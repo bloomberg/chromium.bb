@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_CSS_PARSING_UTILS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_CSS_PARSING_UTILS_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
@@ -46,8 +47,9 @@ bool IsSelfPositionKeyword(CSSValueID);
 bool IsSelfPositionOrLeftOrRightKeyword(CSSValueID);
 bool IsContentPositionKeyword(CSSValueID);
 bool IsContentPositionOrLeftOrRightKeyword(CSSValueID);
+CORE_EXPORT bool IsCSSWideKeyword(CSSValueID);
 
-CSSValue* ConsumeScrollOffset(CSSParserTokenRange&);
+CSSValue* ConsumeScrollOffset(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeSelfPositionOverflowPosition(CSSParserTokenRange&,
                                               IsPositionKeyword);
 CSSValue* ConsumeSimplifiedDefaultPosition(CSSParserTokenRange&,
@@ -59,11 +61,13 @@ CSSValue* ConsumeContentDistributionOverflowPosition(CSSParserTokenRange&,
 CSSValue* ConsumeSimplifiedContentPosition(CSSParserTokenRange&,
                                            IsPositionKeyword);
 
-CSSValue* ConsumeAnimationIterationCount(CSSParserTokenRange&);
+CSSValue* ConsumeAnimationIterationCount(CSSParserTokenRange&,
+                                         const CSSParserContext&);
 CSSValue* ConsumeAnimationName(CSSParserTokenRange&,
                                const CSSParserContext&,
                                bool allow_quoted_name);
-CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange&);
+CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange&,
+                                         const CSSParserContext&);
 bool ConsumeAnimationShorthand(
     const StylePropertyShorthand&,
     HeapVector<Member<CSSValueList>, kMaxNumAnimationLonghands>&,
@@ -117,9 +121,13 @@ bool ConsumeBorderImageComponents(CSSParserTokenRange&,
                                   CSSValue*& repeat,
                                   DefaultFill);
 CSSValue* ConsumeBorderImageRepeat(CSSParserTokenRange&);
-CSSValue* ConsumeBorderImageSlice(CSSParserTokenRange&, DefaultFill);
-CSSValue* ConsumeBorderImageWidth(CSSParserTokenRange&);
-CSSValue* ConsumeBorderImageOutset(CSSParserTokenRange&);
+CSSValue* ConsumeBorderImageSlice(CSSParserTokenRange&,
+                                  const CSSParserContext&,
+                                  DefaultFill);
+CSSValue* ConsumeBorderImageWidth(CSSParserTokenRange&,
+                                  const CSSParserContext&);
+CSSValue* ConsumeBorderImageOutset(CSSParserTokenRange&,
+                                   const CSSParserContext&);
 
 CSSValue* ParseBorderRadiusCorner(CSSParserTokenRange&,
                                   const CSSParserContext&);
@@ -128,15 +136,18 @@ CSSValue* ParseBorderWidthSide(CSSParserTokenRange&,
                                const CSSParserLocalContext&);
 
 CSSValue* ConsumeShadow(CSSParserTokenRange&,
-                        CSSParserMode,
+                        const CSSParserContext&,
                         AllowInsetAndSpread);
 CSSShadowValue* ParseSingleShadow(CSSParserTokenRange&,
-                                  CSSParserMode,
+                                  const CSSParserContext&,
                                   AllowInsetAndSpread);
 
-CSSValue* ConsumeColumnCount(CSSParserTokenRange&);
-CSSValue* ConsumeColumnWidth(CSSParserTokenRange&);
-bool ConsumeColumnWidthOrCount(CSSParserTokenRange&, CSSValue*&, CSSValue*&);
+CSSValue* ConsumeColumnCount(CSSParserTokenRange&, const CSSParserContext&);
+CSSValue* ConsumeColumnWidth(CSSParserTokenRange&, const CSSParserContext&);
+bool ConsumeColumnWidthOrCount(CSSParserTokenRange&,
+                               const CSSParserContext&,
+                               CSSValue*&,
+                               CSSValue*&);
 CSSValue* ConsumeGapLength(CSSParserTokenRange&, const CSSParserContext&);
 
 CSSValue* ConsumeCounter(CSSParserTokenRange&, const CSSParserContext&, int);
@@ -147,32 +158,32 @@ CSSValue* ConsumeFontSize(
     css_property_parser_helpers::UnitlessQuirk =
         css_property_parser_helpers::UnitlessQuirk::kForbid);
 
-CSSValue* ConsumeLineHeight(CSSParserTokenRange&, CSSParserMode);
+CSSValue* ConsumeLineHeight(CSSParserTokenRange&, const CSSParserContext&);
 
 CSSValueList* ConsumeFontFamily(CSSParserTokenRange&);
 CSSValue* ConsumeGenericFamily(CSSParserTokenRange&);
 CSSValue* ConsumeFamilyName(CSSParserTokenRange&);
 String ConcatenateFamilyName(CSSParserTokenRange&);
 CSSIdentifierValue* ConsumeFontStretchKeywordOnly(CSSParserTokenRange&);
-CSSValue* ConsumeFontStretch(CSSParserTokenRange&, const CSSParserMode&);
-CSSValue* ConsumeFontStyle(CSSParserTokenRange&, const CSSParserMode&);
-CSSValue* ConsumeFontWeight(CSSParserTokenRange&, const CSSParserMode&);
-CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange&);
-cssvalue::CSSFontFeatureValue* ConsumeFontFeatureTag(CSSParserTokenRange&);
+CSSValue* ConsumeFontStretch(CSSParserTokenRange&, const CSSParserContext&);
+CSSValue* ConsumeFontStyle(CSSParserTokenRange&, const CSSParserContext&);
+CSSValue* ConsumeFontWeight(CSSParserTokenRange&, const CSSParserContext&);
+CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange&,
+                                     const CSSParserContext&);
+cssvalue::CSSFontFeatureValue* ConsumeFontFeatureTag(CSSParserTokenRange&,
+                                                     const CSSParserContext&);
 CSSIdentifierValue* ConsumeFontVariantCSS21(CSSParserTokenRange&);
 
 CSSValue* ConsumeGridLine(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeGridTrackList(CSSParserTokenRange&,
                                const CSSParserContext&,
-                               CSSParserMode,
                                TrackListType);
 bool ParseGridTemplateAreasRow(const WTF::String& grid_row_names,
                                NamedGridAreaMap&,
                                const size_t row_count,
                                size_t& column_count);
 CSSValue* ConsumeGridTemplatesRowsOrColumns(CSSParserTokenRange&,
-                                            const CSSParserContext&,
-                                            CSSParserMode);
+                                            const CSSParserContext&);
 bool ConsumeGridItemPositionShorthand(bool important,
                                       CSSParserTokenRange&,
                                       const CSSParserContext&,
@@ -205,9 +216,9 @@ CSSValue* ConsumeWidthOrHeight(
         css_property_parser_helpers::UnitlessQuirk::kForbid);
 
 CSSValue* ConsumeMarginOrOffset(CSSParserTokenRange&,
-                                CSSParserMode,
+                                const CSSParserContext&,
                                 css_property_parser_helpers::UnitlessQuirk);
-CSSValue* ConsumeScrollPadding(CSSParserTokenRange&);
+CSSValue* ConsumeScrollPadding(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeOffsetPath(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumePathOrNone(CSSParserTokenRange&);
 CSSValue* ConsumeOffsetRotate(CSSParserTokenRange&, const CSSParserContext&);
@@ -216,7 +227,7 @@ CSSValue* ConsumeBasicShape(CSSParserTokenRange&, const CSSParserContext&);
 bool ConsumeRadii(CSSValue* horizontal_radii[4],
                   CSSValue* vertical_radii[4],
                   CSSParserTokenRange&,
-                  CSSParserMode,
+                  const CSSParserContext&,
                   bool use_legacy_parsing);
 
 CSSValue* ConsumeTextDecorationLine(CSSParserTokenRange&);
@@ -235,7 +246,7 @@ CSSValue* ConsumeBorderColorSide(CSSParserTokenRange&,
                                  const CSSParserContext&,
                                  const CSSParserLocalContext&);
 CSSValue* ConsumeBorderWidth(CSSParserTokenRange&,
-                             CSSParserMode,
+                             const CSSParserContext&,
                              css_property_parser_helpers::UnitlessQuirk);
 CSSValue* ParsePaintStroke(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ParseSpacing(CSSParserTokenRange&, const CSSParserContext&);
@@ -245,7 +256,7 @@ css_property_parser_helpers::UnitlessQuirk UnitlessUnlessShorthand(
 
 template <CSSValueID start, CSSValueID end>
 CSSValue* ConsumePositionLonghand(CSSParserTokenRange& range,
-                                  CSSParserMode css_parser_mode) {
+                                  const CSSParserContext& context) {
   if (range.Peek().GetType() == kIdentToken) {
     CSSValueID id = range.Peek().Id();
     int percent;
@@ -261,11 +272,9 @@ CSSValue* ConsumePositionLonghand(CSSParserTokenRange& range,
     return CSSNumericLiteralValue::Create(
         percent, CSSPrimitiveValue::UnitType::kPercentage);
   }
-  return css_property_parser_helpers::ConsumeLengthOrPercent(
-      range, css_parser_mode, kValueRangeAll);
+  return css_property_parser_helpers::ConsumeLengthOrPercent(range, context,
+                                                             kValueRangeAll);
 }
-
-CSSValue* ConsumeIntrinsicLength(CSSParserTokenRange&, const CSSParserContext&);
 
 }  // namespace css_parsing_utils
 }  // namespace blink

@@ -12,12 +12,10 @@
 #include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
@@ -55,20 +53,6 @@ WebViewPasswordStoreFactory* WebViewPasswordStoreFactory::GetInstance() {
   return instance.get();
 }
 
-// static
-void WebViewPasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
-    WebViewBrowserState* browser_state) {
-  scoped_refptr<password_manager::PasswordStore> password_store =
-      GetForBrowserState(browser_state, ServiceAccessType::EXPLICIT_ACCESS);
-  syncer::SyncService* sync_service =
-      WebViewProfileSyncServiceFactory::GetForBrowserState(browser_state);
-  password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
-      password_store.get(), sync_service,
-      browser_state->GetSharedURLLoaderFactory(),
-      ApplicationContext::GetInstance()->GetNetworkConnectionTracker(),
-      browser_state->GetStatePath());
-}
-
 WebViewPasswordStoreFactory::WebViewPasswordStoreFactory()
     : RefcountedBrowserStateKeyedServiceFactory(
           "PasswordStore",
@@ -91,13 +75,12 @@ WebViewPasswordStoreFactory::BuildServiceInstanceFor(
   // the passwords obtained through tasks on the background runner influence
   // what the user sees.
   scoped_refptr<base::SequencedTaskRunner> db_task_runner(
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::USER_VISIBLE}));
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
 
   scoped_refptr<password_manager::PasswordStore> store =
       new password_manager::PasswordStoreDefault(std::move(login_db));
-  if (!store->Init(base::RepeatingCallback<void(syncer::ModelType)>(),
-                   nullptr)) {
+  if (!store->Init(nullptr)) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
     // UI.
     LOG(WARNING) << "Could not initialize password store.";

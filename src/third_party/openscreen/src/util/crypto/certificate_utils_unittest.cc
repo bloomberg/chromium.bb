@@ -22,24 +22,12 @@ namespace {
 constexpr char kName[] = "test.com";
 constexpr auto kDuration = std::chrono::seconds(31556952);
 
-bssl::UniquePtr<EVP_PKEY> GenerateRsaKeypair() {
-  bssl::UniquePtr<BIGNUM> prime(BN_new());
-  EXPECT_NE(0, BN_set_word(prime.get(), RSA_F4));
-
-  bssl::UniquePtr<RSA> rsa(RSA_new());
-  EXPECT_NE(0, RSA_generate_key_ex(rsa.get(), 2048, prime.get(), nullptr));
-
-  bssl::UniquePtr<EVP_PKEY> pkey(EVP_PKEY_new());
-  EXPECT_NE(0, EVP_PKEY_set1_RSA(pkey.get(), rsa.get()));
-
-  return pkey;
-}
-
 TEST(CertificateUtilTest, CreatesValidCertificate) {
-  bssl::UniquePtr<EVP_PKEY> pkey = GenerateRsaKeypair();
+  bssl::UniquePtr<EVP_PKEY> pkey = GenerateRsaKeyPair();
+  ASSERT_TRUE(pkey);
 
   ErrorOr<bssl::UniquePtr<X509>> certificate =
-      CreateCertificate(kName, kDuration, *pkey);
+      CreateSelfSignedX509Certificate(kName, kDuration, *pkey);
   ASSERT_TRUE(certificate.is_value());
 
   // Validate the generated certificate.
@@ -47,13 +35,14 @@ TEST(CertificateUtilTest, CreatesValidCertificate) {
 }
 
 TEST(CertificateUtilTest, ExportsAndImportsCertificate) {
-  bssl::UniquePtr<EVP_PKEY> pkey = GenerateRsaKeypair();
+  bssl::UniquePtr<EVP_PKEY> pkey = GenerateRsaKeyPair();
+  ASSERT_TRUE(pkey);
   ErrorOr<bssl::UniquePtr<X509>> certificate =
-      CreateCertificate(kName, kDuration, *pkey);
+      CreateSelfSignedX509Certificate(kName, kDuration, *pkey);
   ASSERT_TRUE(certificate.is_value());
 
   ErrorOr<std::vector<uint8_t>> exported =
-      ExportCertificate(*certificate.value());
+      ExportX509CertificateToDer(*certificate.value());
   ASSERT_TRUE(exported.is_value()) << exported.error();
   EXPECT_FALSE(exported.value().empty());
 

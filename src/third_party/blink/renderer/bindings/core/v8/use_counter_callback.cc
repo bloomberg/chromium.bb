@@ -5,11 +5,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/use_counter_callback.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
-#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
@@ -21,7 +19,6 @@ void UseCounterCallback(v8::Isolate* isolate,
 
   WebFeature blink_feature;
   bool deprecated = false;
-  bool detached_window_call = false;
   switch (feature) {
     case v8::Isolate::kUseAsm:
       blink_feature = WebFeature::kUseAsm;
@@ -161,6 +158,9 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kWasmThreadOpcodes:
       blink_feature = WebFeature::kV8WasmThreadOpcodes;
       break;
+    case v8::Isolate::kWasmSimdOpcodes:
+      blink_feature = WebFeature::kV8WasmSimdOpcodes;
+      break;
     case v8::Isolate::kAtomicsNotify:
       blink_feature = WebFeature::kV8AtomicsNotify;
       break;
@@ -246,70 +246,94 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kSharedArrayBufferConstructed:
       blink_feature = WebFeature::kV8SharedArrayBufferConstructed;
       break;
-    // The following 9 counters differ from the rest, because they're reported
-    // to UKM using alternative mechanisms. The use counter logic doesn't work
-    // on detached windows.
-    // TODO(bartekn,chromium:1018156): Remove once not needed.
-    case v8::Isolate::kCallInDetachedWindowByNavigation:
-      InstanceCounters::IncrementCounter(
-          InstanceCounters::kV8CallInDetachedWindowByNavigationCounter);
-      detached_window_call = true;
+    case v8::Isolate::kArrayPrototypeHasElements:
+      blink_feature = WebFeature::kV8ArrayPrototypeHasElements;
       break;
-    case v8::Isolate::kCallInDetachedWindowByNavigationAfter10s:
-      InstanceCounters::IncrementCounter(
-          InstanceCounters::kV8CallInDetachedWindowByNavigationAfter10sCounter);
-      detached_window_call = true;
+    case v8::Isolate::kObjectPrototypeHasElements:
+      blink_feature = WebFeature::kV8ObjectPrototypeHasElements;
       break;
-    case v8::Isolate::kCallInDetachedWindowByNavigationAfter1min:
-      InstanceCounters::IncrementCounter(
-          InstanceCounters::
-              kV8CallInDetachedWindowByNavigationAfter1minCounter);
-      detached_window_call = true;
+    case v8::Isolate::kDisplayNames:
+      blink_feature = WebFeature::kDisplayNames;
       break;
-    case v8::Isolate::kCallInDetachedWindowByClosing:
-      InstanceCounters::IncrementCounter(
-          InstanceCounters::kV8CallInDetachedWindowByClosingCounter);
-      detached_window_call = true;
+    case v8::Isolate::kNumberFormatStyleUnit:
+      blink_feature = WebFeature::kNumberFormatStyleUnit;
       break;
-    case v8::Isolate::kCallInDetachedWindowByClosingAfter10s:
-      InstanceCounters::IncrementCounter(
-          InstanceCounters::kV8CallInDetachedWindowByClosingAfter10sCounter);
-      detached_window_call = true;
+    case v8::Isolate::kDateTimeFormatRange:
+      blink_feature = WebFeature::kDateTimeFormatRange;
       break;
-    case v8::Isolate::kCallInDetachedWindowByClosingAfter1min:
-      InstanceCounters::IncrementCounter(
-          InstanceCounters::kV8CallInDetachedWindowByClosingAfter1minCounter);
-      detached_window_call = true;
+    case v8::Isolate::kDateTimeFormatDateTimeStyle:
+      blink_feature = WebFeature::kDateTimeFormatDateTimeStyle;
       break;
-    case v8::Isolate::kCallInDetachedWindowByOtherReason:
-      InstanceCounters::IncrementCounter(
-          InstanceCounters::kV8CallInDetachedWindowByOtherReasonCounter);
-      detached_window_call = true;
+    case v8::Isolate::kBreakIteratorTypeWord:
+      blink_feature = WebFeature::kBreakIteratorTypeWord;
       break;
-    case v8::Isolate::kCallInDetachedWindowByOtherReasonAfter10s:
-      InstanceCounters::IncrementCounter(
-          InstanceCounters::
-              kV8CallInDetachedWindowByOtherReasonAfter10sCounter);
-      detached_window_call = true;
+    case v8::Isolate::kBreakIteratorTypeLine:
+      blink_feature = WebFeature::kBreakIteratorTypeLine;
       break;
-    case v8::Isolate::kCallInDetachedWindowByOtherReasonAfter1min:
-      InstanceCounters::IncrementCounter(
-          InstanceCounters::
-              kV8CallInDetachedWindowByOtherReasonAfter1minCounter);
-      detached_window_call = true;
+    case v8::Isolate::kInvalidatedArrayBufferDetachingProtector:
+      blink_feature = WebFeature::kV8InvalidatedArrayBufferDetachingProtector;
       break;
-    // End of special case.
+    case v8::Isolate::kInvalidatedArrayConstructorProtector:
+      blink_feature = WebFeature::kV8InvalidatedArrayConstructorProtector;
+      break;
+    case v8::Isolate::kInvalidatedArrayIteratorLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedArrayIteratorLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedArraySpeciesLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedArraySpeciesLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedIsConcatSpreadableLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedIsConcatSpreadableLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedMapIteratorLookupChainProtector:
+      blink_feature = WebFeature::kV8InvalidatedMapIteratorLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedNoElementsProtector:
+      blink_feature = WebFeature::kV8InvalidatedNoElementsProtector;
+      break;
+    case v8::Isolate::kInvalidatedPromiseHookProtector:
+      blink_feature = WebFeature::kV8InvalidatedPromiseHookProtector;
+      break;
+    case v8::Isolate::kInvalidatedPromiseResolveLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedPromiseResolveLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedPromiseSpeciesLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedPromiseSpeciesLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedPromiseThenLookupChainProtector:
+      blink_feature = WebFeature::kV8InvalidatedPromiseThenLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedRegExpSpeciesLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedRegExpSpeciesLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedSetIteratorLookupChainProtector:
+      blink_feature = WebFeature::kV8InvalidatedSetIteratorLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedStringIteratorLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedStringIteratorLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedStringLengthOverflowLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedStringLengthOverflowLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedTypedArraySpeciesLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedTypedArraySpeciesLookupChainProtector;
+      break;
+
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.
       return;
   }
-  if (detached_window_call) {
-    // Detached window call counters are interesting only in the Document case.
-    Document* document = DynamicTo<Document>(CurrentExecutionContext(isolate));
-    if (document)
-      document->RecordCallInDetachedWindow(feature);
-  } else if (deprecated) {
+  if (deprecated) {
     Deprecation::CountDeprecation(CurrentExecutionContext(isolate),
                                   blink_feature);
   } else {

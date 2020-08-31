@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // A Synchronization Source is a 32-bit opaque identifier used in RTP packets
 // for identifying the source (or recipient) of a logical sequence of encoded
@@ -33,7 +33,7 @@ Ssrc GenerateSsrc(bool higher_priority);
 //   ret > 0: Stream |ssrc_b| has higher priority.
 int ComparePriority(Ssrc ssrc_a, Ssrc ssrc_b);
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_SSRC_H_

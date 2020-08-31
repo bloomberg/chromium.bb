@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "components/viz/service/frame_sinks/external_begin_frame_source_android.h"
 
 namespace viz {
 struct BeginFrameArgs;
@@ -20,7 +19,10 @@ namespace android_webview {
 class RootFrameSinkProxyClient {
  public:
   virtual void Invalidate() = 0;
-  virtual void ProgressFling(base::TimeTicks) = 0;
+  virtual void ReturnResourcesFromViz(
+      viz::FrameSinkId frame_sink_id,
+      uint32_t layer_tree_frame_sink_id,
+      std::vector<viz::ReturnedResource> resources) = 0;
 };
 
 // Per-AwContents object. Straddles UI and Viz thread. Public methods should be
@@ -30,15 +32,19 @@ class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
  public:
   RootFrameSinkProxy(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      RootFrameSinkProxyClient* client);
+      RootFrameSinkProxyClient* client,
+      viz::BeginFrameSource* begin_frame_source);
   ~RootFrameSinkProxy() override;
 
   void AddChildFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   void RemoveChildFrameSinkId(const viz::FrameSinkId& frame_sink_id);
+  void OnInputEvent();
+
   // The returned callback can only be called on viz thread.
   RootFrameSinkGetter GetRootFrameSinkCallback();
 
  private:
+  class RootFrameSinkClientImpl;
   static scoped_refptr<RootFrameSink> GetRootFrameSinkHelper(
       base::WeakPtr<RootFrameSinkProxy> proxy);
 
@@ -46,19 +52,34 @@ class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
   void DestroyOnViz();
   void AddChildFrameSinkIdOnViz(const viz::FrameSinkId& frame_sink_id);
   void RemoveChildFrameSinkIdOnViz(const viz::FrameSinkId& frame_sink_id);
-  void BeginFrameOnViz(const viz::BeginFrameArgs& args, bool* invalidate);
+  void BeginFrameOnViz(const viz::BeginFrameArgs& args,
+                       bool had_input_event,
+                       bool* invalidate);
   void SetNeedsBeginFramesOnViz(bool needs_begin_frames);
   void SetNeedsBeginFramesOnUI(bool needs_begin_frames);
+  void SetBeginFrameSourcePausedOnViz(bool paused);
+  void InvalidateOnViz();
+  void InvalidateOnUI();
+  void ReturnResourcesOnViz(viz::FrameSinkId frame_sink_id,
+                            uint32_t layer_tree_frame_sink_id,
+                            std::vector<viz::ReturnedResource> resources);
+  void ReturnResourcesOnUI(viz::FrameSinkId frame_sink_id,
+                           uint32_t layer_tree_frame_sink_id,
+                           std::vector<viz::ReturnedResource> resources);
+
   bool BeginFrame(const viz::BeginFrameArgs& args);
 
   bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) override;
-  void OnBeginFrameSourcePausedChanged(bool) override {}
+  void OnBeginFrameSourcePausedChanged(bool paused) override;
 
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> viz_task_runner_;
   RootFrameSinkProxyClient* const client_;
+  std::unique_ptr<RootFrameSinkClient> root_frame_sink_client_;
   scoped_refptr<RootFrameSink> without_gpu_;
-  std::unique_ptr<viz::ExternalBeginFrameSource> begin_frame_source_;
+  viz::BeginFrameSource* const begin_frame_source_;
+  bool had_input_event_ = false;
+  bool observing_bfs_ = false;
 
   THREAD_CHECKER(ui_thread_checker_);
   THREAD_CHECKER(viz_thread_checker_);

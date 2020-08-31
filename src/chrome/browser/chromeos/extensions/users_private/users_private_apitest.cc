@@ -28,6 +28,7 @@
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"
 #include "extensions/browser/api/test/test_api.h"
@@ -149,7 +150,7 @@ class UsersPrivateApiTest : public ExtensionApiTest {
  protected:
   bool RunSubtest(const std::string& subtest) {
     return RunExtensionSubtest("users_private", "main.html?" + subtest,
-                               kFlagLoadAsComponent);
+                               kFlagNone, kFlagLoadAsComponent);
   }
 
   // Static pointer to the TestDelegate so that it can be accessed in
@@ -232,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(UsersPrivateApiTest, IsOwner) {
 // User profile - logged in, screen not locked.
 IN_PROC_BROWSER_TEST_F(UsersPrivateApiLoginStatusTest, User) {
   EXPECT_TRUE(RunExtensionSubtest("users_private", "main.html?getLoginStatus",
-                                  kFlagLoadAsComponent))
+                                  kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 
@@ -242,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(UsersPrivateApiLoginStatusTest, User) {
 IN_PROC_BROWSER_TEST_F(UsersPrivateApiLockStatusTest, ScreenLock) {
   chromeos::ScreenLockerTester().Lock();
   EXPECT_TRUE(RunExtensionSubtest("users_private", "main.html?getLoginStatus",
-                                  kFlagLoadAsComponent))
+                                  kFlagNone, kFlagLoadAsComponent))
       << message_;
 }
 

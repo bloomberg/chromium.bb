@@ -19,8 +19,8 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/av1_loopfilter.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/common/quant_common.h"
 
 #include "av1/encoder/av1_quantize.h"
@@ -38,7 +38,7 @@ static void yv12_copy_plane(const YV12_BUFFER_CONFIG *src_bc,
 }
 
 int av1_get_max_filter_level(const AV1_COMP *cpi) {
-  if (cpi->oxcf.pass == 2) {
+  if (is_stat_consumption_stage_twopass(cpi)) {
     return cpi->twopass.section_intra_rating > 8 ? MAX_LOOP_FILTER * 3 / 4
                                                  : MAX_LOOP_FILTER;
   } else {
@@ -49,6 +49,8 @@ int av1_get_max_filter_level(const AV1_COMP *cpi) {
 static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
                                 AV1_COMP *const cpi, int filt_level,
                                 int partial_frame, int plane, int dir) {
+  MultiThreadInfo *const mt_info = &cpi->mt_info;
+  int num_workers = mt_info->num_workers;
   AV1_COMMON *const cm = &cpi->common;
   int64_t filt_err;
 
@@ -57,7 +59,7 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
   if (plane == 0 && dir == 0) filter_level[1] = cm->lf.filter_level[1];
   if (plane == 0 && dir == 1) filter_level[0] = cm->lf.filter_level[0];
 
-  // set base filters for use of get_filter_level when in DELTA_Q_LF mode
+  // set base filters for use of av1_get_filter_level when in DELTA_LF mode
   switch (plane) {
     case 0:
       cm->lf.filter_level[0] = filter_level[0];
@@ -69,16 +71,17 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
 
   // TODO(any): please enable multi-thread and remove the flag when loop
   // filter mask is compatible with multi-thread.
-  if (cpi->num_workers > 1)
+  if (num_workers > 1)
     av1_loop_filter_frame_mt(&cm->cur_frame->buf, cm, &cpi->td.mb.e_mbd, plane,
                              plane + 1, partial_frame,
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
                              0,
 #endif
-                             cpi->workers, cpi->num_workers, &cpi->lf_row_sync);
+                             mt_info->workers, num_workers,
+                             &mt_info->lf_row_sync);
   else
     av1_loop_filter_frame(&cm->cur_frame->buf, cm, &cpi->td.mb.e_mbd,
-#if LOOP_FILTER_BITMASK
+#if CONFIG_LPF_MASK
                           0,
 #endif
                           plane, plane + 1, partial_frame);
@@ -142,11 +145,12 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     // Bias against raising loop filter in favor of lowering it.
     int64_t bias = (best_err >> (15 - (filt_mid / 8))) * filter_step;
 
-    if ((cpi->oxcf.pass == 2) && (cpi->twopass.section_intra_rating < 20))
+    if ((is_stat_consumption_stage_twopass(cpi)) &&
+        (cpi->twopass.section_intra_rating < 20))
       bias = (bias * cpi->twopass.section_intra_rating) / 20;
 
     // yx, bias less for large block size
-    if (cm->tx_mode != ONLY_4X4) bias >>= 1;
+    if (cm->features.tx_mode != ONLY_4X4) bias >>= 1;
 
     if (filt_direction <= 0 && filt_low != filt_mid) {
       // Get Low filter error score
@@ -212,20 +216,27 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   } else if (method >= LPF_PICK_FROM_Q) {
     const int min_filter_level = 0;
     const int max_filter_level = av1_get_max_filter_level(cpi);
-    const int q = av1_ac_quant_Q3(cm->base_qindex, 0, cm->seq_params.bit_depth);
+    const int q = av1_ac_quant_QTX(cm->quant_params.base_qindex, 0,
+                                   cm->seq_params.bit_depth);
+    // based on tests result for rtc test set
+    // 0.04590 boosted or 0.02295 non-booseted in 18-bit fixed point
+    const int strength_boost_q_treshold = 700;
+    const int inter_frame_multiplier =
+        q > strength_boost_q_treshold ? 12034 : 6017;
     // These values were determined by linear fitting the result of the
     // searched level for 8 bit depth:
     // Keyframes: filt_guess = q * 0.06699 - 1.60817
-    // Other frames: filt_guess = q * 0.02295 + 2.48225
+    // Other frames: filt_guess = q * inter_frame_multiplier + 2.48225
     //
     // And high bit depth separately:
     // filt_guess = q * 0.316206 + 3.87252
     int filt_guess;
     switch (cm->seq_params.bit_depth) {
       case AOM_BITS_8:
-        filt_guess = (cm->current_frame.frame_type == KEY_FRAME)
-                         ? ROUND_POWER_OF_TWO(q * 17563 - 421574, 18)
-                         : ROUND_POWER_OF_TWO(q * 6017 + 650707, 18);
+        filt_guess =
+            (cm->current_frame.frame_type == KEY_FRAME)
+                ? ROUND_POWER_OF_TWO(q * 17563 - 421574, 18)
+                : ROUND_POWER_OF_TWO(q * inter_frame_multiplier + 650707, 18);
         break;
       case AOM_BITS_10:
         filt_guess = ROUND_POWER_OF_TWO(q * 20723 + 4060632, 20);
@@ -256,12 +267,14 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     lf->filter_level[0] = lf->filter_level[1] =
         search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE,
                             last_frame_filter_level, NULL, 0, 2);
-    lf->filter_level[0] =
-        search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE,
-                            last_frame_filter_level, NULL, 0, 0);
-    lf->filter_level[1] =
-        search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE,
-                            last_frame_filter_level, NULL, 0, 1);
+    if (method != LPF_PICK_FROM_FULL_IMAGE_NON_DUAL) {
+      lf->filter_level[0] =
+          search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE,
+                              last_frame_filter_level, NULL, 0, 0);
+      lf->filter_level[1] =
+          search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE,
+                              last_frame_filter_level, NULL, 0, 1);
+    }
 
     if (num_planes > 1) {
       lf->filter_level_u =

@@ -40,13 +40,12 @@ struct HardwareDisplayPlaneList {
   std::vector<HardwareDisplayPlane*> old_plane_list;
 
   struct PageFlipInfo {
-    PageFlipInfo(uint32_t crtc_id, uint32_t framebuffer, CrtcController* crtc);
+    PageFlipInfo(uint32_t crtc_id, uint32_t framebuffer);
     PageFlipInfo(const PageFlipInfo& other);
     ~PageFlipInfo();
 
     uint32_t crtc_id;
     uint32_t framebuffer;
-    CrtcController* crtc;
   };
   // In the case of non-atomic operation, this info will be used for
   // pageflipping.
@@ -57,12 +56,21 @@ struct HardwareDisplayPlaneList {
 
 class HardwareDisplayPlaneManager {
  public:
-  HardwareDisplayPlaneManager(DrmDevice* drm);
+  explicit HardwareDisplayPlaneManager(DrmDevice* drm);
   virtual ~HardwareDisplayPlaneManager();
 
   // This parses information from the drm driver, adding any new planes
   // or crtcs found.
   bool Initialize();
+
+  // Performs modesetting, either atomic or legacy, depending on the device.
+  virtual bool Modeset(uint32_t crtc_id,
+                       uint32_t framebuffer_id,
+                       uint32_t connector_id,
+                       const drmModeModeInfo& mode,
+                       const HardwareDisplayPlaneList& plane_list) = 0;
+
+  virtual bool DisableModeset(uint32_t crtc_id, uint32_t connector) = 0;
 
   // Clears old frame state out. Must be called before any AssignOverlayPlanes
   // calls.
@@ -86,8 +94,7 @@ class HardwareDisplayPlaneManager {
   // |crtc_id| will be used. |overlay_list| must be sorted bottom-to-top.
   virtual bool AssignOverlayPlanes(HardwareDisplayPlaneList* plane_list,
                                    const DrmOverlayPlaneList& overlay_list,
-                                   uint32_t crtc_id,
-                                   CrtcController* crtc);
+                                   uint32_t crtc_id);
 
   // Commit the plane states in |plane_list|.
   //
@@ -134,11 +141,21 @@ class HardwareDisplayPlaneManager {
   std::vector<uint64_t> GetFormatModifiers(uint32_t crtc_id,
                                            uint32_t format) const;
 
+  // Cache the most updated connectors found in DRM resources. This needs to be
+  // called whenever a DRM hotplug event is received via UDEV.
+  void ResetConnectorsCache(const ScopedDrmResourcesPtr& resources);
+
  protected:
+  struct ConnectorProperties {
+    uint32_t id;
+    DrmDevice::Property crtc_id;
+  };
+
   struct CrtcProperties {
     // Unique identifier for the CRTC. This must be greater than 0 to be valid.
     uint32_t id;
-
+    DrmDevice::Property active;
+    DrmDevice::Property mode_id;
     // Optional properties.
     DrmDevice::Property ctm;
     DrmDevice::Property gamma_lut;
@@ -173,8 +190,7 @@ class HardwareDisplayPlaneManager {
                             HardwareDisplayPlane* hw_plane,
                             const DrmOverlayPlane& overlay,
                             uint32_t crtc_id,
-                            const gfx::Rect& src_rect,
-                            CrtcController* crtc) = 0;
+                            const gfx::Rect& src_rect) = 0;
 
   virtual std::unique_ptr<HardwareDisplayPlane> CreatePlane(uint32_t plane_id);
 
@@ -185,8 +201,10 @@ class HardwareDisplayPlaneManager {
       uint32_t crtc_index,
       const DrmOverlayPlane& overlay) const;
 
-  // Convert |crtc_id| into an index, returning -1 if the ID couldn't be found.
+  // Convert |crtc/connector_id| into an index, returning -1 if the ID couldn't
+  // be found.
   int LookupCrtcIndex(uint32_t crtc_id) const;
+  int LookupConnectorIndex(uint32_t connector_idx) const;
 
   // Returns true if |plane| can support |overlay| and compatible with
   // |crtc_index|.
@@ -211,6 +229,7 @@ class HardwareDisplayPlaneManager {
 
   std::vector<std::unique_ptr<HardwareDisplayPlane>> planes_;
   std::vector<CrtcState> crtc_state_;
+  std::vector<ConnectorProperties> connectors_props_;
   std::vector<uint32_t> supported_formats_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManager);

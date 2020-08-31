@@ -4,8 +4,11 @@
 
 #include "ui/views/controls/menu/menu_host.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/aura/window_observer.h"
@@ -47,9 +50,7 @@ class PreMenuEventDispatchHandler : public ui::EventHandler,
     window_->AddObserver(this);
   }
 
-  ~PreMenuEventDispatchHandler() override {
-    StopObserving();
-  }
+  ~PreMenuEventDispatchHandler() override { StopObserving(); }
 
   // ui::EventHandler overrides.
   void OnTouchEvent(ui::TouchEvent* event) override {
@@ -95,9 +96,7 @@ void TransferGesture(Widget* source, Widget* target) {
 // MenuHost, public:
 
 MenuHost::MenuHost(SubmenuView* submenu)
-    : submenu_(submenu),
-      destroying_(false),
-      ignore_capture_lost_(false) {
+    : submenu_(submenu), destroying_(false), ignore_capture_lost_(false) {
   set_auto_release_capture(false);
 }
 
@@ -278,8 +277,8 @@ void MenuHost::OnDragComplete() {
   // exit.
   if (!menu_controller->did_initiate_drag()) {
     MenuDelegate* menu_delegate = submenu_->GetMenuItem()->GetDelegate();
-    should_close =
-      menu_delegate ? menu_delegate->ShouldCloseOnDragComplete() : should_close;
+    should_close = menu_delegate ? menu_delegate->ShouldCloseOnDragComplete()
+                                 : should_close;
   }
   menu_controller->OnDragComplete(should_close);
 

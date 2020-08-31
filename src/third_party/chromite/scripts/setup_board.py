@@ -13,11 +13,16 @@ headers, gcc-libs).
 
 from __future__ import print_function
 
-from chromite.lib import build_target_util
+import sys
+
+from chromite.lib import build_target_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import portage_util
 from chromite.service import sysroot
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def GetParser():
@@ -112,9 +117,9 @@ def _ParseArgs(args):
 
   # Translate raw options to config objects.
   name = '%s_%s' % (opts.board, opts.variant) if opts.variant else opts.board
-  opts.build_target = build_target_util.BuildTarget(name,
-                                                    build_root=opts.board_root,
-                                                    profile=opts.profile)
+  opts.build_target = build_target_lib.BuildTarget(name,
+                                                   build_root=opts.board_root,
+                                                   profile=opts.profile)
 
   opts.run_config = sysroot.SetupBoardRunConfig(
       set_default=opts.default, force=opts.force, usepkg=opts.usepkg,

@@ -13,11 +13,17 @@
       "transform": 1
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV class='content'",
-      "position": [17, 17],
-      "bounds": [196, 212],
-      "contentsOpaque": true,
-      "backgroundColor": "#DDDDDD",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='scroller'",
+      "position": [5, 5],
+      "bounds": [220, 160],
+      "drawsContent": false,
+      "transform": 2
+    },
+    {
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='scroller'",
+      "position": [5, 5],
+      "bounds": [220, 236],
+      "backgroundColor": "#FFFFFF",
       "transform": 2
     },
     {
@@ -33,11 +39,17 @@
       "transform": 3
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV class='content'",
-      "position": [17, 17],
-      "bounds": [196, 212],
-      "contentsOpaque": true,
-      "backgroundColor": "#DDDDDD",
+      "name": "LayoutNGBlockFlow DIV class='scroller'",
+      "position": [5, 5],
+      "bounds": [220, 160],
+      "drawsContent": false,
+      "transform": 4
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV class='scroller'",
+      "position": [5, 5],
+      "bounds": [220, 236],
+      "backgroundColor": "#FFFFFF",
       "transform": 4
     },
     {
@@ -53,11 +65,17 @@
       "transform": 5
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV class='content'",
-      "position": [17, 17],
-      "bounds": [196, 212],
-      "contentsOpaque": true,
-      "backgroundColor": "#DDDDDD",
+      "name": "LayoutNGBlockFlow DIV class='scroller'",
+      "position": [5, 5],
+      "bounds": [220, 160],
+      "drawsContent": false,
+      "transform": 6
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV class='scroller'",
+      "position": [5, 5],
+      "bounds": [220, 236],
+      "backgroundColor": "#FFFFFF",
       "transform": 6
     },
     {
@@ -73,11 +91,17 @@
       "transform": 7
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV class='content'",
-      "position": [17, 17],
-      "bounds": [196, 212],
-      "contentsOpaque": true,
-      "backgroundColor": "#DDDDDD",
+      "name": "LayoutNGBlockFlow DIV class='scroller'",
+      "position": [5, 5],
+      "bounds": [220, 160],
+      "drawsContent": false,
+      "transform": 8
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV class='scroller'",
+      "position": [5, 5],
+      "bounds": [220, 236],
+      "backgroundColor": "#FFFFFF",
       "transform": 8
     },
     {

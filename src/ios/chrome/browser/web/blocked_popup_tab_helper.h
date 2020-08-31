@@ -14,13 +14,11 @@
 #import "ios/web/public/web_state_user_data.h"
 #include "url/gurl.h"
 
+class ChromeBrowserState;
+
 namespace infobars {
 class InfoBar;
 }  // namespace infobars
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 namespace web {
 class WebState;
@@ -68,7 +66,7 @@ class BlockedPopupTabHelper
   void ShowInfoBar();
 
   // Returns BrowserState for the WebState that this object is attached to.
-  ios::ChromeBrowserState* GetBrowserState() const;
+  ChromeBrowserState* GetBrowserState() const;
 
   // Registers this object as an observer for the InfoBarManager associated with
   // |web_state_|.  Does nothing if already registered.

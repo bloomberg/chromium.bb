@@ -18,8 +18,8 @@
 #include "base/time/time.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/linux/gbm_device.h"
 #include "ui/gfx/overlay_transform.h"
-#include "ui/ozone/common/linux/gbm_device.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/page_flip_request.h"
 
@@ -106,12 +106,7 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   virtual bool SetCrtc(uint32_t crtc_id,
                        uint32_t framebuffer,
                        std::vector<uint32_t> connectors,
-                       drmModeModeInfo* mode);
-
-  // Used to set a specific configuration to the CRTC. Normally this function
-  // would be called with a CRTC saved state (from |GetCrtc|) to restore it to
-  // its original configuration.
-  virtual bool SetCrtc(drmModeCrtc* crtc, std::vector<uint32_t> connectors);
+                       const drmModeModeInfo& mode);
 
   virtual bool DisableCrtc(uint32_t crtc_id);
 
@@ -168,7 +163,8 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
                            uint64_t value);
 
   // Creates a property blob with data |blob| of size |size|.
-  virtual ScopedDrmPropertyBlob CreatePropertyBlob(void* blob, size_t size);
+  virtual ScopedDrmPropertyBlob CreatePropertyBlob(const void* blob,
+                                                   size_t size);
 
   virtual void DestroyPropertyBlob(uint32_t id);
 

@@ -25,6 +25,8 @@ enum class RenderSurfaceReason : uint8_t {
   kNone,
   kRoot,
   k3dTransformFlattening,
+  // Defines the scope of the backdrop for child blend mode or backdrop filter.
+  kBackdropScope,
   kBlendMode,
   kBlendModeDstIn,
   kOpacity,
@@ -75,8 +77,7 @@ struct CC_EXPORT EffectNode {
   gfx::PointF filters_origin;
 
   // The element id corresponding to the mask to apply to the filtered backdrop
-  // image. Note that this is separate from mask_layer_id, which is a layer id,
-  // and is used for masking the "normal" (non-backdrop-filter) content.
+  // image.
   ElementId backdrop_mask_element_id;
 
   // Bounds of rounded corner rrect in the space of the transform node

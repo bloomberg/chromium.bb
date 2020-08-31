@@ -8,6 +8,8 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
@@ -30,12 +32,15 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/text_utils.h"
+
+using autofill::PopupHidingReason;
 
 // Handles registration for key events with RenderFrameHost.
 class PasswordGenerationPopupControllerImpl::KeyPressRegistrator {
@@ -88,7 +93,7 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
   }
 
   if (previous.get())
-    previous->Hide();
+    previous->Hide(PopupHidingReason::kViewDestroyed);
 
   PasswordGenerationPopupControllerImpl* controller =
       new PasswordGenerationPopupControllerImpl(bounds, ui_data, driver,
@@ -105,10 +110,10 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
     content::RenderFrameHost* frame)
     : content::WebContentsObserver(web_contents),
       view_(nullptr),
-      form_(ui_data.password_form),
+      form_data_(ui_data.form_data),
       driver_(driver),
       observer_(observer),
-      form_signature_(autofill::CalculateFormSignature(form_.form_data)),
+      form_signature_(autofill::CalculateFormSignature(form_data_)),
       field_signature_(autofill::CalculateFieldSignatureByNameAndType(
           ui_data.generation_element,
           "password")),
@@ -157,7 +162,7 @@ bool PasswordGenerationPopupControllerImpl::HandleKeyPressEvent(
       PasswordSelected(true);
       return true;
     case ui::VKEY_ESCAPE:
-      Hide();
+      Hide(PopupHidingReason::kUserAborted);
       return true;
     case ui::VKEY_RETURN:
     case ui::VKEY_TAB:
@@ -191,23 +196,22 @@ void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
     return;
 
   base::WeakPtr<PasswordGenerationPopupControllerImpl> weak_this = GetWeakPtr();
-  driver_->GeneratedPasswordAccepted(form_.form_data, generation_element_id_,
+  driver_->GeneratedPasswordAccepted(form_data_, generation_element_id_,
                                      current_password_);
   // |this| can be destroyed here because GeneratedPasswordAccepted pops up
   // another UI and generates some event to close the dropdown.
   if (weak_this)
-    weak_this->Hide();
+    weak_this->Hide(PopupHidingReason::kAcceptSuggestion);
 }
 
 void PasswordGenerationPopupControllerImpl::Show(GenerationUIState state) {
   // When switching from editing to generation state, regenerate the password.
   if (state == kOfferGeneration &&
       (state_ != state || current_password_.empty())) {
-    uint32_t spec_priority = 0;
     current_password_ =
         driver_->GetPasswordGenerationHelper()->GeneratePassword(
             web_contents()->GetLastCommittedURL().GetOrigin(), form_signature_,
-            field_signature_, max_length_, &spec_priority);
+            field_signature_, max_length_);
   }
   state_ = state;
 
@@ -216,7 +220,7 @@ void PasswordGenerationPopupControllerImpl::Show(GenerationUIState state) {
 
     // Treat popup as being hidden if creation fails.
     if (!view_) {
-      Hide();
+      Hide(PopupHidingReason::kViewDestroyed);
       return;
     }
     key_press_handler_manager_->RegisterKeyPressHandler(base::BindRepeating(
@@ -240,33 +244,41 @@ void PasswordGenerationPopupControllerImpl::UpdatePassword(
 }
 
 void PasswordGenerationPopupControllerImpl::FrameWasScrolled() {
-  Hide();
+  Hide(PopupHidingReason::kContentAreaMoved);
 }
 
 void PasswordGenerationPopupControllerImpl::GenerationElementLostFocus() {
-  Hide();
+  Hide(PopupHidingReason::kFocusChanged);
 }
 
 void PasswordGenerationPopupControllerImpl::GeneratedPasswordRejected() {
-  Hide();
+  Hide(PopupHidingReason::kUserAborted);
 }
 
 void PasswordGenerationPopupControllerImpl::DidAttachInterstitialPage() {
-  Hide();
+  Hide(PopupHidingReason::kAttachInterstitialPage);
 }
 
 void PasswordGenerationPopupControllerImpl::WebContentsDestroyed() {
-  Hide();
+  Hide(PopupHidingReason::kTabGone);
+}
+
+void PasswordGenerationPopupControllerImpl::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->HasCommitted() && navigation_handle->IsInMainFrame() &&
+      !navigation_handle->IsSameDocument()) {
+    Hide(PopupHidingReason::kNavigation);
+  }
 }
 
 #if !defined(OS_ANDROID)
 void PasswordGenerationPopupControllerImpl::OnZoomChanged(
     const zoom::ZoomController::ZoomChangedEventData& data) {
-  Hide();
+  Hide(PopupHidingReason::kContentAreaMoved);
 }
 #endif  // !defined(OS_ANDROID)
 
-void PasswordGenerationPopupControllerImpl::Hide() {
+void PasswordGenerationPopupControllerImpl::Hide(PopupHidingReason reason) {
   // Detach if the frame is still alive.
   if (driver_)
     key_press_handler_manager_->RemoveKeyPressHandler();
@@ -281,39 +293,21 @@ void PasswordGenerationPopupControllerImpl::Hide() {
 }
 
 void PasswordGenerationPopupControllerImpl::ViewDestroyed() {
-  view_ = NULL;
+  view_ = nullptr;
 
-  Hide();
-}
-
-void PasswordGenerationPopupControllerImpl::SetSelectionAtPoint(
-    const gfx::Point& point) {
-  PasswordSelected(view_->IsPointInPasswordBounds(point));
-}
-
-bool PasswordGenerationPopupControllerImpl::AcceptSelectedLine() {
-  if (!password_selected_)
-    return false;
-
-  PasswordAccepted();
-  return true;
+  Hide(PopupHidingReason::kViewDestroyed);
 }
 
 void PasswordGenerationPopupControllerImpl::SelectionCleared() {
   PasswordSelected(false);
 }
 
-bool PasswordGenerationPopupControllerImpl::HasSelection() const {
-  return password_selected();
+void PasswordGenerationPopupControllerImpl::SetSelected() {
+  PasswordSelected(true);
 }
 
 gfx::NativeView PasswordGenerationPopupControllerImpl::container_view() const {
   return controller_common_.container_view;
-}
-
-gfx::Rect PasswordGenerationPopupControllerImpl::popup_bounds() const {
-  NOTREACHED();
-  return gfx::Rect();
 }
 
 const gfx::RectF& PasswordGenerationPopupControllerImpl::element_bounds()
@@ -324,21 +318,6 @@ const gfx::RectF& PasswordGenerationPopupControllerImpl::element_bounds()
 bool PasswordGenerationPopupControllerImpl::IsRTL() const {
   return base::i18n::IsRTL();
 }
-
-const std::vector<autofill::Suggestion>
-PasswordGenerationPopupControllerImpl::GetSuggestions() {
-  return std::vector<autofill::Suggestion>();
-}
-
-#if !defined(OS_ANDROID)
-int PasswordGenerationPopupControllerImpl::GetElidedValueWidthForRow(int row) {
-  return 0;
-}
-
-int PasswordGenerationPopupControllerImpl::GetElidedLabelWidthForRow(int row) {
-  return 0;
-}
-#endif
 
 PasswordGenerationPopupController::GenerationUIState
 PasswordGenerationPopupControllerImpl::state() const {

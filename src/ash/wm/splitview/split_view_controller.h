@@ -50,12 +50,13 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
                                        public TabletModeObserver,
                                        public AccessibilityObserver {
  public:
-  // "LEFT" and "RIGHT" are the snap positions corresponding to "primary
-  // landscape" screen orientation. In other screen orientation, we still use
-  // "LEFT" and "RIGHT" but it doesn't literally mean left side of the screen or
-  // right side of the screen. For example, if the screen orientation is
-  // "portait primary", snapping a window to LEFT means snapping it to the
-  // top of the screen.
+  // |LEFT| and |RIGHT| are named for the positions to which they correspond in
+  // clamshell mode or primary-landscape-oriented tablet mode. In portrait-
+  // oriented tablet mode, we actually snap windows on the top and bottom, but
+  // in clamshell mode, although the display orientation may sometimes be
+  // portrait, we always snap windows on the left and right (see
+  // |IsLayoutHorizontal|). The snap positions are swapped in secondary-oriented
+  // tablet mode (see |IsLayoutRightSideUp|).
   enum SnapPosition { NONE, LEFT, RIGHT };
 
   // Why splitview was ended.
@@ -102,6 +103,24 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // disabled, |window| is ignored as there is only one |SplitViewController|.
   static SplitViewController* Get(const aura::Window* window);
 
+  // The return values of these two functions together indicate what actual
+  // positions correspond to |LEFT| and |RIGHT|:
+  // |IsLayoutHorizontal|  |IsLayoutRightSideUp|  |LEFT|               |RIGHT|
+  // -------------------------------------------------------------------------
+  // true                  true                   left                 right
+  // true                  false                  right                left
+  // false                 true                   top                  bottom
+  // false                 false                  bottom               top
+  // In tablet mode, these functions return values based on display orientation.
+  // In clamshell mode, these functions return true.
+  static bool IsLayoutHorizontal();
+  static bool IsLayoutRightSideUp();
+
+  // Returns true if |position| actually signifies a left or top position,
+  // according to the return values of |IsLayoutHorizontal| and
+  // |IsLayoutRightSideUp|.
+  static bool IsPhysicalLeftOrTop(SnapPosition position);
+
   explicit SplitViewController(aura::Window* root_window);
   ~SplitViewController() override;
 
@@ -136,6 +155,14 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // Swaps the left and right windows. This will do nothing if one of the
   // windows is not snapped.
   void SwapWindows();
+
+  // |window| should be |left_window_| or |right_window_|, and this function
+  // returns |LEFT| or |RIGHT| accordingly.
+  SnapPosition GetPositionOfSnappedWindow(const aura::Window* window) const;
+
+  // |position| should be |LEFT| or |RIGHT|, and this function returns
+  // |left_window_| or |right_window_| accordingly.
+  aura::Window* GetSnappedWindow(SnapPosition position);
 
   // Returns the default snapped window. It's the window that remains open until
   // the split mode ends. It's decided by |default_snap_position_|. E.g., If
@@ -177,12 +204,18 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // on the middle split position).
   void InitDividerPositionForTransition(int divider_position);
 
+  // Called when the overview button tray has been long pressed. Enters
+  // splitview mode if the active window is snappable. Also enters overview mode
+  // if device is not currently in overview mode.
+  void OnOverviewButtonTrayLongPressed(const gfx::Point& event_location);
+
   // Called when a window (either it's browser window or an app window) start/
   // end being dragged.
   void OnWindowDragStarted(aura::Window* dragged_window);
   void OnWindowDragEnded(aura::Window* dragged_window,
                          SnapPosition desired_snap_position,
                          const gfx::Point& last_location_in_screen);
+  void OnWindowDragCanceled();
 
   void AddObserver(SplitViewObserver* observer);
   void RemoveObserver(SplitViewObserver* observer);
@@ -200,8 +233,8 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void OnResizeLoopEnded(aura::Window* window) override;
 
   // WindowStateObserver:
-  void OnPostWindowStateTypeChange(ash::WindowState* window_state,
-                                   ash::WindowStateType old_type) override;
+  void OnPostWindowStateTypeChange(WindowState* window_state,
+                                   WindowStateType old_type) override;
 
   // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
@@ -216,6 +249,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void OnOverviewModeEnding(OverviewSession* overview_session) override;
 
   // display::DisplayObserver:
+  void OnDisplayRemoved(const display::Display& old_display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
@@ -223,6 +257,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void OnTabletModeStarting() override;
   void OnTabletModeStarted() override;
   void OnTabletModeEnding() override;
+  void OnTabletModeEnded() override;
   void OnTabletControllerDestroyed() override;
 
   // AccessibilityObserver:
@@ -244,14 +279,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   friend class SplitViewOverviewSessionTest;
   class TabDraggedWindowObserver;
   class DividerSnapAnimation;
-
-  // |window| should be |left_window_| or |right_window_|, and this function
-  // returns |LEFT| or |RIGHT| accordingly.
-  SnapPosition GetPositionOfSnappedWindow(const aura::Window* window) const;
-
-  // |position| should be |LEFT| or |RIGHT|, and this function returns
-  // |left_window_| or |right_window_| accordingly.
-  aura::Window* GetSnappedWindow(SnapPosition position);
 
   // These functions return |left_window_| and |right_window_|, swapped in
   // nonprimary screen orientations. Note that they may return null.
@@ -298,7 +325,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
 
   // Ends split view if |ShouldEndTabletSplitViewAfterResizing| returns true.
   // Handles extra details associated with dragging the divider off the screen.
-  void EndSplitViewAfterResizingIfAppropriate();
+  void EndTabletSplitViewAfterResizingIfAppropriate();
 
   // After resizing, if we should end split view mode, returns the window that
   // needs to be activated. Returns nullptr if there is no such window.
@@ -363,11 +390,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void SetTransformWithAnimation(aura::Window* window,
                                  const gfx::Transform& start_transform,
                                  const gfx::Transform& target_transform);
-
-  // Removes the window item that contains |window| from the overview window
-  // grid if |window| is currently showing in overview window grid. It should be
-  // called before trying to snap the window.
-  void RemoveWindowFromOverviewIfApplicable(aura::Window* window);
 
   // Updates the |snapping_window_transformed_bounds_map_| on |window|. It
   // should be called before trying to snap the window.
@@ -452,8 +474,13 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // versa.
   SnapPosition default_snap_position_ = NONE;
 
-  // Whether the previous screen orientation is a primary orientation.
-  bool is_previous_screen_orientation_primary_ = true;
+  // Whether the previous layout is right-side-up (see |IsLayoutRightSideUp|).
+  // Consistent with |IsLayoutRightSideUp|, |is_previous_layout_right_side_up_|
+  // is always true in clamshell mode. It is not really used in clamshell mode,
+  // but it is kept up to date in anticipation that future code changes could
+  // introduce a bug similar to https://crbug.com/1029181 which could be
+  // overlooked for years while occasionally irritating or confusing real users.
+  bool is_previous_layout_right_side_up_ = true;
 
   // True when the divider is being dragged (not during its snap animation).
   bool is_resizing_ = false;

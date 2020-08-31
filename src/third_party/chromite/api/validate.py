@@ -15,11 +15,15 @@ from __future__ import print_function
 
 import functools
 import os
+import sys
 
 from google.protobuf import message as protobuf_message
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def _value(field, message):
@@ -75,7 +79,7 @@ def exists(*fields):
 
 
 def is_in(field, values):
-  """Validate |field| does not contain |value|.
+  """Validate |field| contains |value|.
 
   Args:
     field (str): The field being checked. May be . separated nested fields.

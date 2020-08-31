@@ -15,13 +15,6 @@ namespace cssvalue {
 
 class CSSPendingSubstitutionValue : public CSSValue {
  public:
-  static CSSPendingSubstitutionValue* Create(
-      CSSPropertyID shorthand_property_id,
-      CSSVariableReferenceValue* shorthand_value) {
-    return MakeGarbageCollected<CSSPendingSubstitutionValue>(
-        shorthand_property_id, shorthand_value);
-  }
-
   CSSPendingSubstitutionValue(CSSPropertyID shorthand_property_id,
                               CSSVariableReferenceValue* shorthand_value)
       : CSSValue(kPendingSubstitutionValueClass),
@@ -39,7 +32,7 @@ class CSSPendingSubstitutionValue : public CSSValue {
   }
   String CustomCSSText() const;
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   CSSPropertyID shorthand_property_id_;

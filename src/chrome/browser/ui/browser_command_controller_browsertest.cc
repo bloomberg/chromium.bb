@@ -29,6 +29,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_CHROMEOS)
@@ -173,7 +174,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
   // automatically upon launch.
   // Wait for robustness because InProcessBrowserTest::PreRunTestOnMainThread
   // does not flush the task scheduler.
-  TabRestoreServiceLoadWaiter waiter(browser());
+  TabRestoreServiceLoadWaiter waiter(
+      TabRestoreServiceFactory::GetForProfile(browser()->profile()));
   waiter.Wait();
 
   // After initialization, the command should become disabled because there's
@@ -187,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
                        PRE_TestTabRestoreCommandEnabled) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("about:"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
   content::WebContents* tab_to_close =
@@ -203,7 +205,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
   // automatically upon launch.
   // Wait for robustness because InProcessBrowserTest::PreRunTestOnMainThread
   // does not flush the task scheduler.
-  TabRestoreServiceLoadWaiter waiter(browser());
+  TabRestoreServiceLoadWaiter waiter(
+      TabRestoreServiceFactory::GetForProfile(browser()->profile()));
   waiter.Wait();
 
   // After initialization, the command should remain enabled because there's

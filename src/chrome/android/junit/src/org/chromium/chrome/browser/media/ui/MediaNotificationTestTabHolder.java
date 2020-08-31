@@ -13,18 +13,21 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.components.url_formatter.UrlFormatterJni;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.media_session.mojom.MediaSessionAction;
 import org.chromium.net.GURLUtils;
 import org.chromium.net.GURLUtilsJni;
 import org.chromium.services.media_session.MediaMetadata;
 
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Utility class for holding a Tab and relevant objects for media notification tests.
@@ -49,7 +52,7 @@ public class MediaNotificationTestTabHolder {
     // Mock LargeIconBridge that always returns false.
     private class TestLargeIconBridge extends LargeIconBridge {
         @Override
-        public boolean getLargeIconForUrl(
+        public boolean getLargeIconForStringUrl(
                 final String pageUrl, int desiredSizePx, final LargeIconCallback callback) {
             return false;
         }
@@ -72,7 +75,7 @@ public class MediaNotificationTestTabHolder {
         when(mTab.getId()).thenReturn(tabId);
         when(mTab.isIncognito()).thenReturn(false);
         when(mTab.getTitle()).thenAnswer(invocation -> mTitle);
-        when(mTab.getUrl()).thenAnswer(invocation -> mUrl);
+        when(mTab.getUrlString()).thenAnswer(invocation -> mUrl);
 
         MediaSessionTabHelper.sOverriddenMediaSession = mMediaSession;
         mMediaSessionTabHelper = new MediaSessionTabHelper(mTab);
@@ -80,6 +83,10 @@ public class MediaNotificationTestTabHolder {
 
         simulateNavigation(url, false);
         simulateTitleUpdated(title);
+
+        // Default actions.
+        simulateMediaSessionActionsChanged(
+                Stream.of(MediaSessionAction.PLAY).collect(Collectors.toSet()));
     }
 
     public void simulateTitleUpdated(String title) {

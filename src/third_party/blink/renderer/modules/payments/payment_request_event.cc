@@ -7,25 +7,25 @@
 #include <utility>
 
 #include "third_party/blink/public/mojom/payments/payment_request.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_address_errors.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_currency_amount.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_details_modifier.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_item.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_method_data.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_request_details_update.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_shipping_option.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_location.h"
-#include "third_party/blink/renderer/modules/payments/address_errors.h"
-#include "third_party/blink/renderer/modules/payments/payment_address_init_type_converter.h"
-#include "third_party/blink/renderer/modules/payments/payment_currency_amount.h"
-#include "third_party/blink/renderer/modules/payments/payment_details_modifier.h"
-#include "third_party/blink/renderer/modules/payments/payment_item.h"
-#include "third_party/blink/renderer/modules/payments/payment_method_data.h"
-#include "third_party/blink/renderer/modules/payments/payment_options.h"
-#include "third_party/blink/renderer/modules/payments/payment_request_details_update.h"
-#include "third_party/blink/renderer/modules/payments/payment_shipping_option.h"
+#include "third_party/blink/renderer/modules/payments/address_init_type_converter.h"
 #include "third_party/blink/renderer/modules/payments/payments_validators.h"
 #include "third_party/blink/renderer/modules/service_worker/respond_with_observer.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_window_client.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -34,20 +34,14 @@ namespace blink {
 
 PaymentRequestEvent* PaymentRequestEvent::Create(
     const AtomicString& type,
-    const PaymentRequestEventInit* initializer) {
-  return MakeGarbageCollected<PaymentRequestEvent>(
-      type, initializer, mojo::NullRemote(), nullptr, nullptr);
-}
-
-PaymentRequestEvent* PaymentRequestEvent::Create(
-    const AtomicString& type,
     const PaymentRequestEventInit* initializer,
     mojo::PendingRemote<payments::mojom::blink::PaymentHandlerHost> host,
     RespondWithObserver* respond_with_observer,
-    WaitUntilObserver* wait_until_observer) {
+    WaitUntilObserver* wait_until_observer,
+    ExecutionContext* execution_context) {
   return MakeGarbageCollected<PaymentRequestEvent>(
       type, initializer, std::move(host), respond_with_observer,
-      wait_until_observer);
+      wait_until_observer, execution_context);
 }
 
 PaymentRequestEvent::PaymentRequestEvent(
@@ -55,7 +49,8 @@ PaymentRequestEvent::PaymentRequestEvent(
     const PaymentRequestEventInit* initializer,
     mojo::PendingRemote<payments::mojom::blink::PaymentHandlerHost> host,
     RespondWithObserver* respond_with_observer,
-    WaitUntilObserver* wait_until_observer)
+    WaitUntilObserver* wait_until_observer,
+    ExecutionContext* execution_context)
     : ExtendableEvent(type, initializer, wait_until_observer),
       top_origin_(initializer->topOrigin()),
       payment_request_origin_(initializer->paymentRequestOrigin()),
@@ -75,13 +70,18 @@ PaymentRequestEvent::PaymentRequestEvent(
       shipping_options_(initializer->hasShippingOptions()
                             ? initializer->shippingOptions()
                             : HeapVector<Member<PaymentShippingOption>>()),
-      observer_(respond_with_observer) {
+      observer_(respond_with_observer),
+      payment_handler_host_(execution_context) {
   if (!host.is_valid())
     return;
 
-  payment_handler_host_.Bind(std::move(host));
-  payment_handler_host_.set_disconnect_handler(WTF::Bind(
-      &PaymentRequestEvent::OnHostConnectionError, WrapWeakPersistent(this)));
+  if (execution_context) {
+    payment_handler_host_.Bind(
+        std::move(host),
+        execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI));
+    payment_handler_host_.set_disconnect_handler(WTF::Bind(
+        &PaymentRequestEvent::OnHostConnectionError, WrapWeakPersistent(this)));
+  }
 }
 
 PaymentRequestEvent::~PaymentRequestEvent() = default;
@@ -127,9 +127,10 @@ const ScriptValue PaymentRequestEvent::paymentOptions(
   return ScriptValue::From(script_state, payment_options_);
 }
 
-const HeapVector<Member<PaymentShippingOption>>&
-PaymentRequestEvent::shippingOptions(bool& is_null) const {
-  is_null = shipping_options_.IsEmpty();
+base::Optional<HeapVector<Member<PaymentShippingOption>>>
+PaymentRequestEvent::shippingOptions() const {
+  if (shipping_options_.IsEmpty())
+    return base::nullopt;
   return shipping_options_;
 }
 
@@ -190,18 +191,17 @@ ScriptPromise PaymentRequestEvent::changePaymentMethod(
     const ScriptValue& method_details,
     ExceptionState& exception_state) {
   if (change_payment_request_details_resolver_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Waiting for response to the previous payment "
-                          "request details change"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Waiting for response to the previous "
+                                      "payment request details change");
+    return ScriptPromise();
   }
 
   if (!payment_handler_host_.is_bound()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "No corresponding PaymentRequest object found"));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "No corresponding PaymentRequest object found");
+    return ScriptPromise();
   }
 
   auto method_data = payments::mojom::blink::PaymentHandlerMethodData::New();
@@ -225,26 +225,25 @@ ScriptPromise PaymentRequestEvent::changePaymentMethod(
 
 ScriptPromise PaymentRequestEvent::changeShippingAddress(
     ScriptState* script_state,
-    PaymentAddressInit* shipping_address) {
+    AddressInit* shipping_address,
+    ExceptionState& exception_state) {
   if (change_payment_request_details_resolver_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Waiting for response to the previous payment "
-                          "request details change"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Waiting for response to the previous "
+                                      "payment request details change");
+    return ScriptPromise();
   }
 
   if (!payment_handler_host_.is_bound()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "No corresponding PaymentRequest object found"));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "No corresponding PaymentRequest object found");
+    return ScriptPromise();
   }
   if (!shipping_address) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
-                                           "Shipping address cannot be null"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "Shipping address cannot be null");
+    return ScriptPromise();
   }
 
   auto shipping_address_ptr =
@@ -252,10 +251,9 @@ ScriptPromise PaymentRequestEvent::changeShippingAddress(
   String shipping_address_error;
   if (!PaymentsValidators::IsValidShippingAddress(shipping_address_ptr,
                                                   &shipping_address_error)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
-                                           shipping_address_error));
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      shipping_address_error);
+    return ScriptPromise();
   }
 
   payment_handler_host_->ChangeShippingAddress(
@@ -269,20 +267,20 @@ ScriptPromise PaymentRequestEvent::changeShippingAddress(
 
 ScriptPromise PaymentRequestEvent::changeShippingOption(
     ScriptState* script_state,
-    const String& shipping_option_id) {
+    const String& shipping_option_id,
+    ExceptionState& exception_state) {
   if (change_payment_request_details_resolver_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Waiting for response to the previous payment "
-                          "request details change"));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Waiting for response to the previous payment request details change");
+    return ScriptPromise();
   }
 
   if (!payment_handler_host_.is_bound()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "No corresponding PaymentRequest object found"));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "No corresponding PaymentRequest object found");
+    return ScriptPromise();
   }
 
   bool shipping_option_id_is_valid = false;
@@ -293,10 +291,9 @@ ScriptPromise PaymentRequestEvent::changeShippingOption(
     }
   }
   if (!shipping_option_id_is_valid) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kSyntaxError,
-                          "Shipping option identifier is invalid"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "Shipping option identifier is invalid");
+    return ScriptPromise();
   }
 
   payment_handler_host_->ChangeShippingOption(
@@ -324,7 +321,7 @@ void PaymentRequestEvent::respondWith(ScriptState* script_state,
   }
 }
 
-void PaymentRequestEvent::Trace(blink::Visitor* visitor) {
+void PaymentRequestEvent::Trace(Visitor* visitor) {
   visitor->Trace(method_data_);
   visitor->Trace(total_);
   visitor->Trace(modifiers_);
@@ -332,6 +329,7 @@ void PaymentRequestEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(shipping_options_);
   visitor->Trace(change_payment_request_details_resolver_);
   visitor->Trace(observer_);
+  visitor->Trace(payment_handler_host_);
   ExtendableEvent::Trace(visitor);
 }
 

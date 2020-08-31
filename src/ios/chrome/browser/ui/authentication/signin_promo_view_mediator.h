@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
 
+class ChromeBrowserState;
 @class ChromeIdentity;
 @protocol SigninPresenter;
 @class SigninPromoViewConfigurator;
@@ -20,8 +21,6 @@ enum class AccessPoint;
 }
 
 namespace ios {
-class ChromeBrowserState;
-
 // Enums for the sign-in promo view state. Those states are sequential, with no
 // way to go backwards. All states can be skipped except |NeverVisible| and
 // |Invalid|.
@@ -76,8 +75,8 @@ class PrefRegistrySyncable;
 // of times it has been displayed and if the user closed the sign-in promo view.
 + (BOOL)shouldDisplaySigninPromoViewWithAccessPoint:
             (signin_metrics::AccessPoint)accessPoint
-                                       browserState:(ios::ChromeBrowserState*)
-                                                        browserState;
+                                       browserState:
+                                           (ChromeBrowserState*)browserState;
 
 // See -[SigninPromoViewMediator initWithBrowserState:].
 - (instancetype)init NS_UNAVAILABLE;
@@ -86,7 +85,7 @@ class PrefRegistrySyncable;
 // * |browserState| is the current browser state.
 // * |accessPoint| only ACCESS_POINT_SETTINGS, ACCESS_POINT_BOOKMARK_MANAGER,
 // ACCESS_POINT_RECENT_TABS, ACCESS_POINT_TAB_SWITCHER are supported.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
                          accessPoint:(signin_metrics::AccessPoint)accessPoint
                            presenter:(id<SigninPresenter>)presenter
     NS_DESIGNATED_INITIALIZER;

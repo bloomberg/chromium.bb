@@ -32,8 +32,17 @@ class ContentfulPaintTimingInfo {
     return type_;
   }
 
-  bool IsEmpty() const {
+  // Returns true iff this object does not represent any paint.
+  bool Empty() const {
+    // size_ and time_ should both be set or both be unset.
+    DCHECK((size_ != 0u && time_) || (size_ == 0u && !time_));
     return !time_;
+  }
+
+  // Returns true iff this object does not represent any paint OR represents an
+  // image that has not finished loading.
+  bool ContainsValidTime() const {
+    return time_ && *time_ != base::TimeDelta();
   }
 
   std::unique_ptr<base::trace_event::TracedValue> DataAsTraceValue() const;
@@ -84,12 +93,6 @@ class LargestContentfulPaintHandler {
   const ContentfulPaintTimingInfo& SubframesLargestContentfulPaint() {
     return subframe_contentful_paint_.MergeTextAndImageTiming();
   }
-  const ContentfulPaintTimingInfo& MainFrameLargestImagePaint() {
-    return main_frame_contentful_paint_.Image();
-  }
-  const ContentfulPaintTimingInfo& MainFrameLargestTextPaint() {
-    return main_frame_contentful_paint_.Text();
-  }
 
   // We merge the candidates from main frame and subframe to get the largest
   // candidate across all frames.
@@ -102,12 +105,34 @@ class LargestContentfulPaintHandler {
   void RecordSubframeTiming(const mojom::PaintTimingPtr& timing,
                             const base::TimeDelta& navigation_start_offset);
   void RecordMainFrameTiming(const page_load_metrics::mojom::PaintTimingPtr&);
+  void UpdateFirstInputOrScrollNotified(
+      const base::Optional<base::TimeDelta>& candidate_new_time,
+      const base::TimeDelta& navigation_start_offset);
+  void MergeForSubframes(
+      ContentfulPaintTimingInfo* inout_timing,
+      const base::Optional<base::TimeDelta>& candidate_new_time,
+      const uint64_t& candidate_new_size,
+      base::TimeDelta navigation_start_offset);
+  bool IsValid(const base::Optional<base::TimeDelta>& time) {
+    // When |time| is not present, this means that there is no current
+    // candidate. If |time| is 0, it corresponds to an image that has not
+    // finished loading. In both cases, we do not know the timestamp at which
+    // |time| was determned. Therefore, we just assume that the time is valid
+    // only if we have not yet received a notification for first input or scroll
+    if (!time.has_value() || (*time).is_zero())
+      return first_input_or_scroll_notified_ == base::TimeDelta::Max();
+    return *time < first_input_or_scroll_notified_;
+  }
   ContentfulPaint main_frame_contentful_paint_;
   ContentfulPaint subframe_contentful_paint_;
 
   // Used for Telemetry to distinguish the LCP events from different
   // navigations.
   base::Optional<int> main_frame_tree_node_id_;
+
+  // The first input or scroll across all frames in the page. Used to filter out
+  // paints that occur on other frames but after this time.
+  base::TimeDelta first_input_or_scroll_notified_ = base::TimeDelta::Max();
 
   // Navigation start offsets for the most recently committed document in each
   // frame.

@@ -21,12 +21,12 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/context_menu_params.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -135,6 +135,15 @@ bool AccessibilityLabelsMenuObserver::ShouldShowLabelsItem() {
   // Hidden behind a feature flag.
   if (!base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels))
     return false;
+
+  // Disabled by policy.
+  Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());
+  if (!profile->GetPrefs()->GetBoolean(
+          prefs::kAccessibilityImageLabelsEnabled) &&
+      profile->GetPrefs()->IsManagedPreference(
+          prefs::kAccessibilityImageLabelsEnabled)) {
+    return false;
+  }
 
   return accessibility_state_utils::IsScreenReaderEnabled();
 }

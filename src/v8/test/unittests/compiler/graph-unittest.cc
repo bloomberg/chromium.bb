@@ -18,7 +18,7 @@ GraphTest::GraphTest(int num_parameters)
     : canonical_(isolate()),
       common_(zone()),
       graph_(zone()),
-      broker_(isolate(), zone(), FLAG_trace_heap_broker),
+      broker_(isolate(), zone(), FLAG_trace_heap_broker, false),
       source_positions_(&graph_),
       node_origins_(&graph_) {
   graph()->SetStart(graph()->NewNode(common()->Start(num_parameters)));
@@ -66,7 +66,7 @@ Node* GraphTest::NumberConstant(volatile double value) {
 
 Node* GraphTest::HeapConstant(const Handle<HeapObject>& value) {
   Node* node = graph()->NewNode(common()->HeapConstant(value));
-  Type type = Type::NewConstant(broker(), value, zone());
+  Type type = Type::Constant(broker(), value, zone());
   NodeProperties::SetType(node, type);
   return node;
 }

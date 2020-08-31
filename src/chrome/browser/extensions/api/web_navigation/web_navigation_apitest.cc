@@ -30,15 +30,15 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/context_menu_params.h"
-#include "content/public/common/resource_type.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
@@ -51,9 +51,8 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 
-using content::ResourceType;
 using content::WebContents;
 
 namespace extensions {
@@ -215,16 +214,9 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Api) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/api")) << message_;
 }
 
-// Flaky on Windows Linux and  Chrome OS. See http://crbug.com/874782.
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)
-#define MAYBE_GetFrame DISABLED_GetFrame
-#else
-#define MAYBE_GetFrame GetFrame
-#endif
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_GetFrame) {
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, GetFrame) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/getFrame")) << message_;
 }
-#undef MAYBE_GetFrame
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ClientRedirect) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/clientRedirect"))
@@ -255,20 +247,6 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Download) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirectSingleProcess) {
-  // TODO(lukasza): https://crbug.com/671734: In the long-term, //chrome-layer
-  // tests should only be run with site-per-process - remove the early return
-  // below when fixing https://crbug.com/870761 and removing the
-  // not_site_per_process_browser_tests step.
-  //
-  // This test has its expectations in
-  // serverRedirectSingleProcess/test_serverRedirectSingleProcess.js.  The
-  // expectations include exact |processId| ("exact" meaning that one cannot use
-  // a wildcard - the verification is done via chrome.test.checkDeepEq).
-  // Inclusion of |processId| means that the expectation change in
-  // site-per-process mode.
-  if (!content::AreAllSitesIsolatedForTesting())
-    return;
-
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Set max renderers to 1 to force running out of processes.
@@ -324,14 +302,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SimpleLoad) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/simpleLoad")) << message_;
 }
 
-// Flaky on Windows, Mac and Linux. See http://crbug.com/477480 (Windows) and
-// https://crbug.com/746407 (Mac, Linux).
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_Failures DISABLED_Failures
-#else
-#define MAYBE_Failures Failures
-#endif
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Failures) {
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Failures) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/failures")) << message_;
 }
 
@@ -339,13 +310,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, FilteredTest) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/filtered")) << message_;
 }
 
-// Flaky on Windows. See http://crbug.com/662160.
-#if defined(OS_WIN)
-#define MAYBE_UserAction DISABLED_UserAction
-#else
-#define MAYBE_UserAction UserAction
-#endif
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_UserAction) {
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, UserAction) {
   content::IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   ASSERT_TRUE(StartEmbeddedTestServer());
 
@@ -405,13 +370,14 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, RequestOpenTab) {
 
   // There's a link on a.html. Middle-click on it to open it in a new tab.
   blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseDown,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebMouseEvent::Button::kMiddle;
   mouse_event.SetPositionInWidget(7, 7);
   mouse_event.click_count = 1;
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
-  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -437,13 +403,14 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, TargetBlank) {
   // There's a link with target=_blank on a.html. Click on it to open it in a
   // new tab.
   blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseDown,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(7, 7);
   mouse_event.click_count = 1;
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
-  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -467,13 +434,14 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, TargetBlankIncognito) {
   // There's a link with target=_blank on a.html. Click on it to open it in a
   // new tab.
   blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseDown,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(7, 7);
   mouse_event.click_count = 1;
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
-  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -553,10 +521,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, PendingDeletion) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/pendingDeletion")) << message_;
 }
 
-// TODO(jam): http://crbug.com/350550
-// TODO(crbug/974787): Flaky on Win7 debug builds.
-#if (defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER)) || \
-    (defined(OS_WIN) && !(defined(NDEBUG)))
+// Flaky fails on Win7 Tests (dbg)(1); https://crbug.com/974787.
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_Crash DISABLED_Crash
 #else
 #define MAYBE_Crash Crash
@@ -573,18 +539,17 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Crash) {
 
   ResultCatcher catcher;
 
-  GURL url(base::StringPrintf(
-      "http://www.a.com:%u/"
-          "extensions/api_test/webnavigation/crash/a.html",
-      embedded_test_server()->port()));
+  GURL url(embedded_test_server()->GetURL(
+      "www.a.com", "/extensions/api_test/webnavigation/crash/a.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
+  content::RenderProcessHostWatcher process_watcher(
+      tab, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   ui_test_utils::NavigateToURL(browser(), GURL(content::kChromeUICrashURL));
+  process_watcher.Wait();
 
-  url = GURL(base::StringPrintf(
-      "http://www.a.com:%u/"
-          "extensions/api_test/webnavigation/crash/b.html",
-      embedded_test_server()->port()));
+  url = GURL(embedded_test_server()->GetURL(
+      "www.a.com", "/extensions/api_test/webnavigation/crash/b.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();

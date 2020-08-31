@@ -18,13 +18,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 #include "components/dom_distiller/content/common/mojom/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_request_view_base.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/experiments.h"
-#include "components/dom_distiller/core/feedback_reporter.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
@@ -35,8 +35,10 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/web_preferences.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
@@ -205,7 +207,7 @@ DomDistillerViewerSource::DomDistillerViewerSource(
     const std::string& scheme)
     : scheme_(scheme), dom_distiller_service_(dom_distiller_service) {}
 
-DomDistillerViewerSource::~DomDistillerViewerSource() {}
+DomDistillerViewerSource::~DomDistillerViewerSource() = default;
 
 std::string DomDistillerViewerSource::GetSource() {
   return scheme_ + "://";
@@ -220,6 +222,13 @@ void DomDistillerViewerSource::StartDataRequest(
   content::WebContents* web_contents = wc_getter.Run();
   if (!web_contents)
     return;
+#if !defined(OS_ANDROID)
+  // Don't allow loading of mixed content on Reader Mode pages.
+  content::WebPreferences prefs =
+      web_contents->GetRenderViewHost()->GetWebkitPreferences();
+  prefs.strict_mixed_content_checking = true;
+  web_contents->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+#endif  // !defined(OS_ANDROID)
   if (kViewerCssPath == path) {
     std::string css = viewer::GetCss();
     std::move(callback).Run(base::RefCountedString::TakeString(&css));
@@ -259,8 +268,7 @@ void DomDistillerViewerSource::StartDataRequest(
       web_contents->GetContainerBounds().size());
 
   GURL current_url(url_utils::GetOriginalUrlFromDistillerUrl(request_url));
-  std::string unsafe_page_html = viewer::GetUnsafeArticleTemplateHtml(
-      current_url.spec(),
+  std::string unsafe_page_html = viewer::GetArticleTemplateHtml(
       dom_distiller_service_->GetDistilledPagePrefs()->GetTheme(),
       dom_distiller_service_->GetDistilledPagePrefs()->GetFontFamily());
 
@@ -289,7 +297,7 @@ std::string DomDistillerViewerSource::GetMimeType(const std::string& path) {
 
 bool DomDistillerViewerSource::ShouldServiceRequest(
     const GURL& url,
-    content::ResourceContext* resource_context,
+    content::BrowserContext* browser_context,
     int render_process_id) {
   return url.SchemeIs(scheme_);
 }

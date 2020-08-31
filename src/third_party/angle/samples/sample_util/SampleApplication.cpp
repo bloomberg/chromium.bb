@@ -26,9 +26,10 @@ const DisplayTypeInfo kDisplayTypes[] = {
     {"d3d11", EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE},
     {"gl", EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE},
     {"gles", EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE},
+    {"metal", EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE},
     {"null", EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE},
-    {"vulkan", EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE},
     {"swiftshader", EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE},
+    {"vulkan", EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE},
 };
 
 EGLint GetDisplayTypeFromArg(const char *displayTypeArg)
@@ -154,7 +155,8 @@ int SampleApplication::run()
     configParams.depthBits   = 24;
     configParams.stencilBits = 8;
 
-    if (!mEGLWindow->initializeGL(mOSWindow, mEntryPointsLib.get(), mPlatformParams, configParams))
+    if (!mEGLWindow->initializeGL(mOSWindow, mEntryPointsLib.get(), angle::GLESDriverType::AngleEGL,
+                                  mPlatformParams, configParams))
     {
         return -1;
     }

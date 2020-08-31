@@ -19,14 +19,16 @@ struct PaintChunk;
 // each derived display item; the ideal value is the least common multiple.
 // The validity of kDisplayItemAlignment and kMaximumDisplayItemSize are checked
 // in PaintController::CreateAndAppend().
-static const size_t kDisplayItemAlignment = alignof(ScrollbarDisplayItem);
-static const size_t kMaximumDisplayItemSize = sizeof(ScrollbarDisplayItem);
+static constexpr wtf_size_t kDisplayItemAlignment =
+    alignof(ScrollbarDisplayItem);
+static constexpr wtf_size_t kMaximumDisplayItemSize =
+    sizeof(ScrollbarDisplayItem);
 
 // A container for a list of display items.
 class PLATFORM_EXPORT DisplayItemList
     : public ContiguousContainer<DisplayItem, kDisplayItemAlignment> {
  public:
-  DisplayItemList(size_t initial_size_bytes)
+  DisplayItemList(wtf_size_t initial_size_bytes)
       : ContiguousContainer(kMaximumDisplayItemSize, initial_size_bytes) {}
   DisplayItemList(DisplayItemList&& source)
       : ContiguousContainer(std::move(source)) {}
@@ -42,7 +44,8 @@ class PLATFORM_EXPORT DisplayItemList
         ContiguousContainer::AppendByMoving(item, item.DerivedSize());
     // ContiguousContainer::AppendByMoving() calls an in-place constructor
     // on item which replaces it with a tombstone/"dead display item" that
-    // can be safely destructed but should never be used except for debugging.
+    // can be safely destructed but should never be used except for debugging
+    // and raster invalidation (see below).
     DCHECK(item.IsTombstone());
     // We need |visual_rect_| and |outset_for_raster_effects_| of the old
     // display item for raster invalidation. Also, the fields that make up the
@@ -56,6 +59,7 @@ class PLATFORM_EXPORT DisplayItemList
     DCHECK(item.GetId() == result.GetId());
     item.visual_rect_ = result.visual_rect_;
     item.outset_for_raster_effects_ = result.outset_for_raster_effects_;
+    result.SetMovedFromCachedSubsequence(false);
     return result;
   }
 
@@ -87,11 +91,11 @@ class PLATFORM_EXPORT DisplayItemList
   };
   typedef unsigned JsonFlags;
 
-  std::unique_ptr<JSONArray> SubsequenceAsJSON(size_t begin_index,
-                                               size_t end_index,
-                                               JsonFlags) const;
-  void AppendSubsequenceAsJSON(size_t begin_index,
-                               size_t end_index,
+  std::unique_ptr<JSONArray> DisplayItemsAsJSON(wtf_size_t begin_index,
+                                                wtf_size_t end_index,
+                                                JsonFlags) const;
+  void AppendSubsequenceAsJSON(wtf_size_t begin_index,
+                               wtf_size_t end_index,
                                JsonFlags,
                                JSONArray&) const;
 #endif  // DCHECK_IS_ON()

@@ -115,9 +115,9 @@ void UberReceivedPacketManager::EnableMultiplePacketNumberSpacesSupport() {
   // In IETF QUIC, the peer is expected to acknowledge packets in Initial and
   // Handshake packets with minimal delay.
   received_packet_managers_[INITIAL_DATA].set_local_max_ack_delay(
-      QuicTime::Delta::FromMilliseconds(1));
+      kAlarmGranularity);
   received_packet_managers_[HANDSHAKE_DATA].set_local_max_ack_delay(
-      QuicTime::Delta::FromMilliseconds(1));
+      kAlarmGranularity);
 
   supports_multiple_packet_number_spaces_ = true;
 }
@@ -166,6 +166,14 @@ QuicTime UberReceivedPacketManager::GetEarliestAckTimeout() const {
     }
   }
   return ack_timeout;
+}
+
+bool UberReceivedPacketManager::IsAckFrameEmpty(
+    PacketNumberSpace packet_number_space) const {
+  if (!supports_multiple_packet_number_spaces_) {
+    return received_packet_managers_[0].IsAckFrameEmpty();
+  }
+  return received_packet_managers_[packet_number_space].IsAckFrameEmpty();
 }
 
 QuicPacketNumber UberReceivedPacketManager::peer_least_packet_awaiting_ack()

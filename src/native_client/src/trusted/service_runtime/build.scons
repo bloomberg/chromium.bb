@@ -101,7 +101,12 @@ elif env.Bit('build_x86_64'):
     ldr_inputs += [
         'arch/x86_64/sel_addrspace_win_x86_64.c',
         'arch/x86_64/fnstcw.S',
-        'arch/x86_64/fxsaverstor.S',
+        'arch/x86_64/fxsaverstor.S']
+    if not env.Bit('force_no_trusted_build'):
+      # This use of win64_asm_env causes an invocation of MSVC, even if sel_ldr
+      # would not otherwise be actually built. So don't include it if we aren't
+      # actually building sel_ldr
+      ldr_inputs += [
         win64_asm_env.ComponentObject('arch/x86_64/nacl_switch_unwind_win.asm')]
   else:
     ldr_inputs += ['arch/x86_64/sel_addrspace_posix_x86_64.c']
@@ -373,7 +378,7 @@ if (env.Bit('linux') and not env.Bit('built_elsewhere')):
                                   '-U__STDC_HOSTED__',
                                   '-D__STDC_HOSTED__=1',
                                   '-Qunused-arguments'])
-
+  compiler_override = ''
   if env.Bit('build_x86_64'):
     ld_emul = 'elf_x86_64'
     if env.Bit('x86_64_zero_based_sandbox'):
@@ -409,6 +414,7 @@ if (env.Bit('linux') and not env.Bit('built_elsewhere')):
   elif env.Bit('build_arm'):
     ld_emul = 'armelf_linux_eabi'
     reserve_top = '0x40002000'
+    compiler_override = '--compiler arm-linux-gnueabihf-gcc'
   elif env.Bit('build_mips32'):
     ld_emul = 'elf32ltsmip'
     reserve_top = '0x40008000'
@@ -417,11 +423,11 @@ if (env.Bit('linux') and not env.Bit('built_elsewhere')):
   bootstrap_raw = bootstrap_env.Command(
       'nacl_bootstrap_raw',
       [bootstrap_obj],
-      ("env CXX='${CXX}' ${PYTHON} %s " +
+      ("env CXX='${CXX}' ${PYTHON} %s %s " +
        '-m %s --build-id -static -z max-page-size=0x1000 ' +
        '--defsym RESERVE_TOP=%s --script %s -o ${TARGET} ${SOURCES}') %
-      (bootstrap_env.File('linux/ld_bfd.py'), ld_emul, reserve_top,
-       bootstrap_env.File('linux/nacl_bootstrap.x')),
+      (bootstrap_env.File('linux/ld_bfd.py'), compiler_override, ld_emul,
+       reserve_top, bootstrap_env.File('linux/nacl_bootstrap.x')),
       )
 
   bootstrap_prog = bootstrap_env.Command(

@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "base/optional.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "url/gurl.h"
@@ -110,13 +111,14 @@ class ChromeKeyboardControllerClient
   void ShowKeyboard();
   void HideKeyboard(ash::HideReason reason);
   void SetContainerType(keyboard::ContainerType container_type,
-                        const base::Optional<gfx::Rect>& target_bounds,
+                        const gfx::Rect& target_bounds,
                         base::OnceCallback<void(bool)> callback);
   void SetKeyboardLocked(bool locked);
   void SetOccludedBounds(const std::vector<gfx::Rect>& bounds);
   void SetHitTestBounds(const std::vector<gfx::Rect>& bounds);
   bool SetAreaToRemainOnScreen(const gfx::Rect& bounds);
   void SetDraggableArea(const gfx::Rect& bounds);
+  bool SetWindowBoundsInScreen(const gfx::Rect& bounds_in_screen);
 
   // Returns true if overscroll is enabled by the config or command line.
   bool IsKeyboardOverscrollEnabled();

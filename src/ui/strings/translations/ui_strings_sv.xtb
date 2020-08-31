@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maximera</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, installerad app</translation>
 <translation id="1450753235335490080">Det gick inte att dela <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> har bytts ut mot <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Du har sökt efter detta tidigare. Om du raderar <ph name="QUERY" /> från historiken tas förslaget bort från ditt konto på alla enheter.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut och }other{# minuter och }}</translation>
 <translation id="1643823602425662293">Avisering</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Välj &amp;alla</translation>
-<translation id="1938451708255335766">Starta om appen om du vill anpassa visningstätheten för fönstret.</translation>
 <translation id="2006524834898217237">Kontrollera att enheten är ansluten till internet.</translation>
 <translation id="208586643495776849">Försök igen</translation>
 <translation id="2090963878406559571"><ph name="TROUBLESHOOT_LINK" /> i inställningarna för båda enheterna om du vill skicka ett nummer från <ph name="ORIGIN" /> till Android-telefonen härifrån.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Nedpil</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dag}other{# dagar}}</translation>
 <translation id="3295886253693811851">Ring från</translation>
+<translation id="3306688585798492231">Inbyggd skärm</translation>
 <translation id="335581015389089642">Tal</translation>
 <translation id="3389286852084373014">Texten är för stor</translation>
-<translation id="3479552764303398839">Inte nu</translation>
 <translation id="348799646910989694">Hyllan döljs automatiskt</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> har fästs</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag kvar}other{# dagar kvar}}</translation>
@@ -100,9 +100,8 @@
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/sek</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Fortsätt att läsa på din mobila enhet <ph name="TITLE" /></translation>
-<translation id="385051799172605136">Bakåt</translation>
+<translation id="385051799172605136">Föregående</translation>
 <translation id="3889424535448813030">Högerpil</translation>
-<translation id="3892641579809465218">Intern bildskärm</translation>
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3909791450649380159">&amp;Klipp ut</translation>
 <translation id="3990502903496589789">Högerkant</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktiv i dag}=1{Aktiv för 1 dag sedan}other{Aktiv för # dagar sedan}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dag och }other{# dagar och }}</translation>
+<translation id="5789643057113097023">,</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{om 1 år}other{om # år}}</translation>
-<translation id="5895138241574237353">Starta om</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 sekund kvar}other{# sekunder kvar}}</translation>
 <translation id="5941711191222866238">Minimera</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 timme}other{# timmar}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Höger till vänster</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">MEST TROLIGA</translation>
+<translation id="7170202025028120564">Appens skärminställningar börjar gälla nästa gång den startas om.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min kvar}other{# min kvar}}</translation>
 <translation id="7319740667687257810">Översikt, delvy</translation>

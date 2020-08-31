@@ -4,53 +4,49 @@
 
 #include "chrome/browser/extensions/forced_extensions/installation_tracker.h"
 
-#include <set>
-
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/pref_names.h"
-#include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/common/extension_urls.h"
-
-namespace {
-// Timeout to report UMA if not all force-installed extension were loaded.
-constexpr base::TimeDelta kInstallationTimeout =
-    base::TimeDelta::FromMinutes(5);
-}  // namespace
 
 namespace extensions {
 
-InstallationTracker::InstallationTracker(
-    ExtensionRegistry* registry,
-    Profile* profile,
-    std::unique_ptr<base::OneShotTimer> timer)
+InstallationTracker::InstallationTracker(ExtensionRegistry* registry,
+                                         Profile* profile)
     : registry_(registry),
       profile_(profile),
-      pref_service_(profile->GetPrefs()),
-      start_time_(base::Time::Now()),
-      timer_(std::move(timer)) {
-  observer_.Add(registry_);
-  pref_change_registrar_.Init(pref_service_);
-  pref_change_registrar_.Add(
-      pref_names::kInstallForceList,
-      base::BindRepeating(&InstallationTracker::OnForcedExtensionsPrefChanged,
-                          base::Unretained(this)));
-
-  timer_->Start(FROM_HERE, kInstallationTimeout,
-                base::BindRepeating(&InstallationTracker::ReportResults,
-                                    base::Unretained(this)));
-
-  // Try to load list now.
-  OnForcedExtensionsPrefChanged();
+      pref_service_(profile->GetPrefs()) {
+  // Load immediately if PolicyService is ready, or wait for it to finish
+  // initializing first.
+  if (policy_service()->IsInitializationComplete(policy::POLICY_DOMAIN_CHROME))
+    OnForcedExtensionsPrefReady();
+  else
+    policy_service()->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
 }
 
-InstallationTracker::~InstallationTracker() = default;
+InstallationTracker::~InstallationTracker() {
+  policy_service()->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
+}
+
+void InstallationTracker::UpdateCounters(ExtensionStatus status, int delta) {
+  switch (status) {
+    case ExtensionStatus::PENDING:
+      load_pending_count_ += delta;
+      FALLTHROUGH;
+    case ExtensionStatus::LOADED:
+      ready_pending_count_ += delta;
+      break;
+    case ExtensionStatus::READY:
+    case ExtensionStatus::FAILED:
+      break;
+  }
+}
 
 void InstallationTracker::AddExtensionInfo(const ExtensionId& extension_id,
                                            ExtensionStatus status,
@@ -58,179 +54,136 @@ void InstallationTracker::AddExtensionInfo(const ExtensionId& extension_id,
   auto result =
       extensions_.emplace(extension_id, ExtensionInfo{status, is_from_store});
   DCHECK(result.second);
-  if (result.first->second.status == ExtensionStatus::PENDING)
-    pending_extensions_counter_++;
+  UpdateCounters(result.first->second.status, +1);
 }
 
 void InstallationTracker::ChangeExtensionStatus(const ExtensionId& extension_id,
                                                 ExtensionStatus status) {
+  DCHECK_GE(status_, kWaitingForExtensionLoads);
   auto item = extensions_.find(extension_id);
   if (item == extensions_.end())
     return;
-  if (item->second.status == ExtensionStatus::PENDING)
-    pending_extensions_counter_--;
+  UpdateCounters(item->second.status, -1);
   item->second.status = status;
-  if (item->second.status == ExtensionStatus::PENDING)
-    pending_extensions_counter_++;
+  UpdateCounters(item->second.status, +1);
 }
 
-void InstallationTracker::RemoveExtensionInfo(const ExtensionId& extension_id) {
-  auto item = extensions_.find(extension_id);
-  DCHECK(item != extensions_.end());
-  if (item->second.status == ExtensionStatus::PENDING)
-    pending_extensions_counter_--;
-  extensions_.erase(item);
+void InstallationTracker::OnPolicyUpdated(const policy::PolicyNamespace& ns,
+                                          const policy::PolicyMap& previous,
+                                          const policy::PolicyMap& current) {}
+
+void InstallationTracker::OnPolicyServiceInitialized(
+    policy::PolicyDomain domain) {
+  DCHECK_EQ(domain, policy::POLICY_DOMAIN_CHROME);
+  DCHECK_EQ(status_, kWaitingForPolicyService);
+  policy_service()->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
+  OnForcedExtensionsPrefReady();
 }
 
-void InstallationTracker::OnForcedExtensionsPrefChanged() {
+void InstallationTracker::OnForcedExtensionsPrefReady() {
+  DCHECK(
+      policy_service()->IsInitializationComplete(policy::POLICY_DOMAIN_CHROME));
+  DCHECK_EQ(status_, kWaitingForPolicyService);
+
+  // Listen for extension loads and install failures.
+  status_ = kWaitingForExtensionLoads;
+  registry_observer_.Add(registry_);
+  reporter_observer_.Add(InstallationReporter::Get(profile_));
+
   const base::DictionaryValue* value =
       pref_service_->GetDictionary(pref_names::kInstallForceList);
-  if (!value)
-    return;
+  if (value) {
+    // Add each extension to |extensions_|.
+    for (const auto& entry : *value) {
+      const ExtensionId& extension_id = entry.first;
+      std::string* update_url = nullptr;
+      if (entry.second->is_dict()) {
+        update_url = entry.second->FindStringKey(
+            ExternalProviderImpl::kExternalUpdateUrl);
+      }
+      bool is_from_store =
+          update_url && *update_url == extension_urls::kChromeWebstoreUpdateURL;
 
-  // Store extensions in a list instead of removing them because we don't want
-  // to change a collection while iterating though it.
-  std::vector<ExtensionId> extensions_to_remove;
-  for (const auto& extension : extensions_) {
-    const ExtensionId& extension_id = extension.first;
-    if (value->FindKey(extension_id) == nullptr)
-      extensions_to_remove.push_back(extension_id);
-  }
-
-  for (const auto& extension_id : extensions_to_remove)
-    RemoveExtensionInfo(extension_id);
-
-  // Report if all remaining extensions were removed from policy.
-  if (loaded_ && pending_extensions_counter_ == 0)
-    ReportResults();
-
-  // Load forced extensions list only once.
-  if (value->empty() || loaded_) {
-    return;
-  }
-
-  loaded_ = true;
-
-  for (const auto& entry : *value) {
-    const ExtensionId& extension_id = entry.first;
-    std::string* update_url = nullptr;
-    if (entry.second->is_dict()) {
-      update_url =
-          entry.second->FindStringKey(ExternalProviderImpl::kExternalUpdateUrl);
+      ExtensionStatus status = ExtensionStatus::PENDING;
+      if (registry_->enabled_extensions().Contains(extension_id)) {
+        status = registry_->ready_extensions().Contains(extension_id)
+                     ? ExtensionStatus::READY
+                     : ExtensionStatus::LOADED;
+      }
+      AddExtensionInfo(extension_id, status, is_from_store);
     }
-    bool is_from_store =
-        update_url && *update_url == extension_urls::kChromeWebstoreUpdateURL;
-
-    AddExtensionInfo(extension_id,
-                     registry_->enabled_extensions().Contains(extension_id)
-                         ? ExtensionStatus::LOADED
-                         : ExtensionStatus::PENDING,
-                     is_from_store);
   }
-  if (pending_extensions_counter_ == 0)
-    ReportResults();
+
+  // Run observers if there are no pending installs.
+  MaybeNotifyObservers();
 }
 
 void InstallationTracker::OnShutdown(ExtensionRegistry*) {
-  observer_.RemoveAll();
-  pref_change_registrar_.RemoveAll();
-  timer_->Stop();
+  registry_observer_.RemoveAll();
+}
+
+void InstallationTracker::AddObserver(Observer* obs) {
+  observers_.AddObserver(obs);
+}
+
+void InstallationTracker::RemoveObserver(Observer* obs) {
+  observers_.RemoveObserver(obs);
 }
 
 void InstallationTracker::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
   ChangeExtensionStatus(extension->id(), ExtensionStatus::LOADED);
-  if (pending_extensions_counter_ == 0)
-    ReportResults();
+  MaybeNotifyObservers();
+}
+
+void InstallationTracker::OnExtensionReady(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  ChangeExtensionStatus(extension->id(), ExtensionStatus::READY);
+  MaybeNotifyObservers();
 }
 
 void InstallationTracker::OnExtensionInstallationFailed(
     const ExtensionId& extension_id,
     InstallationReporter::FailureReason reason) {
+  auto item = extensions_.find(extension_id);
+  // If the extension is loaded, ignore the failure.
+  if (item == extensions_.end() ||
+      item->second.status == ExtensionStatus::LOADED ||
+      item->second.status == ExtensionStatus::READY)
+    return;
   ChangeExtensionStatus(extension_id, ExtensionStatus::FAILED);
-  if (pending_extensions_counter_ == 0)
-    ReportResults();
+  MaybeNotifyObservers();
 }
 
-void InstallationTracker::ReportResults() {
-  DCHECK(!reported_);
-  // Report only if there was non-empty list of force-installed extensions.
-  if (!extensions_.empty()) {
-    UMA_HISTOGRAM_COUNTS_100("Extensions.ForceInstalledTotalCandidateCount",
-                             extensions_.size());
-    std::set<ExtensionId> missing_forced_extensions;
-    for (const auto& extension : extensions_) {
-      if (extension.second.status != ExtensionStatus::LOADED)
-        missing_forced_extensions.insert(extension.first);
-    }
-    if (missing_forced_extensions.empty()) {
-      UMA_HISTOGRAM_LONG_TIMES("Extensions.ForceInstalledLoadTime",
-                               base::Time::Now() - start_time_);
-      // TODO(burunduk): Remove VLOGs after resolving crbug/917700 and
-      // crbug/904600.
-      VLOG(2) << "All forced extensions seems to be installed";
-    } else {
-      InstallationReporter* installation_reporter =
-          InstallationReporter::Get(profile_);
-      size_t enabled_missing_count = missing_forced_extensions.size();
-      auto installed_extensions = registry_->GenerateInstalledExtensionsSet();
-      for (const auto& entry : *installed_extensions)
-        missing_forced_extensions.erase(entry->id());
-      size_t installed_missing_count = missing_forced_extensions.size();
+bool InstallationTracker::IsDoneLoading() const {
+  return status_ == kWaitingForExtensionReady || status_ == kComplete;
+}
 
-      UMA_HISTOGRAM_COUNTS_100("Extensions.ForceInstalledTimedOutCount",
-                               enabled_missing_count);
-      UMA_HISTOGRAM_COUNTS_100(
-          "Extensions.ForceInstalledTimedOutAndNotInstalledCount",
-          installed_missing_count);
-      VLOG(2) << "Failed to install " << installed_missing_count
-              << " forced extensions.";
-      for (const auto& extension_id : missing_forced_extensions) {
-        InstallationReporter::InstallationData installation =
-            installation_reporter->Get(extension_id);
-        UMA_HISTOGRAM_ENUMERATION(
-            "Extensions.ForceInstalledFailureCacheStatus",
-            installation.downloading_cache_status.value_or(
-                ExtensionDownloaderDelegate::CacheStatus::CACHE_UNKNOWN));
-        if (!installation.failure_reason && installation.install_stage) {
-          installation.failure_reason =
-              InstallationReporter::FailureReason::IN_PROGRESS;
-          InstallationReporter::Stage install_stage =
-              installation.install_stage.value();
-          UMA_HISTOGRAM_ENUMERATION("Extensions.ForceInstalledStage",
-                                    install_stage);
-          if (install_stage == InstallationReporter::Stage::DOWNLOADING) {
-            DCHECK(installation.downloading_stage);
-            ExtensionDownloaderDelegate::Stage downloading_stage =
-                installation.downloading_stage.value();
-            UMA_HISTOGRAM_ENUMERATION(
-                "Extensions.ForceInstalledDownloadingStage", downloading_stage);
-          }
-        }
-        InstallationReporter::FailureReason failure_reason =
-            installation.failure_reason.value_or(
-                InstallationReporter::FailureReason::UNKNOWN);
-        UMA_HISTOGRAM_ENUMERATION("Extensions.ForceInstalledFailureReason",
-                                  failure_reason);
-        VLOG(2) << "Forced extension " << extension_id
-                << " failed to install with data="
-                << InstallationReporter::GetFormattedInstallationData(
-                       installation);
-        if (installation.install_error_detail) {
-          CrxInstallErrorDetail detail =
-              installation.install_error_detail.value();
-          UMA_HISTOGRAM_ENUMERATION(
-              "Extensions.ForceInstalledFailureCrxInstallError", detail);
-        }
-      }
-    }
+bool InstallationTracker::IsReady() const {
+  return status_ == kComplete;
+}
+
+policy::PolicyService* InstallationTracker::policy_service() {
+  return profile_->GetProfilePolicyConnector()->policy_service();
+}
+
+void InstallationTracker::MaybeNotifyObservers() {
+  DCHECK_GE(status_, kWaitingForExtensionLoads);
+  if (status_ == kWaitingForExtensionLoads && load_pending_count_ == 0) {
+    for (auto& obs : observers_)
+      obs.OnForceInstalledExtensionsLoaded();
+    status_ = kWaitingForExtensionReady;
   }
-  reported_ = true;
-  InstallationReporter::Get(profile_)->Clear();
-  observer_.RemoveAll();
-  pref_change_registrar_.RemoveAll();
-  timer_->Stop();
+  if (status_ == kWaitingForExtensionReady && ready_pending_count_ == 0) {
+    for (auto& obs : observers_)
+      obs.OnForceInstalledExtensionsReady();
+    status_ = kComplete;
+    registry_observer_.RemoveAll();
+    reporter_observer_.RemoveAll();
+    InstallationReporter::Get(profile_)->Clear();
+  }
 }
 
 }  //  namespace extensions

@@ -4,7 +4,8 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
-import("//build/config/coverage/coverage.gni")
+import("//build/config/chromeos/args.gni")
+import("//build/config/profiling/profiling.gni")
 import("//build/toolchain/toolchain.gni")
 
 declare_args() {
@@ -15,10 +16,6 @@ declare_args() {
   # (android/arm64 only).
   # See http://clang.llvm.org/docs/HardwareAssistedAddressSanitizerDesign.html
   is_hwasan = false
-
-  # Specify whether to target the platform's copy of the HWASan runtime,
-  # rather than one bundled with the application.
-  hwasan_platform = false
 
   # Compile for Leak Sanitizer to find leaks.
   is_lsan = false
@@ -55,13 +52,12 @@ declare_args() {
   # See http://clang.llvm.org/docs/ControlFlowIntegrity.html
   #
   # TODO(pcc): Remove this flag if/when CFI is enabled in all official builds.
-  is_cfi = target_os == "linux" && !is_chromeos && target_cpu == "x64" &&
-           is_official_build
-
-  # Enable checks for bad casts: derived cast and unrelated cast.
-  # TODO(krasin): remove this, when we're ready to add these checks by default.
-  # https://crbug.com/626794
-  use_cfi_cast = false
+  #
+  # Disable this on linux-chromeos to avoid using ThinLTO there;
+  # crbug.com/1033839. Similarly, don't use this on ARC builds.
+  is_cfi = is_official_build &&
+           ((target_os == "linux" && !is_chromeos && target_cpu == "x64") ||
+            (target_os == "chromeos" && is_chromeos_device))
 
   # Enable checks for indirect function calls via a function pointer.
   # TODO(pcc): remove this when we're ready to add these checks by default.
@@ -82,6 +78,9 @@ declare_args() {
 
   # Compile for fuzzing with AFL.
   use_afl = false
+
+  # Compile for fuzzing with an external engine (e.g., Grammarinator).
+  use_external_fuzzing_engine = false
 
   # Enables core ubsan security features. Will later be removed once it matches
   # is_ubsan.
@@ -117,12 +116,18 @@ declare_args() {
   archive_seed_corpus = true
 }
 
-# Disable sanitizers for non-default toolchains.
-if (current_toolchain != default_toolchain) {
+declare_args() {
+  # Enable checks for bad casts: derived cast and unrelated cast.
+  # TODO(krasin): remove this, when we're ready to add these checks by default.
+  # https://crbug.com/626794
+  use_cfi_cast = is_cfi && target_os == "chromeos"
+}
+
+# Disable sanitizers for non-target toolchains.
+if (!is_a_target_toolchain) {
   is_asan = false
   is_cfi = false
   is_hwasan = false
-  hwasan_platform = false
   is_lsan = false
   is_msan = false
   is_tsan = false
@@ -150,7 +155,7 @@ use_prebuilt_instrumented_libraries = is_msan
 # Whether we are doing a fuzzer build. Normally this should be checked instead
 # of checking "use_libfuzzer || use_afl" because often developers forget to
 # check for "use_afl".
-use_fuzzing_engine = use_libfuzzer || use_afl
+use_fuzzing_engine = use_libfuzzer || use_afl || use_external_fuzzing_engine
 
 # Args that are in turn dependent on other args must be in a separate
 # declare_args block. User overrides are only applied at the end of a
@@ -159,6 +164,14 @@ declare_args() {
   use_sanitizer_coverage =
       !use_clang_coverage &&
       (use_fuzzing_engine || sanitizer_coverage_flags != "")
+
+  # https://crbug.com/1002058: Code coverage works inside the sandbox via the
+  # help of several helper IPCs. Unfortunately, the sandbox-only path does not
+  # work well for fuzzing builds. Since fuzzing builds already disable the
+  # sandbox when dumping coverage, limit the sandbox-only path to non-fuzzing
+  # builds.
+  use_clang_profiling_inside_sandbox =
+      use_clang_profiling && !use_fuzzing_engine
 
   # Detect overflow/underflow for global objects.
   #
@@ -246,9 +259,6 @@ assert(
     "crbug.com/753445: use_sanitizer_coverage=true is not supported by the " +
         "Chromium mac_clang_x64 toolchain on iOS distribution. Please set " +
         "the argument value to false.")
-
-assert(!hwasan_platform || is_hwasan,
-       "hwasan_platform requires is_hwasan to be set")
 
 # Use these lists of configs to disable instrumenting code that is part of a
 # fuzzer, but which isn't being targeted (such as libprotobuf-mutator, *.pb.cc

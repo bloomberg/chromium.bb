@@ -7,8 +7,13 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.cbuildbot import topology
 from chromite.lib import cros_test_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class TopologyTest(cros_test_lib.TestCase):
@@ -30,7 +35,7 @@ def FakeFetchTopology(keyvals=None):
   args:
     keyvals: optional dictionary to populate topology
   """
-  keyvals = keyvals if keyvals != None else {}
+  keyvals = keyvals if keyvals is not None else {}
 
   topology.FetchTopology()
   topology.topology.update(keyvals)

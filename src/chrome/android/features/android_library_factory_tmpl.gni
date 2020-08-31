@@ -75,9 +75,8 @@ template("android_library_factory") {
   action_foreach_with_pydeps(_process_factory_target_name) {
     script = "//chrome/android/features/create_stripped_java_factory.py"
     sources = invoker.sources
-    outputs = [
-      "$_base_gen_dir/{{source_root_relative_dir}}/{{source_file_part}}",
-    ]
+    outputs =
+        [ "$_base_gen_dir/{{source_root_relative_dir}}/{{source_file_part}}" ]
     args = [
       "--output",
       rebase_path(outputs[0], root_build_dir),
@@ -86,13 +85,11 @@ template("android_library_factory") {
   }
 
   android_library(target_name) {
-    deps = [
-      ":$_process_factory_target_name",
-    ]
+    deps = [ ":$_process_factory_target_name" ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
-    java_files = get_target_outputs(":$_process_factory_target_name")
+    sources = get_target_outputs(":$_process_factory_target_name")
     jar_excluded_patterns = [ "*" ]
   }
 }

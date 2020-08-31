@@ -16,6 +16,8 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.browser.ChromeActivity;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,33 +33,57 @@ class MockPackageManagerDelegate extends PackageManagerDelegate {
     private final List<ResolveInfo> mServices = new ArrayList<>();
     private final Map<ApplicationInfo, String[]> mResources = new HashMap<>();
 
+    private String mMockTwaPackage;
+
     /**
-     * Simulates an installed payment app.
+     * Simulates an installed payment app with no supported delegations.
      *
-     * @param label                    The user visible name of the app.
-     * @param packageName              The identifying package name.
-     * @param defaultPaymentMethodName The name of the default payment method name for this app.
-     *                                 If null, then this app will not have metadata. If empty,
-     *                                 then the default payment method name will not be set.
-     * @param signature                The signature of the app. The SHA256 hash of this
-     *                                 signature is called "fingerprint" and should be present in
-     *                                 the app's web app manifest. If null, then this app will
-     *                                 not have package info. If empty, then this app will not
-     *                                 have any signatures.
+     * @param label The user visible name of the app.
+     * @param packageName The identifying package name.
+     * @param defaultPaymentMethodName The name of the default payment method name for this app. If
+     *          null, then this app will not have metadata. If empty, then the default payment
+     * method name will not be set.
+     * @param signature The signature of the app. The SHA256 hash of this signature is called
+     *         "fingerprint" and should be present in the app's web app manifest. If null, then this
+     *         app will not have package info. If empty, then this app will not have any signatures.
      */
     public void installPaymentApp(CharSequence label, String packageName,
             String defaultPaymentMethodName, String signature) {
+        installPaymentApp(label, packageName, defaultPaymentMethodName,
+                /*supportedDelegations=*/null, signature);
+    }
+
+    /**
+     * Simulates an installed payment app.
+     *
+     * @param label The user visible name of the app.
+     * @param packageName The identifying package name.
+     * @param defaultPaymentMethodName The name of the default payment method name for this app. If
+     *         null, then this app will not have metadata. If empty, then the default payment method
+     *         name will not be set.
+     * @param supportedDelegations The delegations that the app can support.
+     * @param signature The signature of the app. The SHA256 hash of this signature is called
+     *         "fingerprint" and should be present in the app's web app manifest. If null, then this
+     *         app will not have package info. If empty, then this app will not have any signatures.
+     */
+    public void installPaymentApp(CharSequence label, String packageName,
+            String defaultPaymentMethodName, String[] supportedDelegations, String signature) {
         ResolveInfo paymentApp = new ResolveInfo();
         paymentApp.activityInfo = new ActivityInfo();
         paymentApp.activityInfo.packageName = packageName;
         paymentApp.activityInfo.name = packageName + ".WebPaymentActivity";
         paymentApp.activityInfo.applicationInfo = new ApplicationInfo();
-        if (defaultPaymentMethodName != null) {
+        if (defaultPaymentMethodName != null || supportedDelegations != null) {
             Bundle metaData = new Bundle();
             if (!defaultPaymentMethodName.isEmpty()) {
                 metaData.putString(
                         AndroidPaymentAppFinder.META_DATA_NAME_OF_DEFAULT_PAYMENT_METHOD_NAME,
                         defaultPaymentMethodName);
+            }
+            if (supportedDelegations != null && supportedDelegations.length > 0) {
+                metaData.putStringArray(
+                        AndroidPaymentAppFinder.META_DATA_NAME_OF_SUPPORTED_DELEGATIONS,
+                        supportedDelegations);
             }
             paymentApp.activityInfo.metaData = metaData;
         }
@@ -118,6 +144,15 @@ class MockPackageManagerDelegate extends PackageManagerDelegate {
         mLabels.clear();
     }
 
+    /**
+     * Mock the current package to be a Trust Web Activity package.
+     * @param mockTwaPackage The intended package nam, not allowed to be null.
+     */
+    public void setMockTrustedWebActivity(String mockTwaPackage) {
+        assert mockTwaPackage != null;
+        mMockTwaPackage = mockTwaPackage;
+    }
+
     @Override
     public List<ResolveInfo> getActivitiesThatCanRespondToIntentWithMetaData(Intent intent) {
         return mActivities;
@@ -154,5 +189,11 @@ class MockPackageManagerDelegate extends PackageManagerDelegate {
             ApplicationInfo applicationInfo, int resourceId) {
         assert STRING_ARRAY_RESOURCE_ID == resourceId;
         return mResources.get(applicationInfo);
+    }
+
+    @Override
+    @Nullable
+    public String getTwaPackageName(ChromeActivity activity) {
+        return mMockTwaPackage != null ? mMockTwaPackage : super.getTwaPackageName(activity);
     }
 }

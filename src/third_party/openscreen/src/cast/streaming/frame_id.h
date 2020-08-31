@@ -11,8 +11,8 @@
 
 #include "cast/streaming/expanded_value_base.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Forward declaration (see below).
 class FrameId;
@@ -94,6 +94,16 @@ class FrameId : public ExpandedValueBase<int64_t, FrameId> {
   // The identifier for the first frame in a stream.
   static constexpr FrameId first() { return FrameId(0); }
 
+  // A virtual identifier, representing the frame before the first. There should
+  // never actually be a frame streamed with this identifier. Instead, this is
+  // used in various components to represent a "not yet seen/processed the first
+  // frame" state.
+  //
+  // The name "leader" comes from the terminology used in tape reels, which
+  // refers to the non-data-carrying segment of tape before the recording
+  // begins.
+  static constexpr FrameId leader() { return FrameId(-1); }
+
  private:
   friend class ExpandedValueBase<int64_t, FrameId>;
   friend std::ostream& operator<<(std::ostream& out, const FrameId rhs);
@@ -104,7 +114,7 @@ class FrameId : public ExpandedValueBase<int64_t, FrameId> {
   constexpr int64_t value() const { return value_; }
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_FRAME_ID_H_

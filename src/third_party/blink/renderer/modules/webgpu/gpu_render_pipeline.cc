@@ -4,20 +4,20 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pipeline.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_blend_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_color_state_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_depth_stencil_state_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_rasterization_state_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_pipeline_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_stencil_state_face_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_vertex_attribute_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_vertex_buffer_layout_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_vertex_state_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_blend_descriptor.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_color_state_descriptor.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_depth_stencil_state_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_layout.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_rasterization_state_descriptor.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_render_pipeline_descriptor.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_stencil_state_face_descriptor.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_vertex_attribute_descriptor.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_vertex_buffer_layout_descriptor.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_vertex_state_descriptor.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
@@ -139,26 +139,26 @@ WGPUVertexStateInfo GPUVertexStateAsWGPUVertexState(
         continue;
       }
 
-      GPUVertexBufferLayoutDescriptor vertex_buffer;
-      V8GPUVertexBufferLayoutDescriptor::ToImpl(isolate, value, &vertex_buffer,
-                                                exception_state);
+      GPUVertexBufferLayoutDescriptor* vertex_buffer =
+          NativeValueTraits<GPUVertexBufferLayoutDescriptor>::NativeValue(
+              isolate, value, exception_state);
       if (exception_state.HadException()) {
         return std::make_tuple(dawn_desc, std::move(dawn_vertex_buffers),
                                std::move(dawn_vertex_attributes));
       }
 
       WGPUVertexBufferLayoutDescriptor dawn_vertex_buffer = {};
-      dawn_vertex_buffer.arrayStride = vertex_buffer.arrayStride();
+      dawn_vertex_buffer.arrayStride = vertex_buffer->arrayStride();
       dawn_vertex_buffer.stepMode =
-          AsDawnEnum<WGPUInputStepMode>(vertex_buffer.stepMode());
+          AsDawnEnum<WGPUInputStepMode>(vertex_buffer->stepMode());
       dawn_vertex_buffer.attributeCount =
-          static_cast<uint32_t>(vertex_buffer.attributes().size());
+          static_cast<uint32_t>(vertex_buffer->attributes().size());
       dawn_vertex_buffer.attributes = nullptr;
       dawn_vertex_buffers.push_back(dawn_vertex_buffer);
 
-      for (wtf_size_t j = 0; j < vertex_buffer.attributes().size(); ++j) {
+      for (wtf_size_t j = 0; j < vertex_buffer->attributes().size(); ++j) {
         const GPUVertexAttributeDescriptor* attribute =
-            vertex_buffer.attributes()[j];
+            vertex_buffer->attributes()[j];
         WGPUVertexAttributeDescriptor dawn_vertex_attribute = {};
         dawn_vertex_attribute.shaderLocation = attribute->shaderLocation();
         dawn_vertex_attribute.offset = attribute->offset();

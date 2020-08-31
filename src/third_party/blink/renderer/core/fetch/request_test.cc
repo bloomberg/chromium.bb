@@ -59,7 +59,8 @@ TEST(ServiceWorkerRequestTest, FromAndToFetchAPIRequest) {
   const String referrer = "http://www.referrer.com/";
   const network::mojom::ReferrerPolicy kReferrerPolicy =
       network::mojom::ReferrerPolicy::kAlways;
-  const mojom::RequestContextType kContext = mojom::RequestContextType::AUDIO;
+  const network::mojom::RequestDestination kDestination =
+      network::mojom::RequestDestination::kAudio;
   const network::mojom::RequestMode kMode =
       network::mojom::RequestMode::kNavigate;
   const network::mojom::CredentialsMode kCredentialsMode =
@@ -74,7 +75,7 @@ TEST(ServiceWorkerRequestTest, FromAndToFetchAPIRequest) {
   fetch_api_request->credentials_mode = kCredentialsMode;
   fetch_api_request->cache_mode = kCacheMode;
   fetch_api_request->redirect_mode = kRedirectMode;
-  fetch_api_request->request_context_type = kContext;
+  fetch_api_request->destination = kDestination;
   for (int i = 0; headers[i].key; ++i) {
     fetch_api_request->headers.insert(String(headers[i].key),
                                       String(headers[i].value));
@@ -113,7 +114,7 @@ TEST(ServiceWorkerRequestTest, FromAndToFetchAPIRequest) {
   EXPECT_EQ(kCredentialsMode, second_fetch_api_request->credentials_mode);
   EXPECT_EQ(kCacheMode, second_fetch_api_request->cache_mode);
   EXPECT_EQ(kRedirectMode, second_fetch_api_request->redirect_mode);
-  EXPECT_EQ(kContext, second_fetch_api_request->request_context_type);
+  EXPECT_EQ(kDestination, second_fetch_api_request->destination);
   EXPECT_EQ(referrer, second_fetch_api_request->referrer->url);
   EXPECT_EQ(network::mojom::ReferrerPolicy::kAlways,
             second_fetch_api_request->referrer->policy);

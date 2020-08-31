@@ -40,6 +40,7 @@
 #include "src/objects/smi-inl.h"
 #include "src/objects/tagged-field-inl.h"
 #include "src/objects/tagged-impl-inl.h"
+#include "src/objects/tagged-index.h"
 #include "src/objects/templates.h"
 #include "src/sanitizer/tsan.h"
 #include "torque-generated/class-definitions-tq-inl.h"
@@ -74,6 +75,10 @@ DEF_GETTER(HeapObject, IsClassBoilerplate, bool) {
   return IsFixedArrayExact(isolate);
 }
 
+bool Object::IsTaggedIndex() const {
+  return IsSmi() && TaggedIndex::IsValid(TaggedIndex(ptr()).value());
+}
+
 #define IS_TYPE_FUNCTION_DEF(type_)                                      \
   bool Object::Is##type_() const {                                       \
     return IsHeapObject() && HeapObject::cast(*this).Is##type_();        \
@@ -86,28 +91,34 @@ IS_TYPE_FUNCTION_DEF(HashTableBase)
 IS_TYPE_FUNCTION_DEF(SmallOrderedHashTable)
 #undef IS_TYPE_FUNCTION_DEF
 
-#define IS_TYPE_FUNCTION_DEF(Type, Value)                               \
-  bool Object::Is##Type(const Isolate* isolate) const {                 \
-    return IsHeapObject() && HeapObject::cast(*this).Is##Type(isolate); \
-  }                                                                     \
-  bool Object::Is##Type(ReadOnlyRoots roots) const {                    \
-    return *this == roots.Value();                                      \
-  }                                                                     \
-  bool Object::Is##Type() const {                                       \
-    return IsHeapObject() && HeapObject::cast(*this).Is##Type();        \
-  }                                                                     \
-  bool HeapObject::Is##Type(const Isolate* isolate) const {             \
-    return Is##Type(GetReadOnlyRoots(isolate));                         \
-  }                                                                     \
-  bool HeapObject::Is##Type(ReadOnlyRoots roots) const {                \
-    return Object::Is##Type(roots);                                     \
-  }                                                                     \
+#define IS_TYPE_FUNCTION_DEF(Type, Value)                        \
+  bool Object::Is##Type(Isolate* isolate) const {                \
+    return Is##Type(ReadOnlyRoots(isolate));                     \
+  }                                                              \
+  bool Object::Is##Type(OffThreadIsolate* isolate) const {       \
+    return Is##Type(ReadOnlyRoots(isolate));                     \
+  }                                                              \
+  bool Object::Is##Type(ReadOnlyRoots roots) const {             \
+    return *this == roots.Value();                               \
+  }                                                              \
+  bool Object::Is##Type() const {                                \
+    return IsHeapObject() && HeapObject::cast(*this).Is##Type(); \
+  }                                                              \
+  bool HeapObject::Is##Type(Isolate* isolate) const {            \
+    return Object::Is##Type(isolate);                            \
+  }                                                              \
+  bool HeapObject::Is##Type(OffThreadIsolate* isolate) const {   \
+    return Object::Is##Type(isolate);                            \
+  }                                                              \
+  bool HeapObject::Is##Type(ReadOnlyRoots roots) const {         \
+    return Object::Is##Type(roots);                              \
+  }                                                              \
   bool HeapObject::Is##Type() const { return Is##Type(GetReadOnlyRoots()); }
 ODDBALL_LIST(IS_TYPE_FUNCTION_DEF)
 #undef IS_TYPE_FUNCTION_DEF
 
-bool Object::IsNullOrUndefined(const Isolate* isolate) const {
-  return IsHeapObject() && HeapObject::cast(*this).IsNullOrUndefined(isolate);
+bool Object::IsNullOrUndefined(Isolate* isolate) const {
+  return IsNullOrUndefined(ReadOnlyRoots(isolate));
 }
 
 bool Object::IsNullOrUndefined(ReadOnlyRoots roots) const {
@@ -131,8 +142,8 @@ bool Object::IsNoSharedNameSentinel() const {
   return *this == SharedFunctionInfo::kNoSharedNameSentinel;
 }
 
-bool HeapObject::IsNullOrUndefined(const Isolate* isolate) const {
-  return IsNullOrUndefined(GetReadOnlyRoots(isolate));
+bool HeapObject::IsNullOrUndefined(Isolate* isolate) const {
+  return IsNullOrUndefined(ReadOnlyRoots(isolate));
 }
 
 bool HeapObject::IsNullOrUndefined(ReadOnlyRoots roots) const {
@@ -209,11 +220,6 @@ DEF_GETTER(HeapObject, IsSeqTwoByteString, bool) {
   if (!IsString(isolate)) return false;
   return StringShape(String::cast(*this).map(isolate)).IsSequential() &&
          String::cast(*this).IsTwoByteRepresentation(isolate);
-}
-
-DEF_GETTER(HeapObject, IsExternalString, bool) {
-  if (!IsString(isolate)) return false;
-  return StringShape(String::cast(*this).map(isolate)).IsExternal();
 }
 
 DEF_GETTER(HeapObject, IsExternalOneByteString, bool) {
@@ -978,7 +984,8 @@ Maybe<bool> Object::LessThanOrEqual(Isolate* isolate, Handle<Object> x,
 MaybeHandle<Object> Object::GetPropertyOrElement(Isolate* isolate,
                                                  Handle<Object> object,
                                                  Handle<Name> name) {
-  LookupIterator it = LookupIterator::PropertyOrElement(isolate, object, name);
+  LookupIterator::Key key(isolate, name);
+  LookupIterator it(isolate, object, key);
   return GetProperty(&it);
 }
 
@@ -986,7 +993,8 @@ MaybeHandle<Object> Object::SetPropertyOrElement(
     Isolate* isolate, Handle<Object> object, Handle<Name> name,
     Handle<Object> value, Maybe<ShouldThrow> should_throw,
     StoreOrigin store_origin) {
-  LookupIterator it = LookupIterator::PropertyOrElement(isolate, object, name);
+  LookupIterator::Key key(isolate, name);
+  LookupIterator it(isolate, object, key);
   MAYBE_RETURN_NULL(SetProperty(&it, value, store_origin, should_throw));
   return value;
 }
@@ -994,8 +1002,9 @@ MaybeHandle<Object> Object::SetPropertyOrElement(
 MaybeHandle<Object> Object::GetPropertyOrElement(Handle<Object> receiver,
                                                  Handle<Name> name,
                                                  Handle<JSReceiver> holder) {
-  LookupIterator it = LookupIterator::PropertyOrElement(holder->GetIsolate(),
-                                                        receiver, name, holder);
+  Isolate* isolate = holder->GetIsolate();
+  LookupIterator::Key key(isolate, name);
+  LookupIterator it(isolate, receiver, key, holder);
   return GetProperty(&it);
 }
 
@@ -1097,12 +1106,10 @@ static inline Handle<Object> MakeEntryPair(Isolate* isolate, Handle<Object> key,
                                                     PACKED_ELEMENTS, 2);
 }
 
-bool ScopeInfo::IsAsmModule() const {
-  return IsAsmModuleField::decode(Flags());
-}
+bool ScopeInfo::IsAsmModule() const { return IsAsmModuleBit::decode(Flags()); }
 
 bool ScopeInfo::HasSimpleParameters() const {
-  return HasSimpleParametersField::decode(Flags());
+  return HasSimpleParametersBit::decode(Flags());
 }
 
 #define FIELD_ACCESSORS(name)                                                 \

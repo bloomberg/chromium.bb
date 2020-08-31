@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/common/context_menu_params.h"
+#include "content/public/common/untrustworthy_context_menu_params.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ipc/ipc_message.h"
@@ -149,7 +149,7 @@ int32_t PepperFlashMenuHost::OnHostMsgShow(
   content::RenderFrame* render_frame =
       renderer_ppapi_host_->GetRenderFrameForInstance(pp_instance());
 
-  content::ContextMenuParams params;
+  content::UntrustworthyContextMenuParams params;
   params.x = location.x;
   params.y = location.y;
   params.custom_context.is_pepper_menu = true;

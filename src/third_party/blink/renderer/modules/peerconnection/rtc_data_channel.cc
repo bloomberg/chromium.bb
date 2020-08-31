@@ -31,13 +31,14 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_error_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -126,6 +127,10 @@ static void ThrowNoBlobSupportException(ExceptionState* exception_state) {
                                      "Blob support not implemented yet");
 }
 
+static void ThrowBufferOverflowException(ExceptionState* exception_state) {
+  exception_state->ThrowRangeError("RTCDataChannel buffer overflow");
+}
+
 RTCDataChannel::Observer::Observer(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
     RTCDataChannel* blink_channel,
@@ -207,8 +212,8 @@ void RTCDataChannel::Observer::OnMessageImpl(
 RTCDataChannel::RTCDataChannel(
     ExecutionContext* context,
     scoped_refptr<webrtc::DataChannelInterface> channel,
-    WebRTCPeerConnectionHandler* peer_connection_handler)
-    : ContextLifecycleObserver(context),
+    RTCPeerConnectionHandler* peer_connection_handler)
+    : ExecutionContextLifecycleObserver(context),
       state_(webrtc::DataChannelInterface::kConnecting),
       binary_type_(kBinaryTypeArrayBuffer),
       scheduled_event_timer_(context->GetTaskRunner(TaskType::kNetworking),
@@ -217,6 +222,7 @@ RTCDataChannel::RTCDataChannel(
       buffered_amount_low_threshold_(0U),
       buffered_amount_(0U),
       stopped_(false),
+      closed_from_owner_(false),
       observer_(base::MakeRefCounted<Observer>(
           context->GetTaskRunner(TaskType::kNetworking),
           this,
@@ -229,7 +235,7 @@ RTCDataChannel::RTCDataChannel(
   // thread. Done in a single synchronous call to the signaling thread to ensure
   // channel state consistency.
   peer_connection_handler->RunSynchronousOnceClosureOnSignalingThread(
-      ConvertToBaseOnceCallback(CrossThreadBindOnce(
+      CrossThreadBindOnce(
           [](scoped_refptr<RTCDataChannel::Observer> observer,
              webrtc::DataChannelInterface::DataState current_state) {
             scoped_refptr<webrtc::DataChannelInterface> channel =
@@ -239,7 +245,7 @@ RTCDataChannel::RTCDataChannel(
               observer->OnStateChange();
             }
           },
-          observer_, state_)),
+          observer_, state_),
       "RegisterObserverAndGetStateUpdate");
 
   IncrementCounters(*channel.get());
@@ -262,24 +268,18 @@ bool RTCDataChannel::ordered() const {
   return channel()->ordered();
 }
 
-uint16_t RTCDataChannel::maxPacketLifeTime(bool& is_null) const {
+base::Optional<uint16_t> RTCDataChannel::maxPacketLifeTime() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (channel()->maxPacketLifeTime()) {
-    is_null = false;
-    return *(channel()->maxPacketLifeTime());
-  }
-  is_null = true;
-  return -1;
+  if (channel()->maxPacketLifeTime())
+    return *channel()->maxPacketLifeTime();
+  return base::nullopt;
 }
 
-uint16_t RTCDataChannel::maxRetransmits(bool& is_null) const {
+base::Optional<uint16_t> RTCDataChannel::maxRetransmits() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (channel()->maxRetransmitsOpt()) {
-    is_null = false;
-    return *(channel()->maxRetransmitsOpt());
-  }
-  is_null = true;
-  return -1;
+  if (channel()->maxRetransmitsOpt())
+    return *channel()->maxRetransmitsOpt();
+  return base::nullopt;
 }
 
 String RTCDataChannel::protocol() const {
@@ -292,13 +292,10 @@ bool RTCDataChannel::negotiated() const {
   return channel()->negotiated();
 }
 
-uint16_t RTCDataChannel::id(bool& is_null) const {
+base::Optional<uint16_t> RTCDataChannel::id() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (channel()->id() == -1) {
-    is_null = true;
-    return 0;
-  }
-  is_null = false;
+  if (channel()->id() == -1)
+    return base::nullopt;
   return channel()->id();
 }
 
@@ -360,6 +357,11 @@ void RTCDataChannel::send(const String& data, ExceptionState& exception_state) {
   }
 
   webrtc::DataBuffer data_buffer(data.Utf8());
+  if (!(base::CheckedNumeric<unsigned>(buffered_amount_) + data_buffer.size())
+           .IsValid()) {
+    ThrowBufferOverflowException(&exception_state);
+    return;
+  }
   buffered_amount_ += data_buffer.size();
   RecordMessageSent(*channel().get(), data_buffer.size());
   if (!channel()->Send(data_buffer)) {
@@ -380,6 +382,11 @@ void RTCDataChannel::send(DOMArrayBuffer* data,
   if (!data_length)
     return;
 
+  if (!(base::CheckedNumeric<unsigned>(buffered_amount_) + data_length)
+           .IsValid()) {
+    ThrowBufferOverflowException(&exception_state);
+    return;
+  }
   buffered_amount_ += data_length;
   if (!SendRawData(static_cast<const char*>((data->Data())), data_length)) {
     // TODO(https://crbug.com/937848): Don't throw an exception if data is
@@ -390,9 +397,15 @@ void RTCDataChannel::send(DOMArrayBuffer* data,
 
 void RTCDataChannel::send(NotShared<DOMArrayBufferView> data,
                           ExceptionState& exception_state) {
-  buffered_amount_ += data.View()->deprecatedByteLengthAsUnsigned();
+  if (!(base::CheckedNumeric<unsigned>(buffered_amount_) +
+        data.View()->byteLengthAsSizeT())
+           .IsValid()) {
+    ThrowBufferOverflowException(&exception_state);
+    return;
+  }
+  buffered_amount_ += data.View()->byteLengthAsSizeT();
   if (!SendRawData(static_cast<const char*>(data.View()->BaseAddress()),
-                   data.View()->deprecatedByteLengthAsUnsigned())) {
+                   data.View()->byteLengthAsSizeT())) {
     // TODO(https://crbug.com/937848): Don't throw an exception if data is
     // queued.
     ThrowCouldNotSendDataException(&exception_state);
@@ -406,15 +419,14 @@ void RTCDataChannel::send(Blob* data, ExceptionState& exception_state) {
 
 void RTCDataChannel::close() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (state_ == webrtc::DataChannelInterface::kClosing ||
+      state_ == webrtc::DataChannelInterface::kClosed) {
+    return;
+  }
+  closed_from_owner_ = true;
+  OnStateChange(webrtc::DataChannelInterface::kClosing);
   if (observer_)
     channel()->Close();
-  // Note that even though Close() will run synchronously, the readyState has
-  // not changed yet since the state changes that occurred on the signaling
-  // thread have been posted to this thread and will be delivered later.
-  // To work around this, we could have a nested loop here and deliver the
-  // callbacks before running from this function, but doing so can cause
-  // undesired side effects in webkit, so we don't, and instead rely on the
-  // user of the API handling readyState notifications.
 }
 
 const AtomicString& RTCDataChannel::InterfaceName() const {
@@ -422,10 +434,10 @@ const AtomicString& RTCDataChannel::InterfaceName() const {
 }
 
 ExecutionContext* RTCDataChannel::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
-void RTCDataChannel::ContextDestroyed(ExecutionContext*) {
+void RTCDataChannel::ContextDestroyed() {
   Dispose();
   stopped_ = true;
   state_ = webrtc::DataChannelInterface::kClosed;
@@ -438,9 +450,10 @@ bool RTCDataChannel::HasPendingActivity() const {
 
   // A RTCDataChannel object must not be garbage collected if its
   // * readyState is connecting and at least one event listener is registered
-  //   for open events, message events, error events, or close events.
+  //   for open events, message events, error events, closing events
+  //   or close events.
   // * readyState is open and at least one event listener is registered for
-  //   message events, error events, or close events.
+  //   message events, error events, closing events, or close events.
   // * readyState is closing and at least one event listener is registered for
   //   error events, or close events.
   // * underlying data transport is established and data is queued to be
@@ -451,7 +464,8 @@ bool RTCDataChannel::HasPendingActivity() const {
       has_valid_listeners |= HasEventListeners(event_type_names::kOpen);
       FALLTHROUGH;
     case webrtc::DataChannelInterface::kOpen:
-      has_valid_listeners |= HasEventListeners(event_type_names::kMessage);
+      has_valid_listeners |= HasEventListeners(event_type_names::kMessage) ||
+                             HasEventListeners(event_type_names::kClosing);
       FALLTHROUGH;
     case webrtc::DataChannelInterface::kClosing:
       has_valid_listeners |= HasEventListeners(event_type_names::kError) ||
@@ -471,7 +485,16 @@ bool RTCDataChannel::HasPendingActivity() const {
 void RTCDataChannel::Trace(Visitor* visitor) {
   visitor->Trace(scheduled_events_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
+}
+
+void RTCDataChannel::SetStateToOpenWithoutEvent() {
+  IncrementCounter(DataChannelCounters::kOpened);
+  state_ = webrtc::DataChannelInterface::kOpen;
+}
+
+void RTCDataChannel::DispatchOpenEvent() {
+  DispatchEvent(*Event::Create(event_type_names::kOpen));
 }
 
 void RTCDataChannel::OnStateChange(
@@ -481,15 +504,33 @@ void RTCDataChannel::OnStateChange(
   if (state_ == webrtc::DataChannelInterface::kClosed)
     return;
 
+  if (state_ == webrtc::DataChannelInterface::kClosing &&
+      state != webrtc::DataChannelInterface::kClosed) {
+    return;
+  }
+
+  if (state == state_) {
+    return;
+  }
+
   state_ = state;
 
   switch (state_) {
     case webrtc::DataChannelInterface::kOpen:
       IncrementCounter(DataChannelCounters::kOpened);
-      ScheduleDispatchEvent(Event::Create(event_type_names::kOpen));
+      DispatchEvent(*Event::Create(event_type_names::kOpen));
+      break;
+    case webrtc::DataChannelInterface::kClosing:
+      if (!closed_from_owner_) {
+        DispatchEvent(*Event::Create(event_type_names::kClosing));
+      }
       break;
     case webrtc::DataChannelInterface::kClosed:
-      ScheduleDispatchEvent(Event::Create(event_type_names::kClose));
+      if (!channel()->error().ok()) {
+        DispatchEvent(*MakeGarbageCollected<RTCErrorEvent>(
+            event_type_names::kError, channel()->error()));
+      }
+      DispatchEvent(*Event::Create(event_type_names::kClose));
       break;
     default:
       break;

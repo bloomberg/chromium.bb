@@ -6,68 +6,66 @@
 from blinkbuild.name_style_converter import NameStyleConverter
 from core.css.field_alias_expander import FieldAliasExpander
 import json5_generator
+from make_origin_trials import OriginTrialsWriter
 from name_utilities import enum_key_for_css_property, id_for_css_property
 from name_utilities import enum_key_for_css_property_alias, id_for_css_property_alias
-
 
 # These values are converted using CSSPrimitiveValue in the setter function,
 # if applicable.
 PRIMITIVE_TYPES = [
-    'short',
-    'unsigned short',
-    'int',
-    'unsigned int',
-    'unsigned',
-    'float',
+    'short', 'unsigned short', 'int', 'unsigned int', 'unsigned', 'float',
     'LineClampValue'
 ]
 
 
-# Check properties parameters are valid.
-# TODO(jiameng): add more flag checks later.
-def check_property_parameters(property_to_check):
-    # Only longhand properties can be interpolable.
-    if property_to_check['longhands']:
-        assert not(property_to_check['interpolable']), \
-            'Shorthand property (' + property_to_check['name'] + ') ' \
-            'cannot be interpolable'
-    if property_to_check['longhands']:
-        assert 'parseSingleValue' not in property_to_check['property_methods'], \
-            'Shorthand property (' + property_to_check['name'] + ') ' \
-            'should not implement parseSingleValue'
-    else:
-        assert 'parseShorthand' not in property_to_check['property_methods'], \
-            'Longhand property (' + property_to_check['name'] + ') ' \
-            'should not implement parseShorthand'
-    assert property_to_check['is_descriptor'] or \
-        property_to_check['is_property'], \
-        '{} must be a property, descriptor, or both'.format(
-            property_to_check['name'])
-    if property_to_check['field_template'] is not None:
-        assert not property_to_check['longhands'], \
-            "Shorthand '{}' cannot have a field_template.".format(
-                property_to_check['name'])
-    if property_to_check['mutable']:
-        assert property_to_check['field_template'] == 'monotonic_flag', \
-            'mutable keyword only implemented for monotonic_flag'
-    if property_to_check['alias_for']:
-        assert not property_to_check['is_internal'], \
-            'Internal aliases is not supported'
+def validate_property(prop):
+    name = prop['name']
+    has_method = lambda x: x in prop['property_methods']
+    assert prop['is_property'] or prop['is_descriptor'], \
+        'Entry must be a property, descriptor, or both [%s]' % name
+    assert not prop['interpolable'] or prop['is_longhand'], \
+        'Only longhands can be interpolable [%s]' % name
+    assert not has_method('ParseSingleValue') or prop['is_longhand'], \
+        'Only longhands can implement ParseSingleValue [%s]' % name
+    assert not has_method('ParseShorthand') or prop['is_shorthand'], \
+        'Only shorthands can implement ParseShorthand [%s]' % name
+    assert not prop['field_template'] or prop['is_longhand'], \
+        'Only longhands can have a field_template [%s]' % name
+    assert not prop['valid_for_first_letter'] or prop['is_longhand'], \
+        'Only longhands can be valid_for_first_letter [%s]' % name
+    assert not prop['valid_for_cue'] or prop['is_longhand'], \
+        'Only longhands can be valid_for_cue [%s]' % name
+    assert not prop['valid_for_marker'] or prop['is_longhand'], \
+        'Only longhands can be valid_for_marker [%s]' % name
+
+
+def validate_alias(alias):
+    name = alias['name']
+    is_internal = lambda x: x['name'].original.startswith('-internal-')
+    assert not alias['runtime_flag'], \
+        'Runtime flags are not supported for aliases [%s]' % name
+    assert not is_internal(alias), \
+        'Internal aliases not supported [%s]' % name
+
+
+def validate_field(field):
+    name = field['name']
+    assert not field['mutable'] or field['field_template'] == 'monotonic_flag',\
+        'mutable requires field_template:monotonic_flag [%s]' % name
 
 
 class CSSProperties(object):
     def __init__(self, file_paths):
-        assert len(file_paths) >= 2, \
-            "CSSProperties at least needs both css_properties.json5 and \
-            computed_style_field_aliases.json5 to function"
+        assert len(file_paths) >= 3, \
+            "CSSProperties at least needs both css_properties.json5, \
+            computed_style_field_aliases.json5 and \
+            runtime_enabled_features.json5 to function"
 
         # computed_style_field_aliases.json5. Used to expand out parameters used
         # in the various generators for ComputedStyle.
         self._field_alias_expander = FieldAliasExpander(file_paths[1])
 
-        # CSSPropertyValueMetadata assumes that there are at most 1024
-        # properties + aliases.
-        self._alias_offset = 512
+        self._alias_offset = 1024
         # 0: CSSPropertyID::kInvalid
         # 1: CSSPropertyID::kVariable
         self._first_enum_value = 2
@@ -85,7 +83,15 @@ class CSSProperties(object):
         css_properties_file = json5_generator.Json5File.load_from_files(
             [file_paths[0]])
         self._default_parameters = css_properties_file.parameters
-        self.add_properties(css_properties_file.name_dictionaries)
+        # Map of feature name -> origin trial feature name
+        origin_trial_features = {}
+        # TODO(crbug/1031309): Refactor OriginTrialsWriter to reuse logic here.
+        origin_trials_writer = OriginTrialsWriter([file_paths[2]], "")
+        for feature in origin_trials_writer.origin_trial_features:
+            origin_trial_features[str(feature['name'])] = True
+
+        self.add_properties(css_properties_file.name_dictionaries,
+                            origin_trial_features)
 
         assert self._first_enum_value + len(self._properties_by_id) < \
             self._alias_offset, \
@@ -96,35 +102,45 @@ class CSSProperties(object):
 
         # Process extra files passed in.
         self._extra_fields = []
-        for i in range(2, len(file_paths)):
+        for i in range(3, len(file_paths)):
             fields = json5_generator.Json5File.load_from_files(
-                [file_paths[i]],
-                default_parameters=self._default_parameters)
+                [file_paths[i]], default_parameters=self._default_parameters)
             self._extra_fields.extend(fields.name_dictionaries)
         for field in self._extra_fields:
             self.expand_parameters(field)
+            validate_field(field)
 
-    def add_properties(self, properties):
+    def add_properties(self, properties, origin_trial_features):
         for property_ in properties:
             self._properties_by_name[property_['name'].original] = property_
 
         for property_ in properties:
+            property_['is_shorthand'] = \
+                property_['is_property'] and bool(property_['longhands'])
+            property_['is_longhand'] = \
+                property_['is_property'] and not property_['is_shorthand']
             self.expand_visited(property_)
+            property_['in_origin_trial'] = False
+            self.expand_origin_trials(property_, origin_trial_features)
+            self.expand_surrogate(property_)
 
         self._aliases = [
-            property_ for property_ in properties if property_['alias_for']]
+            property_ for property_ in properties if property_['alias_for']
+        ]
         self._shorthands = [
-            property_ for property_ in properties if property_['longhands']]
+            property_ for property_ in properties if property_['longhands']
+        ]
         self._longhands = [
-            property_ for property_ in properties if (
-                not property_['alias_for'] and not property_['longhands'])]
+            property_ for property_ in properties
+            if (not property_['alias_for'] and not property_['longhands'])
+        ]
 
         # Sort the properties by priority, then alphabetically. Ensure that
         # the resulting order is deterministic.
         # Sort properties by priority, then alphabetically.
         for property_ in self._longhands + self._shorthands:
             self.expand_parameters(property_)
-            check_property_parameters(property_)
+            validate_property(property_)
             # This order must match the order in CSSPropertyPriority.h.
             priority_numbers = {'Animation': 0, 'High': 1, 'Low': 2}
             priority = priority_numbers[property_['priority']]
@@ -159,6 +175,12 @@ class CSSProperties(object):
         self._properties_including_aliases = self._longhands + \
             self._shorthands + self._aliases
 
+    def expand_origin_trials(self, property_, origin_trial_features):
+        if not property_['runtime_flag']:
+            return
+        if property_['runtime_flag'] in origin_trial_features:
+            property_['in_origin_trial'] = True
+
     def expand_visited(self, property_):
         if not property_['visited_property_for']:
             return
@@ -172,18 +194,27 @@ class CSSProperties(object):
             'A property may not have multiple visited properties'
         unvisited_property['visited_property'] = property_
 
+    def expand_surrogate(self, property_):
+        if not property_['surrogate_for']:
+            return
+        assert property_['surrogate_for'] in self._properties_by_name, \
+            'surrogate_for must name a property'
+        # Upgrade 'surrogate_for' to property reference.
+        property_['surrogate_for'] = self._properties_by_name[
+            property_['surrogate_for']]
+
     def expand_aliases(self):
         for i, alias in enumerate(self._aliases):
-            assert not alias['runtime_flag'], \
-                "Property '{}' is an alias with a runtime_flag, "\
-                "but runtime flags do not currently work for aliases.".format(
-                    alias['name'])
-            aliased_property = self._properties_by_id[
-                id_for_css_property(alias['alias_for'])]
+            validate_alias(alias)
+            aliased_property = self._properties_by_id[id_for_css_property(
+                alias['alias_for'])]
+            aliased_property.setdefault('aliases', [])
+            aliased_property['aliases'].append(alias['name'].original)
             updated_alias = aliased_property.copy()
             updated_alias['name'] = alias['name']
             updated_alias['alias_for'] = alias['alias_for']
-            updated_alias['aliased_property'] = aliased_property['name'].to_upper_camel_case()
+            updated_alias['aliased_property'] = aliased_property[
+                'name'].to_upper_camel_case()
             updated_alias['property_id'] = id_for_css_property_alias(
                 alias['name'])
             updated_alias['enum_key'] = enum_key_for_css_property_alias(
@@ -217,23 +248,26 @@ class CSSProperties(object):
         set_if_none(property_, 'name_for_methods', method_name)
         set_if_none(property_, 'type_name', 'E' + method_name)
         set_if_none(
-            property_,
-            'getter',
-            method_name if simple_type_name != method_name else 'Get' + method_name)
+            property_, 'getter', method_name
+            if simple_type_name != method_name else 'Get' + method_name)
         set_if_none(property_, 'setter', 'Set' + method_name)
         if property_['inherited']:
-            property_['is_inherited_setter'] = 'Set' + method_name + 'IsInherited'
+            property_['is_inherited_setter'] = (
+                'Set' + method_name + 'IsInherited')
+        property_['is_animation_property'] = (
+            property_['priority'] == 'Animation')
 
         # Figure out whether this property should have style builders at all.
         # E.g. shorthands do not get style builders.
-        property_['style_builder_declare'] = (property_['is_property'] and
-                                              not property_['longhands'])
+        property_['style_builder_declare'] = (property_['is_property']
+                                              and not property_['longhands'])
 
         # Figure out whether we should generate style builder implementations.
         for x in ['initial', 'inherit', 'value']:
             suppressed = x in property_['style_builder_custom_functions']
             declared = property_['style_builder_declare']
-            property_['style_builder_generate_%s' % x] = declared and not suppressed
+            property_['style_builder_generate_%s' % x] = (declared
+                                                          and not suppressed)
 
         # Expand StyleBuilderConverter params where necessary.
         if property_['type_name'] in PRIMITIVE_TYPES:
@@ -241,7 +275,8 @@ class CSSProperties(object):
         else:
             set_if_none(property_, 'converter', 'CSSIdentifierValue')
 
-        assert not property_['alias_for'], 'Use expand_aliases to expand aliases'
+        assert not property_['alias_for'], \
+            'Use expand_aliases to expand aliases'
         if not property_['longhands']:
             property_['superclass'] = 'Longhand'
             property_['namespace_group'] = 'Longhand'
@@ -254,13 +289,13 @@ class CSSProperties(object):
             self._field_alias_expander.expand_field_alias(property_)
 
             type_name = property_['type_name']
-            if (property_['field_template'] == 'keyword' or
-                    property_['field_template'] == 'multi_keyword'):
+            if (property_['field_template'] == 'keyword'
+                    or property_['field_template'] == 'multi_keyword'):
                 default_value = (type_name + '::' + NameStyleConverter(
                     property_['default_value']).to_enum_value())
-            elif (property_['field_template'] == 'external' or
-                  property_['field_template'] == 'primitive' or
-                  property_['field_template'] == 'pointer'):
+            elif (property_['field_template'] == 'external'
+                  or property_['field_template'] == 'primitive'
+                  or property_['field_template'] == 'pointer'):
                 default_value = property_['default_value']
             else:
                 assert property_['field_template'] == 'monotonic_flag', \
@@ -289,7 +324,8 @@ class CSSProperties(object):
             assert 'resolver' in options, 'resolver option is required'
             assert 'physical_group' in options, 'physical_group option is required'
             options['resolver_name'] = NameStyleConverter(options['resolver'])
-            options['physical_group_name'] = NameStyleConverter(options['physical_group'])
+            options['physical_group_name'] = NameStyleConverter(
+                options['physical_group'])
 
     @property
     def default_parameters(self):
@@ -313,7 +349,9 @@ class CSSProperties(object):
 
     @property
     def longhands_including_aliases(self):
-        return self._longhands + [x for x in self._aliases if not x['longhands']]
+        return self._longhands + [
+            x for x in self._aliases if not x['longhands']
+        ]
 
     @property
     def properties_by_id(self):

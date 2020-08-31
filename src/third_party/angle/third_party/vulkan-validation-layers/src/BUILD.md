@@ -65,6 +65,10 @@ resolved with the "install directory" override and are listed below. The
 "install directory" override can also be used to force the use of a specific
 version of that dependency.
 
+Alternatively, an automated method for obtaining and installing repo dependencies
+is provided, and described below, in
+[Building Dependent Repositories...](#building-dependent-repositories-with-known-good-revisions)
+
 #### Vulkan-Headers
 
 This repository has a required dependency on the
@@ -88,6 +92,19 @@ file. Ensure that the `update_glslang_sources.py` script has been run as part
 of building glslang. You must also take note of the glslang install directory
 and pass it on the CMake command line for building this repository, as
 described below.
+
+#### SPIRV-Headers
+
+This repository has a required dependency on the
+[SPIRV-headers repository](https://github.com/KhronosGroup/SPIRV-Headers).
+The SPIRV-headers repository is required because it supports components that are
+required to build the validation layers. You must clone the SPIRV-headers repository
+and build its `install` target. Follow the build instructions in the SPIRV-headers
+[README.md](https://github.com/KhronosGroup/SPIRV-Headers/blob/master/README.md)
+file. You must also take note of the SPIRV-headers install directory
+and pass it on the CMake command line for building this repository, as
+described below.
+
 
 #### Google Test
 
@@ -173,6 +190,11 @@ specific requirements for configuring and building these components.
 
 - You may need to adjust some of the CMake options based on your platform. See
   the platform-specific sections later in this document.
+- When using update_deps.py to change architectures (x64, Win32...)
+  or build configurations (debug, release...) it is strongly recommended to
+  add the '--clean-repo' parameter. This ensures compatibility among dependent
+  components.
+  dependent components will produce consistent build artifacts.
 - The `update_deps.py` script fetches and builds the dependent repositories in
   the current directory when it is invoked. In this case, they are built in
   the `build` directory.
@@ -272,7 +294,8 @@ work with the solution interactively.
     mkdir build
     cd build
     cmake -A x64 -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
-                 -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir ..
+                 -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
+                 -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir ..
     cmake --build .
 
 The above commands instruct CMake to find and use the default Visual Studio
@@ -291,7 +314,8 @@ create a build directory and generate the Visual Studio project files:
     mkdir build
     cd build
     cmake -A x64 -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
-                 -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir ..
+                 -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
+                 -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir ..
 
 > Note: The `..` parameter tells `cmake` the location of the top of the
 > repository. If you place your build directory someplace else, you'll need to
@@ -424,7 +448,7 @@ repository to other Linux distributions.
     sudo apt-get install git build-essential libx11-xcb-dev \
         libxkbcommon-dev libwayland-dev libxrandr-dev \
         libegl1-mesa-dev
-		
+
 ##### Required package for Ubuntu 18.04 users
 
 For python2 users
@@ -446,7 +470,8 @@ CMake with the `--build` option or `make` to build from the command line.
     mkdir build
     cd build
     cmake -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
-          -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir ..
+          -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
+          -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir ..
     make
 
 See below for the details.
@@ -462,6 +487,7 @@ create a build directory and generate the make files.
     cmake -DCMAKE_BUILD_TYPE=Debug \
           -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
           -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
+          -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
           -DCMAKE_INSTALL_PREFIX=install ..
 
 > Note: The `..` parameter tells `cmake` the location of the top of the
@@ -683,6 +709,8 @@ tools.
     cd build-android
     ./build_all.sh
 
+> **NOTE:** By default, the `build_all.sh` script will build for all Android ABI variations. To **speed up the build time** if you know your target(s), set `APP_ABI` in both [build-android/jni/Application.mk](build-android/jni/Application.mk) and [build-android/jni/shaderc/Application.mk](build-android/jni/shaderc/Application.mk) to the desired [Android ABI](https://developer.android.com/ndk/guides/application_mk#app_abi)
+
 Resulting validation layer binaries will be in build-android/libs. Test and
 demo APKs can be installed on production devices with:
 
@@ -729,6 +757,10 @@ Alternatively, you can use the test_APK script to install and run the layer
 validation tests:
 
     test_APK.sh -s <serial number> -p <plaform name> -f <gtest_filter>
+
+To view to logging while running in a separate terminal run
+
+    adb logcat -c && adb logcat *:S VulkanLayerValidationTests
 
 ## Building on MacOS
 
@@ -778,6 +810,7 @@ build is:
     cd build
     cmake -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
           -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
+          -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
           -DCMAKE_BUILD_TYPE=Debug ..
     make
 
@@ -794,6 +827,7 @@ To create and open an Xcode project:
     cd build-xcode
     cmake -DVULKAN_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
           -DGLSLANG_INSTALL_DIR=absolute_path_to_install_dir \
+          -DSPIRV_HEADERS_INSTALL_DIR=absolute_path_to_install_dir \
           -GXcode ..
     open VULKAN.xcodeproj
 

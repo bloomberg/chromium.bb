@@ -7,7 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 
 class Profile;
 
@@ -36,9 +36,14 @@ class AppRegistryController {
   virtual void SetAppUserDisplayMode(const AppId& app_id,
                                      DisplayMode display_mode) = 0;
 
-  virtual void SetAppIsLocallyInstalledForTesting(
-      const AppId& app_id,
-      bool is_locally_installed) = 0;
+  virtual void SetAppIsDisabled(const AppId& app_id, bool is_disabled) = 0;
+
+  // TODO(crbug.com/897314): Finish experiment by legitimising it as a
+  // DisplayMode or removing entirely.
+  void SetExperimentalTabbedWindowMode(const AppId& app_id, bool enabled);
+
+  virtual void SetAppIsLocallyInstalled(const AppId& app_id,
+                                        bool is_locally_installed) = 0;
 
   // Safe downcast:
   virtual WebAppSyncBridge* AsWebAppSyncBridge() = 0;

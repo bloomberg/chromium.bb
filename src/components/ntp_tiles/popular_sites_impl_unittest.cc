@@ -117,7 +117,7 @@ class PopularSitesTest : public ::testing::Test {
     auto sites_value = std::make_unique<base::ListValue>();
     for (const TestPopularSite& site : sites) {
       auto site_value = std::make_unique<base::DictionaryValue>();
-      for (const std::pair<std::string, std::string>& kv : site) {
+      for (const std::pair<const std::string, std::string>& kv : site) {
         if (kv.first == kTitleSource) {
           int source;
           bool convert_success = base::StringToInt(kv.second, &source);
@@ -187,7 +187,7 @@ class PopularSitesTest : public ::testing::Test {
     base::RunLoop loop;
     base::Optional<bool> save_success;
     if (popular_sites->MaybeStartFetch(
-            force_download, base::Bind(
+            force_download, base::BindOnce(
                                 [](base::Optional<bool>* save_success,
                                    base::RunLoop* loop, bool success) {
                                   save_success->emplace(success);
@@ -326,7 +326,7 @@ TEST_F(PopularSitesTest, ProvidesDefaultSitesUntilCallbackReturns) {
   base::Optional<bool> save_success = false;
 
   bool callback_was_scheduled = popular_sites->MaybeStartFetch(
-      /*force_download=*/true, base::Bind(
+      /*force_download=*/true, base::BindOnce(
                                    [](base::Optional<bool>* save_success,
                                       base::RunLoop* loop, bool success) {
                                      save_success->emplace(success);

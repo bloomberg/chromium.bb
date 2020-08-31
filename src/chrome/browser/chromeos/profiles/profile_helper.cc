@@ -4,10 +4,15 @@
 
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 
+#include <set>
+#include <string>
+#include <vector>
+
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
@@ -15,9 +20,12 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chromeos/base/file_flusher.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -26,16 +34,36 @@
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
+#include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
 
 namespace chromeos {
 
 namespace {
+
+// This array contains a subset of explicitly whitelist extensions that, which
+// are defined in extensions/common/api/_behavior_features.json. The extension
+// is treated as risky if it has some UI elements which remain accessible
+// after the signin was completed.
+const char* kNonRiskyExtensionsIdsHashes[] = {
+    "E24F1786D842E91E74C27929B0B3715A4689A473",  // Gnubby component extension
+    "6F9E349A0561C78A0D3F41496FE521C5151C7F71",  // Gnubby app
+    "8EBDF73405D0B84CEABB8C7513C9B9FA9F1DC2CE",  // Genius app (help)
+    "06BE211D5F014BAB34BC22D9DDA09C63A81D828E",  // Chrome OS XKB
+    "3F50C3A83839D9C76334BCE81CDEC06174F266AF",  // Virtual Keyboard
+    "2F47B526FA71F44816618C41EC55E5EE9543FDCC",  // Braille Keyboard
+    "86672C8D7A04E24EFB244BF96FE518C4C4809F73",  // Speech synthesis
+    "1CF709D51B2B96CF79D00447300BD3BFBE401D21",  // Mobile activation
+    "40FF1103292F40C34066E023B8BE8CAE18306EAE",  // Chromeos help
+    "3C654B3B6682CA194E75AD044CEDE927675DDEE8",  // Easy unlock
+    "2FCBCE08B34CCA1728A85F1EFBD9A34DD2558B2E",  // ChromeVox
+};
 
 // As defined in /chromeos/dbus/cryptohome/cryptohome_client.cc.
 static const char kUserIdHashSuffix[] = "-hash";
@@ -88,19 +116,90 @@ bool IsLockScreenAppProfilePath(const base::FilePath& profile_path) {
 bool ProfileHelper::enable_profile_to_user_testing = false;
 bool ProfileHelper::always_return_primary_user_for_testing = false;
 
+class ProfileHelperImpl : public ProfileHelper,
+                          public content::BrowsingDataRemover::Observer,
+                          public OAuth2LoginManager::Observer {
+ public:
+  ProfileHelperImpl();
+  ~ProfileHelperImpl() override;
+
+  void ProfileStartup(Profile* profile) override;
+  base::FilePath GetActiveUserProfileDir() override;
+  void Initialize() override;
+  void ClearSigninProfile(const base::Closure& on_clear_callback) override;
+
+  Profile* GetProfileByAccountId(const AccountId& account_id) override;
+  Profile* GetProfileByUser(const user_manager::User* user) override;
+
+  Profile* GetProfileByUserUnsafe(const user_manager::User* user) override;
+
+  const user_manager::User* GetUserByProfile(
+      const Profile* profile) const override;
+  user_manager::User* GetUserByProfile(Profile* profile) const override;
+
+  void SetActiveUserIdForTesting(const std::string& user_id) override;
+
+  void FlushProfile(Profile* profile) override;
+
+  void SetProfileToUserMappingForTesting(user_manager::User* user) override;
+  void SetUserToProfileMappingForTesting(const user_manager::User* user,
+                                         Profile* profile) override;
+  void RemoveUserFromListForTesting(const AccountId& account_id) override;
+
+ private:
+  // BrowsingDataRemover::Observer implementation:
+  void OnBrowsingDataRemoverDone() override;
+
+  // OAuth2LoginManager::Observer overrides.
+  void OnSessionRestoreStateChanged(
+      Profile* user_profile,
+      OAuth2LoginManager::SessionRestoreState state) override;
+
+  // user_manager::UserManager::UserSessionStateObserver implementation:
+  void ActiveUserHashChanged(const std::string& hash) override;
+
+  // Called when signin profile is cleared.
+  void OnSigninProfileCleared();
+
+  // Identifies path to active user profile on Chrome OS.
+  std::string active_user_id_hash_;
+
+  // List of callbacks called after signin profile clearance.
+  std::vector<base::Closure> on_clear_callbacks_;
+
+  // Called when a single stage of profile clearing is finished.
+  base::Closure on_clear_profile_stage_finished_;
+
+  // A currently running browsing data remover.
+  content::BrowsingDataRemover* browsing_data_remover_ = nullptr;
+
+  // Used for testing by unit tests and FakeUserManager/MockUserManager.
+  std::map<const user_manager::User*, Profile*> user_to_profile_for_testing_;
+
+  // When this list is not empty GetUserByProfile() will find user that has
+  // the same user_id as |profile|->GetProfileName().
+  user_manager::UserList user_list_for_testing_;
+
+  std::unique_ptr<FileFlusher> profile_flusher_;
+
+  base::WeakPtrFactory<ProfileHelperImpl> weak_factory_{this};
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // ProfileHelper, public
 
-ProfileHelper::ProfileHelper() : browsing_data_remover_(nullptr) {}
+ProfileHelper::ProfileHelper() {}
 
 ProfileHelper::~ProfileHelper() {
   // Checking whether UserManager is initialized covers case
   // when ScopedTestUserManager is used.
   if (user_manager::UserManager::IsInitialized())
     user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
+}
 
-  if (browsing_data_remover_)
-    browsing_data_remover_->RemoveObserver(this);
+// static
+std::unique_ptr<ProfileHelper> ProfileHelper::CreateInstance() {
+  return std::make_unique<ProfileHelperImpl>();
 }
 
 // static
@@ -146,8 +245,13 @@ base::FilePath ProfileHelper::GetSigninProfileDir() {
 // static
 Profile* ProfileHelper::GetSigninProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
+  // |profile_manager| could be null in tests.
+  if (!profile_manager) {
+    return nullptr;
+  }
+
   return profile_manager->GetProfile(GetSigninProfileDir())
-      ->GetOffTheRecordProfile();
+      ->GetPrimaryOTRProfile();
 }
 
 // static
@@ -281,12 +385,36 @@ bool ProfileHelper::IsRegularProfilePath(const base::FilePath& profile_path) {
          !IsLockScreenAppProfilePath(profile_path);
 }
 
-void ProfileHelper::ProfileStartup(Profile* profile) {
+// static
+void ProfileHelper::SetProfileToUserForTestingEnabled(bool enabled) {
+  enable_profile_to_user_testing = enabled;
+}
+
+// static
+void ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(bool value) {
+  always_return_primary_user_for_testing = value;
+  ProfileHelper::SetProfileToUserForTestingEnabled(value);
+}
+
+// static
+std::string ProfileHelper::GetUserIdHashByUserIdForTesting(
+    const std::string& user_id) {
+  return user_id + kUserIdHashSuffix;
+}
+
+ProfileHelperImpl::ProfileHelperImpl() {}
+
+ProfileHelperImpl::~ProfileHelperImpl() {
+  if (browsing_data_remover_)
+    browsing_data_remover_->RemoveObserver(this);
+}
+
+void ProfileHelperImpl::ProfileStartup(Profile* profile) {
   // Initialize Chrome OS preferences like touch pad sensitivity. For the
   // preferences to work in the guest mode, the initialization has to be
-  // done after |profile| is switched to the incognito profile (which
+  // done after |profile| is switched to the off-the-record profile (which
   // is actually GuestSessionProfile in the guest mode). See the
-  // GetOffTheRecordProfile() call above.
+  // GetPrimaryOTRProfile() call above.
   profile->InitChromeOSPreferences();
 
   // Add observer so we can see when the first profile's session restore is
@@ -302,15 +430,16 @@ void ProfileHelper::ProfileStartup(Profile* profile) {
   }
 }
 
-base::FilePath ProfileHelper::GetActiveUserProfileDir() {
+base::FilePath ProfileHelperImpl::GetActiveUserProfileDir() {
   return ProfileHelper::GetUserProfileDir(active_user_id_hash_);
 }
 
-void ProfileHelper::Initialize() {
+void ProfileHelperImpl::Initialize() {
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
-void ProfileHelper::ClearSigninProfile(const base::Closure& on_clear_callback) {
+void ProfileHelperImpl::ClearSigninProfile(
+    const base::Closure& on_clear_callback) {
   on_clear_callbacks_.push_back(on_clear_callback);
 
   // Profile is already clearing.
@@ -319,13 +448,14 @@ void ProfileHelper::ClearSigninProfile(const base::Closure& on_clear_callback) {
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   // Check if signin profile was loaded.
-  if (!profile_manager->GetProfileByPath(GetSigninProfileDir())) {
+  if (!profile_manager ||
+      !profile_manager->GetProfileByPath(GetSigninProfileDir())) {
     OnSigninProfileCleared();
     return;
   }
-  on_clear_profile_stage_finished_ =
-      base::BarrierClosure(3, base::Bind(&ProfileHelper::OnSigninProfileCleared,
-                                         weak_factory_.GetWeakPtr()));
+  on_clear_profile_stage_finished_ = base::BarrierClosure(
+      3, base::BindOnce(&ProfileHelperImpl::OnSigninProfileCleared,
+                        weak_factory_.GetWeakPtr()));
   LOG_ASSERT(!browsing_data_remover_);
   browsing_data_remover_ =
       content::BrowserContext::GetBrowsingDataRemover(GetSigninProfile());
@@ -350,9 +480,27 @@ void ProfileHelper::ClearSigninProfile(const base::Closure& on_clear_callback) {
           &WrapAsBrowsersCloseCallback,
           on_clear_profile_stage_finished_) /* on_close_aborted */,
       true /* skip_beforeunload */);
+
+  // Unload all extensions that could possibly leak the SigninProfile for
+  // unauthorized usage.
+  // TODO(https://crbug.com/1045929): This also can be fixed by restricting URLs
+  //                                  or browser windows from opening.
+  const std::set<std::string> allowed_ids_hashes(
+      std::begin(kNonRiskyExtensionsIdsHashes),
+      std::end(kNonRiskyExtensionsIdsHashes));
+  auto* component_loader = extensions::ExtensionSystem::Get(GetSigninProfile())
+                               ->extension_service()
+                               ->component_loader();
+  const std::vector<std::string> loaded_extensions =
+      component_loader->GetRegisteredComponentExtensionsIds();
+  for (const auto& el : loaded_extensions) {
+    const std::string hex_hash = crx_file::id_util::HashedIdInHex(el);
+    if (!allowed_ids_hashes.count(hex_hash))
+      component_loader->Remove(el);
+  }
 }
 
-Profile* ProfileHelper::GetProfileByAccountId(const AccountId& account_id) {
+Profile* ProfileHelperImpl::GetProfileByAccountId(const AccountId& account_id) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(account_id);
 
@@ -364,7 +512,7 @@ Profile* ProfileHelper::GetProfileByAccountId(const AccountId& account_id) {
   return GetProfileByUser(user);
 }
 
-Profile* ProfileHelper::GetProfileByUser(const user_manager::User* user) {
+Profile* ProfileHelperImpl::GetProfileByUser(const user_manager::User* user) {
   // This map is non-empty only in tests.
   if (!user_to_profile_for_testing_.empty()) {
     std::map<const user_manager::User*, Profile*>::const_iterator it =
@@ -378,14 +526,15 @@ Profile* ProfileHelper::GetProfileByUser(const user_manager::User* user) {
   Profile* profile = GetProfileByUserIdHash(user->username_hash());
 
   // GetActiveUserProfile() or GetProfileByUserIdHash() returns a new instance
-  // of ProfileImpl(), but actually its OffTheRecordProfile() should be used.
+  // of ProfileImpl(), but actually its off-the-record profile should be used.
   if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
-    profile = profile->GetOffTheRecordProfile();
+    profile = profile->GetPrimaryOTRProfile();
 
   return profile;
 }
 
-Profile* ProfileHelper::GetProfileByUserUnsafe(const user_manager::User* user) {
+Profile* ProfileHelperImpl::GetProfileByUserUnsafe(
+    const user_manager::User* user) {
   // This map is non-empty only in tests.
   if (!user_to_profile_for_testing_.empty()) {
     std::map<const user_manager::User*, Profile*>::const_iterator it =
@@ -406,13 +555,13 @@ Profile* ProfileHelper::GetProfileByUserUnsafe(const user_manager::User* user) {
   }
 
   // GetActiveUserProfile() or GetProfileByUserIdHash() returns a new instance
-  // of ProfileImpl(), but actually its OffTheRecordProfile() should be used.
+  // of ProfileImpl(), but actually its off-the-record profile should be used.
   if (profile && user_manager::UserManager::Get()->IsLoggedInAsGuest())
-    profile = profile->GetOffTheRecordProfile();
+    profile = profile->GetPrimaryOTRProfile();
   return profile;
 }
 
-const user_manager::User* ProfileHelper::GetUserByProfile(
+const user_manager::User* ProfileHelperImpl::GetUserByProfile(
     const Profile* profile) const {
   if (!ProfileHelper::IsRegularProfile(profile)) {
     return nullptr;
@@ -471,12 +620,13 @@ const user_manager::User* ProfileHelper::GetUserByProfile(
              : NULL;
 }
 
-user_manager::User* ProfileHelper::GetUserByProfile(Profile* profile) const {
+user_manager::User* ProfileHelperImpl::GetUserByProfile(
+    Profile* profile) const {
   return const_cast<user_manager::User*>(
       GetUserByProfile(static_cast<const Profile*>(profile)));
 }
 
-void ProfileHelper::OnSigninProfileCleared() {
+void ProfileHelperImpl::OnSigninProfileCleared() {
   std::vector<base::Closure> callbacks;
   callbacks.swap(on_clear_callbacks_);
   for (const base::Closure& callback : callbacks) {
@@ -488,7 +638,7 @@ void ProfileHelper::OnSigninProfileCleared() {
 ////////////////////////////////////////////////////////////////////////////////
 // ProfileHelper, content::BrowsingDataRemover::Observer implementation:
 
-void ProfileHelper::OnBrowsingDataRemoverDone() {
+void ProfileHelperImpl::OnBrowsingDataRemoverDone() {
   LOG_ASSERT(browsing_data_remover_);
   browsing_data_remover_->RemoveObserver(this);
   browsing_data_remover_ = nullptr;
@@ -499,7 +649,7 @@ void ProfileHelper::OnBrowsingDataRemoverDone() {
 ////////////////////////////////////////////////////////////////////////////////
 // ProfileHelper, OAuth2LoginManager::Observer implementation:
 
-void ProfileHelper::OnSessionRestoreStateChanged(
+void ProfileHelperImpl::OnSessionRestoreStateChanged(
     Profile* user_profile,
     OAuth2LoginManager::SessionRestoreState state) {
   if (state == OAuth2LoginManager::SESSION_RESTORE_DONE ||
@@ -516,33 +666,23 @@ void ProfileHelper::OnSessionRestoreStateChanged(
 ////////////////////////////////////////////////////////////////////////////////
 // ProfileHelper, UserManager::UserSessionStateObserver implementation:
 
-void ProfileHelper::ActiveUserHashChanged(const std::string& hash) {
+void ProfileHelperImpl::ActiveUserHashChanged(const std::string& hash) {
   active_user_id_hash_ = hash;
 }
 
-void ProfileHelper::SetProfileToUserMappingForTesting(
+void ProfileHelperImpl::SetProfileToUserMappingForTesting(
     user_manager::User* user) {
   user_list_for_testing_.push_back(user);
 }
 
-// static
-void ProfileHelper::SetProfileToUserForTestingEnabled(bool enabled) {
-  enable_profile_to_user_testing = enabled;
-}
-
-// static
-void ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(bool value) {
-  always_return_primary_user_for_testing = value;
-  ProfileHelper::SetProfileToUserForTestingEnabled(value);
-}
-
-void ProfileHelper::SetUserToProfileMappingForTesting(
+void ProfileHelperImpl::SetUserToProfileMappingForTesting(
     const user_manager::User* user,
     Profile* profile) {
   user_to_profile_for_testing_[user] = profile;
 }
 
-void ProfileHelper::RemoveUserFromListForTesting(const AccountId& account_id) {
+void ProfileHelperImpl::RemoveUserFromListForTesting(
+    const AccountId& account_id) {
   auto it =
       std::find_if(user_list_for_testing_.begin(), user_list_for_testing_.end(),
                    [&account_id](const user_manager::User* user) {
@@ -552,17 +692,11 @@ void ProfileHelper::RemoveUserFromListForTesting(const AccountId& account_id) {
     user_list_for_testing_.erase(it);
 }
 
-// static
-std::string ProfileHelper::GetUserIdHashByUserIdForTesting(
-    const std::string& user_id) {
-  return user_id + kUserIdHashSuffix;
-}
-
-void ProfileHelper::SetActiveUserIdForTesting(const std::string& user_id) {
+void ProfileHelperImpl::SetActiveUserIdForTesting(const std::string& user_id) {
   active_user_id_hash_ = GetUserIdHashByUserIdForTesting(user_id);
 }
 
-void ProfileHelper::FlushProfile(Profile* profile) {
+void ProfileHelperImpl::FlushProfile(Profile* profile) {
   if (!profile_flusher_)
     profile_flusher_.reset(new FileFlusher);
 

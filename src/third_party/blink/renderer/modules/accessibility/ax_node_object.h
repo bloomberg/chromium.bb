@@ -36,6 +36,7 @@
 namespace blink {
 
 class AXObjectCacheImpl;
+class AXSVGRoot;
 class Element;
 class HTMLLabelElement;
 class Node;
@@ -44,7 +45,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
  public:
   AXNodeObject(Node*, AXObjectCacheImpl&);
   ~AXNodeObject() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   bool children_dirty_;
@@ -79,7 +80,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   Element* MouseButtonListener() const;
   bool IsNativeCheckboxOrRadio() const;
   void SetNode(Node*);
-  AXObject* CorrespondingControlForLabelElement() const;
+  AXObject* CorrespondingControlAXObjectForLabelElement() const;
+  AXObject* CorrespondingLabelAXObject() const;
   HTMLLabelElement* LabelElementContainer() const;
 
   //
@@ -88,29 +90,21 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   void Init() override;
   void Detach() override;
-  bool IsDetached() const override { return !node_; }
-  bool IsAXNodeObject() const final { return true; }
+  bool IsDetached() const override;
+  bool IsAXNodeObject() const final;
 
   // Check object role or purpose.
-  bool IsAnchor() const final;
   bool IsControllingVideoElement() const;
   bool IsMultiline() const override;
   bool IsEditable() const override { return IsNativeTextControl(); }
   bool ComputeIsEditableRoot() const override;
-  bool IsEmbeddedObject() const final;
   bool IsFieldset() const final;
-  bool IsHeading() const final;
   bool IsHovered() const final;
-  bool IsImage() const final;
   bool IsImageButton() const;
   bool IsInputImage() const final;
-  bool IsLink() const override;
   bool IsInPageLinkTarget() const override;
-  bool IsMenu() const final;
-  bool IsMenuButton() const final;
-  bool IsMeter() const final;
   bool IsMultiSelectable() const override;
-  bool IsNativeImage() const;
+  bool IsNativeImage() const final;
   bool IsNativeTextControl() const final;
   bool IsNonNativeTextControl() const final;
   bool IsOffScreen() const override;
@@ -121,7 +115,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool IsSpinButton() const override;
   bool IsNativeSlider() const override;
   bool IsNativeSpinButton() const override;
-  bool IsMoveableSplitter() const override;
 
   // Check object state.
   bool IsClickable() const final;
@@ -158,9 +151,12 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   KURL Url() const override;
   AXObject* ChooserPopup() const override;
   String StringValue() const override;
+  String TextFromDescendants(AXObjectSet& visited,
+                             bool recursive) const override;
 
   // ARIA attributes.
   ax::mojom::Role AriaRoleAttribute() const final;
+  bool HasAriaAttribute() const override;
 
   // AX name calculation.
   String GetName(ax::mojom::NameFrom&,
@@ -196,11 +192,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AXObject* RawFirstChild() const override;
   AXObject* RawNextSibling() const override;
   void AddChildren() override;
-  virtual void AddListMarker() {}
-  virtual void AddInlineTextBoxChildren(bool force) {}
-  virtual void AddImageMapChildren() {}
-  virtual void AddHiddenChildren() {}
-  virtual void AddPopupChildren() {}
 
   bool CanHaveChildren() const override;
   void AddChild(AXObject*);
@@ -236,6 +227,17 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   void ComputeAriaOwnsChildren(
       HeapVector<Member<AXObject>>& owned_children) const;
 
+  // Inline text boxes.
+  void LoadInlineTextBoxes() override;
+
+  // SVG.
+  bool IsSVGImage() const { return RemoteSVGRootElement(); }
+  AXSVGRoot* RemoteSVGRootElement() const;
+
+  virtual LayoutBoxModelObject* GetLayoutBoxModelObject() const {
+    return nullptr;
+  }
+
   FRIEND_TEST_ALL_PREFIXES(AccessibilityTest, SetNeedsToUpdateChildren);
   FRIEND_TEST_ALL_PREFIXES(AccessibilityTest, UpdateChildrenIfNecessary);
 
@@ -243,8 +245,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   Member<Node> node_;
 
   bool IsNativeCheckboxInMixedState() const;
-  String TextFromDescendants(AXObjectSet& visited,
-                             bool recursive) const override;
   String NativeTextAlternative(AXObjectSet& visited,
                                ax::mojom::NameFrom&,
                                AXRelatedObjectVector*,
@@ -252,6 +252,16 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                                bool* found_text_alternative) const;
   bool IsDescendantOfElementType(HashSet<QualifiedName>& tag_names) const;
   String PlaceholderFromNativeAttribute() const;
+
+  void AddInlineTextBoxChildren(bool force);
+  void AddImageMapChildren();
+  void AddHiddenChildren();
+  void AddPopupChildren();
+  void AddRemoteSVGChildren();
+  void AddTableChildren();
+  void AddValidationMessageChild();
+  // For some nodes, only LayoutBuilderTraversal visits the necessary children.
+  bool ShouldUseLayoutBuilderTraversal() const;
 
   DISALLOW_COPY_AND_ASSIGN(AXNodeObject);
 };

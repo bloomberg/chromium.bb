@@ -15,6 +15,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -189,14 +190,18 @@ void TetherNotificationPresenter::NotifySetupRequired(
   PA_LOG(VERBOSE) << "Displaying \"setup required\" notification. Notification "
                   << "ID = " << kSetupRequiredNotificationId;
 
+  // Persist this notification until acted upon or dismissed, so that the user
+  // is aware that they need to complete setup on their phone.
+  message_center::RichNotificationData rich_notification_data;
+  rich_notification_data.never_timeout = true;
+
   ShowNotification(CreateNotification(
       kSetupRequiredNotificationId,
       l10n_util::GetStringFUTF16(IDS_TETHER_NOTIFICATION_SETUP_REQUIRED_TITLE,
                                  base::ASCIIToUTF16(device_name)),
       l10n_util::GetStringFUTF16(IDS_TETHER_NOTIFICATION_SETUP_REQUIRED_MESSAGE,
                                  base::ASCIIToUTF16(device_name)),
-      GetImageForSignalStrength(signal_strength),
-      {} /* rich_notification_data */));
+      GetImageForSignalStrength(signal_strength), rich_notification_data));
 }
 
 void TetherNotificationPresenter::RemoveSetupRequiredNotification() {
@@ -252,8 +257,9 @@ void TetherNotificationPresenter::OnNotificationClicked(
       GetMetricValueForClickOnNotificationBody(notification_id),
       TetherNotificationPresenter::NOTIFICATION_INTERACTION_TYPE_MAX);
 
-  OpenSettingsAndRemoveNotification(chrome::kTetherSettingsSubPage,
-                                    notification_id);
+  OpenSettingsAndRemoveNotification(
+      chromeos::settings::mojom::kMobileDataNetworksSubpagePath,
+      notification_id);
 }
 
 TetherNotificationPresenter::NotificationInteractionType

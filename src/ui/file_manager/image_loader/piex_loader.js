@@ -8,21 +8,21 @@ console.log('[PiexLoader] wasm mode loaded');
  * Declares the piex-wasm Module interface. The Module has many interfaces
  * but only declare the parts required for PIEX work.
  * @typedef {{
- *   calledRun: boolean,
- *   onAbort: function((!Error|string)):undefined,
- *   HEAP8: !Uint8Array,
- *   _malloc: function(number):number,
- *   _free: function(number):undefined,
- *   image: function(number, number):PiexWasmImageResult
+ *  calledRun: boolean,
+ *  onAbort: function((!Error|string)):undefined,
+ *  HEAP8: !Uint8Array,
+ *  _malloc: function(number):number,
+ *  _free: function(number):undefined,
+ *  image: function(number, number):PiexWasmImageResult
  * }}
  */
-var PiexWasmModule;
+let PiexWasmModule;
 
 /**
  * |window| var Module defined in page <script src='piex/piex.js.wasm'>.
  * @type {PiexWasmModule}
  */
-var Module = window['Module'] || {};
+const PiexModule = window['Module'] || {};
 
 /**
  * Set true only if the wasm Module.onAbort() handler is called.
@@ -35,7 +35,7 @@ let wasmFailed = false;
  * the Module has failed and re-throws the error.
  * @throws {!Error|string}
  */
-Module.onAbort = (error) => {
+PiexModule.onAbort = (error) => {
   wasmFailed = true;
   throw error;
 };
@@ -49,7 +49,7 @@ Module.onAbort = (error) => {
  * broken Module state.
  */
 function wasmModuleFailed() {
-  if (wasmFailed || !Module.calledRun) {
+  if (wasmFailed || !PiexModule.calledRun) {
     console.error('[PiexLoader] wasmModuleFailed');
     setTimeout(chrome.runtime.reload, 0);
     return true;
@@ -57,24 +57,33 @@ function wasmModuleFailed() {
 }
 
 /**
- * @param {{id:number, thumbnail:!ArrayBuffer, orientation:number,
- *          colorSpace: ColorSpace, ifd:?string}}
- *     data The data returned from the piex wasm module.
+ * @typedef {{
+ *  thumbnail: !ArrayBuffer,
+ *  mimeType: (string|undefined),
+ *  orientation: number,
+ *  colorSpace: ColorSpace,
+ *  ifd: ?string
+ * }}
+ */
+let ImagePreviewResponseData;
+
+/**
+ * @param {!ImagePreviewResponseData} data The preview image data.
  * @constructor
  * @struct
  */
 function PiexLoaderResponse(data) {
   /**
-   * @public {number}
-   * @const
-   */
-  this.id = data.id;
-
-  /**
    * @public {!ArrayBuffer}
    * @const
    */
   this.thumbnail = data.thumbnail;
+
+  /**
+   * @public {string}
+   * @const
+   */
+  this.mimeType = data.mimeType || 'image/jpeg';
 
   /**
    * @public {!ImageOrientation}
@@ -90,7 +99,7 @@ function PiexLoaderResponse(data) {
   this.colorSpace = data.colorSpace;
 
   /**
-   * JSON encoded RAW image photographic details (Piex Wasm module only).
+   * JSON encoded RAW image photographic details.
    * @public {?string}
    * @const
    */
@@ -103,10 +112,7 @@ function PiexLoaderResponse(data) {
  * @struct
  */
 function PiexLoader() {
-  /**
-   * @private {number}
-   */
-  this.requestIdCount_ = 0;
+  // TODO(crbug.com/1039141): make this an ES6 class.
 }
 
 /**
@@ -178,16 +184,15 @@ function readFromFileSystem(url) {
  *  length:number
  * }}
  */
-var PiexWasmPreviewImageMetadata;
+let PiexWasmPreviewImageMetadata;
 
 /**
  * The piex wasm Module.image(<raw image source>,...) API returns |error|, or
  * else the source |preview| and/or |thumbnail| image metadata along with the
  * photographic |details| derived from the RAW image EXIF.
  *
- * FilesApp (and related) only use |preview| images. Preview images are JPEG.
- * The |thumbnail| images are small, lower-quality, JPEG or RGB format images
- * and are not currently used in FilesApp.
+ * The |preview| images are JPEG. The |thumbnail| images are smaller, lower-
+ * quality, JPEG or RGB format images.
  *
  * @typedef {{
  *  error:?string,
@@ -196,7 +201,7 @@ var PiexWasmPreviewImageMetadata;
  *  details:?Object
  * }}
  */
-var PiexWasmImageResult;
+let PiexWasmImageResult;
 
 /**
  * Piex wasm raw image preview image extractor.
@@ -204,16 +209,8 @@ var PiexWasmImageResult;
 class ImageBuffer {
   /**
    * @param {!ArrayBuffer} buffer - raw image source data.
-   * @param {number} id - caller-defined id.
    */
-  constructor(buffer, id) {
-    /**
-     * @type {number}
-     * @const
-     * @private
-     */
-    this.id = id;
-
+  constructor(buffer) {
     /**
      * @type {!Uint8Array}
      * @const
@@ -242,13 +239,13 @@ class ImageBuffer {
    * @throws {!Error}
    */
   process() {
-    this.memory = Module._malloc(this.length);
+    this.memory = PiexModule._malloc(this.length);
     if (!this.memory) {
       throw new Error('Image malloc failed: ' + this.length + ' bytes');
     }
 
-    Module.HEAP8.set(this.source, this.memory);
-    const result = Module.image(this.memory, this.length);
+    PiexModule.HEAP8.set(this.source, this.memory);
+    const result = PiexModule.image(this.memory, this.length);
     if (result.error) {
       throw new Error(result.error);
     }
@@ -258,25 +255,18 @@ class ImageBuffer {
 
   /**
    * Returns the preview image data. If no preview image was found, returns
-   * an empty preview image.
+   * the thumbnail image.
    *
    * @param {!PiexWasmImageResult} result
    *
    * @throws {!Error} Data access security error.
    *
-   * @return {{id:number, thumbnail:!ArrayBuffer, orientation:number,
-   *          colorSpace: ColorSpace, ifd:?string}}
+   * @return {!ImagePreviewResponseData}
    */
   preview(result) {
     const preview = result.preview;
     if (!preview) {
-      return {
-        thumbnail: new ArrayBuffer(0),
-        colorSpace: ColorSpace.SRGB,
-        orientation: 1,
-        id: this.id,
-        ifd: null,
-      };
+      return this.thumbnail_(result);
     }
 
     const offset = preview.offset;
@@ -288,10 +278,145 @@ class ImageBuffer {
     const view = new Uint8Array(this.source.buffer, offset, length);
     return {
       thumbnail: new Uint8Array(view).buffer,
+      mimeType: 'image/jpeg',
+      ifd: this.details(result, preview.orientation),
       orientation: preview.orientation,
       colorSpace: preview.colorSpace,
-      ifd: this.details(result),
-      id: this.id,
+    };
+  }
+
+  /**
+   * Returns the thumbnail image. If no thumbnail image was found, returns
+   * an empty thumbnail image.
+   *
+   * @param {!PiexWasmImageResult} result
+   *
+   * @throws {!Error} Data access security error.
+   *
+   * @return {!ImagePreviewResponseData}
+   */
+  thumbnail_(result) {
+    const thumbnail = result.thumbnail;
+    if (!thumbnail) {
+      return {
+        thumbnail: new ArrayBuffer(0),
+        colorSpace: ColorSpace.SRGB,
+        orientation: 1,
+        ifd: null,
+      };
+    }
+
+    if (thumbnail.format) {
+      return this.rgb_(result);
+    }
+
+    const offset = thumbnail.offset;
+    const length = thumbnail.length;
+    if (offset > this.length || (this.length - offset) < length) {
+      throw new Error('Thumbnail image access failed');
+    }
+
+    const view = new Uint8Array(this.source.buffer, offset, length);
+    return {
+      thumbnail: new Uint8Array(view).buffer,
+      mimeType: 'image/jpeg',
+      ifd: this.details(result, thumbnail.orientation),
+      orientation: thumbnail.orientation,
+      colorSpace: thumbnail.colorSpace,
+    };
+  }
+
+  /**
+   * Returns the RGB thumbnail. If no RGB thumbnail was found, returns
+   * an empty thumbnail image.
+   *
+   * @param {!PiexWasmImageResult} result
+   *
+   * @throws {!Error} Data access security error.
+   *
+   * @return {!ImagePreviewResponseData}
+   */
+  rgb_(result) {
+    const thumbnail = result.thumbnail;
+    if (!thumbnail || thumbnail.format !== 1) {
+      return {
+        thumbnail: new ArrayBuffer(0),
+        colorSpace: ColorSpace.SRGB,
+        orientation: 1,
+        ifd: null,
+      };
+    }
+
+    // Expect a width and height.
+    if (!thumbnail.width || !thumbnail.height) {
+      throw new Error('invalid image width or height');
+    }
+
+    const offset = thumbnail.offset;
+    const length = thumbnail.length;
+    if (offset > this.length || (this.length - offset) < length) {
+      throw new Error('Thumbnail image access failed');
+    }
+
+    const view = new Uint8Array(this.source.buffer, offset, length);
+
+    // Compute pixel row stride.
+    const rowPad = thumbnail.width & 3;
+    const rowStride = 3 * thumbnail.width + rowPad;
+
+    // Create bitmap image.
+    const pixelDataOffset = 14 + 40;
+    const fileSize = pixelDataOffset + rowStride * thumbnail.height;
+    const bitmap = new DataView(new ArrayBuffer(fileSize));
+
+    // BITMAPFILEHEADER 14 bytes.
+    bitmap.setUint8(0, 'B'.charCodeAt(0));
+    bitmap.setUint8(1, 'M'.charCodeAt(0));
+    bitmap.setUint32(2, fileSize /* bytes */, true);
+    bitmap.setUint32(6, /* Reserved */ 0, true);
+    bitmap.setUint32(10, pixelDataOffset, true);
+
+    // DIB BITMAPINFOHEADER 40 bytes.
+    bitmap.setUint32(14, /* HeaderSize */ 40, true);
+    bitmap.setInt32(18, thumbnail.width, true);
+    bitmap.setInt32(22, -thumbnail.height /* top-down DIB */, true);
+    bitmap.setInt16(26, /* ColorPlanes */ 1, true);
+    bitmap.setInt16(28, /* BitsPerPixel BI_RGB */ 24, true);
+    bitmap.setUint32(30, /* Compression: BI_RGB none */ 0, true);
+    bitmap.setUint32(34, /* ImageSize: 0 not compressed */ 0, true);
+    bitmap.setInt32(38, /* XPixelsPerMeter */ 0, true);
+    bitmap.setInt32(42, /* YPixelPerMeter */ 0, true);
+    bitmap.setUint32(46, /* TotalPalletColors */ 0, true);
+    bitmap.setUint32(50, /* ImportantColors */ 0, true);
+
+    // Write RGB row pixels in top-down DIB order.
+    let output = pixelDataOffset;
+    for (let i = 0, y = thumbnail.height; y > 0; --y) {
+      for (let x = thumbnail.width; x > 0; --x) {
+        const R = view[i++];
+        const G = view[i++];
+        const B = view[i++];
+        bitmap.setUint8(output++, B);  // B
+        bitmap.setUint8(output++, G);  // G
+        bitmap.setUint8(output++, R);  // R
+      }
+
+      switch (rowPad) {
+        case 3:
+          bitmap.setUint8(output++, 0);
+        case 2:
+          bitmap.setUint8(output++, 0);
+        case 1:
+          bitmap.setUint8(output++, 0);
+      }
+    }
+
+    return {
+      thumbnail: bitmap.buffer,
+      mimeType: 'image/bmp',
+      ifd: this.details(result, thumbnail.orientation),
+      orientation: thumbnail.orientation,
+      colorSpace: thumbnail.colorSpace,
     };
   }
 
@@ -302,15 +427,16 @@ class ImageBuffer {
    *
    * @private
    * @param {!PiexWasmImageResult} result
+   * @param {number} orientation - image EXIF orientation
    * @return {?string}
    */
-  details(result) {
+  details(result, orientation) {
     const details = result.details;
     if (!details) {
       return null;
     }
 
-    let format = {};
+    const format = {};
     for (const [key, value] of Object.entries(details)) {
       if (typeof value === 'string') {
         format[key] = value.replace(/\0+$/, '').trim();
@@ -323,6 +449,13 @@ class ImageBuffer {
       }
     }
 
+    const usesWidthAsHeight = orientation >= 5;
+    if (usesWidthAsHeight) {
+      const width = format.width;
+      format.width = format.height;
+      format.height = width;
+    }
+
     return JSON.stringify(format);
   }
 
@@ -330,7 +463,7 @@ class ImageBuffer {
    * Release resources.
    */
   close() {
-    Module._free(this.memory);
+    PiexModule._free(this.memory);
   }
 }
 
@@ -340,15 +473,14 @@ class ImageBuffer {
  * @return {!Promise<!PiexLoaderResponse>}
  */
 PiexLoader.prototype.load = function(url) {
-  const requestId = this.requestIdCount_++;
-
   let imageBuffer;
+
   return readFromFileSystem(url)
       .then((buffer) => {
         if (wasmModuleFailed() === true) {
           return Promise.reject('piex wasm module failed');
         }
-        imageBuffer = new ImageBuffer(buffer, requestId);
+        imageBuffer = new ImageBuffer(buffer);
         return imageBuffer.process();
       })
       .then((result) => {

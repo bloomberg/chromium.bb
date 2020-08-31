@@ -13,7 +13,9 @@
 
 #include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/gaia_id_hash.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -125,8 +127,7 @@ struct PasswordForm {
 
   // The renderer id of the username input element. It is set during the new
   // form parsing and not persisted.
-  uint32_t username_element_renderer_id =
-      FormFieldData::kNotSetFormControlRendererId;
+  FieldRendererId username_element_renderer_id;
 
   // True if the server-side classification believes that the field may be
   // pre-filled with a placeholder in the value attribute. It is set during
@@ -166,8 +167,7 @@ struct PasswordForm {
 
   // The renderer id of the password input element. It is set during the new
   // form parsing and not persisted.
-  uint32_t password_element_renderer_id =
-      FormFieldData::kNotSetFormControlRendererId;
+  FieldRendererId password_element_renderer_id;
 
   // The current password. Must be non-empty for PasswordForm instances that are
   // meant to be persisted to the password store.
@@ -175,14 +175,18 @@ struct PasswordForm {
   // When parsing an HTML form, this is typically empty.
   base::string16 password_value;
 
+  // The current encrypted password. Must be non-empty for PasswordForm
+  // instances retrieved from the password store or coming in a
+  // PasswordStoreChange that is not of type REMOVE.
+  std::string encrypted_password;
+
   // If the form was a sign-up or a change password form, the name of the input
   // element corresponding to the new password. Optional, and not persisted.
   base::string16 new_password_element;
 
   // The renderer id of the new password input element. It is set during the new
   // form parsing and not persisted.
-  uint32_t new_password_element_renderer_id =
-      FormFieldData::kNotSetFormControlRendererId;
+  FieldRendererId new_password_element_renderer_id;
 
   // The confirmation password element. Optional, only set on form parsing, and
   // not persisted.
@@ -190,8 +194,7 @@ struct PasswordForm {
 
   // The renderer id of the confirmation password input element. It is set
   // during the new form parsing and not persisted.
-  uint32_t confirmation_password_element_renderer_id =
-      FormFieldData::kNotSetFormControlRendererId;
+  FieldRendererId confirmation_password_element_renderer_id;
 
   // The new password. Optional, and not persisted.
   base::string16 new_password_value;
@@ -200,19 +203,10 @@ struct PasswordForm {
   // attribute. This is only used in parsed HTML forms.
   bool new_password_marked_by_site = false;
 
-  // True if this PasswordForm represents the last username/password login the
-  // user selected to log in to the site. If there is only one saved entry for
-  // the site, this will always be true, but when there are multiple entries
-  // the PasswordManager ensures that only one of them has a preferred bit set
-  // to true. Default to false.
-  //
-  // When parsing an HTML form, this is not used.
-  bool preferred = false;
-
   // When the login was last used by the user to login to the site. Defaults to
-  // |date_created|, except for passwords that were migrated from the
-  // |preferred| flag. Their default is set when migrating the login database to
-  // have the "date_last_used" column.
+  // |date_created|, except for passwords that were migrated from the now
+  // deprecated |preferred| flag. Their default is set when migrating the login
+  // database to have the "date_last_used" column.
   //
   // When parsing an HTML form, this is not used.
   base::Time date_last_used;
@@ -303,15 +297,21 @@ struct PasswordForm {
   // as signal for password generation eligibility.
   bool is_new_password_reliable = false;
 
+  // Serialized to prefs, so don't change numeric values!
   enum class Store {
     // Default value.
-    kNotSet,
+    kNotSet = 0,
     // Credential came from the profile (i.e. local) storage.
-    kProfileStore,
+    kProfileStore = 1,
     // Credential came from the Gaia-account-scoped storage.
-    kAccountStore
+    kAccountStore = 2
   };
   Store in_store = Store::kNotSet;
+
+  // Vector of hashes of the gaia id for users who prefer not to move this
+  // password form to their account. This list is used to suppress the move
+  // prompt for those users.
+  std::vector<GaiaIdHash> moving_blocked_for_list;
 
   // Return true if we consider this form to be a change password form.
   // We use only client heuristics, so it could include signup forms.

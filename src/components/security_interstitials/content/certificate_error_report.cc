@@ -183,6 +183,8 @@ CertificateErrorReport::CertificateErrorReport(
     bool require_rev_checking_local_anchors,
     bool enable_sha1_local_anchors,
     bool disable_symantec_enforcement,
+    const std::string& stapled_ocsp,
+    const std::string& sct_list,
     const net::CertVerifyResult& primary_result,
     const net::CertVerifyResult& trial_result,
     network::mojom::CertVerifierDebugInfoPtr debug_info)
@@ -209,6 +211,12 @@ CertificateErrorReport::CertificateErrorReport(
       enable_rev_checking, require_rev_checking_local_anchors,
       enable_sha1_local_anchors, disable_symantec_enforcement,
       trial_report->mutable_verify_flags());
+
+  if (!stapled_ocsp.empty())
+    trial_report->set_stapled_ocsp(stapled_ocsp);
+  if (!sct_list.empty())
+    trial_report->set_sct_list(sct_list);
+
 #if defined(OS_MACOSX)
   AddMacPlatformDebugInfoToReport(debug_info->mac_platform_debug_info,
                                   trial_report);
@@ -276,6 +284,10 @@ void CertificateErrorReport::SetInterstitialInfo(
           chrome_browser_ssl::CertLoggerInterstitialInfo::
               INTERSTITIAL_BLOCKED_INTERCEPTION);
       break;
+    case INTERSTITIAL_LEGACY_TLS:
+      interstitial_info->set_interstitial_reason(
+          chrome_browser_ssl::CertLoggerInterstitialInfo::
+              INTERSTITIAL_LEGACY_TLS);
   }
 
   interstitial_info->set_user_proceeded(proceed_decision == USER_PROCEEDED);

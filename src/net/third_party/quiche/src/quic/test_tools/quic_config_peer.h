@@ -6,6 +6,7 @@
 #define QUICHE_QUIC_TEST_TOOLS_QUIC_CONFIG_PEER_H_
 
 #include "net/third_party/quiche/src/quic/core/quic_config.h"
+#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
 
@@ -45,16 +46,28 @@ class QuicConfigPeer {
 
   static void SetReceivedDisableConnectionMigration(QuicConfig* config);
 
-  static void SetReceivedMaxIncomingBidirectionalStreams(QuicConfig* config,
-                                                         uint32_t max_streams);
-  static void SetReceivedMaxIncomingUnidirectionalStreams(QuicConfig* config,
-                                                          uint32_t max_streams);
+  static void SetReceivedMaxBidirectionalStreams(QuicConfig* config,
+                                                 uint32_t max_streams);
+  static void SetReceivedMaxUnidirectionalStreams(QuicConfig* config,
+                                                  uint32_t max_streams);
 
   static void SetConnectionOptionsToSend(QuicConfig* config,
                                          const QuicTagVector& options);
 
   static void SetReceivedStatelessResetToken(QuicConfig* config,
                                              QuicUint128 token);
+
+  static void SetReceivedMaxPacketSize(QuicConfig* config,
+                                       uint32_t max_packet_size);
+
+  static void SetNegotiated(QuicConfig* config, bool negotiated);
+
+  static void SetReceivedOriginalConnectionId(
+      QuicConfig* config,
+      const QuicConnectionId& original_connection_id);
+
+  static void SetReceivedMaxDatagramFrameSize(QuicConfig* config,
+                                              uint64_t max_datagram_frame_size);
 };
 
 }  // namespace test

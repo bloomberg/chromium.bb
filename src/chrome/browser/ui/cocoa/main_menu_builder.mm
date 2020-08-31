@@ -8,9 +8,11 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/accelerators/platform_accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -229,6 +231,9 @@ base::scoped_nsobject<NSMenuItem> BuildViewMenu(
     id app_delegate,
     const base::string16& product_name,
     bool is_pwa) {
+  const bool full_url_toggle =
+      base::FeatureList::IsEnabled(omnibox::kOmniboxContextMenuShowFullUrls);
+
   base::scoped_nsobject<NSMenuItem> item =
       Item(IDS_VIEW_MENU_MAC)
           .tag(IDC_VIEW_MENU)
@@ -238,6 +243,9 @@ base::scoped_nsobject<NSMenuItem> BuildViewMenu(
                 .remove_if(is_pwa),
                 Item(IDS_TOGGLE_FULLSCREEN_TOOLBAR_MAC)
                     .command_id(IDC_TOGGLE_FULLSCREEN_TOOLBAR),
+                Item(IDS_CONTEXT_MENU_SHOW_FULL_URLS)
+                    .command_id(IDC_SHOW_FULL_URLS)
+                    .remove_if(!full_url_toggle),
                 Item(IDS_CUSTOMIZE_TOUCH_BAR)
                     .tag(IDC_CUSTOMIZE_TOUCH_BAR)
                     .action(@selector(toggleTouchBarCustomizationPalette:))
@@ -420,10 +428,22 @@ base::scoped_nsobject<NSMenuItem> BuildTabMenu(
                   .command_id(IDC_PIN_TARGET_TAB)
                   .is_alternate()
                   .key_equivalent(@"", NSAlternateKeyMask),
+              Item(IDS_GROUP_TAB_MAC)
+                  .command_id(IDC_WINDOW_GROUP_TAB)
+                  .remove_if(
+                      !base::FeatureList::IsEnabled(features::kTabGroups)),
+              Item(IDS_GROUP_TARGET_TAB_MAC)
+                  .command_id(IDC_GROUP_TARGET_TAB)
+                  .is_alternate()
+                  .key_equivalent(@"", NSAlternateKeyMask)
+                  .remove_if(
+                      !base::FeatureList::IsEnabled(features::kTabGroups)),
               Item(IDS_TAB_CXMENU_CLOSEOTHERTABS)
                   .command_id(IDC_WINDOW_CLOSE_OTHER_TABS),
               Item(IDS_TAB_CXMENU_CLOSETABSTORIGHT)
                   .command_id(IDC_WINDOW_CLOSE_TABS_TO_RIGHT),
+              Item(IDS_MOVE_TAB_TO_NEW_WINDOW)
+                  .command_id(IDC_MOVE_TAB_TO_NEW_WINDOW),
               Item().is_separator(),
           })
           .Build();

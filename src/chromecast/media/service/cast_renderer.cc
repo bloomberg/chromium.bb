@@ -31,8 +31,6 @@
 #include "media/base/media_log.h"
 #include "media/base/media_resource.h"
 #include "media/base/renderer_client.h"
-#include "services/service_manager/public/cpp/connect.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 namespace chromecast {
@@ -62,15 +60,13 @@ CastRenderer::CastRenderer(
     VideoModeSwitcher* video_mode_switcher,
     VideoResolutionPolicy* video_resolution_policy,
     const base::UnguessableToken& overlay_plane_id,
-    service_manager::Connector* connector,
-    service_manager::mojom::InterfaceProvider* host_interfaces)
+    ::media::mojom::FrameInterfaceFactory* frame_interfaces)
     : backend_factory_(backend_factory),
       task_runner_(task_runner),
       video_mode_switcher_(video_mode_switcher),
       video_resolution_policy_(video_resolution_policy),
       overlay_plane_id_(overlay_plane_id),
-      connector_(connector),
-      host_interfaces_(host_interfaces),
+      frame_interfaces_(frame_interfaces),
       client_(nullptr),
       cast_cdm_context_(nullptr),
       media_task_runner_factory_(
@@ -82,6 +78,11 @@ CastRenderer::CastRenderer(
 
   if (video_resolution_policy_)
     video_resolution_policy_->AddObserver(this);
+
+  if (frame_interfaces_) {
+    frame_interfaces_->BindEmbedderReceiver(mojo::GenericPendingReceiver(
+        service_connector_.BindNewPipeAndPassReceiver()));
+  }
 }
 
 CastRenderer::~CastRenderer() {
@@ -129,11 +130,9 @@ void CastRenderer::OnSubscribeToVideoGeometryChange(
   // Retrieve application_media_info_manager_remote_ if it is available via
   // CastApplicationMediaInfoManager.
 
-  if (host_interfaces_) {
-    host_interfaces_->GetInterface(
-        ::media::mojom::CastApplicationMediaInfoManager::Name_,
-        application_media_info_manager_remote_.BindNewPipeAndPassReceiver()
-            .PassPipe());
+  if (frame_interfaces_) {
+    frame_interfaces_->BindEmbedderReceiver(mojo::GenericPendingReceiver(
+        application_media_info_manager_remote_.BindNewPipeAndPassReceiver()));
   }
 
   if (application_media_info_manager_remote_) {
@@ -161,8 +160,8 @@ void CastRenderer::OnApplicationMediaInfoReceived(
                        chromecast::mojom::MultiroomInfo::New());
     return;
   }
-  connector_->Connect(chromecast::mojom::kChromecastServiceName,
-                      multiroom_manager_.BindNewPipeAndPassReceiver());
+  service_connector_->Connect(chromecast::mojom::kChromecastServiceName,
+                              multiroom_manager_.BindNewPipeAndPassReceiver());
   multiroom_manager_.set_disconnect_handler(
       base::BindOnce(&CastRenderer::OnGetMultiroomInfo, base::Unretained(this),
                      media_resource, client, application_media_info.Clone(),
@@ -202,7 +201,6 @@ void CastRenderer::OnGetMultiroomInfo(
   MediaPipelineDeviceParams params(
       sync_type, backend_task_runner_.get(), AudioContentType::kMedia,
       ::media::AudioDeviceDescription::kDefaultDeviceId);
-  params.connector = connector_;
   params.session_id = application_media_info->application_session_id;
   params.multiroom = multiroom_info->multiroom;
   params.audio_channel = multiroom_info->audio_channel;
@@ -216,7 +214,7 @@ void CastRenderer::OnGetMultiroomInfo(
   MediaPipelineClient pipeline_client;
   pipeline_client.error_cb =
       base::Bind(&CastRenderer::OnError, weak_factory_.GetWeakPtr());
-  pipeline_client.buffering_state_cb = base::Bind(
+  pipeline_client.buffering_state_cb = base::BindRepeating(
       &CastRenderer::OnBufferingStateChange, weak_factory_.GetWeakPtr());
   pipeline_.reset(new MediaPipelineImpl());
   pipeline_->SetClient(pipeline_client);
@@ -385,7 +383,9 @@ void CastRenderer::OnVideoGeometryChange(const gfx::RectF& rect_f,
 
 void CastRenderer::OnError(::media::PipelineStatus status) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->OnError(status);
+  if (client_) {
+    client_->OnError(status);
+  }
 }
 
 void CastRenderer::OnEnded(Stream stream) {

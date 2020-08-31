@@ -24,18 +24,20 @@ class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
 
   ~MockExtensionDownloaderDelegate();
 
-  MOCK_METHOD4(
-      OnExtensionDownloadFailed,
-      void(const ExtensionId&, Error, const PingResult&, const std::set<int>&));
+  MOCK_METHOD5(OnExtensionDownloadFailed,
+               void(const ExtensionId&,
+                    Error,
+                    const PingResult&,
+                    const std::set<int>&,
+                    const FailureData&));
   MOCK_METHOD2(OnExtensionDownloadStageChanged,
                void(const ExtensionId&, Stage));
   MOCK_METHOD2(OnExtensionDownloadCacheStatusRetrieved,
                void(const ExtensionId&, CacheStatus));
-  MOCK_METHOD7(OnExtensionDownloadFinished,
+  MOCK_METHOD6(OnExtensionDownloadFinished,
                void(const extensions::CRXFileInfo&,
                     bool,
                     const GURL&,
-                    const std::string&,
                     const PingResult&,
                     const std::set<int>&,
                     const InstallCallback&));

@@ -12,6 +12,8 @@
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
+#include "core/fpdfdoc/cpdf_nametree.h"
+#include "core/fxcrt/fx_memory.h"
 
 namespace {
 
@@ -30,13 +32,22 @@ static_assert(FX_ArraySize(g_sZoomModes) ==
 
 }  // namespace
 
-CPDF_Dest::CPDF_Dest() {}
-
 CPDF_Dest::CPDF_Dest(const CPDF_Array* pArray) : m_pArray(pArray) {}
 
 CPDF_Dest::CPDF_Dest(const CPDF_Dest& that) = default;
 
-CPDF_Dest::~CPDF_Dest() {}
+CPDF_Dest::~CPDF_Dest() = default;
+
+// static
+CPDF_Dest CPDF_Dest::Create(CPDF_Document* pDoc, const CPDF_Object* pDest) {
+  if (!pDest)
+    return CPDF_Dest(nullptr);
+
+  if (pDest->IsString() || pDest->IsName())
+    return CPDF_Dest(CPDF_NameTree::LookupNamedDest(pDoc, pDest->GetString()));
+
+  return CPDF_Dest(pDest->AsArray());
+}
 
 int CPDF_Dest::GetDestPageIndex(CPDF_Document* pDoc) const {
   if (!m_pArray)
@@ -129,8 +140,4 @@ unsigned long CPDF_Dest::GetNumParams() const {
 
 float CPDF_Dest::GetParam(int index) const {
   return m_pArray ? m_pArray->GetNumberAt(2 + index) : 0;
-}
-
-ByteString CPDF_Dest::GetRemoteName() const {
-  return m_pArray ? m_pArray->GetString() : ByteString();
 }

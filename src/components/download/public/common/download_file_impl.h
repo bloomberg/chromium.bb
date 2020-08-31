@@ -30,7 +30,6 @@
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/rate_estimator.h"
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 
 namespace download {
@@ -57,7 +56,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
 
   // DownloadFile functions.
   void Initialize(InitializeCallback initialize_callback,
-                  const CancelRequestCallback& cancel_request_callback,
+                  CancelRequestCallback cancel_request_callback,
                   const DownloadItem::ReceivedSlices& received_slices,
                   bool is_parallelizable) override;
   void AddInputStream(std::unique_ptr<InputStream> stream,

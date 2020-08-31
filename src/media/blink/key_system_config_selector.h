@@ -33,7 +33,7 @@ class MediaPermission;
 
 class MEDIA_BLINK_EXPORT KeySystemConfigSelector {
  public:
-  KeySystemConfigSelector(const KeySystems* key_systems,
+  KeySystemConfigSelector(KeySystems* key_systems,
                           MediaPermission* media_permission);
 
   ~KeySystemConfigSelector();
@@ -42,9 +42,9 @@ class MEDIA_BLINK_EXPORT KeySystemConfigSelector {
       const blink::WebString& key_system,
       const blink::WebVector<blink::WebMediaKeySystemConfiguration>&
           candidate_configurations,
-      base::Callback<void(const blink::WebMediaKeySystemConfiguration&,
-                          const CdmConfig&)> succeeded_cb,
-      base::Closure not_supported_cb);
+      base::OnceCallback<void(const blink::WebMediaKeySystemConfiguration&,
+                              const CdmConfig&)> succeeded_cb,
+      base::OnceClosure not_supported_cb);
 
   using IsSupportedMediaTypeCB =
       base::RepeatingCallback<bool(const std::string& container_mime_type,
@@ -96,7 +96,7 @@ class MEDIA_BLINK_EXPORT KeySystemConfigSelector {
       const blink::WebMediaKeySystemMediaCapability::EncryptionScheme
           encryption_scheme);
 
-  const KeySystems* key_systems_;
+  KeySystems* const key_systems_;
   MediaPermission* media_permission_;
 
   // A callback used to check whether a media type is supported. Only set in

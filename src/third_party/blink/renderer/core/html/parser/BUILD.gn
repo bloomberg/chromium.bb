@@ -35,6 +35,8 @@ blink_core_sources("parser") {
     "html_meta_charset_parser.h",
     "html_parser_idioms.cc",
     "html_parser_idioms.h",
+    "html_parser_metrics.cc",
+    "html_parser_metrics.h",
     "html_parser_options.cc",
     "html_parser_options.h",
     "html_parser_reentry_permit.cc",
@@ -62,6 +64,7 @@ blink_core_sources("parser") {
     "input_stream_preprocessor.h",
     "markup_tokenizer_inlines.h",
     "nesting_level_incrementer.h",
+    "parser_scripting_flag_policy.h",
     "parser_synchronization_policy.h",
     "preload_request.cc",
     "preload_request.h",
@@ -85,9 +88,7 @@ blink_core_sources("parser") {
 }
 
 fuzzer_test("blink_html_tokenizer_fuzzer") {
-  sources = [
-    "html_tokenizer_fuzzer.cc",
-  ]
+  sources = [ "html_tokenizer_fuzzer.cc" ]
   deps = [
     "../../:core",
     "../../../platform:blink_fuzzer_test_support",

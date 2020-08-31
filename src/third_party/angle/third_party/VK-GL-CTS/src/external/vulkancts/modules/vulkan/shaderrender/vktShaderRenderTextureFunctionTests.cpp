@@ -1284,32 +1284,8 @@ void ShaderTextureFunctionCase::initShaderSources (void)
 	std::ostringstream	vert;
 	std::ostringstream	frag;
 	std::ostringstream&	op		= isVtxCase ? vert : frag;
-	glu::GLSLVersion	version	= glu::GLSL_VERSION_LAST;
 
-	switch (m_textureSpec.type)
-	{
-		case TEXTURETYPE_2D:
-		case TEXTURETYPE_3D:
-		case TEXTURETYPE_CUBE_MAP:
-		case TEXTURETYPE_2D_ARRAY:
-			version = glu::GLSL_VERSION_310_ES;
-			break;
-
-		case TEXTURETYPE_1D:
-		case TEXTURETYPE_1D_ARRAY:
-		case TEXTURETYPE_CUBE_ARRAY:
-			version = glu::GLSL_VERSION_420;
-			break;
-
-		default:
-			DE_ASSERT(DE_FALSE);
-			break;
-	}
-
-	if (m_lookupSpec.useClamp)
-		version = glu::GLSL_VERSION_450;
-
-	vert << glu::getGLSLVersionDeclaration(version) << "\n"
+	vert << "#version 450 core\n"
 		 << "layout(location = 0) in highp vec4 a_position;\n"
 		 << "layout(location = 4) in " << coordPrecName << " " << coordTypeName << " a_in0;\n";
 
@@ -1321,7 +1297,7 @@ void ShaderTextureFunctionCase::initShaderSources (void)
 	else if (hasLodBias)
 		vert << "layout(location = 5) in " << coordPrecName << " float a_in1;\n";
 
-	frag << glu::getGLSLVersionDeclaration(version) << "\n";
+	frag << "#version 450 core\n";
 
 	if (m_lookupSpec.useClamp)
 		frag << "#extension GL_ARB_sparse_texture_clamp : require\n";
@@ -1357,10 +1333,9 @@ void ShaderTextureFunctionCase::initShaderSources (void)
 	   << "layout(set = 0, binding = 1) uniform buf0 { highp vec4 u_scale; };\n"
 	   << "layout(set = 0, binding = 2) uniform buf1 { highp vec4 u_bias; };\n";
 
-	if (version != glu::GLSL_VERSION_310_ES)
-		vert << "out gl_PerVertex {\n"
-			 << "\tvec4 gl_Position;\n"
-			 << "};\n";
+	vert << "out gl_PerVertex {\n"
+		 << "\tvec4 gl_Position;\n"
+		 << "};\n";
 
 	vert << "\nvoid main()\n{\n"
 		 << "\tgl_Position = a_position;\n";
@@ -2724,40 +2699,13 @@ void TextureQueryCase::initShaderSources (void)
 	std::ostringstream		vert;
 	std::ostringstream		frag;
 	std::ostringstream&		op			= m_isVertexCase ? vert : frag;
-	glu::GLSLVersion		version		= glu::GLSL_VERSION_LAST;
 
 	DE_ASSERT(m_function != QUERYFUNCTION_TEXTUREQUERYLOD || !m_isVertexCase);
 
-	switch (m_function)
-	{
-		case QUERYFUNCTION_TEXTURESIZE:
-			if (m_textureSpec.type == TEXTURETYPE_1D || m_textureSpec.type == TEXTURETYPE_1D_ARRAY || m_textureSpec.type == TEXTURETYPE_CUBE_ARRAY)
-				version = glu::GLSL_VERSION_420;
-			else
-				version = glu::GLSL_VERSION_310_ES;
-			break;
-
-		case QUERYFUNCTION_TEXTUREQUERYLOD:
-			version = glu::GLSL_VERSION_420;
-			break;
-
-		case QUERYFUNCTION_TEXTUREQUERYLEVELS:
-			version = glu::GLSL_VERSION_430;
-			break;
-
-		case QUERYFUNCTION_TEXTURESAMPLES:
-			version = glu::GLSL_VERSION_450;
-			break;
-
-		default:
-			DE_ASSERT(false);
-			break;
-	}
-
-	vert << glu::getGLSLVersionDeclaration(version) << "\n"
+	vert << "#version 450 core\n"
 		 << "layout(location = 0) in highp vec4 a_position;\n";
 
-	frag << glu::getGLSLVersionDeclaration(version) << "\n"
+	frag << "#version 450 core\n"
 		 << "layout(location = 0) out mediump vec4 o_color;\n";
 
 	if (m_isVertexCase)
@@ -2781,10 +2729,9 @@ void TextureQueryCase::initShaderSources (void)
 	if (m_function == QUERYFUNCTION_TEXTURESIZE)
 		op << "layout(set = 0, binding = 1) uniform buf0 { highp int u_lod; };\n";
 
-	if (version != glu::GLSL_VERSION_310_ES)
-		vert << "out gl_PerVertex {\n"
-			 << "\tvec4 gl_Position;\n"
-			 << "};\n";
+	vert << "out gl_PerVertex {\n"
+		 << "\tvec4 gl_Position;\n"
+		 << "};\n";
 
 	vert << "\nvoid main()\n{\n"
 		 << "\tgl_Position = a_position;\n";
@@ -4014,9 +3961,9 @@ void ShaderTextureFunctionTests::init (void)
 		GRAD_CASE_SPEC(usamplercubearray,		FUNCTION_TEXTUREGRAD,	Vec4(-1.0f, -1.0f, -1.01f, -0.5f),	Vec4( 1.0f,  1.0f, -1.01f,  1.5f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.2f,  0.0f),	false,	IVec3(0),	texCubeArrayMipmapUint,		evalTextureCubeArrayGrad,	BOTH),
 
 		GRAD_CASE_SPEC(sampler2dshadow,			FUNCTION_TEXTUREGRAD,	Vec4(-0.2f, -0.4f,  0.0f,  0.0f),	Vec4( 1.5f,  2.3f,  1.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.2f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	false,	IVec3(0),	tex2DMipmapShadow,		evalTexture2DShadowGrad,		BOTH),
-		GRAD_CASE_SPEC(samplercubeshadow,		FUNCTION_TEXTUREGRAD,	Vec4(-1.0f, -1.0f,  1.01f,  0.0f),	Vec4( 1.0f,  1.0f,  1.01f,  1.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.2f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	false,	IVec3(0),	texCubeMipmapShadow,	evalTextureCubeShadowGrad,		BOTH),
-		GRAD_CASE_SPEC(sampler2darrayshadow,	FUNCTION_TEXTUREGRAD,	Vec4(-1.2f, -0.4f,  -0.5f,  0.0f),	Vec4( 1.5f,  2.3f,  3.5f,  1.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.2f,  0.0f,  0.0f),	false,	IVec3(0),	tex2DArrayMipmapShadow,	evalTexture2DArrayShadowGrad,	VERTEX),
-		GRAD_CASE_SPEC(sampler2darrayshadow,	FUNCTION_TEXTUREGRAD,	Vec4(-1.2f, -0.4f,  -0.5f,  0.0f),	Vec4( 1.5f,  2.3f,  3.5f,  1.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f, -0.2f,  0.0f),	false,	IVec3(0),	tex2DArrayMipmapShadow,	evalTexture2DArrayShadowGrad,	FRAGMENT),
+		GRAD_CASE_SPEC(samplercubeshadow,		FUNCTION_TEXTUREGRAD,	Vec4(-1.0f, -1.0f,  1.01f, 0.0f),	Vec4( 1.0f,  1.0f,  1.01f, 1.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f, -0.2f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	false,	IVec3(0),	texCubeMipmapShadow,	evalTextureCubeShadowGrad,		BOTH),
+		GRAD_CASE_SPEC(sampler2darrayshadow,	FUNCTION_TEXTUREGRAD,	Vec4(-1.2f, -0.4f, -0.5f,  0.0f),	Vec4( 1.5f,  2.3f,  3.5f,  1.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.2f,  0.0f,  0.0f),	false,	IVec3(0),	tex2DArrayMipmapShadow,	evalTexture2DArrayShadowGrad,	VERTEX),
+		GRAD_CASE_SPEC(sampler2darrayshadow,	FUNCTION_TEXTUREGRAD,	Vec4(-1.2f, -0.4f, -0.5f,  0.0f),	Vec4( 1.5f,  2.3f,  3.5f,  1.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f, -0.2f,  0.0f),	false,	IVec3(0),	tex2DArrayMipmapShadow,	evalTexture2DArrayShadowGrad,	FRAGMENT),
 		GRAD_CASE_SPEC(sampler1dshadow,			FUNCTION_TEXTUREGRAD,	Vec4(-0.2f,  0.0f,  0.0f,  0.0f),	Vec4( 1.5f,  0.0f,  1.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.2f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	false,	IVec3(0),	tex1DMipmapShadow,		evalTexture1DShadowGrad,		BOTH),
 		GRAD_CASE_SPEC(sampler1darrayshadow,	FUNCTION_TEXTUREGRAD,	Vec4(-1.2f, -0.5f,  0.0f,  0.0f),	Vec4( 1.5f,  3.5f,  1.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.2f,  0.0f,  0.0f),	false,	IVec3(0),	tex1DArrayMipmapShadow,	evalTexture1DArrayShadowGrad,	VERTEX),
 		GRAD_CASE_SPEC(sampler1darrayshadow,	FUNCTION_TEXTUREGRAD,	Vec4(-1.2f, -0.5f,  0.0f,  0.0f),	Vec4( 1.5f,  3.5f,  1.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3( 0.0f,  0.0f,  0.0f),	Vec3(-0.2f,  0.0f,  0.0f),	false,	IVec3(0),	tex1DArrayMipmapShadow,	evalTexture1DArrayShadowGrad,	FRAGMENT),

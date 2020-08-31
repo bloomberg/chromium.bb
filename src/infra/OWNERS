@@ -6,12 +6,14 @@ bpastene@chromium.org
 dpranke@chromium.org
 gbeaty@chromium.org
 hans@chromium.org
-jbudorick@chromium.org
 kbr@chromium.org
 martiniss@chromium.org
 thakis@chromium.org
 tikuta@chromium.org
 ynovikov@chromium.org
+
+# For code coverage and PGO related.
+liaoyuke@chromium.org
 
 # TEAM: infra-dev@chromium.org
 # COMPONENT: Infra>Client>Chrome

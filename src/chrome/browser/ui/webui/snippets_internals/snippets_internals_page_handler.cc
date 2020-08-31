@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals.mojom.h"
@@ -253,7 +254,7 @@ void SnippetsInternalsPageHandler::FetchSuggestionsInBackground(
   DCHECK(delaySeconds >= 0);
   suggestion_fetch_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(delaySeconds),
-      base::BindRepeating(
+      base::BindOnce(
           &SnippetsInternalsPageHandler::FetchSuggestionsInBackgroundImpl,
           weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(callback))));
 }
@@ -267,7 +268,7 @@ void SnippetsInternalsPageHandler::FetchSuggestionsInBackgroundImpl(
 }
 
 void SnippetsInternalsPageHandler::GetLastJson(GetLastJsonCallback callback) {
-  std::string json = "";
+  std::string json;
   if (remote_suggestions_provider_) {
     const ntp_snippets::RemoteSuggestionsFetcher* fetcher =
         remote_suggestions_provider_->suggestions_fetcher_for_debugging();
@@ -349,7 +350,7 @@ void SnippetsInternalsPageHandler::CollectDismissedSuggestions(
     if (last_index + 1 >= 0 && (size_t)last_index + 1 == i) {
       content_suggestions_service_->GetDismissedSuggestionsForDebugging(
           categories[i],
-          base::BindRepeating(
+          base::BindOnce(
               &SnippetsInternalsPageHandler::CollectDismissedSuggestions,
               weak_ptr_factory_.GetWeakPtr(), i,
               base::Passed(std::move(callback))));

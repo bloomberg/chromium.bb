@@ -18,10 +18,12 @@ namespace viz {
 SkiaOutputDeviceX11::SkiaOutputDeviceX11(
     scoped_refptr<gpu::SharedContextState> context_state,
     gfx::AcceleratedWidget widget,
+    gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDeviceOffscreen(context_state,
-                                true /* flipped */,
+                                gfx::SurfaceOrigin::kTopLeft,
                                 true /* has_alpha */,
+                                memory_tracker,
                                 did_swap_buffer_complete_callback),
       display_(gfx::GetXDisplay()),
       widget_(widget),
@@ -33,7 +35,7 @@ SkiaOutputDeviceX11::SkiaOutputDeviceX11(
   support_rendr_ = ui::QueryRenderSupport(display_);
 
   // |capabilities_| should be set by SkiaOutputDeviceOffscreen.
-  DCHECK(capabilities_.flipped_output_surface);
+  DCHECK_EQ(capabilities_.output_surface_origin, gfx::SurfaceOrigin::kTopLeft);
   DCHECK(capabilities_.supports_post_sub_buffer);
 }
 
@@ -44,10 +46,10 @@ SkiaOutputDeviceX11::~SkiaOutputDeviceX11() {
 bool SkiaOutputDeviceX11::Reshape(const gfx::Size& size,
                                   float device_scale_factor,
                                   const gfx::ColorSpace& color_space,
-                                  bool has_alpha,
+                                  gfx::BufferFormat format,
                                   gfx::OverlayTransform transform) {
   if (!SkiaOutputDeviceOffscreen::Reshape(size, device_scale_factor,
-                                          color_space, has_alpha, transform)) {
+                                          color_space, format, transform)) {
     return false;
   }
   auto ii =

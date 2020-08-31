@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.installedapp;
 
-import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -12,25 +11,34 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.util.Pair;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 import androidx.annotation.VisibleForTesting;
+import androidx.annotation.WorkerThread;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
 import org.chromium.mojo.system.MojoException;
+import org.chromium.url.GURL;
+import org.chromium.url.mojom.Url;
+import org.chromium.webapk.lib.client.WebApkValidator;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
+
 /**
  * Android implementation of the InstalledAppProvider service defined in
  * installed_app_provider.mojom
@@ -46,6 +54,8 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     @VisibleForTesting
     public static final String RELATED_APP_PLATFORM_ANDROID = "play";
     @VisibleForTesting
+    public static final String RELATED_APP_PLATFORM_WEBAPP = "webapp";
+    @VisibleForTesting
     public static final String INSTANT_APP_ID_STRING = "instantapp";
     @VisibleForTesting
     public static final String INSTANT_APP_HOLDBACK_ID_STRING = "instantapp:holdback";
@@ -58,7 +68,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     private static final String TAG = "InstalledAppProvider";
 
     private final FrameUrlDelegate mFrameUrlDelegate;
-    private final Context mContext;
+    private final PackageManagerDelegate mPackageManagerDelegate;
     private final InstantAppsHandler mInstantAppsHandler;
 
     /**
@@ -70,7 +80,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
         /**
          * Gets the URL of the current frame. Can return null (if the frame has disappeared).
          */
-        public URI getUrl();
+        public GURL getUrl();
 
         /**
          * Checks if we're in incognito. If the frame has disappeared this returns true.
@@ -78,41 +88,12 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
         public boolean isIncognito();
     }
 
-    public InstalledAppProviderImpl(FrameUrlDelegate frameUrlDelegate, Context context,
-            InstantAppsHandler instantAppsHandler) {
+    public InstalledAppProviderImpl(FrameUrlDelegate frameUrlDelegate,
+            PackageManagerDelegate packageManagerDelegate, InstantAppsHandler instantAppsHandler) {
         assert instantAppsHandler != null;
         mFrameUrlDelegate = frameUrlDelegate;
-        mContext = context;
+        mPackageManagerDelegate = packageManagerDelegate;
         mInstantAppsHandler = instantAppsHandler;
-    }
-
-    @Override
-    public void filterInstalledApps(
-            final RelatedApplication[] relatedApps, final FilterInstalledAppsResponse callback) {
-        final URI frameUrl = mFrameUrlDelegate.getUrl();
-        // Use an AsyncTask to execute the installed/related checks on a background thread (so as
-        // not to block the UI thread).
-        new AsyncTask<Pair<RelatedApplication[], Integer>>() {
-            @Override
-            protected Pair<RelatedApplication[], Integer> doInBackground() {
-                return filterInstalledAppsOnBackgroundThread(relatedApps, frameUrl);
-            }
-
-            @Override
-            protected void onPostExecute(Pair<RelatedApplication[], Integer> result) {
-                final RelatedApplication[] installedApps = result.first;
-                int delayMillis = result.second;
-                // Before calling the callback, delay for the amount of time that has been
-                // calculated in |delayMillis|.
-                delayThenRun(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.call(installedApps);
-                    }
-                }, delayMillis);
-            }
-        }
-                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override
@@ -121,61 +102,171 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     @Override
     public void onConnectionError(MojoException e) {}
 
-    /**
-     * Filters a list of apps, returning those that are both installed and match the origin.
-     *
-     * @param relatedApps A list of applications to be filtered.
-     * @param frameUrl The URL of the frame this operation was called from.
-     * @return Pair of: A subsequence of applications that meet the criteria, and, the total amount
-     *         of time in ms that should be delayed before returning to the user, to mask the
-     *         installed state of the requested apps.
-     */
-    private Pair<RelatedApplication[], Integer> filterInstalledAppsOnBackgroundThread(
-            RelatedApplication[] relatedApps, URI frameUrl) {
-        ThreadUtils.assertOnBackgroundThread();
+    /** Utility class for waiting for all the installation/verification results. */
+    @UiThread
+    private static class ResultHolder {
+        private int mNumTasks;
+        Callback mCallback;
+        private ArrayList<RelatedApplication> mInstalledApps;
+        private int mDelayMs;
 
-        ArrayList<RelatedApplication> installedApps = new ArrayList<RelatedApplication>();
-        int delayMillis = 0;
-        PackageManager pm = mContext.getPackageManager();
-        for (int i = 0; i < Math.min(relatedApps.length, MAX_ALLOWED_RELATED_APPS); i++) {
-            RelatedApplication app = relatedApps[i];
-            // If the package is of type "play", it is installed, and the origin is associated with
-            // package, add the package to the list of valid packages.
-            // NOTE: For security, it must not be possible to distinguish (from the response)
-            // between the app not being installed and the origin not being associated with the app
-            // (otherwise, arbitrary websites would be able to test whether un-associated apps are
-            // installed on the user's device).
-            if (app.platform.equals(RELATED_APP_PLATFORM_ANDROID) && app.id != null) {
-                if (isInstantAppId(app.id)) {
-                    if (mInstantAppsHandler.isInstantAppAvailable(frameUrl.toString(),
-                                INSTANT_APP_HOLDBACK_ID_STRING.equals(app.id),
-                                true /* includeUserPrefersBrowser */)) {
-                        installedApps.add(app);
-                    }
-                    continue;
-                }
-
-                delayMillis += calculateDelayForPackageMs(app.id);
-                if (isAppInstalledAndAssociatedWithOrigin(app.id, frameUrl, pm)) {
-                    installedApps.add(app);
-                }
+        /**
+         * @param numTasks How many results to wait for.
+         * @param callback Gets called with the results once all the tasks are complete.
+         */
+        public ResultHolder(
+                int numTasks, Callback<Pair<ArrayList<RelatedApplication>, Integer>> callback) {
+            mNumTasks = numTasks;
+            mCallback = callback;
+            mInstalledApps =
+                    new ArrayList<RelatedApplication>(Collections.nCopies(mNumTasks, null));
+            mDelayMs = 0;
+            if (mNumTasks == 0) {
+                mCallback.onResult(Pair.create(mInstalledApps, mDelayMs));
             }
         }
 
-        for (RelatedApplication installedApp : installedApps) {
-            setVersionInfo(installedApp);
-        }
+        public void onResult(@Nullable RelatedApplication app, int taskIdx, int delayMs) {
+            assert mNumTasks > 0;
 
-        // Don't expose the related apps if in incognito mode. This is done at
-        // the last stage to prevent using this API as an incognito detector by
-        // timing how long it takes the Promise to resolve.
+            if (app != null) mInstalledApps.add(taskIdx, app);
+            mDelayMs += delayMs;
+
+            if (--mNumTasks == 0) {
+                mInstalledApps.removeAll(Collections.singleton(null));
+                mCallback.onResult(Pair.create(mInstalledApps, mDelayMs));
+            }
+        }
+    }
+
+    @Override
+    @UiThread
+    public void filterInstalledApps(final RelatedApplication[] relatedApps, final Url manifestUrl,
+            final FilterInstalledAppsResponse callback) {
+        final GURL frameUrl = mFrameUrlDelegate.getUrl();
+        int delayMillis = 0;
+        int numTasks = Math.min(relatedApps.length, MAX_ALLOWED_RELATED_APPS);
+        ResultHolder resultHolder = new ResultHolder(numTasks, (resultPair) -> {
+            onFilteredInstalledApps(resultPair.first, resultPair.second, callback);
+        });
+
+        // NOTE: For security, it must not be possible to distinguish (from the time taken to
+        // respond) between the app not being installed and the origin not being associated with the
+        // app (otherwise, arbitrary websites would be able to test whether un-associated apps are
+        // installed on the user's device).
+        // NOTE: A manual loop is used to take MAX_ALLOWED_RELATED_APPS into account.
+        for (int i = 0; i < numTasks; i++) {
+            RelatedApplication app = relatedApps[i];
+            int taskIdx = i;
+
+            if (isInstantNativeApp(app)) {
+                PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
+                        () -> checkInstantApp(resultHolder, taskIdx, app, frameUrl));
+            } else if (isRegularNativeApp(app)) {
+                PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
+                        () -> checkPlayApp(resultHolder, taskIdx, app, frameUrl));
+            } else if (isWebApk(app) && app.url.equals(manifestUrl.url)) {
+                // The website wants to check whether its own WebAPK is installed.
+                PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
+                        () -> checkWebApkInstalled(resultHolder, taskIdx, app));
+            } else if (isWebApk(app)) {
+                // The website wants to check whether another WebAPK is installed.
+                checkWebApk(resultHolder, taskIdx, app, manifestUrl);
+            } else {
+                // The app did not match any category.
+                resultHolder.onResult(null, taskIdx, 0);
+            }
+        }
+    }
+
+    /**
+     * The callback called with the verified installed apps.
+     * @param installedApps The list of apps from the provided related apps that have been verified
+     *         and are installed.
+     * @param delayMs The artificial delay to apply before returning the results.
+     * @param callback The mojo callback for sending the installed apps.
+     */
+    @UiThread
+    private void onFilteredInstalledApps(ArrayList<RelatedApplication> installedApps,
+            Integer delayMs, FilterInstalledAppsResponse callback) {
+        RelatedApplication[] installedAppsArray;
+
         if (mFrameUrlDelegate.isIncognito()) {
-            return Pair.create(new RelatedApplication[0], delayMillis);
+            // Don't expose the related apps if in incognito mode. This is done at
+            // the last stage to prevent using this API as an incognito detector by
+            // timing how long it takes the Promise to resolve.
+            installedAppsArray = new RelatedApplication[0];
+        } else {
+            installedAppsArray = new RelatedApplication[installedApps.size()];
+            installedApps.toArray(installedAppsArray);
         }
 
-        RelatedApplication[] installedAppsArray = new RelatedApplication[installedApps.size()];
-        installedApps.toArray(installedAppsArray);
-        return Pair.create(installedAppsArray, delayMillis);
+        delayThenRun(() -> callback.call(installedAppsArray), delayMs);
+    }
+
+    @WorkerThread
+    private void checkInstantApp(
+            ResultHolder resultHolder, int taskIdx, RelatedApplication app, GURL frameUrl) {
+        int delayMs = calculateDelayForPackageMs(app.id);
+
+        if (!mInstantAppsHandler.isInstantAppAvailable(frameUrl.getSpec(),
+                    INSTANT_APP_HOLDBACK_ID_STRING.equals(app.id),
+                    true /* includeUserPrefersBrowser */)) {
+            delayThenRun(() -> resultHolder.onResult(null, taskIdx, delayMs), 0);
+            return;
+        }
+
+        setVersionInfo(app);
+        delayThenRun(() -> resultHolder.onResult(app, taskIdx, delayMs), 0);
+    }
+
+    @WorkerThread
+    private void checkPlayApp(
+            ResultHolder resultHolder, int taskIdx, RelatedApplication app, GURL frameUrl) {
+        int delayMs = calculateDelayForPackageMs(app.id);
+
+        if (!isAppInstalledAndAssociatedWithOrigin(app.id, frameUrl, mPackageManagerDelegate)) {
+            delayThenRun(() -> resultHolder.onResult(null, taskIdx, delayMs), 0);
+            return;
+        }
+
+        setVersionInfo(app);
+        delayThenRun(() -> resultHolder.onResult(app, taskIdx, delayMs), 0);
+    }
+
+    @WorkerThread
+    private void checkWebApkInstalled(
+            ResultHolder resultHolder, int taskIdx, RelatedApplication app) {
+        int delayMs = calculateDelayForPackageMs(app.url);
+
+        if (!isWebApkInstalled(app.url)) {
+            delayThenRun(() -> resultHolder.onResult(null, taskIdx, delayMs), 0);
+            return;
+        }
+
+        // TODO(crbug.com/1043970): Should we expose the package name and the
+        // version?
+        delayThenRun(() -> resultHolder.onResult(app, taskIdx, delayMs), 0);
+    }
+
+    @UiThread
+    private void checkWebApk(
+            ResultHolder resultHolder, int taskIdx, RelatedApplication app, Url manifestUrl) {
+        int delayMs = calculateDelayForPackageMs(app.url);
+
+        InstalledAppProviderImplJni.get().checkDigitalAssetLinksRelationshipForWebApk(
+                getProfile(), app.url, manifestUrl.url, (verified) -> {
+                    if (verified) {
+                        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
+                                () -> checkWebApkInstalled(resultHolder, taskIdx, app));
+                    } else {
+                        resultHolder.onResult(null, taskIdx, delayMs);
+                    }
+                });
+    }
+
+    protected Profile getProfile() {
+        return Profile.getLastUsedRegularProfile();
     }
 
     /**
@@ -185,17 +276,54 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     private void setVersionInfo(RelatedApplication installedApp) {
         assert installedApp.id != null;
         try {
-            PackageInfo info = mContext.getPackageManager().getPackageInfo(installedApp.id, 0);
+            PackageInfo info = mPackageManagerDelegate.getPackageInfo(installedApp.id, 0);
             installedApp.version = info.versionName;
         } catch (NameNotFoundException e) {
         }
     }
 
     /**
-     * Returns whether or not the app ID is for an instant app/instant app holdback.
+     * Returns whether or not the app is for an instant app/instant app holdback.
      */
-    private boolean isInstantAppId(String appId) {
-        return INSTANT_APP_ID_STRING.equals(appId) || INSTANT_APP_HOLDBACK_ID_STRING.equals(appId);
+    private boolean isInstantNativeApp(RelatedApplication app) {
+        if (!app.platform.equals(RELATED_APP_PLATFORM_ANDROID)) return false;
+
+        if (app.id == null) return false;
+
+        return INSTANT_APP_ID_STRING.equals(app.id)
+                || INSTANT_APP_HOLDBACK_ID_STRING.equals(app.id);
+    }
+
+    /**
+     * Returns whether or not the app is for a regular native app.
+     */
+    private boolean isRegularNativeApp(RelatedApplication app) {
+        if (!app.platform.equals(RELATED_APP_PLATFORM_ANDROID)) return false;
+
+        if (app.id == null) return false;
+
+        return !isInstantNativeApp(app);
+    }
+
+    /**
+     * Returns whether or not the app is for a WebAPK.
+     */
+    private boolean isWebApk(RelatedApplication app) {
+        if (!app.platform.equals(RELATED_APP_PLATFORM_WEBAPP)) return false;
+
+        if (app.url == null) return false;
+
+        return true;
+    }
+
+    /**
+     * Return whether the WebAPK identified by |manifestUurl| is installed.
+     */
+    @VisibleForTesting
+    public boolean isWebApkInstalled(String manifestUrl) {
+        return WebApkValidator.queryBoundWebApkForManifestUrl(
+                       ContextUtils.getApplicationContext(), manifestUrl)
+                != null;
     }
 
     /**
@@ -206,9 +334,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
         // add significant noise to the time taken to check whether this app is installed and
         // related. Otherwise, it would be possible to tell whether a non-related app is installed,
         // based on the time this operation takes.
-        //
-        // Generate a 16-bit hash based on a unique device ID + the package name.
-        short hash = PackageHash.hashForPackage(packageName);
+        short hash = PackageHash.hashForPackage(packageName, mFrameUrlDelegate.isIncognito());
 
         // The time delay is the low 10 bits of the hash in 100ths of a ms (between 0 and 10ms).
         int delayHundredthsOfMs = hash & 0x3ff;
@@ -223,11 +349,10 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      * @param frameUrl Returns false if the Android package does not declare association with the
      *                origin of this URL. Can be null.
      */
+    @WorkerThread
     public static boolean isAppInstalledAndAssociatedWithOrigin(
-            String packageName, URI frameUrl, PackageManager pm) {
+            String packageName, GURL frameUrl, PackageManagerDelegate pm) {
         // TODO(yusufo): Move this to a better/shared location before crbug.com/749876 is closed.
-
-        ThreadUtils.assertOnBackgroundThread();
 
         if (frameUrl == null) return false;
 
@@ -250,7 +375,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
                 continue;
             }
 
-            URI site = getSiteForWebAsset(statement);
+            GURL site = getSiteForWebAsset(statement);
 
             // The URI is considered equivalent if the scheme, host, and port match, according
             // to the DigitalAssetLinks v1 spec.
@@ -273,7 +398,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      * @return The list of asset statements, parsed from JSON.
      * @throws NameNotFoundException if the application is not installed.
      */
-    private static JSONArray getAssetStatements(String packageName, PackageManager pm)
+    private static JSONArray getAssetStatements(String packageName, PackageManagerDelegate pm)
             throws NameNotFoundException {
         // Get the <meta-data> from this app's manifest.
         // Throws NameNotFoundException if the application is not installed.
@@ -322,7 +447,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      *         could be because: the JSON string was invalid, there was no "target" field, this was
      *         not a web asset, there was no "site" field, or the "site" field was invalid.
      */
-    private static URI getSiteForWebAsset(JSONObject statement) {
+    private static GURL getSiteForWebAsset(JSONObject statement) {
         JSONObject target;
         try {
             // Ignore the "relation" field and allow an asset with any relation to this origin.
@@ -339,8 +464,8 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
         }
 
         try {
-            return new URI(target.getString(ASSET_STATEMENT_FIELD_SITE));
-        } catch (JSONException | URISyntaxException e) {
+            return new GURL(target.getString(ASSET_STATEMENT_FIELD_SITE));
+        } catch (JSONException e) {
             return null;
         }
     }
@@ -361,13 +486,12 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
         return namespace.equals(ASSET_STATEMENT_NAMESPACE_WEB);
     }
 
-    private static boolean statementTargetMatches(URI frameUrl, URI assetUrl) {
-        if (assetUrl.getScheme() == null || assetUrl.getAuthority() == null) {
-            return false;
-        }
+    private static boolean statementTargetMatches(GURL frameUrl, GURL assetUrl) {
+        if (assetUrl.getScheme() == null || assetUrl.getHost() == null) return false;
 
         return assetUrl.getScheme().equals(frameUrl.getScheme())
-                && assetUrl.getAuthority().equals(frameUrl.getAuthority());
+                && assetUrl.getHost().equals(frameUrl.getHost())
+                && assetUrl.getPort().equals(frameUrl.getPort());
     }
 
     /**
@@ -381,5 +505,11 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      */
     protected void delayThenRun(Runnable r, long delayMillis) {
         PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, r, delayMillis);
+    }
+
+    @NativeMethods
+    interface Natives {
+        void checkDigitalAssetLinksRelationshipForWebApk(
+                Profile profile, String webDomain, String manifestUrl, Callback<Boolean> callback);
     }
 }

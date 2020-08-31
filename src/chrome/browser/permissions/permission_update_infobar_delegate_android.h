@@ -19,18 +19,6 @@ namespace content {
 class WebContents;
 }
 
-// The states that indicate if a permission infobar should/could be shown or
-// not.
-enum class ShowPermissionInfoBarState {
-  // No need to show the infobar as the permissions have been already granted.
-  NO_NEED_TO_SHOW_PERMISSION_INFOBAR = 0,
-  // Show the the permission infobar.
-  SHOW_PERMISSION_INFOBAR,
-  // Can't show the permission infobar due to an internal state issue like
-  // the WebContents or the AndroidWindow are not available.
-  CANNOT_SHOW_PERMISSION_INFOBAR
-};
-
 // An infobar delegate to be used for requesting missing Android runtime
 // permissions for previously allowed ContentSettingsTypes.
 class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
@@ -44,8 +32,9 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
   //
   // This function can only be called with one of
   // ContentSettingsType::MEDIASTREAM_MIC,
-  // ContentSettingsType::MEDIASTREAM_CAMERA or
-  // ContentSettingsType::GEOLOCATION, or with both
+  // ContentSettingsType::MEDIASTREAM_CAMERA,
+  // ContentSettingsType::GEOLOCATION, or
+  // ContentSettingsType::AR or with both
   // ContentSettingsType::MEDIASTREAM_MIC and
   // ContentSettingsType::MEDIASTREAM_CAMERA.
   //
@@ -65,20 +54,22 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
       int permission_msg_id,
       PermissionUpdatedCallback callback);
 
-  // Returns an indicator of whether a permission infobar should be shown or
-  // not or cannot be shown.
-  static ShowPermissionInfoBarState ShouldShowPermissionInfoBar(
-      content::WebContents* web_contents,
-      const std::vector<ContentSettingsType>& content_settings_types);
-
   void OnPermissionResult(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           jboolean all_permissions_granted);
 
  private:
+  static infobars::InfoBar* Create(
+      content::WebContents* web_contents,
+      const std::vector<std::string>& android_permissions,
+      const std::vector<ContentSettingsType> content_settings_types,
+      int permission_msg_id,
+      PermissionUpdatedCallback callback);
+
   PermissionUpdateInfoBarDelegate(
       content::WebContents* web_contents,
       const std::vector<std::string>& android_permissions,
+      const std::vector<ContentSettingsType>& content_settings_types,
       int permission_msg_id,
       PermissionUpdatedCallback callback);
   ~PermissionUpdateInfoBarDelegate() override;
@@ -101,6 +92,7 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
   std::vector<std::string> android_permissions_;
+  std::vector<ContentSettingsType> content_settings_types_;
   int permission_msg_id_;
   PermissionUpdatedCallback callback_;
 

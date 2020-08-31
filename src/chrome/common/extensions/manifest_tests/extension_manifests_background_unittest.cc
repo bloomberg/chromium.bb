@@ -39,7 +39,7 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundScripts) {
   ASSERT_TRUE(manifest.is_dict());
 
   scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess(ManifestData(&manifest, "")));
+      LoadAndExpectSuccess(ManifestData(manifest.Clone(), "")));
   ASSERT_TRUE(extension.get());
   const std::vector<std::string>& background_scripts =
       BackgroundInfo::GetBackgroundScripts(extension.get());
@@ -53,7 +53,7 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundScripts) {
       BackgroundInfo::GetBackgroundURL(extension.get()).path());
 
   manifest.SetPath({"background", "page"}, base::Value("monkey.html"));
-  LoadAndExpectError(ManifestData(&manifest, ""),
+  LoadAndExpectError(ManifestData(std::move(manifest), ""),
                      errors::kInvalidBackgroundCombination);
 }
 
@@ -86,14 +86,14 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
   manifest.SetPath({"background", "persistent"}, base::Value(false));
   manifest.SetKey(keys::kManifestVersion, base::Value(2));
   scoped_refptr<Extension> extension(
-      LoadAndExpectSuccess(ManifestData(&manifest, "")));
+      LoadAndExpectSuccess(ManifestData(manifest.Clone(), "")));
   ASSERT_TRUE(extension.get());
   EXPECT_TRUE(BackgroundInfo::HasLazyBackgroundPage(extension.get()));
 
   base::Value permissions(base::Value::Type::LIST);
   permissions.Append(base::Value("webRequest"));
   manifest.SetKey(keys::kPermissions, std::move(permissions));
-  LoadAndExpectError(ManifestData(&manifest, ""),
+  LoadAndExpectError(ManifestData(std::move(manifest), ""),
                      errors::kWebRequestConflictsWithLazyBackground);
 }
 
@@ -171,11 +171,16 @@ TEST_F(ExtensionManifestBackgroundTest, ServiceWorkerBasedBackgroundKey) {
   //   - specifying multiple files.
   //   - specifying invalid type (non-string) values.
   {
-    ScopedCurrentChannel dev(version_info::Channel::DEV);
+    ScopedCurrentChannel beta(version_info::Channel::BETA);
     scoped_refptr<Extension> extension =
         LoadAndExpectWarning("service_worker_based_background.json",
-                             "'background.service_worker' requires canary "
-                             "channel or newer, but this is the dev channel.");
+                             "'background.service_worker' requires dev "
+                             "channel or newer, but this is the beta channel.");
+  }
+  {
+    ScopedCurrentChannel dev(version_info::Channel::DEV);
+    scoped_refptr<Extension> extension =
+        LoadAndExpectSuccess("service_worker_based_background.json");
   }
   {
     ScopedCurrentChannel canary(version_info::Channel::CANARY);

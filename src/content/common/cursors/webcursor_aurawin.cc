@@ -6,20 +6,21 @@
 
 #include <windows.h>
 
-#include "third_party/blink/public/platform/web_cursor_info.h"
+#include "ui/base/cursor/cursor_lookup.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/icon_util.h"
 
 namespace content {
 
 ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
-  if (info_.type != ui::CursorType::kCustom)
+  if (cursor_.type() != ui::mojom::CursorType::kCustom)
     return LoadCursor(nullptr, IDC_ARROW);
 
   if (platform_cursor_)
     return platform_cursor_;
 
-  platform_cursor_ = IconUtil::CreateCursorFromSkBitmap(cursor.GetBitmap(),
-                                                        cursor.GetHotspot())
+  platform_cursor_ = IconUtil::CreateCursorFromSkBitmap(
+                         GetCursorBitmap(cursor), GetCursorHotspot(cursor))
                          .release();
   return platform_cursor_;
 }
@@ -33,6 +34,7 @@ void WebCursor::CleanupPlatformData() {
     DestroyIcon(platform_cursor_);
     platform_cursor_ = nullptr;
   }
+  custom_cursor_.reset();
 }
 
 void WebCursor::CopyPlatformData(const WebCursor& other) {

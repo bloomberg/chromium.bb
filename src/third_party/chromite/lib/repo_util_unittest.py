@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -16,6 +17,9 @@ from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import repo_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def RepoInitSideEffects(*_args, **kwargs):
@@ -256,7 +260,8 @@ class RepositoryCommandMethodTest(cros_test_lib.RunCommandTempDirTestCase):
     copy = self.repo.Copy(copy_root)
     self.assertEqual(copy.root, copy_root)
     kwargs = dict(debug_level=logging.DEBUG, capture_output=True,
-                  extra_env={'LC_MESSAGES': 'C'}, cwd=self.root)
+                  encoding='utf-8', extra_env={'LC_MESSAGES': 'C'},
+                  cwd=self.root)
     self.assertCommandCalled([
         'cp', '--archive', '--link', '--parents',
         '.repo/project-objects/p1.git/objects', copy_root,

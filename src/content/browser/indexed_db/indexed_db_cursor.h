@@ -48,7 +48,7 @@ class CONTENT_EXPORT IndexedDBCursor {
     return cursor_->primary_key();
   }
   IndexedDBValue* Value() const {
-    return (cursor_type_ == indexed_db::CURSOR_KEY_ONLY) ? NULL
+    return (cursor_type_ == indexed_db::CURSOR_KEY_ONLY) ? nullptr
                                                          : cursor_->value();
   }
 
@@ -75,6 +75,7 @@ class CONTENT_EXPORT IndexedDBCursor {
       IndexedDBTransaction* transaction);
 
  private:
+  const url::Origin origin_;
   blink::mojom::IDBTaskType task_type_;
   indexed_db::CursorType cursor_type_;
 

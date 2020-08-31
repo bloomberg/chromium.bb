@@ -6,6 +6,7 @@
 
 #include "net/third_party/quiche/src/http2/decoder/decode_status.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_estimate_memory_usage.h"
+#include "net/third_party/quiche/src/http2/platform/api/http2_flags.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
 
 namespace http2 {
@@ -15,7 +16,7 @@ HpackDecoder::HpackDecoder(HpackDecoderListener* listener,
     : decoder_state_(listener),
       entry_buffer_(&decoder_state_, max_string_size),
       block_decoder_(&entry_buffer_),
-      error_detected_(false) {}
+      error_(HpackDecodingError::kOk) {}
 
 HpackDecoder::~HpackDecoder() = default;
 
@@ -34,8 +35,8 @@ void HpackDecoder::ApplyHeaderTableSizeSetting(uint32_t max_header_table_size) {
 
 bool HpackDecoder::StartDecodingBlock() {
   HTTP2_DVLOG(3) << "HpackDecoder::StartDecodingBlock, error_detected="
-                 << (error_detected() ? "true" : "false");
-  if (error_detected()) {
+                 << (DetectError() ? "true" : "false");
+  if (DetectError()) {
     return false;
   }
   // TODO(jamessynge): Eliminate Reset(), which shouldn't be necessary
@@ -48,9 +49,10 @@ bool HpackDecoder::StartDecodingBlock() {
 
 bool HpackDecoder::DecodeFragment(DecodeBuffer* db) {
   HTTP2_DVLOG(3) << "HpackDecoder::DecodeFragment, error_detected="
-                 << (error_detected() ? "true" : "false")
+                 << (DetectError() ? "true" : "false")
                  << ", size=" << db->Remaining();
-  if (error_detected()) {
+  if (DetectError()) {
+    HTTP2_CODE_COUNT_N(decompress_failure_3, 3, 23);
     return false;
   }
   // Decode contents of db as an HPACK block fragment, forwards the decoded
@@ -58,10 +60,11 @@ bool HpackDecoder::DecodeFragment(DecodeBuffer* db) {
   // which finally forwards them to the HpackDecoderListener.
   DecodeStatus status = block_decoder_.Decode(db);
   if (status == DecodeStatus::kDecodeError) {
-    // This has probably already been reported, but just in case...
-    ReportError("HPACK block malformed.");
+    ReportError(block_decoder_.error());
+    HTTP2_CODE_COUNT_N(decompress_failure_3, 4, 23);
     return false;
-  } else if (error_detected()) {
+  } else if (DetectError()) {
+    HTTP2_CODE_COUNT_N(decompress_failure_3, 5, 23);
     return false;
   }
   // Should be positioned between entries iff decoding is complete.
@@ -75,47 +78,52 @@ bool HpackDecoder::DecodeFragment(DecodeBuffer* db) {
 
 bool HpackDecoder::EndDecodingBlock() {
   HTTP2_DVLOG(3) << "HpackDecoder::EndDecodingBlock, error_detected="
-                 << (error_detected() ? "true" : "false");
-  if (error_detected()) {
+                 << (DetectError() ? "true" : "false");
+  if (DetectError()) {
+    HTTP2_CODE_COUNT_N(decompress_failure_3, 6, 23);
     return false;
   }
   if (!block_decoder_.before_entry()) {
     // The HPACK block ended in the middle of an entry.
-    ReportError("HPACK block truncated.");
+    ReportError(HpackDecodingError::kTruncatedBlock);
+    HTTP2_CODE_COUNT_N(decompress_failure_3, 7, 23);
     return false;
   }
   decoder_state_.OnHeaderBlockEnd();
-  if (error_detected()) {
+  if (DetectError()) {
     // HpackDecoderState will have reported the error.
+    HTTP2_CODE_COUNT_N(decompress_failure_3, 8, 23);
     return false;
   }
   return true;
 }
 
-bool HpackDecoder::error_detected() {
-  if (!error_detected_) {
-    if (entry_buffer_.error_detected()) {
-      HTTP2_DVLOG(2) << "HpackDecoder::error_detected in entry_buffer_";
-      error_detected_ = true;
-    } else if (decoder_state_.error_detected()) {
-      HTTP2_DVLOG(2) << "HpackDecoder::error_detected in decoder_state_";
-      error_detected_ = true;
-    }
+bool HpackDecoder::DetectError() {
+  if (error_ != HpackDecodingError::kOk) {
+    return true;
   }
-  return error_detected_;
+
+  if (decoder_state_.error() != HpackDecodingError::kOk) {
+    HTTP2_DVLOG(2) << "Error detected in decoder_state_";
+    HTTP2_CODE_COUNT_N(decompress_failure_3, 10, 23);
+    error_ = decoder_state_.error();
+  }
+
+  return error_ != HpackDecodingError::kOk;
 }
 
 size_t HpackDecoder::EstimateMemoryUsage() const {
   return Http2EstimateMemoryUsage(entry_buffer_);
 }
 
-void HpackDecoder::ReportError(Http2StringPiece error_message) {
+void HpackDecoder::ReportError(HpackDecodingError error) {
   HTTP2_DVLOG(3) << "HpackDecoder::ReportError is new="
-                 << (!error_detected_ ? "true" : "false")
-                 << ", error_message: " << error_message;
-  if (!error_detected_) {
-    error_detected_ = true;
-    decoder_state_.listener()->OnHeaderErrorDetected(error_message);
+                 << (error_ == HpackDecodingError::kOk ? "true" : "false")
+                 << ", error: " << HpackDecodingErrorToString(error);
+  if (error_ == HpackDecodingError::kOk) {
+    error_ = error;
+    decoder_state_.listener()->OnHeaderErrorDetected(
+        HpackDecodingErrorToString(error));
   }
 }
 

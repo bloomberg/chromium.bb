@@ -1,5 +1,6 @@
 <link rel="import" href="../../html/polymer.html">
 
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="../shared_vars_css.html">
 
@@ -40,6 +41,14 @@
         transition: opacity 300ms, transform 300ms, visibility 300ms;
         visibility: hidden;
         z-index: 1;
+      }
+
+      :host-context([dir=ltr]) {
+        left: 0;
+      }
+
+      :host-context([dir=rtl]) {
+        right: 0;
       }
 
       :host([open]) {

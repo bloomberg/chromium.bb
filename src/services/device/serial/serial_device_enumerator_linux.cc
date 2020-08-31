@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -33,11 +33,6 @@ const char kRfcommMajor[] = "216";
 
 }  // namespace
 
-// static
-std::unique_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create() {
-  return std::make_unique<SerialDeviceEnumeratorLinux>();
-}
-
 SerialDeviceEnumeratorLinux::SerialDeviceEnumeratorLinux() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 
@@ -47,23 +42,6 @@ SerialDeviceEnumeratorLinux::SerialDeviceEnumeratorLinux() {
 
 SerialDeviceEnumeratorLinux::~SerialDeviceEnumeratorLinux() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-std::vector<mojom::SerialPortInfoPtr>
-SerialDeviceEnumeratorLinux::GetDevices() {
-  std::vector<mojom::SerialPortInfoPtr> ports;
-  ports.reserve(ports_.size());
-  for (const auto& map_entry : ports_)
-    ports.push_back(map_entry.second->Clone());
-  return ports;
-}
-
-base::Optional<base::FilePath> SerialDeviceEnumeratorLinux::GetPathFromToken(
-    const base::UnguessableToken& token) {
-  auto it = ports_.find(token);
-  if (it == ports_.end())
-    return base::nullopt;
-  return it->second->path;
 }
 
 void SerialDeviceEnumeratorLinux::OnDeviceAdded(ScopedUdevDevicePtr device) {
@@ -116,9 +94,10 @@ void SerialDeviceEnumeratorLinux::OnDeviceRemoved(ScopedUdevDevicePtr device) {
   auto it = paths_.find(syspath);
   if (it == paths_.end())
     return;
+  base::UnguessableToken token = it->second;
 
-  ports_.erase(it->second);
   paths_.erase(it);
+  RemovePort(token);
 }
 
 void SerialDeviceEnumeratorLinux::CreatePort(ScopedUdevDevicePtr device,
@@ -151,8 +130,8 @@ void SerialDeviceEnumeratorLinux::CreatePort(ScopedUdevDevicePtr device,
   if (product_name)
     info->display_name.emplace(product_name);
 
-  ports_.insert(std::make_pair(token, std::move(info)));
   paths_.insert(std::make_pair(syspath, token));
+  AddPort(std::move(info));
 }
 
 }  // namespace device

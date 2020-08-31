@@ -210,22 +210,19 @@ V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
                                            InstanceType instance_type);
 
 // List of object types that have a single unique instance type.
-#define INSTANCE_TYPE_CHECKERS_SINGLE(V)                   \
-  TORQUE_INSTANCE_CHECKERS_SINGLE_FULLY_DEFINED(V)         \
-  TORQUE_INSTANCE_CHECKERS_SINGLE_ONLY_DECLARED(V)         \
-  V(BigInt, BIGINT_TYPE)                                   \
-  V(BreakPoint, TUPLE2_TYPE)                               \
-  V(BreakPointInfo, TUPLE2_TYPE)                           \
-  V(CachedTemplateObject, TUPLE3_TYPE)                     \
-  V(CoverageInfo, FIXED_ARRAY_TYPE)                        \
-  V(FixedArrayExact, FIXED_ARRAY_TYPE)                     \
-  V(PropertyDescriptorObject, FIXED_ARRAY_TYPE)
+#define INSTANCE_TYPE_CHECKERS_SINGLE(V)           \
+  TORQUE_INSTANCE_CHECKERS_SINGLE_FULLY_DEFINED(V) \
+  TORQUE_INSTANCE_CHECKERS_SINGLE_ONLY_DECLARED(V) \
+  V(BigInt, BIGINT_TYPE)                           \
+  V(FixedArrayExact, FIXED_ARRAY_TYPE)
 
 #define INSTANCE_TYPE_CHECKERS_RANGE(V)           \
   TORQUE_INSTANCE_CHECKERS_RANGE_FULLY_DEFINED(V) \
   TORQUE_INSTANCE_CHECKERS_RANGE_ONLY_DECLARED(V)
 
-#define INSTANCE_TYPE_CHECKERS_CUSTOM(V) V(InternalizedString)
+#define INSTANCE_TYPE_CHECKERS_CUSTOM(V) \
+  V(ExternalString)                      \
+  V(InternalizedString)
 
 #define INSTANCE_TYPE_CHECKERS(V)  \
   INSTANCE_TYPE_CHECKERS_SINGLE(V) \

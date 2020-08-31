@@ -74,18 +74,19 @@ void CastSessionDelegateBase::StartUDP(
 
   // Rationale for using unretained: The callback cannot be called after the
   // destruction of CastTransportIPC, and they both share the same thread.
-  cast_transport_.reset(new CastTransportIPC(
+  cast_transport_ = std::make_unique<CastTransportIPC>(
       local_endpoint, remote_endpoint, std::move(options),
-      base::Bind(&CastSessionDelegateBase::ReceivePacket,
-                 base::Unretained(this)),
-      base::Bind(&CastSessionDelegateBase::StatusNotificationCB,
-                 base::Unretained(this), error_callback),
-      base::Bind(&media::cast::LogEventDispatcher::DispatchBatchOfEvents,
-                 base::Unretained(cast_environment_->logger()))));
+      base::BindRepeating(&CastSessionDelegateBase::ReceivePacket,
+                          base::Unretained(this)),
+      base::BindRepeating(&CastSessionDelegateBase::StatusNotificationCB,
+                          base::Unretained(this), error_callback),
+      base::BindRepeating(
+          &media::cast::LogEventDispatcher::DispatchBatchOfEvents,
+          base::Unretained(cast_environment_->logger())));
 }
 
 void CastSessionDelegateBase::StatusNotificationCB(
-    const ErrorCallback& error_callback,
+    ErrorOnceCallback error_callback,
     media::cast::CastTransportStatus status) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   std::string error_message;
@@ -95,10 +96,10 @@ void CastSessionDelegateBase::StatusNotificationCB(
     case media::cast::TRANSPORT_STREAM_INITIALIZED:
       return; // Not errors, do nothing.
     case media::cast::TRANSPORT_INVALID_CRYPTO_CONFIG:
-      error_callback.Run("Invalid encrypt/decrypt configuration.");
+      std::move(error_callback).Run("Invalid encrypt/decrypt configuration.");
       break;
     case media::cast::TRANSPORT_SOCKET_ERROR:
-      error_callback.Run("Socket error.");
+      std::move(error_callback).Run("Socket error.");
       break;
   }
 }
@@ -114,19 +115,19 @@ CastSessionDelegate::~CastSessionDelegate() {
 void CastSessionDelegate::StartAudio(
     const FrameSenderConfig& config,
     const AudioFrameInputAvailableCallback& callback,
-    const ErrorCallback& error_callback) {
+    ErrorOnceCallback error_callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!cast_transport_ || !cast_sender_) {
-    error_callback.Run("Destination not set.");
+    std::move(error_callback).Run("Destination not set.");
     return;
   }
 
   audio_frame_input_available_callback_ = callback;
   cast_sender_->InitializeAudio(
-      config,
-      base::Bind(&CastSessionDelegate::OnOperationalStatusChange,
-                 weak_factory_.GetWeakPtr(), true, error_callback));
+      config, base::BindOnce(&CastSessionDelegate::OnOperationalStatusChange,
+                             weak_factory_.GetWeakPtr(), true,
+                             std::move(error_callback)));
 }
 
 void CastSessionDelegate::StartVideo(
@@ -147,20 +148,19 @@ void CastSessionDelegate::StartVideo(
 
   cast_sender_->InitializeVideo(
       config,
-      base::Bind(&CastSessionDelegate::OnOperationalStatusChange,
-                 weak_factory_.GetWeakPtr(), false, error_callback),
-      create_vea_cb,
-      create_video_encode_mem_cb);
+      base::BindRepeating(&CastSessionDelegate::OnOperationalStatusChange,
+                          weak_factory_.GetWeakPtr(), false, error_callback),
+      create_vea_cb, create_video_encode_mem_cb);
 }
 
 void CastSessionDelegate::StartRemotingStream(
     int32_t stream_id,
     const FrameSenderConfig& config,
-    const ErrorCallback& error_callback) {
+    ErrorOnceCallback error_callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!cast_transport_) {
-    error_callback.Run("Destination not set.");
+    std::move(error_callback).Run("Destination not set.");
     return;
   }
 
@@ -182,8 +182,8 @@ void CastSessionDelegate::StartUDP(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   CastSessionDelegateBase::StartUDP(local_endpoint, remote_endpoint,
                                     std::move(options), error_callback);
-  event_subscribers_.reset(
-      new media::cast::RawEventSubscriberBundle(cast_environment_));
+  event_subscribers_ = std::make_unique<media::cast::RawEventSubscriberBundle>(
+      cast_environment_);
 
   cast_sender_ = CastSender::Create(cast_environment_, cast_transport_.get());
 }
@@ -279,7 +279,7 @@ void CastSessionDelegate::GetStatsAndReset(bool is_audio,
 
 void CastSessionDelegate::OnOperationalStatusChange(
     bool is_for_audio,
-    const ErrorCallback& error_callback,
+    ErrorOnceCallback error_callback,
     media::cast::OperationalStatus status) {
   DCHECK(cast_sender_);
 
@@ -308,20 +308,24 @@ void CastSessionDelegate::OnOperationalStatusChange(
       }
       break;
     case media::cast::STATUS_INVALID_CONFIGURATION:
-      error_callback.Run(base::StringPrintf("Invalid %s configuration.",
-                                            is_for_audio ? "audio" : "video"));
+      std::move(error_callback)
+          .Run(base::StringPrintf("Invalid %s configuration.",
+                                  is_for_audio ? "audio" : "video"));
       break;
     case media::cast::STATUS_UNSUPPORTED_CODEC:
-      error_callback.Run(base::StringPrintf("%s codec not supported.",
-                                            is_for_audio ? "Audio" : "Video"));
+      std::move(error_callback)
+          .Run(base::StringPrintf("%s codec not supported.",
+                                  is_for_audio ? "Audio" : "Video"));
       break;
     case media::cast::STATUS_CODEC_INIT_FAILED:
-      error_callback.Run(base::StringPrintf("%s codec initialization failed.",
-                                            is_for_audio ? "Audio" : "Video"));
+      std::move(error_callback)
+          .Run(base::StringPrintf("%s codec initialization failed.",
+                                  is_for_audio ? "Audio" : "Video"));
       break;
     case media::cast::STATUS_CODEC_RUNTIME_ERROR:
-      error_callback.Run(base::StringPrintf("%s codec runtime error.",
-                                            is_for_audio ? "Audio" : "Video"));
+      std::move(error_callback)
+          .Run(base::StringPrintf("%s codec runtime error.",
+                                  is_for_audio ? "Audio" : "Video"));
       break;
   }
 }

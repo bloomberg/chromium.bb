@@ -45,6 +45,18 @@
         "description": "Commands that can be triggered by switch activation."
       },
       {
+        "id": "SwitchAccessBubble",
+        "type": "string",
+        "enum": [ "backButton", "menu" ],
+        "description": "Different Switch Access bubbles that can be shown or hidden."
+      },
+      {
+        "id": "SwitchAccessMenuAction",
+        "type": "string",
+        "enum": [ "copy", "cut", "decrement", "dictation", "endTextSelection", "increment", "jumpToBeginningOfText", "jumpToEndOfText", "keyboard", "moveBackwardOneCharOfText", "moveBackwardOneWordOfText", "moveCursor", "moveDownOneLineOfText", "moveForwardOneCharOfText", "moveForwardOneWordOfText", "moveUpOneLineOfText", "paste", "scrollDown", "scrollLeft", "scrollRight", "scrollUp", "select", "settings", "startTextSelection" ],
+        "description": "Available actions to be shown in the Switch Access menu. Must be kept in sync with the strings in ash/system/accessibility/switch_access_menu_view.cc"
+      },
+      {
         "id": "SyntheticKeyboardEventType",
         "type": "string",
         "description": "The event to send",
@@ -131,11 +143,16 @@
           },
           "color": {
             "type": "string",
-            "description": "A CSS-style color string (e.g. #3F8213) that describes the primary color of the focus ring."
+            "description": "A RGB hex-value color string (e.g. #3F8213) that describes the primary color of the focus ring."
           },
           "secondaryColor": {
             "type": "string",
-            "description": "A CSS-style color string (e.g. #3F82E4) that describes the secondary color of the focus ring, if there is one.",
+            "description": "A RGB hex-value color string (e.g. #3F82E4) that describes the secondary color of the focus ring, if there is one.",
+            "optional": true
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "A RGB hex-value color string (e.g. #803F82E4) that describes the color drawn outside of the focus ring and over the rest of the display.",
             "optional": true
           },
           "id": {
@@ -148,23 +165,23 @@
     ],
     "functions": [
       {
-        "name": "getDisplayLanguage",
+        "name": "getDisplayNameForLocale",
         "type": "function",
         "nocompile": true,
-        "description": "Called to translate languageCodeToTranslate into human-readable string in the language specified by targetLanguageCode",
+        "description": "Called to translate localeCodeToTranslate into human-readable string in the locale specified by displayLocaleCode",
         "parameters": [
           {
-            "name": "languageCodeToTranslate",
+            "name": "localeCodeToTranslate",
             "type": "string"
           },
           {
-            "name": "targetLanguageCode",
+            "name": "displayLocaleCode",
             "type": "string"
           }
         ],
         "returns": {
           "type": "string",
-          "description": "The human-readable language string in the provided language."
+          "description": "The human-readable locale string in the provided locale."
         },
         "platforms": ["chromeos"]
       },
@@ -263,7 +280,7 @@
       {
             "name": "setSwitchAccessMenuState",
             "type": "function",
-            "description": "Shows or hides the Switch Access menu. If shown, it is at the indicated location.",
+            "description": "Shows or hides the Switch Access menu. If shown, it is at the indicated location.\nTODO(anastasi): Remove this function once the menu refactor is complete.",
             "parameters": [
               {
                 "name": "show",
@@ -291,6 +308,37 @@
           {
             "name": "shouldForward",
             "type": "boolean"
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
+        "name": "updateSwitchAccessBubble",
+        "type": "function",
+        "description": "Shows the Switch Access menu next to the specified rectangle and with the given actions",
+        "parameters": [
+          {
+            "name": "bubble",
+            "$ref": "SwitchAccessBubble",
+            "description": "Which bubble to show/hide"
+          },
+          {
+            "name": "show",
+            "type": "boolean",
+            "description": "True if the bubble should be shown, false otherwise"
+          },
+          {
+            "name": "anchor",
+            "$ref": "ScreenRect",
+            "description": "A rectangle indicating the bounds of the object the menu should be displayed next to.",
+            "optional": true
+          },
+          {
+            "name": "actions",
+            "type": "array",
+            "items": { "$ref": "SwitchAccessMenuAction" },
+            "description": "The actions to be shown in the menu.",
+            "optional": true
           }
         ],
         "platforms": ["chromeos"]
@@ -435,14 +483,14 @@
       {
         "name": "onSelectToSpeakStateChangeRequested",
         "type": "function",
-        "description": "Called when Chrome OS wants to change the Select-to-Speak state, between selecting with the mouse, speaking, and inactive.",
+        "description": "Fired when Chrome OS wants to change the Select-to-Speak state, between selecting with the mouse, speaking, and inactive.",
         "parameters": [],
         "platforms": ["chromeos"]
       },
       {
         "name": "onSwitchAccessCommand",
         "type": "function",
-        "description": "Called when Chrome OS has received a key event corresponding to a Switch Access command.",
+        "description": "Fired when Chrome OS has received a key event corresponding to a Switch Access command.",
         "parameters": [
           {
             "name": "command",
@@ -454,7 +502,7 @@
       {
         "name": "onAnnounceForAccessibility",
         "type": "function",
-        "description": "Called when an internal component within accessibility wants to force speech output for an accessibility extension. Do not use without approval from accessibility owners.",
+        "description": "Fired when an internal component within accessibility wants to force speech output for an accessibility extension. Do not use without approval from accessibility owners.",
         "parameters": [
           {
             "name": "announceText",
@@ -468,7 +516,7 @@
       {
         "name": "findScrollableBoundsForPoint",
         "type": "function",
-        "description": "Called when an internal component within accessibility wants to find the nearest scrolling container at a given screen coordinate. Used in Automatic Clicks.",
+        "description": "Fired when an internal component within accessibility wants to find the nearest scrolling container at a given screen coordinate. Used in Automatic Clicks.",
         "parameters": [
           {
             "name": "x",
@@ -479,6 +527,19 @@
             "name": "y",
             "type": "number",
             "description": "Y screen coordinate of the point."
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
+        "name": "onCustomSpokenFeedbackToggled",
+        "type": "function",
+        "description": "Fired when a custom spoken feedback on the active window gets enabled or disabled. Called from ARC++ accessibility.",
+        "parameters": [
+          {
+            "name": "enabled",
+            "type": "boolean",
+            "description": "True if the active window implements custom spoken feedback features."
           }
         ],
         "platforms": ["chromeos"]

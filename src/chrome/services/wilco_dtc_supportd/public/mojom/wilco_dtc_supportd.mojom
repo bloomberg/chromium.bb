@@ -10,6 +10,8 @@
 
 module chromeos.wilco_dtc_supportd.mojom;
 
+import "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom";
+
 [Extensible]
 enum WilcoDtcSupportdWebRequestHttpMethod {
   kGet,
@@ -45,6 +47,8 @@ enum WilcoDtcSupportdEvent {
   kDockDisplay,
   // Attached dock will operate in USB Type-C compatible mode.
   kDockThunderbolt,
+  // Attached charger does not supply enough power.
+  kLowPowerCharger,
 };
 
 // Factory interface exposed by the wilco_dtc_supportd daemon, which allows both
@@ -151,4 +155,14 @@ interface WilcoDtcSupportdClient {
   // Handles actionable EC events related to power (i.e., battery,
   // charger) and connected docking solutions.
   HandleEvent@3(WilcoDtcSupportdEvent event);
+
+  // Binds |service| to an implementation of CrosHealthdDiagnsticsService. In
+  // production, this implementation is provided by cros_healthd.
+  GetCrosHealthdDiagnosticsService@4(
+      chromeos.cros_healthd.mojom.CrosHealthdDiagnosticsService& service);
+
+  // Binds |service| to an implementation of CrosHealthdProbeService. In
+  // production, this implementation is provided by cros_healthd.
+  GetCrosHealthdProbeService@5(
+      chromeos.cros_healthd.mojom.CrosHealthdProbeService& service);
 };

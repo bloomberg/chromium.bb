@@ -8,6 +8,7 @@ import "content/common/native_types.mojom";
 import "content/common/input/input_handler.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "ui/base/ime/mojom/ime_types.mojom";
+import "third_party/blink/public/mojom/input/input_handler.mojom";
 import "ui/display/mojom/display.mojom";
 import "ui/events/mojom/event.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -21,7 +22,7 @@ import "ui/gfx/range/mojom/range.mojom";
 interface RenderWidgetHostNSView {
   // Specify that the NSView will a popup (e.g, date/time picker) that will
   // create its own NSWindow.
-  InitAsPopup(gfx.mojom.Rect content_rect);
+  InitAsPopup(gfx.mojom.Rect content_rect, bool has_shadow);
 
   // Set this to be a child NSView of the NSView mapped to by
   // |parent_ns_view_id|.
@@ -140,7 +141,7 @@ interface RenderWidgetHostNSViewHost {
       content.mojom.Event event,
       array<uint8> native_event_data,
       bool skip_in_browser,
-      array<content.mojom.EditCommand> commands);
+      array<blink.mojom.EditCommand> commands);
 
   // Forward events to the renderer or the input router, as appropriate.
   RouteOrProcessMouseEvent(content.mojom.Event event);

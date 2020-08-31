@@ -16,8 +16,8 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "components/safe_browsing/base_ui_manager.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/safe_browsing/content/base_ui_manager.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 
 class GURL;
 
@@ -59,6 +59,13 @@ class SafeBrowsingUIManager : public BaseUIManager {
   explicit SafeBrowsingUIManager(
       const scoped_refptr<SafeBrowsingService>& service);
 
+  // Displays a SafeBrowsing interstitial.
+  // |ui_manager| is the manager which eventually displays the blocking page.
+  // |resource| is the unsafe resource for which the warning is displayed.
+  static void StartDisplayingBlockingPage(
+      scoped_refptr<SafeBrowsingUIManager> ui_manager,
+      const UnsafeResource& resource);
+
   // Called to stop or shutdown operations on the UI thread. This may be called
   // multiple times during the life of the UIManager. Should be called
   // on UI thread. If shutdown is true, the manager is disabled permanently.
@@ -73,7 +80,8 @@ class SafeBrowsingUIManager : public BaseUIManager {
   void OnBlockingPageDone(const std::vector<UnsafeResource>& resources,
                           bool proceed,
                           content::WebContents* web_contents,
-                          const GURL& main_frame_url) override;
+                          const GURL& main_frame_url,
+                          bool showed_interstitial) override;
 
   // Report hits to unsafe contents (malware, phishing, unsafe download URL)
   // to the server. Can only be called on UI thread.  The hit report will
@@ -103,9 +111,6 @@ class SafeBrowsingUIManager : public BaseUIManager {
   // MaybeReportSafeBrowsingHit. This also notifies all observers in
   // |observer_list_|.
   void CreateAndSendHitReport(const UnsafeResource& resource) override;
-
-  // Calls SafeBrowsingBlockingPage::ShowBlockingPage().
-  void ShowBlockingPageForResource(const UnsafeResource& resource) override;
 
   // Helper method to ensure hit reports are only sent when the user has
   // opted in to extended reporting and is not currently in incognito mode.

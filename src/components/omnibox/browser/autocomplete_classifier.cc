@@ -14,7 +14,9 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/document_provider.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/query_tiles/switches.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "url/gurl.h"
 
@@ -48,13 +50,16 @@ int AutocompleteClassifier::DefaultOmniboxProviders() {
       (base::FeatureList::IsEnabled(omnibox::kDocumentProvider)
            ? AutocompleteProvider::TYPE_DOCUMENT
            : 0) |
-      (base::FeatureList::IsEnabled(omnibox::kOnDeviceHeadProvider)
+      (OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForAnyMode()
            ? AutocompleteProvider::TYPE_ON_DEVICE_HEAD
            : 0) |
       AutocompleteProvider::TYPE_BOOKMARK | AutocompleteProvider::TYPE_BUILTIN |
       AutocompleteProvider::TYPE_HISTORY_QUICK |
       AutocompleteProvider::TYPE_HISTORY_URL |
-      AutocompleteProvider::TYPE_SEARCH | AutocompleteProvider::TYPE_SHORTCUTS;
+      AutocompleteProvider::TYPE_SEARCH | AutocompleteProvider::TYPE_SHORTCUTS |
+      (query_tiles::features::IsEnabledQueryTilesInOmnibox()
+           ? AutocompleteProvider::TYPE_QUERY_TILE
+           : 0);
 }
 
 void AutocompleteClassifier::Classify(

@@ -5,11 +5,14 @@
 package org.chromium.android_webview.common.variations;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.android_webview.proto.AwVariationsSeedOuterClass.AwVariationsSeed;
+import org.chromium.base.BuildInfo;
+import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
@@ -21,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Utilities for manipulating variations seeds, used by both WebView and WebView's services.
@@ -76,10 +80,15 @@ public class VariationsUtils {
 
     // Creates/updates the timestamp with the current time.
     public static void updateStampTime() {
+        updateStampTime(new Date().getTime());
+    }
+
+    // Creates/updates the timestamp with the specified time.
+    @VisibleForTesting
+    public static void updateStampTime(long now) {
         File file = getStampFile();
         try {
             if (!file.createNewFile()) {
-                long now = (new Date()).getTime();
                 file.setLastModified(now);
             }
         } catch (IOException e) {
@@ -88,7 +97,7 @@ public class VariationsUtils {
     }
 
     // Silently returns null in case of a missing or truncated seed, which is expected in case
-    // of an incomplete downoad or copy. Other IO problems are actual errors, and are logged.
+    // of an incomplete download or copy. Other IO problems are actual errors, and are logged.
     @Nullable
     public static SeedInfo readSeedFile(File inFile) {
         if (!inFile.exists()) return null;
@@ -103,22 +112,24 @@ public class VariationsUtils {
                 return null;
             }
 
-            if (!proto.hasSignature() || !proto.hasCountry() || !proto.hasDate()
-                    || !proto.hasIsGzipCompressed() || !proto.hasSeedData()) {
+            if (!proto.hasSignature() || !proto.hasCountry()
+                    || (!proto.hasDate() && !proto.hasDateHeader()) || !proto.hasIsGzipCompressed()
+                    || !proto.hasSeedData()) {
                 return null;
             }
 
             SeedInfo info = new SeedInfo();
             info.signature = proto.getSignature();
             info.country = proto.getCountry();
-            info.date = proto.getDate();
             info.isGzipCompressed = proto.getIsGzipCompressed();
             info.seedData = proto.getSeedData().toByteArray();
 
-            // |dateHeader| is deprecated in favor of |date|, but parse |dateHeader| in case this
-            // seed predates the deprecation.
-            // TODO(crbug.com/1013390): Remove this fallback logic.
-            if (proto.hasDateHeader()) {
+            if (proto.hasDate()) {
+                info.date = proto.getDate();
+            } else {
+                // |dateHeader| is deprecated in favor of |date|, but parse |dateHeader| in case
+                // this seed predates the deprecation.
+                // TODO(crbug.com/1013390): Remove this fallback logic.
                 info.date = SeedInfo.parseDateHeader(proto.getDateHeader());
             }
 
@@ -151,6 +162,29 @@ public class VariationsUtils {
             return false;
         } finally {
             closeSafely(out);
+        }
+    }
+
+    // Returns the value of the |switchName| flag converted from seconds to milliseconds. If the
+    // |switchName| flag isn't present, or contains an invalid value, |defaultValueMillis| will be
+    // returned.
+    public static long getDurationSwitchValueInMillis(String switchName, long defaultValueMillis) {
+        CommandLine cli = CommandLine.getInstance();
+        if (!cli.hasSwitch(switchName)) {
+            return defaultValueMillis;
+        }
+        try {
+            return TimeUnit.SECONDS.toMillis(Long.parseLong(cli.getSwitchValue(switchName)));
+        } catch (NumberFormatException e) {
+            Log.e(TAG, "Invalid value for flag " + switchName, e);
+            return defaultValueMillis;
+        }
+    }
+
+    // Logs an INFO message if running in a debug build of Android.
+    public static void debugLog(String message) {
+        if (BuildInfo.isDebugAndroid()) {
+            Log.i(TAG, message);
         }
     }
 }

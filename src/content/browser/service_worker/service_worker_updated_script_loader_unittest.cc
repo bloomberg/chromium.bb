@@ -73,10 +73,7 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
  public:
   ServiceWorkerUpdatedScriptLoaderTest()
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
-        kScriptURL(kNormalScriptURL) {
-    feature_list_.InitAndEnableFeature(
-        blink::features::kServiceWorkerImportedScriptUpdateCheck);
-  }
+        kScriptURL(kNormalScriptURL) {}
   ~ServiceWorkerUpdatedScriptLoaderTest() override = default;
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
@@ -87,8 +84,8 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
     SetUpRegistration(kScriptURL);
 
     // Create the old script resource in storage.
-    WriteToDiskCacheSync(context()->storage(), kScriptURL, kOldResourceId,
-                         kOldHeaders, kOldData, std::string());
+    WriteToDiskCacheWithIdSync(context()->storage(), kScriptURL, kOldResourceId,
+                               kOldHeaders, kOldData, std::string());
   }
 
   // Sets up ServiceWorkerRegistration and ServiceWorkerVersion. This should be
@@ -101,9 +98,8 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
   void SetUpRegistrationWithOptions(
       const GURL& script_url,
       blink::mojom::ServiceWorkerRegistrationOptions options) {
-    registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
-        options, context()->storage()->NewRegistrationId(),
-        context()->AsWeakPtr());
+    registration_ =
+        CreateNewServiceWorkerRegistration(context()->registry(), options);
     SetUpVersion(script_url);
   }
 
@@ -111,9 +107,9 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
   // next time DoRequest() is called, |version_| will attempt to install,
   // possibly updating if registration has an installed worker.
   void SetUpVersion(const GURL& script_url) {
-    version_ = base::MakeRefCounted<ServiceWorkerVersion>(
-        registration_.get(), script_url, blink::mojom::ScriptType::kClassic,
-        context()->storage()->NewVersionId(), context()->AsWeakPtr());
+    version_ = CreateNewServiceWorkerVersion(
+        context()->registry(), registration_.get(), script_url,
+        blink::mojom::ScriptType::kClassic);
     version_->SetStatus(ServiceWorkerVersion::NEW);
   }
 
@@ -130,9 +126,10 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
     network::ResourceRequest request;
     request.url = url;
     request.method = "GET";
-    request.resource_type = static_cast<int>((url == version_->script_url())
-                                                 ? ResourceType::kServiceWorker
-                                                 : ResourceType::kScript);
+    request.destination =
+        url == version_->script_url()
+            ? network::mojom::RequestDestination::kServiceWorker
+            : network::mojom::RequestDestination::kScript;
 
     *out_client = std::make_unique<network::TestURLLoaderClient>();
     *out_loader = ServiceWorkerUpdatedScriptLoader::CreateAndStart(
@@ -180,8 +177,6 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
 
  protected:
   BrowserTaskEnvironment task_environment_;
-  base::test::ScopedFeatureList feature_list_;
-
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 
   scoped_refptr<ServiceWorkerRegistration> registration_;
@@ -342,7 +337,7 @@ TEST_F(ServiceWorkerUpdatedScriptLoaderTest, NewScriptLargerThanOld) {
 TEST_F(ServiceWorkerUpdatedScriptLoaderTest, NewScriptEmptyBody) {
   const std::string kNewHeaders =
       "HTTP/1.0 200 OK\0Content-Type: text/javascript\0Content-Length: 0\0\0";
-  const std::string kNewData = "";
+  const std::string kNewData;
 
   SetUpComparedScriptInfo(
       0, kNewHeaders, kNewData,
@@ -382,7 +377,7 @@ TEST_F(ServiceWorkerUpdatedScriptLoaderTest, CompleteFailed) {
   client_->RunUntilComplete();
 
   EXPECT_EQ(net::ERR_FAILED, client_->completion_status().error_code);
-  EXPECT_EQ(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
+  EXPECT_EQ(blink::mojom::kInvalidServiceWorkerResourceId,
             LookupResourceId(kScriptURL));
 }
 

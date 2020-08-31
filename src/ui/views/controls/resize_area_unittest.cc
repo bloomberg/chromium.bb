@@ -5,6 +5,7 @@
 #include "ui/views/controls/resize_area.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "build/build_config.h"
@@ -28,7 +29,7 @@ const int kGestureScrollDistance = 100;
 const int kGestureScrollSteps = 4;
 const int kDistancePerGestureScrollUpdate =
     kGestureScrollDistance / kGestureScrollSteps;
-}
+}  // namespace
 
 namespace views {
 

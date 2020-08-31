@@ -9,7 +9,7 @@ URL: http://bgoffice.sourceforge.net/
      http://extensions.services.openoffice.org/project/pl-dict
      http://ftp.linux.ee/pub/openoffice/contrib/dictionaries/et_EE.zip
      http://ftp.services.openoffice.org/pub/OpenOffice.org/contrib/dictionaries/de_DE_neu.zip
-     http://ispell-uk.sourceforge.net/
+     https://github.com/brown-uk/dict_uk
      http://openoffice.rs/dict-sr/
      https://addons.mozilla.org/en-US/firefox/addon/albanian-dictionary/
      https://addons.mozilla.org/en-US/firefox/addon/thamizha-solthiruthi/
@@ -24,7 +24,7 @@ URL: http://bgoffice.sourceforge.net/
      http://www.broffice.org/
      http://www.dicollecte.org/
      http://www.justlocal.com.au/
-     http://sourceforge.net/projects/lilak/
+     http://lilak-project.com/
      http://techiaith.cymru/hunspell/cy_GB/
      https://github.com/hyspell/HySpell_3.0.1/tree/master/Dictionaries/Dictr
      https://github.com/msmiljan/srdict_chromium
@@ -230,3 +230,6 @@ and sh-* dictionaries (Cyrillic and Latin alphabets respectively). New
 dictionaries are not continuation of old ones but keep the same file names,
 so we just incremented major version from 3-0 to 4-0. Original unaltered new
 dictionaries are located at: https://github.com/msmiljan/srdict_chromium
+
+On Jan 8, 2020, we updated the en and fa dictionaries to the latest upstream
+versions. Because dic files changed, we incremented the major version to 9-0.

@@ -31,7 +31,6 @@
 #include <utility>
 
 #include "base/single_thread_task_runner.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -39,6 +38,8 @@
 #include "third_party/blink/renderer/platform/loader/fetch/preload_key.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -53,7 +54,7 @@ class DetachableConsoleLogger;
 class DetachableUseCounter;
 class DetachableResourceFetcherProperties;
 class FetchContext;
-class FrameScheduler;
+class FrameOrWorkerScheduler;
 class MHTMLArchive;
 class KURL;
 class Resource;
@@ -102,7 +103,7 @@ class PLATFORM_EXPORT ResourceFetcher
   // in ResourceFetcherInit to ensure correctness of this ResourceFetcher.
   explicit ResourceFetcher(const ResourceFetcherInit&);
   virtual ~ResourceFetcher();
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
   // - This function returns the same object throughout this fetcher's
   //   entire life.
@@ -131,10 +132,10 @@ class PLATFORM_EXPORT ResourceFetcher
     resource_load_observer_ = observer;
   }
 
-  // Triggers a fetch based on the given FetchParameters (if there isn't a
-  // suitable Resource already cached) and registers the given ResourceClient
-  // with the Resource. Guaranteed to return a non-null Resource of the subtype
-  // specified by ResourceFactory::GetType().
+  // Triggers or defers a fetch based on the given FetchParameters (if there
+  // isn't a suitable Resource already cached) and registers the given
+  // ResourceClient with the Resource. Guaranteed to return a non-null Resource
+  // of the subtype specified by ResourceFactory::GetType().
   Resource* RequestResource(FetchParameters&,
                             const ResourceFactory&,
                             ResourceClient*);
@@ -162,12 +163,18 @@ class PLATFORM_EXPORT ResourceFetcher
     return cached_resources_map_;
   }
 
+  enum class LoadBlockingPolicy {
+    kDefault,
+    kForceNonBlockingLoad,
+  };
+
   // Binds the given Resource instance to this ResourceFetcher instance to
   // start loading the Resource actually.
   // Usually, RequestResource() calls this method internally, but needs to
   // call this method explicitly on cases such as ResourceNeedsLoad() returning
   // false.
   bool StartLoad(Resource*);
+  bool StartLoad(Resource*, ResourceRequestBody, LoadBlockingPolicy);
 
   void SetAutoLoadImages(bool);
   void SetImagesEnabled(bool);
@@ -223,6 +230,9 @@ class PLATFORM_EXPORT ResourceFetcher
       ResourceType,
       IsImageSet);
 
+  static network::mojom::RequestDestination DetermineRequestDestination(
+      ResourceType);
+
   void UpdateAllImageResourcePriorities();
 
   // Returns whether the given resource is contained as a preloaded resource.
@@ -237,6 +247,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void EmulateLoadStartedForInspector(Resource*,
                                       const KURL&,
                                       mojom::RequestContextType,
+                                      network::mojom::RequestDestination,
                                       const AtomicString& initiator_name);
 
   // This is called from leak detectors (Real-world leak detector & web test
@@ -249,11 +260,11 @@ class PLATFORM_EXPORT ResourceFetcher
 
   mojom::blink::BlobRegistry* GetBlobRegistry();
 
-  FrameScheduler* GetFrameScheduler();
+  FrameOrWorkerScheduler* GetFrameOrWorkerScheduler();
 
   ResourceLoadPriority ComputeLoadPriorityForTesting(
       ResourceType type,
-      const ResourceRequest& request,
+      const ResourceRequestHead& request,
       ResourcePriority::VisibilityStatus visibility_statue,
       FetchParameters::DeferOption defer_option,
       FetchParameters::SpeculativePreloadType speculative_preload_type,
@@ -264,6 +275,11 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void SetShouldLogRequestAsInvalidInImportedDocument() {
     should_log_request_as_invalid_in_imported_document_ = true;
+  }
+
+  void SetThrottleOptionOverride(
+      ResourceLoadScheduler::ThrottleOptionOverride throttle_option_override) {
+    scheduler_->SetThrottleOptionOverride(throttle_option_override);
   }
 
  private:
@@ -284,7 +300,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void StorePerformanceTimingInitiatorInformation(Resource*);
   ResourceLoadPriority ComputeLoadPriority(
       ResourceType,
-      const ResourceRequest&,
+      const ResourceRequestHead&,
       ResourcePriority::VisibilityStatus,
       FetchParameters::DeferOption = FetchParameters::kNoDefer,
       FetchParameters::SpeculativePreloadType =
@@ -297,7 +313,6 @@ class PLATFORM_EXPORT ResourceFetcher
   base::Optional<ResourceRequestBlockedReason> PrepareRequest(
       FetchParameters&,
       const ResourceFactory&,
-      uint64_t identifier,
       WebScopedVirtualTimePauser& virtual_time_pauser);
 
   Resource* ResourceForStaticData(const FetchParameters&,
@@ -319,7 +334,13 @@ class PLATFORM_EXPORT ResourceFetcher
   void StopFetchingIncludingKeepaliveLoaders();
 
   // RevalidationPolicy enum values are used in UMAs https://crbug.com/579496.
-  enum RevalidationPolicy { kUse, kRevalidate, kReload, kLoad };
+  enum class RevalidationPolicy {
+    kUse,
+    kRevalidate,
+    kReload,
+    kLoad,
+    kMaxValue = kLoad
+  };
 
   // A wrapper just for placing a trace_event macro.
   RevalidationPolicy DetermineRevalidationPolicy(
@@ -345,8 +366,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void MoveResourceLoaderToNonBlocking(ResourceLoader*);
   void RemoveResourceLoader(ResourceLoader*);
 
-  void DidLoadResourceFromMemoryCache(uint64_t identifier,
-                                      Resource*,
+  void DidLoadResourceFromMemoryCache(Resource*,
                                       const ResourceRequest&,
                                       bool is_static_data);
 
@@ -402,14 +422,16 @@ class PLATFORM_EXPORT ResourceFetcher
   std::unique_ptr<HashSet<String>> preloaded_urls_for_test_;
 
   // TODO(altimin): Move FrameScheduler to oilpan.
-  base::WeakPtr<FrameScheduler> frame_scheduler_;
+  base::WeakPtr<FrameOrWorkerScheduler> frame_or_worker_scheduler_;
 
   // Timeout timer for keepalive requests.
   TaskHandle keepalive_loaders_task_handle_;
 
   uint32_t inflight_keepalive_bytes_ = 0;
 
-  mojo::Remote<mojom::blink::BlobRegistry> blob_registry_remote_;
+  HeapMojoRemote<mojom::blink::BlobRegistry,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      blob_registry_remote_;
 
   // This is not in the bit field below because we want to use AutoReset.
   bool is_in_request_resource_ = false;
@@ -445,7 +467,7 @@ class ResourceCacheValidationSuppressor {
   }
 
  private:
-  Member<ResourceFetcher> loader_;
+  ResourceFetcher* loader_;
   bool previous_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceCacheValidationSuppressor);
@@ -465,16 +487,18 @@ struct PLATFORM_EXPORT ResourceFetcherInit final {
                       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                       ResourceFetcher::LoaderFactory* loader_factory);
 
-  const Member<DetachableResourceFetcherProperties> properties;
-  const Member<FetchContext> context;
+  DetachableResourceFetcherProperties* const properties;
+  FetchContext* const context;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-  const Member<ResourceFetcher::LoaderFactory> loader_factory;
-  Member<DetachableUseCounter> use_counter;
-  Member<DetachableConsoleLogger> console_logger;
+  ResourceFetcher::LoaderFactory* const loader_factory;
+  DetachableUseCounter* use_counter = nullptr;
+  DetachableConsoleLogger* console_logger = nullptr;
   ResourceLoadScheduler::ThrottlingPolicy initial_throttling_policy =
       ResourceLoadScheduler::ThrottlingPolicy::kNormal;
-  Member<MHTMLArchive> archive;
-  FrameScheduler* frame_scheduler = nullptr;
+  MHTMLArchive* archive = nullptr;
+  FrameOrWorkerScheduler* frame_or_worker_scheduler = nullptr;
+  ResourceLoadScheduler::ThrottleOptionOverride throttle_option_override =
+      ResourceLoadScheduler::ThrottleOptionOverride::kNone;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceFetcherInit);
 };

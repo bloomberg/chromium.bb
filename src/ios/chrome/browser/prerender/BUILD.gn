@@ -4,15 +4,20 @@
 
 source_set("prerender") {
   configs += [ "//build/config/compiler:enable_arc" ]
+  public = [
+    "preload_controller_delegate.h",
+    "prerender_service.h",
+    "prerender_service_factory.h",
+  ]
   sources = [
     "preload_controller.h",
     "preload_controller.mm",
-    "preload_controller_delegate.h",
-    "prerender_service.h",
-    "prerender_service.mm",
-    "prerender_service_factory.h",
     "prerender_service_factory.mm",
+    "prerender_service_impl.h",
+    "prerender_service_impl.mm",
   ]
+
+  friend = [ ":unit_tests" ]
 
   deps = [
     "//base",
@@ -28,7 +33,9 @@ source_set("prerender") {
     "//ios/chrome/browser/geolocation:geolocation_internal",
     "//ios/chrome/browser/history:tab_helper",
     "//ios/chrome/browser/itunes_urls:itunes_urls",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/net",
+    "//ios/chrome/browser/sessions:restoration_agent",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/tabs",
@@ -42,13 +49,23 @@ source_set("prerender") {
   ]
 }
 
+source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "fake_prerender_service.h",
+    "fake_prerender_service.mm",
+  ]
+
+  deps = [ ":prerender" ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
 
   sources = [
     "preload_controller_unittest.mm",
-    "prerender_service_unittest.mm",
+    "prerender_service_impl_unittest.mm",
   ]
   deps = [
     ":prerender",
@@ -65,9 +82,7 @@ source_set("unit_tests") {
 source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
-  sources = [
-    "prerender_egtest.mm",
-  ]
+  sources = [ "prerender_egtest.mm" ]
   deps = [
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
@@ -89,9 +104,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "prerender_egtest.mm",
-  ]
+  sources = [ "prerender_egtest.mm" ]
   deps = [
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",

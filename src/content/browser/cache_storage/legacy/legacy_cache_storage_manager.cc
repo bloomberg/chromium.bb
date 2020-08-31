@@ -27,6 +27,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
@@ -59,24 +60,14 @@ void DeleteOriginDidDeleteDir(storage::QuotaClient::DeletionCallback callback,
 // Calculate the sum of all cache sizes in this store, but only if all sizes are
 // known. If one or more sizes are not known then return kSizeUnknown.
 int64_t GetCacheStorageSize(const base::FilePath& base_path,
-                            const base::Time& base_path_time,
                             const base::Time& index_time,
                             const proto::CacheStorageIndex& index) {
-  // If the base path's modified time is newer than the index, then the
-  // contents of a cache must have changed.  The index is stale.
-  if (base_path_time > index_time)
-    return CacheStorage::kSizeUnknown;
-
-  // It should be impossible for the directory containing the index to
-  // have a modified time older than the index's modified time.  Modifying
-  // the index should update the directories time as well.  Therefore we
-  // should be guaranteed that the time is equal here.
-  //
-  // In practice, though, there can be a few microseconds difference on
-  // some operating systems so we can't do an exact DCHECK here.  Instead
-  // we do a fuzzy DCHECK allowing some microseconds difference.
-  DCHECK_LE((index_time - base_path_time).magnitude().InMicroseconds(), 10);
-
+  // Note, do not use the base path time modified to invalidate the index file.
+  // On some platforms the directory modified time will be slightly later than
+  // the last modified time of a file within it.  This means any write to the
+  // index file will also update the directory modify time slightly after
+  // immediately invalidating it.  To avoid this we only look at the cache
+  // directories and not the base directory containing the index itself.
   int64_t storage_size = 0;
   for (int i = 0, max = index.cache_size(); i < max; ++i) {
     const proto::CacheStorageIndex::Cache& cache = index.cache(i);
@@ -185,13 +176,8 @@ void ListOriginsAndLastModifiedOnTaskRunner(
       continue;
     }
 
-    if (!base::GetFileInfo(path, &file_info)) {
-      RecordIndexValidationResult(IndexResult::kPathFileInfoFailed);
-      continue;
-    }
-
-    int64_t storage_size = GetCacheStorageSize(path, file_info.last_modified,
-                                               index_last_modified, index);
+    int64_t storage_size =
+        GetCacheStorageSize(path, index_last_modified, index);
     base::UmaHistogramBoolean("ServiceWorkerCache.UsedIndexFileSize",
                               storage_size != CacheStorage::kSizeUnknown);
 
@@ -256,7 +242,7 @@ scoped_refptr<LegacyCacheStorageManager> LegacyCacheStorageManager::Create(
     scoped_refptr<CacheStorageContextImpl::ObserverList> observers) {
   base::FilePath root_path = path;
   if (!path.empty()) {
-    root_path = path.Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
+    root_path = path.Append(storage::kServiceWorkerDirectory)
                     .AppendASCII("CacheStorage");
   }
 
@@ -511,7 +497,7 @@ void LegacyCacheStorageManager::DeleteOriginDidClose(
   cache_storage.reset();
 
   quota_manager_proxy_->NotifyStorageModified(
-      CacheStorageQuotaClient::GetIDFromOwner(owner), origin,
+      CacheStorageQuotaClient::GetClientTypeFromOwner(owner), origin,
       blink::mojom::StorageType::kTemporary, -1 * origin_size);
 
   if (owner == CacheStorageOwner::kCacheAPI)

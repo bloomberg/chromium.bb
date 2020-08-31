@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_POINTER_EVENT_MANAGER_H_
 
 #include "base/macros.h"
+#include "third_party/blink/public/common/input/web_pointer_properties.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
-#include "third_party/blink/public/platform/web_pointer_properties.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event_factory.h"
@@ -28,7 +28,7 @@ class CORE_EXPORT PointerEventManager final
     : public GarbageCollected<PointerEventManager> {
  public:
   PointerEventManager(LocalFrame&, MouseEventManager&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   // This is the unified path for handling all input device events. This may
   // cause firing DOM pointerevents, mouseevent, and touch events accordingly.
@@ -112,7 +112,7 @@ class CORE_EXPORT PointerEventManager final
     DISALLOW_NEW();
 
    public:
-    void Trace(blink::Visitor* visitor) { visitor->Trace(target); }
+    void Trace(Visitor* visitor) { visitor->Trace(target); }
     Member<Element> target;
     EventTargetAttributes() : target(nullptr) {}
     EventTargetAttributes(Element* target) : target(target) {}
@@ -149,8 +149,8 @@ class CORE_EXPORT PointerEventManager final
                   EventTarget* related_target,
                   const AtomicString&,
                   bool check_for_listener);
-    Member<PointerEventManager> pointer_event_manager_;
-    Member<PointerEvent> pointer_event_;
+    PointerEventManager* pointer_event_manager_;
+    PointerEvent* pointer_event_;
     DISALLOW_COPY_AND_ASSIGN(PointerEventBoundaryEventDispatcher);
   };
 
@@ -248,7 +248,7 @@ class CORE_EXPORT PointerEventManager final
   // See "PREVENT MOUSE EVENT flag" in the spec:
   //   https://w3c.github.io/pointerevents/#compatibility-mapping-with-mouse-events
   bool prevent_mouse_event_for_pointer_type_
-      [static_cast<size_t>(WebPointerProperties::PointerType::kLastEntry) + 1];
+      [static_cast<size_t>(WebPointerProperties::PointerType::kMaxValue) + 1];
 
   // Set upon scrolling starts when sending a pointercancel, prevents PE
   // dispatches for non-hovering pointers until all of them become inactive.

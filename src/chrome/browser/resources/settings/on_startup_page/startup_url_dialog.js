@@ -2,7 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import '../settings_shared_css.m.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.js';
+
+import {StartupPageInfo, StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from './startup_urls_page_browser_proxy.js';
+
 
 /**
  * Describe the current URL input error status.
@@ -19,6 +29,7 @@ const UrlInputError = {
  * or editing a startup URL entry.
  */
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'settings-startup-url-dialog',
 
   properties: {
@@ -52,12 +63,12 @@ Polymer({
     actionButtonText_: String,
   },
 
-  /** @private {!settings.SearchEnginesBrowserProxy} */
+  /** @private {?StartupUrlsPageBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
-  attached: function() {
-    this.browserProxy_ = settings.StartupUrlsPageBrowserProxyImpl.getInstance();
+  attached() {
+    this.browserProxy_ = StartupUrlsPageBrowserProxyImpl.getInstance();
 
     if (this.model) {
       this.dialogTitle_ = loadTimeData.getString('onStartupEditPage');
@@ -77,7 +88,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasError_: function() {
+  hasError_() {
     return this.error_ != UrlInputError.NONE;
   },
 
@@ -87,17 +98,17 @@ Polymer({
    * @return {string}
    * @private
    */
-  errorMessage_: function(invalidUrl, tooLong) {
+  errorMessage_(invalidUrl, tooLong) {
     return ['', invalidUrl, tooLong][this.error_];
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.$.dialog.close();
   },
 
   /** @private */
-  onActionButtonTap_: function() {
+  onActionButtonTap_() {
     const whenDone = this.model ?
         this.browserProxy_.editStartupPage(this.model.modelIndex, this.url_) :
         this.browserProxy_.addStartupPage(this.url_);
@@ -112,7 +123,7 @@ Polymer({
   },
 
   /** @private */
-  validate_: function() {
+  validate_() {
     if (this.url_.length == 0) {
       this.$.actionButton.disabled = true;
       this.error_ = UrlInputError.NONE;
@@ -129,4 +140,3 @@ Polymer({
     });
   },
 });
-})();

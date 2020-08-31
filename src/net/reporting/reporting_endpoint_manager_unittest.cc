@@ -32,24 +32,23 @@ class TestReportingCache : public ReportingCache {
       : expected_origin_(expected_origin), expected_group_(expected_group) {}
   ~TestReportingCache() override = default;
 
-  void SetEndpoint(const NetworkIsolationKey& network_isolation_key,
-                   const ReportingEndpoint& reporting_endpoint) {
-    reporting_endpoints_[network_isolation_key].push_back(reporting_endpoint);
+  void SetEndpoint(const ReportingEndpoint& reporting_endpoint) {
+    reporting_endpoints_[reporting_endpoint.group_key.network_isolation_key]
+        .push_back(reporting_endpoint);
   }
 
   // ReportingCache implementation:
 
   std::vector<ReportingEndpoint> GetCandidateEndpointsForDelivery(
-      const NetworkIsolationKey& network_isolation_key,
-      const url::Origin& origin,
-      const std::string& group_name) override {
-    EXPECT_EQ(expected_origin_, origin);
-    EXPECT_EQ(expected_group_, group_name);
-    return reporting_endpoints_[network_isolation_key];
+      const ReportingEndpointGroupKey& group_key) override {
+    EXPECT_EQ(expected_origin_, group_key.origin);
+    EXPECT_EQ(expected_group_, group_key.group_name);
+    return reporting_endpoints_[group_key.network_isolation_key];
   }
 
   // Everything below is NOTREACHED.
-  void AddReport(const GURL& url,
+  void AddReport(const NetworkIsolationKey& network_isolation_key,
+                 const GURL& url,
                  const std::string& user_agent,
                  const std::string& group_name,
                  const std::string& type,
@@ -67,13 +66,9 @@ class TestReportingCache : public ReportingCache {
     NOTREACHED();
     return base::Value();
   }
-  void GetNonpendingReports(
-      std::vector<const ReportingReport*>* reports_out) const override {
+  std::vector<const ReportingReport*> GetReportsToDeliver() override {
     NOTREACHED();
-  }
-  void SetReportsPending(
-      const std::vector<const ReportingReport*>& reports) override {
-    NOTREACHED();
+    return {};
   }
   void ClearReportsPending(
       const std::vector<const ReportingReport*>& reports) override {
@@ -83,8 +78,7 @@ class TestReportingCache : public ReportingCache {
       const std::vector<const ReportingReport*>& reports) override {
     NOTREACHED();
   }
-  void IncrementEndpointDeliveries(const url::Origin& origin,
-                                   const std::string& group_name,
+  void IncrementEndpointDeliveries(const ReportingEndpointGroupKey& group_key,
                                    const GURL& url,
                                    int reports_delivered,
                                    bool successful) override {
@@ -110,18 +104,25 @@ class TestReportingCache : public ReportingCache {
     return false;
   }
   void OnParsedHeader(
+      const NetworkIsolationKey& network_isolation_key,
       const url::Origin& origin,
       std::vector<ReportingEndpointGroup> parsed_header) override {
     NOTREACHED();
   }
-  std::vector<url::Origin> GetAllOrigins() const override {
+  std::set<url::Origin> GetAllOrigins() const override {
     NOTREACHED();
-    return std::vector<url::Origin>();
+    return std::set<url::Origin>();
   }
-  void RemoveClient(const url::Origin& origin) override { NOTREACHED(); }
+  void RemoveClient(const NetworkIsolationKey& network_isolation_key,
+                    const url::Origin& origin) override {
+    NOTREACHED();
+  }
+  void RemoveClientsForOrigin(const url::Origin& origin) override {
+    NOTREACHED();
+  }
   void RemoveAllClients() override { NOTREACHED(); }
-  void RemoveEndpointGroup(const url::Origin& origin,
-                           const std::string& group_name) override {
+  void RemoveEndpointGroup(
+      const ReportingEndpointGroupKey& group_key) override {
     NOTREACHED();
   }
   void RemoveEndpointsForUrl(const GURL& url) override { NOTREACHED(); }
@@ -140,16 +141,20 @@ class TestReportingCache : public ReportingCache {
     return 0;
   }
   void Flush() override { NOTREACHED(); }
-  ReportingEndpoint GetEndpointForTesting(const url::Origin& origin,
-                                          const std::string& group_name,
-                                          const GURL& url) const override {
+  ReportingEndpoint GetEndpointForTesting(
+      const ReportingEndpointGroupKey& group_key,
+      const GURL& url) const override {
     NOTREACHED();
     return ReportingEndpoint();
   }
-  bool EndpointGroupExistsForTesting(const url::Origin& origin,
-                                     const std::string& group_name,
+  bool EndpointGroupExistsForTesting(const ReportingEndpointGroupKey& group_key,
                                      OriginSubdomains include_subdomains,
                                      base::Time expires) const override {
+    NOTREACHED();
+    return false;
+  }
+  bool ClientExistsForTesting(const NetworkIsolationKey& network_isolation_key,
+                              const url::Origin& origin) const override {
     NOTREACHED();
     return false;
   }
@@ -157,8 +162,11 @@ class TestReportingCache : public ReportingCache {
     NOTREACHED();
     return 0;
   }
-  void SetEndpointForTesting(const url::Origin& origin,
-                             const std::string& group_name,
+  size_t GetClientCountForTesting() const override {
+    NOTREACHED();
+    return 0;
+  }
+  void SetEndpointForTesting(const ReportingEndpointGroupKey& group_key,
                              const GURL& url,
                              OriginSubdomains include_subdomains,
                              base::Time expires,
@@ -201,14 +209,18 @@ class ReportingEndpointManagerTest : public testing::Test {
       int weight = ReportingEndpoint::EndpointInfo::kDefaultWeight,
       const NetworkIsolationKey& network_isolation_key =
           NetworkIsolationKey()) {
-    cache_.SetEndpoint(network_isolation_key,
-                       ReportingEndpoint(kOrigin, kGroup,
-                                         ReportingEndpoint::EndpointInfo{
-                                             endpoint, priority, weight}));
+    ReportingEndpointGroupKey group_key(kGroupKey);
+    group_key.network_isolation_key = network_isolation_key;
+    cache_.SetEndpoint(ReportingEndpoint(
+        group_key,
+        ReportingEndpoint::EndpointInfo{endpoint, priority, weight}));
   }
 
+  const NetworkIsolationKey kNik;
   const url::Origin kOrigin = url::Origin::Create(GURL("https://origin/"));
   const std::string kGroup = "group";
+  const ReportingEndpointGroupKey kGroupKey =
+      ReportingEndpointGroupKey(kNik, kOrigin, kGroup);
   const GURL kEndpoint = GURL("https://endpoint/");
 
   ReportingPolicy policy_;
@@ -219,16 +231,16 @@ class ReportingEndpointManagerTest : public testing::Test {
 };
 
 TEST_F(ReportingEndpointManagerTest, NoEndpoint) {
-  ReportingEndpoint endpoint = endpoint_manager_->FindEndpointForDelivery(
-      NetworkIsolationKey(), kOrigin, kGroup);
+  ReportingEndpoint endpoint =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   EXPECT_FALSE(endpoint);
 }
 
 TEST_F(ReportingEndpointManagerTest, Endpoint) {
   SetEndpoint(kEndpoint);
 
-  ReportingEndpoint endpoint = endpoint_manager_->FindEndpointForDelivery(
-      NetworkIsolationKey(), kOrigin, kGroup);
+  ReportingEndpoint endpoint =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kEndpoint, endpoint.info.url);
 }
@@ -245,15 +257,15 @@ TEST_F(ReportingEndpointManagerTest, BackedOffEndpoint) {
                                              false);
 
   // After one failure, endpoint is in exponential backoff.
-  ReportingEndpoint endpoint = endpoint_manager_->FindEndpointForDelivery(
-      NetworkIsolationKey(), kOrigin, kGroup);
+  ReportingEndpoint endpoint =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   EXPECT_FALSE(endpoint);
 
   // After initial delay, endpoint is usable again.
   clock_.Advance(initial_delay);
 
-  ReportingEndpoint endpoint2 = endpoint_manager_->FindEndpointForDelivery(
-      NetworkIsolationKey(), kOrigin, kGroup);
+  ReportingEndpoint endpoint2 =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   ASSERT_TRUE(endpoint2);
   EXPECT_EQ(kEndpoint, endpoint2.info.url);
 
@@ -261,22 +273,22 @@ TEST_F(ReportingEndpointManagerTest, BackedOffEndpoint) {
                                              false);
 
   // After a second failure, endpoint is backed off again.
-  ReportingEndpoint endpoint3 = endpoint_manager_->FindEndpointForDelivery(
-      NetworkIsolationKey(), kOrigin, kGroup);
+  ReportingEndpoint endpoint3 =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   EXPECT_FALSE(endpoint3);
 
   clock_.Advance(initial_delay);
 
   // Next backoff is longer -- 2x the first -- so endpoint isn't usable yet.
-  ReportingEndpoint endpoint4 = endpoint_manager_->FindEndpointForDelivery(
-      NetworkIsolationKey(), kOrigin, kGroup);
+  ReportingEndpoint endpoint4 =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   EXPECT_FALSE(endpoint4);
 
   clock_.Advance(initial_delay);
 
   // After 2x the initial delay, the endpoint is usable again.
-  ReportingEndpoint endpoint5 = endpoint_manager_->FindEndpointForDelivery(
-      NetworkIsolationKey(), kOrigin, kGroup);
+  ReportingEndpoint endpoint5 =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   ASSERT_TRUE(endpoint5);
   EXPECT_EQ(kEndpoint, endpoint5.info.url);
 
@@ -290,14 +302,14 @@ TEST_F(ReportingEndpointManagerTest, BackedOffEndpoint) {
   endpoint_manager_->InformOfEndpointRequest(NetworkIsolationKey(), kEndpoint,
                                              false);
 
-  ReportingEndpoint endpoint6 = endpoint_manager_->FindEndpointForDelivery(
-      NetworkIsolationKey(), kOrigin, kGroup);
+  ReportingEndpoint endpoint6 =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   EXPECT_FALSE(endpoint6);
 
   clock_.Advance(initial_delay);
 
-  ReportingEndpoint endpoint7 = endpoint_manager_->FindEndpointForDelivery(
-      NetworkIsolationKey(), kOrigin, kGroup);
+  ReportingEndpoint endpoint7 =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   EXPECT_TRUE(endpoint7);
 }
 
@@ -315,8 +327,8 @@ TEST_F(ReportingEndpointManagerTest, RandomEndpoint) {
   bool endpoint2_seen = false;
 
   for (int i = 0; i < kMaxAttempts; ++i) {
-    ReportingEndpoint endpoint = endpoint_manager_->FindEndpointForDelivery(
-        NetworkIsolationKey(), kOrigin, kGroup);
+    ReportingEndpoint endpoint =
+        endpoint_manager_->FindEndpointForDelivery(kGroupKey);
     ASSERT_TRUE(endpoint);
     ASSERT_TRUE(endpoint.info.url == kEndpoint1 ||
                 endpoint.info.url == kEndpoint2);
@@ -343,8 +355,8 @@ TEST_F(ReportingEndpointManagerTest, Priority) {
   SetEndpoint(kBackupEndpoint, 20 /* priority */,
               ReportingEndpoint::EndpointInfo::kDefaultWeight);
 
-  ReportingEndpoint endpoint = endpoint_manager_->FindEndpointForDelivery(
-      NetworkIsolationKey(), kOrigin, kGroup);
+  ReportingEndpoint endpoint =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kPrimaryEndpoint, endpoint.info.url);
 
@@ -353,16 +365,16 @@ TEST_F(ReportingEndpointManagerTest, Priority) {
   // us to choose the backend endpoint.
   endpoint_manager_->InformOfEndpointRequest(NetworkIsolationKey(),
                                              kPrimaryEndpoint, false);
-  ReportingEndpoint endpoint2 = endpoint_manager_->FindEndpointForDelivery(
-      NetworkIsolationKey(), kOrigin, kGroup);
+  ReportingEndpoint endpoint2 =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   ASSERT_TRUE(endpoint2);
   EXPECT_EQ(kBackupEndpoint, endpoint2.info.url);
 
   // Advance the current time far enough to clear out the primary endpoint's
   // backoff clock.  This should bring the primary endpoint back into play.
   clock_.Advance(base::TimeDelta::FromMinutes(2));
-  ReportingEndpoint endpoint3 = endpoint_manager_->FindEndpointForDelivery(
-      NetworkIsolationKey(), kOrigin, kGroup);
+  ReportingEndpoint endpoint3 =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   ASSERT_TRUE(endpoint3);
   EXPECT_EQ(kPrimaryEndpoint, endpoint3.info.url);
 }
@@ -387,8 +399,8 @@ TEST_F(ReportingEndpointManagerTest, Weight) {
   int endpoint2_count = 0;
 
   for (int i = 0; i < kTotalEndpointWeight; ++i) {
-    ReportingEndpoint endpoint = endpoint_manager_->FindEndpointForDelivery(
-        NetworkIsolationKey(), kOrigin, kGroup);
+    ReportingEndpoint endpoint =
+        endpoint_manager_->FindEndpointForDelivery(kGroupKey);
     ASSERT_TRUE(endpoint);
     ASSERT_TRUE(endpoint.info.url == kEndpoint1 ||
                 endpoint.info.url == kEndpoint2);
@@ -416,8 +428,8 @@ TEST_F(ReportingEndpointManagerTest, ZeroWeights) {
   int endpoint2_count = 0;
 
   for (int i = 0; i < 10; ++i) {
-    ReportingEndpoint endpoint = endpoint_manager_->FindEndpointForDelivery(
-        NetworkIsolationKey(), kOrigin, kGroup);
+    ReportingEndpoint endpoint =
+        endpoint_manager_->FindEndpointForDelivery(kGroupKey);
     ASSERT_TRUE(endpoint);
     ASSERT_TRUE(endpoint.info.url == kEndpoint1 ||
                 endpoint.info.url == kEndpoint2);
@@ -438,48 +450,44 @@ TEST_F(ReportingEndpointManagerTest, NetworkIsolationKey) {
 
   const NetworkIsolationKey kNetworkIsolationKey1(kOrigin, kOrigin);
   const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const ReportingEndpointGroupKey kGroupKey1(kNetworkIsolationKey1, kOrigin,
+                                             kGroup);
+  const ReportingEndpointGroupKey kGroupKey2(kNetworkIsolationKey2, kOrigin,
+                                             kGroup);
 
   // An Endpoint set for kNetworkIsolationKey1 should not affect
   // kNetworkIsolationKey2.
   SetEndpoint(kEndpoint, ReportingEndpoint::EndpointInfo::kDefaultPriority,
               0 /* weight */, kNetworkIsolationKey1);
-  ReportingEndpoint endpoint = endpoint_manager_->FindEndpointForDelivery(
-      kNetworkIsolationKey1, kOrigin, kGroup);
+  ReportingEndpoint endpoint =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey1);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kEndpoint, endpoint.info.url);
-  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(kNetworkIsolationKey2,
-                                                          kOrigin, kGroup));
-  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(NetworkIsolationKey(),
-                                                          kOrigin, kGroup));
+  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(kGroupKey2));
+  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(kGroupKey));
 
   // Set the same Endpoint for kNetworkIsolationKey2, so both should be
   // reporting to the same URL.
   SetEndpoint(kEndpoint, ReportingEndpoint::EndpointInfo::kDefaultPriority,
               0 /* weight */, kNetworkIsolationKey2);
-  endpoint = endpoint_manager_->FindEndpointForDelivery(kNetworkIsolationKey1,
-                                                        kOrigin, kGroup);
+  endpoint = endpoint_manager_->FindEndpointForDelivery(kGroupKey1);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kEndpoint, endpoint.info.url);
-  endpoint = endpoint_manager_->FindEndpointForDelivery(kNetworkIsolationKey2,
-                                                        kOrigin, kGroup);
+  endpoint = endpoint_manager_->FindEndpointForDelivery(kGroupKey2);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kEndpoint, endpoint.info.url);
-  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(NetworkIsolationKey(),
-                                                          kOrigin, kGroup));
+  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(kGroupKey));
 
   // An error reporting to that URL in the context of kNetworkIsolationKey1
   // should only affect the Endpoint retrieved in the context of
   // kNetworkIsolationKey1.
   endpoint_manager_->InformOfEndpointRequest(kNetworkIsolationKey1, kEndpoint,
                                              false);
-  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(kNetworkIsolationKey1,
-                                                          kOrigin, kGroup));
-  endpoint = endpoint_manager_->FindEndpointForDelivery(kNetworkIsolationKey2,
-                                                        kOrigin, kGroup);
+  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(kGroupKey1));
+  endpoint = endpoint_manager_->FindEndpointForDelivery(kGroupKey2);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kEndpoint, endpoint.info.url);
-  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(NetworkIsolationKey(),
-                                                          kOrigin, kGroup));
+  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(kGroupKey));
 }
 
 TEST_F(ReportingEndpointManagerTest, NetworkIsolationKeyWithMultipleEndpoints) {
@@ -487,6 +495,10 @@ TEST_F(ReportingEndpointManagerTest, NetworkIsolationKeyWithMultipleEndpoints) {
 
   const NetworkIsolationKey kNetworkIsolationKey1(kOrigin, kOrigin);
   const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  const ReportingEndpointGroupKey kGroupKey1(kNetworkIsolationKey1, kOrigin,
+                                             kGroup);
+  const ReportingEndpointGroupKey kGroupKey2(kNetworkIsolationKey2, kOrigin,
+                                             kGroup);
 
   const GURL kEndpoint1("https://endpoint1/");
   const GURL kEndpoint2("https://endpoint2/");
@@ -511,8 +523,8 @@ TEST_F(ReportingEndpointManagerTest, NetworkIsolationKeyWithMultipleEndpoints) {
   // Make sure that calling FindEndpointForDelivery() with kNetworkIsolationKey1
   // can return both of its endpoints, but not kNetworkIsolationKey2's endpoint.
   for (int i = 0; i < kMaxAttempts; ++i) {
-    ReportingEndpoint endpoint = endpoint_manager_->FindEndpointForDelivery(
-        kNetworkIsolationKey1, kOrigin, kGroup);
+    ReportingEndpoint endpoint =
+        endpoint_manager_->FindEndpointForDelivery(kGroupKey1);
     ASSERT_TRUE(endpoint);
     ASSERT_TRUE(endpoint.info.url == kEndpoint1 ||
                 endpoint.info.url == kEndpoint2);
@@ -527,8 +539,8 @@ TEST_F(ReportingEndpointManagerTest, NetworkIsolationKeyWithMultipleEndpoints) {
   EXPECT_TRUE(endpoint1_seen);
   EXPECT_TRUE(endpoint2_seen);
 
-  ReportingEndpoint endpoint = endpoint_manager_->FindEndpointForDelivery(
-      kNetworkIsolationKey2, kOrigin, kGroup);
+  ReportingEndpoint endpoint =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey2);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kEndpoint3, endpoint.info.url);
 }
@@ -546,8 +558,8 @@ TEST_F(ReportingEndpointManagerTest, CacheEviction) {
   std::set<GURL> seen_endpoints;
   for (int i = 0; i < ReportingEndpointManager::kMaxEndpointBackoffCacheSize;
        ++i) {
-    ReportingEndpoint endpoint = endpoint_manager_->FindEndpointForDelivery(
-        NetworkIsolationKey(), kOrigin, kGroup);
+    ReportingEndpoint endpoint =
+        endpoint_manager_->FindEndpointForDelivery(kGroupKey);
     EXPECT_TRUE(endpoint);
     EXPECT_FALSE(seen_endpoints.count(endpoint.info.url));
     seen_endpoints.insert(endpoint.info.url);
@@ -555,29 +567,29 @@ TEST_F(ReportingEndpointManagerTest, CacheEviction) {
                                                endpoint.info.url, false);
   }
   // All endpoints should now be marked as bad.
-  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(NetworkIsolationKey(),
-                                                          kOrigin, kGroup));
+  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(kGroupKey));
 
   // Add another endpoint with a different NetworkIsolationKey;
-  const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  const NetworkIsolationKey kDifferentNetworkIsolationKey(kOrigin, kOrigin);
+  const ReportingEndpointGroupKey kDifferentGroupKey(
+      kDifferentNetworkIsolationKey, kOrigin, kGroup);
   SetEndpoint(kEndpoint, ReportingEndpoint::EndpointInfo::kDefaultPriority,
               ReportingEndpoint::EndpointInfo::kDefaultWeight,
-              kNetworkIsolationKey);
+              kDifferentNetworkIsolationKey);
   // All endpoints associated with the empty NetworkIsolationKey should still be
   // marked as bad.
-  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(NetworkIsolationKey(),
-                                                          kOrigin, kGroup));
+  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(kGroupKey));
 
-  // Make the endpoint added for the kNetworkIsolationKey as bad.
-  endpoint_manager_->InformOfEndpointRequest(kNetworkIsolationKey, kEndpoint,
-                                             false);
-  // The only endpoint for kNetworkIsolationKey should still be marked as bad.
-  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(kNetworkIsolationKey,
-                                                          kOrigin, kGroup));
+  // Make the endpoint added for the kDifferentNetworkIsolationKey as bad.
+  endpoint_manager_->InformOfEndpointRequest(kDifferentNetworkIsolationKey,
+                                             kEndpoint, false);
+  // The only endpoint for kDifferentNetworkIsolationKey should still be marked
+  // as bad.
+  EXPECT_FALSE(endpoint_manager_->FindEndpointForDelivery(kDifferentGroupKey));
   // One of the endpoints for the empty NetworkIsolationKey should no longer be
   // marked as bad, due to eviction.
-  ReportingEndpoint endpoint = endpoint_manager_->FindEndpointForDelivery(
-      NetworkIsolationKey(), kOrigin, kGroup);
+  ReportingEndpoint endpoint =
+      endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   EXPECT_TRUE(endpoint);
 
   // Reporting a success for the (only) good endpoint for the empty
@@ -587,8 +599,7 @@ TEST_F(ReportingEndpointManagerTest, CacheEviction) {
   endpoint_manager_->InformOfEndpointRequest(NetworkIsolationKey(),
                                              endpoint.info.url, true);
 
-  EXPECT_TRUE(endpoint_manager_->FindEndpointForDelivery(kNetworkIsolationKey,
-                                                         kOrigin, kGroup));
+  EXPECT_TRUE(endpoint_manager_->FindEndpointForDelivery(kDifferentGroupKey));
 }
 
 }  // namespace

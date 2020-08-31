@@ -6,9 +6,10 @@
 #define QUICHE_QUIC_CORE_QUIC_STREAM_SEND_BUFFER_H_
 
 #include "net/third_party/quiche/src/quic/core/frames/quic_stream_frame.h"
+#include "net/third_party/quiche/src/quic/core/quic_circular_deque.h"
+#include "net/third_party/quiche/src/quic/core/quic_interval_deque.h"
 #include "net/third_party/quiche/src/quic/core/quic_interval_set.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_iovec.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_span.h"
@@ -34,6 +35,9 @@ struct QUIC_EXPORT_PRIVATE BufferedSlice {
   BufferedSlice(const BufferedSlice& other) = delete;
   BufferedSlice& operator=(const BufferedSlice& other) = delete;
   ~BufferedSlice();
+
+  // Return an interval representing the offset and length.
+  QuicInterval<std::size_t> interval() const;
 
   // Stream data of this data slice.
   QuicMemSlice slice;
@@ -141,7 +145,10 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
   // Cleanup empty slices in order from buffered_slices_.
   void CleanUpBufferedSlices();
 
-  QuicDeque<BufferedSlice> buffered_slices_;
+  // |current_end_offset_| stores the end offset of the current slice to ensure
+  // data isn't being written out of order when using the |interval_deque_|.
+  QuicStreamOffset current_end_offset_;
+  QuicIntervalDeque<BufferedSlice> interval_deque_;
 
   // Offset of next inserted byte.
   QuicStreamOffset stream_offset_;

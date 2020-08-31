@@ -21,6 +21,11 @@
  */
 class GrAppliedHardClip {
 public:
+    static const GrAppliedHardClip& Disabled() {
+        static GrAppliedHardClip kDisabled;
+        return kDisabled;
+    }
+
     GrAppliedHardClip() = default;
     GrAppliedHardClip(GrAppliedHardClip&& that) = default;
     GrAppliedHardClip(const GrAppliedHardClip&) = delete;
@@ -94,6 +99,7 @@ public:
         return std::move(fClipCoverageFPs[i]);
     }
 
+    const GrAppliedHardClip& hardClip() const { return fHardClip; }
     GrAppliedHardClip& hardClip() { return fHardClip; }
 
     void addCoverageFP(std::unique_ptr<GrFragmentProcessor> fp) {

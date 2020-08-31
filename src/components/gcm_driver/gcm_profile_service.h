@@ -50,8 +50,7 @@ class GCMProfileService : public KeyedService {
 #if BUILDFLAG(USE_GCM_FROM_PLATFORM)
   GCMProfileService(
       base::FilePath path,
-      scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
 #else
   GCMProfileService(
       PrefService* prefs,
@@ -71,9 +70,6 @@ class GCMProfileService : public KeyedService {
       scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
 #endif
   ~GCMProfileService() override;
-
-  // Returns whether GCM is enabled.
-  static bool IsGCMEnabled(PrefService* prefs);
 
   // KeyedService:
   void Shutdown() override;

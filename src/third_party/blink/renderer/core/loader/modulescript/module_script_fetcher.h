@@ -12,17 +12,21 @@
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {
 
 class ConsoleMessage;
-class ResourceFetcher;
+class ModuleScriptLoader;
 
 // ModuleScriptFetcher is an abstract class to fetch module scripts. Derived
 // classes are expected to fetch a module script for the given FetchParameters
 // and return its client a fetched resource as ModuleScriptCreationParams.
 class CORE_EXPORT ModuleScriptFetcher : public ResourceClient {
  public:
+  // ModuleScriptFetcher should only be called from ModuleScriptLoader.
+  explicit ModuleScriptFetcher(util::PassKey<ModuleScriptLoader>);
+
   class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
     virtual void NotifyFetchFinished(
@@ -35,19 +39,17 @@ class CORE_EXPORT ModuleScriptFetcher : public ResourceClient {
     void OnFailed();
   };
 
+  // Fetch() must be called right after ModuleScriptFetcher is constructed.
+  // Fetch() must not be called more than once.
+  //
   // Takes a non-const reference to FetchParameters because
   // ScriptResource::Fetch() requires it.
-  //
-  // Do not use |modulator_for_built_in_modules| other than for built-in
-  // modules. Fetching should depend sorely on the ResourceFetcher that
-  // represents fetch client settings object. https://crbug.com/928435
-  // |modulator_for_built_in_modules| can be nullptr in unit tests, and
-  // in such cases built-in modules are not loaded at all.
   virtual void Fetch(FetchParameters&,
                      ResourceFetcher*,
-                     const Modulator* modulator_for_built_in_modules,
                      ModuleGraphLevel,
                      Client*) = 0;
+
+  void Trace(Visitor*) override;
 
  protected:
   static bool WasModuleLoadSuccessful(

@@ -1,9 +1,21 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import {DebuggerModel} from './DebuggerModel.js';            // eslint-disable-line no-unused-vars
+import {RemoteObject} from './RemoteObject.js';              // eslint-disable-line no-unused-vars
+import {RuntimeModel} from './RuntimeModel.js';              // eslint-disable-line no-unused-vars
+import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
-export default class HeapProfilerModel extends SDK.SDKModel {
+export class HeapProfilerModel extends SDKModel {
   /**
-   * @param {!SDK.Target} target
+   * @param {!Target} target
    */
   constructor(target) {
     super(target);
@@ -11,19 +23,19 @@ export default class HeapProfilerModel extends SDK.SDKModel {
     this._enabled = false;
     this._heapProfilerAgent = target.heapProfilerAgent();
     this._memoryAgent = target.memoryAgent();
-    this._runtimeModel = /** @type {!SDK.RuntimeModel} */ (target.model(SDK.RuntimeModel));
+    this._runtimeModel = /** @type {!RuntimeModel} */ (target.model(RuntimeModel));
     this._samplingProfilerDepth = 0;
   }
 
   /**
-   * @return {!SDK.DebuggerModel}
+   * @return {!DebuggerModel}
    */
   debuggerModel() {
     return this._runtimeModel.debuggerModel();
   }
 
   /**
-   * @return {!SDK.RuntimeModel}
+   * @return {!RuntimeModel}
    */
   runtimeModel() {
     return this._runtimeModel;
@@ -136,7 +148,7 @@ export default class HeapProfilerModel extends SDK.SDKModel {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   collectGarbage() {
     return this._heapProfilerAgent.collectGarbage();
@@ -153,7 +165,7 @@ export default class HeapProfilerModel extends SDK.SDKModel {
   /**
    * @param {string} snapshotObjectId
    * @param {string} objectGroupName
-   * @return {!Promise<?SDK.RemoteObject>}
+   * @return {!Promise<?RemoteObject>}
    */
   async objectForSnapshotObjectId(snapshotObjectId, objectGroupName) {
     const result = await this._heapProfilerAgent.getObjectByHeapObjectId(snapshotObjectId, objectGroupName);
@@ -162,7 +174,7 @@ export default class HeapProfilerModel extends SDK.SDKModel {
 
   /**
    * @param {string} snapshotObjectId
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   addInspectedHeapObject(snapshotObjectId) {
     return this._heapProfilerAgent.addInspectedHeapObject(snapshotObjectId);
@@ -170,15 +182,16 @@ export default class HeapProfilerModel extends SDK.SDKModel {
 
   /**
    * @param {boolean} reportProgress
-   * @return {!Promise}
+   * @param {boolean} treatGlobalObjectsAsRoots
+   * @return {!Promise<void>}
    */
-  takeHeapSnapshot(reportProgress) {
-    return this._heapProfilerAgent.takeHeapSnapshot(reportProgress);
+  takeHeapSnapshot(reportProgress, treatGlobalObjectsAsRoots) {
+    return this._heapProfilerAgent.takeHeapSnapshot(reportProgress, treatGlobalObjectsAsRoots);
   }
 
   /**
    * @param {boolean} recordAllocationStacks
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   startTrackingHeapObjects(recordAllocationStacks) {
     return this._heapProfilerAgent.startTrackingHeapObjects(recordAllocationStacks);
@@ -186,7 +199,7 @@ export default class HeapProfilerModel extends SDK.SDKModel {
 
   /**
    * @param {boolean} reportProgress
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   stopTrackingHeapObjects(reportProgress) {
     return this._heapProfilerAgent.stopTrackingHeapObjects(reportProgress);
@@ -238,7 +251,6 @@ export const Events = {
 };
 
 /**
- * @implements {Protocol.Profiler.Profile}
  * @extends {Protocol.HeapProfiler.SamplingHeapProfile}
  */
 class NativeHeapProfile {
@@ -304,16 +316,4 @@ class HeapProfilerDispatcher {
   }
 }
 
-/* Legacy exported object */
-self.SDK = self.SDK || {};
-
-/* Legacy exported object */
-SDK = SDK || {};
-
-/** @constructor */
-SDK.HeapProfilerModel = HeapProfilerModel;
-
-/** @enum {symbol} */
-SDK.HeapProfilerModel.Events = Events;
-
-SDK.SDKModel.register(SDK.HeapProfilerModel, SDK.Target.Capability.JS, false);
+SDKModel.register(HeapProfilerModel, Capability.JS, false);

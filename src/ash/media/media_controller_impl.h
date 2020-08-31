@@ -16,10 +16,6 @@
 
 class PrefRegistrySimple;
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace ash {
 
 class MediaClient;
@@ -42,8 +38,7 @@ class ASH_EXPORT MediaControllerImpl
     : public MediaController,
       public media_session::mojom::MediaControllerObserver {
  public:
-  // |connector| can be null in tests.
-  explicit MediaControllerImpl(service_manager::Connector* connector);
+  MediaControllerImpl();
   ~MediaControllerImpl() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -65,8 +60,13 @@ class ASH_EXPORT MediaControllerImpl
   // media session service to control playback. Otherwise it will forward to
   // |client_|.
   void HandleMediaPlayPause();
+  void HandleMediaPlay();
+  void HandleMediaPause();
+  void HandleMediaStop();
   void HandleMediaNextTrack();
   void HandleMediaPrevTrack();
+  void HandleMediaSeekBackward();
+  void HandleMediaSeekForward();
 
   // Methods that forward to |client_|.
   void RequestCaptureState();
@@ -139,8 +139,6 @@ class ASH_EXPORT MediaControllerImpl
   // Mojo pointer to the active media session controller.
   mojo::Remote<media_session::mojom::MediaController>
       media_session_controller_remote_;
-
-  service_manager::Connector* const connector_;
 
   mojo::Receiver<media_session::mojom::MediaControllerObserver>
       media_controller_observer_receiver_{this};

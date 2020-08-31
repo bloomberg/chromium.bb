@@ -59,7 +59,7 @@ class SVGGeometryElement : public SVGGraphicsElement {
   static float PathLengthScaleFactor(float computed_path_length,
                                      float author_path_length);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   SVGGeometryElement(const QualifiedName&,
@@ -79,11 +79,20 @@ class SVGGeometryElement : public SVGGraphicsElement {
   Member<SVGAnimatedNumber> path_length_;
 };
 
-inline bool IsSVGGeometryElement(const SVGElement& element) {
-  return element.IsSVGGeometryElement();
+template <>
+inline bool IsElementOfType<const SVGGeometryElement>(const Node& node) {
+  return IsA<SVGGeometryElement>(node);
 }
-
-DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGeometryElement);
+template <>
+struct DowncastTraits<SVGGeometryElement> {
+  static bool AllowFrom(const Node& node) {
+    auto* svg_element = DynamicTo<SVGElement>(node);
+    return svg_element && AllowFrom(*svg_element);
+  }
+  static bool AllowFrom(const SVGElement& svg_element) {
+    return svg_element.IsSVGGeometryElement();
+  }
+};
 
 }  // namespace blink
 

@@ -11,14 +11,11 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+class ChromeBrowserState;
 class KeyedService;
 
 namespace favicon {
 class LargeIconService;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 // Singleton that owns all LargeIconService and associates them with
@@ -27,7 +24,7 @@ class IOSChromeLargeIconServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:
   static favicon::LargeIconService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   static IOSChromeLargeIconServiceFactory* GetInstance();
 

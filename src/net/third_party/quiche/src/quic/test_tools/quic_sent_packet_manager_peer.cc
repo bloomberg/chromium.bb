@@ -102,22 +102,8 @@ void QuicSentPacketManagerPeer::MarkForRetransmission(
 
 // static
 QuicTime::Delta QuicSentPacketManagerPeer::GetRetransmissionDelay(
-    const QuicSentPacketManager* sent_packet_manager,
-    size_t consecutive_rto_count) {
-  return sent_packet_manager->GetRetransmissionDelay(consecutive_rto_count);
-}
-
-// static
-QuicTime::Delta QuicSentPacketManagerPeer::GetRetransmissionDelay(
     const QuicSentPacketManager* sent_packet_manager) {
   return sent_packet_manager->GetRetransmissionDelay();
-}
-
-// static
-QuicTime::Delta QuicSentPacketManagerPeer::GetTailLossProbeDelay(
-    const QuicSentPacketManager* sent_packet_manager,
-    size_t consecutive_tlp_count) {
-  return sent_packet_manager->GetTailLossProbeDelay(consecutive_tlp_count);
 }
 
 // static
@@ -219,6 +205,13 @@ bool QuicSentPacketManagerPeer::AdaptiveTimeThresholdEnabled(
     QuicSentPacketManager* sent_packet_manager) {
   return sent_packet_manager->uber_loss_algorithm_.general_loss_algorithms_[0]
       .use_adaptive_time_threshold();
+}
+
+// static
+bool QuicSentPacketManagerPeer::UsePacketThresholdForRuntPackets(
+    QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->uber_loss_algorithm_.general_loss_algorithms_[0]
+      .use_packet_threshold_for_runt_packets();
 }
 
 }  // namespace test

@@ -9,7 +9,6 @@
 
 #include "base/feature_list.h"
 #include "base/ios/ios_util.h"
-#include "base/logging.h"
 #include "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -29,10 +28,6 @@ const CGFloat kPortraitWidth[INTERFACE_IDIOM_COUNT] = {
     320,  // IPHONE_IDIOM
     768   // IPAD_IDIOM
 };
-
-bool IsHighResScreen() {
-  return [[UIScreen mainScreen] scale] > 1.0;
-}
 
 bool IsPortrait() {
   UIInterfaceOrientation orient = GetInterfaceOrientation();

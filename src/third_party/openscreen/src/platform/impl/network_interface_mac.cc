@@ -19,11 +19,11 @@
 
 #include "platform/api/network_interface.h"
 #include "platform/base/ip_address.h"
+#include "platform/impl/network_interface.h"
 #include "platform/impl/scoped_pipe.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
-namespace platform {
 
 namespace {
 
@@ -68,13 +68,12 @@ std::vector<InterfaceInfo> ProcessInterfacesList(ifaddrs* interfaces) {
   // Socket used for querying interface media types.
   const ScopedFd ioctl_socket(socket(AF_INET6, SOCK_DGRAM, 0));
 
-  // Walk the |interfaces| linked list, creating the hierarchial structure.
+  // Walk the |interfaces| linked list, creating the hierarchical structure.
   std::vector<InterfaceInfo> results;
   for (ifaddrs* cur = interfaces; cur; cur = cur->ifa_next) {
-    // Skip: 1) loopback interfaces, 2) interfaces that are down, 3) interfaces
-    // with no address configured.
-    if ((IFF_LOOPBACK & cur->ifa_flags) || !(IFF_RUNNING & cur->ifa_flags) ||
-        !cur->ifa_addr) {
+    // Skip: 1) interfaces that are down, 2) interfaces with no address
+    // configured.
+    if (!(IFF_RUNNING & cur->ifa_flags) || !cur->ifa_addr) {
       continue;
     }
 
@@ -86,6 +85,7 @@ std::vector<InterfaceInfo> ProcessInterfacesList(ifaddrs* interfaces) {
         [&name](const InterfaceInfo& info) { return info.name == name; });
     InterfaceInfo* interface;
     if (it == results.end()) {
+      InterfaceInfo::Type type = InterfaceInfo::Type::kOther;
       // Query for the interface media type and status. If not valid/active,
       // skip further processing. Note that "active" here means the media is
       // connected to the interface, which is different than the interface being
@@ -96,16 +96,20 @@ std::vector<InterfaceInfo> ProcessInterfacesList(ifaddrs* interfaces) {
       // ifmr.ifm_name string, and it will always be NUL terminated.
       memcpy(ifmr.ifm_name, name.data(),
              std::min(name.size(), sizeof(ifmr.ifm_name) - 1));
-      if (ioctl(ioctl_socket.get(), SIOCGIFMEDIA, &ifmr) < 0 ||
-          !((ifmr.ifm_status & IFM_AVALID) && (ifmr.ifm_status & IFM_ACTIVE))) {
-        continue;  // Skip this interface since it's not valid or active.
-      }
-      InterfaceInfo::Type type = InterfaceInfo::Type::kOther;
-      if (ifmr.ifm_current & IFM_IEEE80211) {
-        type = InterfaceInfo::Type::kWifi;
-      }
-      if (ifmr.ifm_current & IFM_ETHER) {
-        type = InterfaceInfo::Type::kEthernet;
+      if (ioctl(ioctl_socket.get(), SIOCGIFMEDIA, &ifmr) >= 0) {
+        if (!((ifmr.ifm_status & IFM_AVALID) &&
+              (ifmr.ifm_status & IFM_ACTIVE))) {
+          continue;  // Skip this interface since it's not valid or active.
+        }
+        if (ifmr.ifm_current & IFM_IEEE80211) {
+          type = InterfaceInfo::Type::kWifi;
+        } else if (ifmr.ifm_current & IFM_ETHER) {
+          type = InterfaceInfo::Type::kEthernet;
+        }
+      } else if (cur->ifa_flags & IFF_LOOPBACK) {
+        type = InterfaceInfo::Type::kLoopback;
+      } else {
+        continue;
       }
 
       // Start with an unknown hardware ethernet address, which should be
@@ -163,7 +167,7 @@ std::vector<InterfaceInfo> ProcessInterfacesList(ifaddrs* interfaces) {
 
 }  // namespace
 
-std::vector<InterfaceInfo> GetNetworkInterfaces() {
+std::vector<InterfaceInfo> GetAllInterfaces() {
   std::vector<InterfaceInfo> results;
   ifaddrs* interfaces;
   if (getifaddrs(&interfaces) == 0) {
@@ -173,5 +177,4 @@ std::vector<InterfaceInfo> GetNetworkInterfaces() {
   return results;
 }
 
-}  // namespace platform
 }  // namespace openscreen

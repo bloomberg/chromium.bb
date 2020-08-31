@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -172,6 +173,12 @@ void ChunkDemuxerStream::OnMemoryPressure(
     base::TimeDelta media_time,
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level,
     bool force_instant_gc) {
+  // TODO(sebmarchand): Check if MEMORY_PRESSURE_LEVEL_MODERATE should also be
+  // ignored.
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
+    return;
+  }
   base::AutoLock auto_lock(lock_);
   return stream_->OnMemoryPressure(media_time, memory_pressure_level,
                                    force_instant_gc);
@@ -439,16 +446,16 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
 }
 
 ChunkDemuxer::ChunkDemuxer(
-    const base::Closure& open_cb,
-    const base::Closure& progress_cb,
-    const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
+    base::OnceClosure open_cb,
+    base::RepeatingClosure progress_cb,
+    EncryptedMediaInitDataCB encrypted_media_init_data_cb,
     MediaLog* media_log)
     : state_(WAITING_FOR_INIT),
       cancel_next_seek_(false),
       host_(nullptr),
-      open_cb_(open_cb),
-      progress_cb_(progress_cb),
-      encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
+      open_cb_(std::move(open_cb)),
+      progress_cb_(std::move(progress_cb)),
+      encrypted_media_init_data_cb_(std::move(encrypted_media_init_data_cb)),
       media_log_(media_log),
       duration_(kNoTimestamp),
       user_specified_duration_(-1),
@@ -569,6 +576,11 @@ int64_t ChunkDemuxer::GetMemoryUsage() const {
   return mem;
 }
 
+base::Optional<container_names::MediaContainerName>
+ChunkDemuxer::GetContainerForMetrics() const {
+  return base::nullopt;
+}
+
 void ChunkDemuxer::AbortPendingReads() {
   base::AutoLock auto_lock(lock_);
   DCHECK(state_ == INITIALIZED || state_ == ENDED || state_ == SHUTDOWN ||
@@ -640,18 +652,18 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
     return ChunkDemuxer::kNotSupported;
   }
 
-  std::unique_ptr<FrameProcessor> frame_processor(new FrameProcessor(
-      base::BindRepeating(&ChunkDemuxer::IncreaseDurationIfNecessary,
-                          base::Unretained(this)),
-      media_log_));
+  std::unique_ptr<FrameProcessor> frame_processor =
+      std::make_unique<FrameProcessor>(
+          base::BindRepeating(&ChunkDemuxer::IncreaseDurationIfNecessary,
+                              base::Unretained(this)),
+          media_log_);
 
-  std::unique_ptr<SourceBufferState> source_state(new SourceBufferState(
-      std::move(stream_parser), std::move(frame_processor),
-      base::Bind(&ChunkDemuxer::CreateDemuxerStream, base::Unretained(this),
-                 id),
-      media_log_));
-
-  SourceBufferState::NewTextTrackCB new_text_track_cb;
+  std::unique_ptr<SourceBufferState> source_state =
+      std::make_unique<SourceBufferState>(
+          std::move(stream_parser), std::move(frame_processor),
+          base::BindRepeating(&ChunkDemuxer::CreateDemuxerStream,
+                              base::Unretained(this), id),
+          media_log_);
 
   // TODO(wolenetz): Change these to DCHECKs or switch to returning
   // kReachedIdLimit once less verification in release build is needed. See
@@ -665,7 +677,7 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
   source_state->Init(base::BindOnce(&ChunkDemuxer::OnSourceInitDone,
                                     base::Unretained(this), id),
                      ExpectedCodecs(content_type, codecs),
-                     encrypted_media_init_data_cb_, new_text_track_cb);
+                     encrypted_media_init_data_cb_, base::NullCallback());
 
   // TODO(wolenetz): Change to DCHECKs once less verification in release build
   // is needed. See https://crbug.com/786975.
@@ -685,7 +697,7 @@ void ChunkDemuxer::SetTracksWatcher(
 
 void ChunkDemuxer::SetParseWarningCallback(
     const std::string& id,
-    const SourceBufferParseWarningCB& parse_warning_cb) {
+    SourceBufferParseWarningCB parse_warning_cb) {
   base::AutoLock auto_lock(lock_);
   CHECK(IsValidId(id));
   source_state_map_[id]->SetParseWarningCallback(parse_warning_cb);
@@ -804,6 +816,12 @@ void ChunkDemuxer::OnMemoryPressure(
     base::TimeDelta currentMediaTime,
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level,
     bool force_instant_gc) {
+  // TODO(sebmarchand): Check if MEMORY_PRESSURE_LEVEL_MODERATE should also be
+  // ignored.
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
+    return;
+  }
   base::AutoLock auto_lock(lock_);
   for (const auto& itr : source_state_map_) {
     itr.second->OnMemoryPressure(currentMediaTime, memory_pressure_level,

@@ -4,22 +4,22 @@
 
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 
+#include "base/check_op.h"
 #import "base/ios/block_types.h"
-#include "base/logging.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/settings/google_services/advanced_signin_settings_coordinator.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_presenting.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface SigninInteractionCoordinator () <
-    AdvancedSigninSettingsCoordinatorDelegate,
-    SigninInteractionPresenting>
+@interface SigninInteractionCoordinator () <SigninInteractionPresenting>
 
 // Coordinator to present alerts.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
@@ -27,8 +27,10 @@
 // The controller managed by this coordinator.
 @property(nonatomic, strong) SigninInteractionController* controller;
 
-// The dispatcher to which commands should be sent.
-@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
+// The coordinator used to control sign-in UI flows.
+// See https://crbug.com/971989 for the migration plan to exclusively use
+// SigninCoordinator to trigger sign-in UI.
+@property(nonatomic, strong) SigninCoordinator* coordinator;
 
 // The UIViewController upon which UI should be presented.
 @property(nonatomic, strong) UIViewController* presentingViewController;
@@ -39,22 +41,13 @@
 // Sign-in completion.
 @property(nonatomic, copy) signin_ui::CompletionCallback signinCompletion;
 
-// Advanced sign-in settings coordinator.
-@property(nonatomic, strong)
-    AdvancedSigninSettingsCoordinator* advancedSigninSettingsCoordinator;
-
 @end
 
 @implementation SigninInteractionCoordinator
 
-- (instancetype)initWithBrowser:(Browser*)browser
-                     dispatcher:
-                         (id<ApplicationCommands, BrowserCommands>)dispatcher {
+- (instancetype)initWithBrowser:(Browser*)browser {
   DCHECK(browser);
   self = [super initWithBaseViewController:nil browser:browser];
-  if (self) {
-    _dispatcher = dispatcher;
-  }
   return self;
 }
 
@@ -64,17 +57,38 @@
     presentingViewController:(UIViewController*)viewController
                   completion:(signin_ui::CompletionCallback)completion {
   // Ensure that nothing is done if a sign in operation is already in progress.
-  if (self.controller) {
+  if (self.coordinator || self.controller) {
     return;
   }
 
-  [self setupForSigninOperationWithAccessPoint:accessPoint
-                                   promoAction:promoAction
-                      presentingViewController:viewController
-                                    completion:completion];
+  if (base::FeatureList::IsEnabled(kNewSigninArchitecture)) {
+    self.coordinator = [SigninCoordinator
+        userSigninCoordinatorWithBaseViewController:viewController
+                                            browser:self.browser
+                                           identity:identity
+                                        accessPoint:accessPoint
+                                        promoAction:promoAction];
 
-  [self.controller signInWithIdentity:identity
-                           completion:[self callbackToClearState]];
+    __weak SigninInteractionCoordinator* weakSelf = self;
+    self.coordinator.signinCompletion =
+        ^(SigninCoordinatorResult signinResult, SigninCompletionInfo*) {
+          if (completion) {
+            completion(signinResult == SigninCoordinatorResultSuccess);
+          }
+          [weakSelf.coordinator stop];
+          weakSelf.coordinator = nil;
+        };
+
+    [self.coordinator start];
+  } else {
+    [self setupForSigninOperationWithAccessPoint:accessPoint
+                                     promoAction:promoAction
+                        presentingViewController:viewController
+                                      completion:completion];
+
+    [self.controller signInWithIdentity:identity
+                             completion:[self callbackToClearState]];
+  }
 }
 
 - (void)reAuthenticateWithAccessPoint:(signin_metrics::AccessPoint)accessPoint
@@ -83,16 +97,36 @@
                            completion:
                                (signin_ui::CompletionCallback)completion {
   // Ensure that nothing is done if a sign in operation is already in progress.
-  if (self.controller) {
+  if (self.coordinator || self.controller) {
     return;
   }
 
-  [self setupForSigninOperationWithAccessPoint:accessPoint
-                                   promoAction:promoAction
-                      presentingViewController:viewController
-                                    completion:completion];
+  if (base::FeatureList::IsEnabled(kNewSigninArchitecture)) {
+    self.coordinator = [SigninCoordinator
+        reAuthenticationCoordinatorWithBaseViewController:viewController
+                                                  browser:self.browser
+                                              accessPoint:accessPoint
+                                              promoAction:promoAction];
 
-  [self.controller reAuthenticateWithCompletion:[self callbackToClearState]];
+    __weak SigninInteractionCoordinator* weakSelf = self;
+    self.coordinator.signinCompletion =
+        ^(SigninCoordinatorResult signinResult, SigninCompletionInfo*) {
+          if (completion) {
+            completion(signinResult == SigninCoordinatorResultSuccess);
+          }
+          [weakSelf.coordinator stop];
+          weakSelf.coordinator = nil;
+        };
+
+    [self.coordinator start];
+  } else {
+    [self setupForSigninOperationWithAccessPoint:accessPoint
+                                     promoAction:promoAction
+                        presentingViewController:viewController
+                                      completion:completion];
+
+    [self.controller reAuthenticateWithCompletion:[self callbackToClearState]];
+  }
 }
 
 - (void)addAccountWithAccessPoint:(signin_metrics::AccessPoint)accessPoint
@@ -100,16 +134,26 @@
          presentingViewController:(UIViewController*)viewController
                        completion:(signin_ui::CompletionCallback)completion {
   // Ensure that nothing is done if a sign in operation is already in progress.
-  if (self.controller) {
+  if (self.coordinator || self.controller) {
     return;
   }
 
-  [self setupForSigninOperationWithAccessPoint:accessPoint
-                                   promoAction:promoAction
-                      presentingViewController:viewController
-                                    completion:completion];
+  self.coordinator = [SigninCoordinator
+      addAccountCoordinatorWithBaseViewController:viewController
+                                          browser:self.browser
+                                      accessPoint:accessPoint];
 
-  [self.controller addAccountWithCompletion:[self callbackToClearState]];
+  __weak SigninInteractionCoordinator* weakSelf = self;
+  self.coordinator.signinCompletion =
+      ^(SigninCoordinatorResult signinResult, SigninCompletionInfo*) {
+        if (completion) {
+          completion(signinResult == SigninCoordinatorResultSuccess);
+        }
+        [weakSelf.coordinator stop];
+        weakSelf.coordinator = nil;
+      };
+
+  [self.coordinator start];
 }
 
 - (void)showAdvancedSigninSettingsWithPresentingViewController:
@@ -118,47 +162,68 @@
   [self showAdvancedSigninSettings];
 }
 
+- (void)
+    showTrustedVaultReauthenticationWithPresentingViewController:
+        (UIViewController*)viewController
+                                                retrievalTrigger:
+                                                    (syncer::
+                                                         KeyRetrievalTriggerForUMA)
+                                                        retrievalTrigger {
+  DCHECK(!self.signinCompletion);
+  DCHECK(!self.presentingViewController);
+  DCHECK(!self.coordinator);
+  self.presentingViewController = viewController;
+  self.coordinator = [SigninCoordinator
+      trustedVaultReAuthenticationCoordiantorWithBaseViewController:
+          viewController
+                                                            browser:self.browser
+                                                   retrievalTrigger:
+                                                       retrievalTrigger];
+  __weak SigninInteractionCoordinator* weakSelf = self;
+  self.coordinator.signinCompletion =
+      ^(SigninCoordinatorResult, SigninCompletionInfo*) {
+        [weakSelf trustedVaultReauthenticationDone];
+      };
+  [self.coordinator start];
+}
+
 - (void)cancel {
   [self.controller cancel];
-  [self.advancedSigninSettingsCoordinator abortWithDismiss:NO
-                                                  animated:YES
-                                                completion:nil];
+  [self interrupSigninCoordinatorWithAction:
+            SigninCoordinatorInterruptActionNoDismiss
+                                 completion:nil];
 }
 
 - (void)cancelAndDismiss {
   [self.controller cancelAndDismiss];
-  [self.advancedSigninSettingsCoordinator abortWithDismiss:YES
-                                                  animated:YES
-                                                completion:nil];
+  [self interrupSigninCoordinatorWithAction:
+            SigninCoordinatorInterruptActionDismissWithAnimation
+                                 completion:nil];
 }
 
 - (void)abortAndDismissSettingsViewAnimated:(BOOL)animated
                                  completion:(ProceduralBlock)completion {
-  DCHECK(!self.controller);
-  DCHECK(self.advancedSigninSettingsCoordinator);
-  [self.advancedSigninSettingsCoordinator abortWithDismiss:YES
-                                                  animated:animated
-                                                completion:completion];
+  if (self.controller) {
+    [self.controller cancel];
+    if (completion) {
+      completion();
+    }
+    return;
+  }
+  SigninCoordinatorInterruptAction action =
+      animated ? SigninCoordinatorInterruptActionDismissWithAnimation
+               : SigninCoordinatorInterruptActionDismissWithoutAnimation;
+  [self interrupSigninCoordinatorWithAction:action completion:completion];
 }
 
 #pragma mark - Properties
 
 - (BOOL)isActive {
-  return self.controller != nil || self.isSettingsViewPresented;
+  return self.controller != nil || self.coordinator != nil;
 }
 
 - (BOOL)isSettingsViewPresented {
-  return self.advancedSigninSettingsCoordinator != nil;
-}
-
-#pragma mark - AdvancedSigninSettingsCoordinatorDelegate
-
-- (void)advancedSigninSettingsCoordinatorDidClose:
-            (AdvancedSigninSettingsCoordinator*)coordinator
-                                         signedin:(BOOL)signedin {
-  DCHECK_EQ(self.advancedSigninSettingsCoordinator, coordinator);
-  self.advancedSigninSettingsCoordinator = nil;
-  [self signinDoneWithSuccess:signedin];
+  return self.coordinator.isSettingsViewPresented;
 }
 
 #pragma mark - SigninInteractionPresenting
@@ -196,8 +261,8 @@
   DCHECK(!self.alertCoordinator);
   DCHECK(self.topViewController);
   DCHECK(![self.topViewController presentedViewController]);
-  self.alertCoordinator =
-      ErrorCoordinator(error, dismissAction, self.topViewController);
+  self.alertCoordinator = ErrorCoordinator(
+      error, dismissAction, self.topViewController, self.browser);
   [self.alertCoordinator start];
 }
 
@@ -228,12 +293,16 @@
   self.presentingViewController = presentingViewController;
   self.topViewController = presentingViewController;
 
-  self.controller =
-      [[SigninInteractionController alloc] initWithBrowser:self.browser
-                                      presentationProvider:self
-                                               accessPoint:accessPoint
-                                               promoAction:promoAction
-                                                dispatcher:self.dispatcher];
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  self.controller = [[SigninInteractionController alloc]
+           initWithBrowser:self.browser
+      presentationProvider:self
+               accessPoint:accessPoint
+               promoAction:promoAction
+                dispatcher:static_cast<
+                               id<ApplicationCommands, BrowsingDataCommands>>(
+                               self.browser->GetCommandDispatcher())];
 }
 
 // Returns a callback that clears the state of the coordinator and runs
@@ -263,15 +332,25 @@
 
 // Shows the advanced sign-in settings UI.
 - (void)showAdvancedSigninSettings {
-  DCHECK(!self.advancedSigninSettingsCoordinator);
+  DCHECK(!self.coordinator);
   DCHECK(self.presentingViewController);
-  self.advancedSigninSettingsCoordinator =
-      [[AdvancedSigninSettingsCoordinator alloc]
-          initWithBaseViewController:self.presentingViewController
-                             browser:self.browser];
-  self.advancedSigninSettingsCoordinator.delegate = self;
-  self.advancedSigninSettingsCoordinator.dispatcher = self.dispatcher;
-  [self.advancedSigninSettingsCoordinator start];
+  self.coordinator = [SigninCoordinator
+      advancedSettingsSigninCoordinatorWithBaseViewController:
+          self.presentingViewController
+                                                      browser:self.browser];
+  __weak SigninInteractionCoordinator* weakSelf = self;
+  self.coordinator.signinCompletion =
+      ^(SigninCoordinatorResult signinResult, SigninCompletionInfo*) {
+        [weakSelf advancedSigninDoneWithSigninResult:signinResult];
+      };
+  [self.coordinator start];
+}
+
+- (void)advancedSigninDoneWithSigninResult:
+    (SigninCoordinatorResult)signinResult {
+  [self.coordinator stop];
+  self.coordinator = nil;
+  [self signinDoneWithSuccess:signinResult == SigninCoordinatorResultSuccess];
 }
 
 // Called when the sign-in is done.
@@ -279,12 +358,32 @@
   DCHECK(!self.controller);
   DCHECK(!self.topViewController);
   DCHECK(!self.alertCoordinator);
+  self.presentingViewController = nil;
   if (self.signinCompletion) {
     self.signinCompletion(success);
     self.signinCompletion = nil;
   }
-  [self.advancedSigninSettingsCoordinator stop];
-  self.advancedSigninSettingsCoordinator = nil;
+}
+
+- (void)interrupSigninCoordinatorWithAction:
+            (SigninCoordinatorInterruptAction)action
+                                 completion:(ProceduralBlock)completion {
+  __weak __typeof(self) weakSelf = self;
+  ProceduralBlock interruptCompletion = ^() {
+    // |weakSelf.coordinator.signinCompletion| is called before this interrupt
+    // block. The signin completion has to set |coordinator| to nil.
+    DCHECK(!weakSelf.coordinator);
+    if (completion) {
+      completion();
+    }
+  };
+  [self.coordinator interruptWithAction:action completion:interruptCompletion];
+}
+
+- (void)trustedVaultReauthenticationDone {
+  DCHECK(self.coordinator);
+  [self.coordinator stop];
+  self.coordinator = nil;
   self.presentingViewController = nil;
 }
 

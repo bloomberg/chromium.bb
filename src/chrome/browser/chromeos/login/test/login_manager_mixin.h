@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/test/local_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/session_flags_manager.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "components/account_id/account_id.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_type.h"
 
 namespace chromeos {
@@ -24,28 +26,47 @@ class UserContext;
 // initializes user manager with a list of pre-registered users.
 // The mixin will mark the OOBE flow as complete during test setup, so it's not
 // suitable for OOBE tests.
-class LoginManagerMixin : public InProcessBrowserTestMixin {
+class LoginManagerMixin : public InProcessBrowserTestMixin,
+                          public LocalStateMixin::Delegate {
  public:
   // Represents test user.
   struct TestUserInfo {
     // Creates test user with regular user type from the given |account_id|.
     explicit TestUserInfo(const AccountId& account_id)
-        : account_id(account_id), user_type(user_manager::USER_TYPE_REGULAR) {}
+        : TestUserInfo(account_id, user_manager::USER_TYPE_REGULAR) {}
 
     // Creates test user with |user_type| from the given |account_id|.
     TestUserInfo(const AccountId& account_id, user_manager::UserType user_type)
-        : account_id(account_id), user_type(user_type) {}
+        : TestUserInfo(account_id,
+                       user_type,
+                       user_manager::User::OAUTH2_TOKEN_STATUS_VALID) {}
+
+    TestUserInfo(const AccountId& account_id,
+                 user_manager::UserType user_type,
+                 user_manager::User::OAuthTokenStatus token_status)
+        : account_id(account_id),
+          user_type(user_type),
+          token_status(token_status) {}
 
     const AccountId account_id;
     const user_manager::UserType user_type;
+    const user_manager::User::OAuthTokenStatus token_status;
   };
+
+  using UserList = std::vector<TestUserInfo>;
 
   // Convenience method for creating default UserContext for an account ID. The
   // result can be used with Login* methods below.
   static UserContext CreateDefaultUserContext(const TestUserInfo& account_id);
 
+  // Should be called before any InProcessBrowserTestMixin functions.
+  void AppendRegularUsers(int n);
+  void AppendManagedUsers(int n);
+  void AppendLegacySupervisedUsers(int n);
+
+  explicit LoginManagerMixin(InProcessBrowserTestMixinHost* host);
   LoginManagerMixin(InProcessBrowserTestMixinHost* host,
-                    const std::vector<TestUserInfo>& initial_users);
+                    const UserList& initial_users);
 
   ~LoginManagerMixin() override;
 
@@ -59,6 +80,8 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
   // behavior.
   void set_should_launch_browser(bool value) { should_launch_browser_ = value; }
 
+  const UserList& users() const { return initial_users_; }
+
   // Sets the list of default policy switches to be added to command line on the
   // login screen.
   void SetDefaultLoginSwitches(
@@ -66,10 +89,11 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
 
   // InProcessBrowserTestMixin:
   bool SetUpUserDataDirectory() override;
-  void CreatedBrowserMainParts(
-      content::BrowserMainParts* browser_main_parts) override;
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
+
+  // LocalStateMixin::Delegate:
+  void SetUpLocalState() override;
 
   // Starts login attempt for a user, using the stub authenticator provided by
   // |authenticator_builder|.
@@ -92,8 +116,15 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
   // Returns whether the newly logged in user is active when the method exits.
   bool LoginAndWaitForActiveSession(const UserContext& user_context);
 
+  // Logs in a user using with CreateDefaultUserContext(user_info) context.
+  void LoginWithDefaultContext(const TestUserInfo& user_info);
+
+  // Logs in as a regular user with default user context. Should be used for
+  // proceeding into the session from the login screen.
+  void LoginAsNewReguarUser();
+
  private:
-  const std::vector<TestUserInfo> initial_users_;
+  UserList initial_users_;
 
   // If set, session_flags_manager_ will be set up with session restore logic
   // enabled (it will restore session state between test runs for multi-step
@@ -104,6 +135,7 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
   // Whether the user session manager should skip browser launch steps for
   // testing.
   bool should_launch_browser_ = false;
+  LocalStateMixin local_state_mixin_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerMixin);
 };

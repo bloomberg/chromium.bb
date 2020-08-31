@@ -9,6 +9,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump.h"
@@ -74,7 +75,6 @@ CreateSequenceManagerForMainThreadType(
       MessagePump::Create(type),
       base::sequence_manager::SequenceManager::Settings::Builder()
           .SetMessagePumpType(type)
-          .SetAntiStarvationLogicForPrioritiesDisabled(true)
           .Build());
 }
 
@@ -136,7 +136,7 @@ class TaskEnvironment::TestTaskTracker
   ConditionVariable can_run_tasks_cv_ GUARDED_BY(lock_);
 
   // Signaled when a task is completed.
-  ConditionVariable task_completed_ GUARDED_BY(lock_);
+  ConditionVariable task_completed_cv_ GUARDED_BY(lock_);
 
   // Number of tasks that are currently running.
   int num_tasks_running_ GUARDED_BY(lock_) = 0;
@@ -177,8 +177,12 @@ class TaskEnvironment::MockTimeDomain : public sequence_manager::TimeDomain,
 
   void AdvanceClock(TimeDelta delta) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    AutoLock lock(now_ticks_lock_);
-    now_ticks_ += delta;
+    {
+      AutoLock lock(now_ticks_lock_);
+      now_ticks_ += delta;
+    }
+    if (thread_pool_)
+      thread_pool_->ProcessRipeDelayedTasksForTesting();
   }
 
   static std::unique_ptr<TaskEnvironment::MockTimeDomain> CreateAndRegister(
@@ -355,11 +359,13 @@ TaskEnvironment::TaskEnvironment(
     MainThreadType main_thread_type,
     ThreadPoolExecutionMode thread_pool_execution_mode,
     ThreadingMode threading_mode,
+    ThreadPoolCOMEnvironment thread_pool_com_environment,
     bool subclass_creates_default_taskrunner,
     trait_helpers::NotATraitTag)
     : main_thread_type_(main_thread_type),
       thread_pool_execution_mode_(thread_pool_execution_mode),
       threading_mode_(threading_mode),
+      thread_pool_com_environment_(thread_pool_com_environment),
       subclass_creates_default_taskrunner_(subclass_creates_default_taskrunner),
       sequence_manager_(
           CreateSequenceManagerForMainThreadType(main_thread_type)),
@@ -379,22 +385,16 @@ TaskEnvironment::TaskEnvironment(
       scoped_lazy_task_runner_list_for_testing_(
           std::make_unique<internal::ScopedLazyTaskRunnerListForTesting>()),
       // TODO(https://crbug.com/922098): Enable Run() timeouts even for
-      // instances created with *MOCK_TIME.
+      // instances created with TimeSource::MOCK_TIME.
       run_loop_timeout_(
           mock_time_domain_
               ? nullptr
-              : std::make_unique<RunLoop::ScopedRunTimeoutForTest>(
+              : std::make_unique<ScopedRunLoopTimeout>(
+                    FROM_HERE,
                     TestTimeouts::action_timeout(),
-                    BindRepeating(
-                        [](sequence_manager::SequenceManager*
-                               sequence_manager) {
-                          ADD_FAILURE()
-                              << "RunLoop::Run() timed out with the following "
-                                 "pending task(s) in its TaskEnvironment's "
-                                 "main thread queue:\n"
-                              << sequence_manager->DescribeAllPendingTasks();
-                        },
-                        Unretained(sequence_manager_.get())))) {
+                    BindRepeating(&sequence_manager::SequenceManager::
+                                      DescribeAllPendingTasks,
+                                  Unretained(sequence_manager_.get())))) {
   CHECK(!base::ThreadTaskRunnerHandle::IsSet());
   // If |subclass_creates_default_taskrunner| is true then initialization is
   // deferred until DeferredInitFromSubclass().
@@ -404,8 +404,7 @@ TaskEnvironment::TaskEnvironment(
             .SetTimeDomain(mock_time_domain_.get()));
     task_runner_ = task_queue_->task_runner();
     sequence_manager_->SetDefaultTaskRunner(task_runner_);
-    simple_task_executor_ = std::make_unique<SimpleTaskExecutor>(
-        sequence_manager_.get(), task_runner_);
+    simple_task_executor_ = std::make_unique<SimpleTaskExecutor>(task_runner_);
     CHECK(base::ThreadTaskRunnerHandle::IsSet())
         << "ThreadTaskRunnerHandle should've been set now.";
     CompleteInitialization();
@@ -428,26 +427,13 @@ void TaskEnvironment::InitializeThreadPool() {
          "someone has explicitly disabled it with "
          "DisableCheckForLeakedGlobals().";
 
-  // Instantiate a ThreadPoolInstance with 4 workers per thread group. Having
-  // multiple threads prevents deadlocks should some blocking APIs not use
-  // ScopedBlockingCall. It also allows enough concurrency to allow TSAN to spot
-  // data races.
-  constexpr int kMaxThreads = 4;
-  ThreadPoolInstance::InitParams init_params(kMaxThreads);
+  ThreadPoolInstance::InitParams init_params(kNumForegroundThreadPoolThreads);
   init_params.suggested_reclaim_time = TimeDelta::Max();
 #if defined(OS_WIN)
-  // Enable the MTA in unit tests to match the browser process's
-  // ThreadPoolInstance configuration.
-  //
-  // This has the adverse side-effect of enabling the MTA in non-browser unit
-  // tests as well but the downside there is not as bad as not having it in
-  // browser unit tests. It just means some COM asserts may pass in unit tests
-  // where they wouldn't in integration tests or prod. That's okay because unit
-  // tests are already generally very loose on allowing I/O, waits, etc. Such
-  // misuse will still be caught in later phases (and COM usage should already
-  // be pretty much inexistent in sandboxed processes).
-  init_params.common_thread_pool_environment =
-      ThreadPoolInstance::InitParams::CommonThreadPoolEnvironment::COM_MTA;
+  if (thread_pool_com_environment_ == ThreadPoolCOMEnvironment::COM_MTA) {
+    init_params.common_thread_pool_environment =
+        ThreadPoolInstance::InitParams::CommonThreadPoolEnvironment::COM_MTA;
+  }
 #endif
 
   auto task_tracker = std::make_unique<TestTaskTracker>();
@@ -740,7 +726,12 @@ void TaskEnvironment::RemoveDestructionObserver(DestructionObserver* observer) {
 TaskEnvironment::TestTaskTracker::TestTaskTracker()
     : internal::ThreadPoolImpl::TaskTrackerImpl(std::string()),
       can_run_tasks_cv_(&lock_),
-      task_completed_(&lock_) {}
+      task_completed_cv_(&lock_) {
+  // Consider threads blocked on these as idle (avoids instantiating
+  // ScopedBlockingCalls and confusing some //base internals tests).
+  can_run_tasks_cv_.declare_only_used_while_idle();
+  task_completed_cv_.declare_only_used_while_idle();
+}
 
 bool TaskEnvironment::TestTaskTracker::AllowRunTasks() {
   AutoLock auto_lock(lock_);
@@ -763,7 +754,7 @@ bool TaskEnvironment::TestTaskTracker::DisallowRunTasks() {
     // Attempt to wait a bit so that the caller doesn't busy-loop with the same
     // set of pending work. A short wait is required to avoid deadlock
     // scenarios. See DisallowRunTasks()'s declaration for more details.
-    task_completed_.TimedWait(TimeDelta::FromMilliseconds(1));
+    task_completed_cv_.TimedWait(TimeDelta::FromMilliseconds(1));
     return false;
   }
 
@@ -809,7 +800,7 @@ void TaskEnvironment::TestTaskTracker::RunTask(internal::Task task,
 
     --num_tasks_running_;
 
-    task_completed_.Broadcast();
+    task_completed_cv_.Broadcast();
   }
 }
 

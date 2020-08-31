@@ -13,7 +13,6 @@
 #include "platform/test/fake_clock.h"
 
 namespace openscreen {
-namespace platform {
 namespace {
 
 using namespace ::testing;
@@ -31,7 +30,7 @@ void WaitUntilCondition(std::function<bool()> predicate) {
 
 class FakeTaskWaiter final : public TaskRunnerImpl::TaskWaiter {
  public:
-  explicit FakeTaskWaiter(platform::ClockNowFunctionPtr now_function)
+  explicit FakeTaskWaiter(ClockNowFunctionPtr now_function)
       : now_function_(now_function) {}
   ~FakeTaskWaiter() override = default;
 
@@ -60,7 +59,7 @@ class FakeTaskWaiter final : public TaskRunnerImpl::TaskWaiter {
   }
 
  private:
-  const platform::ClockNowFunctionPtr now_function_;
+  const ClockNowFunctionPtr now_function_;
   TaskRunnerImpl* task_runner_;
   std::atomic<bool> has_event_{false};
   std::atomic<bool> waiting_{false};
@@ -69,7 +68,7 @@ class FakeTaskWaiter final : public TaskRunnerImpl::TaskWaiter {
 class TaskRunnerWithWaiterFactory {
  public:
   static std::unique_ptr<TaskRunnerImpl> Create(
-      platform::ClockNowFunctionPtr now_function) {
+      ClockNowFunctionPtr now_function) {
     fake_waiter = std::make_unique<FakeTaskWaiter>(now_function);
     auto runner = std::make_unique<TaskRunnerImpl>(
         now_function, fake_waiter.get(), std::chrono::hours(1));
@@ -86,7 +85,7 @@ std::unique_ptr<FakeTaskWaiter> TaskRunnerWithWaiterFactory::fake_waiter;
 }  // anonymous namespace
 
 TEST(TaskRunnerImplTest, TaskRunnerExecutesTaskAndStops) {
-  FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
+  FakeClock fake_clock{Clock::time_point(milliseconds(1337))};
   TaskRunnerImpl runner(&fake_clock.now);
 
   std::string ran_tasks = "";
@@ -98,7 +97,7 @@ TEST(TaskRunnerImplTest, TaskRunnerExecutesTaskAndStops) {
 }
 
 TEST(TaskRunnerImplTest, TaskRunnerRunsDelayedTasksInOrder) {
-  FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
+  FakeClock fake_clock{Clock::time_point(milliseconds(1337))};
   TaskRunnerImpl runner(&fake_clock.now);
 
   std::thread t([&runner] { runner.RunUntilStopped(); });
@@ -126,7 +125,7 @@ TEST(TaskRunnerImplTest, TaskRunnerRunsDelayedTasksInOrder) {
 }
 
 TEST(TaskRunnerImplTest, SingleThreadedTaskRunnerRunsSequentially) {
-  FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
+  FakeClock fake_clock{Clock::time_point(milliseconds(1337))};
   TaskRunnerImpl runner(&fake_clock.now);
 
   std::string ran_tasks;
@@ -149,7 +148,7 @@ TEST(TaskRunnerImplTest, SingleThreadedTaskRunnerRunsSequentially) {
 }
 
 TEST(TaskRunnerImplTest, RunsAllImmediateTasksBeforeStopping) {
-  FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
+  FakeClock fake_clock{Clock::time_point(milliseconds(1337))};
   TaskRunnerImpl runner(&fake_clock.now);
 
   std::string result;
@@ -181,7 +180,7 @@ TEST(TaskRunnerImplTest, RunsAllImmediateTasksBeforeStopping) {
 }
 
 TEST(TaskRunnerImplTest, TaskRunnerIsStableWithLotsOfTasks) {
-  FakeClock fake_clock{platform::Clock::time_point(milliseconds(1337))};
+  FakeClock fake_clock{Clock::time_point(milliseconds(1337))};
   TaskRunnerImpl runner(&fake_clock.now);
 
   const int kNumberOfTasks = 500;
@@ -200,7 +199,7 @@ TEST(TaskRunnerImplTest, TaskRunnerIsStableWithLotsOfTasks) {
 }
 
 TEST(TaskRunnerImplTest, TaskRunnerDelayedTasksDontBlockImmediateTasks) {
-  TaskRunnerImpl runner(platform::Clock::now);
+  TaskRunnerImpl runner(Clock::now);
 
   std::string ran_tasks;
   const auto task = [&ran_tasks] { ran_tasks += "1"; };
@@ -282,5 +281,4 @@ class RepeatedClass {
   std::atomic<int> execution_count{0};
 };
 
-}  // namespace platform
 }  // namespace openscreen

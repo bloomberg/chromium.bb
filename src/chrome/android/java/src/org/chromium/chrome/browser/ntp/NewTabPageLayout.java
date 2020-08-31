@@ -4,30 +4,28 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.RippleDrawable;
-import android.os.Build;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.MathUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
@@ -35,14 +33,16 @@ import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.explore_sites.ExperimentalExploreSitesSection;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
-import org.chromium.chrome.browser.explore_sites.ExploreSitesSection;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.cards.ExploreOfflineCard;
+import org.chromium.chrome.browser.ntp.search.SearchBoxCoordinator;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.query_tiles.QueryTileSection;
+import org.chromium.chrome.browser.query_tiles.QueryTileUtils;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.tile.SiteSection;
@@ -51,12 +51,11 @@ import org.chromium.chrome.browser.suggestions.tile.Tile;
 import org.chromium.chrome.browser.suggestions.tile.TileGridLayout;
 import org.chromium.chrome.browser.suggestions.tile.TileGroup;
 import org.chromium.chrome.browser.suggestions.tile.TileRenderer;
-import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
-import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.chrome.browser.util.ViewUtils;
-import org.chromium.chrome.browser.vr.VrModeObserver;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.vr.VrModeObserver;
 
 /**
  * Layout for the new tab page. This positions the page elements in the correct vertical positions.
@@ -73,12 +72,13 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private View mMiddleSpacer; // Spacer between toolbar and Most Likely.
 
     private LogoView mSearchProviderLogoView;
-    private View mSearchBoxView;
+    private SearchBoxCoordinator mSearchBoxCoordinator;
     private ViewGroup mSiteSectionView;
     private SiteSectionViewHolder mSiteSectionViewHolder;
     private ImageView mVoiceSearchButton;
     private View mTileGridPlaceholder;
     private View mNoSearchLogoSpacer;
+    private QueryTileSection mQueryTileSection;
 
     @Nullable
     private View mExploreSectionView; // View is null if explore flag is disabled.
@@ -88,11 +88,11 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private OnSearchBoxScrollListener mSearchBoxScrollListener;
 
     private NewTabPageManager mManager;
-    private ChromeActivity mActivity;
-    private OverviewModeBehavior mOverviewModeBehavior;
+    private Activity mActivity;
     private LogoDelegateImpl mLogoDelegate;
     private TileGroup mTileGroup;
     private UiConfig mUiConfig;
+    private Supplier<Tab> mTabProvider;
 
     /**
      * Whether the tiles shown in the layout have finished loading.
@@ -108,6 +108,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
     /** Observer for overview mode. */
     private EmptyOverviewModeObserver mOverviewObserver;
+    private OverviewModeBehavior mOverviewModeBehavior;
 
     private boolean mSearchProviderHasLogo = true;
     private boolean mSearchProviderIsGoogle;
@@ -130,6 +131,8 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
     private ScrollDelegate mScrollDelegate;
     private ExploreOfflineCard mExploreOfflineCard;
+
+    private NewTabPageUma mNewTabPageUma;
 
     /**
      * A delegate used to obtain information about scroll state and perform various scroll
@@ -176,25 +179,23 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         super.onFinishInflate();
         mMiddleSpacer = findViewById(R.id.ntp_middle_spacer);
         mSearchProviderLogoView = findViewById(R.id.search_provider_logo);
-        mSearchBoxView = findViewById(R.id.search_box);
         mExploreOfflineCard = new ExploreOfflineCard(this, openDownloadHomeCallback());
         insertSiteSectionView();
 
         int variation = ExploreSitesBridge.getVariation();
-        if (ExploreSitesBridge.isEnabled(variation)
-                && !ExploreSitesBridge.isIntegratedWithMostLikely(variation)) {
-            mExploreSectionView = ((ViewStub) findViewById(R.id.explore_sites_stub)).inflate();
-        } else if (ExploreSitesBridge.isExperimental(variation)) {
+        if (ExploreSitesBridge.isExperimental(variation)) {
             ViewStub exploreStub = findViewById(R.id.explore_sites_stub);
             exploreStub.setLayoutResource(R.layout.experimental_explore_sites_section);
             mExploreSectionView = exploreStub.inflate();
         }
 
+        View searchBoxContainerView = findViewById(R.id.search_box);
         if (SearchEngineLogoUtils.isSearchEngineLogoEnabled()) {
             int lateral_padding =
                     getResources().getDimensionPixelOffset(R.dimen.sei_search_box_lateral_padding);
-            mSearchBoxView.setPaddingRelative(lateral_padding, mSearchBoxView.getPaddingTop(),
-                    lateral_padding, mSearchBoxView.getPaddingBottom());
+            searchBoxContainerView.setPaddingRelative(lateral_padding,
+                    searchBoxContainerView.getPaddingTop(), lateral_padding,
+                    searchBoxContainerView.getPaddingBottom());
         }
     }
 
@@ -205,25 +206,32 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      * @param manager NewTabPageManager used to perform various actions when the user interacts
      *                with the page.
      * @param activity The activity that currently owns the new tab page
-     * @param overviewModeBehavior The overview mode behavior associated with the new tab page.
+     * @param tileGroupDelegate Delegate for {@link TileGroup}.
      * @param searchProviderHasLogo Whether the search provider has a logo.
      * @param searchProviderIsGoogle Whether the search provider is Google.
      * @param scrollDelegate The delegate used to obtain information about scroll state.
      * @param contextMenuManager The manager for long-press context menus.
      * @param uiConfig UiConfig that provides display information about this view.
+     * @param tabProvider Provides the current active tab.
+     * @param lifecycleDispatcher Activity lifecycle dispatcher.
+     * @param overviewModeBehavior Overview mode to observe for mode changes.
+     * @param uma {@link NewTabPageUma} object recording user metrics.
      */
-    public void initialize(NewTabPageManager manager, ChromeActivity activity,
-            @Nullable OverviewModeBehavior overviewModeBehavior,
+    public void initialize(NewTabPageManager manager, Activity activity,
             TileGroup.Delegate tileGroupDelegate, boolean searchProviderHasLogo,
             boolean searchProviderIsGoogle, ScrollDelegate scrollDelegate,
-            ContextMenuManager contextMenuManager, UiConfig uiConfig) {
+            ContextMenuManager contextMenuManager, UiConfig uiConfig, Supplier<Tab> tabProvider,
+            ActivityLifecycleDispatcher lifecycleDispatcher,
+            @Nullable OverviewModeBehavior overviewModeBehavior, NewTabPageUma uma) {
         TraceEvent.begin(TAG + ".initialize()");
         mScrollDelegate = scrollDelegate;
         mManager = manager;
         mActivity = activity;
         mUiConfig = uiConfig;
+        mTabProvider = tabProvider;
+        mNewTabPageUma = uma;
 
-        Profile profile = Profile.getLastUsedProfile();
+        Profile profile = Profile.getLastUsedRegularProfile();
         OfflinePageBridge offlinePageBridge =
                 SuggestionsDependencyFactory.getInstance().getOfflinePageBridge(profile);
         TileRenderer tileRenderer =
@@ -236,11 +244,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         mSiteSectionViewHolder.bindDataSource(mTileGroup, tileRenderer);
 
         int variation = ExploreSitesBridge.getVariation();
-        if (ExploreSitesBridge.isEnabled(variation)
-                && !ExploreSitesBridge.isIntegratedWithMostLikely(variation)) {
-            mExploreSection = new ExploreSitesSection(mExploreSectionView, profile,
-                    mManager.getNavigationDelegate(), SuggestionsConfig.getTileStyle(mUiConfig));
-        } else if (ExploreSitesBridge.isExperimental(variation)) {
+        if (ExploreSitesBridge.isExperimental(variation)) {
             mExploreSection = new ExperimentalExploreSitesSection(
                     mExploreSectionView, profile, mManager.getNavigationDelegate());
         }
@@ -249,8 +253,9 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         mLogoDelegate = new LogoDelegateImpl(
                 mManager.getNavigationDelegate(), mSearchProviderLogoView, profile);
 
-        mSearchBoxView = findViewById(R.id.search_box);
-        if (!DeviceFormFactor.isWindowOnTablet(mActivity.getWindowAndroid())) {
+        mSearchBoxCoordinator = new SearchBoxCoordinator(getContext(), this);
+        mSearchBoxCoordinator.initialize(lifecycleDispatcher);
+        if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity)) {
             mSearchBoxBoundsVerticalInset = getResources().getDimensionPixelSize(
                     R.dimen.ntp_search_box_bounds_vertical_inset_modern);
         }
@@ -262,7 +267,13 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         setSearchProviderInfo(searchProviderHasLogo, searchProviderIsGoogle);
         mSearchProviderLogoView.showSearchProviderInitialView();
 
-        mTileGroup.startObserving(getMaxTileRows() * getMaxTileColumns());
+        if (searchProviderIsGoogle && QueryTileUtils.isFeatureEnabled()) {
+            mQueryTileSection = new QueryTileSection(findViewById(R.id.query_tiles),
+                    mSearchBoxCoordinator, profile, mManager::performSearchQuery);
+        }
+
+        mTileGroup.startObserving(
+                getMaxRowsForMostVisitedTiles() * getMaxColumnsForMostVisitedTiles());
 
         VrModuleProvider.registerVrModeObserver(this);
         if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
@@ -299,9 +310,8 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private void initializeSearchBoxTextView() {
         TraceEvent.begin(TAG + ".initializeSearchBoxTextView()");
 
-        final TextView searchBoxTextView = mSearchBoxView.findViewById(R.id.search_box_text);
-        searchBoxTextView.setOnClickListener(v -> mManager.focusSearchBox(false, null));
-        searchBoxTextView.addTextChangedListener(new TextWatcher() {
+        mSearchBoxCoordinator.setSearchBoxClickListener(v -> mManager.focusSearchBox(false, null));
+        mSearchBoxCoordinator.setSearchBoxTextWatcher(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
@@ -312,7 +322,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             public void afterTextChanged(Editable s) {
                 if (s.length() == 0) return;
                 mManager.focusSearchBox(false, s.toString());
-                searchBoxTextView.setText("");
+                mSearchBoxCoordinator.setSearchText("");
             }
         });
         TraceEvent.end(TAG + ".initializeSearchBoxTextView()");
@@ -320,15 +330,16 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
     private void initializeVoiceSearchButton() {
         TraceEvent.begin(TAG + ".initializeVoiceSearchButton()");
-        mVoiceSearchButton = findViewById(R.id.voice_search_button);
-        mVoiceSearchButton.setOnClickListener(v -> mManager.focusSearchBox(true, null));
+        mSearchBoxCoordinator.addVoiceSearchButtonClickListener(
+                v -> mManager.focusSearchBox(true, null));
         if (SearchEngineLogoUtils.isSearchEngineLogoEnabled()) {
             // View is 48dp, image is 24dp. Increasing the padding from 4dp -> 8dp will split the
             // remaining 16dp evenly between start/end resulting in a paddingEnd of 8dp.
             int paddingStart = getResources().getDimensionPixelSize(
                     R.dimen.sei_ntp_voice_button_start_padding);
-            mVoiceSearchButton.setPaddingRelative(paddingStart, mVoiceSearchButton.getPaddingTop(),
-                    getPaddingEnd(), mVoiceSearchButton.getPaddingBottom());
+            ImageView voiceSearchButton = findViewById(R.id.voice_search_button);
+            voiceSearchButton.setPaddingRelative(paddingStart, voiceSearchButton.getPaddingTop(),
+                    getPaddingEnd(), voiceSearchButton.getPaddingBottom());
         }
 
         TraceEvent.end(TAG + ".initializeVoiceSearchButton()");
@@ -394,12 +405,12 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
         // During startup the view may not be fully initialized, so we only calculate the current
         // percentage if some basic view properties (position of the search box) are sane.
-        int searchBoxTop = mSearchBoxView.getTop();
+        int searchBoxTop = getSearchBoxView().getTop();
         if (searchBoxTop == 0) return 0f;
 
         // For all other calculations, add the search box padding, because it defines where the
         // visible "border" of the search box is.
-        searchBoxTop += mSearchBoxView.getPaddingTop();
+        searchBoxTop += getSearchBoxView().getPaddingTop();
 
         final int scrollY = mScrollDelegate.getVerticalScrollOffset();
         // Use int pixel size instead of float dimension to avoid precision error on the percentage.
@@ -419,14 +430,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         mSiteSectionView = SiteSection.inflateSiteSection(this);
         ViewGroup.LayoutParams layoutParams = mSiteSectionView.getLayoutParams();
         layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
-        // If the explore sites section exists as its own section, then space it more closely.
-        int variation = ExploreSitesBridge.getVariation();
-        if (ExploreSitesBridge.isEnabled(variation)
-                && !ExploreSitesBridge.isIntegratedWithMostLikely(variation)) {
-            ((MarginLayoutParams) layoutParams).bottomMargin =
-                    getResources().getDimensionPixelOffset(
-                            R.dimen.tile_grid_layout_vertical_spacing);
-        }
         mSiteSectionView.setLayoutParams(layoutParams);
 
         int insertionPoint = indexOfChild(mMiddleSpacer) + 1;
@@ -444,7 +447,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      * @return The fake search box view.
      */
     public View getSearchBoxView() {
-        return mSearchBoxView;
+        return mSearchBoxCoordinator.getView();
     }
 
     @Override
@@ -531,7 +534,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         // Hide or show the views above the tile grid as needed, including logo, search box, and
         // spacers.
         mSearchProviderLogoView.setVisibility(shouldShowLogo() ? View.VISIBLE : View.GONE);
-        mSearchBoxView.setVisibility(mSearchProviderHasLogo ? View.VISIBLE : View.GONE);
+        mSearchBoxCoordinator.setVisibility(mSearchProviderHasLogo);
         updateTileGridPlaceholderVisibility();
 
         onUrlFocusAnimationChanged();
@@ -595,10 +598,15 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         float percent = mSearchProviderHasLogo ? mUrlFocusChangePercent : 0;
         int basePosition = mScrollDelegate.getVerticalScrollOffset() + getPaddingTop();
         int target = Math.max(basePosition,
-                mSearchBoxView.getBottom() - mSearchBoxView.getPaddingBottom()
+                getSearchBoxView().getBottom() - getSearchBoxView().getPaddingBottom()
                         - mSearchBoxBoundsVerticalInset);
 
         setTranslationY(percent * (basePosition - target));
+        if (mQueryTileSection != null) mQueryTileSection.onUrlFocusAnimationChanged(percent);
+    }
+
+    void onLoadUrl(boolean isNtpUrl) {
+        if (isNtpUrl && mQueryTileSection != null) mQueryTileSection.reloadTiles();
     }
 
     /**
@@ -616,10 +624,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      * @param alpha opacity (alpha) value to use.
      */
     public void setSearchBoxAlpha(float alpha) {
-        mSearchBoxView.setAlpha(alpha);
-
-        // Disable the search box contents if it is the process of being animated away.
-        ViewUtils.setEnabledRecursive(mSearchBoxView, mSearchBoxView.getAlpha() == 1.0f);
+        mSearchBoxCoordinator.setAlpha(alpha);
     }
 
     /**
@@ -637,7 +642,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      * @param drawable The search box background.
      */
     public void setSearchBoxBackground(Drawable drawable) {
-        mSearchBoxView.setBackground(drawable);
+        mSearchBoxCoordinator.setBackground(drawable);
     }
 
     /**
@@ -649,17 +654,17 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      * @param parentView The top level parent view used to translate search box bounds.
      */
     void getSearchBoxBounds(Rect bounds, Point translation, View parentView) {
-        int searchBoxX = (int) mSearchBoxView.getX();
-        int searchBoxY = (int) mSearchBoxView.getY();
-        bounds.set(searchBoxX, searchBoxY, searchBoxX + mSearchBoxView.getWidth(),
-                searchBoxY + mSearchBoxView.getHeight());
+        int searchBoxX = (int) getSearchBoxView().getX();
+        int searchBoxY = (int) getSearchBoxView().getY();
+        bounds.set(searchBoxX, searchBoxY, searchBoxX + getSearchBoxView().getWidth(),
+                searchBoxY + getSearchBoxView().getHeight());
 
         translation.set(0, 0);
 
         if (isSearchBoxOffscreen()) {
             translation.y = Integer.MIN_VALUE;
         } else {
-            View view = mSearchBoxView;
+            View view = getSearchBoxView();
             while (true) {
                 view = (View) view.getParent();
                 if (view == null) {
@@ -689,7 +694,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      */
     private boolean isSearchBoxOffscreen() {
         return !mScrollDelegate.isChildVisibleAtPosition(0)
-                || mScrollDelegate.getVerticalScrollOffset() > mSearchBoxView.getTop();
+                || mScrollDelegate.getVerticalScrollOffset() > getSearchBoxView().getTop();
     }
 
     /**
@@ -709,7 +714,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         if (!mHasShownView) {
             mHasShownView = true;
             onInitializationProgressChanged();
-            NewTabPageUma.recordSearchAvailableLoadTime(mActivity);
+            mNewTabPageUma.recordSearchAvailableLoadTime();
             TraceEvent.instant("NewTabPageSearchAvailable)");
         }
     }
@@ -724,10 +729,12 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
                     ? getResources().getDimensionPixelSize(R.dimen.sei_search_box_lateral_padding)
                     : getResources().getDimensionPixelSize(R.dimen.location_bar_lateral_padding);
         }
-        mVoiceSearchButton.setVisibility(mManager.isVoiceSearchEnabled() ? VISIBLE : GONE);
-        mSearchBoxView.setPadding(mSearchBoxView.getPaddingStart(), mSearchBoxView.getPaddingTop(),
+        mSearchBoxCoordinator.setVoiceSearchButtonVisibility(mManager.isVoiceSearchEnabled());
+        View searchBoxContainerView = mSearchBoxCoordinator.getView();
+        searchBoxContainerView.setPadding(searchBoxContainerView.getPaddingStart(),
+                searchBoxContainerView.getPaddingTop(),
                 mManager.isVoiceSearchEnabled() ? 0 : mSearchBoxEndPadding,
-                mSearchBoxView.getPaddingBottom());
+                searchBoxContainerView.getPaddingBottom());
     }
 
     @Override
@@ -786,15 +793,18 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         }
     }
 
-    private static int getMaxTileRows() {
-        return 2;
+    private int getMaxRowsForMostVisitedTiles() {
+        Integer maxRows = mQueryTileSection == null
+                ? null
+                : mQueryTileSection.getMaxRowsForMostVisitedTiles();
+        return maxRows == null ? 2 : maxRows.intValue();
     }
 
     /**
      * Determines The maximum number of tiles to try and fit in a row. On smaller screens, there
      * may not be enough space to fit all of them.
      */
-    private int getMaxTileColumns() {
+    private int getMaxColumnsForMostVisitedTiles() {
         return 4;
     }
 
@@ -845,12 +855,12 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
     @Override
     public void onEnterVr() {
-        mSearchBoxView.setVisibility(GONE);
+        mSearchBoxCoordinator.setVisibility(false);
     }
 
     @Override
     public void onExitVr() {
-        mSearchBoxView.setVisibility(VISIBLE);
+        mSearchBoxCoordinator.setVisibility(true);
     }
 
     private void onDestroy() {
@@ -859,9 +869,19 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         // Need to null-check compositor view holder and layout manager since they might've
         // been cleared by now.
         if (mOverviewObserver != null) {
-            mActivity.getOverviewModeBehavior().removeOverviewModeObserver(mOverviewObserver);
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewObserver);
             mOverviewObserver = null;
         }
+
+        if (mSearchProviderLogoView != null) {
+            mSearchProviderLogoView.destroy();
+        }
+
+        if (mLogoDelegate != null) {
+            mLogoDelegate.destroy();
+        }
+
+        mSearchBoxCoordinator.destroy();
     }
 
     /**
@@ -870,9 +890,9 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private void unifyElementWidths() {
         if (mSiteSectionView.getVisibility() != GONE) {
             final int width = mSiteSectionView.getMeasuredWidth() - mTileGridLayoutBleed;
-            measureExactly(mSearchBoxView, width, mSearchBoxView.getMeasuredHeight());
-            measureExactly(mSearchProviderLogoView,
-                    width, mSearchProviderLogoView.getMeasuredHeight());
+            measureExactly(getSearchBoxView(), width, getSearchBoxView().getMeasuredHeight());
+            measureExactly(
+                    mSearchProviderLogoView, width, mSearchProviderLogoView.getMeasuredHeight());
 
             if (mExploreSectionView != null) {
                 measureExactly(mExploreSectionView, mSiteSectionView.getMeasuredWidth(),
@@ -880,7 +900,8 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             }
         } else if (mExploreSectionView != null) {
             final int exploreWidth = mExploreSectionView.getMeasuredWidth() - mTileGridLayoutBleed;
-            measureExactly(mSearchBoxView, exploreWidth, mSearchBoxView.getMeasuredHeight());
+            measureExactly(
+                    getSearchBoxView(), exploreWidth, getSearchBoxView().getMeasuredHeight());
             measureExactly(mSearchProviderLogoView, exploreWidth,
                     mSearchProviderLogoView.getMeasuredHeight());
         }
@@ -888,7 +909,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
     private Runnable openDownloadHomeCallback() {
         return () -> {
-            DownloadUtils.showDownloadManager(mActivity, mActivity.getActivityTabProvider().get(),
+            DownloadUtils.showDownloadManager(mActivity, mTabProvider.get(),
                     DownloadOpenSource.NEW_TAB_PAGE, true /*showPrefetchedContent*/);
         };
     }
@@ -900,26 +921,5 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private static void measureExactly(View view, int widthPx, int heightPx) {
         view.measure(MeasureSpec.makeMeasureSpec(widthPx, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(heightPx, MeasureSpec.EXACTLY));
-    }
-
-    /**
-     * Provides the additional capabilities needed for the SearchBox container layout.
-     */
-    public static class SearchBoxContainerView extends LinearLayout {
-        /** Constructor for inflating from XML. */
-        public SearchBoxContainerView(Context context, AttributeSet attrs) {
-            super(context, attrs);
-        }
-
-        @Override
-        public boolean onInterceptTouchEvent(MotionEvent ev) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                    && ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                if (getBackground() instanceof RippleDrawable) {
-                    ((RippleDrawable) getBackground()).setHotspot(ev.getX(), ev.getY());
-                }
-            }
-            return super.onInterceptTouchEvent(ev);
-        }
     }
 }

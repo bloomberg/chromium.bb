@@ -39,13 +39,13 @@
 
 namespace google_breakpad {
 
-void DwarfRangeListHandler::AddRange(uint64 begin, uint64 end) {
+void DwarfRangeListHandler::AddRange(uint64_t begin, uint64_t end) {
   Module::Range r(begin + base_address_, end - begin);
 
   ranges_->push_back(r);
 }
 
-void DwarfRangeListHandler::SetBaseAddress(uint64 base_address) {
+void DwarfRangeListHandler::SetBaseAddress(uint64_t base_address) {
   base_address_ = base_address;
 }
 

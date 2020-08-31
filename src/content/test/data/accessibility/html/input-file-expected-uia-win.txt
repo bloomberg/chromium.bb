@@ -1,4 +1,4 @@
-document
-++group
-++++button Name='Choose File'
-++++++button Name='Choose File'
+Document
+++Group IsControlElement=false
+++++Button Name='Choose File'
+++++++Button Name='Choose File'

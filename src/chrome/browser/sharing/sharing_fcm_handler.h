@@ -12,18 +12,23 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "components/gcm_driver/gcm_app_handler.h"
-#include "components/sync/protocol/sharing_message.pb.h"
 #include "components/sync_device_info/device_info.h"
 
 namespace gcm {
 class GCMDriver;
-}
+}  // namespace gcm
 
+namespace syncer {
+class DeviceInfoTracker;
+}  // namespace syncer
+
+enum class SharingChannelType;
 class SharingFCMSender;
 class SharingHandlerRegistry;
-class SharingSyncPreference;
 
 enum class SharingDevicePlatform;
 
@@ -32,9 +37,9 @@ enum class SharingDevicePlatform;
 class SharingFCMHandler : public gcm::GCMAppHandler {
  public:
   SharingFCMHandler(gcm::GCMDriver* gcm_driver,
+                    syncer::DeviceInfoTracker* device_info_tracker,
                     SharingFCMSender* sharing_fcm_sender,
-                    SharingSyncPreference* sync_preference,
-                    std::unique_ptr<SharingHandlerRegistry> handler_registry);
+                    SharingHandlerRegistry* handler_registry);
   ~SharingFCMHandler() override;
 
   // Registers itself as app handler for sharing messages.
@@ -62,28 +67,41 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
   void OnMessagesDeleted(const std::string& app_id) override;
 
  private:
-  base::Optional<syncer::DeviceInfo::SharingTargetInfo> GetTargetInfo(
+  base::Optional<chrome_browser_sharing::FCMChannelConfiguration> GetFCMChannel(
+      const chrome_browser_sharing::SharingMessage& original_message);
+
+  base::Optional<chrome_browser_sharing::ServerChannelConfiguration>
+  GetServerChannel(
+      const chrome_browser_sharing::SharingMessage& original_message);
+
+  SharingDevicePlatform GetSenderPlatform(
       const chrome_browser_sharing::SharingMessage& original_message);
 
   // Ack message sent back to the original sender of message.
   void SendAckMessage(
       std::string original_message_id,
       chrome_browser_sharing::MessageType original_message_type,
-      base::Optional<syncer::DeviceInfo::SharingTargetInfo> target_info,
+      base::Optional<chrome_browser_sharing::FCMChannelConfiguration>
+          fcm_channel,
+      base::Optional<chrome_browser_sharing::ServerChannelConfiguration>
+          server_channel,
       SharingDevicePlatform sender_device_type,
+      base::TimeTicks message_received_time,
       std::unique_ptr<chrome_browser_sharing::ResponseMessage> response);
 
   void OnAckMessageSent(
       std::string original_message_id,
       chrome_browser_sharing::MessageType original_message_type,
       SharingDevicePlatform sender_device_type,
+      int trace_id,
       SharingSendMessageResult result,
-      base::Optional<std::string> message_id);
+      base::Optional<std::string> message_id,
+      SharingChannelType channel_type);
 
   gcm::GCMDriver* const gcm_driver_;
+  syncer::DeviceInfoTracker* device_info_tracker_;
   SharingFCMSender* sharing_fcm_sender_;
-  SharingSyncPreference* sync_preference_;
-  std::unique_ptr<SharingHandlerRegistry> handler_registry_;
+  SharingHandlerRegistry* handler_registry_;
 
   bool is_listening_ = false;
 

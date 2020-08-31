@@ -11,6 +11,7 @@
 #include "include/private/SkImageInfoPriv.h"
 #include "src/core/SkMathPriv.h"
 #include "tests/Test.h"
+#include "tests/TestUtils.h"
 #include "tools/ToolUtils.h"
 
 #include "include/gpu/GrBackendSurface.h"
@@ -455,8 +456,8 @@ static void test_write_pixels_non_texture(skiatest::Reporter* reporter,
                                           int sampleCnt) {
 
     for (auto& origin : { kTopLeft_GrSurfaceOrigin, kBottomLeft_GrSurfaceOrigin }) {
-        GrBackendTexture backendTex = context->createBackendTexture(
-                DEV_W, DEV_H, kRGBA_8888_SkColorType,
+        GrBackendTexture backendTex;
+        CreateBackendTexture(context, &backendTex, DEV_W, DEV_H, kRGBA_8888_SkColorType,
                 SkColors::kTransparent, GrMipMapped::kNo, GrRenderable::kYes, GrProtected::kNo);
         if (!backendTex.isValid()) {
             continue;
@@ -523,17 +524,14 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(WritePixelsPendingIO, reporter, ctxInfo) {
 
     {
         // Seed the resource cached with a scratch texture that will be reused by writePixels
-        GrSurfaceDesc desc;
-        desc.fWidth = 32;
-        desc.fHeight = 64;
-        desc.fConfig = kRGBA_8888_GrPixelConfig;
+        static constexpr SkISize kDims = {32, 64};
 
         const GrBackendFormat format = caps->getDefaultBackendFormat(GrColorType::kRGBA_8888,
                                                                      GrRenderable::kNo);
 
         sk_sp<GrTextureProxy> temp = proxyProvider->createProxy(
-                format, desc, GrRenderable::kNo, 1, kTopLeft_GrSurfaceOrigin, GrMipMapped::kNo,
-                SkBackingFit::kApprox, SkBudgeted::kYes, GrProtected::kNo);
+                format, kDims, GrRenderable::kNo, 1, GrMipMapped::kNo, SkBackingFit::kApprox,
+                SkBudgeted::kYes, GrProtected::kNo);
         temp->instantiate(context->priv().resourceProvider());
     }
 

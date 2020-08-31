@@ -18,9 +18,14 @@ from __future__ import print_function
 import argparse
 import multiprocessing
 import os
+import sys
 
 from chromite.lib import commandline
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class LookupBoardSysroot(argparse.Action):
@@ -146,8 +151,9 @@ def main(argv):
     emerge_args.append('--root-deps')
 
   emerge_args.append('--jobs=%s' % parsed_args['jobs'])
-  emerge_args.append('--rebuild-exclude=chromeos-base/chromeos-chrome')
 
-  # TODO(cjmcdonald): Change the exec target back to just 'emerge' once
-  #                   python3 is the default in the SDK.
-  os.execvp('/usr/lib64/python-exec/python3.6/emerge', ['emerge'] + emerge_args)
+  emerge_args.append('--rebuild-exclude=chromeos-base/chromeos-chrome')
+  for pkg in constants.OTHER_CHROME_PACKAGES:
+    emerge_args.append('--rebuild-exclude=%s' % pkg)
+
+  os.execvp('emerge', ['emerge'] + emerge_args)

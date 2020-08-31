@@ -59,19 +59,6 @@ class NativeWindowDelegate;
 class User;
 class UserContext;
 
-// Helper class to pass initial parameters to the login screen.
-class LoginScreenContext {
- public:
-  LoginScreenContext();
-
-  void set_email(const std::string& email) { email_ = email; }
-  const std::string& email() const { return email_; }
-
- private:
-  // Optional email to prefill in gaia signin.
-  std::string email_;
-};
-
 // An interface for WebUILoginDisplay to call SigninScreenHandler.
 class LoginDisplayWebUIHandler {
  public:
@@ -204,7 +191,7 @@ class SigninScreenHandler
       input_method::InputMethodManager::State* ime_state);
 
   // Shows the sign in screen.
-  void Show(const LoginScreenContext& context, bool oobe_ui);
+  void Show(bool oobe_ui);
 
   // Sets delegate to be used by the handler. It is guaranteed that valid
   // delegate is set before Show() method will be called.
@@ -227,8 +214,6 @@ class SigninScreenHandler
   // ash::WallpaperControllerObserver implementation:
   void OnWallpaperColorsChanged() override;
   void OnWallpaperBlurChanged() override;
-
-  void SetFocusPODCallbackForTesting(base::Closure callback);
 
   // To avoid spurious error messages on flaky networks, the offline message is
   // only shown if the network is offline for a threshold number of seconds.
@@ -414,13 +399,6 @@ class SigninScreenHandler
   // Callback invoked after the feedback is finished.
   void OnFeedbackFinished();
 
-  // Callback invoked after the feedback sent from the unrecoverable cryptohome
-  // page is finished.
-  void OnUnrecoverableCryptohomeFeedbackFinished();
-
-  // Called when the cros property controlling allowed input methods changes.
-  void OnAllowedInputMethodsChanged();
-
   // After proxy auth information has been supplied, this function re-enables
   // responding to network state notifications.
   void ReenableNetworkStateUpdatesAfterProxyAuth();
@@ -461,9 +439,6 @@ class SigninScreenHandler
 
   content::NotificationRegistrar registrar_;
 
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      allowed_input_methods_subscription_;
-
   // Whether we're currently ignoring network state updates because a proxy auth
   // UI pending (or we're waiting for a grace period after the proxy auth UI is
   // finished for the network to switch into the ONLINE state).
@@ -491,9 +466,6 @@ class SigninScreenHandler
 
   // Input Method Engine state used at signin screen.
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;
-
-  // This callback captures "focusPod finished" event for tests.
-  base::Closure test_focus_pod_callback_;
 
   // True if SigninScreenHandler has already been added to OobeUI observers.
   bool oobe_ui_observer_added_ = false;

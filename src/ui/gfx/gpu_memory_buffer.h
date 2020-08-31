@@ -20,7 +20,7 @@
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include "ui/gfx/mac/io_surface.h"
 #elif defined(OS_WIN)
-#include "ipc/ipc_platform_file.h"  // nogncheck
+#include "base/win/scoped_handle.h"
 #elif defined(OS_ANDROID)
 #include "base/android/scoped_hardware_buffer_handle.h"
 #endif
@@ -55,23 +55,26 @@ using GpuMemoryBufferId = GenericSharedMemoryId;
 // time and it corresponds to |type|.
 struct GFX_EXPORT GpuMemoryBufferHandle {
   GpuMemoryBufferHandle();
+#if defined(OS_ANDROID)
+  explicit GpuMemoryBufferHandle(
+      base::android::ScopedHardwareBufferHandle handle);
+#endif
   GpuMemoryBufferHandle(GpuMemoryBufferHandle&& other);
   GpuMemoryBufferHandle& operator=(GpuMemoryBufferHandle&& other);
   ~GpuMemoryBufferHandle();
   GpuMemoryBufferHandle Clone() const;
   bool is_null() const { return type == EMPTY_BUFFER; }
-  GpuMemoryBufferType type;
-  GpuMemoryBufferId id;
+  GpuMemoryBufferType type = GpuMemoryBufferType::EMPTY_BUFFER;
+  GpuMemoryBufferId id{0};
   base::UnsafeSharedMemoryRegion region;
-  uint32_t offset;
-  int32_t stride;
+  uint32_t offset = 0;
+  int32_t stride = 0;
 #if defined(OS_LINUX) || defined(OS_FUCHSIA)
   NativePixmapHandle native_pixmap_handle;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   ScopedRefCountedIOSurfaceMachPort mach_port;
 #elif defined(OS_WIN)
-  // TODO(crbug.com/863011): convert this to a scoped handle.
-  IPC::PlatformFileForTransit dxgi_handle;
+  base::win::ScopedHandle dxgi_handle;
 #elif defined(OS_ANDROID)
   base::android::ScopedHardwareBufferHandle android_hardware_buffer;
 #endif

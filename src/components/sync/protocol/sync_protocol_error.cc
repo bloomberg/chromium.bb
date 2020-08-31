@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace syncer {
 #define ENUM_CASE(x) \
@@ -25,6 +25,7 @@ const char* GetSyncErrorTypeString(SyncProtocolErrorType type) {
     ENUM_CASE(DISABLED_BY_ADMIN);
     ENUM_CASE(PARTIAL_FAILURE);
     ENUM_CASE(CLIENT_DATA_OBSOLETE);
+    ENUM_CASE(ENCRYPTION_OBSOLETE);
     ENUM_CASE(UNKNOWN_ERROR);
   }
   NOTREACHED();

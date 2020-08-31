@@ -38,11 +38,13 @@ void OobeScreenWaiter::Wait() {
 
   state_ = State::WAITING_FOR_SCREEN;
 
+  LOG(INFO) << "Actually waiting for screen " << target_screen_.name;
+
   run_loop_ = std::make_unique<base::RunLoop>();
   run_loop_->Run();
   run_loop_.reset();
 
-  DCHECK_EQ(State::DONE, state_);
+  ASSERT_EQ(State::DONE, state_);
 
   oobe_ui_observer_.RemoveAll();
   if (check_native_window_visible_)

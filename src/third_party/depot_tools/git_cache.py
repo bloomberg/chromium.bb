@@ -301,7 +301,7 @@ class Mirror(object):
           cachepath = subprocess.check_output(
               [cls.git_exe, 'config'] +
               cls._GIT_CONFIG_LOCATION +
-              ['cache.cachepath']).strip()
+              ['cache.cachepath']).decode('utf-8', 'ignore').strip()
         except subprocess.CalledProcessError:
           cachepath = os.environ.get('GIT_CACHE_PATH', cls.UNSET_CACHEPATH)
         setattr(cls, 'cachepath', cachepath)
@@ -472,7 +472,7 @@ class Mirror(object):
     try:
       config_fetchspecs = subprocess.check_output(
           [self.git_exe, 'config', '--get-all', 'remote.origin.fetch'],
-          cwd=self.mirror_path)
+          cwd=self.mirror_path).decode('utf-8', 'ignore')
       for fetchspec in config_fetchspecs.splitlines():
         self.fetch_specs.add(self.parse_fetch_spec(fetchspec))
     except subprocess.CalledProcessError:
@@ -481,17 +481,19 @@ class Mirror(object):
                    '%s and "git cache fetch" again.'
                    % os.path.join(self.mirror_path, 'config'))
 
-  def _ensure_bootstrapped(self, depth, bootstrap, force=False):
+  def _ensure_bootstrapped(
+      self, depth, bootstrap, reset_fetch_config, force=False):
     pack_dir = os.path.join(self.mirror_path, 'objects', 'pack')
     pack_files = []
     if os.path.isdir(pack_dir):
       pack_files = [f for f in os.listdir(pack_dir) if f.endswith('.pack')]
-      self.print('%s has %d .pack files, re-bootstrapping if >%d' %
+      self.print('%s has %d .pack files, re-bootstrapping if >%d or ==0' %
                 (self.mirror_path, len(pack_files), GC_AUTOPACKLIMIT))
 
     should_bootstrap = (force or
                         not self.exists() or
-                        len(pack_files) > GC_AUTOPACKLIMIT)
+                        len(pack_files) > GC_AUTOPACKLIMIT or
+                        len(pack_files) == 0)
 
     if not should_bootstrap:
       if depth and os.path.exists(os.path.join(self.mirror_path, 'shallow')):
@@ -499,16 +501,16 @@ class Mirror(object):
             'Shallow fetch requested, but repo cache already exists.')
       return
 
-    if self.exists():
-      # Re-bootstrapping an existing mirror; preserve existing fetch spec.
-      self._preserve_fetchspec()
-    else:
+    if not self.exists():
       if os.path.exists(self.mirror_path):
         # If the mirror path exists but self.exists() returns false, we're
         # in an unexpected state. Nuke the previous mirror directory and
         # start fresh.
         gclient_utils.rmtree(self.mirror_path)
       os.mkdir(self.mirror_path)
+    elif not reset_fetch_config:
+      # Re-bootstrapping an existing mirror; preserve existing fetch spec.
+      self._preserve_fetchspec()
 
     bootstrapped = (not depth and bootstrap and
                     self.bootstrap_repo(self.mirror_path))
@@ -527,23 +529,30 @@ class Mirror(object):
             'but failed. Continuing with non-optimized repository.'
             % len(pack_files))
 
-  def _fetch(self, rundir, verbose, depth, no_fetch_tags, reset_fetch_config):
+  def _fetch(self,
+             rundir,
+             verbose,
+             depth,
+             no_fetch_tags,
+             reset_fetch_config,
+             prune=True):
     self.config(rundir, reset_fetch_config)
-    v = []
-    d = []
-    t = []
+
+    fetch_cmd = ['fetch']
     if verbose:
-      v = ['-v', '--progress']
+      fetch_cmd.extend(['-v', '--progress'])
     if depth:
-      d = ['--depth', str(depth)]
+      fetch_cmd.extend(['--depth', str(depth)])
     if no_fetch_tags:
-      t = ['--no-tags']
-    fetch_cmd = ['fetch'] + v + d + t + ['origin']
+      fetch_cmd.append('--no-tags')
+    if prune:
+      fetch_cmd.append('--prune')
+    fetch_cmd.append('origin')
+
     fetch_specs = subprocess.check_output(
         [self.git_exe, 'config', '--get-all', 'remote.origin.fetch'],
-        cwd=rundir).strip().splitlines()
+        cwd=rundir).decode('utf-8', 'ignore').strip().splitlines()
     for spec in fetch_specs:
-      spec = spec.decode()
       try:
         self.print('Fetching %s' % spec)
         with self.print_duration_of('fetch %s' % spec):
@@ -572,14 +581,15 @@ class Mirror(object):
       lockfile.lock()
 
     try:
-      self._ensure_bootstrapped(depth, bootstrap)
+      self._ensure_bootstrapped(depth, bootstrap, reset_fetch_config)
       self._fetch(self.mirror_path, verbose, depth, no_fetch_tags,
                   reset_fetch_config)
     except ClobberNeeded:
       # This is a major failure, we need to clean and force a bootstrap.
       gclient_utils.rmtree(self.mirror_path)
       self.print(GIT_CACHE_CORRUPT_MESSAGE)
-      self._ensure_bootstrapped(depth, bootstrap, force=True)
+      self._ensure_bootstrapped(
+          depth, bootstrap, reset_fetch_config, force=True)
       self._fetch(self.mirror_path, verbose, depth, no_fetch_tags,
                   reset_fetch_config)
     finally:
@@ -589,7 +599,8 @@ class Mirror(object):
   def update_bootstrap(self, prune=False, gc_aggressive=False):
     # The folder is <git number>
     gen_number = subprocess.check_output(
-        [self.git_exe, 'number', 'master'], cwd=self.mirror_path).strip()
+        [self.git_exe, 'number', 'master'],
+        cwd=self.mirror_path).decode('utf-8', 'ignore').strip()
     gsutil = Gsutil(path=self.gsutil_exe, boto_path=None)
 
     src_name = self.mirror_path
@@ -809,16 +820,18 @@ def CMDfetch(parser, args):
   remotes = []
   if options.all:
     assert not args, 'fatal: fetch --all does not take a repository argument'
-    remotes = subprocess.check_output([Mirror.git_exe, 'remote']).splitlines()
+    remotes = subprocess.check_output([Mirror.git_exe, 'remote'])
+    remotes = remotes.decode('utf-8', 'ignore').splitlines()
   elif args:
     remotes = args
   else:
     current_branch = subprocess.check_output(
-        [Mirror.git_exe, 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
+        [Mirror.git_exe, 'rev-parse', '--abbrev-ref', 'HEAD'])
+    current_branch = current_branch.decode('utf-8', 'ignore').strip()
     if current_branch != 'HEAD':
       upstream = subprocess.check_output(
-          [Mirror.git_exe, 'config', 'branch.%s.remote' % current_branch]
-      ).strip()
+          [Mirror.git_exe, 'config', 'branch.%s.remote' % current_branch])
+      upstream = upstream.decode('utf-8', 'ignore').strip()
       if upstream and upstream != '.':
         remotes = [upstream]
   if not remotes:
@@ -826,7 +839,7 @@ def CMDfetch(parser, args):
 
   cachepath = Mirror.GetCachePath()
   git_dir = os.path.abspath(subprocess.check_output(
-      [Mirror.git_exe, 'rev-parse', '--git-dir']))
+      [Mirror.git_exe, 'rev-parse', '--git-dir']).decode('utf-8', 'ignore'))
   git_dir = os.path.abspath(git_dir)
   if git_dir.startswith(cachepath):
     mirror = Mirror.FromPath(git_dir)
@@ -837,7 +850,8 @@ def CMDfetch(parser, args):
     return 0
   for remote in remotes:
     remote_url = subprocess.check_output(
-        [Mirror.git_exe, 'config', 'remote.%s.url' % remote]).strip()
+        [Mirror.git_exe, 'config', 'remote.%s.url' % remote])
+    remote_url = remote_url.decode('utf-8', 'ignore').strip()
     if remote_url.startswith(cachepath):
       mirror = Mirror.FromPath(remote_url)
       mirror.print = lambda *args: None

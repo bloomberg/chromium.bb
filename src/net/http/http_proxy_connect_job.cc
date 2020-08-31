@@ -236,6 +236,10 @@ bool HttpProxyConnectJob::HasEstablishedConnection() const {
   return false;
 }
 
+ResolveErrorInfo HttpProxyConnectJob::GetResolveErrorInfo() const {
+  return resolve_error_info_;
+}
+
 bool HttpProxyConnectJob::IsSSLError() const {
   return ssl_cert_request_info_ != nullptr;
 }
@@ -447,6 +451,7 @@ int HttpProxyConnectJob::DoTransportConnect() {
 }
 
 int HttpProxyConnectJob::DoTransportConnectComplete(int result) {
+  resolve_error_info_ = nested_connect_job_->GetResolveErrorInfo();
   if (result != OK) {
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpProxy.ConnectLatency.Insecure.Error",
                                base::TimeTicks::Now() - connect_start_time_);
@@ -478,6 +483,7 @@ int HttpProxyConnectJob::DoSSLConnect() {
 }
 
 int HttpProxyConnectJob::DoSSLConnectComplete(int result) {
+  resolve_error_info_ = nested_connect_job_->GetResolveErrorInfo();
   if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpProxy.ConnectLatency.Secure.Error",
                                base::TimeTicks::Now() - connect_start_time_);
@@ -635,8 +641,9 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {
   DCHECK(stream.get());
   // |transport_socket_| will set itself as |stream|'s delegate.
   transport_socket_ = std::make_unique<SpdyProxyClientSocket>(
-      stream, GetUserAgent(), params_->endpoint(), net_log(),
-      http_auth_controller_.get());
+      stream, ProxyServer(GetProxyServerScheme(), GetDestination()),
+      GetUserAgent(), params_->endpoint(), net_log(),
+      http_auth_controller_.get(), common_connect_job_params()->proxy_delegate);
   return transport_socket_->Connect(base::BindOnce(
       &HttpProxyConnectJob::OnIOComplete, base::Unretained(this)));
 }
@@ -704,8 +711,10 @@ int HttpProxyConnectJob::DoQuicProxyCreateStreamComplete(int result) {
   quic_stream->SetPriority(precedence);
 
   transport_socket_ = std::make_unique<QuicProxyClientSocket>(
-      std::move(quic_stream), std::move(quic_session_), GetUserAgent(),
-      params_->endpoint(), net_log(), http_auth_controller_.get());
+      std::move(quic_stream), std::move(quic_session_),
+      ProxyServer(GetProxyServerScheme(), GetDestination()), GetUserAgent(),
+      params_->endpoint(), net_log(), http_auth_controller_.get(),
+      common_connect_job_params()->proxy_delegate);
   return transport_socket_->Connect(base::BindOnce(
       &HttpProxyConnectJob::OnIOComplete, base::Unretained(this)));
 }

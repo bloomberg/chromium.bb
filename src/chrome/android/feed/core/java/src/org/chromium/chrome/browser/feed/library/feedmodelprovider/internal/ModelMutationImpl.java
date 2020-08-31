@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.feedmodelprovider.internal;
 
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelMutation;
@@ -22,8 +23,10 @@ public final class ModelMutationImpl implements ModelMutation {
     public static final class Change {
         public final List<StreamStructure> mStructureChanges = new ArrayList<>();
         public final List<StreamStructure> mUpdateChanges = new ArrayList<>();
-        /*@Nullable*/ public MutationContext mMutationContext;
-        /*@Nullable*/ public String mSessionId;
+        @Nullable
+        public MutationContext mMutationContext;
+        @Nullable
+        public String mSessionId;
         public boolean mCachedBindings;
     }
 

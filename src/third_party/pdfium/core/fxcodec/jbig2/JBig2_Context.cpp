@@ -331,7 +331,7 @@ JBig2_Result CJBig2_Context::ProcessingParseSegmentData(
       pPageInfo->m_bIsStriped = !!(wTemp & 0x8000);
       pPageInfo->m_wMaxStripeSize = wTemp & 0x7fff;
       bool bMaxHeight = (pPageInfo->m_dwHeight == 0xffffffff);
-      if (bMaxHeight && pPageInfo->m_bIsStriped != true)
+      if (bMaxHeight && !pPageInfo->m_bIsStriped)
         pPageInfo->m_bIsStriped = true;
 
       if (!m_bBufSpecified) {
@@ -1221,7 +1221,7 @@ bool CJBig2_Context::HuffmanAssignCode(JBig2HuffmanCode* SBSYMCODES,
   LENCOUNT[0] = 0;
 
   for (int i = 1; i <= LENMAX; ++i) {
-    pdfium::base::CheckedNumeric<int> shifted = FIRSTCODE[i - 1];
+    FX_SAFE_INT32 shifted = FIRSTCODE[i - 1];
     shifted += LENCOUNT[i - 1];
     shifted <<= 1;
     if (!shifted.IsValid())

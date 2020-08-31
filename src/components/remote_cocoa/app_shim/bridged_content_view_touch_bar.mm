@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mac/availability.h"
+#include <os/availability.h>
+
 #import "base/mac/scoped_nsobject.h"
-#import "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
-#import "ui/base/cocoa/touch_bar_forward_declarations.h"
 
 namespace {
 
@@ -28,8 +27,8 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
 
 - (void)touchBarButtonAction:(id)sender {
   ui::DialogButton type = static_cast<ui::DialogButton>([sender tag]);
-  if (bridge_)
-    bridge_->host()->DoDialogButtonAction(type);
+  if (_bridge)
+    _bridge->host()->DoDialogButtonAction(type);
 }
 
 // NSTouchBarDelegate protocol implementation.
@@ -37,7 +36,7 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
 - (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
       makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier
     API_AVAILABLE(macos(10.12.2)) {
-  if (!bridge_)
+  if (!_bridge)
     return nil;
 
   if ([identifier isEqualToString:kTouchBarDialogButtonsGroupId]) {
@@ -66,7 +65,7 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
   base::string16 buttonLabel;
   bool isButtonEnabled = false;
   bool isButtonDefault = false;
-  bridge_->host()->GetDialogButtonInfo(type, &buttonExists, &buttonLabel,
+  _bridge->host()->GetDialogButtonInfo(type, &buttonExists, &buttonLabel,
                                        &isButtonEnabled, &isButtonDefault);
   if (!buttonExists)
     return nil;
@@ -95,11 +94,11 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
 // NSTouchBarProvider protocol implementation (via NSResponder category).
 
 - (NSTouchBar*)makeTouchBar {
-  if (!bridge_)
+  if (!_bridge)
     return nil;
 
   bool buttonsExist = false;
-  bridge_->host()->GetDoDialogButtonsExist(&buttonsExist);
+  _bridge->host()->GetDoDialogButtonsExist(&buttonsExist);
   if (!buttonsExist)
     return nil;
 

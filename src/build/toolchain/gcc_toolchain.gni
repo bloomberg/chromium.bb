@@ -154,15 +154,27 @@ template("gcc_toolchain") {
     # toolchain args, use those values, otherwise default to the global one.
     # This works because the only reasonable override that toolchains might
     # supply for these values are to force-disable them.
-    # But if has_gomacc_path is set in simple chrome build, we assumes that
-    # *chromeos* compiler wrapper find gomacc from GOMACC_PATH envvar.
-    # Note: In this case, we use gomacc for host toolchain compiling.
+    # But if needs_gomacc_path_arg is set in a Chrome OS build, the toolchain
+    # wrapper will have picked up gomacc via cmd-line arg. So need to prepend
+    # gomacc in that case.
+    goma_path = "$goma_dir/gomacc"
     if (toolchain_uses_goma &&
-        (!has_gomacc_path || invoker_toolchain_args.current_os != "chromeos")) {
-      goma_path = "$goma_dir/gomacc"
+        (!defined(invoker_toolchain_args.needs_gomacc_path_arg) ||
+         !invoker_toolchain_args.needs_gomacc_path_arg)) {
       compiler_prefix = "${goma_path} "
     } else {
       compiler_prefix = "${toolchain_cc_wrapper} "
+    }
+    if (use_goma_thin_lto && toolchain_uses_goma && use_thin_lto) {
+      # goma_ld.py uses autoninja in an attempt to set a reasonable
+      # number of jobs, but this results in too low a value on
+      # Chrome OS builders. So we pass in an explicit value.
+      goma_ld =
+          rebase_path("//tools/clang/scripts/goma_ld.py", root_build_dir) +
+          " --gomacc ${goma_path} --jobs 100 -- "
+    } else {
+      goma_ld = ""
+      not_needed([ "goma_path" ])
     }
 
     # Create a distinct variable for "asm", since coverage runs pass a bunch of
@@ -214,7 +226,7 @@ template("gcc_toolchain") {
     cxx = compiler_prefix + invoker.cxx
     asm = asm_prefix + invoker.cc
     ar = invoker.ar
-    ld = invoker.ld
+    ld = "$goma_ld${invoker.ld}"
     if (defined(invoker.readelf)) {
       readelf = invoker.readelf
     } else {
@@ -291,9 +303,7 @@ template("gcc_toolchain") {
       command = "$cc -MMD -MF $depfile ${rebuild_string}{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}}${extra_cppflags}${extra_cflags} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "CC {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.o",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
     }
 
     tool("cxx") {
@@ -302,9 +312,7 @@ template("gcc_toolchain") {
       command = "$cxx -MMD -MF $depfile ${rebuild_string}{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}}${extra_cppflags}${extra_cxxflags} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "CXX {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.o",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
     }
 
     tool("asm") {
@@ -313,9 +321,7 @@ template("gcc_toolchain") {
       command = "$asm -MMD -MF $depfile ${rebuild_string}{{defines}} {{include_dirs}} {{asmflags}}${extra_asmflags} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "ASM {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.o",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
     }
 
     tool("alink") {
@@ -342,9 +348,7 @@ template("gcc_toolchain") {
       # Almost all targets build with //build/config/compiler:thin_archive which
       # adds -T to arflags.
       description = "AR {{output}}"
-      outputs = [
-        "{{output_dir}}/{{target_output_name}}{{output_extension}}",
-      ]
+      outputs = [ "{{output_dir}}/{{target_output_name}}{{output_extension}}" ]
 
       # Shared libraries go in the target out directory by default so we can
       # generate different targets with the same name and not have them collide.
@@ -473,9 +477,7 @@ template("gcc_toolchain") {
 
       output_prefix = "lib"
 
-      outputs = [
-        sofile,
-      ]
+      outputs = [ sofile ]
       if (sofile != unstripped_sofile) {
         outputs += [ unstripped_sofile ]
         if (defined(invoker.use_unstripped_as_runtime_outputs) &&
@@ -536,9 +538,7 @@ template("gcc_toolchain") {
 
       description = "LINK $outfile"
       rspfile_content = "{{inputs}}"
-      outputs = [
-        outfile,
-      ]
+      outputs = [ outfile ]
       if (outfile != unstripped_outfile) {
         outputs += [ unstripped_outfile ]
         if (defined(invoker.use_unstripped_as_runtime_outputs) &&

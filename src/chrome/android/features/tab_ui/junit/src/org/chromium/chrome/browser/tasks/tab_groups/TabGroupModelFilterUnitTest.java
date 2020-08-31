@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_groups;
 
+import static junit.framework.Assert.assertTrue;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
@@ -21,7 +23,6 @@ import static org.mockito.Mockito.verify;
 
 import androidx.annotation.Nullable;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,16 +31,13 @@ import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -51,6 +49,7 @@ import java.util.List;
 /**
  * Tests for {@link TabGroupModelFilter}.
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabGroupModelFilterUnitTest {
@@ -104,13 +103,10 @@ public class TabGroupModelFilterUnitTest {
     private TabImpl prepareTab(int tabId, int rootId, int parentTabId) {
         TabImpl tab = mock(TabImpl.class);
 
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) {
-                int newRootId = invocation.getArgument(0);
-                doReturn(newRootId).when(tab).getRootId();
-                return null;
-            }
+        doAnswer(invocation -> {
+            int newRootId = invocation.getArgument(0);
+            doReturn(newRootId).when(tab).getRootId();
+            return null;
         })
                 .when(tab)
                 .setRootId(anyInt());
@@ -132,66 +128,47 @@ public class TabGroupModelFilterUnitTest {
     }
 
     private void setUpTabModel() {
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) {
-                Tab tab = invocation.getArgument(0);
-                int index = invocation.getArgument(1);
-                index = index == -1 ? mTabs.size() : index;
-                mTabs.add(index, tab);
-                return null;
-            }
+        doAnswer(invocation -> {
+            Tab tab = invocation.getArgument(0);
+            int index = invocation.getArgument(1);
+            index = index == -1 ? mTabs.size() : index;
+            mTabs.add(index, tab);
+            return null;
         })
                 .when(mTabModel)
-                .addTab(any(Tab.class), anyInt(), anyInt());
+                .addTab(any(Tab.class), anyInt(), anyInt(), anyInt());
 
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) {
-                int movedTabId = invocation.getArgument(0);
-                int newIndex = invocation.getArgument(1);
+        doAnswer(invocation -> {
+            int movedTabId = invocation.getArgument(0);
+            int newIndex = invocation.getArgument(1);
 
-                int oldIndex = TabModelUtils.getTabIndexById(mTabModel, movedTabId);
-                Tab tab = TabModelUtils.getTabById(mTabModel, movedTabId);
+            int oldIndex = TabModelUtils.getTabIndexById(mTabModel, movedTabId);
+            Tab tab = TabModelUtils.getTabById(mTabModel, movedTabId);
 
-                mTabs.remove(tab);
-                if (oldIndex < newIndex) --newIndex;
-                mTabs.add(newIndex, tab);
-                mTabModelObserverCaptor.getValue().didMoveTab(tab, newIndex, oldIndex);
-                return null;
-            }
+            mTabs.remove(tab);
+            if (oldIndex < newIndex) --newIndex;
+            mTabs.add(newIndex, tab);
+            mTabModelObserverCaptor.getValue().didMoveTab(tab, newIndex, oldIndex);
+            return null;
         })
                 .when(mTabModel)
                 .moveTab(anyInt(), anyInt());
 
-        doAnswer(new Answer() {
-            @Override
-            public Tab answer(InvocationOnMock invocation) {
-                int index = invocation.getArgument(0);
-                return mTabs.get(index);
-            }
+        doAnswer(invocation -> {
+            int index = invocation.getArgument(0);
+            return mTabs.get(index);
         })
                 .when(mTabModel)
                 .getTabAt(anyInt());
 
-        doAnswer(new Answer() {
-            @Override
-            public Integer answer(InvocationOnMock invocation) {
-                Tab tab = invocation.getArgument(0);
-                return mTabs.indexOf(tab);
-            }
+        doAnswer(invocation -> {
+            Tab tab = invocation.getArgument(0);
+            return mTabs.indexOf(tab);
         })
                 .when(mTabModel)
                 .indexOf(any(Tab.class));
 
-        doAnswer(new Answer() {
-            @Override
-            public Integer answer(InvocationOnMock invocation) {
-                return mTabs.size();
-            }
-        })
-                .when(mTabModel)
-                .getCount();
+        doAnswer(invocation -> mTabs.size()).when(mTabModel).getCount();
 
         doReturn(0).when(mTabModel).index();
         doNothing().when(mTabModel).addObserver(mTabModelObserverCaptor.capture());
@@ -204,8 +181,10 @@ public class TabGroupModelFilterUnitTest {
 
     private TabImpl addTabToTabModel(int index, @Nullable TabImpl tab) {
         if (tab == null) tab = prepareTab(NEW_TAB_ID, NEW_TAB_ID, Tab.INVALID_TAB_ID);
-        mTabModel.addTab(tab, index, TabLaunchType.FROM_CHROME_UI);
-        mTabModelObserverCaptor.getValue().didAddTab(tab, TabLaunchType.FROM_CHROME_UI);
+        mTabModel.addTab(
+                tab, index, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                tab, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
         return tab;
     }
 
@@ -216,31 +195,44 @@ public class TabGroupModelFilterUnitTest {
         mTabGroupModelFilter.addTabGroupObserver(mTabGroupModelFilterObserver);
 
         doReturn(isIncognito).when(mTab1).isIncognito();
-        mTabModel.addTab(mTab1, -1, TabLaunchType.FROM_CHROME_UI);
-        mTabModelObserverCaptor.getValue().didAddTab(mTab1, TabLaunchType.FROM_CHROME_UI);
+        mTabModel.addTab(
+                mTab1, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 
         doReturn(isIncognito).when(mTab2).isIncognito();
-        mTabModel.addTab(mTab2, -1, TabLaunchType.FROM_CHROME_UI);
-        mTabModelObserverCaptor.getValue().didAddTab(mTab2, TabLaunchType.FROM_CHROME_UI);
+        mTabModel.addTab(
+                mTab2, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab2, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 
         doReturn(isIncognito).when(mTab3).isIncognito();
-        mTabModel.addTab(mTab3, -1, TabLaunchType.FROM_CHROME_UI);
-        mTabModelObserverCaptor.getValue().didAddTab(mTab3, TabLaunchType.FROM_CHROME_UI);
+        mTabModel.addTab(
+                mTab3, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab3, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 
         doReturn(isIncognito).when(mTab4).isIncognito();
-        mTabModel.addTab(mTab4, -1, TabLaunchType.FROM_CHROME_UI);
-        mTabModelObserverCaptor.getValue().didAddTab(mTab4, TabLaunchType.FROM_CHROME_UI);
+        mTabModel.addTab(
+                mTab4, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab4, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 
         doReturn(isIncognito).when(mTab5).isIncognito();
-        mTabModel.addTab(mTab5, -1, TabLaunchType.FROM_CHROME_UI);
-        mTabModelObserverCaptor.getValue().didAddTab(mTab5, TabLaunchType.FROM_CHROME_UI);
+        mTabModel.addTab(
+                mTab5, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab5, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 
         doReturn(isIncognito).when(mTab6).isIncognito();
-        mTabModel.addTab(mTab6, -1, TabLaunchType.FROM_CHROME_UI);
-        mTabModelObserverCaptor.getValue().didAddTab(mTab6, TabLaunchType.FROM_CHROME_UI);
+        mTabModel.addTab(
+                mTab6, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        mTabModelObserverCaptor.getValue().didAddTab(
+                mTab6, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
 
         if (isTabRestoreCompleted) {
             mTabGroupModelFilter.restoreCompleted();
+            assertTrue(mTabGroupModelFilter.isTabModelRestored());
         }
     }
 
@@ -249,8 +241,6 @@ public class TabGroupModelFilterUnitTest {
         // After setUp, TabModel has 6 tabs in the following order: mTab1, mTab2, mTab3, mTab4,
         // mTab5, mTab6. While mTab2 and mTab3 are in a group, and mTab5 and mTab6 are in a separate
         // group.
-        RecordUserAction.setDisabledForTests(true);
-        RecordHistogram.setDisabledForTests(true);
 
         MockitoAnnotations.initMocks(this);
 
@@ -259,35 +249,12 @@ public class TabGroupModelFilterUnitTest {
         setupTabGroupModelFilter(true, false);
     }
 
-    @After
-    public void tearDown() {
-        RecordUserAction.setDisabledForTests(false);
-        RecordHistogram.setDisabledForTests(false);
-    }
-
     @Test
     public void setIncognito() {
         setupTabGroupModelFilter(true, false);
         setupTabGroupModelFilter(false, true);
         assertThat(mTabGroupModelFilter.isIncognito(), equalTo(true));
         assertThat(mTabModel.getCount(), equalTo(6));
-    }
-
-    @Test
-    // TODO(mattsimmons): This is actually testing behavior of the superclass but there's no unit
-    //  tests for the superclass today. If one ever exists, this should move to that test.
-    public void isTabModelRestored() {
-        setupTabGroupModelFilter(false, false);
-        assertThat(mTabGroupModelFilter.isTabModelRestored(), equalTo(false));
-
-        setupTabGroupModelFilter(true, false);
-        assertThat(mTabGroupModelFilter.isTabModelRestored(), equalTo(true));
-
-        setupTabGroupModelFilter(false, true);
-        assertThat(mTabGroupModelFilter.isTabModelRestored(), equalTo(true));
-
-        setupTabGroupModelFilter(true, true);
-        assertThat(mTabGroupModelFilter.isTabModelRestored(), equalTo(true));
     }
 
     @Test
@@ -799,11 +766,27 @@ public class TabGroupModelFilterUnitTest {
     public void ignoreUnrelatedMoveTab() {
         // Simulate that the tab restoring is not yet finished.
         setupTabGroupModelFilter(false, false);
+        assertFalse(mTabGroupModelFilter.isTabModelRestored());
 
         mTabModelObserverCaptor.getValue().didMoveTab(mTab1, POSITION1, POSITION6);
         mTabModelObserverCaptor.getValue().didMoveTab(mTab1, POSITION6, POSITION1);
         mTabModelObserverCaptor.getValue().didMoveTab(mTab2, POSITION2, POSITION5);
         mTabModelObserverCaptor.getValue().didMoveTab(mTab2, POSITION5, POSITION2);
+
+        // No call should be made here.
+        verify(mTabGroupModelFilterObserver, never())
+                .didMoveTabOutOfGroup(any(Tab.class), anyInt());
+        verify(mTabGroupModelFilterObserver, never()).didMergeTabToGroup(any(Tab.class), anyInt());
+        verify(mTabGroupModelFilterObserver, never())
+                .didMoveWithinGroup(any(Tab.class), anyInt(), anyInt());
+        verify(mTabGroupModelFilterObserver, never())
+                .didMoveTabGroup(any(Tab.class), anyInt(), anyInt());
+
+        // Ignore any move incognito tabs before TabModel restored.
+        setupTabGroupModelFilter(false, true);
+        assertFalse(mTabGroupModelFilter.isTabModelRestored());
+
+        mTabModelObserverCaptor.getValue().didMoveTab(mTab1, POSITION1, POSITION6);
 
         // No call should be made here.
         verify(mTabGroupModelFilterObserver, never())
@@ -886,11 +869,12 @@ public class TabGroupModelFilterUnitTest {
     }
 
     @Test
-    public void skipRestoringStageMoveTab_Incognito() {
-        // Simulate tab model is in incognito mode, and thus tab restoring will not happen.
-        // Therefore, we should not ignore didMoveTab calls because we have already skipped the
-        // didMoveTab calls from restoring stage.
+    public void moveTab_Incognito() {
         setupTabGroupModelFilter(false, true);
+        assertFalse(mTabGroupModelFilter.isTabModelRestored());
+
+        mTabGroupModelFilter.markTabStateInitialized();
+        assertTrue(mTabGroupModelFilter.isTabModelRestored());
 
         // Simulate that tab3 is going to be moved out of group.
         mTab3.setRootId(TAB3_ID);

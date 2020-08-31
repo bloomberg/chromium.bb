@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
 #include "third_party/blink/renderer/core/css/font_face_set_worker.h"
 #include "third_party/blink/renderer/core/css/remote_font_face_source.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
@@ -214,9 +215,12 @@ void CSSFontFace::SetLoadStatus(FontFace::LoadStatusType new_status) {
   if (segmented_font_faces_.IsEmpty() || !font_face_->GetExecutionContext())
     return;
 
-  if (auto* document = DynamicTo<Document>(font_face_->GetExecutionContext())) {
-    if (new_status == FontFace::kLoading)
-      FontFaceSetDocument::From(*document)->BeginFontLoading(font_face_);
+  if (auto* window =
+          DynamicTo<LocalDOMWindow>(font_face_->GetExecutionContext())) {
+    if (new_status == FontFace::kLoading) {
+      FontFaceSetDocument::From(*window->document())
+          ->BeginFontLoading(font_face_);
+    }
   } else if (auto* scope = DynamicTo<WorkerGlobalScope>(
                  font_face_->GetExecutionContext())) {
     if (new_status == FontFace::kLoading)
@@ -224,7 +228,18 @@ void CSSFontFace::SetLoadStatus(FontFace::LoadStatusType new_status) {
   }
 }
 
-void CSSFontFace::Trace(blink::Visitor* visitor) {
+bool CSSFontFace::UpdatePeriod() {
+  if (LoadStatus() == FontFace::kLoaded)
+    return false;
+  bool changed = false;
+  for (CSSFontFaceSource* source : sources_) {
+    if (source->UpdatePeriod())
+      changed = true;
+  }
+  return changed;
+}
+
+void CSSFontFace::Trace(Visitor* visitor) {
   visitor->Trace(segmented_font_faces_);
   visitor->Trace(sources_);
   visitor->Trace(font_face_);

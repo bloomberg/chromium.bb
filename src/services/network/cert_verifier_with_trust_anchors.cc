@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "net/base/net_errors.h"
 #include "net/cert/caching_cert_verifier.h"
+#include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/coalescing_cert_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
@@ -19,7 +20,7 @@ namespace network {
 namespace {
 
 void MaybeSignalAnchorUse(int error,
-                          const base::Closure& anchor_used_callback,
+                          const base::RepeatingClosure& anchor_used_callback,
                           const net::CertVerifyResult& verify_result) {
   if (error != net::OK || !verify_result.is_issued_by_additional_trust_anchor ||
       anchor_used_callback.is_null()) {
@@ -28,10 +29,11 @@ void MaybeSignalAnchorUse(int error,
   anchor_used_callback.Run();
 }
 
-void CompleteAndSignalAnchorUse(const base::Closure& anchor_used_callback,
-                                net::CompletionOnceCallback completion_callback,
-                                const net::CertVerifyResult* verify_result,
-                                int error) {
+void CompleteAndSignalAnchorUse(
+    const base::RepeatingClosure& anchor_used_callback,
+    net::CompletionOnceCallback completion_callback,
+    const net::CertVerifyResult* verify_result,
+    int error) {
   MaybeSignalAnchorUse(error, anchor_used_callback, *verify_result);
   std::move(completion_callback).Run(error);
 }
@@ -49,7 +51,7 @@ net::CertVerifier::Config ExtendTrustAnchors(
 }  // namespace
 
 CertVerifierWithTrustAnchors::CertVerifierWithTrustAnchors(
-    const base::Closure& anchor_used_callback)
+    const base::RepeatingClosure& anchor_used_callback)
     : anchor_used_callback_(anchor_used_callback) {
   DETACH_FROM_THREAD(thread_checker_);
 }
@@ -59,15 +61,9 @@ CertVerifierWithTrustAnchors::~CertVerifierWithTrustAnchors() {
 }
 
 void CertVerifierWithTrustAnchors::InitializeOnIOThread(
-    const scoped_refptr<net::CertVerifyProc>& verify_proc) {
+    std::unique_ptr<net::CertVerifier> delegate) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!verify_proc->SupportsAdditionalTrustAnchors()) {
-    LOG(WARNING)
-        << "Additional trust anchors not supported on the current platform!";
-  }
-  delegate_ = std::make_unique<net::CachingCertVerifier>(
-      std::make_unique<net::CoalescingCertVerifier>(
-          std::make_unique<net::MultiThreadedCertVerifier>(verify_proc.get())));
+  delegate_ = std::move(delegate);
   delegate_->SetConfig(ExtendTrustAnchors(orig_config_, trust_anchors_));
 }
 

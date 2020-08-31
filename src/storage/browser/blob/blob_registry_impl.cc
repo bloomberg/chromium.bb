@@ -50,7 +50,7 @@ class BlobRegistryImpl::BlobUnderConstruction {
   // referenced by this new blob. This (and any further methods) could end up
   // deleting |this| by removing it from the blobs_under_construction_
   // collection in the blob service.
-  void StartTransportation();
+  void StartTransportation(base::WeakPtr<BlobImpl> blob_impl);
 
   ~BlobUnderConstruction() = default;
 
@@ -179,6 +179,9 @@ class BlobRegistryImpl::BlobUnderConstruction {
   // UUID of the blob being built.
   std::string uuid_;
 
+  // BlobImpl representing the blob being built.
+  base::WeakPtr<BlobImpl> blob_impl_;
+
   // BlobDataBuilder for the blob under construction. Is created in the
   // constructor, but not filled until all referenced blob UUIDs have been
   // resolved.
@@ -208,11 +211,14 @@ class BlobRegistryImpl::BlobUnderConstruction {
   DISALLOW_COPY_AND_ASSIGN(BlobUnderConstruction);
 };
 
-void BlobRegistryImpl::BlobUnderConstruction::StartTransportation() {
+void BlobRegistryImpl::BlobUnderConstruction::StartTransportation(
+    base::WeakPtr<BlobImpl> blob_impl) {
   if (!context()) {
     MarkAsFinishedAndDeleteSelf();
     return;
   }
+
+  blob_impl_ = std::move(blob_impl);
 
   size_t blob_count = 0;
   for (auto& entry : elements_) {
@@ -391,21 +397,26 @@ void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobDependencies() {
       base::BindRepeating(&BlobUnderConstruction::OnReadyForTransport,
                           weak_ptr_factory_.GetWeakPtr());
 
+  auto blob_impl = std::move(blob_impl_);
+
   // OnReadyForTransport can be called synchronously, which can call
   // MarkAsFinishedAndDeleteSelf synchronously, so don't access any members
   // after this call.
   std::unique_ptr<BlobDataHandle> new_handle =
       context()->BuildPreregisteredBlob(std::move(builder_), callback);
 
-  // TODO(mek): Update BlobImpl with new BlobDataHandle. Although handles
-  // only differ in their size() attribute, which is currently not used by
-  // BlobImpl.
+  bool is_being_built = new_handle->IsBeingBuilt();
+  auto blob_status = new_handle->GetBlobStatus();
 
-  // BuildPreregisteredBlob might or might not have called the callback if it
-  // finished synchronously, so call the callback directly. If it was already
-  // called |this| would have been deleted making calling the callback a no-op.
-  if (!new_handle->IsBeingBuilt()) {
-    callback.Run(new_handle->GetBlobStatus(),
+  if (blob_impl)
+    blob_impl->UpdateHandle(std::move(new_handle));
+
+  // BuildPreregisteredBlob might or might not have called the callback if
+  // it finished synchronously, so call the callback directly. If it was
+  // already called |this| would have been deleted making calling the
+  // callback a no-op.
+  if (!is_being_built) {
+    callback.Run(blob_status,
                  std::vector<BlobMemoryController::FileCreationInfo>());
   }
 }
@@ -432,6 +443,10 @@ void BlobRegistryImpl::BlobUnderConstruction::TransportComplete(
   // try to delete |this| again afterwards.
   auto weak_this = weak_ptr_factory_.GetWeakPtr();
 
+  // Store the bad_message_callback_, so we can invoke it if needed, after
+  // notifying about the blob being finished.
+  auto bad_message_callback = std::move(bad_message_callback_);
+
   // The blob might no longer have any references, in which case it may no
   // longer exist. If that happens just skip calling Complete.
   // TODO(mek): Stop building sooner if a blob is no longer referenced.
@@ -445,7 +460,7 @@ void BlobRegistryImpl::BlobUnderConstruction::TransportComplete(
     // BlobTransportStrategy might have already reported a BadMessage on the
     // BytesProvider binding, but just to be safe, also report one on the
     // BlobRegistry binding itself.
-    std::move(bad_message_callback_)
+    std::move(bad_message_callback)
         .Run("Received invalid data while transporting blob");
   }
   if (weak_this)
@@ -548,9 +563,9 @@ void BlobRegistryImpl::Register(
       uuid, content_type, content_disposition,
       base::BindOnce(&BlobRegistryImpl::BlobBuildAborted,
                      weak_ptr_factory_.GetWeakPtr(), uuid));
-  BlobImpl::Create(std::move(handle), std::move(blob));
+  auto blob_impl = BlobImpl::Create(std::move(handle), std::move(blob));
 
-  blobs_under_construction_[uuid]->StartTransportation();
+  blobs_under_construction_[uuid]->StartTransportation(std::move(blob_impl));
 
   std::move(callback).Run();
 }

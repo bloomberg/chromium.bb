@@ -24,8 +24,8 @@
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -121,6 +121,8 @@ struct QUIC_EXPORT_PRIVATE QuicPacketHeader {
   QuicPacketHeader(const QuicPacketHeader& other);
   ~QuicPacketHeader();
 
+  QuicPacketHeader& operator=(const QuicPacketHeader& other);
+
   QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os,
       const QuicPacketHeader& header);
@@ -158,7 +160,7 @@ struct QUIC_EXPORT_PRIVATE QuicPacketHeader {
   // carried only by v99 IETF Initial packets.
   QuicVariableLengthIntegerLength retry_token_length_length;
   // Retry token, carried only by v99 IETF Initial packets.
-  QuicStringPiece retry_token;
+  quiche::QuicheStringPiece retry_token;
   // Length of the length variable length integer field,
   // carried only by v99 IETF Initial, 0-RTT and Handshake packets.
   QuicVariableLengthIntegerLength length_length;
@@ -209,14 +211,15 @@ class QUIC_EXPORT_PRIVATE QuicData {
   // Creates a QuicData from a buffer and length,
   // optionally taking ownership of the buffer.
   QuicData(const char* buffer, size_t length, bool owns_buffer);
-  // Creates a QuicData from a QuicStringPiece. Does not own the buffer.
-  QuicData(QuicStringPiece data);
+  // Creates a QuicData from a quiche::QuicheStringPiece. Does not own the
+  // buffer.
+  QuicData(quiche::QuicheStringPiece data);
   QuicData(const QuicData&) = delete;
   QuicData& operator=(const QuicData&) = delete;
   virtual ~QuicData();
 
-  QuicStringPiece AsStringPiece() const {
-    return QuicStringPiece(data(), length());
+  quiche::QuicheStringPiece AsStringPiece() const {
+    return quiche::QuicheStringPiece(data(), length());
   }
 
   const char* data() const { return buffer_; }
@@ -249,8 +252,8 @@ class QUIC_EXPORT_PRIVATE QuicPacket : public QuicData {
   QuicPacket(const QuicPacket&) = delete;
   QuicPacket& operator=(const QuicPacket&) = delete;
 
-  QuicStringPiece AssociatedData(QuicTransportVersion version) const;
-  QuicStringPiece Plaintext(QuicTransportVersion version) const;
+  quiche::QuicheStringPiece AssociatedData(QuicTransportVersion version) const;
+  quiche::QuicheStringPiece Plaintext(QuicTransportVersion version) const;
 
   char* mutable_data() { return buffer_; }
 
@@ -274,9 +277,9 @@ class QUIC_EXPORT_PRIVATE QuicEncryptedPacket : public QuicData {
   // Creates a QuicEncryptedPacket from a buffer and length,
   // optionally taking ownership of the buffer.
   QuicEncryptedPacket(const char* buffer, size_t length, bool owns_buffer);
-  // Creates a QuicEncryptedPacket from a QuicStringPiece.
+  // Creates a QuicEncryptedPacket from a quiche::QuicheStringPiece.
   // Does not own the buffer.
-  QuicEncryptedPacket(QuicStringPiece data);
+  QuicEncryptedPacket(quiche::QuicheStringPiece data);
 
   QuicEncryptedPacket(const QuicEncryptedPacket&) = delete;
   QuicEncryptedPacket& operator=(const QuicEncryptedPacket&) = delete;
@@ -354,6 +357,13 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacket : public QuicEncryptedPacket {
   bool owns_header_buffer_;
 };
 
+// SerializedPacket contains information of a serialized(encrypted) packet.
+//
+// WARNING:
+//
+//   If you add a member field to this class, please make sure it is properly
+//   copied in |CopySerializedPacket|.
+//
 struct QUIC_EXPORT_PRIVATE SerializedPacket {
   SerializedPacket(QuicPacketNumber packet_number,
                    QuicPacketNumberLength packet_number_length,
@@ -361,14 +371,20 @@ struct QUIC_EXPORT_PRIVATE SerializedPacket {
                    QuicPacketLength encrypted_length,
                    bool has_ack,
                    bool has_stop_waiting);
-  SerializedPacket(const SerializedPacket& other);
-  SerializedPacket& operator=(const SerializedPacket& other);
+
+  // Copy constructor & assignment are deleted. Use |CopySerializedPacket| to
+  // make a copy.
+  SerializedPacket(const SerializedPacket& other) = delete;
+  SerializedPacket& operator=(const SerializedPacket& other) = delete;
   SerializedPacket(SerializedPacket&& other);
   ~SerializedPacket();
 
-  // Not owned.
+  // Not owned if |release_encrypted_buffer| is nullptr. Otherwise it is
+  // released by |release_encrypted_buffer| on destruction.
   const char* encrypted_buffer;
   QuicPacketLength encrypted_length;
+  std::function<void(const char*)> release_encrypted_buffer;
+
   QuicFrames retransmittable_frames;
   QuicFrames nonretransmittable_frames;
   IsHandshake has_crypto_handshake;
@@ -398,10 +414,6 @@ QUIC_EXPORT_PRIVATE SerializedPacket* CopySerializedPacket(
     QuicBufferAllocator* allocator,
     bool copy_buffer);
 
-// Deletes and clears all the frames and the packet from serialized packet.
-QUIC_EXPORT_PRIVATE void ClearSerializedPacket(
-    SerializedPacket* serialized_packet);
-
 // Allocates a new char[] of size |packet.encrypted_length| and copies in
 // |packet.encrypted_buffer|.
 QUIC_EXPORT_PRIVATE char* CopyBuffer(const SerializedPacket& packet);
@@ -409,21 +421,6 @@ QUIC_EXPORT_PRIVATE char* CopyBuffer(const SerializedPacket& packet);
 // |encrypted_buffer|.
 QUIC_EXPORT_PRIVATE char* CopyBuffer(const char* encrypted_buffer,
                                      QuicPacketLength encrypted_length);
-
-struct QUIC_EXPORT_PRIVATE SerializedPacketDeleter {
-  void operator()(SerializedPacket* packet) {
-    if (packet->encrypted_buffer != nullptr) {
-      delete[] packet->encrypted_buffer;
-    }
-    delete packet;
-  }
-};
-
-// On destruction, OwningSerializedPacketPointer deletes a packet's (on-heap)
-// encrypted_buffer before deleting the (also on-heap) packet itself.
-// TODO(wub): Maybe delete retransmittable_frames too?
-typedef std::unique_ptr<SerializedPacket, SerializedPacketDeleter>
-    OwningSerializedPacketPointer;
 
 // Context for an incoming packet.
 struct QUIC_EXPORT_PRIVATE QuicPerPacketContext {

@@ -146,9 +146,10 @@ typedef de::SharedPtr<vk::Allocation>	AllocationSp;
 class Resource
 {
 public:
-	Resource(const BufferSp& buffer_, vk::VkDescriptorType descriptorType_ = vk::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)
+	Resource(const BufferSp& buffer_, vk::VkDescriptorType descriptorType_ = vk::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, void* userData_ = NULL)
 		: buffer(buffer_)
 		, descriptorType(descriptorType_)
+		, userData(userData_)
 	{
 	}
 
@@ -159,9 +160,13 @@ public:
 	virtual void					setDescriptorType	(vk::VkDescriptorType type)		{ descriptorType = type; }
 	virtual vk::VkDescriptorType	getDescriptorType	()	const						{ return descriptorType; }
 
+	virtual void					setUserData			(void* data)					{ userData = data; }
+	virtual void*					getUserData			() const						{ return userData; }
+
 private:
 	BufferSp				buffer;
 	vk::VkDescriptorType	descriptorType;
+	void*					userData;
 };
 
 typedef bool (*VerifyIOFunc) (const std::vector<Resource>&		inputs,
@@ -249,7 +254,15 @@ enum ExtensionFloat16Int8FeaturesBits
 	EXTFLOAT16INT8FEATURES_INT8		= (1u << 2),
 };
 typedef deUint32 ExtensionFloat16Int8Features;
-typedef vk::VkPhysicalDeviceFloatControlsPropertiesKHR ExtensionFloatControlsFeatures;
+typedef vk::VkPhysicalDeviceFloatControlsProperties ExtensionFloatControlsFeatures;
+
+enum ExtensionVulkanMemoryModelFeaturesBits
+{
+	EXTVULKANMEMORYMODELFEATURES_ENABLE							= (1u << 1),
+	EXTVULKANMEMORYMODELFEATURES_DEVICESCOPE					= (1u << 2),
+	EXTVULKANMEMORYMODELFEATURES_AVAILABILITYVISIBILITYCHAINS	= (1u << 3),
+};
+typedef deUint32 ExtensionVulkanMemoryModelFeatures;
 
 struct VulkanFeatures
 {
@@ -258,13 +271,16 @@ struct VulkanFeatures
 	Extension8BitStorageFeatures		ext8BitStorage;
 	Extension16BitStorageFeatures		ext16BitStorage;
 	ExtensionVariablePointersFeatures	extVariablePointers;
+	ExtensionVulkanMemoryModelFeatures	extVulkanMemoryModel;
 	ExtensionFloatControlsFeatures		floatControlsProperties;
+
 
 	VulkanFeatures				(void)
 		: extFloat16Int8		(0)
 		, ext8BitStorage		(0)
 		, ext16BitStorage		(0)
 		, extVariablePointers	(0)
+		, extVulkanMemoryModel	(0)
 	{
 		deMemset(&coreFeatures, 0, sizeof(coreFeatures));
 		deMemset(&floatControlsProperties, 0, sizeof(ExtensionFloatControlsFeatures));
@@ -295,11 +311,6 @@ bool isCoreFeaturesSupported (const Context&						context,
 							  const char**							missingFeature);
 
 // Returns true if the given 16bit storage extension features in `toCheck` are all supported.
-bool isCoreFeaturesSupported (const Context&						context,
-							  const vk::VkPhysicalDeviceFeatures&	toCheck,
-							  const char**							missingFeature);
-
-// Returns true if the given 16bit storage extension features in `toCheck` are all supported.
 bool is16BitStorageFeaturesSupported (const Context&				context,
 									  Extension16BitStorageFeatures	toCheck);
 
@@ -310,6 +321,10 @@ bool isVariablePointersFeaturesSupported (const Context&					context,
 // Returns true if the given 16bit float/8bit int extension features in `toCheck` are all supported.
 bool isFloat16Int8FeaturesSupported (const Context&					context,
 									 ExtensionFloat16Int8Features	toCheck);
+
+// Returns true if the given Vulkan Memory Model extension features in `toCheck` are all supported.
+bool isVulkanMemoryModelFeaturesSupported (const Context&						context,
+										   ExtensionVulkanMemoryModelFeatures	toCheck);
 
 // Returns true if the given float controls features in `toCheck` are all supported.
 bool isFloatControlsFeaturesSupported (const Context&							context,

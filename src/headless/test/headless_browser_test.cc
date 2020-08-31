@@ -172,6 +172,8 @@ void HeadlessBrowserTest::PostRunTestOnMainThread() {
        !i.IsAtEnd(); i.Advance()) {
     i.GetCurrentValue()->FastShutdownIfPossible();
   }
+  // Pump tasks produced during shutdown.
+  base::RunLoop().RunUntilIdle();
 }
 
 HeadlessBrowser* HeadlessBrowserTest::browser() const {
@@ -217,9 +219,7 @@ void HeadlessBrowserTest::RunAsynchronousTest() {
   EXPECT_FALSE(run_loop_);
   run_loop_ = std::make_unique<base::RunLoop>(
       base::RunLoop::Type::kNestableTasksAllowed);
-  PreRunAsynchronousTest();
   run_loop_->Run();
-  PostRunAsynchronousTest();
   run_loop_ = nullptr;
 }
 
@@ -264,7 +264,8 @@ void HeadlessAsyncDevTooledBrowserTest::RenderProcessExited(
 
   FinishAsynchronousTest();
   render_process_exited_ = true;
-  FAIL() << "Abnormal renderer termination";
+  FAIL() << "Abnormal renderer termination "
+         << "(status=" << status << ", exit_code=" << exit_code << ")";
 }
 
 void HeadlessAsyncDevTooledBrowserTest::RunTest() {
@@ -297,6 +298,9 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
   browser()->GetDevToolsTarget()->DetachClient(browser_devtools_client_.get());
   browser_context_->Close();
   browser_context_ = nullptr;
+  // Let the tasks that might have beein scheduled during web contents
+  // being closed run (see https://crbug.com/1036627 for details).
+  base::RunLoop().RunUntilIdle();
 }
 
 bool HeadlessAsyncDevTooledBrowserTest::GetEnableBeginFrameControl() {

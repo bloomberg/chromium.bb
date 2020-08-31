@@ -15,6 +15,8 @@ import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/po
 
 import {Destination} from '../data/destination.js';
 
+const DESTINATION_ITEM_HEIGHT = 32;
+
 Polymer({
   is: 'print-preview-destination-list',
 
@@ -35,8 +37,6 @@ Polymer({
       value: false,
     },
 
-    listName: String,
-
     /** @private {!Array<!Destination>} */
     matchingDestinations_: {
       type: Array,
@@ -54,50 +54,101 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private */
+    hideList_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   observers: [
-    'updateMatchingDestinations_(destinations.*, searchQuery)',
-    'matchingDestinationsChanged_(' +
-        'matchingDestinations_.*, loadingDestinations)',
-    'updateThrobberHidden_(matchingDestinations_.*, loadingDestinations)',
+    'updateMatchingDestinations_(' +
+        'destinations.*, searchQuery, loadingDestinations)',
   ],
 
-  // This is a workaround to ensure that the iron-list correctly updates the
-  // displayed destination information when the elements in the
-  // |matchingDestinations_| array change, instead of using stale information
-  // (a known iron-list issue). The event needs to be fired while the list is
-  // visible, so firing it immediately when the change occurs does not always
-  // work.
-  forceIronResize: function() {
+  /** @private {?function(Event)} */
+  boundUpdateHeight_: null,
+
+  /** @override */
+  attached() {
+    this.boundUpdateHeight_ = () => this.updateHeight_();
+    window.addEventListener('resize', this.boundUpdateHeight_);
+  },
+
+  /** @override */
+  detached() {
+    window.removeEventListener('resize', this.boundUpdateHeight_);
+    this.boundUpdateHeight_ = null;
+  },
+
+  /**
+   * This is a workaround to ensure that the iron-list correctly updates the
+   * displayed destination information when the elements in the
+   * |matchingDestinations_| array change, instead of using stale information
+   * (a known iron-list issue). The event needs to be fired while the list is
+   * visible, so firing it immediately when the change occurs does not always
+   * work.
+   * @private
+   */
+  forceIronResize_() {
     this.$.list.fire('iron-resize');
   },
 
+  /**
+   * @param {number=} numDestinations
+   * @private
+   */
+  updateHeight_(numDestinations) {
+    const count = numDestinations === undefined ?
+        this.matchingDestinations_.length :
+        numDestinations;
+
+    const maxDisplayedItems = this.offsetHeight / DESTINATION_ITEM_HEIGHT;
+    const isListFullHeight = maxDisplayedItems <= count;
+
+    // Update the throbber and "No destinations" message.
+    this.hasDestinations_ = count > 0 || this.loadingDestinations;
+    this.throbberHidden_ =
+        !this.loadingDestinations || isListFullHeight || !this.hasDestinations_;
+
+    this.hideList_ = count === 0;
+    if (this.hideList_) {
+      return;
+    }
+
+    const listHeight =
+        isListFullHeight ? this.offsetHeight : count * DESTINATION_ITEM_HEIGHT;
+    this.$.list.style.height = listHeight > DESTINATION_ITEM_HEIGHT ?
+        `${listHeight}px` :
+        `${DESTINATION_ITEM_HEIGHT}px`;
+  },
+
   /** @private */
-  updateMatchingDestinations_: function() {
+  updateMatchingDestinations_() {
     if (this.destinations === undefined) {
       return;
     }
 
+    const matchingDestinations = this.searchQuery ?
+        this.destinations.filter(
+            d => d.matches(/** @type {!RegExp} */ (this.searchQuery))) :
+        this.destinations.slice();
+
+    // Update the height before updating the list.
+    this.updateHeight_(matchingDestinations.length);
     this.updateList(
         'matchingDestinations_', destination => destination.key,
-        this.searchQuery ?
-            this.destinations.filter(
-                d => d.matches(/** @type {!RegExp} */ (this.searchQuery))) :
-            this.destinations.slice());
-  },
+        matchingDestinations);
 
-  /** @private */
-  matchingDestinationsChanged_: function() {
-    const count = this.matchingDestinations_.length;
-    this.hasDestinations_ = count > 0 || this.loadingDestinations;
+    this.forceIronResize_();
   },
 
   /**
    * @param {!KeyboardEvent} e Event containing the destination and key.
    * @private
    */
-  onKeydown_: function(e) {
+  onKeydown_(e) {
     if (e.key === 'Enter') {
       this.onDestinationSelected_(e);
       e.stopPropagation();
@@ -108,7 +159,7 @@ Polymer({
    * @param {!Event} e Event containing the destination that was selected.
    * @private
    */
-  onDestinationSelected_: function(e) {
+  onDestinationSelected_(e) {
     if (e.composedPath()[0].tagName === 'A') {
       return;
     }
@@ -116,19 +167,13 @@ Polymer({
     this.fire('destination-selected', e.target);
   },
 
-  /** @private */
-  updateThrobberHidden_: function() {
-    if (!this.loadingDestinations) {
-      this.throbberHidden_ = true;
-    } else if (!this.matchingDestinations_) {
-      this.throbberHidden_ = false;
-    } else {
-      const maxDisplayedItems = this.offsetHeight / 32;
-      this.throbberHidden_ =
-          maxDisplayedItems <= this.matchingDestinations_.length;
-    }
-    afterNextRender(this, () => {
-      this.forceIronResize();
-    });
-  }
+  /**
+   * Returns a 1-based index for aria-rowindex.
+   * @param {number} index
+   * @return {number}
+   * @private
+   */
+  getAriaRowindex_(index) {
+    return index + 1;
+  },
 });

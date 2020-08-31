@@ -95,8 +95,8 @@ bool ContributesToClip(const SVGElement& element) {
 }
 
 Path PathFromElement(const SVGElement& element) {
-  if (IsSVGGeometryElement(element))
-    return ToSVGGeometryElement(element).ToClipPath();
+  if (auto* geometry_element = DynamicTo<SVGGeometryElement>(element))
+    return geometry_element->ToClipPath();
 
   // Guaranteed by DetermineClipStrategy() above, only <use> element and
   // SVGGraphicsElement that has a LayoutSVGShape can reach here.
@@ -106,20 +106,17 @@ Path PathFromElement(const SVGElement& element) {
 }  // namespace
 
 LayoutSVGResourceClipper::LayoutSVGResourceClipper(SVGClipPathElement* node)
-    : LayoutSVGResourceContainer(node), in_clip_expansion_(false) {}
+    : LayoutSVGResourceContainer(node) {}
 
 LayoutSVGResourceClipper::~LayoutSVGResourceClipper() = default;
 
-void LayoutSVGResourceClipper::RemoveAllClientsFromCache(
-    bool mark_for_invalidation) {
+void LayoutSVGResourceClipper::RemoveAllClientsFromCache() {
   clip_content_path_validity_ = kClipContentPathUnknown;
   clip_content_path_.Clear();
   cached_paint_record_.reset();
   local_clip_bounds_ = FloatRect();
-  MarkAllClientsForInvalidation(
-      mark_for_invalidation ? SVGResourceClient::kLayoutInvalidation |
-                                  SVGResourceClient::kBoundariesInvalidation
-                            : SVGResourceClient::kParentOnlyInvalidation);
+  MarkAllClientsForInvalidation(SVGResourceClient::kLayoutInvalidation |
+                                SVGResourceClient::kBoundariesInvalidation);
 }
 
 base::Optional<Path> LayoutSVGResourceClipper::AsPath() {

@@ -62,7 +62,6 @@ class SVGStaticStringList final : public GarbageCollected<SVGStaticStringList>,
   ~SVGStaticStringList() override;
 
   // SVGAnimatedPropertyBase:
-  SVGPropertyBase* CurrentValueBase() override;
   const SVGPropertyBase& BaseValueBase() const override;
   bool IsAnimating() const override;
   SVGPropertyBase* CreateAnimatedValue() override;
@@ -74,7 +73,7 @@ class SVGStaticStringList final : public GarbageCollected<SVGStaticStringList>,
   SVGStringListBase* Value() { return value_.Get(); }
   SVGStringListTearOff* TearOff();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<SVGStringListBase> value_;

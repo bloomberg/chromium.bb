@@ -39,11 +39,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
   //
   // The BluetoothAdapterAndroid instance will indirectly hold a Java reference
   // to |bluetooth_adapter_wrapper|.
-  static base::WeakPtr<BluetoothAdapterAndroid> Create(
+  static scoped_refptr<BluetoothAdapterAndroid> Create(
       const base::android::JavaRef<jobject>&
           bluetooth_adapter_wrapper);  // Java Type: bluetoothAdapterWrapper
 
   // BluetoothAdapter:
+  void Initialize(base::OnceClosure callback) override;
   std::string GetAddress() const override;
   std::string GetName() const override;
   void SetName(const std::string& name,
@@ -104,8 +105,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
       const base::android::JavaParamRef<jintArray>&
           manufacturer_data_keys,  // Java Type: int[]
       const base::android::JavaParamRef<jobjectArray>&
-          manufacturer_data_values  // Java Type: byte[]
-  );
+          manufacturer_data_values,  // Java Type: byte[]
+      int32_t advertisement_flags);
 
  protected:
   BluetoothAdapterAndroid();

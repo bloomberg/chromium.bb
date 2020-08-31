@@ -16,14 +16,10 @@ namespace password_manager {
 // difference to the PasswordSaveManagerImpl base class. After the launch of the
 // account store feature, this class should be merged with
 // PasswordSaveManagerImpl.
-// TODO(crbug.com/1012203): It currently has the following limitations:
-// 1. When a PSL matched entry exists, a non-PSL matched entry is silently added
-//    to the correpsonding store. However, if a PSL matched entry exists in both
-//    stores, it's only added to the account store.
-// 2. There is no API to set the destination store from the PasswordFormManager.
-//    This will be eventually required in order to communicate the user choice
-//    from the UI.
-// 3. (Un)Blacklisting is done always against the profile store.
+// TODO(crbug.com/1012203): It currently has the limitation that when a PSL
+// matched entry exists, a non-PSL matched entry is silently added to the
+// correpsonding store. However, if a PSL matched entry exists in both stores,
+// it's only added to the account store.
 
 class MultiStorePasswordSaveManager : public PasswordSaveManagerImpl {
  public:
@@ -31,23 +27,46 @@ class MultiStorePasswordSaveManager : public PasswordSaveManagerImpl {
                                 std::unique_ptr<FormSaver> account_form_saver);
   ~MultiStorePasswordSaveManager() override;
 
-  void SaveInternal(const std::vector<const autofill::PasswordForm*>& matches,
-                    const base::string16& old_password) override;
-
-  void UpdateInternal(const std::vector<const autofill::PasswordForm*>& matches,
-                      const base::string16& old_password) override;
-
   void PermanentlyBlacklist(
       const PasswordStore::FormDigest& form_digest) override;
   void Unblacklist(const PasswordStore::FormDigest& form_digest) override;
 
+  std::unique_ptr<PasswordSaveManager> Clone() override;
+
+  void MoveCredentialsToAccountStore() override;
+
+  void BlockMovingToAccountStoreFor(
+      const autofill::GaiaIdHash& gaia_id_hash) override;
+
  protected:
+  void SavePendingToStoreImpl(
+      const autofill::PasswordForm& parsed_submitted_form) override;
+  std::pair<const autofill::PasswordForm*, PendingCredentialsState>
+  FindSimilarSavedFormAndComputeState(
+      const autofill::PasswordForm& parsed_submitted_form) const override;
   FormSaver* GetFormSaverForGeneration() override;
+  std::vector<const autofill::PasswordForm*> GetRelevantMatchesForGeneration(
+      const std::vector<const autofill::PasswordForm*>& matches) override;
 
  private:
-  bool IsAccountStoreActive();
+  struct PendingCredentialsStates {
+    PendingCredentialsState profile_store_state = PendingCredentialsState::NONE;
+    PendingCredentialsState account_store_state = PendingCredentialsState::NONE;
+
+    const autofill::PasswordForm* similar_saved_form_from_profile_store =
+        nullptr;
+    const autofill::PasswordForm* similar_saved_form_from_account_store =
+        nullptr;
+  };
+  static PendingCredentialsStates ComputePendingCredentialsStates(
+      const autofill::PasswordForm& parsed_submitted_form,
+      const std::vector<const autofill::PasswordForm*>& matches);
+
+  bool IsOptedInForAccountStorage() const;
+  bool AccountStoreIsDefault() const;
 
   const std::unique_ptr<FormSaver> account_store_form_saver_;
+
   DISALLOW_COPY_AND_ASSIGN(MultiStorePasswordSaveManager);
 };
 

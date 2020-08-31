@@ -14,10 +14,10 @@
 #include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 using blink::mojom::StorageType;
-using storage::QuotaClient;
 
 namespace content {
 namespace {
@@ -56,8 +56,8 @@ AppCacheQuotaClient::~AppCacheQuotaClient() {
   DCHECK(current_delete_request_callback_.is_null());
 }
 
-QuotaClient::ID AppCacheQuotaClient::id() const {
-  return kAppcache;
+storage::QuotaClientType AppCacheQuotaClient::type() const {
+  return storage::QuotaClientType::kAppcache;
 }
 
 void AppCacheQuotaClient::OnQuotaManagerDestroyed() {
@@ -159,6 +159,11 @@ void AppCacheQuotaClient::DeleteOriginData(const url::Origin& origin,
                      origin,
                      base::BindOnce(&RunDeleteOnIO, FROM_HERE,
                                     GetServiceDeleteCallback()->callback())));
+}
+
+void AppCacheQuotaClient::PerformStorageCleanup(blink::mojom::StorageType type,
+                                                base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
 bool AppCacheQuotaClient::DoesSupport(StorageType type) const {

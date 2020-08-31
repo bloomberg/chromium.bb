@@ -148,7 +148,7 @@ class GitApi(recipe_api.RecipeApi):
              to a local path, may cause problem with scripts that do
              "git fetch origin" or "git push origin".
            * arbitrary refs such refs/whatever/not-fetched-by-default-to-cache
-       progress (bool): wether to show progress for fetch or not
+       progress (bool): whether to show progress for fetch or not
       tags (bool): Also fetch tags.
 
     Returns: If the checkout was successful, this returns the commit hash of

@@ -32,6 +32,7 @@
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/events/event.h"
+#include "ui/events/gestures/gesture_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 
@@ -85,6 +86,10 @@ class KEYBOARD_EXPORT KeyboardUIController
   // Returns the keyboard window, or null if the keyboard window has not been
   // created yet.
   aura::Window* GetKeyboardWindow() const;
+
+  // Returns the gesture consumer for the keyboard, or null if the keyboard
+  // window has not been created yet.
+  ui::GestureConsumer* GetGestureConsumer() const;
 
   // Returns the root window that this keyboard controller is attached to, or
   // null if the keyboard has not been attached to any root window.
@@ -194,6 +199,9 @@ class KEYBOARD_EXPORT KeyboardUIController
   // here are relative to the window's origin.
   bool SetAreaToRemainOnScreen(const gfx::Rect& bounds_in_window);
 
+  // Sets the bounds of the keyboard window in screen coordinates.
+  bool SetKeyboardWindowBoundsInScreen(const gfx::Rect& bounds_in_screen);
+
   ContainerType GetActiveContainerType() const {
     return container_behavior_->GetType();
   }
@@ -215,12 +223,13 @@ class KEYBOARD_EXPORT KeyboardUIController
   // Handle mouse and touch events on the keyboard. The effects of this method
   // will not stop propagation to the keyboard extension.
   bool HandlePointerEvent(const ui::LocatedEvent& event);
+  bool HandleGestureEvent(const ui::GestureEvent& event);
 
   // Sets the active container type. If the keyboard is currently shown, this
   // will trigger a hide animation and a subsequent show animation. Otherwise
   // the ContainerBehavior change is synchronous.
   void SetContainerType(ContainerType type,
-                        const base::Optional<gfx::Rect>& target_bounds_in_root,
+                        const gfx::Rect& target_bounds_in_root,
                         base::OnceCallback<void(bool)> callback);
 
   // Sets floating keyboard draggable rect.
@@ -287,6 +296,7 @@ class KEYBOARD_EXPORT KeyboardUIController
   void MoveKeyboardWindow(const gfx::Rect& new_bounds) override;
   void MoveKeyboardWindowToDisplay(const display::Display& display,
                                    const gfx::Rect& new_bounds) override;
+  void TransferGestureEventToShelf(const ui::GestureEvent& e) override;
 
   // aura::WindowObserver overrides
   void OnWindowAddedToRootWindow(aura::Window* window) override;

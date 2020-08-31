@@ -4,11 +4,11 @@
 
 #include "third_party/blink/renderer/core/inspector/inspect_tools.h"
 
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_pointer_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
-#include "third_party/blink/public/platform/web_keyboard_event.h"
-#include "third_party/blink/public/platform/web_pointer_event.h"
 #include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
@@ -26,7 +26,9 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/cursors.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
 
 namespace blink {
 
@@ -73,17 +75,17 @@ Node* HoveredNodeForPoint(LocalFrame* frame,
 Node* HoveredNodeForEvent(LocalFrame* frame,
                           const WebGestureEvent& event,
                           bool ignore_pointer_events_none) {
-  return HoveredNodeForPoint(frame,
-                             RoundedIntPoint(event.PositionInRootFrame()),
-                             ignore_pointer_events_none);
+  return HoveredNodeForPoint(
+      frame, RoundedIntPoint(FloatPoint(event.PositionInRootFrame())),
+      ignore_pointer_events_none);
 }
 
 Node* HoveredNodeForEvent(LocalFrame* frame,
                           const WebMouseEvent& event,
                           bool ignore_pointer_events_none) {
-  return HoveredNodeForPoint(frame,
-                             RoundedIntPoint(event.PositionInRootFrame()),
-                             ignore_pointer_events_none);
+  return HoveredNodeForPoint(
+      frame, RoundedIntPoint(FloatPoint(event.PositionInRootFrame())),
+      ignore_pointer_events_none);
 }
 
 Node* HoveredNodeForEvent(LocalFrame* frame,
@@ -91,7 +93,7 @@ Node* HoveredNodeForEvent(LocalFrame* frame,
                           bool ignore_pointer_events_none) {
   WebPointerEvent transformed_point = event.WebPointerEventInRootFrame();
   return HoveredNodeForPoint(
-      frame, RoundedIntPoint(transformed_point.PositionInWidget()),
+      frame, RoundedIntPoint(FloatPoint(transformed_point.PositionInWidget())),
       ignore_pointer_events_none);
 }
 
@@ -113,7 +115,7 @@ SearchingForNodeTool::SearchingForNodeTool(InspectorDOMAgent* dom_agent,
       InspectorOverlayAgent::ToHighlightConfig(highlight_config.get());
 }
 
-void SearchingForNodeTool::Trace(blink::Visitor* visitor) {
+void SearchingForNodeTool::Trace(Visitor* visitor) {
   InspectTool::Trace(visitor);
   visitor->Trace(dom_agent_);
   visitor->Trace(hovered_node_);
@@ -140,8 +142,8 @@ void SearchingForNodeTool::Draw(float scale) {
 bool SearchingForNodeTool::HandleInputEvent(LocalFrameView* frame_view,
                                             const WebInputEvent& input_event,
                                             bool* swallow_next_mouse_up) {
-  if (input_event.GetType() == WebInputEvent::kGestureScrollBegin ||
-      input_event.GetType() == WebInputEvent::kGestureScrollUpdate) {
+  if (input_event.GetType() == WebInputEvent::Type::kGestureScrollBegin ||
+      input_event.GetType() == WebInputEvent::Type::kGestureScrollUpdate) {
     hovered_node_.Clear();
     event_target_node_.Clear();
     overlay_->ScheduleUpdate();
@@ -295,6 +297,10 @@ bool NodeHighlightTool::HideOnHideHighlight() {
   return true;
 }
 
+bool NodeHighlightTool::HideOnMouseMove() {
+  return true;
+}
+
 void NodeHighlightTool::Draw(float scale) {
   DrawNode();
   DrawMatchingSelector();
@@ -337,7 +343,7 @@ void NodeHighlightTool::DrawMatchingSelector() {
   }
 }
 
-void NodeHighlightTool::Trace(blink::Visitor* visitor) {
+void NodeHighlightTool::Trace(Visitor* visitor) {
   InspectTool::Trace(visitor);
   visitor->Trace(node_);
 }
@@ -403,7 +409,7 @@ void NearbyDistanceTool::Draw(float scale) {
   overlay_->EvaluateInOverlay("drawDistances", highlight.AsProtocolValue());
 }
 
-void NearbyDistanceTool::Trace(blink::Visitor* visitor) {
+void NearbyDistanceTool::Trace(Visitor* visitor) {
   InspectTool::Trace(visitor);
   visitor->Trace(hovered_node_);
 }
@@ -436,14 +442,27 @@ int ScreenshotTool::GetDataResourceId() {
 }
 
 void ScreenshotTool::Dispatch(const String& message) {
+  if (message.IsEmpty())
+    return;
+  std::vector<uint8_t> cbor;
+  if (message.Is8Bit()) {
+    crdtp::json::ConvertJSONToCBOR(
+        crdtp::span<uint8_t>(message.Characters8(), message.length()), &cbor);
+  } else {
+    crdtp::json::ConvertJSONToCBOR(
+        crdtp::span<uint16_t>(
+            reinterpret_cast<const uint16_t*>(message.Characters16()),
+            message.length()),
+        &cbor);
+  }
   std::unique_ptr<protocol::Value> value =
-      protocol::StringUtil::parseJSON(message);
+      protocol::Value::parseBinary(cbor.data(), cbor.size());
   if (!value)
     return;
   protocol::ErrorSupport errors;
   std::unique_ptr<protocol::DOM::Rect> box =
       protocol::DOM::Rect::fromValue(value.get(), &errors);
-  if (errors.hasErrors())
+  if (!errors.Errors().empty())
     return;
 
   float scale = 1.0f;

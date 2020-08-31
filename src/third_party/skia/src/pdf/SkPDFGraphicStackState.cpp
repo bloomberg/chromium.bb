@@ -6,6 +6,7 @@
 #include "include/core/SkStream.h"
 #include "include/pathops/SkPathOps.h"
 #include "src/pdf/SkPDFUtils.h"
+#include "src/utils/SkClipStackUtils.h"
 
 static SkPath to_path(const SkRect& r) {
     SkPath p;
@@ -104,7 +105,7 @@ static void apply_clip(const SkClipStack& stack, const SkRect& outerBounds, F fn
 
 static void append_clip_path(const SkPath& clipPath, SkWStream* wStream) {
     SkPDFUtils::EmitPath(clipPath, SkPaint::kFill_Style, wStream);
-    SkPathFillType clipFill = clipPath.getNewFillType();
+    SkPathFillType clipFill = clipPath.getFillType();
     NOT_IMPLEMENTED(clipFill == SkPathFillType::kInverseEvenOdd, false);
     NOT_IMPLEMENTED(clipFill == SkPathFillType::kInverseWinding, false);
     if (clipFill == SkPathFillType::kEvenOdd) {
@@ -131,7 +132,7 @@ static void append_clip(const SkClipStack& clipStack,
 
     if (is_complex_clip(clipStack)) {
         SkPath clipPath;
-        (void)clipStack.asPath(&clipPath);
+        SkClipStack_AsPath(clipStack, &clipPath);
         if (Op(clipPath, to_path(outsetBounds), kIntersect_SkPathOp, &clipPath)) {
             append_clip_path(clipPath, wStream);
         }

@@ -11,7 +11,13 @@ namespace password_manager {
 
 class PasswordGenerationManager;
 
-enum class PendingCredentialsState { NONE, NEW_LOGIN, UPDATE, AUTOMATIC_SAVE };
+enum class PendingCredentialsState {
+  NONE,
+  NEW_LOGIN,
+  UPDATE,
+  AUTOMATIC_SAVE,
+  EQUAL_TO_SAVED_MATCH
+};
 
 class PasswordSaveManagerImpl : public PasswordSaveManager {
  public:
@@ -23,7 +29,7 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   static std::unique_ptr<PasswordSaveManagerImpl> CreatePasswordSaveManagerImpl(
       const PasswordManagerClient* client);
 
-  const autofill::PasswordForm* GetPendingCredentials() const override;
+  const autofill::PasswordForm& GetPendingCredentials() const override;
   const base::string16& GetGeneratedPassword() const override;
   FormSaver* GetFormSaver() const override;
 
@@ -32,14 +38,16 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
             scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder,
             VotesUploader* votes_uploader) override;
 
-  // Create pending credentials from |parsed_submitted_form| and
-  // |parsed_observed_form| and |submitted_form|.
+  // Create pending credentials from |parsed_submitted_form|, |observed_form|
+  // and |submitted_form|.
   void CreatePendingCredentials(
       const autofill::PasswordForm& parsed_submitted_form,
       const autofill::FormData& observed_form,
       const autofill::FormData& submitted_form,
       bool is_http_auth,
       bool is_credential_api_save) override;
+
+  void ResetPendingCrednetials() override;
 
   void Save(const autofill::FormData& observed_form,
             const autofill::PasswordForm& parsed_submitted_form) override;
@@ -63,6 +71,11 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   // Signals that the user cancels password generation.
   void PasswordNoLongerGenerated() override;
 
+  void MoveCredentialsToAccountStore() override;
+
+  void BlockMovingToAccountStoreFor(
+      const autofill::GaiaIdHash& gaia_id_hash) override;
+
   bool IsNewLogin() const override;
   bool IsPasswordUpdate() const override;
   bool HasGeneratedPassword() const override;
@@ -74,17 +87,38 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
 #endif
 
  protected:
+  static PendingCredentialsState ComputePendingCredentialsState(
+      const autofill::PasswordForm& parsed_submitted_form,
+      const autofill::PasswordForm* similar_saved_form);
+  static autofill::PasswordForm BuildPendingCredentials(
+      PendingCredentialsState pending_credentials_state,
+      const autofill::PasswordForm& parsed_submitted_form,
+      const autofill::FormData& observed_form,
+      const autofill::FormData& submitted_form,
+      const base::Optional<base::string16>& generated_password,
+      bool is_http_auth,
+      bool is_credential_api_save,
+      const autofill::PasswordForm* similar_saved_form);
+
+  virtual std::pair<const autofill::PasswordForm*, PendingCredentialsState>
+  FindSimilarSavedFormAndComputeState(
+      const autofill::PasswordForm& parsed_submitted_form) const;
+
   // Returns the form_saver to be used for generated passwords. Subclasses will
   // override this method to provide different logic for get the form saver.
   virtual FormSaver* GetFormSaverForGeneration();
 
-  virtual void SaveInternal(
-      const std::vector<const autofill::PasswordForm*>& matches,
-      const base::string16& old_password);
+  // Returns the forms in |matches| that should be taken into account for
+  // conflict resolution during generation. Will be overridden in subclasses.
+  virtual std::vector<const autofill::PasswordForm*>
+  GetRelevantMatchesForGeneration(
+      const std::vector<const autofill::PasswordForm*>& matches);
 
-  virtual void UpdateInternal(
-      const std::vector<const autofill::PasswordForm*>& matches,
-      const base::string16& old_password);
+  virtual void SavePendingToStoreImpl(
+      const autofill::PasswordForm& parsed_submitted_form);
+
+  // Clones the current object into |clone|. |clone| must not be null.
+  void CloneInto(PasswordSaveManagerImpl* clone);
 
   // FormSaver instance used by |this| to all tasks related to storing
   // credentials.
@@ -102,31 +136,28 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   PendingCredentialsState pending_credentials_state_ =
       PendingCredentialsState::NONE;
 
+  // FormFetcher instance which owns the login data from PasswordStore.
+  const FormFetcher* form_fetcher_;
+
  private:
-  // Create pending credentials from provisionally saved form when this form
-  // represents credentials that were not previously saved.
-  void CreatePendingCredentialsForNewCredentials(
-      const autofill::PasswordForm& parsed_submitted_form,
-      const autofill::FormData& observed_form,
-      const base::string16& password_element,
-      bool is_http_auth,
-      bool is_credential_api_save);
+  base::string16 GetOldPassword(
+      const autofill::PasswordForm& parsed_submitted_form) const;
+
+  void SetVotesAndRecordMetricsForPendingCredentials(
+      const autofill::PasswordForm& parsed_submitted_form);
 
   // Save/update |pending_credentials_| to the password store.
-  void SavePendingToStore(const autofill::PasswordForm& parsed_submitted_form,
-                          bool update);
+  void SavePendingToStore(const autofill::FormData& observed_form,
+                          const autofill::PasswordForm& parsed_submitted_form);
 
-  // Helper for Save in the case there is at least one match for the pending
-  // credentials. This sends needed signals to the autofill server, and also
-  // triggers some UMA reporting.
-  void ProcessUpdate(const autofill::FormData& observed_form,
-                     const autofill::PasswordForm& parsed_submitted_form);
+  // This sends needed signals to the autofill server, and also triggers some
+  // UMA reporting.
+  void UploadVotesAndMetrics(
+      const autofill::FormData& observed_form,
+      const autofill::PasswordForm& parsed_submitted_form);
 
   // Handles the user flows related to the generation.
   std::unique_ptr<PasswordGenerationManager> generation_manager_;
-
-  // FormFetcher instance which owns the login data from PasswordStore.
-  const FormFetcher* form_fetcher_;
 
   // Takes care of recording metrics and events for |*this|.
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;

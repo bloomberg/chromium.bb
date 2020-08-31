@@ -42,7 +42,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/base_event_utils.h"
@@ -50,6 +49,7 @@
 #include "ui/gfx/animation/test_animation_delegate.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 
@@ -258,11 +258,9 @@ void PaymentRequestBrowserTestBase::OnProcessingSpinnerHidden() {
     event_waiter_->OnEvent(DialogEvent::PROCESSING_SPINNER_HIDDEN);
 }
 
-void PaymentRequestBrowserTestBase::OnInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe, render_frame_host);
+void PaymentRequestBrowserTestBase::OnPaymentHandlerWindowOpened() {
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::PAYMENT_HANDLER_WINDOW_OPENED);
 }
 
 void PaymentRequestBrowserTestBase::InvokePaymentRequestUI() {
@@ -687,6 +685,12 @@ void PaymentRequestBrowserTestBase::RetryPaymentRequest(
   WaitForObservedEvent();
 }
 
+bool PaymentRequestBrowserTestBase::IsViewVisible(DialogViewID view_id) const {
+  views::View* view =
+      delegate_->dialog_view()->GetViewByID(static_cast<int>(view_id));
+  return view != nullptr && view->GetVisible();
+}
+
 base::string16 PaymentRequestBrowserTestBase::GetEditorTextfieldValue(
     autofill::ServerFieldType type) {
   ValidatingTextfield* textfield =
@@ -765,6 +769,13 @@ bool PaymentRequestBrowserTestBase::IsPayButtonEnabled() {
           static_cast<int>(DialogViewID::PAY_BUTTON)));
   DCHECK(button);
   return button->GetEnabled();
+}
+
+base::string16 PaymentRequestBrowserTestBase::GetPrimaryButtonLabel() const {
+  return static_cast<views::MdTextButton*>(
+             delegate_->dialog_view()->GetViewByID(
+                 static_cast<int>(DialogViewID::PAY_BUTTON)))
+      ->GetText();
 }
 
 void PaymentRequestBrowserTestBase::WaitForAnimation() {
@@ -917,6 +928,9 @@ std::ostream& operator<<(
       break;
     case DialogEvent::PROCESSING_SPINNER_HIDDEN:
       out << "PROCESSING_SPINNER_HIDDEN";
+      break;
+    case DialogEvent::PAYMENT_HANDLER_WINDOW_OPENED:
+      out << "PAYMENT_HANDLER_WINDOW_OPENED";
       break;
   }
   return out;

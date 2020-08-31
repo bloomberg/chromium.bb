@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">アップロード</translation>
 <translation id="1249250836236328755">ジャンル</translation>
 <translation id="1278813325885878377">ハンガリー語 QWERTY キーボード</translation>
+<translation id="1293556467332435079">ファイル</translation>
 <translation id="1297922636971898492">Google ドライブは現在ご利用いただけません。Google ドライブが利用可能になったときに、自動的にアップロードを再開します。</translation>
 <translation id="1307931752636661898">[Linux ファイル] を表示できません</translation>
 <translation id="1310751437842832374">文字変換（mausam → ନମସ୍ତେ）</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">保存されました</translation>
 <translation id="1864756863218646478">ファイルが見つかりませんでした。</translation>
 <translation id="1921986354447415460">トルコ語-F キーボード</translation>
+<translation id="1924372192547904021">「<ph name="DRIVE_NAME" />」をフォーマットしました</translation>
 <translation id="1931134289871235022">スロバキア語</translation>
 <translation id="1933345018156373194">移動できませんでした。予期しないエラー: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">フィンランド語</translation>
@@ -88,6 +90,7 @@
 <translation id="1947424002851288782">ドイツ語のキーボード</translation>
 <translation id="1972984168337863910">ファイルのフィードバック パネルを展開します</translation>
 <translation id="1984603991036629094">アルメニア語表音キーボード</translation>
+<translation id="1995337122023280937">ファイルの場所へ移動</translation>
 <translation id="2001796770603320721">ドライブで管理</translation>
 <translation id="2009067268969781306">ドライブをフォーマットすると、そのドライブに保存されているすべてのデータが削除されます。この操作は元に戻せません。</translation>
 <translation id="2028997212275086731">RAR アーカイブ</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">Google ドライブにアクセスできませんでした。<ph name="BEGIN_LINK" />ログアウト<ph name="END_LINK" />してもう一度ログインしてください。</translation>
 <translation id="2649120831653069427">熱帯魚</translation>
 <translation id="2661146741306740526">16×9</translation>
+<translation id="2664412712123763093">ファイルの場所</translation>
 <translation id="2672394958563893062">エラーが発生しました。クリックすると最初から再生します。</translation>
 <translation id="2676946222714718093">再生中:</translation>
 <translation id="2735698359135166290">ルーマニア語標準キーボード</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">ドイツ語（NEO 2）キーボード</translation>
 <translation id="2943400156390503548">スライド</translation>
 <translation id="2943503720238418293">もう少し短い名前にしてください</translation>
+<translation id="2949781154072577687">「<ph name="DRIVE_NAME" />」をフォーマットしています...</translation>
 <translation id="2951236788251446349">クラゲ</translation>
 <translation id="2963783323012015985">トルコ語のキーボード</translation>
 <translation id="2966459079597787514">スウェーデン語のキーボード</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> 件のエラーがあります。</translation>
 <translation id="3519867315646775981">文字変換（shalom ← שלום）</translation>
 <translation id="3522708245912499433">ポルトガル語</translation>
+<translation id="3524311639100184459">注: これらのファイルは一時的なもので、ディスクの空き容量を増やすために自動的に削除されることがあります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">フォルダ</translation>
 <translation id="3549797760399244642">drive.google.com にアクセスします...</translation>
 <translation id="357479282490346887">リトアニア語</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">キウイ</translation>
 <translation id="3966388904776714213">オーディオ プレーヤー</translation>
 <translation id="4002066346123236978">タイトル</translation>
+<translation id="4065397611279318371"><ph name="APP_NAME" /> アプリでファイルを開くには、<ph name="SHARED_DIRECTORY_LABEL" /> フォルダにファイルを移動してください。</translation>
 <translation id="4070370845051020638">広東語入力方法</translation>
 <translation id="4072248638558688893">タミル語キーボード（表音）</translation>
 <translation id="4124935795427217608">ユニコーン</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">コピーできませんでした。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">メロン</translation>
 <translation id="4372884569765913867">1×1</translation>
+<translation id="4394214039309501350">外部リンク</translation>
 <translation id="4425149324548788773">マイドライブ</translation>
 <translation id="4465830120256509958">ポルトガル語（ブラジル）のキーボード</translation>
 <translation id="4470564870223067757">ハングル（2 ボル式）</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">自動修正</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4886021172213954916">タミル語キーボード（タイプライター）</translation>
+<translation id="4892969127351273348">「<ph name="APP_NAME" />」で開くことができません</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" />をバックアップできます</translation>
 <translation id="4924638091161556692">修正済み</translation>
 <translation id="4935975195727477204">花</translation>
@@ -496,6 +505,7 @@
 <translation id="6806699711453372963">Linux との共有を管理</translation>
 <translation id="6808193438228982088">キツネ</translation>
 <translation id="6820687829547641339">gzip で圧縮された tar アーカイブ</translation>
+<translation id="6823166707458800069">このフォルダに保存されているすべてのファイルが自動的にオンラインにバックアップされます。</translation>
 <translation id="6825883775269213504">ロシア語</translation>
 <translation id="6827236167376090743">この動画は繰り返し再生されます。</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> を選択範囲から削除しました。</translation>
@@ -505,6 +515,7 @@
 <translation id="6878261347041253038">デバナーガリ語キーボード（表音）</translation>
 <translation id="6885780034956018177">カタツムリ</translation>
 <translation id="6896758677409633944">コピー</translation>
+<translation id="6898028766943174120">その他のサブフォルダ...</translation>
 <translation id="691516599546977041"><ph name="FOLDER_NAME" /> に保存できません。編集した画像はダウンロード フォルダに保存されます。</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">US Workman</translation>
@@ -517,6 +528,7 @@
 <translation id="696203921837389374">モバイルデータとの同期を有効にする</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6970230597523682626">ブルガリア語</translation>
+<translation id="6973630695168034713">フォルダ</translation>
 <translation id="6978611942794658017">このファイルは Windows ソフトウェアを使用する PC 用に作成されています。Chrome OS を実行するデバイスとは互換性がありません。Chrome ウェブストアで代わりのアプリをお探しください。</translation>
 <translation id="6979158407327259162">Google ドライブ</translation>
 <translation id="6990081529015358884">空き容量が不足しています</translation>
@@ -550,6 +562,7 @@
 <translation id="7417705661718309329">Google マップ</translation>
 <translation id="7419631653042041064">カタロニア語のキーボード</translation>
 <translation id="7434823369735508263">Dvorak 配列キーボード（英国）</translation>
+<translation id="7447678886297481665">このフォルダ内のファイルは読み取り専用です。一部の操作は行えません。</translation>
 <translation id="7460898608667578234">ウクライナ語</translation>
 <translation id="7474889694310679759">英語（カナダ）のキーボード</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" />が見つかりました
@@ -568,6 +581,7 @@
 <translation id="7649070708921625228">ヘルプ</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムを移動しています...</translation>
 <translation id="7658239707568436148">キャンセル</translation>
+<translation id="7695430100978772476">「<ph name="DRIVE_NAME" />」をフォーマットできませんでした</translation>
 <translation id="770015031906360009">ギリシャ語</translation>
 <translation id="7706319470528945664">ポルトガル語のキーボード</translation>
 <translation id="7711920809702896782">画像情報</translation>

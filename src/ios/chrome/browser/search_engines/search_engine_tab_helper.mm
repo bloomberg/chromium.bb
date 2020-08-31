@@ -99,8 +99,8 @@ void SearchEngineTabHelper::OnFaviconUpdated(
     const GURL& icon_url,
     bool icon_url_changed,
     const gfx::Image& image) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   TemplateURLService* url_service =
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);
   const GURL potential_search_url = driver->GetActiveURL();
@@ -169,8 +169,8 @@ void SearchEngineTabHelper::AddTemplateURLByOSDD(const GURL& page_url,
   if (!osdd_url.is_valid() || !osdd_url.SchemeIsHTTPOrHTTPS())
     return;
 
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   if ((page_url != web_state_->GetLastCommittedURL()) ||
       (!ios::TemplateURLFetcherFactory::GetForBrowserState(browser_state)) ||
       (browser_state->IsOffTheRecord()))
@@ -206,7 +206,8 @@ void SearchEngineTabHelper::AddTemplateURLByOSDD(const GURL& page_url,
       ->ScheduleDownload(keyword, osdd_url, item->GetFavicon().url,
                          url::Origin::Create(web_state_->GetLastCommittedURL()),
                          browser_state->GetURLLoaderFactory(), MSG_ROUTING_NONE,
-                         /* content::ResourceType::kSubResource */ 6);
+                         /* content::ResourceType::kSubResource */ 6,
+                         /* request_id */ 0);
 }
 
 // Creates a TemplateURL by |searchable_url| and adds it to TemplateURLService.
@@ -218,8 +219,8 @@ void SearchEngineTabHelper::AddTemplateURLBySearchableURL(
     return;
   }
 
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   // Don't add TemplateURL under incognito mode.
   if (browser_state->IsOffTheRecord())
     return;

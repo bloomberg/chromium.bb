@@ -71,7 +71,7 @@ static_library("lzma_sdk") {
 
     # Must be after no_chromium_code for warning flags to be ordered correctly.
     ":clang_warnings",
-    ":lzma_defines"
+    ":lzma_defines",
   ]
   public_configs = [ ":lzma_sdk_config" ]
 }
@@ -90,9 +90,7 @@ static_library("lzma_sdk_xz") {
     "XzDec.c",
   ]
 
-  deps = [
-    ":lzma_sdk"
-  ]
+  deps = [ ":lzma_sdk" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
@@ -100,7 +98,7 @@ static_library("lzma_sdk_xz") {
 
     # Must be after no_chromium_code for warning flags to be ordered correctly.
     ":clang_warnings",
-    ":lzma_defines"
+    ":lzma_defines",
   ]
   public_configs = [ ":lzma_sdk_config" ]
 }

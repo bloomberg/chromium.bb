@@ -13,7 +13,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
@@ -49,7 +49,6 @@ class BookmarkPermanentNodeLoader {
     node_->set_id(*next_node_id);
     *next_node_id = ManagedBookmarksTracker::LoadInitial(
         node_.get(), initial_bookmarks_.get(), node_->id() + 1);
-    node_->set_visible(!node_->children().empty());
     node_->SetTitle(l10n_util::GetStringUTF16(title_id_));
     return std::move(node_);
   }
@@ -75,10 +74,10 @@ std::unique_ptr<BookmarkPermanentNode> LoadManagedNode(
 
 ManagedBookmarkService::ManagedBookmarkService(
     PrefService* prefs,
-    const GetManagementDomainCallback& callback)
+    GetManagementDomainCallback callback)
     : prefs_(prefs),
       bookmark_model_(nullptr),
-      managed_domain_callback_(callback),
+      managed_domain_callback_(std::move(callback)),
       managed_node_(nullptr) {}
 
 ManagedBookmarkService::~ManagedBookmarkService() {
@@ -92,16 +91,16 @@ void ManagedBookmarkService::BookmarkModelCreated(
   bookmark_model_ = bookmark_model;
   bookmark_model_->AddObserver(this);
 
-  managed_bookmarks_tracker_.reset(new ManagedBookmarksTracker(
-      bookmark_model_, prefs_, managed_domain_callback_));
+  managed_bookmarks_tracker_ = std::make_unique<ManagedBookmarksTracker>(
+      bookmark_model_, prefs_, managed_domain_callback_);
 }
 
 LoadManagedNodeCallback ManagedBookmarkService::GetLoadManagedNodeCallback() {
   // Create a BookmarkPermanentNode with a temporary id of 0. It will be
   // populated and assigned a proper id in the LoadManagedNode callback. Until
   // then, it is owned by the returned closure.
-  std::unique_ptr<BookmarkPermanentNode> managed(
-      new BookmarkPermanentNode(0, BookmarkNode::FOLDER));
+  auto managed = std::make_unique<BookmarkPermanentNode>(
+      0, BookmarkNode::FOLDER, /*visible_when_empty=*/false);
 
   managed_node_ = managed.get();
 

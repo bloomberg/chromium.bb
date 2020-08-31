@@ -7,9 +7,11 @@
 
 #include <memory>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/util/type_safety/id_type.h"
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/graph.h"
@@ -21,7 +23,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-// TODO(siggi): Add workers to the WebUI graph.
 class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
                               public performance_manager::GraphOwned,
                               public performance_manager::FrameNodeObserver,
@@ -43,11 +44,16 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
       performance_manager::Graph* graph,
       mojo::PendingReceiver<discards::mojom::GraphDump> receiver);
 
+  int64_t GetNodeIdForTesting(const performance_manager::Node* node);
+
  protected:
   // WebUIGraphDump implementation.
   void SubscribeToChanges(
       mojo::PendingRemote<discards::mojom::GraphChangeStream> change_subscriber)
       override;
+  void RequestNodeDescriptions(
+      const std::vector<int64_t>& node_ids,
+      RequestNodeDescriptionsCallback callback) override;
 
   // GraphOwned implementation.
   void OnPassedToGraph(performance_manager::Graph* graph) override;
@@ -89,6 +95,13 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   void OnPriorityAndReasonChanged(
       const performance_manager::FrameNode* frame_node,
       const PriorityAndReason& previous_value) override {}
+  // Ignored.
+  void OnHadFormInteractionChanged(
+      const performance_manager::FrameNode* frame_node) override {}
+  // Ignored.
+  void OnFirstContentfulPaint(
+      const performance_manager::FrameNode* frame_node,
+      base::TimeDelta time_since_navigation_start) override {}
 
   // PageNodeObserver implementation:
   void OnPageNodeAdded(const performance_manager::PageNode* page_node) override;
@@ -117,9 +130,9 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   void OnMainFrameUrlChanged(
       const performance_manager::PageNode* page_node) override;
   // Ignored.
-  void OnPageAlmostIdleChanged(
-      const performance_manager::PageNode* page_node) override {}
   void OnMainFrameDocumentChanged(
+      const performance_manager::PageNode* page_node) override {}
+  void OnHadFormInteractionChanged(
       const performance_manager::PageNode* page_node) override {}
   void OnTitleUpdated(const performance_manager::PageNode* page_node) override {
   }  // Ignored.
@@ -150,6 +163,8 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
       const performance_manager::WorkerNode* worker_node) override;
   void OnBeforeWorkerNodeRemoved(
       const performance_manager::WorkerNode* worker_node) override;
+  void OnFinalResponseURLDetermined(
+      const performance_manager::WorkerNode* worker_node) override;
   void OnClientFrameAdded(
       const performance_manager::WorkerNode* worker_node,
       const performance_manager::FrameNode* client_frame_node) override;
@@ -167,6 +182,11 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   // The favicon requests happen on the UI thread. This helper class
   // maintains the state required to do that.
   class FaviconRequestHelper;
+  using NodeId = util::IdType64<class NodeIdTag>;
+
+  void AddNode(const performance_manager::Node* node);
+  void RemoveNode(const performance_manager::Node* node);
+  int64_t GetNodeId(const performance_manager::Node* node);
 
   FaviconRequestHelper* EnsureFaviconRequestHelper();
 
@@ -195,6 +215,11 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   performance_manager::Graph* graph_ = nullptr;
 
   std::unique_ptr<FaviconRequestHelper> favicon_request_helper_;
+
+  // The live nodes and their IDs.
+  base::flat_map<const performance_manager::Node*, NodeId> node_ids_;
+  base::flat_map<NodeId, const performance_manager::Node*> nodes_by_id_;
+  NodeId::Generator node_id_generator_;
 
   // The current change subscriber to this dumper. This instance is subscribed
   // to every node in |graph_| save for the system node, so long as there is a

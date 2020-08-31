@@ -38,13 +38,13 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
-#if defined(OS_MACOSX)
-#include <Accelerate/Accelerate.h>
-#elif defined(WTF_USE_WEBAUDIO_FFMPEG)
+#if defined(WTF_USE_WEBAUDIO_FFMPEG)
 struct RDFTContext;
 #elif defined(WTF_USE_WEBAUDIO_PFFFT)
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/pffft/src/pffft.h"
+#elif defined(OS_MACOSX)
+#include <Accelerate/Accelerate.h>
 #endif
 
 namespace blink {
@@ -83,10 +83,10 @@ class PLATFORM_EXPORT FFTFrame {
   // least |fft_size_| elements.
   void DoInverseFFT(float* data);
 
-  float* RealData() { return real_data_.Data(); }
-  const float* RealData() const { return real_data_.Data(); }
-  float* ImagData() { return imag_data_.Data(); }
-  const float* ImagData() const { return imag_data_.Data(); }
+  AudioFloatArray& RealData() { return real_data_; }
+  const AudioFloatArray& RealData() const { return real_data_; }
+  AudioFloatArray& ImagData() { return imag_data_; }
+  const AudioFloatArray& ImagData() const { return imag_data_; }
 
   unsigned FftSize() const { return fft_size_; }
   unsigned Log2FFTSize() const { return log2fft_size_; }
@@ -144,7 +144,7 @@ class PLATFORM_EXPORT FFTFrame {
   AudioFloatArray real_data_;
   AudioFloatArray imag_data_;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(WTF_USE_WEBAUDIO_PFFFT)
   // Thin wrapper around FFTSetup so we can call the appropriate routines to
   // construct or release the FFTSetup objects.
   class FFTSetupDatum {

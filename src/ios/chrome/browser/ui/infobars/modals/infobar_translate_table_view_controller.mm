@@ -7,13 +7,14 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_translate_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_modal_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -71,8 +72,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (instancetype)initWithDelegate:
     (id<InfobarTranslateModalDelegate>)modalDelegate {
-  self = [super initWithTableViewStyle:UITableViewStylePlain
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
     _infobarModalDelegate = modalDelegate;
   }
@@ -93,7 +93,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self
-                           action:@selector(dismissInfobarModal:)];
+                           action:@selector(dismissInfobarModal)];
   cancelButton.accessibilityIdentifier = kInfobarModalCancelButton;
   self.navigationItem.leftBarButtonItem = cancelButton;
   self.navigationController.navigationBar.prefersLargeTitles = NO;
@@ -130,6 +130,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                 l10n_util::GetNSString(
                     IDS_IOS_TRANSLATE_INFOBAR_MODAL_SOURCE_LANGUAGE_FIELD_NAME)
            textFieldValue:self.sourceLanguage];
+  sourceLanguageItem.accessibilityIdentifier =
+      kTranslateInfobarModalTranslateSourceLanguageItemAXId;
   [model addItem:sourceLanguageItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
@@ -139,6 +141,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                 l10n_util::GetNSString(
                     IDS_IOS_TRANSLATE_INFOBAR_MODAL_TARGET_LANGUAGE_FIELD_NAME)
            textFieldValue:self.targetLanguage];
+  targetLanguageItem.accessibilityIdentifier =
+      kTranslateInfobarModalTranslateTargetLanguageItemAXId;
   [model addItem:targetLanguageItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
@@ -147,6 +151,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                  buttonText:l10n_util::GetNSString(
                                 IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_ACTION)];
   translateButtonItem.disableButtonIntrinsicWidth = YES;
+  translateButtonItem.buttonAccessibilityIdentifier =
+      kTranslateInfobarModalTranslateButtonAXId;
   if (!self.enableTranslateActionButton) {
     translateButtonItem.buttonBackgroundColor =
         [UIColor colorNamed:kDisabledTintColor];
@@ -162,6 +168,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                            IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_UNDO_ACTION)];
     showOriginalButtonItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
     showOriginalButtonItem.buttonBackgroundColor = [UIColor clearColor];
+    showOriginalButtonItem.buttonAccessibilityIdentifier =
+        kTranslateInfobarModalShowOriginalButtonAXId;
     [model addItem:showOriginalButtonItem
         toSectionWithIdentifier:SectionIdentifierContent];
   }
@@ -171,6 +179,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                        buttonText:[self shouldAlwaysTranslateButtonText]];
   alwaysTranslateSourceItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
   alwaysTranslateSourceItem.buttonBackgroundColor = [UIColor clearColor];
+  alwaysTranslateSourceItem.buttonAccessibilityIdentifier =
+      kTranslateInfobarModalAlwaysTranslateButtonAXId;
   [model addItem:alwaysTranslateSourceItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
@@ -180,6 +190,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                    buttonText:[self shouldNeverTranslateSourceButtonText]];
     neverTranslateSourceItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
     neverTranslateSourceItem.buttonBackgroundColor = [UIColor clearColor];
+    neverTranslateSourceItem.buttonAccessibilityIdentifier =
+        kTranslateInfobarModalNeverTranslateButtonAXId;
     [model addItem:neverTranslateSourceItem
         toSectionWithIdentifier:SectionIdentifierContent];
   }
@@ -190,6 +202,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                          buttonText:[self shouldNeverTranslateSiteButtonText]];
     neverTranslateSiteItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
     neverTranslateSiteItem.buttonBackgroundColor = [UIColor clearColor];
+    neverTranslateSiteItem.buttonAccessibilityIdentifier =
+        kTranslateInfobarModalNeverTranslateSiteButtonAXId;
     [model addItem:neverTranslateSiteItem
         toSectionWithIdentifier:SectionIdentifierContent];
   }
@@ -353,11 +367,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return item;
 }
 
-- (void)dismissInfobarModal:(UIButton*)sender {
+- (void)dismissInfobarModal {
   // TODO(crbug.com/1014959): add metrics
-  [self.infobarModalDelegate dismissInfobarModal:sender
-                                        animated:YES
-                                      completion:nil];
+  [self.infobarModalDelegate dismissInfobarModal:self];
 }
 
 // Call the appropriate method to trigger Translate depending on if the
@@ -366,7 +378,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (self.updateLanguageBeforeTranslate) {
     [self.infobarModalDelegate translateWithNewLanguages];
   } else {
-    [self.infobarModalDelegate modalInfobarButtonWasAccepted:sender];
+    [self.infobarModalDelegate modalInfobarButtonWasAccepted:self];
   }
 }
 

@@ -43,6 +43,7 @@
 namespace blink {
 
 class KURL;
+class SystemClipboard;
 class WebDragData;
 
 enum class PasteMode;
@@ -62,7 +63,7 @@ class CORE_EXPORT DataObject : public GarbageCollected<DataObject>,
     virtual void OnItemListChanged() = 0;
   };
 
-  static DataObject* CreateFromClipboard(PasteMode);
+  static DataObject* CreateFromClipboard(SystemClipboard*, PasteMode);
   static DataObject* CreateFromString(const String&);
   static DataObject* Create();
   static DataObject* Create(WebDragData);
@@ -123,7 +124,7 @@ class CORE_EXPORT DataObject : public GarbageCollected<DataObject>,
   // whenever the underlying item_list_ changes.
   void AddObserver(Observer*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   WebDragData ToWebDragData();
 

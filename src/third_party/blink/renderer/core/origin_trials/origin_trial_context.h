@@ -17,6 +17,7 @@
 namespace blink {
 
 class ExecutionContext;
+class ScriptState;
 
 // The Origin Trials Framework provides limited access to experimental features,
 // on a per-origin basis (origin trials). This class provides the implementation
@@ -84,9 +85,19 @@ class CORE_EXPORT OriginTrialContext final
   // and immediately adds required bindings to already initialized JS contexts.
   void AddFeature(OriginTrialFeature feature);
 
+  // Forces given trials to be enabled in this context and immediately adds
+  // required bindings to already initialized JS contexts.
+  void AddForceEnabledTrials(const Vector<String>& trial_names);
+
   // Returns true if the feature should be considered enabled for the current
   // execution context.
   bool IsFeatureEnabled(OriginTrialFeature feature) const;
+
+  // Gets the latest expiry time of all valid tokens that enable |feature|. If
+  // there are no valid tokens enabling the feature, this will return the null
+  // time (base::Time()). Note: This will only find expiry times for features
+  // backed by a token, so will not work for features enabled via |AddFeature|.
+  base::Time GetFeatureExpiry(OriginTrialFeature feature);
 
   std::unique_ptr<Vector<OriginTrialFeature>> GetEnabledNavigationFeatures()
       const;
@@ -109,9 +120,17 @@ class CORE_EXPORT OriginTrialContext final
   // enabled.
   void InitializePendingFeatures();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
+  // If this returns false, the trial cannot be enabled (e.g. due to it is
+  // invalid in the browser's present configuration).
+  bool CanEnableTrialFromName(const StringView& trial_name);
+
+  // Enable features by trial name. Returns true or false to indicate whether
+  // some features are enabled as the result.
+  bool EnableTrialFromName(const String& trial_name, base::Time expiry_time);
+
   // Validate the trial token. If valid, the trial named in the token is
   // added to the list of enabled trials. Returns true or false to indicate if
   // the token is valid.
@@ -130,6 +149,7 @@ class CORE_EXPORT OriginTrialContext final
   HashSet<OriginTrialFeature> enabled_features_;
   HashSet<OriginTrialFeature> installed_features_;
   HashSet<OriginTrialFeature> navigation_activated_features_;
+  WTF::HashMap<OriginTrialFeature, base::Time> feature_expiry_times_;
   std::unique_ptr<TrialTokenValidator> trial_token_validator_;
   Member<ExecutionContext> context_;
 };

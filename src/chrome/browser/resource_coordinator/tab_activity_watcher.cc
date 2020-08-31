@@ -31,7 +31,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 
 // Use a 1-day max for tab visibility histograms since it's not uncommon to keep
 // a tab in the same visibility state for a very long time (see Tab.VisibleTime
@@ -53,13 +53,14 @@ static int32_t reactivation_index = 0;
 int64_t internal_id_for_logging = 0;
 // Returns an int64_t number as label_id or query_id.
 int64_t NewInt64ForLabelIdOrQueryId() {
-  // The id is shifted 13 bits so that the lower bits are reserved for counting
+  // The id is shifted 16 bits so that the lower bits are reserved for counting
   // multiple queries.
-  // We choose 13 so that the lower bits for counting multiple queries and
+  // We choose 16 so that the lower bits for counting multiple queries and
   // higher bits for labeling queries are both unlikely to overflow. (lower bits
-  // only overflows when we have more than 8192 queries without labeling events;
-  // higher bits only overflow when we have more than 100 billion discards.
-  constexpr int kIdShiftBits = 13;
+  // only overflows when we have more than 65536 queries without labeling
+  // events; higher bits only overflow when we have more than 100 billion
+  // discards.
+  constexpr int kIdShiftBits = 16;
   return (++internal_id_for_logging) << kIdShiftBits;
 }
 
@@ -539,12 +540,15 @@ WEB_CONTENTS_USER_DATA_KEY_IMPL(TabActivityWatcher::WebContentsData)
 
 TabActivityWatcher::TabActivityWatcher()
     : tab_metrics_logger_(std::make_unique<TabMetricsLogger>()),
-      browser_tab_strip_tracker_(this, this, this),
+      browser_tab_strip_tracker_(this, this),
       predictor_(std::make_unique<tab_ranker::TabScorePredictor>()) {
+  BrowserList::AddObserver(this);
   browser_tab_strip_tracker_.Init();
 }
 
-TabActivityWatcher::~TabActivityWatcher() = default;
+TabActivityWatcher::~TabActivityWatcher() {
+  BrowserList::RemoveObserver(this);
+}
 
 base::Optional<float> TabActivityWatcher::CalculateReactivationScore(
     content::WebContents* web_contents) {
@@ -559,6 +563,9 @@ void TabActivityWatcher::LogAndMaybeSortLifecycleUnitWithTabRanker(
     std::vector<LifecycleUnit*>* tabs) {
   // Set query_id so that all TabFeatures logged in this query can be joined.
   tab_metrics_logger_->set_query_id(NewInt64ForLabelIdOrQueryId());
+
+  const bool should_sort_tabs =
+      base::FeatureList::IsEnabled(features::kTabRanker);
 
   std::map<int32_t, base::Optional<TabFeatures>> tab_features;
   for (auto* lifecycle_unit : *tabs) {
@@ -582,12 +589,16 @@ void TabActivityWatcher::LogAndMaybeSortLifecycleUnitWithTabRanker(
     }
 
     const base::Optional<TabFeatures> tab = web_contents_data->GetTabFeatures();
-    tab_features[lifecycle_unit->GetID()] = tab;
     web_contents_data->LogCurrentTabFeatures(tab);
+
+    // No reason to store TabFeatures if TabRanker is disabled.
+    if (should_sort_tabs) {
+      tab_features[lifecycle_unit->GetID()] = tab;
+    }
   }
 
-  // Directly return if TabRanker is not enabled.
-  if (!base::FeatureList::IsEnabled(features::kTabRanker))
+  // Directly return if TabRanker is disabled.
+  if (!should_sort_tabs)
     return;
 
   const std::map<int32_t, float> reactivation_scores =

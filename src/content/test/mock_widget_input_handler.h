@@ -104,16 +104,16 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
   class DispatchedEditCommandMessage : public DispatchedMessage {
    public:
     explicit DispatchedEditCommandMessage(
-        const std::vector<content::EditCommand>& commands);
+        std::vector<blink::mojom::EditCommandPtr> commands);
     ~DispatchedEditCommandMessage() override;
 
     // Override and return |this|.
     DispatchedEditCommandMessage* ToEditCommand() override;
 
-    const std::vector<content::EditCommand>& Commands() const;
+    const std::vector<blink::mojom::EditCommandPtr>& Commands() const;
 
    private:
-    std::vector<content::EditCommand> commands_;
+    std::vector<blink::mojom::EditCommandPtr> commands_;
 
     DISALLOW_COPY_AND_ASSIGN(DispatchedEditCommandMessage);
   };
@@ -149,14 +149,14 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
 
     // Invoke the callback on this object with the passed in |state|.
     // The callback is called with default values for the other fields.
-    void CallCallback(InputEventAckState state);
+    void CallCallback(blink::mojom::InputEventResultState state);
 
     // Invoke a callback with all the arguments provided.
-    void CallCallback(InputEventAckSource source,
+    void CallCallback(blink::mojom::InputEventResultSource source,
                       const ui::LatencyInfo& latency_info,
-                      InputEventAckState state,
-                      const base::Optional<ui::DidOverscrollParams>& overscroll,
-                      const base::Optional<cc::TouchAction>& touch_action);
+                      blink::mojom::InputEventResultState state,
+                      blink::mojom::DidOverscrollParamsPtr overscroll,
+                      blink::mojom::TouchActionOptionalPtr touch_action);
 
     // Return if the callback is set.
     bool HasCallback() const;
@@ -197,9 +197,8 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
   void SetFocus(bool focused) override;
   void MouseCaptureLost() override;
   void SetEditCommandsForNextKeyEvent(
-      const std::vector<content::EditCommand>& commands) override;
+      std::vector<blink::mojom::EditCommandPtr> commands) override;
   void CursorVisibilityChanged(bool visible) override;
-  void FallbackCursorModeToggled(bool is_on) override;
   void ImeSetComposition(const base::string16& text,
                          const std::vector<ui::ImeTextSpan>& ime_text_spans,
                          const gfx::Range& range,

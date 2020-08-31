@@ -7,8 +7,9 @@
 #include <memory>
 #include <vector>
 
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -31,11 +32,13 @@
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
+#include "components/translate/core/browser/translate_browser_metrics.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
+#include "components/translate/core/common/translate_util.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -82,28 +85,65 @@ TranslateEventProto::EventType BubbleResultToTranslateEvent(
 }  // namespace
 
 ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      translate_driver_(
-          &web_contents->GetController(),
-          UrlLanguageHistogramFactory::GetForBrowserContext(
-              web_contents->GetBrowserContext())),
-      translate_manager_(new translate::TranslateManager(
-          this,
-          translate::TranslateRankerFactory::GetForBrowserContext(
-              web_contents->GetBrowserContext()),
-          LanguageModelManagerFactory::GetForBrowserContext(
-              web_contents->GetBrowserContext())
-              ->GetPrimaryModel())) {
-  translate_driver_.AddObserver(this);
-  translate_driver_.set_translate_manager(translate_manager_.get());
+    : content::WebContentsObserver(web_contents) {
+  if (translate::IsSubFrameTranslationEnabled()) {
+    per_frame_translate_driver_ =
+        std::make_unique<translate::PerFrameContentTranslateDriver>(
+            &web_contents->GetController(),
+            UrlLanguageHistogramFactory::GetForBrowserContext(
+                web_contents->GetBrowserContext()));
+  } else {
+    translate_driver_ = std::make_unique<translate::ContentTranslateDriver>(
+        &web_contents->GetController(),
+        UrlLanguageHistogramFactory::GetForBrowserContext(
+            web_contents->GetBrowserContext()));
+  }
+  translate_manager_ = std::make_unique<translate::TranslateManager>(
+      this,
+      translate::TranslateRankerFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext()),
+      LanguageModelManagerFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext())
+          ->GetPrimaryModel());
+  if (translate_driver_) {
+    translate_driver_->AddObserver(this);
+    translate_driver_->set_translate_manager(translate_manager_.get());
+  }
+  if (per_frame_translate_driver_) {
+    per_frame_translate_driver_->AddObserver(this);
+    per_frame_translate_driver_->set_translate_manager(
+        translate_manager_.get());
+  }
 }
 
 ChromeTranslateClient::~ChromeTranslateClient() {
-  translate_driver_.RemoveObserver(this);
+  if (translate_driver_) {
+    translate_driver_->RemoveObserver(this);
+    translate_driver_->set_translate_manager(nullptr);
+  }
+  if (per_frame_translate_driver_) {
+    per_frame_translate_driver_->RemoveObserver(this);
+    per_frame_translate_driver_->set_translate_manager(nullptr);
+  }
 }
 
 translate::LanguageState& ChromeTranslateClient::GetLanguageState() {
   return translate_manager_->GetLanguageState();
+}
+
+translate::ContentTranslateDriver* ChromeTranslateClient::translate_driver() {
+  if (translate_driver_) {
+    DCHECK(!translate::IsSubFrameTranslationEnabled());
+    return translate_driver_.get();
+  }
+
+  return per_frame_translate_driver();
+}
+
+translate::PerFrameContentTranslateDriver*
+ChromeTranslateClient::per_frame_translate_driver() {
+  DCHECK(translate::IsSubFrameTranslationEnabled());
+  return per_frame_translate_driver_.get();
 }
 
 // static
@@ -228,7 +268,7 @@ bool ChromeTranslateClient::ShowTranslateUI(
 }
 
 translate::TranslateDriver* ChromeTranslateClient::GetTranslateDriver() {
-  return &translate_driver_;
+  return translate_driver();
 }
 
 PrefService* ChromeTranslateClient::GetPrefs() {
@@ -303,6 +343,9 @@ void ChromeTranslateClient::WebContentsDestroyed() {
 
 void ChromeTranslateClient::OnLanguageDetermined(
     const translate::LanguageDetectionDetails& details) {
+  translate::TranslateBrowserMetrics::ReportLanguageDetectionContentLength(
+      details.contents.size());
+
   // TODO(268984): Remove translate notifications and have the clients be
   // ContentTranslateDriver::Observer directly instead.
   content::NotificationService::current()->Notify(

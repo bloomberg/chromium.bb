@@ -128,9 +128,11 @@ SecurityStateTabHelper::SecurityStateTabHelper(
 SecurityStateTabHelper::~SecurityStateTabHelper() {}
 
 security_state::SecurityLevel SecurityStateTabHelper::GetSecurityLevel() {
-  return security_state::GetSecurityLevel(
-      *GetVisibleSecurityState(), UsedPolicyInstalledCertificate(),
-      base::BindRepeating(&content::IsOriginSecure));
+  if (get_security_level_callback_for_tests_) {
+    std::move(get_security_level_callback_for_tests_).Run();
+  }
+  return security_state::GetSecurityLevel(*GetVisibleSecurityState(),
+                                          UsedPolicyInstalledCertificate());
 }
 
 std::unique_ptr<security_state::VisibleSecurityState>
@@ -196,6 +198,19 @@ void SecurityStateTabHelper::DidStartNavigation(
     UMA_HISTOGRAM_BOOLEAN(
         "Security.LegacyTLS.FormSubmission",
         GetLegacyTLSWarningStatus(*GetVisibleSecurityState()));
+    if (navigation_handle->IsInMainFrame() &&
+        !security_state::IsSchemeCryptographic(
+            GetVisibleSecurityState()->url)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Security.SecurityLevel.InsecureMainFrameFormSubmission",
+          GetSecurityLevel(), security_state::SECURITY_LEVEL_COUNT);
+    }
+  } else if (navigation_handle->IsInMainFrame() &&
+             !security_state::IsSchemeCryptographic(
+                 GetVisibleSecurityState()->url)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Security.SecurityLevel.InsecureMainFrameNonFormNavigation",
+        GetSecurityLevel(), security_state::SECURITY_LEVEL_COUNT);
   }
 }
 

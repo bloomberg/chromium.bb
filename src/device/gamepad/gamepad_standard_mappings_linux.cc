@@ -120,6 +120,48 @@ void MapperXboxOneS2016Firmware(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
+void MapperXboxElite2Bluetooth(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
+  // On some systems, the View (back/select) button is interpreted as a media
+  // key instead of a gamepad button. When it behaves as a media key, pressing
+  // the button causes a back-navigation in the browser. The below mapping is
+  // correct when this behavior is not present.
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[16];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[13];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[14];
+  // The modern Xbox Elite Series 2 firmware reports less axes than prior
+  // versions. However, the only way to distinguish between the versions is
+  // to check the length of the axes.
+  //
+  // In the older firmware, axes 4 and 9 are redundancies, so after axis 3
+  // the mappings are shifted by 1
+  int axis_shift = mapped->axes_length > 8 ? 1 : 0;
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] =
+      AxisToButton(input.axes[5 + axis_shift]);
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] =
+      AxisToButton(input.axes[4 + axis_shift]);
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] =
+      AxisNegativeAsButton(input.axes[7 + axis_shift]);
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] =
+      AxisPositiveAsButton(input.axes[7 + axis_shift]);
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] =
+      AxisNegativeAsButton(input.axes[6 + axis_shift]);
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+      AxisPositiveAsButton(input.axes[6 + axis_shift]);
+
+  // The Xbox (meta) button does not generate an input event for this device.
+  mapped->buttons_length = BUTTON_INDEX_COUNT - 1;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
 void MapperLakeviewResearch(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[2];
@@ -714,6 +756,50 @@ void MapperBoomN64Psx(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
+void MapperSnakebyteIDroidCon(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[10];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[2];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[5];
+  mapped->buttons[BUTTON_INDEX_META] = NullButton();
+
+  if (input.axes_length == 7) {
+    // "Game controller 2" mode: analog triggers.
+    mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] =
+        AxisPositiveAsButton(input.axes[2]);
+    mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] =
+        AxisNegativeAsButton(input.axes[2]);
+    mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[6]);
+    mapped->buttons[BUTTON_INDEX_DPAD_DOWN] =
+        AxisPositiveAsButton(input.axes[6]);
+    mapped->buttons[BUTTON_INDEX_DPAD_LEFT] =
+        AxisNegativeAsButton(input.axes[5]);
+    mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+        AxisPositiveAsButton(input.axes[5]);
+    mapped->buttons[BUTTON_INDEX_META] = NullButton();
+    mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[3];
+    mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[4];
+  } else {
+    // "Game controller 1" mode: digital triggers.
+    mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = input.buttons[8];
+    mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = input.buttons[9];
+    mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[5]);
+    mapped->buttons[BUTTON_INDEX_DPAD_DOWN] =
+        AxisPositiveAsButton(input.axes[5]);
+    mapped->buttons[BUTTON_INDEX_DPAD_LEFT] =
+        AxisNegativeAsButton(input.axes[4]);
+    mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+        AxisPositiveAsButton(input.axes[4]);
+  }
+  mapped->buttons_length = BUTTON_INDEX_COUNT - 1;  // no meta
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
 constexpr struct MappingData {
   GamepadId gamepad_id;
   GamepadStandardMappingFunction function;
@@ -724,6 +810,8 @@ constexpr struct MappingData {
     {GamepadId::kMicrosoftProduct02e0, MapperXboxOneS},
     // Xbox One S (Bluetooth)
     {GamepadId::kMicrosoftProduct02fd, MapperXboxOneS2016Firmware},
+    // Xbox One Elite 2 (Bluetooth)
+    {GamepadId::kMicrosoftProduct0b05, MapperXboxElite2Bluetooth},
     // Logitech F310 D-mode
     {GamepadId::kLogitechProductc216, MapperLogitechDInput},
     // Logitech F510 D-mode
@@ -792,18 +880,21 @@ constexpr struct MappingData {
     {GamepadId::kPrototypeVendorProduct0667, MapperBoomN64Psx},
     // Stadia Controller prototype
     {GamepadId::kPrototypeVendorProduct9401, MapperStadiaControllerOldFirmware},
+    // Snakebyte iDroid:con
+    {GamepadId::kBroadcomProduct8502, MapperSnakebyteIDroidCon},
 };
 
 }  // namespace
 
 GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
+    const base::StringPiece product_name,
     const uint16_t vendor_id,
     const uint16_t product_id,
     const uint16_t hid_specification_version,
     const uint16_t version_number,
     GamepadBusType bus_type) {
   GamepadId gamepad_id =
-      GamepadIdList::Get().GetGamepadId(vendor_id, product_id);
+      GamepadIdList::Get().GetGamepadId(product_name, vendor_id, product_id);
   const MappingData* begin = std::begin(AvailableMappings);
   const MappingData* end = std::end(AvailableMappings);
   const auto* find_it = std::find_if(begin, end, [=](const MappingData& item) {

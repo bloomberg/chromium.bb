@@ -11,29 +11,7 @@ import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 import {IronA11yKeysBehavior} from 'chrome://resources/polymer/v3_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-/**
- * The |title| is the text label displayed for the bookmark.
- *
- * The bookmark may point at a location in the PDF or a URI.
- * If it points at a location, |page| indicates which 0-based page it leads to.
- * Optionally, |x| is the x position in that page, |y| is the y position in that
- * page, in pixel coordinates and |zoom| is the new zoom value. If it points at
- * an URI, |uri| is the target for that bookmark.
- *
- * |children| is an array of the |Bookmark|s that are below this in a table of
- * contents tree
- * structure.
- * @typedef {{
- *   title: string,
- *   page: (number | undefined),
- *   x: (number | undefined),
- *   y: (number | undefined),
- *   zoom: (number | undefined),
- *   uri: (string | undefined),
- *   children: !Array<!Bookmark>
- * }}
- */
-export let Bookmark;
+import {Bookmark} from '../bookmark_type.js';
 
 /** Amount that each level of bookmarks is indented by (px). */
 const BOOKMARK_INDENT = 20;
@@ -74,25 +52,25 @@ Polymer({
   keyBindings: {'enter': 'onEnter_', 'space': 'onSpace_'},
 
   /** @override */
-  attached: function() {
+  attached() {
     this.keyEventTarget = this.$.item;
   },
 
   /** @private */
-  bookmarkChanged_: function() {
+  bookmarkChanged_() {
     this.$.expand.style.visibility =
         this.bookmark.children.length > 0 ? 'visible' : 'hidden';
   },
 
   /** @private */
-  depthChanged_: function() {
+  depthChanged_() {
     this.childDepth_ = this.depth + 1;
     this.$.item.style.paddingInlineStart =
         (this.depth * BOOKMARK_INDENT) + 'px';
   },
 
   /** @private */
-  onClick_: function() {
+  onClick_() {
     if (this.bookmark.page != null) {
       if (this.bookmark.zoom != null) {
         this.fire('change-zoom', {zoom: this.bookmark.zoom});
@@ -118,10 +96,10 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onEnter_: function(e) {
+  onEnter_(e) {
     // Don't allow events which have propagated up from the expand button to
     // trigger a click.
-    if (e.detail.keyboardEvent.target != this.$.expand) {
+    if (e.detail.keyboardEvent.target !== this.$.expand) {
       this.onClick_();
     }
   },
@@ -130,7 +108,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onSpace_: function(e) {
+  onSpace_(e) {
     // cr-icon-button stops propagation of space events, so there's no need
     // to check the event source here.
     this.onClick_();
@@ -142,7 +120,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  toggleChildren_: function(e) {
+  toggleChildren_(e) {
     this.childrenShown_ = !this.childrenShown_;
     e.stopPropagation();  // Prevent the above onClick_ handler from firing.
   }

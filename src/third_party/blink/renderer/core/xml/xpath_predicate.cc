@@ -38,7 +38,7 @@ namespace xpath {
 
 Number::Number(double value) : value_(value) {}
 
-void Number::Trace(blink::Visitor* visitor) {
+void Number::Trace(Visitor* visitor) {
   visitor->Trace(value_);
   Expression::Trace(visitor);
 }
@@ -49,7 +49,7 @@ Value Number::Evaluate(EvaluationContext&) const {
 
 StringExpression::StringExpression(const String& value) : value_(value) {}
 
-void StringExpression::Trace(blink::Visitor* visitor) {
+void StringExpression::Trace(Visitor* visitor) {
   visitor->Trace(value_);
   Expression::Trace(visitor);
 }
@@ -70,8 +70,9 @@ NumericOp::NumericOp(Opcode opcode, Expression* lhs, Expression* rhs)
 }
 
 Value NumericOp::Evaluate(EvaluationContext& context) const {
+  EvaluationContext cloned_context(context);
   Value lhs(SubExpr(0)->Evaluate(context));
-  Value rhs(SubExpr(1)->Evaluate(context));
+  Value rhs(SubExpr(1)->Evaluate(cloned_context));
 
   double left_val = lhs.ToNumber();
   double right_val = rhs.ToNumber();
@@ -203,8 +204,9 @@ bool EqTestOp::Compare(EvaluationContext& context,
 }
 
 Value EqTestOp::Evaluate(EvaluationContext& context) const {
+  EvaluationContext cloned_context(context);
   Value lhs(SubExpr(0)->Evaluate(context));
-  Value rhs(SubExpr(1)->Evaluate(context));
+  Value rhs(SubExpr(1)->Evaluate(cloned_context));
 
   return Compare(context, lhs, rhs);
 }
@@ -220,6 +222,7 @@ bool LogicalOp::ShortCircuitOn() const {
 }
 
 Value LogicalOp::Evaluate(EvaluationContext& context) const {
+  EvaluationContext cloned_context(context);
   Value lhs(SubExpr(0)->Evaluate(context));
 
   // This is not only an optimization, http://www.w3.org/TR/xpath
@@ -228,15 +231,18 @@ Value LogicalOp::Evaluate(EvaluationContext& context) const {
   if (lhs_bool == ShortCircuitOn())
     return lhs_bool;
 
-  return SubExpr(1)->Evaluate(context).ToBoolean();
+  return SubExpr(1)->Evaluate(cloned_context).ToBoolean();
 }
 
 Value Union::Evaluate(EvaluationContext& context) const {
+  // SubExpr(0)->Evaluate() can change the context node, but SubExpr(1) should
+  // start with the current context node.
+  EvaluationContext cloned_context = context;
   Value lhs_result = SubExpr(0)->Evaluate(context);
-  Value rhs = SubExpr(1)->Evaluate(context);
+  Value rhs = SubExpr(1)->Evaluate(cloned_context);
 
   NodeSet& result_set = lhs_result.ModifiableNodeSet(context);
-  const NodeSet& rhs_nodes = rhs.ToNodeSet(&context);
+  const NodeSet& rhs_nodes = rhs.ToNodeSet(&cloned_context);
 
   HeapHashSet<Member<Node>> nodes;
   for (const auto& node : result_set)
@@ -256,14 +262,17 @@ Value Union::Evaluate(EvaluationContext& context) const {
 
 Predicate::Predicate(Expression* expr) : expr_(expr) {}
 
-void Predicate::Trace(blink::Visitor* visitor) {
+void Predicate::Trace(Visitor* visitor) {
   visitor->Trace(expr_);
 }
 
 bool Predicate::Evaluate(EvaluationContext& context) const {
   DCHECK(expr_);
 
-  Value result(expr_->Evaluate(context));
+  // Apply a cloned context because position() requires the current
+  // context node.
+  EvaluationContext cloned_context = context;
+  Value result(expr_->Evaluate(cloned_context));
 
   // foo[3] means foo[position()=3]
   if (result.IsNumber())

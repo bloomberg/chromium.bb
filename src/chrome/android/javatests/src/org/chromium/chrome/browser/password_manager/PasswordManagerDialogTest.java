@@ -32,7 +32,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -67,7 +67,10 @@ public class PasswordManagerDialogTest {
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         ChromeActivity activity = (ChromeActivity) mActivityTestRule.getActivity();
-        mCoordinator = new PasswordManagerDialogCoordinator(activity.getModalDialogManager(),
+        ModalDialogManager dialogManager =
+                TestThreadUtils.runOnUiThreadBlockingNoException(activity::getModalDialogManager);
+
+        mCoordinator = new PasswordManagerDialogCoordinator(dialogManager,
                 activity.findViewById(android.R.id.content), activity.getFullscreenManager(),
                 activity.getControlContainerHeightResource());
         PasswordManagerDialogContents contents = new PasswordManagerDialogContents(TITLE, DETAILS,

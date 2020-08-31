@@ -4,7 +4,9 @@
 
 #include "ui/views/focus/external_focus_tracker.h"
 
-#include "base/logging.h"
+#include <memory>
+
+#include "base/check.h"
 #include "ui/views/view.h"
 #include "ui/views/view_tracker.h"
 
@@ -36,8 +38,7 @@ void ExternalFocusTracker::OnWillChangeFocus(View* focused_before,
 }
 
 void ExternalFocusTracker::OnDidChangeFocus(View* focused_before,
-                                            View* focused_now) {
-}
+                                            View* focused_now) {}
 
 void ExternalFocusTracker::FocusLastFocusedExternalView() {
   View* last_focused_view = last_focused_view_tracker_->view();

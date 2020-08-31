@@ -107,11 +107,25 @@ function formActivity_(evt) {
       __gCrWeb.form.wasEditedByUser !== null) {
     __gCrWeb.form.wasEditedByUser.set(target, evt.isTrusted);
   }
-  if (target != lastFocusedElement) return;
+  if (target !== lastFocusedElement) {
+    return;
+  }
+  let formUniqueIdString = __gCrWeb.fill.RENDERER_ID_NOT_SET;
+  let fieldUniqueIdString = __gCrWeb.fill.RENDERER_ID_NOT_SET;
+  try {
+    __gCrWeb.fill.setUniqueIDIfNeeded(target.form);
+    __gCrWeb.fill.setUniqueIDIfNeeded(target);
+    const uniqueID = Symbol.for('__gChrome~uniqueID');
+    formUniqueIdString = target.form[uniqueID].toString();
+    fieldUniqueIdString = target[uniqueID].toString();
+  } catch (e) {
+  }
   const msg = {
     'command': 'form.activity',
-    'formName': __gCrWeb.form.getFormIdentifier(evt.target.form),
+    'formName': __gCrWeb.form.getFormIdentifier(target.form),
+    'uniqueFormID': formUniqueIdString,
     'fieldIdentifier': __gCrWeb.form.getFieldIdentifier(target),
+    'uniqueFieldID': fieldUniqueIdString,
     'fieldType': fieldType,
     'type': evt.type,
     'value': value,
@@ -222,12 +236,16 @@ __gCrWeb.formHandlers['trackFormMutations'] = function(delay) {
     for (let i = 0; i < mutations.length; i++) {
       const mutation = mutations[i];
       // Only process mutations to the tree of nodes.
-      if (mutation.type != 'childList') continue;
+      if (mutation.type !== 'childList') {
+        continue;
+      }
       const addedElements = [];
       for (let j = 0; j < mutation.addedNodes.length; j++) {
         const node = mutation.addedNodes[j];
         // Ignore non-element nodes.
-        if (node.nodeType != Node.ELEMENT_NODE) continue;
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+          continue;
+        }
         addedElements.push(node);
         [].push.apply(
             addedElements, [].slice.call(node.getElementsByTagName('*')));
@@ -239,7 +257,9 @@ __gCrWeb.formHandlers['trackFormMutations'] = function(delay) {
         const msg = {
           'command': 'form.activity',
           'formName': '',
+          'uniqueFormID': '',
           'fieldIdentifier': '',
+          'uniqueFieldID': '',
           'fieldType': '',
           'type': 'form_changed',
           'value': '',

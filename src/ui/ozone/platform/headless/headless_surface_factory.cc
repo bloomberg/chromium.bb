@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -54,8 +55,7 @@ void WriteDataToFile(const base::FilePath& location, const SkBitmap& bitmap) {
   DCHECK(!location.empty());
   std::vector<unsigned char> png_data;
   gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, true, &png_data);
-  if (base::WriteFile(location, reinterpret_cast<const char*>(png_data.data()),
-                      png_data.size()) < 0) {
+  if (!base::WriteFile(location, png_data)) {
     static bool logged_once = false;
     LOG_IF(ERROR, !logged_once)
         << "Failed to write frame to file. "
@@ -75,7 +75,7 @@ class FileSurface : public SurfaceOzoneCanvas {
     surface_ = SkSurface::MakeRaster(SkImageInfo::MakeN32Premul(
         viewport_size.width(), viewport_size.height()));
   }
-  sk_sp<SkSurface> GetSurface() override { return surface_; }
+  SkCanvas* GetCanvas() override { return surface_->getCanvas(); }
   void PresentCanvas(const gfx::Rect& damage) override {
     if (base_path_.empty())
       return;
@@ -85,10 +85,10 @@ class FileSurface : public SurfaceOzoneCanvas {
     // TODO(dnicoara) Use SkImage instead to potentially avoid a copy.
     // See crbug.com/361605 for details.
     if (surface_->getCanvas()->readPixels(bitmap, 0, 0)) {
-      base::PostTask(FROM_HERE,
-                     {base::ThreadPool(), base::MayBlock(),
-                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                     base::BindOnce(&WriteDataToFile, base_path_, bitmap));
+      base::ThreadPool::PostTask(
+          FROM_HERE,
+          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+          base::BindOnce(&WriteDataToFile, base_path_, bitmap));
     }
   }
   std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
@@ -122,10 +122,10 @@ class FileGLSurface : public GLSurfaceEglReadback {
     if (!bitmap.writePixels(pixmap))
       return false;
 
-    base::PostTask(FROM_HERE,
-                   {base::ThreadPool(), base::MayBlock(),
-                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                   base::BindOnce(&WriteDataToFile, location_, bitmap));
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::BindOnce(&WriteDataToFile, location_, bitmap));
     return true;
   }
 
@@ -191,7 +191,9 @@ class GLOzoneEGLHeadless : public GLOzoneEGL {
 
  protected:
   // GLOzoneEGL:
-  intptr_t GetNativeDisplay() override { return EGL_DEFAULT_DISPLAY; }
+  gl::EGLDisplayPlatform GetNativeDisplay() override {
+    return gl::EGLDisplayPlatform(EGL_DEFAULT_DISPLAY);
+  }
 
   bool LoadGLES2Bindings(gl::GLImplementation implementation) override {
     return LoadDefaultEGLGLES2Bindings(implementation);
@@ -232,8 +234,9 @@ GLOzone* HeadlessSurfaceFactory::GetGLOzone(
 }
 
 std::unique_ptr<SurfaceOzoneCanvas>
-HeadlessSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget,
-                                              base::TaskRunner* task_runner) {
+HeadlessSurfaceFactory::CreateCanvasForWidget(
+    gfx::AcceleratedWidget widget,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   return std::make_unique<FileSurface>(GetPathForWidget(base_path_, widget));
 }
 
@@ -242,7 +245,8 @@ scoped_refptr<gfx::NativePixmap> HeadlessSurfaceFactory::CreateNativePixmap(
     VkDevice vk_device,
     gfx::Size size,
     gfx::BufferFormat format,
-    gfx::BufferUsage usage) {
+    gfx::BufferUsage usage,
+    base::Optional<gfx::Size> framebuffer_size) {
   return new TestPixmap(format);
 }
 

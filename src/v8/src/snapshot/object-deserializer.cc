@@ -33,7 +33,6 @@ ObjectDeserializer::DeserializeSharedFunctionInfo(
 
 MaybeHandle<HeapObject> ObjectDeserializer::Deserialize(Isolate* isolate) {
   Initialize(isolate);
-
   if (!allocator()->ReserveSpace()) return MaybeHandle<HeapObject>();
 
   DCHECK(deserializing_user_code());
@@ -42,8 +41,7 @@ MaybeHandle<HeapObject> ObjectDeserializer::Deserialize(Isolate* isolate) {
   {
     DisallowHeapAllocation no_gc;
     Object root;
-    VisitRootPointer(Root::kPartialSnapshotCache, nullptr,
-                     FullObjectSlot(&root));
+    VisitRootPointer(Root::kStartupObjectCache, nullptr, FullObjectSlot(&root));
     DeserializeDeferredObjects();
     FlushICache();
     LinkAllocationSites();
@@ -82,13 +80,21 @@ void ObjectDeserializer::CommitPostProcessedObjects() {
   Factory* factory = isolate()->factory();
   for (Handle<Script> script : new_scripts()) {
     // Assign a new script id to avoid collision.
-    script->set_id(isolate()->heap()->NextScriptId());
+    script->set_id(isolate()->GetNextScriptId());
     LogScriptEvents(*script);
     // Add script to list.
     Handle<WeakArrayList> list = factory->script_list();
     list = WeakArrayList::AddToEnd(isolate(), list,
                                    MaybeObjectHandle::Weak(script));
     heap->SetRootScriptList(*list);
+  }
+
+  for (Handle<JSArrayBuffer> buffer : new_off_heap_array_buffers()) {
+    uint32_t store_index = buffer->GetBackingStoreRefForDeserialization();
+    auto bs = backing_store(store_index);
+    SharedFlag shared =
+        bs && bs->is_shared() ? SharedFlag::kShared : SharedFlag::kNotShared;
+    buffer->Setup(shared, bs);
   }
 }
 

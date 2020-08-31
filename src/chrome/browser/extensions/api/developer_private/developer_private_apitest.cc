@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 
@@ -27,8 +28,8 @@ IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, Basics) {
       base_dir.AppendASCII("packaged_app"), 1, Manifest::INTERNAL));
   LoadExtension(base_dir.AppendASCII("simple_extension"));
 
-  ASSERT_TRUE(RunPlatformAppTestWithFlags(
-      "developer/test", kFlagLoadAsComponent));
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("developer/test", kFlagNone,
+                                          kFlagLoadAsComponent));
 }
 
 // Tests opening the developer tools for an app window.

@@ -56,7 +56,8 @@ std::vector<ShellDevToolsBindings*>* GetShellDevtoolsBindingsInstances() {
 
 std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(
     const net::HttpResponseHeaders* rh,
-    bool success) {
+    bool success,
+    int net_error) {
   auto response = std::make_unique<base::DictionaryValue>();
   int responseCode = 200;
   if (rh) {
@@ -66,6 +67,8 @@ std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(
     responseCode = 404;
   }
   response->SetInteger("statusCode", responseCode);
+  response->SetInteger("netError", net_error);
+  response->SetString("netErrorName", net::ErrorToString(net_error));
 
   auto headers = std::make_unique<base::DictionaryValue>();
   size_t iterator = 0;
@@ -126,7 +129,8 @@ class ShellDevToolsBindings::NetworkResourceLoader
   }
 
   void OnComplete(bool success) override {
-    auto response = BuildObjectForResponse(response_headers_.get(), success);
+    auto response = BuildObjectForResponse(response_headers_.get(), success,
+                                           loader_->NetError());
     bindings_->SendMessageAck(request_id_, response.get());
     bindings_->loaders_.erase(bindings_->loaders_.find(this));
   }
@@ -265,7 +269,8 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     std::string protocol_message;
     if (!agent_host_ || !params->GetString(0, &protocol_message))
       return;
-    agent_host_->DispatchProtocolMessage(this, protocol_message);
+    agent_host_->DispatchProtocolMessage(
+        this, base::as_bytes(base::make_span(protocol_message)));
   } else if (method == "loadCompleted") {
     web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("DevToolsAPI.setUseSoftMenu(true);"),
@@ -284,6 +289,7 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     if (!gurl.is_valid()) {
       base::DictionaryValue response;
       response.SetInteger("statusCode", 404);
+      response.SetBoolean("urlValid", false);
       SendMessageAck(request_id, &response);
       return;
     }
@@ -318,7 +324,7 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     resource_request->url = gurl;
     // TODO(caseq): this preserves behavior of URLFetcher-based implementation.
     // We really need to pass proper first party origin from the front-end.
-    resource_request->site_for_cookies = gurl;
+    resource_request->site_for_cookies = net::SiteForCookies::FromUrl(gurl);
     resource_request->headers.AddHeadersFromString(headers);
 
     auto* partition = content::BrowserContext::GetStoragePartitionForSite(
@@ -372,10 +378,12 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
 
 void ShellDevToolsBindings::DispatchProtocolMessage(
     DevToolsAgentHost* agent_host,
-    const std::string& message) {
-  if (message.length() < kShellMaxMessageChunkSize) {
+    base::span<const uint8_t> message) {
+  base::StringPiece str_message(reinterpret_cast<const char*>(message.data()),
+                                message.size());
+  if (str_message.length() < kShellMaxMessageChunkSize) {
     std::string param;
-    base::EscapeJSONString(message, true, &param);
+    base::EscapeJSONString(str_message, true, &param);
     std::string code = "DevToolsAPI.dispatchMessage(" + param + ");";
     base::string16 javascript = base::UTF8ToUTF16(code);
     web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
@@ -383,12 +391,12 @@ void ShellDevToolsBindings::DispatchProtocolMessage(
     return;
   }
 
-  size_t total_size = message.length();
-  for (size_t pos = 0; pos < message.length();
+  size_t total_size = str_message.length();
+  for (size_t pos = 0; pos < str_message.length();
        pos += kShellMaxMessageChunkSize) {
     std::string param;
-    base::EscapeJSONString(message.substr(pos, kShellMaxMessageChunkSize), true,
-                           &param);
+    base::EscapeJSONString(str_message.substr(pos, kShellMaxMessageChunkSize),
+                           true, &param);
     std::string code = "DevToolsAPI.dispatchMessageChunk(" + param + "," +
                        std::to_string(pos ? 0 : total_size) + ");";
     base::string16 javascript = base::UTF8ToUTF16(code);

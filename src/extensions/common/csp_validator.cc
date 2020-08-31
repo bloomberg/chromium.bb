@@ -15,7 +15,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -352,7 +352,7 @@ bool AllowedToHaveInsecureObjectSrc(int options,
                      PluginTypeAllowed);
 }
 
-using SecureDirectiveValueFunction = base::Callback<std::string(
+using SecureDirectiveValueFunction = base::RepeatingCallback<std::string(
     const std::string& directive_name,
     const std::vector<base::StringPiece>& directive_values,
     const std::string& manifest_key,

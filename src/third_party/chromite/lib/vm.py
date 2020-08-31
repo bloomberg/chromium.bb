@@ -9,12 +9,15 @@ from __future__ import print_function
 
 import distutils.version  # pylint: disable=import-error,no-name-in-module
 import errno
+import fcntl
 import glob
 import multiprocessing
 import os
 import re
 import shutil
 import socket
+import sys
+import time
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import constants
@@ -27,6 +30,9 @@ from chromite.lib import path_util
 from chromite.lib import remote_access
 from chromite.lib import retry_util
 from chromite.utils import memoize
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class VMError(device.DeviceError):
@@ -163,7 +169,12 @@ class VM(device.Device):
     self.qemu_hostfwd = opts.qemu_hostfwd
     self.qemu_args = opts.qemu_args
 
-    self.enable_kvm = opts.enable_kvm
+    if opts.enable_kvm is None:
+      self.enable_kvm = os.path.exists('/dev/kvm')
+      if not self.enable_kvm:
+        logging.warning('KVM is not supported; Chrome VM will be slow')
+    else:
+      self.enable_kvm = opts.enable_kvm
     self.copy_on_write = opts.copy_on_write
     # We don't need sudo access for software emulation or if /dev/kvm is
     # writeable.
@@ -173,7 +184,7 @@ class VM(device.Device):
     self.image_format = opts.image_format
 
     self.device = remote_access.LOCALHOST
-    self.ssh_port = opts.ssh_port
+    self.ssh_port = self.ssh_port or opts.ssh_port or VM.SSH_PORT
 
     self.start = opts.start
     self.stop = opts.stop
@@ -195,6 +206,9 @@ class VM(device.Device):
     self.kvm_pipe_out = '%s.out' % self.kvm_monitor  # from KVM
     self.kvm_serial = '%s.serial' % self.kvm_monitor
 
+    self.copy_image_on_shutdown = False
+    self.image_copy_dir = None
+
     self.InitRemote()
 
   def _CreateVMDir(self):
@@ -211,6 +225,9 @@ class VM(device.Device):
     """Creates a qcow2-formatted image in the temporary VM dir.
 
     This image will get removed on VM shutdown.
+
+    Returns:
+      Tuple of (path to qcow2 image, format of qcow2 image)
     """
     cow_image_path = os.path.join(self.vm_dir, 'qcow2.img')
     qemu_img_args = [
@@ -219,10 +236,9 @@ class VM(device.Device):
         '-o', 'backing_file=%s' % self.image_path,
         cow_image_path,
     ]
-    self.RunCommand(qemu_img_args)
+    cros_build_lib.run(qemu_img_args, dryrun=self.dryrun)
     logging.info('qcow2 image created at %s.', cow_image_path)
-    self.image_path = cow_image_path
-    self.image_format = 'qcow2'
+    return cow_image_path, 'qcow2'
 
   def _RmVMDir(self):
     """Cleanup vm_dir."""
@@ -235,8 +251,9 @@ class VM(device.Device):
     Returns:
       QEMU version.
     """
-    version_str = self.RunCommand([self.qemu_path, '--version'],
-                                  capture_output=True, encoding='utf-8').stdout
+    version_str = cros_build_lib.run([self.qemu_path, '--version'],
+                                     capture_output=True, dryrun=self.dryrun,
+                                     encoding='utf-8').stdout
     # version string looks like one of these:
     # QEMU emulator version 2.0.0 (Debian 2.0.0+dfsg-2ubuntu1.36), Copyright (c)
     # 2003-2008 Fabrice Bellard
@@ -252,7 +269,7 @@ class VM(device.Device):
 
   def _CheckQemuMinVersion(self):
     """Ensure minimum QEMU version."""
-    if self.dry_run:
+    if self.dryrun:
       return
     min_qemu_version = '2.6.0'
     logging.info('QEMU version %s', self.QemuVersion())
@@ -369,28 +386,17 @@ class VM(device.Device):
     if self.cmd:
       if not self.IsRunning():
         raise VMError('VM not running.')
-      self.RemoteCommand(self.cmd, stream_output=True)
+      self.remote_run(self.cmd, stream_output=True)
     if self.stop:
       self.Stop()
 
-  def Start(self):
-    """Start the VM."""
+  def _GetQemuArgs(self, image_path, image_format):
+    """Returns the args to qemu used to launch the VM.
 
-    self.Stop()
-
-    logging.debug('Start VM')
-    self._SetQemuPath()
-    self._SetVMImagePath()
-
-    self._CreateVMDir()
-    if self.copy_on_write:
-      self._CreateQcow2Image()
-    # Make sure we can read these files later on by creating them as ourselves.
-    osutils.Touch(self.kvm_serial)
-    for pipe in [self.kvm_pipe_in, self.kvm_pipe_out]:
-      os.mkfifo(pipe, 0o600)
-    osutils.Touch(self.pidfile)
-
+    Args:
+      image_path: Path to QEMU image.
+      image_format: Format of the image.
+    """
     # Append 'check' to warn if the requested CPU is not fully supported.
     if 'check' not in self.qemu_cpu.split(','):
       self.qemu_cpu += ',check'
@@ -420,9 +426,10 @@ class VM(device.Device):
         '-cpu', self.qemu_cpu,
         '-device', 'virtio-net,netdev=eth0',
         '-device', 'virtio-scsi-pci,id=scsi',
+        '-device', 'virtio-rng',
         '-device', 'scsi-hd,drive=hd',
         '-drive', 'if=none,id=hd,file=%s,cache=unsafe,format=%s'
-        % (self.image_path, self.image_format),
+        % (image_path, image_format),
     ]
     # netdev args, including hostfwds.
     netdev_args = ('user,id=eth0,net=10.0.2.0/27,hostfwd=tcp:%s:%d-:%d'
@@ -440,9 +447,48 @@ class VM(device.Device):
       qemu_args += ['-enable-kvm']
     if not self.display:
       qemu_args += ['-display', 'none']
+
+    return qemu_args
+
+  def Start(self, retries=1):
+    """Start the VM.
+
+    Args:
+      retries: Number of times to retry launching the VM if it fails to boot-up.
+    """
+    self._SetQemuPath()
+    self._SetVMImagePath()
     logging.info('Pid file: %s', self.pidfile)
-    self.RunCommand(qemu_args)
-    self.WaitForBoot()
+
+    for attempt in range(0, retries + 1):
+      self.Stop()
+
+      logging.debug('Start VM, attempt #%d', attempt)
+
+      self._CreateVMDir()
+      image_path = self.image_path
+      image_format = self.image_format
+      if self.copy_on_write:
+        image_path, image_format = self._CreateQcow2Image()
+      qemu_args = self._GetQemuArgs(image_path, image_format)
+      # Make sure we can read these files later on by creating them as
+      # ourselves.
+      osutils.Touch(self.kvm_serial)
+      for pipe in [self.kvm_pipe_in, self.kvm_pipe_out]:
+        os.mkfifo(pipe, 0o600)
+      osutils.Touch(self.pidfile)
+
+      # Add use_sudo support to cros_build_lib.run.
+      run = cros_build_lib.sudo_run if self.use_sudo else cros_build_lib.run
+      run(qemu_args, dryrun=self.dryrun)
+      try:
+        self.WaitForBoot()
+        return
+      except device.DeviceError:
+        if attempt == retries:
+          raise
+        else:
+          logging.warning('Error when launching VM. Retrying...')
 
   def _GetVMPid(self):
     """Get the pid of the VM.
@@ -480,11 +526,64 @@ class VM(device.Device):
     # Make sure the process actually exists.
     return os.path.isdir('/proc/%i' % pid)
 
+  def SaveVMImageOnShutdown(self, output_dir):
+    """Takes a VM snapshot via savevm and signals to save the VM image later.
+
+    Args:
+      output_dir: A path specifying the directory that the VM image should be
+          saved to.
+    """
+    logging.debug('Taking VM snapshot')
+    self.copy_image_on_shutdown = True
+    self.image_copy_dir = output_dir
+    if not self.copy_on_write:
+      logging.warning(
+          'Attempting to take a VM snapshot without --copy-on-write. Saved '
+          'VM image may not contain the desired snapshot.')
+    with open(self.kvm_pipe_in, 'w') as monitor_pipe:
+      # Saving the snapshot will take an indeterminate amount of time, so also
+      # send a fake command that the monitor will complain about so we can know
+      # when the snapshot saving is done.
+      monitor_pipe.write('savevm chromite_lib_vm_snapshot\n')
+      monitor_pipe.write('thisisafakecommand\n')
+    with open(self.kvm_pipe_out) as monitor_pipe:
+      # Set reads to be non-blocking
+      fd = monitor_pipe.fileno()
+      cur_flags = fcntl.fcntl(fd, fcntl.F_GETFL)
+      fcntl.fcntl(fd, fcntl.F_SETFL, cur_flags | os.O_NONBLOCK)
+      # 30 second timeout.
+      success = False
+      start_time = time.time()
+      while time.time() - start_time < 30:
+        try:
+          line = monitor_pipe.readline()
+          if 'thisisafakecommand' in line:
+            logging.debug('Finished attempting to take VM snapshot')
+            success = True
+            break
+          logging.debug('VM monitor output: %s', line)
+        except IOError:
+          time.sleep(1)
+      if not success:
+        logging.warning('Timed out trying to take VM snapshot')
+
   def _KillVM(self):
     """Kill the VM process."""
     pid = self._GetVMPid()
     if pid:
-      self.RunCommand(['kill', '-9', str(pid)], error_code_ok=True)
+      # Add use_sudo support to cros_build_lib.run.
+      run = cros_build_lib.sudo_run if self.use_sudo else cros_build_lib.run
+      run(['kill', '-9', str(pid)], check=False, dryrun=self.dryrun)
+
+  def _MaybeCopyVMImage(self):
+    """Saves the VM image to a location on disk if previously told to."""
+    if not self.copy_image_on_shutdown:
+      return
+    if not self.image_copy_dir:
+      logging.debug('Told to copy VM image, but no output directory set')
+      return
+    shutil.copy(self.image_path, os.path.join(
+        self.image_copy_dir, os.path.basename(self.image_path)))
 
   def Stop(self):
     """Stop the VM."""
@@ -492,6 +591,7 @@ class VM(device.Device):
 
     self._KillVM()
     self._WaitForSSHPort()
+    self._MaybeCopyVMImage()
     self._RmVMDir()
 
   def _WaitForProcs(self, sleep=2):
@@ -521,16 +621,17 @@ class VM(device.Device):
     # utility-process, 3 renderers.
     _WaitForProc('chrome', 8)
 
-  def WaitForBoot(self, sleep=5):
+  def WaitForBoot(self, max_retry=3, sleep=5):
     """Wait for the VM to boot up.
 
     Wait for ssh connection to become active, and wait for all expected chrome
-    processes to be launched.
+    processes to be launched. Set max_retry to a lower value since we can easily
+    restart the VM if something is stuck and timing out.
     """
     if not os.path.exists(self.vm_dir):
       self.Start()
 
-    super(VM, self).WaitForBoot(sleep=sleep)
+    super(VM, self).WaitForBoot(sleep=sleep, max_retry=max_retry)
 
     # Chrome can take a while to start with software emulation.
     if not self.enable_kvm:
@@ -584,12 +685,12 @@ class VM(device.Device):
                         help='Path to qemu-img binary used to create temporary '
                              'copy-on-write images.')
     parser.add_argument('--disable-kvm', dest='enable_kvm',
-                        action='store_false', default=True,
+                        action='store_false', default=None,
                         help='Disable KVM, use software emulation.')
     parser.add_argument('--no-display', dest='display',
                         action='store_false', default=True,
                         help='Do not display video output.')
-    parser.add_argument('--ssh-port', type=int, default=VM.SSH_PORT,
+    parser.add_argument('--ssh-port', type=int,
                         help='ssh port to communicate with VM.')
     parser.add_argument('--chroot-path', type='path',
                         default=os.path.join(constants.SOURCE_ROOT,

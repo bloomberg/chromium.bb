@@ -7,8 +7,9 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
+#include "base/time/time.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/instance_id.h"
@@ -70,10 +71,7 @@ ExtensionFunction::ResponseAction InstanceIDApiFunction::Run() {
 }
 
 bool InstanceIDApiFunction::IsEnabled() const {
-  Profile* profile = Profile::FromBrowserContext(browser_context());
-
-  return instance_id::InstanceIDProfileService::IsInstanceIDEnabled(
-      profile->GetPrefs());
+  return instance_id::InstanceIDProfileService::IsInstanceIDEnabled();
 }
 
 instance_id::InstanceID* InstanceIDApiFunction::GetInstanceID() const {
@@ -88,7 +86,7 @@ InstanceIDGetIDFunction::~InstanceIDGetIDFunction() {}
 
 ExtensionFunction::ResponseAction InstanceIDGetIDFunction::DoWork() {
   GetInstanceID()->GetID(
-      base::Bind(&InstanceIDGetIDFunction::GetIDCompleted, this));
+      base::BindOnce(&InstanceIDGetIDFunction::GetIDCompleted, this));
   return RespondLater();
 }
 
@@ -101,9 +99,8 @@ InstanceIDGetCreationTimeFunction::InstanceIDGetCreationTimeFunction() {}
 InstanceIDGetCreationTimeFunction::~InstanceIDGetCreationTimeFunction() {}
 
 ExtensionFunction::ResponseAction InstanceIDGetCreationTimeFunction::DoWork() {
-  GetInstanceID()->GetCreationTime(
-      base::Bind(&InstanceIDGetCreationTimeFunction::GetCreationTimeCompleted,
-                 this));
+  GetInstanceID()->GetCreationTime(base::BindOnce(
+      &InstanceIDGetCreationTimeFunction::GetCreationTimeCompleted, this));
   return RespondLater();
 }
 
@@ -131,9 +128,10 @@ ExtensionFunction::ResponseAction InstanceIDGetTokenFunction::DoWork() {
 
   GetInstanceID()->GetToken(
       params->get_token_params.authorized_entity,
-      params->get_token_params.scope, options,
+      params->get_token_params.scope, /*time_to_live=*/base::TimeDelta(),
+      options,
       /*flags=*/{},
-      base::Bind(&InstanceIDGetTokenFunction::GetTokenCompleted, this));
+      base::BindOnce(&InstanceIDGetTokenFunction::GetTokenCompleted, this));
 
   return RespondLater();
 }
@@ -159,7 +157,8 @@ ExtensionFunction::ResponseAction InstanceIDDeleteTokenFunction::DoWork() {
   GetInstanceID()->DeleteToken(
       params->delete_token_params.authorized_entity,
       params->delete_token_params.scope,
-      base::Bind(&InstanceIDDeleteTokenFunction::DeleteTokenCompleted, this));
+      base::BindOnce(&InstanceIDDeleteTokenFunction::DeleteTokenCompleted,
+                     this));
 
   return RespondLater();
 }
@@ -178,7 +177,7 @@ InstanceIDDeleteIDFunction::~InstanceIDDeleteIDFunction() {}
 
 ExtensionFunction::ResponseAction InstanceIDDeleteIDFunction::DoWork() {
   GetInstanceID()->DeleteID(
-      base::Bind(&InstanceIDDeleteIDFunction::DeleteIDCompleted, this));
+      base::BindOnce(&InstanceIDDeleteIDFunction::DeleteIDCompleted, this));
 
   return RespondLater();
 }

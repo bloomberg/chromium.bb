@@ -9,25 +9,33 @@
  * construct, unlike the object from the extension system.
  */
 
+goog.provide('ChromeVoxEvent');
 goog.provide('CustomAutomationEvent');
 
 /**
- * An object we can use instead of a chrome.automation.AutomationEvent.
- * @constructor
- * @extends {chrome.automation.AutomationEvent}
- * @param {chrome.automation.EventType} type The event type.
- * @param {!chrome.automation.AutomationNode} target The event target.
- * @param {string} eventFrom The source of this event.
+ * @typedef{chrome.automation.AutomationEvent|CustomAutomationEvent}
  */
-var CustomAutomationEvent = function(type, target, eventFrom) {
-  this.type = type;
-  this.target = target;
-  this.eventFrom = eventFrom;
-};
+let ChromeVoxEvent;
 
 /**
- * @override
+ * An object we can use instead of a chrome.automation.AutomationEvent.
  */
-CustomAutomationEvent.prototype.stopPropagation = function() {
-  throw Error('Can\'t call stopPropagation on a CustomAutomationEvent');
+CustomAutomationEvent = class {
+  /**
+   * @param {chrome.automation.EventType} type The event type.
+   * @param {!chrome.automation.AutomationNode} target The event target.
+   * @param {string} eventFrom The source of this event.
+   */
+  constructor(type, target, eventFrom) {
+    this.type = type;
+    this.target = target;
+    this.eventFrom = eventFrom;
+  }
+
+  /**
+   * Stops the propagation of this event.
+   */
+  stopPropagation() {
+    throw Error('Can\'t call stopPropagation on a CustomAutomationEvent');
+  }
 };

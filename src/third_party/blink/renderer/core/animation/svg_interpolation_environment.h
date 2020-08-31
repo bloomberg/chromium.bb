@@ -39,15 +39,16 @@ class SVGInterpolationEnvironment : public InterpolationEnvironment {
   }
 
  private:
-  Member<SVGElement> svg_element_ = nullptr;
-  Member<const SVGPropertyBase> svg_base_value_ = nullptr;
+  SVGElement* svg_element_ = nullptr;
+  const SVGPropertyBase* svg_base_value_ = nullptr;
 };
 
-DEFINE_TYPE_CASTS(SVGInterpolationEnvironment,
-                  InterpolationEnvironment,
-                  value,
-                  value->IsSVG(),
-                  value.IsSVG());
+template <>
+struct DowncastTraits<SVGInterpolationEnvironment> {
+  static bool AllowFrom(const InterpolationEnvironment& value) {
+    return value.IsSVG();
+  }
+};
 
 }  // namespace blink
 

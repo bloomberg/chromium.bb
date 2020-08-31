@@ -80,9 +80,9 @@ class KeyedStoreGenericAssembler : public AccessorAssembler {
                              Nothing<LanguageMode>());
   }
 
-  void BranchIfPrototypesHaveNonFastElements(TNode<Map> receiver_map,
-                                             Label* non_fast_elements,
-                                             Label* only_fast_elements);
+  void BranchIfPrototypesMayHaveReadOnlyElements(
+      TNode<Map> receiver_map, Label* maybe_read_only_elements,
+      Label* only_fast_writable_elements);
 
   void TryRewriteElements(TNode<JSObject> receiver, TNode<Map> receiver_map,
                           TNode<FixedArrayBase> elements,
@@ -176,9 +176,9 @@ void KeyedStoreGenericGenerator::SetPropertyInLiteral(
   assembler.SetProperty(context, receiver, key, value, LanguageMode::kStrict);
 }
 
-void KeyedStoreGenericAssembler::BranchIfPrototypesHaveNonFastElements(
-    TNode<Map> receiver_map, Label* non_fast_elements,
-    Label* only_fast_elements) {
+void KeyedStoreGenericAssembler::BranchIfPrototypesMayHaveReadOnlyElements(
+    TNode<Map> receiver_map, Label* maybe_read_only_elements,
+    Label* only_fast_writable_elements) {
   TVARIABLE(Map, var_map);
   var_map = receiver_map;
   Label loop_body(this, &var_map);
@@ -188,16 +188,17 @@ void KeyedStoreGenericAssembler::BranchIfPrototypesHaveNonFastElements(
   {
     TNode<Map> map = var_map.value();
     TNode<HeapObject> prototype = LoadMapPrototype(map);
-    GotoIf(IsNull(prototype), only_fast_elements);
+    GotoIf(IsNull(prototype), only_fast_writable_elements);
     TNode<Map> prototype_map = LoadMap(prototype);
     var_map = prototype_map;
     TNode<Uint16T> instance_type = LoadMapInstanceType(prototype_map);
     GotoIf(IsCustomElementsReceiverInstanceType(instance_type),
-           non_fast_elements);
+           maybe_read_only_elements);
     TNode<Int32T> elements_kind = LoadMapElementsKind(prototype_map);
-    GotoIf(IsFastElementsKind(elements_kind), &loop_body);
+    GotoIf(IsFastOrNonExtensibleOrSealedElementsKind(elements_kind),
+           &loop_body);
     GotoIf(Word32Equal(elements_kind, Int32Constant(NO_ELEMENTS)), &loop_body);
-    Goto(non_fast_elements);
+    Goto(maybe_read_only_elements);
   }
 }
 
@@ -304,8 +305,8 @@ void KeyedStoreGenericAssembler::MaybeUpdateLengthAndReturn(
     UpdateLength update_length) {
   if (update_length != kDontChangeLength) {
     TNode<Smi> new_length = SmiTag(Signed(IntPtrAdd(index, IntPtrConstant(1))));
-    StoreObjectFieldNoWriteBarrier(receiver, JSArray::kLengthOffset, new_length,
-                                   MachineRepresentation::kTagged);
+    StoreObjectFieldNoWriteBarrier(receiver, JSArray::kLengthOffset,
+                                   new_length);
   }
   Return(value);
 }
@@ -350,8 +351,8 @@ void KeyedStoreGenericAssembler::StoreElementWithCapacity(
               CAST(Load(MachineType::AnyTagged(), elements, offset));
           GotoIf(IsNotTheHole(element), &hole_check_passed);
         }
-        BranchIfPrototypesHaveNonFastElements(receiver_map, slow,
-                                              &hole_check_passed);
+        BranchIfPrototypesMayHaveReadOnlyElements(receiver_map, slow,
+                                                  &hole_check_passed);
         BIND(&hole_check_passed);
       }
     }
@@ -443,7 +444,6 @@ void KeyedStoreGenericAssembler::StoreElementWithCapacity(
         ElementOffsetFromIndex(index, PACKED_DOUBLE_ELEMENTS, kHeaderSize);
     if (!IsStoreInLiteral()) {
       // Check if we're about to overwrite the hole. We can safely do that
-      // Check if we're about to overwrite the hole. We can safely do that
       // only if there can be no setters on the prototype chain.
       {
         Label hole_check_passed(this);
@@ -456,8 +456,8 @@ void KeyedStoreGenericAssembler::StoreElementWithCapacity(
           Goto(&hole_check_passed);
           BIND(&found_hole);
         }
-        BranchIfPrototypesHaveNonFastElements(receiver_map, slow,
-                                              &hole_check_passed);
+        BranchIfPrototypesMayHaveReadOnlyElements(receiver_map, slow,
+                                                  &hole_check_passed);
         BIND(&hole_check_passed);
       }
     }
@@ -617,9 +617,9 @@ void KeyedStoreGenericAssembler::LookupPropertyOnPrototypeChain(
       Label found(this), found_fast(this), found_dict(this), found_global(this);
       TVARIABLE(HeapObject, var_meta_storage);
       TVARIABLE(IntPtrT, var_entry);
-      TryLookupProperty(CAST(holder), holder_map, instance_type, name,
-                        &found_fast, &found_dict, &found_global,
-                        &var_meta_storage, &var_entry, &next_proto, bailout);
+      TryLookupProperty(holder, holder_map, instance_type, name, &found_fast,
+                        &found_dict, &found_global, &var_meta_storage,
+                        &var_entry, &next_proto, bailout);
       BIND(&found_fast);
       {
         TNode<DescriptorArray> descriptors = CAST(var_meta_storage.value());
@@ -638,16 +638,14 @@ void KeyedStoreGenericAssembler::LookupPropertyOnPrototypeChain(
 
       BIND(&found_dict);
       {
-        TNode<HeapObject> dictionary = var_meta_storage.value();
+        TNode<NameDictionary> dictionary = CAST(var_meta_storage.value());
         TNode<IntPtrT> entry = var_entry.value();
-        TNode<Uint32T> details =
-            LoadDetailsByKeyIndex<NameDictionary>(dictionary, entry);
+        TNode<Uint32T> details = LoadDetailsByKeyIndex(dictionary, entry);
         JumpIfDataProperty(details, &ok_to_write, readonly);
 
         if (accessor != nullptr) {
           // Accessor case.
-          *var_accessor_pair =
-              LoadValueByKeyIndex<NameDictionary>(dictionary, entry);
+          *var_accessor_pair = LoadValueByKeyIndex(dictionary, entry);
           *var_accessor_holder = holder;
           Goto(accessor);
         } else {
@@ -657,10 +655,10 @@ void KeyedStoreGenericAssembler::LookupPropertyOnPrototypeChain(
 
       BIND(&found_global);
       {
-        TNode<HeapObject> dictionary = var_meta_storage.value();
+        TNode<GlobalDictionary> dictionary = CAST(var_meta_storage.value());
         TNode<IntPtrT> entry = var_entry.value();
         TNode<PropertyCell> property_cell =
-            CAST(LoadValueByKeyIndex<GlobalDictionary>(dictionary, entry));
+            CAST(LoadValueByKeyIndex(dictionary, entry));
         TNode<Object> value =
             LoadObjectField(property_cell, PropertyCell::kValueOffset);
         GotoIf(TaggedEqual(value, TheHoleConstant()), &next_proto);
@@ -769,7 +767,7 @@ void KeyedStoreGenericAssembler::EmitGenericPropertyStore(
       readonly(this);
   TNode<Uint32T> bitfield3 = LoadMapBitField3(receiver_map);
   TNode<Name> name = CAST(p->name());
-  Branch(IsSetWord32<Map::IsDictionaryMapBit>(bitfield3),
+  Branch(IsSetWord32<Map::Bits3::IsDictionaryMapBit>(bitfield3),
          &dictionary_properties, &fast_properties);
 
   BIND(&fast_properties);
@@ -841,15 +839,15 @@ void KeyedStoreGenericAssembler::EmitGenericPropertyStore(
     BIND(&dictionary_found);
     {
       Label overwrite(this);
-      TNode<Uint32T> details = LoadDetailsByKeyIndex<NameDictionary>(
-          properties, var_name_index.value());
+      TNode<Uint32T> details =
+          LoadDetailsByKeyIndex(properties, var_name_index.value());
       JumpIfDataProperty(details, &overwrite,
                          ShouldReconfigureExisting() ? nullptr : &readonly);
 
       if (ShouldCallSetter()) {
         // Accessor case.
-        var_accessor_pair = LoadValueByKeyIndex<NameDictionary>(
-            properties, var_name_index.value());
+        var_accessor_pair =
+            LoadValueByKeyIndex(properties, var_name_index.value());
         var_accessor_holder = receiver;
         Goto(&accessor);
       } else {
@@ -876,7 +874,8 @@ void KeyedStoreGenericAssembler::EmitGenericPropertyStore(
       Label extensible(this), is_private_symbol(this);
       TNode<Uint32T> bitfield3 = LoadMapBitField3(receiver_map);
       GotoIf(IsPrivateSymbol(name), &is_private_symbol);
-      Branch(IsSetWord32<Map::IsExtensibleBit>(bitfield3), &extensible, slow);
+      Branch(IsSetWord32<Map::Bits3::IsExtensibleBit>(bitfield3), &extensible,
+             slow);
 
       BIND(&is_private_symbol);
       {
@@ -921,8 +920,7 @@ void KeyedStoreGenericAssembler::EmitGenericPropertyStore(
       GotoIf(IsFunctionTemplateInfoMap(setter_map), slow);
       GotoIfNot(IsCallableMap(setter_map), &not_callable);
 
-      Callable callable = CodeFactory::Call(isolate());
-      CallJS(callable, p->context(), setter, receiver, p->value());
+      Call(p->context(), setter, receiver, p->value());
       exit_point->Return(p->value());
 
       BIND(&not_callable);
@@ -1055,7 +1053,7 @@ void KeyedStoreGenericAssembler::StoreIC_NoFeedback() {
   TNode<Object> receiver_maybe_smi = CAST(Parameter(Descriptor::kReceiver));
   TNode<Object> name = CAST(Parameter(Descriptor::kName));
   TNode<Object> value = CAST(Parameter(Descriptor::kValue));
-  TNode<Smi> slot = CAST(Parameter(Descriptor::kSlot));
+  TNode<TaggedIndex> slot = CAST(Parameter(Descriptor::kSlot));
   TNode<Context> context = CAST(Parameter(Descriptor::kContext));
 
   Label miss(this, Label::kDeferred), store_property(this);

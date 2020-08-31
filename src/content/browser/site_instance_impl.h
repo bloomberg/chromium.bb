@@ -36,15 +36,29 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
                                    const ChildProcessTerminationInfo& info) = 0;
   };
 
+  // Methods for creating new SiteInstances. The documentation for these methods
+  // are on the SiteInstance::Create* methods with the same name.
   static scoped_refptr<SiteInstanceImpl> Create(
       BrowserContext* browser_context);
   static scoped_refptr<SiteInstanceImpl> CreateForURL(
       BrowserContext* browser_context,
       const GURL& url);
+  static scoped_refptr<SiteInstanceImpl> CreateForGuest(
+      content::BrowserContext* browser_context,
+      const GURL& guest_site_url);
+
+  // Creates a SiteInstance that will be use for a service worker.
+  // |url| - The script URL for the service worker if |is_guest| is false.
+  //         The <webview> guest site URL if |is_guest| is true.
+  // |can_reuse_process| - Set to true if the new SiteInstance can use the
+  //                       same process as the renderer for |url|.
+  // |is_guest| - Set to true if the new SiteInstance is for a <webview>
+  // guest.
   static scoped_refptr<SiteInstanceImpl> CreateForServiceWorker(
       BrowserContext* browser_context,
       const GURL& url,
-      bool can_reuse_process = false);
+      bool can_reuse_process = false,
+      bool is_guest = false);
 
   // Creates a SiteInstance for |url| like CreateForURL() would except the
   // instance that is returned has its process_reuse_policy set to
@@ -125,6 +139,10 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   ProcessReusePolicy process_reuse_policy() const {
     return process_reuse_policy_;
   }
+
+  // Checks if |current_process| can be reused for this SiteInstance, and
+  // sets |process_| to |current_process| if so.
+  void ReuseCurrentProcessIfPossible(RenderProcessHost* current_process);
 
   // Whether the SiteInstance is created for a service worker. If this flag
   // is true, when a new process is created for this SiteInstance or a randomly
@@ -286,10 +304,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // Note that this function currently requires passing in a site URL (which
   // may use effective URLs), and not a lock URL to which the process may
   // eventually be locked via LockToOrigin().  See comments on lock_url() for
-  // more info.
+  // more info. |is_guest| should be set to true if the call is being made for
+  // a <webview> guest SiteInstance(i.e. SiteInstance::IsGuest() returns true).
   // TODO(alexmos):  See if this can take a lock URL instead.
   static bool ShouldLockToOrigin(const IsolationContext& isolation_context,
-                                 GURL site_url);
+                                 const GURL& site_url,
+                                 const bool is_guest);
 
   // Converts |site_url| into an origin that can be used as
   // |URLLoaderFactoryParams::request_initiator_site_lock|.
@@ -328,6 +348,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // for this instance (i.e. GetSiteURL()). Otherwise returns false.
   bool DoesSiteForURLMatch(const GURL& url);
 
+  // Adds |origin| as a non-isolated origin within this BrowsingInstance due to
+  // an existing instance at the time of opt-in, so that future instances of it
+  // here won't be origin isolated.
+  void PreventOptInOriginIsolation(
+      const url::Origin& previously_visited_origin);
+
  private:
   friend class BrowsingInstance;
   friend class SiteInstanceTestBrowserClient;
@@ -353,6 +379,19 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // BrowsingInstance as the default process for SiteInstances that don't need
   // a dedicated process.
   void MaybeSetBrowsingInstanceDefaultProcess();
+
+  // Sets |site_| and |lock_| with |site_url| and |lock_url| respectively
+  // and registers this object with |browsing_instance_|. SetSite() calls
+  // this method to set the site and lock for a user provided URL. This
+  // method should only be called by code that need to set the site and
+  // lock directly without any "url to site URL" transformation.
+  void SetSiteAndLockInternal(const GURL& site_url, const GURL& lock_url);
+
+  // Helper method to set the process of this SiteInstance, only in cases
+  // where it is safe. It is not generally safe to change the process of a
+  // SiteInstance, unless the RenderProcessHost itself is entirely destroyed and
+  // a new one later replaces it.
+  void SetProcessInternal(RenderProcessHost* process);
 
   // Returns the site for the given URL, which includes only the scheme and
   // registered domain.  Returns an empty GURL if the URL has no host.
@@ -437,6 +476,10 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
   // Whether the SiteInstance was created for a service worker.
   bool is_for_service_worker_;
+
+  // Whether the SiteInstance was created for a <webview> guest.
+  // TODO(734722): Move this into the SecurityPrincipal once it is available.
+  bool is_guest_;
 
   base::ObserverList<Observer, true>::Unchecked observers_;
 

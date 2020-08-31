@@ -10,8 +10,6 @@ namespace blink {
 
 PolicyValue::PolicyValue() : type_(mojom::PolicyValueType::kNull) {}
 
-PolicyValue::~PolicyValue() = default;
-
 PolicyValue::PolicyValue(mojom::PolicyValueType type) : type_(type) {
   DCHECK_EQ(type, mojom::PolicyValueType::kNull);
 }
@@ -119,7 +117,7 @@ bool operator<(const PolicyValue& lhs, const PolicyValue& rhs) {
   DCHECK_EQ(lhs.Type(), rhs.Type());
   switch (lhs.Type()) {
     case mojom::PolicyValueType::kBool:
-      return rhs.BoolValue();
+      return !lhs.BoolValue() && rhs.BoolValue();
     case mojom::PolicyValueType::kDecDouble:
       return lhs.DoubleValue() < rhs.DoubleValue();
     case mojom::PolicyValueType::kNull:

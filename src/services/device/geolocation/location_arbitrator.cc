@@ -91,8 +91,8 @@ void LocationArbitrator::RegisterProvider(
     std::unique_ptr<LocationProvider> provider) {
   if (!provider)
     return;
-  provider->SetUpdateCallback(base::Bind(&LocationArbitrator::OnLocationUpdate,
-                                         base::Unretained(this)));
+  provider->SetUpdateCallback(base::BindRepeating(
+      &LocationArbitrator::OnLocationUpdate, base::Unretained(this)));
   if (is_permission_granted_)
     provider->OnPermissionGranted();
   providers_.push_back(std::move(provider));
@@ -113,9 +113,8 @@ void LocationArbitrator::RegisterProviders() {
     return;
   }
 
-  if (url_loader_factory_) {
+  if (url_loader_factory_)
     RegisterProvider(NewNetworkLocationProvider(url_loader_factory_, api_key_));
-  }
 }
 
 void LocationArbitrator::OnLocationUpdate(
@@ -157,7 +156,7 @@ LocationArbitrator::NewNetworkLocationProvider(
 
 std::unique_ptr<LocationProvider>
 LocationArbitrator::NewSystemLocationProvider() {
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_FUCHSIA)
   return nullptr;
 #else
   return device::NewSystemLocationProvider();

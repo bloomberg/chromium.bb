@@ -23,24 +23,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+import * as UI from '../ui/ui.js';
+
 /**
  * @unrestricted
  * @template NODE_TYPE
  */
-export default class DataGridImpl extends Common.Object {
+export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
   /**
-   * @param {!Array.<!DataGrid.DataGrid.ColumnDescriptor>} columnsArray
-   * @param {function(!NODE_TYPE, string, string, string)=} editCallback
-   * @param {function(!NODE_TYPE)=} deleteCallback
-   * @param {function()=} refreshCallback
+   * @param {!Parameters} dataGridParameters
    */
-  constructor(columnsArray, editCallback, deleteCallback, refreshCallback) {
+  constructor(dataGridParameters) {
     super();
-    this.element = createElementWithClass('div', 'data-grid');
-    UI.appendStyle(this.element, 'data_grid/dataGrid.css');
+    const {displayName, columns: columnsArray, editCallback, deleteCallback, refreshCallback} = dataGridParameters;
+    this.element = document.createElement('div');
+    this.element.classList.add('data-grid');
+    UI.Utils.appendStyle(this.element, 'data_grid/dataGrid.css');
     this.element.tabIndex = 0;
     this.element.addEventListener('keydown', this._keyDown.bind(this), false);
     this.element.addEventListener('contextmenu', this._contextMenu.bind(this), true);
+    this.element.addEventListener('focusin', event => {
+      this.updateGridAccessibleNameOnFocus();
+      event.consume(true);
+    });
+    this.element.addEventListener('focusout', event => {
+      this.updateGridAccessibleName(/* text */ '');
+      event.consume(true);
+    });
+
+    UI.ARIAUtils.markAsApplication(this.element);
+    this._displayName = displayName;
 
     this._editCallback = editCallback;
     this._deleteCallback = deleteCallback;
@@ -49,12 +63,18 @@ export default class DataGridImpl extends Common.Object {
     const headerContainer = this.element.createChild('div', 'header-container');
     /** @type {!Element} */
     this._headerTable = headerContainer.createChild('table', 'header');
+    // Hide the header table from screen readers since titles are also added to data table.
+    UI.ARIAUtils.markAsHidden(this._headerTable);
     /** @type {!Object.<string, !Element>} */
     this._headerTableHeaders = {};
     /** @type {!Element} */
     this._scrollContainer = this.element.createChild('div', 'data-container');
     /** @type {!Element} */
     this._dataTable = this._scrollContainer.createChild('table', 'data');
+
+    /** @type {!Element} */
+    this._ariaLiveLabel = this.element.createChild('div', 'aria-live-label');
+    UI.ARIAUtils.markAsPoliteLiveRegion(this._ariaLiveLabel, false);
 
     // FIXME: Add a createCallback which is different from editCallback and has different
     // behavior when creating a new node.
@@ -67,12 +87,12 @@ export default class DataGridImpl extends Common.Object {
     /** @type {boolean} */
     this._inline = false;
 
-    /** @type {!Array.<!DataGrid.DataGrid.ColumnDescriptor>} */
+    /** @type {!Array.<!ColumnDescriptor>} */
     this._columnsArray = [];
-    /** @type {!Object.<string, !DataGrid.DataGrid.ColumnDescriptor>} */
+    /** @type {!Object.<string, !ColumnDescriptor>} */
     this._columns = {};
-    /** @type {!Array.<!DataGrid.DataGrid.ColumnDescriptor>} */
-    this._visibleColumnsArray = columnsArray;
+    /** @type {!Array.<!ColumnDescriptor>} */
+    this.visibleColumnsArray = columnsArray;
 
     columnsArray.forEach(column => this._innerAddColumn(column));
 
@@ -122,9 +142,9 @@ export default class DataGridImpl extends Common.Object {
     /** @type {!ResizeMethod} */
     this._resizeMethod = ResizeMethod.Nearest;
 
-    /** @type {?function(!UI.ContextMenu)} */
+    /** @type {?function(!UI.ContextMenu.SubMenu)} */
     this._headerContextMenuCallback = null;
-    /** @type {?function(!UI.ContextMenu, !NODE_TYPE)} */
+    /** @type {?function(!UI.ContextMenu.ContextMenu, !NODE_TYPE)} */
     this._rowContextMenuCallback = null;
   }
 
@@ -156,6 +176,23 @@ export default class DataGridImpl extends Common.Object {
 
   /**
    * @param {!Element} element
+   * @param {*} value
+   */
+  setElementContent(element, value) {
+    const columnId = this.columnIdFromNode(element);
+    if (!columnId) {
+      return;
+    }
+    const column = this._columns[columnId];
+    if (column.dataType === DataGrid.DataGrid.DataType.Boolean) {
+      DataGridImpl.setElementBoolean(element, /** @type {boolean} */ (!!value));
+    } else if (value !== null) {
+      DataGridImpl.setElementText(element, /** @type {string} */ (value), !!column.longText);
+    }
+  }
+
+  /**
+   * @param {!Element} element
    * @param {string} newText
    * @param {boolean} longText
    */
@@ -172,6 +209,15 @@ export default class DataGridImpl extends Common.Object {
   }
 
   /**
+   * @param {!Element} element
+   * @param {boolean} value
+   */
+  static setElementBoolean(element, value) {
+    element.textContent = value ? '\u2713' : '';
+    element.title = '';
+  }
+
+  /**
    * @param {boolean} isStriped
    */
   setStriped(isStriped) {
@@ -183,6 +229,9 @@ export default class DataGridImpl extends Common.Object {
    */
   setFocusable(focusable) {
     this.element.tabIndex = focusable ? 0 : -1;
+    if (focusable === false) {
+      UI.ARIAUtils.removeRole(this.element);
+    }
   }
 
   /**
@@ -194,6 +243,36 @@ export default class DataGridImpl extends Common.Object {
   }
 
   /**
+   * @param {string=} text
+   */
+  updateGridAccessibleName(text) {
+    // Update the label with the provided text or the current selected node
+    const accessibleText = (this.selectedNode && this.selectedNode.existingElement()) ? this.selectedNode.nodeAccessibleText : '';
+    this._ariaLiveLabel.textContent = text ? text : accessibleText;
+  }
+
+  updateGridAccessibleNameOnFocus() {
+    // When a grid gets focus
+    // 1) If an item is selected - Read the content of the row
+    let accessibleText;
+    if (this.selectedNode && this.selectedNode.existingElement()) {
+      let expandText = '';
+      if (this.selectedNode.hasChildren()) {
+        expandText = this.selectedNode.expanded ? ls`expanded` : ls`collapsed`;
+      }
+      const rowHeader = ls`${this._displayName} Row ${expandText}`;
+      accessibleText = `${rowHeader} ${this.selectedNode.nodeAccessibleText}`;
+    } else {
+      // 2) If there is no selected item - Read the name of the grid and give instructions
+      const children = this._enumerateChildren(this._rootNode, [], 1);
+      const items = ls`Rows: ${children.length}`;
+      accessibleText = ls`${
+          this._displayName} ${items}, use the up and down arrow keys to navigate and interact with the rows of the table; Use browse mode to read cell by cell.`;
+    }
+    this._ariaLiveLabel.textContent = accessibleText;
+  }
+
+  /**
    * @return {!Element}
    */
   headerTableBody() {
@@ -201,10 +280,12 @@ export default class DataGridImpl extends Common.Object {
   }
 
   /**
-   * @param {!DataGrid.DataGrid.ColumnDescriptor} column
+   * @param {!ColumnDescriptor} column
    * @param {number=} position
    */
   _innerAddColumn(column, position) {
+    column.defaultWeight = column.weight;
+
     const columnId = column.id;
     if (columnId in this._columns) {
       this._innerRemoveColumn(columnId);
@@ -241,14 +322,14 @@ export default class DataGridImpl extends Common.Object {
     if (column.sortable) {
       cell.addEventListener('click', this._clickInHeaderCell.bind(this), false);
       cell.classList.add('sortable');
-      const icon = UI.Icon.create('', 'sort-order-icon');
+      const icon = UI.Icon.Icon.create('', 'sort-order-icon');
       cell.createChild('div', 'sort-order-icon-container').appendChild(icon);
       cell[DataGrid._sortIconSymbol] = icon;
     }
   }
 
   /**
-   * @param {!DataGrid.DataGrid.ColumnDescriptor} column
+   * @param {!ColumnDescriptor} column
    * @param {number=} position
    */
   addColumn(column, position) {
@@ -294,8 +375,8 @@ export default class DataGridImpl extends Common.Object {
     this._topFillerRow.removeChildren();
     this._bottomFillerRow.removeChildren();
 
-    for (let i = 0; i < this._visibleColumnsArray.length; ++i) {
-      const column = this._visibleColumnsArray[i];
+    for (let i = 0; i < this.visibleColumnsArray.length; ++i) {
+      const column = this.visibleColumnsArray[i];
       const columnId = column.id;
       const headerColumn = this._headerTableColumnGroup.createChild('col');
       const dataColumn = this._dataTableColumnGroup.createChild('col');
@@ -388,8 +469,56 @@ export default class DataGridImpl extends Common.Object {
     this._editingNode.select();
 
     const element = this._editingNode._element.children[cellIndex];
-    UI.InplaceEditor.startEditing(element, this._startEditingConfig(element));
-    element.getComponentSelection().selectAllChildren(element);
+    if (element[DataGrid._longTextSymbol]) {
+      element.textContent = element[DataGrid._longTextSymbol];
+    }
+    const column = this.visibleColumnsArray[cellIndex];
+    if (column.dataType === DataGrid.DataGrid.DataType.Boolean) {
+      const checkboxLabel = UI.UIUtils.CheckboxLabel.create(undefined, /** @type {boolean} */ (node.data[column.id]));
+      UI.ARIAUtils.setAccessibleName(checkboxLabel, column.title || '');
+
+      let hasChanged = false;
+      checkboxLabel.style.height = '100%';
+      const checkboxElement = checkboxLabel.checkboxElement;
+      checkboxElement.classList.add('inside-datagrid');
+      const initialValue = checkboxElement.checked;
+
+      checkboxElement.addEventListener('change', () => {
+        hasChanged = true;
+        this._editingCommitted(element, checkboxElement.checked, initialValue, undefined, 'forward');
+      }, false);
+
+      checkboxElement.addEventListener('keydown', event => {
+        if (event.key === 'Tab') {
+          event.consume(true);
+          hasChanged = true;
+          return this._editingCommitted(
+              element, checkboxElement.checked, initialValue, undefined, event.shiftKey ? 'backward' : 'forward');
+        }
+        if (event.key === ' ') {
+          event.consume(true);
+          checkboxElement.checked = !checkboxElement.checked;
+        } else if (event.key === 'Enter') {
+          event.consume(true);
+          hasChanged = true;
+          this._editingCommitted(element, checkboxElement.checked, initialValue, undefined, 'forward');
+        }
+      }, false);
+
+      checkboxElement.addEventListener('blur', () => {
+        if (hasChanged) {
+          return;
+        }
+        this._editingCommitted(element, checkboxElement.checked, checkboxElement.checked, undefined, 'next');
+      }, false);
+
+      element.innerHTML = '';
+      element.appendChild(checkboxLabel);
+      checkboxElement.focus();
+    } else {
+      UI.InplaceEditor.InplaceEditor.startEditing(element, this._startEditingConfig(element));
+      element.getComponentSelection().selectAllChildren(element);
+    }
   }
 
   /**
@@ -398,7 +527,7 @@ export default class DataGridImpl extends Common.Object {
    */
   startEditingNextEditableColumnOfDataGridNode(node, columnIdentifier) {
     const column = this._columns[columnIdentifier];
-    const cellIndex = this._visibleColumnsArray.indexOf(column);
+    const cellIndex = this.visibleColumnsArray.indexOf(column);
     const nextEditableColumn = this._nextEditableColumn(cellIndex);
     if (nextEditableColumn !== -1) {
       this._startEditingColumnOfDataGridNode(node, nextEditableColumn);
@@ -428,13 +557,14 @@ export default class DataGridImpl extends Common.Object {
       return;
     }
 
-    this._editing = true;
-    if (element[DataGrid._longTextSymbol]) {
-      element.textContent = element[DataGrid._longTextSymbol];
+    const columnId = this.columnIdFromNode(target);
+    if (!columnId) {
+      return;
     }
-    UI.InplaceEditor.startEditing(element, this._startEditingConfig(element));
+    const column = this._columns[columnId];
+    const cellIndex = this.visibleColumnsArray.indexOf(column);
 
-    element.getComponentSelection().selectAllChildren(element);
+    this._startEditingColumnOfDataGridNode(this._editingNode, cellIndex);
   }
 
   renderInline() {
@@ -454,8 +584,8 @@ export default class DataGridImpl extends Common.Object {
 
   /**
    * @param {!Element} element
-   * @param {string} newText
-   * @param {string} oldText
+   * @param {*} newText
+   * @param {*} oldText
    * @param {string|undefined} context
    * @param {string} moveDirection
    */
@@ -466,13 +596,14 @@ export default class DataGridImpl extends Common.Object {
       return;
     }
     const column = this._columns[columnId];
-    const cellIndex = this._visibleColumnsArray.indexOf(column);
-    const textBeforeEditing = /** @type {string} */ (this._editingNode.data[columnId] || '');
+    const cellIndex = this.visibleColumnsArray.indexOf(column);
+    const valueBeforeEditing = /** @type {string|boolean} */ (
+        this._editingNode.data[columnId] === null ? '' : this._editingNode.data[columnId]);
     const currentEditingNode = this._editingNode;
 
     /**
      * @param {boolean} wasChange
-     * @this {DataGrid.DataGrid}
+     * @this {DataGridImpl}
      */
     function moveToNextIfNeeded(wasChange) {
       if (!moveDirection) {
@@ -511,7 +642,7 @@ export default class DataGridImpl extends Common.Object {
           return;
         }
 
-        const lastEditableColumn = this._nextEditableColumn(this._visibleColumnsArray.length, true);
+        const lastEditableColumn = this._nextEditableColumn(this.visibleColumnsArray.length, true);
         const nextDataGridNode = currentEditingNode.traversePreviousNode(true, true);
         if (nextDataGridNode) {
           this._startEditingColumnOfDataGridNode(nextDataGridNode, lastEditableColumn);
@@ -521,9 +652,9 @@ export default class DataGridImpl extends Common.Object {
     }
 
     // Show trimmed text after editing.
-    DataGrid.DataGrid.setElementText(element, newText, !!column.longText);
+    this.setElementContent(element, newText);
 
-    if (textBeforeEditing === newText) {
+    if (valueBeforeEditing === newText) {
       this._editingCancelled(element);
       moveToNextIfNeeded.call(this, false);
       return;
@@ -534,7 +665,7 @@ export default class DataGridImpl extends Common.Object {
 
     // Make the callback - expects an editing node (table row), the column number that is being edited,
     // the text that used to be there, and the new text.
-    this._editCallback(this._editingNode, columnId, textBeforeEditing, newText);
+    this._editCallback(this._editingNode, columnId, valueBeforeEditing, newText);
 
     if (this._editingNode.isCreationNode) {
       this.addCreationNode(false);
@@ -559,7 +690,7 @@ export default class DataGridImpl extends Common.Object {
    */
   _nextEditableColumn(cellIndex, moveBackward) {
     const increment = moveBackward ? -1 : 1;
-    const columns = this._visibleColumnsArray;
+    const columns = this.visibleColumnsArray;
     for (let i = cellIndex + increment; (i >= 0) && (i < columns.length); i += increment) {
       if (columns[i].editable) {
         return i;
@@ -731,7 +862,7 @@ export default class DataGridImpl extends Common.Object {
       const cells = this._headerTableBody.rows[0].cells;
       const numColumns = cells.length - 1;  // Do not process corner column.
       for (let i = 0; i < numColumns; i++) {
-        const column = this._visibleColumnsArray[i];
+        const column = this.visibleColumnsArray[i];
         if (!column.weight) {
           column.weight = 100 * cells[i].offsetWidth / tableWidth || 10;
         }
@@ -746,15 +877,25 @@ export default class DataGridImpl extends Common.Object {
    * @returns {number}
    */
   indexOfVisibleColumn(columnId) {
-    return this._visibleColumnsArray.findIndex(column => column.id === columnId);
+    return this.visibleColumnsArray.findIndex(column => column.id === columnId);
   }
 
   /**
    * @param {string} name
    */
   setName(name) {
-    this._columnWeightsSetting = Common.settings.createSetting('dataGrid-' + name + '-columnWeights', {});
+    this._columnWeightsSetting =
+        Common.Settings.Settings.instance().createSetting('dataGrid-' + name + '-columnWeights', {});
     this._loadColumnWeights();
+  }
+
+  _resetColumnWeights() {
+    for (let i = 0; i < this._columnsArray.length; ++i) {
+      const column = this._columnsArray[i];
+      column.weight = column.defaultWeight;
+    }
+    this._applyColumnWeights();
+    this._saveColumnWeights();
   }
 
   _loadColumnWeights() {
@@ -799,22 +940,22 @@ export default class DataGridImpl extends Common.Object {
 
     let sumOfWeights = 0.0;
     const fixedColumnWidths = [];
-    for (let i = 0; i < this._visibleColumnsArray.length; ++i) {
-      const column = this._visibleColumnsArray[i];
+    for (let i = 0; i < this.visibleColumnsArray.length; ++i) {
+      const column = this.visibleColumnsArray[i];
       if (column.fixedWidth) {
         const width = this._headerTableColumnGroup.children[i][DataGrid._preferredWidthSymbol] ||
             this._headerTableBody.rows[0].cells[i].offsetWidth;
         fixedColumnWidths[i] = width;
         tableWidth -= width;
       } else {
-        sumOfWeights += this._visibleColumnsArray[i].weight;
+        sumOfWeights += this.visibleColumnsArray[i].weight;
       }
     }
     let sum = 0;
     let lastOffset = 0;
 
-    for (let i = 0; i < this._visibleColumnsArray.length; ++i) {
-      const column = this._visibleColumnsArray[i];
+    for (let i = 0; i < this.visibleColumnsArray.length; ++i) {
+      const column = this.visibleColumnsArray[i];
       let width;
       if (column.fixedWidth) {
         width = fixedColumnWidths[i];
@@ -834,11 +975,11 @@ export default class DataGridImpl extends Common.Object {
    * @param {!Object.<string, boolean>} columnsVisibility
    */
   setColumnsVisiblity(columnsVisibility) {
-    this._visibleColumnsArray = [];
+    this.visibleColumnsArray = [];
     for (let i = 0; i < this._columnsArray.length; ++i) {
       const column = this._columnsArray[i];
       if (columnsVisibility[column.id]) {
-        this._visibleColumnsArray.push(column);
+        this.visibleColumnsArray.push(column);
       }
     }
     this._refreshHeader();
@@ -880,7 +1021,7 @@ export default class DataGridImpl extends Common.Object {
         resizer.__index = i;
         resizer.classList.add('data-grid-resizer');
         // This resizer is associated with the column to its right.
-        UI.installDragHandle(
+        UI.UIUtils.installDragHandle(
             resizer, this._startResizerDragging.bind(this), this._resizerDragging.bind(this),
             this._endResizerDragging.bind(this), 'col-resize');
         this.element.appendChild(resizer);
@@ -902,7 +1043,7 @@ export default class DataGridImpl extends Common.Object {
     for (const column in this._columns) {
       emptyData[column] = null;
     }
-    this.creationNode = new DataGrid.CreationDataGridNode(emptyData, hasChildren);
+    this.creationNode = new CreationDataGridNode(emptyData, hasChildren);
     this.rootNode().appendChild(this.creationNode);
   }
 
@@ -911,7 +1052,7 @@ export default class DataGridImpl extends Common.Object {
    * @suppressGlobalPropertiesCheck
    */
   _keyDown(event) {
-    if (event.shiftKey || event.metaKey || event.ctrlKey || this._editing || UI.isEditing()) {
+    if (event.shiftKey || event.metaKey || event.ctrlKey || this._editing || UI.UIUtils.isEditing()) {
       return;
     }
 
@@ -1145,14 +1286,14 @@ export default class DataGridImpl extends Common.Object {
   }
 
   /**
-   * @param {?function(!UI.ContextMenu)} callback
+   * @param {?function(!UI.ContextMenu.SubMenu)} callback
    */
   setHeaderContextMenuCallback(callback) {
     this._headerContextMenuCallback = callback;
   }
 
   /**
-   * @param {?function(!UI.ContextMenu, !NODE_TYPE)} callback
+   * @param {?function(!UI.ContextMenu.ContextMenu, !NODE_TYPE)} callback
    */
   setRowContextMenuCallback(callback) {
     this._rowContextMenuCallback = callback;
@@ -1162,10 +1303,10 @@ export default class DataGridImpl extends Common.Object {
    * @param {!Event} event
    */
   _contextMenu(event) {
-    const contextMenu = new UI.ContextMenu(event);
+    const contextMenu = new UI.ContextMenu.ContextMenu(event);
     const target = /** @type {!Node} */ (event.target);
 
-    const sortableVisibleColumns = this._visibleColumnsArray.filter(column => {
+    const sortableVisibleColumns = this.visibleColumnsArray.filter(column => {
       return (column.sortable && column.title);
     });
 
@@ -1182,16 +1323,25 @@ export default class DataGridImpl extends Common.Object {
       }
     }
 
-    const isContextMenuKey = (event.button === 0);
-    if (!isContextMenuKey && target.isSelfOrDescendant(this._headerTableBody)) {
+    if (target.isSelfOrDescendant(this._headerTableBody)) {
       if (this._headerContextMenuCallback) {
         this._headerContextMenuCallback(contextMenu);
-      } else {
-        contextMenu.show();
       }
+      contextMenu.defaultSection().appendItem(
+          Common.UIString.UIString('Reset Columns'), this._resetColumnWeights.bind(this));
+      contextMenu.show();
       return;
     }
 
+    // Add header context menu to a subsection available from the body
+    const headerSubMenu = contextMenu.defaultSection().appendSubMenuItem(ls`Header Options`);
+    if (this._headerContextMenuCallback) {
+      this._headerContextMenuCallback(headerSubMenu);
+    }
+    headerSubMenu.defaultSection().appendItem(
+        Common.UIString.UIString('Reset Columns'), this._resetColumnWeights.bind(this));
+
+    const isContextMenuKey = (event.button === 0);
     const gridNode = isContextMenuKey ? this.selectedNode : this.dataGridNodeFromNode(target);
     if (isContextMenuKey && this.selectedNode) {
       const boundingRowRect = this.selectedNode.existingElement().getBoundingClientRect();
@@ -1203,17 +1353,18 @@ export default class DataGridImpl extends Common.Object {
       }
     }
     if (this._refreshCallback && (!gridNode || gridNode !== this.creationNode)) {
-      contextMenu.defaultSection().appendItem(Common.UIString('Refresh'), this._refreshCallback.bind(this));
+      contextMenu.defaultSection().appendItem(Common.UIString.UIString('Refresh'), this._refreshCallback.bind(this));
     }
 
     if (gridNode && gridNode.selectable && !gridNode.isEventWithinDisclosureTriangle(event)) {
       if (this._editCallback) {
         if (gridNode === this.creationNode) {
-          contextMenu.defaultSection().appendItem(Common.UIString('Add new'), this._startEditing.bind(this, target));
+          contextMenu.defaultSection().appendItem(
+              Common.UIString.UIString('Add new'), this._startEditing.bind(this, target));
         } else if (isContextMenuKey) {
           const firstEditColumnIndex = this._nextEditableColumn(-1);
           if (firstEditColumnIndex > -1) {
-            const firstColumn = this._visibleColumnsArray[firstEditColumnIndex];
+            const firstColumn = this.visibleColumnsArray[firstEditColumnIndex];
             if (firstColumn && firstColumn.editable) {
               contextMenu.defaultSection().appendItem(
                   ls`Edit "${firstColumn.title}"`,
@@ -1224,12 +1375,14 @@ export default class DataGridImpl extends Common.Object {
           const columnId = this.columnIdFromNode(target);
           if (columnId && this._columns[columnId].editable) {
             contextMenu.defaultSection().appendItem(
-                Common.UIString('Edit "%s"', this._columns[columnId].title), this._startEditing.bind(this, target));
+                Common.UIString.UIString('Edit "%s"', this._columns[columnId].title),
+                this._startEditing.bind(this, target));
           }
         }
       }
       if (this._deleteCallback && gridNode !== this.creationNode) {
-        contextMenu.defaultSection().appendItem(Common.UIString('Delete'), this._deleteCallback.bind(this, gridNode));
+        contextMenu.defaultSection().appendItem(
+            Common.UIString.UIString('Delete'), this._deleteCallback.bind(this, gridNode));
       }
       if (this._rowContextMenuCallback) {
         this._rowContextMenuCallback(contextMenu, gridNode);
@@ -1324,7 +1477,7 @@ export default class DataGridImpl extends Common.Object {
       return;
     }
 
-    dragPoint = Number.constrain(dragPoint, leftMinimum, rightMaximum);
+    dragPoint = Platform.NumberUtilities.clamp(dragPoint, leftMinimum, rightMaximum);
 
     const position = (dragPoint - CenterResizerOverBorderAdjustment);
     resizer.__position = position;
@@ -1333,8 +1486,8 @@ export default class DataGridImpl extends Common.Object {
     this._setPreferredWidth(leftCellIndex, dragPoint - leftEdgeOfPreviousColumn);
     this._setPreferredWidth(rightCellIndex, rightEdgeOfNextColumn - dragPoint);
 
-    const leftColumn = this._visibleColumnsArray[leftCellIndex];
-    const rightColumn = this._visibleColumnsArray[rightCellIndex];
+    const leftColumn = this.visibleColumnsArray[leftCellIndex];
+    const rightColumn = this.visibleColumnsArray[rightCellIndex];
     if (leftColumn.weight || rightColumn.weight) {
       const sumOfWeights = leftColumn.weight + rightColumn.weight;
       const delta = rightEdgeOfNextColumn - leftEdgeOfPreviousColumn;
@@ -1365,8 +1518,8 @@ export default class DataGridImpl extends Common.Object {
     if (!this.element.offsetWidth) {
       return 0;
     }
-    for (let i = 1; i < this._visibleColumnsArray.length; ++i) {
-      if (columnId === this._visibleColumnsArray[i].id) {
+    for (let i = 1; i < this.visibleColumnsArray.length; ++i) {
+      if (columnId === this.visibleColumnsArray[i].id) {
         if (this._resizers[i - 1]) {
           return this._resizers[i - 1].__position;
         }
@@ -1415,6 +1568,12 @@ export const Align = {
   Right: 'right'
 };
 
+/** @enum {symbol} */
+export const DataType = {
+  String: Symbol('String'),
+  Boolean: Symbol('Boolean'),
+};
+
 export const ColumnResizePadding = 24;
 export const CenterResizerOverBorderAdjustment = 3;
 
@@ -1429,7 +1588,7 @@ export const ResizeMethod = {
  * @unrestricted
  * @template NODE_TYPE
  */
-export class DataGridNode extends Common.Object {
+export class DataGridNode extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {?Object.<string, *>=} data
    * @param {boolean=} hasChildren
@@ -1446,6 +1605,8 @@ export class DataGridNode extends Common.Object {
     this._dirty = false;
     /** @type {boolean} */
     this._inactive = false;
+    /** @type {string} */
+    this.key;
     /** @type {number|undefined} */
     this._depth;
     /** @type {boolean|undefined} */
@@ -1462,7 +1623,7 @@ export class DataGridNode extends Common.Object {
     this._hasChildren = hasChildren || false;
     /** @type {!Array.<!NODE_TYPE>} */
     this.children = [];
-    /** @type {?DataGrid.DataGrid} */
+    /** @type {?DataGridImpl} */
     this.dataGrid = null;
     /** @type {?NODE_TYPE} */
     this.parent = null;
@@ -1478,6 +1639,11 @@ export class DataGridNode extends Common.Object {
 
     /** @type {boolean} */
     this._isRoot = false;
+
+    /** @type {string} */
+    this.nodeAccessibleText = '';
+    /** @type {!Map<string, string>}} */
+    this.cellAccessibleTextMap = new Map();
   }
 
   /**
@@ -1496,7 +1662,8 @@ export class DataGridNode extends Common.Object {
    * @return {!Element}
    */
   createElement() {
-    this._element = createElementWithClass('tr', 'data-grid-data-grid-node');
+    this._element = document.createElement('tr');
+    this._element.classList.add('data-grid-data-grid-node');
     this._element._dataGridNode = this;
 
     if (this._hasChildren) {
@@ -1540,10 +1707,20 @@ export class DataGridNode extends Common.Object {
    */
   createCells(element) {
     element.removeChildren();
-    const columnsArray = this.dataGrid._visibleColumnsArray;
-    for (let i = 0; i < columnsArray.length; ++i) {
-      element.appendChild(this.createCell(columnsArray[i].id));
+    const columnsArray = this.dataGrid.visibleColumnsArray;
+    const accessibleTextArray = [];
+    // Add depth if node is part of a tree
+    if (this._hasChildren || !this.parent._isRoot) {
+      accessibleTextArray.push(ls`level ${this.depth + 1}`);
     }
+    for (let i = 0; i < columnsArray.length; ++i) {
+      const column = columnsArray[i];
+      const cell = element.appendChild(this.createCell(column.id));
+      // Add each visibile cell to the node's accessible text by gathering 'Column Title: content'
+      const localizedTitle = ls`${column.title}`;
+      accessibleTextArray.push(`${localizedTitle}: ${this.cellAccessibleTextMap.get(column.id) || cell.textContent}`);
+    }
+    this.nodeAccessibleText = accessibleTextArray.join(', ');
     element.appendChild(this._createTDWithClass('corner'));
   }
 
@@ -1769,7 +1946,10 @@ export class DataGridNode extends Common.Object {
    * @return {!Element}
    */
   _createTDWithClass(className) {
-    const cell = createElementWithClass('td', className);
+    const cell = document.createElement('td');
+    if (className) {
+      cell.className = className;
+    }
     const cellClass = this.dataGrid._cellClass;
     if (cellClass) {
       cell.classList.add(cellClass);
@@ -1810,10 +1990,24 @@ export class DataGridNode extends Common.Object {
     if (data instanceof Node) {
       cell.appendChild(data);
     } else if (data !== null) {
-      DataGrid.DataGrid.setElementText(cell, /** @type {string} */ (data), !!this.dataGrid._columns[columnId].longText);
+      this.dataGrid.setElementContent(cell, /** @type {string} */ (data));
     }
 
     return cell;
+  }
+
+  /**
+   * @param {string} name
+   * @param {!Element} cell
+   * @param {string} columnId
+   */
+  setCellAccessibleName(name, cell, columnId) {
+    this.cellAccessibleTextMap.set(columnId, name);
+    // Mark all direct children of cell as hidden so cell name is properly announced
+    for (let i = 0; i < cell.children.length; i++) {
+      UI.ARIAUtils.markAsHidden(cell.children[i]);
+    }
+    UI.ARIAUtils.setAccessibleName(cell, name);
   }
 
   /**
@@ -1925,7 +2119,7 @@ export class DataGridNode extends Common.Object {
 
     child._detach();
     child.resetNode();
-    this.children.remove(child, true);
+    Platform.ArrayUtilities.removeElement(this.children, child, true);
 
     if (this.children.length <= 0) {
       this.setHasChildren(false);
@@ -1976,6 +2170,9 @@ export class DataGridNode extends Common.Object {
     }
 
     this._expanded = false;
+    if (this.selected) {
+      this.dataGrid.updateGridAccessibleName(/* text */ ls`collapsed`);
+    }
 
     for (let i = 0; i < this.children.length; ++i) {
       this.children[i].revealed = false;
@@ -2032,6 +2229,9 @@ export class DataGridNode extends Common.Object {
     if (this._element) {
       this._element.classList.add('expanded');
     }
+    if (this.selected) {
+      this.dataGrid.updateGridAccessibleName(/* text */ ls`expanded`);
+    }
 
     this._expanded = true;
   }
@@ -2077,6 +2277,7 @@ export class DataGridNode extends Common.Object {
     if (this._element) {
       this._element.classList.add('selected');
       this.dataGrid.setHasSelection(true);
+      this.dataGrid.updateGridAccessibleName();
     }
 
     if (!supressSelectedEvent) {
@@ -2106,6 +2307,7 @@ export class DataGridNode extends Common.Object {
     if (this._element) {
       this._element.classList.remove('selected');
       this.dataGrid.setHasSelection(false);
+      this.dataGrid.updateGridAccessibleName('');
     }
 
     if (!supressDeselectedEvent) {
@@ -2287,14 +2489,15 @@ export class CreationDataGridNode extends DataGridNode {
 /**
  * @unrestricted
  */
-export class DataGridWidget extends UI.VBox {
+export class DataGridWidget extends UI.Widget.VBox {
   /**
-   * @param {!DataGrid.DataGrid} dataGrid
+   * @param {!DataGridImpl} dataGrid
    */
   constructor(dataGrid) {
     super();
     this._dataGrid = dataGrid;
     this.element.appendChild(dataGrid.element);
+    this.setDefaultFocusedElement(dataGrid.element);
   }
 
   /**
@@ -2338,11 +2541,16 @@ export class DataGridWidget extends UI.VBox {
   }
 }
 
-/* Legacy exported object */
-self.DataGrid = self.DataGrid || {};
-
-/* Legacy exported object */
-DataGrid = DataGrid || {};
+/**
+ * @typedef {{
+ *   displayName: string,
+ *   columns: !Array.<!ColumnDescriptor>,
+ *   editCallback: (function(!Object, string, *, *)|undefined),
+ *   deleteCallback: (function(!Object)|undefined|function(string)),
+ *   refreshCallback: (function()|undefined)
+ * }}
+ */
+export let Parameters;
 
 /**
  * @typedef {{
@@ -2358,62 +2566,8 @@ DataGrid = DataGrid || {};
  *   longText: (boolean|undefined),
  *   disclosure: (boolean|undefined),
  *   weight: (number|undefined),
- *   allowInSortByEvenWhenHidden: (boolean|undefined)
+ *   allowInSortByEvenWhenHidden: (boolean|undefined),
+ *   dataType: (?DataType|undefined)
  * }}
  */
-DataGrid.ColumnDescriptor;
-
-DataGrid._preferredWidthSymbol = Symbol('preferredWidth');
-DataGrid._columnIdSymbol = Symbol('columnId');
-DataGrid._sortIconSymbol = Symbol('sortIcon');
-DataGrid._longTextSymbol = Symbol('longText');
-
-/**
- * @unrestricted
- * @constructor
- */
-DataGrid.DataGrid = DataGridImpl;
-
-/**
- * @unrestricted
- * @constructor
- */
-DataGrid.CreationDataGridNode = CreationDataGridNode;
-
-/**
- * @unrestricted
- * @constructor
- */
-DataGrid.DataGridNode = DataGridNode;
-DataGrid.DataGridWidget = DataGridWidget;
-
-/** @enum {symbol} */
-DataGrid.DataGrid.Events = Events;
-
-/** @enum {string} */
-DataGrid.DataGrid.Order = Order;
-
-/** @enum {string} */
-DataGrid.DataGrid.Align = Align;
-
-/** @enum {string} */
-DataGrid.DataGrid.ResizeMethod = ResizeMethod;
-
-/**
- * @typedef {{
-  *   id: string,
-  *   title: (string|undefined),
-  *   titleDOMFragment: (?DocumentFragment|undefined),
-  *   sortable: boolean,
-  *   sort: (?Order|undefined),
-  *   align: (?Align|undefined),
-  *   fixedWidth: (boolean|undefined),
-  *   editable: (boolean|undefined),
-  *   nonSelectable: (boolean|undefined),
-  *   longText: (boolean|undefined),
-  *   disclosure: (boolean|undefined),
-  *   weight: (number|undefined),
-  *   allowInSortByEvenWhenHidden: (boolean|undefined)
-  * }}
-  */
-DataGrid.DataGrid.ColumnDescriptor = DataGrid.ColumnDescriptor;
+export let ColumnDescriptor;

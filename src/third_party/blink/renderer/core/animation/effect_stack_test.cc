@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -31,7 +32,7 @@ class AnimationEffectStackTest : public PageTestBase {
 
   Animation* Play(KeyframeEffect* effect, double start_time) {
     Animation* animation = timeline->Play(effect);
-    animation->setStartTime(start_time * 1000, false);
+    animation->setStartTime(start_time * 1000);
     animation->Update(kTimingUpdateOnDemand);
     return animation;
   }
@@ -82,8 +83,8 @@ class AnimationEffectStackTest : public PageTestBase {
         active_interpolations.at(PropertyHandle(GetCSSPropertyFontSize()));
     EnsureInterpolatedValueCached(interpolations, GetDocument(), element);
 
-    const TypedInterpolationValue* typed_value =
-        ToInvalidatableInterpolation(*interpolations.at(0))
+    const auto* typed_value =
+        To<InvalidatableInterpolation>(*interpolations.at(0))
             .GetCachedValueForTesting();
     // font-size is stored as an |InterpolableLength|; here we assume pixels.
     EXPECT_TRUE(typed_value->GetInterpolableValue().IsLength());
@@ -97,12 +98,13 @@ class AnimationEffectStackTest : public PageTestBase {
         active_interpolations.at(PropertyHandle(GetCSSPropertyZIndex()));
     EnsureInterpolatedValueCached(interpolations, GetDocument(), element);
 
-    const TypedInterpolationValue* typed_value =
-        ToInvalidatableInterpolation(*interpolations.at(0))
+    const auto* typed_value =
+        To<InvalidatableInterpolation>(*interpolations.at(0))
             .GetCachedValueForTesting();
     // z-index is stored as a straight number value.
     EXPECT_TRUE(typed_value->GetInterpolableValue().IsNumber());
-    return ToInterpolableNumber(&typed_value->GetInterpolableValue())->Value();
+    return To<InterpolableNumber>(&typed_value->GetInterpolableValue())
+        ->Value();
   }
 
   Persistent<DocumentTimeline> timeline;
@@ -220,6 +222,62 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   EXPECT_EQ(1u, interpolations->size());
   EXPECT_EQ(GetFontSizeValue(*interpolations), 3);
   EXPECT_EQ(1u, SampledEffectCount());
+}
+
+TEST_F(AnimationEffectStackTest, AffectsPropertiesCSSBitsetDefaultPriority) {
+  Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyID::kColor, "red")), 10);
+  Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyID::kTop, "1px")), 10);
+  Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyID::kLeft, "1px")), 10);
+
+  ASSERT_TRUE(element->GetElementAnimations());
+  const EffectStack& effect_stack =
+      element->GetElementAnimations()->GetEffectStack();
+
+  EXPECT_FALSE(effect_stack.AffectsProperties(
+      CSSBitset({CSSPropertyID::kBackgroundColor}),
+      KeyframeEffect::kDefaultPriority));
+  EXPECT_FALSE(effect_stack.AffectsProperties(
+      CSSBitset({CSSPropertyID::kBackgroundColor, CSSPropertyID::kFontSize}),
+      KeyframeEffect::kDefaultPriority));
+  EXPECT_FALSE(effect_stack.AffectsProperties(
+      CSSBitset({CSSPropertyID::kColor}), KeyframeEffect::kTransitionPriority));
+
+  EXPECT_TRUE(effect_stack.AffectsProperties(CSSBitset({CSSPropertyID::kColor}),
+                                             KeyframeEffect::kDefaultPriority));
+  EXPECT_TRUE(effect_stack.AffectsProperties(CSSBitset({CSSPropertyID::kTop}),
+                                             KeyframeEffect::kDefaultPriority));
+  EXPECT_TRUE(effect_stack.AffectsProperties(CSSBitset({CSSPropertyID::kLeft}),
+                                             KeyframeEffect::kDefaultPriority));
+  EXPECT_TRUE(effect_stack.AffectsProperties(
+      CSSBitset({CSSPropertyID::kColor, CSSPropertyID::kRight}),
+      KeyframeEffect::kDefaultPriority));
+  EXPECT_TRUE(effect_stack.AffectsProperties(
+      CSSBitset({CSSPropertyID::kColor, CSSPropertyID::kTop}),
+      KeyframeEffect::kDefaultPriority));
+  EXPECT_FALSE(effect_stack.AffectsProperties(
+      CSSBitset({CSSPropertyID::kColor}), KeyframeEffect::kTransitionPriority));
+}
+
+TEST_F(AnimationEffectStackTest, AffectsPropertiesCSSBitsetTransitionPriority) {
+  Element* body = GetDocument().body();
+  body->SetInlineStyleProperty(CSSPropertyID::kTransition, "color 10s");
+  body->SetInlineStyleProperty(CSSPropertyID::kColor, "red");
+  UpdateAllLifecyclePhasesForTest();
+
+  body->SetInlineStyleProperty(CSSPropertyID::kColor, "blue");
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_TRUE(body->GetElementAnimations());
+  const EffectStack& effect_stack =
+      body->GetElementAnimations()->GetEffectStack();
+
+  EXPECT_FALSE(effect_stack.AffectsProperties(
+      CSSBitset({CSSPropertyID::kColor}), KeyframeEffect::kDefaultPriority));
+  EXPECT_TRUE(effect_stack.AffectsProperties(
+      CSSBitset({CSSPropertyID::kColor}), KeyframeEffect::kTransitionPriority));
+  EXPECT_FALSE(effect_stack.AffectsProperties(
+      CSSBitset({CSSPropertyID::kBackgroundColor}),
+      KeyframeEffect::kTransitionPriority));
 }
 
 }  // namespace blink

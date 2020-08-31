@@ -8,6 +8,7 @@
 #include "src/builtins/builtins-descriptors.h"
 #include "src/codegen/assembler-inl.h"
 #include "src/codegen/callable.h"
+#include "src/codegen/macro-assembler-inl.h"
 #include "src/codegen/macro-assembler.h"
 #include "src/diagnostics/code-tracer.h"
 #include "src/execution/isolate.h"
@@ -282,15 +283,16 @@ void Builtins::EmitCodeCreateEvents(Isolate* isolate) {
 
   Address* builtins = isolate->builtins_table();
   int i = 0;
+  HandleScope scope(isolate);
   for (; i < kFirstBytecodeHandler; i++) {
-    auto code = AbstractCode::cast(Object(builtins[i]));
+    Handle<AbstractCode> code(AbstractCode::cast(Object(builtins[i])), isolate);
     PROFILE(isolate, CodeCreateEvent(CodeEventListener::BUILTIN_TAG, code,
                                      Builtins::name(i)));
   }
 
   STATIC_ASSERT(kLastBytecodeHandlerPlusOne == builtin_count);
   for (; i < builtin_count; i++) {
-    auto code = AbstractCode::cast(Object(builtins[i]));
+    Handle<AbstractCode> code(AbstractCode::cast(Object(builtins[i])), isolate);
     interpreter::Bytecode bytecode =
         builtin_metadata[i].data.bytecode_and_scale.bytecode;
     interpreter::OperandScale scale =
@@ -318,6 +320,7 @@ class OffHeapTrampolineGenerator {
     {
       FrameScope scope(&masm_, StackFrame::NONE);
       if (type == TrampolineType::kJump) {
+        masm_.CodeEntry();
         masm_.JumpToInstructionStream(off_heap_entry);
       } else {
         masm_.Trap();

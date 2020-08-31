@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import collections
-import math
 import os
 
 from chromite.cbuildbot import afdo
@@ -55,17 +54,9 @@ class UnitTestStage(generic_stages.BoardSpecificBuilderStage,
     """
     self.board_runattrs.GetParallel('test_artifacts_uploaded',
                                     timeout=None)
+    self.board_runattrs.GetParallel('debug_symbols_completed',
+                                    timeout=None)
     return True
-
-  def HandleSkip(self):
-    """Launch DebugSymbolsStage if UnitTestStage is skipped."""
-    self.board_runattrs.SetParallel('unittest_completed', True)
-    return super(UnitTestStage, self).HandleSkip()
-
-  def _HandleStageException(self, exc_info):
-    """Launch DebugSymbolStage if UnitTestStage is raising an exception."""
-    self.board_runattrs.SetParallel('unittest_completed', True)
-    return super(UnitTestStage, self)._HandleStageException(exc_info)
 
   def PerformStage(self):
     extra_env = {}
@@ -79,8 +70,6 @@ class UnitTestStage(generic_stages.BoardSpecificBuilderStage,
           blacklist=self._run.config.unittest_blacklist,
           extra_env=extra_env,
           build_stage=self._run.config.build_packages)
-    # The attribute 'unittest_completed' is used in DebugSymbolsStage.
-    self.board_runattrs.SetParallel('unittest_completed', True)
     # Package UnitTest binaries.
     tarball = commands.BuildUnitTestTarball(
         self._build_root, self._current_board, self.archive_path)
@@ -176,7 +165,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
   def TestsEnabled(self, builder_run):
     """Abstract the logic to decide if tests are enabled."""
     if (builder_run.options.remote_trybot and
-        (builder_run.options.hwtest or builder_run.config.pre_cq)):
+        builder_run.options.hwtest):
       return not builder_run.options.debug_forced
     else:
       return not builder_run.options.debug
@@ -197,26 +186,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
             'and Chrome %s. Not generating it again', arch,
             cpv.version_no_rev.split('_')[0])
         return
-
-    if self.suite_config.suite in [
-        constants.HWTEST_CTS_QUAL_SUITE, constants.HWTEST_GTS_QUAL_SUITE
-    ]:
-      # Increase the priority for CTS/GTS qualification suite as we want stable
-      # build to have higher priority than beta build (again higher than dev).
-      try:
-        cros_vers = self._run.GetVersionInfo().VersionString().split('.')
-        # Convert priority to corresponding integer value.
-        self.suite_config.priority = constants.HWTEST_PRIORITIES_MAP[
-            self.suite_config.priority]
-        # We add 1/10 of the branch version to the priority. This results in a
-        # modest priority bump the older the branch is. Typically beta priority
-        # would be dev + [1..4] and stable priority dev + [5..9].
-        self.suite_config.priority += int(math.ceil(float(cros_vers[1]) / 10.0))
-      except cbuildbot_run.VersionNotSetError:
-        logging.debug(
-            'Could not obtain version info. %s will use initial '
-            'priority value: %s', self.suite_config.suite,
-            self.suite_config.priority)
 
     build = '/'.join([self._bot_id, self.version])
 

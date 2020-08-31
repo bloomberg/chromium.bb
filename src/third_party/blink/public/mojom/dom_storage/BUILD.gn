@@ -9,14 +9,12 @@ mojom_component("dom_storage") {
   macro_prefix = "DOM_STORAGE_MOJOM"
 
   sources = [
+    "dom_storage.mojom",
     "session_storage_namespace.mojom",
     "storage_area.mojom",
-    "storage_partition_service.mojom",
   ]
 
-  public_deps = [
-    "//url/mojom:url_mojom_origin",
-  ]
+  public_deps = [ "//url/mojom:url_mojom_origin" ]
 
   # The Blink variant is linked directly into the private platform
   # implementation and so it requires the corresponding export configuration to

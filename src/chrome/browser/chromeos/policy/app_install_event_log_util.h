@@ -11,16 +11,9 @@ namespace base {
 class Value;
 }  // namespace base
 
-class Profile;
-
 namespace em = enterprise_management;
 
 namespace policy {
-
-// Returns true if GAIA ID can be fetched for a given |profile|, and it can be
-// converted to a number. If GAIA ID can be fetched, it gets written to
-// |gaia_id|, otherwise returns false.
-bool GetGaiaId(Profile* profile, int* gaia_id);
 
 // Return serial number of the device.
 std::string GetSerialNumber();
@@ -34,22 +27,18 @@ std::string GetSerialNumber();
 // locally.
 base::Value ConvertProtoToValue(
     const em::AppInstallReportRequest* app_install_report_request,
-    Profile* profile);
+    const base::Value& context);
 
 // Converts AppInstallReportLogEvent proto defined in
 // components/policy/proto/device_management_backend.proto to a dictionary value
 // that corresponds to the definition of AndroidAppInstallEvent defined in
 // google3/chrome/cros/reporting/proto/chrome_app_install_events.proto.
+// Appends event_id to the event by calculating hash of the (event,
+// |context|) pair, so long as the calculation is possible.
 base::Value ConvertEventToValue(
     const std::string& package,
     const em::AppInstallReportLogEvent& app_install_report_log_event,
-    Profile* profile);
-
-// Appends event_id to events in |event_list| by calculating hash of the (event,
-// |context|) pair. If calculating hash is not possible for an event in
-// |event_list|, event_id for that event will not be populated. event_id is used
-// by "Chrome Reporting API" to deduplicate events.
-void AppendEventId(base::Value* event_list, const base::Value& context);
+    const base::Value& context);
 
 }  // namespace policy
 

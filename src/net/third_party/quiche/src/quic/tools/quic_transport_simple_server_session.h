@@ -44,13 +44,14 @@ class QuicTransportSimpleServerSession
       const ParsedQuicVersionVector& supported_versions,
       const QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache,
-      Mode mode,
       std::vector<url::Origin> accepted_origins);
   ~QuicTransportSimpleServerSession();
 
   void OnIncomingDataStream(QuicTransportStream* stream) override;
   void OnCanCreateNewOutgoingStream(bool unidirectional) override;
   bool CheckOrigin(url::Origin origin) override;
+  bool ProcessPath(const GURL& url) override;
+  void OnMessageReceived(quiche::QuicheStringPiece message) override;
 
   void EchoStreamBack(const std::string& data) {
     streams_to_echo_back_.push_back(data);
@@ -60,11 +61,10 @@ class QuicTransportSimpleServerSession
  private:
   void MaybeEchoStreamsBack();
 
-  QuicConnection* connection_;
   const bool owns_connection_;
   Mode mode_;
   std::vector<url::Origin> accepted_origins_;
-  QuicDeque<std::string> streams_to_echo_back_;
+  QuicCircularDeque<std::string> streams_to_echo_back_;
 };
 
 }  // namespace quic

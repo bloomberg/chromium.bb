@@ -5,9 +5,7 @@
 #include "platform/api/trace_logging_platform.h"
 
 namespace openscreen {
-namespace platform {
 
 TraceLoggingPlatform::~TraceLoggingPlatform() = default;
 
-}  // namespace platform
 }  // namespace openscreen

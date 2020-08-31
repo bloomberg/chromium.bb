@@ -58,10 +58,12 @@
 .tabbed-pane-placeholder-row {
     display: flex;
     white-space: nowrap;
+    padding: 0 5px;
+    margin: 2px;
 }
 
 .tabbed-pane-placeholder-row[data-keyboard-focus="true"]:focus {
-  outline-width: unset;
+    outline-width: unset;
 }
 
 .tabbed-pane-placeholder-key {
@@ -73,8 +75,8 @@
 }
 
 .tabbed-pane-no-shortcut {
-  flex: 1;
-  text-align: center;
+    flex: 1;
+    text-align: center;
 }
 
 .tabbed-pane-placeholder-value {
@@ -288,4 +290,40 @@
 .tabbed-pane-right-toolbar {
     margin-left: -4px;
     flex: none;
+}
+
+@media (forced-colors: active) {
+    .tabbed-pane-tab-slider {
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+    .tabbed-pane-header {
+        forced-color-adjust: none;
+        border-bottom: 1px solid transparent;
+        background-color: ButtonFace;
+    }
+    .tabbed-pane-header-tab,
+    .tabbed-pane-header-tab.selected {
+        background: ButtonFace;
+        color: ButtonText;
+    }
+    .tabbed-pane-header-tab:hover,
+    .tabbed-pane-shadow .tabbed-pane-header-tab[data-keyboard-focus="true"]:focus {
+        background-color: Highlight;
+        color: HighlightText;
+    }
+    .tabbed-pane-header-tabs-drop-down-container {
+        opacity: 1;
+    }
+    .tabbed-pane-header-tabs-drop-down-container:hover,
+    .tabbed-pane-header-tabs-drop-down-container[data-keyboard-focus="true"]:focus {
+        background-color: Highlight;
+    }
+    .tabbed-pane-header-tabs-drop-down-container > .chevron-icon {
+        background-color: ButtonText;
+    }
+    .tabbed-pane-header-tabs-drop-down-container:hover > .chevron-icon,
+    .tabbed-pane-header-tabs-drop-down-container[data-keyboard-focus="true"]:focus > .chevron-icon {
+        background-color: HighlightText;
+    }
 }

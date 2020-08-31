@@ -1,22 +1,25 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="../../about_page/about_page_browser_proxy.html">
-<link rel="import" href="../../about_page/detailed_build_info.html">
-<link rel="import" href="../../about_page/update_warning_dialog.html">
 <link rel="import" href="../../i18n_setup.html">
 <!-- TODO(crbug.com/986596): Don't use browser icons here. Fork them. -->
 <link rel="import" href="../../icons.html">
 <link rel="import" href="../../lifetime_browser_proxy.html">
 <link rel="import" href="../../prefs/prefs.html">
-<link rel="import" href="../../route.html">
+<link rel="import" href="../os_route.html">
+<link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_page/main_page_behavior.html">
 <link rel="import" href="../../settings_page/settings_animated_pages.html">
 <link rel="import" href="../../settings_page/settings_section.html">
 <link rel="import" href="../../settings_page/settings_subpage.html">
 <link rel="import" href="../../settings_page_css.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="../metrics_recorder.html">
 <link rel="import" href="../os_icons.html">
 <link rel="import" href="../os_reset_page/os_powerwash_dialog.html">
+<link rel="import" href="../localized_link/localized_link.html">
+<link rel="import" href="detailed_build_info.html">
+<link rel="import" href="update_warning_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
@@ -60,7 +63,7 @@
       }
 
       iron-icon[icon='settings:check-circle'] {
-        fill: var(--cros-default-button-color);
+        fill: var(--cros-default-icon-color-prominent);
       }
 
       iron-icon[icon='cr:error'] {
@@ -116,12 +119,10 @@
                   $i18n{learnMore}
                 </a>
               </div>
-             <div id="endOfLifeMessageContainer" hidden="[[!hasEndOfLife_]]">
-               $i18n{endOfLifeMessage}
-               <a href="$i18n{endOfLifeLearnMoreURL}" target="_blank">
-                 $i18n{learnMore}
-               </a>
-             </div>
+              <settings-localized-link
+                  id="endOfLifeMessageContainer" hidden="[[!hasEndOfLife_]]"
+                  localized-string="$i18n{endOfLifeMessage}">
+              </settings-localized-link>
               <div class="secondary">$i18n{aboutBrowserVersion}</div>
             </div>
             <div class="separator" hidden="[[!showButtonContainer_]]"></div>
@@ -209,7 +210,9 @@
           </div>
         </div>
 <if expr="_google_chrome">
-        <div class="secondary">$i18nRaw{aboutProductTos}</div>
+        <div class="secondary">
+          <a href="$i18n{aboutTermsURL}">$i18n{aboutProductTos}</a>
+        </div>
 </if>
       </div>
       <div class="settings-box padded block" id="regulatoryInfo"

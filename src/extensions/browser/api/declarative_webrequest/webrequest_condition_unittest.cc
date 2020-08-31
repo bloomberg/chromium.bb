@@ -27,40 +27,38 @@ TEST(WebRequestConditionTest, CreateCondition) {
 
   // Test wrong condition name passed.
   error.clear();
+  constexpr const char kWrongNameCondition[] = R"({
+    "invalid": "foobar",
+    "instanceType": "declarativeWebRequest.RequestMatcher",
+  })";
   result = WebRequestCondition::Create(
-      NULL, matcher.condition_factory(),
-      *base::test::ParseJsonDeprecated(
-          "{ \"invalid\": \"foobar\", \n"
-          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-          "}"),
-      &error);
+      nullptr, matcher.condition_factory(),
+      base::test::ParseJson(kWrongNameCondition), &error);
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(result.get());
 
   // Test wrong datatype in host_suffix.
+  constexpr const char kWrongDataTypeCondition[] = R"({
+    "url": [],
+    "instanceType": "declarativeWebRequest.RequestMatcher",
+  })";
   error.clear();
   result = WebRequestCondition::Create(
-      NULL, matcher.condition_factory(),
-      *base::test::ParseJsonDeprecated(
-          "{ \n"
-          "  \"url\": [], \n"
-          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-          "}"),
-      &error);
+      nullptr, matcher.condition_factory(),
+      base::test::ParseJson(kWrongDataTypeCondition), &error);
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(result.get());
 
   // Test success (can we support multiple criteria?)
   error.clear();
+  constexpr const char kMultipleCriteriaCondition[] = R"({
+    "resourceType": ["main_frame"],
+    "url": { "hostSuffix": "example.com" },
+    "instanceType": "declarativeWebRequest.RequestMatcher",
+  })";
   result = WebRequestCondition::Create(
-      NULL, matcher.condition_factory(),
-      *base::test::ParseJsonDeprecated(
-          "{ \n"
-          "  \"resourceType\": [\"main_frame\"], \n"
-          "  \"url\": { \"hostSuffix\": \"example.com\" }, \n"
-          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-          "}"),
-      &error);
+      nullptr, matcher.condition_factory(),
+      base::test::ParseJson(kMultipleCriteriaCondition), &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
 
@@ -71,7 +69,7 @@ TEST(WebRequestConditionTest, CreateCondition) {
   const GURL http_url("http://www.example.com");
   WebRequestInfoInitParams match_params;
   match_params.url = http_url;
-  match_params.type = content::ResourceType::kMainFrame;
+  match_params.type = blink::mojom::ResourceType::kMainFrame;
   match_params.web_request_type = WebRequestResourceType::MAIN_FRAME;
   WebRequestInfo match_request_info(std::move(match_params));
   WebRequestData data(&match_request_info, ON_BEFORE_REQUEST);
@@ -83,7 +81,7 @@ TEST(WebRequestConditionTest, CreateCondition) {
   const GURL https_url("https://www.example.com");
   WebRequestInfoInitParams wrong_resource_type_params;
   wrong_resource_type_params.url = https_url;
-  wrong_resource_type_params.type = content::ResourceType::kSubFrame;
+  wrong_resource_type_params.type = blink::mojom::ResourceType::kSubFrame;
   wrong_resource_type_params.web_request_type =
       WebRequestResourceType::SUB_FRAME;
   WebRequestInfo wrong_resource_type_request_info(
@@ -95,41 +93,23 @@ TEST(WebRequestConditionTest, CreateCondition) {
   EXPECT_FALSE(result->IsFulfilled(request_data));
 }
 
-TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
+TEST(WebRequestConditionTest, IgnoreConditionFirstPartyForCookies) {
+  // firstPartyForCookiesUrl is deprecated, but must still be accepted in
+  // parsing.
   URLMatcher matcher;
 
   std::string error;
   std::unique_ptr<WebRequestCondition> result;
 
-  result = WebRequestCondition::Create(
-      NULL, matcher.condition_factory(),
-      *base::test::ParseJsonDeprecated(
-          "{ \n"
-          "  \"firstPartyForCookiesUrl\": { \"hostPrefix\": \"fpfc\"}, \n"
-          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-          "}"),
-      &error);
+  constexpr const char kCondition[] = R"({
+    "firstPartyForCookiesUrl": { "hostPrefix": "fpfc"},
+    "instanceType": "declarativeWebRequest.RequestMatcher",
+  })";
+  result =
+      WebRequestCondition::Create(nullptr, matcher.condition_factory(),
+                                  base::test::ParseJson(kCondition), &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
-
-  URLMatcherConditionSet::Vector url_matcher_condition_set;
-  result->GetURLMatcherConditionSets(&url_matcher_condition_set);
-  matcher.AddConditionSets(url_matcher_condition_set);
-
-  const GURL http_url("http://www.example.com");
-  const GURL first_party_url("http://fpfc.example.com");
-  WebRequestInfoInitParams match_params;
-  match_params.url = http_url;
-  match_params.type = content::ResourceType::kMainFrame;
-  match_params.web_request_type = WebRequestResourceType::MAIN_FRAME;
-  WebRequestInfo match_request_info(std::move(match_params));
-  WebRequestData data(&match_request_info, ON_BEFORE_REQUEST);
-  WebRequestDataWithMatchIds request_data(&data);
-  request_data.url_match_ids = matcher.MatchURL(http_url);
-  EXPECT_EQ(0u, request_data.url_match_ids.size());
-  request_data.first_party_url_match_ids = matcher.MatchURL(first_party_url);
-  EXPECT_EQ(1u, request_data.first_party_url_match_ids.size());
-  EXPECT_TRUE(result->IsFulfilled(request_data));
 }
 
 // Conditions without UrlFilter attributes need to be independent of URL
@@ -144,52 +124,50 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
 
   // The empty condition.
   error.clear();
+  constexpr const char kEmptyCondition[] = R"({
+    "instanceType": "declarativeWebRequest.RequestMatcher",
+  })";
   std::unique_ptr<WebRequestCondition> condition_empty =
-      WebRequestCondition::Create(
-          NULL, matcher.condition_factory(),
-          *base::test::ParseJsonDeprecated(
-              "{ \n"
-              "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-              "}"),
-          &error);
+      WebRequestCondition::Create(nullptr, matcher.condition_factory(),
+                                  base::test::ParseJson(kEmptyCondition),
+                                  &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(condition_empty.get());
 
   // A condition without a UrlFilter attribute, which is always true.
   error.clear();
+  constexpr const char kTrueConditionWithoutUrlFilter[] = R"({
+    "instanceType": "declarativeWebRequest.RequestMatcher",
+
+    // There is no "1st party for cookies" URL in the requests below,
+    // therefore all requests are considered first party for cookies.
+    "thirdPartyForCookies": false,
+  })";
   std::unique_ptr<WebRequestCondition> condition_no_url_true =
       WebRequestCondition::Create(
-          NULL, matcher.condition_factory(),
-          *base::test::ParseJsonDeprecated(
-              "{ \n"
-              "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", "
-              "\n"
-              // There is no "1st party for cookies" URL in the requests below,
-              // therefore all requests are considered first party for cookies.
-              "  \"thirdPartyForCookies\": false, \n"
-              "}"),
-          &error);
+          nullptr, matcher.condition_factory(),
+          base::test::ParseJson(kTrueConditionWithoutUrlFilter), &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(condition_no_url_true.get());
 
   // A condition without a UrlFilter attribute, which is always false.
   error.clear();
+  constexpr const char kFalseConditionWithoutUrlFilter[] = R"({
+    "instanceType": "declarativeWebRequest.RequestMatcher",
+
+    "thirdPartyForCookies": true,
+  })";
   std::unique_ptr<WebRequestCondition> condition_no_url_false =
       WebRequestCondition::Create(
-          NULL, matcher.condition_factory(),
-          *base::test::ParseJsonDeprecated(
-              "{ \n"
-              "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", "
-              "\n"
-              "  \"thirdPartyForCookies\": true, \n"
-              "}"),
-          &error);
+          nullptr, matcher.condition_factory(),
+          base::test::ParseJson(kFalseConditionWithoutUrlFilter), &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(condition_no_url_false.get());
 
   WebRequestInfoInitParams params;
   params.url = GURL("https://www.example.com");
-  params.site_for_cookies = GURL("https://www.example.com");
+  params.site_for_cookies =
+      net::SiteForCookies::FromUrl(GURL("https://www.example.com"));
   WebRequestInfo https_request_info(std::move(params));
 
   // 1. A non-empty condition without UrlFilter attributes is fulfilled iff its
@@ -233,7 +211,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   // Test insertion
   std::string error;
   std::unique_ptr<WebRequestConditionSet> result =
-      WebRequestConditionSet::Create(NULL, matcher.condition_factory(),
+      WebRequestConditionSet::Create(nullptr, matcher.condition_factory(),
                                      conditions, &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
@@ -294,7 +272,7 @@ TEST(WebRequestConditionTest, TestPortFilter) {
   // Test insertion
   std::string error;
   std::unique_ptr<WebRequestConditionSet> result =
-      WebRequestConditionSet::Create(NULL, matcher.condition_factory(),
+      WebRequestConditionSet::Create(nullptr, matcher.condition_factory(),
                                      conditions, &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
@@ -332,21 +310,18 @@ TEST(WebRequestConditionTest, ConditionsWithConflictingStages) {
   URLMatcher matcher;
 
   std::string error;
-  std::unique_ptr<WebRequestCondition> result;
 
   // Test error on incompatible application stages for involved attributes.
-  error.clear();
-  result = WebRequestCondition::Create(
-      NULL, matcher.condition_factory(),
-      *base::test::ParseJsonDeprecated(
-          "{ \n"
-          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-          // Pass a JS array with one empty object to each of the header
-          // filters.
-          "  \"requestHeaders\": [{}], \n"
-          "  \"responseHeaders\": [{}], \n"
-          "}"),
-      &error);
+  constexpr const char kCondition[] = R"({
+    "instanceType": "declarativeWebRequest.RequestMatcher",
+    // Pass a JS array with one empty object to each of the header
+    // filters.
+    "requestHeaders": [{}],
+    "responseHeaders": [{}],
+  })";
+  std::unique_ptr<WebRequestCondition> result =
+      WebRequestCondition::Create(nullptr, matcher.condition_factory(),
+                                  base::test::ParseJson(kCondition), &error);
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(result.get());
 }

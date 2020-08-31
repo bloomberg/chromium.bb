@@ -5,13 +5,13 @@
 #include "ash/system/unified/unified_system_tray_bubble.h"
 
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
+#include "ash/system/tray/tray_utils.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
@@ -19,9 +19,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/metrics/histogram_macros.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/window.h"
-#include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -81,18 +79,18 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
 
   TrayBubbleView::InitParams init_params;
   init_params.shelf_alignment = tray_->shelf()->alignment();
-  init_params.min_width = kTrayMenuWidth;
-  init_params.max_width = kTrayMenuWidth;
+  init_params.preferred_width = kTrayMenuWidth;
   init_params.delegate = tray;
   init_params.parent_window = tray->GetBubbleWindowContainer();
   init_params.anchor_view = nullptr;
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect = tray->shelf()->GetSystemTrayAnchorRect();
-  init_params.insets = GetInsets();
+  init_params.insets = GetTrayBubbleInsets();
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
   init_params.show_by_click = show_by_click;
   init_params.close_on_deactivate = false;
+  init_params.translucent = true;
 
   bubble_view_ = new TrayBubbleView(init_params);
 
@@ -105,19 +103,11 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   controller_->ResetToCollapsedIfRequired();
   bubble_view_->AddChildView(new ContainerView(unified_view_));
 
-  bubble_view_->set_color(SK_ColorTRANSPARENT);
-  bubble_view_->layer()->SetFillsBoundsOpaquely(false);
-
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
   bubble_widget_->AddObserver(this);
 
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
-
-  if (features::IsBackgroundBlurEnabled()) {
-    bubble_widget_->client_view()->layer()->SetBackgroundBlur(
-        kUnifiedMenuBackgroundBlur);
-  }
 
   tray->tray_event_filter()->AddBubble(this);
   tray->shelf()->AddObserver(this);
@@ -183,6 +173,16 @@ void UnifiedSystemTrayBubble::EnsureExpanded() {
   controller_->EnsureExpanded();
 }
 
+void UnifiedSystemTrayBubble::CollapseWithoutAnimating() {
+  if (!bubble_widget_)
+    return;
+
+  DCHECK(unified_view_);
+  DCHECK(controller_);
+
+  controller_->CollapseWithoutAnimating();
+}
+
 void UnifiedSystemTrayBubble::CollapseMessageCenter() {
   tray_->CollapseMessageCenter();
 }
@@ -225,7 +225,7 @@ void UnifiedSystemTrayBubble::UpdateTransform() {
 
   if (!unified_view_->IsTransformEnabled()) {
     unified_view_->SetTransform(gfx::Transform());
-    DestroyBlurLayerForAnimation();
+    OnAnimationFinished();
     SetFrameVisible(true);
     return;
   }
@@ -242,13 +242,9 @@ void UnifiedSystemTrayBubble::UpdateTransform() {
   transform.Translate(0, y_offset);
   unified_view_->SetTransform(transform);
 
-  CreateBlurLayerForAnimation();
-
-  if (blur_layer_) {
-    gfx::Rect blur_bounds = bubble_widget_->client_view()->layer()->bounds();
-    blur_bounds.Inset(gfx::Insets(y_offset, 0, 0, 0));
-    blur_layer_->layer()->SetBounds(blur_bounds);
-  }
+  gfx::Rect blur_bounds = bubble_view_->bounds();
+  blur_bounds.Inset(gfx::Insets(y_offset, 0, 0, 0));
+  bubble_view_->layer()->SetClipRect(blur_bounds);
 }
 
 TrayBackgroundView* UnifiedSystemTrayBubble::GetTray() const {
@@ -321,19 +317,21 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
     return;
   }
 
-  // Don't close the bubble if the message center is gaining or losing
-  // activation.
+  // Don't close the bubble if the message center is gaining activation.
   if (features::IsUnifiedMessageCenterRefactorEnabled() &&
       tray_->IsMessageCenterBubbleShown()) {
     views::Widget* message_center_widget =
         tray_->message_center_bubble()->GetBubbleWidget();
     if (message_center_widget ==
-            views::Widget::GetWidgetForNativeView(gained_active) ||
-        (lost_active &&
-         message_center_widget ==
-             views::Widget::GetWidgetForNativeView(lost_active))) {
+        views::Widget::GetWidgetForNativeView(gained_active)) {
       return;
     }
+
+    // If the message center is not visible, ignore activation changes.
+    // Otherwise, this may cause a crash when closing the dialog via
+    // accelerator. See crbug.com/1041174.
+    if (!message_center_widget->IsVisible())
+      return;
   }
 
   tray_->CloseBubble();
@@ -374,71 +372,13 @@ void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
     tray_->message_center_bubble()->UpdatePosition();
 }
 
-void UnifiedSystemTrayBubble::CreateBlurLayerForAnimation() {
-  if (!features::IsBackgroundBlurEnabled())
-    return;
-
-  if (blur_layer_)
-    return;
-
-  DCHECK(bubble_widget_);
-
-  bubble_widget_->client_view()->layer()->SetBackgroundBlur(0);
-
-  blur_layer_ = std::make_unique<ui::LayerOwner>(
-      std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR));
-  blur_layer_->layer()->SetColor(SK_ColorTRANSPARENT);
-  blur_layer_->layer()->SetRoundedCornerRadius(
-      {kUnifiedTrayCornerRadius, kUnifiedTrayCornerRadius,
-       kUnifiedTrayCornerRadius, kUnifiedTrayCornerRadius});
-  blur_layer_->layer()->SetFillsBoundsOpaquely(false);
-
-  bubble_widget_->GetLayer()->Add(blur_layer_->layer());
-  bubble_widget_->GetLayer()->StackAtBottom(blur_layer_->layer());
-
-  blur_layer_->layer()->SetBounds(
-      bubble_widget_->client_view()->layer()->bounds());
-  blur_layer_->layer()->SetBackgroundBlur(kUnifiedMenuBackgroundBlur);
-}
-
-void UnifiedSystemTrayBubble::DestroyBlurLayerForAnimation() {
-  if (!features::IsBackgroundBlurEnabled())
-    return;
-
-  if (!blur_layer_)
-    return;
-
-  blur_layer_.reset();
-
-  bubble_widget_->client_view()->layer()->SetBackgroundBlur(
-      kUnifiedMenuBackgroundBlur);
+void UnifiedSystemTrayBubble::OnAnimationFinished() {
+  bubble_widget_->GetNativeWindow()->layer()->SetClipRect(gfx::Rect());
 }
 
 void UnifiedSystemTrayBubble::SetFrameVisible(bool visible) {
   DCHECK(bubble_widget_);
   bubble_widget_->non_client_view()->frame_view()->SetVisible(visible);
-}
-
-gfx::Insets UnifiedSystemTrayBubble::GetInsets() {
-  // Decrease bottom and right insets to compensate for the adjustment of
-  // the respective edges in Shelf::GetSystemTrayAnchorRect().
-  gfx::Insets insets = gfx::Insets(
-      kUnifiedMenuPadding, kUnifiedMenuPadding, kUnifiedMenuPadding - 1,
-      kUnifiedMenuPadding - (base::i18n::IsRTL() ? 0 : 1));
-
-  // A special case exists on the homescreen in tablet mode in which the padding
-  // is already applied in the status area. We should not set the padding again
-  // for the bubble. See crbug.com/1011924.
-  bool in_tablet_mode = Shell::Get()->tablet_mode_controller() &&
-                        Shell::Get()->tablet_mode_controller()->InTabletMode();
-  bool is_bottom_alignment =
-      tray_->shelf()->alignment() == ShelfAlignment::kBottom;
-  if (chromeos::switches::ShouldShowShelfHotseat() && in_tablet_mode &&
-      !ShelfConfig::Get()->is_in_app() && is_bottom_alignment) {
-    insets.set_bottom(0);
-  }
-
-  return insets;
 }
 
 }  // namespace ash

@@ -25,9 +25,9 @@ namespace content {
 namespace {
 
 bool ShouldTouchTriggerTimeout(const WebTouchEvent& event) {
-  return (event.GetType() == WebInputEvent::kTouchStart ||
-          event.GetType() == WebInputEvent::kTouchMove) &&
-         event.dispatch_type == WebInputEvent::kBlocking;
+  return (event.GetType() == WebInputEvent::Type::kTouchStart ||
+          event.GetType() == WebInputEvent::Type::kTouchMove) &&
+         event.dispatch_type == WebInputEvent::DispatchType::kBlocking;
 }
 
 }  // namespace
@@ -41,8 +41,8 @@ TouchTimeoutHandler::TouchTimeoutHandler(
       mobile_timeout_delay_(mobile_timeout_delay),
       use_mobile_timeout_(false),
       pending_ack_state_(PENDING_ACK_NONE),
-      timeout_monitor_(
-          base::Bind(&TouchTimeoutHandler::OnTimeOut, base::Unretained(this))),
+      timeout_monitor_(base::BindRepeating(&TouchTimeoutHandler::OnTimeOut,
+                                           base::Unretained(this))),
       enabled_(true),
       enabled_for_current_sequence_(false),
       sequence_awaiting_uma_update_(false),
@@ -81,15 +81,16 @@ void TouchTimeoutHandler::StartIfNecessary(
   timeout_monitor_.Restart(timeout_delay);
 }
 
-bool TouchTimeoutHandler::ConfirmTouchEvent(uint32_t unique_touch_event_id,
-                                            InputEventAckState ack_result,
-                                            bool should_stop_timeout_monitor) {
+bool TouchTimeoutHandler::ConfirmTouchEvent(
+    uint32_t unique_touch_event_id,
+    blink::mojom::InputEventResultState ack_result,
+    bool should_stop_timeout_monitor) {
   if (timeout_event_.event.unique_touch_event_id != unique_touch_event_id)
     return false;
 
   switch (pending_ack_state_) {
     case PENDING_ACK_NONE:
-      if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
+      if (ack_result == blink::mojom::InputEventResultState::kConsumed)
         enabled_for_current_sequence_ = false;
       if (should_stop_timeout_monitor)
         timeout_monitor_.Stop();
@@ -161,9 +162,9 @@ void TouchTimeoutHandler::OnTimeOut() {
 // Skip a cancel event if the timed-out event had no consumer and was the
 // initial event in the gesture.
 bool TouchTimeoutHandler::AckedTimeoutEventRequiresCancel(
-    InputEventAckState ack_result) const {
+    blink::mojom::InputEventResultState ack_result) const {
   DCHECK(HasTimeoutEvent());
-  if (ack_result != INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS)
+  if (ack_result != blink::mojom::InputEventResultState::kNoConsumerExists)
     return true;
   return !WebTouchEventTraits::IsTouchSequenceStart(timeout_event_.event);
 }

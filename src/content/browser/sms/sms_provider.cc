@@ -4,24 +4,32 @@
 
 #include <memory>
 
+#include "base/command_line.h"
+
 #include "build/build_config.h"
 #include "content/browser/sms/sms_provider.h"
+#include "content/public/common/content_switches.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #if defined(OS_ANDROID)
-#include "content/browser/sms/sms_provider_android.h"
+#include "content/browser/sms/sms_provider_gms_user_consent.h"
+#include "content/browser/sms/sms_provider_gms_verification.h"
 #endif
 
 namespace content {
 
 SmsProvider::SmsProvider() = default;
-
 SmsProvider::~SmsProvider() = default;
 
 // static
 std::unique_ptr<SmsProvider> SmsProvider::Create() {
 #if defined(OS_ANDROID)
-  return std::make_unique<SmsProviderAndroid>();
+  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kWebOtpBackend) ==
+      switches::kWebOtpBackendSmsVerification) {
+    return std::make_unique<SmsProviderGmsVerification>();
+  }
+  return std::make_unique<SmsProviderGmsUserConsent>();
 #else
   return nullptr;
 #endif
@@ -38,14 +46,13 @@ void SmsProvider::RemoveObserver(const Observer* observer) {
 void SmsProvider::NotifyReceive(const std::string& sms) {
   base::Optional<SmsParser::Result> result = SmsParser::Parse(sms);
   if (result)
-    NotifyReceive(result->origin, result->one_time_code, sms);
+    NotifyReceive(result->origin, result->one_time_code);
 }
 
 void SmsProvider::NotifyReceive(const url::Origin& origin,
-                                const std::string& one_time_code,
-                                const std::string& sms) {
+                                const std::string& one_time_code) {
   for (Observer& obs : observers_) {
-    bool handled = obs.OnReceive(origin, one_time_code, sms);
+    bool handled = obs.OnReceive(origin, one_time_code);
     if (handled) {
       break;
     }

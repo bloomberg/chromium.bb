@@ -117,9 +117,23 @@ class ContentTranslateDriver : public TranslateDriver,
   void AddReceiver(
       mojo::PendingReceiver<translate::mojom::ContentTranslateDriver> receiver);
   // Called when a page has been loaded and can be potentially translated.
-  void RegisterPage(mojo::PendingRemote<translate::mojom::Page> page,
-                    const translate::LanguageDetectionDetails& details,
-                    bool page_needs_translation) override;
+  void RegisterPage(
+      mojo::PendingRemote<translate::mojom::TranslateAgent> translate_agent,
+      const translate::LanguageDetectionDetails& details,
+      bool page_needs_translation) override;
+
+ protected:
+  const base::ObserverList<Observer, true>::Unchecked& observer_list() const {
+    return observer_list_;
+  }
+
+  TranslateManager* translate_manager() const { return translate_manager_; }
+
+  language::UrlLanguageHistogram* language_histogram() const {
+    return language_histogram_;
+  }
+
+  bool IsAutoHrefTranslateAllOriginsEnabled() const;
 
  private:
   void OnPageAway(int page_seq_no);
@@ -136,17 +150,17 @@ class ContentTranslateDriver : public TranslateDriver,
 
   // Records mojo connections with all current alive pages.
   int next_page_seq_no_;
-  // mojo::Remote<Page> is the connection between this driver and a
-  // TranslateHelper (which are per RenderFrame). Each TranslateHelper has a
+  // mojo::Remote<TranslateAgent> is the connection between this driver and a
+  // TranslateAgent (which are per RenderFrame). Each TranslateAgent has a
   // |binding_| member, representing the other end of this pipe.
-  std::map<int, mojo::Remote<mojom::Page>> pages_;
+  std::map<int, mojo::Remote<mojom::TranslateAgent>> translate_agents_;
 
   // Histogram to be notified about detected language of every page visited. Not
   // owned here.
   language::UrlLanguageHistogram* const language_histogram_;
 
   // ContentTranslateDriver is a singleton per web contents but multiple render
-  // frames may be contained in a single web contents. TranslateHelpers get the
+  // frames may be contained in a single web contents. TranslateAgents get the
   // other end of this receiver in the form of a ContentTranslateDriver.
   mojo::ReceiverSet<translate::mojom::ContentTranslateDriver> receivers_;
 

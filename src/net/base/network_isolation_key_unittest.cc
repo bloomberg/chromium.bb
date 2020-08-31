@@ -152,33 +152,28 @@ TEST(NetworkIsolationKeyTest, ValueRoundTripEmpty) {
   const url::Origin kJunkOrigin =
       url::Origin::Create(GURL("data:text/html,junk"));
 
-  // Convert empty key to value and back, expecting the same value.
-  NetworkIsolationKey no_frame_origin_key;
-  base::Value no_frame_origin_value;
-  ASSERT_TRUE(no_frame_origin_key.ToValue(&no_frame_origin_value));
+  for (bool use_frame_origins : {true, false}) {
+    SCOPED_TRACE(use_frame_origins);
+    base::test::ScopedFeatureList feature_list;
+    if (use_frame_origins) {
+      feature_list.InitAndEnableFeature(
+          features::kAppendFrameOriginToNetworkIsolationKey);
+    } else {
+      feature_list.InitAndDisableFeature(
+          features::kAppendFrameOriginToNetworkIsolationKey);
+    }
 
-  // Fill initial value with junk data, to make sure it's overwritten.
-  NetworkIsolationKey out_key(kJunkOrigin, kJunkOrigin);
-  EXPECT_TRUE(NetworkIsolationKey::FromValue(no_frame_origin_value, &out_key));
-  EXPECT_EQ(no_frame_origin_key, out_key);
+    // Convert empty key to value and back, expecting the same value.
+    NetworkIsolationKey no_frame_origin_key;
+    base::Value no_frame_origin_value;
+    ASSERT_TRUE(no_frame_origin_key.ToValue(&no_frame_origin_value));
 
-  // Perform same checks when frame origins are enabled.
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAppendFrameOriginToNetworkIsolationKey);
-
-  NetworkIsolationKey frame_origin_key;
-  base::Value frame_origin_value;
-  ASSERT_TRUE(frame_origin_key.ToValue(&frame_origin_value));
-
-  // Fill initial value with junk data, to make sure it's overwritten.
-  out_key = NetworkIsolationKey(kJunkOrigin, kJunkOrigin);
-  EXPECT_TRUE(NetworkIsolationKey::FromValue(frame_origin_value, &out_key));
-  EXPECT_EQ(frame_origin_key, out_key);
-
-  // The Values should also be the same in both cases.
-  EXPECT_EQ(no_frame_origin_key, frame_origin_key);
+    // Fill initial value with junk data, to make sure it's overwritten.
+    NetworkIsolationKey out_key(kJunkOrigin, kJunkOrigin);
+    EXPECT_TRUE(
+        NetworkIsolationKey::FromValue(no_frame_origin_value, &out_key));
+    EXPECT_EQ(no_frame_origin_key, out_key);
+  }
 }
 
 TEST(NetworkIsolationKeyTest, ValueRoundTripNoFrameOrigin) {
@@ -236,11 +231,14 @@ TEST(NetworkIsolationKeyTest, ToValueTransientOrigin) {
   const url::Origin kTransientOrigin =
       url::Origin::Create(GURL("data:text/html,transient"));
 
-  for (bool use_frame_origins : {false, true}) {
+  for (bool use_frame_origins : {true, false}) {
     SCOPED_TRACE(use_frame_origins);
     base::test::ScopedFeatureList feature_list;
     if (use_frame_origins) {
       feature_list.InitAndEnableFeature(
+          features::kAppendFrameOriginToNetworkIsolationKey);
+    } else {
+      feature_list.InitAndDisableFeature(
           features::kAppendFrameOriginToNetworkIsolationKey);
     }
 
@@ -273,11 +271,14 @@ TEST(NetworkIsolationKeyTest, FromValueBadData) {
       base::Value(std::move(too_many_origins_list)),
   };
 
-  for (bool use_frame_origins : {false, true}) {
+  for (bool use_frame_origins : {true, false}) {
     SCOPED_TRACE(use_frame_origins);
     base::test::ScopedFeatureList feature_list;
     if (use_frame_origins) {
       feature_list.InitAndEnableFeature(
+          features::kAppendFrameOriginToNetworkIsolationKey);
+    } else {
+      feature_list.InitAndDisableFeature(
           features::kAppendFrameOriginToNetworkIsolationKey);
     }
 
@@ -311,6 +312,102 @@ TEST(NetworkIsolationKeyTest, UseRegistrableDomain) {
 
   // More tests for using registrable domain are in
   // NetworkIsolationKeyWithFrameOriginTest.UseRegistrableDomain.
+}
+
+class OpaqueNonTransientNetworkIsolationKeyTest : public testing::Test {
+ public:
+  OpaqueNonTransientNetworkIsolationKeyTest() = default;
+  ~OpaqueNonTransientNetworkIsolationKeyTest() override = default;
+
+  std::string GetOriginNonceToString(const net::NetworkIsolationKey& key) {
+    return key.GetTopFrameOrigin().value().nonce_->token().ToString();
+  }
+};
+
+TEST_F(OpaqueNonTransientNetworkIsolationKeyTest,
+       OpaqueNonTransient_DisableAppendFrameOrigin) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kAppendFrameOriginToNetworkIsolationKey);
+
+  NetworkIsolationKey key = NetworkIsolationKey::CreateOpaqueAndNonTransient();
+  EXPECT_TRUE(key.IsFullyPopulated());
+  EXPECT_FALSE(key.IsTransient());
+  EXPECT_FALSE(key.IsEmpty());
+  EXPECT_EQ("opaque non-transient " + GetOriginNonceToString(key),
+            key.ToString());
+  EXPECT_EQ(key.GetTopFrameOrigin()->GetDebugString() + " non-transient",
+            key.ToDebugString());
+
+  // |opaque_and_non_transient_| is kept when a new frame origin is opaque.
+  url::Origin opaque_origin;
+  NetworkIsolationKey new_frame_origin =
+      key.CreateWithNewFrameOrigin(opaque_origin);
+  EXPECT_TRUE(new_frame_origin.IsFullyPopulated());
+  EXPECT_FALSE(new_frame_origin.IsTransient());
+  EXPECT_FALSE(new_frame_origin.IsEmpty());
+  EXPECT_EQ("opaque non-transient " + GetOriginNonceToString(new_frame_origin),
+            new_frame_origin.ToString());
+  EXPECT_EQ(
+      new_frame_origin.GetTopFrameOrigin()->GetDebugString() + " non-transient",
+      new_frame_origin.ToDebugString());
+
+  // Should not be equal to a similar NetworkIsolationKey derived from it.
+  EXPECT_NE(key, NetworkIsolationKey(*key.GetTopFrameOrigin(),
+                                     *key.GetTopFrameOrigin()));
+
+  // To and back from a Value should yield the same key.
+  base::Value value;
+  ASSERT_TRUE(key.ToValue(&value));
+  NetworkIsolationKey from_value;
+  ASSERT_TRUE(NetworkIsolationKey::FromValue(value, &from_value));
+  EXPECT_EQ(key, from_value);
+  EXPECT_EQ(key.ToString(), from_value.ToString());
+  EXPECT_EQ(key.ToDebugString(), from_value.ToDebugString());
+}
+
+TEST_F(OpaqueNonTransientNetworkIsolationKeyTest,
+       OpaqueNonTransient_EnableAppendFrameOrigin) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kAppendFrameOriginToNetworkIsolationKey);
+
+  NetworkIsolationKey key = NetworkIsolationKey::CreateOpaqueAndNonTransient();
+  EXPECT_TRUE(key.IsFullyPopulated());
+  EXPECT_FALSE(key.IsTransient());
+  EXPECT_FALSE(key.IsEmpty());
+  EXPECT_EQ("opaque non-transient " + GetOriginNonceToString(key),
+            key.ToString());
+  EXPECT_EQ(key.GetTopFrameOrigin()->GetDebugString() + " " +
+                key.GetFrameOrigin()->GetDebugString() + " non-transient",
+            key.ToDebugString());
+
+  // |opaque_and_non_transient_| is kept when a new frame origin is opaque.
+  url::Origin opaque_origin;
+  NetworkIsolationKey new_frame_origin =
+      key.CreateWithNewFrameOrigin(opaque_origin);
+  EXPECT_TRUE(new_frame_origin.IsFullyPopulated());
+  EXPECT_FALSE(new_frame_origin.IsTransient());
+  EXPECT_FALSE(new_frame_origin.IsEmpty());
+  EXPECT_EQ("opaque non-transient " + GetOriginNonceToString(new_frame_origin),
+            new_frame_origin.ToString());
+  EXPECT_EQ(new_frame_origin.GetTopFrameOrigin()->GetDebugString() + " " +
+                new_frame_origin.GetFrameOrigin()->GetDebugString() +
+                " non-transient",
+            new_frame_origin.ToDebugString());
+
+  // Should not be equal to a similar NetworkIsolationKey derived from it.
+  EXPECT_NE(key, NetworkIsolationKey(*key.GetTopFrameOrigin(),
+                                     *key.GetFrameOrigin()));
+
+  // To and back from a Value should yield the same key.
+  base::Value value;
+  ASSERT_TRUE(key.ToValue(&value));
+  NetworkIsolationKey from_value;
+  ASSERT_TRUE(NetworkIsolationKey::FromValue(value, &from_value));
+  EXPECT_EQ(key, from_value);
+  EXPECT_EQ(key.ToString(), from_value.ToString());
+  EXPECT_EQ(key.ToDebugString(), from_value.ToDebugString());
 }
 
 class NetworkIsolationKeyWithFrameOriginTest : public testing::Test {
@@ -495,11 +592,15 @@ TEST_F(NetworkIsolationKeyWithFrameOriginTest, UseRegistrableDomain) {
 // host when using a non-standard scheme.
 TEST(NetworkIsolationKeyTest, UseRegistrableDomainWithNonStandardScheme) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kUseRegistrableDomainInNetworkIsolationKey);
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kUseRegistrableDomainInNetworkIsolationKey},
+      // disabled_features
+      {features::kAppendFrameOriginToNetworkIsolationKey});
 
   // Have to register the scheme, or url::Origin::Create() will return an opaque
   // origin.
+  url::ScopedSchemeRegistryForTests scoped_registry;
   url::AddStandardScheme("foo", url::SCHEME_WITH_HOST);
 
   url::Origin origin = url::Origin::Create(GURL("foo://a.foo.com"));
@@ -527,9 +628,10 @@ TEST_F(NetworkIsolationKeyWithFrameOriginTest, CreateWithNewFrameOrigin) {
 }
 
 TEST(NetworkIsolationKeyTest, CreateTransient) {
-  for (bool append_frame_origin : {false, true}) {
+  for (bool use_frame_origins : {true, false}) {
+    SCOPED_TRACE(use_frame_origins);
     base::test::ScopedFeatureList feature_list;
-    if (append_frame_origin) {
+    if (use_frame_origins) {
       feature_list.InitAndEnableFeature(
           features::kAppendFrameOriginToNetworkIsolationKey);
     } else {

@@ -6,6 +6,7 @@ The notarization module manages uploading artifacts for notarization, polling
 for results, and stapling Apple Notary notarization tickets.
 """
 
+import os
 import plistlib
 import subprocess
 import time
@@ -42,10 +43,16 @@ def submit(path, config):
     if config.notary_asc_provider is not None:
         command.extend(['--asc-provider', config.notary_asc_provider])
     output = commands.run_command_output(command)
-    plist = plistlib.loads(output)
-    uuid = plist['notarization-upload']['RequestUUID']
-    logger.info('Submitted %s for notarization, request UUID: %s.', path, uuid)
-    return uuid
+    try:
+        plist = plistlib.loads(output)
+        uuid = plist['notarization-upload']['RequestUUID']
+        logger.info('Submitted %s for notarization, request UUID: %s.', path,
+                    uuid)
+        return uuid
+    except:
+        raise NotarizationError(
+            'xcrun altool returned output that could not be parsed: {}'.format(
+                output))
 
 
 def wait_for_results(uuids, config):
@@ -128,6 +135,29 @@ def wait_for_results(uuids, config):
                 raise NotarizationError(
                     'Timed out waiting for notarization requests: {}'.format(
                         wait_set))
+
+
+def staple_bundled_parts(parts, paths):
+    """Staples all the bundled executable components of the app bundle.
+
+    Args:
+        parts: A list of |model.CodeSignedProduct|.
+        paths: A |model.Paths| object.
+    """
+    # Only staple the signed, bundled executables.
+    part_paths = [
+        part.path
+        for part in parts
+        # TODO(https://crbug.com/979725): Reinstate .xpc bundle stapling once
+        # the signing environment is on a macOS release that supports
+        # Xcode 10.2 or newer.
+        if part.path[-4:] in ('.app',)
+    ]
+    # Reverse-sort the paths so that more nested paths are stapled before
+    # less-nested ones.
+    part_paths.sort(reverse=True)
+    for part_path in part_paths:
+        staple(os.path.join(paths.work, part_path))
 
 
 def staple(path):

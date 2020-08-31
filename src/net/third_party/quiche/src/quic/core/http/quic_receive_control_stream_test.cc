@@ -5,15 +5,21 @@
 #include "net/third_party/quiche/src/quic/core/http/quic_receive_control_stream.h"
 
 #include "net/third_party/quiche/src/quic/core/http/http_constants.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_header_table.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
+#include "net/third_party/quiche/src/quic/test_tools/qpack/qpack_encoder_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_stream_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 namespace quic {
+
+class QpackEncoder;
+
 namespace test {
 
 namespace {
@@ -43,7 +49,7 @@ struct TestParams {
 
 // Used by ::testing::PrintToStringParamName().
 std::string PrintToString(const TestParams& tp) {
-  return QuicStrCat(
+  return quiche::QuicheStrCat(
       ParsedQuicVersionToString(tp.version), "_",
       (tp.perspective == Perspective::IS_CLIENT ? "client" : "server"));
 }
@@ -88,7 +94,7 @@ class QuicReceiveControlStreamTest : public QuicTestWithParam<TestParams> {
                                 session_.transport_version(), 3);
     char type[] = {kControlStream};
 
-    QuicStreamFrame data1(id, false, 0, QuicStringPiece(type, 1));
+    QuicStreamFrame data1(id, false, 0, quiche::QuicheStringPiece(type, 1));
     session_.OnStreamFrame(data1);
 
     receive_control_stream_ =
@@ -109,10 +115,12 @@ class QuicReceiveControlStreamTest : public QuicTestWithParam<TestParams> {
     return std::string(buffer.get(), settings_frame_length);
   }
 
-  std::string PriorityFrame(const PriorityFrame& frame) {
+  std::string SerializePriorityUpdateFrame(
+      const PriorityUpdateFrame& priority_update) {
     std::unique_ptr<char[]> priority_buffer;
     QuicByteCount priority_frame_length =
-        HttpEncoder::SerializePriorityFrame(frame, &priority_buffer);
+        HttpEncoder::SerializePriorityUpdateFrame(priority_update,
+                                                  &priority_buffer);
     return std::string(priority_buffer.get(), priority_frame_length);
   }
 
@@ -139,7 +147,8 @@ TEST_P(QuicReceiveControlStreamTest, ResetControlStream) {
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId,
                                receive_control_stream_->id(),
                                QUIC_STREAM_CANCELLED, 1234);
-  EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID, _, _));
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_HTTP_CLOSED_CRITICAL_STREAM, _, _));
   receive_control_stream_->OnStreamReset(rst_frame);
 }
 
@@ -147,11 +156,24 @@ TEST_P(QuicReceiveControlStreamTest, ReceiveSettings) {
   SettingsFrame settings;
   settings.values[3] = 2;
   settings.values[SETTINGS_MAX_HEADER_LIST_SIZE] = 5;
+  settings.values[SETTINGS_QPACK_BLOCKED_STREAMS] = 12;
+  settings.values[SETTINGS_QPACK_MAX_TABLE_CAPACITY] = 37;
   std::string data = EncodeSettings(settings);
   QuicStreamFrame frame(receive_control_stream_->id(), false, 1, data);
-  EXPECT_NE(5u, session_.max_outbound_header_list_size());
+
+  QpackEncoder* qpack_encoder = session_.qpack_encoder();
+  QpackHeaderTable* header_table =
+      QpackEncoderPeer::header_table(qpack_encoder);
+  EXPECT_EQ(std::numeric_limits<size_t>::max(),
+            session_.max_outbound_header_list_size());
+  EXPECT_EQ(0u, QpackEncoderPeer::maximum_blocked_streams(qpack_encoder));
+  EXPECT_EQ(0u, header_table->maximum_dynamic_table_capacity());
+
   receive_control_stream_->OnStreamFrame(frame);
+
   EXPECT_EQ(5u, session_.max_outbound_header_list_size());
+  EXPECT_EQ(12u, QpackEncoderPeer::maximum_blocked_streams(qpack_encoder));
+  EXPECT_EQ(37u, header_table->maximum_dynamic_table_capacity());
 }
 
 // Regression test for https://crbug.com/982648.
@@ -165,34 +187,36 @@ TEST_P(QuicReceiveControlStreamTest, ReceiveSettingsTwice) {
 
   std::string settings_frame = EncodeSettings(settings);
 
-  EXPECT_EQ(1u, NumBytesConsumed());
+  QuicStreamOffset offset = 1;
+  EXPECT_EQ(offset, NumBytesConsumed());
 
   // Receive first SETTINGS frame.
   receive_control_stream_->OnStreamFrame(
-      QuicStreamFrame(receive_control_stream_->id(), /* fin = */ false,
-                      /* offset = */ 1, settings_frame));
+      QuicStreamFrame(receive_control_stream_->id(), /* fin = */ false, offset,
+                      settings_frame));
+  offset += settings_frame.length();
 
   // First SETTINGS frame is consumed.
-  EXPECT_EQ(settings_frame.size() + 1, NumBytesConsumed());
+  EXPECT_EQ(offset, NumBytesConsumed());
 
   // Second SETTINGS frame causes the connection to be closed.
-  EXPECT_CALL(*connection_,
-              CloseConnection(QUIC_INVALID_STREAM_ID,
-                              "Settings frames are received twice.", _))
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_HTTP_INVALID_FRAME_SEQUENCE_ON_CONTROL_STREAM,
+                      "Settings frames are received twice.", _))
       .WillOnce(
           Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
   EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _));
   EXPECT_CALL(session_, OnConnectionClosed(_, _));
 
   // Receive second SETTINGS frame.
-  receive_control_stream_->OnStreamFrame(QuicStreamFrame(
-      receive_control_stream_->id(), /* fin = */ false,
-      /* offset = */ settings_frame.size() + 1, settings_frame));
+  receive_control_stream_->OnStreamFrame(
+      QuicStreamFrame(receive_control_stream_->id(), /* fin = */ false, offset,
+                      settings_frame));
 
   // Frame header of second SETTINGS frame is consumed, but not frame payload.
   QuicByteCount settings_frame_header_length = 2;
-  EXPECT_EQ(settings_frame.size() + settings_frame_header_length + 1,
-            NumBytesConsumed());
+  EXPECT_EQ(offset + settings_frame_header_length, NumBytesConsumed());
 }
 
 TEST_P(QuicReceiveControlStreamTest, ReceiveSettingsFragments) {
@@ -212,51 +236,68 @@ TEST_P(QuicReceiveControlStreamTest, ReceiveSettingsFragments) {
 }
 
 TEST_P(QuicReceiveControlStreamTest, ReceiveWrongFrame) {
-  DuplicatePushFrame dup;
-  dup.push_id = 0x1;
+  // DATA frame header without payload.
   std::unique_ptr<char[]> buffer;
   QuicByteCount header_length =
-      HttpEncoder::SerializeDuplicatePushFrame(dup, &buffer);
+      HttpEncoder::SerializeDataFrameHeader(/* payload_length = */ 2, &buffer);
   std::string data = std::string(buffer.get(), header_length);
 
   QuicStreamFrame frame(receive_control_stream_->id(), false, 1, data);
-  EXPECT_CALL(*connection_, CloseConnection(QUIC_HTTP_DECODER_ERROR, _, _));
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM, _, _));
   receive_control_stream_->OnStreamFrame(frame);
 }
 
-TEST_P(QuicReceiveControlStreamTest, ReceivePriorityFrame) {
-  if (perspective() == Perspective::IS_CLIENT) {
-    return;
-  }
-  SetQuicFlag(FLAGS_quic_allow_http3_priority, true);
-  struct PriorityFrame frame;
-  frame.prioritized_type = REQUEST_STREAM;
-  frame.dependency_type = ROOT_OF_TREE;
-  frame.prioritized_element_id = stream_->id();
-  frame.weight = 1;
-  std::string serialized_frame = PriorityFrame(frame);
-  QuicStreamFrame data(receive_control_stream_->id(), false, 1,
-                       serialized_frame);
+TEST_P(QuicReceiveControlStreamTest,
+       ReceivePriorityUpdateFrameBeforeSettingsFrame) {
+  std::string serialized_frame = SerializePriorityUpdateFrame({});
+  QuicStreamFrame data(receive_control_stream_->id(), /* fin = */ false,
+                       /* offset = */ 1, serialized_frame);
 
-  EXPECT_EQ(3u, stream_->precedence().spdy3_priority());
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_HTTP_MISSING_SETTINGS_FRAME,
+                      "PRIORITY_UPDATE frame received before SETTINGS.", _))
+      .WillOnce(
+          Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _));
+  EXPECT_CALL(session_, OnConnectionClosed(_, _));
+
   receive_control_stream_->OnStreamFrame(data);
-  EXPECT_EQ(1u, stream_->precedence().spdy3_priority());
 }
 
 TEST_P(QuicReceiveControlStreamTest, ReceiveGoAwayFrame) {
-  GoAwayFrame goaway;
-  goaway.stream_id = 0x00;
+  StrictMock<MockHttp3DebugVisitor> debug_visitor;
+  session_.set_debug_visitor(&debug_visitor);
+
+  QuicStreamOffset offset = 1;
+
+  // Receive SETTINGS frame.
+  SettingsFrame settings;
+  std::string settings_frame = EncodeSettings(settings);
+  EXPECT_CALL(debug_visitor, OnSettingsFrameReceived(settings));
+  receive_control_stream_->OnStreamFrame(
+      QuicStreamFrame(receive_control_stream_->id(), /* fin = */ false, offset,
+                      settings_frame));
+  offset += settings_frame.length();
+
+  GoAwayFrame goaway{/* stream_id = */ 0};
 
   std::unique_ptr<char[]> buffer;
   QuicByteCount header_length =
       HttpEncoder::SerializeGoAwayFrame(goaway, &buffer);
   std::string data = std::string(buffer.get(), header_length);
 
-  QuicStreamFrame frame(receive_control_stream_->id(), false, 1, data);
+  QuicStreamFrame frame(receive_control_stream_->id(), false, offset, data);
   EXPECT_FALSE(session_.http3_goaway_received());
 
+  EXPECT_CALL(debug_visitor, OnGoAwayFrameReceived(goaway));
+
   if (perspective() == Perspective::IS_SERVER) {
-    EXPECT_CALL(*connection_, CloseConnection(QUIC_HTTP_DECODER_ERROR, _, _));
+    EXPECT_CALL(
+        *connection_,
+        CloseConnection(QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM, _, _));
   }
 
   receive_control_stream_->OnStreamFrame(frame);
@@ -274,8 +315,9 @@ TEST_P(QuicReceiveControlStreamTest, PushPromiseOnControlStreamShouldClose) {
       push_promise, &buffer);
   QuicStreamFrame frame(receive_control_stream_->id(), false, 1, buffer.get(),
                         length);
-  // TODO(lassey) Check for HTTP_WRONG_STREAM error code.
-  EXPECT_CALL(*connection_, CloseConnection(QUIC_HTTP_DECODER_ERROR, _, _))
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM, _, _))
       .WillOnce(
           Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
   EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _));
@@ -285,18 +327,97 @@ TEST_P(QuicReceiveControlStreamTest, PushPromiseOnControlStreamShouldClose) {
 
 // Regression test for b/137554973: unknown frames should be consumed.
 TEST_P(QuicReceiveControlStreamTest, ConsumeUnknownFrame) {
-  std::string unknown_frame = QuicTextUtils::HexDecode(
+  EXPECT_EQ(1u, NumBytesConsumed());
+
+  QuicStreamOffset offset = 1;
+
+  // Receive SETTINGS frame.
+  std::string settings_frame = EncodeSettings({});
+  receive_control_stream_->OnStreamFrame(
+      QuicStreamFrame(receive_control_stream_->id(), /* fin = */ false, offset,
+                      settings_frame));
+  offset += settings_frame.length();
+
+  // SETTINGS frame is consumed.
+  EXPECT_EQ(offset, NumBytesConsumed());
+
+  // Receive unknown frame.
+  std::string unknown_frame = quiche::QuicheTextUtils::HexDecode(
       "21"        // reserved frame type
       "03"        // payload length
       "666f6f");  // payload "foo"
 
-  EXPECT_EQ(1u, NumBytesConsumed());
+  receive_control_stream_->OnStreamFrame(QuicStreamFrame(
+      receive_control_stream_->id(), /* fin = */ false, offset, unknown_frame));
+  offset += unknown_frame.size();
+
+  // Unknown frame is consumed.
+  EXPECT_EQ(offset, NumBytesConsumed());
+}
+
+TEST_P(QuicReceiveControlStreamTest, ReceiveUnknownFrame) {
+  StrictMock<MockHttp3DebugVisitor> debug_visitor;
+  session_.set_debug_visitor(&debug_visitor);
+
+  const QuicStreamId id = receive_control_stream_->id();
+  QuicStreamOffset offset = 1;
+
+  // Receive SETTINGS frame.
+  SettingsFrame settings;
+  std::string settings_frame = EncodeSettings(settings);
+  EXPECT_CALL(debug_visitor, OnSettingsFrameReceived(settings));
+  receive_control_stream_->OnStreamFrame(
+      QuicStreamFrame(id, /* fin = */ false, offset, settings_frame));
+  offset += settings_frame.length();
+
+  // Receive unknown frame.
+  std::string unknown_frame = quiche::QuicheTextUtils::HexDecode(
+      "21"        // reserved frame type
+      "03"        // payload length
+      "666f6f");  // payload "foo"
+
+  EXPECT_CALL(debug_visitor, OnUnknownFrameReceived(id, /* frame_type = */ 0x21,
+                                                    /* payload_length = */ 3));
+  receive_control_stream_->OnStreamFrame(
+      QuicStreamFrame(id, /* fin = */ false, offset, unknown_frame));
+}
+
+TEST_P(QuicReceiveControlStreamTest, CancelPushFrameBeforeSettings) {
+  std::string cancel_push_frame = quiche::QuicheTextUtils::HexDecode(
+      "03"    // type CANCEL_PUSH
+      "01"    // payload length
+      "01");  // push ID
+
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_HTTP_MISSING_SETTINGS_FRAME,
+                              "CANCEL_PUSH frame received before SETTINGS.", _))
+      .WillOnce(
+          Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _));
+  EXPECT_CALL(session_, OnConnectionClosed(_, _));
+
+  receive_control_stream_->OnStreamFrame(
+      QuicStreamFrame(receive_control_stream_->id(), /* fin = */ false,
+                      /* offset = */ 1, cancel_push_frame));
+}
+
+TEST_P(QuicReceiveControlStreamTest, UnknownFrameBeforeSettings) {
+  std::string unknown_frame = quiche::QuicheTextUtils::HexDecode(
+      "21"        // reserved frame type
+      "03"        // payload length
+      "666f6f");  // payload "foo"
+
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_HTTP_MISSING_SETTINGS_FRAME,
+                              "Unknown frame received before SETTINGS.", _))
+      .WillOnce(
+          Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _));
+  EXPECT_CALL(session_, OnConnectionClosed(_, _));
 
   receive_control_stream_->OnStreamFrame(
       QuicStreamFrame(receive_control_stream_->id(), /* fin = */ false,
                       /* offset = */ 1, unknown_frame));
-
-  EXPECT_EQ(unknown_frame.size() + 1, NumBytesConsumed());
 }
 
 }  // namespace

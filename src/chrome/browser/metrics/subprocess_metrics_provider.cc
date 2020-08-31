@@ -106,10 +106,6 @@ void SubprocessMetricsProvider::MergeHistogramDeltas() {
     MergeHistogramDeltasFromAllocator(iter.GetCurrentKey(),
                                       iter.GetCurrentValue());
   }
-
-  UMA_HISTOGRAM_COUNTS_100(
-      "UMA.SubprocessMetricsProvider.SubprocessCount",
-      allocators_by_id_.size());
 }
 
 void SubprocessMetricsProvider::BrowserChildProcessHostConnected(
@@ -122,11 +118,11 @@ void SubprocessMetricsProvider::BrowserChildProcessHostConnected(
   // thread so do the necessary dance.
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(
+      base::BindOnce(
           &SubprocessMetricsProvider::GetSubprocessHistogramAllocatorOnIOThread,
           data.id),
-      base::Bind(&SubprocessMetricsProvider::RegisterSubprocessAllocator,
-                 weak_ptr_factory_.GetWeakPtr(), data.id));
+      base::BindOnce(&SubprocessMetricsProvider::RegisterSubprocessAllocator,
+                     weak_ptr_factory_.GetWeakPtr(), data.id));
 }
 
 void SubprocessMetricsProvider::BrowserChildProcessHostDisconnected(

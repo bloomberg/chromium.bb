@@ -69,7 +69,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Updates the top UI state to be hidden or shown in fullscreen according to
   // the preference's state. Currently only used on Mac.
-  virtual void UpdateFullscreenTopUI(bool needs_check_tab_fullscreen);
+  virtual void UpdateFullscreenTopUI();
 
   // Returns whether the top UI should hide.
   virtual bool ShouldHideTopUIForFullscreen() const;
@@ -177,18 +177,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   int GetSystemMenuY() const override;
 #endif
 
-  void MaybeObserveTabstrip();
-
-  // Gets a theme provider that should be non-null even before we're added to a
-  // view hierarchy.
-  const ui::ThemeProvider* GetThemeProviderForProfile() const;
-
-  // Returns the color of the given |color_id| from the theme provider or the
-  // default theme properties.
-  SkColor GetThemeOrDefaultColor(int color_id) const;
-
-  // Returns the color of the given |color_id| for an un-themed frame.
-  SkColor GetUnthemedColor(int color_id) const;
+  // Get the |frame_| theme provider since it should be non-null even before
+  // we're added to the view hierarchy.
+  const ui::ThemeProvider* GetFrameThemeProvider() const;
 
   // The frame that hosts this view.
   BrowserFrame* frame_;

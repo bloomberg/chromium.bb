@@ -9,14 +9,15 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/lazy_task_runner.h"
+#include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -57,10 +58,9 @@ namespace {
 
 const char kMediaGalleryMountPrefix[] = "media_galleries-";
 
-base::LazySequencedTaskRunner g_media_task_runner =
-    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::ThreadPool(),
-                         base::MayBlock(),
+base::LazyThreadPoolSequencedTaskRunner g_media_task_runner =
+    LAZY_THREAD_POOL_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(),
                          base::TaskPriority::USER_VISIBLE,
                          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
 
@@ -113,9 +113,9 @@ void AttemptAutoMountOnUIThread(
               profile);
       // Pass the WebContentsGetter to the closure to prevent a use-after-free
       // in the case that the web_contents is destroyed before the closure runs.
-      preferences->EnsureInitialized(base::Bind(
+      preferences->EnsureInitialized(base::BindOnce(
           &OnPreferencesInit, web_contents_getter, base::RetainedRef(extension),
-          pref_id, base::Passed(&callback)));
+          pref_id, std::move(callback)));
       return;
     }
   }

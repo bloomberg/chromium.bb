@@ -19,9 +19,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_constructor_4.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
@@ -70,14 +72,21 @@ namespace test_interface_constructor_4_v8_internal {
 static void Constructor1(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor4_ConstructorCallback");
 
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor4");
+  ScriptState* script_state = ScriptState::From(
+      info.NewTarget().As<v8::Object>()->CreationContext());
+
   TestInterfaceConstructor4* test_interface_4_arg;
   test_interface_4_arg = V8TestInterfaceConstructor4::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!test_interface_4_arg) {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToConstruct("TestInterfaceConstructor4", ExceptionMessages::ArgumentNotOfType(0, "TestInterfaceConstructor4")));
+    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(0, "TestInterfaceConstructor4"));
     return;
   }
 
-  TestInterfaceConstructor4* impl = TestInterfaceConstructor4::Create(test_interface_4_arg);
+  TestInterfaceConstructor4* impl = TestInterfaceConstructor4::Create(script_state, test_interface_4_arg, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestInterfaceConstructor4::GetWrapperTypeInfo(), wrapper);
   V8SetReturnValue(info, wrapper);
@@ -87,13 +96,18 @@ static void Constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor4_ConstructorCallback");
 
   ExceptionState exception_state(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor4");
+  ScriptState* script_state = ScriptState::From(
+      info.NewTarget().As<v8::Object>()->CreationContext());
 
   V8StringResource<> usv_string_arg;
   usv_string_arg = NativeValueTraits<IDLUSVString>::NativeValue(info.GetIsolate(), info[0], exception_state);
   if (exception_state.HadException())
     return;
 
-  TestInterfaceConstructor4* impl = TestInterfaceConstructor4::Create(usv_string_arg);
+  TestInterfaceConstructor4* impl = TestInterfaceConstructor4::Create(script_state, usv_string_arg, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestInterfaceConstructor4::GetWrapperTypeInfo(), wrapper);
   V8SetReturnValue(info, wrapper);
@@ -122,6 +136,8 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 CORE_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor4_Constructor");
 
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kV8TestInterfaceConstructor4_Constructor);
   if (!info.IsConstructCall()) {
     V8ThrowException::ThrowTypeError(
         info.GetIsolate(),
@@ -134,7 +150,7 @@ CORE_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& 
     return;
   }
 
-  test_interface_constructor_4_v8_internal::Constructor(info);
+  V8TestInterfaceConstructor4::ConstructorCustom(info);
 }
 
 }  // namespace test_interface_constructor_4_v8_internal
@@ -199,16 +215,6 @@ v8::Local<v8::Object> V8TestInterfaceConstructor4::FindInstanceInPrototypeChain(
 TestInterfaceConstructor4* V8TestInterfaceConstructor4::ToImplWithTypeCheck(
     v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
-}
-
-TestInterfaceConstructor4* NativeValueTraits<TestInterfaceConstructor4>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestInterfaceConstructor4* native_value = V8TestInterfaceConstructor4::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestInterfaceConstructor4"));
-  }
-  return native_value;
 }
 
 }  // namespace blink

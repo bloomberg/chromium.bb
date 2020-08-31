@@ -16,6 +16,7 @@
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/browsertest_util.h"
@@ -479,7 +480,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
   ExpectSameSiteCookies(cookies);
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no label */,
+INSTANTIATE_TEST_SUITE_P(All,
                          ExtensionSameSiteCookiesTest,
                          ::testing::Bool());
 

@@ -36,7 +36,9 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
+import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
 import java.util.ArrayList;
@@ -82,7 +84,7 @@ public class CustomNotificationBuilderTest {
                         .setTitle("title")
                         .setBody("body")
                         .setOrigin("origin")
-                        .setChannelId(ChannelDefinitions.ChannelId.SITES)
+                        .setChannelId(ChromeChannelDefinitions.ChannelId.SITES)
                         .setTicker("ticker")
                         .setDefaults(Notification.DEFAULT_ALL)
                         .setVibrate(new long[] {100L})
@@ -147,7 +149,7 @@ public class CustomNotificationBuilderTest {
     public void testZeroActionButtons() {
         Context context = InstrumentationRegistry.getTargetContext();
         NotificationBuilderBase builder = new CustomNotificationBuilder(context).setChannelId(
-                ChannelDefinitions.ChannelId.SITES);
+                ChromeChannelDefinitions.ChannelId.SITES);
         Notification notification = buildNotification(builder);
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
         ArrayList<View> buttons = new ArrayList<>();
@@ -167,7 +169,7 @@ public class CustomNotificationBuilderTest {
         Context context = InstrumentationRegistry.getTargetContext();
         NotificationBuilderBase builder =
                 new CustomNotificationBuilder(context)
-                        .setChannelId(ChannelDefinitions.ChannelId.SITES)
+                        .setChannelId(ChromeChannelDefinitions.ChannelId.SITES)
                         .addButtonAction(null /* iconBitmap */, "button",
                                 createIntent(context, "ActionButtonOne").getPendingIntent())
                         .addButtonAction(null /* iconBitmap */, "button",
@@ -198,10 +200,11 @@ public class CustomNotificationBuilderTest {
 
         Bitmap largeIcon = createIcon(Color.RED);
 
-        NotificationBuilderBase builder = new CustomNotificationBuilder(context)
-                                                  .setChannelId(ChannelDefinitions.ChannelId.SITES)
-                                                  .setLargeIcon(largeIcon)
-                                                  .setSmallIconId(R.drawable.ic_chrome);
+        NotificationBuilderBase builder =
+                new CustomNotificationBuilder(context)
+                        .setChannelId(ChromeChannelDefinitions.ChannelId.SITES)
+                        .setLargeIcon(largeIcon)
+                        .setSmallIconId(R.drawable.ic_chrome);
         Notification notification = buildNotification(builder);
         assertLargeNotificationIconAsExpected(context, notification, largeIcon);
     }
@@ -214,10 +217,11 @@ public class CustomNotificationBuilderTest {
 
         Bitmap smallIcon = createIcon(Color.RED);
 
-        NotificationBuilderBase builder = new CustomNotificationBuilder(context)
-                                                  .setChannelId(ChannelDefinitions.ChannelId.SITES)
-                                                  .setSmallIconForContent(smallIcon)
-                                                  .setStatusBarIcon(smallIcon);
+        NotificationBuilderBase builder =
+                new CustomNotificationBuilder(context)
+                        .setChannelId(ChromeChannelDefinitions.ChannelId.SITES)
+                        .setSmallIconForContent(smallIcon)
+                        .setStatusBarIcon(smallIcon);
         Notification notification = buildNotification(builder);
 
         // Note that small icon as a Bitmap should be present on pre-M, even though it can't
@@ -234,7 +238,7 @@ public class CustomNotificationBuilderTest {
 
         NotificationBuilderBase builder =
                 new CustomNotificationBuilder(context)
-                        .setChannelId(ChannelDefinitions.ChannelId.SITES)
+                        .setChannelId(ChromeChannelDefinitions.ChannelId.SITES)
                         .setSmallIconId(R.drawable.ic_chrome)
                         .addButtonAction(actionIcon, "button",
                                 createIntent(context, "ActionButton").getPendingIntent());
@@ -274,7 +278,7 @@ public class CustomNotificationBuilderTest {
                         .setTitle(createString('a', maxLength + 1))
                         .setBody(createString('b', maxLength + 1))
                         .setOrigin(createString('c', maxLength + 1))
-                        .setChannelId(ChannelDefinitions.ChannelId.SITES)
+                        .setChannelId(ChromeChannelDefinitions.ChannelId.SITES)
                         .setTicker(createString('d', maxLength + 1))
                         .addButtonAction(null /* iconBitmap */, createString('e', maxLength + 1),
                                 createIntent(context, "ActionButtonOne").getPendingIntent());
@@ -333,7 +337,7 @@ public class CustomNotificationBuilderTest {
         NotificationBuilderBase notificationBuilder =
                 new CustomNotificationBuilder(context)
                         .setOrigin("https://www.google.com")
-                        .setChannelId(ChannelDefinitions.ChannelId.SITES);
+                        .setChannelId(ChromeChannelDefinitions.ChannelId.SITES);
 
         Notification notification = buildNotification(notificationBuilder);
 
@@ -352,7 +356,7 @@ public class CustomNotificationBuilderTest {
         NotificationBuilderBase notificationBuilder =
                 new CustomNotificationBuilder(context)
                         .setOrigin("https://www.chromium.org")
-                        .setChannelId(ChannelDefinitions.ChannelId.SITES)
+                        .setChannelId(ChromeChannelDefinitions.ChannelId.SITES)
                         .setLargeIcon(null);
 
         Notification notification = buildNotification(notificationBuilder);
@@ -379,7 +383,7 @@ public class CustomNotificationBuilderTest {
         Context context = InstrumentationRegistry.getTargetContext();
         NotificationBuilderBase notificationBuilder =
                 new CustomNotificationBuilder(context)
-                        .setChannelId(ChannelDefinitions.ChannelId.SITES)
+                        .setChannelId(ChromeChannelDefinitions.ChannelId.SITES)
                         .addTextAction(null, "Action Title", null, "Placeholder");
 
         Notification notification = buildNotification(notificationBuilder);

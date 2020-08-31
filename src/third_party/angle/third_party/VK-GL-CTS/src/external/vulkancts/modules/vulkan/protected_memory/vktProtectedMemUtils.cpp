@@ -56,12 +56,18 @@ CustomInstance makeProtectedMemInstance (vkt::Context& context, const std::vecto
 	const Extensions			supportedExtensions(vk::enumerateInstanceExtensionProperties(vkp, DE_NULL));
 	std::vector<std::string>	requiredExtensions = extraExtensions;
 
-	if (!isCoreInstanceExtension(context.getUsedApiVersion(), "VK_KHR_get_physical_device_properties2"))
+	deUint32 apiVersion = context.getUsedApiVersion();
+	if (!isCoreInstanceExtension(apiVersion, "VK_KHR_get_physical_device_properties2"))
 		requiredExtensions.push_back("VK_KHR_get_physical_device_properties2");
+
+	// extract extension names
+	std::vector<std::string> extensions;
+	for (const auto& e : supportedExtensions)
+		extensions.push_back(e.extensionName);
 
 	for (const auto& extName : requiredExtensions)
 	{
-		if (!isInstanceExtensionSupported(context.getUsedApiVersion(), supportedExtensions, vk::RequiredExtension(extName)))
+		if (!isInstanceExtensionSupported(apiVersion, extensions, extName))
 			TCU_THROW(NotSupportedError, (extName + " is not supported").c_str());
 	}
 
@@ -148,10 +154,11 @@ vk::Move<vk::VkDevice> makeProtectedMemDevice	(const vk::PlatformInterface&		vkp
 	// Check if the physical device supports the protected memory extension name
 	for (deUint32 ndx = 0; ndx < extensions.size(); ++ndx)
 	{
-		if (!isDeviceExtensionSupported(apiVersion, supportedExtensions, vk::RequiredExtension(extensions[ndx])))
+		bool notInCore = !isCoreDeviceExtension(apiVersion, extensions[ndx]);
+		if (notInCore && !isExtensionSupported(supportedExtensions.begin(), supportedExtensions.end(), RequiredExtension(extensions[ndx])))
 			TCU_THROW(NotSupportedError, (extensions[ndx] + " is not supported").c_str());
 
-		if (!isCoreDeviceExtension(apiVersion, extensions[ndx]))
+		if (notInCore)
 			requiredExtensions.push_back(extensions[ndx]);
 	}
 
@@ -699,7 +706,7 @@ void uploadImage (ProtectedContext& ctx, vk::VkImage image, const tcu::Texture2D
 
 		tcu::copy(destAccess, access);
 
-		vk::flushMappedMemoryRange(vk, device, stagingBuffer->getAllocation().getMemory(), stagingBuffer->getAllocation().getOffset(), stagingBufferSize);
+		flushAlloc(vk, device, stagingBuffer->getAllocation());
 	}
 
 	const vk::VkImageSubresourceRange	subresourceRange	=
@@ -903,6 +910,41 @@ void fillWithRandomColorTiles (const tcu::PixelBufferAccess& dst, const tcu::Vec
 		for (int i = 0; i < 4; i++)
 			color[i] = rnd.getFloat(minVal[i], maxVal[i]);
 		tcu::clear(tcu::getSubregion(dst, xBegin, yBegin, slice, xEnd - xBegin, yEnd - yBegin, 1), color);
+	}
+}
+
+void fillWithUniqueColors (const tcu::PixelBufferAccess& dst, deUint32 seed)
+{
+	// This is an implementation of linear congruential generator.
+	// The A and M are prime numbers, thus allowing to generate unique number sequence of length genM-1.
+	// The generator uses C constant as 0, thus value of 0 is not allowed as a seed.
+	const deUint64	genA	= 1573051ull;
+	const deUint64	genM	= 2097023ull;
+	deUint64		genX	= seed % genM;
+
+	DE_ASSERT(deUint64(dst.getWidth()) * deUint64(dst.getHeight()) * deUint64(dst.getDepth()) < genM - 1);
+
+	if (genX == 0)
+		genX = 1;
+
+	const int	numCols		= dst.getWidth();
+	const int	numRows		= dst.getHeight();
+	const int	numSlices	= dst.getDepth();
+
+	for (int z = 0; z < numSlices; z++)
+	for (int y = 0; y < numRows; y++)
+	for (int x = 0; x < numCols; x++)
+	{
+		genX = (genA * genX) % genM;
+
+		DE_ASSERT(genX != seed);
+
+		const float		r		= float(deUint32((genX >> 0)  & 0x7F)) / 127.0f;
+		const float		g		= float(deUint32((genX >> 7)  & 0x7F)) / 127.0f;
+		const float		b		= float(deUint32((genX >> 14) & 0x7F)) / 127.0f;
+		const tcu::Vec4	color	= tcu::Vec4(r, g, b, 1.0f);
+
+		dst.setPixel(color, x, y, z);
 	}
 }
 

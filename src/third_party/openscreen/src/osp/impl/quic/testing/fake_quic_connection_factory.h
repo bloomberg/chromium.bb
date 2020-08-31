@@ -55,10 +55,9 @@ class FakeClientQuicConnectionFactory final : public QuicConnectionFactory {
   ~FakeClientQuicConnectionFactory() override;
 
   // UdpSocket::Client overrides.
-  void OnError(platform::UdpSocket* socket, Error error) override;
-  void OnSendError(platform::UdpSocket* socket, Error error) override;
-  void OnRead(platform::UdpSocket* socket,
-              ErrorOr<platform::UdpPacket> packet) override;
+  void OnError(UdpSocket* socket, Error error) override;
+  void OnSendError(UdpSocket* socket, Error error) override;
+  void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet) override;
 
   // QuicConnectionFactory overrides.
   void SetServerDelegate(ServerDelegate* delegate,
@@ -69,7 +68,7 @@ class FakeClientQuicConnectionFactory final : public QuicConnectionFactory {
 
   bool idle() const { return idle_; }
 
-  std::unique_ptr<platform::UdpSocket> socket_;
+  std::unique_ptr<UdpSocket> socket_;
 
  private:
   FakeQuicConnectionFactoryBridge* bridge_;
@@ -83,10 +82,9 @@ class FakeServerQuicConnectionFactory final : public QuicConnectionFactory {
   ~FakeServerQuicConnectionFactory() override;
 
   // UdpSocket::Client overrides.
-  void OnError(platform::UdpSocket* socket, Error error) override;
-  void OnSendError(platform::UdpSocket* socket, Error error) override;
-  void OnRead(platform::UdpSocket* socket,
-              ErrorOr<platform::UdpPacket> packet) override;
+  void OnError(UdpSocket* socket, Error error) override;
+  void OnSendError(UdpSocket* socket, Error error) override;
+  void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet) override;
 
   // QuicConnectionFactory overrides.
   void SetServerDelegate(ServerDelegate* delegate,

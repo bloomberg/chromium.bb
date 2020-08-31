@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 
 /**
  * This class serves as a callback from TabModel to TabModelSelector. Avoid adding unnecessary
@@ -30,6 +31,11 @@ public interface TabModelDelegate {
      * @return Whether the specified model is currently selected.
      */
     boolean isCurrentModel(TabModel model);
+
+    /**
+     * @return Whether reparenting is currently in progress for this TabModel.
+     */
+    boolean isReparentingInProgress();
 
     // TODO(aurimas): clean these methods up.
     TabModel getCurrentModel();

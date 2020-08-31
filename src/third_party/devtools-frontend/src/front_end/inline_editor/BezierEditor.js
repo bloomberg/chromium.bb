@@ -1,10 +1,17 @@
 // Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+import * as UI from '../ui/ui.js';
+
+import {BezierUI} from './BezierUI.js';
+
 /**
  * @unrestricted
  */
-export class BezierEditor extends UI.VBox {
+export class BezierEditor extends UI.Widget.VBox {
   constructor() {
     super(true);
     this.registerRequiredCSS('inline_editor/bezierEditor.css');
@@ -22,7 +29,7 @@ export class BezierEditor extends UI.VBox {
 
     // Presets UI
     this._presetsContainer = this._outerContainer.createChild('div', 'bezier-presets');
-    this._presetUI = new InlineEditor.BezierUI(40, 40, 0, 2, false);
+    this._presetUI = new BezierUI(40, 40, 0, 2, false);
     this._presetCategories = [];
     for (let i = 0; i < Presets.length; i++) {
       this._presetCategories[i] = this._createCategory(Presets[i]);
@@ -30,9 +37,9 @@ export class BezierEditor extends UI.VBox {
     }
 
     // Curve UI
-    this._curveUI = new InlineEditor.BezierUI(150, 250, 50, 7, true);
+    this._curveUI = new BezierUI(150, 250, 50, 7, true);
     this._curve = this._outerContainer.createSVGChild('svg', 'bezier-curve');
-    UI.installDragHandle(
+    UI.UIUtils.installDragHandle(
         this._curve, this._dragStart.bind(this), this._dragMove.bind(this), this._dragEnd.bind(this), 'default');
 
     this._header = this.contentElement.createChild('div', 'bezier-header');
@@ -88,7 +95,7 @@ export class BezierEditor extends UI.VBox {
   _updateUI() {
     const labelText = this._selectedCategory ? this._selectedCategory.presets[this._selectedCategory.presetIndex].name :
                                                this._bezier.asCSSText().replace(/\s(-\d\.\d)/g, '$1');
-    this._label.textContent = Common.UIString(labelText);
+    this._label.textContent = Common.UIString.UIString(labelText);
     this._curveUI.drawCurve(this._bezier, this._curve);
     this._previewOnion.removeChildren();
   }
@@ -101,7 +108,7 @@ export class BezierEditor extends UI.VBox {
     this._mouseDownPosition = new UI.Geometry.Point(event.x, event.y);
     const ui = this._curveUI;
     this._controlPosition = new UI.Geometry.Point(
-        Number.constrain((event.offsetX - ui.radius) / ui.curveWidth(), 0, 1),
+        Platform.NumberUtilities.clamp((event.offsetX - ui.radius) / ui.curveWidth(), 0, 1),
         (ui.curveHeight() + ui.marginTop + ui.radius - event.offsetY) / ui.curveHeight());
 
     const firstControlPointIsCloser = this._controlPosition.distanceTo(this._bezier.controlPoints[0]) <
@@ -124,7 +131,7 @@ export class BezierEditor extends UI.VBox {
     const deltaX = (mouseX - this._mouseDownPosition.x) / this._curveUI.curveWidth();
     const deltaY = (mouseY - this._mouseDownPosition.y) / this._curveUI.curveHeight();
     const newPosition = new UI.Geometry.Point(
-        Number.constrain(this._controlPosition.x + deltaX, 0, 1), this._controlPosition.y - deltaY);
+        Platform.NumberUtilities.clamp(this._controlPosition.x + deltaX, 0, 1), this._controlPosition.y - deltaY);
     this._bezier.controlPoints[this._selectedPoint] = newPosition;
   }
 
@@ -147,10 +154,11 @@ export class BezierEditor extends UI.VBox {
 
   /**
    * @param {!Array<{name: string, value: string}>} presetGroup
-   * @return {!InlineEditor.BezierEditor.PresetCategory}
+   * @return {!PresetCategory}
    */
   _createCategory(presetGroup) {
-    const presetElement = createElementWithClass('div', 'bezier-preset-category');
+    const presetElement = document.createElement('div');
+    presetElement.classList.add('bezier-preset-category');
     const iconElement = presetElement.createSVGChild('svg', 'bezier-preset monospace');
     const category = {presets: presetGroup, presetIndex: 0, icon: presetElement};
     this._presetUI.drawCurve(UI.Geometry.CubicBezier.parse(category.presets[0].value), iconElement);
@@ -182,7 +190,7 @@ export class BezierEditor extends UI.VBox {
   }
 
   /**
-   * @param {!InlineEditor.BezierEditor.PresetCategory} category
+   * @param {!PresetCategory} category
    * @param {!Event=} event
    */
   _presetCategorySelected(category, event) {
@@ -273,17 +281,5 @@ export const Presets = [
   ]
 ];
 
-/* Legacy exported object */
-self.InlineEditor = self.InlineEditor || {};
-
-/* Legacy exported object */
-InlineEditor = InlineEditor || {};
-
-/** @constructor */
-InlineEditor.BezierEditor = BezierEditor;
-
-InlineEditor.BezierEditor.Events = Events;
-InlineEditor.BezierEditor.Presets = Presets;
-
 /** @typedef {{presets: !Array.<{name: string, value: string}>, icon: !Element, presetIndex: number}} */
-InlineEditor.BezierEditor.PresetCategory;
+export let PresetCategory;

@@ -5,6 +5,7 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
+import("//tools/polymer/html_to_js.gni")
 import("../optimize_webui.gni")
 
 if (optimize_webui) {
@@ -13,41 +14,40 @@ if (optimize_webui) {
 
   optimize_webui("build") {
     host = "history"
-    html_in_files = [
-      "app.html",
-      "lazy_load.html",
-    ]
-    html_out_files = [
-      "app.vulcanized.html",
-      "lazy_load.vulcanized.html",
+    js_module_in_files = [
+      "history.js",
+      "lazy_load.js",
     ]
     input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
     js_out_files = [
-      "app.crisper.js",
-      "lazy_load.crisper.js",
+      "history.rollup.js",
+      "lazy_load.rollup.js",
+      "shared.rollup.js",
     ]
 
     deps = [
       ":unpak",
+      "../../../../ui/webui/resources:modulize",
     ]
-    excludes = [
-      "chrome://resources/html/util.html",
-      "constants.html",
-    ]
+    excludes = [ "chrome://resources/js/cr.m.js" ]
   }
 
   unpak("unpak") {
     pak_file = history_pak_file
     out_folder = unpak_folder
 
-    deps = [
-      ":flattened_resources",
-    ]
+    deps = [ ":flattened_resources" ]
   }
 
   grit("flattened_resources") {
     source = "history_resources.grd"
 
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
+    deps = [ ":web_components" ]
     defines = chrome_grit_defines
     outputs = [
       "grit/history_resources.h",
@@ -60,17 +60,18 @@ if (optimize_webui) {
 }
 
 js_type_check("closure_compile") {
+  is_polymer3 = true
   deps = [
     ":app",
     ":browser_service",
     ":constants",
     ":externs",
-    ":history",
     ":history_item",
     ":history_list",
     ":history_toolbar",
     ":query_manager",
     ":router",
+    ":searched_label",
     ":side_bar",
     ":synced_device_card",
     ":synced_device_manager",
@@ -82,15 +83,13 @@ js_library("constants") {
 
 js_library("browser_service") {
   deps = [
+    ":constants",
     ":externs",
-    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:cr.m",
   ]
 }
 
 js_library("externs") {
-  deps = [
-    ":constants",
-  ]
 }
 
 js_library("history_item") {
@@ -98,10 +97,10 @@ js_library("history_item") {
     ":browser_service",
     ":constants",
     ":externs",
-    "//ui/webui/resources/js:icon",
-    "//ui/webui/resources/js:load_time_data",
-    "//ui/webui/resources/js:util",
-    "//ui/webui/resources/js/cr/ui:focus_row_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:icon.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js/cr/ui:focus_row_behavior.m",
   ]
 }
 
@@ -111,15 +110,17 @@ js_library("history_list") {
     ":constants",
     ":externs",
     ":history_item",
-    "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
-    "//third_party/polymer/v1_0/components-chromium/iron-list:iron-list-extracted",
-    "//third_party/polymer/v1_0/components-chromium/iron-scroll-threshold:iron-scroll-threshold-extracted",
-    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
-    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
-    "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js:load_time_data",
-    "//ui/webui/resources/js:util",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
+    "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer",
+    "//third_party/polymer/v3_0/components-chromium/iron-list:iron-list",
+    "//third_party/polymer/v3_0/components-chromium/iron-scroll-threshold:iron-scroll-threshold",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:util.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
 }
 
@@ -127,22 +128,12 @@ js_library("history_toolbar") {
   deps = [
     ":constants",
     ":externs",
-    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar",
-    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_selection_overlay",
-    "//ui/webui/resources/js:load_time_data",
-    "//ui/webui/resources/js:util",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar.m",
+    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_selection_overlay.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:util.m",
   ]
-}
-
-js_library("history") {
-  deps = [
-    ":app",
-    ":constants",
-    ":externs",
-    "//ui/webui/resources/js:icon",
-    "//ui/webui/resources/js:load_time_data",
-  ]
-  externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
 js_library("app") {
@@ -154,9 +145,11 @@ js_library("app") {
     ":side_bar",
     ":synced_device_card",
     ":synced_device_manager",
-    "//ui/webui/resources/cr_elements/cr_drawer:cr_drawer",
-    "//ui/webui/resources/js:find_shortcut_behavior",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_drawer:cr_drawer.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:find_shortcut_behavior.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
 }
 
@@ -165,6 +158,7 @@ js_library("query_manager") {
     ":browser_service",
     ":externs",
     ":router",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
@@ -172,16 +166,25 @@ js_library("router") {
   deps = [
     ":constants",
     ":externs",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("searched_label") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:util.m",
   ]
 }
 
 js_library("side_bar") {
   deps = [
     ":browser_service",
-    "//third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior:iron-a11y-keys-behavior-extracted",
-    "//third_party/polymer/v1_0/components-chromium/iron-selector:iron-selector-extracted",
-    "//third_party/polymer/v1_0/components-chromium/paper-ripple:paper-ripple-extracted",
-    "//ui/webui/resources/js:load_time_data",
+    "//third_party/polymer/v3_0/components-chromium/iron-a11y-keys-behavior:iron-a11y-keys-behavior",
+    "//third_party/polymer/v3_0/components-chromium/iron-selector:iron-selector",
+    "//third_party/polymer/v3_0/components-chromium/paper-ripple:paper-ripple",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
 }
 
@@ -190,9 +193,10 @@ js_library("synced_device_card") {
     ":browser_service",
     ":constants",
     ":externs",
-    "//ui/webui/resources/js:icon",
-    "//ui/webui/resources/js:load_time_data",
-    "//ui/webui/resources/js/cr/ui:focus_row",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:icon.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js/cr/ui:focus_row.m",
   ]
 }
 
@@ -200,8 +204,26 @@ js_library("synced_device_manager") {
   deps = [
     ":browser_service",
     ":synced_device_card",
-    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
-    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
-    "//ui/webui/resources/js/cr/ui:focus_grid",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js/cr/ui:focus_grid.m",
+  ]
+}
+
+html_to_js("web_components") {
+  js_files = [
+    "app.js",
+    "history_item.js",
+    "history_list.js",
+    "history_toolbar.js",
+    "router.js",
+    "shared_style.js",
+    "shared_vars.js",
+    "side_bar.js",
+    "synced_device_card.js",
+    "synced_device_manager.js",
   ]
 }

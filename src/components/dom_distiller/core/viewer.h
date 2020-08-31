@@ -24,15 +24,11 @@ class ViewRequestDelegate;
 
 namespace viewer {
 
-// Returns an HTML template page based on the given |page_proto| which provides
-// basic information about the page (i.e. title, text direction, etc.). This is
-// supposed to be displayed to the end user. The returned HTML should be
-// considered unsafe, so callers must ensure rendering it does not compromise
-// Chrome.
-const std::string GetUnsafeArticleTemplateHtml(
-    const std::string& original_url,
-    DistilledPagePrefs::Theme theme,
-    DistilledPagePrefs::FontFamily font_family);
+// Assembles a platform-specific HTML template page based on the given
+// parameters. Information from the original article has not yet been inserted,
+// so the returned HTML should be safe.
+const std::string GetArticleTemplateHtml(mojom::Theme theme,
+                                         mojom::FontFamily font_family);
 
 // Returns the JavaScript to place a full article's HTML on the page. The
 // returned HTML should be considered unsafe, so callers must ensure
@@ -81,11 +77,10 @@ std::unique_ptr<ViewerHandle> CreateViewRequest(
     const gfx::Size& render_view_size);
 
 // Returns JavaScript corresponding to setting the font family.
-const std::string GetDistilledPageFontFamilyJs(
-    DistilledPagePrefs::FontFamily font);
+const std::string GetDistilledPageFontFamilyJs(mojom::FontFamily font);
 
 // Returns JavaScript corresponding to setting a specific theme.
-const std::string GetDistilledPageThemeJs(DistilledPagePrefs::Theme theme);
+const std::string GetDistilledPageThemeJs(mojom::Theme theme);
 
 // Returns JavaScript corresponding to setting the font scaling.
 const std::string GetDistilledPageFontScalingJs(float scaling);

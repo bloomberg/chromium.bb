@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/weak_ptr.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -14,10 +15,6 @@
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/button/button.h"
-
-namespace service_manager {
-class Connector;
-}
 
 namespace views {
 class Label;
@@ -97,8 +94,7 @@ class ASH_EXPORT LockScreenMediaControlsView
     DISALLOW_COPY_AND_ASSIGN(Callbacks);
   };
 
-  LockScreenMediaControlsView(service_manager::Connector* connector,
-                              const Callbacks& callbacks);
+  explicit LockScreenMediaControlsView(const Callbacks& callbacks);
   ~LockScreenMediaControlsView() override;
 
   // views::View:
@@ -202,9 +198,6 @@ class ASH_EXPORT LockScreenMediaControlsView
   // Animates |contents_view_| to its original position.
   void RunResetControlsAnimation();
 
-  // Used to connect to the Media Session service.
-  service_manager::Connector* const connector_;
-
   // Used to control the active session.
   mojo::Remote<media_session::mojom::MediaController> media_controller_remote_;
 
@@ -277,6 +270,8 @@ class ASH_EXPORT LockScreenMediaControlsView
 
   // True if the user is in the process of gesture-dragging |contents_view_|.
   bool is_in_drag_ = false;
+
+  base::WeakPtrFactory<LockScreenMediaControlsView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsView);
 };

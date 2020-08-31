@@ -23,6 +23,7 @@ from __future__ import print_function
 
 arm_internal_release_boards = frozenset([
     'arkham',
+    'asurada',
     'beaglebone',
     'beaglebone_servo',
     'bob',
@@ -33,7 +34,6 @@ arm_internal_release_boards = frozenset([
     'cheza64',
     'cobblepot',
     'elm',
-    'flapjack',
     'gale',
     'gonzo',
     'hana',
@@ -41,8 +41,8 @@ arm_internal_release_boards = frozenset([
     'kevin',
     'kevin64',
     'kevin-arc64',
-    'kevin-arcnext',
     'kukui',
+    'kukui-arc-r',
     'lasilla-ground',
     'littlejoe',
     'mistral',
@@ -85,10 +85,10 @@ x86_internal_release_boards = frozenset([
     'banjo',
     'banon',
     'betty',
-    'betty-arc64',
+    'betty-arc-r',
+    'betty-arcvm-master',
     'betty-arcvm-pi',
     'betty-pi-arc',
-    'betty-qt-arc',
     'buddy',
     'candy',
     'caroline',
@@ -98,14 +98,15 @@ x86_internal_release_boards = frozenset([
     'coral',
     'cyan',
     'dedede',
+    'deltaur',
     'drallion',
     'edgar',
     'endeavour',
     'enguarde',
     'eve',
-    'eve-arcnext',
-    'eve-arcvm',
+    'eve-arc-r',
     'eve-arcvm-mesa-virgl-next',
+    'eve-lacros',
     'excelsior',
     'expresso',
     'falco_li',
@@ -118,9 +119,9 @@ x86_internal_release_boards = frozenset([
     'gnawty',
     'grunt',
     'guado',
-    'guado-accelerator',
     'guado_labstation',
     'hatch',
+    'hatch-arc-r',
     'hatch-diskswap',
     'heli',
     'jecht',
@@ -137,6 +138,7 @@ x86_internal_release_boards = frozenset([
     'lars',
     'lulu',
     'monroe',
+    'mushu',
     'nami',
     'nautilus',
     'ninja',
@@ -145,10 +147,12 @@ x86_internal_release_boards = frozenset([
     'novato-arc64',
     'octopus',
     'orco',
+    'palkia',
     'poppy',
     'puff',
     'pyro',
     'rammus',
+    'rammus-arc-r',
     'reef',
     'reks',
     'relm',
@@ -191,7 +195,6 @@ brillo_boards = frozenset([
 
 accelerator_boards = frozenset([
     'fizz-accelerator',
-    'guado-accelerator',
 ])
 
 beaglebone_boards = frozenset([
@@ -229,6 +232,10 @@ loonix_boards = frozenset([
     'wooten',
 ])
 
+reven_boards = frozenset([
+    'reven',
+])
+
 wshwos_boards = frozenset([
     'littlejoe',
     'viking',
@@ -251,7 +258,7 @@ termina_boards = frozenset([
 ])
 
 nofactory_boards = (
-    lakitu_boards | termina_boards | lassen_boards | frozenset([
+    lakitu_boards | termina_boards | lassen_boards | reven_boards | frozenset([
         'x30evb',
     ])
 )
@@ -265,7 +272,7 @@ noimagetest_boards = (lakitu_boards | loonix_boards | termina_boards
 
 nohwqual_boards = (lakitu_boards | lassen_boards | loonix_boards
                    | termina_boards | beaglebone_boards | wshwos_boards
-                   | dustbuster_boards)
+                   | dustbuster_boards | reven_boards)
 
 norootfs_verification_boards = frozenset([
     'kumo',

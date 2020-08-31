@@ -58,6 +58,7 @@ class ElementRareData : public NodeRareData {
 
   void SetPseudoElement(PseudoId, PseudoElement*);
   PseudoElement* GetPseudoElement(PseudoId) const;
+  PseudoElementData::PseudoElementVector GetPseudoElements() const;
 
   void SetTabIndexExplicitly() {
     SetElementFlag(ElementFlags::kTabIndexWasSetExplicitly, true);
@@ -191,11 +192,9 @@ class ElementRareData : public NodeRareData {
   }
   ResizeObserverDataMap& EnsureResizeObserverData();
 
-  DisplayLockContext* EnsureDisplayLockContext(Element* element,
-                                               ExecutionContext* context) {
+  DisplayLockContext* EnsureDisplayLockContext(Element* element) {
     if (!display_lock_context_) {
-      display_lock_context_ =
-          MakeGarbageCollected<DisplayLockContext>(element, context);
+      display_lock_context_ = MakeGarbageCollected<DisplayLockContext>(element);
     }
     return display_lock_context_.Get();
   }
@@ -206,7 +205,7 @@ class ElementRareData : public NodeRareData {
   const AtomicString& GetNonce() const { return nonce_; }
   void SetNonce(const AtomicString& nonce) { nonce_ = nonce; }
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
   ScrollOffset saved_layer_scroll_offset_;
@@ -272,6 +271,13 @@ inline PseudoElement* ElementRareData::GetPseudoElement(
   if (!pseudo_element_data_)
     return nullptr;
   return pseudo_element_data_->GetPseudoElement(pseudo_id);
+}
+
+inline PseudoElementData::PseudoElementVector
+ElementRareData::GetPseudoElements() const {
+  if (!pseudo_element_data_)
+    return {};
+  return pseudo_element_data_->GetPseudoElements();
 }
 
 }  // namespace blink

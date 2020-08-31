@@ -30,10 +30,18 @@ import re
 import stat
 import sys
 
-import magic  # pylint: disable=import-error
 import six
 
 from chromite.lib import parseelf
+
+try:
+  import pytest  # pylint: disable=import-error
+  magic = pytest.importorskip('magic')
+except ImportError:
+  import magic  # pylint: disable=import-error
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # The buffer size we would use to read files from the disk.

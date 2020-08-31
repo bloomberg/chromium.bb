@@ -384,6 +384,7 @@ content::JavaScriptDialogManager* ExtensionHost::GetJavaScriptDialogManager(
 
 void ExtensionHost::AddNewContents(WebContents* source,
                                    std::unique_ptr<WebContents> new_contents,
+                                   const GURL& target_url,
                                    WindowOpenDisposition disposition,
                                    const gfx::Rect& initial_rect,
                                    bool user_gesture,
@@ -404,8 +405,8 @@ void ExtensionHost::AddNewContents(WebContents* source,
       WebContentsDelegate* delegate = associated_contents->GetDelegate();
       if (delegate) {
         delegate->AddNewContents(associated_contents, std::move(new_contents),
-                                 disposition, initial_rect, user_gesture,
-                                 was_blocked);
+                                 target_url, disposition, initial_rect,
+                                 user_gesture, was_blocked);
         return;
       }
     }
@@ -416,6 +417,10 @@ void ExtensionHost::AddNewContents(WebContents* source,
 }
 
 void ExtensionHost::RenderViewReady() {
+  if (has_creation_notification_already_fired_)
+    return;
+  has_creation_notification_already_fired_ = true;
+
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_HOST_CREATED,
       content::Source<BrowserContext>(browser_context_),
@@ -438,7 +443,7 @@ bool ExtensionHost::CheckMediaAccessPermission(
       render_frame_host, security_origin, type, extension());
 }
 
-bool ExtensionHost::IsNeverVisible(content::WebContents* web_contents) {
+bool ExtensionHost::IsNeverComposited(content::WebContents* web_contents) {
   ViewType view_type = extensions::GetViewType(web_contents);
   return view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
 }

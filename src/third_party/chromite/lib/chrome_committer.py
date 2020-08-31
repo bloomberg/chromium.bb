@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -17,6 +18,9 @@ from chromite.lib import git
 from chromite.lib import osutils
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 class CommitError(Exception):
   """Raised if the commit failed."""
 
@@ -24,16 +28,14 @@ class CommitError(Exception):
 class ChromeCommitter(object):
   """Committer object responsible for committing a git change."""
 
-  def __init__(self, args):
-    self._checkout_dir = args.workdir
-    self._dryrun = args.dryrun
-    self._git_committer_args = ['-c', 'user.email=%s' % args.user_email,
-                                '-c', 'user.name=%s' % args.user_email]
+  def __init__(self, user_email, workdir, dryrun=False):
+    logging.info('user_email=%s, checkout_dir=%s', user_email, workdir)
+    self.author = user_email
+    self._checkout_dir = workdir
+    self._git_committer_args = ['-c', 'user.email=%s' % user_email,
+                                '-c', 'user.name=%s' % user_email]
     self._commit_msg = ''
-    self.author = args.user_email
-
-    logging.info('user_email=%s', args.user_email)
-    logging.info('checkout_dir=%s', args.workdir)
+    self._dryrun = dryrun
 
   def __del__(self):
     self.Cleanup()
@@ -85,7 +87,7 @@ class ChromeCommitter(object):
         git.AddPath(file_path)
       commit_args = ['commit', '-m', self._commit_msg]
       git.RunGit(self._checkout_dir, self._git_committer_args + commit_args,
-                 print_cmd=True, redirect_stderr=True, capture_output=False)
+                 print_cmd=True, stderr=True, capture_output=False)
     except cros_build_lib.RunCommandError as e:
       raise CommitError('Could not create git commit: %r' % e)
 
@@ -103,15 +105,10 @@ class ChromeCommitter(object):
       upload_args += ['--send-mail']
       if self._dryrun:
         upload_args += ['--dry-run']
+      else:
+        upload_args += ['--use-commit-queue']
       git.RunGit(self._checkout_dir, upload_args, print_cmd=True,
-                 redirect_stderr=True, capture_output=False)
-
-      # Flip the CQ commit bit.
-      submit_args = ['cl', 'set-commit', '-v']
-      if self._dryrun:
-        submit_args += ['--dry-run']
-      git.RunGit(self._checkout_dir, submit_args,
-                 print_cmd=True, redirect_stderr=True, capture_output=False)
+                 stderr=True, capture_output=False)
     except cros_build_lib.RunCommandError as e:
       # Log the change for debugging.
       git.RunGit(self._checkout_dir, ['--no-pager', 'log', '--pretty=full'],
@@ -129,7 +126,7 @@ class ChromeCommitter(object):
     """Returns parser for ChromeCommitter.
 
     Returns:
-      Dictionary of parsed command line args.
+      Parser for ChromeCommitter.
     """
     # We need to use the account used by the builder to upload git CLs when
     # generating CLs.

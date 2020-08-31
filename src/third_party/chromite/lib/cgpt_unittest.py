@@ -7,8 +7,13 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.lib import cgpt
 from chromite.lib import cros_test_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 CGPT_SHOW_OUTPUT = """       start        size    part  contents

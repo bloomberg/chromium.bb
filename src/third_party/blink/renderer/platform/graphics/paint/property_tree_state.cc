@@ -12,9 +12,11 @@ const PropertyTreeState& PropertyTreeState::Uninitialized() {
   DEFINE_STATIC_REF(const TransformPaintPropertyNode, transform,
                     TransformPaintPropertyNode::Create(
                         TransformPaintPropertyNode::Root(), {}));
-  DEFINE_STATIC_REF(const ClipPaintPropertyNode, clip,
-                    ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
-                                                  {transform}));
+  DEFINE_STATIC_REF(
+      const ClipPaintPropertyNode, clip,
+      ClipPaintPropertyNode::Create(
+          ClipPaintPropertyNode::Root(),
+          ClipPaintPropertyNode::State(transform, FloatRoundedRect())));
   DEFINE_STATIC_REF(const EffectPaintPropertyNode, effect,
                     EffectPaintPropertyNode::Create(
                         EffectPaintPropertyNode::Root(), {transform}));
@@ -48,6 +50,14 @@ String PropertyTreeState::ToTreeString() const {
 }
 
 #endif
+
+std::unique_ptr<JSONObject> PropertyTreeState::ToJSON() const {
+  std::unique_ptr<JSONObject> result = std::make_unique<JSONObject>();
+  result->SetObject("transform", transform_->ToJSON());
+  result->SetObject("clip", clip_->ToJSON());
+  result->SetObject("effect", effect_->ToJSON());
+  return result;
+}
 
 size_t PropertyTreeState::CacheMemoryUsageInBytes() const {
   return Clip().CacheMemoryUsageInBytes() +

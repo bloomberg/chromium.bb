@@ -57,10 +57,9 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
   // ExclusiveAccessContext Interface:
   Profile* GetProfile() override;
   content::WebContents* GetActiveWebContents() override;
-  void HideDownloadShelf() override;
-  void UnhideDownloadShelf() override;
   void EnterFullscreen(const GURL& url,
-                       ExclusiveAccessBubbleType type) override;
+                       ExclusiveAccessBubbleType type,
+                       int64_t display_id) override;
   void ExitFullscreen() override;
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
@@ -91,7 +90,8 @@ FullscreenControllerTestWindow::FullscreenControllerTestWindow()
 
 void FullscreenControllerTestWindow::EnterFullscreen(
     const GURL& url,
-    ExclusiveAccessBubbleType type) {
+    ExclusiveAccessBubbleType type,
+    int64_t display_id) {
   EnterFullscreen();
 }
 
@@ -181,14 +181,6 @@ Profile* FullscreenControllerTestWindow::GetProfile() {
 
 content::WebContents* FullscreenControllerTestWindow::GetActiveWebContents() {
   return browser_->tab_strip_model()->GetActiveWebContents();
-}
-
-void FullscreenControllerTestWindow::UnhideDownloadShelf() {
-  GetDownloadShelf()->Unhide();
-}
-
-void FullscreenControllerTestWindow::HideDownloadShelf() {
-  GetDownloadShelf()->Hide();
 }
 
 void FullscreenControllerTestWindow::UpdateExclusiveAccessExitBubbleContent(

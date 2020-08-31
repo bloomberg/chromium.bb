@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "url/gurl.h"
@@ -174,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, ActiveTab) {
 }
 
 // Order of windows.
-IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, WindowOrder) {
+IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, DISABLED_WindowOrder) {
   base::scoped_nsobject<WindowAppleScript> window2(
       [[WindowAppleScript alloc] initWithBrowser:browser()]);
   base::scoped_nsobject<WindowAppleScript> window1(

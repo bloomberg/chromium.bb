@@ -4,7 +4,6 @@
 
 #include "components/exo/drag_drop_operation.h"
 
-#include "ash/drag_drop/drag_drop_controller.h"
 #include "base/barrier_closure.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/exo/data_offer.h"
@@ -18,6 +17,10 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/transform_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/drag_drop/drag_drop_controller.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace exo {
 
@@ -114,9 +117,9 @@ DragDropOperation::DragDropOperation(
       base::BindOnce(&DragDropOperation::ScheduleStartDragDropOperation,
                      weak_ptr_factory_.GetWeakPtr());
 
-  // Make the count kMaxClipboardDataTypes + 1 so we can wait for the icon to be
-  // captured as well.
-  counter_ = base::BarrierClosure(kMaxClipboardDataTypes + 1,
+  // When the icon is present, make the count kMaxClipboardDataTypes + 1 so we
+  // can wait for the icon to be captured as well.
+  counter_ = base::BarrierClosure(kMaxClipboardDataTypes + (icon ? 1 : 0),
                                   std::move(start_op_callback));
 
   source->GetDataForPreferredMimeTypes(

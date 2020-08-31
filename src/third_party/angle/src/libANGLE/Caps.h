@@ -41,6 +41,9 @@ struct TextureCaps
     // Support for being used as a renderbuffer format, i.e. glFramebufferRenderbuffer
     bool renderbuffer = false;
 
+    // Support for blend modes while being used as a framebuffer attachment
+    bool blendable = false;
+
     // Set of supported sample counts, only guaranteed to be valid in ES3.
     SupportedSampleSet sampleCounts;
 
@@ -115,6 +118,7 @@ struct Extensions
     // GL_EXT_color_buffer_float
     // GL_EXT_texture_norm16
     // GL_EXT_texture_compression_bptc
+    // GL_EXT_texture_compression_rgtc
     void setTextureExtensionSupport(const TextureCapsMap &textureCaps);
 
     // indicate if any depth texture extension is available
@@ -123,17 +127,26 @@ struct Extensions
     // ES2 Extension support
 
     // GL_OES_element_index_uint
-    bool elementIndexUint = false;
+    bool elementIndexUintOES = false;
 
     // GL_OES_packed_depth_stencil
-    bool packedDepthStencil = false;
+    bool packedDepthStencilOES = false;
+
+    // GL_NV_read_depth
+    bool readDepthNV = false;
+
+    // GL_NV_read_stencil
+    bool readStencilNV = false;
+
+    // GL_NV_depth_buffer_float2
+    bool depthBufferFloat2NV = false;
 
     // GL_OES_get_program_binary
-    bool getProgramBinary = false;
+    bool getProgramBinaryOES = false;
 
     // GL_OES_rgb8_rgba8
     // Implies that TextureCaps for GL_RGB8 and GL_RGBA8 exist
-    bool rgb8rgba8 = false;
+    bool rgb8rgba8OES = false;
 
     // GL_EXT_texture_format_BGRA8888
     // Implies that TextureCaps for GL_BGRA8 exist
@@ -143,13 +156,13 @@ struct Extensions
     bool readFormatBGRA = false;
 
     // GL_NV_pixel_buffer_object
-    bool pixelBufferObject = false;
+    bool pixelBufferObjectNV = false;
 
     // GL_ARB_sync
-    bool glSync = false;
+    bool glSyncARB = false;
 
     // GL_OES_mapbuffer and GL_EXT_map_buffer_range
-    bool mapBuffer      = false;
+    bool mapBufferOES   = false;
     bool mapBufferRange = false;
 
     // GL_EXT_color_buffer_half_float
@@ -169,8 +182,8 @@ struct Extensions
     // GL_OES_texture_float and GL_OES_texture_float_linear
     // Implies that TextureCaps for GL_RGB32F, GL_RGBA32F, GL_ALPHA16F_EXT, GL_LUMINANCE16F_EXT and
     // GL_LUMINANCE_ALPHA16F_EXT exist
-    bool textureFloat       = false;
-    bool textureFloatLinear = false;
+    bool textureFloatOES       = false;
+    bool textureFloatLinearOES = false;
 
     // GL_EXT_texture_rg
     // Implies that TextureCaps for GL_R8, GL_RG8 (and floating point R/RG texture formats if
@@ -200,42 +213,51 @@ struct Extensions
     // GL_OES_texture_compression_astc
     bool textureCompressionASTCOES = false;
 
+    // GL_KHR_texture_compression_astc_sliced_3d
+    bool textureCompressionSliced3dASTCKHR = false;
+
     // GL_EXT_texture_compression_bptc
     bool textureCompressionBPTC = false;
 
+    // GL_EXT_texture_compression_rgtc
+    bool textureCompressionRGTC = false;
+
     // GL_OES_compressed_ETC1_RGB8_texture
     // Implies that TextureCaps for GL_ETC1_RGB8_OES exist
-    bool compressedETC1RGB8Texture = false;
+    bool compressedETC1RGB8TextureOES = false;
+
+    // GL_EXT_compressed_ETC1_RGB8_sub_texture
+    bool compressedETC1RGB8SubTexture = false;
 
     // OES_compressed_ETC2_RGB8_texture
-    bool compressedETC2RGB8Texture = false;
+    bool compressedETC2RGB8TextureOES = false;
 
     // OES_compressed_ETC2_sRGB8_texture
-    bool compressedETC2sRGB8Texture = false;
+    bool compressedETC2sRGB8TextureOES = false;
 
     // OES_compressed_ETC2_punchthroughA_RGBA8_texture
-    bool compressedETC2PunchthroughARGB8Texture = false;
+    bool compressedETC2PunchthroughARGB8TextureOES = false;
 
     // OES_compressed_ETC2_punchthroughA_sRGB8_alpha_texture
-    bool compressedETC2PunchthroughAsRGB8AlphaTexture = false;
+    bool compressedETC2PunchthroughAsRGB8AlphaTextureOES = false;
 
     // OES_compressed_ETC2_RGBA8_texture
-    bool compressedETC2RGBA8Texture = false;
+    bool compressedETC2RGBA8TextureOES = false;
 
     // OES_compressed_ETC2_sRGB8_alpha8_texture
-    bool compressedETC2sRGB8Alpha8Texture = false;
+    bool compressedETC2sRGB8Alpha8TextureOES = false;
 
     // OES_compressed_EAC_R11_unsigned_texture
-    bool compressedEACR11UnsignedTexture = false;
+    bool compressedEACR11UnsignedTextureOES = false;
 
     // OES_compressed_EAC_R11_signed_texture
-    bool compressedEACR11SignedTexture = false;
+    bool compressedEACR11SignedTextureOES = false;
 
     // OES_compressed_EAC_RG11_unsigned_texture
-    bool compressedEACRG11UnsignedTexture = false;
+    bool compressedEACRG11UnsignedTextureOES = false;
 
     // OES_compressed_EAC_RG11_signed_texture
-    bool compressedEACRG11SignedTexture = false;
+    bool compressedEACRG11SignedTextureOES = false;
 
     // ANGLE_compressed_texture_etc
     // ONLY exposed if ETC texture formats are natively supported without decompression
@@ -255,11 +277,17 @@ struct Extensions
     // TODO: Don't advertise this extension in ES3
     bool sRGB = false;
 
+    // GL_EXT_texture_sRGB_R8
+    bool sRGBR8EXT = false;
+
     // GL_ANGLE_depth_texture
     bool depthTextureANGLE = false;
 
     // OES_depth_texture
     bool depthTextureOES = false;
+
+    // GL_OES_depth_texture_cube_map
+    bool depthTextureCubeMapOES = false;
 
     // GL_OES_depth24
     // Allows DEPTH_COMPONENT24_OES as a valid Renderbuffer format.
@@ -267,7 +295,7 @@ struct Extensions
 
     // GL_OES_depth32
     // Allows DEPTH_COMPONENT32_OES as a valid Renderbuffer format.
-    bool depth32 = false;
+    bool depth32OES = false;
 
     // GL_OES_texture_3D
     bool texture3DOES = false;
@@ -276,10 +304,19 @@ struct Extensions
     bool textureStorage = false;
 
     // GL_OES_texture_npot
-    bool textureNPOT = false;
+    bool textureNPOTOES = false;
 
     // GL_EXT_draw_buffers
     bool drawBuffers = false;
+
+    // GL_EXT_draw_buffers_indexed
+    bool drawBuffersIndexedEXT = false;
+
+    // GL_OES_draw_buffers_indexed
+    bool drawBuffersIndexedOES = false;
+
+    // Any version of the draw_buffers_indexed
+    bool drawBuffersIndexedAny() const { return (drawBuffersIndexedEXT || drawBuffersIndexedOES); }
 
     // GL_EXT_texture_filter_anisotropic
     bool textureFilterAnisotropic = false;
@@ -289,7 +326,7 @@ struct Extensions
     bool occlusionQueryBoolean = false;
 
     // GL_NV_fence
-    bool fence = false;
+    bool fenceNV = false;
 
     // GL_EXT_disjoint_timer_query
     bool disjointTimerQuery            = false;
@@ -325,7 +362,7 @@ struct Extensions
     bool packReverseRowOrder = false;
 
     // GL_OES_standard_derivatives
-    bool standardDerivatives = false;
+    bool standardDerivativesOES = false;
 
     // GL_EXT_shader_texture_lod
     bool shaderTextureLOD = false;
@@ -347,7 +384,7 @@ struct Extensions
     bool translatedShaderSource = false;
 
     // GL_OES_fbo_render_mipmap
-    bool fboRenderMipmap = false;
+    bool fboRenderMipmapOES = false;
 
     // GL_EXT_discard_framebuffer
     bool discardFramebuffer = false;
@@ -356,16 +393,19 @@ struct Extensions
     bool debugMarker = false;
 
     // GL_OES_EGL_image
-    bool eglImage = false;
+    bool eglImageOES = false;
 
     // GL_OES_EGL_image_external
-    bool eglImageExternal = false;
+    bool eglImageExternalOES = false;
 
     // GL_OES_EGL_image_external_essl3
-    bool eglImageExternalEssl3 = false;
+    bool eglImageExternalEssl3OES = false;
+
+    // GL_EXT_EGL_image_external_wrap_modes
+    bool eglImageExternalWrapModesEXT = false;
 
     // GL_OES_EGL_sync
-    bool eglSync = false;
+    bool eglSyncOES = false;
 
     // GL_EXT_memory_object
     bool memoryObject = false;
@@ -373,14 +413,20 @@ struct Extensions
     // GL_EXT_memory_object_fd
     bool memoryObjectFd = false;
 
+    // GL_ANGLE_memory_object_fuchsia
+    bool memoryObjectFuchsiaANGLE = false;
+
     // GL_EXT_semaphore
     bool semaphore = false;
 
     // GL_EXT_semaphore_fd
     bool semaphoreFd = false;
 
+    // GL_ANGLE_semaphore_fuchsia
+    bool semaphoreFuchsiaANGLE = false;
+
     // NV_EGL_stream_consumer_external
-    bool eglStreamConsumerExternal = false;
+    bool eglStreamConsumerExternalNV = false;
 
     // EXT_unpack_subimage
     bool unpackSubimage = false;
@@ -388,14 +434,17 @@ struct Extensions
     // NV_pack_subimage
     bool packSubimage = false;
 
+    // GL_NV_shader_noperspective_interpolation
+    bool noperspectiveInterpolationNV = false;
+
     // GL_OES_vertex_half_float
-    bool vertexHalfFloat = false;
+    bool vertexHalfFloatOES = false;
 
     // GL_OES_vertex_array_object
-    bool vertexArrayObject = false;
+    bool vertexArrayObjectOES = false;
 
     // GL_OES_vertex_type_10_10_10_2
-    bool vertexAttribType1010102 = false;
+    bool vertexAttribType1010102OES = false;
 
     // GL_KHR_debug
     bool debug                     = false;
@@ -438,7 +487,7 @@ struct Extensions
     bool robustClientMemory = false;
 
     // GL_OES_texture_border_clamp
-    bool textureBorderClamp = false;
+    bool textureBorderClampOES = false;
 
     // GL_EXT_texture_sRGB_decode
     bool textureSRGBDecode = false;
@@ -451,6 +500,9 @@ struct Extensions
 
     // GL_CHROMIUM_color_buffer_float_rgba
     bool colorBufferFloatRGBA = false;
+
+    // GL_EXT_EGL_image_array
+    bool eglImageArray = false;
 
     // ES3 Extension support
 
@@ -468,11 +520,8 @@ struct Extensions
     // written against ES 3.1 but can apply to ES 3.0 as well.
     bool textureNorm16 = false;
 
-    // GL_CHROMIUM_path_rendering
-    bool pathRendering = false;
-
     // GL_OES_surfaceless_context
-    bool surfacelessContext = false;
+    bool surfacelessContextOES = false;
 
     // GL_ANGLE_client_arrays
     bool clientArrays = false;
@@ -491,16 +540,16 @@ struct Extensions
 
     // GLES1 emulation: GLES1 extensions
     // GL_OES_point_size_array
-    bool pointSizeArray = false;
+    bool pointSizeArrayOES = false;
 
     // GL_OES_texture_cube_map
-    bool textureCubeMap = false;
+    bool textureCubeMapOES = false;
 
     // GL_OES_point_sprite
-    bool pointSprite = false;
+    bool pointSpriteOES = false;
 
     // GL_OES_draw_texture
-    bool drawTexture = false;
+    bool drawTextureOES = false;
 
     // EGL_ANGLE_explicit_context GL subextensions
     // GL_ANGLE_explicit_context_gles1
@@ -512,7 +561,7 @@ struct Extensions
     bool parallelShaderCompile = false;
 
     // GL_OES_texture_storage_multisample_2d_array
-    bool textureStorageMultisample2DArray = false;
+    bool textureStorageMultisample2DArrayOES = false;
 
     // GL_ANGLE_multiview_multisample
     bool multiviewMultisample = false;
@@ -557,6 +606,17 @@ struct Extensions
     {
         return (drawElementsBaseVertexOES || drawElementsBaseVertexEXT);
     }
+
+    // GL_EXT_shader_non_constant_global_initializers
+    bool shaderNonConstGlobalInitializersEXT = false;
+
+    // GL_EXT_gpu_shader5
+    bool gpuShader5EXT = false;
+    // WEBGL_video_texture
+    bool webglVideoTexture = false;
+
+    // GL_APPLE_clip_distance
+    bool clipDistanceAPPLE = false;
 };
 
 // Pointer to a boolean memeber of the Extensions struct
@@ -771,6 +831,9 @@ struct Caps
 
     GLuint subPixelBits = 4;
 
+    // GL_APPLE_clip_distance/GL_EXT_clip_cull_distance
+    GLuint maxClipDistances = 0;
+
     // GLES1 emulation: Caps for ES 1.1. Taken from Table 6.20 / 6.22 in the OpenGL ES 1.1 spec.
     GLuint maxMultitextureUnits                 = 0;
     GLuint maxClipPlanes                        = 0;
@@ -902,6 +965,9 @@ struct DisplayExtensions
     // EGL_CHROMIUM_sync_control
     bool syncControlCHROMIUM = false;
 
+    // EGL_ANGLE_sync_control_rate
+    bool syncControlRateANGLE = false;
+
     // EGL_KHR_swap_buffers_with_damage
     bool swapBuffersWithDamage = false;
 
@@ -962,11 +1028,44 @@ struct DisplayExtensions
     // EGL_KHR_no_config_context
     bool noConfigContext = false;
 
+    // EGL_IMG_context_priority
+    bool contextPriority = false;
+
     // EGL_ANGLE_ggp_stream_descriptor
     bool ggpStreamDescriptor = false;
 
     // EGL_ANGLE_swap_with_frame_token
     bool swapWithFrameToken = false;
+
+    // EGL_KHR_gl_colorspace
+    bool glColorspace = false;
+
+    // EGL_EXT_gl_colorspace_display_p3_linear
+    bool glColorspaceDisplayP3Linear = false;
+
+    // EGL_EXT_gl_colorspace_display_p3
+    bool glColorspaceDisplayP3 = false;
+
+    // EGL_EXT_gl_colorspace_scrgb
+    bool glColorspaceScrgb = false;
+
+    // EGL_EXT_gl_colorspace_scrgb_linear
+    bool glColorspaceScrgbLinear = false;
+
+    // EGL_EXT_gl_colorspace_display_p3_passthrough
+    bool glColorspaceDisplayP3Passthrough = false;
+
+    // EGL_ANDROID_framebuffer_target
+    bool framebufferTargetANDROID = false;
+
+    // EGL_EXT_image_gl_colorspace
+    bool imageGlColorspace = false;
+
+    // EGL_EXT_image_dma_buf_import
+    bool imageDmaBufImportEXT = false;
+
+    // EGL_EXT_image_dma_buf_import_modifiers
+    bool imageDmaBufImportModifiersEXT = false;
 };
 
 struct DeviceExtensions
@@ -981,6 +1080,9 @@ struct DeviceExtensions
 
     // EGL_ANGLE_device_cgl
     bool deviceCGL = false;
+
+    // EGL_ANGLE_device_eagl
+    bool deviceEAGL = false;
 };
 
 struct ClientExtensions
@@ -1050,6 +1152,9 @@ struct ClientExtensions
 
     // EGL_ANGLE_platform_angle_device_type_swiftshader
     bool platformANGLEDeviceTypeSwiftShader = false;
+
+    // EGL_ANGLE_platform_angle_device_type_egl_angle
+    bool platformANGLEDeviceTypeEGLANGLE = false;
 };
 
 }  // namespace egl

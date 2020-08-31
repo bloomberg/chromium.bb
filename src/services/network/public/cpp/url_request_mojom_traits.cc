@@ -6,14 +6,18 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/debug/dump_without_crashing.h"
+#include "base/notreached.h"
 #include "mojo/public/cpp/base/file_mojom_traits.h"
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "services/network/public/cpp/http_request_headers_mojom_traits.h"
+#include "services/network/public/cpp/isolation_info_mojom_traits.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "url/mojom/origin_mojom_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
@@ -154,12 +158,12 @@ bool StructTraits<network::mojom::TrustedUrlRequestParamsDataView,
                   network::ResourceRequest::TrustedParams>::
     Read(network::mojom::TrustedUrlRequestParamsDataView data,
          network::ResourceRequest::TrustedParams* out) {
-  if (!data.ReadNetworkIsolationKey(&out->network_isolation_key))
+  if (!data.ReadIsolationInfo(&out->isolation_info))
     return false;
-  out->update_network_isolation_key_on_redirect =
-      data.update_network_isolation_key_on_redirect();
   out->disable_secure_dns = data.disable_secure_dns();
   out->has_user_activation = data.has_user_activation();
+  out->cookie_observer = data.TakeCookieObserver<
+      mojo::PendingRemote<network::mojom::CookieAccessObserver>>();
   return true;
 }
 
@@ -184,17 +188,22 @@ bool StructTraits<
       !data.ReadFetchIntegrity(&out->fetch_integrity) ||
       !data.ReadRequestBody(&out->request_body) ||
       !data.ReadThrottlingProfileId(&out->throttling_profile_id) ||
-      !data.ReadCustomProxyPreCacheHeaders(
-          &out->custom_proxy_pre_cache_headers) ||
-      !data.ReadCustomProxyPostCacheHeaders(
-          &out->custom_proxy_post_cache_headers) ||
       !data.ReadFetchWindowId(&out->fetch_window_id) ||
       !data.ReadDevtoolsRequestId(&out->devtools_request_id) ||
       !data.ReadRecursivePrefetchToken(&out->recursive_prefetch_token)) {
+    // Note that data.ReadTrustTokenParams is temporarily handled below.
     return false;
   }
 
-  out->attach_same_site_cookies = data.attach_same_site_cookies();
+  // Temporarily separated from the remainder of the deserialization in order to
+  // help debug crbug.com/1062637.
+  if (!data.ReadTrustTokenParams(&out->trust_token_params.as_ptr())) {
+    // We don't return false here to avoid duplicate reports.
+    out->trust_token_params = base::nullopt;
+    base::debug::DumpWithoutCrashing();
+  }
+
+  out->force_ignore_site_for_cookies = data.force_ignore_site_for_cookies();
   out->update_first_party_url_on_redirect =
       data.update_first_party_url_on_redirect();
   out->load_flags = data.load_flags();
@@ -205,7 +214,7 @@ bool StructTraits<
   out->skip_service_worker = data.skip_service_worker();
   out->corb_detachable = data.corb_detachable();
   out->corb_excluded = data.corb_excluded();
-  out->fetch_request_context_type = data.fetch_request_context_type();
+  out->destination = data.destination();
   out->keepalive = data.keepalive();
   out->has_user_gesture = data.has_user_gesture();
   out->enable_load_timing = data.enable_load_timing();
@@ -256,32 +265,6 @@ bool StructTraits<network::mojom::DataElementDataView, network::DataElement>::
   out->offset_ = data.offset();
   out->length_ = data.length();
   return true;
-}
-
-// static
-const GURL&
-StructTraits<network::mojom::URLRequestDataView, network::ResourceRequest>::
-    referrer(const network::ResourceRequest& request) {
-  // TODO(crbug.com/912680, crbug.com/1021908): Move this method back inline,
-  // and move the debugging logic back to NetworkServiceNetworkDelegate when the
-  // current cause of referrer mismatches is found.
-  if (request.referrer !=
-      net::URLRequestJob::ComputeReferrerForPolicy(
-          request.referrer_policy, request.referrer, request.url)) {
-    // Record information to help debug issues like http://crbug.com/422871.
-    if (request.url.SchemeIsHTTPOrHTTPS()) {
-      auto referrer_policy = request.referrer_policy;
-      base::debug::Alias(&referrer_policy);
-      DEBUG_ALIAS_FOR_GURL(target_buf, request.url);
-      DEBUG_ALIAS_FOR_GURL(referrer_buf, request.referrer);
-      DEBUG_ALIAS_FOR_GURL(
-          initiator_buf,
-          request.request_initiator.value_or(url::Origin()).GetURL())
-      base::debug::DumpWithoutCrashing();
-    }
-  }
-
-  return request.referrer;
 }
 
 }  // namespace mojo

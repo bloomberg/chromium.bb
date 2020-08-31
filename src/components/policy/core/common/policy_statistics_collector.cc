@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/task_runner.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_service.h"
@@ -115,9 +115,8 @@ void PolicyStatisticsCollector::CollectStatistics() {
 }
 
 void PolicyStatisticsCollector::ScheduleUpdate(base::TimeDelta delay) {
-  update_callback_.Reset(base::Bind(
-      &PolicyStatisticsCollector::CollectStatistics,
-      base::Unretained(this)));
+  update_callback_.Reset(base::BindOnce(
+      &PolicyStatisticsCollector::CollectStatistics, base::Unretained(this)));
   task_runner_->PostDelayedTask(FROM_HERE, update_callback_.callback(), delay);
 }
 

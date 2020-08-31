@@ -25,7 +25,7 @@ enum class InitiatorLockCompatibility {
   kBrowserProcess = 0,
 
   // |request_initiator_site_lock| is missing - see https://crbug.com/891872
-  // and RenderProcessHostImpl::CreateURLLoaderFactoryWithOptionalOrigin.
+  // and RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess.
   kNoLock = 1,
 
   // |request_initiator| is missing.  This indicates that the renderer has a bug
@@ -45,9 +45,12 @@ enum class InitiatorLockCompatibility {
   kIncorrectLock = 4,
 
   // Covered by CrossOriginReadBlocking::ShouldAllowForPlugin.
-  kExcludedUniversalAccessPlugin = 6,
+  kExcludedCorbForPlugin = 6,
 
-  kMaxValue = kExcludedUniversalAccessPlugin,
+  // Covered by AddAllowedRequestInitiatorForPlugin.
+  kAllowedRequestInitiatorForPlugin = 7,
+
+  kMaxValue = kAllowedRequestInitiatorForPlugin,
 };
 
 // Verifies if |request.request_initiator| matches
@@ -75,8 +78,8 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
 //
 // TODO(lukasza): Remove this function if https://crrev.com/c/1661114 sticks
 // (i.e. if ResourceRequest::request_initiator is sanitized and made trustworthy
-// by CorsURLLoaderFactory::CreateLoaderAndStart and IsSane). Once we remove
-// this, this header can be moved to non-public directory.
+// by CorsURLLoaderFactory::CreateLoaderAndStart and IsValidRequest). Once we
+// remove this, this header can be moved to non-public directory.
 COMPONENT_EXPORT(NETWORK_CPP)
 url::Origin GetTrustworthyInitiator(
     const base::Optional<url::Origin>& request_initiator_site_lock,

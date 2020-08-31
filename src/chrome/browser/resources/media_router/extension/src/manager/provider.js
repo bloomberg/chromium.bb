@@ -18,7 +18,6 @@ goog.require('mr.CancellablePromise');
  */
 mr.ProviderName = {
   CAST: 'cast',
-  DIAL: 'dial',
   CLOUD: 'cloud',
   TEST: 'test'
 };

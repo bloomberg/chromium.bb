@@ -49,17 +49,41 @@ class LogManager {
     const browserLogger = Logger.getInstance('browser');
     const oldErrorHandler = window.onerror;
     /**
+     * We set |window.onerror| instead of calling window.addEventListener()
+     * because we need to ensure that this handler is called before any others.
+     *
      * @param {string} message
      * @param {string} url
      * @param {number} line
      * @param {number=} col
      * @param {*=} error
+     * @return {*}
      */
     window.onerror = (message, url, line, col, error) => {
+
+      //
+      // This is necessary because even if we handle the error reported by GAPI
+      // at the call site (in WeaveDevicesService), the GAPI client still raises
+      // a separate exception we apparently can't handle until it gets here.
+      // The code below attempts to see if the error looks like the one the GAPI
+      // client throws and ignores it if so.
+      try {
+        const gapiError = error.result.error.errors[0];
+        if (gapiError.domain == 'usageLimits' &&
+            gapiError.reason == 'accessNotConfigured') {
+          // Suppress default error handling.
+          return true;
+        }
+      } catch (err) {
+        // Ignore; this is not the error we're interested in.
+      }
+
       if (oldErrorHandler) {
         oldErrorHandler(message, url, line, col, error);
       }
       browserLogger.error(`Error: ${message} (${url} @ Line: ${line})`, error);
+
+
     };
     Logger.addHandler(this.onNewLog_.bind(this));
 
@@ -95,7 +119,7 @@ class LogManager {
   /**
    * Saves logs in the internal buffer.
    *
-   * @param {Logger.Record} logRecord The log entry.
+   * @param {!Logger.Record} logRecord The log entry.
    * @private
    */
   onNewLog_(logRecord) {
@@ -107,7 +131,7 @@ class LogManager {
   }
 
   /**
-   * @param {Logger.Record} logRecord The log entry.
+   * @param {!Logger.Record} logRecord The log entry.
    * @private
    */
   logToConsole_(logRecord) {

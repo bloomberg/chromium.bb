@@ -29,7 +29,7 @@ struct Mailbox;
 class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
     : public SharedImageBackingFactory {
  public:
-  explicit SharedImageBackingFactoryD3D(bool use_passthrough);
+  SharedImageBackingFactoryD3D();
   ~SharedImageBackingFactoryD3D() override;
 
   // Returns true if DXGI swap chain shared images for overlays are supported.
@@ -61,6 +61,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
       viz::ResourceFormat format,
+      SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage,
@@ -102,9 +103,6 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
       const Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
       base::win::ScopedHandle shared_handle);
 
-  // Whether we're using the passthrough command decoder and should generate
-  // passthrough textures.
-  const bool use_passthrough_ = false;
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingFactoryD3D);
 };

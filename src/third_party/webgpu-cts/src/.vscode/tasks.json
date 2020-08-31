@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "grunt",
+      "task": "test",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "type": "grunt",
+      "task": "pre",
+      "problemMatcher": []
+    }
+  ]
+}

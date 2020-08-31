@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/generic_sensor/absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer.h"
 #include "services/device/generic_sensor/fake_platform_sensor_and_provider.h"
 #include "services/device/generic_sensor/linear_acceleration_fusion_algorithm_using_accelerometer.h"
@@ -49,18 +48,20 @@ class PlatformSensorFusionTest : public testing::Test {
   }
 
   void CreateAccelerometer() {
-    auto callback = base::Bind(&PlatformSensorFusionTest::AccelerometerCallback,
-                               base::Unretained(this));
-    provider_->CreateSensor(SensorType::ACCELEROMETER, callback);
+    auto callback =
+        base::BindOnce(&PlatformSensorFusionTest::AccelerometerCallback,
+                       base::Unretained(this));
+    provider_->CreateSensor(SensorType::ACCELEROMETER, std::move(callback));
     EXPECT_TRUE(accelerometer_callback_called_);
     EXPECT_TRUE(accelerometer_);
     EXPECT_EQ(SensorType::ACCELEROMETER, accelerometer_->GetType());
   }
 
   void CreateMagnetometer() {
-    auto callback = base::Bind(&PlatformSensorFusionTest::MagnetometerCallback,
-                               base::Unretained(this));
-    provider_->CreateSensor(SensorType::MAGNETOMETER, callback);
+    auto callback =
+        base::BindOnce(&PlatformSensorFusionTest::MagnetometerCallback,
+                       base::Unretained(this));
+    provider_->CreateSensor(SensorType::MAGNETOMETER, std::move(callback));
     EXPECT_TRUE(magnetometer_callback_called_);
     EXPECT_TRUE(magnetometer_);
     EXPECT_EQ(SensorType::MAGNETOMETER, magnetometer_->GetType());
@@ -81,12 +82,12 @@ class PlatformSensorFusionTest : public testing::Test {
   void CreateFusionSensor(
       std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm) {
     auto callback =
-        base::Bind(&PlatformSensorFusionTest::PlatformSensorFusionCallback,
-                   base::Unretained(this));
+        base::BindOnce(&PlatformSensorFusionTest::PlatformSensorFusionCallback,
+                       base::Unretained(this));
     SensorType type = fusion_algorithm->fused_type();
     PlatformSensorFusion::Create(provider_->GetSensorReadingBuffer(type),
                                  provider_.get(), std::move(fusion_algorithm),
-                                 callback);
+                                 std::move(callback));
     EXPECT_TRUE(platform_sensor_fusion_callback_called_);
   }
 
@@ -231,10 +232,10 @@ TEST_F(PlatformSensorFusionTest, SourceSensorNeedsToBeCreated) {
 TEST_F(PlatformSensorFusionTest, SourceSensorIsNotAvailable) {
   // Accelerometer is not available.
   ON_CALL(*provider_, DoCreateSensorInternal(SensorType::ACCELEROMETER, _, _))
-      .WillByDefault(Invoke(
-          [](mojom::SensorType, scoped_refptr<PlatformSensor>,
-             const FakePlatformSensorProvider::CreateSensorCallback& callback) {
-            callback.Run(nullptr);
+      .WillByDefault(
+          Invoke([](mojom::SensorType, scoped_refptr<PlatformSensor>,
+                    FakePlatformSensorProvider::CreateSensorCallback callback) {
+            std::move(callback).Run(nullptr);
           }));
 
   CreateLinearAccelerationFusionSensor();
@@ -272,10 +273,10 @@ TEST_F(PlatformSensorFusionTest, BothSourceSensorsNeedToBeCreated) {
 TEST_F(PlatformSensorFusionTest, BothSourceSensorsAreNotAvailable) {
   // Failure.
   ON_CALL(*provider_, DoCreateSensorInternal(_, _, _))
-      .WillByDefault(Invoke(
-          [](mojom::SensorType, scoped_refptr<PlatformSensor>,
-             const FakePlatformSensorProvider::CreateSensorCallback& callback) {
-            callback.Run(nullptr);
+      .WillByDefault(
+          Invoke([](mojom::SensorType, scoped_refptr<PlatformSensor>,
+                    FakePlatformSensorProvider::CreateSensorCallback callback) {
+            std::move(callback).Run(nullptr);
           }));
 
   CreateAbsoluteOrientationEulerAnglesFusionSensor();
@@ -303,10 +304,10 @@ TEST_F(PlatformSensorFusionTest,
 
   // Magnetometer is not available.
   ON_CALL(*provider_, DoCreateSensorInternal(SensorType::MAGNETOMETER, _, _))
-      .WillByDefault(Invoke(
-          [](mojom::SensorType, scoped_refptr<PlatformSensor>,
-             const FakePlatformSensorProvider::CreateSensorCallback& callback) {
-            callback.Run(nullptr);
+      .WillByDefault(
+          Invoke([](mojom::SensorType, scoped_refptr<PlatformSensor>,
+                    FakePlatformSensorProvider::CreateSensorCallback callback) {
+            std::move(callback).Run(nullptr);
           }));
 
   CreateAbsoluteOrientationEulerAnglesFusionSensor();
@@ -318,10 +319,10 @@ TEST_F(PlatformSensorFusionTest,
   EXPECT_FALSE(provider_->GetSensor(SensorType::ACCELEROMETER));
   // Magnetometer is not available.
   ON_CALL(*provider_, DoCreateSensorInternal(SensorType::MAGNETOMETER, _, _))
-      .WillByDefault(Invoke(
-          [](mojom::SensorType, scoped_refptr<PlatformSensor>,
-             const FakePlatformSensorProvider::CreateSensorCallback& callback) {
-            callback.Run(nullptr);
+      .WillByDefault(
+          Invoke([](mojom::SensorType, scoped_refptr<PlatformSensor>,
+                    FakePlatformSensorProvider::CreateSensorCallback callback) {
+            std::move(callback).Run(nullptr);
           }));
 
   CreateAbsoluteOrientationEulerAnglesFusionSensor();

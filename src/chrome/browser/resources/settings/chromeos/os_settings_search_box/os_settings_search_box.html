@@ -1,0 +1,167 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/cr/ui/focus_row.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/mojo/mojo/public/mojom/base/string16.mojom.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
+<link rel="import" href="os_search_result_row.html">
+<link rel="import" href="../metrics_recorder.html">
+<link rel="import" href="../search_handler.html">
+<link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="../../router.html">
+
+<dom-module id="os-settings-search-box">
+  <template>
+    <style include="settings-shared">
+      :host {
+        --cr-toolbar-field-width: 480px;
+        --cr-toolbar-icon-container-size: 32px;
+        --cr-toolbar-icon-margin: 6px 12px;
+        --separator-height: 8px;
+        display: flex;
+        flex-basis: var(--cr-toolbar-field-width);
+        transition: width 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* Only search icon is visible in this mode */
+      :host([narrow]:not([showing-search])) {
+        /* Row flex keeps magnifying glass on the rightmost edge. */
+        flex-direction: row;
+        justify-content: flex-end;
+      }
+
+      :host([narrow][showing-search]) {
+        flex-basis: 100%;
+        justify-content: center;
+        padding-inline-end: 24px;
+        padding-inline-start: 24px;
+      }
+
+      cr-toolbar-search-field {
+        --cr-toolbar-search-field-term-margin: 0;
+        --cr-toolbar-search-field-border-radius: 20px;
+        --cr-toolbar-search-field-paper-spinner-margin: 0 12px;
+        --cr-toolbar-search-field-prompt-margin-inline-start: 140px;
+        --cr-toolbar-search-field-input-text-color:
+            var(--cr-primary-text-color);
+      }
+
+      :host(:focus-within) cr-toolbar-search-field {
+        --cr-toolbar-search-field-background: var(--cr-card-background-color);
+      }
+
+      :host(:focus-within[should-show-dropdown_]) cr-toolbar-search-field {
+        --cr-toolbar-search-field-border-radius: 20px 20px 0 0;
+        height: 56px;
+        margin-top: var(--separator-height);
+      }
+
+      :host(:focus-within) cr-toolbar-search-field {
+        box-shadow: var(--cr-menu-shadow);
+      }
+
+      :host([narrow]) iron-dropdown {
+        left: 0;
+        margin-inline-end: 24px;
+        margin-inline-start: 24px;
+        right: 0;
+      }
+
+      iron-dropdown {
+        margin-top: 60px;
+      }
+
+      iron-dropdown [slot='dropdown-content'] {
+        background-color: var(--cr-menu-background-color);
+        border-radius: 0 0 20px 20px;
+        box-shadow: var(--cr-menu-shadow);
+        display: table;
+        padding-bottom: 16px;
+      }
+
+      :host([narrow]) iron-dropdown [slot='dropdown-content'] {
+        width: 100%;
+      }
+
+      :host(:not([narrow])) iron-dropdown [slot='dropdown-content'] {
+        width: var(--cr-toolbar-field-width);
+      }
+
+      iron-list {
+        max-height: 50vh;
+      }
+
+      :host([narrow]) os-search-result-row {
+        --cr-toolbar-icon-margin: 6px 12px 6px 18px;
+      }
+
+      #noSearchResultsContainer {
+        height: 24px;
+        margin-top: var(--separator-height);
+      }
+
+      :host(:not([narrow])) #noSearchResultsContainer {
+        margin-inline-start: 56px;
+      }
+
+      :host([narrow]) #noSearchResultsContainer {
+        margin-inline-start: 62px;
+      }
+
+      /* The separator covers the top box shadow of the dropdown so that
+       * var(--cr-menu-shadow) can be used instead of custom values. */
+      .separator {
+        background-color: var(--cr-menu-background-color);
+        border-bottom: none;
+        border-inline-end: none;
+        border-inline-start: none;
+        border-top: 2px solid var(--cr-separator-color);
+        height: var(--separator-height);
+        margin-inline-end: 0;
+        margin-inline-start: 0;
+        margin-top: -5px;
+      }
+    </style>
+    <cr-toolbar-search-field id="search" narrow="[[narrow]]"
+        label="$i18n{searchPrompt}" clear-label="$i18n{clearSearch}"
+        showing-search="{{showingSearch}}" spinner-active="[[spinnerActive]]">
+    </cr-toolbar-search-field>
+    <iron-dropdown id="searchResults" opened="[[shouldShowDropdown_]]"
+        allow-outside-scroll no-cancel-on-outside-click>
+      <!--  As part of iron-dropdown's behavior, the slot 'dropdown-content' is
+            hidden until iron-dropdown's opened attribute is set true, or when
+            iron-dropdown's open() is called on the JS side. -->
+      <div slot="dropdown-content">
+        <div class="separator"></div>
+        <iron-list id="searchResultList" selection-enabled risk-selection
+            items="[[searchResults_]]" selected-item="{{selectedItem_}}"
+            on-selected-item-changed="onSelectedItemChanged_">
+          <template>
+            <os-search-result-row actionable search-result="[[item]]"
+                search-query="[[getCurrentQuery_(searchResults_)]]"
+                selected="[[isItemSelected_(item, selectedItem_)]]"
+                tabindex$="[[getRowTabIndex_(item, selectedItem_,
+                    shouldShowDropdown_)]]"
+                iron-list-tab-index$="[[getRowTabIndex_(item, selectedItem_,
+                    shouldShowDropdown_)]]"
+                on-navigated-to-result-route="onNavigatedToResultRowRoute_"
+                last-focused="{{lastFocused_}}"
+                list-blurred="{{listBlurred_}}"
+                list-length="[[getListLength_(searchResults_)]]"
+                focus-row-index="[[index]]"
+                first$="[[!index]]">
+            </os-search-result-row>
+          </template>
+        </iron-list>
+        <div id="noSearchResultsContainer" hidden="[[searchResultsExist_]]">
+          $i18n{searchNoResults}
+        </div>
+      </div>
+    </iron-dropdown>
+  </template>
+  <script src="os_settings_search_box.js"></script>
+</dom-module>

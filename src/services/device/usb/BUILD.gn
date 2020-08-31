@@ -108,6 +108,8 @@ static_library("usb") {
       "setupapi.lib",
       "winusb.lib",
     ]
+
+    deps += [ "//third_party/re2" ]
   }
 
   if (is_android || is_chromeos || is_linux) {
@@ -145,15 +147,11 @@ static_library("test_support") {
     "//testing/gtest",
   ]
 
-  public_deps = [
-    "//testing/gmock",
-  ]
+  public_deps = [ "//testing/gmock" ]
 }
 
 fuzzer_test("webusb_descriptors_fuzzer") {
-  sources = [
-    "webusb_descriptors_fuzzer.cc",
-  ]
+  sources = [ "webusb_descriptors_fuzzer.cc" ]
   deps = [
     ":test_support",
     ":usb",
@@ -165,9 +163,7 @@ fuzzer_test("webusb_descriptors_fuzzer") {
 }
 
 fuzzer_test("usb_descriptors_fuzzer") {
-  sources = [
-    "usb_descriptors_fuzzer.cc",
-  ]
+  sources = [ "usb_descriptors_fuzzer.cc" ]
   deps = [
     ":usb",
     "//mojo/public/cpp/bindings",
@@ -179,9 +175,7 @@ fuzzer_test("usb_descriptors_fuzzer") {
 }
 
 fuzzer_test("usb_string_read_fuzzer") {
-  sources = [
-    "usb_string_read_fuzzer.cc",
-  ]
+  sources = [ "usb_string_read_fuzzer.cc" ]
   deps = [
     ":test_support",
     ":usb",
@@ -206,7 +200,7 @@ if (is_android) {
   }
 
   android_library("java") {
-    java_files = java_sources_needing_jni
+    sources = java_sources_needing_jni
     deps = [
       "//base:base_java",
       "//base:jni_java",

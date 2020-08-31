@@ -8,6 +8,7 @@
 #define CORE_FXCODEC_JPX_CJPX_DECODER_H_
 
 #include <memory>
+#include <vector>
 
 #include "core/fxcrt/unowned_ptr.h"
 #include "third_party/base/span.h"
@@ -30,17 +31,24 @@ class CJPX_Decoder {
     kIndexedColorSpace
   };
 
+  struct JpxImageInfo {
+    uint32_t width;
+    uint32_t height;
+    uint32_t components;
+    COLOR_SPACE colorspace;
+  };
+
   static void Sycc420ToRgbForTesting(opj_image_t* img);
 
   explicit CJPX_Decoder(ColorSpaceOption option);
   ~CJPX_Decoder();
 
   bool Init(pdfium::span<const uint8_t> src_data);
-  void GetInfo(uint32_t* width, uint32_t* height, uint32_t* components);
+  JpxImageInfo GetInfo() const;
   bool StartDecode();
-  bool Decode(uint8_t* dest_buf,
-              uint32_t pitch,
-              pdfium::span<const uint8_t> offsets);
+
+  // |swap_rgb| can only be set for images with 3 or more components.
+  bool Decode(uint8_t* dest_buf, uint32_t pitch, bool swap_rgb);
 
  private:
   const ColorSpaceOption m_ColorSpaceOption;

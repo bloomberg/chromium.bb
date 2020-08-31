@@ -7,7 +7,9 @@
 
 #include <vector>
 
+#include "base/optional.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-forward.h"
 
 namespace content {
 
@@ -31,8 +33,8 @@ enum class PermissionType {
   FLASH = 11,
   SENSORS = 12,
   ACCESSIBILITY_EVENTS = 13,
-  CLIPBOARD_READ = 14,
-  CLIPBOARD_WRITE = 15,
+  // CLIPBOARD_READ = 14, // Replaced by CLIPBOARD_READ_WRITE in M81.
+  // CLIPBOARD_WRITE = 15, // Replaced by CLIPBOARD_SANITIZED_WRITE in M81.
   PAYMENT_HANDLER = 16,
   BACKGROUND_FETCH = 17,
   IDLE_DETECTION = 18,
@@ -40,12 +42,24 @@ enum class PermissionType {
   WAKE_LOCK_SCREEN = 20,
   WAKE_LOCK_SYSTEM = 21,
   NFC = 22,
+  CLIPBOARD_READ_WRITE = 23,
+  CLIPBOARD_SANITIZED_WRITE = 24,
+  VR = 25,
+  AR = 26,
+  STORAGE_ACCESS_GRANT = 27,
+  CAMERA_PAN_TILT_ZOOM = 28,
+  WINDOW_PLACEMENT = 29,
 
   // Always keep this at the end.
   NUM,
 };
 
 CONTENT_EXPORT const std::vector<PermissionType>& GetAllPermissionTypes();
+
+// Given |descriptor|, set |permission_type| to a corresponding PermissionType.
+CONTENT_EXPORT base::Optional<PermissionType>
+PermissionDescriptorToPermissionType(
+    const blink::mojom::PermissionDescriptorPtr& descriptor);
 
 }  // namespace content
 

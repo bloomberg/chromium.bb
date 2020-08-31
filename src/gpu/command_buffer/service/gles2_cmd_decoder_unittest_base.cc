@@ -132,7 +132,8 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
       cached_stencil_front_mask_(static_cast<GLuint>(-1)),
       cached_stencil_back_mask_(static_cast<GLuint>(-1)),
       shader_language_version_(100),
-      shader_translator_cache_(gpu_preferences_) {
+      shader_translator_cache_(gpu_preferences_),
+      discardable_manager_(gpu_preferences_) {
   memset(immediate_buffer_, 0xEE, sizeof(immediate_buffer_));
 }
 
@@ -517,7 +518,8 @@ ContextResult GLES2DecoderTestBase::MaybeInitDecoderWithWorkarounds(
   gpu::ContextResult result = decoder_->Initialize(
       surface_, context_, false, DisallowedFeatures(), attribs);
   if (result != gpu::ContextResult::kSuccess) {
-    decoder_->Destroy(false /* have_context */);
+    // GLES2CmdDecoder::Destroy should be handled by Initialize in all failure
+    // cases.
     decoder_.reset();
     group_->Destroy(mock_decoder_.get(), false);
     return result;
@@ -2394,7 +2396,9 @@ GpuPreferences GenerateGpuPreferencesForPassthroughTests() {
 GLES2DecoderPassthroughTestBase::GLES2DecoderPassthroughTestBase(
     ContextType context_type)
     : gpu_preferences_(GenerateGpuPreferencesForPassthroughTests()),
-      shader_translator_cache_(gpu_preferences_) {
+      shader_translator_cache_(gpu_preferences_),
+      discardable_manager_(gpu_preferences_),
+      passthrough_discardable_manager_(gpu_preferences_) {
   context_creation_attribs_.context_type = context_type;
 }
 
@@ -2430,7 +2434,7 @@ void GLES2DecoderPassthroughTestBase::SetUp() {
 
   gl::init::InitializeStaticGLBindingsImplementation(
       gl::kGLImplementationEGLANGLE, false);
-  gl::init::InitializeGLOneOffPlatformImplementation(false, false, false, true);
+  gl::init::InitializeGLOneOffPlatformImplementation(false, false, true);
 
   scoped_refptr<gles2::FeatureInfo> feature_info = new gles2::FeatureInfo();
   group_ = new gles2::ContextGroup(

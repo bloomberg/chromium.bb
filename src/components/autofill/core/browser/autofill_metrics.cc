@@ -85,14 +85,6 @@ std::string PreviousSaveCreditCardPromptUserDecisionToString(
 
 }  // namespace
 
-int64_t HashFormSignature(autofill::FormSignature form_signature) {
-  return static_cast<uint64_t>(form_signature) % 1021;
-}
-
-int64_t HashFieldSignature(autofill::FieldSignature field_signature) {
-  return static_cast<uint64_t>(field_signature) % 1021;
-}
-
 // First, translates |field_type| to the corresponding logical |group| from
 // |FieldTypeGroupForMetrics|.  Then, interpolates this with the given |metric|,
 // which should be in the range [0, |num_possible_metrics|).
@@ -587,11 +579,6 @@ void AutofillMetrics::LogSubmittedServerCardExpirationStatusMetric(
 }
 
 // static
-void AutofillMetrics::LogMaskedCardComparisonNetworksMatch(bool matches) {
-  UMA_HISTOGRAM_BOOLEAN("Autofill.MaskedCardComparisonNetworksMatch", matches);
-}
-
-// static
 void AutofillMetrics::LogCreditCardSaveNotOfferedDueToMaxStrikesMetric(
     SaveTypeMetric metric) {
   UMA_HISTOGRAM_ENUMERATION(
@@ -841,6 +828,17 @@ void AutofillMetrics::LogLocalCardMigrationBubbleUserInteractionMetric(
 }
 
 // static
+void AutofillMetrics::LogLocalCardMigrationBubbleResultMetric(
+    LocalCardMigrationBubbleResultMetric metric,
+    bool is_reshow) {
+  DCHECK_LT(metric, NUM_LOCAL_CARD_MIGRATION_BUBBLE_RESULT_METRICS);
+  std::string suffix = is_reshow ? ".Reshows" : ".FirstShow";
+  base::UmaHistogramEnumeration(
+      "Autofill.LocalCardMigrationBubbleResult" + suffix, metric,
+      NUM_LOCAL_CARD_MIGRATION_BUBBLE_RESULT_METRICS);
+}
+
+// static
 void AutofillMetrics::LogLocalCardMigrationDialogOfferMetric(
     LocalCardMigrationDialogOfferMetric metric) {
   DCHECK_LT(metric, NUM_LOCAL_CARD_MIGRATION_DIALOG_OFFER_METRICS);
@@ -1020,6 +1018,30 @@ void AutofillMetrics::LogUserPerceivedLatencyOnCardSelection(
 }
 
 // static
+void AutofillMetrics::LogUserPerceivedLatencyOnCardSelectionDuration(
+    const base::TimeDelta duration) {
+  base::UmaHistogramLongTimes(
+      "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.OptedIn."
+      "Duration",
+      duration);
+}
+
+// static
+void AutofillMetrics::LogUserPerceivedLatencyOnCardSelectionTimedOut(
+    bool did_time_out) {
+  base::UmaHistogramBoolean(
+      "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.OptedIn."
+      "TimedOutCvcFallback",
+      did_time_out);
+}
+
+void AutofillMetrics::LogUserVerifiabilityCheckDuration(
+    const base::TimeDelta& duration) {
+  base::UmaHistogramLongTimes(
+      "Autofill.BetterAuth.UserVerifiabilityCheckDuration", duration);
+}
+
+// static
 void AutofillMetrics::LogWebauthnResult(WebauthnFlowEvent event,
                                         WebauthnResultMetric metric) {
   std::string histogram_name = "Autofill.BetterAuth.WebauthnResult.";
@@ -1041,9 +1063,14 @@ void AutofillMetrics::LogWebauthnResult(WebauthnFlowEvent event,
 }
 
 // static
-void AutofillMetrics::LogUnmaskPromptEvent(UnmaskPromptEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("Autofill.UnmaskPrompt.Events", event,
-                            NUM_UNMASK_PROMPT_EVENTS);
+void AutofillMetrics::LogUnmaskPromptEvent(UnmaskPromptEvent event,
+                                           bool has_valid_nickname) {
+  base::UmaHistogramEnumeration("Autofill.UnmaskPrompt.Events", event,
+                                NUM_UNMASK_PROMPT_EVENTS);
+  if (has_valid_nickname) {
+    base::UmaHistogramEnumeration("Autofill.UnmaskPrompt.Events.WithNickname",
+                                  event, NUM_UNMASK_PROMPT_EVENTS);
+  }
 }
 
 // static
@@ -1068,37 +1095,51 @@ void AutofillMetrics::LogExpirationDateFixFlowPromptShown() {
 // static
 void AutofillMetrics::LogUnmaskPromptEventDuration(
     const base::TimeDelta& duration,
-    UnmaskPromptEvent close_event) {
+    UnmaskPromptEvent close_event,
+    bool has_valid_nickname) {
   std::string suffix;
   switch (close_event) {
     case UNMASK_PROMPT_CLOSED_NO_ATTEMPTS:
-      suffix = "NoAttempts";
+      suffix = ".NoAttempts";
       break;
     case UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE:
     case UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE:
-      suffix = "Failure";
+      suffix = ".Failure";
       break;
     case UNMASK_PROMPT_CLOSED_ABANDON_UNMASKING:
-      suffix = "AbandonUnmasking";
+      suffix = ".AbandonUnmasking";
       break;
     case UNMASK_PROMPT_UNMASKED_CARD_FIRST_ATTEMPT:
     case UNMASK_PROMPT_UNMASKED_CARD_AFTER_FAILED_ATTEMPTS:
-      suffix = "Success";
+      suffix = ".Success";
       break;
     default:
       NOTREACHED();
       return;
   }
   base::UmaHistogramLongTimes("Autofill.UnmaskPrompt.Duration", duration);
-  base::UmaHistogramLongTimes("Autofill.UnmaskPrompt.Duration." + suffix,
+  base::UmaHistogramLongTimes("Autofill.UnmaskPrompt.Duration" + suffix,
                               duration);
+
+  if (has_valid_nickname) {
+    base::UmaHistogramLongTimes("Autofill.UnmaskPrompt.Duration.WithNickname",
+                                duration);
+    base::UmaHistogramLongTimes(
+        "Autofill.UnmaskPrompt.Duration" + suffix + ".WithNickname", duration);
+  }
 }
 
 // static
 void AutofillMetrics::LogTimeBeforeAbandonUnmasking(
-    const base::TimeDelta& duration) {
-  UMA_HISTOGRAM_LONG_TIMES("Autofill.UnmaskPrompt.TimeBeforeAbandonUnmasking",
-                           duration);
+    const base::TimeDelta& duration,
+    bool has_valid_nickname) {
+  base::UmaHistogramLongTimes(
+      "Autofill.UnmaskPrompt.TimeBeforeAbandonUnmasking", duration);
+  if (has_valid_nickname) {
+    base::UmaHistogramLongTimes(
+        "Autofill.UnmaskPrompt.TimeBeforeAbandonUnmasking.WithNickname",
+        duration);
+  }
 }
 
 // static
@@ -1702,16 +1743,18 @@ void AutofillMetrics::LogParseFormTiming(const base::TimeDelta& duration) {
 void AutofillMetrics::LogNumberOfProfilesConsideredForDedupe(
     size_t num_considered) {
   // A maximum of 50 is enforced to reduce the number of generated buckets.
-  UMA_HISTOGRAM_COUNTS_1000("Autofill.NumberOfProfilesConsideredForDedupe",
-                            std::min(int(num_considered), kMaxBucketsCount));
+  UMA_HISTOGRAM_COUNTS_1000(
+      "Autofill.NumberOfProfilesConsideredForDedupe",
+      std::min(static_cast<int>(num_considered), kMaxBucketsCount));
 }
 
 // static
 void AutofillMetrics::LogNumberOfProfilesRemovedDuringDedupe(
     size_t num_removed) {
   // A maximum of 50 is enforced to reduce the number of generated buckets.
-  UMA_HISTOGRAM_COUNTS_1000("Autofill.NumberOfProfilesRemovedDuringDedupe",
-                            std::min(int(num_removed), kMaxBucketsCount));
+  UMA_HISTOGRAM_COUNTS_1000(
+      "Autofill.NumberOfProfilesRemovedDuringDedupe",
+      std::min(static_cast<int>(num_removed), kMaxBucketsCount));
 }
 
 // static
@@ -2140,6 +2183,32 @@ AutofillMetrics::UkmTimestampPin::UkmTimestampPin(
 AutofillMetrics::UkmTimestampPin::~UkmTimestampPin() {
   DCHECK(logger_->has_pinned_timestamp());
   logger_->set_pinned_timestamp(base::TimeTicks());
+}
+
+// static
+void AutofillMetrics::LogAddressFormImportRequirementMetric(
+    AutofillMetrics::AddressProfileImportRequirementMetric metric) {
+  // Shift the requirement type index by one bit to the right.
+  // The freed least significant bit is used to indicate the fulfillment status
+  // of the specific requirement.
+  base::UmaHistogramEnumeration("Autofill.AddressProfileImportRequirements",
+                                metric);
+}
+
+// static
+void AutofillMetrics::
+    LogAddressFormImportCountrySpecificFieldRequirementsMetric(
+        bool is_zip_missing,
+        bool is_state_missing,
+        bool is_city_missing,
+        bool is_line1_missing) {
+  const auto metric = static_cast<
+      AutofillMetrics::
+          AddressProfileImportCountrySpecificFieldRequirementsMetric>(
+      (is_zip_missing ? 0b1 : 0) | (is_state_missing ? 0b10 : 0) |
+      (is_city_missing ? 0b100 : 0) | (is_line1_missing ? 0b1000 : 0));
+  base::UmaHistogramEnumeration(
+      "Autofill.AddressProfileImportCountrySpecificFieldRequirements", metric);
 }
 
 }  // namespace autofill

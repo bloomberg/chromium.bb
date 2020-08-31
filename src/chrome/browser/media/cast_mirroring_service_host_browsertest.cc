@@ -19,6 +19,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "media/capture/mojom/video_capture.mojom.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/capture/video_capture_types.h"
@@ -205,9 +206,7 @@ class CastMirroringServiceHostBrowserTest
   }
 
   // InProcessBrowserTest override.
-  void SetUp() override {
-    InProcessBrowserTest::SetUp();
-  }
+  void SetUp() override { InProcessBrowserTest::SetUp(); }
 
  private:
   // mojom::SessionObserver mocks.
@@ -220,11 +219,11 @@ class CastMirroringServiceHostBrowserTest
 
   // mojom::AudioStreamCreatorClient mocks.
   MOCK_METHOD0(OnAudioStreamCreated, void());
-  void StreamCreated(mojo::PendingRemote<media::mojom::AudioInputStream> stream,
-                     mojo::PendingReceiver<media::mojom::AudioInputStreamClient>
-                         client_receiver,
-                     media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
-                     bool initially_muted) override {
+  void StreamCreated(
+      mojo::PendingRemote<media::mojom::AudioInputStream> stream,
+      mojo::PendingReceiver<media::mojom::AudioInputStreamClient>
+          client_receiver,
+      media::mojom::ReadOnlyAudioDataPipePtr data_pipe) override {
     EXPECT_TRUE(stream);
     EXPECT_TRUE(client_receiver);
     EXPECT_TRUE(data_pipe);

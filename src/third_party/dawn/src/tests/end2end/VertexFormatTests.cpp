@@ -383,7 +383,7 @@ class VertexFormatTest : public DawnTest {
             wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
             pass.SetPipeline(pipeline);
             pass.SetVertexBuffer(0, vertexBuffer);
-            pass.Draw(3, 1, 0, 0);
+            pass.Draw(3);
             pass.EndPass();
         }
 
@@ -915,4 +915,4 @@ TEST_P(VertexFormatTest, Int4) {
     DoVertexFormatTest(wgpu::VertexFormat::Int4, vertexData, vertexData);
 }
 
-DAWN_INSTANTIATE_TEST(VertexFormatTest, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend);
+DAWN_INSTANTIATE_TEST(VertexFormatTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());

@@ -25,9 +25,10 @@ namespace cc {
 class PaintImageGenerator;
 class PaintOpBuffer;
 class PaintWorkletInput;
+class TextureBacking;
 using PaintRecord = PaintOpBuffer;
 
-enum class ImageType { kPNG, kJPEG, kWEBP, kGIF, kICO, kBMP, kInvalid };
+enum class ImageType { kPNG, kJPEG, kWEBP, kGIF, kICO, kBMP, kAVIF, kInvalid };
 
 enum class YUVSubsampling { k410, k411, k420, k422, k440, k444, kUnknown };
 
@@ -240,7 +241,6 @@ class CC_PAINT_EXPORT PaintImage {
     return reset_animation_sequence_id_;
   }
   DecodingMode decoding_mode() const { return decoding_mode_; }
-  PaintImage::ContentId content_id() const { return content_id_; }
 
   // TODO(vmpstr): Don't get the SkImage here if you don't need to.
   uint32_t unique_id() const {
@@ -261,6 +261,7 @@ class CC_PAINT_EXPORT PaintImage {
   SkColorSpace* color_space() const {
     return paint_worklet_input_ ? nullptr : GetSkImage()->colorSpace();
   }
+  bool isSRGB() const;
   const gfx::Rect subset_rect() const { return subset_rect_; }
 
   // Returns whether this image will be decoded and rendered from YUV data
@@ -271,8 +272,9 @@ class CC_PAINT_EXPORT PaintImage {
              SkYUVAIndex* plane_indices = nullptr,
              SkYUVColorSpace* yuv_color_space = nullptr) const;
 
-  // Returns the color type of this image.
+  // Get metadata associated with this image.
   SkColorType GetColorType() const;
+  SkAlphaType GetAlphaType() const;
 
   // Returns general information about the underlying image. Returns nullptr if
   // there is no available |paint_image_generator_|.
@@ -280,6 +282,8 @@ class CC_PAINT_EXPORT PaintImage {
 
   // Returns a unique id for the pixel data for the frame at |frame_index|.
   FrameKey GetKeyForFrame(size_t frame_index) const;
+
+  PaintImage::ContentId GetContentIdForFrame(size_t frame_index) const;
 
   // Returns the metadata for each frame of a multi-frame image. Should only be
   // used with animated images.
@@ -295,6 +299,8 @@ class CC_PAINT_EXPORT PaintImage {
   const scoped_refptr<PaintWorkletInput>& paint_worklet_input() const {
     return paint_worklet_input_;
   }
+
+  bool IsOpaque() const { return GetSkImage() && GetSkImage()->isOpaque(); }
 
   std::string ToString() const;
 
@@ -329,6 +335,7 @@ class CC_PAINT_EXPORT PaintImage {
   ContentId content_id_ = kInvalidContentId;
 
   sk_sp<PaintImageGenerator> paint_image_generator_;
+  sk_sp<TextureBacking> texture_backing_;
 
   Id id_ = 0;
   AnimationType animation_type_ = AnimationType::STATIC;

@@ -30,7 +30,8 @@ namespace indexed_db {
 // 1 - Adds UserIntVersion to DatabaseMetaData.
 // 2 - Adds DataVersion to to global metadata.
 // 3 - Adds metadata needed for blob support.
-const constexpr int64_t kLatestKnownSchemaVersion = 3;
+// 4 - Adds size & last_modified to 'file' blob_info encodings.
+const constexpr int64_t kLatestKnownSchemaVersion = 4;
 }  // namespace indexed_db
 
 CONTENT_EXPORT extern const unsigned char kMinimumIndexId;
@@ -38,7 +39,7 @@ CONTENT_EXPORT extern const unsigned char kMinimumIndexId;
 CONTENT_EXPORT std::string MaxIDBKey();
 CONTENT_EXPORT std::string MinIDBKey();
 
-// DatabaseId, BlobKey
+// DatabaseId, BlobNumber
 typedef std::pair<int64_t, int64_t> BlobJournalEntryType;
 typedef std::vector<BlobJournalEntryType> BlobJournalType;
 
@@ -55,6 +56,8 @@ CONTENT_EXPORT void EncodeString(const base::string16& value,
 CONTENT_EXPORT void EncodeStringWithLength(const base::string16& value,
                                            std::string* into);
 CONTENT_EXPORT void EncodeBinary(const std::string& value, std::string* into);
+CONTENT_EXPORT void EncodeBinary(base::span<const uint8_t> value,
+                                 std::string* into);
 CONTENT_EXPORT void EncodeDouble(double value, std::string* into);
 CONTENT_EXPORT void EncodeIDBKey(const blink::IndexedDBKey& value,
                                  std::string* into);
@@ -76,6 +79,11 @@ CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeStringWithLength(
     base::string16* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeBinary(base::StringPiece* slice,
                                                     std::string* value);
+// The returned span is only valid as long as the date behind |slice| is
+// still valid.
+CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeBinary(
+    base::StringPiece* slice,
+    base::span<const uint8_t>* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeDouble(base::StringPiece* slice,
                                                     double* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeIDBKey(
@@ -291,12 +299,12 @@ class DatabaseMetaDataKey {
     MAX_SIMPLE_METADATA_TYPE = 6
   };
 
-  CONTENT_EXPORT static const int64_t kAllBlobsKey;
-  static const int64_t kBlobKeyGeneratorInitialNumber;
+  CONTENT_EXPORT static const int64_t kAllBlobsNumber;
+  static const int64_t kBlobNumberGeneratorInitialNumber;
   // All keys <= 0 are invalid.  This one's just a convenient example.
-  static const int64_t kInvalidBlobKey;
+  static const int64_t kInvalidBlobNumber;
 
-  CONTENT_EXPORT static bool IsValidBlobKey(int64_t blob_key);
+  CONTENT_EXPORT static bool IsValidBlobNumber(int64_t blob_number);
   CONTENT_EXPORT static std::string Encode(int64_t database_id,
                                            MetaDataType type);
 };
@@ -450,9 +458,9 @@ class ObjectStoreDataKey {
   CONTENT_EXPORT static std::string Encode(int64_t database_id,
                                            int64_t object_store_id,
                                            const std::string encoded_user_key);
-  static std::string Encode(int64_t database_id,
-                            int64_t object_store_id,
-                            const blink::IndexedDBKey& user_key);
+  CONTENT_EXPORT static std::string Encode(int64_t database_id,
+                                           int64_t object_store_id,
+                                           const blink::IndexedDBKey& user_key);
   std::string DebugString() const;
 
   std::unique_ptr<blink::IndexedDBKey> user_key() const;
@@ -484,7 +492,7 @@ class ExistsEntryKey {
   DISALLOW_COPY_AND_ASSIGN(ExistsEntryKey);
 };
 
-class BlobEntryKey {
+class CONTENT_EXPORT BlobEntryKey {
  public:
   BlobEntryKey() : database_id_(0), object_store_id_(0) {}
   static bool Decode(base::StringPiece* slice, BlobEntryKey* result);

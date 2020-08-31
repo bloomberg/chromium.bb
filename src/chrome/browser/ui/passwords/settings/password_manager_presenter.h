@@ -11,14 +11,15 @@
 #include <memory>
 #include <string>
 #include <vector>
-
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
+#include "components/password_manager/core/browser/ui/plaintext_reason.h"
 #include "components/prefs/pref_member.h"
 #include "components/undo/undo_manager.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -80,6 +81,7 @@ class PasswordManagerPresenter
   // across Desktop and Android.
   void RemoveSavedPassword(size_t index);
   void RemoveSavedPassword(const std::string& sort_key);
+  void RemoveSavedPasswords(const std::vector<std::string>& sort_keys);
 
   // Removes the saved exception entries at |index|, or corresponding to
   // |sort_key|, respectively.
@@ -87,18 +89,22 @@ class PasswordManagerPresenter
   // across Desktop and Android.
   void RemovePasswordException(size_t index);
   void RemovePasswordException(const std::string& sort_key);
+  void RemovePasswordExceptions(const std::vector<std::string>& sort_keys);
 
   // Undoes the last saved password or exception removal.
   void UndoRemoveSavedPasswordOrException();
 
+#if !defined(OS_ANDROID)
   // Requests to reveal the plain text password corresponding to |sort_key|. If
   // |sort_key| is a valid key into |password_map_|, runs |callback| with the
   // corresponding value, or nullopt otherwise.
   // TODO(https://crbug.com/778146): Update this method to take a DisplayEntry
   // instead.
-  void RequestShowPassword(
+  void RequestPlaintextPassword(
       const std::string& sort_key,
+      password_manager::PlaintextReason reason,
       base::OnceCallback<void(base::Optional<base::string16>)> callback) const;
+#endif
 
   // Wrapper around |PasswordStore::AddLogin| that adds the corresponding undo
   // action to |undo_manager_|.
@@ -143,9 +149,6 @@ class PasswordManagerPresenter
   // Sets the password and exception list of the UI view.
   void SetPasswordList();
   void SetPasswordExceptionList();
-
-  // Returns the password store associated with the currently active profile.
-  password_manager::PasswordStore* GetPasswordStore(bool use_account_store);
 
   PasswordFormMap password_map_;
   PasswordFormMap exception_map_;

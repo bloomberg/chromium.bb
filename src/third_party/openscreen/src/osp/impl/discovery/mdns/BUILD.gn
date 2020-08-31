@@ -15,6 +15,7 @@ source_set("mdns_interface") {
 
   public_deps = [
     "../../../../platform",
+    "../../../../third_party/abseil",
     "../../../../util",
   ]
 }

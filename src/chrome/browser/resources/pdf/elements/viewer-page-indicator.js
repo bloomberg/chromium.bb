@@ -23,7 +23,7 @@ Polymer({
   timerId: undefined,
 
   /** @override */
-  ready: function() {
+  ready() {
     const callback = this.fadeIn_.bind(this);
     window.addEventListener('scroll', function() {
       requestAnimationFrame(callback);
@@ -31,7 +31,7 @@ Polymer({
   },
 
   /** @private */
-  fadeIn_: function() {
+  fadeIn_() {
     const percent = window.scrollY /
         (document.scrollingElement.scrollHeight -
          document.documentElement.clientHeight);
@@ -45,7 +45,7 @@ Polymer({
     // those platforms, though.
     assert(document.documentElement.dir);
     const endEdge = isRTL() ? 'left' : 'right';
-    if (window.innerWidth == document.scrollingElement.scrollWidth) {
+    if (window.innerWidth === document.scrollingElement.scrollWidth) {
       this.style[endEdge] = '16px';
     } else {
       this.style[endEdge] = '0px';
@@ -60,11 +60,11 @@ Polymer({
     }, 2000);
   },
 
-  pageLabelsChanged: function() {
+  pageLabelsChanged() {
     this.indexChanged();
   },
 
-  indexChanged: function() {
+  indexChanged() {
     if (this.pageLabels) {
       this.label = this.pageLabels[this.index];
     } else {

@@ -17,20 +17,18 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/blocked_action_bubble_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "components/crx_file/id_util.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -38,6 +36,8 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/declarative_net_request/action_tracker.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
+#include "extensions/browser/extension_action.h"
+#include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
@@ -119,7 +119,7 @@ ExtensionAction::ShowAction ExtensionActionRunner::RunAction(
 
   // Anything that gets here should have a page or browser action.
   DCHECK(extension_action);
-  int tab_id = SessionTabHelper::IdForTab(web_contents()).id();
+  int tab_id = sessions::SessionTabHelper::IdForTab(web_contents()).id();
   if (!extension_action->GetIsVisible(tab_id))
     return ExtensionAction::ACTION_NONE;
 
@@ -230,7 +230,7 @@ ExtensionActionRunner::RequiresUserConsentForScriptInjection(
     return PermissionsData::PageAccess::kAllowed;
 
   GURL url = web_contents()->GetVisibleURL();
-  int tab_id = SessionTabHelper::IdForTab(web_contents()).id();
+  int tab_id = sessions::SessionTabHelper::IdForTab(web_contents()).id();
   switch (type) {
     case UserScript::CONTENT_SCRIPT:
       return extension->permissions_data()->GetContentScriptAccess(url, tab_id,
@@ -450,6 +450,8 @@ void ExtensionActionRunner::UpdatePageAccessSettings(const Extension* extension,
 
   switch (new_access) {
     case PageAccess::RUN_ON_CLICK:
+      if (modifier.HasBroadGrantedHostPermissions())
+        modifier.RemoveBroadGrantedHostPermissions();
       // Note: SetWithholdHostPermissions() is a no-op if host permissions are
       // already being withheld.
       modifier.SetWithholdHostPermissions(true);
@@ -457,6 +459,8 @@ void ExtensionActionRunner::UpdatePageAccessSettings(const Extension* extension,
         modifier.RemoveGrantedHostPermission(url);
       break;
     case PageAccess::RUN_ON_SITE:
+      if (modifier.HasBroadGrantedHostPermissions())
+        modifier.RemoveBroadGrantedHostPermissions();
       // Note: SetWithholdHostPermissions() is a no-op if host permissions are
       // already being withheld.
       modifier.SetWithholdHostPermissions(true);
@@ -503,11 +507,21 @@ bool ExtensionActionRunner::OnMessageReceived(
 
 void ExtensionActionRunner::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      !navigation_handle->HasCommitted() ||
-      navigation_handle->IsSameDocument()) {
-    return;
+  declarative_net_request::RulesMonitorService* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(browser_context_);
+
+  const bool is_main_frame = navigation_handle->IsInMainFrame();
+  const bool has_committed = navigation_handle->HasCommitted();
+
+  if (is_main_frame && !has_committed && rules_monitor_service) {
+    // Clean up any pending actions recorded in the action tracker for this
+    // navigation.
+    rules_monitor_service->action_tracker().ClearPendingNavigation(
+        navigation_handle->GetNavigationId());
   }
+
+  if (!is_main_frame || !has_committed || navigation_handle->IsSameDocument())
+    return;
 
   LogUMA();
   num_page_requests_ = 0;
@@ -522,17 +536,13 @@ void ExtensionActionRunner::DidFinishNavigation(
   // run".
   ExtensionActionAPI::Get(browser_context_)
       ->ClearAllValuesForTab(web_contents());
-
-  declarative_net_request::RulesMonitorService* rules_monitor_service =
-      declarative_net_request::RulesMonitorService::Get(browser_context_);
-
   // |rules_monitor_service| can be null for some unit tests.
   if (rules_monitor_service) {
+    int tab_id = ExtensionTabUtil::GetTabId(web_contents());
     declarative_net_request::ActionTracker& action_tracker =
         rules_monitor_service->action_tracker();
-
-    int tab_id = ExtensionTabUtil::GetTabId(web_contents());
-    action_tracker.ResetActionCountForTab(tab_id);
+    action_tracker.ResetTrackedInfoForTab(tab_id,
+                                          navigation_handle->GetNavigationId());
   }
 }
 

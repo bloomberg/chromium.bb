@@ -26,6 +26,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -115,8 +116,8 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest, SimpleTabUnder_IsBlocked) {
       embedded_test_server()->GetURL("a.com", "/title1.html");
 
   std::string expected_error = GetError(cross_origin_url);
-  content::ConsoleObserverDelegate console_observer(opener, expected_error);
-  opener->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(opener);
+  console_observer.SetPattern(expected_error);
 
   EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
       opener, base::StringPrintf("window.location = '%s';",
@@ -128,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest, SimpleTabUnder_IsBlocked) {
   // to be consistent with the NotBlocked test below, which has to use this
   // technique.
   EXPECT_TRUE(content::ExecuteScript(opener, "var a = 0;"));
-  EXPECT_EQ(expected_error, console_observer.message());
+  EXPECT_EQ(expected_error, console_observer.GetMessageAt(0u));
   EXPECT_TRUE(IsUiShownForUrl(opener, cross_origin_url));
 }
 
@@ -155,9 +156,8 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
   content::TestNavigationObserver tab_under_observer(opener, 1);
   const GURL cross_origin_url =
       embedded_test_server()->GetURL("a.com", "/title1.html");
-  content::ConsoleObserverDelegate console_observer(opener,
-                                                    GetError(cross_origin_url));
-  opener->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(opener);
+  console_observer.SetPattern(GetError(cross_origin_url));
   EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
       opener, base::StringPrintf("window.location = '%s';",
                                  cross_origin_url.spec().c_str())));
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
 
   // Round trip to the renderer to ensure the message would have been sent.
   EXPECT_TRUE(content::ExecuteScript(opener, "var a = 0;"));
-  EXPECT_TRUE(console_observer.message().empty());
+  EXPECT_TRUE(console_observer.messages().empty());
   EXPECT_FALSE(IsUiShownForUrl(opener, cross_origin_url));
 }
 

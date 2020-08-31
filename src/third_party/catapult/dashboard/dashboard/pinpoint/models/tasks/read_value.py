@@ -21,7 +21,8 @@ from dashboard.pinpoint.models.tasks import run_test
 from tracing.value import histogram_set
 
 HistogramOptions = collections.namedtuple(
-    'HistogramOptions', ('grouping_label', 'story', 'statistic'))
+    'HistogramOptions',
+    ('grouping_label', 'story', 'statistic', 'histogram_name'))
 
 GraphJsonOptions = collections.namedtuple('GraphJsonOptions',
                                           ('chart', 'trace'))
@@ -35,6 +36,10 @@ class CompleteReadValueAction(
     collections.namedtuple('CompleteReadValueAction',
                            ('job', 'task', 'state'))):
   __slots__ = ()
+
+  def __str__(self):
+    return 'CompleteReadValueAction(job = %s, task = %s)' % (
+        self.job.job_id, self.task.id)
 
   @task_module.LogStateTransitionFailures
   def __call__(self, _):
@@ -70,7 +75,6 @@ class ReadValueEvaluator(
     dep = accumulator.get(task.dependencies[0], {})
     isolate_server = dep.get('isolate_server')
     isolate_hash = dep.get('isolate_hash')
-    logging.debug('Dependency Data: %s', dep)
     dependency_status = dep.get('status', 'failed')
     if dependency_status == 'failed':
       return self.CompleteWithError(
@@ -98,11 +102,11 @@ class ReadValueEvaluator(
       return self.CompleteWithError(task, type(e).__name__, e.message)
 
   def HandleHistogramSets(self, task, histogram_dicts):
-    histogram_name = task.payload.get('benchmark')
     histogram_options = task.payload.get('histogram_options', {})
     grouping_label = histogram_options.get('grouping_label', '')
-    story = histogram_options.get('story', '')
-    statistic = histogram_options.get('statistic', '')
+    histogram_name = histogram_options.get('histogram_name')
+    story = histogram_options.get('story')
+    statistic = histogram_options.get('statistic')
     histograms = histogram_set.HistogramSet()
     histograms.ImportDicts(histogram_dicts)
     histograms_by_path = read_value_quest.CreateHistogramSetByTestPathDict(
@@ -228,15 +232,8 @@ def CreateGraph(options):
               'benchmark': options.benchmark,
               'mode': options.mode,
               'results_filename': path,
-              'histogram_options': {
-                  'grouping_label': options.histogram_options.grouping_label,
-                  'story': options.histogram_options.story,
-                  'statistic': options.histogram_options.statistic,
-              },
-              'graph_json_options': {
-                  'chart': options.graph_json_options.chart,
-                  'trace': options.graph_json_options.trace
-              },
+              'histogram_options': options.histogram_options._asdict(),
+              'graph_json_options': options.graph_json_options._asdict(),
               'change': options.test_options.build_options.change.AsDict(),
               'index': attempt,
           }), task_module.Dependency(from_=read_value_id, to=run_test_id))

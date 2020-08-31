@@ -155,14 +155,8 @@
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to April 2018 UI guidelines. The prompt will be shown in a bubble below the omnibox.">
     To pay faster next time, save your card and billing address to your Google Account.
   </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally, according to April 2018 UI guidelines. The prompt can be either a bubble or an infobar.">
-    To pay faster next time, save your card and billing address to your Google Account and to this device.
-  </message>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to April 2018 UI guidelines. The prompt will be shown in a bubble below the omnibox.">
     To pay faster next time, save your card, name, and billing address to your Google Account.
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME_AND_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally, according to April 2018 UI guidelines. The prompt can be either a bubble or an infobar.">
-    To pay faster next time, save your card, name, and billing address to your Google Account and to this device.
   </message>
 
   <if expr="is_ios">
@@ -476,6 +470,39 @@
   </message>
   <message name="IDS_AUTOFILL_FROM_GOOGLE_ACCOUNT_LONG" desc="Text that indicates an address or credit card came from Google Pay. 'Google Pay' should not be translated as it is the product name." formatter_data="android_java">
     From Google Pay
+  </message>
+
+  <!-- Cloud token related strings (Desktop only) -->
+  <if expr="not is_ios and not is_android">
+    <message name="IDS_AUTOFILL_CLOUD_TOKEN_DROPDOWN_OPTION_LABEL" desc="Text shown in the button in the Autofill dropdown menu when a credit card form field is queried, to offer the option to use a virtual card.">
+      Use a virtual card number...
+    </message>
+    <message name="IDS_AUTOFILL_VIRTUAL_CARD_SELECTION_DIALOG_CONTENT_TITLE" desc="The title shown in the Autofill virtual card selection dialog. This dialog offers available virtual credit cards for users to choose to fill the form with. [ICU Syntax]">
+      {NUM_CARDS, plural,
+      =1 {Use a virtual number for this card}
+      other {Select a card}}
+    </message>
+    <message name="IDS_AUTOFILL_VIRTUAL_CARD_SELECTION_DIALOG_CONTENT_EXPLANATION" desc="The detailed explanations shown in the Autofill virtual card selection dialog. This dialog offers available virtual credit cards for users to choose to fill the form with. [ICU Syntax]">
+      {NUM_CARDS, plural,
+      =1 {This card will be charged when you pay, but its real number won't be shared with this site. For extra security, a temporary CVC will be generated.}
+      other {The card you select will be charged when you pay, but its real number won't be shared with this site. For extra security, a temporary CVC will be generated.}}
+    </message>
+    <message name="IDS_AUTOFILL_VIRTUAL_CARD_SELECTION_DIALOG_OK_BUTTON_LABEL" desc="Text shown in the OK button in the Autofill virtual card selection dialog. This dialog offers all available virtual credit cards for users to choose.">
+      Continue
+    </message>
+    <message name="IDS_AUTOFILL_VIRTUAL_CARD_SELECTION_DIALOG_CANCEL_BUTTON_LABEL" desc="Text shown in the Cancel button in the Autofill virtual card selection dialog. This dialog offers all available virtual credit cards for users to choose.">
+      Cancel
+    </message>
+  </if>
+
+  <message name="IDS_AUTOFILL_SAVE_UPI_PROMPT_TITLE" desc="Title text for the prompt to save a UPI ID locally, which the user used in a page. UPI is an online payment method. A UPI ID is an email-like string.">
+    Remember your UPI ID?
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_UPI_PROMPT_ACCEPT" desc="Text for the button to accept saving a UPI ID locally, after the user used it in a page. A UPI ID is an email-like string.">
+    Save
+  </message>
+  <message name="IDS_AUTOFILL_SAVE_UPI_PROMPT_REJECT" desc="Text for the button to reject saving a UPI ID locally, after the user used it in a page. A UPI ID is an email-like string.">
+    No thanks
   </message>
 
 </grit-part>

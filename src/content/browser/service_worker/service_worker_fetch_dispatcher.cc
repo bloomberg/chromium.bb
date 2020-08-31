@@ -218,15 +218,15 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
 };
 
 using EventType = ServiceWorkerMetrics::EventType;
-EventType ResourceTypeToEventType(ResourceType resource_type) {
+EventType ResourceTypeToEventType(blink::mojom::ResourceType resource_type) {
   switch (resource_type) {
-    case ResourceType::kMainFrame:
+    case blink::mojom::ResourceType::kMainFrame:
       return EventType::FETCH_MAIN_FRAME;
-    case ResourceType::kSubFrame:
+    case blink::mojom::ResourceType::kSubFrame:
       return EventType::FETCH_SUB_FRAME;
-    case ResourceType::kSharedWorker:
+    case blink::mojom::ResourceType::kSharedWorker:
       return EventType::FETCH_SHARED_WORKER;
-    case ResourceType::kServiceWorker:
+    case blink::mojom::ResourceType::kServiceWorker:
       return EventType::FETCH_SUB_RESOURCE;
     default:
       return EventType::FETCH_SUB_RESOURCE;
@@ -328,7 +328,7 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
       ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
       frame_tree_node->navigation_request()->GetNavigationId(), &receiver,
       &header_client, &bypass_redirect_checks_unused,
-      /*factory_override=*/nullptr);
+      /*disable_secure_dns=*/nullptr, /*factory_override=*/nullptr);
 
   // Make the network factory.
   NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
@@ -458,17 +458,19 @@ class ServiceWorkerFetchDispatcher::URLLoaderAssets
 
 ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     blink::mojom::FetchAPIRequestPtr request,
-    ResourceType resource_type,
+    blink::mojom::ResourceType resource_type,
     const std::string& client_id,
     scoped_refptr<ServiceWorkerVersion> version,
     base::OnceClosure prepare_callback,
-    FetchCallback fetch_callback)
+    FetchCallback fetch_callback,
+    bool is_offline_capability_check)
     : request_(std::move(request)),
       client_id_(client_id),
       version_(std::move(version)),
       resource_type_(resource_type),
       prepare_callback_(std::move(prepare_callback)),
-      fetch_callback_(std::move(fetch_callback)) {
+      fetch_callback_(std::move(fetch_callback)),
+      is_offline_capability_check_(is_offline_capability_check) {
   DCHECK(!request_->blob);
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
@@ -596,7 +598,18 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   auto params = blink::mojom::DispatchFetchEventParams::New();
   params->request = std::move(request_);
   params->client_id = client_id_;
-  params->preload_handle = std::move(preload_handle_);
+  if (is_offline_capability_check_) {
+    // TODO(crbug.com/1031950): We have to set up |preload_handle_| correctly so
+    // that event.preloadResponse is valid one if navigation preload is enabled.
+
+    // At present, an offline-capability-check fetch event is not calling
+    // MayStartNavigationPreload() so |preload_handle_| is null here.
+    DCHECK(!preload_handle_);
+  } else {
+    params->preload_handle = std::move(preload_handle_);
+  }
+  params->is_offline_capability_check = is_offline_capability_check_;
+
   // TODO(https://crbug.com/900700): Make the remote connected to a receiver
   // which is passed to blink::PerformanceResourceTiming.
   params->worker_timing_remote = mojo::NullRemote();
@@ -661,8 +674,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     URLLoaderFactoryGetter* url_loader_factory_getter,
     scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
     int frame_tree_node_id) {
-  if (resource_type_ != ResourceType::kMainFrame &&
-      resource_type_ != ResourceType::kSubFrame) {
+  if (resource_type_ != blink::mojom::ResourceType::kMainFrame &&
+      resource_type_ != blink::mojom::ResourceType::kSubFrame) {
     return false;
   }
   if (!version_->navigation_preload_state().enabled)
@@ -672,13 +685,13 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     return false;
 
   network::ResourceRequest resource_request(original_request);
-  if (resource_type_ == ResourceType::kMainFrame) {
-    resource_request.resource_type =
-        static_cast<int>(ResourceType::kNavigationPreloadMainFrame);
+  if (resource_type_ == blink::mojom::ResourceType::kMainFrame) {
+    resource_request.resource_type = static_cast<int>(
+        blink::mojom::ResourceType::kNavigationPreloadMainFrame);
   } else {
-    DCHECK_EQ(ResourceType::kSubFrame, resource_type_);
-    resource_request.resource_type =
-        static_cast<int>(ResourceType::kNavigationPreloadSubFrame);
+    DCHECK_EQ(blink::mojom::ResourceType::kSubFrame, resource_type_);
+    resource_request.resource_type = static_cast<int>(
+        blink::mojom::ResourceType::kNavigationPreloadSubFrame);
   }
 
   resource_request.skip_service_worker = true;
@@ -714,9 +727,9 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   auto url_loader_client = std::make_unique<DelegatingURLLoaderClient>(
       std::move(inner_url_loader_client), resource_request);
 
-  // Use NavigationURLLoaderImpl to get a unique request id across
-  // browser-initiated navigations and navigation preloads.
-  int request_id = NavigationURLLoaderImpl::MakeGlobalRequestID().request_id;
+  // Get a unique request id across browser-initiated navigations and navigation
+  // preloads.
+  int request_id = GlobalRequestID::MakeBrowserInitiated().request_id;
 
   // Start the network request for the URL using the network factory.
   // TODO(falken): What to do about routing_id.

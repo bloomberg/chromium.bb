@@ -11,6 +11,7 @@ import collections
 import datetime
 import os
 import re
+import sys
 
 import dateutil  # pylint: disable=import-error
 import dateutil.parser  # pylint: disable=import-error
@@ -18,6 +19,9 @@ import dateutil.parser  # pylint: disable=import-error
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Default timezone to assume for logs if one is not specified.

@@ -15,9 +15,12 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_layout_manager_observer.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -25,11 +28,168 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
+#include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace {
+
+bool IsAppListBackground(ash::ShelfBackgroundType background_type) {
+  switch (background_type) {
+    case ash::ShelfBackgroundType::kAppList:
+    case ash::ShelfBackgroundType::kHomeLauncher:
+    case ash::ShelfBackgroundType::kMaximizedWithAppList:
+      return true;
+    case ash::ShelfBackgroundType::kDefaultBg:
+    case ash::ShelfBackgroundType::kMaximized:
+    case ash::ShelfBackgroundType::kOobe:
+    case ash::ShelfBackgroundType::kLogin:
+    case ash::ShelfBackgroundType::kLoginNonBlurredWallpaper:
+    case ash::ShelfBackgroundType::kOverview:
+    case ash::ShelfBackgroundType::kInApp:
+      return false;
+  }
+}
+
+}  // namespace
+
 namespace ash {
+
+// Records smoothness of bounds animations for the HotseatWidget.
+class HotseatWidgetAnimationMetricsReporter
+    : public ui::AnimationMetricsReporter {
+ public:
+  // The different kinds of hotseat elements.
+  enum class HotseatElementType {
+    // The Hotseat Widget.
+    kWidget,
+    // The Hotseat Widget's translucent background.
+    kTranslucentBackground
+  };
+  explicit HotseatWidgetAnimationMetricsReporter(
+      HotseatElementType hotseat_element)
+      : hotseat_element_(hotseat_element) {}
+  ~HotseatWidgetAnimationMetricsReporter() override = default;
+
+  void SetTargetHotseatState(HotseatState target_state) {
+    target_state_ = target_state;
+  }
+
+  // ui::AnimationMetricsReporter:
+  void Report(int value) override {
+    switch (target_state_) {
+      case HotseatState::kShownClamshell:
+      case HotseatState::kShownHomeLauncher:
+        if (hotseat_element_ == HotseatElementType::kWidget) {
+          UMA_HISTOGRAM_PERCENTAGE(
+              "Ash.HotseatWidgetAnimation.Widget.AnimationSmoothness."
+              "TransitionToShownHotseat",
+              value);
+        } else {
+          UMA_HISTOGRAM_PERCENTAGE(
+              "Ash.HotseatWidgetAnimation.TranslucentBackground."
+              "AnimationSmoothness.TransitionToShownHotseat",
+              value);
+        }
+        break;
+      case HotseatState::kExtended:
+        if (hotseat_element_ == HotseatElementType::kWidget) {
+          UMA_HISTOGRAM_PERCENTAGE(
+              "Ash.HotseatWidgetAnimation.Widget.AnimationSmoothness."
+              "TransitionToExtendedHotseat",
+              value);
+        } else {
+          UMA_HISTOGRAM_PERCENTAGE(
+              "Ash.HotseatWidgetAnimation.TranslucentBackground."
+              "AnimationSmoothness.TransitionToExtendedHotseat",
+              value);
+        }
+        break;
+      case HotseatState::kHidden:
+        if (hotseat_element_ == HotseatElementType::kWidget) {
+          UMA_HISTOGRAM_PERCENTAGE(
+              "Ash.HotseatWidgetAnimation.Widget.AnimationSmoothness."
+              "TransitionToHiddenHotseat",
+              value);
+        } else {
+          UMA_HISTOGRAM_PERCENTAGE(
+              "Ash.HotseatWidgetAnimation.TranslucentBackground."
+              "AnimationSmoothness.TransitionToHiddenHotseat",
+              value);
+        }
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+ private:
+  // The element that is reporting an animation.
+  HotseatElementType hotseat_element_;
+  // The state to which the animation is transitioning.
+  HotseatState target_state_ = HotseatState::kHidden;
+};
+
+// An animation metrics reporter for the shelf navigation widget.
+class ASH_EXPORT NavigationWidgetAnimationMetricsReporter
+    : public ui::AnimationMetricsReporter,
+      public ShelfLayoutManagerObserver {
+ public:
+  explicit NavigationWidgetAnimationMetricsReporter(Shelf* shelf)
+      : shelf_(shelf) {
+    shelf_->shelf_layout_manager()->AddObserver(this);
+  }
+
+  ~NavigationWidgetAnimationMetricsReporter() override {
+    shelf_->shelf_layout_manager()->RemoveObserver(this);
+  }
+
+  NavigationWidgetAnimationMetricsReporter(
+      const NavigationWidgetAnimationMetricsReporter&) = delete;
+  NavigationWidgetAnimationMetricsReporter& operator=(
+      const NavigationWidgetAnimationMetricsReporter&) = delete;
+
+  // ui::AnimationMetricsReporter:
+  void Report(int value) override {
+    switch (target_state_) {
+      case HotseatState::kShownClamshell:
+      case HotseatState::kShownHomeLauncher:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.NavigationWidget.Widget.AnimationSmoothness."
+            "TransitionToShownHotseat",
+            value);
+        break;
+      case HotseatState::kExtended:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.NavigationWidget.Widget.AnimationSmoothness."
+            "TransitionToExtendedHotseat",
+            value);
+        break;
+      case HotseatState::kHidden:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.NavigationWidget.Widget.AnimationSmoothness."
+            "TransitionToHiddenHotseat",
+            value);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  // ShelfLayoutManagerObserver:
+  void OnHotseatStateChanged(HotseatState old_state,
+                             HotseatState new_state) override {
+    target_state_ = new_state;
+  }
+
+ private:
+  Shelf* shelf_;
+  // The state to which the animation is transitioning.
+  HotseatState target_state_ = HotseatState::kShownHomeLauncher;
+};
 
 // Shelf::AutoHideEventHandler -----------------------------------------------
 
@@ -54,7 +214,7 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
         event, static_cast<aura::Window*>(event->target()));
   }
   void OnTouchEvent(ui::TouchEvent* event) override {
-    if (shelf_->auto_hide_behavior() != SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
+    if (shelf_->auto_hide_behavior() != ShelfAutoHideBehavior::kAlways)
       return;
 
     // The event target should be the shelf widget or the hotseat widget.
@@ -84,10 +244,12 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
 
 // Handles mouse and touch events and determines whether ShelfLayoutManager
 // should update shelf opacity for auto-dimming.
-class Shelf::AutoDimEventHandler : public ui::EventHandler {
+class Shelf::AutoDimEventHandler : public ui::EventHandler,
+                                   public ShelfObserver {
  public:
   explicit AutoDimEventHandler(Shelf* shelf) : shelf_(shelf) {
     Shell::Get()->AddPreTargetHandler(this);
+    shelf_observer_.Add(shelf_);
     UndimShelf();
   }
 
@@ -110,21 +272,48 @@ class Shelf::AutoDimEventHandler : public ui::EventHandler {
     }
   }
 
- private:
-  void DimShelf() { shelf_->shelf_layout_manager()->SetDimmed(true); }
-
-  // Sets shelf as active and sets timer to mark shelf as inactive.
-  void UndimShelf() {
-    shelf_->shelf_layout_manager()->SetDimmed(false);
-    update_shelf_dim_state_timer_.Start(
+  void StartDimShelfTimer() {
+    dim_shelf_timer_.Start(
         FROM_HERE, kDimDelay,
         base::BindOnce(&AutoDimEventHandler::DimShelf, base::Unretained(this)));
   }
 
+  void DimShelf() {
+    // Attempt to dim the shelf. Stop the |dim_shelf_timer_| if successful.
+    if (shelf_->shelf_layout_manager()->SetDimmed(true))
+      dim_shelf_timer_.Stop();
+  }
+
+  // Sets shelf as active and sets timer to mark shelf as inactive.
+  void UndimShelf() {
+    shelf_->shelf_layout_manager()->SetDimmed(false);
+    StartDimShelfTimer();
+  }
+
+  bool HasDimShelfTimer() { return dim_shelf_timer_.IsRunning(); }
+
+  // ShelfObserver:
+  void OnAutoHideStateChanged(ShelfAutoHideState new_state) override {
+    // Shelf should be undimmed when it is shown.
+    if (new_state == ShelfAutoHideState::SHELF_AUTO_HIDE_SHOWN)
+      UndimShelf();
+  }
+
+  // ShelfObserver:
+  void WillChangeVisibilityState(ShelfVisibilityState new_state) override {
+    // Shelf should be undimmed when it is shown.
+    if (new_state != ShelfVisibilityState::SHELF_HIDDEN)
+      UndimShelf();
+  }
+
+ private:
   // Unowned pointer to the shelf that owns this event handler.
   Shelf* shelf_;
   // OneShotTimer that dims shelf due to inactivity.
-  base::OneShotTimer update_shelf_dim_state_timer_;
+  base::OneShotTimer dim_shelf_timer_;
+  // An observer that notifies the AutoDimHandler that shelf visibility has
+  // changed.
+  ScopedObserver<Shelf, ShelfObserver> shelf_observer_{this};
 
   // Delay before dimming the shelf.
   const base::TimeDelta kDimDelay = base::TimeDelta::FromSeconds(5);
@@ -178,6 +367,39 @@ void Shelf::ActivateShelfItemOnDisplay(int item_index, int64_t display_id) {
                               base::DoNothing());
 }
 
+void Shelf::CreateNavigationWidget(aura::Window* container) {
+  DCHECK(container);
+  DCHECK(!navigation_widget_);
+  navigation_widget_ = std::make_unique<ShelfNavigationWidget>(
+      this, hotseat_widget()->GetShelfView());
+  navigation_widget_->Initialize(container);
+  navigation_widget_metrics_reporter_ =
+      std::make_unique<NavigationWidgetAnimationMetricsReporter>(this);
+}
+
+void Shelf::CreateHotseatWidget(aura::Window* container) {
+  DCHECK(container);
+  DCHECK(!hotseat_widget_);
+  hotseat_widget_ = std::make_unique<HotseatWidget>();
+  translucent_background_metrics_reporter_ =
+      std::make_unique<HotseatWidgetAnimationMetricsReporter>(
+          HotseatWidgetAnimationMetricsReporter::HotseatElementType::
+              kTranslucentBackground);
+  hotseat_widget_->Initialize(container, this);
+  shelf_widget_->RegisterHotseatWidget(hotseat_widget());
+  hotseat_transition_metrics_reporter_ =
+      std::make_unique<HotseatWidgetAnimationMetricsReporter>(
+          HotseatWidgetAnimationMetricsReporter::HotseatElementType::kWidget);
+}
+
+void Shelf::CreateStatusAreaWidget(aura::Window* status_container) {
+  DCHECK(status_container);
+  DCHECK(!status_area_widget_);
+  status_area_widget_ =
+      std::make_unique<StatusAreaWidget>(status_container, this);
+  status_area_widget_->Initialize();
+}
+
 void Shelf::CreateShelfWidget(aura::Window* root) {
   DCHECK(!shelf_widget_);
   aura::Window* shelf_container =
@@ -188,27 +410,28 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
   shelf_layout_manager_ = shelf_widget_->shelf_layout_manager();
   shelf_layout_manager_->AddObserver(this);
 
-  DCHECK(!shelf_widget_->hotseat_widget());
-  aura::Window* control_container =
-      root->GetChildById(kShellWindowId_ShelfControlContainer);
-  shelf_widget_->CreateHotseatWidget(control_container);
-
-  DCHECK(!shelf_widget_->navigation_widget());
-  shelf_widget_->CreateNavigationWidget(control_container);
+  // Create the various shelf components.
+  CreateHotseatWidget(shelf_container);
+  CreateNavigationWidget(shelf_container);
 
   // Must occur after |shelf_widget_| is constructed because the system tray
   // constructors call back into Shelf::shelf_widget().
-  DCHECK(!shelf_widget_->status_area_widget());
-  aura::Window* status_container =
-      root->GetChildById(kShellWindowId_ShelfControlContainer);
-  shelf_widget_->CreateStatusAreaWidget(status_container);
+  CreateStatusAreaWidget(shelf_container);
   shelf_widget_->Initialize(shelf_container);
+  shelf_widget_->GetNativeWindow()->parent()->StackChildAtBottom(
+      shelf_widget_->GetNativeWindow());
 
   // The Hotseat should be above everything in the shelf.
-  shelf_widget_->hotseat_widget()->StackAtTop();
+  hotseat_widget()->StackAtTop();
 }
 
 void Shelf::ShutdownShelfWidget() {
+  // The contents view of the hotseat widget may rely on the status area widget.
+  // So do explicit destruction here.
+  hotseat_widget_.reset();
+  status_area_widget_.reset();
+  navigation_widget_.reset();
+
   shelf_widget_->Shutdown();
 }
 
@@ -242,12 +465,12 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
     return;
   }
 
+  ShelfAlignment old_alignment = alignment_;
   alignment_ = alignment;
-  // The ShelfWidget notifies the ShelfView of the alignment change.
-  shelf_widget_->OnShelfAlignmentChanged();
   tooltip_->Close();
   shelf_layout_manager_->LayoutShelf();
-  Shell::Get()->NotifyShelfAlignmentChanged(GetWindow()->GetRootWindow());
+  Shell::Get()->NotifyShelfAlignmentChanged(GetWindow()->GetRootWindow(),
+                                            old_alignment);
 }
 
 bool Shelf::IsHorizontalAlignment() const {
@@ -261,24 +484,6 @@ bool Shelf::IsHorizontalAlignment() const {
   }
   NOTREACHED();
   return true;
-}
-
-int Shelf::SelectValueForShelfAlignment(int bottom, int left, int right) const {
-  switch (alignment_) {
-    case ShelfAlignment::kBottom:
-    case ShelfAlignment::kBottomLocked:
-      return bottom;
-    case ShelfAlignment::kLeft:
-      return left;
-    case ShelfAlignment::kRight:
-      return right;
-  }
-  NOTREACHED();
-  return bottom;
-}
-
-int Shelf::PrimaryAxisValue(int horizontal, int vertical) const {
-  return IsHorizontalAlignment() ? horizontal : vertical;
 }
 
 void Shelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
@@ -323,6 +528,10 @@ ShelfVisibilityState Shelf::GetVisibilityState() const {
                                : SHELF_HIDDEN;
 }
 
+gfx::Rect Shelf::GetShelfBoundsInScreen() const {
+  return shelf_widget()->GetTargetBounds();
+}
+
 gfx::Rect Shelf::GetIdealBounds() const {
   return shelf_layout_manager_->GetIdealBounds();
 }
@@ -349,18 +558,36 @@ void Shelf::ProcessMouseEvent(const ui::MouseEvent& event) {
     shelf_layout_manager_->ProcessMouseEventFromShelf(event);
 }
 
-void Shelf::ProcessMouseWheelEvent(ui::MouseWheelEvent* event) {
+void Shelf::ProcessScrollEvent(ui::ScrollEvent* event) {
+  if (event->finger_count() == 2 && event->type() == ui::ET_SCROLL) {
+    ui::MouseWheelEvent wheel(*event);
+    ProcessMouseWheelEvent(&wheel, /*from_touchpad=*/true);
+    event->SetHandled();
+  }
+}
+
+void Shelf::ProcessMouseWheelEvent(ui::MouseWheelEvent* event,
+                                   bool from_touchpad) {
   event->SetHandled();
+
+  // Early out if not in active session. Code below assumes that there is
+  // an active user (shelf layout manager looks up active user's scroll
+  // preferences) and crashes without this.
+  if (!shelf_layout_manager_->is_active_session_state())
+    return;
+
   if (!IsHorizontalAlignment())
     return;
   auto* app_list_controller = Shell::Get()->app_list_controller();
   DCHECK(app_list_controller);
   // If the App List is not visible, send MouseWheel events to the
   // |shelf_layout_manager_| because these events are used to show the App List.
-  if (app_list_controller->IsVisible())
+  if (app_list_controller->IsVisible(shelf_layout_manager_->display_.id())) {
     app_list_controller->ProcessMouseWheelEvent(*event);
-  else
-    shelf_layout_manager_->ProcessMouseWheelEventFromShelf(event);
+  } else {
+    shelf_layout_manager_->ProcessMouseWheelEventFromShelf(event,
+                                                           from_touchpad);
+  }
 }
 
 void Shelf::AddObserver(ShelfObserver* observer) {
@@ -432,10 +659,28 @@ ShelfView* Shelf::GetShelfViewForTesting() {
   return shelf_widget_->shelf_view_for_testing();
 }
 
+ui::AnimationMetricsReporter* Shelf::GetHotseatTransitionMetricsReporter(
+    HotseatState target_state) {
+  hotseat_transition_metrics_reporter_->SetTargetHotseatState(target_state);
+  return hotseat_transition_metrics_reporter_.get();
+}
+
+ui::AnimationMetricsReporter* Shelf::GetTranslucentBackgroundMetricsReporter(
+    HotseatState target_state) {
+  translucent_background_metrics_reporter_->SetTargetHotseatState(target_state);
+  return translucent_background_metrics_reporter_.get();
+}
+
+ui::AnimationMetricsReporter*
+Shelf::GetNavigationWidgetAnimationMetricsReporter() {
+  return navigation_widget_metrics_reporter_.get();
+}
+
 void Shelf::WillDeleteShelfLayoutManager() {
   // Clear event handlers that might forward events to the destroyed instance.
   auto_hide_event_handler_.reset();
   auto_dim_event_handler_.reset();
+  navigation_widget_metrics_reporter_.reset();
 
   DCHECK(shelf_layout_manager_);
   shelf_layout_manager_->RemoveObserver(this);
@@ -451,7 +696,7 @@ void Shelf::WillChangeVisibilityState(ShelfVisibilityState new_state) {
     auto_hide_event_handler_ = std::make_unique<AutoHideEventHandler>(this);
   }
 
-  if (!auto_dim_event_handler_ && ash::switches::IsUsingShelfAutoDim()) {
+  if (!auto_dim_event_handler_ && switches::IsUsingShelfAutoDim()) {
     auto_dim_event_handler_ = std::make_unique<AutoDimEventHandler>(this);
   }
 }
@@ -465,13 +710,36 @@ void Shelf::OnBackgroundUpdated(ShelfBackgroundType background_type,
                                 AnimationChangeType change_type) {
   if (background_type == GetBackgroundType())
     return;
+
+  // Shelf should undim when transitioning to show app list.
+  if (auto_dim_event_handler_ && IsAppListBackground(background_type))
+    UndimShelf();
+
   for (auto& observer : observers_)
     observer.OnBackgroundTypeChanged(background_type, change_type);
+}
+
+void Shelf::OnHotseatStateChanged(HotseatState old_state,
+                                  HotseatState new_state) {
+  for (auto& observer : observers_)
+    observer.OnHotseatStateChanged(old_state, new_state);
 }
 
 void Shelf::OnWorkAreaInsetsChanged() {
   for (auto& observer : observers_)
     observer.OnShelfWorkAreaInsetsChanged();
+}
+
+void Shelf::DimShelf() {
+  auto_dim_event_handler_->DimShelf();
+}
+
+void Shelf::UndimShelf() {
+  auto_dim_event_handler_->UndimShelf();
+}
+
+bool Shelf::HasDimShelfTimer() {
+  return auto_dim_event_handler_->HasDimShelfTimer();
 }
 
 WorkAreaInsets* Shelf::GetWorkAreaInsets() const {

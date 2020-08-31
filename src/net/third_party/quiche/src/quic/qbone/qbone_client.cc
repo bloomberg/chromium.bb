@@ -11,6 +11,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_epoll.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_exported_stats.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_stream.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 namespace {
@@ -57,8 +58,16 @@ QboneClientSession* QboneClient::qbone_session() {
   return static_cast<QboneClientSession*>(QuicClientBase::session());
 }
 
-void QboneClient::ProcessPacketFromNetwork(QuicStringPiece packet) {
+void QboneClient::ProcessPacketFromNetwork(quiche::QuicheStringPiece packet) {
   qbone_session()->ProcessPacketFromNetwork(packet);
+}
+
+bool QboneClient::EarlyDataAccepted() {
+  return qbone_session()->EarlyDataAccepted();
+}
+
+bool QboneClient::ReceivedInchoateReject() {
+  return qbone_session()->ReceivedInchoateReject();
 }
 
 int QboneClient::GetNumSentClientHellosFromSession() {
@@ -85,7 +94,7 @@ class QboneClientSessionWithConnection : public QboneClientSession {
  public:
   using QboneClientSession::QboneClientSession;
 
-  ~QboneClientSessionWithConnection() override { delete connection(); }
+  ~QboneClientSessionWithConnection() override { DeleteConnection(); }
 };
 
 // Takes ownership of |connection|.

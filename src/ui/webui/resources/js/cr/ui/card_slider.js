@@ -117,16 +117,16 @@ cr.define('cr.ui', function() {
      * @param {boolean} ignoreMouseWheelEvents If true, horizontal mouse wheel
      *     events will be ignored, rather than flipping between pages.
      */
-    initialize: function(ignoreMouseWheelEvents) {
+    initialize(ignoreMouseWheelEvents) {
       const view = this.container_.ownerDocument.defaultView;
       assert(
-          view.getComputedStyle(this.container_).display == '-webkit-box',
+          view.getComputedStyle(this.container_).display === '-webkit-box',
           'Container should be display -webkit-box.');
       assert(
-          view.getComputedStyle(this.frame_).overflow == 'hidden',
+          view.getComputedStyle(this.frame_).overflow === 'hidden',
           'Frame should be overflow hidden.');
       assert(
-          view.getComputedStyle(this.container_).position == 'static',
+          view.getComputedStyle(this.container_).position === 'static',
           'Container should be position static.');
 
       this.updateCardWidths_();
@@ -165,8 +165,8 @@ cr.define('cr.ui', function() {
      * in full width sliders.
      * @param {number} newCardWidth Width all cards should have, in pixels.
      */
-    resize: function(newCardWidth) {
-      if (newCardWidth != this.cardWidth_) {
+    resize(newCardWidth) {
+      if (newCardWidth !== this.cardWidth_) {
         this.cardWidth_ = newCardWidth;
 
         this.updateCardWidths_();
@@ -182,7 +182,7 @@ cr.define('cr.ui', function() {
      * @param {number} index Index of the card to in the new set of cards to
      *     navigate to.
      */
-    setCards: function(cards, index) {
+    setCards(cards, index) {
       assert(
           index >= 0 && index < cards.length,
           'Invalid index in CardSlider#setCards');
@@ -203,9 +203,9 @@ cr.define('cr.ui', function() {
      *   'selected-card' in its classList, and is invisible for accessibility.
      * @private
      */
-    updateSelectedCardAttributes_: function() {
+    updateSelectedCardAttributes_() {
       for (let i = 0; i < this.cards_.length; i++) {
-        if (i == this.currentCard_) {
+        if (i === this.currentCard_) {
           this.cards_[i].classList.add('selected-card');
           this.cards_[i].removeAttribute('aria-hidden');
         } else {
@@ -219,7 +219,7 @@ cr.define('cr.ui', function() {
      * Updates the width of each card.
      * @private
      */
-    updateCardWidths_: function() {
+    updateCardWidths_() {
       for (let i = 0, card; card = this.cards_[i]; i++) {
         card.style.width = this.cardWidth_ + 'px';
       }
@@ -270,8 +270,8 @@ cr.define('cr.ui', function() {
      * Handle horizontal scrolls to flip between pages.
      * @private
      */
-    onMouseWheel_: function(e) {
-      if (e.wheelDeltaX == 0) {
+    onMouseWheel_(e) {
+      if (e.wheelDeltaX === 0) {
         return;
       }
 
@@ -318,12 +318,12 @@ cr.define('cr.ui', function() {
       }
 
       // We got a mouse wheel event, so cancel any pending scroll wheel timeout.
-      if (this.scrollClearTimeout_ != null) {
+      if (this.scrollClearTimeout_ !== null) {
         clearTimeout(this.scrollClearTimeout_);
       }
       // If we didn't use up all the scroll, hold onto it for a little bit, but
       // drop it after a delay.
-      if (this.mouseWheelScrollAmount_ != 0) {
+      if (this.mouseWheelScrollAmount_ !== 0) {
         this.scrollClearTimeout_ =
             setTimeout(this.clearMouseWheelScroll_.bind(this), 500);
       }
@@ -334,7 +334,7 @@ cr.define('cr.ui', function() {
      * onMouseWheel_.
      * @private
      */
-    clearMouseWheelScroll_: function() {
+    clearMouseWheelScroll_() {
       this.mouseWheelScrollAmount_ = 0;
       this.mouseWheelCardSelected_ = false;
     },
@@ -345,9 +345,9 @@ cr.define('cr.ui', function() {
      * @param {Event} e The transitionend event.
      * @private
      */
-    onTransitionEnd_: function(e) {
+    onTransitionEnd_(e) {
       // Ignore irrelevant transitions that might bubble up.
-      if (e.target !== this.container_ || e.propertyName != 'transform') {
+      if (e.target !== this.container_ || e.propertyName !== 'transform') {
         return;
       }
       this.fireChangeEndedEvent_(true);
@@ -359,7 +359,7 @@ cr.define('cr.ui', function() {
      * @param {boolean} wasAnimated whether or not the change was animated.
      * @private
      */
-    fireChangeEndedEvent_: function(wasAnimated) {
+    fireChangeEndedEvent_(wasAnimated) {
       const e = document.createEvent('Event');
       e.initEvent('cardSlider:card_change_ended', true, true);
       e.cardSlider = this;
@@ -376,7 +376,7 @@ cr.define('cr.ui', function() {
      * @param {number} index An index at which the given |card| should be
      *     inserted. Must be positive and less than the number of cards.
      */
-    addCardAtIndex: function(card, index) {
+    addCardAtIndex(card, index) {
       assert(card instanceof Node, '|card| isn\'t a Node');
       this.assertValidIndex_(index);
       this.cards_ = Array.prototype.concat.call(
@@ -384,7 +384,7 @@ cr.define('cr.ui', function() {
 
       this.updateSelectedCardAttributes_();
 
-      if (this.currentCard_ == -1) {
+      if (this.currentCard_ === -1) {
         this.currentCard_ = 0;
       } else if (index <= this.currentCard_) {
         this.selectCard(this.currentCard_ + 1, false, true, true);
@@ -397,7 +397,7 @@ cr.define('cr.ui', function() {
      * Append a card to the end of the list.
      * @param {!Element} card A card to add at the end of the card slider.
      */
-    appendCard: function(card) {
+    appendCard(card) {
       this.cards_.push(assertInstanceof(card, Element));
       this.fireAddedEvent_(card, this.cards_.length - 1);
     },
@@ -409,7 +409,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The position of the newly added card.
      * @private
      */
-    fireAddedEvent_: function(card, index) {
+    fireAddedEvent_(card, index) {
       this.assertValidIndex_(index);
       const e = document.createEvent('Event');
       e.initEvent('cardSlider:card_added', true, true);
@@ -423,7 +423,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The index of the card to return.
      * @return {!Element} The card at the given index.
      */
-    getCardAtIndex: function(index) {
+    getCardAtIndex(index) {
       this.assertValidIndex_(index);
       return this.cards_[index];
     },
@@ -434,7 +434,7 @@ cr.define('cr.ui', function() {
      * will be updated (to current card - 1).
      * @param {!Element} card A card to be removed.
      */
-    removeCard: function(card) {
+    removeCard(card) {
       this.removeCardAtIndex(
           this.cards_.indexOf(assertInstanceof(card, Element)));
     },
@@ -445,11 +445,11 @@ cr.define('cr.ui', function() {
      * will be updated (to current card - 1).
      * @param {number} index The index of the tile that should be removed.
      */
-    removeCardAtIndex: function(index) {
+    removeCardAtIndex(index) {
       this.assertValidIndex_(index);
       const removed = this.cards_.splice(index, 1).pop();
 
-      if (this.cards_.length == 0) {
+      if (this.cards_.length === 0) {
         this.currentCard_ = -1;
       } else if (index < this.currentCard_) {
         this.selectCard(this.currentCard_ - 1, false, true);
@@ -465,7 +465,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The index of the card before it was removed.
      * @private
      */
-    fireRemovedEvent_: function(card, index) {
+    fireRemovedEvent_(card, index) {
       const e = document.createEvent('Event');
       e.initEvent('cardSlider:card_removed', true, true);
       e.removedCard = card;
@@ -478,7 +478,7 @@ cr.define('cr.ui', function() {
      * the likely event it needs to be updated by a card being inserted or
      * removed in the flow.
      */
-    repositionFrame: function() {
+    repositionFrame() {
       this.transformToCurrentCard_();
     },
 
@@ -487,7 +487,7 @@ cr.define('cr.ui', function() {
      * @param {number} index An index to check.
      * @private
      */
-    assertValidIndex_: function(index) {
+    assertValidIndex_(index) {
       assert(index >= 0 && index < this.cards_.length);
     },
 
@@ -502,15 +502,14 @@ cr.define('cr.ui', function() {
      * @param {boolean=} opt_forceChange If true, ignore if the card already
      *     selected.
      */
-    selectCard: function(
-        newCardIndex, opt_animate, opt_dontNotify, opt_forceChange) {
+    selectCard(newCardIndex, opt_animate, opt_dontNotify, opt_forceChange) {
       this.assertValidIndex_(newCardIndex);
 
       const previousCard = this.currentCardValue;
       let isChangingCard =
           !this.cards_[newCardIndex].classList.contains('selected-card');
 
-      if (typeof opt_forceChange != 'undefined' && opt_forceChange) {
+      if (typeof opt_forceChange !== 'undefined' && opt_forceChange) {
         isChangingCard = true;
       }
 
@@ -549,9 +548,9 @@ cr.define('cr.ui', function() {
      * @param {!Element} newCard The card that should be selected.
      * @param {boolean=} opt_animate Whether to animate.
      */
-    selectCardByValue: function(newCard, opt_animate) {
+    selectCardByValue(newCard, opt_animate) {
       const i = this.cards_.indexOf(newCard);
-      assert(i != -1);
+      assert(i !== -1);
       this.selectCard(i, opt_animate);
     },
 
@@ -563,7 +562,7 @@ cr.define('cr.ui', function() {
      * @return {boolean} Whether or not a transformation was necessary.
      * @private
      */
-    transformToCurrentCard_: function(opt_animate) {
+    transformToCurrentCard_(opt_animate) {
       const prevLeft = this.currentLeft_;
       this.currentLeft_ = -this.cardWidth_ *
           (isRTL() ? this.cards_.length - this.currentCard - 1 :
@@ -571,7 +570,7 @@ cr.define('cr.ui', function() {
 
       // If there's no change, return something to let the caller know there
       // won't be a transition occuring.
-      if (prevLeft == this.currentLeft_ && this.deltaX_ == 0) {
+      if (prevLeft === this.currentLeft_ && this.deltaX_ === 0) {
         return false;
       }
 
@@ -594,7 +593,7 @@ cr.define('cr.ui', function() {
      * @param {number} x Horizontal position to move to.
      * @private
      */
-    translateTo_: function(x) {
+    translateTo_(x) {
       // We use a transform to slide because this is GPU accelerated on
       // Chrome and iOS.  Once Chrome does GPU acceleration on the position
       // fixed-layout elements we could simply set the element's position to
@@ -611,7 +610,7 @@ cr.define('cr.ui', function() {
      * @param {!Event} e The TouchHandler event.
      * @private
      */
-    onTouchStart_: function(e) {
+    onTouchStart_(e) {
       e = /** @type {!cr.ui.TouchHandler.Event} */ (e);
       this.container_.style.transition = '';
       e.enableDrag = true;
@@ -623,7 +622,7 @@ cr.define('cr.ui', function() {
      * @param {!Event} e The TouchHandler event.
      * @private
      */
-    onDragStart_: function(e) {
+    onDragStart_(e) {
       e = /** @type {!cr.ui.TouchHandler.Event} */ (e);
       e.enableDrag =
           this.cardCount > 1 && Math.abs(e.dragDeltaX) > Math.abs(e.dragDeltaY);
@@ -635,13 +634,13 @@ cr.define('cr.ui', function() {
      * @param {!Event} e The TouchHandler event.
      * @private
      */
-    onDragMove_: function(e) {
+    onDragMove_(e) {
       e = /** @type {!cr.ui.TouchHandler.Event} */ (e);
       let deltaX = e.dragDeltaX;
       // If dragging beyond the first or last card then apply a backoff so the
       // dragging feels stickier than usual.
       if (!this.currentCard && deltaX > 0 ||
-          this.currentCard == (this.cards_.length - 1) && deltaX < 0) {
+          this.currentCard === (this.cards_.length - 1) && deltaX < 0) {
         deltaX /= 2;
       }
       this.translateTo_(this.currentLeft_ + deltaX);
@@ -653,14 +652,14 @@ cr.define('cr.ui', function() {
      * @param {!Event} e The TouchHandler event.
      * @private
      */
-    onDragEnd_: function(e) {
+    onDragEnd_(e) {
       e = /** @type {!cr.ui.TouchHandler.Event} */ (e);
       const deltaX = e.dragDeltaX;
       const velocity = this.touchHandler_.getEndVelocity().x;
       const newX = this.currentLeft_ + deltaX;
       let newCardIndex = Math.round(-newX / this.cardWidth_);
 
-      if (newCardIndex == this.currentCard &&
+      if (newCardIndex === this.currentCard &&
           Math.abs(velocity) > CardSlider.TRANSITION_VELOCITY_THRESHOLD_) {
         // The drag wasn't far enough to change cards but the velocity was
         // high enough to transition anyways. If the velocity is to the left
@@ -681,7 +680,7 @@ cr.define('cr.ui', function() {
     /**
      * Cancel any current touch/slide as if we saw a touch end
      */
-    cancelTouch: function() {
+    cancelTouch() {
       // Stop listening to any current touch
       this.touchHandler_.cancelTouch();
 

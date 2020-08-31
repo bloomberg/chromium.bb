@@ -4,8 +4,8 @@
 
 #include "content/public/common/content_client.h"
 
-#include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -65,10 +65,6 @@ ContentClient::ContentClient()
     : browser_(nullptr), gpu_(nullptr), renderer_(nullptr), utility_(nullptr) {}
 
 ContentClient::~ContentClient() {
-}
-
-bool ContentClient::CanSendWhileSwappedOut(const IPC::Message* message) {
-  return false;
 }
 
 base::string16 ContentClient::GetLocalizedString(int message_id) {

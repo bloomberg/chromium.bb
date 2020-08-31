@@ -65,6 +65,7 @@ blink_modules_sources("accessibility") {
   ]
 
   deps = [
+    "//ui/accessibility:ax_base",
     "//ui/accessibility:ax_enums_mojo_blink",
   ]
 

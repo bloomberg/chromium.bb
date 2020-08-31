@@ -9,9 +9,13 @@ from __future__ import print_function
 
 import glob
 import os
+import sys
 
 from chromite.lib import cros_test_lib
 from chromite.lib import qemu
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class QemuTests(cros_test_lib.TestCase):

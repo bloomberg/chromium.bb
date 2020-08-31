@@ -112,6 +112,7 @@ void NonClientFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void NonClientFrameView::OnThemeChanged() {
+  View::OnThemeChanged();
   SchedulePaint();
 }
 
@@ -251,7 +252,7 @@ void NonClientView::Layout() {
 
   SkPath client_clip;
   if (frame_view_->GetClientMask(client_view_->size(), &client_clip))
-    client_view_->set_clip_path(client_clip);
+    client_view_->SetClipPath(client_clip);
 
   if (overlay_view_)
     overlay_view_->SetBoundsRect(GetLocalBounds());
@@ -313,8 +314,8 @@ View* NonClientView::TargetForRect(View* root, const gfx::Rect& rect) {
     // removed from the NonClientView.
     gfx::RectF rect_in_child_coords_f(rect);
     View::ConvertRectToTarget(this, frame_view_.get(), &rect_in_child_coords_f);
-    gfx::Rect rect_in_child_coords = gfx::ToEnclosingRect(
-        rect_in_child_coords_f);
+    gfx::Rect rect_in_child_coords =
+        gfx::ToEnclosingRect(rect_in_child_coords_f);
     if (frame_view_->HitTestRect(rect_in_child_coords))
       return frame_view_->GetEventHandlerForRect(rect_in_child_coords);
   }

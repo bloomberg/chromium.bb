@@ -57,7 +57,8 @@ class StyleFetchedImage final : public StyleImage,
   bool ErrorOccurred() const override;
   FloatSize ImageSize(const Document&,
                       float multiplier,
-                      const LayoutSize& default_object_size) const override;
+                      const LayoutSize& default_object_size,
+                      RespectImageOrientationEnum) const override;
   bool HasIntrinsicSize() const override;
   void AddClient(ImageResourceObserver*) override;
   void RemoveClient(ImageResourceObserver*) override;
@@ -73,7 +74,7 @@ class StyleFetchedImage final : public StyleImage,
 
   void LoadDeferredImage(const Document& document);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool IsEqual(const StyleImage&) const override;
@@ -87,6 +88,9 @@ class StyleFetchedImage final : public StyleImage,
   Member<const Document> document_;
   const KURL url_;
   const bool origin_clean_;
+
+  // Whether this was created by an ad-related CSSParserContext.
+  const bool is_ad_related_;
 };
 
 template <>

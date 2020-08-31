@@ -22,7 +22,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/media_session_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
@@ -197,8 +197,12 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
                                                      user_pref_service_.get());
 
 #if defined(OS_CHROMEOS)
+  mojo::PendingRemote<media_session::mojom::MediaControllerManager>
+      media_controller_manager;
+  content::GetMediaSessionService().BindMediaControllerManager(
+      media_controller_manager.InitWithNewPipeAndPassReceiver());
   chromeos::CrasAudioHandler::Initialize(
-      content::GetSystemConnector(),
+      std::move(media_controller_manager),
       base::MakeRefCounted<chromeos::AudioDevicesPrefHandlerImpl>(
           local_state_.get()));
   audio_controller_.reset(new ShellAudioController());
@@ -211,12 +215,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
 #if defined(USE_AURA)
   aura::Env::GetInstance()->set_context_factory(content::GetContextFactory());
-  aura::Env::GetInstance()->set_context_factory_private(
-      content::GetContextFactoryPrivate());
 #endif
 
-  storage_monitor::StorageMonitor::Create(
-      content::GetSystemConnector()->Clone());
+  storage_monitor::StorageMonitor::Create();
 
   desktop_controller_.reset(
       browser_main_delegate_->CreateDesktopController(browser_context_.get()));
@@ -236,7 +237,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // such as in browser tests.
   task_tracker_.PostTask(
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(), FROM_HERE,
-      base::Bind(nacl::NaClProcessHost::EarlyStartup));
+      base::BindOnce(nacl::NaClProcessHost::EarlyStartup));
 #endif
 
   content::ShellDevToolsManagerDelegate::StartHttpHandler(

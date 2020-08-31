@@ -9,23 +9,22 @@ import android.content.ClipData;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.view.MarginLayoutParamsCompat;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.MarginLayoutParams;
 import android.view.inputmethod.InputConnection;
-import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.view.MarginLayoutParamsCompat;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.compat.ApiHelperForN;
-import org.chromium.ui.touchless.TouchlessEventHandler;
-import org.chromium.ui_base.web.CursorType;
+import org.chromium.ui.mojom.CursorType;
 
 /**
  * Class to acquire, position, and remove anchor views from the implementing View.
@@ -131,17 +130,19 @@ public class ViewAndroidDelegate {
 
     /**
      * Set the anchor view to specified position and size (all units in px).
-     * @param view The anchor view that needs to be positioned.
+     * @param anchorView The view that needs to be positioned. This must be the result of a previous
+     *         call to {@link acquireView} which has not yet been removed via {@link removeView}.
      * @param x X coordinate of the top left corner of the anchor view.
      * @param y Y coordinate of the top left corner of the anchor view.
      * @param width The width of the anchor view.
      * @param height The height of the anchor view.
      */
     @CalledByNative
-    public void setViewPosition(
-            View view, float x, float y, float width, float height, int leftMargin, int topMargin) {
+    public void setViewPosition(View anchorView, float x, float y, float width, float height,
+            int leftMargin, int topMargin) {
         ViewGroup containerView = getContainerView();
         if (containerView == null) return;
+        assert anchorView.getParent() == containerView;
 
         int widthInt = Math.round(width);
         int heightInt = Math.round(height);
@@ -155,10 +156,12 @@ public class ViewAndroidDelegate {
         if (widthInt + startMargin > containerView.getWidth()) {
             widthInt = containerView.getWidth() - startMargin;
         }
-        LayoutParams lp = new LayoutParams(widthInt, heightInt);
-        MarginLayoutParamsCompat.setMarginStart(lp, startMargin);
-        lp.topMargin = topMargin;
-        view.setLayoutParams(lp);
+        MarginLayoutParams mlp = (MarginLayoutParams) anchorView.getLayoutParams();
+        mlp.width = widthInt;
+        mlp.height = heightInt;
+        MarginLayoutParamsCompat.setMarginStart(mlp, startMargin);
+        mlp.topMargin = topMargin;
+        anchorView.setLayoutParams(mlp);
     }
 
     /**
@@ -335,17 +338,21 @@ public class ViewAndroidDelegate {
      * Notify the client of the position of the top controls.
      * @param topControlsOffsetY The Y offset of the top controls in physical pixels.
      * @param topContentOffsetY The Y offset of the content in physical pixels.
+     * @param topControlsMinHeightOffsetY The current top controls min-height in physical pixels.
      */
     @CalledByNative
-    public void onTopControlsChanged(int topControlsOffsetY, int topContentOffsetY) {}
+    public void onTopControlsChanged(
+            int topControlsOffsetY, int topContentOffsetY, int topControlsMinHeightOffsetY) {}
 
     /**
      * Notify the client of the position of the bottom controls.
      * @param bottomControlsOffsetY The Y offset of the bottom controls in physical pixels.
-     * @param bottomContentOffsetY The Y offset of the content in physical pixels.
+     * @param bottomControlsMinHeightOffsetY The current bottom controls min-height in physical
+     *                                       pixels.
      */
     @CalledByNative
-    public void onBottomControlsChanged(int bottomControlsOffsetY, int bottomContentOffsetY) {}
+    public void onBottomControlsChanged(
+            int bottomControlsOffsetY, int bottomControlsMinHeightOffsetY) {}
 
     /**
      * @return The Visual Viewport bottom inset in pixels.
@@ -434,27 +441,6 @@ public class ViewAndroidDelegate {
     private void requestFocus() {
         ViewGroup containerView = getContainerView();
         if (containerView != null) ViewUtils.requestFocus(containerView);
-    }
-
-    @CalledByNative
-    private static boolean hasTouchlessEventHandler() {
-        return TouchlessEventHandler.hasTouchlessEventHandler();
-    }
-
-    @CalledByNative
-    private static boolean onUnconsumedKeyboardEventAck(int nativeCode) {
-        return TouchlessEventHandler.onUnconsumedKeyboardEventAck(nativeCode);
-    }
-
-    @CalledByNative
-    private static void fallbackCursorModeLockCursor(
-            boolean left, boolean right, boolean up, boolean down) {
-        TouchlessEventHandler.fallbackCursorModeLockCursor(left, right, up, down);
-    }
-
-    @CalledByNative
-    private static void fallbackCursorModeSetCursorVisibility(boolean visible) {
-        TouchlessEventHandler.fallbackCursorModeSetCursorVisibility(visible);
     }
 
     /**

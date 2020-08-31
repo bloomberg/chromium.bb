@@ -27,7 +27,11 @@ enum ExtensionInstallStatus {
   // Extension has been installed but it's terminated.
   kTerminated,
   // Extension is blacklisted.
-  kBlacklisted
+  kBlacklisted,
+  // Extension requires custodian approval to enable.
+  kCustodianApprovalRequired,
+  // Extension is force installed or recommended by policy.
+  kForceInstalled
 };
 
 // Returns the Extension install status for an Chrome web store extension with

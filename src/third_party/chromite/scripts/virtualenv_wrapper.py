@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Copyright 2016 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -12,14 +12,18 @@ import os
 import subprocess
 import sys
 
-import wrapper
+try:
+  import pytest  # pylint: disable=import-error
+  wrapper3 = pytest.importorskip('wrapper3', reason='File must be run in venv')
+except ImportError:
+  import wrapper3
 
 _CHROMITE_DIR = os.path.realpath(
     os.path.join(os.path.abspath(__file__), '..', '..'))
 
 # _VIRTUALENV_DIR contains the scripts for working with venvs
 _VIRTUALENV_DIR = os.path.join(_CHROMITE_DIR, '..', 'infra_virtualenv')
-_CREATE_VENV_PATH = os.path.join(_VIRTUALENV_DIR, 'bin', 'create_venv')
+_CREATE_VENV_PATH = os.path.join(_VIRTUALENV_DIR, 'bin', 'create_venv3')
 _REQUIREMENTS = os.path.join(_CHROMITE_DIR, 'venv', 'requirements.txt')
 
 _VENV_MARKER = 'INSIDE_CHROMITE_VENV'
@@ -27,7 +31,10 @@ _VENV_MARKER = 'INSIDE_CHROMITE_VENV'
 
 def main():
   if _IsInsideVenv(os.environ):
-    wrapper.DoMain()
+    # Don't bleed the marker into children processes that might use the wrapper
+    # themselves to run inside of the virtualenv.
+    os.environ.pop(_VENV_MARKER)
+    wrapper3.DoMain()
   else:
     venvdir = _CreateVenv()
     _ExecInVenv(venvdir, sys.argv)

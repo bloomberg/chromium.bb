@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/test/fake_server/fake_server_http_post_provider.h"
+#include "content/public/test/browser_test.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -465,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // Flaky. http://crbug.com/917498
 IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest,
-                       DISABLED_ServerAddressConvertsToSameLocalAddress) {
+                       ServerAddressConvertsToSameLocalAddress) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
@@ -474,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest,
   // On top of expecting convergence on AutofillWalletChecker, expect
   // convergence on wallet metadata and on autofill profiles.
   EXPECT_TRUE(AutofillWalletMetadataSizeChecker(0, 1).Wait());
-  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   // Make sure both have has_converted true.
   std::vector<AutofillProfile*> server_addresses = GetServerProfiles(0);

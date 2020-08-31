@@ -53,8 +53,11 @@ const base::Feature kPaymentRequestSkipToGPay{
 const base::Feature kPaymentRequestSkipToGPayIfNoCard{
     "PaymentRequestSkipToGPayIfNoCard", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kWebPaymentMicrotransaction{
-    "WebPaymentMicrotransaction", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDownRankJustInTimePaymentApp{
+    "DownRankJustInTimePaymentApp", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPaymentHandlerPopUpSizeWindow{
+    "PaymentHandlerPopUpSizeWindow", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace payments

@@ -26,18 +26,20 @@
 #include "components/content_settings/core/browser/content_settings_ephemeral_provider.h"
 #include "components/content_settings/core/browser/content_settings_pref_provider.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
+#include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/user_modifiable_provider.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
-#include "net/base/static_cookie_policy.h"
+#include "net/cookies/static_cookie_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -66,12 +68,13 @@ class MockUserModifiableProvider
                          const content_settings::ResourceIdentifier&,
                          bool));
 
-  MOCK_METHOD5(SetWebsiteSetting,
+  MOCK_METHOD6(SetWebsiteSetting,
                bool(const ContentSettingsPattern&,
                     const ContentSettingsPattern&,
                     ContentSettingsType,
                     const content_settings::ResourceIdentifier&,
-                    std::unique_ptr<base::Value>&&));
+                    std::unique_ptr<base::Value>&&,
+                    const content_settings::ContentSettingConstraints&));
 
   MOCK_METHOD1(ClearAllContentSettingsRules, void(ContentSettingsType));
 
@@ -82,11 +85,18 @@ class MockUserModifiableProvider
                           const ContentSettingsPattern&,
                           ContentSettingsType,
                           const content_settings::ResourceIdentifier&));
+
+  MOCK_METHOD1(SetClockForTesting, void(base::Clock*));
 };
 
 class HostContentSettingsMapTest : public testing::Test {
  public:
-  HostContentSettingsMapTest() = default;
+  HostContentSettingsMapTest()
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+
+  void FastForwardTime(base::TimeDelta delta) {
+    task_environment_.FastForwardBy(delta);
+  }
 
  protected:
   const std::string& GetPrefName(ContentSettingsType type) {
@@ -789,6 +799,18 @@ TEST_F(HostContentSettingsMapTest, IncognitoInheritInitialAllow) {
             otr_map->GetContentSetting(host, host, ContentSettingsType::COOKIES,
                                        std::string()));
 
+  // The inherited setting should be included in ContentSettingsForOneType
+  // table as well.
+  {
+    ContentSettingsForOneType otr_settings;
+    otr_map->GetSettingsForOneType(ContentSettingsType::COOKIES, std::string(),
+                                   &otr_settings);
+    ASSERT_EQ(1u, otr_settings.size());
+    EXPECT_FALSE(otr_settings[0].incognito);
+    EXPECT_EQ(CONTENT_SETTING_ALLOW, content_settings::ValueToContentSetting(
+                                         &otr_settings[0].setting_value));
+  }
+
   // Changing content settings on the main map should also affect the
   // incognito map.
   host_content_settings_map->SetContentSettingDefaultScope(
@@ -800,6 +822,21 @@ TEST_F(HostContentSettingsMapTest, IncognitoInheritInitialAllow) {
   EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
             otr_map->GetContentSetting(host, host, ContentSettingsType::COOKIES,
                                        std::string()));
+
+  // Inherited setting + default in ContentSettingsForOneType
+  {
+    ContentSettingsForOneType otr_settings;
+    otr_map->GetSettingsForOneType(ContentSettingsType::COOKIES, std::string(),
+                                   &otr_settings);
+    ASSERT_EQ(2u, otr_settings.size());
+    EXPECT_FALSE(otr_settings[0].incognito);
+    EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
+              content_settings::ValueToContentSetting(
+                  &otr_settings[0].setting_value));
+    EXPECT_FALSE(otr_settings[1].incognito);
+    EXPECT_EQ(CONTENT_SETTING_ALLOW, content_settings::ValueToContentSetting(
+                                         &otr_settings[1].setting_value));
+  }
 
   host_content_settings_map->SetContentSettingDefaultScope(
       host, GURL(), ContentSettingsType::COOKIES, std::string(),
@@ -822,6 +859,24 @@ TEST_F(HostContentSettingsMapTest, IncognitoInheritInitialAllow) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             otr_map->GetContentSetting(host, host, ContentSettingsType::COOKIES,
                                        std::string()));
+
+  // The GetSettingsForOneType includes incognito setting first, but also
+  // inherited ones.
+  {
+    ContentSettingsForOneType otr_settings;
+    otr_map->GetSettingsForOneType(ContentSettingsType::COOKIES, std::string(),
+                                   &otr_settings);
+    ASSERT_EQ(3u, otr_settings.size());
+    EXPECT_TRUE(otr_settings[0].incognito);
+    EXPECT_EQ(CONTENT_SETTING_ALLOW, content_settings::ValueToContentSetting(
+                                         &otr_settings[0].setting_value));
+    EXPECT_FALSE(otr_settings[1].incognito);
+    EXPECT_EQ(CONTENT_SETTING_BLOCK, content_settings::ValueToContentSetting(
+                                         &otr_settings[1].setting_value));
+    EXPECT_FALSE(otr_settings[2].incognito);
+    EXPECT_EQ(CONTENT_SETTING_ALLOW, content_settings::ValueToContentSetting(
+                                         &otr_settings[2].setting_value));
+  }
 }
 
 TEST_F(HostContentSettingsMapTest, IncognitoInheritPopups) {
@@ -893,6 +948,16 @@ TEST_F(HostContentSettingsMapTest, IncognitoPartialInheritPref) {
       otr_map->GetContentSetting(
           host, host, ContentSettingsType::MEDIASTREAM_MIC, std::string()));
 
+  {
+    ContentSettingsForOneType otr_settings;
+    otr_map->GetSettingsForOneType(ContentSettingsType::MEDIASTREAM_MIC,
+                                   std::string(), &otr_settings);
+    ASSERT_EQ(1u, otr_settings.size());
+    EXPECT_FALSE(otr_settings[0].incognito);
+    EXPECT_EQ(CONTENT_SETTING_ASK, content_settings::ValueToContentSetting(
+                                       &otr_settings[0].setting_value));
+  }
+
   // BLOCK should be inherited from the main map to the incognito map.
   host_content_settings_map->SetContentSettingDefaultScope(
       host, GURL(), ContentSettingsType::MEDIASTREAM_MIC, std::string(),
@@ -905,6 +970,22 @@ TEST_F(HostContentSettingsMapTest, IncognitoPartialInheritPref) {
       CONTENT_SETTING_BLOCK,
       otr_map->GetContentSetting(
           host, host, ContentSettingsType::MEDIASTREAM_MIC, std::string()));
+
+  // GetSettingsForOneType should return preference followed by default, both inherited.
+  {
+    
+    ContentSettingsForOneType otr_settings;
+    otr_map->GetSettingsForOneType(ContentSettingsType::MEDIASTREAM_MIC,
+                                   std::string(), &otr_settings);
+    ASSERT_EQ(2u, otr_settings.size());
+    EXPECT_FALSE(otr_settings[0].incognito);
+    EXPECT_EQ(CONTENT_SETTING_BLOCK, content_settings::ValueToContentSetting(
+                                         &otr_settings[0].setting_value));
+
+    EXPECT_FALSE(otr_settings[1].incognito);
+    EXPECT_EQ(CONTENT_SETTING_ASK, content_settings::ValueToContentSetting(
+                                       &otr_settings[1].setting_value));
+  }
 
   // ALLOW should not be inherited from the main map to the incognito map (but
   // it still overwrites the BLOCK, hence incognito reverts to ASK).
@@ -919,6 +1000,22 @@ TEST_F(HostContentSettingsMapTest, IncognitoPartialInheritPref) {
       CONTENT_SETTING_ASK,
       otr_map->GetContentSetting(
           host, host, ContentSettingsType::MEDIASTREAM_MIC, std::string()));
+
+  // The inherited ALLOW gets turned back into ASK in GetSettingsForOneType, mirroring the 
+  // reverting to ASK behavior above.
+  {
+    ContentSettingsForOneType otr_settings;
+    otr_map->GetSettingsForOneType(ContentSettingsType::MEDIASTREAM_MIC,
+                                   std::string(), &otr_settings);
+    ASSERT_EQ(2u, otr_settings.size());
+    EXPECT_FALSE(otr_settings[0].incognito);
+    EXPECT_EQ(CONTENT_SETTING_ASK, content_settings::ValueToContentSetting(
+                                       &otr_settings[0].setting_value));
+
+    EXPECT_FALSE(otr_settings[1].incognito);
+    EXPECT_EQ(CONTENT_SETTING_ASK, content_settings::ValueToContentSetting(
+                                       &otr_settings[1].setting_value));
+  }
 }
 
 TEST_F(HostContentSettingsMapTest, IncognitoPartialInheritDefault) {
@@ -1014,6 +1111,13 @@ TEST_F(HostContentSettingsMapTest, IncognitoDontInheritSetting) {
   EXPECT_EQ(nullptr, otr_map->GetWebsiteSetting(
                          host, host, ContentSettingsType::USB_CHOOSER_DATA,
                          std::string(), nullptr));
+  {
+    ContentSettingsForOneType otr_settings;
+    otr_map->GetSettingsForOneType(ContentSettingsType::USB_CHOOSER_DATA,
+                                   std::string(), &otr_settings);
+    // Nothing gets inherited here, and there is no default.
+    ASSERT_EQ(0u, otr_settings.size());
+  }
 }
 
 TEST_F(HostContentSettingsMapTest, PrefExceptionsOperation) {
@@ -1807,6 +1911,23 @@ TEST_F(HostContentSettingsMapTest,
             host_settings[0].secondary_pattern);
 }
 
+// Creates new instances of PrefProvider and EphemeralProvider and overrides
+// them in |host_content_settings_map|.
+void ReloadProviders(PrefService* pref_service,
+                     HostContentSettingsMap* host_content_settings_map) {
+  auto pref_provider = std::make_unique<content_settings::PrefProvider>(
+      pref_service, false, true, false);
+  content_settings::TestUtils::OverrideProvider(
+      host_content_settings_map, std::move(pref_provider),
+      HostContentSettingsMap::PREF_PROVIDER);
+
+  auto ephemeral_provider =
+      std::make_unique<content_settings::EphemeralProvider>(true);
+  content_settings::TestUtils::OverrideProvider(
+      host_content_settings_map, std::move(ephemeral_provider),
+      HostContentSettingsMap::EPHEMERAL_PROVIDER);
+}
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Test that existing Flash preferences should get copied into the
 // |ContentSettingsType::PLUGINS_DATA| setting on the creation of a new
@@ -1876,23 +1997,6 @@ TEST_F(HostContentSettingsMapTest, PluginDataMigrated) {
   EXPECT_EQ(nullptr, map->GetWebsiteSetting(unmigrated_url, unmigrated_url,
                                             ContentSettingsType::PLUGINS_DATA,
                                             std::string(), nullptr));
-}
-
-// Creates new instances of PrefProvider and EphemeralProvider and overrides
-// them in |host_content_settings_map|.
-void ReloadProviders(PrefService* pref_service,
-                     HostContentSettingsMap* host_content_settings_map) {
-  auto pref_provider = std::make_unique<content_settings::PrefProvider>(
-      pref_service, false, true);
-  content_settings::TestUtils::OverrideProvider(
-      host_content_settings_map, std::move(pref_provider),
-      HostContentSettingsMap::PREF_PROVIDER);
-
-  auto ephemeral_provider =
-      std::make_unique<content_settings::EphemeralProvider>(true);
-  content_settings::TestUtils::OverrideProvider(
-      host_content_settings_map, std::move(ephemeral_provider),
-      HostContentSettingsMap::EPHEMERAL_PROVIDER);
 }
 
 // Tests that Flash permissions are reset after restarting.
@@ -2008,10 +2112,11 @@ TEST_F(HostContentSettingsMapTest, EphemeralTypeDoesntReadFromPrefProvider) {
 
   map->SetDefaultContentSetting(ephemeral_type, CONTENT_SETTING_ASK);
 
-  content_settings::PrefProvider pref_provider(profile.GetPrefs(), true, true);
+  content_settings::PrefProvider pref_provider(profile.GetPrefs(), true, true,
+                                               false);
   pref_provider.SetWebsiteSetting(
       pattern, pattern, ephemeral_type, std::string(),
-      std::make_unique<base::Value>(CONTENT_SETTING_ALLOW));
+      std::make_unique<base::Value>(CONTENT_SETTING_ALLOW), {});
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
             map->GetContentSetting(url, url, ephemeral_type, std::string()));
@@ -2163,4 +2268,251 @@ TEST_F(HostContentSettingsMapTest, IncognitoChangesDoNotPersist) {
       EXPECT_FALSE(original_value);
     }
   }
+}
+
+// Validate that a content setting that uses a different scope/constraint can
+// co-exist with another setting
+TEST_F(HostContentSettingsMapTest, MixedScopeSettings) {
+  TestingProfile profile;
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  content_settings::ContentSettingsRegistry::GetInstance()->ResetForTest();
+  ReloadProviders(profile.GetPrefs(), map);
+
+  // The following type is used as a sample of the persistent permission type.
+  // It can be replaced with any other type if required.
+  const ContentSettingsType persistent_type =
+      ContentSettingsType::STORAGE_ACCESS;
+  EXPECT_EQ(content_settings::ContentSettingsInfo::PERSISTENT,
+            content_settings::ContentSettingsRegistry::GetInstance()
+                ->Get(persistent_type)
+                ->storage_behavior());
+
+  const GURL example_url1("https://example.com");
+  const GURL example_url2("https://other_site.example");
+
+  // Set default permission to ASK and expect it for a website.
+  map->SetDefaultContentSetting(persistent_type, CONTENT_SETTING_ASK);
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(example_url1, example_url1, persistent_type,
+                                   std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(example_url2, example_url2, persistent_type,
+                                   std::string()));
+
+  // Set permission and expect to retrieve it correctly. This will default to a
+  // never expiring Durable permission.
+  map->SetContentSettingDefaultScope(example_url1, example_url1,
+                                     persistent_type, std::string(),
+                                     CONTENT_SETTING_BLOCK);
+  // Set a Session only permission for our second url and we expect it should
+  // co-exist with the other permission just fine.
+  map->SetContentSettingDefaultScope(
+      example_url2, example_url2, persistent_type, std::string(),
+      CONTENT_SETTING_ALLOW,
+      {base::Time(), content_settings::SessionModel::UserSession});
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            map->GetContentSetting(example_url1, example_url1, persistent_type,
+                                   std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            map->GetContentSetting(example_url2, example_url2, persistent_type,
+                                   std::string()));
+
+  // Restart and expect reset of Session scoped permission to ASK, while keeping
+  // the permission of Durable scope.
+  ReloadProviders(profile.GetPrefs(), map);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            map->GetContentSetting(example_url1, example_url1, persistent_type,
+                                   std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(example_url2, example_url2, persistent_type,
+                                   std::string()));
+}
+
+// Validate that GetSettingsForOneType works with a SessionModel specified.
+// We should act like no preference is specified if the value is
+// SessionModel::None; otherwise, only the preferences from the specified
+// scope should be returned (if any).
+TEST_F(HostContentSettingsMapTest, GetSettingsForOneTypeWithSessionModel) {
+  TestingProfile profile;
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  content_settings::ContentSettingsRegistry::GetInstance()->ResetForTest();
+  ReloadProviders(profile.GetPrefs(), map);
+
+  // The following type is used as a sample of the persistent permission type.
+  // It can be replaced with any other type if required.
+  const ContentSettingsType persistent_type =
+      ContentSettingsType::STORAGE_ACCESS;
+  EXPECT_EQ(content_settings::ContentSettingsInfo::PERSISTENT,
+            content_settings::ContentSettingsRegistry::GetInstance()
+                ->Get(persistent_type)
+                ->storage_behavior());
+
+  const GURL example_url1("https://example.com");
+  const GURL example_url2("https://other_site.example");
+
+  // Set default permission to ASK and expect it for a website.
+  map->SetDefaultContentSetting(persistent_type, CONTENT_SETTING_ASK);
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(example_url1, example_url1, persistent_type,
+                                   std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(example_url2, example_url2, persistent_type,
+                                   std::string()));
+
+  // Set permissions in two different scopes.
+  map->SetContentSettingDefaultScope(
+      example_url1, example_url1, persistent_type, std::string(),
+      CONTENT_SETTING_BLOCK,
+      {base::Time(), content_settings::SessionModel::Durable});
+  map->SetContentSettingDefaultScope(
+      example_url2, example_url2, persistent_type, std::string(),
+      CONTENT_SETTING_ALLOW,
+      {base::Time(), content_settings::SessionModel::UserSession});
+
+  // Validate that if we retrieve all our settings we should see both settings
+  // and the default values returned.
+  ContentSettingsForOneType settings;
+  map->GetSettingsForOneType(persistent_type, std::string(), &settings);
+  ASSERT_EQ(3u, settings.size());
+
+  // Validate that using no SessionModel functions the exact same way.
+  map->GetSettingsForOneType(persistent_type, std::string(), &settings,
+                             base::nullopt);
+  ASSERT_EQ(3u, settings.size());
+
+  // Each one/type of settings we set should be retrievable by specifying the
+  // specific scope without getting any of the other results. For Durable we
+  // should see our set value and the default value.
+  map->GetSettingsForOneType(persistent_type, std::string(), &settings,
+                             content_settings::SessionModel::Durable);
+  ASSERT_EQ(2u, settings.size());
+
+  map->GetSettingsForOneType(persistent_type, std::string(), &settings,
+                             content_settings::SessionModel::UserSession);
+  ASSERT_EQ(1u, settings.size());
+
+  // Reload to clear our session settings.
+  ReloadProviders(profile.GetPrefs(), map);
+
+  // If a scope is specified that has no settings, we should get an empty set
+  // returned.
+  map->GetSettingsForOneType(persistent_type, std::string(), &settings,
+                             content_settings::SessionModel::UserSession);
+  ASSERT_EQ(0u, settings.size());
+}
+
+// Validate that the settings array retrieved correctly carries the expiry data
+// for settings and they can detect if and when they expire.
+// GetSettingsForOneType should also omit any settings that are already expired.
+TEST_F(HostContentSettingsMapTest, GetSettingsForOneTypeWithExpiry) {
+  TestingProfile profile;
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  content_settings::ContentSettingsRegistry::GetInstance()->ResetForTest();
+  ReloadProviders(profile.GetPrefs(), map);
+
+  // The following type is used as a sample of the persistent permission type.
+  // It can be replaced with any other type if required.
+  const ContentSettingsType persistent_type =
+      ContentSettingsType::STORAGE_ACCESS;
+  EXPECT_EQ(content_settings::ContentSettingsInfo::PERSISTENT,
+            content_settings::ContentSettingsRegistry::GetInstance()
+                ->Get(persistent_type)
+                ->storage_behavior());
+
+  const GURL example_url1("https://example.com");
+  const GURL example_url2("https://other_site.example");
+  const GURL example_url3("https://third_site.example");
+
+  // Set default permission to ASK and expect it for a website.
+  map->SetDefaultContentSetting(persistent_type, CONTENT_SETTING_ASK);
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(example_url1, example_url1, persistent_type,
+                                   std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(example_url2, example_url2, persistent_type,
+                                   std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(example_url3, example_url3, persistent_type,
+                                   std::string()));
+
+  // Set permissions with our first two urls with different expiry times and our
+  // third with no expiration.
+  map->SetContentSettingDefaultScope(
+      example_url1, example_url1, persistent_type, std::string(),
+      CONTENT_SETTING_BLOCK,
+      {content_settings::GetConstraintExpiration(
+           base::TimeDelta::FromSeconds(100)),
+       content_settings::SessionModel::UserSession});
+  map->SetContentSettingDefaultScope(
+      example_url2, example_url2, persistent_type, std::string(),
+      CONTENT_SETTING_ALLOW,
+      {content_settings::GetConstraintExpiration(
+           base::TimeDelta::FromSeconds(200)),
+       content_settings::SessionModel::UserSession});
+  map->SetContentSettingDefaultScope(
+      example_url3, example_url3, persistent_type, std::string(),
+      CONTENT_SETTING_ALLOW,
+      {base::Time(), content_settings::SessionModel::UserSession});
+
+  // Validate that we can retrieve all our settings and none of them are
+  // expired.
+  ContentSettingsForOneType settings;
+  map->GetSettingsForOneType(persistent_type, std::string(), &settings,
+                             content_settings::SessionModel::UserSession);
+  ASSERT_EQ(3u, settings.size());
+
+  // None of our current settings should be expired, but we'll keep each one to
+  // check the validity later on.
+  ContentSettingPatternSource url1_setting;
+  ContentSettingPatternSource url2_setting;
+  ContentSettingPatternSource url3_setting;
+  for (const auto& entry : settings) {
+    ASSERT_FALSE(entry.IsExpired());
+    // Store the relevant settings to check on later.
+    if (entry.primary_pattern.Matches(example_url1)) {
+      url1_setting = entry;
+    } else if (entry.primary_pattern.Matches(example_url2)) {
+      url2_setting = entry;
+    } else if (entry.primary_pattern.Matches(example_url3)) {
+      url3_setting = entry;
+    }
+  }
+
+  // If we Fastforward by 101 seconds we should see only our first setting is
+  // expired, we now retrieve 1 less setting and the rest are okay.
+  FastForwardTime(base::TimeDelta::FromSeconds(101));
+  ASSERT_TRUE(url1_setting.IsExpired());
+  ASSERT_FALSE(url2_setting.IsExpired());
+  ASSERT_FALSE(url3_setting.IsExpired());
+  map->GetSettingsForOneType(persistent_type, std::string(), &settings,
+                             content_settings::SessionModel::UserSession);
+  ASSERT_EQ(2u, settings.size());
+
+  // If we fast forward again we should expire our second setting and drop if
+  // from our retrieval list now.
+  FastForwardTime(base::TimeDelta::FromSeconds(101));
+  ASSERT_TRUE(url1_setting.IsExpired());
+  ASSERT_TRUE(url2_setting.IsExpired());
+  ASSERT_FALSE(url3_setting.IsExpired());
+  map->GetSettingsForOneType(persistent_type, std::string(), &settings,
+                             content_settings::SessionModel::UserSession);
+  ASSERT_EQ(1u, settings.size());
+
+  // If we fast forwarding much further it shouldn't make a difference as our
+  // last setting and the default setting should never expire.
+  FastForwardTime(base::TimeDelta::FromMinutes(100));
+  ASSERT_TRUE(url1_setting.IsExpired());
+  ASSERT_TRUE(url2_setting.IsExpired());
+  ASSERT_FALSE(url3_setting.IsExpired());
+  map->GetSettingsForOneType(persistent_type, std::string(), &settings,
+                             content_settings::SessionModel::UserSession);
+  ASSERT_EQ(1u, settings.size());
 }

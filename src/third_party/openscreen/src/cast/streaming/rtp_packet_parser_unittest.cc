@@ -8,11 +8,8 @@
 #include "gtest/gtest.h"
 #include "util/big_endian.h"
 
-using openscreen::ReadBigEndian;
-using openscreen::WriteBigEndian;
-
+namespace openscreen {
 namespace cast {
-namespace streaming {
 namespace {
 
 // Tests that a simple packet for a key frame can be parsed.
@@ -309,5 +306,5 @@ TEST(RtpPacketParserTest, RejectsPacketWithBadFramePacketIds) {
 }
 
 }  // namespace
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

@@ -16,17 +16,16 @@
 #include "xfa/fwl/cfwl_widget.h"
 #include "xfa/fwl/cfwl_widgetproperties.h"
 
-#define FWL_STYLEEXT_DTP_LongDateFormat 0
 #define FWL_STYLEEXT_DTP_ShortDateFormat (1L << 1)
-#define FWL_STYLEEXT_DTP_EditHNear 0
+#define FWL_STYLEEXT_DTP_EditHAlignMask (3L << 4)
+#define FWL_STYLEEXT_DTP_EditHNear (0L << 4)
 #define FWL_STYLEEXT_DTP_EditHCenter (1L << 4)
 #define FWL_STYLEEXT_DTP_EditHFar (2L << 4)
-#define FWL_STYLEEXT_DTP_EditVNear 0
+#define FWL_STYLEEXT_DTP_EditVAlignMask (3L << 6)
+#define FWL_STYLEEXT_DTP_EditVNear (0L << 6)
 #define FWL_STYLEEXT_DTP_EditVCenter (1L << 6)
 #define FWL_STYLEEXT_DTP_EditVFar (2L << 6)
 #define FWL_STYLEEXT_DTP_EditJustified (1L << 8)
-#define FWL_STYLEEXT_DTP_EditHAlignMask (3L << 4)
-#define FWL_STYLEEXT_DTP_EditVAlignMask (3L << 6)
 
 class CFWL_DateTimeEdit;
 
@@ -94,16 +93,16 @@ class CFWL_DateTimePicker final : public CFWL_Widget {
 
   bool NeedsToShowButton() const;
 
-  CFX_RectF m_rtBtn;
-  CFX_RectF m_rtClient;
-  int32_t m_iBtnState;
-  int32_t m_iYear;
-  int32_t m_iMonth;
-  int32_t m_iDay;
-  bool m_bLBtnDown;
+  bool m_bLBtnDown = false;
+  int32_t m_iBtnState = 1;
+  int32_t m_iYear = -1;
+  int32_t m_iMonth = -1;
+  int32_t m_iDay = -1;
+  float m_fBtn = 0.0f;
+  CFX_RectF m_BtnRect;
+  CFX_RectF m_ClientRect;
   std::unique_ptr<CFWL_DateTimeEdit> m_pEdit;
   std::unique_ptr<CFWL_MonthCalendar> m_pMonthCal;
-  float m_fBtn;
 };
 
 #endif  // XFA_FWL_CFWL_DATETIMEPICKER_H_

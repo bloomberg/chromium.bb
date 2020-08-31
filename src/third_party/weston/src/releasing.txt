@@ -1,0 +1,113 @@
+To make a release of Weston and/or Wayland, follow these steps.
+
+  0.  Verify the test suites and codebase checks pass.  All of the
+      tests should either pass or skip.
+
+      $ make check
+
+  1.  For Weston, verify that the wayland and wayland-protocols version
+      dependencies are correct, and that wayland-protocols has had a
+      release with any needed protocol updates.
+
+  2.  Update the first stanza of configure.ac to the intended versions
+      for Weston and libweston.
+
+      For Weston's x.y.0 releases, if libweston_major_version is greater than
+      weston_major_version, bump the Weston version numbers (major, minor,
+      micro) to match the libweston version numbers (major, minor, patch).
+
+      Additionally for all Weston releases, if libweston's
+      major.minor.patch version is less than Weston's major.minor.micro
+      version, bump libweston version numbers to match the Weston
+      version numbers.
+
+      Weston releases are made with the Weston version number, not with the
+      libweston version number.
+
+      Then commit your changes:
+
+      $ export RELEASE_NUMBER="x.y.z"
+      $ export RELEASE_NAME="[alpha|beta|RC1|RC2|official|point]"
+      $ git status
+      $ git commit configure.ac -m "configure.ac: bump to version $RELEASE_NUMBER for the $RELEASE_NAME release"
+      $ git push
+
+  3.  For Weston releases, install Xwayland, either from your distro or
+      manually (see http://wayland.freedesktop.org/building.html).  If
+      you install it to a location other than /usr/bin/Xwayland, specify
+      this in the following env var:
+
+	  XWAYLAND=$(which Xwayland)  # Or specify your own path
+      export DISTCHECK_CONFIGURE_FLAGS="--with-xserver-path=$XWAYLAND"
+
+      If you're using a locally installed libinput or other dependency
+      libraries, you'll likely need to set a few other environment
+      variables:
+
+      export WLD="<path-to-your-local-installation>"
+      export LD_LIBRARY_PATH=$WLD/lib
+      export PKG_CONFIG_PATH=$WLD/lib/pkgconfig:$WLD/share/pkgconfig/
+
+  4.  Run the release.sh script to generate the tarballs, sign and
+      upload them, and generate a release announcement template.
+      This script can be obtained from X.org's modular package:
+
+        http://cgit.freedesktop.org/xorg/util/modular/tree/release.sh
+
+      The script supports a --dry-run option to test it without actually
+      doing a release.  If the script fails on the distcheck step due to
+      a testsuite error that can't be fixed for some reason, you can
+      skip testsuite by specifying the --dist argument.  Pass --help to
+      see other supported options.
+
+      $ release.sh .
+
+      For Wayland official and point releases, also publish the publican
+      documentation to wayland.freedesktop.org:
+
+      $ ./publish-doc
+
+  5.  Compose the release announcements.  The script will generate
+      *.x.y.z.announce files with a list of changes and tags, one for
+      wayland, one for weston.  Prepend these with a human-readable
+      listing of the most notable changes.  For x.y.0 releases, indicate
+      the schedule for the x.y+1.0 release.
+
+  6.  pgp sign the release announcements and send them to
+      wayland-devel@lists.freedesktop.org
+
+  7.  Update releases.html in wayland-web with links to tarballs and
+      the release email URL.
+
+      The wl_register_release script in wayland-web will generate an HTML
+      snippet that can be pasted into releases.html (or e.g. in emacs
+      insert it via "C-u M-! scripts/wl_register_release x.y.z") and
+      customized.
+
+      Once satisfied:
+
+      $ git commit ./releases.html -m "releases: Add ${RELEASE_NUMBER} release"
+      $ git push
+      $ ./deploy
+
+  8.  Update topic in #wayland to point to the release announcement URL
+
+For x.y.0 releases, also create the release series x.y branch.  The x.y
+branch is for bug fixes and conservative changes to the x.y.0 release,
+and is where we create x.y.z releases from.  Creating the x.y branch
+opens up master for new development and lets new development move on.
+We've done this both after the x.y.0 release (to focus development on
+bug fixing for the x.y.1 release for a little longer) or before the
+x.y.0 release (like we did with the 1.5.0 release, to unblock master
+development early).
+
+    $ git branch x.y [sha]
+    $ git push origin x.y
+
+The master branch's configure.ac version should always be (at least)
+x.y.90, with x.y being the most recent stable branch.  The stable
+branch's configure.ac version is just whatever was most recently
+released from that branch.
+
+For stable branches, we commit fixes to master first, then cherry-pick
+them back to the stable branch.

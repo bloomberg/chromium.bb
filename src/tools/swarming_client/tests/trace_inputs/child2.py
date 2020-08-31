@@ -9,7 +9,7 @@ import time
 
 
 def main():
-  print 'child2'
+  print('child2')
   # Introduce a race condition with the parent so the parent may have a chance
   # to exit before the child. Will be random.
   time.sleep(.01)
@@ -34,9 +34,9 @@ def main():
           os.path.isfile(os.path.join(root, filename))))
 
   if actual != expected:
-    print 'Failure'
-    print actual
-    print expected
+    print('Failure')
+    print(actual)
+    print(expected)
     return 1
   return 0
 

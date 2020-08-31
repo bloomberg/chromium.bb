@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/unpacked_serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_point_init.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
@@ -18,7 +19,6 @@
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix_read_only.h"
 #include "third_party/blink/renderer/core/geometry/dom_point.h"
-#include "third_party/blink/renderer/core/geometry/dom_point_init.h"
 #include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/core/geometry/dom_quad.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
@@ -133,7 +133,6 @@ V8ScriptValueDeserializer::V8ScriptValueDeserializer(
       transferred_message_ports_(options.message_ports),
       blob_info_array_(options.blob_info) {
   deserializer_.SetSupportsLegacyWireFormat(true);
-  deserializer_.SetExpectInlineWasm(options.read_wasm_from_stream);
 }
 
 v8::Local<v8::Value> V8ScriptValueDeserializer::Deserialize() {
@@ -178,7 +177,7 @@ v8::Local<v8::Value> V8ScriptValueDeserializer::Deserialize() {
 }
 
 void V8ScriptValueDeserializer::Transfer() {
-  if (RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+  if (TransferableStreamsEnabled()) {
     // TODO(ricea): Make ExtendableMessageEvent store an
     // UnpackedSerializedScriptValue like MessageEvent does, and then this
     // special case won't be necessary.
@@ -221,7 +220,10 @@ bool V8ScriptValueDeserializer::ReadUTF8String(String* string) {
     return false;
   *string =
       String::FromUTF8(reinterpret_cast<const LChar*>(utf8_data), utf8_length);
-  return true;
+
+  // Decoding must have failed; this encoding does not distinguish between null
+  // and empty strings.
+  return !string->IsNull();
 }
 
 ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
@@ -293,7 +295,8 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
     }
     case kImageBitmapTag: {
       SerializedColorSpace canvas_color_space = SerializedColorSpace::kSRGB;
-      SerializedPixelFormat canvas_pixel_format = SerializedPixelFormat::kRGBA8;
+      SerializedPixelFormat canvas_pixel_format =
+          SerializedPixelFormat::kNative8_LegacyObsolete;
       SerializedOpacityMode canvas_opacity_mode =
           SerializedOpacityMode::kOpaque;
       uint32_t origin_clean = 0, is_premultiplied = 0, width = 0, height = 0,
@@ -358,8 +361,8 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         // been deprecated.
         return nullptr;
       }
-      return ImageBitmap::Create(pixels, width, height, is_premultiplied,
-                                 origin_clean, color_params);
+      return MakeGarbageCollected<ImageBitmap>(
+          pixels, width, height, is_premultiplied, origin_clean, color_params);
     }
     case kImageBitmapTransferTag: {
       uint32_t index = 0;
@@ -415,7 +418,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       }
 
       SerializedColorParams color_params(
-          canvas_color_space, SerializedPixelFormat::kRGBA8,
+          canvas_color_space, SerializedPixelFormat::kNative8_LegacyObsolete,
           SerializedOpacityMode::kNonOpaque, image_data_storage_format);
       ImageDataStorageFormat storage_format = color_params.GetStorageFormat();
       base::CheckedNumeric<size_t> computed_byte_length = width;
@@ -543,7 +546,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       return canvas;
     }
     case kReadableStreamTransferTag: {
-      if (!RuntimeEnabledFeatures::TransferableStreamsEnabled())
+      if (!TransferableStreamsEnabled())
         return nullptr;
       uint32_t index = 0;
       if (!ReadUint32(&index) || !transferred_stream_ports_ ||
@@ -555,7 +558,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           exception_state);
     }
     case kWritableStreamTransferTag: {
-      if (!RuntimeEnabledFeatures::TransferableStreamsEnabled())
+      if (!TransferableStreamsEnabled())
         return nullptr;
       uint32_t index = 0;
       if (!ReadUint32(&index) || !transferred_stream_ports_ ||
@@ -567,7 +570,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           exception_state);
     }
     case kTransformStreamTransferTag: {
-      if (!RuntimeEnabledFeatures::TransferableStreamsEnabled())
+      if (!TransferableStreamsEnabled())
         return nullptr;
       uint32_t index = 0;
       if (!ReadUint32(&index) || !transferred_stream_ports_ ||
@@ -595,7 +598,8 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           !ReadUTF8String(&stack_unused)) {
         return nullptr;
       }
-      return DOMException::Create(name, message);
+      // DOMException::Create takes its arguments in the opposite order.
+      return DOMException::Create(message, name);
     }
     default:
       break;
@@ -652,9 +656,8 @@ File* V8ScriptValueDeserializer::ReadFileIndex() {
   }
   if (!blob_handle)
     return nullptr;
-  return File::CreateFromIndexedSerialization(info.FilePath(), info.FileName(),
-                                              info.size(), info.LastModified(),
-                                              blob_handle);
+  return File::CreateFromIndexedSerialization(info.FileName(), info.size(),
+                                              info.LastModified(), blob_handle);
 }
 
 DOMRectReadOnly* V8ScriptValueDeserializer::ReadDOMRectReadOnly() {
@@ -754,4 +757,10 @@ V8ScriptValueDeserializer::GetSharedArrayBufferFromId(v8::Isolate* isolate,
   CHECK(shared_array_buffers_contents.IsEmpty());
   return v8::MaybeLocal<v8::SharedArrayBuffer>();
 }
+
+bool V8ScriptValueDeserializer::TransferableStreamsEnabled() const {
+  return RuntimeEnabledFeatures::TransferableStreamsEnabled(
+      ExecutionContext::From(script_state_));
+}
+
 }  // namespace blink

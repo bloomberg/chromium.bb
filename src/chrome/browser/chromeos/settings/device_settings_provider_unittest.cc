@@ -9,11 +9,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_path_override.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -93,11 +95,14 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     proto->set_report_users(enable_reporting);
     proto->set_report_hardware_status(enable_reporting);
     proto->set_report_session_status(enable_reporting);
+    proto->set_report_graphics_status(enable_reporting);
+    proto->set_report_crash_report_info(enable_reporting);
     proto->set_report_os_update_status(enable_reporting);
     proto->set_report_running_kiosk_app(enable_reporting);
     proto->set_report_power_status(enable_reporting);
     proto->set_report_storage_status(enable_reporting);
     proto->set_report_board_status(enable_reporting);
+    proto->set_report_app_info(enable_reporting);
     proto->set_device_status_frequency(frequency);
     BuildAndInstallDevicePolicy();
   }
@@ -159,14 +164,24 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   void VerifyReportingSettings(bool expected_enable_state,
                                int expected_frequency) {
     const char* reporting_settings[] = {
-        kReportDeviceVersionInfo, kReportDeviceActivityTimes,
-        kReportDeviceBoardStatus, kReportDeviceBootMode,
+        kReportDeviceVersionInfo,
+        kReportDeviceActivityTimes,
+        kReportDeviceBoardStatus,
+        kReportDeviceBootMode,
         // Device location reporting is not currently supported.
         // kReportDeviceLocation,
-        kReportDeviceNetworkInterfaces, kReportDeviceUsers,
-        kReportDeviceHardwareStatus, kReportDevicePowerStatus,
-        kReportDeviceStorageStatus, kReportDeviceSessionStatus,
-        kReportOsUpdateStatus, kReportRunningKioskApp};
+        kReportDeviceNetworkInterfaces,
+        kReportDeviceUsers,
+        kReportDeviceHardwareStatus,
+        kReportDevicePowerStatus,
+        kReportDeviceStorageStatus,
+        kReportDeviceSessionStatus,
+        kReportDeviceGraphicsStatus,
+        kReportDeviceCrashReportInfo,
+        kReportDeviceAppInfo,
+        kReportOsUpdateStatus,
+        kReportRunningKioskApp,
+    };
 
     const base::Value expected_enable_value(expected_enable_state);
     for (auto* setting : reporting_settings) {
@@ -358,8 +373,10 @@ TEST_F(DeviceSettingsProviderTest, InitializationTest) {
 
   // Verify that the policy blob has been correctly parsed and trusted.
   // The trusted flag should be set before the call to PrepareTrustedValues.
+  base::OnceClosure closure = base::DoNothing();
   EXPECT_EQ(CrosSettingsProvider::TRUSTED,
-            provider_->PrepareTrustedValues(base::Closure()));
+            provider_->PrepareTrustedValues(&closure));
+  EXPECT_TRUE(closure);  // Ownership of |closure| was not taken.
   const base::Value* value = provider_->Get(kStatsReportingPref);
   ASSERT_TRUE(value);
   bool bool_value;
@@ -373,8 +390,10 @@ TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
   ReloadDeviceSettings();
 
   // The trusted flag should be set before the call to PrepareTrustedValues.
+  base::OnceClosure closure = base::DoNothing();
   EXPECT_EQ(CrosSettingsProvider::TRUSTED,
-            provider_->PrepareTrustedValues(base::Closure()));
+            provider_->PrepareTrustedValues(&closure));
+  EXPECT_TRUE(closure);  // Ownership of |closure| was not taken.
   const base::Value* value = provider_->Get(kReleaseChannel);
   ASSERT_TRUE(value);
   std::string string_value;
@@ -499,6 +518,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
 }
 
 TEST_F(DeviceSettingsProviderTest, PolicyRetrievalFailedBadSignature) {
+  base::HistogramTester histogram_tester;
   owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_->GetSigningKey());
   device_policy_->policy().set_policy_data_signature("bad signature");
   session_manager_client_.set_device_policy(device_policy_->GetBlob());
@@ -507,11 +527,19 @@ TEST_F(DeviceSettingsProviderTest, PolicyRetrievalFailedBadSignature) {
   // Verify that the cached settings blob is not "trusted".
   EXPECT_EQ(DeviceSettingsService::STORE_VALIDATION_ERROR,
             device_settings_service_->status());
+  base::OnceClosure closure = base::DoNothing();
   EXPECT_EQ(CrosSettingsProvider::PERMANENTLY_UNTRUSTED,
-            provider_->PrepareTrustedValues(base::Closure()));
+            provider_->PrepareTrustedValues(&closure));
+  EXPECT_TRUE(closure);  // Ownership of |closure| was not taken.
+  histogram_tester.ExpectUniqueSample(
+      "Enterprise.DeviceSettings.UpdatedStatus",
+      DeviceSettingsService::STORE_VALIDATION_ERROR, /*amount=*/1);
+  histogram_tester.ExpectTotalCount(
+      "Enterprise.DeviceSettings.MissingPolicyMitigated", 0);
 }
 
 TEST_F(DeviceSettingsProviderTest, PolicyRetrievalNoPolicy) {
+  base::HistogramTester histogram_tester;
   owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_->GetSigningKey());
   session_manager_client_.set_device_policy(std::string());
   ReloadDeviceSettings();
@@ -519,36 +547,83 @@ TEST_F(DeviceSettingsProviderTest, PolicyRetrievalNoPolicy) {
   // Verify that the cached settings blob is not "trusted".
   EXPECT_EQ(DeviceSettingsService::STORE_NO_POLICY,
             device_settings_service_->status());
+  base::OnceClosure closure = base::DoNothing();
   EXPECT_EQ(CrosSettingsProvider::PERMANENTLY_UNTRUSTED,
-            provider_->PrepareTrustedValues(base::Closure()));
+            provider_->PrepareTrustedValues(&closure));
+  EXPECT_TRUE(closure);  // Ownership of |closure| was not taken.
+  histogram_tester.ExpectUniqueSample("Enterprise.DeviceSettings.UpdatedStatus",
+                                      DeviceSettingsService::STORE_NO_POLICY,
+                                      /*amount=*/1);
+  histogram_tester.ExpectTotalCount(
+      "Enterprise.DeviceSettings.MissingPolicyMitigated", 0);
+}
+
+TEST_F(DeviceSettingsProviderTest, PolicyRetrievalNoPolicyMitigated) {
+  base::HistogramTester histogram_tester;
+  profile_->ScopedCrosSettingsTestHelper()
+      ->InstallAttributes()
+      ->SetConsumerOwned();
+  owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_->GetSigningKey());
+  session_manager_client_.set_device_policy(std::string());
+  ReloadDeviceSettings();
+
+  // Verify that the cached settings blob is not "trusted".
+  EXPECT_EQ(DeviceSettingsService::STORE_NO_POLICY,
+            device_settings_service_->status());
+  base::OnceClosure closure = base::DoNothing();
+  EXPECT_EQ(CrosSettingsProvider::TRUSTED,
+            provider_->PrepareTrustedValues(&closure));
+  EXPECT_TRUE(closure);  // Ownership of |closure| was not taken.
+  histogram_tester.ExpectUniqueSample("Enterprise.DeviceSettings.UpdatedStatus",
+                                      DeviceSettingsService::STORE_NO_POLICY,
+                                      /*amount=*/1);
+  histogram_tester.ExpectTotalCount(
+      "Enterprise.DeviceSettings.MissingPolicyMitigated", 1);
 }
 
 TEST_F(DeviceSettingsProviderTest, PolicyFailedPermanentlyNotification) {
+  base::HistogramTester histogram_tester;
   session_manager_client_.set_device_policy(std::string());
+
+  base::OnceClosure closure = base::BindOnce(
+      &DeviceSettingsProviderTest::GetTrustedCallback, base::Unretained(this));
 
   EXPECT_CALL(*this, GetTrustedCallback());
   EXPECT_EQ(CrosSettingsProvider::TEMPORARILY_UNTRUSTED,
-            provider_->PrepareTrustedValues(
-                base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
-                           base::Unretained(this))));
+            provider_->PrepareTrustedValues(&closure));
+  EXPECT_FALSE(closure);  // Ownership of |closure| was taken.
 
   ReloadDeviceSettings();
   Mock::VerifyAndClearExpectations(this);
 
+  closure = base::DoNothing::Once();
   EXPECT_EQ(CrosSettingsProvider::PERMANENTLY_UNTRUSTED,
-            provider_->PrepareTrustedValues(base::Closure()));
+            provider_->PrepareTrustedValues(&closure));
+  EXPECT_TRUE(closure);  // Ownership of |closure| was not taken.
+  histogram_tester.ExpectUniqueSample("Enterprise.DeviceSettings.UpdatedStatus",
+                                      DeviceSettingsService::STORE_NO_POLICY,
+                                      /*amount=*/1);
+  histogram_tester.ExpectTotalCount(
+      "Enterprise.DeviceSettings.MissingPolicyMitigated", 0);
 }
 
 TEST_F(DeviceSettingsProviderTest, PolicyLoadNotification) {
+  base::HistogramTester histogram_tester;
   EXPECT_CALL(*this, GetTrustedCallback());
 
+  base::OnceClosure closure = base::BindOnce(
+      &DeviceSettingsProviderTest::GetTrustedCallback, base::Unretained(this));
   EXPECT_EQ(CrosSettingsProvider::TEMPORARILY_UNTRUSTED,
-            provider_->PrepareTrustedValues(
-                base::Bind(&DeviceSettingsProviderTest::GetTrustedCallback,
-                           base::Unretained(this))));
+            provider_->PrepareTrustedValues(&closure));
+  EXPECT_FALSE(closure);  // Ownership of |closure| was taken.
 
   ReloadDeviceSettings();
   Mock::VerifyAndClearExpectations(this);
+  histogram_tester.ExpectUniqueSample("Enterprise.DeviceSettings.UpdatedStatus",
+                                      DeviceSettingsService::STORE_SUCCESS,
+                                      /*amount=*/1);
+  histogram_tester.ExpectTotalCount(
+      "Enterprise.DeviceSettings.MissingPolicyMitigated", 0);
 }
 
 TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {

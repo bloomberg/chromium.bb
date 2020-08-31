@@ -9,11 +9,8 @@
 #include "cast/streaming/packet_util.h"
 #include "util/saturate_cast.h"
 
-using openscreen::saturate_cast;
-using openscreen::platform::Clock;
-
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 RtcpCommonHeader::RtcpCommonHeader() = default;
 RtcpCommonHeader::~RtcpCommonHeader() = default;
@@ -29,6 +26,9 @@ void RtcpCommonHeader::AppendFields(absl::Span<uint8_t>* buffer) const {
       OSP_DCHECK_LE(with.report_count,
                     FieldBitmask<int>(kRtcpReportCountFieldNumBits));
       byte0 |= with.report_count;
+      break;
+    case RtcpPacketType::kSourceDescription:
+      OSP_UNIMPLEMENTED();
       break;
     case RtcpPacketType::kApplicationDefined:
     case RtcpPacketType::kPayloadSpecific:
@@ -242,5 +242,5 @@ absl::optional<RtcpReportBlock> RtcpReportBlock::ParseOne(
 RtcpSenderReport::RtcpSenderReport() = default;
 RtcpSenderReport::~RtcpSenderReport() = default;
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

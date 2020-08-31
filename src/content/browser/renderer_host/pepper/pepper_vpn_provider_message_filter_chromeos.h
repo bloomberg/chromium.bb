@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task_runner.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/vpn_service_proxy.h"
@@ -41,7 +40,7 @@ class CONTENT_EXPORT PepperVpnProviderMessageFilter
                                  PP_Instance instance);
 
   // ppapi::host::ResourceMessageFilter overrides.
-  scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+  scoped_refptr<base::SequencedTaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
   int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
@@ -52,10 +51,10 @@ class CONTENT_EXPORT PepperVpnProviderMessageFilter
   void SendOnUnbind();
 
  private:
-  using SuccessCallback = base::Closure;
+  using SuccessCallback = base::OnceClosure;
   using FailureCallback =
-      base::Callback<void(const std::string& error_name,
-                          const std::string& error_message)>;
+      base::OnceCallback<void(const std::string& error_name,
+                              const std::string& error_message)>;
   ~PepperVpnProviderMessageFilter() override;
 
   // Message handlers

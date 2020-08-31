@@ -4,10 +4,23 @@
 
 /** @fileoverview Runs tests for the OS settings menu. */
 
+function setupRouter() {
+  const routes = {
+    BASIC: new settings.Route('/'),
+    ADVANCED: new settings.Route('/advanced'),
+  };
+  routes.BLUETOOTH = routes.BASIC.createSection('/bluetooth', 'bluetooth');
+  routes.RESET = routes.ADVANCED.createSection('/osReset', 'osReset');
+
+  settings.Router.resetInstanceForTesting(new settings.Router(routes));
+  settings.routes = routes;
+}
+
 suite('OSSettingsMenu', function() {
   let settingsMenu = null;
 
   setup(function() {
+    setupRouter();
     PolymerTest.clearBody();
     settingsMenu = document.createElement('os-settings-menu');
     settingsMenu.pageVisibility = settings.pageVisibility;
@@ -63,8 +76,9 @@ suite('OSSettingsMenu', function() {
 
 suite('OSSettingsMenuReset', function() {
   setup(function() {
+    setupRouter();
     PolymerTest.clearBody();
-    settings.navigateTo(settings.routes.RESET, '');
+    settings.Router.getInstance().navigateTo(settings.routes.RESET, '');
     settingsMenu = document.createElement('os-settings-menu');
     document.body.appendChild(settingsMenu);
   });
@@ -76,15 +90,15 @@ suite('OSSettingsMenuReset', function() {
   test('openResetSection', function() {
     const selector = settingsMenu.$.subMenu;
     const path = new window.URL(selector.selected).pathname;
-    assertEquals('/reset', path);
+    assertEquals('/osReset', path);
   });
 
   test('navigateToAnotherSection', function() {
     const selector = settingsMenu.$.subMenu;
     let path = new window.URL(selector.selected).pathname;
-    assertEquals('/reset', path);
+    assertEquals('/osReset', path);
 
-    settings.navigateTo(settings.routes.BLUETOOTH, '');
+    settings.Router.getInstance().navigateTo(settings.routes.BLUETOOTH, '');
     Polymer.dom.flush();
 
     path = new window.URL(selector.selected).pathname;
@@ -94,9 +108,9 @@ suite('OSSettingsMenuReset', function() {
   test('navigateToBasic', function() {
     const selector = settingsMenu.$.subMenu;
     const path = new window.URL(selector.selected).pathname;
-    assertEquals('/reset', path);
+    assertEquals('/osReset', path);
 
-    settings.navigateTo(settings.routes.BASIC, '');
+    settings.Router.getInstance().navigateTo(settings.routes.BASIC, '');
     Polymer.dom.flush();
 
     // BASIC has no sub page selected.

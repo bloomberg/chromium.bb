@@ -157,7 +157,7 @@ bool HasAnyAnimationTargetingProperty(const MutatorHost& host,
 // -------------------------------------------------------------------
 
 bool LayerClipsSubtreeToItsBounds(Layer* layer) {
-  return layer->masks_to_bounds() || layer->IsMaskedByChild();
+  return layer->masks_to_bounds() || layer->mask_layer();
 }
 
 bool LayerClipsSubtree(Layer* layer) {
@@ -292,7 +292,7 @@ bool PropertyTreeBuilderContext::AddTransformNodeIfNeeded(
   GetAnimationScales(mutator_host_, layer, &node->maximum_animation_scale,
                      &node->starting_animation_scale);
 
-  node->scroll_offset = layer->CurrentScrollOffset();
+  node->scroll_offset = layer->scroll_offset();
 
   node->needs_local_transform_update = true;
   transform_tree_.UpdateTransforms(node->id);
@@ -312,7 +312,7 @@ RenderSurfaceReason ComputeRenderSurfaceReason(const MutatorHost& mutator_host,
   if (is_root)
     return RenderSurfaceReason::kRoot;
 
-  if (layer->IsMaskedByChild()) {
+  if (layer->mask_layer()) {
     return RenderSurfaceReason::kMask;
   }
 
@@ -462,11 +462,14 @@ bool PropertyTreeBuilderContext::AddEffectNodeIfNeeded(
   node->backdrop_filters = layer->backdrop_filters();
   node->backdrop_filter_bounds = layer->backdrop_filter_bounds();
   node->backdrop_filter_quality = layer->backdrop_filter_quality();
-  node->filters_origin = layer->filters_origin();
+  if (!node->backdrop_filters.IsEmpty() && layer->mask_layer()) {
+    DCHECK(layer->mask_layer()->element_id());
+    node->backdrop_mask_element_id = layer->mask_layer()->element_id();
+    layer->mask_layer()->SetIsBackdropFilterMask(true);
+  }
   node->trilinear_filtering = layer->trilinear_filtering();
   node->has_potential_opacity_animation = has_potential_opacity_animation;
   node->has_potential_filter_animation = has_potential_filter_animation;
-  node->double_sided = layer->double_sided();
   node->subtree_hidden = layer->hide_layer_and_subtree();
   node->is_currently_animating_opacity =
       OpacityIsAnimating(mutator_host_, layer);
@@ -622,27 +625,11 @@ void PropertyTreeBuilderContext::AddScrollNodeIfNeeded(
 
     if (node.scrollable) {
       scroll_tree_.SetBaseScrollOffset(layer->element_id(),
-                                       layer->CurrentScrollOffset());
+                                       layer->scroll_offset());
     }
   }
 
   layer->SetScrollTreeIndex(node_id);
-}
-
-void SetBackfaceVisibilityTransform(Layer* layer, bool created_transform_node) {
-  if (layer->use_parent_backface_visibility()) {
-    DCHECK(layer->parent());
-    DCHECK(!layer->parent()->use_parent_backface_visibility());
-    layer->SetShouldCheckBackfaceVisibility(
-        layer->parent()->should_check_backface_visibility());
-  } else {
-    // A double-sided layer's backface can been shown when its visible.
-    // In addition, we need to check if (1) there might be a local 3D transform
-    // on the layer that might turn it to the backface, or (2) it is not drawn
-    // into a flattened space.
-    layer->SetShouldCheckBackfaceVisibility(!layer->double_sided() &&
-                                            created_transform_node);
-  }
 }
 
 void SetSafeOpaqueBackgroundColor(const DataForRecursion& data_from_ancestor,
@@ -676,7 +663,6 @@ void PropertyTreeBuilderContext::BuildPropertyTreesInternal(
 
   AddScrollNodeIfNeeded(data_from_parent, layer, &data_for_children);
 
-  SetBackfaceVisibilityTransform(layer, created_transform_node);
   SetSafeOpaqueBackgroundColor(data_from_parent, layer, &data_for_children);
 
   bool not_axis_aligned_since_last_clip =
@@ -760,7 +746,6 @@ void PropertyTreeBuilderContext::BuildPropertyTrees() {
   transform_tree_.set_needs_update(false);
   clip_tree_.set_needs_update(true);
   effect_tree_.set_needs_update(true);
-  scroll_tree_.set_needs_update(false);
 }
 
 }  // namespace

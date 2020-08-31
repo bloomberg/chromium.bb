@@ -22,7 +22,7 @@
 class AccountId;
 
 namespace base {
-class TaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace network {
@@ -63,7 +63,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
     virtual void SetAuthFlowOffline(bool offline) = 0;
   };
 
-  LoginPerformer(scoped_refptr<base::TaskRunner> task_runner,
+  LoginPerformer(scoped_refptr<base::SequencedTaskRunner> task_runner,
                  Delegate* delegate);
   ~LoginPerformer() override;
 
@@ -139,17 +139,16 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   // Run trusted check for a platform. If trusted check have to be performed
   // asynchronously, |false| will be returned, and either delegate's
   // PolicyLoadFailed() or |callback| will be called upon actual check.
-  virtual bool RunTrustedCheck(const base::Closure& callback) = 0;
+  virtual bool RunTrustedCheck(base::OnceClosure callback) = 0;
 
   // This method should run addional online check if user can sign in on device.
   // Either |success_callback| or |failure_callback| should be called upon this
   // check.
-  virtual void RunOnlineWhitelistCheck(
-      const AccountId& account_id,
-      bool wildcard_match,
-      const std::string& refresh_token,
-      const base::Closure& success_callback,
-      const base::Closure& failure_callback) = 0;
+  virtual void RunOnlineWhitelistCheck(const AccountId& account_id,
+                                       bool wildcard_match,
+                                       const std::string& refresh_token,
+                                       base::OnceClosure success_callback,
+                                       base::OnceClosure failure_callback) = 0;
 
   // Supervised users-related methods.
 
@@ -209,7 +208,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   void DoPerformLogin(const UserContext& user_context,
                       AuthorizationMode auth_mode);
 
-  scoped_refptr<base::TaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Used for logging in.
   scoped_refptr<Authenticator> authenticator_;

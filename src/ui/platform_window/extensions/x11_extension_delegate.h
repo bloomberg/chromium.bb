@@ -22,11 +22,6 @@ namespace ui {
 
 class COMPONENT_EXPORT(EXTENSIONS) X11ExtensionDelegate {
  public:
-  // Notifies the delegate that the window got mapped in the X server. Wayland
-  // does not support this interface.
-  virtual void OnXWindowMapped() = 0;
-  virtual void OnXWindowUnmapped() = 0;
-
   // Notifies if the PlatformWindow looses a mouse grab. This can be useful
   // for Wayland or X11. Both of them provide pointer enter and leave
   // notifications, which non-ozone X11 (just an example) use to be using to
@@ -42,6 +37,13 @@ class COMPONENT_EXPORT(EXTENSIONS) X11ExtensionDelegate {
 #if BUILDFLAG(USE_ATK)
   virtual bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event) = 0;
 #endif
+
+  // Returns true if this window should be in a forced override-redirect state
+  // (not managed by the window manager). If |is_tiling_wm| is set to true, the
+  // underlaying window manager is tiling. If it is set to false, the wm is
+  // stacking. The delegate can use this information to determine the value
+  // returned for override-redirect.
+  virtual bool IsOverrideRedirect(bool is_tiling_wm) const = 0;
 
  protected:
   virtual ~X11ExtensionDelegate() = default;

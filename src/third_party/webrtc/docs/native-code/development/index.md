@@ -51,7 +51,7 @@ $ git new-branch your-branch-name
 See the [Android][webrtc-android-development] and [iOS][webrtc-ios-development] pages for separate instructions.
 
 **NOTICE:** if you get `Remote: Daily bandwidth rate limit exceeded for <ip>`,
-make sure [you're logged in][webrtc-first-patch]. The quota is much larger for logged in users.
+make sure you're logged in. The quota is much larger for logged in users.
 
 ## Updating the Code
 
@@ -169,9 +169,8 @@ For more details, read Chromium's [Working with Branches][chromium-work-branches
 ## Contributing Patches
 
 Please see [Contributing Fixes][webrtc-contributing] for information on how to run
-`git cl upload`, getting your patch reviewed, and getting it submitted.
-
-This also includes information on how to run tryjobs, if you're a committer.
+`git cl upload`, getting your patch reviewed, and getting it submitted. You can also
+find info on how to run trybots and applying for try rights.
 
 ## Chromium Committers
 
@@ -243,12 +242,6 @@ your connection. Open one more tab using the same page. Connect it too (with a
 different name). It is now possible to exchange messages between the connected
 peers.
 
-### Relay Server
-
-Target name `relayserver`. Relays traffic when a direct peer-to-peer
-connection can't be established. Can be used with the call application above.
-
-
 ### STUN Server
 
 Target name `stunserver`. Implements the STUN protocol for Session Traversal
@@ -257,21 +250,19 @@ Utilities for NAT as documented in [RFC 5389][rfc-5389].
 
 ### TURN Server
 
-Target name `turnserver`. In active development to reach compatibility with
-[RFC 5766][rfc-5766].
+Target name `turnserver`. Used for unit tests.
 
 
 [ninja]: https://ninja-build.org/
 [gn]: https://gn.googlesource.com/gn/+/master/README.md
 [gn-doc]: https://gn.googlesource.com/gn/+/master/docs/reference.md#IDE-options
-[webtc-android-development]: https://webrtc.googlesource.com/src/+/refs/heads/master/docs/native-code/android/index.md
+[webrtc-android-development]: https://webrtc.googlesource.com/src/+/refs/heads/master/docs/native-code/android/index.md
 [webrtc-ios-development]: https://webrtc.googlesource.com/src/+/refs/heads/master/docs/native-code/ios/index.md
 [chromium-work-branches]: https://www.chromium.org/developers/how-tos/get-the-code/working-with-branches
 [chromium-work-release-branches]: https://www.chromium.org/developers/how-tos/get-the-code/working-with-release-branches
-[webrtc-contributing]: https://webrtc.org/contributing/
+[webrtc-contributing]: https://webrtc.org/support/contributing/
 [depot-tools]: http://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
 [rfc-5389]: https://tools.ietf.org/html/rfc5389
 [rfc-5766]: https://tools.ietf.org/html/rfc5766
-[webrtc-first-patch]: https://webrtc.org/native-code/development/#contributing-your-first-patch
 [m43-log]: https://webrtc.googlesource.com/src/+log/branch-heads/43
 [m43]: https://webrtc.googlesource.com/src/+/branch-heads/43

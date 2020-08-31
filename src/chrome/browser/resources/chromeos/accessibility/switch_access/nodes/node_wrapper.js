@@ -12,27 +12,29 @@ class NodeWrapper extends SAChildNode {
   /**
    * @param {!AutomationNode} baseNode
    * @param {?SARootNode} parent
+   * @protected
    */
   constructor(baseNode, parent) {
     super();
     /** @private {!AutomationNode} */
     this.baseNode_ = baseNode;
 
+    /** @private {?SARootNode} */
+    this.parent_ = parent;
+
     /** @private {boolean} */
     this.isGroup_ = SwitchAccessPredicate.isGroup(this.baseNode_, parent);
+
+    /** @private {function(chrome.automation.AutomationEvent)} */
+    this.locationChangedHandler_ = NavigationManager.refreshFocusRings;
   }
 
   // ================= Getters and setters =================
 
   /** @override */
   get actions() {
-    let actions = [];
-    if (SwitchAccessPredicate.isTextInput(this.baseNode_)) {
-      actions.push(SAConstants.MenuAction.OPEN_KEYBOARD);
-      actions.push(SAConstants.MenuAction.DICTATION);
-    } else {
-      actions.push(SAConstants.MenuAction.SELECT);
-    }
+    const actions = [];
+    actions.push(SAConstants.MenuAction.SELECT);
 
     const ancestor = this.getScrollableAncestor_();
     if (ancestor.scrollable) {
@@ -93,6 +95,13 @@ class NodeWrapper extends SAChildNode {
 
   /** @override */
   isEquivalentTo(node) {
+    if (node instanceof NodeWrapper || node instanceof RootNodeWrapper) {
+      return this.baseNode_ === node.baseNode_;
+    }
+
+    if (node instanceof SAChildNode) {
+      return node.isEquivalentTo(this);
+    }
     return this.baseNode_ === node;
   }
 
@@ -102,48 +111,71 @@ class NodeWrapper extends SAChildNode {
   }
 
   /** @override */
+  isValidAndVisible() {
+    // Nodes without a role are not valid.
+    if (!this.baseNode_.role) {
+      return false;
+    }
+    return SwitchAccessPredicate.isVisible(this.baseNode_);
+  }
+
+  /** @override */
+  onFocus() {
+    super.onFocus();
+    this.baseNode_.addEventListener(
+        chrome.automation.EventType.LOCATION_CHANGED,
+        this.locationChangedHandler_, false /* is_capture */);
+  }
+
+  /** @override */
+  onUnfocus() {
+    super.onUnfocus();
+    this.baseNode_.removeEventListener(
+        chrome.automation.EventType.LOCATION_CHANGED,
+        this.locationChangedHandler_, false /* is_capture */);
+  }
+
+  /** @override */
   performAction(action) {
     let ancestor;
     switch (action) {
-      case SAConstants.MenuAction.OPEN_KEYBOARD:
-        this.baseNode_.focus();
-        return true;
       case SAConstants.MenuAction.SELECT:
-        this.baseNode_.doDefault();
-        return true;
-      case SAConstants.MenuAction.DICTATION:
-        chrome.accessibilityPrivate.toggleDictation();
-        return true;
+        if (this.isGroup()) {
+          NavigationManager.enterGroup();
+        } else {
+          this.baseNode_.doDefault();
+        }
+        return SAConstants.ActionResponse.CLOSE_MENU;
       case SAConstants.MenuAction.SCROLL_DOWN:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
-          ancestor.scrollDown(() => {});
+          ancestor.scrollDown(() => this.parent_.refresh());
         }
-        return true;
+        return SAConstants.ActionResponse.CLOSE_MENU;
       case SAConstants.MenuAction.SCROLL_UP:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
-          ancestor.scrollUp(() => {});
+          ancestor.scrollUp(() => this.parent_.refresh());
         }
-        return true;
+        return SAConstants.ActionResponse.CLOSE_MENU;
       case SAConstants.MenuAction.SCROLL_RIGHT:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
-          ancestor.scrollRight(() => {});
+          ancestor.scrollRight(() => this.parent_.refresh());
         }
-        return true;
+        return SAConstants.ActionResponse.CLOSE_MENU;
       case SAConstants.MenuAction.SCROLL_LEFT:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
-          ancestor.scrollLeft(() => {});
+          ancestor.scrollLeft(() => this.parent_.refresh());
         }
-        return true;
+        return SAConstants.ActionResponse.CLOSE_MENU;
       default:
         if (Object.values(chrome.automation.ActionType).includes(action)) {
           this.baseNode_.performStandardAction(
               /** @type {chrome.automation.ActionType} */ (action));
         }
-        return true;
+        return SAConstants.ActionResponse.CLOSE_MENU;
     }
   }
 
@@ -155,9 +187,30 @@ class NodeWrapper extends SAChildNode {
    */
   getScrollableAncestor_() {
     let ancestor = this.baseNode_;
-    while (!ancestor.scrollable && ancestor.parent)
+    while (!ancestor.scrollable && ancestor.parent) {
       ancestor = ancestor.parent;
+    }
     return ancestor;
+  }
+
+  // ================= Static methods =================
+
+  /**
+   * @param {!AutomationNode} baseNode
+   * @param {?SARootNode} parent
+   * @return {!NodeWrapper}
+   */
+  static create(baseNode, parent) {
+    if (SwitchAccessPredicate.isTextInput(baseNode)) {
+      return new EditableTextNode(baseNode, parent);
+    }
+
+    switch (baseNode.role) {
+      case chrome.automation.RoleType.TAB:
+        return TabNode.create(baseNode, parent);
+      default:
+        return new NodeWrapper(baseNode, parent);
+    }
   }
 }
 
@@ -174,6 +227,15 @@ class RootNodeWrapper extends SARootNode {
 
     /** @private {!AutomationNode} */
     this.baseNode_ = baseNode;
+
+    /** @private {boolean} */
+    this.invalidated_ = false;
+
+    /** @private {function(chrome.automation.AutomationEvent)} */
+    this.childrenChangedHandler_ = this.refresh.bind(this);
+
+    /** @private {function(chrome.automation.AutomationEvent)} */
+    this.locationChangedHandler_ = NavigationManager.refreshFocusRings;
   }
 
   // ================= Getters and setters =================
@@ -201,37 +263,84 @@ class RootNodeWrapper extends SARootNode {
   }
 
   /** @override */
-  isEquivalentTo(automationNode) {
-    return this.baseNode_ === automationNode;
+  isEquivalentTo(node) {
+    if (node instanceof RootNodeWrapper || node instanceof NodeWrapper) {
+      return this.baseNode_ === node.baseNode_;
+    }
+
+    if (node instanceof SAChildNode) {
+      return node.isEquivalentTo(this);
+    }
+    return this.baseNode_ === node;
   }
 
   /** @override */
-  isValid() {
-    return !!this.baseNode_.role;
+  isValidGroup() {
+    if (!this.baseNode_.role) {
+      // If the underlying automation node has been invalidated, return false.
+      return false;
+    }
+    return !this.invalidated_ && super.isValidGroup();
+  }
+
+  /** @override */
+  onFocus() {
+    super.onFocus();
+    this.baseNode_.addEventListener(
+        chrome.automation.EventType.CHILDREN_CHANGED,
+        this.childrenChangedHandler_, false /* is_capture */);
+    this.baseNode_.addEventListener(
+        chrome.automation.EventType.LOCATION_CHANGED,
+        this.locationChangedHandler_, false /* is_capture */);
+  }
+
+  /** @override */
+  onUnfocus() {
+    super.onUnfocus();
+    this.baseNode_.removeEventListener(
+        chrome.automation.EventType.CHILDREN_CHANGED,
+        this.childrenChangedHandler_, false /* is_capture */);
+    this.baseNode_.removeEventListener(
+        chrome.automation.EventType.LOCATION_CHANGED,
+        this.locationChangedHandler_, false /* is_capture */);
+  }
+
+  /** @override */
+  refresh() {
+    // Find the currently focused child.
+    let focusedChild = null;
+    for (const child of this.children) {
+      if (child.isFocused()) {
+        focusedChild = child;
+        break;
+      }
+    }
+
+    // Update this RootNodeWrapper's children.
+    const childConstructor = (node) => NodeWrapper.create(node, this);
+    try {
+      RootNodeWrapper.findAndSetChildren(this, childConstructor);
+    } catch (e) {
+      this.onUnfocus();
+      this.invalidated_ = true;
+      NavigationManager.moveToValidNode();
+      return;
+    }
+
+    // Set the new instance of that child to be the focused node.
+    for (const child of this.children) {
+      if (child.isEquivalentTo(focusedChild)) {
+        NavigationManager.forceFocusedNode(child);
+        return;
+      }
+    }
+
+    // If the previously focused node no longer exists, focus the first node in
+    // the group.
+    NavigationManager.forceFocusedNode(this.children[0]);
   }
 
   // ================= Static methods =================
-
-  /**
-   * @param {!AutomationNode} desktop
-   * @return {!RootNodeWrapper}
-   */
-  static buildDesktopTree(desktop) {
-    const root = new RootNodeWrapper(desktop);
-    const interestingChildren = RootNodeWrapper.getInterestingChildren(root);
-
-    if (interestingChildren.length < 1) {
-      throw SwitchAccess.error(
-          SAConstants.ErrorType.MALFORMED_DESKTOP,
-          'Desktop node must have at least 1 interesting child.');
-    }
-
-    const childConstructor = (autoNode) => new NodeWrapper(autoNode, root);
-    let children = interestingChildren.map(childConstructor);
-    root.children = children;
-
-    return root;
-  }
 
   /**
    * @param {!AutomationNode} rootNode
@@ -239,7 +348,7 @@ class RootNodeWrapper extends SARootNode {
    */
   static buildTree(rootNode) {
     const root = new RootNodeWrapper(rootNode);
-    const childConstructor = (node) => new NodeWrapper(node, root);
+    const childConstructor = (node) => NodeWrapper.create(node, root);
 
     RootNodeWrapper.findAndSetChildren(root, childConstructor);
     return root;
@@ -260,7 +369,7 @@ class RootNodeWrapper extends SARootNode {
           SAConstants.ErrorType.NO_CHILDREN,
           'Root node must have at least 1 interesting child.');
     }
-    let children = interestingChildren.map(childConstructor);
+    const children = interestingChildren.map(childConstructor);
     children.push(new BackButtonNode(root));
     root.children = children;
   }
@@ -270,8 +379,11 @@ class RootNodeWrapper extends SARootNode {
    * @return {!Array<!AutomationNode>}
    */
   static getInterestingChildren(root) {
-    let interestingChildren = [];
-    let treeWalker = new AutomationTreeWalker(
+    if (root.baseNode_.children.length === 0) {
+      return [];
+    }
+    const interestingChildren = [];
+    const treeWalker = new AutomationTreeWalker(
         root.baseNode_, constants.Dir.FORWARD,
         SwitchAccessPredicate.restrictions(root));
     let node = treeWalker.next().node;

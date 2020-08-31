@@ -32,6 +32,10 @@ const char kIsSameTabAttrName[] = "is_same_tab";
 const char kIsSamlAttrName[] = "is_saml";
 const char kProfileModeAttrName[] = "mode";
 const char kServiceTypeAttrName[] = "action";
+#if defined(OS_ANDROID)
+const char kEligibleForConsistency[] = "eligible_for_consistency";
+const char kShowConsistencyPromo[] = "show_consistency_promo";
+#endif
 
 // Determines the service type that has been passed from Gaia in the header.
 GAIAServiceType GetGAIAServiceTypeFromHeader(const std::string& header_value) {
@@ -90,6 +94,10 @@ ManageAccountsParams ChromeConnectedHeaderHelper::BuildManageAccountsParams(
       params.continue_url = value;
     } else if (key_name == kIsSameTabAttrName) {
       params.is_same_tab = value == "true";
+#if defined(OS_ANDROID)
+    } else if (key_name == kShowConsistencyPromo) {
+      params.show_consistency_promo = value == "true";
+#endif
     } else {
       DLOG(WARNING) << "Unexpected Gaia header attribute '" << key_name << "'.";
     }
@@ -169,12 +177,6 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
     const GURL& url,
     const std::string& gaia_id,
     int profile_mode_mask) {
-#if defined(OS_ANDROID)
-  bool is_mice_enabled = base::FeatureList::IsEnabled(kMiceFeature);
-#else
-  bool is_mice_enabled = false;
-#endif
-
 // If we are on mobile or desktop, an empty |account_id| corresponds to the user
 // not signed into Sync. Do not enforce account consistency, unless Mice is
 // enabled on Android.
@@ -183,8 +185,14 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
 // filtered upstream and we want to enforce account consistency in Public
 // Sessions and Active Directory logins.
 #if !defined(OS_CHROMEOS)
-  if (gaia_id.empty() && !is_mice_enabled)
+  if (gaia_id.empty()) {
+#if defined(OS_ANDROID)
+    if (base::FeatureList::IsEnabled(kMobileIdentityConsistency)) {
+      return base::StringPrintf("%s=%s", kEligibleForConsistency, "true");
+    }
+#endif  // defined(OS_ANDROID)
     return std::string();
+  }
 #endif  // !defined(OS_CHROMEOS)
 
   std::vector<std::string> parts;
@@ -201,9 +209,8 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
       account_consistency_ == AccountConsistencyMethod::kMirror;
   parts.push_back(base::StringPrintf("%s=%s", kEnableAccountConsistencyAttrName,
                                      is_mirror_enabled ? "true" : "false"));
-  parts.push_back(base::StringPrintf("%s=%s",
-                                     kConsistencyEnabledByDefaultAttrName,
-                                     is_mice_enabled ? "true" : "false"));
+  parts.push_back(base::StringPrintf(
+      "%s=%s", kConsistencyEnabledByDefaultAttrName, "false"));
 
   return base::JoinString(parts, is_header_request ? "," : ":");
 }

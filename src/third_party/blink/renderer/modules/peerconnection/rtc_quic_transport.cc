@@ -8,6 +8,7 @@
 #include "net/quic/quic_chromium_alarm_factory.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_quic_transport_stats.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -20,7 +21,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream_event.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport_stats.h"
 
 namespace blink {
 namespace {
@@ -150,7 +150,7 @@ RTCQuicTransport::RTCQuicTransport(
     const HeapVector<Member<RTCCertificate>>& certificates,
     ExceptionState& exception_state,
     std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
       transport_(transport),
       key_(key),
       certificates_(certificates),
@@ -691,10 +691,10 @@ const AtomicString& RTCQuicTransport::InterfaceName() const {
 }
 
 ExecutionContext* RTCQuicTransport::GetExecutionContext() const {
-  return ContextClient::GetExecutionContext();
+  return ExecutionContextClient::GetExecutionContext();
 }
 
-void RTCQuicTransport::Trace(blink::Visitor* visitor) {
+void RTCQuicTransport::Trace(Visitor* visitor) {
   visitor->Trace(transport_);
   visitor->Trace(certificates_);
   visitor->Trace(remote_certificates_);
@@ -706,7 +706,7 @@ void RTCQuicTransport::Trace(blink::Visitor* visitor) {
   visitor->Trace(ready_to_send_datagram_promise_);
   visitor->Trace(received_datagrams_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

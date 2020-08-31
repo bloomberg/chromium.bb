@@ -61,7 +61,7 @@ bool CheckForOversizedImagesPolicy(const LayoutImage& layout_image,
       cached_image ? cached_image->Url().GetString() : g_empty_string;
 
   return !layout_image.GetDocument().IsFeatureEnabled(
-      mojom::FeaturePolicyFeature::kOversizedImages,
+      mojom::blink::DocumentPolicyFeature::kOversizedImages,
       blink::PolicyValue(
           std::max(downscale_ratio_width, downscale_ratio_height),
           blink::mojom::PolicyValueType::kDecDouble),
@@ -127,7 +127,7 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
   paint_info.context.Clip(PixelSnappedIntRect(focus_rect));
   paint_info.context.DrawFocusRing(
       path, area_element_style->GetOutlineStrokeWidthForFocusRing(),
-      area_element_style->OutlineOffset(),
+      area_element_style->OutlineOffsetInt(),
       layout_image_.ResolveColor(*area_element_style,
                                  GetCSSPropertyOutlineColor()));
   paint_info.context.Restore();
@@ -142,7 +142,7 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
     if (content_size.IsEmpty())
       return;
   } else {
-    if (paint_info.phase == PaintPhase::kSelection)
+    if (paint_info.phase == PaintPhase::kSelectionDragImage)
       return;
     if (content_size.Width() <= 2 || content_size.Height() <= 2)
       return;
@@ -187,8 +187,8 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
 void ImagePainter::PaintIntoRect(GraphicsContext& context,
                                  const PhysicalRect& dest_rect,
                                  const PhysicalRect& content_rect) {
-  if (!layout_image_.ImageResource()->HasImage() ||
-      layout_image_.ImageResource()->ErrorOccurred())
+  const LayoutImageResource& image_resource = *layout_image_.ImageResource();
+  if (!image_resource.HasImage() || image_resource.ErrorOccurred())
     return;  // FIXME: should we just ASSERT these conditions? (audit all
              // callers).
 
@@ -197,11 +197,14 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
     return;
 
   scoped_refptr<Image> image =
-      layout_image_.ImageResource()->GetImage(pixel_snapped_dest_rect.Size());
+      image_resource.GetImage(FloatSize(dest_rect.size));
   if (!image || image->IsNull())
     return;
 
-  FloatRect src_rect = FloatRect(image->Rect());
+  // Do not respect the image orientation when computing the source rect. It is
+  // in the un-orientated dimensions.
+  FloatRect src_rect(FloatPoint(),
+                     image->SizeAsFloat(kDoNotRespectImageOrientation));
   // If the content rect requires clipping, adjust |srcRect| and
   // |pixelSnappedDestRect| over using a clip.
   if (!content_rect.Contains(dest_rect)) {
@@ -249,17 +252,18 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
       layout_image_.StyleRef().HasFilterInducingProperty(),
       SkBlendMode::kSrcOver,
       LayoutObject::ShouldRespectImageOrientation(&layout_image_));
+
+  ImageResourceContent* image_content = image_resource.CachedImage();
   if ((IsA<HTMLImageElement>(node) || IsA<HTMLVideoElement>(node)) &&
-      !context.ContextDisabled() && layout_image_.CachedImage() &&
-      layout_image_.CachedImage()->IsLoaded()) {
+      image_content && image_content->IsLoaded()) {
     LocalDOMWindow* window = layout_image_.GetDocument().domWindow();
     DCHECK(window);
     ImageElementTiming::From(*window).NotifyImagePainted(
-        &layout_image_, layout_image_.CachedImage(),
+        &layout_image_, image_content,
         context.GetPaintController().CurrentPaintChunkProperties());
   }
   PaintTimingDetector::NotifyImagePaint(
-      layout_image_, image->Size(), layout_image_.CachedImage(),
+      layout_image_, image->Size(), image_content,
       context.GetPaintController().CurrentPaintChunkProperties());
 }
 

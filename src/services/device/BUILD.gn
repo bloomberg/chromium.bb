@@ -17,6 +17,7 @@ source_set("lib") {
     ":test_support",
     ":tests",
     "//content/browser",
+    "//services/device/public/cpp:test_support",
   ]
   sources = [
     "device_service.cc",
@@ -26,13 +27,12 @@ source_set("lib") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
-    "//base",
+    ":binder_overrides",
     "//services/device/fingerprint",
     "//services/device/generic_sensor",
     "//services/device/geolocation",
     "//services/device/power_monitor",
     "//services/device/public/cpp:device_features",
-    "//services/device/public/mojom",
     "//services/device/public/mojom:usb",
     "//services/device/public/mojom:usb_test",
     "//services/device/screen_orientation",
@@ -41,6 +41,13 @@ source_set("lib") {
     "//services/device/wake_lock",
     "//services/service_manager/public/cpp",
     "//ui/gfx",
+  ]
+
+  public_deps = [
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//services/device/public/mojom",
+    "//services/device/public/mojom:device_service",
   ]
 
   if (is_android) {
@@ -65,14 +72,32 @@ source_set("lib") {
   }
 }
 
+# NOTE: We use a separate component target to support global binder overrides,
+# since the service implementation itself may be linked into multiple
+# simultaneously loaded binary targets in a component build. The ":lib" target
+# cannot be a component target itself because it depends on generated JNI
+# headers that do not currently support component exports.
+component("binder_overrides") {
+  visibility = [ ":lib" ]
+  output_name = "device_service_binder_overrides"
+  sources = [
+    "binder_overrides.cc",
+    "binder_overrides.h",
+  ]
+  public_deps = [
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//services/device/public/mojom",
+  ]
+  defines = [ "IS_DEVICE_SERVICE_BINDER_OVERRIDES_IMPL" ]
+}
+
 is_linux_without_udev = is_linux && !use_udev
 
 source_set("perftests") {
   testonly = true
 
-  sources = [
-    "geolocation/position_cache_impl_perftest.cc",
-  ]
+  sources = [ "geolocation/position_cache_impl_perftest.cc" ]
 
   deps = [
     ":test_support",
@@ -105,8 +130,10 @@ source_set("tests") {
     "generic_sensor/platform_sensor_and_provider_unittest_win.cc",
     "generic_sensor/platform_sensor_fusion_unittest.cc",
     "generic_sensor/platform_sensor_provider_unittest_android.cc",
+    "generic_sensor/platform_sensor_util_unittest.cc",
     "generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_gyroscope_unittest.cc",
     "generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer_unittest.cc",
+    "geolocation/core_location_provider_unittest.mm",
     "geolocation/geolocation_provider_impl_unittest.cc",
     "geolocation/geolocation_service_unittest.cc",
     "geolocation/location_arbitrator_unittest.cc",
@@ -311,7 +338,7 @@ source_set("test_support") {
     "//net",
     "//net:test_support",
     "//services/device/public/cpp/geolocation",
-    "//services/device/public/mojom:constants",
+    "//services/device/public/mojom:device_service",
     "//services/network:test_support",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
@@ -323,6 +350,7 @@ if (is_android) {
   generate_jni("device_service_jni_headers") {
     sources = [
       "android/java/src/org/chromium/services/device/InterfaceRegistrar.java",
+      "public/java/src/org/chromium/device/DeviceFeatureList.java",
     ]
   }
 
@@ -338,7 +366,7 @@ if (is_android) {
       "//content/public/android:*",
       "//services:*",
     ]
-    java_files = [
+    sources = [
       "android/java/src/org/chromium/services/device/InterfaceRegistrar.java",
     ]
     deps = [

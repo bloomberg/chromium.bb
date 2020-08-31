@@ -8,21 +8,21 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "device/vr/orientation/orientation_device.h"
-#include "device/vr/vr_device_provider.h"
-#include "device/vr/vr_export.h"
+#include "device/vr/public/cpp/vr_device_provider.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
 
-class DEVICE_VR_EXPORT VROrientationDeviceProvider : public VRDeviceProvider {
+class COMPONENT_EXPORT(VR_ORIENTATION) VROrientationDeviceProvider
+    : public VRDeviceProvider {
  public:
-  VROrientationDeviceProvider(service_manager::Connector* connector);
+  explicit VROrientationDeviceProvider(
+      mojo::PendingRemote<device::mojom::SensorProvider> sensor_provider);
   ~VROrientationDeviceProvider() override;
 
   void Initialize(

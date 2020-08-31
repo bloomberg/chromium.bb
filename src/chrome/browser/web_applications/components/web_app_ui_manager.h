@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_UI_MANAGER_H_
 
 #include "base/callback_forward.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 
 class Profile;
 
@@ -45,6 +45,9 @@ class WebAppUiManager {
   virtual void AddAppToQuickLaunchBar(const AppId& app_id) = 0;
 
   virtual bool IsInAppWindow(content::WebContents* web_contents) const = 0;
+  virtual void NotifyOnAssociatedAppChanged(content::WebContents* web_contents,
+                                            const AppId& previous_app_id,
+                                            const AppId& new_app_id) const = 0;
 
   virtual bool CanReparentAppTabToWindow(const AppId& app_id,
                                          bool shortcut_created) const = 0;

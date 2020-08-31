@@ -79,7 +79,7 @@ class CPDF_SyntaxParser {
   friend class CPDF_DataAvail;
   friend class cpdf_syntax_parser_ReadHexString_Test;
 
-  static const int kParserMaxRecursionDepth = 64;
+  static constexpr int kParserMaxRecursionDepth = 64;
   static int s_CurrentRecursionDepth;
 
   bool ReadBlockAt(FX_FILESIZE read_pos);
@@ -109,7 +109,7 @@ class CPDF_SyntaxParser {
   const FX_FILESIZE m_FileLen;
   FX_FILESIZE m_Pos = 0;
   WeakPtr<ByteStringPool> m_pPool;
-  std::vector<uint8_t> m_pFileBuf;
+  std::vector<uint8_t, FxAllocAllocator<uint8_t>> m_pFileBuf;
   FX_FILESIZE m_BufOffset = 0;
   uint32_t m_WordSize = 0;
   uint8_t m_WordBuffer[257];

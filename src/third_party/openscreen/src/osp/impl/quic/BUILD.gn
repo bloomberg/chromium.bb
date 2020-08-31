@@ -16,6 +16,7 @@ source_set("quic") {
 
   deps = [
     "../../../platform",
+    "../../../third_party/abseil",
     "../../../util",
     "../../public",
   ]
@@ -34,6 +35,7 @@ source_set("test_support") {
 
   deps = [
     "../../../platform",
+    "../../../third_party/abseil",
     "../../../third_party/googletest:gmock",
     "../../../util",
     "../../msgs",

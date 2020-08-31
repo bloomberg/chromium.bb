@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/button/button.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -56,10 +58,10 @@ Button::WidgetObserverButtonBridge::~WidgetObserverButtonBridge() {
     owner_->GetWidget()->RemoveObserver(this);
 }
 
-void Button::WidgetObserverButtonBridge::OnWidgetActivationChanged(
+void Button::WidgetObserverButtonBridge::OnWidgetPaintAsActiveChanged(
     Widget* widget,
-    bool active) {
-  owner_->WidgetActivationChanged(widget, active);
+    bool paint_as_active) {
+  owner_->WidgetPaintAsActiveChanged(widget, paint_as_active);
 }
 
 void Button::WidgetObserverButtonBridge::OnWidgetDestroying(Widget* widget) {
@@ -120,6 +122,9 @@ bool Button::DefaultButtonControllerDelegate::InDrag() {
 ////////////////////////////////////////////////////////////////////////////////
 
 // static
+constexpr Button::ButtonState Button::kButtonStates[STATE_COUNT];
+
+// static
 const Button* Button::AsButton(const views::View* view) {
   return AsButton(const_cast<View*>(view));
 }
@@ -134,11 +139,16 @@ Button* Button::AsButton(views::View* view) {
 // static
 Button::ButtonState Button::GetButtonStateFrom(ui::NativeTheme::State state) {
   switch (state) {
-    case ui::NativeTheme::kDisabled:  return Button::STATE_DISABLED;
-    case ui::NativeTheme::kHovered:   return Button::STATE_HOVERED;
-    case ui::NativeTheme::kNormal:    return Button::STATE_NORMAL;
-    case ui::NativeTheme::kPressed:   return Button::STATE_PRESSED;
-    case ui::NativeTheme::kNumStates: NOTREACHED();
+    case ui::NativeTheme::kDisabled:
+      return Button::STATE_DISABLED;
+    case ui::NativeTheme::kHovered:
+      return Button::STATE_HOVERED;
+    case ui::NativeTheme::kNormal:
+      return Button::STATE_NORMAL;
+    case ui::NativeTheme::kPressed:
+      return Button::STATE_PRESSED;
+    case ui::NativeTheme::kNumStates:
+      NOTREACHED();
   }
   return Button::STATE_NORMAL;
 }
@@ -205,7 +215,7 @@ void Button::SetState(ButtonState state) {
 
 Button::ButtonState Button::GetVisualState() const {
   if (PlatformStyle::kInactiveWidgetControlsAppearDisabled && GetWidget() &&
-      !GetWidget()->IsActive()) {
+      !GetWidget()->ShouldPaintAsActive()) {
     return STATE_DISABLED;
   }
   return state();
@@ -624,7 +634,7 @@ void Button::OnEnabledChanged() {
   }
 }
 
-void Button::WidgetActivationChanged(Widget* widget, bool active) {
+void Button::WidgetPaintAsActiveChanged(Widget* widget, bool paint_as_active) {
   StateChanged(state());
 }
 

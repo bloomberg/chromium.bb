@@ -19,11 +19,12 @@ cast_source_set("app") {
     "//chromecast/base",
     "//chromecast/browser",
     "//chromecast/common",
+    "//chromecast/common:resource_delegate",
     "//chromecast/gpu",
     "//chromecast/renderer",
     "//chromecast/utility",
     "//components/crash/core/common:crash_key",
-    "//content/public/app:both",
+    "//content/public/app",
     "//content/public/browser",
     "//content/public/common",
     "//ui/base",
@@ -31,7 +32,7 @@ cast_source_set("app") {
 
   if (!is_fuchsia) {
     # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
-    deps += [ "//components/crash/content/app" ]
+    deps += [ "//components/crash/core/app" ]
   }
 }
 
@@ -53,10 +54,9 @@ cast_source_set("cast_crash_client") {
   ]
 
   if (!is_fuchsia) {
-    # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
     deps += [
       "//chromecast/crash",
-      "//components/crash/content/app",
+      "//components/crash/core/app",
     ]
   }
 
@@ -71,9 +71,7 @@ cast_source_set("cast_crash_client") {
 
 cast_source_set("test_support") {
   testonly = true
-  sources = [
-    "cast_test_launcher.cc",
-  ]
+  sources = [ "cast_test_launcher.cc" ]
 
   deps = [
     ":app",
@@ -88,9 +86,7 @@ cast_source_set("test_support") {
 
 cast_source_set("unittests") {
   testonly = true
-  sources = [
-    "linux/cast_crash_reporter_client_unittest.cc",
-  ]
+  sources = [ "linux/cast_crash_reporter_client_unittest.cc" ]
 
   deps = [
     "//base",
@@ -101,7 +97,6 @@ cast_source_set("unittests") {
 
   if (!is_fuchsia) {
     deps += [
-      # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
       ":cast_crash_client",
       "//chromecast/crash",
       "//chromecast/crash:test_support",
@@ -124,16 +119,12 @@ grit("chromecast_settings") {
   source = "//chromecast/app/resources/chromecast_settings.grd"
   resource_ids = "//chromecast/app/resources/resource_ids"
 
-  outputs = [
-    "grit/chromecast_settings.h",
-  ]
+  outputs = [ "grit/chromecast_settings.h" ]
   foreach(locale, cast_locales) {
     outputs += [ "chromecast_settings_${locale}.pak" ]
   }
 
-  deps = [
-    ":verify_cast_locales",
-  ]
+  deps = [ ":verify_cast_locales" ]
 }
 
 # This target ensures that Chromecast developers are notified when locales
@@ -153,7 +144,5 @@ action("verify_cast_locales") {
 
   args += cast_locales
 
-  outputs = [
-    stamp_file,
-  ]
+  outputs = [ stamp_file ]
 }

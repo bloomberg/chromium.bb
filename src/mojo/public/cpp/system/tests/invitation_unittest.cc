@@ -9,8 +9,8 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/path_service.h"
@@ -279,7 +279,15 @@ TEST(InvitationCppTest_NoParam, SendIsolatedInvitationWithDuplicateName) {
 const char kErrorMessage[] = "ur bad :{{";
 const char kDisconnectMessage[] = "go away plz";
 
-TEST_P(InvitationCppTest, ProcessErrors) {
+// Flakily times out on Android under ASAN.
+// crbug.com/1011494
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#define MAYBE_ProcessErrors DISABLED_ProcessErrors
+#else
+#define MAYBE_ProcessErrors ProcessErrors
+#endif
+
+TEST_P(InvitationCppTest, MAYBE_ProcessErrors) {
   ProcessErrorCallback actual_error_callback;
 
   ScopedMessagePipeHandle pipe;

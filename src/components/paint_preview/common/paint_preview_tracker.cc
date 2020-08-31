@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/stl_util.h"
 #include "components/paint_preview/common/glyph_usage.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
@@ -38,19 +38,23 @@ bool ShouldUseDenseGlyphUsage(SkTypeface* typeface) {
 
 }  // namespace
 
-PaintPreviewTracker::PaintPreviewTracker(const base::UnguessableToken& guid,
-                                         int routing_id,
-                                         bool is_main_frame)
-    : guid_(guid), routing_id_(routing_id), is_main_frame_(is_main_frame) {}
+PaintPreviewTracker::PaintPreviewTracker(
+    const base::UnguessableToken& guid,
+    const base::Optional<base::UnguessableToken>& embedding_token,
+    bool is_main_frame)
+    : guid_(guid),
+      embedding_token_(embedding_token),
+      is_main_frame_(is_main_frame) {}
 PaintPreviewTracker::~PaintPreviewTracker() = default;
 
-uint32_t PaintPreviewTracker::CreateContentForRemoteFrame(const gfx::Rect& rect,
-                                                          int routing_id) {
+uint32_t PaintPreviewTracker::CreateContentForRemoteFrame(
+    const gfx::Rect& rect,
+    const base::UnguessableToken& embedding_token) {
   sk_sp<SkPicture> pic = SkPicture::MakePlaceholder(
       SkRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height()));
   const uint32_t content_id = pic->uniqueID();
-  DCHECK(!base::Contains(content_id_to_proxy_id_, content_id));
-  content_id_to_proxy_id_[content_id] = routing_id;
+  DCHECK(!base::Contains(content_id_to_embedding_token_, content_id));
+  content_id_to_embedding_token_[content_id] = embedding_token;
   subframe_pics_[content_id] = pic;
   return content_id;
 }
@@ -86,13 +90,13 @@ void PaintPreviewTracker::AddGlyphs(const SkTextBlob* blob) {
 }
 
 void PaintPreviewTracker::AnnotateLink(const GURL& url, const gfx::Rect& rect) {
-  links_.push_back(mojom::LinkData(url, rect));
+  links_.push_back(mojom::LinkData::New(url, rect));
 }
 
 void PaintPreviewTracker::CustomDataToSkPictureCallback(SkCanvas* canvas,
                                                         uint32_t content_id) {
-  auto map_it = content_id_to_proxy_id_.find(content_id);
-  if (map_it == content_id_to_proxy_id_.end())
+  auto map_it = content_id_to_embedding_token_.find(content_id);
+  if (map_it == content_id_to_embedding_token_.end())
     return;
 
   auto it = subframe_pics_.find(content_id);
@@ -103,6 +107,11 @@ void PaintPreviewTracker::CustomDataToSkPictureCallback(SkCanvas* canvas,
   SkRect rect = it->second->cullRect();
   SkMatrix matrix = SkMatrix::MakeTrans(rect.x(), rect.y());
   canvas->drawPicture(it->second, &matrix, nullptr);
+}
+
+void PaintPreviewTracker::MoveLinks(std::vector<mojom::LinkDataPtr>* out) {
+  std::move(links_.begin(), links_.end(), std::back_inserter(*out));
+  links_.clear();
 }
 
 }  // namespace paint_preview

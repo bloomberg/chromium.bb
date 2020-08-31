@@ -15,6 +15,7 @@
 
 #include <string>
 
+#include "absl/strings/match.h"
 #include "api/transport/field_trial_based_config.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/safe_conversions.h"
@@ -27,11 +28,6 @@ const int kDefaultAcceptedQueueMs = 250;
 
 const int kDefaultMinPushbackTargetBitrateBps = 30000;
 
-const char kVp8TrustedRateControllerFieldTrialName[] =
-    "WebRTC-LibvpxVp8TrustedRateController";
-const char kVp9TrustedRateControllerFieldTrialName[] =
-    "WebRTC-LibvpxVp9TrustedRateController";
-
 const char kUseBaseHeavyVp8Tl3RateAllocationFieldTrialName[] =
     "WebRTC-UseBaseHeavyVP8TL3RateAllocation";
 
@@ -42,7 +38,7 @@ const char* kScreenshareHysteresisFieldTrialname =
 
 bool IsEnabled(const WebRtcKeyValueConfig* const key_value_config,
                absl::string_view key) {
-  return key_value_config->Lookup(key).find("Enabled") == 0;
+  return absl::StartsWith(key_value_config->Lookup(key), "Enabled");
 }
 
 void ParseHysteresisFactor(const WebRtcKeyValueConfig* const key_value_config,
@@ -62,7 +58,9 @@ constexpr char CongestionWindowConfig::kKey[];
 
 std::unique_ptr<StructParametersParser> CongestionWindowConfig::Parser() {
   return StructParametersParser::Create("QueueSize", &queue_size_ms,  //
-                                        "MinBitrate", &min_bitrate_bps);
+                                        "MinBitrate", &min_bitrate_bps,
+                                        "InitWin", &initial_data_window,
+                                        "DropFrame", &drop_frame_only);
 }
 
 // static
@@ -98,10 +96,6 @@ RateControlSettings::RateControlSettings(
     const WebRtcKeyValueConfig* const key_value_config)
     : congestion_window_config_(CongestionWindowConfig::Parse(
           key_value_config->Lookup(CongestionWindowConfig::kKey))) {
-  video_config_.trust_vp8 =
-      IsEnabled(key_value_config, kVp8TrustedRateControllerFieldTrialName);
-  video_config_.trust_vp9 =
-      IsEnabled(key_value_config, kVp9TrustedRateControllerFieldTrialName);
   video_config_.vp8_base_heavy_tl3_alloc = IsEnabled(
       key_value_config, kUseBaseHeavyVp8Tl3RateAllocationFieldTrialName);
   ParseHysteresisFactor(key_value_config, kVideoHysteresisFieldTrialname,
@@ -141,10 +135,19 @@ bool RateControlSettings::UseCongestionWindowPushback() const {
          congestion_window_config_.min_bitrate_bps;
 }
 
+bool RateControlSettings::UseCongestionWindowDropFrameOnly() const {
+  return congestion_window_config_.drop_frame_only;
+}
+
 uint32_t RateControlSettings::CongestionWindowMinPushbackTargetBitrateBps()
     const {
   return congestion_window_config_.min_bitrate_bps.value_or(
       kDefaultMinPushbackTargetBitrateBps);
+}
+
+absl::optional<DataSize>
+RateControlSettings::CongestionWindowInitialDataWindow() const {
+  return congestion_window_config_.initial_data_window;
 }
 
 absl::optional<double> RateControlSettings::GetPacingFactor() const {

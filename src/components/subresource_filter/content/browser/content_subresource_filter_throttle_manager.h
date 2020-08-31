@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "components/subresource_filter/content/browser/subframe_navigation_filtering_throttle.h"
@@ -80,7 +81,16 @@ class ContentSubresourceFilterThrottleManager
   bool CalculateIsAdSubframe(content::RenderFrameHost* frame_host,
                              LoadPolicy load_policy) override;
 
+  // Returns whether |frame_host| is considered to be an ad.
   bool IsFrameTaggedAsAd(const content::RenderFrameHost* frame_host) const;
+
+  // Returns whether the last navigation resource in |frame_host| was detected
+  // to be an ad. A null optional indicates there was no previous navigation or
+  // the last navigation was not evaluated by the subresource filter in
+  // |frame_host|. Load policy is determined by presence of the navigation url
+  // in the filter list.
+  base::Optional<LoadPolicy> LoadPolicyForLastCommittedNavigation(
+      const content::RenderFrameHost* frame_host) const;
 
  protected:
   // content::WebContentsObserver:
@@ -149,10 +159,17 @@ class ContentSubresourceFilterThrottleManager
 
   // For each RenderFrameHost where the last committed load has subresource
   // filtering activated, owns the corresponding AsyncDocumentSubresourceFilter.
-  // It is possible for a frame to have a null filter.
+  // A null filter indicates that the filter should be inherited from its
+  // parent if the parent has one. This is possible if the last load was a
+  // special navigation (see MaybeActivateSubframeSpecialUrls) or if no
+  // navigations have committed.
   std::map<content::RenderFrameHost*,
            std::unique_ptr<AsyncDocumentSubresourceFilter>>
-      activated_frame_hosts_;
+      frame_host_filter_map_;
+
+  // Set of RenderFrameHosts that have had at least one committed or aborted
+  // navigation. Main frames with only aborted navigations are not included.
+  std::set<content::RenderFrameHost*> navigated_frames_;
 
   // For each ongoing navigation that requires activation state computation,
   // keeps track of the throttle that is carrying out that computation, so that
@@ -169,6 +186,13 @@ class ContentSubresourceFilterThrottleManager
   // 4. It's the result of moving an old ad subframe RFH to a new RFH (e.g.,
   //    OOPIF)
   std::set<const content::RenderFrameHost*> ad_frames_;
+
+  // Map of RenderFrameHost's whose navigations have been identified as ads.
+  // Contains information on the most current completed navigation for any given
+  // RenderFrameHost. If a frame is not present in the map, it has not had a
+  // navigation evaluated by the filter list.
+  std::map<const content::RenderFrameHost*, LoadPolicy>
+      navigation_load_policies_;
 
   content::WebContentsFrameReceiverSet<mojom::SubresourceFilterHost> receiver_;
 

@@ -53,16 +53,18 @@ source_set("dns") {
       "dns_reloader.cc",
       "dns_reloader.h",
       "dns_response.cc",
+      "dns_server_iterator.cc",
+      "dns_server_iterator.h",
       "dns_session.cc",
       "dns_session.h",
       "dns_socket_pool.cc",
       "dns_socket_pool.h",
       "dns_transaction.cc",
+      "dns_udp_tracker.cc",
+      "dns_udp_tracker.h",
       "esni_content.cc",
       "host_cache.cc",
       "host_resolver.cc",
-      "host_resolver_histograms.cc",
-      "host_resolver_histograms.h",
       "host_resolver_manager.cc",
       "host_resolver_mdns_listener_impl.cc",
       "host_resolver_mdns_listener_impl.h",
@@ -75,6 +77,8 @@ source_set("dns") {
       "notify_watcher_mac.h",
       "record_parsed.cc",
       "record_rdata.cc",
+      "resolve_context.cc",
+      "resolve_context.h",
       "serial_worker.cc",
       "serial_worker.h",
       "system_dns_config_change_notifier.cc",
@@ -117,9 +121,7 @@ source_set("dns") {
     }
   }
 
-  deps = [
-    "//net:net_deps",
-  ]
+  deps = [ "//net:net_deps" ]
 
   public_deps = [
     ":dns_client",
@@ -208,9 +210,7 @@ source_set("host_resolver") {
     "//net:net_deps",
     "//net/dns/public",
   ]
-  public_deps = [
-    "//net:net_public_deps",
-  ]
+  public_deps = [ "//net:net_public_deps" ]
 }
 
 # Shared mostly-global handler of HostResolver requests.
@@ -256,9 +256,7 @@ source_set("host_resolver_manager") {
     "//net:net_deps",
     "//net/dns/public",
   ]
-  public_deps = [
-    "//net:net_public_deps",
-  ]
+  public_deps = [ "//net:net_public_deps" ]
 }
 
 # DnsClient interfaces. Primarily intended as part of the implementation of the
@@ -370,9 +368,7 @@ source_set("mdns_client") {
     ":host_resolver",
     "//net:net_deps",
   ]
-  public_deps = [
-    "//net:net_public_deps",
-  ]
+  public_deps = [ "//net:net_public_deps" ]
 }
 
 source_set("tests") {
@@ -388,6 +384,7 @@ source_set("tests") {
     "dns_session_unittest.cc",
     "dns_socket_pool_unittest.cc",
     "dns_transaction_unittest.cc",
+    "dns_udp_tracker_unittest.cc",
     "dns_util_unittest.cc",
     "esni_content_unittest.cc",
     "host_cache_unittest.cc",
@@ -395,6 +392,7 @@ source_set("tests") {
     "mapped_host_resolver_unittest.cc",
     "record_parsed_unittest.cc",
     "record_rdata_unittest.cc",
+    "resolve_context_unittest.cc",
     "serial_worker_unittest.cc",
     "system_dns_config_change_notifier_unittest.cc",
   ]
@@ -430,6 +428,7 @@ source_set("tests") {
 }
 
 source_set("test_support") {
+  visibility = [ "//net:test_support" ]
   testonly = true
   sources = [
     "address_info_test_util.cc",
@@ -480,10 +479,18 @@ if (use_fuzzing_engine) {
   }
 }
 
-fuzzer_test("net_dns_hosts_parse_fuzzer") {
-  sources = [
-    "dns_hosts_parse_fuzzer.cc",
+fuzzer_test("net_dns_host_cache_fuzzer") {
+  sources = [ "host_cache_fuzzer.cc" ]
+  deps = [
+    "//base",
+    "//net",
+    "//net:net_fuzzer_test_support",
   ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/json.dict"
+}
+
+fuzzer_test("net_dns_hosts_parse_fuzzer") {
+  sources = [ "dns_hosts_parse_fuzzer.cc" ]
   deps = [
     "//base",
     "//net",
@@ -492,10 +499,17 @@ fuzzer_test("net_dns_hosts_parse_fuzzer") {
   dict = "//net/data/fuzzer_dictionaries/net_dns_hosts_parse_fuzzer.dict"
 }
 
-fuzzer_test("net_dns_record_fuzzer") {
-  sources = [
-    "dns_record_fuzzer.cc",
+fuzzer_test("net_dns_integrity_record_fuzzer") {
+  sources = [ "integrity_record_fuzzer.cc" ]
+  deps = [
+    "//base",
+    "//net",
+    "//net:net_fuzzer_test_support",
   ]
+}
+
+fuzzer_test("net_dns_record_fuzzer") {
+  sources = [ "dns_record_fuzzer.cc" ]
   deps = [
     "//base",
     "//net",
@@ -505,9 +519,7 @@ fuzzer_test("net_dns_record_fuzzer") {
 }
 
 fuzzer_test("net_dns_query_parse_fuzzer") {
-  sources = [
-    "dns_query_parse_fuzzer.cc",
-  ]
+  sources = [ "dns_query_parse_fuzzer.cc" ]
   deps = [
     "//base",
     "//net",
@@ -517,9 +529,7 @@ fuzzer_test("net_dns_query_parse_fuzzer") {
 }
 
 fuzzer_test("net_dns_response_fuzzer") {
-  sources = [
-    "dns_response_fuzzer.cc",
-  ]
+  sources = [ "dns_response_fuzzer.cc" ]
   deps = [
     "//base",
     "//net",
@@ -529,9 +539,7 @@ fuzzer_test("net_dns_response_fuzzer") {
 }
 
 fuzzer_test("net_host_resolver_manager_fuzzer") {
-  sources = [
-    "host_resolver_manager_fuzzer.cc",
-  ]
+  sources = [ "host_resolver_manager_fuzzer.cc" ]
   deps = [
     "//base",
     "//net",
@@ -543,9 +551,7 @@ fuzzer_test("net_host_resolver_manager_fuzzer") {
 
 if (is_win) {
   fuzzer_test("net_dns_parse_domain_ascii_win_fuzzer") {
-    sources = [
-      "dns_parse_domain_ascii_win_fuzzer.cc",
-    ]
+    sources = [ "dns_parse_domain_ascii_win_fuzzer.cc" ]
     deps = [
       "//base",
       "//net",

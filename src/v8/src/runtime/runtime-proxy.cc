@@ -15,6 +15,26 @@
 namespace v8 {
 namespace internal {
 
+RUNTIME_FUNCTION(Runtime_IsJSProxy) {
+  SealHandleScope shs(isolate);
+  DCHECK_EQ(1, args.length());
+  CONVERT_ARG_CHECKED(Object, obj, 0);
+  return isolate->heap()->ToBoolean(obj.IsJSProxy());
+}
+
+RUNTIME_FUNCTION(Runtime_JSProxyGetHandler) {
+  SealHandleScope shs(isolate);
+  DCHECK_EQ(1, args.length());
+  CONVERT_ARG_CHECKED(JSProxy, proxy, 0);
+  return proxy.handler();
+}
+
+RUNTIME_FUNCTION(Runtime_JSProxyGetTarget) {
+  SealHandleScope shs(isolate);
+  DCHECK_EQ(1, args.length());
+  CONVERT_ARG_CHECKED(JSProxy, proxy, 0);
+  return proxy.target();
+}
 
 RUNTIME_FUNCTION(Runtime_GetPropertyWithReceiver) {
   HandleScope scope(isolate);
@@ -33,12 +53,12 @@ RUNTIME_FUNCTION(Runtime_GetPropertyWithReceiver) {
 #endif
 
   bool success = false;
-  LookupIterator it = LookupIterator::PropertyOrElement(isolate, receiver, key,
-                                                        &success, holder);
+  LookupIterator::Key lookup_key(isolate, key, &success);
   if (!success) {
     DCHECK(isolate->has_pending_exception());
     return ReadOnlyRoots(isolate).exception();
   }
+  LookupIterator it(isolate, receiver, lookup_key, holder);
 
   RETURN_RESULT_OR_FAILURE(isolate, Object::GetProperty(&it));
 }
@@ -53,12 +73,12 @@ RUNTIME_FUNCTION(Runtime_SetPropertyWithReceiver) {
   CONVERT_ARG_HANDLE_CHECKED(Object, receiver, 3);
 
   bool success = false;
-  LookupIterator it = LookupIterator::PropertyOrElement(isolate, receiver, key,
-                                                        &success, holder);
+  LookupIterator::Key lookup_key(isolate, key, &success);
   if (!success) {
     DCHECK(isolate->has_pending_exception());
     return ReadOnlyRoots(isolate).exception();
   }
+  LookupIterator it(isolate, receiver, lookup_key, holder);
   Maybe<bool> result =
       Object::SetSuperProperty(&it, value, StoreOrigin::kMaybeKeyed);
   MAYBE_RETURN(result, ReadOnlyRoots(isolate).exception());

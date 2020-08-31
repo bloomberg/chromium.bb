@@ -20,7 +20,14 @@
 
 namespace net {
 
+const char HttpRequestHeaders::kConnectMethod[] = "CONNECT";
 const char HttpRequestHeaders::kGetMethod[] = "GET";
+const char HttpRequestHeaders::kHeadMethod[] = "HEAD";
+const char HttpRequestHeaders::kOptionsMethod[] = "OPTIONS";
+const char HttpRequestHeaders::kPostMethod[] = "POST";
+const char HttpRequestHeaders::kTraceMethod[] = "TRACE";
+const char HttpRequestHeaders::kTrackMethod[] = "TRACK";
+const char HttpRequestHeaders::kAccept[] = "Accept";
 const char HttpRequestHeaders::kAcceptCharset[] = "Accept-Charset";
 const char HttpRequestHeaders::kAcceptEncoding[] = "Accept-Encoding";
 const char HttpRequestHeaders::kAcceptLanguage[] = "Accept-Language";
@@ -42,17 +49,15 @@ const char HttpRequestHeaders::kProxyAuthorization[] = "Proxy-Authorization";
 const char HttpRequestHeaders::kProxyConnection[] = "Proxy-Connection";
 const char HttpRequestHeaders::kRange[] = "Range";
 const char HttpRequestHeaders::kReferer[] = "Referer";
-const char HttpRequestHeaders::kSecOriginPolicy[] = "Sec-Origin-Policy";
 const char HttpRequestHeaders::kTransferEncoding[] = "Transfer-Encoding";
 const char HttpRequestHeaders::kUserAgent[] = "User-Agent";
 
 HttpRequestHeaders::HeaderKeyValuePair::HeaderKeyValuePair() = default;
 
 HttpRequestHeaders::HeaderKeyValuePair::HeaderKeyValuePair(
-    const base::StringPiece& key, const base::StringPiece& value)
-    : key(key.data(), key.size()), value(value.data(), value.size()) {
-}
-
+    const base::StringPiece& key,
+    const base::StringPiece& value)
+    : key(key.data(), key.size()), value(value.data(), value.size()) {}
 
 HttpRequestHeaders::Iterator::Iterator(const HttpRequestHeaders& headers)
     : started_(false),
@@ -200,8 +205,8 @@ base::Value HttpRequestHeaders::NetLogParams(
   return std::move(dict);
 }
 
-HttpRequestHeaders::HeaderVector::iterator
-HttpRequestHeaders::FindHeader(const base::StringPiece& key) {
+HttpRequestHeaders::HeaderVector::iterator HttpRequestHeaders::FindHeader(
+    const base::StringPiece& key) {
   for (auto it = headers_.begin(); it != headers_.end(); ++it) {
     if (base::EqualsCaseInsensitiveASCII(key, it->key))
       return it;
@@ -210,8 +215,8 @@ HttpRequestHeaders::FindHeader(const base::StringPiece& key) {
   return headers_.end();
 }
 
-HttpRequestHeaders::HeaderVector::const_iterator
-HttpRequestHeaders::FindHeader(const base::StringPiece& key) const {
+HttpRequestHeaders::HeaderVector::const_iterator HttpRequestHeaders::FindHeader(
+    const base::StringPiece& key) const {
   for (auto it = headers_.begin(); it != headers_.end(); ++it) {
     if (base::EqualsCaseInsensitiveASCII(key, it->key))
       return it;

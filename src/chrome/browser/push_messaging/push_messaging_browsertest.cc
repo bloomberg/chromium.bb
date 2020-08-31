@@ -19,7 +19,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -29,10 +28,10 @@
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_handler.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
+#include "chrome/browser/push_messaging/push_messaging_features.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/ui/browser.h"
@@ -41,6 +40,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -53,11 +53,13 @@
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/test_utils.h"
@@ -249,8 +251,8 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     return gcm_driver_->GetAppHandler(kPushMessagingAppIdentifierPrefix);
   }
 
-  PermissionRequestManager* GetPermissionRequestManager() {
-    return PermissionRequestManager::FromWebContents(
+  permissions::PermissionRequestManager* GetPermissionRequestManager() {
+    return permissions::PermissionRequestManager::FromWebContents(
         GetBrowser()->tab_strip_model()->GetActiveWebContents());
   }
 
@@ -367,7 +369,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 void PushMessagingBrowserTest::RequestAndAcceptPermission() {
   std::string script_result;
   GetPermissionRequestManager()->set_auto_response_for_test(
-      PermissionRequestManager::ACCEPT_ALL);
+      permissions::PermissionRequestManager::ACCEPT_ALL);
   ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
   ASSERT_EQ("permission status - granted", script_result);
 }
@@ -375,7 +377,7 @@ void PushMessagingBrowserTest::RequestAndAcceptPermission() {
 void PushMessagingBrowserTest::RequestAndDenyPermission() {
   std::string script_result;
   GetPermissionRequestManager()->set_auto_response_for_test(
-      PermissionRequestManager::DENY_ALL);
+      permissions::PermissionRequestManager::DENY_ALL);
   ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
   ASSERT_EQ("permission status - denied", script_result);
 }
@@ -435,7 +437,7 @@ void PushMessagingBrowserTest::SetupOrphanedPushSubscription(
   base::RunLoop run_loop;
   push_service()->SubscribeFromWorker(
       requesting_origin, service_worker_registration_id, std::move(options),
-      base::Bind(&DidRegister, run_loop.QuitClosure()));
+      base::BindOnce(&DidRegister, run_loop.QuitClosure()));
   run_loop.Run();
 
   PushMessagingAppIdentifier app_identifier =
@@ -470,8 +472,8 @@ void PushMessagingBrowserTest::LegacySubscribeSuccessfully(
     gcm::GCMClient::Result register_result = gcm::GCMClient::UNKNOWN_ERROR;
     gcm_driver_->Register(
         app_identifier.app_id(), {kManifestSenderId},
-        base::Bind(&LegacyRegisterCallback, run_loop.QuitClosure(),
-                   &subscription_id, &register_result));
+        base::BindOnce(&LegacyRegisterCallback, run_loop.QuitClosure(),
+                       &subscription_id, &register_result));
     run_loop.Run();
     ASSERT_EQ(gcm::GCMClient::SUCCESS, register_result);
   }
@@ -536,7 +538,7 @@ void PushMessagingBrowserTest::DeleteInstanceIDAsIfGCMStoreReset(
   instance_id::InstanceID::Result delete_result =
       instance_id::InstanceID::UNKNOWN_ERROR;
   base::RunLoop run_loop;
-  instance_id_driver->GetInstanceID(app_id)->DeleteID(base::Bind(
+  instance_id_driver->GetInstanceID(app_id)->DeleteID(base::BindOnce(
       &InstanceIDResultCallback, run_loop.QuitClosure(), &delete_result));
   run_loop.Run();
   ASSERT_EQ(instance_id::InstanceID::SUCCESS, delete_result);
@@ -587,7 +589,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_EQ("ok - service worker registered", script_result);
 
   GetPermissionRequestManager()->set_auto_response_for_test(
-      PermissionRequestManager::ACCEPT_ALL);
+      permissions::PermissionRequestManager::ACCEPT_ALL);
   ASSERT_TRUE(RunScript("documentSubscribePush()", &script_result));
   // Both of these methods EXPECT that they succeed.
   ASSERT_NO_FATAL_FAILURE(EndpointToToken(script_result));
@@ -1822,7 +1824,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, CrossOriginFrame) {
   // permission to be denied.
 
   GetPermissionRequestManager()->set_auto_response_for_test(
-      PermissionRequestManager::ACCEPT_ALL);
+      permissions::PermissionRequestManager::ACCEPT_ALL);
 
   std::string script_result;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
@@ -1860,7 +1862,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, CrossOriginFrame) {
                                       std::string(), CONTENT_SETTING_ALLOW);
 
   GetPermissionRequestManager()->set_auto_response_for_test(
-      PermissionRequestManager::DENY_ALL);
+      permissions::PermissionRequestManager::DENY_ALL);
 
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       subframe, "requestNotificationPermission();", &script_result));
@@ -2590,7 +2592,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, EncryptionKeyUniqueness) {
 
 class PushMessagingIncognitoBrowserTest : public PushMessagingBrowserTest {
  public:
-  ~PushMessagingIncognitoBrowserTest() override {}
+  ~PushMessagingIncognitoBrowserTest() override = default;
 
   // PushMessagingBrowserTest:
   void SetUpOnMainThread() override {
@@ -2618,4 +2620,42 @@ IN_PROC_BROWSER_TEST_F(PushMessagingIncognitoBrowserTest,
   // it should just fulfill with null.
   ASSERT_TRUE(RunScript("hasSubscription()", &script_result));
   ASSERT_EQ("false - not subscribed", script_result);
+}
+
+class PushMessagingDisallowSenderIdsBrowserTest
+    : public PushMessagingBrowserTest {
+ public:
+  PushMessagingDisallowSenderIdsBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(kPushMessagingDisallowSenderIDs);
+  }
+
+  ~PushMessagingDisallowSenderIdsBrowserTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PushMessagingDisallowSenderIdsBrowserTest,
+                       SubscriptionWithSenderIdFails) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  ASSERT_NO_FATAL_FAILURE(RequestAndAcceptPermission());
+
+  LoadTestPage();  // Reload to become controlled.
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  // Attempt to create a subscription with a GCM Sender ID ("numeric key"),
+  // which should fail because the kPushMessagingDisallowSenderIDs feature has
+  // been enabled for this test.
+  ASSERT_TRUE(
+      RunScript("documentSubscribePushWithNumericKey()", &script_result));
+  EXPECT_EQ(
+      "AbortError - Registration failed - GCM Sender IDs are no longer "
+      "supported, please upgrade to VAPID authentication instead",
+      script_result);
 }

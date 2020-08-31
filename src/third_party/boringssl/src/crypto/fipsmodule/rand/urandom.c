@@ -65,38 +65,12 @@
 #include <openssl/thread.h>
 #include <openssl/mem.h>
 
+#include "getrandom_fillin.h"
 #include "../delocate.h"
 #include "../../internal.h"
 
 
-#if defined(OPENSSL_LINUX)
-
-#if defined(OPENSSL_X86_64)
-#define EXPECTED_NR_getrandom 318
-#elif defined(OPENSSL_X86)
-#define EXPECTED_NR_getrandom 355
-#elif defined(OPENSSL_AARCH64)
-#define EXPECTED_NR_getrandom 278
-#elif defined(OPENSSL_ARM)
-#define EXPECTED_NR_getrandom 384
-#elif defined(OPENSSL_PPC64LE)
-#define EXPECTED_NR_getrandom 359
-#endif
-
-#if defined(EXPECTED_NR_getrandom)
-#define USE_NR_getrandom
-
-#if defined(__NR_getrandom)
-
-#if __NR_getrandom != EXPECTED_NR_getrandom
-#error "system call number for getrandom is not the expected value"
-#endif
-
-#else  // __NR_getrandom
-
-#define __NR_getrandom EXPECTED_NR_getrandom
-
-#endif  // __NR_getrandom
+#if defined(USE_NR_getrandom)
 
 #if defined(OPENSSL_MSAN)
 void __msan_unpoison(void *, size_t);
@@ -119,16 +93,7 @@ static ssize_t boringssl_getrandom(void *buf, size_t buf_len, unsigned flags) {
   return ret;
 }
 
-#endif  // EXPECTED_NR_getrandom
-
-#if !defined(GRND_NONBLOCK)
-#define GRND_NONBLOCK 1
-#endif
-#if !defined(GRND_RANDOM)
-#define GRND_RANDOM 2
-#endif
-
-#endif  // OPENSSL_LINUX
+#endif  // USE_NR_getrandom
 
 // rand_lock is used to protect the |*_requested| variables.
 DEFINE_STATIC_MUTEX(rand_lock)
@@ -367,7 +332,7 @@ void RAND_set_urandom_fd(int fd) {
   *urandom_fd_requested_bss_get() = fd;
   CRYPTO_STATIC_MUTEX_unlock_write(rand_lock_bss_get());
 
-  CRYPTO_once(rand_once_bss_get(), init_once);
+  CRYPTO_init_sysrand();
   if (*urandom_fd_bss_get() == kHaveGetrandom) {
     close(fd);
   } else if (*urandom_fd_bss_get() != fd) {
@@ -397,7 +362,7 @@ static int fill_with_entropy(uint8_t *out, size_t len, int block, int seed) {
   }
 #endif
 
-  CRYPTO_once(rand_once_bss_get(), init_once);
+  CRYPTO_init_sysrand();
   if (block) {
     CRYPTO_once(wait_for_entropy_once_bss_get(), wait_for_entropy);
   }
@@ -452,6 +417,10 @@ void CRYPTO_sysrand(uint8_t *out, size_t requested) {
   }
 }
 
+void CRYPTO_init_sysrand(void) {
+  CRYPTO_once(rand_once_bss_get(), init_once);
+}
+
 #if defined(BORINGSSL_FIPS)
 void CRYPTO_sysrand_for_seed(uint8_t *out, size_t requested) {
   if (!fill_with_entropy(out, requested, /*block=*/1, /*seed=*/1)) {
@@ -466,16 +435,18 @@ void CRYPTO_sysrand_for_seed(uint8_t *out, size_t requested) {
 #endif
 }
 
-void CRYPTO_sysrand_if_available(uint8_t *out, size_t requested) {
-  // Return all zeros if |fill_with_entropy| fails.
-  OPENSSL_memset(out, 0, requested);
+#endif  // BORINGSSL_FIPS
 
-  if (!fill_with_entropy(out, requested, /*block=*/0, /*seed=*/0) &&
-      errno != EAGAIN) {
+int CRYPTO_sysrand_if_available(uint8_t *out, size_t requested) {
+  if (fill_with_entropy(out, requested, /*block=*/0, /*seed=*/0)) {
+    return 1;
+  } else if (errno == EAGAIN) {
+    OPENSSL_memset(out, 0, requested);
+    return 0;
+  } else {
     perror("opportunistic entropy fill failed");
     abort();
   }
 }
-#endif  // BORINGSSL_FIPS
 
 #endif  // OPENSSL_URANDOM

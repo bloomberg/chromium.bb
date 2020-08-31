@@ -2,11 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import posixpath
+
 from .code_generator_info import CodeGeneratorInfo
 from .code_generator_info import CodeGeneratorInfoMutable
 from .exposure import Exposure
 from .exposure import ExposureMutable
 from .extended_attribute import ExtendedAttributes
+from .extended_attribute import ExtendedAttributesMutable
 
 
 class Identifier(str):
@@ -27,18 +30,26 @@ class WithIdentifier(object):
     def identifier(self):
         return self._identifier
 
+    def change_identifier(self, new_identifier):
+        assert isinstance(new_identifier, Identifier)
+        self._identifier = new_identifier
+
 
 class WithExtendedAttributes(object):
     """Implements |extended_attributes| as a readonly attribute."""
 
-    def __init__(self, extended_attributes=None):
+    def __init__(self, extended_attributes=None, readonly=False):
         if isinstance(extended_attributes, WithExtendedAttributes):
             extended_attributes = extended_attributes.extended_attributes
         elif extended_attributes is None:
             extended_attributes = ExtendedAttributes()
         assert isinstance(extended_attributes, ExtendedAttributes)
 
-        self._extended_attributes = extended_attributes
+        if readonly:
+            self._extended_attributes = ExtendedAttributes(extended_attributes)
+        else:
+            self._extended_attributes = ExtendedAttributesMutable(
+                extended_attributes)
 
     @property
     def extended_attributes(self):
@@ -133,10 +144,22 @@ class WithComponent(object):
 
 
 class Location(object):
+    _blink_path_prefix = posixpath.sep + posixpath.join(
+        'third_party', 'blink', 'renderer', '')
+
     def __init__(self, filepath=None, line_number=None, position=None):
         assert filepath is None or isinstance(filepath, str)
         assert line_number is None or isinstance(line_number, int)
         assert position is None or isinstance(position, int)
+
+        # idl_parser produces paths based on the working directory, which may
+        # not be the project root directory, e.g. "../../third_party/blink/...".
+        # Canonicalize the paths heuristically.
+        if filepath is not None:
+            index = filepath.find(self._blink_path_prefix)
+            if index >= 0:
+                filepath = filepath[index + 1:]
+
         self._filepath = filepath
         self._line_number = line_number
         self._position = position  # Position number in a file

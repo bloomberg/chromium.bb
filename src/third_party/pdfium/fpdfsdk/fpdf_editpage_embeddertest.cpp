@@ -5,18 +5,16 @@
 #include "core/fxcrt/fx_system.h"
 #include "public/fpdf_edit.h"
 #include "testing/embedder_test.h"
+#include "testing/embedder_test_constants.h"
 
 class FPDFEditPageEmbedderTest : public EmbedderTest {};
 
-// TODO(crbug.com/pdfium/11): Fix this test and enable.
+TEST_F(FPDFEditPageEmbedderTest, Rotation) {
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_Rotation DISABLED_Rotation
+  const char kRotatedMD5[] = "eded83f75f3d0332c584c416c571c0df";
 #else
-#define MAYBE_Rotation Rotation
-#endif
-TEST_F(FPDFEditPageEmbedderTest, MAYBE_Rotation) {
-  const char kOriginalMD5[] = "0a90de37f52127619c3dfb642b5fa2fe";
   const char kRotatedMD5[] = "d599429574ff0dcad3bc898ea8b874ca";
+#endif
 
   {
     ASSERT_TRUE(OpenDocument("rectangles.pdf"));
@@ -31,7 +29,8 @@ TEST_F(FPDFEditPageEmbedderTest, MAYBE_Rotation) {
       EXPECT_EQ(200, page_width);
       EXPECT_EQ(300, page_height);
       ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
-      CompareBitmap(bitmap.get(), page_width, page_height, kOriginalMD5);
+      CompareBitmap(bitmap.get(), page_width, page_height,
+                    pdfium::kRectanglesChecksum);
     }
 
     FPDFPage_SetRotation(page, 1);

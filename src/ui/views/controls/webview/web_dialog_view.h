@@ -26,7 +26,7 @@ namespace content {
 class BrowserContext;
 class RenderFrameHost;
 struct GlobalRequestID;
-}
+}  // namespace content
 
 namespace views {
 
@@ -43,7 +43,7 @@ class ObservableWebView : public WebView {
   void ResourceLoadComplete(
       content::RenderFrameHost* render_frame_host,
       const content::GlobalRequestID& request_id,
-      const content::mojom::ResourceLoadInfo& resource_load_info) override;
+      const blink::mojom::ResourceLoadInfo& resource_load_info) override;
 
   // Resets the delegate. The delegate will no longer receive calls after this
   // point.
@@ -68,10 +68,10 @@ class ObservableWebView : public WebView {
 // TODO(akalin): Make WebDialogView contain an WebDialogWebContentsDelegate
 // instead of inheriting from it to avoid violating the "no multiple
 // inheritance" rule.
-class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
+class WEBVIEW_EXPORT WebDialogView : public ClientView,
                                      public ui::WebDialogWebContentsDelegate,
                                      public ui::WebDialogDelegate,
-                                     public views::WidgetDelegate {
+                                     public WidgetDelegate {
  public:
   // |handler| must not be nullptr.
   // |use_dialog_frame| indicates whether to use dialog frame view for non
@@ -84,7 +84,7 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
 
   content::WebContents* web_contents();
 
-  // Overridden from views::ClientView:
+  // ClientView:
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
@@ -92,7 +92,7 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
       const ViewHierarchyChangedDetails& details) override;
   bool CanClose() override;
 
-  // Overridden from views::WidgetDelegate:
+  // WidgetDelegate:
   bool OnCloseRequested(Widget::ClosedReason close_reason) override;
   bool CanResize() const override;
   ui::ModalType GetModalType() const override;
@@ -100,16 +100,16 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   base::string16 GetAccessibleWindowTitle() const override;
   std::string GetWindowName() const override;
   void WindowClosing() override;
-  views::View* GetContentsView() override;
-  ClientView* CreateClientView(views::Widget* widget) override;
+  View* GetContentsView() override;
+  ClientView* CreateClientView(Widget* widget) override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
-  views::View* GetInitiallyFocusedView() override;
+  View* GetInitiallyFocusedView() override;
   bool ShouldShowWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
-  views::Widget* GetWidget() override;
-  const views::Widget* GetWidget() const override;
+  Widget* GetWidget() override;
+  const Widget* GetWidget() const override;
 
-  // Overridden from ui::WebDialogDelegate:
+  // ui::WebDialogDelegate:
   ui::ModalType GetDialogModalType() const override;
   base::string16 GetDialogTitle() const override;
   GURL GetDialogContentURL() const override;
@@ -128,7 +128,7 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
                          const content::ContextMenuParams& params) override;
 
-  // Overridden from content::WebContentsDelegate:
+  // content::WebContentsDelegate:
   void SetContentsBounds(content::WebContents* source,
                          const gfx::Rect& bounds) override;
   bool HandleKeyboardEvent(
@@ -140,6 +140,7 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
       const content::OpenURLParams& params) override;
   void AddNewContents(content::WebContents* source,
                       std::unique_ptr<content::WebContents> new_contents,
+                      const GURL& target_url,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
@@ -157,6 +158,7 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
       const GURL& target_url) override;
 
  private:
+  friend class WebDialogViewUnitTest;
   FRIEND_TEST_ALL_PREFIXES(WebDialogBrowserTest, WebContentRendered);
 
   // Initializes the contents of the dialog.
@@ -193,6 +195,8 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
 
   // Whether to use dialog frame view for non client frame view.
   bool use_dialog_frame_ = false;
+
+  bool disable_url_load_for_test_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebDialogView);
 };

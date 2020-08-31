@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
 #include "url/origin.h"
 
@@ -35,19 +36,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaClient
   using DeletionCallback =
       base::OnceCallback<void(blink::mojom::QuotaStatusCode status)>;
 
-  enum ID {
-    kUnknown = 1 << 0,
-    kFileSystem = 1 << 1,
-    kDatabase = 1 << 2,
-    kAppcache = 1 << 3,
-    kIndexedDatabase = 1 << 4,
-    kServiceWorkerCache = 1 << 5,
-    kServiceWorker = 1 << 6,
-    kBackgroundFetch = 1 << 7,
-    kAllClientsMask = -1,
-  };
-
-  virtual ID id() const = 0;
+  virtual QuotaClientType type() const = 0;
 
   // Called when the QuotaManager is destroyed.
   virtual void OnQuotaManagerDestroyed() = 0;
@@ -80,10 +69,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaClient
                                 DeletionCallback callback) = 0;
 
   // Called by the QuotaManager.
-  // This can be implemented if a QuotaClient would like to perform a cleanup
-  // step after major deletions.
+  // Gives the QuotaClient an opportunity to perform a cleanup step after major
+  // deletions.
   virtual void PerformStorageCleanup(blink::mojom::StorageType type,
-                                     base::OnceClosure callback);
+                                     base::OnceClosure callback) = 0;
 
   virtual bool DoesSupport(blink::mojom::StorageType type) const = 0;
 

@@ -19,9 +19,6 @@ class AuthenticationService;
 class PrefService;
 class SyncSetupService;
 
-// Accessibility identifier for Manage Sync cell.
-extern NSString* const kManageSyncCellAccessibilityIdentifier;
-
 namespace syncer {
 class SyncService;
 }  // namespace syncer

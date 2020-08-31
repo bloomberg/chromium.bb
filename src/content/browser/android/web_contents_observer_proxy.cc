@@ -110,20 +110,16 @@ void WebContentsObserverProxy::LoadProgressChanged(double progress) {
       AttachCurrentThread(), java_observer_, static_cast<jfloat>(progress));
 }
 
-void WebContentsObserverProxy::DidFailLoad(
-    RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description) {
+void WebContentsObserverProxy::DidFailLoad(RenderFrameHost* render_frame_host,
+                                           const GURL& validated_url,
+                                           int error_code) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jstring_error_description(
-      ConvertUTF16ToJavaString(env, error_description));
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, validated_url.spec()));
 
-  Java_WebContentsObserverProxy_didFailLoad(
-      env, java_observer_, !render_frame_host->GetParent(), error_code,
-      jstring_error_description, jstring_url);
+  Java_WebContentsObserverProxy_didFailLoad(env, java_observer_,
+                                            !render_frame_host->GetParent(),
+                                            error_code, jstring_url);
 }
 
 void WebContentsObserverProxy::DidChangeVisibleSecurityState() {
@@ -211,11 +207,9 @@ void WebContentsObserverProxy::DidDetachInterstitialPage() {
   Java_WebContentsObserverProxy_didDetachInterstitialPage(env, java_observer_);
 }
 
-void WebContentsObserverProxy::DidChangeThemeColor(
-    base::Optional<SkColor> color) {
+void WebContentsObserverProxy::DidChangeThemeColor() {
   JNIEnv* env = AttachCurrentThread();
-  Java_WebContentsObserverProxy_didChangeThemeColor(
-      env, java_observer_, color.value_or(SK_ColorTRANSPARENT));
+  Java_WebContentsObserverProxy_didChangeThemeColor(env, java_observer_);
 }
 
 void WebContentsObserverProxy::MediaEffectivelyFullscreenChanged(

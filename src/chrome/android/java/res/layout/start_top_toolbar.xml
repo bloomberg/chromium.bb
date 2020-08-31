@@ -6,10 +6,12 @@
 <org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/tab_switcher_toolbar"
     android:layout_width="match_parent"
     android:layout_height="@dimen/toolbar_height_no_shadow"
-    android:clickable="true" >
+    android:clickable="true"
+    android:visibility="gone">
 
     <Switch
         android:id="@+id/incognito_switch"
@@ -18,7 +20,7 @@
         android:layout_centerVertical="true"
         android:layout_alignParentStart="true"
         android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+        android:paddingEnd="8dp"
         android:thumb="@drawable/incognito_switch"
         android:track="@drawable/incognito_switch_track"
         android:visibility="gone"/>
@@ -29,8 +31,6 @@
         android:layout_height="32dp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
         android:scaleType="centerInside"
         android:adjustViewBounds="true"
         app:srcCompat="@drawable/google_logo"
@@ -43,9 +43,28 @@
         android:layout_width="wrap_content"
         android:layout_toStartOf="@+id/menu_anchor"
         android:layout_centerVertical="true"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         android:contentDescription="@string/accessibility_toolbar_btn_new_tab" />
+
+    <org.chromium.ui.widget.ChromeImageButton
+        android:id="@+id/identity_disc_button"
+        android:layout_toStartOf="@+id/menu_anchor"
+        android:paddingStart="@dimen/start_surface_toolbar_button_padding_to_button"
+        android:paddingEnd="@dimen/start_surface_toolbar_button_padding_to_button"
+        style="@style/ToolbarButton"
+        android:visibility="gone"
+        tools:ignore="ContentDescription"/>
+
+    <org.chromium.chrome.browser.toolbar.TabSwitcherButtonView
+        android:id="@+id/start_tab_switcher_button"
+        android:layout_toStartOf="@+id/menu_anchor"
+        style="@style/SplitToolbarButton"
+        app:menuMaxWidth="@dimen/tab_switcher_menu_width"
+        android:visibility="gone"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/accessibility_toolbar_btn_tabswitcher_toggle_default"
+        app:menuVerticalOverlapAnchor="false" />
 
     <FrameLayout
       android:id="@+id/menu_anchor"

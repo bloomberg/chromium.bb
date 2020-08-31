@@ -217,6 +217,8 @@ class FakePeerConnectionBase : public PeerConnectionInternal {
     return IceGatheringState::kIceGatheringNew;
   }
 
+  absl::optional<bool> can_trickle_ice_candidates() { return absl::nullopt; }
+
   bool StartRtcEventLog(std::unique_ptr<RtcEventLogOutput> output,
                         int64_t output_period_ms) override {
     return false;
@@ -255,10 +257,6 @@ class FakePeerConnectionBase : public PeerConnectionInternal {
   std::vector<rtc::scoped_refptr<DataChannel>> sctp_data_channels()
       const override {
     return {};
-  }
-
-  absl::optional<std::string> sctp_content_name() const override {
-    return absl::nullopt;
   }
 
   absl::optional<std::string> sctp_transport_name() const override {

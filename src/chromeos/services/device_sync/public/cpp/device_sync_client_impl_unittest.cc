@@ -63,7 +63,7 @@ class FakeDeviceSyncImplFactory : public DeviceSyncImpl::Factory {
   ~FakeDeviceSyncImplFactory() override = default;
 
   // DeviceSyncImpl::Factory:
-  std::unique_ptr<DeviceSyncBase> BuildInstance(
+  std::unique_ptr<DeviceSyncBase> CreateInstance(
       signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       PrefService* profile_prefs,
@@ -156,14 +156,16 @@ class DeviceSyncClientImplTest : public testing::Test {
 
     identity_test_environment_ =
         std::make_unique<signin::IdentityTestEnvironment>();
-    identity_test_environment_->MakePrimaryAccountAvailable(kTestEmail);
+    // "Unconsented" because this feature is not tied to browser sync consent.
+    identity_test_environment_->MakeUnconsentedPrimaryAccountAvailable(
+        kTestEmail);
 
     auto fake_device_sync = std::make_unique<FakeDeviceSync>();
     fake_device_sync_ = fake_device_sync.get();
     fake_device_sync_impl_factory_ =
         std::make_unique<FakeDeviceSyncImplFactory>(
             std::move(fake_device_sync));
-    DeviceSyncImpl::Factory::SetInstanceForTesting(
+    DeviceSyncImpl::Factory::SetFactoryForTesting(
         fake_device_sync_impl_factory_.get());
 
     auto shared_url_loader_factory =
@@ -176,7 +178,7 @@ class DeviceSyncClientImplTest : public testing::Test {
     test_pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     DeviceSyncImpl::RegisterProfilePrefs(test_pref_service_->registry());
 
-    device_sync_ = DeviceSyncImpl::Factory::Get()->BuildInstance(
+    device_sync_ = DeviceSyncImpl::Factory::Create(
         identity_test_environment_->identity_manager(), fake_gcm_driver_.get(),
         test_pref_service_.get(), fake_gcm_device_info_provider_.get(),
         fake_client_app_metadata_provider_.get(), shared_url_loader_factory,
@@ -300,7 +302,7 @@ class DeviceSyncClientImplTest : public testing::Test {
   }
 
   void TearDown() override {
-    DeviceSyncImpl::Factory::SetInstanceForTesting(nullptr);
+    DeviceSyncImpl::Factory::SetFactoryForTesting(nullptr);
     client_->RemoveObserver(test_observer_.get());
   }
 

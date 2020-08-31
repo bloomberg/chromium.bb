@@ -125,8 +125,10 @@ std::string outputTypeToGLString (const VkPrimitiveTopology& outputType)
 	}
 }
 
+using Pair32						= pair<deUint32, deUint32>;
+using Pair64						= pair<deUint64, deUint64>;
 using ResultsVector					= vector<deUint64>;
-using ResultsVectorWithAvailability	= vector<pair<deUint64, deUint64>>;
+using ResultsVectorWithAvailability	= vector<Pair64>;
 
 // Get query pool results as a vector. Note results are always converted to
 // deUint64, but the actual vkGetQueryPoolResults call will use the 64-bits flag
@@ -150,9 +152,15 @@ vk::VkResult GetQueryPoolResultsVector(
 	{
 		using IntermediateVector = vector<deUint32>;
 
-		IntermediateVector	intermediate(queryCount, 0u);
+		IntermediateVector	intermediate(queryCount);
+
+		// Try to preserve existing data if possible.
+		std::transform(begin(output), end(output), begin(intermediate), [](deUint64 v) { return static_cast<deUint32>(v); });
+
 		constexpr size_t	stride		= sizeof(decltype(intermediate)::value_type);
 		const size_t		totalSize	= stride * intermediate.size();
+
+		// Get and copy results.
 		result = vk.getQueryPoolResults(device, queryPool, firstQuery, queryCount, totalSize, intermediate.data(), stride, flags);
 		std::copy(begin(intermediate), end(intermediate), begin(output));
 	}
@@ -178,18 +186,39 @@ vk::VkResult GetQueryPoolResultsVector(
 	}
 	else
 	{
-		using IntermediateVector = vector<pair<deUint32, deUint32>>;
+		using IntermediateVector = vector<Pair32>;
 
-		IntermediateVector	intermediate(queryCount, pair<deUint32, deUint32>(0u, 0u));
+		IntermediateVector	intermediate(queryCount);
+
+		// Try to preserve existing output data if possible.
+		std::transform(begin(output), end(output), begin(intermediate), [](const Pair64& p) { return Pair32{static_cast<deUint32>(p.first), static_cast<deUint32>(p.second)}; });
+
 		constexpr size_t	stride		= sizeof(decltype(intermediate)::value_type);
 		const size_t		totalSize	= stride * intermediate.size();
+
+		// Get and copy.
 		result = vk.getQueryPoolResults(device, queryPool, firstQuery, queryCount, totalSize, intermediate.data(), stride, flags);
-		std::transform(begin(intermediate), end(intermediate), begin(output),
-			[](const pair<deUint32, deUint32>& p) { return pair<deUint64, deUint64>(p.first, p.second); });
+		std::transform(begin(intermediate), end(intermediate), begin(output), [](const Pair32& p) { return Pair64{p.first, p.second}; });
 	}
 
 	return result;
 }
+
+// Generic parameters structure.
+struct GenericParameters
+{
+	ResetType	resetType;
+	deBool		query64Bits;
+
+	GenericParameters (ResetType resetType_, deBool query64Bits_)
+		: resetType{resetType_}, query64Bits{query64Bits_}
+		{}
+
+	VkQueryResultFlags querySizeFlags () const
+	{
+		return (query64Bits ? static_cast<VkQueryResultFlags>(vk::VK_QUERY_RESULT_64_BIT) : 0u);
+	}
+};
 
 void beginSecondaryCommandBuffer (const DeviceInterface&				vk,
 								  const VkCommandBuffer					commandBuffer,
@@ -292,7 +321,7 @@ void clearBuffer (const DeviceInterface& vk, const VkDevice device, const de::Sh
 	const std::vector<deUint8>	data			((size_t)bufferSizeBytes, 0u);
 	const Allocation&			allocation		= buffer->getBoundMemory();
 	void*						allocationData	= allocation.getHostPtr();
-	invalidateMappedMemoryRange(vk, device, allocation.getMemory(), allocation.getOffset(), bufferSizeBytes);
+	invalidateAlloc(vk, device, allocation);
 	deMemcpy(allocationData, &data[0], (size_t)bufferSizeBytes);
 }
 
@@ -331,7 +360,7 @@ void StatisticQueryTestInstance::checkExtensions (deBool hostResetQueryEnabled)
 	if (hostResetQueryEnabled == DE_TRUE)
 	{
 		// Check VK_EXT_host_query_reset is supported
-		m_context.requireDeviceExtension("VK_EXT_host_query_reset");
+		m_context.requireDeviceFunctionality("VK_EXT_host_query_reset");
 		if(m_context.getHostQueryResetFeatures().hostQueryReset == VK_FALSE)
 			throw tcu::NotSupportedError(std::string("Implementation doesn't support resetting queries from the host").c_str());
 	}
@@ -351,21 +380,18 @@ tcu::TestStatus	StatisticQueryTestInstance::verifyUnavailable ()
 class ComputeInvocationsTestInstance : public StatisticQueryTestInstance
 {
 public:
-	struct ParametersCompute
+	struct ParametersCompute : public GenericParameters
 	{
-		ParametersCompute(const tcu::UVec3& localSize_, const tcu::UVec3& groupSize_, const std::string& shaderName_, ResetType resetType_, deBool query64Bits_)
-			: localSize(localSize_)
+		ParametersCompute (const tcu::UVec3& localSize_, const tcu::UVec3& groupSize_, const std::string& shaderName_, ResetType resetType_, deBool query64Bits_)
+			: GenericParameters{resetType_, query64Bits_}
+			, localSize(localSize_)
 			, groupSize(groupSize_)
 			, shaderName(shaderName_)
-			, resetType(resetType_)
-			, query64Bits(query64Bits_)
 			{}
 
 		tcu::UVec3	localSize;
 		tcu::UVec3	groupSize;
 		std::string	shaderName;
-		ResetType	resetType;
-		deBool		query64Bits;
 	};
 							ComputeInvocationsTestInstance		(Context& context, const std::vector<ParametersCompute>& parameters);
 	tcu::TestStatus			iterate								(void);
@@ -519,33 +545,33 @@ tcu::TestStatus ComputeInvocationsTestInstance::executeTest (const VkCommandPool
 		m_context.getTestContext().getLog() << tcu::TestLog::Message << "Compute shader invocations: " << getComputeExecution(m_parameters[parametersNdx]) << tcu::TestLog::EndMessage;
 
 		if (m_parameters[0].resetType == RESET_TYPE_HOST)
-			vk.resetQueryPoolEXT(device, *queryPool, 0u, 1u);
+			vk.resetQueryPool(device, *queryPool, 0u, 1u);
 
 		// Wait for completion
 		submitCommandsAndWait(vk, device, queue, *cmdBuffer);
 
 		// Validate the results
 		const Allocation& bufferAllocation = buffer->getBoundMemory();
-		invalidateMappedMemoryRange(vk, device, bufferAllocation.getMemory(), bufferAllocation.getOffset(), bufferSizeBytes);
+		invalidateAlloc(vk, device, bufferAllocation);
 
 		if (m_parameters[0].resetType == RESET_TYPE_NORMAL)
 		{
 			ResultsVector data;
-			VK_CHECK(GetQueryPoolResultsVector(data, vk, device, *queryPool, 0u, 1u, (VK_QUERY_RESULT_WAIT_BIT | VK_QUERY_RESULT_64_BIT)));
+			VK_CHECK(GetQueryPoolResultsVector(data, vk, device, *queryPool, 0u, 1u, (VK_QUERY_RESULT_WAIT_BIT | m_parameters[0].querySizeFlags())));
 			if (getComputeExecution(m_parameters[parametersNdx]) != data[0])
 				return tcu::TestStatus::fail("QueryPoolResults incorrect");
 		}
 		else if (m_parameters[0].resetType == RESET_TYPE_HOST)
 		{
 			ResultsVectorWithAvailability data;
-			VK_CHECK(GetQueryPoolResultsVector(data, vk, device, *queryPool, 0u, 1u, (VK_QUERY_RESULT_WAIT_BIT | VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT)));
+			VK_CHECK(GetQueryPoolResultsVector(data, vk, device, *queryPool, 0u, 1u, (VK_QUERY_RESULT_WAIT_BIT | m_parameters[0].querySizeFlags() | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT)));
 			if (getComputeExecution(m_parameters[parametersNdx]) != data[0].first || data[0].second == 0)
 				return tcu::TestStatus::fail("QueryPoolResults incorrect");
 
 			deUint64 temp = data[0].first;
 
-			vk.resetQueryPoolEXT(device, *queryPool, 0, 1u);
-			vk::VkResult res = GetQueryPoolResultsVector(data, vk, device, *queryPool, 0u, 1u, (VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT));
+			vk.resetQueryPool(device, *queryPool, 0, 1u);
+			vk::VkResult res = GetQueryPoolResultsVector(data, vk, device, *queryPool, 0u, 1u, (m_parameters[0].querySizeFlags() | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT));
 			/* From Vulkan spec:
 			 *
 			 * If VK_QUERY_RESULT_WAIT_BIT and VK_QUERY_RESULT_PARTIAL_BIT are both not set then no result values are written to pData
@@ -582,7 +608,6 @@ protected:
 																	 const de::SharedPtr<Buffer>	buffer,
 																	 const VkDeviceSize				bufferSizeBytes);
 	virtual tcu::TestStatus	checkResult								(const de::SharedPtr<Buffer>	buffer,
-																	 const VkDeviceSize				bufferSizeBytes,
 																	 const VkQueryPool				queryPool);
 };
 
@@ -698,14 +723,14 @@ tcu::TestStatus ComputeInvocationsSecondaryTestInstance::executeTest (const VkCo
 
 	// Secondary buffer is emitted only once, so it is safe to reset the query pool here.
 	if (m_parameters[0].resetType == RESET_TYPE_HOST)
-		vk.resetQueryPoolEXT(device, *queryPool, 0u, 1u);
+		vk.resetQueryPool(device, *queryPool, 0u, 1u);
 
 	// Wait for completion
 	submitCommandsAndWait(vk, device, queue, *primaryCmdBuffer);
-	return checkResult(buffer, bufferSizeBytes, *queryPool);
+	return checkResult(buffer, *queryPool);
 }
 
-tcu::TestStatus ComputeInvocationsSecondaryTestInstance::checkResult (const de::SharedPtr<Buffer> buffer, const VkDeviceSize bufferSizeBytes, const VkQueryPool queryPool)
+tcu::TestStatus ComputeInvocationsSecondaryTestInstance::checkResult (const de::SharedPtr<Buffer> buffer, const VkQueryPool queryPool)
 {
 	const DeviceInterface&	vk					= m_context.getDeviceInterface();
 	const VkDevice			device				= m_context.getDevice();
@@ -717,21 +742,21 @@ tcu::TestStatus ComputeInvocationsSecondaryTestInstance::checkResult (const de::
 		if (m_parameters[0].resetType == RESET_TYPE_NORMAL)
 		{
 			ResultsVector results;
-			VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, 1u, (VK_QUERY_RESULT_WAIT_BIT | VK_QUERY_RESULT_64_BIT)));
+			VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, 1u, (VK_QUERY_RESULT_WAIT_BIT | m_parameters[0].querySizeFlags())));
 			if (expected != results[0])
 				return tcu::TestStatus::fail("QueryPoolResults incorrect");
 		}
 		else if (m_parameters[0].resetType == RESET_TYPE_HOST)
 		{
 			ResultsVectorWithAvailability results;
-			VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, 1u, (VK_QUERY_RESULT_WAIT_BIT | VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT)));
+			VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, 1u, (VK_QUERY_RESULT_WAIT_BIT | m_parameters[0].querySizeFlags() | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT)));
 			if (expected != results[0].first || results[0].second == 0u)
 				return tcu::TestStatus::fail("QueryPoolResults incorrect");
 
 			deUint64 temp = results[0].first;
 
-			vk.resetQueryPoolEXT(device, queryPool, 0u, 1u);
-			vk::VkResult res = GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, 1u, (VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT));
+			vk.resetQueryPool(device, queryPool, 0u, 1u);
+			vk::VkResult res = GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, 1u, (m_parameters[0].querySizeFlags() | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT));
 			/* From Vulkan spec:
 			 *
 			 * If VK_QUERY_RESULT_WAIT_BIT and VK_QUERY_RESULT_PARTIAL_BIT are both not set then no result values are written to pData
@@ -752,7 +777,7 @@ tcu::TestStatus ComputeInvocationsSecondaryTestInstance::checkResult (const de::
 	{
 		// Validate the results
 		const Allocation&	bufferAllocation	= buffer->getBoundMemory();
-		invalidateMappedMemoryRange(vk, device, bufferAllocation.getMemory(), bufferAllocation.getOffset(), bufferSizeBytes);
+		invalidateAlloc(vk, device, bufferAllocation);
 		const deUint32*		bufferPtr			= static_cast<deUint32*>(bufferAllocation.getHostPtr());
 		deUint32			minSize				= ~0u;
 		for(size_t parametersNdx = 0; parametersNdx < m_parameters.size(); ++parametersNdx)
@@ -906,11 +931,11 @@ tcu::TestStatus ComputeInvocationsSecondaryInheritedTestInstance::executeTest (c
 	endCommandBuffer(vk, *primaryCmdBuffer);
 
 	if (m_parameters[0].resetType == RESET_TYPE_HOST)
-		vk.resetQueryPoolEXT(device, *queryPool, 0u, 1u);
+		vk.resetQueryPool(device, *queryPool, 0u, 1u);
 
 	// Wait for completion
 	submitCommandsAndWait(vk, device, queue, *primaryCmdBuffer);
-	return checkResult(buffer, bufferSizeBytes, *queryPool);
+	return checkResult(buffer, *queryPool);
 }
 
 class GraphicBasicTestInstance : public StatisticQueryTestInstance
@@ -925,19 +950,18 @@ public:
 		tcu::Vec4	position;
 		tcu::Vec4	color;
 	};
-	struct  ParametersGraphic
+
+	struct ParametersGraphic : public GenericParameters
 	{
-			ParametersGraphic (const VkQueryPipelineStatisticFlags queryStatisticFlags_, const VkPrimitiveTopology primitiveTopology_, const ResetType resetType_, const deBool query64Bits_, const deBool vertexOnlyPipe_ = DE_FALSE)
-			: queryStatisticFlags	(queryStatisticFlags_)
+		ParametersGraphic (const VkQueryPipelineStatisticFlags queryStatisticFlags_, const VkPrimitiveTopology primitiveTopology_, const ResetType resetType_, const deBool query64Bits_, const deBool vertexOnlyPipe_ = DE_FALSE)
+			: GenericParameters		{resetType_, query64Bits_}
+			, queryStatisticFlags	(queryStatisticFlags_)
 			, primitiveTopology		(primitiveTopology_)
-			, resetType				(resetType_)
-			, query64Bits			(query64Bits_)
 			, vertexOnlyPipe		(vertexOnlyPipe_)
-		{}
+			{}
+
 		VkQueryPipelineStatisticFlags	queryStatisticFlags;
 		VkPrimitiveTopology				primitiveTopology;
-		ResetType						resetType;
-		deBool							query64Bits;
 		deBool							vertexOnlyPipe;
 	};
 											GraphicBasicTestInstance			(vkt::Context&					context,
@@ -1288,7 +1312,7 @@ tcu::TestStatus VertexShaderTestInstance::executeTest (void)
 	endCommandBuffer(vk, *cmdBuffer);
 
 	if (m_parametersGraphic.resetType == RESET_TYPE_HOST)
-		vk.resetQueryPoolEXT(device, *queryPool, 0u, queryCount);
+		vk.resetQueryPool(device, *queryPool, 0u, queryCount);
 
 	// Wait for completion
 	submitCommandsAndWait(vk, device, queue, *cmdBuffer);
@@ -1350,7 +1374,7 @@ tcu::TestStatus VertexShaderTestInstance::checkResult (VkQueryPool queryPool)
 	if (m_parametersGraphic.resetType == RESET_TYPE_NORMAL)
 	{
 		ResultsVector results(queryCount, 0u);
-		VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_WAIT_BIT | VK_QUERY_RESULT_64_BIT)));
+		VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_WAIT_BIT | m_parametersGraphic.querySizeFlags())));
 		if (results[0] < expectedMin)
 			return tcu::TestStatus::fail("QueryPoolResults incorrect");
 		if (queryCount > 1)
@@ -1363,7 +1387,7 @@ tcu::TestStatus VertexShaderTestInstance::checkResult (VkQueryPool queryPool)
 	else if (m_parametersGraphic.resetType == RESET_TYPE_HOST)
 	{
 		ResultsVectorWithAvailability results(queryCount, pair<deUint64, deUint64>(0u,0u));
-		VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_WAIT_BIT | VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT)));
+		VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_WAIT_BIT | m_parametersGraphic.querySizeFlags() | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT)));
 		if (results[0].first < expectedMin || results[0].second == 0)
 			return tcu::TestStatus::fail("QueryPoolResults incorrect");
 
@@ -1376,8 +1400,8 @@ tcu::TestStatus VertexShaderTestInstance::checkResult (VkQueryPool queryPool)
 
 		deUint64 temp = results[0].first;
 
-		vk.resetQueryPoolEXT(device, queryPool, 0, queryCount);
-		vk::VkResult res = GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT));
+		vk.resetQueryPool(device, queryPool, 0, queryCount);
+		vk::VkResult res = GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (m_parametersGraphic.querySizeFlags() | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT));
 		/* From Vulkan spec:
 		 *
 		 * If VK_QUERY_RESULT_WAIT_BIT and VK_QUERY_RESULT_PARTIAL_BIT are both not set then no result values are written to pData
@@ -1506,7 +1530,7 @@ tcu::TestStatus VertexShaderSecondaryTestInstance::executeTest (void)
 	endCommandBuffer(vk, *primaryCmdBuffer);
 
 	if (m_parametersGraphic.resetType == RESET_TYPE_HOST)
-		vk.resetQueryPoolEXT(device, *queryPool, 0u, queryCount);
+		vk.resetQueryPool(device, *queryPool, 0u, queryCount);
 
 	// Wait for completion
 	submitCommandsAndWait(vk, device, queue, *primaryCmdBuffer);
@@ -1600,7 +1624,7 @@ tcu::TestStatus VertexShaderSecondaryInheritedTestInstance::executeTest (void)
 	endCommandBuffer(vk, *primaryCmdBuffer);
 
 	if (m_parametersGraphic.resetType == RESET_TYPE_HOST)
-		vk.resetQueryPoolEXT(device, *queryPool, 0u, queryCount);
+		vk.resetQueryPool(device, *queryPool, 0u, queryCount);
 
 	// Wait for completion
 	submitCommandsAndWait(vk, device, queue, *primaryCmdBuffer);
@@ -1763,7 +1787,7 @@ tcu::TestStatus GeometryShaderTestInstance::executeTest (void)
 	endCommandBuffer(vk, *cmdBuffer);
 
 	if (m_parametersGraphic.resetType == RESET_TYPE_HOST)
-		vk.resetQueryPoolEXT(device, *queryPool, 0u, queryCount);
+		vk.resetQueryPool(device, *queryPool, 0u, queryCount);
 
 	// Wait for completion
 	submitCommandsAndWait(vk, device, queue, *cmdBuffer);
@@ -1816,7 +1840,7 @@ tcu::TestStatus GeometryShaderTestInstance::checkResult (VkQueryPool queryPool)
 	if (m_parametersGraphic.resetType == RESET_TYPE_NORMAL)
 	{
 		ResultsVector results(queryCount, 0u);
-		VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_WAIT_BIT | VK_QUERY_RESULT_64_BIT)));
+		VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_WAIT_BIT | m_parametersGraphic.querySizeFlags())));
 		if (results[0] < expectedMin)
 			return tcu::TestStatus::fail("QueryPoolResults incorrect");
 		if (queryCount > 1)
@@ -1829,7 +1853,7 @@ tcu::TestStatus GeometryShaderTestInstance::checkResult (VkQueryPool queryPool)
 	else if (m_parametersGraphic.resetType == RESET_TYPE_HOST)
 	{
 		ResultsVectorWithAvailability results(queryCount, pair<deUint64, deUint64>(0u, 0u));
-		VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_WAIT_BIT | VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT)));
+		VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_WAIT_BIT | m_parametersGraphic.querySizeFlags() | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT)));
 		if (results[0].first < expectedMin || results[0].second == 0u)
 			return tcu::TestStatus::fail("QueryPoolResults incorrect");
 
@@ -1842,8 +1866,8 @@ tcu::TestStatus GeometryShaderTestInstance::checkResult (VkQueryPool queryPool)
 
 		deUint64 temp = results[0].first;
 
-		vk.resetQueryPoolEXT(device, queryPool, 0, queryCount);
-		vk::VkResult res = GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT));
+		vk.resetQueryPool(device, queryPool, 0, queryCount);
+		vk::VkResult res = GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (m_parametersGraphic.querySizeFlags() | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT));
 		/* From Vulkan spec:
 		 *
 		 * If VK_QUERY_RESULT_WAIT_BIT and VK_QUERY_RESULT_PARTIAL_BIT are both not set then no result values are written to pData
@@ -1958,7 +1982,7 @@ tcu::TestStatus GeometryShaderSecondaryTestInstance::executeTest (void)
 	endCommandBuffer(vk, *primaryCmdBuffer);
 
 	if (m_parametersGraphic.resetType == RESET_TYPE_HOST)
-		vk.resetQueryPoolEXT(device, *queryPool, 0u, queryCount);
+		vk.resetQueryPool(device, *queryPool, 0u, queryCount);
 
 	// Wait for completion
 	submitCommandsAndWait(vk, device, queue, *primaryCmdBuffer);
@@ -2052,7 +2076,7 @@ tcu::TestStatus GeometryShaderSecondaryInheritedTestInstance::executeTest (void)
 	endCommandBuffer(vk, *primaryCmdBuffer);
 
 	if (m_parametersGraphic.resetType == RESET_TYPE_HOST)
-		vk.resetQueryPoolEXT(device, *queryPool, 0u, queryCount);
+		vk.resetQueryPool(device, *queryPool, 0u, queryCount);
 
 	// Wait for completion
 	submitCommandsAndWait(vk, device, queue, *primaryCmdBuffer);
@@ -2213,7 +2237,7 @@ tcu::TestStatus	TessellationShaderTestInstance::executeTest (void)
 	endCommandBuffer(vk, *cmdBuffer);
 
 	if (m_parametersGraphic.resetType == RESET_TYPE_HOST)
-		vk.resetQueryPoolEXT(device, *queryPool, 0u, queryCount);
+		vk.resetQueryPool(device, *queryPool, 0u, queryCount);
 
 	// Wait for completion
 	submitCommandsAndWait(vk, device, queue, *cmdBuffer);
@@ -2244,7 +2268,7 @@ tcu::TestStatus TessellationShaderTestInstance::checkResult (VkQueryPool queryPo
 	if (m_parametersGraphic.resetType == RESET_TYPE_NORMAL)
 	{
 		ResultsVector results(queryCount, 0u);
-		VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_WAIT_BIT | VK_QUERY_RESULT_64_BIT)));
+		VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_WAIT_BIT | m_parametersGraphic.querySizeFlags())));
 		if (results[0] < expectedMin)
 			return tcu::TestStatus::fail("QueryPoolResults incorrect");
 		if (queryCount > 1)
@@ -2260,7 +2284,7 @@ tcu::TestStatus TessellationShaderTestInstance::checkResult (VkQueryPool queryPo
 	else if (m_parametersGraphic.resetType == RESET_TYPE_HOST)
 	{
 		ResultsVectorWithAvailability results(queryCount, pair<deUint64,deUint64>(0u,0u));
-		VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_WAIT_BIT | VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT)));
+		VK_CHECK(GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_WAIT_BIT | m_parametersGraphic.querySizeFlags() | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT)));
 		if (results[0].first < expectedMin || results[0].second == 0u)
 			return tcu::TestStatus::fail("QueryPoolResults incorrect");
 
@@ -2273,8 +2297,8 @@ tcu::TestStatus TessellationShaderTestInstance::checkResult (VkQueryPool queryPo
 
 		deUint64 temp = results[0].first;
 
-		vk.resetQueryPoolEXT(device, queryPool, 0, queryCount);
-		vk::VkResult res = GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT));
+		vk.resetQueryPool(device, queryPool, 0, queryCount);
+		vk::VkResult res = GetQueryPoolResultsVector(results, vk, device, queryPool, 0u, queryCount, (m_parametersGraphic.querySizeFlags() | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT));
 		/* From Vulkan spec:
 		 *
 		 * If VK_QUERY_RESULT_WAIT_BIT and VK_QUERY_RESULT_PARTIAL_BIT are both not set then no result values are written to pData
@@ -2378,7 +2402,7 @@ tcu::TestStatus	TessellationShaderSecondrayTestInstance::executeTest (void)
 	endCommandBuffer(vk, *primaryCmdBuffer);
 
 	if (m_parametersGraphic.resetType == RESET_TYPE_HOST)
-		vk.resetQueryPoolEXT(device, *queryPool, 0u, queryCount);
+		vk.resetQueryPool(device, *queryPool, 0u, queryCount);
 
 	// Wait for completion
 	submitCommandsAndWait(vk, device, queue, *primaryCmdBuffer);
@@ -2472,7 +2496,7 @@ tcu::TestStatus	TessellationShaderSecondrayInheritedTestInstance::executeTest (v
 	endCommandBuffer(vk, *primaryCmdBuffer);
 
 	if (m_parametersGraphic.resetType == RESET_TYPE_HOST)
-		vk.resetQueryPoolEXT(device, *queryPool, 0u, queryCount);
+		vk.resetQueryPool(device, *queryPool, 0u, queryCount);
 
 	// Wait for completion
 	submitCommandsAndWait(vk, device, queue, *primaryCmdBuffer);

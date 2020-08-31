@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "content/common/frame.mojom.h"
@@ -28,7 +29,6 @@
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "third_party/blink/public/common/features.h"
 #include "v8/include/v8.h"
 
 namespace content {
@@ -193,24 +193,14 @@ void ExposeRendererInterfacesToBrowser(
   binders->Add(base::BindRepeating(&CreateResourceUsageReporter, render_thread),
                base::ThreadTaskRunnerHandle::Get());
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kOffMainThreadServiceWorkerStartup)) {
-    auto task_runner = base::CreateSingleThreadTaskRunner(
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_BLOCKING,
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-    binders->Add(
-        base::BindRepeating(&EmbeddedWorkerInstanceClientImpl::CreateForRequest,
-                            task_runner),
-        task_runner);
-  } else {
-    auto task_runner =
-        render_thread->GetWebMainThreadScheduler()->DefaultTaskRunner();
-    binders->Add(
-        base::BindRepeating(&EmbeddedWorkerInstanceClientImpl::CreateForRequest,
-                            task_runner),
-        task_runner);
-  }
+  auto task_runner_for_service_worker_startup =
+      base::ThreadPool::CreateSingleThreadTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  binders->Add(
+      base::BindRepeating(&EmbeddedWorkerInstanceClientImpl::CreateForRequest,
+                          task_runner_for_service_worker_startup),
+      task_runner_for_service_worker_startup);
 
   binders->Add(base::BindRepeating(&CreateFrameFactory),
                base::ThreadTaskRunnerHandle::Get());

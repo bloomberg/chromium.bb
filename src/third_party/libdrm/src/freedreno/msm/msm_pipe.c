@@ -26,10 +26,6 @@
  *    Rob Clark <robclark@freedesktop.org>
  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #include "msm_priv.h"
 
 static int query_param(struct fd_pipe *pipe, uint32_t param,
@@ -100,42 +96,54 @@ static int msm_pipe_wait(struct fd_pipe *pipe, uint32_t timestamp,
 	return 0;
 }
 
-static int open_submitqueue(struct fd_device *dev, uint32_t prio,
-		uint32_t *queue_id)
+static int open_submitqueue(struct fd_pipe *pipe, uint32_t prio)
 {
 	struct drm_msm_submitqueue req = {
 		.flags = 0,
 		.prio = prio,
 	};
+	uint64_t nr_rings = 1;
 	int ret;
 
-	if (fd_device_version(dev) < FD_VERSION_SUBMIT_QUEUES) {
-		*queue_id = 0;
+	if (fd_device_version(pipe->dev) < FD_VERSION_SUBMIT_QUEUES) {
+		to_msm_pipe(pipe)->queue_id = 0;
 		return 0;
 	}
 
-	ret = drmCommandWriteRead(dev->fd, DRM_MSM_SUBMITQUEUE_NEW, &req, sizeof(req));
+	msm_pipe_get_param(pipe, FD_NR_RINGS, &nr_rings);
+
+	req.prio = MIN2(req.prio, MAX2(nr_rings, 1) - 1);
+
+	ret = drmCommandWriteRead(pipe->dev->fd, DRM_MSM_SUBMITQUEUE_NEW,
+			&req, sizeof(req));
 	if (ret) {
 		ERROR_MSG("could not create submitqueue! %d (%s)", ret, strerror(errno));
 		return ret;
 	}
 
-	*queue_id = req.id;
+	to_msm_pipe(pipe)->queue_id = req.id;
 	return 0;
 }
 
-static void close_submitqueue(struct fd_device *dev, uint32_t queue_id)
+static void close_submitqueue(struct fd_pipe *pipe, uint32_t queue_id)
 {
-	if (fd_device_version(dev) < FD_VERSION_SUBMIT_QUEUES)
+	if (fd_device_version(pipe->dev) < FD_VERSION_SUBMIT_QUEUES)
 		return;
 
-	drmCommandWrite(dev->fd, DRM_MSM_SUBMITQUEUE_CLOSE, &queue_id, sizeof(queue_id));
+	drmCommandWrite(pipe->dev->fd, DRM_MSM_SUBMITQUEUE_CLOSE,
+			&queue_id, sizeof(queue_id));
 }
 
 static void msm_pipe_destroy(struct fd_pipe *pipe)
 {
 	struct msm_pipe *msm_pipe = to_msm_pipe(pipe);
-	close_submitqueue(pipe->dev, msm_pipe->queue_id);
+	close_submitqueue(pipe, msm_pipe->queue_id);
+
+	if (msm_pipe->suballoc_ring) {
+		fd_ringbuffer_del(msm_pipe->suballoc_ring);
+		msm_pipe->suballoc_ring = NULL;
+	}
+
 	free(msm_pipe);
 }
 
@@ -193,7 +201,7 @@ drm_private struct fd_pipe * msm_pipe_new(struct fd_device *dev,
 	INFO_MSG(" Chip-id:         0x%08x", msm_pipe->chip_id);
 	INFO_MSG(" GMEM size:       0x%08x", msm_pipe->gmem);
 
-	if (open_submitqueue(dev, prio, &msm_pipe->queue_id))
+	if (open_submitqueue(pipe, prio))
 		goto fail;
 
 	return pipe;

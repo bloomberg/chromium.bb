@@ -4,14 +4,17 @@
 
 #import "ios/chrome/browser/ui/translate/legacy_translate_infobar_coordinator.h"
 
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/translate/language_selection_context.h"
 #import "ios/chrome/browser/translate/language_selection_delegate.h"
 #import "ios/chrome/browser/translate/language_selection_handler.h"
 #import "ios/chrome/browser/translate/translate_option_selection_delegate.h"
 #import "ios/chrome/browser/translate/translate_option_selection_handler.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_presenter.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_presenter_delegate.h"
@@ -19,6 +22,7 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_constants.h"
 #import "ios/chrome/browser/ui/translate/cells/select_language_popup_menu_item.h"
+#import "ios/chrome/browser/ui/translate/legacy_translate_infobar_constants.h"
 #import "ios/chrome/browser/ui/translate/legacy_translate_infobar_mediator.h"
 #import "ios/chrome/browser/ui/translate/translate_notification_presenter.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
@@ -27,17 +31,12 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kLanguageSelectorPopupMenuId = @"kLanguageSelectorPopupMenuId";
-NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
-
 @interface LegacyTranslateInfobarCoordinator () <
     LanguageSelectionHandler,
     PopupMenuPresenterDelegate,
     PopupMenuTableViewControllerDelegate,
     TranslateOptionSelectionHandler>
 
-// The WebStateList this coordinator observes.
-@property(nonatomic, assign) WebStateList* webStateList;
 // Presenter for the popup menu, managing the animations.
 @property(nonatomic, strong) PopupMenuPresenter* popupMenuPresenter;
 // Mediator for the popup menu.
@@ -55,27 +54,10 @@ NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
     translateOptionSelectionDelegate;
 // YES if the coordinator has been started.
 @property(nonatomic) BOOL started;
-// The dispatcher used by this Coordinator.
-@property(nonatomic, weak) id<SnackbarCommands> dispatcher;
 
 @end
 
 @implementation LegacyTranslateInfobarCoordinator
-
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
-                              webStateList:(WebStateList*)webStateList
-                                dispatcher:(id<SnackbarCommands>)dispatcher {
-  DCHECK(webStateList);
-  self = [super initWithBaseViewController:viewController
-                              browserState:browserState];
-  if (self) {
-    _webStateList = webStateList;
-    _dispatcher = dispatcher;
-  }
-  return self;
-}
 
 #pragma mark - ChromeCoordinator
 
@@ -83,13 +65,16 @@ NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
   if (self.started)
     return;
 
-  self.notificationPresenter = [[TranslateNotificationPresenter alloc]
-      initWithDispatcher:self.dispatcher];
+  CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
+  id<SnackbarCommands> handler =
+      HandlerForProtocol(dispatcher, SnackbarCommands);
+  self.notificationPresenter =
+      [[TranslateNotificationPresenter alloc] initWithDispatcher:handler];
 
   self.mediator = [[LegacyTranslateInfobarMediator alloc]
       initWithSelectionHandler:self
            notificationHandler:self.notificationPresenter];
-  self.mediator.webStateList = self.webStateList;
+  self.mediator.webStateList = self.browser->GetWebStateList();
 
   self.started = YES;
 }
@@ -102,7 +87,6 @@ NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
   [self.mediator disconnect];
   self.mediator = nil;
   self.notificationPresenter = nil;
-  self.webStateList = nullptr;
   self.popupMenuPresenter = nil;
   self.viewController = nil;
   self.languageSelectionDelegate = nil;
@@ -213,16 +197,6 @@ NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
       NOTREACHED() << "Unexpected identifier";
       break;
   }
-}
-
-#pragma mark - ContainedPresenterDelegate
-
-- (void)containedPresenterDidPresent:(id<ContainedPresenter>)presenter {
-  // noop.
-}
-
-- (void)containedPresenterDidDismiss:(id<ContainedPresenter>)presenter {
-  // noop.
 }
 
 #pragma mark - PopupMenuPresenterDelegate

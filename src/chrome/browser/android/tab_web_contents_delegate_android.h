@@ -8,12 +8,13 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/find_bar/find_result_observer.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "components/embedder_support/android/delegate/web_contents_delegate_android.h"
+#include "components/find_in_page/find_result_observer.h"
+#include "components/find_in_page/find_tab_helper.h"
+#include "components/paint_preview/buildflags/buildflags.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "printing/buildflags/buildflags.h"
-#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
+#include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 
 namespace content {
 struct FileChooserParams;
@@ -36,11 +37,12 @@ namespace android {
 // the Chromium Android port but not to be shared with WebView.
 class TabWebContentsDelegateAndroid
     : public web_contents_delegate_android::WebContentsDelegateAndroid,
-      public FindResultObserver {
+      public find_in_page::FindResultObserver {
  public:
   TabWebContentsDelegateAndroid(JNIEnv* env, jobject obj);
   ~TabWebContentsDelegateAndroid() override;
 
+  void PortalWebContentsCreated(content::WebContents* portal_contents) override;
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
                       std::unique_ptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
@@ -93,6 +95,7 @@ class TabWebContentsDelegateAndroid
   bool ShouldResumeRequestsForCreatedWindow() override;
   void AddNewContents(content::WebContents* source,
                       std::unique_ptr<content::WebContents> new_contents,
+                      const GURL& target_url,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
@@ -100,10 +103,11 @@ class TabWebContentsDelegateAndroid
   blink::SecurityStyle GetSecurityStyle(
       content::WebContents* web_contents,
       content::SecurityStyleExplanations* security_style_explanations) override;
-  void OnDidBlockNavigation(content::WebContents* web_contents,
-                            const GURL& blocked_url,
-                            const GURL& initiator_url,
-                            blink::NavigationBlockedReason reason) override;
+  void OnDidBlockNavigation(
+      content::WebContents* web_contents,
+      const GURL& blocked_url,
+      const GURL& initiator_url,
+      blink::mojom::NavigationBlockedReason reason) override;
   void UpdateUserGestureCarryoverInfo(
       content::WebContents* web_contents) override;
   content::PictureInPictureResult EnterPictureInPicture(
@@ -111,11 +115,9 @@ class TabWebContentsDelegateAndroid
       const viz::SurfaceId&,
       const gfx::Size&) override;
   void ExitPictureInPicture() override;
-  std::unique_ptr<content::WebContents> SwapWebContents(
-      content::WebContents* old_contents,
-      std::unique_ptr<content::WebContents> new_contents,
-      bool did_start_load,
-      bool did_finish_load) override;
+  std::unique_ptr<content::WebContents> ActivatePortalWebContents(
+      content::WebContents* predecessor_contents,
+      std::unique_ptr<content::WebContents> portal_contents) override;
 
 #if BUILDFLAG(ENABLE_PRINTING)
   void PrintCrossProcessSubframe(
@@ -125,9 +127,17 @@ class TabWebContentsDelegateAndroid
       content::RenderFrameHost* subframe_host) const override;
 #endif
 
-  // FindResultObserver:
+#if BUILDFLAG(ENABLE_PAINT_PREVIEW)
+  void CapturePaintPreviewOfCrossProcessSubframe(
+      content::WebContents* web_contents,
+      const gfx::Rect& rect,
+      const base::UnguessableToken& guid,
+      content::RenderFrameHost* render_frame_host) override;
+#endif
+
+  // find_in_page::FindResultObserver:
   void OnFindResultAvailable(content::WebContents* web_contents) override;
-  void OnFindTabHelperDestroyed(FindTabHelper* helper) override;
+  void OnFindTabHelperDestroyed(find_in_page::FindTabHelper* helper) override;
 
   bool ShouldEnableEmbeddedMediaExperience() const;
   bool IsPictureInPictureEnabled() const;
@@ -141,7 +151,8 @@ class TabWebContentsDelegateAndroid
   const GURL GetManifestScope() const;
 
  private:
-  ScopedObserver<FindTabHelper, FindResultObserver> find_result_observer_{this};
+  ScopedObserver<find_in_page::FindTabHelper, find_in_page::FindResultObserver>
+      find_result_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabWebContentsDelegateAndroid);
 };

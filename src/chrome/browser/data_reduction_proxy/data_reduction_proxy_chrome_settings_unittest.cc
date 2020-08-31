@@ -9,11 +9,8 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -29,7 +26,6 @@ namespace {
 using testing::_;
 using testing::Return;
 
-constexpr char kUrl[] = "http://example.com";
 constexpr char kProxyPac[] = "PROXY proxy.net";
 }  // namespace
 
@@ -49,11 +45,9 @@ class DataReductionProxyChromeSettingsTest
             .Build();
     net::ProxyList proxies;
     proxies.SetFromPacString(kProxyPac);
-    test_context_->config()->test_params()->SetConfiguredProxies(proxies);
     test_context_->test_network_quality_tracker()
         ->ReportEffectiveConnectionTypeForTesting(
             net::EFFECTIVE_CONNECTION_TYPE_4G);
-    config_ = test_context_->mock_config();
     dict_ = std::make_unique<base::DictionaryValue>();
 
     PrefRegistrySimple* registry = test_context_->pref_service()->registry();
@@ -70,12 +64,10 @@ class DataReductionProxyChromeSettingsTest
   std::unique_ptr<base::DictionaryValue> dict_;
   std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
       test_context_;
-  data_reduction_proxy::MockDataReductionProxyConfig* config_;
 };
 
 TEST_F(DataReductionProxyChromeSettingsTest, MigrateNonexistentProxyPref) {
   base::HistogramTester histogram_tester;
-  EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(0);
   drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
       test_context_->pref_service());
 
@@ -112,7 +104,6 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateBadlyFormedProxyPref) {
     test_context_->pref_service()->Set(proxy_config::prefs::kProxy,
                                        *dict_.get());
 
-    EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(0);
     drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
         test_context_->pref_service());
 
@@ -132,7 +123,6 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateBadlyFormedProxyPref) {
 TEST_F(DataReductionProxyChromeSettingsTest, MigrateEmptyProxy) {
   base::HistogramTester histogram_tester;
   test_context_->pref_service()->Set(proxy_config::prefs::kProxy, *dict_.get());
-  EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(0);
   drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
       test_context_->pref_service());
 
@@ -147,7 +137,6 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateSystemProxy) {
   base::HistogramTester histogram_tester;
   dict_->SetString("mode", "system");
   test_context_->pref_service()->Set(proxy_config::prefs::kProxy, *dict_.get());
-  EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(0);
 
   drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
       test_context_->pref_service());
@@ -157,33 +146,6 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateSystemProxy) {
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.ProxyPrefMigrationResult",
       DataReductionProxyChromeSettings::PROXY_PREF_CLEARED_MODE_SYSTEM, 1);
-}
-
-TEST_F(DataReductionProxyChromeSettingsTest, MigrateDataReductionProxy) {
-  const std::string kTestServers[] = {"http=http://proxy.googlezip.net",
-                                      "http=https://my-drp.org",
-                                      "https=https://tunneldrp.com"};
-
-  for (const std::string& test_server : kTestServers) {
-    base::HistogramTester histogram_tester;
-    dict_.reset(new base::DictionaryValue());
-    dict_->SetString("mode", "fixed_servers");
-    dict_->SetString("server", test_server);
-    test_context_->pref_service()->Set(proxy_config::prefs::kProxy,
-                                       *dict_.get());
-    EXPECT_CALL(*config_, ContainsDataReductionProxy(_))
-        .Times(1)
-        .WillOnce(Return(true));
-
-    drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
-        test_context_->pref_service());
-
-    EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(
-                        proxy_config::prefs::kProxy));
-    histogram_tester.ExpectUniqueSample(
-        "DataReductionProxy.ProxyPrefMigrationResult",
-        DataReductionProxyChromeSettings::PROXY_PREF_CLEARED_DRP, 1);
-  }
 }
 
 TEST_F(DataReductionProxyChromeSettingsTest,
@@ -202,10 +164,6 @@ TEST_F(DataReductionProxyChromeSettingsTest,
     dict_->SetString("server", test_server);
     test_context_->pref_service()->Set(proxy_config::prefs::kProxy,
                                        *dict_.get());
-    EXPECT_CALL(*config_, ContainsDataReductionProxy(_))
-        .Times(1)
-        .WillOnce(Return(false));
-
     drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
         test_context_->pref_service());
 
@@ -313,7 +271,6 @@ TEST_F(DataReductionProxyChromeSettingsTest,
     dict_->SetString("pac_url", test.pac_url);
     test_context_->pref_service()->Set(proxy_config::prefs::kProxy,
                                        *dict_.get());
-    EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(0);
 
     drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
         test_context_->pref_service());
@@ -357,9 +314,6 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateIgnoreOtherProxy) {
     dict_->SetString("server", test_server);
     test_context_->pref_service()->Set(proxy_config::prefs::kProxy,
                                        *dict_.get());
-    EXPECT_CALL(*config_, ContainsDataReductionProxy(_))
-        .Times(1)
-        .WillOnce(Return(false));
 
     drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
         test_context_->pref_service());
@@ -378,92 +332,4 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateIgnoreOtherProxy) {
         "DataReductionProxy.ProxyPrefMigrationResult",
         DataReductionProxyChromeSettings::PROXY_PREF_NOT_CLEARED, 1);
   }
-}
-
-TEST_F(DataReductionProxyChromeSettingsTest, CreateDataBasic) {
-  content::MockNavigationHandle handle(GURL(kUrl), main_rfh());
-  std::string raw_headers = "HTTP/1.0 200 OK\n";
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(raw_headers));
-  handle.set_response_headers(headers);
-  auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
-      &handle, headers.get());
-
-  EXPECT_EQ(data->request_url(), GURL(kUrl));
-  EXPECT_EQ(data->effective_connection_type(),
-            net::EFFECTIVE_CONNECTION_TYPE_4G);
-  EXPECT_EQ(data->connection_type(),
-            net::NetworkChangeNotifier::ConnectionType::CONNECTION_4G);
-  EXPECT_FALSE(data->used_data_reduction_proxy());
-}
-
-TEST_F(DataReductionProxyChromeSettingsTest, CreateDataUsedDataReductionProxy) {
-  content::MockNavigationHandle handle(GURL(kUrl), main_rfh());
-  handle.set_proxy_server(net::ProxyServer::FromPacString(kProxyPac));
-  std::string raw_headers = "HTTP/1.0 200 OK\n";
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(raw_headers));
-  handle.set_response_headers(headers);
-  auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
-      &handle, headers.get());
-
-  EXPECT_TRUE(data->used_data_reduction_proxy());
-}
-
-TEST_F(DataReductionProxyChromeSettingsTest, CreateDataCachedResponse) {
-  std::string raw_headers =
-      "HTTP/1.0 200 OK\n"
-      "chrome-proxy: foo\n";
-  content::MockNavigationHandle handle(GURL(kUrl), main_rfh());
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(raw_headers));
-  handle.set_response_headers(headers);
-  handle.set_was_response_cached(true);
-  auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
-      &handle, headers.get());
-
-  EXPECT_TRUE(data->was_cached_data_reduction_proxy_response());
-}
-
-TEST_F(DataReductionProxyChromeSettingsTest, CreateHTTPSDataCachedResponse) {
-  std::string raw_headers = "HTTP/1.0 200 OK\nchrome-proxy: foo\n";
-  content::MockNavigationHandle handle(GURL("https://secure.com"), main_rfh());
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(raw_headers));
-  handle.set_response_headers(headers);
-  handle.set_was_response_cached(true);
-  auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
-      &handle, headers.get());
-
-  EXPECT_FALSE(data->was_cached_data_reduction_proxy_response());
-}
-
-TEST_F(DataReductionProxyChromeSettingsTest,
-       CreateCachedResponseWithViaHeader) {
-  std::string raw_headers =
-      "HTTP/1.0 200 OK\n"
-      "via: 1.1 Chrome-Compression-Proxy\n";
-  content::MockNavigationHandle handle(GURL(kUrl), main_rfh());
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(raw_headers));
-  handle.set_response_headers(headers);
-  handle.set_was_response_cached(true);
-  auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
-      &handle, headers.get());
-
-  EXPECT_TRUE(data->was_cached_data_reduction_proxy_response());
-}
-
-TEST_F(DataReductionProxyChromeSettingsTest, CreateDataWithLitePage) {
-  std::string raw_headers =
-      "HTTP/1.0 200 OK\n"
-      "chrome-proxy-content-transform: lite-page\n";
-  content::MockNavigationHandle handle(GURL(kUrl), main_rfh());
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(raw_headers));
-  handle.set_response_headers(headers);
-  auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
-      &handle, headers.get());
-
-  EXPECT_TRUE(data->lite_page_received());
 }

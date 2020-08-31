@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
-#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -66,7 +66,7 @@ class DOMWebSocketWithMockChannel final : public DOMWebSocket {
     return channel_.Get();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(channel_);
     DOMWebSocket::Trace(visitor);
   }
@@ -190,7 +190,8 @@ TEST(DOMWebSocketTest, insecureRequestsUpgrade) {
         .WillOnce(Return(true));
   }
 
-  scope.GetDocument().SetInsecureRequestPolicy(kUpgradeInsecureRequests);
+  scope.GetDocument().GetSecurityContext().SetInsecureRequestPolicy(
+      mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests);
   websocket_scope.Socket().Connect("ws://example.com/endpoint",
                                    Vector<String>(), scope.GetExceptionState());
 
@@ -209,7 +210,8 @@ TEST(DOMWebSocketTest, insecureRequestsUpgradePotentiallyTrustworthy) {
         .WillOnce(Return(true));
   }
 
-  scope.GetDocument().SetInsecureRequestPolicy(kUpgradeInsecureRequests);
+  scope.GetDocument().GetSecurityContext().SetInsecureRequestPolicy(
+      mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests);
   websocket_scope.Socket().Connect("ws://127.0.0.1/endpoint", Vector<String>(),
                                    scope.GetExceptionState());
 
@@ -228,7 +230,8 @@ TEST(DOMWebSocketTest, insecureRequestsDoNotUpgrade) {
         .WillOnce(Return(true));
   }
 
-  scope.GetDocument().SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
+  scope.GetDocument().GetSecurityContext().SetInsecureRequestPolicy(
+      mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone);
   websocket_scope.Socket().Connect("ws://example.com/endpoint",
                                    Vector<String>(), scope.GetExceptionState());
 

@@ -10,6 +10,7 @@ from __future__ import print_function
 import ctypes
 import io
 import os
+import sys
 
 import mock
 
@@ -19,6 +20,9 @@ from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.scripts import cros_generate_breakpad_symbols
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class FindDebugDirMock(partial_mock.PartialMock):

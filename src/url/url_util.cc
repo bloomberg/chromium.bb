@@ -6,9 +6,10 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <atomic>
 
-#include "base/debug/leak_annotations.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/compiler_specific.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -20,6 +21,12 @@
 namespace url {
 
 namespace {
+
+// A pair for representing a standard scheme name and the SchemeType for it.
+struct SchemeWithType {
+  std::string scheme;
+  SchemeType type;
+};
 
 // List of currently registered schemes and associated properties.
 struct SchemeRegistry {
@@ -90,9 +97,24 @@ struct SchemeRegistry {
   bool allow_non_standard_schemes = false;
 };
 
-SchemeRegistry* GetSchemeRegistry() {
+// See the LockSchemeRegistries declaration in the header.
+bool scheme_registries_locked = false;
+
+// Ensure that the schemes aren't modified after first use.
+static std::atomic<bool> g_scheme_registries_used{false};
+
+// Gets the scheme registry without locking the schemes. This should *only* be
+// used for adding schemes to the registry.
+SchemeRegistry* GetSchemeRegistryWithoutLocking() {
   static base::NoDestructor<SchemeRegistry> registry;
   return registry.get();
+}
+
+const SchemeRegistry& GetSchemeRegistry() {
+#if DCHECK_IS_ON()
+  g_scheme_registries_used.store(true);
+#endif
+  return *GetSchemeRegistryWithoutLocking();
 }
 
 // Pass this enum through for methods which would like to know if whitespace
@@ -101,9 +123,6 @@ enum WhitespaceRemovalPolicy {
   REMOVE_WHITESPACE,
   DO_NOT_REMOVE_WHITESPACE,
 };
-
-// See the LockSchemeRegistries declaration in the header.
-bool scheme_registries_locked = false;
 
 // This template converts a given character type to the corresponding
 // StringPiece type.
@@ -154,7 +173,7 @@ bool DoIsInSchemes(const CHAR* spec,
 template<typename CHAR>
 bool DoIsStandard(const CHAR* spec, const Component& scheme, SchemeType* type) {
   return DoIsInSchemes(spec, scheme, type,
-                       GetSchemeRegistry()->standard_schemes);
+                       GetSchemeRegistry().standard_schemes);
 }
 
 
@@ -165,7 +184,7 @@ bool DoFindAndCompareScheme(const CHAR* str,
                             Component* found_scheme) {
   // Before extracting scheme, canonicalize the URL to remove any whitespace.
   // This matches the canonicalization done in DoCanonicalize function.
-  RawCanonOutputT<CHAR> whitespace_buffer;
+  STACK_UNINITIALIZED RawCanonOutputT<CHAR> whitespace_buffer;
   int spec_len;
   const CHAR* spec =
       RemoveURLWhitespace(str, str_len, &whitespace_buffer, &spec_len, nullptr);
@@ -194,7 +213,7 @@ bool DoCanonicalize(const CHAR* spec,
 
   // Remove any whitespace from the middle of the relative URL if necessary.
   // Possibly this will result in copying to the new buffer.
-  RawCanonOutputT<CHAR> whitespace_buffer;
+  STACK_UNINITIALIZED RawCanonOutputT<CHAR> whitespace_buffer;
   if (whitespace_policy == REMOVE_WHITESPACE) {
     spec = RemoveURLWhitespace(spec, spec_len, &whitespace_buffer, &spec_len,
                                &output_parsed->potentially_dangling_markup);
@@ -273,7 +292,7 @@ bool DoResolveRelative(const char* base_spec,
                        Parsed* output_parsed) {
   // Remove any whitespace from the middle of the relative URL, possibly
   // copying to the new buffer.
-  RawCanonOutputT<CHAR> whitespace_buffer;
+  STACK_UNINITIALIZED RawCanonOutputT<CHAR> whitespace_buffer;
   int relative_length;
   const CHAR* relative = RemoveURLWhitespace(
       in_relative, in_relative_length, &whitespace_buffer, &relative_length,
@@ -314,7 +333,7 @@ bool DoResolveRelative(const char* base_spec,
     Parsed base_parsed_authority;
     ParseStandardURL(base_spec, base_spec_len, &base_parsed_authority);
     if (base_parsed_authority.host.is_nonempty()) {
-      RawCanonOutputT<char> temporary_output;
+      STACK_UNINITIALIZED RawCanonOutputT<char> temporary_output;
       bool did_resolve_succeed =
           ResolveRelativeURL(base_spec, base_parsed_authority, false, relative,
                              relative_component, charset_converter,
@@ -366,7 +385,7 @@ bool DoReplaceComponents(const char* spec,
   if (replacements.IsSchemeOverridden()) {
     // Canonicalize the new scheme so it is 8-bit and can be concatenated with
     // the existing spec.
-    RawCanonOutput<128> scheme_replaced;
+    STACK_UNINITIALIZED RawCanonOutput<128> scheme_replaced;
     Component scheme_replaced_parsed;
     CanonicalizeScheme(replacements.sources().scheme,
                        replacements.components().scheme,
@@ -383,7 +402,7 @@ bool DoReplaceComponents(const char* spec,
 
     // We now need to completely re-parse the resulting string since its meaning
     // may have changed with the different scheme.
-    RawCanonOutput<128> recanonicalized;
+    STACK_UNINITIALIZED RawCanonOutput<128> recanonicalized;
     Parsed recanonicalized_parsed;
     DoCanonicalize(scheme_replaced.data(), scheme_replaced.length(), true,
                    REMOVE_WHITESPACE, charset_converter, &recanonicalized,
@@ -438,8 +457,16 @@ bool DoReplaceComponents(const char* spec,
   return ReplacePathURL(spec, parsed, replacements, output, out_parsed);
 }
 
-void DoAddScheme(const char* new_scheme, std::vector<std::string>* schemes) {
-  DCHECK(schemes);
+void DoSchemeModificationPreamble() {
+  // If this assert triggers, it means you've called Add*Scheme after
+  // the SchemeRegistry has been used.
+  //
+  // This normally means you're trying to set up a new scheme too late or using
+  // the SchemeRegistry too early in your application's init process. Make sure
+  // that you haven't added any static GURL initializers in tests.
+  DCHECK(!g_scheme_registries_used.load())
+      << "Trying to add a scheme after the lists have been used.";
+
   // If this assert triggers, it means you've called Add*Scheme after
   // LockSchemeRegistries has been called (see the header file for
   // LockSchemeRegistries for more).
@@ -449,122 +476,145 @@ void DoAddScheme(const char* new_scheme, std::vector<std::string>* schemes) {
   // and calls LockSchemeRegistries, and add your new scheme there.
   DCHECK(!scheme_registries_locked)
       << "Trying to add a scheme after the lists have been locked.";
+}
 
-  size_t scheme_len = strlen(new_scheme);
-  if (scheme_len == 0)
-    return;
-
+void DoAddScheme(const char* new_scheme, std::vector<std::string>* schemes) {
+  DoSchemeModificationPreamble();
+  DCHECK(schemes);
+  DCHECK(strlen(new_scheme) > 0);
   DCHECK_EQ(base::ToLowerASCII(new_scheme), new_scheme);
-  schemes->push_back(std::string(new_scheme));
+  DCHECK(std::find(schemes->begin(), schemes->end(), new_scheme) ==
+         schemes->end());
+  schemes->push_back(new_scheme);
 }
 
 void DoAddSchemeWithType(const char* new_scheme,
                          SchemeType type,
                          std::vector<SchemeWithType>* schemes) {
+  DoSchemeModificationPreamble();
   DCHECK(schemes);
-  // If this assert triggers, it means you've called Add*Scheme after
-  // LockSchemeRegistries has been called (see the header file for
-  // LockSchemeRegistries for more).
-  //
-  // This normally means you're trying to set up a new scheme too late in your
-  // application's init process. Locate where your app does this initialization
-  // and calls LockSchemeRegistries, and add your new scheme there.
-  DCHECK(!scheme_registries_locked)
-      << "Trying to add a scheme after the lists have been locked.";
-
-  size_t scheme_len = strlen(new_scheme);
-  if (scheme_len == 0)
-    return;
-
+  DCHECK(strlen(new_scheme) > 0);
   DCHECK_EQ(base::ToLowerASCII(new_scheme), new_scheme);
-  // Duplicate the scheme into a new buffer and add it to the list of standard
-  // schemes. This pointer will be leaked on shutdown.
-  char* dup_scheme = new char[scheme_len + 1];
-  ANNOTATE_LEAKING_OBJECT_PTR(dup_scheme);
-  memcpy(dup_scheme, new_scheme, scheme_len + 1);
-
-  SchemeWithType scheme_with_type;
-  scheme_with_type.scheme = dup_scheme;
-  scheme_with_type.type = type;
-  schemes->push_back(scheme_with_type);
+  DCHECK(std::find_if(schemes->begin(), schemes->end(),
+                      [&new_scheme](const SchemeWithType& scheme) {
+                        return scheme.scheme == new_scheme;
+                      }) == schemes->end());
+  schemes->push_back({new_scheme, type});
 }
 
 }  // namespace
 
-void ResetForTests() {
-  *GetSchemeRegistry() = SchemeRegistry();
+void ClearSchemesForTests() {
+  DCHECK(!g_scheme_registries_used.load())
+      << "Schemes already used "
+      << "(use ScopedSchemeRegistryForTests to relax for tests).";
+  DCHECK(!scheme_registries_locked)
+      << "Schemes already locked "
+      << "(use ScopedSchemeRegistryForTests to relax for tests).";
+  *GetSchemeRegistryWithoutLocking() = SchemeRegistry();
 }
 
+class ScopedSchemeRegistryInternal {
+ public:
+  ScopedSchemeRegistryInternal()
+      : registry_(std::make_unique<SchemeRegistry>(
+            *GetSchemeRegistryWithoutLocking())) {
+    g_scheme_registries_used.store(false);
+    scheme_registries_locked = false;
+  }
+  ~ScopedSchemeRegistryInternal() {
+    *GetSchemeRegistryWithoutLocking() = *registry_;
+    g_scheme_registries_used.store(true);
+    scheme_registries_locked = true;
+  }
+
+ private:
+  std::unique_ptr<SchemeRegistry> registry_;
+};
+
+ScopedSchemeRegistryForTests::ScopedSchemeRegistryForTests()
+    : internal_(std::make_unique<ScopedSchemeRegistryInternal>()) {}
+
+ScopedSchemeRegistryForTests::~ScopedSchemeRegistryForTests() = default;
+
 void EnableNonStandardSchemesForAndroidWebView() {
-  GetSchemeRegistry()->allow_non_standard_schemes = true;
+  DoSchemeModificationPreamble();
+  GetSchemeRegistryWithoutLocking()->allow_non_standard_schemes = true;
 }
 
 bool AllowNonStandardSchemesForAndroidWebView() {
-  return GetSchemeRegistry()->allow_non_standard_schemes;
+  return GetSchemeRegistry().allow_non_standard_schemes;
 }
 
 void AddStandardScheme(const char* new_scheme, SchemeType type) {
-  DoAddSchemeWithType(new_scheme, type, &GetSchemeRegistry()->standard_schemes);
+  DoAddSchemeWithType(new_scheme, type,
+                      &GetSchemeRegistryWithoutLocking()->standard_schemes);
 }
 
 void AddReferrerScheme(const char* new_scheme, SchemeType type) {
-  DoAddSchemeWithType(new_scheme, type, &GetSchemeRegistry()->referrer_schemes);
+  DoAddSchemeWithType(new_scheme, type,
+                      &GetSchemeRegistryWithoutLocking()->referrer_schemes);
 }
 
 void AddSecureScheme(const char* new_scheme) {
-  DoAddScheme(new_scheme, &GetSchemeRegistry()->secure_schemes);
+  DoAddScheme(new_scheme, &GetSchemeRegistryWithoutLocking()->secure_schemes);
 }
 
 const std::vector<std::string>& GetSecureSchemes() {
-  return GetSchemeRegistry()->secure_schemes;
+  return GetSchemeRegistry().secure_schemes;
 }
 
 void AddLocalScheme(const char* new_scheme) {
-  DoAddScheme(new_scheme, &GetSchemeRegistry()->local_schemes);
+  DoAddScheme(new_scheme, &GetSchemeRegistryWithoutLocking()->local_schemes);
 }
 
 const std::vector<std::string>& GetLocalSchemes() {
-  return GetSchemeRegistry()->local_schemes;
+  return GetSchemeRegistry().local_schemes;
 }
 
 void AddNoAccessScheme(const char* new_scheme) {
-  DoAddScheme(new_scheme, &GetSchemeRegistry()->no_access_schemes);
+  DoAddScheme(new_scheme,
+              &GetSchemeRegistryWithoutLocking()->no_access_schemes);
 }
 
 const std::vector<std::string>& GetNoAccessSchemes() {
-  return GetSchemeRegistry()->no_access_schemes;
+  return GetSchemeRegistry().no_access_schemes;
 }
 
 void AddCorsEnabledScheme(const char* new_scheme) {
-  DoAddScheme(new_scheme, &GetSchemeRegistry()->cors_enabled_schemes);
+  DoAddScheme(new_scheme,
+              &GetSchemeRegistryWithoutLocking()->cors_enabled_schemes);
 }
 
 const std::vector<std::string>& GetCorsEnabledSchemes() {
-  return GetSchemeRegistry()->cors_enabled_schemes;
+  return GetSchemeRegistry().cors_enabled_schemes;
 }
 
 void AddWebStorageScheme(const char* new_scheme) {
-  DoAddScheme(new_scheme, &GetSchemeRegistry()->web_storage_schemes);
+  DoAddScheme(new_scheme,
+              &GetSchemeRegistryWithoutLocking()->web_storage_schemes);
 }
 
 const std::vector<std::string>& GetWebStorageSchemes() {
-  return GetSchemeRegistry()->web_storage_schemes;
+  return GetSchemeRegistry().web_storage_schemes;
 }
 
 void AddCSPBypassingScheme(const char* new_scheme) {
-  DoAddScheme(new_scheme, &GetSchemeRegistry()->csp_bypassing_schemes);
+  DoAddScheme(new_scheme,
+              &GetSchemeRegistryWithoutLocking()->csp_bypassing_schemes);
 }
 
 const std::vector<std::string>& GetCSPBypassingSchemes() {
-  return GetSchemeRegistry()->csp_bypassing_schemes;
+  return GetSchemeRegistry().csp_bypassing_schemes;
 }
 
 void AddEmptyDocumentScheme(const char* new_scheme) {
-  DoAddScheme(new_scheme, &GetSchemeRegistry()->empty_document_schemes);
+  DoAddScheme(new_scheme,
+              &GetSchemeRegistryWithoutLocking()->empty_document_schemes);
 }
 
 const std::vector<std::string>& GetEmptyDocumentSchemes() {
-  return GetSchemeRegistry()->empty_document_schemes;
+  return GetSchemeRegistry().empty_document_schemes;
 }
 
 void LockSchemeRegistries() {
@@ -596,7 +646,7 @@ bool IsStandard(const base::char16* spec, const Component& scheme) {
 bool IsReferrerScheme(const char* spec, const Component& scheme) {
   SchemeType unused_scheme_type;
   return DoIsInSchemes(spec, scheme, &unused_scheme_type,
-                       GetSchemeRegistry()->referrer_schemes);
+                       GetSchemeRegistry().referrer_schemes);
 }
 
 bool FindAndCompareScheme(const char* str,
@@ -650,7 +700,7 @@ bool DomainIs(base::StringPiece canonical_host,
 }
 
 bool HostIsIPAddress(base::StringPiece host) {
-  url::RawCanonOutputT<char, 128> ignored_output;
+  STACK_UNINITIALIZED url::RawCanonOutputT<char, 128> ignored_output;
   url::CanonHostInfo host_info;
   url::CanonicalizeIPAddress(host.data(), Component(0, host.length()),
                              &ignored_output, &host_info);
@@ -729,7 +779,7 @@ void DecodeURLEscapeSequences(const char* input,
                               int length,
                               DecodeURLMode mode,
                               CanonOutputW* output) {
-  RawCanonOutputT<char> unescaped_chars;
+  STACK_UNINITIALIZED RawCanonOutputT<char> unescaped_chars;
   for (int i = 0; i < length; i++) {
     if (input[i] == '%') {
       unsigned char ch;

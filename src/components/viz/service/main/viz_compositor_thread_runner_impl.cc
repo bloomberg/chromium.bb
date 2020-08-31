@@ -27,6 +27,7 @@
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/scheduler_sequence.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "ui/gfx/switches.h"
 
 #if BUILDFLAG(USE_VIZ_DEVTOOLS)
@@ -74,6 +75,12 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
 #endif  // !defined(OS_MACOSX)
 
   CHECK(thread->StartWithOptions(thread_options));
+
+  // Setup tracing sampler profiler as early as possible.
+  thread->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&tracing::TracingSamplerProfiler::CreateOnChildThread));
+
   return thread;
 #endif  // !defined(OS_ANDROID)
 }
@@ -191,6 +198,8 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
   init_params.restart_id = params->restart_id;
   init_params.run_all_compositor_stages_before_draw =
       run_all_compositor_stages_before_draw;
+  init_params.log_capture_pipeline_in_webrtc =
+      features::ShouldWebRtcLogCapturePipeline();
 
   frame_sink_manager_ = std::make_unique<FrameSinkManagerImpl>(init_params);
   frame_sink_manager_->BindAndSetClient(

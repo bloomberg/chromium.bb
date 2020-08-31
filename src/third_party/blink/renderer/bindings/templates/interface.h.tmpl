@@ -39,6 +39,11 @@ class {{v8_class}} {
   STATIC_ONLY({{v8_class}});
  public:
   {% if is_array_buffer_or_view %}
+  // Migration adapter
+  {{exported}}static bool HasInstance(v8::Isolate*, v8::Local<v8::Value> value) {
+    return value->Is{{interface_name}}();
+  }
+
   {{exported}}static {{cpp_class}}* ToImpl(v8::Local<v8::Object> object);
   {% else %}
   {{exported}}static bool HasInstance(v8::Local<v8::Value>, v8::Isolate*);
@@ -64,12 +69,6 @@ class {{v8_class}} {
   {% for method in methods %}
   {% if method.is_custom %}
   static void {{method.camel_case_name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-  {% endif %}
-  {% if method.is_custom_call_prologue %}
-  static void {{method.camel_case_name}}MethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>&, {{cpp_class}}*);
-  {% endif %}
-  {% if method.is_custom_call_epilogue %}
-  static void {{method.camel_case_name}}MethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>&, {{cpp_class}}*);
   {% endif %}
   {% endfor %}
   {% if has_custom_constructor %}
@@ -306,12 +305,6 @@ class {{v8_class}} {
   {% endif %}
   {% endif %}{# has_partial_interface #}
   {% endif %}
-};
-
-template <>
-struct NativeValueTraits<{{cpp_class}}> : public NativeValueTraitsBase<{{cpp_class}}> {
-  {{exported}}static {{cpp_class}}* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  {{exported}}static {{cpp_class}}* NullValue() { return nullptr; }
 };
 
 template <>

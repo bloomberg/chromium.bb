@@ -32,9 +32,26 @@ struct IceFieldTrials {
   // give us chance to find a better connection before starting.
   absl::optional<int> initial_select_dampening_ping_received;
 
+  // Announce GOOG_PING support in STUN_BINDING_RESPONSE if requested
+  // by peer.
+  bool announce_goog_ping = true;
+
+  // Enable sending GOOG_PING if remote announce it.
+  bool enable_goog_ping = false;
+
   // Decay rate for RTT estimate using EventBasedExponentialMovingAverage
   // expressed as halving time.
   int rtt_estimate_halftime_ms = 500;
+
+  // Sending a PING directly after a switch on ICE_CONTROLLING-side.
+  bool send_ping_on_switch_ice_controlling = false;
+
+  // Sending a PING directly after a nomination on ICE_CONTROLLED-side.
+  bool send_ping_on_nomination_ice_controlled = false;
+
+  // The timeout after which the connection will be considered dead if no
+  // traffic is received.
+  int dead_connection_timeout_ms = 30000;
 };
 
 }  // namespace cricket

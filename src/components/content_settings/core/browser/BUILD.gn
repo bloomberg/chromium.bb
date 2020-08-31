@@ -8,6 +8,7 @@ import("//ppapi/buildflags/buildflags.gni")
 
 jumbo_static_library("browser") {
   sources = [
+    "content_settings_constraints.h",
     "content_settings_default_provider.cc",
     "content_settings_default_provider.h",
     "content_settings_details.cc",
@@ -34,14 +35,14 @@ jumbo_static_library("browser") {
     "content_settings_registry.h",
     "content_settings_rule.cc",
     "content_settings_rule.h",
-    "content_settings_usages_state.cc",
-    "content_settings_usages_state.h",
     "content_settings_utils.cc",
     "content_settings_utils.h",
     "cookie_settings.cc",
     "cookie_settings.h",
     "host_content_settings_map.cc",
     "host_content_settings_map.h",
+    "uma_util.cc",
+    "uma_util.h",
     "user_modifiable_provider.h",
     "website_settings_info.cc",
     "website_settings_info.h",
@@ -74,6 +75,7 @@ jumbo_static_library("browser") {
     deps += [
       "//components/policy:generated",
       "//components/policy/core/browser",
+      "//third_party/blink/public/common:headers",
     ]
   }
 
@@ -123,6 +125,7 @@ jumbo_source_set("unit_tests") {
     deps += [
       "//components/policy:generated",
       "//components/policy/core/browser:test_support",
+      "//third_party/blink/public/common:headers",
     ]
   }
 }

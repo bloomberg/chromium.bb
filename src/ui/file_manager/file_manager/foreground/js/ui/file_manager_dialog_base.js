@@ -11,6 +11,10 @@ class FileManagerDialogBase extends cr.ui.dialogs.BaseDialog {
    */
   constructor(parentNode) {
     super(parentNode);
+
+    if (util.isFilesNg()) {
+      this.container.classList.add('files-ng');
+    }
   }
 
   /**
@@ -50,6 +54,22 @@ class FileManagerDialogBase extends cr.ui.dialogs.BaseDialog {
     super.showWithTitle(title, message, onOk, onCancel, null);
 
     return true;
+  }
+
+  /**
+   * @override
+   */
+  showWithTitle(title, message, ...args) {
+    this.frame.classList.toggle('no-title', !title);
+    super.showWithTitle(title, message, ...args);
+  }
+
+  /**
+   * @override
+   */
+  showHtml(title, message, ...args) {
+    this.frame.classList.toggle('no-title', !title);
+    super.showHtml(title, message, ...args);
   }
 
   /**

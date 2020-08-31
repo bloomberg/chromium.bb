@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/hash/hash.h"
-#include "base/logging.h"
 #include "base/pickle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -39,10 +39,10 @@ const char kFrameRemoved[] = "The frame was removed.";
 // <host_id> is the host ID, and <digest> is an unspecified hash digest of the
 // file URL or the code string, respectively.
 const std::string GenerateInjectionKey(const HostID& host_id,
-                                       const GURL& file_url,
+                                       const GURL& script_url,
                                        const std::string& code) {
-  const std::string& source = file_url.is_valid() ? file_url.spec() : code;
-  return base::StringPrintf("%c%s%zu", file_url.is_valid() ? 'F' : 'C',
+  const std::string& source = script_url.is_valid() ? script_url.spec() : code;
+  return base::StringPrintf("%c%s%zu", script_url.is_valid() ? 'F' : 'C',
                             host_id.id().c_str(), base::FastHash(source));
 }
 
@@ -51,12 +51,16 @@ const std::string GenerateInjectionKey(const HostID& host_id,
 // corresponding response comes from the renderer, or the renderer is destroyed.
 class Handler : public content::WebContentsObserver {
  public:
-  Handler(ScriptsExecutedNotification observer,
+  // OnceCallback version of ScriptExecutor::ScriptsExecutedNotification:
+  using ScriptsExecutedOnceCallback = base::OnceCallback<
+      void(content::WebContents*, const ExecutingScriptsMap&, const GURL&)>;
+
+  Handler(ScriptsExecutedOnceCallback observer,
           content::WebContents* web_contents,
           const ExtensionMsg_ExecuteCode_Params& params,
           ScriptExecutor::FrameScope scope,
           int frame_id,
-          const ScriptExecutor::ScriptFinishedCallback& callback)
+          ScriptExecutor::ScriptFinishedCallback callback)
       : content::WebContentsObserver(web_contents),
         observer_(std::move(observer)),
         host_id_(params.host_id),
@@ -65,7 +69,7 @@ class Handler : public content::WebContentsObserver {
         root_rfh_(ExtensionApiFrameIdMap::GetRenderFrameHostById(web_contents,
                                                                  frame_id)),
         root_is_main_frame_(root_rfh_ ? !root_rfh_->GetParent() : false),
-        callback_(callback) {
+        callback_(std::move(callback)) {
     if (root_rfh_) {
       if (include_sub_frames_) {
         web_contents->ForEachFrame(base::BindRepeating(
@@ -180,17 +184,18 @@ class Handler : public content::WebContentsObserver {
       results_.Clear();
     }
 
-    if (!observer_.is_null() && root_frame_error_.empty() &&
+    if (observer_ && root_frame_error_.empty() &&
         host_id_.type() == HostID::EXTENSIONS) {
-      observer_.Run(web_contents(), {{host_id_.id(), {}}}, root_frame_url_);
+      std::move(observer_).Run(web_contents(), {{host_id_.id(), {}}},
+                               root_frame_url_);
     }
 
-    if (!callback_.is_null())
-      callback_.Run(root_frame_error_, root_frame_url_, results_);
+    if (callback_)
+      std::move(callback_).Run(root_frame_error_, root_frame_url_, results_);
     delete this;
   }
 
-  ScriptsExecutedNotification observer_;
+  ScriptsExecutedOnceCallback observer_;
 
   // The id of the host (the extension or the webui) doing the injection.
   HostID host_id_;
@@ -244,11 +249,11 @@ void ScriptExecutor::ExecuteScript(const HostID& host_id,
                                    UserScript::RunLocation run_at,
                                    ScriptExecutor::ProcessType process_type,
                                    const GURL& webview_src,
-                                   const GURL& file_url,
+                                   const GURL& script_url,
                                    bool user_gesture,
                                    base::Optional<CSSOrigin> css_origin,
                                    ScriptExecutor::ResultType result_type,
-                                   const ScriptFinishedCallback& callback) {
+                                   ScriptFinishedCallback callback) {
   if (host_id.type() == HostID::EXTENSIONS) {
     // Don't execute if the extension has been unloaded.
     const Extension* extension =
@@ -269,7 +274,7 @@ void ScriptExecutor::ExecuteScript(const HostID& host_id,
   params.run_at = run_at;
   params.is_web_view = (process_type == WEB_VIEW_PROCESS);
   params.webview_src = webview_src;
-  params.file_url = file_url;
+  params.script_url = script_url;
   params.wants_result = (result_type == JSON_SERIALIZED_RESULT);
   params.user_gesture = user_gesture;
   params.css_origin = css_origin;
@@ -277,11 +282,11 @@ void ScriptExecutor::ExecuteScript(const HostID& host_id,
   // Generate an injection key if this is a CSS injection from an extension
   // (i.e. tabs.insertCSS).
   if (host_id.type() == HostID::EXTENSIONS && script_type == CSS)
-    params.injection_key = GenerateInjectionKey(host_id, file_url, code);
+    params.injection_key = GenerateInjectionKey(host_id, script_url, code);
 
   // Handler handles IPCs and deletes itself on completion.
   new Handler(observer_, web_contents_, params, frame_scope, frame_id,
-              callback);
+              std::move(callback));
 }
 
 }  // namespace extensions

@@ -17,9 +17,9 @@ function handleKeypress(e) {
   // other approaches are both safer and have fewer side-effects.
   // See https://goo.gl/ZcZixP for more details.
   const BYPASS_SEQUENCE = window.atob('dGhpc2lzdW5zYWZl');
-  if (BYPASS_SEQUENCE.charCodeAt(keyPressState) == e.keyCode) {
+  if (BYPASS_SEQUENCE.charCodeAt(keyPressState) === e.keyCode) {
     keyPressState++;
-    if (keyPressState == BYPASS_SEQUENCE.length) {
+    if (keyPressState === BYPASS_SEQUENCE.length) {
       sendCommand(SecurityInterstitialCommandId.CMD_PROCEED);
       keyPressState = 0;
     }
@@ -65,24 +65,20 @@ function toggleDebuggingInfo() {
 function setupEvents() {
   const overridable = loadTimeData.getBoolean('overridable');
   const interstitialType = loadTimeData.getString('type');
-  const ssl = interstitialType == 'SSL';
-  const captivePortal = interstitialType == 'CAPTIVE_PORTAL';
+  const ssl = interstitialType === 'SSL';
+  const captivePortal = interstitialType === 'CAPTIVE_PORTAL';
   const badClock = ssl && loadTimeData.getBoolean('bad_clock');
-  const lookalike = interstitialType == 'LOOKALIKE';
-  const billing = interstitialType == 'SAFEBROWSING' &&
-                    loadTimeData.getBoolean('billing');
-  const originPolicy = interstitialType == "ORIGIN_POLICY";
-  const blockedInterception = interstitialType == "BLOCKED_INTERCEPTION";
+  const lookalike = interstitialType === 'LOOKALIKE';
+  const billing =
+      interstitialType === 'SAFEBROWSING' && loadTimeData.getBoolean('billing');
+  const originPolicy = interstitialType === 'ORIGIN_POLICY';
+  const blockedInterception = interstitialType === 'BLOCKED_INTERCEPTION';
+  const legacyTls = interstitialType == 'LEGACY_TLS';
   const hidePrimaryButton = loadTimeData.getBoolean('hide_primary_button');
   const showRecurrentErrorParagraph = loadTimeData.getBoolean(
     'show_recurrent_error_paragraph');
 
-  if (loadTimeData.valueExists('darkModeAvailable') &&
-      loadTimeData.getBoolean('darkModeAvailable')) {
-    $('body').classList.add('dark-mode-available');
-  }
-
-  if (ssl || originPolicy || blockedInterception) {
+  if (ssl || originPolicy || blockedInterception || legacyTls) {
     $('body').classList.add(badClock ? 'bad-clock' : 'ssl');
     $('error-code').textContent = loadTimeData.getString('errorCode');
     $('error-code').classList.remove(HIDDEN_CLASS);
@@ -101,6 +97,10 @@ function setupEvents() {
 
   $('icon').classList.add('icon');
 
+  if (legacyTls) {
+    $('icon').classList.add('legacy-tls');
+  }
+
   if (hidePrimaryButton) {
     $('primary-button').classList.add(HIDDEN_CLASS);
   } else {
@@ -111,6 +111,7 @@ function setupEvents() {
           break;
 
         case 'SSL':
+        case 'LEGACY_TLS':
           if (badClock) {
             sendCommand(SecurityInterstitialCommandId.CMD_OPEN_DATE_SETTINGS);
           } else if (overridable) {

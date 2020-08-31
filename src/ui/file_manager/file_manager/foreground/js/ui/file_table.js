@@ -14,6 +14,10 @@ class FileTableColumnModel extends cr.ui.table.TableColumnModel {
 
     /** @private {?FileTableColumnModel.ColumnSnapshot} */
     this.snapshot_ = null;
+
+    if (util.isFilesNg()) {
+      FileTableColumnModel.MIN_WIDTH_ = 40;
+    }
   }
 
   /**
@@ -128,7 +132,8 @@ class FileTableColumnModel extends cr.ui.table.TableColumnModel {
    *     hitPosition where the horizontal position is hit in the column.
    */
   getHitColumn(x) {
-    for (var i = 0; x >= this.columns_[i].width; i++) {
+    let i = 0;
+    for (; x >= this.columns_[i].width; i++) {
       x -= this.columns_[i].width;
     }
     if (i >= this.columns_.length) {
@@ -245,25 +250,53 @@ class FileTableColumnModel extends cr.ui.table.TableColumnModel {
  */
 function renderHeader_(table) {
   const column = /** @type {cr.ui.table.TableColumn} */ (this);
+  const container = table.ownerDocument.createElement('div');
+  container.classList.add('table-label-container');
+
   const textElement = table.ownerDocument.createElement('span');
   textElement.textContent = column.name;
   const dm = table.dataModel;
 
   let sortOrder = column.defaultOrder;
+  let isSorted = false;
   if (dm && dm.sortStatus.field === column.id) {
+    isSorted = true;
     // Here we have to flip, because clicking will perform the opposite sorting.
     sortOrder = dm.sortStatus.direction === 'desc' ? 'asc' : 'desc';
+
+    if (!util.isFilesNg()) {
+      textElement.classList.toggle(
+          'table-header-sort-image-desc', dm.sortStatus.direction === 'desc');
+      textElement.classList.toggle(
+          'table-header-sort-image-asc', dm.sortStatus.direction !== 'desc');
+    }
   }
 
   textElement.setAttribute('aria-describedby', 'sort-column-' + sortOrder);
   textElement.setAttribute('role', 'button');
-  return textElement;
+  container.appendChild(textElement);
+
+  if (util.isFilesNg()) {
+    const icon = document.createElement('cr-icon-button');
+    const iconName = sortOrder === 'desc' ? 'up' : 'down';
+    icon.setAttribute('iron-icon', `files16:arrow_${iconName}_small`);
+    icon.setAttribute('tabindex', '-1');
+    icon.classList.add('sort-icon', 'no-overlap');
+
+    container.classList.toggle('not-sorted', !isSorted);
+    container.classList.toggle('sorted', isSorted);
+
+    container.appendChild(icon);
+  }
+
+  return container;
 }
 
 /**
  * Minimum width of column. Note that is not marked private as it is used in the
  * unit tests.
- * @const {number}
+ * TODO(lucmult): Revert back to const once FilesNg flag is removed.
+ * @type {number}
  */
 FileTableColumnModel.MIN_WIDTH_ = 10;
 
@@ -395,7 +428,7 @@ class FileTable extends cr.ui.Table {
     self.a11y = a11y;
 
     // Force the list's ending spacer to be tall enough to allow overscroll.
-    let endSpacer = self.querySelector('.spacer:last-child');
+    const endSpacer = self.querySelector('.spacer:last-child');
     if (endSpacer) {
       endSpacer.classList.add('signals-overscroll');
     }
@@ -614,8 +647,7 @@ class FileTable extends cr.ui.Table {
       if (box) {
         if (event.dataUrl) {
           this.setThumbnailImage_(
-              assertInstanceof(box, HTMLDivElement), event.dataUrl,
-              true /* with animation */);
+              assertInstanceof(box, HTMLDivElement), event.dataUrl);
         } else {
           this.clearThumbnailImage_(assertInstanceof(box, HTMLDivElement));
         }
@@ -1096,8 +1128,7 @@ class FileTable extends cr.ui.Table {
         this.listThumbnailLoader_.getThumbnailFromCache(entry) :
         null;
     if (thumbnailData && thumbnailData.dataUrl) {
-      this.setThumbnailImage_(
-          box, thumbnailData.dataUrl, false /* without animation */);
+      this.setThumbnailImage_(box, thumbnailData.dataUrl);
     }
 
     return box;
@@ -1107,30 +1138,16 @@ class FileTable extends cr.ui.Table {
    * Sets thumbnail image to the box.
    * @param {!HTMLDivElement} box Detail thumbnail div element.
    * @param {string} dataUrl Data url of thumbnail.
-   * @param {boolean} shouldAnimate Whether the thumbnail is shown with
-   *     animation or not.
    * @private
    */
-  setThumbnailImage_(box, dataUrl, shouldAnimate) {
-    const oldThumbnails = box.querySelectorAll('.thumbnail');
-
+  setThumbnailImage_(box, dataUrl) {
     const thumbnail = box.ownerDocument.createElement('div');
     thumbnail.classList.add('thumbnail');
     thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
-    thumbnail.addEventListener('animationend', () => {
-      // Remove animation css once animation is completed in order not to
-      // animate again when an item is attached to the dom again.
-      thumbnail.classList.remove('animate');
+    const oldThumbnails = box.querySelectorAll('.thumbnail');
 
-      for (let i = 0; i < oldThumbnails.length; i++) {
-        if (box.contains(oldThumbnails[i])) {
-          box.removeChild(oldThumbnails[i]);
-        }
-      }
-    });
-
-    if (shouldAnimate) {
-      thumbnail.classList.add('animate');
+    for (let i = 0; i < oldThumbnails.length; i++) {
+      box.removeChild(oldThumbnails[i]);
     }
 
     box.appendChild(thumbnail);

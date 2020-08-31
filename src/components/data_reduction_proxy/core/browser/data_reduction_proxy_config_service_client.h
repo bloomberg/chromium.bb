@@ -24,13 +24,6 @@
 #include "base/android/application_status_listener.h"
 #endif  // OS_ANDROID
 
-namespace net {
-class HttpRequestHeaders;
-class HttpResponseHeaders;
-struct LoadTimingInfo;
-class ProxyServer;
-}  // namespace net
-
 namespace network {
 class SharedURLLoaderFactory;
 class SimpleURLLoader;
@@ -39,12 +32,10 @@ class SimpleURLLoader;
 namespace data_reduction_proxy {
 
 class ClientConfig;
-class DataReductionProxyConfig;
 class DataReductionProxyService;
-class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
 
-typedef base::Callback<void(const std::string&)> ConfigStorer;
+using ConfigStorer = base::RepeatingCallback<void(const std::string&)>;
 
 // Retrieves the default net::BackoffEntry::Policy for the Data Reduction Proxy
 // configuration service client.
@@ -87,8 +78,6 @@ class DataReductionProxyConfigServiceClient
   DataReductionProxyConfigServiceClient(
       const net::BackoffEntry::Policy& backoff_policy,
       DataReductionProxyRequestOptions* request_options,
-      DataReductionProxyMutableConfigValues* config_values,
-      DataReductionProxyConfig* config,
       DataReductionProxyService* service,
       network::NetworkConnectionTracker* network_connection_tracker,
       ConfigStorer config_storer);
@@ -114,17 +103,6 @@ class DataReductionProxyConfigServiceClient
   // current Data Reduction Proxy configuration. If a remote configuration has
   // already been retrieved, the remote configuration takes precedence.
   void ApplySerializedConfig(const std::string& config_value);
-
-  // Examines |response_headers| to determine if an authentication failure
-  // occurred on a Data Reduction Proxy. Returns true if authentication failure
-  // occurred, and the session key specified in |request_headers| matches the
-  // current session in use by the client. If an authentication failure is
-  // detected,  it fetches a new config.
-  bool ShouldRetryDueToAuthFailure(
-      const net::HttpRequestHeaders& request_headers,
-      const net::HttpResponseHeaders* response_headers,
-      const net::ProxyServer& proxy_server,
-      const net::LoadTimingInfo& load_timing_info);
 
   void SetRemoteConfigAppliedForTesting(bool remote_config_applied) {
     remote_config_applied_ = remote_config_applied;
@@ -197,12 +175,6 @@ class DataReductionProxyConfigServiceClient
 
   // The caller must ensure that the |request_options_| outlives this instance.
   DataReductionProxyRequestOptions* request_options_;
-
-  // The caller must ensure that the |config_values_| outlives this instance.
-  DataReductionProxyMutableConfigValues* config_values_;
-
-  // The caller must ensure that the |config_| outlives this instance.
-  DataReductionProxyConfig* config_;
 
   // The caller must ensure that the |service_| outlives this instance.
   DataReductionProxyService* service_;

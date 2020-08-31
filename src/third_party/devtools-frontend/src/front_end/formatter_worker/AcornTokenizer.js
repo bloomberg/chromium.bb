@@ -1,6 +1,13 @@
 // Copyright (c) 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Platform from '../platform/platform.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+
 /**
  * @unrestricted
  */
@@ -12,7 +19,8 @@ export class AcornTokenizer {
     this._content = content;
     this._comments = [];
     this._tokenizer = acorn.tokenizer(this._content, {onComment: this._comments});
-    this._textCursor = new TextUtils.TextCursor(this._content.computeLineEndings());
+    const contentLineEndings = Platform.StringUtilities.findLineEndingIndexes(this._content);
+    this._textCursor = new TextUtils.TextCursor.TextCursor(contentLineEndings);
     this._tokenLineStart = 0;
     this._tokenLineEnd = 0;
     this._nextTokenInternal();
@@ -126,12 +134,3 @@ export class AcornTokenizer {
     return this._tokenColumnStart;
   }
 }
-
-/* Legacy exported object */
-self.FormatterWorker = self.FormatterWorker || {};
-
-/* Legacy exported object */
-FormatterWorker = FormatterWorker || {};
-
-/** @constructor */
-FormatterWorker.AcornTokenizer = AcornTokenizer;

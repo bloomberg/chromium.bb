@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -21,15 +22,13 @@
 #include "content/browser/sms/test/mock_sms_web_contents_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/sms_fetcher.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/sms/sms_receiver_destroyed_reason.h"
@@ -79,12 +78,11 @@ class Service {
       : Service(web_contents,
                 web_contents->GetMainFrame()->GetLastCommittedOrigin()) {}
 
-  NiceMock<MockSmsWebContentsDelegate>* delegate() { return &delegate_; }
   NiceMock<MockSmsProvider>* provider() { return &provider_; }
   SmsFetcher* fetcher() { return &fetcher_; }
 
   void CreateSmsPrompt(RenderFrameHost* rfh) {
-    EXPECT_CALL(*delegate(), CreateSmsPrompt(rfh, _, _, _, _))
+    EXPECT_CALL(delegate_, CreateSmsPrompt(rfh, _, _, _, _))
         .WillOnce(Invoke([=](RenderFrameHost*, const Origin& origin,
                              const std::string&, base::OnceClosure on_confirm,
                              base::OnceClosure on_cancel) {
@@ -111,14 +109,18 @@ class Service {
     confirm_callback_.Reset();
   }
 
+  bool IsPromptOpen() const {
+    return !confirm_callback_.is_null() || !dismiss_callback_.is_null();
+  }
+
   void MakeRequest(SmsReceiver::ReceiveCallback callback) {
     service_remote_->Receive(std::move(callback));
   }
 
   void AbortRequest() { service_remote_->Abort(); }
 
-  void NotifyReceive(const GURL& url, const string& message) {
-    provider_.NotifyReceive(Origin::Create(url), "", message);
+  void NotifyReceive(const GURL& url, const string& otp) {
+    provider_.NotifyReceive(Origin::Create(url), otp);
   }
 
  private:
@@ -133,18 +135,23 @@ class Service {
 
 class SmsServiceTest : public RenderViewHostTestHarness {
  protected:
-  SmsServiceTest() {}
-  ~SmsServiceTest() override {}
+  SmsServiceTest() = default;
+  ~SmsServiceTest() override = default;
 
-  std::unique_ptr<base::HistogramSamples> GetHistogramSamplesSinceTestStart(
-      const std::string& name) {
-    return histogram_tester_.GetHistogramSamplesSinceCreation(name);
+  void SetUp() override {
+    RenderViewHostTestHarness::SetUp();
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kWebOtpBackend, switches::kWebOtpBackendSmsVerification);
   }
 
   void ExpectDestroyedReasonCount(SmsReceiverDestroyedReason bucket,
                                   int32_t count) {
     histogram_tester_.ExpectBucketCount("Blink.Sms.Receive.DestroyedReason",
                                         bucket, count);
+  }
+
+  const base::HistogramTester& histogram_tester() const {
+    return histogram_tester_;
   }
 
  private:
@@ -164,18 +171,17 @@ TEST_F(SmsServiceTest, Basic) {
 
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "hi");
     service.ConfirmPrompt();
   }));
 
-  service.MakeRequest(
-      BindLambdaForTesting(
-          [&loop](SmsStatus status, const Optional<string>& sms) {
-            EXPECT_EQ(SmsStatus::kSuccess, status);
-            EXPECT_EQ("hi", sms.value());
-            loop.Quit();
-          }));
+  service.MakeRequest(BindLambdaForTesting(
+      [&loop](SmsStatus status, const Optional<string>& otp) {
+        EXPECT_EQ(SmsStatus::kSuccess, status);
+        EXPECT_EQ("hi", otp.value());
+        loop.Quit();
+      }));
 
   loop.Run();
 
@@ -192,18 +198,17 @@ TEST_F(SmsServiceTest, HandlesMultipleCalls) {
 
     service.CreateSmsPrompt(main_rfh());
 
-    EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+    EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
       service.NotifyReceive(GURL(kTestUrl), "first");
       service.ConfirmPrompt();
     }));
 
-    service.MakeRequest(
-        BindLambdaForTesting(
-            [&loop](SmsStatus status, const Optional<string>& sms) {
-              EXPECT_EQ("first", sms.value());
-              EXPECT_EQ(SmsStatus::kSuccess, status);
-              loop.Quit();
-            }));
+    service.MakeRequest(BindLambdaForTesting(
+        [&loop](SmsStatus status, const Optional<string>& otp) {
+          EXPECT_EQ("first", otp.value());
+          EXPECT_EQ(SmsStatus::kSuccess, status);
+          loop.Quit();
+        }));
 
     loop.Run();
   }
@@ -213,18 +218,17 @@ TEST_F(SmsServiceTest, HandlesMultipleCalls) {
 
     service.CreateSmsPrompt(main_rfh());
 
-    EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+    EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
       service.NotifyReceive(GURL(kTestUrl), "second");
       service.ConfirmPrompt();
     }));
 
-    service.MakeRequest(
-        BindLambdaForTesting(
-            [&loop](SmsStatus status, const Optional<string>& sms) {
-              EXPECT_EQ("second", sms.value());
-              EXPECT_EQ(SmsStatus::kSuccess, status);
-              loop.Quit();
-            }));
+    service.MakeRequest(BindLambdaForTesting(
+        [&loop](SmsStatus status, const Optional<string>& otp) {
+          EXPECT_EQ("second", otp.value());
+          EXPECT_EQ(SmsStatus::kSuccess, status);
+          loop.Quit();
+        }));
 
     loop.Run();
   }
@@ -242,7 +246,7 @@ TEST_F(SmsServiceTest, IgnoreFromOtherOrigins) {
 
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     // Delivers an SMS from an unrelated origin first and expect the
     // receiver to ignore it.
     service.NotifyReceive(GURL("http://b.com"), "wrong");
@@ -252,9 +256,9 @@ TEST_F(SmsServiceTest, IgnoreFromOtherOrigins) {
 
   service.MakeRequest(
       BindLambdaForTesting([&sms_status, &response, &sms_loop](
-                               SmsStatus status, const Optional<string>& sms) {
+                               SmsStatus status, const Optional<string>& otp) {
         sms_status = status;
-        response = sms;
+        response = otp;
         sms_loop.Quit();
       }));
 
@@ -276,7 +280,7 @@ TEST_F(SmsServiceTest, ExpectOneReceiveTwo) {
 
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     // Delivers two SMSes for the same origin, even if only one was being
     // expected.
     ASSERT_TRUE(service.fetcher()->HasSubscribers());
@@ -288,9 +292,9 @@ TEST_F(SmsServiceTest, ExpectOneReceiveTwo) {
 
   service.MakeRequest(
       BindLambdaForTesting([&sms_status, &response, &sms_loop](
-                               SmsStatus status, const Optional<string>& sms) {
+                               SmsStatus status, const Optional<string>& otp) {
         sms_status = status;
-        response = sms;
+        response = otp;
         sms_loop.Quit();
       }));
 
@@ -315,7 +319,7 @@ TEST_F(SmsServiceTest, AtMostOneSmsRequestPerOrigin) {
   // Expect SMS Prompt to be created once.
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve())
+  EXPECT_CALL(*service.provider(), Retrieve(_))
       .WillOnce(Return())
       .WillOnce(Invoke([&service]() {
         service.NotifyReceive(GURL(kTestUrl), "second");
@@ -324,9 +328,9 @@ TEST_F(SmsServiceTest, AtMostOneSmsRequestPerOrigin) {
 
   service.MakeRequest(
       BindLambdaForTesting([&sms_status1, &response1, &sms1_loop](
-                               SmsStatus status, const Optional<string>& sms) {
+                               SmsStatus status, const Optional<string>& otp) {
         sms_status1 = status;
-        response1 = sms;
+        response1 = otp;
         sms1_loop.Quit();
       }));
 
@@ -334,9 +338,9 @@ TEST_F(SmsServiceTest, AtMostOneSmsRequestPerOrigin) {
   // one request can be pending per origin per tab.
   service.MakeRequest(
       BindLambdaForTesting([&sms_status2, &response2, &sms2_loop](
-                               SmsStatus status, const Optional<string>& sms) {
+                               SmsStatus status, const Optional<string>& otp) {
         sms_status2 = status;
-        response2 = sms;
+        response2 = otp;
         sms2_loop.Quit();
       }));
 
@@ -365,25 +369,25 @@ TEST_F(SmsServiceTest, SecondRequestDuringPrompt) {
   // Expect SMS Prompt to be created once.
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "second");
   }));
 
   // First request.
   service.MakeRequest(
       BindLambdaForTesting([&sms_status1, &response1, &service](
-                               SmsStatus status, const Optional<string>& sms) {
+                               SmsStatus status, const Optional<string>& otp) {
         sms_status1 = status;
-        response1 = sms;
+        response1 = otp;
         service.ConfirmPrompt();
       }));
 
   // Make second request before confirming prompt.
   service.MakeRequest(
       BindLambdaForTesting([&sms_status2, &response2, &sms_loop](
-                               SmsStatus status, const Optional<string>& sms) {
+                               SmsStatus status, const Optional<string>& otp) {
         sms_status2 = status;
-        response2 = sms;
+        response2 = otp;
         sms_loop.Quit();
       }));
 
@@ -412,19 +416,18 @@ TEST_F(SmsServiceTest, CleansUp) {
 
   base::RunLoop navigate;
 
-  EXPECT_CALL(provider, Retrieve()).WillOnce(Invoke([&navigate]() {
+  EXPECT_CALL(provider, Retrieve(_)).WillOnce(Invoke([&navigate]() {
     navigate.Quit();
   }));
 
   base::RunLoop reload;
 
-  service->Receive(
-      base::BindLambdaForTesting(
-          [&reload](SmsStatus status, const base::Optional<std::string>& sms) {
-            EXPECT_EQ(SmsStatus::kTimeout, status);
-            EXPECT_EQ(base::nullopt, sms);
-            reload.Quit();
-          }));
+  service->Receive(base::BindLambdaForTesting(
+      [&reload](SmsStatus status, const Optional<string>& otp) {
+        EXPECT_EQ(SmsStatus::kTimeout, status);
+        EXPECT_EQ(base::nullopt, otp);
+        reload.Quit();
+      }));
 
   navigate.Run();
 
@@ -446,18 +449,17 @@ TEST_F(SmsServiceTest, PromptsDialog) {
 
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "hi");
     service.ConfirmPrompt();
   }));
 
-  service.MakeRequest(
-      BindLambdaForTesting(
-          [&loop](SmsStatus status, const Optional<string>& sms) {
-            EXPECT_EQ("hi", sms.value());
-            EXPECT_EQ(SmsStatus::kSuccess, status);
-            loop.Quit();
-          }));
+  service.MakeRequest(BindLambdaForTesting(
+      [&loop](SmsStatus status, const Optional<string>& otp) {
+        EXPECT_EQ("hi", otp.value());
+        EXPECT_EQ(SmsStatus::kSuccess, status);
+        loop.Quit();
+      }));
 
   loop.Run();
 
@@ -473,15 +475,14 @@ TEST_F(SmsServiceTest, Cancel) {
 
   service.CreateSmsPrompt(main_rfh());
 
-  service.MakeRequest(
-      BindLambdaForTesting(
-          [&loop](SmsStatus status, const Optional<string>& sms) {
-            EXPECT_EQ(SmsStatus::kCancelled, status);
-            EXPECT_EQ(base::nullopt, sms);
-            loop.Quit();
-          }));
+  service.MakeRequest(BindLambdaForTesting(
+      [&loop](SmsStatus status, const Optional<string>& otp) {
+        EXPECT_EQ(SmsStatus::kCancelled, status);
+        EXPECT_EQ(base::nullopt, otp);
+        loop.Quit();
+      }));
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "hi");
     service.DismissPrompt();
   }));
@@ -489,6 +490,29 @@ TEST_F(SmsServiceTest, Cancel) {
   loop.Run();
 
   ASSERT_FALSE(service.fetcher()->HasSubscribers());
+}
+
+TEST_F(SmsServiceTest, CancelForNoDelegate) {
+  NavigateAndCommit(GURL(kTestUrl));
+
+  NiceMock<MockSmsProvider> provider;
+  SmsFetcherImpl fetcher(web_contents()->GetBrowserContext(), &provider);
+  mojo::Remote<blink::mojom::SmsReceiver> service;
+  SmsService::Create(&fetcher, main_rfh(),
+                     service.BindNewPipeAndPassReceiver());
+
+  base::RunLoop loop;
+
+  service->Receive(base::BindLambdaForTesting(
+      [&loop](SmsStatus status, const Optional<string>& otp) {
+        EXPECT_EQ(SmsStatus::kCancelled, status);
+        EXPECT_EQ(base::nullopt, otp);
+        loop.Quit();
+      }));
+
+  loop.Run();
+
+  ASSERT_FALSE(fetcher.HasSubscribers());
 }
 
 TEST_F(SmsServiceTest, Abort) {
@@ -499,9 +523,9 @@ TEST_F(SmsServiceTest, Abort) {
   base::RunLoop loop;
 
   service.MakeRequest(BindLambdaForTesting(
-      [&loop](SmsStatus status, const Optional<string>& sms) {
+      [&loop](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kAborted, status);
-        EXPECT_EQ(base::nullopt, sms);
+        EXPECT_EQ(base::nullopt, otp);
         loop.Quit();
       }));
 
@@ -522,23 +546,77 @@ TEST_F(SmsServiceTest, AbortWhilePrompt) {
   service.CreateSmsPrompt(main_rfh());
 
   service.MakeRequest(BindLambdaForTesting(
-      [&loop](SmsStatus status, const Optional<string>& sms) {
+      [&loop](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kAborted, status);
-        EXPECT_EQ(base::nullopt, sms);
+        EXPECT_EQ(base::nullopt, otp);
         loop.Quit();
       }));
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
-    service.NotifyReceive(GURL(kTestUrl), "hi");
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
+    service.NotifyReceive(GURL(kTestUrl), "ABC");
+    EXPECT_TRUE(service.IsPromptOpen());
+    service.AbortRequest();
   }));
-
-  service.AbortRequest();
 
   loop.Run();
 
   ASSERT_FALSE(service.fetcher()->HasSubscribers());
 
   service.ConfirmPrompt();
+}
+
+TEST_F(SmsServiceTest, RequestAfterAbortWhilePrompt) {
+  NavigateAndCommit(GURL(kTestUrl));
+
+  Service service(web_contents());
+
+  {
+    base::RunLoop loop;
+
+    service.CreateSmsPrompt(main_rfh());
+
+    service.MakeRequest(BindLambdaForTesting(
+        [&loop](SmsStatus status, const Optional<string>& otp) {
+          EXPECT_EQ(SmsStatus::kAborted, status);
+          EXPECT_EQ(base::nullopt, otp);
+          loop.Quit();
+        }));
+
+    EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
+      service.NotifyReceive(GURL(kTestUrl), "hi");
+      EXPECT_TRUE(service.IsPromptOpen());
+      service.AbortRequest();
+    }));
+
+    loop.Run();
+  }
+
+  ASSERT_FALSE(service.fetcher()->HasSubscribers());
+
+  // Confirm to dismiss prompt for a request that has already aborted.
+  service.ConfirmPrompt();
+
+  {
+    base::RunLoop loop;
+
+    service.CreateSmsPrompt(main_rfh());
+
+    service.MakeRequest(BindLambdaForTesting(
+        [&loop](SmsStatus status, const Optional<string>& otp) {
+          // Verify that the 2nd request completes successfully after prompt
+          // confirmation.
+          EXPECT_EQ(SmsStatus::kSuccess, status);
+          EXPECT_EQ("hi2", otp.value());
+          loop.Quit();
+        }));
+
+    EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
+      service.NotifyReceive(GURL(kTestUrl), "hi2");
+      service.ConfirmPrompt();
+    }));
+
+    loop.Run();
+  }
 }
 
 TEST_F(SmsServiceTest, SecondRequestWhilePrompt) {
@@ -551,13 +629,13 @@ TEST_F(SmsServiceTest, SecondRequestWhilePrompt) {
   service.CreateSmsPrompt(main_rfh());
 
   service.MakeRequest(BindLambdaForTesting(
-      [&callback_loop1](SmsStatus status, const Optional<string>& sms) {
+      [&callback_loop1](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kAborted, status);
-        EXPECT_EQ(base::nullopt, sms);
+        EXPECT_EQ(base::nullopt, otp);
         callback_loop1.Quit();
       }));
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "hi");
     service.AbortRequest();
   }));
@@ -567,9 +645,9 @@ TEST_F(SmsServiceTest, SecondRequestWhilePrompt) {
   base::ThreadTaskRunnerHandle::Get()->PostTaskAndReply(
       FROM_HERE, BindLambdaForTesting([&]() {
         service.MakeRequest(BindLambdaForTesting(
-            [&callback_loop2](SmsStatus status, const Optional<string>& sms) {
+            [&callback_loop2](SmsStatus status, const Optional<string>& otp) {
               EXPECT_EQ(SmsStatus::kSuccess, status);
-              EXPECT_EQ("hi", sms.value());
+              EXPECT_EQ("hi", otp.value());
               callback_loop2.Quit();
             }));
       }),
@@ -594,27 +672,19 @@ TEST_F(SmsServiceTest, RecordTimeMetricsForContinueOnSuccess) {
 
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
-    service.NotifyReceive(GURL(kTestUrl), "hi");
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
+    service.NotifyReceive(GURL(kTestUrl), "ABC");
     service.ConfirmPrompt();
   }));
 
-  service.MakeRequest(
-      BindLambdaForTesting(
-          [&loop](SmsStatus status, const Optional<string>& sms) {
-            loop.Quit();
-          }));
+  service.MakeRequest(BindLambdaForTesting(
+      [&loop](SmsStatus status, const Optional<string>& otp) { loop.Quit(); }));
 
   loop.Run();
 
-  std::unique_ptr<base::HistogramSamples> continue_samples(
-      GetHistogramSamplesSinceTestStart(
-          "Blink.Sms.Receive.TimeContinueOnSuccess"));
-  EXPECT_EQ(1, continue_samples->TotalCount());
-
-  std::unique_ptr<base::HistogramSamples> receive_samples(
-      GetHistogramSamplesSinceTestStart("Blink.Sms.Receive.TimeSmsReceive"));
-  EXPECT_EQ(1, receive_samples->TotalCount());
+  histogram_tester().ExpectTotalCount("Blink.Sms.Receive.TimeContinueOnSuccess",
+                                      1);
+  histogram_tester().ExpectTotalCount("Blink.Sms.Receive.TimeSmsReceive", 1);
 }
 
 TEST_F(SmsServiceTest, RecordMetricsForCancelOnSuccess) {
@@ -627,27 +697,19 @@ TEST_F(SmsServiceTest, RecordMetricsForCancelOnSuccess) {
 
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "hi");
     service.DismissPrompt();
   }));
 
-  service.MakeRequest(
-      BindLambdaForTesting(
-          [&loop](SmsStatus status, const Optional<string>& sms) {
-            loop.Quit();
-          }));
+  service.MakeRequest(BindLambdaForTesting(
+      [&loop](SmsStatus status, const Optional<string>& otp) { loop.Quit(); }));
 
   loop.Run();
 
-  std::unique_ptr<base::HistogramSamples> samples(
-      GetHistogramSamplesSinceTestStart(
-          "Blink.Sms.Receive.TimeCancelOnSuccess"));
-  EXPECT_EQ(1, samples->TotalCount());
-
-  std::unique_ptr<base::HistogramSamples> receive_samples(
-      GetHistogramSamplesSinceTestStart("Blink.Sms.Receive.TimeSmsReceive"));
-  EXPECT_EQ(1, receive_samples->TotalCount());
+  histogram_tester().ExpectTotalCount("Blink.Sms.Receive.TimeCancelOnSuccess",
+                                      1);
+  histogram_tester().ExpectTotalCount("Blink.Sms.Receive.TimeSmsReceive", 1);
 }
 
 TEST_F(SmsServiceTest, RecordMetricsForNewPage) {
@@ -668,16 +730,16 @@ TEST_F(SmsServiceTest, RecordMetricsForNewPage) {
 
   base::RunLoop navigate;
 
-  EXPECT_CALL(provider, Retrieve()).WillOnce(Invoke([&navigate]() {
+  EXPECT_CALL(provider, Retrieve(_)).WillOnce(Invoke([&navigate]() {
     navigate.Quit();
   }));
 
   base::RunLoop reload;
 
   service->Receive(base::BindLambdaForTesting(
-      [&reload](SmsStatus status, const base::Optional<std::string>& sms) {
+      [&reload](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kTimeout, status);
-        EXPECT_EQ(base::nullopt, sms);
+        EXPECT_EQ(base::nullopt, otp);
         reload.Quit();
       }));
 
@@ -706,16 +768,16 @@ TEST_F(SmsServiceTest, RecordMetricsForSamePage) {
 
   base::RunLoop navigate;
 
-  EXPECT_CALL(provider, Retrieve()).WillOnce(Invoke([&navigate]() {
+  EXPECT_CALL(provider, Retrieve(_)).WillOnce(Invoke([&navigate]() {
     navigate.Quit();
   }));
 
   base::RunLoop reload;
 
   service->Receive(base::BindLambdaForTesting(
-      [&reload](SmsStatus status, const base::Optional<std::string>& sms) {
+      [&reload](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kTimeout, status);
-        EXPECT_EQ(base::nullopt, sms);
+        EXPECT_EQ(base::nullopt, otp);
         reload.Quit();
       }));
 
@@ -749,16 +811,16 @@ TEST_F(SmsServiceTest, RecordMetricsForExistingPage) {
 
   base::RunLoop navigate;
 
-  EXPECT_CALL(provider, Retrieve()).WillOnce(Invoke([&navigate]() {
+  EXPECT_CALL(provider, Retrieve(_)).WillOnce(Invoke([&navigate]() {
     navigate.Quit();
   }));
 
   base::RunLoop reload;
 
   service->Receive(base::BindLambdaForTesting(
-      [&reload](SmsStatus status, const base::Optional<std::string>& sms) {
+      [&reload](SmsStatus status, const Optional<string>& otp) {
         EXPECT_EQ(SmsStatus::kTimeout, status);
-        EXPECT_EQ(base::nullopt, sms);
+        EXPECT_EQ(base::nullopt, otp);
         reload.Quit();
       }));
 

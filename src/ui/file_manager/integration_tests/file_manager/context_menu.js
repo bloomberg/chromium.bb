@@ -387,8 +387,9 @@ testcase.checkContextMenusForInputElements = async () => {
 
   // Focus the search box.
   chrome.test.assertEq(2, elements.length);
-  for (let element of elements) {
-    chrome.test.assertEq('#text-context-menu', element.attributes.contextmenu);
+  for (const element of elements) {
+    chrome.test.assertEq(
+        '#text-context-menu', element.attributes['contextmenu']);
   }
 
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -418,11 +419,59 @@ testcase.checkContextMenusForInputElements = async () => {
 };
 
 /**
+ * Tests that opening context menu in the rename input won't commit the
+ * renaming.
+ */
+testcase.checkContextMenuForRenameInput = async () => {
+  const textInput = '#file-list .table-row[renaming] input.rename';
+  const contextMenu = '#text-context-menu:not([hidden])';
+
+  // Open FilesApp on Downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Select the file.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']),
+      'selectFile failed');
+
+  // Press Ctrl+Enter key to rename the file.
+  const key = ['#file-list', 'Enter', true, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key));
+
+  // Check: the renaming text input should be shown in the file list.
+  await remoteCall.waitForElement(appId, textInput);
+
+  // Type new file name.
+  await remoteCall.callRemoteTestUtil(
+      'inputText', appId, [textInput, 'NEW NAME']);
+
+  // Right click to show the context menu.
+  await remoteCall.waitAndRightClick(appId, textInput);
+
+  // Context menu must be visible.
+  await remoteCall.waitForElement(appId, contextMenu);
+
+  // Dismiss the context menu.
+  const escKey = [contextMenu, 'Escape', false, false, false];
+  await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, escKey);
+
+  // Check: The rename input should be still be visible and with the same
+  // content.
+  const inputElement = await remoteCall.waitForElement(appId, textInput);
+  chrome.test.assertEq('NEW NAME', inputElement.value);
+
+  // Check: The rename input should be the focused element.
+  const focusedElement =
+      await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+  chrome.test.assertEq(inputElement, focusedElement);
+};
+
+/**
  * Tests that the specified menu item is in |expectedEnabledState| when the
  * context menu is opened from the file list inside the folder called
  * |folderName|. The folder is opened and the white area inside the folder is
  * selected. |folderName| must be inside the Google Drive root.
- * TODO(sashab): Allow specifying a generic path to any folder in the tree.
  *
  * @param {string} commandId ID of the command in the context menu to check.
  * @param {string} folderName Path to the file to open the context menu for.
@@ -438,28 +487,8 @@ async function checkContextMenuInDriveFolder(
   // Optionally copy hello.txt into the clipboard if needed.
   await maybeCopyToClipboard(appId, commandId);
 
-  // Focus the file list.
-  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
-      'focus', appId, ['#file-list:not([hidden])']));
-
-  // Select 'My Drive'.
-  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
-      'selectFolderInTree', appId, ['My Drive']));
-
-  // Wait for My Drive to load.
-  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/My Drive');
-
-  // Expand 'My Drive'.
-  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
-      'expandSelectedFolderInTree', appId, []));
-
-  // Select the folder.
-  await remoteCall.callRemoteTestUtil(
-      'selectFolderInTree', appId, [folderName]);
-
-  // Wait the folder to load.
-  await remoteCall.waitUntilCurrentDirectoryIsChanged(
-      appId, '/My Drive/' + folderName);
+  // Navigate to folder.
+  await navigateWithDirectoryTree(appId, '/My Drive/' + folderName);
 
   // Right-click inside the file list.
   chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
@@ -528,7 +557,7 @@ async function checkMyFilesRootItemContextMenu(itemName, commandStates) {
 
   const enabledCmds = [];
   const disabledCmds = [];
-  for (let [cmd, enabled] of Object.entries(commandStates)) {
+  for (const [cmd, enabled] of Object.entries(commandStates)) {
     chrome.test.assertTrue(cmd in validCmds, cmd + ' is not a valid command.');
     if (enabled) {
       enabledCmds.push(cmd);
@@ -542,7 +571,7 @@ async function checkMyFilesRootItemContextMenu(itemName, commandStates) {
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
 
   // Navigate to My files.
-  await remoteCall.waitAndClickElement(appId, '#breadcrumb-path-0');
+  await navigateWithDirectoryTree(appId, '/My files');
 
   // Wait for the navigation to complete.
   const expectedRows = [
@@ -570,14 +599,14 @@ async function checkMyFilesRootItemContextMenu(itemName, commandStates) {
 
   // Check the enabled commands.
   for (const commandId of enabledCmds) {
-    let query = `#file-context-menu:not([hidden]) [command="#${
+    const query = `#file-context-menu:not([hidden]) [command="#${
         commandId}"]:not([disabled])`;
     await remoteCall.waitForElement(appId, query);
   }
 
   // Check the disabled commands.
   for (const commandId of disabledCmds) {
-    let query =
+    const query =
         `#file-context-menu:not([hidden]) [command="#${commandId}"][disabled]`;
     await remoteCall.waitForElement(appId, query);
   }
@@ -756,5 +785,5 @@ testcase.checkContextMenuFocus = async () => {
   // Check currently focused element.
   const focusedElement =
       await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
-  chrome.test.assertEq('menuitem', focusedElement.attributes.role);
+  chrome.test.assertEq('menuitem', focusedElement.attributes['role']);
 };

@@ -50,7 +50,7 @@ testcase.showMyFiles = async () => {
 
   // Check tree elements for the correct order and label/element type.
   const visibleElements = [];
-  for (let element of elements) {
+  for (const element of elements) {
     if (!element.hidden) {  // Ignore hidden elements.
       visibleElements.push(
           element.attributes['entry-label'] + ': ' +
@@ -155,8 +155,7 @@ testcase.myFilesUpdatesChildren = async () => {
 
   // Select Downloads folder.
   const isDriveQuery = false;
-  await remoteCall.callRemoteTestUtil(
-      'selectInDirectoryTree', appId, [downloadsQuery, isDriveQuery]);
+  await navigateWithDirectoryTree(appId, '/My files/Downloads');
 
   // Wait for gear menu to be displayed.
   await remoteCall.waitForElement(appId, '#gear-button');
@@ -184,6 +183,13 @@ testcase.myFilesUpdatesChildren = async () => {
   await remoteCall.waitForFiles(
       appId, TestEntryInfo.getExpectedRows([hiddenFolder, ENTRIES.beautiful]),
       {ignoreFileSize: true, ignoreLastModifiedTime: true});
+
+  // Wait for Downloads folder to have the expand icon because of hidden folder.
+  const hasChildren = ' > .tree-row[has-children=true]';
+  await remoteCall.waitForElement(appId, downloadsQuery + hasChildren);
+
+  // Expand Downloads to display the ".hidden-folder".
+  await expandTreeItem(appId, downloadsQuery);
 
   // Check the hidden folder to be displayed in LHS.
   // Children of Downloads and named ".hidden-folder".
@@ -266,13 +272,13 @@ testcase.myFilesAutoExpandOnce = async () => {
   // Collapse MyFiles.
   const myFiles = '#directory-tree [entry-label="My files"]';
   let expandIcon = myFiles + '[expanded] > .tree-row[has-children=true]' +
-      '> .expand-icon';
+      ' .expand-icon';
   await remoteCall.waitAndClickElement(appId, expandIcon);
   await remoteCall.waitForElement(appId, myFiles + ':not([expanded])');
 
   // Expand Google Drive.
   const driveGrandRoot = '#directory-tree [entry-label="Google Drive"]';
-  expandIcon = driveGrandRoot + ' > .tree-row > .expand-icon';
+  expandIcon = driveGrandRoot + ' > .tree-row .expand-icon';
   await remoteCall.waitAndClickElement(appId, expandIcon);
 
   // Wait for its subtree to expand and display its children.

@@ -263,11 +263,11 @@ cr.define('accessibility', function() {
   }
 
   function insertHeadingInline(parentElement, headingText, id) {
-    const h4 = document.createElement('h4');
-    h4.textContent = headingText;
-    h4.style.display = 'inline';
-    h4.id = id + ':title';
-    parentElement.appendChild(h4);
+    const h3 = document.createElement('h3');
+    h3.textContent = headingText;
+    h3.style.display = 'inline';
+    h3.id = id + ':title';
+    parentElement.appendChild(h3);
   }
 
   function formatValue(data, property) {
@@ -391,7 +391,8 @@ cr.define('accessibility', function() {
   function createErrorMessageElement(data) {
     const errorMessageElement = document.createElement('div');
     const errorMessage = data.error;
-    errorMessageElement.innerHTML = errorMessage + '&nbsp;';
+    const nbsp = '\u00a0';
+    errorMessageElement.textContent = errorMessage + nbsp;
     const closeLink = document.createElement('a');
     closeLink.href = '#';
     closeLink.textContent = '[close]';
@@ -480,7 +481,12 @@ cr.define('accessibility', function() {
       treeElement = document.createElement('pre');
       treeElement.id = id + ':' + type;
     }
-    treeElement.textContent = data[type];
+    const dataSplitByLine = data[type].split(/\n/);
+    for (let i = 0; i < dataSplitByLine.length; i++) {
+      const lineElement = document.createElement('div');
+      lineElement.textContent = dataSplitByLine[i];
+      treeElement.appendChild(lineElement);
+    }
     return treeElement;
   }
 

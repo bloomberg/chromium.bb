@@ -5,16 +5,20 @@
 package org.chromium.chrome.browser.feed.library.feedactionparser;
 
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
+import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.BLOCK_CONTENT;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.DOWNLOAD;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.LEARN_MORE;
+import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.MANAGE_INTERESTS;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.OPEN_URL;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.OPEN_URL_INCOGNITO;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.OPEN_URL_NEW_TAB;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.OPEN_URL_NEW_WINDOW;
+import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.REPORT_VIEW;
 
 import android.view.View;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.Log;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.feed.library.api.host.action.StreamActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
@@ -22,21 +26,18 @@ import org.chromium.chrome.browser.feed.library.api.host.logging.InternalFeedErr
 import org.chromium.chrome.browser.feed.library.api.internal.actionparser.ActionParser;
 import org.chromium.chrome.browser.feed.library.api.internal.actionparser.ActionSource;
 import org.chromium.chrome.browser.feed.library.api.internal.protocoladapter.ProtocolAdapter;
-import org.chromium.chrome.browser.feed.library.common.Result;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.feedactionparser.internal.ActionTypesConverter;
 import org.chromium.chrome.browser.feed.library.feedactionparser.internal.PietFeedActionPayloadRetriever;
 import org.chromium.chrome.browser.feed.library.feedactionparser.internal.TooltipInfoImpl;
-import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionPayloadProto.FeedActionPayload;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedAction;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.OpenUrlData;
+import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.ViewReportData;
 import org.chromium.components.feed.core.proto.ui.piet.ActionsProto.Action;
 import org.chromium.components.feed.core.proto.ui.piet.LogDataProto.LogData;
-
-import java.util.List;
 
 /**
  * Action parser which is able to parse Feed actions and notify clients about which action needs to
@@ -44,16 +45,17 @@ import java.util.List;
  */
 public final class FeedActionParser implements ActionParser {
     private static final String TAG = "FeedActionParser";
+    static final String EXPECTED_MANAGE_INTERESTS_URL =
+            "https://www.google.com/preferences/interests";
 
     private final PietFeedActionPayloadRetriever mPietFeedActionPayloadRetriever;
     private final ProtocolAdapter mProtocolAdapter;
-    private final Supplier</*@Nullable*/ ContentMetadata> mContentMetadata;
+    private final Supplier<ContentMetadata> mContentMetadata;
     private final BasicLoggingApi mBasicLoggingApi;
 
     FeedActionParser(ProtocolAdapter protocolAdapter,
             PietFeedActionPayloadRetriever pietFeedActionPayloadRetriever,
-            Supplier</*@Nullable*/ ContentMetadata> contentMetadata,
-            BasicLoggingApi basicLoggingApi) {
+            Supplier<ContentMetadata> contentMetadata, BasicLoggingApi basicLoggingApi) {
         this.mProtocolAdapter = protocolAdapter;
         this.mPietFeedActionPayloadRetriever = pietFeedActionPayloadRetriever;
         this.mContentMetadata = contentMetadata;
@@ -82,6 +84,13 @@ public final class FeedActionParser implements ActionParser {
             case OPEN_URL_NEW_WINDOW:
             case OPEN_URL_INCOGNITO:
             case OPEN_URL_NEW_TAB:
+                // TODO(freedjm): Use a different action type for Manage Interests to handle it
+                // separately from a simple OPEN_URL action.
+                if (feedActionMetadata.getOpenUrlData().hasUrl()
+                        && feedActionMetadata.getOpenUrlData().getUrl().equals(
+                                EXPECTED_MANAGE_INTERESTS_URL)) {
+                    streamActionApi.onClientAction(ActionTypesConverter.convert(MANAGE_INTERESTS));
+                }
                 handleOpenUrl(feedActionMetadata.getType(), feedActionMetadata.getOpenUrlData(),
                         streamActionApi);
                 break;
@@ -105,23 +114,17 @@ public final class FeedActionParser implements ActionParser {
                     return;
                 }
 
-                Result<List<StreamDataOperation>> streamDataOperationsResult =
-                        mProtocolAdapter.createOperations(
-                                feedActionMetadata.getDismissData().getDataOperationsList());
-
-                if (!streamDataOperationsResult.isSuccessful()) {
-                    Logger.e(TAG, "Cannot dismiss: conversion to StreamDataOperation failed.");
-                    return;
-                }
                 if (!feedActionMetadata.getDismissData().hasContentId()) {
                     Logger.e(TAG, "Cannot dismiss: no Content Id");
                     return;
                 }
+
                 // TODO: Once we start logging DISMISS via the feed action end point, DISMISS
                 // and DISMISS_LOCAL should not be handled in the exact same way.
                 streamActionApi.dismiss(mProtocolAdapter.getStreamContentId(
                                                 feedActionMetadata.getDismissData().getContentId()),
-                        streamDataOperationsResult.getValue(),
+                        mProtocolAdapter.createOperations(
+                                feedActionMetadata.getDismissData().getDataOperationsList()),
                         feedActionMetadata.getDismissData().getUndoAction(),
                         feedActionMetadata.getDismissData().getPayload());
 
@@ -133,20 +136,10 @@ public final class FeedActionParser implements ActionParser {
                                     + " not support it.");
                     return;
                 }
-
-                Result<List<StreamDataOperation>> streamDataOperationResult =
+                streamActionApi.handleNotInterestedIn(
                         mProtocolAdapter.createOperations(
                                 feedActionMetadata.getNotInterestedInData()
-                                        .getDataOperationsList());
-
-                if (!streamDataOperationResult.isSuccessful()) {
-                    Logger.e(TAG,
-                            "Cannot preform action not interested in action: conversion to"
-                                    + " StreamDataOperation failed.");
-                    return;
-                }
-
-                streamActionApi.handleNotInterestedIn(streamDataOperationResult.getValue(),
+                                        .getDataOperationsList()),
                         feedActionMetadata.getNotInterestedInData().getUndoAction(),
                         feedActionMetadata.getNotInterestedInData().getPayload(),
                         feedActionMetadata.getNotInterestedInData().getInterestTypeValue());
@@ -204,6 +197,33 @@ public final class FeedActionParser implements ActionParser {
                 streamActionApi.maybeShowTooltip(
                         new TooltipInfoImpl(feedActionMetadata.getTooltipData()), view);
                 break;
+            case SEND_FEEDBACK:
+                Log.d(TAG, "SendFeedback menu item clicked.");
+                streamActionApi.sendFeedback(this.mContentMetadata.get());
+                break;
+            case BLOCK_CONTENT:
+                streamActionApi.handleBlockContent(
+                        mProtocolAdapter.createOperations(
+                                feedActionMetadata.getBlockContentData().getDataOperationsList()),
+                        feedActionMetadata.getBlockContentData().getPayload());
+                streamActionApi.onClientAction(ActionTypesConverter.convert(BLOCK_CONTENT));
+                break;
+            case REPORT_VIEW:
+                ViewReportData viewReportData = feedActionMetadata.getViewReportData();
+                String contentId =
+                        mProtocolAdapter.getStreamContentId(viewReportData.getContentId());
+                switch (viewReportData.getVisibility()) {
+                    case SHOW:
+                        streamActionApi.reportViewVisible(
+                                view, contentId, viewReportData.getPayload());
+                        break;
+                    case HIDE:
+                        streamActionApi.reportViewHidden(view, contentId);
+                        break;
+                    default:
+                        Log.d(TAG, "Unrecognized view report data visibility.");
+                }
+                break;
             default:
                 Logger.wtf(TAG, "Haven't implemented host handling of %s",
                         feedActionMetadata.getType());
@@ -233,6 +253,13 @@ public final class FeedActionParser implements ActionParser {
             mBasicLoggingApi.onInternalError(InternalFeedError.NO_URL_FOR_OPEN);
             Logger.e(TAG, "Cannot open URL action: %s, no URL available.", urlType);
             return;
+        }
+
+        if (urlType != OPEN_URL_INCOGNITO && openUrlData.hasContentId()
+                && openUrlData.hasPayload()) {
+            streamActionApi.reportClickAction(
+                    mProtocolAdapter.getStreamContentId(openUrlData.getContentId()),
+                    openUrlData.getPayload());
         }
 
         String url = openUrlData.getUrl();
@@ -306,6 +333,9 @@ public final class FeedActionParser implements ActionParser {
                 return streamActionApi.canLearnMore();
             case NOT_INTERESTED_IN:
                 return streamActionApi.canHandleNotInterestedIn();
+            // Send Feedback for the feed is available in M81 and later.
+            case SEND_FEEDBACK:
+                return true;
             case UNKNOWN:
             default:
                 // TODO : Handle the action types introduced in [INTERNAL LINK]

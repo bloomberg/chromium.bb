@@ -53,15 +53,15 @@ extern const char kAccessControlRequestMethod[];
 COMPONENT_EXPORT(NETWORK_CPP)
 base::Optional<CorsErrorStatus> CheckAccess(
     const GURL& response_url,
-    const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     mojom::CredentialsMode credentials_mode,
     const url::Origin& origin);
 
 // Returns true if |request_mode| is not kNavigate nor kNoCors, and the
-// origin of |request_url| is not a data URL, and |request_initiator| is not
-// same as the origin of |request_url|,
+// |request_initiator| is not same as the origin of |request_url|. The
+// |request_url| is expected to have a http or https scheme as they are only
+// schemes that the spec officially supports.
 COMPONENT_EXPORT(NETWORK_CPP)
 bool ShouldCheckCors(const GURL& request_url,
                      const base::Optional<url::Origin>& request_initiator,
@@ -91,12 +91,6 @@ base::Optional<CorsErrorStatus> CheckRedirectLocation(
     const base::Optional<url::Origin>& origin,
     bool cors_flag,
     bool tainted);
-
-// Performs the required CORS checks on the response to a preflight request.
-// Returns |kPreflightSuccess| if preflight response was successful.
-// TODO(toyoshim): Rename to CheckPreflightStatus.
-COMPONENT_EXPORT(NETWORK_CPP)
-base::Optional<mojom::CorsError> CheckPreflight(const int status_code);
 
 // Checks errors for the currently experimental "Access-Control-Allow-External:"
 // header. Shares error conditions with standard preflight checking.
@@ -173,6 +167,19 @@ bool IsCorsCrossOriginResponseType(mojom::FetchResponseType type);
 COMPONENT_EXPORT(NETWORK_CPP)
 bool CalculateCredentialsFlag(mojom::CredentialsMode credentials_mode,
                               mojom::FetchResponseType response_tainting);
+
+// TODO(toyoshim): Consider finding a more organized way to ensure adopting CORS
+// checks against all URLLoaderFactory and URLLoader inheritances.
+// Calculates mojom::FetchResponseType for non HTTP/HTTPS schemes those are out
+// of web standards. This adopts a simplified step 5 of
+// https://fetch.spec.whatwg.org/#main-fetch. |mode| is one of the
+// network::ResourceRequest to provide a CORS mode for the request.
+// |is_request_considered_same_origin| specifies if the request has a special
+// permission to bypass CORS checks.
+COMPONENT_EXPORT(NETWORK_CPP)
+mojom::FetchResponseType CalculateResponseType(
+    mojom::RequestMode mode,
+    bool is_request_considered_same_origin);
 
 }  // namespace cors
 

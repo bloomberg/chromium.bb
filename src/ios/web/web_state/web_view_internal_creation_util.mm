@@ -6,7 +6,7 @@
 
 #import <objc/runtime.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
@@ -36,6 +36,13 @@ void VerifyWKWebViewCreationPreConditions(
 
 }  // namespace
 
+WKWebView* BuildWKWebViewForQueries(WKWebViewConfiguration* configuration,
+                                    BrowserState* browser_state) {
+  VerifyWKWebViewCreationPreConditions(browser_state, configuration);
+  return [[WKWebView alloc] initWithFrame:CGRectZero
+                            configuration:configuration];
+}
+
 WKWebView* BuildWKWebView(CGRect frame,
                           WKWebViewConfiguration* configuration,
                           BrowserState* browser_state,
@@ -44,6 +51,7 @@ WKWebView* BuildWKWebView(CGRect frame,
   VerifyWKWebViewCreationPreConditions(browser_state, configuration);
 
   GetWebClient()->PreWebViewCreation();
+
   WKWebView* web_view =
       [[WKWebView alloc] initWithFrame:frame configuration:configuration];
 

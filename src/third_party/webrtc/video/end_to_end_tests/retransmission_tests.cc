@@ -16,9 +16,10 @@
 #include "api/test/video/function_video_encoder_factory.h"
 #include "call/fake_network_pipe.h"
 #include "call/simulated_network.h"
+#include "modules/rtp_rtcp/source/rtp_packet.h"
 #include "modules/video_coding/codecs/vp8/include/vp8.h"
+#include "rtc_base/event.h"
 #include "rtc_base/task_queue_for_test.h"
-#include "system_wrappers/include/sleep.h"
 #include "test/call_test.h"
 #include "test/field_trial.h"
 #include "test/gtest.h"
@@ -58,13 +59,13 @@ TEST_F(RetransmissionEndToEndTest, ReceivesAndRetransmitsNack) {
    private:
     Action OnSendRtp(const uint8_t* packet, size_t length) override {
       rtc::CritScope lock(&crit_);
-      RTPHeader header;
-      EXPECT_TRUE(parser_->Parse(packet, length, &header));
+      RtpPacket rtp_packet;
+      EXPECT_TRUE(rtp_packet.Parse(packet, length));
 
       // Never drop retransmitted packets.
-      if (dropped_packets_.find(header.sequenceNumber) !=
+      if (dropped_packets_.find(rtp_packet.SequenceNumber()) !=
           dropped_packets_.end()) {
-        retransmitted_packets_.insert(header.sequenceNumber);
+        retransmitted_packets_.insert(rtp_packet.SequenceNumber());
         return SEND_PACKET;
       }
 
@@ -84,9 +85,9 @@ TEST_F(RetransmissionEndToEndTest, ReceivesAndRetransmitsNack) {
         packets_left_to_drop_ = kLossBurstSize;
 
       // Never drop padding packets as those won't be retransmitted.
-      if (packets_left_to_drop_ > 0 && header.paddingLength == 0) {
+      if (packets_left_to_drop_ > 0 && rtp_packet.padding_size() == 0) {
         --packets_left_to_drop_;
-        dropped_packets_.insert(header.sequenceNumber);
+        dropped_packets_.insert(rtp_packet.SequenceNumber());
         return DROP_PACKET;
       }
 
@@ -152,14 +153,15 @@ TEST_F(RetransmissionEndToEndTest, ReceivesNackAndRetransmitsAudio) {
     }
 
     Action OnSendRtp(const uint8_t* packet, size_t length) override {
-      RTPHeader header;
-      EXPECT_TRUE(parser_->Parse(packet, length, &header));
+      RtpPacket rtp_packet;
+      EXPECT_TRUE(rtp_packet.Parse(packet, length));
 
       if (!sequence_number_to_retransmit_) {
-        sequence_number_to_retransmit_ = header.sequenceNumber;
+        sequence_number_to_retransmit_ = rtp_packet.SequenceNumber();
 
         // Don't ask for retransmission straight away, may be deduped in pacer.
-      } else if (header.sequenceNumber == *sequence_number_to_retransmit_) {
+      } else if (rtp_packet.SequenceNumber() ==
+                 *sequence_number_to_retransmit_) {
         observation_complete_.Set();
       } else {
         // Send a NACK as often as necessary until retransmission is received.
@@ -201,7 +203,7 @@ TEST_F(RetransmissionEndToEndTest, ReceivesNackAndRetransmitsAudio) {
 
 TEST_F(RetransmissionEndToEndTest,
        StopSendingKeyframeRequestsForInactiveStream) {
-  class KeyframeRequestObserver : public test::EndToEndTest {
+  class KeyframeRequestObserver : public test::EndToEndTest, public QueuedTask {
    public:
     explicit KeyframeRequestObserver(TaskQueueBase* task_queue)
         : clock_(Clock::GetRealTimeClock()), task_queue_(task_queue) {}
@@ -214,28 +216,59 @@ TEST_F(RetransmissionEndToEndTest,
       receive_stream_ = receive_streams[0];
     }
 
-    void PerformTest() override {
-      bool frame_decoded = false;
-      int64_t start_time = clock_->TimeInMilliseconds();
-      while (clock_->TimeInMilliseconds() - start_time <= 5000) {
-        if (receive_stream_->GetStats().frames_decoded > 0) {
-          frame_decoded = true;
-          break;
-        }
-        SleepMs(100);
+    Action OnReceiveRtcp(const uint8_t* packet, size_t length) override {
+      test::RtcpPacketParser parser;
+      EXPECT_TRUE(parser.Parse(packet, length));
+      if (parser.pli()->num_packets() > 0)
+        task_queue_->PostTask(std::unique_ptr<QueuedTask>(this));
+      return SEND_PACKET;
+    }
+
+    bool PollStats() {
+      if (receive_stream_->GetStats().frames_decoded > 0) {
+        frame_decoded_ = true;
+      } else if (clock_->TimeInMilliseconds() - start_time_ < 5000) {
+        task_queue_->PostDelayedTask(std::unique_ptr<QueuedTask>(this), 100);
+        return false;
       }
-      ASSERT_TRUE(frame_decoded);
-      SendTask(RTC_FROM_HERE, task_queue_, [this]() { send_stream_->Stop(); });
-      SleepMs(10000);
-      ASSERT_EQ(
-          1U, receive_stream_->GetStats().rtcp_packet_type_counts.pli_packets);
+      return true;
+    }
+
+    void PerformTest() override {
+      start_time_ = clock_->TimeInMilliseconds();
+      task_queue_->PostTask(std::unique_ptr<QueuedTask>(this));
+      test_done_.Wait(rtc::Event::kForever);
+    }
+
+    bool Run() override {
+      if (!frame_decoded_) {
+        if (PollStats()) {
+          send_stream_->Stop();
+          if (!frame_decoded_) {
+            test_done_.Set();
+          } else {
+            // Now we wait for the PLI packet. Once we receive it, a task
+            // will be posted (see OnReceiveRtcp) and we'll check the stats
+            // once more before signaling that we're done.
+          }
+        }
+      } else {
+        EXPECT_EQ(
+            1U,
+            receive_stream_->GetStats().rtcp_packet_type_counts.pli_packets);
+        test_done_.Set();
+      }
+      return false;
     }
 
    private:
-    Clock* clock_;
+    Clock* const clock_;
     VideoSendStream* send_stream_;
     VideoReceiveStream* receive_stream_;
     TaskQueueBase* const task_queue_;
+    rtc::Event test_done_;
+    bool frame_decoded_ = false;
+    int64_t start_time_ = 0;
   } test(task_queue());
 
   RunBaseTest(&test);
@@ -258,15 +291,15 @@ void RetransmissionEndToEndTest::ReceivesPliAndRecovers(int rtp_history_ms) {
    private:
     Action OnSendRtp(const uint8_t* packet, size_t length) override {
       rtc::CritScope lock(&crit_);
-      RTPHeader header;
-      EXPECT_TRUE(parser_->Parse(packet, length, &header));
+      RtpPacket rtp_packet;
+      EXPECT_TRUE(rtp_packet.Parse(packet, length));
 
       // Drop all retransmitted packets to force a PLI.
-      if (header.timestamp <= highest_dropped_timestamp_)
+      if (rtp_packet.Timestamp() <= highest_dropped_timestamp_)
         return DROP_PACKET;
 
       if (frames_to_drop_ > 0) {
-        highest_dropped_timestamp_ = header.timestamp;
+        highest_dropped_timestamp_ = rtp_packet.Timestamp();
         --frames_to_drop_;
         return DROP_PACKET;
       }
@@ -350,29 +383,29 @@ void RetransmissionEndToEndTest::DecodesRetransmittedFrame(bool enable_rtx,
    private:
     Action OnSendRtp(const uint8_t* packet, size_t length) override {
       rtc::CritScope lock(&crit_);
-      RTPHeader header;
-      EXPECT_TRUE(parser_->Parse(packet, length, &header));
+      RtpPacket rtp_packet;
+      EXPECT_TRUE(rtp_packet.Parse(packet, length));
 
       // Ignore padding-only packets over RTX.
-      if (header.payloadType != payload_type_) {
-        EXPECT_EQ(retransmission_ssrc_, header.ssrc);
-        if (length == header.headerLength + header.paddingLength)
+      if (rtp_packet.PayloadType() != payload_type_) {
+        EXPECT_EQ(retransmission_ssrc_, rtp_packet.Ssrc());
+        if (rtp_packet.payload_size() == 0)
           return SEND_PACKET;
       }
 
-      if (header.timestamp == retransmitted_timestamp_) {
-        EXPECT_EQ(retransmission_ssrc_, header.ssrc);
-        EXPECT_EQ(retransmission_payload_type_, header.payloadType);
+      if (rtp_packet.Timestamp() == retransmitted_timestamp_) {
+        EXPECT_EQ(retransmission_ssrc_, rtp_packet.Ssrc());
+        EXPECT_EQ(retransmission_payload_type_, rtp_packet.PayloadType());
         return SEND_PACKET;
       }
 
       // Found the final packet of the frame to inflict loss to, drop this and
       // expect a retransmission.
-      if (header.payloadType == payload_type_ && header.markerBit &&
+      if (rtp_packet.PayloadType() == payload_type_ && rtp_packet.Marker() &&
           ++marker_bits_observed_ == kDroppedFrameNumber) {
         // This should be the only dropped packet.
         EXPECT_EQ(0u, retransmitted_timestamp_);
-        retransmitted_timestamp_ = header.timestamp;
+        retransmitted_timestamp_ = rtp_packet.Timestamp();
         if (absl::c_linear_search(rendered_timestamps_,
                                   retransmitted_timestamp_)) {
           // Frame was rendered before last packet was scheduled for sending.

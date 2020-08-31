@@ -18,6 +18,13 @@ namespace chrome_test_util {
 // Opens a new tab, and does not wait for animations to complete.
 void OpenNewTab();
 
+// Simulates opening http://www.example.com/ from another application.
+// Returns the opened URL.
+NSURL* SimulateExternalAppURLOpening();
+
+// Simulates opening the add account sign-in flow from the web.
+void SimulateAddAccountFromWeb();
+
 // Opens a new incognito tab, and does not wait for animations to complete.
 void OpenNewIncognitoTab();
 
@@ -45,6 +52,9 @@ void CloseCurrentTab();
 
 // Closes tab with the given index in current mode (incognito or normal).
 void CloseTabAtIndex(NSUInteger index);
+
+// Returns the index of active tab in normal (non-incognito) mode.
+NSUInteger GetIndexOfActiveNormalTab();
 
 // Closes all tabs in the current mode (incognito or normal), and does not wait
 // for the UI to complete. If current mode is Incognito, mode will be switched

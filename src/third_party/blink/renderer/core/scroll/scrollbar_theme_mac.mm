@@ -29,9 +29,9 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_policy.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/platform/mac/web_scrollbar_theme.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/scroll/ns_scroller_imp_details.h"
@@ -83,7 +83,7 @@ using gfx::CocoaScrollbarPainter;
     _saved_knob_alpha = [_scrollbarPainter knobAlpha];
   } else {
     [_scrollbarPainter setKnobAlpha:_saved_knob_alpha];
-    _scrollbar->SetScrollbarsHiddenIfOverlay(_saved_knob_alpha == 0);
+    _scrollbar->SetScrollbarsHiddenFromExternalAnimator(_saved_knob_alpha == 0);
   }
 }
 
@@ -99,7 +99,7 @@ using gfx::CocoaScrollbarPainter;
   if ([keyPath isEqualToString:@"knobAlpha"]) {
     if (!_suppressSetScrollbarsHidden) {
       BOOL visible = [_scrollbarPainter knobAlpha] > 0;
-      _scrollbar->SetScrollbarsHiddenIfOverlay(!visible);
+      _scrollbar->SetScrollbarsHiddenFromExternalAnimator(!visible);
     }
   }
 }
@@ -236,8 +236,8 @@ CocoaScrollbarPainter::Params GetPaintParams(const Scrollbar& scrollbar,
   if (scrollbar.IsLeftSideVerticalScrollbar())
     params.orientation = CocoaScrollbarPainter::Orientation::kVerticalOnLeft;
 
+  params.dark_mode = scrollbar.UsedColorScheme() == WebColorScheme::kDark;
   params.overlay = overlay;
-  // Only enable dark mode for overlay scrollbars (for now).
   if (overlay)
     params.dark_mode = scrollbar.GetScrollbarOverlayColorTheme() ==
                        kScrollbarOverlayColorThemeLight;
@@ -423,10 +423,6 @@ void ScrollbarThemeMac::UpdateScrollbarOverlayColorTheme(
   }
 }
 
-WebScrollbarButtonsPlacement ScrollbarThemeMac::ButtonsPlacement() const {
-  return kWebScrollbarButtonsPlacementNone;
-}
-
 bool ScrollbarThemeMac::HasThumb(const Scrollbar& scrollbar) {
   ScrollbarPainter painter = PainterForScrollbar(scrollbar);
   int min_length_for_thumb =
@@ -439,20 +435,15 @@ bool ScrollbarThemeMac::HasThumb(const Scrollbar& scrollbar) {
               : scrollbar.Height()) >= min_length_for_thumb;
 }
 
-IntRect ScrollbarThemeMac::BackButtonRect(const Scrollbar& scrollbar,
-                                          ScrollbarPart part) {
-  DCHECK_EQ(ButtonsPlacement(), kWebScrollbarButtonsPlacementNone);
+IntRect ScrollbarThemeMac::BackButtonRect(const Scrollbar& scrollbar) {
   return IntRect();
 }
 
-IntRect ScrollbarThemeMac::ForwardButtonRect(const Scrollbar& scrollbar,
-                                             ScrollbarPart part) {
-  DCHECK_EQ(ButtonsPlacement(), kWebScrollbarButtonsPlacementNone);
+IntRect ScrollbarThemeMac::ForwardButtonRect(const Scrollbar& scrollbar) {
   return IntRect();
 }
 
 IntRect ScrollbarThemeMac::TrackRect(const Scrollbar& scrollbar) {
-  DCHECK(!HasButtons(scrollbar));
   return scrollbar.FrameRect();
 }
 
@@ -464,7 +455,7 @@ void ScrollbarThemeMac::UpdateEnabledState(const Scrollbar& scrollbar) {
   [PainterForScrollbar(scrollbar) setEnabled:scrollbar.Enabled()];
 }
 
-float ScrollbarThemeMac::ThumbOpacity(const Scrollbar& scrollbar) const {
+float ScrollbarThemeMac::Opacity(const Scrollbar& scrollbar) const {
   ScrollbarPainter scrollbar_painter = PainterForScrollbar(scrollbar);
   return [scrollbar_painter knobAlpha];
 }

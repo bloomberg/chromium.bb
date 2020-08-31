@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -15,10 +16,12 @@ import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_TEXT_WATCHER;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_MANAGER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_LEARN_MORE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_INITIALIZED;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_SURFACE_BODY_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEARCH_BUTTON_CLICK_LISTENER;
@@ -37,11 +40,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
+import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
 import org.chromium.chrome.browser.omnibox.LocationBar;
-import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** Tests for {@link TasksSurfaceMediator}. */
@@ -55,9 +58,11 @@ public class TasksSurfaceMediatorUnitTest {
     @Mock
     private FakeboxDelegate mFakeboxDelegate;
     @Mock
-    private LocationBarVoiceRecognitionHandler mLocationBarVoiceRecognitionHandler;
+    private VoiceRecognitionHandler mVoiceRecognitionHandler;
     @Mock
     private View.OnClickListener mLearnMoreOnClickListener;
+    @Mock
+    private IncognitoCookieControlsManager mCookieControlsManager;
     @Captor
     private ArgumentCaptor<View.OnClickListener> mFakeboxClickListenerCaptor;
     @Captor
@@ -66,19 +71,20 @@ public class TasksSurfaceMediatorUnitTest {
     private ArgumentCaptor<View.OnClickListener> mVoiceSearchButtonClickListenerCaptor;
     @Captor
     private ArgumentCaptor<View.OnClickListener> mLearnMoreOnClickListenerCaptor;
+    @Captor
+    private ArgumentCaptor<IncognitoCookieControlsManager> mCookieControlsManagerCaptor;
 
     @Before
     public void setUp() {
-        RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
 
         mMediator = new TasksSurfaceMediator(
-                mPropertyModel, mFakeboxDelegate, mLearnMoreOnClickListener, true);
+                mPropertyModel, mLearnMoreOnClickListener, mCookieControlsManager, true);
+        mMediator.initWithNative(mFakeboxDelegate);
     }
 
     @After
     public void tearDown() {
-        RecordUserAction.setDisabledForTests(false);
         mMediator = null;
     }
 
@@ -94,12 +100,15 @@ public class TasksSurfaceMediatorUnitTest {
                         mVoiceSearchButtonClickListenerCaptor.capture());
         verify(mPropertyModel).set(eq(IS_FAKE_SEARCH_BOX_VISIBLE), eq(true));
         verify(mPropertyModel).set(eq(IS_VOICE_RECOGNITION_BUTTON_VISIBLE), eq(false));
+        verify(mPropertyModel).set(eq(IS_SURFACE_BODY_VISIBLE), eq(true));
+        verify(mPropertyModel)
+                .set(eq(INCOGNITO_COOKIE_CONTROLS_MANAGER), mCookieControlsManagerCaptor.capture());
         verify(mPropertyModel)
                 .set(eq(INCOGNITO_LEARN_MORE_CLICK_LISTENER),
                         mLearnMoreOnClickListenerCaptor.capture());
         assertEquals(mLearnMoreOnClickListener, mLearnMoreOnClickListenerCaptor.getValue());
-        assertEquals(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE), false);
-        assertEquals(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED), false);
+        assertFalse(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE));
+        assertFalse(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED));
     }
 
     @Test
@@ -145,13 +154,11 @@ public class TasksSurfaceMediatorUnitTest {
         verify(mPropertyModel)
                 .set(eq(VOICE_SEARCH_BUTTON_CLICK_LISTENER),
                         mVoiceSearchButtonClickListenerCaptor.capture());
-        doReturn(mLocationBarVoiceRecognitionHandler)
-                .when(mFakeboxDelegate)
-                .getLocationBarVoiceRecognitionHandler();
+        doReturn(mVoiceRecognitionHandler).when(mFakeboxDelegate).getVoiceRecognitionHandler();
 
         mVoiceSearchButtonClickListenerCaptor.getValue().onClick(null);
-        verify(mLocationBarVoiceRecognitionHandler, times(1))
-                .startVoiceRecognition(eq(
-                        LocationBarVoiceRecognitionHandler.VoiceInteractionSource.TASKS_SURFACE));
+        verify(mVoiceRecognitionHandler, times(1))
+                .startVoiceRecognition(
+                        eq(VoiceRecognitionHandler.VoiceInteractionSource.TASKS_SURFACE));
     }
 }

@@ -14,9 +14,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -28,8 +31,10 @@
 
 using autofill::AutofillDownloadManager;
 using autofill::CONFIRMATION_PASSWORD;
+using autofill::FieldSignature;
 using autofill::FormData;
 using autofill::FormFieldData;
+using autofill::FormSignature;
 using autofill::FormStructure;
 using autofill::NEW_PASSWORD;
 using autofill::NOT_USERNAME;
@@ -92,8 +97,14 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
 class MockFieldInfoManager : public FieldInfoManager {
  public:
-  MOCK_METHOD3(AddFieldType, void(uint64_t, uint32_t, ServerFieldType));
-  MOCK_CONST_METHOD2(GetFieldType, ServerFieldType(uint64_t, uint32_t));
+  MOCK_METHOD(void,
+              AddFieldType,
+              (FormSignature, FieldSignature, ServerFieldType),
+              (override));
+  MOCK_METHOD(ServerFieldType,
+              GetFieldType,
+              (FormSignature, autofill::FieldSignature),
+              (const override));
 };
 
 }  // namespace
@@ -196,7 +207,7 @@ TEST_F(VotesUploaderTest, InitialValueDetection) {
   // Note that the value of the username field is deliberately altered before
   // the |form_structure| is generated from |form_data| to test the persistence.
   base::string16 prefilled_username = ASCIIToUTF16("prefilled_username");
-  uint32_t username_field_renderer_id = 123456;
+  autofill::FieldRendererId username_field_renderer_id(123456);
   const uint32_t kNumberOfHashValues = 64;
   FormData form_data;
 
@@ -206,7 +217,7 @@ TEST_F(VotesUploaderTest, InitialValueDetection) {
 
   FormFieldData other_field;
   other_field.value = ASCIIToUTF16("some_field");
-  other_field.unique_renderer_id = 3234;
+  other_field.unique_renderer_id = autofill::FieldRendererId(3234);
 
   form_data.fields = {other_field, username_field};
 
@@ -411,16 +422,18 @@ TEST_F(VotesUploaderTest, UploadSingleUsername) {
     ON_CALL(client_, GetFieldInfoManager())
         .WillByDefault(Return(&mock_field_manager));
 
-    constexpr uint32_t kUsernameRendererId = 101;
-    constexpr uint32_t kUsernameFieldSignature = 1234;
-    constexpr uint64_t kFormSignature = 1000;
+    constexpr autofill::FieldRendererId kUsernameRendererId(101);
+    constexpr FieldSignature kUsernameFieldSignature(1234);
+    constexpr FormSignature kFormSignature(1000);
 
     FormPredictions form_predictions;
     form_predictions.form_signature = kFormSignature;
     // Add a non-username field.
     form_predictions.fields.emplace_back();
-    form_predictions.fields.back().renderer_id = kUsernameRendererId - 1;
-    form_predictions.fields.back().signature = kUsernameFieldSignature - 1;
+    form_predictions.fields.back().renderer_id.value() =
+        kUsernameRendererId.value() - 1;
+    form_predictions.fields.back().signature.value() =
+        kUsernameFieldSignature.value() - 1;
 
     // Add the username field.
     form_predictions.fields.emplace_back();
@@ -443,9 +456,9 @@ TEST_F(VotesUploaderTest, UploadSingleUsername) {
 
 TEST_F(VotesUploaderTest, SaveSingleUsernameVote) {
   VotesUploader votes_uploader(&client_, false);
-  constexpr uint32_t kUsernameRendererId = 101;
-  constexpr uint32_t kUsernameFieldSignature = 1234;
-  constexpr uint64_t kFormSignature = 1000;
+  constexpr autofill::FieldRendererId kUsernameRendererId(101);
+  constexpr autofill::FieldSignature kUsernameFieldSignature(1234);
+  constexpr autofill::FormSignature kFormSignature(1000);
 
   FormPredictions form_predictions;
   form_predictions.form_signature = kFormSignature;
@@ -460,10 +473,15 @@ TEST_F(VotesUploaderTest, SaveSingleUsernameVote) {
 
   // Init store and expect that adding field info is called.
   scoped_refptr<MockPasswordStore> store = new MockPasswordStore;
-  store->Init(syncer::SyncableService::StartSyncFlare(), /*prefs=*/nullptr);
+  store->Init(/*prefs=*/nullptr);
+
+#if defined(OS_ANDROID)
+  EXPECT_CALL(*store, AddFieldInfoImpl).Times(0);
+#else
   EXPECT_CALL(*store,
               AddFieldInfoImpl(FieldInfoHasData(
                   kFormSignature, kUsernameFieldSignature, SINGLE_USERNAME)));
+#endif  // defined(OS_ANDROID)
 
   // Init FieldInfoManager.
   FieldInfoManagerImpl field_info_manager(store);
@@ -477,9 +495,9 @@ TEST_F(VotesUploaderTest, SaveSingleUsernameVote) {
 
 TEST_F(VotesUploaderTest, DontUploadSingleUsernameWhenAlreadyUploaded) {
   VotesUploader votes_uploader(&client_, false);
-  constexpr uint32_t kUsernameRendererId = 101;
-  constexpr uint32_t kUsernameFieldSignature = 1234;
-  constexpr uint64_t kFormSignature = 1000;
+  constexpr autofill::FieldRendererId kUsernameRendererId(101);
+  constexpr autofill::FieldSignature kUsernameFieldSignature(1234);
+  constexpr autofill::FormSignature kFormSignature(1000);
 
   MockFieldInfoManager mock_field_manager;
   ON_CALL(client_, GetFieldInfoManager())

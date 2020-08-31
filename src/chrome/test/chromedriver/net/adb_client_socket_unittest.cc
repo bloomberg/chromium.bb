@@ -4,7 +4,6 @@
 
 #include "chrome/test/chromedriver/net/adb_client_socket.h"
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
@@ -148,9 +147,9 @@ class AdbClientSocketTest : public testing::Test {
     buffer->SetCapacity(initial_capacity);
     int result = adb_socket.socket_->Read(
         buffer.get(), initial_capacity,
-        base::Bind(&AdbClientSocket::ReadUntilEOF,
-                   base::Unretained(&adb_socket), parse_callback.Get(),
-                   response_callback.Get(), buffer));
+        base::BindOnce(&AdbClientSocket::ReadUntilEOF,
+                       base::Unretained(&adb_socket), parse_callback.Get(),
+                       response_callback.Get(), buffer));
     if (result != net::ERR_IO_PENDING) {
       adb_socket.ReadUntilEOF(parse_callback.Get(), response_callback.Get(),
                               buffer, result);

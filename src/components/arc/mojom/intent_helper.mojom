@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 35
+// Next MinVersion: 37
 
 module arc.mojom;
 
@@ -147,8 +147,46 @@ enum ChromePage {
   ABOUTBLANK,
   ABOUTDOWNLOADS,
   ABOUTHISTORY,
+  CROSTINIDISKRESIZE,
+  ACCESSIBILITY,
+  ACCOUNTMANAGER,
+  ANDROIDAPPSDETAILS,
+  ANDROIDAPPSDETAILSINBROWSERSETTINGS,
+  APPMANAGEMENT,
+  APPMANAGEMENTDETAILS,
+  ASSISTANT,
+  CONNECTEDDEVICES,
+  CROSTINISHAREDPATHS,
+  CROSTINISHAREDUSBDEVICES,
+  CROSTINIEXPORTIMPORT,
+  EXTERNALSTORAGE,
+  INTERNET,
+  KERBEROSACCOUNTS,
+  KNOWNNETWORKS,
+  MANAGEACCESSIBILITYTTS,
+  SMARTLOCKSETTINGS,
+  SWITCHACCESS,
+  STYLUS,
+  TETHERSETTINGS,
+  ETHERNET,
+  CELLULAR,
+  AMBIENTMODE,
+  DEPRECATED_PLUGINVMDETAILS,
+  PLUGINVMSHAREDPATHS,
+  OSACCESSIBILITY,
+  OSLANGUAGES,
+  OSLANGUAGESDETAILS,
+  OSLANGUAGESINPUTMETHODS,
+  OSPRINTING,
+  PRINTING,
+  OSPEOPLE,
+  OSPRIVACY,
+  OSSEARCH,
+  OSRESET,
+  OSLANGUAGESSMARTINPUTS,
+  DOWNLOADEDCONTENT,
 
-  LAST = ABOUTHISTORY,
+  LAST = DOWNLOADEDCONTENT
 };
 
 // Describes an unique chrome app.
@@ -251,12 +289,13 @@ interface IntentHelperHost {
   // intent expects the captured image would be down-scaled to a small enough
   // size. If |is_secure| is true, the intent is fired when the device is
   // secured, which means the camera app should not show any user-sensitive
-  // data.
+  // data. |task_id| represents the id of the caller task in ARC.
   [MinVersion=28] LaunchCameraApp@12(uint32 intent_id,
                                      CameraIntentMode mode,
                                      bool should_handle_result,
                                      bool should_down_scale,
-                                     bool is_secure);
+                                     bool is_secure,
+                                     [MinVersion=36] int32 task_id);
 
   // Called when intent filters are updated for one package. This will be
   // called when apps are installed, uninstalled or updated.
@@ -275,7 +314,7 @@ interface IntentHelperHost {
 };
 
 // Sends intents to ARC on behalf of Chrome.
-// Next method ID: 18
+// Next method ID: 19
 interface IntentHelperInstance {
   // Sets the given package as a preferred package. The next time an ACTION_VIEW
   // intent is sent with a URL that requires disambiguation, instead of opening
@@ -292,6 +331,12 @@ interface IntentHelperInstance {
   [MinVersion=32] AddPreferredApp@17(string package_name,
                                      IntentFilter intent_filter,
                                      IntentInfo intent_info);
+
+  // Reset the verified link domain status to always ask for the
+  // |package_names|.
+  // This method will be called when Chrome OS replaced the preferred package
+  // from an ARC app to something else.
+  [MinVersion=35] ResetVerifiedLinks@18(array<string> package_names);
 
   // DEPRECATED. Use FileSystemInstance.GetFileSize() instead.
   [MinVersion=15] GetFileSizeDeprecated@11(string url) => (int64 size);

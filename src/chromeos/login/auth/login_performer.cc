@@ -29,10 +29,11 @@ using base::UserMetricsAction;
 
 namespace chromeos {
 
-LoginPerformer::LoginPerformer(scoped_refptr<base::TaskRunner> task_runner,
-                               Delegate* delegate)
+LoginPerformer::LoginPerformer(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    Delegate* delegate)
     : delegate_(delegate),
-      task_runner_(task_runner),
+      task_runner_(std::move(task_runner)),
       last_login_failure_(AuthFailure::AuthFailureNone()) {}
 
 LoginPerformer::~LoginPerformer() {
@@ -132,10 +133,9 @@ void LoginPerformer::PerformLogin(const UserContext& user_context,
   auth_mode_ = auth_mode;
   user_context_ = user_context;
 
-  if (RunTrustedCheck(base::Bind(&LoginPerformer::DoPerformLogin,
-                                 weak_factory_.GetWeakPtr(),
-                                 user_context_,
-                                 auth_mode))) {
+  if (RunTrustedCheck(base::BindOnce(&LoginPerformer::DoPerformLogin,
+                                     weak_factory_.GetWeakPtr(), user_context_,
+                                     auth_mode))) {
     return;
   }
   DoPerformLogin(user_context_, auth_mode);
@@ -158,10 +158,10 @@ void LoginPerformer::DoPerformLogin(const UserContext& user_context,
     case AuthorizationMode::kExternal: {
       RunOnlineWhitelistCheck(
           account_id, wildcard_match, user_context.GetRefreshToken(),
-          base::Bind(&LoginPerformer::StartLoginCompletion,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&LoginPerformer::NotifyWhitelistCheckFailure,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&LoginPerformer::StartLoginCompletion,
+                         weak_factory_.GetWeakPtr()),
+          base::BindOnce(&LoginPerformer::NotifyWhitelistCheckFailure,
+                         weak_factory_.GetWeakPtr()));
       break;
     }
     case AuthorizationMode::kInternal:
@@ -181,9 +181,9 @@ void LoginPerformer::LoginAsSupervisedUser(const UserContext& user_context) {
                << user_context_.GetUserType();
   }
 
-  if (RunTrustedCheck(base::Bind(&LoginPerformer::TrustedLoginAsSupervisedUser,
-                                 weak_factory_.GetWeakPtr(),
-                                 user_context_))) {
+  if (RunTrustedCheck(
+          base::BindOnce(&LoginPerformer::TrustedLoginAsSupervisedUser,
+                         weak_factory_.GetWeakPtr(), user_context_))) {
     return;
   }
   TrustedLoginAsSupervisedUser(user_context_);

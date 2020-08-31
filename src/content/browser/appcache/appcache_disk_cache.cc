@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -44,8 +44,7 @@ class AppCacheDiskCache::CreateBackendCallbackShim
  private:
   friend class base::RefCounted<CreateBackendCallbackShim>;
 
-  ~CreateBackendCallbackShim() {
-  }
+  ~CreateBackendCallbackShim() = default;
 
   AppCacheDiskCache* appcache_diskcache_;  // Unowned pointer.
 };
@@ -193,9 +192,9 @@ class ActiveCall : public base::RefCounted<ActiveCall> {
 
 AppCacheDiskCache::AppCacheDiskCache()
 #if defined(APPCACHE_USE_SIMPLE_CACHE)
-    : AppCacheDiskCache("DiskCache.AppCache", true)
+    : AppCacheDiskCache(true)
 #else
-    : AppCacheDiskCache("DiskCache.AppCache", false)
+    : AppCacheDiskCache(false)
 #endif
 {
 }
@@ -309,12 +308,10 @@ base::WeakPtr<AppCacheDiskCache> AppCacheDiskCache::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-AppCacheDiskCache::AppCacheDiskCache(const char* uma_name,
-                                     bool use_simple_cache)
+AppCacheDiskCache::AppCacheDiskCache(bool use_simple_cache)
     : use_simple_cache_(use_simple_cache),
       is_disabled_(false),
-      is_waiting_to_initialize_(false),
-      uma_name_(uma_name) {}
+      is_waiting_to_initialize_(false) {}
 
 AppCacheDiskCache::PendingCall::PendingCall()
     : call_type(CREATE), key(0), entry(nullptr) {}

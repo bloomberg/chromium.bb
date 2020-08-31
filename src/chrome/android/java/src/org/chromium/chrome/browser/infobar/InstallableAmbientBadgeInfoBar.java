@@ -17,9 +17,10 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.ui.widget.text.AccessibleTextView;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
+import org.chromium.chrome.browser.ui.messages.infobar.InfoBarCompactLayout;
+import org.chromium.components.browser_ui.widget.text.AccessibleTextView;
 
 /**
  * An ambient infobar to tell the user that the current site they are visiting is a PWA.
@@ -30,16 +31,14 @@ public class InstallableAmbientBadgeInfoBar extends InfoBar implements View.OnCl
     private boolean mIsHiding;
 
     @CalledByNative
-    private static InfoBar show(int enumeratedIconId, Bitmap iconBitmap, String messageText,
-            String url, boolean isIconAdaptive) {
-        int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
-
+    private static InfoBar show(
+            int iconId, Bitmap iconBitmap, String messageText, String url, boolean isIconAdaptive) {
         Bitmap iconBitmapToUse = iconBitmap;
         if (isIconAdaptive && ShortcutHelper.doesAndroidSupportMaskableIcons()) {
             iconBitmapToUse = ShortcutHelper.generateAdaptiveIconBitmap(iconBitmap);
         }
 
-        return new InstallableAmbientBadgeInfoBar(drawableId, iconBitmapToUse, messageText, url);
+        return new InstallableAmbientBadgeInfoBar(iconId, iconBitmapToUse, messageText, url);
     }
 
     @Override
@@ -58,7 +57,7 @@ public class InstallableAmbientBadgeInfoBar extends InfoBar implements View.OnCl
 
         Resources res = layout.getResources();
         prompt.setText(mMessageText);
-        ApiCompatibilityUtils.setTextAppearance(prompt, R.style.TextAppearance_BlueLink1);
+        ApiCompatibilityUtils.setTextAppearance(prompt, R.style.TextAppearance_TextLarge_Blue);
         prompt.setGravity(Gravity.CENTER_VERTICAL);
         prompt.setOnClickListener(this);
 
@@ -69,7 +68,7 @@ public class InstallableAmbientBadgeInfoBar extends InfoBar implements View.OnCl
         iconView.setOnClickListener(this);
         iconView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
         final int messagePadding =
-                res.getDimensionPixelOffset(R.dimen.reader_mode_infobar_text_padding);
+                res.getDimensionPixelOffset(R.dimen.infobar_compact_message_vertical_padding);
         prompt.setPadding(0, messagePadding, 0, messagePadding);
         layout.addContent(prompt, 1f);
     }

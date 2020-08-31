@@ -22,14 +22,9 @@
         overflow: overlay;
       }
 
-      .sections-container {
-        @apply --cr-centered-card-container;
-        height: 100%;
-      }
-
       .card {
-        @apply --cr-card-elevation;
         background-color: var(--cr-card-background-color);
+        box-shadow: var(--cr-card-shadow);
         margin: 0 3px;
         min-height: 100%;
       }
@@ -83,13 +78,12 @@
       }
 
       section {
-        @apply --cr-section;
         align-items: flex-start;
-        border-top: none;
+        display: flex;
         flex-direction: column;
         justify-content: center;
-        padding-bottom: 12px;
-        padding-top: 12px;
+        min-height: var(--cr-section-min-height);
+        padding: 12px var(--cr-section-padding);
       }
 
       section:not(.page-subtitle) h2 {
@@ -170,7 +164,7 @@
         search-prompt="$i18n{searchPrompt}">
     </cr-toolbar>
     <main id="mainContent">
-      <div class="sections-container">
+      <div class="cr-centered-card-container">
         <div class="card">
           <section hidden="[[!managed_]]" class="page-subtitle">
             <cr-icon-button class="icon-arrow-back" id="closeButton"

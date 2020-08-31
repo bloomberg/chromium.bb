@@ -4,7 +4,7 @@
 
 #include "ui/views/widget/widget_delegate.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/display/display.h"
@@ -20,6 +20,9 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetDelegate:
 
+WidgetDelegate::Params::Params() = default;
+WidgetDelegate::Params::~Params() = default;
+
 WidgetDelegate::WidgetDelegate() = default;
 WidgetDelegate::~WidgetDelegate() {
   CHECK(can_delete_this_) << "A WidgetDelegate must outlive its Widget";
@@ -29,20 +32,15 @@ void WidgetDelegate::SetCanActivate(bool can_activate) {
   can_activate_ = can_activate;
 }
 
-void WidgetDelegate::OnWidgetMove() {
-}
+void WidgetDelegate::OnWidgetMove() {}
 
-void WidgetDelegate::OnDisplayChanged() {
-}
+void WidgetDelegate::OnDisplayChanged() {}
 
-void WidgetDelegate::OnWorkAreaChanged() {
-}
+void WidgetDelegate::OnWorkAreaChanged() {}
 
 bool WidgetDelegate::OnCloseRequested(Widget::ClosedReason close_reason) {
   return true;
 }
-
-void WidgetDelegate::OnPaintAsActiveChanged(bool paint_as_active) {}
 
 View* WidgetDelegate::GetInitiallyFocusedView() {
   return nullptr;
@@ -57,15 +55,15 @@ DialogDelegate* WidgetDelegate::AsDialogDelegate() {
 }
 
 bool WidgetDelegate::CanResize() const {
-  return false;
+  return params_.can_resize;
 }
 
 bool WidgetDelegate::CanMaximize() const {
-  return false;
+  return params_.can_maximize;
 }
 
 bool WidgetDelegate::CanMinimize() const {
-  return false;
+  return params_.can_minimize;
 }
 
 bool WidgetDelegate::CanActivate() const {
@@ -85,19 +83,23 @@ base::string16 WidgetDelegate::GetAccessibleWindowTitle() const {
 }
 
 base::string16 WidgetDelegate::GetWindowTitle() const {
-  return base::string16();
+  return params_.title;
 }
 
 bool WidgetDelegate::ShouldShowWindowTitle() const {
-  return true;
+  return params_.show_title;
 }
 
 bool WidgetDelegate::ShouldCenterWindowTitleText() const {
+#if defined(USE_AURA)
+  return params_.center_title;
+#else
   return false;
+#endif
 }
 
 bool WidgetDelegate::ShouldShowCloseButton() const {
-  return true;
+  return params_.show_close_button;
 }
 
 gfx::ImageSkia WidgetDelegate::GetWindowAppIcon() {
@@ -107,11 +109,11 @@ gfx::ImageSkia WidgetDelegate::GetWindowAppIcon() {
 
 // Returns the icon to be displayed in the window.
 gfx::ImageSkia WidgetDelegate::GetWindowIcon() {
-  return gfx::ImageSkia();
+  return params_.icon;
 }
 
 bool WidgetDelegate::ShouldShowWindowIcon() const {
-  return false;
+  return params_.show_icon;
 }
 
 bool WidgetDelegate::ExecuteWindowsCommand(int command_id) {
@@ -150,6 +152,24 @@ bool WidgetDelegate::ShouldRestoreWindowSize() const {
   return true;
 }
 
+void WidgetDelegate::WindowWillClose() {
+  // TODO(ellyjones): For this and the other callback methods, establish whether
+  // any other code calls these methods. If not, DCHECK here and below that
+  // these methods are only called once.
+  for (auto&& callback : window_will_close_callbacks_)
+    std::move(callback).Run();
+}
+
+void WidgetDelegate::WindowClosing() {
+  for (auto&& callback : window_closing_callbacks_)
+    std::move(callback).Run();
+}
+
+void WidgetDelegate::DeleteDelegate() {
+  for (auto&& callback : delete_delegate_callbacks_)
+    std::move(callback).Run();
+}
+
 View* WidgetDelegate::GetContentsView() {
   if (!default_contents_view_)
     default_contents_view_ = new View;
@@ -180,19 +200,74 @@ void WidgetDelegate::GetWidgetHitTestMask(SkPath* mask) const {
   DCHECK(mask);
 }
 
-bool WidgetDelegate::ShouldAdvanceFocusToTopLevelWidget() const {
-  return false;
-}
-
 bool WidgetDelegate::ShouldDescendIntoChildForEventHandling(
     gfx::NativeView child,
     const gfx::Point& location) {
   return true;
 }
 
+void WidgetDelegate::SetCanMaximize(bool can_maximize) {
+  params_.can_maximize = can_maximize;
+}
+
+void WidgetDelegate::SetCanMinimize(bool can_minimize) {
+  params_.can_minimize = can_minimize;
+}
+
+void WidgetDelegate::SetCanResize(bool can_resize) {
+  params_.can_resize = can_resize;
+}
+
+void WidgetDelegate::SetFocusTraversesOut(bool focus_traverses_out) {
+  params_.focus_traverses_out = focus_traverses_out;
+}
+
+void WidgetDelegate::SetIcon(const gfx::ImageSkia& icon) {
+  params_.icon = icon;
+}
+
+void WidgetDelegate::SetShowCloseButton(bool show_close_button) {
+  params_.show_close_button = show_close_button;
+}
+
+void WidgetDelegate::SetShowIcon(bool show_icon) {
+  params_.show_icon = show_icon;
+}
+
+void WidgetDelegate::SetShowTitle(bool show_title) {
+  params_.show_title = show_title;
+}
+
+void WidgetDelegate::SetTitle(const base::string16& title) {
+  if (params_.title == title)
+    return;
+  params_.title = title;
+  if (GetWidget())
+    GetWidget()->UpdateWindowTitle();
+}
+
+#if defined(USE_AURA)
+void WidgetDelegate::SetCenterTitle(bool center_title) {
+  params_.center_title = center_title;
+}
+#endif
+
+void WidgetDelegate::RegisterWindowWillCloseCallback(
+    base::OnceClosure callback) {
+  window_will_close_callbacks_.emplace_back(std::move(callback));
+}
+
+void WidgetDelegate::RegisterWindowClosingCallback(base::OnceClosure callback) {
+  window_closing_callbacks_.emplace_back(std::move(callback));
+}
+
+void WidgetDelegate::RegisterDeleteDelegateCallback(
+    base::OnceClosure callback) {
+  delete_delegate_callbacks_.emplace_back(std::move(callback));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetDelegateView:
-
 
 WidgetDelegateView::WidgetDelegateView() {
   // A WidgetDelegate should be deleted on DeleteDelegate.

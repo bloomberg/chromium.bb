@@ -25,10 +25,19 @@ class RenderFrame;
 class RenderViewVisitor;
 struct WebPreferences;
 
-// DEPRECATED: RenderView is being removed as part of the SiteIsolation project.
-// New code should be added to RenderFrame instead.
+// RenderView corresponds to the content container of a renderer's subset
+// of the frame tree. A frame tree that spans multiple renderers will have a
+// RenderView in each renderer, containing the local frames that belong to
+// that renderer. The RenderView holds non-frame-related state that is
+// replicated across all renderers, and is a fairly shallow object.
+// Generally, most APIs care about state related to the document content which
+// should be accessed through RenderFrame instead.
 //
-// For context, please see https://crbug.com/467770 and
+// WARNING: Historically RenderView was the path to get to the main frame,
+// and the entire frame tree, but that is no longer the case. Usually
+// RenderFrame is a more appropriate surface for new code, unless the code is
+// agnostic of frames and document content or structure. For more context,
+// please see https://crbug.com/467770 and
 // https://www.chromium.org/developers/design-documents/site-isolation.
 class CONTENT_EXPORT RenderView : public IPC::Sender {
  public:
@@ -72,14 +81,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // contents) should be sent to the browser immediately. This is normally
   // false, but set to true by some tests.
   virtual bool GetContentStateImmediately() = 0;
-
-  // Inject edit commands to be used for the next keyboard event.
-  // TODO(alexmos): Currently, these are used only by BlinkTestRunner.  They
-  // should be removed from RenderView and instead be plumbed through the
-  // target frame and WebFrameTestProxy.
-  virtual void SetEditCommandForNextKeyEvent(const std::string& name,
-                                             const std::string& value) = 0;
-  virtual void ClearEditCommands() = 0;
 
   // Returns |renderer_preferences_.accept_languages| value.
   virtual const std::string& GetAcceptLanguages() = 0;

@@ -1,23 +1,31 @@
-/*
- * Copyright 2014 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// @ts-nocheck crbug.com/1081686
+
+import * as ProtocolClient from '../protocol_client/protocol_client.js';
+
+import {Capability, SDKModel, Target} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import {ObjectSnapshot} from './TracingModel.js';            // eslint-disable-line no-unused-vars
 
 /**
  * @unrestricted
  */
-export default class TracingManager extends SDK.SDKModel {
+export class TracingManager extends SDKModel {
   /**
-   * @param {!SDK.Target} target
+   * @param {!Target} target
    */
   constructor(target) {
     super(target);
+    // @ts-ignore TODO(1063322): Domain-specific CDP generated method.
     this._tracingAgent = target.tracingAgent();
+    // @ts-ignore TODO(1063322): Domain-specific CDP generated method.
     target.registerTracingDispatcher(new TracingDispatcher(this));
 
     /** @type {?TracingManagerClient} */
     this._activeClient = null;
+    /** @type {?number} */
     this._eventBufferSize = 0;
     this._eventsRetrieved = 0;
   }
@@ -28,14 +36,19 @@ export default class TracingManager extends SDK.SDKModel {
    * @param {number=} percentFull
    */
   _bufferUsage(usage, eventCount, percentFull) {
-    this._eventBufferSize = eventCount;
-    this._activeClient.tracingBufferUsage(usage || percentFull || 0);
+    this._eventBufferSize = eventCount === undefined ? null : eventCount;
+    if (this._activeClient) {
+      this._activeClient.tracingBufferUsage(usage || percentFull || 0);
+    }
   }
 
   /**
-   * @param {!Array.<!SDK.TracingManager.EventPayload>} events
+   * @param {!Array.<!EventPayload>} events
    */
   _eventsCollected(events) {
+    if (!this._activeClient) {
+      return;
+    }
     this._activeClient.traceEventsCollected(events);
     this._eventsRetrieved += events.length;
     if (!this._eventBufferSize) {
@@ -52,11 +65,15 @@ export default class TracingManager extends SDK.SDKModel {
   _tracingComplete() {
     this._eventBufferSize = 0;
     this._eventsRetrieved = 0;
-    this._activeClient.tracingComplete();
-    this._activeClient = null;
+    if (this._activeClient) {
+      this._activeClient.tracingComplete();
+      this._activeClient = null;
+    }
     this._finishing = false;
   }
 
+  // TODO(petermarshall): Use the traceConfig argument instead of deprecated
+  // categories + options.
   /**
    * @param {!TracingManagerClient} client
    * @param {string} categoryFilter
@@ -76,7 +93,7 @@ export default class TracingManager extends SDK.SDKModel {
       transferMode: TransferMode.ReportEvents
     };
     const response = await this._tracingAgent.invoke_start(args);
-    if (response[Protocol.Error]) {
+    if (response[ProtocolClient.InspectorBackend.ProtocolError]) {
       this._activeClient = null;
     }
     return response;
@@ -104,7 +121,7 @@ const TransferMode = {
  */
 export class TracingManagerClient {
   /**
-   * @param {!Array.<!SDK.TracingManager.EventPayload>} events
+   * @param {!Array.<!EventPayload>} events
    */
   traceEventsCollected(events) {
   }
@@ -147,7 +164,7 @@ class TracingDispatcher {
 
   /**
    * @override
-   * @param {!Array.<!SDK.TracingManager.EventPayload>} data
+   * @param {!Array.<!EventPayload>} data
    */
   dataCollected(data) {
     this._tracingManager._eventsCollected(data);
@@ -161,17 +178,7 @@ class TracingDispatcher {
   }
 }
 
-/* Legacy exported object */
-self.SDK = self.SDK || {};
-
-/* Legacy exported object */
-SDK = SDK || {};
-
-/** @constructor */
-SDK.TracingManager = TracingManager;
-
-/** @interface */
-SDK.TracingManagerClient = TracingManagerClient;
+SDKModel.register(TracingManager, Capability.Tracing, false);
 
 /** @typedef {!{
         cat: (string|undefined),
@@ -180,7 +187,11 @@ SDK.TracingManagerClient = TracingManagerClient;
         ts: number,
         ph: string,
         name: string,
-        args: !Object,
+        args: !{
+          sort_index: number,
+          name: string,
+          snapshot: ObjectSnapshot,
+        },
         dur: number,
         id: string,
         id2: (!{global: (string|undefined), local: (string|undefined)}|undefined),
@@ -189,6 +200,5 @@ SDK.TracingManagerClient = TracingManagerClient;
         s: string
     }}
  */
-SDK.TracingManager.EventPayload;
-
-SDK.SDKModel.register(SDK.TracingManager, SDK.Target.Capability.Tracing, false);
+// @ts-ignore typedef
+export let EventPayload;

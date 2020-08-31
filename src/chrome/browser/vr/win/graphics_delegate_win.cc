@@ -7,9 +7,9 @@
 #include "base/numerics/math_constants.h"
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/common/gpu_stream_constants.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace vr {
 
@@ -118,15 +118,12 @@ void GraphicsDelegateWin::PostRender() {
   ClearContext();
 }
 
-mojo::ScopedHandle GraphicsDelegateWin::GetTexture() {
-  // Hand out the gpu memory buffer.
-  mojo::ScopedHandle handle;
-  if (!gpu_memory_buffer_) {
-    return handle;
-  }
+mojo::PlatformHandle GraphicsDelegateWin::GetTexture() {
+  if (!gpu_memory_buffer_)
+    return {};
 
   gfx::GpuMemoryBufferHandle gpu_handle = gpu_memory_buffer_->CloneHandle();
-  return mojo::WrapPlatformFile(gpu_handle.dxgi_handle.GetHandle());
+  return mojo::PlatformHandle(std::move(gpu_handle.dxgi_handle));
 }
 
 gfx::RectF GraphicsDelegateWin::GetLeft() {

@@ -23,13 +23,13 @@
 
 namespace blink {
 
+class ExecutionContext;
 class FetchParameters;
 class ImageResourceInfo;
 class ImageResourceObserver;
 class ResourceError;
 class ResourceFetcher;
 class ResourceResponse;
-class SecurityContext;
 
 // ImageResourceContent is a container that holds fetch result of
 // an ImageResource in a decoded form.
@@ -55,8 +55,6 @@ class CORE_EXPORT ImageResourceContent final
 
   // Creates ImageResourceContent from an already loaded image.
   static ImageResourceContent* CreateLoaded(scoped_refptr<blink::Image>);
-
-  static ImageResourceContent* CreateLazyImagePlaceholder();
 
   static ImageResourceContent* Fetch(FetchParameters&, ResourceFetcher*);
 
@@ -86,7 +84,7 @@ class CORE_EXPORT ImageResourceContent final
     return size_available_ != Image::kSizeUnavailable;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Content status and deriving predicates.
   // https://docs.google.com/document/d/1O-fB83mrE0B_V8gzXNqHgmRLCvstTB4MMi3RnVLr8bE/edit#heading=h.6cyqmir0f30h
@@ -182,9 +180,12 @@ class CORE_EXPORT ImageResourceContent final
   // extraneous metadata). "well-compressed" is determined by comparing the
   // image's compression ratio against a specific value that is defined by an
   // unoptimized image feature policy on |context|.
-  bool IsAcceptableCompressionRatio(const SecurityContext& context);
+  bool IsAcceptableCompressionRatio(ExecutionContext& context);
 
   void LoadDeferredImage(ResourceFetcher* fetcher);
+
+  // Returns whether the resource request has been tagged as an ad.
+  bool IsAdResource() const;
 
  private:
   using CanDeferInvalidation = ImageResourceObserver::CanDeferInvalidation;

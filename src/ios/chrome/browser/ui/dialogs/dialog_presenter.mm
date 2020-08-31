@@ -158,6 +158,7 @@ using completion_block_util::GetSafeHTTPAuthCompletion;
                                   mainFrameURL:webState->GetLastCommittedURL()];
   AlertCoordinator* alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:self.viewController
+                                                   browser:self.browser
                                                      title:title
                                                    message:message];
 
@@ -197,6 +198,7 @@ using completion_block_util::GetSafeHTTPAuthCompletion;
                                   mainFrameURL:webState->GetLastCommittedURL()];
   AlertCoordinator* alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:self.viewController
+                                                   browser:self.browser
                                                      title:title
                                                    message:message];
 
@@ -237,6 +239,7 @@ using completion_block_util::GetSafeHTTPAuthCompletion;
                                   mainFrameURL:webState->GetLastCommittedURL()];
   InputAlertCoordinator* alertCoordinator = [[InputAlertCoordinator alloc]
       initWithBaseViewController:self.viewController
+                         browser:self.browser
                            title:title
                          message:message];
 
@@ -287,6 +290,7 @@ using completion_block_util::GetSafeHTTPAuthCompletion;
 
   InputAlertCoordinator* alertCoordinator = [[InputAlertCoordinator alloc]
       initWithBaseViewController:self.viewController
+                         browser:self.browser
                            title:title
                          message:message];
 
@@ -536,10 +540,12 @@ using completion_block_util::GetSafeHTTPAuthCompletion;
     AlertCoordinator* confirmationCoordinator =
         IsIPadIdiom() ? [[AlertCoordinator alloc]
                             initWithBaseViewController:weakBaseViewController
+                                               browser:self.browser
                                                  title:nil
                                                message:confirmMessage]
                       : [[ActionSheetCoordinator alloc]
                             initWithBaseViewController:weakBaseViewController
+                                               browser:self.browser
                                                  title:nil
                                                message:confirmMessage
                                                   rect:CGRectZero

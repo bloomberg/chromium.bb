@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -481,7 +482,7 @@ TEST_P(WebRtcSetDescriptionObserverHandlerTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     WebRtcSetDescriptionObserverHandlerTest,
     ::testing::Values(std::make_tuple(ObserverHandlerType::kLocal,
                                       StateSurfacerType::kTransceivers),

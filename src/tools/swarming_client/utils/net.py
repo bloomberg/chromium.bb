@@ -4,6 +4,7 @@
 
 """Classes and functions for generic network communication over HTTP."""
 
+import io
 import itertools
 import json
 import logging
@@ -13,18 +14,8 @@ import random
 import re
 import socket
 import ssl
-import sys
 import threading
 import time
-import urllib
-# pylint: disable=ungrouped-imports
-# pylint: disable=no-name-in-module
-if sys.version_info.major == 2:
-  import urlparse
-  urlencode = urllib.urlencode
-else:
-  from urllib import parse as urlparse
-  urlencode = urlparse.urlencode
 
 from utils import tools
 tools.force_local_third_party()
@@ -33,10 +24,13 @@ tools.force_local_third_party()
 import requests
 from requests import adapters
 from requests import structures
+import six
+from six.moves import http_cookiejar as cookielib
+from six.moves import urllib
 import urllib3
 
-from six.moves import http_cookiejar as cookielib
 from utils import authenticators
+from utils import configs
 from utils import oauth
 from utils import tools
 
@@ -67,10 +61,10 @@ DEFAULT_CONTENT_TYPE = URL_ENCODED_FORM_CONTENT_TYPE
 
 # Content type -> function that encodes a request body.
 CONTENT_ENCODERS = {
-  URL_ENCODED_FORM_CONTENT_TYPE:
-    urlencode,
-  JSON_CONTENT_TYPE:
-    lambda x: json.dumps(x, sort_keys=True, separators=(',', ':')),
+    URL_ENCODED_FORM_CONTENT_TYPE:
+        urllib.parse.urlencode,
+    JSON_CONTENT_TYPE:
+        lambda x: json.dumps(x, sort_keys=True, separators=(',', ':')),
 }
 
 
@@ -89,10 +83,6 @@ _auth_lock = threading.Lock()
 # Set in 'set_oauth_config'. If 'set_oauth_config' is not called before the
 # first request, will be set to oauth.make_oauth_config().
 _auth_config = None
-
-# A class to use to send HTTP requests. Can be changed by 'set_engine_class'.
-# Default is RequestsLibEngine.
-_request_engine_cls = None
 
 
 class NetError(IOError):
@@ -162,7 +152,7 @@ class HttpError(NetError):
         if not header.lower().startswith('x-'):
           out.append('%s: %s' % (header.capitalize(), value))
       out.append('')
-    out.append(self._body_for_desc or '<empty body>')
+    out.append(six.ensure_str(self._body_for_desc) or '<empty body>')
     out.append('----------')
     return '\n'.join(out)
 
@@ -171,7 +161,7 @@ def _fish_out_error_message(maybe_json_blob):
   try:
     as_json = json.loads(maybe_json_blob)
     err = as_json.get('error')
-    if isinstance(err, basestring):
+    if isinstance(err, six.string_types):
       return err
     if isinstance(err, dict):
       return str(err.get('message') or '<no error message>')
@@ -188,14 +178,17 @@ def set_engine_class(engine_cls):
 
   Custom engine class should support same public interface as RequestsLibEngine.
   """
-  global _request_engine_cls
-  assert _request_engine_cls is None
-  _request_engine_cls = engine_cls
+  # global keyword doesn't work cross modules in Python3, created configs.py
+  # to share global variables across modules based on this recommendataion(
+  # https://docs.python.org/3/faq/programming.html#
+  # how-do-i-share-global-variables-across-modules)
+  assert configs._request_engine_cls is None
+  configs._request_engine_cls = engine_cls
 
 
 def get_engine_class():
   """Returns a class to use to execute HTTP requests."""
-  return _request_engine_cls or RequestsLibEngine
+  return configs._request_engine_cls or RequestsLibEngine
 
 
 def url_open(url, **kwargs):  # pylint: disable=W0621
@@ -254,7 +247,7 @@ def url_retrieve(filepath, url, **kwargs):
   if not response:
     return False
   try:
-    with open(filepath, 'wb') as f:
+    with io.open(filepath, 'wb') as f:
       for buf in response.iter_content(65536):
         f.write(buf)
     return True
@@ -268,27 +261,27 @@ def url_retrieve(filepath, url, **kwargs):
 
 def split_server_request_url(url):
   """Splits the url into scheme+netloc and path+params+query+fragment."""
-  url_parts = list(urlparse.urlparse(url))
+  url_parts = list(urllib.parse.urlparse(url))
   urlhost = '%s://%s' % (url_parts[0], url_parts[1])
-  urlpath = urlparse.urlunparse(['', ''] + url_parts[2:])
+  urlpath = urllib.parse.urlunparse(['', ''] + url_parts[2:])
   return urlhost, urlpath
 
 
 def fix_url(url):
   """Fixes an url to https."""
-  parts = urlparse.urlparse(url, 'https')
+  parts = urllib.parse.urlparse(url, 'https')
   if parts.query:
     raise ValueError('doesn\'t support query parameter.')
   if parts.fragment:
     raise ValueError('doesn\'t support fragment in the url.')
-  # urlparse('foo.com') will result in netloc='', path='foo.com', which is not
-  # what is desired here.
+  # urllib.parse.urlparse('foo.com') will result in netloc='', path='foo.com',
+  # which is not what is desired here.
   new = list(parts)
   if not new[1] and new[2]:
     new[1] = new[2].rstrip('/')
     new[2] = ''
   new[2] = new[2].rstrip('/')
-  return urlparse.urlunparse(new)
+  return urllib.parse.urlunparse(new)
 
 
 def get_http_service(urlhost, allow_cached=True):
@@ -400,12 +393,14 @@ class HttpService(object):
   def encode_request_body(body, content_type):
     """Returns request body encoded according to its content type."""
     # No body or it is already encoded.
-    if body is None or isinstance(body, str):
+    if body is None or isinstance(body, (str, bytes)):
       return body
     # Any body should have content type set.
     assert content_type, 'Request has body, but no content type'
     encoder = CONTENT_ENCODERS.get(content_type)
     assert encoder, ('Unknown content type %s' % content_type)
+    if six.PY3 and isinstance(body, bytes):
+      return body
     return encoder(body)
 
   def login(self, allow_user_interaction):
@@ -492,6 +487,8 @@ class HttpService(object):
       method = method or 'POST'
       content_type = content_type or DEFAULT_CONTENT_TYPE
       body = self.encode_request_body(data, content_type)
+      # data in http request is expected to be bytes in Python3.
+      body = six.ensure_binary(body)
     else:
       assert method in (None, 'DELETE', 'GET')
       method = method or 'GET'
@@ -499,9 +496,9 @@ class HttpService(object):
       assert not content_type, 'Can\'t use content_type on %s' % method
 
     # Prepare request info.
-    parsed = urlparse.urlparse('/' + urlpath.lstrip('/'))
-    resource_url = urlparse.urljoin(self.urlhost, parsed.path)
-    query_params = urlparse.parse_qsl(parsed.query)
+    parsed = urllib.parse.urlparse('/' + urlpath.lstrip('/'))
+    resource_url = urllib.parse.urljoin(self.urlhost, parsed.path)
+    query_params = urllib.parse.parse_qsl(parsed.query)
 
     # Prepare headers.
     headers = get_case_insensitive_dict(headers or {})
@@ -545,8 +542,8 @@ class HttpService(object):
         if e.response.code in (401, 403):
           logging.warning(
               'Got a reply with HTTP status code %d for %s on attempt %d: %s',
-              e.response.code, request.get_full_url(),
-              attempt.attempt, e.description())
+              e.response.code, request.get_full_url(), attempt.attempt,
+              e.description())
           # Try forcefully refresh the token. If it doesn't help, then server
           # does not support authentication or user doesn't have required
           # access.
@@ -664,7 +661,7 @@ class HttpRequest(object):
     """Resource URL with url-encoded GET parameters."""
     if not self.params:
       return self.url
-    return '%s?%s' % (self.url, urllib.urlencode(self.params))
+    return '%s?%s' % (self.url, urllib.parse.urlencode(self.params))
 
 
 class HttpResponse(object):
@@ -816,6 +813,18 @@ class RequestsLibEngine(object):
       raise HttpError(resp, e)
     except (requests.ConnectionError, socket.timeout, ssl.SSLError) as e:
       raise ConnectionError(e)
+
+
+def set_user_agent(useragent):
+  """Globally changes a useragent to use to execute HTTP requests."""
+
+  class UserAgentRequestsLibEngine(get_engine_class()):
+
+    def perform_request(self, request):
+      request.headers['User-Agent'] = useragent
+      return super(UserAgentRequestsLibEngine, self).perform_request(request)
+
+  set_engine_class(UserAgentRequestsLibEngine)
 
 
 class RetryAttempt(object):

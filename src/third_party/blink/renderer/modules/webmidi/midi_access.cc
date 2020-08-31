@@ -64,7 +64,7 @@ MIDIAccess::MIDIAccess(
     bool sysex_enabled,
     const Vector<MIDIAccessInitializer::PortDescriptor>& ports,
     ExecutionContext* execution_context)
-    : ContextLifecycleObserver(execution_context),
+    : ExecutionContextLifecycleObserver(execution_context),
       dispatcher_(std::move(dispatcher)),
       sysex_enabled_(sysex_enabled),
       has_pending_activity_(false) {
@@ -202,15 +202,15 @@ void MIDIAccess::SendMIDIData(unsigned port_index,
   dispatcher_->SendMIDIData(port_index, data, length, time_stamp);
 }
 
-void MIDIAccess::ContextDestroyed(ExecutionContext*) {
+void MIDIAccess::ContextDestroyed() {
   dispatcher_.reset();
 }
 
-void MIDIAccess::Trace(blink::Visitor* visitor) {
+void MIDIAccess::Trace(Visitor* visitor) {
   visitor->Trace(inputs_);
   visitor->Trace(outputs_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

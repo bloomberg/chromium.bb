@@ -16,7 +16,7 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-import "sync_enums.proto";
+import "components/sync/protocol/sync_enums.proto";
 
 // Information about a device that is running a sync-enabled Chrome browser.  We
 // are mapping the per-client cache guid to more specific information about the
@@ -65,6 +65,12 @@ message DeviceInfoSpecifics {
 
   // Name of device manufacturer.
   optional string manufacturer = 12;
+
+  // The interval in minutes with which |last_updated_timestamp| is updated to
+  // the sync servers if online and while sync is actively running (e.g.
+  // excludes backgrounded apps on Android). Introduced in M81. The legacy
+  // default was 1 day.
+  optional int32 pulse_interval_in_minutes = 13;
 }
 
 // Feature specific information about the device that is running a sync-enabled
@@ -96,22 +102,38 @@ message SharingSpecificFields {
   // Enum defining available Sharing features.
   enum EnabledFeatures {
     UNKNOWN = 0;
-    CLICK_TO_CALL = 1;
-    SHARED_CLIPBOARD = 2;
+    // Supports Click to Call only via VAPID.
+    CLICK_TO_CALL_VAPID = 1;
+    // Supports Shared Clipboard only via VAPID.
+    SHARED_CLIPBOARD_VAPID = 2;
     SMS_FETCHER = 3;
     REMOTE_COPY = 4;
     PEER_CONNECTION = 5;
+    DISCOVERY = 6;
+    // Suppots Click to Call via both VAPID and sender ID.
+    CLICK_TO_CALL_V2 = 7;
+    // Suppots Shared Clipboard via both VAPID and sender ID.
+    SHARED_CLIPBOARD_V2 = 8;
   }
 
   // A list of enabled Sharing features.
   repeated EnabledFeatures enabled_features = 4;
 
+  // Deprecated. Use sender_id_fcm_token_v2 for new clients.
+  optional string sender_id_fcm_token_deprecated = 5 [deprecated = true];
+
+  // Deprecated. Use sender_id_p256dh_v2 for new clients.
+  optional bytes sender_id_p256dh_deprecated = 6 [deprecated = true];
+
+  // Deprecated. Use sender_id_auth_secret_v2 for new clients.
+  optional bytes sender_id_auth_secret_deprecated = 7 [deprecated = true];
+
   // FCM registration token of device subscribed using Sharing sender ID.
-  optional string sender_id_fcm_token = 5;
+  optional string sender_id_fcm_token_v2 = 8;
 
   // Public key for message encryption [RFC8291] using Sharing sender ID.
-  optional bytes sender_id_p256dh = 6;
+  optional bytes sender_id_p256dh_v2 = 9;
 
   // Auth secret for message encryption [RFC8291] using Sharing sender ID.
-  optional bytes sender_id_auth_secret = 7;
+  optional bytes sender_id_auth_secret_v2 = 10;
 }

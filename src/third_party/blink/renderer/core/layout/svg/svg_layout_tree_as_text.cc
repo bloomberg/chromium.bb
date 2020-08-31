@@ -383,12 +383,10 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts,
     WriteNameValuePair(ts, "r",
                        length_context.ValueForLength(svg_style.R(), style,
                                                      SVGLengthMode::kOther));
-  } else if (IsSVGPolyElement(*svg_element)) {
-    WriteNameAndQuotedValue(ts, "points",
-                            ToSVGPolyElement(*svg_element)
-                                .Points()
-                                ->CurrentValue()
-                                ->ValueAsString());
+  } else if (auto* svg_poly_element = DynamicTo<SVGPolyElement>(svg_element)) {
+    WriteNameAndQuotedValue(
+        ts, "points",
+        svg_poly_element->Points()->CurrentValue()->ValueAsString());
   } else if (IsA<SVGPathElement>(*svg_element)) {
     const StylePath& path =
         svg_style.D() ? *svg_style.D() : *StylePath::EmptyPath();
@@ -410,7 +408,7 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts,
 
 static void WriteLayoutSVGTextBox(WTF::TextStream& ts,
                                   const LayoutSVGText& text) {
-  SVGRootInlineBox* box = ToSVGRootInlineBox(text.FirstRootBox());
+  auto* box = To<SVGRootInlineBox>(text.FirstRootBox());
   if (!box)
     return;
 
@@ -495,10 +493,11 @@ static inline void WriteSVGInlineTextBoxes(WTF::TextStream& ts,
                                            const LayoutText& text,
                                            int indent) {
   for (InlineTextBox* box : text.TextBoxes()) {
-    if (!box->IsSVGInlineTextBox())
+    auto* svg_inline_text_box = DynamicTo<SVGInlineTextBox>(box);
+    if (!svg_inline_text_box)
       continue;
 
-    WriteSVGInlineTextBox(ts, ToSVGInlineTextBox(box), indent);
+    WriteSVGInlineTextBox(ts, svg_inline_text_box, indent);
   }
 }
 
@@ -648,9 +647,6 @@ void WriteSVGResourceContainer(WTF::TextStream& ts,
 void WriteSVGContainer(WTF::TextStream& ts,
                        const LayoutObject& container,
                        int indent) {
-  // Currently LayoutSVGResourceFilterPrimitive has no meaningful output.
-  if (container.IsSVGResourceFilterPrimitive())
-    return;
   WriteStandardPrefix(ts, container, indent);
   WritePositionAndStyle(ts, container);
   ts << "\n";
@@ -741,7 +737,7 @@ void WriteResources(WTF::TextStream& ts,
     WriteStandardPrefix(ts, *clipper, 0);
     ts << " " << clipper->ResourceBoundingBox(reference_box) << "\n";
   }
-  if (LayoutSVGResourceFilter* filter = resources->Filter()) {
+  if (LayoutSVGResourceFilter* filter = GetFilterResourceForSVG(style)) {
     DCHECK(style.HasFilter());
     DCHECK_EQ(style.Filter().size(), 1u);
     const FilterOperation& filter_operation = *style.Filter().at(0);

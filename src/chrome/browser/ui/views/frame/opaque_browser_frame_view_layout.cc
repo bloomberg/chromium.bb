@@ -86,12 +86,12 @@ void OpaqueBrowserFrameViewLayout::SetButtonOrdering(
 }
 
 gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStripRegion(
-    const gfx::Size& tabstrip_preferred_size,
+    const gfx::Size& tabstrip_minimum_size,
     int total_width) const {
   const int x = available_space_leading_x_;
   const int available_width = available_space_trailing_x_ - x;
   return gfx::Rect(x, GetTabStripInsetsTop(false), std::max(0, available_width),
-                   tabstrip_preferred_size.height());
+                   tabstrip_minimum_size.height());
 }
 
 gfx::Size OpaqueBrowserFrameViewLayout::GetMinimumSize(
@@ -102,7 +102,7 @@ gfx::Size OpaqueBrowserFrameViewLayout::GetMinimumSize(
   // Ensure that we can, at minimum, hold our window controls and a tab strip.
   int top_width = minimum_size_for_buttons_;
   if (delegate_->IsTabStripVisible())
-    top_width += delegate_->GetTabstripPreferredSize().width();
+    top_width += delegate_->GetTabstripMinimumSize().width();
   min_size.set_width(std::max(min_size.width(), top_width));
 
   // Account for the frame.
@@ -180,9 +180,8 @@ int OpaqueBrowserFrameViewLayout::DefaultCaptionButtonY(bool restored) const {
              : views::NonClientFrameView::kFrameShadowThickness;
 }
 
-int OpaqueBrowserFrameViewLayout::CaptionButtonY(
-    chrome::FrameButtonDisplayType button_id,
-    bool restored) const {
+int OpaqueBrowserFrameViewLayout::CaptionButtonY(views::FrameButton button_id,
+                                                 bool restored) const {
   return DefaultCaptionButtonY(restored);
 }
 
@@ -198,24 +197,6 @@ gfx::Rect OpaqueBrowserFrameViewLayout::CalculateClientAreaBounds(
   return gfx::Rect(border_thickness, top_height,
                    std::max(0, width - (2 * border_thickness)),
                    std::max(0, height - top_height - border_thickness));
-}
-
-chrome::FrameButtonDisplayType
-OpaqueBrowserFrameViewLayout::GetButtonDisplayType(
-    views::FrameButton button_id) const {
-  switch (button_id) {
-    case views::FrameButton::kMinimize:
-      return chrome::FrameButtonDisplayType::kMinimize;
-    case views::FrameButton::kMaximize:
-      return delegate_->IsMaximized()
-                 ? chrome::FrameButtonDisplayType::kRestore
-                 : chrome::FrameButtonDisplayType::kMaximize;
-    case views::FrameButton::kClose:
-      return chrome::FrameButtonDisplayType::kClose;
-    default:
-      NOTREACHED();
-      return chrome::FrameButtonDisplayType::kClose;
-  }
 }
 
 int OpaqueBrowserFrameViewLayout::GetWindowCaptionSpacing(
@@ -297,7 +278,7 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
   int size = delegate_->GetIconSize();
   bool should_show_icon = delegate_->ShouldShowWindowIcon() && window_icon_;
   bool should_show_title = delegate_->ShouldShowWindowTitle() && window_title_;
-  int icon_y = 0;
+  base::Optional<int> icon_spacing;
 
   if (should_show_icon || should_show_title || web_app_frame_toolbar_) {
     use_hidden_icon_location = false;
@@ -319,14 +300,19 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
     const int icon_height =
         unavailable_px_at_top + size + kContentEdgeShadowThickness;
     const int y = unavailable_px_at_top + (available_height - icon_height) / 2;
-    icon_y = y;
 
-    if (web_app_frame_toolbar_)
-      available_space_leading_x_ = y - kIconLeftSpacing;
-    window_icon_bounds_ =
-        gfx::Rect(available_space_leading_x_ + kIconLeftSpacing, y, size, size);
-    available_space_leading_x_ += size + kIconLeftSpacing;
-    minimum_size_for_buttons_ += size + kIconLeftSpacing;
+    // Want same spacing adjacent to the icon as above when the icon is the
+    // first element in the frame. We'll use this spacing again to ensure
+    // appropriate spacing between icon and title.
+    icon_spacing = y;
+    if (web_app_frame_toolbar_ && leading_buttons_.empty())
+      available_space_leading_x_ = FrameSideThickness(false) + *icon_spacing;
+    else
+      available_space_leading_x_ += kIconLeftSpacing;
+
+    window_icon_bounds_ = gfx::Rect(available_space_leading_x_, y, size, size);
+    available_space_leading_x_ += size;
+    minimum_size_for_buttons_ += size;
 
     if (web_app_frame_toolbar_) {
       std::pair<int, int> remaining_bounds =
@@ -346,15 +332,18 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
     if (should_show_title) {
       window_title_->SetText(delegate_->GetWindowTitle());
 
-      // Extra space between icon and title.
-      int extra_space = web_app_frame_toolbar_ ? icon_y - kIconTitleSpacing : 0;
-      int text_width = std::max(
-          0, available_space_trailing_x_ - kCaptionSpacing -
-                 available_space_leading_x_ - kIconTitleSpacing - extra_space);
-      window_title_->SetBounds(
-          available_space_leading_x_ + kIconTitleSpacing + extra_space,
-          window_icon_bounds_.y(), text_width, window_icon_bounds_.height());
-      available_space_leading_x_ += text_width + kIconTitleSpacing;
+      // If possible, make space between icon and title symmetrical with space
+      // between icon and frame.
+      const int icon_title_spacing = (web_app_frame_toolbar_ && icon_spacing)
+                                         ? *icon_spacing
+                                         : kIconTitleSpacing;
+      const int text_width =
+          std::max(0, available_space_trailing_x_ - kCaptionSpacing -
+                          available_space_leading_x_ - icon_title_spacing);
+      window_title_->SetBounds(available_space_leading_x_ + icon_title_spacing,
+                               window_icon_bounds_.y(), text_width,
+                               window_icon_bounds_.height());
+      available_space_leading_x_ += text_width + icon_title_spacing;
     }
   }
 
@@ -422,7 +411,7 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
     views::FrameButton button_id,
     views::Button* button,
     ButtonAlignment alignment) {
-  const int caption_y = CaptionButtonY(GetButtonDisplayType(button_id), false);
+  const int caption_y = CaptionButtonY(button_id, false);
 
   // There should always be the same number of non-shadow pixels visible to the
   // side of the caption buttons.  In maximized mode we extend buttons to the
@@ -546,7 +535,10 @@ void OpaqueBrowserFrameViewLayout::SetView(int id, views::View* view) {
       window_title_ = static_cast<views::Label*>(view);
       break;
     case VIEW_ID_WEB_APP_FRAME_TOOLBAR:
-      DCHECK_EQ(view->GetClassName(), WebAppFrameToolbarView::kViewClassName);
+      if (view) {
+        DCHECK_EQ(std::string(WebAppFrameToolbarView::kViewClassName),
+                  view->GetClassName());
+      }
       web_app_frame_toolbar_ = static_cast<WebAppFrameToolbarView*>(view);
       break;
     default:

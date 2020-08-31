@@ -6,7 +6,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/mac/scoped_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -38,6 +37,7 @@ NSString* FakeGetHostedDomainForIdentity(ChromeIdentity* identity) {
 @interface FakeAccountDetailsViewController : UIViewController {
   __weak ChromeIdentity* _identity;
   UIButton* _removeAccountButton;
+  UIButton* _closeAccountDetailsButton;
 }
 @end
 
@@ -55,6 +55,9 @@ NSString* FakeGetHostedDomainForIdentity(ChromeIdentity* identity) {
   [_removeAccountButton removeTarget:self
                               action:@selector(didTapRemoveAccount:)
                     forControlEvents:UIControlEventTouchUpInside];
+  [_closeAccountDetailsButton removeTarget:self
+                                    action:@selector(didTapCloseAccount:)
+                          forControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)viewDidLoad {
@@ -64,21 +67,43 @@ NSString* FakeGetHostedDomainForIdentity(ChromeIdentity* identity) {
   self.view.backgroundColor = [UIColor orangeColor];
 
   _removeAccountButton = [UIButton buttonWithType:UIButtonTypeCustom];
-  [_removeAccountButton setTitle:@"Remove account"
-                        forState:UIControlStateNormal];
-  [_removeAccountButton addTarget:self
-                           action:@selector(didTapRemoveAccount:)
-                 forControlEvents:UIControlEventTouchUpInside];
-  [self.view addSubview:_removeAccountButton];
+  [self addButtonToSubviewWithTitle:@"Remove account"
+                             button:_removeAccountButton
+                             action:@selector(didTapRemoveAccount:)];
+
+  _closeAccountDetailsButton = [UIButton buttonWithType:UIButtonTypeCustom];
+  [self addButtonToSubviewWithTitle:@"Close account"
+                             button:_closeAccountDetailsButton
+                             action:@selector(didTapCloseAccount:)];
 }
 
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
 
   CGRect bounds = self.view.bounds;
-  [_removeAccountButton
-      setCenter:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds))];
-  [_removeAccountButton sizeToFit];
+  [self sizeButtonToFitWithCenter:CGPointMake(CGRectGetMidX(bounds),
+                                              CGRectGetMinY(bounds))
+                           button:_removeAccountButton];
+  [self sizeButtonToFitWithCenter:CGPointMake(CGRectGetMidX(bounds),
+                                              CGRectGetMidY(bounds))
+                           button:_closeAccountDetailsButton];
+}
+
+#pragma mark - Private
+
+- (void)addButtonToSubviewWithTitle:(NSString*)title
+                             button:(UIButton*)button
+                             action:(SEL)action {
+  [button setTitle:title forState:UIControlStateNormal];
+  [button addTarget:self
+                action:action
+      forControlEvents:UIControlEventTouchUpInside];
+  [self.view addSubview:button];
+}
+
+- (void)sizeButtonToFitWithCenter:(CGPoint)center button:(UIButton*)button {
+  [button setCenter:center];
+  [button sizeToFit];
 }
 
 - (void)didTapRemoveAccount:(id)sender {
@@ -88,9 +113,14 @@ NSString* FakeGetHostedDomainForIdentity(ChromeIdentity* identity) {
       });
 }
 
+- (void)didTapCloseAccount:(id)sender {
+  [self dismissViewControllerAnimated:YES completion:nil];
+}
+
 @end
 
 namespace ios {
+NSString* const kManagedIdentityEmailFormat = @"%@@google.com";
 NSString* const kIdentityEmailFormat = @"%@@gmail.com";
 NSString* const kIdentityGaiaIDFormat = @"%@ID";
 
@@ -126,9 +156,16 @@ FakeChromeIdentityService::PresentAccountDetailsController(
 
 ChromeIdentityInteractionManager*
 FakeChromeIdentityService::CreateChromeIdentityInteractionManager(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     id<ChromeIdentityInteractionManagerDelegate> delegate) const {
-  ChromeIdentityInteractionManager* manager =
+  return CreateFakeChromeIdentityInteractionManager(browser_state, delegate);
+}
+
+FakeChromeIdentityInteractionManager*
+FakeChromeIdentityService::CreateFakeChromeIdentityInteractionManager(
+    ChromeBrowserState* browser_state,
+    id<ChromeIdentityInteractionManagerDelegate> delegate) const {
+  FakeChromeIdentityInteractionManager* manager =
       [[FakeChromeIdentityInteractionManager alloc] init];
   manager.delegate = delegate;
   return manager;
@@ -261,6 +298,17 @@ NSString* FakeChromeIdentityService::GetCachedHostedDomainForIdentity(
 }
 
 void FakeChromeIdentityService::SetUpForIntegrationTests() {}
+
+void FakeChromeIdentityService::AddManagedIdentities(NSArray* identitiesNames) {
+  for (NSString* name in identitiesNames) {
+    NSString* email =
+        [NSString stringWithFormat:kManagedIdentityEmailFormat, name];
+    NSString* gaiaID = [NSString stringWithFormat:kIdentityGaiaIDFormat, name];
+    [identities_ addObject:[FakeChromeIdentity identityWithEmail:email
+                                                          gaiaID:gaiaID
+                                                            name:name]];
+  }
+}
 
 void FakeChromeIdentityService::AddIdentities(NSArray* identitiesNames) {
   for (NSString* name in identitiesNames) {

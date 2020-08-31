@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/user_manager/user.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -241,8 +242,9 @@ void AccountManagerUIHandler::OnGetAccounts(
   DCHECK(user);
 
   base::DictionaryValue gaia_device_account;
-  base::ListValue accounts = GetSecondaryGaiaAccounts(
-      stored_accounts, user->GetAccountId(), &gaia_device_account);
+  base::ListValue accounts =
+      GetSecondaryGaiaAccounts(stored_accounts, user->GetAccountId(),
+                               profile_->IsChild(), &gaia_device_account);
 
   AccountBuilder device_account;
   if (user->IsActiveDirectoryUser()) {
@@ -273,12 +275,13 @@ void AccountManagerUIHandler::OnGetAccounts(
           GetEnterpriseDomainFromUsername(user->GetDisplayEmail()));
     } else if (profile_->GetProfilePolicyConnector()->IsManaged()) {
       device_account.SetOrganization(GetEnterpriseDomainFromUsername(
-          identity_manager_->GetPrimaryAccountInfo().email));
+          identity_manager_
+              ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+              .email));
     }
 
     // Device account must show up at the top.
-    accounts.GetList().insert(accounts.GetList().begin(),
-                              device_account.Build());
+    accounts.Insert(accounts.GetList().begin(), device_account.Build());
   }
 
   ResolveJavascriptCallback(callback_id, accounts);
@@ -287,6 +290,7 @@ void AccountManagerUIHandler::OnGetAccounts(
 base::ListValue AccountManagerUIHandler::GetSecondaryGaiaAccounts(
     const std::vector<AccountManager::Account>& stored_accounts,
     const AccountId device_account_id,
+    const bool is_child_user,
     base::DictionaryValue* device_account) {
   base::ListValue accounts;
   for (const auto& stored_account : stored_accounts) {
@@ -310,7 +314,10 @@ base::ListValue AccountManagerUIHandler::GetSecondaryGaiaAccounts(
         .SetIsDeviceAccount(false)
         .SetFullName(maybe_account_info->full_name)
         .SetEmail(stored_account.raw_email)
-        .SetUnmigrated(account_manager_->HasDummyGaiaToken(account_key))
+        // Secondary accounts in child user session cannot be unmigrated. If
+        // such account has dummy gaia token, it was invalidated.
+        .SetUnmigrated(!is_child_user &&
+                       account_manager_->HasDummyGaiaToken(account_key))
         .SetIsSignedIn(!identity_manager_
                             ->HasAccountWithRefreshTokenInPersistentErrorState(
                                 maybe_account_info->account_id));
@@ -336,7 +343,8 @@ base::ListValue AccountManagerUIHandler::GetSecondaryGaiaAccounts(
 
 void AccountManagerUIHandler::HandleAddAccount(const base::ListValue* args) {
   AllowJavascript();
-  InlineLoginHandlerDialogChromeOS::Show();
+  InlineLoginHandlerDialogChromeOS::Show(
+      InlineLoginHandlerDialogChromeOS::Source::kSettingsAddAccountButton);
 }
 
 void AccountManagerUIHandler::HandleReauthenticateAccount(
@@ -346,7 +354,9 @@ void AccountManagerUIHandler::HandleReauthenticateAccount(
   CHECK(!args->GetList().empty());
   const std::string& account_email = args->GetList()[0].GetString();
 
-  InlineLoginHandlerDialogChromeOS::Show(account_email);
+  InlineLoginHandlerDialogChromeOS::Show(
+      account_email,
+      InlineLoginHandlerDialogChromeOS::Source::kSettingsReauthAccountButton);
 }
 
 void AccountManagerUIHandler::HandleMigrateAccount(
@@ -418,15 +428,24 @@ void AccountManagerUIHandler::OnAccountRemoved(
   RefreshUI();
 }
 
-// |signin::IdentityManager::Observer| overrides. For newly added accounts,
-// |signin::IdentityManager| may take some time to fetch user's full name and
-// account image. Whenever that is completed, we may need to update the UI with
-// this new set of information. Note that we may be listening to
-// |signin::IdentityManager| but we still consider |AccountManager| to be the
-// source of truth for account list.
+// |signin::IdentityManager::Observer| overrides.
+//
+// For newly added accounts, |signin::IdentityManager| may take some time to
+// fetch user's full name and account image. Whenever that is completed, we may
+// need to update the UI with this new set of information. Note that we may be
+// listening to |signin::IdentityManager| but we still consider |AccountManager|
+// to be the source of truth for account list.
 void AccountManagerUIHandler::OnExtendedAccountInfoUpdated(
     const AccountInfo& info) {
   RefreshUI();
+}
+
+void AccountManagerUIHandler::OnErrorStateOfRefreshTokenUpdatedForAccount(
+    const CoreAccountInfo& account_info,
+    const GoogleServiceAuthError& error) {
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    RefreshUI();
+  }
 }
 
 void AccountManagerUIHandler::RefreshUI() {

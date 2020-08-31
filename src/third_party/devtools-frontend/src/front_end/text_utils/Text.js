@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Platform from '../platform/platform.js';
+
+import {TextCursor} from './TextCursor.js';
+import {SourceRange, TextRange} from './TextRange.js';
+
 /**
  * @unrestricted
  */
@@ -18,7 +23,7 @@ export class Text {
    */
   lineEndings() {
     if (!this._lineEndings) {
-      this._lineEndings = this._value.computeLineEndings();
+      this._lineEndings = Platform.StringUtilities.findLineEndingIndexes(this._value);
     }
     return this._lineEndings;
   }
@@ -49,7 +54,7 @@ export class Text {
 
   /**
    * @param {number} offset
-   * @return {!TextUtils.Text.Position}
+   * @return {!Position}
    */
   positionFromOffset(offset) {
     const lineEndings = this.lineEndings();
@@ -58,6 +63,7 @@ export class Text {
   }
 
   /**
+   * @param {number} lineNumber
    * @return {string}
    */
   lineAt(lineNumber) {
@@ -72,22 +78,22 @@ export class Text {
   }
 
   /**
-   * @param {!TextUtils.TextRange} range
-   * @return {!TextUtils.SourceRange}
+   * @param {!TextRange} range
+   * @return {!SourceRange}
    */
   toSourceRange(range) {
     const start = this.offsetFromPosition(range.startLine, range.startColumn);
     const end = this.offsetFromPosition(range.endLine, range.endColumn);
-    return new TextUtils.SourceRange(start, end - start);
+    return new SourceRange(start, end - start);
   }
 
   /**
-   * @param {!TextUtils.SourceRange} sourceRange
-   * @return {!TextUtils.TextRange}
+   * @param {!SourceRange} sourceRange
+   * @return {!TextRange}
    */
   toTextRange(sourceRange) {
     const cursor = new TextCursor(this.lineEndings());
-    const result = TextUtils.TextRange.createFromLocation(0, 0);
+    const result = TextRange.createFromLocation(0, 0);
 
     cursor.resetTo(sourceRange.offset);
     result.startLine = cursor.lineNumber();
@@ -100,7 +106,7 @@ export class Text {
   }
 
   /**
-   * @param {!TextUtils.TextRange} range
+   * @param {!TextRange} range
    * @param {string} replacement
    * @return {string}
    */
@@ -111,7 +117,7 @@ export class Text {
   }
 
   /**
-   * @param {!TextUtils.TextRange} range
+   * @param {!TextRange} range
    * @return {string}
    */
   extract(range) {
@@ -120,73 +126,6 @@ export class Text {
   }
 }
 
-/**
- * @unrestricted
- */
-export class TextCursor {
-  /**
-   * @param {!Array<number>} lineEndings
-   */
-  constructor(lineEndings) {
-    this._lineEndings = lineEndings;
-    this._offset = 0;
-    this._lineNumber = 0;
-    this._columnNumber = 0;
-  }
-
-  /**
-   * @param {number} offset
-   */
-  advance(offset) {
-    this._offset = offset;
-    while (this._lineNumber < this._lineEndings.length && this._lineEndings[this._lineNumber] < this._offset) {
-      ++this._lineNumber;
-    }
-    this._columnNumber = this._lineNumber ? this._offset - this._lineEndings[this._lineNumber - 1] - 1 : this._offset;
-  }
-
-  /**
-   * @return {number}
-   */
-  offset() {
-    return this._offset;
-  }
-
-  /**
-   * @param {number} offset
-   */
-  resetTo(offset) {
-    this._offset = offset;
-    this._lineNumber = this._lineEndings.lowerBound(offset);
-    this._columnNumber = this._lineNumber ? this._offset - this._lineEndings[this._lineNumber - 1] - 1 : this._offset;
-  }
-
-  /**
-   * @return {number}
-   */
-  lineNumber() {
-    return this._lineNumber;
-  }
-
-  /**
-   * @return {number}
-   */
-  columnNumber() {
-    return this._columnNumber;
-  }
-}
-
-/* Legacy exported object */
-self.TextUtils = self.TextUtils || {};
-
-/* Legacy exported object */
-TextUtils = TextUtils || {};
-
-/** @constructor */
-TextUtils.Text = Text;
-
-/** @constructor */
-TextUtils.TextCursor = TextCursor;
-
 /** @typedef {{lineNumber: number, columnNumber: number}} */
-TextUtils.Text.Position;
+// @ts-ignore typedef
+export let Position;

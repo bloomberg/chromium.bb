@@ -6,7 +6,6 @@ package org.chromium.chrome.browser;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.provider.Settings;
 import android.text.TextUtils;
 
@@ -22,19 +21,20 @@ import org.chromium.base.LocaleUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
+import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.metrics.VariationsSession;
 import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
 import org.chromium.chrome.browser.notifications.chime.ChimeSession;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
-import org.chromium.chrome.browser.settings.privacy.BrowsingDataBridge;
-import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.share.ShareImageFileUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.ui.base.ResourceBundle;
@@ -46,8 +46,6 @@ import java.util.Locale;
  */
 public class ChromeActivitySessionTracker {
 
-    private static final String PREF_LOCALE = "locale";
-
     @SuppressLint("StaticFieldLeak")
     private static ChromeActivitySessionTracker sInstance;
 
@@ -58,7 +56,6 @@ public class ChromeActivitySessionTracker {
 
     private boolean mIsInitialized;
     private boolean mIsStarted;
-    private boolean mIsFinishedCachingNativeFlags;
 
     /**
      * @return The activity session tracker for Chrome.
@@ -105,6 +102,7 @@ public class ChromeActivitySessionTracker {
         mIsInitialized = true;
         assert !mIsStarted;
 
+        mVariationsSession.initializeWithNative();
         ApplicationStatus.registerApplicationStateListener(createApplicationStateListener());
     }
 
@@ -124,7 +122,6 @@ public class ChromeActivitySessionTracker {
         assert mIsInitialized;
 
         onForegroundSessionStart();
-        cacheNativeFlags();
     }
 
     /**
@@ -185,7 +182,7 @@ public class ChromeActivitySessionTracker {
         if (ApplicationStatus.isEveryActivityDestroyed()) {
             // These will all be re-initialized when a new Activity starts / upon next use.
             PartnerBrowserCustomizations.destroy();
-            ShareHelper.clearSharedImages();
+            ShareImageFileUtils.clearSharedImages();
         }
     }
 
@@ -218,12 +215,11 @@ public class ChromeActivitySessionTracker {
     }
 
     private boolean hasLocaleChanged(String newLocale) {
-        String previousLocale = ContextUtils.getAppSharedPreferences().getString(PREF_LOCALE, null);
+        String previousLocale = SharedPreferencesManager.getInstance().readString(
+                ChromePreferenceKeys.APP_LOCALE, null);
         if (!TextUtils.equals(previousLocale, newLocale)) {
-            SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putString(PREF_LOCALE, newLocale);
-            editor.apply();
+            SharedPreferencesManager.getInstance().writeString(
+                    ChromePreferenceKeys.APP_LOCALE, newLocale);
             TranslateBridge.resetAcceptLanguages(newLocale);
             // We consider writing the initial value to prefs as _not_ changing the locale.
             return previousLocale != null;
@@ -247,17 +243,6 @@ public class ChromeActivitySessionTracker {
 
         PrefServiceBridge.getInstance().setBoolean(
                 Pref.WEBKIT_PASSWORD_ECHO_ENABLED, systemEnabled);
-    }
-
-    /**
-     * Caches flags that are needed by Activities that launch before the native library is loaded
-     * and stores them in SharedPreferences. Because this function is called during launch after the
-     * library has loaded, they won't affect the next launch until Chrome is restarted.
-     */
-    private void cacheNativeFlags() {
-        if (mIsFinishedCachingNativeFlags) return;
-        FeatureUtilities.cacheNativeFlags();
-        mIsFinishedCachingNativeFlags = true;
     }
 
     /**

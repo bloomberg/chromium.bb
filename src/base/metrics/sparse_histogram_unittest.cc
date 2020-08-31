@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_samples.h"
@@ -18,6 +19,7 @@
 #include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -383,6 +385,42 @@ TEST_P(SparseHistogramTest, HistogramNameHash) {
   HistogramBase* histogram = SparseHistogram::FactoryGet(
       kName, HistogramBase::kUmaTargetedHistogramFlag);
   EXPECT_EQ(histogram->name_hash(), HashMetricName(kName));
+}
+
+TEST_P(SparseHistogramTest, WriteAscii) {
+  HistogramBase* histogram =
+      SparseHistogram::FactoryGet("AsciiOut", HistogramBase::kNoFlags);
+  histogram->AddCount(/*sample=*/4, /*value=*/5);
+  histogram->AddCount(/*sample=*/10, /*value=*/15);
+
+  std::string output;
+  histogram->WriteAscii(&output);
+
+  const char kOutputFormatRe[] =
+      R"(Histogram: AsciiOut recorded 20 samples.*\n)"
+      R"(4   -+O +\(5 = 25.0%\)\n)"
+      R"(10  -+O +\(15 = 75.0%\)\n)";
+
+  EXPECT_THAT(output, testing::MatchesRegex(kOutputFormatRe));
+}
+
+TEST_P(SparseHistogramTest, ToGraphDict) {
+  HistogramBase* histogram =
+      SparseHistogram::FactoryGet("HTMLOut", HistogramBase::kNoFlags);
+  histogram->AddCount(/*sample=*/4, /*value=*/5);
+  histogram->AddCount(/*sample=*/10, /*value=*/15);
+
+  base::DictionaryValue output = histogram->ToGraphDict();
+  std::string* header = output.FindStringKey("header");
+  std::string* body = output.FindStringKey("body");
+
+  const char kOutputHeaderFormatRe[] =
+      R"(Histogram: HTMLOut recorded 20 samples.*)";
+  const char kOutputBodyFormatRe[] = R"(4   -+O +\(5 = 25.0%\)\n)"
+                                     R"(10  -+O +\(15 = 75.0%\)\n)";
+
+  EXPECT_THAT(*header, testing::MatchesRegex(kOutputHeaderFormatRe));
+  EXPECT_THAT(*body, testing::MatchesRegex(kOutputBodyFormatRe));
 }
 
 }  // namespace base

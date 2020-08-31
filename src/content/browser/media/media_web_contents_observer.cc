@@ -29,19 +29,6 @@ AudibleMetrics* GetAudibleMetrics() {
   return metrics;
 }
 
-void CheckFullscreenDetectionEnabled(WebContents* web_contents) {
-#if defined(OS_ANDROID)
-  DCHECK(web_contents->GetRenderViewHost()
-             ->GetWebkitPreferences()
-             .video_fullscreen_detection_enabled)
-      << "Attempt to use method relying on fullscreen detection while "
-      << "fullscreen detection is disabled.";
-#else   // defined(OS_ANDROID)
-  NOTREACHED() << "Attempt to use method relying on fullscreen detection, "
-               << "which is only enabled on Android.";
-#endif  // defined(OS_ANDROID)
-}
-
 // Returns true if |player_id| exists in |player_map|.
 bool MediaPlayerEntryExists(
     const MediaPlayerId& player_id,
@@ -116,7 +103,6 @@ void MediaWebContentsObserver::MaybeUpdateAudibleState() {
 }
 
 bool MediaWebContentsObserver::HasActiveEffectivelyFullscreenVideo() const {
-  CheckFullscreenDetectionEnabled(web_contents_impl());
   if (!web_contents()->IsFullscreen() || !fullscreen_player_)
     return false;
 
@@ -133,7 +119,6 @@ bool MediaWebContentsObserver::IsPictureInPictureAllowedForFullscreenVideo()
 
 const base::Optional<MediaPlayerId>&
 MediaWebContentsObserver::GetFullscreenVideoMediaPlayerId() const {
-  CheckFullscreenDetectionEnabled(web_contents_impl());
   return fullscreen_player_;
 }
 
@@ -157,9 +142,18 @@ bool MediaWebContentsObserver::OnMessageReceived(
         OnMediaEffectivelyFullscreenChanged)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
                         OnMediaSizeChanged)
+    IPC_MESSAGE_HANDLER(
+        MediaPlayerDelegateHostMsg_OnPictureInPictureAvailabilityChanged,
+        OnPictureInPictureAvailabilityChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void MediaWebContentsObserver::MediaPictureInPictureChanged(
+    bool is_picture_in_picture) {
+  session_controllers_manager_.PictureInPictureStateChanged(
+      is_picture_in_picture);
 }
 
 void MediaWebContentsObserver::DidUpdateAudioMutingState(bool muted) {
@@ -239,7 +233,7 @@ void MediaWebContentsObserver::OnMediaPlaying(
     AddMediaPlayerEntry(id, &active_video_players_);
 
   if (!session_controllers_manager_.RequestPlay(
-          id, has_audio, is_remote, media_content_type)) {
+          id, has_audio, is_remote, media_content_type, has_video)) {
     return;
   }
 
@@ -285,6 +279,14 @@ void MediaWebContentsObserver::OnMediaSizeChanged(
     const gfx::Size& size) {
   const MediaPlayerId id(render_frame_host, delegate_id);
   web_contents_impl()->MediaResized(size, id);
+}
+
+void MediaWebContentsObserver::OnPictureInPictureAvailabilityChanged(
+    RenderFrameHost* render_frame_host,
+    int delegate_id,
+    bool available) {
+  session_controllers_manager_.OnPictureInPictureAvailabilityChanged(
+      MediaPlayerId(render_frame_host, delegate_id), available);
 }
 
 void MediaWebContentsObserver::ClearWakeLocks(
@@ -360,6 +362,8 @@ void MediaWebContentsObserver::AddMediaPlayerEntry(
     ActiveMediaPlayerMap* player_map) {
   (*player_map)[id.render_frame_host].insert(id.delegate_id);
   if (power_experiment_manager_) {
+    // Bind the callback to a WeakPtr for the frame, so that we won't try to
+    // notify the frame after it's been destroyed.
     power_experiment_manager_->PlayerStarted(
         id,
         base::BindRepeating(&MediaWebContentsObserver::OnExperimentStateChanged,
@@ -426,7 +430,9 @@ void MediaWebContentsObserver::SuspendAllMediaPlayers() {
 
 void MediaWebContentsObserver::OnExperimentStateChanged(MediaPlayerId id,
                                                         bool is_starting) {
-  // TODO(liberato): Notify the player.
+  id.render_frame_host->Send(
+      new MediaPlayerDelegateMsg_NotifyPowerExperimentState(
+          id.render_frame_host->GetRoutingID(), id.delegate_id, is_starting));
 }
 
 void MediaWebContentsObserver::RemoveAllPlayers(

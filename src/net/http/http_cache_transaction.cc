@@ -22,6 +22,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"  // For HexEncode.
@@ -79,6 +80,12 @@ void RecordNoStoreHeaderHistogram(int load_flags,
         "Net.MainFrameNoStore",
         response->headers->HasHeaderValue("cache-control", "no-store"));
   }
+}
+
+bool IsOnBatteryPower() {
+  if (base::PowerMonitor::IsInitialized())
+    return base::PowerMonitor::IsOnBatteryPower();
+  return false;
 }
 
 enum ExternallyConditionalizedType {
@@ -567,12 +574,6 @@ void HttpCache::Transaction::SetBeforeNetworkStartCallback(
   before_network_start_callback_ = callback;
 }
 
-void HttpCache::Transaction::SetBeforeHeadersSentCallback(
-    const BeforeHeadersSentCallback& callback) {
-  DCHECK(!network_trans_);
-  before_headers_sent_callback_ = callback;
-}
-
 void HttpCache::Transaction::SetRequestHeadersCallback(
     RequestHeadersCallback callback) {
   DCHECK(!network_trans_);
@@ -1036,9 +1037,9 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
     }
   }
 
-  // Use PUT and DELETE only to invalidate existing stored entries.
-  if ((method_ == "PUT" || method_ == "DELETE") && mode_ != READ_WRITE &&
-      mode_ != WRITE) {
+  // Use PUT, DELETE, and PATCH only to invalidate existing stored entries.
+  if ((method_ == "PUT" || method_ == "DELETE" || method_ == "PATCH") &&
+      mode_ != READ_WRITE && mode_ != WRITE) {
     mode_ = NONE;
   }
 
@@ -1684,7 +1685,6 @@ int HttpCache::Transaction::DoSendRequest() {
   }
 
   network_trans_->SetBeforeNetworkStartCallback(before_network_start_callback_);
-  network_trans_->SetBeforeHeadersSentCallback(before_headers_sent_callback_);
   network_trans_->SetRequestHeadersCallback(request_headers_callback_);
   network_trans_->SetResponseHeadersCallback(response_headers_callback_);
 
@@ -1723,6 +1723,7 @@ int HttpCache::Transaction::DoSendRequestComplete(int result) {
   response_.was_fetched_via_proxy = response->was_fetched_via_proxy;
   response_.proxy_server = response->proxy_server;
   response_.restricted_prefetch = response->restricted_prefetch;
+  response_.resolve_error_info = response->resolve_error_info;
 
   // Do not record requests that have network errors or restarts.
   UpdateCacheEntryStatus(CacheEntryStatus::ENTRY_OTHER);
@@ -1807,14 +1808,15 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     UpdateCacheEntryStatus(CacheEntryStatus::ENTRY_NOT_IN_CACHE);
   }
 
-  // Invalidate any cached GET with a successful PUT or DELETE.
-  if (mode_ == WRITE && (method_ == "PUT" || method_ == "DELETE")) {
+  // Invalidate any cached GET with a successful PUT, DELETE, or PATCH.
+  if (mode_ == WRITE &&
+      (method_ == "PUT" || method_ == "DELETE" || method_ == "PATCH")) {
     if (NonErrorResponse(new_response_->headers->response_code()) &&
         (entry_ && !entry_->doomed)) {
       int ret = cache_->DoomEntry(cache_key_, nullptr);
       DCHECK_EQ(OK, ret);
     }
-    // Do not invalidate the entry if its a failed Delete or Put.
+    // Do not invalidate the entry if the request failed.
     DoneWithEntry(true);
   }
 
@@ -1879,7 +1881,7 @@ int HttpCache::Transaction::DoUpdateCachedResponse() {
   }
 
   if (response_.headers->HasHeaderValue("cache-control", "no-store") ||
-      ShouldDisableMediaCaching(response_.headers.get())) {
+      ShouldDisableCaching(response_.headers.get())) {
     if (!entry_->doomed) {
       int ret = cache_->DoomEntry(cache_key_, nullptr);
       DCHECK_EQ(OK, ret);
@@ -2441,7 +2443,10 @@ bool HttpCache::Transaction::ShouldPassThrough() {
   } else if (method_ == "POST" && request_->upload_data_stream &&
              request_->upload_data_stream->identifier()) {
   } else if (method_ == "PUT" && request_->upload_data_stream) {
-  } else if (method_ == "DELETE") {
+  }
+  // DELETE and PATCH requests may result in invalidating the cache, so cannot
+  // just pass through.
+  else if (method_ == "DELETE" || method_ == "PATCH") {
   } else {
     cacheable = false;
   }
@@ -2719,7 +2724,7 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
     return VALIDATION_SYNCHRONOUS;
   }
 
-  if (method_ == "PUT" || method_ == "DELETE")
+  if (method_ == "PUT" || method_ == "DELETE" || method_ == "PATCH")
     return VALIDATION_SYNCHRONOUS;
 
   ValidationType validation_required_by_headers =
@@ -2782,14 +2787,14 @@ bool HttpCache::Transaction::IsResponseConditionalizable(
 bool HttpCache::Transaction::ShouldOpenOnlyMethods() const {
   // These methods indicate that we should only try to open an entry and not
   // fallback to create.
-  return method_ == "PUT" || method_ == "DELETE" ||
+  return method_ == "PUT" || method_ == "DELETE" || method_ == "PATCH" ||
          (method_ == "HEAD" && mode_ == READ_WRITE);
 }
 
 bool HttpCache::Transaction::ConditionalizeRequest() {
   DCHECK(response_.headers.get());
 
-  if (method_ == "PUT" || method_ == "DELETE")
+  if (method_ == "PUT" || method_ == "DELETE" || method_ == "PATCH")
     return false;
 
   if (fail_conditionalization_for_test_)
@@ -3105,7 +3110,10 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(
   // status to a net error and replay the net error.
   if ((response.headers->HasHeaderValue("cache-control", "no-store")) ||
       IsCertStatusError(response.ssl_info.cert_status) ||
-      ShouldDisableMediaCaching(response.headers.get())) {
+      ShouldDisableCaching(response.headers.get())) {
+    if (partial_)
+      partial_->FixResponseHeaders(response_.headers.get(), true);
+
     bool stopped = StopCachingImpl(false);
     DCHECK(stopped);
     if (net_log_.IsCapturing())
@@ -3588,23 +3596,23 @@ void HttpCache::Transaction::TransitionToState(State state) {
   next_state_ = state;
 }
 
-bool HttpCache::Transaction::ShouldDisableMediaCaching(
+bool HttpCache::Transaction::ShouldDisableCaching(
     const HttpResponseHeaders* headers) const {
   bool disable_caching = false;
-  if (base::FeatureList::IsEnabled(features::kTurnOffStreamingMediaCaching)) {
-    // If the acquired content is 'large' and not already cached, and we have
-    // a MIME type of audio or video, then disable the cache for this response.
-    // We based our initial definition of 'large' on the disk cache maximum
-    // block size of 16K, which we observed captures the majority of responses
-    // from various MSE implementations.
+  if (base::FeatureList::IsEnabled(features::kTurnOffStreamingMediaCaching) &&
+      IsOnBatteryPower()) {
+    // If we're running on battery, and the acquired content is 'large' and
+    // not already cached, and we have a MIME type of audio or video, then
+    // disable the cache for this response. We based our initial definition of
+    // 'large' on the disk cache maximum block size of 16K, which we observed
+    // captures the majority of responses from various MSE implementations.
     static constexpr int kMaxContentSize = 4096 * 4;
     std::string mime_type;
+    base::CompareCase insensitive_ascii = base::CompareCase::INSENSITIVE_ASCII;
     if (headers->GetContentLength() > kMaxContentSize &&
         headers->response_code() != 304 && headers->GetMimeType(&mime_type) &&
-        (base::StartsWith(mime_type, "video",
-                          base::CompareCase::INSENSITIVE_ASCII) ||
-         base::StartsWith(mime_type, "audio",
-                          base::CompareCase::INSENSITIVE_ASCII))) {
+        (base::StartsWith(mime_type, "video", insensitive_ascii) ||
+         base::StartsWith(mime_type, "audio", insensitive_ascii))) {
       disable_caching = true;
       MediaCacheStatusResponseHistogram(
           MediaResponseCacheType::kMediaResponseTransactionCacheDisabled);

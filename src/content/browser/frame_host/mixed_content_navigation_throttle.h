@@ -9,9 +9,11 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
@@ -49,8 +51,8 @@ class MixedContentNavigationThrottle : public NavigationThrottle {
 
   // Returns the parent frame where mixed content exists for the provided data
   // or nullptr if there is no mixed content.
-  FrameTreeNode* InWhichFrameIsContentMixed(FrameTreeNode* node,
-                                            const GURL& url);
+  RenderFrameHostImpl* InWhichFrameIsContentMixed(FrameTreeNode* node,
+                                                  const GURL& url);
 
   // Updates the renderer about any Blink feature usage.
   void MaybeSendBlinkFeatureUsageReport();

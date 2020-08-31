@@ -14,7 +14,7 @@ from google.appengine.ext import ndb
 from dashboard.common import testing_common
 from dashboard.common import utils
 from dashboard.models import anomaly
-from dashboard.models import sheriff
+from dashboard.models.subscription import Subscription
 
 
 class AnomalyTest(testing_common.TestCase):
@@ -91,8 +91,10 @@ class AnomalyTest(testing_common.TestCase):
       entity.timestamp = timestamp
     entity.bug_id = bug_id
     if sheriff_name:
-      entity.sheriff = ndb.Key('Sheriff', sheriff_name)
-      sheriff.Sheriff(id=sheriff_name, email='sullivan@google.com').put()
+      entity.subscription_names.append(sheriff_name)
+      entity.subscriptions.append(Subscription(
+          name=sheriff_name,
+          notification_email='sullivan@google.com'))
     if test:
       entity.test = utils.TestKey(test)
     entity.start_revision = start_revision
@@ -208,7 +210,7 @@ class AnomalyTest(testing_common.TestCase):
     self._CreateAnomaly(sheriff_name='Chromium Perf Sheriff', start_revision=42)
     self._CreateAnomaly(sheriff_name='WebRTC Perf Sheriff')
     anomalies, _, _ = anomaly.Anomaly.QueryAsync(
-        sheriff='Chromium Perf Sheriff').get_result()
+        subscriptions=['Chromium Perf Sheriff']).get_result()
     self.assertEqual(1, len(anomalies))
     self.assertEqual(42, anomalies[0].start_revision)
 
@@ -242,6 +244,15 @@ class AnomalyTest(testing_common.TestCase):
     anomalies, _, _ = anomaly.Anomaly.QueryAsync(
         min_end_revision=150).get_result()
     self.assertEqual(1, len(anomalies))
+    self.assertEqual(200, anomalies[0].end_revision)
+
+  def testMinAndMaxRevisionAreSame(self):
+    self._CreateAnomaly()
+    self._CreateAnomaly(end_revision=200)
+    anomalies, _, _ = anomaly.Anomaly.QueryAsync(
+        min_end_revision=200, max_start_revision=200
+    ).get_result()
+    self.assertGreaterEqual(1, len(anomalies))
     self.assertEqual(200, anomalies[0].end_revision)
 
   def testMaxTimestamp(self):

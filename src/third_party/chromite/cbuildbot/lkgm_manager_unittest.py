@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import contextlib
 import os
+import sys
 import tempfile
 from xml.dom import minidom
 
@@ -25,6 +26,9 @@ from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib.buildstore import FakeBuildStore
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 FAKE_VERSION_STRING = '1.2.4-rc3'
@@ -244,126 +248,6 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(git, 'RunGit', return_value=fake_result)
 
     return exists_mock, link_mock
-
-  def testGenerateBlameListSinceLKGM(self):
-    """Tests that we can generate a blamelist from two commit messages.
-
-    This test tests the functionality of generating a blamelist for a git log.
-    Note in this test there are two commit messages, one commited by the
-    Commit Queue and another from Non-Commit Queue.  We test the correct
-    handling in both cases.
-    """
-    fake_git_log = """commit abcd
-Author: Sammy Sosa <fake@fake.com>
-Commit: Chris Sosa <sosa@chromium.org>
-
-    Add in a test for cbuildbot
-
-    TEST=So much testing
-    BUG=chromium-os:99999
-
-    Change-Id: Ib72a742fd2cee3c4a5223b8easwasdgsdgfasdf
-    Reviewed-on: https://chromium-review.googlesource.com/1234
-    Reviewed-by: Fake person <fake@fake.org>
-    Tested-by: Sammy Sosa <fake@fake.com>
-
-commit ef01
-Author: Sammy Sosa <fake@fake.com>
-Commit: Gerrit <chrome-bot@chromium.org>
-
-    Add in a test for cbuildbot
-
-    Random line that says "Author:" in the message:
-    Author: _Not_ Sammy Sosa <veryfake@fake.com>
-
-    TEST=So much testing
-    BUG=chromium-os:99999
-
-    Change-Id: Ib72a742fd2cee3c4a5223b8easwasdgsdgfasdf
-    Reviewed-on: https://chromium-review.googlesource.com/1235
-    Reviewed-by: Fake person <fake@fake.org>
-    Tested-by: Sammy Sosa <fake@fake.com>
-    """
-    project = {
-        'name': 'fake/repo',
-        'path': 'fake/path',
-        'revision': '1234567890',
-    }
-    self.manager.incr_type = 'build'
-    self.PatchObject(cros_build_lib, 'run', side_effect=Exception())
-    exists_mock, link_mock = self._MockParseGitLog(fake_git_log, project)
-    self.manager.GenerateBlameListSinceLKGM()
-
-    exists_mock.assert_called_once_with(
-        os.path.join(self.tmpdir, project['path']))
-    link_mock.assert_has_calls([
-        mock.call('CHUMP | repo | fake | 1234',
-                  'https://chromium-review.googlesource.com/1234'),
-        mock.call('repo | fake | 1235',
-                  'https://chromium-review.googlesource.com/1235'),
-    ])
-
-  def testGenerateBlameListHasChumpCL(self):
-    """Test GenerateBlameList with chump CLs."""
-    fake_git_log = """
-commit 1234
-Author: Sammy Sosa <fake@fake.com>
-Commit: Chris Sosa <sosa@chromium.org>
-
-    Add in a test for cbuildbot
-
-    TEST=So much testing
-    BUG=chromium-os:99999
-
-    Change-Id: Ib72a742fd2cee3c4a5223b8easwasdgsdgfasdf
-    Reviewed-on: https://chromium-review.googlesource.com/1234
-    Reviewed-by: Fake person <fake@fake.org>
-    Tested-by: Sammy Sosa <fake@fake.com>
-    """
-    project = {
-        'name': 'fake/repo',
-        'path': 'fake/path',
-        'revision': '1234567890',
-    }
-    _, link_mock = self._MockParseGitLog(fake_git_log, project)
-    has_chump_cls = lkgm_manager.GenerateBlameList(
-        self.manager.cros_source, self.manager.lkgm_path)
-
-    self.assertTrue(has_chump_cls)
-    link_mock.assert_has_calls([
-        mock.call('CHUMP | repo | fake | 1234',
-                  'https://chromium-review.googlesource.com/1234')])
-
-  def testGenerateBlameListNoChumpCL(self):
-    """Test GenerateBlameList without chump CLs."""
-    fake_git_log = """
-commit 5678
-Author: Sammy Sosa <fake@fake.com>
-Commit: Gerrit <chrome-bot@chromium.org>
-
-    Add in a test for cbuildbot
-
-    TEST=So much testing
-    BUG=chromium-os:99999
-
-    Change-Id: Ib72a742fd2cee3c4a5223b8easwasdgsdgfasdf
-    Reviewed-on: https://chromium-review.googlesource.com/1235
-    Reviewed-by: Fake person <fake@fake.org>
-    Tested-by: Sammy Sosa <fake@fake.com>
-    """
-    project = {
-        'name': 'fake/repo',
-        'path': 'fake/path',
-        'revision': '1234567890',
-    }
-    _, link_mock = self._MockParseGitLog(fake_git_log, project)
-    has_chump_cl = lkgm_manager.GenerateBlameList(
-        self.manager.cros_source, self.manager.lkgm_path)
-
-    self.assertFalse(has_chump_cl)
-    link_mock.assert_has_calls([
-        mock.call('repo | fake | 1235',
-                  'https://chromium-review.googlesource.com/1235')])
 
   def testAddChromeVersionToManifest(self):
     """Tests whether we can write the chrome version to the manifest file."""

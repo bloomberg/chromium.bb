@@ -5,21 +5,22 @@
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 
 #import "base/ios/block_types.h"
-#include "base/logging.h"
 #import "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/settings/cells/version_item.h"
+#import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/channel_info.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
@@ -59,8 +60,7 @@ const CGFloat kDefaultHeight = 70;
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
-  self = [super initWithTableViewStyle:style
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:style];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_ABOUT_PRODUCT_NAME);
   }
@@ -92,6 +92,7 @@ const CGFloat kDefaultHeight = 70;
   credits.text = l10n_util::GetNSString(IDS_IOS_OPEN_SOURCE_LICENSES);
   credits.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   credits.accessibilityTraits = UIAccessibilityTraitButton;
+  credits.accessibilityIdentifier = kSettingsOpenSourceLicencesCellId;
   [model addItem:credits toSectionWithIdentifier:SectionIdentifierLinks];
 
   TableViewDetailTextItem* terms =
@@ -99,6 +100,7 @@ const CGFloat kDefaultHeight = 70;
   terms.text = l10n_util::GetNSString(IDS_IOS_TERMS_OF_SERVICE);
   terms.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   terms.accessibilityTraits = UIAccessibilityTraitButton;
+  terms.accessibilityIdentifier = kSettingsTOSCellId;
   [model addItem:terms toSectionWithIdentifier:SectionIdentifierLinks];
 
   TableViewDetailTextItem* privacy =
@@ -106,6 +108,7 @@ const CGFloat kDefaultHeight = 70;
   privacy.text = l10n_util::GetNSString(IDS_IOS_PRIVACY_POLICY);
   privacy.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   privacy.accessibilityTraits = UIAccessibilityTraitButton;
+  privacy.accessibilityIdentifier = kSettingsPrivacyNoticeCellId;
   [model addItem:privacy toSectionWithIdentifier:SectionIdentifierLinks];
 
   VersionItem* version = [[VersionItem alloc] initWithType:ItemTypeVersion];

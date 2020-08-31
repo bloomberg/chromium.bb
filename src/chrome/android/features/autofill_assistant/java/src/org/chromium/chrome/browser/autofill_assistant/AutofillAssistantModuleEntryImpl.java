@@ -5,15 +5,15 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
-import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.UsedByReflection;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.WebContents;
@@ -27,33 +27,39 @@ import java.util.Map;
 @UsedByReflection("AutofillAssistantModuleEntryProvider.java")
 public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModuleEntry {
     @Override
-    public void start(@NonNull Tab tab, @NonNull WebContents webContents, boolean skipOnboarding,
-            String initialUrl, Map<String, String> parameters, String experimentIds,
-            Bundle intentExtras) {
+    public void start(BottomSheetController bottomSheetController,
+            ChromeFullscreenManager fullscreenManager, CompositorViewHolder compositorViewHolder,
+            ScrimView scrimView, Context context, @NonNull WebContents webContents,
+            boolean skipOnboarding, boolean isChromeCustomTab, @NonNull String initialUrl,
+            Map<String, String> parameters, String experimentIds, @Nullable String callerAccount,
+            @Nullable String userName) {
         if (skipOnboarding) {
             AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NOT_SHOWN);
-            AutofillAssistantClient.fromWebContents(tab.getWebContents())
-                    .start(initialUrl, parameters, experimentIds, intentExtras, null);
+            AutofillAssistantClient.fromWebContents(webContents)
+                    .start(initialUrl, parameters, experimentIds, callerAccount, userName,
+                            isChromeCustomTab,
+                            /* onboardingCoordinator= */ null);
             return;
         }
 
-        ChromeActivity activity = ((TabImpl) tab).getActivity();
-        AssistantOnboardingCoordinator onboardingCoordinator = new AssistantOnboardingCoordinator(
-                experimentIds, activity, activity.getBottomSheetController(), tab);
+        AssistantOnboardingCoordinator onboardingCoordinator =
+                new AssistantOnboardingCoordinator(experimentIds, parameters, context,
+                        bottomSheetController, fullscreenManager, compositorViewHolder, scrimView);
         onboardingCoordinator.show(accepted -> {
             if (!accepted) return;
 
-            AutofillAssistantClient.fromWebContents(tab.getWebContents())
-                    .start(initialUrl, parameters, experimentIds, intentExtras,
-                            onboardingCoordinator);
+            AutofillAssistantClient.fromWebContents(webContents)
+                    .start(initialUrl, parameters, experimentIds, callerAccount, userName,
+                            isChromeCustomTab, onboardingCoordinator);
         });
     }
 
     @Override
     public AutofillAssistantActionHandler createActionHandler(Context context,
-            BottomSheetController bottomSheetController, ScrimView scrimView,
-            GetCurrentTab getCurrentTab) {
-        return new AutofillAssistantActionHandlerImpl(
-                context, bottomSheetController, scrimView, getCurrentTab);
+            BottomSheetController bottomSheetController, ChromeFullscreenManager fullscreenManager,
+            CompositorViewHolder compositorViewHolder, ActivityTabProvider activityTabProvider,
+            ScrimView scrimView) {
+        return new AutofillAssistantActionHandlerImpl(context, bottomSheetController,
+                fullscreenManager, compositorViewHolder, activityTabProvider, scrimView);
     }
 }

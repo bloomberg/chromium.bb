@@ -17,7 +17,7 @@ public class SuggestionListProperties {
     public static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey();
 
     /** The embedder for the suggestion list. */
-    public static final WritableObjectPropertyKey<OmniboxSuggestionListEmbedder> EMBEDDER =
+    public static final WritableObjectPropertyKey<OmniboxSuggestionsDropdown.Embedder> EMBEDDER =
             new WritableObjectPropertyKey<>();
 
     /**
@@ -30,6 +30,10 @@ public class SuggestionListProperties {
     /** Whether the suggestion list should have a dark background. */
     public static final WritableBooleanPropertyKey IS_INCOGNITO = new WritableBooleanPropertyKey();
 
+    /** Observer that will receive notifications and callbacks from Suggestion List. */
+    public static final WritableObjectPropertyKey<OmniboxSuggestionsDropdown.Observer> OBSERVER =
+            new WritableObjectPropertyKey<>();
+
     public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {VISIBLE, EMBEDDER, SUGGESTION_MODELS, IS_INCOGNITO};
+            new PropertyKey[] {VISIBLE, EMBEDDER, SUGGESTION_MODELS, IS_INCOGNITO, OBSERVER};
 }

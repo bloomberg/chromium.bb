@@ -10,10 +10,9 @@
 #include "platform/base/macros.h"
 #include "platform/impl/platform_client_posix.h"
 #include "platform/impl/socket_handle_posix.h"
-#include "platform/impl/weak_ptr.h"
+#include "util/weak_ptr.h"
 
 namespace openscreen {
-namespace platform {
 
 class UdpSocketReaderPosix;
 
@@ -87,7 +86,6 @@ class UdpSocketPosix : public UdpSocket {
   OSP_DISALLOW_COPY_AND_ASSIGN(UdpSocketPosix);
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_UDP_SOCKET_POSIX_H_

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,8 +51,8 @@ BindingsTestRunner.AutomappingTest = function(workspace) {
   this._networkProject = new Bindings.ContentProviderBasedProject(
       this._workspace, 'AUTOMAPPING', Workspace.projectTypes.Network, 'simple website');
 
-  if (workspace !== Workspace.workspace) {
-    new Persistence.FileSystemWorkspaceBinding(Persistence.isolatedFileSystemManager, this._workspace);
+  if (workspace !== self.Workspace.workspace) {
+    new Persistence.FileSystemWorkspaceBinding(self.Persistence.isolatedFileSystemManager, this._workspace);
   }
 
   this._failedBindingsCount = 0;
@@ -73,7 +73,7 @@ BindingsTestRunner.AutomappingTest.prototype = {
     for (const url in assets) {
       const asset = assets[url];
       const contentType = asset.contentType || Common.resourceTypes.Script;
-      const contentProvider = Common.StaticContentProvider.fromString(url, contentType, asset.content);
+      const contentProvider = TextUtils.StaticContentProvider.fromString(url, contentType, asset.content);
       const metadata =
           (typeof asset.content === 'string' || asset.time ?
                new Workspace.UISourceCodeMetadata(asset.time, asset.content.length) :

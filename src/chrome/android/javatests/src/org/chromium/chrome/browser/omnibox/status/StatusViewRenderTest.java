@@ -18,14 +18,15 @@ import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.omnibox.status.StatusProperties.StatusIconResource;
 import org.chromium.chrome.browser.omnibox.status.StatusView.StatusViewDelegate;
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
-import org.chromium.chrome.browser.ui.widget.CompositeTouchDelegate;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
-import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
+import org.chromium.components.browser_ui.widget.CompositeTouchDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.test.util.DummyUiActivityTestCase;
 
 /**
  * Render tests for {@link StatusView}.
@@ -33,8 +34,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class StatusViewRenderTest extends DummyUiActivityTestCase {
     @Rule
-    public RenderTestRule mRenderTestRule =
-            new RenderTestRule("chrome/test/data/android/render_tests");
+    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
 
     private StatusView mStatusView;
     private PropertyModel mStatusModel;
@@ -87,9 +87,8 @@ public class StatusViewRenderTest extends DummyUiActivityTestCase {
             mStatusView.setVerboseStatusTextWidth(mStatusView.getResources().getDimensionPixelSize(
                     org.chromium.chrome.R.dimen.location_bar_min_verbose_status_text_width));
             mStatusView.setVerboseStatusTextVisible(true);
-            mStatusModel.set(
-                    StatusProperties.STATUS_ICON_RES, org.chromium.chrome.R.drawable.ic_search);
-            mStatusModel.set(StatusProperties.STATUS_ICON_TINT_RES, 0);
+            mStatusModel.set(StatusProperties.STATUS_ICON_RESOURCE,
+                    new StatusIconResource(org.chromium.chrome.R.drawable.ic_search, 0));
         });
         mRenderTestRule.render(mStatusView, "status_view_verbose_padding");
     }
@@ -107,11 +106,10 @@ public class StatusViewRenderTest extends DummyUiActivityTestCase {
             mStatusView.setVerboseStatusTextWidth(mStatusView.getResources().getDimensionPixelSize(
                     org.chromium.chrome.R.dimen.location_bar_min_verbose_status_text_width));
             mStatusView.setVerboseStatusTextVisible(true);
-            mStatusModel.set(StatusProperties.STATUS_ALPHA, 1f);
+            mStatusModel.set(StatusProperties.STATUS_ICON_ALPHA, 1f);
             mStatusModel.set(StatusProperties.SHOW_STATUS_ICON, true);
-            mStatusModel.set(StatusProperties.STATUS_ICON_RES,
-                    org.chromium.chrome.R.drawable.ic_logo_googleg_20dp);
-            mStatusModel.set(StatusProperties.STATUS_ICON_TINT_RES, 0);
+            mStatusModel.set(StatusProperties.STATUS_ICON_RESOURCE,
+                    new StatusIconResource(org.chromium.chrome.R.drawable.ic_logo_googleg_24dp, 0));
         });
 
         mRenderTestRule.render(mStatusView, "status_view_verbose_padding_with_dse_icon");

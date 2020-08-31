@@ -18,11 +18,10 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/url_list_manager.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
-#include "chrome/grit/generated_resources.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -162,6 +161,7 @@ class ContentSettingBubbleModel {
     MediaMenuMap media_menus;
     bool show_learn_more = false;
     base::string16 done_button_text;
+    base::string16 cancel_button_text;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(BubbleContent);
@@ -192,6 +192,7 @@ class ContentSettingBubbleModel {
   virtual void OnMediaMenuClicked(blink::mojom::MediaStreamType type,
                                   const std::string& selected_device_id) {}
   virtual void OnDoneButtonClicked() {}
+  virtual void OnCancelButtonClicked() {}
   // Called by the view code when the bubble is closed
   virtual void CommitChanges() {}
 
@@ -273,6 +274,9 @@ class ContentSettingBubbleModel {
   }
   void set_done_button_text(const base::string16& done_button_text) {
     bubble_content_.done_button_text = done_button_text;
+  }
+  void set_cancel_button_text(const base::string16& cancel_button_text) {
+    bubble_content_.cancel_button_text = cancel_button_text;
   }
   rappor::RapporServiceImpl* rappor_service() const { return rappor_service_; }
 
@@ -402,7 +406,7 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
   // buttons.
   ContentSetting radio_item_setting_[2];
   // The state of the microphone and camera access.
-  TabSpecificContentSettings::MicrophoneCameraState state_;
+  content_settings::TabSpecificContentSettings::MicrophoneCameraState state_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMediaStreamBubbleModel);
 };
@@ -424,7 +428,9 @@ class ContentSettingNotificationsBubbleModel
 
   // ContentSettingBubbleModel:
   void OnManageButtonClicked() override;
+  void OnLearnMoreClicked() override;
   void OnDoneButtonClicked() override;
+  void OnCancelButtonClicked() override;
   ContentSettingNotificationsBubbleModel* AsNotificationsBubbleModel() override;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingNotificationsBubbleModel);

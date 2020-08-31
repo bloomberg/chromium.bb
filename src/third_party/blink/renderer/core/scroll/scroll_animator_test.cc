@@ -74,7 +74,8 @@ class MockScrollableAreaForAnimatorTest
   MOCK_CONST_METHOD1(ScrollSize, int(ScrollbarOrientation));
   MOCK_CONST_METHOD0(IsScrollCornerVisible, bool());
   MOCK_CONST_METHOD0(ScrollCornerRect, IntRect());
-  MOCK_METHOD2(UpdateScrollOffset, void(const ScrollOffset&, ScrollType));
+  MOCK_METHOD2(UpdateScrollOffset,
+               void(const ScrollOffset&, mojom::blink::ScrollType));
   MOCK_METHOD0(ScrollControlWasSetNeedsPaintInvalidation, void());
   MOCK_CONST_METHOD0(EnclosingScrollableArea, ScrollableArea*());
   MOCK_CONST_METHOD1(VisibleContentRect, IntRect(IncludeScrollbarsInRect));
@@ -114,8 +115,9 @@ class MockScrollableAreaForAnimatorTest
   }
 
   void SetScrollOffset(const ScrollOffset& offset,
-                       ScrollType type,
-                       ScrollBehavior behavior = kScrollBehaviorInstant,
+                       mojom::blink::ScrollType type,
+                       mojom::blink::ScrollBehavior behavior =
+                           mojom::blink::ScrollBehavior::kInstant,
                        ScrollCallback on_finish = ScrollCallback()) override {
     if (animator)
       animator->SetCurrentOffset(offset);
@@ -135,7 +137,7 @@ class MockScrollableAreaForAnimatorTest
     return ScrollbarTheme::GetTheme();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(animator);
     ScrollableArea::Trace(visitor);
   }
@@ -850,7 +852,8 @@ TEST(ScrollAnimatorTest, MainThreadAnimationTargetAdjustment) {
 
   // Adjustment
   ScrollOffset new_offset = offset + ScrollOffset(10, -10);
-  animator->AdjustAnimationAndSetScrollOffset(new_offset, kAnchoringScroll);
+  animator->AdjustAnimationAndSetScrollOffset(
+      new_offset, mojom::blink::ScrollType::kAnchoring);
   EXPECT_EQ(ScrollOffset(110, 90), animator->DesiredTargetOffset());
 
   // Adjusting after finished animation should do nothing.
@@ -861,7 +864,8 @@ TEST(ScrollAnimatorTest, MainThreadAnimationTargetAdjustment) {
       animator->RunStateForTesting(),
       ScrollAnimatorCompositorCoordinator::RunState::kPostAnimationCleanup);
   new_offset = animator->CurrentOffset() + ScrollOffset(10, -10);
-  animator->AdjustAnimationAndSetScrollOffset(new_offset, kAnchoringScroll);
+  animator->AdjustAnimationAndSetScrollOffset(
+      new_offset, mojom::blink::ScrollType::kAnchoring);
   EXPECT_EQ(
       animator->RunStateForTesting(),
       ScrollAnimatorCompositorCoordinator::RunState::kPostAnimationCleanup);

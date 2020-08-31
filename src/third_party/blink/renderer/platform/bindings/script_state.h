@@ -24,7 +24,7 @@ class ScriptValue;
 class V8PerContextData;
 
 // ScriptState is an abstraction class that holds all information about script
-// exectuion (e.g., v8::Isolate, v8::Context, DOMWrapperWorld, ExecutionContext
+// execution (e.g., v8::Isolate, v8::Context, DOMWrapperWorld, ExecutionContext
 // etc). If you need any info about the script execution, you're expected to
 // pass around ScriptState in the code base. ScriptState is in a 1:1
 // relationship with v8::Context.
@@ -75,7 +75,7 @@ class V8PerContextData;
 // all V8 proxy objects that have references to the ScriptState are destructed.
 class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
  public:
-  class Scope {
+  class Scope final {
     STACK_ALLOCATED();
 
    public:
@@ -95,10 +95,36 @@ class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
     v8::Local<v8::Context> context_;
   };
 
+  // Use EscapableScope if you have to return a v8::Local to an outer scope.
+  // See v8::EscapableHandleScope.
+  class EscapableScope final {
+    STACK_ALLOCATED();
+
+   public:
+    // You need to make sure that scriptState->context() is not empty before
+    // creating a Scope.
+    explicit EscapableScope(ScriptState* script_state)
+        : handle_scope_(script_state->GetIsolate()),
+          context_(script_state->GetContext()) {
+      DCHECK(script_state->ContextIsValid());
+      context_->Enter();
+    }
+
+    ~EscapableScope() { context_->Exit(); }
+
+    v8::Local<v8::Value> Escape(v8::Local<v8::Value> value) {
+      return handle_scope_.Escape(value);
+    }
+
+   private:
+    v8::EscapableHandleScope handle_scope_;
+    v8::Local<v8::Context> context_;
+  };
+
   ScriptState(v8::Local<v8::Context>, scoped_refptr<DOMWrapperWorld>);
   ~ScriptState();
 
-  void Trace(blink::Visitor*) {}
+  void Trace(Visitor*) {}
 
   static ScriptState* Current(v8::Isolate* isolate) {  // DEPRECATED
     return From(isolate->GetCurrentContext());
@@ -193,9 +219,9 @@ class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
   // exactly.
   SelfKeepAlive<ScriptState> reference_from_v8_context_;
 
-  static constexpr int kV8ContextPerContextDataIndex = static_cast<int>(
-      gin::kPerContextDataStartIndex +  // NOLINT(readability/enum_casing)
-      gin::kEmbedderBlink);             // NOLINT(readability/enum_casing)
+  static constexpr int kV8ContextPerContextDataIndex =
+      static_cast<int>(gin::kPerContextDataStartIndex) +
+      static_cast<int>(gin::kEmbedderBlink);
 
   DISALLOW_COPY_AND_ASSIGN(ScriptState);
 };
@@ -215,7 +241,7 @@ class ScriptStateProtectingContext final
     }
   }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(script_state_); }
+  void Trace(Visitor* visitor) { visitor->Trace(script_state_); }
 
   ScriptState* Get() const { return script_state_; }
   void Reset() {

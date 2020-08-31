@@ -5,6 +5,11 @@
 #include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
 
 #include <limits>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
@@ -43,19 +48,20 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
-    file_system_context_ = CreateFileSystemContextForTesting(
+    file_system_context_ = storage::CreateFileSystemContextForTesting(
         /*quota_manager_proxy=*/nullptr, dir_.GetPath());
 
     test_file_url_ = file_system_context_->CreateCrackedFileSystemURL(
-        test_src_origin_.GetURL(), storage::kFileSystemTypeTest,
+        test_src_origin_, storage::kFileSystemTypeTest,
         base::FilePath::FromUTF8Unsafe("test"));
 
     ASSERT_EQ(base::File::FILE_OK,
-              AsyncFileTestHelper::CreateFile(file_system_context_.get(),
-                                              test_file_url_));
+              storage::AsyncFileTestHelper::CreateFile(
+                  file_system_context_.get(), test_file_url_));
 
     chrome_blob_context_ = base::MakeRefCounted<ChromeBlobStorageContext>();
-    chrome_blob_context_->InitializeOnIOThread(base::FilePath(), nullptr);
+    chrome_blob_context_->InitializeOnIOThread(base::FilePath(),
+                                               base::FilePath(), nullptr);
 
     manager_ = base::MakeRefCounted<NativeFileSystemManagerImpl>(
         file_system_context_, chrome_blob_context_,
@@ -120,7 +126,7 @@ TEST_F(NativeFileSystemFileHandleImplTest, CreateFileWriterOverLimitNotOK) {
 
   const FileSystemURL base_swap_url =
       file_system_context_->CreateCrackedFileSystemURL(
-          test_src_origin_.GetURL(), storage::kFileSystemTypeTest,
+          test_src_origin_, storage::kFileSystemTypeTest,
           base::FilePath::FromUTF8Unsafe("test.crswap"));
 
   std::vector<mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter>>
@@ -131,7 +137,7 @@ TEST_F(NativeFileSystemFileHandleImplTest, CreateFileWriterOverLimitNotOK) {
       swap_url = base_swap_url;
     } else {
       swap_url = file_system_context_->CreateCrackedFileSystemURL(
-          test_src_origin_.GetURL(), storage::kFileSystemTypeTest,
+          test_src_origin_, storage::kFileSystemTypeTest,
           base::FilePath::FromUTF8Unsafe(
               base::StringPrintf("test.%d.crswap", i)));
     }

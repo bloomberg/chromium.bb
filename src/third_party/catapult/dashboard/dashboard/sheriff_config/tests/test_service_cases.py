@@ -14,22 +14,19 @@ import base64
 import json
 import service
 import unittest
-from apiclient.http import HttpMockSequence
+from tests.utils import HttpMockSequenceWithDiscovery
 
 
 class ValidationTest(unittest.TestCase):
 
   def setUp(self):
-    with open('tests/config-discovery.json') as discovery_file:
-      self.app = service.CreateApp({
-          'environ': {
-              'GOOGLE_CLOUD_PROJECT': 'chromeperf',
-              'GAE_SERVICE': 'sheriff-config'
-          },
-          'http': HttpMockSequence([({
-              'status': '200'
-          }, discovery_file.read())])
-      })
+    self.app = service.CreateApp({
+        'environ': {
+            'GOOGLE_CLOUD_PROJECT': 'chromeperf',
+            'GAE_SERVICE': 'sheriff-config'
+        },
+        'http': HttpMockSequenceWithDiscovery([])
+    })
     self.client = self.app.test_client()
 
   def testServiceMetadata(self):
@@ -76,7 +73,7 @@ class ValidationTest(unittest.TestCase):
     self.assertIn('messages', response_proto)
     self.assertGreater(len(response_proto['messages']), 0)
     self.assertRegex(response_proto['messages'][0].get('text'),
-                     'notification_email')
+                     'contact_email')
 
   def testValidationSucceedsSilently(self):
     response = self.client.post(
@@ -92,13 +89,13 @@ class ValidationTest(unittest.TestCase):
                         """
                         subscriptions: [{
                             name: 'Release Team',
-                            notification_email: 'release-team@example.com',
+                            contact_email: 'release-team@example.com',
                             bug_labels: ['release-blocker'],
                             bug_components: ['Sample>Component'],
                             patterns: [{ glob: 'project/**' }]
                         }, {
                             name: 'Memory Team',
-                            notification_email: 'memory-team@example.com',
+                            contact_email: 'memory-team@example.com',
                             bug_labels: ['memory-regressions'],
                             patterns: [{ regex: '^project/.*memory_.*$' }],
                             anomaly_configs: [{

@@ -19,6 +19,7 @@
 #include "src/core/SkPictureRecord.h"
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkSafeMath.h"
+#include "src/core/SkVerticesPriv.h"
 #include "src/utils/SkPatchUtils.h"
 
 // matches old SkCanvas::SaveFlags
@@ -34,30 +35,6 @@ SkCanvas::SaveLayerFlags SkCanvasPriv::LegacySaveFlagsToSaveLayerFlags(uint32_t 
     }
     return layerFlags;
 }
-
-/*
- * Read the next op code and chunk size from 'reader'. The returned size
- * is the entire size of the chunk (including the opcode). Thus, the
- * offset just prior to calling ReadOpAndSize + 'size' is the offset
- * to the next chunk's op code. This also means that the size of a chunk
- * with no arguments (just an opcode) will be 4.
- */
-DrawType SkPicturePlayback::ReadOpAndSize(SkReadBuffer* reader, uint32_t* size) {
-    uint32_t temp = reader->readInt();
-    uint32_t op;
-    if ((temp & 0xFF) == temp) {
-        // old skp file - no size information
-        op = temp;
-        *size = 0;
-    } else {
-        UNPACK_8_24(temp, op, *size);
-        if (MASK_24 == *size) {
-            *size = reader->readInt();
-        }
-    }
-    return (DrawType)op;
-}
-
 
 static const SkRect* get_rect_ptr(SkReadBuffer* reader, SkRect* storage) {
     if (reader->readBool()) {
@@ -88,13 +65,19 @@ void SkPicturePlayback::draw(SkCanvas* canvas,
         }
 
         fCurOffset = reader.offset();
-        uint32_t size;
-        DrawType op = ReadOpAndSize(&reader, &size);
-        if (!reader.validate(op > UNUSED && op <= LAST_DRAWTYPE_ENUM)) {
+
+        uint32_t bits = reader.readInt();
+        uint32_t op   = bits >> 24,
+                 size = bits & 0xffffff;
+        if (size == 0xffffff) {
+            size = reader.readInt();
+        }
+
+        if (!reader.validate(size > 0 && op > UNUSED && op <= LAST_DRAWTYPE_ENUM)) {
             return;
         }
 
-        this->handleOp(&reader, op, size, canvas, initialMatrix);
+        this->handleOp(&reader, (DrawType)op, size, canvas, initialMatrix);
     }
 
     // need to propagate invalid state to the parent reader
@@ -182,6 +165,12 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
                 reader->skip(offsetToRestore - reader->offset());
             }
         } break;
+        case CLIP_SHADER_IN_PAINT: {
+            const SkPaint* paint = fPictureData->getPaint(reader);
+            SkClipOp clipOp = reader->checkRange(SkClipOp::kDifference, SkClipOp::kIntersect);
+            BREAK_ON_READ_ERROR(reader);
+            canvas->clipShader(paint->refShader(), clipOp);
+        } break;
         case PUSH_CULL: break;  // Deprecated, safe to ignore both push and pop.
         case POP_CULL:  break;
         case CONCAT: {
@@ -190,6 +179,12 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
             BREAK_ON_READ_ERROR(reader);
 
             canvas->concat(matrix);
+            break;
+        }
+        case CONCAT44: {
+            const SkScalar* colMaj = reader->skipT<SkScalar>(16);
+            BREAK_ON_READ_ERROR(reader);
+            canvas->concat(SkM44::ColMajor(colMaj));
             break;
         }
         case DRAW_ANNOTATION: {
@@ -562,15 +557,19 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
             const SkPaint* paint = fPictureData->getPaint(reader);
             const SkVertices* vertices = fPictureData->getVertices(reader);
             const int boneCount = reader->readInt();
-            const SkVertices::Bone* bones = boneCount ?
-                    (const SkVertices::Bone*) reader->skip(boneCount, sizeof(SkVertices::Bone)) :
-                    nullptr;
+            (void)reader->skip(boneCount, sizeof(SkVertices_DeprecatedBone));
             SkBlendMode bmode = reader->read32LE(SkBlendMode::kLastMode);
             BREAK_ON_READ_ERROR(reader);
 
             if (paint && vertices) {
-                canvas->drawVertices(vertices, bones, boneCount, bmode, *paint);
+                canvas->drawVertices(vertices, bmode, *paint);
             }
+        } break;
+        case MARK_CTM: {
+            SkString name;
+            reader->readString(&name);
+            BREAK_ON_READ_ERROR(reader);
+            canvas->markCTM(name.c_str());
         } break;
         case RESTORE:
             canvas->restore();

@@ -33,10 +33,10 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_blob_property_bag.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
-#include "third_party/blink/renderer/core/fileapi/blob_property_bag.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -216,7 +216,7 @@ Blob* Blob::slice(int64_t start,
 }
 
 ReadableStream* Blob::stream(ScriptState* script_state) const {
-  BodyStreamBuffer* body_buffer = MakeGarbageCollected<BodyStreamBuffer>(
+  BodyStreamBuffer* body_buffer = BodyStreamBuffer::Create(
       script_state,
       MakeGarbageCollected<BlobBytesConsumer>(
           ExecutionContext::From(script_state), blob_data_handle_),

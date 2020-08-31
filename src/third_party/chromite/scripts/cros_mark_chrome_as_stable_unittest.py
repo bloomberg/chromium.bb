@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import base64
 import os
+import sys
 from textwrap import dedent
 
 import mock
@@ -22,6 +23,11 @@ from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import portage_util
 from chromite.scripts import cros_mark_chrome_as_stable
+
+pytestmark = cros_test_lib.pytestmark_inside_only
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 unstable_data = 'KEYWORDS=~x86 ~arm'

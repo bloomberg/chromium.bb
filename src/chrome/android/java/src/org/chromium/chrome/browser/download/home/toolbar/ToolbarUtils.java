@@ -4,13 +4,16 @@
 
 package org.chromium.chrome.browser.download.home.toolbar;
 
-import android.support.v4.view.ViewCompat;
 import android.view.View;
+
+import androidx.core.view.ViewCompat;
 
 import org.chromium.chrome.browser.download.DirectoryOption;
 import org.chromium.chrome.browser.download.DownloadDirectoryProvider;
-import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
-import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
+import org.chromium.chrome.browser.download.R;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter;
+import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.widget.ViewRectProvider;
@@ -45,7 +48,7 @@ public class ToolbarUtils {
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_SETTINGS_FEATURE)) return;
 
         // Build and show text bubble.
-        View anchorView = rootView.findViewById(org.chromium.chrome.download.R.id.settings_menu_id);
+        View anchorView = rootView.findViewById(R.id.settings_menu_id);
 
         // Show the setting text bubble after the root view is attached to window.
         if (ViewCompat.isAttachedToWindow(rootView)) {
@@ -66,9 +69,9 @@ public class ToolbarUtils {
     private static void showDownloadSettingsInProductHelp(
             Tracker tracker, View anchorView, View rootView) {
         TextBubble textBubble = new TextBubble(rootView.getContext(), rootView,
-                org.chromium.chrome.download.R.string.iph_download_settings_text,
-                org.chromium.chrome.download.R.string.iph_download_settings_accessibility_text,
-                new ViewRectProvider(anchorView));
+                R.string.iph_download_settings_text,
+                R.string.iph_download_settings_accessibility_text, new ViewRectProvider(anchorView),
+                AccessibilityUtil.isAccessibilityEnabled());
         textBubble.setDismissOnTouchInteraction(true);
         textBubble.addOnDismissListener(() -> {
             tracker.dismissed(FeatureConstants.DOWNLOAD_SETTINGS_FEATURE);

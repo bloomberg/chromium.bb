@@ -113,19 +113,19 @@ class DecodeVideoTask extends AsyncTask<List<Bitmap>> {
      * @param durationMs The duration in milliseconds.
      * @return The duration in human-readable form.
      */
-    private String formatDuration(String durationMs) {
+    public static String formatDuration(Long durationMs) {
         if (durationMs == null) return null;
 
-        long duration = Long.parseLong(durationMs) / 1000;
+        long duration = durationMs / 1000;
         long hours = duration / 3600;
         duration -= hours * 3600;
         long minutes = duration / 60;
         duration -= minutes * 60;
         long seconds = duration;
         if (hours > 0) {
-            return String.format(Locale.US, "%02d:%02d:%02d", hours, minutes, seconds);
+            return String.format(Locale.US, "%d:%02d:%02d", hours, minutes, seconds);
         } else {
-            return String.format(Locale.US, "%02d:%02d", minutes, seconds);
+            return String.format(Locale.US, "%d:%02d", minutes, seconds);
         }
     }
 
@@ -139,10 +139,11 @@ class DecodeVideoTask extends AsyncTask<List<Bitmap>> {
 
         if (isCancelled()) return null;
 
-        AssetFileDescriptor afd = null;
-        try {
-            afd = mContentResolver.openAssetFileDescriptor(mUri, "r");
-            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        // TODO(finnur): Apply try-with-resources to MediaMetadataRetriever once Chrome no longer
+        //               supports versions below Build.VERSION_CODES.N.
+        MediaMetadataRetriever retriever = null;
+        try (AssetFileDescriptor afd = mContentResolver.openAssetFileDescriptor(mUri, "r")) {
+            retriever = new MediaMetadataRetriever();
             retriever.setDataSource(afd.getFileDescriptor());
             String duration =
                     retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
@@ -152,12 +153,13 @@ class DecodeVideoTask extends AsyncTask<List<Bitmap>> {
                 if (mFrames > 1 && mFrames * mIntervalMs > durationMs) {
                     mIntervalMs = durationMs / mFrames;
                 }
-                duration = formatDuration(duration);
+                duration = formatDuration(durationMs);
             }
             Pair<List<Bitmap>, Float> bitmaps = BitmapUtils.decodeVideoFromFileDescriptor(
                     retriever, afd.getFileDescriptor(), mSize, mFrames, mFullWidth, mIntervalMs);
             mDuration = duration;
             mRatio = bitmaps.second;
+            mDecodingResult = DecodingResult.SUCCESS;
             return bitmaps.first;
         } catch (FileNotFoundException exception) {
             mDecodingResult = DecodingResult.FILE_ERROR;
@@ -165,14 +167,11 @@ class DecodeVideoTask extends AsyncTask<List<Bitmap>> {
         } catch (RuntimeException exception) {
             mDecodingResult = DecodingResult.RUNTIME_ERROR;
             return null;
+        } catch (IOException exception) {
+            mDecodingResult = DecodingResult.IO_ERROR;
+            return null;
         } finally {
-            try {
-                if (afd != null) afd.close();
-                mDecodingResult = DecodingResult.SUCCESS;
-            } catch (IOException exception) {
-                mDecodingResult = DecodingResult.IO_ERROR;
-                return null;
-            }
+            if (retriever != null) retriever.release();
         }
     }
 

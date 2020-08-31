@@ -2,40 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+import * as UI from '../ui/ui.js';
+
+import {MinimalTimeWindowMs} from './FlameChart.js';
+
 /**
  * @interface
  */
-PerfUI.ChartViewportDelegate = function() {};
-
-PerfUI.ChartViewportDelegate.prototype = {
+export class ChartViewportDelegate {
   /**
    * @param {number} startTime
    * @param {number} endTime
    * @param {boolean} animate
    */
-  windowChanged(startTime, endTime, animate) {},
+  windowChanged(startTime, endTime, animate) {
+  }
 
   /**
    * @param {number} startTime
    * @param {number} endTime
    */
-  updateRangeSelection(startTime, endTime) {},
+  updateRangeSelection(startTime, endTime) {
+  }
 
   /**
    * @param {number} width
    * @param {number} height
    */
-  setSize(width, height) {},
+  setSize(width, height) {
+  }
 
   update() {}
-};
+}
 
 /**
  * @unrestricted
  */
-PerfUI.ChartViewport = class extends UI.VBox {
+export class ChartViewport extends UI.Widget.VBox {
   /**
-   * @param {!PerfUI.ChartViewportDelegate} delegate
+   * @param {!ChartViewportDelegate} delegate
    */
   constructor(delegate) {
     super();
@@ -50,10 +57,10 @@ PerfUI.ChartViewport = class extends UI.VBox {
     this.viewportElement.addEventListener('keydown', this._onChartKeyDown.bind(this), false);
     this.viewportElement.addEventListener('keyup', this._onChartKeyUp.bind(this), false);
 
-    UI.installDragHandle(
+    UI.UIUtils.installDragHandle(
         this.viewportElement, this._startDragging.bind(this), this._dragging.bind(this), this._endDragging.bind(this),
         '-webkit-grabbing', null);
-    UI.installDragHandle(
+    UI.UIUtils.installDragHandle(
         this.viewportElement, this._startRangeSelection.bind(this), this._rangeSelectionDragging.bind(this),
         this._endRangeSelection.bind(this), 'text', null);
 
@@ -152,6 +159,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
     this._totalHeight = totalHeight;
     this._vScrollContent.style.height = totalHeight + 'px';
     this._updateScrollBar();
+    this._updateContentElementSize();
     if (this._scrollTop + this._offsetHeight <= totalHeight) {
       return;
     }
@@ -180,6 +188,13 @@ PerfUI.ChartViewport = class extends UI.VBox {
   }
 
   /**
+   * @return {number}
+   */
+  chartHeight() {
+    return this._offsetHeight;
+  }
+
+  /**
    * @param {number} zeroTime
    * @param {number} totalTime
    */
@@ -192,7 +207,8 @@ PerfUI.ChartViewport = class extends UI.VBox {
    * @param {!Event} e
    */
   _onMouseWheel(e) {
-    const doZoomInstead = e.shiftKey ^ (Common.moduleSetting('flamechartMouseWheelAction').get() === 'zoom');
+    const doZoomInstead =
+        e.shiftKey ^ (Common.Settings.Settings.instance().moduleSetting('flamechartMouseWheelAction').get() === 'zoom');
     const panVertically = !doZoomInstead && (e.wheelDeltaY || Math.abs(e.wheelDeltaX) === 120);
     const panHorizontally = doZoomInstead && Math.abs(e.wheelDeltaX) > Math.abs(e.wheelDeltaY);
     if (panVertically) {
@@ -299,7 +315,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
    * @param {!MouseEvent} event
    */
   _rangeSelectionDragging(event) {
-    const x = Number.constrain(event.pageX + this._selectionOffsetShiftX, 0, this._offsetWidth);
+    const x = Platform.NumberUtilities.clamp(event.pageX + this._selectionOffsetShiftX, 0, this._offsetWidth);
     const start = this.pixelToTime(this._selectionStartX);
     const end = this.pixelToTime(x);
     this.setRangeSelection(start, end);
@@ -307,8 +323,10 @@ PerfUI.ChartViewport = class extends UI.VBox {
 
   _updateRangeSelectionOverlay() {
     const /** @const */ margin = 100;
-    const left = Number.constrain(this.timeToPosition(this._rangeSelectionStart), -margin, this._offsetWidth + margin);
-    const right = Number.constrain(this.timeToPosition(this._rangeSelectionEnd), -margin, this._offsetWidth + margin);
+    const left = Platform.NumberUtilities.clamp(
+        this.timeToPosition(this._rangeSelectionStart), -margin, this._offsetWidth + margin);
+    const right = Platform.NumberUtilities.clamp(
+        this.timeToPosition(this._rangeSelectionEnd), -margin, this._offsetWidth + margin);
     const style = this._selectionOverlay.style;
     style.left = left + 'px';
     style.width = (right - left) + 'px';
@@ -393,7 +411,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
    * @param {!Event} e
    */
   _handleZoomPanKeys(e) {
-    if (!UI.KeyboardShortcut.hasNoModifiers(e)) {
+    if (!UI.KeyboardShortcut.KeyboardShortcut.hasNoModifiers(e)) {
       return;
     }
     const zoomFactor = e.shiftKey ? 0.8 : 0.3;
@@ -434,7 +452,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
    */
   _handlePanGesture(offset, animate) {
     const bounds = {left: this._targetLeftTime, right: this._targetRightTime};
-    const timeOffset = Number.constrain(
+    const timeOffset = Platform.NumberUtilities.clamp(
         this.pixelToTimeOffset(offset), this._minimumBoundary - bounds.left,
         this._totalTime + this._minimumBoundary - bounds.right);
     bounds.left += timeOffset;
@@ -455,7 +473,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
       bounds.left = Math.max(bounds.left - bounds.right + maxBound, this._minimumBoundary);
       bounds.right = maxBound;
     }
-    if (bounds.right - bounds.left < PerfUI.FlameChart.MinimalTimeWindowMs) {
+    if (bounds.right - bounds.left < MinimalTimeWindowMs) {
       return;
     }
     this._delegate.windowChanged(bounds.left, bounds.right, animate);
@@ -502,7 +520,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
     }
     this._targetLeftTime = startTime;
     this._targetRightTime = endTime;
-    this._cancelWindowTimesAnimation = UI.animateFunction(
+    this._cancelWindowTimesAnimation = UI.UIUtils.animateFunction(
         this.element.window(), animateWindowTimes.bind(this),
         [{from: this._visibleLeftTime, to: startTime}, {from: this._visibleRightTime, to: endTime}], 100,
         () => this._cancelWindowTimesAnimation = null);
@@ -510,7 +528,7 @@ PerfUI.ChartViewport = class extends UI.VBox {
     /**
      * @param {number} startTime
      * @param {number} endTime
-     * @this {PerfUI.ChartViewport}
+     * @this {ChartViewport}
      */
     function animateWindowTimes(startTime, endTime) {
       this._visibleLeftTime = startTime;
@@ -532,4 +550,4 @@ PerfUI.ChartViewport = class extends UI.VBox {
   windowRightTime() {
     return this._visibleRightTime;
   }
-};
+}

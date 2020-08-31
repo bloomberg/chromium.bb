@@ -13,6 +13,7 @@ import json
 import os
 import random
 import shutil
+import sys
 
 from chromite.lib import chroot_util
 from chromite.lib import constants
@@ -21,6 +22,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import retry_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 _CONFIG_FILE_NAME = 'moblabvm.json'
@@ -515,7 +519,7 @@ def _CreateTapDevice(suffix):
   # creation to complete.
   @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=RetriableError)
   def _VerifyDeviceCreated(name):
-    result = cros_build_lib.run(['ip', 'tuntap', 'show'], redirect_stdout=True)
+    result = cros_build_lib.run(['ip', 'tuntap', 'show'], stdout=True)
     if name not in result.output:
       raise RetriableError('Device %s not found in output "%s".' %
                            (name, result.output))

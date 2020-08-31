@@ -31,17 +31,21 @@ const char kAllowLoopbackInPeerConnection[] =
     "allow-loopback-in-peer-connection";
 
 // Allow a page to show popups during its unloading.
-// TODO(https://crbug.com/937569): Remove this in Chrome 82.
+// TODO(https://crbug.com/937569): Remove this in Chrome 88.
 const char kAllowPopupsDuringPageUnload[] = "allow-popups-during-page-unload";
 
 // Allow a page to send synchronus XHR during its unloading.
-// TODO(https://crbug.com/1003101): Remove this in Chrome 82.
+// TODO(https://crbug.com/1003101): Remove this in Chrome 88.
 const char kAllowSyncXHRInPageDismissal[] = "allow-sync-xhr-in-page-dimissal";
 
 // Uses the android SkFontManager on linux. The specified directory should
 // include the configuration xml file with the name "fonts.xml".
 // This is used in blimp to emulate android fonts on linux.
 const char kAndroidFontsPath[]          = "android-fonts-path";
+
+// Allows app cache to be forced on, even when gated by an origin trial.
+// TODO(enne): remove this once app cache has been removed.
+const char kAppCacheForceEnabled[] = "app-cache-force-enabled";
 
 // Set blink settings. Format is <name>[=<value],<name>[=<value>],...
 // The names are declared in Settings.json5. For boolean type, use "true",
@@ -62,6 +66,9 @@ const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 // used by the content shell and also disables features that can make tests
 // flaky [like monitoring of memory pressure]).
 const char kBrowserTest[] = "browser-test";
+
+// Causes the Conversion Measurement API to run without delays or noise.
+const char kConversionsDebugMode[] = "conversions-debug-mode";
 
 // Sets the tile size used by composited layers.
 const char kDefaultTileWidth[]              = "default-tile-width";
@@ -84,6 +91,9 @@ const char kDisable3DAPIs[]                 = "disable-3d-apis";
 
 // Disable gpu-accelerated 2d canvas.
 const char kDisableAccelerated2dCanvas[]    = "disable-accelerated-2d-canvas";
+
+// Enable in-progress canvas 2d API features.
+const char kEnableNewCanvas2DAPI[] = "new-canvas-2d-api";
 
 // Disables hardware acceleration of video decode, where available.
 const char kDisableAcceleratedVideoDecode[] =
@@ -346,6 +356,24 @@ const char kEnableBlinkFeatures[]           = "enable-blink-features";
 // just a keyboard. See https://crbug.com/977390 for links to i2i.
 const char kEnableCaretBrowsing[] = "enable-caret-browsing";
 
+// Flag that turns on a group of experimental/newly added cookie-related
+// features together, as a convenience for e.g. testing, to avoid having to set
+// multiple switches individually which may be error-prone (not to mention
+// tedious). There is not a corresponding switch to disable all these features,
+// because that is discouraged, and for testing purposes you'd need to switch
+// them off individually to identify the problematic feature anyway.
+//
+// At present this turns on:
+//   net::features::kCookiesWithoutSameSiteMustBeSecure
+//   net::features::kSameSiteByDefaultCookies
+//   net::features::kSameSiteDefaultChecksMethodRigorously
+// It will soon also turn on:
+//   content_settings::kImprovedCookieControls
+//   content_settings::kImprovedCookieControlsForThirdPartyCookieBlocking
+//   net::features::kSchemefulSameSite
+const char kEnableExperimentalCookieFeatures[] =
+    "enable-experimental-cookie-features";
+
 // Enables experimental WebAssembly features.
 const char kEnableExperimentalWebAssemblyFeatures[] =
     "enable-experimental-webassembly-features";
@@ -395,9 +423,6 @@ const char kEnablePluginPlaceholderTesting[] =
 // still available, but it is bucketized and updated less frequently. This flag
 // also applys to workers.
 const char kEnablePreciseMemoryInfo[] = "enable-precise-memory-info";
-
-// Enables PrintBrowser mode, in which everything renders as though printed.
-const char kEnablePrintBrowser[] = "enable-print-browser";
 
 // Enables RGBA_4444 textures.
 const char kEnableRGBA4444Textures[] = "enable-rgba-4444-textures";
@@ -453,10 +478,6 @@ const char kEnableViewport[]                = "enable-viewport";
 // Enable the Vtune profiler support.
 const char kEnableVtune[]                   = "enable-vtune-support";
 
-// Enable the Web Authentication Testing API.
-// https://w3c.github.io/webauthn
-const char kEnableWebAuthTestingAPI[] = "enable-web-authentication-testing-api";
-
 // Enable WebGL2 Compute context.
 const char kEnableWebGL2ComputeContext[] = "enable-webgl2-compute-context";
 
@@ -480,20 +501,12 @@ const char kFieldTrialHandle[] = "field-trial-handle";
 // file:///alias/some/path.html into file:///replacement/some/path.html.
 const char kFileUrlPathAlias[] = "file-url-path-alias";
 
-// Always use the Skia GPU backend for drawing layer tiles. Only valid with GPU
-// accelerated compositing + impl-side painting. Overrides the
-// kEnableGpuRasterization flag.
-const char kForceGpuRasterization[] = "force-gpu-rasterization";
-
 // Disables OOP rasterization.  Takes precedence over the enable flag.
 const char kDisableOopRasterization[] = "disable-oop-rasterization";
 
 // Turns on out of process raster for the renderer whenever gpu raster
 // would have been used.  Enables the chromium_raster_transport extension.
 const char kEnableOopRasterization[] = "enable-oop-rasterization";
-
-// Turns on skia deferred display list for out of process raster.
-const char kEnableOopRasterizationDDL[] = "enable-oop-rasterization-ddl";
 
 // Pins the default referrer policy to the pre-M80 value of
 // no-referrer-when-downgrade.
@@ -853,6 +866,10 @@ const char kUtilityProcess[]                = "utility";
 // Causes the utility process to display a dialog on launch.
 const char kUtilityStartupDialog[] = "utility-startup-dialog";
 
+// This switch indicates the type of a utility process. It is not used by Chrome
+// but is added to the command line for debugging and profiling purposes.
+const char kUtilitySubType[] = "utility-sub-type";
+
 // In debug builds, asserts that the stream of input events is valid.
 const char kValidateInputEventStream[] = "validate-input-event-stream";
 
@@ -869,6 +886,16 @@ const char kWebglAntialiasingMode[] = "webgl-antialiasing-mode";
 
 // Set a default sample count for webgl if msaa is enabled.
 const char kWebglMSAASampleCount[] = "webgl-msaa-sample-count";
+
+// Enables specified backend for the Web OTP API.
+const char kWebOtpBackend[] = "web-otp-backend";
+
+// Enables Sms Verification backend for Web OTP API which requires app hash in
+// SMS body.
+const char kWebOtpBackendSmsVerification[] = "web-otp-backend-sms-verification";
+
+// Enables User Consent backend for Web OTP API.
+const char kWebOtpBackendUserConsent[] = "web-otp-backend-user-consent";
 
 // Disables encryption of RTP Media for WebRTC. When Chrome embeds Content, it
 // ignores this switch on its stable and beta channels.
@@ -924,10 +951,34 @@ const char kWebRtcStunProbeTrialParameter[] = "webrtc-stun-probe-trial";
 // without restarting the browser and relaunching without this flag.
 const char kWebRtcLocalEventLogging[] = "webrtc-event-logging";
 
+// Forcibly enable and select the specified runtime for webxr.
+// Note that this provides an alternative means of enabling a runtime, and will
+// also functionally disable all other runtimes.
+const char kWebXrForceRuntime[] = "force-webxr-runtime";
+
+// Tell WebXr to assume that it does not support any runtimes.
+const char kWebXrRuntimeNone[] = "no-vr-runtime";
+
+const char kWebXrRuntimeOrientationSensors[] = "orientation-sensors";
+
+// The following are the runtimes that WebXr supports.
+const char kWebXrRuntimeOculus[] = "oculus";
+const char kWebXrRuntimeOpenVr[] = "openvr";
+const char kWebXrRuntimeOpenXr[] = "openxr";
+const char kWebXrRuntimeWMR[] = "windows-mixed-reality";
+
 // This switch allows the Web Components v0 APIs to be re-enabled temporarily
 // from M80 through M84.
 // TODO(937746): Remove this after M84.
 const char kWebComponentsV0Enabled[] = "web-components-v0-enabled";
+
+// This switch allows the FormControlsRefresh feature to be disabled temporarily
+// from M81 through M84.
+// TODO(1034611): Remove this after M84.
+const char kUseLegacyFormControls[] = "use-legacy-form-controls";
+
+// This switch disables the ScrollToTextFragment feature.
+const char kDisableScrollToTextFragment[] = "disable-scroll-to-text-fragment";
 
 #if defined(OS_ANDROID)
 // Disable Media Session API

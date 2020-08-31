@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 component("fido") {
   sources = [
@@ -27,35 +28,36 @@ component("fido") {
     "authenticator_selection_criteria.h",
     "authenticator_supported_options.cc",
     "authenticator_supported_options.h",
+    "bio/enroller.cc",
+    "bio/enroller.h",
     "bio/enrollment.cc",
     "bio/enrollment.h",
     "bio/enrollment_handler.cc",
     "bio/enrollment_handler.h",
-    "ble/fido_ble_connection.cc",
-    "ble/fido_ble_connection.h",
-    "ble/fido_ble_device.cc",
-    "ble/fido_ble_device.h",
-    "ble/fido_ble_discovery.cc",
-    "ble/fido_ble_discovery.h",
-    "ble/fido_ble_discovery_base.cc",
-    "ble/fido_ble_discovery_base.h",
-    "ble/fido_ble_frames.cc",
-    "ble/fido_ble_frames.h",
-    "ble/fido_ble_pairing_delegate.cc",
-    "ble/fido_ble_pairing_delegate.h",
-    "ble/fido_ble_transaction.cc",
-    "ble/fido_ble_transaction.h",
-    "ble/fido_ble_uuids.cc",
-    "ble/fido_ble_uuids.h",
     "ble_adapter_manager.cc",
     "ble_adapter_manager.h",
     "cable/cable_discovery_data.h",
+    "cable/fido_ble_connection.cc",
+    "cable/fido_ble_connection.h",
+    "cable/fido_ble_frames.cc",
+    "cable/fido_ble_frames.h",
+    "cable/fido_ble_transaction.cc",
+    "cable/fido_ble_transaction.h",
+    "cable/fido_ble_uuids.cc",
+    "cable/fido_ble_uuids.h",
     "cable/fido_cable_device.cc",
     "cable/fido_cable_device.h",
     "cable/fido_cable_discovery.cc",
     "cable/fido_cable_discovery.h",
     "cable/fido_cable_handshake_handler.cc",
     "cable/fido_cable_handshake_handler.h",
+    "cable/noise.cc",
+    "cable/noise.h",
+    "cable/v2_handshake.cc",
+    "cable/v2_handshake.h",
+    "cbor_extract.cc",
+    "client_data.cc",
+    "client_data.h",
     "credential_management.cc",
     "credential_management.h",
     "credential_management_handler.cc",
@@ -70,8 +72,6 @@ component("fido") {
     "device_operation.h",
     "device_response_converter.cc",
     "device_response_converter.h",
-    "ec_public_key.cc",
-    "ec_public_key.h",
     "features.cc",
     "features.h",
     "fido_authenticator.cc",
@@ -111,8 +111,8 @@ component("fido") {
     "make_credential_task.h",
     "opaque_attestation_statement.cc",
     "opaque_attestation_statement.h",
-    "opaque_public_key.cc",
-    "opaque_public_key.h",
+    "p256_public_key.cc",
+    "p256_public_key.h",
     "pin.cc",
     "pin.h",
     "platform_credential_store.h",
@@ -130,6 +130,8 @@ component("fido") {
     "reset_request_handler.h",
     "response_data.cc",
     "response_data.h",
+    "rsa_public_key.cc",
+    "rsa_public_key.h",
     "set_pin_request_handler.cc",
     "set_pin_request_handler.h",
     "u2f_command_constructor.cc",
@@ -155,8 +157,6 @@ component("fido") {
     "//crypto",
     "//device/base",
     "//device/fido/strings",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
     "//third_party/boringssl",
     "//third_party/microsoft_webauthn",
     "//ui/base",
@@ -204,7 +204,6 @@ component("fido") {
       "mac/make_credential_operation.h",
       "mac/make_credential_operation.mm",
       "mac/operation.h",
-      "mac/operation_base.h",
       "mac/touch_id_context.h",
       "mac/touch_id_context.mm",
       "mac/util.h",
@@ -234,14 +233,36 @@ component("fido") {
       "win/webauthn_api.h",
     ]
   }
+
+  if (is_chromeos) {
+    sources += [
+      "cros/authenticator.cc",
+      "cros/authenticator.h",
+      "cros/discovery.cc",
+      "cros/discovery.h",
+    ]
+
+    deps += [
+      ":u2f_proto",
+      "//dbus",
+    ]
+  }
+}
+
+if (is_chromeos) {
+  proto_library("u2f_proto") {
+    sources = [ "//third_party/cros_system_api/dbus/u2f/u2f_interface.proto" ]
+
+    proto_out_dir = "chromeos/dbus/u2f"
+  }
 }
 
 source_set("mocks") {
   testonly = true
 
   sources = [
-    "ble/mock_fido_ble_connection.cc",
-    "ble/mock_fido_ble_connection.h",
+    "cable/mock_fido_ble_connection.cc",
+    "cable/mock_fido_ble_connection.h",
     "mock_fido_device.cc",
     "mock_fido_device.h",
     "mock_fido_discovery_observer.cc",
@@ -258,9 +279,7 @@ source_set("mocks") {
 }
 
 fuzzer_test("fido_hid_message_fuzzer") {
-  sources = [
-    "hid/fido_hid_message_fuzzer.cc",
-  ]
+  sources = [ "hid/fido_hid_message_fuzzer.cc" ]
   deps = [
     ":fido",
     "//base",
@@ -269,19 +288,13 @@ fuzzer_test("fido_hid_message_fuzzer") {
 }
 
 fuzzer_test("fido_ble_frames_fuzzer") {
-  sources = [
-    "ble/fido_ble_frames_fuzzer.cc",
-  ]
-  deps = [
-    ":fido",
-  ]
+  sources = [ "cable/fido_ble_frames_fuzzer.cc" ]
+  deps = [ ":fido" ]
   libfuzzer_options = [ "max_len=65535" ]
 }
 
 fuzzer_test("ctap_response_fuzzer") {
-  sources = [
-    "ctap_response_fuzzer.cc",
-  ]
+  sources = [ "ctap_response_fuzzer.cc" ]
   deps = [
     ":fido",
     "//base",
@@ -294,9 +307,7 @@ fuzzer_test("ctap_response_fuzzer") {
 }
 
 fuzzer_test("fido_cable_handshake_handler_fuzzer") {
-  sources = [
-    "cable/fido_cable_handshake_handler_fuzzer.cc",
-  ]
+  sources = [ "cable/fido_cable_handshake_handler_fuzzer.cc" ]
   deps = [
     ":fido",
     "//base",
@@ -309,9 +320,7 @@ fuzzer_test("fido_cable_handshake_handler_fuzzer") {
 }
 
 fuzzer_test("fido_cable_handshake_handler_v2_fuzzer") {
-  sources = [
-    "cable/fido_cable_handshake_handler_v2_fuzzer.cc",
-  ]
+  sources = [ "cable/fido_cable_handshake_handler_v2_fuzzer.cc" ]
   deps = [
     ":fido",
     "//base",
@@ -340,8 +349,6 @@ source_set("test_support") {
     "//device/fido",
     "//mojo/public/cpp/bindings",
     "//services/device/public/mojom",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
   ]

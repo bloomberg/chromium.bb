@@ -10,7 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/feature_policy/feature_policy_helper.h"
+#include "third_party/blink/renderer/core/feature_policy/policy_helper.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -92,49 +92,40 @@ class CORE_EXPORT FeaturePolicyParser {
       Vector<String>* messages,
       const FeatureNameMap& feature_names,
       FeaturePolicyParserDelegate* delegate = nullptr);
-
-  // Used for LLVM fuzzer test
-  static void ParseValueForFuzzer(mojom::PolicyValueType, const String&);
-
- private:
-  static PolicyValue GetFallbackValueForFeature(
-      mojom::FeaturePolicyFeature feature);
-  static PolicyValue ParseValueForType(mojom::PolicyValueType feature_type,
-                                       const String& value_string,
-                                       bool* ok);
 };
 // Returns true iff any declaration in the policy is for the given feature.
-CORE_EXPORT bool IsFeatureDeclared(mojom::FeaturePolicyFeature,
+CORE_EXPORT bool IsFeatureDeclared(mojom::blink::FeaturePolicyFeature,
                                    const ParsedFeaturePolicy&);
 
 // Removes any declaration in the policy for the given feature. Returns true if
 // the policy was modified.
-CORE_EXPORT bool RemoveFeatureIfPresent(mojom::FeaturePolicyFeature,
+CORE_EXPORT bool RemoveFeatureIfPresent(mojom::blink::FeaturePolicyFeature,
                                         ParsedFeaturePolicy&);
 
 // If no declaration in the policy exists already for the feature, adds a
 // declaration which disallows the feature in all origins. Returns true if the
 // policy was modified.
-CORE_EXPORT bool DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature,
+CORE_EXPORT bool DisallowFeatureIfNotPresent(mojom::blink::FeaturePolicyFeature,
                                              ParsedFeaturePolicy&);
 
 // If no declaration in the policy exists already for the feature, adds a
 // declaration which allows the feature in all origins. Returns true if the
 // policy was modified.
-CORE_EXPORT bool AllowFeatureEverywhereIfNotPresent(mojom::FeaturePolicyFeature,
-                                                    ParsedFeaturePolicy&);
+CORE_EXPORT bool AllowFeatureEverywhereIfNotPresent(
+    mojom::blink::FeaturePolicyFeature,
+    ParsedFeaturePolicy&);
 
 // Replaces any existing declarations in the policy for the given feature with
 // a declaration which disallows the feature in all origins.
-CORE_EXPORT void DisallowFeature(mojom::FeaturePolicyFeature,
+CORE_EXPORT void DisallowFeature(mojom::blink::FeaturePolicyFeature,
                                  ParsedFeaturePolicy&);
 
 // Replaces any existing declarations in the policy for the given feature with
 // a declaration which allows the feature in all origins.
-CORE_EXPORT void AllowFeatureEverywhere(mojom::FeaturePolicyFeature,
+CORE_EXPORT void AllowFeatureEverywhere(mojom::blink::FeaturePolicyFeature,
                                         ParsedFeaturePolicy&);
 
-CORE_EXPORT const String& GetNameForFeature(mojom::FeaturePolicyFeature);
+CORE_EXPORT const String& GetNameForFeature(mojom::blink::FeaturePolicyFeature);
 
 }  // namespace blink
 

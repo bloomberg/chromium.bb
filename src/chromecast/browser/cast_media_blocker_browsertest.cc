@@ -13,6 +13,7 @@
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/test_data_util.h"
 #include "url/gurl.h"
@@ -21,6 +22,8 @@
 namespace chromecast {
 namespace shell {
 
+// TODO(crbug.com/1057860): Move relevant tests to components/browsertests so
+// there is common coverage of MediaBlocker across platforms.
 class CastMediaBlockerBrowserTest : public CastBrowserTest {
  public:
   CastMediaBlockerBrowserTest() {}

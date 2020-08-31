@@ -14,10 +14,10 @@
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_permission_request.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -151,11 +151,9 @@ void DownloadRequestLimiter::TabDownloadState::DidStartNavigation(
       return;
     }
 
-    // If this is a navigation as a result of x-origin redirect from a previous
-    // <a download> download, or if this is a forward/back navigation in a host
-    // already seen, also don't reset a prompting or blocking limiter state.
-    // This prevents a page to use any of those mechanisms to trigger multiple
-    // downloads.
+    // If this is a forward/back navigation, also don't reset a prompting or
+    // blocking limiter state unless a new host is encounted. This prevents a
+    // page to use history forward/backward to trigger multiple downloads.
     if (IsNavigationRestricted(navigation_handle))
       return;
   }
@@ -210,7 +208,7 @@ void DownloadRequestLimiter::TabDownloadState::DidFinishNavigation(
 void DownloadRequestLimiter::TabDownloadState::DidGetUserInteraction(
     const blink::WebInputEvent::Type type) {
   if (is_showing_prompt() ||
-      type == blink::WebInputEvent::kGestureScrollBegin) {
+      type == blink::WebInputEvent::Type::kGestureScrollBegin) {
     // Don't change state if a prompt is showing or if the user has scrolled.
     return;
   }
@@ -235,8 +233,8 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
   if (is_showing_prompt())
     return;
 
-  PermissionRequestManager* permission_request_manager =
-      PermissionRequestManager::FromWebContents(web_contents_);
+  permissions::PermissionRequestManager* permission_request_manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents_);
   if (permission_request_manager) {
     permission_request_manager->AddRequest(
         new DownloadPermissionRequest(factory_.GetWeakPtr(), request_origin));
@@ -310,10 +308,10 @@ bool DownloadRequestLimiter::TabDownloadState::is_showing_prompt() const {
 void DownloadRequestLimiter::TabDownloadState::OnUserInteraction() {
   // See PromptUserForDownload(): if there's no PermissionRequestManager, then
   // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
-  bool need_prompt =
-      (PermissionRequestManager::FromWebContents(web_contents()) == nullptr &&
-       status_ == DOWNLOADS_NOT_ALLOWED) ||
-      status_ == PROMPT_BEFORE_DOWNLOAD;
+  bool need_prompt = (permissions::PermissionRequestManager::FromWebContents(
+                          web_contents()) == nullptr &&
+                      status_ == DOWNLOADS_NOT_ALLOWED) ||
+                     status_ == PROMPT_BEFORE_DOWNLOAD;
 
   // If content setting blocks automatic downloads, don't reset the
   // PROMPT_BEFORE_DOWNLOAD status for the current page because doing
@@ -453,9 +451,6 @@ void DownloadRequestLimiter::TabDownloadState::SetDownloadStatusAndNotifyImpl(
 
 bool DownloadRequestLimiter::TabDownloadState::IsNavigationRestricted(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->FromDownloadCrossOriginRedirect())
-    return true;
-
   url::Origin origin = url::Origin::Create(navigation_handle->GetURL());
   if (navigation_handle->GetPageTransition() &
       ui::PAGE_TRANSITION_FORWARD_BACK) {
@@ -519,6 +514,7 @@ void DownloadRequestLimiter::CanDownload(
     const GURL& url,
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,
+    bool from_download_cross_origin_redirect,
     Callback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -537,10 +533,10 @@ void DownloadRequestLimiter::CanDownload(
   // Note that because |originating_contents| might go away before
   // OnCanDownloadDecided is invoked, we look it up by |render_process_host_id|
   // and |render_view_id|.
-  base::OnceCallback<void(bool)> can_download_callback =
-      base::BindOnce(&DownloadRequestLimiter::OnCanDownloadDecided,
-                     factory_.GetWeakPtr(), web_contents_getter, request_method,
-                     std::move(request_initiator), std::move(callback));
+  base::OnceCallback<void(bool)> can_download_callback = base::BindOnce(
+      &DownloadRequestLimiter::OnCanDownloadDecided, factory_.GetWeakPtr(),
+      web_contents_getter, request_method, std::move(request_initiator),
+      from_download_cross_origin_redirect, std::move(callback));
 
   originating_contents->GetDelegate()->CanDownload(
       url, request_method, std::move(can_download_callback));
@@ -550,6 +546,7 @@ void DownloadRequestLimiter::OnCanDownloadDecided(
     const content::WebContents::Getter& web_contents_getter,
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,
+    bool from_download_cross_origin_redirect,
     Callback orig_callback,
     bool allow) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -559,8 +556,9 @@ void DownloadRequestLimiter::OnCanDownloadDecided(
     return;
   }
 
-  CanDownloadImpl(originating_contents, request_method,
-                  std::move(request_initiator), std::move(orig_callback));
+  CanDownloadImpl(
+      originating_contents, request_method, std::move(request_initiator),
+      from_download_cross_origin_redirect, std::move(orig_callback));
 }
 
 HostContentSettingsMap* DownloadRequestLimiter::GetContentSettings(
@@ -586,8 +584,18 @@ void DownloadRequestLimiter::CanDownloadImpl(
     content::WebContents* originating_contents,
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,
+    bool from_download_cross_origin_redirect,
     Callback callback) {
   DCHECK(originating_contents);
+
+  // Always allow download resulted from a cross-origin redirect from a previous
+  // download attempt, and there's no need to update any state.
+  if (from_download_cross_origin_redirect) {
+    std::move(callback).Run(true);
+    if (!on_can_download_decided_callback_.is_null())
+      on_can_download_decided_callback_.Run(true);
+    return;
+  }
 
   TabDownloadState* state = GetDownloadState(originating_contents, true);
   state->set_download_seen();
@@ -597,10 +605,16 @@ void DownloadRequestLimiter::CanDownloadImpl(
   // settings first to see if the download needs to be blocked.
   GURL initiator = request_initiator ? request_initiator->GetURL()
                                      : originating_contents->GetVisibleURL();
+  // Use the origin of |originating_contents| as a back up, if it is non-opaque.
   url::Origin origin =
-      request_initiator && !request_initiator->opaque()
-          ? request_initiator.value()
-          : url::Origin::Create(originating_contents->GetVisibleURL());
+      url::Origin::Create(originating_contents->GetVisibleURL());
+  // If |request_initiator| has a non-opaque origin or if the origin from
+  // |originating_contents| is opaque, use the origin from |request_initiator|
+  // to make decisions so that it won't impact the download state of
+  // |originating_contents|.
+  if (request_initiator && (!request_initiator->opaque() || origin.opaque()))
+    origin = request_initiator.value();
+
   DownloadStatus status = state->GetDownloadStatus(origin);
 
   bool is_opaque_initiator = request_initiator && request_initiator->opaque();

@@ -7,8 +7,8 @@ import("//build/symlink.gni")
 
 group("md5sum") {
   data_deps = [
-    ":md5sum_prepare_dist($default_toolchain)",
     ":md5sum_bin_host($default_toolchain)",
+    ":md5sum_prepare_dist($default_toolchain)",
   ]
 
   # TODO(cjhopman): Remove once group data_deps are fixed.
@@ -16,11 +16,10 @@ group("md5sum") {
 }
 
 executable("md5sum_bin") {
-  sources = [
-    "md5sum.cc",
-  ]
+  sources = [ "md5sum.cc" ]
   deps = [
     "//base",
+    "//third_party/zlib/google:compression_utils",
   ]
 }
 
@@ -30,9 +29,7 @@ if (current_toolchain == default_toolchain) {
   create_native_executable_dist("md5sum_prepare_dist") {
     dist_dir = "$root_build_dir/md5sum_dist"
     binary = "$root_build_dir/md5sum_bin"
-    deps = [
-      ":md5sum_bin",
-    ]
+    deps = [ ":md5sum_bin" ]
   }
 
   binary_symlink("md5sum_bin_host") {

@@ -5,10 +5,14 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 
 #include <memory>
+#include "base/feature_list.h"
+#include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_worker_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
@@ -20,7 +24,6 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
-#include "third_party/blink/renderer/core/workers/worker_options.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
@@ -44,16 +47,14 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id,
-    const String& source_code) {
+    const String& source_code,
+    RejectCoepUnsafeNone reject_coep_unsafe_none) {
   DCHECK(IsParentContextThread());
   if (AskedToTerminate()) {
     // Worker.terminate() could be called from JS before the thread was
     // created.
     return;
   }
-
-  OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option =
-      creation_params->off_main_thread_fetch_option;
 
   InitializeWorkerThread(
       std::move(creation_params),
@@ -66,40 +67,34 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     // destination, and inside settings."
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kClassicDedicatedWorker);
-    switch (off_main_thread_fetch_option) {
-      case OffMainThreadWorkerScriptFetchOption::kEnabled: {
-        auto* resource_timing_notifier =
-            WorkerResourceTimingNotifierImpl::CreateForOutsideResourceFetcher(
-                *GetExecutionContext());
-        GetWorkerThread()->FetchAndRunClassicScript(
-            script_url, outside_settings_object.CopyData(),
-            resource_timing_notifier, stack_id);
-        break;
-      }
-      case OffMainThreadWorkerScriptFetchOption::kDisabled:
-        // Legacy code path (to be deprecated, see https://crbug.com/835717):
-        GetWorkerThread()->EvaluateClassicScript(
-            script_url, source_code, nullptr /* cached_meta_data */, stack_id);
-        break;
+    if (base::FeatureList::IsEnabled(features::kPlzDedicatedWorker)) {
+      auto* resource_timing_notifier =
+          WorkerResourceTimingNotifierImpl::CreateForOutsideResourceFetcher(
+              *GetExecutionContext());
+      GetWorkerThread()->FetchAndRunClassicScript(
+          script_url, outside_settings_object.CopyData(),
+          resource_timing_notifier, stack_id);
+    } else {
+      // Legacy code path (to be deprecated, see https://crbug.com/835717):
+      GetWorkerThread()->EvaluateClassicScript(
+          script_url, source_code, nullptr /* cached_meta_data */, stack_id);
     }
   } else if (options->type() == "module") {
-    DCHECK_EQ(off_main_thread_fetch_option,
-              OffMainThreadWorkerScriptFetchOption::kEnabled);
     // "module: Fetch a module worker script graph given url, outside settings,
     // destination, the value of the credentials member of options, and inside
     // settings."
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kModuleDedicatedWorker);
-    network::mojom::CredentialsMode credentials_mode;
-    bool result = Request::ParseCredentialsMode(options->credentials(),
-                                                &credentials_mode);
-    DCHECK(result);
+    base::Optional<network::mojom::CredentialsMode> credentials_mode =
+        Request::ParseCredentialsMode(options->credentials());
+    DCHECK(credentials_mode);
+
     auto* resource_timing_notifier =
         WorkerResourceTimingNotifierImpl::CreateForOutsideResourceFetcher(
             *GetExecutionContext());
     GetWorkerThread()->FetchAndRunModuleScript(
         script_url, outside_settings_object.CopyData(),
-        resource_timing_notifier, credentials_mode);
+        resource_timing_notifier, *credentials_mode, reject_coep_unsafe_none);
   } else {
     NOTREACHED();
   }
@@ -237,7 +232,7 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
   GetExecutionContext()->DispatchErrorEvent(event, mute_script_errors);
 }
 
-void DedicatedWorkerMessagingProxy::Trace(blink::Visitor* visitor) {
+void DedicatedWorkerMessagingProxy::Trace(Visitor* visitor) {
   visitor->Trace(worker_object_);
   ThreadedMessagingProxyBase::Trace(visitor);
 }

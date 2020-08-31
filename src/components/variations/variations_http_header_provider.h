@@ -24,6 +24,7 @@ struct DefaultSingletonTraits;
 }
 
 namespace variations {
+class VariationsClient;
 
 // A helper class for maintaining client experiments and metrics state
 // transmitted in custom HTTP request headers.
@@ -34,9 +35,7 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   class Observer {
    public:
     // Called when variation ids headers are updated.
-    virtual void VariationIdsHeaderUpdated(
-        const std::string& variation_ids_header,
-        const std::string& variation_ids_header_signed_in) {}
+    virtual void VariationIdsHeaderUpdated() = 0;
 
    protected:
     virtual ~Observer() {}
@@ -53,9 +52,17 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // Returns a space-separated string containing the list of current active
   // variations (as would be reported in the |variation_id| repeated field of
   // the ClientVariations proto). Does not include variation ids that should be
-  // sent for signed-in users only. The returned string is guaranteed to have a
-  // a leading and trailing space, e.g. " 123 234 345 ".
+  // sent for signed-in users only and does not include Google app variations.
+  // The returned string is guaranteed to have a leading and trailing space,
+  // e.g. " 123 234 345 ".
   std::string GetVariationsString();
+
+  // Same as GetVariationString(), but returns Google App variation ids rather
+  // than Google Web variations.
+  // IMPORTANT: This string is only approved for integrations with the Android
+  // Google App and must receive a privacy review before extending to other
+  // apps.
+  std::string GetGoogleAppVariationsString();
 
   // Returns the collection of of variation ids matching the given |key|. Each
   // entry in the returned vector will be unique.
@@ -109,12 +116,19 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            OnFieldTrialGroupFinalized);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
+                           GetGoogleAppVariationsString);
+  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            GetVariationsString);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            GetVariationsVector);
 
   VariationsHttpHeaderProvider();
   ~VariationsHttpHeaderProvider() override;
+
+  // Returns a space-separated string containing the list of current active
+  // variations (as would be reported in the |variation_id| repeated field of
+  // the ClientVariations proto) for a given ID collection.
+  std::string GetVariationsString(IDCollectionKey key);
 
   // base::FieldTrialList::Observer:
   // This will add the variation ID associated with |trial_name| and
@@ -184,8 +198,11 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   std::string cached_variation_ids_header_signed_in_;
 
   // List of observers to notify on variation ids header update.
-  // Makes sure list is empty on destruction.
-  base::ObserverList<Observer, true>::Unchecked observer_list_;
+  // NOTE this should really check observers are unregistered but due to
+  // https://crbug.com/1051937 this isn't currently possible.
+  base::ObserverList<Observer>::Unchecked observer_list_;
+
+  const VariationsClient* variations_client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsHttpHeaderProvider);
 };

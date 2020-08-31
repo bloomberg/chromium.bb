@@ -15,8 +15,7 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "chrome/browser/android/vr/vr_core_info.h"
-#include "chrome/browser/vr/metrics/session_metrics_helper.h"
-#include "chrome/browser/vr/service/xr_runtime_manager_observer.h"
+#include "content/public/browser/xr_runtime_manager.h"
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
@@ -37,10 +36,9 @@ enum class VrSupportLevel : int {
 };
 
 class VrShell;
-class XRRuntimeManager;
 
 class VrShellDelegate : public device::GvrDelegateProvider,
-                        XRRuntimeManagerObserver {
+                        content::XRRuntimeManager::Observer {
  public:
   VrShellDelegate(JNIEnv* env, jobject obj);
   ~VrShellDelegate() override;
@@ -57,8 +55,6 @@ class VrShellDelegate : public device::GvrDelegateProvider,
   void SetPresentResult(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
                         jboolean success);
-  void RecordVrStartAction(JNIEnv* env,
-                           jint start_action);
   void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   bool IsClearActivatePending(JNIEnv* env,
@@ -80,14 +76,14 @@ class VrShellDelegate : public device::GvrDelegateProvider,
       device::mojom::XRRuntimeSessionOptionsPtr options,
       base::OnceCallback<void(device::mojom::XRSessionPtr)> callback) override;
 
-  // vr::XRRuntimeManagerObserver implementation.
-  // VrShellDelegate implements XRRuntimeManagerObserver to turn off poses (by
+  // content::XRRuntimeManager::Observer implementation.
+  // VrShellDelegate implements XRRuntimeManager::Observer to turn off poses (by
   // calling SetInlinePosesEnabled) on a runtime that gets initialized and added
   // to XRRuntimeManager, while the VrShell is active (user has headset on).
   // As for the runtimes that got added to the XRRuntimeManager before the
   // VrShell got created, their poses will be turned off too on its
   // creation.
-  void OnRuntimeAdded(vr::BrowserXRRuntime* runtime) override;
+  void OnRuntimeAdded(content::BrowserXRRuntime* runtime) override;
   void OnPresentResult(
       device::mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRRuntimeSessionOptionsPtr options,
@@ -110,8 +106,6 @@ class VrShellDelegate : public device::GvrDelegateProvider,
       request_present_response_callback_;
 
   bool pending_successful_present_request_ = false;
-  base::Optional<VrStartAction> pending_vr_start_action_;
-  base::Optional<PresentationStartAction> possible_presentation_start_action_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

@@ -10,9 +10,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/containers/mru_cache.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/time/tick_clock.h"
@@ -52,14 +53,11 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
   ~ReportingEndpointManagerImpl() override = default;
 
   const ReportingEndpoint FindEndpointForDelivery(
-      const NetworkIsolationKey& network_isolation_key,
-      const url::Origin& origin,
-      const std::string& group) override {
+      const ReportingEndpointGroupKey& group_key) override {
     // Get unexpired endpoints that apply to a delivery to |origin| and |group|.
     // May have been configured by a superdomain of |origin|.
     std::vector<ReportingEndpoint> endpoints =
-        cache_->GetCandidateEndpointsForDelivery(network_isolation_key, origin,
-                                                 group);
+        cache_->GetCandidateEndpointsForDelivery(group_key);
 
     // Highest-priority endpoint(s) that are not expired, failing, or
     // forbidden for use by the ReportingDelegate.
@@ -67,7 +65,7 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
     // Total weight of endpoints in |available_endpoints|.
     int total_weight = 0;
 
-    for (const ReportingEndpoint endpoint : endpoints) {
+    for (const ReportingEndpoint& endpoint : endpoints) {
       if (!delegate_->CanUseClient(endpoint.group_key.origin,
                                    endpoint.info.url)) {
         continue;
@@ -81,8 +79,8 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
 
       // This brings each match to the front of the MRU cache, so if an entry
       // frequently matches requests, it's more likely to stay in the cache.
-      auto endpoint_backoff_it = endpoint_backoff_.Get(
-          EndpointBackoffKey(network_isolation_key, endpoint.info.url));
+      auto endpoint_backoff_it = endpoint_backoff_.Get(EndpointBackoffKey(
+          group_key.network_isolation_key, endpoint.info.url));
       if (endpoint_backoff_it != endpoint_backoff_.end() &&
           endpoint_backoff_it->second->ShouldRejectRequest()) {
         continue;

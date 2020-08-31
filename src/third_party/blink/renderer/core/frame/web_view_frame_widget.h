@@ -39,71 +39,82 @@ class WebWidgetClient;
 // https://goo.gl/7yVrnb.
 class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
  public:
-  explicit WebViewFrameWidget(util::PassKey<WebFrameWidget>,
-                              WebWidgetClient&,
-                              WebViewImpl&);
+  WebViewFrameWidget(
+      util::PassKey<WebFrameWidget>,
+      WebWidgetClient&,
+      WebViewImpl&,
+      CrossVariantMojoAssociatedRemote<
+          mojom::blink::FrameWidgetHostInterfaceBase> frame_widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase>
+          frame_widget,
+      CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase>
+          widget_host,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase>
+          widget);
   ~WebViewFrameWidget() override;
 
   // WebWidget overrides:
-  void Close() override;
+  void Close(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
+             base::OnceCallback<void()> cleanup_task) override;
   WebSize Size() override;
   void Resize(const WebSize&) override;
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
-  void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
-  void BeginFrame(base::TimeTicks last_frame_time,
-                  bool record_main_frame_metrics) override;
-  void DidBeginFrame() override;
-  void BeginRafAlignedInput() override;
-  void EndRafAlignedInput() override;
-  void BeginUpdateLayers() override;
-  void EndUpdateLayers() override;
-  void BeginCommitCompositorFrame() override;
-  void EndCommitCompositorFrame() override;
-  void RecordStartOfFrameMetrics() override;
-  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
-  std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
-      override;
-  void UpdateLifecycle(LifecycleUpdate requested_update,
-                       LifecycleUpdateReason reason) override;
+  void UpdateLifecycle(WebLifecycleUpdate requested_update,
+                       DocumentUpdateReason reason) override;
   void ThemeChanged() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
   void SetCursorVisibilityState(bool is_visible) override;
-  void OnFallbackCursorModeToggled(bool is_on) override;
-  void ApplyViewportChanges(const ApplyViewportChangesArgs&) override;
-  void RecordManipulationTypeCounts(cc::ManipulationInfo info) override;
-  void SendOverscrollEventFromImplSide(
-      const gfx::Vector2dF& overscroll_delta,
-      cc::ElementId scroll_latched_element_id) override;
-  void SendScrollEndEventFromImplSide(
-      cc::ElementId scroll_latched_element_id) override;
   void MouseCaptureLost() override;
   void SetFocus(bool) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
-  bool IsAcceleratedCompositingActive() const override;
   WebURL GetURLForDebugTrace() override;
 
   // WebFrameWidget overrides:
   void DidDetachLocalFrameTree() override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
-  WebHitTestResult HitTestResultAt(const gfx::Point&) override;
+  WebHitTestResult HitTestResultAt(const gfx::PointF&) override;
 
   // WebFrameWidgetBase overrides:
-  void SetAnimationHost(cc::AnimationHost*) override;
   bool ForSubframe() const override { return false; }
-  void SetRootLayer(scoped_refptr<cc::Layer>) override;
-  cc::AnimationHost* AnimationHost() const override;
-  HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
+  HitTestResult CoreHitTestResultAt(const gfx::PointF&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
 
-  void Trace(blink::Visitor*) override;
+  // FrameWidget overrides:
+  void SetRootLayer(scoped_refptr<cc::Layer>) override;
+
+  // WidgetBaseClient overrides:
+  void BeginMainFrame(base::TimeTicks last_frame_time) override;
+  void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
+  void RecordStartOfFrameMetrics() override;
+  void RecordEndOfFrameMetrics(
+      base::TimeTicks frame_begin_time,
+      cc::ActiveFrameSequenceTrackers trackers) override;
+  std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
+      override;
+  void BeginUpdateLayers() override;
+  void EndUpdateLayers() override;
+  void DidBeginMainFrame() override;
+  void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override;
+  void RecordManipulationTypeCounts(cc::ManipulationInfo info) override;
+  void SendOverscrollEventFromImplSide(
+      const gfx::Vector2dF& overscroll_delta,
+      cc::ElementId scroll_latched_element_id) override;
+  void SendScrollEndEventFromImplSide(
+      cc::ElementId scroll_latched_element_id) override;
+  void BeginCommitCompositorFrame() override;
+  void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
+
+  void Trace(Visitor*) override;
 
  private:
   PageWidgetEventHandler* GetPageWidgetEventHandler() override;
+  LocalFrameView* GetLocalFrameViewForAnimationScrolling() override;
 
   scoped_refptr<WebViewImpl> web_view_;
+  base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
 
   SelfKeepAlive<WebViewFrameWidget> self_keep_alive_;
 

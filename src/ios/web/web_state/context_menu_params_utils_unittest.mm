@@ -27,6 +27,10 @@ const char kReferrerPolicy[] = "always";
 const char kLinkText[] = "link text";
 const char kJavaScriptLinkUrl[] = "javascript://src.url/";
 const char kDataUrl[] = "data://foo.bar/";
+const char kAlt[] = "alt text";
+const char kLinkToTruncate[] =
+    "https://subdomain.domain.com/site?key=value&key=value&key=value\
+  &key=value&key=value&key=value&key=value&key=value";
 }
 
 namespace web {
@@ -46,7 +50,7 @@ TEST_F(ContextMenuParamsUtilsTest, EmptyParams) {
   EXPECT_EQ(params.link_text, nil);
 }
 
-// Tests the the parsing of the element NSDictionary.
+// Tests the parsing of the element NSDictionary.
 TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTest) {
   web::ContextMenuParams params = web::ContextMenuParamsFromElementDictionary(@{
     kContextMenuElementHyperlink : @(kLinkUrl),
@@ -154,6 +158,30 @@ TEST_F(ContextMenuParamsUtilsTest, CanShowContextMenuTestLinkedImage) {
     kContextMenuElementHyperlink : @"http://example.com",
     kContextMenuElementSource : @"http://example.com/image.jpeg"
   }));
+}
+
+// Tests that the menu title is truncated when it is above the character limit.
+TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTestTruncateTitle) {
+  web::ContextMenuParams params = web::ContextMenuParamsFromElementDictionary(@{
+    kContextMenuElementHyperlink : @(kLinkToTruncate),
+  });
+
+  ASSERT_GT(strlen(kLinkToTruncate), kContextMenuMaxTitleLength);
+  EXPECT_EQ(params.menu_title.length, kContextMenuMaxTitleLength);
+}
+
+// Tests that the menu title prepends the element's alt text if it is an image
+// without a link.
+TEST_F(ContextMenuParamsUtilsTest,
+       DictionaryConstructorTestPrependAltForImage) {
+  web::ContextMenuParams params = web::ContextMenuParamsFromElementDictionary(@{
+    kContextMenuElementSource : @(kSrcUrl),
+    kContextMenuElementAlt : @(kAlt),
+  });
+
+  NSString* title = [NSString stringWithFormat:@"%@ – %@", @(kAlt), @(kSrcUrl)];
+
+  EXPECT_NSEQ(params.menu_title, title);
 }
 
 }  // namespace web

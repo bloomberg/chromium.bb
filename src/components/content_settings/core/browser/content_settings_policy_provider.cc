@@ -300,7 +300,7 @@ void PolicyProvider::GetContentSettingsFromPreferences(
       value_map->SetValue(
           pattern_pair.first, secondary_pattern, content_type,
           ResourceIdentifier(), base::Time(),
-          base::Value(kPrefsForManagedContentSettingsMap[i].setting));
+          base::Value(kPrefsForManagedContentSettingsMap[i].setting), {});
     }
   }
 }
@@ -392,7 +392,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
 
     value_map->SetValue(pattern, ContentSettingsPattern::Wildcard(),
                         ContentSettingsType::AUTO_SELECT_CERTIFICATE,
-                        std::string(), base::Time(), setting.Clone());
+                        std::string(), base::Time(), setting.Clone(), {});
   }
 }
 
@@ -435,7 +435,7 @@ void PolicyProvider::UpdateManagedDefaultSetting(
     // Don't set a timestamp for policy settings.
     value_map_.SetValue(ContentSettingsPattern::Wildcard(),
                         ContentSettingsPattern::Wildcard(), entry.content_type,
-                        std::string(), base::Time(), base::Value(setting));
+                        std::string(), base::Time(), base::Value(setting), {});
   }
 }
 
@@ -455,7 +455,8 @@ bool PolicyProvider::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    std::unique_ptr<base::Value>&& value) {
+    std::unique_ptr<base::Value>&& value,
+    const ContentSettingConstraints& constraints) {
   return false;
 }
 

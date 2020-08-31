@@ -11,8 +11,6 @@ source_set("elements") {
     "fade_truncating_label.mm",
     "gray_highlight_button.h",
     "gray_highlight_button.mm",
-    "selector_coordinator.h",
-    "selector_coordinator.mm",
     "selector_picker_presentation_controller.h",
     "selector_picker_presentation_controller.mm",
     "selector_picker_view_controller.h",
@@ -27,10 +25,25 @@ source_set("elements") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/ui/colors",
+  ]
+}
+
+source_set("selector_coordinator") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "selector_coordinator.h",
+    "selector_coordinator.mm",
+  ]
+  deps = [
+    ":elements",
+    "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
   ]
 }
 
@@ -48,8 +61,10 @@ source_set("unit_tests") {
   deps = [
     ":elements",
     ":elements_internal",
+    ":selector_coordinator",
     "//base",
     "//base/test:test_support",
+    "//ios/chrome/browser/main:test_support",
     "//ios/chrome/test:test_support",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -74,8 +89,8 @@ source_set("elements_internal") {
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/util",
     "//ios/third_party/material_components_ios",
   ]
   libs = [ "UIKit.framework" ]

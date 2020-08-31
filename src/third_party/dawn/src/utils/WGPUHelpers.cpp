@@ -16,12 +16,12 @@
 
 #include "common/Assert.h"
 #include "common/Constants.h"
+#include "common/Log.h"
 
 #include <shaderc/shaderc.hpp>
 
 #include <cstring>
 #include <iomanip>
-#include <iostream>
 #include <sstream>
 
 namespace utils {
@@ -51,11 +51,39 @@ namespace utils {
             ptrdiff_t resultSize = resultEnd - resultBegin;
             // SetSource takes data as uint32_t*.
 
+            wgpu::ShaderModuleSPIRVDescriptor spirvDesc;
+            spirvDesc.codeSize = static_cast<uint32_t>(resultSize);
+            spirvDesc.code = result.cbegin();
+
             wgpu::ShaderModuleDescriptor descriptor;
-            descriptor.codeSize = static_cast<uint32_t>(resultSize);
-            descriptor.code = result.cbegin();
+            descriptor.nextInChain = &spirvDesc;
+
             return device.CreateShaderModule(&descriptor);
         }
+
+        class CompilerSingleton {
+          public:
+            static shaderc::Compiler* Get() {
+                std::call_once(mInitFlag, &CompilerSingleton::Initialize);
+                return mCompiler;
+            }
+
+          private:
+            CompilerSingleton() = default;
+            ~CompilerSingleton() = default;
+            CompilerSingleton(const CompilerSingleton&) = delete;
+            CompilerSingleton& operator=(const CompilerSingleton&) = delete;
+
+            static shaderc::Compiler* mCompiler;
+            static std::once_flag mInitFlag;
+
+            static void Initialize() {
+                mCompiler = new shaderc::Compiler();
+            }
+        };
+
+        shaderc::Compiler* CompilerSingleton::mCompiler = nullptr;
+        std::once_flag CompilerSingleton::mInitFlag;
 
     }  // anonymous namespace
 
@@ -64,17 +92,17 @@ namespace utils {
                                           const char* source) {
         shaderc_shader_kind kind = ShadercShaderKind(stage);
 
-        shaderc::Compiler compiler;
-        auto result = compiler.CompileGlslToSpv(source, strlen(source), kind, "myshader?");
+        shaderc::Compiler* compiler = CompilerSingleton::Get();
+        auto result = compiler->CompileGlslToSpv(source, strlen(source), kind, "myshader?");
         if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-            std::cerr << result.GetErrorMessage();
+            dawn::ErrorLog() << result.GetErrorMessage();
             return {};
         }
 #ifdef DUMP_SPIRV_ASSEMBLY
         {
             shaderc::CompileOptions options;
-            auto resultAsm = compiler.CompileGlslToSpvAssembly(source, strlen(source), kind,
-                                                               "myshader?", options);
+            auto resultAsm = compiler->CompileGlslToSpvAssembly(source, strlen(source), kind,
+                                                                "myshader?", options);
             size_t sizeAsm = (resultAsm.cend() - resultAsm.cbegin());
 
             char* buffer = reinterpret_cast<char*>(malloc(sizeAsm + 1));
@@ -103,14 +131,26 @@ namespace utils {
     }
 
     wgpu::ShaderModule CreateShaderModuleFromASM(const wgpu::Device& device, const char* source) {
-        shaderc::Compiler compiler;
-        shaderc::SpvCompilationResult result = compiler.AssembleToSpv(source, strlen(source));
+        shaderc::Compiler* compiler = CompilerSingleton::Get();
+        shaderc::SpvCompilationResult result = compiler->AssembleToSpv(source, strlen(source));
         if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-            std::cerr << result.GetErrorMessage();
+            dawn::ErrorLog() << result.GetErrorMessage();
             return {};
         }
 
         return CreateShaderModuleFromResult(device, result);
+    }
+
+    std::vector<uint32_t> CompileGLSLToSpirv(SingleShaderStage stage, const char* source) {
+        shaderc_shader_kind kind = ShadercShaderKind(stage);
+
+        shaderc::Compiler* compiler = CompilerSingleton::Get();
+        auto result = compiler->CompileGlslToSpv(source, strlen(source), kind, "myshader?");
+        if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
+            dawn::ErrorLog() << result.GetErrorMessage();
+            return {};
+        }
+        return {result.cbegin(), result.cend()};
     }
 
     wgpu::Buffer CreateBufferFromData(const wgpu::Device& device,
@@ -158,6 +198,10 @@ namespace utils {
         } else {
             depthStencilAttachment = nullptr;
         }
+    }
+
+    ComboRenderPassDescriptor::ComboRenderPassDescriptor(const ComboRenderPassDescriptor& other) {
+        *this = other;
     }
 
     const ComboRenderPassDescriptor& ComboRenderPassDescriptor::operator=(
@@ -219,13 +263,13 @@ namespace utils {
 
     wgpu::BufferCopyView CreateBufferCopyView(wgpu::Buffer buffer,
                                               uint64_t offset,
-                                              uint32_t rowPitch,
-                                              uint32_t imageHeight) {
+                                              uint32_t bytesPerRow,
+                                              uint32_t rowsPerImage) {
         wgpu::BufferCopyView bufferCopyView;
         bufferCopyView.buffer = buffer;
         bufferCopyView.offset = offset;
-        bufferCopyView.rowPitch = rowPitch;
-        bufferCopyView.imageHeight = imageHeight;
+        bufferCopyView.bytesPerRow = bytesPerRow;
+        bufferCopyView.rowsPerImage = rowsPerImage;
 
         return bufferCopyView;
     }
@@ -244,7 +288,7 @@ namespace utils {
     }
 
     wgpu::SamplerDescriptor GetDefaultSamplerDescriptor() {
-        wgpu::SamplerDescriptor desc;
+        wgpu::SamplerDescriptor desc = {};
 
         desc.minFilter = wgpu::FilterMode::Linear;
         desc.magFilter = wgpu::FilterMode::Linear;
@@ -252,9 +296,6 @@ namespace utils {
         desc.addressModeU = wgpu::AddressMode::Repeat;
         desc.addressModeV = wgpu::AddressMode::Repeat;
         desc.addressModeW = wgpu::AddressMode::Repeat;
-        desc.lodMinClamp = kLodMin;
-        desc.lodMaxClamp = kLodMax;
-        desc.compare = wgpu::CompareFunction::Never;
 
         return desc;
     }
@@ -274,19 +315,15 @@ namespace utils {
 
     wgpu::BindGroupLayout MakeBindGroupLayout(
         const wgpu::Device& device,
-        std::initializer_list<wgpu::BindGroupLayoutBinding> bindingsInitializer) {
-        constexpr wgpu::ShaderStage kNoStages{};
-
-        std::vector<wgpu::BindGroupLayoutBinding> bindings;
-        for (const wgpu::BindGroupLayoutBinding& binding : bindingsInitializer) {
-            if (binding.visibility != kNoStages) {
-                bindings.push_back(binding);
-            }
+        std::initializer_list<wgpu::BindGroupLayoutEntry> entriesInitializer) {
+        std::vector<wgpu::BindGroupLayoutEntry> entries;
+        for (const wgpu::BindGroupLayoutEntry& entry : entriesInitializer) {
+            entries.push_back(entry);
         }
 
         wgpu::BindGroupLayoutDescriptor descriptor;
-        descriptor.bindingCount = static_cast<uint32_t>(bindings.size());
-        descriptor.bindings = bindings.data();
+        descriptor.entryCount = static_cast<uint32_t>(entries.size());
+        descriptor.entries = entries.data();
         return device.CreateBindGroupLayout(&descriptor);
     }
 
@@ -307,8 +344,8 @@ namespace utils {
         : binding(binding), buffer(buffer), offset(offset), size(size) {
     }
 
-    wgpu::BindGroupBinding BindingInitializationHelper::GetAsBinding() const {
-        wgpu::BindGroupBinding result;
+    wgpu::BindGroupEntry BindingInitializationHelper::GetAsBinding() const {
+        wgpu::BindGroupEntry result;
 
         result.binding = binding;
         result.sampler = sampler;
@@ -323,16 +360,16 @@ namespace utils {
     wgpu::BindGroup MakeBindGroup(
         const wgpu::Device& device,
         const wgpu::BindGroupLayout& layout,
-        std::initializer_list<BindingInitializationHelper> bindingsInitializer) {
-        std::vector<wgpu::BindGroupBinding> bindings;
-        for (const BindingInitializationHelper& helper : bindingsInitializer) {
-            bindings.push_back(helper.GetAsBinding());
+        std::initializer_list<BindingInitializationHelper> entriesInitializer) {
+        std::vector<wgpu::BindGroupEntry> entries;
+        for (const BindingInitializationHelper& helper : entriesInitializer) {
+            entries.push_back(helper.GetAsBinding());
         }
 
         wgpu::BindGroupDescriptor descriptor;
         descriptor.layout = layout;
-        descriptor.bindingCount = bindings.size();
-        descriptor.bindings = bindings.data();
+        descriptor.entryCount = entries.size();
+        descriptor.entries = entries.data();
 
         return device.CreateBindGroup(&descriptor);
     }

@@ -210,10 +210,9 @@ int32_t FileIOResource::Query(PP_FileInfo* info,
   // completion task to write the result.
   scoped_refptr<QueryOp> query_op(new QueryOp(file_holder_));
   base::PostTaskAndReplyWithResult(
-      PpapiGlobals::Get()->GetFileTaskRunner(),
-      FROM_HERE,
-      Bind(&FileIOResource::QueryOp::DoWork, query_op),
-      RunWhileLocked(Bind(&TrackedCallback::Run, callback)));
+      PpapiGlobals::Get()->GetFileTaskRunner(), FROM_HERE,
+      base::BindOnce(&FileIOResource::QueryOp::DoWork, query_op),
+      RunWhileLocked(base::BindOnce(&TrackedCallback::Run, callback)));
   callback->set_completion_task(
       Bind(&FileIOResource::OnQueryComplete, this, query_op, info));
 
@@ -306,12 +305,9 @@ int32_t FileIOResource::Write(int64_t offset,
       int64_t result =
           file_system_resource_->AsPPB_FileSystem_API()->RequestQuota(
               increase,
-              base::Bind(&FileIOResource::OnRequestWriteQuotaComplete,
-                         this,
-                         offset,
-                         base::Passed(&copy),
-                         bytes_to_write,
-                         callback));
+              base::BindOnce(&FileIOResource::OnRequestWriteQuotaComplete, this,
+                             offset, base::Passed(&copy), bytes_to_write,
+                             callback));
       if (result == PP_OK_COMPLETIONPENDING)
         return PP_OK_COMPLETIONPENDING;
       DCHECK(result == increase);
@@ -340,9 +336,8 @@ int32_t FileIOResource::SetLength(int64_t length,
       int32_t result =
           file_system_resource_->AsPPB_FileSystem_API()->RequestQuota(
               increase,
-              base::Bind(&FileIOResource::OnRequestSetLengthQuotaComplete,
-                         this,
-                         length, callback));
+              base::BindOnce(&FileIOResource::OnRequestSetLengthQuotaComplete,
+                             this, length, callback));
       if (result == PP_OK_COMPLETIONPENDING) {
         state_manager_.SetPendingOperation(
             FileIOStateManager::OPERATION_EXCLUSIVE);
@@ -440,7 +435,7 @@ FileIOResource::FileHolder::~FileHolder() {
     base::TaskRunner* file_task_runner =
         PpapiGlobals::Get()->GetFileTaskRunner();
     file_task_runner->PostTask(FROM_HERE,
-                               base::BindOnce(&DoClose, Passed(&file_)));
+                               base::BindOnce(&DoClose, std::move(file_)));
   }
 }
 
@@ -478,10 +473,9 @@ int32_t FileIOResource::ReadValidated(int64_t offset,
   scoped_refptr<ReadOp> read_op(
       new ReadOp(file_holder_, offset, bytes_to_read));
   base::PostTaskAndReplyWithResult(
-      PpapiGlobals::Get()->GetFileTaskRunner(),
-      FROM_HERE,
-      Bind(&FileIOResource::ReadOp::DoWork, read_op),
-      RunWhileLocked(Bind(&TrackedCallback::Run, callback)));
+      PpapiGlobals::Get()->GetFileTaskRunner(), FROM_HERE,
+      base::BindOnce(&FileIOResource::ReadOp::DoWork, read_op),
+      RunWhileLocked(base::BindOnce(&TrackedCallback::Run, callback)));
   callback->set_completion_task(
       Bind(&FileIOResource::OnReadComplete, this, read_op, array_output));
 
@@ -520,10 +514,9 @@ int32_t FileIOResource::WriteValidated(
   scoped_refptr<WriteOp> write_op(new WriteOp(
       file_holder_, offset, std::move(copy), bytes_to_write, append));
   base::PostTaskAndReplyWithResult(
-      PpapiGlobals::Get()->GetFileTaskRunner(),
-      FROM_HERE,
-      Bind(&FileIOResource::WriteOp::DoWork, write_op),
-      RunWhileLocked(Bind(&TrackedCallback::Run, callback)));
+      PpapiGlobals::Get()->GetFileTaskRunner(), FROM_HERE,
+      base::BindOnce(&FileIOResource::WriteOp::DoWork, write_op),
+      RunWhileLocked(base::BindOnce(&TrackedCallback::Run, callback)));
   callback->set_completion_task(Bind(&FileIOResource::OnWriteComplete, this));
 
   return PP_OK_COMPLETIONPENDING;
@@ -612,10 +605,9 @@ void FileIOResource::OnRequestWriteQuotaComplete(
     scoped_refptr<WriteOp> write_op(new WriteOp(
         file_holder_, offset, std::move(buffer), bytes_to_write, append));
     base::PostTaskAndReplyWithResult(
-        PpapiGlobals::Get()->GetFileTaskRunner(),
-        FROM_HERE,
-        Bind(&FileIOResource::WriteOp::DoWork, write_op),
-        RunWhileLocked(Bind(&TrackedCallback::Run, callback)));
+        PpapiGlobals::Get()->GetFileTaskRunner(), FROM_HERE,
+        base::BindOnce(&FileIOResource::WriteOp::DoWork, write_op),
+        RunWhileLocked(base::BindOnce(&TrackedCallback::Run, callback)));
     callback->set_completion_task(Bind(&FileIOResource::OnWriteComplete, this));
   }
 }

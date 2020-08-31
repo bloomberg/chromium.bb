@@ -12,9 +12,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
-namespace ios {
 class ChromeBrowserState;
-}
 
 namespace language {
 class UrlLanguageHistogram;
@@ -28,7 +26,7 @@ class UrlLanguageHistogramFactory : public BrowserStateKeyedServiceFactory {
  public:
   static UrlLanguageHistogramFactory* GetInstance();
   static language::UrlLanguageHistogram* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
  private:
   friend class base::NoDestructor<UrlLanguageHistogramFactory>;

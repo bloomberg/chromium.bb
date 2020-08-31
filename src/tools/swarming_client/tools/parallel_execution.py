@@ -31,7 +31,7 @@ def task_to_name(name, dimensions, isolated_hash):
   """Returns a task name the same way swarming.py generates them."""
   return '%s/%s/%s' % (
       name,
-      '_'.join('%s=%s' % (k, v) for k, v in sorted(dimensions.iteritems())),
+      '_'.join('%s=%s' % (k, v) for k, v in sorted(dimensions.items())),
       isolated_hash[:8])
 
 
@@ -84,7 +84,7 @@ class Runner(object):
     self.extra_trigger_args = extra_trigger_args
 
   def trigger(self, task_name, isolated_hash, dimensions, env):
-    args = sum((['--dimension', k, v] for k, v in dimensions.iteritems()), [])
+    args = sum((['--dimension', k, v] for k, v in dimensions.items()), [])
     args.extend(sum((['--env', k, v] for k, v in env), []))
     returncode, stdout, duration, task_id = trigger(
         self.swarming_server,

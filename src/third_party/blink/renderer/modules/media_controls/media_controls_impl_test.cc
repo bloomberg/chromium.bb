@@ -9,8 +9,9 @@
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
@@ -273,12 +274,12 @@ class MediaControlsImplTest : public PageTestBase,
         HTMLMediaElement::kHaveEnoughData);
   }
 
-  void MouseDownAt(WebFloatPoint pos);
-  void MouseMoveTo(WebFloatPoint pos);
-  void MouseUpAt(WebFloatPoint pos);
+  void MouseDownAt(gfx::PointF pos);
+  void MouseMoveTo(gfx::PointF pos);
+  void MouseUpAt(gfx::PointF pos);
 
-  void GestureTapAt(WebFloatPoint pos);
-  void GestureDoubleTapAt(WebFloatPoint pos);
+  void GestureTapAt(gfx::PointF pos);
+  void GestureDoubleTapAt(gfx::PointF pos);
 
   bool HasAvailabilityCallbacks(RemotePlayback& remote_playback) {
     return !remote_playback.availability_callbacks_.IsEmpty();
@@ -311,8 +312,8 @@ class MediaControlsImplTest : public PageTestBase,
   HistogramTester histogram_tester_;
 };
 
-void MediaControlsImplTest::MouseDownAt(WebFloatPoint pos) {
-  WebMouseEvent mouse_down_event(WebInputEvent::kMouseDown,
+void MediaControlsImplTest::MouseDownAt(gfx::PointF pos) {
+  WebMouseEvent mouse_down_event(WebInputEvent::Type::kMouseDown,
                                  pos /* client pos */, pos /* screen pos */,
                                  WebPointerProperties::Button::kLeft, 1,
                                  WebInputEvent::Modifiers::kLeftButtonDown,
@@ -322,8 +323,8 @@ void MediaControlsImplTest::MouseDownAt(WebFloatPoint pos) {
       mouse_down_event);
 }
 
-void MediaControlsImplTest::MouseMoveTo(WebFloatPoint pos) {
-  WebMouseEvent mouse_move_event(WebInputEvent::kMouseMove,
+void MediaControlsImplTest::MouseMoveTo(gfx::PointF pos) {
+  WebMouseEvent mouse_move_event(WebInputEvent::Type::kMouseMove,
                                  pos /* client pos */, pos /* screen pos */,
                                  WebPointerProperties::Button::kLeft, 1,
                                  WebInputEvent::Modifiers::kLeftButtonDown,
@@ -333,9 +334,9 @@ void MediaControlsImplTest::MouseMoveTo(WebFloatPoint pos) {
       mouse_move_event, {}, {});
 }
 
-void MediaControlsImplTest::MouseUpAt(WebFloatPoint pos) {
+void MediaControlsImplTest::MouseUpAt(gfx::PointF pos) {
   WebMouseEvent mouse_up_event(
-      WebMouseEvent::kMouseUp, pos /* client pos */, pos /* screen pos */,
+      WebMouseEvent::Type::kMouseUp, pos /* client pos */, pos /* screen pos */,
       WebPointerProperties::Button::kLeft, 1, WebInputEvent::kNoModifiers,
       WebInputEvent::GetStaticTimeStampForTests());
   mouse_up_event.SetFrameScale(1);
@@ -343,16 +344,15 @@ void MediaControlsImplTest::MouseUpAt(WebFloatPoint pos) {
       mouse_up_event);
 }
 
-void MediaControlsImplTest::GestureTapAt(WebFloatPoint pos) {
+void MediaControlsImplTest::GestureTapAt(gfx::PointF pos) {
   WebGestureEvent gesture_tap_event(
-      WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
+      WebInputEvent::Type::kGestureTap, WebInputEvent::kNoModifiers,
       WebInputEvent::GetStaticTimeStampForTests());
 
   // Adjust |pos| by current frame scale.
   float frame_scale = GetDocument().GetFrame()->PageZoomFactor();
   gesture_tap_event.SetFrameScale(frame_scale);
-  pos.x = pos.x * frame_scale;
-  pos.y = pos.y * frame_scale;
+  pos.Scale(frame_scale);
   gesture_tap_event.SetPositionInWidget(pos);
 
   // Fire the event.
@@ -360,7 +360,7 @@ void MediaControlsImplTest::GestureTapAt(WebFloatPoint pos) {
       gesture_tap_event);
 }
 
-void MediaControlsImplTest::GestureDoubleTapAt(WebFloatPoint pos) {
+void MediaControlsImplTest::GestureDoubleTapAt(gfx::PointF pos) {
   GestureTapAt(pos);
   GestureTapAt(pos);
 }
@@ -689,8 +689,8 @@ TEST_F(MediaControlsImplTest, TimelineMetricsClick) {
 
   EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
 
-  WebFloatPoint trackCenter(timelineRect->left() + timelineRect->width() / 2,
-                            timelineRect->top() + timelineRect->height() / 2);
+  gfx::PointF trackCenter(timelineRect->left() + timelineRect->width() / 2,
+                          timelineRect->top() + timelineRect->height() / 2);
   MouseDownAt(trackCenter);
   MouseUpAt(trackCenter);
   test::RunPendingTasks();
@@ -727,11 +727,11 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragFromCurrentPosition) {
           ->UserAgentShadowRoot()
           ->getElementById(shadow_element_names::SliderThumb())
           ->getBoundingClientRect();
-  WebFloatPoint thumb(thumb_rect->x() + (thumb_rect->width() / 2),
-                      thumb_rect->y() + 1);
+  gfx::PointF thumb(thumb_rect->x() + (thumb_rect->width() / 2),
+                    thumb_rect->y() + 1);
 
   float y = timeline_rect->top() + timeline_rect->height() / 2;
-  WebFloatPoint track_two_thirds(
+  gfx::PointF track_two_thirds(
       timeline_rect->left() + timeline_rect->width() * 2 / 3, y);
   MouseDownAt(thumb);
   MouseMoveTo(track_two_thirds);
@@ -766,9 +766,9 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragFromElsewhere) {
   EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
 
   float y = timelineRect->top() + timelineRect->height() / 2;
-  WebFloatPoint trackOneThird(
+  gfx::PointF trackOneThird(
       timelineRect->left() + timelineRect->width() * 1 / 3, y);
-  WebFloatPoint trackTwoThirds(
+  gfx::PointF trackTwoThirds(
       timelineRect->left() + timelineRect->width() * 2 / 3, y);
   MouseDownAt(trackOneThird);
   MouseMoveTo(trackTwoThirds);
@@ -803,10 +803,10 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragBackAndForth) {
   EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
 
   float y = timelineRect->top() + timelineRect->height() / 2;
-  WebFloatPoint trackTwoThirds(
+  gfx::PointF trackTwoThirds(
       timelineRect->left() + timelineRect->width() * 2 / 3, y);
-  WebFloatPoint trackEnd(timelineRect->left() + timelineRect->width(), y);
-  WebFloatPoint trackOneThird(
+  gfx::PointF trackEnd(timelineRect->left() + timelineRect->width(), y);
+  gfx::PointF trackOneThird(
       timelineRect->left() + timelineRect->width() * 1 / 3, y);
   MouseDownAt(trackTwoThirds);
   MouseMoveTo(trackEnd);
@@ -987,7 +987,7 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
   // Mouse move while focused
   MediaControls().DispatchEvent(*Event::Create("focusin"));
   MediaControls().MediaElement().SetFocused(true,
-                                            WebFocusType::kWebFocusTypeNone);
+                                            mojom::blink::FocusType::kNone);
   MediaControls().DispatchEvent(*Event::Create("pointermove"));
 
   // Controls should remain visible
@@ -1014,7 +1014,7 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
   // Mouse move out while focused, controls should hide
   MediaControls().DispatchEvent(*Event::Create("focusin"));
   MediaControls().MediaElement().SetFocused(true,
-                                            WebFocusType::kWebFocusTypeNone);
+                                            mojom::blink::FocusType::kNone);
   MediaControls().DispatchEvent(*Event::Create("pointerout"));
   EXPECT_FALSE(IsElementVisible(*panel));
 }
@@ -1088,7 +1088,7 @@ TEST_F(MediaControlsImplTest,
   WeakPersistent<HTMLMediaElement> weak_persistent_video = element;
   {
     Persistent<HTMLMediaElement> persistent_video = element;
-    page_holder->GetDocument().body()->SetInnerHTMLFromString("");
+    page_holder->GetDocument().body()->setInnerHTML("");
 
     // When removed from the document, the event listeners should have been
     // dropped.
@@ -1124,10 +1124,7 @@ TEST_F(MediaControlsImplTest,
 
   test::RunPendingTasks();
 
-  // Needs to call into V8's GC here to trigger a unified garbage collection.
-  V8GCController::CollectAllGarbageForTesting(
-      ThreadState::Current()->GetIsolate(),
-      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(nullptr, weak_persistent_video);
 }
 
@@ -1207,10 +1204,10 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
   EXPECT_TRUE(volume_slider->classList().contains("closed"));
 
   DOMRect* mute_btn_rect = mute_btn->getBoundingClientRect();
-  WebFloatPoint mute_btn_center(
+  gfx::PointF mute_btn_center(
       mute_btn_rect->left() + mute_btn_rect->width() / 2,
       mute_btn_rect->top() + mute_btn_rect->height() / 2);
-  WebFloatPoint edge(0, 0);
+  gfx::PointF edge(0, 0);
 
   // Hover on mute button and stay
   MouseMoveTo(mute_btn_center);
@@ -1248,7 +1245,7 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
   EXPECT_TRUE(volume_slider->classList().contains("closed"));
 
   // Tab focus should open volume slider immediately.
-  volume_slider->SetFocused(true, WebFocusType::kWebFocusTypeNone);
+  volume_slider->SetFocused(true, mojom::blink::FocusType::kNone);
   volume_slider->DispatchEvent(*Event::Create("focus"));
   EXPECT_FALSE(volume_slider->classList().contains("closed"));
 
@@ -1393,10 +1390,10 @@ TEST_F(MediaControlsImplTest, DoubleTouchChangesTime) {
 
   DOMRect* videoRect = MediaControls().MediaElement().getBoundingClientRect();
   ASSERT_LT(0, videoRect->width());
-  WebFloatPoint leftOfCenter(videoRect->left() + (videoRect->width() / 2) - 5,
-                             videoRect->top() + 5);
-  WebFloatPoint rightOfCenter(videoRect->left() + (videoRect->width() / 2) + 5,
-                              videoRect->top() + 5);
+  gfx::PointF leftOfCenter(videoRect->left() + (videoRect->width() / 2) - 5,
+                           videoRect->top() + 5);
+  gfx::PointF rightOfCenter(videoRect->left() + (videoRect->width() / 2) + 5,
+                            videoRect->top() + 5);
 
   // Double-tapping left of center should shift the time backwards by 10
   // seconds.
@@ -1423,10 +1420,10 @@ TEST_F(MediaControlsImplTest, DoubleTouchChangesTimeWhenZoomed) {
 
   DOMRect* videoRect = MediaControls().MediaElement().getBoundingClientRect();
   ASSERT_LT(0, videoRect->width());
-  WebFloatPoint leftOfCenter(videoRect->left() + (videoRect->width() / 2) - 5,
-                             videoRect->top() + 10);
-  WebFloatPoint rightOfCenter(videoRect->left() + (videoRect->width() / 2) + 5,
-                              videoRect->top() + 10);
+  gfx::PointF leftOfCenter(videoRect->left() + (videoRect->width() / 2) - 5,
+                           videoRect->top() + 10);
+  gfx::PointF rightOfCenter(videoRect->left() + (videoRect->width() / 2) + 5,
+                            videoRect->top() + 10);
 
   // Add a zoom factor and ensure that it's properly handled.
   MediaControls().GetDocument().GetFrame()->SetPageZoomFactor(2);

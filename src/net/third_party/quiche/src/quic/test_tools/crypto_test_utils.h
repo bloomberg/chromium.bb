@@ -15,8 +15,8 @@
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_framer.h"
 #include "net/third_party/quiche/src/quic/core/quic_framer.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -28,7 +28,7 @@ class QuicClock;
 class QuicConfig;
 class QuicCryptoClientStream;
 class QuicCryptoServerConfig;
-class QuicCryptoServerStream;
+class QuicCryptoServerStreamBase;
 class QuicCryptoStream;
 class QuicRandom;
 class QuicServerId;
@@ -62,6 +62,10 @@ struct FakeClientOptions {
   // If only_tls_versions is set, then the client will only use TLS for the
   // crypto handshake.
   bool only_tls_versions = false;
+
+  // If only_quic_crypto_versions is set, then the client will only use
+  // PROTOCOL_QUIC_CRYPTO for the crypto handshake.
+  bool only_quic_crypto_versions = false;
 };
 
 // Returns a QuicCryptoServerConfig that is in a reasonable configuration to
@@ -81,7 +85,7 @@ int HandshakeWithFakeServer(QuicConfig* server_quic_config,
 int HandshakeWithFakeClient(MockQuicConnectionHelper* helper,
                             MockAlarmFactory* alarm_factory,
                             PacketSavingConnection* server_conn,
-                            QuicCryptoServerStream* server,
+                            QuicCryptoServerStreamBase* server,
                             const QuicServerId& server_id,
                             const FakeClientOptions& options,
                             std::string alpn);
@@ -132,7 +136,7 @@ std::unique_ptr<ProofVerifyContext> ProofVerifyContextForTesting();
 
 // MockCommonCertSets returns a CommonCertSets that contains a single set with
 // hash |hash|, consisting of the certificate |cert| at index |index|.
-CommonCertSets* MockCommonCertSets(QuicStringPiece cert,
+CommonCertSets* MockCommonCertSets(quiche::QuicheStringPiece cert,
                                    uint64_t hash,
                                    uint32_t index);
 
@@ -185,14 +189,14 @@ void GenerateFullCHLO(
     QuicCryptoServerConfig* crypto_config,
     QuicSocketAddress server_addr,
     QuicSocketAddress client_addr,
-    QuicTransportVersion version,
+    QuicTransportVersion transport_version,
     const QuicClock* clock,
     QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config,
     QuicCompressedCertsCache* compressed_certs_cache,
     CryptoHandshakeMessage* out);
 
 void CompareClientAndServerKeys(QuicCryptoClientStream* client,
-                                QuicCryptoServerStream* server);
+                                QuicCryptoServerStreamBase* server);
 
 // Return a CHLO nonce in hexadecimal.
 std::string GenerateClientNonceHex(const QuicClock* clock,

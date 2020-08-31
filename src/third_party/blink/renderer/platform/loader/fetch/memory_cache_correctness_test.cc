@@ -95,13 +95,13 @@ class MemoryCacheCorrectnessTest : public testing::Test {
     ResourceRequest resource_request{KURL(kResourceURL)};
     resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
     resource_request.SetRequestorOrigin(GetSecurityOrigin());
-    FetchParameters fetch_params(resource_request);
+    FetchParameters fetch_params(std::move(resource_request));
     return RawResource::Fetch(fetch_params, Fetcher(), nullptr);
   }
   MockResource* FetchMockResource() {
     ResourceRequest resource_request{KURL(kResourceURL)};
     resource_request.SetRequestorOrigin(GetSecurityOrigin());
-    FetchParameters fetch_params(resource_request);
+    FetchParameters fetch_params(std::move(resource_request));
     return MockResource::Fetch(fetch_params, Fetcher(), nullptr);
   }
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
@@ -318,7 +318,7 @@ TEST_F(MemoryCacheCorrectnessTest, RequestWithNoCache) {
   no_cache_request.SetHttpHeaderField(http_names::kCacheControl, "no-cache");
   no_cache_request.SetRequestorOrigin(GetSecurityOrigin());
   MockResource* no_cache_resource =
-      ResourceFromResourceRequest(no_cache_request);
+      ResourceFromResourceRequest(std::move(no_cache_request));
   MockResource* fetched = FetchMockResource();
   EXPECT_NE(no_cache_resource, fetched);
 }
@@ -349,7 +349,7 @@ TEST_F(MemoryCacheCorrectnessTest, RequestWithNoStore) {
   no_store_request.SetHttpHeaderField(http_names::kCacheControl, "no-store");
   no_store_request.SetRequestorOrigin(GetSecurityOrigin());
   MockResource* no_store_resource =
-      ResourceFromResourceRequest(no_store_request);
+      ResourceFromResourceRequest(std::move(no_store_request));
   MockResource* fetched = FetchMockResource();
   EXPECT_NE(no_store_resource, fetched);
 }
@@ -469,7 +469,7 @@ TEST_F(MemoryCacheCorrectnessTest, PostToSameURLTwice) {
   ResourceRequest request2{KURL(kResourceURL)};
   request2.SetHttpMethod(http_names::kPOST);
   request2.SetRequestorOrigin(GetSecurityOrigin());
-  FetchParameters fetch2(request2);
+  FetchParameters fetch2(std::move(request2));
   RawResource* resource2 = RawResource::FetchSynchronously(fetch2, Fetcher());
   EXPECT_NE(resource1, resource2);
 }

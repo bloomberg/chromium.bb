@@ -39,6 +39,14 @@ class SeriallyExecutedBrowserTestCase(test_case.TestCase):
     super(SeriallyExecutedBrowserTestCase, self).set_artifacts(artifacts)
     artifact_logger.RegisterArtifactImplementation(artifacts)
 
+  def setUp(self):
+    if hasattr(self, 'browser') and self.browser:
+      self.browser.CleanupUnsymbolizedMinidumps()
+
+  def tearDown(self):
+    if hasattr(self, 'browser') and self.browser:
+      self.browser.CleanupUnsymbolizedMinidumps(fatal=True)
+
   @classmethod
   def Name(cls):
     return cls.__name__
@@ -86,9 +94,6 @@ class SeriallyExecutedBrowserTestCase(test_case.TestCase):
               browser_options.browser_options.browser_type,
               '\n'.join(browser_finder.GetAllAvailableBrowserTypes(
                   browser_options))))
-    if cls._typ_runner.has_expectations:
-      cls._typ_runner.expectations.add_tags(
-          cls._browser_to_create.GetTypExpectationsTags())
     if not cls.platform:
       cls.platform = cls._browser_to_create.platform
       cls.platform.SetFullPerformanceModeEnabled(
@@ -135,8 +140,13 @@ class SeriallyExecutedBrowserTestCase(test_case.TestCase):
       cls._browser_to_create.SetUpEnvironment(
           cls._browser_options.browser_options)
       cls.browser = cls._browser_to_create.Create()
-      if cls._typ_runner.has_expectations:
-        cls._typ_runner.expectations.add_tags(cls.GetPlatformTags(cls.browser))
+      specifiers = set(cls.GetPlatformTags(cls.browser) +
+                       cls._browser_to_create.GetTypExpectationsTags())
+      if cls._typ_runner.has_expectations and specifiers:
+        logging.info(
+            'The following expectations condition tags were generated %s' %
+            str(list(specifiers)))
+        cls._typ_runner.expectations.add_tags(specifiers)
     except Exception:
       cls._browser_to_create.CleanUpEnvironment()
       raise

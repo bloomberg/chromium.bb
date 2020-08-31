@@ -99,7 +99,7 @@ class UI_BASE_EXPORT ResourceBundle {
     // default resource.
     virtual gfx::Image GetNativeImageNamed(int resource_id) = 0;
 
-    // Return a ref counted memory resource or NULL to attempt retrieval of the
+    // Return a ref counted memory resource or null to attempt retrieval of the
     // default resource.
     virtual base::RefCountedMemory* LoadDataResourceBytes(
         int resource_id,
@@ -120,7 +120,8 @@ class UI_BASE_EXPORT ResourceBundle {
   };
 
   // Initialize the ResourceBundle for this process. Does not take ownership of
-  // the |delegate| value. Returns the language selected.
+  // the |delegate| value. Returns the language selected or an empty string if
+  // initialization failed (e.g. resource bundle not found or corrupted).
   // NOTE: Mac ignores this and always loads up resources for the language
   // defined by the Cocoa UI (i.e., NSBundle does the language work).
   //
@@ -147,6 +148,9 @@ class UI_BASE_EXPORT ResourceBundle {
 
   // Delete the ResourceBundle for this process if it exists.
   static void CleanupSharedInstance();
+
+  // Returns the existing shared instance and sets it to the given instance.
+  static ResourceBundle* SwapSharedInstanceForTesting(ResourceBundle* instance);
 
   // Returns true after the global resource loader instance has been created.
   static bool HasSharedInstance();
@@ -191,11 +195,12 @@ class UI_BASE_EXPORT ResourceBundle {
                                    ScaleFactor scale_factor);
 
   // Changes the locale for an already-initialized ResourceBundle, returning the
-  // name of the newly-loaded locale.  Future calls to get strings will return
-  // the strings for this new locale.  This has no effect on existing or future
-  // image resources.  |locale_resources_data_| is protected by a lock for the
-  // duration of the swap, as GetLocalizedString() may be concurrently invoked
-  // on another thread.
+  // name of the newly-loaded locale, or an empty string if initialization
+  // failed (e.g. resource bundle not found or corrupted). Future calls to get
+  // strings will return the strings for this new locale. This has no effect on
+  // existing or future image resources. |locale_resources_data_| is protected
+  // by a lock for the duration of the swap, as GetLocalizedString() may be
+  // concurrently invoked on another thread.
   std::string ReloadLocaleResources(const std::string& pref_locale);
 
   // Gets image with the specified resource_id from the current module data.
@@ -219,7 +224,7 @@ class UI_BASE_EXPORT ResourceBundle {
   // loading code of ResourceBundle.
   gfx::Image& GetNativeImageNamed(int resource_id);
 
-  // Loads the raw bytes of a scale independent data resource.
+  // Loads the raw bytes of a scale independent data resource or null.
   base::RefCountedMemory* LoadDataResourceBytes(int resource_id) const;
 
   // Whether the |resource_id| is gzipped in this bundle. False is also returned
@@ -233,7 +238,7 @@ class UI_BASE_EXPORT ResourceBundle {
   // Loads the raw bytes of a data resource nearest the scale factor
   // |scale_factor| into |bytes|. If the resource is compressed, decompress
   // before returning. Use ResourceHandle::SCALE_FACTOR_NONE for scale
-  // independent image resources (such as wallpaper). Returns nullptr if we fail
+  // independent image resources (such as wallpaper). Returns null if we fail
   // to read the resource.
   base::RefCountedMemory* LoadDataResourceBytesForScale(
       int resource_id,
@@ -461,7 +466,7 @@ class UI_BASE_EXPORT ResourceBundle {
   base::string16 GetLocalizedStringImpl(int resource_id);
 
   // This pointer is guaranteed to outlive the ResourceBundle instance and may
-  // be NULL.
+  // be null.
   Delegate* delegate_;
 
   // Protects |locale_resources_data_|.

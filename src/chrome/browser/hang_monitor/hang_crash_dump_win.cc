@@ -6,8 +6,8 @@
 
 #include <windows.h>
 
-#include "base/logging.h"
-#include "components/crash/content/app/crash_export_thunks.h"
+#include "base/check.h"
+#include "components/crash/core/app/crash_export_thunks.h"
 
 namespace {
 

@@ -19,31 +19,31 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = multidevice_setup.BrowserProxyImpl.getInstance();
   },
 
   /** @private */
-  openSettings_: function() {
+  openSettings_() {
     this.browserProxy_.openMultiDeviceSettings();
   },
 
   /** @private */
-  onSettingsLinkClicked_: function() {
+  onSettingsLinkClicked_() {
     this.openSettings_();
     this.fire('setup-exited');
   },
 
   /** @private */
-  getMessageHtml_: function() {
-    const validNodeFn = (node, value) => node.tagName == 'A';
+  getMessageHtml_() {
+    const validNodeFn = (node, value) => node.tagName === 'A';
     return this.i18nAdvanced(
         'setupSucceededPageMessage',
         {attrs: {'id': validNodeFn, 'href': validNodeFn}});
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     const linkElement = this.$$('#settings-link');
     linkElement.setAttribute('href', '#');
     linkElement.addEventListener('click', () => this.onSettingsLinkClicked_());

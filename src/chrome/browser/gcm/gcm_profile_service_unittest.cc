@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
@@ -72,9 +73,8 @@ std::unique_ptr<KeyedService> BuildGCMProfileService(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   return std::make_unique<gcm::GCMProfileService>(
       profile->GetPrefs(), profile->GetPath(),
       base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),
@@ -185,11 +185,9 @@ void GCMProfileServiceTest::RegisterAndWaitForCompletion(
     const std::vector<std::string>& sender_ids) {
   base::RunLoop run_loop;
   gcm_profile_service_->driver()->Register(
-      kTestAppID,
-      sender_ids,
-      base::Bind(&GCMProfileServiceTest::RegisterCompleted,
-                 base::Unretained(this),
-                 run_loop.QuitClosure()));
+      kTestAppID, sender_ids,
+      base::BindOnce(&GCMProfileServiceTest::RegisterCompleted,
+                     base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 }
 
@@ -197,9 +195,8 @@ void GCMProfileServiceTest::UnregisterAndWaitForCompletion() {
   base::RunLoop run_loop;
   gcm_profile_service_->driver()->Unregister(
       kTestAppID,
-      base::Bind(&GCMProfileServiceTest::UnregisterCompleted,
-                 base::Unretained(this),
-                 run_loop.QuitClosure()));
+      base::BindOnce(&GCMProfileServiceTest::UnregisterCompleted,
+                     base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 }
 
@@ -207,12 +204,9 @@ void GCMProfileServiceTest::SendAndWaitForCompletion(
     const OutgoingMessage& message) {
   base::RunLoop run_loop;
   gcm_profile_service_->driver()->Send(
-      kTestAppID,
-      kUserID,
-      message,
-      base::Bind(&GCMProfileServiceTest::SendCompleted,
-                 base::Unretained(this),
-                 run_loop.QuitClosure()));
+      kTestAppID, kUserID, message,
+      base::BindOnce(&GCMProfileServiceTest::SendCompleted,
+                     base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 }
 

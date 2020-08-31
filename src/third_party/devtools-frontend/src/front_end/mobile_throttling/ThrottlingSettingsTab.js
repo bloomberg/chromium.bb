@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
+import * as UI from '../ui/ui.js';
+
 /**
  * @implements {UI.ListWidget.Delegate}
  * @unrestricted
  */
-export class ThrottlingSettingsTab extends UI.VBox {
+export class ThrottlingSettingsTab extends UI.Widget.VBox {
   constructor() {
     super(true);
     this.registerRequiredCSS('mobile_throttling/throttlingSettingsTab.css');
@@ -15,16 +19,16 @@ export class ThrottlingSettingsTab extends UI.VBox {
     header.textContent = ls`Network Throttling Profiles`;
     UI.ARIAUtils.markAsHeading(header, 1);
 
-    const addButton = UI.createTextButton(
-        Common.UIString('Add custom profile...'), this._addButtonClicked.bind(this), 'add-conditions-button');
+    const addButton = UI.UIUtils.createTextButton(
+        Common.UIString.UIString('Add custom profile...'), this._addButtonClicked.bind(this), 'add-conditions-button');
     this.contentElement.appendChild(addButton);
 
-    this._list = new UI.ListWidget(this);
+    this._list = new UI.ListWidget.ListWidget(this);
     this._list.element.classList.add('conditions-list');
     this._list.registerRequiredCSS('mobile_throttling/throttlingSettingsTab.css');
     this._list.show(this.contentElement);
 
-    this._customSetting = Common.moduleSetting('customNetworkConditions');
+    this._customSetting = Common.Settings.Settings.instance().moduleSetting('customNetworkConditions');
     this._customSetting.addChangeListener(this._conditionsUpdated, this);
 
     this.setDefaultFocusedElement(addButton);
@@ -61,7 +65,8 @@ export class ThrottlingSettingsTab extends UI.VBox {
    */
   renderItem(item, editable) {
     const conditions = /** @type {!SDK.NetworkManager.Conditions} */ (item);
-    const element = createElementWithClass('div', 'conditions-list-item');
+    const element = document.createElement('div');
+    element.classList.add('conditions-list-item');
     const title = element.createChild('div', 'conditions-list-text conditions-list-title');
     const titleText = title.createChild('div', 'conditions-list-title-text');
     titleText.textContent = conditions.title;
@@ -71,7 +76,8 @@ export class ThrottlingSettingsTab extends UI.VBox {
     element.createChild('div', 'conditions-list-separator');
     element.createChild('div', 'conditions-list-text').textContent = throughputText(conditions.upload);
     element.createChild('div', 'conditions-list-separator');
-    element.createChild('div', 'conditions-list-text').textContent = Common.UIString('%dms', conditions.latency);
+    element.createChild('div', 'conditions-list-text').textContent =
+        Common.UIString.UIString('%dms', conditions.latency);
     return element;
   }
 
@@ -195,8 +201,13 @@ export class ThrottlingSettingsTab extends UI.VBox {
      * @return {!UI.ListWidget.ValidatorResult}
      */
     function titleValidator(item, index, input) {
+      const maxLength = 49;
       const value = input.value.trim();
-      const valid = value.length > 0 && value.length < 50;
+      const valid = value.length > 0 && value.length <= maxLength;
+      if (!valid) {
+        const errorMessage = ls`Profile Name characters length must be between 1 to ${maxLength} inclusive`;
+        return {valid, errorMessage};
+      }
       return {valid};
     }
 
@@ -207,8 +218,17 @@ export class ThrottlingSettingsTab extends UI.VBox {
      * @return {!UI.ListWidget.ValidatorResult}
      */
     function throughputValidator(item, index, input) {
+      const minThroughput = 0;
+      const maxThroughput = 10000000;
       const value = input.value.trim();
-      const valid = !value || (/^[\d]+(\.\d+)?|\.\d+$/.test(value) && value >= 0 && value <= 10000000);
+      const parsedValue = Number(value);
+      const throughput = input.getAttribute('aria-label');
+      const valid = !Number.isNaN(parsedValue) && parsedValue >= minThroughput && parsedValue <= maxThroughput;
+      if (!valid) {
+        const errorMessage =
+            ls`${throughput} must be a number between ${minThroughput}kb/s to ${maxThroughput}kb/s inclusive`;
+        return {valid, errorMessage};
+      }
       return {valid};
     }
 
@@ -219,8 +239,15 @@ export class ThrottlingSettingsTab extends UI.VBox {
      * @return {!UI.ListWidget.ValidatorResult}
      */
     function latencyValidator(item, index, input) {
+      const minLatency = 0;
+      const maxLatency = 1000000;
       const value = input.value.trim();
-      const valid = !value || (/^[\d]+$/.test(value) && value >= 0 && value <= 1000000);
+      const parsedValue = Number(value);
+      const valid = Number.isInteger(parsedValue) && parsedValue >= minLatency && parsedValue <= maxLatency;
+      if (!valid) {
+        const errorMessage = ls`Latency must be an integer between ${minLatency}ms to ${maxLatency}ms inclusive`;
+        return {valid, errorMessage};
+      }
       return {valid};
     }
   }
@@ -238,21 +265,10 @@ export function throughputText(throughput, plainText) {
   const throughputInKbps = throughput / (1024 / 8);
   const delimiter = plainText ? '' : ' ';
   if (throughputInKbps < 1024) {
-    return Common.UIString('%d%skb/s', throughputInKbps, delimiter);
+    return Common.UIString.UIString('%d%skb/s', throughputInKbps, delimiter);
   }
   if (throughputInKbps < 1024 * 10) {
-    return Common.UIString('%.1f%sMb/s', throughputInKbps / 1024, delimiter);
+    return Common.UIString.UIString('%.1f%sMb/s', throughputInKbps / 1024, delimiter);
   }
-  return Common.UIString('%d%sMb/s', (throughputInKbps / 1024) | 0, delimiter);
+  return Common.UIString.UIString('%d%sMb/s', (throughputInKbps / 1024) | 0, delimiter);
 }
-
-/* Legacy exported object */
-self.MobileThrottling = self.MobileThrottling || {};
-
-/* Legacy exported object */
-MobileThrottling = MobileThrottling || {};
-
-/** @constructor */
-MobileThrottling.ThrottlingSettingsTab = ThrottlingSettingsTab;
-
-MobileThrottling.throughputText = throughputText;

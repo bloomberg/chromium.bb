@@ -56,7 +56,7 @@ _TEST_RESOURCES_MAP_1 = {
 
 _TEST_NAMESPACES_1 = {'android': 'http://schemas.android.com/apk/res/android'}
 
-_TEST_RESOURCES_WHITELIST_1 = ['low_memory_error', 'structured_text']
+_TEST_RESOURCES_ALLOWLIST_1 = ['low_memory_error', 'structured_text']
 
 # Extracted from one generated Chromium R.txt file, with string resource
 # names shuffled randomly.
@@ -78,10 +78,10 @@ int styleable SnackbarLayout_android_maxWidth 0
 int styleable SnackbarLayout_elevation 2
 '''
 
-# Test whitelist R.txt file. Note that AlternateErrorPagesEnabledTitle is
+# Test allowlist R.txt file. Note that AlternateErrorPagesEnabledTitle is
 # listed as an 'anim' and should thus be skipped. Similarly the string
 # 'ThisStringDoesNotAppear' should not be in the final result.
-_TEST_WHITELIST_R_TXT = r'''int anim AlternateErrorPagesEnabledTitle 0x7f0eeeee
+_TEST_ALLOWLIST_R_TXT = r'''int anim AlternateErrorPagesEnabledTitle 0x7f0eeeee
 int string AllowedDomainsForAppsDesc 0x7f0c0105
 int string AlternateErrorPagesEnabledDesc 0x7f0c0107
 int string ThisStringDoesNotAppear 0x7f0fffff
@@ -119,14 +119,14 @@ class ResourceUtilsTest(unittest.TestCase):
           resource_utils.GetRTxtStringResourceNames(tmp_file),
           _TEST_R_TXT_STRING_RESOURCE_NAMES)
 
-  def test_GenerateStringResourcesWhitelist(self):
+  def test_GenerateStringResourcesAllowList(self):
     with build_utils.TempDir() as tmp_dir:
       tmp_module_rtxt_file = _CreateTestFile(tmp_dir, "test_R.txt", _TEST_R_TXT)
-      tmp_whitelist_rtxt_file = _CreateTestFile(tmp_dir, "test_whitelist_R.txt",
-                                                _TEST_WHITELIST_R_TXT)
+      tmp_allowlist_rtxt_file = _CreateTestFile(tmp_dir, "test_allowlist_R.txt",
+                                                _TEST_ALLOWLIST_R_TXT)
       self.assertDictEqual(
-          resource_utils.GenerateStringResourcesWhitelist(
-              tmp_module_rtxt_file, tmp_whitelist_rtxt_file),
+          resource_utils.GenerateStringResourcesAllowList(
+              tmp_module_rtxt_file, tmp_allowlist_rtxt_file),
           _TEST_R_TEXT_RESOURCES_IDS)
 
   def test_IsAndroidLocaleQualifier(self):
@@ -179,11 +179,17 @@ class ResourceUtilsTest(unittest.TestCase):
     _TEST_ANDROID_TO_CHROMIUM_LOCALE_MAP = {
         'foo': 'foo',
         'foo-rBAR': 'foo-BAR',
-        'b+foo': 'foo',
-        'b+foo+BAR': 'foo-BAR',
-        'b+foo+BAR+Whatever': 'foo-BAR',
-        'b+foo+Whatever+BAR': 'foo-BAR',
-        'b+foo+Whatever': 'foo',
+        'b+lll': 'lll',
+        'b+ll+Extra': 'll',
+        'b+ll+RR': 'll-RR',
+        'b+lll+RR+Extra': 'lll-RR',
+        'b+ll+RRR+Extra': 'll-RRR',
+        'b+ll+Ssss': 'll-Ssss',
+        'b+ll+Ssss+Extra': 'll-Ssss',
+        'b+ll+Ssss+RR': 'll-Ssss-RR',
+        'b+ll+Ssss+RRR': 'll-Ssss-RRR',
+        'b+ll+Ssss+RRR+Extra': 'll-Ssss-RRR',
+        'b+ll+Whatever': 'll',
         'en': 'en',
         'en-rUS': 'en-US',
         'en-US': None,
@@ -195,6 +201,7 @@ class ResourceUtilsTest(unittest.TestCase):
         'fil': 'fil',
         'iw': 'he',
         'iw-rIL': 'he-IL',
+        'b+iw+IL': 'he-IL',
         'in': 'id',
         'in-rBAR': 'id-BAR',
         'id-rBAR': 'id-BAR',
@@ -260,7 +267,7 @@ class ResourceUtilsTest(unittest.TestCase):
       test_file = self._CreateTestResourceFile(
           tmp_path, 'foo', _TEST_RESOURCES_MAP_1, _TEST_NAMESPACES_1)
       resource_utils.FilterAndroidResourceStringsXml(
-          test_file, lambda x: x in _TEST_RESOURCES_WHITELIST_1)
+          test_file, lambda x: x in _TEST_RESOURCES_ALLOWLIST_1)
       self._CheckTestResourceFile(test_file, _TEST_XML_OUTPUT_2)
 
 

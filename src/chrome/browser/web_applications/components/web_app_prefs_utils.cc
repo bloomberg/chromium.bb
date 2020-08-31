@@ -52,15 +52,31 @@ std::unique_ptr<prefs::DictionaryValueUpdate> UpdateWebAppDictionary(
 //   "web_app_ids": {
 //     "<app_id_1>": {
 //       "was_external_app_uninstalled_by_user": true,
+//       "file_handlers_enabled": true,
+//       A double representing the number of seconds since epoch, in local time.
+//       Convert from/to using base::Time::FromDoubleT() and
+//       base::Time::ToDoubleT().
+//       "file_handling_origin_trial_expiry_time": 1580475600000
 //     },
 //     "<app_id_N>": {
 //       "was_external_app_uninstalled_by_user": false,
+//       "file_handlers_enabled": false,
+//       "file_handling_origin_trial_expiry_time": 0
 //     }
 //   }
 // }
 //
 const char kWasExternalAppUninstalledByUser[] =
     "was_external_app_uninstalled_by_user";
+
+const char kFileHandlersEnabled[] = "file_handlers_enabled";
+
+const char kFileHandlingOriginTrialExpiryTime[] =
+    "file_handling_origin_trial_expiry_time";
+
+const char kExperimentalTabbedWindowMode[] = "experimental_tabbed_window_mode";
+
+const char kLatestWebAppInstallSource[] = "latest_web_app_install_source";
 
 void WebAppPrefsUtilsRegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -88,6 +104,61 @@ void UpdateBoolWebAppPref(PrefService* pref_service,
   std::unique_ptr<prefs::DictionaryValueUpdate> web_app_prefs =
       UpdateWebAppDictionary(update.Get(), app_id);
   web_app_prefs->SetBoolean(path, value);
+}
+
+base::Optional<int> GetIntWebAppPref(const PrefService* pref_service,
+                                     const AppId& app_id,
+                                     base::StringPiece path) {
+  const base::DictionaryValue* web_app_prefs =
+      GetWebAppDictionary(pref_service, app_id);
+  if (web_app_prefs)
+    return web_app_prefs->FindIntPath(path);
+  return base::nullopt;
+}
+
+void UpdateIntWebAppPref(PrefService* pref_service,
+                         const AppId& app_id,
+                         base::StringPiece path,
+                         int value) {
+  prefs::ScopedDictionaryPrefUpdate update(pref_service,
+                                           prefs::kWebAppsPreferences);
+
+  std::unique_ptr<prefs::DictionaryValueUpdate> web_app_prefs =
+      UpdateWebAppDictionary(update.Get(), app_id);
+  web_app_prefs->SetInteger(path, value);
+}
+
+base::Optional<double> GetDoubleWebAppPref(const PrefService* pref_service,
+                                           const AppId& app_id,
+                                           base::StringPiece path) {
+  const base::DictionaryValue* web_app_prefs =
+      GetWebAppDictionary(pref_service, app_id);
+  if (web_app_prefs)
+    return web_app_prefs->FindDoublePath(path);
+  return base::nullopt;
+}
+
+void UpdateDoubleWebAppPref(PrefService* pref_service,
+                            const AppId& app_id,
+                            base::StringPiece path,
+                            double value) {
+  prefs::ScopedDictionaryPrefUpdate update(pref_service,
+                                           prefs::kWebAppsPreferences);
+
+  std::unique_ptr<prefs::DictionaryValueUpdate> web_app_prefs =
+      UpdateWebAppDictionary(update.Get(), app_id);
+  web_app_prefs->SetDouble(path, value);
+}
+
+void RemoveWebAppPref(PrefService* pref_service,
+                      const AppId& app_id,
+                      base::StringPiece path) {
+  prefs::ScopedDictionaryPrefUpdate update(pref_service,
+                                           prefs::kWebAppsPreferences);
+
+  std::unique_ptr<prefs::DictionaryValueUpdate> web_app_prefs =
+      UpdateWebAppDictionary(update.Get(), app_id);
+  web_app_prefs->Remove(path, nullptr);
 }
 
 }  // namespace web_app

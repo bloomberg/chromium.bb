@@ -4,11 +4,14 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_adaptor.h"
 
-#include "base/logging.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
+#include "base/check.h"
+#import "ios/chrome/browser/main/browser.h"
+#include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
-#import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -21,20 +24,15 @@
 
 #pragma mark - TabSwitcher
 
-- (id<ApplicationCommands, OmniboxFocuser, ToolbarCommands>)dispatcher {
-  return static_cast<id<ApplicationCommands, OmniboxFocuser, ToolbarCommands>>(
-      self.adaptedDispatcher);
-}
-
-- (void)restoreInternalStateWithMainTabModel:(TabModel*)mainModel
-                                 otrTabModel:(TabModel*)otrModel
-                              activeTabModel:(TabModel*)activeModel {
+- (void)restoreInternalStateWithMainBrowser:(Browser*)mainBrowser
+                                 otrBrowser:(Browser*)otrBrowser
+                              activeBrowser:(Browser*)activeBrowser {
   // The only action here is to signal to the tab grid which panel should be
   // active.
-  if (activeModel == otrModel) {
-    self.tabGridPager.activePage = TabGridPageIncognitoTabs;
+  if (activeBrowser == otrBrowser) {
+    self.tabGridViewController.activePage = TabGridPageIncognitoTabs;
   } else {
-    self.tabGridPager.activePage = TabGridPageRegularTabs;
+    self.tabGridViewController.activePage = TabGridPageRegularTabs;
   }
 }
 
@@ -42,30 +40,24 @@
   return self.tabGridViewController;
 }
 
-- (void)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
-                        withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
-                                  atIndex:(NSUInteger)position {
-  NSUInteger tabIndex = position;
-  if (position > targetModel.count)
-    tabIndex = targetModel.count;
+- (void)dismissWithNewTabAnimationToBrowser:(Browser*)browser
+                          withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
+                                    atIndex:(int)position {
+  int tabIndex = std::min(position, browser->GetWebStateList()->count());
 
-  // Create the new tab.
-  [targetModel insertWebStateWithLoadParams:urlLoadParams.web_params
-                                     opener:nil
-                                openedByDOM:NO
-                                    atIndex:tabIndex
-                               inBackground:NO];
+  TabInsertionBrowserAgent::FromBrowser(browser)->InsertWebState(
+      urlLoadParams.web_params, nil, false, tabIndex, false);
 
   // Tell the delegate to display the tab.
   DCHECK(self.delegate);
   [self.delegate tabSwitcher:self
-      shouldFinishWithActiveModel:targetModel
-                     focusOmnibox:NO];
+      shouldFinishWithBrowser:browser
+                 focusOmnibox:NO];
 }
 
-- (void)setOtrTabModel:(TabModel*)otrModel {
+- (void)setOtrBrowser:(Browser*)browser {
   DCHECK(self.incognitoMediator);
-  self.incognitoMediator.tabModel = otrModel;
+  self.incognitoMediator.browser = browser;
 }
 
 @end

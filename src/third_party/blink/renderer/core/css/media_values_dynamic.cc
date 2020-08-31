@@ -160,6 +160,10 @@ NavigationControls MediaValuesDynamic::GetNavigationControls() const {
   return CalculateNavigationControls(frame_);
 }
 
+ScreenSpanning MediaValuesDynamic::GetScreenSpanning() const {
+  return CalculateScreenSpanning(frame_);
+}
+
 Document* MediaValuesDynamic::GetDocument() const {
   return frame_->GetDocument();
 }
@@ -168,7 +172,7 @@ bool MediaValuesDynamic::HasValues() const {
   return frame_;
 }
 
-void MediaValuesDynamic::Trace(blink::Visitor* visitor) {
+void MediaValuesDynamic::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   MediaValues::Trace(visitor);
 }

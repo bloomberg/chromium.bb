@@ -11,6 +11,7 @@
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/webui_url_constants.h"
+#include "content/public/test/browser_test.h"
 #include "ui/base/ui_base_features.h"
 
 namespace extensions {
@@ -23,9 +24,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, SendSyntheticKeyEvent) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, GetDisplayLanguageTest) {
+IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest,
+                       GetDisplayNameForLocaleTest) {
   ASSERT_TRUE(
-      RunExtensionSubtest("accessibility_private/", "display_language.html"))
+      RunExtensionSubtest("accessibility_private/", "display_locale.html"))
       << message_;
 }
 

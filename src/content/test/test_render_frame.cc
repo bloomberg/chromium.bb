@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
@@ -26,7 +27,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/data_url.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_navigation_control.h"
@@ -100,8 +101,20 @@ class MockFrameHost : public mojom::FrameHost {
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override {}
 
-  void DidAddContentSecurityPolicies(
-      const std::vector<ContentSecurityPolicy>&) override {}
+  void set_overlay_routing_token(const base::UnguessableToken& token) {
+    overlay_routing_token_ = token;
+  }
+
+  size_t request_overlay_routing_token_called() {
+    return request_overlay_routing_token_called_;
+  }
+
+  void RequestOverlayRoutingToken(
+      media::RoutingTokenCallback callback) override {
+    request_overlay_routing_token_called_++;
+    if (overlay_routing_token_.has_value())
+      std::move(callback).Run(overlay_routing_token_.value());
+  }
 
  protected:
   // mojom::FrameHost:
@@ -121,16 +134,48 @@ class MockFrameHost : public mojom::FrameHost {
     return true;
   }
 
+  bool CreateNewWidget(
+      mojo::PendingRemote<::content::mojom::Widget> widget,
+      mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
+          blink_widget_host,
+      mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget,
+      int32_t* out_routing_id) override {
+    MockRenderThread* mock_render_thread =
+        static_cast<MockRenderThread*>(RenderThread::Get());
+    *out_routing_id = mock_render_thread->GetNextRoutingID();
+    return true;
+  }
+
+  void CreateNewWidget(
+      mojo::PendingRemote<mojom::Widget> widget,
+      mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
+          blink_widget_host,
+      mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget,
+      CreateNewWidgetCallback callback) override {
+    std::move(callback).Run(MSG_ROUTING_NONE);
+  }
+
+  void CreateNewFullscreenWidget(
+      mojo::PendingRemote<mojom::Widget> widget,
+      mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
+          blink_widget_host,
+      mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget,
+      CreateNewFullscreenWidgetCallback callback) override {
+    std::move(callback).Run(MSG_ROUTING_NONE);
+  }
+
   void CreatePortal(mojo::PendingAssociatedReceiver<blink::mojom::Portal>,
                     mojo::PendingAssociatedRemote<blink::mojom::PortalClient>,
                     CreatePortalCallback callback) override {
-    std::move(callback).Run(MSG_ROUTING_NONE, base::UnguessableToken(),
+    std::move(callback).Run(MSG_ROUTING_NONE, FrameReplicationState(),
+                            base::UnguessableToken(), base::UnguessableToken(),
                             base::UnguessableToken());
   }
 
   void AdoptPortal(const base::UnguessableToken&,
                    AdoptPortalCallback callback) override {
-    std::move(callback).Run(MSG_ROUTING_NONE, FrameReplicationState(),
+    std::move(callback).Run(MSG_ROUTING_NONE, viz::FrameSinkId(),
+                            FrameReplicationState(), base::UnguessableToken(),
                             base::UnguessableToken());
   }
 
@@ -154,18 +199,18 @@ class MockFrameHost : public mojom::FrameHost {
                                   net::CertStatus cert_status) override {}
 
   void ResourceLoadComplete(
-      mojom::ResourceLoadInfoPtr resource_load_info) override {}
+      blink::mojom::ResourceLoadInfoPtr resource_load_info) override {}
 
   void DidChangeName(const std::string& name,
                      const std::string& unique_name) override {}
 
   void DidSetFramePolicyHeaders(
-      blink::WebSandboxFlags sandbox_flags,
-      const blink::ParsedFeaturePolicy& parsed_header) override {}
+      network::mojom::WebSandboxFlags sandbox_flags,
+      const blink::ParsedFeaturePolicy& feature_policy_header,
+      const blink::DocumentPolicy::FeatureState& document_policy_header)
+      override {}
 
   void CancelInitialHistoryLoad() override {}
-
-  void DocumentOnLoadCompleted() override {}
 
   void UpdateEncoding(const std::string& encoding_name) override {}
 
@@ -179,10 +224,6 @@ class MockFrameHost : public mojom::FrameHost {
       std::move(did_add_message_to_console_callback_).Run(msg);
     }
   }
-
-  void DidFailLoadWithError(const GURL& url,
-                            int error_code,
-                            const base::string16& error_description) override {}
 
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override {}
@@ -198,6 +239,9 @@ class MockFrameHost : public mojom::FrameHost {
 
   base::OnceCallback<void(const base::string16& msg)>
       did_add_message_to_console_callback_;
+
+  size_t request_overlay_routing_token_called_ = 0;
+  base::Optional<base::UnguessableToken> overlay_routing_token_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFrameHost);
 };
@@ -258,6 +302,7 @@ void TestRenderFrame::NavigateWithError(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::CommitNavigationParamsPtr commit_params,
     int error_code,
+    const net::ResolveErrorInfo& resolve_error_info,
     const base::Optional<std::string>& error_page_content) {
   mock_navigation_client_.reset();
   BindNavigationClient(
@@ -265,17 +310,18 @@ void TestRenderFrame::NavigateWithError(
           .BindNewEndpointAndPassDedicatedReceiverForTesting());
   mock_navigation_client_->CommitFailedNavigation(
       std::move(common_params), std::move(commit_params),
-      false /* has_stale_copy_in_cache */, error_code, error_page_content,
-      nullptr,
+      false /* has_stale_copy_in_cache */, error_code, resolve_error_info,
+      error_page_content, nullptr,
       base::BindOnce(&MockFrameHost::DidCommitProvisionalLoad,
                      base::Unretained(mock_frame_host_.get())));
 }
 
-void TestRenderFrame::SwapOut(
+void TestRenderFrame::Unload(
     int proxy_routing_id,
     bool is_loading,
-    const FrameReplicationState& replicated_frame_state) {
-  OnSwapOut(proxy_routing_id, is_loading, replicated_frame_state);
+    const FrameReplicationState& replicated_frame_state,
+    const base::UnguessableToken& frame_token) {
+  OnUnload(proxy_routing_id, is_loading, replicated_frame_state, frame_token);
 }
 
 void TestRenderFrame::SetEditableSelectionOffsets(int start, int end) {
@@ -298,10 +344,6 @@ void TestRenderFrame::CollapseSelection() {
   GetFrameInputHandler()->CollapseSelection();
 }
 
-void TestRenderFrame::SetAccessibilityMode(ui::AXMode new_mode) {
-  OnSetAccessibilityMode(new_mode);
-}
-
 void TestRenderFrame::SetCompositionFromExistingText(
     int start,
     int end,
@@ -316,9 +358,8 @@ void TestRenderFrame::BeginNavigation(
     auto navigation_params = blink::WebNavigationParams::CreateWithHTMLString(
         next_navigation_html_override_.value(), info->url_request.Url());
     next_navigation_html_override_ = base::nullopt;
-    frame_->CommitNavigation(
-        std::move(navigation_params), nullptr /* extra_data */,
-        base::DoNothing::Once() /* call_before_attaching_new_document */);
+    frame_->CommitNavigation(std::move(navigation_params),
+                             nullptr /* extra_data */);
     return;
   }
   if (info->navigation_policy == blink::kWebNavigationPolicyCurrentTab &&
@@ -328,8 +369,8 @@ void TestRenderFrame::BeginNavigation(
     // BeginNavigation will be called from Blink and we should avoid
     // going through browser process in this case.
     GURL url = info->url_request.Url();
-    auto navigation_params = std::make_unique<blink::WebNavigationParams>();
-    navigation_params->url = url;
+    auto navigation_params =
+        blink::WebNavigationParams::CreateFromInfo(*info.get());
     if (!url.IsAboutBlank() && !url.IsAboutSrcdoc()) {
       std::string mime_type, charset, data;
       if (!net::DataURL::Parse(url, &mime_type, &charset, &data)) {
@@ -342,9 +383,8 @@ void TestRenderFrame::BeginNavigation(
           navigation_params.get(), blink::WebString::FromUTF8(mime_type),
           blink::WebString::FromUTF8(charset), data);
     }
-    frame_->CommitNavigation(
-        std::move(navigation_params), nullptr /* extra_data */,
-        base::DoNothing::Once() /* call_before_attaching_new_document */);
+    frame_->CommitNavigation(std::move(navigation_params),
+                             nullptr /* extra_data */);
     return;
   }
   RenderFrameImpl::BeginNavigation(std::move(info));
@@ -368,6 +408,23 @@ TestRenderFrame::TakeLastInterfaceProviderReceiver() {
 mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
 TestRenderFrame::TakeLastBrowserInterfaceBrokerReceiver() {
   return mock_frame_host_->TakeLastBrowserInterfaceBrokerReceiver();
+}
+
+void TestRenderFrame::SimulateBeforeUnload(bool is_reload) {
+  // This will execute the BeforeUnload event in this frame and all of its
+  // local descendant frames, including children of remote frames. The browser
+  // process will send separate IPCs to dispatch beforeunload in any
+  // out-of-process child frames.
+  frame_->DispatchBeforeUnloadEvent(is_reload);
+}
+
+void TestRenderFrame::SetOverlayRoutingToken(
+    const base::UnguessableToken& token) {
+  mock_frame_host_->set_overlay_routing_token(token);
+}
+
+size_t TestRenderFrame::RequestOverlayRoutingTokenCalled() {
+  return mock_frame_host_->request_overlay_routing_token_called();
 }
 
 mojom::FrameHost* TestRenderFrame::GetFrameHost() {

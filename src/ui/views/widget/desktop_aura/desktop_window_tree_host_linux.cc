@@ -4,6 +4,12 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 
+#include <algorithm>
+#include <list>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "ui/aura/null_window_targeter.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
@@ -23,16 +29,10 @@
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #endif
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostLinux*)
-
 namespace views {
 
 std::list<gfx::AcceleratedWidget>* DesktopWindowTreeHostLinux::open_windows_ =
     nullptr;
-
-DEFINE_UI_CLASS_PROPERTY_KEY(DesktopWindowTreeHostLinux*,
-                             kHostForRootWindow,
-                             nullptr)
 
 namespace {
 
@@ -76,30 +76,13 @@ DesktopWindowTreeHostLinux::DesktopWindowTreeHostLinux(
     : DesktopWindowTreeHostPlatform(native_widget_delegate,
                                     desktop_native_widget_aura) {}
 
-DesktopWindowTreeHostLinux::~DesktopWindowTreeHostLinux() {
-  window()->ClearProperty(kHostForRootWindow);
-}
-
-// static
-aura::Window* DesktopWindowTreeHostLinux::GetContentWindowForWidget(
-    gfx::AcceleratedWidget widget) {
-  auto* host = DesktopWindowTreeHostLinux::GetHostForWidget(widget);
-  return host ? host->GetContentWindow() : nullptr;
-}
-
-// static
-DesktopWindowTreeHostLinux* DesktopWindowTreeHostLinux::GetHostForWidget(
-    gfx::AcceleratedWidget widget) {
-  aura::WindowTreeHost* host =
-      aura::WindowTreeHost::GetForAcceleratedWidget(widget);
-  return host ? host->window()->GetProperty(kHostForRootWindow) : nullptr;
-}
+DesktopWindowTreeHostLinux::~DesktopWindowTreeHostLinux() = default;
 
 // static
 std::vector<aura::Window*> DesktopWindowTreeHostLinux::GetAllOpenWindows() {
   std::vector<aura::Window*> windows(open_windows().size());
   std::transform(open_windows().begin(), open_windows().end(), windows.begin(),
-                 GetContentWindowForWidget);
+                 DesktopWindowTreeHostPlatform::GetContentWindowForWidget);
   return windows;
 }
 
@@ -110,17 +93,13 @@ void DesktopWindowTreeHostLinux::CleanUpWindowList(
     return;
   while (!open_windows_->empty()) {
     gfx::AcceleratedWidget widget = open_windows_->front();
-    func(GetContentWindowForWidget(widget));
+    func(DesktopWindowTreeHostPlatform::GetContentWindowForWidget(widget));
     if (!open_windows_->empty() && open_windows_->front() == widget)
       open_windows_->erase(open_windows_->begin());
   }
 
   delete open_windows_;
   open_windows_ = nullptr;
-}
-
-void DesktopWindowTreeHostLinux::SetPendingXVisualId(int x_visual_id) {
-  pending_x_visual_id_ = x_visual_id;
 }
 
 gfx::Rect DesktopWindowTreeHostLinux::GetXRootWindowOuterBounds() const {
@@ -173,8 +152,6 @@ void DesktopWindowTreeHostLinux::Init(const Widget::InitParams& params) {
 
 void DesktopWindowTreeHostLinux::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
-  window()->SetProperty(kHostForRootWindow, this);
-
   CreateNonClientEventFilter();
   DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(params);
 }
@@ -196,6 +173,15 @@ void DesktopWindowTreeHostLinux::InitModalType(ui::ModalType modal_type) {
       // is rare.
       NOTIMPLEMENTED();
   }
+}
+
+Widget::MoveLoopResult DesktopWindowTreeHostLinux::RunMoveLoop(
+    const gfx::Vector2d& drag_offset,
+    Widget::MoveLoopSource source,
+    Widget::MoveLoopEscapeBehavior escape_behavior) {
+  GetContentWindow()->SetCapture();
+  return DesktopWindowTreeHostPlatform::RunMoveLoop(drag_offset, source,
+                                                    escape_behavior);
 }
 
 void DesktopWindowTreeHostLinux::OnDisplayMetricsChanged(
@@ -291,6 +277,14 @@ void DesktopWindowTreeHostLinux::OnActivationChanged(bool active) {
   DesktopWindowTreeHostPlatform::OnActivationChanged(active);
 }
 
+ui::X11Extension* DesktopWindowTreeHostLinux::GetX11Extension() {
+  return ui::GetX11Extension(*(platform_window()));
+}
+
+const ui::X11Extension* DesktopWindowTreeHostLinux::GetX11Extension() const {
+  return ui::GetX11Extension(*(platform_window()));
+}
+
 #if BUILDFLAG(USE_ATK)
 bool DesktopWindowTreeHostLinux::OnAtkKeyEvent(AtkKeyEventStruct* atk_event) {
   if (!IsActive() && !HasCapture())
@@ -299,6 +293,11 @@ bool DesktopWindowTreeHostLinux::OnAtkKeyEvent(AtkKeyEventStruct* atk_event) {
          ui::DiscardAtkKeyEvent::Discard;
 }
 #endif
+
+bool DesktopWindowTreeHostLinux::IsOverrideRedirect(bool is_tiling_wm) const {
+  // BrowserDesktopWindowTreeHostLinux implements this for browser windows.
+  return false;
+}
 
 void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
     const Widget::InitParams& params,
@@ -333,8 +332,6 @@ void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
   properties->wm_class_class = params.wm_class_class;
   properties->wm_role_name = params.wm_role_name;
 
-  properties->x_visual_id = pending_x_visual_id_;
-
   DCHECK(!properties->x11_extension_delegate);
   properties->x11_extension_delegate = this;
 }
@@ -355,10 +352,6 @@ void DesktopWindowTreeHostLinux::DestroyNonClientEventFilter() {
   non_client_window_event_filter_.reset();
 }
 
-void DesktopWindowTreeHostLinux::OnXWindowMapped() {}
-
-void DesktopWindowTreeHostLinux::OnXWindowUnmapped() {}
-
 void DesktopWindowTreeHostLinux::GetWindowMask(const gfx::Size& size,
                                                SkPath* window_mask) {
   DCHECK(window_mask);
@@ -378,14 +371,6 @@ void DesktopWindowTreeHostLinux::EnableEventListening() {
   DCHECK_GT(modal_dialog_counter_, 0UL);
   if (!--modal_dialog_counter_)
     targeter_for_modal_.reset();
-}
-
-ui::X11Extension* DesktopWindowTreeHostLinux::GetX11Extension() {
-  return ui::GetX11Extension(*(platform_window()));
-}
-
-const ui::X11Extension* DesktopWindowTreeHostLinux::GetX11Extension() const {
-  return ui::GetX11Extension(*(platform_window()));
 }
 
 std::list<gfx::AcceleratedWidget>& DesktopWindowTreeHostLinux::open_windows() {

@@ -24,17 +24,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as Components from '../components/components.js';  // eslint-disable-line no-unused-vars
+import * as Host from '../host/host.js';
+import * as Platform from '../platform/platform.js';
+import * as SDK from '../sdk/sdk.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+import * as UI from '../ui/ui.js';
+
+import {CustomPreviewComponent} from './CustomPreviewComponent.js';
+import {JavaScriptREPL} from './JavaScriptREPL.js';
+import {createSpansForNodeTitle, RemoteObjectPreviewFormatter} from './RemoteObjectPreviewFormatter.js';
+
 /**
  * @unrestricted
  */
-export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
+export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow {
   /**
-   * @param {!SDK.RemoteObject} object
+   * @param {!SDK.RemoteObject.RemoteObject} object
    * @param {?string|!Element=} title
-   * @param {!Components.Linkifier=} linkifier
+   * @param {!Components.Linkifier.Linkifier=} linkifier
    * @param {?string=} emptyPlaceholder
    * @param {boolean=} ignoreHasOwnProperty
-   * @param {!Array.<!SDK.RemoteObjectProperty>=} extraProperties
+   * @param {!Array.<!SDK.RemoteObject.RemoteObjectProperty>=} extraProperties
    * @param {boolean=} showOverflow
    */
   constructor(object, title, linkifier, emptyPlaceholder, ignoreHasOwnProperty, extraProperties, showOverflow) {
@@ -67,8 +79,8 @@ export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
   }
 
   /**
-   * @param {!SDK.RemoteObject} object
-   * @param {!Components.Linkifier=} linkifier
+   * @param {!SDK.RemoteObject.RemoteObject} object
+   * @param {!Components.Linkifier.Linkifier=} linkifier
    * @param {boolean=} skipProto
    * @param {boolean=} readOnly
    * @return {!Element}
@@ -78,23 +90,24 @@ export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
         ObjectPropertiesSection.defaultObjectPropertiesSection(object, linkifier, skipProto, readOnly);
     if (!object.hasChildren) {
       return objectPropertiesSection.titleElement;
-    } else {
-      return objectPropertiesSection.element;
     }
+    return objectPropertiesSection.element;
   }
 
   /**
-   * @param {!SDK.RemoteObject} object
-   * @param {!Components.Linkifier=} linkifier
+   * @param {!SDK.RemoteObject.RemoteObject} object
+   * @param {!Components.Linkifier.Linkifier=} linkifier
    * @param {boolean=} skipProto
    * @param {boolean=} readOnly
    * @return {!ObjectPropertiesSection}
    */
   static defaultObjectPropertiesSection(object, linkifier, skipProto, readOnly) {
-    const titleElement = createElementWithClass('span', 'source-code');
-    const shadowRoot = UI.createShadowRootWithCoreStyles(titleElement, 'object_ui/objectValue.css');
-    shadowRoot.appendChild(
-        ObjectPropertiesSection.createValueElement(object, /* wasThrown */ false, /* showPreview */ true));
+    const titleElement = document.createElement('span');
+    titleElement.classList.add('source-code');
+    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(titleElement, 'object_ui/objectValue.css');
+    const propertyValue =
+        ObjectPropertiesSection.createPropertyValue(object, /* wasThrown */ false, /* showPreview */ true);
+    shadowRoot.appendChild(propertyValue.element);
     const objectPropertiesSection = new ObjectPropertiesSection(object, titleElement, linkifier);
     objectPropertiesSection.editable = false;
     if (skipProto) {
@@ -108,8 +121,8 @@ export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
   }
 
   /**
-   * @param {!SDK.RemoteObjectProperty} propertyA
-   * @param {!SDK.RemoteObjectProperty} propertyB
+   * @param {!SDK.RemoteObject.RemoteObjectProperty} propertyA
+   * @param {!SDK.RemoteObject.RemoteObjectProperty} propertyB
    * @return {number}
    */
   static CompareProperties(propertyA, propertyB) {
@@ -155,17 +168,17 @@ export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
    */
   static createNameElement(name, isPrivate) {
     if (name === null) {
-      return UI.html`<span class="name"></span>`;
+      return UI.Fragment.html`<span class="name"></span>`;
     }
     if (/^\s|\s$|^$|\n/.test(name)) {
-      return UI.html`<span class="name">"${name.replace(/\n/g, '\u21B5')}"</span>`;
+      return UI.Fragment.html`<span class="name">"${name.replace(/\n/g, '\u21B5')}"</span>`;
     }
     if (isPrivate) {
-      return UI.html`<span class="name">
+      return UI.Fragment.html`<span class="name">
         <span class="private-property-hash">${name[0]}</span>${name.substring(1)}
       </span>`;
     }
-    return UI.html`<span class="name">${name}</span>`;
+    return UI.Fragment.html`<span class="name">${name}</span>`;
   }
 
   /**
@@ -175,7 +188,8 @@ export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
    * @return {!Element} valueElement
    */
   static valueElementForFunctionDescription(description, includePreview, defaultName) {
-    const valueElement = createElementWithClass('span', 'object-value-function');
+    const valueElement = document.createElement('span');
+    valueElement.classList.add('object-value-function');
     description = description || '';
     const text = description.replace(/^function [gs]et /, 'function ')
                      .replace(/^function [gs]et\(/, 'function\(')
@@ -219,7 +233,7 @@ export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
       if (defaultName) {
         abbreviation = defaultName + '()';
       } else if (text.length > maxArrowFunctionCharacterLength) {
-        abbreviation = text.substring(0, firstArrowIndex + 2) + ' {\u2026}';
+        abbreviation = text.substring(0, firstArrowIndex + 2) + ' {…}';
       }
       addElements('', text, abbreviation);
     } else {
@@ -262,32 +276,32 @@ export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
   }
 
   /**
-   * @param {!SDK.RemoteObject} value
+   * @param {!SDK.RemoteObject.RemoteObject} value
    * @param {boolean} wasThrown
    * @param {boolean} showPreview
    * @param {!Element=} parentElement
-   * @param {!Components.Linkifier=} linkifier
-   * @return {!Element}
+   * @param {!Components.Linkifier.Linkifier=} linkifier
+   * @return {!ObjectPropertyValue}
    */
-  static createValueElementWithCustomSupport(value, wasThrown, showPreview, parentElement, linkifier) {
+  static createPropertyValueWithCustomSupport(value, wasThrown, showPreview, parentElement, linkifier) {
     if (value.customPreview()) {
-      const result = (new ObjectUI.CustomPreviewComponent(value)).element;
+      const result = (new CustomPreviewComponent(value)).element;
       result.classList.add('object-properties-section-custom-section');
-      return result;
+      return new ObjectPropertyValue(result);
     }
-    return ObjectPropertiesSection.createValueElement(value, wasThrown, showPreview, parentElement, linkifier);
+    return ObjectPropertiesSection.createPropertyValue(value, wasThrown, showPreview, parentElement, linkifier);
   }
 
   /**
-   * @param {!SDK.RemoteObject} value
+   * @param {!SDK.RemoteObject.RemoteObject} value
    * @param {boolean} wasThrown
    * @param {boolean} showPreview
    * @param {!Element=} parentElement
-   * @param {!Components.Linkifier=} linkifier
-   * @return {!Element}
+   * @param {!Components.Linkifier.Linkifier=} linkifier
+   * @return {!ObjectPropertyValue}
    */
-  static createValueElement(value, wasThrown, showPreview, parentElement, linkifier) {
-    let valueElement;
+  static createPropertyValue(value, wasThrown, showPreview, parentElement, linkifier) {
+    let propertyValue;
     const type = value.type;
     const subtype = value.subtype;
     const description = value.description;
@@ -295,81 +309,95 @@ export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
       const rawLocation = value.debuggerModel().createRawLocationByScriptId(
           value.value.scriptId, value.value.lineNumber, value.value.columnNumber);
       if (rawLocation && linkifier) {
-        return linkifier.linkifyRawLocation(rawLocation, '');
+        return new ObjectPropertyValue(linkifier.linkifyRawLocation(rawLocation, ''));
       }
-      valueElement = createUnknownInternalLocationElement();
+      propertyValue = new ObjectPropertyValue(createUnknownInternalLocationElement());
     } else if (type === 'string' && typeof description === 'string') {
-      valueElement = createStringElement();
+      propertyValue = createStringElement();
     } else if (type === 'function') {
-      valueElement = ObjectPropertiesSection.valueElementForFunctionDescription(description);
+      propertyValue = new ObjectPropertyValue(ObjectPropertiesSection.valueElementForFunctionDescription(description));
     } else if (type === 'object' && subtype === 'node' && description) {
-      valueElement = createNodeElement();
+      propertyValue = new ObjectPropertyValue(createNodeElement());
     } else if (type === 'number' && description && description.indexOf('e') !== -1) {
-      valueElement = createNumberWithExponentElement();
+      propertyValue = new ObjectPropertyValue(createNumberWithExponentElement());
       if (parentElement)  // FIXME: do it in the caller.
       {
         parentElement.classList.add('hbox');
       }
     } else {
-      valueElement = createElementWithClass('span', 'object-value-' + (subtype || type));
-      valueElement.title = description || '';
+      const valueElement = document.createElement('span');
+      valueElement.classList.add('object-value-' + (subtype || type));
       if (value.preview && showPreview) {
-        const previewFormatter = new ObjectUI.RemoteObjectPreviewFormatter();
+        const previewFormatter = new RemoteObjectPreviewFormatter();
         previewFormatter.appendObjectPreview(valueElement, value.preview, false /* isEntry */);
-      } else if (description.length > ObjectUI.ObjectPropertiesSection._maxRenderableStringLength) {
-        valueElement.appendChild(UI.createExpandableText(description, 50));
+        propertyValue = new ObjectPropertyValue(valueElement);
+        propertyValue.element.title = description || '';
+      } else if (
+          description.length >
+          (self.ObjectUI.ObjectPropertiesSection._maxRenderableStringLength || maxRenderableStringLength)) {
+        propertyValue = new ExpandableTextPropertyValue(valueElement, description, 50);
       } else {
-        valueElement.textContent = description;
+        propertyValue = new ObjectPropertyValue(valueElement);
+        propertyValue.element.textContent = description;
+        propertyValue.element.title = description || '';
       }
     }
 
     if (wasThrown) {
-      const wrapperElement = createElementWithClass('span', 'error value');
-      wrapperElement.appendChild(UI.formatLocalized('[Exception: %s]', [valueElement]));
-      return wrapperElement;
+      const wrapperElement = document.createElement('span');
+      wrapperElement.classList.add('error');
+      wrapperElement.classList.add('value');
+      wrapperElement.appendChild(UI.UIUtils.formatLocalized('[Exception: %s]', [propertyValue.element]));
+      propertyValue.element = wrapperElement;
     }
-    valueElement.classList.add('value');
-    return valueElement;
+    propertyValue.element.classList.add('value');
+    return propertyValue;
 
     /**
      * @return {!Element}
      */
     function createUnknownInternalLocationElement() {
-      const valueElement = createElementWithClass('span');
-      valueElement.textContent = '<' + Common.UIString('unknown') + '>';
+      const valueElement = document.createElement('span');
+      valueElement.textContent = '<' + Common.UIString.UIString('unknown') + '>';
       valueElement.title = description || '';
       return valueElement;
     }
 
     /**
-     * @return {!Element}
+     * @return {!ObjectPropertyValue}
      */
     function createStringElement() {
-      const valueElement = createElementWithClass('span', 'object-value-string');
+      const valueElement = document.createElement('span');
+      valueElement.classList.add('object-value-string');
       const text = description.replace(/\n/g, '\u21B5');
+      let propertyValue;
       valueElement.createChild('span', 'object-value-string-quote').textContent = '"';
-      if (description.length > ObjectUI.ObjectPropertiesSection._maxRenderableStringLength) {
-        valueElement.appendChild(UI.createExpandableText(text, 50));
+      if (description.length >
+          (self.ObjectUI.ObjectPropertiesSection._maxRenderableStringLength || maxRenderableStringLength)) {
+        propertyValue = new ExpandableTextPropertyValue(valueElement, text, 50);
       } else {
         valueElement.createTextChild(text);
+        propertyValue = new ObjectPropertyValue(valueElement);
+        valueElement.title = description || '';
       }
       valueElement.createChild('span', 'object-value-string-quote').textContent = '"';
-      valueElement.title = description || '';
-      return valueElement;
+      return propertyValue;
     }
 
     /**
      * @return {!Element}
      */
     function createNodeElement() {
-      const valueElement = createElementWithClass('span', 'object-value-node');
-      ObjectUI.RemoteObjectPreviewFormatter.createSpansForNodeTitle(valueElement, /** @type {string} */ (description));
+      const valueElement = document.createElement('span');
+      valueElement.classList.add('object-value-node');
+      createSpansForNodeTitle(valueElement, /** @type {string} */ (description));
       valueElement.addEventListener('click', event => {
         Common.Revealer.reveal(value);
         event.consume(true);
       }, false);
-      valueElement.addEventListener('mousemove', () => SDK.OverlayModel.highlightObjectAsDOMNode(value), false);
-      valueElement.addEventListener('mouseleave', () => SDK.OverlayModel.hideDOMNodeHighlight(), false);
+      valueElement.addEventListener(
+          'mousemove', () => SDK.OverlayModel.OverlayModel.highlightObjectAsDOMNode(value), false);
+      valueElement.addEventListener('mouseleave', () => SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(), false);
       return valueElement;
     }
 
@@ -377,7 +405,8 @@ export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
      * @return {!Element}
      */
     function createNumberWithExponentElement() {
-      const valueElement = createElementWithClass('span', 'object-value-number');
+      const valueElement = document.createElement('span');
+      valueElement.classList.add('object-value-number');
       const numberParts = description.split('e');
       valueElement.createChild('span', 'object-value-scientific-notation-mantissa').textContent = numberParts[0];
       valueElement.createChild('span', 'object-value-scientific-notation-exponent').textContent = 'e' + numberParts[1];
@@ -388,7 +417,7 @@ export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
   }
 
   /**
-   * @param {!SDK.RemoteObject} func
+   * @param {!SDK.RemoteObject.RemoteObject} func
    * @param {!Element} element
    * @param {boolean} linkify
    * @param {boolean=} includePreview
@@ -418,8 +447,8 @@ export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
   }
 
   /**
-   * @param {!SDK.RemoteObjectProperty} property
-   * @param {!SDK.RemoteObjectProperty=} parentProperty
+   * @param {!SDK.RemoteObject.RemoteObjectProperty} property
+   * @param {!SDK.RemoteObject.RemoteObjectProperty=} parentProperty
    * @return {boolean}
    */
   static _isDisplayableProperty(property, parentProperty) {
@@ -447,7 +476,7 @@ export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
   }
 
   /**
-   * @return {!UI.TreeElement}
+   * @return {!UI.TreeOutline.TreeElement}
    */
   objectTreeElement() {
     return this._objectTreeElement;
@@ -458,9 +487,9 @@ export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
   }
 
   _contextMenuEventFired(event) {
-    const contextMenu = new UI.ContextMenu(event);
+    const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.appendApplicableItems(this._object);
-    if (this._object instanceof SDK.LocalJSONObject) {
+    if (this._object instanceof SDK.RemoteObject.LocalJSONObject) {
       contextMenu.viewSection().appendItem(
           ls`Expand recursively`,
           this._objectTreeElement.expandRecursively.bind(this._objectTreeElement, Number.MAX_VALUE));
@@ -481,11 +510,11 @@ export default class ObjectPropertiesSection extends UI.TreeOutlineInShadow {
 const _arrayLoadThreshold = 100;
 
 /** @const */
-export const _maxRenderableStringLength = 10000;
+export const maxRenderableStringLength = 10000;
 
-export class ObjectPropertiesSectionsTreeOutline extends UI.TreeOutlineInShadow {
+export class ObjectPropertiesSectionsTreeOutline extends UI.TreeOutline.TreeOutlineInShadow {
   /**
-   * @param {?ObjectUI.ObjectPropertiesSectionsTreeOutlineOptions=} options
+   * @param {?TreeOutlineOptions=} options
    */
   constructor(options) {
     super();
@@ -501,13 +530,13 @@ export class ObjectPropertiesSectionsTreeOutline extends UI.TreeOutlineInShadow 
 /**
  * @unrestricted
  */
-export class RootElement extends UI.TreeElement {
+export class RootElement extends UI.TreeOutline.TreeElement {
   /**
-   * @param {!SDK.RemoteObject} object
-   * @param {!Components.Linkifier=} linkifier
+   * @param {!SDK.RemoteObject.RemoteObject} object
+   * @param {!Components.Linkifier.Linkifier=} linkifier
    * @param {?string=} emptyPlaceholder
    * @param {boolean=} ignoreHasOwnProperty
-   * @param {!Array.<!SDK.RemoteObjectProperty>=} extraProperties
+   * @param {!Array.<!SDK.RemoteObject.RemoteObjectProperty>=} extraProperties
    */
   constructor(object, linkifier, emptyPlaceholder, ignoreHasOwnProperty, extraProperties) {
     const contentElement = createElement('slot');
@@ -566,10 +595,10 @@ export class RootElement extends UI.TreeElement {
 /**
  * @unrestricted
  */
-export class ObjectPropertyTreeElement extends UI.TreeElement {
+export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
   /**
-   * @param {!SDK.RemoteObjectProperty} property
-   * @param {!Components.Linkifier=} linkifier
+   * @param {!SDK.RemoteObject.RemoteObjectProperty} property
+   * @param {!Components.Linkifier.Linkifier=} linkifier
    */
   constructor(property, linkifier) {
     // Pass an empty title, the title gets made later in onattach.
@@ -584,14 +613,14 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!UI.TreeElement} treeElement
-   * @param {!SDK.RemoteObject} value
+   * @param {!UI.TreeOutline.TreeElement} treeElement
+   * @param {!SDK.RemoteObject.RemoteObject} value
    * @param {boolean} skipProto
-   * @param {!Components.Linkifier=} linkifier
+   * @param {!Components.Linkifier.Linkifier=} linkifier
    * @param {?string=} emptyPlaceholder
    * @param {boolean=} flattenProtoChain
-   * @param {!Array.<!SDK.RemoteObjectProperty>=} extraProperties
-   * @param {!SDK.RemoteObject=} targetValue
+   * @param {!Array.<!SDK.RemoteObject.RemoteObjectProperty>=} extraProperties
+   * @param {!SDK.RemoteObject.RemoteObject=} targetValue
    * @return {!Promise}
    */
   static async _populate(
@@ -606,7 +635,7 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
     if (flattenProtoChain) {
       allProperties = await value.getAllProperties(false /* accessorPropertiesOnly */, true /* generatePreview */);
     } else {
-      allProperties = await SDK.RemoteObject.loadFromObjectPerProto(value, true /* generatePreview */);
+      allProperties = await SDK.RemoteObject.RemoteObject.loadFromObjectPerProto(value, true /* generatePreview */);
     }
     const properties = allProperties.properties;
     const internalProperties = allProperties.internalProperties;
@@ -625,22 +654,17 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!UI.TreeElement} treeNode
-   * @param {!Array.<!SDK.RemoteObjectProperty>} properties
-   * @param {?Array.<!SDK.RemoteObjectProperty>} internalProperties
+   * @param {!UI.TreeOutline.TreeElement} treeNode
+   * @param {!Array.<!SDK.RemoteObject.RemoteObjectProperty>} properties
+   * @param {?Array.<!SDK.RemoteObject.RemoteObjectProperty>} internalProperties
    * @param {boolean} skipProto
-   * @param {?SDK.RemoteObject} value
-   * @param {!Components.Linkifier=} linkifier
+   * @param {?SDK.RemoteObject.RemoteObject} value
+   * @param {!Components.Linkifier.Linkifier=} linkifier
    * @param {?string=} emptyPlaceholder
    */
   static populateWithProperties(
-      treeNode,
-      properties,
-      internalProperties,
-      skipProto,
-      value,
-      linkifier,
-      emptyPlaceholder) {
+      treeNode, properties, internalProperties, skipProto, value, linkifier, emptyPlaceholder) {
+    properties.sort(ObjectPropertiesSection.CompareProperties);
     internalProperties = internalProperties || [];
 
     const entriesProperty = internalProperties.find(property => property.name === '[[Entries]]');
@@ -666,12 +690,14 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
       }
 
       if (property.isOwn && property.getter) {
-        const getterProperty = new SDK.RemoteObjectProperty('get ' + property.name, property.getter, false);
+        const getterProperty =
+            new SDK.RemoteObject.RemoteObjectProperty('get ' + property.name, property.getter, false);
         getterProperty.parentObject = value;
         tailProperties.push(getterProperty);
       }
       if (property.isOwn && property.setter) {
-        const setterProperty = new SDK.RemoteObjectProperty('set ' + property.name, property.setter, false);
+        const setterProperty =
+            new SDK.RemoteObject.RemoteObjectProperty('set ' + property.name, property.setter, false);
         setterProperty.parentObject = value;
         tailProperties.push(setterProperty);
       }
@@ -700,34 +726,35 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!UI.TreeElement} treeNode
+   * @param {!UI.TreeOutline.TreeElement} treeNode
    * @param {?string=} emptyPlaceholder
    */
   static _appendEmptyPlaceholderIfNeeded(treeNode, emptyPlaceholder) {
     if (treeNode.childCount()) {
       return;
     }
-    const title = createElementWithClass('div', 'gray-info-message');
-    title.textContent = emptyPlaceholder || Common.UIString('No properties');
-    const infoElement = new UI.TreeElement(title);
+    const title = document.createElement('div');
+    title.classList.add('gray-info-message');
+    title.textContent = emptyPlaceholder || Common.UIString.UIString('No properties');
+    const infoElement = new UI.TreeOutline.TreeElement(title);
     treeNode.appendChild(infoElement);
   }
 
   /**
-   * @param {?SDK.RemoteObject} object
+   * @param {?SDK.RemoteObject.RemoteObject} object
    * @param {!Array.<string>} propertyPath
-   * @param {function(!SDK.CallFunctionResult)} callback
+   * @param {function(!SDK.RemoteObject.CallFunctionResult)} callback
    * @return {!Element}
    */
   static createRemoteObjectAccessorPropertySpan(object, propertyPath, callback) {
     const rootElement = createElement('span');
     const element = rootElement.createChild('span');
-    element.textContent = Common.UIString('(...)');
+    element.textContent = Common.UIString.UIString('(...)');
     if (!object) {
       return rootElement;
     }
     element.classList.add('object-value-calculate-value-button');
-    element.title = Common.UIString('Invoke property getter');
+    element.title = Common.UIString.UIString('Invoke property getter');
     element.addEventListener('click', onInvokeGetterClick, false);
 
     function onInvokeGetterClick(event) {
@@ -758,7 +785,7 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
    * @return {boolean}
    */
   setSearchRegex(regex, additionalCssClassName) {
-    let cssClasses = UI.highlightedSearchResultClassName;
+    let cssClasses = UI.UIUtils.highlightedSearchResultClassName;
     if (additionalCssClassName) {
       cssClasses += ' ' + additionalCssClassName;
     }
@@ -784,16 +811,16 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
     regex.lastIndex = 0;
     let match = regex.exec(content);
     while (match) {
-      ranges.push(new TextUtils.SourceRange(match.index, match[0].length));
+      ranges.push(new TextUtils.TextRange.SourceRange(match.index, match[0].length));
       match = regex.exec(content);
     }
     if (ranges.length) {
-      UI.highlightRangesWithStyleClass(element, ranges, cssClassName, this._highlightChanges);
+      UI.UIUtils.highlightRangesWithStyleClass(element, ranges, cssClassName, this._highlightChanges);
     }
   }
 
   revertHighlightChanges() {
-    UI.revertDomChanges(this._highlightChanges);
+    UI.UIUtils.revertDomChanges(this._highlightChanges);
     this._highlightChanges = [];
   }
 
@@ -802,7 +829,7 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
    * @returns {!Promise}
    */
   async onpopulate() {
-    const propertyValue = /** @type {!SDK.RemoteObject} */ (this.property.value);
+    const propertyValue = /** @type {!SDK.RemoteObject.RemoteObject} */ (this.property.value);
     console.assert(propertyValue);
     const skipProto = this.treeOutline ? this.treeOutline._skipProto : true;
     const targetValue = this.property.name !== '__proto__' ? propertyValue : this.property.parentObject;
@@ -817,7 +844,8 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
   ondblclick(event) {
     const inEditableElement = event.target.isSelfOrDescendant(this.valueElement) ||
         (this.expandedValueElement && event.target.isSelfOrDescendant(this.expandedValueElement));
-    if (!this.property.value.customPreview() && inEditableElement && (this.property.writable || this.property.setter)) {
+    if (this.property.value && !this.property.value.customPreview() && inEditableElement &&
+        (this.property.writable || this.property.setter)) {
       this._startEditing();
     }
     return false;
@@ -872,7 +900,7 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!SDK.RemoteObject} value
+   * @param {!SDK.RemoteObject.RemoteObject} value
    * @return {?Element}
    */
   _createExpandedValueElement(value) {
@@ -882,7 +910,8 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
       return null;
     }
 
-    const valueElement = createElementWithClass('span', 'value');
+    const valueElement = document.createElement('span');
+    valueElement.classList.add('value');
     if (value.description === 'Object') {
       valueElement.textContent = '';
     } else {
@@ -906,18 +935,21 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
 
     const isInternalEntries = this.property.synthetic && this.property.name === '[[Entries]]';
     if (isInternalEntries) {
-      this.valueElement = createElementWithClass('span', 'value');
+      this.valueElement = document.createElement('span');
+      this.valueElement.classList.add('value');
     } else if (this.property.value) {
       const showPreview = this.property.name !== '__proto__';
-      this.valueElement = ObjectPropertiesSection.createValueElementWithCustomSupport(
+      this.propertyValue = ObjectPropertiesSection.createPropertyValueWithCustomSupport(
           this.property.value, this.property.wasThrown, showPreview, this.listItemElement, this._linkifier);
+      this.valueElement = this.propertyValue.element;
     } else if (this.property.getter) {
       this.valueElement = ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(
           this.property.parentObject, [this.property.name], this._onInvokeGetterClick.bind(this));
     } else {
-      this.valueElement = createElementWithClass('span', 'object-value-undefined');
-      this.valueElement.textContent = Common.UIString('<unreadable>');
-      this.valueElement.title = Common.UIString('No property getter');
+      this.valueElement = document.createElement('span');
+      this.valueElement.classList.add('object-value-undefined');
+      this.valueElement.textContent = Common.UIString.UIString('<unreadable>');
+      this.valueElement.title = Common.UIString.UIString('No property getter');
     }
 
     const valueText = this.valueElement.textContent;
@@ -927,9 +959,10 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
 
     this.listItemElement.removeChildren();
     if (isInternalEntries) {
-      this._rowContainer = UI.html`<span class='name-and-value'>${this.nameElement}</span>`;
+      this._rowContainer = UI.Fragment.html`<span class='name-and-value'>${this.nameElement}</span>`;
     } else {
-      this._rowContainer = UI.html`<span class='name-and-value'>${this.nameElement}: ${this.valueElement}</span>`;
+      this._rowContainer =
+          UI.Fragment.html`<span class='name-and-value'>${this.nameElement}: ${this.valueElement}</span>`;
     }
     this.listItemElement.appendChild(this._rowContainer);
   }
@@ -946,8 +979,9 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
       return;
     }
 
-    const useDotNotation = /^(_|\$|[A-Z])(_|\$|[A-Z]|\d)*$/i;
-    const isInteger = /^[1-9]\d*$/;
+    // https://tc39.es/ecma262/#prod-IdentifierName
+    const useDotNotation = /^(?:[$_\p{ID_Start}])(?:[$_\u200C\u200D\p{ID_Continue}])*$/u;
+    const isInteger = /^(?:0|[1-9]\d*)$/;
 
     const parentPath =
         (this.parent.nameElement && !this.parent.property.synthetic) ? this.parent.nameElement.title : '';
@@ -955,9 +989,9 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
     if (this.property.private || useDotNotation.test(name)) {
       this.nameElement.title = parentPath ? `${parentPath}.${name}` : name;
     } else if (isInteger.test(name)) {
-      this.nameElement.title = parentPath + '[' + name + ']';
+      this.nameElement.title = `${parentPath}[${name}]`;
     } else {
-      this.nameElement.title = parentPath + '["' + JSON.stringify(name) + '"]';
+      this.nameElement.title = `${parentPath}[${JSON.stringify(name)}]`;
     }
   }
 
@@ -965,7 +999,7 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
    * @param {!Event} event
    */
   _contextMenuFired(event) {
-    const contextMenu = new UI.ContextMenu(event);
+    const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.appendApplicableItems(this);
     if (this.property.symbol) {
       contextMenu.appendApplicableItems(this.property.symbol);
@@ -974,13 +1008,16 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
       contextMenu.appendApplicableItems(this.property.value);
     }
     if (!this.property.synthetic && this.nameElement && this.nameElement.title) {
-      const copyPathHandler =
-          Host.InspectorFrontendHost.copyText.bind(Host.InspectorFrontendHost, this.nameElement.title);
+      const copyPathHandler = Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(
+          Host.InspectorFrontendHost.InspectorFrontendHostInstance, this.nameElement.title);
       contextMenu.clipboardSection().appendItem(ls`Copy property path`, copyPathHandler);
     }
-    if (this.property.parentObject instanceof SDK.LocalJSONObject) {
+    if (this.property.parentObject instanceof SDK.RemoteObject.LocalJSONObject) {
       contextMenu.viewSection().appendItem(ls`Expand recursively`, this.expandRecursively.bind(this, Number.MAX_VALUE));
       contextMenu.viewSection().appendItem(ls`Collapse children`, this.collapseChildren.bind(this));
+    }
+    if (this.propertyValue) {
+      this.propertyValue.appendApplicableItems(event, contextMenu);
     }
     contextMenu.show();
   }
@@ -994,10 +1031,10 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
 
     let text = this.property.value.description;
     if (this.property.value.type === 'string' && typeof text === 'string') {
-      text = '"' + text + '"';
+      text = `"${text}"`;
     }
 
-    this._editableDiv.setTextContentTruncatedIfNeeded(text, Common.UIString('<string is too large to edit>'));
+    this._editableDiv.setTextContentTruncatedIfNeeded(text, Common.UIString.UIString('<string is too large to edit>'));
     const originalContent = this._editableDiv.textContent;
 
     // Lie about our children to prevent expanding on double click and to collapse subproperties.
@@ -1065,8 +1102,8 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
    * @param {string} expression
    */
   async _applyExpression(expression) {
-    const property = SDK.RemoteObject.toCallArgument(this.property.symbol || this.property.name);
-    expression = ObjectUI.JavaScriptREPL.wrapObjectLiteral(expression.trim());
+    const property = SDK.RemoteObject.RemoteObject.toCallArgument(this.property.symbol || this.property.name);
+    expression = JavaScriptREPL.wrapObjectLiteral(expression.trim());
 
     if (this.property.synthetic) {
       let invalidate = false;
@@ -1103,7 +1140,7 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!SDK.CallFunctionResult} result
+   * @param {!SDK.RemoteObject.CallFunctionResult} result
    */
   _onInvokeGetterClick(result) {
     if (!result.object) {
@@ -1138,16 +1175,16 @@ export class ObjectPropertyTreeElement extends UI.TreeElement {
 /**
  * @unrestricted
  */
-class ArrayGroupingTreeElement extends UI.TreeElement {
+export class ArrayGroupingTreeElement extends UI.TreeOutline.TreeElement {
   /**
-   * @param {!SDK.RemoteObject} object
+   * @param {!SDK.RemoteObject.RemoteObject} object
    * @param {number} fromIndex
    * @param {number} toIndex
    * @param {number} propertyCount
-   * @param {!Components.Linkifier=} linkifier
+   * @param {!Components.Linkifier.Linkifier=} linkifier
    */
   constructor(object, fromIndex, toIndex, propertyCount, linkifier) {
-    super(String.sprintf('[%d \u2026 %d]', fromIndex, toIndex), true);
+    super(Platform.StringUtilities.sprintf('[%d … %d]', fromIndex, toIndex), true);
     this.toggleOnClick = true;
     this._fromIndex = fromIndex;
     this._toIndex = toIndex;
@@ -1158,11 +1195,11 @@ class ArrayGroupingTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!UI.TreeElement} treeNode
-   * @param {!SDK.RemoteObject} object
+   * @param {!UI.TreeOutline.TreeElement} treeNode
+   * @param {!SDK.RemoteObject.RemoteObject} object
    * @param {number} fromIndex
    * @param {number} toIndex
-   * @param {!Components.Linkifier=} linkifier
+   * @param {!Components.Linkifier.Linkifier=} linkifier
    * @returns {!Promise}
    */
   static async _populateArray(treeNode, object, fromIndex, toIndex, linkifier) {
@@ -1170,12 +1207,12 @@ class ArrayGroupingTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!UI.TreeElement} treeNode
-   * @param {!SDK.RemoteObject} object
+   * @param {!UI.TreeOutline.TreeElement} treeNode
+   * @param {!SDK.RemoteObject.RemoteObject} object
    * @param {number} fromIndex
    * @param {number} toIndex
    * @param {boolean} topLevel
-   * @param {!Components.Linkifier=} linkifier
+   * @param {!Components.Linkifier.Linkifier=} linkifier
    * @this {ArrayGroupingTreeElement}
    * @returns {!Promise}
    */
@@ -1297,11 +1334,11 @@ class ArrayGroupingTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!UI.TreeElement} treeNode
-   * @param {!SDK.RemoteObject} object
+   * @param {!UI.TreeOutline.TreeElement} treeNode
+   * @param {!SDK.RemoteObject.RemoteObject} object
    * @param {number} fromIndex
    * @param {number} toIndex
-   * @param {!Components.Linkifier=} linkifier
+   * @param {!Components.Linkifier.Linkifier=} linkifier
    * @return {!Promise}
    * @this {ArrayGroupingTreeElement}
    */
@@ -1358,10 +1395,10 @@ class ArrayGroupingTreeElement extends UI.TreeElement {
   }
 
   /**
-   * @param {!UI.TreeElement} treeNode
-   * @param {!SDK.RemoteObject} object
+   * @param {!UI.TreeOutline.TreeElement} treeNode
+   * @param {!SDK.RemoteObject.RemoteObject} object
    * @param {boolean} skipGetOwnPropertyNames
-   * @param {!Components.Linkifier=} linkifier
+   * @param {!Components.Linkifier.Linkifier=} linkifier
    * @return {!Promise<undefined>}
    * @this {ArrayGroupingTreeElement}
    */
@@ -1443,7 +1480,7 @@ ArrayGroupingTreeElement._getOwnPropertyNamesThreshold = 500000;
 /**
  * @unrestricted
  */
-export class ObjectPropertyPrompt extends UI.TextPrompt {
+export class ObjectPropertyPrompt extends UI.TextPrompt.TextPrompt {
   constructor() {
     super();
     this.initialize(
@@ -1456,7 +1493,7 @@ export class ObjectPropertyPrompt extends UI.TextPrompt {
  */
 export class ObjectPropertiesSectionsTreeExpandController {
   /**
-   * @param {!UI.TreeOutline} treeOutline
+   * @param {!UI.TreeOutline.TreeOutline} treeOutline
    */
   constructor(treeOutline) {
     /** @type {!Set.<string>} */
@@ -1490,33 +1527,33 @@ export class ObjectPropertiesSectionsTreeExpandController {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _elementAttached(event) {
-    const element = /** @type {!UI.TreeElement} */ (event.data);
+    const element = /** @type {!UI.TreeOutline.TreeElement} */ (event.data);
     if (element.isExpandable() && this._expandedProperties.has(this._propertyPath(element))) {
       element.expand();
     }
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _elementExpanded(event) {
-    const element = /** @type {!UI.TreeElement} */ (event.data);
+    const element = /** @type {!UI.TreeOutline.TreeElement} */ (event.data);
     this._expandedProperties.add(this._propertyPath(element));
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _elementCollapsed(event) {
-    const element = /** @type {!UI.TreeElement} */ (event.data);
+    const element = /** @type {!UI.TreeOutline.TreeElement} */ (event.data);
     this._expandedProperties.delete(this._propertyPath(element));
   }
 
   /**
-   * @param {!UI.TreeElement} treeElement
+   * @param {!UI.TreeOutline.TreeElement} treeElement
    * @return {string}
    */
   _propertyPath(treeElement) {
@@ -1554,17 +1591,17 @@ ObjectPropertiesSectionsTreeExpandController._cachedPathSymbol = Symbol('cachedP
 ObjectPropertiesSectionsTreeExpandController._treeOutlineId = Symbol('treeOutlineId');
 
 /**
- * @implements {UI.Renderer}
+ * @implements {UI.UIUtils.Renderer}
  */
 export class Renderer {
   /**
    * @override
    * @param {!Object} object
-   * @param {!UI.Renderer.Options=} options
-   * @return {!Promise<?{node: !Node, tree: ?UI.TreeOutline}>}
+   * @param {!UI.UIUtils.Options=} options
+   * @return {!Promise<?{node: !Node, tree: ?UI.TreeOutline.TreeOutline}>}
    */
   render(object, options) {
-    if (!(object instanceof SDK.RemoteObject)) {
+    if (!(object instanceof SDK.RemoteObject.RemoteObject)) {
       return Promise.reject(new Error('Can\'t render ' + object));
     }
     options = options || {};
@@ -1575,48 +1612,112 @@ export class Renderer {
     }
     section.editable = !!options.editable;
     return Promise.resolve(
-        /** @type {?{node: !Node, tree: ?UI.TreeOutline}} */ ({node: section.element, tree: section}));
+        /** @type {?{node: !Node, tree: ?UI.TreeOutline.TreeOutline}} */ ({node: section.element, tree: section}));
   }
 }
 
-/* Legacy exported object */
-self.ObjectUI = self.ObjectUI || {};
-
-/* Legacy exported object */
-ObjectUI = ObjectUI || {};
-
-ObjectUI.ArrayGroupingTreeElement = ArrayGroupingTreeElement;
-
-/** @constructor */
-ObjectUI.ObjectPropertiesSection = ObjectPropertiesSection;
-
-ObjectUI.ObjectPropertiesSection._maxRenderableStringLength = _maxRenderableStringLength;
-
-/** @constructor */
-ObjectUI.ObjectPropertiesSectionsTreeOutline = ObjectPropertiesSectionsTreeOutline;
-
 /**
- * @constructor
+ * @implements {UI.ContextMenu.Provider}
  */
-ObjectUI.ObjectPropertiesSection.RootElement = RootElement;
+export class ObjectPropertyValue {
+  /**
+   * @param {!Element} element
+   */
+  constructor(element) {
+    this.element = element;
+  }
 
-/**
- * @constructor
- */
-ObjectUI.ObjectPropertiesSection.Renderer = Renderer;
+  /**
+   * @override
+   * @param {!Event} event
+   * @param {!UI.ContextMenu.ContextMenu} contextMenu
+   * @param {!Object} object
+   */
+  appendApplicableItems(event, contextMenu, object) {
+  }
+}
 
-/** @constructor */
-ObjectUI.ObjectPropertyTreeElement = ObjectPropertyTreeElement;
+export class ExpandableTextPropertyValue extends ObjectPropertyValue {
+  /**
+  * @param {!Element} element
+  * @param {string} text
+  * @param {number} maxLength
+  */
+  constructor(element, text, maxLength) {
+    // abbreviated text and expandable text controls are added as children to element
+    super(element);
+    const container = element.createChild('span');
+    this._text = text;
+    this._maxLength = maxLength;
+    container.textContent = text.slice(0, maxLength);
+    container.title = `${text.slice(0, maxLength)}…`;
+    this._expandElement = container.createChild('span');
+    this._maxDisplayableTextLength = 10000000;
 
-/** @constructor */
-ObjectUI.ObjectPropertyPrompt = ObjectPropertyPrompt;
+    const byteCount = Platform.StringUtilities.countWtf8Bytes(text);
+    const totalBytesText = Platform.NumberUtilities.bytesToString(byteCount);
+    if (this._text.length < this._maxDisplayableTextLength) {
+      this._expandElementText = ls`Show more (${totalBytesText})`;
+      this._expandElement.setAttribute('data-text', this._expandElementText);
+      this._expandElement.classList.add('expandable-inline-button');
+      this._expandElement.addEventListener('click', this._expandText.bind(this));
+      this._expandElement.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          this._expandText();
+        }
+      });
+      UI.ARIAUtils.markAsButton(this._expandElement);
+    } else {
+      this._expandElement.setAttribute('data-text', ls`long text was truncated (${totalBytesText})`);
+      this._expandElement.classList.add('undisplayable-text');
+    }
 
-/** @constructor */
-ObjectUI.ObjectPropertiesSectionsTreeExpandController = ObjectPropertiesSectionsTreeExpandController;
+    this._copyButtonText = ls`Copy`;
+    const copyButton = container.createChild('span', 'expandable-inline-button');
+    copyButton.setAttribute('data-text', this._copyButtonText);
+    copyButton.addEventListener('click', this._copyText.bind(this));
+    copyButton.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        this._copyText();
+      }
+    });
+    UI.ARIAUtils.markAsButton(copyButton);
+  }
+
+  /**
+   * @override
+   * @param {!Event} event
+   * @param {!UI.ContextMenu.ContextMenu} contextMenu
+   * @param {!Object} object
+   */
+  appendApplicableItems(event, contextMenu, object) {
+    if (this._text.length < this._maxDisplayableTextLength && this._expandElement) {
+      contextMenu.clipboardSection().appendItem(this._expandElementText, this._expandText.bind(this));
+    }
+    contextMenu.clipboardSection().appendItem(this._copyButtonText, this._copyText.bind(this));
+  }
+
+  _expandText() {
+    if (!this._expandElement) {
+      return;
+    }
+
+    if (this._expandElement.parentElement) {
+      this._expandElement.parentElement.insertBefore(
+          createTextNode(this._text.slice(this._maxLength)), this._expandElement);
+    }
+    this._expandElement.remove();
+    this._expandElement = null;
+  }
+
+  _copyText() {
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this._text);
+  }
+}
 
 /**
  * @typedef {{
  *   readOnly: (boolean|undefined),
  * }}
  */
-ObjectUI.ObjectPropertiesSectionsTreeOutlineOptions;
+export let TreeOutlineOptions;

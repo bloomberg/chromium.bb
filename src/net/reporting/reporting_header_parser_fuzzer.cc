@@ -10,6 +10,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "net/base/network_isolation_key.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_header_parser.h"
 #include "net/reporting/reporting_policy.pb.h"
@@ -21,10 +22,6 @@
 
 // Silence logging from the protobuf library.
 protobuf_mutator::protobuf::LogSilencer log_silencer;
-
-// TODO: consider including proto definition for URL after moving that to
-// testing/libfuzzer/proto and creating a separate converter.
-const GURL kUrl_ = GURL("https://origin/path");
 
 namespace net_reporting_header_parser_fuzzer {
 
@@ -40,7 +37,10 @@ void FuzzReportingHeaderParser(const std::string& data_json,
   if (!data_value)
     return;
 
-  net::ReportingHeaderParser::ParseHeader(&context, kUrl_,
+  // TODO: consider including proto definition for URL after moving that to
+  // testing/libfuzzer/proto and creating a separate converter.
+  net::ReportingHeaderParser::ParseHeader(&context, net::NetworkIsolationKey(),
+                                          GURL("https://origin/path"),
                                           std::move(data_value));
   if (context.cache()->GetEndpointCount() == 0) {
     return;

@@ -41,6 +41,7 @@
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -600,8 +601,8 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest,
   fake_intent_helper_instance_->clear_broadcasts();
 
   net::ProxyBypassRules chrome_proxy_bypass_rules;
-  chrome_proxy_bypass_rules.AddRuleForHostname("", "test1.org", -1);
-  chrome_proxy_bypass_rules.AddRuleForHostname("", "test2.org", -1);
+  chrome_proxy_bypass_rules.AddRuleFromString("test1.org");
+  chrome_proxy_bypass_rules.AddRuleFromString("test2.org");
 
   const char kArcProxyBypassList[] = "test1.org,test2.org";
 

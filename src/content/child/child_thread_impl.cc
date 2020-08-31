@@ -10,7 +10,7 @@
 
 #include "base/base_switches.h"
 #include "base/bind.h"
-#include "base/clang_coverage_buildflags.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
@@ -41,8 +41,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/tracing/child/background_tracing_agent_impl.h"
-#include "components/tracing/child/background_tracing_agent_provider_impl.h"
 #include "content/child/browser_exposed_child_interfaces.h"
 #include "content/child/child_process.h"
 #include "content/child/thread_safe_sender.h"
@@ -74,6 +72,8 @@
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
+#include "services/tracing/public/cpp/background_tracing/background_tracing_agent_impl.h"
+#include "services/tracing/public/cpp/background_tracing/background_tracing_agent_provider_impl.h"
 
 #if defined(OS_POSIX)
 #include "base/posix/global_descriptors.h"
@@ -84,7 +84,7 @@
 #include "base/mac/mach_port_rendezvous.h"
 #endif
 
-#if BUILDFLAG(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
 #include <stdio.h>
 #if defined(OS_WIN)
 #include <io.h>
@@ -243,13 +243,11 @@ class ChildThreadImpl::IOThreadState
       base::WeakPtr<ChildThreadImpl> weak_main_thread,
       base::RepeatingClosure quit_closure,
       ChildThreadImpl::Options::ServiceBinder service_binder,
-      bool wait_for_interface_binders,
       mojo::PendingReceiver<mojom::ChildProcessHost> host_receiver)
       : main_thread_task_runner_(std::move(main_thread_task_runner)),
         weak_main_thread_(std::move(weak_main_thread)),
         quit_closure_(std::move(quit_closure)),
         service_binder_(std::move(service_binder)),
-        wait_for_interface_binders_(wait_for_interface_binders),
         host_receiver_(std::move(host_receiver)) {}
 
   // Used only in the deprecated Service Manager IPC mode.
@@ -297,7 +295,8 @@ class ChildThreadImpl::IOThreadState
 
 #if defined(OS_MACOSX)
   void GetTaskPort(GetTaskPortCallback callback) override {
-    mojo::ScopedHandle task_port = mojo::WrapMachPort(mach_task_self());
+    mojo::PlatformHandle task_port(
+        (base::mac::ScopedMachSendRight(task_self_trap())));
     std::move(callback).Run(std::move(task_port));
   }
 #endif
@@ -365,7 +364,7 @@ class ChildThreadImpl::IOThreadState
       return;
     }
 
-    if (interface_binders_.Bind(&receiver))
+    if (interface_binders_.TryBind(&receiver))
       return;
 
     main_thread_task_runner_->PostTask(
@@ -373,8 +372,8 @@ class ChildThreadImpl::IOThreadState
                                   weak_main_thread_, std::move(receiver)));
   }
 
-#if BUILDFLAG(CLANG_COVERAGE)
-  void SetCoverageFile(base::File file) override {
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+  void SetProfilingFile(base::File file) override {
     // TODO(crbug.com/985574) Remove Android check when possible.
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
     // Take the file descriptor so that |file| does not close it.
@@ -396,7 +395,7 @@ class ChildThreadImpl::IOThreadState
 
   ChildThreadImpl::Options::ServiceBinder service_binder_;
   mojo::BinderMap interface_binders_;
-  bool wait_for_interface_binders_;
+  bool wait_for_interface_binders_ = true;
   mojo::Receiver<mojom::ChildProcess> receiver_{this};
   mojo::PendingReceiver<mojom::ChildProcessHost> host_receiver_;
 
@@ -511,7 +510,16 @@ ChildThreadImpl::ChildThreadImpl(base::RepeatingClosure quit_closure,
   io_thread_state_ = base::MakeRefCounted<IOThreadState>(
       base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr(),
       quit_closure_, std::move(options.service_binder),
-      options.exposes_interfaces_to_browser, std::move(host_receiver));
+      std::move(host_receiver));
+
+  // |ExposeInterfacesToBrowser()| must be called exactly once. Subclasses which
+  // set |exposes_interfaces_to_browser| in Options signify that they take
+  // responsibility for calling it.
+  //
+  // For other process types, we call it to expose only the basic set of
+  // interfaces common to all child process types.
+  if (!options.exposes_interfaces_to_browser)
+    ExposeInterfacesToBrowser(mojo::BinderMap());
 
   Init(options);
 }
@@ -562,8 +570,16 @@ void ChildThreadImpl::Init(const Options& options) {
   // IPC mode.
   mojo::ScopedMessagePipeHandle child_process_pipe;
   if (!IsInBrowserProcess()) {
+    scoped_refptr<base::SingleThreadTaskRunner> mojo_ipc_task_runner =
+        GetIOTaskRunner();
+    if (base::FeatureList::IsEnabled(features::kMojoDedicatedThread)) {
+      mojo_ipc_thread_.StartWithOptions(
+          base::Thread::Options(base::MessagePumpType::IO, 0));
+      mojo_ipc_task_runner = mojo_ipc_thread_.task_runner();
+    }
     mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(
-        GetIOTaskRunner(), mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
+        mojo_ipc_task_runner,
+        mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
     mojo::IncomingInvitation invitation = InitializeMojoIPCChannel();
     child_process_pipe = invitation.ExtractMessagePipe(0);
   } else {

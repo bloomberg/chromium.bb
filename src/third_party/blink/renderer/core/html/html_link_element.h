@@ -73,10 +73,10 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
 
   const AtomicString& GetType() const;
 
-  IconType GetIconType() const;
+  mojom::blink::FaviconIconType GetIconType() const;
 
   // the icon sizes as parsed from the HTML attribute
-  const Vector<IntSize>& IconSizes() const;
+  const Vector<gfx::Size>& IconSizes() const;
 
   bool Async() const;
 
@@ -164,7 +164,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   String importance_;
   network::mojom::ReferrerPolicy referrer_policy_;
   Member<DOMTokenList> sizes_;
-  Vector<IntSize> icon_sizes_;
+  Vector<gfx::Size> icon_sizes_;
   Member<RelList> rel_list_;
   LinkRelAttribute rel_attribute_;
   String scope_;

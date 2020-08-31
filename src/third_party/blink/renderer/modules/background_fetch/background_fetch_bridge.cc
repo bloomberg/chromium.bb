@@ -6,12 +6,11 @@
 
 #include <utility>
 
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/renderer/modules/background_fetch/background_fetch_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_background_fetch_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_image_resource.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_type_converters.h"
-#include "third_party/blink/renderer/modules/manifest/image_resource.h"
 
 namespace blink {
 
@@ -38,9 +37,15 @@ const char BackgroundFetchBridge::kSupplementName[] = "BackgroundFetchBridge";
 
 BackgroundFetchBridge::BackgroundFetchBridge(
     ServiceWorkerRegistration& registration)
-    : Supplement<ServiceWorkerRegistration>(registration) {}
+    : Supplement<ServiceWorkerRegistration>(registration),
+      background_fetch_service_(registration.GetExecutionContext()) {}
 
 BackgroundFetchBridge::~BackgroundFetchBridge() = default;
+
+void BackgroundFetchBridge::Trace(Visitor* visitor) {
+  visitor->Trace(background_fetch_service_);
+  Supplement::Trace(visitor);
+}
 
 void BackgroundFetchBridge::GetIconDisplaySize(
     GetIconDisplaySizeCallback callback) {
@@ -73,16 +78,16 @@ void BackgroundFetchBridge::DidGetRegistration(
     RegistrationCallback callback,
     mojom::blink::BackgroundFetchError error,
     mojom::blink::BackgroundFetchRegistrationPtr registration_ptr) {
-  BackgroundFetchRegistration* registration =
-      registration_ptr.To<BackgroundFetchRegistration*>();
-
-  if (registration) {
-    DCHECK_EQ(error, mojom::blink::BackgroundFetchError::NONE);
-    DCHECK_EQ(registration->result(), "");
-    registration->Initialize(
-        GetSupplementable(),
-        std::move(registration_ptr->registration_interface));
+  if (!registration_ptr || !registration_ptr->registration_data) {
+    DCHECK_NE(error, mojom::blink::BackgroundFetchError::NONE);
+    std::move(callback).Run(error, nullptr);
+    return;
   }
+
+  DCHECK_EQ(error, mojom::blink::BackgroundFetchError::NONE);
+  BackgroundFetchRegistration* registration =
+      MakeGarbageCollected<blink::BackgroundFetchRegistration>(
+          GetSupplementable(), std::move(registration_ptr));
 
   std::move(callback).Run(error, registration);
 }
@@ -93,7 +98,7 @@ void BackgroundFetchBridge::GetDeveloperIds(GetDeveloperIdsCallback callback) {
 }
 
 mojom::blink::BackgroundFetchService* BackgroundFetchBridge::GetService() {
-  if (!background_fetch_service_) {
+  if (!background_fetch_service_.is_bound()) {
     auto receiver = background_fetch_service_.BindNewPipeAndPassReceiver(
         GetSupplementable()->GetExecutionContext()->GetTaskRunner(
             TaskType::kBackgroundFetch));

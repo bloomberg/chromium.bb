@@ -33,7 +33,7 @@
 #include "third_party/blink/renderer/core/svg/svg_tests.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -41,6 +41,39 @@ class ConditionEventListener;
 class SMILTimeContainer;
 class IdTargetObserver;
 class SVGSMILElement;
+
+class CORE_EXPORT SMILInstanceTimeList {
+ public:
+  void Append(SMILTime, SMILTimeOrigin);
+  void InsertSortedAndUnique(SMILTime, SMILTimeOrigin);
+  void RemoveWithOrigin(SMILTimeOrigin);
+  void Sort();
+  SMILTime NextAfter(SMILTime) const;
+
+  wtf_size_t size() const { return instance_times_.size(); }
+  bool IsEmpty() const { return instance_times_.IsEmpty(); }
+
+  using const_iterator = typename Vector<SMILTimeWithOrigin>::const_iterator;
+  const_iterator begin() const { return instance_times_.begin(); }
+  const_iterator end() const { return instance_times_.end(); }
+
+ private:
+  static unsigned OriginToMask(SMILTimeOrigin origin) {
+    return 1u << static_cast<unsigned>(origin);
+  }
+  void AddOrigin(SMILTimeOrigin origin) {
+    time_origin_mask_ |= OriginToMask(origin);
+  }
+  void ClearOrigin(SMILTimeOrigin origin) {
+    time_origin_mask_ &= ~OriginToMask(origin);
+  }
+  bool HasOrigin(SMILTimeOrigin origin) const {
+    return (time_origin_mask_ & OriginToMask(origin)) != 0;
+  }
+
+  Vector<SMILTimeWithOrigin> instance_times_;
+  unsigned time_origin_mask_ = 0;
+};
 
 // This class implements SMIL interval timing model as needed for SVG animation.
 class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
@@ -82,12 +115,24 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime SimpleDuration() const;
 
   void UpdateInterval(SMILTime presentation_time);
-  void UpdateActiveState(SMILTime elapsed);
+  enum EventDispatchMask {
+    kDispatchNoEvent = 0,
+    kDispatchBeginEvent = 1u << 0,
+    kDispatchRepeatEvent = 1u << 1,
+    kDispatchEndEvent = 1u << 2,
+  };
+  EventDispatchMask UpdateActiveState(SMILTime presentation_time,
+                                      bool skip_repeat);
+  EventDispatchMask ComputeSeekEvents(
+      const SMILInterval& starting_interval) const;
+  void DispatchEvents(EventDispatchMask);
   void UpdateProgressState(SMILTime presentation_time);
   bool IsHigherPriorityThan(const SVGSMILElement* other,
                             SMILTime presentation_time) const;
 
-  SMILTime ComputeNextIntervalTime(SMILTime presentation_time) const;
+  enum IncludeRepeats { kIncludeRepeats, kExcludeRepeats };
+  SMILTime ComputeNextIntervalTime(SMILTime presentation_time,
+                                   IncludeRepeats) const;
   SMILTime NextProgressTime(SMILTime elapsed) const;
 
   void Reset();
@@ -96,18 +141,14 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   static SMILTime ParseOffsetValue(const String&);
 
   bool IsContributing(SMILTime elapsed) const;
+  const SMILInterval& GetActiveInterval(SMILTime presentation_time) const;
 
   unsigned DocumentOrderIndex() const { return document_order_index_; }
   void SetDocumentOrderIndex(unsigned index) { document_order_index_ = index; }
 
   wtf_size_t& PriorityQueueHandle() { return queue_handle_; }
 
-  void ScheduleEvent(const AtomicString& event_type);
-  void ScheduleRepeatEvents();
-
-  virtual bool IsSVGDiscardElement() const { return false; }
-
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   enum BeginOrEnd { kBegin, kEnd };
@@ -120,9 +161,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   virtual void WillChangeAnimationTarget();
   virtual void DidChangeAnimationTarget();
 
-  virtual void StartedActiveInterval();
-  void QueueDiscard();
-
   struct ProgressState {
     float progress;
     unsigned repeat;
@@ -130,10 +168,13 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   const ProgressState& GetProgressState() const { return last_progress_; }
 
  private:
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+
   void BuildPendingResource() override;
   void ClearResourceAndEventBaseReferences();
   void ClearConditions();
 
+  void StartedActiveInterval();
   void EndedActiveInterval();
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
@@ -151,7 +192,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void DiscardOrRevalidateCurrentInterval(SMILTime presentation_time);
   SMILTime ResolveActiveEnd(SMILTime resolved_begin) const;
   SMILTime RepeatingDuration() const;
-  const SMILInterval& GetActiveInterval(SMILTime elapsed) const;
   void SetNewInterval(const SMILInterval&);
   void SetNewIntervalEnd(SMILTime new_end);
 
@@ -175,7 +215,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
               unsigned repeat);
 
     ~Condition();
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
     Type GetType() const { return type_; }
     BeginOrEnd GetBeginOrEnd() const { return begin_or_end_; }
@@ -232,6 +272,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   ProgressState CalculateProgressState(SMILTime presentation_time) const;
 
+  SMILTime LastIntervalEndTime() const;
+
   Member<SVGElement> target_element_;
   Member<IdTargetObserver> target_id_observer_;
 
@@ -246,8 +288,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   TimeDependentSet sync_base_dependents_;
 
   // Instance time lists
-  Vector<SMILTimeWithOrigin> begin_times_;
-  Vector<SMILTimeWithOrigin> end_times_;
+  SMILInstanceTimeList begin_times_;
+  SMILInstanceTimeList end_times_;
 
   // This is the upcoming or current interval
   SMILInterval interval_;
@@ -277,23 +319,24 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   friend class ConditionEventListener;
 };
 
-inline bool IsSVGSMILElement(const SVGElement& element) {
-  return element.HasTagName(svg_names::kSetTag) ||
-         element.HasTagName(svg_names::kAnimateTag) ||
-         element.HasTagName(svg_names::kAnimateMotionTag) ||
-         element.HasTagName(svg_names::kAnimateTransformTag) ||
-         element.HasTagName((svg_names::kDiscardTag));
+template <>
+inline bool IsElementOfType<const SVGSMILElement>(const Node& node) {
+  return IsA<SVGSMILElement>(node);
 }
-
 template <>
 struct DowncastTraits<SVGSMILElement> {
   static bool AllowFrom(const Node& node) {
     auto* svg_element = DynamicTo<SVGElement>(node);
-    return svg_element && IsSVGSMILElement(*svg_element);
+    return svg_element && AllowFrom(*svg_element);
+  }
+  static bool AllowFrom(const SVGElement& svg_element) {
+    return svg_element.HasTagName(svg_names::kSetTag) ||
+           svg_element.HasTagName(svg_names::kAnimateTag) ||
+           svg_element.HasTagName(svg_names::kAnimateMotionTag) ||
+           svg_element.HasTagName(svg_names::kAnimateTransformTag);
   }
 };
 
-DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SVG_SMIL_ELEMENT_H_

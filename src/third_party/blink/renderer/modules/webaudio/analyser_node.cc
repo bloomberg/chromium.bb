@@ -25,7 +25,7 @@
 
 #include "third_party/blink/renderer/modules/webaudio/analyser_node.h"
 
-#include "third_party/blink/renderer/modules/webaudio/analyser_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_analyser_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -58,12 +58,12 @@ void AnalyserHandler::Process(uint32_t frames_to_process) {
     return;
   }
 
-  AudioBus* input_bus = Input(0).Bus();
+  scoped_refptr<AudioBus> input_bus = Input(0).Bus();
 
   // Give the analyser the audio which is passing through this
   // AudioNode.  This must always be done so that the state of the
   // Analyser reflects the current input.
-  analyser_.WriteInput(input_bus, frames_to_process);
+  analyser_.WriteInput(input_bus.get(), frames_to_process);
 
   if (!Input(0).IsConnected()) {
     // No inputs, so clear the output, and propagate the silence hint.

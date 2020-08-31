@@ -33,6 +33,9 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::FormRendererId;
+using autofill::FieldRendererId;
+
 // Test provider that records invocations of its interface methods.
 @interface TestSuggestionProvider : NSObject<FormSuggestionProvider>
 
@@ -54,7 +57,9 @@
 @implementation TestSuggestionProvider {
   NSArray* _suggestions;
   NSString* _formName;
+  FormRendererId _uniqueFormID;
   NSString* _fieldIdentifier;
+  FieldRendererId _uniqueFieldID;
   NSString* _frameID;
   FormSuggestion* _suggestion;
 }
@@ -100,12 +105,8 @@
   return _suggestion;
 }
 
-- (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
-                           fieldIdentifier:(NSString*)fieldIdentifier
-                                 fieldType:(NSString*)fieldType
-                                      type:(NSString*)type
-                                typedValue:(NSString*)typedValue
-                                   frameID:(NSString*)frameID
+- (void)checkIfSuggestionsAvailableForForm:
+            (FormSuggestionProviderQuery*)formQuery
                                isMainFrame:(BOOL)isMainFrame
                             hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
@@ -115,12 +116,7 @@
   completion([_suggestions count] > 0);
 }
 
-- (void)retrieveSuggestionsForForm:(NSString*)formName
-                   fieldIdentifier:(NSString*)fieldIdentifier
-                         fieldType:(NSString*)fieldType
-                              type:(NSString*)type
-                        typedValue:(NSString*)typedValue
-                           frameID:(NSString*)frameID
+- (void)retrieveSuggestionsForForm:(FormSuggestionProviderQuery*)formQuery
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   self.askedForSuggestions = YES;
@@ -129,13 +125,17 @@
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion
                        form:(NSString*)formName
+               uniqueFormID:(FormRendererId)uniqueFormID
             fieldIdentifier:(NSString*)fieldIdentifier
+              uniqueFieldID:(FieldRendererId)uniqueFieldID
                     frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   self.selected = YES;
   _suggestion = suggestion;
   _formName = [formName copy];
+  _uniqueFormID = uniqueFormID;
   _fieldIdentifier = [fieldIdentifier copy];
+  _uniqueFieldID = uniqueFieldID;
   _frameID = [frameID copy];
   completion();
 }
@@ -257,7 +257,7 @@ TEST_F(FormSuggestionControllerTest,
   SetUpController(@[ [TestSuggestionProvider providerWithSuggestions] ]);
   GURL url("http://foo.com");
   test_web_state_.SetCurrentURL(url);
-  web::FakeWebFrame main_frame("main_frame", /*is_main_frame=*/true, url);
+  web::FakeMainWebFrame main_frame(url);
 
   // Trigger form activity, which should set up the suggestions view.
   autofill::FormActivityParams params;
@@ -280,7 +280,7 @@ TEST_F(FormSuggestionControllerTest, FormActivityBlurShouldBeIgnored) {
   SetUpController(@[ [TestSuggestionProvider providerWithSuggestions] ]);
   GURL url("http://foo.com");
   test_web_state_.SetCurrentURL(url);
-  web::FakeWebFrame main_frame("main_frame", true, url);
+  web::FakeMainWebFrame main_frame(url);
 
   autofill::FormActivityParams params;
   params.form_name = "form";
@@ -300,7 +300,7 @@ TEST_F(FormSuggestionControllerTest,
   SetUpController(@[]);
   GURL url("http://foo.com");
   test_web_state_.SetCurrentURL(url);
-  web::FakeWebFrame main_frame("main_frame", true, url);
+  web::FakeMainWebFrame main_frame(url);
 
   autofill::FormActivityParams params;
   params.form_name = "form";
@@ -329,7 +329,7 @@ TEST_F(FormSuggestionControllerTest,
   SetUpController(@[ provider1, provider2 ]);
   GURL url("http://foo.com");
   test_web_state_.SetCurrentURL(url);
-  web::FakeWebFrame main_frame("main_frame", true, url);
+  web::FakeMainWebFrame main_frame(url);
 
   autofill::FormActivityParams params;
   params.form_name = "form";
@@ -378,7 +378,7 @@ TEST_F(FormSuggestionControllerTest,
   SetUpController(@[ provider1, provider2 ]);
   GURL url("http://foo.com");
   test_web_state_.SetCurrentURL(url);
-  web::FakeWebFrame main_frame("main_frame", true, url);
+  web::FakeMainWebFrame main_frame(url);
 
   autofill::FormActivityParams params;
   params.form_name = "form";
@@ -419,7 +419,7 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
   SetUpController(@[ provider ]);
   GURL url("http://foo.com");
   test_web_state_.SetCurrentURL(url);
-  web::FakeWebFrame main_frame("main_frame", true, url);
+  web::FakeMainWebFrame main_frame(url);
 
   autofill::FormActivityParams params;
   params.form_name = "form";

@@ -21,6 +21,8 @@ namespace syncer {
 
 static const int64_t kUncommittedVersion = -1;
 
+enum class SyncCommitError { kNetworkError, kServerError, kBadServerResponse };
+
 struct CommitRequestData {
   CommitRequestData();
   ~CommitRequestData();
@@ -43,9 +45,13 @@ struct CommitRequestData {
   DISALLOW_COPY_AND_ASSIGN(CommitRequestData);
 };
 
+// Represents a successfully committed item.
 struct CommitResponseData {
   CommitResponseData();
   CommitResponseData(const CommitResponseData& other);
+  CommitResponseData(CommitResponseData&&);
+  CommitResponseData& operator=(const CommitResponseData&);
+  CommitResponseData& operator=(CommitResponseData&&);
   ~CommitResponseData();
 
   std::string id;
@@ -60,22 +66,42 @@ struct CommitResponseData {
   base::Time unsynced_time;
 };
 
+// Represents an item, which wasn't committed due to an error.
+struct FailedCommitResponseData {
+  FailedCommitResponseData();
+  FailedCommitResponseData(const FailedCommitResponseData& other);
+  FailedCommitResponseData(FailedCommitResponseData&&);
+  FailedCommitResponseData& operator=(const FailedCommitResponseData&);
+  FailedCommitResponseData& operator=(FailedCommitResponseData&&);
+  ~FailedCommitResponseData();
+
+  ClientTagHash client_tag_hash;
+  sync_pb::CommitResponse::ResponseType response_type =
+      sync_pb::CommitResponse::TRANSIENT_ERROR;
+
+  sync_pb::CommitResponse::EntryResponse::DatatypeSpecificError
+      datatype_specific_error;
+};
+
 struct UpdateResponseData {
   UpdateResponseData();
+  UpdateResponseData(UpdateResponseData&&) = default;
+  UpdateResponseData& operator=(UpdateResponseData&&) = default;
   ~UpdateResponseData();
 
-  std::unique_ptr<EntityData> entity;
+  UpdateResponseData(const UpdateResponseData&) = delete;
+  UpdateResponseData& operator=(const UpdateResponseData&) = delete;
+
+  EntityData entity;
 
   int64_t response_version = 0;
   std::string encryption_key_name;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UpdateResponseData);
 };
 
 using CommitRequestDataList = std::vector<std::unique_ptr<CommitRequestData>>;
 using CommitResponseDataList = std::vector<CommitResponseData>;
-using UpdateResponseDataList = std::vector<std::unique_ptr<UpdateResponseData>>;
+using FailedCommitResponseDataList = std::vector<FailedCommitResponseData>;
+using UpdateResponseDataList = std::vector<UpdateResponseData>;
 
 // Returns the estimate of dynamically allocated memory in bytes.
 size_t EstimateMemoryUsage(const CommitRequestData& value);

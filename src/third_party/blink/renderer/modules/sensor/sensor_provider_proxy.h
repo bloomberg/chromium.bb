@@ -6,12 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_PROVIDER_PROXY_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/sensor.mojom-blink-forward.h"
 #include "services/device/public/mojom/sensor_provider.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
@@ -22,15 +23,15 @@ class SensorProxy;
 // 'SensorProxy' instances.
 class MODULES_EXPORT SensorProviderProxy final
     : public GarbageCollected<SensorProviderProxy>,
-      public Supplement<Document> {
+      public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(SensorProviderProxy);
 
  public:
   static const char kSupplementName[];
 
-  static SensorProviderProxy* From(Document*);
+  static SensorProviderProxy* From(LocalDOMWindow*);
 
-  explicit SensorProviderProxy(Document&);
+  explicit SensorProviderProxy(LocalDOMWindow&);
   ~SensorProviderProxy();
 
   SensorProxy* CreateSensorProxy(device::mojom::blink::SensorType, Page*);
@@ -39,7 +40,7 @@ class MODULES_EXPORT SensorProviderProxy final
   void set_inspector_mode(bool flag) { inspector_mode_ = flag; }
   bool inspector_mode() const { return inspector_mode_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class SensorProxy;
@@ -58,7 +59,9 @@ class MODULES_EXPORT SensorProviderProxy final
   void OnSensorProviderConnectionError();
   SensorsSet sensor_proxies_;
 
-  mojo::Remote<device::mojom::blink::SensorProvider> sensor_provider_;
+  HeapMojoRemote<device::mojom::blink::SensorProvider,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      sensor_provider_;
   bool inspector_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(SensorProviderProxy);

@@ -33,18 +33,11 @@
 #include "components/payments/core/payment_app.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_experimental_features.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
 
 namespace payments {
 namespace {
-
-// Checks whether any of the |apps| return true in IsValidForCanMakePayment().
-bool GetHasEnrolledInstrument(
-    const std::vector<std::unique_ptr<PaymentApp>>& apps) {
-  return std::any_of(apps.begin(), apps.end(), [](const auto& app) {
-    return app->IsValidForCanMakePayment();
-  });
-}
 
 // Invokes the |callback| with |status|.
 void CallStatusCallback(PaymentRequestState::StatusCallback callback,
@@ -64,8 +57,10 @@ void PostStatusCallback(PaymentRequestState::StatusCallback callback,
 
 PaymentRequestState::PaymentRequestState(
     content::WebContents* web_contents,
+    content::RenderFrameHost* initiator_render_frame_host,
     const GURL& top_level_origin,
     const GURL& frame_origin,
+    const url::Origin& frame_security_origin,
     PaymentRequestSpec* spec,
     Delegate* delegate,
     const std::string& app_locale,
@@ -74,8 +69,10 @@ PaymentRequestState::PaymentRequestState(
     const ServiceWorkerPaymentApp::IdentityCallback& sw_identity_callback,
     JourneyLogger* journey_logger)
     : web_contents_(web_contents),
+      initiator_render_frame_host_(initiator_render_frame_host),
       top_origin_(top_level_origin),
       frame_origin_(frame_origin),
+      frame_security_origin_(frame_security_origin),
       app_locale_(app_locale),
       spec_(spec),
       delegate_(delegate),
@@ -89,10 +86,10 @@ PaymentRequestState::PaymentRequestState(
   PopulateProfileCache();
 
   // |web_contents_| is null in unit tests.
-  PaymentAppServiceFactory::GetForContext(
-      web_contents_ ? web_contents_->GetBrowserContext() : nullptr)
-      ->Create(weak_ptr_factory_.GetWeakPtr(),
-               &number_of_payment_app_factories_);
+  PaymentAppService* service = PaymentAppServiceFactory::GetForContext(
+      web_contents_ ? web_contents_->GetBrowserContext() : nullptr);
+  number_of_payment_app_factories_ = service->GetNumberOfFactories();
+  service->Create(weak_ptr_factory_.GetWeakPtr());
 
   spec_->AddObserver(this);
 }
@@ -103,12 +100,12 @@ content::WebContents* PaymentRequestState::GetWebContents() {
   return web_contents_;
 }
 
-ContentPaymentRequestDelegate*
-PaymentRequestState::GetPaymentRequestDelegate() {
+ContentPaymentRequestDelegate* PaymentRequestState::GetPaymentRequestDelegate()
+    const {
   return payment_request_delegate_;
 }
 
-PaymentRequestSpec* PaymentRequestState::GetSpec() {
+PaymentRequestSpec* PaymentRequestState::GetSpec() const {
   return spec_;
 }
 
@@ -118,6 +115,25 @@ const GURL& PaymentRequestState::GetTopOrigin() {
 
 const GURL& PaymentRequestState::GetFrameOrigin() {
   return frame_origin_;
+}
+
+const url::Origin& PaymentRequestState::GetFrameSecurityOrigin() {
+  return frame_security_origin_;
+}
+
+content::RenderFrameHost* PaymentRequestState::GetInitiatorRenderFrameHost()
+    const {
+  return initiator_render_frame_host_;
+}
+
+const std::vector<mojom::PaymentMethodDataPtr>&
+PaymentRequestState::GetMethodData() const {
+  return GetSpec()->method_data();
+}
+
+scoped_refptr<PaymentManifestWebDataService>
+PaymentRequestState::GetPaymentManifestWebDataService() const {
+  return GetPaymentRequestDelegate()->GetPaymentManifestWebDataService();
 }
 
 const std::vector<autofill::AutofillProfile*>&
@@ -160,6 +176,17 @@ void PaymentRequestState::OnPaymentAppCreationError(
   get_all_payment_apps_error_ = error_message;
 }
 
+bool PaymentRequestState::SkipCreatingNativePaymentApps() const {
+  return false;
+}
+
+void PaymentRequestState::OnCreatingNativePaymentAppsSkipped(
+    content::PaymentAppProvider::PaymentApps unused_apps,
+    ServiceWorkerPaymentAppFinder::InstallablePaymentApps
+        unused_installable_apps) {
+  NOTREACHED();
+}
+
 void PaymentRequestState::OnDoneCreatingPaymentApps() {
   DCHECK_NE(0U, number_of_payment_app_factories_);
   if (--number_of_payment_app_factories_ > 0U)
@@ -168,7 +195,9 @@ void PaymentRequestState::OnDoneCreatingPaymentApps() {
   SetDefaultProfileSelections();
 
   get_all_apps_finished_ = true;
-  has_enrolled_instrument_ = GetHasEnrolledInstrument(available_apps_);
+  has_enrolled_instrument_ =
+      std::any_of(available_apps_.begin(), available_apps_.end(),
+                  [](const auto& app) { return app->HasEnrolledInstrument(); });
   are_requested_methods_supported_ |= !available_apps_.empty();
   NotifyOnGetAllPaymentAppsFinished();
   NotifyInitialized();
@@ -261,6 +290,13 @@ void PaymentRequestState::AreRequestedMethodsSupported(
       FROM_HERE,
       base::BindOnce(&PaymentRequestState::CheckRequestedMethodsSupported,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void PaymentRequestState::OnAbort() {
+  // Reset supported method callback when the merchant calls abort before
+  // OnDoneCreatingPaymentApps().
+  if (are_requested_methods_supported_callback_)
+    are_requested_methods_supported_callback_.Reset();
 }
 
 void PaymentRequestState::CheckRequestedMethodsSupported(
@@ -598,6 +634,7 @@ void PaymentRequestState::SetDefaultProfileSelections() {
   selected_app_ = nullptr;
   if (!available_apps_.empty() && available_apps_[0]->CanPreselect()) {
     selected_app_ = available_apps_[0].get();
+    UpdateIsReadyToPayAndNotifyObservers();
   }
 
   // Record the missing required payment fields when no complete payment

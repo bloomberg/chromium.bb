@@ -10,7 +10,7 @@ if (is_mac) {
 
 # Reset sources_assignment_filter for the BUILD.gn file to prevent
 # regression during the migration of Chromium away from the feature.
-# See build/no_sources_assignment_filter.md for more information.
+# See docs/no_sources_assignment_filter.md for more information.
 # TODO(crbug.com/1018739): remove this when migration is done.
 set_sources_assignment_filter([])
 
@@ -22,9 +22,7 @@ component("idle") {
   # All targets in this file are allowed to access any of the headers.
   friend = [ ":*" ]
 
-  public = [
-    "idle.h",
-  ]
+  public = [ "idle.h" ]
 
   deps = [
     "//base",
@@ -63,10 +61,7 @@ component("idle") {
   }
 
   if (use_x11 && !is_chromeos) {
-    configs += [
-      "//build/config/linux:x11",
-      "//build/config/linux:xscrnsaver",
-    ]
+    configs += [ "//build/config/linux:xscrnsaver" ]
     deps += [ "//ui/gfx/x" ]
     sources += [
       "idle_query_x11.cc",

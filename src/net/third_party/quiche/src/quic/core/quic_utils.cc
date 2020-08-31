@@ -13,13 +13,14 @@
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_aligned.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_prefetch.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 namespace {
@@ -34,7 +35,8 @@ namespace {
 #endif
 
 #ifdef QUIC_UTIL_HAS_UINT128
-QuicUint128 IncrementalHashFast(QuicUint128 uhash, QuicStringPiece data) {
+QuicUint128 IncrementalHashFast(QuicUint128 uhash,
+                                quiche::QuicheStringPiece data) {
   // This code ends up faster than the naive implementation for 2 reasons:
   // 1. QuicUint128 is sufficiently complicated that the compiler
   //    cannot transform the multiplication by kPrime into a shift-multiply-add;
@@ -57,7 +59,8 @@ QuicUint128 IncrementalHashFast(QuicUint128 uhash, QuicStringPiece data) {
 
 #ifndef QUIC_UTIL_HAS_UINT128
 // Slow implementation of IncrementalHash. In practice, only used by Chromium.
-QuicUint128 IncrementalHashSlow(QuicUint128 hash, QuicStringPiece data) {
+QuicUint128 IncrementalHashSlow(QuicUint128 hash,
+                                quiche::QuicheStringPiece data) {
   // kPrime = 309485009821345068724781371
   static const QuicUint128 kPrime = MakeQuicUint128(16777216, 315);
   const uint8_t* octets = reinterpret_cast<const uint8_t*>(data.data());
@@ -69,7 +72,7 @@ QuicUint128 IncrementalHashSlow(QuicUint128 hash, QuicStringPiece data) {
 }
 #endif
 
-QuicUint128 IncrementalHash(QuicUint128 hash, QuicStringPiece data) {
+QuicUint128 IncrementalHash(QuicUint128 hash, quiche::QuicheStringPiece data) {
 #ifdef QUIC_UTIL_HAS_UINT128
   return IncrementalHashFast(hash, data);
 #else
@@ -80,7 +83,7 @@ QuicUint128 IncrementalHash(QuicUint128 hash, QuicStringPiece data) {
 }  // namespace
 
 // static
-uint64_t QuicUtils::FNV1a_64_Hash(QuicStringPiece data) {
+uint64_t QuicUtils::FNV1a_64_Hash(quiche::QuicheStringPiece data) {
   static const uint64_t kOffset = UINT64_C(14695981039346656037);
   static const uint64_t kPrime = UINT64_C(1099511628211);
 
@@ -97,20 +100,21 @@ uint64_t QuicUtils::FNV1a_64_Hash(QuicStringPiece data) {
 }
 
 // static
-QuicUint128 QuicUtils::FNV1a_128_Hash(QuicStringPiece data) {
-  return FNV1a_128_Hash_Three(data, QuicStringPiece(), QuicStringPiece());
+QuicUint128 QuicUtils::FNV1a_128_Hash(quiche::QuicheStringPiece data) {
+  return FNV1a_128_Hash_Three(data, quiche::QuicheStringPiece(),
+                              quiche::QuicheStringPiece());
 }
 
 // static
-QuicUint128 QuicUtils::FNV1a_128_Hash_Two(QuicStringPiece data1,
-                                          QuicStringPiece data2) {
-  return FNV1a_128_Hash_Three(data1, data2, QuicStringPiece());
+QuicUint128 QuicUtils::FNV1a_128_Hash_Two(quiche::QuicheStringPiece data1,
+                                          quiche::QuicheStringPiece data2) {
+  return FNV1a_128_Hash_Three(data1, data2, quiche::QuicheStringPiece());
 }
 
 // static
-QuicUint128 QuicUtils::FNV1a_128_Hash_Three(QuicStringPiece data1,
-                                            QuicStringPiece data2,
-                                            QuicStringPiece data3) {
+QuicUint128 QuicUtils::FNV1a_128_Hash_Three(quiche::QuicheStringPiece data1,
+                                            quiche::QuicheStringPiece data2,
+                                            quiche::QuicheStringPiece data3) {
   // The two constants are defined as part of the hash algorithm.
   // see http://www.isthe.com/chongo/tech/comp/fnv/
   // kOffset = 144066263297769815596495629667062367629
@@ -281,7 +285,7 @@ void QuicUtils::CopyToBuffer(const struct iovec* iov,
 }
 
 // static
-struct iovec QuicUtils::MakeIovec(QuicStringPiece data) {
+struct iovec QuicUtils::MakeIovec(quiche::QuicheStringPiece data) {
   struct iovec iov = {const_cast<char*>(data.data()),
                       static_cast<size_t>(data.size())};
   return iov;
@@ -314,6 +318,17 @@ bool QuicUtils::IsHandshakeFrame(const QuicFrame& frame,
   } else {
     return frame.type == CRYPTO_FRAME;
   }
+}
+
+// static
+bool QuicUtils::ContainsFrameType(const QuicFrames& frames,
+                                  QuicFrameType type) {
+  for (const QuicFrame& frame : frames) {
+    if (frame.type == type) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // static
@@ -478,7 +493,7 @@ QuicStreamId QuicUtils::GetFirstUnidirectionalStreamId(
 QuicConnectionId QuicUtils::CreateReplacementConnectionId(
     QuicConnectionId connection_id) {
   const uint64_t connection_id_hash = FNV1a_64_Hash(
-      QuicStringPiece(connection_id.data(), connection_id.length()));
+      quiche::QuicheStringPiece(connection_id.data(), connection_id.length()));
   return QuicConnectionId(reinterpret_cast<const char*>(&connection_id_hash),
                           sizeof(connection_id_hash));
 }
@@ -513,21 +528,12 @@ QuicConnectionId QuicUtils::CreateRandomConnectionId(
 }
 
 // static
-bool QuicUtils::VariableLengthConnectionIdAllowedForVersion(
-    QuicTransportVersion version) {
-  // We allow variable length connection IDs for unsupported versions to
-  // ensure that IETF version negotiation works when other implementations
-  // trigger version negotiation with custom connection ID lengths.
-  return version > QUIC_VERSION_46 || version == QUIC_VERSION_UNSUPPORTED;
-}
-
-// static
 QuicConnectionId QuicUtils::CreateZeroConnectionId(
     QuicTransportVersion version) {
-  if (!VariableLengthConnectionIdAllowedForVersion(version)) {
+  if (!VersionAllowsVariableLengthConnectionIds(version)) {
     char connection_id_bytes[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     return QuicConnectionId(static_cast<char*>(connection_id_bytes),
-                            QUIC_ARRAYSIZE(connection_id_bytes));
+                            QUICHE_ARRAYSIZE(connection_id_bytes));
   }
   return EmptyQuicConnectionId();
 }
@@ -541,10 +547,17 @@ bool QuicUtils::IsConnectionIdLengthValidForVersion(
       static_cast<size_t>(std::numeric_limits<uint8_t>::max())) {
     return false;
   }
+
+  if (transport_version == QUIC_VERSION_UNSUPPORTED ||
+      transport_version == QUIC_VERSION_RESERVED_FOR_NEGOTIATION) {
+    // Unknown versions could allow connection ID lengths up to 255.
+    return true;
+  }
+
   const uint8_t connection_id_length8 =
       static_cast<uint8_t>(connection_id_length);
   // Versions that do not support variable lengths only support length 8.
-  if (!VariableLengthConnectionIdAllowedForVersion(transport_version)) {
+  if (!VersionAllowsVariableLengthConnectionIds(transport_version)) {
     return connection_id_length8 == kQuicDefaultConnectionIdLength;
   }
   // Versions that do support variable length but do not have length-prefixed
@@ -569,24 +582,11 @@ bool QuicUtils::IsConnectionIdValidForVersion(
 QuicUint128 QuicUtils::GenerateStatelessResetToken(
     QuicConnectionId connection_id) {
   return FNV1a_128_Hash(
-      QuicStringPiece(connection_id.data(), connection_id.length()));
+      quiche::QuicheStringPiece(connection_id.data(), connection_id.length()));
 }
 
-// Returns the maximum value that a stream count may have, taking into account
-// the fact that bidirectional, client initiated, streams have one fewer stream
-// available than the others. This is because the old crypto streams, with ID ==
-// 0 are not included in the count.
-// The version is not included in the call, nor does the method take the version
-// into account, because this is called only from code used for IETF QUIC.
-// TODO(fkastenholz): Remove this method and replace calls to it with direct
-// references to kMaxQuicStreamIdCount when streamid 0 becomes a normal stream
-// id.
 // static
-QuicStreamCount QuicUtils::GetMaxStreamCount(bool unidirectional,
-                                             Perspective perspective) {
-  if (!unidirectional && perspective == Perspective::IS_CLIENT) {
-    return kMaxQuicStreamCount >> 2;
-  }
+QuicStreamCount QuicUtils::GetMaxStreamCount() {
   return (kMaxQuicStreamCount >> 2) + 1;
 }
 

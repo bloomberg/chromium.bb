@@ -29,7 +29,7 @@ struct ServiceInfo {
   bool operator!=(const ServiceInfo& other) const;
 
   bool Update(std::string friendly_name,
-              platform::NetworkInterfaceIndex network_interface_index,
+              NetworkInterfaceIndex network_interface_index,
               const IPEndpoint& v4_endpoint,
               const IPEndpoint& v6_endpoint);
 
@@ -40,8 +40,7 @@ struct ServiceInfo {
   std::string friendly_name;
 
   // The index of the network interface that the screen was discovered on.
-  platform::NetworkInterfaceIndex network_interface_index =
-      platform::kInvalidNetworkInterfaceIndex;
+  NetworkInterfaceIndex network_interface_index = kInvalidNetworkInterfaceIndex;
 
   // The network endpoints to create a new connection to the Open Screen
   // service.

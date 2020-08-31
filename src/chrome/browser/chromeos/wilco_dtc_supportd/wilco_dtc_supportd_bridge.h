@@ -15,16 +15,14 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_notification_controller.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.h"
-#include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
+#include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom-forward.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/buffer.h"
 
-namespace network {
-class SharedURLLoaderFactory;
-}  // namespace network
-
 namespace chromeos {
+
+class WilcoDtcSupportdNetworkContext;
 
 // Establishes Mojo communication to the wilco_dtc_supportd daemon. The Mojo
 // pipe gets bootstrapped via D-Bus, and the class takes care of waiting until
@@ -56,11 +54,11 @@ class WilcoDtcSupportdBridge final
   static int max_connection_attempt_count_for_testing();
 
   explicit WilcoDtcSupportdBridge(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      std::unique_ptr<WilcoDtcSupportdNetworkContext> network_context);
   // For use in tests.
   WilcoDtcSupportdBridge(
       std::unique_ptr<Delegate> delegate,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      std::unique_ptr<WilcoDtcSupportdNetworkContext> network_context,
       std::unique_ptr<WilcoDtcSupportdNotificationController>
           notification_controller);
 
@@ -82,10 +80,6 @@ class WilcoDtcSupportdBridge final
                ? wilco_dtc_supportd_service_mojo_remote_.get()
                : nullptr;
   }
-
-  // wilco_dtc_supportd::mojom::WilcoDtcSupportdClient overrides.
-  void HandleEvent(
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent event) override;
 
  private:
   // Starts waiting until the wilco_dtc_supportd D-Bus service becomes available
@@ -118,6 +112,13 @@ class WilcoDtcSupportdBridge final
       mojo::ScopedHandle json_message,
       SendWilcoDtcMessageToUiCallback callback) override;
   void GetConfigurationData(GetConfigurationDataCallback callback) override;
+  void HandleEvent(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent event) override;
+  void GetCrosHealthdDiagnosticsService(
+      cros_healthd::mojom::CrosHealthdDiagnosticsServiceRequest service)
+      override;
+  void GetCrosHealthdProbeService(
+      cros_healthd::mojom::CrosHealthdProbeServiceRequest service) override;
 
   std::unique_ptr<Delegate> delegate_;
 

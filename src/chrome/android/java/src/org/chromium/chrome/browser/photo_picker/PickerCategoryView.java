@@ -4,17 +4,14 @@
 
 package org.chromium.chrome.browser.photo_picker;
 
-import android.Manifest;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.SystemClock;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.transition.ChangeBounds;
 import android.transition.Transition;
 import android.transition.TransitionManager;
@@ -22,25 +19,24 @@ import android.util.DisplayMetrics;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.MediaController;
 import android.widget.RelativeLayout;
-import android.widget.VideoView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.DiscardableReferencePool.DiscardableReference;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.util.ConversionUtils;
-import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.vr.VrModeProviderImpl;
+import org.chromium.components.browser_ui.util.ConversionUtils;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.net.MimeTypeFilter;
 import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.UiUtils;
@@ -56,7 +52,7 @@ import java.util.List;
  */
 public class PickerCategoryView extends RelativeLayout
         implements FileEnumWorkerTask.FilesEnumeratedCallback, RecyclerView.RecyclerListener,
-                   DecoderServiceHost.ServiceReadyCallback, View.OnClickListener,
+                   DecoderServiceHost.DecoderStatusCallback, View.OnClickListener,
                    SelectionDelegate.SelectionObserver<PickerBitmap> {
     // These values are written to logs.  New enum values can be added, but existing
     // enums must never be renumbered or deleted and reused.
@@ -78,13 +74,13 @@ public class PickerCategoryView extends RelativeLayout
         // The calculated ratio of the originals for the bitmaps above, were they to be shown
         // un-cropped. NOTE: The |bitmaps| above may already have been cropped and as such might
         // have a different ratio.
-        public float ratio;
+        public float ratioOriginal;
 
         Thumbnail(List<Bitmap> bitmaps, String videoDuration, Boolean fullWidth, float ratio) {
             this.bitmaps = bitmaps;
             this.videoDuration = videoDuration;
             this.fullWidth = fullWidth;
-            this.ratio = ratio;
+            this.ratioOriginal = ratio;
         }
     }
 
@@ -96,6 +92,9 @@ public class PickerCategoryView extends RelativeLayout
 
     // Our activity.
     private ChromeActivity mActivity;
+
+    // The ContentResolver to use to retrieve image metadata from disk.
+    private ContentResolver mContentResolver;
 
     // The list of images on disk, sorted by last-modified first.
     private List<PickerBitmap> mPickerBitmaps;
@@ -184,24 +183,23 @@ public class PickerCategoryView extends RelativeLayout
     // A list of files to use for testing (instead of reading files on disk).
     private static List<PickerBitmap> sTestFiles;
 
-    // The video preview view.
-    private VideoView mVideoView;
-
-    // The media controls to show with the video (play/pause, etc).
-    private MediaController mMediaController;
+    // The Video Player.
+    private final PickerVideoPlayer mVideoPlayer;
 
     // The Zoom (floating action) button.
     private ImageView mZoom;
 
     /**
      * @param context The context to use.
+     * @param contentResolver The ContentResolver to use to retrieve image metadata from disk.
      * @param multiSelectionAllowed Whether to allow the user to select more than one image.
      */
     @SuppressWarnings("unchecked") // mSelectableListLayout
-    public PickerCategoryView(Context context, boolean multiSelectionAllowed,
-            PhotoPickerToolbar.PhotoPickerToolbarDelegate delegate) {
+    public PickerCategoryView(Context context, ContentResolver contentResolver,
+            boolean multiSelectionAllowed, PhotoPickerToolbar.PhotoPickerToolbarDelegate delegate) {
         super(context);
         mActivity = (ChromeActivity) context;
+        mContentResolver = contentResolver;
         mMultiSelectionAllowed = multiSelectionAllowed;
 
         mDecoderServiceHost = new DecoderServiceHost(this, context);
@@ -223,12 +221,12 @@ public class PickerCategoryView extends RelativeLayout
                                             : R.string.photo_picker_select_image;
         PhotoPickerToolbar toolbar = (PhotoPickerToolbar) mSelectableListLayout.initializeToolbar(
                 R.layout.photo_picker_toolbar, mSelectionDelegate, titleId, 0, 0, null, false,
-                false);
+                false, new VrModeProviderImpl());
         toolbar.setNavigationOnClickListener(this);
         toolbar.setDelegate(delegate);
         Button doneButton = (Button) toolbar.findViewById(R.id.done);
         doneButton.setOnClickListener(this);
-        mVideoView = findViewById(R.id.video_player);
+        mVideoPlayer = findViewById(R.id.playback_container);
         mZoom = findViewById(R.id.zoom);
 
         calculateGridMetrics();
@@ -290,46 +288,17 @@ public class PickerCategoryView extends RelativeLayout
      * Start playback of a video in an overlay above the photo picker.
      * @param uri The uri of the video to start playing.
      */
-    public void playVideo(Uri uri) {
-        findViewById(R.id.playback_container).setVisibility(View.VISIBLE);
-        findViewById(R.id.close).setOnClickListener(this);
-
-        mMediaController = new MediaController(mActivity, false) {
-            @Override
-            public void hide() {
-                // Making sure the controls never hide prevents the seekbar from no longer updating
-                // in the middle of playing a video.
-                this.show();
-            }
-        };
-        mVideoView.setMediaController(mMediaController);
-        mVideoView.setVisibility(View.VISIBLE);
-        mVideoView.setVideoURI(uri);
-
-        mVideoView.setOnPreparedListener((MediaPlayer mp) -> {
-            mp.setOnVideoSizeChangedListener((MediaPlayer player, int width, int height) -> {
-                // To get the media controls to show up in a dialog, the view needs to be
-                // re-parented.
-                ((ViewGroup) mMediaController.getParent()).removeView(mMediaController);
-                ((FrameLayout) findViewById(R.id.controls_wrapper)).addView(mMediaController);
-                mMediaController.setVisibility(View.VISIBLE);
-
-                mMediaController.setAnchorView(mVideoView);
-                mMediaController.setEnabled(true);
-                mMediaController.show(0);
-            });
-
-            mVideoView.start();
-        });
+    public void startVideoPlaybackAsync(Uri uri) {
+        mVideoPlayer.startVideoPlaybackAsync(uri);
     }
 
-    private void stopVideo() {
-        findViewById(R.id.playback_container).setVisibility(View.GONE);
-        mVideoView.stopPlayback();
-        mVideoView.setMediaController(null);
-        // The MediaController needs a little bit of time to go away fully. Hide it in the meantime.
-        mMediaController.setVisibility(View.GONE);
-        mMediaController = null;
+    /**
+     * Ends video playback (if a video is playing) and closes the video player. Aborts if the video
+     * playback container is not showing.
+     * @return true if a video container was showing, false otherwise.
+     */
+    public boolean closeVideoPlayer() {
+        return mVideoPlayer.closeVideoPlayer();
     }
 
     /**
@@ -358,6 +327,10 @@ public class PickerCategoryView extends RelativeLayout
 
     @Override
     public void filesEnumeratedCallback(List<PickerBitmap> files) {
+        if (files == null) {
+            return;
+        }
+
         // Calculate the rate of files enumerated per tenth of a second.
         long elapsedTimeMs = SystemClock.elapsedRealtime() - mEnumStartTime;
         int rate = (int) (100 * files.size() / elapsedTimeMs);
@@ -370,13 +343,16 @@ public class PickerCategoryView extends RelativeLayout
         processBitmaps();
     }
 
-    // DecoderServiceHost.ServiceReadyCallback:
+    // DecoderServiceHost.DecoderStatusCallback:
 
     @Override
     public void serviceReady() {
         mServiceReady = true;
         processBitmaps();
     }
+
+    @Override
+    public void decoderIdle() {}
 
     // RecyclerView.RecyclerListener:
 
@@ -414,8 +390,6 @@ public class PickerCategoryView extends RelativeLayout
             if (!mZoomSwitchingInEffect) {
                 flipZoomMode();
             }
-        } else if (id == R.id.close) {
-            stopVideo();
         } else {
             executeAction(PhotoPickerListener.PhotoPickerAction.CANCEL, null, ACTION_CANCEL);
         }
@@ -490,10 +464,6 @@ public class PickerCategoryView extends RelativeLayout
 
     public int getImageWidth() {
         return mImageWidth;
-    }
-
-    public int getImageHeight() {
-        return mImageHeight;
     }
 
     public int getSpecialTileHeight() {
@@ -601,15 +571,9 @@ public class PickerCategoryView extends RelativeLayout
             mWorkerTask.cancel(true);
         }
 
-        // TODO(finnur): Remove once we figure out the cause of crbug.com/950024.
-        if (!mActivity.getWindowAndroid().hasPermission(
-                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            throw new RuntimeException("Bitmap enumeration without storage read permission");
-        }
-
         mEnumStartTime = SystemClock.elapsedRealtime();
         mWorkerTask = new FileEnumWorkerTask(mActivity.getWindowAndroid(), this,
-                new MimeTypeFilter(mMimeTypes, true), mMimeTypes, mActivity.getContentResolver());
+                new MimeTypeFilter(mMimeTypes, true), mMimeTypes, mContentResolver);
         mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -710,5 +674,10 @@ public class PickerCategoryView extends RelativeLayout
     @VisibleForTesting
     public SelectionDelegate<PickerBitmap> getSelectionDelegateForTesting() {
         return mSelectionDelegate;
+    }
+
+    @VisibleForTesting
+    public PickerVideoPlayer getVideoPlayerForTesting() {
+        return mVideoPlayer;
     }
 }

@@ -117,7 +117,6 @@ class TouchHudTestBase : public AshTestBase {
   int64_t external_display_id() const { return external_display_id_; }
 
  protected:
-
   WindowTreeHostManager* GetWindowTreeHostManager() {
     return Shell::Get()->window_tree_host_manager();
   }
@@ -144,7 +143,9 @@ class TouchHudTestBase : public AshTestBase {
   }
 
   aura::Window* GetSecondaryRootWindow() {
-    const display::Display& display = display_manager()->GetSecondaryDisplay();
+    const display::Display& display =
+        display::test::DisplayManagerTestApi(display_manager())
+            .GetSecondaryDisplay();
     return Shell::GetRootWindowForDisplayId(display.id());
   }
 
@@ -205,7 +206,7 @@ class TouchHudDebugTest : public TouchHudTestBase {
     // Add ash-touch-hud flag to enable debug touch HUD. This flag should be set
     // before Ash environment is set up, i.e., before TouchHudTestBase::SetUp().
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshTouchHud);
+        switches::kAshTouchHud);
 
     TouchHudTestBase::SetUp();
   }
@@ -284,7 +285,7 @@ class TouchHudProjectionTest : public TouchHudTestBase {
                                    int touch_id) {
     ui::TouchEvent event(
         type, location, event_time,
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, touch_id));
+        ui::PointerDetails(ui::EventPointerType::kTouch, touch_id));
     GetInternalTouchHudProjection()->OnTouchEvent(&event);
 
     // Advance time for next event.
@@ -327,10 +328,11 @@ TEST_F(TouchHudDebugTest, SwapPrimaryDisplay) {
   // Set the primary display to the external one.
   SetExternalAsPrimary();
 
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
   // Check if displays' touch HUDs are not swapped as root windows are.
   EXPECT_EQ(external_display_id(), GetPrimaryDisplay().id());
   EXPECT_EQ(internal_display_id(),
-            display_manager()->GetSecondaryDisplay().id());
+            display_manager_test.GetSecondaryDisplay().id());
   CheckInternalDisplay();
   CheckExternalDisplay();
 
@@ -340,7 +342,7 @@ TEST_F(TouchHudDebugTest, SwapPrimaryDisplay) {
   // Check if displays' touch HUDs are not swapped back as root windows are.
   EXPECT_EQ(internal_display_id(), GetPrimaryDisplay().id());
   EXPECT_EQ(external_display_id(),
-            display_manager()->GetSecondaryDisplay().id());
+            display_manager_test.GetSecondaryDisplay().id());
   CheckInternalDisplay();
   CheckExternalDisplay();
 }
@@ -367,7 +369,9 @@ TEST_F(TouchHudDebugTest, MirrorDisplays) {
   // Check if external display is added back correctly.
   EXPECT_EQ(internal_display_id(), GetPrimaryDisplay().id());
   EXPECT_EQ(external_display_id(),
-            display_manager()->GetSecondaryDisplay().id());
+            display::test::DisplayManagerTestApi(display_manager())
+                .GetSecondaryDisplay()
+                .id());
   CheckInternalDisplay();
   CheckExternalDisplay();
 
@@ -399,7 +403,9 @@ TEST_F(TouchHudDebugTest, SwapPrimaryThenMirrorDisplays) {
   // touch HUDs are set correctly.
   EXPECT_EQ(external_display_id(), GetPrimaryDisplay().id());
   EXPECT_EQ(internal_display_id(),
-            display_manager()->GetSecondaryDisplay().id());
+            display::test::DisplayManagerTestApi(display_manager())
+                .GetSecondaryDisplay()
+                .id());
   CheckInternalDisplay();
   CheckExternalDisplay();
 
@@ -425,7 +431,9 @@ TEST_F(TouchHudDebugTest, RemoveSecondaryDisplay) {
   // Check if displays' touch HUDs are set correctly.
   EXPECT_EQ(internal_display_id(), GetPrimaryDisplay().id());
   EXPECT_EQ(external_display_id(),
-            display_manager()->GetSecondaryDisplay().id());
+            display::test::DisplayManagerTestApi(display_manager())
+                .GetSecondaryDisplay()
+                .id());
   CheckInternalDisplay();
   CheckExternalDisplay();
 }
@@ -453,7 +461,9 @@ TEST_F(TouchHudDebugTest, RemovePrimaryDisplay) {
   // correctly.
   EXPECT_EQ(external_display_id(), GetPrimaryDisplay().id());
   EXPECT_EQ(internal_display_id(),
-            display_manager()->GetSecondaryDisplay().id());
+            display::test::DisplayManagerTestApi(display_manager())
+                .GetSecondaryDisplay()
+                .id());
   CheckInternalDisplay();
   CheckExternalDisplay();
 }

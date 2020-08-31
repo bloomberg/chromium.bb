@@ -12,6 +12,7 @@ import collections
 import os
 import random
 import re
+import subprocess
 import time
 
 import six
@@ -1151,7 +1152,7 @@ class GitRepoPatch(PatchQuery):
     finally:
       if reset_target is not None:
         git.RunGit(git_repo, ['reset', '--hard', reset_target],
-                   error_code_ok=True)
+                   check=False)
 
   def Apply(self, git_repo, upstream, revision=None, trivial=False):
     """Apply patch into a standalone git repo.
@@ -1223,7 +1224,7 @@ class GitRepoPatch(PatchQuery):
       # Ensure we're on the correct branch on the way out.
       if do_checkout:
         git.RunGit(git_repo, ['checkout', '-f', constants.PATCH_BRANCH],
-                   error_code_ok=True)
+                   check=False)
 
   # pylint: disable=protected-access
   def _ValidateMergeCommit(self, git_repo, upstream, parents):
@@ -1439,7 +1440,7 @@ class GitRepoPatch(PatchQuery):
       return []
 
     cmd = ['ls-tree', '--full-name', '--name-only', '-z', tree_revision, '--']
-    output = git.RunGit(git_repo, cmd + files, error_code_ok=True).output
+    output = git.RunGit(git_repo, cmd + files, check=False).output
     existing_filenames = output.split('\0')[:-1]
     return [x for x in files if x not in existing_filenames]
 
@@ -1666,7 +1667,7 @@ class LocalPatch(GitRepoPatch):
     # Depending on git/gerrit/weather, the URL might be written to stdout or
     # stderr.  Just combine them so we don't have to worry about it.
     result = git.RunGit(self.project_url, cmd, capture_output=True,
-                        combine_stdout_stderr=True)
+                        stderr=subprocess.STDOUT)
     lines = result.output.splitlines()
     urls = []
     for num, line in enumerate(lines):

@@ -12,6 +12,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -54,6 +55,10 @@ class MockUIDelegate : public FullCardRequest::UIDelegate,
                     base::WeakPtr<CardUnmaskDelegate>));
   MOCK_METHOD1(OnUnmaskVerificationResult,
                void(AutofillClient::PaymentsRpcResult));
+#if defined(OS_ANDROID)
+  MOCK_CONST_METHOD0(ShouldOfferFidoAuth, bool());
+  MOCK_CONST_METHOD0(UserOptedInToFidoFromSettingsPageOnMobile, bool());
+#endif
 };
 
 // The personal data manager.
@@ -203,6 +208,56 @@ TEST_F(FullCardRequestTest, GetFullCardPanAndDcvvForMaskedServerCardViaDcvv) {
 TEST_F(FullCardRequestTest, GetFullCardPanForMaskedServerCardWithoutDcvv) {
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillAlwaysReturnCloudTokenizedCard);
+  EXPECT_CALL(*result_delegate(),
+              OnFullCardRequestSucceeded(
+                  testing::Ref(*request()),
+                  CardMatches(CreditCard::FULL_SERVER_CARD, "4111"),
+                  base::ASCIIToUTF16("123")));
+  EXPECT_CALL(*ui_delegate(), ShowUnmaskPrompt(_, _, _));
+  EXPECT_CALL(*ui_delegate(),
+              OnUnmaskVerificationResult(AutofillClient::SUCCESS));
+
+  request()->GetFullCard(
+      CreditCard(CreditCard::MASKED_SERVER_CARD, "server_id"),
+      AutofillClient::UNMASK_FOR_AUTOFILL, result_delegate()->AsWeakPtr(),
+      ui_delegate()->AsWeakPtr());
+  CardUnmaskDelegate::UserProvidedUnmaskDetails details;
+  details.cvc = base::ASCIIToUTF16("123");
+  card_unmask_delegate()->OnUnmaskPromptAccepted(details);
+  OnDidGetRealPan(AutofillClient::SUCCESS, "4111");
+  card_unmask_delegate()->OnUnmaskPromptClosed();
+}
+
+// Verify getting the full PAN and the CVV for a Google issued card when FIDO is
+// used for authentication.
+TEST_F(FullCardRequestTest, GetFullCardPanAndUseCvcInUnmaskResponse) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableGoogleIssuedCard);
+  EXPECT_CALL(*result_delegate(),
+              OnFullCardRequestSucceeded(
+                  testing::Ref(*request()),
+                  CardMatches(CreditCard::FULL_SERVER_CARD, "4111"),
+                  base::ASCIIToUTF16("321")));
+  EXPECT_CALL(*ui_delegate(), ShowUnmaskPrompt(_, _, _));
+  EXPECT_CALL(*ui_delegate(),
+              OnUnmaskVerificationResult(AutofillClient::SUCCESS));
+
+  request()->GetFullCard(
+      CreditCard(CreditCard::MASKED_SERVER_CARD, "server_id"),
+      AutofillClient::UNMASK_FOR_AUTOFILL, result_delegate()->AsWeakPtr(),
+      ui_delegate()->AsWeakPtr());
+  CardUnmaskDelegate::UserProvidedUnmaskDetails details;
+  details.cvc = base::ASCIIToUTF16("123");
+  card_unmask_delegate()->OnUnmaskPromptAccepted(details);
+  OnDidGetRealPanWithDcvv(AutofillClient::SUCCESS, "4111", "321");
+  card_unmask_delegate()->OnUnmaskPromptClosed();
+}
+
+// Verify getting the full PAN for a Google issued card when CVV is used for
+// authentication.
+TEST_F(FullCardRequestTest, GetFullCardPanWithoutCvcInUnmaskResponse) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableGoogleIssuedCard);
   EXPECT_CALL(*result_delegate(),
               OnFullCardRequestSucceeded(
                   testing::Ref(*request()),

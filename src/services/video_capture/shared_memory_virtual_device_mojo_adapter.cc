@@ -4,8 +4,10 @@
 
 #include "services/video_capture/shared_memory_virtual_device_mojo_adapter.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/scoped_buffer_pool_reservation.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
@@ -113,10 +115,9 @@ void SharedMemoryVirtualDeviceMojoAdapter::RequestFrameBuffer(
     // message pipes, so the order for calls to |producer_| and |callback|
     // is not guaranteed.
     if (producer_.is_bound())
-      producer_->OnNewBuffer(
-          buffer_id, std::move(buffer_handle),
-          base::BindOnce(&OnNewBufferAcknowleged, base::Passed(&callback),
-                         buffer_id));
+      producer_->OnNewBuffer(buffer_id, std::move(buffer_handle),
+                             base::BindOnce(&OnNewBufferAcknowleged,
+                                            std::move(callback), buffer_id));
     return;
   }
   std::move(callback).Run(buffer_id);

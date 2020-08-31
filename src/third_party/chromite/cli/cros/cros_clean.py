@@ -17,13 +17,17 @@ from __future__ import print_function
 import errno
 import glob
 import os
+import sys
 
 from chromite.lib import constants
 from chromite.cli import command
-from chromite.cli import flash
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import dev_server_wrapper
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 @command.CommandDecorator('clean')
@@ -171,10 +175,13 @@ class CleanCommand(command.CliCommand):
 
     cros_build_lib.AssertOutsideChroot()
 
+    def _LogClean(path):
+      logging.notice('would have cleaned: %s', path)
+
     def Clean(path):
       """Helper wrapper for the dry-run checks"""
       if self.options.dry_run:
-        logging.notice('would have cleaned: %s', path)
+        _LogClean(path)
       else:
         osutils.RmDir(path, ignore_missing=True, sudo=True)
 
@@ -241,8 +248,10 @@ class CleanCommand(command.CliCommand):
           Clean(d)
 
     if self.options.flash:
-      logging.debug('Clean up the cros flash cache.')
-      Clean(flash.DEVSERVER_STATIC_DIR)
+      if self.options.dry_run:
+        _LogClean(dev_server_wrapper.DEFAULT_STATIC_DIR)
+      else:
+        dev_server_wrapper.DevServerWrapper.WipeStaticDirectory()
 
     if self.options.images:
       logging.debug('Clean the images cache.')

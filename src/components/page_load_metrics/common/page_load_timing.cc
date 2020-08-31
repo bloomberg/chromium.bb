@@ -15,16 +15,20 @@ mojom::PageLoadTimingPtr CreatePageLoadTiming() {
 }
 
 bool IsEmpty(const page_load_metrics::mojom::DocumentTiming& timing) {
-  return !timing.dom_content_loaded_event_start && !timing.load_event_start &&
-         !timing.first_layout;
+  return !timing.dom_content_loaded_event_start && !timing.load_event_start;
 }
 
 bool IsEmpty(const page_load_metrics::mojom::InteractiveTiming& timing) {
-  return !timing.interactive && !timing.interactive_detection &&
-         !timing.first_invalidating_input && !timing.first_input_delay &&
-         !timing.first_input_timestamp && !timing.longest_input_delay &&
-         !timing.longest_input_timestamp;
+  return !timing.first_input_delay && !timing.first_input_timestamp &&
+         !timing.longest_input_delay && !timing.longest_input_timestamp;
 }
+
+bool IsEmpty(const page_load_metrics::mojom::InputTiming& timing) {
+  return !timing.total_input_delay.InMilliseconds() &&
+         !timing.total_adjusted_input_delay.InMilliseconds() &&
+         !timing.num_input_events;
+}
+
 bool IsEmpty(const page_load_metrics::mojom::PaintTiming& timing) {
   return !timing.first_paint && !timing.first_image_paint &&
          !timing.first_contentful_paint && !timing.first_meaningful_paint &&

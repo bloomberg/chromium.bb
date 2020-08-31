@@ -22,10 +22,10 @@ class TabCallbackProxy : public TabObserver {
   TabCallbackProxy(JNIEnv* env, jobject obj, Tab* tab);
   ~TabCallbackProxy() override;
 
-  // BrowserObserver:
+  // TabObserver:
   void DisplayedUrlChanged(const GURL& url) override;
-
   void OnRenderProcessGone() override;
+  void OnTitleUpdated(const base::string16& title) override;
 
  private:
   Tab* tab_;

@@ -16,12 +16,11 @@
 namespace v8 {
 namespace internal {
 
-OBJECT_CONSTRUCTORS_IMPL(AllocationMemento, Struct)
+TQ_OBJECT_CONSTRUCTORS_IMPL(AllocationMemento)
 OBJECT_CONSTRUCTORS_IMPL(AllocationSite, Struct)
 
 NEVER_READ_ONLY_SPACE_IMPL(AllocationSite)
 
-CAST_ACCESSOR(AllocationMemento)
 CAST_ACCESSOR(AllocationSite)
 
 ACCESSORS(AllocationSite, transition_info_or_boilerplate, Object,
@@ -225,7 +224,7 @@ bool AllocationSite::DigestTransitionFeedback(Handle<AllocationSite> site,
         }
         JSObject::TransitionElementsKind(boilerplate, to_kind);
         site->dependent_code().DeoptimizeDependentCodeGroup(
-            isolate, DependentCode::kAllocationSiteTransitionChangedGroup);
+            DependentCode::kAllocationSiteTransitionChangedGroup);
         result = true;
       }
     }
@@ -245,7 +244,7 @@ bool AllocationSite::DigestTransitionFeedback(Handle<AllocationSite> site,
       }
       site->SetElementsKind(to_kind);
       site->dependent_code().DeoptimizeDependentCodeGroup(
-          isolate, DependentCode::kAllocationSiteTransitionChangedGroup);
+          DependentCode::kAllocationSiteTransitionChangedGroup);
       result = true;
     }
   }

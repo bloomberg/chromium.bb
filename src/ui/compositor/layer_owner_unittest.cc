@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/test/null_task_runner.h"
-#include "cc/animation/single_keyframe_effect_animation.h"
+#include "cc/animation/animation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -26,8 +26,8 @@ namespace {
 // compositor is not null.
 class TestLayerAnimationObserver : public ImplicitAnimationObserver {
  public:
-  TestLayerAnimationObserver(Layer* layer) : layer_(layer) {}
-  ~TestLayerAnimationObserver() override {}
+  explicit TestLayerAnimationObserver(Layer* layer) : layer_(layer) {}
+  ~TestLayerAnimationObserver() override = default;
 
   // ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override {
@@ -42,7 +42,7 @@ class TestLayerAnimationObserver : public ImplicitAnimationObserver {
 
 class LayerOwnerForTesting : public LayerOwner {
  public:
-  LayerOwnerForTesting(std::unique_ptr<Layer> layer) {
+  explicit LayerOwnerForTesting(std::unique_ptr<Layer> layer) {
     SetLayer(std::move(layer));
   }
   void DestroyLayerForTesting() { DestroyLayer(); }
@@ -82,9 +82,8 @@ void LayerOwnerTestWithCompositor::SetUp() {
       std::make_unique<ui::TestContextFactories>(enable_pixel_output);
 
   compositor_ = std::make_unique<ui::Compositor>(
-      context_factories_->GetContextFactoryPrivate()->AllocateFrameSinkId(),
-      context_factories_->GetContextFactory(),
-      context_factories_->GetContextFactoryPrivate(), task_runner,
+      context_factories_->GetContextFactory()->AllocateFrameSinkId(),
+      context_factories_->GetContextFactory(), task_runner,
       false /* enable_pixel_canvas */);
   compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 }
@@ -184,7 +183,7 @@ TEST_F(LayerOwnerTestWithCompositor, DetachTimelineOnAnimatorDeletion) {
   layer->SetOpacity(0.5f);
   root_layer->Add(layer);
 
-  scoped_refptr<cc::SingleKeyframeEffectAnimation> animation =
+  scoped_refptr<cc::Animation> animation =
       layer->GetAnimator()->GetAnimationForTesting();
   EXPECT_TRUE(animation);
   EXPECT_TRUE(animation->animation_timeline());
@@ -207,7 +206,7 @@ TEST_F(LayerOwnerTestWithCompositor,
 
   layer->SetOpacity(0.5f);
 
-  scoped_refptr<cc::SingleKeyframeEffectAnimation> animation =
+  scoped_refptr<cc::Animation> animation =
       layer->GetAnimator()->GetAnimationForTesting();
   EXPECT_TRUE(animation);
   EXPECT_TRUE(animation->animation_timeline());

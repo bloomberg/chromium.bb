@@ -74,7 +74,6 @@ static void convolve_vert(const uint8_t *src, ptrdiff_t src_stride,
 
 static const InterpKernel *get_filter_base(const int16_t *filter) {
   // NOTE: This assumes that the filter table is 256-byte aligned.
-  // TODO(agrange) Modify to make independent of table alignment.
   return (const InterpKernel *)(((intptr_t)filter) & ~((intptr_t)0xFF));
 }
 
@@ -113,23 +112,15 @@ void aom_convolve8_vert_c(const uint8_t *src, ptrdiff_t src_stride,
 }
 
 void aom_convolve_copy_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
-                         ptrdiff_t dst_stride, const int16_t *filter_x,
-                         int filter_x_stride, const int16_t *filter_y,
-                         int filter_y_stride, int w, int h) {
-  int r;
-
-  (void)filter_x;
-  (void)filter_x_stride;
-  (void)filter_y;
-  (void)filter_y_stride;
-
-  for (r = h; r > 0; --r) {
-    memcpy(dst, src, w);
+                         ptrdiff_t dst_stride, int w, int h) {
+  for (int r = h; r > 0; --r) {
+    memmove(dst, src, w);
     src += src_stride;
     dst += dst_stride;
   }
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static INLINE int highbd_vert_scalar_product(const uint16_t *a,
                                              ptrdiff_t a_stride,
                                              const int16_t *b) {
@@ -216,23 +207,13 @@ void aom_highbd_convolve8_vert_c(const uint8_t *src, ptrdiff_t src_stride,
                        y_step_q4, w, h, bd);
 }
 
-void aom_highbd_convolve_copy_c(const uint8_t *src8, ptrdiff_t src_stride,
-                                uint8_t *dst8, ptrdiff_t dst_stride,
-                                const int16_t *filter_x, int filter_x_stride,
-                                const int16_t *filter_y, int filter_y_stride,
-                                int w, int h, int bd) {
-  int r;
-  uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-  uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
-  (void)filter_x;
-  (void)filter_y;
-  (void)filter_x_stride;
-  (void)filter_y_stride;
-  (void)bd;
-
-  for (r = h; r > 0; --r) {
-    memcpy(dst, src, w * sizeof(uint16_t));
+void aom_highbd_convolve_copy_c(const uint16_t *src, ptrdiff_t src_stride,
+                                uint16_t *dst, ptrdiff_t dst_stride, int w,
+                                int h) {
+  for (int y = 0; y < h; ++y) {
+    memmove(dst, src, w * sizeof(src[0]));
     src += src_stride;
     dst += dst_stride;
   }
 }
+#endif  // CONFIG_AV1_HIGHBITDEPTH

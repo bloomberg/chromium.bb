@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import itertools
+
 from .attribute import Attribute
 from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import WithCodeGeneratorInfo
@@ -60,20 +62,26 @@ class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             WithDebugInfo.__init__(self, debug_info)
 
             self.is_partial = is_partial
+            self.is_mixin = False
             self.attributes = list(attributes)
             self.constants = list(constants)
             self.constructors = []
             self.constructor_groups = []
+            self.named_constructors = []
+            self.named_constructor_groups = []
             self.operations = list(operations)
             self.operation_groups = []
 
         def iter_all_members(self):
-            for attribute in self.attributes:
-                yield attribute
-            for constant in self.constants:
-                yield constant
-            for operation in self.operations:
-                yield operation
+            list_of_members = [
+                self.attributes,
+                self.constants,
+                self.operations,
+            ]
+            return itertools.chain(*list_of_members)
+
+        def iter_all_overload_groups(self):
+            return iter(self.operation_groups)
 
     def __init__(self, ir):
         assert isinstance(ir, Namespace.IR)
@@ -81,7 +89,7 @@ class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
 
         ir = make_copy(ir)
         UserDefinedType.__init__(self, ir.identifier)
-        WithExtendedAttributes.__init__(self, ir)
+        WithExtendedAttributes.__init__(self, ir, readonly=True)
         WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
         WithExposure.__init__(self, ir, readonly=True)
         WithComponent.__init__(self, ir, readonly=True)
@@ -112,6 +120,11 @@ class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         return None
 
     @property
+    def deriveds(self):
+        """Returns the list of the derived namespaces."""
+        return ()
+
+    @property
     def attributes(self):
         """Returns attributes."""
         return self._attributes
@@ -132,6 +145,16 @@ class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         return ()
 
     @property
+    def named_constructors(self):
+        """Returns named constructors."""
+        return ()
+
+    @property
+    def named_constructor_groups(self):
+        """Returns groups of overloaded named constructors."""
+        return ()
+
+    @property
     def operations(self):
         """Returns operations."""
         return self._operations
@@ -140,3 +163,8 @@ class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
     def operation_groups(self):
         """Returns a list of OperationGroups."""
         return self._operation_groups
+
+    @property
+    def exposed_constructs(self):
+        """Returns exposed constructs."""
+        return ()

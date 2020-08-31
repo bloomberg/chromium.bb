@@ -70,36 +70,6 @@ enum : size_t {
   kUVPlaneImageIndex = 1,
 };
 
-void RecordOverlayFullScreenTypes(const gfx::Rect& overlay_onscreen_rect) {
-  OverlayFullScreenTypes full_screen_type;
-  const gfx::Size& screen_size =
-      DirectCompositionSurfaceWin::GetOverlayMonitorSize();
-  const gfx::Size& overlay_onscreen_size = overlay_onscreen_rect.size();
-  const gfx::Point& origin = overlay_onscreen_rect.origin();
-
-  // The kFullScreenInWidthOnly type might be over counted, it's possible the
-  // video width fits the screen but it's still in a window mode.
-  if (screen_size.IsEmpty()) {
-    full_screen_type = OverlayFullScreenTypes::kNotAvailable;
-  } else if (origin.IsOrigin() && overlay_onscreen_size == screen_size)
-    full_screen_type = OverlayFullScreenTypes::kFullScreenMode;
-  else if (overlay_onscreen_size.width() > screen_size.width() ||
-           overlay_onscreen_size.height() > screen_size.height()) {
-    full_screen_type = OverlayFullScreenTypes::kOverSizedFullScreen;
-  } else if (origin.x() == 0 &&
-             overlay_onscreen_size.width() == screen_size.width()) {
-    full_screen_type = OverlayFullScreenTypes::kFullScreenInWidthOnly;
-  } else if (origin.y() == 0 &&
-             overlay_onscreen_size.height() == screen_size.height()) {
-    full_screen_type = OverlayFullScreenTypes::kFullScreenInHeightOnly;
-  } else {
-    full_screen_type = OverlayFullScreenTypes::kWindowMode;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.OverlayFullScreenTypes",
-                            full_screen_type);
-}
-
 const char* ProtectedVideoTypeToString(gfx::ProtectedVideoType type) {
   switch (type) {
     case gfx::ProtectedVideoType::kClear:
@@ -409,7 +379,6 @@ gfx::Size SwapChainPresenter::CalculateSwapChainSize(
       swap_chain_size.set_height(overlay_monitor_size.height());
     }
   }
-  RecordOverlayFullScreenTypes(gfx::ToEnclosingRect(bounds));
 
   // 4:2:2 subsampled formats like YUY2 must have an even width, and 4:2:0
   // subsampled formats like NV12 must have an even width and height.
@@ -726,6 +695,16 @@ bool SwapChainPresenter::PresentToSwapChain(
     // We don't treat this as an error because this could mean that the client
     // sent us invalid overlay candidates which we weren't able to detect prior
     // to this.  This would cause incorrect rendering, but not a failure loop.
+    return true;
+  }
+
+  if (nv12_image && !nv12_image->texture()) {
+    // We can't proceed if |nv12_image| has no underlying d3d11 texture.  It's
+    // unclear how we get into this state, but we do observe crashes due to it.
+    // Just stop here instead, and render incorrectly.
+    // https://crbug.com/1077645
+    DLOG(ERROR) << "Video NV12 texture is missing";
+    ReleaseSwapChainResources();
     return true;
   }
 

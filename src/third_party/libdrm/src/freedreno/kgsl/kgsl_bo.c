@@ -26,10 +26,6 @@
  *    Rob Clark <robclark@freedesktop.org>
  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #include "kgsl_priv.h"
 
 #include <linux/fb.h>
@@ -181,7 +177,7 @@ drm_private struct fd_bo * kgsl_bo_from_handle(struct fd_device *dev,
 	return bo;
 }
 
-struct fd_bo *
+drm_public struct fd_bo *
 fd_bo_from_fbdev(struct fd_pipe *pipe, int fbfd, uint32_t size)
 {
 	struct fd_bo *bo;

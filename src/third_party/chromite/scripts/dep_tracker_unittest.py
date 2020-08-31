@@ -8,11 +8,18 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import unittest_lib
 from chromite.scripts import dep_tracker
+
+pytestmark = cros_test_lib.pytestmark_inside_only
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # Allow access private members for testing:
 # pylint: disable=protected-access

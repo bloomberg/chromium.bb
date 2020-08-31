@@ -19,6 +19,7 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/update_client/net/url_loader_post_interceptor.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/extension_registry.h"
@@ -42,8 +43,8 @@ using UpdateClientEvents = update_client::UpdateClient::Observer::Events;
 
 class UpdateServiceTest : public ExtensionUpdateClientBaseTest {
  public:
-  UpdateServiceTest() : ExtensionUpdateClientBaseTest() {}
-  ~UpdateServiceTest() override {}
+  UpdateServiceTest() = default;
+  ~UpdateServiceTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionUpdateClientBaseTest::SetUpCommandLine(command_line);
@@ -78,15 +79,6 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, NoUpdate) {
   // UpdateService should emit a not-updated event.
   EXPECT_EQ(UpdateClientEvents::COMPONENT_NOT_UPDATED,
             WaitOnComponentUpdaterCompleteEvent(kExtensionId));
-
-  content::FetchHistogramsFromChildProcesses();
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "Extensions.ExtensionUpdaterUpdateResults"),
-      testing::ElementsAre(base::Bucket(
-          static_cast<int>(ExtensionUpdaterUpdateResult::NO_UPDATE), 1)));
-  histogram_tester.ExpectTotalCount(
-      "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors", 0);
 
   ASSERT_EQ(1, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
@@ -130,17 +122,6 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UpdateCheckError) {
   // UpdateService should emit an error update event.
   EXPECT_EQ(UpdateClientEvents::COMPONENT_UPDATE_ERROR,
             WaitOnComponentUpdaterCompleteEvent(kExtensionId));
-
-  content::FetchHistogramsFromChildProcesses();
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "Extensions.ExtensionUpdaterUpdateResults"),
-      testing::ElementsAre(base::Bucket(
-          static_cast<int>(ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR),
-          1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors"),
-              testing::ElementsAre(base::Bucket(403, 1)));
 
   ASSERT_EQ(1, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
@@ -196,17 +177,6 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, TwoUpdateCheckErrors) {
   extension_service()->updater()->CheckNow(std::move(params));
   run_loop2.Run();
 
-  content::FetchHistogramsFromChildProcesses();
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "Extensions.ExtensionUpdaterUpdateResults"),
-      testing::ElementsAre(base::Bucket(
-          static_cast<int>(ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR),
-          3)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors"),
-              testing::ElementsAre(base::Bucket(304, 2), base::Bucket(305, 1)));
-
   ASSERT_EQ(2, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
 
@@ -259,15 +229,6 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, SuccessfulUpdate) {
             WaitOnComponentUpdaterCompleteEvent(kExtensionId));
 
   run_loop.Run();
-
-  content::FetchHistogramsFromChildProcesses();
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "Extensions.ExtensionUpdaterUpdateResults"),
-      testing::ElementsAre(base::Bucket(
-          static_cast<int>(ExtensionUpdaterUpdateResult::UPDATE_SUCCESS), 1)));
-  histogram_tester.ExpectTotalCount(
-      "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors", 0);
 
   ASSERT_EQ(1, update_interceptor_->GetCount())
       << update_interceptor_->GetRequestsAsString();
@@ -413,8 +374,8 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UninstallExtensionWhileUpdating) {
 class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest,
                                 public testing::WithParamInterface<bool> {
  public:
-  PolicyUpdateServiceTest() : ExtensionUpdateClientBaseTest() {}
-  ~PolicyUpdateServiceTest() override {}
+  PolicyUpdateServiceTest() = default;
+  ~PolicyUpdateServiceTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionUpdateClientBaseTest::SetUpCommandLine(command_line);

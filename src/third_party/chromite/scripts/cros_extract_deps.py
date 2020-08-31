@@ -13,6 +13,7 @@ from __future__ import absolute_import
 
 import json
 import os
+import sys
 
 from chromite.lib.depgraph import DepGraphGenerator
 
@@ -21,6 +22,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import portage_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def FlattenDepTree(deptree, pkgtable=None, parentcpv=None, get_cpe=False):
@@ -116,8 +120,8 @@ def GetCPEFromCPV(category, package, version):
     ["cpe:/a:curl:curl:7.30.0", "cpe:/a:curl:libcurl:7.30.0"]
   """
   equery_cmd = ['equery', 'm', '-U', '%s/%s' % (category, package)]
-  lines = cros_build_lib.run(equery_cmd, error_code_ok=True, print_cmd=False,
-                             redirect_stdout=True).output.splitlines()
+  lines = cros_build_lib.run(equery_cmd, check=False, print_cmd=False,
+                             stdout=True, encoding='utf-8').stdout.splitlines()
   # Look for lines like "Remote-ID:   cpe:/a:kernel:linux-pam ID: cpe"
   # and extract the cpe URI.
   cpes = []

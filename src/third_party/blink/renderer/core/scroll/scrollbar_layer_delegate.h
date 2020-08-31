@@ -22,6 +22,7 @@ class CORE_EXPORT ScrollbarLayerDelegate : public cc::Scrollbar {
                          float device_scale_factor);
 
   // cc::Scrollbar implementation.
+  bool IsSame(const cc::Scrollbar& other) const override;
   cc::ScrollbarOrientation Orientation() const override;
   bool IsLeftSideVerticalScrollbar() const override;
   bool HasThumb() const override;
@@ -35,7 +36,7 @@ class CORE_EXPORT ScrollbarLayerDelegate : public cc::Scrollbar {
   gfx::Rect BackButtonRect() const override;
   gfx::Rect ForwardButtonRect() const override;
 
-  float ThumbOpacity() const override;
+  float Opacity() const override;
   bool NeedsRepaintPart(cc::ScrollbarPart part) const override;
   bool HasTickmarks() const override;
   void PaintPart(cc::PaintCanvas* canvas,

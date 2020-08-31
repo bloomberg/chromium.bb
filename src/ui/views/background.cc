@@ -4,14 +4,16 @@
 
 #include "ui/views/background.h"
 
-#include "base/logging.h"
+#include <utility>
+
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme_color_id.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
@@ -26,9 +28,7 @@ namespace views {
 // background in a solid color.
 class SolidBackground : public Background {
  public:
-  explicit SolidBackground(SkColor color) {
-    SetNativeControlColor(color);
-  }
+  explicit SolidBackground(SkColor color) { SetNativeControlColor(color); }
 
   void Paint(gfx::Canvas* canvas, View* view) const override {
     // Fill the background. Note that we don't constrain to the bounds as
@@ -108,7 +108,7 @@ class BackgroundPainter : public Background {
   DISALLOW_COPY_AND_ASSIGN(BackgroundPainter);
 };
 
-Background::Background() : color_(SK_ColorWHITE) {}
+Background::Background() = default;
 
 Background::~Background() = default;
 
@@ -129,11 +129,6 @@ std::unique_ptr<Background> CreateThemedSolidBackground(
     View* view,
     ui::NativeTheme::ColorId color_id) {
   return std::make_unique<ThemedSolidBackground>(view, color_id);
-}
-
-std::unique_ptr<Background> CreateStandardPanelBackground() {
-  // TODO(beng): Should be in NativeTheme.
-  return CreateSolidBackground(SK_ColorWHITE);
 }
 
 std::unique_ptr<Background> CreateBackgroundFromPainter(

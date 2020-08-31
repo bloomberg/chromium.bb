@@ -11,8 +11,12 @@ This takes care of downloading the pinned version we use in chromite.
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import gs
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def main(argv):

@@ -32,25 +32,23 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_CLIENT_H_
 
 #include "base/strings/string_piece.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-forward.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/public/web/web_frame.h"
-#include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 
 namespace blink {
 
-class WebElement;
 class WebPagePopup;
 class WebURL;
 class WebURLRequest;
 class WebView;
-enum class WebSandboxFlags;
 struct WebRect;
 struct WebSize;
-struct WebTextAutosizerPageInfo;
 struct WebWindowFeatures;
 
 class WebViewClient {
@@ -71,7 +69,7 @@ class WebViewClient {
       const WebWindowFeatures& features,
       const WebString& name,
       WebNavigationPolicy policy,
-      WebSandboxFlags,
+      network::mojom::WebSandboxFlags,
       const FeaturePolicy::FeatureState&,
       const SessionStorageNamespaceId& session_storage_namespace_id) {
     return nullptr;
@@ -104,8 +102,7 @@ class WebViewClient {
   // should be printed.
   virtual void PrintPage(WebLocalFrame*) {}
 
-  // Called when PageImportanceSignals for the WebView is updated.
-  virtual void PageImportanceSignalsChanged() {}
+  virtual void OnPageVisibilityChanged(mojom::PageVisibilityState visibility) {}
 
   // UI ------------------------------------------------------------------
 
@@ -123,11 +120,6 @@ class WebViewClient {
   // in the containing window.
   virtual void FocusNext() {}
   virtual void FocusPrevious() {}
-
-  // Called when a new element gets focused. |from_element| is the previously
-  // focused element, |to_element| is the newly focused one. Either can be null.
-  virtual void FocusedElementChanged(const WebElement& from_element,
-                                     const WebElement& to_element) {}
 
   // Called to check if layout update should be processed.
   virtual bool CanUpdateLayout() { return false; }
@@ -171,19 +163,6 @@ class WebViewClient {
 
   virtual void DidUpdateInspectorSetting(const WebString& key,
                                          const WebString& value) {}
-
-  // Zoom ----------------------------------------------------------------
-
-  // Informs the browser that the page scale has changed and/or a pinch gesture
-  // has started or ended.
-  virtual void PageScaleFactorChanged(float page_scale_factor) {}
-
-  // Informs the browser that page metrics relevant to Blink's TextAutosizer
-  // have changed, so that they can be shared with other renderers. Only called
-  // in the renderer hosting the local main frame. The browser will share this
-  // information with other renderers that have frames in the page.
-  virtual void DidUpdateTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) {
-  }
 
   // Gestures -------------------------------------------------------------
 

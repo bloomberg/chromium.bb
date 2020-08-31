@@ -52,6 +52,8 @@ class DownloadController : public DownloadControllerBase {
   };
   static void RecordStoragePermission(StoragePermissionType type);
 
+  static void CloseTabIfEmpty(content::WebContents* web_contents);
+
   // Callback when user permission prompt finishes. Args: whether file access
   // permission is acquired, which permission to update.
   using AcquirePermissionCallback =
@@ -77,6 +79,9 @@ class DownloadController : public DownloadControllerBase {
 
   // The download item contains dangerous file types.
   void OnDangerousDownload(download::DownloadItem* item);
+
+  // The download item is a mixed content download.
+  void OnMixedContentDownload(download::DownloadItem* item);
 
   // Helper methods to start android download on UI thread.
   void StartAndroidDownload(const content::WebContents::Getter& wc_getter,

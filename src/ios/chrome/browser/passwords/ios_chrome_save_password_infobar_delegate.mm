@@ -116,6 +116,15 @@ bool IsUpdateInfobar(PasswordInfobarType infobar_type) {
 
 using password_manager::PasswordFormManagerForUI;
 
+// static
+IOSChromeSavePasswordInfoBarDelegate*
+IOSChromeSavePasswordInfoBarDelegate::FromInfobarDelegate(
+    infobars::InfoBarDelegate* delegate) {
+  return delegate->GetIdentifier() == SAVE_PASSWORD_INFOBAR_DELEGATE_MOBILE
+             ? static_cast<IOSChromeSavePasswordInfoBarDelegate*>(delegate)
+             : nullptr;
+}
+
 IOSChromeSavePasswordInfoBarDelegate::IOSChromeSavePasswordInfoBarDelegate(
     bool is_sync_user,
     bool password_update,
@@ -214,7 +223,8 @@ void IOSChromeSavePasswordInfoBarDelegate::InfoBarDismissed() {
 
 bool IOSChromeSavePasswordInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
-  return !details.is_redirect && ConfirmInfoBarDelegate::ShouldExpire(details);
+  return !details.is_form_submission && !details.is_redirect &&
+         ConfirmInfoBarDelegate::ShouldExpire(details);
 }
 
 void IOSChromeSavePasswordInfoBarDelegate::UpdateCredentials(
@@ -229,7 +239,8 @@ void IOSChromeSavePasswordInfoBarDelegate::UpdateCredentials(
 
 void IOSChromeSavePasswordInfoBarDelegate::InfobarPresenting(bool automatic) {
   DCHECK(IsInfobarUIRebootEnabled());
-  DCHECK(!infobar_presenting_);
+  if (infobar_presenting_)
+    return;
 
   RecordPresentationMetrics(form_to_save(), current_password_saved_,
                             IsUpdateInfobar(infobar_type_), automatic);
@@ -238,7 +249,8 @@ void IOSChromeSavePasswordInfoBarDelegate::InfobarPresenting(bool automatic) {
 
 void IOSChromeSavePasswordInfoBarDelegate::InfobarDismissed() {
   DCHECK(IsInfobarUIRebootEnabled());
-  DCHECK(infobar_presenting_);
+  if (!infobar_presenting_)
+    return;
 
   RecordDismissalMetrics(form_to_save(), infobar_response(),
                          IsUpdateInfobar(infobar_type_));

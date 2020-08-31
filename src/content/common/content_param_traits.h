@@ -25,12 +25,12 @@
 namespace blink {
 class PolicyValue;
 class MessagePortChannel;
+class MessagePortDescriptor;
 struct TransferableMessage;
 }
 
 namespace content {
-struct FrameMsg_ViewChanged_Params;
-struct RecordTabSwitchTimeRequest;
+struct RecordContentToVisibleTimeRequest;
 }
 
 namespace viz {
@@ -56,6 +56,16 @@ struct CONTENT_EXPORT ParamTraits<content::WebCursor> {
 template <>
 struct CONTENT_EXPORT ParamTraits<blink::MessagePortChannel> {
   typedef blink::MessagePortChannel param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<blink::MessagePortDescriptor> {
+  typedef blink::MessagePortDescriptor param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -92,16 +102,6 @@ struct CONTENT_EXPORT ParamTraits<
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
                    param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<content::FrameMsg_ViewChanged_Params> {
-  using param_type = content::FrameMsg_ViewChanged_Params;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -166,8 +166,8 @@ struct CONTENT_EXPORT ParamTraits<net::SHA256HashValue> {
 };
 
 template <>
-struct CONTENT_EXPORT ParamTraits<content::RecordTabSwitchTimeRequest> {
-  using param_type = content::RecordTabSwitchTimeRequest;
+struct CONTENT_EXPORT ParamTraits<content::RecordContentToVisibleTimeRequest> {
+  using param_type = content::RecordContentToVisibleTimeRequest;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

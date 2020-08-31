@@ -67,7 +67,8 @@ class CORE_EXPORT NGLineBreaker {
   // information that can help computing |kMaxContent|. It is recommended to set
   // this when computing both |kMinContent| and |kMaxContent|.
   using MaxSizeCache = Vector<LayoutUnit, 64>;
-  void SetMaxSizeCache(MaxSizeCache* max_size_cache);
+  void SetIntrinsicSizeOutputs(MaxSizeCache* max_size_cache,
+                               bool* depends_on_percentage_block_size_out);
 
   // Compute NGInlineItemResult for an open tag item.
   // Returns true if this item has edge and may have non-zero inline size.
@@ -99,8 +100,6 @@ class CORE_EXPORT NGLineBreaker {
                               unsigned end_offset,
                               NGLineInfo*);
   NGInlineItemResult* AddItem(const NGInlineItem&, NGLineInfo*);
-  LayoutUnit SetLineEndFragment(scoped_refptr<const NGPhysicalTextFragment>,
-                                NGLineInfo*);
 
   void BreakLine(LayoutUnit percentage_resolution_block_size_for_min_max,
                  NGLineInfo*);
@@ -135,6 +134,7 @@ class CORE_EXPORT NGLineBreaker {
                         const NGInlineItem&,
                         const ShapeResult&,
                         LayoutUnit available_width,
+                        LayoutUnit available_width_with_hyphens,
                         NGLineInfo*);
   bool BreakTextAtPreviousBreakOpportunity(NGInlineItemResult* item_result);
   bool HandleTextForFastMinContent(NGInlineItemResult*,
@@ -166,10 +166,7 @@ class CORE_EXPORT NGLineBreaker {
       const NGInlineItem&,
       LayoutUnit percentage_resolution_block_size_for_min_max,
       NGLineInfo*);
-  bool IsAtomicInlineAfterNoBreakSpace(
-      const NGInlineItemResult& item_result) const;
-  bool IsAtomicInlineBeforeNoBreakSpace(
-      const NGInlineItemResult& item_result) const;
+  bool ShouldForceCanBreakAfter(const NGInlineItemResult& item_result) const;
   void HandleFloat(const NGInlineItem&,
                    NGLineInfo*);
   void HandleOutOfFlowPositioned(const NGInlineItem&, NGLineInfo*);
@@ -260,6 +257,10 @@ class CORE_EXPORT NGLineBreaker {
   // the next line.
   bool is_after_forced_break_ = false;
 
+  // Set in quirks mode when we're not supposed to break inside table cells
+  // between images, and between text and images.
+  bool sticky_images_quirk_ = false;
+
   const NGInlineItemsData& items_data_;
 
   // The text content of this node. This is same as |items_data_.text_content|
@@ -293,6 +294,8 @@ class CORE_EXPORT NGLineBreaker {
 
   // Cache for computing |MinMaxSize|. See |MaxSizeCache|.
   MaxSizeCache* max_size_cache_ = nullptr;
+
+  bool* depends_on_percentage_block_size_out_ = nullptr;
 
   // Keep the last item |HandleTextForFastMinContent()| has handled. This is
   // used to fallback the last word to |HandleText()|.

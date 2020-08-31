@@ -202,8 +202,8 @@ class SupervisedUserServiceTest : public ::testing::Test {
  protected:
   void AddURLAccessRequest(const GURL& url, AsyncResultHolder* result_holder) {
     supervised_user_service_->AddURLAccessRequest(
-        url, base::Bind(&AsyncResultHolder::SetResult,
-                        base::Unretained(result_holder)));
+        url, base::BindOnce(&AsyncResultHolder::SetResult,
+                            base::Unretained(result_holder)));
   }
 
   signin::IdentityTestEnvironment* identity_test_env() {
@@ -228,7 +228,8 @@ TEST_F(SupervisedUserServiceTest, ShutDownCustodianProfileDownloader) {
 
   // Emulate being logged in, then start to download a profile so a
   // ProfileDownloader gets created.
-  identity_test_env()->MakePrimaryAccountAvailable("logged_in@gmail.com");
+  identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(
+      "logged_in@gmail.com");
 
   downloader_service->DownloadProfile(base::Bind(&OnProfileDownloadedFail));
 }
@@ -449,7 +450,11 @@ TEST_F(SupervisedUserServiceExtensionTest,
 
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
-  ASSERT_TRUE(profile_->IsSupervised());
+  supervised_user_service
+      ->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(false);
+  EXPECT_FALSE(supervised_user_service
+                   ->GetSupervisedUserExtensionsMayRequestPermissionsPref());
+  EXPECT_TRUE(profile_->IsSupervised());
 
   // Check that a supervised user can install and uninstall a theme even if
   // they are not allowed to install extensions.
@@ -502,9 +507,9 @@ TEST_F(SupervisedUserServiceExtensionTest,
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
   supervised_user_service
       ->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(true);
-  ASSERT_TRUE(supervised_user_service
+  EXPECT_TRUE(supervised_user_service
                   ->GetSupervisedUserExtensionsMayRequestPermissionsPref());
-  ASSERT_TRUE(profile_->IsSupervised());
+  EXPECT_TRUE(profile_->IsSupervised());
 
   // The supervised user should be able to load and uninstall the extensions
   // they install.
@@ -531,9 +536,9 @@ TEST_F(SupervisedUserServiceExtensionTest,
     EXPECT_FALSE(error_3.empty());
 
     base::string16 error_4;
-    EXPECT_FALSE(supervised_user_service->UserMayModifySettings(extension.get(),
-                                                                &error_4));
-    EXPECT_FALSE(error_4.empty());
+    EXPECT_TRUE(supervised_user_service->UserMayModifySettings(extension.get(),
+                                                               &error_4));
+    EXPECT_TRUE(error_4.empty());
 
     base::string16 error_5;
     EXPECT_TRUE(

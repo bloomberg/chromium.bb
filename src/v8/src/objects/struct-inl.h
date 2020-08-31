@@ -21,8 +21,9 @@ namespace internal {
 
 TQ_OBJECT_CONSTRUCTORS_IMPL(Struct)
 TQ_OBJECT_CONSTRUCTORS_IMPL(Tuple2)
-TQ_OBJECT_CONSTRUCTORS_IMPL(Tuple3)
 TQ_OBJECT_CONSTRUCTORS_IMPL(AccessorPair)
+
+NEVER_READ_ONLY_SPACE_IMPL(AccessorPair)
 
 TQ_OBJECT_CONSTRUCTORS_IMPL(ClassPositions)
 
@@ -32,9 +33,6 @@ void Struct::InitializeBody(int object_size) {
     WRITE_FIELD(*this, offset, value);
   }
 }
-
-TQ_SMI_ACCESSORS(ClassPositions, start)
-TQ_SMI_ACCESSORS(ClassPositions, end)
 
 Object AccessorPair::get(AccessorComponent component) {
   return component == ACCESSOR_GETTER ? getter() : setter();

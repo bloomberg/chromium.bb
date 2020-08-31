@@ -42,6 +42,8 @@ void WakeUpBudgetPool::RecordTaskRunTime(TaskQueue* queue,
 
 bool WakeUpBudgetPool::CanRunTasksAt(base::TimeTicks moment,
                                      bool is_wake_up) const {
+  if (!is_enabled_)
+    return true;
   if (!last_wake_up_)
     return false;
   // |is_wake_up| flag means that we're in the beginning of the wake-up and
@@ -53,9 +55,11 @@ bool WakeUpBudgetPool::CanRunTasksAt(base::TimeTicks moment,
   return moment < last_wake_up_.value() + wake_up_duration_;
 }
 
-base::Optional<base::TimeTicks> WakeUpBudgetPool::GetTimeTasksCanRunUntil(
+base::TimeTicks WakeUpBudgetPool::GetTimeTasksCanRunUntil(
     base::TimeTicks now,
     bool is_wake_up) const {
+  if (!is_enabled_)
+    return base::TimeTicks::Max();
   if (!last_wake_up_)
     return base::TimeTicks();
   if (!CanRunTasksAt(now, is_wake_up))
@@ -63,29 +67,19 @@ base::Optional<base::TimeTicks> WakeUpBudgetPool::GetTimeTasksCanRunUntil(
   return last_wake_up_.value() + wake_up_duration_;
 }
 
-namespace {
-
-// Wrapper around base::TimeTicks::SnappedToNextTick which ensures that
-// the returned point is strictly in the future.
-base::TimeTicks SnapToNextTickStrict(base::TimeTicks moment,
-                                     base::TimeDelta interval) {
-  base::TimeTicks snapped =
-      moment.SnappedToNextTick(base::TimeTicks(), interval);
-  if (snapped == moment)
-    return moment + interval;
-  return snapped;
-}
-
-}  // namespace
-
 base::TimeTicks WakeUpBudgetPool::GetNextAllowedRunTime(
     base::TimeTicks desired_run_time) const {
-  if (!last_wake_up_)
-    return SnapToNextTickStrict(desired_run_time, wake_up_interval_);
+  if (!is_enabled_)
+    return desired_run_time;
+  if (!last_wake_up_) {
+    return desired_run_time.SnappedToNextTick(base::TimeTicks(),
+                                              wake_up_interval_);
+  }
   if (desired_run_time < last_wake_up_.value() + wake_up_duration_)
     return desired_run_time;
-  return SnapToNextTickStrict(std::max(desired_run_time, last_wake_up_.value()),
-                              wake_up_interval_);
+  DCHECK_GE(desired_run_time, last_wake_up_.value());
+  return desired_run_time.SnappedToNextTick(base::TimeTicks(),
+                                            wake_up_interval_);
 }
 
 void WakeUpBudgetPool::OnQueueNextWakeUpChanged(

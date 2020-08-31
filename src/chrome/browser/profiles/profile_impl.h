@@ -15,17 +15,16 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_impl_io_data.h"
+#include "chrome/browser/profiles/profile_io_data_handle.h"
 #include "chrome/common/buildflags.h"
 #include "components/keyed_service/core/simple_factory_key.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/content_browser_client.h"
 #include "extensions/buildflags/buildflags.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "services/identity/public/mojom/identity_service.mojom.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
@@ -46,10 +45,6 @@ class SupervisedUserTestBase;
 
 namespace base {
 class SequencedTaskRunner;
-}
-
-namespace identity {
-class IdentityService;
 }
 
 namespace policy {
@@ -119,16 +114,22 @@ class ProfileImpl : public Profile {
   base::Time GetCreationTime() const override;
   bool IsOffTheRecord() override;
   bool IsOffTheRecord() const override;
+  const OTRProfileID& GetOTRProfileID() const override;
   base::FilePath GetPath() const override;
-  Profile* GetOffTheRecordProfile() override;
-  void DestroyOffTheRecordProfile() override;
-  bool HasOffTheRecordProfile() override;
+  // TODO(https://crbug.com/1033903): Remove the default value.
+  Profile* GetOffTheRecordProfile(
+      const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) override;
+  std::vector<Profile*> GetAllOffTheRecordProfiles() override;
+  void DestroyOffTheRecordProfile(Profile* otr_profile) override;
+  // TODO(https://crbug.com/1033903): Remove the default value.
+  bool HasOffTheRecordProfile(
+      const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) override;
+  bool HasAnyOffTheRecordProfile() override;
   Profile* GetOriginalProfile() override;
   const Profile* GetOriginalProfile() const override;
   bool IsSupervised() const override;
   bool IsChild() const override;
   bool IsLegacySupervised() const override;
-  bool IsIndependentOffTheRecordProfile() override;
   bool AllowsBrowserWindows() const override;
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
   PrefService* GetPrefs() override;
@@ -162,7 +163,6 @@ class ProfileImpl : public Profile {
   ExitType GetLastSessionExitType() override;
   bool ShouldRestoreOldSessionCookies() override;
   bool ShouldPersistSessionCookies() override;
-  identity::mojom::IdentityService* GetIdentityService() override;
 
 #if defined(OS_CHROMEOS)
   void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia) override;
@@ -188,7 +188,7 @@ class ProfileImpl : public Profile {
   ProfileImpl(const base::FilePath& path,
               Delegate* delegate,
               CreateMode create_mode,
-              base::Time creation_time,
+              base::Time path_creation_time,
               scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
 #if defined(OS_ANDROID)
@@ -230,19 +230,10 @@ class ProfileImpl : public Profile {
 
   base::FilePath path_;
 
-  base::Time creation_time_;
+  base::Time path_creation_time_;
 
   // Task runner used for file access in the profile path.
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-
-  // The Identity Service instance for this profile. This should not be exposed
-  // outside of ProfileImpl except through |remote_identity_service_| by way of
-  // |GetIdentityService()|.
-  std::unique_ptr<identity::IdentityService> identity_service_impl_;
-
-  // A Mojo connection to the above service instance. Exposed to clients via
-  // |GetIdentityService()|.
-  mojo::Remote<identity::mojom::IdentityService> remote_identity_service_;
 
   // !!! BIG HONKING WARNING !!!
   //  The order of the members below is important. Do not change it unless
@@ -285,7 +276,7 @@ class ProfileImpl : public Profile {
   // See comment in GetOffTheRecordPrefs. Field exists so something owns the
   // dummy.
   std::unique_ptr<sync_preferences::PrefServiceSyncable> dummy_otr_prefs_;
-  ProfileImplIOData::Handle io_data_;
+  ProfileIODataHandle io_data_;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
@@ -299,7 +290,7 @@ class ProfileImpl : public Profile {
   base::OneShotTimer create_session_service_timer_;
 #endif
 
-  std::unique_ptr<Profile> off_the_record_profile_;
+  std::map<OTRProfileID, std::unique_ptr<Profile>> otr_profiles_;
 
   // See GetStartTime for details.
   base::Time start_time_;

@@ -11,10 +11,13 @@
 #ifndef MODULES_AUDIO_CODING_CODECS_ISAC_AUDIO_ENCODER_ISAC_T_H_
 #define MODULES_AUDIO_CODING_CODECS_ISAC_AUDIO_ENCODER_ISAC_T_H_
 
+#include <utility>
 #include <vector>
 
+#include "absl/types/optional.h"
 #include "api/audio_codecs/audio_encoder.h"
 #include "api/scoped_refptr.h"
+#include "api/units/time_delta.h"
 #include "rtc_base/constructor_magic.h"
 
 namespace webrtc {
@@ -28,7 +31,6 @@ class AudioEncoderIsacT final : public AudioEncoder {
   //  - 32000 Hz, 30 ms, 10000-56000 bps (if T has super-wideband support)
   struct Config {
     bool IsOk() const;
-
     int payload_type = 103;
     int sample_rate_hz = 16000;
     int frame_size_ms = 30;
@@ -50,6 +52,8 @@ class AudioEncoderIsacT final : public AudioEncoder {
                          rtc::ArrayView<const int16_t> audio,
                          rtc::Buffer* encoded) override;
   void Reset() override;
+  absl::optional<std::pair<TimeDelta, TimeDelta>> GetFrameLengthRange()
+      const override;
 
  private:
   // This value is taken from STREAM_SIZE_MAX_60 for iSAC float (60 ms) and

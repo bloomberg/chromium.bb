@@ -56,9 +56,9 @@ class NavigationItemImpl : public web::NavigationItem {
   SSLStatus& GetSSL() override;
   void SetTimestamp(base::Time timestamp) override;
   base::Time GetTimestamp() const override;
-  void SetUserAgentType(UserAgentType type,
-                        bool update_inherited_user_agent) override;
-  UserAgentType GetUserAgentType() const override;
+  void SetUserAgentType(UserAgentType type) override;
+  UserAgentType GetUserAgentType(
+      id<UITraitEnvironment> web_view) const override;
   UserAgentType GetUserAgentForInheritance() const override;
   bool HasPostData() const override;
   NSDictionary* GetHttpRequestHeaders() const override;
@@ -130,6 +130,9 @@ class NavigationItemImpl : public web::NavigationItem {
   // due to timining problems or bugs in WKWebView.
   void SetUntrusted();
   bool IsUntrusted();
+
+  // Restores the state of the |other| navigation item in this item.
+  void RestoreStateFromItem(NavigationItem* other);
 
 #ifndef NDEBUG
   // Returns a human-readable description of the state for debugging purposes.

@@ -224,6 +224,13 @@ public class ModalDialogManager {
     }
 
     /**
+     * @return The type of dialog showing, or last type that was shown.
+     */
+    public @ModalDialogType int getCurrentType() {
+        return mCurrentType;
+    }
+
+    /**
      * Show the specified dialog. If another dialog is currently showing, the specified dialog will
      * be added to the end of the pending dialog list of the specified type.
      * @param model The dialog model to be shown or added to pending list.
@@ -326,9 +333,26 @@ public class ModalDialogManager {
     public void dismissDialogsOfType(
             @ModalDialogType int dialogType, @DialogDismissalCause int dismissalCause) {
         dismissPendingDialogsOfType(dialogType, dismissalCause);
+        dismissActiveDialogOfType(dialogType, dismissalCause);
+    }
+
+    /**
+     * Dismiss the dialog currently shown if it is of the specified type.
+     *
+     * Any pending dialogs will then be shown.
+     *
+     * @param dialogType The specified type of dialog.
+     * @param dismissalCause The {@link DialogDismissalCause} that describes why the dialogs are
+     *                       dismissed.
+     * @return true if a dialog was showing and was dismissed.
+     */
+    public boolean dismissActiveDialogOfType(
+            @ModalDialogType int dialogType, @DialogDismissalCause int dismissalCause) {
         if (isShowing() && dialogType == mCurrentType) {
             dismissDialog(mCurrentPresenter.getDialogModel(), dismissalCause);
+            return true;
         }
+        return false;
     }
 
     /** Helper method to dismiss pending dialogs of the specified type. */

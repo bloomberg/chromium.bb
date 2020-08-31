@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
@@ -39,7 +38,6 @@ class Value;
 namespace content {
 
 class RenderFrameHost;
-class TestServiceManagerContext;
 
 // Create an blink::mojom::FetchAPIRequestPtr with given fields.
 blink::mojom::FetchAPIRequestPtr CreateFetchAPIRequest(
@@ -102,9 +100,6 @@ bool AreDefaultSiteInstancesEnabled();
 // the test; the flag will be read on the first real navigation.
 void IsolateAllSitesForTesting(base::CommandLine* command_line);
 
-// Resets the internal secure schemes/origins whitelist.
-void ResetSchemesAndOriginsWhitelist();
-
 // Returns a GURL constructed from the WebUI scheme and the given host.
 GURL GetWebUIURL(const std::string& host);
 
@@ -119,6 +114,9 @@ std::string GetWebUIURLString(const std::string& host);
 // WebContents. The caller should be careful when retaining the pointer, as the
 // inner WebContents will be deleted if the frame it's attached to goes away.
 WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh);
+
+// Spins a run loop until IsDocumentOnLoadCompletedInMainFrame() is true.
+void AwaitDocumentOnLoadCompleted(WebContents* web_contents);
 
 // Helper class to Run and Quit the message loop. Run and Quit can only happen
 // once per instance. Make a new instance for each use. Calling Quit after Run
@@ -291,9 +289,7 @@ class InProcessUtilityThreadHelper : public BrowserChildProcessObserver {
   void BrowserChildProcessHostDisconnected(
       const ChildProcessData& data) override;
 
-  base::OnceClosure quit_closure_;
-  std::unique_ptr<TestServiceManagerContext> shell_context_;
-  base::WeakPtrFactory<InProcessUtilityThreadHelper> weak_ptr_factory_{this};
+  base::Optional<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessUtilityThreadHelper);
 };
@@ -320,7 +316,8 @@ class RenderFrameDeletedObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(RenderFrameDeletedObserver);
 };
 
-// Watches a WebContents and blocks until it is destroyed.
+// Watches a WebContents. Can be used to block until it is destroyed or just
+// merely report if it was destroyed.
 class WebContentsDestroyedWatcher : public WebContentsObserver {
  public:
   explicit WebContentsDestroyedWatcher(WebContents* web_contents);
@@ -329,11 +326,16 @@ class WebContentsDestroyedWatcher : public WebContentsObserver {
   // Waits until the WebContents is destroyed.
   void Wait();
 
+  // Returns whether the WebContents was destroyed.
+  bool IsDestroyed() { return destroyed_; }
+
  private:
   // Overridden WebContentsObserver methods.
   void WebContentsDestroyed() override;
 
   base::RunLoop run_loop_;
+
+  bool destroyed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedWatcher);
 };

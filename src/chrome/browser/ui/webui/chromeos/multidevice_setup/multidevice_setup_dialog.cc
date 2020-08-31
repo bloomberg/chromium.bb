@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -58,8 +59,8 @@ void MultiDeviceSetupDialog::Show() {
 
   // Remove the black backdrop behind the dialog window which appears in tablet
   // and full-screen mode.
-  window->SetProperty(ash::kBackdropWindowMode,
-                      ash::BackdropWindowMode::kDisabled);
+  ash::WindowBackdrop::Get(window)->SetBackdropMode(
+      ash::WindowBackdrop::BackdropMode::kDisabled);
 }
 
 // static
@@ -127,15 +128,11 @@ MultiDeviceSetupDialogUI::MultiDeviceSetupDialogUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(std::make_unique<MultideviceSetupHandler>());
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
-
-  // Add Mojo bindings to this WebUI so that Mojo calls can occur in JavaScript.
-  AddHandlerToRegistry(base::BindRepeating(
-      &MultiDeviceSetupDialogUI::BindMultiDeviceSetup, base::Unretained(this)));
 }
 
 MultiDeviceSetupDialogUI::~MultiDeviceSetupDialogUI() = default;
 
-void MultiDeviceSetupDialogUI::BindMultiDeviceSetup(
+void MultiDeviceSetupDialogUI::BindInterface(
     mojo::PendingReceiver<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
         receiver) {
   MultiDeviceSetupService* service =
@@ -144,6 +141,8 @@ void MultiDeviceSetupDialogUI::BindMultiDeviceSetup(
   if (service)
     service->BindMultiDeviceSetup(std::move(receiver));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(MultiDeviceSetupDialogUI)
 
 }  // namespace multidevice_setup
 

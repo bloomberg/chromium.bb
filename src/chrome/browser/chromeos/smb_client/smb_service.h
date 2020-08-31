@@ -20,10 +20,12 @@
 #include "chrome/browser/chromeos/file_system_provider/provider_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/smb_client/smb_errors.h"
+#include "chrome/browser/chromeos/smb_client/smb_persisted_share_registry.h"
 #include "chrome/browser/chromeos/smb_client/smb_share_finder.h"
 #include "chrome/browser/chromeos/smb_client/smb_task_queue.h"
-#include "chrome/browser/chromeos/smb_client/temp_file_manager.h"
+#include "chrome/browser/chromeos/smb_client/smbfs_share.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/smb_provider_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/base/network_change_notifier.h"
@@ -39,16 +41,15 @@ class PrefRegistrySyncable;
 namespace chromeos {
 namespace smb_client {
 
-using file_system_provider::Capabilities;
 using file_system_provider::ProvidedFileSystemInfo;
-using file_system_provider::ProvidedFileSystemInterface;
-using file_system_provider::ProviderId;
-using file_system_provider::ProviderInterface;
-using file_system_provider::Service;
+
+class SmbKerberosCredentialsUpdater;
+class SmbShareInfo;
 
 // Creates and manages an smb file system.
 class SmbService : public KeyedService,
                    public net::NetworkChangeNotifier::NetworkChangeObserver,
+                   public chromeos::PowerManagerClient::Observer,
                    public base::SupportsWeakPtr<SmbService> {
  public:
   using MountResponse = base::OnceCallback<void(SmbMountResult result)>;
@@ -61,34 +62,29 @@ class SmbService : public KeyedService,
   SmbService(Profile* profile, std::unique_ptr<base::TickClock> tick_clock);
   ~SmbService() override;
 
+  // KeyedService override.
+  void Shutdown() override;
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Starts the process of mounting an SMB file system.
   // |use_kerberos| indicates whether the share should be mounted with a user's
   // chromad kerberos tickets.
-  // Calls SmbProviderClient::Mount().
   void Mount(const file_system_provider::MountOptions& options,
              const base::FilePath& share_path,
              const std::string& username,
              const std::string& password,
-             bool use_chromad_kerberos,
+             bool use_kerberos,
              bool should_open_file_manager_after_mount,
              bool save_credentials,
              MountResponse callback);
 
-  // Completes the mounting of an SMB file system, passing |options| on to
-  // file_system_provider::Service::MountFileSystem(). Passes error status to
-  // callback.
-  void OnMountResponse(MountResponse callback,
-                       const file_system_provider::MountOptions& options,
-                       const base::FilePath& share_path,
-                       bool is_kerberos_chromad,
-                       bool should_open_file_manager_after_mount,
-                       const std::string& username,
-                       const std::string& workgroup,
-                       bool save_credentials,
-                       smbprovider::ErrorType error,
-                       int32_t mount_id);
+  // Unmounts the SmbFs share mounted at |mount_path|.
+  void UnmountSmbFs(const base::FilePath& mount_path);
+
+  // Returns the SmbFsShare instance for the file at |path|. If |path| is not
+  // part of an smbfs share, returns nullptr.
+  SmbFsShare* GetSmbFsShareForPath(const base::FilePath& path);
 
   // Gathers the hosts in the network using |share_finder_| and gets the shares
   // for each of the hosts found. |discovery_callback| is called as soon as host
@@ -99,13 +95,6 @@ class SmbService : public KeyedService,
   // again.
   void GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
                              GatherSharesResponse shares_callback);
-
-  // Updates the credentials for |mount_id|. If there is a stored callback in
-  // |update_credentials_replies_| for |mount_id|, it will be run upon once the
-  // credentials are successfully updated.
-  void UpdateCredentials(int32_t mount_id,
-                         const std::string& username,
-                         const std::string& password);
 
   // Updates the share path for |mount_id|.
   void UpdateSharePath(int32_t mount_id,
@@ -121,19 +110,70 @@ class SmbService : public KeyedService,
   // |callback| will be run inline.
   void OnSetupCompleteForTesting(base::OnceClosure callback);
 
+  // Sets up Kerberos / AD services.
+  void SetupKerberos(const std::string& account_identifier);
+
+  // Updates credentials for Kerberos service.
+  void UpdateKerberosCredentials(const std::string& account_identifier);
+
+  // Returns true if Kerberos was enabled via policy at service creation time
+  // and is still enabled now.
+  bool IsKerberosEnabledViaPolicy() const;
+
+  // Sets the mounter creation callback, which is passed to
+  // SmbFsShare::SetMounterCreationCallbackForTest() when a new SmbFs share is
+  // created.
+  void SetSmbFsMounterCreationCallbackForTesting(
+      SmbFsShare::MounterCreationCallback callback);
+
+  // chromeos::PowerManagerClient::Observer overrides
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
  private:
   friend class SmbServiceTest;
 
-  // Calls SmbProviderClient::Mount(). |temp_file_manager_| must be initialized
-  // before this is called.
-  void CallMount(const file_system_provider::MountOptions& options,
-                 const base::FilePath& share_path,
-                 const std::string& username,
-                 const std::string& password,
-                 bool use_chromad_kerberos,
-                 bool should_open_file_manager_after_mount,
-                 bool save_credentials,
-                 MountResponse callback);
+  using MountInternalCallback =
+      base::OnceCallback<void(SmbMountResult result,
+                              const base::FilePath& mount_path)>;
+
+  // Callback passed to MountInternal().
+  void MountInternalDone(MountResponse callback,
+                         const SmbShareInfo& info,
+                         bool should_open_file_manager_after_mount,
+                         SmbMountResult result,
+                         const base::FilePath& mount_path);
+
+  // Mounts an SMB share with url |share_url| using either smbprovider or smbfs
+  // based on feature flags.
+  // Calls SmbProviderClient::Mount() or start the smbfs mount process.
+  void MountInternal(const file_system_provider::MountOptions& options,
+                     const SmbShareInfo& info,
+                     const std::string& password,
+                     bool save_credentials,
+                     bool skip_connect,
+                     MountInternalCallback callback);
+
+  // Handles the response from mounting an SMB share using smbprovider.
+  // Completes the mounting of an SMB file system, passing |options| on to
+  // file_system_provider::Service::MountFileSystem(). Passes error status to
+  // callback.
+  void OnProviderMountDone(MountInternalCallback callback,
+                           const file_system_provider::MountOptions& options,
+                           bool save_credentials,
+                           smbprovider::ErrorType error,
+                           int32_t mount_id);
+
+  // Handles the response from mounting an smbfs share. Passes |result| onto
+  // |callback|.
+  void OnSmbfsMountDone(const std::string& smbfs_mount_id,
+                        MountInternalCallback callback,
+                        SmbMountResult result);
+
+  // Callback passed to SmbFsShare::Unmount() during a power management
+  // suspension. Ensures that suspension is blocked until the unmount completes.
+  void OnSuspendUnmountDone(base::UnguessableToken power_manager_suspend_token,
+                            chromeos::MountError result);
 
   // Retrieves the mount_id for |file_system_info|.
   int32_t GetMountId(const ProvidedFileSystemInfo& info) const;
@@ -143,7 +183,7 @@ class SmbService : public KeyedService,
       const std::string& file_system_id,
       file_system_provider::Service::UnmountReason reason);
 
-  Service* GetProviderService() const;
+  file_system_provider::Service* GetProviderService() const;
 
   SmbProviderClient* GetSmbProviderClient() const;
 
@@ -153,6 +193,7 @@ class SmbService : public KeyedService,
 
   void OnHostsDiscovered(
       const std::vector<ProvidedFileSystemInfo>& file_systems,
+      const std::vector<SmbShareInfo>& saved_smbfs_shares,
       const std::vector<SmbUrl>& preconfigured_shares);
 
   // Closure for OnHostDiscovered(). |reply| is passed down to
@@ -172,28 +213,27 @@ class SmbService : public KeyedService,
                          smbprovider::ErrorType error,
                          int32_t mount_id);
 
-  // Calls SmbProviderClient::Premount(). |temp_file_manager_| must be
-  // initialized before this is called.
-  void Premount(const base::FilePath& share_path);
+  // Mounts a saved (smbfs) SMB share with details |info|.
+  void MountSavedSmbfsShare(const SmbShareInfo& info);
 
-  // Handles the response from attempting to premount a share configured via
-  // policy. If premounting fails it will log and exit the operation.
-  void OnPremountResponse(const base::FilePath& share_path,
-                          smbprovider::ErrorType error,
-                          int32_t mount_id);
+  // Mounts a preconfigured (by policy) SMB share with path |share_url|. The
+  // share is mounted with empty credentials.
+  void MountPreconfiguredShare(const SmbUrl& share_url);
 
-  // Sets up |temp_file_manager_|. Calls CompleteSetup().
-  void SetupTempFileManagerAndCompleteSetup();
+  // Handles the response from attempting to mount a share configured via
+  // policy.
+  void OnMountPreconfiguredShareDone(SmbMountResult result,
+                                     const base::FilePath& mount_path);
 
   // Completes SmbService setup including ShareFinder initialization and
-  // remounting shares. Called by SetupTempFileManagerAndCompleteSetup().
-  void CompleteSetup(std::unique_ptr<TempFileManager> temp_file_manager);
+  // remounting shares.
+  void CompleteSetup();
 
   // Handles the response from attempting to setup Kerberos.
   void OnSetupKerberosResponse(bool success);
 
-  // Fires |callback| with |result|.
-  void FireMountCallback(MountResponse callback, SmbMountResult result);
+  // Handles the response from attempting to update Kerberos credentials.
+  void OnUpdateKerberosCredentialsResponse(bool success);
 
   // Registers host locators for |share_finder_|.
   void RegisterHostLocators();
@@ -203,10 +243,6 @@ class SmbService : public KeyedService,
 
   // Set up NetBios host locator.
   void SetUpNetBiosHostLocator();
-
-  // Opens |file_system_id| in the File Manager. Must only be called on a
-  // mounted share.
-  void OpenFileManager(const std::string& file_system_id);
 
   // Whether NetBios discovery should be used. Controlled via policy.
   bool IsNetBiosDiscoveryEnabled() const;
@@ -239,17 +275,15 @@ class SmbService : public KeyedService,
                           int32_t mount_id,
                           base::OnceClosure reply);
 
-  // Opens a request credential dialog for the share path |share_path|.
-  // When a user clicks "Update" in the dialog, UpdateCredentials is run.
-  void OpenRequestCredentialsDialog(const std::string& share_path,
-                                    int32_t mount_id);
-
-  // Handles the response from attempting to the update the credentials of an
-  // existing share. If |error| indicates success, the callback is run and
-  // removed from |update_credential_replies_|. Otherwise, the callback
-  // is removed from |update_credential_replies_| and the error is logged.
-  void OnUpdateCredentialsResponse(int32_t mount_id,
-                                   smbprovider::ErrorType error);
+  // Handles the response from showing the SMB credentials dialog. If |canceled|
+  // is true, the |reply| callback is dropped. Otherwise, |username| and
+  // |password| are passed to the smb service and |reply| is run if the service
+  // returns success.
+  void OnSmbCredentialsDialogShown(int32_t mount_id,
+                                   base::OnceClosure reply,
+                                   bool canceled,
+                                   const std::string& username,
+                                   const std::string& password);
 
   // Requests an updated share path via running
   // ShareFinder::DiscoverHostsInNetwork. |reply| is stored. Once the share path
@@ -263,6 +297,10 @@ class SmbService : public KeyedService,
   void OnUpdateSharePathResponse(int32_t mount_id,
                                  StartReadDirIfSuccessfulCallback reply,
                                  smbprovider::ErrorType error);
+
+  // Handles the callback for SmbFsShare::RemoveSavedCredentials().
+  void OnSmbfsRemoveSavedCredentialsDone(const std::string& mount_id,
+                                         bool success);
 
   // Helper function that determines if HostDiscovery can be run again. Returns
   // false if HostDiscovery was recently run.
@@ -279,17 +317,22 @@ class SmbService : public KeyedService,
   static bool disable_share_discovery_for_testing_;
 
   base::TimeTicks previous_host_discovery_time_;
-  const ProviderId provider_id_;
+  const file_system_provider::ProviderId provider_id_;
   Profile* profile_;
   std::unique_ptr<base::TickClock> tick_clock_;
-  std::unique_ptr<TempFileManager> temp_file_manager_;
   std::unique_ptr<SmbShareFinder> share_finder_;
-  // |mount_id| -> |reply|. Stored callbacks to run after updating credential.
-  std::map<int32_t, base::OnceClosure> update_credential_replies_;
   // |file_system_id| -> |mount_id|
   std::unordered_map<std::string, int32_t> mount_id_map_;
+  // |smbfs_mount_id| -> SmbFsShare
+  // Note, mount ID for smbfs is a randomly generated string. For smbprovider
+  // shares, it is an integer.
+  std::unordered_map<std::string, std::unique_ptr<SmbFsShare>> smbfs_shares_;
+  SmbPersistedShareRegistry registry_;
+
+  std::unique_ptr<SmbKerberosCredentialsUpdater> smb_credentials_updater_;
 
   base::OnceClosure setup_complete_callback_;
+  SmbFsShare::MounterCreationCallback smbfs_mounter_creation_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbService);
 };

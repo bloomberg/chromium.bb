@@ -39,6 +39,90 @@ PresentationUrlType GetPresentationUrlType(const GURL& url) {
   return PresentationUrlType::kOther;
 }
 
+DialogActivationLocationAndCastMode GetActivationLocationAndCastMode(
+    MediaRouterDialogOpenOrigin activation_location,
+    MediaCastMode cast_mode,
+    bool is_icon_pinned) {
+  switch (activation_location) {
+    case MediaRouterDialogOpenOrigin::TOOLBAR:
+      if (is_icon_pinned) {
+        switch (cast_mode) {
+          case MediaCastMode::PRESENTATION:
+            return DialogActivationLocationAndCastMode::
+                kPinnedIconAndPresentation;
+          case MediaCastMode::TAB_MIRROR:
+            return DialogActivationLocationAndCastMode::kPinnedIconAndTabMirror;
+          case MediaCastMode::DESKTOP_MIRROR:
+            return DialogActivationLocationAndCastMode::
+                kPinnedIconAndDesktopMirror;
+          case MediaCastMode::LOCAL_FILE:
+            return DialogActivationLocationAndCastMode::kPinnedIconAndLocalFile;
+        }
+      } else {
+        switch (cast_mode) {
+          case MediaCastMode::PRESENTATION:
+            return DialogActivationLocationAndCastMode::
+                kEphemeralIconAndPresentation;
+          case MediaCastMode::TAB_MIRROR:
+            return DialogActivationLocationAndCastMode::
+                kEphemeralIconAndTabMirror;
+          case MediaCastMode::DESKTOP_MIRROR:
+            return DialogActivationLocationAndCastMode::
+                kEphemeralIconAndDesktopMirror;
+          case MediaCastMode::LOCAL_FILE:
+            return DialogActivationLocationAndCastMode::
+                kEphemeralIconAndLocalFile;
+        }
+      }
+      break;
+    case MediaRouterDialogOpenOrigin::CONTEXTUAL_MENU:
+      switch (cast_mode) {
+        case MediaCastMode::PRESENTATION:
+          return DialogActivationLocationAndCastMode::
+              kContextMenuAndPresentation;
+        case MediaCastMode::TAB_MIRROR:
+          return DialogActivationLocationAndCastMode::kContextMenuAndTabMirror;
+        case MediaCastMode::DESKTOP_MIRROR:
+          return DialogActivationLocationAndCastMode::
+              kContextMenuAndDesktopMirror;
+        case MediaCastMode::LOCAL_FILE:
+          return DialogActivationLocationAndCastMode::kContextMenuAndLocalFile;
+      }
+      break;
+    case MediaRouterDialogOpenOrigin::PAGE:
+      switch (cast_mode) {
+        case MediaCastMode::PRESENTATION:
+          return DialogActivationLocationAndCastMode::kPageAndPresentation;
+        case MediaCastMode::TAB_MIRROR:
+          return DialogActivationLocationAndCastMode::kPageAndTabMirror;
+        case MediaCastMode::DESKTOP_MIRROR:
+          return DialogActivationLocationAndCastMode::kPageAndDesktopMirror;
+        case MediaCastMode::LOCAL_FILE:
+          return DialogActivationLocationAndCastMode::kPageAndLocalFile;
+      }
+      break;
+    case MediaRouterDialogOpenOrigin::APP_MENU:
+      switch (cast_mode) {
+        case MediaCastMode::PRESENTATION:
+          return DialogActivationLocationAndCastMode::kAppMenuAndPresentation;
+        case MediaCastMode::TAB_MIRROR:
+          return DialogActivationLocationAndCastMode::kAppMenuAndTabMirror;
+        case MediaCastMode::DESKTOP_MIRROR:
+          return DialogActivationLocationAndCastMode::kAppMenuAndDesktopMirror;
+        case MediaCastMode::LOCAL_FILE:
+          return DialogActivationLocationAndCastMode::kAppMenuAndLocalFile;
+      }
+      break;
+    // |OVERFLOW_MENU| refers to extension icons hidden in the app menu. That
+    // mode is no longer available for the Cast toolbar icon.
+    case MediaRouterDialogOpenOrigin::OVERFLOW_MENU:
+    case MediaRouterDialogOpenOrigin::TOTAL_COUNT:
+      break;
+  }
+  NOTREACHED();
+  return DialogActivationLocationAndCastMode::kMaxValue;
+}
+
 }  // namespace
 
 MediaRouterMetrics::MediaRouterMetrics() {}
@@ -47,6 +131,10 @@ MediaRouterMetrics::~MediaRouterMetrics() = default;
 // static
 const char MediaRouterMetrics::kHistogramCloseLatency[] =
     "MediaRouter.Ui.Action.CloseLatency";
+const char MediaRouterMetrics::kHistogramCloudPrefAtDialogOpen[] =
+    "MediaRouter.Cloud.PrefAtDialogOpen";
+const char MediaRouterMetrics::kHistogramCloudPrefAtInit[] =
+    "MediaRouter.Cloud.PrefAtInit";
 const char MediaRouterMetrics::kHistogramDialParsingError[] =
     "MediaRouter.Dial.ParsingError";
 const char MediaRouterMetrics::kHistogramDialFetchAppInfo[] =
@@ -63,8 +151,6 @@ const char MediaRouterMetrics::kHistogramMediaSinkType[] =
     "MediaRouter.Sink.SelectedType";
 const char MediaRouterMetrics::kHistogramPresentationUrlType[] =
     "MediaRouter.PresentationRequest.AvailabilityUrlType";
-const char MediaRouterMetrics::kHistogramRecordSearchSinkOutcome[] =
-    "MediaRouter.Sink.SearchOutcome";
 const char MediaRouterMetrics::kHistogramRouteCreationOutcome[] =
     "MediaRouter.Route.CreationOutcome";
 const char MediaRouterMetrics::kHistogramStartLocalLatency[] =
@@ -77,6 +163,9 @@ const char MediaRouterMetrics::kHistogramStopRoute[] =
     "MediaRouter.Ui.Action.StopRoute";
 const char MediaRouterMetrics::kHistogramUiDeviceCount[] =
     "MediaRouter.Ui.Device.Count";
+const char
+    MediaRouterMetrics::kHistogramUiDialogActivationLocationAndCastMode[] =
+        "MediaRouter.Ui.Dialog.ActivationLocationAndCastMode";
 const char MediaRouterMetrics::kHistogramUiDialogIconStateAtOpen[] =
     "MediaRouter.Ui.Dialog.IconStateAtOpen";
 const char MediaRouterMetrics::kHistogramUiDialogLoadedWithData[] =
@@ -217,11 +306,6 @@ void MediaRouterMetrics::RecordStopRemoteRoute() {
 }
 
 // static
-void MediaRouterMetrics::RecordSearchSinkOutcome(bool success) {
-  UMA_HISTOGRAM_BOOLEAN(kHistogramRecordSearchSinkOutcome, success);
-}
-
-// static
 void MediaRouterMetrics::RecordIconStateAtDialogOpen(bool is_pinned) {
   UMA_HISTOGRAM_BOOLEAN(kHistogramUiDialogIconStateAtOpen, is_pinned);
 }
@@ -231,6 +315,27 @@ void MediaRouterMetrics::RecordIconStateAtInit(bool is_pinned) {
   // Since this gets called only rarely, use base::UmaHistogramBoolean() to
   // avoid instantiating the caching code.
   base::UmaHistogramBoolean(kHistogramUiIconStateAtInit, is_pinned);
+}
+
+// static
+void MediaRouterMetrics::RecordCloudPrefAtDialogOpen(bool enabled) {
+  base::UmaHistogramBoolean(kHistogramCloudPrefAtDialogOpen, enabled);
+}
+
+// static
+void MediaRouterMetrics::RecordCloudPrefAtInit(bool enabled) {
+  base::UmaHistogramBoolean(kHistogramCloudPrefAtInit, enabled);
+}
+
+// static
+void MediaRouterMetrics::RecordDialogActivationLocationAndCastMode(
+    MediaRouterDialogOpenOrigin activation_location,
+    MediaCastMode cast_mode,
+    bool is_icon_pinned) {
+  UMA_HISTOGRAM_ENUMERATION(
+      kHistogramUiDialogActivationLocationAndCastMode,
+      GetActivationLocationAndCastMode(activation_location, cast_mode,
+                                       is_icon_pinned));
 }
 
 }  // namespace media_router

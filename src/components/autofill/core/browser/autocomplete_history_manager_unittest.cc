@@ -15,12 +15,14 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/browser/webdata/mock_autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -41,26 +43,6 @@ using testing::UnorderedElementsAre;
 namespace autofill {
 
 namespace {
-
-class MockWebDataService : public AutofillWebDataService {
- public:
-  MockWebDataService()
-      : AutofillWebDataService(base::ThreadTaskRunnerHandle::Get(),
-                               base::ThreadTaskRunnerHandle::Get()) {}
-
-  MOCK_METHOD1(AddFormFields, void(const std::vector<FormFieldData>&));
-  MOCK_METHOD1(CancelRequest, void(int));
-  MOCK_METHOD4(GetFormValuesForElementName,
-               WebDataServiceBase::Handle(const base::string16& name,
-                                          const base::string16& prefix,
-                                          int limit,
-                                          WebDataServiceConsumer* consumer));
-  MOCK_METHOD1(RemoveExpiredAutocompleteEntries,
-               WebDataServiceBase::Handle(WebDataServiceConsumer* consumer));
-
- protected:
-  ~MockWebDataService() override {}
-};
 
 class MockAutofillClient : public TestAutofillClient {
  public:
@@ -108,7 +90,7 @@ class AutocompleteHistoryManagerTest : public testing::Test {
 
     // Set time to some arbitrary date.
     test_clock.SetNow(base::Time::FromDoubleT(1546889367));
-    web_data_service_ = base::MakeRefCounted<MockWebDataService>();
+    web_data_service_ = base::MakeRefCounted<MockAutofillWebDataService>();
     autocomplete_manager_ = std::make_unique<AutocompleteHistoryManager>();
     autocomplete_manager_->Init(web_data_service_, prefs_.get(), false);
   }
@@ -151,7 +133,7 @@ class AutocompleteHistoryManagerTest : public testing::Test {
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_;
-  scoped_refptr<MockWebDataService> web_data_service_;
+  scoped_refptr<MockAutofillWebDataService> web_data_service_;
   std::unique_ptr<AutocompleteHistoryManager> autocomplete_manager_;
   std::unique_ptr<PrefService> prefs_;
   TestAutofillClock test_clock;
@@ -169,6 +151,7 @@ TEST_F(AutocompleteHistoryManagerTest, CreditCardNumberValue) {
   valid_cc.label = ASCIIToUTF16("Credit Card");
   valid_cc.name = ASCIIToUTF16("ccnum");
   valid_cc.value = ASCIIToUTF16("4012888888881881");
+  valid_cc.properties_mask |= kUserTyped;
   valid_cc.form_control_type = "text";
   form.fields.push_back(valid_cc);
 
@@ -191,10 +174,11 @@ TEST_F(AutocompleteHistoryManagerTest, NonCreditCardNumberValue) {
   invalid_cc.label = ASCIIToUTF16("Credit Card");
   invalid_cc.name = ASCIIToUTF16("ccnum");
   invalid_cc.value = ASCIIToUTF16("4580123456789012");
+  invalid_cc.properties_mask |= kUserTyped;
   invalid_cc.form_control_type = "text";
   form.fields.push_back(invalid_cc);
 
-  EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_)).Times(1);
+  EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_));
   autocomplete_manager_->OnWillSubmitForm(form,
                                           /*is_autocomplete_enabled=*/true);
 }
@@ -210,6 +194,7 @@ TEST_F(AutocompleteHistoryManagerTest, SSNValue) {
   ssn.label = ASCIIToUTF16("Social Security Number");
   ssn.name = ASCIIToUTF16("ssn");
   ssn.value = ASCIIToUTF16("078-05-1120");
+  ssn.properties_mask |= kUserTyped;
   ssn.form_control_type = "text";
   form.fields.push_back(ssn);
 
@@ -230,10 +215,11 @@ TEST_F(AutocompleteHistoryManagerTest, SearchField) {
   search_field.label = ASCIIToUTF16("Search");
   search_field.name = ASCIIToUTF16("search");
   search_field.value = ASCIIToUTF16("my favorite query");
+  search_field.properties_mask |= kUserTyped;
   search_field.form_control_type = "search";
   form.fields.push_back(search_field);
 
-  EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_)).Times(1);
+  EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_));
   autocomplete_manager_->OnWillSubmitForm(form,
                                           /*is_autocomplete_enabled=*/true);
 }
@@ -249,6 +235,7 @@ TEST_F(AutocompleteHistoryManagerTest, AutocompleteFeatureOff) {
   search_field.label = ASCIIToUTF16("Search");
   search_field.name = ASCIIToUTF16("search");
   search_field.value = ASCIIToUTF16("my favorite query");
+  search_field.properties_mask |= kUserTyped;
   search_field.form_control_type = "search";
   form.fields.push_back(search_field);
 
@@ -271,6 +258,7 @@ TEST_F(AutocompleteHistoryManagerTest, InvalidValues) {
   search_field.label = ASCIIToUTF16("Search");
   search_field.name = ASCIIToUTF16("search");
   search_field.value = ASCIIToUTF16("");
+  search_field.properties_mask |= kUserTyped;
   search_field.form_control_type = "search";
   form.fields.push_back(search_field);
 
@@ -278,6 +266,7 @@ TEST_F(AutocompleteHistoryManagerTest, InvalidValues) {
   search_field.label = ASCIIToUTF16("Search2");
   search_field.name = ASCIIToUTF16("other search");
   search_field.value = ASCIIToUTF16(" ");
+  search_field.properties_mask |= kUserTyped;
   search_field.form_control_type = "search";
   form.fields.push_back(search_field);
 
@@ -285,6 +274,7 @@ TEST_F(AutocompleteHistoryManagerTest, InvalidValues) {
   search_field.label = ASCIIToUTF16("Search3");
   search_field.name = ASCIIToUTF16("other search");
   search_field.value = ASCIIToUTF16("      ");
+  search_field.properties_mask |= kUserTyped;
   search_field.form_control_type = "search";
   form.fields.push_back(search_field);
 
@@ -308,6 +298,7 @@ TEST_F(AutocompleteHistoryManagerTest, FieldWithAutocompleteOff) {
   field.label = ASCIIToUTF16("Something esoteric");
   field.name = ASCIIToUTF16("esoterica");
   field.value = ASCIIToUTF16("a truly esoteric value, I assure you");
+  field.properties_mask |= kUserTyped;
   field.form_control_type = "text";
   field.should_autocomplete = false;
   form.fields.push_back(field);
@@ -331,6 +322,7 @@ TEST_F(AutocompleteHistoryManagerTest, Incognito) {
   search_field.label = ASCIIToUTF16("Search");
   search_field.name = ASCIIToUTF16("search");
   search_field.value = ASCIIToUTF16("my favorite query");
+  search_field.properties_mask |= kUserTyped;
   search_field.form_control_type = "search";
   form.fields.push_back(search_field);
 
@@ -339,27 +331,31 @@ TEST_F(AutocompleteHistoryManagerTest, Incognito) {
                                           /*is_autocomplete_enabled=*/true);
 }
 
-// Tests that text entered into fields that are not focusable is not sent to the
-// WebDatabase to be saved.
-TEST_F(AutocompleteHistoryManagerTest, NonFocusableField) {
+#if !defined(OS_IOS)
+// Tests that fields that are no longer focusable but still have user typed
+// input are sent to the WebDatabase to be saved. Will not work for iOS
+// because |properties_mask| is not set on iOS.
+TEST_F(AutocompleteHistoryManagerTest, UserInputNotFocusable) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
   form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
 
-  // Unfocusable field.
-  FormFieldData field;
-  field.label = ASCIIToUTF16("Something esoteric");
-  field.name = ASCIIToUTF16("esoterica");
-  field.value = ASCIIToUTF16("a truly esoteric value, I assure you");
-  field.form_control_type = "text";
-  field.is_focusable = false;
-  form.fields.push_back(field);
+  // Search field.
+  FormFieldData search_field;
+  search_field.label = ASCIIToUTF16("Search");
+  search_field.name = ASCIIToUTF16("search");
+  search_field.value = ASCIIToUTF16("my favorite query");
+  search_field.form_control_type = "search";
+  search_field.properties_mask |= kUserTyped;
+  search_field.is_focusable = false;
+  form.fields.push_back(search_field);
 
-  EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
+  EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_));
   autocomplete_manager_->OnWillSubmitForm(form,
                                           /*is_autocomplete_enabled=*/true);
 }
+#endif
 
 // Tests that text entered into presentation fields is not sent to the
 // WebDatabase to be saved.
@@ -374,6 +370,7 @@ TEST_F(AutocompleteHistoryManagerTest, PresentationField) {
   field.label = ASCIIToUTF16("Something esoteric");
   field.name = ASCIIToUTF16("esoterica");
   field.value = ASCIIToUTF16("a truly esoteric value, I assure you");
+  field.properties_mask |= kUserTyped;
   field.form_control_type = "text";
   field.role = FormFieldData::RoleAttribute::kPresentation;
   form.fields.push_back(field);

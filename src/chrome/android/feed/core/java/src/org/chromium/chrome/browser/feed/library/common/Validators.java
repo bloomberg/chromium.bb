@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.common;
 
+import androidx.annotation.Nullable;
+
 /**
  * Class similar to Guava's Preconditions. Not all users of Feed can use Guava libraries so we
  * define our own here.
@@ -20,8 +22,9 @@ public class Validators {
      * @return the non-null reference that was validated
      * @throws NullPointerException if {@code reference} is null
      */
+    @SuppressWarnings("AnnotateFormatMethod")
     public static <T> T checkNotNull(
-            /*@Nullable*/ T reference, String debugString, Object... formatArgs) {
+            @Nullable T reference, String debugString, Object... formatArgs) {
         if (reference == null) {
             throw new NullPointerException(String.format(debugString, formatArgs));
         }
@@ -35,7 +38,7 @@ public class Validators {
      * @return the non-null reference that was validated
      * @throws NullPointerException if {@code reference} is null
      */
-    public static <T> T checkNotNull(/*@Nullable*/ T reference) {
+    public static <T> T checkNotNull(@Nullable T reference) {
         if (reference == null) {
             throw new NullPointerException();
         }
@@ -50,6 +53,7 @@ public class Validators {
      * @param formatArgs arguments to the format string
      * @throws IllegalStateException thrown if the expression is false
      */
+    @SuppressWarnings("AnnotateFormatMethod")
     public static void checkState(boolean expression, String formatString, Object... formatArgs) {
         if (!expression) {
             throw new IllegalStateException(String.format(formatString, formatArgs));

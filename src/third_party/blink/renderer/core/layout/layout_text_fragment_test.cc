@@ -17,7 +17,7 @@ class LayoutTextFragmentTest : public RenderingTest {
  protected:
   void SetUp() override {
     RenderingTest::SetUp();
-    GetDocument().head()->SetInnerHTMLFromString(
+    GetDocument().head()->setInnerHTML(
         "<style>#target::first-letter{color:red}</style>");
   }
 
@@ -52,7 +52,9 @@ class ParameterizedLayoutTextFragmentTest
   ParameterizedLayoutTextFragmentTest() : ScopedLayoutNGForTest(GetParam()) {}
 
  protected:
-  bool LayoutNGEnabled() const { return GetParam(); }
+  bool LayoutNGEnabled() const {
+    return RuntimeEnabledFeatures::LayoutNGEnabled();
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(All,

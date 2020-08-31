@@ -25,16 +25,16 @@ const GURL& FakeScriptExecutorDelegate::GetDeeplinkURL() {
   return current_url_;
 }
 
+const GURL& FakeScriptExecutorDelegate::GetScriptURL() {
+  return current_url_;
+}
+
 Service* FakeScriptExecutorDelegate::GetService() {
   return service_;
 }
 
 WebController* FakeScriptExecutorDelegate::GetWebController() {
   return web_controller_;
-}
-
-ClientMemory* FakeScriptExecutorDelegate::GetClientMemory() {
-  return &memory_;
 }
 
 TriggerContext* FakeScriptExecutorDelegate::GetTriggerContext() {
@@ -46,7 +46,7 @@ FakeScriptExecutorDelegate::GetPersonalDataManager() {
   return nullptr;
 }
 
-WebsiteLoginFetcher* FakeScriptExecutorDelegate::GetWebsiteLoginFetcher() {
+WebsiteLoginManager* FakeScriptExecutorDelegate::GetWebsiteLoginManager() {
   return nullptr;
 }
 
@@ -54,7 +54,7 @@ content::WebContents* FakeScriptExecutorDelegate::GetWebContents() {
   return nullptr;
 }
 
-std::string FakeScriptExecutorDelegate::GetAccountEmailAddress() {
+std::string FakeScriptExecutorDelegate::GetEmailAddressForAccessTokenAccount() {
   return std::string();
 }
 
@@ -62,8 +62,12 @@ std::string FakeScriptExecutorDelegate::GetLocale() {
   return "en-US";
 }
 
-void FakeScriptExecutorDelegate::EnterState(AutofillAssistantState state) {
-  state_ = state;
+bool FakeScriptExecutorDelegate::EnterState(AutofillAssistantState state) {
+  if (GetState() == state)
+    return false;
+
+  state_history_.emplace_back(state);
+  return true;
 }
 
 void FakeScriptExecutorDelegate::SetTouchableElementArea(
@@ -122,6 +126,11 @@ void FakeScriptExecutorDelegate::WriteUserData(
   std::move(write_callback).Run(payment_request_info_.get(), &field_change);
 }
 
+void FakeScriptExecutorDelegate::WriteUserModel(
+    base::OnceCallback<void(UserModel*)> write_callback) {
+  std::move(write_callback).Run(user_model_);
+}
+
 void FakeScriptExecutorDelegate::SetViewportMode(ViewportMode mode) {
   viewport_mode_ = mode;
 }
@@ -139,6 +148,16 @@ ConfigureBottomSheetProto::PeekMode FakeScriptExecutorDelegate::GetPeekMode() {
   return peek_mode_;
 }
 
+void FakeScriptExecutorDelegate::ExpandBottomSheet() {
+  expand_or_collapse_updated_ = true;
+  expand_or_collapse_value_ = true;
+}
+
+void FakeScriptExecutorDelegate::CollapseBottomSheet() {
+  expand_or_collapse_updated_ = true;
+  expand_or_collapse_value_ = false;
+}
+
 bool FakeScriptExecutorDelegate::HasNavigationError() {
   return navigation_error_;
 }
@@ -151,12 +170,21 @@ void FakeScriptExecutorDelegate::RequireUI() {
   require_ui_ = true;
 }
 
-void FakeScriptExecutorDelegate::AddListener(Listener* listener) {
+void FakeScriptExecutorDelegate::AddListener(NavigationListener* listener) {
   listeners_.insert(listener);
 }
 
-void FakeScriptExecutorDelegate::RemoveListener(Listener* listener) {
+void FakeScriptExecutorDelegate::RemoveListener(NavigationListener* listener) {
   listeners_.erase(listener);
+}
+
+void FakeScriptExecutorDelegate::SetExpandSheetForPromptAction(bool expand) {
+  expand_sheet_for_prompt_ = expand;
+}
+
+void FakeScriptExecutorDelegate::SetBrowseDomainsWhitelist(
+    std::vector<std::string> domains) {
+  browse_domains_ = std::move(domains);
 }
 
 bool FakeScriptExecutorDelegate::SetForm(
@@ -165,4 +193,20 @@ bool FakeScriptExecutorDelegate::SetForm(
     base::OnceCallback<void(const ClientStatus&)> cancel_callback) {
   return true;
 }
+
+UserModel* FakeScriptExecutorDelegate::GetUserModel() {
+  return user_model_;
+}
+
+EventHandler* FakeScriptExecutorDelegate::GetEventHandler() {
+  return nullptr;
+}
+
+void FakeScriptExecutorDelegate::SetGenericUi(
+    std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+    base::OnceCallback<void(bool, ProcessedActionStatusProto, const UserModel*)>
+        end_action_callback) {}
+
+void FakeScriptExecutorDelegate::ClearGenericUi() {}
+
 }  // namespace autofill_assistant

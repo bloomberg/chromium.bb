@@ -51,18 +51,21 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
   ~SubresourceFilterAgentUnderTest() override = default;
 
   MOCK_METHOD0(GetDocumentURL, GURL());
-  MOCK_METHOD0(OnSetSubresourceFilterForCommittedLoadCalled, void());
-  MOCK_METHOD0(SignalFirstSubresourceDisallowedForCommittedLoad, void());
+  MOCK_METHOD0(OnSetSubresourceFilterForCurrentDocumentCalled, void());
+  MOCK_METHOD0(SignalFirstSubresourceDisallowedForCurrentDocument, void());
   MOCK_METHOD1(SendDocumentLoadStatistics,
                void(const mojom::DocumentLoadStatistics&));
   MOCK_METHOD0(SendFrameIsAdSubframe, void());
 
-  bool IsMainFrame() override { return true; }
+  bool IsMainFrame() override { return is_main_frame_; }
+  void SetIsMainFrame(bool value) { is_main_frame_ = value; }
 
-  void SetSubresourceFilterForCommittedLoad(
+  bool HasDocumentLoader() override { return true; }
+
+  void SetSubresourceFilterForCurrentDocument(
       std::unique_ptr<blink::WebDocumentSubresourceFilter> filter) override {
     last_injected_filter_ = std::move(filter);
-    OnSetSubresourceFilterForCommittedLoadCalled();
+    OnSetSubresourceFilterForCurrentDocumentCalled();
   }
 
   bool IsAdSubframe() override { return is_ad_subframe_; }
@@ -79,11 +82,26 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
     return std::move(last_injected_filter_);
   }
 
+  void SetParentActivationState(mojom::ActivationLevel level) {
+    mojom::ActivationState state;
+    state.activation_level = level;
+    parent_activation_state_ = state;
+  }
+
+  void SimulateNonInitialLoad() { SetFirstDocument(false); }
+
   using SubresourceFilterAgent::ActivateForNextCommittedLoad;
 
  private:
+  mojom::ActivationState GetParentActivationState(
+      content::RenderFrame*) override {
+    return parent_activation_state_;
+  }
+
   std::unique_ptr<blink::WebDocumentSubresourceFilter> last_injected_filter_;
   bool is_ad_subframe_ = false;
+  bool is_main_frame_ = true;
+  mojom::ActivationState parent_activation_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAgentUnderTest);
 };
@@ -162,21 +180,21 @@ class SubresourceFilterAgentTest : public ::testing::Test {
 
   void ExpectSubresourceFilterGetsInjected() {
     EXPECT_CALL(*agent(), GetDocumentURL());
-    EXPECT_CALL(*agent(), OnSetSubresourceFilterForCommittedLoadCalled());
+    EXPECT_CALL(*agent(), OnSetSubresourceFilterForCurrentDocumentCalled());
   }
 
   void ExpectNoSubresourceFilterGetsInjected() {
     EXPECT_CALL(*agent(), GetDocumentURL()).Times(::testing::AtLeast(0));
-    EXPECT_CALL(*agent(), OnSetSubresourceFilterForCommittedLoadCalled())
+    EXPECT_CALL(*agent(), OnSetSubresourceFilterForCurrentDocumentCalled())
         .Times(0);
   }
 
   void ExpectSignalAboutFirstSubresourceDisallowed() {
-    EXPECT_CALL(*agent(), SignalFirstSubresourceDisallowedForCommittedLoad());
+    EXPECT_CALL(*agent(), SignalFirstSubresourceDisallowedForCurrentDocument());
   }
 
   void ExpectNoSignalAboutFirstSubresourceDisallowed() {
-    EXPECT_CALL(*agent(), SignalFirstSubresourceDisallowedForCommittedLoad())
+    EXPECT_CALL(*agent(), SignalFirstSubresourceDisallowedForCurrentDocument())
         .Times(0);
   }
 
@@ -224,6 +242,8 @@ class SubresourceFilterAgentTest : public ::testing::Test {
 };
 
 TEST_F(SubresourceFilterAgentTest, RulesetUnset_RulesetNotAvailable) {
+  // To record histograms, we need a non-initial load.
+  agent()->SimulateNonInitialLoad();
   base::HistogramTester histogram_tester;
   // Do not set ruleset.
   ExpectNoSubresourceFilterGetsInjected();
@@ -239,6 +259,8 @@ TEST_F(SubresourceFilterAgentTest, RulesetUnset_RulesetNotAvailable) {
 }
 
 TEST_F(SubresourceFilterAgentTest, DisabledByDefault_NoFilterIsInjected) {
+  // To record histograms, we need a non-initial load.
+  agent()->SimulateNonInitialLoad();
   base::HistogramTester histogram_tester;
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestBothURLsPathSuffix));
@@ -281,6 +303,8 @@ TEST_F(SubresourceFilterAgentTest, Disabled_NoFilterIsInjected) {
 
 TEST_F(SubresourceFilterAgentTest,
        EnabledButRulesetUnavailable_NoFilterIsInjected) {
+  // To record histograms, we need a non-initial load.
+  agent()->SimulateNonInitialLoad();
   base::HistogramTester histogram_tester;
   ExpectNoSubresourceFilterGetsInjected();
   StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled);
@@ -299,6 +323,8 @@ TEST_F(SubresourceFilterAgentTest,
 // TODO(csharrison): Refactor these unit tests so it is easier to test with
 // real backing RenderFrames.
 TEST_F(SubresourceFilterAgentTest, EmptyDocumentLoad_NoFilterIsInjected) {
+  // To record histograms, we need a non-initial load.
+  agent()->SimulateNonInitialLoad();
   base::HistogramTester histogram_tester;
   ExpectNoSubresourceFilterGetsInjected();
   EXPECT_CALL(*agent(), GetDocumentURL())
@@ -313,6 +339,8 @@ TEST_F(SubresourceFilterAgentTest, EmptyDocumentLoad_NoFilterIsInjected) {
 }
 
 TEST_F(SubresourceFilterAgentTest, Enabled_FilteringIsInEffectForOneLoad) {
+  // To record histograms, we need a non-initial load.
+  agent()->SimulateNonInitialLoad();
   base::HistogramTester histogram_tester;
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
@@ -356,6 +384,8 @@ TEST_F(SubresourceFilterAgentTest, Enabled_FilteringIsInEffectForOneLoad) {
 
 TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamplesOverTwoLoads) {
   for (const bool measure_performance : {false, true}) {
+    // To record histograms, we need a non-initial load.
+    agent()->SimulateNonInitialLoad();
     base::HistogramTester histogram_tester;
     ASSERT_NO_FATAL_FAILURE(
         SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
@@ -454,6 +484,8 @@ TEST_F(SubresourceFilterAgentTest,
 }
 
 TEST_F(SubresourceFilterAgentTest, DryRun_ResourcesAreEvaluatedButNotFiltered) {
+  // To record histograms, we need a non-initial load.
+  agent()->SimulateNonInitialLoad();
   base::HistogramTester histogram_tester;
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
@@ -529,6 +561,24 @@ TEST_F(SubresourceFilterAgentTest,
   ExpectNoSignalAboutFirstSubresourceDisallowed();
 
   filter->ReportDisallowedLoad();
+}
+
+TEST_F(SubresourceFilterAgentTest,
+       FailedInitialLoad_FilterInjectedOnInitialDocumentCreation) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetTestRulesetToDisallowURLsWithPathSuffix("somethingNotMatched"));
+
+  agent()->SetIsMainFrame(false);
+  agent()->SetParentActivationState(mojom::ActivationLevel::kEnabled);
+
+  // ExpectSubresourceFilterGetsInjected();
+  EXPECT_CALL(*agent(), GetDocumentURL())
+      .WillOnce(::testing::Return(GURL("about:blank")));
+  EXPECT_CALL(*agent(), OnSetSubresourceFilterForCurrentDocumentCalled());
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled);
+
+  ExpectNoSubresourceFilterGetsInjected();
+  agent_as_rfo()->DidFailProvisionalLoad();
 }
 
 TEST_F(SubresourceFilterAgentTest,

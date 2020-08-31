@@ -48,6 +48,7 @@ class CSSComputedStyleDeclaration;
 class ContainerNode;
 class Document;
 class Element;
+class ExecutionContext;
 class HTMLElement;
 class LocalFrame;
 class MutableCSSPropertyValueSet;
@@ -90,9 +91,9 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
   void OverrideWithStyle(const CSSPropertyValueSet*);
   void Clear();
   EditingStyle* Copy() const;
-  EditingStyle* ExtractAndRemoveBlockProperties();
+  EditingStyle* ExtractAndRemoveBlockProperties(const ExecutionContext*);
   EditingStyle* ExtractAndRemoveTextDirection(SecureContextMode);
-  void RemoveBlockProperties();
+  void RemoveBlockProperties(const ExecutionContext*);
   void RemoveStyleAddedByElement(Element*);
   void RemoveStyleConflictingWithStyleOfElement(Element*);
   void CollapseTextDecorationProperties(SecureContextMode);
@@ -100,7 +101,9 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
     kIgnoreTextOnlyProperties,
     kDoNotIgnoreTextOnlyProperties
   };
-  EditingTriState TriStateOfStyle(EditingStyle*, SecureContextMode) const;
+  EditingTriState TriStateOfStyle(ExecutionContext*,
+                                  EditingStyle*,
+                                  SecureContextMode) const;
   EditingTriState TriStateOfStyle(const VisibleSelection&,
                                   SecureContextMode) const;
   bool ConflictsWithInlineStyleOfElement(HTMLElement* element) const {

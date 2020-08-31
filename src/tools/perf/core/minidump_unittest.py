@@ -14,11 +14,28 @@ from telemetry import decorators
 import py_utils
 
 
+# Possible ways that gl::Crash() will show up in a stack trace.
+CRASH_SIGNATURES = [
+    'gl::Crash',
+    'chrome!Crash',
+    'GpuServiceImpl::Crash()',
+]
+
+
 class BrowserMinidumpTest(tab_test_case.TabTestCase):
+  def assertContainsAtLeastOne(self, expected_values, checked_value):
+    for expected in expected_values:
+      if expected in checked_value:
+        return
+    raise AssertionError(
+        'None of %s found in %s' % (expected_values, checked_value))
+
   @decorators.Isolated
   # Minidump symbolization doesn't work in ChromeOS local mode if the rootfs is
   # still read-only, so skip the test in that case.
-  @decorators.Disabled('chromeos-local')
+  # TODO(crbug.com/1038043): Test is failing on chromeos-betty-chrome.
+  @decorators.Disabled('chromeos-local', 'chromeos-board-betty',
+                       'chromeos-board-betty-pi-arc')
   def testSymbolizeMinidump(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var sam = "car";', 'sam')
@@ -45,7 +62,9 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     self.assertTrue(len(all_unsymbolized_paths) == 1)
 
     # Now symbolize that minidump and make sure there are no longer any present
-    self._browser.SymbolizeMinidump(crash_minidump_path)
+    succeeded, stack = self._browser.SymbolizeMinidump(crash_minidump_path)
+    self.assertTrue(succeeded)
+    self.assertContainsAtLeastOne(CRASH_SIGNATURES, stack)
 
     all_unsymbolized_after_symbolize_paths = \
         self._browser.GetAllUnsymbolizedMinidumpPaths()
@@ -58,7 +77,9 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   @decorators.Isolated
   # Minidump symbolization doesn't work in ChromeOS local mode if the rootfs is
   # still read-only, so skip the test in that case.
-  @decorators.Disabled('chromeos-local')
+  # TODO(crbug.com/1038043): Test is failing on chromeos-betty-chrome.
+  @decorators.Disabled('chromeos-local', 'chromeos-board-betty',
+                       'chromeos-board-betty-pi-arc')
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var cat = "dog";', 'cat')
@@ -121,7 +142,10 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
 
     # Now symbolize one of those paths and assert that there is still one
     # unsymbolized
-    self._browser.SymbolizeMinidump(second_crash_path)
+    succeeded, stack = self._browser.SymbolizeMinidump(second_crash_path)
+    self.assertTrue(succeeded)
+    self.assertContainsAtLeastOne(CRASH_SIGNATURES, stack)
+
     after_symbolize_all_paths = self._browser.GetAllMinidumpPaths()
     if after_symbolize_all_paths is not None:
       logging.info('testMultipleCrashMinidumps: after symbolize all paths: '
@@ -135,6 +159,10 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
           + ''.join(after_symbolize_all_unsymbolized_paths))
     self.assertEquals(after_symbolize_all_unsymbolized_paths,
         [first_crash_path])
+
+    # Explicitly ignore the remaining minidump so that it isn't detected during
+    # teardown by the test runner.
+    self._browser.IgnoreMinidump(first_crash_path)
 
   def _LoadPageThenWait(self, script, value):
     # We are occasionally seeing these tests fail on the first load and

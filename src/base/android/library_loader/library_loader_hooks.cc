@@ -27,10 +27,11 @@ namespace android {
 
 namespace {
 
-base::AtExitManager* g_at_exit_manager = NULL;
+base::AtExitManager* g_at_exit_manager = nullptr;
 const char* g_library_version_number = "";
-LibraryLoadedHook* g_registration_callback = NULL;
-NativeInitializationHook* g_native_initialization_hook = NULL;
+LibraryLoadedHook* g_registration_callback = nullptr;
+NativeInitializationHook* g_native_initialization_hook = nullptr;
+NonMainDexJniRegistrationHook* g_jni_registration_hook = nullptr;
 
 // The amount of time, in milliseconds, that it took to load the shared
 // libraries in the renderer. Set in
@@ -58,14 +59,17 @@ void SetNativeInitializationHook(
   g_native_initialization_hook = native_initialization_hook;
 }
 
+void SetNonMainDexJniRegistrationHook(
+    NonMainDexJniRegistrationHook jni_registration_hook) {
+  DCHECK(!g_jni_registration_hook);
+  g_jni_registration_hook = jni_registration_hook;
+}
+
 void RecordLibraryLoaderRendererHistograms() {
   // Record how long it took to load the shared libraries.
   UMA_HISTOGRAM_TIMES(
       "ChromiumAndroidLinker.RendererLoadTime",
       base::TimeDelta::FromMilliseconds(g_renderer_library_load_time_ms));
-
-  Java_LibraryLoader_onUmaRecordingReadyInRenderer(
-      base::android::AttachCurrentThread());
 }
 
 void SetLibraryLoadedHook(LibraryLoadedHook* func) {
@@ -101,10 +105,16 @@ static jboolean JNI_LibraryLoader_LibraryLoaded(
   return true;
 }
 
+static void JNI_LibraryLoader_RegisterNonMainDexJni(JNIEnv* env) {
+  if (g_jni_registration_hook) {
+    g_jni_registration_hook();
+  }
+}
+
 void LibraryLoaderExitHook() {
   if (g_at_exit_manager) {
     delete g_at_exit_manager;
-    g_at_exit_manager = NULL;
+    g_at_exit_manager = nullptr;
   }
 }
 

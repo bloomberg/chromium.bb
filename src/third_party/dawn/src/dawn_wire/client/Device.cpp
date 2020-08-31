@@ -16,20 +16,46 @@
 
 #include "common/Assert.h"
 #include "dawn_wire/WireCmd_autogen.h"
+#include "dawn_wire/client/ApiObjects_autogen.h"
 #include "dawn_wire/client/Client.h"
+#include "dawn_wire/client/ObjectAllocator.h"
 
 namespace dawn_wire { namespace client {
 
-    Device::Device(Client* client, uint32_t refcount, uint32_t id)
-        : ObjectBase(this, refcount, id), mClient(client) {
+    Device::Device(Client* client, uint32_t initialRefcount, uint32_t initialId)
+        : ObjectBase(this, initialRefcount, initialId), mClient(client) {
         this->device = this;
+
+        // Get the default queue for this device.
+        ObjectAllocator<Queue>::ObjectAndSerial* allocation = mClient->QueueAllocator().New(this);
+        mDefaultQueue = allocation->object.get();
+
+        DeviceGetDefaultQueueCmd cmd;
+        cmd.self = reinterpret_cast<WGPUDevice>(this);
+        cmd.result = ObjectHandle{allocation->object->id, allocation->generation};
+
+        size_t requiredSize = cmd.GetRequiredSize();
+        char* allocatedBuffer = static_cast<char*>(mClient->GetCmdSpace(requiredSize));
+        cmd.Serialize(allocatedBuffer, *mClient);
     }
 
     Device::~Device() {
+        // Fire pending error scopes
         auto errorScopes = std::move(mErrorScopes);
         for (const auto& it : errorScopes) {
             it.second.callback(WGPUErrorType_Unknown, "Device destroyed", it.second.userdata);
         }
+
+        // Destroy the default queue
+        DestroyObjectCmd cmd;
+        cmd.objectType = ObjectType::Queue;
+        cmd.objectId = mDefaultQueue->id;
+
+        size_t requiredSize = cmd.GetRequiredSize();
+        char* allocatedBuffer = static_cast<char*>(mClient->GetCmdSpace(requiredSize));
+        cmd.Serialize(allocatedBuffer);
+
+        mClient->QueueAllocator().Free(mDefaultQueue);
     }
 
     Client* Device::GetClient() {
@@ -42,9 +68,21 @@ namespace dawn_wire { namespace client {
         }
     }
 
+    void Device::HandleDeviceLost(const char* message) {
+        if (mDeviceLostCallback && !mDidRunLostCallback) {
+            mDidRunLostCallback = true;
+            mDeviceLostCallback(message, mDeviceLostUserdata);
+        }
+    }
+
     void Device::SetUncapturedErrorCallback(WGPUErrorCallback errorCallback, void* errorUserdata) {
         mErrorCallback = errorCallback;
         mErrorUserdata = errorUserdata;
+    }
+
+    void Device::SetDeviceLostCallback(WGPUDeviceLostCallback callback, void* userdata) {
+        mDeviceLostCallback = callback;
+        mDeviceLostUserdata = userdata;
     }
 
     void Device::PushErrorScope(WGPUErrorFilter filter) {
@@ -105,6 +143,11 @@ namespace dawn_wire { namespace client {
         mErrorScopes.erase(requestIt);
         request.callback(type, message, request.userdata);
         return true;
+    }
+
+    WGPUQueue Device::GetDefaultQueue() {
+        mDefaultQueue->refcount++;
+        return reinterpret_cast<WGPUQueue>(mDefaultQueue);
     }
 
 }}  // namespace dawn_wire::client

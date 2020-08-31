@@ -23,9 +23,14 @@ class LocalServerBackend(object):
   def __init__(self):
     pass
 
-  def StartAndGetNamedPorts(self, args):
+  def StartAndGetNamedPorts(self, args, handler_class=None):
     """Starts the actual server and obtains any sockets on which it
     should listen.
+
+    Args:
+      args: Same as what LocalServer.GetBackendStartupArgs() returns.
+      handler_class: Class of the handler which is used by sub-classes to
+        process resource requests.
 
     Returns a list of NamedPort on which this backend is listening.
     """
@@ -96,7 +101,9 @@ class LocalServer(object):
     named_ports_re = re.compile('LocalServerBackend started: (?P<port>.+)')
     # TODO: This will hang if the subprocess doesn't print the correct output.
     while self._subprocess.poll() is None:
-      m = named_ports_re.match(self._subprocess.stdout.readline())
+      line = self._subprocess.stdout.readline()
+      print line
+      m = named_ports_re.match(line)
       if m:
         named_ports_json = m.group('port')
         break
@@ -210,7 +217,19 @@ def _LocalServerBackendMain(args):
 
   server_args = json.loads(server_args_as_json)
 
-  named_ports = server.StartAndGetNamedPorts(server_args)
+  # Import the handler class if provided.
+  handler_module_name = server_args.get('dynamic_request_handler_module_name')
+  handler_class_name = server_args.get('dynamic_request_handler_class_name')
+  handler_class = None
+  if handler_module_name and handler_class_name:
+    handler_module = __import__(handler_module_name, fromlist=[True])
+    handler_class = getattr(handler_module, handler_class_name, None)
+    logging.info('Loading request handler: %s', handler_class_name)
+
+    if handler_class is None:
+      raise Exception('Failed to load request handler %s.' % handler_class_name)
+
+  named_ports = server.StartAndGetNamedPorts(server_args, handler_class)
   assert isinstance(named_ports, list)
   for named_port in named_ports:
     assert isinstance(named_port, NamedPort)

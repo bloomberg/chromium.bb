@@ -94,7 +94,7 @@ public:
      * Based on 'type', writes the s (signed), u (unsigned), or f (float) instruction.
      */
     void writeTypedInstruction(const Type& type, ByteCodeInstruction s, ByteCodeInstruction u,
-                               ByteCodeInstruction f, int count, bool writeCount = true);
+                               ByteCodeInstruction f, int count);
 
     static int SlotCount(const Type& type);
 
@@ -138,30 +138,29 @@ private:
 
     // Intrinsics which do not simply map to a single opcode
     enum class SpecialIntrinsic {
+        kAll,
+        kAny,
+        kClamp,
         kDot,
+        kLength,
+        kMax,
+        kMin,
+        kMix,
+        kSaturate,
     };
 
     struct Intrinsic {
-        Intrinsic(ByteCodeInstruction instruction)
-            : fIsSpecial(false)
-            , fValue(instruction) {}
+        Intrinsic(SpecialIntrinsic    s) : is_special(true), special(s) {}
+        Intrinsic(ByteCodeInstruction i) : Intrinsic(i, i, i) {}
+        Intrinsic(ByteCodeInstruction f,
+                  ByteCodeInstruction s,
+                  ByteCodeInstruction u) : is_special(false), inst_f(f), inst_s(s), inst_u(u) {}
 
-        Intrinsic(SpecialIntrinsic special)
-            : fIsSpecial(true)
-            , fValue(special) {}
-
-        bool fIsSpecial;
-
-        union Value {
-            Value(ByteCodeInstruction instruction)
-                : fInstruction(instruction) {}
-
-            Value(SpecialIntrinsic special)
-                : fSpecial(special) {}
-
-            ByteCodeInstruction fInstruction;
-            SpecialIntrinsic fSpecial;
-        } fValue;
+        bool                is_special;
+        SpecialIntrinsic    special;
+        ByteCodeInstruction inst_f;
+        ByteCodeInstruction inst_s;
+        ByteCodeInstruction inst_u;
     };
 
 

@@ -24,15 +24,14 @@
 #include "third_party/blink/renderer/modules/mediastream/navigator_media_stream.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_constraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_error_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_success_callback.h"
-#include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -48,19 +47,19 @@ void NavigatorMediaStream::getUserMedia(
   DCHECK(success_callback);
   DCHECK(error_callback);
 
-  UserMediaController* user_media =
-      UserMediaController::From(navigator.GetFrame());
-  if (!user_media) {
+  if (!navigator.DomWindow()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "No user media controller available; is this a detached window?");
     return;
   }
 
+  UserMediaController* user_media =
+      UserMediaController::From(navigator.DomWindow());
   MediaErrorState error_state;
-  UserMediaRequest* request = UserMediaRequest::Create(
-      navigator.GetFrame()->GetDocument(), user_media, options,
-      success_callback, error_callback, error_state);
+  UserMediaRequest* request =
+      UserMediaRequest::Create(navigator.DomWindow(), user_media, options,
+                               success_callback, error_callback, error_state);
   if (!request) {
     DCHECK(error_state.HadException());
     if (error_state.CanGenerateException()) {
@@ -74,7 +73,7 @@ void NavigatorMediaStream::getUserMedia(
 
   String error_message;
   if (!request->IsSecureContextUse(error_message)) {
-    request->Fail(WebUserMediaRequest::Error::kSecurityError, error_message);
+    request->Fail(UserMediaRequest::Error::kSecurityError, error_message);
     return;
   }
 

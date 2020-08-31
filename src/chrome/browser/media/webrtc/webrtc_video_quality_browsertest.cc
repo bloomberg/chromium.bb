@@ -32,6 +32,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -115,7 +116,6 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
         .AddExtension(test::kY4mFileExtension);
     command_line->AppendSwitchPath(switches::kUseFileForFakeVideoCapture,
                                    webrtc_reference_video_y4m_);
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
 
     // The video playback will not work without a GPU, so force its use here.
     command_line->AppendSwitch(switches::kUseGpuInTests);
@@ -158,6 +158,8 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     ffmpeg_command.AppendArg(base::StringPrintf("%dx%d", width, height));
     ffmpeg_command.AppendArg("-b:v");
     ffmpeg_command.AppendArg(base::StringPrintf("%d", 120 * width * height));
+    ffmpeg_command.AppendArg("-vsync");
+    ffmpeg_command.AppendArg("passthrough");
     ffmpeg_command.AppendArgPath(yuv_video_filename);
 
     // We produce an output file that will later be used as an input to the

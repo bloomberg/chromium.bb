@@ -16,33 +16,28 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
-  properties: {
-    isSupervised: Boolean,
-  },
-
   hostAttributes: {
     role: 'navigation',
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.sectionMenu.select(
-        navigation.getCurrentPage().page == Page.SHORTCUTS ? 1 : 0);
+        navigation.getCurrentPage().page === Page.SHORTCUTS ? 1 : 0);
   },
 
   /**
    * @param {!Event} e
    * @private
    */
-  onLinkTap_: function(e) {
+  onLinkTap_(e) {
     e.preventDefault();
     navigation.navigateTo({page: e.target.dataset.path});
     this.fire('close-drawer');
   },
 
   /** @private */
-  onMoreExtensionsTap_: function() {
-    assert(!this.isSupervised);
+  onMoreExtensionsTap_() {
     chrome.metricsPrivate.recordUserAction('Options_GetMoreExtensions');
   },
 });

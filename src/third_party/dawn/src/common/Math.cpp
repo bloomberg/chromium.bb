@@ -15,9 +15,11 @@
 #include "common/Math.h"
 
 #include "common/Assert.h"
+#include "common/Platform.h"
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 #if defined(DAWN_COMPILER_MSVC)
 #    include <intrin.h>
@@ -50,28 +52,31 @@ uint32_t Log2(uint32_t value) {
 uint32_t Log2(uint64_t value) {
     ASSERT(value != 0);
 #if defined(DAWN_COMPILER_MSVC)
+#    if defined(DAWN_PLATFORM_64_BIT)
     unsigned long firstBitIndex = 0ul;
     unsigned char ret = _BitScanReverse64(&firstBitIndex, value);
     ASSERT(ret != 0);
     return firstBitIndex;
-#else
+#    else   // defined(DAWN_PLATFORM_64_BIT)
+    unsigned long firstBitIndex = 0ul;
+    if (_BitScanReverse(&firstBitIndex, value >> 32)) {
+        return firstBitIndex + 32;
+    }
+    unsigned char ret = _BitScanReverse(&firstBitIndex, value & 0xFFFFFFFF);
+    ASSERT(ret != 0);
+    return firstBitIndex;
+#    endif  // defined(DAWN_PLATFORM_64_BIT)
+#else       // defined(DAWN_COMPILER_MSVC)
     return 63 - static_cast<uint32_t>(__builtin_clzll(value));
-#endif
+#endif      // defined(DAWN_COMPILER_MSVC)
 }
 
 uint64_t NextPowerOfTwo(uint64_t n) {
-#if defined(DAWN_COMPILER_MSVC)
     if (n <= 1) {
         return 1;
     }
 
-    unsigned long firstBitIndex = 0ul;
-    unsigned char ret = _BitScanReverse64(&firstBitIndex, n - 1);
-    ASSERT(ret != 0);
-    return 1ull << (firstBitIndex + 1);
-#else
-    return n <= 1 ? 1 : 1ull << (64 - __builtin_clzll(n - 1));
-#endif
+    return 1ull << (Log2(n - 1) + 1);
 }
 
 bool IsPowerOfTwo(uint64_t n) {
@@ -83,13 +88,6 @@ bool IsPtrAligned(const void* ptr, size_t alignment) {
     ASSERT(IsPowerOfTwo(alignment));
     ASSERT(alignment != 0);
     return (reinterpret_cast<size_t>(ptr) & (alignment - 1)) == 0;
-}
-
-void* AlignVoidPtr(void* ptr, size_t alignment) {
-    ASSERT(IsPowerOfTwo(alignment));
-    ASSERT(alignment != 0);
-    return reinterpret_cast<void*>((reinterpret_cast<size_t>(ptr) + (alignment - 1)) &
-                                   ~(alignment - 1));
 }
 
 bool IsAligned(uint32_t value, size_t alignment) {
@@ -154,4 +152,11 @@ float SRGBToLinear(float srgb) {
     } else {
         return std::pow((srgb + 0.055f) / 1.055f, 2.4f);
     }
+}
+
+uint64_t RoundUp(uint64_t n, uint64_t m) {
+    ASSERT(m > 0);
+    ASSERT(n > 0);
+    ASSERT(m <= std::numeric_limits<uint64_t>::max() - n);
+    return ((n + m - 1) / m) * m;
 }

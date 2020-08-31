@@ -13,6 +13,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/base/proxy_server.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/http/http_vary_data.h"
 #include "net/ssl/ssl_info.h"
 
@@ -70,6 +71,8 @@ class NET_EXPORT HttpResponseInfo {
     CONNECTION_INFO_QUIC_T049 = 32,
     CONNECTION_INFO_QUIC_T050 = 33,
     CONNECTION_INFO_QUIC_T099 = 34,
+    CONNECTION_INFO_QUIC_DRAFT_25 = 35,
+    CONNECTION_INFO_QUIC_DRAFT_27 = 36,
     NUM_OF_CONNECTION_INFOS,
   };
 
@@ -211,6 +214,9 @@ class NET_EXPORT HttpResponseInfo {
   // The time at which the response headers were received.  For cached
   // this is the last time the cache entry was validated.
   base::Time response_time;
+
+  // Host resolution error info.
+  ResolveErrorInfo resolve_error_info;
 
   // If the response headers indicate a 401 or 407 failure, then this structure
   // will contain additional information about the authentication challenge.

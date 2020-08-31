@@ -12,17 +12,15 @@
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 class AutocompleteClassifier;
-
-namespace ios {
-
 class ChromeBrowserState;
 
+namespace ios {
 // Singleton that owns all AutocompleteClassifiers and associates them with
-// ios::ChromeBrowserState.
+// ChromeBrowserState.
 class AutocompleteClassifierFactory : public BrowserStateKeyedServiceFactory {
  public:
   static AutocompleteClassifier* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
   static AutocompleteClassifierFactory* GetInstance();
 
   // Returns the default factory used to build AutocompleteClassifiers. Can be

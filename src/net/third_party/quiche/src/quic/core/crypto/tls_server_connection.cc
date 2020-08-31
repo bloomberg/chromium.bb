@@ -4,6 +4,11 @@
 
 #include "net/third_party/quiche/src/quic/core/crypto/tls_server_connection.h"
 
+#include "third_party/boringssl/src/include/openssl/ssl.h"
+#include "net/third_party/quiche/src/quic/core/crypto/proof_source.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+
 namespace quic {
 
 TlsServerConnection::TlsServerConnection(SSL_CTX* ssl_ctx, Delegate* delegate)
@@ -11,12 +16,24 @@ TlsServerConnection::TlsServerConnection(SSL_CTX* ssl_ctx, Delegate* delegate)
       delegate_(delegate) {}
 
 // static
-bssl::UniquePtr<SSL_CTX> TlsServerConnection::CreateSslCtx() {
+bssl::UniquePtr<SSL_CTX> TlsServerConnection::CreateSslCtx(
+    ProofSource* proof_source) {
   bssl::UniquePtr<SSL_CTX> ssl_ctx = TlsConnection::CreateSslCtx();
   SSL_CTX_set_tlsext_servername_callback(ssl_ctx.get(),
                                          &SelectCertificateCallback);
   SSL_CTX_set_alpn_select_cb(ssl_ctx.get(), &SelectAlpnCallback, nullptr);
-  SSL_CTX_set_options(ssl_ctx.get(), SSL_OP_NO_TICKET);
+  // We don't actually need the TicketCrypter here, but we need to know
+  // whether it's set.
+  if (GetQuicReloadableFlag(quic_enable_tls_resumption) &&
+      proof_source->GetTicketCrypter()) {
+    SSL_CTX_set_ticket_aead_method(ssl_ctx.get(),
+                                   &TlsServerConnection::kSessionTicketMethod);
+    if (GetQuicReloadableFlag(quic_enable_zero_rtt_for_tls)) {
+      SSL_CTX_set_early_data_enabled(ssl_ctx.get(), 1);
+    }
+  } else {
+    SSL_CTX_set_options(ssl_ctx.get(), SSL_OP_NO_TICKET);
+  }
   return ssl_ctx;
 }
 
@@ -66,7 +83,7 @@ ssl_private_key_result_t TlsServerConnection::PrivateKeySign(SSL* ssl,
                                                              size_t in_len) {
   return ConnectionFromSsl(ssl)->delegate_->PrivateKeySign(
       out, out_len, max_out, sig_alg,
-      QuicStringPiece(reinterpret_cast<const char*>(in), in_len));
+      quiche::QuicheStringPiece(reinterpret_cast<const char*>(in), in_len));
 }
 
 // static
@@ -77,6 +94,43 @@ ssl_private_key_result_t TlsServerConnection::PrivateKeyComplete(
     size_t max_out) {
   return ConnectionFromSsl(ssl)->delegate_->PrivateKeyComplete(out, out_len,
                                                                max_out);
+}
+
+// static
+const SSL_TICKET_AEAD_METHOD TlsServerConnection::kSessionTicketMethod{
+    TlsServerConnection::SessionTicketMaxOverhead,
+    TlsServerConnection::SessionTicketSeal,
+    TlsServerConnection::SessionTicketOpen,
+};
+
+// static
+size_t TlsServerConnection::SessionTicketMaxOverhead(SSL* ssl) {
+  return ConnectionFromSsl(ssl)->delegate_->SessionTicketMaxOverhead();
+}
+
+// static
+int TlsServerConnection::SessionTicketSeal(SSL* ssl,
+                                           uint8_t* out,
+                                           size_t* out_len,
+                                           size_t max_out_len,
+                                           const uint8_t* in,
+                                           size_t in_len) {
+  return ConnectionFromSsl(ssl)->delegate_->SessionTicketSeal(
+      out, out_len, max_out_len,
+      quiche::QuicheStringPiece(reinterpret_cast<const char*>(in), in_len));
+}
+
+// static
+enum ssl_ticket_aead_result_t TlsServerConnection::SessionTicketOpen(
+    SSL* ssl,
+    uint8_t* out,
+    size_t* out_len,
+    size_t max_out_len,
+    const uint8_t* in,
+    size_t in_len) {
+  return ConnectionFromSsl(ssl)->delegate_->SessionTicketOpen(
+      out, out_len, max_out_len,
+      quiche::QuicheStringPiece(reinterpret_cast<const char*>(in), in_len));
 }
 
 }  // namespace quic

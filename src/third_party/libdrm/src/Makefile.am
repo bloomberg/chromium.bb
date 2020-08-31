@@ -121,6 +121,7 @@ libdrm_la_LIBADD = @CLOCK_LIB@ -lm
 libdrm_la_CPPFLAGS = -I$(top_srcdir)/include/drm
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
+	-fvisibility=hidden \
 	$(VALGRIND_CFLAGS)
 
 libdrm_la_SOURCES = $(LIBDRM_FILES)
@@ -135,7 +136,37 @@ if HAVE_VMWGFX
 klibdrminclude_HEADERS += $(LIBDRM_INCLUDE_VMWGFX_H_FILES)
 endif
 
-EXTRA_DIST = include/drm/README
+EXTRA_DIST = \
+	include/drm/README \
+	amdgpu/meson.build \
+	data/meson.build \
+	etnaviv/meson.build \
+	exynos/meson.build \
+	freedreno/meson.build \
+	intel/meson.build \
+	libkms/meson.build \
+	man/meson.build \
+	nouveau/meson.build \
+	omap/meson.build \
+	radeon/meson.build \
+	tegra/meson.build \
+	tests/amdgpu/meson.build \
+	tests/etnaviv/meson.build \
+	tests/exynos/meson.build \
+	tests/kms/meson.build \
+	tests/kmstest/meson.build \
+	tests/meson.build \
+	tests/modeprint/meson.build \
+	tests/modetest/meson.build \
+	tests/nouveau/meson.build \
+	tests/proptest/meson.build \
+	tests/radeon/meson.build \
+	tests/tegra/meson.build \
+	tests/util/meson.build \
+	tests/vbltest/meson.build \
+	vc4/meson.build \
+	meson.build \
+	meson_options.txt
 
 copy-headers :
 	cp -r $(kernel_source)/include/uapi/drm/*.h $(top_srcdir)/include/drm/

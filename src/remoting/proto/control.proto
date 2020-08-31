@@ -110,6 +110,9 @@ message VideoTrackLayout {
 message VideoLayout {
   // Layout for each video track.
   repeated VideoTrackLayout video_track = 1;
+
+  // True if this display configuration supports capturing the entire desktop.
+  optional bool supports_full_desktop_capture = 2;
 }
 
 message SelectDesktopDisplayRequest {
@@ -152,10 +155,22 @@ message KeyboardLayout {
 
   // Next ID: 2
   message KeyBehavior {
-    // Maps shift level to key action.
-    map<int32, KeyAction> actions = 1;
+    // Maps 0-based shift level to key action. (Note: because this is zero-
+    // based, it will be one less than the corresponding ISO shift level.)
+    map<uint32, KeyAction> actions = 1;
   }
 
   // Map USB code to key behavior.
   map<uint32, KeyBehavior> keys = 1;
+}
+
+// Next ID: 2
+message TransportInfo {
+  // Transport layer protocol the message sender uses to connect to the relay
+  // server or the peer (if connection not relayed).
+  // Possible values are those defined in the protocol and relayProtocol fields
+  // in the RTCIceCandidateStats dictionary.
+  // If the host failed to get protocol using WebRTC API, this field will be set
+  // to "api-error".
+  optional string protocol = 1;
 }

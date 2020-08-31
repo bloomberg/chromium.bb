@@ -19,15 +19,17 @@
 
 namespace dawn_native { namespace vulkan {
 
-#define GET_GLOBAL_PROC(name)                                                          \
-    name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(nullptr, "vk" #name)); \
-    if (name == nullptr) {                                                             \
-        return DAWN_DEVICE_LOST_ERROR(std::string("Couldn't get proc vk") + #name);    \
-    }
+#define GET_GLOBAL_PROC(name)                                                              \
+    do {                                                                                   \
+        name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(nullptr, "vk" #name)); \
+        if (name == nullptr) {                                                             \
+            return DAWN_INTERNAL_ERROR(std::string("Couldn't get proc vk") + #name);       \
+        }                                                                                  \
+    } while (0)
 
     MaybeError VulkanFunctions::LoadGlobalProcs(const DynamicLib& vulkanLib) {
         if (!vulkanLib.GetProc(&GetInstanceProcAddr, "vkGetInstanceProcAddr")) {
-            return DAWN_DEVICE_LOST_ERROR("Couldn't get vkGetInstanceProcAddr");
+            return DAWN_INTERNAL_ERROR("Couldn't get vkGetInstanceProcAddr");
         }
 
         GET_GLOBAL_PROC(CreateInstance);
@@ -41,11 +43,16 @@ namespace dawn_native { namespace vulkan {
         return {};
     }
 
-#define GET_INSTANCE_PROC(name)                                                         \
-    name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(instance, "vk" #name)); \
-    if (name == nullptr) {                                                              \
-        return DAWN_DEVICE_LOST_ERROR(std::string("Couldn't get proc vk") + #name);     \
-    }
+#define GET_INSTANCE_PROC_BASE(name, procName)                                                  \
+    do {                                                                                        \
+        name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(instance, "vk" #procName)); \
+        if (name == nullptr) {                                                                  \
+            return DAWN_INTERNAL_ERROR(std::string("Couldn't get proc vk") + #procName);        \
+        }                                                                                       \
+    } while (0)
+
+#define GET_INSTANCE_PROC(name) GET_INSTANCE_PROC_BASE(name, name)
+#define GET_INSTANCE_PROC_VENDOR(name, vendor) GET_INSTANCE_PROC_BASE(name, name##vendor)
 
     MaybeError VulkanFunctions::LoadInstanceProcs(VkInstance instance,
                                                   const VulkanGlobalInfo& globalInfo) {
@@ -73,26 +80,36 @@ namespace dawn_native { namespace vulkan {
             GET_INSTANCE_PROC(DestroyDebugReportCallbackEXT);
         }
 
-        // Vulkan 1.1 is not required to report promoted extensions from 1.0
-        if (globalInfo.externalMemoryCapabilities ||
-            globalInfo.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
-            GET_INSTANCE_PROC(GetPhysicalDeviceExternalBufferPropertiesKHR);
+        // Vulkan 1.1 is not required to report promoted extensions from 1.0 and is not required to
+        // support the vendor entrypoint in GetProcAddress.
+        if (globalInfo.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
+            GET_INSTANCE_PROC(GetPhysicalDeviceExternalBufferProperties);
+        } else if (globalInfo.externalMemoryCapabilities) {
+            GET_INSTANCE_PROC_VENDOR(GetPhysicalDeviceExternalBufferProperties, KHR);
         }
 
-        if (globalInfo.externalSemaphoreCapabilities ||
-            globalInfo.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
-            GET_INSTANCE_PROC(GetPhysicalDeviceExternalSemaphorePropertiesKHR);
+        if (globalInfo.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
+            GET_INSTANCE_PROC(GetPhysicalDeviceExternalSemaphoreProperties);
+        } else if (globalInfo.externalSemaphoreCapabilities) {
+            GET_INSTANCE_PROC_VENDOR(GetPhysicalDeviceExternalSemaphoreProperties, KHR);
         }
 
-        if (globalInfo.getPhysicalDeviceProperties2 ||
-            globalInfo.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
-            GET_INSTANCE_PROC(GetPhysicalDeviceFeatures2KHR);
-            GET_INSTANCE_PROC(GetPhysicalDeviceProperties2KHR);
-            GET_INSTANCE_PROC(GetPhysicalDeviceFormatProperties2KHR);
-            GET_INSTANCE_PROC(GetPhysicalDeviceImageFormatProperties2KHR);
-            GET_INSTANCE_PROC(GetPhysicalDeviceQueueFamilyProperties2KHR);
-            GET_INSTANCE_PROC(GetPhysicalDeviceMemoryProperties2KHR);
-            GET_INSTANCE_PROC(GetPhysicalDeviceSparseImageFormatProperties2KHR);
+        if (globalInfo.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
+            GET_INSTANCE_PROC(GetPhysicalDeviceFeatures2);
+            GET_INSTANCE_PROC(GetPhysicalDeviceProperties2);
+            GET_INSTANCE_PROC(GetPhysicalDeviceFormatProperties2);
+            GET_INSTANCE_PROC(GetPhysicalDeviceImageFormatProperties2);
+            GET_INSTANCE_PROC(GetPhysicalDeviceQueueFamilyProperties2);
+            GET_INSTANCE_PROC(GetPhysicalDeviceMemoryProperties2);
+            GET_INSTANCE_PROC(GetPhysicalDeviceSparseImageFormatProperties2);
+        } else if (globalInfo.getPhysicalDeviceProperties2) {
+            GET_INSTANCE_PROC_VENDOR(GetPhysicalDeviceFeatures2, KHR);
+            GET_INSTANCE_PROC_VENDOR(GetPhysicalDeviceProperties2, KHR);
+            GET_INSTANCE_PROC_VENDOR(GetPhysicalDeviceFormatProperties2, KHR);
+            GET_INSTANCE_PROC_VENDOR(GetPhysicalDeviceImageFormatProperties2, KHR);
+            GET_INSTANCE_PROC_VENDOR(GetPhysicalDeviceQueueFamilyProperties2, KHR);
+            GET_INSTANCE_PROC_VENDOR(GetPhysicalDeviceMemoryProperties2, KHR);
+            GET_INSTANCE_PROC_VENDOR(GetPhysicalDeviceSparseImageFormatProperties2, KHR);
         }
 
         if (globalInfo.surface) {
@@ -103,20 +120,41 @@ namespace dawn_native { namespace vulkan {
             GET_INSTANCE_PROC(GetPhysicalDeviceSurfacePresentModesKHR);
         }
 
-#ifdef VK_USE_PLATFORM_FUCHSIA
+#if defined(VK_USE_PLATFORM_FUCHSIA)
         if (globalInfo.fuchsiaImagePipeSurface) {
             GET_INSTANCE_PROC(CreateImagePipeSurfaceFUCHSIA);
         }
-#endif
+#endif  // defined(VK_USE_PLATFORM_FUCHSIA)
 
+#if defined(DAWN_ENABLE_BACKEND_METAL)
+        if (globalInfo.metalSurface) {
+            GET_INSTANCE_PROC(CreateMetalSurfaceEXT);
+        }
+#endif  // defined(DAWN_ENABLE_BACKEND_METAL)
+
+#if defined(DAWN_PLATFORM_WINDOWS)
+        if (globalInfo.win32Surface) {
+            GET_INSTANCE_PROC(CreateWin32SurfaceKHR);
+            GET_INSTANCE_PROC(GetPhysicalDeviceWin32PresentationSupportKHR);
+        }
+#endif  // defined(DAWN_PLATFORM_WINDOWS)
+
+#if defined(DAWN_USE_X11)
+        if (globalInfo.xlibSurface) {
+            GET_INSTANCE_PROC(CreateXlibSurfaceKHR);
+            GET_INSTANCE_PROC(GetPhysicalDeviceXlibPresentationSupportKHR);
+        }
+#endif  // defined(DAWN_USE_X11)
         return {};
     }
 
-#define GET_DEVICE_PROC(name)                                                       \
-    name = reinterpret_cast<decltype(name)>(GetDeviceProcAddr(device, "vk" #name)); \
-    if (name == nullptr) {                                                          \
-        return DAWN_DEVICE_LOST_ERROR(std::string("Couldn't get proc vk") + #name); \
-    }
+#define GET_DEVICE_PROC(name)                                                           \
+    do {                                                                                \
+        name = reinterpret_cast<decltype(name)>(GetDeviceProcAddr(device, "vk" #name)); \
+        if (name == nullptr) {                                                          \
+            return DAWN_INTERNAL_ERROR(std::string("Couldn't get proc vk") + #name);    \
+        }                                                                               \
+    } while (0)
 
     MaybeError VulkanFunctions::LoadDeviceProcs(VkDevice device,
                                                 const VulkanDeviceInfo& deviceInfo) {

@@ -9,9 +9,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/format_macros.h"
 #include "base/location.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
@@ -283,10 +284,9 @@ void ConflictResolver::UpdateFileMetadata(
     const std::string& file_id,
     std::unique_ptr<SyncTaskToken> token) {
   drive_service()->GetFileResource(
-      file_id,
-      base::Bind(&ConflictResolver::DidGetRemoteMetadata,
-                 weak_ptr_factory_.GetWeakPtr(), file_id,
-                 base::Passed(&token)));
+      file_id, base::BindOnce(&ConflictResolver::DidGetRemoteMetadata,
+                              weak_ptr_factory_.GetWeakPtr(), file_id,
+                              base::Passed(&token)));
 }
 
 void ConflictResolver::DidGetRemoteMetadata(

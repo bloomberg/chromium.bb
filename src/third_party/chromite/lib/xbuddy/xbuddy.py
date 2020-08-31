@@ -13,15 +13,18 @@ import operator
 import os
 import re
 import shutil
+import sys
 import time
 import threading
 
 from six.moves import configparser
 
+from chromite.lib import constants
+from chromite.lib import image_lib
 from chromite.lib import gs
+from chromite.lib import path_util
 from chromite.lib.xbuddy import artifact_info
 from chromite.lib.xbuddy import build_artifact
-from chromite.lib.xbuddy import build_util
 from chromite.lib.xbuddy import common_util
 from chromite.lib.xbuddy import devserver_constants
 from chromite.lib.xbuddy import downloader
@@ -47,6 +50,7 @@ TEST = 'test'
 BASE = 'base'
 DEV = 'dev'
 FULL = 'full_payload'
+DELTA = 'delta_payload'
 SIGNED = 'signed'
 RECOVERY = 'recovery'
 STATEFUL = 'stateful'
@@ -73,6 +77,7 @@ LOCAL_ALIASES = [
     RECOVERY,
     FACTORY_SHIM,
     FULL,
+    DELTA,
     STATEFUL,
     ANY,
 ]
@@ -98,6 +103,7 @@ GS_ALIASES = [
     SIGNED,
     FACTORY_SHIM,
     FULL,
+    DELTA,
     STATEFUL,
     AUTOTEST,
 ]
@@ -120,6 +126,7 @@ ARTIFACTS = [
     artifact_info.SIGNED_IMAGE,
     artifact_info.FACTORY_SHIM_IMAGE,
     artifact_info.FULL_PAYLOAD,
+    artifact_info.DELTA_PAYLOAD,
     artifact_info.STATEFUL_PAYLOAD,
     artifact_info.AUTOTEST,
 ]
@@ -161,7 +168,7 @@ class Timestamp(object):
       os.utime(time_file, None)
 
 
-class XBuddy(build_util.BuildObject):
+class XBuddy(object):
   """Class that manages image retrieval and caching by the devserver.
 
   Image retrieval by xBuddy path:
@@ -191,9 +198,7 @@ class XBuddy(build_util.BuildObject):
   _staging_thread_count_lock = threading.Lock()
 
   def __init__(self, manage_builds=False, board=None, version=None,
-               images_dir=None, log_screen=True, **kwargs):
-    super(XBuddy, self).__init__(**kwargs)
-
+               images_dir=None, log_screen=True, static_dir=None):
     if not log_screen:
       cherrypy_log_util.UpdateConfig({'log.screen': False})
 
@@ -201,12 +206,11 @@ class XBuddy(build_util.BuildObject):
     self._manage_builds = manage_builds or self._ManageBuilds()
     self._board = board
     self._version = version
+    self.static_dir = static_dir
     self._timestamp_folder = os.path.join(self.static_dir,
                                           Timestamp.XBUDDY_TIMESTAMP_DIR)
-    if images_dir:
-      self.images_dir = images_dir
-    else:
-      self.images_dir = os.path.join(self.GetSourceRoot(), 'src/build/images')
+    self.images_dir = images_dir or os.path.join(constants.SOURCE_ROOT,
+                                                 'src/build/images')
 
     cache_user = 'chronos' if common_util.IsRunningOnMoblab() else None
     self._ctx = gs.GSContext(cache_user=cache_user)
@@ -233,8 +237,9 @@ class XBuddy(build_util.BuildObject):
     Raises:
       XBuddyException if the config file is missing.
     """
+    devserver_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    config_file = os.path.join(devserver_dir, CONFIG_FILE)
     xbuddy_config = configparser.ConfigParser()
-    config_file = os.path.join(self.devserver_dir, CONFIG_FILE)
     if os.path.exists(config_file):
       xbuddy_config.read(config_file)
     else:
@@ -247,7 +252,7 @@ class XBuddy(build_util.BuildObject):
     if os.path.isdir(CHROOT_SHADOW_DIR):
       shadow_config_file = os.path.join(CHROOT_SHADOW_DIR, SHADOW_CONFIG_FILE)
     else:
-      shadow_config_file = os.path.join(self.devserver_dir, SHADOW_CONFIG_FILE)
+      shadow_config_file = os.path.join(devserver_dir, SHADOW_CONFIG_FILE)
 
     _Log('Using shadow config file stored at %s', shadow_config_file)
     if os.path.exists(shadow_config_file):
@@ -346,7 +351,7 @@ class XBuddy(build_util.BuildObject):
                     'board': board,
                     'suffix': suffix})
     # Full release + version is in the LATEST file.
-    version = self._ctx.Cat(latest_addr)
+    version = self._ctx.Cat(latest_addr, encoding='utf-8')
 
     return devserver_constants.IMAGE_DIR % {'board':board,
                                             'suffix':suffix,
@@ -364,7 +369,7 @@ class XBuddy(build_util.BuildObject):
     """
     if list_subdirectory:
       return self._ctx.DoCommand(
-          ['ls', '-d', '--', path], redirect_stdout=True).output.splitlines()
+          ['ls', '-d', '--', path], stdout=True).output.splitlines()
     else:
       return self._ctx.LS(path)
 
@@ -462,7 +467,10 @@ class XBuddy(build_util.BuildObject):
         version = self._ctx.LS(
             '%s/%s' % (devserver_constants.GS_IMAGE_DIR, build_id))
         return build_id
-      except gs.GSContextException:
+      except gs.GSContextException as e:
+        if common_util.IsAnonymousCaller(e):
+          _Log('Anonymous caller cannot list chromeos image archive')
+          return build_id_as_is
         continue
 
     raise XBuddyException('Could not find remote build_id for %s %s' % (
@@ -560,7 +568,7 @@ class XBuddy(build_util.BuildObject):
       XBuddyException if neither test nor dev image was found in latest built
       directory.
     """
-    latest_local_dir = self.GetLatestImageLink(board)
+    latest_local_dir = image_lib.GetLatestImageLink(board)
     if not latest_local_dir or not os.path.exists(latest_local_dir):
       raise XBuddyException('No builds found for %s. Did you run build_image?' %
                             board)
@@ -602,15 +610,14 @@ class XBuddy(build_util.BuildObject):
     # Do the stuff that is well known first. We know that if paths have a
     # image_type, it must be one of the GS/LOCAL aliases and it must be at the
     # end. Similarly, local/remote are well-known and must start the path list.
-    is_local = True
+    # Default to remote for chrome checkout.
+    is_local = (path_util.DetermineCheckout().type !=
+                path_util.CHECKOUT_TYPE_GCLIENT)
     if path_list and path_list[0] in (REMOTE, LOCAL):
       is_local = (path_list.pop(0) == LOCAL)
 
     # Default image type is determined by remote vs. local.
-    if is_local:
-      image_type = ANY
-    else:
-      image_type = TEST
+    image_type = ANY if is_local else TEST
 
     if path_list and path_list[-1] in GS_ALIASES + LOCAL_ALIASES:
       image_type = path_list.pop(-1)
@@ -622,9 +629,11 @@ class XBuddy(build_util.BuildObject):
     version = default_version or LATEST
     if len(path_list) == 1:
       path = path_list.pop(0)
+      if board == path or version == path:
+        pass
       # Treat this as a version if it's one we know (contains default or
       # latest), or we were given an actual default board.
-      if default_version in path or LATEST in path or default_board is not None:
+      elif default_version in path or LATEST in path or board is not None:
         version = path
       else:
         board = path
@@ -846,7 +855,7 @@ class XBuddy(build_util.BuildObject):
                                             artifact.
     """
     path = '/'.join(path_list)
-    default_board = self._board if self._board else board
+    default_board = self._board or board
     default_version = self._version or version or LATEST
     # Rewrite the path if there is an appropriate default.
     path, suffix = self.LookupAlias(path, board=default_board,

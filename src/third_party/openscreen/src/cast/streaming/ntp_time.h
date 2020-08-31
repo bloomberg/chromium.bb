@@ -9,8 +9,8 @@
 
 #include "platform/api/time.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // NTP timestamps are 64-bit timestamps that consist of two 32-bit parts: 1) The
 // number of seconds since 1 January 1900; and 2) The fraction of the second,
@@ -41,24 +41,21 @@ constexpr NtpTimestamp AssembleNtpTimestamp(NtpSeconds seconds,
          static_cast<uint32_t>(fraction.count());
 }
 
-// Converts between openscreen::platform::Clock::time_points and NtpTimestamps.
-// The class is instantiated with the current openscreen::platform::Clock time
-// and the current wall clock time, and these are used to determine a fixed
-// origin reference point for all conversions. Thus, to avoid introducing
-// unintended timing-related behaviors, only one NtpTimeConverter instance
-// should be used for converting all the NTP timestamps in the same streaming
-// session.
+// Converts between Clock::time_points and NtpTimestamps. The class is
+// instantiated with the current Clock time and the current wall clock time, and
+// these are used to determine a fixed origin reference point for all
+// conversions. Thus, to avoid introducing unintended timing-related behaviors,
+// only one NtpTimeConverter instance should be used for converting all the NTP
+// timestamps in the same streaming session.
 class NtpTimeConverter {
  public:
-  NtpTimeConverter(openscreen::platform::Clock::time_point now,
-                   std::chrono::seconds since_unix_epoch =
-                       openscreen::platform::GetWallTimeSinceUnixEpoch());
+  NtpTimeConverter(
+      Clock::time_point now,
+      std::chrono::seconds since_unix_epoch = GetWallTimeSinceUnixEpoch());
   ~NtpTimeConverter();
 
-  NtpTimestamp ToNtpTimestamp(
-      openscreen::platform::Clock::time_point time_point) const;
-  openscreen::platform::Clock::time_point ToLocalTime(
-      NtpTimestamp timestamp) const;
+  NtpTimestamp ToNtpTimestamp(Clock::time_point time_point) const;
+  Clock::time_point ToLocalTime(NtpTimestamp timestamp) const;
 
  private:
   // The time point on the platform clock's timeline that corresponds to
@@ -68,11 +65,11 @@ class NtpTimeConverter {
   // can be off (with respect to each other) by even a large amount; and all
   // that matters is that time ticks forward at a reasonable pace from some
   // initial point.
-  const openscreen::platform::Clock::time_point start_time_;
+  const Clock::time_point start_time_;
   const NtpSeconds since_ntp_epoch_;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_NTP_TIME_H_

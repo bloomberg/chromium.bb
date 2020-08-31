@@ -12,6 +12,8 @@ blink_core_sources("page") {
     "chrome_client.h",
     "chrome_client_impl.cc",
     "chrome_client_impl.h",
+    "color_page_popup_controller.cc",
+    "color_page_popup_controller.h",
     "context_menu_controller.cc",
     "context_menu_controller.h",
     "context_menu_provider.h",
@@ -34,6 +36,8 @@ blink_core_sources("page") {
     "frame_tree.h",
     "link_highlight.cc",
     "link_highlight.h",
+    "named_pages_mapper.cc",
+    "named_pages_mapper.h",
     "page.cc",
     "page.h",
     "page_animator.cc",
@@ -45,10 +49,7 @@ blink_core_sources("page") {
     "page_popup_client.h",
     "page_popup_controller.cc",
     "page_popup_controller.h",
-    "page_popup_supplement.cc",
-    "page_popup_supplement.h",
-    "page_visibility_notifier.cc",
-    "page_visibility_notifier.h",
+    "page_visibility_observer.cc",
     "page_visibility_observer.h",
     "page_widget_delegate.cc",
     "page_widget_delegate.h",
@@ -81,7 +82,6 @@ blink_core_sources("page") {
     "scrolling/scroll_state_callback.h",
     "scrolling/scrolling_coordinator.cc",
     "scrolling/scrolling_coordinator.h",
-    "scrolling/scrolling_coordinator_context.cc",
     "scrolling/scrolling_coordinator_context.h",
     "scrolling/snap_coordinator.cc",
     "scrolling/snap_coordinator.h",
@@ -115,4 +115,6 @@ blink_core_sources("page") {
     "viewport_description.cc",
     "viewport_description.h",
   ]
+
+  public_deps = [ "//ui/base/cursor" ]
 }

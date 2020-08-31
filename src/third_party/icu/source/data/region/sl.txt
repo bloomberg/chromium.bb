@@ -310,5 +310,5 @@ sl{
         SZ{"Svazi"}
         TL{"Vzhodni Timor"}
     }
-    Version{"36"}
+    Version{"37"}
 }

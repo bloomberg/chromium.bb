@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "base/fuchsia/scoped_service_binding.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/fuchsia/startup_context.h"
 #include "base/logging.h"
 #include "fuchsia/base/lifecycle_impl.h"
@@ -58,6 +57,8 @@ class WebComponent : public fuchsia::sys::ComponentController,
                std::vector<fuchsia::net::http::Header> extra_headers);
 
   fuchsia::web::Frame* frame() const { return frame_.get(); }
+
+  WebContentRunner* runner() const { return runner_; }
 
  protected:
   // fuchsia::sys::ComponentController implementation.

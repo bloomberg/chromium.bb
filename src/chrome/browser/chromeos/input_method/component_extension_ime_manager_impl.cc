@@ -177,16 +177,15 @@ void ComponentExtensionIMEManagerImpl::Load(Profile* profile,
   // and InputMethodEngine creation, so that the virtual keyboard web content
   // url won't be override by IME component extensions.
   auto* copied_file_path = new base::FilePath(file_path);
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       // USER_BLOCKING because it is on the critical path of displaying the
       // virtual keyboard. See https://crbug.com/976542
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::Bind(&CheckFilePath, base::Unretained(copied_file_path)),
-      base::Bind(&OnFilePathChecked, base::Unretained(profile),
-                 base::Owned(new std::string(extension_id)),
-                 base::Owned(new std::string(manifest)),
-                 base::Owned(copied_file_path)));
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(&CheckFilePath, base::Unretained(copied_file_path)),
+      base::BindOnce(&OnFilePathChecked, base::Unretained(profile),
+                     base::Owned(new std::string(extension_id)),
+                     base::Owned(new std::string(manifest)),
+                     base::Owned(copied_file_path)));
 }
 
 void ComponentExtensionIMEManagerImpl::Unload(Profile* profile,
@@ -269,6 +268,16 @@ bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
   }
 
   std::string url_string;
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Information is managed on VK extension side so just use a default value
+  // here.
+  GURL url = extensions::Extension::GetResourceURL(
+      extensions::Extension::GetBaseURLFromExtensionId(component_extension.id),
+      "inputview.html#id=default");
+  if (!url.is_valid())
+    return false;
+  out->input_view_url = url;
+#else
   if (dict.GetString(extensions::manifest_keys::kInputView,
                      &url_string)) {
     GURL url = extensions::Extension::GetResourceURL(
@@ -279,6 +288,7 @@ bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
       return false;
     out->input_view_url = url;
   }
+#endif
 
   if (dict.GetString(extensions::manifest_keys::kOptionsPage,
                      &url_string)) {

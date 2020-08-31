@@ -49,25 +49,29 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
 
   void Installed() override;
 
-  void DidScroll(ScrollType type) override;
+  void DidScroll(mojom::blink::ScrollType type) override;
 
   void PerformPreRafActions() override;
-
-  void DidCompleteLoad() override;
 
   // Removes text match highlights if any highlight is in view.
   bool Dismiss() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // TextFragmentFinder::Client interface
-  void DidFindMatch(const EphemeralRangeInFlatTree& range) override;
+  void DidFindMatch(
+      const EphemeralRangeInFlatTree& range,
+      const TextFragmentAnchorMetrics::Match match_metrics) override;
   void DidFindAmbiguousMatch() override;
 
  private:
   // Called when the search is finished. Reports metrics and activates the
   // element fragment anchor if we didn't find a match.
   void DidFinishSearch();
+
+  void ApplyTargetToCommonAncestor(const EphemeralRangeInFlatTree& range);
+
+  void FireBeforeMatchEvent(Element* element);
 
   Vector<TextFragmentFinder> text_fragment_finders_;
 
@@ -95,6 +99,12 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   // history navigations and reloads, where we want to restore the highlight but
   // not scroll into view again.
   bool should_scroll_ = false;
+
+  enum BeforematchState {
+    kNoMatchFound,  // DidFindMatch has not been called.
+    kEventQueued,   // Beforematch event has been queued, but not fired yet.
+    kFiredEvent     // Beforematch event has been fired.
+  } beforematch_state_ = kNoMatchFound;
 
   Member<TextFragmentAnchorMetrics> metrics_;
 

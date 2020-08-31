@@ -13,9 +13,9 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/policy/profile_policy_connector_builder.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/login/login_handler_test_utils.h"
@@ -33,17 +32,18 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
-#include "components/app_modal/javascript_dialog_manager.h"
-#include "components/app_modal/native_app_modal_dialog.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/embedder_support/switches.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_manager.h"
+#include "components/javascript_dialogs/app_modal_dialog_view.h"
+#include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -65,6 +65,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/back_forward_cache_util.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -435,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, NoPopupsLaunchWhenTabIsClosed) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePopupBlocking);
+      embedder_support::kDisablePopupBlocking);
   GURL url(
       embedded_test_server()->GetURL("/popup_blocker/popup-on-unload.html"));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -448,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, NoPopupsLaunchWhenTabIsClosed) {
 }
 
 // This only exists for the AllowPopupsWhenTabIsClosedWithSpecialPolicy test.
-// Remove this in Chrome 82. https://crbug.com/937569
+// Remove this in Chrome 88. https://crbug.com/937569
 class PopupBlockerSpecialPolicyBrowserTest : public PopupBlockerBrowserTest {
  public:
   PopupBlockerSpecialPolicyBrowserTest() {}
@@ -481,11 +482,11 @@ class PopupBlockerSpecialPolicyBrowserTest : public PopupBlockerBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PopupBlockerSpecialPolicyBrowserTest);
 };
 
-// Remove this in Chrome 82. https://crbug.com/937569
+// Remove this in Chrome 88. https://crbug.com/937569
 IN_PROC_BROWSER_TEST_F(PopupBlockerSpecialPolicyBrowserTest,
                        AllowPopupsWhenTabIsClosedWithSpecialPolicy) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePopupBlocking);
+      embedder_support::kDisablePopupBlocking);
   GURL url(
       embedded_test_server()->GetURL("/popup_blocker/popup-on-unload.html"));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -498,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerSpecialPolicyBrowserTest,
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                        UnblockedPopupShowsInHistoryAndOmnibox) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisablePopupBlocking);
+      embedder_support::kDisablePopupBlocking);
   GURL url(embedded_test_server()->GetURL(
       "/popup_blocker/popup-blocked-to-post-blank.html"));
   NavigateAndCheckPopupShown(url, kExpectForegroundTab);
@@ -688,10 +689,10 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
   ui_test_utils::BrowserActivationWaiter alert_waiter(browser());
 #endif
   bool ignored;
-  app_modal::JavaScriptDialogManager::GetInstance()->RunJavaScriptDialog(
+  javascript_dialogs::AppModalDialogManager::GetInstance()->RunJavaScriptDialog(
       tab, tab->GetMainFrame(), content::JAVASCRIPT_DIALOG_TYPE_ALERT,
       base::string16(), base::string16(), base::DoNothing(), &ignored);
-  app_modal::JavaScriptAppModalDialog* dialog =
+  javascript_dialogs::AppModalDialogController* dialog =
       ui_test_utils::WaitForAppModalDialog();
   ASSERT_TRUE(dialog);
 #if !defined(OS_MACOSX)
@@ -703,15 +704,56 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
 #if !defined(OS_MACOSX)
   ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
 #endif
-  app_modal::JavaScriptDialogManager::GetInstance()->HandleJavaScriptDialog(
-      tab, true, nullptr);
+  javascript_dialogs::AppModalDialogManager::GetInstance()
+      ->HandleJavaScriptDialog(tab, true, nullptr);
 #if !defined(OS_MACOSX)
   waiter.WaitForActivation();
 #endif
   ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }
 
-// Tests that Ctrl+Enter/Cmd+Enter keys on a link open the backgournd tab.
+#if defined(OS_MACOSX)
+// Tests that the print preview dialog can't be used to create popunders. This
+// is due to a bug in MacViews that causes dialogs to activate their parents
+// (https://crbug.com/1073587). For now, test the PopunderBlocker that was
+// installed to prevent this.
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PrintPreviewPopUnder) {
+  WebContents* original_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL url(
+      embedded_test_server()->GetURL("/popup_blocker/popup-window-open.html"));
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetContentSettingDefaultScope(url, GURL(), ContentSettingsType::POPUPS,
+                                      std::string(), CONTENT_SETTING_ALLOW);
+
+  NavigateAndCheckPopupShown(url, kExpectPopup);
+
+  Browser* popup_browser = chrome::FindLastActive();
+  ASSERT_NE(popup_browser, browser());
+
+  // Force a print preview dialog to be shown. This will cause activation of the
+  // browser window containing the original WebContents.
+
+  ui_test_utils::BrowserDeactivationWaiter waiter(popup_browser);
+  printing::PrintPreviewDialogController* dialog_controller =
+      printing::PrintPreviewDialogController::GetInstance();
+  WebContents* print_preview_dialog =
+      dialog_controller->GetOrCreatePreviewDialog(original_tab);
+  waiter.WaitForDeactivation();
+
+  // Navigate away; this will close the print preview dialog.
+
+  content::WebContentsDestroyedWatcher watcher(print_preview_dialog);
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  watcher.Wait();
+
+  // Verify that after the dialog is closed, the popup is in front again.
+
+  ASSERT_EQ(popup_browser, chrome::FindLastActive());
+}
+#endif
+
+// Tests that Ctrl+Enter/Cmd+Enter keys on a link open the background tab.
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CtrlEnterKey) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 

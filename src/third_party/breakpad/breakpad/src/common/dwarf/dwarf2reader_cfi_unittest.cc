@@ -99,43 +99,45 @@ void WriteELFFrameSection(const char *filename, const char *section_name,
 
 class MockCallFrameInfoHandler: public CallFrameInfo::Handler {
  public:
-  MOCK_METHOD6(Entry, bool(size_t offset, uint64 address, uint64 length,
-                           uint8 version, const string &augmentation,
+  MOCK_METHOD6(Entry, bool(size_t offset, uint64_t address, uint64_t length,
+                           uint8_t version, const string &augmentation,
                            unsigned return_address));
-  MOCK_METHOD2(UndefinedRule, bool(uint64 address, int reg));
-  MOCK_METHOD2(SameValueRule, bool(uint64 address, int reg));
-  MOCK_METHOD4(OffsetRule, bool(uint64 address, int reg, int base_register,
+  MOCK_METHOD2(UndefinedRule, bool(uint64_t address, int reg));
+  MOCK_METHOD2(SameValueRule, bool(uint64_t address, int reg));
+  MOCK_METHOD4(OffsetRule, bool(uint64_t address, int reg, int base_register,
                                 long offset));
-  MOCK_METHOD4(ValOffsetRule, bool(uint64 address, int reg, int base_register,
+  MOCK_METHOD4(ValOffsetRule, bool(uint64_t address, int reg, int base_register,
                                    long offset));
-  MOCK_METHOD3(RegisterRule, bool(uint64 address, int reg, int base_register));
-  MOCK_METHOD3(ExpressionRule, bool(uint64 address, int reg,
+  MOCK_METHOD3(RegisterRule, bool(uint64_t address, int reg, int base_register));
+  MOCK_METHOD3(ExpressionRule, bool(uint64_t address, int reg,
                                     const string &expression));
-  MOCK_METHOD3(ValExpressionRule, bool(uint64 address, int reg,
+  MOCK_METHOD3(ValExpressionRule, bool(uint64_t address, int reg,
                                        const string &expression));
   MOCK_METHOD0(End, bool());
-  MOCK_METHOD2(PersonalityRoutine, bool(uint64 address, bool indirect));
-  MOCK_METHOD2(LanguageSpecificDataArea, bool(uint64 address, bool indirect));
+  MOCK_METHOD2(PersonalityRoutine, bool(uint64_t address, bool indirect));
+  MOCK_METHOD2(LanguageSpecificDataArea, bool(uint64_t address, bool indirect));
   MOCK_METHOD0(SignalHandler, bool());
 };
 
 class MockCallFrameErrorReporter: public CallFrameInfo::Reporter {
  public:
   MockCallFrameErrorReporter() : Reporter("mock filename", "mock section") { }
-  MOCK_METHOD2(Incomplete, void(uint64, CallFrameInfo::EntryKind));
-  MOCK_METHOD1(EarlyEHTerminator, void(uint64));
-  MOCK_METHOD2(CIEPointerOutOfRange, void(uint64, uint64));
-  MOCK_METHOD2(BadCIEId, void(uint64, uint64));
-  MOCK_METHOD2(UnexpectedAddressSize, void(uint64, uint8_t));
-  MOCK_METHOD2(UnexpectedSegmentSize, void(uint64, uint8_t));
-  MOCK_METHOD2(UnrecognizedVersion, void(uint64, int version));
-  MOCK_METHOD2(UnrecognizedAugmentation, void(uint64, const string &));
-  MOCK_METHOD2(InvalidPointerEncoding, void(uint64, uint8));
-  MOCK_METHOD2(UnusablePointerEncoding, void(uint64, uint8));
-  MOCK_METHOD2(RestoreInCIE, void(uint64, uint64));
-  MOCK_METHOD3(BadInstruction, void(uint64, CallFrameInfo::EntryKind, uint64));
-  MOCK_METHOD3(NoCFARule, void(uint64, CallFrameInfo::EntryKind, uint64));
-  MOCK_METHOD3(EmptyStateStack, void(uint64, CallFrameInfo::EntryKind, uint64));
+  MOCK_METHOD2(Incomplete, void(uint64_t, CallFrameInfo::EntryKind));
+  MOCK_METHOD1(EarlyEHTerminator, void(uint64_t));
+  MOCK_METHOD2(CIEPointerOutOfRange, void(uint64_t, uint64_t));
+  MOCK_METHOD2(BadCIEId, void(uint64_t, uint64_t));
+  MOCK_METHOD2(UnexpectedAddressSize, void(uint64_t, uint8_t));
+  MOCK_METHOD2(UnexpectedSegmentSize, void(uint64_t, uint8_t));
+  MOCK_METHOD2(UnrecognizedVersion, void(uint64_t, int version));
+  MOCK_METHOD2(UnrecognizedAugmentation, void(uint64_t, const string &));
+  MOCK_METHOD2(InvalidPointerEncoding, void(uint64_t, uint8_t));
+  MOCK_METHOD2(UnusablePointerEncoding, void(uint64_t, uint8_t));
+  MOCK_METHOD2(RestoreInCIE, void(uint64_t, uint64_t));
+  MOCK_METHOD3(BadInstruction, void(uint64_t, CallFrameInfo::EntryKind,
+                                    uint64_t));
+  MOCK_METHOD3(NoCFARule, void(uint64_t, CallFrameInfo::EntryKind, uint64_t));
+  MOCK_METHOD3(EmptyStateStack, void(uint64_t, CallFrameInfo::EntryKind,
+                                     uint64_t));
 };
 
 struct CFIFixture {
@@ -608,11 +610,11 @@ TEST_F(CFI, CIEVersion3ReturnColumn) {
 }
 
 TEST_F(CFI, CIEVersion4AdditionalFields) {
-  CFISection section(kBigEndian, 4);
+  CFISection section(kBigEndian, 8);
   Label cie;
   section
       .Mark(&cie)
-      // CIE version 4 with expected address and segment size.
+      // CIE version 4 with expected address (64bit) and segment size.
       .CIEHeader(0x0ab4758d, 0xc010fdf7, 0x89, 4, "", true, 8, 0)
       .FinishEntry()
       // FDE, citing that CIE.
@@ -631,7 +633,36 @@ TEST_F(CFI, CIEVersion4AdditionalFields) {
   string contents;
   EXPECT_TRUE(section.GetContents(&contents));
   ByteReader byte_reader(ENDIANNESS_BIG);
-  byte_reader.SetAddressSize(4);
+  CallFrameInfo parser(reinterpret_cast<const uint8_t *>(contents.data()),
+                       contents.size(),
+                       &byte_reader, &handler, &reporter);
+  EXPECT_TRUE(parser.Start());
+}
+
+TEST_F(CFI, CIEVersion4AdditionalFields32BitAddress) {
+  CFISection section(kBigEndian, 4);
+  Label cie;
+  section
+      .Mark(&cie)
+      // CIE version 4 with expected address (32bit) and segment size.
+      .CIEHeader(0x0ab4758d, 0xc010fdf7, 0x89, 4, "", true, 4, 0)
+      .FinishEntry()
+      // FDE, citing that CIE.
+      .FDEHeader(cie, 0x86763f2b, 0x2a66dc23)
+      .FinishEntry();
+
+  PERHAPS_WRITE_DEBUG_FRAME_FILE("CIEVersion3ReturnColumn", section);
+
+  {
+    InSequence s;
+    EXPECT_CALL(handler, Entry(_, 0x86763f2b, 0x2a66dc23, 4, "", 0x89))
+        .WillOnce(Return(true));
+    EXPECT_CALL(handler, End()).WillOnce(Return(true));
+  }
+
+  string contents;
+  EXPECT_TRUE(section.GetContents(&contents));
+  ByteReader byte_reader(ENDIANNESS_BIG);
   CallFrameInfo parser(reinterpret_cast<const uint8_t *>(contents.data()),
                        contents.size(),
                        &byte_reader, &handler, &reporter);
@@ -659,7 +690,6 @@ TEST_F(CFI, CIEVersion4AdditionalFieldsUnexpectedAddressSize) {
   string contents;
   EXPECT_TRUE(section.GetContents(&contents));
   ByteReader byte_reader(ENDIANNESS_BIG);
-  byte_reader.SetAddressSize(8);
   CallFrameInfo parser(reinterpret_cast<const uint8_t *>(contents.data()),
                        contents.size(),
                        &byte_reader, &handler, &reporter);
@@ -667,7 +697,7 @@ TEST_F(CFI, CIEVersion4AdditionalFieldsUnexpectedAddressSize) {
 }
 
 TEST_F(CFI, CIEVersion4AdditionalFieldsUnexpectedSegmentSize) {
-  CFISection section(kBigEndian, 4);
+  CFISection section(kBigEndian, 8);
   Label cie;
 
   section
@@ -685,7 +715,6 @@ TEST_F(CFI, CIEVersion4AdditionalFieldsUnexpectedSegmentSize) {
   string contents;
   EXPECT_TRUE(section.GetContents(&contents));
   ByteReader byte_reader(ENDIANNESS_BIG);
-  byte_reader.SetAddressSize(8);
   CallFrameInfo parser(reinterpret_cast<const uint8_t *>(contents.data()),
                        contents.size(),
                        &byte_reader, &handler, &reporter);
@@ -779,13 +808,13 @@ struct CFIInsnFixture: public CFIFixture {
 
   Label cie_label;
   Sequence s;
-  uint64 code_factor;
+  uint64_t code_factor;
   int data_factor;
   unsigned return_register;
   unsigned version;
   unsigned cfa_base_register;
   int cfa_offset;
-  uint64 fde_start, fde_size;
+  uint64_t fde_start, fde_size;
 };
 
 class CFIInsn: public CFIInsnFixture, public Test { };
@@ -1421,7 +1450,7 @@ TEST_F(CFIInsn, DW_CFA_remember_and_restore_state) {
       .D8(dwarf2reader::DW_CFA_restore_state)
       .FinishEntry();
 
-  uint64 addr = fde_start;
+  uint64_t addr = fde_start;
 
   // Expect the incoming rules to be reported.
   EXPECT_CALL(handler, OffsetRule(addr, 2, kCFARegister, 0x9806 * data_factor))

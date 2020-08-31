@@ -20,7 +20,8 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
 
 namespace blink {
 struct FramePolicy;
@@ -28,7 +29,6 @@ struct FramePolicy;
 
 namespace content {
 
-struct FrameOwnerProperties;
 class Navigator;
 class RenderFrameHostDelegate;
 class RenderViewHostDelegate;
@@ -121,6 +121,10 @@ class CONTENT_EXPORT FrameTree {
   RenderFrameHostManager::Delegate* manager_delegate() {
     return manager_delegate_;
   }
+  const std::unordered_map<int /* SiteInstance ID */, RenderViewHostImpl*>&
+  render_view_hosts() const {
+    return render_view_host_map_;
+  }
 
   // Returns the FrameTreeNode with the given |frame_tree_node_id| if it is part
   // of this FrameTree.
@@ -151,22 +155,23 @@ class CONTENT_EXPORT FrameTree {
   // exposed by the corresponding RenderFrameHost. The caller takes care of
   // sending the client end of the interface down to the RenderFrame.
   FrameTreeNode* AddFrame(
-      FrameTreeNode* parent,
+      RenderFrameHostImpl* parent,
       int process_id,
       int new_routing_id,
       mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
           interface_provider_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
-      blink::WebTreeScopeType scope,
+      blink::mojom::TreeScopeType scope,
       const std::string& frame_name,
       const std::string& frame_unique_name,
       bool is_created_by_script,
+      const base::UnguessableToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
       const blink::FramePolicy& frame_policy,
-      const FrameOwnerProperties& frame_owner_properties,
+      const blink::mojom::FrameOwnerProperties& frame_owner_properties,
       bool was_discarded,
-      blink::FrameOwnerElementType owner_type);
+      blink::mojom::FrameOwnerElementType owner_type);
 
   // Removes a frame from the frame tree. |child|, its children, and objects
   // owned by their RenderFrameHostManagers are immediately deleted. The root
@@ -207,9 +212,7 @@ class CONTENT_EXPORT FrameTree {
   // of this object.
   scoped_refptr<RenderViewHostImpl> CreateRenderViewHost(
       SiteInstance* site_instance,
-      int32_t routing_id,
       int32_t main_frame_routing_id,
-      int32_t widget_routing_id,
       bool swapped_out);
 
   // Returns the existing RenderViewHost for a new RenderFrameHost.
@@ -267,6 +270,14 @@ class CONTENT_EXPORT FrameTree {
   // Updates page-level focus for this FrameTree in the subframe renderer
   // identified by |instance|.
   void SetPageFocus(SiteInstance* instance, bool is_focused);
+
+  // Walks the current frame tree and registers any origins matching |origin|,
+  // either the last committed origin of a RenderFrameHost or the origin
+  // associated with a NavigationRequest that has been assigned to a
+  // SiteInstance, as not-opted-in for origin isolation.
+  void RegisterExistingOriginToPreventOptInIsolation(
+      const url::Origin& previously_visited_origin,
+      NavigationRequest* navigation_request_to_exclude);
 
  private:
   friend class FrameTreeTest;

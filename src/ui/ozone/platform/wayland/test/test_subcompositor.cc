@@ -6,7 +6,7 @@
 
 #include <wayland-server-core.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/server_object.h"
 #include "ui/ozone/platform/wayland/test/test_subsurface.h"
@@ -33,7 +33,7 @@ void GetSubsurface(struct wl_client* client,
   wl_resource* subsurface_resource =
       CreateResourceWithImpl<::testing::NiceMock<TestSubSurface>>(
           client, &wl_subsurface_interface, wl_resource_get_version(resource),
-          &kTestSubSurfaceImpl, id);
+          &kTestSubSurfaceImpl, id, surface, parent);
   DCHECK(subsurface_resource);
   mock_surface->set_sub_surface(
       GetUserDataAs<TestSubSurface>(subsurface_resource));

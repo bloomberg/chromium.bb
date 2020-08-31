@@ -520,7 +520,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedVPN) {
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest,
-       SetPolicyUpdateManagedVPNPlusUi) {
+       SetPolicyUpdateManagedVPNOpenVPNPlusUi) {
   InitializeStandardProfiles();
   SetUpEntry("policy/shill_managed_vpn.json", kUser1ProfilePath, "entry_path");
 
@@ -551,6 +551,42 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
   std::unique_ptr<base::DictionaryValue> expected_shill_properties =
       test_utils::ReadTestDictionary(
           "policy/shill_policy_on_managed_vpn_plus_ui.json");
+  EXPECT_EQ(*expected_shill_properties, *properties);
+}
+
+TEST_F(ManagedNetworkConfigurationHandlerTest,
+       SetPolicyUpdateManagedVPNL2TPIPsecPlusUi) {
+  InitializeStandardProfiles();
+  SetUpEntry("policy/shill_managed_vpn_ipsec.json", kUser1ProfilePath,
+             "entry_path");
+
+  // Apply the VPN L2TP-IPsec policy that will be updated.
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1,
+            "policy/policy_vpn_ipsec.onc");
+  base::RunLoop().RunUntilIdle();
+
+  // Update the VPN L2TP-IPsec policy.
+  const NetworkState* network_state =
+      network_state_handler_->GetNetworkStateFromGuid(kTestGuidVpn);
+  ASSERT_TRUE(network_state);
+  std::unique_ptr<base::DictionaryValue> ui_config =
+      test_utils::ReadTestDictionary("policy/policy_vpn_ipsec_ui.json");
+  managed_network_configuration_handler_->SetProperties(
+      network_state->path(), *ui_config, base::DoNothing(),
+      base::Bind(&ErrorCallback));
+  base::RunLoop().RunUntilIdle();
+
+  // Get shill service properties after the update.
+  std::string service_path =
+      GetShillServiceClient()->FindServiceMatchingGUID(kTestGuidVpn);
+  ASSERT_FALSE(service_path.empty());
+  const base::DictionaryValue* properties =
+      GetShillServiceClient()->GetServiceProperties(service_path);
+  ASSERT_TRUE(properties);
+
+  std::unique_ptr<base::DictionaryValue> expected_shill_properties =
+      test_utils::ReadTestDictionary(
+          "policy/shill_policy_on_managed_vpn_ipsec_plus_ui.json");
   EXPECT_EQ(*expected_shill_properties, *properties);
 }
 
@@ -715,7 +751,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, AutoConnectDisallowed) {
   std::unique_ptr<base::DictionaryValue> dictionary;
   managed_handler()->GetManagedProperties(
       kUser1, wifi2_service_path,
-      base::Bind(
+      base::BindOnce(
           [](std::unique_ptr<base::DictionaryValue>* dictionary_out,
              const std::string& service_path,
              const base::DictionaryValue& dictionary) {
@@ -900,7 +936,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, ActiveProxySettingsPreference) {
   // Get properties and verify that proxy is used.
   managed_handler()->GetManagedProperties(
       kUser1, wifi_service_path,
-      base::Bind(
+      base::BindOnce(
           [](std::unique_ptr<base::DictionaryValue>* dictionary_out,
              base::RepeatingClosure quit_closure,
              const std::string& service_path,
@@ -914,7 +950,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, ActiveProxySettingsPreference) {
       base::Bind(
           [](base::RepeatingClosure quit_closure, const std::string& error_name,
              std::unique_ptr<base::DictionaryValue> error_data) {
-            FAIL() << error_name;
+            ADD_FAILURE() << error_name;
             quit_closure.Run();
           },
           get_initial_properties_run_loop.QuitClosure()));
@@ -937,7 +973,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, ActiveProxySettingsPreference) {
   // Fetch managed properties after preference is set.
   managed_handler()->GetManagedProperties(
       kUser1, wifi_service_path,
-      base::Bind(
+      base::BindOnce(
           [](std::unique_ptr<base::DictionaryValue>* dictionary_out,
              base::RepeatingClosure quit_closure,
              const std::string& service_path,
@@ -950,7 +986,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, ActiveProxySettingsPreference) {
       base::Bind(
           [](base::RepeatingClosure quit_closure, const std::string& error_name,
              std::unique_ptr<base::DictionaryValue> error_data) {
-            FAIL() << error_name;
+            ADD_FAILURE() << error_name;
             quit_closure.Run();
           },
           get_merged_properties_run_loop.QuitClosure()));

@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 
 // https://wicg.github.io/native-file-system/#enumdef-choosefilesystementriestype
-enum ChooseFileSystemEntriesType { "openFile", "saveFile", "openDirectory" };
+enum ChooseFileSystemEntriesType {
+    "open-file",
+    "save-file",
+    "open-directory",
+};
 
 // https://wicg.github.io/native-file-system/#dictdef-choosefilesystementriesoptions
 dictionary ChooseFileSystemEntriesOptions {
-    ChooseFileSystemEntriesType type = "openFile";
+    ChooseFileSystemEntriesType type = "open-file";
     boolean multiple = false;
     sequence<ChooseFileSystemEntriesOptionsAccepts> accepts;
     boolean excludeAcceptAllOption = false;

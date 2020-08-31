@@ -2,8 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import './shared_style.js';
+import './strings.js';
+
 Polymer({
   is: 'history-toolbar',
+
+  _template: html`{__html_template__}`,
+
   properties: {
     // Number of history items currently selected.
     // TODO(calamity): bind this to
@@ -59,11 +69,11 @@ Polymer({
         .getSearchField();
   },
 
-  deleteSelectedItems: function() {
+  deleteSelectedItems() {
     this.fire('delete-selected');
   },
 
-  clearSelectedItems: function() {
+  clearSelectedItems() {
     this.fire('unselect-all');
   },
 
@@ -72,7 +82,7 @@ Polymer({
    * are currently selected.
    * @private
    */
-  changeToolbarView_: function() {
+  changeToolbarView_() {
     this.itemsSelected_ = this.count > 0;
   },
 
@@ -81,8 +91,8 @@ Polymer({
    * reflect the new search term.
    * @private
    */
-  searchTermChanged_: function() {
-    if (this.searchField.getValue() != this.searchTerm) {
+  searchTermChanged_() {
+    if (this.searchField.getValue() !== this.searchTerm) {
       this.searchField.showAndFocus();
       this.searchField.setValue(this.searchTerm);
     }
@@ -93,7 +103,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  canShowMenuPromo_: function(showMenuPromo) {
+  canShowMenuPromo_(showMenuPromo) {
     return this.showMenuPromo && !loadTimeData.getBoolean('isGuestSession');
   },
 
@@ -101,12 +111,12 @@ Polymer({
    * @param {!CustomEvent<string>} event
    * @private
    */
-  onSearchChanged_: function(event) {
+  onSearchChanged_(event) {
     this.fire('change-query', {search: event.detail});
   },
 
   /** @private */
-  numberOfItemsSelected_: function(count) {
+  numberOfItemsSelected_(count) {
     return count > 0 ? loadTimeData.getStringF('itemsSelected', count) : '';
   },
 });

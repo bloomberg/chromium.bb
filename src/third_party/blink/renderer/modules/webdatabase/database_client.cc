@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/modules/webdatabase/database_client.h"
 
 #include "third_party/blink/public/platform/web_content_settings_client.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/webdatabase/database.h"
@@ -41,7 +41,7 @@ namespace blink {
 
 DatabaseClient::DatabaseClient() : inspector_agent_(nullptr) {}
 
-void DatabaseClient::Trace(blink::Visitor* visitor) {
+void DatabaseClient::Trace(Visitor* visitor) {
   visitor->Trace(inspector_agent_);
   Supplement<Page>::Trace(visitor);
 }
@@ -51,15 +51,16 @@ DatabaseClient* DatabaseClient::FromPage(Page* page) {
 }
 
 DatabaseClient* DatabaseClient::From(ExecutionContext* context) {
-  return DatabaseClient::FromPage(To<Document>(context)->GetPage());
+  return DatabaseClient::FromPage(
+      To<LocalDOMWindow>(context)->GetFrame()->GetPage());
 }
 
 const char DatabaseClient::kSupplementName[] = "DatabaseClient";
 
 bool DatabaseClient::AllowDatabase(ExecutionContext* context) {
   DCHECK(context->IsContextThread());
-  Document* document = To<Document>(context);
-  if (auto* client = document->GetFrame()->GetContentSettingsClient())
+  LocalDOMWindow* window = To<LocalDOMWindow>(context);
+  if (auto* client = window->GetFrame()->GetContentSettingsClient())
     return client->AllowDatabase();
   return true;
 }

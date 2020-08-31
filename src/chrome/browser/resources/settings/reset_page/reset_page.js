@@ -6,70 +6,59 @@
  * @fileoverview
  * 'settings-reset-page' is the settings page containing reset
  * settings.
- *
- * Example:
- *
- *    <iron-animated-pages>
- *      <settings-reset-page prefs="{{prefs}}">
- *      </settings-reset-page>
- *      ... other pages ...
- *    </iron-animated-pages>
  */
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import './reset_profile_dialog.js';
+import '../settings_page/settings_animated_pages.m.js';
+import '../settings_shared_css.m.js';
+
+// <if expr="_google_chrome and is_win">
+import '../chrome_cleanup_page/chrome_cleanup_page.js';
+import '../incompatible_applications_page/incompatible_applications_page.js';
+// </if>
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.js';
+import {routes} from '../route.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+
+
 Polymer({
   is: 'settings-reset-page',
 
-  behaviors: [settings.RouteObserverBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [RouteObserverBehavior],
 
   properties: {
     /** Preferences state. */
     prefs: Object,
 
-    // <if expr="chromeos">
-    /**
-     * Dictionary defining page visibility.
-     * @type {!ResetPageVisibility}
-     */
-    pageVisibility: Object,
-
-    /** @private */
-    showPowerwashDialog_: Boolean,
-
-    /** @private */
-    allowPowerwash_: Boolean,
-    // </if>
-
-
     // <if expr="_google_chrome and is_win">
     /** @private */
     showIncompatibleApplications_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('showIncompatibleApplications');
       },
     },
     // </if>
   },
 
-  // <if expr="chromeos">
-  /** @override */
-  ready: function() {
-    // TODO(hsuregan): Remove when OS settings migration is complete.
-    this.allowPowerwash_ = loadTimeData.getBoolean('allowPowerwash') &&
-        this.pageVisibility.powerwash;
-  },
-  // </if>
-
   /**
-   * settings.RouteObserverBehavior
-   * @param {!settings.Route} route
+   * RouteObserverBehavior
+   * @param {!Route} route
    * @protected
    */
-  currentRouteChanged: function(route) {
+  currentRouteChanged(route) {
     const lazyRender =
         /** @type {!CrLazyRenderElement} */ (this.$.resetProfileDialog);
 
-    if (route == settings.routes.TRIGGERED_RESET_DIALOG ||
-        route == settings.routes.RESET_DIALOG) {
+    if (route == routes.TRIGGERED_RESET_DIALOG ||
+        route == routes.RESET_DIALOG) {
       /** @type {!SettingsResetProfileDialogElement} */ (lazyRender.get())
           .show();
     } else {
@@ -82,44 +71,26 @@ Polymer({
   },
 
   /** @private */
-  onShowResetProfileDialog_: function() {
-    settings.navigateTo(
-        settings.routes.RESET_DIALOG, new URLSearchParams('origin=userclick'));
+  onShowResetProfileDialog_() {
+    Router.getInstance().navigateTo(
+        routes.RESET_DIALOG, new URLSearchParams('origin=userclick'));
   },
 
   /** @private */
-  onResetProfileDialogClose_: function() {
-    settings.navigateToPreviousRoute();
-    cr.ui.focusWithoutInk(assert(this.$.resetProfile));
+  onResetProfileDialogClose_() {
+    Router.getInstance().navigateToPreviousRoute();
+    focusWithoutInk(assert(this.$.resetProfile));
   },
-
-  // <if expr="chromeos">
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onShowPowerwashDialog_: function(e) {
-    e.preventDefault();
-    this.showPowerwashDialog_ = true;
-  },
-
-  /** @private */
-  onPowerwashDialogClose_: function() {
-    this.showPowerwashDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.$.powerwash));
-  },
-  // </if>
 
   // <if expr="_google_chrome and is_win">
   /** @private */
-  onChromeCleanupTap_: function() {
-    settings.navigateTo(settings.routes.CHROME_CLEANUP);
+  onChromeCleanupTap_() {
+    Router.getInstance().navigateTo(routes.CHROME_CLEANUP);
   },
 
   /** @private */
-  onIncompatibleApplicationsTap_: function() {
-    settings.navigateTo(settings.routes.INCOMPATIBLE_APPLICATIONS);
+  onIncompatibleApplicationsTap_() {
+    Router.getInstance().navigateTo(routes.INCOMPATIBLE_APPLICATIONS);
   },
   // </if>
-
 });

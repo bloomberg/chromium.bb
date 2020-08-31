@@ -19,25 +19,16 @@ class ServiceWorkerGlobalScope;
 class ServiceWorkerScriptCachedMetadataHandler
     : public SingleCachedMetadataHandler {
  public:
-  static ServiceWorkerScriptCachedMetadataHandler* Create(
-      ServiceWorkerGlobalScope* global_scope,
-      const KURL& script_url,
-      std::unique_ptr<Vector<uint8_t>> meta_data) {
-    return MakeGarbageCollected<ServiceWorkerScriptCachedMetadataHandler>(
-        global_scope, script_url, std::move(meta_data));
-  }
-
   ServiceWorkerScriptCachedMetadataHandler(
       ServiceWorkerGlobalScope*,
       const KURL& script_url,
       std::unique_ptr<Vector<uint8_t>> meta_data);
   ~ServiceWorkerScriptCachedMetadataHandler() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   void SetCachedMetadata(uint32_t data_type_id,
                          const uint8_t*,
-                         size_t,
-                         CacheType) override;
-  void ClearCachedMetadata(CacheType) override;
+                         size_t) override;
+  void ClearCachedMetadata(ClearCacheType) override;
   scoped_refptr<CachedMetadata> GetCachedMetadata(
       uint32_t data_type_id) const override;
   String Encoding() const override;

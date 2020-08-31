@@ -8,71 +8,436 @@
  * security site settings.
  */
 
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import '../settings_shared_css.m.js';
+import './recent_site_permissions.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.js';
+import {routes} from '../route.js';
+import {Route, Router} from '../router.m.js';
+import {ContentSettingsTypes} from '../site_settings/constants.js';
+
+import {CategoryListItem} from './site_settings_list.js';
+
+const Id = ContentSettingsTypes;
+
+/**
+ * @type {?Map<!ContentSettingsTypes, !CategoryListItem>}
+ */
+let categoryItemMap = null;
+
+/**
+ * @return {!Map<!ContentSettingsTypes, !CategoryListItem>}
+ */
+function getCategoryItemMap() {
+  if (categoryItemMap !== null) {
+    return categoryItemMap;
+  }
+
+  // The following list is ordered alphabetically by |id|. The order in which
+  // these appear in the UI is determined elsewhere in this file.
+  const categoryList = [
+    {
+      route: routes.SITE_SETTINGS_ADS,
+      id: Id.ADS,
+      label: 'siteSettingsAds',
+      icon: 'settings:ads',
+      enabledLabel: 'siteSettingsAllowed',
+      disabledLabel: 'siteSettingsAdsBlock',
+      shouldShow: () =>
+          loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter'),
+    },
+    {
+      route: routes.SITE_SETTINGS_AR,
+      id: Id.AR,
+      label: 'siteSettingsAr',
+      icon: 'settings:vr-headset',
+      enabledLabel: 'siteSettingsArAsk',
+      disabledLabel: 'siteSettingsArBlock',
+      shouldShow: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
+    },
+    {
+      route: routes.SITE_SETTINGS_AUTOMATIC_DOWNLOADS,
+      id: Id.AUTOMATIC_DOWNLOADS,
+      label: 'siteSettingsAutomaticDownloads',
+      icon: 'cr:file-download',
+      enabledLabel: 'siteSettingsAutoDownloadAsk',
+      disabledLabel: 'siteSettingsAutoDownloadBlock',
+    },
+    {
+      route: routes.SITE_SETTINGS_BACKGROUND_SYNC,
+      id: Id.BACKGROUND_SYNC,
+      label: 'siteSettingsBackgroundSync',
+      icon: 'cr:sync',
+      enabledLabel: 'siteSettingsAllowRecentlyClosedSites',
+      disabledLabel: 'siteSettingsBackgroundSyncBlocked',
+    },
+    {
+      route: routes.SITE_SETTINGS_BLUETOOTH_DEVICES,
+      id: Id.BLUETOOTH_DEVICES,
+      label: 'siteSettingsBluetoothDevices',
+      icon: 'settings:bluetooth',
+      enabledLabel: 'siteSettingsBluetoothDevicesAsk',
+      disabledLabel: 'siteSettingsBluetoothDevicesBlock',
+      shouldShow: () =>
+          loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend'),
+    },
+    {
+      route: routes.SITE_SETTINGS_BLUETOOTH_SCANNING,
+      id: Id.BLUETOOTH_SCANNING,
+      label: 'siteSettingsBluetoothScanning',
+      icon: 'settings:bluetooth-scanning',
+      enabledLabel: 'siteSettingsBluetoothScanningAsk',
+      disabledLabel: 'siteSettingsBluetoothScanningBlock',
+      shouldShow: () =>
+          loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures'),
+    },
+    {
+      route: routes.SITE_SETTINGS_CAMERA,
+      id: Id.CAMERA,
+      label: 'siteSettingsCamera',
+      icon: 'cr:videocam',
+      enabledLabel: 'siteSettingsAskBeforeAccessing',
+      disabledLabel: 'siteSettingsBlocked',
+    },
+    {
+      route: routes.SITE_SETTINGS_CLIPBOARD,
+      id: Id.CLIPBOARD,
+      label: 'siteSettingsClipboard',
+      icon: 'settings:clipboard',
+      enabledLabel: 'siteSettingsAskBeforeAccessing',
+      disabledLabel: 'siteSettingsBlocked',
+    },
+    {
+      route: (function() {
+        return loadTimeData.getBoolean('privacySettingsRedesignEnabled') ?
+            routes.COOKIES :
+            routes.SITE_SETTINGS_COOKIES;
+      })(),
+      id: Id.COOKIES,
+      label: 'siteSettingsCookies',
+      icon: 'settings:cookie',
+      enabledLabel: 'siteSettingsCookiesAllowed',
+      disabledLabel: 'siteSettingsBlocked',
+      otherLabel: 'deleteDataPostSession',
+    },
+    {
+      route: routes.SITE_SETTINGS_LOCATION,
+      id: Id.GEOLOCATION,
+      label: 'siteSettingsLocation',
+      icon: 'cr:location-on',
+      enabledLabel: 'siteSettingsAskBeforeAccessing',
+      disabledLabel: 'siteSettingsBlocked',
+    },
+    {
+      route: routes.SITE_SETTINGS_HID_DEVICES,
+      id: Id.HID_DEVICES,
+      label: 'siteSettingsHidDevices',
+      icon: 'settings:hid-device',
+      enabledLabel: 'siteSettingsHidDevicesAsk',
+      disabledLabel: 'siteSettingsHidDevicesBlock',
+      shouldShow: () =>
+          loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures'),
+    },
+    {
+      route: routes.SITE_SETTINGS_IMAGES,
+      id: Id.IMAGES,
+      label: 'siteSettingsImages',
+      icon: 'settings:photo',
+      enabledLabel: 'siteSettingsShowAll',
+      disabledLabel: 'siteSettingsDontShowImages',
+    },
+    {
+      route: routes.SITE_SETTINGS_JAVASCRIPT,
+      id: Id.JAVASCRIPT,
+      label: 'siteSettingsJavascript',
+      icon: 'settings:code',
+      enabledLabel: 'siteSettingsAllowed',
+      disabledLabel: 'siteSettingsBlocked',
+    },
+    {
+      route: routes.SITE_SETTINGS_MICROPHONE,
+      id: Id.MIC,
+      label: 'siteSettingsMic',
+      icon: 'cr:mic',
+      enabledLabel: 'siteSettingsAskBeforeAccessing',
+      disabledLabel: 'siteSettingsBlocked',
+    },
+    {
+      route: routes.SITE_SETTINGS_MIDI_DEVICES,
+      id: Id.MIDI_DEVICES,
+      label: 'siteSettingsMidiDevices',
+      icon: 'settings:midi',
+      enabledLabel: 'siteSettingsMidiDevicesAsk',
+      disabledLabel: 'siteSettingsMidiDevicesBlock',
+    },
+    {
+      route: routes.SITE_SETTINGS_MIXEDSCRIPT,
+      id: Id.MIXEDSCRIPT,
+      label: 'siteSettingsInsecureContent',
+      icon: 'settings:insecure-content',
+      disabledLabel: 'siteSettingsInsecureContentBlock',
+      shouldShow: () =>
+          loadTimeData.getBoolean('enableInsecureContentContentSetting'),
+    },
+    {
+      route: routes.SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE,
+      id: Id.NATIVE_FILE_SYSTEM_WRITE,
+      label: 'siteSettingsNativeFileSystemWrite',
+      icon: 'settings:save-original',
+      enabledLabel: 'siteSettingsNativeFileSystemWriteAsk',
+      disabledLabel: 'siteSettingsNativeFileSystemWriteBlock',
+      shouldShow: () =>
+          loadTimeData.getBoolean('enableNativeFileSystemWriteContentSetting'),
+    },
+    {
+      route: routes.SITE_SETTINGS_NOTIFICATIONS,
+      id: Id.NOTIFICATIONS,
+      label: 'siteSettingsNotifications',
+      icon: 'settings:notifications',
+      enabledLabel: 'siteSettingsAskBeforeSending',
+      disabledLabel: 'siteSettingsBlocked',
+    },
+    {
+      route: routes.SITE_SETTINGS_PAYMENT_HANDLER,
+      id: Id.PAYMENT_HANDLER,
+      label: 'siteSettingsPaymentHandler',
+      icon: 'settings:payment-handler',
+      enabledLabel: 'siteSettingsPaymentHandlerAllow',
+      disabledLabel: 'siteSettingsPaymentHandlerBlock',
+      shouldShow: () =>
+          loadTimeData.getBoolean('enablePaymentHandlerContentSetting'),
+    },
+    {
+      route: routes.SITE_SETTINGS_PDF_DOCUMENTS,
+      id: 'pdfDocuments',
+      label: 'siteSettingsPdfDocuments',
+      icon: 'settings:pdf',
+    },
+    {
+      route: routes.SITE_SETTINGS_FLASH,
+      id: Id.PLUGINS,
+      label: 'siteSettingsFlash',
+      icon: 'cr:extension',
+      enabledLabel: 'siteSettingsFlashAskFirst',
+      disabledLabel: 'siteSettingsFlashBlock',
+    },
+    {
+      route: routes.SITE_SETTINGS_POPUPS,
+      id: Id.POPUPS,
+      label: 'siteSettingsPopups',
+      icon: 'cr:open-in-new',
+      enabledLabel: 'siteSettingsAllowed',
+      disabledLabel: 'siteSettingsBlocked',
+    },
+    {
+      route: routes.SITE_SETTINGS_PROTECTED_CONTENT,
+      id: Id.PROTECTED_CONTENT,
+      label: 'siteSettingsProtectedContent',
+      icon: 'settings:protected-content',
+    },
+    {
+      route: routes.SITE_SETTINGS_HANDLERS,
+      id: Id.PROTOCOL_HANDLERS,
+      label: 'siteSettingsHandlers',
+      icon: 'settings:protocol-handler',
+      enabledLabel: 'siteSettingsHandlersAsk',
+      disabledLabel: 'siteSettingsHandlersBlocked',
+      shouldShow: () => !loadTimeData.getBoolean('isGuest'),
+    },
+    {
+      route: routes.SITE_SETTINGS_SENSORS,
+      id: Id.SENSORS,
+      label: 'siteSettingsSensors',
+      icon: 'settings:sensors',
+      enabledLabel: 'siteSettingsSensorsAllow',
+      disabledLabel: 'siteSettingsSensorsBlock',
+    },
+    {
+      route: routes.SITE_SETTINGS_SERIAL_PORTS,
+      id: Id.SERIAL_PORTS,
+      label: 'siteSettingsSerialPorts',
+      icon: 'settings:serial-port',
+      enabledLabel: 'siteSettingsSerialPortsAsk',
+      disabledLabel: 'siteSettingsSerialPortsBlock',
+    },
+    {
+      route: routes.SITE_SETTINGS_SOUND,
+      id: Id.SOUND,
+      label: 'siteSettingsSound',
+      icon: 'settings:volume-up',
+      enabledLabel: 'siteSettingsSoundAllow',
+      disabledLabel: 'siteSettingsSoundBlock',
+    },
+    {
+      route: routes.SITE_SETTINGS_UNSANDBOXED_PLUGINS,
+      id: Id.UNSANDBOXED_PLUGINS,
+      label: 'siteSettingsUnsandboxedPlugins',
+      icon: 'cr:extension',
+      enabledLabel: 'siteSettingsUnsandboxedPluginsAsk',
+      disabledLabel: 'siteSettingsUnsandboxedPluginsBlock',
+    },
+    {
+      route: routes.SITE_SETTINGS_USB_DEVICES,
+      id: Id.USB_DEVICES,
+      label: 'siteSettingsUsbDevices',
+      icon: 'settings:usb',
+      enabledLabel: 'siteSettingsUsbDevicesAsk',
+      disabledLabel: 'siteSettingsUsbDevicesBlock',
+    },
+    {
+      route: routes.SITE_SETTINGS_VR,
+      id: Id.VR,
+      label: 'siteSettingsVr',
+      icon: 'settings:vr-headset',
+      enabledLabel: 'siteSettingsVrAsk',
+      disabledLabel: 'siteSettingsVrBlock',
+      shouldShow: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
+    },
+    {
+      route: routes.SITE_SETTINGS_WINDOW_PLACEMENT,
+      id: Id.WINDOW_PLACEMENT,
+      label: 'siteSettingsWindowPlacement',
+      icon: 'settings:window-placement',
+      enabledLabel: 'siteSettingsWindowPlacementAsk',
+      disabledLabel: 'siteSettingsWindowPlacementBlock',
+      shouldShow: () =>
+          loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures'),
+    },
+    {
+      route: routes.SITE_SETTINGS_ZOOM_LEVELS,
+      id: Id.ZOOM_LEVELS,
+      label: 'siteSettingsZoomLevels',
+      icon: 'settings:zoom-in',
+    },
+  ];
+
+  categoryItemMap = new Map(categoryList.map(item => [item.id, item]));
+  return categoryItemMap;
+}
+
+/**
+ * @param {!Array<!ContentSettingsTypes>} orderedIdList
+ * @return {!Array<!CategoryListItem>}
+ */
+function buildItemListFromIds(orderedIdList) {
+  const map = getCategoryItemMap();
+  const orderedList = [];
+  for (const id of orderedIdList) {
+    const item = map.get(id);
+    if (item.shouldShow === undefined || item.shouldShow()) {
+      orderedList.push(item);
+    }
+  }
+  return orderedList;
+}
+
 Polymer({
   is: 'settings-site-settings-page',
 
-  behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
+  _template: html`{__html_template__}`,
 
   properties: {
     /**
-     * An object to bind default values to (so they are not in the |this|
-     * scope). The keys of this object are the values of the
-     * settings.ContentSettingsTypes enum.
-     * @private
+     * @private {{
+     *   all: (!Array<!CategoryListItem>|undefined),
+     *   permissionsBasic: (!Array<!CategoryListItem>|undefined),
+     *   permissionsAdvanced: (!Array<!CategoryListItem>|undefined),
+     *   contentBasic: (!Array<!CategoryListItem>|undefined),
+     *   contentAdvanced: (!Array<!CategoryListItem>|undefined)
+     * }}
      */
-    default_: {
+    lists_: {
       type: Object,
       value: function() {
-        return {};
-      },
-    },
+        if (!loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
+          return {
+            all: buildItemListFromIds([
+              Id.COOKIES,
+              Id.GEOLOCATION,
+              Id.CAMERA,
+              Id.MIC,
+              Id.SENSORS,
+              Id.NOTIFICATIONS,
+              Id.JAVASCRIPT,
+              Id.PLUGINS,
+              Id.IMAGES,
+              Id.POPUPS,
+              Id.ADS,
+              Id.BACKGROUND_SYNC,
+              Id.SOUND,
+              Id.AUTOMATIC_DOWNLOADS,
+              Id.UNSANDBOXED_PLUGINS,
+              Id.PROTOCOL_HANDLERS,
+              Id.MIDI_DEVICES,
+              Id.ZOOM_LEVELS,
+              Id.USB_DEVICES,
+              Id.SERIAL_PORTS,
+              Id.BLUETOOTH_DEVICES,
+              Id.NATIVE_FILE_SYSTEM_WRITE,
+              Id.HID_DEVICES,
+              'pdfDocuments',
+              Id.PROTECTED_CONTENT,
+              Id.CLIPBOARD,
+              Id.PAYMENT_HANDLER,
+              Id.MIXEDSCRIPT,
+              Id.BLUETOOTH_SCANNING,
+              Id.AR,
+              Id.VR,
+              Id.WINDOW_PLACEMENT,
+            ]),
+          };
+        }
 
-    /** @private */
-    isGuest_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('isGuest');
-      }
-    },
-
-    /** @private */
-    enableSafeBrowsingSubresourceFilter_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter');
-      }
-    },
-
-    /** @private */
-    enableExperimentalWebPlatformFeatures_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures');
-      },
-    },
-
-    /** @private */
-    enablePaymentHandlerContentSetting_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enablePaymentHandlerContentSetting');
-      }
-    },
-
-    /** @private */
-    enableInsecureContentContentSetting_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableInsecureContentContentSetting');
-      }
-    },
-
-    /** @private */
-    enableNativeFileSystemWriteContentSetting_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean(
-            'enableNativeFileSystemWriteContentSetting');
+        return {
+          permissionsBasic: buildItemListFromIds([
+            Id.GEOLOCATION,
+            Id.CAMERA,
+            Id.MIC,
+            Id.NOTIFICATIONS,
+            Id.BACKGROUND_SYNC,
+          ]),
+          permissionsAdvanced: buildItemListFromIds([
+            Id.SENSORS,
+            Id.AUTOMATIC_DOWNLOADS,
+            Id.UNSANDBOXED_PLUGINS,
+            Id.PROTOCOL_HANDLERS,
+            Id.MIDI_DEVICES,
+            Id.USB_DEVICES,
+            Id.SERIAL_PORTS,
+            Id.BLUETOOTH_DEVICES,
+            Id.NATIVE_FILE_SYSTEM_WRITE,
+            Id.HID_DEVICES,
+            Id.CLIPBOARD,
+            Id.PAYMENT_HANDLER,
+            Id.BLUETOOTH_SCANNING,
+            Id.AR,
+            Id.VR,
+            Id.WINDOW_PLACEMENT,
+          ]),
+          contentBasic: buildItemListFromIds([
+            Id.COOKIES,
+            Id.JAVASCRIPT,
+            Id.PLUGINS,
+            Id.IMAGES,
+            Id.POPUPS,
+          ]),
+          contentAdvanced: buildItemListFromIds([
+            Id.SOUND,
+            Id.ADS,
+            Id.ZOOM_LEVELS,
+            'pdfDocuments',
+            Id.PROTECTED_CONTENT,
+            Id.MIXEDSCRIPT,
+          ]),
+        };
       }
     },
 
@@ -81,6 +446,23 @@ Polymer({
       type: Object,
       observer: 'focusConfigChanged_',
     },
+
+    /** @private */
+    privacySettingsRedesignEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
+      },
+    },
+
+    /** @private */
+    permissionsExpanded_: Boolean,
+
+    /** @private */
+    contentExpanded_: Boolean,
+
+    /* @private */
+    noRecentSitePermissions_: Boolean,
   },
 
   /**
@@ -88,155 +470,28 @@ Polymer({
    * @param {?Map<string, string>} oldConfig
    * @private
    */
-  focusConfigChanged_: function(newConfig, oldConfig) {
-    // focusConfig is set only once on the parent, so this observer should only
-    // fire once.
+  focusConfigChanged_(newConfig, oldConfig) {
+    // focusConfig is set only once on the parent, so this observer should
+    // only fire once.
     assert(!oldConfig);
-
-    // Populate the |focusConfig| map of the parent <settings-animated-pages>
-    // element, with additional entries that correspond to subpage trigger
-    // elements residing in this element's Shadow DOM.
-    const R = settings.routes;
-    const pairs = [
-      [R.SITE_SETTINGS_ADS, 'ads'],
-      [R.SITE_SETTINGS_ALL, 'all-sites'],
-      [R.SITE_SETTINGS_AUTOMATIC_DOWNLOADS, 'automatic-downloads'],
-      [R.SITE_SETTINGS_BACKGROUND_SYNC, 'background-sync'],
-      [R.SITE_SETTINGS_CAMERA, 'camera'],
-      [R.SITE_SETTINGS_CLIPBOARD, 'clipboard'],
-      [R.SITE_SETTINGS_COOKIES, 'cookies'],
-      [R.SITE_SETTINGS_FLASH, 'flash'],
-      [R.SITE_SETTINGS_HANDLERS, 'protocol-handlers'],
-      [R.SITE_SETTINGS_IMAGES, 'images'],
-      [R.SITE_SETTINGS_JAVASCRIPT, 'javascript'],
-      [R.SITE_SETTINGS_LOCATION, 'location'],
-      [R.SITE_SETTINGS_MICROPHONE, 'microphone'],
-      [R.SITE_SETTINGS_MIDI_DEVICES, 'midi-devices'],
-      [R.SITE_SETTINGS_NOTIFICATIONS, 'notifications'],
-      [R.SITE_SETTINGS_PDF_DOCUMENTS, 'pdf-documents'],
-      [R.SITE_SETTINGS_POPUPS, 'popups'],
-      [R.SITE_SETTINGS_PROTECTED_CONTENT, 'protected-content'],
-      [R.SITE_SETTINGS_SENSORS, 'sensors'],
-      [R.SITE_SETTINGS_SERIAL_PORTS, 'serial-ports'],
-      [R.SITE_SETTINGS_SOUND, 'sound'],
-      [R.SITE_SETTINGS_UNSANDBOXED_PLUGINS, 'unsandboxed-plugins'],
-      [R.SITE_SETTINGS_USB_DEVICES, 'usb-devices'],
-      [R.SITE_SETTINGS_ZOOM_LEVELS, 'zoom-levels'],
-    ];
-
-    if (this.enablePaymentHandlerContentSetting_) {
-      pairs.push([R.SITE_SETTINGS_PAYMENT_HANDLER, 'paymentHandler']);
-    }
-
-    if (this.enableExperimentalWebPlatformFeatures_) {
-      pairs.push([R.SITE_SETTINGS_BLUETOOTH_SCANNING, 'bluetooth-scanning']);
-    }
-
-    if (this.enableNativeFileSystemWriteContentSetting_) {
-      pairs.push([
-        R.SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE, 'native-file-system-write'
-      ]);
-    }
-
-    if (this.enableInsecureContentContentSetting_) {
-      pairs.push([R.SITE_SETTINGS_MIXEDSCRIPT, 'mixed-script']);
-    }
-
-    pairs.forEach(([route, id]) => {
-      this.focusConfig.set(route.path, () => this.async(() => {
-        cr.ui.focusWithoutInk(assert(this.$$(`#${id}`)));
-      }));
+    this.focusConfig.set(routes.SITE_SETTINGS_ALL.path, () => {
+      focusWithoutInk(assert(this.$$('#allSites')));
     });
   },
 
-  /** @override */
-  ready: function() {
-    this.ContentSettingsTypes = settings.ContentSettingsTypes;
-    this.ALL_SITES = settings.ALL_SITES;
-
-    const keys = Object.keys(settings.ContentSettingsTypes);
-    for (let i = 0; i < keys.length; ++i) {
-      const key = settings.ContentSettingsTypes[keys[i]];
-      // Default labels are not applicable to ZOOM.
-      if (key == settings.ContentSettingsTypes.ZOOM_LEVELS) {
-        continue;
-      }
-      // Protocol handlers are not available (and will DCHECK) in guest mode.
-      if (this.isGuest_ &&
-          key == settings.ContentSettingsTypes.PROTOCOL_HANDLERS) {
-        continue;
-      }
-      // Similarly, protected content is only available in CrOS.
-      // <if expr="not chromeos">
-      if (key == settings.ContentSettingsTypes.PROTECTED_CONTENT) {
-        continue;
-      }
-      // </if>
-      this.updateDefaultValueLabel_(key);
-    }
-
-    this.addWebUIListener(
-        'contentSettingCategoryChanged',
-        this.updateDefaultValueLabel_.bind(this));
-    this.addWebUIListener(
-        'setHandlersEnabled', this.updateHandlersEnabled_.bind(this));
-    this.browserProxy.observeProtocolHandlersEnabledState();
+  /** @private */
+  onSiteSettingsAllClick_() {
+    Router.getInstance().navigateTo(routes.SITE_SETTINGS_ALL);
   },
 
   /**
-   * @param {string} setting Value from settings.ContentSetting.
-   * @param {string} enabled Non-block label ('feature X not allowed').
-   * @param {string} disabled Block label (likely just, 'Blocked').
-   * @param {?string} other Tristate value (maybe, 'session only').
+   * @return {string} Class for the all site settings link
    * @private
    */
-  defaultSettingLabel_: function(setting, enabled, disabled, other) {
-    if (setting == settings.ContentSetting.BLOCK) {
-      return disabled;
-    }
-    if (setting == settings.ContentSetting.ALLOW) {
-      return enabled;
-    }
-    if (other) {
-      return other;
-    }
-    return enabled;
-  },
-
-  /**
-   * @param {string} category The category to update.
-   * @private
-   */
-  updateDefaultValueLabel_: function(category) {
-    this.browserProxy.getDefaultValueForContentType(category).then(
-        defaultValue => {
-          this.set(
-              'default_.' + Polymer.CaseMap.dashToCamelCase(category),
-              defaultValue.setting);
-        });
-  },
-
-  /**
-   * The protocol handlers have a separate enabled/disabled notifier.
-   * @param {boolean} enabled
-   * @private
-   */
-  updateHandlersEnabled_: function(enabled) {
-    const category = settings.ContentSettingsTypes.PROTOCOL_HANDLERS;
-    this.set(
-        'default_.' + Polymer.CaseMap.dashToCamelCase(category),
-        enabled ? settings.ContentSetting.ALLOW :
-                  settings.ContentSetting.BLOCK);
-  },
-
-  /**
-   * Navigate to the route specified in the event dataset.
-   * @param {!Event} event The tap event.
-   * @private
-   */
-  onTapNavigate_: function(event) {
-    const dataSet =
-        /** @type {{route: string}} */ (event.currentTarget.dataset);
-    settings.navigateTo(settings.routes[dataSet.route]);
+  getClassForSiteSettingsAllLink_() {
+    return (this.privacySettingsRedesignEnabled_ &&
+            !this.noRecentSitePermissions_) ?
+        'hr' :
+        '';
   },
 });

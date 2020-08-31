@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2012 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -9,8 +9,11 @@ import logging
 import os
 import subprocess
 import sys
+import textwrap
 import time
 import unittest
+
+import six
 
 # Mutates sys.path.
 import test_env
@@ -22,7 +25,9 @@ from utils import file_path
 
 
 CONTENTS = {
-  'check_files.py': """if True:
+    'check_files.py':
+        textwrap.dedent("""
+      from __future__ import print_function
       import os, sys
       ROOT_DIR = os.path.dirname(os.path.abspath(
           __file__.decode(sys.getfilesystemencoding())))
@@ -32,29 +37,40 @@ CONTENTS = {
       ]
       actual = sorted(os.listdir(ROOT_DIR))
       if expected != actual:
-        print >> sys.stderr, 'Expected list doesn\\'t match:'
-        print >> sys.stderr, '%s\\n%s' % (','.join(expected), ','.join(actual))
+        print('Expected list doesn\\'t match:', file=sys.stderr)
+        print(
+             '%s\\n%s' % (','.join(expected), ','.join(actual)),
+             file=sys.stderr)
         sys.exit(1)
       # Check that file2.txt is in reality file3.txt.
       with open(os.path.join(ROOT_DIR, 'file2.txt'), 'rb') as f:
         if f.read() != 'File3\\n':
-          print >> sys.stderr, 'file2.txt should be file3.txt in reality'
+          print('file2.txt should be file3.txt in reality', file=sys.stderr)
           sys.exit(2)
-      print('Success')""",
-  'file1.txt': 'File1\n',
-  'file2.txt': 'File2.txt\n',
-  'file3.txt': 'File3\n',
-  'repeated_files.py': """if True:
+      print('Success')"""),
+    'file1.txt':
+        'File1\n',
+    'file2.txt':
+        'File2.txt\n',
+    'file3.txt':
+        'File3\n',
+    'repeated_files.py':
+        textwrap.dedent("""
+      from __future__ import print_function
       import os, sys
       expected = ['file1.txt', 'file1_copy.txt', 'repeated_files.py']
       actual = sorted(os.listdir(os.path.dirname(os.path.abspath(
           __file__.decode(sys.getfilesystemencoding())))))
       if expected != actual:
-        print >> sys.stderr, 'Expected list doesn\\'t match:'
-        print >> sys.stderr, '%s\\n%s' % (','.join(expected), ','.join(actual))
+        print('Expected list doesn\\'t match:', file=sys.stderr)
+        print(
+            '%s\\n%s' % (','.join(expected), ','.join(actual)),
+            file=sys.stderr)
         sys.exit(1)
-      print('Success')""",
-  'max_path.py': """if True:
+      print('Success')"""),
+    'max_path.py':
+        textwrap.dedent("""
+      from __future__ import print_function
       import os, sys
       prefix = u'\\\\\\\\?\\\\' if sys.platform == 'win32' else u''
       path = os.path.join(os.getcwd().decode(
@@ -62,39 +78,44 @@ CONTENTS = {
       with open(prefix + path, 'rb') as f:
         actual = f.read()
         if actual != 'File1\\n':
-          print >> sys.stderr, 'Unexpected content: %s' % actual
+          print('Unexpected content: %s' % actual, file=sys.stderr)
           sys.exit(1)
-      print('Success')""",
-  'tar_archive': open(os.path.join(test_env.TESTS_DIR, 'archive.tar')).read(),
-  'archive_files.py': """if True:
+      print('Success')"""),
+    'tar_archive':
+        open(os.path.join(test_env.TESTS_DIR, 'archive.tar')).read(),
+    'archive_files.py':
+        textwrap.dedent("""
+      from __future__ import print_function
       import os, sys
       ROOT_DIR = os.path.dirname(os.path.abspath(
           __file__.decode(sys.getfilesystemencoding())))
       expected = ['a', 'archive_files.py', 'b']
       actual = sorted(os.listdir(ROOT_DIR))
       if expected != actual:
-        print >> sys.stderr, 'Expected list doesn\\'t match:'
-        print >> sys.stderr, '%s\\n%s' % (','.join(expected), ','.join(actual))
+        print('Expected list doesn\\'t match:', file=sys.stderr)
+        print('%s\\n%s' % (','.join(expected), ','.join(actual)),
+        file=sys.stderr)
         sys.exit(1)
       expected = ['foo']
       actual = sorted(os.listdir(os.path.join(ROOT_DIR, 'a')))
       if expected != actual:
-        print >> sys.stderr, 'Expected list doesn\\'t match:'
-        print >> sys.stderr, '%s\\n%s' % (','.join(expected), ','.join(actual))
+        print('Expected list doesn\\'t match:', file=sys.stderr)
+        print('%s\\n%s' % (','.join(expected), ','.join(actual)),
+        file=sys.stderr)
         sys.exit(2)
       # Check that a/foo has right contents.
       with open(os.path.join(ROOT_DIR, 'a/foo'), 'rb') as f:
         d = f.read()
         if d != 'Content':
-          print >> sys.stderr, 'a/foo contained %r' % d
+          print('a/foo contained %r' % d, file=sys.stderr)
           sys.exit(3)
       # Check that b has right contents.
       with open(os.path.join(ROOT_DIR, 'b'), 'rb') as f:
         d = f.read()
         if d != 'More content':
-          print >> sys.stderr, 'b contained %r' % d
+          print('b contained %r' % d, file=sys.stderr)
           sys.exit(4)
-      print('Success')""",
+      print('Success')"""),
 }
 
 
@@ -294,7 +315,7 @@ class RunIsolatedTest(unittest.TestCase):
       index = 1
     else:
       index = 0
-    expected_mangled = dict((k, oct(v[index])) for k, v in expected.iteritems())
+    expected_mangled = dict((k, oct(v[index])) for k, v in expected.items())
     self.assertEqual(expected_mangled, actual)
 
   def test_isolated_normal(self):
@@ -397,20 +418,20 @@ class RunIsolatedTest(unittest.TestCase):
     _out, _err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual(0, returncode)
     expected = {
-      u'.': (040707, 040707, 040777),
-      u'state.json': (0100606, 0100606, 0100666),
-      # The reason for 0100666 on Windows is that the file node had to be
-      # modified to delete the hardlinked node. The read only bit is reset on
-      # load.
-      unicode(file1_hash): (0100400, 0100400, 0100444),
-      unicode(isolated_hash): (0100400, 0100400, 0100444),
+        u'.': (0o40707, 0o40707, 0o40777),
+        u'state.json': (0o100606, 0o100606, 0o100666),
+        # The reason for 0100666 on Windows is that the file node had to be
+        # modified to delete the hardlinked node. The read only bit is reset on
+        # load.
+        six.text_type(file1_hash): (0o100400, 0o100400, 0o100444),
+        six.text_type(isolated_hash): (0o100400, 0o100400, 0o100444),
     }
     self.assertTreeModes(self._isolated_cache_dir, expected)
 
     # Modify one of the files in the cache to be invalid.
     cached_file_path = os.path.join(self._isolated_cache_dir, file1_hash)
     previous_mode = os.stat(cached_file_path).st_mode
-    os.chmod(cached_file_path, 0600)
+    os.chmod(cached_file_path, 0o600)
     write_content(cached_file_path, new_content)
     os.chmod(cached_file_path, previous_mode)
     logging.info('Modified %s', cached_file_path)
@@ -421,10 +442,10 @@ class RunIsolatedTest(unittest.TestCase):
     out, err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual(0, returncode, (out, err, returncode))
     expected = {
-      u'.': (040707, 040707, 040777),
-      u'state.json': (0100606, 0100606, 0100666),
-      unicode(file1_hash): (0100400, 0100400, 0100444),
-      unicode(isolated_hash): (0100400, 0100400, 0100444),
+        u'.': (0o40707, 0o40707, 0o40777),
+        u'state.json': (0o100606, 0o100606, 0o100666),
+        six.text_type(file1_hash): (0o100400, 0o100400, 0o100444),
+        six.text_type(isolated_hash): (0o100400, 0o100400, 0o100444),
     }
     self.assertTreeModes(self._isolated_cache_dir, expected)
     return cached_file_path
@@ -471,9 +492,8 @@ class RunIsolatedTest(unittest.TestCase):
       cmd.extend(('--containment-type', 'JOB_OBJECT'))
     cmd.extend(('--', sys.executable, '-c'))
     if sys.platform == 'win32':
-      cmd.append(
-          'import subprocess,sys; '
-          'subprocess.call([sys.executable, "-c", "print 0"])')
+      cmd.append('import subprocess,sys; '
+                 'subprocess.call([sys.executable, "-c", "print(0)"])')
     else:
       cmd.append('import os,sys; sys.stdout.write(str(os.nice(0)))')
     out, err, returncode = self._run(cmd)

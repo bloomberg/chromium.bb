@@ -21,6 +21,8 @@ static_library("core") {
     "offline_item.h",
     "offline_item_filter.h",
     "offline_item_state.h",
+    "open_params.cc",
+    "open_params.h",
     "pending_state.h",
     "rename_result.h",
     "throttled_offline_content_provider.cc",
@@ -76,10 +78,7 @@ source_set("unit_tests") {
 
 if (is_android) {
   android_library("core_java") {
-    java_files = [
-      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemBridge.java",
-      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemShareInfoBridge.java",
-      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemVisualsBridge.java",
+    sources = [
       "android/java/src/org/chromium/components/offline_items_collection/ContentId.java",
       "android/java/src/org/chromium/components/offline_items_collection/LegacyHelpers.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineContentAggregatorBridge.java",
@@ -87,9 +86,13 @@ if (is_android) {
       "android/java/src/org/chromium/components/offline_items_collection/OfflineItem.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineItemShareInfo.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineItemVisuals.java",
+      "android/java/src/org/chromium/components/offline_items_collection/OpenParams.java",
       "android/java/src/org/chromium/components/offline_items_collection/ShareCallback.java",
       "android/java/src/org/chromium/components/offline_items_collection/UpdateDelta.java",
       "android/java/src/org/chromium/components/offline_items_collection/VisualsCallback.java",
+      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemBridge.java",
+      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemShareInfoBridge.java",
+      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemVisualsBridge.java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 

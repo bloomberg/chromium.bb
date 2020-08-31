@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {BrowserService, ensureLazyLoaded} from 'chrome://history/history.js';
+import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
+
 suite('#overflow-menu', function() {
   let listContainer;
   let sharedMenu;
@@ -9,17 +12,29 @@ suite('#overflow-menu', function() {
   let target1;
   let target2;
 
-  suiteSetup(function() {
-    const app = $('history-app');
-    listContainer = app.$['history'];
-    const element1 = document.createElement('div');
-    const element2 = document.createElement('div');
-    document.body.appendChild(element1);
-    document.body.appendChild(element2);
+  setup(function() {
+    document.body.innerHTML = '';
+    const testService = new TestBrowserService();
+    BrowserService.instance_ = testService;
 
-    target1 = element1;
-    target2 = element2;
-    sharedMenu = listContainer.$.sharedMenu.get();
+    const app = document.createElement('history-app');
+    document.body.appendChild(app);
+    return Promise
+        .all([
+          testService.whenCalled('queryHistory'),
+          ensureLazyLoaded(),
+        ])
+        .then(function() {
+          listContainer = app.$['history'];
+          const element1 = document.createElement('div');
+          const element2 = document.createElement('div');
+          document.body.appendChild(element1);
+          document.body.appendChild(element2);
+
+          target1 = element1;
+          target2 = element2;
+          sharedMenu = listContainer.$.sharedMenu.get();
+        });
   });
 
   test('opening and closing menu', function() {

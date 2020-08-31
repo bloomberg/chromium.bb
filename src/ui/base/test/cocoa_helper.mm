@@ -31,12 +31,12 @@ void NOINLINE ForceSystemLeaks() {
 
 @implementation CocoaTestHelperWindow
 
-@synthesize pretendIsKeyWindow = pretendIsKeyWindow_;
-@synthesize pretendIsOccluded = pretendIsOccluded_;
-@synthesize pretendIsOnActiveSpace = pretendIsOnActiveSpace_;
+@synthesize pretendIsKeyWindow = _pretendIsKeyWindow;
+@synthesize pretendIsOccluded = _pretendIsOccluded;
+@synthesize pretendIsOnActiveSpace = _pretendIsOnActiveSpace;
 @synthesize pretendFullKeyboardAccessIsEnabled =
-    pretendFullKeyboardAccessIsEnabled_;
-@synthesize useDefaultConstraints = useDefaultConstraints_;
+    _pretendFullKeyboardAccessIsEnabled;
+@synthesize useDefaultConstraints = _useDefaultConstraints;
 
 - (instancetype)initWithContentRect:(NSRect)contentRect {
   self = [super initWithContentRect:contentRect
@@ -44,8 +44,8 @@ void NOINLINE ForceSystemLeaks() {
                             backing:NSBackingStoreBuffered
                               defer:NO];
   if (self) {
-    useDefaultConstraints_ = YES;
-    pretendIsOnActiveSpace_ = YES;
+    _useDefaultConstraints = YES;
+    _pretendIsOnActiveSpace = YES;
   }
   return self;
 }
@@ -61,11 +61,11 @@ void NOINLINE ForceSystemLeaks() {
 }
 
 - (BOOL)isKeyWindow {
-  return pretendIsKeyWindow_;
+  return _pretendIsKeyWindow;
 }
 
 - (BOOL)isOnActiveSpace {
-  return pretendIsOnActiveSpace_;
+  return _pretendIsOnActiveSpace;
 }
 
 - (void)makePretendKeyWindowAndSetFirstResponder:(NSResponder*)responder {
@@ -79,14 +79,14 @@ void NOINLINE ForceSystemLeaks() {
 }
 
 - (void)setPretendIsOccluded:(BOOL)flag {
-  pretendIsOccluded_ = flag;
+  _pretendIsOccluded = flag;
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidChangeOcclusionStateNotification
                     object:self];
 }
 
 - (void)setPretendIsOnActiveSpace:(BOOL)pretendIsOnActiveSpace {
-  pretendIsOnActiveSpace_ = pretendIsOnActiveSpace;
+  _pretendIsOnActiveSpace = pretendIsOnActiveSpace;
   [[NSWorkspace sharedWorkspace].notificationCenter
       postNotificationName:NSWorkspaceActiveSpaceDidChangeNotification
                     object:[NSWorkspace sharedWorkspace]];
@@ -95,7 +95,7 @@ void NOINLINE ForceSystemLeaks() {
 - (void)setPretendFullKeyboardAccessIsEnabled:(BOOL)enabled {
   EXPECT_TRUE([NSWindow
       instancesRespondToSelector:@selector(_allowsAnyValidResponder)]);
-  pretendFullKeyboardAccessIsEnabled_ = enabled;
+  _pretendFullKeyboardAccessIsEnabled = enabled;
   [self recalculateKeyViewLoop];
 }
 
@@ -103,11 +103,11 @@ void NOINLINE ForceSystemLeaks() {
 // full keyboard access is enabled. Its presence is verified in
 // -setPretendFullKeyboardAccessIsEnabled:.
 - (BOOL)_allowsAnyValidResponder {
-  return pretendFullKeyboardAccessIsEnabled_;
+  return _pretendFullKeyboardAccessIsEnabled;
 }
 
 - (NSWindowOcclusionState)occlusionState {
-  return pretendIsOccluded_ ? 0 : NSWindowOcclusionStateVisible;
+  return _pretendIsOccluded ? 0 : NSWindowOcclusionStateVisible;
 }
 
 - (NSArray<NSView*>*)validKeyViews {
@@ -123,7 +123,7 @@ void NOINLINE ForceSystemLeaks() {
 }
 
 - (NSRect)constrainFrameRect:(NSRect)frameRect toScreen:(NSScreen*)screen {
-  if (!useDefaultConstraints_)
+  if (!_useDefaultConstraints)
     return frameRect;
 
   return [super constrainFrameRect:frameRect toScreen:screen];
@@ -133,17 +133,8 @@ void NOINLINE ForceSystemLeaks() {
 
 namespace ui {
 
-CocoaTest::CocoaTest() : called_tear_down_(false), test_window_(nil) {
+CocoaTestHelper::CocoaTestHelper() {
   ForceSystemLeaks();
-  Init();
-}
-
-CocoaTest::~CocoaTest() {
-  // Must call CocoaTest's teardown from your overrides.
-  DCHECK(called_tear_down_);
-}
-
-void CocoaTest::Init() {
   // Set the duration of AppKit-evaluated animations (such as frame changes)
   // to zero for testing purposes. That way they take effect immediately.
   [[NSAnimationContext currentContext] setDuration:0.0];
@@ -155,14 +146,10 @@ void CocoaTest::Init() {
   NSDictionary* dict = @{@"NSWindowResizeTime" : @"0.01"};
   [[NSUserDefaults standardUserDefaults] registerDefaults:dict];
 
-  // Collect the list of windows that were open when the test started so
-  // that we don't wait for them to close in TearDown. Has to be done
-  // after BootstrapCocoa is called.
-  initial_windows_ = ApplicationWindows();
+  MarkCurrentWindowsAsInitial();
 }
 
-void CocoaTest::TearDown() {
-  called_tear_down_ = true;
+CocoaTestHelper::~CocoaTestHelper() {
   // Call close on our test_window to clean it up if one was opened.
   [test_window_ clearPretendKeyWindowAndFirstResponder];
   [test_window_ close];
@@ -243,10 +230,16 @@ void CocoaTest::TearDown() {
 
     windows_left = still_left;
   }
-  PlatformTest::TearDown();
 }
 
-std::set<NSWindow*> CocoaTest::ApplicationWindows() {
+void CocoaTestHelper::MarkCurrentWindowsAsInitial() {
+  // Collect the list of windows that were open when the test started so
+  // that we don't wait for them to close in TearDown. Has to be done
+  // after BootstrapCocoa is called.
+  initial_windows_ = ApplicationWindows();
+}
+
+std::set<NSWindow*> CocoaTestHelper::ApplicationWindows() {
   // This must NOT retain the windows it is returning.
   std::set<NSWindow*> windows;
 
@@ -261,14 +254,14 @@ std::set<NSWindow*> CocoaTest::ApplicationWindows() {
   }
 }
 
-std::set<NSWindow*> CocoaTest::WindowsLeft() {
+std::set<NSWindow*> CocoaTestHelper::WindowsLeft() {
   const std::set<NSWindow*> windows(ApplicationWindows());
   std::set<NSWindow*> windows_left =
       base::STLSetDifference<std::set<NSWindow*>>(windows, initial_windows_);
   return windows_left;
 }
 
-CocoaTestHelperWindow* CocoaTest::test_window() {
+CocoaTestHelperWindow* CocoaTestHelper::test_window() {
   if (!test_window_) {
     test_window_ = [[CocoaTestHelperWindow alloc] init];
     if (base::debug::BeingDebugged()) {
@@ -278,6 +271,20 @@ CocoaTestHelperWindow* CocoaTest::test_window() {
     }
   }
   return test_window_;
+}
+
+CocoaTest::CocoaTest() : helper_(std::make_unique<CocoaTestHelper>()) {}
+CocoaTest::~CocoaTest() {
+  CHECK(!helper_);
+}
+
+void CocoaTest::TearDown() {
+  helper_.reset();
+  PlatformTest::TearDown();
+}
+
+void CocoaTest::MarkCurrentWindowsAsInitial() {
+  helper_->MarkCurrentWindowsAsInitial();
 }
 
 }  // namespace ui

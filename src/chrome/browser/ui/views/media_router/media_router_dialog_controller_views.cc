@@ -44,7 +44,8 @@ MediaRouterDialogControllerViews::~MediaRouterDialogControllerViews() {
   media_router_ui_service_->RemoveObserver(this);
 }
 
-void MediaRouterDialogControllerViews::CreateMediaRouterDialog() {
+void MediaRouterDialogControllerViews::CreateMediaRouterDialog(
+    MediaRouterDialogOpenOrigin activation_location) {
   base::Time dialog_creation_time = base::Time::Now();
   if (GetActionController())
     GetActionController()->OnDialogShown();
@@ -57,11 +58,11 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog() {
   if (browser) {
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
     if (browser_view->toolbar()->cast_button()) {
-      CastDialogView::ShowDialogWithToolbarAction(ui_.get(), browser,
-                                                  dialog_creation_time);
+      CastDialogView::ShowDialogWithToolbarAction(
+          ui_.get(), browser, dialog_creation_time, activation_location);
     } else {
-      CastDialogView::ShowDialogCenteredForBrowserWindow(ui_.get(), browser,
-                                                         dialog_creation_time);
+      CastDialogView::ShowDialogCenteredForBrowserWindow(
+          ui_.get(), browser, dialog_creation_time, activation_location);
     }
   } else {
     gfx::Rect anchor_bounds = initiator()->GetContainerBounds();
@@ -69,7 +70,8 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog() {
     // window.
     anchor_bounds.set_height(0);
     CastDialogView::ShowDialogCentered(anchor_bounds, ui_.get(), profile,
-                                       dialog_creation_time);
+                                       dialog_creation_time,
+                                       activation_location);
   }
   scoped_widget_observer_.Add(CastDialogView::GetCurrentDialogWidget());
   if (dialog_creation_callback_)
@@ -119,14 +121,12 @@ void MediaRouterDialogControllerViews::OnServiceDisabled() {
 }
 
 void MediaRouterDialogControllerViews::InitializeMediaRouterUI() {
-  ui_ = std::make_unique<MediaRouterViewsUI>();
-  PresentationServiceDelegateImpl* delegate =
-      PresentationServiceDelegateImpl::FromWebContents(initiator());
-  if (!start_presentation_context_) {
-    ui_->InitWithDefaultMediaSource(initiator(), delegate);
-  } else {
+  ui_ = std::make_unique<MediaRouterViewsUI>(initiator());
+  if (start_presentation_context_) {
     ui_->InitWithStartPresentationContext(
-        initiator(), delegate, std::move(start_presentation_context_));
+        std::move(start_presentation_context_));
+  } else {
+    ui_->InitWithDefaultMediaSource();
   }
 }
 

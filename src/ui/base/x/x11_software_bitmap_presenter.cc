@@ -17,17 +17,12 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/base/x/x11_shm_image_pool.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/gfx/x/x11_types.h"
-
-#if defined(USE_OZONE)
-#include "ui/base/x/x11_shm_image_pool_ozone.h"
-#else
-#include "ui/base/x/x11_shm_image_pool.h"
-#endif
 
 namespace ui {
 
@@ -123,8 +118,8 @@ bool X11SoftwareBitmapPresenter::CompositeBitmap(XDisplay* display,
 
 X11SoftwareBitmapPresenter::X11SoftwareBitmapPresenter(
     gfx::AcceleratedWidget widget,
-    base::TaskRunner* host_task_runner,
-    base::TaskRunner* event_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> host_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> event_task_runner)
     : widget_(widget),
       display_(gfx::GetXDisplay()),
       gc_(nullptr),
@@ -138,15 +133,9 @@ X11SoftwareBitmapPresenter::X11SoftwareBitmapPresenter(
     return;
   }
 
-#if defined(USE_OZONE)
-  shm_pool_ = base::MakeRefCounted<ui::X11ShmImagePoolOzone>(
+  shm_pool_ = base::MakeRefCounted<ui::XShmImagePool>(
       host_task_runner, event_task_runner, display_, widget_,
       attributes_.visual, attributes_.depth, kMaxFramesPending);
-#else
-  shm_pool_ = base::MakeRefCounted<ui::X11ShmImagePool>(
-      host_task_runner, event_task_runner, display_, widget_,
-      attributes_.visual, attributes_.depth, kMaxFramesPending);
-#endif
   shm_pool_->Initialize();
 
   // TODO(thomasanderson): Avoid going through the X11 server to plumb this
@@ -201,9 +190,12 @@ void X11SoftwareBitmapPresenter::Resize(const gfx::Size& pixel_size) {
     needs_swap_ = false;
     surface_ = nullptr;
   } else {
-    SkImageInfo info = SkImageInfo::Make(
-        viewport_pixel_size_.width(), viewport_pixel_size_.height(),
-        ColorTypeForVisual(attributes_.visual), kOpaque_SkAlphaType);
+    SkColorType color_type = ColorTypeForVisual(attributes_.visual);
+    if (color_type == kUnknown_SkColorType)
+      return;
+    SkImageInfo info = SkImageInfo::Make(viewport_pixel_size_.width(),
+                                         viewport_pixel_size_.height(),
+                                         color_type, kOpaque_SkAlphaType);
     surface_ = SkSurface::MakeRaster(info);
   }
 }
@@ -235,7 +227,7 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
       return;
     }
     skia_pixmap = shm_pool_->CurrentBitmap().pixmap();
-  } else {
+  } else if (surface_) {
     surface_->peekPixels(&skia_pixmap);
   }
 

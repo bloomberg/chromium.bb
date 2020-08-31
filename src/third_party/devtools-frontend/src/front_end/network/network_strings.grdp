@@ -3,6 +3,9 @@
   <message name="IDS_DEVTOOLS_008aa5b6435af8504757085a92b2eb28" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Microsoft Edge (EdgeHTML) — XBox</ph>
   </message>
+  <message name="IDS_DEVTOOLS_01687380017f302a17710b4abc47c71c" desc="Text in Headers View of the Network panel">
+    To use this resource from a different site, the server may relax the cross-origin resource policy response header:
+  </message>
   <message name="IDS_DEVTOOLS_0194336f90a2b1de65553e3bec01becd" desc="Text in Network Log View of the Network panel">
     Copy as fetch
   </message>
@@ -29,6 +32,9 @@
   </message>
   <message name="IDS_DEVTOOLS_09c9ea004b0c0822b75bdec322b90ff4" desc="Inner element text content in Network Log View Columns of the Network panel">
     Waterfall
+  </message>
+  <message name="IDS_DEVTOOLS_0a25d7f9a7637b2128651ac02ab9bf9d" desc="Text in Network Data Grid Node of the Network panel">
+    NotSameSite
   </message>
   <message name="IDS_DEVTOOLS_0bcc4ec10c2e4cee4b9bbabd48501304" desc="Text in Resource Web Socket Frame View of the Network panel">
     Select message to browse its content.
@@ -123,8 +129,14 @@
   <message name="IDS_DEVTOOLS_2ad7f735dd6d0dedb0d010a612854a17" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Internet Explorer 8</ph>
   </message>
+  <message name="IDS_DEVTOOLS_2cc979d2cc5eda80f702a242ad5242cf" desc="Tooltip to explain lack of raw headers for a particular network request">
+    Only provisional headers are available because this request was not sent over the network and instead was served from a local cache, which doesn&apos;t store the original request headers. Disable cache to see full request headers.
+  </message>
   <message name="IDS_DEVTOOLS_2d13df6f8b5e4c5af9f87e0dc39df69d" desc="Text in Network Data Grid Node of the Network panel">
     Pending
+  </message>
+  <message name="IDS_DEVTOOLS_2eb301e5055154d55ca33685591c737e" desc="Text in Headers View of the Network panel">
+    To use this resource from a different origin, the server may relax the cross-origin resource policy response header:
   </message>
   <message name="IDS_DEVTOOLS_2ef0ae0c4d76a87b28176de205d7d346" desc="Text in Network Panel of the Network panel">
     Recording frames...
@@ -134,6 +146,9 @@
   </message>
   <message name="IDS_DEVTOOLS_30ad3ea5e350075c1c0a1171c5006ed7" desc="Text in Network Panel of the Network panel">
     Fetching frames...
+  </message>
+  <message name="IDS_DEVTOOLS_311103989003f5bc6a01fca15ccb4fa4" desc="Data grid name for Web Socket Frame data grids">
+    Web Socket Frame
   </message>
   <message name="IDS_DEVTOOLS_31977081ea2c828cc70e6151ab5d7da8" desc="Text in Request Headers View of the Network panel">
     view decoded
@@ -164,6 +179,9 @@
   </message>
   <message name="IDS_DEVTOOLS_383fc50a38f1666adc3f06d0bdf71467" desc="Text in Network Log View of the Network panel">
     Are you sure you want to clear browser cookies?
+  </message>
+  <message name="IDS_DEVTOOLS_38adb5ba687241627ce2b1f82b714e7d" desc="Tooltip text for network request overview setting">
+    Show overview of network requests
   </message>
   <message name="IDS_DEVTOOLS_39b8414d89adf80e97ec0024e13e3b86" desc="Title of a section in Request Initiator view of the Network Panel">
     Request call stack
@@ -201,6 +219,9 @@
   <message name="IDS_DEVTOOLS_4145ea54b6f576d7646d6a68eb39813f" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Opera (Presto) — Mac</ph>
   </message>
+  <message name="IDS_DEVTOOLS_41d98c4bb351da4733feff7e1ad628a5" desc="Error text for empty list widget input in Request Blocking tool">
+    Pattern input cannot be empty.
+  </message>
   <message name="IDS_DEVTOOLS_41de6d6cfb8953c021bbe4ba0701c8a1" desc="Text in Network Item View of the Network panel">
     Messages
   </message>
@@ -234,6 +255,9 @@
   <message name="IDS_DEVTOOLS_47d546fc3634f59db7e350acbb01885c" desc="Text in Network Log View of the Network panel">
     <ph name="SELECTEDTRANSFERSIZE">$1s<ex>10</ex></ph> B / <ph name="TRANSFERSIZE">$2s<ex>15</ex></ph> B transferred over network
   </message>
+  <message name="IDS_DEVTOOLS_4909c5e867e2322253bef625307a85a8" desc="Text in Headers View of the Network panel">
+    Only choose this option if an arbitrary website including this resource does not impose a security risk.
+  </message>
   <message name="IDS_DEVTOOLS_490aa6e856ccf208a054389e47ce0d06" desc="Text in Event Source Messages View of the Network panel">
     Id
   </message>
@@ -246,20 +270,26 @@
   <message name="IDS_DEVTOOLS_4dec8df20c6bc162fd77420b6f17edc5" desc="Aria accessible name in Network Log View of the Network panel">
     Resource types to include
   </message>
-  <message name="IDS_DEVTOOLS_4e5684a9fc5a7bde112a0519e77f4b37" desc="Label for a filter in the Network panel">
-    Only show requests with SameSite issues
-  </message>
   <message name="IDS_DEVTOOLS_4e88c13fb97f356a81c48bf2644bef51" desc="Text in Request Timing View of the Network panel">
     Connection Start
   </message>
+  <message name="IDS_DEVTOOLS_4fda1e980a77182467d3a97d8e4aecf0" desc="Text describing the depth of a top level node in the network datagrid">
+    level 1
+  </message>
   <message name="IDS_DEVTOOLS_5023e5b1d1c02cf168a9a67dda6d2d87" desc="Text in Network Panel of the Network panel">
     Show overview
+  </message>
+  <message name="IDS_DEVTOOLS_50ca42b24dad676e8915c5ebe45e4654" desc="Text in Network Data Grid Node of the Network panel">
+    CoepFrameResourceNeedsCoepHeader
   </message>
   <message name="IDS_DEVTOOLS_50de9bc68c93dc32d8c7c90593471760" desc="A group title in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Safari</ph>
   </message>
   <message name="IDS_DEVTOOLS_5101cdda28ea3097ac00cdbfdcedc353" desc="Title of a setting under the Network category that can be invoked through the Command Menu">
     Use default colors
+  </message>
+  <message name="IDS_DEVTOOLS_5223b56f806ed0547f295a2c643061ec" desc="Text in Headers View of the Network panel">
+    To use this resource from a different origin, the server needs to specify a cross-origin resource policy in the response headers:
   </message>
   <message name="IDS_DEVTOOLS_52c2263c92c8b0f41e36892ccd8cb119" desc="Accessible label for the button to add request blocking patterns in the Request blocking tool">
     Add request blocking pattern
@@ -285,6 +315,9 @@
   <message name="IDS_DEVTOOLS_57db0f3677bfe1e5af2f568c71369e9e" desc="A context menu item in the Network Log View of the Network panel">
     Save all as HAR with content
   </message>
+  <message name="IDS_DEVTOOLS_5897e3da587331ff21a5d66b838f40f7" desc="Text in Network Data Grid Node of the Network panel">
+    CoopSandboxedIframeCannotNavigateToCoopPage
+  </message>
   <message name="IDS_DEVTOOLS_58f6ae6f525fa723c603752e682be6a7" desc="Text in Request Response View of the Network panel">
     This request has no response data available.
   </message>
@@ -293,6 +326,9 @@
   </message>
   <message name="IDS_DEVTOOLS_59f2df528ff5c941c8d6308288a83141" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Chrome — iPad</ph>
+  </message>
+  <message name="IDS_DEVTOOLS_5c60f46c60a82151a2f1a9f7145ed8eb" desc="Tooltip for a filter in the Network panel">
+    Only show requests with blocked response cookies
   </message>
   <message name="IDS_DEVTOOLS_5cb98890f19c13e5fce52287187d9803" desc="Text in Network Log View of the Network panel">
     <ph name="SELECTEDNODENUMBER">$1s<ex>3</ex></ph> / <ph name="NODECOUNT">$2s<ex>5</ex></ph> requests
@@ -330,6 +366,9 @@
   <message name="IDS_DEVTOOLS_6a7c804797a8bb913c82824a6465ede1" desc="Text in Network Manage Custom Headers View of the Network panel">
     Header Name
   </message>
+  <message name="IDS_DEVTOOLS_6a8d9cb212dac5e05013bc649fe6977b" desc="Text in Network Data Grid Node of the Network panel">
+    NotSameOriginAfterDefaultedToSameOriginByCoep
+  </message>
   <message name="IDS_DEVTOOLS_6a98894cd6b4628f0b5117412aab083e" desc="Text in Network Log View Columns of the Network panel">
     <ph name="LOCKED_1">Cache-Control</ph>
   </message>
@@ -348,6 +387,9 @@
   <message name="IDS_DEVTOOLS_6dec00f9ae08edb5af58e6efb699dba0" desc="Label for showing request cookies that were not actually sent">
     show filtered out request cookies
   </message>
+  <message name="IDS_DEVTOOLS_6e458346abf37cc727a811ea1d71034a" desc="Data grid name for Event Source data grids">
+    Event Source
+  </message>
   <message name="IDS_DEVTOOLS_6e68a529a38966508d348e9f65d7ea31" desc="Title of an action in the network tool to toggle recording">
     Record network log
   </message>
@@ -360,26 +402,74 @@
   <message name="IDS_DEVTOOLS_722e6ea747a62b7f93bb017d3dd04cbd" desc="Op codes continuation frame of map in Resource Web Socket Frame View of the Network panel">
     Continuation Frame
   </message>
+  <message name="IDS_DEVTOOLS_82764787c77b4c9e53993b15d31a11c5" desc="Text to announce to screen readers that network data is available.">
+    Network Data Available
+  </message>
+  <message name="IDS_DEVTOOLS_8470bd9052ed82990d6e49335b14e41e" desc="Text in Headers View of the Network panel">
+    This document was blocked from loading in an <ph name="LOCKED_1">iframe</ph> with a <ph name="LOCKED_1">sandbox</ph> attribute because this document specified a cross-origin opener policy.
+  </message>
+  <message name="IDS_DEVTOOLS_b23be8e9d2dc9b79c70ec2acd3f174d3" desc="Label for the Server Timing API">
+    the Server Timing API
+  </message>
+  <message name="IDS_DEVTOOLS_b67f775562210192587e38f66a6ae380" desc="Label for a filter in the Network panel">
+    Has blocked cookies
+  </message>
+  <message name="IDS_DEVTOOLS_7734a3eb999c4910e2ae5dcd906bdefc" desc="Data grid name for Network Log data grids">
+    Network Log
+  </message>
   <message name="IDS_DEVTOOLS_b85f4d2fed0fc1c5f95fd4a49ff6f2e7" desc="A tag of Network Conditions tool that can be searched in the command menu">
     user-agent
+  </message>
+  <message name="IDS_DEVTOOLS_be54c703eb3d0bf55a44e731f730f714" desc="Label for a filter in the Network panel">
+    Blocked Requests
   </message>
   <message name="IDS_DEVTOOLS_c21b43091d5f2cb131e79122289ce033" desc="Text in Network Log View of the Network panel">
     <ph name="SELECTEDRESOURCESIZE">$1s<ex>40</ex></ph> B / <ph name="RESOURCESIZE">$2s<ex>50</ex></ph> B resources loaded by the page
   </message>
+  <message name="IDS_DEVTOOLS_c823a983a972cfb5ee4b8bf1918080d3" desc="Text in Headers View of the Network panel">
+    Choose this option if the resource and the document are served from the same site.
+  </message>
   <message name="IDS_DEVTOOLS_ca092ce554360617d7bb503ff16dcb7c" desc="Text for toggling the view of header data (e.g. query string parameters) from parsed to source in the headers tab">
     View source
+  </message>
+  <message name="IDS_DEVTOOLS_ce89cbfed44c10f5dd21427be154f288" desc="Text in Network Log View of the Network panel">
+    Copy as Node.js fetch
   </message>
   <message name="IDS_DEVTOOLS_d07d8b2f741d82961c330af95e739d27" desc="Text for toggling header data (e.g. query string parameters) from encoded to decoded in the headers tab">
     View decoded
   </message>
+  <message name="IDS_DEVTOOLS_d0ba1750af6bfca9c78ae8105e2d2c96" desc="Tooltip for a filter in the Network panel">
+    Only show blocked requests
+  </message>
+  <message name="IDS_DEVTOOLS_d3a5ba3be76f23c067151787387512d2" desc="Text for a link to the issues panel">
+    Learn more in the issues tab
+  </message>
   <message name="IDS_DEVTOOLS_d55df13c735b6066e930b3e66c4588ab" desc="Text for toggling header data (e.g. query string parameters) from decoded to encoded in the headers tab">
     View URL encoded
+  </message>
+  <message name="IDS_DEVTOOLS_d68ff2d86e48cad77057a4b0a842089d" desc="Tooltip for group by frame network setting">
+    Group requests by top level request frame
   </message>
   <message name="IDS_DEVTOOLS_da011b03135db41fae6598372f46bd0c" desc="An option in the user agent dropdown menu in the Network conditions tool">
     Safari — iPad iOS 13.2
   </message>
   <message name="IDS_DEVTOOLS_da3211be40e2b7282b37431dc1e6ceb6" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Googlebot Desktop</ph>
+  </message>
+  <message name="IDS_DEVTOOLS_db6cb44185e9c607291751f915b1ca99" desc="Title of an action that hides network request details">
+    Hide request details
+  </message>
+  <message name="IDS_DEVTOOLS_de9b14d980b77c264d42463f407180be" desc="Message to explain lack of raw headers for a particular network request">
+    Provisional headers are shown
+  </message>
+  <message name="IDS_DEVTOOLS_decbe8975cc2421194a7c86283fef5e4" desc="Text in Network Data Grid Node of the Network panel">
+    NotSameOrigin
+  </message>
+  <message name="IDS_DEVTOOLS_ded747188d830e091a643af558251af5" desc="Tooltip for capture screenshot network setting">
+    Capture screenshots when loading a page
+  </message>
+  <message name="IDS_DEVTOOLS_e2cfb91cd8426f99401143d41343faff" desc="Text in Headers View of the Network panel">
+    To embed this frame in your document, the response needs to enable the cross-origin embedder policy by specifying the following response header:
   </message>
   <message name="IDS_DEVTOOLS_e4217cfa8bdee0baaa2249db59b8671b" desc="Text for toggling the view of header data (e.g. query string parameters) from source to parsed in the headers tab">
     View parsed
@@ -389,6 +479,12 @@
   </message>
   <message name="IDS_DEVTOOLS_842ad9796db643e88bd614ac51a99734" desc="Text in Request Initiator View of the Network panel">
     This request has no initiator data.
+  </message>
+  <message name="IDS_DEVTOOLS_e48c00bc05b642164b5520137b66d011" desc="Text in Network Log View of the Network panel">
+    Copy all as Node.js fetch
+  </message>
+  <message name="IDS_DEVTOOLS_f59329e45eb11a75d709aeb5b9b8943e" desc="Tooltip for expanding network request row setting">
+    Show more information in request rows
   </message>
   <message name="IDS_DEVTOOLS_f5a6d40aab4d260009df79b7dab7e6a0" desc="An option in the user agent dropdown menu in the Network conditions tool">
     <ph name="LOCKED_1">Microsoft Edge — iPhone</ph>
@@ -816,9 +912,6 @@
   <message name="IDS_DEVTOOLS_de99618e7e2cc63c7262c12965fa31f3" desc="Latency format in Network Time Calculator of the Network panel">
     <ph name="PH1">$1s<ex>20ms</ex></ph> latency
   </message>
-  <message name="IDS_DEVTOOLS_de9b14d980b77c264d42463f407180be" desc="Text in Request Headers View of the Network panel">
-    Provisional headers are shown
-  </message>
   <message name="IDS_DEVTOOLS_df080c10e2e9f1e98c180fe2645f6132" desc="Text in Request Headers View of the Network panel">
     Request URL
   </message>
@@ -900,6 +993,9 @@
   <message name="IDS_DEVTOOLS_f6068daa29dbb05a7ead1e3b5a48bbee" desc="Text in Event Source Messages View of the Network panel">
     Data
   </message>
+  <message name="IDS_DEVTOOLS_f6a884486253ccf6c97c1252563acbbc" desc="Text to inform about the ServerTiming API">
+    During development, you can use <ph name="LINK">$1s<ex>https://example.com</ex></ph> to add insights into the server-side timing of this request.
+  </message>
   <message name="IDS_DEVTOOLS_f6c804a6be9719c98a260380833bfde7" desc="A context menu item in the Network Log View of the Network panel">
     Block request URL
   </message>
@@ -917,6 +1013,12 @@
   </message>
   <message name="IDS_DEVTOOLS_f95d3d09fc16ae9294fbef87ac8d17cb" desc="Text in Network Data Grid Node of the Network panel">
     (pending)
+  </message>
+  <message name="IDS_DEVTOOLS_fa3e0746749fe7ce056ebf7811bdc3fc" desc="Error text for duplicate list widget input in Request Blocking tool">
+    Pattern already exists.
+  </message>
+  <message name="IDS_DEVTOOLS_fae735abadea1bcebd7d6f96bc5e3523" desc="Message to explain lack of raw headers for a particular network request">
+    Provisional headers are shown. Disable cache to see full headers.
   </message>
   <message name="IDS_DEVTOOLS_fae900d6e2cf6b54ffae8cad77b9e2a6" desc="Text of a DOM element in Network Data Grid Node of the Network panel">
     (prefetch cache)

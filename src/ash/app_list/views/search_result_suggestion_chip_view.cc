@@ -83,6 +83,7 @@ void SearchResultSuggestionChipView::SetBackgroundBlurEnabled(bool enabled) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetBackgroundBlur(kBlurRadius);
+  layer()->SetName("launcher/SearchResultSuggestionChip");
   SetRoundedCornersForLayer(kPreferredHeightDip / 2);
 }
 
@@ -103,8 +104,8 @@ void SearchResultSuggestionChipView::ButtonPressed(views::Button* sender,
                                view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(
       result()->id(), event.flags(),
-      ash::AppListLaunchedFrom::kLaunchedFromSuggestionChip,
-      ash::AppListLaunchType::kAppSearchResult, index_in_container(),
+      AppListLaunchedFrom::kLaunchedFromSuggestionChip,
+      AppListLaunchType::kAppSearchResult, index_in_container(),
       false /* launch_as_default */);
 }
 
@@ -249,6 +250,7 @@ void SearchResultSuggestionChipView::SetRoundedCornersForLayer(
     int corner_radius) {
   layer()->SetRoundedCornerRadius(
       {corner_radius, corner_radius, corner_radius, corner_radius});
+  layer()->SetIsFastRoundedCorner(true);
 }
 
 }  // namespace ash

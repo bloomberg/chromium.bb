@@ -17,6 +17,7 @@ import multiprocessing
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -54,6 +55,9 @@ from chromite.scripts import pushimage
 from chromite.service import artifacts as artifacts_service
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
 CHROME_UNMASK_FILE = ('/build/%(board)s/etc/portage/package.unmask/chrome')
@@ -62,7 +66,7 @@ _FACTORY_SHIM = 'factory_shim'
 _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
                         'autotest_rpc_client.py')
 _AUTOTEST_RPC_HOSTNAME = 'master2'
-LOCAL_BUILD_FLAGS = ['--nousepkg', '--reuse_pkgs_from_local_boards']
+LOCAL_BUILD_FLAGS = ['--nousepkg']
 UPLOADED_LIST_FILENAME = 'UPLOADED'
 STATEFUL_FILE = 'stateful.tgz'
 # For swarming proxy
@@ -94,12 +98,12 @@ _TAST_SSP_SUBDIR = 'tast'
 # Tast files and directories to include in AUTOTEST_SERVER_PACKAGE relative to
 # the build root. Public so it can be used by commands_unittest.py.
 TAST_SSP_FILES = [
-    'chroot/usr/bin/tast',  # Main Tast executable.
+    'chroot/etc/tast/vars',  # Secret variables tast interprets.
     'chroot/usr/bin/remote_test_runner',  # Runs remote tests.
+    'chroot/usr/bin/tast',  # Main Tast executable.
     'chroot/usr/libexec/tast/bundles',  # Dir containing test bundles.
     'chroot/usr/share/tast/data',  # Dir containing test data.
     'src/platform/tast/tools/run_tast.sh',  # Helper script to run SSP tast.
-    'src/platform/tast-tests-private/vars',  # Secret variables tast interprets.
 ]
 
 # =========================== Command Helpers =================================
@@ -238,7 +242,7 @@ def ListChrootSnapshots(buildroot):
   cmd = ['cros_sdk', '--snapshot-list']
 
   cmd_snapshots = RunBuildScript(
-      buildroot, cmd, chromite_cmd=True, redirect_stdout=True)
+      buildroot, cmd, chromite_cmd=True, stdout=True)
   return cmd_snapshots.output.splitlines()
 
 
@@ -246,7 +250,7 @@ def RevertChrootToSnapshot(buildroot, snapshot_name):
   """Wrapper around cros_sdk --snapshot-restore."""
   cmd = ['cros_sdk', '--snapshot-restore', snapshot_name]
 
-  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, error_code_ok=True)
+  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, check=False)
   return result.returncode == 0
 
 
@@ -254,7 +258,7 @@ def CreateChrootSnapshot(buildroot, snapshot_name):
   """Wrapper around cros_sdk --snapshot-create."""
   cmd = ['cros_sdk', '--snapshot-create', snapshot_name]
 
-  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, error_code_ok=True)
+  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, check=False)
   return result.returncode == 0
 
 
@@ -262,7 +266,7 @@ def DeleteChrootSnapshot(buildroot, snapshot_name):
   """Wrapper around cros_sdk --snapshot-delete."""
   cmd = ['cros_sdk', '--snapshot-delete', snapshot_name]
 
-  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, error_code_ok=True)
+  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, check=False)
   return result.returncode == 0
 
 
@@ -548,16 +552,6 @@ def RunLocalTryjob(buildroot, build_config, args=None, target_buildroot=None):
     RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
 
-def UpdateBinhostJson(buildroot):
-  """Test prebuilts for all boards, making sure everybody gets Chrome prebuilts.
-
-  Args:
-    buildroot: The buildroot of the current build.
-  """
-  cmd = ['../cbuildbot/update_binhost_json']
-  RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
-
-
 def Build(buildroot,
           board,
           build_autotest,
@@ -568,7 +562,6 @@ def Build(buildroot,
           chrome_root=None,
           noretry=False,
           chroot_args=None,
-          event_file=None,
           run_goma=False,
           build_all_with_goma=False,
           disable_revdep_logic=False):
@@ -587,7 +580,6 @@ def Build(buildroot,
     chrome_root: The directory where chrome is stored.
     noretry: Do not retry package failures.
     chroot_args: The args to the chroot.
-    event_file: File name that events will be logged to.
     build_all_with_goma: Use goma to build all board packages.
     run_goma: Set ./build_package --run_goma option, which starts and stops
       goma server in chroot while building packages.
@@ -625,10 +617,6 @@ def Build(buildroot,
 
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
-
-  if event_file:
-    cmd.append('--withevents')
-    cmd.append('--eventfile=%s' % event_file)
 
   cmd.extend(packages)
   RunBuildScript(
@@ -783,7 +771,7 @@ def RunCrosConfigHost(buildroot, board, args, log_output=True):
       encoding='utf-8',
       log_output=log_output,
       cwd=buildroot,
-      error_code_ok=True)
+      check=False)
   if result.returncode:
     # Show the output for debugging purposes.
     if 'No such file or directory' not in result.error:
@@ -911,7 +899,7 @@ def RunUnitTests(buildroot,
                  extra_env=None,
                  build_stage=True,
                  chroot_args=None):
-  cmd = ['cros_run_unit_tests', '--board=%s' % board]
+  cmd = ['cros_run_unit_tests', '--board=%s' % board, '--jobs=10']
 
   if blacklist:
     cmd += ['--blacklist_packages=%s' % ' '.join(blacklist)]
@@ -1318,7 +1306,7 @@ def RunSkylabHWTest(build,
                                timeout_mins, tags, keyvals, test_args)
   try:
     result = cros_build_lib.run(
-        [skylab_path, 'create-test'] + args, redirect_stdout=True)
+        [skylab_path, 'create-test'] + args, stdout=True)
     return HWTestSuiteResult(None, None)
   except cros_build_lib.RunCommandError as e:
     result = e.result
@@ -1401,7 +1389,7 @@ def RunSkylabHWTestSuite(
       quota_account=quota_account)
 
   try:
-    output = cros_build_lib.run(cmd, redirect_stdout=True)
+    output = cros_build_lib.run(cmd, stdout=True)
     report = json.loads(output.output)
     task_id = report['task_id']
     task_url = report['task_url']
@@ -1413,7 +1401,7 @@ def RunSkylabHWTestSuite(
 
     wait_cmd = [skylab_tool, 'wait-task'] + _GetSkylabWaitTaskArgs(
         task_id, timeout_mins=timeout_mins)
-    output = cros_build_lib.run(wait_cmd, redirect_stdout=True)
+    output = cros_build_lib.run(wait_cmd, stdout=True)
     try:
       report = json.loads(output.output)
     except:
@@ -1504,7 +1492,7 @@ def RunSkylabHWTestPlan(test_plan=None,
   try:
     result = cros_build_lib.run(
         [skylab_path, 'create-testplan'] + args,
-        redirect_stdout=True,
+        stdout=True,
         input=test_plan)
 
     task_url = ''
@@ -1720,7 +1708,7 @@ def _HWTestCreate(cmd, debug=False, **kwargs):
         cmd=start_cmd,
         capture_output=True,
         encoding='utf-8',
-        combine_stdout_stderr=True,
+        stderr=subprocess.STDOUT,
         **kwargs)
     # If the command succeeds, result.task_summary_json
     # should have the right content.
@@ -1759,7 +1747,7 @@ def _HWTestWait(cmd, job_id, **kwargs):
         cmd=wait_cmd,
         capture_output=True,
         encoding='utf-8',
-        combine_stdout_stderr=True,
+        stderr=subprocess.STDOUT,
         **kwargs)
     pass_hwtest = True
   except cros_build_lib.RunCommandError as e:
@@ -1816,7 +1804,7 @@ def _HWTestDumpJson(cmd, job_id, **kwargs):
       cmd=dump_json_cmd,
       capture_output=True,
       encoding='utf-8',
-      combine_stdout_stderr=True,
+      stderr=subprocess.STDOUT,
       **kwargs)
   for output in result.GetValue('outputs', ''):
     sys.stdout.write(output)
@@ -1940,10 +1928,10 @@ def GenerateStackTraces(buildroot, board, test_results_dir, archive_dir,
         cros_build_lib.run(['minidump_stackwalk', minidump, symbol_dir],
                            cwd=cwd,
                            enter_chroot=True,
-                           error_code_ok=True,
-                           redirect_stderr=True,
+                           check=False,
+                           stderr=True,
                            debug_level=logging.DEBUG,
-                           log_stdout_to_file=processed_file_path)
+                           stdout=processed_file_path)
       # Process asan log.
       else:
         # Prepend '/chrome/$board' path to the stack trace in log.
@@ -1970,8 +1958,8 @@ def GenerateStackTraces(buildroot, board, test_results_dir, archive_dir,
                            input=raw.output,
                            debug_level=logging.DEBUG,
                            cwd=buildroot,
-                           redirect_stderr=True,
-                           log_stdout_to_file=processed_file_path)
+                           stderr=True,
+                           stdout=processed_file_path)
         # Break the bot if asan_log found. This is because some asan
         # crashes may not fail any test so the bot stays green.
         # Ex: crbug.com/167497
@@ -2045,8 +2033,7 @@ def MarkAndroidAsStable(buildroot,
                         android_package,
                         android_build_branch,
                         boards=None,
-                        android_version=None,
-                        android_gts_build_branch=None):
+                        android_version=None):
   """Returns the portage atom for the revved Android ebuild - see man emerge."""
   input_msg = android_pb2.MarkStableRequest()
   input_msg.tracking_branch = tracking_branch
@@ -2054,8 +2041,6 @@ def MarkAndroidAsStable(buildroot,
   input_msg.android_build_branch = android_build_branch
   if android_version:
     input_msg.android_version = android_version
-  if android_gts_build_branch:
-    input_msg.android_gts_build_branch = android_gts_build_branch
   if boards:
     for board in boards:
       input_msg.build_targets.add().name = board
@@ -2111,7 +2096,7 @@ def MarkChromeAsStable(buildroot,
   portage_atom_string = cros_build_lib.run(
       command + [chrome_rev],
       cwd=cwd,
-      redirect_stdout=True,
+      stdout=True,
       enter_chroot=True,
       chroot_args=chroot_args,
       extra_env=extra_env).output.rstrip()
@@ -2201,15 +2186,12 @@ def RegenPortageCache(overlays):
 def UprevPush(buildroot,
               overlay_type,
               dryrun=True,
-              staging_branch=None,
               workspace=None):
   """Pushes uprev changes to the main line.
 
   Args:
     buildroot: Root directory where build occurs.
     dryrun: If True, do not actually push.
-    staging_branch: If not None, push uprev commits to this
-                    staging_branch.
     overlay_type: A value from constants.VALID_OVERLAYS.
     workspace: Alternative buildroot directory to uprev.
   """
@@ -2223,8 +2205,6 @@ def UprevPush(buildroot,
       '--overlay-type',
       overlay_type,
   ]
-  if staging_branch is not None:
-    cmd.append('--staging_branch=%s' % staging_branch)
   if dryrun:
     cmd.append('--dryrun')
   RunBuildScript(buildroot, cmd, chromite_cmd=True)
@@ -2714,7 +2694,7 @@ def ExportToGCloud(build_root,
     cros_build_lib.run(cmd)
     success = True
   except cros_build_lib.RunCommandError as e:
-    logging.warn('Unable to export to datastore: %s', e)
+    logging.warning('Unable to export to datastore: %s', e)
     success = False
 
   metrics.Counter(constants.MON_EXPORT_TO_GCLOUD).increment(fields={
@@ -2852,7 +2832,7 @@ def BuildFactoryInstallImage(buildroot, board, extra_env):
   alias = _FACTORY_SHIM
   cmd = [
       './build_image',
-      '--board=%s' % board, '--replace',
+      '--board=%s' % board, '--replace', '--noeclean',
       '--symlink=%s' % alias, '--build_attempt=3', 'factory_install'
   ]
   RunBuildScript(
@@ -3065,7 +3045,7 @@ def BuildAutotestServerPackageTarball(buildroot, cwd, tarball_dir):
       tarball,
       cwd=cwd,
       extra_args=transforms,
-      error_code_ok=True)
+      check=False)
   return tarball
 
 
@@ -3193,7 +3173,7 @@ def BuildFullAutotestTarball(buildroot, board, tarball_dir):
       os.path.join(buildroot, 'chroot', 'build', board,
                    constants.AUTOTEST_BUILD_PATH, '..'))
   result = BuildTarball(
-      buildroot, ['autotest'], tarball, cwd=cwd, error_code_ok=True)
+      buildroot, ['autotest'], tarball, cwd=cwd, check=False)
 
   # Emerging the autotest package to the factory test image while this is
   # running modifies the timestamp on /build/autotest/server by
@@ -3223,7 +3203,7 @@ def BuildUnitTestTarball(buildroot, board, tarball_dir):
       tarball_path,
       cwd=cwd,
       compressed=False,
-      error_code_ok=True)
+      check=False)
   return tarball
 
 
@@ -3366,14 +3346,15 @@ def BuildStrippedPackagesTarball(buildroot, board, package_globs, archive_dir):
                         cpv.cpf, len(files))
 
       tarball = sorted(files)[-1]
-      tarball_paths.append(os.path.abspath(tarball))
+      tarball_paths.append(os.path.relpath(tarball, board_path))
 
   if not tarball_paths:
     # tar barfs on an empty list of files, so skip tarring completely.
     return None
 
   tarball_output = os.path.join(archive_dir, 'stripped-packages.tar')
-  BuildTarball(buildroot, tarball_paths, tarball_output, compressed=False)
+  BuildTarball(buildroot, tarball_paths, tarball_output, compressed=False,
+               cwd=board_path)
   return os.path.basename(tarball_output)
 
 
@@ -3488,7 +3469,7 @@ def CallBuildApiWithInputProto(buildroot, build_api_command, input_proto):
     cmd += [
         '--input-json', input_proto_file, '--output-json', output_proto_file
     ]
-    RunBuildScript(buildroot, cmd, chromite_cmd=True, redirect_stdout=True)
+    RunBuildScript(buildroot, cmd, chromite_cmd=True, stdout=True)
     return json.loads(osutils.ReadFile(output_proto_file))
 
 
@@ -3904,7 +3885,7 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
         [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
         cwd=buildroot, check=False, encoding='utf-8', capture_output=True)
   except cros_build_lib.RunCommandError:
-    # Although error_code_ok=True was used, this exception will still be raised
+    # Although check=False was used, this exception will still be raised
     # if the executible did not exist.
     full_cbuildbot_path = os.path.join(buildroot, constants.PATH_TO_CBUILDBOT)
     if not os.path.exists(full_cbuildbot_path):

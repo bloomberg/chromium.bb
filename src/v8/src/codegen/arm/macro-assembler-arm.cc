@@ -17,7 +17,7 @@
 #include "src/codegen/register-configuration.h"
 #include "src/debug/debug.h"
 #include "src/execution/frames-inl.h"
-#include "src/heap/heap-inl.h"  // For MemoryChunk.
+#include "src/heap/memory-chunk.h"
 #include "src/init/bootstrapper.h"
 #include "src/logging/counters.h"
 #include "src/numbers/double.h"
@@ -121,28 +121,11 @@ void TurboAssembler::LoadFromConstantsTable(Register destination,
                                             int constant_index) {
   DCHECK(RootsTable::IsImmortalImmovable(RootIndex::kBuiltinsConstantsTable));
 
-  // The ldr call below could end up clobbering ip when the offset does not fit
-  // into 12 bits (and thus needs to be loaded from the constant pool). In that
-  // case, we need to be extra-careful and temporarily use another register as
-  // the target.
-
   const uint32_t offset =
       FixedArray::kHeaderSize + constant_index * kPointerSize - kHeapObjectTag;
-  const bool could_clobber_ip = !is_uint12(offset);
 
-  Register reg = destination;
-  if (could_clobber_ip) {
-    Push(r7);
-    reg = r7;
-  }
-
-  LoadRoot(reg, RootIndex::kBuiltinsConstantsTable);
-  ldr(destination, MemOperand(reg, offset));
-
-  if (could_clobber_ip) {
-    DCHECK_EQ(reg, r7);
-    Pop(r7);
-  }
+  LoadRoot(destination, RootIndex::kBuiltinsConstantsTable);
+  ldr(destination, MemOperand(destination, offset));
 }
 
 void TurboAssembler::LoadRootRelative(Register destination, int32_t offset) {
@@ -442,6 +425,35 @@ void TurboAssembler::Push(Smi smi) {
   Register scratch = temps.Acquire();
   mov(scratch, Operand(smi));
   push(scratch);
+}
+
+void TurboAssembler::PushArray(Register array, Register size, Register scratch,
+                               PushArrayOrder order) {
+  UseScratchRegisterScope temps(this);
+  Register counter = scratch;
+  Register tmp = temps.Acquire();
+  DCHECK(!AreAliased(array, size, counter, tmp));
+  Label loop, entry;
+  if (order == PushArrayOrder::kReverse) {
+    mov(counter, Operand(0));
+    b(&entry);
+    bind(&loop);
+    ldr(tmp, MemOperand(array, counter, LSL, kSystemPointerSizeLog2));
+    push(tmp);
+    add(counter, counter, Operand(1));
+    bind(&entry);
+    cmp(counter, size);
+    b(lt, &loop);
+  } else {
+    mov(counter, size);
+    b(&entry);
+    bind(&loop);
+    ldr(tmp, MemOperand(array, counter, LSL, kSystemPointerSizeLog2));
+    push(tmp);
+    bind(&entry);
+    sub(counter, counter, Operand(1), SetCC);
+    b(ge, &loop);
+  }
 }
 
 void TurboAssembler::Move(Register dst, Smi smi) { mov(dst, Operand(smi)); }
@@ -867,13 +879,6 @@ void TurboAssembler::PushStandardFrame(Register function_reg) {
   int offset = -StandardFrameConstants::kContextOffset;
   offset += function_reg.is_valid() ? kPointerSize : 0;
   add(fp, sp, Operand(offset));
-}
-
-int MacroAssembler::SafepointRegisterStackIndex(int reg_code) {
-  // The registers are pushed starting with the highest encoding,
-  // which means that lowest encodings are closest to the stack pointer.
-  DCHECK(reg_code >= 0 && reg_code < kNumSafepointRegisters);
-  return reg_code;
 }
 
 void TurboAssembler::VFPCanonicalizeNaN(const DwVfpRegister dst,
@@ -1580,7 +1585,7 @@ void MacroAssembler::CallDebugOnFunctionCall(Register fun, Register new_target,
                                              Register expected_parameter_count,
                                              Register actual_parameter_count) {
   // Load receiver to pass it later to DebugOnFunctionCall hook.
-  ldr(r4, MemOperand(sp, actual_parameter_count, LSL, kPointerSizeLog2));
+  ldr(r4, ReceiverOperand(actual_parameter_count));
   FrameScope frame(this, has_frame() ? StackFrame::NONE : StackFrame::INTERNAL);
 
   SmiTag(expected_parameter_count);
@@ -2039,7 +2044,7 @@ void MacroAssembler::AssertConstructor(Register object) {
     push(object);
     LoadMap(object, object);
     ldrb(object, FieldMemOperand(object, Map::kBitFieldOffset));
-    tst(object, Operand(Map::IsConstructorBit::kMask));
+    tst(object, Operand(Map::Bits1::IsConstructorBit::kMask));
     pop(object);
     Check(ne, AbortReason::kOperandIsNotAConstructor);
   }
@@ -2390,15 +2395,25 @@ void TurboAssembler::CallCFunctionHelper(Register function,
 
   // Save the frame pointer and PC so that the stack layout remains iterable,
   // even without an ExitFrame which normally exists between JS and C frames.
-  if (isolate() != nullptr) {
-    Register scratch = r4;
-    Push(scratch);
+  Register addr_scratch = r4;
+  // See x64 code for reasoning about how to address the isolate data fields.
+  if (root_array_available()) {
+    str(pc,
+        MemOperand(kRootRegister, IsolateData::fast_c_call_caller_pc_offset()));
+    str(fp,
+        MemOperand(kRootRegister, IsolateData::fast_c_call_caller_fp_offset()));
+  } else {
+    DCHECK_NOT_NULL(isolate());
+    Push(addr_scratch);
 
-    Move(scratch, ExternalReference::fast_c_call_caller_pc_address(isolate()));
-    str(pc, MemOperand(scratch));
-    Move(scratch, ExternalReference::fast_c_call_caller_fp_address(isolate()));
-    str(fp, MemOperand(scratch));
-    Pop(scratch);
+    Move(addr_scratch,
+         ExternalReference::fast_c_call_caller_pc_address(isolate()));
+    str(pc, MemOperand(addr_scratch));
+    Move(addr_scratch,
+         ExternalReference::fast_c_call_caller_fp_address(isolate()));
+    str(fp, MemOperand(addr_scratch));
+
+    Pop(addr_scratch);
   }
 
   // Just call directly. The function called cannot cause a GC, or
@@ -2406,18 +2421,24 @@ void TurboAssembler::CallCFunctionHelper(Register function,
   // stays correct.
   Call(function);
 
-  if (isolate() != nullptr) {
-    // We don't unset the PC; the FP is the source of truth.
-    Register scratch1 = r4;
-    Register scratch2 = r5;
-    Push(scratch1);
-    Push(scratch2);
-    Move(scratch1, ExternalReference::fast_c_call_caller_fp_address(isolate()));
-    mov(scratch2, Operand::Zero());
-    str(scratch2, MemOperand(scratch1));
-    Pop(scratch2);
-    Pop(scratch1);
+  // We don't unset the PC; the FP is the source of truth.
+  Register zero_scratch = r5;
+  Push(zero_scratch);
+  mov(zero_scratch, Operand::Zero());
+
+  if (root_array_available()) {
+    str(zero_scratch,
+        MemOperand(kRootRegister, IsolateData::fast_c_call_caller_fp_offset()));
+  } else {
+    DCHECK_NOT_NULL(isolate());
+    Push(addr_scratch);
+    Move(addr_scratch,
+         ExternalReference::fast_c_call_caller_fp_address(isolate()));
+    str(zero_scratch, MemOperand(addr_scratch));
+    Pop(addr_scratch);
   }
+
+  Pop(zero_scratch);
 
   int stack_passed_arguments =
       CalculateStackPassedWords(num_reg_arguments, num_double_arguments);
@@ -2469,7 +2490,9 @@ void TurboAssembler::ResetSpeculationPoisonRegister() {
   mov(kSpeculationPoisonRegister, Operand(-1));
 }
 
-void TurboAssembler::CallForDeoptimization(Address target, int deopt_id) {
+void TurboAssembler::CallForDeoptimization(Address target, int deopt_id,
+                                           Label* exit, DeoptimizeKind kind) {
+  USE(exit, kind);
   NoRootArrayScope no_root_array(this);
 
   // Save the deopt id in r10 (we don't need the roots array from now on).
@@ -2490,6 +2513,7 @@ void TurboAssembler::CallForDeoptimization(Address target, int deopt_id) {
 }
 
 void TurboAssembler::Trap() { stop(); }
+void TurboAssembler::DebugBreak() { stop(); }
 
 }  // namespace internal
 }  // namespace v8

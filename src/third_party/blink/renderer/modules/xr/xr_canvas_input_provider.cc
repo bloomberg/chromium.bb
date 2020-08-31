@@ -8,10 +8,10 @@
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
-#include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_system.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 
 namespace blink {
@@ -27,7 +27,7 @@ class XRCanvasInputEventListener : public NativeEventListener {
     if (!input_provider_->ShouldProcessEvents())
       return;
 
-    PointerEvent* pointer_event = ToPointerEvent(event);
+    auto* pointer_event = To<PointerEvent>(event);
     DCHECK(pointer_event);
     if (!pointer_event->isPrimary())
       return;
@@ -40,7 +40,7 @@ class XRCanvasInputEventListener : public NativeEventListener {
     }
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(input_provider_);
     EventListener::Trace(visitor);
   }
@@ -128,7 +128,7 @@ void XRCanvasInputProvider::ClearInputSource() {
   input_source_ = nullptr;
 }
 
-void XRCanvasInputProvider::Trace(blink::Visitor* visitor) {
+void XRCanvasInputProvider::Trace(Visitor* visitor) {
   visitor->Trace(session_);
   visitor->Trace(canvas_);
   visitor->Trace(listener_);

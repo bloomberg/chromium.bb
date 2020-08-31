@@ -65,7 +65,7 @@ Text* DocumentMarkerControllerTest::CreateTextNode(const char* text_contents) {
 void DocumentMarkerControllerTest::MarkNodeContents(Node* node) {
   // Force layoutObjects to be created; TextIterator, which is used in
   // DocumentMarkerControllerTest::addMarker(), needs them.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   auto range = EphemeralRange::RangeOfContents(*node);
   MarkerController().AddSpellingMarker(range);
 }
@@ -73,7 +73,7 @@ void DocumentMarkerControllerTest::MarkNodeContents(Node* node) {
 void DocumentMarkerControllerTest::MarkNodeContentsTextMatch(Node* node) {
   // Force layoutObjects to be created; TextIterator, which is used in
   // DocumentMarkerControllerTest::addMarker(), needs them.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   auto range = EphemeralRange::RangeOfContents(*node);
   MarkerController().AddTextMatchMarker(range,
                                         TextMatchMarker::MatchStatus::kActive);
@@ -228,7 +228,7 @@ TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects) {
   EXPECT_EQ(1u, rendered_rects.size());
 
   div->setAttribute(html_names::kStyleAttr, "margin: 200px");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   Vector<IntRect> new_rendered_rects =
       MarkerController().LayoutRectsForTextMatchMarkers();
   EXPECT_EQ(1u, new_rendered_rects.size());
@@ -240,10 +240,14 @@ TEST_F(DocumentMarkerControllerTest, CompositionMarkersNotMerged) {
   Node* text = GetDocument().body()->firstChild()->firstChild();
   MarkerController().AddCompositionMarker(
       EphemeralRange(Position(text, 0), Position(text, 1)), Color::kTransparent,
-      ui::mojom::ImeTextSpanThickness::kThin, Color::kBlack);
+      ui::mojom::ImeTextSpanThickness::kThin,
+      ui::mojom::ImeTextSpanUnderlineStyle::kSolid, Color::kBlack,
+      Color::kBlack);
   MarkerController().AddCompositionMarker(
       EphemeralRange(Position(text, 1), Position(text, 3)), Color::kTransparent,
-      ui::mojom::ImeTextSpanThickness::kThick, Color::kBlack);
+      ui::mojom::ImeTextSpanThickness::kThick,
+      ui::mojom::ImeTextSpanUnderlineStyle::kSolid, Color::kBlack,
+      Color::kBlack);
 
   EXPECT_EQ(2u, MarkerController().Markers().size());
 }
@@ -420,7 +424,7 @@ TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerInRangeOnFinish) {
 
 TEST_F(DocumentMarkerControllerTest, FirstMarkerIntersectingOffsetRange) {
   SetBodyContent("<div contenteditable>123456789</div>");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   Element* div = GetDocument().QuerySelector("div");
   auto* text = To<Text>(div->firstChild());
 
@@ -441,7 +445,7 @@ TEST_F(DocumentMarkerControllerTest, FirstMarkerIntersectingOffsetRange) {
 TEST_F(DocumentMarkerControllerTest,
        FirstMarkerIntersectingOffsetRange_collapsed) {
   SetBodyContent("<div contenteditable>123456789</div>");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   Element* div = GetDocument().QuerySelector("div");
   auto* text = To<Text>(div->firstChild());
 

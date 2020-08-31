@@ -12,6 +12,7 @@ import multiprocessing
 import os
 import re
 import socket
+import subprocess
 import tempfile
 
 from six.moves import http_client as httplib
@@ -39,7 +40,7 @@ from chromite.lib.xbuddy import xbuddy
 DEFAULT_PORT = 8080
 
 DEFAULT_STATIC_DIR = path_util.FromChrootPath(
-    os.path.join(constants.SOURCE_ROOT, 'src', 'platform', 'dev', 'static'))
+    os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
 
 XBUDDY_REMOTE = 'remote'
 XBUDDY_LOCAL = 'local'
@@ -106,9 +107,8 @@ def GetXbuddyPath(path):
     raise ValueError('Do not support scheme %s.' % (parsed.scheme,))
 
 
-def GetImagePathWithXbuddy(path, board, version=None,
-                           static_dir=DEFAULT_STATIC_DIR,
-                           lookup_only=False, silent=False):
+def GetImagePathWithXbuddy(path, board, version, static_dir=DEFAULT_STATIC_DIR,
+                           silent=False):
   """Gets image path and resolved XBuddy path using xbuddy.
 
   Ask xbuddy to translate |path|, and if necessary, download and stage the
@@ -121,8 +121,6 @@ def GetImagePathWithXbuddy(path, board, version=None,
     board: The default board to use if board is not specified in |path|.
     version: The default version to use if one is not specified in |path|.
     static_dir: Static directory to stage the image in.
-    lookup_only: Caller only wants to translate the path not download the
-      artifact.
     silent: Suppress error messages.
 
   Returns:
@@ -145,15 +143,11 @@ def GetImagePathWithXbuddy(path, board, version=None,
     else:
       cherrypy.config.update({'server.log_to_screen': False})
 
-  xb = xbuddy.XBuddy(static_dir=static_dir, board=board, version=version,
-                     log_screen=False)
+  xb = xbuddy.XBuddy(board=board, version=version, log_screen=False,
+                     static_dir=static_dir)
   path_list = GetXbuddyPath(path).rsplit(os.path.sep)
   try:
-    if lookup_only:
-      build_id, file_name = xb.Translate(path_list)
-    else:
-      build_id, file_name = xb.Get(path_list)
-
+    build_id, file_name = xb.Get(path_list)
     resolved_path, _ = xb.LookupAlias(os.path.sep.join(path_list))
     return os.path.join(build_id, file_name), resolved_path
   except xbuddy.XBuddyException as e:
@@ -192,7 +186,7 @@ def GenerateXbuddyRequest(path, req_type):
     raise ValueError('Does not support xbuddy request type %s' % req_type)
 
 
-def TranslatedPathToLocalPath(translated_path, static_dir):
+def TranslatedPathToLocalPath(translated_path, static_dir=DEFAULT_STATIC_DIR):
   """Convert the translated path to a local path to the image file.
 
   Args:
@@ -371,33 +365,46 @@ class DevServerWrapper(multiprocessing.Process):
       return res.read()
 
   @classmethod
-  def WipeStaticDirectory(cls, static_dir):
+  def CreateStaticDirectory(cls, static_dir=DEFAULT_STATIC_DIR):
+    """Creates |static_dir|.
+
+    Args:
+      static_dir: path to the static directory of the devserver instance.
+    """
+    osutils.SafeMakedirsNonRoot(static_dir)
+
+  @classmethod
+  def WipeStaticDirectory(cls, static_dir=DEFAULT_STATIC_DIR):
     """Cleans up |static_dir|.
 
     Args:
       static_dir: path to the static directory of the devserver instance.
     """
-    # Wipe the payload cache.
     cls.WipePayloadCache(static_dir=static_dir)
-    logging.info('Cleaning up directory %s', static_dir)
+    logging.info('Clearing cache directory %s', static_dir)
     osutils.RmDir(static_dir, ignore_missing=True, sudo=True)
 
   @classmethod
   def WipePayloadCache(cls, devserver_bin='start_devserver', static_dir=None):
     """Cleans up devserver cache of payloads.
 
+    This isn't necessary for chrome checkouts.
+
     Args:
       devserver_bin: path to the devserver binary.
       static_dir: path to use as the static directory of the devserver instance.
     """
+    if path_util.DetermineCheckout().type == path_util.CHECKOUT_TYPE_GCLIENT:
+      return
+
     logging.info('Cleaning up previously generated payloads.')
     cmd = [devserver_bin, '--clear_cache', '--exit']
     if static_dir:
       cmd.append('--static_dir=%s' % path_util.ToChrootPath(static_dir))
 
     cros_build_lib.sudo_run(
-        cmd, enter_chroot=True, print_cmd=False, combine_stdout_stderr=True,
-        redirect_stdout=True, redirect_stderr=True, cwd=constants.SOURCE_ROOT)
+        cmd, enter_chroot=True, print_cmd=False, stderr=subprocess.STDOUT,
+        stdout=True, cwd=constants.SOURCE_ROOT)
 
   def _ReadPortNumber(self):
     """Read port number from file."""
@@ -464,8 +471,7 @@ class DevServerWrapper(multiprocessing.Process):
     cmd = [self.devserver_bin,
            '--pidfile', path_resolver.ToChroot(self._pid_file),
            '--logfile', path_resolver.ToChroot(self.log_file),
-           '--port=%d' % port,
-           '--critical_update']
+           '--port=%d' % port]
 
     if not self.port:
       cmd.append('--portfile=%s' % path_resolver.ToChroot(self.port_file))
@@ -487,8 +493,8 @@ class DevServerWrapper(multiprocessing.Process):
                            path_resolver.ToChroot(constants.CHROMITE_BIN_DIR))}
     result = self._RunCommand(
         cmd, enter_chroot=True, chroot_args=chroot_args,
-        cwd=constants.SOURCE_ROOT, extra_env=extra_env, error_code_ok=True,
-        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
+        cwd=constants.SOURCE_ROOT, extra_env=extra_env, check=False,
+        stdout=True, stderr=subprocess.STDOUT, encoding='utf-8')
     if result.returncode != 0:
       msg = ('Devserver failed to start!\n'
              '--- Start output from the devserver startup command ---\n'
@@ -515,7 +521,7 @@ class DevServerWrapper(multiprocessing.Process):
 
     logging.debug('Stopping devserver instance with pid %s', self._pid)
     if self.is_alive():
-      self._RunCommand(['kill', self._pid], error_code_ok=True)
+      self._RunCommand(['kill', self._pid], check=False)
     else:
       logging.debug('Devserver not running')
       return
@@ -537,7 +543,7 @@ class DevServerWrapper(multiprocessing.Process):
     fname = self.log_file
     # We use self._RunCommand here to check the existence of the log file.
     if self._RunCommand(
-        ['test', '-f', fname], error_code_ok=True).returncode == 0:
+        ['test', '-f', fname], check=False).returncode == 0:
       result = self._RunCommand(['tail', '-n', str(num_lines), fname],
                                 capture_output=True, encoding='utf-8')
       output = '--- Start output from %s ---' % fname

@@ -5,6 +5,8 @@
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 
 #include "base/callback.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "url/gurl.h"
 
@@ -102,7 +104,8 @@ const GURL& TestAppRegistrar::GetAppLaunchURL(const AppId& app_id) const {
   return iterator->second.launch_url;
 }
 
-base::Optional<GURL> TestAppRegistrar::GetAppScope(const AppId& app_id) const {
+base::Optional<GURL> TestAppRegistrar::GetAppScopeInternal(
+    const AppId& app_id) const {
   const auto& result = installed_apps_.find(app_id);
   if (result == installed_apps_.end())
     return base::nullopt;
@@ -126,12 +129,22 @@ std::vector<WebApplicationIconInfo> TestAppRegistrar::GetAppIconInfos(
   return {};
 }
 
+std::vector<SquareSizePx> TestAppRegistrar::GetAppDownloadedIconSizes(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return {};
+}
+
 std::vector<AppId> TestAppRegistrar::GetAppIds() const {
   std::vector<AppId> result;
-  for (const std::pair<AppId, AppInfo>& it : installed_apps_) {
+  for (const std::pair<const AppId, AppInfo>& it : installed_apps_) {
     result.push_back(it.first);
   }
   return result;
+}
+
+WebAppRegistrar* TestAppRegistrar::AsWebAppRegistrar() {
+  return nullptr;
 }
 
 }  // namespace web_app

@@ -42,7 +42,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const std::string& parent_resource_id,
       const std::string& directory_title,
       const drive::AddNewDirectoryOptions& options,
-      const google_apis::FileResourceCallback& callback) override;
+      google_apis::FileResourceCallback callback) override;
 
   google_apis::CancelCallback DeleteResource(
       const std::string& resource_id,
@@ -54,14 +54,14 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const std::string& resource_id,
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback,
-      const google_apis::ProgressCallback& progress_callback) override;
+      google_apis::ProgressCallback progress_callback) override;
 
   google_apis::CancelCallback GetAboutResource(
-      const google_apis::AboutResourceCallback& callback) override;
+      google_apis::AboutResourceCallback callback) override;
 
   google_apis::CancelCallback GetStartPageToken(
       const std::string& team_drive_id,
-      const google_apis::StartPageTokenCallback& callback) override;
+      google_apis::StartPageTokenCallback callback) override;
 
   google_apis::CancelCallback GetChangeList(
       int64_t start_changestamp,
@@ -88,7 +88,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
 
   google_apis::CancelCallback GetFileResource(
       const std::string& resource_id,
-      const google_apis::FileResourceCallback& callback) override;
+      google_apis::FileResourceCallback callback) override;
 
   google_apis::CancelCallback GetFileListInDirectory(
       const std::string& directory_resource_id,
@@ -112,8 +112,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
   void RemoveObserver(drive::DriveServiceObserver* observer) override;
   bool CanSendRequest() const override;
   bool HasAccessToken() const override;
-  void RequestAccessToken(
-      const google_apis::AuthStatusCallback& callback) override;
+  void RequestAccessToken(google_apis::AuthStatusCallback callback) override;
   void ClearAccessToken() override;
   void ClearRefreshToken() override;
   google_apis::CancelCallback GetAllTeamDriveList(
@@ -132,7 +131,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const std::string& parent_resource_id,
       const std::string& new_title,
       const base::Time& last_modified,
-      const google_apis::FileResourceCallback& callback) override;
+      google_apis::FileResourceCallback callback) override;
   google_apis::CancelCallback UpdateResource(
       const std::string& resource_id,
       const std::string& parent_resource_id,
@@ -140,7 +139,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const base::Time& last_modified,
       const base::Time& last_viewed_by_me,
       const google_apis::drive::Properties& properties,
-      const google_apis::FileResourceCallback& callback) override;
+      google_apis::FileResourceCallback callback) override;
   google_apis::CancelCallback AddResourceToDirectory(
       const std::string& parent_resource_id,
       const std::string& resource_id,
@@ -165,12 +164,12 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       int64_t content_length,
       const std::string& content_type,
       const base::FilePath& local_file_path,
-      const google_apis::drive::UploadRangeCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) override;
+      google_apis::drive::UploadRangeCallback callback,
+      google_apis::ProgressCallback progress_callback) override;
   google_apis::CancelCallback GetUploadStatus(
       const GURL& upload_url,
       int64_t content_length,
-      const google_apis::drive::UploadRangeCallback& callback) override;
+      google_apis::drive::UploadRangeCallback callback) override;
   google_apis::CancelCallback MultipartUploadNewFile(
       const std::string& content_type,
       int64_t content_length,
@@ -178,16 +177,16 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const std::string& title,
       const base::FilePath& local_file_path,
       const drive::UploadNewFileOptions& options,
-      const google_apis::FileResourceCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) override;
+      google_apis::FileResourceCallback callback,
+      google_apis::ProgressCallback progress_callback) override;
   google_apis::CancelCallback MultipartUploadExistingFile(
       const std::string& content_type,
       int64_t content_length,
       const std::string& resource_id,
       const base::FilePath& local_file_path,
       const drive::UploadExistingFileOptions& options,
-      const google_apis::FileResourceCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) override;
+      google_apis::FileResourceCallback callback,
+      google_apis::ProgressCallback progress_callback) override;
   std::unique_ptr<drive::BatchRequestConfiguratorInterface> StartBatchRequest()
       override;
   google_apis::CancelCallback AddPermission(

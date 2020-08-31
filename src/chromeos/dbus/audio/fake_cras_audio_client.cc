@@ -192,6 +192,9 @@ void FakeCrasAudioClient::SetHotwordModel(uint64_t node_id,
                                           const std::string& hotword_model,
                                           VoidDBusMethodCallback callback) {}
 
+void FakeCrasAudioClient::SetFixA2dpPacketSize(bool enabled) {}
+void FakeCrasAudioClient::SetNextHandsfreeProfile(bool enabled) {}
+
 void FakeCrasAudioClient::AddActiveInputNode(uint64_t node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)
@@ -211,6 +214,19 @@ void FakeCrasAudioClient::SwapLeftRight(uint64_t node_id, bool swap) {}
 void FakeCrasAudioClient::SetGlobalOutputChannelRemix(
     int32_t channels,
     const std::vector<double>& mixer) {}
+
+void FakeCrasAudioClient::SetPlayerPlaybackStatus(
+    const std::string& playback_status) {}
+
+void FakeCrasAudioClient::SetPlayerIdentity(
+    const std::string& playback_identity) {}
+
+void FakeCrasAudioClient::SetPlayerPosition(const int64_t& position) {}
+
+void FakeCrasAudioClient::SetPlayerDuration(const int64_t& duration) {}
+
+void FakeCrasAudioClient::SetPlayerMetadata(
+    const std::map<std::string, std::string>& metadata) {}
 
 void FakeCrasAudioClient::AddActiveOutputNode(uint64_t node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {

@@ -7,9 +7,12 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base/observer_list.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -22,7 +25,6 @@
 namespace ui {
 
 class AXTableInfo;
-class AXTree;
 class AXTreeObserver;
 struct AXTreeUpdateState;
 class AXLanguageDetectionManager;
@@ -34,26 +36,32 @@ class AXLanguageDetectionManager;
 // accessibility APIs on a specific platform.
 class AX_EXPORT AXTree : public AXNode::OwnerTree {
  public:
-  typedef std::map<ax::mojom::IntAttribute,
-                   std::map<int32_t, std::set<int32_t>>>
-      IntReverseRelationMap;
-  typedef std::map<ax::mojom::IntListAttribute,
-                   std::map<int32_t, std::set<int32_t>>>
-      IntListReverseRelationMap;
+  using IntReverseRelationMap =
+      std::map<ax::mojom::IntAttribute, std::map<int32_t, std::set<int32_t>>>;
+  using IntListReverseRelationMap =
+      std::map<ax::mojom::IntListAttribute,
+               std::map<int32_t, std::set<int32_t>>>;
 
   AXTree();
   explicit AXTree(const AXTreeUpdate& initial_state);
   virtual ~AXTree();
 
+  // AXTree owns pointers so copying is non-trivial.
+  AXTree(const AXTree&) = delete;
+  AXTree& operator=(const AXTree&) = delete;
+
   void AddObserver(AXTreeObserver* observer);
   bool HasObserver(AXTreeObserver* observer);
-  void RemoveObserver(const AXTreeObserver* observer);
+  void RemoveObserver(AXTreeObserver* observer);
 
   base::ObserverList<AXTreeObserver>& observers() { return observers_; }
 
   AXNode* root() const { return root_; }
 
   const AXTreeData& data() const { return data_; }
+
+  // Destroys the tree and notifies all observers.
+  void Destroy();
 
   // AXNode::OwnerTree override.
   // Returns the globally unique ID of this accessibility tree.
@@ -139,15 +147,15 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // conflict with positive-numbered node IDs from tree sources.
   int32_t GetNextNegativeInternalNodeId();
 
-  // Returns the pos_in_set of node. Looks in ordered_set_info_map_ for cached
-  // value. Calculates pos_in_set and set_size for node (and all other nodes in
-  // the same ordered set) if no value is present in the cache.
+  // Returns the pos_in_set of node. Looks in node_set_size_pos_in_set_info_map_
+  // for cached value. Calculates pos_in_set and set_size for node (and all
+  // other nodes in the same ordered set) if no value is present in the cache.
   // This function is guaranteed to be only called on nodes that can hold
   // pos_in_set values, minimizing the size of the cache.
   int32_t GetPosInSet(const AXNode& node, const AXNode* ordered_set) override;
-  // Returns the set_size of node. Looks in ordered_set_info_map_ for cached
-  // value. Calculates pos_inset_set and set_size for node (and all other nodes
-  // in the same ordered set) if no value is present in the cache.
+  // Returns the set_size of node. Looks in node_set_size_pos_in_set_info_map_
+  // for cached value. Calculates pos_inset_set and set_size for node (and all
+  // other nodes in the same ordered set) if no value is present in the cache.
   // This function is guaranteed to be only called on nodes that can hold
   // set_size values, minimizing the size of the cache.
   int32_t GetSetSize(const AXNode& node, const AXNode* ordered_set) override;
@@ -190,7 +198,7 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // This allows us to notify observers of structure changes when the
   // tree is still in a stable and unchanged state.
   bool ComputePendingChanges(const AXTreeUpdate& update,
-                             AXTreeUpdateState& update_state);
+                             AXTreeUpdateState* update_state);
 
   // Populates |update_state| with information about actions that will
   // be performed on the tree during the update, such as adding or
@@ -307,7 +315,8 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   // Map from node ID to cached table info, if the given node is a table.
   // Invalidated every time the tree is updated.
-  mutable std::unordered_map<int32_t, AXTableInfo*> table_info_map_;
+  mutable std::unordered_map<int32_t, std::unique_ptr<AXTableInfo>>
+      table_info_map_;
 
   // The next negative node ID to use for internal nodes.
   int32_t next_negative_internal_node_id_ = -1;
@@ -319,36 +328,60 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   bool enable_extra_mac_nodes_ = false;
 
   // Contains pos_in_set and set_size data for an AXNode.
-  struct OrderedSetInfo {
-    int32_t pos_in_set;
-    int32_t set_size;
-    int32_t lowest_hierarchical_level;
-    OrderedSetInfo() : pos_in_set(0), set_size(0) {}
-    ~OrderedSetInfo() {}
+  struct NodeSetSizePosInSetInfo {
+    NodeSetSizePosInSetInfo();
+    ~NodeSetSizePosInSetInfo();
+
+    int32_t pos_in_set = 0;
+    int32_t set_size = 0;
+    base::Optional<int> lowest_hierarchical_level;
   };
 
-  // Populates items vector with all items within ordered_set.
-  // Will only add items whose roles match the role of the
-  // ordered_set.
-  void PopulateOrderedSetItems(const AXNode* ordered_set,
-                               const AXNode* local_parent,
-                               std::vector<const AXNode*>& items,
-                               const AXNode& original_node) const;
+  // Represents the content of an ordered set which includes the ordered set
+  // items and the ordered set container if it exists.
+  struct OrderedSetContent;
 
-  // Helper for GetPosInSet and GetSetSize. Computes the pos_in_set and set_size
-  // values of all items in ordered_set and caches those values.
+  // Maps a particular hierarchical level to a list of OrderedSetContents.
+  // Represents all ordered set items/container on a particular hierarchical
+  // level.
+  struct OrderedSetItemsMap;
+
+  // Populates |items_map_to_be_populated| with all items associated with
+  // |original_node| and within |ordered_set|. Only items whose roles match the
+  // role of the |ordered_set| will be added.
+  void PopulateOrderedSetItemsMap(
+      const AXNode& original_node,
+      const AXNode* ordered_set,
+      OrderedSetItemsMap* items_map_to_be_populated) const;
+
+  // Helper function for recursively populating ordered sets items map with
+  // all items associated with |original_node| and |ordered_set|. |local_parent|
+  // tracks the recursively passed in child nodes of |ordered_set|.
+  void RecursivelyPopulateOrderedSetItemsMap(
+      const AXNode& original_node,
+      const AXNode* ordered_set,
+      const AXNode* local_parent,
+      base::Optional<int> ordered_set_min_level,
+      base::Optional<int> prev_level,
+      OrderedSetItemsMap* items_map_to_be_populated) const;
+
+  // Computes the pos_in_set and set_size values of all items in ordered_set and
+  // caches those values. Called by GetPosInSet and GetSetSize.
   void ComputeSetSizePosInSetAndCache(const AXNode& node,
                                       const AXNode* ordered_set);
+
+  // Helper for ComputeSetSizePosInSetAndCache. Computes and caches the
+  // pos_in_set and set_size values for a given OrderedSetContent.
+  void ComputeSetSizePosInSetAndCacheHelper(
+      const OrderedSetContent& ordered_set_content);
 
   // Map from node ID to OrderedSetInfo.
   // Item-like and ordered-set-like objects will map to populated OrderedSetInfo
   // objects.
   // All other objects will map to default-constructed OrderedSetInfo objects.
   // Invalidated every time the tree is updated.
-  mutable std::unordered_map<int32_t, OrderedSetInfo> ordered_set_info_map_;
-
-  // AXTree owns pointers so copying is non-trivial.
-  DISALLOW_COPY_AND_ASSIGN(AXTree);
+  mutable std::unordered_map<int32_t, NodeSetSizePosInSetInfo>
+      node_set_size_pos_in_set_info_map_;
 
   // Indicates if the tree is updating.
   bool tree_update_in_progress_ = false;

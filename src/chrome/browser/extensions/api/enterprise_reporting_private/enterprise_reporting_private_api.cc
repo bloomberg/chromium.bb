@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -71,11 +72,7 @@ EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
     device_management_service->ScheduleInitialization(0);
 
   cloud_policy_client_ = std::make_unique<policy::CloudPolicyClient>(
-      std::string() /* machine_id */, std::string() /* machine_model */,
-      std::string() /* brand_code */, std::string() /* ethernet_mac_address */,
-      std::string() /* dock_mac_address */,
-      std::string() /* manufacture_date */, device_management_service,
-      std::move(url_loader_factory), nullptr,
+      device_management_service, std::move(url_loader_factory),
       policy::CloudPolicyClient::DeviceDMTokenCallback());
   dm_token_ = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
   client_id_ = policy::BrowserDMTokenStorage::Get()->RetrieveClientId();
@@ -120,7 +117,7 @@ EnterpriseReportingPrivateUploadChromeDesktopReportFunction::Run() {
 
   cloud_policy_client_->UploadChromeDesktopReport(
       std::move(request),
-      base::BindRepeating(
+      base::BindOnce(
           &EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
               OnReportUploaded,
           this));
@@ -182,10 +179,9 @@ EnterpriseReportingPrivateGetPersistentSecretFunction::
 ExtensionFunction::ResponseAction
 EnterpriseReportingPrivateGetPersistentSecretFunction::Run() {
   // TODO(pastarmovj): Consider keying the secret retrieval by extension id.
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(
           &RetrieveDeviceSecret,
           base::BindOnce(
@@ -222,10 +218,9 @@ EnterpriseReportingPrivateGetDeviceDataFunction::Run() {
       params(api::enterprise_reporting_private::GetDeviceData::Params::Create(
           *args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(
           &RetrieveDeviceData, params->id,
           base::BindOnce(
@@ -261,12 +256,11 @@ EnterpriseReportingPrivateSetDeviceDataFunction::Run() {
       params(api::enterprise_reporting_private::SetDeviceData::Params::Create(
           *args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(
-          &StoreDeviceData, params->id, params->data,
+          &StoreDeviceData, params->id, std::move(params->data),
           base::BindOnce(
               &EnterpriseReportingPrivateSetDeviceDataFunction::OnDataStored,
               this)));
@@ -295,7 +289,7 @@ ExtensionFunction::ResponseAction
 EnterpriseReportingPrivateGetDeviceInfoFunction::Run() {
 #if defined(OS_WIN)
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunner({base::ThreadPool()}).get(), FROM_HERE,
+      base::ThreadPool::CreateCOMSTATaskRunner({}).get(), FROM_HERE,
       base::BindOnce(&enterprise_reporting::DeviceInfoFetcher::Fetch,
                      enterprise_reporting::DeviceInfoFetcher::CreateInstance()),
       base::BindOnce(&EnterpriseReportingPrivateGetDeviceInfoFunction::
@@ -303,8 +297,7 @@ EnterpriseReportingPrivateGetDeviceInfoFunction::Run() {
                      this));
 #else
   base::PostTaskAndReplyWithResult(
-      base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()}).get(),
-      FROM_HERE,
+      base::ThreadPool::CreateTaskRunner({base::MayBlock()}).get(), FROM_HERE,
       base::BindOnce(&enterprise_reporting::DeviceInfoFetcher::Fetch,
                      enterprise_reporting::DeviceInfoFetcher::CreateInstance()),
       base::BindOnce(&EnterpriseReportingPrivateGetDeviceInfoFunction::

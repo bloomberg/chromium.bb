@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -291,22 +292,40 @@ GURL OneGoogleBarLoaderImpl::GetLoadURLForTesting() const {
   return GetApiUrl();
 }
 
+bool OneGoogleBarLoaderImpl::SetAdditionalQueryParams(
+    const std::string& value) {
+  if (additional_query_params_ == value) {
+    return false;
+  }
+  additional_query_params_ = value;
+  return true;
+}
+
 GURL OneGoogleBarLoaderImpl::GetApiUrl() const {
+  GURL api_url;
   GURL google_base_url = google_util::CommandLineGoogleBaseURL();
   if (!google_base_url.is_valid()) {
     google_base_url = GURL(google_util::kGoogleHomepageURL);
   }
 
-  GURL api_url = google_base_url.Resolve(kNewTabOgbApiPath);
+  api_url = google_base_url.Resolve(kNewTabOgbApiPath);
 
   // Add the "hl=" parameter.
-  api_url = net::AppendQueryParameter(api_url, "hl", application_locale_);
+  if (additional_query_params_.find("&hl=") == std::string::npos) {
+    api_url = net::AppendQueryParameter(api_url, "hl", application_locale_);
+  }
 
   // Add the "async=" parameter. We can't use net::AppendQueryParameter for
   // this because we need the ":" to remain unescaped.
   GURL::Replacements replacements;
   std::string query = api_url.query();
-  query += "&async=fixed:0";
+  query += additional_query_params_;
+  if (additional_query_params_.find("&async=") == std::string::npos) {
+    query += "&async=fixed:0";
+  }
+  if (query.at(0) == '&') {
+    query = query.substr(1);
+  }
   replacements.SetQueryStr(query);
   return api_url.ReplaceComponents(replacements);
 }

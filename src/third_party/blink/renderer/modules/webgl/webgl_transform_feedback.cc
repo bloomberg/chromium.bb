@@ -9,12 +9,6 @@
 
 namespace blink {
 
-WebGLTransformFeedback* WebGLTransformFeedback::Create(
-    WebGL2RenderingContextBase* ctx,
-    TFType type) {
-  return MakeGarbageCollected<WebGLTransformFeedback>(ctx, type);
-}
-
 WebGLTransformFeedback::WebGLTransformFeedback(WebGL2RenderingContextBase* ctx,
                                                TFType type)
     : WebGLContextObject(ctx),
@@ -139,7 +133,7 @@ void WebGLTransformFeedback::UnbindBuffer(WebGLBuffer* buffer) {
   }
 }
 
-void WebGLTransformFeedback::Trace(blink::Visitor* visitor) {
+void WebGLTransformFeedback::Trace(Visitor* visitor) {
   visitor->Trace(bound_indexed_transform_feedback_buffers_);
   visitor->Trace(program_);
   WebGLContextObject::Trace(visitor);

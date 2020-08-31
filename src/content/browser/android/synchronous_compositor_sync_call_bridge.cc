@@ -41,7 +41,8 @@ void SynchronousCompositorSyncCallBridge::RemoteClosedOnIOThread() {
 bool SynchronousCompositorSyncCallBridge::ReceiveFrameOnIOThread(
     int layer_tree_frame_sink_id,
     uint32_t metadata_version,
-    base::Optional<viz::CompositorFrame> compositor_frame) {
+    base::Optional<viz::CompositorFrame> compositor_frame,
+    base::Optional<viz::HitTestRegionList> hit_test_region_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::AutoLock lock(lock_);
   if (remote_state_ != RemoteState::READY || frame_futures_.empty())
@@ -61,31 +62,31 @@ bool SynchronousCompositorSyncCallBridge::ReceiveFrameOnIOThread(
                                   compositor_frame->metadata.Clone()));
     frame_ptr->frame.reset(new viz::CompositorFrame);
     *frame_ptr->frame = std::move(*compositor_frame);
+    frame_ptr->hit_test_region_list = std::move(hit_test_region_list);
   }
   future->SetFrame(std::move(frame_ptr));
   return true;
 }
 
 bool SynchronousCompositorSyncCallBridge::BeginFrameResponseOnIOThread(
-    const SyncCompositorCommonRendererParams& render_params) {
+    mojom::SyncCompositorCommonRendererParamsPtr render_params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::AutoLock lock(lock_);
   if (begin_frame_response_valid_)
     return false;
   begin_frame_response_valid_ = true;
-  last_render_params_ = render_params;
+  last_render_params_ = *render_params;
   begin_frame_condition_.Signal();
   return true;
 }
 
-bool SynchronousCompositorSyncCallBridge::WaitAfterVSyncOnUIThread(
-    ui::WindowAndroid* window_android) {
+bool SynchronousCompositorSyncCallBridge::WaitAfterVSyncOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
   if (remote_state_ != RemoteState::READY)
     return false;
   CHECK(!begin_frame_response_valid_);
-  window_android->AddBeginFrameCompletionCallback(base::BindOnce(
+  host_->AddBeginFrameCompletionCallback(base::BindOnce(
       &SynchronousCompositorSyncCallBridge::BeginFrameCompleteOnUIThread,
       this));
   return true;
@@ -124,8 +125,7 @@ bool SynchronousCompositorSyncCallBridge::IsRemoteReadyOnUIThread() {
 void SynchronousCompositorSyncCallBridge::BeginFrameCompleteOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  bool update_state = false;
-  SyncCompositorCommonRendererParams render_params;
+  mojom::SyncCompositorCommonRendererParamsPtr render_params;
   {
     base::AutoLock lock(lock_);
     if (remote_state_ != RemoteState::READY)
@@ -140,12 +140,11 @@ void SynchronousCompositorSyncCallBridge::BeginFrameCompleteOnUIThread() {
     DCHECK(begin_frame_response_valid_ || remote_state_ != RemoteState::READY);
     begin_frame_response_valid_ = false;
     if (remote_state_ == RemoteState::READY) {
-      update_state = true;
-      render_params = last_render_params_;
+      render_params = last_render_params_.Clone();
     }
   }
-  if (update_state)
-    host_->UpdateState(render_params);
+  if (render_params)
+    host_->UpdateState(std::move(render_params));
 }
 
 void SynchronousCompositorSyncCallBridge::ProcessFrameMetadataOnUIThread(

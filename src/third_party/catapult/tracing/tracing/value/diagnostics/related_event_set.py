@@ -53,6 +53,10 @@ class RelatedEventSet(diagnostic.Diagnostic):
       result.Add(event)
     return result
 
+  @staticmethod
+  def FromProto(d):
+    raise NotImplementedError()
+
   def Serialize(self, serializer):
     return [
         [
@@ -65,3 +69,6 @@ class RelatedEventSet(diagnostic.Diagnostic):
 
   def _AsDictInto(self, d):
     d['events'] = [event for event in self]
+
+  def _AsProto(self):
+    raise NotImplementedError()

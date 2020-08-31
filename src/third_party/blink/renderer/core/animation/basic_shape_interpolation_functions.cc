@@ -69,7 +69,15 @@ class BasicShapeNonInterpolableValue : public NonInterpolableValue {
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(BasicShapeNonInterpolableValue);
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(BasicShapeNonInterpolableValue);
+template <>
+struct DowncastTraits<BasicShapeNonInterpolableValue> {
+  static bool AllowFrom(const NonInterpolableValue* value) {
+    return value && AllowFrom(*value);
+  }
+  static bool AllowFrom(const NonInterpolableValue& value) {
+    return value.GetType() == BasicShapeNonInterpolableValue::static_type_;
+  }
+};
 
 namespace {
 
@@ -216,7 +224,7 @@ scoped_refptr<BasicShape> CreateBasicShape(
     const InterpolableValue& interpolable_value,
     const CSSToLengthConversionData& conversion_data) {
   scoped_refptr<BasicShapeCircle> circle = BasicShapeCircle::Create();
-  const InterpolableList& list = ToInterpolableList(interpolable_value);
+  const auto& list = To<InterpolableList>(interpolable_value);
   circle->SetCenterX(
       CreateCoordinate(*list.Get(kCircleCenterXIndex), conversion_data));
   circle->SetCenterY(
@@ -289,7 +297,7 @@ scoped_refptr<BasicShape> CreateBasicShape(
     const InterpolableValue& interpolable_value,
     const CSSToLengthConversionData& conversion_data) {
   scoped_refptr<BasicShapeEllipse> ellipse = BasicShapeEllipse::Create();
-  const InterpolableList& list = ToInterpolableList(interpolable_value);
+  const auto& list = To<InterpolableList>(interpolable_value);
   ellipse->SetCenterX(
       CreateCoordinate(*list.Get(kEllipseCenterXIndex), conversion_data));
   ellipse->SetCenterY(
@@ -408,7 +416,7 @@ scoped_refptr<BasicShape> CreateBasicShape(
     const InterpolableValue& interpolable_value,
     const CSSToLengthConversionData& conversion_data) {
   scoped_refptr<BasicShapeInset> inset = BasicShapeInset::Create();
-  const InterpolableList& list = ToInterpolableList(interpolable_value);
+  const auto& list = To<InterpolableList>(interpolable_value);
   inset->SetTop(To<InterpolableLength>(*list.Get(kInsetTopIndex))
                     .CreateLength(conversion_data, kValueRangeAll));
   inset->SetRight(To<InterpolableLength>(*list.Get(kInsetRightIndex))
@@ -473,7 +481,7 @@ scoped_refptr<BasicShape> CreateBasicShape(
     const CSSToLengthConversionData& conversion_data) {
   scoped_refptr<BasicShapePolygon> polygon = BasicShapePolygon::Create();
   polygon->SetWindRule(non_interpolable_value.GetWindRule());
-  const InterpolableList& list = ToInterpolableList(interpolable_value);
+  const auto& list = To<InterpolableList>(interpolable_value);
   wtf_size_t size = non_interpolable_value.size();
   DCHECK_EQ(list.length(), size);
   DCHECK_EQ(size % 2, 0U);
@@ -538,8 +546,8 @@ InterpolationValue basic_shape_interpolation_functions::MaybeConvertBasicShape(
 std::unique_ptr<InterpolableValue>
 basic_shape_interpolation_functions::CreateNeutralValue(
     const NonInterpolableValue& untyped_non_interpolable_value) {
-  const BasicShapeNonInterpolableValue& non_interpolable_value =
-      ToBasicShapeNonInterpolableValue(untyped_non_interpolable_value);
+  const auto& non_interpolable_value =
+      To<BasicShapeNonInterpolableValue>(untyped_non_interpolable_value);
   switch (non_interpolable_value.GetShapeType()) {
     case BasicShape::kBasicShapeCircleType:
       return circle_functions::CreateNeutralValue();
@@ -558,16 +566,16 @@ basic_shape_interpolation_functions::CreateNeutralValue(
 bool basic_shape_interpolation_functions::ShapesAreCompatible(
     const NonInterpolableValue& a,
     const NonInterpolableValue& b) {
-  return ToBasicShapeNonInterpolableValue(a).IsCompatibleWith(
-      ToBasicShapeNonInterpolableValue(b));
+  return To<BasicShapeNonInterpolableValue>(a).IsCompatibleWith(
+      To<BasicShapeNonInterpolableValue>(b));
 }
 
 scoped_refptr<BasicShape> basic_shape_interpolation_functions::CreateBasicShape(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue& untyped_non_interpolable_value,
     const CSSToLengthConversionData& conversion_data) {
-  const BasicShapeNonInterpolableValue& non_interpolable_value =
-      ToBasicShapeNonInterpolableValue(untyped_non_interpolable_value);
+  const auto& non_interpolable_value =
+      To<BasicShapeNonInterpolableValue>(untyped_non_interpolable_value);
   switch (non_interpolable_value.GetShapeType()) {
     case BasicShape::kBasicShapeCircleType:
       return circle_functions::CreateBasicShape(interpolable_value,

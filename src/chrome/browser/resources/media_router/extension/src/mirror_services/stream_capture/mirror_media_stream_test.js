@@ -24,7 +24,8 @@ describe('mr.mirror.MirrorMediaStream', () => {
         jasmine.createSpyObj('tabCapture', ['capture', 'captureOffscreenTab']);
     chrome.desktopCapture = jasmine.createSpyObj(
         'desktopCapture', ['chooseDesktopMedia', 'cancelChooseDesktopMedia']);
-    spyOn(navigator.mediaDevices, 'getUserMedia');
+    navigator.mediaDevices =
+        jasmine.createSpyObj('mediaDevices', ['getUserMedia']);
     spyOn(mr.PlatformUtils, 'getCurrentOS');
 
     mediaStream = jasmine.createSpyObj(

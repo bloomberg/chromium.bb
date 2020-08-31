@@ -32,6 +32,11 @@ CORE_EXPORT extern const WrapperTypeInfo v8_data_view_wrapper_type_info;
 class V8DataView {
   STATIC_ONLY(V8DataView);
  public:
+  // Migration adapter
+  CORE_EXPORT static bool HasInstance(v8::Isolate*, v8::Local<v8::Value> value) {
+    return value->IsDataView();
+  }
+
   CORE_EXPORT static TestDataView* ToImpl(v8::Local<v8::Object> object);
   CORE_EXPORT static TestDataView* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
 
@@ -47,12 +52,6 @@ class V8DataView {
   CORE_EXPORT static void GetFloat64MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void SetUint8MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void SetFloat64MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-};
-
-template <>
-struct NativeValueTraits<TestDataView> : public NativeValueTraitsBase<TestDataView> {
-  CORE_EXPORT static TestDataView* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestDataView* NullValue() { return nullptr; }
 };
 
 template <>

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // Namespace
+// eslint-disable-next-line
 var importer = importer || {};
 
 /** @private @enum {string} */
@@ -614,7 +615,7 @@ importer.RuntimeCommandWidget = class {
 
     /** @private @const{number} */
     this.cloudImportButtonTabIndex_ =
-        queryRequiredElement('button#cloud-import-button').tabIndex;
+        queryRequiredElement('#cloud-import-button').tabIndex;
   }
 
   /**

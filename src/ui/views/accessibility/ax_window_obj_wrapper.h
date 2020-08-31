@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/scoped_observer.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
@@ -33,6 +35,7 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   void GetChildren(std::vector<AXAuraObjWrapper*>* out_children) override;
   void Serialize(ui::AXNodeData* out_node_data) override;
   int32_t GetUniqueId() const final;
+  std::string ToString() const override;
 
   // WindowObserver overrides.
   void OnWindowDestroyed(aura::Window* window) override;

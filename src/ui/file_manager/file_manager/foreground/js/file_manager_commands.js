@@ -32,6 +32,58 @@ class Command {
 const CommandUtil = {};
 
 /**
+ * Possible share action sources for UMA.
+ * @enum {string}
+ * @const
+ */
+CommandUtil.SharingActionSourceForUMA = {
+  UNKNOWN: 'Unknown',
+  CONTEXT_MENU: 'Context Menu',
+  SHARE_BUTTON: 'Share Button',
+};
+
+/**
+ * The IDs of elements that can trigger share action.
+ * @enum {string}
+ * @const
+ */
+CommandUtil.SharingActionElementId = {
+  CONTEXT_MENU: 'file-list',
+  SHARE_BUTTON: 'share-menu-button',
+};
+
+/**
+ * A list of supported values for SharingActionSource enum. Keep this in sync
+ * with SharingActionSource defined in //tools/metrics/histograms/enums.xml.
+ */
+CommandUtil.ValidSharingActionSource = [
+  CommandUtil.SharingActionSourceForUMA.UNKNOWN,
+  CommandUtil.SharingActionSourceForUMA.CONTEXT_MENU,
+  CommandUtil.SharingActionSourceForUMA.SHARE_BUTTON,
+];
+
+/**
+ * Helper function that for the given event returns the source of a share
+ * action. If the source cannot be determined, this function returns
+ * CommandUtil.SharingActionSourceForUMA.UNKNOWN.
+ * @param {!Event} event The event that triggered share action.
+ * @return {!CommandUtil.SharingActionSourceForUMA}
+ */
+CommandUtil.getSharingActionSource = event => {
+  const id = event.target.id;
+  switch (id) {
+    case CommandUtil.SharingActionElementId.CONTEXT_MENU:
+      return CommandUtil.SharingActionSourceForUMA.CONTEXT_MENU;
+    case CommandUtil.SharingActionElementId.SHARE_BUTTON:
+      return CommandUtil.SharingActionSourceForUMA.SHARE_BUTTON;
+    default: {
+      console.error('Unrecognized event.target.id for sharing action "%s"', id);
+      return CommandUtil.SharingActionSourceForUMA.UNKNOWN;
+    }
+  }
+};
+
+/**
  * Extracts entry on which command event was dispatched.
  *
  * @param {!CommandHandlerDeps} fileManager
@@ -289,10 +341,11 @@ CommandUtil.shouldShowMenuItemsForEntry = (volumeManager, entry) => {
 /**
  * Returns whether all of the given entries have the given capability.
  *
+ * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps.
  * @param {!Array<Entry>} entries List of entries to check capabilities for.
  * @param {!string} capability Name of the capability to check for.
  */
-CommandUtil.hasCapability = (entries, capability) => {
+CommandUtil.hasCapability = (fileManager, entries, capability) => {
   if (entries.length == 0) {
     return false;
   }
@@ -451,6 +504,15 @@ class CommandHandler {
     handler.canExecute.call(
         /** @type {Command} */ (handler), event, this.fileManager_);
   }
+
+  /**
+   * Returns command handler by name.
+   * @param {string} name The command name.
+   * @public
+   */
+  static getCommand(name) {
+    return CommandHandler.COMMANDS_[name];
+  }
 }
 
 /**
@@ -541,6 +603,24 @@ console.assert(
 CommandHandler.recordMenuItemSelected = menuItem => {
   metrics.recordEnum(
       'MenuItemSelected', menuItem, CommandHandler.ValidMenuCommandsForUMA);
+};
+
+/**
+ * Records UMA statistics about Share action.
+ * @param {!Event} event The event that triggered sharing action.
+ * @param {!Array<!FileEntry>} entries File entries to be shared.
+ */
+CommandHandler.recordSharingAction = (event, entries) => {
+  const source = CommandUtil.getSharingActionSource(event);
+  metrics.recordEnum(
+      'Share.ActionSource', source, CommandUtil.ValidSharingActionSource);
+  metrics.recordSmallCount('Share.FileCount', entries.length);
+  for (const entry of entries) {
+    metrics.recordEnum(
+        'Share.FileType', FileTasks.getViewFileType(entry),
+        FileTasks.UMA_INDEX_KNOWN_EXTENSIONS);
+  }
+  // TODO(crbug.com/1063169): record Share.AppId AppID for each entity.
 };
 
 /**
@@ -832,7 +912,7 @@ CommandHandler.COMMANDS_['new-folder'] = new class extends Command {
 
       const locationInfo = fileManager.volumeManager.getLocationInfo(entry);
       event.canExecute = locationInfo && !locationInfo.isReadOnly &&
-          CommandUtil.hasCapability([entry], 'canAddChildren');
+          CommandUtil.hasCapability(fileManager, [entry], 'canAddChildren');
       event.command.setHidden(false);
     } else {
       const directoryModel = fileManager.directoryModel;
@@ -840,7 +920,8 @@ CommandHandler.COMMANDS_['new-folder'] = new class extends Command {
       event.canExecute = !fileManager.directoryModel.isReadOnly() &&
           !fileManager.namingController.isRenamingInProgress() &&
           !directoryModel.isSearching() &&
-          CommandUtil.hasCapability([directoryEntry], 'canAddChildren');
+          CommandUtil.hasCapability(
+              fileManager, [directoryEntry], 'canAddChildren');
       event.command.setHidden(false);
     }
     if (this.busy_) {
@@ -964,29 +1045,17 @@ CommandHandler.COMMANDS_['delete'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
 
-    // Execute might be called without a call of canExecute method,
-    // e.g. called directly from code. Double check here not to delete
-    // undeletable entries.
-    if (!entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
-            null, fileManager.volumeManager)) ||
-        this.containsReadOnlyEntry_(entries, fileManager)) {
-      return;
-    }
-
-    const message = entries.length === 1 ?
-        strf('GALLERY_CONFIRM_DELETE_ONE', entries[0].name) :
-        strf('GALLERY_CONFIRM_DELETE_SOME', entries.length);
-
-    fileManager.ui.deleteConfirmDialog.show(message, () => {
-      fileManager.fileOperationManager.deleteEntries(entries);
-    }, null, null);
+    // Execute might be called without a call of canExecute method, e.g.,
+    // called directly from code, crbug.com/509483. See toolbar controller
+    // delete button handling, for an example.
+    this.deleteEntries(entries, fileManager);
   }
 
   /** @override */
   canExecute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
 
-    // If entries contain fake or root entry, hide delete option.
+    // If entries contain fake or root entry, remove delete option.
     if (!entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
             null, fileManager.volumeManager))) {
       event.canExecute = false;
@@ -994,23 +1063,88 @@ CommandHandler.COMMANDS_['delete'] = new class extends Command {
       return;
     }
 
-    event.canExecute = entries.length > 0 &&
-        !this.containsReadOnlyEntry_(entries, fileManager) &&
-        !fileManager.directoryModel.isReadOnly() &&
-        CommandUtil.hasCapability(entries, 'canDelete');
+    event.canExecute = this.canDeleteEntries_(entries, fileManager);
 
-    // Hide if there isn't anything selected, meaning user clicked in an empty
+    // Remove if nothing is selected, e.g. user clicked in an empty
     // space in the file list.
     const noEntries = entries.length === 0;
     event.command.setHidden(noEntries);
   }
 
   /**
-   * Returns True if any entry belongs to a read-only volume or is
+   * Delete the entries (if the entries can be deleted).
+   * @param {!Array<!Entry>} entries
+   * @param {!CommandHandlerDeps} fileManager
+   * @param {?FilesConfirmDialog} dialog An optional delete confirm dialog.
+   *    The default delete confirm dialog will be used if |dialog| is null.
+   * @public
+   */
+  deleteEntries(entries, fileManager, dialog = null) {
+    // Verify that the entries are not fake or root entries, and that they
+    // can be deleted.
+    if (!entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
+            null, fileManager.volumeManager)) ||
+        !this.canDeleteEntries_(entries, fileManager)) {
+      return;
+    }
+
+    const message = entries.length === 1 ?
+        strf('GALLERY_CONFIRM_DELETE_ONE', entries[0].name) :
+        strf('GALLERY_CONFIRM_DELETE_SOME', entries.length);
+
+    if (!dialog) {
+      dialog = fileManager.ui.deleteConfirmDialog;
+    } else if (dialog.showModalElement) {
+      dialog.showModalElement();
+    }
+
+    dialog.show(message, () => {
+      dialog.doneCallback && dialog.doneCallback();
+      fileManager.fileOperationManager.deleteEntries(entries);
+    }, dialog.doneCallback, null);
+  }
+
+  /**
+   * Returns true if all entries can be deleted. Note: This does not check for
+   * root or fake entries.
+   * @param {!Array<!Entry>} entries
+   * @param {!CommandHandlerDeps} fileManager
+   * @return {boolean}
+   * @private
+   */
+  canDeleteEntries_(entries, fileManager) {
+    return entries.length > 0 &&
+        !this.containsReadOnlyEntry_(entries, fileManager) &&
+        !fileManager.directoryModel.isReadOnly() &&
+        CommandUtil.hasCapability(fileManager, entries, 'canDelete');
+  }
+
+  /**
+   * Returns True if entries can be deleted.
+   * @param {!Array<!Entry>} entries
+   * @param {!CommandHandlerDeps} fileManager
+   * @return {boolean}
+   * @public
+   */
+  canDeleteEntries(entries, fileManager) {
+    // Verify that the entries are not fake or root entries, and that they
+    // can be deleted.
+    if (!entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
+            null, fileManager.volumeManager)) ||
+        !this.canDeleteEntries_(entries, fileManager)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Returns true if any entry belongs to a read-only volume or is
    * forced to be read-only like MyFiles>Downloads.
    * @param {!Array<!Entry>} entries
    * @param {!CommandHandlerDeps} fileManager
-   * @return {boolean} True if entries contain read only entry.
+   * @return {boolean}
+   * @private
    */
   containsReadOnlyEntry_(entries, fileManager) {
     return entries.some(entry => {
@@ -1304,7 +1438,7 @@ CommandHandler.COMMANDS_['rename'] = new class extends Command {
         null;
     const volumeIsNotReadOnly = !!locationInfo && !locationInfo.isReadOnly;
     event.canExecute = entries.length === 1 && volumeIsNotReadOnly &&
-        CommandUtil.hasCapability(entries, 'canRename');
+        CommandUtil.hasCapability(fileManager, entries, 'canRename');
     event.command.setHidden(false);
   }
 };
@@ -1502,7 +1636,7 @@ CommandHandler.COMMANDS_['get-info'] = new class extends Command {
       return;
     }
 
-    event.canExecute = entries.length === 1;
+    event.canExecute = entries.length >= 1;
     event.command.setHidden(false);
   }
 };
@@ -1687,6 +1821,7 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends Command {
 CommandHandler.COMMANDS_['share'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    CommandHandler.recordSharingAction(event, entries);
     const actionsController = fileManager.actionsController;
 
     fileManager.actionsController.getActionsForEntries(entries).then(
@@ -2312,7 +2447,9 @@ CommandHandler.COMMANDS_['open-gear-menu'] = new class extends Command {
  */
 CommandHandler.COMMANDS_['focus-action-bar'] = new class extends Command {
   execute(event, fileManager) {
-    fileManager.ui.actionbar.querySelector('button:not([hidden])').focus();
+    fileManager.ui.actionbar
+        .querySelector('button:not([hidden]), cr-button:not([hidden])')
+        .focus();
   }
 };
 

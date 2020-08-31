@@ -2,13 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {settings.FontsBrowserProxy} */
+// clang-format off
+import 'chrome://settings/settings.js';
+
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {FontsBrowserProxy, FontsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// clang-format on
+
+/** @implements {FontsBrowserProxy} */
 class TestFontsBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'fetchFontsData',
-      'observeAdvancedFontExtensionAvailable',
-      'openAdvancedFontSettings',
     ]);
 
     /** @private {!FontsData} */
@@ -23,16 +29,6 @@ class TestFontsBrowserProxy extends TestBrowserProxy {
     this.methodCalled('fetchFontsData');
     return Promise.resolve(this.fontsData_);
   }
-
-  /** @override */
-  observeAdvancedFontExtensionAvailable() {
-    this.methodCalled('observeAdvancedFontExtensionAvailable');
-  }
-
-  /** @override */
-  openAdvancedFontSettings() {
-    this.methodCalled('openAdvancedFontSettings');
-  }
 }
 
 let fontsPage = null;
@@ -43,7 +39,7 @@ let fontsBrowserProxy = null;
 suite('AppearanceFontHandler', function() {
   setup(function() {
     fontsBrowserProxy = new TestFontsBrowserProxy();
-    settings.FontsBrowserProxyImpl.instance_ = fontsBrowserProxy;
+    FontsBrowserProxyImpl.instance_ = fontsBrowserProxy;
 
     PolymerTest.clearBody();
 
@@ -57,15 +53,6 @@ suite('AppearanceFontHandler', function() {
 
   test('fetchFontsData', function() {
     return fontsBrowserProxy.whenCalled('fetchFontsData');
-  });
-
-  test('openAdvancedFontSettings', function() {
-    cr.webUIListenerCallback('advanced-font-settings-installed', [true]);
-    Polymer.dom.flush();
-    const button = fontsPage.$$('#advancedButton');
-    assert(!!button);
-    button.click();
-    return fontsBrowserProxy.whenCalled('openAdvancedFontSettings');
   });
 
   test('minimum font size sample', async () => {

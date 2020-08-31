@@ -70,6 +70,13 @@ struct SK_API GrContextOptions {
     // Suppress prints for the GrContext.
     bool fSuppressPrints = false;
 
+    /**
+     * Controls whether we check for GL errors after functions that allocate resources (e.g.
+     * glTexImage2D), for shader compilation success, and program link success. Ignored on
+     * backends other than GL.
+     */
+    Enable fSkipGLErrorChecks = Enable::kDefault;
+
     /** Overrides: These options override feature detection using backend API queries. These
         overrides can only reduce the feature set or limits, never increase them beyond the
         detected values. */
@@ -236,6 +243,11 @@ struct SK_API GrContextOptions {
     bool fSuppressGeometryShaders = false;
 
     /**
+     * If true, the caps will never support tessellation shaders.
+     */
+    bool fSuppressTessellationShaders = false;
+
+    /**
      * Render everything in wireframe
      */
     bool fWireframeMode = false;
@@ -248,7 +260,7 @@ struct SK_API GrContextOptions {
     /**
      * Include or exclude specific GPU path renderers.
      */
-    GpuPathRenderers fGpuPathRenderers = GpuPathRenderers::kAll;
+    GpuPathRenderers fGpuPathRenderers = GpuPathRenderers::kDefault;
 #endif
 
 #if SK_SUPPORT_ATLAS_TEXT

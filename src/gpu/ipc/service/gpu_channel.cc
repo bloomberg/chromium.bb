@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/ipc/service/gpu_channel.h"
+#include "base/memory/ptr_util.h"
 
 #include <utility>
 
@@ -21,6 +22,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -137,7 +139,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
   scoped_refptr<ImageDecodeAcceleratorStub> image_decode_accelerator_stub_;
   base::ThreadChecker io_thread_checker_;
 
-  bool allow_crash_for_testing_ = false;
+  bool allow_process_kill_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelMessageFilter);
 };
@@ -157,9 +159,9 @@ GpuChannelMessageFilter::GpuChannelMessageFilter(
               static_cast<int32_t>(
                   GpuChannelReservedRoutes::kImageDecodeAccelerator))) {
   io_thread_checker_.DetachFromThread();
-  allow_crash_for_testing_ = gpu_channel->gpu_channel_manager()
-                                 ->gpu_preferences()
-                                 .enable_gpu_benchmarking_extension;
+  allow_process_kill_for_testing_ = gpu_channel->gpu_channel_manager()
+                                        ->gpu_preferences()
+                                        .enable_gpu_benchmarking_extension;
 }
 
 GpuChannelMessageFilter::~GpuChannelMessageFilter() {
@@ -263,11 +265,18 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
       // harness. Only pay attention to this message if Telemetry's GPU
       // benchmarking extension was enabled via the command line, which
       // exposes privileged APIs to JavaScript.
-      if (allow_crash_for_testing_) {
+      if (allow_process_kill_for_testing_) {
         gl::Crash();
       }
       // Won't be reached if the extension is enabled.
       return MessageErrorHandler(message, "Crashes for testing are disabled");
+    case GpuChannelMsg_TerminateForTesting::ID:
+      if (allow_process_kill_for_testing_) {
+        base::Process::TerminateCurrentProcessImmediately(0);
+        return true;
+      }
+      return MessageErrorHandler(message,
+                                 "Process termination for testing is disabled");
     default:
       break;
   }
@@ -734,7 +743,8 @@ void GpuChannel::OnCreateCommandBuffer(
     stub = std::make_unique<WebGPUCommandBufferStub>(
         this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
   } else if (init_params.attribs.enable_raster_interface &&
-             !init_params.attribs.enable_gles2_interface) {
+             !init_params.attribs.enable_gles2_interface &&
+             !init_params.attribs.enable_grcontext) {
     stub = std::make_unique<RasterCommandBufferStub>(
         this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
   } else {

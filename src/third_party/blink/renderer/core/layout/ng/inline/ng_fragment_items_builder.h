@@ -11,7 +11,6 @@
 
 namespace blink {
 
-class NGBoxFragmentBuilder;
 class NGFragmentItem;
 class NGFragmentItems;
 class NGInlineNode;
@@ -23,7 +22,10 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   STACK_ALLOCATED();
 
  public:
-  NGFragmentItemsBuilder(NGBoxFragmentBuilder* box_builder) {}
+  NGFragmentItemsBuilder() = default;
+  explicit NGFragmentItemsBuilder(const NGInlineNode& node);
+
+  wtf_size_t Size() const { return items_.size(); }
 
   // Returns true if we have any floating descendants which need to be
   // traversed during the float paint phase.
@@ -36,7 +38,6 @@ class CORE_EXPORT NGFragmentItemsBuilder {
                ? first_line_text_content_
                : text_content_;
   }
-  void SetTextContent(const NGInlineNode& node);
 
   // The caller should create a |ChildList| for a complete line and add to this
   // builder.
@@ -59,10 +60,64 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   void AddListMarker(const NGPhysicalBoxFragment& marker_fragment,
                      const LogicalOffset& offset);
 
+  // See |AddPreviousItems| below.
+  struct AddPreviousItemsResult {
+    STACK_ALLOCATED();
+
+   public:
+    const NGInlineBreakToken* inline_break_token = nullptr;
+    LayoutUnit used_block_size;
+    bool succeeded = false;
+  };
+
+  // Add previously laid out |NGFragmentItems|.
+  //
+  // When |stop_at_dirty| is true, this function checks reusability of previous
+  // items and stops copying before the first dirty line.
+  AddPreviousItemsResult AddPreviousItems(
+      const NGFragmentItems& items,
+      WritingMode writing_mode,
+      TextDirection direction,
+      const PhysicalSize& container_size,
+      NGBoxFragmentBuilder* container_builder = nullptr,
+      bool stop_at_dirty = false);
+
+  struct ItemWithOffset {
+    DISALLOW_NEW();
+
+   public:
+    ItemWithOffset(scoped_refptr<const NGFragmentItem> item,
+                   const LogicalOffset& offset)
+        : item(std::move(item)), offset(offset) {}
+    explicit ItemWithOffset(const LogicalOffset& offset) : offset(offset) {}
+
+    const NGFragmentItem& operator*() const { return *item; }
+    const NGFragmentItem* operator->() const { return item.get(); }
+
+    scoped_refptr<const NGFragmentItem> item;
+    LogicalOffset offset;
+  };
+
+  // Give an inline size, the allocation of this vector is hot. "128" is
+  // heuristic. Usually 10-40, some wikipedia pages have >64 items.
+  using ItemWithOffsetList = Vector<ItemWithOffset, 128>;
+
+  // Find |LogicalOffset| of the first |NGFragmentItem| for |LayoutObject|.
+  base::Optional<LogicalOffset> LogicalOffsetFor(const LayoutObject&) const;
+
+  // Converts the |NGFragmentItem| vector to the physical coordinate space and
+  // returns the result. This should only be used for determining the inline
+  // containing block geometry for OOF-positioned nodes.
+  //
+  // Once this method has been called, new items cannot be added.
+  const ItemWithOffsetList& Items(WritingMode,
+                                  TextDirection,
+                                  const PhysicalSize& outer_size);
+
   // Build a |NGFragmentItems|. The builder cannot build twice because data set
   // to this builder may be cleared.
-  void ToFragmentItems(WritingMode writing_mode,
-                       TextDirection direction,
+  void ToFragmentItems(WritingMode,
+                       TextDirection,
                        const PhysicalSize& outer_size,
                        void* data);
 
@@ -73,10 +128,7 @@ class CORE_EXPORT NGFragmentItemsBuilder {
                          TextDirection direction,
                          const PhysicalSize& outer_size);
 
-  void AssociateNextForSameLayoutObject();
-
-  Vector<std::unique_ptr<NGFragmentItem>> items_;
-  Vector<LogicalOffset> offsets_;
+  ItemWithOffsetList items_;
   String text_content_;
   String first_line_text_content_;
 
@@ -84,10 +136,10 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   ChildList current_line_;
 
   bool has_floating_descendants_for_paint_ = false;
+  bool is_converted_to_physical_ = false;
 
 #if DCHECK_IS_ON()
   const NGPhysicalLineBoxFragment* current_line_fragment_ = nullptr;
-  bool is_converted_to_physical_ = false;
 #endif
 
   friend class NGFragmentItems;

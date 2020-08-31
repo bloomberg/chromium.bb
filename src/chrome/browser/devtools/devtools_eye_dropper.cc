@@ -16,18 +16,19 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/cursor_info.h"
 #include "content/public/common/screen_info.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPixmap.h"
+#include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 DevToolsEyeDropper::DevToolsEyeDropper(content::WebContents* web_contents,
@@ -80,9 +81,8 @@ void DevToolsEyeDropper::DetachFromHost() {
   if (!host_)
     return;
   host_->RemoveMouseEventCallback(mouse_event_callback_);
-  content::CursorInfo cursor_info;
-  cursor_info.type = ui::CursorType::kPointer;
-  host_->SetCursor(cursor_info);
+  ui::Cursor cursor(ui::mojom::CursorType::kPointer);
+  host_->SetCursor(cursor);
   video_capturer_.reset();
   host_ = nullptr;
 }
@@ -115,14 +115,14 @@ void DevToolsEyeDropper::ResetFrame() {
 }
 
 bool DevToolsEyeDropper::HandleMouseEvent(const blink::WebMouseEvent& event) {
-  last_cursor_x_ = event.PositionInWidget().x;
-  last_cursor_y_ = event.PositionInWidget().y;
+  last_cursor_x_ = event.PositionInWidget().x();
+  last_cursor_y_ = event.PositionInWidget().y();
   if (frame_.drawsNothing())
     return true;
 
   if (event.button == blink::WebMouseEvent::Button::kLeft &&
-      (event.GetType() == blink::WebInputEvent::kMouseDown ||
-       event.GetType() == blink::WebInputEvent::kMouseMove)) {
+      (event.GetType() == blink::WebInputEvent::Type::kMouseDown ||
+       event.GetType() == blink::WebInputEvent::Type::kMouseMove)) {
     if (last_cursor_x_ < 0 || last_cursor_x_ >= frame_.width() ||
         last_cursor_y_ < 0 || last_cursor_y_ >= frame_.height()) {
       return true;
@@ -254,13 +254,12 @@ void DevToolsEyeDropper::UpdateCursor() {
   paint.setAntiAlias(true);
   canvas.drawCircle(kCursorSize / 2, kCursorSize / 2, kDiameter / 2, paint);
 
-  content::CursorInfo cursor_info;
-  cursor_info.type = ui::CursorType::kCustom;
-  cursor_info.image_scale_factor = device_scale_factor;
-  cursor_info.custom_image = result;
-  cursor_info.hotspot = gfx::Point(kHotspotOffset * device_scale_factor,
-                                   kHotspotOffset * device_scale_factor);
-  host_->SetCursor(cursor_info);
+  ui::Cursor cursor(ui::mojom::CursorType::kCustom);
+  cursor.set_image_scale_factor(device_scale_factor);
+  cursor.set_custom_bitmap(result);
+  cursor.set_custom_hotspot(gfx::Point(kHotspotOffset * device_scale_factor,
+                                       kHotspotOffset * device_scale_factor));
+  host_->SetCursor(cursor);
 }
 
 void DevToolsEyeDropper::OnFrameCaptured(

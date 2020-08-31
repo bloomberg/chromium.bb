@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "content/browser/webauth/virtual_discovery.h"
 #include "content/browser/webauth/virtual_fido_discovery_factory.h"
-#include "content/public/common/content_switches.h"
 #include "device/fido/fido_discovery_factory.h"
 
 namespace content {
@@ -26,13 +25,7 @@ AuthenticatorEnvironmentImpl* AuthenticatorEnvironmentImpl::GetInstance() {
   return environment.get();
 }
 
-AuthenticatorEnvironmentImpl::AuthenticatorEnvironmentImpl() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebAuthTestingAPI)) {
-    replaced_discovery_factory_ =
-        std::make_unique<VirtualFidoDiscoveryFactory>();
-  }
-}
+AuthenticatorEnvironmentImpl::AuthenticatorEnvironmentImpl() = default;
 
 AuthenticatorEnvironmentImpl::~AuthenticatorEnvironmentImpl() = default;
 
@@ -71,7 +64,7 @@ VirtualFidoDiscoveryFactory* AuthenticatorEnvironmentImpl::GetVirtualFactoryFor(
     if (base::Contains(virtual_discovery_factories_, node)) {
       return virtual_discovery_factories_[node].get();
     }
-  } while ((node = node->parent()));
+  } while ((node = FrameTreeNode::From(node->parent())));
   return nullptr;
 }
 

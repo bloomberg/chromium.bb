@@ -15,10 +15,10 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pdf_util.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/find_in_page/find_tab_helper.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/find_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
@@ -263,13 +264,19 @@ class StubDevToolsAgentHostClient : public content::DevToolsAgentHostClient {
   ~StubDevToolsAgentHostClient() override {}
   void AgentHostClosed(content::DevToolsAgentHost* agent_host) override {}
   void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
-                               const std::string& message) override {}
+                               base::span<const uint8_t> message) override {}
 };
 
 }  // namespace
 
+// Flaky on ChromeOS (https://crbug.com/1033009)
+#if defined(OS_CHROMEOS)
+#define MAYBE_GuestDevToolsReloadsEmbedder DISABLED_GuestDevToolsReloadsEmbedder
+#else
+#define MAYBE_GuestDevToolsReloadsEmbedder GuestDevToolsReloadsEmbedder
+#endif
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
-                       GuestDevToolsReloadsEmbedder) {
+                       MAYBE_GuestDevToolsReloadsEmbedder) {
   GURL data_url("data:application/pdf,foo");
   ui_test_utils::NavigateToURL(browser(), data_url);
   auto* embedder_web_contents =
@@ -291,8 +298,10 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest,
 
   // Reload via guest's DevTools, embedder should reload.
   content::TestNavigationObserver reload_observer(embedder_web_contents);
+  constexpr char kMsg[] = R"({"id":1,"method":"Page.reload"})";
   devtools_agent_host->DispatchProtocolMessage(
-      &devtools_agent_host_client, R"({"id":1,"method": "Page.reload"})");
+      &devtools_agent_host_client,
+      base::as_bytes(base::make_span(kMsg, strlen(kMsg))));
   reload_observer.Wait();
   devtools_agent_host->DetachClient(&devtools_agent_host_client);
 }

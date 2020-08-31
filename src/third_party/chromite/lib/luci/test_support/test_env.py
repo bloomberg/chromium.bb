@@ -21,7 +21,7 @@ def setup_test_env():
   """Sets up test environment."""
   global _INITIALIZED  # pylint: disable=global-statement
   if _INITIALIZED:
-    raise Exception('Do not call test_env.setup_test_env() twice.')
+    return
   _INITIALIZED = True
 
   # For 'from components import ...' and 'from test_support import ...'.

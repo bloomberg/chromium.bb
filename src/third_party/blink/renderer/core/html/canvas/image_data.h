@@ -31,9 +31,9 @@
 
 #include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/bindings/core/v8/uint8_clamped_array_or_uint16_array_or_float32_array.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_image_data_color_settings.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
-#include "third_party/blink/renderer/core/html/canvas/image_data_color_settings.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
@@ -104,11 +104,11 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
 
   static ImageData* CreateForTest(const IntSize&);
   static ImageData* CreateForTest(const IntSize&,
-                                  DOMArrayBufferView*,
+                                  NotShared<DOMArrayBufferView>,
                                   const ImageDataColorSettings* = nullptr);
 
   ImageData(const IntSize&,
-            DOMArrayBufferView*,
+            NotShared<DOMArrayBufferView>,
             const ImageDataColorSettings* = nullptr);
 
   ImageData* CropRect(const IntRect&, bool flip_y = false);
@@ -119,7 +119,7 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   static ImageDataStorageFormat GetImageDataStorageFormat(const String&);
   static unsigned StorageFormatDataSize(const String&);
   static unsigned StorageFormatDataSize(ImageDataStorageFormat);
-  static DOMArrayBufferView*
+  static NotShared<DOMArrayBufferView>
   ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
       ArrayBufferContents&,
       CanvasPixelFormat,
@@ -154,9 +154,9 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   // ImageBitmapSource implementation
   IntSize BitmapSourceSize() const override { return size_; }
   ScriptPromise CreateImageBitmap(ScriptState*,
-                                  EventTarget&,
                                   base::Optional<IntRect> crop_rect,
-                                  const ImageBitmapOptions*) override;
+                                  const ImageBitmapOptions*,
+                                  ExceptionState&) override;
 
   void Trace(Visitor*) override;
 
@@ -170,7 +170,7 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
       const IntSize* = nullptr,
       const unsigned& = 0,
       const unsigned& = 0,
-      const DOMArrayBufferView* = nullptr,
+      const NotShared<DOMArrayBufferView> = NotShared<DOMArrayBufferView>(),
       const ImageDataColorSettings* = nullptr,
       ExceptionState* = nullptr);
 
@@ -178,24 +178,24 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   IntSize size_;
   Member<ImageDataColorSettings> color_settings_;
   ImageDataArray data_union_;
-  Member<DOMUint8ClampedArray> data_;
-  Member<DOMUint16Array> data_u16_;
-  Member<DOMFloat32Array> data_f32_;
+  NotShared<DOMUint8ClampedArray> data_;
+  NotShared<DOMUint16Array> data_u16_;
+  NotShared<DOMFloat32Array> data_f32_;
 
-  static DOMArrayBufferView* AllocateAndValidateDataArray(
+  static NotShared<DOMArrayBufferView> AllocateAndValidateDataArray(
       const unsigned&,
       ImageDataStorageFormat,
       ExceptionState* = nullptr);
 
-  static DOMUint8ClampedArray* AllocateAndValidateUint8ClampedArray(
+  static NotShared<DOMUint8ClampedArray> AllocateAndValidateUint8ClampedArray(
       const unsigned&,
       ExceptionState* = nullptr);
 
-  static DOMUint16Array* AllocateAndValidateUint16Array(
+  static NotShared<DOMUint16Array> AllocateAndValidateUint16Array(
       const unsigned&,
       ExceptionState* = nullptr);
 
-  static DOMFloat32Array* AllocateAndValidateFloat32Array(
+  static NotShared<DOMFloat32Array> AllocateAndValidateFloat32Array(
       const unsigned&,
       ExceptionState* = nullptr);
 };

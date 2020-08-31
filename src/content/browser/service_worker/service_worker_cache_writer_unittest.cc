@@ -30,9 +30,9 @@ class MockServiceWorkerCacheWriterObserver
   MockServiceWorkerCacheWriterObserver() : data_length_(0), result_(net::OK) {}
   ~MockServiceWorkerCacheWriterObserver() {}
 
-  int WillWriteInfo(
-      scoped_refptr<HttpResponseInfoIOBuffer> response_info) override {
-    response_info_ = std::move(response_info);
+  int WillWriteResponseHead(
+      const network::mojom::URLResponseHead& response_head) override {
+    response_ = response_head.Clone();
     return net::OK;
   }
 
@@ -54,7 +54,7 @@ class MockServiceWorkerCacheWriterObserver
   // Set the return value of WillWriteData().
   void set_result(net::Error result) { result_ = result; }
 
-  scoped_refptr<HttpResponseInfoIOBuffer> response_info_;
+  network::mojom::URLResponseHeadPtr response_;
   scoped_refptr<net::IOBuffer> data_;
   size_t data_length_;
   base::OnceCallback<void(net::Error)> callback_;
@@ -146,9 +146,13 @@ class ServiceWorkerCacheWriterTest : public ::testing::Test {
   }
 
   net::Error WriteHeaders(size_t len) {
-    scoped_refptr<HttpResponseInfoIOBuffer> buf(new HttpResponseInfoIOBuffer);
-    buf->response_data_size = len;
-    return cache_writer_->MaybeWriteHeaders(buf.get(), CreateWriteCallback());
+    auto response_head = network::mojom::URLResponseHead::New();
+    const char data[] = "HTTP/1.1 200 OK\0\0";
+    response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        std::string(data, base::size(data)));
+    response_head->content_length = len;
+    return cache_writer_->MaybeWriteHeaders(std::move(response_head),
+                                            CreateWriteCallback());
   }
 
   net::Error WriteData(const std::string& data) {
@@ -476,7 +480,10 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareDataOkAsync) {
 
 TEST_F(ServiceWorkerCacheWriterTest, CompareDataManyOkAsync) {
   const std::string expected_data[] = {
-      "abcdef", "ghijkl", "mnopqr", "stuvwxyz",
+      "abcdef",
+      "ghijkl",
+      "mnopqr",
+      "stuvwxyz",
   };
   size_t response_size = 0;
   for (size_t i = 0; i < base::size(expected_data); ++i)
@@ -1118,7 +1125,7 @@ TEST_F(ServiceWorkerCacheWriterTest, ObserverSyncResponseWriterSync) {
   cache_writer_->set_write_observer(&observer);
 
   net::Error error = WriteHeaders(kHeaderSize);
-  EXPECT_TRUE(observer.response_info_);
+  EXPECT_TRUE(observer.response_);
   EXPECT_EQ(net::OK, error);
 
   error = WriteData(data);
@@ -1150,7 +1157,7 @@ TEST_F(ServiceWorkerCacheWriterTest, ObserverAsyncResponseWriterSync) {
 
   net::Error error = WriteHeaders(kHeaderSize);
   EXPECT_EQ(net::OK, error);
-  EXPECT_TRUE(observer.response_info_);
+  EXPECT_TRUE(observer.response_);
 
   error = WriteData(data);
   EXPECT_EQ(net::ERR_IO_PENDING, error);
@@ -1183,7 +1190,7 @@ TEST_F(ServiceWorkerCacheWriterTest, ObserverSyncResponseWriterAsync) {
 
   net::Error error = WriteHeaders(kHeaderSize);
   EXPECT_EQ(net::ERR_IO_PENDING, error);
-  EXPECT_TRUE(observer.response_info_);
+  EXPECT_TRUE(observer.response_);
   writer->CompletePendingWrite();
   EXPECT_TRUE(write_complete_);
   EXPECT_EQ(last_error_, net::OK);
@@ -1220,7 +1227,7 @@ TEST_F(ServiceWorkerCacheWriterTest, ObserverAsyncResponseWriterAsync) {
 
   net::Error error = WriteHeaders(kHeaderSize);
   EXPECT_EQ(net::ERR_IO_PENDING, error);
-  EXPECT_TRUE(observer.response_info_);
+  EXPECT_TRUE(observer.response_);
   writer->CompletePendingWrite();
   EXPECT_TRUE(write_complete_);
   EXPECT_EQ(last_error_, net::OK);
@@ -1255,7 +1262,7 @@ TEST_F(ServiceWorkerCacheWriterTest, ObserverSyncFail) {
   cache_writer_->set_write_observer(&observer);
 
   net::Error error = WriteHeaders(kHeaderSize);
-  EXPECT_TRUE(observer.response_info_);
+  EXPECT_TRUE(observer.response_);
   EXPECT_EQ(net::OK, error);
 
   observer.set_result(net::ERR_FAILED);
@@ -1283,7 +1290,7 @@ TEST_F(ServiceWorkerCacheWriterTest, ObserverAsyncFail) {
 
   net::Error error = WriteHeaders(kHeaderSize);
   EXPECT_EQ(net::OK, error);
-  EXPECT_TRUE(observer.response_info_);
+  EXPECT_TRUE(observer.response_);
 
   error = WriteData(data);
   EXPECT_EQ(net::ERR_IO_PENDING, error);

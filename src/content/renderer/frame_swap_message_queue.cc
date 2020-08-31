@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "ipc/ipc_message.h"
@@ -152,17 +152,6 @@ void FrameSwapMessageQueue::TransferMessages(
     dest->push_back(*msg.get());
   }
   source->clear();
-}
-
-void FrameSwapMessageQueue::NotifyFramesAreDiscarded(
-    bool frames_are_discarded) {
-  DCHECK_CALLED_ON_VALID_THREAD(impl_thread_checker_);
-  frames_are_discarded_ = frames_are_discarded;
-}
-
-bool FrameSwapMessageQueue::AreFramesDiscarded() {
-  DCHECK_CALLED_ON_VALID_THREAD(impl_thread_checker_);
-  return frames_are_discarded_;
 }
 
 }  // namespace content

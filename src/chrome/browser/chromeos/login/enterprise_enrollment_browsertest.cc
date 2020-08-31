@@ -20,15 +20,17 @@
 #include "chrome/browser/chromeos/login/test/enrollment_helper_mixin.h"
 #include "chrome/browser/chromeos/login/test/enrollment_ui_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chrome/browser/policy/enrollment_status.h"
 #include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 
@@ -42,11 +44,12 @@ namespace {
 
 constexpr char kEnrollmentUI[] = "enterprise-enrollment";
 constexpr char kAdDialog[] = "oauth-enroll-ad-join-ui";
-constexpr char kAdErrorCard[] = "oauth-enroll-error-card";
+constexpr char kBackButton[] = "oobe-signin-back-button";
 
 constexpr char kAdUnlockConfigurationStep[] = "unlockStep";
 constexpr char kAdUnlockPasswordInput[] = "unlockPasswordInput";
 constexpr char kAdUnlockButton[] = "unlockButton";
+constexpr char kAdErrorButton[] = "ad-join-error-retry-button";
 constexpr char kSkipButton[] = "skipButton";
 
 constexpr char kAdCredentialsStep[] = "credsStep";
@@ -56,7 +59,6 @@ constexpr char kAdMachineNameInput[] = "machineNameInput";
 constexpr char kAdUsernameInput[] = "userInput";
 constexpr char kAdPasswordInput[] = "passwordInput";
 constexpr char kAdConfigurationSelect[] = "joinConfigSelect";
-constexpr char kSubmitButton[] = "submitButton";
 constexpr char kNextButton[] = "nextButton";
 constexpr char kWebview[] = "oauth-enroll-auth-view";
 constexpr char kPartitionAttribute[] = ".partition";
@@ -139,11 +141,9 @@ class MockAuthPolicyClient : public FakeAuthPolicyClient {
 
 }  // namespace
 
-class EnterpriseEnrollmentTestBase : public LoginManagerTest {
+class EnterpriseEnrollmentTestBase : public OobeBaseTest {
  public:
-  explicit EnterpriseEnrollmentTestBase(bool should_initialize_webui)
-      : LoginManagerTest(true /*should_launch_browser*/,
-                         should_initialize_webui) {}
+  EnterpriseEnrollmentTestBase() = default;
 
   // Submits regular enrollment credentials.
   void SubmitEnrollmentCredentials() {
@@ -175,7 +175,6 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
     OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
     ASSERT_TRUE(enrollment_screen() != nullptr);
     ASSERT_TRUE(WizardController::default_controller() != nullptr);
-    ASSERT_FALSE(StartupUtils::IsOobeCompleted());
   }
 
   // Helper method to return the current EnrollmentScreen instance.
@@ -194,8 +193,7 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
 
 class EnterpriseEnrollmentTest : public EnterpriseEnrollmentTestBase {
  public:
-  EnterpriseEnrollmentTest()
-      : EnterpriseEnrollmentTestBase(true /* should_initialize_webui */) {}
+  EnterpriseEnrollmentTest() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentTest);
@@ -499,33 +497,6 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
 }
 
-// Shows the enrollment screen and mocks the enrollment helper to show license
-// selection step. Selects an option with non-zero license count, and uses that
-// license for enrollment.
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, TestLicenseSelection) {
-  ShowEnrollmentScreen();
-  enrollment_helper_.ExpectEnrollmentMode(
-      policy::EnrollmentConfig::MODE_MANUAL);
-
-  enrollment_helper_.DisableAttributePromptUpdate();
-  enrollment_helper_.ExpectAvailableLicenseCount(1 /* perpetual */,
-                                                 0 /* annual */, 3 /* kiosk */);
-  enrollment_helper_.ExpectSuccessfulEnrollmentWithLicense(
-      policy::LicenseType::KIOSK);
-
-  SubmitEnrollmentCredentials();
-
-  // Make sure the license selection screen is open.
-  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepLicenses);
-  // Click on Kiosk option.
-  enrollment_ui_.SelectEnrollmentLicense(test::values::kLicenseTypeKiosk);
-  // Click on second option. As there is 0 annual licenses, it should not be
-  // selected.
-  enrollment_ui_.SelectEnrollmentLicense(test::values::kLicenseTypeAnnual);
-  enrollment_ui_.UseSelectedLicense();
-  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
-}
-
 // Verifies that the storage partition is updated when the enrollment screen is
 // shown again.
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, StoragePartitionUpdated) {
@@ -538,8 +509,12 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, StoragePartitionUpdated) {
       test::OobeJS().GetString(webview_partition_path);
   EXPECT_FALSE(webview_partition_name_1.empty());
 
-  // Simulate navigating over the enrollment screen a second time (without using
-  // 'Back' and 'Next' buttons).
+  // Cancel button is enabled when the authenticator is ready. Do it manually
+  // instead of waiting for it.
+  test::ExecuteOobeJS("$('enterprise-enrollment').isCancelDisabled = false");
+  test::OobeJS().ClickOnPath({kEnrollmentUI, kBackButton});
+
+  // Simulate navigating over the enrollment screen a second time.
   ShowEnrollmentScreen();
   ExecutePendingJavaScript();
 
@@ -550,20 +525,12 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, StoragePartitionUpdated) {
   test::OobeJS().CreateWaiter(partition_valid_and_changed_condition)->Wait();
 }
 
-// Flaky in debug builds - crbug.com/1021191
-#if !defined(NDEBUG)
-#define MAYBE_TestActiveDirectoryEnrollment_Success \
-  DISABLED_TestActiveDirectoryEnrollment_Success
-#else
-#define MAYBE_TestActiveDirectoryEnrollment_Success \
-  TestActiveDirectoryEnrollment_Success
-#endif
 // Shows the enrollment screen and mocks the enrollment helper to show Active
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory credentials. Verifies that the AuthpolicyClient
 // calls us back with the correct realm.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       MAYBE_TestActiveDirectoryEnrollment_Success) {
+                       TestActiveDirectoryEnrollment_Success) {
   ShowEnrollmentScreen();
   enrollment_helper_.DisableAttributePromptUpdate();
   enrollment_helper_.SetupActiveDirectoryJoin(
@@ -589,18 +556,10 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
 }
 
-// Flaky in debug builds - crbug.com/1021191
-#if !defined(NDEBUG)
-#define MAYBE_TestActiveDirectoryEnrollment_DistinguishedName \
-  DISABLED_TestActiveDirectoryEnrollment_DistinguishedName
-#else
-#define MAYBE_TestActiveDirectoryEnrollment_DistinguishedName \
-  TestActiveDirectoryEnrollment_DistinguishedName
-#endif
 // Verifies that the distinguished name specified on the Active Directory join
 // domain screen correctly parsed and passed into AuthPolicyClient.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       MAYBE_TestActiveDirectoryEnrollment_DistinguishedName) {
+                       TestActiveDirectoryEnrollment_DistinguishedName) {
   ShowEnrollmentScreen();
   enrollment_helper_.DisableAttributePromptUpdate();
   enrollment_helper_.SetupActiveDirectoryJoin(
@@ -630,20 +589,12 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
 }
 
-// Flaky in debug builds - crbug.com/1021191
-#if !defined(NDEBUG)
-#define MAYBE_TestActiveDirectoryEnrollment_UIErrors \
-  DISABLED_TestActiveDirectoryEnrollment_UIErrors
-#else
-#define MAYBE_TestActiveDirectoryEnrollment_UIErrors \
-  TestActiveDirectoryEnrollment_UIErrors
-#endif
 // Shows the enrollment screen and mocks the enrollment helper to show Active
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory different incorrect credentials. Verifies that the
 // correct error is displayed.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       MAYBE_TestActiveDirectoryEnrollment_UIErrors) {
+                       TestActiveDirectoryEnrollment_UIErrors) {
   ShowEnrollmentScreen();
   enrollment_helper_.SetupActiveDirectoryJoin(
       enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
@@ -685,18 +636,10 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   ExpectElementValid(kAdPasswordInput, true);
 }
 
-// Flaky in debug builds - crbug.com/1021191
-#if !defined(NDEBUG)
-#define MAYBE_TestActiveDirectoryEnrollment_ErrorCard \
-  DISABLED_TestActiveDirectoryEnrollment_ErrorCard
-#else
-#define MAYBE_TestActiveDirectoryEnrollment_ErrorCard \
-  TestActiveDirectoryEnrollment_ErrorCard
-#endif
 // Check that correct error card is shown (Active Directory one). Also checks
 // that hitting retry shows Active Directory screen again.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       MAYBE_TestActiveDirectoryEnrollment_ErrorCard) {
+                       TestActiveDirectoryEnrollment_ErrorCard) {
   ShowEnrollmentScreen();
   enrollment_helper_.SetupActiveDirectoryJoin(
       enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
@@ -711,22 +654,14 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                                    "legacy", kAdTestUser, "password");
   WaitForMessage(&message_queue, "\"ShowADJoinError\"");
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
-  test::OobeJS().ClickOnPath({kEnrollmentUI, kAdErrorCard, kSubmitButton});
+  test::OobeJS().ClickOnPath({kEnrollmentUI, kAdErrorButton});
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepADJoin);
 }
 
-// Flaky in debug builds - crbug.com/1021191
-#if !defined(NDEBUG)
-#define MAYBE_TestActiveDirectoryEnrollment_Streamline \
-  DISABLED_TestActiveDirectoryEnrollment_Streamline
-#else
-#define MAYBE_TestActiveDirectoryEnrollment_Streamline \
-  TestActiveDirectoryEnrollment_Streamline
-#endif
 // Check that configuration for the streamline Active Directory domain join
 // propagates correctly to the Domain Join UI.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       MAYBE_TestActiveDirectoryEnrollment_Streamline) {
+                       TestActiveDirectoryEnrollment_Streamline) {
   ShowEnrollmentScreen();
   std::string binary_config;
   EXPECT_TRUE(base::Base64Decode(kAdDomainJoinEncryptedConfig, &binary_config));

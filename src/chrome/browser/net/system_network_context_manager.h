@@ -13,15 +13,16 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
+#include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/dns/dns_config.h"
 #include "services/network/public/mojom/host_resolver.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
 #include "services/network/public/mojom/ssl_config.mojom-forward.h"
-#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -36,6 +37,7 @@ class SharedURLLoaderFactory;
 
 namespace net_log {
 class NetExportFileWriter;
+class NetLogProxySource;
 }
 
 // Responsible for creating and managing access to the system NetworkContext.
@@ -78,6 +80,8 @@ class SystemNetworkContextManager {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  static StubResolverConfigReader* GetStubResolverConfigReader();
+
   // Returns the System NetworkContext. May only be called after SetUp(). Does
   // any initialization of the NetworkService that may be needed when first
   // called.
@@ -113,7 +117,15 @@ class SystemNetworkContextManager {
   void AddSSLConfigToNetworkContextParams(
       network::mojom::NetworkContextParams* network_context_params);
 
-  // Returns default set of parameters for configuring the network service.
+  // Configures default set of parameters for configuring the network context.
+  void ConfigureDefaultNetworkContextParams(
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params);
+
+  // Same as ConfigureDefaultNetworkContextParams() but returns a newly
+  // allocated network::mojom::NetworkContextParams with the
+  // CertVerifierCreationParams already placed into the NetworkContextParams.
   network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams();
 
   // Returns a shared global NetExportFileWriter instance, used by net-export.
@@ -131,13 +143,6 @@ class SystemNetworkContextManager {
   // use only.
   void FlushNetworkInterfaceForTesting();
 
-  // Returns configuration that would be sent to the stub DNS resolver.
-  static void GetStubResolverConfigForTesting(
-      bool* insecure_stub_resolver_enabled,
-      net::DnsConfig::SecureDnsMode* secure_dns_mode,
-      base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
-          dns_over_https_servers);
-
   static network::mojom::HttpAuthStaticParamsPtr
   GetHttpAuthStaticParamsForTesting();
   static network::mojom::HttpAuthDynamicParamsPtr
@@ -148,6 +153,11 @@ class SystemNetworkContextManager {
   // the default state.
   static void SetEnableCertificateTransparencyForTesting(
       base::Optional<bool> enabled);
+
+  static void set_stub_resolver_config_reader_for_testing(
+      StubResolverConfigReader* reader) {
+    stub_resolver_config_reader_for_testing_ = reader;
+  }
 
  private:
   class URLLoaderFactoryForSystem;
@@ -186,8 +196,16 @@ class SystemNetworkContextManager {
 
   BooleanPrefMember enable_referrers_;
 
+  // Copies NetLog events from the browser process to the Network Service, if
+  // the network service is running in a separate process. It will be destroyed
+  // and re-created on Network Service crash.
+  std::unique_ptr<net_log::NetLogProxySource> net_log_proxy_source_;
+
   // Initialized on first access.
   std::unique_ptr<net_log::NetExportFileWriter> net_export_file_writer_;
+
+  StubResolverConfigReader stub_resolver_config_reader_;
+  static StubResolverConfigReader* stub_resolver_config_reader_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemNetworkContextManager);
 };

@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
@@ -103,21 +104,53 @@ MockProducerClient::MockProducerClient(
       num_data_sources_expected_(num_data_sources),
       client_enabled_callback_(std::move(client_enabled_callback)),
       client_disabled_callback_(std::move(client_disabled_callback)) {
-  // We want to set the ProducerClient to this mock, but that 'requires' passing
-  // ownership of ourselves to PerfettoTracedProcess. Since someone else manages
-  // our deletion we need to be careful in the deconstructor to not double free
-  // ourselves.
-  std::unique_ptr<MockProducerClient> client;
-  client.reset(this);
-  old_producer_ = PerfettoTracedProcess::Get()->SetProducerClientForTesting(
-      std::move(client));
+  // Create SMB immediately since we never call ProducerClient's Connect().
+  CHECK(InitSharedMemoryIfNeeded());
 }
 
-MockProducerClient::~MockProducerClient() {
-  // See comment in the constructor. This prevents a double free.
-  auto client = PerfettoTracedProcess::Get()->SetProducerClientForTesting(
-      std::move(old_producer_));
-  client.release();
+MockProducerClient::~MockProducerClient() = default;
+
+// static
+std::unique_ptr<MockProducerClient::Handle> MockProducerClient::Create(
+    uint32_t num_data_sources,
+    base::OnceClosure client_enabled_callback,
+    base::OnceClosure client_disabled_callback) {
+  std::unique_ptr<MockProducerClient> client(new MockProducerClient(
+      num_data_sources, std::move(client_enabled_callback),
+      std::move(client_disabled_callback)));
+  auto handle = std::make_unique<Handle>(client.get());
+
+  // Transfer ownership of the client to PerfettoTracedProcess.
+  PerfettoTracedProcess::Get()
+      ->GetTaskRunner()
+      ->GetOrCreateTaskRunner()
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              [](std::unique_ptr<MockProducerClient> client) {
+                auto* raw_client = client.get();
+                raw_client->old_producer_ =
+                    PerfettoTracedProcess::Get()->SetProducerClientForTesting(
+                        std::move(client));
+              },
+              std::move(client)));
+  return handle;
+}
+
+MockProducerClient::Handle::~Handle() {
+  // Replace the previous client in PerfettoTracedProcess, deleting the mock
+  // as a side-effect.
+  PerfettoTracedProcess::Get()
+      ->GetTaskRunner()
+      ->GetOrCreateTaskRunner()
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              [](std::unique_ptr<ProducerClient> old_producer) {
+                PerfettoTracedProcess::Get()->SetProducerClientForTesting(
+                    std::move(old_producer));
+              },
+              std::move(client_->old_producer_)));
 }
 
 void MockProducerClient::SetupDataSource(const std::string& data_source_name) {}
@@ -216,7 +249,7 @@ void MockConsumer::FreeBuffers() {
 
 void MockConsumer::OnConnect() {
   consumer_endpoint_->ObserveEvents(
-      perfetto::ConsumerEndpoint::kDataSourceInstances);
+      perfetto::ObservableEvents::TYPE_DATA_SOURCES_INSTANCES);
   StartTracing();
 }
 void MockConsumer::OnDisconnect() {}
@@ -302,16 +335,21 @@ void MockConsumer::CheckForAllDataSourcesStopped() {
 MockProducerHost::MockProducerHost(
     const std::string& producer_name,
     const std::string& data_source_name,
-    perfetto::TracingService* service,
+    PerfettoService* service,
     MockProducerClient* producer_client,
     base::OnceClosure datasource_registered_callback)
-    : producer_name_(producer_name),
+    : ProducerHost(service->perfetto_task_runner()),
+      producer_name_(producer_name),
       datasource_registered_callback_(
           std::move(datasource_registered_callback)) {
   mojo::PendingRemote<mojom::ProducerClient> client;
   mojo::PendingRemote<mojom::ProducerHost> host_remote;
   auto client_receiver = client.InitWithNewPipeAndPassReceiver();
-  Initialize(std::move(client), service, producer_name_);
+  Initialize(std::move(client), service->GetService(), producer_name_,
+             static_cast<MojoSharedMemory*>(
+                 producer_client->shared_memory_for_testing())
+                 ->Clone(),
+             PerfettoProducer::kSMBPageSizeBytes);
   receiver_.Bind(host_remote.InitWithNewPipeAndPassReceiver());
   producer_client->BindClientAndHostPipesForTesting(std::move(client_receiver),
                                                     std::move(host_remote));
@@ -347,7 +385,7 @@ void MockProducerHost::OnCommit(
 
 MockProducer::MockProducer(const std::string& producer_name,
                            const std::string& data_source_name,
-                           perfetto::TracingService* service,
+                           PerfettoService* service,
                            base::OnceClosure on_datasource_registered,
                            base::OnceClosure on_tracing_started,
                            size_t num_packets) {
@@ -360,19 +398,17 @@ MockProducer::MockProducer(const std::string& producer_name,
   // from the real client to the mock, however this is done on a different
   // sequence and thus we have a race. By setting the pointer before we
   // construct the data source the TestDataSource can not race.
-  producer_client_ = std::make_unique<MockProducerClient>(
+  producer_client_ = MockProducerClient::Create(
       /* num_data_sources = */ 1, std::move(on_tracing_started));
   data_source_ = TestDataSource::CreateAndRegisterDataSource(data_source_name,
                                                              num_packets);
 
   producer_host_ = std::make_unique<MockProducerHost>(
-      producer_name, data_source_name, service, producer_client_.get(),
+      producer_name, data_source_name, service, **producer_client_,
       std::move(on_datasource_registered));
 }
 
-MockProducer::~MockProducer() {
-  ProducerClient::DeleteSoonForTesting(std::move(producer_client_));
-}
+MockProducer::~MockProducer() = default;
 
 void MockProducer::WritePacketBigly(base::OnceClosure on_write_complete) {
   PerfettoTracedProcess::Get()

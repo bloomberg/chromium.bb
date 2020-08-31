@@ -119,12 +119,12 @@ static void transfer_tile(struct bo *bo, uint8_t *tiled, uint8_t *untiled, enum 
 		if (tiled >= tiled_last)
 			return;
 
-		if (x >= bo->width || y >= bo->height) {
+		if (x >= bo->meta.width || y >= bo->meta.height) {
 			tiled += bytes_per_pixel;
 			continue;
 		}
 
-		tmp = untiled + y * bo->strides[0] + x * bytes_per_pixel;
+		tmp = untiled + y * bo->meta.strides[0] + x * bytes_per_pixel;
 
 		if (type == TEGRA_READ_TILED_BUFFER)
 			memcpy(tmp, tiled, bytes_per_pixel);
@@ -143,7 +143,7 @@ static void transfer_tiled_memory(struct bo *bo, uint8_t *tiled, uint8_t *untile
 	    gob_top, gob_left;
 	uint32_t i, j, offset;
 	uint8_t *tmp, *tiled_last;
-	uint32_t bytes_per_pixel = drv_stride_from_format(bo->format, 1, 0);
+	uint32_t bytes_per_pixel = drv_stride_from_format(bo->meta.format, 1, 0);
 
 	/*
 	 * The blocklinear format consists of 8*(2^n) x 64 byte sized tiles,
@@ -152,16 +152,16 @@ static void transfer_tiled_memory(struct bo *bo, uint8_t *tiled, uint8_t *untile
 	gob_width = DIV_ROUND_UP(NV_BLOCKLINEAR_GOB_WIDTH, bytes_per_pixel);
 	gob_height = NV_BLOCKLINEAR_GOB_HEIGHT * (1 << NV_DEFAULT_BLOCK_HEIGHT_LOG2);
 	/* Calculate the height from maximum possible gob height */
-	while (gob_height > NV_BLOCKLINEAR_GOB_HEIGHT && gob_height >= 2 * bo->height)
+	while (gob_height > NV_BLOCKLINEAR_GOB_HEIGHT && gob_height >= 2 * bo->meta.height)
 		gob_height /= 2;
 
 	gob_size_bytes = gob_height * NV_BLOCKLINEAR_GOB_WIDTH;
 	gob_size_pixels = gob_height * gob_width;
 
-	gob_count_x = DIV_ROUND_UP(bo->strides[0], NV_BLOCKLINEAR_GOB_WIDTH);
-	gob_count_y = DIV_ROUND_UP(bo->height, gob_height);
+	gob_count_x = DIV_ROUND_UP(bo->meta.strides[0], NV_BLOCKLINEAR_GOB_WIDTH);
+	gob_count_y = DIV_ROUND_UP(bo->meta.height, gob_height);
 
-	tiled_last = tiled + bo->total_size;
+	tiled_last = tiled + bo->meta.total_size;
 
 	offset = 0;
 	for (j = 0; j < gob_count_y; j++) {
@@ -234,9 +234,9 @@ static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint3
 	}
 
 	bo->handles[0].u32 = gem_create.handle;
-	bo->offsets[0] = 0;
-	bo->total_size = bo->sizes[0] = size;
-	bo->strides[0] = stride;
+	bo->meta.offsets[0] = 0;
+	bo->meta.total_size = bo->meta.sizes[0] = size;
+	bo->meta.strides[0] = stride;
 
 	if (kind != NV_MEM_KIND_PITCH) {
 		struct drm_tegra_gem_set_tiling gem_tile;
@@ -254,8 +254,8 @@ static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint3
 		}
 
 		/* Encode blocklinear parameters for EGLImage creation. */
-		bo->tiling = (kind & 0xff) | ((block_height_log2 & 0xf) << 8);
-		bo->format_modifiers[0] = fourcc_mod_code(NV, bo->tiling);
+		bo->meta.tiling = (kind & 0xff) | ((block_height_log2 & 0xf) << 8);
+		bo->meta.format_modifiers[0] = fourcc_mod_code(NV, bo->meta.tiling);
 	}
 
 	return 0;
@@ -283,16 +283,16 @@ static int tegra_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	/* NOTE(djmk): we only know about one tiled format, so if our drmIoctl call tells us we are
 	   tiled, assume it is this format (NV_MEM_KIND_C32_2CRA) otherwise linear (KIND_PITCH). */
 	if (gem_get_tiling.mode == DRM_TEGRA_GEM_TILING_MODE_PITCH) {
-		bo->tiling = NV_MEM_KIND_PITCH;
+		bo->meta.tiling = NV_MEM_KIND_PITCH;
 	} else if (gem_get_tiling.mode == DRM_TEGRA_GEM_TILING_MODE_BLOCK) {
-		bo->tiling = NV_MEM_KIND_C32_2CRA;
+		bo->meta.tiling = NV_MEM_KIND_C32_2CRA;
 	} else {
 		drv_log("%s: unknown tile format %d\n", __func__, gem_get_tiling.mode);
 		drv_gem_bo_destroy(bo);
 		assert(0);
 	}
 
-	bo->format_modifiers[0] = fourcc_mod_code(NV, bo->tiling);
+	bo->meta.format_modifiers[0] = fourcc_mod_code(NV, bo->meta.tiling);
 	return 0;
 }
 
@@ -311,12 +311,12 @@ static void *tegra_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t
 		return MAP_FAILED;
 	}
 
-	void *addr = mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+	void *addr = mmap(0, bo->meta.total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 			  gem_map.offset);
-	vma->length = bo->total_size;
-	if ((bo->tiling & 0xFF) == NV_MEM_KIND_C32_2CRA && addr != MAP_FAILED) {
+	vma->length = bo->meta.total_size;
+	if ((bo->meta.tiling & 0xFF) == NV_MEM_KIND_C32_2CRA && addr != MAP_FAILED) {
 		priv = calloc(1, sizeof(*priv));
-		priv->untiled = calloc(1, bo->total_size);
+		priv->untiled = calloc(1, bo->meta.total_size);
 		priv->tiled = addr;
 		vma->priv = priv;
 		transfer_tiled_memory(bo, priv->tiled, priv->untiled, TEGRA_READ_TILED_BUFFER);

@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/contact_info.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
-#include "third_party/icu/source/i18n/unicode/translit.h"
 
 namespace autofill {
 
@@ -144,7 +143,7 @@ class AutofillProfileComparator {
   // profile.
   static std::string MergeProfile(
       const AutofillProfile& new_profile,
-      std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
+      const std::vector<std::unique_ptr<AutofillProfile>>& existing_profiles,
       const std::string& app_locale,
       std::vector<AutofillProfile>* merged_profiles);
 
@@ -244,7 +243,6 @@ class AutofillProfileComparator {
 
  private:
   l10n::CaseInsensitiveCompare case_insensitive_compare_;
-  std::unique_ptr<icu::Transliterator> transliterator_;
   const std::string app_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileComparator);

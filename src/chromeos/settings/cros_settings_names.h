@@ -40,6 +40,10 @@ extern const char kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kAccountsPrefDeviceLocalAccountsKeyWebKioskUrl[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kAccountsPrefDeviceLocalAccountsKeyWebKioskTitle[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kAccountsPrefDeviceLocalAccountsKeyWebKioskIconUrl[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kAccountsPrefDeviceLocalAccountAutoLoginId[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kAccountsPrefDeviceLocalAccountAutoLoginDelay[];
@@ -81,6 +85,12 @@ extern const char kReportDeviceActivityTimes[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceBoardStatus[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceBootMode[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceCpuInfo[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kReportDeviceTimezoneInfo[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceMemoryInfo[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kReportDeviceBacklightInfo[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceLocation[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceNetworkInterfaces[];
@@ -93,9 +103,14 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceHardwareStatus[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceSessionStatus[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kReportDeviceGraphicsStatus[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kReportDeviceCrashReportInfo[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportOsUpdateStatus[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportRunningKioskApp[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportUploadFrequency[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceAppInfo[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kHeartbeatEnabled[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kHeartbeatFrequency[];
@@ -195,7 +210,7 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kTPMFirmwareUpdateSettings[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
-extern const char kMinimumRequiredChromeVersion[];
+extern const char kMinimumChromeVersionEnforced[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kCastReceiverName[];
 
@@ -237,6 +252,14 @@ extern const char kDevicePowerwashAllowed[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceWebBasedAttestationAllowedUrls[];
+
+COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kSystemProxySettings[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kSystemProxySettingsKeyEnabled[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kSystemProxySettingsKeySystemServicesUsername[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kSystemProxySettingsKeySystemServicesPassword[];
 
 }  // namespace chromeos
 

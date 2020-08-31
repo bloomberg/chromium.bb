@@ -5,6 +5,7 @@
 #include "ui/views/animation/square_ink_drop_ripple.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "ui/compositor/layer.h"
@@ -159,7 +160,7 @@ SquareInkDropRipple::SquareInkDropRipple(const gfx::Size& large_size,
       rect_layer_delegate_(
           new RectangleLayerDelegate(color, gfx::SizeF(large_size_))),
       root_layer_(ui::LAYER_NOT_DRAWN) {
-  root_layer_.set_name("SquareInkDropRipple:ROOT_LAYER");
+  root_layer_.SetName("SquareInkDropRipple:ROOT_LAYER");
 
   for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
     AddPaintLayer(static_cast<PaintedShape>(i));
@@ -309,15 +310,17 @@ void SquareInkDropRipple::AnimateStateChange(
       AnimateToOpacity(visible_opacity_, visible_duration,
                        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                        gfx::Tween::EASE_IN_OUT, animation_observer);
-      AnimateToOpacity(kHiddenOpacity, GetAnimationDuration(
-                                           ALTERNATE_ACTION_TRIGGERED_FADE_OUT),
-                       ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
-                       gfx::Tween::EASE_IN_OUT, animation_observer);
+      AnimateToOpacity(
+          kHiddenOpacity,
+          GetAnimationDuration(ALTERNATE_ACTION_TRIGGERED_FADE_OUT),
+          ui::LayerAnimator::ENQUEUE_NEW_ANIMATION, gfx::Tween::EASE_IN_OUT,
+          animation_observer);
       CalculateRectTransforms(large_size_, large_corner_radius_, &transforms);
-      AnimateToTransforms(transforms, GetAnimationDuration(
-                                          ALTERNATE_ACTION_TRIGGERED_TRANSFORM),
-                          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
-                          gfx::Tween::EASE_IN_OUT, animation_observer);
+      AnimateToTransforms(
+          transforms,
+          GetAnimationDuration(ALTERNATE_ACTION_TRIGGERED_TRANSFORM),
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+          gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
     }
     case InkDropState::ACTIVATED: {
@@ -592,7 +595,7 @@ void SquareInkDropRipple::AddPaintLayer(PaintedShape painted_shape) {
   layer->SetVisible(true);
   layer->SetOpacity(1.0);
   layer->SetMasksToBounds(false);
-  layer->set_name("PAINTED_SHAPE_COUNT:" + ToLayerName(painted_shape));
+  layer->SetName("PAINTED_SHAPE_COUNT:" + ToLayerName(painted_shape));
 
   painted_layers_[painted_shape].reset(layer);
 }

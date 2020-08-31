@@ -7,6 +7,7 @@ package org.chromium.weblayer.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
@@ -14,19 +15,24 @@ import static org.chromium.content_public.browser.test.util.TestThreadUtils.runO
 import android.net.Uri;
 import android.support.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.net.test.util.TestWebServer;
 import org.chromium.weblayer.LoadError;
+import org.chromium.weblayer.NavigateParams;
 import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.NavigationState;
+import org.chromium.weblayer.Tab;
+import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.ArrayList;
@@ -34,11 +40,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Example test that just starts the weblayer shell.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(WebLayerJUnit4ClassRunner.class)
 public class NavigationTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =
@@ -48,6 +55,7 @@ public class NavigationTest {
     private static final String URL1 = "data:text,foo";
     private static final String URL2 = "data:text,bar";
     private static final String URL3 = "data:text,baz";
+    private static final String URL4 = "data:text,bat";
 
     private static class Callback extends NavigationCallback {
         public static class NavigationCallbackHelper extends CallbackHelper {
@@ -117,14 +125,7 @@ public class NavigationTest {
 
             public void waitUntilValueObserved(String expectation) {
                 CriteriaHelper.pollInstrumentationThread(
-                        new Criteria() {
-                            @Override
-                            public boolean isSatisfied() {
-                                return mObservedValues.contains(expectation);
-                            }
-                        },
-                        CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL,
-                        CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+                        () -> Assert.assertThat(expectation, Matchers.isIn(mObservedValues)));
             }
         }
 
@@ -240,6 +241,39 @@ public class NavigationTest {
 
     @Test
     @SmallTest
+    public void testReplace() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        setNavigationCallback(activity);
+
+        final NavigateParams params =
+                new NavigateParams.Builder().setShouldReplaceCurrentEntry(true).build();
+        navigateAndWaitForCompletion(URL2,
+                ()
+                        -> activity.getTab().getNavigationController().navigate(
+                                Uri.parse(URL2), params));
+        runOnUiThreadBlocking(() -> {
+            NavigationController navigationController = activity.getTab().getNavigationController();
+            assertFalse(navigationController.canGoForward());
+            assertFalse(navigationController.canGoBack());
+            assertEquals(1, navigationController.getNavigationListSize());
+        });
+
+        // Verify that a default NavigateParams does not replace.
+        final NavigateParams params2 = new NavigateParams();
+        navigateAndWaitForCompletion(URL3,
+                ()
+                        -> activity.getTab().getNavigationController().navigate(
+                                Uri.parse(URL3), params2));
+        runOnUiThreadBlocking(() -> {
+            NavigationController navigationController = activity.getTab().getNavigationController();
+            assertFalse(navigationController.canGoForward());
+            assertTrue(navigationController.canGoBack());
+            assertEquals(2, navigationController.getNavigationListSize());
+        });
+    }
+
+    @Test
+    @SmallTest
     public void testGoBackAndForward() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
         setNavigationCallback(activity);
@@ -272,6 +306,41 @@ public class NavigationTest {
         });
 
         runOnUiThreadBlocking(() -> { assertFalse(navigationController.canGoForward()); });
+    }
+
+    @Test
+    @SmallTest
+    public void testGoToIndex() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        setNavigationCallback(activity);
+
+        mActivityTestRule.navigateAndWait(URL2);
+        mActivityTestRule.navigateAndWait(URL3);
+        mActivityTestRule.navigateAndWait(URL4);
+
+        // Navigate back to the 2nd url.
+        assertEquals(URL2, goToIndexAndReturnUrl(activity.getTab(), 1));
+
+        // Navigate forwards to the 4th url.
+        assertEquals(URL4, goToIndexAndReturnUrl(activity.getTab(), 3));
+    }
+
+    @Test
+    @SmallTest
+    public void testGetNavigationEntryTitle() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(
+                "data:text/html,<head><title>Page A</title></head>");
+        setNavigationCallback(activity);
+
+        mActivityTestRule.navigateAndWait("data:text/html,<head><title>Page B</title></head>");
+        mActivityTestRule.navigateAndWait("data:text/html,<head><title>Page C</title></head>");
+
+        runOnUiThreadBlocking(() -> {
+            NavigationController navigationController = activity.getTab().getNavigationController();
+            assertEquals("Page A", navigationController.getNavigationEntryTitle(0));
+            assertEquals("Page B", navigationController.getNavigationEntryTitle(1));
+            assertEquals("Page C", navigationController.getNavigationEntryTitle(2));
+        });
     }
 
     @Test
@@ -376,12 +445,49 @@ public class NavigationTest {
 
         int curCompletedCount = mCallback.onCompletedCallback.getCallCount();
 
-        mActivityTestRule.navigateAndWait(url);
+        // navigateAndWait() expects a success code, so it won't work here.
+        runOnUiThreadBlocking(
+                () -> { activity.getTab().getNavigationController().navigate(Uri.parse(url)); });
 
         mCallback.onCompletedCallback.assertCalledWith(
                 curCompletedCount, url, LoadError.HTTP_CLIENT_ERROR);
         assertEquals(mCallback.onCompletedCallback.getHttpStatusCode(), 404);
         assertEquals(mCallback.onCompletedCallback.getNavigationState(), NavigationState.COMPLETE);
+    }
+
+    @Test
+    @SmallTest
+    public void testRepostConfirmation() throws Exception {
+        // Load a page with a form.
+        InstrumentationActivity activity =
+                mActivityTestRule.launchShellWithUrl(mActivityTestRule.getTestDataURL("form.html"));
+        assertNotNull(activity);
+        setNavigationCallback(activity);
+
+        // Touch the page; this should submit the form.
+        int currentCallCount = mCallback.onCompletedCallback.getCallCount();
+        EventUtils.simulateTouchCenterOfView(activity.getWindow().getDecorView());
+        String targetUrl = mActivityTestRule.getTestDataURL("simple_page.html");
+        mCallback.onCompletedCallback.assertCalledWith(currentCallCount, targetUrl);
+
+        // Make sure a tab modal shows after we attempt a reload.
+        Boolean isTabModalShowingResult[] = new Boolean[1];
+        CallbackHelper callbackHelper = new CallbackHelper();
+        runOnUiThreadBlocking(() -> {
+            Tab tab = activity.getTab();
+            TabCallback callback = new TabCallback() {
+                @Override
+                public void onTabModalStateChanged(boolean isTabModalShowing) {
+                    isTabModalShowingResult[0] = isTabModalShowing;
+                    callbackHelper.notifyCalled();
+                }
+            };
+            tab.registerTabCallback(callback);
+            tab.getNavigationController().reload();
+        });
+
+        callbackHelper.waitForFirst();
+        assertTrue(isTabModalShowingResult[0]);
     }
 
     private void setNavigationCallback(InstrumentationActivity activity) {
@@ -391,10 +497,195 @@ public class NavigationTest {
                                 mCallback));
     }
 
+    private void registerNavigationCallback(NavigationCallback callback) {
+        runOnUiThreadBlocking(()
+                                      -> mActivityTestRule.getActivity()
+                                                 .getTab()
+                                                 .getNavigationController()
+                                                 .registerNavigationCallback(callback));
+    }
+
     private void navigateAndWaitForCompletion(String expectedUrl, Runnable navigateRunnable)
             throws Exception {
         int currentCallCount = mCallback.onCompletedCallback.getCallCount();
         runOnUiThreadBlocking(navigateRunnable);
         mCallback.onCompletedCallback.assertCalledWith(currentCallCount, expectedUrl);
+    }
+
+    private String goToIndexAndReturnUrl(Tab tab, int index) throws Exception {
+        NavigationController navigationController =
+                runOnUiThreadBlocking(() -> tab.getNavigationController());
+
+        final BoundedCountDownLatch navigationComplete = new BoundedCountDownLatch(1);
+        final AtomicReference<String> navigationUrl = new AtomicReference<String>();
+        NavigationCallback navigationCallback = new NavigationCallback() {
+            @Override
+            public void onNavigationCompleted(Navigation navigation) {
+                navigationComplete.countDown();
+                navigationUrl.set(navigation.getUri().toString());
+            }
+        };
+
+        runOnUiThreadBlocking(() -> {
+            navigationController.registerNavigationCallback(navigationCallback);
+            navigationController.goToIndex(index);
+        });
+
+        navigationComplete.timedAwait();
+
+        runOnUiThreadBlocking(
+                () -> { navigationController.unregisterNavigationCallback(navigationCallback); });
+
+        return navigationUrl.get();
+    }
+
+    @Test
+    @SmallTest
+    public void testStopFromOnNavigationStarted() throws Exception {
+        final InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
+        final BoundedCountDownLatch doneLatch = new BoundedCountDownLatch(1);
+        NavigationCallback navigationCallback = new NavigationCallback() {
+            @Override
+            public void onNavigationStarted(Navigation navigation) {
+                activity.getTab().getNavigationController().stop();
+                doneLatch.countDown();
+            }
+        };
+        runOnUiThreadBlocking(() -> {
+            NavigationController controller = activity.getTab().getNavigationController();
+            controller.registerNavigationCallback(navigationCallback);
+            controller.navigate(Uri.parse(URL1));
+        });
+        doneLatch.timedAwait();
+    }
+
+    // NavigationCallback implementation that sets a header in either start or redirect.
+    private static final class HeaderSetter extends NavigationCallback {
+        private final String mName;
+        private final String mValue;
+        private final boolean mInStart;
+        public boolean mGotIllegalArgumentException;
+
+        HeaderSetter(String name, String value, boolean inStart) {
+            mName = name;
+            mValue = value;
+            mInStart = inStart;
+        }
+
+        @Override
+        public void onNavigationStarted(Navigation navigation) {
+            if (mInStart) applyHeader(navigation);
+        }
+
+        @Override
+        public void onNavigationRedirected(Navigation navigation) {
+            if (!mInStart) applyHeader(navigation);
+        }
+
+        private void applyHeader(Navigation navigation) {
+            try {
+                navigation.setRequestHeader(mName, mValue);
+            } catch (IllegalArgumentException e) {
+                mGotIllegalArgumentException = true;
+            }
+        }
+    }
+
+    @Test
+    @SmallTest
+    public void testSetRequestHeaderInStart() throws Exception {
+        TestWebServer testServer = TestWebServer.start();
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
+        String headerName = "header";
+        String headerValue = "value";
+        HeaderSetter setter = new HeaderSetter(headerName, headerValue, true);
+        registerNavigationCallback(setter);
+        String url = testServer.setResponse("/ok.html", "<html>ok</html>", null);
+        mActivityTestRule.navigateAndWait(url);
+        assertFalse(setter.mGotIllegalArgumentException);
+        assertEquals(headerValue, testServer.getLastRequest("/ok.html").headerValue(headerName));
+    }
+
+    @Test
+    @SmallTest
+    public void testSetRequestHeaderInRedirect() throws Exception {
+        TestWebServer testServer = TestWebServer.start();
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
+        String headerName = "header";
+        String headerValue = "value";
+        HeaderSetter setter = new HeaderSetter(headerName, headerValue, false);
+        registerNavigationCallback(setter);
+        // The destination of the redirect.
+        String finalUrl = testServer.setResponse("/ok.html", "<html>ok</html>", null);
+        // The url that redirects to |finalUrl|.
+        String redirectingUrl = testServer.setRedirect("/redirect.html", finalUrl);
+        Tab tab = mActivityTestRule.getActivity().getTab();
+        NavigationWaiter waiter = new NavigationWaiter(finalUrl, tab, false, false);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { tab.getNavigationController().navigate(Uri.parse(redirectingUrl)); });
+        waiter.waitForNavigation();
+        assertFalse(setter.mGotIllegalArgumentException);
+        assertEquals(headerValue, testServer.getLastRequest("/ok.html").headerValue(headerName));
+    }
+
+    @Test
+    @SmallTest
+    public void testSetRequestHeaderThrowsExceptionInCompleted() throws Exception {
+        mActivityTestRule.launchShellWithUrl(null);
+        boolean gotCompleted[] = new boolean[1];
+        NavigationCallback navigationCallback = new NavigationCallback() {
+            @Override
+            public void onNavigationCompleted(Navigation navigation) {
+                gotCompleted[0] = true;
+                boolean gotException = false;
+                try {
+                    navigation.setRequestHeader("name", "value");
+                } catch (IllegalStateException e) {
+                    gotException = true;
+                }
+                assertTrue(gotException);
+            }
+        };
+        registerNavigationCallback(navigationCallback);
+        mActivityTestRule.navigateAndWait(URL1);
+        assertTrue(gotCompleted[0]);
+    }
+
+    @Test
+    @SmallTest
+    public void testSetRequestHeaderThrowsExceptionWithInvalidValue() throws Exception {
+        mActivityTestRule.launchShellWithUrl(null);
+        HeaderSetter setter = new HeaderSetter("name", "\0", true);
+        registerNavigationCallback(setter);
+        mActivityTestRule.navigateAndWait(URL1);
+        assertTrue(setter.mGotIllegalArgumentException);
+    }
+
+    // NavigationCallback implementation that sets the user-agent string in onNavigationStarted().
+    private static final class UserAgentSetter extends NavigationCallback {
+        private final String mValue;
+
+        UserAgentSetter(String value) {
+            mValue = value;
+        }
+
+        @Override
+        public void onNavigationStarted(Navigation navigation) {
+            navigation.setUserAgentString(mValue);
+        }
+    }
+
+    @Test
+    @SmallTest
+    public void testSetUserAgentString() throws Exception {
+        TestWebServer testServer = TestWebServer.start();
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
+        String customUserAgent = "custom-ua";
+        UserAgentSetter setter = new UserAgentSetter(customUserAgent);
+        registerNavigationCallback(setter);
+        String url = testServer.setResponse("/ok.html", "<html>ok</html>", null);
+        mActivityTestRule.navigateAndWait(url);
+        String actualUserAgent = testServer.getLastRequest("/ok.html").headerValue("User-Agent");
+        assertEquals(customUserAgent, actualUserAgent);
     }
 }

@@ -65,6 +65,15 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Marks |packet_number| as no longer in flight.
   void RemoveFromInFlight(QuicPacketNumber packet_number);
 
+  // Called to neuter all unencrypted packets to ensure they do not get
+  // retransmitted. Returns a vector of neutered packet numbers.
+  QuicInlinedVector<QuicPacketNumber, 2> NeuterUnencryptedPackets();
+
+  // Called to neuter packets in handshake packet number space to ensure they do
+  // not get retransmitted. Returns a vector of neutered packet numbers.
+  // TODO(fayang): Consider to combine this with NeuterUnencryptedPackets.
+  QuicInlinedVector<QuicPacketNumber, 2> NeuterHandshakePackets();
+
   // Returns true if |packet_number| has retransmittable frames. This will
   // return false if all frames of this packet are either non-retransmittable or
   // have been acked.
@@ -100,7 +109,7 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   // been acked by the peer.  If there are no unacked packets, returns 0.
   QuicPacketNumber GetLeastUnacked() const;
 
-  // This can not be a QuicDeque since pointers into this are
+  // This can not be a QuicCircularDeque since pointers into this are
   // assumed to be stable.
   typedef std::deque<QuicTransmissionInfo> UnackedPacketMap;
 
@@ -203,6 +212,18 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   QuicPacketNumber GetLargestSentPacketOfPacketNumberSpace(
       EncryptionLevel encryption_level) const;
 
+  // Returns last in flight packet sent time of |packet_number_space|.
+  QuicTime GetLastInFlightPacketSentTime(
+      PacketNumberSpace packet_number_space) const;
+
+  // Returns TransmissionInfo of the first in flight packet.
+  const QuicTransmissionInfo* GetFirstInFlightTransmissionInfo() const;
+
+  // Returns TransmissionInfo of first in flight packet in
+  // |packet_number_space|.
+  const QuicTransmissionInfo* GetFirstInFlightTransmissionInfoOfSpace(
+      PacketNumberSpace packet_number_space) const;
+
   void SetSessionNotifier(SessionNotifierInterface* session_notifier);
 
   void EnableMultiplePacketNumberSpacesSupport();
@@ -236,8 +257,6 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   const Perspective perspective_;
 
   QuicPacketNumber largest_sent_packet_;
-  // Only used when supports_multiple_packet_number_spaces_ is true.
-  QuicPacketNumber largest_sent_packets_[NUM_PACKET_NUMBER_SPACES];
   // The largest sent packet we expect to receive an ack for per packet number
   // space.
   QuicPacketNumber
@@ -266,6 +285,8 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
 
   // Time that the last inflight packet was sent.
   QuicTime last_inflight_packet_sent_time_;
+  // Time that the last in flight packet was sent per packet number space.
+  QuicTime last_inflight_packets_sent_time_[NUM_PACKET_NUMBER_SPACES];
 
   // Time that the last unacked crypto packet was sent.
   QuicTime last_crypto_packet_sent_time_;

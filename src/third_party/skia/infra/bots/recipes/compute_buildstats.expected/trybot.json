@@ -232,7 +232,7 @@
       "[START_DIR]/cache/work/skia/infra/bots/buildstats/buildstats_wasm.py",
       "[START_DIR]/build/pathkit.wasm",
       "[START_DIR]/[SWARM_OUT_DIR]",
-      "compiler EMCC configuration Release extra_config PathKit os Debian9 target_arch wasm",
+      "compiler EMCC configuration Release extra_config PathKit os Debian10 target_arch wasm",
       "gitHash abc123 swarming_bot_id skia-bot-123 swarming_task_id 123456abc issue 456789 patchset 12 patch_storage gerrit",
       "[START_DIR]/bloaty/bloaty"
     ],
@@ -287,7 +287,7 @@
       "[START_DIR]/cache/work/skia/infra/bots/buildstats/buildstats_web.py",
       "[START_DIR]/build/pathkit.js",
       "[START_DIR]/[SWARM_OUT_DIR]",
-      "compiler EMCC configuration Release extra_config PathKit os Debian9 target_arch wasm",
+      "compiler EMCC configuration Release extra_config PathKit os Debian10 target_arch wasm",
       "gitHash abc123 swarming_bot_id skia-bot-123 swarming_task_id 123456abc issue 456789 patchset 12 patch_storage gerrit"
     ],
     "cwd": "[START_DIR]/cache/work/skia",
@@ -323,7 +323,7 @@
       "[START_DIR]/cache/work/skia/infra/bots/buildstats/buildstats_web.py",
       "[START_DIR]/build/pathkit.js.mem",
       "[START_DIR]/[SWARM_OUT_DIR]",
-      "compiler EMCC configuration Release extra_config PathKit os Debian9 target_arch wasm",
+      "compiler EMCC configuration Release extra_config PathKit os Debian10 target_arch wasm",
       "gitHash abc123 swarming_bot_id skia-bot-123 swarming_task_id 123456abc issue 456789 patchset 12 patch_storage gerrit"
     ],
     "cwd": "[START_DIR]/cache/work/skia",
@@ -359,7 +359,7 @@
       "[START_DIR]/cache/work/skia/infra/bots/buildstats/buildstats_flutter.py",
       "[START_DIR]/build/libflutter_stripped.so",
       "[START_DIR]/[SWARM_OUT_DIR]",
-      "compiler EMCC configuration Release extra_config PathKit os Debian9 target_arch wasm",
+      "compiler EMCC configuration Release extra_config PathKit os Debian10 target_arch wasm",
       "gitHash abc123 swarming_bot_id skia-bot-123 swarming_task_id 123456abc issue 456789 patchset 12 patch_storage gerrit",
       "[START_DIR]/bloaty/bloaty",
       "[START_DIR]/build/libflutter.so"
@@ -425,7 +425,7 @@
       "[START_DIR]/cache/work/skia/infra/bots/buildstats/buildstats_cpp.py",
       "[START_DIR]/build/libskia.so",
       "[START_DIR]/[SWARM_OUT_DIR]",
-      "compiler EMCC configuration Release extra_config PathKit os Debian9 target_arch wasm",
+      "compiler EMCC configuration Release extra_config PathKit os Debian10 target_arch wasm",
       "gitHash abc123 swarming_bot_id skia-bot-123 swarming_task_id 123456abc issue 456789 patchset 12 patch_storage gerrit",
       "[START_DIR]/bloaty/bloaty"
     ],
@@ -469,7 +469,42 @@
       "DOCKER_CONFIG": "/home/chrome-bot/.docker",
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
-    "name": "Make code size treemap"
+    "name": "Make code size treemap [START_DIR]/build/skottie_tool"
+  },
+  {
+    "cmd": [
+      "vpython",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "glob",
+      "[START_DIR]/build",
+      "dm"
+    ],
+    "cwd": "[START_DIR]/build",
+    "infra_step": true,
+    "name": "find dm",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@glob@[START_DIR]/build/dm@@@",
+      "@@@STEP_LOG_END@glob@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "[START_DIR]/cache/work/skia/infra/bots/buildstats/make_treemap.py",
+      "[START_DIR]/build/dm",
+      "[START_DIR]/[SWARM_OUT_DIR]"
+    ],
+    "cwd": "[START_DIR]/cache/work/skia",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "DOCKER_CONFIG": "/home/chrome-bot/.docker",
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "name": "Make code size treemap [START_DIR]/build/dm"
   },
   {
     "name": "$result"

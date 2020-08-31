@@ -22,6 +22,8 @@ class GrShaderCaps;
  */
 class GrProgramDesc {
 public:
+    GrProgramDesc(const GrProgramDesc& other) : fKey(other.fKey) {}   // for SkLRUCache
+
     bool isValid() const { return !fKey.empty(); }
 
     // Returns this as a uint32_t array to be used as a key in the program cache.
@@ -67,6 +69,7 @@ public:
 
 protected:
     friend class GrDawnCaps;
+    friend class GrD3DCaps;
     friend class GrGLCaps;
     friend class GrMockCaps;
     friend class GrMtlCaps;
@@ -101,7 +104,7 @@ protected:
     // TODO: this should be removed and converted to just data added to the key
     struct KeyHeader {
         // Set to uniquely identify any swizzling of the shader's output color(s).
-        uint16_t fOutputSwizzle;
+        uint16_t fWriteSwizzle;
         uint8_t fColorFragmentProcessorCnt; // Can be packed into 4 bits if required.
         uint8_t fCoverageFragmentProcessorCnt;
         // Set to uniquely identify the rt's origin, or 0 if the shader does not require this info.
@@ -113,7 +116,7 @@ protected:
         // portions added by the platform-specific backends.
         uint32_t fInitialKeyLength : 27;
     };
-    GR_STATIC_ASSERT(sizeof(KeyHeader) == 8);
+    static_assert(sizeof(KeyHeader) == 8);
 
     const KeyHeader& header() const { return *this->atOffset<KeyHeader, kHeaderOffset>(); }
 

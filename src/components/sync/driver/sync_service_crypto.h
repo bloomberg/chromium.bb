@@ -15,6 +15,7 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/data_type_encryption_handler.h"
+#include "components/sync/driver/trusted_vault_client.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_engine.h"
@@ -22,7 +23,6 @@
 namespace syncer {
 
 class CryptoSyncPrefs;
-class TrustedVaultClient;
 
 // This class functions as mostly independent component of SyncService that
 // handles things related to encryption, including holding lots of state and
@@ -35,6 +35,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   // outlive this object.
   SyncServiceCrypto(
       const base::RepeatingClosure& notify_observers,
+      const base::RepeatingClosure& notify_required_user_action_changed,
       const base::RepeatingCallback<void(ConfigureReason)>& reconfigure,
       CryptoSyncPrefs* sync_prefs,
       TrustedVaultClient* trusted_vault_client);
@@ -51,8 +52,11 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   bool IsEncryptEverythingEnabled() const;
   void SetEncryptionPassphrase(const std::string& passphrase);
   bool SetDecryptionPassphrase(const std::string& passphrase);
-  void AddTrustedVaultDecryptionKeys(const std::string& gaia_id,
-                                     const std::vector<std::string>& keys);
+
+  // Returns whether it's already possible to determine whether trusted vault
+  // key required (e.g. engine didn't start yet or silent fetch attempt is in
+  // progress).
+  bool IsTrustedVaultKeyRequiredStateKnown() const;
 
   // Returns the actual passphrase type being used for encryption.
   PassphraseType GetPassphraseType() const;
@@ -89,6 +93,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
 
  private:
   enum class RequiredUserAction {
+    kUnknownDuringInitialization,
     kNone,
     kPassphraseRequiredForDecryption,
     kPassphraseRequiredForEncryption,
@@ -98,18 +103,38 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
     // Silent attempt is completed and user action is definitely required to
     // retrieve trusted vault keys.
     kTrustedVaultKeyRequired,
+    // The need for user action has already been surfaced to upper layers (UI)
+    // via IsTrustedVaultKeyRequired() but there's an ongoing fetch that may
+    // resolve the issue.
+    kTrustedVaultKeyRequiredButFetching,
   };
 
+  // Observer method invoked by TrustedVaultClient when its content changes.
+  void OnTrustedVaultClientKeysChanged();
+
   // Reads trusted vault keys from the client and feeds them to the sync engine.
-  void FetchTrustedVaultKeys();
+  void FetchTrustedVaultKeys(bool is_second_fetch_attempt);
 
   // Called at various stages of asynchronously fetching and processing trusted
-  // vault encryption keys.
-  void TrustedVaultKeysFetched(const std::vector<std::string>& keys);
-  void TrustedVaultKeysAdded();
+  // vault encryption keys. |is_second_fetch_attempt| is useful for the case
+  // where multiple passes (up to two) are needed to fetch the keys from the
+  // client.
+  void TrustedVaultKeysFetchedFromClient(
+      bool is_second_fetch_attempt,
+      const std::vector<std::vector<uint8_t>>& keys);
+  void TrustedVaultKeysAdded(bool is_second_fetch_attempt);
+  void TrustedVaultKeysMarkedAsStale(bool is_second_fetch_attempt, bool result);
+  void FetchTrustedVaultKeysCompletedButInsufficient();
+
+  // Updates required user action and notifies observers via
+  // |notify_required_user_action_changed_|.
+  void UpdateRequiredUserActionAndNotify(
+      RequiredUserAction new_required_user_action);
 
   // Calls SyncServiceBase::NotifyObservers(). Never null.
   const base::RepeatingClosure notify_observers_;
+
+  const base::RepeatingClosure notify_required_user_action_changed_;
 
   const base::RepeatingCallback<void(ConfigureReason)> reconfigure_;
 
@@ -119,6 +144,10 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
 
   // Never null and guaranteed to outlive us.
   TrustedVaultClient* const trusted_vault_client_;
+
+  // Subscription to observe changes in |*trusted_vault_client_|.
+  std::unique_ptr<TrustedVaultClient::Subscription>
+      trusted_vault_client_subscription_;
 
   // All the mutable state is wrapped in a struct so that it can be easily
   // reset to its default values.
@@ -134,7 +163,10 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
     // Populated when the engine is initialized.
     CoreAccountInfo account_info;
 
-    RequiredUserAction required_user_action = RequiredUserAction::kNone;
+    // This field must be updated via UpdateRequiredUserAction() to ensure
+    // observers are notified.
+    RequiredUserAction required_user_action =
+        RequiredUserAction::kUnknownDuringInitialization;
 
     // The current set of encrypted types. Always a superset of
     // AlwaysEncryptedUserTypes().
@@ -175,6 +207,10 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
     // If an explicit passphrase is in use, the time at which the passphrase was
     // first set (if available).
     base::Time cached_explicit_passphrase_time;
+
+    // Set to true when FetchKeys() should be issued again once an ongoing
+    // fetch-and-add procedure completes.
+    bool deferred_trusted_vault_fetch_keys_pending = false;
   } state_;
 
   SEQUENCE_CHECKER(sequence_checker_);

@@ -61,18 +61,18 @@ FakeBluetoothGattCharacteristicClient::Properties::~Properties() = default;
 void FakeBluetoothGattCharacteristicClient::Properties::Get(
     dbus::PropertyBase* property,
     dbus::PropertySet::GetCallback callback) {
-  VLOG(1) << "Get " << property->name();
+  DVLOG(1) << "Get " << property->name();
   std::move(callback).Run(true);
 }
 
 void FakeBluetoothGattCharacteristicClient::Properties::GetAll() {
-  VLOG(1) << "GetAll";
+  DVLOG(1) << "GetAll";
 }
 
 void FakeBluetoothGattCharacteristicClient::Properties::Set(
     dbus::PropertyBase* property,
     dbus::PropertySet::SetCallback callback) {
-  VLOG(1) << "Set " << property->name();
+  DVLOG(1) << "Set " << property->name();
   std::move(callback).Run(false);
 }
 
@@ -387,21 +387,21 @@ void FakeBluetoothGattCharacteristicClient::StopNotify(
 void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
     const dbus::ObjectPath& service_path) {
   if (IsHeartRateVisible()) {
-    VLOG(2) << "Fake Heart Rate characteristics are already visible.";
+    DVLOG(2) << "Fake Heart Rate characteristics are already visible.";
     return;
   }
 
-  VLOG(2) << "Exposing fake Heart Rate characteristics.";
+  DVLOG(2) << "Exposing fake Heart Rate characteristics.";
 
   std::vector<std::string> flags;
 
   // ==== Heart Rate Measurement Characteristic ====
   heart_rate_measurement_path_ =
       service_path.value() + "/" + kHeartRateMeasurementPathComponent;
-  heart_rate_measurement_properties_.reset(new Properties(
-      base::Bind(&FakeBluetoothGattCharacteristicClient::OnPropertyChanged,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 dbus::ObjectPath(heart_rate_measurement_path_))));
+  heart_rate_measurement_properties_.reset(new Properties(base::BindRepeating(
+      &FakeBluetoothGattCharacteristicClient::OnPropertyChanged,
+      weak_ptr_factory_.GetWeakPtr(),
+      dbus::ObjectPath(heart_rate_measurement_path_))));
   heart_rate_measurement_properties_->uuid.ReplaceValue(
       kHeartRateMeasurementUUID);
   heart_rate_measurement_properties_->service.ReplaceValue(service_path);
@@ -412,10 +412,10 @@ void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
   // ==== Body Sensor Location Characteristic ====
   body_sensor_location_path_ =
       service_path.value() + "/" + kBodySensorLocationPathComponent;
-  body_sensor_location_properties_.reset(new Properties(
-      base::Bind(&FakeBluetoothGattCharacteristicClient::OnPropertyChanged,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 dbus::ObjectPath(body_sensor_location_path_))));
+  body_sensor_location_properties_.reset(new Properties(base::BindRepeating(
+      &FakeBluetoothGattCharacteristicClient::OnPropertyChanged,
+      weak_ptr_factory_.GetWeakPtr(),
+      dbus::ObjectPath(body_sensor_location_path_))));
   body_sensor_location_properties_->uuid.ReplaceValue(kBodySensorLocationUUID);
   body_sensor_location_properties_->service.ReplaceValue(service_path);
   flags.clear();
@@ -425,10 +425,10 @@ void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
   // ==== Heart Rate Control Point Characteristic ====
   heart_rate_control_point_path_ =
       service_path.value() + "/" + kHeartRateControlPointPathComponent;
-  heart_rate_control_point_properties_.reset(new Properties(
-      base::Bind(&FakeBluetoothGattCharacteristicClient::OnPropertyChanged,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 dbus::ObjectPath(heart_rate_control_point_path_))));
+  heart_rate_control_point_properties_.reset(new Properties(base::BindRepeating(
+      &FakeBluetoothGattCharacteristicClient::OnPropertyChanged,
+      weak_ptr_factory_.GetWeakPtr(),
+      dbus::ObjectPath(heart_rate_control_point_path_))));
   heart_rate_control_point_properties_->uuid.ReplaceValue(
       kHeartRateControlPointUUID);
   heart_rate_control_point_properties_->service.ReplaceValue(service_path);
@@ -455,7 +455,7 @@ void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
 }
 
 void FakeBluetoothGattCharacteristicClient::HideHeartRateCharacteristics() {
-  VLOG(2) << "Hiding fake Heart Rate characteristics.";
+  DVLOG(2) << "Hiding fake Heart Rate characteristics.";
 
   // Hide the descriptors.
   FakeBluetoothGattDescriptorClient* descriptor_client =
@@ -491,7 +491,7 @@ void FakeBluetoothGattCharacteristicClient::SetExtraProcessing(
     action_extra_requests_.clear();
     return;
   }
-  VLOG(2) << "Requests SLOW now, " << requests << " InProgress errors each.";
+  DVLOG(2) << "Requests SLOW now, " << requests << " InProgress errors each.";
 }
 
 size_t FakeBluetoothGattCharacteristicClient::GetExtraProcessing() const {
@@ -516,8 +516,8 @@ FakeBluetoothGattCharacteristicClient::GetHeartRateControlPointPath() const {
 void FakeBluetoothGattCharacteristicClient::OnPropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
-  VLOG(2) << "Characteristic property changed: " << object_path.value() << ": "
-          << property_name;
+  DVLOG(2) << "Characteristic property changed: " << object_path.value() << ": "
+           << property_name;
 
   for (auto& observer : observers_)
     observer.GattCharacteristicPropertyChanged(object_path, property_name);
@@ -525,14 +525,14 @@ void FakeBluetoothGattCharacteristicClient::OnPropertyChanged(
 
 void FakeBluetoothGattCharacteristicClient::NotifyCharacteristicAdded(
     const dbus::ObjectPath& object_path) {
-  VLOG(2) << "GATT characteristic added: " << object_path.value();
+  DVLOG(2) << "GATT characteristic added: " << object_path.value();
   for (auto& observer : observers_)
     observer.GattCharacteristicAdded(object_path);
 }
 
 void FakeBluetoothGattCharacteristicClient::NotifyCharacteristicRemoved(
     const dbus::ObjectPath& object_path) {
-  VLOG(2) << "GATT characteristic removed: " << object_path.value();
+  DVLOG(2) << "GATT characteristic removed: " << object_path.value();
   for (auto& observer : observers_)
     observer.GattCharacteristicRemoved(object_path);
 }
@@ -546,7 +546,7 @@ void FakeBluetoothGattCharacteristicClient::
   if (!heart_rate_measurement_properties_->notifying.value())
     return;
 
-  VLOG(2) << "Updating heart rate value.";
+  DVLOG(2) << "Updating heart rate value.";
   std::vector<uint8_t> measurement = GetHeartRateMeasurementValue();
   heart_rate_measurement_properties_->value.ReplaceValue(measurement);
 

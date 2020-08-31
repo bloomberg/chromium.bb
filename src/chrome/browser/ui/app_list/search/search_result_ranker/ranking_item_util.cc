@@ -30,6 +30,10 @@ RankingItemType RankingItemTypeFromSearchResult(
     case ash::AppListSearchResultType::kInstantApp:
     case ash::AppListSearchResultType::kAnswerCard:
     case ash::AppListSearchResultType::kPlayStoreReinstallApp:
+    case ash::AppListSearchResultType::kAssistantChip:
+    case ash::AppListSearchResultType::kOsSettings:
+      // NOTE: We don't rank results of type kAssistantChip as the Assistant
+      // chip result, if present, is always shown in a dedicated slot.
       return RankingItemType::kIgnored;
     case ash::AppListSearchResultType::kArcAppShortcut:
       return RankingItemType::kArcAppShortcut;
@@ -37,6 +41,9 @@ RankingItemType RankingItemTypeFromSearchResult(
       return RankingItemType::kZeroStateFile;
     case ash::AppListSearchResultType::kDriveQuickAccess:
       return RankingItemType::kDriveQuickAccess;
+    case ash::AppListSearchResultType::kFileChip:
+    case ash::AppListSearchResultType::kDriveQuickAccessChip:
+      return RankingItemType::kChip;
   }
 }
 

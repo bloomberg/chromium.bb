@@ -10,9 +10,12 @@
 #include <string>
 
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "components/dom_distiller/core/url_constants.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_view.h"
@@ -223,6 +226,27 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopyQueryInOmnibox) {
   }
 }
 
+// Tests that AdjustTextForCopy behaves properly for Reader Mode URLs.
+TEST_F(OmniboxEditModelTest, AdjustTextForCopyReaderMode) {
+  const GURL article_url("https://www.example.com/article.html");
+  const GURL distiller_url =
+      dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
+          dom_distiller::kDomDistillerScheme, article_url, "title");
+  // In ReaderMode, the URL is chrome-distiller://<hash>,
+  // but the user should only see the original URL minus the scheme.
+  location_bar_model()->set_url(distiller_url);
+  model()->ResetDisplayTexts();
+
+  base::string16 result = base::UTF8ToUTF16(distiller_url.spec());
+  GURL url;
+  bool write_url = false;
+  model()->AdjustTextForCopy(0, &result, &url, &write_url);
+
+  EXPECT_EQ(base::ASCIIToUTF16(article_url.spec()), result);
+  EXPECT_EQ(article_url, url);
+  EXPECT_TRUE(write_url);
+}
+
 TEST_F(OmniboxEditModelTest, DISABLED_InlineAutocompleteText) {
   // Test if the model updates the inline autocomplete text in the view.
   EXPECT_EQ(base::string16(), view()->inline_autocomplete_text());
@@ -323,7 +347,7 @@ TEST_F(OmniboxEditModelTest, AlternateNavHasHTTP) {
       AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED);
   const GURL alternate_nav_url("http://abcd/");
 
-  model()->OnSetFocus(false, false);  // Avoids DCHECK in OpenMatch().
+  model()->OnSetFocus(false);  // Avoids DCHECK in OpenMatch().
   model()->SetUserText(base::ASCIIToUTF16("http://abcd"));
   model()->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB,
                      alternate_nav_url, base::string16(), 0);
@@ -489,7 +513,7 @@ TEST_F(OmniboxEditModelTest, IgnoreInvalidSavedFocusStates) {
   ASSERT_EQ(OMNIBOX_FOCUS_NONE, state.focus_state);
 
   // Simulate the tab-switching system focusing the Omnibox.
-  model()->OnSetFocus(false, true);
+  model()->OnSetFocus(false);
 
   // Restoring the old saved state should not clobber the model's focus state.
   model()->RestoreState(&state);
@@ -515,9 +539,9 @@ TEST_F(OmniboxEditModelTest, ConsumeCtrlKey) {
 // Tests ctrl_key_state_ is set consumed if the ctrl key is down on focus.
 TEST_F(OmniboxEditModelTest, ConsumeCtrlKeyOnRequestFocus) {
   model()->control_key_state_ = TestOmniboxEditModel::DOWN;
-  model()->OnSetFocus(false, false);
+  model()->OnSetFocus(false);
   EXPECT_EQ(model()->control_key_state_, TestOmniboxEditModel::UP);
-  model()->OnSetFocus(true, false);
+  model()->OnSetFocus(true);
   EXPECT_EQ(model()->control_key_state_,
             TestOmniboxEditModel::DOWN_AND_CONSUMED);
 }
@@ -575,4 +599,47 @@ TEST_F(OmniboxEditModelTest, KeywordModePreservesTemporaryText) {
   EXPECT_EQ(base::UTF8ToUTF16("match text"), model()->GetUserTextForTesting());
   EXPECT_EQ(base::UTF8ToUTF16("match text"), view()->GetText());
   EXPECT_TRUE(view()->IsSelectAll());
+}
+
+TEST_F(OmniboxEditModelTest, CtrlEnterNavigatesToDesiredTLD) {
+  // Set the edit model into an inline autocomplete state.
+  view()->SetUserText(base::UTF8ToUTF16("foo"));
+  model()->StartAutocomplete(false, false);
+  view()->OnInlineAutocompleteTextMaybeChanged(base::UTF8ToUTF16("foobar"), 3);
+
+  model()->OnControlKeyChanged(true);
+  model()->AcceptInput(WindowOpenDisposition::UNKNOWN);
+  OmniboxEditModel::State state = model()->GetStateForTabSwitch();
+  EXPECT_EQ(GURL("http://www.foo.com/"),
+            state.autocomplete_input.canonicalized_url());
+}
+
+TEST_F(OmniboxEditModelTest, CtrlEnterNavigatesToDesiredTLDTemporaryText) {
+  // But if it's the temporary text, the View text should be used.
+  view()->SetUserText(base::UTF8ToUTF16("foo"));
+  model()->StartAutocomplete(false, false);
+  model()->OnPopupDataChanged(base::ASCIIToUTF16("foobar"),
+                              /*is_temporary_text=*/true, base::string16(),
+                              false);
+
+  model()->OnControlKeyChanged(true);
+  model()->AcceptInput(WindowOpenDisposition::UNKNOWN);
+  OmniboxEditModel::State state = model()->GetStateForTabSwitch();
+  EXPECT_EQ(GURL("http://www.foobar.com/"),
+            state.autocomplete_input.canonicalized_url());
+}
+
+TEST_F(OmniboxEditModelTest,
+       CtrlEnterNavigatesToDesiredTLDSteadyStateElisions) {
+  location_bar_model()->set_url(GURL("https://www.example.com/"));
+  location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
+
+  EXPECT_TRUE(model()->ResetDisplayTexts());
+  model()->Revert();
+
+  model()->OnControlKeyChanged(true);
+  model()->AcceptInput(WindowOpenDisposition::UNKNOWN);
+  OmniboxEditModel::State state = model()->GetStateForTabSwitch();
+  EXPECT_EQ(GURL("https://www.example.com/"),
+            state.autocomplete_input.canonicalized_url());
 }

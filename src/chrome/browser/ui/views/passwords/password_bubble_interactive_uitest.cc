@@ -22,13 +22,14 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
-#include "chrome/browser/ui/views/passwords/password_pending_view.h"
+#include "chrome/browser/ui/views/passwords/password_save_update_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -38,9 +39,9 @@
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
+using testing::_;
 using testing::Eq;
 using testing::Field;
-using testing::_;
 
 namespace {
 
@@ -82,8 +83,9 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, BasicOpenAndClose) {
   EXPECT_FALSE(IsBubbleShowing());
   SetupPendingPassword();
   EXPECT_TRUE(IsBubbleShowing());
-  const PasswordPendingView* bubble = static_cast<const PasswordPendingView*>(
-      PasswordBubbleViewBase::manage_password_bubble());
+  const PasswordSaveUpdateView* bubble =
+      static_cast<const PasswordSaveUpdateView*>(
+          PasswordBubbleViewBase::manage_password_bubble());
   EXPECT_FALSE(bubble->GetFocusManager()->GetFocusedView());
   PasswordBubbleViewBase::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());
@@ -97,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, BasicOpenAndClose) {
       browser()->tab_strip_model()->GetActiveWebContents())
       ->ShowManagePasswordsBubble(true /* user_action */);
   EXPECT_TRUE(IsBubbleShowing());
-  bubble = static_cast<const PasswordPendingView*>(
+  bubble = static_cast<const PasswordSaveUpdateView*>(
       PasswordBubbleViewBase::manage_password_bubble());
   // A pending password with empty username should initially focus on the
   // username field.
@@ -218,8 +220,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnClick) {
                    ->GetFocusManager()
                    ->GetFocusedView());
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
-  EXPECT_EQ(IsBubbleShowing(), base::FeatureList::IsEnabled(
-                                   password_manager::features::kStickyBubble));
+  EXPECT_TRUE(IsBubbleShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnEsc) {
@@ -227,8 +228,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnEsc) {
   EXPECT_TRUE(IsBubbleShowing());
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE, false,
                                               false, false, false));
-  EXPECT_EQ(IsBubbleShowing(), base::FeatureList::IsEnabled(
-                                   password_manager::features::kStickyBubble));
+  EXPECT_TRUE(IsBubbleShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnKey) {
@@ -250,8 +250,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CloseOnKey) {
   EXPECT_TRUE(web_contents->IsFocusedElementEditable());
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_K, false,
                                               false, false, false));
-  EXPECT_EQ(IsBubbleShowing(), base::FeatureList::IsEnabled(
-                                   password_manager::features::kStickyBubble));
+  EXPECT_TRUE(IsBubbleShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest,
@@ -299,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest,
   // PasswordBubbleViewBase::PendingView:: ButtonPressed(), and
   // simulate the OS event queue by posting a task.
   auto press_button = [](PasswordBubbleViewBase* bubble, bool* ran) {
-    bubble->model()->OnNeverForThisSiteClicked();
+    bubble->Cancel();
     *ran = true;
   };
 

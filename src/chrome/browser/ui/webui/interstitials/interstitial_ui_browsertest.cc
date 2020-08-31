@@ -14,6 +14,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -190,6 +191,11 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, BlockedInterceptionInterstitial) {
   TestInterstitial(GURL("chrome://interstitials/blocked-interception"),
                    "Your activity on example.com is being monitored",
                    base::ASCIIToUTF16("Anything you type"));
+}
+
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, LegacyTLSInterstitial) {
+  TestInterstitial(GURL("chrome://interstitials/legacy-tls"), "Privacy error",
+                   base::ASCIIToUTF16("outdated security configuration"));
 }
 
 // Tests that back button works after opening an interstitial from

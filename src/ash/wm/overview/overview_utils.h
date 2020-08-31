@@ -8,13 +8,15 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/overview_animation_type.h"
+#include "ash/wm/overview/overview_types.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_type.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace aura {
@@ -29,6 +31,10 @@ namespace ash {
 
 // Returns true if |window| can cover available workspace.
 bool CanCoverAvailableWorkspace(aura::Window* window);
+
+// Returns false if any window with |root_window| covers the entire workspace,
+// true otherwise.
+bool ShouldAnimateWallpaper(aura::Window* root_window);
 
 // Fades |widget| to opacity one with the enter overview settings. Additionally
 // place |widget| closer to the top of screen and slide it down if |slide| is
@@ -81,20 +87,29 @@ bool IsSlidingOutOverviewFromShelf();
 void MaximizeIfSnapped(aura::Window* window);
 
 // Get the grid bounds if a window is snapped in splitview, or what they will be
-// when snapped based on |target_root| and |indicator_state|.
-gfx::Rect GetGridBoundsInScreenForSplitview(
+// when snapped based on |target_root| and |indicator_state|. If
+// |divider_changed| is true, maybe clamp the bounds to a minimum size and shift
+// the bounds offscreen. If |account_for_hotseat| is true, inset the bounds by
+// the hotseat size.
+gfx::Rect GetGridBoundsInScreen(aura::Window* target_root);
+gfx::Rect GetGridBoundsInScreen(
     aura::Window* target_root,
     base::Optional<SplitViewDragIndicators::WindowDraggingState>
-        window_dragging_state = base::nullopt);
+        window_dragging_state,
+    bool divider_changed,
+    bool account_for_hotseat);
 
 // Gets the bounds of a window if it were to be snapped or about to be snapped
 // in splitview. Returns nothing if we are not in tablet mode, or if we aren't
 // in splitview, or if we aren't showing a splitview preview.
-base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
-    aura::Window* window);
+base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio();
 
 // Check if kNewOverviewLayout is enabled for tablet mode.
 bool ShouldUseTabletModeGridLayout();
+
+// Returns a Rect by rounding the values of the given RectF in a way that
+// returns the same size for SizeF regardless of its origin.
+ASH_EXPORT gfx::Rect ToStableSizeRoundedRect(const gfx::RectF& rect);
 
 }  // namespace ash
 

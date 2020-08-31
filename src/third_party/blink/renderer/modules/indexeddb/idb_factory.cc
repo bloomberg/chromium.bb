@@ -33,25 +33,24 @@
 
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-blink.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_idb_database_info.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
-#include "third_party/blink/renderer/modules/indexeddb/idb_database_info.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_name_and_version.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
@@ -105,13 +104,13 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kUnknownError,
         "The databases() promise was rejected."));
-    promise_resolver_.Clear();
   }
 
   void SuccessNamesAndVersionsList(
       Vector<mojom::blink::IDBNameAndVersionPtr> names_and_versions) override {
     if (!promise_resolver_)
       return;
+    DCHECK(!async_task_.has_value());
 
     HeapVector<Member<IDBDatabaseInfo>> name_and_version_list;
     name_and_version_list.ReserveInitialCapacity(name_and_version_list.size());
@@ -125,11 +124,12 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
       name_and_version_list.push_back(idb_info);
     }
 
-    probe::AsyncTask async_task(
+    async_task_.emplace(
         ExecutionContext::From(promise_resolver_->GetScriptState()),
         &async_task_id_, "success");
     promise_resolver_->Resolve(name_and_version_list);
-    promise_resolver_.Clear();
+    // Note: Resolve may cause |this| to be deleted.  async_task_ will be
+    // completed in the destructor.
   }
 
   void SuccessStringList(const Vector<String>&) override { NOTREACHED(); }
@@ -191,6 +191,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
 
  private:
   probe::AsyncTaskId async_task_id_;
+  base::Optional<probe::AsyncTask> async_task_;
   Persistent<ScriptPromiseResolver> promise_resolver_;
 };
 
@@ -205,9 +206,9 @@ IDBFactory::IDBFactory(std::unique_ptr<WebIDBFactory> web_idb_factory)
     : web_idb_factory_(std::move(web_idb_factory)) {}
 
 static bool IsContextValid(ExecutionContext* context) {
-  DCHECK(IsA<Document>(context) || context->IsWorkerGlobalScope());
-  if (auto* document = DynamicTo<Document>(context))
-    return document->GetFrame() && document->GetPage();
+  DCHECK(context->IsDocument() || context->IsWorkerGlobalScope());
+  if (auto* window = DynamicTo<LocalDOMWindow>(context))
+    return window->GetFrame();
   return true;
 }
 
@@ -216,8 +217,13 @@ WebIDBFactory* IDBFactory::GetFactory(ExecutionContext* execution_context) {
     mojo::PendingRemote<mojom::blink::IDBFactory> web_idb_factory_host_remote;
     execution_context->GetBrowserInterfaceBroker().GetInterface(
         web_idb_factory_host_remote.InitWithNewPipeAndPassReceiver());
+
+    mojo::PendingRemote<mojom::blink::FeatureObserver> feature_observer;
+    execution_context->GetBrowserInterfaceBroker().GetInterface(
+        feature_observer.InitWithNewPipeAndPassReceiver());
+
     web_idb_factory_ = std::make_unique<WebIDBFactoryImpl>(
-        std::move(web_idb_factory_host_remote),
+        std::move(web_idb_factory_host_remote), std::move(feature_observer),
         execution_context->GetTaskRunner(TaskType::kDatabaseAccess));
   }
   return web_idb_factory_.get();
@@ -340,6 +346,13 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
   auto* database_callbacks = MakeGarbageCollected<IDBDatabaseCallbacks>();
   int64_t transaction_id = IDBDatabase::NextTransactionId();
 
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  WebIDBFactory* factory = GetFactory(execution_context);
+  if (!factory) {
+    exception_state.ThrowSecurityError("An internal error occurred.");
+    return nullptr;
+  }
+
   auto transaction_backend = std::make_unique<WebIDBTransactionImpl>(
       ExecutionContext::From(script_state)
           ->GetTaskRunner(TaskType::kDatabaseAccess),
@@ -348,7 +361,8 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
       transaction_receiver = transaction_backend->CreateReceiver();
   auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
       script_state, database_callbacks, std::move(transaction_backend),
-      transaction_id, version, std::move(metrics));
+      transaction_id, version, std::move(metrics),
+      factory->GetObservedFeature());
 
   if (!CachedAllowIndexedDB(script_state)) {
     request->HandleResponse(MakeGarbageCollected<DOMException>(
@@ -356,12 +370,6 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
     return request;
   }
 
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  WebIDBFactory* factory = GetFactory(execution_context);
-  if (!factory) {
-    exception_state.ThrowSecurityError("An internal error occurred.");
-    return nullptr;
-  }
   factory->Open(name, version, std::move(transaction_receiver), transaction_id,
                 request->CreateWebCallbacks(),
                 database_callbacks->CreateWebCallbacks());
@@ -413,9 +421,17 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
                       WebFeature::kFileAccessedDatabase);
   }
 
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  WebIDBFactory* factory = GetFactory(execution_context);
+  if (!factory) {
+    exception_state.ThrowSecurityError("An internal error occurred.");
+    return nullptr;
+  }
+
   auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
       script_state, nullptr, /*IDBTransactionAssociatedPtr=*/nullptr, 0,
-      IDBDatabaseMetadata::kDefaultVersion, std::move(metrics));
+      IDBDatabaseMetadata::kDefaultVersion, std::move(metrics),
+      factory->GetObservedFeature());
 
   if (!CachedAllowIndexedDB(script_state)) {
     request->HandleResponse(MakeGarbageCollected<DOMException>(
@@ -423,12 +439,6 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
     return request;
   }
 
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  WebIDBFactory* factory = GetFactory(execution_context);
-  if (!factory) {
-    exception_state.ThrowSecurityError("An internal error occurred.");
-    return nullptr;
-  }
   factory->DeleteDatabase(name, request->CreateWebCallbacks(), force_close);
   return request;
 }
@@ -469,8 +479,8 @@ bool IDBFactory::AllowIndexedDB(ScriptState* script_state) {
   DCHECK(execution_context->IsContextThread());
   SECURITY_DCHECK(execution_context->IsDocument() ||
                   execution_context->IsWorkerGlobalScope());
-  if (auto* document = DynamicTo<Document>(execution_context)) {
-    LocalFrame* frame = document->GetFrame();
+  if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
+    LocalFrame* frame = window->GetFrame();
     if (!frame)
       return false;
     if (auto* settings_client = frame->GetContentSettingsClient()) {

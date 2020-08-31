@@ -16,16 +16,15 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/upload_job_impl.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace policy {
 
 ScreenshotDelegate::ScreenshotDelegate() {}
 
-ScreenshotDelegate::~ScreenshotDelegate() {
-}
+ScreenshotDelegate::~ScreenshotDelegate() {}
 
 bool ScreenshotDelegate::IsScreenshotAllowed() {
   BrowserPolicyConnectorChromeOS* connector =
@@ -52,8 +51,8 @@ void ScreenshotDelegate::TakeSnapshot(
 std::unique_ptr<UploadJob> ScreenshotDelegate::CreateUploadJob(
     const GURL& upload_url,
     UploadJob::Delegate* delegate) {
-  chromeos::DeviceOAuth2TokenService* device_oauth2_token_service =
-      chromeos::DeviceOAuth2TokenServiceFactory::Get();
+  DeviceOAuth2TokenService* device_oauth2_token_service =
+      DeviceOAuth2TokenServiceFactory::Get();
 
   CoreAccountId robot_account_id =
       device_oauth2_token_service->GetRobotAccountId();

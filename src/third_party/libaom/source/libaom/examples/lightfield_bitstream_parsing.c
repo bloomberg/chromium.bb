@@ -192,10 +192,8 @@ void process_tile_list(const TILE_LIST_INFO *tiles, int num_tiles,
 }
 
 int main(int argc, char **argv) {
-  aom_codec_ctx_t codec;
   AvxVideoReader *reader = NULL;
   AvxVideoWriter *writer = NULL;
-  const AvxInterface *decoder = NULL;
   const AvxVideoInfo *info = NULL;
   int num_references;
   int i;
@@ -211,6 +209,8 @@ int main(int argc, char **argv) {
   num_references = (int)strtol(argv[3], NULL, 0);
   info = aom_video_reader_get_info(reader);
 
+  aom_video_reader_set_fourcc(reader, AV1_FOURCC);
+
   // The writer to write out ivf file in tile list OBU, which can be decoded by
   // AV1 decoder.
   writer = aom_video_writer_open(argv[2], kContainerIVF, info);
@@ -218,11 +218,12 @@ int main(int argc, char **argv) {
 
   tile_list_file = argv[4];
 
-  decoder = get_aom_decoder_by_fourcc(info->codec_fourcc);
+  aom_codec_iface_t *decoder = get_aom_decoder_by_fourcc(info->codec_fourcc);
   if (!decoder) die("Unknown input codec.");
-  printf("Using %s\n", aom_codec_iface_name(decoder->codec_interface()));
+  printf("Using %s\n", aom_codec_iface_name(decoder));
 
-  if (aom_codec_dec_init(&codec, decoder->codec_interface(), NULL, 0))
+  aom_codec_ctx_t codec;
+  if (aom_codec_dec_init(&codec, decoder, NULL, 0))
     die_codec(&codec, "Failed to initialize decoder.");
 
   // Decode anchor frames.

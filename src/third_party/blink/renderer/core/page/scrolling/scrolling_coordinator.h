@@ -65,7 +65,7 @@ class CORE_EXPORT ScrollingCoordinator final
  public:
   explicit ScrollingCoordinator(Page*);
   ~ScrollingCoordinator() override;
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   // The LocalFrameView argument is optional, nullptr causes the the scrolling
   // animation host and timeline to be owned by the ScrollingCoordinator. When
@@ -84,33 +84,23 @@ class CORE_EXPORT ScrollingCoordinator final
   // Called when any frame has done its layout or compositing has changed.
   void NotifyGeometryChanged(LocalFrameView*);
 
-  // Update non-fast scrollable regions, touch event target rects, main thread
-  // scrolling reasons, and whether the visual viewport is user scrollable.
+  // Update non-fast scrollable regions and touch event target rects.
   // TODO(pdr): Refactor this out of ScrollingCoordinator.
   void UpdateAfterPaint(LocalFrameView*);
-
-  // Should be called whenever the slow repaint objects counter changes between
-  // zero and one.
-  void FrameViewHasBackgroundAttachmentFixedObjectsDidChange(LocalFrameView*);
-
-  // Should be called whenever the set of fixed objects changes.
-  void FrameViewFixedObjectsDidChange(LocalFrameView*);
 
   // Should be called whenever the root layer for the given frame view changes.
   void FrameViewRootLayerDidChange(LocalFrameView*);
 
-  scoped_refptr<cc::ScrollbarLayerBase> CreateSolidColorScrollbarLayer(
-      ScrollbarOrientation,
-      int thumb_thickness,
-      int track_start,
-      bool is_left_side_vertical_scrollbar,
-      cc::ElementId);
-
   void WillDestroyScrollableArea(ScrollableArea*);
 
-  // Updates scroll offset, if the appropriate composited layers exist,
-  // and if successful, returns true. Otherwise returns false.
-  bool UpdateCompositedScrollOffset(ScrollableArea* scrollable_area);
+  // Updates scroll offset in cc scroll tree immediately. We don't wait for
+  // a full document lifecycle update to propagate the scroll offset from blink
+  // paint properties to cc paint properties because cc needs the scroll offset
+  // to apply the impl-side scroll delta correctly at the beginning of the next
+  // frame. The scroll offset in the transform node will still be updated
+  // in normal document lifecycle update instead of here.
+  // Returns whether the update is successful.
+  bool UpdateCompositorScrollOffset(const LocalFrame&, const ScrollableArea&);
 
   // Updates composited layers after changes to scrollable area  properties
   // like content and container sizes, scrollbar existence, scrollability, etc.
@@ -165,14 +155,12 @@ class CORE_EXPORT ScrollingCoordinator final
   bool should_scroll_on_main_thread_dirty_;
 
  private:
-  void AddScrollbarLayer(ScrollableArea*,
+  void SetScrollbarLayer(ScrollableArea*,
                          ScrollbarOrientation,
                          scoped_refptr<cc::ScrollbarLayerBase>);
   cc::ScrollbarLayerBase* GetScrollbarLayer(ScrollableArea*,
                                             ScrollbarOrientation);
   void RemoveScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
-
-  bool FrameScrollerIsDirty(LocalFrameView*) const;
 
   cc::AnimationHost* animation_host_ = nullptr;
   std::unique_ptr<CompositorAnimationTimeline>

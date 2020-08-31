@@ -18,6 +18,7 @@
 #include "crypto/sha2.h"
 #include "extensions/browser/content_hash_fetcher.h"
 #include "extensions/browser/content_hash_tree.h"
+#include "extensions/browser/content_verifier/content_verifier_utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/common/file_util.h"
 #include "net/base/load_flags.h"
@@ -139,7 +140,7 @@ ContentHash::TreeHashVerificationResult ContentHash::VerifyTreeHashRoot(
 }
 
 const ComputedHashes& ContentHash::computed_hashes() const {
-  DCHECK(succeeded_ && computed_hashes_);
+  DCHECK(succeeded() && computed_hashes_);
   return *computed_hashes_;
 }
 
@@ -155,15 +156,11 @@ ContentHash::ContentHash(
     const ExtensionId& id,
     const base::FilePath& root,
     ContentVerifierDelegate::VerifierSourceType source_type,
-    std::unique_ptr<const VerifiedContents> verified_contents,
-    std::unique_ptr<const ComputedHashes> computed_hashes)
+    std::unique_ptr<const VerifiedContents> verified_contents)
     : extension_id_(id),
       extension_root_(root),
       source_type_(source_type),
-      verified_contents_(std::move(verified_contents)),
-      computed_hashes_(std::move(computed_hashes)) {
-  succeeded_ = verified_contents_ != nullptr && computed_hashes_ != nullptr;
-}
+      verified_contents_(std::move(verified_contents)) {}
 
 ContentHash::~ContentHash() = default;
 
@@ -280,7 +277,7 @@ void ContentHash::GetComputedHashes(
   }
   scoped_refptr<ContentHash> hash =
       new ContentHash(key.extension_id, key.extension_root, source_type,
-                      std::move(verified_contents), nullptr);
+                      std::move(verified_contents));
   hash->BuildComputedHashes(did_attempt_fetch, /*force_build=*/false,
                             is_cancelled);
   std::move(created_callback).Run(hash, is_cancelled && is_cancelled.Run());
@@ -298,8 +295,8 @@ void ContentHash::DispatchFetchFailure(
       << "Only signed hashes should attempt fetching verified_contents.json";
   RecordFetchResult(false);
   // NOTE: bare new because ContentHash constructor is private.
-  scoped_refptr<ContentHash> content_hash = new ContentHash(
-      extension_id, extension_root, source_type, nullptr, nullptr);
+  scoped_refptr<ContentHash> content_hash =
+      new ContentHash(extension_id, extension_root, source_type, nullptr);
   std::move(created_callback)
       .Run(content_hash, is_cancelled && is_cancelled.Run());
 }
@@ -324,19 +321,22 @@ std::set<base::FilePath> ContentHash::GetMismatchedComputedHashes(
   DCHECK(computed_hashes_data);
   if (source_type_ !=
       ContentVerifierDelegate::VerifierSourceType::SIGNED_HASHES) {
-    return std::set<base::FilePath>();
+    return {};
   }
 
   std::set<base::FilePath> mismatched_hashes;
 
-  for (const auto& resource_info : *computed_hashes_data) {
-    const base::FilePath& relative_unix_path = resource_info.first;
-    const std::vector<std::string>& hashes = resource_info.second.second;
+  for (const auto& resource_info : computed_hashes_data->items()) {
+    const ComputedHashes::Data::HashInfo& hash_info = resource_info.second;
+    const content_verifier_utils::CanonicalRelativePath&
+        canonical_relative_path = resource_info.first;
 
-    std::string root =
-        ComputeTreeHashRoot(hashes, block_size_ / crypto::kSHA256Length);
-    if (!verified_contents_->TreeHashRootEquals(relative_unix_path, root))
-      mismatched_hashes.insert(relative_unix_path);
+    std::string root = ComputeTreeHashRoot(hash_info.hashes,
+                                           block_size_ / crypto::kSHA256Length);
+    if (!verified_contents_->TreeHashRootEqualsForCanonicalPath(
+            canonical_relative_path, root)) {
+      mismatched_hashes.insert(hash_info.relative_unix_path);
+    }
   }
 
   return mismatched_hashes;
@@ -365,7 +365,7 @@ bool ContentHash::CreateHashes(const base::FilePath& hashes_file,
       VLOG(1) << "content mismatch for " << relative_unix_path.AsUTF8Unsafe();
       // Remove hash entry to keep computed_hashes.json file clear of mismatched
       // hashes.
-      computed_hashes_data->erase(relative_unix_path);
+      computed_hashes_data->Remove(relative_unix_path);
     }
     hash_mismatch_unix_paths_ = std::move(hashes_mismatch);
   }
@@ -375,9 +375,6 @@ bool ContentHash::CreateHashes(const base::FilePath& hashes_file,
                     .WriteToFile(hashes_file);
   UMA_HISTOGRAM_TIMES("ExtensionContentHashFetcher.CreateHashesTime",
                       timer.Elapsed());
-
-  if (result)
-    succeeded_ = true;
 
   return result;
 }
@@ -412,14 +409,16 @@ void ContentHash::BuildComputedHashes(bool attempted_fetching_verified_contents,
     // Note: Tolerate for existing implementation.
     // Try to read and initialize the file first. On failure, continue creating.
     base::Optional<ComputedHashes> computed_hashes =
-        ComputedHashes::CreateFromFile(computed_hashes_path);
+        ComputedHashes::CreateFromFile(computed_hashes_path,
+                                       &computed_hashes_status_);
+    DCHECK_EQ(computed_hashes_status_ == ComputedHashes::Status::SUCCESS,
+              computed_hashes.has_value());
     if (!computed_hashes) {
       // TODO(lazyboy): Also create computed_hashes.json in this case. See the
       // comment above about |will_create|.
       // will_create = true;
     } else {
       // Read successful.
-      succeeded_ = true;
       computed_hashes_ =
           std::make_unique<ComputedHashes>(std::move(computed_hashes.value()));
       return;
@@ -436,12 +435,14 @@ void ContentHash::BuildComputedHashes(bool attempted_fetching_verified_contents,
     return;
 
   base::Optional<ComputedHashes> computed_hashes =
-      ComputedHashes::CreateFromFile(computed_hashes_path);
+      ComputedHashes::CreateFromFile(computed_hashes_path,
+                                     &computed_hashes_status_);
+  DCHECK_EQ(computed_hashes_status_ == ComputedHashes::Status::SUCCESS,
+            computed_hashes.has_value());
   if (!computed_hashes)
     return;
 
   // Read successful.
-  succeeded_ = true;
   computed_hashes_ =
       std::make_unique<ComputedHashes>(std::move(computed_hashes.value()));
 }

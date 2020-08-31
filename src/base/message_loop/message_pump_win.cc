@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/debug/alias.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
@@ -18,6 +19,16 @@
 namespace base {
 
 namespace {
+
+// Jank analysis uncovered that Windows uses native ::PeekMessage calls as an
+// opportunity to yield to other threads according to some heuristics (e.g.
+// presumably when there's no input but perhaps a single WM_USER message posted
+// later than another thread was readied). MessagePumpForUI doesn't intend to
+// give this opportunity to the kernel when invoking ::PeekMessage however as it
+// runs most tasks out-of-band. Hence, PM_NOYIELD should be used to tell
+// ::PeekMessage it's not the only source of work for this thread.
+const Feature kNoYieldFromNativePeek{"NoYieldFromNativePeek",
+                                     FEATURE_DISABLED_BY_DEFAULT};
 
 enum MessageLoopProblems {
   MESSAGE_POST_ERROR,
@@ -128,7 +139,7 @@ void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   // Since this is always called from |bound_thread_|, there is almost always
   // nothing to do as the loop is already running. When the loop becomes idle,
   // it will typically WaitForWork() in DoRunLoop() with the timeout provided by
-  // DoSomeWork(). The only alternative to this is entering a native nested loop
+  // DoWork(). The only alternative to this is entering a native nested loop
   // (e.g. modal dialog) under a ScopedNestableTaskAllower, in which case
   // HandleWorkMessage() will be invoked when the system picks up kMsgHaveWork
   // and it will ScheduleNativeTimer() if it's out of immediate work. However,
@@ -138,6 +149,7 @@ void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   // from it. This is the only case where we must install/adjust the native
   // timer from ScheduleDelayedWork() because if we don't, the native loop will
   // go back to sleep, unaware of the new |delayed_work_time|.
+  // See MessageLoopTest.PostDelayedTaskFromSystemPump for an example.
   // TODO(gab): This could potentially be replaced by a ForegroundIdleProc hook
   // if Windows ends up being the only platform requiring ScheduleDelayedWork().
   if (in_native_loop_ && !work_scheduled_) {
@@ -206,15 +218,13 @@ void MessagePumpForUI::DoRunLoop() {
     // work.
 
     in_native_loop_ = false;
-    state_->delegate->BeforeDoInternalWork();
-    DCHECK(!in_native_loop_);
 
     bool more_work_is_plausible = ProcessNextWindowsMessage();
     in_native_loop_ = false;
     if (state_->should_quit)
       break;
 
-    Delegate::NextWorkInfo next_work_info = state_->delegate->DoSomeWork();
+    Delegate::NextWorkInfo next_work_info = state_->delegate->DoWork();
     in_native_loop_ = false;
     more_work_is_plausible |= next_work_info.is_immediate();
     if (state_->should_quit)
@@ -243,7 +253,7 @@ void MessagePumpForUI::DoRunLoop() {
       continue;
 
     // WaitForWork() does some work itself, so notify the delegate of it.
-    state_->delegate->BeforeDoInternalWork();
+    state_->delegate->BeforeWait();
     WaitForWork(next_work_info);
   }
 }
@@ -277,12 +287,23 @@ void MessagePumpForUI::WaitForWork(Delegate::NextWorkInfo next_work_info) {
       // some time to process its input messages by looping back to
       // MsgWaitForMultipleObjectsEx above when there are no messages for the
       // current thread.
-      MSG msg = {0};
-      bool has_pending_sent_message =
-          (HIWORD(::GetQueueStatus(QS_SENDMESSAGE)) & QS_SENDMESSAGE) != 0;
-      if (has_pending_sent_message ||
-          ::PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE)) {
-        return;
+
+      {
+        // Trace as in ProcessNextWindowsMessage().
+        TRACE_EVENT0("base", "MessagePumpForUI::WaitForWork GetQueueStatus");
+        if (HIWORD(::GetQueueStatus(QS_SENDMESSAGE)) & QS_SENDMESSAGE)
+          return;
+      }
+
+      {
+        static const auto kAdditionalFlags =
+            FeatureList::IsEnabled(kNoYieldFromNativePeek) ? PM_NOYIELD : 0x0;
+
+        MSG msg;
+        // Trace as in ProcessNextWindowsMessage().
+        TRACE_EVENT0("base", "MessagePumpForUI::WaitForWork PeekMessage");
+        if (::PeekMessage(&msg, nullptr, 0, 0, kAdditionalFlags | PM_NOREMOVE))
+          return;
       }
 
       // We know there are no more messages for this thread because PeekMessage
@@ -316,7 +337,7 @@ void MessagePumpForUI::HandleWorkMessage() {
   // messages that may be in the Windows message queue.
   ProcessPumpReplacementMessage();
 
-  Delegate::NextWorkInfo next_work_info = state_->delegate->DoSomeWork();
+  Delegate::NextWorkInfo next_work_info = state_->delegate->DoWork();
   if (next_work_info.is_immediate()) {
     ScheduleWork();
   } else {
@@ -347,7 +368,7 @@ void MessagePumpForUI::HandleTimerMessage() {
   if (!state_)
     return;
 
-  Delegate::NextWorkInfo next_work_info = state_->delegate->DoSomeWork();
+  Delegate::NextWorkInfo next_work_info = state_->delegate->DoWork();
   if (next_work_info.is_immediate()) {
     ScheduleWork();
   } else {
@@ -435,16 +456,46 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
   // dispatches the message and returns false. We return true in this
   // case to ensure that the message loop peeks again instead of calling
   // MsgWaitForMultipleObjectsEx.
-  bool sent_messages_in_queue = false;
-  DWORD queue_status = ::GetQueueStatus(QS_SENDMESSAGE);
-  if (HIWORD(queue_status) & QS_SENDMESSAGE)
-    sent_messages_in_queue = true;
+  bool more_work_is_plausible = false;
+  {
+    // Individually trace ::GetQueueStatus and ::PeekMessage because sampling
+    // profiler is hinting that we're spending a surprising amount of time with
+    // these on top of the stack. Tracing will be able to tell us whether this
+    // is a bias of sampling profiler (e.g. kernel takes ::GetQueueStatus as an
+    // opportunity to swap threads and is more likely to schedule the sampling
+    // profiler's thread while the sampled thread is swapped out on this frame).
+    TRACE_EVENT0("base",
+                 "MessagePumpForUI::ProcessNextWindowsMessage GetQueueStatus");
+    DWORD queue_status = ::GetQueueStatus(QS_SENDMESSAGE);
+    if (HIWORD(queue_status) & QS_SENDMESSAGE)
+      more_work_is_plausible = true;
+  }
 
   MSG msg;
-  if (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != FALSE)
-    return ProcessMessageHelper(msg);
+  bool has_msg = false;
+  {
+    // ::PeekMessage() may process sent messages (regardless of |had_messages|
+    // as ::GetQueueStatus() is an optimistic check that may racily have missed
+    // an incoming event -- it doesn't hurt to have empty internal units of work
+    // when ::PeekMessage turns out to be a no-op).
+    state_->delegate->BeforeDoInternalWork();
 
-  return sent_messages_in_queue;
+    static const auto kAdditionalFlags =
+        FeatureList::IsEnabled(kNoYieldFromNativePeek) ? PM_NOYIELD : 0x0;
+
+    // PeekMessage can run a message if there are sent messages, trace that and
+    // emit the boolean param to see if it ever janks independently (ref.
+    // comment on GetQueueStatus).
+    TRACE_EVENT1("base",
+                 "MessagePumpForUI::ProcessNextWindowsMessage PeekMessage",
+                 "sent_messages_in_queue", more_work_is_plausible);
+    has_msg = ::PeekMessage(&msg, nullptr, 0, 0,
+                            kAdditionalFlags | PM_REMOVE) != FALSE;
+  }
+  if (has_msg)
+    more_work_is_plausible |= ProcessMessageHelper(msg);
+
+  return more_work_is_plausible;
 }
 
 bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
@@ -470,6 +521,8 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   if (msg.message == kMsgHaveWork && msg.hwnd == message_window_.hwnd())
     return ProcessPumpReplacementMessage();
 
+  state_->delegate->BeforeDoInternalWork();
+
   for (Observer& observer : observers_)
     observer.WillDispatchMSG(msg);
   ::TranslateMessage(&msg);
@@ -491,6 +544,10 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
   // replacement kMsgHaveWork to possibly be posted), and finally dispatches
   // that peeked replacement. Note that the re-post of kMsgHaveWork may be
   // asynchronous to this thread!!
+
+  // As in ProcessNextWindowsMessage() since ::PeekMessage() may process
+  // sent-messages.
+  state_->delegate->BeforeDoInternalWork();
 
   MSG msg;
   const bool have_message =
@@ -543,6 +600,11 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
 MessagePumpForIO::IOContext::IOContext() {
   memset(&overlapped, 0, sizeof(overlapped));
 }
+
+MessagePumpForIO::IOHandler::IOHandler(const Location& from_here)
+    : io_handler_location_(from_here) {}
+
+MessagePumpForIO::IOHandler::~IOHandler() = default;
 
 MessagePumpForIO::MessagePumpForIO() {
   port_.Set(::CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr,
@@ -619,11 +681,12 @@ void MessagePumpForIO::DoRunLoop() {
     // had no work, then it is a good time to consider sleeping (waiting) for
     // more work.
 
-    Delegate::NextWorkInfo next_work_info = state_->delegate->DoSomeWork();
+    Delegate::NextWorkInfo next_work_info = state_->delegate->DoWork();
     bool more_work_is_plausible = next_work_info.is_immediate();
     if (state_->should_quit)
       break;
 
+    state_->delegate->BeforeWait();
     more_work_is_plausible |= WaitForIOCompletion(0, nullptr);
     if (state_->should_quit)
       break;
@@ -638,6 +701,7 @@ void MessagePumpForIO::DoRunLoop() {
     if (more_work_is_plausible)
       continue;
 
+    state_->delegate->BeforeWait();
     WaitForWork(next_work_info);
   }
 }
@@ -676,6 +740,9 @@ bool MessagePumpForIO::WaitForIOCompletion(DWORD timeout, IOHandler* filter) {
     // Save this item for later
     completed_io_.push_back(item);
   } else {
+    TRACE_EVENT2("base,toplevel", "IOHandler::OnIOCompleted", "dest_file",
+                 item.handler->io_handler_location().file_name(), "dest_func",
+                 item.handler->io_handler_location().function_name());
     item.handler->OnIOCompleted(item.context, item.bytes_transfered,
                                 item.error);
   }

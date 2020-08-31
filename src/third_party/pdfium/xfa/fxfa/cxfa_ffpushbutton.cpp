@@ -51,12 +51,16 @@ void CXFA_FFPushButton::RenderWidget(CXFA_Graphics* pGS,
 
 bool CXFA_FFPushButton::LoadWidget() {
   ASSERT(!IsLoaded());
+
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retain_layout(m_pLayoutItem.Get());
+
   auto pNew = pdfium::MakeUnique<CFWL_PushButton>(GetFWLApp());
   CFWL_PushButton* pPushButton = pNew.get();
   m_pOldDelegate = pPushButton->GetDelegate();
   pPushButton->SetDelegate(this);
   SetNormalWidget(std::move(pNew));
-  pPushButton->SetFFWidget(this);
+  pPushButton->SetAdapterIface(this);
 
   CFWL_NoteDriver* pNoteDriver = pPushButton->GetOwnerApp()->GetNoteDriver();
   pNoteDriver->RegisterEventTarget(pPushButton, pPushButton);
@@ -92,15 +96,15 @@ bool CXFA_FFPushButton::PerformLayout() {
   CXFA_FFWidget::PerformLayout();
   CFX_RectF rtWidget = GetRectWithoutRotate();
 
-  m_rtUI = rtWidget;
+  m_UIRect = rtWidget;
   CXFA_Margin* margin = m_pNode->GetMarginIfExists();
   XFA_RectWithoutMargin(&rtWidget, margin);
 
-  m_rtCaption = rtWidget;
+  m_CaptionRect = rtWidget;
 
   CXFA_Caption* caption = m_pNode->GetCaptionIfExists();
   CXFA_Margin* captionMargin = caption ? caption->GetMarginIfExists() : nullptr;
-  XFA_RectWithoutMargin(&m_rtCaption, captionMargin);
+  XFA_RectWithoutMargin(&m_CaptionRect, captionMargin);
 
   LayoutHighlightCaption();
   SetFWLRect();
@@ -152,7 +156,7 @@ void CXFA_FFPushButton::LoadHighlightCaption() {
 }
 
 void CXFA_FFPushButton::LayoutHighlightCaption() {
-  CFX_SizeF sz(m_rtCaption.width, m_rtCaption.height);
+  CFX_SizeF sz(m_CaptionRect.width, m_CaptionRect.height);
   LayoutCaption();
   if (m_pRolloverTextLayout)
     m_pRolloverTextLayout->Layout(sz);
@@ -168,9 +172,9 @@ void CXFA_FFPushButton::RenderHighlightCaption(CXFA_Graphics* pGS,
     return;
 
   CFX_RenderDevice* pRenderDevice = pGS->GetRenderDevice();
-  CFX_RectF rtClip = m_rtCaption;
+  CFX_RectF rtClip = m_CaptionRect;
   rtClip.Intersect(GetRectWithoutRotate());
-  CFX_Matrix mt(1, 0, 0, 1, m_rtCaption.left, m_rtCaption.top);
+  CFX_Matrix mt(1, 0, 0, 1, m_CaptionRect.left, m_CaptionRect.top);
   if (pMatrix) {
     rtClip = pMatrix->TransformRect(rtClip);
     mt.Concat(*pMatrix);
@@ -191,16 +195,25 @@ void CXFA_FFPushButton::RenderHighlightCaption(CXFA_Graphics* pGS,
 }
 
 void CXFA_FFPushButton::OnProcessMessage(CFWL_Message* pMessage) {
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retainer(m_pLayoutItem.Get());
+
   m_pOldDelegate->OnProcessMessage(pMessage);
 }
 
 void CXFA_FFPushButton::OnProcessEvent(CFWL_Event* pEvent) {
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retain_layout(m_pLayoutItem.Get());
+
   m_pOldDelegate->OnProcessEvent(pEvent);
   CXFA_FFField::OnProcessEvent(pEvent);
 }
 
 void CXFA_FFPushButton::OnDrawWidget(CXFA_Graphics* pGraphics,
                                      const CFX_Matrix& matrix) {
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retainer(m_pLayoutItem.Get());
+
   auto* pWidget = GetNormalWidget();
   if (pWidget->GetStylesEx() & XFA_FWL_PSBSTYLEEXT_HiliteInverted) {
     if ((pWidget->GetStates() & FWL_STATE_PSB_Pressed) &&

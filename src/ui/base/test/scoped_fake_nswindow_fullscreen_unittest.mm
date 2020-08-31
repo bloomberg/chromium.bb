@@ -4,9 +4,10 @@
 
 #import "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 
+#import <AppKit/AppKit.h>
+
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
-#import "base/mac/sdk_forward_declarations.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -15,7 +16,7 @@
 
 @interface TestNSWindowDelegate : NSObject<NSWindowDelegate> {
  @private
-  NSSize targetSize_;
+  NSSize _targetSize;
 }
 - (instancetype)initWithFullScreenContentSize:(NSSize)targetSize;
 @end
@@ -24,14 +25,14 @@
 
 - (instancetype)initWithFullScreenContentSize:(NSSize)targetSize {
   if ((self = [super init])) {
-    targetSize_ = targetSize;
+    _targetSize = targetSize;
   }
   return self;
 }
 
 - (NSSize)window:(NSWindow*)window
     willUseFullScreenContentSize:(NSSize)proposedSize {
-  return targetSize_;
+  return _targetSize;
 }
 
 @end

@@ -4,25 +4,31 @@
 
 #include "content/browser/cache_storage/cache_storage_blob_to_disk_cache.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
-#include "storage/common/storage_histograms.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "url/origin.h"
 
 namespace content {
 
 const int CacheStorageBlobToDiskCache::kBufferSize = 1024 * 512;
 
-CacheStorageBlobToDiskCache::CacheStorageBlobToDiskCache()
+CacheStorageBlobToDiskCache::CacheStorageBlobToDiskCache(
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+    const url::Origin& origin)
     : handle_watcher_(FROM_HERE,
                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                      base::SequencedTaskRunnerHandle::Get()) {}
+                      base::SequencedTaskRunnerHandle::Get()),
+      quota_manager_proxy_(std::move(quota_manager_proxy)),
+      origin_(origin) {}
 
 CacheStorageBlobToDiskCache::~CacheStorageBlobToDiskCache() = default;
 
@@ -91,11 +97,10 @@ void CacheStorageBlobToDiskCache::ReadFromBlob() {
 void CacheStorageBlobToDiskCache::DidWriteDataToEntry(int expected_bytes,
                                                       int rv) {
   if (rv != expected_bytes) {
+    quota_manager_proxy_->NotifyWriteFailed(origin_);
     RunCallback(false /* success */);
     return;
   }
-  if (rv > 0)
-    storage::RecordBytesWritten("DiskCache.CacheStorage", rv);
   cache_entry_offset_ += rv;
 
   ReadFromBlob();

@@ -49,17 +49,21 @@ class LocalizedError {
       const std::string& error_domain,
       const GURL& failed_url,
       bool is_post,
+      bool is_secure_dns_network_error,
       bool stale_copy_in_cache,
       bool can_show_network_diagnostics_dialog,
       bool is_incognito,
       bool offline_content_feature_enabled,
       bool auto_fetch_feature_enabled,
+      bool is_kiosk_mode,  // whether device is currently in single app (kiosk)
+                           // mode
       const std::string& locale,
       std::unique_ptr<error_page::ErrorPageParams> params);
 
   // Returns a description of the encountered error.
   static base::string16 GetErrorDetails(const std::string& error_domain,
                                         int error_code,
+                                        bool is_secure_dns_network_error,
                                         bool is_post);
 
   // Returns true if an error page exists for the specified parameters.

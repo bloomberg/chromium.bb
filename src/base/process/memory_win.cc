@@ -40,24 +40,21 @@ namespace base {
 
 namespace {
 
-#pragma warning(push)
-#pragma warning(disable: 4702)  // Unreachable code after the _exit.
-
-NOINLINE int OnNoMemory(size_t size) {
-  // Kill the process. This is important for security since most of code
-  // does not check the result of memory allocation.
-  // https://msdn.microsoft.com/en-us/library/het71c37.aspx
-  // Pass the size of the failed request in an exception argument.
-  ULONG_PTR exception_args[] = {size};
-  ::RaiseException(win::kOomExceptionCode, EXCEPTION_NONCONTINUABLE,
-                   base::size(exception_args), exception_args);
-
-  // Safety check, make sure process exits here.
-  _exit(win::kOomExceptionCode);
+// Return a non-0 value to retry the allocation.
+int ReleaseReservationOrTerminate(size_t size) {
+  constexpr int kRetryAllocation = 1;
+  if (internal::ReleaseAddressSpaceReservation())
+    return kRetryAllocation;
+  internal::OnNoMemoryInternal(size);
   return 0;
 }
 
-#pragma warning(pop)
+// TODO(crbug.com/1062949): Remove the NOINLINE once the crash servers handle
+// the |OnNoMemoryInternal()| signature..
+NOINLINE int OnNoMemory(size_t size) {
+  internal::OnNoMemoryInternal(size);
+  return 0;
+}
 
 }  // namespace
 
@@ -71,8 +68,9 @@ void EnableTerminationOnHeapCorruption() {
 }
 
 void EnableTerminationOnOutOfMemory() {
-  _set_new_handler(&OnNoMemory);
-  _set_new_mode(1);
+  constexpr int kCallNewHandlerOnAllocationFailure = 1;
+  _set_new_handler(&ReleaseReservationOrTerminate);
+  _set_new_mode(kCallNewHandlerOnAllocationFailure);
 }
 
 // Implemented using a weak symbol.

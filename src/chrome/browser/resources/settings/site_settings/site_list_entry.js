@@ -6,12 +6,35 @@
  * @fileoverview
  * 'site-list-entry' shows an Allowed and Blocked site for a given category.
  */
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '../icons.m.js';
+import '../settings_shared_css.m.js';
+import '../site_favicon.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.js';
+import {routes} from '../route.js';
+import {Router} from '../router.m.js';
+
+import {ChooserType, ContentSettingsTypes, SITE_EXCEPTION_WILDCARD} from './constants.js';
+import {SiteSettingsBehavior} from './site_settings_behavior.js';
+import {SiteException} from './site_settings_prefs_browser_proxy.js';
+
 Polymer({
   is: 'site-list-entry',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [
     SiteSettingsBehavior,
-    cr.ui.FocusRowBehavior,
+    FocusRowBehavior,
   ],
 
   properties: {
@@ -37,11 +60,11 @@ Polymer({
     /**
      * If the site represented is part of a chooser exception, the chooser type
      * will be stored here to allow the permission to be manipulated.
-     * @private {!settings.ChooserType}
+     * @private {!ChooserType}
      */
     chooserType: {
       type: String,
-      value: settings.ChooserType.NONE,
+      value: ChooserType.NONE,
     },
 
     /**
@@ -68,7 +91,7 @@ Polymer({
   },
 
   /** @private */
-  onShowTooltip_: function() {
+  onShowTooltip_() {
     const indicator = assert(this.$$('cr-policy-pref-indicator'));
     // The tooltip text is used by an paper-tooltip contained inside the
     // cr-policy-pref-indicator. The text is currently held in a private
@@ -78,11 +101,22 @@ Polymer({
     this.fire('show-tooltip', {target: indicator, text});
   },
 
+  /** @private */
+  onShowIncognitoTooltip_: function() {
+    const tooltip = assert(this.$$('#incognitoTooltip'));
+    // The tooltip text is used by an paper-tooltip contained inside the
+    // cr-policy-pref-indicator. The text is currently held in a private
+    // property. This text is needed here to send up to the common tooltip
+    // component.
+    const text = loadTimeData.getString('incognitoSiteExceptionDesc');
+    this.fire('show-tooltip', {target: tooltip, text});
+  },
+
   /**
    * @return {boolean}
    * @private
    */
-  shouldHideResetButton_: function() {
+  shouldHideResetButton_() {
     if (this.model === undefined) {
       return false;
     }
@@ -96,7 +130,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldHideActionMenu_: function() {
+  shouldHideActionMenu_() {
     if (this.model === undefined) {
       return false;
     }
@@ -110,12 +144,12 @@ Polymer({
    * A handler for selecting a site (by clicking on the origin).
    * @private
    */
-  onOriginTap_: function() {
+  onOriginTap_() {
     if (!this.allowNavigateToSiteDetail_) {
       return;
     }
-    settings.navigateTo(
-        settings.routes.SITE_SETTINGS_SITE_DETAILS,
+    Router.getInstance().navigateTo(
+        routes.SITE_SETTINGS_SITE_DETAILS,
         new URLSearchParams('site=' + this.model.origin));
   },
 
@@ -125,10 +159,10 @@ Polymer({
    * or the website whose third parties are also affected.
    * @return {string}
    */
-  computeDisplayName_: function() {
+  computeDisplayName_() {
     if (this.model.embeddingOrigin &&
-        this.model.category === settings.ContentSettingsTypes.COOKIES &&
-        this.model.origin.trim() == settings.SITE_EXCEPTION_WILDCARD) {
+        this.model.category === ContentSettingsTypes.COOKIES &&
+        this.model.origin.trim() == SITE_EXCEPTION_WILDCARD) {
       return this.model.embeddingOrigin;
     }
     return this.model.displayName;
@@ -136,42 +170,33 @@ Polymer({
 
   /**
    * Returns the appropriate site description to display. This can, for example,
-   * be blank, an 'embedded on <site>' or 'Current incognito session' (or a
-   * mix of the last two).
+   * be blank, an 'embedded on <site>' string, or a third-party exception
+   * description string.
    * @return {string}
    */
-  computeSiteDescription_: function() {
+  computeSiteDescription_() {
     let description = '';
 
     if (this.model.embeddingOrigin) {
-      if (this.model.category === settings.ContentSettingsTypes.COOKIES &&
-          this.model.origin.trim() == settings.SITE_EXCEPTION_WILDCARD) {
-        description =
-            loadTimeData.getString(
-                'siteSettingsCookiesThirdPartyExceptionLabel');
-       } else {
-         description = loadTimeData.getStringF(
-             'embeddedOnHost', this.sanitizePort(this.model.embeddingOrigin));
-       }
-    } else if (this.category == settings.ContentSettingsTypes.GEOLOCATION) {
+      if (this.model.category === ContentSettingsTypes.COOKIES &&
+          this.model.origin.trim() == SITE_EXCEPTION_WILDCARD) {
+        description = loadTimeData.getString(
+            'siteSettingsCookiesThirdPartyExceptionLabel');
+      } else {
+        description = loadTimeData.getStringF(
+            'embeddedOnHost', this.sanitizePort(this.model.embeddingOrigin));
+      }
+    } else if (this.category == ContentSettingsTypes.GEOLOCATION) {
       description = loadTimeData.getString('embeddedOnAnyHost');
     }
 
     // <if expr="chromeos">
-    if (this.model.category === settings.ContentSettingsTypes.NOTIFICATIONS &&
+    if (this.model.category === ContentSettingsTypes.NOTIFICATIONS &&
         this.model.showAndroidSmsNote) {
       description = loadTimeData.getString('androidSmsNote');
     }
     // </if>
 
-    if (this.model.incognito) {
-      if (description.length > 0) {
-        description =
-            loadTimeData.getStringF('embeddedIncognitoSite', description);
-      } else {
-        description = loadTimeData.getString('incognitoSite');
-      }
-    }
     return description;
   },
 
@@ -179,17 +204,16 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeShowPolicyPrefIndicator_: function() {
+  computeShowPolicyPrefIndicator_() {
     return this.model.enforcement ==
         chrome.settingsPrivate.Enforcement.ENFORCED &&
         !!this.model.controlledBy;
   },
 
   /** @private */
-  onResetButtonTap_: function() {
+  onResetButtonTap_() {
     // Use the appropriate method to reset a chooser exception.
-    if (this.chooserType !== settings.ChooserType.NONE &&
-        this.chooserObject != null) {
+    if (this.chooserType !== ChooserType.NONE && this.chooserObject != null) {
       this.browserProxy.resetChooserExceptionForSite(
           this.chooserType, this.model.origin, this.model.embeddingOrigin,
           this.chooserObject);
@@ -202,9 +226,9 @@ Polymer({
   },
 
   /** @private */
-  onShowActionMenuTap_: function() {
+  onShowActionMenuTap_() {
     // Chooser exceptions do not support the action menu, so do nothing.
-    if (this.chooserType !== settings.ChooserType.NONE) {
+    if (this.chooserType !== ChooserType.NONE) {
       return;
     }
 
@@ -214,7 +238,7 @@ Polymer({
   },
 
   /** @private */
-  onModelChanged_: function() {
+  onModelChanged_() {
     if (!this.model) {
       this.allowNavigateToSiteDetail_ = false;
       return;

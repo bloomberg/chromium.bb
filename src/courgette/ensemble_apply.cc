@@ -12,10 +12,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/check.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "courgette/crc.h"
 #include "courgette/patcher_x86_32.h"
@@ -141,7 +141,6 @@ Status EnsemblePatchApplication::ReadInitialParameters(
     switch (kind) {
       case EXE_WIN_32_X86:  // Fall through.
       case EXE_ELF_32_X86:
-      case EXE_ELF_32_ARM:
       case EXE_WIN_32_X64:
         patcher.reset(new PatcherX86_32(base_region_));
         break;

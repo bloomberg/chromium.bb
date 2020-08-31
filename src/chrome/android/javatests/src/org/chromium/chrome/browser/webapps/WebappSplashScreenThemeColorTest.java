@@ -17,8 +17,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.ThemeTestUtils;
 import org.chromium.ui.test.util.UiRestriction;
@@ -40,7 +40,7 @@ public class WebappSplashScreenThemeColorTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     // Customizing status bar color is disallowed for tablets.
-    @Feature({"Webapps"})
+    @Feature({"StatusBar", "Webapps"})
     public void testThemeColorWhenSpecified() {
         // This is Color.Magenta with 50% opacity.
         final int intentThemeColor = Color.argb(0x80, 0xFF, 0, 0xFF);
@@ -57,7 +57,7 @@ public class WebappSplashScreenThemeColorTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     // Customizing status bar color is disallowed for tablets.
-    @Feature({"Webapps"})
+    @Feature({"StatusBar", "Webapps"})
     public void testThemeColorNotUsedIfPagesHasOne() throws ExecutionException, TimeoutException {
         final int intentThemeColor = Color.MAGENTA;
         final int pageThemeColor = Color.RED;

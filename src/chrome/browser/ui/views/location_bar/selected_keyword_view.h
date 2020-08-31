@@ -15,6 +15,7 @@
 
 class LocationBarView;
 class Profile;
+class TemplateURLService;
 
 namespace gfx {
 class FontList;
@@ -24,23 +25,33 @@ class Size;
 // SelectedKeywordView displays the tab-to-search UI in the location bar view.
 class SelectedKeywordView : public IconLabelBubbleView {
  public:
+  struct KeywordLabelNames {
+    base::string16 short_name;
+    base::string16 full_name;
+  };
+  // Returns the short and long names that can be used to describe keyword
+  // behavior, e.g. "Search google.com" or an equivalent translation, with
+  // consideration for bidirectional text safety using |service|. Empty
+  // names are returned if service is null.
+  static KeywordLabelNames GetKeywordLabelNames(const base::string16& keyword,
+                                                TemplateURLService* service);
+
   SelectedKeywordView(LocationBarView* location_bar,
-                      const gfx::FontList& font_list,
-                      Profile* profile);
+                      const gfx::FontList& font_list);
   ~SelectedKeywordView() override;
 
-  // Resets the icon for this chip to its default (it may have been changed
-  // for an extension).
-  void ResetImage();
+  // Sets the icon for this chip to |image|.  If there is no custom image (i.e.
+  // |image| is empty), resets the icon for this chip to its default.
+  void SetCustomImage(const gfx::Image& image);
 
   // IconLabelBubbleView:
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
-  SkColor GetTextColor() const override;
-  SkColor GetInkDropBaseColor() const override;
+  void OnThemeChanged() override;
+  SkColor GetForegroundColor() const override;
 
   // The current keyword, or an empty string if no keyword is displayed.
-  void SetKeyword(const base::string16& keyword);
+  void SetKeyword(const base::string16& keyword, Profile* profile);
   const base::string16& keyword() const { return keyword_; }
 
   using IconLabelBubbleView::label;
@@ -67,7 +78,8 @@ class SelectedKeywordView : public IconLabelBubbleView {
   views::Label full_label_;
   views::Label partial_label_;
 
-  Profile* profile_;
+  // True when the chip icon has been changed via SetCustomImage().
+  bool using_custom_image_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SelectedKeywordView);
 };

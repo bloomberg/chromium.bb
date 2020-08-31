@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/beacon/navigator_beacon.h"
 
-#include "third_party/blink/renderer/bindings/modules/v8/array_buffer_view_or_blob_or_string_or_form_data.h"
+#include "third_party/blink/renderer/bindings/modules/v8/array_buffer_view_or_blob_or_string_or_form_data_or_readable_stream.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -25,7 +26,7 @@ NavigatorBeacon::NavigatorBeacon(Navigator& navigator)
 
 NavigatorBeacon::~NavigatorBeacon() = default;
 
-void NavigatorBeacon::Trace(blink::Visitor* visitor) {
+void NavigatorBeacon::Trace(Visitor* visitor) {
   Supplement<Navigator>::Trace(visitor);
 }
 
@@ -66,7 +67,7 @@ bool NavigatorBeacon::sendBeacon(
     ScriptState* script_state,
     Navigator& navigator,
     const String& urlstring,
-    const ArrayBufferViewOrBlobOrStringOrFormData& data,
+    const ArrayBufferViewOrBlobOrStringOrFormDataOrReadableStream& data,
     ExceptionState& exception_state) {
   return NavigatorBeacon::From(navigator).SendBeaconImpl(
       script_state, urlstring, data, exception_state);
@@ -75,7 +76,7 @@ bool NavigatorBeacon::sendBeacon(
 bool NavigatorBeacon::SendBeaconImpl(
     ScriptState* script_state,
     const String& urlstring,
-    const ArrayBufferViewOrBlobOrStringOrFormData& data,
+    const ArrayBufferViewOrBlobOrStringOrFormDataOrReadableStream& data,
     ExceptionState& exception_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   KURL url = context->CompleteURL(urlstring);
@@ -99,7 +100,8 @@ bool NavigatorBeacon::SendBeaconImpl(
         PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url, data_view);
   } else if (data.IsBlob()) {
     Blob* blob = data.GetAsBlob();
-    if (!cors::IsCorsSafelistedContentType(blob->type())) {
+    if (!RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
+        !cors::IsCorsSafelistedContentType(blob->type())) {
       UseCounter::Count(context,
                         WebFeature::kSendBeaconWithNonSimpleContentType);
       if (RuntimeEnabledFeatures::
@@ -119,6 +121,10 @@ bool NavigatorBeacon::SendBeaconImpl(
   } else if (data.IsFormData()) {
     allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url,
                                      data.GetAsFormData());
+  } else if (data.IsReadableStream()) {
+    exception_state.ThrowTypeError(
+        "sendBeacon cannot have a ReadableStream body.");
+    return false;
   } else {
     allowed =
         PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url, String());

@@ -4,7 +4,8 @@
 
 #include "ui/views/controls/button/label_button_border.h"
 
-#include "base/logging.h"
+#include <utility>
+
 #include "cc/paint/paint_flags.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
@@ -32,9 +33,8 @@ void PaintHelper(LabelButtonAssetBorder* border,
                  ui::NativeTheme::State state,
                  const gfx::Rect& rect,
                  const ui::NativeTheme::ExtraParams& extra) {
-  Painter* painter =
-      border->GetPainter(extra.button.is_focused,
-                         Button::GetButtonStateFrom(state));
+  Painter* painter = border->GetPainter(extra.button.is_focused,
+                                        Button::GetButtonStateFrom(state));
   // Paint any corresponding unfocused painter if there is no focused painter.
   if (!painter && extra.button.is_focused)
     painter = border->GetPainter(false, Button::GetButtonStateFrom(state));

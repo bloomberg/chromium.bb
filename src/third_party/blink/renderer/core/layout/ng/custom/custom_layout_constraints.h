@@ -29,10 +29,10 @@ class CustomLayoutConstraints : public ScriptWrappable {
 
   // LayoutConstraints.idl
   double fixedInlineSize() const { return fixed_inline_size_; }
-  double fixedBlockSize(bool& is_null) const;
+  base::Optional<double> fixedBlockSize() const;
   ScriptValue data(ScriptState*) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   double fixed_inline_size_;

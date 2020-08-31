@@ -21,12 +21,12 @@
         android:layout_weight="1"
         android:paddingStart="6dp"
         android:textAlignment="viewStart"
-        android:textAppearance="@style/TextAppearance.BlackTitle2" />
+        android:textAppearance="@style/TextAppearance.TextMediumThick.Primary" />
 
     <TextView
         android:id="@+id/header_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.BlueLink2" />
+        android:textAppearance="@style/TextAppearance.TextMedium.Blue" />
 
 </org.chromium.chrome.browser.ntp.snippets.SectionHeaderView>

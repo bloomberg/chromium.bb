@@ -63,6 +63,8 @@ class ArcNotificationContentView
   void OnContainerAnimationEnded();
   void ActivateWidget(bool activate);
 
+  bool slide_in_progress() const { return slide_in_progress_; }
+
  private:
   friend class ArcNotificationViewTest;
   friend class ArcNotificationContentViewTest;
@@ -106,6 +108,7 @@ class ArcNotificationContentView
   void OnAccessibilityEvent(ax::mojom::Event event) override;
   void AddedToWidget() override;
   void RemovedFromWidget() override;
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
 
   // aura::WindowObserver
   void OnWindowBoundsChanged(aura::Window* window,

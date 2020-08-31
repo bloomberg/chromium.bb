@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
@@ -44,8 +45,8 @@ PrintJobDatabaseImpl::PrintJobDatabaseImpl(
   auto print_job_database_path = profile_path.Append(kPrintJobDatabaseName);
 
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::BEST_EFFORT});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   database_ = database_provider->GetDB<printing::proto::PrintJobInfo>(
       leveldb_proto::ProtoDbType::PRINT_JOB_DATABASE, print_job_database_path,
@@ -119,14 +120,44 @@ void PrintJobDatabaseImpl::DeletePrintJobs(const std::vector<std::string>& ids,
   database_->UpdateEntries(
       /*entries_to_save=*/std::make_unique<EntryVector>(),
       /*keys_to_remove=*/std::make_unique<std::vector<std::string>>(ids),
-      base::BindOnce(&PrintJobDatabaseImpl::OnPrintJobDeleted,
+      base::BindOnce(&PrintJobDatabaseImpl::OnPrintJobsDeleted,
+                     weak_ptr_factory_.GetWeakPtr(), ids, std::move(callback)));
+}
+
+void PrintJobDatabaseImpl::Clear(DeletePrintJobsCallback callback) {
+  // TODO(crbug/1074444): Maybe try to remove duplicate code in this function.
+  if (init_status_ == InitStatus::FAILED) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+
+  if (init_status_ != InitStatus::INITIALIZED) {
+    deferred_callbacks_.push(base::BindOnce(&PrintJobDatabaseImpl::Clear,
+                                            weak_ptr_factory_.GetWeakPtr(),
+                                            std::move(callback)));
+    return;
+  }
+
+  std::vector<std::string> ids;
+  ids.reserve(cache_.size());
+  for (const auto& pair : cache_)
+    ids.push_back(pair.second.id());
+
+  database_->UpdateEntries(
+      /*entries_to_save=*/std::make_unique<EntryVector>(),
+      /*keys_to_remove=*/
+      std::make_unique<std::vector<std::string>>(ids),
+      base::BindOnce(&PrintJobDatabaseImpl::OnPrintJobsDeleted,
                      weak_ptr_factory_.GetWeakPtr(), ids, std::move(callback)));
 }
 
 void PrintJobDatabaseImpl::GetPrintJobs(GetPrintJobsCallback callback) {
   if (init_status_ == InitStatus::FAILED) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), false,
+                       std::vector<printing::proto::PrintJobInfo>()));
     return;
   }
 
@@ -139,9 +170,10 @@ void PrintJobDatabaseImpl::GetPrintJobs(GetPrintJobsCallback callback) {
   }
 
   base::Time start_time = base::Time::Now();
-  auto entries = std::make_unique<std::vector<printing::proto::PrintJobInfo>>();
+  std::vector<printing::proto::PrintJobInfo> entries;
+  entries.reserve(cache_.size());
   for (const auto& pair : cache_)
-    entries->emplace_back(pair.second);
+    entries.push_back(pair.second);
   base::UmaHistogramTimes(kPrintJobDatabaseLoadTime,
                           base::Time::Now() - start_time);
 
@@ -211,7 +243,7 @@ void PrintJobDatabaseImpl::OnPrintJobSaved(
       FROM_HERE, base::BindOnce(std::move(callback), success));
 }
 
-void PrintJobDatabaseImpl::OnPrintJobDeleted(
+void PrintJobDatabaseImpl::OnPrintJobsDeleted(
     const std::vector<std::string>& ids,
     DeletePrintJobsCallback callback,
     bool success) {
@@ -223,7 +255,7 @@ void PrintJobDatabaseImpl::OnPrintJobDeleted(
 }
 
 void PrintJobDatabaseImpl::GetPrintJobsFromProtoDatabase(
-    GetPrintJobsCallback callback) {
+    GetPrintJobsFromProtoDatabaseCallback callback) {
   if (init_status_ == InitStatus::FAILED) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
@@ -239,12 +271,12 @@ void PrintJobDatabaseImpl::GetPrintJobsFromProtoDatabase(
   }
 
   database_->LoadEntries(
-      base::BindOnce(&PrintJobDatabaseImpl::OnPrintJobsRetrieved,
+      base::BindOnce(&PrintJobDatabaseImpl::OnPrintJobRetrievedFromDatabase,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void PrintJobDatabaseImpl::OnPrintJobsRetrieved(
-    GetPrintJobsCallback callback,
+void PrintJobDatabaseImpl::OnPrintJobRetrievedFromDatabase(
+    GetPrintJobsFromProtoDatabaseCallback callback,
     bool success,
     std::unique_ptr<std::vector<printing::proto::PrintJobInfo>> entries) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(

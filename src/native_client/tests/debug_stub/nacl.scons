@@ -25,7 +25,8 @@ if env.GetEmulator():
   # qualification tests because they fail under qemu-arm.
   sel_ldr_command = [env.GetEmulator()] + sel_ldr_command + ['-Q']
 
-is_broken = not env.Bit('nacl_static_link') or env.GetSelLdr() is None
+is_broken = (not env.Bit('nacl_static_link') or env.GetSelLdr() is None or
+             env.Bit('host_windows'))
 
 if env.Bit('build_arm') or env.Bit('build_mips32'):
   # Use the system's 'nm' tool.  The NaCl toolchain will not be

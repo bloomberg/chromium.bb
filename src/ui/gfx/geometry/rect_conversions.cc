@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 
 namespace gfx {
@@ -55,6 +55,17 @@ Rect ToEnclosedRect(const RectF& rect) {
   return result;
 }
 
+Rect ToEnclosedRectIgnoringError(const RectF& r, float error) {
+  int left = ToCeiledIntIgnoringError(r.x(), error);
+  int right = r.width() ? ToFlooredIntIgnoringError(r.right(), error) : left;
+  int top = ToCeiledIntIgnoringError(r.y(), error);
+  int bottom = r.height() ? ToFlooredIntIgnoringError(r.bottom(), error) : top;
+
+  Rect result;
+  result.SetByBounds(left, top, right, bottom);
+  return result;
+}
+
 Rect ToNearestRect(const RectF& rect) {
   float float_min_x = rect.x();
   float float_min_y = rect.y();
@@ -95,6 +106,16 @@ bool IsNearestRectWithinDistance(const gfx::RectF& rect, float distance) {
       (std::abs(min_y - float_min_y) < distance) &&
       (std::abs(max_x - float_max_x) < distance) &&
       (std::abs(max_y - float_max_y) < distance);
+}
+
+gfx::Rect ToRoundedRect(const gfx::RectF& rect) {
+  int left = ToRoundedInt(rect.x());
+  int top = ToRoundedInt(rect.y());
+  int right = ToRoundedInt(rect.right());
+  int bottom = ToRoundedInt(rect.bottom());
+  gfx::Rect result;
+  result.SetByBounds(left, top, right, bottom);
+  return result;
 }
 
 Rect ToFlooredRectDeprecated(const RectF& rect) {

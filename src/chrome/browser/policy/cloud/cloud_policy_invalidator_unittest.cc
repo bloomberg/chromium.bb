@@ -17,16 +17,17 @@
 #include "base/metrics/sample_map.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/policy/cloud/policy_invalidation_util.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator.h"
-#include "chrome/common/chrome_features.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
+#include "components/invalidation/impl/invalidator_registrar_with_memory.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -34,6 +35,7 @@
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
+#include "components/policy/core/common/cloud/policy_invalidation_scope.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -44,18 +46,6 @@ namespace em = enterprise_management;
 
 namespace policy {
 
-namespace {
-
-struct TestParams {
-  const bool is_fcm_enabled;
-  const em::DeviceRegisterRequest::Type policy_type;
-
-  TestParams(bool is_fcm_enabled, em::DeviceRegisterRequest::Type policy_type)
-      : is_fcm_enabled(is_fcm_enabled), policy_type(std::move(policy_type)) {}
-};
-
-}  // namespace
-
 class CloudPolicyInvalidatorTestBase : public testing::Test {
  protected:
   // Policy objects which can be used in tests.
@@ -65,7 +55,7 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
     POLICY_OBJECT_B
   };
 
-  explicit CloudPolicyInvalidatorTestBase(bool is_fcm_enabled);
+  CloudPolicyInvalidatorTestBase();
 
   void TearDown() override;
 
@@ -186,10 +176,8 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
   // Get an invalidation version for the given time.
   int64_t GetVersion(base::Time time);
 
-  // Get the policy type that the |invalidator_| is responsible for.
-  virtual em::DeviceRegisterRequest::Type GetPolicyType() const;
-
-  bool is_fcm_enabled() { return is_fcm_enabled_; }
+  // Get the invalidation scope that the |invalidator_| is responsible for.
+  virtual PolicyInvalidationScope GetPolicyInvalidationScope() const;
 
  private:
   // Checks that the policy was refreshed due to an invalidation with the given
@@ -199,13 +187,10 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
   // Checks that the policy was refreshed the given number of times.
   bool CheckPolicyRefreshCount(int count);
 
-  // Returns the object id of the given policy object.
-  const invalidation::ObjectId& GetPolicyObjectId(PolicyObject object) const;
+  // Returns the invalidation topic corresponding to the given policy object.
+  const syncer::Topic& GetPolicyTopic(PolicyObject object) const;
 
   base::test::SingleThreadTaskEnvironment task_environment_;
-
-  // Fake feature list with custom values.
-  base::test::ScopedFeatureList feature_list_;
 
   // Objects the invalidator depends on.
   invalidation::FakeInvalidationService invalidation_service_;
@@ -215,16 +200,12 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::SimpleTestClock clock_;
 
-  // If true FCM (Firebase Cloud Messaging) based topics used to register to
-  // invalidations and Tango based topics otherwise.
-  const bool is_fcm_enabled_;
-
   // The invalidator which will be tested.
   std::unique_ptr<CloudPolicyInvalidator> invalidator_;
 
-  // Object ids for the test policy objects.
-  invalidation::ObjectId object_id_a_;
-  invalidation::ObjectId object_id_b_;
+  // Topics for the test policy objects.
+  syncer::Topic topic_a_;
+  syncer::Topic topic_b_;
 
   // Fake policy values which are alternated to cause the store to report a
   // changed policy.
@@ -235,8 +216,7 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
   const char* policy_value_cur_;
 };
 
-CloudPolicyInvalidatorTestBase::CloudPolicyInvalidatorTestBase(
-    bool is_fcm_enabled)
+CloudPolicyInvalidatorTestBase::CloudPolicyInvalidatorTestBase()
     : core_(dm_protocol::kChromeUserPolicyType,
             std::string(),
             &store_,
@@ -244,21 +224,11 @@ CloudPolicyInvalidatorTestBase::CloudPolicyInvalidatorTestBase(
             network::TestNetworkConnectionTracker::CreateGetter()),
       client_(nullptr),
       task_runner_(new base::TestSimpleTaskRunner()),
-      is_fcm_enabled_(is_fcm_enabled),
+      topic_a_("asdf"),
+      topic_b_("zxcv"),
       policy_value_a_("asdf"),
       policy_value_b_("zxcv"),
       policy_value_cur_(policy_value_a_) {
-  feature_list_.InitWithFeatureState(features::kPolicyFcmInvalidations,
-                                     is_fcm_enabled);
-  if (is_fcm_enabled) {
-    object_id_a_ =
-        invalidation::ObjectId(syncer::kDeprecatedSourceForFCM, "asdf");
-    object_id_b_ =
-        invalidation::ObjectId(syncer::kDeprecatedSourceForFCM, "zxcv");
-  } else {
-    object_id_a_ = invalidation::ObjectId(135, "asdf");
-    object_id_b_ = invalidation::ObjectId(246, "zxcv");
-  }
   clock_.SetNow(base::Time::UnixEpoch() +
                 base::TimeDelta::FromSeconds(987654321));
 }
@@ -273,9 +243,9 @@ void CloudPolicyInvalidatorTestBase::StartInvalidator(
     bool initialize,
     bool start_refresh_scheduler,
     int64_t highest_handled_invalidation_version) {
-  invalidator_.reset(
-      new CloudPolicyInvalidator(GetPolicyType(), &core_, task_runner_, &clock_,
-                                 highest_handled_invalidation_version));
+  invalidator_.reset(new CloudPolicyInvalidator(
+      GetPolicyInvalidationScope(), &core_, task_runner_, &clock_,
+      highest_handled_invalidation_version));
   if (start_refresh_scheduler) {
     ConnectCore();
     StartRefreshScheduler();
@@ -317,12 +287,8 @@ void CloudPolicyInvalidatorTestBase::StorePolicy(PolicyObject object,
                                                  const base::Time& time) {
   em::PolicyData* data = new em::PolicyData();
   if (object != POLICY_OBJECT_NONE) {
-    data->set_invalidation_source(GetPolicyObjectId(object).source());
-    data->set_invalidation_name(GetPolicyObjectId(object).name());
-    // When FCM is enabled CloudPolicyInvalidator expects the name in this
-    // field.
-    if (is_fcm_enabled())
-      data->set_policy_invalidation_topic(GetPolicyObjectId(object).name());
+    // CloudPolicyInvalidator expects the topic to subscribe in this field.
+    data->set_policy_invalidation_topic(GetPolicyTopic(object));
   }
   data->set_timestamp(time.ToJavaTime());
   // Swap the policy value if a policy change is desired.
@@ -357,10 +323,8 @@ syncer::Invalidation CloudPolicyInvalidatorTestBase::FireInvalidation(
     PolicyObject object,
     int64_t version,
     const std::string& payload) {
-  syncer::Invalidation invalidation = syncer::Invalidation::Init(
-      GetPolicyObjectId(object),
-      version,
-      payload);
+  syncer::Invalidation invalidation =
+      syncer::Invalidation::Init(GetPolicyTopic(object), version, payload);
   invalidation_service_.EmitInvalidationForTest(invalidation);
   return invalidation;
 }
@@ -368,8 +332,8 @@ syncer::Invalidation CloudPolicyInvalidatorTestBase::FireInvalidation(
 syncer::Invalidation
 CloudPolicyInvalidatorTestBase::FireUnknownVersionInvalidation(
     PolicyObject object) {
-  syncer::Invalidation invalidation = syncer::Invalidation::InitUnknownVersion(
-      GetPolicyObjectId(object));
+  syncer::Invalidation invalidation =
+      syncer::Invalidation::InitUnknownVersion(GetPolicyTopic(object));
   invalidation_service_.EmitInvalidationForTest(invalidation);
   return invalidation;
 }
@@ -418,7 +382,8 @@ bool CloudPolicyInvalidatorTestBase::IsInvalidationAcknowledged(
 
 bool CloudPolicyInvalidatorTestBase::IsInvalidatorRegistered() {
   return !invalidation_service_.invalidator_registrar()
-      .GetRegisteredIds(invalidator_.get()).empty();
+              .GetRegisteredTopics(invalidator_.get())
+              .empty();
 }
 
 int64_t CloudPolicyInvalidatorTestBase::GetHighestHandledInvalidationVersion()
@@ -442,9 +407,9 @@ int64_t CloudPolicyInvalidatorTestBase::GetVersion(base::Time time) {
   return (time - base::Time::UnixEpoch()).InMicroseconds();
 }
 
-em::DeviceRegisterRequest::Type CloudPolicyInvalidatorTestBase::GetPolicyType()
-    const {
-  return UserCloudPolicyInvalidator::GetPolicyType();
+PolicyInvalidationScope
+CloudPolicyInvalidatorTestBase::GetPolicyInvalidationScope() const {
+  return PolicyInvalidationScope::kUser;
 }
 
 bool CloudPolicyInvalidatorTestBase::CheckPolicyRefreshed(
@@ -479,22 +444,15 @@ bool CloudPolicyInvalidatorTestBase::CheckPolicyRefreshCount(int count) {
   return testing::Mock::VerifyAndClearExpectations(client_);
 }
 
-const invalidation::ObjectId& CloudPolicyInvalidatorTestBase::GetPolicyObjectId(
+const syncer::Topic& CloudPolicyInvalidatorTestBase::GetPolicyTopic(
     PolicyObject object) const {
   EXPECT_TRUE(object == POLICY_OBJECT_A || object == POLICY_OBJECT_B);
-  return object == POLICY_OBJECT_A ? object_id_a_ : object_id_b_;
+  return object == POLICY_OBJECT_A ? topic_a_ : topic_b_;
 }
 
-class CloudPolicyInvalidatorTest : public CloudPolicyInvalidatorTestBase,
-                                   public testing::WithParamInterface<bool> {
- protected:
-  CloudPolicyInvalidatorTest();
-};
+class CloudPolicyInvalidatorTest : public CloudPolicyInvalidatorTestBase {};
 
-CloudPolicyInvalidatorTest::CloudPolicyInvalidatorTest()
-    : CloudPolicyInvalidatorTestBase(GetParam() /* is_fcm_enabled */) {}
-
-TEST_P(CloudPolicyInvalidatorTest, Uninitialized) {
+TEST_F(CloudPolicyInvalidatorTest, Uninitialized) {
   // No invalidations should be processed if the invalidator is not initialized.
   StartInvalidator(false, /* initialize */
                    true,  /* start_refresh_scheduler */
@@ -506,7 +464,7 @@ TEST_P(CloudPolicyInvalidatorTest, Uninitialized) {
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
 
-TEST_P(CloudPolicyInvalidatorTest, RefreshSchedulerNotStarted) {
+TEST_F(CloudPolicyInvalidatorTest, RefreshSchedulerNotStarted) {
   // No invalidations should be processed if the refresh scheduler is not
   // started.
   StartInvalidator(true,  /* initialize */
@@ -519,7 +477,7 @@ TEST_P(CloudPolicyInvalidatorTest, RefreshSchedulerNotStarted) {
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
 
-TEST_P(CloudPolicyInvalidatorTest, DisconnectCoreThenInitialize) {
+TEST_F(CloudPolicyInvalidatorTest, DisconnectCoreThenInitialize) {
   // No invalidations should be processed if the core is disconnected before
   // initialization.
   StartInvalidator(false, /* initialize */
@@ -534,7 +492,7 @@ TEST_P(CloudPolicyInvalidatorTest, DisconnectCoreThenInitialize) {
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
 
-TEST_P(CloudPolicyInvalidatorTest, InitializeThenStartRefreshScheduler) {
+TEST_F(CloudPolicyInvalidatorTest, InitializeThenStartRefreshScheduler) {
   // Make sure registration occurs and invalidations are processed when
   // Initialize is called before starting the refresh scheduler.
   // Note that the reverse case (start refresh scheduler then initialize) is
@@ -552,7 +510,7 @@ TEST_P(CloudPolicyInvalidatorTest, InitializeThenStartRefreshScheduler) {
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
 
-TEST_P(CloudPolicyInvalidatorTest, RegisterOnStoreLoaded) {
+TEST_F(CloudPolicyInvalidatorTest, RegisterOnStoreLoaded) {
   // No registration when store is not loaded.
   StartInvalidator();
   EXPECT_FALSE(IsInvalidatorRegistered());
@@ -580,7 +538,7 @@ TEST_P(CloudPolicyInvalidatorTest, RegisterOnStoreLoaded) {
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
 
-TEST_P(CloudPolicyInvalidatorTest, ChangeRegistration) {
+TEST_F(CloudPolicyInvalidatorTest, ChangeRegistration) {
   // Register for object A.
   StartInvalidator();
   StorePolicy(POLICY_OBJECT_A);
@@ -609,7 +567,7 @@ TEST_P(CloudPolicyInvalidatorTest, ChangeRegistration) {
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
 
-TEST_P(CloudPolicyInvalidatorTest, UnregisterOnStoreLoaded) {
+TEST_F(CloudPolicyInvalidatorTest, UnregisterOnStoreLoaded) {
   // Register for object A.
   StartInvalidator();
   StorePolicy(POLICY_OBJECT_A);
@@ -638,7 +596,7 @@ TEST_P(CloudPolicyInvalidatorTest, UnregisterOnStoreLoaded) {
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
 
-TEST_P(CloudPolicyInvalidatorTest, HandleInvalidation) {
+TEST_F(CloudPolicyInvalidatorTest, HandleInvalidation) {
   // Register and fire invalidation
   StorePolicy(POLICY_OBJECT_A);
   StartInvalidator();
@@ -660,7 +618,7 @@ TEST_P(CloudPolicyInvalidatorTest, HandleInvalidation) {
   EXPECT_EQ(V(12), GetHighestHandledInvalidationVersion());
 }
 
-TEST_P(CloudPolicyInvalidatorTest, HandleInvalidationWithUnknownVersion) {
+TEST_F(CloudPolicyInvalidatorTest, HandleInvalidationWithUnknownVersion) {
   // Register and fire invalidation with unknown version.
   StorePolicy(POLICY_OBJECT_A);
   StartInvalidator();
@@ -680,7 +638,7 @@ TEST_P(CloudPolicyInvalidatorTest, HandleInvalidationWithUnknownVersion) {
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
 
-TEST_P(CloudPolicyInvalidatorTest, HandleMultipleInvalidations) {
+TEST_F(CloudPolicyInvalidatorTest, HandleMultipleInvalidations) {
   // Generate multiple invalidations.
   StorePolicy(POLICY_OBJECT_A);
   StartInvalidator();
@@ -712,7 +670,7 @@ TEST_P(CloudPolicyInvalidatorTest, HandleMultipleInvalidations) {
   EXPECT_EQ(V(3), GetHighestHandledInvalidationVersion());
 }
 
-TEST_P(CloudPolicyInvalidatorTest,
+TEST_F(CloudPolicyInvalidatorTest,
        HandleMultipleInvalidationsWithUnknownVersion) {
   // Validate that multiple invalidations with unknown version each generate
   // unique invalidation version numbers.
@@ -746,7 +704,7 @@ TEST_P(CloudPolicyInvalidatorTest,
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
 
-TEST_P(CloudPolicyInvalidatorTest,
+TEST_F(CloudPolicyInvalidatorTest,
        InitialHighestHandledInvalidationVersionNonZero) {
   StorePolicy(POLICY_OBJECT_A);
   StartInvalidator(true, /* initialize */
@@ -787,7 +745,7 @@ TEST_P(CloudPolicyInvalidatorTest,
   EXPECT_EQ(V(3), GetHighestHandledInvalidationVersion());
 }
 
-TEST_P(CloudPolicyInvalidatorTest, AcknowledgeBeforeRefresh) {
+TEST_F(CloudPolicyInvalidatorTest, AcknowledgeBeforeRefresh) {
   // Generate an invalidation.
   StorePolicy(POLICY_OBJECT_A);
   StartInvalidator();
@@ -803,7 +761,7 @@ TEST_P(CloudPolicyInvalidatorTest, AcknowledgeBeforeRefresh) {
   EXPECT_EQ(V(3), GetHighestHandledInvalidationVersion());
 }
 
-TEST_P(CloudPolicyInvalidatorTest, NoCallbackAfterShutdown) {
+TEST_F(CloudPolicyInvalidatorTest, NoCallbackAfterShutdown) {
   // Generate an invalidation.
   StorePolicy(POLICY_OBJECT_A);
   StartInvalidator();
@@ -817,7 +775,7 @@ TEST_P(CloudPolicyInvalidatorTest, NoCallbackAfterShutdown) {
   DestroyInvalidator();
 }
 
-TEST_P(CloudPolicyInvalidatorTest, StateChanged) {
+TEST_F(CloudPolicyInvalidatorTest, StateChanged) {
   // Test invalidation service state changes while not registered.
   StartInvalidator();
   DisableInvalidationService();
@@ -855,7 +813,7 @@ TEST_P(CloudPolicyInvalidatorTest, StateChanged) {
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
 
-TEST_P(CloudPolicyInvalidatorTest, Disconnect) {
+TEST_F(CloudPolicyInvalidatorTest, Disconnect) {
   // Generate an invalidation.
   StorePolicy(POLICY_OBJECT_A);
   StartInvalidator();
@@ -895,155 +853,64 @@ TEST_P(CloudPolicyInvalidatorTest, Disconnect) {
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
 
-INSTANTIATE_TEST_SUITE_P(FCMEnabledAndFCMDisabled,
-                         CloudPolicyInvalidatorTest,
-                         testing::Bool() /* is_fcm_enabled */);
-
 class CloudPolicyInvalidatorUserTypedTest
     : public CloudPolicyInvalidatorTestBase,
-      public testing::WithParamInterface<TestParams> {
+      public testing::WithParamInterface<PolicyInvalidationScope> {
  protected:
-  CloudPolicyInvalidatorUserTypedTest();
-  virtual ~CloudPolicyInvalidatorUserTypedTest();
+  CloudPolicyInvalidatorUserTypedTest() = default;
 
-  // CloudPolicyInvalidatorTest:
-  void SetUp() override;
-
-  // Get the current count for the given metric.
   base::HistogramBase::Count GetCount(MetricPolicyRefresh metric);
   base::HistogramBase::Count GetCountFcm(MetricPolicyRefresh metric);
-  base::HistogramBase::Count GetCountTicl(MetricPolicyRefresh metric);
   base::HistogramBase::Count GetInvalidationCount(PolicyInvalidationType type);
   base::HistogramBase::Count GetInvalidationCountFcm(
-      PolicyInvalidationType type);
-  base::HistogramBase::Count GetInvalidationCountTicl(
       PolicyInvalidationType type);
 
  private:
   // CloudPolicyInvalidatorTest:
-  em::DeviceRegisterRequest::Type GetPolicyType() const override;
+  PolicyInvalidationScope GetPolicyInvalidationScope() const override;
 
-  // Get histogram samples for the given histogram.
-  std::unique_ptr<base::HistogramSamples> GetHistogramSamples(
-      const std::string& name) const;
-
-  // Stores starting histogram counts for kMetricPolicyRefresh.
-  std::unique_ptr<base::HistogramSamples> refresh_samples_;
-  std::unique_ptr<base::HistogramSamples> refresh_samples_fcm_;
-  std::unique_ptr<base::HistogramSamples> refresh_samples_ticl_;
-
-  // Stores starting histogram counts for kMetricPolicyInvalidations.
-  std::unique_ptr<base::HistogramSamples> invalidations_samples_;
-  std::unique_ptr<base::HistogramSamples> invalidations_samples_fcm_;
-  std::unique_ptr<base::HistogramSamples> invalidations_samples_ticl_;
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyInvalidatorUserTypedTest);
 };
 
-CloudPolicyInvalidatorUserTypedTest::CloudPolicyInvalidatorUserTypedTest()
-    : CloudPolicyInvalidatorTestBase(GetParam().is_fcm_enabled) {}
-
-CloudPolicyInvalidatorUserTypedTest::~CloudPolicyInvalidatorUserTypedTest() {
-}
-
-void CloudPolicyInvalidatorUserTypedTest::SetUp() {
-  refresh_samples_ = GetHistogramSamples(
-      GetPolicyType() == em::DeviceRegisterRequest::DEVICE ?
-          kMetricDevicePolicyRefresh : kMetricUserPolicyRefresh);
-  refresh_samples_fcm_ =
-      GetHistogramSamples(GetPolicyType() == em::DeviceRegisterRequest::DEVICE
-                              ? kMetricDevicePolicyRefreshFcm
-                              : kMetricUserPolicyRefreshFcm);
-  refresh_samples_ticl_ =
-      GetHistogramSamples(GetPolicyType() == em::DeviceRegisterRequest::DEVICE
-                              ? kMetricDevicePolicyRefreshTicl
-                              : kMetricUserPolicyRefreshTicl);
-
-  invalidations_samples_ = GetHistogramSamples(
-      GetPolicyType() == em::DeviceRegisterRequest::DEVICE ?
-          kMetricDevicePolicyInvalidations : kMetricUserPolicyInvalidations);
-  invalidations_samples_fcm_ =
-      GetHistogramSamples(GetPolicyType() == em::DeviceRegisterRequest::DEVICE
-                              ? kMetricDevicePolicyInvalidationsFcm
-                              : kMetricUserPolicyInvalidationsFcm);
-  invalidations_samples_ticl_ =
-      GetHistogramSamples(GetPolicyType() == em::DeviceRegisterRequest::DEVICE
-                              ? kMetricDevicePolicyInvalidationsTicl
-                              : kMetricUserPolicyInvalidationsTicl);
-}
-
 base::HistogramBase::Count CloudPolicyInvalidatorUserTypedTest::GetCount(
     MetricPolicyRefresh metric) {
-  return GetHistogramSamples(
-      GetPolicyType() == em::DeviceRegisterRequest::DEVICE ?
-          kMetricDevicePolicyRefresh : kMetricUserPolicyRefresh)->
-              GetCount(metric) - refresh_samples_->GetCount(metric);
+  const char* metric_name = CloudPolicyInvalidator::GetPolicyRefreshMetricName(
+      GetPolicyInvalidationScope());
+  return histogram_tester_.GetHistogramSamplesSinceCreation(metric_name)
+      ->GetCount(metric);
 }
-
 base::HistogramBase::Count CloudPolicyInvalidatorUserTypedTest::GetCountFcm(
     MetricPolicyRefresh metric) {
-  return GetHistogramSamples(GetPolicyType() ==
-                                     em::DeviceRegisterRequest::DEVICE
-                                 ? kMetricDevicePolicyRefreshFcm
-                                 : kMetricUserPolicyRefreshFcm)
-             ->GetCount(metric) -
-         refresh_samples_fcm_->GetCount(metric);
+  const char* metric_name =
+      CloudPolicyInvalidator::GetPolicyRefreshFcmMetricName(
+          GetPolicyInvalidationScope());
+  return histogram_tester_.GetHistogramSamplesSinceCreation(metric_name)
+      ->GetCount(metric);
 }
-
-base::HistogramBase::Count CloudPolicyInvalidatorUserTypedTest::GetCountTicl(
-    MetricPolicyRefresh metric) {
-  return GetHistogramSamples(GetPolicyType() ==
-                                     em::DeviceRegisterRequest::DEVICE
-                                 ? kMetricDevicePolicyRefreshTicl
-                                 : kMetricUserPolicyRefreshTicl)
-             ->GetCount(metric) -
-         refresh_samples_ticl_->GetCount(metric);
-}
-
 base::HistogramBase::Count
 CloudPolicyInvalidatorUserTypedTest::GetInvalidationCount(
     PolicyInvalidationType type) {
-  return GetHistogramSamples(
-      GetPolicyType() == em::DeviceRegisterRequest::DEVICE ?
-          kMetricDevicePolicyInvalidations : kMetricUserPolicyInvalidations)->
-          GetCount(type) - invalidations_samples_->GetCount(type);
+  const char* metric_name =
+      CloudPolicyInvalidator::GetPolicyInvalidationMetricName(
+          GetPolicyInvalidationScope());
+  return histogram_tester_.GetHistogramSamplesSinceCreation(metric_name)
+      ->GetCount(type);
 }
-
 base::HistogramBase::Count
 CloudPolicyInvalidatorUserTypedTest::GetInvalidationCountFcm(
     PolicyInvalidationType type) {
-  return GetHistogramSamples(GetPolicyType() ==
-                                     em::DeviceRegisterRequest::DEVICE
-                                 ? kMetricDevicePolicyInvalidationsFcm
-                                 : kMetricUserPolicyInvalidationsFcm)
-             ->GetCount(type) -
-         invalidations_samples_fcm_->GetCount(type);
+  const char* metric_name =
+      CloudPolicyInvalidator::GetPolicyInvalidationFcmMetricName(
+          GetPolicyInvalidationScope());
+  return histogram_tester_.GetHistogramSamplesSinceCreation(metric_name)
+      ->GetCount(type);
 }
 
-base::HistogramBase::Count
-CloudPolicyInvalidatorUserTypedTest::GetInvalidationCountTicl(
-    PolicyInvalidationType type) {
-  return GetHistogramSamples(GetPolicyType() ==
-                                     em::DeviceRegisterRequest::DEVICE
-                                 ? kMetricDevicePolicyInvalidationsTicl
-                                 : kMetricUserPolicyInvalidationsTicl)
-             ->GetCount(type) -
-         invalidations_samples_ticl_->GetCount(type);
-}
-
-em::DeviceRegisterRequest::Type
-CloudPolicyInvalidatorUserTypedTest::GetPolicyType() const {
-  return GetParam().policy_type;
-}
-
-std::unique_ptr<base::HistogramSamples>
-CloudPolicyInvalidatorUserTypedTest::GetHistogramSamples(
-    const std::string& name) const {
-  base::HistogramBase* histogram =
-      base::StatisticsRecorder::FindHistogram(name);
-  if (!histogram)
-    return std::unique_ptr<base::HistogramSamples>(new base::SampleMap());
-  return histogram->SnapshotSamples();
+PolicyInvalidationScope
+CloudPolicyInvalidatorUserTypedTest::GetPolicyInvalidationScope() const {
+  return GetParam();
 }
 
 TEST_P(CloudPolicyInvalidatorUserTypedTest, RefreshMetricsUnregistered) {
@@ -1056,16 +923,13 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, RefreshMetricsUnregistered) {
   EXPECT_EQ(0, GetCount(METRIC_POLICY_REFRESH_UNCHANGED));
   EXPECT_EQ(0, GetCount(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED));
   EXPECT_EQ(0, GetCount(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
+
   EXPECT_EQ(0, GetCountFcm(METRIC_POLICY_REFRESH_CHANGED));
   EXPECT_EQ(0, GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
   EXPECT_EQ(0, GetCountFcm(METRIC_POLICY_REFRESH_UNCHANGED));
   EXPECT_EQ(0, GetCountFcm(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED));
   EXPECT_EQ(0, GetCountFcm(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
-  EXPECT_EQ(0, GetCountTicl(METRIC_POLICY_REFRESH_CHANGED));
-  EXPECT_EQ(0, GetCountTicl(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
-  EXPECT_EQ(0, GetCountTicl(METRIC_POLICY_REFRESH_UNCHANGED));
-  EXPECT_EQ(0, GetCountTicl(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED));
-  EXPECT_EQ(0, GetCountTicl(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
+
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
 
@@ -1081,13 +945,7 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, RefreshMetricsNoInvalidations) {
   StorePolicy(POLICY_OBJECT_A, 0, true /* policy_changed */);
   EXPECT_EQ(1, GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS),
-            is_fcm_enabled()
-                ? GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS)
-                : GetCountTicl(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
-  EXPECT_EQ(0,
-            is_fcm_enabled()
-                ? GetCountTicl(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS)
-                : GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
+            GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
 
   // If the clock advances less than the grace period, invalidations are OFF.
   AdvanceClock(base::TimeDelta::FromSeconds(1));
@@ -1095,13 +953,7 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, RefreshMetricsNoInvalidations) {
   StorePolicy(POLICY_OBJECT_A, 0, true /* policy_changed */);
   EXPECT_EQ(2, GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS),
-            is_fcm_enabled()
-                ? GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS)
-                : GetCountTicl(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
-  EXPECT_EQ(0,
-            is_fcm_enabled()
-                ? GetCountTicl(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS)
-                : GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
+            GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
 
   // After the grace period elapses, invalidations are ON.
   AdvanceClock(base::TimeDelta::FromSeconds(
@@ -1110,10 +962,7 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, RefreshMetricsNoInvalidations) {
   StorePolicy(POLICY_OBJECT_A, 0, true /* policy_changed */);
   EXPECT_EQ(1, GetCount(METRIC_POLICY_REFRESH_CHANGED));
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_CHANGED),
-            is_fcm_enabled() ? GetCountFcm(METRIC_POLICY_REFRESH_CHANGED)
-                             : GetCountTicl(METRIC_POLICY_REFRESH_CHANGED));
-  EXPECT_EQ(0, is_fcm_enabled() ? GetCountTicl(METRIC_POLICY_REFRESH_CHANGED)
-                                : GetCountFcm(METRIC_POLICY_REFRESH_CHANGED));
+            GetCountFcm(METRIC_POLICY_REFRESH_CHANGED));
 
   // After the invalidation service is disabled, invalidations are OFF.
   DisableInvalidationService();
@@ -1121,13 +970,7 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, RefreshMetricsNoInvalidations) {
   StorePolicy(POLICY_OBJECT_A, 0, true /* policy_changed */);
   EXPECT_EQ(3, GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS),
-            is_fcm_enabled()
-                ? GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS)
-                : GetCountTicl(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
-  EXPECT_EQ(0,
-            is_fcm_enabled()
-                ? GetCountTicl(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS)
-                : GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
+            GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
 
   // Enabling the invalidation service results in a new grace period, so
   // invalidations are OFF.
@@ -1136,9 +979,7 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, RefreshMetricsNoInvalidations) {
   StorePolicy(POLICY_OBJECT_A, 0, true /* policy_changed */);
   EXPECT_EQ(4, GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS),
-            is_fcm_enabled()
-                ? GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS)
-                : GetCountTicl(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
+            GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
 
   // After the grace period elapses, invalidations are ON.
   AdvanceClock(base::TimeDelta::FromSeconds(
@@ -1153,41 +994,15 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, RefreshMetricsNoInvalidations) {
   EXPECT_EQ(0, GetCount(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
 
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_CHANGED),
-            is_fcm_enabled() ? GetCountFcm(METRIC_POLICY_REFRESH_CHANGED)
-                             : GetCountTicl(METRIC_POLICY_REFRESH_CHANGED));
+            GetCountFcm(METRIC_POLICY_REFRESH_CHANGED));
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS),
-            is_fcm_enabled()
-                ? GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS)
-                : GetCountTicl(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
+            GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_UNCHANGED),
-            is_fcm_enabled() ? GetCountFcm(METRIC_POLICY_REFRESH_UNCHANGED)
-                             : GetCountTicl(METRIC_POLICY_REFRESH_UNCHANGED));
+            GetCountFcm(METRIC_POLICY_REFRESH_UNCHANGED));
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED),
-            is_fcm_enabled()
-                ? GetCountFcm(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED)
-                : GetCountTicl(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED));
+            GetCountFcm(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED));
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED),
-            is_fcm_enabled()
-                ? GetCountFcm(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED)
-                : GetCountTicl(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
-
-  EXPECT_EQ(0, is_fcm_enabled() ? GetCountTicl(METRIC_POLICY_REFRESH_CHANGED)
-                                : GetCountFcm(METRIC_POLICY_REFRESH_CHANGED));
-  EXPECT_EQ(0,
-            is_fcm_enabled()
-                ? GetCountTicl(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS)
-                : GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
-  EXPECT_EQ(0,
-            is_fcm_enabled()
-                ? GetCountTicl(METRIC_POLICY_REFRESH_UNCHANGED)
-                : GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
-  EXPECT_EQ(0,
-            is_fcm_enabled()
-                ? GetCountTicl(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED)
-                : GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
-  EXPECT_EQ(0, is_fcm_enabled()
-                   ? GetCountTicl(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED)
-                   : GetCountFcm(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
+            GetCountFcm(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
 
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
@@ -1222,38 +1037,15 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, RefreshMetricsInvalidation) {
   EXPECT_EQ(0, GetCount(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
 
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_CHANGED),
-            is_fcm_enabled() ? GetCountFcm(METRIC_POLICY_REFRESH_CHANGED)
-                             : GetCountTicl(METRIC_POLICY_REFRESH_CHANGED));
+            GetCountFcm(METRIC_POLICY_REFRESH_CHANGED));
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS),
-            is_fcm_enabled()
-                ? GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS)
-                : GetCountTicl(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
+            GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_UNCHANGED),
-            is_fcm_enabled() ? GetCountFcm(METRIC_POLICY_REFRESH_UNCHANGED)
-                             : GetCountTicl(METRIC_POLICY_REFRESH_UNCHANGED));
+            GetCountFcm(METRIC_POLICY_REFRESH_UNCHANGED));
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED),
-            is_fcm_enabled()
-                ? GetCountFcm(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED)
-                : GetCountTicl(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED));
+            GetCountFcm(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED));
   EXPECT_EQ(GetCount(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED),
-            is_fcm_enabled()
-                ? GetCountFcm(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED)
-                : GetCountTicl(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
-
-  EXPECT_EQ(0, is_fcm_enabled() ? GetCountTicl(METRIC_POLICY_REFRESH_CHANGED)
-                                : GetCountFcm(METRIC_POLICY_REFRESH_CHANGED));
-  EXPECT_EQ(0,
-            is_fcm_enabled()
-                ? GetCountTicl(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS)
-                : GetCountFcm(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
-  EXPECT_EQ(0, is_fcm_enabled() ? GetCountTicl(METRIC_POLICY_REFRESH_UNCHANGED)
-                                : GetCountFcm(METRIC_POLICY_REFRESH_UNCHANGED));
-  EXPECT_EQ(0, is_fcm_enabled()
-                   ? GetCountTicl(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED)
-                   : GetCountFcm(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED));
-  EXPECT_EQ(0, is_fcm_enabled()
-                   ? GetCountTicl(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED)
-                   : GetCountFcm(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
+            GetCountFcm(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
 
   EXPECT_EQ(V(5), GetHighestHandledInvalidationVersion());
 }
@@ -1264,8 +1056,8 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, ExpiredInvalidations) {
 
   // Invalidations fired before the last fetch time (adjusted by max time delta)
   // should be ignored.
-  base::Time time = Now() - base::TimeDelta::FromSeconds(
-      CloudPolicyInvalidator::kMaxInvalidationTimeDelta + 300);
+  base::Time time = Now() - (invalidation_timeouts::kMaxInvalidationTimeDelta +
+                             base::TimeDelta::FromSeconds(300));
   syncer::Invalidation inv =
       FireInvalidation(POLICY_OBJECT_A, GetVersion(time), "test");
   ASSERT_TRUE(IsInvalidationAcknowledged(inv));
@@ -1298,8 +1090,8 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, ExpiredInvalidations) {
   ASSERT_TRUE(IsInvalidationAcknowledged(inv));
   ASSERT_TRUE(CheckPolicyNotRefreshed());
 
-  AdvanceClock(base::TimeDelta::FromSeconds(
-      CloudPolicyInvalidator::kUnknownVersionIgnorePeriod - 1));
+  AdvanceClock(invalidation_timeouts::kUnknownVersionIgnorePeriod -
+               base::TimeDelta::FromSeconds(1));
   inv = FireUnknownVersionInvalidation(POLICY_OBJECT_A);
   ASSERT_TRUE(IsInvalidationAcknowledged(inv));
   ASSERT_TRUE(CheckPolicyNotRefreshed());
@@ -1318,72 +1110,24 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, ExpiredInvalidations) {
             GetInvalidationCount(POLICY_INVALIDATION_TYPE_NO_PAYLOAD_EXPIRED));
   EXPECT_EQ(2, GetInvalidationCount(POLICY_INVALIDATION_TYPE_EXPIRED));
 
-  EXPECT_EQ(
-      GetInvalidationCount(POLICY_INVALIDATION_TYPE_NO_PAYLOAD),
-      is_fcm_enabled()
-          ? GetInvalidationCountFcm(POLICY_INVALIDATION_TYPE_NO_PAYLOAD)
-          : GetInvalidationCountTicl(POLICY_INVALIDATION_TYPE_NO_PAYLOAD));
+  EXPECT_EQ(GetInvalidationCount(POLICY_INVALIDATION_TYPE_NO_PAYLOAD),
+            GetInvalidationCountFcm(POLICY_INVALIDATION_TYPE_NO_PAYLOAD));
   EXPECT_EQ(GetInvalidationCount(POLICY_INVALIDATION_TYPE_NORMAL),
-            is_fcm_enabled()
-                ? GetInvalidationCountFcm(POLICY_INVALIDATION_TYPE_NORMAL)
-                : GetInvalidationCountTicl(POLICY_INVALIDATION_TYPE_NORMAL));
+            GetInvalidationCountFcm(POLICY_INVALIDATION_TYPE_NORMAL));
   EXPECT_EQ(
       GetInvalidationCount(POLICY_INVALIDATION_TYPE_NO_PAYLOAD_EXPIRED),
-      is_fcm_enabled()
-          ? GetInvalidationCountFcm(POLICY_INVALIDATION_TYPE_NO_PAYLOAD_EXPIRED)
-          : GetInvalidationCountTicl(
-                POLICY_INVALIDATION_TYPE_NO_PAYLOAD_EXPIRED));
+      GetInvalidationCountFcm(POLICY_INVALIDATION_TYPE_NO_PAYLOAD_EXPIRED));
   EXPECT_EQ(GetInvalidationCount(POLICY_INVALIDATION_TYPE_EXPIRED),
-            is_fcm_enabled()
-                ? GetInvalidationCountFcm(POLICY_INVALIDATION_TYPE_EXPIRED)
-                : GetInvalidationCountTicl(POLICY_INVALIDATION_TYPE_EXPIRED));
-
-  EXPECT_EQ(0,
-            is_fcm_enabled()
-                ? GetInvalidationCountTicl(POLICY_INVALIDATION_TYPE_NO_PAYLOAD)
-                : GetInvalidationCountFcm(POLICY_INVALIDATION_TYPE_NO_PAYLOAD));
-  EXPECT_EQ(0, is_fcm_enabled()
-                   ? GetInvalidationCountTicl(POLICY_INVALIDATION_TYPE_NORMAL)
-                   : GetInvalidationCountFcm(POLICY_INVALIDATION_TYPE_NORMAL));
-  EXPECT_EQ(0, is_fcm_enabled()
-                   ? GetInvalidationCountTicl(
-                         POLICY_INVALIDATION_TYPE_NO_PAYLOAD_EXPIRED)
-                   : GetInvalidationCountFcm(
-                         POLICY_INVALIDATION_TYPE_NO_PAYLOAD_EXPIRED));
-  EXPECT_EQ(0, is_fcm_enabled()
-                   ? GetInvalidationCountTicl(POLICY_INVALIDATION_TYPE_EXPIRED)
-                   : GetInvalidationCountFcm(POLICY_INVALIDATION_TYPE_EXPIRED));
+            GetInvalidationCountFcm(POLICY_INVALIDATION_TYPE_EXPIRED));
 
   EXPECT_EQ(0, GetHighestHandledInvalidationVersion());
 }
 
-#if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_SUITE_P(
     CloudPolicyInvalidatorUserTypedTestInstance,
     CloudPolicyInvalidatorUserTypedTest,
-    testing::Values(
-        TestParams(false /* is_fcm_enabled */, em::DeviceRegisterRequest::USER),
-        TestParams(true /* is_fcm_enabled */, em::DeviceRegisterRequest::USER),
-        TestParams(false /* is_fcm_enabled */,
-                   em::DeviceRegisterRequest::DEVICE),
-        TestParams(true /* is_fcm_enabled */,
-                   em::DeviceRegisterRequest::DEVICE)));
-#elif defined(OS_ANDROID)
-INSTANTIATE_TEST_SUITE_P(
-    CloudPolicyInvalidatorUserTypedTestInstance,
-    CloudPolicyInvalidatorUserTypedTest,
-    testing::Values(TestParams(false /* is_fcm_enabled */,
-                               em::DeviceRegisterRequest::ANDROID_BROWSER),
-                    TestParams(true /* is_fcm_enabled */,
-                               em::DeviceRegisterRequest::ANDROID_BROWSER)));
-#else
-INSTANTIATE_TEST_SUITE_P(
-    CloudPolicyInvalidatorUserTypedTestInstance,
-    CloudPolicyInvalidatorUserTypedTest,
-    testing::Values(TestParams(false /* is_fcm_enabled */,
-                               em::DeviceRegisterRequest::BROWSER),
-                    TestParams(true /* is_fcm_enabled */,
-                               em::DeviceRegisterRequest::BROWSER)));
-#endif
+    testing::Values(PolicyInvalidationScope::kUser,
+                    PolicyInvalidationScope::kDevice,
+                    PolicyInvalidationScope::kDeviceLocalAccount));
 
 }  // namespace policy

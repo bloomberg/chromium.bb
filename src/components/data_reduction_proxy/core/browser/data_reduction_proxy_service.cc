@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -17,20 +18,15 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
-#include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
 #include "components/prefs/pref_service.h"
@@ -38,6 +34,29 @@
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace data_reduction_proxy {
+
+namespace {
+
+base::Optional<base::Value> GetSaveDataSavingsPercentEstimateFromFieldTrial() {
+  if (!base::FeatureList::IsEnabled(features::kReportSaveDataSavings))
+    return base::nullopt;
+  const auto origin_savings_estimate_json =
+      base::GetFieldTrialParamValueByFeature(features::kReportSaveDataSavings,
+                                             "origin_savings_estimate");
+  if (origin_savings_estimate_json.empty())
+    return base::nullopt;
+
+  auto origin_savings_estimates =
+      base::JSONReader::Read(origin_savings_estimate_json);
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "DataReductionProxy.ReportSaveDataSavings.ParseResult",
+      origin_savings_estimates && origin_savings_estimates->is_dict());
+
+  return origin_savings_estimates;
+}
+
+}  // namespace
 
 DataReductionProxyService::DataReductionProxyService(
     DataReductionProxySettings* settings,
@@ -62,27 +81,15 @@ DataReductionProxyService::DataReductionProxyService(
       data_use_measurement_(data_use_measurement),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       client_(client),
-      channel_(channel) {
+      channel_(channel),
+      save_data_savings_estimate_dict_(
+          GetSaveDataSavingsPercentEstimateFromFieldTrial()) {
   DCHECK(settings);
   DCHECK(network_quality_tracker_);
   DCHECK(network_connection_tracker_);
 
-  configurator_ = std::make_unique<DataReductionProxyConfigurator>();
-  // It is safe to use base::Unretained here, since it gets executed
-  // synchronously on the UI thread, and |this| outlives the caller (since the
-  // caller is owned by |this|.
-  configurator_->SetConfigUpdatedCallback(
-      base::BindRepeating(&DataReductionProxyService::OnProxyConfigUpdated,
-                          base::Unretained(this)));
-  DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
-  std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config =
-      std::make_unique<DataReductionProxyMutableConfigValues>();
-  raw_mutable_config = mutable_config.get();
-  config_ = std::make_unique<DataReductionProxyConfig>(
-      network_connection_tracker_, std::move(mutable_config),
-      configurator_.get());
-  request_options_ = std::make_unique<DataReductionProxyRequestOptions>(
-      client_, config_.get());
+  request_options_ =
+      std::make_unique<DataReductionProxyRequestOptions>(client_);
   request_options_->Init();
   // It is safe to use base::Unretained here, since it gets executed
   // synchronously on the UI thread, and |this| outlives the caller (since the
@@ -94,27 +101,14 @@ DataReductionProxyService::DataReductionProxyService(
   // It is safe to use base::Unretained here, since it gets executed
   // synchronously on the UI thread, and |this| outlives the caller (since the
   // caller is owned by |this|.
-  if (!params::IsIncludedInHoldbackFieldTrial() ||
-      previews::params::IsLitePageServerPreviewsEnabled() ||
-      params::ForceEnableClientConfigServiceForAllDataSaverUsers()) {
+  if (params::ForceEnableClientConfigServiceForAllDataSaverUsers()) {
     config_client_ = std::make_unique<DataReductionProxyConfigServiceClient>(
-        GetBackoffPolicy(), request_options_.get(), raw_mutable_config,
-        config_.get(), this, network_connection_tracker_,
+        GetBackoffPolicy(), request_options_.get(), this,
+        network_connection_tracker_,
         base::BindRepeating(&DataReductionProxyService::StoreSerializedConfig,
                             base::Unretained(this)));
   }
 
-  network_properties_manager_ = std::make_unique<NetworkPropertiesManager>(
-      base::DefaultClock::GetInstance(), prefs);
-
-  // It is safe to use base::Unretained here, since it gets executed
-  // synchronously on the UI thread, and |this| outlives the caller (since the
-  // caller is owned by |this|.
-  config_->Initialize(
-      url_loader_factory_,
-      base::BindRepeating(&DataReductionProxyService::CreateCustomProxyConfig,
-                          base::Unretained(this), true),
-      network_properties_manager_.get(), user_agent);
   if (config_client_)
     config_client_->Initialize(url_loader_factory_);
 
@@ -194,7 +188,6 @@ void DataReductionProxyService::OnEffectiveConnectionTypeChanged(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   effective_connection_type_ = type;
-  UpdateCustomProxyConfig();
 }
 
 void DataReductionProxyService::OnRTTOrThroughputEstimatesComputed(
@@ -203,7 +196,6 @@ void DataReductionProxyService::OnRTTOrThroughputEstimatesComputed(
     int32_t downstream_throughput_kbps) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   http_rtt_ = http_rtt;
-  config_->OnRTTOrThroughputEstimatesComputed(http_rtt);
 }
 
 void DataReductionProxyService::Shutdown() {
@@ -257,7 +249,7 @@ void DataReductionProxyService::SetStringPref(const std::string& pref_path,
 
 void DataReductionProxyService::SetProxyPrefs(bool enabled, bool at_startup) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  config_->SetProxyConfig(enabled, at_startup);
+
   if (config_client_) {
     config_client_->SetEnabled(enabled);
     if (enabled)
@@ -269,12 +261,6 @@ void DataReductionProxyService::SetProxyPrefs(bool enabled, bool at_startup) {
     for (auto& client : proxy_config_clients_)
       client->ClearBadProxiesCache();
   }
-}
-
-void DataReductionProxyService::OnCacheCleared(const base::Time start,
-                                               const base::Time end) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  network_properties_manager_->DeleteHistory();
 }
 
 net::EffectiveConnectionType
@@ -299,13 +285,16 @@ void DataReductionProxyService::UpdateProxyRequestHeaders(
     const net::HttpRequestHeaders& headers) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   settings_->SetProxyRequestHeaders(headers);
-  UpdateCustomProxyConfig();
+}
+
+void DataReductionProxyService::UpdatePrefetchProxyHosts(
+    const std::vector<GURL>& prefetch_proxies) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  settings_->UpdatePrefetchProxyHosts(std::move(prefetch_proxies));
 }
 
 void DataReductionProxyService::OnProxyConfigUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  UpdateCustomProxyConfig();
-  UpdateThrottleConfig();
 }
 
 void DataReductionProxyService::SetIgnoreLongTermBlackListRules(
@@ -317,11 +306,10 @@ void DataReductionProxyService::SetIgnoreLongTermBlackListRules(
 void DataReductionProxyService::AddCustomProxyConfigClient(
     mojo::Remote<network::mojom::CustomProxyConfigClient> config_client) {
   proxy_config_clients_.Add(std::move(config_client));
-  UpdateCustomProxyConfig();
 }
 
 void DataReductionProxyService::LoadHistoricalDataUsage(
-    const HistoricalDataUsageCallback& load_data_usage_callback) {
+    HistoricalDataUsageCallback load_data_usage_callback) {
   std::unique_ptr<std::vector<DataUsageBucket>> data_usage(
       new std::vector<DataUsageBucket>());
   std::vector<DataUsageBucket>* data_usage_ptr = data_usage.get();
@@ -330,11 +318,12 @@ void DataReductionProxyService::LoadHistoricalDataUsage(
       base::BindOnce(&DBDataOwner::LoadHistoricalDataUsage,
                      db_data_owner_->GetWeakPtr(),
                      base::Unretained(data_usage_ptr)),
-      base::BindOnce(load_data_usage_callback, std::move(data_usage)));
+      base::BindOnce(std::move(load_data_usage_callback),
+                     std::move(data_usage)));
 }
 
 void DataReductionProxyService::LoadCurrentDataUsageBucket(
-    const LoadCurrentDataUsageCallback& load_current_data_usage_callback) {
+    LoadCurrentDataUsageCallback load_current_data_usage_callback) {
   std::unique_ptr<DataUsageBucket> bucket(new DataUsageBucket());
   DataUsageBucket* bucket_ptr = bucket.get();
   db_task_runner_->PostTaskAndReply(
@@ -342,7 +331,8 @@ void DataReductionProxyService::LoadCurrentDataUsageBucket(
       base::BindOnce(&DBDataOwner::LoadCurrentDataUsageBucket,
                      db_data_owner_->GetWeakPtr(),
                      base::Unretained(bucket_ptr)),
-      base::BindOnce(load_current_data_usage_callback, std::move(bucket)));
+      base::BindOnce(std::move(load_current_data_usage_callback),
+                     std::move(bucket)));
 }
 
 void DataReductionProxyService::StoreCurrentDataUsageBucket(
@@ -365,8 +355,6 @@ void DataReductionProxyService::DeleteBrowsingHistory(const base::Time& start,
   db_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&DBDataOwner::DeleteBrowsingHistory,
                                 db_data_owner_->GetWeakPtr(), start, end));
-
-  network_properties_manager_->DeleteHistory();
 }
 
 base::WeakPtr<DataReductionProxyService>
@@ -395,157 +383,40 @@ void DataReductionProxyService::OnServicesDataUse(int32_t service_hash_code,
   }
 }
 
-void DataReductionProxyService::MarkProxiesAsBad(
-    base::TimeDelta bypass_duration,
-    const net::ProxyList& bad_proxies,
-    MarkProxiesAsBadCallback callback) {
-  // Sanity check the inputs, as this data may originate from a lower-privilege
-  // process (renderer).
-
-  if (bypass_duration < base::TimeDelta()) {
-    LOG(ERROR) << "Received bad MarkProxiesAsBad() -- invalid bypass_duration: "
-               << bypass_duration;
-    std::move(callback).Run();
-    return;
-  }
-
-  // Limit maximum bypass duration to a day.
-  if (bypass_duration > base::TimeDelta::FromDays(1))
-    bypass_duration = base::TimeDelta::FromDays(1);
-
-  // |bad_proxies| should be DRP servers or this API allows marking arbitrary
-  // proxies as bad. It is possible that proxies from an older config are
-  // received (FindConfiguredDataReductionProxy() searches recent proxies too).
-  for (const auto& proxy : bad_proxies.GetAll()) {
-    if (!config_->FindConfiguredDataReductionProxy(proxy)) {
-      LOG(ERROR) << "Received bad MarkProxiesAsBad() -- not a DRP server: "
-                 << proxy.ToURI();
-      std::move(callback).Run();
-      return;
-    }
-  }
-
-  for (auto& client : proxy_config_clients_)
-    client->MarkProxiesAsBad(bypass_duration, bad_proxies, std::move(callback));
-}
-
-void DataReductionProxyService::AddThrottleConfigObserver(
-    mojo::PendingRemote<mojom::DataReductionProxyThrottleConfigObserver>
-        observer) {
-  mojo::Remote<mojom::DataReductionProxyThrottleConfigObserver> observer_remote(
-      std::move(observer));
-  observer_remote->OnThrottleConfigChanged(CreateThrottleConfig());
-  drp_throttle_config_observers_.Add(std::move(observer_remote));
-}
-
-void DataReductionProxyService::Clone(
-    mojo::PendingReceiver<mojom::DataReductionProxy> receiver) {
-  drp_receivers_.Add(this, std::move(receiver));
-}
-
-void DataReductionProxyService::UpdateCustomProxyConfig() {
-  if (params::IsIncludedInHoldbackFieldTrial())
-    return;
-
-  network::mojom::CustomProxyConfigPtr config = CreateCustomProxyConfig(
-      !base::FeatureList::IsEnabled(
-          features::kDataReductionProxyDisableProxyFailedWarmup),
-      config_->GetProxiesForHttp());
-  for (auto& client : proxy_config_clients_)
-    client->OnCustomProxyConfigUpdated(config->Clone());
-}
-
-void DataReductionProxyService::UpdateThrottleConfig() {
-  if (drp_throttle_config_observers_.empty())
-    return;
-
-  auto config = CreateThrottleConfig();
-
-  for (auto& it : drp_throttle_config_observers_)
-    it->OnThrottleConfigChanged(config->Clone());
-}
-
-mojom::DataReductionProxyThrottleConfigPtr
-DataReductionProxyService::CreateThrottleConfig() const {
-  return DataReductionProxyThrottleManager::CreateConfig(
-      config_->GetProxiesForHttp());
-}
-
-network::mojom::CustomProxyConfigPtr
-DataReductionProxyService::CreateCustomProxyConfig(
-    bool is_warmup_url,
-    const std::vector<DataReductionProxyServer>& proxies_for_http) const {
-  auto config = network::mojom::CustomProxyConfig::New();
-  if (params::IsIncludedInHoldbackFieldTrial()) {
-    config->rules =
-        configurator_
-            ->CreateProxyConfig(is_warmup_url,
-                                config_->GetNetworkPropertiesManager(),
-                                std::vector<DataReductionProxyServer>())
-            .proxy_rules();
-  } else {
-    config->rules =
-        configurator_
-            ->CreateProxyConfig(is_warmup_url,
-                                config_->GetNetworkPropertiesManager(),
-                                proxies_for_http)
-            .proxy_rules();
-  }
-
-  net::EffectiveConnectionType type = GetEffectiveConnectionType();
-  if (type > net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
-    DCHECK_NE(net::EFFECTIVE_CONNECTION_TYPE_LAST, type);
-    config->pre_cache_headers.SetHeader(
-        chrome_proxy_ect_header(),
-        net::GetNameForEffectiveConnectionType(type));
-  }
-
-  request_options_->AddRequestHeader(&config->post_cache_headers,
-                                     base::nullopt);
-
-  config->assume_https_proxies_support_quic = true;
-  config->can_use_proxy_on_http_url_redirect_cycles = false;
-
-  return config;
-}
-
 void DataReductionProxyService::StoreSerializedConfig(
     const std::string& serialized_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!params::IsIncludedInHoldbackFieldTrial() ||
-         previews::params::IsLitePageServerPreviewsEnabled() ||
-         params::ForceEnableClientConfigServiceForAllDataSaverUsers());
-
+  DCHECK(params::ForceEnableClientConfigServiceForAllDataSaverUsers());
   SetStringPref(prefs::kDataReductionProxyConfig, serialized_config);
   SetInt64Pref(prefs::kDataReductionProxyLastConfigRetrievalTime,
                (base::Time::Now() - base::Time()).InMicroseconds());
 }
 
 void DataReductionProxyService::SetDependenciesForTesting(
-    std::unique_ptr<DataReductionProxyConfig> config,
     std::unique_ptr<DataReductionProxyRequestOptions> request_options,
-    std::unique_ptr<DataReductionProxyConfigurator> configurator,
     std::unique_ptr<DataReductionProxyConfigServiceClient> config_client) {
-  config_ = std::move(config);
-  config_->Initialize(
-      url_loader_factory_,
-      base::BindRepeating(&DataReductionProxyService::CreateCustomProxyConfig,
-                          base::Unretained(this), true),
-      network_properties_manager_.get(), std::string());
-
   request_options_ = std::move(request_options);
   request_options_->SetUpdateHeaderCallback(
       base::BindRepeating(&DataReductionProxyService::UpdateProxyRequestHeaders,
                           base::Unretained(this)));
 
-  configurator_ = std::move(configurator);
-  configurator_->SetConfigUpdatedCallback(
-      base::BindRepeating(&DataReductionProxyService::OnProxyConfigUpdated,
-                          base::Unretained(this)));
-
   config_client_ = std::move(config_client);
+
   if (config_client_)
     config_client_->Initialize(url_loader_factory_);
+}
+
+double DataReductionProxyService::GetSaveDataSavingsPercentEstimate(
+    const std::string& origin) const {
+  if (origin.empty() || !save_data_savings_estimate_dict_ ||
+      !save_data_savings_estimate_dict_->is_dict()) {
+    return 0;
+  }
+  const auto savings_percent =
+      save_data_savings_estimate_dict_->FindDoubleKey(origin);
+  if (!savings_percent)
+    return 0;
+  return *savings_percent;
 }
 
 }  // namespace data_reduction_proxy

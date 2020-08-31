@@ -36,6 +36,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/clipboard/test/clipboard_test_util.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/half_float.h"
@@ -44,7 +45,7 @@
 #include "ui/base/clipboard/clipboard_util_win.h"
 #endif
 
-#if defined(USE_AURA)
+#if defined(USE_X11)
 #include "ui/events/platform/platform_event_source.h"
 #endif
 
@@ -65,7 +66,7 @@ class ClipboardTest : public PlatformTest {
   // PlatformTest:
   void SetUp() override {
     PlatformTest::SetUp();
-#if defined(USE_AURA)
+#if defined(USE_X11)
     event_source_ = ClipboardTraits::GetEventSource();
 #endif
     clipboard_ = ClipboardTraits::Create();
@@ -80,17 +81,16 @@ class ClipboardTest : public PlatformTest {
   Clipboard& clipboard() { return *clipboard_; }
 
   std::vector<base::string16> GetAvailableTypes(ClipboardBuffer buffer) {
-    bool contains_filenames;
     std::vector<base::string16> types;
-    clipboard().ReadAvailableTypes(buffer, &types, &contains_filenames);
+    clipboard().ReadAvailableTypes(buffer, &types);
     return types;
   }
 
  private:
-#if defined(USE_AURA)
+#if defined(USE_X11)
   std::unique_ptr<PlatformEventSource> event_source_;
 #endif
-  // ui::Clipboard has a protected destructor, so scoped_ptr doesn't work here.
+  // Clipboard has a protected destructor, so scoped_ptr doesn't work here.
   Clipboard* clipboard_ = nullptr;
 };
 
@@ -113,9 +113,11 @@ TYPED_TEST(ClipboardTest, ClearTest) {
 
   EXPECT_TRUE(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste).empty());
   EXPECT_FALSE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextWType(), ClipboardBuffer::kCopyPaste));
-  EXPECT_FALSE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+#if defined(OS_WIN)
+  EXPECT_FALSE(this->clipboard().IsFormatAvailable(
+      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+#endif
 }
 
 TYPED_TEST(ClipboardTest, TextTest) {
@@ -130,9 +132,12 @@ TYPED_TEST(ClipboardTest, TextTest) {
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeText)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextWType(), ClipboardBuffer::kCopyPaste));
-  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+#if defined(OS_WIN)
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+#endif
+
   this->clipboard().ReadText(ClipboardBuffer::kCopyPaste, &text_result);
 
   EXPECT_EQ(text, text_result);
@@ -169,6 +174,9 @@ TYPED_TEST(ClipboardTest, HTMLTest) {
 #endif  // defined(OS_WIN)
 }
 
+#if !defined(OS_ANDROID)
+// TODO(crbug/1064968): This test fails with ClipboardAndroid, but passes with
+// the TestClipboard as RTF isn't implemented in ClipboardAndroid.
 TYPED_TEST(ClipboardTest, RTFTest) {
   std::string rtf =
       "{\\rtf1\\ansi{\\fonttbl\\f0\\fswiss Helvetica;}\\f0\\pard\n"
@@ -188,6 +196,7 @@ TYPED_TEST(ClipboardTest, RTFTest) {
   this->clipboard().ReadRTF(ClipboardBuffer::kCopyPaste, &result);
   EXPECT_EQ(rtf, result);
 }
+#endif  // !defined(OS_ANDROID)
 
 // TODO(msisov, tonikitoo): Enable test once ClipboardOzone implements
 // selection support. https://crbug.com/911992
@@ -276,6 +285,10 @@ TYPED_TEST(ClipboardTest, UnicodeHTMLTest) {
   {
     ScopedClipboardWriter clipboard_writer(ClipboardBuffer::kCopyPaste);
     clipboard_writer.WriteHTML(markup, url);
+#if defined(OS_ANDROID)
+    // Android requires HTML and plain text representations to be written.
+    clipboard_writer.WriteText(markup);
+#endif
   }
 
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
@@ -306,7 +319,7 @@ TYPED_TEST(ClipboardTest, BookmarkTest) {
   }
 
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetUrlWType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetUrlType(), ClipboardBuffer::kCopyPaste));
   this->clipboard().ReadBookmark(&title_result, &url_result);
   EXPECT_EQ(title, title_result);
   EXPECT_EQ(url, url_result);
@@ -332,9 +345,11 @@ TYPED_TEST(ClipboardTest, MultiFormatTest) {
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kCopyPaste));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextWType(), ClipboardBuffer::kCopyPaste));
-  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+#if defined(OS_WIN)
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+#endif
   uint32_t fragment_start;
   uint32_t fragment_end;
   this->clipboard().ReadHTML(ClipboardBuffer::kCopyPaste, &markup_result,
@@ -364,9 +379,11 @@ TYPED_TEST(ClipboardTest, URLTest) {
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeText)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextWType(), ClipboardBuffer::kCopyPaste));
-  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+#if defined(OS_WIN)
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+#endif
   base::string16 text_result;
   this->clipboard().ReadText(ClipboardBuffer::kCopyPaste, &text_result);
 
@@ -407,7 +424,7 @@ static void TestBitmapWrite(Clipboard* clipboard,
 
   EXPECT_TRUE(clipboard->IsFormatAvailable(ClipboardFormatType::GetBitmapType(),
                                            ClipboardBuffer::kCopyPaste));
-  const SkBitmap& image = clipboard->ReadImage(ClipboardBuffer::kCopyPaste);
+  const SkBitmap& image = clipboard_test_util::ReadImage(clipboard);
   ASSERT_EQ(image.info().colorType(), kN32_SkColorType);
   ASSERT_NE(image.info().alphaType(), kUnpremul_SkAlphaType);
   EXPECT_EQ(gfx::Size(info.width(), info.height()),
@@ -437,6 +454,10 @@ constexpr U8x4 kN32 =
 constexpr U8x4 kN32Opaque =
     (kN32_SkColorType == kRGBA_8888_SkColorType) ? kRGBAOpaque : kBGRAOpaque;
 
+#if !defined(OS_ANDROID)
+// TODO(https://crbug.com/1056650): Re-enable these tests after fixing the root
+// cause. This test only fails on Android.
+
 // Either RGBA_8888 or BGRA_8888 will be equivalent to N32, but the other
 // won't be.
 TYPED_TEST(ClipboardTest, Bitmap_RGBA_Premul) {
@@ -457,6 +478,7 @@ TYPED_TEST(ClipboardTest, Bitmap_RGBA_Opaque) {
       SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kOpaque_SkAlphaType),
       &kRGBAOpaque, &kN32Opaque);
 }
+
 TYPED_TEST(ClipboardTest, Bitmap_BGRA_Premul) {
   TestBitmapWrite(
       &this->clipboard(),
@@ -519,12 +541,13 @@ TYPED_TEST(ClipboardTest, Bitmap_N32_Premul_2x7) {
   };
   TestBitmapWrite(&this->clipboard(), SkImageInfo::MakeN32Premul(2, 7), b, b);
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 
 TYPED_TEST(ClipboardTest, PickleTest) {
-  const ui::ClipboardFormatType kFormat =
-      ui::ClipboardFormatType::GetType("chromium/x-test-format");
+  const ClipboardFormatType kFormat =
+      ClipboardFormatType::GetType("chromium/x-test-format");
   std::string payload("test string");
   base::Pickle write_pickle;
   write_pickle.WriteString(payload);
@@ -548,14 +571,14 @@ TYPED_TEST(ClipboardTest, PickleTest) {
 }
 
 TYPED_TEST(ClipboardTest, MultiplePickleTest) {
-  const ui::ClipboardFormatType kFormat1 =
-      ui::ClipboardFormatType::GetType("chromium/x-test-format1");
+  const ClipboardFormatType kFormat1 =
+      ClipboardFormatType::GetType("chromium/x-test-format1");
   std::string payload1("test string1");
   base::Pickle write_pickle1;
   write_pickle1.WriteString(payload1);
 
-  const ui::ClipboardFormatType kFormat2 =
-      ui::ClipboardFormatType::GetType("chromium/x-test-format2");
+  const ClipboardFormatType kFormat2 =
+      ClipboardFormatType::GetType("chromium/x-test-format2");
   std::string payload2("test string2");
   base::Pickle write_pickle2;
   write_pickle2.WriteString(payload2);
@@ -609,8 +632,8 @@ TYPED_TEST(ClipboardTest, MultiplePickleTest) {
 
 TYPED_TEST(ClipboardTest, DataTest) {
   const std::string kFormatString = "chromium/x-test-format";
-  const ui::ClipboardFormatType kFormat =
-      ui::ClipboardFormatType::GetType(kFormatString);
+  const ClipboardFormatType kFormat =
+      ClipboardFormatType::GetType(kFormatString);
   const std::string payload = "test string";
   base::span<const uint8_t> payload_span(
       reinterpret_cast<const uint8_t*>(payload.data()), payload.size());
@@ -629,23 +652,23 @@ TYPED_TEST(ClipboardTest, DataTest) {
   EXPECT_EQ(payload, output);
 }
 
-// TODO(huangdarwin): Implement multiple raw types for AuraClipboard. This test
-// currently doesn't run on AuraClipboard because AuraClipboard only supports
-// one raw type.
+// TODO(https://crbug.com/1032161): Implement multiple raw types for
+// AuraClipboard. This test currently doesn't run on AuraClipboard because
+// AuraClipboard only supports one raw type.
 #if (!defined(USE_AURA) || defined(OS_WIN) || defined(USE_OZONE) || \
      defined(USE_X11)) &&                                           \
     !defined(OS_CHROMEOS)
 TYPED_TEST(ClipboardTest, MultipleDataTest) {
   const std::string kFormatString1 = "chromium/x-test-format1";
-  const ui::ClipboardFormatType kFormat1 =
-      ui::ClipboardFormatType::GetType(kFormatString1);
+  const ClipboardFormatType kFormat1 =
+      ClipboardFormatType::GetType(kFormatString1);
   const std::string payload1("test string1");
   base::span<const uint8_t> payload_span1(
       reinterpret_cast<const uint8_t*>(payload1.data()), payload1.size());
 
   const std::string kFormatString2 = "chromium/x-test-format2";
-  const ui::ClipboardFormatType kFormat2 =
-      ui::ClipboardFormatType::GetType(kFormatString2);
+  const ClipboardFormatType kFormat2 =
+      ClipboardFormatType::GetType(kFormatString2);
   const std::string payload2("test string2");
   base::span<const uint8_t> payload_span2(
       reinterpret_cast<const uint8_t*>(payload2.data()), payload2.size());
@@ -660,18 +683,100 @@ TYPED_TEST(ClipboardTest, MultipleDataTest) {
   }
 
   // Check format 1.
-  ASSERT_TRUE(this->clipboard().IsFormatAvailable(kFormat1,
+  EXPECT_THAT(this->clipboard().ReadAvailablePlatformSpecificFormatNames(
+                  ClipboardBuffer::kCopyPaste),
+              Contains(ASCIIToUTF16(kFormatString1)));
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(kFormat1,
                                                   ClipboardBuffer::kCopyPaste));
   std::string output1;
   this->clipboard().ReadData(kFormat1, &output1);
   EXPECT_EQ(payload1, output1);
 
   // Check format 2.
-  ASSERT_TRUE(this->clipboard().IsFormatAvailable(kFormat2,
+  EXPECT_THAT(this->clipboard().ReadAvailablePlatformSpecificFormatNames(
+                  ClipboardBuffer::kCopyPaste),
+              Contains(ASCIIToUTF16(kFormatString2)));
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(kFormat2,
                                                   ClipboardBuffer::kCopyPaste));
   std::string output2;
   this->clipboard().ReadData(kFormat2, &output2);
   EXPECT_EQ(payload2, output2);
+}
+#endif
+
+TYPED_TEST(ClipboardTest, ReadAvailablePlatformSpecificFormatNamesTest) {
+  base::string16 text = ASCIIToUTF16("Test String");
+  std::string ascii_text;
+  {
+    ScopedClipboardWriter clipboard_writer(ClipboardBuffer::kCopyPaste);
+    clipboard_writer.WriteText(text);
+  }
+
+  const std::vector<base::string16> raw_types =
+      this->clipboard().ReadAvailablePlatformSpecificFormatNames(
+          ClipboardBuffer::kCopyPaste);
+#if defined(OS_MACOSX)
+  EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("public.utf8-plain-text")));
+  EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("NSStringPboardType")));
+  EXPECT_EQ(raw_types.size(), static_cast<uint64_t>(2));
+#elif defined(USE_X11)
+  EXPECT_THAT(raw_types, Contains(ASCIIToUTF16(kMimeTypeText)));
+  EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("TEXT")));
+  EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("STRING")));
+  EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("UTF8_STRING")));
+  EXPECT_EQ(raw_types.size(), static_cast<uint64_t>(4));
+#elif defined(OS_WIN)
+  EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("CF_UNICODETEXT")));
+  EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("CF_TEXT")));
+  EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("CF_LOCALE")));
+  EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("CF_OEMTEXT")));
+  EXPECT_EQ(raw_types.size(), static_cast<uint64_t>(4));
+#elif defined(USE_AURA) || defined(OS_ANDROID)
+  EXPECT_THAT(raw_types, Contains(ASCIIToUTF16(kMimeTypeText)));
+  EXPECT_EQ(raw_types.size(), static_cast<uint64_t>(1));
+#else
+#error Unsupported platform
+#endif
+}
+
+// Test that a platform-specific write works.
+#if defined(OS_WIN)
+TYPED_TEST(ClipboardTest, WindowsPredefinedFormatWriteDataTest) {
+  const std::string kFormatString = "CF_TEXT";
+  const std::string text = "test string";
+  base::span<const uint8_t> text_span(
+      reinterpret_cast<const uint8_t*>(text.data()), text.size() + 1);
+
+  {
+    ScopedClipboardWriter clipboard_writer(ClipboardBuffer::kCopyPaste);
+    clipboard_writer.WriteData(UTF8ToUTF16(kFormatString),
+                               mojo_base::BigBuffer(text_span));
+  }
+
+  const std::vector<base::string16> raw_types =
+      this->clipboard().ReadAvailablePlatformSpecificFormatNames(
+          ClipboardBuffer::kCopyPaste);
+
+  EXPECT_THAT(raw_types, Contains(ASCIIToUTF16(kFormatString)));
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+
+  // Only ClipboardWin recognizes the Windows-specific CF_TEXT.
+  std::string test_suite_name = ::testing::UnitTest::GetInstance()
+                                    ->current_test_info()
+                                    ->test_suite_name();
+  if (test_suite_name == std::string("ClipboardTest/PlatformClipboardTest")) {
+    std::string text_result;
+    this->clipboard().ReadAsciiText(ClipboardBuffer::kCopyPaste, &text_result);
+    EXPECT_EQ(text, text_result);
+
+    // Windows will automatically convert CF_TEXT to its UNICODE version.
+    EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+        ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+    base::string16 text_result16;
+    this->clipboard().ReadText(ClipboardBuffer::kCopyPaste, &text_result16);
+    EXPECT_EQ(base::ASCIIToUTF16(text), text_result16);
+  }
 }
 #endif
 

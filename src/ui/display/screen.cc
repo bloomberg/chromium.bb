@@ -4,6 +4,9 @@
 
 #include "ui/display/screen.h"
 
+#include <utility>
+
+#include "base/logging.h"
 #include "ui/display/display.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
@@ -31,8 +34,8 @@ Screen* Screen::GetScreen() {
 }
 
 // static
-void Screen::SetScreenInstance(Screen* instance) {
-  g_screen = instance;
+Screen* Screen::SetScreenInstance(Screen* instance) {
+  return std::exchange(g_screen, instance);
 }
 
 Display Screen::GetDisplayNearestView(gfx::NativeView view) const {
@@ -53,15 +56,15 @@ void Screen::SetDisplayForNewWindows(int64_t display_id) {
   display_id_for_new_windows_ = display_id;
 }
 
-gfx::Rect Screen::ScreenToDIPRectInWindow(gfx::NativeView view,
+gfx::Rect Screen::ScreenToDIPRectInWindow(gfx::NativeWindow window,
                                           const gfx::Rect& screen_rect) const {
-  float scale = GetDisplayNearestView(view).device_scale_factor();
+  float scale = GetDisplayNearestWindow(window).device_scale_factor();
   return ScaleToEnclosingRect(screen_rect, 1.0f / scale);
 }
 
-gfx::Rect Screen::DIPToScreenRectInWindow(gfx::NativeView view,
+gfx::Rect Screen::DIPToScreenRectInWindow(gfx::NativeWindow window,
                                           const gfx::Rect& dip_rect) const {
-  float scale = GetDisplayNearestView(view).device_scale_factor();
+  float scale = GetDisplayNearestWindow(window).device_scale_factor();
   return ScaleToEnclosingRect(dip_rect, scale);
 }
 
@@ -80,6 +83,11 @@ void Screen::SetPanelRotationForTesting(int64_t display_id,
                                         Display::Rotation rotation) {
   // Not implemented.
   DCHECK(false);
+}
+
+std::string Screen::GetCurrentWorkspace() {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return {};
 }
 
 }  // namespace display

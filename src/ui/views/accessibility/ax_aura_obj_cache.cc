@@ -4,6 +4,8 @@
 
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 
+#include <utility>
+
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -35,15 +37,19 @@ AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(View* view) {
   // Avoid problems with transient focus events. https://crbug.com/729449
   if (!view->GetWidget())
     return nullptr;
-  return CreateInternal<AXViewObjWrapper>(view, view_to_id_map_);
+  return CreateInternal<AXViewObjWrapper>(view, &view_to_id_map_);
 }
 
 AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(Widget* widget) {
-  return CreateInternal<AXWidgetObjWrapper>(widget, widget_to_id_map_);
+  return CreateInternal<AXWidgetObjWrapper>(widget, &widget_to_id_map_);
 }
 
 AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(aura::Window* window) {
-  return CreateInternal<AXWindowObjWrapper>(window, window_to_id_map_);
+  return CreateInternal<AXWindowObjWrapper>(window, &window_to_id_map_);
+}
+
+void AXAuraObjCache::CreateOrReplace(std::unique_ptr<AXAuraObjWrapper> obj) {
+  cache_[obj->GetUniqueId()] = std::move(obj);
 }
 
 int32_t AXAuraObjCache::GetID(View* view) const {
@@ -59,7 +65,7 @@ int32_t AXAuraObjCache::GetID(aura::Window* window) const {
 }
 
 void AXAuraObjCache::Remove(View* view) {
-  RemoveInternal(view, view_to_id_map_);
+  RemoveInternal(view, &view_to_id_map_);
 }
 
 void AXAuraObjCache::RemoveViewSubtree(View* view) {
@@ -69,7 +75,7 @@ void AXAuraObjCache::RemoveViewSubtree(View* view) {
 }
 
 void AXAuraObjCache::Remove(Widget* widget) {
-  RemoveInternal(widget, widget_to_id_map_);
+  RemoveInternal(widget, &widget_to_id_map_);
 
   // When an entire widget is deleted, it doesn't always send a notification
   // on each of its views, so we need to explore them recursively.
@@ -81,7 +87,7 @@ void AXAuraObjCache::Remove(Widget* widget) {
 void AXAuraObjCache::Remove(aura::Window* window, aura::Window* parent) {
   int id = GetIDInternal(parent, window_to_id_map_);
   AXAuraObjWrapper* parent_window_obj = Get(id);
-  RemoveInternal(window, window_to_id_map_);
+  RemoveInternal(window, &window_to_id_map_);
   if (parent && delegate_)
     delegate_->OnChildWindowRemoved(parent_window_obj);
 }
@@ -99,15 +105,19 @@ void AXAuraObjCache::GetTopLevelWindows(
 
 AXAuraObjWrapper* AXAuraObjCache::GetFocus() {
   View* focused_view = GetFocusedView();
-  if (focused_view) {
-    const ViewAccessibility& view_accessibility =
-        focused_view->GetViewAccessibility();
-    if (view_accessibility.FocusedVirtualChild())
-      return view_accessibility.FocusedVirtualChild()->GetOrCreateWrapper(this);
+  while (focused_view && focused_view->GetViewAccessibility().IsIgnored())
+    focused_view = focused_view->parent();
 
-    return GetOrCreate(focused_view);
+  if (!focused_view)
+    return nullptr;
+
+  if (focused_view->GetViewAccessibility().FocusedVirtualChild()) {
+    return focused_view->GetViewAccessibility()
+        .FocusedVirtualChild()
+        ->GetOrCreateWrapper(this);
   }
-  return nullptr;
+
+  return GetOrCreate(focused_view);
 }
 
 void AXAuraObjCache::OnFocusedViewChanged() {
@@ -202,18 +212,18 @@ void AXAuraObjCache::OnRootWindowObjDestroyed(aura::Window* window) {
 template <typename AuraViewWrapper, typename AuraView>
 AXAuraObjWrapper* AXAuraObjCache::CreateInternal(
     AuraView* aura_view,
-    std::map<AuraView*, int32_t>& aura_view_to_id_map) {
+    std::map<AuraView*, int32_t>* aura_view_to_id_map) {
   if (!aura_view)
     return nullptr;
 
-  auto it = aura_view_to_id_map.find(aura_view);
+  auto it = aura_view_to_id_map->find(aura_view);
 
-  if (it != aura_view_to_id_map.end())
+  if (it != aura_view_to_id_map->end())
     return Get(it->second);
 
   auto wrapper = std::make_unique<AuraViewWrapper>(this, aura_view);
   int32_t id = wrapper->GetUniqueId();
-  aura_view_to_id_map[aura_view] = id;
+  (*aura_view_to_id_map)[aura_view] = id;
   cache_[id] = std::move(wrapper);
   return cache_[id].get();
 }
@@ -233,11 +243,11 @@ int32_t AXAuraObjCache::GetIDInternal(
 template <typename AuraView>
 void AXAuraObjCache::RemoveInternal(
     AuraView* aura_view,
-    std::map<AuraView*, int32_t>& aura_view_to_id_map) {
+    std::map<AuraView*, int32_t>* aura_view_to_id_map) {
   int32_t id = GetID(aura_view);
   if (id == ui::AXNode::kInvalidAXID)
     return;
-  aura_view_to_id_map.erase(aura_view);
+  aura_view_to_id_map->erase(aura_view);
   cache_.erase(id);
 }
 

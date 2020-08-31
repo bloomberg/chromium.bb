@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/synced_property.h"
 #include "cc/cc_export.h"
@@ -407,7 +408,8 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   int currently_scrolling_node() const { return currently_scrolling_node_id_; }
   gfx::Transform ScreenSpaceTransform(int scroll_node_id) const;
 
-  gfx::Vector2dF ClampScrollToMaxScrollOffset(ScrollNode* node, LayerTreeImpl*);
+  gfx::Vector2dF ClampScrollToMaxScrollOffset(const ScrollNode& node,
+                                              LayerTreeImpl*);
 
   // Returns the current scroll offset. On the main thread this would return the
   // value for the LayerTree while on the impl thread this is the current value
@@ -431,7 +433,8 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   // called on the impl thread side PropertyTrees.
   void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
                            ElementId inner_viewport_scroll_element_id,
-                           bool use_fractional_deltas);
+                           bool use_fractional_deltas,
+                           const base::flat_set<ElementId>& snapped_elements);
 
   // Applies deltas sent in the previous main frame onto the impl thread state.
   // Should only be called on the impl thread side PropertyTrees.
@@ -461,7 +464,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   const gfx::ScrollOffset GetScrollOffsetDeltaForTesting(ElementId id) const;
   void CollectScrollDeltasForTesting();
 
-  gfx::Vector2dF ScrollBy(ScrollNode* scroll_node,
+  gfx::Vector2dF ScrollBy(const ScrollNode& scroll_node,
                           const gfx::Vector2dF& scroll,
                           LayerTreeImpl* layer_tree_impl);
   gfx::ScrollOffset ClampScrollOffsetToLimits(
@@ -486,7 +489,16 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void NotifyDidChangeScrollbarsHidden(ElementId scroll_element_id,
                                        bool hidden);
 
+  // A composited scroll node is a scroll node that has an associated composited
+  // layer, otherwise the scroll node corresponds to a scroller that requires
+  // repainting.
+  bool IsComposited(const ScrollNode& node) const;
+
  private:
+  // ScrollTree doesn't use the needs_update flag.
+  using PropertyTree::needs_update;
+  using PropertyTree::set_needs_update;
+
   using ScrollOffsetMap = base::flat_map<ElementId, gfx::ScrollOffset>;
   using SyncedScrollOffsetMap =
       base::flat_map<ElementId, scoped_refptr<SyncedScrollOffset>>;
@@ -674,6 +686,7 @@ class CC_EXPORT PropertyTrees final {
   }
 
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
+  void AsValueInto(base::trace_event::TracedValue* value) const;
   std::string ToString() const;
 
   CombinedAnimationScale GetAnimationScales(int transform_node_id,

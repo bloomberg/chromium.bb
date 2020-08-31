@@ -40,14 +40,6 @@
             { "name": "handle create info length", "type": "uint64_t" },
             { "name": "handle create info", "type": "uint8_t", "annotation": "const*", "length": "handle create info length", "skip_serialize": true}
         ],
-        "device create buffer mapped async": [
-            { "name": "device", "type": "device" },
-            { "name": "descriptor", "type": "buffer descriptor", "annotation": "const*" },
-            { "name": "request serial", "type": "uint32_t" },
-            { "name": "result", "type": "ObjectHandle", "handle_type": "buffer" },
-            { "name": "handle create info length", "type": "uint64_t" },
-            { "name": "handle create info", "type": "uint8_t", "annotation": "const*", "length": "handle create info length", "skip_serialize": true}
-        ],
         "device pop error scope": [
             { "name": "device", "type": "device" },
             { "name": "request serial", "type": "uint64_t" }
@@ -74,6 +66,9 @@
             { "name": "type", "type": "error type"},
             { "name": "message", "type": "char", "annotation": "const*", "length": "strlen" }
         ],
+        "device lost callback" : [
+            { "name": "message", "type": "char", "annotation": "const*", "length": "strlen" }
+        ],
         "device pop error scope callback": [
             { "name": "request serial", "type": "uint64_t" },
             { "name": "type", "type": "error type" },
@@ -86,22 +81,27 @@
     },
     "special items": {
         "client_side_structures": [
-            "CreateBufferMappedResult"
+            "CreateBufferMappedResult",
+            "SurfaceDescriptorFromMetalLayer",
+            "SurfaceDescriptorFromWindowsHWND",
+            "SurfaceDescriptorFromXlib"
         ],
         "client_side_commands": [
             "BufferMapReadAsync",
             "BufferMapWriteAsync",
             "BufferSetSubData",
-            "DeviceCreateBufferMappedAsync",
             "DevicePopErrorScope",
+            "DeviceSetDeviceLostCallback",
             "DeviceSetUncapturedErrorCallback",
             "FenceGetCompletedValue",
             "FenceOnCompletion"
         ],
         "client_handwritten_commands": [
+            "BufferDestroy",
             "BufferUnmap",
             "DeviceCreateBuffer",
             "DeviceCreateBufferMapped",
+            "DeviceGetDefaultQueue",
             "DevicePushErrorScope",
             "QueueCreateFence",
             "QueueSignal"
@@ -112,6 +112,7 @@
             "Fence"
         ],
         "server_custom_pre_handler_commands": [
+            "BufferDestroy",
             "BufferUnmap"
         ],
         "server_handwritten_commands": [

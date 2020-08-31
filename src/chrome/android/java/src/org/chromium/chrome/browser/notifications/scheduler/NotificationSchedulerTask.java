@@ -12,10 +12,9 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
+import org.chromium.components.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskParameters;
@@ -46,8 +45,8 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
             }
         };
 
-        NotificationSchedulerTaskJni.get().onStartTask(NotificationSchedulerTask.this,
-                Profile.getLastUsedProfile().getOriginalProfile(), taskCallback);
+        NotificationSchedulerTaskJni.get().onStartTask(
+                NotificationSchedulerTask.this, taskCallback);
     }
 
     @Override
@@ -59,8 +58,7 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
 
     @Override
     protected boolean onStopTaskWithNative(Context context, TaskParameters taskParameters) {
-        return NotificationSchedulerTaskJni.get().onStopTask(
-                NotificationSchedulerTask.this, Profile.getLastUsedProfile().getOriginalProfile());
+        return NotificationSchedulerTaskJni.get().onStopTask(NotificationSchedulerTask.this);
     }
 
     /**
@@ -95,8 +93,7 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
 
     @NativeMethods
     interface Natives {
-        void onStartTask(
-                NotificationSchedulerTask caller, Profile profile, Callback<Boolean> callback);
-        boolean onStopTask(NotificationSchedulerTask caller, Profile profile);
+        void onStartTask(NotificationSchedulerTask caller, Callback<Boolean> callback);
+        boolean onStopTask(NotificationSchedulerTask caller);
     }
 }

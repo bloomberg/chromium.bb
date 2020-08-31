@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/threading/scoped_thread_priority.h"
 #include "chrome/common/safe_browsing/pe_image_reader_win.h"
-#include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 
 namespace safe_browsing {
 
@@ -45,7 +45,7 @@ void BinaryFeatureExtractor::CheckSignature(
     ClientDownloadRequest_SignatureInfo* signature_info) {
   // Mitigate the issues caused by loading DLLs on a background thread
   // (http://crbug/973868).
-  base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
 
   DVLOG(2) << "Checking signature for " << file_path.value();
 

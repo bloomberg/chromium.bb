@@ -46,6 +46,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/policy_invalidation_scope.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
 #include "components/policy/core/common/schema_registry.h"
@@ -222,12 +223,13 @@ void DeviceCloudPolicyManagerChromeOS::SetDeviceEnrollmentAutoStart() {
   }
 }
 
+// Keep clean up order as the reversed creation order.
 void DeviceCloudPolicyManagerChromeOS::Shutdown() {
-  status_uploader_.reset();
-  syslog_uploader_.reset();
   heartbeat_scheduler_.reset();
-  state_keys_update_subscription_.reset();
+  syslog_uploader_.reset();
+  status_uploader_.reset();
   external_data_manager_->Disconnect();
+  state_keys_update_subscription_.reset();
   CloudPolicyManager::Shutdown();
   signin_profile_forwarding_schema_registry_.reset();
 }
@@ -326,7 +328,8 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
 
   // Start remote commands services now that we have setup everything they need.
   core()->StartRemoteCommandsService(
-      std::make_unique<DeviceCommandsFactoryChromeOS>(this));
+      std::make_unique<DeviceCommandsFactoryChromeOS>(this),
+      PolicyInvalidationScope::kDevice);
 
   // Enable device reporting and status monitoring for cloud managed devices. We
   // want to create these objects even if monitoring is currently inactive, in
@@ -337,9 +340,8 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
     CreateStatusUploader();
     syslog_uploader_.reset(new SystemLogUploader(nullptr, task_runner_));
     heartbeat_scheduler_.reset(new HeartbeatScheduler(
-        g_browser_process->gcm_driver(), client(),
-        install_attributes->GetDomain(), install_attributes->GetDeviceId(),
-        task_runner_));
+        g_browser_process->gcm_driver(), client(), device_store_.get(),
+        install_attributes->GetDeviceId(), task_runner_));
   }
 
   NotifyConnected();
@@ -427,15 +429,7 @@ void DeviceCloudPolicyManagerChromeOS::CreateStatusUploader() {
   status_uploader_.reset(new StatusUploader(
       client(),
       std::make_unique<DeviceStatusCollector>(
-          local_state_, chromeos::system::StatisticsProvider::GetInstance(),
-          DeviceStatusCollector::VolumeInfoFetcher(),
-          DeviceStatusCollector::CPUStatisticsFetcher(),
-          DeviceStatusCollector::CPUTempFetcher(),
-          DeviceStatusCollector::AndroidStatusFetcher(),
-          DeviceStatusCollector::TpmStatusFetcher(),
-          DeviceStatusCollector::EMMCLifetimeFetcher(),
-          DeviceStatusCollector::StatefulPartitionInfoFetcher(),
-          DeviceStatusCollector::CrosHealthdDataFetcher()),
+          local_state_, chromeos::system::StatisticsProvider::GetInstance()),
       task_runner_, kDeviceStatusUploadFrequency));
 }
 

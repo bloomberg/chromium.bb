@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/updater/win/net/scoped_hinternet.h"
 #include "components/update_client/network.h"
@@ -19,6 +17,8 @@ namespace updater {
 class NetworkFetcherFactory : public update_client::NetworkFetcherFactory {
  public:
   NetworkFetcherFactory();
+  NetworkFetcherFactory(const NetworkFetcherFactory&) = delete;
+  NetworkFetcherFactory& operator=(const NetworkFetcherFactory&) = delete;
 
   std::unique_ptr<update_client::NetworkFetcher> Create() const override;
 
@@ -30,8 +30,6 @@ class NetworkFetcherFactory : public update_client::NetworkFetcherFactory {
 
   THREAD_CHECKER(thread_checker_);
   scoped_hinternet session_handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkFetcherFactory);
 };
 
 }  // namespace updater

@@ -27,6 +27,11 @@ from logging import shutdown
 from chromite.lib import buildbot_annotations as _annotations
 
 
+# Remove deprecated APIs to force use of new ones.
+del WARN
+del warn
+
+
 # Notice Level.
 NOTICE = 25
 addLevelName(NOTICE, 'NOTICE')
@@ -62,10 +67,13 @@ def _PrintForBuildbot(handle, annotation_class, *args):
   """
   if handle is None:
     handle = sys.stderr
-  # Cast each argument, because we end up getting all sorts of objects from
-  # callers.
-  str_args = [str(x) for x in args]
-  annotation = annotation_class(*str_args)
+  if annotation_class == _annotations.SetEmailNotifyProperty:
+    annotation = annotation_class(*args)
+  else:
+    # Cast each argument, because we end up getting all sorts of objects from
+    # callers.
+    str_args = [str(x) for x in args]
+    annotation = annotation_class(*str_args)
   if _buildbot_markers_enabled:
     line = str(annotation)
   else:
@@ -81,6 +89,11 @@ def PrintBuildbotLink(text, url, handle=None):
 def PrintKitchenSetBuildProperty(name, data, handle=None):
   """Prints out a request to set a build property to a JSON value."""
   _PrintForBuildbot(handle, _annotations.SetBuildProperty, name, data)
+
+
+def PrintKitchenSetEmailNotifyProperty(name, data, handle=None):
+  """Prints out a request to set an email_notify build property."""
+  _PrintForBuildbot(handle, _annotations.SetEmailNotifyProperty, name, data)
 
 
 def PrintBuildbotStepText(text, handle=None):

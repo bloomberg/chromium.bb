@@ -17,6 +17,7 @@
 #include <memory>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/variant.h"
@@ -70,7 +71,6 @@ enum RTPExtensionType : int {
   kRtpExtensionMid,
   kRtpExtensionGenericFrameDescriptor00,
   kRtpExtensionGenericFrameDescriptor = kRtpExtensionGenericFrameDescriptor00,
-  kRtpExtensionGenericFrameDescriptor01,
   kRtpExtensionGenericFrameDescriptor02,
   kRtpExtensionColorSpace,
   kRtpExtensionNumberOfExtensions  // Must be the last entity in the enum.
@@ -212,6 +212,17 @@ class RtcpBandwidthObserver {
   virtual ~RtcpBandwidthObserver() {}
 };
 
+// NOTE! |kNumMediaTypes| must be kept in sync with RtpPacketMediaType!
+static constexpr size_t kNumMediaTypes = 5;
+enum class RtpPacketMediaType : size_t {
+  kAudio,                         // Audio media packets.
+  kVideo,                         // Video media packets.
+  kRetransmission,                // Retransmisions, sent as response to NACK.
+  kForwardErrorCorrection,        // FEC packets.
+  kPadding = kNumMediaTypes - 1,  // RTX or plain padding sent to maintain BWE.
+  // Again, don't forget to udate |kNumMediaTypes| if you add another value!
+};
+
 struct RtpPacketSendInfo {
  public:
   RtpPacketSendInfo() = default;
@@ -219,11 +230,11 @@ struct RtpPacketSendInfo {
   uint16_t transport_sequence_number = 0;
   uint32_t ssrc = 0;
   uint16_t rtp_sequence_number = 0;
-  // Get rid of this flag when all code paths populate |rtp_sequence_number|.
-  bool has_rtp_sequence_number = false;
   size_t length = 0;
+  absl::optional<RtpPacketMediaType> packet_type;
   PacedPacketInfo pacing_info;
 };
+
 class NetworkStateEstimateObserver {
  public:
   virtual void OnRemoteNetworkEstimate(NetworkStateEstimate estimate) = 0;
@@ -306,6 +317,12 @@ struct RtpPacketCounter {
     packets -= other.packets;
   }
 
+  bool operator==(const RtpPacketCounter& other) const {
+    return header_bytes == other.header_bytes &&
+           payload_bytes == other.payload_bytes &&
+           padding_bytes == other.padding_bytes && packets == other.packets;
+  }
+
   // Not inlined, since use of RtpPacket would result in circular includes.
   void AddPacket(const RtpPacket& packet);
 
@@ -369,6 +386,34 @@ struct StreamDataCounters {
   RtpPacketCounter fec;            // Number of redundancy packets/bytes.
 };
 
+class RtpSendRates {
+  template <std::size_t... Is>
+  constexpr std::array<DataRate, sizeof...(Is)> make_zero_array(
+      std::index_sequence<Is...>) {
+    return {{(static_cast<void>(Is), DataRate::Zero())...}};
+  }
+
+ public:
+  RtpSendRates()
+      : send_rates_(
+            make_zero_array(std::make_index_sequence<kNumMediaTypes>())) {}
+  RtpSendRates(const RtpSendRates& rhs) = default;
+  RtpSendRates& operator=(const RtpSendRates&) = default;
+
+  DataRate& operator[](RtpPacketMediaType type) {
+    return send_rates_[static_cast<size_t>(type)];
+  }
+  const DataRate& operator[](RtpPacketMediaType type) const {
+    return send_rates_[static_cast<size_t>(type)];
+  }
+  DataRate Sum() const {
+    return absl::c_accumulate(send_rates_, DataRate::Zero());
+  }
+
+ private:
+  std::array<DataRate, kNumMediaTypes> send_rates_;
+};
+
 // Callback, called whenever byte/packet counts have been updated.
 class StreamDataCountersCallback {
  public:
@@ -390,19 +435,6 @@ struct RtpReceiveStats {
   // https://w3c.github.io/webrtc-stats/#inboundrtpstats-dict*
   absl::optional<int64_t> last_packet_received_timestamp_ms;
   RtpPacketCounter packet_counter;
-};
-
-class RtcpAckObserver {
- public:
-  // This method is called on received report blocks matching the sender ssrc.
-  // TODO(nisse): Use of "extended" sequence number is a bit brittle, since the
-  // observer for this callback typically has its own sequence number unwrapper,
-  // and there's no guarantee that they are in sync. Change to pass raw sequence
-  // number, possibly augmented with timestamp (if available) to aid
-  // disambiguation.
-  virtual void OnReceivedAck(int64_t extended_highest_sequence_number) = 0;
-
-  virtual ~RtcpAckObserver() = default;
 };
 
 // Callback, used to notify an observer whenever new rates have been estimated.

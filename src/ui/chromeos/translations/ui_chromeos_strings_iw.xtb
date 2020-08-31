@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">העלה</translation>
 <translation id="1249250836236328755">ז'אנר</translation>
 <translation id="1278813325885878377">‏מקלדת הונגרית בפריסת QWERTY</translation>
+<translation id="1293556467332435079">קבצים</translation>
 <translation id="1297922636971898492">‏Google Drive אינו זמין כעת. ההעלאה תופעל מחדש באופן אוטומטי לאחר ש-Google Drive יחזור לפעול.</translation>
 <translation id="1307931752636661898">‏לא ניתן להציג קובצי Linux</translation>
 <translation id="1310751437842832374">‏תעתוק (mausam → ନମସ୍ତେ)</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">בוצעה שמירה</translation>
 <translation id="1864756863218646478">הקובץ לא נמצא.</translation>
 <translation id="1921986354447415460">‏מקלדת טורקית-F</translation>
+<translation id="1924372192547904021">הפרמוט של <ph name="DRIVE_NAME" /> הושלם</translation>
 <translation id="1931134289871235022">סלובקית</translation>
 <translation id="1933345018156373194">ההעברה נכשלה, שגיאה לא צפויה: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">פינית</translation>
@@ -88,6 +90,7 @@
 <translation id="1947424002851288782">מקלדת גרמנית</translation>
 <translation id="1972984168337863910">הרחבת חלוניות המשוב של קבצים</translation>
 <translation id="1984603991036629094">מקלדת פונטית ארמנית</translation>
+<translation id="1995337122023280937">מעבר אל מיקום הקובץ</translation>
 <translation id="2001796770603320721">‏ניהול ב-Drive</translation>
 <translation id="2009067268969781306">פירמוט של התקן אחסון מוחק את כל הנתונים שמאוחסנים בו. לא ניתן לבטל את הפעולה הזו.</translation>
 <translation id="2028997212275086731">‏ארכיון RAR</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">‏לא ניתן היה להגיע אל Google Drive‏. <ph name="BEGIN_LINK" />צא<ph name="END_LINK" /> ואז התחבר שוב.</translation>
 <translation id="2649120831653069427">דג</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">מיקום הקובץ</translation>
 <translation id="2672394958563893062">אירעה שגיאה. לחץ כדי להתחיל מחדש.</translation>
 <translation id="2676946222714718093">מופעל ב-</translation>
 <translation id="2735698359135166290">מקלדת רומנית רגילה</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">‏מקלדת גרמנית NEO 2</translation>
 <translation id="2943400156390503548">שקופיות</translation>
 <translation id="2943503720238418293">השם צריך להיות קצר יותר</translation>
+<translation id="2949781154072577687">מתבצע פרמוט של <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">מדוזה</translation>
 <translation id="2963783323012015985">מקלדת טורקית</translation>
 <translation id="2966459079597787514">מקלדת שוודית</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> שגיאות.</translation>
 <translation id="3519867315646775981">‏תעתוק (שלום ← shalom)</translation>
 <translation id="3522708245912499433">פורטוגזית</translation>
+<translation id="3524311639100184459">זהירות: הקבצים האלה זמניים, וייתכן שהם יימחקו באופן אוטומטי כדי לפנות מקום בכונן.  <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">תיקיה</translation>
 <translation id="3549797760399244642">‏עבור אל drive.google.com...</translation>
 <translation id="357479282490346887">ליטאית</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">קיווי</translation>
 <translation id="3966388904776714213">נגן אודיו</translation>
 <translation id="4002066346123236978">כותרת</translation>
+<translation id="4065397611279318371">כדי לפתוח קבצים באמצעות אפליקציות <ph name="APP_NAME" />, תחילה יש להעביר אותם לתיקיית <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
 <translation id="4070370845051020638">שיטת קלט קנטונזית</translation>
 <translation id="4072248638558688893">מקלדת טמילית (פונטית)</translation>
 <translation id="4124935795427217608">חד-קרן</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">פעולת ההעתקה נכשלה. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">מלון</translation>
 <translation id="4372884569765913867">1x1</translation>
+<translation id="4394214039309501350">קישור חיצוני</translation>
 <translation id="4425149324548788773">האחסון שלי</translation>
 <translation id="4465830120256509958">מקלדת פורטוגזית (ברזיל) </translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">תיקון אוטומטי</translation>
 <translation id="4881695831933465202">פתיחה</translation>
 <translation id="4886021172213954916">‏מקלדת טמילית (Typewriter)</translation>
+<translation id="4892969127351273348">לא ניתן לפתוח באמצעות <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">מוכן לגבות <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">קבוע</translation>
 <translation id="4935975195727477204">פרח גזניה</translation>
@@ -497,6 +506,7 @@
 <translation id="6806699711453372963">‏ניהול שיתוף ב-Linux</translation>
 <translation id="6808193438228982088">שועל</translation>
 <translation id="6820687829547641339">‏ארכיון Gzip מכווץ של Bzip2</translation>
+<translation id="6823166707458800069">כל הקבצים השמורים בתיקיה זו מגובים באופן אוטומטי באינטרנט.</translation>
 <translation id="6825883775269213504">רוסית</translation>
 <translation id="6827236167376090743">סרטון זה ימשיך לפעול ללא הפסקה.</translation>
 <translation id="6847101934483209767">הסרת את<ph name="ENTRY_NAME" /> מהבחירה.</translation>
@@ -506,6 +516,7 @@
 <translation id="6878261347041253038">מקלדת דוונגארי (פונטית)</translation>
 <translation id="6885780034956018177">שבלול</translation>
 <translation id="6896758677409633944">העתק</translation>
+<translation id="6898028766943174120">תיקיות משנה נוספות…</translation>
 <translation id="691516599546977041">לא ניתן לשמור בתיקייה <ph name="FOLDER_NAME" />. תמונות ערוכות יישמרו בתיקיית ההורדות.</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">US Workman</translation>
@@ -518,6 +529,7 @@
 <translation id="696203921837389374">הפעל סנכרון של חבילת הגלישה</translation>
 <translation id="6965382102122355670">אישור</translation>
 <translation id="6970230597523682626">בולגרית</translation>
+<translation id="6973630695168034713">תיקיות</translation>
 <translation id="6978611942794658017">‏קובץ זה מיועד עבור מחשב אישי המשתמש בתוכנת Windows. הוא אינו מתאים למכשירך שעובד עם מערכת הפעלה של Chrome. חפש יישום חלופי מתאים בחנות האינטרנט של Chrome.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6990081529015358884">לא נשאר לך מקום פנוי</translation>
@@ -551,6 +563,7 @@
 <translation id="7417705661718309329">‏מפת Google</translation>
 <translation id="7419631653042041064">מקלדת קטלאנית</translation>
 <translation id="7434823369735508263">‏מקלדת Dvorak אנגלית (בריטניה)</translation>
+<translation id="7447678886297481665">הקבצים בתיקייה הזו הם לקריאה בלבד. לא ניתן לבצע פעולות מסוימות.</translation>
 <translation id="7460898608667578234">אוקראינית</translation>
 <translation id="7474889694310679759">מקלדת אנגלית (קנדה)</translation>
 <translation id="7489215562877293245">‏נמצאו <ph name="FILE_COUNT" />
@@ -569,6 +582,7 @@
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7654209398114106148">מתבצעת העברה של<ph name="NUMBER_OF_ITEMS" /> פריטים…</translation>
 <translation id="7658239707568436148">ביטול</translation>
+<translation id="7695430100978772476">לא ניתן לפרמט את <ph name="DRIVE_NAME" /></translation>
 <translation id="770015031906360009">יוונית</translation>
 <translation id="7706319470528945664">מקלדת פורטוגזית</translation>
 <translation id="7711920809702896782">פרטי התמונה</translation>

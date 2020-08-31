@@ -16,23 +16,23 @@ namespace osp {
 class MdnsPlatformService {
  public:
   struct BoundInterface {
-    BoundInterface(const platform::InterfaceInfo& interface_info,
-                   const platform::IPSubnet& subnet,
-                   platform::UdpSocket* socket);
+    BoundInterface(const InterfaceInfo& interface_info,
+                   const IPSubnet& subnet,
+                   UdpSocket* socket);
     ~BoundInterface();
 
     bool operator==(const BoundInterface& other) const;
     bool operator!=(const BoundInterface& other) const;
 
-    platform::InterfaceInfo interface_info;
-    platform::IPSubnet subnet;
-    platform::UdpSocket* socket;
+    InterfaceInfo interface_info;
+    IPSubnet subnet;
+    UdpSocket* socket;
   };
 
   virtual ~MdnsPlatformService() = default;
 
   virtual std::vector<BoundInterface> RegisterInterfaces(
-      const std::vector<platform::NetworkInterfaceIndex>& whitelist) = 0;
+      const std::vector<NetworkInterfaceIndex>& whitelist) = 0;
   virtual void DeregisterInterfaces(
       const std::vector<BoundInterface>& registered_interfaces) = 0;
 };

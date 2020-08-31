@@ -1,25 +1,31 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-Network.RequestInitiatorView = class extends UI.VBox {
+
+import * as Common from '../common/common.js';
+import * as Components from '../components/components.js';
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
+export class RequestInitiatorView extends UI.Widget.VBox {
   /**
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    */
   constructor(request) {
     super();
     this.registerRequiredCSS('network/requestInitiatorView.css');
     this.element.classList.add('request-initiator-view');
-    /** @type {!Components.Linkifier} */
-    this._linkifier = new Components.Linkifier();
+    /** @type {!Components.Linkifier.Linkifier} */
+    this._linkifier = new Components.Linkifier.Linkifier();
     this._request = request;
-    this._emptyWidget = new UI.EmptyWidget(Common.UIString('This request has no initiator data.'));
+    this._emptyWidget = new UI.EmptyWidget.EmptyWidget(Common.UIString.UIString('This request has no initiator data.'));
     this._emptyWidget.show(this.element);
     this._hasShown = false;
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
-   * @param {!Components.Linkifier} linkifier
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
+   * @param {!Components.Linkifier.Linkifier} linkifier
    * @param {boolean=} focusableLink
    * @param {function()=} callback
    * @return {?{element: !Element, links: !Array<!Element>}}
@@ -29,15 +35,10 @@ Network.RequestInitiatorView = class extends UI.VBox {
     if (!initiator || !initiator.stack) {
       return null;
     }
-    const networkManager = SDK.NetworkManager.forRequest(request);
+    const networkManager = SDK.NetworkManager.NetworkManager.forRequest(request);
     const target = networkManager ? networkManager.target() : null;
-    const stackTrace =
-        Components.JSPresentationUtils.buildStackTracePreviewContents(target, linkifier, initiator.stack, callback);
-    if (focusableLink) {
-      for (const link of stackTrace.links) {
-        link.tabIndex = 0;
-      }
-    }
+    const stackTrace = Components.JSPresentationUtils.buildStackTracePreviewContents(
+        target, linkifier, {stackTrace: initiator.stack, contentUpdated: callback, tabStops: focusableLink});
     return stackTrace;
   }
 
@@ -47,8 +48,9 @@ Network.RequestInitiatorView = class extends UI.VBox {
    * @param {boolean} expanded
    */
   _appendExpandableSection(sectionContent, title, expanded) {
-    const section = createElementWithClass('div', 'request-initiator-view-section');
-    const icon = UI.Icon.create('smallicon-triangle-right');
+    const section = document.createElement('div');
+    section.classList.add('request-initiator-view-section');
+    const icon = UI.Icon.Icon.create('smallicon-triangle-right');
     const clickableElement = section.createChild('div', 'request-initiator-view-section-title');
     clickableElement.appendChild(icon);
     clickableElement.createTextChild(title);
@@ -71,14 +73,14 @@ Network.RequestInitiatorView = class extends UI.VBox {
 
   /**
    * @param {!SDK.NetworkLog.InitiatorGraph} initiatorGraph
-   * @return {!UI.TreeOutlineInShadow}
+   * @return {!UI.TreeOutline.TreeOutlineInShadow}
    */
   _buildRequestChainTree(initiatorGraph) {
-    const root = new UI.TreeOutlineInShadow();
+    const root = new UI.TreeOutline.TreeOutlineInShadow();
     const initiators = initiatorGraph.initiators;
     let parent = root;
     for (const request of Array.from(initiators).reverse()) {
-      const treeElement = new UI.TreeElement(request.url());
+      const treeElement = new UI.TreeOutline.TreeElement(request.url());
       parent.appendChild(treeElement);
       if (parent !== root) {
         parent.expand();
@@ -91,14 +93,14 @@ Network.RequestInitiatorView = class extends UI.VBox {
     parent.titleElement.style.fontWeight = 'bold';
 
     const initiated = initiatorGraph.initiated;
-    this._depthFirstSearchTreeBuilder(initiated, /** @type {!UI.TreeElement} */ (parent), this._request);
+    this._depthFirstSearchTreeBuilder(initiated, /** @type {!UI.TreeOutline.TreeElement} */ (parent), this._request);
     return root;
   }
 
   /**
-   * @param {!Map<!SDK.NetworkRequest, !SDK.NetworkRequest>} initiated
-   * @param {!UI.TreeElement} parentElement
-   * @param {!SDK.NetworkRequest} parentRequest
+   * @param {!Map<!SDK.NetworkRequest.NetworkRequest, !SDK.NetworkRequest.NetworkRequest>} initiated
+   * @param {!UI.TreeOutline.TreeElement} parentElement
+   * @param {!SDK.NetworkRequest.NetworkRequest} parentRequest
    */
   _depthFirstSearchTreeBuilder(initiated, parentElement, parentRequest) {
     const visited = new Set();
@@ -106,7 +108,7 @@ Network.RequestInitiatorView = class extends UI.VBox {
     visited.add(this._request);
     for (const request of initiated.keys()) {
       if (initiated.get(request) === parentRequest) {
-        const treeElement = new UI.TreeElement(request.url());
+        const treeElement = new UI.TreeOutline.TreeElement(request.url());
         parentElement.appendChild(treeElement);
         parentElement.expand();
         // only do dfs when we haven't done one
@@ -126,14 +128,13 @@ Network.RequestInitiatorView = class extends UI.VBox {
       return;
     }
     let initiatorDataPresent = false;
-    const stackTracePreview =
-        Network.RequestInitiatorView.createStackTracePreview(this._request, this._linkifier, true);
+    const stackTracePreview = RequestInitiatorView.createStackTracePreview(this._request, this._linkifier, true);
     if (stackTracePreview) {
       initiatorDataPresent = true;
       this._appendExpandableSection(stackTracePreview.element, ls`Request call stack`, true);
     }
 
-    const initiatorGraph = SDK.networkLog.initiatorGraphForRequest(this._request);
+    const initiatorGraph = self.SDK.networkLog.initiatorGraphForRequest(this._request);
     if (initiatorGraph.initiators.size > 1 || initiatorGraph.initiated.size > 1) {
       initiatorDataPresent = true;
       this._appendExpandableSection(
@@ -144,4 +145,4 @@ Network.RequestInitiatorView = class extends UI.VBox {
     }
     this._hasShown = true;
   }
-};
+}

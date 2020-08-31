@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/devtools_manager.h"
+#include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -30,12 +31,14 @@
 namespace content {
 namespace protocol {
 
-BrowserHandler::BrowserHandler()
-    : DevToolsDomainHandler(Browser::Metainfo::domainName) {}
+BrowserHandler::BrowserHandler(bool allow_set_download_behavior)
+    : DevToolsDomainHandler(Browser::Metainfo::domainName),
+      allow_set_download_behavior_(allow_set_download_behavior) {}
 
 BrowserHandler::~BrowserHandler() {}
 
 Response BrowserHandler::Disable() {
+  // TODO: this leaks context ids for all contexts with overridden permissions.
   for (auto& browser_context_id : contexts_with_overridden_permissions_) {
     content::BrowserContext* browser_context = nullptr;
     std::string error;
@@ -50,7 +53,27 @@ Response BrowserHandler::Disable() {
     }
   }
   contexts_with_overridden_permissions_.clear();
-  return Response::OK();
+
+  // TODO: this leaks context ids for all contexts with overridden downloads.
+  for (auto& browser_context_id : contexts_with_overridden_downloads_) {
+    content::BrowserContext* browser_context = nullptr;
+    std::string error;
+    Maybe<std::string> context_id =
+        browser_context_id == "" ? Maybe<std::string>()
+                                 : Maybe<std::string>(browser_context_id);
+    FindBrowserContext(context_id, &browser_context);
+    if (browser_context) {
+      auto* delegate =
+          DevToolsDownloadManagerDelegate::GetInstance(browser_context);
+      if (delegate) {
+        delegate->set_download_behavior(
+            DevToolsDownloadManagerDelegate::DownloadBehavior::DEFAULT);
+      }
+    }
+  }
+  contexts_with_overridden_downloads_.clear();
+
+  return Response::Success();
 }
 
 void BrowserHandler::Wire(UberDispatcher* dispatcher) {
@@ -67,7 +90,7 @@ Response BrowserHandler::GetVersion(std::string* protocol_version,
   *product = GetContentClient()->browser()->GetProduct();
   *user_agent = GetContentClient()->browser()->GetUserAgent();
   *js_version = V8_VERSION_STRING;
-  return Response::OK();
+  return Response::Success();
 }
 
 namespace {
@@ -149,9 +172,12 @@ Response PermissionDescriptorToPermissionType(
   } else if (name == "accessibility-events") {
     *permission_type = PermissionType::ACCESSIBILITY_EVENTS;
   } else if (name == "clipboard-read") {
-    *permission_type = PermissionType::CLIPBOARD_READ;
+    *permission_type = PermissionType::CLIPBOARD_READ_WRITE;
   } else if (name == "clipboard-write") {
-    *permission_type = PermissionType::CLIPBOARD_WRITE;
+    if (descriptor->GetAllowWithoutSanitization(false))
+      *permission_type = PermissionType::CLIPBOARD_READ_WRITE;
+    else
+      *permission_type = PermissionType::CLIPBOARD_SANITIZED_WRITE;
   } else if (name == "payment-handler") {
     *permission_type = PermissionType::PAYMENT_HANDLER;
   } else if (name == "background-fetch") {
@@ -175,12 +201,14 @@ Response PermissionDescriptorToPermissionType(
     }
   } else if (name == "nfc") {
     *permission_type = PermissionType::NFC;
+  } else if (name == "window-placement") {
+    *permission_type = PermissionType::WINDOW_PLACEMENT;
   } else {
     return Response::InvalidParams("Invalid PermissionDescriptor name: " +
                                    name);
   }
 
-  return Response::OK();
+  return Response::Success();
 }
 
 Response FromProtocolPermissionType(
@@ -212,10 +240,12 @@ Response FromProtocolPermissionType(
   } else if (type ==
              protocol::Browser::PermissionTypeEnum::AccessibilityEvents) {
     *out_type = PermissionType::ACCESSIBILITY_EVENTS;
-  } else if (type == protocol::Browser::PermissionTypeEnum::ClipboardRead) {
-    *out_type = PermissionType::CLIPBOARD_READ;
-  } else if (type == protocol::Browser::PermissionTypeEnum::ClipboardWrite) {
-    *out_type = PermissionType::CLIPBOARD_WRITE;
+  } else if (type ==
+             protocol::Browser::PermissionTypeEnum::ClipboardReadWrite) {
+    *out_type = PermissionType::CLIPBOARD_READ_WRITE;
+  } else if (type ==
+             protocol::Browser::PermissionTypeEnum::ClipboardSanitizedWrite) {
+    *out_type = PermissionType::CLIPBOARD_SANITIZED_WRITE;
   } else if (type == protocol::Browser::PermissionTypeEnum::PaymentHandler) {
     *out_type = PermissionType::PAYMENT_HANDLER;
   } else if (type == protocol::Browser::PermissionTypeEnum::BackgroundFetch) {
@@ -234,7 +264,7 @@ Response FromProtocolPermissionType(
   } else {
     return Response::InvalidParams("Unknown permission type: " + type);
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 Response PermissionSettingToPermissionStatus(
@@ -249,7 +279,7 @@ Response PermissionSettingToPermissionStatus(
   } else {
     return Response::InvalidParams("Unknown permission setting: " + setting);
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 }  // namespace
@@ -269,7 +299,7 @@ Response BrowserHandler::GetHistograms(
     (*out_histograms)->emplace_back(Convert(*h, in_delta.fromMaybe(false)));
   }
 
-  return Response::OK();
+  return Response::Success();
 }
 
 // static
@@ -279,19 +309,21 @@ Response BrowserHandler::FindBrowserContext(
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (!delegate)
-    return Response::Error("Browser context management is not supported.");
+    return Response::ServerError(
+        "Browser context management is not supported.");
   if (!browser_context_id.isJust()) {
     *browser_context = delegate->GetDefaultBrowserContext();
     if (*browser_context == nullptr)
-      return Response::Error("Browser context management is not supported.");
-    return Response::OK();
+      return Response::ServerError(
+          "Browser context management is not supported.");
+    return Response::Success();
   }
 
   std::string context_id = browser_context_id.fromJust();
   for (auto* context : delegate->GetBrowserContexts()) {
     if (context->UniqueId() == context_id) {
       *browser_context = context;
-      return Response::OK();
+      return Response::Success();
     }
   }
   return Response::InvalidParams("Failed to find browser context for id " +
@@ -299,34 +331,37 @@ Response BrowserHandler::FindBrowserContext(
 }
 
 Response BrowserHandler::SetPermission(
-    const std::string& origin,
     std::unique_ptr<protocol::Browser::PermissionDescriptor> permission,
     const protocol::Browser::PermissionSetting& setting,
+    Maybe<std::string> origin,
     Maybe<std::string> browser_context_id) {
   BrowserContext* browser_context = nullptr;
   Response response = FindBrowserContext(browser_context_id, &browser_context);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   PermissionType type;
   Response parse_response =
       PermissionDescriptorToPermissionType(std::move(permission), &type);
-  if (!parse_response.isSuccess())
+  if (!parse_response.IsSuccess())
     return parse_response;
 
   blink::mojom::PermissionStatus permission_status;
   Response setting_response =
       PermissionSettingToPermissionStatus(setting, &permission_status);
-  if (!setting_response.isSuccess())
+  if (!setting_response.IsSuccess())
     return setting_response;
 
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(browser_context);
-  url::Origin overridden_origin = url::Origin::Create(GURL(origin));
-  if (overridden_origin.opaque())
-    return Response::InvalidParams(
-        "Permission can't be granted to opaque origins.");
 
+  base::Optional<url::Origin> overridden_origin;
+  if (origin.isJust()) {
+    overridden_origin = url::Origin::Create(GURL(origin.fromJust()));
+    if (overridden_origin->opaque())
+      return Response::InvalidParams(
+          "Permission can't be granted to opaque origins.");
+  }
   PermissionControllerImpl::OverrideStatus status =
       permission_controller->SetOverrideForDevTools(overridden_origin, type,
                                                     permission_status);
@@ -336,17 +371,17 @@ Response BrowserHandler::SetPermission(
   }
   contexts_with_overridden_permissions_.insert(
       browser_context_id.fromMaybe(std::string()));
-  return Response::OK();
+  return Response::Success();
 }
 
 Response BrowserHandler::GrantPermissions(
-    const std::string& origin,
     std::unique_ptr<protocol::Array<protocol::Browser::PermissionType>>
         permissions,
+    Maybe<std::string> origin,
     Maybe<std::string> browser_context_id) {
   BrowserContext* browser_context = nullptr;
   Response response = FindBrowserContext(browser_context_id, &browser_context);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
 
   std::vector<PermissionType> internal_permissions;
@@ -354,41 +389,99 @@ Response BrowserHandler::GrantPermissions(
   for (const protocol::Browser::PermissionType& t : *permissions) {
     PermissionType type;
     Response type_response = FromProtocolPermissionType(t, &type);
-    if (!type_response.isSuccess())
+    if (!type_response.IsSuccess())
       return type_response;
     internal_permissions.push_back(type);
   }
 
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(browser_context);
-  url::Origin overridden_origin = url::Origin::Create(GURL(origin));
-  if (overridden_origin.opaque())
-    return Response::InvalidParams(
-        "Permission can't be granted to opaque origins.");
-
+  base::Optional<url::Origin> overridden_origin;
+  if (origin.isJust()) {
+    overridden_origin = url::Origin::Create(GURL(origin.fromJust()));
+    if (overridden_origin->opaque())
+      return Response::InvalidParams(
+          "Permission can't be granted to opaque origins.");
+  }
   PermissionControllerImpl::OverrideStatus status =
       permission_controller->GrantOverridesForDevTools(overridden_origin,
                                                        internal_permissions);
+
   if (status != PermissionControllerImpl::OverrideStatus::kOverrideSet) {
     return Response::InvalidParams(
         "Permissions can't be granted in current context.");
   }
   contexts_with_overridden_permissions_.insert(
       browser_context_id.fromMaybe(""));
-  return Response::OK();
+  return Response::Success();
 }
 
 Response BrowserHandler::ResetPermissions(
     Maybe<std::string> browser_context_id) {
   BrowserContext* browser_context = nullptr;
   Response response = FindBrowserContext(browser_context_id, &browser_context);
-  if (!response.isSuccess())
+  if (!response.IsSuccess())
     return response;
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(browser_context);
   permission_controller->ResetOverridesForDevTools();
   contexts_with_overridden_permissions_.erase(browser_context_id.fromMaybe(""));
-  return Response::OK();
+  return Response::Success();
+}
+
+Response BrowserHandler::SetDownloadBehavior(
+    const std::string& behavior,
+    Maybe<std::string> browser_context_id,
+    Maybe<std::string> download_path) {
+  BrowserContext* browser_context = nullptr;
+  Response response = FindBrowserContext(browser_context_id, &browser_context);
+  if (!response.IsSuccess())
+    return response;
+  return DoSetDownloadBehavior(behavior, browser_context,
+                               std::move(download_path));
+}
+
+Response BrowserHandler::DoSetDownloadBehavior(
+    const std::string& behavior,
+    BrowserContext* browser_context,
+    Maybe<std::string> download_path) {
+  if (!allow_set_download_behavior_)
+    return Response::ServerError("Not allowed");
+  if (behavior == Browser::SetDownloadBehavior::BehaviorEnum::Allow &&
+      !download_path.isJust()) {
+    return Response::InvalidParams("downloadPath not provided");
+  }
+  DevToolsManagerDelegate* manager_delegate =
+      DevToolsManager::GetInstance()->delegate();
+  if (!manager_delegate) {
+    return Response::ServerError(
+        "Browser context management is not supported.");
+  }
+
+  auto* delegate =
+      DevToolsDownloadManagerDelegate::GetOrCreateInstance(browser_context);
+  if (behavior == Browser::SetDownloadBehavior::BehaviorEnum::Allow) {
+    delegate->set_download_behavior(
+        DevToolsDownloadManagerDelegate::DownloadBehavior::ALLOW);
+    delegate->set_download_path(download_path.fromJust());
+  } else if (behavior ==
+             Browser::SetDownloadBehavior::BehaviorEnum::AllowAndName) {
+    delegate->set_download_behavior(
+        DevToolsDownloadManagerDelegate::DownloadBehavior::ALLOW_AND_NAME);
+    delegate->set_download_path(download_path.fromJust());
+  } else if (behavior == Browser::SetDownloadBehavior::BehaviorEnum::Deny) {
+    delegate->set_download_behavior(
+        DevToolsDownloadManagerDelegate::DownloadBehavior::DENY);
+  } else {
+    delegate->set_download_behavior(
+        DevToolsDownloadManagerDelegate::DownloadBehavior::DEFAULT);
+  }
+  contexts_with_overridden_downloads_.insert(
+      manager_delegate->GetDefaultBrowserContext() == browser_context
+          ? ""
+          : browser_context->UniqueId());
+
+  return Response::Success();
 }
 
 Response BrowserHandler::GetHistogram(
@@ -405,7 +498,7 @@ Response BrowserHandler::GetHistogram(
   DCHECK(out_histogram);
   *out_histogram = Convert(*in_histogram, in_delta.fromMaybe(false));
 
-  return Response::OK();
+  return Response::Success();
 }
 
 Response BrowserHandler::GetBrowserCommandLine(
@@ -422,16 +515,16 @@ Response BrowserHandler::GetBrowserCommandLine(
       (*arguments)->emplace_back(arg);
 #endif
     }
-    return Response::OK();
+    return Response::Success();
   } else {
-    return Response::Error(
+    return Response::ServerError(
         "Command line not returned because --enable-automation not set.");
   }
 }
 
 Response BrowserHandler::Crash() {
   CHECK(false);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response BrowserHandler::CrashGpuProcess() {
@@ -440,7 +533,7 @@ Response BrowserHandler::CrashGpuProcess() {
                              if (host)
                                host->gpu_service()->Crash();
                            }));
-  return Response::OK();
+  return Response::Success();
 }
 
 }  // namespace protocol

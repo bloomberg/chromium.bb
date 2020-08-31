@@ -10,6 +10,11 @@ namespace password_manager {
 //       names, e.g. "MyGreatFeature".
 namespace features {
 
+// Enables Biometrics for the Touch To Fill feature. This only effects Android
+// and requires autofill::features::kAutofillTouchToFill to be enabled as well.
+const base::Feature kBiometricTouchToFill = {"BiometricTouchToFill",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the editing of passwords in chrome://settings/passwords, i.e. the
 // Desktop passwords settings page.
 const base::Feature kEditPasswordsInDesktopSettings = {
@@ -30,11 +35,6 @@ const base::Feature kEnableOverwritingPlaceholderUsernames{
 const base::Feature kEnablePasswordsAccountStorage = {
     "EnablePasswordsAccountStorage", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Provides the UI to save Gaia-account-scoped passwords. Relies on the feature
-// "EnablePasswordsAccountStorage" to be active.
-const base::Feature kEnablePasswordsAccountStorageSavingUi = {
-    "EnablePasswordsAccountStorageSavingUi", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature KEnablePasswordGenerationForClearTextFields = {
     "EnablePasswordGenerationForClearTextFields",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -44,27 +44,17 @@ const base::Feature KEnablePasswordGenerationForClearTextFields = {
 const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Forces password generation to ask user to update the password instead of
-// overwriting silently.
-const base::Feature kGenerationNoOverwrites = {
-    "GenerationNoOverwrites", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Integration with Google's Password Manager for signed-in and sync users.
 const base::Feature kGooglePasswordManager = {
     "google-password-manager", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Analyses the credentials submitted by user for leak detection.
-const base::Feature kLeakDetection = {"PasswordLeakDetection",
+// Enables password change flow from leaked password dialog.
+const base::Feature kPasswordChange = {"PasswordChange",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the bulk Password Check feature for signed in users.
+const base::Feature kPasswordCheck = {"PasswordCheck",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables storing leaked credentials in the database.
-const base::Feature kLeakHistory = {"PasswordLeakHistory",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether to offer manual password generation in the accessory sheet
-// on Android.
-const base::Feature kManualPasswordGenerationAndroid{
-    "ManualPasswordGenerationAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables editing saved passwords for Android.
 const base::Feature kPasswordEditingAndroid = {
@@ -79,18 +69,14 @@ const base::Feature kPasswordImport = {"PasswordImport",
 const base::Feature kPasswordManagerOnboardingAndroid = {
     "PasswordManagerOnboardingAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controlls whether the password bubble on desktop contains an illustration and
-// which illustration.
-const base::Feature kPasswordSaveIllustration = {
-    "SavePasswordIllustration", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables showing UI which allows users to easily revert their choice to
+// never save passwords on a certain website.
+const base::Feature kRecoverFromNeverSaveAndroid = {
+    "RecoverFromNeverSaveAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables support of filling and saving on username first flow.
 const base::Feature kUsernameFirstFlow = {"UsernameFirstFlow",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Makes the password managaer save/update bubble sticky.
-const base::Feature kStickyBubble{"PasswordManagerStickyBubble",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Field trial identifier for password generation requirements.
 const char kGenerationRequirementsFieldTrial[] =

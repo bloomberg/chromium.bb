@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "services/network/public/mojom/cookie_manager.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_cookie_change_event_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_cookie_list_item.h"
 #include "third_party/blink/renderer/core/dom/dom_time_stamp.h"
-#include "third_party/blink/renderer/modules/cookie_store/cookie_change_event_init.h"
-#include "third_party/blink/renderer/modules/cookie_store/cookie_list_item.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/platform/cookie/canonical_cookie.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -23,7 +23,7 @@ const AtomicString& CookieChangeEvent::InterfaceName() const {
   return event_interface_names::kCookieChangeEvent;
 }
 
-void CookieChangeEvent::Trace(blink::Visitor* visitor) {
+void CookieChangeEvent::Trace(Visitor* visitor) {
   Event::Trace(visitor);
   visitor->Trace(changed_);
   visitor->Trace(deleted_);
@@ -56,7 +56,7 @@ String ToCookieListItemSameSite(network::mojom::CookieSameSite same_site) {
     case network::mojom::CookieSameSite::LAX_MODE:
       return "lax";
     case network::mojom::CookieSameSite::NO_RESTRICTION:
-      return "unrestricted";
+      return "none";
     case network::mojom::CookieSameSite::UNSPECIFIED:
       return "unspecified";
   }

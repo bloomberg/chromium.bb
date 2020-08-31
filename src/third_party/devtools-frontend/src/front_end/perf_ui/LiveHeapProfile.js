@@ -2,16 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as Host from '../host/host.js';
+import * as SDK from '../sdk/sdk.js';
+
+import {Memory} from './LineLevelProfile.js';
+
 /**
- * @implements {Common.Runnable}
- * @implements {SDK.SDKModelObserver<!SDK.HeapProfilerModel>}
+ * @implements {Common.Runnable.Runnable}
+ * @implements {SDK.SDKModel.SDKModelObserver<!SDK.HeapProfilerModel.HeapProfilerModel>}
  */
-PerfUI.LiveHeapProfile = class {
+export class LiveHeapProfile {
   constructor() {
     this._running = false;
     this._sessionId = 0;
     this._loadEventCallback = () => {};
-    this._setting = Common.settings.moduleSetting('memoryLiveHeapProfile');
+    this._setting = Common.Settings.Settings.instance().moduleSetting('memoryLiveHeapProfile');
     this._setting.addChangeListener(event => event.data ? this._startProfiling() : this._stopProfiling());
     if (this._setting.get()) {
       this._startProfiling();
@@ -26,7 +32,7 @@ PerfUI.LiveHeapProfile = class {
 
   /**
    * @override
-   * @param {!SDK.HeapProfilerModel} model
+   * @param {!SDK.HeapProfilerModel.HeapProfilerModel} model
    */
   modelAdded(model) {
     model.startSampling(1e4);
@@ -34,7 +40,7 @@ PerfUI.LiveHeapProfile = class {
 
   /**
    * @override
-   * @param {!SDK.HeapProfilerModel} model
+   * @param {!SDK.HeapProfilerModel.HeapProfilerModel} model
    */
   modelRemoved(model) {
     // Cannot do much when the model has already been removed.
@@ -46,17 +52,17 @@ PerfUI.LiveHeapProfile = class {
     }
     this._running = true;
     const sessionId = this._sessionId;
-    SDK.targetManager.observeModels(SDK.HeapProfilerModel, this);
-    SDK.targetManager.addModelListener(
-        SDK.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._loadEventFired, this);
+    SDK.SDKModel.TargetManager.instance().observeModels(SDK.HeapProfilerModel.HeapProfilerModel, this);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._loadEventFired, this);
 
     do {
-      const models = SDK.targetManager.models(SDK.HeapProfilerModel);
+      const models = SDK.SDKModel.TargetManager.instance().models(SDK.HeapProfilerModel.HeapProfilerModel);
       const profiles = await Promise.all(models.map(model => model.getSamplingProfile()));
       if (sessionId !== this._sessionId) {
         break;
       }
-      const lineLevelProfile = self.runtime.sharedInstance(PerfUI.LineLevelProfile.Memory);
+      const lineLevelProfile = self.runtime.sharedInstance(Memory);
       lineLevelProfile.reset();
       for (let i = 0; i < profiles.length; ++i) {
         if (profiles[i]) {
@@ -64,17 +70,18 @@ PerfUI.LiveHeapProfile = class {
         }
       }
       await Promise.race([
-        new Promise(r => setTimeout(r, Host.isUnderTest() ? 10 : 5000)), new Promise(r => this._loadEventCallback = r)
+        new Promise(r => setTimeout(r, Host.InspectorFrontendHost.isUnderTest() ? 10 : 5000)),
+        new Promise(r => this._loadEventCallback = r)
       ]);
     } while (sessionId === this._sessionId);
 
-    SDK.targetManager.unobserveModels(SDK.HeapProfilerModel, this);
-    SDK.targetManager.removeModelListener(
-        SDK.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._loadEventFired, this);
-    for (const model of SDK.targetManager.models(SDK.HeapProfilerModel)) {
+    SDK.SDKModel.TargetManager.instance().unobserveModels(SDK.HeapProfilerModel.HeapProfilerModel, this);
+    SDK.SDKModel.TargetManager.instance().removeModelListener(
+        SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._loadEventFired, this);
+    for (const model of SDK.SDKModel.TargetManager.instance().models(SDK.HeapProfilerModel.HeapProfilerModel)) {
       model.stopSampling();
     }
-    self.runtime.sharedInstance(PerfUI.LineLevelProfile.Memory).reset();
+    self.runtime.sharedInstance(Memory).reset();
   }
 
   _stopProfiling() {
@@ -88,4 +95,4 @@ PerfUI.LiveHeapProfile = class {
   _loadEventFired() {
     this._loadEventCallback();
   }
-};
+}

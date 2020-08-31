@@ -34,10 +34,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation_coordinates.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation_error.h"
@@ -87,12 +88,12 @@ GeolocationPositionError* CreatePositionError(
   return MakeGarbageCollected<GeolocationPositionError>(error_code, error);
 }
 
-static void ReportGeolocationViolation(Document* doc) {
+static void ReportGeolocationViolation(LocalDOMWindow* window) {
   // TODO(dcheng): |doc| probably can't be null here.
-  if (!LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
-                                                  : nullptr)) {
+  if (!LocalFrame::HasTransientUserActivation(window ? window->GetFrame()
+                                                     : nullptr)) {
     PerformanceMonitor::ReportGenericViolation(
-        doc, PerformanceMonitor::kDiscouragedAPIUse,
+        window, PerformanceMonitor::kDiscouragedAPIUse,
         "Only request geolocation information in response to a user gesture.",
         base::TimeDelta(), nullptr);
   }
@@ -105,32 +106,36 @@ Geolocation* Geolocation::Create(ExecutionContext* context) {
 }
 
 Geolocation::Geolocation(ExecutionContext* context)
-    : ContextLifecycleObserver(context),
-      PageVisibilityObserver(GetDocument()->GetPage()),
-      watchers_(MakeGarbageCollected<GeolocationWatchers>()) {}
+    : ExecutionContextLifecycleObserver(context),
+      PageVisibilityObserver(GetFrame()->GetPage()),
+      watchers_(MakeGarbageCollected<GeolocationWatchers>()),
+      geolocation_(context),
+      geolocation_service_(context) {}
 
 Geolocation::~Geolocation() = default;
 
-void Geolocation::Trace(blink::Visitor* visitor) {
+void Geolocation::Trace(Visitor* visitor) {
   visitor->Trace(one_shots_);
   visitor->Trace(watchers_);
   visitor->Trace(one_shots_being_invoked_);
   visitor->Trace(watchers_being_invoked_);
   visitor->Trace(last_position_);
+  visitor->Trace(geolocation_);
+  visitor->Trace(geolocation_service_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
 }
 
-Document* Geolocation::GetDocument() const {
-  return To<Document>(GetExecutionContext());
+LocalDOMWindow* Geolocation::GetWindow() const {
+  return To<LocalDOMWindow>(GetExecutionContext());
 }
 
 LocalFrame* Geolocation::GetFrame() const {
-  return GetDocument() ? GetDocument()->GetFrame() : nullptr;
+  return GetWindow() ? GetWindow()->GetFrame() : nullptr;
 }
 
-void Geolocation::ContextDestroyed(ExecutionContext*) {
+void Geolocation::ContextDestroyed() {
   StopTimers();
   one_shots_.clear();
   watchers_->Clear();
@@ -138,44 +143,35 @@ void Geolocation::ContextDestroyed(ExecutionContext*) {
   StopUpdating();
 
   last_position_ = nullptr;
-  geolocation_.reset();
-  geolocation_service_.reset();
 }
 
 void Geolocation::RecordOriginTypeAccess() const {
   DCHECK(GetFrame());
 
-  Document* document = this->GetDocument();
-  DCHECK(document);
+  LocalDOMWindow* window = GetWindow();
 
   // It is required by isSecureContext() but isn't actually used. This could be
   // used later if a warning is shown in the developer console.
   String insecure_origin_msg;
-  if (document->IsSecureContext(insecure_origin_msg)) {
-    UseCounter::Count(document, WebFeature::kGeolocationSecureOrigin);
-    document->CountUseOnlyInCrossOriginIframe(
+  if (window->IsSecureContext(insecure_origin_msg)) {
+    UseCounter::Count(window, WebFeature::kGeolocationSecureOrigin);
+    window->document()->CountUseOnlyInCrossOriginIframe(
         WebFeature::kGeolocationSecureOriginIframe);
   } else if (GetFrame()
                  ->GetSettings()
                  ->GetAllowGeolocationOnInsecureOrigins()) {
-    // TODO(jww): This should be removed after WebView is fixed so that it
-    // disallows geolocation in insecure contexts.
-    //
-    // See https://crbug.com/603574.
+    // Android WebView allows geolocation in secure contexts for legacy apps.
+    // See https://crbug.com/603574 for details.
     Deprecation::CountDeprecation(
-        document, WebFeature::kGeolocationInsecureOriginDeprecatedNotRemoved);
+        window, WebFeature::kGeolocationInsecureOriginDeprecatedNotRemoved);
     Deprecation::CountDeprecationCrossOriginIframe(
-        *document,
+        *window->document(),
         WebFeature::kGeolocationInsecureOriginIframeDeprecatedNotRemoved);
-    HostsUsingFeatures::CountAnyWorld(
-        *document, HostsUsingFeatures::Feature::kGeolocationInsecureHost);
   } else {
-    Deprecation::CountDeprecation(document,
+    Deprecation::CountDeprecation(window,
                                   WebFeature::kGeolocationInsecureOrigin);
     Deprecation::CountDeprecationCrossOriginIframe(
-        *document, WebFeature::kGeolocationInsecureOriginIframe);
-    HostsUsingFeatures::CountAnyWorld(
-        *document, HostsUsingFeatures::Feature::kGeolocationInsecureHost);
+        *window->document(), WebFeature::kGeolocationInsecureOriginIframe);
   }
 }
 
@@ -185,7 +181,8 @@ void Geolocation::getCurrentPosition(V8PositionCallback* success_callback,
   if (!GetFrame())
     return;
 
-  probe::BreakableLocation(GetDocument(), "Geolocation.getCurrentPosition");
+  probe::BreakableLocation(GetExecutionContext(),
+                           "Geolocation.getCurrentPosition");
 
   auto* notifier = MakeGarbageCollected<GeoNotifier>(this, success_callback,
                                                      error_callback, options);
@@ -201,7 +198,7 @@ int Geolocation::watchPosition(V8PositionCallback* success_callback,
   if (!GetFrame())
     return 0;
 
-  probe::BreakableLocation(GetDocument(), "Geolocation.watchPosition");
+  probe::BreakableLocation(GetExecutionContext(), "Geolocation.watchPosition");
 
   auto* notifier = MakeGarbageCollected<GeoNotifier>(this, success_callback,
                                                      error_callback, options);
@@ -228,10 +225,10 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
     return;
   }
 
-  if (!GetDocument()->IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kGeolocation,
+  if (!GetExecutionContext()->IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kGeolocation,
           ReportOptions::kReportOnFailure, kFeaturePolicyConsoleWarning)) {
-    UseCounter::Count(GetDocument(),
+    UseCounter::Count(GetExecutionContext(),
                       WebFeature::kGeolocationDisabledByFeaturePolicy);
     notifier->SetFatalError(MakeGarbageCollected<GeolocationPositionError>(
         GeolocationPositionError::kPermissionDenied,
@@ -239,7 +236,7 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
     return;
   }
 
-  ReportGeolocationViolation(GetDocument());
+  ReportGeolocationViolation(GetWindow());
 
   if (HaveSuitableCachedPosition(notifier->Options())) {
     notifier->SetUseCachedPosition();
@@ -435,7 +432,7 @@ void Geolocation::StartUpdating(GeoNotifier* notifier) {
   updating_ = true;
   if (notifier->Options()->enableHighAccuracy() && !enable_high_accuracy_) {
     enable_high_accuracy_ = true;
-    if (geolocation_)
+    if (geolocation_.is_bound())
       geolocation_->SetHighAccuracy(true);
   }
   UpdateGeolocationConnection(notifier);
@@ -455,7 +452,7 @@ void Geolocation::UpdateGeolocationConnection(GeoNotifier* notifier) {
     disconnected_geolocation_ = true;
     return;
   }
-  if (geolocation_) {
+  if (geolocation_.is_bound()) {
     if (notifier)
       notifier->StartTimer();
     return;

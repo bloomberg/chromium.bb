@@ -2814,8 +2814,12 @@ void WebGLImageConversion::ImageExtractor::ExtractImage(
   alpha_op_ = kAlphaDoNothing;
   bool has_alpha = skia_image ? !skia_image->isOpaque() : true;
 
-  if ((!skia_image || ignore_color_space ||
-       (has_alpha && !premultiply_alpha)) &&
+  bool need_unpremultiplied = has_alpha && !premultiply_alpha;
+  bool need_color_conversion = !ignore_color_space && skia_image &&
+                               skia_image->colorSpace() &&
+                               !skia_image->colorSpace()->isSRGB();
+  if ((!skia_image || ignore_color_space || need_unpremultiplied ||
+       need_color_conversion) &&
       image_->Data()) {
     // Attempt to get raw unpremultiplied image data.
     const bool data_complete = true;
@@ -2858,7 +2862,11 @@ void WebGLImageConversion::ImageExtractor::ExtractImage(
   if (!skia_image)
     return;
 
-  image_source_format_ = SK_B32_SHIFT ? kDataFormatRGBA8 : kDataFormatBGRA8;
+#if SK_B32_SHIFT
+  image_source_format_ = kDataFormatRGBA8;
+#else
+  image_source_format_ = kDataFormatBGRA8;
+#endif
   image_source_unpack_alignment_ =
       0;  // FIXME: this seems to always be zero - why use at all?
 

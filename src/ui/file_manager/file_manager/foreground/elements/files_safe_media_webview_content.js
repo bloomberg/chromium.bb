@@ -36,17 +36,20 @@ window.onload = () => {
         break;
       case 'image':
         content.remove();
-        content.onload = (e) => contentChanged(e.target.src);
-        content.src = event.data.src;
-        content.decode()
-            .then(() => {
-              content.removeAttribute('generic-thumbnail');
-              document.body.appendChild(content);
-            })
-            .catch(() => {
-              content.setAttribute('generic-thumbnail', 'image');
-              document.body.appendChild(content);
-            });
+        content.src = '';
+
+        const image = new Image();
+        image.onload = (e) => {
+          contentChanged(e.target.src);
+          document.body.appendChild(content);
+          content.src = e.target.src;
+        };
+
+        image.onerror = (e) => {
+          contentDecodeFailed();
+        };
+
+        image.src = event.data.src;
         break;
       default:
         content.onload = (e) => contentChanged(e.target.src);
@@ -66,6 +69,10 @@ window.onload = () => {
 
   function contentChanged(src) {
     sendMessage(src ? 'webview-loaded' : 'webview-cleared');
+  }
+
+  function contentDecodeFailed() {
+    sendMessage('content-decode-failed');
   }
 
   function sendMessage(message) {

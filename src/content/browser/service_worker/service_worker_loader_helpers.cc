@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/service_worker/service_worker_consts.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -16,7 +17,7 @@ namespace content {
 
 namespace service_worker_loader_helpers {
 
-std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
+bool CheckResponseHead(
     const network::mojom::URLResponseHead& response_head,
     blink::ServiceWorkerStatusCode* out_service_worker_status,
     network::URLLoaderCompletionStatus* out_completion_status,
@@ -29,7 +30,7 @@ std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
         ServiceWorkerConsts::kServiceWorkerBadHTTPResponseError,
         response_head.headers->response_code());
     *out_service_worker_status = blink::ServiceWorkerStatusCode::kErrorNetwork;
-    return nullptr;
+    return false;
   }
 
   if (net::IsCertStatusError(response_head.cert_status) &&
@@ -39,10 +40,14 @@ std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
         net::MapCertStatusToNetError(response_head.cert_status));
     *out_error_message = ServiceWorkerConsts::kServiceWorkerSSLError;
     *out_service_worker_status = blink::ServiceWorkerStatusCode::kErrorNetwork;
-    return nullptr;
+    return false;
   }
 
-  if (!blink::IsSupportedJavascriptMimeType(response_head.mime_type)) {
+  // Remain consistent with logic in
+  // blink::InstalledServiceWorkerModuleScriptFetcher::Fetch()
+  if (!blink::IsSupportedJavascriptMimeType(response_head.mime_type) &&
+      !(base::FeatureList::IsEnabled(blink::features::kJSONModules) &&
+        blink::IsJSONMimeType(response_head.mime_type))) {
     *out_completion_status =
         network::URLLoaderCompletionStatus(net::ERR_INSECURE_RESPONSE);
     *out_error_message =
@@ -52,6 +57,19 @@ std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
                   ServiceWorkerConsts::kServiceWorkerBadMIMEError,
                   response_head.mime_type.c_str());
     *out_service_worker_status = blink::ServiceWorkerStatusCode::kErrorSecurity;
+    return false;
+  }
+
+  return true;
+}
+
+std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
+    const network::mojom::URLResponseHead& response_head,
+    blink::ServiceWorkerStatusCode* out_service_worker_status,
+    network::URLLoaderCompletionStatus* out_completion_status,
+    std::string* out_error_message) {
+  if (!CheckResponseHead(response_head, out_service_worker_status,
+                         out_completion_status, out_error_message)) {
     return nullptr;
   }
 
@@ -94,6 +112,27 @@ bool ShouldValidateBrowserCacheForScript(
               ServiceWorkerConsts::kServiceWorkerScriptMaxCacheAge ||
           force_bypass_cache);
 }
+
+#if DCHECK_IS_ON()
+void CheckVersionStatusBeforeWorkerScriptLoad(
+    ServiceWorkerVersion::Status status,
+    network::mojom::RequestDestination resource_destination) {
+  switch (resource_destination) {
+    // The service worker main script should be fetched during worker startup.
+    case network::mojom::RequestDestination::kServiceWorker:
+      DCHECK_EQ(status, ServiceWorkerVersion::NEW);
+      break;
+    // importScripts() should be called until completion of the install event.
+    case network::mojom::RequestDestination::kScript:
+      DCHECK(status == ServiceWorkerVersion::NEW ||
+             status == ServiceWorkerVersion::INSTALLING);
+      break;
+    default:
+      NOTREACHED() << resource_destination;
+      break;
+  }
+}
+#endif  // DCHECK_IS_ON()
 
 }  // namespace service_worker_loader_helpers
 

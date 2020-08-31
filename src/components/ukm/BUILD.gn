@@ -13,6 +13,7 @@ static_library("ukm") {
     "app_source_url_recorder.h",
     "scheme_constants.cc",
     "scheme_constants.h",
+    "ukm_entry_filter.h",
     "ukm_pref_names.cc",
     "ukm_pref_names.h",
     "ukm_recorder_impl.cc",
@@ -60,9 +61,7 @@ static_library("observers") {
     "//google_apis",
   ]
 
-  public_deps = [
-    "//components/unified_consent",
-  ]
+  public_deps = [ "//components/unified_consent" ]
 }
 
 static_library("test_support") {
@@ -120,5 +119,21 @@ test("ukm_unittests") {
     "//base",
     "//base/test:test_support",
     "//components/test:run_all_unittests",
+  ]
+}
+
+static_library("ukm_test_helper") {
+  testonly = true
+  sources = [
+    "ukm_test_helper.cc",
+    "ukm_test_helper.h",
+  ]
+  deps = [
+    ":ukm",
+    "//base",
+    "//components/metrics",
+    "//services/metrics/public/cpp:metrics_cpp",
+    "//third_party/metrics_proto",
+    "//third_party/zlib/google:compression_utils",
   ]
 }

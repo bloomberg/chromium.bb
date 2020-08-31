@@ -82,8 +82,12 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kMips64F64x2Ne:
     case kMips64F64x2Lt:
     case kMips64F64x2Le:
+    case kMips64I64x2Splat:
+    case kMips64I64x2ExtractLane:
+    case kMips64I64x2ReplaceLane:
     case kMips64I64x2Add:
     case kMips64I64x2Sub:
+    case kMips64I64x2Mul:
     case kMips64I64x2Neg:
     case kMips64I64x2Shl:
     case kMips64I64x2ShrS:
@@ -165,6 +169,8 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kMips64I16x8UConvertI32x4:
     case kMips64I16x8UConvertI8x16High:
     case kMips64I16x8UConvertI8x16Low:
+    case kMips64I16x8RoundingAverageU:
+    case kMips64I16x8Abs:
     case kMips64I32x4Add:
     case kMips64I32x4AddHoriz:
     case kMips64I32x4Eq:
@@ -192,6 +198,7 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kMips64I32x4UConvertF32x4:
     case kMips64I32x4UConvertI16x8High:
     case kMips64I32x4UConvertI16x8Low:
+    case kMips64I32x4Abs:
     case kMips64I8x16Add:
     case kMips64I8x16AddSaturateS:
     case kMips64I8x16AddSaturateU:
@@ -217,6 +224,8 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kMips64I8x16Sub:
     case kMips64I8x16SubSaturateS:
     case kMips64I8x16SubSaturateU:
+    case kMips64I8x16RoundingAverageU:
+    case kMips64I8x16Abs:
     case kMips64Ins:
     case kMips64Lsa:
     case kMips64MaxD:
@@ -245,6 +254,7 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kMips64S128Or:
     case kMips64S128Not:
     case kMips64S128Select:
+    case kMips64S128AndNot:
     case kMips64S128Xor:
     case kMips64S128Zero:
     case kMips64S16x8InterleaveEven:
@@ -321,6 +331,16 @@ int InstructionScheduler::GetTargetInstructionFlags(
     case kMips64Ulw:
     case kMips64Ulwu:
     case kMips64Ulwc1:
+    case kMips64S8x16LoadSplat:
+    case kMips64S16x8LoadSplat:
+    case kMips64S32x4LoadSplat:
+    case kMips64S64x2LoadSplat:
+    case kMips64I16x8Load8x8S:
+    case kMips64I16x8Load8x8U:
+    case kMips64I32x4Load16x4S:
+    case kMips64I32x4Load16x4U:
+    case kMips64I64x2Load32x2S:
+    case kMips64I64x2Load32x2U:
     case kMips64Word64AtomicLoadUint8:
     case kMips64Word64AtomicLoadUint16:
     case kMips64Word64AtomicLoadUint32:
@@ -931,14 +951,6 @@ int AssembleArchJumpLatency() {
   return Latency::BRANCH;
 }
 
-int AssembleArchLookupSwitchLatency(const Instruction* instr) {
-  int latency = 0;
-  for (size_t index = 2; index < instr->InputCount(); index += 2) {
-    latency += 1 + Latency::BRANCH;
-  }
-  return latency + AssembleArchJumpLatency();
-}
-
 int GenerateSwitchTableLatency() {
   int latency = 0;
   if (kArchVariant >= kMips64r6) {
@@ -1287,8 +1299,6 @@ int InstructionScheduler::GetInstructionLatency(const Instruction* instr) {
       return CallCFunctionLatency();
     case kArchJmp:
       return AssembleArchJumpLatency();
-    case kArchLookupSwitch:
-      return AssembleArchLookupSwitchLatency(instr);
     case kArchTableSwitch:
       return AssembleArchTableSwitchLatency();
     case kArchAbortCSAAssert:

@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # coding=utf-8
 # Copyright 2013 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
 import getpass
+import io
 import os
-import StringIO
 import subprocess
 import sys
 import tempfile
@@ -53,18 +53,18 @@ class FilePathTest(auto_stub.TestCase):
 
   def test_atomic_replace_new_file(self):
     path = os.path.join(self.tempdir, 'new_file')
-    file_path.atomic_replace(path, 'blah')
+    file_path.atomic_replace(path, b'blah')
     with open(path, 'rb') as f:
-      self.assertEqual('blah', f.read())
+      self.assertEqual(b'blah', f.read())
     self.assertEqual([u'new_file'], os.listdir(self.tempdir))
 
   def test_atomic_replace_existing_file(self):
     path = os.path.join(self.tempdir, 'existing_file')
     with open(path, 'wb') as f:
-      f.write('existing body')
-    file_path.atomic_replace(path, 'new body')
+      f.write(b'existing body')
+    file_path.atomic_replace(path, b'new body')
     with open(path, 'rb') as f:
-      self.assertEqual('new body', f.read())
+      self.assertEqual(b'new body', f.read())
     self.assertEqual([u'existing_file'], os.listdir(self.tempdir))
 
   def assertFileMode(self, filepath, mode, umask=None):
@@ -78,7 +78,7 @@ class FilePathTest(auto_stub.TestCase):
 
   def assertMaskedFileMode(self, filepath, mode):
     """It's usually when the file was first marked read only."""
-    self.assertFileMode(filepath, mode, 0 if sys.platform == 'win32' else 077)
+    self.assertFileMode(filepath, mode, 0 if sys.platform == 'win32' else 0o77)
 
   def test_native_case_end_with_os_path_sep(self):
     # Make sure the trailing os.path.sep is kept.
@@ -103,12 +103,12 @@ class FilePathTest(auto_stub.TestCase):
     # Confirms that a RO file in a RW directory can be deleted on non-Windows.
     dir_foo = os.path.join(self.tempdir, 'foo')
     file_bar = os.path.join(dir_foo, 'bar')
-    fs.mkdir(dir_foo, 0777)
-    write_content(file_bar, 'bar')
+    fs.mkdir(dir_foo, 0o777)
+    write_content(file_bar, b'bar')
     file_path.set_read_only(dir_foo, False)
     file_path.set_read_only(file_bar, True)
-    self.assertFileMode(dir_foo, 040777)
-    self.assertMaskedFileMode(file_bar, 0100444)
+    self.assertFileMode(dir_foo, 0o40777)
+    self.assertMaskedFileMode(file_bar, 0o100444)
     if sys.platform == 'win32':
       # On Windows, a read-only file can't be deleted.
       with self.assertRaises(OSError):
@@ -120,12 +120,12 @@ class FilePathTest(auto_stub.TestCase):
     # Confirms that a Rw file in a RO directory can be deleted on Windows only.
     dir_foo = os.path.join(self.tempdir, 'foo')
     file_bar = os.path.join(dir_foo, 'bar')
-    fs.mkdir(dir_foo, 0777)
-    write_content(file_bar, 'bar')
+    fs.mkdir(dir_foo, 0o777)
+    write_content(file_bar, b'bar')
     file_path.set_read_only(dir_foo, True)
     file_path.set_read_only(file_bar, False)
-    self.assertMaskedFileMode(dir_foo, 040555)
-    self.assertFileMode(file_bar, 0100666)
+    self.assertMaskedFileMode(dir_foo, 0o40555)
+    self.assertFileMode(file_bar, 0o100666)
     if sys.platform == 'win32':
       # A read-only directory has a convoluted meaning on Windows, it means that
       # the directory is "personalized". This is used as a signal by Windows
@@ -143,12 +143,12 @@ class FilePathTest(auto_stub.TestCase):
     # Confirms that a RO file in a RO directory can't be deleted.
     dir_foo = os.path.join(self.tempdir, 'foo')
     file_bar = os.path.join(dir_foo, 'bar')
-    fs.mkdir(dir_foo, 0777)
-    write_content(file_bar, 'bar')
+    fs.mkdir(dir_foo, 0o777)
+    write_content(file_bar, b'bar')
     file_path.set_read_only(dir_foo, True)
     file_path.set_read_only(file_bar, True)
-    self.assertMaskedFileMode(dir_foo, 040555)
-    self.assertMaskedFileMode(file_bar, 0100444)
+    self.assertMaskedFileMode(dir_foo, 0o40555)
+    self.assertMaskedFileMode(file_bar, 0o100444)
     with self.assertRaises(OSError):
       # It fails for different reason depending on the OS. See the test cases
       # above.
@@ -160,14 +160,14 @@ class FilePathTest(auto_stub.TestCase):
     dir_foo = os.path.join(self.tempdir, 'foo')
     file_bar = os.path.join(dir_foo, 'bar')
     file_link = os.path.join(dir_foo, 'link')
-    fs.mkdir(dir_foo, 0777)
-    write_content(file_bar, 'bar')
+    fs.mkdir(dir_foo, 0o777)
+    write_content(file_bar, b'bar')
     file_path.hardlink(file_bar, file_link)
-    self.assertFileMode(file_bar, 0100666)
-    self.assertFileMode(file_link, 0100666)
+    self.assertFileMode(file_bar, 0o100666)
+    self.assertFileMode(file_link, 0o100666)
     file_path.set_read_only(file_bar, True)
-    self.assertMaskedFileMode(file_bar, 0100444)
-    self.assertMaskedFileMode(file_link, 0100444)
+    self.assertMaskedFileMode(file_bar, 0o100444)
+    self.assertMaskedFileMode(file_link, 0o100444)
     # This is bad news for Windows; on Windows, the file must be writeable to be
     # deleted, but the file node is modified. This means that every hard links
     # must be reset to be read-only after deleting one of the hard link
@@ -175,12 +175,12 @@ class FilePathTest(auto_stub.TestCase):
 
   def test_ensure_tree(self):
     dir_foo = os.path.join(self.tempdir, 'foo')
-    file_path.ensure_tree(dir_foo, 0777)
+    file_path.ensure_tree(dir_foo, 0o777)
 
     self.assertTrue(os.path.isdir(dir_foo))
 
     # Do not raise OSError with errno.EEXIST
-    file_path.ensure_tree(dir_foo, 0777)
+    file_path.ensure_tree(dir_foo, 0o777)
 
   def test_rmtree_unicode(self):
     subdir = os.path.join(self.tempdir, 'hi')
@@ -188,7 +188,7 @@ class FilePathTest(auto_stub.TestCase):
     filepath = os.path.join(
         subdir, u'\u0627\u0644\u0635\u064A\u0646\u064A\u0629')
     with fs.open(filepath, 'wb') as f:
-      f.write('hi')
+      f.write(b'hi')
     # In particular, it fails when the input argument is a str.
     file_path.rmtree(str(subdir))
 
@@ -253,7 +253,7 @@ class FilePathTest(auto_stub.TestCase):
   if sys.platform == 'win32':
     def test_native_case_alternate_datastream(self):
       # Create the file manually, since tempfile doesn't support ADS.
-      tempdir = unicode(tempfile.mkdtemp(prefix=u'trace_inputs'))
+      tempdir = six.text_type(tempfile.mkdtemp(prefix=u'trace_inputs'))
       try:
         tempdir = file_path.get_native_path_case(tempdir)
         basename = 'foo.txt'
@@ -280,7 +280,7 @@ class FilePathTest(auto_stub.TestCase):
       # Mock our sleep for faster test case execution.
       sleeps = []
       self.mock(time, 'sleep', sleeps.append)
-      self.mock(sys, 'stderr', StringIO.StringIO())
+      self.mock(sys, 'stderr', io.StringIO())
 
       # Open a child process, so the file is locked.
       subdir = os.path.join(self.tempdir, 'to_be_deleted')

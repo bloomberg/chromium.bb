@@ -68,11 +68,13 @@ void LargestContentfulPaintCalculator::UpdateLargestContentPaintIfNeeded(
   bool text_has_changed = false;
   if (largest_image.has_value()) {
     image_has_changed = HasLargestImageChanged(largest_image_, *largest_image);
-    OnLargestImageUpdated(*largest_image);
+    if (image_has_changed)
+      OnLargestImageUpdated(*largest_image);
   }
   if (largest_text.has_value()) {
     text_has_changed = HasLargestTextChanged(largest_text_, *largest_text);
-    OnLargestTextUpdated(*largest_text);
+    if (text_has_changed)
+      OnLargestTextUpdated(*largest_text);
   }
   // If |largest_image| does not have value, the detector may have been
   // destroyed. In this case, keep using its last candidate for comparison with
@@ -121,17 +123,23 @@ void LargestContentfulPaintCalculator::UpdateLargestContentfulPaint(
       return;
 
     const KURL& url = cached_image->Url();
-    auto* document = window_performance_->GetExecutionContext();
-    bool expose_paint_time_to_api = true;
-    bool response_tainting_not_basic = false;
-    bool tainted_origin_flag = false;
-    if (!url.ProtocolIsData() &&
-        (!document ||
-         !Performance::PassesTimingAllowCheck(
-             cached_image->GetResponse(), cached_image->GetResponse(),
-             *document->GetSecurityOrigin(), document,
-             &response_tainting_not_basic, &tainted_origin_flag))) {
-      expose_paint_time_to_api = false;
+    bool expose_paint_time_to_api = url.ProtocolIsData();
+    // Use TimingAllowPassed() if possible, see comment in ImageElementTiming.
+    if (!expose_paint_time_to_api) {
+      if (RuntimeEnabledFeatures::OutOfBlinkCorsEnabled()) {
+        expose_paint_time_to_api =
+            cached_image->GetResponse().TimingAllowPassed();
+      } else {
+        auto* document = window_performance_->GetExecutionContext();
+        bool response_tainting_not_basic = false;
+        bool tainted_origin_flag = false;
+        expose_paint_time_to_api =
+            document &&
+            Performance::PassesTimingAllowCheck(
+                cached_image->GetResponse(), cached_image->GetResponse(),
+                *document->GetSecurityOrigin(), document,
+                &response_tainting_not_basic, &tainted_origin_flag);
+      }
     }
     const String& image_url =
         url.ProtocolIsData()

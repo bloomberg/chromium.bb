@@ -12,7 +12,6 @@
 #include "include/core/SkStream.h"
 #include "include/core/SkTypeface.h"
 #include "src/core/SkAutoMalloc.h"
-#include "src/core/SkMakeUnique.h"
 #include "src/core/SkMathPriv.h"
 #include "src/core/SkMatrixPriv.h"
 #include "src/core/SkReadBuffer.h"
@@ -33,7 +32,7 @@ namespace {
 
     static sk_sp<SkImage> MakeEmptyImage(int width, int height) {
         return SkImage::MakeFromGenerator(
-              skstd::make_unique<EmptyImageGenerator>(SkImageInfo::MakeN32Premul(width, height)));
+              std::make_unique<EmptyImageGenerator>(SkImageInfo::MakeN32Premul(width, height)));
     }
 
 } // anonymous namespace
@@ -136,7 +135,9 @@ uint8_t SkReadBuffer::peekByte() {
 
 bool SkReadBuffer::readPad32(void* buffer, size_t bytes) {
     if (const void* src = this->skip(bytes)) {
-        memcpy(buffer, src, bytes);
+        // buffer might be null if bytes is zero (see SkAutoMalloc), hence we call
+        // the careful version of memcpy.
+        sk_careful_memcpy(buffer, src, bytes);
         return true;
     }
     return false;
@@ -270,7 +271,6 @@ sk_sp<SkData> SkReadBuffer::readByteArrayAsData() {
     if (!this->readByteArray(buffer.get(), numBytes)) {
         return nullptr;
     }
-
     return SkData::MakeFromMalloc(buffer.release(), numBytes);
 }
 

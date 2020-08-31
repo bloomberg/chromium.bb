@@ -34,6 +34,11 @@ class QUIC_EXPORT_PRIVATE QuicCoalescedPacket {
                             size_t buffer_len,
                             size_t* length_copied) const;
 
+  std::string ToString(size_t serialized_length) const;
+
+  // Returns true if this coalesced packet contains packet of |level|.
+  bool ContainsPacketOfEncryptionLevel(EncryptionLevel level) const;
+
   const SerializedPacket* initial_packet() const {
     return initial_packet_.get();
   }

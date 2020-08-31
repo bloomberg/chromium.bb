@@ -20,7 +20,6 @@
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -64,7 +63,6 @@ gfx::Size PowerTrayView::CalculatePreferredSize() const {
 
 void PowerTrayView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(accessible_name_);
-  node_data->role = ax::mojom::Role::kButton;
 }
 
 views::View* PowerTrayView::GetTooltipHandlerForPoint(const gfx::Point& point) {

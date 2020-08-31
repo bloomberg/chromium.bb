@@ -4,7 +4,7 @@
 
 module chromeos.crostini_installer.mojom;
 
-import "chrome/browser/chromeos/crostini/crostini_installer_types.mojom";
+import "chrome/browser/chromeos/crostini/crostini_types.mojom";
 
 // Lives in the browser process. A renderer uses this to create a page handler
 // for controlling Crostini installation.
@@ -17,8 +17,9 @@ interface PageHandlerFactory {
 // Lives in the browser process. A renderer use this to control Crostini
 // installation.
 interface PageHandler {
-  // Start installation
-  Install();
+  // Start installation, |disk_size| is in bytes, username is the user's
+  // desired username for inside the container.
+  Install(int64 disk_size, string username);
   // Cancel an on-going installation
   Cancel();
   // If a user cancels the installation without starting it at all, this should
@@ -28,6 +29,9 @@ interface PageHandler {
   // chrome.send('dialogClose') should not be used, which could kill the page
   // handler before previous mojom calls have been run.
   Close();
+  // Fetches the amount of free disk space, the result is sent via
+  // OnAmountOfFreeDiskSpace.
+  RequestAmountOfFreeDiskSpace();
 };
 
 // Lives in the renderer process. The browser uses this to sends installation
@@ -43,4 +47,11 @@ interface Page {
   // After user cancels the installation, this is called when the cancellation
   // finishes.
   OnCanceled();
+  // Used to tell the UI how much disk space is available.
+  // |is_low_space_available| indicates that there is less than the recommended
+  // amount of space available for Crostini (though enough to continue with the
+  // installation).
+  OnAmountOfFreeDiskSpace(array<crostini.mojom.DiskSliderTick> ticks,
+                          int8 default_index,
+                          bool is_low_space_available);
 };

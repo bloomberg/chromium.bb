@@ -18,7 +18,7 @@ namespace blink {
 namespace {
 
 template <typename P, typename T>
-bool ScanConstraintsForExactValue(const WebMediaConstraints& constraints,
+bool ScanConstraintsForExactValue(const MediaConstraints& constraints,
                                   P picker,
                                   T* value) {
   if (constraints.IsNull())
@@ -40,7 +40,7 @@ bool ScanConstraintsForExactValue(const WebMediaConstraints& constraints,
 }
 
 template <typename P, typename T>
-bool ScanConstraintsForMaxValue(const WebMediaConstraints& constraints,
+bool ScanConstraintsForMaxValue(const MediaConstraints& constraints,
                                 P picker,
                                 T* value) {
   if (constraints.IsNull())
@@ -69,7 +69,7 @@ bool ScanConstraintsForMaxValue(const WebMediaConstraints& constraints,
 }
 
 template <typename P, typename T>
-bool ScanConstraintsForMinValue(const WebMediaConstraints& constraints,
+bool ScanConstraintsForMinValue(const MediaConstraints& constraints,
                                 P picker,
                                 T* value) {
   if (constraints.IsNull())
@@ -174,42 +174,42 @@ AudioCaptureSettings& AudioCaptureSettings::operator=(
     AudioCaptureSettings&& other) = default;
 
 bool GetConstraintValueAsBoolean(
-    const WebMediaConstraints& constraints,
-    const BooleanConstraint WebMediaTrackConstraintSet::*picker,
+    const MediaConstraints& constraints,
+    const BooleanConstraint MediaTrackConstraintSetPlatform::*picker,
     bool* value) {
   return ScanConstraintsForExactValue(constraints, picker, value);
 }
 
 bool GetConstraintValueAsInteger(
-    const WebMediaConstraints& constraints,
-    const LongConstraint WebMediaTrackConstraintSet::*picker,
+    const MediaConstraints& constraints,
+    const LongConstraint MediaTrackConstraintSetPlatform::*picker,
     int* value) {
   return ScanConstraintsForExactValue(constraints, picker, value);
 }
 
 bool GetConstraintMinAsInteger(
-    const WebMediaConstraints& constraints,
-    const LongConstraint WebMediaTrackConstraintSet::*picker,
+    const MediaConstraints& constraints,
+    const LongConstraint MediaTrackConstraintSetPlatform::*picker,
     int* value) {
   return ScanConstraintsForMinValue(constraints, picker, value);
 }
 
 bool GetConstraintMaxAsInteger(
-    const WebMediaConstraints& constraints,
-    const LongConstraint WebMediaTrackConstraintSet::*picker,
+    const MediaConstraints& constraints,
+    const LongConstraint MediaTrackConstraintSetPlatform::*picker,
     int* value) {
   return ScanConstraintsForMaxValue(constraints, picker, value);
 }
 
 bool GetConstraintValueAsDouble(
-    const WebMediaConstraints& constraints,
-    const DoubleConstraint WebMediaTrackConstraintSet::*picker,
+    const MediaConstraints& constraints,
+    const DoubleConstraint MediaTrackConstraintSetPlatform::*picker,
     double* value) {
   return ScanConstraintsForExactValue(constraints, picker, value);
 }
 
 VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
-    const WebMediaTrackConstraintSet& basic_constraint_set,
+    const MediaTrackConstraintSetPlatform& basic_constraint_set,
     const media_constraints::ResolutionSet& resolution_set,
     const media_constraints::NumericRangeSet<double>& frame_rate_set,
     const media::VideoCaptureFormat& source_format,
@@ -267,7 +267,9 @@ double StringConstraintFitnessDistance(const WebString& value,
     return 0.0;
 
   for (auto& ideal_value : constraint.Ideal()) {
-    if (value == ideal_value)
+    // TODO(crbug.com/787254): Remove the explicit conversion to WebString when
+    // this method operates solely over WTF::String.
+    if (value == WebString(ideal_value))
       return 0.0;
   }
 

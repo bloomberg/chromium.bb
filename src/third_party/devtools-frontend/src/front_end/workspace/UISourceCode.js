@@ -27,22 +27,30 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+
+import {Events as WorkspaceImplEvents, Project, projectTypes} from './WorkspaceImpl.js';  // eslint-disable-line no-unused-vars
+
 /**
- * @implements {Common.ContentProvider}
+ * @implements {TextUtils.ContentProvider.ContentProvider}
  * @unrestricted
  */
-export default class UISourceCode extends Common.Object {
+export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
   /**
-   * @param {!Workspace.Project} project
+   * @param {!Project} project
    * @param {string} url
-   * @param {!Common.ResourceType} contentType
+   * @param {!Common.ResourceType.ResourceType} contentType
    */
   constructor(project, url, contentType) {
     super();
     this._project = project;
+    /** @type {string} */
     this._url = url;
 
-    const parsedURL = url.asParsedURL();
+    const parsedURL = Common.ParsedURL.ParsedURL.fromString(url);
     if (parsedURL) {
       this._origin = parsedURL.securityOrigin();
       this._parentURL = this._origin + parsedURL.folderPathComponents;
@@ -57,7 +65,7 @@ export default class UISourceCode extends Common.Object {
     }
 
     this._contentType = contentType;
-    /** @type {?Promise<!Common.DeferredContent>} */
+    /** @type {?Promise<!TextUtils.ContentProvider.DeferredContent>} */
     this._requestContentPromise = null;
     /** @type {?Platform.Multimap<string, !LineMarker>} */
     this._decorations = null;
@@ -65,7 +73,7 @@ export default class UISourceCode extends Common.Object {
     /** @type {?Set<!Message>} */
     this._messages = null;
     this._contentLoaded = false;
-    /** @type {?Common.DeferredContent} */
+    /** @type {?TextUtils.ContentProvider.DeferredContent} */
     this._content = null;
     this._forceLoadOnCheckContent = false;
     this._checkingContent = false;
@@ -75,6 +83,7 @@ export default class UISourceCode extends Common.Object {
     this._workingCopy = null;
     /** @type {?function() : string} */
     this._workingCopyGetter = null;
+    this._disableEdit = false;
   }
 
   /**
@@ -132,11 +141,11 @@ export default class UISourceCode extends Common.Object {
    */
   displayName(skipTrim) {
     if (!this._name) {
-      return Common.UIString('(index)');
+      return Common.UIString.UIString('(index)');
     }
     let name = this._name;
     try {
-      if (this.project().type() === Workspace.projectTypes.FileSystem) {
+      if (this.project().type() === projectTypes.FileSystem) {
         name = unescape(name);
       } else {
         name = decodeURI(name);
@@ -158,6 +167,7 @@ export default class UISourceCode extends Common.Object {
    * @return {!Promise<boolean>}
    */
   rename(newName) {
+    /** @type {function(boolean):void} */
     let fulfill;
     const promise = new Promise(x => fulfill = x);
     this._project.rename(this, newName, innerCallback.bind(this));
@@ -167,14 +177,14 @@ export default class UISourceCode extends Common.Object {
      * @param {boolean} success
      * @param {string=} newName
      * @param {string=} newURL
-     * @param {!Common.ResourceType=} newContentType
+     * @param {!Common.ResourceType.ResourceType=} newContentType
      * @this {UISourceCode}
      */
     function innerCallback(success, newName, newURL, newContentType) {
       if (success) {
         this._updateName(
             /** @type {string} */ (newName), /** @type {string} */ (newURL),
-            /** @type {!Common.ResourceType} */ (newContentType));
+            /** @type {!Common.ResourceType.ResourceType} */ (newContentType));
       }
       fulfill(success);
     }
@@ -187,7 +197,7 @@ export default class UISourceCode extends Common.Object {
   /**
    * @param {string} name
    * @param {string} url
-   * @param {!Common.ResourceType=} contentType
+   * @param {!Common.ResourceType.ResourceType=} contentType
    */
   _updateName(name, url, contentType) {
     const oldURL = this._url;
@@ -201,7 +211,7 @@ export default class UISourceCode extends Common.Object {
     }
     this.dispatchEventToListeners(Events.TitleChanged, this);
     this.project().workspace().dispatchEventToListeners(
-        Workspace.Workspace.Events.UISourceCodeRenamed, {oldURL: oldURL, uiSourceCode: this});
+        WorkspaceImplEvents.UISourceCodeRenamed, {oldURL: oldURL, uiSourceCode: this});
   }
 
   /**
@@ -214,7 +224,7 @@ export default class UISourceCode extends Common.Object {
 
   /**
    * @override
-   * @return {!Common.ResourceType}
+   * @return {!Common.ResourceType.ResourceType}
    */
   contentType() {
     return this._contentType;
@@ -230,7 +240,7 @@ export default class UISourceCode extends Common.Object {
   }
 
   /**
-   * @return {!Workspace.Project}
+   * @return {!Project}
    */
   project() {
     return this._project;
@@ -238,7 +248,7 @@ export default class UISourceCode extends Common.Object {
 
   /**
    * @override
-   * @return {!Promise<!Common.DeferredContent>}
+   * @return {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   requestContent() {
     if (this._requestContentPromise) {
@@ -246,7 +256,7 @@ export default class UISourceCode extends Common.Object {
     }
 
     if (this._contentLoaded) {
-      return Promise.resolve(/** @type {!Common.DeferredContent} */ (this._content));
+      return Promise.resolve(/** @type {!TextUtils.ContentProvider.DeferredContent} */ (this._content));
     }
 
 
@@ -255,7 +265,7 @@ export default class UISourceCode extends Common.Object {
   }
 
   /**
-   * @returns {!Promise<!Common.DeferredContent>}
+   * @returns {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   async _requestContentImpl() {
     try {
@@ -270,7 +280,7 @@ export default class UISourceCode extends Common.Object {
       this._content = {error: err ? String(err) : '', isEncoded: false};
     }
 
-    return /** @type {!Common.DeferredContent} */ (this._content);
+    return /** @type {!TextUtils.ContentProvider.DeferredContent} */ (this._content);
   }
 
   async checkContentUpdated() {
@@ -284,6 +294,9 @@ export default class UISourceCode extends Common.Object {
 
     this._checkingContent = true;
     const updatedContent = await this._project.requestFileContent(this);
+    if ('error' in updatedContent) {
+      return;
+    }
     this._checkingContent = false;
     if (updatedContent.content === null) {
       const workingCopy = this.workingCopy();
@@ -295,7 +308,7 @@ export default class UISourceCode extends Common.Object {
       return;
     }
 
-    if (this._content && this._content.content === updatedContent.content) {
+    if (this._content && 'content' in this._content && this._content.content === updatedContent.content) {
       this._lastAcceptedContent = null;
       return;
     }
@@ -347,9 +360,9 @@ export default class UISourceCode extends Common.Object {
     this._innerResetWorkingCopy();
     const data = {uiSourceCode: this, content, encoded: this._contentEncoded};
     this.dispatchEventToListeners(Events.WorkingCopyCommitted, data);
-    this._project.workspace().dispatchEventToListeners(Workspace.Workspace.Events.WorkingCopyCommitted, data);
+    this._project.workspace().dispatchEventToListeners(WorkspaceImplEvents.WorkingCopyCommitted, data);
     if (committedByUser) {
-      this._project.workspace().dispatchEventToListeners(Workspace.Workspace.Events.WorkingCopyCommittedByUser, data);
+      this._project.workspace().dispatchEventToListeners(WorkspaceImplEvents.WorkingCopyCommittedByUser, data);
     }
   }
 
@@ -378,7 +391,7 @@ export default class UISourceCode extends Common.Object {
     if (this.isDirty()) {
       return /** @type {string} */ (this._workingCopy);
     }
-    return (this._content && this._content.content) || '';
+    return (this._content && 'content' in this._content && this._content.content) || '';
   }
 
   resetWorkingCopy() {
@@ -423,8 +436,7 @@ export default class UISourceCode extends Common.Object {
   _workingCopyChanged() {
     this._removeAllMessages();
     this.dispatchEventToListeners(Events.WorkingCopyChanged, this);
-    this._project.workspace().dispatchEventToListeners(
-        Workspace.Workspace.Events.WorkingCopyChanged, {uiSourceCode: this});
+    this._project.workspace().dispatchEventToListeners(WorkspaceImplEvents.WorkingCopyChanged, {uiSourceCode: this});
   }
 
   removeWorkingCopyGetter() {
@@ -452,21 +464,21 @@ export default class UISourceCode extends Common.Object {
    * @return {string}
    */
   extension() {
-    return Common.ParsedURL.extractExtension(this._name);
+    return Common.ParsedURL.ParsedURL.extractExtension(this._name);
   }
 
   /**
    * @return {string}
    */
   content() {
-    return (this._content && this._content.content) || '';
+    return (this._content && 'content' in this._content && this._content.content) || '';
   }
 
   /**
    * @return {?string}
    */
   loadError() {
-    return (this._content && this._content.error);
+    return (this._content && 'error' in this._content && this._content.error) || null;
   }
 
   /**
@@ -474,14 +486,14 @@ export default class UISourceCode extends Common.Object {
    * @param {string} query
    * @param {boolean} caseSensitive
    * @param {boolean} isRegex
-   * @return {!Promise<!Array<!Common.ContentProvider.SearchMatch>>}
+   * @return {!Promise<!Array<!TextUtils.ContentProvider.SearchMatch>>}
    */
   searchInContent(query, caseSensitive, isRegex) {
     const content = this.content();
     if (!content) {
       return this._project.searchInFileContent(this, query, caseSensitive, isRegex);
     }
-    return Promise.resolve(Common.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex));
+    return Promise.resolve(TextUtils.TextUtils.performSearchInContent(content, query, caseSensitive, isRegex));
   }
 
   /**
@@ -519,13 +531,13 @@ export default class UISourceCode extends Common.Object {
    */
   addLineMessage(level, text, lineNumber, columnNumber) {
     return this.addMessage(
-        level, text, new TextUtils.TextRange(lineNumber, columnNumber || 0, lineNumber, columnNumber || 0));
+        level, text, new TextUtils.TextRange.TextRange(lineNumber, columnNumber || 0, lineNumber, columnNumber || 0));
   }
 
   /**
    * @param {!Message.Level} level
    * @param {string} text
-   * @param {!TextUtils.TextRange} range
+   * @param {!TextUtils.TextRange.TextRange} range
    * @return {!Message} message
    */
   addMessage(level, text, range) {
@@ -563,11 +575,11 @@ export default class UISourceCode extends Common.Object {
    * @param {?} data
    */
   addLineDecoration(lineNumber, type, data) {
-    this.addDecoration(TextUtils.TextRange.createFromLocation(lineNumber, 0), type, data);
+    this.addDecoration(TextUtils.TextRange.TextRange.createFromLocation(lineNumber, 0), type, data);
   }
 
   /**
-   * @param {!TextUtils.TextRange} range
+   * @param {!TextUtils.TextRange.TextRange} range
    * @param {string} type
    * @param {?} data
    */
@@ -616,6 +628,17 @@ export default class UISourceCode extends Common.Object {
    */
   decorationsForType(type) {
     return this._decorations ? this._decorations.get(type) : null;
+  }
+
+  disableEdit() {
+    this._disableEdit = true;
+  }
+
+  /**
+   * @return {boolean}
+   */
+  editDisabled() {
+    return this._disableEdit;
   }
 }
 
@@ -668,6 +691,13 @@ export class UILocation {
   /**
    * @return {string}
    */
+  lineId() {
+    return this.uiSourceCode.project().id() + ':' + this.uiSourceCode.url() + ':' + this.lineNumber;
+  }
+
+  /**
+   * @return {string}
+   */
   toUIString() {
     return this.uiSourceCode.url() + ':' + (this.lineNumber + 1);
   }
@@ -704,7 +734,7 @@ export class Message {
    * @param {!UISourceCode} uiSourceCode
    * @param {!Message.Level} level
    * @param {string} text
-   * @param {!TextUtils.TextRange} range
+   * @param {!TextUtils.TextRange.TextRange} range
    */
   constructor(uiSourceCode, level, text, range) {
     this._uiSourceCode = uiSourceCode;
@@ -735,7 +765,7 @@ export class Message {
   }
 
   /**
-   * @return {!TextUtils.TextRange}
+   * @return {!TextUtils.TextRange.TextRange}
    */
   range() {
     return this._range;
@@ -782,7 +812,7 @@ Message.Level = {
  */
 export class LineMarker {
   /**
-   * @param {!TextUtils.TextRange} range
+   * @param {!TextUtils.TextRange.TextRange} range
    * @param {string} type
    * @param {?} data
    */
@@ -793,7 +823,7 @@ export class LineMarker {
   }
 
   /**
-   * @return {!TextUtils.TextRange}
+   * @return {!TextUtils.TextRange.TextRange}
    */
   range() {
     return this._range;
@@ -827,27 +857,3 @@ export class UISourceCodeMetadata {
     this.contentSize = contentSize;
   }
 }
-
-/* Legacy exported object */
-self.Workspace = self.Workspace || {};
-
-/* Legacy exported object */
-Workspace = Workspace || {};
-
-/** @constructor */
-Workspace.UISourceCode = UISourceCode;
-
-/** @enum {symbol} */
-Workspace.UISourceCode.Events = Events;
-
-/** @constructor */
-Workspace.UISourceCode.Message = Message;
-
-/** @constructor */
-Workspace.UISourceCode.LineMarker = LineMarker;
-
-/** @constructor */
-Workspace.UILocation = UILocation;
-
-/** @constructor */
-Workspace.UISourceCodeMetadata = UISourceCodeMetadata;

@@ -30,9 +30,9 @@ cc_defaults {
     cppflags: [
         "-Woverloaded-virtual",
         "-DVK_USE_PLATFORM_ANDROID_KHR",
-	"-DVK_EXPORT= ",
+        "-DVK_EXPORT= ",
     ],
-    cpp_std: "c++11",
+    cpp_std: "c++14",
 
     target: {
         host: {

@@ -7,9 +7,8 @@
 #include <utility>
 
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/core/metrics_helper.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 
@@ -25,25 +24,17 @@ SecurityInterstitialControllerClient::SecurityInterstitialControllerClient(
     const GURL& default_safe_page)
     : ControllerClient(std::move(metrics_helper)),
       web_contents_(web_contents),
-      interstitial_page_(nullptr),
       prefs_(prefs),
       app_locale_(app_locale),
       default_safe_page_(default_safe_page) {}
 
 SecurityInterstitialControllerClient::~SecurityInterstitialControllerClient() {}
 
-void SecurityInterstitialControllerClient::set_interstitial_page(
-    content::InterstitialPage* interstitial_page) {
-  interstitial_page_ = interstitial_page;
-}
-
-content::InterstitialPage*
-SecurityInterstitialControllerClient::interstitial_page() {
-  return interstitial_page_;
-}
-
 void SecurityInterstitialControllerClient::GoBack() {
-  interstitial_page_->DontProceed();
+  // TODO(crbug.com/1077074): This method is left so class can be non abstract
+  // since it is still instantiated in tests. This can be cleaned up by having
+  // tests use a subclass.
+  NOTREACHED();
 }
 
 bool SecurityInterstitialControllerClient::CanGoBack() {
@@ -64,7 +55,10 @@ void SecurityInterstitialControllerClient::GoBackAfterNavigationCommitted() {
 }
 
 void SecurityInterstitialControllerClient::Proceed() {
-  interstitial_page_->Proceed();
+  // TODO(crbug.com/1077074): This method is left so class can be non abstract
+  // since it is still instantiated in tests. This can be cleaned up by having
+  // tests use a subclass.
+  NOTREACHED();
 }
 
 void SecurityInterstitialControllerClient::Reload() {
@@ -109,6 +103,12 @@ bool SecurityInterstitialControllerClient::CanLaunchDateAndTimeSettings() {
 
 void SecurityInterstitialControllerClient::LaunchDateAndTimeSettings() {
   NOTREACHED();
+}
+
+bool SecurityInterstitialControllerClient::CanGoBackBeforeNavigation() {
+  // If checking before navigating to the interstitial, back to safety is
+  // possible if there is already at least one prior entry.
+  return web_contents_->GetController().GetEntryCount() > 0;
 }
 
 }  // namespace security_interstitials

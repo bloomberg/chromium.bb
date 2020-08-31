@@ -11,7 +11,6 @@ android_library("glue") {
   deps = [
     "//android_webview:android_webview_product_config_java",
     "//android_webview:browser_java",
-    "//android_webview:common_commandline_java",
     "//android_webview:common_java",
     "//android_webview/nonembedded:system_webview_manifest",
     "//android_webview/support_library/boundary_interfaces:boundary_interface_java",
@@ -25,13 +24,14 @@ android_library("glue") {
     "//content/public/android:content_java",
     "//net/android:net_java",
     "//ui/android:ui_java",
+    "//url:gurl_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   alternative_android_sdk_dep =
       "//third_party/android_sdk:public_framework_system_java"
 
-  java_files = [
+  sources = [
     "java/src/com/android/webview/chromium/CallbackConverter.java",
     "java/src/com/android/webview/chromium/ContentSettingsAdapter.java",
     "java/src/com/android/webview/chromium/CookieManagerAdapter.java",
@@ -78,7 +78,4 @@ android_library("glue") {
     "java/src/com/android/webview/chromium/WebViewRenderProcessClientAdapter.java",
     "java/src/com/android/webview/chromium/WebkitToSharedGlueConverter.java",
   ]
-
-  android_manifest_for_lint = system_webview_android_manifest
-  min_sdk_version = 21
 }

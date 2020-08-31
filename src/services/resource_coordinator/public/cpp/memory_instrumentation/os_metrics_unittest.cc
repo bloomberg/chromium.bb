@@ -61,7 +61,7 @@ const char kTestSmaps1[] =
     "Swap:                  0 kB\n"
     "KernelPageSize:        4 kB\n"
     "MMUPageSize:           4 kB\n"
-    "Locked:                0 kB\n"
+    "Locked:                1 kB\n"
     "VmFlags: rd ex mr mw me dw sd";
 
 const char kTestSmaps2[] =
@@ -115,17 +115,16 @@ const char kTestSmaps2[] =
     "Swap:                  0 kB\n"
     "KernelPageSize:        4 kB\n"
     "MMUPageSize:           4 kB\n"
-    "Locked:                0 kB\n"
+    "Locked:                11 kB\n"
     "VmFlags: rd wr mr mw me ac sd\n";
 
 void CreateTempFileWithContents(const char* contents, base::ScopedFILE* file) {
   base::FilePath temp_path;
-  FILE* temp_file = CreateAndOpenTemporaryFile(&temp_path);
-  file->reset(temp_file);
-  ASSERT_TRUE(temp_file);
+  *file = CreateAndOpenTemporaryStream(&temp_path);
+  ASSERT_TRUE(*file);
 
-  ASSERT_TRUE(
-      base::WriteFileDescriptor(fileno(temp_file), contents, strlen(contents)));
+  ASSERT_TRUE(base::WriteFileDescriptor(fileno(file->get()), contents,
+                                        strlen(contents)));
 }
 
 }  // namespace
@@ -176,6 +175,7 @@ TEST(OSMetricsTest, ParseProcSmaps) {
   EXPECT_EQ(0UL, maps_1[0]->byte_stats_private_clean_resident);
   EXPECT_EQ(68 * 1024UL, maps_1[0]->byte_stats_private_dirty_resident);
   EXPECT_EQ(4 * 1024UL, maps_1[0]->byte_stats_swapped);
+  EXPECT_EQ(0 * 1024UL, maps_1[0]->byte_locked);
 
   EXPECT_EQ(0xff000000UL, maps_1[1]->start_address);
   EXPECT_EQ(0xff800000UL - 0xff000000UL, maps_1[1]->size_in_bytes);
@@ -187,6 +187,7 @@ TEST(OSMetricsTest, ParseProcSmaps) {
   EXPECT_EQ(60 * 1024UL, maps_1[1]->byte_stats_private_clean_resident);
   EXPECT_EQ(8 * 1024UL, maps_1[1]->byte_stats_private_dirty_resident);
   EXPECT_EQ(0 * 1024UL, maps_1[1]->byte_stats_swapped);
+  EXPECT_EQ(1 * 1024UL, maps_1[1]->byte_locked);
 
   // Parse the 2nd smaps file.
   base::ScopedFILE temp_file2;
@@ -204,6 +205,7 @@ TEST(OSMetricsTest, ParseProcSmaps) {
   EXPECT_EQ(8 * 1024UL, maps_2[0]->byte_stats_private_clean_resident);
   EXPECT_EQ(4 * 1024UL, maps_2[0]->byte_stats_private_dirty_resident);
   EXPECT_EQ(0 * 1024UL, maps_2[0]->byte_stats_swapped);
+  EXPECT_EQ(11 * 1024UL, maps_2[0]->byte_locked);
 }
 
 TEST(OSMetricsTest, GetMappedAndResidentPages) {

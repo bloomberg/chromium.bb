@@ -18,6 +18,7 @@
 #include <array>
 #include <cassert>
 #include <functional>
+#include <mutex>
 #include <ostream>
 #include <string>
 #include <unordered_map>
@@ -41,54 +42,20 @@ namespace shaderc_util {
 enum class PassId;
 
 // Initializes glslang on creation, and destroys it on completion.
-// This object is expected to be a singleton, so that internal
-// glslang state can be correctly handled.
-// TODO(awoloszyn): Once glslang no longer has static global mutable state
-//                  remove this class.
+// Used to tie gslang process operations to object lifetimes.
+// Additionally initialization/finalization of glslang is not thread safe, so
+// synchronizes these operations.
 class GlslangInitializer {
  public:
-  GlslangInitializer() { glslang::InitializeProcess(); }
-
-  ~GlslangInitializer() { glslang::FinalizeProcess(); }
-
-  // Calls release on GlslangInitializer used to intialize this object
-  // when it is destroyed.
-  class InitializationToken {
-   public:
-    ~InitializationToken() {
-      if (initializer_) {
-        initializer_->Release();
-      }
-    }
-
-    InitializationToken(InitializationToken&& other)
-        : initializer_(other.initializer_) {
-      other.initializer_ = nullptr;
-    }
-
-    InitializationToken(const InitializationToken&) = delete;
-
-   private:
-    InitializationToken(GlslangInitializer* initializer)
-        : initializer_(initializer) {}
-
-    friend class GlslangInitializer;
-    GlslangInitializer* initializer_;
-  };
-
-  // Obtains exclusive access to the glslang state. The state remains
-  // exclusive until the Initialization Token has been destroyed.
-  InitializationToken Acquire() {
-    state_lock_.lock();
-    return InitializationToken(this);
-  }
+  GlslangInitializer();
+  ~GlslangInitializer();
 
  private:
-  void Release() { state_lock_.unlock(); }
+  static unsigned int initialize_count_;
 
-  friend class InitializationToken;
-
-  mutex state_lock_;
+  // Using a bare pointer here to avoid any global class construction at the
+  // beginning of the execution.
+  static std::mutex* glslang_mutex_;
 };
 
 // Maps macro names to their definitions.  Stores string_pieces, so the
@@ -109,6 +76,7 @@ class Compiler {
     Vulkan,        // Default to Vulkan 1.0
     OpenGL,        // Default to OpenGL 4.5
     OpenGLCompat,  // Deprecated.
+    WebGPU,
   };
 
   // Target environment versions.  These numbers match those used by Glslang.
@@ -117,6 +85,7 @@ class Compiler {
     // For Vulkan, use numbering scheme from vulkan.h
     Vulkan_1_0 = ((1 << 22)),              // Vulkan 1.0
     Vulkan_1_1 = ((1 << 22) | (1 << 12)),  // Vulkan 1.1
+    Vulkan_1_2 = ((1 << 22) | (2 << 12)),  // Vulkan 1.2
     // For OpenGL, use the numbering from #version in shaders.
     OpenGL_4_5 = 450,
   };
@@ -181,7 +150,6 @@ class Compiler {
     Geometry,
     Fragment,
     Compute,
-#ifdef NV_EXTENSIONS
     RayGenNV,
     IntersectNV,
     AnyHitNV,
@@ -190,7 +158,6 @@ class Compiler {
     CallableNV,
     TaskNV,
     MeshNV,
-#endif
     StageEnd,
   };
   enum { kNumStages = int(Stage::StageEnd) };
@@ -204,7 +171,6 @@ class Compiler {
         Stage::Geometry,
         Stage::Fragment,
         Stage::Compute,
-#ifdef NV_EXTENSIONS
         Stage::RayGenNV,
         Stage::IntersectNV,
         Stage::AnyHitNV,
@@ -213,7 +179,6 @@ class Compiler {
         Stage::CallableNV,
         Stage::TaskNV,
         Stage::MeshNV,
-#endif
     }};
     return values;
   }
@@ -404,8 +369,7 @@ class Compiler {
                                       const string_piece& error_tag)>&
           stage_callback,
       CountingIncluder& includer, OutputType output_type,
-      std::ostream* error_stream, size_t* total_warnings, size_t* total_errors,
-      GlslangInitializer* initializer) const;
+      std::ostream* error_stream, size_t* total_warnings, size_t* total_errors) const;
 
   static EShMessages GetDefaultRules() {
     return static_cast<EShMessages>(EShMsgSpvRules | EShMsgVulkanRules |
@@ -587,7 +551,6 @@ inline Compiler::Stage ConvertToStage(EShLanguage stage) {
       return Compiler::Stage::Fragment;
     case EShLangCompute:
       return Compiler::Stage::Compute;
-#ifdef NV_EXTENSIONS
     case EShLangRayGenNV:
       return Compiler::Stage::RayGenNV;
     case EShLangIntersectNV:
@@ -604,7 +567,6 @@ inline Compiler::Stage ConvertToStage(EShLanguage stage) {
       return Compiler::Stage::TaskNV;
     case EShLangMeshNV:
       return Compiler::Stage::MeshNV;
-#endif
     default:
       break;
   }

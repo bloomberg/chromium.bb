@@ -15,7 +15,6 @@ mojo::PendingRemote<mojom::FilePatcher> LaunchFilePatcher() {
   content::ServiceProcessHost::Launch<mojom::FilePatcher>(
       remote.InitWithNewPipeAndPassReceiver(),
       content::ServiceProcessHost::Options()
-          .WithSandboxType(service_manager::SANDBOX_TYPE_UTILITY)
           .WithDisplayName(IDS_PATCH_SERVICE_DISPLAY_NAME)
           .Pass());
   return remote;

@@ -47,20 +47,31 @@ class ASH_EXPORT DemoSessionMetricsRecorder
     kCamera = 6,
     kFiles = 7,
     kGetHelp = 8,
-    kGoogleKeep = 9,
+    kGoogleKeepChromeApp = 9,
     kGooglePhotos = 10,
-    kGoogleSheets = 11,
-    kGoogleSlides = 12,
+    kGoogleSheetsAndroidApp = 11,
+    kGoogleSlidesAndroidApp = 12,
     kInfinitePainter = 13,  // Android painting app.
     kMyScriptNebo = 14,     // Android note-taking app.
     kPlayStore = 15,
     kSquid = 16,  // Android note-taking app.
     kWebStore = 17,
     kYouTube = 18,
-    kScreensaver = 19,  // Demo Mode screensaver app.
+    kScreensaver = 19,    // Demo Mode screensaver app.
+    kAsphalt9 = 20,       // Android racing game demo app.
+    kStardewValley = 21,  // Android farming game demo app.
+    kKinemaster = 22,     // Android video editing software demo app.
+    kGoogleKeepAndroidApp = 23,
+    kAutoCAD = 24,     // Android 2D/3D drawing software demo app.
+    kPixlr = 25,       // Android photo editing software demo app.
+    kCalculator = 26,  // Essential apps calculator.
+    kCalendar = 27,
+    kGoogleDocsChromeApp = 28,
+    kGoogleSheetsChromeApp = 29,
+    kGoogleSlidesChromeApp = 30,
     // Add future entries above this comment, in sync with enums.xml.
     // Update kMaxValue to the last value.
-    kMaxValue = kScreensaver,
+    kMaxValue = kGoogleSlidesChromeApp,
   };
 
   // The recorder will create a normal timer by default. Tests should provide a
@@ -102,6 +113,10 @@ class ASH_EXPORT DemoSessionMetricsRecorder
   // Emits various histograms for unique apps launched.
   void ReportUniqueAppsLaunched();
 
+  // Records the duration of time the user spent interacting with the current
+  // demo session, measured from first user activity to last user activity.
+  void ReportDwellTime();
+
   // Stores samples as they are collected. Report to UMA if we see user
   // activity soon after. Guaranteed not to grow too large.
   std::vector<DemoModeApp> unreported_samples_;
@@ -117,6 +132,10 @@ class ASH_EXPORT DemoSessionMetricsRecorder
 
   // How many periods have elapsed since the last user activity.
   int periods_since_activity_ = 0;
+
+  base::TimeTicks first_user_activity_;
+
+  base::TimeTicks last_user_activity_;
 
   std::unique_ptr<base::RepeatingTimer> timer_;
 

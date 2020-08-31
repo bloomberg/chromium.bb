@@ -40,7 +40,9 @@ class FontSizeJsTest : public web::WebJsTest<web::WebTestWithWebState> {
   // '-webkit-text-size-adjust=none' also works.
   void LoadHtml(NSString* html) {
     LoadHtmlAndInject(
-        [NSString stringWithFormat:@"<html><meta name='viewport' "
+        [NSString stringWithFormat:@"<html><style>"
+                                   @"html { -webkit-text-size-adjust: none }"
+                                   @"</style><meta name='viewport' "
                                    @"content='initial-scale=1.0'>%@</html>",
                                    html]);
   }

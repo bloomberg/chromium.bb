@@ -13,8 +13,8 @@
 #include "platform/base/error.h"
 #include "platform/base/macros.h"
 
+namespace openscreen {
 namespace cast {
-namespace certificate {
 
 class CastCRL;
 
@@ -70,7 +70,7 @@ class CertVerificationContext {
   OSP_DISALLOW_COPY_AND_ASSIGN(CertVerificationContext);
 };
 
-// Verifies a cast device certficate given a chain of DER-encoded certificates.
+// Verifies a cast device certificate given a chain of DER-encoded certificates.
 //
 // Inputs:
 //
@@ -95,16 +95,15 @@ class CertVerificationContext {
 //
 // Outputs:
 //
-// Returns openscreen::Error::Code::kNone on success. Otherwise, the
-// corresponding openscreen::Error::Code. On success, the output parameters are
-// filled with more details:
+// Returns Error::Code::kNone on success.  Otherwise, the corresponding
+// Error::Code.  On success, the output parameters are filled with more details:
 //
 //   * |context| is filled with an object that can be used to verify signatures
 //     using the device certificate's public key, as well as to extract other
 //     properties from the device certificate (Common Name).
 //   * |policy| is filled with an indication of the device certificate's policy
 //     (i.e. is it for audio-only devices or is it unrestricted?)
-[[nodiscard]] openscreen::Error VerifyDeviceCert(
+[[nodiscard]] Error VerifyDeviceCert(
     const std::vector<std::string>& der_certs,
     const DateTime& time,
     std::unique_ptr<CertVerificationContext>* context,
@@ -113,7 +112,7 @@ class CertVerificationContext {
     CRLPolicy crl_policy,
     TrustStore* trust_store = nullptr);
 
-}  // namespace certificate
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_COMMON_CERTIFICATE_CAST_CERT_VALIDATOR_H_

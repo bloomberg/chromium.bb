@@ -17,10 +17,12 @@
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/content/service_worker_payment_app.h"
 #include "components/payments/core/journey_logger.h"
+#include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 class RenderFrameHost;
@@ -125,6 +127,9 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   bool IsIncognito() const;
 
+  // Called when the payment handler requests to open a payment handler window.
+  void OnPaymentHandlerOpenWindowCalled();
+
   content::WebContents* web_contents() { return web_contents_; }
 
   bool skipped_payment_request_ui() { return skipped_payment_request_ui_; }
@@ -183,6 +188,7 @@ class PaymentRequest : public mojom::PaymentRequest,
                                            bool warn_localhost_or_file);
 
   content::WebContents* web_contents_;
+  const content::GlobalFrameRoutingId initiator_frame_routing_id_;
   DeveloperConsoleLogger log_;
   std::unique_ptr<ContentPaymentRequestDelegate> delegate_;
   // |manager_| owns this PaymentRequest.
@@ -199,13 +205,21 @@ class PaymentRequest : public mojom::PaymentRequest,
   // browser process.
   PaymentHandlerHost payment_handler_host_;
 
-  // The RFC 6454 origin of the top level frame that has invoked PaymentRequest
-  // API. This is what the user sees in the address bar.
+  // The scheme, host, and port of the top level frame that has invoked
+  // PaymentRequest API as formatted by
+  // url_formatter::FormatUrlForSecurityDisplay(). This is what the user sees in
+  // the address bar.
   const GURL top_level_origin_;
 
-  // The RFC 6454 origin of the frame that has invoked PaymentRequest API. This
-  // can be either the main frame or an iframe.
+  // The scheme, host, and port of the frame that has invoked PaymentRequest API
+  // as formatted by url_formatter::FormatUrlForSecurityDisplay(). This can be
+  // either the main frame or an iframe.
   const GURL frame_origin_;
+
+  // The security origin of the frame that has invoked PaymentRequest API. This
+  // can be opaque. Used by security features like 'Sec-Fetch-Site' and
+  // 'Cross-Origin-Resource-Policy'.
+  const url::Origin frame_security_origin_;
 
   // May be null, must outlive this object.
   ObserverForTest* observer_for_testing_;

@@ -11,12 +11,14 @@
 #include <cmath>
 #include <limits>
 #include <sstream>
+#include <type_traits>
 
 #include "cast/streaming/expanded_value_base.h"
 #include "platform/api/time.h"
+#include "util/saturate_cast.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Forward declarations (see below).
 class RtpTimeDelta;
@@ -155,25 +157,15 @@ class RtpTimeDelta : public ExpandedValueBase<int64_t, RtpTimeDelta> {
   constexpr int64_t value() const { return value_; }
 
   template <typename Rep>
-  static Rep ToNearestRepresentativeValue(double ticks) {
-    if (ticks <= std::numeric_limits<Rep>::min()) {
-      return std::numeric_limits<Rep>::min();
-    } else if (ticks >= std::numeric_limits<Rep>::max()) {
-      return std::numeric_limits<Rep>::max();
-    }
+  static std::enable_if_t<std::is_floating_point<Rep>::value, Rep>
+  ToNearestRepresentativeValue(double ticks) {
+    return Rep(ticks);
+  }
 
-    static_assert(
-        std::is_floating_point<Rep>::value ||
-            (std::is_integral<Rep>::value &&
-             sizeof(Rep) <= sizeof(decltype(llround(ticks)))),
-        "Rep must be an integer (<= 64 bits) or a floating-point type.");
-    if (std::is_floating_point<Rep>::value) {
-      return Rep(ticks);
-    }
-    if (sizeof(Rep) <= sizeof(decltype(lround(ticks)))) {
-      return Rep(lround(ticks));
-    }
-    return Rep(llround(ticks));
+  template <typename Rep>
+  static std::enable_if_t<std::is_integral<Rep>::value, Rep>
+  ToNearestRepresentativeValue(double ticks) {
+    return rounded_saturate_cast<Rep>(ticks);
   }
 };
 
@@ -262,7 +254,7 @@ class RtpTimeTicks : public ExpandedValueBase<int64_t, RtpTimeTicks> {
   constexpr int64_t value() const { return value_; }
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_RTP_TIME_H_

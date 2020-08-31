@@ -123,6 +123,7 @@ const int DeviceManagementService::kServiceUnavailable;
 const int DeviceManagementService::kPolicyNotFound;
 const int DeviceManagementService::kDeprovisioned;
 const int DeviceManagementService::kArcDisabled;
+const int DeviceManagementService::kTosHasNotBeenAccepted;
 
 // static
 std::string DeviceManagementService::JobConfiguration::GetJobTypeAsString(
@@ -167,11 +168,6 @@ std::string DeviceManagementService::JobConfiguration::GetJobTypeAsString(
     case DeviceManagementService::JobConfiguration::
         TYPE_ACTIVE_DIRECTORY_PLAY_ACTIVITY:
       return "ActiveDirectoryPlayActivity";
-    case DeviceManagementService::JobConfiguration::TYPE_REQUEST_LICENSE_TYPES:
-      return "RequestLicenseTypes";
-    case DeviceManagementService::JobConfiguration::
-        TYPE_UPLOAD_APP_INSTALL_REPORT:
-      return "UploadAppInstallReport";
     case DeviceManagementService::JobConfiguration::TYPE_TOKEN_ENROLLMENT:
       return "TokenEnrollment";
     case DeviceManagementService::JobConfiguration::TYPE_CHROME_DESKTOP_REPORT:
@@ -189,6 +185,9 @@ std::string DeviceManagementService::JobConfiguration::GetJobTypeAsString(
       return "PublicSamlUserRequest";
     case DeviceManagementService::JobConfiguration::TYPE_CHROME_OS_USER_REPORT:
       return "ChromeOsUserReport";
+    case DeviceManagementService::JobConfiguration::
+        TYPE_CERT_PROVISIONING_REQUEST:
+      return "CertProvisioningRequest";
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";
@@ -283,21 +282,25 @@ JobConfigurationBase::GetResourceRequest(bool bypass_proxy, int last_error) {
   rr->load_flags =
       net::LOAD_DISABLE_CACHE | (bypass_proxy ? net::LOAD_BYPASS_PROXY : 0);
   rr->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  // Disable secure DNS for requests related to device management to allow for
+  // recovery in the event of a misconfigured secure DNS policy.
+  rr->trusted_params = network::ResourceRequest::TrustedParams();
+  rr->trusted_params->disable_secure_dns = true;
 
   // If auth data is specified, use it to build the request.
   if (auth_data_) {
-    if (!auth_data_->gaia_token().empty()) {
+    if (auth_data_->has_gaia_token()) {
       rr->headers.SetHeader(
           dm_protocol::kAuthHeader,
           std::string(dm_protocol::kServiceTokenAuthHeaderPrefix) +
               auth_data_->gaia_token());
     }
-    if (!auth_data_->dm_token().empty()) {
+    if (auth_data_->has_dm_token()) {
       rr->headers.SetHeader(dm_protocol::kAuthHeader,
                             std::string(dm_protocol::kDMTokenAuthHeaderPrefix) +
                                 auth_data_->dm_token());
     }
-    if (!auth_data_->enrollment_token().empty()) {
+    if (auth_data_->has_enrollment_token()) {
       rr->headers.SetHeader(
           dm_protocol::kAuthHeader,
           std::string(dm_protocol::kEnrollmentTokenAuthHeaderPrefix) +
@@ -306,6 +309,13 @@ JobConfigurationBase::GetResourceRequest(bool bypass_proxy, int last_error) {
   }
 
   return rr;
+}
+
+DeviceManagementService::Job::RetryMethod JobConfigurationBase::ShouldRetry(
+    int response_code,
+    const std::string& response_body) {
+  // By default, no need to retry based on the contents of the response.
+  return DeviceManagementService::Job::NO_RETRY;
 }
 
 // A device management service job implementation.
@@ -361,7 +371,7 @@ DeviceManagementService::JobImpl::CreateFetcher() {
   return fetcher;
 }
 
-DeviceManagementService::JobImpl::RetryMethod
+DeviceManagementService::Job::RetryMethod
 DeviceManagementService::JobImpl::OnURLLoadComplete(
     const std::string& response_body,
     const std::string& mime_type,
@@ -371,8 +381,14 @@ DeviceManagementService::JobImpl::OnURLLoadComplete(
     int* retry_delay) {
   RetryMethod retry_method =
       ShouldRetry(mime_type, response_code, net_error, was_fetched_via_proxy);
+
+  // Ask the config if this is a valid response
+  if (retry_method == RetryMethod::NO_RETRY) {
+    retry_method = config_->ShouldRetry(response_code, response_body);
+  }
+
   if (retry_method != RetryMethod::NO_RETRY) {
-    config_->OnBeforeRetry();
+    config_->OnBeforeRetry(response_code, response_body);
     *retry_delay = GetRetryDelay(retry_method);
     return retry_method;
   }
@@ -404,7 +420,7 @@ DeviceManagementService::JobImpl::OnURLLoadComplete(
   return NO_RETRY;
 }
 
-DeviceManagementService::JobImpl::RetryMethod
+DeviceManagementService::Job::RetryMethod
 DeviceManagementService::JobImpl::ShouldRetry(const std::string& mime_type,
                                               int response_code,
                                               int net_error,
@@ -574,10 +590,10 @@ void DeviceManagementService::OnURLLoaderCompleteInternal(
   pending_jobs_.erase(entry);
 
   int delay;
-  JobControl::RetryMethod retry_method =
+  Job::RetryMethod retry_method =
       job->OnURLLoadComplete(response_body, mime_type, net_error, response_code,
                              was_fetched_via_proxy, &delay);
-  if (retry_method != JobControl::NO_RETRY) {
+  if (retry_method != Job::NO_RETRY) {
     LOG(WARNING) << "Dmserver request failed, retrying in " << delay / 1000
                  << "s.";
     task_runner_->PostDelayedTask(

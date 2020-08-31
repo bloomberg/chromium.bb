@@ -21,7 +21,6 @@
 namespace blink {
 
 class ExecutionContext;
-struct WebSize;
 
 // Fetches the resources specified in a given NotificationData. Uses a
 // callback to notify the caller when all fetches have finished.
@@ -55,12 +54,12 @@ class MODULES_EXPORT NotificationResourcesLoader final
   // pre-finalizer.
   void Stop();
 
-  virtual void Trace(blink::Visitor* visitor);
+  virtual void Trace(Visitor* visitor);
 
  private:
   void LoadIcon(ExecutionContext* context,
                 const KURL& url,
-                const WebSize& resize_dimensions,
+                const gfx::Size& resize_dimensions,
                 ThreadedIconLoader::IconCallback icon_callback);
 
   void DidLoadIcon(SkBitmap* out_icon, SkBitmap icon, double resize_scale);

@@ -26,8 +26,7 @@
    * @param {boolean} uidBasedUpdate
    * @returns {boolean} True if notifySplices was called.
    */
-  updateList: function(
-      propertyPath, itemUidGetter, updatedList, uidBasedUpdate = false) {
+  updateList(propertyPath, itemUidGetter, updatedList, uidBasedUpdate = false) {
     const list = this.get(propertyPath);
     const splices = Polymer.ArraySplice.calculateSplices(
         updatedList.map(itemUidGetter), list.map(itemUidGetter));
@@ -50,7 +49,7 @@
     if (!uidBasedUpdate) {
       list.forEach((item, index) => {
         const updatedItem = updatedList[index];
-        if (JSON.stringify(item) != JSON.stringify(updatedItem)) {
+        if (JSON.stringify(item) !== JSON.stringify(updatedItem)) {
           this.set([propertyPath, index], updatedItem);
           updated = true;
         }

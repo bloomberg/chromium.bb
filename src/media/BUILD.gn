@@ -22,7 +22,6 @@ buildflag_header("media_buildflags") {
     "CDM_PLATFORM_SPECIFIC_PATH=\"$cdm_platform_specific_path\"",
     "ENABLE_PLATFORM_AC3_EAC3_AUDIO=$enable_platform_ac3_eac3_audio",
     "ENABLE_CDM_HOST_VERIFICATION=$enable_cdm_host_verification",
-    "ENABLE_CDM_PROXY=$enable_cdm_proxy",
     "ENABLE_CDM_STORAGE_ID=$enable_cdm_storage_id",
     "ENABLE_DAV1D_DECODER=$enable_dav1d_decoder",
     "ENABLE_AV1_DECODER=$enable_av1_decoder",
@@ -31,13 +30,16 @@ buildflag_header("media_buildflags") {
     "ENABLE_FFMPEG_VIDEO_DECODERS=$enable_ffmpeg_video_decoders",
     "ENABLE_PLATFORM_HEVC=$enable_platform_hevc",
     "ENABLE_HLS_SAMPLE_AES=$enable_hls_sample_aes",
+    "ENABLE_LIBGAV1_DECODER=$enable_libgav1_decoder",
     "ENABLE_LIBRARY_CDMS=$enable_library_cdms",
     "ENABLE_LIBVPX=$media_use_libvpx",
     "ENABLE_LOGGING_OVERRIDE=$enable_logging_override",
+    "ENABLE_MEDIA_DRM_STORAGE=$enable_media_drm_storage",
     "ENABLE_MEDIA_REMOTING=$enable_media_remoting",
     "ENABLE_MEDIA_REMOTING_RPC=$enable_media_remoting_rpc",
     "ENABLE_PLATFORM_MPEG_H_AUDIO=$enable_platform_mpeg_h_audio",
     "ENABLE_MSE_MPEG2TS_STREAM_PARSER=$enable_mse_mpeg2ts_stream_parser",
+    "USE_CHROMEOS_MEDIA_ACCELERATION=$use_vaapi||$use_v4l2_codec",
     "USE_PROPRIETARY_CODECS=$proprietary_codecs",
   ]
 }
@@ -155,14 +157,13 @@ test("media_unittests") {
     "//media/test:pipeline_integration_tests",
     "//media/test:run_all_unittests",
     "//media/video:unit_tests",
+    "//media/webcodecs:unit_tests",
     "//media/webrtc:unit_tests",
   ]
 
-  data = [
-    "test/data/",
-  ]
+  data = [ "test/data/" ]
 
-  data_deps = []
+  data_deps = [ "//testing/buildbot/filters:media_unittests_filters" ]
 
   if (media_use_ffmpeg) {
     deps += [ "//media/ffmpeg:unit_tests" ]
@@ -177,6 +178,13 @@ test("media_unittests") {
       "//media/base/android:unit_tests",
       "//media/gpu:android_video_decode_accelerator_unittests",
       "//ui/android:ui_java",
+    ]
+  }
+
+  if (is_fuchsia) {
+    deps += [
+      "//media/fuchsia/audio:unittests",
+      "//media/fuchsia/metrics:unittests",
     ]
   }
 
@@ -210,9 +218,7 @@ test("media_perftests") {
   # This target should not require the Chrome executable to run.
   assert_no_deps = [ "//chrome" ]
 
-  data = [
-    "test/data/",
-  ]
+  data = [ "test/data/" ]
 
   data_deps = [
     # Needed for isolate script to execute.
@@ -308,19 +314,13 @@ if (media_use_ffmpeg && !is_android) {
 
 if (proprietary_codecs) {
   fuzzer_test("media_cenc_utils_fuzzer") {
-    sources = [
-      "cdm/cenc_utils_fuzzertest.cc",
-    ]
-    deps = [
-      ":media",
-    ]
+    sources = [ "cdm/cenc_utils_fuzzertest.cc" ]
+    deps = [ ":media" ]
   }
 }
 
 fuzzer_test("media_vp9_parser_fuzzer") {
-  sources = [
-    "filters/vp9_parser_fuzzertest.cc",
-  ]
+  sources = [ "filters/vp9_parser_fuzzertest.cc" ]
   deps = [
     ":test_support",
     "//base",
@@ -329,9 +329,7 @@ fuzzer_test("media_vp9_parser_fuzzer") {
 }
 
 fuzzer_test("media_vp9_parser_encrypted_fuzzer") {
-  sources = [
-    "filters/vp9_parser_encrypted_fuzzertest.cc",
-  ]
+  sources = [ "filters/vp9_parser_encrypted_fuzzertest.cc" ]
   deps = [
     ":test_support",
     "//base",
@@ -341,9 +339,7 @@ fuzzer_test("media_vp9_parser_encrypted_fuzzer") {
 }
 
 fuzzer_test("media_vpx_video_decoder_fuzzer") {
-  sources = [
-    "filters/vpx_video_decoder_fuzzertest.cc",
-  ]
+  sources = [ "filters/vpx_video_decoder_fuzzertest.cc" ]
   deps = [
     ":media",
     "//base",
@@ -354,9 +350,7 @@ fuzzer_test("media_vpx_video_decoder_fuzzer") {
 }
 
 fuzzer_test("media_webm_muxer_fuzzer") {
-  sources = [
-    "muxers/webm_muxer_fuzzertest.cc",
-  ]
+  sources = [ "muxers/webm_muxer_fuzzertest.cc" ]
   deps = [
     ":media",
     "//base",
@@ -365,9 +359,7 @@ fuzzer_test("media_webm_muxer_fuzzer") {
 }
 
 fuzzer_test("cbcs_decryptor_fuzzer") {
-  sources = [
-    "cdm/cbcs_decryptor_fuzzer.cc",
-  ]
+  sources = [ "cdm/cbcs_decryptor_fuzzer.cc" ]
   deps = [
     ":media",
     "//base",
@@ -376,9 +368,7 @@ fuzzer_test("cbcs_decryptor_fuzzer") {
 }
 
 fuzzer_test("cenc_decryptor_fuzzer") {
-  sources = [
-    "cdm/cenc_decryptor_fuzzer.cc",
-  ]
+  sources = [ "cdm/cenc_decryptor_fuzzer.cc" ]
   deps = [
     ":media",
     "//base",
@@ -387,9 +377,7 @@ fuzzer_test("cenc_decryptor_fuzzer") {
 }
 
 fuzzer_test("json_web_key_fuzzer") {
-  sources = [
-    "cdm/json_web_key_fuzzer.cc",
-  ]
+  sources = [ "cdm/json_web_key_fuzzer.cc" ]
   deps = [
     ":media",
     "//base",
@@ -398,9 +386,7 @@ fuzzer_test("json_web_key_fuzzer") {
 
 if (proprietary_codecs) {
   fuzzer_test("media_mp4_avcc_parser_fuzzer") {
-    sources = [
-      "formats/mp4/mp4_avcc_parser_fuzzer.cc",
-    ]
+    sources = [ "formats/mp4/mp4_avcc_parser_fuzzer.cc" ]
     deps = [
       ":media",
       "//base",
@@ -408,9 +394,7 @@ if (proprietary_codecs) {
   }
 
   fuzzer_test("media_mp4_box_reader_fuzzer") {
-    sources = [
-      "formats/mp4/mp4_box_reader_fuzzer.cc",
-    ]
+    sources = [ "formats/mp4/mp4_box_reader_fuzzer.cc" ]
     deps = [
       ":media",
       "//base",
@@ -422,9 +406,7 @@ if (proprietary_codecs) {
 
 if (enable_mse_mpeg2ts_stream_parser) {
   fuzzer_test("media_es_parser_adts_fuzzer") {
-    sources = [
-      "formats/mp2t/es_parser_adts_fuzzer.cc",
-    ]
+    sources = [ "formats/mp2t/es_parser_adts_fuzzer.cc" ]
     deps = [
       ":media",
       "//base",
@@ -432,9 +414,7 @@ if (enable_mse_mpeg2ts_stream_parser) {
   }
 
   fuzzer_test("media_es_parser_h264_fuzzer") {
-    sources = [
-      "formats/mp2t/es_parser_h264_fuzzer.cc",
-    ]
+    sources = [ "formats/mp2t/es_parser_h264_fuzzer.cc" ]
     deps = [
       ":media",
       "//base",
@@ -442,9 +422,7 @@ if (enable_mse_mpeg2ts_stream_parser) {
   }
 
   fuzzer_test("media_es_parser_mpeg1audio_fuzzer") {
-    sources = [
-      "formats/mp2t/es_parser_mpeg1audio_fuzzer.cc",
-    ]
+    sources = [ "formats/mp2t/es_parser_mpeg1audio_fuzzer.cc" ]
     deps = [
       ":media",
       "//base",

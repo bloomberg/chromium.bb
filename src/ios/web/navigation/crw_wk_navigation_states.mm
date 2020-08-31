@@ -4,8 +4,8 @@
 
 #import "ios/web/navigation/crw_wk_navigation_states.h"
 
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_context_impl.h"
@@ -157,7 +157,6 @@
   // of the pending URL.  See crbug.com/1010765 for details and a reproducible
   // example.
   if (state == web::WKNavigationState::FINISHED &&
-      web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
       base::FeatureList::IsEnabled(
           web::features::kClearOldNavigationRecordsWorkaround)) {
     NSUInteger finishedIndex = record.index;

@@ -4,6 +4,9 @@
 
 #include "content/shell/common/web_test/web_test_switches.h"
 
+#include "base/command_line.h"
+#include "base/strings/string_split.h"
+
 namespace switches {
 
 // Allow access to external pages during web tests.
@@ -32,9 +35,11 @@ const char kEnableLeakDetection[] = "enable-leak-detection";
 // Encode binary web test results (images, audio) using base64.
 const char kEncodeBinary[] = "encode-binary";
 
-// Request the render trees of pages to be dumped as text once they have
-// finished loading.
-const char kRunWebTests[] = "run-web-tests";
+// Disables the automatic origin isolation of web platform test domains.
+// We normally origin-isolate them for better test coverage, but tests of opt-in
+// origin isolation need to disable this.
+const char kDisableAutoWPTOriginIsolation[] =
+    "disable-auto-wpt-origin-isolation";
 
 // This makes us disable some web-platform runtime features so that we test
 // content_shell as if it was a stable release. It is only followed when
@@ -46,5 +51,24 @@ const char kStableReleaseMode[] = "stable-release-mode";
 // to use the hardware GPU for rendering. This is only followed when
 // kRunWebTests is set.
 const char kDisableHeadlessMode[] = "disable-headless-mode";
+
+#if defined(OS_WIN)
+// Registers additional font files on Windows (for fonts outside the usual
+// %WINDIR%\Fonts location). Multiple files can be used by separating them
+// with a semicolon (;).
+const char kRegisterFontFiles[] = "register-font-files";
+
+std::vector<std::string> GetSideloadFontFiles() {
+  std::vector<std::string> files;
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kRegisterFontFiles)) {
+    files = base::SplitString(
+        command_line.GetSwitchValueASCII(switches::kRegisterFontFiles), ";",
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  }
+  return files;
+}
+#endif
 
 }  // namespace switches

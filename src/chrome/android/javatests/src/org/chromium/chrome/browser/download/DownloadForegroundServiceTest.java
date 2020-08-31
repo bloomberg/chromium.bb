@@ -9,23 +9,21 @@ import static android.app.Service.STOP_FOREGROUND_REMOVE;
 
 import static junit.framework.Assert.assertEquals;
 
-import static org.chromium.chrome.browser.download.DownloadForegroundService.clearPersistedNotificationId;
 import static org.chromium.chrome.browser.download.DownloadSnackbarController.INVALID_NOTIFICATION_ID;
 
 import android.app.Notification;
 import android.support.test.filters.SmallTest;
-import android.support.v4.app.ServiceCompat;
 
 import androidx.annotation.IntDef;
+import androidx.core.app.ServiceCompat;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.lang.annotation.Retention;
@@ -106,20 +104,14 @@ public class DownloadForegroundServiceTest {
     @Before
     public void setUp() {
         mForegroundService = new MockDownloadForegroundService();
-        clearPersistedNotificationId();
         mNotification =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.ChannelId.DOWNLOADS)
+                        .createChromeNotificationBuilder(true /* preferCompat */,
+                                ChromeChannelDefinitions.ChannelId.DOWNLOADS)
                         .setSmallIcon(org.chromium.chrome.R.drawable.ic_file_download_white_24dp)
                         .setContentTitle("fakeContentTitle")
                         .setContentText("fakeContentText")
                         .build();
-    }
-
-    @After
-    public void tearDown() {
-        clearPersistedNotificationId();
     }
 
     /**

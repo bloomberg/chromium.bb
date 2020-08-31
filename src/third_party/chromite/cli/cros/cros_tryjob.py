@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import json
 import os
+import sys
 import time
 
 from chromite.lib import constants
@@ -20,6 +21,9 @@ from chromite.lib import git
 from chromite.lib import request_build
 
 from chromite.cbuildbot import trybot_patch_pool
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 REMOTE = 'remote'
@@ -187,7 +191,7 @@ def RunLocal(options):
 
   # Run the tryjob.
   result = cros_build_lib.run(cmd, debug_level=logging.CRITICAL,
-                              error_code_ok=True, cwd=options.buildroot)
+                              check=False, cwd=options.buildroot)
   return result.returncode
 
 
@@ -214,7 +218,7 @@ def RunCbuildbot(options):
 
   # Run the tryjob.
   result = cros_build_lib.run(cmd, debug_level=logging.CRITICAL,
-                              error_code_ok=True, cwd=options.buildroot)
+                              check=False, cwd=options.buildroot)
   return result.returncode
 
 
@@ -321,9 +325,11 @@ def RunRemote(site_config, options, patch_pool, infra_testing=False,
   args = CbuildbotArgs(options)
   args += PushLocalPatches(patch_pool.local_patches, user_email)
 
-  email_template = None
   if options.debug:
+    # default_debug template used to test email templates before they go live.
     email_template = 'default_debug'
+  else:
+    email_template = 'tryjob'
 
   logging.info('Submitting tryjob...')
   results = []
@@ -595,6 +601,12 @@ List Examples:
     how_group.add_argument(
         '--debug-cidb', dest='passthrough', action='append_option',
         help='Force Debug CIDB to be used.')
+    how_group.add_argument(
+        '--no-publish-prebuilt-confs',
+        dest='passthrough',
+        action='append_option',
+        help='Force the tryjob to not publish commits to prebuilt.conf or '
+             'sdk_version.conf, even if run in production.')
 
     # Overrides for the build configs testing behaviors.
     test_group = parser.add_argument_group(

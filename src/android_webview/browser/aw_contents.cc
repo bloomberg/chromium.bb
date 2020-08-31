@@ -13,7 +13,6 @@
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
-#include "android_webview/browser/aw_contents_lifecycle_notifier.h"
 #include "android_webview/browser/aw_pdf_exporter.h"
 #include "android_webview/browser/aw_render_process.h"
 #include "android_webview/browser/aw_renderer_priority.h"
@@ -28,6 +27,7 @@
 #include "android_webview/browser/gfx/java_browser_view_renderer_helper.h"
 #include "android_webview/browser/gfx/render_thread_manager.h"
 #include "android_webview/browser/gfx/scoped_app_gl_state_restore.h"
+#include "android_webview/browser/lifecycle/aw_contents_lifecycle_notifier.h"
 #include "android_webview/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "android_webview/browser/permission/aw_permission_request.h"
 #include "android_webview/browser/permission/permission_request_handler.h"
@@ -47,6 +47,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
@@ -65,6 +66,8 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/safe_browsing/core/features.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/public/browser/android/child_process_importance.h"
 #include "content/public/browser/android/synchronous_compositor.h"
@@ -73,7 +76,6 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/favicon_status.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -151,16 +153,6 @@ class AwContentsUserData : public base::SupportsUserData::Data {
 };
 
 base::subtle::Atomic32 g_instance_count = 0;
-
-void JavaScriptResultCallbackForTesting(
-    const ScopedJavaGlobalRef<jobject>& callback,
-    base::Value result) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  std::string json;
-  base::JSONWriter::Write(result, &json);
-  ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env, json);
-  Java_AwContents_onEvaluateJavaScriptResultForTesting(env, j_json, callback);
-}
 
 }  // namespace
 
@@ -257,7 +249,8 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
     InitAutofillIfNecessary(autofill_manager_delegate->GetSaveFormData());
   content::SynchronousCompositor::SetClientForWebContents(
       web_contents_.get(), &browser_view_renderer_);
-  AwContentsLifecycleNotifier::OnWebViewCreated();
+  AwContentsLifecycleNotifier::GetInstance().OnWebViewCreated(this);
+  AwBrowserProcess::GetInstance()->visibility_metrics_logger()->AddClient(this);
 }
 
 void AwContents::SetJavaPeers(
@@ -343,6 +336,7 @@ void AwContents::SetAwAutofillClient(const JavaRef<jobject>& client) {
 AwContents::~AwContents() {
   DCHECK_EQ(this, AwContents::FromWebContents(web_contents_.get()));
   web_contents_->RemoveUserData(kAwContentsUserDataKey);
+  AwContentsClientBridge::Dissociate(web_contents_.get());
   if (find_helper_.get())
     find_helper_->SetListener(NULL);
   if (icon_helper_.get())
@@ -359,7 +353,9 @@ AwContents::~AwContents() {
         base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   }
   browser_view_renderer_.SetCurrentCompositorFrameConsumer(nullptr);
-  AwContentsLifecycleNotifier::OnWebViewDestroyed();
+  AwContentsLifecycleNotifier::GetInstance().OnWebViewDestroyed(this);
+  AwBrowserProcess::GetInstance()->visibility_metrics_logger()->RemoveClient(
+      this);
 }
 
 base::android::ScopedJavaLocalRef<jobject> AwContents::GetWebContents(
@@ -926,6 +922,9 @@ void AwContents::OnSizeChanged(JNIEnv* env,
   web_contents_->GetNativeView()->OnPhysicalBackingSizeChanged(size);
   web_contents_->GetNativeView()->OnSizeChanged(w, h);
   browser_view_renderer_.OnSizeChanged(w, h);
+  AwBrowserProcess::GetInstance()
+      ->visibility_metrics_logger()
+      ->ClientVisibilityChanged(this);
 }
 
 void AwContents::SetViewVisibility(JNIEnv* env,
@@ -933,6 +932,9 @@ void AwContents::SetViewVisibility(JNIEnv* env,
                                    bool visible) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_view_renderer_.SetViewVisibility(visible);
+  AwBrowserProcess::GetInstance()
+      ->visibility_metrics_logger()
+      ->ClientVisibilityChanged(this);
 }
 
 void AwContents::SetWindowVisibility(JNIEnv* env,
@@ -940,6 +942,13 @@ void AwContents::SetWindowVisibility(JNIEnv* env,
                                      bool visible) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_view_renderer_.SetWindowVisibility(visible);
+  if (visible)
+    AwContentsLifecycleNotifier::GetInstance().OnWebViewWindowBeVisible(this);
+  else
+    AwContentsLifecycleNotifier::GetInstance().OnWebViewWindowBeInvisible(this);
+  AwBrowserProcess::GetInstance()
+      ->visibility_metrics_logger()
+      ->ClientVisibilityChanged(this);
 }
 
 void AwContents::SetIsPaused(JNIEnv* env,
@@ -955,16 +964,34 @@ void AwContents::OnAttachedToWindow(JNIEnv* env,
                                     int h) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_view_renderer_.OnAttachedToWindow(w, h);
+  AwContentsLifecycleNotifier::GetInstance().OnWebViewAttachedToWindow(this);
+  AwBrowserProcess::GetInstance()
+      ->visibility_metrics_logger()
+      ->ClientVisibilityChanged(this);
 }
 
 void AwContents::OnDetachedFromWindow(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_view_renderer_.OnDetachedFromWindow();
+  AwContentsLifecycleNotifier::GetInstance().OnWebViewDetachedFromWindow(this);
+  AwBrowserProcess::GetInstance()
+      ->visibility_metrics_logger()
+      ->ClientVisibilityChanged(this);
 }
 
 bool AwContents::IsVisible(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return browser_view_renderer_.IsClientVisible();
+}
+
+bool AwContents::IsDisplayingInterstitialForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  security_interstitials::SecurityInterstitialTabHelper*
+      security_interstitial_tab_helper = security_interstitials::
+          SecurityInterstitialTabHelper::FromWebContents(web_contents_.get());
+  return security_interstitial_tab_helper &&
+         security_interstitial_tab_helper->IsDisplayingInterstitial();
 }
 
 base::android::ScopedJavaLocalRef<jbyteArray> AwContents::GetOpaqueState(
@@ -1165,6 +1192,10 @@ void AwContents::SetDipScale(JNIEnv* env,
   SetDipScaleInternal(dip_scale);
 }
 
+void AwContents::OnInputEvent(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  browser_view_renderer_.OnInputEvent();
+}
+
 void AwContents::SetDipScaleInternal(float dip_scale) {
   browser_view_renderer_.SetDipScale(dip_scale);
 }
@@ -1264,8 +1295,8 @@ void AwContents::InsertVisualStateCallback(
     const JavaParamRef<jobject>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   web_contents_->GetMainFrame()->InsertVisualStateCallback(
-      base::Bind(&InvokeVisualStateCallback, java_ref_, request_id,
-                 ScopedJavaGlobalRef<jobject>(env, callback)));
+      base::BindOnce(&InvokeVisualStateCallback, java_ref_, request_id,
+                     ScopedJavaGlobalRef<jobject>(env, callback)));
 }
 
 jint AwContents::GetEffectivePriority(
@@ -1293,6 +1324,22 @@ JsJavaConfiguratorHost* AwContents::GetJsJavaConfiguratorHost() {
   return js_java_configurator_host_.get();
 }
 
+jint AwContents::AddDocumentStartJavascript(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& script,
+    const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules) {
+  return GetJsJavaConfiguratorHost()->AddDocumentStartJavascript(
+      env, script, allowed_origin_rules);
+}
+
+void AwContents::RemoveDocumentStartJavascript(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint script_id) {
+  GetJsJavaConfiguratorHost()->RemoveDocumentStartJavascript(env, script_id);
+}
+
 base::android::ScopedJavaLocalRef<jstring> AwContents::AddWebMessageListener(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
@@ -1308,6 +1355,16 @@ void AwContents::RemoveWebMessageListener(
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& js_object_name) {
   GetJsJavaConfiguratorHost()->RemoveWebMessageListener(env, js_object_name);
+}
+
+base::android::ScopedJavaLocalRef<jobjectArray> AwContents::GetJsObjectsInfo(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jclass>& clazz) {
+  if (js_java_configurator_host_.get()) {
+    return GetJsJavaConfiguratorHost()->GetJsObjectsInfo(env, clazz);
+  }
+  return nullptr;
 }
 
 void AwContents::ClearView(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -1407,6 +1464,23 @@ void AwContents::DidFinishNavigation(
       error_code != net::ERR_ABORTED) {
     return;
   }
+
+  // We do not call OnReceivedError for requests that were blocked due to an
+  // interstitial showing. OnReceivedError is handled directly by the blocking
+  // page for interstitials.
+  if (web_contents_) {
+    // We can't be showing an interstitial if there is no web_contents.
+    security_interstitials::SecurityInterstitialTabHelper*
+        security_interstitial_tab_helper = security_interstitials::
+            SecurityInterstitialTabHelper::FromWebContents(web_contents_.get());
+    if (security_interstitial_tab_helper &&
+        (security_interstitial_tab_helper->IsInterstitialPendingForNavigation(
+             navigation_handle->GetNavigationId()) ||
+         security_interstitial_tab_helper->IsDisplayingInterstitial())) {
+      return;
+    }
+  }
+
   AwContentsClientBridge* client =
       AwContentsClientBridge::FromWebContents(web_contents_.get());
   if (!client)
@@ -1418,21 +1492,7 @@ void AwContents::DidFinishNavigation(
                                navigation_handle->HasUserGesture(),
                                net::HttpRequestHeaders());
   request.is_renderer_initiated = navigation_handle->IsRendererInitiated();
-
-  client->OnReceivedError(request, error_code, false);
-}
-
-void AwContents::DidAttachInterstitialPage() {
-  RenderFrameHost* rfh = web_contents_->GetInterstitialPage()->GetMainFrame();
-  browser_view_renderer_.SetActiveFrameSinkId(
-      rfh->GetRenderViewHost()->GetWidget()->GetFrameSinkId());
-}
-
-void AwContents::DidDetachInterstitialPage() {
-  if (!web_contents_)
-    return;
-  browser_view_renderer_.SetActiveFrameSinkId(
-      web_contents_->GetRenderViewHost()->GetWidget()->GetFrameSinkId());
+  client->OnReceivedError(request, error_code, false, false);
 }
 
 bool AwContents::CanShowInterstitial() {
@@ -1451,31 +1511,11 @@ int AwContents::GetErrorUiType() {
   return Java_AwContents_getErrorUiType(env, obj);
 }
 
-void AwContents::EvaluateJavaScriptOnInterstitialForTesting(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& script,
-    const base::android::JavaParamRef<jobject>& callback) {
-  content::InterstitialPage* interstitial =
-      web_contents_->GetInterstitialPage();
-  DCHECK(interstitial);
-
-  if (!callback) {
-    // No callback requested.
-    interstitial->GetMainFrame()->ExecuteJavaScriptForTests(
-        ConvertJavaStringToUTF16(env, script), base::NullCallback());
-    return;
-  }
-
-  // Secure the Java callback in a scoped object and give ownership of it to the
-  // base::Callback.
-  ScopedJavaGlobalRef<jobject> j_callback;
-  j_callback.Reset(env, callback);
-  RenderFrameHost::JavaScriptResultCallback js_callback =
-      base::BindOnce(&JavaScriptResultCallbackForTesting, j_callback);
-
-  interstitial->GetMainFrame()->ExecuteJavaScriptForTests(
-      ConvertJavaStringToUTF16(env, script), std::move(js_callback));
+VisibilityMetricsLogger::VisibilityInfo AwContents::GetVisibilityInfo() {
+  return VisibilityMetricsLogger::VisibilityInfo{
+      browser_view_renderer_.attached_to_window(),
+      browser_view_renderer_.view_visible(),
+      browser_view_renderer_.window_visible()};
 }
 
 void AwContents::RendererUnresponsive(

@@ -4,7 +4,6 @@
 
 #import "ios/web/public/web_state_delegate_bridge.h"
 
-#include "base/logging.h"
 #import "ios/web/public/ui/context_menu_params.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -129,6 +128,60 @@ void WebStateDelegateBridge::CommitPreviewingViewController(
                  (webState:commitPreviewingViewController:)]) {
     [delegate_ webState:source
         commitPreviewingViewController:previewing_view_controller];
+  }
+}
+
+UIView* WebStateDelegateBridge::GetWebViewContainer(WebState* source) {
+  if ([delegate_ respondsToSelector:@selector(webViewContainerForWebState:)]) {
+    return [delegate_ webViewContainerForWebState:source];
+  }
+  return nil;
+}
+
+void WebStateDelegateBridge::ContextMenuConfiguration(
+    WebState* source,
+    const GURL& link_url,
+    void (^completion_handler)(UIContextMenuConfiguration*))
+    API_AVAILABLE(ios(13.0)) {
+  if ([delegate_
+          respondsToSelector:@selector
+          (webState:
+              contextMenuConfigurationForLinkWithURL:completionHandler:)]) {
+    [delegate_ webState:source
+        contextMenuConfigurationForLinkWithURL:link_url
+                             completionHandler:completion_handler];
+  }
+}
+
+void WebStateDelegateBridge::ContextMenuDidEnd(WebState* source,
+                                               const GURL& link_url)
+    API_AVAILABLE(ios(13.0)) {
+  if ([delegate_ respondsToSelector:@selector(webState:
+                                        contextMenuDidEndForLinkWithURL:)]) {
+    [delegate_ webState:source contextMenuDidEndForLinkWithURL:link_url];
+  }
+}
+
+void WebStateDelegateBridge::ContextMenuWillCommitWithAnimator(
+    WebState* source,
+    const GURL& link_url,
+    id<UIContextMenuInteractionCommitAnimating> animator)
+    API_AVAILABLE(ios(13.0)) {
+  if ([delegate_ respondsToSelector:@selector
+                 (webState:
+                     contextMenuForLinkWithURL:willCommitWithAnimator:)]) {
+    [delegate_ webState:source
+        contextMenuForLinkWithURL:link_url
+           willCommitWithAnimator:animator];
+  }
+}
+
+void WebStateDelegateBridge::ContextMenuWillPresent(WebState* source,
+                                                    const GURL& link_url)
+    API_AVAILABLE(ios(13.0)) {
+  if ([delegate_ respondsToSelector:@selector
+                 (webState:contextMenuWillPresentForLinkWithURL:)]) {
+    [delegate_ webState:source contextMenuWillPresentForLinkWithURL:link_url];
   }
 }
 

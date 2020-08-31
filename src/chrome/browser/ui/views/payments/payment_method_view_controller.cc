@@ -172,16 +172,6 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
   DISALLOW_COPY_AND_ASSIGN(PaymentMethodListItem);
 };
 
-std::unique_ptr<views::View> CreateHeaderView(const base::string16& text) {
-  auto label = std::make_unique<views::Label>(text);
-  label->SetMultiLine(true);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetBorder(views::CreateEmptyBorder(
-      kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets, 0,
-      kPaymentRequestRowHorizontalInsets));
-  return label;
-}
-
 }  // namespace
 
 PaymentMethodViewController::PaymentMethodViewController(
@@ -190,7 +180,8 @@ PaymentMethodViewController::PaymentMethodViewController(
     PaymentRequestDialogView* dialog)
     : PaymentRequestSheetController(spec, state, dialog),
       payment_method_list_(dialog),
-      enable_add_card_(!state->is_retry_called()) {
+      enable_add_card_(!state->is_retry_called() &&
+                       spec->supports_basic_card()) {
   const std::vector<std::unique_ptr<PaymentApp>>& available_apps =
       state->available_apps();
   for (const auto& app : available_apps) {
@@ -215,11 +206,6 @@ void PaymentMethodViewController::FillContentView(views::View* content_view) {
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
   content_view->SetLayoutManager(std::move(layout));
-
-  base::string16 sub_header =
-      GetCardTypesAreAcceptedText(spec()->supported_card_types_set());
-  if (!sub_header.empty())
-    content_view->AddChildView(CreateHeaderView(sub_header).release());
 
   std::unique_ptr<views::View> list_view =
       payment_method_list_.CreateListView();

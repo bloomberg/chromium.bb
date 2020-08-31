@@ -17,7 +17,6 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/resource_type.h"
 
 using predictors::AutocompleteActionPredictor;
 using predictors::ResourcePrefetchPredictor;
@@ -91,7 +90,7 @@ void PredictorsHandler::RequestResourcePrefetchPredictorDb(
       // Origin table cache.
       auto db = std::make_unique<base::ListValue>();
       AddOriginDataMapToListValue(
-          *resource_prefetch_predictor->origin_data_->data_cache_, db.get());
+          resource_prefetch_predictor->origin_data_->GetAllCached(), db.get());
       dict.Set("origin_db", std::move(db));
     }
   }

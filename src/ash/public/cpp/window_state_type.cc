@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/window_state_type.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace ash {
 
@@ -99,6 +99,10 @@ bool IsMaximizedOrFullscreenOrPinnedWindowStateType(WindowStateType type) {
 
 bool IsMinimizedWindowStateType(WindowStateType type) {
   return type == WindowStateType::kMinimized;
+}
+
+bool IsNormalWindowStateType(WindowStateType type) {
+  return type == WindowStateType::kNormal || type == WindowStateType::kDefault;
 }
 
 bool IsValidWindowStateType(int64_t value) {

@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/arm.gni")
+import("//build/config/sysroot.gni")
+import("//build_overrides/build.gni")
+
 declare_args() {
   # Enable OSP_DCHECKs to be compiled in, even if it's not a debug build.
   dcheck_always_on = false
@@ -11,7 +15,18 @@ declare_args() {
 
   # Enable thread sanitizer.
   is_tsan = false
+
+  # Must be enabled for fuzzing targets.
+  use_libfuzzer = false
+
+  # Enables clang's source-based coverage (requires is_clang=true).
+  # NOTE: This will slow down the build and increase binary size
+  # significantly. For more details, see:
+  # https://chromium.googlesource.com/chromium/src/+/refs/heads/master/docs/clang_code_coverage_wrapper.md
+  use_coverage = false
 }
+
+assert(!use_coverage || is_clang)
 
 config("compiler_defaults") {
   cflags = []
@@ -32,6 +47,31 @@ config("compiler_defaults") {
         "-latomic",
       ]
     }
+  }
+}
+
+config("compiler_cpu_abi") {
+  cflags = []
+  ldflags = []
+
+  if (current_cpu == "x64") {
+    # These are explicitly specified in case of cross-compiling.
+    cflags += [ "-m64" ]
+    ldflags += [ "-m64" ]
+  } else if (current_cpu == "x86") {
+    cflags += [ "-m32" ]
+    ldflags += [ "-m32" ]
+  } else if (current_cpu == "arm") {
+    cflags += [
+      "--target=arm-linux-gnueabihf",
+      "-march=$arm_arch",
+      "-mfloat-abi=$arm_float_abi",
+      "-mtune=$arm_tune",
+    ]
+    ldflags += [ "--target=arm-linux-gnueabihf" ]
+  } else if (current_cpu == "arm64") {
+    cflags += [ "--target=aarch64-linux-gnu" ]
+    ldflags += [ "--target=aarch64-linux-gnu" ]
   }
 }
 
@@ -165,5 +205,55 @@ config("default_sanitizers") {
   } else if (is_tsan) {
     cflags += [ "-fsanitize=thread" ]
     ldflags += [ "-fsanitize=thread" ]
+  }
+
+  if (use_libfuzzer) {
+    cflags += [ "-fsanitize=fuzzer-no-link" ]
+    if (!is_asan) {
+      ldflags += [ "-fsanitize=address" ]
+    }
+  }
+}
+
+config("default_coverage") {
+  cflags = []
+  ldflags = []
+
+  # TODO(issuetracker.google.com/155348032): Limit the use of these flags
+  if (use_coverage) {
+    cflags += [
+      "-fprofile-instr-generate",
+      "-fcoverage-mapping",
+    ]
+    ldflags += [ "-fprofile-instr-generate" ]
+  }
+}
+
+config("sysroot_runtime_libraries") {
+  if (sysroot != "") {
+    assert(is_clang)
+    sysroot_path = rebase_path(sysroot, root_build_dir)
+    flags = [ "--sysroot=" + sysroot_path ]
+    hash = exec_script("//build/scripts/install-sysroot.py",
+                       [
+                         "--print-hash",
+                         "$current_cpu",
+                         "$sysroot_platform",
+                       ],
+                       "trim string",
+                       [ "//build/scripts/sysroots.json" ])
+
+    # GN uses this to know that the sysroot is "dirty"
+    defines = [ "SYSROOT_HASH=$hash" ]
+    ldflags = flags
+    cflags = flags
+
+    ld_paths = exec_script("//build/scripts/sysroot_ld_path.py",
+                           [ sysroot_path ],
+                           "list lines")
+    foreach(ld_path, ld_paths) {
+      ld_path = rebase_path(ld_path, root_build_dir)
+      ldflags += [ "-L" + ld_path ]
+    }
   }
 }

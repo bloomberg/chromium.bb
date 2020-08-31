@@ -6,7 +6,6 @@ import jsone
 import mock
 import pytest
 import requests
-import sys
 import yaml
 from jsonschema import validate
 
@@ -20,9 +19,6 @@ def data_path(filename):
     return os.path.join(here, "..", "testdata", filename)
 
 
-@pytest.mark.xfail(sys.version_info.major == 2,
-                   reason="taskcluster library has an encoding bug "
-                   "https://github.com/taskcluster/json-e/issues/338")
 def test_verify_taskcluster_yml():
     """Verify that the json-e in the .taskcluster.yml is valid"""
     with open(os.path.join(root, ".taskcluster.yml"), encoding="utf8") as f:
@@ -46,11 +42,13 @@ def test_verify_payload():
     """Verify that the decision task produces tasks with a valid payload"""
     from tools.ci.tc.decision import decide
 
-    create_task_schema = requests.get(
-        "https://raw.githubusercontent.com/taskcluster/taskcluster/blob/master/services/queue/schemas/v1/create-task-request.yml")
-    create_task_schema = yaml.safe_load(create_task_schema.content)
+    r = requests.get("https://community-tc.services.mozilla.com/schemas/queue/v1/create-task-request.json")
+    r.raise_for_status()
+    create_task_schema = r.json()
 
-    payload_schema = requests.get("https://raw.githubusercontent.com/taskcluster/docker-worker/master/schemas/v1/payload.json").json()
+    r = requests.get("https://raw.githubusercontent.com/taskcluster/taskcluster/master/workers/docker-worker/schemas/v1/payload.json")
+    r.raise_for_status()
+    payload_schema = r.json()
 
     jobs = ["lint",
             "manifest_upload",
@@ -123,14 +121,21 @@ def test_verify_payload():
       'wpt-chrome-dev-reftest-5',
       'wpt-firefox-nightly-wdspec-1',
       'wpt-chrome-dev-wdspec-1',
+      'wpt-firefox-nightly-crashtest-1',
+      'wpt-chrome-dev-crashtest-1',
       'lint'}),
     ("pr_event.json", True, {".taskcluster.yml",".travis.yml","tools/ci/start.sh"},
-     {'lint',
+     {'download-firefox-nightly',
+      'lint',
       'tools/ unittests (Python 2)',
-      'tools/ unittests (Python 3)',
-      'tools/wpt/ tests',
+      'tools/ unittests (Python 3.6)',
+      'tools/ unittests (Python 3.8)',
+      'tools/wpt/ tests (Python 2)',
+      'tools/wpt/ tests (Python 3.6)',
+      'tools/wpt/ tests (Python 3.8)',
       'resources/ tests',
-      'infrastructure/ tests'}),
+      'infrastructure/ tests',
+      'infrastructure/ tests (Python 3)'}),
     # More tests are affected in the actual PR but it shouldn't affect the scheduled tasks
     ("pr_event_tests_affected.json", True, {"layout-instability/clip-negative-bottom-margin.html",
                                             "layout-instability/composited-element-movement.html"},
@@ -166,6 +171,7 @@ def test_verify_payload():
       'wpt-chrome-stable-testharness-8',
       'wpt-chrome-stable-testharness-9',
       'wpt-chrome-stable-wdspec-1',
+      'wpt-chrome-stable-crashtest-1',
       'wpt-firefox-stable-reftest-1',
       'wpt-firefox-stable-reftest-2',
       'wpt-firefox-stable-reftest-3',
@@ -188,6 +194,7 @@ def test_verify_payload():
       'wpt-firefox-stable-testharness-8',
       'wpt-firefox-stable-testharness-9',
       'wpt-firefox-stable-wdspec-1',
+      'wpt-firefox-stable-crashtest-1',
       'wpt-webkitgtk_minibrowser-nightly-reftest-1',
       'wpt-webkitgtk_minibrowser-nightly-reftest-2',
       'wpt-webkitgtk_minibrowser-nightly-reftest-3',
@@ -209,7 +216,31 @@ def test_verify_payload():
       'wpt-webkitgtk_minibrowser-nightly-testharness-7',
       'wpt-webkitgtk_minibrowser-nightly-testharness-8',
       'wpt-webkitgtk_minibrowser-nightly-testharness-9',
-      'wpt-webkitgtk_minibrowser-nightly-wdspec-1'})
+      'wpt-webkitgtk_minibrowser-nightly-wdspec-1',
+      'wpt-webkitgtk_minibrowser-nightly-crashtest-1',
+      'wpt-servo-nightly-reftest-1',
+      'wpt-servo-nightly-reftest-2',
+      'wpt-servo-nightly-reftest-3',
+      'wpt-servo-nightly-reftest-4',
+      'wpt-servo-nightly-reftest-5',
+      'wpt-servo-nightly-testharness-1',
+      'wpt-servo-nightly-testharness-10',
+      'wpt-servo-nightly-testharness-11',
+      'wpt-servo-nightly-testharness-12',
+      'wpt-servo-nightly-testharness-13',
+      'wpt-servo-nightly-testharness-14',
+      'wpt-servo-nightly-testharness-15',
+      'wpt-servo-nightly-testharness-16',
+      'wpt-servo-nightly-testharness-2',
+      'wpt-servo-nightly-testharness-3',
+      'wpt-servo-nightly-testharness-4',
+      'wpt-servo-nightly-testharness-5',
+      'wpt-servo-nightly-testharness-6',
+      'wpt-servo-nightly-testharness-7',
+      'wpt-servo-nightly-testharness-8',
+      'wpt-servo-nightly-testharness-9',
+      'wpt-servo-nightly-wdspec-1',
+      'wpt-servo-nightly-crashtest-1',})
 ])
 def test_schedule_tasks(event_path, is_pr, files_changed, expected):
     with mock.patch("tools.ci.tc.decision.get_fetch_rev", return_value=(None, None, None)):

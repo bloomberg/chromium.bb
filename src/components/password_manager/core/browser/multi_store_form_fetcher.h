@@ -21,11 +21,28 @@ class MultiStoreFormFetcher : public FormFetcherImpl {
                         bool should_migrate_http_passwords);
   ~MultiStoreFormFetcher() override;
 
+  // FormFetcher overrides.
   void Fetch() override;
+  bool IsBlacklisted() const override;
+  bool IsMovingBlocked(const autofill::GaiaIdHash& destination,
+                       const base::string16& username) const override;
+  std::unique_ptr<FormFetcher> Clone() override;
+
+  // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
  private:
+  // Splits |results| into |federated_|, |non_federated_|,
+  // |is_blacklisted_in_profile_store_| and |is_blacklisted_in_account_store_|.
+  void SplitResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
+
+  // Whether there were any blacklisted credentials obtained from the profile
+  // and account password stores respectively.
+  bool is_blacklisted_in_profile_store_ = false;
+  bool is_blacklisted_in_account_store_ = false;
+
   int wait_counter_ = 0;
   std::vector<std::unique_ptr<autofill::PasswordForm>> partial_results_;
 

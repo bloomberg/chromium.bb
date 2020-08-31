@@ -7,6 +7,7 @@ module media.mojom;
 import "media/mojo/mojom/media_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
+import "media/mojo/mojom/video_encoder_info.mojom";
 
 // This file is the Mojo version of the media::VideoEncodeAccelerator interface
 // and describes the communication between a Client and a remote "service"
@@ -32,16 +33,42 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 // time the Client can send a RequestEncodingParametersChange() to the VEA. None
 // of these messages are acknowledged.
 
+
+struct VideoEncodeAcceleratorSupportedProfile {
+  VideoCodecProfile profile;
+  gfx.mojom.Size min_resolution;
+  gfx.mojom.Size max_resolution;
+  uint32 max_framerate_numerator;
+  uint32 max_framerate_denominator;
+};
+
+// A renderer process calls this interface's functions. GPU process implements
+// this interface.
 interface VideoEncodeAcceleratorProvider {
   // Creates a VideoEncodeAccelerator bound to |receiver|.
   CreateVideoEncodeAccelerator(
         pending_receiver<VideoEncodeAccelerator> receiver);
+
+  // Get a VideoEncodeAccelerator supported profiles.
+  GetVideoEncodeAcceleratorSupportedProfiles()
+      => (array<VideoEncodeAcceleratorSupportedProfile> profiles);
 };
 
 // Class that describes how video bitrate, in bps, is allocated across temporal
 // and spatial layers. See media::VideoBitrateAllocation for more details.
 struct VideoBitrateAllocation {
   array<int32> bitrates;
+};
+
+// This defines a mojo transport format for
+// media::VideoEncodeAccelerator::Config::SpatialLayer.
+struct SpatialLayer {
+  int32 width;
+  int32 height;
+  uint32 bitrate_bps;
+  uint32 framerate;
+  uint8 max_qp;
+  uint8 num_of_temporal_layers;
 };
 
 // This defines a mojo transport format for
@@ -72,6 +99,7 @@ struct VideoEncodeAcceleratorConfig {
   StorageType storage_type;
   bool has_storage_type;  // Whether or not config has storage type config
   ContentType content_type;
+  array<SpatialLayer> spatial_layers;
 };
 
 interface VideoEncodeAccelerator {
@@ -83,7 +111,6 @@ interface VideoEncodeAccelerator {
   };
 
   // Responded by VideoEncodeAcceleratorClient.RequireBitstreamBuffers().
-  // TODO(mcasas): Update to asynchronous, https://crbug.com/744210.
   [Sync]
   Initialize(VideoEncodeAcceleratorConfig config,
              pending_remote<VideoEncodeAcceleratorClient> client)
@@ -123,4 +150,8 @@ interface VideoEncodeAcceleratorClient {
                        BitstreamBufferMetadata metadata);
 
   NotifyError(VideoEncodeAccelerator.Error error);
+
+  // VideoEncodeAccelerator calls this when its VideoEncoderInfo is changed.
+  // |info| is the updated VideoEncoderInfo.
+  NotifyEncoderInfoChange(VideoEncoderInfo info);
 };

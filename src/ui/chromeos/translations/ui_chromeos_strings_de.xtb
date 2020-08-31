@@ -22,13 +22,14 @@
 <translation id="1155759005174418845">Katalanisch</translation>
 <translation id="1173894706177603556">Umbenennen</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> wird kopiert...</translation>
-<translation id="1178581264944972037">Anhalten</translation>
+<translation id="1178581264944972037">Pause</translation>
 <translation id="1190144681599273207">Zum Abrufen dieser Datei werden etwa <ph name="FILE_SIZE" /> mobile Daten benötigt.</translation>
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1208421848177517699">Transliteration (namaste → નમસ્તે)</translation>
 <translation id="1243314992276662751">Hochladen</translation>
 <translation id="1249250836236328755">Genre</translation>
 <translation id="1278813325885878377">Ungarische QWERTY-Tastatur</translation>
+<translation id="1293556467332435079">Dateien</translation>
 <translation id="1297922636971898492">Google Drive ist momentan nicht verfügbar. Das Hochladen Ihrer Dateien wird automatisch fortgesetzt, sobald Google Drive wieder verfügbar ist.</translation>
 <translation id="1307931752636661898">Linux-Dateien können nicht angezeigt werden</translation>
 <translation id="1310751437842832374">Transliteration (mausam → ନମସ୍ତେ)</translation>
@@ -40,7 +41,7 @@
 <translation id="1358735829858566124">Die Datei oder das Verzeichnis kann nicht verwendet werden.</translation>
 <translation id="1363028406613469049">Titel</translation>
 <translation id="1378727793141957596">Willkommen bei Google Drive!</translation>
-<translation id="1383876407941801731">Suchen</translation>
+<translation id="1383876407941801731">Durchsuchen</translation>
 <translation id="1395262318152388157">Schieberegler für die Suche</translation>
 <translation id="1399648040768741453">Telugu-Tastatur (phonetisch)</translation>
 <translation id="1430915738399379752">Drucken</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">Gespeichert</translation>
 <translation id="1864756863218646478">Die Datei wurde nicht gefunden.</translation>
 <translation id="1921986354447415460">Tastatur "Türkisch-F"</translation>
+<translation id="1924372192547904021">"<ph name="DRIVE_NAME" />" wurde formatiert</translation>
 <translation id="1931134289871235022">Slowakisch</translation>
 <translation id="1933345018156373194">Unerwarteter Fehler beim Verschieben: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finnisch</translation>
@@ -88,6 +90,7 @@
 <translation id="1947424002851288782">Deutsche Tastatur</translation>
 <translation id="1972984168337863910">Erweiterte Dateiinformationen maximieren</translation>
 <translation id="1984603991036629094">Armenische phonetische Tastatur</translation>
+<translation id="1995337122023280937">Zum Dateispeicherort</translation>
 <translation id="2001796770603320721">In Drive verwalten</translation>
 <translation id="2009067268969781306">Durch die Formatierung eines Laufwerks werden alle darauf gespeicherten Daten gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</translation>
 <translation id="2028997212275086731">RAR-Archiv</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive konnte nicht erreicht werden. Bitte <ph name="BEGIN_LINK" />melden Sie sich ab<ph name="END_LINK" /> und melden Sie sich dann erneut an.</translation>
 <translation id="2649120831653069427">Regenbogenfisch</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Dateispeicherort</translation>
 <translation id="2672394958563893062">Ein Fehler ist aufgetreten. Klicken Sie, um von vorn zu beginnen.</translation>
 <translation id="2676946222714718093">Läuft gerade auf:</translation>
 <translation id="2735698359135166290">Rumänische Standardtastatur</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">Deutsche Neo2-Tastatur</translation>
 <translation id="2943400156390503548">Präsentationen</translation>
 <translation id="2943503720238418293">Verwenden Sie einen kürzeren Namen</translation>
+<translation id="2949781154072577687">"<ph name="DRIVE_NAME" />" wird formatiert...</translation>
 <translation id="2951236788251446349">Qualle</translation>
 <translation id="2963783323012015985">Türkische Tastatur</translation>
 <translation id="2966459079597787514">Schwedische Tastatur</translation>
@@ -184,7 +189,7 @@
 <translation id="3197563288998582412">UK – Dvorak</translation>
 <translation id="3202131003361292969">Pfad</translation>
 <translation id="3224239078034945833">Kanadisch – mehrsprachig</translation>
-<translation id="3236289833370040187">Die Inhaberschaft wird übertragen an <ph name="DESTINATION_DOMAIN" />.</translation>
+<translation id="3236289833370040187">Die Eigentümerschaft geht auf <ph name="DESTINATION_DOMAIN" /> über.</translation>
 <translation id="3241720467332021590">Irisch</translation>
 <translation id="3245321423178950146">Unbekannter Musiker</translation>
 <translation id="3252266817569339921">Französisch</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> Fehler</translation>
 <translation id="3519867315646775981">Transliteration (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugiesisch</translation>
+<translation id="3524311639100184459">Vorsicht: Dies sind temporäre Dateien, die möglicherweise automatisch gelöscht werden, um Speicherplatz freizugeben.  <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Ordner</translation>
 <translation id="3549797760399244642">Zu drive.google.com wechseln...</translation>
 <translation id="357479282490346887">Litauisch</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">Audio-Player</translation>
 <translation id="4002066346123236978">Titel</translation>
+<translation id="4065397611279318371">Wenn Sie Dateien mit <ph name="APP_NAME" />-Apps öffnen möchten, verschieben Sie sie zuerst in den <ph name="SHARED_DIRECTORY_LABEL" />-Ordner.</translation>
 <translation id="4070370845051020638">Kantonesische Eingabemethode</translation>
 <translation id="4072248638558688893">Tamil-Tastatur (phonetisch)</translation>
 <translation id="4124935795427217608">Einhorn</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">Fehler beim Kopieren. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">Melone</translation>
 <translation id="4372884569765913867">1 x 1</translation>
+<translation id="4394214039309501350">Externer Link</translation>
 <translation id="4425149324548788773">Meine Ablage</translation>
 <translation id="4465830120256509958">Brasilianische Tastatur</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">Autom. Korrektur</translation>
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="4886021172213954916">Tamil-Tastatur (Schreibmaschine)</translation>
+<translation id="4892969127351273348">Öffnen mit <ph name="APP_NAME" /> nicht möglich</translation>
 <translation id="4905417359854579806">Bereit zum Sichern von <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Korrigiert</translation>
 <translation id="4935975195727477204">Mittagsgoldblume</translation>
@@ -377,7 +386,7 @@
 <translation id="5323213332664049067">Lateinamerikanisch</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5330145655348521461">Diese Dateien wurden auf einem anderen Desktop geöffnet. Wechseln Sie zu <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), um sie anzusehen.</translation>
-<translation id="5330512191124428349">Informationen abrufen</translation>
+<translation id="5330512191124428349">Informationen ansehen</translation>
 <translation id="5335458522276292100"><ph name="FILE_COUNT" /> werden auf <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> gesichert</translation>
 <translation id="5358764674931277">Framerate</translation>
 <translation id="5368191757080475556">Ordner für Linux freigeben</translation>
@@ -445,7 +454,7 @@
 <translation id="6074825444536523002">Google-Formular</translation>
 <translation id="6096979789310008754">Die Sucheingabe wurde gelöscht. Alle Dateien und Ordner werden angezeigt.</translation>
 <translation id="6111770213269631447">Transliteration (namaskar → নমস্কার)</translation>
-<translation id="6129953537138746214">Leerzeichen</translation>
+<translation id="6129953537138746214">Leertaste</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> wird verschoben...</translation>
 <translation id="6146563240635539929">Videos</translation>
 <translation id="6150853954427645995">Wenn Sie diese Datei zur Offline-Nutzung speichern möchten, gehen Sie online, klicken Sie mit der rechten Maustaste auf die Datei und wählen Sie die Option "<ph name="OFFLINE_CHECKBOX_NAME" />" aus.</translation>
@@ -496,6 +505,7 @@
 <translation id="6806699711453372963">Freigabe über Linux verwalten</translation>
 <translation id="6808193438228982088">Fuchs</translation>
 <translation id="6820687829547641339">Gzip-komprimiertes Tar-Archiv</translation>
+<translation id="6823166707458800069">Alle in diesem Ordner gespeicherten Dateien werden automatisch online gesichert.</translation>
 <translation id="6825883775269213504">Russisch</translation>
 <translation id="6827236167376090743">Dieses Video läuft immer weiter und weiter...</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> wurde aus der Auswahl entfernt.</translation>
@@ -505,6 +515,7 @@
 <translation id="6878261347041253038">Devanagari-Tastatur (phonetisch)</translation>
 <translation id="6885780034956018177">Schnecke</translation>
 <translation id="6896758677409633944">Kopieren</translation>
+<translation id="6898028766943174120">Weitere Unterordner…</translation>
 <translation id="691516599546977041">Fehler beim Speichern unter "<ph name="FOLDER_NAME" />". Bearbeitete Bilder werden im Ordner "Downloads" gespeichert.</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">US-amerikanische Workman-Tastatur</translation>
@@ -517,6 +528,7 @@
 <translation id="696203921837389374">Synchronisierung über mobile Daten aktivieren</translation>
 <translation id="6965382102122355670">Ok</translation>
 <translation id="6970230597523682626">Bulgarisch</translation>
+<translation id="6973630695168034713">Ordner</translation>
 <translation id="6978611942794658017">Diese Datei wurde für Computer entwickelt, die mit Windows-Software betrieben werden. Die Datei ist nicht kompatibel mit Ihrem Chrome OS-Gerät. Suchen Sie im Chrome Web Store nach einer geeigneten Ersatz-App.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6990081529015358884">Sie haben keinen freien Speicherplatz mehr.</translation>
@@ -550,6 +562,7 @@
 <translation id="7417705661718309329">Google-Karte</translation>
 <translation id="7419631653042041064">Katalanische Tastatur</translation>
 <translation id="7434823369735508263">Englische Dvorak-Tastatur</translation>
+<translation id="7447678886297481665">Dateien in diesem Ordner sind schreibgeschützt. Einige Aktivitäten werden nicht unterstützt.</translation>
 <translation id="7460898608667578234">Ukrainisch</translation>
 <translation id="7474889694310679759">Kanadisch-englische Tastatur</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> gefunden
@@ -568,6 +581,7 @@
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" /> Elemente werden verschoben...</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
+<translation id="7695430100978772476">"<ph name="DRIVE_NAME" />" konnte nicht formatiert werden</translation>
 <translation id="770015031906360009">Griechisch</translation>
 <translation id="7706319470528945664">Portugiesische Tastatur</translation>
 <translation id="7711920809702896782">Bildinformationen</translation>

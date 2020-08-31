@@ -24,6 +24,8 @@ using testing::_;
 
 namespace blink {
 
+namespace {
+
 class HTMLVideoElementMockMediaPlayer : public EmptyWebMediaPlayer {
  public:
   MOCK_METHOD1(SetIsEffectivelyFullscreen, void(WebFullscreenVideoStatus));
@@ -31,13 +33,14 @@ class HTMLVideoElementMockMediaPlayer : public EmptyWebMediaPlayer {
   MOCK_CONST_METHOD0(HasAvailableVideoFrame, bool());
 };
 
+}  // namespace
+
 class HTMLVideoElementTest : public PageTestBase {
  public:
   void SetUp() override {
     auto mock_media_player =
         std::make_unique<HTMLVideoElementMockMediaPlayer>();
     media_player_ = mock_media_player.get();
-
     SetupPageWithClients(nullptr,
                          MakeGarbageCollected<test::MediaStubLocalFrameClient>(
                              std::move(mock_media_player)),
@@ -74,14 +77,16 @@ TEST_F(HTMLVideoElementTest, PictureInPictureInterstitialAndTextContainer) {
   video()->UpdateTextTrackDisplay();
 
   // Simulate entering Picture-in-Picture.
-  EXPECT_CALL(*MockWebMediaPlayer(), OnDisplayTypeChanged(_));
+  EXPECT_CALL(*MockWebMediaPlayer(),
+              OnDisplayTypeChanged(WebMediaPlayer::DisplayType::kInline));
   video()->OnEnteredPictureInPicture();
 
   // Simulate that text track are displayed again.
   video()->UpdateTextTrackDisplay();
 
   EXPECT_EQ(3u, video()->EnsureUserAgentShadowRoot().CountChildren());
-
+  EXPECT_CALL(*MockWebMediaPlayer(),
+              OnDisplayTypeChanged(WebMediaPlayer::DisplayType::kInline));
   // Reset cc::layer to avoid crashes depending on timing.
   SetFakeCcLayer(nullptr);
 }
@@ -94,12 +99,17 @@ TEST_F(HTMLVideoElementTest, PictureInPictureInterstitial_Reattach) {
   video()->SetSrc("http://example.com/foo.mp4");
   test::RunPendingTasks();
 
-  EXPECT_CALL(*MockWebMediaPlayer(), OnDisplayTypeChanged(_));
+  EXPECT_CALL(*MockWebMediaPlayer(),
+              OnDisplayTypeChanged(WebMediaPlayer::DisplayType::kInline));
   EXPECT_CALL(*MockWebMediaPlayer(), HasAvailableVideoFrame())
       .WillRepeatedly(testing::Return(true));
 
   // Simulate entering Picture-in-Picture.
   video()->OnEnteredPictureInPicture();
+
+  EXPECT_CALL(*MockWebMediaPlayer(),
+              OnDisplayTypeChanged(WebMediaPlayer::DisplayType::kInline))
+      .Times(3);
 
   // Try detaching and reattaching. This should not crash.
   GetDocument().body()->removeChild(video());

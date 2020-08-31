@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 
+#include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -42,6 +43,7 @@
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/editing/set_selection_options.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -82,7 +84,7 @@ TextControlElement::~TextControlElement() = default;
 
 void TextControlElement::DispatchFocusEvent(
     Element* old_focused_element,
-    WebFocusType type,
+    mojom::blink::FocusType type,
     InputDeviceCapabilities* source_capabilities) {
   if (SupportsPlaceholder())
     UpdatePlaceholderVisibility();
@@ -93,7 +95,7 @@ void TextControlElement::DispatchFocusEvent(
 
 void TextControlElement::DispatchBlurEvent(
     Element* new_focused_element,
-    WebFocusType type,
+    mojom::blink::FocusType type,
     InputDeviceCapabilities* source_capabilities) {
   if (SupportsPlaceholder())
     UpdatePlaceholderVisibility();
@@ -222,8 +224,8 @@ void TextControlElement::select() {
   setSelectionRangeForBinding(0, std::numeric_limits<unsigned>::max());
   // Avoid SelectionBehaviorOnFocus::Restore, which scrolls containers to show
   // the selection.
-  focus(
-      FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
+  focus(FocusParams(SelectionBehaviorOnFocus::kNone,
+                    mojom::blink::FocusType::kNone, nullptr));
   RestoreCachedSelection();
 }
 
@@ -246,11 +248,15 @@ void TextControlElement::ClearValueBeforeFirstUserEdit() {
   value_before_first_user_edit_ = String();
 }
 
-void TextControlElement::SetFocused(bool flag, WebFocusType focus_type) {
+void TextControlElement::SetFocused(bool flag,
+                                    mojom::blink::FocusType focus_type) {
   HTMLFormControlElementWithState::SetFocused(flag, focus_type);
 
   if (!flag)
     DispatchFormControlChangeEvent();
+
+  if (auto* inner_editor = InnerEditorElement())
+    inner_editor->FocusChanged();
 }
 
 void TextControlElement::DispatchFormControlChangeEvent() {
@@ -771,6 +777,13 @@ void TextControlElement::ParseAttribute(
              params.name == html_names::kDisabledAttr) {
     DisabledOrReadonlyAttributeChanged(params.name);
     HTMLFormControlElementWithState::ParseAttribute(params);
+    if (params.new_value.IsNull())
+      return;
+
+    if (HTMLElement* inner_editor = InnerEditorElement()) {
+      if (auto* frame = GetDocument().GetFrame())
+        frame->GetSpellChecker().RemoveSpellingAndGrammarMarkers(*inner_editor);
+    }
   } else {
     HTMLFormControlElementWithState::ParseAttribute(params);
   }
@@ -972,11 +985,11 @@ String TextControlElement::DirectionForFormData() const {
     if (dir_attribute_value.IsNull())
       continue;
 
-    if (DeprecatedEqualIgnoringCase(dir_attribute_value, "rtl") ||
-        DeprecatedEqualIgnoringCase(dir_attribute_value, "ltr"))
+    if (EqualIgnoringASCIICase(dir_attribute_value, "rtl") ||
+        EqualIgnoringASCIICase(dir_attribute_value, "ltr"))
       return dir_attribute_value;
 
-    if (DeprecatedEqualIgnoringCase(dir_attribute_value, "auto")) {
+    if (EqualIgnoringASCIICase(dir_attribute_value, "auto")) {
       bool is_auto;
       TextDirection text_direction =
           element->DirectionalityIfhasDirAutoAttribute(is_auto);

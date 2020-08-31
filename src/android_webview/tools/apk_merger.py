@@ -48,12 +48,12 @@ BUILD_ANDROID_DIR = os.path.join(SRC_DIR, 'build', 'android')
 BUILD_ANDROID_GYP_DIR = os.path.join(BUILD_ANDROID_DIR, 'gyp')
 sys.path.append(BUILD_ANDROID_GYP_DIR)
 
-import finalize_apk # pylint: disable=import-error,wrong-import-position
-from util import build_utils # pylint: disable=import-error,wrong-import-position
+import finalize_apk  # pylint: disable=wrong-import-position
+from util import build_utils  # pylint: disable=wrong-import-position
 
 sys.path.append(BUILD_ANDROID_DIR)
 
-from pylib import constants  # pylint: disable=import-error,wrong-import-position
+from pylib import constants  # pylint: disable=wrong-import-position
 
 DEFAULT_ZIPALIGN_PATH = os.path.join(
     SRC_DIR, 'third_party', 'android_sdk', 'public', 'build-tools',
@@ -252,11 +252,15 @@ def main():
   try:
     MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64)
 
-    apksigner_path = os.path.join(
-        os.path.dirname(args.zipalign_path), 'apksigner')
-    finalize_apk.FinalizeApk(apksigner_path, args.zipalign_path,
-                             tmp_apk, new_apk, args.keystore_path,
-                             args.key_password, args.key_name)
+    apksigner_jar = os.path.join(
+        os.path.dirname(args.zipalign_path), 'lib', 'apksigner.jar')
+    # Official APKs are re-signed anyways, so it is not important to figure out
+    # the correct min_sdk_version. Use 21 since that's the lowest supported
+    # webview version.
+    min_sdk_version = 21
+    finalize_apk.FinalizeApk(apksigner_jar, args.zipalign_path, tmp_apk,
+                             new_apk, args.keystore_path, args.key_password,
+                             args.key_name, min_sdk_version)
   finally:
     shutil.rmtree(tmp_dir)
   return 0

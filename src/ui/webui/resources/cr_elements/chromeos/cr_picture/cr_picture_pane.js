@@ -11,20 +11,18 @@
 Polymer({
   is: 'cr-picture-pane',
 
-  behaviors: [CrPngBehavior],
-
   properties: {
 
     /** Whether the camera is present / available */
     cameraPresent: Boolean,
 
-    /** Image source to show when imageType != CAMERA. */
+    /** Image source to show when imageType !== CAMERA. */
     imageSrc: {
       type: String,
       observer: 'imageSrcChanged_',
     },
 
-    /** Image URL to use when imageType != CAMERA. */
+    /** Image URL to use when imageType !== CAMERA. */
     imageUrl: {
       type: String,
       value: '',
@@ -62,7 +60,7 @@ Polymer({
    * Tells the camera to take a photo; the camera will fire a 'photo-taken'
    * event when the photo is completed.
    */
-  takePhoto: function() {
+  takePhoto() {
     const camera = /** @type {?CrCameraElement} */ (this.$$('#camera'));
     if (camera) {
       camera.takePhoto();
@@ -70,7 +68,7 @@ Polymer({
   },
 
   /** Tells the pane to focus the main action button. */
-  focusActionButton: function() {
+  focusActionButton() {
     if (this.showDiscard_()) {
       this.$.discardImage.focus();
     } else if (this.cameraActive_) {
@@ -82,13 +80,13 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getCameraActive_: function() {
+  getCameraActive_() {
     return this.cameraPresent &&
-        this.imageType == CrPicture.SelectionTypes.CAMERA;
+        this.imageType === CrPicture.SelectionTypes.CAMERA;
   },
 
   /** @private */
-  cameraActiveChanged_: function() {
+  cameraActiveChanged_() {
     const camera = /** @type {?CrCameraElement} */ (this.$$('#camera'));
     if (!camera) {
       return;
@@ -101,7 +99,7 @@ Polymer({
   },
 
   /** @private */
-  imageSrcChanged_: function() {
+  imageSrcChanged_() {
     /**
      * If current image URL is an object URL created below then revoke it to
      * prevent this code from using more than one object URL per document.
@@ -123,8 +121,8 @@ Polymer({
       }
       const blob = new Blob([bytes], {'type': 'image/png'});
       // Use first frame as placeholder while rest of image loads.
-      image.style.backgroundImage = 'url(' +
-          CrPngBehavior.convertImageSequenceToPng([this.imageSrc]) + ')';
+      image.style.backgroundImage =
+          'url(' + cr.png.convertImageSequenceToPng([this.imageSrc]) + ')';
       this.imageUrl = URL.createObjectURL(blob);
     } else {
       image.style.backgroundImage = 'none';
@@ -136,7 +134,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showImagePreview_: function() {
+  showImagePreview_() {
     return !this.cameraActive_ && !!this.imageSrc;
   },
 
@@ -144,12 +142,12 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showDiscard_: function() {
-    return this.imageType == CrPicture.SelectionTypes.OLD;
+  showDiscard_() {
+    return this.imageType === CrPicture.SelectionTypes.OLD;
   },
 
   /** @private */
-  onTapDiscardImage_: function() {
+  onTapDiscardImage_() {
     this.fire('discard-image');
   },
 
@@ -159,7 +157,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getImgSrc_: function(url) {
+  getImgSrc_(url) {
     // Always use 2x user image for preview.
     if (url.startsWith('chrome://theme')) {
       return url + '@2x';

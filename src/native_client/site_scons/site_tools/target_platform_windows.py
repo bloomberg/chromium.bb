@@ -244,7 +244,8 @@ def generate(env):
   # itself.  A more principled fix would be nice.
 
   use_msvc_tools = (env['PLATFORM'] in ('win32', 'cygwin')
-                    and not env.Bit('built_elsewhere'))
+                    and not env.Bit('built_elsewhere')
+                    and not env.Bit('force_no_trusted_build'))
 
   # Preserve some variables that get blown away by the tools.
   saved = dict()

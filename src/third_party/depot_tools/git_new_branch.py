@@ -9,11 +9,44 @@ Create new branch tracking origin/master by default.
 import argparse
 import sys
 
+import git_common
 import subprocess2
 
-from git_common import run, root, set_config, get_or_create_merge_base, tags
-from git_common import hash_one, upstream, set_branch_config, current_branch
 
+def create_new_branch(
+    branch_name, upstream_current=False, upstream=None, inject_current=False):
+  upstream = upstream or git_common.root()
+  try:
+    if inject_current:
+      below = git_common.current_branch()
+      if below is None:
+        raise Exception('no current branch')
+      above = git_common.upstream(below)
+      if above is None:
+        raise Exception('branch %s has no upstream' % (below))
+      git_common.run('checkout', '--track', above, '-b', branch_name)
+      git_common.run('branch', '--set-upstream-to', branch_name, below)
+    elif upstream_current:
+      git_common.run('checkout', '--track', '-b', branch_name)
+    else:
+      if upstream in git_common.tags():
+        # TODO(iannucci): ensure that basis_ref is an ancestor of HEAD?
+        git_common.run(
+            'checkout', '--no-track', '-b', branch_name,
+            git_common.hash_one(upstream))
+        git_common.set_config('branch.%s.remote' % branch_name, '.')
+        git_common.set_config('branch.%s.merge' % branch_name, upstream)
+      else:
+        # TODO(iannucci): Detect unclean workdir then stash+pop if we need to
+        # teleport to a conflicting portion of history?
+        git_common.run('checkout', '--track', upstream, '-b', branch_name)
+    git_common.get_or_create_merge_base(branch_name)
+  except subprocess2.CalledProcessError as cpe:
+    sys.stdout.write(cpe.stdout.decode('utf-8', 'replace'))
+    sys.stderr.write(cpe.stderr.decode('utf-8', 'replace'))
+    return 1
+  sys.stderr.write('Switched to branch %s.\n' % branch_name)
+  return 0
 
 def main(args):
   parser = argparse.ArgumentParser(
@@ -25,7 +58,7 @@ def main(args):
   g.add_argument('--upstream-current', '--upstream_current',
                  action='store_true',
                  help='set upstream branch to current branch.')
-  g.add_argument('--upstream', metavar='REF', default=root(),
+  g.add_argument('--upstream', metavar='REF',
                  help='upstream branch (or tag) to track.')
   g.add_argument('--inject-current', '--inject_current',
                  action='store_true',
@@ -36,36 +69,9 @@ def main(args):
 
   opts = parser.parse_args(args)
 
-  try:
-    if opts.inject_current:
-      below = current_branch()
-      if below is None:
-        raise Exception('no current branch')
-      above = upstream(below)
-      if above is None:
-        raise Exception('branch %s has no upstream' % (below))
-      run('checkout', '--track', above, '-b', opts.branch_name)
-      run('branch', '--set-upstream-to', opts.branch_name, below)
-    elif opts.upstream_current:
-      run('checkout', '--track', '-b', opts.branch_name)
-    else:
-      if opts.upstream in tags():
-        # TODO(iannucci): ensure that basis_ref is an ancestor of HEAD?
-        run('checkout', '--no-track', '-b', opts.branch_name,
-            hash_one(opts.upstream))
-        set_config('branch.%s.remote' % opts.branch_name, '.')
-        set_config('branch.%s.merge' % opts.branch_name, opts.upstream)
-      else:
-        # TODO(iannucci): Detect unclean workdir then stash+pop if we need to
-        # teleport to a conflicting portion of history?
-        run('checkout', '--track', opts.upstream, '-b', opts.branch_name)
-    get_or_create_merge_base(opts.branch_name)
-  except subprocess2.CalledProcessError as cpe:
-    sys.stdout.write(cpe.stdout.decode('utf-8', 'replace'))
-    sys.stderr.write(cpe.stderr.decode('utf-8', 'replace'))
-    return 1
-  sys.stderr.write('Switched to branch %s.\n' % opts.branch_name)
-  return 0
+  return create_new_branch(
+      opts.branch_name, opts.upstream_current, opts.upstream,
+      opts.inject_current)
 
 
 if __name__ == '__main__':  # pragma: no cover

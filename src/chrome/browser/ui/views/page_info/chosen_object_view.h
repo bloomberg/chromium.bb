@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_CHOSEN_OBJECT_VIEW_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/page_info/page_info_ui.h"
+#include "base/strings/string16.h"
+#include "components/page_info/page_info_ui.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -22,7 +23,8 @@ class ChosenObjectViewObserver;
 // access to.
 class ChosenObjectView : public views::View, public views::ButtonListener {
  public:
-  explicit ChosenObjectView(std::unique_ptr<PageInfoUI::ChosenObjectInfo> info);
+  explicit ChosenObjectView(std::unique_ptr<PageInfoUI::ChosenObjectInfo> info,
+                            base::string16 display_name);
   ~ChosenObjectView() override;
 
   void AddObserver(ChosenObjectViewObserver* observer);

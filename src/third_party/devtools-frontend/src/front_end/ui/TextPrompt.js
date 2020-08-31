@@ -26,11 +26,23 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+
+import * as ARIAUtils from './ARIAUtils.js';
+import {SuggestBox, SuggestBoxDelegate, Suggestion, Suggestions} from './SuggestBox.js';  // eslint-disable-line no-unused-vars
+import {ElementFocusRestorer} from './UIUtils.js';
+import {appendStyle} from './utils/append-style.js';
+
 /**
- * @implements {UI.SuggestBoxDelegate}
+ * @implements {SuggestBoxDelegate}
  * @unrestricted
  */
-export default class TextPrompt extends Common.Object {
+export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
     /**
@@ -44,13 +56,18 @@ export default class TextPrompt extends Common.Object {
     this._previousText = '';
     this._currentSuggestion = null;
     this._completionRequestId = 0;
-    this._ghostTextElement = createElementWithClass('span', 'auto-complete-text');
+    this._ghostTextElement = document.createElement('span');
+    this._ghostTextElement.classList.add('auto-complete-text');
     this._ghostTextElement.setAttribute('contenteditable', 'false');
-    UI.ARIAUtils.markAsHidden(this._ghostTextElement);
+    /**
+     * @type {!Array<number>}
+     */
+    this._leftParenthesesIndices = [];
+    ARIAUtils.markAsHidden(this._ghostTextElement);
   }
 
   /**
-   * @param {(function(this:null, string, string, boolean=):!Promise<!UI.SuggestBox.Suggestions>)} completions
+   * @param {function(this:null, string, string, boolean=):!Promise<!Suggestions>} completions
    * @param {string=} stopCharacters
    */
   initialize(completions, stopCharacters) {
@@ -87,7 +104,7 @@ export default class TextPrompt extends Common.Object {
    * (since the "blur" event does not bubble.)
    *
    * @param {!Element} element
-   * @param {function(!Event)} blurListener
+   * @param {function(!Event):*} blurListener
    * @return {!Element}
    */
   attachAndStartEditing(element, blurListener) {
@@ -111,13 +128,13 @@ export default class TextPrompt extends Common.Object {
     this._boundOnMouseWheel = this.onMouseWheel.bind(this);
     this._boundClearAutocomplete = this.clearAutocomplete.bind(this);
     this._proxyElement = element.ownerDocument.createElement('span');
-    UI.appendStyle(this._proxyElement, 'ui/textPrompt.css');
+    appendStyle(this._proxyElement, 'ui/textPrompt.css');
     this._contentElement = this._proxyElement.createChild('div', 'text-prompt-root');
     this._proxyElement.style.display = this._proxyElementDisplay;
     element.parentElement.insertBefore(this._proxyElement, element);
     this._contentElement.appendChild(element);
     this._element.classList.add('text-prompt');
-    UI.ARIAUtils.markAsTextBox(this._element);
+    ARIAUtils.markAsTextBox(this._element);
     this._element.setAttribute('contenteditable', 'plaintext-only');
     this._element.addEventListener('keydown', this._boundOnKeyDown, false);
     this._element.addEventListener('input', this._boundOnInput, false);
@@ -125,7 +142,7 @@ export default class TextPrompt extends Common.Object {
     this._element.addEventListener('selectstart', this._boundClearAutocomplete, false);
     this._element.addEventListener('blur', this._boundClearAutocomplete, false);
 
-    this._suggestBox = new UI.SuggestBox(this, 20);
+    this._suggestBox = new SuggestBox(this, 20);
 
     if (this._title) {
       this._proxyElement.title = this._title;
@@ -212,10 +229,10 @@ export default class TextPrompt extends Common.Object {
       this._element.setAttribute('data-placeholder', placeholder);
       // TODO(https://github.com/nvaccess/nvda/issues/10164): Remove ariaPlaceholder once the NVDA bug is fixed
       // ariaPlaceholder and placeholder may differ, like in case the placeholder contains a '?'
-      UI.ARIAUtils.setPlaceholder(this._element, ariaPlaceholder || placeholder);
+      ARIAUtils.setPlaceholder(this._element, ariaPlaceholder || placeholder);
     } else {
       this._element.removeAttribute('data-placeholder');
-      UI.ARIAUtils.setPlaceholder(this._element, null);
+      ARIAUtils.setPlaceholder(this._element, null);
     }
   }
 
@@ -246,11 +263,12 @@ export default class TextPrompt extends Common.Object {
   }
 
   /**
-   * @param {function(!Event)=} blurListener
+   * @param {function(!Event):*=} blurListener
    */
   _startEditing(blurListener) {
     this._isEditing = true;
     this._contentElement.classList.add('text-prompt-editing');
+    this._focusRestorer = new ElementFocusRestorer(this._element);
     if (blurListener) {
       this._blurListener = blurListener;
       this._element.addEventListener('blur', this._blurListener, false);
@@ -259,7 +277,6 @@ export default class TextPrompt extends Common.Object {
     if (this._element.tabIndex < 0) {
       this._element.tabIndex = 0;
     }
-    this._focusRestorer = new UI.ElementFocusRestorer(this._element);
     if (!this.text()) {
       this.autoCompleteSoon();
     }
@@ -356,8 +373,32 @@ export default class TextPrompt extends Common.Object {
    * @param {!Event} event
    */
   onInput(event) {
-    const text = this.text();
-    if (event.data && !this._acceptSuggestionOnStopCharacters(event.data)) {
+    let text = this.text();
+    const currentEntry = event.data;
+
+    if (event.inputType === 'insertFromPaste' && text.includes('\n')) {
+      /* Ensure that we remove any linebreaks from copied/pasted content
+       * to avoid breaking the rendering of the filter bar.
+       * See crbug.com/849563.
+       * We don't let users enter linebreaks when
+       * typing manually, so we should escape them if copying text in.
+       */
+      text = Platform.StringUtilities.stripLineBreaks(text);
+      this.setText(text);
+    }
+
+    // Skip the current ')' entry if the caret is right before a ')' and there's an unmatched '('.
+    const caretPosition = this._getCaretPosition();
+    if (currentEntry === ')' && caretPosition >= 0 && this._leftParenthesesIndices.length > 0) {
+      const nextCharAtCaret = text[caretPosition];
+      if (nextCharAtCaret === ')' && this._tryMatchingLeftParenthesis(caretPosition)) {
+        text = text.substring(0, caretPosition) + text.substring(caretPosition + 1);
+        this.setText(text);
+        return;
+      }
+    }
+
+    if (currentEntry && !this._acceptSuggestionOnStopCharacters(currentEntry)) {
       const hasCommonPrefix = text.startsWith(this._previousText) || this._previousText.startsWith(text);
       if (this._queryRange && hasCommonPrefix) {
         this._queryRange.endColumn += text.length - this._previousText.length;
@@ -499,7 +540,7 @@ export default class TextPrompt extends Common.Object {
 
   /**
    * @param {string} query
-   * @return {!UI.SuggestBox.Suggestions}
+   * @return {!Suggestions}
    */
   additionalCompletions(query) {
     return [];
@@ -510,7 +551,7 @@ export default class TextPrompt extends Common.Object {
    * @param {!Selection} selection
    * @param {!Range} originalWordQueryRange
    * @param {boolean} force
-   * @param {!UI.SuggestBox.Suggestions} completions
+   * @param {!Suggestions} completions
    */
   _completionsReady(completionRequestId, selection, originalWordQueryRange, force, completions) {
     if (this._completionRequestId !== completionRequestId) {
@@ -562,7 +603,7 @@ export default class TextPrompt extends Common.Object {
 
   /**
    * @override
-   * @param {?UI.SuggestBox.Suggestion} suggestion
+   * @param {?Suggestion} suggestion
    * @param {boolean=} isIntermediateSuggestion
    */
   applySuggestion(suggestion, isIntermediateSuggestion) {
@@ -594,6 +635,7 @@ export default class TextPrompt extends Common.Object {
     const startColumn = selectionRange ? selectionRange.startColumn : suggestionLength;
     this._element.textContent = this.textWithCurrentSuggestion();
     this.setDOMSelection(this._queryRange.startColumn + startColumn, this._queryRange.startColumn + endColumn);
+    this._updateLeftParenthesesIndices();
 
     this.clearAutocomplete();
     this.dispatchEventToListeners(Events.TextChanged);
@@ -695,6 +737,25 @@ export default class TextPrompt extends Common.Object {
   }
 
   /**
+   * @return {number} -1 if no caret can be found in text prompt
+   */
+  _getCaretPosition() {
+    if (!this._element.hasFocus()) {
+      return -1;
+    }
+
+    const selection = this._element.getComponentSelection();
+    const selectionRange = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
+    if (!selectionRange || !selection.isCollapsed) {
+      return -1;
+    }
+    if (selectionRange.startOffset !== selectionRange.endOffset) {
+      return -1;
+    }
+    return selectionRange.startOffset;
+  }
+
+  /**
    * @param {!Event} event
    * @return {boolean}
    */
@@ -708,6 +769,39 @@ export default class TextPrompt extends Common.Object {
   proxyElementForTests() {
     return this._proxyElement || null;
   }
+
+  /**
+   * Try matching the most recent open parenthesis with the given right
+   * parenthesis, and closes the matched left parenthesis if found.
+   * Return the result of the matching.
+   * @param {number} rightParenthesisIndex
+   * @return {boolean}
+   */
+  _tryMatchingLeftParenthesis(rightParenthesisIndex) {
+    const leftParenthesesIndices = this._leftParenthesesIndices;
+    if (leftParenthesesIndices.length === 0 || rightParenthesisIndex < 0) {
+      return false;
+    }
+
+    for (let i = leftParenthesesIndices.length - 1; i >= 0; --i) {
+      if (leftParenthesesIndices[i] < rightParenthesisIndex) {
+        leftParenthesesIndices.splice(i, 1);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  _updateLeftParenthesesIndices() {
+    const text = this.text();
+    const leftParenthesesIndices = this._leftParenthesesIndices = [];
+    for (let i = 0; i < text.length; ++i) {
+      if (text[i] === '(') {
+        leftParenthesesIndices.push(i);
+      }
+    }
+  }
 }
 
 const DefaultAutocompletionTimeout = 250;
@@ -716,15 +810,3 @@ const DefaultAutocompletionTimeout = 250;
 export const Events = {
   TextChanged: Symbol('TextChanged')
 };
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.TextPrompt = TextPrompt;
-
-/** @enum {symbol} */
-UI.TextPrompt.Events = Events;

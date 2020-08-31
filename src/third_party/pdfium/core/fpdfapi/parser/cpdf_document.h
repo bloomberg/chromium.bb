@@ -7,32 +7,20 @@
 #ifndef CORE_FPDFAPI_PARSER_CPDF_DOCUMENT_H_
 #define CORE_FPDFAPI_PARSER_CPDF_DOCUMENT_H_
 
-#include <functional>
 #include <memory>
 #include <set>
 #include <utility>
 #include <vector>
 
-#include "build/build_config.h"
-#include "core/fpdfapi/parser/cpdf_object.h"
 #include "core/fpdfapi/parser/cpdf_parser.h"
 #include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 
-class CFX_Font;
-class CFX_Matrix;
-class CPDF_LinearizedHeader;
-class CPDF_Object;
 class CPDF_ReadValidator;
 class CPDF_StreamAcc;
 class IFX_SeekableReadStream;
 class JBig2_DocumentContext;
-
-#define FPDFPERM_MODIFY 0x0008
-#define FPDFPERM_ANNOT_FORM 0x0020
-#define FPDFPERM_FILL_FORM 0x0100
-#define FPDFPERM_EXTRACT_ACCESS 0x0200
 
 class CPDF_Document : public Observable,
                       public CPDF_Parser::ParsedObjectsHolder {
@@ -86,7 +74,9 @@ class CPDF_Document : public Observable,
     UnownedPtr<CPDF_Document> m_pDoc;
   };
 
-  static const int kPageMaxNum = 0xFFFFF;
+  static constexpr int kPageMaxNum = 0xFFFFF;
+
+  static bool IsValidPageObject(const CPDF_Object* obj);
 
   CPDF_Document(std::unique_ptr<RenderDataIface> pRenderData,
                 std::unique_ptr<PageDataIface> pPageData);
@@ -100,6 +90,7 @@ class CPDF_Document : public Observable,
   CPDF_Parser* GetParser() const { return m_pParser.get(); }
   CPDF_Dictionary* GetRoot() const { return m_pRootDict.Get(); }
   CPDF_Dictionary* GetInfo();
+  const CPDF_Array* GetFileIdentifier() const;
 
   void DeletePage(int iPage);
   int GetPageCount() const;
@@ -122,8 +113,9 @@ class CPDF_Document : public Observable,
     m_pLinksContext = std::move(pContext);
   }
 
-  //  CPDF_Parser::ParsedObjectsHolder overrides:
+  // CPDF_Parser::ParsedObjectsHolder:
   bool TryInit() override;
+  RetainPtr<CPDF_Object> ParseIndirectObject(uint32_t objnum) override;
 
   CPDF_Parser::Error LoadDoc(
       const RetainPtr<IFX_SeekableReadStream>& pFileAccess,
@@ -143,6 +135,12 @@ class CPDF_Document : public Observable,
   uint32_t GetParsedPageCountForTesting() { return m_ParsedPageCount; }
 
  protected:
+  void SetParser(std::unique_ptr<CPDF_Parser> pParser);
+
+  void SetRootForTesting(CPDF_Dictionary* root);
+  void ResizePageListForTesting(size_t size);
+
+ private:
   class StockFontClearer {
    public:
     explicit StockFontClearer(CPDF_Document::PageDataIface* pPageData);
@@ -156,14 +154,10 @@ class CPDF_Document : public Observable,
   int RetrievePageCount();
   // When this method is called, m_pTreeTraversal[level] exists.
   CPDF_Dictionary* TraversePDFPages(int iPage, int* nPagesToGo, size_t level);
-  int FindPageIndex(const CPDF_Dictionary* pNode,
-                    uint32_t* skip_count,
-                    uint32_t objnum,
-                    int* index,
-                    int level) const;
-  RetainPtr<CPDF_Object> ParseIndirectObject(uint32_t objnum) override;
+
   const CPDF_Dictionary* GetPagesDict() const;
   CPDF_Dictionary* GetPagesDict();
+
   bool InsertDeletePDFPage(CPDF_Dictionary* pPages,
                            int nPagesToGo,
                            CPDF_Dictionary* pPageDict,
@@ -171,7 +165,6 @@ class CPDF_Document : public Observable,
                            std::set<CPDF_Dictionary*>* pVisited);
   bool InsertNewPage(int iPage, CPDF_Dictionary* pPageDict);
   void ResetTraversal();
-  void SetParser(std::unique_ptr<CPDF_Parser> pParser);
   CPDF_Parser::Error HandleLoadResult(CPDF_Parser::Error error);
 
   std::unique_ptr<CPDF_Parser> m_pParser;

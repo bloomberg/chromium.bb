@@ -67,7 +67,7 @@ aomdec_av1_ivf() {
   if [ "$(aomdec_can_decode_av1)" = "yes" ]; then
     local file="${AV1_IVF_FILE}"
     if [ ! -e "${file}" ]; then
-      encode_yuv_raw_input_av1 "${file}" --ivf
+      encode_yuv_raw_input_av1 "${file}" --ivf || return 1
     fi
     aomdec "${AV1_IVF_FILE}" --summary --noblit
   fi
@@ -77,7 +77,7 @@ aomdec_av1_ivf_error_resilient() {
   if [ "$(aomdec_can_decode_av1)" = "yes" ]; then
     local file="av1.error-resilient.ivf"
     if [ ! -e "${file}" ]; then
-      encode_yuv_raw_input_av1 "${file}" --ivf --error-resilient=1
+      encode_yuv_raw_input_av1 "${file}" --ivf --error-resilient=1 || return 1
     fi
     aomdec "${file}" --summary --noblit
   fi
@@ -87,10 +87,10 @@ aomdec_av1_ivf_multithread() {
   if [ "$(aomdec_can_decode_av1)" = "yes" ]; then
     local file="${AV1_IVF_FILE}"
     if [ ! -e "${file}" ]; then
-      encode_yuv_raw_input_av1 "${file}" --ivf
+      encode_yuv_raw_input_av1 "${file}" --ivf || return 1
     fi
     for threads in 2 3 4 5 6 7 8; do
-      aomdec "${file}" --summary --noblit --threads=$threads
+      aomdec "${file}" --summary --noblit --threads=$threads || return 1
     done
   fi
 }
@@ -99,7 +99,7 @@ aomdec_aom_ivf_pipe_input() {
   if [ "$(aomdec_can_decode_av1)" = "yes" ]; then
     local file="${AV1_IVF_FILE}"
     if [ ! -e "${file}" ]; then
-      encode_yuv_raw_input_av1 "${file}" --ivf
+      encode_yuv_raw_input_av1 "${file}" --ivf || return 1
     fi
     aomdec_pipe "${AV1_IVF_FILE}" --summary --noblit
   fi
@@ -109,7 +109,7 @@ aomdec_av1_obu_annexb() {
   if [ "$(aomdec_can_decode_av1)" = "yes" ]; then
     local file="${AV1_OBU_ANNEXB_FILE}"
     if [ ! -e "${file}" ]; then
-      encode_yuv_raw_input_av1 "${file}" --obu --annexb=1
+      encode_yuv_raw_input_av1 "${file}" --obu --annexb=1 || return 1
     fi
     aomdec "${file}" --summary --noblit --annexb
   fi
@@ -119,7 +119,7 @@ aomdec_av1_obu_section5() {
   if [ "$(aomdec_can_decode_av1)" = "yes" ]; then
     local file="${AV1_OBU_SEC5_FILE}"
     if [ ! -e "${file}" ]; then
-      encode_yuv_raw_input_av1 "${file}" --obu
+      encode_yuv_raw_input_av1 "${file}" --obu || return 1
     fi
     aomdec "${file}" --summary --noblit
   fi
@@ -130,7 +130,7 @@ aomdec_av1_webm() {
      [ "$(webm_io_available)" = "yes" ]; then
     local file="${AV1_WEBM_FILE}"
     if [ ! -e "${file}" ]; then
-      encode_yuv_raw_input_av1 "${file}"
+      encode_yuv_raw_input_av1 "${file}" || return 1
     fi
     aomdec "${AV1_WEBM_FILE}" --summary --noblit
   fi

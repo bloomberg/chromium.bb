@@ -13,6 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "components/viz/common/frame_timing_details_map.h"
+#include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "content/common/content_export.h"
@@ -29,6 +30,7 @@ class Transform;
 
 namespace viz {
 class CompositorFrame;
+class BeginFrameSource;
 }
 
 namespace content {
@@ -55,6 +57,7 @@ class CONTENT_EXPORT SynchronousCompositor {
 
     uint32_t layer_tree_frame_sink_id;
     std::unique_ptr<viz::CompositorFrame> frame;
+    base::Optional<viz::HitTestRegionList> hit_test_region_list;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Frame);
@@ -124,8 +127,13 @@ class CONTENT_EXPORT SynchronousCompositor {
   // and if any input animation is active, it should tick now.
   virtual void OnComputeScroll(base::TimeTicks animation_time) = 0;
 
-  // Called when viz for webview enabled to drive browser-side fling
-  virtual void ProgressFling(base::TimeTicks frame_time) = 0;
+  // Sets BeginFrameSource to use
+  virtual void SetBeginFrameSource(
+      viz::BeginFrameSource* begin_frame_source) = 0;
+
+  // Called when client invalidated because it was necessary for drawing sub
+  // clients. Used with viz for webview only.
+  virtual void DidInvalidate() = 0;
 
  protected:
   virtual ~SynchronousCompositor() {}

@@ -41,6 +41,7 @@ class SadTab {
   // suggests reloading and subsequent ones suggest sending feedback.)
   int GetTitle();
   int GetInfoMessage();
+  int GetErrorCodeFormatString();
   int GetButtonTitle();
   int GetHelpLinkTitle();
 
@@ -48,9 +49,11 @@ class SadTab {
   // bullet points should be displayed.
   std::vector<int> GetSubMessages();
 
-  // Returns the target of the "Learn more" link. Use it for the context menu
-  // and to show the URL on hover, but call PerformAction() for regular clicks.
+  // Returns the target of the "Learn more" link.
   const char* GetHelpLinkURL();
+
+  // Returns the error code describing the reason for the crash.
+  int GetCrashedErrorCode();
 
   // Virtual for testing.
   virtual void RecordFirstPaint();
@@ -64,6 +67,10 @@ class SadTab {
  private:
   content::WebContents* web_contents_;
   SadTabKind kind_;
+  // True if a crash happened in the last ten seconds. Repeated crashes
+  // may suggest additional troubleshooting steps.
+  bool is_repeatedly_crashing_;
+  // True if repeatedly crashing and the browser is Google Chrome branded.
   bool show_feedback_button_;
   bool recorded_paint_;
 

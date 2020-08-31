@@ -13,6 +13,7 @@
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/favicon/core/favicon_service.h"
@@ -64,8 +65,8 @@ std::vector<ash::NotifierMetadata> WebPageNotifierController::GetNotifierList(
     // that URL.
     favicon_service->GetFaviconImageForPageURL(
         url,
-        base::Bind(&WebPageNotifierController::OnFaviconLoaded,
-                   base::Unretained(this), url),
+        base::BindOnce(&WebPageNotifierController::OnFaviconLoaded,
+                       base::Unretained(this), url),
         favicon_tracker_.get());
   }
 

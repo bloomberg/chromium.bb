@@ -46,10 +46,10 @@ struct LineStateMachine {
     end_sequence = false;
   }
 
-  uint32 file_num;
-  uint64 address;
-  uint32 line_num;
-  uint32 column_num;
+  uint32_t file_num;
+  uint64_t address;
+  uint32_t line_num;
+  uint32_t column_num;
   bool is_stmt;  // stmt means statement.
   bool basic_block;
   bool end_sequence;

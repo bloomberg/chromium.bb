@@ -16,6 +16,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider_handler_view.h"
 #include "ash/wm/splitview/split_view_utils.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -36,10 +37,6 @@ namespace ash {
 
 namespace {
 
-// The distance to the divider edge in which a touch gesture will be considered
-// as a valid event on the divider.
-constexpr int kDividerEdgeInsetForTouch = 8;
-
 // The window targeter that is installed on the always on top container window
 // when the split view mode is active.
 class AlwaysOnTopWindowTargeter : public aura::WindowTargeter {
@@ -55,7 +52,8 @@ class AlwaysOnTopWindowTargeter : public aura::WindowTargeter {
     if (target == divider_window_) {
       *hit_test_rect_mouse = *hit_test_rect_touch = gfx::Rect(target->bounds());
       hit_test_rect_touch->Inset(
-          gfx::Insets(-kDividerEdgeInsetForTouch, -kDividerEdgeInsetForTouch));
+          gfx::Insets(-SplitViewDivider::kDividerEdgeInsetForTouch,
+                      -SplitViewDivider::kDividerEdgeInsetForTouch));
       return true;
     }
     return aura::WindowTargeter::GetHitTestRects(target, hit_test_rect_mouse,
@@ -122,6 +120,12 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
 
   // views::View:
   void Layout() override {
+    // There is no divider in clamshell split view. If we are in clamshell mode,
+    // then we must be transitioning from tablet mode, and the divider will be
+    // destroyed, meaning there is no need to update it.
+    if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+      return;
+
     divider_view_->SetBoundsRect(GetLocalBounds());
     divider_handler_view_->Refresh(controller_->is_resizing());
   }
@@ -340,15 +344,12 @@ void SplitViewDivider::RemoveObservedWindow(aura::Window* window) {
   }
 }
 
-void SplitViewDivider::OnWindowDragStarted(aura::Window* dragged_window) {
+void SplitViewDivider::OnWindowDragStarted() {
   is_dragging_window_ = true;
   SetAlwaysOnTop(false);
 
   aura::Window* divider_window = divider_widget_->GetNativeWindow();
-  // If |divider_window| and |dragged_window| are siblings, then make sure that
-  // |divider_window| is stacked below |dragged_window|.
-  if (divider_window->parent() == dragged_window->parent())
-    divider_window->parent()->StackChildBelow(divider_window, dragged_window);
+  divider_window->parent()->StackChildAtBottom(divider_window);
 }
 
 void SplitViewDivider::OnWindowDragEnded() {

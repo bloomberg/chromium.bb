@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/power/ml/recent_events_counter.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_helpers.h"
@@ -86,8 +87,8 @@ AppLaunchEventLogger::AppLaunchEventLogger()
               kDayDuration,
               kQuarterHoursInADay)),
       weak_factory_(this) {
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   EnforceLoggingPolicy();
 }
@@ -339,7 +340,7 @@ ukm::SourceId AppLaunchEventLogger::GetSourceId(
     const std::string& arc_package_name,
     const std::string& pwa_url) {
   if (app_type == AppLaunchEvent_AppType_CHROME) {
-    return ukm::AppSourceUrlRecorder::GetSourceIdForChromeApp(app_id);
+    return ukm::AppSourceUrlRecorder::GetSourceIdForChromeExtension(app_id);
   } else if (app_type == AppLaunchEvent_AppType_PWA) {
     return ukm::AppSourceUrlRecorder::GetSourceIdForPWA(GURL(pwa_url));
   } else if (app_type == AppLaunchEvent_AppType_PLAY) {

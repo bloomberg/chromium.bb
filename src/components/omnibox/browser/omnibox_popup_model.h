@@ -21,6 +21,7 @@
 class OmniboxPopupModelObserver;
 class OmniboxPopupView;
 class GURL;
+class PrefService;
 
 namespace gfx {
 class Image;
@@ -28,14 +29,84 @@ class Image;
 
 class OmniboxPopupModel {
  public:
-  // See selected_line_state_ for details.
-  enum LineState {
-    NORMAL = 0,
-    KEYWORD,
-    BUTTON_FOCUSED
+  // Directions for stepping through selections. These may apply for going
+  // up/down by lines or cycling left/right through states within a line.
+  enum Direction { kForward, kBackward };
+
+  // When changing selections, these are the possible stepping behaviors.
+  enum Step {
+    // Step by an entire line regardless of line state. Usually used for the
+    // Up and Down arrow keys.
+    kWholeLine,
+
+    // Step by a state if another one is available on the current line;
+    // otherwise step by line. Usually used for the Tab and Shift+Tab keys.
+    kStateOrLine,
+
+    // Step by a state if another one is available on the current line;
+    // otherwise do not step. Usually used for the Left and Right arrow keys.
+    kStateOrNothing,
+
+    // Step across all lines to the first or last line. Usually used for the
+    // PgUp and PgDn keys.
+    kAllLines
   };
 
-  OmniboxPopupModel(OmniboxPopupView* popup_view, OmniboxEditModel* edit_model);
+  // The sentinel value for Selection::line which means no line is selected.
+  static const size_t kNoMatch;
+
+  // See |Selection::state| below for details. The numeric values are to aid
+  // comparison only. They are not persisted anywhere and can be freely changed.
+  enum LineState {
+    // This means the Header above this row is highlighted, and the
+    // header collapse/expand button is focused.
+    HEADER_BUTTON_FOCUSED = 0,
+
+    // NORMAL means the row is focused, and Enter key navigates to the match.
+    NORMAL = 1,
+
+    // KEYWORD state means actually in keyword mode, as distinct from the
+    // FOCUSED_BUTTON_KEYWORD state, which is only for button focus.
+    KEYWORD = 2,
+
+    // The single (ambiguous) button focus state is not used when button row
+    // is enabled. Instead, the specific FOCUSED_* states below apply.
+    BUTTON_FOCUSED = 3,
+
+    // Button row focus states:
+    FOCUSED_BUTTON_KEYWORD = 4,
+    FOCUSED_BUTTON_TAB_SWITCH = 5,
+    FOCUSED_BUTTON_PEDAL = 6,
+  };
+
+  struct Selection {
+    // The currently selected line.  This is kNoMatch when nothing is selected,
+    // which should only be true when the popup is closed.
+    size_t line;
+
+    // If the selected line has both a normal match and a keyword match, this
+    // determines whether the normal match (if NORMAL) or the keyword match
+    // (if KEYWORD) is selected. Likewise, if the selected line has a normal
+    // match and a tab switch match, this determines whether the tab switch
+    // match (if BUTTON_FOCUSED) is selected.
+    LineState state;
+
+    Selection(size_t line, LineState state) : line(line), state(state) {}
+
+    bool operator==(const Selection&) const;
+    bool operator!=(const Selection&) const;
+    bool operator<(const Selection&) const;
+
+    // Returns true if going to this selection from given |from| selection
+    // results in activation of keyword state when it wasn't active before.
+    bool IsChangeToKeyword(Selection from) const;
+  };
+
+  // |pref_service| can be nullptr, in which case OmniboxPopupModel won't
+  // account for collapsed headers.
+  OmniboxPopupModel(OmniboxPopupView* popup_view,
+                    OmniboxEditModel* edit_model,
+                    PrefService* pref_service);
   ~OmniboxPopupModel();
 
   // Computes the maximum width, in pixels, that can be allocated for the two
@@ -75,9 +146,9 @@ class OmniboxPopupModel {
     return autocomplete_controller()->result();
   }
 
-  size_t selected_line() const { return selected_line_; }
-
-  LineState selected_line_state() const { return selected_line_state_; }
+  Selection selection() const { return selection_; }
+  size_t selected_line() const { return selection_.line; }
+  LineState selected_line_state() const { return selection_.state; }
 
   // Call to change the selected line.  This will update all state and repaint
   // the necessary parts of the window, as well as updating the edit with the
@@ -94,12 +165,6 @@ class OmniboxPopupModel {
   // Called when the user hits escape after arrowing around the popup.  This
   // will reset the popup to the initial state.
   void ResetToInitialState();
-
-  // Immediately updates and opens the popup if necessary, then moves the
-  // current selection to the respective line. If the line is unchanged, the
-  // selection will be unchanged, but the popup will still redraw and modify
-  // the text in the OmniboxEditModel.
-  void MoveTo(size_t new_line);
 
   // If the selected line has both a normal match and a keyword match, this can
   // be used to choose which to select.  This allows the user to toggle between
@@ -152,9 +217,32 @@ class OmniboxPopupModel {
 
   OmniboxEditModel* edit_model() { return edit_model_; }
 
-  // The token value for selected_line_ and functions dealing with a "line
-  // number" that indicates "no line".
-  static const size_t kNoMatch;
+  // Gets all the available selections, filtered by |direction| and |step|, as
+  // well as feature flags and the matches' states.
+  std::vector<Selection> GetAllAvailableSelectionsSorted(Direction direction,
+                                                         Step step) const;
+
+  // Advances selection with consideration for both line number and line state.
+  // |direction| indicates direction of step, and |step| determines what kind
+  // of step to take. Returns the next selection, which could be anything.
+  Selection GetNextSelection(Direction direction, Step step) const;
+
+  // Applies the next selection as provided by GetNextSelection.
+  // Stepping the popup model selection gives special consideration for
+  // keyword mode state maintained in the edit model.
+  Selection StepSelection(Direction direction, Step step);
+
+  // Applies a given selection. Use GetNextSelection instead of constructing
+  // a selection from scratch.
+  void SetSelection(Selection selection);
+
+  // Preserves current selection line but resets it to default state.
+  // Returns new selection.
+  Selection ClearSelectionState();
+
+  // Returns true if the |selection| is available according to result matches.
+  // It doesn't account for some Step methods skipping some selections.
+  bool IsSelectionAvailable(Selection selection) const;
 
  private:
   void OnFaviconFetched(const GURL& page_url, const gfx::Image& icon);
@@ -165,16 +253,10 @@ class OmniboxPopupModel {
 
   OmniboxEditModel* edit_model_;
 
-  // The currently selected line.  This is kNoMatch when nothing is selected,
-  // which should only be true when the popup is closed.
-  size_t selected_line_;
+  // Non-owning reference to the pref service. Can be nullptr in tests or iOS.
+  PrefService* const pref_service_;
 
-  // If the selected line has both a normal match and a keyword match, this
-  // determines whether the normal match (if NORMAL) or the keyword match
-  // (if KEYWORD) is selected. Likewise, if the selected line has a normal
-  // match and a tab switch match, this determines whether the tab switch match
-  // (if TAB_SWITCH) is selected.
-  LineState selected_line_state_;
+  Selection selection_;
 
   // When a result changes, this informs of the URL in the previously selected
   // suggestion whose tab switch button was focused, so that we may compare

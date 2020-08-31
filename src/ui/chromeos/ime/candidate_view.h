@@ -36,6 +36,8 @@ class UI_CHROMEOS_EXPORT CandidateView : public views::Button {
 
   void SetHighlighted(bool highlighted);
 
+  void SetPositionData(int index, int total);
+
  private:
   friend class CandidateWindowViewTest;
   FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, ShortcutSettingTest);
@@ -48,6 +50,7 @@ class UI_CHROMEOS_EXPORT CandidateView : public views::Button {
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // The orientation of the candidate view.
   ui::CandidateWindow::Orientation orientation_;
@@ -56,17 +59,21 @@ class UI_CHROMEOS_EXPORT CandidateView : public views::Button {
   // child views will be deleted when |this| is deleted.
 
   // The shortcut label renders shortcut numbers like 1, 2, and 3.
-  views::Label* shortcut_label_;
+  views::Label* shortcut_label_ = nullptr;
   // The candidate label renders candidates.
-  views::Label* candidate_label_;
+  views::Label* candidate_label_ = nullptr;
   // The annotation label renders annotations.
-  views::Label* annotation_label_;
+  views::Label* annotation_label_ = nullptr;
   // The infolist icon.
-  views::View* infolist_icon_;
+  views::View* infolist_icon_ = nullptr;
 
-  int shortcut_width_;
-  int candidate_width_;
-  bool highlighted_;
+  int shortcut_width_ = 0;
+  int candidate_width_ = 0;
+  bool highlighted_ = false;
+
+  // 0-based index of this candidate e.g. [0, total_candidates_ -1].
+  int candidate_index_;
+  int total_candidates_;
 
   DISALLOW_COPY_AND_ASSIGN(CandidateView);
 };

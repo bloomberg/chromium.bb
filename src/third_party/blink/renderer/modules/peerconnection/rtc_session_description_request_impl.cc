@@ -55,7 +55,7 @@ RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(
     RTCPeerConnection* requester,
     V8RTCSessionDescriptionCallback* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       operation_(operation),
       success_callback_(success_callback),
       error_callback_(error_callback),
@@ -90,7 +90,7 @@ void RTCSessionDescriptionRequestImpl::RequestFailed(
   Clear();
 }
 
-void RTCSessionDescriptionRequestImpl::ContextDestroyed(ExecutionContext*) {
+void RTCSessionDescriptionRequestImpl::ContextDestroyed() {
   Clear();
 }
 
@@ -100,12 +100,12 @@ void RTCSessionDescriptionRequestImpl::Clear() {
   requester_.Clear();
 }
 
-void RTCSessionDescriptionRequestImpl::Trace(blink::Visitor* visitor) {
+void RTCSessionDescriptionRequestImpl::Trace(Visitor* visitor) {
   visitor->Trace(success_callback_);
   visitor->Trace(error_callback_);
   visitor->Trace(requester_);
   RTCSessionDescriptionRequest::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

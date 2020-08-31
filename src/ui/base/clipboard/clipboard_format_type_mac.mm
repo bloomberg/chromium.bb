@@ -47,6 +47,10 @@ ClipboardFormatType ClipboardFormatType::Deserialize(
   return ClipboardFormatType(base::SysUTF8ToNSString(serialization));
 }
 
+std::string ClipboardFormatType::GetName() const {
+  return Serialize();
+}
+
 bool ClipboardFormatType::operator<(const ClipboardFormatType& other) const {
   return [data_ compare:other.data_] == NSOrderedAscending;
 }
@@ -66,30 +70,15 @@ const ClipboardFormatType& ClipboardFormatType::GetUrlType() {
 }
 
 // static
-const ClipboardFormatType& ClipboardFormatType::GetUrlWType() {
-  return ClipboardFormatType::GetUrlType();
-}
-
-// static
 const ClipboardFormatType& ClipboardFormatType::GetPlainTextType() {
   static base::NoDestructor<ClipboardFormatType> type(NSPasteboardTypeString);
   return *type;
 }
 
 // static
-const ClipboardFormatType& ClipboardFormatType::GetPlainTextWType() {
-  return ClipboardFormatType::GetPlainTextType();
-}
-
-// static
 const ClipboardFormatType& ClipboardFormatType::GetFilenameType() {
   static base::NoDestructor<ClipboardFormatType> type(NSFilenamesPboardType);
   return *type;
-}
-
-// static
-const ClipboardFormatType& ClipboardFormatType::GetFilenameWType() {
-  return ClipboardFormatType::GetFilenameType();
 }
 
 // static

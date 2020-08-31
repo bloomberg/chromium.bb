@@ -11,13 +11,11 @@
 #include "media/mojo/services/mojo_cdm_file_io.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/cpp/connect.h"
 
 namespace media {
 
-MojoCdmHelper::MojoCdmHelper(
-    service_manager::mojom::InterfaceProvider* interface_provider)
-    : interface_provider_(interface_provider) {}
+MojoCdmHelper::MojoCdmHelper(mojom::FrameInterfaceFactory* frame_interfaces)
+    : frame_interfaces_(frame_interfaces) {}
 
 MojoCdmHelper::~MojoCdmHelper() = default;
 
@@ -38,27 +36,6 @@ cdm::FileIO* MojoCdmHelper::CreateCdmFileIO(cdm::FileIOClient* client) {
   cdm_file_io_set_.push_back(std::move(mojo_cdm_file_io));
   return cdm_file_io;
 }
-
-#if BUILDFLAG(ENABLE_CDM_PROXY)
-cdm::CdmProxy* MojoCdmHelper::CreateCdmProxy(cdm::CdmProxyClient* client) {
-  DVLOG(3) << __func__;
-  if (cdm_proxy_) {
-    DVLOG(1) << __func__ << ": Only one outstanding CdmProxy allowed.";
-    return nullptr;
-  }
-
-  mojo::PendingRemote<mojom::CdmProxy> cdm_proxy_remote;
-  service_manager::GetInterface<mojom::CdmProxy>(
-      interface_provider_, cdm_proxy_remote.InitWithNewPipeAndPassReceiver());
-  cdm_proxy_ =
-      std::make_unique<MojoCdmProxy>(std::move(cdm_proxy_remote), client);
-  return cdm_proxy_.get();
-}
-
-int MojoCdmHelper::GetCdmProxyCdmId() {
-  return cdm_proxy_ ? cdm_proxy_->GetCdmId() : CdmContext::kInvalidCdmId;
-}
-#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 cdm::Buffer* MojoCdmHelper::CreateCdmBuffer(size_t capacity) {
   return GetAllocator()->CreateCdmBuffer(capacity);
@@ -118,8 +95,8 @@ void MojoCdmHelper::ReportFileReadSize(int file_size_bytes) {
 
 void MojoCdmHelper::ConnectToCdmStorage() {
   if (!cdm_storage_remote_) {
-    service_manager::GetInterface<mojom::CdmStorage>(
-        interface_provider_, cdm_storage_remote_.BindNewPipeAndPassReceiver());
+    frame_interfaces_->CreateCdmStorage(
+        cdm_storage_remote_.BindNewPipeAndPassReceiver());
   }
 }
 
@@ -131,16 +108,15 @@ CdmAllocator* MojoCdmHelper::GetAllocator() {
 
 void MojoCdmHelper::ConnectToOutputProtection() {
   if (!output_protection_) {
-    service_manager::GetInterface<mojom::OutputProtection>(
-        interface_provider_, output_protection_.BindNewPipeAndPassReceiver());
+    frame_interfaces_->BindEmbedderReceiver(mojo::GenericPendingReceiver(
+        output_protection_.BindNewPipeAndPassReceiver()));
   }
 }
 
 void MojoCdmHelper::ConnectToPlatformVerification() {
   if (!platform_verification_) {
-    interface_provider_->GetInterface(
-        mojom::PlatformVerification::Name_,
-        platform_verification_.BindNewPipeAndPassReceiver().PassPipe());
+    frame_interfaces_->BindEmbedderReceiver(mojo::GenericPendingReceiver(
+        platform_verification_.BindNewPipeAndPassReceiver()));
   }
 }
 

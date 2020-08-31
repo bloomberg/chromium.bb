@@ -30,6 +30,10 @@ namespace gl {
 
 class GL_EXPORT SurfaceControl {
  public:
+  // Check if the platform is capable of supporting the low-level SurfaceControl
+  // API. See also gpu/config/gpu_util's GetAndroidSurfaceControlFeatureStatus
+  // which checks other prerequisites such as Gpufence support before declaring
+  // support for the high-level SurfaceControl feature in Chrome.
   static bool IsSupported();
 
   // Returns true if overlays with |color_space| are supported by the platform.
@@ -42,6 +46,9 @@ class GL_EXPORT SurfaceControl {
   // Enables usage bits requires for getting UBWC on Qualcomm devices. Must be
   // called early at process startup, before any buffer allocations are made.
   static void EnableQualcommUBWC();
+
+  // Returns true if tagging a surface with a frame rate value is supported.
+  static bool SupportsSetFrameRate();
 
   class GL_EXPORT Surface : public base::RefCounted<Surface> {
    public:
@@ -113,6 +120,7 @@ class GL_EXPORT SurfaceControl {
     void SetDamageRect(const Surface& surface, const gfx::Rect& rect);
     void SetColorSpace(const Surface& surface,
                        const gfx::ColorSpace& color_space);
+    void SetFrameRate(const Surface& surface, float frame_rate);
 
     // Sets the callback which will be dispatched when the transaction is acked
     // by the framework.
@@ -122,6 +130,7 @@ class GL_EXPORT SurfaceControl {
     void SetOnCompleteCb(
         OnCompleteCb cb,
         scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+    void SetParent(const Surface& surface, const Surface* new_parent);
 
     void Apply();
 

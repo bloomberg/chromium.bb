@@ -12,6 +12,7 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_delegate.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_init.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -23,7 +24,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_delegate.h"
-#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_init.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -59,7 +60,7 @@ class IntersectionObserverDelegateImpl final
 
   ExecutionContext* GetExecutionContext() const override { return context_; }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     IntersectionObserverDelegate::Trace(visitor);
     visitor->Trace(context_);
   }
@@ -159,7 +160,12 @@ IntersectionObserver* IntersectionObserver::Create(
     const IntersectionObserverInit* observer_init,
     IntersectionObserverDelegate& delegate,
     ExceptionState& exception_state) {
-  Element* root = observer_init->root();
+  Node* root = nullptr;
+  if (observer_init->root().IsElement()) {
+    root = observer_init->root().GetAsElement();
+  } else if (observer_init->root().IsDocument()) {
+    root = observer_init->root().GetAsDocument();
+  }
 
   DOMHighResTimeStamp delay = 0;
   bool track_visibility = false;
@@ -222,7 +228,7 @@ IntersectionObserver* IntersectionObserver::Create(
     ExceptionState& exception_state) {
   IntersectionObserverDelegateImpl* intersection_observer_delegate =
       MakeGarbageCollected<IntersectionObserverDelegateImpl>(
-          document, std::move(callback), behavior);
+          document->GetExecutionContext(), std::move(callback), behavior);
   return MakeGarbageCollected<IntersectionObserver>(
       *intersection_observer_delegate, nullptr, root_margin, thresholds,
       semantics, delay, track_visibility, always_report_root_bounds);
@@ -230,24 +236,25 @@ IntersectionObserver* IntersectionObserver::Create(
 
 IntersectionObserver::IntersectionObserver(
     IntersectionObserverDelegate& delegate,
-    Element* root,
+    Node* root,
     const Vector<Length>& root_margin,
     const Vector<float>& thresholds,
     ThresholdInterpretation semantics,
     DOMHighResTimeStamp delay,
     bool track_visibility,
     bool always_report_root_bounds)
-    : ContextClient(delegate.GetExecutionContext()),
+    : ExecutionContextClient(delegate.GetExecutionContext()),
       delegate_(&delegate),
       root_(root),
       thresholds_(thresholds),
       delay_(delay),
       root_margin_(4, Length::Fixed(0)),
       root_is_implicit_(root ? 0 : 1),
-      track_visibility_(track_visibility ? 1 : 0),
+      track_visibility_(track_visibility),
       track_fraction_of_root_(semantics == kFractionOfRoot),
-      always_report_root_bounds_(always_report_root_bounds ? 1 : 0),
-      needs_delivery_(0) {
+      always_report_root_bounds_(always_report_root_bounds),
+      needs_delivery_(0),
+      can_use_cached_rects_(0) {
   switch (root_margin.size()) {
     case 0:
       break;
@@ -275,19 +282,24 @@ IntersectionObserver::IntersectionObserver(
       break;
   }
   if (root) {
-    root->EnsureIntersectionObserverData().AddObserver(*this);
-    root->GetDocument()
-        .EnsureIntersectionObserverController()
-        .AddTrackedElement(*root, track_visibility);
+    if (root->IsDocumentNode()) {
+      To<Document>(root)
+          ->EnsureDocumentExplicitRootIntersectionObserverData()
+          .AddObserver(*this);
+    } else {
+      DCHECK(root->IsElementNode());
+      To<Element>(root)->EnsureIntersectionObserverData().AddObserver(*this);
+    }
   }
 }
 
-void IntersectionObserver::ProcessCustomWeakness(const WeakCallbackInfo& info) {
-  if (RootIsImplicit() || (root() && info.IsHeapObjectAlive(root())))
-    return;
-  DummyExceptionStateForTesting exception_state;
-  disconnect(exception_state);
-  root_ = nullptr;
+void IntersectionObserver::ProcessCustomWeakness(const LivenessBroker& info) {
+  // For explicit-root observers, if the root element disappears for any reason,
+  // any remaining obsevations must be dismantled.
+  if (root() && !info.IsHeapObjectAlive(root()))
+    root_ = nullptr;
+  if (!RootIsImplicit() && !root())
+    disconnect();
 }
 
 bool IntersectionObserver::RootIsValid() const {
@@ -302,10 +314,6 @@ void IntersectionObserver::observe(Element* target,
   if (!target || root() == target)
     return;
 
-  LocalFrame* target_frame = target->GetDocument().GetFrame();
-  if (!target_frame)
-    return;
-
   if (target->EnsureIntersectionObserverData().GetObservationFor(*this))
     return;
 
@@ -313,13 +321,17 @@ void IntersectionObserver::observe(Element* target,
       MakeGarbageCollected<IntersectionObservation>(*this, *target);
   target->EnsureIntersectionObserverData().AddObservation(*observation);
   observations_.insert(observation);
+  if (root() && root()->isConnected()) {
+    root()
+        ->GetDocument()
+        .EnsureIntersectionObserverController()
+        .AddTrackedObserver(*this);
+  }
   if (target->isConnected()) {
-    if (RootIsImplicit()) {
-      target->GetDocument()
-          .EnsureIntersectionObserverController()
-          .AddTrackedElement(*target, track_visibility_);
-    }
-    if (LocalFrameView* frame_view = target_frame->View()) {
+    target->GetDocument()
+        .EnsureIntersectionObserverController()
+        .AddTrackedObservation(*observation);
+    if (LocalFrameView* frame_view = target->GetDocument().View()) {
       // The IntersectionObsever spec requires that at least one observation
       // be recorded after observe() is called, even if the frame is throttled.
       frame_view->SetIntersectionObservationState(LocalFrameView::kRequired);
@@ -347,12 +359,24 @@ void IntersectionObserver::unobserve(Element* target,
 
   observation->Disconnect();
   observations_.erase(observation);
+  if (root() && root()->isConnected() && observations_.IsEmpty()) {
+    root()
+        ->GetDocument()
+        .EnsureIntersectionObserverController()
+        .RemoveTrackedObserver(*this);
+  }
 }
 
 void IntersectionObserver::disconnect(ExceptionState& exception_state) {
   for (auto& observation : observations_)
     observation->Disconnect();
   observations_.clear();
+  if (root() && root()->isConnected()) {
+    root()
+        ->GetDocument()
+        .EnsureIntersectionObserverController()
+        .RemoveTrackedObserver(*this);
+  }
 }
 
 HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords(
@@ -389,11 +413,9 @@ DOMHighResTimeStamp IntersectionObserver::GetEffectiveDelay() const {
 }
 
 DOMHighResTimeStamp IntersectionObserver::GetTimeStamp() const {
-  if (Document* document = To<Document>(delegate_->GetExecutionContext())) {
-    if (LocalDOMWindow* dom_window = document->domWindow())
-      return DOMWindowPerformance::performance(*dom_window)->now();
-  }
-  return -1;
+  return DOMWindowPerformance::performance(
+             *To<LocalDOMWindow>(delegate_->GetExecutionContext()))
+      ->now();
 }
 
 bool IntersectionObserver::ComputeIntersections(unsigned flags) {
@@ -401,7 +423,8 @@ bool IntersectionObserver::ComputeIntersections(unsigned flags) {
   if (!RootIsValid() || !GetExecutionContext() || observations_.IsEmpty())
     return false;
   IntersectionGeometry::RootGeometry root_geometry(
-      IntersectionGeometry::GetRootLayoutObjectForTarget(root(), nullptr),
+      IntersectionGeometry::GetRootLayoutObjectForTarget(root(), nullptr,
+                                                         false),
       root_margin_);
   HeapVector<Member<IntersectionObservation>> observations_to_process;
   // TODO(szager): Is this copy necessary?
@@ -409,6 +432,7 @@ bool IntersectionObserver::ComputeIntersections(unsigned flags) {
   for (auto& observation : observations_to_process) {
     observation->ComputeIntersection(root_geometry, flags);
   }
+  can_use_cached_rects_ = 1;
   return trackVisibility();
 }
 
@@ -416,7 +440,8 @@ void IntersectionObserver::SetNeedsDelivery() {
   if (needs_delivery_)
     return;
   needs_delivery_ = 1;
-  To<Document>(GetExecutionContext())
+  To<LocalDOMWindow>(GetExecutionContext())
+      ->document()
       ->EnsureIntersectionObserverController()
       .ScheduleIntersectionObserverForDelivery(*this);
 }
@@ -441,13 +466,13 @@ bool IntersectionObserver::HasPendingActivity() const {
   return !observations_.IsEmpty();
 }
 
-void IntersectionObserver::Trace(blink::Visitor* visitor) {
+void IntersectionObserver::Trace(Visitor* visitor) {
   visitor->template RegisterWeakCallbackMethod<
       IntersectionObserver, &IntersectionObserver::ProcessCustomWeakness>(this);
   visitor->Trace(delegate_);
   visitor->Trace(observations_);
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

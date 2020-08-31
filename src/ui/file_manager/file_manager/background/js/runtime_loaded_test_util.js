@@ -7,16 +7,36 @@
  * extension under test at runtime to populate testing functionality.
  */
 
+
+/**
+ * @typedef {{
+ *   attributes:Object<string>,
+ *   text:string,
+ *   styles:(Object<string>|undefined),
+ *   hidden:boolean,
+ *   hasShadowRoot: boolean,
+ *   imageWidth: (number|undefined),
+ *   imageHeight: (number|undefined),
+ *   renderedWidth: (number|undefined),
+ *   renderedHeight: (number|undefined),
+ *   renderedTop: (number|undefined),
+ *   renderedLeft: (number|undefined),
+ *   scrollLeft: (number|undefined),
+ *   scrollTop: (number|undefined),
+ *   scrollWidth: (number|undefined),
+ *   scrollHeight: (number|undefined),
+ *  }}
+ */
+let ElementObject;
+
 /**
  * Extract the information of the given element.
  * @param {Element} element Element to be extracted.
  * @param {Window} contentWindow Window to be tested.
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained. NOTE: Causes element style re-calculation.
- * @return {{attributes:Object<string>, text:string,
- *           styles:(Object<string>|undefined), hidden:boolean}} Element
- *     information that contains contentText, attribute names and
- *     values, hidden attribute, and style names and values.
+ * @return {!ElementObject} Element information that contains contentText,
+ *     attribute names and values, hidden attribute, and style names and values.
  */
 function extractElementInfo(element, contentWindow, opt_styleNames) {
   const attributes = {};
@@ -41,28 +61,29 @@ function extractElementInfo(element, contentWindow, opt_styleNames) {
     return result;
   }
 
-  const styles = {};
+  // Force a style resolve and record the requested style values.
+  result.styles = {};
   const size = element.getBoundingClientRect();
-  const computedStyles = contentWindow.getComputedStyle(element);
+  const computedStyle = contentWindow.getComputedStyle(element);
   for (let i = 0; i < styleNames.length; i++) {
-    styles[styleNames[i]] = computedStyles[styleNames[i]];
+    result.styles[styleNames[i]] = computedStyle[styleNames[i]];
   }
-
-  result.styles = styles;
 
   // These attributes are set when element is <img> or <canvas>.
   result.imageWidth = Number(element.width);
   result.imageHeight = Number(element.height);
 
-  // These attributes are set in any element.
+  // Get the element client rectangle properties.
   result.renderedWidth = size.width;
   result.renderedHeight = size.height;
   result.renderedTop = size.top;
   result.renderedLeft = size.left;
 
-  // Get the scroll position of the element.
+  // Get the element scroll properties.
   result.scrollLeft = element.scrollLeft;
   result.scrollTop = element.scrollTop;
+  result.scrollWidth = element.scrollWidth;
+  result.scrollHeight = element.scrollHeight;
 
   return result;
 }
@@ -169,10 +190,9 @@ test.util.sync.isWindowMaximized = contentWindow => {
  * @param {string} targetQuery Query to specify the element.
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
- * @return {!Array<{attributes:Object<string>, text:string,
- *                  styles:Object<string>, hidden:boolean}>} Element
- *     information that contains contentText, attribute names and
- *     values, hidden attribute, and style names and values.
+ * @return {!Array<!ElementObject>} Element information that contains
+ *     contentText, attribute names and values, hidden attribute, and style
+ *     names and values.
  */
 test.util.sync.queryAllElements =
     (contentWindow, targetQuery, opt_styleNames) => {
@@ -189,10 +209,9 @@ test.util.sync.queryAllElements =
  *   elements inside the shadow DOM of the first element, and so on.
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
- * @return {!Array<{attributes:Object<string>, text:string,
- *                  styles:Object<string>, hidden:boolean}>} Element
- *     information that contains contentText, attribute names and
- *     values, hidden attribute, and style names and values.
+ * @return {!Array<!ElementObject>} Element information that contains
+ *     contentText, attribute names and values, hidden attribute, and style
+ *     names and values.
  */
 test.util.sync.deepQueryAllElements =
     (contentWindow, targetQuery, opt_styleNames) => {
@@ -209,6 +228,29 @@ test.util.sync.deepQueryAllElements =
         return extractElementInfo(element, contentWindow, opt_styleNames);
       });
     };
+
+/**
+ * Count elements matching the selector query.
+ *
+ * This avoid serializing and transmitting the elements to the test extension,
+ * which can be time consuming for large elements.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {!Array<string>} query Query to specify the element.
+ *   |query[0]| specifies the first element(s). |query[1]| specifies elements
+ *   inside the shadow DOM of the first element, and so on.
+ * @param {function(boolean)} callback Callback function with results if the
+ *    number of elements match |count|.
+ */
+test.util.async.countElements = (contentWindow, query, count, callback) => {
+  // Uses requestIdleCallback so it doesn't interfere with normal operation of
+  // Files app UI.
+  contentWindow.requestIdleCallback(() => {
+    const elements =
+        test.util.sync.deepQuerySelectorAll_(contentWindow.document, query);
+    callback(elements.length === count);
+  });
+};
 
 /**
  * Selects elements below |root|, possibly following shadow DOM subtree.
@@ -270,11 +312,9 @@ test.util.async.deepExecuteScriptInWebView =
  * @param {Window} contentWindow Window to be tested.
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
- * @return {?{attributes:Object<string>, text:string,
- *                  styles:(Object<string>|undefined), hidden:boolean}} Element
- *     information that contains contentText, attribute names and
- *     values, hidden attribute, and style names and values. If there is no
- *     active element, returns null.
+ * @return {?ElementObject} Element information that contains contentText,
+ *     attribute names and values, hidden attribute, and style names and values.
+ *     If there is no active element, returns null.
  */
 test.util.sync.getActiveElement = (contentWindow, opt_styleNames) => {
   if (!contentWindow.document || !contentWindow.document.activeElement) {
@@ -283,6 +323,35 @@ test.util.sync.getActiveElement = (contentWindow, opt_styleNames) => {
 
   return extractElementInfo(
       contentWindow.document.activeElement, contentWindow, opt_styleNames);
+};
+
+/**
+ * Gets the information of the active element. However, unlike the previous
+ * helper, the shadow roots are searched as well.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {Array<string>=} opt_styleNames List of CSS property name to be
+ *     obtained.
+ * @return {?ElementObject} Element information that contains contentText,
+ *     attribute names and values, hidden attribute, and style names and values.
+ *     If there is no active element, returns null.
+ */
+test.util.sync.deepGetActiveElement = (contentWindow, opt_styleNames) => {
+  if (!contentWindow.document || !contentWindow.document.activeElement) {
+    return null;
+  }
+
+  let activeElement = contentWindow.document.activeElement;
+  while (true) {
+    const shadow = activeElement.shadowRoot;
+    if (shadow && shadow.activeElement) {
+      activeElement = shadow.activeElement;
+    } else {
+      break;
+    }
+  }
+
+  return extractElementInfo(activeElement, contentWindow, opt_styleNames);
 };
 
 /**
@@ -986,6 +1055,15 @@ test.util.async.getVolumesCount = callback => {
   return volumeManagerFactory.getInstance().then((volumeManager) => {
     callback(volumeManager.volumeInfoList.length);
   });
+};
+
+/**
+ * Sets/Resets a flag that causes file copy operations to always fail in test.
+ * @param {boolean} enable True to force errors.
+ */
+test.util.sync.forceErrorsOnFileOperations = (contentWindow, enable) => {
+  fileOperationUtil.forceErrorForTest = enable;
+  return enable;
 };
 
 /**

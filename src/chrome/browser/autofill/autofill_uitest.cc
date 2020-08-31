@@ -78,6 +78,9 @@ void AutofillUiTest::SetUpOnMainThread() {
                          /* new_host = */ GetWebContents()->GetMainFrame());
   Observe(GetWebContents());
 
+  disable_animation_ = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
   // If the mouse happened to be over where the suggestions are shown, then
   // the preview will show up and will fail the tests. We need to give it a
   // point that's within the browser frame, or else the method hangs.
@@ -91,7 +94,8 @@ void AutofillUiTest::TearDownOnMainThread() {
   // Make sure to close any showing popups prior to tearing down the UI.
   AutofillManager* autofill_manager = GetAutofillManager();
   if (autofill_manager)
-    autofill_manager->client()->HideAutofillPopup();
+    autofill_manager->client()->HideAutofillPopup(
+        autofill::PopupHidingReason::kTabGone);
   test::ReenableSystemServices();
 }
 
@@ -130,9 +134,9 @@ void AutofillUiTest::SendKeyToPopup(content::RenderFrameHost* render_frame_host,
       render_frame_host->GetView()->GetRenderWidgetHost();
 
   // Route popup-targeted key presses via the render view host.
-  content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
-                                        blink::WebInputEvent::kNoModifiers,
-                                        ui::EventTimeForNow());
+  content::NativeWebKeyboardEvent event(
+      blink::WebKeyboardEvent::Type::kRawKeyDown,
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   event.windows_key_code = key_code;
   event.dom_code = static_cast<int>(code);
   event.dom_key = key;
@@ -160,9 +164,9 @@ void AutofillUiTest::SendKeyToPopupAndWait(
     std::list<ObservedUiEvents> expected_events,
     content::RenderWidgetHost* widget) {
   // Route popup-targeted key presses via the render view host.
-  content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
-                                        blink::WebInputEvent::kNoModifiers,
-                                        ui::EventTimeForNow());
+  content::NativeWebKeyboardEvent event(
+      blink::WebKeyboardEvent::Type::kRawKeyDown,
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   event.windows_key_code = key_code;
   event.dom_code = static_cast<int>(code);
   event.dom_key = key;
@@ -193,9 +197,9 @@ void AutofillUiTest::SendKeyToDataListPopup(ui::DomKey key,
                                             ui::DomCode code,
                                             ui::KeyboardCode key_code) {
   // Route popup-targeted key presses via the render view host.
-  content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
-                                        blink::WebInputEvent::kNoModifiers,
-                                        ui::EventTimeForNow());
+  content::NativeWebKeyboardEvent event(
+      blink::WebKeyboardEvent::Type::kRawKeyDown,
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   event.windows_key_code = key_code;
   event.dom_code = static_cast<int>(code);
   event.dom_key = key;

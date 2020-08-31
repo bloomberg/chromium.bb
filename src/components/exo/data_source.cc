@@ -11,9 +11,11 @@
 #include "base/files/file_util.h"
 #include "base/i18n/character_encoding.h"
 #include "base/i18n/icu_string_conversions.h"
+#include "base/optional.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/exo/data_source_delegate.h"
 #include "components/exo/data_source_observer.h"
 #include "components/exo/mime_utils.h"
@@ -43,7 +45,7 @@ constexpr char kImageBitmap[] = "image/bmp";
 constexpr char kImagePNG[] = "image/png";
 constexpr char kImageAPNG[] = "image/apng";
 
-std::vector<uint8_t> ReadDataOnWorkerThread(base::ScopedFD fd) {
+base::Optional<std::vector<uint8_t>> ReadDataOnWorkerThread(base::ScopedFD fd) {
   constexpr size_t kChunkSize = 1024;
   std::vector<uint8_t> bytes;
   while (true) {
@@ -57,7 +59,7 @@ std::vector<uint8_t> ReadDataOnWorkerThread(base::ScopedFD fd) {
       return bytes;
     if (bytes_read < 0) {
       PLOG(ERROR) << "Failed to read selection data from clipboard";
-      return std::vector<uint8_t>();
+      return base::nullopt;
     }
   }
 }
@@ -211,20 +213,25 @@ void DataSource::ReadData(const std::string& mime_type,
   PCHECK(base::CreatePipe(&read_fd, &write_fd));
   delegate_->OnSend(mime_type, std::move(write_fd));
 
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&ReadDataOnWorkerThread, std::move(read_fd)),
-      base::BindOnce(&DataSource::OnDataRead,
-                     read_data_weak_ptr_factory_.GetWeakPtr(),
-                     std::move(callback), mime_type));
+      base::BindOnce(
+          &DataSource::OnDataRead, read_data_weak_ptr_factory_.GetWeakPtr(),
+          std::move(callback), mime_type, std::move(failure_callback)));
 }
 
 void DataSource::OnDataRead(ReadDataCallback callback,
                             const std::string& mime_type,
-                            const std::vector<uint8_t>& data) {
-  std::move(callback).Run(mime_type, data);
+                            base::OnceClosure failure_callback,
+                            const base::Optional<std::vector<uint8_t>>& data) {
+  if (!data) {
+    std::move(failure_callback).Run();
+    return;
+  }
+  std::move(callback).Run(mime_type, *data);
 }
 
 void DataSource::GetDataForPreferredMimeTypes(
@@ -300,6 +307,10 @@ void DataSource::OnTextRead(ReadTextDataCallback callback,
                             const std::vector<uint8_t>& data) {
   base::string16 output = CodepageToUTF16(data, GetCharset(mime_type));
   std::move(callback).Run(mime_type, std::move(output));
+}
+
+bool DataSource::CanBeDataSourceForCopy(Surface* surface) const {
+  return delegate_->CanAcceptDataEventsForSurface(surface);
 }
 
 }  // namespace exo

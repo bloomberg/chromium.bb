@@ -13,10 +13,6 @@
 #include "ui/views/animation/ink_drop_event_handler.h"
 #include "ui/views/view.h"
 
-namespace gfx {
-class PointF;
-}  // namespace gfx
-
 namespace ui {
 class Layer;
 class LocatedEvent;
@@ -77,9 +73,9 @@ class VIEWS_EXPORT InkDropHostView : public View {
   virtual std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const;
 
   // Subclasses can override to return a mask for the ink drop. By default,
-  // returns nullptr (i.e no mask).
-  // TODO(bruthig): InkDropMasks do not currently work on Windows. See
-  // https://crbug.com/713359.
+  // this generates a mask based on HighlightPathGenerator.
+  // TODO(pbos): Replace overrides with HighlightPathGenerator usage and remove
+  // this function.
   virtual std::unique_ptr<views::InkDropMask> CreateInkDropMask() const;
 
   // Returns the base color for the ink drop.
@@ -168,17 +164,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
       const gfx::Point& center_point,
       const gfx::Size& size) const;
 
-  // TODO(pbos): Migrate uses to CreateSquareInkDropHighlight which this calls
-  // directly.
-  std::unique_ptr<InkDropHighlight> CreateDefaultInkDropHighlight(
-      const gfx::PointF& center_point,
-      const gfx::Size& size = kDefaultInkDropSize) const;
-
-  // Creates a InkDropHighlight centered on |center_point|.
-  std::unique_ptr<InkDropHighlight> CreateSquareInkDropHighlight(
-      const gfx::PointF& center_point,
-      const gfx::Size& size) const;
-
   // Returns true if an ink drop instance has been created.
   bool HasInkDrop() const;
 
@@ -187,10 +172,16 @@ class VIEWS_EXPORT InkDropHostView : public View {
   gfx::Point GetInkDropCenterBasedOnLastEvent() const;
 
   // Initializes and sets a mask on |ink_drop_layer|. No-op if
-  // CreateInkDropMask() returns null.
+  // CreateInkDropMask() returns null. This will not run if |AddInkDropClip()|
+  // succeeds in the default implementation of |AddInkDropLayer()|.
   void InstallInkDropMask(ui::Layer* ink_drop_layer);
 
   void ResetInkDropMask();
+
+  // Adds a clip rect on the root layer of the ink drop impl. This is a more
+  // performant alternative to using circles or rectangle mask layers. Returns
+  // true if a clip was added.
+  bool AddInkDropClip(ui::Layer* ink_drop_layer);
 
   // Returns a large ink drop size based on the |small_size| that works well
   // with the SquareInkDropRipple animation durations.

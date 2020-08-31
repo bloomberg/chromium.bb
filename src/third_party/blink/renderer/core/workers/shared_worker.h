@@ -33,6 +33,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_worker_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/workers/abstract_worker.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -53,7 +54,7 @@ class CORE_EXPORT SharedWorker final
  public:
   static SharedWorker* Create(ExecutionContext*,
                               const String& url,
-                              const String& name,
+                              const StringOrWorkerOptions&,
                               ExceptionState&);
 
   explicit SharedWorker(ExecutionContext*);
@@ -69,7 +70,7 @@ class CORE_EXPORT SharedWorker final
   bool HasPendingActivity() const final;
 
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState state) override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<MessagePort> port_;

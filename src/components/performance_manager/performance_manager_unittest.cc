@@ -4,13 +4,16 @@
 
 #include "components/performance_manager/public/performance_manager.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "components/performance_manager/performance_manager_test_harness.h"
 #include "components/performance_manager/public/graph/page_node.h"
 #include "components/performance_manager/public/web_contents_proxy.h"
+#include "components/performance_manager/test_support/performance_manager_test_harness.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -54,7 +57,7 @@ TEST_F(PerformanceManagerTest, GetPageNodeForWebContents) {
         run_loop.Quit();
       });
 
-  auto call_on_graph_cb = base::BindLambdaForTesting([&](Graph* unused) {
+  auto call_on_graph_cb = base::BindLambdaForTesting([&]() {
     EXPECT_TRUE(page_node.get());
     base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                    base::BindOnce(std::move(check_wc_on_main_thread),
@@ -72,7 +75,7 @@ TEST_F(PerformanceManagerTest, GetPageNodeForWebContents) {
   // invalid.
   base::RunLoop run_loop_after_contents_reset;
   auto quit_closure = run_loop_after_contents_reset.QuitClosure();
-  auto call_on_graph_cb_2 = base::BindLambdaForTesting([&](Graph* unused) {
+  auto call_on_graph_cb_2 = base::BindLambdaForTesting([&]() {
     EXPECT_FALSE(page_node.get());
     std::move(quit_closure).Run();
   });

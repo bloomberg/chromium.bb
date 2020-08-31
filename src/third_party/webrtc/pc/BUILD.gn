@@ -13,9 +13,7 @@ if (is_android) {
 }
 
 group("pc") {
-  deps = [
-    ":rtc_pc",
-  ]
+  deps = [ ":rtc_pc" ]
 }
 
 config("rtc_pc_config") {
@@ -233,6 +231,7 @@ rtc_library("peerconnection") {
     "../api:audio_options_api",
     "../api:call_api",
     "../api:fec_controller_api",
+    "../api:frame_transformer_interface",
     "../api:ice_transport_factory",
     "../api:libjingle_peerconnection_api",
     "../api:media_stream_interface",
@@ -267,7 +266,6 @@ rtc_library("peerconnection") {
     "../rtc_base:safe_minmax",
     "../rtc_base:weak_ptr",
     "../rtc_base/experiments:field_trial_parser",
-    "../rtc_base/system:fallthrough",
     "../rtc_base/system:file_wrapper",
     "../rtc_base/system:rtc_export",
     "../rtc_base/third_party/base64",
@@ -362,6 +360,7 @@ if (rtc_include_tests) {
       "../test:test_support",
       "//third_party/abseil-cpp/absl/algorithm:container",
       "//third_party/abseil-cpp/absl/memory",
+      "//third_party/abseil-cpp/absl/strings",
     ]
 
     if (rtc_build_libsrtp) {
@@ -375,9 +374,7 @@ if (rtc_include_tests) {
 
   rtc_library("peerconnection_perf_tests") {
     testonly = true
-    sources = [
-      "peer_connection_rampup_tests.cc",
-    ]
+    sources = [ "peer_connection_rampup_tests.cc" ]
     deps = [
       ":pc_test_utils",
       ":peerconnection_wrapper",
@@ -466,6 +463,7 @@ if (rtc_include_tests) {
       ":peerconnection",
       ":rtc_pc_base",
       "../api:audio_options_api",
+      "../api:create_frame_generator",
       "../api:create_peerconnection_factory",
       "../api:libjingle_peerconnection_api",
       "../api:media_stream_interface",
@@ -522,6 +520,7 @@ if (rtc_include_tests) {
       "peer_connection_data_channel_unittest.cc",
       "peer_connection_end_to_end_unittest.cc",
       "peer_connection_factory_unittest.cc",
+      "peer_connection_header_extension_unittest.cc",
       "peer_connection_histogram_unittest.cc",
       "peer_connection_ice_unittest.cc",
       "peer_connection_integrationtest.cc",
@@ -588,18 +587,21 @@ if (rtc_include_tests) {
       "../media:rtc_media_engine_defaults",
       "../modules/audio_device:audio_device_api",
       "../modules/audio_processing:audio_processing_statistics",
+      "../modules/audio_processing:audioproc_test_utils",
       "../modules/rtp_rtcp:rtp_rtcp_format",
       "../p2p:fake_ice_transport",
       "../p2p:fake_port_allocator",
       "../rtc_base:checks",
       "../rtc_base:gunit_helpers",
       "../rtc_base:rtc_base_tests_utils",
+      "../rtc_base:rtc_json",
       "../rtc_base/third_party/base64",
       "../rtc_base/third_party/sigslot",
       "../system_wrappers:metrics",
       "../test:field_trial",
       "../test:fileutils",
       "../test:rtp_test_utils",
+      "./scenario_tests:pc_scenario_tests",
       "//third_party/abseil-cpp/absl/algorithm:container",
       "//third_party/abseil-cpp/absl/memory",
       "//third_party/abseil-cpp/absl/strings",
@@ -627,7 +629,8 @@ if (rtc_include_tests) {
       "../api/video_codecs:video_codecs_api",
       "../call:call_interfaces",
       "../media:rtc_audio_video",
-      "../media:rtc_data",  # TODO(phoglund): AFAIK only used for one sctp constant.
+      "../media:rtc_data",  # TODO(phoglund): AFAIK only used for one sctp
+                            # constant.
       "../media:rtc_media_base",
       "../media:rtc_media_tests_utils",
       "../modules/audio_processing",

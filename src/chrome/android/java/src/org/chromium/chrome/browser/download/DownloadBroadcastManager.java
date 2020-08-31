@@ -32,17 +32,18 @@ import com.google.ipc.invalidation.util.Preconditions;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDownloadResumption;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
+import org.chromium.components.offline_items_collection.OpenParams;
 import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.content_public.browser.BrowserStartupController;
 
@@ -173,8 +174,7 @@ public class DownloadBroadcastManager extends Service {
     @VisibleForTesting
     void loadNativeAndPropagateInteraction(final Intent intent) {
         final boolean browserStarted =
-                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isFullBrowserStarted();
+                BrowserStartupController.getInstance().isFullBrowserStarted();
         final ContentId id = getContentIdFromIntent(intent);
         final BrowserParts parts = new EmptyBrowserParts() {
             @Override
@@ -194,8 +194,7 @@ public class DownloadBroadcastManager extends Service {
                 }
 
                 DownloadStartupUtils.ensureDownloadSystemInitialized(
-                        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                                .isFullBrowserStarted(),
+                        BrowserStartupController.getInstance().isFullBrowserStarted(),
                         IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OFF_THE_RECORD, false));
                 propagateInteraction(intent);
             }
@@ -203,7 +202,7 @@ public class DownloadBroadcastManager extends Service {
             @Override
             public boolean startServiceManagerOnly() {
                 if (!LegacyHelpers.isLegacyDownload(id)) return false;
-                return FeatureUtilities.isServiceManagerForDownloadResumptionEnabled()
+                return CachedFeatureFlags.isEnabled(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD)
                         && !ACTION_DOWNLOAD_OPEN.equals(intent.getAction());
             }
         };
@@ -226,7 +225,11 @@ public class DownloadBroadcastManager extends Service {
 
             case ACTION_DOWNLOAD_OPEN:
                 if (id != null) {
-                    OfflineContentAggregatorNotificationBridgeUiFactory.instance().openItem(id);
+                    OpenParams openParams = new OpenParams(LaunchLocation.NOTIFICATION);
+                    openParams.openInIncognito =
+                            IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OFF_THE_RECORD, false);
+                    OfflineContentAggregatorNotificationBridgeUiFactory.instance().openItem(
+                            openParams, id);
                 }
                 return;
         }
@@ -246,6 +249,8 @@ public class DownloadBroadcastManager extends Service {
                 DownloadNotificationUmaHelper.recordStateAtCancelHistogram(
                         LegacyHelpers.isLegacyDownload(id),
                         intent.getIntExtra(EXTRA_DOWNLOAD_STATE_AT_CANCEL, -1));
+                DownloadMetrics.recordDownloadCancel(
+                        DownloadMetrics.CancelFrom.CANCEL_NOTIFICATION);
                 downloadServiceDelegate.cancelDownload(id, isOffTheRecord);
                 break;
 

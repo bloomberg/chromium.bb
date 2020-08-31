@@ -39,7 +39,7 @@ std::string DecryptingDemuxerStream::GetDisplayName() const {
 
 void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
                                          CdmContext* cdm_context,
-                                         const PipelineStatusCB& status_cb) {
+                                         PipelineStatusCallback status_cb) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kUninitialized) << state_;
@@ -49,7 +49,7 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
 
   weak_this_ = weak_factory_.GetWeakPtr();
   demuxer_stream_ = stream;
-  init_cb_ = BindToCurrentLoop(status_cb);
+  init_cb_ = BindToCurrentLoop(std::move(status_cb));
 
   InitializeDecoderConfig();
 
@@ -64,8 +64,8 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
 
   decryptor_->RegisterNewKeyCB(
       GetDecryptorStreamType(),
-      BindToCurrentLoop(
-          base::Bind(&DecryptingDemuxerStream::OnKeyAdded, weak_this_)));
+      BindToCurrentLoop(base::BindRepeating(
+          &DecryptingDemuxerStream::OnKeyAdded, weak_this_)));
 
   state_ = kIdle;
   std::move(init_cb_).Run(PIPELINE_OK);
@@ -88,13 +88,13 @@ bool DecryptingDemuxerStream::IsReadPending() const {
   return !read_cb_.is_null();
 }
 
-void DecryptingDemuxerStream::Reset(const base::Closure& closure) {
+void DecryptingDemuxerStream::Reset(base::OnceClosure closure) {
   DVLOG(2) << __func__ << " - state: " << state_;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ != kUninitialized) << state_;
   DCHECK(!reset_cb_);
 
-  reset_cb_ = BindToCurrentLoop(closure);
+  reset_cb_ = BindToCurrentLoop(std::move(closure));
 
   decryptor_->CancelDecrypt(GetDecryptorStreamType());
 
@@ -247,8 +247,8 @@ void DecryptingDemuxerStream::DecryptPendingBuffer() {
       pending_buffer_to_decrypt_->timestamp().InMicroseconds());
   decryptor_->Decrypt(
       GetDecryptorStreamType(), pending_buffer_to_decrypt_,
-      BindToCurrentLoop(
-          base::Bind(&DecryptingDemuxerStream::OnBufferDecrypted, weak_this_)));
+      BindToCurrentLoop(base::BindOnce(
+          &DecryptingDemuxerStream::OnBufferDecrypted, weak_this_)));
 }
 
 void DecryptingDemuxerStream::OnBufferDecrypted(

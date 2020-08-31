@@ -11,22 +11,36 @@ namespace autofill {
 PasswordFormGenerationData::PasswordFormGenerationData() = default;
 
 PasswordFormGenerationData::PasswordFormGenerationData(
-    const PasswordFormGenerationData& other) = default;
-
-PasswordFormGenerationData::PasswordFormGenerationData(
-    uint32_t new_password_renderer_id,
-    uint32_t confirmation_password_renderer_id)
+    FieldRendererId new_password_renderer_id,
+    FieldRendererId confirmation_password_renderer_id)
     : new_password_renderer_id(new_password_renderer_id),
       confirmation_password_renderer_id(confirmation_password_renderer_id) {}
 
 #if defined(OS_IOS)
 PasswordFormGenerationData::PasswordFormGenerationData(
-    base::string16 form_name,
+    FormRendererId form_renderer_id,
     base::string16 new_password_element,
-    base::string16 confirmation_password_element)
-    : form_name(std::move(form_name)),
-      new_password_element(std::move(new_password_element)),
-      confirmation_password_element(std::move(confirmation_password_element)) {}
+    FieldRendererId new_password_renderer_id,
+    FieldRendererId confirmation_password_renderer_id)
+    : form_renderer_id(form_renderer_id),
+      new_password_element(new_password_element),
+      new_password_renderer_id(new_password_renderer_id),
+      confirmation_password_renderer_id(confirmation_password_renderer_id) {}
+
+PasswordFormGenerationData::PasswordFormGenerationData(
+    const PasswordFormGenerationData&) = default;
+
+PasswordFormGenerationData& PasswordFormGenerationData::operator=(
+    const PasswordFormGenerationData&) = default;
+
+PasswordFormGenerationData::PasswordFormGenerationData(
+    PasswordFormGenerationData&&) = default;
+
+PasswordFormGenerationData& PasswordFormGenerationData::operator=(
+    PasswordFormGenerationData&&) = default;
+
+PasswordFormGenerationData::~PasswordFormGenerationData() = default;
+
 #endif
 
 }  // namespace autofill

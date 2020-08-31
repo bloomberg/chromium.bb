@@ -8,12 +8,8 @@
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/resource_type.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
-
-namespace content {
-class NavigationUIData;
-}  // namespace content
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace signin {
 
@@ -28,7 +24,6 @@ class URLLoaderThrottle : public blink::URLLoaderThrottle,
   // intercepted.
   static std::unique_ptr<URLLoaderThrottle> MaybeCreate(
       std::unique_ptr<HeaderModificationDelegate> delegate,
-      content::NavigationUIData* navigation_ui_data,
       content::WebContents::Getter web_contents_getter);
 
   ~URLLoaderThrottle() override;
@@ -36,11 +31,13 @@ class URLLoaderThrottle : public blink::URLLoaderThrottle,
   // blink::URLLoaderThrottle
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
-  void WillRedirectRequest(net::RedirectInfo* redirect_info,
-                           const network::mojom::URLResponseHead& response_head,
-                           bool* defer,
-                           std::vector<std::string>* headers_to_remove,
-                           net::HttpRequestHeaders* modified_headers) override;
+  void WillRedirectRequest(
+      net::RedirectInfo* redirect_info,
+      const network::mojom::URLResponseHead& response_head,
+      bool* defer,
+      std::vector<std::string>* headers_to_remove,
+      net::HttpRequestHeaders* modified_headers,
+      net::HttpRequestHeaders* modified_cors_exempt_headers) override;
   void WillProcessResponse(const GURL& response_url,
                            network::mojom::URLResponseHead* response_head,
                            bool* defer) override;
@@ -59,7 +56,8 @@ class URLLoaderThrottle : public blink::URLLoaderThrottle,
   GURL request_url_;
   GURL request_referrer_;
   net::HttpRequestHeaders request_headers_;
-  content::ResourceType request_resource_type_;
+  net::HttpRequestHeaders request_cors_exempt_headers_;
+  blink::mojom::ResourceType request_resource_type_;
 
   base::OnceClosure destruction_callback_;
 

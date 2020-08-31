@@ -36,8 +36,14 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 namespace {
+
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
+constexpr char kGeneratedPath[] =
+    "@out_folder@/gen/chrome/browser/resources/history/";
+#endif
 
 constexpr char kIsUserSignedInKey[] = "isUserSignedIn";
 constexpr char kShowMenuPromoKey[] = "showMenuPromo";
@@ -116,30 +122,20 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddBoolean(kIsUserSignedInKey, IsUserSignedIn(profile));
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->AddResourcePath("app.html", IDR_HISTORY_APP_VULCANIZED_HTML);
-  source->AddResourcePath("app.crisper.js", IDR_HISTORY_APP_CRISPER_JS);
-  source->AddResourcePath("lazy_load.html",
-                          IDR_HISTORY_LAZY_LOAD_VULCANIZED_HTML);
-  source->AddResourcePath("lazy_load.crisper.js",
-                          IDR_HISTORY_LAZY_LOAD_CRISPER_JS);
-  source->AddResourcePath("constants.html", IDR_HISTORY_CONSTANTS_HTML);
-  source->AddResourcePath("constants.js", IDR_HISTORY_CONSTANTS_JS);
-  source->AddResourcePath("history.js", IDR_HISTORY_HISTORY_JS);
-  source->AddResourcePath("history.js", IDR_HISTORY_HISTORY_JS);
+  webui::SetupBundledWebUIDataSource(source, "history.js",
+                                     IDR_HISTORY_HISTORY_ROLLUP_JS,
+                                     IDR_HISTORY_HISTORY_HTML);
+  source->AddResourcePath("lazy_load.js", IDR_HISTORY_LAZY_LOAD_ROLLUP_JS);
+  source->AddResourcePath("shared.rollup.js", IDR_HISTORY_SHARED_ROLLUP_JS);
   source->AddResourcePath("images/sign_in_promo.svg",
                           IDR_HISTORY_IMAGES_SIGN_IN_PROMO_SVG);
   source->AddResourcePath("images/sign_in_promo_dark.svg",
                           IDR_HISTORY_IMAGES_SIGN_IN_PROMO_DARK_SVG);
-  source->AddResourcePath("strings.html", IDR_HISTORY_STRINGS_HTML);
 #else
-  // Add all history resources.
-  for (size_t i = 0; i < kHistoryResourcesSize; ++i) {
-    source->AddResourcePath(kHistoryResources[i].name,
-                            kHistoryResources[i].value);
-  }
+  webui::SetupWebUIDataSource(
+      source, base::make_span(kHistoryResources, kHistoryResourcesSize),
+      kGeneratedPath, IDR_HISTORY_HISTORY_HTML);
 #endif
-  source->SetDefaultResource(IDR_HISTORY_HISTORY_HTML);
-  source->UseStringsJs();
 
   return source;
 }
@@ -153,11 +149,19 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::WebUIDataSource::Add(profile, data_source);
 
   web_ui->AddMessageHandler(std::make_unique<webui::NavigationHandler>());
-  web_ui->AddMessageHandler(std::make_unique<BrowsingHistoryHandler>());
+  auto browsing_history_handler = std::make_unique<BrowsingHistoryHandler>();
+  BrowsingHistoryHandler* browsing_history_handler_ptr =
+      browsing_history_handler.get();
+  web_ui->AddMessageHandler(std::move(browsing_history_handler));
+  browsing_history_handler_ptr->StartQueryHistory();
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
-  web_ui->AddMessageHandler(
-      std::make_unique<browser_sync::ForeignSessionHandler>());
+  auto foreign_session_handler =
+      std::make_unique<browser_sync::ForeignSessionHandler>();
+  browser_sync::ForeignSessionHandler* foreign_session_handler_ptr =
+      foreign_session_handler.get();
+  web_ui->AddMessageHandler(std::move(foreign_session_handler));
+  foreign_session_handler_ptr->InitializeForeignSessions();
   web_ui->AddMessageHandler(std::make_unique<HistoryLoginHandler>(
       base::Bind(&HistoryUI::UpdateDataSource, base::Unretained(this))));
 

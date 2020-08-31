@@ -81,7 +81,6 @@ class AudioInputDevice::AudioThreadCallback
   base::ReadOnlySharedMemoryRegion shared_memory_region_;
   base::ReadOnlySharedMemoryMapping shared_memory_mapping_;
   const base::TimeTicks start_time_;
-  bool no_callbacks_received_;
   size_t current_segment_id_;
   uint32_t last_buffer_id_;
   std::vector<std::unique_ptr<const media::AudioBus>> audio_buses_;
@@ -212,15 +211,15 @@ void AudioInputDevice::SetOutputDeviceForAec(
 
 void AudioInputDevice::OnStreamCreated(
     base::ReadOnlySharedMemoryRegion shared_memory_region,
-    base::SyncSocket::Handle socket_handle,
+    base::SyncSocket::ScopedHandle socket_handle,
     bool initially_muted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("audio", "AudioInputDevice::OnStreamCreated");
   DCHECK(shared_memory_region.IsValid());
 #if defined(OS_WIN)
-  DCHECK(socket_handle);
+  DCHECK(socket_handle.IsValid());
 #else
-  DCHECK_GE(socket_handle, 0);
+  DCHECK(socket_handle.is_valid());
 #endif
   DCHECK_GT(shared_memory_region.GetSize(), 0u);
 
@@ -267,9 +266,9 @@ void AudioInputDevice::OnStreamCreated(
       kRequestedSharedMemoryCount, enable_uma_, callback_,
       base::BindRepeating(&AliveChecker::NotifyAlive,
                           base::Unretained(alive_checker_.get())));
-  audio_thread_ =
-      std::make_unique<AudioDeviceThread>(audio_callback_.get(), socket_handle,
-                                          "AudioInputDevice", thread_priority_);
+  audio_thread_ = std::make_unique<AudioDeviceThread>(
+      audio_callback_.get(), std::move(socket_handle), "AudioInputDevice",
+      thread_priority_);
 
   state_ = RECORDING;
   ipc_->RecordStream();
@@ -357,7 +356,6 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
       enable_uma_(enable_uma),
       shared_memory_region_(std::move(shared_memory_region)),
       start_time_(base::TimeTicks::Now()),
-      no_callbacks_received_(true),
       current_segment_id_(0u),
       last_buffer_id_(UINT32_MAX),
       capture_callback_(capture_callback),
@@ -400,15 +398,6 @@ void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
 
 void AudioInputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   TRACE_EVENT_BEGIN0("audio", "AudioInputDevice::AudioThreadCallback::Process");
-
-  if (no_callbacks_received_) {
-    if (enable_uma_) {
-      UMA_HISTOGRAM_TIMES("Media.Audio.Render.InputDeviceStartTime",
-                          base::TimeTicks::Now() - start_time_);
-    }
-    no_callbacks_received_ = false;
-  }
-
   // The shared memory represents parameters, size of the data buffer and the
   // actual data buffer containing audio data. Map the memory into this
   // structure and parse out parameters and the data area.

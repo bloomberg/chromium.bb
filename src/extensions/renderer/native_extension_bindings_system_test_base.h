@@ -12,6 +12,7 @@
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
@@ -76,12 +77,11 @@ class TestIPCMessageSender : public IPCMessageSender {
                     const base::DictionaryValue& filter,
                     bool remove_lazy_listener));
 
-  MOCK_METHOD5(SendOpenMessageChannel,
+  MOCK_METHOD4(SendOpenMessageChannel,
                void(ScriptContext* script_context,
                     const PortId& port_id,
                     const MessageTarget& target,
-                    const std::string& channel_name,
-                    bool include_tls_channel_id));
+                    const std::string& channel_name));
   MOCK_METHOD2(SendOpenMessagePort,
                void(int routing_id, const PortId& port_id));
   MOCK_METHOD3(SendCloseMessagePort,

@@ -19,12 +19,6 @@
 
 #include <hb.h>
 
-namespace base {
-namespace i18n {
-class BreakIterator;
-}
-}
-
 namespace gfx {
 
 class Range;
@@ -38,10 +32,6 @@ struct GFX_EXPORT TextRunHarfBuzz {
   // default-constructed gfx::Font is expensive, but it will always be replaced.
   explicit TextRunHarfBuzz(const Font& template_font);
   ~TextRunHarfBuzz();
-
-  // Returns the index of the first glyph that corresponds to the character at
-  // |pos|.
-  size_t CharToGlyph(size_t pos) const;
 
   // Returns the corresponding glyph range of the given character range.
   // |range| is in text-space (0 corresponds to |GetDisplayText()[0]|). Returned
@@ -131,7 +121,6 @@ struct GFX_EXPORT TextRunHarfBuzz {
     ShapeOutput& operator=(ShapeOutput&& other);
 
     float width = 0.0;
-    float preceding_run_widths = 0.0;
     std::vector<uint16_t> glyphs;
     std::vector<SkPoint> positions;
     // Note that in the context of TextRunHarfBuzz, |glyph_to_char| is indexed
@@ -219,23 +208,14 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
   // RenderText:
   const base::string16& GetDisplayText() override;
-  Size GetStringSize() override;
   SizeF GetStringSizeF() override;
   Size GetLineSize(const SelectionModel& caret) override;
-  float TotalLineWidth() override;
-  SelectionModel FindCursorPosition(const Point& point,
-                                    const Point& drag_origin) override;
-  bool IsSelectionSupported() const override;
   std::vector<Rect> GetSubstringBounds(const Range& range) override;
   RangeF GetCursorSpan(const Range& text_range) override;
   size_t GetLineContainingCaret(const SelectionModel& caret) override;
 
-  // ICU grapheme iterator for the layout text. Can be null in case of an error.
-  base::i18n::BreakIterator* GetGraphemeIterator();
-
  protected:
   // RenderText:
-  int GetDisplayTextBaseline() override;
   SelectionModel AdjacentCharSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) override;
@@ -245,12 +225,11 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   SelectionModel AdjacentLineSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) override;
-  bool IsValidCursorIndex(size_t index) override;
   void OnLayoutTextAttributeChanged(bool text_changed) override;
   void OnDisplayTextAttributeChanged() override;
   void EnsureLayout() override;
   void DrawVisualText(internal::SkiaTextRenderer* renderer,
-                      const Range& selection) override;
+                      const std::vector<Range> selections) override;
 
  private:
   friend class test::RenderTextTestApi;
@@ -320,12 +299,10 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
   bool update_layout_run_list_ : 1;
   bool update_display_run_list_ : 1;
-  bool update_grapheme_iterator_ : 1;
   bool update_display_text_ : 1;
 
-  // ICU grapheme iterator for the layout text. Use GetGraphemeIterator()
-  // to access the iterator.
-  std::unique_ptr<base::i18n::BreakIterator> grapheme_iterator_;
+  // The device scale factor for which the text was laid out.
+  float device_scale_factor_ = 1.0f;
 
   // The total size of the layouted text.
   SizeF total_size_;

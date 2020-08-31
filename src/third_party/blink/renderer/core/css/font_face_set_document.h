@@ -64,13 +64,20 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
   void NotifyLoaded(FontFace*) override;
   void NotifyError(FontFace*) override;
 
+  // After flipping the flag to true, all 'font-display: auto' fonts that
+  // haven't finished loading will enter the failure period immediately (except
+  // for those already in the memory cache), so that they don't cause a bad
+  // Largest Contentful Paint (https://wicg.github.io/largest-contentful-paint/)
+  bool HasReachedLCPLimit() const { return has_reached_lcp_limit_; }
+  void LCPLimitReached(TimerBase*);
+
   size_t ApproximateBlankCharacterCount() const;
 
   static FontFaceSetDocument* From(Document&);
   static void DidLayout(Document&);
   static size_t ApproximateBlankCharacterCount(Document&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   bool InActiveContext() const override;
@@ -83,9 +90,14 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
   bool ResolveFontStyle(const String&, Font&) override;
 
  private:
+  Document* GetDocument() const;
+
   void FireDoneEventIfPossible() override;
   const HeapLinkedHashSet<Member<FontFace>>& CSSConnectedFontFaceList()
       const override;
+
+  void StartLCPLimitTimerIfNeeded();
+  void AlignTimeoutWithLCPGoal(FontFace* font_face);
 
   class FontLoadHistogram {
     DISALLOW_NEW();
@@ -99,7 +111,28 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
    private:
     Status status_;
   };
-  FontLoadHistogram histogram_;
+  FontLoadHistogram font_load_histogram_;
+
+  class FontDisplayAutoAlignHistogram {
+    DISALLOW_NEW();
+
+   public:
+    void SetHasFontDisplayAuto() { has_font_display_auto_ = true; }
+    void CountAffected() { ++affected_count_; }
+
+    void Record();
+
+   private:
+    unsigned affected_count_ = 0;
+    bool has_font_display_auto_ = false;
+    bool reported_ = false;
+  };
+  FontDisplayAutoAlignHistogram font_display_auto_align_histogram_;
+
+  TaskRunnerTimer<FontFaceSetDocument> lcp_limit_timer_;
+
+  bool has_reached_lcp_limit_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(FontFaceSetDocument);
 };
 

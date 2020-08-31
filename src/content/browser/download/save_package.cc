@@ -68,8 +68,8 @@ namespace {
 
 // Generates unique ids for SavePackage::unique_id_ field.
 SavePackageId GetNextSavePackageId() {
-  static int g_save_package_id = 0;
-  return SavePackageId::FromUnsafeValue(g_save_package_id++);
+  static SavePackageId::Generator g_save_package_id_generator;
+  return g_save_package_id_generator.GenerateNextId();
 }
 
 // Default name which will be used when we can not get proper name from
@@ -129,6 +129,23 @@ void CancelSavePackage(base::WeakPtr<SavePackage> save_package,
     save_package->Cancel(user_cancel, false);
 }
 
+const std::string GetMimeTypeForSaveType(SavePageType save_type) {
+  switch (save_type) {
+    case SAVE_PAGE_TYPE_AS_ONLY_HTML:
+    case SAVE_PAGE_TYPE_AS_COMPLETE_HTML:
+      return "text/html";
+    case SAVE_PAGE_TYPE_AS_MHTML:
+      return "multipart/related";
+    case SAVE_PAGE_TYPE_AS_WEB_BUNDLE:
+      return "application/webbundle";
+    case SAVE_PAGE_TYPE_UNKNOWN:
+    case SAVE_PAGE_TYPE_MAX:
+      NOTREACHED();
+      return "";
+  }
+  NOTREACHED();
+}
+
 }  // namespace
 
 const base::FilePath::CharType SavePackage::kDefaultHtmlExtension[] =
@@ -162,7 +179,8 @@ SavePackage::SavePackage(WebContents* web_contents,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK((save_type_ == SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
          (save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ||
-         (save_type_ == SAVE_PAGE_TYPE_AS_COMPLETE_HTML))
+         (save_type_ == SAVE_PAGE_TYPE_AS_COMPLETE_HTML) ||
+         (save_type_ == SAVE_PAGE_TYPE_AS_WEB_BUNDLE))
       << save_type_;
   DCHECK(!saved_main_file_path_.empty() &&
          saved_main_file_path_.value().length() <= kMaxFilePathLength);
@@ -242,8 +260,11 @@ void SavePackage::InternalInit() {
 
   download::RecordSavePackageEvent(download::SAVE_PACKAGE_STARTED);
 
+  // TODO(crbug.com/1061899): The code here should take an explicit reference
+  // to the corresponding frame instead of using the current main frame.
   ukm_source_id_ = static_cast<WebContentsImpl*>(web_contents())
-                       ->GetUkmSourceIdForLastCommittedSource();
+                       ->GetMainFrame()
+                       ->GetPageUkmSourceId();
   ukm_download_id_ = download::GetUniqueDownloadId();
   download::DownloadUkmHelper::RecordDownloadStarted(
       ukm_download_id_, ukm_source_id_, download::DownloadContent::TEXT,
@@ -273,9 +294,7 @@ bool SavePackage::Init(
 
   RenderFrameHost* frame_host = web_contents()->GetMainFrame();
   download_manager_->CreateSavePackageDownloadItem(
-      saved_main_file_path_, page_url_,
-      ((save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ? "multipart/related"
-                                               : "text/html"),
+      saved_main_file_path_, page_url_, GetMimeTypeForSaveType(save_type_),
       frame_host->GetProcess()->GetID(), frame_host->GetRoutingID(),
       base::BindOnce(&CancelSavePackage, AsWeakPtr()),
       base::BindOnce(&SavePackage::InitWithDownloadItem, AsWeakPtr(),
@@ -302,7 +321,11 @@ void SavePackage::InitWithDownloadItem(
     MHTMLGenerationParams mhtml_generation_params(saved_main_file_path_);
     web_contents()->GenerateMHTML(
         mhtml_generation_params,
-        base::BindOnce(&SavePackage::OnMHTMLGenerated, this));
+        base::BindOnce(&SavePackage::OnMHTMLOrWebBundleGenerated, this));
+  } else if (save_type_ == SAVE_PAGE_TYPE_AS_WEB_BUNDLE) {
+    web_contents()->GenerateWebBundle(
+        saved_main_file_path_,
+        base::BindOnce(&SavePackage::OnWebBundleGenerated, this));
   } else {
     DCHECK_EQ(SAVE_PAGE_TYPE_AS_ONLY_HTML, save_type_);
     wait_state_ = NET_FILES;
@@ -318,7 +341,7 @@ void SavePackage::InitWithDownloadItem(
   }
 }
 
-void SavePackage::OnMHTMLGenerated(int64_t size) {
+void SavePackage::OnMHTMLOrWebBundleGenerated(int64_t size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!download_)
     return;
@@ -337,6 +360,16 @@ void SavePackage::OnMHTMLGenerated(int64_t size) {
                        download_, base::BindOnce(&SavePackage::Finish, this))) {
     Finish();
   }
+}
+
+void SavePackage::OnWebBundleGenerated(
+    uint64_t size,
+    data_decoder::mojom::WebBundlerError error) {
+  if (error == data_decoder::mojom::WebBundlerError::kOK)
+    DCHECK_GT(size, 0ULL);
+  else
+    DCHECK_EQ(size, 0ULL);
+  OnMHTMLOrWebBundleGenerated(size);
 }
 
 // On POSIX, the length of |base_name| + |file_name_ext| is further
@@ -706,7 +739,8 @@ void SavePackage::Finish() {
                                 file_manager_, list_of_failed_save_item_ids));
 
   if (download_) {
-    if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML) {
+    if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML &&
+        save_type_ != SAVE_PAGE_TYPE_AS_WEB_BUNDLE) {
       CHECK_EQ(download_->GetState(), download::DownloadItem::IN_PROGRESS);
       download_->DestinationUpdate(
           all_save_items_count_, CurrentSpeed(),
@@ -790,7 +824,7 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
     save_item_ptr->Start();
 
     // Find the frame responsible for making the network request below - it will
-    // be used in security checks made later by ResourceDispatcherHostImpl.
+    // be used in security checks made later.
     int requester_frame_tree_node_id =
         save_item_ptr->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_NET
             ? save_item_ptr->container_frame_tree_node_id()
@@ -840,10 +874,11 @@ int64_t SavePackage::CurrentSpeed() const {
 void SavePackage::DoSavingProcess() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (save_type_ != SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
-    // Save as HTML only or MHTML.
+    // Save as HTML only or MHTML, or Web Bundle.
     DCHECK_EQ(NET_FILES, wait_state_);
     DCHECK((save_type_ == SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
-           (save_type_ == SAVE_PAGE_TYPE_AS_MHTML))
+           (save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ||
+           (save_type_ == SAVE_PAGE_TYPE_AS_WEB_BUNDLE))
         << save_type_;
     if (waiting_item_queue_.size()) {
       DCHECK_EQ(all_save_items_count_, waiting_item_queue_.size());
@@ -1103,24 +1138,17 @@ void SavePackage::OnSavableResourceLinksResponse(
     EnqueueSavableResource(container_frame_tree_node_id, u, referrer);
   }
   for (const SavableSubframe& subframe : subframes) {
-    FrameTreeNode* subframe_tree_node =
-        sender->frame_tree_node()->frame_tree()->FindByRoutingID(
-            sender->GetProcess()->GetID(), subframe.routing_id);
+    RenderFrameHostImpl* rfh_subframe = sender->FindAndVerifyChild(
+        subframe.routing_id,
+        bad_message::DWNLD_INVALID_SAVABLE_RESOURCE_LINKS_RESPONSE);
 
-    if (!subframe_tree_node) {
+    if (!rfh_subframe) {
       // crbug.com/541354 - Raciness when saving a dynamically changing page.
-      continue;
-    }
-    if (subframe_tree_node->parent() != sender->frame_tree_node()) {
-      // Only reachable if the renderer has a bug or has been compromised.
-      ReceivedBadMessage(
-          sender->GetProcess(),
-          bad_message::DWNLD_INVALID_SAVABLE_RESOURCE_LINKS_RESPONSE);
       continue;
     }
 
     EnqueueFrame(container_frame_tree_node_id,
-                 subframe_tree_node->frame_tree_node_id(),
+                 rfh_subframe->frame_tree_node()->frame_tree_node_id(),
                  subframe.original_url);
   }
 
@@ -1249,11 +1277,11 @@ void SavePackage::GetSaveInfo() {
   bool can_save_as_complete = CanSaveAsComplete(mime_type);
   base::PostTaskAndReplyWithResult(
       download::GetDownloadTaskRunner().get(), FROM_HERE,
-      base::Bind(&SavePackage::CreateDirectoryOnFileThread, title_, page_url_,
-                 can_save_as_complete, mime_type, website_save_dir,
-                 download_save_dir),
-      base::Bind(&SavePackage::ContinueGetSaveInfo, this,
-                 can_save_as_complete));
+      base::BindOnce(&SavePackage::CreateDirectoryOnFileThread, title_,
+                     page_url_, can_save_as_complete, mime_type,
+                     website_save_dir, download_save_dir),
+      base::BindOnce(&SavePackage::ContinueGetSaveInfo, this,
+                     can_save_as_complete));
 }
 
 // static
@@ -1327,7 +1355,9 @@ void SavePackage::OnPathPicked(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK((type == SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
          (type == SAVE_PAGE_TYPE_AS_MHTML) ||
-         (type == SAVE_PAGE_TYPE_AS_COMPLETE_HTML)) << type;
+         (type == SAVE_PAGE_TYPE_AS_COMPLETE_HTML) ||
+         (type == SAVE_PAGE_TYPE_AS_WEB_BUNDLE))
+      << type;
   // Ensure the filename is safe.
   saved_main_file_path_ = final_name;
   // TODO(asanka): This call may block on IO and shouldn't be made

@@ -4,7 +4,7 @@
 
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/trace_event/traced_value.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
@@ -27,7 +27,7 @@ void StreamVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   DrawQuad::SetAll(shared_quad_state, DrawQuad::Material::kStreamVideoContent,
                    rect, visible_rect, needs_blending);
   resources.ids[kResourceIdIndex] = resource_id;
-  overlay_resources.size_in_pixels[kResourceIdIndex] = resource_size_in_pixels;
+  overlay_resources.size_in_pixels = resource_size_in_pixels;
   resources.count = 1;
   this->uv_top_left = uv_top_left;
   this->uv_bottom_right = uv_bottom_right;
@@ -44,7 +44,7 @@ void StreamVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   DrawQuad::SetAll(shared_quad_state, DrawQuad::Material::kStreamVideoContent,
                    rect, visible_rect, needs_blending);
   resources.ids[kResourceIdIndex] = resource_id;
-  overlay_resources.size_in_pixels[kResourceIdIndex] = resource_size_in_pixels;
+  overlay_resources.size_in_pixels = resource_size_in_pixels;
   resources.count = 1;
   this->uv_top_left = uv_top_left;
   this->uv_bottom_right = uv_bottom_right;

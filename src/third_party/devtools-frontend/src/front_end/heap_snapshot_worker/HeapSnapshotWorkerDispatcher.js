@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as HeapSnapshotModel from '../heap_snapshot_model/heap_snapshot_model.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
@@ -56,17 +58,19 @@ export class HeapSnapshotWorkerDispatcher {
   }
 
   dispatchMessage(event) {
-    const data = /** @type {!HeapSnapshotModel.WorkerCommand } */ (event.data);
+    const data = /** @type {!HeapSnapshotModel.HeapSnapshotModel.WorkerCommand } */ (event.data);
     const response = {callId: data.callId};
     try {
       switch (data.disposition) {
-        case 'create':
+        case 'create': {
           const constructorFunction = this._findFunction(data.methodName);
           this._objects[data.objectId] = new constructorFunction(this);
           break;
-        case 'dispose':
+        }
+        case 'dispose': {
           delete this._objects[data.objectId];
           break;
+        }
         case 'getter': {
           const object = this._objects[data.objectId];
           const result = object[data.methodName];
@@ -87,17 +91,18 @@ export class HeapSnapshotWorkerDispatcher {
           response.result = object[data.methodName].apply(object, data.methodArguments);
           break;
         }
-        case 'evaluateForTest':
+        case 'evaluateForTest': {
           try {
             response.result = self.eval(data.source);
-          } catch (e) {
-            response.result = e.toString();
+          } catch (error) {
+            response.result = error.toString();
           }
           break;
+        }
       }
-    } catch (e) {
-      response.error = e.toString();
-      response.errorCallStack = e.stack;
+    } catch (error) {
+      response.error = error.toString();
+      response.errorCallStack = error.stack;
       if (data.methodName) {
         response.errorMethodName = data.methodName;
       }
@@ -105,12 +110,3 @@ export class HeapSnapshotWorkerDispatcher {
     this._postMessage(response);
   }
 }
-
-/* Legacy exported object */
-self.HeapSnapshotWorker = self.HeapSnapshotWorker || {};
-
-/* Legacy exported object */
-HeapSnapshotWorker = HeapSnapshotWorker || {};
-
-/** @constructor */
-HeapSnapshotWorker.HeapSnapshotWorkerDispatcher = HeapSnapshotWorkerDispatcher;

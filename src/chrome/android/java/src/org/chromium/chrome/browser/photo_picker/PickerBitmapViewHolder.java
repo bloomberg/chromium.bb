@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.photo_picker;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.SystemClock;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
+
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
@@ -110,7 +111,7 @@ public class PickerBitmapViewHolder
                 : mCategoryView.getHighResThumbnails().get(filePath);
         if (original != null) {
             mItemView.initialize(mBitmapDetails, original.bitmaps, original.videoDuration, false,
-                    original.ratio);
+                    original.ratioOriginal);
             return PickerAdapter.DecodeActions.FROM_CACHE;
         }
 
@@ -135,7 +136,7 @@ public class PickerBitmapViewHolder
             bitmaps.add(placeholder);
 
             mItemView.initialize(
-                    mBitmapDetails, bitmaps, payload.videoDuration, true, payload.ratio);
+                    mBitmapDetails, bitmaps, payload.videoDuration, true, payload.ratioOriginal);
         } else {
             mItemView.initialize(mBitmapDetails, null, null, true, -1);
         }

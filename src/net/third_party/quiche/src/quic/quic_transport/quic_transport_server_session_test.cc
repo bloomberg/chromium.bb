@@ -15,13 +15,13 @@
 #include "net/third_party/quiche/src/quic/core/frames/quic_stream_frame.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_protocol.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_transport_test_tools.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 namespace quic {
 namespace test {
@@ -36,7 +36,12 @@ using testing::SaveArg;
 
 constexpr char kTestOrigin[] = "https://test-origin.test";
 constexpr char kTestOriginClientIndication[] =
-    "\0\0\0\x18https://test-origin.test";
+    "\0\0"                      // key (0x0000, origin)
+    "\0\x18"                    // length
+    "https://test-origin.test"  // value
+    "\0\x01"                    // key (0x0001, path)
+    "\0\x05"                    // length
+    "/test";                    // value
 const url::Origin GetTestOrigin() {
   return url::Origin::Create(GURL(kTestOrigin));
 }
@@ -46,7 +51,7 @@ const std::string GetTestOriginClientIndication() {
 }
 
 ParsedQuicVersionVector GetVersions() {
-  return {ParsedQuicVersion{PROTOCOL_TLS1_3, QUIC_VERSION_99}};
+  return {DefaultVersionForQuicTransport()};
 }
 
 class QuicTransportServerSessionTest : public QuicTest {
@@ -62,7 +67,7 @@ class QuicTransportServerSessionTest : public QuicTest {
                        KeyExchangeSource::Default()),
         compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize) {
-    SetQuicReloadableFlag(quic_supports_tls_handshake, true);
+    QuicEnableVersion(DefaultVersionForQuicTransport());
     connection_.AdvanceTime(QuicTime::Delta::FromSeconds(100000));
     crypto_test_utils::SetupCryptoServerConfigForTest(
         helper_.GetClock(), helper_.GetRandomGenerator(), &crypto_config_);
@@ -70,11 +75,9 @@ class QuicTransportServerSessionTest : public QuicTest {
         &connection_, nullptr, DefaultQuicConfig(), GetVersions(),
         &crypto_config_, &compressed_certs_cache_, &visitor_);
     session_->Initialize();
-    crypto_stream_ = static_cast<QuicCryptoServerStream*>(
-        session_->GetMutableCryptoStream());
-    if (!GetQuicReloadableFlag(quic_version_negotiated_by_default_at_server)) {
-      crypto_stream_->OnSuccessfulVersionNegotiation(GetVersions()[0]);
-    }
+    crypto_stream_ = session_->GetMutableCryptoStream();
+    ON_CALL(visitor_, ProcessPath(_))
+        .WillByDefault(DoAll(SaveArg<0>(&path_), Return(true)));
   }
 
   void Connect() {
@@ -85,9 +88,9 @@ class QuicTransportServerSessionTest : public QuicTest {
         QuicServerId("test.example.com", 443), options, QuicTransportAlpn());
   }
 
-  void ReceiveIndication(QuicStringPiece indication) {
+  void ReceiveIndication(quiche::QuicheStringPiece indication) {
     QUIC_LOG(INFO) << "Receiving indication: "
-                   << QuicTextUtils::HexDump(indication);
+                   << quiche::QuicheTextUtils::HexDump(indication);
     constexpr size_t kChunkSize = 1024;
     // Shard the indication, since some of the tests cause it to not fit into a
     // single frame.
@@ -98,7 +101,21 @@ class QuicTransportServerSessionTest : public QuicTest {
     }
     session_->OnStreamFrame(QuicStreamFrame(ClientIndicationStream(),
                                             /*fin=*/true, indication.size(),
-                                            QuicStringPiece()));
+                                            quiche::QuicheStringPiece()));
+  }
+
+  void ReceiveIndicationWithPath(quiche::QuicheStringPiece path) {
+    constexpr char kTestOriginClientIndicationPrefix[] =
+        "\0\0"                      // key (0x0000, origin)
+        "\0\x18"                    // length
+        "https://test-origin.test"  // value
+        "\0\x01";                   // key (0x0001, path)
+    std::string indication{kTestOriginClientIndicationPrefix,
+                           sizeof(kTestOriginClientIndicationPrefix) - 1};
+    indication.push_back(static_cast<char>(path.size() >> 8));
+    indication.push_back(static_cast<char>(path.size() & 0xff));
+    indication += std::string{path};
+    ReceiveIndication(indication);
   }
 
  protected:
@@ -109,8 +126,9 @@ class QuicTransportServerSessionTest : public QuicTest {
   QuicCryptoServerConfig crypto_config_;
   std::unique_ptr<QuicTransportServerSession> session_;
   QuicCompressedCertsCache compressed_certs_cache_;
-  testing::StrictMock<MockServerVisitor> visitor_;
-  QuicCryptoServerStream* crypto_stream_;
+  testing::NiceMock<MockServerVisitor> visitor_;
+  QuicCryptoServerStreamBase* crypto_stream_;
+  GURL path_;
 };
 
 TEST_F(QuicTransportServerSessionTest, SuccessfulHandshake) {
@@ -122,21 +140,23 @@ TEST_F(QuicTransportServerSessionTest, SuccessfulHandshake) {
   ReceiveIndication(GetTestOriginClientIndication());
   EXPECT_TRUE(session_->IsSessionReady());
   EXPECT_EQ(origin, GetTestOrigin());
+  EXPECT_EQ(path_.path(), "/test");
 }
 
 TEST_F(QuicTransportServerSessionTest, PiecewiseClientIndication) {
   Connect();
   size_t i = 0;
   for (; i < sizeof(kTestOriginClientIndication) - 2; i++) {
-    QuicStreamFrame frame(ClientIndicationStream(), false, i,
-                          QuicStringPiece(&kTestOriginClientIndication[i], 1));
+    QuicStreamFrame frame(
+        ClientIndicationStream(), false, i,
+        quiche::QuicheStringPiece(&kTestOriginClientIndication[i], 1));
     session_->OnStreamFrame(frame);
   }
 
   EXPECT_CALL(visitor_, CheckOrigin(_)).WillOnce(Return(true));
   QuicStreamFrame last_frame(
       ClientIndicationStream(), true, i,
-      QuicStringPiece(&kTestOriginClientIndication[i], 1));
+      quiche::QuicheStringPiece(&kTestOriginClientIndication[i], 1));
   session_->OnStreamFrame(last_frame);
   EXPECT_TRUE(session_->IsSessionReady());
 }
@@ -150,7 +170,7 @@ TEST_F(QuicTransportServerSessionTest, OriginRejected) {
   EXPECT_FALSE(session_->IsSessionReady());
 }
 
-std::string MakeUnknownField(QuicStringPiece payload) {
+std::string MakeUnknownField(quiche::QuicheStringPiece payload) {
   std::string buffer;
   buffer.resize(payload.size() + 4);
   QuicDataWriter writer(buffer.size(), &buffer[0]);
@@ -228,6 +248,41 @@ TEST_F(QuicTransportServerSessionTest, InvalidOrigin) {
       connection_,
       CloseConnection(_, HasSubstr("Unable to parse the specified origin"), _));
   ReceiveIndication(kEmptyOriginIndication);
+  EXPECT_FALSE(session_->IsSessionReady());
+}
+
+TEST_F(QuicTransportServerSessionTest, PathWithQuery) {
+  Connect();
+  EXPECT_CALL(visitor_, CheckOrigin(_)).WillOnce(Return(true));
+  ReceiveIndicationWithPath("/test?foo=bar");
+  EXPECT_TRUE(session_->IsSessionReady());
+  EXPECT_EQ(path_.path(), "/test");
+  EXPECT_EQ(path_.query(), "foo=bar");
+}
+
+TEST_F(QuicTransportServerSessionTest, PathNormalization) {
+  Connect();
+  EXPECT_CALL(visitor_, CheckOrigin(_)).WillOnce(Return(true));
+  ReceiveIndicationWithPath("/foo/../bar");
+  EXPECT_TRUE(session_->IsSessionReady());
+  EXPECT_EQ(path_.path(), "/bar");
+}
+
+TEST_F(QuicTransportServerSessionTest, EmptyPath) {
+  Connect();
+  EXPECT_CALL(visitor_, CheckOrigin(_)).WillOnce(Return(true));
+  EXPECT_CALL(connection_,
+              CloseConnection(_, HasSubstr("Path must begin with a '/'"), _));
+  ReceiveIndicationWithPath("");
+  EXPECT_FALSE(session_->IsSessionReady());
+}
+
+TEST_F(QuicTransportServerSessionTest, UnprefixedPath) {
+  Connect();
+  EXPECT_CALL(visitor_, CheckOrigin(_)).WillOnce(Return(true));
+  EXPECT_CALL(connection_,
+              CloseConnection(_, HasSubstr("Path must begin with a '/'"), _));
+  ReceiveIndicationWithPath("test");
   EXPECT_FALSE(session_->IsSessionReady());
 }
 

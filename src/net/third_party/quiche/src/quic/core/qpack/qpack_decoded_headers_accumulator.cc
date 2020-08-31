@@ -5,14 +5,10 @@
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_decoded_headers_accumulator.h"
 
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_header_table.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
-
-namespace {
-
-size_t kHeaderFieldSizeOverhead = 32;
-
-}
 
 QpackDecodedHeadersAccumulator::QpackDecodedHeadersAccumulator(
     QuicStreamId id,
@@ -31,8 +27,9 @@ QpackDecodedHeadersAccumulator::QpackDecodedHeadersAccumulator(
   quic_header_list_.OnHeaderBlockStart();
 }
 
-void QpackDecodedHeadersAccumulator::OnHeaderDecoded(QuicStringPiece name,
-                                                     QuicStringPiece value) {
+void QpackDecodedHeadersAccumulator::OnHeaderDecoded(
+    quiche::QuicheStringPiece name,
+    quiche::QuicheStringPiece value) {
   DCHECK(!error_detected_);
 
   uncompressed_header_bytes_without_overhead_ += name.size() + value.size();
@@ -42,7 +39,7 @@ void QpackDecodedHeadersAccumulator::OnHeaderDecoded(QuicStringPiece name,
   }
 
   uncompressed_header_bytes_including_overhead_ +=
-      name.size() + value.size() + kHeaderFieldSizeOverhead;
+      name.size() + value.size() + QpackEntry::kSizeOverhead;
 
   if (uncompressed_header_bytes_including_overhead_ > max_header_list_size_) {
     header_list_size_limit_exceeded_ = true;
@@ -62,11 +59,12 @@ void QpackDecodedHeadersAccumulator::OnDecodingCompleted() {
       uncompressed_header_bytes_without_overhead_, compressed_header_bytes_);
 
   // Might destroy |this|.
-  visitor_->OnHeadersDecoded(std::move(quic_header_list_));
+  visitor_->OnHeadersDecoded(std::move(quic_header_list_),
+                             header_list_size_limit_exceeded_);
 }
 
 void QpackDecodedHeadersAccumulator::OnDecodingErrorDetected(
-    QuicStringPiece error_message) {
+    quiche::QuicheStringPiece error_message) {
   DCHECK(!error_detected_);
   DCHECK(!headers_decoded_);
 
@@ -75,7 +73,7 @@ void QpackDecodedHeadersAccumulator::OnDecodingErrorDetected(
   visitor_->OnHeaderDecodingError(error_message);
 }
 
-void QpackDecodedHeadersAccumulator::Decode(QuicStringPiece data) {
+void QpackDecodedHeadersAccumulator::Decode(quiche::QuicheStringPiece data) {
   DCHECK(!error_detected_);
 
   compressed_header_bytes_ += data.size();

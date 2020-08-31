@@ -12,15 +12,12 @@ import datetime
 import glob
 import os
 import re
+import sys
 
-from six.moves import zip as izip
-
-from chromite.lib import build_requests
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import factory
 from chromite.lib import failure_message_lib
-from chromite.lib import hwtest_results
 from chromite.lib import osutils
 from chromite.lib import retry_stats
 from chromite.utils import memoize
@@ -35,6 +32,10 @@ try:
   sqlalchemy_imported = True
 except ImportError:
   pass
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 log = logging.getLogger(__name__)
 
@@ -160,23 +161,6 @@ class SchemaVersionedMySQLConnection(object):
     except IOError as e:
       log.warning('Error reading %s from file %s: %s', key, file_path, e)
 
-  def _UpdateSslArgs(self, key, db_credentials_dir, filename):
-    """Read an ssl argument for the sql connection from the given file.
-
-    side effect: store argument in self._ssl_args
-
-    Args:
-      key: Name of the ssl argument to read.
-      db_credentials_dir: The directory containing the credentials.
-      filename: Name of the file to read.
-    """
-    file_path = os.path.join(db_credentials_dir, filename)
-    if os.path.exists(file_path):
-      if 'ssl' not in self._ssl_args:
-        self._ssl_args['ssl'] = {}
-      self._ssl_args['ssl'][key] = file_path
-      self._ssl_args['ssl']['check_hostname'] = True
-
   def _UpdateConnectArgs(self, db_credentials_dir, for_service=False):
     """Update all connection args from |db_credentials_dir|."""
     self._UpdateConnectUrlArgs('username', db_credentials_dir, 'user.txt')
@@ -185,10 +169,6 @@ class SchemaVersionedMySQLConnection(object):
     if not for_service:
       self._UpdateConnectUrlArgs('host', db_credentials_dir, 'host.txt')
       self._UpdateConnectUrlArgs('port', db_credentials_dir, 'port.txt')
-
-      self._UpdateSslArgs('cert', db_credentials_dir, 'client-cert.pem')
-      self._UpdateSslArgs('key', db_credentials_dir, 'client-key.pem')
-      self._UpdateSslArgs('ca', db_credentials_dir, 'server-ca.pem')
     else:
       self._UpdateConnectUrlQuery(
           'unix_socket', db_credentials_dir, 'unix_socket.txt')
@@ -257,7 +237,6 @@ class SchemaVersionedMySQLConnection(object):
     # mysql args that are optionally provided by files in db_credentials_dir
     self._connect_url_args = {}
     self._connect_url_args['query'] = {}
-    self._ssl_args = {}
     self._UpdateConnectArgs(db_credentials_dir, for_service=for_service)
 
     tmp_connect_url = sqlalchemy.engine.url.URL(
@@ -268,7 +247,6 @@ class SchemaVersionedMySQLConnection(object):
     # engine here because the real engine will be opened with a default
     # database name given by |db_name|.
     temp_engine = sqlalchemy.create_engine(tmp_connect_url,
-                                           connect_args=self._ssl_args,
                                            listeners=[self._listener_class()])
 
     databases = self._ExecuteWithEngine('SHOW DATABASES',
@@ -399,28 +377,6 @@ class SchemaVersionedMySQLConnection(object):
     ins = self._meta.tables[table].insert().values(values)
     r = self._Execute(ins)
     return r.inserted_primary_key[0]
-
-  def _InsertMany(self, table, values):
-    """Create and execute an multi-row INSERT query.
-
-    Args:
-      table: Table name to insert to.
-      values: A list of value dictionaries to insert multiple rows.
-
-    Returns:
-      The number of inserted rows.
-    """
-    # sqlalchemy 0.7 and prior has a bug in which it does not always
-    # correctly unpack a list of rows to multi-insert if the list contains
-    # only one item.
-    if len(values) == 1:
-      self._Insert(table, values[0])
-      return 1
-
-    self._ReflectToMetadata()
-    ins = self._meta.tables[table].insert()
-    r = self._Execute(ins, *values)
-    return r.rowcount
 
   def _GetPrimaryKey(self, table):
     """Gets the primary key column of |table|.
@@ -611,7 +567,6 @@ class SchemaVersionedMySQLConnection(object):
       return self._engine
     else:
       e = sqlalchemy.create_engine(self._connect_url,
-                                   connect_args=self._ssl_args,
                                    listeners=[self._listener_class()])
       self._engine = e
       self._engine_pid = pid
@@ -823,50 +778,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
               'board': board}
     return self._Insert('buildMessageTable', values)
 
-  @minimum_schema(57)
-  def InsertHWTestResults(self, hwTestResults):
-    """Insert HWTest results.
-
-    Args:
-      hwTestResults: A list of hwtest_results.HWTestResult instances.
-
-    Returns:
-      The number of inserted rows.
-    """
-    values = []
-    for result in hwTestResults:
-      values.append({'build_id': result.build_id,
-                     'test_name': result.test_name,
-                     'status': result.status})
-
-    return self._InsertMany('hwTestResultTable', values)
-
-  @minimum_schema(60)
-  def InsertBuildRequests(self, build_reqs):
-    """Insert a list of build requests.
-
-    Args:
-      build_reqs: A list of build_requests.BuildRequest instances.
-
-    Returns:
-      The number of inserted rows.
-    """
-    values = []
-    for build_request in build_reqs:
-      value = {
-          'build_id': build_request.build_id,
-          'request_build_config': build_request.request_build_config,
-          'request_build_args': build_request.request_build_args,
-          'request_buildbucket_id': build_request.request_buildbucket_id,
-          'request_reason': build_request.request_reason
-      }
-      if build_request.timestamp:
-        value['timestamp'] = build_request.timestamp
-
-      values.append(value)
-
-    return self._InsertMany('buildRequestTable', values)
-
   @minimum_schema(65)
   def UpdateMetadata(self, build_id, metadata):
     """Update the given metadata row in database.
@@ -892,29 +803,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                          'unibuild': d.get('unibuild', False),
                          'suite_scheduling': d.get('suite_scheduling', False),
                          'branch': d.get('branch')})
-
-  @minimum_schema(32)
-  def ExtendDeadline(self, build_id, timeout_seconds):
-    """Extend the deadline for this build.
-
-    Args:
-      build_id: primary key, in buildTable, of the build for which deadline
-          should be extended.
-      timeout_seconds: Time remaining for the deadline from the current time.
-
-    Returns:
-      Number of rows updated (1 for success, 0 for failure)
-      Deadline extension can fail if
-        (1) The deadline is already past, or
-        (2) The new deadline requested is earlier than the original deadline.
-    """
-    return self._Execute(
-        'UPDATE buildTable SET deadline = NOW() + INTERVAL %d SECOND WHERE '
-        'id = %d AND '
-        '(deadline = 0 OR deadline > NOW()) AND '
-        'NOW() + INTERVAL %d SECOND > deadline'
-        % (timeout_seconds, build_id, timeout_seconds)
-        ).rowcount
 
   @minimum_schema(6)
   def UpdateBoardPerBuildMetadata(self, build_id, board, board_metadata):
@@ -1209,39 +1097,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     results = self._Execute(query).fetchall()
     return [failure_message_lib.StageFailure(*values) for values in results]
 
-  @minimum_schema(32)
-  def GetTimeToDeadline(self, build_id):
-    """Gets the time remaining till the deadline for given build_id.
-
-    Always use this function to find time remaining to a deadline. This function
-    computes all times on the database. You run the risk of hitting timezone
-    issues if you compute remaining time locally.
-
-    Args:
-      build_id: The build_id of the build to query.
-
-    Returns:
-      The time remaining to the deadline in seconds.
-      0 if the deadline is already past.
-      None if no deadline is found.
-    """
-    # Sign information is lost in the timediff coercion into python
-    # datetime.timedelta type. So, we must find out if the deadline is past
-    # separately.
-    r = self._Execute(
-        'SELECT deadline >= NOW(), TIMEDIFF(deadline, NOW()), deadline '
-        'from buildTable where id = %d' % build_id).fetchall()
-    if not r:
-      return None
-
-    time_remaining = r[0][1]
-    deadline = r[0][2]
-    if deadline is None:
-      return None
-
-    deadline_past = (r[0][0] == 0)
-    return 0 if deadline_past else abs(time_remaining.total_seconds())
-
   @minimum_schema(65)
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
@@ -1387,45 +1242,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [dict(zip(CIDBConnection.BUILD_STATUS_KEYS, values))
             for values in results]
 
-  @minimum_schema(26)
-  def GetAnnotationsForBuilds(self, build_ids):
-    """Returns the annotations for given build_ids.
-
-    Args:
-      build_ids: list of build_ids for which annotations are requested.
-
-    Returns:
-      {id: annotations} where annotations is itself a list of dicts containing
-      annotations. Valid keys in annotations are [failure_category,
-      failure_message, blame_url, notes].
-    """
-    columns_to_report = ['failure_category', 'failure_message',
-                         'blame_url', 'notes']
-    where_or_clauses = []
-    for build_id in build_ids:
-      where_or_clauses.append('build_id = %d' % build_id)
-    annotations = self._SelectWhere('annotationsTable',
-                                    ' OR '.join(where_or_clauses),
-                                    ['build_id'] + columns_to_report)
-
-    results = {}
-    for annotation in annotations:
-      build_id = annotation['build_id']
-      if build_id not in results:
-        results[build_id] = []
-      results[build_id].append(annotation)
-    return results
-
-  @minimum_schema(40)
-  def GetKeyVals(self):
-    """Get key-vals from keyvalTable.
-
-    Returns:
-      A dictionary of {key: value} strings (values may also be None).
-    """
-    results = self._Execute('SELECT k, v FROM keyvalTable').fetchall()
-    return dict(results)
-
   @minimum_schema(42)
   def GetBuildMessages(self, build_id, message_type=None, message_subtype=None):
     """Gets build messages from buildMessageTable.
@@ -1450,23 +1266,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     return self._GetBuildMessagesWithClause(' AND '.join(where_clause))
 
-  @minimum_schema(42)
-  def GetBuildMessagesNewerThan(self, message_type, timestamp):
-    """Returns build messages newer than |timestamp|.
-
-    Args:
-      message_type: The type of buildMessage we're interested in
-      timestamp: The timestamp with which to filter out older messages.
-
-    Returns:
-      A list of build message dictionaries.
-    """
-    timestamp_formatted = timestamp.strftime(self._DATETIME_FORMAT)
-    return self._GetBuildMessagesWithClause(
-        'timestamp > TIMESTAMP("%s") AND message_type = "%s"' %
-        (timestamp_formatted, message_type)
-    )
-
   def _GetBuildMessagesWithClause(self, clause):
     """Private helper method for fetching build messages."""
     columns = ['build_id', 'build_config', 'waterfall', 'builder_name',
@@ -1475,142 +1274,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     results = self._Execute('%s WHERE %s' % (self._SQL_FETCH_MESSAGES,
                                              clause)).fetchall()
     return [dict(zip(columns, values)) for values in results]
-
-  @minimum_schema(57)
-  def GetHWTestResultsForBuilds(self, build_ids):
-    """Get HWTest results for builds.
-
-    Args:
-      build_ids: A list of build_ids (strings) to get the HWTest results.
-
-    Returns:
-      A list of HWTest result dictionaries, where each dictionary contains keys
-        id, build_id, test_name and status.
-    """
-    if not build_ids:
-      raise AssertionError("Build ID's are empty.")
-
-    q = ('SELECT * from hwTestResultTable WHERE build_id IN (%s)' %
-         ','.join(str(int(x)) for x in build_ids))
-    results = self._Execute(q).fetchall()
-
-    return [hwtest_results.HWTestResult(*values) for values in results]
-
-  @minimum_schema(59)
-  def GetBuildRequestsForBuildConfigs(self,
-                                      request_build_configs,
-                                      num_results=NUM_RESULTS_NO_LIMIT,
-                                      start_time=None):
-    """Get BuildRequests for a list of request_build_configs.
-
-    Args:
-      request_build_configs: A list of build configs (string) to request.
-      num_results: Number of results to return, default to
-        self.NUM_RESULTS_NO_LIMIT.
-      start_time: If not None, only return build requests sent after the
-        start_time. Default to None.
-
-    Returns:
-      A list of BuildRequest instances sorted by id in descending order.
-    """
-    query = ('SELECT * from buildRequestTable WHERE request_build_config IN '
-             '(%s)' % (','.join('"%s"' % x for x in request_build_configs)))
-
-    if start_time is not None:
-      query += (' and timestamp > TIMESTAMP("%s")' % start_time)
-
-    query += ' ORDER BY id DESC'
-
-    if num_results != self.NUM_RESULTS_NO_LIMIT:
-      query += (' LIMIT %d' % num_results)
-
-    results = self._Execute(query).fetchall()
-
-    return [build_requests.BuildRequest(*values) for values in results]
-
-  @minimum_schema(59)
-  def GetLatestBuildRequestsForReason(self, request_reason,
-                                      num_results=NUM_RESULTS_NO_LIMIT,
-                                      n_days_back=7):
-    """Gets the latest build_requests associated with the request_reason.
-
-    Args:
-      request_reason: The reason to filter by
-      num_results: Number of results to return, default to
-        self.NUM_RESULTS_NO_LIMIT.
-      n_days_back: How many days back to look for build requests.
-
-    Returns:
-      A list of build_request.BuildRequest instances.
-    """
-    query = [self._SQL_FETCH_LATEST_BUILD_REQUEST]
-    query.append("AND t1.request_reason = '%s'" % request_reason)
-
-    if n_days_back is not None:
-      query.append(
-          'AND t1.timestamp > TIMESTAMP(DATE_SUB(NOW(), INTERVAL %s DAY))'
-          % n_days_back)
-
-    if num_results != self.NUM_RESULTS_NO_LIMIT:
-      query.append('LIMIT %d' % num_results)
-
-    results = self._Execute(' '.join(query)).fetchall()
-    return [build_requests.BuildRequest(*values) for values in results]
-
-  def GetBuildRequestsForRequesterBuild(self, requester_build_id,
-                                        request_reason=None):
-    """Get the build_requests associated to the requester build.
-
-    Args:
-      requester_build_id: The build id of the requester build.
-      request_reason: If provided, only return the build_request of the given
-        request reason. Default to None.
-
-    Returns:
-      A list of build_request.BuildRequest instances.
-    """
-    query = ('SELECT * from buildRequestTable WHERE build_id = %d' %
-             requester_build_id)
-
-    if request_reason is not None:
-      query += ' AND request_reason = "%s"' % request_reason
-
-    results = self._Execute(query).fetchall()
-    return [build_requests.BuildRequest(*values) for values in results]
-
-  def GetPreCQFlakeCounts(self, start_date=None, end_date=None):
-    """Gets counts of pre-CQ flake and total pre-CQ runs by build config.
-
-    Finds counts of pre-CQ builds failing and then succeeding on retry for
-    the same patchset within a time window bounded by |start_date| and
-    |end_date|.
-
-    Note: if neither |start_date| or |end_date| is provided, this defaults
-    to a 7-day window.
-
-    Args:
-      start_date: The start date for the time window.
-      end_date: The last day to include in the time window.
-
-    Returns:
-      A list of dicts, keys = ('build_config', 'flake_count', 'build_count')
-    """
-    time_constraint = ''
-    if not start_date and not end_date:
-      time_constraint = ' AND b.start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)'
-    if start_date:
-      time_constraint += ' AND b.start_time >= DATE(%s)' % (
-          start_date.strftime(self._DATE_FORMAT))
-    if end_date:
-      time_constraint += ' AND b.start_time <= DATE(%s)' % (
-          end_date.strftime(self._DATE_FORMAT))
-
-    query = self._SQL_FETCH_RETRIED_PRE_CQ_FAILURES.format(
-        time_constraint=time_constraint)
-
-    results = self._Execute(query).fetchall()
-    keys = ('build_config', 'flake_count', 'build_count')
-    return [dict(izip(keys, row)) for row in results]
 
 
 def _INV():

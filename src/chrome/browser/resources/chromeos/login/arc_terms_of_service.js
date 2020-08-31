@@ -10,7 +10,7 @@
 Polymer({
   is: 'arc-tos-root',
 
-  behaviors: [OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**
@@ -26,13 +26,117 @@ Polymer({
      * Reference to OOBE screen object.
      * @type {!{
      *     onAccept: function(),
-     *     onNext: function(),
-     *     onSkip: function(),
      *     reloadPlayStoreToS: function(),
      * }}
      */
     screen: {
       type: Object,
+    },
+
+    /**
+     * Indicates whether metrics text should be hidden.
+     */
+    isMetricsHidden: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * String id for metrics collection text.
+     */
+    metricsTextKey: {
+      type: String,
+      value: 'arcTextMetricsEnabled',
+    },
+
+    /**
+     * String id of Google service confirmation text.
+     */
+    googleServiceConfirmationTextKey: {
+      type: String,
+      value: 'arcTextGoogleServiceConfirmation',
+    },
+
+    /**
+     * String id of text for Accept button.
+     */
+    acceptTextKey: {
+      type: String,
+      value: 'arcTermsOfServiceAcceptButton',
+    },
+
+    /**
+     * Indicates whether backup and restore should be enabled.
+     */
+    backupRestore: {
+      type: Boolean,
+      value: true,
+    },
+
+    /**
+     * Indicates whether backup and restore is managed.
+     * If backup and restore is managed, the checkbox will be disabled.
+     */
+    backupRestoreManaged: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Indicates whether current account is child account.
+     */
+    isChild: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Indicates whether location service should be enabled.
+     */
+    locationService: {
+      type: Boolean,
+      value: true,
+    },
+
+    /**
+     * Indicates whether location service is managed.
+     * If location service is managed, the checkbox will be disabled.
+     */
+    locationServiceManaged: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Indicates whether user will review Arc settings after login.
+     */
+    reviewSettings: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Indicates whether user sees full content of terms of service.
+     */
+    showFullDialog: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Indicates whether currently under demo mode.
+     */
+    demoMode: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Indicates whether popup overlay webview is loading.
+     */
+    overlayLoading_: {
+      type: Boolean,
+      value: true,
     },
   },
 
@@ -48,8 +152,15 @@ Polymer({
    */
   is_shown_: false,
 
+  /**
+   * Last focused element when overlay is shown. Used to resume focus when
+   * overlay is dismissed.
+   * @private {Object|null}
+   */
+  lastFocusedElement_: null,
+
   /** Called when dialog is shown */
-  onBeforeShow: function() {
+  onBeforeShow() {
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
@@ -58,18 +169,35 @@ Polymer({
     window.setTimeout(this.applyOobeConfiguration_.bind(this), 0);
   },
 
-  /**
-   * Returns element by its id.
-   */
-  getElement: function(id) {
-    return this.$[id];
+  /** Setups overlay webview loading callback */
+  setupOverlay() {
+    var self = this;
+    this.$.arcTosOverlayWebview.addEventListener(
+        'contentload', function() {
+      self.overlayLoading_ = false;
+    });
   },
 
   /**
-   * Returns focused element inside this element.
+   * Opens external URL in popup overlay.
+   * @param {string} targetUrl to show in overlay webview.
+   * @param {boolean} isUsingOfflineTerm whether to use offline url.
    */
-  getActiveElement: function(id) {
-    return this.shadowRoot.activeElement;
+  showUrlOverlay(targetUrl, isUsingOfflineTerm) {
+    if (!isUsingOfflineTerm) {
+      this.$.arcTosOverlayWebview.src = targetUrl;
+    }
+    this.lastFocusedElement_ = this.shadowRoot.activeElement;
+
+    this.overlayLoading_ = true;
+    this.$.arcTosOverlayPrivacyPolicy.showDialog();
+  },
+
+  /**
+   * Returns element by its id.
+   */
+  getElement(id) {
+    return this.$[id];
   },
 
   /**
@@ -77,7 +205,7 @@ Polymer({
    *
    * @private
    */
-  applyOobeConfiguration_: function() {
+  applyOobeConfiguration_() {
     if (this.configuration_applied_)
       return;
     var configuration = Oobe.getInstance().getOobeConfiguration();
@@ -96,7 +224,7 @@ Polymer({
    *
    * @private
    */
-  buttonsDisabledStateChanged_: function(newValue, oldValue) {
+  buttonsDisabledStateChanged_(newValue, oldValue) {
     // Trigger applyOobeConfiguration_ if buttons are enabled and dialog is
     // visible.
     if (this.arcTosButtonsDisabled)
@@ -113,7 +241,7 @@ Polymer({
    *
    * @private
    */
-  onAccept_: function() {
+  onAccept_() {
     this.screen.onAccept();
   },
 
@@ -122,8 +250,10 @@ Polymer({
    *
    * @private
    */
-  onNext_: function() {
-    this.screen.onNext();
+  onNext_() {
+    this.showFullDialog = true;
+    this.$.arcTosDialog.scrollToBottom();
+    this.$.arcTosAcceptButton.focus();
   },
 
   /**
@@ -131,17 +261,8 @@ Polymer({
    *
    * @private
    */
-  onRetry_: function() {
+  onRetry_() {
     this.screen.reloadPlayStoreToS();
-  },
-
-  /**
-   * On-tap event handler for Skip button.
-   *
-   * @private
-   */
-  onSkip_: function() {
-    this.screen.onSkip();
   },
 
   /**
@@ -149,7 +270,58 @@ Polymer({
    *
    * @private
    */
-  onBack_: function() {
+  onBack_() {
     chrome.send('login.ArcTermsOfServiceScreen.userActed', ['go-back']);
+  },
+
+  /**
+   * On-tap event handler for metrics learn more link
+   * @private
+   */
+  onMetricsLearnMoreTap_() {
+    this.lastFocusedElement_ = this.shadowRoot.activeElement;
+    this.$.arcMetricsPopup.showDialog();
+  },
+
+  /**
+   * On-tap event handler for backup and restore learn more link
+   * @private
+   */
+  onBackupRestoreLearnMoreTap_() {
+    this.lastFocusedElement_ = this.shadowRoot.activeElement;
+    if (this.isChild) {
+      this.$.arcBackupRestoreChildPopup.showDialog();
+    } else {
+      this.$.arcBackupRestorePopup.showDialog();
+    }
+  },
+
+  /**
+   * On-tap event handler for location service learn more link
+   * @private
+   */
+  onLocationServiceLearnMoreTap_() {
+    this.lastFocusedElement_ = this.shadowRoot.activeElement;
+    this.$.arcLocationServicePopup.showDialog();
+  },
+
+  /**
+   * On-tap event handler for Play auto install learn more link
+   * @private
+   */
+  onPaiLearnMoreTap_() {
+    this.lastFocusedElement_ = this.shadowRoot.activeElement;
+    this.$.arcPaiPopup.showDialog();
+  },
+
+  /*
+   * Callback when overlay is closed.
+   * @private
+   */
+  onOverlayClosed_() {
+    if (this.lastFocusedElement_) {
+      this.lastFocusedElement_.focus();
+      this.lastFocusedElement_ = null;
+    }
   }
 });

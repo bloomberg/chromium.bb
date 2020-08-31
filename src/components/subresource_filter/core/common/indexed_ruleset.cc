@@ -4,7 +4,7 @@
 
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "components/subresource_filter/core/common/first_party_origin.h"
@@ -52,12 +52,12 @@ VerifyStatus GetVerifyStatus(const uint8_t* buffer,
 
 // RulesetIndexer --------------------------------------------------------------
 
-const int RulesetIndexer::kIndexedFormatVersion = 26;
+const int RulesetIndexer::kIndexedFormatVersion = 27;
 
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
 // updating RulesetIndexer::kIndexedFormatVersion.
-static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 5,
+static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 6,
               "kUrlPatternIndexFormatVersion has changed, make sure you've "
               "also updated RulesetIndexer::kIndexedFormatVersion above.");
 
@@ -139,15 +139,20 @@ bool IndexedRulesetMatcher::ShouldDisableFilteringForDocument(
       false, FindRuleStrategy::kAny);
 }
 
-bool IndexedRulesetMatcher::ShouldDisallowResourceLoad(
+LoadPolicy IndexedRulesetMatcher::GetLoadPolicyForResourceLoad(
     const GURL& url,
     const FirstPartyOrigin& first_party,
     proto::ElementType element_type,
     bool disable_generic_rules) const {
   const url_pattern_index::flat::UrlRule* rule =
       MatchedUrlRule(url, first_party, element_type, disable_generic_rules);
-  return rule &&
-         !(rule->options() & url_pattern_index::flat::OptionFlag_IS_WHITELIST);
+
+  if (!rule)
+    return LoadPolicy::ALLOW;
+
+  return rule->options() & url_pattern_index::flat::OptionFlag_IS_WHITELIST
+             ? LoadPolicy::EXPLICITLY_ALLOW
+             : LoadPolicy::DISALLOW;
 }
 
 const url_pattern_index::flat::UrlRule* IndexedRulesetMatcher::MatchedUrlRule(

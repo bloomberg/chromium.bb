@@ -13,13 +13,6 @@ goog.require('mr.Analytics');
 
 
 /**
- * Contains all common analytics logic for Mirroring.
- * @const {*}
- */
-mr.MirrorAnalytics = {};
-
-
-/**
  * Histogram name for mirroring start failure.
  * @private @const {string}
  */

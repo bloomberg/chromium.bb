@@ -80,10 +80,12 @@ class PaymentRequestStateTest : public testing::Test,
     PaymentAppServiceFactory::SetForTesting(
         std::make_unique<PaymentAppService>());
     state_ = std::make_unique<PaymentRequestState>(
-        /*web_contents=*/nullptr, GURL("https://example.com"),
-        GURL("https://example.com/pay"), spec_.get(), this, "en-US",
-        &test_personal_data_manager_, &test_payment_request_delegate_,
-        base::Bind(
+        /*web_contents=*/nullptr,
+        /*render_frame_host=*/nullptr, GURL("https://example.com"),
+        GURL("https://example.com/pay"),
+        url::Origin::Create(GURL("https://example.com")), spec_.get(), this,
+        "en-US", &test_personal_data_manager_, &test_payment_request_delegate_,
+        base::BindRepeating(
             [](const url::Origin& origin,
                int64_t registration_id) { /* Intentionally left blank. */ }),
         &journey_logger_);

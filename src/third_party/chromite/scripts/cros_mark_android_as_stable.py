@@ -10,27 +10,22 @@ caller could then use this atom with emerge to build the newly uprevved version
 of Android e.g.
 
 ./cros_mark_android_as_stable \
-    --android_package=android-container \
-    --android_build_branch=git_mnc-dr-arc-dev \
-    --android_gts_build_branch=git_mnc-dev
+    --android_build_branch=git_pi-arc \
+    --android_package=android-container-pi
 
-Returns chromeos-base/android-container-2559197
+Returns chromeos-base/android-container-pi-6417892-r1
 
-emerge-veyron_minnie-cheets =chromeos-base/android-container-2559197-r1
+emerge-eve =chromeos-base/android-container-pi-6417892-r1
 """
 
 from __future__ import print_function
 
 import filecmp
-import hashlib
 import glob
 import os
 import re
-import shutil
-import tempfile
 import time
-import subprocess
-import base64
+import sys
 
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -42,15 +37,18 @@ from chromite.lib import portage_util
 from chromite.scripts import cros_mark_as_stable
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 # Dir where all the action happens.
 _OVERLAY_DIR = '%(srcroot)s/private-overlays/project-cheets-private/'
 
-_GIT_COMMIT_MESSAGE = ('Marking latest for %(android_package)s ebuild '
-                       'with version %(android_version)s as stable.')
+_GIT_COMMIT_MESSAGE = """Marking latest for %(android_package)s ebuild with \
+version %(android_version)s as stable.
 
-# URLs that print lists of Android revisions between two build ids.
-_ANDROID_VERSION_URL = ('http://android-build-uber.corp.google.com/repo.html?'
-                        'last_bid=%(old)s&bid=%(new)s&branch=%(branch)s')
+BUG=None
+TEST=CQ
+"""
 
 
 def IsBuildIdValid(bucket_url, build_branch, build_id, targets):
@@ -80,12 +78,12 @@ def IsBuildIdValid(bucket_url, build_branch, build_id, targets):
     try:
       subpaths = gs_context.List(build_id_path)
     except gs.GSNoSuchKey:
-      logging.warn(
+      logging.warning(
           'Directory [%s] does not contain any subpath, ignoring it.',
           build_id_path)
       return None
     if len(subpaths) > 1:
-      logging.warn(
+      logging.warning(
           'Directory [%s] contains more than one subpath, ignoring it.',
           build_id_path)
       return None
@@ -97,7 +95,7 @@ def IsBuildIdValid(bucket_url, build_branch, build_id, targets):
     try:
       gs_context.List(subpath_dir)
     except gs.GSNoSuchKey:
-      logging.warn(
+      logging.warning(
           'Did not find a file for build id [%s] in directory [%s].',
           build_id, subpath_dir)
       return None
@@ -133,8 +131,8 @@ def GetLatestBuild(bucket_url, build_branch, targets):
       # Remove trailing slashes and get the base name, which is the build_id.
       build_id = os.path.basename(gs_result.url.rstrip('/'))
       if not build_id.isdigit():
-        logging.warn('Directory [%s] does not look like a valid build_id.',
-                     gs_result.url)
+        logging.warning('Directory [%s] does not look like a valid build_id.',
+                        gs_result.url)
         continue
       build_ids.append(build_id)
 
@@ -147,7 +145,7 @@ def GetLatestBuild(bucket_url, build_branch, targets):
       common_build_ids.intersection_update(build_ids)
 
   if common_build_ids is None:
-    logging.warn('Did not find a build_id common to all platforms.')
+    logging.warning('Did not find a build_id common to all platforms.')
     return None, None
 
   # Otherwise, find the most recent one that is valid.
@@ -157,7 +155,7 @@ def GetLatestBuild(bucket_url, build_branch, targets):
       return build_id, subpaths
 
   # If not found, no build_id is valid.
-  logging.warn('Did not find a build_id valid on all platforms.')
+  logging.warning('Did not find a build_id valid on all platforms.')
   return None, None
 
 
@@ -227,84 +225,6 @@ def _GetArcBasename(build, basename):
   return basename
 
 
-def PackSdkTools(build_branch, build_id, targets, arc_bucket_url, acl):
-  """Creates static SDK tools pack from ARC++ specific bucket.
-
-  Ebuild needs archives to process binaries natively. This collects static SDK
-  tools and packs them to tbz2 archive which can referenced from Android
-  container ebuild file. Pack is placed into the same bucket where SDK tools
-  exist. If pack already exists and up to date then copying is skipped.
-  Otherwise fresh pack is copied.
-
-  Args:
-    build_branch: branch of Android builds
-    build_id: A string. The Android build id number to check.
-    targets: Dict from build key to (targe build suffix, artifact file pattern)
-        pair.
-    arc_bucket_url: URL of the target ARC build gs bucket
-    acl: ACL file to apply.
-  """
-
-  if not 'SDK_TOOLS' in targets:
-    return
-
-  gs_context = gs.GSContext()
-  target, pattern = targets['SDK_TOOLS']
-  build_dir = '%s-%s' % (build_branch, target)
-  arc_dir = os.path.join(arc_bucket_url, build_dir, build_id)
-
-  sdk_tools_dir = tempfile.mkdtemp()
-
-  try:
-    sdk_tools_bin_dir = os.path.join(sdk_tools_dir, 'bin')
-    os.mkdir(sdk_tools_bin_dir)
-
-    for tool in gs_context.List(arc_dir):
-      if re.search(pattern, tool.url):
-        local_tool_path = os.path.join(sdk_tools_bin_dir,
-                                       os.path.basename(tool.url))
-        gs_context.Copy(tool.url, local_tool_path, version=0)
-        file_time = int(gs_context.Stat(tool.url).creation_time.strftime('%s'))
-        os.utime(local_tool_path, (file_time, file_time))
-
-    # Fix ./ times to make tar file stable.
-    os.utime(sdk_tools_bin_dir, (0, 0))
-
-    sdk_tools_file_name = 'sdk_tools_%s.tbz2' % build_id
-    sdk_tools_local_path = os.path.join(sdk_tools_dir, sdk_tools_file_name)
-    sdk_tools_target_path = os.path.join(arc_dir, sdk_tools_file_name)
-    subprocess.call(['tar', '--group=root:0', '--owner=root:0',
-                     '--create', '--bzip2', '--sort=name',
-                     '--file=%s' % sdk_tools_local_path,
-                     '--directory=%s' % sdk_tools_bin_dir, '.'])
-
-    if gs_context.Exists(sdk_tools_target_path):
-      # Calculate local md5
-      md5 = hashlib.md5()
-      with open(sdk_tools_local_path, 'rb') as f:
-        while True:
-          buf = f.read(4096)
-          if not buf:
-            break
-          md5.update(buf)
-      md5_local = md5.digest()
-      # Get target md5
-      md5_target = base64.decodestring(
-          gs_context.Stat(sdk_tools_target_path).hash_md5)
-      if md5_local == md5_target:
-        logging.info('SDK tools pack %s is up to date', sdk_tools_target_path)
-        return
-      logging.warning('SDK tools pack %s invalid, removing',
-                      sdk_tools_target_path)
-      gs_context.Remove(sdk_tools_target_path)
-
-    logging.info('Creating SDK tools pack %s', sdk_tools_target_path)
-    gs_context.Copy(sdk_tools_local_path, sdk_tools_target_path, version=0)
-    gs_context.ChangeACL(sdk_tools_target_path, acl_args_file=acl)
-  finally:
-    shutil.rmtree(sdk_tools_dir)
-
-
 def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
                     targets, arc_bucket_url, acls):
   """Copies from source Android bucket to ARC++ specific bucket.
@@ -345,7 +265,7 @@ def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
           if gs_context.Exists(arc_path):
             if (gs_context.Stat(targetfile.url).hash_crc32c !=
                 gs_context.Stat(arc_path).hash_crc32c):
-              logging.warn('Removing incorrect file %s', arc_path)
+              logging.warning('Removing incorrect file %s', arc_path)
               gs_context.Remove(arc_path)
             else:
               logging.info('Skipping already copied file %s', arc_path)
@@ -410,8 +330,6 @@ def MirrorArtifacts(android_bucket_url, android_build_branch, arc_bucket_url,
 
   CopyToArcBucket(android_bucket_url, android_build_branch, version, subpaths,
                   targets, arc_bucket_url, acls)
-  PackSdkTools(android_build_branch, version, targets, arc_bucket_url,
-               acls['SDK_TOOLS'])
 
   return version
 
@@ -450,41 +368,60 @@ def MakeBuildTargetDict(package_name, build_branch):
     ValueError: if the Android build branch is invalid.
   """
   if constants.ANDROID_CONTAINER_PACKAGE_KEYWORD in package_name:
-    if build_branch == constants.ANDROID_MST_BUILD_BRANCH:
-      return constants.ANDROID_MST_BUILD_TARGETS
-    elif build_branch == constants.ANDROID_NYC_BUILD_BRANCH:
-      return constants.ANDROID_NYC_BUILD_TARGETS
-    elif build_branch == constants.ANDROID_PI_BUILD_BRANCH:
-      return constants.ANDROID_PI_BUILD_TARGETS
-    elif build_branch == constants.ANDROID_QT_BUILD_BRANCH:
-      return constants.ANDROID_QT_BUILD_TARGETS
-    raise ValueError('Unknown branch: %s' % build_branch)
+    target_list = {
+        constants.ANDROID_MST_BUILD_BRANCH:
+        constants.ANDROID_MST_BUILD_TARGETS,
+        constants.ANDROID_PI_BUILD_BRANCH:
+        constants.ANDROID_PI_BUILD_TARGETS,
+        constants.ANDROID_QT_BUILD_BRANCH:
+        constants.ANDROID_QT_BUILD_TARGETS,
+        constants.ANDROID_RVC_BUILD_BRANCH:
+        constants.ANDROID_RVC_BUILD_TARGETS,
+    }
   elif constants.ANDROID_VM_PACKAGE_KEYWORD in package_name:
-    if build_branch == constants.ANDROID_VMPI_BUILD_BRANCH:
-      return constants.ANDROID_VMPI_BUILD_TARGETS
-    elif build_branch == constants.ANDROID_VMMST_BUILD_BRANCH:
-      return constants.ANDROID_VMMST_BUILD_TARGETS
+    target_list = {
+        constants.ANDROID_VMPI_BUILD_BRANCH:
+        constants.ANDROID_VMPI_BUILD_TARGETS,
+        constants.ANDROID_VMMST_BUILD_BRANCH:
+        constants.ANDROID_VMMST_BUILD_TARGETS,
+        constants.ANDROID_VMRVC_BUILD_BRANCH:
+        constants.ANDROID_VMRVC_BUILD_TARGETS,
+    }
+  else:
+    raise ValueError('Unknown package: %s' % package_name)
+  target = target_list.get(build_branch)
+  if not target:
     raise ValueError('Unknown branch: %s' % build_branch)
-  raise ValueError('Unknown package: %s' % package_name)
+  return target
 
 
-def GetAndroidRevisionListLink(build_branch, old_android, new_android):
-  """Returns a link to the list of revisions between two Android versions
-
-  Given two AndroidEBuilds, generate a link to a page that prints the
-  Android changes between those two revisions, inclusive.
+def PrintUprevMetadata(build_branch, stable_candidate, new_ebuild):
+  """Shows metadata on buildbot page at UprevAndroid step.
 
   Args:
-    build_branch: branch of Android builds
-    old_android: ebuild for the version to diff from
-    new_android: ebuild for the version to which to diff
-
-  Returns:
-    The desired URL.
+    build_branch: The branch of Android builds.
+    stable_candidate: The existing stable ebuild.
+    new_ebuild: The newly written ebuild.
   """
-  return _ANDROID_VERSION_URL % {'branch': build_branch,
-                                 'old': old_android.version_no_rev,
-                                 'new': new_android.version_no_rev}
+  # Examples:
+  # "android-container-pi revved 6461825-r1 -> 6468247-r1"
+  # "android-container-pi revved 6461825-r1 -> 6461825-r2 (ebuild update only)"
+  msg = '%s revved %s -> %s' % (stable_candidate.pkgname,
+                                stable_candidate.version,
+                                new_ebuild.version)
+
+  old_android = stable_candidate.version_no_rev
+  new_android = new_ebuild.version_no_rev
+
+  if old_android == new_android:
+    msg += ' (ebuild update only)'
+  else:
+    ab_link = ('https://android-build.googleplex.com'
+               '/builds/%s/branches/%s/cls?end=%s'
+               % (new_android, build_branch, old_android))
+    logging.PrintBuildbotLink('Android changelog', ab_link)
+
+  logging.PrintBuildbotStepText(msg)
 
 
 def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild,
@@ -545,14 +482,15 @@ def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild,
   if IsTheNewEBuildRedundant(new_ebuild, stable_candidate):
     msg = 'Previous ebuild with same version found and ebuild is redundant.'
     logging.info(msg)
+    logging.PrintBuildbotStepText('%s %s not revved'
+                                  % (stable_candidate.pkgname,
+                                     stable_candidate.version))
     os.unlink(new_ebuild_path)
     return None
 
+  # PFQ runs should always be able to find a stable candidate.
   if stable_candidate:
-    logging.PrintBuildbotLink('Android revisions',
-                              GetAndroidRevisionListLink(build_branch,
-                                                         stable_candidate,
-                                                         new_ebuild))
+    PrintUprevMetadata(build_branch, stable_candidate, new_ebuild)
 
   git.RunGit(package_dir, ['add', new_ebuild_path])
   if stable_candidate and not stable_candidate.IsSticky():
@@ -582,9 +520,6 @@ def GetParser():
                       required=True,
                       help='Android branch to import from. '
                            'Ex: git_mnc-dr-arc-dev')
-  parser.add_argument('--android_gts_build_branch',
-                      help='Android GTS branch to copy artifacts from. '
-                           'Ex: git_mnc-dev')
   parser.add_argument('--android_package',
                       default=constants.ANDROID_PACKAGE_NAME)
   parser.add_argument('--arc_bucket_url',
@@ -622,13 +557,6 @@ def main(argv):
                                      options.arc_bucket_url, acls,
                                      build_targets,
                                      options.force_version)
-
-  # Mirror GTS.
-  if options.android_gts_build_branch:
-    MirrorArtifacts(options.android_bucket_url,
-                    options.android_gts_build_branch,
-                    options.arc_bucket_url, acls,
-                    constants.ANDROID_GTS_BUILD_TARGETS)
 
   stable_candidate = portage_util.BestEBuild(stable_ebuilds)
 

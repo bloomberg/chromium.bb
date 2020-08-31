@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/containers/mru_cache.h"
-#include "base/macros.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 
@@ -24,10 +23,10 @@ const int kDefaultMaxNumCachedEntries = 32;
 // ArticleEntry.
 class DistilledContentStore {
  public:
-  typedef base::Callback<void(bool /* success */,
-                              std::unique_ptr<DistilledArticleProto>)>
+  typedef base::OnceCallback<void(bool /* success */,
+                                  std::unique_ptr<DistilledArticleProto>)>
       LoadCallback;
-  typedef base::Callback<void(bool /* success */)> SaveCallback;
+  typedef base::OnceCallback<void(bool /* success */)> SaveCallback;
 
   virtual void SaveContent(const ArticleEntry& entry,
                            const DistilledArticleProto& proto,
@@ -35,11 +34,11 @@ class DistilledContentStore {
   virtual void LoadContent(const ArticleEntry& entry,
                            LoadCallback callback) = 0;
 
-  DistilledContentStore() {}
-  virtual ~DistilledContentStore() {}
+  DistilledContentStore() = default;
+  virtual ~DistilledContentStore() = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DistilledContentStore);
+  DistilledContentStore(const DistilledContentStore&) = delete;
+  DistilledContentStore& operator=(const DistilledContentStore&) = delete;
 };
 
 // This content store keeps up to |max_num_entries| of the last accessed items

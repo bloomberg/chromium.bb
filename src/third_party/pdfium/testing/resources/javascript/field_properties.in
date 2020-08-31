@@ -1,7 +1,6 @@
 {{header}}
 {{include field.fragment}}
-
-% JS program to exexute
+% JS program to execute
 {{object 16 0}} <<
   {{streamlen}}
 >>
@@ -15,20 +14,30 @@ function testProperties() {
     var radio = this.getField("MyField.MyRadio");
     var list = this.getField("MyField.MyMultiSelect");
     var check = this.getField("MyField.MyCheckBox");
+    var file = this.getField("MyField.MyFile");
     app.alert('Testing properties under delay');
     testRWProperty(field, "delay", false, true);
     // TODO(tsepez): try this case, too.
-    // testTextPropertiesCase(field);
     app.alert('Testing properties under non-delay');
     testRWProperty(field, "delay", true, false);
-    testTextPropertiesCase(field);
+    testFieldPropertiesCase(field);
+    testTextPropertiesCase(text);
     testPushButtonPropertiesCase(button);
     testRadioButtonPropertiesCase(radio);
     testCheckBoxPropertiesCase(check);
     testListBoxPropertiesCase(list);
+    testFileSelectPropertiesCase(file);
   } catch (e) {
     app.alert("Unexpected error: " + e);
   }
+}
+
+function testFieldPropertiesCase(field) {
+  testROProperty(field, "name", "MyField");
+  // TODO(tsepez): this is rect of first child somehow.
+  testRWProperty(field, "rect", [200,221,220,201], [100,121,120,101]);
+ // Put it back to where it started.
+  testRWProperty(field, "rect", [100,121,120,101], [200,221,220,201]);
 }
 
 function testTextPropertiesCase(field) {
@@ -42,7 +51,7 @@ function testTextPropertiesCase(field) {
     // testRIProperty(field, "commitOnSelChange", false, true);
     // testROProperty(field, "currentValueIndices", "clams");
     testXXProperty(field, "defaultStyle");
-    testRIProperty(field, "defaultValue", "", "clams");
+    testRIProperty(field, "defaultValue", "grue", "clams");
     testRIProperty(field, "doNotScroll", false, true);
     testRIProperty(field, "doNotSpellCheck", false, true);
     testRWProperty(field, "display", 2, 3);
@@ -54,13 +63,13 @@ function testTextPropertiesCase(field) {
     testRWProperty(field, "lineWidth", 1, 4);
     testRIProperty(field, "multiline", false, true);
     // testROProperty(field, "multipleSelection", "clams");
-    testROProperty(field, "name", "MyField");
+    testROProperty(field, "name", "MyField.MyText");
     // testROProperty(field, "numItems", "clams");
     testROProperty(field, "page", 0);
     testRIProperty(field, "password", false, 42);
     testRWProperty(field, "print", true, false);
     testRIProperty(field, "readonly", false, true);
-    // testRWProperty(field, "rect", [0,0,0,0], [0,0,0,0]);
+    testROProperty(field, "rect", [200,221,220,201]);
     // testROProperty(field, "required", "clams");
     testRIProperty(field, "richText", false, true);
     testRIProperty(field, "richValue", undefined, "clams");
@@ -73,8 +82,8 @@ function testTextPropertiesCase(field) {
     testRIProperty(field, "textSize", 0, 32);
     testROProperty(field, "type", "text");
     testRIProperty(field, "userName", "");
-    testRIProperty(field, "value", "", "clams");
-    testROProperty(field, "valueAsString", "");
+    testRWProperty(field, "value", "bleen", "clams");
+    testROProperty(field, "valueAsString", "clams");  // Set by previous line.
   } catch (e) {
     app.alert("Unexpected error: " + e);
   }
@@ -123,6 +132,14 @@ function testCheckBoxPropertiesCase(field) {
 function testListBoxPropertiesCase(field) {
   try {
     testRWProperty(field, "currentValueIndices", 2, 1);
+  } catch (e) {
+    app.alert("Unexpected error: " + e);
+  }
+}
+
+function testFileSelectPropertiesCase(field) {
+  try {
+    testRIProperty(field, "fileSelect", true);
   } catch (e) {
     app.alert("Unexpected error: " + e);
   }

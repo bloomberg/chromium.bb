@@ -26,8 +26,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
+import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.embedder_support.util.ShadowUrlUtilities;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -36,11 +38,14 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
+@Features.DisableFeatures({ChromeFeatureList.CCT_EXTERNAL_LINK_HANDLING})
 public class CustomTabActivityTabControllerTest {
-
     @Rule
     public final CustomTabActivityContentTestEnvironment env =
             new CustomTabActivityContentTestEnvironment();
+
+    @Rule
+    public Features.JUnitProcessor processor = new Features.JUnitProcessor();
 
     private CustomTabActivityTabController mTabController;
 
@@ -81,7 +86,7 @@ public class CustomTabActivityTabControllerTest {
         Tab savedTab = env.prepareTab();
         env.saveTab(savedTab);
         env.reachNativeInit(mTabController);
-        verify(env.tabFactory, never()).createTab(any(), any());
+        verify(env.tabFactory, never()).createTab(any(), any(), any());
     }
 
     @Test
@@ -98,20 +103,20 @@ public class CustomTabActivityTabControllerTest {
 
         clearInvocations(env.tabFactory);
         mTabController.onFinishNativeInitialization();
-        verify(env.tabFactory, never()).createTab(any(), any());
+        verify(env.tabFactory, never()).createTab(any(), any(), any());
     }
 
     @Test
     public void addsEarlyCreatedTab_ToTabModel() {
         env.warmUp();
         env.reachNativeInit(mTabController);
-        verify(env.tabModel).addTab(eq(env.tabFromFactory), anyInt(), anyInt());
+        verify(env.tabModel).addTab(eq(env.tabFromFactory), anyInt(), anyInt(), anyInt());
     }
 
     @Test
     public void addsTabCreatedOnNativeInit_ToTabModel() {
         env.reachNativeInit(mTabController);
-        verify(env.tabModel).addTab(eq(env.tabFromFactory), anyInt(), anyInt());
+        verify(env.tabModel).addTab(eq(env.tabFromFactory), anyInt(), anyInt(), anyInt());
     }
 
     @Test
@@ -126,7 +131,7 @@ public class CustomTabActivityTabControllerTest {
     public void finishesReparentingHiddenTab() {
         Tab hiddenTab = env.prepareHiddenTab();
         env.reachNativeInit(mTabController);
-        verify(env.reparentingTaskProvider.get(hiddenTab)).finish(any(), any(), any());
+        verify(env.reparentingTaskProvider.get(hiddenTab)).finish(any(), any());
     }
 
     @Test

@@ -13,23 +13,29 @@
 #include "platform/impl/socket_handle_posix.h"
 #include "platform/impl/timeval_posix.h"
 #include "platform/impl/udp_socket_posix.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
-namespace platform {
 
-SocketHandleWaiterPosix::SocketHandleWaiterPosix() = default;
+SocketHandleWaiterPosix::SocketHandleWaiterPosix(
+    ClockNowFunctionPtr now_function)
+    : SocketHandleWaiter(now_function) {}
 
 SocketHandleWaiterPosix::~SocketHandleWaiterPosix() = default;
 
-ErrorOr<std::vector<SocketHandleWaiterPosix::SocketHandleRef>>
+ErrorOr<std::vector<SocketHandleWaiterPosix::ReadyHandle>>
 SocketHandleWaiterPosix::AwaitSocketsReadable(
     const std::vector<SocketHandleRef>& socket_handles,
     const Clock::duration& timeout) {
   int max_fd = -1;
-  FD_ZERO(&read_handles_);
+  fd_set read_handles;
+  fd_set write_handles;
+
+  FD_ZERO(&read_handles);
+  FD_ZERO(&write_handles);
   for (const SocketHandle& handle : socket_handles) {
-    FD_SET(handle.fd, &read_handles_);
+    FD_SET(handle.fd, &read_handles);
+    FD_SET(handle.fd, &write_handles);
     max_fd = std::max(max_fd, handle.fd);
   }
   if (max_fd < 0) {
@@ -37,10 +43,13 @@ SocketHandleWaiterPosix::AwaitSocketsReadable(
   }
 
   struct timeval tv = ToTimeval(timeout);
-  // This value is set to 'max_fd + 1' by convention. For more information, see:
+  // This value is set to 'max_fd + 1' by convention. Also, select() is
+  // level-triggered so incomplete reads/writes by the caller are fine and will
+  // be picked up again on the next select() call.  For more information, see:
   // http://man7.org/linux/man-pages/man2/select.2.html
   int max_fd_to_watch = max_fd + 1;
-  const int rv = select(max_fd_to_watch, &read_handles_, nullptr, nullptr, &tv);
+  const int rv =
+      select(max_fd_to_watch, &read_handles, &write_handles, nullptr, &tv);
   if (rv == -1) {
     // This is the case when an error condition is hit within the select(...)
     // command.
@@ -50,10 +59,17 @@ SocketHandleWaiterPosix::AwaitSocketsReadable(
     return Error::Code::kAgain;
   }
 
-  std::vector<SocketHandleRef> changed_handles;
+  std::vector<ReadyHandle> changed_handles;
   for (const SocketHandleRef& handle : socket_handles) {
-    if (FD_ISSET(handle.get().fd, &read_handles_)) {
-      changed_handles.push_back(handle);
+    uint32_t flags = 0;
+    if (FD_ISSET(handle.get().fd, &read_handles)) {
+      flags |= Flags::kReadable;
+    }
+    if (FD_ISSET(handle.get().fd, &write_handles)) {
+      flags |= Flags::kWriteable;
+    }
+    if (flags) {
+      changed_handles.push_back({handle, flags});
     }
   }
 
@@ -74,5 +90,4 @@ void SocketHandleWaiterPosix::RequestStopSoon() {
   is_running_.store(false);
 }
 
-}  // namespace platform
 }  // namespace openscreen

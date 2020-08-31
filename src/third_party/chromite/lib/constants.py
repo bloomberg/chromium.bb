@@ -34,11 +34,14 @@ BOOTSTRAP_DIR = os.path.join(CHROMITE_DIR, 'bootstrap')
 DEPOT_TOOLS_DIR = os.path.join(SOURCE_ROOT, DEPOT_TOOLS_SUBPATH)
 CHROMITE_BIN_SUBDIR = 'chromite/bin'
 CHROMITE_BIN_DIR = os.path.join(CHROMITE_DIR, 'bin')
+CHROMITE_SCRIPTS_DIR = os.path.join(CHROMITE_DIR, 'scripts')
 PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
 DEFAULT_CHROOT_PATH = os.path.join(SOURCE_ROOT, DEFAULT_CHROOT_DIR)
 TERMINA_TOOLS_DIR = os.path.join(
     SOURCE_ROOT, 'src/platform/container-guest-tools/termina')
+
+STATEFUL_DIR = '/mnt/stateful_partition'
 
 # These constants are defined and used in the die_hook that logs failed
 # packages: 'cros_log_failed_packages' in profiles/base/profile.bashrc in
@@ -132,15 +135,6 @@ BUILDER_NON_FAILURE_STATUSES = (BUILDER_STATUS_PLANNED,
                                 BUILDER_STATUS_INFLIGHT,
                                 BUILDER_STATUS_FORGIVEN)
 
-# CL status strings
-CL_STATUS_FAILED = BUILDER_STATUS_FAILED
-CL_STATUS_INFLIGHT = BUILDER_STATUS_INFLIGHT
-CL_STATUS_PASSED = BUILDER_STATUS_PASSED
-CL_STATUS_LAUNCHING = 'launching'
-CL_STATUS_WAITING = 'waiting'
-CL_STATUS_READY_TO_SUBMIT = 'ready-to-submit'
-CL_STATUS_FULLY_VERIFIED = 'fully-verified'
-
 # Partition labels
 CROS_PART_STATEFUL = 'STATE'
 
@@ -151,40 +145,6 @@ SIGNER_STATUS_FAILED = 'failed'
 # Change sources
 CHANGE_SOURCE_INTERNAL = 'internal'
 CHANGE_SOURCE_EXTERNAL = 'external'
-
-# Build failure categories
-FAILURE_CATEGORY_BAD_CL = 'bad_cl'
-FAILURE_CATEGORY_BUG_IN_TOT = 'bug_in_tot'
-FAILURE_CATEGORY_MERGE_CONFLICT = 'merge_conflict'
-FAILURE_CATEGORY_SCHEDULED_ABORT = 'scheduled_abort'
-FAILURE_CATEGORY_CL_NOT_READY = 'cl_not_ready'
-FAILURE_CATEGORY_BAD_CHROME = 'bad_chrome'
-FAILURE_CATEGORY_INFRA_FAILURE = 'infra_failure'
-FAILURE_CATEGORY_TEST_FLAKE = 'test_flake'
-FAILURE_CATEGORY_GERRIT_FAILURE = 'gerrit_failure'
-FAILURE_CATEGORY_GS_FAILURE = 'gs_failure'
-FAILURE_CATEGORY_LAB_FAILURE = 'lab_failure'
-FAILURE_CATEGORY_BAD_BINARY_PACKAGE = 'bad_binary_package'
-FAILURE_CATEGORY_BUILD_FLAKE = 'build_flake'
-FAILURE_CATEGORY_MYSTERY = 'mystery'
-
-FAILURE_CATEGORY_ALL_CATEGORIES = (
-    FAILURE_CATEGORY_BAD_CL,
-    FAILURE_CATEGORY_BUG_IN_TOT,
-    FAILURE_CATEGORY_MERGE_CONFLICT,
-    FAILURE_CATEGORY_SCHEDULED_ABORT,
-    FAILURE_CATEGORY_CL_NOT_READY,
-    FAILURE_CATEGORY_BAD_CHROME,
-    FAILURE_CATEGORY_INFRA_FAILURE,
-    FAILURE_CATEGORY_TEST_FLAKE,
-    FAILURE_CATEGORY_GERRIT_FAILURE,
-    FAILURE_CATEGORY_GS_FAILURE,
-    FAILURE_CATEGORY_LAB_FAILURE,
-    FAILURE_CATEGORY_BAD_BINARY_PACKAGE,
-    FAILURE_CATEGORY_BUILD_FLAKE,
-    FAILURE_CATEGORY_MYSTERY,
-)
-
 
 # Exception categories, as recorded in cidb
 EXCEPTION_CATEGORY_UNKNOWN = 'unknown'
@@ -201,58 +161,15 @@ EXCEPTION_CATEGORY_ALL_CATEGORIES = (
     EXCEPTION_CATEGORY_LAB,
 )
 
-# Suspect reasons for rejecting changes in validation_pool.
-SUSPECT_REASON_BAD_CHANGE = 'bad_change'
-SUSPECT_REASON_INFRA_FAIL = 'infra_fail'
-SUSPECT_REASON_BUILD_FAIL = 'build_fail'
-SUSPECT_REASON_TEST_FAIL = 'test_fail'
-SUSPECT_REASON_OVERLAY_CHANGE = 'overlay_change'
-SUSPECT_REASON_UNKNOWN = 'unknown'
-
-# A dict mapping suspect reasons to their blame priorities.
-# Lower values have higher blame priorities.
-SUSPECT_REASONS = {
-    SUSPECT_REASON_BAD_CHANGE: 1,
-    SUSPECT_REASON_INFRA_FAIL: 2,
-    SUSPECT_REASON_BUILD_FAIL: 3,
-    SUSPECT_REASON_TEST_FAIL: 4,
-    SUSPECT_REASON_OVERLAY_CHANGE: 5,
-    SUSPECT_REASON_UNKNOWN: 6,
-}
-
 # Monarch metric names
-MON_CQ_WALL_CLOCK_SECS = 'chromeos/cbuildbot/cq_wall_clock_seconds'
-MON_CQ_SELF_DESTRUCTION_COUNT = ('chromeos/cbuildbot/build/'
-                                 'cq_self_destruction_count')
-MON_CQ_BUILD_DURATION = 'chromeos/cbuildbot/build/cq_build_durations'
-MON_CL_ACTION = 'chromeos/cbuildbot/cl_action'
 MON_LAST_SLAVE = 'chromeos/cbuildbot/last_completed_slave'
-MON_PRECQ_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/launch_count'
-MON_PRECQ_CL_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/cl_launch_count'
-MON_PRECQ_TICK_COUNT = 'chromeos/cbuildbot/pre-cq/tick_count'
 MON_BUILD_COMP_COUNT = 'chromeos/cbuildbot/build/completed_count'
-MON_BUILD_SANITY_COMP_COUNT = (
-    'chromeos/cbuildbot/build/sanity_build_completed_count')
-MON_BUILD_SANITY_ID = 'chromeos/cbuildbot/build/sanity_build_id'
 MON_BUILD_DURATION = 'chromeos/cbuildbot/build/durations'
 MON_STAGE_COMP_COUNT = 'chromeos/cbuildbot/stage/completed_count'
 MON_STAGE_DURATION = 'chromeos/cbuildbot/stage/durations'
 MON_STAGE_INSTANCE_DURATION = 'chromeos/cbuildbot/stage/instance_durations'
 MON_STAGE_FAILURE_COUNT = 'chromeos/cbuildbot/stage/failure_count'
 MON_FAILED_STAGE = 'chromeos/chromite/cbuildbot_launch/failed_stage'
-MON_CL_HANDLE_TIME = 'chromeos/cbuildbot/submitted_change/handling_times'
-MON_CL_WALL_CLOCK_TIME = 'chromeos/cbuildbot/submitted_change/wall_clock_times'
-MON_CL_PRECQ_TIME = 'chromeos/cbuildbot/submitted_change/precq_times'
-MON_CL_WAIT_TIME = 'chromeos/cbuildbot/submitted_change/wait_times'
-MON_CL_CQRUN_TIME = 'chromeos/cbuildbot/submitted_change/cq_run_times'
-MON_CL_CQ_TRIES = 'chromeos/cbuildbot/submitted_change/cq_attempts'
-MON_CL_FALSE_REJ = 'chromeos/cbuildbot/submitted_change/false_rejections'
-MON_CL_FALSE_REJ_TOTAL = (
-    'chromeos/cbuildbot/submitted_change/false_rejections_total')
-MON_CL_FALSE_REJ_COUNT = (
-    'chromeos/cbuildbot/submitted_change/false_rejection_count')
-MON_CQ_FALSE_REJ_MINUS_EXONERATIONS = (
-    'chromeos/cbuildbot/submitted_change/false_rejections_minus_exonerations')
 MON_CHROOT_USED = 'chromeos/cbuildbot/chroot_at_version'
 MON_REPO_SYNC_COUNT = 'chromeos/cbuildbot/repo/sync_count'
 MON_REPO_SYNC_RETRY_COUNT = 'chromeos/cbuildbot/repo/sync_retry_count'
@@ -265,10 +182,7 @@ MON_BB_RETRY_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
                             'retry_build_count')
 MON_BB_CANCEL_BATCH_BUILDS_COUNT = ('chromeos/cbuildbot/buildbucket/'
                                     'cancel_batch_builds_count')
-MON_BB_CANCEL_PRE_CQ_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
-                                    'cancel_pre_cq_build_count')
 MON_EXPORT_TO_GCLOUD = 'chromeos/cbuildbot/export_to_gcloud'
-MON_CL_REJECT_COUNT = 'chromeos/cbuildbot/change/rejected_count'
 
 # Stage Categorization for failed stages metric.
 UNCATEGORIZED_STAGE = 'Uncategorized'
@@ -289,7 +203,7 @@ PRODUCT_TOOLCHAIN_STAGE = 'Product-Toolchain'
 # Major is used for tracking heavy API breakage- for example, no longer
 # supporting the --resume option.
 REEXEC_API_MAJOR = 0
-REEXEC_API_MINOR = 11
+REEXEC_API_MINOR = 12
 REEXEC_API_VERSION = '%i.%i' % (REEXEC_API_MAJOR, REEXEC_API_MINOR)
 
 # Support --master-build-id
@@ -310,6 +224,8 @@ REEXEC_API_WORKSPACE = 9
 REEXEC_API_MASTER_BUILDBUCKET_ID = 10
 # Support --chromeos_goma_dir
 REEXEC_API_CHROMEOS_GOMA_DIR = 11
+# Support --chrome-preload-dir
+REEXEC_API_CHROME_PRELOAD_DIR = 12
 
 # We rely on the (waterfall, builder name, build number) to uniquely identify
 # a build. However, future migrations or state wipes of the buildbot master may
@@ -358,20 +274,19 @@ DEFAULT_CTS_APFE_GSURI = 'gs://chromeos-cts-apfe/'
 ANDROID_CONTAINER_PACKAGE_KEYWORD = 'android-container'
 ANDROID_VM_PACKAGE_KEYWORD = 'android-vm'
 
-ANDROID_INTERNAL_PATTERN = r'\.zip.internal$'
 ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
 ANDROID_MST_BUILD_BRANCH = 'git_master-arc-dev'
+# TODO(b/155088760): Remove once R80 PFQ is gone.
 ANDROID_NYC_BUILD_BRANCH = 'git_nyc-mr1-arc'
 ANDROID_PI_BUILD_BRANCH = 'git_pi-arc'
 ANDROID_QT_BUILD_BRANCH = 'git_qt-arc-dev'
+ANDROID_RVC_BUILD_BRANCH = 'git_rvc-arc-dev'
+ANDROID_VMRVC_BUILD_BRANCH = 'git_rvc-arc-dev'
 ANDROID_VMPI_BUILD_BRANCH = 'git_pi-arcvm-dev'
 ANDROID_VMMST_BUILD_BRANCH = 'git_master-arc-dev'
 assert ANDROID_VMMST_BUILD_BRANCH == ANDROID_MST_BUILD_BRANCH
+assert ANDROID_VMRVC_BUILD_BRANCH == ANDROID_RVC_BUILD_BRANCH
 
-ANDROID_GTS_BUILD_TARGETS = {
-    # "gts_arm64" is the build maintained by GMS team.
-    'XTS': ('linux-gts_arm64', r'\.zip$'),
-}
 ANDROID_MST_BUILD_TARGETS = {
     # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
     'ARM': ('linux-cheets_arm-user', r'(\.zip|/XkbToKcmConverter)$'),
@@ -383,22 +298,6 @@ ANDROID_MST_BUILD_TARGETS = {
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
 }
-ANDROID_NYC_BUILD_TARGETS = {
-    # TODO(b/29509721): Workaround to roll adb with system image. We want to
-    # get rid of this.
-    'ARM': ('linux-cheets_arm-user', r'(\.zip|/adb)$'),
-    'X86': ('linux-cheets_x86-user', r'\.zip$'),
-    'X86_INTERNAL': ('linux-cheets_x86-user', ANDROID_INTERNAL_PATTERN),
-    'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
-    'AOSP_X86_USERDEBUG': ('linux-aosp_cheets_x86-userdebug', r'\.zip$'),
-    'SDK_TOOLS': ('linux-static_sdk_tools', r'/(aapt|adb|zipalign)$'),
-    'SDK_GOOGLE_X86_USERDEBUG': ('linux-sdk_google_cheets_x86-userdebug',
-                                 r'\.zip$'),
-    'SDK_GOOGLE_X86_64_USERDEBUG': ('linux-sdk_google_cheets_x86_64-userdebug',
-                                    r'\.zip$'),
-    'X86_64': ('linux-cheets_x86_64-user', r'\.zip$'),
-    'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
-}
 ANDROID_PI_BUILD_TARGETS = {
     # Roll XkbToKcmConverter with system image. It's a host executable and
     # doesn't depend on the target as long as it's pi-arc branch. The converter
@@ -407,6 +306,7 @@ ANDROID_PI_BUILD_TARGETS = {
     # X86 target as there's no other similar executables right now.
     # We put it in two buckets because we have separate ACLs for arm and x86.
     # http://b/128405786
+    'APPS': ('linux-apps', 'org.chromium.arc.cachebuilder.jar'),
     'ARM': ('linux-cheets_arm-user', r'(\.zip|/XkbToKcmConverter)$'),
     'ARM64': ('linux-cheets_arm64-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86': ('linux-cheets_x86-user', r'(\.zip|/XkbToKcmConverter)$'),
@@ -429,6 +329,7 @@ ANDROID_QT_BUILD_TARGETS = {
 }
 ANDROID_VMPI_BUILD_TARGETS = {
     # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
+    'APPS': ('linux-apps', 'org.chromium.arc.cachebuilder.jar'),
     'ARM_USERDEBUG': ('linux-bertha_arm-userdebug',
                       r'(\.zip|/XkbToKcmConverter)$'),
     'X86_USERDEBUG': ('linux-bertha_x86-userdebug',
@@ -437,6 +338,35 @@ ANDROID_VMPI_BUILD_TARGETS = {
 }
 ANDROID_VMMST_BUILD_TARGETS = {
     # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
+    'ARM_USERDEBUG': ('linux-bertha_arm-userdebug',
+                      r'(\.zip|/XkbToKcmConverter)$'),
+    'ARM64_USERDEBUG': ('linux-bertha_arm64-userdebug',
+                        r'(\.zip|/XkbToKcmConverter)$'),
+    'X86_USERDEBUG': ('linux-bertha_x86-userdebug',
+                      r'(\.zip|/XkbToKcmConverter)$'),
+    'X86_64_USERDEBUG': ('linux-bertha_x86_64-userdebug', r'\.zip$'),
+}
+ANDROID_RVC_BUILD_TARGETS = {
+    # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
+    'APPS': ('linux-apps', 'org.chromium.arc.cachebuilder.jar'),
+    'ARM': ('linux-cheets_arm-user', r'(\.zip|/XkbToKcmConverter)$'),
+    'ARM64': ('linux-cheets_arm64-user', r'\.zip$'),
+    'X86': ('linux-cheets_x86-user', r'(\.zip|/XkbToKcmConverter)$'),
+    'X86_64': ('linux-cheets_x86_64-user', r'\.zip$'),
+    'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
+    'ARM64_USERDEBUG': ('linux-cheets_arm64-userdebug', r'\.zip$'),
+    'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
+    'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
+}
+ANDROID_VMRVC_BUILD_TARGETS = {
+    # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
+    'APPS': ('linux-apps', 'org.chromium.arc.cachebuilder.jar'),
+    'ARM64': ('linux-bertha_arm64-user', r'(\.zip|/XkbToKcmConverter)$'),
+    'X86': ('linux-bertha_x86-user', r'(\.zip|/XkbToKcmConverter)$'),
+    'X86_64': ('linux-bertha_x86_64-user', r'\.zip$'),
+    'ARM_USERDEBUG': ('linux-bertha_arm-userdebug', r'\.zip$'),
+    'ARM64_USERDEBUG': ('linux-bertha_arm64-userdebug',
+                        r'(\.zip|/XkbToKcmConverter)$'),
     'X86_USERDEBUG': ('linux-bertha_x86-userdebug',
                       r'(\.zip|/XkbToKcmConverter)$'),
     'X86_64_USERDEBUG': ('linux-bertha_x86_64-userdebug', r'\.zip$'),
@@ -444,6 +374,7 @@ ANDROID_VMMST_BUILD_TARGETS = {
 
 ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
 ARC_BUCKET_ACLS = {
+    'APPS': 'googlestorage_acl_public.txt',
     'ARM': 'googlestorage_acl_arm.txt',
     'ARM64': 'googlestorage_acl_arm.txt',
     'X86': 'googlestorage_acl_x86.txt',
@@ -452,14 +383,8 @@ ARC_BUCKET_ACLS = {
     'ARM64_USERDEBUG': 'googlestorage_acl_arm.txt',
     'X86_USERDEBUG': 'googlestorage_acl_x86.txt',
     'X86_64_USERDEBUG': 'googlestorage_acl_x86.txt',
-    'AOSP_ARM_USERDEBUG': 'googlestorage_acl_arm.txt',
-    'AOSP_X86_USERDEBUG': 'googlestorage_acl_x86.txt',
-    'AOSP_X86_64_USERDEBUG': 'googlestorage_acl_x86.txt',
     'SDK_GOOGLE_X86_USERDEBUG': 'googlestorage_acl_x86.txt',
     'SDK_GOOGLE_X86_64_USERDEBUG': 'googlestorage_acl_x86.txt',
-    'X86_INTERNAL': 'googlestorage_acl_internal.txt',
-    'SDK_TOOLS': 'googlestorage_acl_public.txt',
-    'XTS': 'googlestorage_acl_cts.txt',
 }
 ANDROID_SYMBOLS_URL_TEMPLATE = (
     ARC_BUCKET_URL +
@@ -477,16 +402,15 @@ ARC_BUILDS_NEED_ARTIFACTS_RENAMED = {
     'ARM64_USERDEBUG',
     'X86_USERDEBUG',
     'X86_64_USERDEBUG',
-    'AOSP_ARM_USERDEBUG',
-    'AOSP_X86_USERDEBUG',
-    'AOSP_X86_64_USERDEBUG',
     'SDK_GOOGLE_X86_USERDEBUG',
     'SDK_GOOGLE_X86_64_USERDEBUG',
 }
 # All builds will have the same name without target prefix.
 # Emerge checksum failures will be workarounded by ebuild rename symbol (->).
 ARC_ARTIFACTS_RENAME_NOT_NEEDED = [
+    'push_to_device.zip',
     'sepolicy.zip',
+    'XkbToKcmConverter',
 ]
 
 GOB_COOKIE_PATH = os.path.expanduser('~/.git-credential-cache/cookie')
@@ -559,7 +483,8 @@ CHROME_PN = 'chromeos-chrome'
 CHROME_CP = '%s/%s' % (CHROME_CN, CHROME_PN)
 
 # Other packages to uprev while uprevving Chrome.
-OTHER_CHROME_PACKAGES = ['chromeos-base/chromium-source']
+OTHER_CHROME_PACKAGES = ['chromeos-base/chromium-source',
+                         'chromeos-base/chrome-icu']
 
 # Chrome use flags
 USE_CHROME_INTERNAL = 'chrome_internal'
@@ -608,18 +533,6 @@ INCREMENTAL_TYPE = 'binary'
 # These builds serve as PFQ builders.  This is being deprecated.
 PFQ_TYPE = 'pfq'
 
-# Hybrid Commit and PFQ type.  Ultimate protection.  Commonly referred to
-# as simply "commit queue" now.
-PALADIN_TYPE = 'paladin'
-
-# A builder that kicks off Pre-CQ builders that bless the purest CLs.
-PRE_CQ_LAUNCHER_TYPE = 'priest'
-
-# Chrome PFQ type.  Incremental build type that builds and validates new
-# versions of Chrome.  Only valid if set with CHROME_REV.  See
-# VALID_CHROME_REVISIONS for more information.
-CHROME_PFQ_TYPE = 'chrome'
-
 # Android PFQ type.  Builds and validates new versions of Android.
 ANDROID_PFQ_TYPE = 'android'
 
@@ -639,10 +552,6 @@ TOOLCHAIN_TYPE = 'toolchain'
 # Generic type of tryjob only build configs.
 TRYJOB_TYPE = 'tryjob'
 
-# Builds that run repeatedly to verify TOT state, and generate secondary
-# artifacts (like prebuilts).
-POSTSUBMIT_TYPE = 'postsubmit'
-
 # Special build type for Chroot builders.  These builds focus on building
 # toolchains and validate that they work.
 CHROOT_BUILDER_TYPE = 'chroot'
@@ -651,75 +560,30 @@ CHROOT_BUILDER_BOARD = 'amd64-host'
 # Use for builds that don't requite a type.
 GENERIC_TYPE = 'generic'
 
-# Build type of Pre-CQs
-PRE_CQ_TYPE = 'pre_cq'
-
 VALID_BUILD_TYPES = (
-    PALADIN_TYPE,
     INCREMENTAL_TYPE,
     FULL_TYPE,
     CANARY_TYPE,
     CHROOT_BUILDER_TYPE,
     CHROOT_BUILDER_BOARD,
-    CHROME_PFQ_TYPE,
     ANDROID_PFQ_TYPE,
     PFQ_TYPE,
-    PRE_CQ_LAUNCHER_TYPE,
     PAYLOADS_TYPE,
     TOOLCHAIN_TYPE,
     TRYJOB_TYPE,
     GENERIC_TYPE,
-    PRE_CQ_TYPE,
-    POSTSUBMIT_TYPE,
 )
-
-# The default list of pre-cq configs to use.
-PRE_CQ_DEFAULT_CONFIGS = [
-    # Betty is the designated board to run vmtest on N.
-    # betty-pi-arc is disabled pending decreasing its runtime
-    # 'betty-pi-arc-pre-cq',           # vm board    arcnext
-    'betty-pre-cq',                   # vm board    vmtest
-    'eve-no-vmtest-pre-cq',           # kabylake    cheets_64 vulkan(Intel)
-    'fizz-no-vmtest-pre-cq',          # kabylake
-    'grunt-no-vmtest-pre-cq',         # stoneyridge vulkan(AMD)
-    'kevin-arcnext-no-vmtest-pre-cq', # arm64       arcnext
-    'lakitu-no-vmtest-pre-cq',        # container
-    'whirlwind-no-vmtest-pre-cq',     # brillo
-]
-
-# The name of the pre-cq launching config.
-PRE_CQ_LAUNCHER_CONFIG = 'pre-cq-launcher'
-
-# The name of the Pre-CQ launcher on the waterfall.
-# As of crbug.com/591117 this is the same as the config name.
-PRE_CQ_LAUNCHER_NAME = PRE_CQ_LAUNCHER_CONFIG
-
-CQ_CONFIG_FILENAME = 'COMMIT-QUEUE.ini'
-CQ_CONFIG_SECTION_GENERAL = 'GENERAL'
-CQ_CONFIG_IGNORED_STAGES = 'ignored-stages'
-CQ_CONFIG_SUBMIT_IN_PRE_CQ = 'submit-in-pre-cq'
-CQ_CONFIG_SUBSYSTEM = 'subsystem'
-CQ_CONFIG_UNION_PRE_CQ_SUB_CONFIGS = 'union-pre-cq-sub-configs'
-
-# The COMMIT-QUEUE.ini and commit message option that overrides pre-cq configs
-# to test with.
-CQ_CONFIG_PRE_CQ_CONFIGS = 'pre-cq-configs'
-CQ_CONFIG_PRE_CQ_CONFIGS_REGEX = CQ_CONFIG_PRE_CQ_CONFIGS + ':'
 
 # Define pool of machines for Hardware tests.
 # TODO(akeshet): Delete constants for deprecated pools, and references to them.
 HWTEST_TRYBOT_NUM = 3
 HWTEST_MACH_POOL = 'bvt'
 HWTEST_MACH_POOL_UNI = 'bvt-uni'        # Deprecated
-HWTEST_PALADIN_POOL = 'cq'              # Deprecated
 HWTEST_QUOTA_POOL = 'quota'
-HWTEST_TOT_PALADIN_POOL = 'tot-cq'      # Deprecated
 HWTEST_PFQ_POOL = 'pfq'
 HWTEST_SUITES_POOL = 'suites'
 HWTEST_CHROME_PERF_POOL = 'chromeperf'  # Probably deprecated, no existing DUTS.
 HWTEST_TRYBOT_POOL = HWTEST_SUITES_POOL
-HWTEST_WIFICELL_PRE_CQ_POOL = 'wificell-pre-cq'
-HWTEST_BLUESTREAK_PRE_CQ_POOL = 'bluestreak-pre-cq'
 HWTEST_CONTINUOUS_POOL = 'continuous'
 HWTEST_CTS_POOL = 'cts'
 HWTEST_GTS_POOL = HWTEST_CTS_POOL
@@ -758,8 +622,6 @@ HWTEST_MOBLAB_SUITE = 'moblab'
 HWTEST_MOBLAB_QUICK_SUITE = 'moblab_quick'
 HWTEST_SANITY_SUITE = 'sanity'
 HWTEST_TOOLCHAIN_SUITE = 'toolchain-tests'
-HWTEST_CTS_QUAL_SUITE = 'arc-cts-qual'
-HWTEST_GTS_QUAL_SUITE = 'arc-gts-qual'
 # Non-blocking informational hardware tests for Chrome, run throughout the
 # day on tip-of-trunk Chrome rather than on the daily Chrome branch.
 HWTEST_CHROME_INFORMATIONAL = 'chrome-informational'
@@ -904,175 +766,11 @@ INTERNAL_PATCH_TAG = 'i'
 EXTERNAL_PATCH_TAG = 'e'
 PATCH_TAGS = (INTERNAL_PATCH_TAG, EXTERNAL_PATCH_TAG)
 
-# Common parts of query used for CQ, THROTTLED_CQ, and PRECQ.
-# "NOT is:draft" in this query doesn't work, it finds any non-draft revision.
-# We want to match drafts anyway, so we can comment on them.
-_QUERIES = {
-    # CLs that are open and not vetoed.
-    'open': 'status:open AND -label:CodeReview=-2 AND -label:Verified=-1',
-
-    # CLs that are approved and verified.
-    'approved': 'label:Code-Review=+2 AND label:Verified=+1',
-}
-
-#
-# Please note that requiring the +2 code review (or CQ+1 for try) for all CQ
-# and PreCQ runs is a security requirement. Otherwise arbitrary people can
-# run code on our servers.
-#
-# The Verified and Commit-Queue flags can be set by any registered user (you
-# don't need commit access to set them.)
-#
-
-
-# Default gerrit query used to find changes for CQ.
-CQ_READY_QUERY = (
-    '%(open)s AND %(approved)s AND label:Commit-Queue>=2' % _QUERIES,
-    lambda change: change.IsMergeable())
-
-# The PreCQ does not require the CQ+2 bit to be set if it's a recent CL, or if
-# the Commit-Queue +1 flag has been set.
-PRECQ_READY_QUERY = (
-    '%(open)s AND (%(approved)s AND label:Commit-Queue>=2 OR '
-    'label:Code-Review=+2 AND -age:2h OR label:Commit-Queue=+1)' % _QUERIES,
-    lambda change: not change.IsBeingMerged())
-
 GERRIT_ON_BORG_LABELS = {
     'Code-Review': 'CRVW',
     'Commit-Queue': 'COMR',
     'Verified': 'VRIF',
 }
-
-# Actions that a CQ run can take on a CL
-CL_ACTION_PICKED_UP = 'picked_up'         # CL picked up in CommitQueueSync
-CL_ACTION_SUBMITTED = 'submitted'         # CL submitted successfully
-CL_ACTION_KICKED_OUT = 'kicked_out'       # CL CQ-Ready value set to zero
-CL_ACTION_SUBMIT_FAILED = 'submit_failed' # CL submitted but submit failed
-CL_ACTION_VERIFIED = 'verified'           # CL was verified by the builder
-CL_ACTION_FORGIVEN = 'forgiven'           # Build failed, but CL not kicked out
-CL_ACTION_EXONERATED = 'exonerated'       # CL was kicked out, then exonerated.
-
-# Actions the Pre-CQ Launcher can take on a CL
-# See cbuildbot/stages/sync_stages.py:PreCQLauncherStage for more info
-CL_ACTION_PRE_CQ_INFLIGHT = 'pre_cq_inflight'
-CL_ACTION_PRE_CQ_PASSED = 'pre_cq_passed'
-CL_ACTION_PRE_CQ_FAILED = 'pre_cq_failed'
-CL_ACTION_PRE_CQ_LAUNCHING = 'pre_cq_launching'
-CL_ACTION_PRE_CQ_WAITING = 'pre_cq_waiting'
-CL_ACTION_PRE_CQ_FULLY_VERIFIED = 'pre_cq_fully_verified'
-CL_ACTION_PRE_CQ_READY_TO_SUBMIT = 'pre_cq_ready_to_submit'
-# Recording this action causes the pre-cq status and all per-config statuses to
-# be reset.
-CL_ACTION_PRE_CQ_RESET = 'pre_cq_reset'
-
-# Miscellaneous actions
-
-# Recorded by pre-cq launcher for a change when it is noticed that a previously
-# rejected change is again in the queue.
-# This is a best effort detection for developers re-marking their changes, to
-# help calculate true CQ handling time. It is susceptible to developers
-# un-marking their change after is requeued or to the CQ picking up a CL before
-# it is seen by the pre-cq-launcher.
-CL_ACTION_REQUEUED = 'requeued'
-
-# Recorded by pre-cq launcher when it begins handling a change that isn't marked
-# as CQ+1. This indicates that all actions between this and the next
-# CL_ACTION_REQUEUED action have occured on a non-CQ+1 change.
-CL_ACTION_SPECULATIVE = 'speculative'
-
-# Recorded by pre-cq launcher when it has screened a change for necessary
-# tryjobs
-CL_ACTION_SCREENED_FOR_PRE_CQ = 'screened_for_pre_cq'
-# Recorded by pre-cq launcher for each tryjob config necessary to validate
-# a change, with |reason| field specifying the config.
-CL_ACTION_VALIDATION_PENDING_PRE_CQ = 'validation_pending_pre_cq'
-
-# Recorded by CQ slaves builds when a picked-up CL is determined to be
-# irrelevant to that slave build.
-CL_ACTION_IRRELEVANT_TO_SLAVE = 'irrelevant_to_slave'
-
-# Recorded by CQ slaves builds when a picked-up CL is determined to be
-# relevant to that slave build.
-CL_ACTION_RELEVANT_TO_SLAVE = 'relevant_to_slave'
-
-# Recorded by pre-cq-launcher when it launches a tryjob with a particular
-# config. The |reason| field of the action will be the config.
-CL_ACTION_TRYBOT_LAUNCHING = 'trybot_launching'
-
-# Recorded by pre-cq-launcher when it cancels a trybot.
-CL_ACTION_TRYBOT_CANCELLED = 'trybot_cancelled'
-
-
-CL_ACTIONS = (CL_ACTION_PICKED_UP,
-              CL_ACTION_SUBMITTED,
-              CL_ACTION_KICKED_OUT,
-              CL_ACTION_SUBMIT_FAILED,
-              CL_ACTION_VERIFIED,
-              CL_ACTION_PRE_CQ_INFLIGHT,
-              CL_ACTION_PRE_CQ_PASSED,
-              CL_ACTION_PRE_CQ_FAILED,
-              CL_ACTION_PRE_CQ_LAUNCHING,
-              CL_ACTION_PRE_CQ_WAITING,
-              CL_ACTION_PRE_CQ_READY_TO_SUBMIT,
-              CL_ACTION_REQUEUED,
-              CL_ACTION_SCREENED_FOR_PRE_CQ,
-              CL_ACTION_VALIDATION_PENDING_PRE_CQ,
-              CL_ACTION_IRRELEVANT_TO_SLAVE,
-              CL_ACTION_RELEVANT_TO_SLAVE,
-              CL_ACTION_TRYBOT_LAUNCHING,
-              CL_ACTION_SPECULATIVE,
-              CL_ACTION_FORGIVEN,
-              CL_ACTION_EXONERATED,
-              CL_ACTION_PRE_CQ_FULLY_VERIFIED,
-              CL_ACTION_PRE_CQ_RESET,
-              CL_ACTION_TRYBOT_CANCELLED)
-
-# Actions taken by a builder when making a decision about a CL.
-CL_DECISION_ACTIONS = (
-    CL_ACTION_SUBMITTED,
-    CL_ACTION_KICKED_OUT,
-    CL_ACTION_SUBMIT_FAILED,
-    CL_ACTION_VERIFIED,
-    CL_ACTION_FORGIVEN
-)
-
-# Per-config status strings for a CL.
-CL_PRECQ_CONFIG_STATUS_PENDING = 'pending'
-CL_PRECQ_CONFIG_STATUS_LAUNCHED = 'launched'
-CL_PRECQ_CONFIG_STATUS_INFLIGHT = CL_STATUS_INFLIGHT
-CL_PRECQ_CONFIG_STATUS_FAILED = BUILDER_STATUS_FAILED
-CL_PRECQ_CONFIG_STATUS_VERIFIED = CL_ACTION_VERIFIED
-CL_PRECQ_CONFIG_STATUSES = (CL_PRECQ_CONFIG_STATUS_PENDING,
-                            CL_PRECQ_CONFIG_STATUS_LAUNCHED,
-                            CL_PRECQ_CONFIG_STATUS_INFLIGHT,
-                            CL_PRECQ_CONFIG_STATUS_FAILED,
-                            CL_PRECQ_CONFIG_STATUS_VERIFIED)
-
-# CL submission, rejection, or forgiven reasons (i.e. strategies).
-STRATEGY_CQ_SUCCESS = 'strategy:cq-success'
-STRATEGY_PRECQ_SUBMIT = 'strategy:pre-cq-submit'
-STRATEGY_NONMANIFEST = 'strategy:non-manifest-submit'
-
-# Strategy for CQ partial pool submission
-STRATEGY_CQ_PARTIAL_NOT_TESTED = 'strategy:cq-submit-partial-pool-not-tested'
-STRATEGY_CQ_PARTIAL_CQ_HISTORY = 'strategy:cq-submit-partial-pool-cq-history'
-STRATEGY_CQ_PARTIAL_IGNORED_STAGES = (
-    'strategy:cq-submit-partial-pool-ignored-stages')
-STRATEGY_CQ_PARTIAL_BUILDS_PASSED = (
-    'strategy:cq-submit-partial-pool-builds-passed')
-
-# A dict mapping CQ partial pool submission strategies to their priorities;
-# lower values have higher priorities.
-STRATEGY_CQ_PARTIAL_REASONS = {
-    STRATEGY_CQ_PARTIAL_NOT_TESTED: 1,
-    STRATEGY_CQ_PARTIAL_CQ_HISTORY: 2,
-    STRATEGY_CQ_PARTIAL_IGNORED_STAGES: 3,
-    STRATEGY_CQ_PARTIAL_BUILDS_PASSED: 4
-}
-
-# CQ types.
-CQ = 'cq'
-PRE_CQ = 'pre-cq'
 
 # Environment variables that should be exposed to all children processes
 # invoked via cros_build_lib.run.
@@ -1144,6 +842,7 @@ VM_IMAGE_TAR = '%s.tar.xz' % VM_IMAGE_NAME
 VM_DISK_PREFIX = 'chromiumos_qemu_disk.bin'
 VM_MEM_PREFIX = 'chromiumos_qemu_mem.bin'
 VM_NUM_RETRIES = 0
+TAST_VM_NUM_RETRIES = 3
 TAST_VM_TEST_RESULTS = 'tast_vm_test_results_%(attempt)s'
 BASE_GUEST_VM_DIR = 'guest-vm-base'
 TEST_GUEST_VM_DIR = 'guest-vm-test'
@@ -1213,16 +912,13 @@ CHROME_GARDENER = 'chrome'
 CHROME_GARDENER_REVIEW_EMAIL = 'chrome-os-gardeners@google.com'
 
 # Useful config targets.
-CQ_MASTER = 'master-paladin'
 CANARY_MASTER = 'master-release'
 PFQ_MASTER = 'master-chromium-pfq'
-WIFICELL_PRE_CQ = 'wificell-pre-cq'
-BLUESTREAK_PRE_CQ = 'bluestreak-pre-cq'
-MST_ANDROID_PFQ_MASTER = 'master-mst-android-pfq'
 VMMST_ANDROID_PFQ_MASTER = 'master-vmmst-android-pfq'
-NYC_ANDROID_PFQ_MASTER = 'master-nyc-android-pfq'
 PI_ANDROID_PFQ_MASTER = 'master-pi-android-pfq'
 VMPI_ANDROID_PFQ_MASTER = 'master-vmpi-android-pfq'
+RVC_ANDROID_PFQ_MASTER = 'master-rvc-android-pfq'
+VMRVC_ANDROID_PFQ_MASTER = 'master-vmrvc-android-pfq'
 QT_ANDROID_PFQ_MASTER = 'master-qt-android-pfq'
 TOOLCHAIN_MASTTER = 'master-toolchain'
 
@@ -1245,10 +941,6 @@ EXTRA_BUCKETS_FILES_BLACKLIST = [
 # AFDO common constants.
 # How long does the AFDO_record autotest have to generate the AFDO perf data.
 AFDO_GENERATE_TIMEOUT = 120 * 60
-
-# Manual Uprev PFQ constants.
-STAGING_PFQ_BRANCH_PREFIX = 'staging_pfq_branch_'
-PFQ_REF = 'pfq'
 
 # Gmail Credentials.
 GMAIL_TOKEN_CACHE_FILE = os.path.expanduser('~/.gmail_credentials')
@@ -1274,7 +966,11 @@ ACTIVE_BUCKETS = [
 ]
 
 # Build retry limit on buildbucket
-BUILDBUCKET_BUILD_RETRY_LIMIT = 2
+#
+# 2->1 on 2020-05-13 by engeg@: This is rarely effective, causes confusion,
+# higher bot utilization, and if the initial try was past uploading artifacts
+# then the retry is destined to fail with a difficult to parse error.
+BUILDBUCKET_BUILD_RETRY_LIMIT = 1
 
 # TODO(nxia): consolidate all run.metadata key constants,
 # add a unit test to avoid duplicated keys in run_metadata
@@ -1328,8 +1024,6 @@ TOPOLOGY_DICT = {
         '104.154.79.237',
     '/statsd/host':
         '104.154.79.237',
-    '/swarming_proxy/host':
-        'chromeos-proxy.appspot.com',
 }
 
 # Percentage of child builders that need to complete to update LKGM

@@ -5,6 +5,17 @@
 #include "ash/public/cpp/ash_switches.h"
 
 #include "base/command_line.h"
+#include "base/numerics/ranges.h"
+#include "base/strings/string_number_conversions.h"
+
+namespace {
+// Max and min number of seconds that must pass between showing user contextual
+// nudges when override switch is set.
+constexpr base::TimeDelta kAshContextualNudgesMinInterval =
+    base::TimeDelta::FromSeconds(0);
+constexpr base::TimeDelta kAshContextualNudgesMaxInterval =
+    base::TimeDelta::FromSeconds(60);
+}  // namespace
 
 namespace ash {
 namespace switches {
@@ -16,6 +27,14 @@ const char kAshColorModeLight[] = "light";
 
 // Force the pointer (cursor) position to be kept inside root windows.
 const char kAshConstrainPointerToRoot[] = "ash-constrain-pointer-to-root";
+
+// Overrides the minimum time that must pass between showing user contextual
+// nudges. Unit of time is in seconds.
+const char kAshContextualNudgesInterval[] = "ash-contextual-nudges-interval";
+
+// Reset contextual nudge shown count on login.
+const char kAshContextualNudgesResetShownCount[] =
+    "ash-contextual-nudges-reset-shown-count";
 
 // Enable keyboard shortcuts useful for debugging.
 const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
@@ -115,13 +134,6 @@ const char kHasInternalStylus[] = "has-internal-stylus";
 // option "Show taps".
 const char kShowTaps[] = "show-taps";
 
-// If true, the webui lock screen wil be shown. This is deprecated and will be
-// removed in the future.
-const char kShowWebUiLock[] = "show-webui-lock";
-
-// Forces the webui login implementation.
-const char kShowWebUiLogin[] = "show-webui-login";
-
 // Chromebases' touchscreens can be used to wake from suspend, unlike the
 // touchscreens on other Chrome OS devices. If set, the touchscreen is kept
 // enabled while the screen is off so that it can be used to turn the screen
@@ -133,8 +145,27 @@ const char kTouchscreenUsableWhileScreenOff[] =
 // Hides all Message Center notification popups (toasts). Used for testing.
 const char kSuppressMessageCenterPopups[] = "suppress-message-center-popups";
 
-bool IsUsingViewsLock() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kShowWebUiLock);
+base::Optional<base::TimeDelta> ContextualNudgesInterval() {
+  int numeric_cooldown_time;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kAshContextualNudgesInterval) &&
+      base::StringToInt(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              kAshContextualNudgesInterval),
+          &numeric_cooldown_time)) {
+    base::TimeDelta cooldown_time =
+        base::TimeDelta::FromSeconds(numeric_cooldown_time);
+    cooldown_time =
+        base::ClampToRange(cooldown_time, kAshContextualNudgesMinInterval,
+                           kAshContextualNudgesMaxInterval);
+    return base::Optional<base::TimeDelta>(cooldown_time);
+  }
+  return base::nullopt;
+}
+
+bool ContextualNudgesResetShownCount() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kAshContextualNudgesResetShownCount);
 }
 
 bool IsUsingShelfAutoDim() {

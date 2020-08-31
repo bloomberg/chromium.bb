@@ -15,6 +15,7 @@ TextStyle::TextStyle() : fFontStyle() {
     // value to indicate no decoration color was set.
     fDecoration.fColor = SK_ColorTRANSPARENT;
     fDecoration.fStyle = TextDecorationStyle::kSolid;
+    fDecoration.fMode = TextDecorationMode::kGaps;
     // Thickness is applied as a multiplier to the default thickness of the font.
     fDecoration.fThicknessMultiplier = 1.0;
     fFontSize = 14.0;
@@ -40,6 +41,7 @@ TextStyle:: TextStyle(const TextStyle& other, bool placeholder) {
     fForeground = other.fForeground;
     fHeightOverride = other.fHeightOverride;
     fIsPlaceholder = placeholder;
+    fFontFeatures = other.fFontFeatures;
 }
 
 bool TextStyle::equals(const TextStyle& other) const {
@@ -84,14 +86,34 @@ bool TextStyle::equals(const TextStyle& other) const {
     if (fTextShadows.size() != other.fTextShadows.size()) {
         return false;
     }
-
-    for (int32_t i = 0; i < (int32_t)fTextShadows.size(); ++i) {
+    for (size_t i = 0; i < fTextShadows.size(); ++i) {
         if (fTextShadows[i] != other.fTextShadows[i]) {
+            return false;
+        }
+    }
+    if (fFontFeatures.size() != other.fFontFeatures.size()) {
+        return false;
+    }
+    for (size_t i = 0; i < fFontFeatures.size(); ++i) {
+        if (!(fFontFeatures[i] == other.fFontFeatures[i])) {
             return false;
         }
     }
 
     return true;
+}
+
+bool TextStyle::equalsByFonts(const TextStyle& that) const {
+
+    return !fIsPlaceholder && !that.fIsPlaceholder &&
+           fFontStyle == that.fFontStyle &&
+           fFontFamilies == that.fFontFamilies &&
+           fFontFeatures == that.fFontFeatures &&
+           nearlyEqual(fLetterSpacing, that.fLetterSpacing) &&
+           nearlyEqual(fWordSpacing, that.fWordSpacing) &&
+           nearlyEqual(fHeight, that.fHeight) &&
+           nearlyEqual(fFontSize, that.fFontSize) &&
+           fLocale == that.fLocale;
 }
 
 bool TextStyle::matchOneAttribute(StyleType styleType, const TextStyle& other) const {
@@ -132,9 +154,11 @@ bool TextStyle::matchOneAttribute(StyleType styleType, const TextStyle& other) c
 
         case kFont:
             // TODO: should not we take typefaces in account?
-            return fFontStyle == other.fFontStyle && fFontFamilies == other.fFontFamilies &&
-                   fFontSize == other.fFontSize && fHeight == other.fHeight;
-
+            return fFontStyle == other.fFontStyle &&
+                   fLocale == other.fLocale &&
+                   fFontFamilies == other.fFontFamilies &&
+                   fFontSize == other.fFontSize &&
+                   fHeight == other.fHeight;
         default:
             SkASSERT(false);
             return false;
@@ -157,6 +181,15 @@ void TextStyle::getFontMetrics(SkFontMetrics* metrics) const {
         metrics->fAscent = (metrics->fAscent - metrics->fLeading / 2);
         metrics->fDescent = (metrics->fDescent + metrics->fLeading / 2);
     }
+}
+
+bool PlaceholderStyle::equals(const PlaceholderStyle& other) const {
+    return nearlyEqual(fWidth, other.fWidth) &&
+           nearlyEqual(fHeight, other.fHeight) &&
+           fAlignment == other.fAlignment &&
+           fBaseline == other.fBaseline &&
+           (fAlignment != PlaceholderAlignment::kBaseline ||
+            nearlyEqual(fBaselineOffset, other.fBaselineOffset));
 }
 
 }  // namespace textlayout

@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -18,41 +18,54 @@
 namespace blink {
 
 class DOMTask;
-class ExecutionContext;
+class DOMTaskSignal;
+class ExceptionState;
 class SchedulerPostTaskOptions;
 class ScriptValue;
 class V8Function;
 class WebSchedulingTaskQueue;
 
 class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
-                                    public ContextLifecycleObserver,
-                                    public Supplement<Document> {
+                                    public ExecutionContextLifecycleObserver,
+                                    public Supplement<LocalDOMWindow> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMScheduler);
 
  public:
   static const char kSupplementName[];
 
-  static DOMScheduler* From(Document&);
+  static DOMScheduler* From(LocalDOMWindow&);
 
-  explicit DOMScheduler(Document*);
+  explicit DOMScheduler(LocalDOMWindow*);
 
   // postTask creates and queues a DOMTask and returns a Promise that will
   // resolve when it completes. The task will be scheduled in the queue
   // corresponding to the priority in the SchedulerPostTaskOptions, or in a
   // queue associated with the given DOMTaskSignal if one is provided. If the
-  // underlying context is destroyed, e.g. for detached documents, this will
+  // underlying context is destroyed, e.g. for detached windows, this will
   // return a rejected promise.
   ScriptPromise postTask(ScriptState*,
                          V8Function*,
                          SchedulerPostTaskOptions*,
-                         const HeapVector<ScriptValue>& args);
+                         const HeapVector<ScriptValue>& args,
+                         ExceptionState&);
 
-  // Callbacks invoked by DOMTasks when they run.
-  void OnTaskStarted(DOMTask*);
-  void OnTaskCompleted(DOMTask*);
+  // Returns a TaskSignal representing the state when the current task was
+  // scheduled. If postTask is given a signal but no priority, it will return
+  // that signal. If postTask is given both a signal and a priority, it will
+  // return a signal with the given priority that follows the given signal.
+  // If a priority only was given, it will return a signal with the given
+  // priority that neither follows another signal nor is known to a controller,
+  // and is therefore unmodifiable. If called outside of a postTask task, it
+  // will return a task signal at the default priority (user-visible).
+  // NOTE: This uses V8's ContinuationPreservedEmbedderData to propagate the
+  // currentTaskSignal across microtask boundaries, so it will remain usable
+  // even in then() blocks or after an await in an async function.
+  DOMTaskSignal* currentTaskSignal(ScriptState*) const;
 
-  void ContextDestroyed(ExecutionContext*) override;
+  base::SingleThreadTaskRunner* GetTaskRunnerFor(WebSchedulingPriority);
+
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 
@@ -60,11 +73,10 @@ class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
   static constexpr size_t kWebSchedulingPriorityCount =
       static_cast<size_t>(WebSchedulingPriority::kLastPriority) + 1;
 
-  void CreateGlobalTaskQueues(Document*);
-  base::SingleThreadTaskRunner* GetTaskRunnerFor(WebSchedulingPriority);
+  void CreateGlobalTaskQueues(LocalDOMWindow*);
 
   // |global_task_queues_| is initialized with one entry per priority, indexed
-  // by priority. This will be empty when the document is detached.
+  // by priority. This will be empty when the window is detached.
   Vector<std::unique_ptr<WebSchedulingTaskQueue>, kWebSchedulingPriorityCount>
       global_task_queues_;
 };

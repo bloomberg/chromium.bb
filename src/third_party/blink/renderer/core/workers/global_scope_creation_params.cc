@@ -16,9 +16,9 @@ namespace blink {
 GlobalScopeCreationParams::GlobalScopeCreationParams(
     const KURL& script_url,
     mojom::ScriptType script_type,
-    OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option,
     const String& global_scope_name,
     const String& user_agent,
+    const base::Optional<UserAgentMetadata>& ua_metadata,
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     const Vector<CSPHeaderAndType>& outside_content_security_policy_headers,
     network::mojom::ReferrerPolicy referrer_policy,
@@ -40,9 +40,9 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     base::UnguessableToken agent_cluster_id)
     : script_url(script_url.Copy()),
       script_type(script_type),
-      off_main_thread_fetch_option(off_main_thread_fetch_option),
       global_scope_name(global_scope_name.IsolatedCopy()),
       user_agent(user_agent.IsolatedCopy()),
+      ua_metadata(ua_metadata.value_or(blink::UserAgentMetadata())),
       web_worker_fetch_context(std::move(web_worker_fetch_context)),
       referrer_policy(referrer_policy),
       starter_origin(starter_origin ? starter_origin->IsolatedCopy() : nullptr),
@@ -64,15 +64,6 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
           ParsedFeaturePolicy() /* container_policy */,
           starter_origin->ToUrlOrigin())),
       agent_cluster_id(agent_cluster_id) {
-  switch (this->script_type) {
-    case mojom::ScriptType::kClassic:
-      break;
-    case mojom::ScriptType::kModule:
-      DCHECK_EQ(this->off_main_thread_fetch_option,
-                OffMainThreadWorkerScriptFetchOption::kEnabled);
-      break;
-  }
-
   this->outside_content_security_policy_headers.ReserveInitialCapacity(
       outside_content_security_policy_headers.size());
   for (const auto& header : outside_content_security_policy_headers) {

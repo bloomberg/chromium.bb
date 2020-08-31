@@ -30,12 +30,10 @@ private:
     // Deferred version
     GrTextureRenderTargetProxy(const GrCaps&,
                                const GrBackendFormat&,
-                               const GrSurfaceDesc&,
+                               SkISize,
                                int sampleCnt,
-                               GrSurfaceOrigin,
                                GrMipMapped,
                                GrMipMapsStatus,
-                               const GrSwizzle& textureSwizzle,
                                SkBackingFit,
                                SkBudgeted,
                                GrProtected,
@@ -46,12 +44,10 @@ private:
     GrTextureRenderTargetProxy(const GrCaps&,
                                LazyInstantiateCallback&&,
                                const GrBackendFormat&,
-                               const GrSurfaceDesc& desc,
+                               SkISize,
                                int sampleCnt,
-                               GrSurfaceOrigin,
                                GrMipMapped,
                                GrMipMapsStatus,
-                               const GrSwizzle& textureSwizzle,
                                SkBackingFit,
                                SkBudgeted,
                                GrProtected,
@@ -60,8 +56,6 @@ private:
 
     // Wrapped version
     GrTextureRenderTargetProxy(sk_sp<GrSurface>,
-                               GrSurfaceOrigin,
-                               const GrSwizzle& textureSwizzle,
                                UseAllocator);
 
     void initSurfaceFlags(const GrCaps&);
@@ -70,7 +64,7 @@ private:
     sk_sp<GrSurface> createSurface(GrResourceProvider*) const override;
 
     size_t onUninstantiatedGpuMemorySize(const GrCaps&) const override;
-
+    LazySurfaceDesc callbackDesc() const override;
     SkDEBUGCODE(void onValidateSurface(const GrSurface*) override;)
 };
 

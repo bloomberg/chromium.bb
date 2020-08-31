@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Sources.SearchSourcesView = class extends Search.SearchView {
+import * as Search from '../search/search.js';
+import * as UI from '../ui/ui.js';  // eslint-disable-line no-unused-vars
+
+import {SourcesSearchScope} from './SourcesSearchScope.js';
+
+export class SearchSourcesView extends Search.SearchView.SearchView {
   constructor() {
     super('sources');
   }
@@ -13,33 +18,33 @@ Sources.SearchSourcesView = class extends Search.SearchView {
    * @return {!Promise}
    */
   static async openSearch(query, searchImmediately) {
-    const view = UI.viewManager.view('sources.search-sources-tab');
+    const view = UI.ViewManager.ViewManager.instance().view('sources.search-sources-tab');
     // Deliberately use target location name so that it could be changed
     // based on the setting later.
-    const location = await UI.viewManager.resolveLocation('drawer-view');
+    const location = await UI.ViewManager.ViewManager.instance().resolveLocation('drawer-view');
     location.appendView(view);
-    await UI.viewManager.revealView(/** @type {!UI.View} */ (view));
-    const widget = /** @type {!Search.SearchView} */ (await view.widget());
+    await UI.ViewManager.ViewManager.instance().revealView(/** @type {!UI.View.View} */ (view));
+    const widget = /** @type {!Search.SearchView.SearchView} */ (await view.widget());
     widget.toggle(query, !!searchImmediately);
     return widget;
   }
 
   /**
    * @override
-   * @return {!Search.SearchScope}
+   * @return {!Search.SearchConfig.SearchScope}
    */
   createScope() {
-    return new Sources.SourcesSearchScope();
+    return new SourcesSearchScope();
   }
-};
+}
 
 /**
- * @implements {UI.ActionDelegate}
+ * @implements {UI.ActionDelegate.ActionDelegate}
  */
-Sources.SearchSourcesView.ActionDelegate = class {
+export class ActionDelegate {
   /**
    * @override
-   * @param {!UI.Context} context
+   * @param {!UI.Context.Context} context
    * @param {string} actionId
    * @return {boolean}
    */
@@ -52,12 +57,12 @@ Sources.SearchSourcesView.ActionDelegate = class {
    * @return {!Promise}
    */
   _showSearch() {
-    const selection = UI.inspectorView.element.window().getSelection();
+    const selection = self.UI.inspectorView.element.window().getSelection();
     let queryCandidate = '';
     if (selection.rangeCount) {
       queryCandidate = selection.toString().replace(/\r?\n.*/, '');
     }
 
-    return Sources.SearchSourcesView.openSearch(queryCandidate);
+    return SearchSourcesView.openSearch(queryCandidate);
   }
-};
+}

@@ -126,7 +126,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 82;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 86;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -885,42 +885,9 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion60ToCurrent) {
   }
 }
 
-// Tests addition of use_count and use_date fields to unmasked server cards.
-TEST_F(WebDatabaseMigrationTest, MigrateVersion61ToCurrent) {
-  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_61.sql")));
-
-  // Verify pre-conditions.
-  {
-    sql::Database connection;
-    ASSERT_TRUE(connection.Open(GetDatabasePath()));
-    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
-
-    sql::MetaTable meta_table;
-    ASSERT_TRUE(meta_table.Init(&connection, 61, 61));
-
-    EXPECT_FALSE(
-        connection.DoesColumnExist("unmasked_credit_cards", "use_count"));
-    EXPECT_FALSE(
-        connection.DoesColumnExist("unmasked_credit_cards", "use_date"));
-  }
-
-  DoMigration();
-
-  // Verify post-conditions.
-  {
-    sql::Database connection;
-    ASSERT_TRUE(connection.Open(GetDatabasePath()));
-    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
-
-    // Check version.
-    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
-
-    EXPECT_TRUE(
-        connection.DoesColumnExist("unmasked_credit_cards", "use_count"));
-    EXPECT_TRUE(
-        connection.DoesColumnExist("unmasked_credit_cards", "use_date"));
-  }
-}
+// Not keeping the test MigrateVersion61ToCurrent since it tests for
+// addition of |use_count| and |use_date| columns to the unmasked_credit_cards
+// table, which have been later removed in version 86.
 
 // Tests addition of server metadata tables.
 TEST_F(WebDatabaseMigrationTest, MigrateVersion64ToCurrent) {
@@ -1339,14 +1306,12 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion73ToCurrent) {
     // Check version.
     EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
 
-    EXPECT_TRUE(connection.DoesColumnExist("masked_credit_cards", "type"));
-
+    // Not checking type, because it's removed in version 83.
     sql::Statement cards(connection.GetUniqueStatement(
-        "SELECT id, network, type FROM masked_credit_cards"));
+        "SELECT id, network FROM masked_credit_cards"));
     ASSERT_TRUE(cards.Step());
     EXPECT_EQ("id", cards.ColumnString(0));
     EXPECT_EQ("VISA", cards.ColumnString(1));
-    EXPECT_EQ(CreditCard::CARD_TYPE_UNKNOWN, cards.ColumnInt(2));
   }
 }
 
@@ -1388,14 +1353,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion73WithTypeColumnToCurrent) {
     // The bank_name column should exist.
     EXPECT_TRUE(connection.DoesColumnExist("masked_credit_cards", "bank_name"));
 
-    // The type column should exist.
-    EXPECT_TRUE(connection.DoesColumnExist("masked_credit_cards", "type"));
-
-    // Make sure that the existing value of the type column is preserved.
-    sql::Statement s_masked_cards(
-        connection.GetUniqueStatement("SELECT type FROM masked_credit_cards"));
-    ASSERT_TRUE(s_masked_cards.Step());
-    EXPECT_EQ(2, s_masked_cards.ColumnInt(0));
+    // Not checking type, because it's removed in version 83.
   }
 }
 
@@ -1791,5 +1749,185 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion81ToCurrent) {
 
     EXPECT_TRUE(
         connection.DoesColumnExist("keywords", "created_from_play_api"));
+  }
+}
+
+// Tests removal of "type" field from "masked_credit_cards" table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion82ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_82.sql")));
+
+  // Verify the "type" column exists before migration and add some data into the
+  // table.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 82, 79));
+
+    EXPECT_TRUE(connection.DoesColumnExist("masked_credit_cards", "type"));
+
+    EXPECT_TRUE(
+        connection.Execute("INSERT INTO masked_credit_cards(id, type) "
+                           "VALUES ('1980751', 1)"));
+  }
+
+  DoMigration();
+
+  // Verify the "type" column is gone after migration and the data is preserved.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    EXPECT_FALSE(connection.DoesColumnExist("masked_credit_cards", "type"));
+
+    sql::Statement cards(
+        connection.GetUniqueStatement("SELECT id FROM masked_credit_cards"));
+    ASSERT_TRUE(cards.Step());
+    EXPECT_EQ("1980751", cards.ColumnString(0));
+  }
+}
+
+// Tests addition of nickname column in masked_credit_cards table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion83ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_83.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 83, 79));
+
+    EXPECT_FALSE(connection.DoesColumnExist("masked_credit_cards", "nickname"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // The nickname column should exist.
+    EXPECT_TRUE(connection.DoesColumnExist("masked_credit_cards", "nickname"));
+
+    // Make sure that the default nickname value is empty.
+    sql::Statement s_masked_cards(connection.GetUniqueStatement(
+        "SELECT nickname FROM masked_credit_cards"));
+    ASSERT_TRUE(s_masked_cards.Step());
+    EXPECT_EQ("", s_masked_cards.ColumnString(0));
+  }
+}
+
+// Tests addition of card_issuer column in masked_credit_cards table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion84ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_84.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 84, 79));
+
+    EXPECT_FALSE(
+        connection.DoesColumnExist("masked_credit_cards", "card_issuer"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // The card_issuer column should exist.
+    EXPECT_TRUE(
+        connection.DoesColumnExist("masked_credit_cards", "card_issuer"));
+  }
+}
+
+// Tests removal of use_count and use_date columns in unmasked_credit_cards
+// table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion85ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_85.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 85, 79));
+
+    // The use_count and use_date columns should exist.
+    EXPECT_TRUE(
+        connection.DoesColumnExist("unmasked_credit_cards", "use_count"));
+    EXPECT_TRUE(
+        connection.DoesColumnExist("unmasked_credit_cards", "use_date"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Database connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // The use_count and use_date columns should no longer exist.
+    EXPECT_FALSE(
+        connection.DoesColumnExist("unmasked_credit_cards", "use_count"));
+    EXPECT_FALSE(
+        connection.DoesColumnExist("unmasked_credit_cards", "use_date"));
+
+    // Data should have been preserved post migration
+    sql::Statement s(connection.GetUniqueStatement(
+        "SELECT id, card_number_encrypted, unmask_date "
+        "FROM unmasked_credit_cards"));
+
+    ASSERT_TRUE(s.Step());
+    EXPECT_EQ("card_1", s.ColumnString(0));
+    EXPECT_EQ("DEADBEEFDEADBEEF", s.ColumnString(1));
+    EXPECT_EQ(1588603065, s.ColumnInt64(2));
+
+    ASSERT_TRUE(s.Step());
+    EXPECT_EQ("card_2", s.ColumnString(0));
+    EXPECT_EQ("ABCDABCD12341234", s.ColumnString(1));
+    EXPECT_EQ(1398902400, s.ColumnInt64(2));
+
+    ASSERT_TRUE(s.Step());
+    EXPECT_EQ("card_3", s.ColumnString(0));
+    EXPECT_EQ("FEDCBA9876543210", s.ColumnString(1));
+    EXPECT_EQ(1398901532, s.ColumnInt64(2));
+
+    ASSERT_TRUE(s.Step());
+    EXPECT_EQ("card_4", s.ColumnString(0));
+    EXPECT_EQ("0123456789ABCDEF", s.ColumnString(1));
+    EXPECT_EQ(1398901000, s.ColumnInt64(2));
+
+    // No more entries
+    EXPECT_FALSE(s.Step());
   }
 }

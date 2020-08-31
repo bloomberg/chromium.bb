@@ -103,9 +103,6 @@ struct WrapperTypeInfo {
         v8::External::Cast(*type_info_wrapper)->Value());
   }
 
-  PLATFORM_EXPORT static void WrapperCreated();
-  PLATFORM_EXPORT static void WrapperDestroyed();
-
   bool Equals(const WrapperTypeInfo* that) const { return this == that; }
 
   bool IsSubclass(const WrapperTypeInfo* that) const {
@@ -153,7 +150,7 @@ struct WrapperTypeInfo {
 
   // Garbage collection support for when the type depends the WrapperTypeInfo
   // object.
-  PLATFORM_EXPORT void Trace(Visitor*, void*) const;
+  PLATFORM_EXPORT void Trace(Visitor*, const void*) const;
 
   // This field must be the first member of the struct WrapperTypeInfo.
   // See also static_assert() in .cpp file.

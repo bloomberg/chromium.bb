@@ -5,10 +5,9 @@
 #include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_drain.h"
 
 #include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_sender.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 
 namespace quic {
-
-void Bbr2DrainMode::Enter(const Bbr2CongestionEvent& /*congestion_event*/) {}
 
 Bbr2Mode Bbr2DrainMode::OnCongestionEvent(
     QuicByteCount /*prior_in_flight*/,

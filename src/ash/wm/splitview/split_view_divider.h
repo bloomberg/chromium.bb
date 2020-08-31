@@ -38,7 +38,11 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
                                     public ::wm::ActivationChangeObserver,
                                     public ::wm::TransientWindowObserver {
  public:
-  SplitViewDivider(SplitViewController* controller);
+  // The distance to the divider edge in which a touch gesture will be
+  // considered as a valid event on the divider.
+  static constexpr int kDividerEdgeInsetForTouch = 8;
+
+  explicit SplitViewDivider(SplitViewController* controller);
   ~SplitViewDivider() override;
 
   // static version of GetDividerBoundsInScreen(bool is_dragging) function.
@@ -66,7 +70,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
 
   // Called when a window tab(s) are being dragged around the workspace. The
   // divider should be placed beneath the dragged window during dragging.
-  void OnWindowDragStarted(aura::Window* dragged_window);
+  void OnWindowDragStarted();
   void OnWindowDragEnded();
 
   // aura::WindowObserver:

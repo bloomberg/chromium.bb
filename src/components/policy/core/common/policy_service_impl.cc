@@ -13,6 +13,7 @@
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -107,13 +108,16 @@ base::flat_set<std::string> GetStringListPolicyItems(
 
 }  // namespace
 
-PolicyServiceImpl::PolicyServiceImpl(Providers providers)
+PolicyServiceImpl::PolicyServiceImpl(Providers providers, Migrators migrators)
     : PolicyServiceImpl(std::move(providers),
+                        std::move(migrators),
                         /*initialization_throttled=*/false) {}
 
 PolicyServiceImpl::PolicyServiceImpl(Providers providers,
+                                     Migrators migrators,
                                      bool initialization_throttled)
     : providers_(std::move(providers)),
+      migrators_(std::move(migrators)),
       initialization_throttled_(initialization_throttled) {
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
     initialization_complete_[domain] = true;
@@ -131,9 +135,11 @@ PolicyServiceImpl::PolicyServiceImpl(Providers providers,
 
 // static
 std::unique_ptr<PolicyServiceImpl>
-PolicyServiceImpl::CreateWithThrottledInitialization(Providers providers) {
-  return base::WrapUnique(new PolicyServiceImpl(
-      std::move(providers), /*initialization_throttled=*/true));
+PolicyServiceImpl::CreateWithThrottledInitialization(Providers providers,
+                                                     Migrators migrators) {
+  return base::WrapUnique(
+      new PolicyServiceImpl(std::move(providers), std::move(migrators),
+                            /*initialization_throttled=*/true));
 }
 
 PolicyServiceImpl::~PolicyServiceImpl() {
@@ -195,11 +201,11 @@ bool PolicyServiceImpl::IsInitializationComplete(PolicyDomain domain) const {
   return initialization_complete_[domain];
 }
 
-void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
+void PolicyServiceImpl::RefreshPolicies(base::OnceClosure callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!callback.is_null())
-    refresh_callbacks_.push_back(callback);
+    refresh_callbacks_.push_back(std::move(callback));
 
   if (providers_.empty()) {
     // Refresh is immediately complete if there are no providers. See the note
@@ -327,6 +333,9 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   for (auto it = bundle.begin(); it != bundle.end(); ++it)
     it->second->MergeValues(mergers);
 
+  for (auto& migrator : migrators_)
+    migrator->Migrate(&bundle);
+
   // Swap first, so that observers that call GetPolicies() see the current
   // values.
   policy_bundle_.Swap(&bundle);
@@ -410,11 +419,10 @@ void PolicyServiceImpl::MaybeNotifyInitializationComplete(
 void PolicyServiceImpl::CheckRefreshComplete() {
   // Invoke all the callbacks if a refresh has just fully completed.
   if (refresh_pending_.empty() && !refresh_callbacks_.empty()) {
-    std::vector<base::Closure> callbacks;
+    std::vector<base::OnceClosure> callbacks;
     callbacks.swap(refresh_callbacks_);
-    std::vector<base::Closure>::iterator it;
-    for (it = callbacks.begin(); it != callbacks.end(); ++it)
-      it->Run();
+    for (auto& callback : callbacks)
+      std::move(callback).Run();
   }
 }
 

@@ -24,14 +24,13 @@ namespace dawn_native { namespace opengl {
     class Device;
     struct GLFormat;
 
-    class Texture : public TextureBase {
+    class Texture final : public TextureBase {
       public:
         Texture(Device* device, const TextureDescriptor* descriptor);
         Texture(Device* device,
                 const TextureDescriptor* descriptor,
                 GLuint handle,
                 TextureState state);
-        ~Texture();
 
         GLuint GetHandle() const;
         GLenum GetGLTarget() const;
@@ -40,30 +39,32 @@ namespace dawn_native { namespace opengl {
         void EnsureSubresourceContentInitialized(uint32_t baseMipLevel,
                                                  uint32_t levelCount,
                                                  uint32_t baseArrayLayer,
-                                                 uint32_t layerCount,
-                                                 bool isLazyClear = true);
+                                                 uint32_t layerCount);
 
       private:
+        ~Texture() override;
+
         void DestroyImpl() override;
         MaybeError ClearTexture(GLint baseMipLevel,
                                 GLint levelCount,
                                 GLint baseArrayLayer,
-                                uint32_t layerCount,
+                                GLint layerCount,
                                 TextureBase::ClearValue clearValue);
 
         GLuint mHandle;
         GLenum mTarget;
     };
 
-    class TextureView : public TextureViewBase {
+    class TextureView final : public TextureViewBase {
       public:
         TextureView(TextureBase* texture, const TextureViewDescriptor* descriptor);
-        ~TextureView();
 
         GLuint GetHandle() const;
         GLenum GetGLTarget() const;
 
       private:
+        ~TextureView() override;
+
         GLuint mHandle;
         GLenum mTarget;
         bool mOwnsHandle;

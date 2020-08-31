@@ -11,18 +11,11 @@
 
 #include "fpdfsdk/formfiller/cffl_textobject.h"
 
-#define BF_ALIGN_LEFT 0
-#define BF_ALIGN_MIDDLE 1
-#define BF_ALIGN_RIGHT 2
-
-class CBA_FontMap;
 class CPWL_Edit;
 
 struct FFL_TextFieldState {
-  FFL_TextFieldState() : nStart(0), nEnd(0) {}
-
-  int nStart;
-  int nEnd;
+  int nStart = 0;
+  int nEnd = 0;
   WideString sValue;
 };
 
@@ -47,9 +40,6 @@ class CFFL_TextField final : public CFFL_TextObject,
   void SetActionData(CPDFSDK_PageView* pPageView,
                      CPDF_AAction::AActionType type,
                      const CPDFSDK_FieldAction& fa) override;
-  bool IsActionDataChanged(CPDF_AAction::AActionType type,
-                           const CPDFSDK_FieldAction& faOld,
-                           const CPDFSDK_FieldAction& faNew) override;
   void SaveState(CPDFSDK_PageView* pPageView) override;
   void RestoreState(CPDFSDK_PageView* pPageView) override;
 #ifdef PDF_ENABLE_XFA

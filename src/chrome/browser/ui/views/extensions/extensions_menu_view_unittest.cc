@@ -11,7 +11,9 @@
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
@@ -37,8 +40,11 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/layout/animating_layout_manager_test_util.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -108,6 +114,14 @@ class ExtensionsMenuViewUnitTest : public TestWithBrowserView {
   // from left to right.
   std::vector<std::string> GetPinnedExtensionNames();
 
+  // Since this is a unittest (and doesn't have as much "real" rendering),
+  // the ExtensionsMenuView sometimes needs a nudge to re-layout the views.
+  void LayoutMenuIfNecessary();
+
+  // Waits for the extensions container to animate (on pin, unpin, pop-out,
+  // etc.)
+  void WaitForAnimation();
+
  private:
   base::AutoReset<bool> allow_extension_menu_instances_;
   base::test::ScopedFeatureList feature_list_;
@@ -130,6 +144,9 @@ void ExtensionsMenuViewUnitTest::SetUp() {
   extension_service_ =
       extensions::ExtensionSystem::Get(profile())->extension_service();
 
+  // Shorten delay on animations so tests run faster.
+  views::test::ReduceAnimationDuration(extensions_container());
+
   ExtensionsMenuView::ShowBubble(extensions_container()->extensions_button(),
                                  browser(), extensions_container());
 }
@@ -139,6 +156,8 @@ ExtensionsMenuViewUnitTest::AddSimpleExtension(const std::string& name) {
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder(name).Build();
   extension_service()->AddExtension(extension.get());
+  // Force the menu to re-layout, since a new item was added.
+  LayoutMenuIfNecessary();
 
   return extension;
 }
@@ -171,9 +190,19 @@ ExtensionsMenuViewUnitTest::GetPinnedExtensionViews() {
   std::vector<ToolbarActionView*> result;
   for (views::View* child : extensions_container()->children()) {
     // Ensure we don't downcast the ExtensionsToolbarButton.
-    if (child->GetVisible() &&
-        child->GetClassName() == ToolbarActionView::kClassName) {
-      result.push_back(static_cast<ToolbarActionView*>(child));
+    if (child->GetClassName() == ToolbarActionView::kClassName) {
+      ToolbarActionView* const action = static_cast<ToolbarActionView*>(child);
+#if defined(OS_MACOSX)
+      // TODO(crbug.com/1045212): Use IsActionVisibleOnToolbar() because it
+      // queries the underlying model and not GetVisible(), as that relies on an
+      // animation running, which is not reliable in unit tests on Mac.
+      const bool is_visible = extensions_container()->IsActionVisibleOnToolbar(
+          action->view_controller());
+#else
+      const bool is_visible = action->GetVisible();
+#endif
+      if (is_visible)
+        result.push_back(action);
     }
   }
   return result;
@@ -203,8 +232,20 @@ std::vector<std::string> ExtensionsMenuViewUnitTest::GetPinnedExtensionNames() {
   return result;
 }
 
-// Disabled due to flaky crashes. See also https://crbug.com/1030172.
-TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ExtensionsAreShownInTheMenu) {
+void ExtensionsMenuViewUnitTest::LayoutMenuIfNecessary() {
+  extensions_menu()->GetWidget()->LayoutRootViewIfNecessary();
+}
+
+void ExtensionsMenuViewUnitTest::WaitForAnimation() {
+#if defined(OS_MACOSX)
+  // TODO(crbug.com/1045212): we avoid using animations on Mac due to the lack
+  // of support in unit tests. Therefore this is a no-op.
+#else
+  views::test::WaitForAnimatingLayoutManager(extensions_container());
+#endif
+}
+
+TEST_F(ExtensionsMenuViewUnitTest, ExtensionsAreShownInTheMenu) {
   // To start, there should be no extensions in the menu.
   EXPECT_EQ(0u, extensions_menu()->extensions_menu_items_for_testing().size());
 
@@ -229,26 +270,25 @@ TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionAppearsInToolbar) {
 
   ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
   ASSERT_TRUE(menu_item);
-  ToolbarActionViewController* controller =
-      menu_item->view_controller_for_testing();
+  ToolbarActionViewController* controller = menu_item->view_controller();
   EXPECT_FALSE(extensions_container()->IsActionVisibleOnToolbar(controller));
   EXPECT_THAT(GetPinnedExtensionNames(), testing::IsEmpty());
 
   ClickPinButton(menu_item);
+  WaitForAnimation();
 
   EXPECT_TRUE(extensions_container()->IsActionVisibleOnToolbar(controller));
   EXPECT_THAT(GetPinnedExtensionNames(), testing::ElementsAre(kName));
 
   ClickPinButton(menu_item);  // Unpin.
+  WaitForAnimation();
 
   EXPECT_FALSE(extensions_container()->IsActionVisibleOnToolbar(
-      menu_item->view_controller_for_testing()));
+      menu_item->view_controller()));
   EXPECT_THAT(GetPinnedExtensionNames(), testing::IsEmpty());
 }
 
-// Disabled due to flaky crashes. See also https://crbug.com/1030172.
-TEST_F(ExtensionsMenuViewUnitTest,
-       DISABLED_PinnedExtensionAppearsInAnotherWindow) {
+TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionAppearsInAnotherWindow) {
   AddSimpleExtension("Test Name");
 
   AdditionalBrowser browser2(
@@ -261,7 +301,7 @@ TEST_F(ExtensionsMenuViewUnitTest,
 
   // Window that was already open gets the pinned extension.
   browser2.extensions_container()->IsActionVisibleOnToolbar(
-      menu_item->view_controller_for_testing());
+      menu_item->view_controller());
 
   AdditionalBrowser browser3(
       CreateBrowser(browser()->profile(), browser()->type(),
@@ -269,11 +309,34 @@ TEST_F(ExtensionsMenuViewUnitTest,
 
   // Brand-new window also gets the pinned extension.
   browser3.extensions_container()->IsActionVisibleOnToolbar(
-      menu_item->view_controller_for_testing());
+      menu_item->view_controller());
 }
 
-// Disabled due to flaky crashes. See also https://crbug.com/1030172.
-TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ReorderPinnedExtensions) {
+TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionRemovedWhenDisabled) {
+  constexpr char kName[] = "Test Name";
+  const extensions::ExtensionId id = AddSimpleExtension(kName)->id();
+
+  {
+    ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
+    ASSERT_TRUE(menu_item);
+    ClickPinButton(menu_item);
+  }
+
+  extension_service()->DisableExtension(
+      id, extensions::disable_reason::DISABLE_USER_ACTION);
+  WaitForAnimation();
+
+  ASSERT_EQ(0u, extensions_menu()->extensions_menu_items_for_testing().size());
+  EXPECT_THAT(GetPinnedExtensionNames(), testing::IsEmpty());
+
+  extension_service()->EnableExtension(id);
+  WaitForAnimation();
+
+  ASSERT_EQ(1u, extensions_menu()->extensions_menu_items_for_testing().size());
+  EXPECT_THAT(GetPinnedExtensionNames(), testing::ElementsAre(kName));
+}
+
+TEST_F(ExtensionsMenuViewUnitTest, ReorderPinnedExtensions) {
   constexpr char kName1[] = "Test 1";
   AddSimpleExtension(kName1);
   constexpr char kName2[] = "Test 2";
@@ -287,8 +350,9 @@ TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ReorderPinnedExtensions) {
   for (auto* menu_item : menu_items) {
     ClickPinButton(menu_item);
     EXPECT_TRUE(extensions_container()->IsActionVisibleOnToolbar(
-        menu_item->view_controller_for_testing()));
+        menu_item->view_controller()));
   }
+  WaitForAnimation();
 
   EXPECT_THAT(GetPinnedExtensionNames(),
               testing::ElementsAre(kName1, kName2, kName3));
@@ -303,14 +367,13 @@ TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ReorderPinnedExtensions) {
                                  ui::DragDropTypes::DRAG_MOVE);
   extensions_container()->OnDragUpdated(drop_event);
   extensions_container()->OnPerformDrop(drop_event);
+  WaitForAnimation();
 
   EXPECT_THAT(GetPinnedExtensionNames(),
               testing::ElementsAre(kName3, kName1, kName2));
 }
 
-// Disabled due to flaky crashes. See also https://crbug.com/1030172.
-TEST_F(ExtensionsMenuViewUnitTest,
-       DISABLED_PinnedExtensionsReorderOnPrefChange) {
+TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionsReorderOnPrefChange) {
   constexpr char kName1[] = "Test 1";
   const extensions::ExtensionId id1 = AddSimpleExtension(kName1)->id();
   constexpr char kName2[] = "Test 2";
@@ -321,25 +384,27 @@ TEST_F(ExtensionsMenuViewUnitTest,
        extensions_menu()->extensions_menu_items_for_testing()) {
     ClickPinButton(menu_item);
   }
+  WaitForAnimation();
 
   EXPECT_THAT(GetPinnedExtensionNames(),
               testing::ElementsAre(kName1, kName2, kName3));
 
   extensions::ExtensionPrefs::Get(profile())->SetPinnedExtensions(
       {id2, id3, id1});
+  WaitForAnimation();
 
   EXPECT_THAT(GetPinnedExtensionNames(),
               testing::ElementsAre(kName2, kName3, kName1));
 }
 
-// Disabled due to flaky crashes. See also https://crbug.com/1030172.
-TEST_F(ExtensionsMenuViewUnitTest, DISABLED_PinnedExtensionLayout) {
+TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionLayout) {
   for (int i = 0; i < 3; i++)
     AddSimpleExtension(base::StringPrintf("Test %d", i));
   for (auto* menu_item :
        extensions_menu()->extensions_menu_items_for_testing()) {
     ClickPinButton(menu_item);
   }
+  WaitForAnimation();
 
   std::vector<ToolbarActionView*> action_views = GetPinnedExtensionViews();
   ASSERT_EQ(3u, action_views.size());
@@ -361,9 +426,7 @@ TEST_F(ExtensionsMenuViewUnitTest, DISABLED_PinnedExtensionLayout) {
 
 // Tests that when an extension is reloaded it remains visible in the toolbar
 // and extensions menu.
-//
-// Disabled due to flaky crashes. See also https://crbug.com/1030172.
-TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ReloadExtension) {
+TEST_F(ExtensionsMenuViewUnitTest, ReloadExtension) {
   // The extension must have a manifest to be reloaded.
   extensions::TestExtensionDir extension_directory;
   constexpr char kManifest[] = R"({
@@ -375,13 +438,15 @@ TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ReloadExtension) {
   extensions::ChromeTestExtensionLoader loader(profile());
   scoped_refptr<const extensions::Extension> extension =
       loader.LoadExtension(extension_directory.UnpackedPath());
+  // Force the menu to re-layout, since a new item was added.
+  LayoutMenuIfNecessary();
   ASSERT_EQ(1u, extensions_menu()->extensions_menu_items_for_testing().size());
 
   {
     ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
     ClickPinButton(menu_item);
     EXPECT_TRUE(extensions_container()->IsActionVisibleOnToolbar(
-        menu_item->view_controller_for_testing()));
+        menu_item->view_controller()));
     // |menu_item| will not be valid after the extension reloads.
   }
 
@@ -389,18 +454,17 @@ TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ReloadExtension) {
       extensions::ExtensionRegistry::Get(profile()));
   extension_service()->ReloadExtension(extension->id());
   ASSERT_TRUE(registry_observer.WaitForExtensionLoaded());
+  LayoutMenuIfNecessary();
 
   ASSERT_EQ(1u, extensions_menu()->extensions_menu_items_for_testing().size());
   EXPECT_TRUE(extensions_container()->IsActionVisibleOnToolbar(
-      GetOnlyMenuItem()->view_controller_for_testing()));
+      GetOnlyMenuItem()->view_controller()));
 }
 
 // Tests that a when an extension is reloaded with manifest errors, and
 // therefore fails to be loaded into Chrome, it's removed from the toolbar and
 // extensions menu.
-//
-// Disabled due to flaky crashes. See also https://crbug.com/1030172.
-TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ReloadExtensionFailed) {
+TEST_F(ExtensionsMenuViewUnitTest, ReloadExtensionFailed) {
   extensions::TestExtensionDir extension_directory;
   constexpr char kManifest[] = R"({
         "name": "Test",
@@ -411,6 +475,7 @@ TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ReloadExtensionFailed) {
   extensions::ChromeTestExtensionLoader loader(profile());
   scoped_refptr<const extensions::Extension> extension =
       loader.LoadExtension(extension_directory.UnpackedPath());
+  LayoutMenuIfNecessary();
   ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
   ASSERT_TRUE(menu_item);
   ClickPinButton(menu_item);
@@ -436,6 +501,21 @@ TEST_F(ExtensionsMenuViewUnitTest, DISABLED_ReloadExtensionFailed) {
   for (views::View* child : extensions_container()->children())
     EXPECT_NE(ToolbarActionView::kClassName, child->GetClassName());
   EXPECT_EQ(0u, extensions_menu()->extensions_menu_items_for_testing().size());
+}
+
+TEST_F(ExtensionsMenuViewUnitTest, PinButtonUserAction) {
+  base::UserActionTester user_action_tester;
+  AddSimpleExtension("Test Extension");
+
+  ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
+  ASSERT_TRUE(menu_item);
+
+  constexpr char kPinButtonUserAction[] = "Extensions.Toolbar.PinButtonPressed";
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kPinButtonUserAction));
+  ClickPinButton(menu_item);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kPinButtonUserAction));
+  ClickPinButton(menu_item);  // Unpin.
+  EXPECT_EQ(2, user_action_tester.GetActionCount(kPinButtonUserAction));
 }
 
 // TODO(crbug.com/984654): When supported, add a test to verify the

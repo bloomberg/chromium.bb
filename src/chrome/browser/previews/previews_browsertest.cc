@@ -31,6 +31,7 @@
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -195,14 +196,13 @@ class PreviewsNoScriptBrowserTest : public ::testing::WithParamInterface<bool>,
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{previews::features::kPreviews,
-          {{"override_should_show_preview_check",
-            GetParam() ? "true" : "false"}}},
-         {optimization_guide::features::kOptimizationHints, {}},
-         {previews::features::kNoScriptPreviews, {}},
-         {data_reduction_proxy::features::
-              kDataReductionProxyEnabledWithNetworkService,
-          {}}},
+        {
+            {previews::features::kPreviews,
+             {{"override_should_show_preview_check",
+               GetParam() ? "true" : "false"}}},
+            {optimization_guide::features::kOptimizationHints, {}},
+            {previews::features::kNoScriptPreviews, {}},
+        },
         {});
     PreviewsBrowserTest::SetUp();
   }
@@ -438,4 +438,35 @@ IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
     EXPECT_TRUE(noscript_js_requested());
     EXPECT_FALSE(noscript_css_requested());
   }
+}
+
+// This test class disables DataSaver.
+class PreviewsDataSaverDisabledBrowserTest
+    : public PreviewsNoScriptBrowserTest {
+ public:
+  PreviewsDataSaverDisabledBrowserTest() = default;
+
+  ~PreviewsDataSaverDisabledBrowserTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    PreviewsNoScriptBrowserTest::SetUpCommandLine(cmd);
+    cmd->RemoveSwitch("enable-spdy-proxy-auth");
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(ShouldDisablePreview,
+                         PreviewsDataSaverDisabledBrowserTest,
+                         ::testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(PreviewsDataSaverDisabledBrowserTest,
+                       NoPreviewWithDataSaverDisabled) {
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  // Verify loaded noscript tag triggered js file and not css file.
+  EXPECT_TRUE(noscript_js_requested());
+  EXPECT_FALSE(noscript_css_requested());
+
+  histogram_tester.ExpectTotalCount("OptimizationGuide.ApplyDecision.NoScript",
+                                    0);
 }

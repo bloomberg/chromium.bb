@@ -73,7 +73,7 @@ bool IsDumpObsolete(const DumpInfo& dump) {
 MinidumpUploader::MinidumpUploader(CastSysInfo* sys_info,
                                    const std::string& server_url,
                                    CastCrashdumpUploader* const uploader,
-                                   const PrefServiceGeneratorCallback callback)
+                                   PrefServiceGeneratorCallback callback)
     : release_channel_(sys_info->GetSystemReleaseChannel()),
       product_name_(sys_info->GetProductName()),
       device_model_(sys_info->GetDeviceModel()),
@@ -87,14 +87,14 @@ MinidumpUploader::MinidumpUploader(CastSysInfo* sys_info,
       reboot_scheduled_(false),
       filestate_initialized_(false),
       uploader_(uploader),
-      pref_service_generator_(callback) {}
+      pref_service_generator_(std::move(callback)) {}
 
 MinidumpUploader::MinidumpUploader(CastSysInfo* sys_info,
                                    const std::string& server_url)
     : MinidumpUploader(sys_info,
                        server_url,
                        nullptr,
-                       base::Bind(&CreatePrefService)) {}
+                       base::BindRepeating(&CreatePrefService)) {}
 
 MinidumpUploader::~MinidumpUploader() {}
 
@@ -254,6 +254,9 @@ bool MinidumpUploader::DoWork() {
     if (!dump.params().reason.empty()) {
       g.SetParameter("reason", dump.params().reason);
     }
+    if (!dump.params().stadia_session_id.empty()) {
+      g.SetParameter("stadia_session_id", dump.params().stadia_session_id);
+    }
 
     std::string response;
     if (!g.Upload(&response)) {
@@ -261,6 +264,8 @@ bool MinidumpUploader::DoWork() {
       // Save our state by flushing our dumps to the lockfile
       // We'll come back around later and try again.
       LOG(ERROR) << "Upload report failed. response: " << response;
+      // The increment will happen when it retries the upload.
+      DecrementNumDumpsInCurrentPeriod();
       SetCurrentDumps(dumps);
       return true;
     }

@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 import time
 
 import mock
@@ -21,6 +22,10 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 from chromite.scripts import cbuildbot_launch
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 EXPECTED_MANIFEST_URL = 'https://chrome-internal-review.googlesource.com/chromeos/manifest-internal'  # pylint: disable=line-too-long
 
@@ -112,7 +117,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
 
     self.assertCommandCalled(
         expected_cmd, extra_env={'PATH': mock.ANY},
-        cwd='/cbuildbot_buildroot', error_code_ok=True)
+        cwd='/cbuildbot_buildroot', check=False)
 
   def testCbuildbotSimple(self):
     """Ensure we invoke cbuildbot correctly."""
@@ -189,11 +194,10 @@ class RunTests(cros_test_lib.RunCommandTestCase):
             '--cache-dir', '/root/repository/.cache',
             # The duplication is a bug, but not harmful.
             '--cache-dir', '/root/repository/.cache',
-            '--ts-mon-task-num', '1',
         ],
         extra_env={'PATH': mock.ANY},
         cwd='/root/repository',
-        error_code_ok=True)
+        check=False)
 
     # Ensure we saved the final state, as expected.
     self.assertEqual(expected_build_state.status,
@@ -289,11 +293,10 @@ class RunTests(cros_test_lib.RunCommandTestCase):
             'Aic3RhdHVzIjogImZhaWwifQ==',
             '--workspace', '/root/workspace',
             '--cache-dir', '/cache',
-            '--ts-mon-task-num', '1',
         ],
         extra_env={'PATH': mock.ANY},
         cwd='/root/repository',
-        error_code_ok=True)
+        check=False)
 
     # Ensure we write the final build state, as expected.
     final_state = build_summary.BuildSummary(

@@ -462,16 +462,16 @@ MediaGalleriesPreferences::~MediaGalleriesPreferences() {
     StorageMonitor::GetInstance()->RemoveObserver(this);
 }
 
-void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
+void MediaGalleriesPreferences::EnsureInitialized(base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (IsInitialized()) {
-    if (!callback.is_null())
-      callback.Run();
+    if (callback)
+      std::move(callback).Run();
     return;
   }
 
-  on_initialize_callbacks_.push_back(callback);
+  on_initialize_callbacks_.push_back(std::move(callback));
   if (on_initialize_callbacks_.size() > 1)
     return;
 
@@ -486,9 +486,8 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
   // return and add media galleries to it (hence why the APIHasBeenUsed check
   // needs to happen here rather than inside OnStorageMonitorInit itself).
   StorageMonitor::GetInstance()->EnsureInitialized(
-      base::Bind(&MediaGalleriesPreferences::OnStorageMonitorInit,
-                 weak_factory_.GetWeakPtr(),
-                 APIHasBeenUsed(profile_)));
+      base::BindOnce(&MediaGalleriesPreferences::OnStorageMonitorInit,
+                     weak_factory_.GetWeakPtr(), APIHasBeenUsed(profile_)));
 }
 
 bool MediaGalleriesPreferences::IsInitialized() const { return initialized_; }
@@ -572,10 +571,8 @@ void MediaGalleriesPreferences::OnStorageMonitorInit(
         existing_devices[i].total_size_in_bytes(), base::Time::Now(), 0, 0, 0);
   }
 
-  for (auto iter = on_initialize_callbacks_.begin();
-       iter != on_initialize_callbacks_.end(); ++iter) {
-    iter->Run();
-  }
+  for (base::OnceClosure& callback : on_initialize_callbacks_)
+    std::move(callback).Run();
   on_initialize_callbacks_.clear();
 }
 

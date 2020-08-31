@@ -7,20 +7,26 @@ package org.chromium.chrome.browser.contextmenu;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.support.v7.app.AlertDialog;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.app.AlertDialog;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
-import org.chromium.chrome.browser.ui.widget.ContextMenuDialog;
+import org.chromium.components.browser_ui.widget.ContextMenuDialog;
+import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
@@ -47,6 +53,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
 
     private static final int INVALID_ITEM_ID = -1;
 
+    private WebContents mWebContents;
     private RevampedContextMenuHeaderCoordinator mHeaderCoordinator;
 
     private RevampedContextMenuListView mListView;
@@ -67,9 +74,10 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
     }
 
     @Override
-    public void displayMenu(final WindowAndroid window, ContextMenuParams params,
-            List<Pair<Integer, List<ContextMenuItem>>> items, Callback<Integer> onItemClicked,
-            final Runnable onMenuShown, final Callback<Boolean> onMenuClosed) {
+    public void displayMenu(final WindowAndroid window, WebContents webContents,
+            ContextMenuParams params, List<Pair<Integer, List<ContextMenuItem>>> items,
+            Callback<Integer> onItemClicked, final Runnable onMenuShown,
+            final Callback<Boolean> onMenuClosed) {
         mOnMenuClosed = onMenuClosed;
         Activity activity = window.getActivity().get();
         final float density = activity.getResources().getDisplayMetrics().density;
@@ -82,7 +90,13 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
         mDialog.setOnShowListener(dialogInterface -> onMenuShown.run());
         mDialog.setOnDismissListener(dialogInterface -> mOnMenuClosed.onResult(false));
 
-        mHeaderCoordinator = new RevampedContextMenuHeaderCoordinator(activity, params);
+        mWebContents = webContents;
+        int performanceClass = params.isAnchor()
+                ? PerformanceHintsObserver.getPerformanceClassForURL(
+                        webContents, params.getLinkUrl())
+                : PerformanceClass.PERFORMANCE_UNKNOWN;
+        mHeaderCoordinator = new RevampedContextMenuHeaderCoordinator(
+                activity, performanceClass, params, Profile.fromWebContents(mWebContents));
 
         // The Integer here specifies the {@link ListItemType}.
         ModelList listItems = getItemList(window, items, params);
@@ -117,22 +131,19 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
         // clang-format off
         adapter.registerType(
                 ListItemType.HEADER,
-                mHeaderCoordinator::getView,
+                new LayoutViewBuilder(R.layout.revamped_context_menu_header),
                 RevampedContextMenuHeaderViewBinder::bind);
         adapter.registerType(
                 ListItemType.DIVIDER,
-                () -> LayoutInflater.from(mListView.getContext())
-                        .inflate(R.layout.app_menu_divider, null),
+                new LayoutViewBuilder(R.layout.app_menu_divider),
                 (m, v, p) -> {});
         adapter.registerType(
                 ListItemType.CONTEXT_MENU_ITEM,
-                () -> LayoutInflater.from(mListView.getContext())
-                        .inflate(R.layout.revamped_context_menu_row, null),
+                new LayoutViewBuilder(R.layout.revamped_context_menu_row),
                 RevampedContextMenuItemViewBinder::bind);
         adapter.registerType(
                 ListItemType.CONTEXT_MENU_SHARE_ITEM,
-                () -> LayoutInflater.from(mListView.getContext())
-                        .inflate(R.layout.revamped_context_menu_share_row, null),
+                new LayoutViewBuilder(R.layout.revamped_context_menu_share_row),
                 RevampedContextMenuShareItemViewBinder::bind);
         // clang-format on
 
@@ -221,7 +232,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
     private View.OnClickListener getShareItemClickListener(
             WindowAndroid window, ShareContextMenuItem item, ContextMenuParams params) {
         return (v) -> {
-            ChromeContextMenuPopulator.ContextMenuUma.record(params,
+            ChromeContextMenuPopulator.ContextMenuUma.record(mWebContents, params,
                     item.isShareLink()
                             ? ChromeContextMenuPopulator.ContextMenuUma.Action.DIRECT_SHARE_LINK
                             : ChromeContextMenuPopulator.ContextMenuUma.Action.DIRECT_SHARE_IMAGE);
@@ -245,8 +256,10 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
     }
 
     @VisibleForTesting
-    void initializeHeaderCoordinatorForTesting(Activity activity, ContextMenuParams params) {
-        mHeaderCoordinator = new RevampedContextMenuHeaderCoordinator(activity, params);
+    void initializeHeaderCoordinatorForTesting(
+            Activity activity, ContextMenuParams params, Profile profile) {
+        mHeaderCoordinator = new RevampedContextMenuHeaderCoordinator(
+                activity, PerformanceClass.PERFORMANCE_UNKNOWN, params, profile);
     }
 
     public void clickListItemForTesting(int id) {

@@ -18,6 +18,7 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace {
 constexpr char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
@@ -115,8 +116,8 @@ void ArcScreenCaptureBridge::RequestPermission(
   pending_permissions_map_.find(package_name)
       ->second.picker->Show(
           picker_params, std::move(source_lists),
-          base::BindRepeating(&ArcScreenCaptureBridge::PermissionPromptCallback,
-                              base::Unretained(this), package_name));
+          base::BindOnce(&ArcScreenCaptureBridge::PermissionPromptCallback,
+                         base::Unretained(this), package_name));
 }
 
 void ArcScreenCaptureBridge::PermissionPromptCallback(
@@ -137,9 +138,9 @@ void ArcScreenCaptureBridge::PermissionPromptCallback(
   // This is OK since these persist forever and this may be requested again with
   // a different desktop.
   granted_permissions_map_.erase(package_name);
-  granted_permissions_map_.emplace(std::make_pair(
+  granted_permissions_map_.emplace(
       package_name, GrantedCaptureParams(found->second.display_name, desktop_id,
-                                         true /* enable notification */)));
+                                         true /* enable notification */));
   std::move(found->second.callback).Run(true);
   pending_permissions_map_.erase(found);
 }
@@ -162,13 +163,13 @@ void ArcScreenCaptureBridge::TestModeAcceptPermission(
     return;
   }
   granted_permissions_map_.erase(package_name);
-  granted_permissions_map_.emplace(std::make_pair(
+  granted_permissions_map_.emplace(
       package_name,
       GrantedCaptureParams(found->second.display_name,
                            content::DesktopMediaID::RegisterNativeWindow(
                                content::DesktopMediaID::TYPE_SCREEN,
                                ash::Shell::GetPrimaryRootWindow()),
-                           false /* enable notification */)));
+                           false /* enable notification */));
   std::move(found->second.callback).Run(true);
   pending_permissions_map_.erase(found);
   // The dialog will be closed when 'found' goes out of scope and is
@@ -193,9 +194,15 @@ void ArcScreenCaptureBridge::OpenSession(
     std::move(callback).Run(nullptr);
     return;
   }
-  std::move(callback).Run(ArcScreenCaptureSession::Create(
-      std::move(notifier), found->second.display_name, found->second.desktop_id,
-      size, found->second.enable_notification));
+
+  // TODO(crbug.com/955171): Remove this temporary conversion to InterfacePtr
+  // once OpenSession callback from //components/arc/mojom/screen_capture.mojom
+  // could take pending_remote directly. Refer to crrev.com/c/1868870.
+  mojo::InterfacePtr<mojom::ScreenCaptureSession> screen_capture_session_ptr(
+      ArcScreenCaptureSession::Create(
+          std::move(notifier), found->second.display_name,
+          found->second.desktop_id, size, found->second.enable_notification));
+  std::move(callback).Run(std::move(screen_capture_session_ptr));
 }
 
 }  // namespace arc

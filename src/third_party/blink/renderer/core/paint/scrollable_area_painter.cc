@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scrollbar_display_item.h"
 
 namespace blink {
@@ -30,10 +29,7 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
   if (!GetScrollableArea().GetLayoutBox()->StyleRef().HasResize())
     return;
 
-  IntRect abs_rect = GetScrollableArea().ResizerCornerRect(
-      GetScrollableArea().GetLayoutBox()->PixelSnappedBorderBoxRect(
-          GetScrollableArea().Layer()->SubpixelAccumulation()),
-      kResizerForPointer);
+  IntRect abs_rect = GetScrollableArea().ResizerCornerRect(kResizerForPointer);
   if (abs_rect.IsEmpty())
     return;
   abs_rect.MoveBy(paint_offset);
@@ -73,18 +69,15 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
 
 void ScrollableAreaPainter::RecordResizerScrollHitTestData(
     GraphicsContext& context,
-    const PhysicalOffset& paint_offset,
-    const DisplayItemClient& client) {
+    const PhysicalOffset& paint_offset) {
   if (!GetScrollableArea().GetLayoutBox()->CanResize())
     return;
 
-  IntRect touch_rect = scrollable_area_->ResizerCornerRect(
-      GetScrollableArea().GetLayoutBox()->PixelSnappedBorderBoxRect(
-          paint_offset),
-      kResizerForTouch);
+  IntRect touch_rect = scrollable_area_->ResizerCornerRect(kResizerForTouch);
   touch_rect.MoveBy(RoundedIntPoint(paint_offset));
-  ScrollHitTestDisplayItem::Record(
-      context, client, DisplayItem::kResizerScrollHitTest, nullptr, touch_rect);
+  context.GetPaintController().RecordScrollHitTestData(
+      DisplayItemClientForCorner(), DisplayItem::kResizerScrollHitTest, nullptr,
+      touch_rect);
 }
 
 void ScrollableAreaPainter::DrawPlatformResizerImage(
@@ -179,12 +172,12 @@ void ScrollableAreaPainter::PaintOverflowControls(
   if (GetScrollableArea().HorizontalScrollbar() &&
       !GetScrollableArea().GraphicsLayerForHorizontalScrollbar()) {
     PaintScrollbar(context, *GetScrollableArea().HorizontalScrollbar(),
-                   paint_info.GetCullRect(), paint_offset);
+                   paint_offset, paint_info.GetCullRect());
   }
   if (GetScrollableArea().VerticalScrollbar() &&
       !GetScrollableArea().GraphicsLayerForVerticalScrollbar()) {
     PaintScrollbar(context, *GetScrollableArea().VerticalScrollbar(),
-                   paint_info.GetCullRect(), paint_offset);
+                   paint_offset, paint_info.GetCullRect());
   }
 
   if (!GetScrollableArea().GraphicsLayerForScrollCorner()) {
@@ -199,20 +192,27 @@ void ScrollableAreaPainter::PaintOverflowControls(
 
 void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
                                            Scrollbar& scrollbar,
-                                           const CullRect& cull_rect,
-                                           const IntPoint& paint_offset) {
-  // We create PaintOffsetTranslation for scrollable area, so the rounded
-  // paint offset is always zero.
+                                           const IntPoint& paint_offset,
+                                           const CullRect& cull_rect) {
   // TODO(crbug.com/1020913): We should not round paint_offset but should
   // consider subpixel accumulation when painting scrollbars.
-  DCHECK_EQ(paint_offset, IntPoint());
   IntRect rect = scrollbar.FrameRect();
+  rect.MoveBy(paint_offset);
   if (!cull_rect.Intersects(rect))
     return;
 
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      scrollbar.IsCustomScrollbar()) {
-    scrollbar.Paint(context);
+  if (scrollbar.IsCustomScrollbar()) {
+    scrollbar.Paint(context, paint_offset);
+
+    // Prevent composited scroll hit test on the custom scrollbar which always
+    // need main thread scrolling.
+    context.GetPaintController().RecordScrollHitTestData(
+        scrollbar, DisplayItem::kCustomScrollbarHitTest, nullptr, rect);
+    return;
+  }
+
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    scrollbar.Paint(context, paint_offset);
     return;
   }
 

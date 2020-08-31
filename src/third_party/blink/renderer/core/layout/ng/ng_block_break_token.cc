@@ -12,7 +12,7 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGBlockBreakToken : NGBreakToken {
-  unsigned numbers[2];
+  unsigned numbers[3];
 };
 
 static_assert(sizeof(NGBlockBreakToken) == sizeof(SameSizeAsNGBlockBreakToken),
@@ -21,13 +21,16 @@ static_assert(sizeof(NGBlockBreakToken) == sizeof(SameSizeAsNGBlockBreakToken),
 }  // namespace
 
 NGBlockBreakToken::NGBlockBreakToken(
+    PassKey key,
     NGLayoutInputNode node,
     LayoutUnit consumed_block_size,
+    unsigned sequence_number,
     const NGBreakTokenVector& child_break_tokens,
     NGBreakAppeal break_appeal,
     bool has_seen_all_children)
     : NGBreakToken(kBlockBreakToken, kUnfinished, node),
       consumed_block_size_(consumed_block_size),
+      sequence_number_(sequence_number),
       num_children_(child_break_tokens.size()) {
   break_appeal_ = break_appeal;
   has_seen_all_children_ = has_seen_all_children;
@@ -37,7 +40,7 @@ NGBlockBreakToken::NGBlockBreakToken(
   }
 }
 
-NGBlockBreakToken::NGBlockBreakToken(NGLayoutInputNode node)
+NGBlockBreakToken::NGBlockBreakToken(PassKey key, NGLayoutInputNode node)
     : NGBreakToken(kBlockBreakToken, kUnfinished, node), num_children_(0) {}
 
 const NGInlineBreakToken* NGBlockBreakToken::InlineBreakTokenFor(

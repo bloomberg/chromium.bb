@@ -204,7 +204,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // relative to |this| layer. Prefer SetMasksToBounds() to set the clip to the
   // bounds of |this| layer. This clips the subtree rooted at |this| layer.
   void SetClipRect(const gfx::Rect& clip_rect);
-  const gfx::Rect& clip_rect() const { return cc_layer_->clip_rect(); }
+  gfx::Rect clip_rect() const { return cc_layer_->clip_rect(); }
 
   // The opacity of the layer. The opacity is applied to each pixel of the
   // texture (resulting alpha = opacity * alpha).
@@ -214,10 +214,6 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Returns the actual opacity, which the opacity of this layer multipled by
   // the combined opacity of the parent.
   float GetCombinedOpacity() const;
-
-  // Returns the target color temperature if animator is running, or the current
-  // temperature otherwise.
-  float GetTargetTemperature() const;
 
   // Blur pixels by 3 * this amount in anything below the layer and visible
   // through the layer.
@@ -337,7 +333,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void SetFillsBoundsCompletely(bool fills_bounds_completely);
 
   const std::string& name() const { return name_; }
-  void set_name(const std::string& name) { name_ = name; }
+  void SetName(const std::string& name);
 
   // Set new TransferableResource for this layer. This method only supports
   // a gpu-backed |resource|.
@@ -563,7 +559,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   cc::Layer* GetCcLayer() const override;
   LayerThreadedAnimationDelegate* GetThreadedAnimationDelegate() override;
   LayerAnimatorCollection* GetLayerAnimatorCollection() override;
-  int GetFrameNumber() const override;
+  base::Optional<int> GetFrameNumber() const override;
   float GetRefreshRate() const override;
 
   // Creates a corresponding composited layer for |type_|.
@@ -597,6 +593,14 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void ResetSubtreeReflectedLayer();
 
   bool IsHitTestableForCC() const { return visible_ && accept_events_; }
+
+  // Gets a flattened WeakPtr list of all layers and layer masks in the tree
+  // rooted from |this|.
+  void GetFlattenedWeakList(std::vector<base::WeakPtr<Layer>>* flattened_list);
+
+  // Same as SetFillsBoundsOpaque but with a reason how it's changed.
+  void SetFillsBoundsOpaquelyWithReason(bool fills_bounds_opaquely,
+                                        PropertyChangeReason reason);
 
   const LayerType type_;
 

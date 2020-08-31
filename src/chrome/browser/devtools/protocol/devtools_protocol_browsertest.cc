@@ -7,6 +7,7 @@
 
 #include "base/base64.h"
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
@@ -17,6 +18,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
@@ -27,13 +29,14 @@ namespace {
 
 const char kIdParam[] = "id";
 const char kMethodParam[] = "method";
+const char kParamsParam[] = "params";
 
 }  // namespace
 
 class DevToolsProtocolTest : public InProcessBrowserTest,
                              public content::DevToolsAgentHostClient {
  public:
-  DevToolsProtocolTest() : last_sent_id_(0) {}
+  DevToolsProtocolTest() = default;
 
  protected:
   typedef base::RepeatingCallback<bool(const base::Value&)> NotificationMatcher;
@@ -43,11 +46,19 @@ class DevToolsProtocolTest : public InProcessBrowserTest,
 
   // DevToolsAgentHostClient interface
   void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
-                               const std::string& message) override {
-    auto parsed_message = base::JSONReader::Read(message);
-    auto id = parsed_message->FindIntPath("id");
-    if (id) {
-      // TODO: implement handling of results from method calls (when needed).
+                               base::span<const uint8_t> message) override {
+    base::StringPiece message_str(reinterpret_cast<const char*>(message.data()),
+                                  message.size());
+    auto parsed_message = base::JSONReader::Read(message_str);
+    if (auto id = parsed_message->FindIntPath("id")) {
+      base::Value* result;
+      ASSERT_TRUE(result = parsed_message->FindDictPath("result"));
+      result_ = result->Clone();
+      in_dispatch_ = false;
+      if (*id && *id == waiting_for_command_result_id_) {
+        waiting_for_command_result_id_ = 0;
+        std::move(run_loop_quit_closure_).Run();
+      }
     } else {
       std::string* notification = parsed_message->FindStringPath("method");
       EXPECT_TRUE(notification);
@@ -67,12 +78,40 @@ class DevToolsProtocolTest : public InProcessBrowserTest,
   }
 
   void SendCommand(const std::string& method) {
+    SendCommand(method, base::Value(), false);
+  }
+
+  void SendCommandSync(const std::string& method) {
+    SendCommandSync(method, base::Value());
+  }
+
+  void SendCommandSync(const std::string& method, base::Value&& params) {
+    SendCommand(method, std::move(params), true);
+  }
+
+  void SendCommand(const std::string& method,
+                   base::Value&& params,
+                   bool synchronous) {
+    in_dispatch_ = true;
     base::Value command(base::Value::Type::DICTIONARY);
     command.SetKey(kIdParam, base::Value(++last_sent_id_));
     command.SetKey(kMethodParam, base::Value(method));
+    if (!params.is_none())
+      command.SetPath(kParamsParam, std::move(params));
     std::string json_command;
     base::JSONWriter::Write(command, &json_command);
-    agent_host_->DispatchProtocolMessage(this, json_command);
+    agent_host_->DispatchProtocolMessage(
+        this, base::as_bytes(base::make_span(json_command)));
+    // Some messages are dispatched synchronously.
+    // Only run loop if we are not finished yet.
+    if (in_dispatch_ && synchronous)
+      WaitForResponse();
+    in_dispatch_ = false;
+  }
+
+  void WaitForResponse() {
+    waiting_for_command_result_id_ = last_sent_id_;
+    RunLoopUpdatingQuitClosure();
   }
 
   void RunLoopUpdatingQuitClosure() {
@@ -80,6 +119,12 @@ class DevToolsProtocolTest : public InProcessBrowserTest,
     CHECK(!run_loop_quit_closure_);
     run_loop_quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
+  }
+
+  void AttachToBrowser() {
+    agent_host_ = content::DevToolsAgentHost::CreateForBrowser(
+        nullptr, content::DevToolsAgentHost::CreateServerSocketCallback());
+    agent_host_->AttachClient(this);
   }
 
   void Attach() {
@@ -120,13 +165,15 @@ class DevToolsProtocolTest : public InProcessBrowserTest,
     return std::move(waiting_for_notification_params_);
   }
 
- private:
   // DevToolsAgentHostClient interface
   void AgentHostClosed(content::DevToolsAgentHost* agent_host) override {}
 
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
-  int last_sent_id_;
+  int last_sent_id_ = 0;
   base::OnceClosure run_loop_quit_closure_;
+  bool in_dispatch_ = false;
+  int waiting_for_command_result_id_ = 0;
+  base::Value result_;
   std::vector<std::string> notifications_;
   std::vector<base::Value> notification_params_;
   std::string waiting_for_notification_;
@@ -137,7 +184,7 @@ class DevToolsProtocolTest : public InProcessBrowserTest,
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
                        VisibleSecurityStateChangedNeutralState) {
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  content::WaitForLoadStop(web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   Attach();
   SendCommand("Security.enable");
@@ -157,6 +204,25 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
                         security_state_issue_ids->GetList().end(),
                         base::Value("scheme-is-not-cryptographic")) !=
               security_state_issue_ids->GetList().end());
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CreateDeleteContext) {
+  AttachToBrowser();
+  for (int i = 0; i < 2; i++) {
+    SendCommandSync("Target.createBrowserContext");
+    std::string* context_id_value = result_.FindStringPath("browserContextId");
+    ASSERT_TRUE(context_id_value);
+    std::string context_id = *context_id_value;
+
+    base::DictionaryValue params;
+    params.SetStringPath("url", "about:blank");
+    params.SetStringPath("browserContextId", context_id);
+    SendCommandSync("Target.createTarget", std::move(params));
+
+    params = base::DictionaryValue();
+    params.SetStringPath("browserContextId", context_id);
+    SendCommandSync("Target.disposeBrowserContext", std::move(params));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VisibleSecurityStateSecureState) {

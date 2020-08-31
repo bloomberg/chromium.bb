@@ -107,6 +107,8 @@ struct MediaRoute {
   string? media_source;
   // The ID of sink that is rendering the media content.
   string media_sink_id;
+  // Human readable name of the sink.
+  string media_sink_name;
   // Human readable description of the casting activity.  Examples:
   // "Mirroring tab (www.example.com)", "Casting media", "Casting YouTube"
   //
@@ -194,14 +196,6 @@ struct RouteMessage {
   array<uint8>? data;
 };
 
-struct SinkSearchCriteria {
-  // Input to the search method which each Media Route Provider may interpret
-  // differently.
-  string input;
-  // The user's current hosted domain.
-  string domain;
-};
-
 // Keep in sync with:
 // - RouteRequestResult::ResultCode in route_request_result.h
 // - MediaRouteProviderResult enum in tools/metrics/histograms.xml.
@@ -251,6 +245,31 @@ struct RoutePresentationConnection {
   // Receiver which the controlling page should bind to receive messages from
   // the MRP.
   pending_receiver<blink.mojom.PresentationConnection> connection_receiver;
+};
+
+// State of one active Cast session.
+struct CastSessionState {
+  // The Media Sink ID for the session.
+  string sink_id;
+  // The Cast App ID that the session is currently running.
+  string app_id;
+  // The session ID assigned by the Cast Receiver.
+  string session_id;
+  // Human readable description of the app or session, e.g. "Netflix."
+  string route_description;
+};
+
+// The state of the Cast Media Route Provider.
+struct CastProviderState {
+  // Includes all sessions running on known (local network) Cast receivers.
+  array<CastSessionState> session_state;
+};
+
+// Returned to the Media Router to reflect the state of a single route
+// provider for chrome://media-router-internals.
+union ProviderState {
+  // The state of the Cast MRP.
+  CastProviderState cast_provider_state;
 };
 
 // Modeled after the MediaRouter interface defined in
@@ -455,17 +474,6 @@ interface MediaRouteProvider {
   // |media_source| parameter.
   UpdateMediaSinks(string media_source);
 
-  // Indicates that the Media Router is interested in finding a sink that
-  // matches |search_criteria| and is compatible with the source urn
-  // |media_source|. |search_criteria| should contain an exact copy of the user
-  // input. The user's current domain is also used to search.  The domain is the
-  // hosted domain of the user's signed-in identity, or empty if the user has no
-  // domain or is not signed in.
-  SearchSinks(string sink_id,
-              string media_source,
-              SinkSearchCriteria search_criteria) =>
-                  (string sink_id);
-
   // Called when the list of MediaSinks discovered by Media Router has been
   // updated. The sinks are supplied to the MediaRouteProvider so that they can
   // be used for other operations, such as route creation.
@@ -487,6 +495,12 @@ interface MediaRouteProvider {
                              pending_receiver<MediaController> media_controller,
                              pending_remote<MediaStatusObserver> observer) =>
                                  (bool success);
+
+  // Returns the state of this Media Route Provider for debugging; returns null
+  // if this MRP does not report any state.
+  //
+  // Currently, only the Cast MRP returns a state value.
+  GetState() => (ProviderState? state);
 };
 
 // Interface for a service which observes MediaRouteProviders for state changes

@@ -573,9 +573,6 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermission::kNetworkState},
        {}},
       {IDS_EXTENSION_PROMPT_WARNING_VPN, {APIPermission::kVpnProvider}, {}},
-      {IDS_EXTENSION_PROMPT_WARNING_WEB_CONNECTABLE,
-       {APIPermission::kWebConnectable},
-       {}},
       {std::make_unique<SingleParameterFormatter>(
            IDS_EXTENSION_PROMPT_WARNING_HOME_PAGE_SETTING_OVERRIDE),
        {APIPermission::kHomepage},
@@ -589,9 +586,7 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermission::kStartupPages},
        {}},
 
-      {IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
-       {APIPermission::kBookmark},
-       {APIPermission::kOverrideBookmarksUI}},
+      {IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS, {APIPermission::kBookmark}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD_READWRITE,
        {APIPermission::kClipboardRead, APIPermission::kClipboardWrite},
        {}},

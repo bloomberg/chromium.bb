@@ -5,6 +5,7 @@
 import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("xml") {
+  deps = [ ":xpath_generated" ]
   sources = [
     "document_xml_tree_viewer.cc",
     "document_xml_tree_viewer.h",
@@ -38,7 +39,6 @@ blink_core_sources("xml") {
     "xpath_node_set.cc",
     "xpath_node_set.h",
     "xpath_ns_resolver.h",
-    "xpath_parser.cc",
     "xpath_parser.h",
     "xpath_path.cc",
     "xpath_path.h",
@@ -64,11 +64,17 @@ blink_core_sources("xml") {
     "xslt_unicode_sort.cc",
     "xslt_unicode_sort.h",
   ]
+}
 
-  # XCode's ancient bison (v2.3 from 2006) prevents us from updating a
-  # deprecated bison directive. This will silence the warning.
-  # See https://crbug.com/1028421.
-  if (!is_mac) {
-    cflags = [ "-Wno-deprecated" ]
+# Chromium-style plugin produces an error for xpath_grammar_generated.h.
+# Disable the plugin for sources including xpath_grammar_generated.h.
+blink_core_sources("xpath_generated") {
+  sources = [
+    "xpath_grammar_generated.cc",
+    "xpath_grammar_generated.h",
+    "xpath_parser.cc",
+  ]
+  if (is_clang) {
+    configs -= [ "//build/config/clang:find_bad_constructs" ]
   }
 }

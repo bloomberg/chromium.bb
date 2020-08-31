@@ -5,13 +5,14 @@
 #ifndef UI_VIEWS_CONTROLS_SLIDER_H_
 #define UI_VIEWS_CONTROLS_SLIDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
-
-using SkColor = unsigned int;
 
 namespace views {
 
@@ -21,9 +22,9 @@ class SliderTestApi;
 
 class Slider;
 
-enum SliderChangeReason {
-  VALUE_CHANGED_BY_USER,  // value was changed by the user (by clicking, e.g.)
-  VALUE_CHANGED_BY_API,   // value was changed by a call to SetValue.
+enum class SliderChangeReason {
+  kByUser,  // value was changed by the user (e.g. by clicking)
+  kByApi,   // value was changed by a call to SetValue.
 };
 
 class VIEWS_EXPORT SliderListener {
@@ -55,9 +56,17 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   bool GetEnableAccessibilityEvents() const;
   void SetEnableAccessibilityEvents(bool enabled);
 
-  // Gets/Sets IsActive state
-  bool GetIsActive() const;
-  void SetIsActive(bool is_active);
+  // Represents the visual style of the slider.
+  enum class RenderingStyle {
+    kDefaultStyle,
+    kMinimalStyle,
+  };
+
+  // Set rendering style and schedule paint since the colors for the slider
+  // may change.
+  void SetRenderingStyle(RenderingStyle style);
+
+  RenderingStyle style() const { return style_; }
 
  protected:
   // Returns the current position of the thumb on the slider.
@@ -106,11 +115,13 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  void set_listener(SliderListener* listener) {
-    listener_ = listener;
-  }
+  void set_listener(SliderListener* listener) { listener_ = listener; }
 
   void NotifyPendingAccessibilityValueChanged();
+
+  virtual SkColor GetThumbColor() const;
+  virtual SkColor GetTroughColor() const;
+  int GetSliderExtraPadding() const;
 
   SliderListener* listener_;
 
@@ -126,8 +137,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   // button.
   int initial_button_offset_ = 0;
 
-  // Record whether the slider is in the active state or the disabled state.
-  bool is_active_ = true;
+  RenderingStyle style_ = RenderingStyle::kDefaultStyle;
 
   // Animating value of the current radius of the thumb's highlight.
   float thumb_highlight_radius_ = 0.f;

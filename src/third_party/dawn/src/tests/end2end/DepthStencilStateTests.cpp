@@ -288,7 +288,7 @@ class DepthStencilStateTest : public DawnTest {
                 pass.SetStencilReference(test.stencil);  // Set the stencil reference
                 pass.SetBindGroup(
                     0, bindGroup);  // Set the bind group which contains color and depth data
-                pass.Draw(6, 1, 0, 0);
+                pass.Draw(6);
             }
             pass.EndPass();
 
@@ -681,8 +681,28 @@ TEST_P(DepthStencilStateTest, StencilDepthPass) {
 2);                                                         // Replace the stencil on stencil pass, depth pass, so it should be 2
 }
 
+// Test that creating a render pipeline works with for all depth and combined formats
+TEST_P(DepthStencilStateTest, CreatePipelineWithAllFormats) {
+    constexpr wgpu::TextureFormat kDepthStencilFormats[] = {
+        wgpu::TextureFormat::Depth32Float,
+        wgpu::TextureFormat::Depth24PlusStencil8,
+        wgpu::TextureFormat::Depth24Plus,
+    };
+
+    for (wgpu::TextureFormat depthStencilFormat : kDepthStencilFormats) {
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.vertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        descriptor.cDepthStencilState.format = depthStencilFormat;
+        descriptor.depthStencilState = &descriptor.cDepthStencilState;
+
+        device.CreateRenderPipeline(&descriptor);
+    }
+}
+
 DAWN_INSTANTIATE_TEST(DepthStencilStateTest,
-                     D3D12Backend,
-                     MetalBackend,
-                     OpenGLBackend,
-                     VulkanBackend);
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      VulkanBackend({"vulkan_use_d32s8"}, {}),
+                      VulkanBackend({}, {"vulkan_use_d32s8"}));

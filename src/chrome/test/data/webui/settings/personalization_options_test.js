@@ -2,286 +2,267 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('settings_personalization_options', function() {
+// clang-format off
+import 'chrome://settings/lazy_load.js';
+
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PrivacyPageBrowserProxyImpl, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.js';
+import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+import {eventToPromise, isChildVisible, isVisible} from 'chrome://test/test_util.m.js';
+
+// clang-format on
+
+
+suite('PersonalizationOptionsTests_AllBuilds', function() {
+  /** @type {settings.TestPrivacyPageBrowserProxy} */
+  let testBrowserProxy;
+
+  /** @type {SyncBrowserProxy} */
+  let syncBrowserProxy;
+
+  /** @type {SettingsPersonalizationOptionsElement} */
+  let testElement;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      driveSuggestAvailable: true,
+      privacySettingsRedesignEnabled: true,
+    });
+  });
+
+  setup(function() {
+    testBrowserProxy = new TestPrivacyPageBrowserProxy();
+    PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+    syncBrowserProxy = new TestSyncBrowserProxy();
+    SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+    PolymerTest.clearBody();
+    testElement = document.createElement('settings-personalization-options');
+    testElement.prefs = {
+      signin: {
+        allowed_on_next_startup:
+            {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true},
+      },
+      profile: {password_manager_leak_detection: {value: true}},
+      safebrowsing:
+          {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+    };
+    document.body.appendChild(testElement);
+    flush();
+  });
+
+  teardown(function() {
+    testElement.remove();
+  });
+
+  test('DriveSearchSuggestControl', function() {
+    assertFalse(!!testElement.$$('#driveSuggestControl'));
+
+    testElement.syncStatus = {
+      signedIn: true,
+      statusAction: StatusAction.NO_ACTION
+    };
+    flush();
+    assertTrue(!!testElement.$$('#driveSuggestControl'));
+
+    testElement.syncStatus = {
+      signedIn: true,
+      statusAction: StatusAction.REAUTHENTICATE
+    };
+    flush();
+    assertFalse(!!testElement.$$('#driveSuggestControl'));
+  });
+
   /**
-   * @param {!Element} element
-   * @param {boolean} displayed
+   *  TODO(crbug.com/1032584): This test verifies that the link doctor setting
+   * is removed as part of the privacy settings redesign. Consider removing
+   * the test once the redesign is fully launched.
    */
-  function assertVisible(element, displayed) {
-    assertEquals(
-        displayed, window.getComputedStyle(element)['display'] != 'none');
+  test('LinkDoctor', function() {
+    assertFalse(!!testElement.$$('#linkDoctor'));
+  });
+
+  if (!isChromeOS) {
+    test('signinAllowedToggle', function() {
+      const toggle = testElement.$.signinAllowedToggle;
+      assertTrue(isVisible(toggle));
+
+      testElement.syncStatus = {signedIn: false};
+      // Check initial setup.
+      assertTrue(toggle.checked);
+      assertTrue(testElement.prefs.signin.allowed_on_next_startup.value);
+      assertFalse(!!testElement.$.toast.open);
+
+      // When the user is signed out, clicking the toggle should work
+      // normally and the restart toast should be opened.
+      toggle.click();
+      assertFalse(toggle.checked);
+      assertFalse(testElement.prefs.signin.allowed_on_next_startup.value);
+      assertTrue(testElement.$.toast.open);
+
+      // Clicking it again, turns the toggle back on. The toast remains
+      // open.
+      toggle.click();
+      assertTrue(toggle.checked);
+      assertTrue(testElement.prefs.signin.allowed_on_next_startup.value);
+      assertTrue(testElement.$.toast.open);
+
+      // Reset toast.
+      testElement.showRestartToast_ = false;
+      assertFalse(testElement.$.toast.open);
+
+      // When the user is part way through sync setup, the toggle should be
+      // disabled in an on state.
+      testElement.syncStatus = {firstSetupInProgress: true};
+      assertTrue(toggle.disabled);
+      assertTrue(toggle.checked);
+
+      testElement.syncStatus = {signedIn: true};
+      // When the user is signed in, clicking the toggle should open the
+      // sign-out dialog.
+      assertFalse(!!testElement.$$('settings-signout-dialog'));
+      toggle.click();
+      return eventToPromise('cr-dialog-open', testElement)
+          .then(function() {
+            flush();
+            // The toggle remains on.
+            assertTrue(toggle.checked);
+            assertTrue(testElement.prefs.signin.allowed_on_next_startup.value);
+            assertFalse(testElement.$.toast.open);
+
+            const signoutDialog = testElement.$$('settings-signout-dialog');
+            assertTrue(!!signoutDialog);
+            assertTrue(signoutDialog.$$('#dialog').open);
+
+            // The user clicks cancel.
+            const cancel = signoutDialog.$$('#disconnectCancel');
+            cancel.click();
+
+            return eventToPromise('close', signoutDialog);
+          })
+          .then(function() {
+            flush();
+            assertFalse(!!testElement.$$('settings-signout-dialog'));
+
+            // After the dialog is closed, the toggle remains turned on.
+            assertTrue(toggle.checked);
+            assertTrue(testElement.prefs.signin.allowed_on_next_startup.value);
+            assertFalse(testElement.$.toast.open);
+
+            // The user clicks the toggle again.
+            toggle.click();
+            return eventToPromise('cr-dialog-open', testElement);
+          })
+          .then(function() {
+            flush();
+            const signoutDialog = testElement.$$('settings-signout-dialog');
+            assertTrue(!!signoutDialog);
+            assertTrue(signoutDialog.$$('#dialog').open);
+
+            // The user clicks confirm, which signs them out.
+            const disconnectConfirm = signoutDialog.$$('#disconnectConfirm');
+            disconnectConfirm.click();
+
+            return eventToPromise('close', signoutDialog);
+          })
+          .then(function() {
+            flush();
+            // After the dialog is closed, the toggle is turned off and the
+            // toast is shown.
+            assertFalse(toggle.checked);
+            assertFalse(testElement.prefs.signin.allowed_on_next_startup.value);
+            assertTrue(testElement.$.toast.open);
+          });
+    });
   }
+});
 
-  suite('PersonalizationOptionsTests_AllBuilds', function() {
-    /** @type {settings.TestPrivacyPageBrowserProxy} */
-    let testBrowserProxy;
+suite('PersonalizationOptionsTests_OfficialBuild', function() {
+  /** @type {settings.TestPrivacyPageBrowserProxy} */
+  let testBrowserProxy;
 
-    /** @type {settings.SyncBrowserProxy} */
-    let syncBrowserProxy;
+  /** @type {SettingsPersonalizationOptionsElement} */
+  let testElement;
 
-    /** @type {SettingsPersonalizationOptionsElement} */
-    let testElement;
+  setup(function() {
+    testBrowserProxy = new TestPrivacyPageBrowserProxy();
+    PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+    PolymerTest.clearBody();
+    testElement = document.createElement('settings-personalization-options');
+    document.body.appendChild(testElement);
+  });
 
-    suiteSetup(function() {
-      loadTimeData.overrideValues({
-        driveSuggestAvailable: true,
-        passwordsLeakDetectionEnabled: true,
-      });
-    });
+  teardown(function() {
+    testElement.remove();
+  });
 
-    setup(function() {
-      testBrowserProxy = new TestPrivacyPageBrowserProxy();
-      settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
-      syncBrowserProxy = new TestSyncBrowserProxy();
-      settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
-      PolymerTest.clearBody();
-      testElement = document.createElement('settings-personalization-options');
-      testElement.prefs = {
-        profile: {password_manager_leak_detection: {value: true}},
-        safebrowsing:
-            {enabled: {value: true}, scout_reporting_enabled: {value: true}},
-      };
-      document.body.appendChild(testElement);
-      Polymer.dom.flush();
-    });
+  test('Spellcheck toggle', function() {
+    testElement.prefs = {
+      profile: {password_manager_leak_detection: {value: true}},
+      safebrowsing:
+          {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+      spellcheck: {dictionaries: {value: ['en-US']}}
+    };
+    flush();
+    assertFalse(testElement.$.spellCheckControl.hidden);
 
-    teardown(function() {
-      testElement.remove();
-    });
+    testElement.prefs = {
+      profile: {password_manager_leak_detection: {value: true}},
+      safebrowsing:
+          {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+      spellcheck: {dictionaries: {value: []}}
+    };
+    flush();
+    assertTrue(testElement.$.spellCheckControl.hidden);
 
-    test('DriveSearchSuggestControl', function() {
-      assertFalse(!!testElement.$$('#driveSuggestControl'));
+    testElement.prefs = {
+      profile: {password_manager_leak_detection: {value: true}},
+      safebrowsing:
+          {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+      browser: {enable_spellchecking: {value: false}},
+      spellcheck: {
+        dictionaries: {value: ['en-US']},
+        use_spelling_service: {value: false}
+      }
+    };
+    flush();
+    testElement.$.spellCheckControl.click();
+    assertTrue(testElement.prefs.spellcheck.use_spelling_service.value);
+  });
+});
 
-      testElement.syncStatus = {
-        signedIn: true,
-        statusAction: settings.StatusAction.NO_ACTION
-      };
-      Polymer.dom.flush();
-      assertTrue(!!testElement.$$('#driveSuggestControl'));
+suite('PersonalizationOptionsTests_AllBuilds_Old', function() {
+  /**
+   * Tests for changes in the personalization page when the
+   * |privacySettingsRedesignEnabled| flag is off.
+   * TODO(crbug.com/1032584): Remove this suite when the redesign is fully
+   * launched and the flag is removed.
+   */
 
-      testElement.syncStatus = {
-        signedIn: true,
-        statusAction: settings.StatusAction.REAUTHENTICATE
-      };
-      Polymer.dom.flush();
-      assertFalse(!!testElement.$$('#driveSuggestControl'));
-    });
+  /** @type {SettingsPersonalizationOptionsElement} */
+  let testElement;
 
-    test('PrivacySettingsRedesignEnabled_False', function() {
-      // Ensure that elements hidden by the updated privacy settings
-      // flag remain visible when the flag is in the default state
-      assertFalse(loadTimeData.getBoolean('privacySettingsRedesignEnabled'));
-      assertVisible(testElement.$$('#safeBrowsingToggle'), true);
-      assertVisible(testElement.$$('#passwordsLeakDetectionToggle'), true);
-      assertVisible(testElement.$$('#safeBrowsingReportingToggle'), true);
-      assertFalse(!!testElement.$$('#signinAllowedToggle'));
-    });
-
-    test('safeBrowsingReportingToggle', function() {
-      const safeBrowsingToggle = testElement.$$('#safeBrowsingToggle');
-      const safeBrowsingReportingToggle =
-          testElement.$$('#safeBrowsingReportingToggle');
-      assertTrue(safeBrowsingToggle.checked);
-      assertFalse(safeBrowsingReportingToggle.disabled);
-      assertTrue(safeBrowsingReportingToggle.checked);
-      safeBrowsingToggle.click();
-      Polymer.dom.flush();
-
-      assertFalse(safeBrowsingToggle.checked);
-      assertTrue(safeBrowsingReportingToggle.disabled);
-      assertFalse(safeBrowsingReportingToggle.checked);
-      assertTrue(testElement.prefs.safebrowsing.scout_reporting_enabled.value);
-      safeBrowsingToggle.click();
-      Polymer.dom.flush();
-
-      assertTrue(safeBrowsingToggle.checked);
-      assertFalse(safeBrowsingReportingToggle.disabled);
-      assertTrue(safeBrowsingReportingToggle.checked);
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      privacySettingsRedesignEnabled: false,
     });
   });
 
-  suite('PrivacySettingsRedesignTests', function() {
-    /** @type {SettingsPrivacyPageElement} */
-    let page;
-
-    suiteSetup(function() {
-      loadTimeData.overrideValues({
-        privacySettingsRedesignEnabled: true,
-      });
-    });
-
-    setup(function() {
-      const testBrowserProxy = new TestPrivacyPageBrowserProxy();
-      settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
-      const syncBrowserProxy = new TestSyncBrowserProxy();
-      settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
-      PolymerTest.clearBody();
-
-      page = document.createElement('settings-personalization-options');
-      page.prefs = {
-        profile: {password_manager_leak_detection: {value: true}},
-        safebrowsing:
-            {enabled: {value: true}, scout_reporting_enabled: {value: true}},
-        signin: {
-          allowed_on_next_startup:
-              {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true},
-        },
-      };
-      document.body.appendChild(page);
-      Polymer.dom.flush();
-    });
-
-    teardown(function() {
-      page.remove();
-    });
-
-    test('PrivacySettingsRedesignEnabled_True', function() {
-      Polymer.dom.flush();
-      assertFalse(!!page.$$('#safeBrowsingToggle'));
-      assertFalse(!!page.$$('#passwordsLeakDetectionToggle'));
-      assertFalse(!!page.$$('#safeBrowsingReportingToggle'));
-    });
-
-    if (!cr.isChromeOS) {
-      test('signinAllowedToggle', function() {
-        const toggle = page.$$('#signinAllowedToggle');
-        assertVisible(toggle, true);
-
-        page.syncStatus = {signedIn: false};
-        // Check initial setup.
-        assertTrue(toggle.checked);
-        assertTrue(page.prefs.signin.allowed_on_next_startup.value);
-        assertFalse(!!page.$.toast.open);
-
-        // When the user is signed out, clicking the toggle should work
-        // normally and the restart toast should be opened.
-        toggle.click();
-        assertFalse(toggle.checked);
-        assertFalse(page.prefs.signin.allowed_on_next_startup.value);
-        assertTrue(page.$.toast.open);
-
-        // Clicking it again, turns the toggle back on. The toast remains
-        // open.
-        toggle.click();
-        assertTrue(toggle.checked);
-        assertTrue(page.prefs.signin.allowed_on_next_startup.value);
-        assertTrue(page.$.toast.open);
-
-        // Reset toast.
-        page.showRestartToast_ = false;
-        assertFalse(page.$.toast.open);
-
-        page.syncStatus = {signedIn: true};
-        // When the user is signed in, clicking the toggle should open the
-        // sign-out dialog.
-        assertFalse(!!page.$$('settings-signout-dialog'));
-        toggle.click();
-        return test_util.eventToPromise('cr-dialog-open', page)
-            .then(function() {
-              Polymer.dom.flush();
-              // The toggle remains on.
-              assertTrue(toggle.checked);
-              assertTrue(page.prefs.signin.allowed_on_next_startup.value);
-              assertFalse(page.$.toast.open);
-
-              const signoutDialog = page.$$('settings-signout-dialog');
-              assertTrue(!!signoutDialog);
-              assertTrue(signoutDialog.$$('#dialog').open);
-
-              // The user clicks cancel.
-              const cancel = signoutDialog.$$('#disconnectCancel');
-              cancel.click();
-
-              return test_util.eventToPromise('close', signoutDialog);
-            })
-            .then(function() {
-              Polymer.dom.flush();
-              assertFalse(!!page.$$('settings-signout-dialog'));
-
-              // After the dialog is closed, the toggle remains turned on.
-              assertTrue(toggle.checked);
-              assertTrue(page.prefs.signin.allowed_on_next_startup.value);
-              assertFalse(page.$.toast.open);
-
-              // The user clicks the toggle again.
-              toggle.click();
-              return test_util.eventToPromise('cr-dialog-open', page);
-            })
-            .then(function() {
-              Polymer.dom.flush();
-              const signoutDialog = page.$$('settings-signout-dialog');
-              assertTrue(!!signoutDialog);
-              assertTrue(signoutDialog.$$('#dialog').open);
-
-              // The user clicks confirm, which signs them out.
-              const disconnectConfirm = signoutDialog.$$('#disconnectConfirm');
-              disconnectConfirm.click();
-
-              return test_util.eventToPromise('close', signoutDialog);
-            })
-            .then(function() {
-              Polymer.dom.flush();
-              // After the dialog is closed, the toggle is turned off and the
-              // toast is shown.
-              assertFalse(toggle.checked);
-              assertFalse(page.prefs.signin.allowed_on_next_startup.value);
-              assertTrue(page.$.toast.open);
-            });
-      });
-    }
+  setup(function() {
+    PolymerTest.clearBody();
+    testElement = document.createElement('settings-personalization-options');
+    document.body.appendChild(testElement);
+    flush();
   });
 
-  suite('PersonalizationOptionsTests_OfficialBuild', function() {
-    /** @type {settings.TestPrivacyPageBrowserProxy} */
-    let testBrowserProxy;
+  teardown(function() {
+    testElement.remove();
+  });
 
-    /** @type {SettingsPersonalizationOptionsElement} */
-    let testElement;
-
-    setup(function() {
-      testBrowserProxy = new TestPrivacyPageBrowserProxy();
-      settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
-      PolymerTest.clearBody();
-      testElement = document.createElement('settings-personalization-options');
-      document.body.appendChild(testElement);
-    });
-
-    teardown(function() {
-      testElement.remove();
-    });
-
-    test('Spellcheck toggle', function() {
-      testElement.prefs = {
-        profile: {password_manager_leak_detection: {value: true}},
-        safebrowsing:
-            {enabled: {value: true}, scout_reporting_enabled: {value: true}},
-        spellcheck: {dictionaries: {value: ['en-US']}}
-      };
-      Polymer.dom.flush();
-      assertFalse(testElement.$.spellCheckControl.hidden);
-
-      testElement.prefs = {
-        profile: {password_manager_leak_detection: {value: true}},
-        safebrowsing:
-            {enabled: {value: true}, scout_reporting_enabled: {value: true}},
-        spellcheck: {dictionaries: {value: []}}
-      };
-      Polymer.dom.flush();
-      assertTrue(testElement.$.spellCheckControl.hidden);
-
-      testElement.prefs = {
-        profile: {password_manager_leak_detection: {value: true}},
-        safebrowsing:
-            {enabled: {value: true}, scout_reporting_enabled: {value: true}},
-        browser: {enable_spellchecking: {value: false}},
-        spellcheck: {
-          dictionaries: {value: ['en-US']},
-          use_spelling_service: {value: false}
-        }
-      };
-      Polymer.dom.flush();
-      testElement.$.spellCheckControl.click();
-      assertTrue(testElement.prefs.spellcheck.use_spelling_service.value);
-    });
+  test('LinkDoctor', function() {
+    // The Link Doctor setting exists if the |privacySettingsRedesignEnabled|
+    // has not been turned on.
+    assertTrue(isChildVisible(testElement, '#linkDoctor'));
   });
 });

@@ -21,15 +21,14 @@ source_set("viz") {
   deps = [
     "//components/ui_devtools",
     "//components/viz/service",
+    "//third_party/inspector_protocol:crdtp",
   ]
 }
 
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "viz_devtools_unittest.cc",
-  ]
+  sources = [ "viz_devtools_unittest.cc" ]
 
   deps = [
     ":viz",

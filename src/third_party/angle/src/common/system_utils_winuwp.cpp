@@ -14,9 +14,6 @@
 #include <codecvt>
 #include <locale>
 #include <string>
-#include <vector>
-
-#include "common/debug.h"
 
 namespace angle
 {
@@ -33,59 +30,22 @@ std::string GetEnvironmentVar(const char *variableName)
     return "";
 }
 
-const char *GetPathSeparatorForEnvironmentVar()
-{
-    return ";";
-}
-
-const char *GetSharedLibraryExtension()
-{
-    return "dll";
-}
-
-const char *GetExecutableExtension()
-{
-    return ".exe";
-}
-
-char GetPathSeparator()
-{
-    return '\\';
-}
-
-double GetCurrentTime()
-{
-    LARGE_INTEGER frequency = {};
-    QueryPerformanceFrequency(&frequency);
-
-    LARGE_INTEGER curTime;
-    QueryPerformanceCounter(&curTime);
-
-    return static_cast<double>(curTime.QuadPart) / frequency.QuadPart;
-}
-
 class UwpLibrary : public Library
 {
   public:
     UwpLibrary(const char *libraryName, SearchType searchType)
     {
-        char buffer[MAX_PATH];
-        int ret = snprintf(buffer, MAX_PATH, "%s.%s", libraryName, GetSharedLibraryExtension());
-
         std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-        std::wstring wideBuffer = converter.from_bytes(buffer);
+        std::wstring wideBuffer = converter.from_bytes(libraryName);
 
-        if (ret > 0 && ret < MAX_PATH)
+        switch (searchType)
         {
-            switch (searchType)
-            {
-                case SearchType::ApplicationDir:
-                    mModule = LoadPackagedLibrary(wideBuffer.c_str(), 0);
-                    break;
-                case SearchType::SystemDir:
-                    // Not supported in UWP
-                    break;
-            }
+            case SearchType::ApplicationDir:
+                mModule = LoadPackagedLibrary(wideBuffer.c_str(), 0);
+                break;
+            case SearchType::SystemDir:
+                // Not supported in UWP
+                break;
         }
     }
 
@@ -115,16 +75,24 @@ class UwpLibrary : public Library
 
 Library *OpenSharedLibrary(const char *libraryName, SearchType searchType)
 {
-    return new UwpLibrary(libraryName, searchType);
+    char buffer[MAX_PATH];
+    int ret = snprintf(buffer, MAX_PATH, "%s.%s", libraryName, GetSharedLibraryExtension());
+
+    if (ret > 0 && ret < MAX_PATH)
+    {
+        return new UwpLibrary(buffer, searchType);
+    }
+    else
+    {
+        fprintf(stderr, "Error loading shared library: 0x%x", ret);
+        return nullptr;
+    }
 }
 
-bool IsDebuggerAttached()
+Library *OpenSharedLibraryWithExtension(const char *libraryName)
 {
-    return !!::IsDebuggerPresent();
-}
-
-void BreakDebugger()
-{
-    __debugbreak();
+    // SystemDir is not implemented in UWP.
+    fprintf(stderr, "Error loading shared library with extension.\n");
+    return nullptr;
 }
 }  // namespace angle

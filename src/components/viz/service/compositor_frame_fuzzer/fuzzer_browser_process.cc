@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
@@ -116,9 +117,8 @@ CompositorFrame FuzzerBrowserProcess::BuildBrowserUICompositorFrame(
   CompositorFrame frame;
 
   frame.metadata.frame_token = ++next_frame_token_;
-  frame.metadata.begin_frame_ack.source_id = BeginFrameArgs::kManualSourceId;
-  frame.metadata.begin_frame_ack.sequence_number =
-      BeginFrameArgs::kStartingFrameNumber;
+  frame.metadata.begin_frame_ack.frame_id = BeginFrameId(
+      BeginFrameArgs::kManualSourceId, BeginFrameArgs::kStartingFrameNumber);
   frame.metadata.device_scale_factor = 1;
   frame.metadata.local_surface_id_allocation_time = base::TimeTicks::Now();
   frame.metadata.referenced_surfaces.push_back(

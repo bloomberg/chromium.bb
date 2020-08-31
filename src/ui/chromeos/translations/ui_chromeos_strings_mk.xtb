@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">Постави</translation>
 <translation id="1249250836236328755">Жанр</translation>
 <translation id="1278813325885878377">Унгарска QWERTY тастатура</translation>
+<translation id="1293556467332435079">Датотеки</translation>
 <translation id="1297922636971898492">Google Диск не е достапен во моментов. Поставувањето автоматски ќе се рестартира штом ќе се активира Google Диск.</translation>
 <translation id="1307931752636661898">Не може да се прикажат датотеките на Linux</translation>
 <translation id="1310751437842832374">Транслитерација (mausam → ନମସ୍ତେ)</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">Зачувано</translation>
 <translation id="1864756863218646478">Не може да се најде датотеката.</translation>
 <translation id="1921986354447415460">Турска-F тастатура</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> е форматиран</translation>
 <translation id="1931134289871235022">Словачки</translation>
 <translation id="1933345018156373194">Потегот не успеа, неочекувана грешка: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">фински</translation>
@@ -88,6 +90,7 @@
 <translation id="1947424002851288782">германска тастатура</translation>
 <translation id="1972984168337863910">Проширете ги таблите со повратни информации за датотеките</translation>
 <translation id="1984603991036629094">ерменска фонетска тастатура</translation>
+<translation id="1995337122023280937">Оди на локацијата на датотеката</translation>
 <translation id="2001796770603320721">Управување во Drive</translation>
 <translation id="2009067268969781306">Форматирањето на USB-дискот ќе ги избрише сите податоци складирани во него. Дејството не може да се врати.</translation>
 <translation id="2028997212275086731">РАР-архива</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">Не можеше да се добие Google Диск. <ph name="BEGIN_LINK" />Одјавете се<ph name="END_LINK" /> и повторно најавете се.</translation>
 <translation id="2649120831653069427">Риба виножито</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Локација на датотеката</translation>
 <translation id="2672394958563893062">Настана грешка. Кликнете за да се рестартира отпочеток.</translation>
 <translation id="2676946222714718093">Се репродуцира на</translation>
 <translation id="2735698359135166290">Романска стандардна тастатура</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">германска тастатура NEO 2</translation>
 <translation id="2943400156390503548">Слајдови</translation>
 <translation id="2943503720238418293">Користете пократко име</translation>
+<translation id="2949781154072577687">Се форматира <ph name="DRIVE_NAME" />…</translation>
 <translation id="2951236788251446349">Медуза</translation>
 <translation id="2963783323012015985">турска тастатура</translation>
 <translation id="2966459079597787514">шведска тастатура</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> грешки.</translation>
 <translation id="3519867315646775981">Транслитерација (shalom ← שלום)</translation>
 <translation id="3522708245912499433">португалски</translation>
+<translation id="3524311639100184459">Внимание: датотекиве се привремени и може да се бришат автоматски за да се ослободи простор на дискот.  <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3549797760399244642">Одете на drive.google.com...</translation>
 <translation id="357479282490346887">литвански</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">Киви</translation>
 <translation id="3966388904776714213">Аудиоплеер</translation>
 <translation id="4002066346123236978">Наслов</translation>
+<translation id="4065397611279318371">За да отворате датотеки со апликации на <ph name="APP_NAME" />, прво преместете ги во папката на <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
 <translation id="4070370845051020638">Кантонски метод за внесување</translation>
 <translation id="4072248638558688893">тамилска тастатура (фонетска)</translation>
 <translation id="4124935795427217608">Еднорог</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">Копирањето не успеа. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">Диња</translation>
 <translation id="4372884569765913867">1 x 1</translation>
+<translation id="4394214039309501350">Надворешен линк</translation>
 <translation id="4425149324548788773">Мојот Drive</translation>
 <translation id="4465830120256509958">бразилска тастатура</translation>
 <translation id="4470564870223067757">хангул, 2-делна</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">Автоматска поправка</translation>
 <translation id="4881695831933465202">Отвори</translation>
 <translation id="4886021172213954916">тамилска тастатура (машина за пишување)</translation>
+<translation id="4892969127351273348">Не може да се отвори со <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Направете бекап на <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Поправено</translation>
 <translation id="4935975195727477204">Цвет од газанија</translation>
@@ -495,6 +504,7 @@
 <translation id="6806699711453372963">Управувајте со споделувањето на Linux</translation>
 <translation id="6808193438228982088">Лисица</translation>
 <translation id="6820687829547641339">tar архива компримирана со gzip</translation>
+<translation id="6823166707458800069">Автоматски се прави резервна копија онлајн од сите датотеки зачувани во папкава.</translation>
 <translation id="6825883775269213504">руски</translation>
 <translation id="6827236167376090743">Видеото ќе се прикажува постојано.</translation>
 <translation id="6847101934483209767">Го отстранивте <ph name="ENTRY_NAME" /> од изборот.</translation>
@@ -504,6 +514,7 @@
 <translation id="6878261347041253038">деванагари тастатура (фонетска)</translation>
 <translation id="6885780034956018177">Полжав</translation>
 <translation id="6896758677409633944">Копирај</translation>
+<translation id="6898028766943174120">Повеќе подредени папки…</translation>
 <translation id="691516599546977041">Не може да се зачувува во „<ph name="FOLDER_NAME" />“. Изменетите слики ќе се зачуваат во папката „Преземања“.</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">САД, Workman</translation>
@@ -516,6 +527,7 @@
 <translation id="696203921837389374">Овозможи синхронизација преку мобилни податоци</translation>
 <translation id="6965382102122355670">Во ред</translation>
 <translation id="6970230597523682626">бугарски</translation>
+<translation id="6973630695168034713">Папки</translation>
 <translation id="6978611942794658017">Оваа датотека е дизајнирана за компјутер кој користи софтвер на Windows. Таа не е компатибилна со вашиот уред кој работи на Chrome ОС. Пребарајте ја веб-продавницата на Chrome за да најдете соодветна апликација за замена.</translation>
 <translation id="6979158407327259162">Google Диск</translation>
 <translation id="6990081529015358884">Немате веќе простор</translation>
@@ -549,6 +561,7 @@
 <translation id="7417705661718309329">Карта на Google</translation>
 <translation id="7419631653042041064">каталонска тастатура</translation>
 <translation id="7434823369735508263">ОК тастатура Dvorak</translation>
+<translation id="7447678886297481665">Датотеките во папкава се само за читање. Некои активности не се поддржани.</translation>
 <translation id="7460898608667578234">украинска</translation>
 <translation id="7474889694310679759">тастатура на канадски англиски</translation>
 <translation id="7489215562877293245">Најдени се <ph name="FILE_COUNT" />
@@ -567,6 +580,7 @@
 <translation id="7649070708921625228">Помош</translation>
 <translation id="7654209398114106148">Се преместуваат <ph name="NUMBER_OF_ITEMS" /> ставки…</translation>
 <translation id="7658239707568436148">Откажи</translation>
+<translation id="7695430100978772476">Не можеше да се форматира <ph name="DRIVE_NAME" /></translation>
 <translation id="770015031906360009">Грчки</translation>
 <translation id="7706319470528945664">португалска тастатура</translation>
 <translation id="7711920809702896782">Информации за сликата</translation>
@@ -709,7 +723,7 @@
 <translation id="939736085109172342">Нова папка</translation>
 <translation id="942954117721265519">Нема слики во директориумот.</translation>
 <translation id="943972244133411984">Изменето од</translation>
-<translation id="945522503751344254">Испрати повратни информации</translation>
+<translation id="945522503751344254">Испратете повратни информации</translation>
 <translation id="947144732524271678">Избравте опсег од <ph name="ENTRY_COUNT" /> записи од <ph name="FROM_ENTRY_NAME" /> до <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Без мрежа</translation>
 <translation id="988685240266037636">Веќе постои датотека со име „<ph name="FILE_NAME" />“. Дали сакате да ја замените?</translation>

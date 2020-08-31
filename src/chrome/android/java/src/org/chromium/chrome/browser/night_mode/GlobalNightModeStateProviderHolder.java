@@ -4,15 +4,13 @@
 
 package org.chromium.chrome.browser.night_mode;
 
-import android.support.v7.app.AppCompatDelegate;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
@@ -59,8 +57,7 @@ public class GlobalNightModeStateProviderHolder {
     public static NightModeStateProvider getInstance() {
         if (sInstance == null) {
             if (CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_ENABLE_NIGHT_MODE)
-                    || !NightModeUtils.isNightModeSupported()
-                    || !FeatureUtilities.isNightModeAvailable()) {
+                    || !NightModeUtils.isNightModeSupported()) {
                 sInstance = new DummyNightModeStateProvider();
             } else {
                 sInstance = new GlobalNightModeStateController(SystemNightModeMonitor.getInstance(),

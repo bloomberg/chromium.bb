@@ -4,7 +4,9 @@
 
 #include "ui/views/painter.h"
 
-#include "base/logging.h"
+#include <utility>
+
+#include "base/check.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/layer_owner.h"
@@ -160,13 +162,11 @@ class ImagePainter : public Painter {
 };
 
 ImagePainter::ImagePainter(const int image_ids[])
-    : nine_painter_(ui::CreateNineImagePainter(image_ids)) {
-}
+    : nine_painter_(ui::CreateNineImagePainter(image_ids)) {}
 
 ImagePainter::ImagePainter(const gfx::ImageSkia& image,
                            const gfx::Insets& insets)
-    : nine_painter_(new gfx::NineImagePainter(image, insets)) {
-}
+    : nine_painter_(new gfx::NineImagePainter(image, insets)) {}
 
 ImagePainter::~ImagePainter() = default;
 
@@ -211,7 +211,6 @@ void PaintedLayer::OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                               float new_device_scale_factor) {}
 
 }  // namespace
-
 
 // Painter --------------------------------------------------------------------
 

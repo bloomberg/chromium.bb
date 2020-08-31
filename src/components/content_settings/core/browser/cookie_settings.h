@@ -11,8 +11,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/cookie_settings_base.h"
@@ -26,9 +28,12 @@ namespace content_settings {
 
 // This enum is used in prefs, do not change values.
 // The enum needs to correspond to CookieControlsMode in enums.xml.
+// This enum needs to be kept in sync with the enum of the same name in
+// browser/resources/settings/site_settings/constants.js.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.content_settings
 enum class CookieControlsMode {
   kOff = 0,
-  kOn = 1,
+  kBlockThirdParty = 1,
   kIncognitoOnly = 2,
   kMaxValue = kIncognitoOnly,
 };
@@ -40,12 +45,14 @@ const char kDummyExtensionScheme[] = ":no-extension-scheme:";
 // cookie-specific logic such as blocking third-party cookies. Written on the UI
 // thread and read on any thread.
 class CookieSettings : public CookieSettingsBase,
+                       public content_settings::Observer,
                        public RefcountedKeyedService {
  public:
   class Observer : public base::CheckedObserver {
    public:
     virtual void OnThirdPartyCookieBlockingChanged(
-        bool block_third_party_cookies) = 0;
+        bool block_third_party_cookies) {}
+    virtual void OnCookieSettingChanged() {}
   };
 
   // Creates a new CookieSettings instance.
@@ -94,7 +101,8 @@ class CookieSettings : public CookieSettingsBase,
   // accessing cookies.
   //
   // This should only be called on the UI thread.
-  bool IsThirdPartyAccessAllowed(const GURL& first_party_url);
+  bool IsThirdPartyAccessAllowed(const GURL& first_party_url,
+                                 content_settings::SettingSource* source);
 
   // Sets the cookie setting for the site and third parties embedded in it.
   //
@@ -157,11 +165,19 @@ class CookieSettings : public CookieSettingsBase,
                                 content_settings::SettingSource* source,
                                 ContentSetting* cookie_setting) const override;
 
+  // content_settings::Observer:
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               const std::string& resource_identifier) override;
+
   void OnCookiePreferencesChanged();
 
   base::ThreadChecker thread_checker_;
   base::ObserverList<Observer> observers_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+  ScopedObserver<HostContentSettingsMap, content_settings::Observer>
+      content_settings_observer_{this};
   PrefChangeRegistrar pref_change_registrar_;
   const bool is_incognito_;
   const char* extension_scheme_;  // Weak.

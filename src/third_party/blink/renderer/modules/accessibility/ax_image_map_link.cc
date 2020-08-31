@@ -67,6 +67,12 @@ ax::mojom::Role AXImageMapLink::RoleValue() const {
   if (!aria_role.IsEmpty())
     return AXObject::AriaRoleToWebCoreRole(aria_role);
 
+  // https://www.w3.org/TR/html-aam-1.0/#html-element-role-mappings
+  // <area> tags without an href should be treated as static text.
+  KURL url = Url();
+  if (url.IsNull() || url.IsEmpty())
+    return ax::mojom::Role::kStaticText;
+
   return ax::mojom::Role::kLink;
 }
 
@@ -104,8 +110,8 @@ void AXImageMapLink::GetRelativeBounds(AXObject** out_container,
     return;
 
   LayoutObject* layout_object;
-  if (parent_ && parent_->IsAXLayoutObject())
-    layout_object = ToAXLayoutObject(parent_)->GetLayoutObject();
+  if (auto* ax_object = DynamicTo<AXLayoutObject>(parent_.Get()))
+    layout_object = ax_object->GetLayoutObject();
   else
     layout_object = map->GetLayoutObject();
 
@@ -116,7 +122,11 @@ void AXImageMapLink::GetRelativeBounds(AXObject** out_container,
   *out_container = AXObjectCache().GetOrCreate(layout_object);
 }
 
-void AXImageMapLink::Trace(blink::Visitor* visitor) {
+bool AXImageMapLink::IsImageMapLink() const {
+  return true;
+}
+
+void AXImageMapLink::Trace(Visitor* visitor) {
   AXNodeObject::Trace(visitor);
 }
 

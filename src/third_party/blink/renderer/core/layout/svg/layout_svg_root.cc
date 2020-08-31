@@ -130,12 +130,16 @@ LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalWidth(
   // (border-image/background-image/<html:img>/...) we're forced to resize to a
   // specific size.
   if (!container_size_.IsEmpty())
-    return LayoutUnit(container_size_.Width());
+    return container_size_.Width();
 
   if (IsEmbeddedThroughFrameContainingSVGDocument())
     return ContainingBlock()->AvailableLogicalWidth();
 
-  return LayoutReplaced::ComputeReplacedLogicalWidth(should_compute_preferred);
+  LayoutUnit width =
+      LayoutReplaced::ComputeReplacedLogicalWidth(should_compute_preferred);
+  if (StyleRef().LogicalWidth().IsPercentOrCalc())
+    width *= LogicalSizeScaleFactorForPercentageLengths();
+  return width;
 }
 
 LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalHeight(
@@ -144,7 +148,7 @@ LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalHeight(
   // (border-image/background-image/<html:img>/...) we're forced to resize to a
   // specific size.
   if (!container_size_.IsEmpty())
-    return LayoutUnit(container_size_.Height());
+    return container_size_.Height();
 
   if (IsEmbeddedThroughFrameContainingSVGDocument())
     return ContainingBlock()->AvailableLogicalHeight(
@@ -152,12 +156,27 @@ LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalHeight(
 
   const Length& logical_height = StyleRef().LogicalHeight();
   if (IsDocumentElement() && logical_height.IsPercentOrCalc()) {
-    return ValueForLength(
+    LayoutUnit height = ValueForLength(
         logical_height,
         GetDocument().GetLayoutView()->ViewLogicalHeightForPercentages());
+    height *= LogicalSizeScaleFactorForPercentageLengths();
+    return height;
   }
 
   return LayoutReplaced::ComputeReplacedLogicalHeight(estimated_used_width);
+}
+
+double LayoutSVGRoot::LogicalSizeScaleFactorForPercentageLengths() const {
+  if (!IsDocumentElement() || !GetDocument().IsInMainFrame())
+    return 1;
+  if (GetDocument().GetLayoutView()->ShouldUsePrintingLayout())
+    return 1;
+  // This will return the zoom factor which is different from the typical usage
+  // of "zoom factor" in blink (e.g., |LocalFrame::PageZoomFactor()|) which
+  // includes CSS zoom and the device scale factor (if use-zoom-for-dsf is
+  // enabled). For this special-case, we only want to include the user's zoom
+  // factor, as all other types of zoom should not scale a percentage-sized svg.
+  return GetFrame()->GetChromeClient().UserZoomFactor();
 }
 
 void LayoutSVGRoot::UpdateLayout() {
@@ -300,7 +319,7 @@ bool LayoutSVGRoot::StyleChangeAffectsIntrinsicSize(
 }
 
 void LayoutSVGRoot::IntrinsicSizingInfoChanged() {
-  SetPreferredLogicalWidthsDirty();
+  SetIntrinsicLogicalWidthsDirty();
 
   // TODO(fs): Merge with IntrinsicSizeChanged()? (from LayoutReplaced)
   // Ignore changes to intrinsic dimensions if the <svg> is not in an SVG
@@ -315,7 +334,7 @@ void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
                                    const ComputedStyle* old_style) {
   if (diff.NeedsFullLayout())
     SetNeedsBoundariesUpdate();
-  if (diff.NeedsFullPaintInvalidation()) {
+  if (diff.NeedsPaintInvalidation()) {
     // Box decorations may have appeared/disappeared - recompute status.
     has_box_decoration_background_ = StyleRef().HasBoxDecorationBackground();
   }
@@ -336,7 +355,7 @@ bool LayoutSVGRoot::IsChildAllowed(LayoutObject* child,
 
 void LayoutSVGRoot::AddChild(LayoutObject* child, LayoutObject* before_child) {
   LayoutReplaced::AddChild(child, before_child);
-  SVGResourcesCache::ClientWasAddedToTree(*child, child->StyleRef());
+  SVGResourcesCache::ClientWasAddedToTree(*child);
 
   bool should_isolate_descendants =
       (child->IsBlendingAllowed() && child->StyleRef().HasBlendMode()) ||
@@ -383,7 +402,7 @@ void LayoutSVGRoot::DescendantIsolationRequirementsChanged(
 
 void LayoutSVGRoot::InsertedIntoTree() {
   LayoutReplaced::InsertedIntoTree();
-  SVGResourcesCache::ClientWasAddedToTree(*this, StyleRef());
+  SVGResourcesCache::ClientWasAddedToTree(*this);
 }
 
 void LayoutSVGRoot::WillBeRemovedFromTree() {

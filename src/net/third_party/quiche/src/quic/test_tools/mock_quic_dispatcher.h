@@ -22,7 +22,7 @@ class MockQuicDispatcher : public QuicSimpleDispatcher {
       const QuicCryptoServerConfig* crypto_config,
       QuicVersionManager* version_manager,
       std::unique_ptr<QuicConnectionHelperInterface> helper,
-      std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
+      std::unique_ptr<QuicCryptoServerStreamBase::Helper> session_helper,
       std::unique_ptr<QuicAlarmFactory> alarm_factory,
       QuicSimpleServerBackend* quic_simple_server_backend);
   MockQuicDispatcher(const MockQuicDispatcher&) = delete;
@@ -30,10 +30,12 @@ class MockQuicDispatcher : public QuicSimpleDispatcher {
 
   ~MockQuicDispatcher() override;
 
-  MOCK_METHOD3(ProcessPacket,
-               void(const QuicSocketAddress& server_address,
-                    const QuicSocketAddress& client_address,
-                    const QuicReceivedPacket& packet));
+  MOCK_METHOD(void,
+              ProcessPacket,
+              (const QuicSocketAddress& server_address,
+               const QuicSocketAddress& client_address,
+               const QuicReceivedPacket& packet),
+              (override));
 };
 
 }  // namespace test

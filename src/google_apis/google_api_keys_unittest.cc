@@ -37,7 +37,6 @@
 #include <string>
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/strings/stringize_macros.h"
 
 #if defined(OS_MACOSX)
@@ -89,7 +88,7 @@ void GoogleAPIKeysTest::TearDown() {
 // This is the default baked-in value for OAuth IDs and secrets.
 static const char kDummyToken[] = "dummytoken";
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
+#if defined(USE_OFFICIAL_GOOGLE_API_KEYS)
 // Test official build behavior, since we are in a checkout where this
 // is possible.
 namespace official_build {

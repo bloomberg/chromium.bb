@@ -6,7 +6,9 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -113,17 +115,15 @@ ExtensionUpdater::FetchedCRXFile::FetchedCRXFile(
     : info(file),
       file_ownership_passed(file_ownership_passed),
       request_ids(request_ids),
-      callback(callback) {
-}
+      callback(callback) {}
 
 ExtensionUpdater::FetchedCRXFile::FetchedCRXFile()
-    : file_ownership_passed(true) {
-}
+    : file_ownership_passed(true) {}
 
 ExtensionUpdater::FetchedCRXFile::FetchedCRXFile(const FetchedCRXFile& other) =
     default;
 
-ExtensionUpdater::FetchedCRXFile::~FetchedCRXFile() {}
+ExtensionUpdater::FetchedCRXFile::~FetchedCRXFile() = default;
 
 ExtensionUpdater::InProgressCheck::InProgressCheck()
     : install_immediately(false), awaiting_update_service(false) {}
@@ -411,54 +411,53 @@ void ExtensionUpdater::OnExtensionDownloadCacheStatusRetrieved(
       id, cache_status);
 }
 
+void ExtensionUpdater::OnExtensionManifestUpdateCheckStatusReceived(
+    const ExtensionId& id,
+    const std::string& status) {
+  InstallationReporter::Get(profile_)->ReportManifestUpdateCheckStatus(id,
+                                                                       status);
+}
+
 void ExtensionUpdater::OnExtensionDownloadFailed(
     const ExtensionId& id,
     Error error,
     const PingResult& ping,
-    const std::set<int>& request_ids) {
+    const std::set<int>& request_ids,
+    const FailureData& data) {
   DCHECK(alive_);
   InstallationReporter* installation_reporter =
       InstallationReporter::Get(profile_);
 
   switch (error) {
     case Error::CRX_FETCH_FAILED:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Extensions.ExtensionUpdaterUpdateResults",
-          ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR,
-          ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+      installation_reporter->ReportFetchError(
+          id, InstallationReporter::FailureReason::CRX_FETCH_FAILED, data);
+      break;
+    case Error::CRX_FETCH_URL_EMPTY:
       installation_reporter->ReportFailure(
-          id, InstallationReporter::FailureReason::CRX_FETCH_FAILED);
+          id, InstallationReporter::FailureReason::CRX_FETCH_URL_EMPTY);
+      break;
+    case Error::CRX_FETCH_URL_INVALID:
+      installation_reporter->ReportFailure(
+          id, InstallationReporter::FailureReason::CRX_FETCH_URL_INVALID);
       break;
     case Error::MANIFEST_FETCH_FAILED:
-      installation_reporter->ReportFailure(
-          id, InstallationReporter::FailureReason::MANIFEST_FETCH_FAILED);
-      UMA_HISTOGRAM_ENUMERATION(
-          "Extensions.ExtensionUpdaterUpdateResults",
-          ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR,
-          ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+      installation_reporter->ReportFetchError(
+          id, InstallationReporter::FailureReason::MANIFEST_FETCH_FAILED, data);
       break;
     case Error::MANIFEST_INVALID:
-      installation_reporter->ReportFailure(
-          id, InstallationReporter::FailureReason::MANIFEST_INVALID);
-      UMA_HISTOGRAM_ENUMERATION(
-          "Extensions.ExtensionUpdaterUpdateResults",
-          ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR,
-          ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+      DCHECK(data.manifest_invalid_error);
+      installation_reporter->ReportManifestInvalidFailure(
+          id, data.manifest_invalid_error.value());
       break;
     case Error::NO_UPDATE_AVAILABLE:
       installation_reporter->ReportFailure(
           id, InstallationReporter::FailureReason::NO_UPDATE);
-      UMA_HISTOGRAM_ENUMERATION(
-          "Extensions.ExtensionUpdaterUpdateResults",
-          ExtensionUpdaterUpdateResult::NO_UPDATE,
-          ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
       break;
     case Error::DISABLED:
       // Error::DISABLED corresponds to the browser having disabled extension
       // updates, the extension updater does not actually run when this error
-      // code is emitted. For this reason, Error::DISABLED is not included in
-      // Extensions.ExtensionUpdaterUpdateResults UMA; we are only interested
-      // in the update results when the extension updater runs.
+      // code is emitted.
       break;
   }
 
@@ -483,7 +482,6 @@ void ExtensionUpdater::OnExtensionDownloadFinished(
     const CRXFileInfo& file,
     bool file_ownership_passed,
     const GURL& download_url,
-    const std::string& version,
     const PingResult& ping,
     const std::set<int>& request_ids,
     const InstallCallback& callback) {
@@ -611,12 +609,6 @@ void ExtensionUpdater::Observe(int type,
 
   // If installing this file didn't succeed, we may need to re-download it.
   const Extension* extension = content::Details<const Extension>(details).ptr();
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Extensions.ExtensionUpdaterUpdateResults",
-      extension ? ExtensionUpdaterUpdateResult::UPDATE_SUCCESS
-                : ExtensionUpdaterUpdateResult::UPDATE_INSTALL_ERROR,
-      ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
 
   CrxInstaller* installer = content::Source<CrxInstaller>(source).ptr();
   const FetchedCRXFile& crx_file = current_crx_file_;

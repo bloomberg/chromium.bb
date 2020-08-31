@@ -18,7 +18,7 @@
 #include "base/android/build_info.h"
 #endif
 #if defined(OS_WIN)
-#include "components/metrics/system_session_analyzer_win.h"
+#include "components/metrics/system_session_analyzer/system_session_analyzer_win.h"
 #endif
 
 namespace metrics {
@@ -71,9 +71,6 @@ void StabilityMetricsProvider::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kStabilityGmsCoreVersion, "");
   registry->RegisterIntegerPref(prefs::kStabilityCrashCountDueToGmsCoreUpdate,
                                 0);
-  // Obsolete. See MigrateObsoleteBrowserPrefs().
-  registry->RegisterIntegerPref(
-      prefs::kStabilityCrashCountWithoutGmsCoreUpdateObsolete, 0);
 #endif
 #if defined(OS_WIN)
   registry->RegisterIntegerPref(prefs::kStabilitySystemCrashCount, 0);

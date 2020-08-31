@@ -6,9 +6,9 @@
 
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/supports_user_data.h"
@@ -23,6 +23,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
 #include "net/quic/quic_context.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -85,7 +86,8 @@ void TestURLRequestContext::Init() {
     context_storage_.set_host_resolver(
         std::unique_ptr<HostResolver>(new MockCachingHostResolver()));
   if (!proxy_resolution_service())
-    context_storage_.set_proxy_resolution_service(ProxyResolutionService::CreateDirect());
+    context_storage_.set_proxy_resolution_service(
+        ConfiguredProxyResolutionService::CreateDirect());
   if (!cert_verifier()) {
     context_storage_.set_cert_verifier(
         CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr));
@@ -175,7 +177,7 @@ std::unique_ptr<URLRequest> TestURLRequestContext::CreateFirstPartyRequest(
     URLRequest::Delegate* delegate,
     NetworkTrafficAnnotationTag traffic_annotation) const {
   auto req = CreateRequest(url, priority, delegate, traffic_annotation);
-  req->set_site_for_cookies(url);
+  req->set_site_for_cookies(SiteForCookies::FromUrl(url));
   return req;
 }
 
@@ -387,11 +389,9 @@ TestNetworkDelegate::TestNetworkDelegate()
       blocked_get_cookies_count_(0),
       blocked_set_cookie_count_(0),
       set_cookie_count_(0),
-      before_send_headers_with_proxy_count_(0),
       before_start_transaction_count_(0),
       headers_received_count_(0),
       has_load_timing_info_before_redirect_(false),
-      experimental_cookie_features_enabled_(false),
       cancel_request_with_policy_violating_referrer_(false),
       before_start_transaction_fails_(false),
       add_header_to_first_response_(false),
@@ -455,21 +455,6 @@ int TestNetworkDelegate::OnBeforeStartTransaction(
   return OK;
 }
 
-void TestNetworkDelegate::OnBeforeSendHeaders(
-    URLRequest* request,
-    const ProxyInfo& proxy_info,
-    const ProxyRetryInfoMap& proxy_retry_info,
-    HttpRequestHeaders* headers) {
-  if (!proxy_info.is_http() && !proxy_info.is_https() && !proxy_info.is_quic())
-    return;
-  if (!request || request->url().SchemeIs("https") ||
-      request->url().SchemeIsWSOrWSS()) {
-    return;
-  }
-  ++before_send_headers_with_proxy_count_;
-  last_observed_proxy_ = proxy_info.proxy_server().host_port_pair();
-}
-
 int TestNetworkDelegate::OnHeadersReceived(
     URLRequest* request,
     CompletionOnceCallback callback,
@@ -499,8 +484,8 @@ int TestNetworkDelegate::OnHeadersReceived(
         new HttpResponseHeaders(original_response_headers->raw_headers());
     (*override_response_headers)->ReplaceStatusLine("HTTP/1.1 302 Found");
     (*override_response_headers)->RemoveHeader("Location");
-    (*override_response_headers)->AddHeader(
-        "Location: " + redirect_on_headers_received_url_.spec());
+    (*override_response_headers)
+        ->AddHeader("Location", redirect_on_headers_received_url_.spec());
 
     redirect_on_headers_received_url_ = GURL();
 
@@ -510,7 +495,7 @@ int TestNetworkDelegate::OnHeadersReceived(
     *override_response_headers =
         new HttpResponseHeaders(original_response_headers->raw_headers());
     (*override_response_headers)
-        ->AddHeader("X-Network-Delegate: Greetings, planet");
+        ->AddHeader("X-Network-Delegate", "Greetings, planet");
   }
 
   headers_received_count_++;

@@ -4,6 +4,10 @@
 
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
@@ -205,6 +209,9 @@ void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
   SetAllocatorDumpMetric(
       pmd, "v8/main", "allocated_objects_size",
       metrics_mb_or_count["V8.Main.AllocatedObjects"] * 1024 * 1024);
+  SetAllocatorDumpMetric(
+      pmd, "v8/main/global_handles", "effective_size",
+      metrics_mb_or_count["V8.Main.GlobalHandles"] * 1024 * 1024);
 
   SetAllocatorDumpMetric(pmd, "v8/main/heap", "effective_size",
                          metrics_mb_or_count["V8.Main.Heap"] * 1024 * 1024);
@@ -337,44 +344,43 @@ constexpr base::ProcessId kTestRendererPid202 = 202;
 constexpr base::ProcessId kTestRendererPid203 = 203;
 
 MetricMap GetExpectedRendererMetrics() {
-  return MetricMap(
-      {
-        {"ProcessType", static_cast<int64_t>(ProcessType::RENDERER)},
+  return MetricMap({
+    {"ProcessType", static_cast<int64_t>(ProcessType::RENDERER)},
 #if !defined(OS_MACOSX)
-            {"Resident", kTestRendererResidentSet},
+        {"Resident", kTestRendererResidentSet},
 #endif
-            {"Malloc", 120},
-            {"PrivateMemoryFootprint", kTestRendererPrivateMemoryFootprint},
-            {"SharedMemoryFootprint", kTestRendererSharedMemoryFootprint},
-            {"PartitionAlloc", 140}, {"BlinkGC", 150}, {"V8", 160},
-            {"V8.AllocatedObjects", 70}, {"V8.Main", 100},
-            {"V8.Main.AllocatedObjects", 30}, {"V8.Main.Heap", 98},
-            {"V8.Main.Heap.AllocatedObjects", 28},
-            {"V8.Main.Heap.CodeSpace", 11},
-            {"V8.Main.Heap.CodeSpace.AllocatedObjects", 1},
-            {"V8.Main.Heap.LargeObjectSpace", 12},
-            {"V8.Main.Heap.LargeObjectSpace.AllocatedObjects", 2},
-            {"V8.Main.Heap.MapSpace", 13},
-            {"V8.Main.Heap.MapSpace.AllocatedObjects", 3},
-            {"V8.Main.Heap.NewLargeObjectSpace", 14},
-            {"V8.Main.Heap.NewLargeObjectSpace.AllocatedObjects", 4},
-            {"V8.Main.Heap.NewSpace", 15},
-            {"V8.Main.Heap.NewSpace.AllocatedObjects", 5},
-            {"V8.Main.Heap.OldSpace", 16},
-            {"V8.Main.Heap.NewSpace.AllocatedObjects", 6},
-            {"V8.Main.Heap.ReadOnlySpace", 17},
-            {"V8.Main.Heap.ReadOnlySpace.AllocatedObjects", 7},
-            {"V8.Main.Malloc", 2}, {"V8.Workers", 60},
-            {"V8.Workers.AllocatedObjects", 40}, {"NumberOfExtensions", 0},
-            {"Uptime", 42},
+        {"Malloc", 120},
+        {"PrivateMemoryFootprint", kTestRendererPrivateMemoryFootprint},
+        {"SharedMemoryFootprint", kTestRendererSharedMemoryFootprint},
+        {"PartitionAlloc", 140}, {"BlinkGC", 150}, {"V8", 160},
+        {"V8.AllocatedObjects", 70}, {"V8.Main", 100},
+        {"V8.Main.AllocatedObjects", 30}, {"V8.Main.Heap", 98},
+        {"V8.Main.GlobalHandles", 3}, {"V8.Main.Heap.AllocatedObjects", 28},
+        {"V8.Main.Heap.CodeSpace", 11},
+        {"V8.Main.Heap.CodeSpace.AllocatedObjects", 1},
+        {"V8.Main.Heap.LargeObjectSpace", 12},
+        {"V8.Main.Heap.LargeObjectSpace.AllocatedObjects", 2},
+        {"V8.Main.Heap.MapSpace", 13},
+        {"V8.Main.Heap.MapSpace.AllocatedObjects", 3},
+        {"V8.Main.Heap.NewLargeObjectSpace", 14},
+        {"V8.Main.Heap.NewLargeObjectSpace.AllocatedObjects", 4},
+        {"V8.Main.Heap.NewSpace", 15},
+        {"V8.Main.Heap.NewSpace.AllocatedObjects", 5},
+        {"V8.Main.Heap.OldSpace", 16},
+        {"V8.Main.Heap.NewSpace.AllocatedObjects", 6},
+        {"V8.Main.Heap.ReadOnlySpace", 17},
+        {"V8.Main.Heap.ReadOnlySpace.AllocatedObjects", 7},
+        {"V8.Main.Malloc", 2}, {"V8.Workers", 60},
+        {"V8.Workers.AllocatedObjects", 40}, {"NumberOfExtensions", 0},
+        {"Uptime", 42},
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-            {"PrivateSwapFootprint", 50},
+        {"PrivateSwapFootprint", 50},
 #endif
-            {"NumberOfAdSubframes", 28}, {"NumberOfDetachedScriptStates", 11},
-            {"NumberOfDocuments", 1}, {"NumberOfFrames", 2},
-            {"NumberOfLayoutObjects", 5}, {"NumberOfNodes", 3},
-            {"PartitionAlloc.Partitions.ArrayBuffer", 10},
-      });
+        {"NumberOfAdSubframes", 28}, {"NumberOfDetachedScriptStates", 11},
+        {"NumberOfDocuments", 1}, {"NumberOfFrames", 2},
+        {"NumberOfLayoutObjects", 5}, {"NumberOfNodes", 3},
+        {"PartitionAlloc.Partitions.ArrayBuffer", 10},
+  });
 }
 
 void AddPageMetrics(MetricMap& expected_metrics) {
@@ -603,7 +609,6 @@ class ProcessMemoryMetricsEmitterTest
       }
       if (i >= expected.size()) {
         FAIL() << "Unexpected non-total entry.";
-        continue;
       }
       for (const auto& kv : expected[i]) {
         test_ukm_recorder_.ExpectEntryMetric(entry, kv.first, kv.second);
@@ -781,6 +786,25 @@ TEST_F(ProcessMemoryMetricsEmitterTest, ReceiveProcessInfoSecond) {
   std::vector<MetricMap> expected_entries;
   expected_entries.push_back(expected_metrics);
   CheckMemoryUkmEntryMetrics(expected_entries);
+}
+
+TEST_F(ProcessMemoryMetricsEmitterTest, GlobalDumpFailed) {
+  GlobalMemoryDumpPtr global_dump(
+      memory_instrumentation::mojom::GlobalMemoryDump::New());
+  MetricMap expected_metrics = GetExpectedRendererMetrics();
+  AddPageMetrics(expected_metrics);
+  PopulateRendererMetrics(global_dump, expected_metrics, kTestRendererPid201);
+
+  scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter(
+      new ProcessMemoryMetricsEmitterFake(test_ukm_recorder_));
+  emitter->ReceivedMemoryDump(
+      false, GlobalMemoryDump::MoveFrom(std::move(global_dump)));
+  emitter->ReceivedProcessInfos(GetProcessInfo(test_ukm_recorder_));
+
+  // Should not record any metrics since the memory dump failed, and don't
+  // crash.
+  auto entries = test_ukm_recorder_.GetEntriesByName(UkmEntry::kEntryName);
+  ASSERT_EQ(entries.size(), 0u);
 }
 
 TEST_F(ProcessMemoryMetricsEmitterTest, ProcessInfoHasTwoURLs) {

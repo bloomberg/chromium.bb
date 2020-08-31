@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_mangle.h"
@@ -33,7 +34,6 @@
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/permissions_updater.h"
@@ -45,7 +45,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -81,6 +80,7 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/path_util.h"
 #include "extensions/browser/process_manager_factory.h"
+#include "extensions/browser/ui_util.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/browser/warning_service_factory.h"
 #include "extensions/browser/zipfile_installer.h"
@@ -101,6 +101,7 @@
 #include "storage/browser/file_system/isolated_context.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/origin.h"
 
 namespace extensions {
 
@@ -176,9 +177,8 @@ void GetManifestError(const std::string& error,
 
   // This will read the manifest and call AddFailure with the read manifest
   // contents.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&ReadFileToString,
                      extension_path.Append(kManifestFilename)),
       base::BindOnce(std::move(callback), extension_path, error, line));
@@ -211,7 +211,7 @@ void PerformVerificationCheck(content::BrowserContext* context) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
   bool should_do_verification_check = false;
   for (const scoped_refptr<const Extension>& extension : *extensions) {
-    if (ui_util::ShouldDisplayInExtensionSettings(extension.get(), context) &&
+    if (ui_util::ShouldDisplayInExtensionSettings(*extension) &&
         prefs->HasDisableReason(extension->id(),
                                 disable_reason::DISABLE_NOT_VERIFIED)) {
       should_do_verification_check = true;
@@ -324,7 +324,6 @@ std::unique_ptr<developer::ProfileInfo> DeveloperPrivateAPI::CreateProfileInfo(
   info->in_developer_mode =
       !info->is_supervised &&
       prefs->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-  info->app_info_dialog_enabled = CanPlatformShowAppInfoDialog();
   info->can_load_unpacked =
       ExtensionManagementFactory::GetForBrowserContext(profile)
           ->HasWhitelistedExtension();
@@ -908,7 +907,7 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
     if (!UserCanModifyExtensionConfiguration(extension,
                                              browser_context(),
                                              &error)) {
-      return RespondNow(Error(error));
+      return RespondNow(Error(std::move(error)));
     }
     util::SetAllowFileAccess(
         extension->id(), browser_context(), *update.file_access);
@@ -932,6 +931,8 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
         modifier.RemoveAllGrantedHostPermissions();
         break;
       case developer::HOST_ACCESS_ON_SPECIFIC_SITES:
+        if (modifier.HasBroadGrantedHostPermissions())
+          modifier.RemoveBroadGrantedHostPermissions();
         modifier.SetWithholdHostPermissions(true);
         break;
       case developer::HOST_ACCESS_ON_ALL_SITES:
@@ -1176,8 +1177,8 @@ void DeveloperPrivateLoadUnpackedFunction::OnLoadComplete(
 
   GetManifestError(
       error, file_path,
-      base::Bind(&DeveloperPrivateLoadUnpackedFunction::OnGotManifestError,
-                 this));
+      base::BindOnce(&DeveloperPrivateLoadUnpackedFunction::OnGotManifestError,
+                     this));
 }
 
 void DeveloperPrivateLoadUnpackedFunction::OnGotManifestError(
@@ -1378,7 +1379,7 @@ DeveloperPrivatePackDirectoryFunction::
 
 DeveloperPrivateLoadUnpackedFunction::~DeveloperPrivateLoadUnpackedFunction() {}
 
-bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
+ExtensionFunction::ResponseAction DeveloperPrivateLoadDirectoryFunction::Run() {
   // TODO(grv) : add unittests.
   std::string directory_url_str;
   std::string filesystem_name;
@@ -1398,48 +1399,47 @@ bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
         context_->CrackURL(GURL(directory_url_str));
     if (!directory_url.is_valid() ||
         directory_url.type() != storage::kFileSystemTypeSyncable) {
-      SetError("DirectoryEntry of unsupported filesystem.");
-      return false;
+      return RespondNow(Error("DirectoryEntry of unsupported filesystem."));
     }
     return LoadByFileSystemAPI(directory_url);
-  } else {
-    // Check if the DirectoryEntry is the instance of chrome filesystem.
-    if (!app_file_handler_util::ValidateFileEntryAndGetPath(
-            filesystem_name, filesystem_path, source_process_id(),
-            &project_base_path_, &error_)) {
-      SetError("DirectoryEntry of unsupported filesystem.");
-      return false;
-    }
-
-    // Try to load using the FileSystem API backend, in case the filesystem
-    // points to a non-native local directory.
-    std::string filesystem_id;
-    bool cracked =
-        storage::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id);
-    CHECK(cracked);
-    base::FilePath virtual_path =
-        storage::IsolatedContext::GetInstance()
-            ->CreateVirtualRootPath(filesystem_id)
-            .Append(base::FilePath::FromUTF8Unsafe(filesystem_path));
-    storage::FileSystemURL directory_url = context_->CreateCrackedFileSystemURL(
-        extensions::Extension::GetBaseURLFromExtensionId(extension_id()),
-        storage::kFileSystemTypeIsolated,
-        virtual_path);
-
-    if (directory_url.is_valid() &&
-        directory_url.type() != storage::kFileSystemTypeNativeLocal &&
-        directory_url.type() != storage::kFileSystemTypeRestrictedNativeLocal &&
-        directory_url.type() != storage::kFileSystemTypeDragged) {
-      return LoadByFileSystemAPI(directory_url);
-    }
-
-    Load();
   }
 
-  return true;
+  std::string unused_error;
+  // Check if the DirectoryEntry is the instance of chrome filesystem.
+  if (!app_file_handler_util::ValidateFileEntryAndGetPath(
+          filesystem_name, filesystem_path, source_process_id(),
+          &project_base_path_, &unused_error)) {
+    return RespondNow(Error("DirectoryEntry of unsupported filesystem."));
+  }
+
+  // Try to load using the FileSystem API backend, in case the filesystem
+  // points to a non-native local directory.
+  std::string filesystem_id;
+  bool cracked =
+      storage::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id);
+  CHECK(cracked);
+  base::FilePath virtual_path =
+      storage::IsolatedContext::GetInstance()
+          ->CreateVirtualRootPath(filesystem_id)
+          .Append(base::FilePath::FromUTF8Unsafe(filesystem_path));
+  storage::FileSystemURL directory_url = context_->CreateCrackedFileSystemURL(
+      url::Origin::Create(
+          extensions::Extension::GetBaseURLFromExtensionId(extension_id())),
+      storage::kFileSystemTypeIsolated, virtual_path);
+
+  if (directory_url.is_valid() &&
+      directory_url.type() != storage::kFileSystemTypeNativeLocal &&
+      directory_url.type() != storage::kFileSystemTypeRestrictedNativeLocal &&
+      directory_url.type() != storage::kFileSystemTypeDragged) {
+    return LoadByFileSystemAPI(directory_url);
+  }
+
+  Load();
+  return AlreadyResponded();
 }
 
-bool DeveloperPrivateLoadDirectoryFunction::LoadByFileSystemAPI(
+ExtensionFunction::ResponseAction
+DeveloperPrivateLoadDirectoryFunction::LoadByFileSystemAPI(
     const storage::FileSystemURL& directory_url) {
   std::string directory_url_str = directory_url.ToGURL().spec();
 
@@ -1447,8 +1447,7 @@ bool DeveloperPrivateLoadDirectoryFunction::LoadByFileSystemAPI(
   // Parse the project directory name from the project url. The project url is
   // expected to have project name as the suffix.
   if ((pos = directory_url_str.rfind("/")) == std::string::npos) {
-    SetError("Invalid Directory entry.");
-    return false;
+    return RespondNow(Error("Invalid Directory entry."));
   }
 
   std::string project_name;
@@ -1462,14 +1461,13 @@ bool DeveloperPrivateLoadDirectoryFunction::LoadByFileSystemAPI(
 
   project_base_path_ = project_path;
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
           &DeveloperPrivateLoadDirectoryFunction::ClearExistingDirectoryContent,
           this, project_base_path_));
-  return true;
+  return RespondLater();
 }
 
 void DeveloperPrivateLoadDirectoryFunction::Load() {
@@ -1478,8 +1476,7 @@ void DeveloperPrivateLoadDirectoryFunction::Load() {
 
   // TODO(grv) : The unpacked installer should fire an event when complete
   // and return the extension_id.
-  SetResult(std::make_unique<base::Value>("-1"));
-  SendResponse(true);
+  Respond(OneArgument(std::make_unique<base::Value>("-1")));
 }
 
 void DeveloperPrivateLoadDirectoryFunction::ClearExistingDirectoryContent(
@@ -1524,7 +1521,7 @@ void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPICb(
   // are added for copying. We do that to ensure that pendingCopyOperationsCount
   // does not become zero before all copy operations are finished.
   // In case the directory happens to be executing the last copy operation it
-  // will call SendResponse to send the response to the API. The pending copy
+  // will call Respond to send the response to the API. The pending copy
   // operations of files are released by the CopyFile function.
   pending_copy_operations_count_ += file_list.size();
 
@@ -1543,10 +1540,9 @@ void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPICb(
     target_path = target_path.Append(file_list[i].name);
 
     context_->operation_runner()->CreateSnapshotFile(
-        url,
-        base::Bind(&DeveloperPrivateLoadDirectoryFunction::SnapshotFileCallback,
-            this,
-            target_path));
+        url, base::BindOnce(
+                 &DeveloperPrivateLoadDirectoryFunction::SnapshotFileCallback,
+                 this, target_path));
   }
 
   if (!has_more) {
@@ -1554,10 +1550,15 @@ void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPICb(
     pending_copy_operations_count_--;
 
     if (!pending_copy_operations_count_) {
+      ExtensionFunction::ResponseValue response;
+      if (success_)
+        response = NoArguments();
+      else
+        response = Error(error_);
       base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(&DeveloperPrivateLoadDirectoryFunction::SendResponse,
-                         this, success_));
+          base::BindOnce(&DeveloperPrivateLoadDirectoryFunction::Respond, this,
+                         std::move(response)));
     }
   }
 }
@@ -1569,15 +1570,14 @@ void DeveloperPrivateLoadDirectoryFunction::SnapshotFileCallback(
     const base::FilePath& src_path,
     scoped_refptr<storage::ShareableFileReference> file_ref) {
   if (result != base::File::FILE_OK) {
-    SetError("Error in copying files from sync filesystem.");
+    error_ = "Error in copying files from sync filesystem.";
     success_ = false;
     return;
   }
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&DeveloperPrivateLoadDirectoryFunction::CopyFile, this,
                      src_path, target_path));
 }
@@ -1586,7 +1586,7 @@ void DeveloperPrivateLoadDirectoryFunction::CopyFile(
     const base::FilePath& src_path,
     const base::FilePath& target_path) {
   if (!base::CreateDirectory(target_path.DirName())) {
-    SetError("Error in copying files from sync filesystem.");
+    error_ = "Error in copying files from sync filesystem.";
     success_ = false;
   }
 
@@ -1702,11 +1702,10 @@ DeveloperPrivateRequestFileSourceFunction::Run() {
   if (properties.path_suffix == kManifestFile && !properties.manifest_key)
     return RespondNow(Error(kManifestKeyIsRequiredError));
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(&ReadFileToString, extension->path().Append(path_suffix)),
-      base::Bind(&DeveloperPrivateRequestFileSourceFunction::Finish, this));
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&ReadFileToString, extension->path().Append(path_suffix)),
+      base::BindOnce(&DeveloperPrivateRequestFileSourceFunction::Finish, this));
 
   return RespondLater();
 }

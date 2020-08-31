@@ -29,24 +29,20 @@
  */
 
 // Note that length == 0 and overloaded; need other tests for other cases.
-[
-    Constructor,
-    Constructor(
+interface TestInterfaceConstructor {
+    [CallWith=(ScriptState,ExecutionContext,Document), RaisesException, MeasureAs=TestFeature]
+    constructor();
+    [CallWith=(ScriptState,ExecutionContext,Document), RaisesException, MeasureAs=TestFeature]
+    constructor(
         double doubleArg,
         DOMString stringArg,
         TestInterfaceEmpty testInterfaceEmptyArg,
-        Dictionary dictionaryArg,
         sequence<DOMString> sequenceStringArg,
-        sequence<Dictionary> sequenceDictionaryArg,
         sequence<(long or TestDictionary)> sequenceLongOrTestDictionaryArg,
         optional USVString? optionalUSVStringArg,
-        optional Dictionary optionalDictionaryArg,
-        [DefaultValue=Undefined] optional TestInterfaceEmpty optionalTestInterfaceEmptyArg),
-    Constructor(DOMString arg, optional DOMString optArg),
-    Constructor(DOMString arg, DOMString arg2, DOMString arg3),
-    NamedConstructor=Audio(DOMString arg, optional DOMString optArg),
-    ConstructorCallWith=(ScriptState,ExecutionContext,Document),
-    MeasureAs=TestFeature,
-    RaisesException=Constructor
-] interface TestInterfaceConstructor {
+        [DefaultValue=Undefined] optional TestInterfaceEmpty optionalTestInterfaceEmptyArg);
+    [CallWith=(ScriptState,ExecutionContext,Document), RaisesException, MeasureAs=TestFeature]
+    constructor(DOMString arg, optional DOMString optArg);
+    [CallWith=(ScriptState,ExecutionContext,Document), RaisesException, MeasureAs=TestFeature]
+    constructor(DOMString arg, DOMString arg2, DOMString arg3);
 };

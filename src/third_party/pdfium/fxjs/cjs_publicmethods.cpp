@@ -124,11 +124,11 @@ ByteString CalculateString(double dValue,
 WideString CalcMergedString(const CJS_EventRecorder* event,
                             const WideString& value,
                             const WideString& change) {
-  WideString prefix = value.Left(event->SelStart());
+  WideString prefix = value.First(event->SelStart());
   WideString postfix;
   int end = event->SelEnd();
   if (end >= 0 && static_cast<size_t>(end) < value.GetLength())
-    postfix = value.Right(value.GetLength() - static_cast<size_t>(end));
+    postfix = value.Last(value.GetLength() - static_cast<size_t>(end));
   return prefix + change + postfix;
 }
 
@@ -342,7 +342,6 @@ v8::Local<v8::Array> CJS_PublicMethods::AF_MakeArrayFromList(
   }
   return StrArray;
 }
-
 
 double CJS_PublicMethods::ParseDate(const WideString& value,
                                     bool* bWrongFormat) {
@@ -721,8 +720,8 @@ CJS_Result CJS_PublicMethods::AFNumber_Keystroke(
 
   WideString wstrSelected;
   if (pEvent->SelStart() != -1) {
-    wstrSelected = wstrValue.Mid(pEvent->SelStart(),
-                                 pEvent->SelEnd() - pEvent->SelStart());
+    wstrSelected = wstrValue.Substr(pEvent->SelStart(),
+                                    pEvent->SelEnd() - pEvent->SelStart());
   }
 
   bool bHasSign = wstrValue.Contains(L'-') && !wstrSelected.Contains(L'-');

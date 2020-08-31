@@ -21,6 +21,7 @@ class WebAuthFlowTest;
 namespace content {
 class NotificationDetails;
 class NotificationSource;
+class StoragePartition;
 }
 
 namespace extensions {
@@ -51,6 +52,11 @@ class WebAuthFlow : public content::NotificationObserver,
     SILENT        // No UI should be shown.
   };
 
+  enum Partition {
+    GET_AUTH_TOKEN,       // Use the getAuthToken() partition.
+    LAUNCH_WEB_AUTH_FLOW  // Use the launchWebAuthFlow() partition.
+  };
+
   enum Failure {
     WINDOW_CLOSED,  // Window closed by user.
     INTERACTION_REQUIRED,  // Non-redirect page load in silent mode.
@@ -64,9 +70,9 @@ class WebAuthFlow : public content::NotificationObserver,
     virtual void OnAuthFlowFailure(Failure failure) = 0;
     // Called on redirects and other navigations to see if the URL should stop
     // the flow.
-    virtual void OnAuthFlowURLChange(const GURL& redirect_url) = 0;
+    virtual void OnAuthFlowURLChange(const GURL& redirect_url) {}
     // Called when the title of the current page changes.
-    virtual void OnAuthFlowTitleChange(const std::string& title) = 0;
+    virtual void OnAuthFlowTitleChange(const std::string& title) {}
 
    protected:
     virtual ~Delegate() {}
@@ -77,7 +83,8 @@ class WebAuthFlow : public content::NotificationObserver,
   WebAuthFlow(Delegate* delegate,
               Profile* profile,
               const GURL& provider_url,
-              Mode mode);
+              Mode mode,
+              Partition partition);
 
   ~WebAuthFlow() override;
 
@@ -86,6 +93,17 @@ class WebAuthFlow : public content::NotificationObserver,
 
   // Prevents further calls to the delegate and deletes the flow.
   void DetachDelegateAndDelete();
+
+  // Returns a StoragePartition of the guest webview. Used to inject cookies
+  // into Gaia page. Can override for testing.
+  virtual content::StoragePartition* GetGuestPartition();
+
+  // Returns an ID string attached to the window. Can override for testing.
+  virtual const std::string& GetAppWindowKey() const;
+
+  // Returns the URL used by the SiteInstance associated with the WebViewGuest
+  // with given |partition| used in the WebAuthFlow.
+  static GURL GetWebViewSiteURL(Partition partition);
 
  private:
   friend class ::WebAuthFlowTest;
@@ -117,6 +135,7 @@ class WebAuthFlow : public content::NotificationObserver,
   Profile* profile_;
   GURL provider_url_;
   Mode mode_;
+  Partition partition_;
 
   AppWindow* app_window_;
   std::string app_window_key_;

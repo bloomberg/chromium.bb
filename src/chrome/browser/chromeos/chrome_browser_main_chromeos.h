@@ -13,9 +13,10 @@
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
 
-class AssistantClient;
+class AssistantClientImpl;
 class AssistantStateClient;
 class ChromeKeyboardControllerClient;
+class ImageDownloaderImpl;
 class SpokenFeedbackEventRewriterDelegate;
 
 namespace lock_screen_apps {
@@ -55,11 +56,9 @@ class NetworkPrefStateObserver;
 class NetworkThrottlingObserver;
 class PowerMetricsReporter;
 class RendererFreezer;
-class SchedulerConfigurationManager;
 class SessionTerminationManager;
 class ShutdownPolicyForwarder;
 class SystemTokenCertDBInitializer;
-class WakeOnWifiManager;
 class WebKioskAppManager;
 class WilcoDtcSupportdManager;
 
@@ -71,7 +70,12 @@ namespace internal {
 class DBusServices;
 }  // namespace internal
 
+namespace network_health {
+class NetworkHealth;
+}  // namespace network_health
+
 namespace power {
+class SmartChargingManager;
 namespace ml {
 class AdaptiveScreenBrightnessManager;
 }  // namespace ml
@@ -83,6 +87,7 @@ class Controller;
 
 namespace system {
 class DarkResumeController;
+class BreakpadConsentWatcher;
 }  // namespace system
 
 // ChromeBrowserMainParts implementation for chromeos specific code.
@@ -112,11 +117,11 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
  private:
   std::unique_ptr<default_app_order::ExternalLoader> app_order_loader_;
+  std::unique_ptr<network_health::NetworkHealth> network_health_;
   std::unique_ptr<NetworkPrefStateObserver> network_pref_state_observer_;
   std::unique_ptr<IdleActionWarningObserver> idle_action_warning_observer_;
   std::unique_ptr<RendererFreezer> renderer_freezer_;
   std::unique_ptr<PowerMetricsReporter> power_metrics_reporter_;
-  std::unique_ptr<WakeOnWifiManager> wake_on_wifi_manager_;
   std::unique_ptr<FastTransitionObserver> fast_transition_observer_;
   std::unique_ptr<NetworkThrottlingObserver> network_throttling_observer_;
   std::unique_ptr<NetworkChangeManagerClient> network_change_manager_client_;
@@ -138,9 +143,11 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<arc::ArcServiceLauncher> arc_service_launcher_;
 
+  std::unique_ptr<ImageDownloaderImpl> image_downloader_;
+
   std::unique_ptr<AssistantStateClient> assistant_state_client_;
 
-  std::unique_ptr<AssistantClient> assistant_client_;
+  std::unique_ptr<AssistantClientImpl> assistant_client_;
 
   std::unique_ptr<LowDiskNotification> low_disk_notification_;
   std::unique_ptr<ArcKioskAppManager> arc_kiosk_app_manager_;
@@ -154,6 +161,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<lock_screen_apps::StateController>
       lock_screen_apps_state_controller_;
 
+  std::unique_ptr<power::SmartChargingManager> smart_charging_manager_;
+
   std::unique_ptr<power::ml::AdaptiveScreenBrightnessManager>
       adaptive_screen_brightness_manager_;
 
@@ -163,8 +172,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<DemoModeResourcesRemover> demo_mode_resources_remover_;
   std::unique_ptr<crostini::CrosvmMetrics> crosvm_metrics_;
   std::unique_ptr<DiscoverManager> discover_manager_;
-  std::unique_ptr<SchedulerConfigurationManager>
-      scheduler_configuration_manager_;
 
   std::unique_ptr<CrosUsbDetector> cros_usb_detector_;
 
@@ -192,6 +199,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
       login_screen_extensions_storage_cleaner_;
 
   std::unique_ptr<GnubbyNotification> gnubby_notification_;
+  std::unique_ptr<system::BreakpadConsentWatcher> breakpad_consent_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_provider.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -26,8 +27,11 @@ namespace {
 // This method and its dependencies must remain constant time, thus not branch
 // based on the value of |buffer| while encoding, assuming a known length.
 String ToBase64URLWithoutPadding(DOMArrayBuffer* buffer) {
-  String value = WTF::Base64URLEncode(static_cast<const char*>(buffer->Data()),
-                                      buffer->DeprecatedByteLengthAsUnsigned());
+  String value = WTF::Base64URLEncode(
+      static_cast<const char*>(buffer->Data()),
+      // The size of {buffer} should always fit into into {wtf_size_t}, because
+      // the buffer content itself origins from a WTF::Vector.
+      base::checked_cast<wtf_size_t>(buffer->ByteLengthAsSizeT()));
   DCHECK_GT(value.length(), 0u);
 
   unsigned padding_to_remove = 0;
@@ -65,8 +69,9 @@ PushSubscription::PushSubscription(
     const WTF::Vector<unsigned char>& auth,
     ServiceWorkerRegistration* service_worker_registration)
     : endpoint_(endpoint),
-      options_(PushSubscriptionOptions::Create(user_visible_only,
-                                               application_server_key)),
+      options_(MakeGarbageCollected<PushSubscriptionOptions>(
+          user_visible_only,
+          application_server_key)),
       p256dh_(DOMArrayBuffer::Create(p256dh.data(),
                                      SafeCast<unsigned>(p256dh.size()))),
       auth_(
@@ -75,13 +80,11 @@ PushSubscription::PushSubscription(
 
 PushSubscription::~PushSubscription() = default;
 
-DOMTimeStamp PushSubscription::expirationTime(bool& out_is_null) const {
+base::Optional<DOMTimeStamp> PushSubscription::expirationTime() const {
   // This attribute reflects the time at which the subscription will expire,
   // which is not relevant to this implementation yet as subscription refreshes
   // are not supported.
-  out_is_null = true;
-
-  return 0;
+  return base::nullopt;
 }
 
 DOMArrayBuffer* PushSubscription::getKey(const AtomicString& name) const {
@@ -121,7 +124,7 @@ ScriptValue PushSubscription::toJSONForBinding(ScriptState* script_state) {
   return result.GetScriptValue();
 }
 
-void PushSubscription::Trace(blink::Visitor* visitor) {
+void PushSubscription::Trace(Visitor* visitor) {
   visitor->Trace(options_);
   visitor->Trace(p256dh_);
   visitor->Trace(auth_);

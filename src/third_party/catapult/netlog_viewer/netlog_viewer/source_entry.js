@@ -10,8 +10,7 @@ class SourceEntry {
    *
    * @constructor
    */
-  constructor(logEntry, maxPreviousSourceId) {
-    this.maxPreviousSourceId_ = maxPreviousSourceId;
+  constructor(logEntry) {
     this.entries_ = [];
     this.description_ = '';
 
@@ -276,14 +275,6 @@ class SourceEntry {
     return this.entries_[0].source.id;
   }
 
-  /**
-   * Returns the largest source ID seen before this object was received.
-   * Used only for sorting SourceEntries without a source by source ID.
-   */
-  getMaxPreviousEntrySourceId() {
-    return this.maxPreviousSourceId_;
-  }
-
   isInactive() {
     return this.isInactive_;
   }
@@ -293,10 +284,24 @@ class SourceEntry {
   }
 
   /**
-   * Returns time ticks of first event.
+   * Returns time ticks of start of source. This may differ from
+   * the time of the first event if netlogging was started in the middle of a
+   * source, or if the source was created some time before the first event is
+   * logged.
    */
   getStartTicks() {
+    if (this.entries_[0].source.start_time !== undefined) {
+      return this.entries_[0].source.start_time;
+    }
     return this.entries_[0].time;
+  }
+
+  /**
+   * Returns true if this entry was created by a version of Chrome that records
+   * the start time of each source.
+   */
+  hasSourceStartTime() {
+    return this.entries_[0].source.start_time !== undefined;
   }
 
   /**

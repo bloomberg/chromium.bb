@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
@@ -115,9 +115,8 @@ ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   // Load schemas when the extension system is ready. It might be ready now.
   ExtensionSystem::Get(profile_)->ready().Post(
-      FROM_HERE,
-      base::Bind(&ExtensionTracker::OnExtensionsReady,
-                 weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ExtensionTracker::OnExtensionsReady,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void ManagedValueStoreCache::ExtensionTracker::OnExtensionWillBeInstalled(

@@ -11,28 +11,18 @@
 
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/ui/extensions/browser_action_test_util.h"
+#include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "extensions/common/extension_builder.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 
-class ExtensionAction;
 class ScopedTestingLocalState;
 class ToolbarActionsBar;
 class ToolbarActionsModel;
 
-namespace content {
-class WebContents;
-}
-
 namespace extensions {
 class Extension;
 }
-
-namespace ui {
-namespace test {
-class MaterialDesignControllerTestAPI;
-}
-}  // namespace ui
 
 // A cross-platform unit test for the ToolbarActionsBar that uses the
 // TestToolbarActionsBarHelper to create the platform-specific containers.
@@ -51,11 +41,6 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest,
 
   // Activates the tab at the given |index| in the tab strip model.
   void ActivateTab(int index);
-
-  // Set whether or not the given |action| wants to run on the |web_contents|.
-  void SetActionWantsToRunOnTab(ExtensionAction* action,
-                                content::WebContents* web_contents,
-                                bool wants_to_run);
 
   // Creates an extension with the given |name| and |action_type|, adds it to
   // the associated extension service, and returns the created extension. (It's
@@ -85,10 +70,10 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest,
     return overflow_browser_action_test_util_->GetToolbarActionsBar();
   }
   ToolbarActionsModel* toolbar_model() { return toolbar_model_; }
-  BrowserActionTestUtil* browser_action_test_util() {
+  ExtensionActionTestHelper* browser_action_test_util() {
     return browser_action_test_util_.get();
   }
-  BrowserActionTestUtil* overflow_browser_action_test_util() {
+  ExtensionActionTestHelper* overflow_browser_action_test_util() {
     return overflow_browser_action_test_util_.get();
   }
 
@@ -96,17 +81,16 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest,
   base::test::ScopedFeatureList feature_list_;
 
   // The associated ToolbarActionsModel (owned by the keyed service setup).
-  ToolbarActionsModel* toolbar_model_;
+  ToolbarActionsModel* toolbar_model_ = nullptr;
 
-  // A BrowserActionTestUtil object constructed with the associated
+  // A ExtensionActionTestHelper object constructed with the associated
   // ToolbarActionsBar.
-  std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
+  std::unique_ptr<ExtensionActionTestHelper> browser_action_test_util_;
 
-  // The overflow container's BrowserActionTestUtil.
-  std::unique_ptr<BrowserActionTestUtil> overflow_browser_action_test_util_;
+  // The overflow container's ExtensionActionTestHelper.
+  std::unique_ptr<ExtensionActionTestHelper> overflow_browser_action_test_util_;
 
-  std::unique_ptr<ui::test::MaterialDesignControllerTestAPI>
-      material_design_state_;
+  ui::TouchUiController::TouchUiScoperForTesting touch_ui_scoper_;
 
   // Local state for the browser process.
   std::unique_ptr<ScopedTestingLocalState> local_state_;

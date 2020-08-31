@@ -17,8 +17,9 @@
 
 namespace keyboard {
 
-// Length of the animation to show and hide the keyboard.
-constexpr int kAnimationDurationMs = 200;
+// The virtual keyboard show/hide animation durations.
+constexpr auto kShowAnimationDuration = base::TimeDelta::FromMilliseconds(200);
+constexpr auto kHideAnimationDuration = base::TimeDelta::FromMilliseconds(100);
 
 // Distance the keyboard moves during the animation
 constexpr int kAnimationDistance = 30;
@@ -36,7 +37,7 @@ void ContainerFloatingBehavior::DoHidingAnimation(
     aura::Window* container,
     ::wm::ScopedHidingAnimationSettings* animation_settings) {
   animation_settings->layer_animation_settings()->SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+      kHideAnimationDuration);
   gfx::Transform transform;
   transform.Translate(0, kAnimationDistance);
   container->SetTransform(transform);
@@ -47,8 +48,7 @@ void ContainerFloatingBehavior::DoShowingAnimation(
     aura::Window* container,
     ui::ScopedLayerAnimationSettings* animation_settings) {
   animation_settings->SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
-  animation_settings->SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+  animation_settings->SetTransitionDuration(kShowAnimationDuration);
 
   container->SetTransform(gfx::Transform());
   container->layer()->SetOpacity(1.0);
@@ -69,23 +69,9 @@ void ContainerFloatingBehavior::InitializeShowAnimationStartingState(
 gfx::Rect ContainerFloatingBehavior::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
     const gfx::Rect& requested_bounds_in_screen) {
-  gfx::Rect keyboard_bounds_in_screen = requested_bounds_in_screen;
-
-  if (!default_position_in_screen_) {
-    // If the keyboard hasn't been shown yet, ignore the request and use
-    // default.
-    gfx::Point default_location = GetPositionForShowingKeyboard(
-        keyboard_bounds_in_screen.size(), display_bounds);
-    keyboard_bounds_in_screen =
-        gfx::Rect(default_location, keyboard_bounds_in_screen.size());
-  } else {
-    // Otherwise, simply make sure that the new bounds are not off the edge of
-    // the screen.
-    keyboard_bounds_in_screen = ContainKeyboardToDisplayBounds(
-        keyboard_bounds_in_screen, display_bounds);
-    SavePosition(keyboard_bounds_in_screen, display_bounds.size());
-  }
-
+  gfx::Rect keyboard_bounds_in_screen = ContainKeyboardToDisplayBounds(
+      requested_bounds_in_screen, display_bounds);
+  SavePosition(keyboard_bounds_in_screen, display_bounds.size());
   return keyboard_bounds_in_screen;
 }
 
@@ -301,6 +287,12 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
       drag_descriptor_.reset();
       break;
   }
+  return false;
+}
+
+bool ContainerFloatingBehavior::HandleGestureEvent(
+    const ui::GestureEvent& event,
+    const gfx::Rect& bounds_in_screen) {
   return false;
 }
 

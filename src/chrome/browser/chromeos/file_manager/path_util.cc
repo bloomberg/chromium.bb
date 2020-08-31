@@ -10,7 +10,7 @@
 #include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -25,6 +25,9 @@
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/smb_client/smb_service.h"
+#include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
+#include "chrome/browser/chromeos/smb_client/smbfs_share.h"
 #include "chrome/browser/download/download_dir_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -108,6 +111,30 @@ bool ShouldMountPrimaryUserDownloads(Profile* profile) {
   return false;
 }
 
+// Extracts the Drive path from the given path located under the legacy Drive
+// mount point. Returns an empty path if |path| is not under the legacy Drive
+// mount point.
+// Example: ExtractLegacyDrivePath("/special/drive-xxx/foo.txt") =>
+//   "drive/foo.txt"
+base::FilePath ExtractLegacyDrivePath(const base::FilePath& path) {
+  std::vector<base::FilePath::StringType> components;
+  path.GetComponents(&components);
+  if (components.size() < 3)
+    return base::FilePath();
+  if (components[0] != FILE_PATH_LITERAL("/"))
+    return base::FilePath();
+  if (components[1] != FILE_PATH_LITERAL("special"))
+    return base::FilePath();
+  static const base::FilePath::CharType kPrefix[] = FILE_PATH_LITERAL("drive");
+  if (components[2].compare(0, base::size(kPrefix) - 1, kPrefix) != 0)
+    return base::FilePath();
+
+  base::FilePath drive_path = drive::util::GetDriveGrandRootPath();
+  for (size_t i = 3; i < components.size(); ++i)
+    drive_path = drive_path.Append(components[i]);
+  return drive_path;
+}
+
 }  // namespace
 
 const base::FilePath::CharType kRemovableMediaPath[] =
@@ -115,6 +142,9 @@ const base::FilePath::CharType kRemovableMediaPath[] =
 
 const base::FilePath::CharType kAndroidFilesPath[] =
     FILE_PATH_LITERAL("/run/arc/sdcard/write/emulated/0");
+
+const base::FilePath::CharType kSystemFontsPath[] =
+    FILE_PATH_LITERAL("/usr/share/fonts");
 
 base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
   // Check if FilesApp has a registered path already.  This happens for tests.
@@ -152,6 +182,17 @@ base::FilePath GetMyFilesFolderForProfile(Profile* profile) {
 
   // Return <cryptohome>/MyFiles.
   return profile->GetPath().AppendASCII(kFolderNameMyFiles);
+}
+
+base::FilePath GetAndroidFilesPath() {
+  // Check if Android has a registered path already. This happens for tests.
+  const std::string mount_point_name = util::GetAndroidFilesMountPointName();
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  base::FilePath path;
+  if (mount_points->GetRegisteredPath(mount_point_name, &path))
+    return path;
+  return base::FilePath(file_manager::util::kAndroidFilesPath);
 }
 
 bool MigratePathFromOldFormat(Profile* profile,
@@ -207,7 +248,7 @@ bool MigrateToDriveFs(Profile* profile,
   }
   *new_path = integration_service->GetMountPointPath();
   return drive::util::GetDriveGrandRootPath().AppendRelativePath(
-      drive::util::ExtractDrivePath(old_path), new_path);
+      ExtractLegacyDrivePath(old_path), new_path);
 }
 
 std::string GetDownloadsMountPointName(Profile* profile) {
@@ -373,7 +414,7 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
   }
 
   bool force_external = false;
-  // Force external URL for DriveFS and Crostini.
+  // Force external URL for DriveFS, Crostini and smbfs.
   drive::DriveIntegrationService* integration_service =
       drive::util::GetIntegrationServiceByProfile(primary_profile);
   if ((integration_service &&
@@ -382,6 +423,16 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
       GetCrostiniMountDirectory(primary_profile)
           .AppendRelativePath(path, &relative_path)) {
     force_external = true;
+  }
+
+  chromeos::smb_client::SmbService* smb_service =
+      chromeos::smb_client::SmbServiceFactory::Get(primary_profile);
+  if (smb_service) {
+    chromeos::smb_client::SmbFsShare* share =
+        smb_service->GetSmbFsShareForPath(path);
+    if (share && share->mount_path().AppendRelativePath(path, &relative_path)) {
+      force_external = true;
+    }
   }
 
   // Convert paths under /special or other paths forced to use external URL.
@@ -436,7 +487,7 @@ void ConvertToContentUrls(
                                                       &file_path);
       if (documents_provider_root) {
         documents_provider_root->ResolveToContentUrl(
-            file_path, base::BindRepeating(single_content_url_callback, index));
+            file_path, base::BindOnce(single_content_url_callback, index));
         continue;
       }
     }

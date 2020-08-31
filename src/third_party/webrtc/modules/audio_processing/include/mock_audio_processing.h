@@ -13,7 +13,6 @@
 
 #include <memory>
 
-#include "modules/audio_processing/audio_buffer.h"
 #include "modules/audio_processing/include/aec_dump.h"
 #include "modules/audio_processing/include/audio_processing.h"
 #include "modules/audio_processing/include/audio_processing_statistics.h"
@@ -81,7 +80,11 @@ class MockAudioProcessing : public ::testing::NiceMock<AudioProcessing> {
   MOCK_CONST_METHOD0(num_reverse_channels, size_t());
   MOCK_METHOD1(set_output_will_be_muted, void(bool muted));
   MOCK_METHOD1(SetRuntimeSetting, void(RuntimeSetting setting));
-  MOCK_METHOD1(ProcessStream, int(AudioFrame* frame));
+  MOCK_METHOD4(ProcessStream,
+               int(const int16_t* const src,
+                   const StreamConfig& input_config,
+                   const StreamConfig& output_config,
+                   int16_t* const dest));
   MOCK_METHOD7(ProcessStream,
                int(const float* const* src,
                    size_t samples_per_channel,
@@ -95,7 +98,11 @@ class MockAudioProcessing : public ::testing::NiceMock<AudioProcessing> {
                    const StreamConfig& input_config,
                    const StreamConfig& output_config,
                    float* const* dest));
-  MOCK_METHOD1(ProcessReverseStream, int(AudioFrame* frame));
+  MOCK_METHOD4(ProcessReverseStream,
+               int(const int16_t* const src,
+                   const StreamConfig& input_config,
+                   const StreamConfig& output_config,
+                   int16_t* const dest));
   MOCK_METHOD4(AnalyzeReverseStream,
                int(const float* const* data,
                    size_t samples_per_channel,
@@ -120,16 +127,19 @@ class MockAudioProcessing : public ::testing::NiceMock<AudioProcessing> {
   MOCK_CONST_METHOD0(delay_offset_ms, int());
   MOCK_METHOD1(set_stream_analog_level, void(int));
   MOCK_CONST_METHOD0(recommended_stream_analog_level, int());
-
-  virtual void AttachAecDump(std::unique_ptr<AecDump> aec_dump) {}
+  MOCK_METHOD3(CreateAndAttachAecDump,
+               bool(const std::string& file_name,
+                    int64_t max_log_size_bytes,
+                    rtc::TaskQueue* worker_queue));
+  MOCK_METHOD3(CreateAndAttachAecDump,
+               bool(FILE* handle,
+                    int64_t max_log_size_bytes,
+                    rtc::TaskQueue* worker_queue));
+  MOCK_METHOD1(AttachAecDump, void(std::unique_ptr<AecDump>));
   MOCK_METHOD0(DetachAecDump, void());
 
-  virtual void AttachPlayoutAudioGenerator(
-      std::unique_ptr<AudioGenerator> audio_generator) {}
-  MOCK_METHOD0(DetachPlayoutAudioGenerator, void());
-
-  MOCK_METHOD0(UpdateHistogramsOnCallEnd, void());
-  MOCK_CONST_METHOD1(GetStatistics, AudioProcessingStats(bool));
+  MOCK_METHOD0(GetStatistics, AudioProcessingStats());
+  MOCK_METHOD1(GetStatistics, AudioProcessingStats(bool));
 
   MOCK_CONST_METHOD0(GetConfig, AudioProcessing::Config());
 };

@@ -10,13 +10,9 @@ import("//gpu/vulkan/features.gni")
 
 group("config") {
   if (is_component_build) {
-    public_deps = [
-      "//gpu",
-    ]
+    public_deps = [ "//gpu" ]
   } else {
-    public_deps = [
-      ":config_sources",
-    ]
+    public_deps = [ ":config_sources" ]
   }
 }
 
@@ -63,9 +59,7 @@ action("process_json") {
     args += [ "linux" ]
   }
 
-  public_deps = [
-    ":workaround_list",
-  ]
+  public_deps = [ ":workaround_list" ]
 }
 
 action("workaround_list") {
@@ -77,9 +71,7 @@ action("workaround_list") {
     skia_workaround_list,
   ]
 
-  outputs = [
-    "$target_gen_dir/gpu_driver_bug_workaround_autogen.h",
-  ]
+  outputs = [ "$target_gen_dir/gpu_driver_bug_workaround_autogen.h" ]
 
   args = [
     "--output-file",
@@ -99,11 +91,11 @@ if (enable_vulkan) {
 
     configs += [ "//gpu:gpu_implementation" ]
 
-    deps = [
-      "//gpu/ipc/common:vulkan_interface",
+    deps = [ "//gpu/ipc/common:vulkan_interface" ]
+    public_deps = [
+      "//third_party/vulkan_headers",
+      "//ui/gfx",
     ]
-
-    all_dependent_configs = [ "//third_party/vulkan:vulkan_config" ]
 
     # surpass linke error 4217. It is because vulkan_info depends on
     # //gpu/ipc/common:vulkan_interface and //gpu/ipc/common:vulkan_interface"
@@ -121,6 +113,8 @@ jumbo_source_set("config_sources") {
   visibility = [ "//gpu/*" ]
 
   sources = [
+    "device_perf_info.cc",
+    "device_perf_info.h",
     "dx_diag_node.cc",
     "dx_diag_node.h",
     "gpu_blocklist.cc",
@@ -164,6 +158,8 @@ jumbo_source_set("config_sources") {
     "gpu_test_expectations_parser.h",
     "gpu_util.cc",
     "gpu_util.h",
+    "skia_limits.cc",
+    "skia_limits.h",
   ]
 
   if (is_fuchsia) {
@@ -174,9 +170,7 @@ jumbo_source_set("config_sources") {
 
   configs += [ "//gpu:gpu_implementation" ]
 
-  public_deps = [
-    "//components/crash/core/common:crash_key",
-  ]
+  public_deps = [ "//components/crash/core/common:crash_key" ]
 
   if (enable_vulkan) {
     public_deps += [ ":vulkan_info" ]
@@ -186,10 +180,13 @@ jumbo_source_set("config_sources") {
     ":process_json",
     "//base",
     "//build:branding_buildflags",
+    "//build:chromecast_buildflags",
+    "//gpu/command_buffer/common:common_sources",
     "//gpu/ipc/common:gpu_preferences_interface",
     "//gpu/vulkan:buildflags",
     "//media:media_buildflags",
     "//third_party/re2",
+    "//third_party/vulkan_headers",
     "//ui/gl",
     "//ui/gl:buildflags",
     "//ui/gl/init",
@@ -221,5 +218,8 @@ jumbo_source_set("config_sources") {
   }
   if (is_linux || is_mac) {
     deps += [ "//third_party/angle:angle_gpu_info_util" ]
+  }
+  if (use_x11) {
+    deps += [ "//ui/gfx/linux:gpu_memory_buffer_support_x11" ]
   }
 }

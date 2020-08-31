@@ -48,6 +48,11 @@ class ScriptPromiseResolver;
 class ScriptState;
 class StyleSheetContents;
 
+enum class CSSImportRules {
+  kAllow,
+  kIgnoreWithWarning,
+};
+
 class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -100,9 +105,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     deleteRule(index, exception_state);
   }
 
-  ScriptPromise replace(ScriptState* script_state,
-                        const String& text,
-                        ExceptionState&);
+  ScriptPromise replace(ScriptState* script_state, const String& text);
   void replaceSync(const String& text, ExceptionState&);
   void ResolveReplacePromiseIfNeeded(bool load_error_occured);
 
@@ -160,7 +163,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     ~RuleMutationScope();
 
    private:
-    Member<CSSStyleSheet> style_sheet_;
+    CSSStyleSheet* style_sheet_;
     DISALLOW_COPY_AND_ASSIGN(RuleMutationScope);
   };
 
@@ -176,7 +179,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     ~InspectorMutationScope();
 
    private:
-    Member<CSSStyleSheet> style_sheet_;
+    CSSStyleSheet* style_sheet_;
     DISALLOW_COPY_AND_ASSIGN(InspectorMutationScope);
   };
 
@@ -191,7 +194,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool SheetLoaded();
   bool LoadCompleted() const { return load_completed_; }
   void StartLoadingDynamicSheet();
-  void SetText(const String&, bool allow_import_rules, ExceptionState&);
+  void SetText(const String&, CSSImportRules);
   void SetMedia(MediaList*);
   void SetAlternateFromConstructor(bool);
   bool CanBeActivated(const String& current_preferrable_name) const;
@@ -202,7 +205,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
   bool IsConstructed() { return is_constructed_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool IsAlternate() const;

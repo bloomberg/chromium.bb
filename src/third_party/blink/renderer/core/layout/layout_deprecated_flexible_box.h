@@ -33,7 +33,7 @@ class FlexBoxIterator;
 // eventually be replaced by LayoutFlexibleBox.
 class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
  public:
-  LayoutDeprecatedFlexibleBox(Element&);
+  LayoutDeprecatedFlexibleBox(Element* element);
   ~LayoutDeprecatedFlexibleBox() override;
 
   const char* GetName() const override { return "LayoutDeprecatedFlexibleBox"; }
@@ -42,37 +42,21 @@ class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
                        const ComputedStyle& new_style) override;
 
   void UpdateBlockLayout(bool relayout_children) override;
-  void LayoutHorizontalBox(bool relayout_children);
   void LayoutVerticalBox(bool relayout_children);
 
   bool IsDeprecatedFlexibleBox() const override { return true; }
   bool IsFlexibleBoxIncludingDeprecatedAndNG() const override { return true; }
-  bool IsStretchingChildren() const { return stretching_children_; }
 
   void PlaceChild(LayoutBox* child, const LayoutPoint& location);
 
  private:
-  void ComputeIntrinsicLogicalWidths(
-      LayoutUnit& min_logical_width,
-      LayoutUnit& max_logical_width) const override;
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const override;
 
   LayoutUnit AllowedChildFlex(LayoutBox* child, bool expanding);
 
-  bool IsVertical() const {
-    return StyleRef().BoxOrient() == EBoxOrient::kVertical;
-  }
-  bool IsHorizontal() const {
-    return StyleRef().BoxOrient() == EBoxOrient::kHorizontal;
-  }
-
   void ApplyLineClamp(FlexBoxIterator&, bool relayout_children);
   void ClearLineClamp();
-
-  bool stretching_children_;
 };
-
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutDeprecatedFlexibleBox,
-                                IsDeprecatedFlexibleBox());
 
 }  // namespace blink
 

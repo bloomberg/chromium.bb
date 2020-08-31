@@ -7,18 +7,17 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "content/common/input/ime_text_span_conversions.h"
 #include "content/common/input_messages.h"
-#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget.h"
+#include "third_party/blink/public/common/input/web_coalesced_input_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
-#include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
@@ -28,9 +27,9 @@ namespace {
 
 void RunClosureIfNotSwappedOut(base::WeakPtr<RenderWidget> render_widget,
                                base::OnceClosure closure) {
-  // Input messages must not be processed if the RenderWidget was undead or is
-  // closing.
-  if (!render_widget || render_widget->IsUndeadOrProvisional()) {
+  // Input messages must not be processed if the RenderWidget was destroyed or
+  // was just recreated for a provisional frame.
+  if (!render_widget || render_widget->IsForProvisionalFrame()) {
     return;
   }
   std::move(closure).Run();
@@ -87,20 +86,15 @@ void WidgetInputHandlerImpl::MouseCaptureLost() {
 }
 
 void WidgetInputHandlerImpl::SetEditCommandsForNextKeyEvent(
-    const std::vector<EditCommand>& commands) {
+    std::vector<blink::mojom::EditCommandPtr> commands) {
   RunOnMainThread(
       base::BindOnce(&RenderWidget::OnSetEditCommandsForNextKeyEvent,
-                     render_widget_, commands));
+                     render_widget_, std::move(commands)));
 }
 
 void WidgetInputHandlerImpl::CursorVisibilityChanged(bool visible) {
   RunOnMainThread(base::BindOnce(&RenderWidget::OnCursorVisibilityChange,
                                  render_widget_, visible));
-}
-
-void WidgetInputHandlerImpl::FallbackCursorModeToggled(bool is_on) {
-  RunOnMainThread(base::BindOnce(&RenderWidget::OnFallbackCursorModeToggled,
-                                 render_widget_, is_on));
 }
 
 void WidgetInputHandlerImpl::ImeSetComposition(

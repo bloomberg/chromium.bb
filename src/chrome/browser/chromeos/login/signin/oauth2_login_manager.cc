@@ -17,6 +17,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -81,20 +82,22 @@ void OAuth2LoginManager::ContinueSessionRestore() {
 
 void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
   signin::IdentityManager* identity_manager = GetIdentityManager();
-  if (identity_manager->HasPrimaryAccountWithRefreshToken()) {
+  if (identity_manager->HasAccountWithRefreshToken(
+          GetUnconsentedPrimaryAccountId())) {
     VLOG(1) << "OAuth2 refresh token is already loaded.";
     VerifySessionCookies();
   } else {
     VLOG(1) << "Waiting for OAuth2 refresh token being loaded from database.";
 
-    const CoreAccountInfo account_info =
-        identity_manager->GetPrimaryAccountInfo();
     // Flag user with unknown token status in case there are no saved tokens
     // and OnRefreshTokenAvailable is not called. Flagging it here would
     // cause user to go through Gaia in next login to obtain a new refresh
     // token.
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
-        AccountId::FromUserEmail(account_info.email),
+        AccountId::FromUserEmail(
+            identity_manager
+                ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+                .email),
         user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN);
   }
 }
@@ -129,7 +132,7 @@ void OAuth2LoginManager::OnRefreshTokenUpdatedForAccount(
     return;
   }
   // Only restore session cookies for the primary account in the profile.
-  if (GetPrimaryAccountId() == account_info.account_id) {
+  if (GetUnconsentedPrimaryAccountId() == account_info.account_id) {
     // The refresh token has changed, so stop any ongoing actions that were
     // based on the old refresh token.
     Stop();
@@ -148,9 +151,11 @@ signin::IdentityManager* OAuth2LoginManager::GetIdentityManager() {
   return IdentityManagerFactory::GetForProfile(user_profile_);
 }
 
-CoreAccountId OAuth2LoginManager::GetPrimaryAccountId() {
+CoreAccountId OAuth2LoginManager::GetUnconsentedPrimaryAccountId() {
+  // Use the primary ID whether or not the user has consented to browser sync.
   const CoreAccountId primary_account_id =
-      GetIdentityManager()->GetPrimaryAccountId();
+      GetIdentityManager()->GetPrimaryAccountId(
+          signin::ConsentLevel::kNotRequired);
   LOG_IF(ERROR, primary_account_id.empty()) << "Primary account id is empty.";
   return primary_account_id;
 }
@@ -160,9 +165,11 @@ void OAuth2LoginManager::StoreOAuth2Token() {
 
   signin::IdentityManager* identity_manager = GetIdentityManager();
   // The primary account must be already set at this point.
-  DCHECK(identity_manager->HasPrimaryAccount());
+  DCHECK(
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kNotRequired));
   const CoreAccountInfo primary_account_info =
-      identity_manager->GetPrimaryAccountInfo();
+      identity_manager->GetPrimaryAccountInfo(
+          signin::ConsentLevel::kNotRequired);
 
   // We already have the refresh token at this
   // point, and will not get any additional callbacks from Account Manager or
@@ -175,9 +182,9 @@ void OAuth2LoginManager::StoreOAuth2Token() {
 
 void OAuth2LoginManager::VerifySessionCookies() {
   DCHECK(!login_verifier_.get());
-  login_verifier_.reset(new OAuth2LoginVerifier(this, GetIdentityManager(),
-                                                GetPrimaryAccountId(),
-                                                oauthlogin_access_token_));
+  login_verifier_ = std::make_unique<OAuth2LoginVerifier>(
+      this, GetIdentityManager(), GetUnconsentedPrimaryAccountId(),
+      oauthlogin_access_token_);
 
   if (restore_strategy_ == RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN) {
     login_verifier_->VerifyUserCookies();
@@ -215,7 +222,7 @@ void OAuth2LoginManager::OnListAccountsSuccess(
     const std::vector<gaia::ListedAccount>& accounts) {
   MergeVerificationOutcome outcome = POST_MERGE_SUCCESS;
   // Let's analyze which accounts we see logged in here:
-  CoreAccountId user_account_id = GetPrimaryAccountId();
+  CoreAccountId user_account_id = GetUnconsentedPrimaryAccountId();
   if (!accounts.empty()) {
     bool found = false;
     bool first = true;

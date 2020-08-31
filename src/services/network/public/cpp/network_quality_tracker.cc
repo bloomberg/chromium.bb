@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
@@ -165,9 +165,9 @@ void NetworkQualityTracker::InitializeMojoChannel() {
 
   // base::Unretained is safe as destruction of the
   // NetworkQualityTracker will also destroy the |receiver_|.
-  receiver_.set_disconnect_handler(base::BindRepeating(
-      &NetworkQualityTracker::HandleNetworkServicePipeBroken,
-      base::Unretained(this)));
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&NetworkQualityTracker::HandleNetworkServicePipeBroken,
+                     base::Unretained(this)));
 }
 
 void NetworkQualityTracker::HandleNetworkServicePipeBroken() {

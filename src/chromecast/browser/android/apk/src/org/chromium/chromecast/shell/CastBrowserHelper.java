@@ -46,11 +46,11 @@ public class CastBrowserHelper {
         DeviceUtils.addDeviceSpecificUserAgentSwitch();
 
         try {
-            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+            LibraryLoader.getInstance().ensureInitialized();
 
             Log.d(TAG, "Loading BrowserStartupController...");
-            BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                    .startBrowserProcessesSync(false);
+            BrowserStartupController.getInstance().startBrowserProcessesSync(
+                    LibraryProcessType.PROCESS_BROWSER, false);
             NetworkChangeNotifier.init();
             // Cast shell always expects to receive notifications to track network state.
             NetworkChangeNotifier.registerToReceiveNotificationsAlways();

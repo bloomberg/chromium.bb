@@ -4,6 +4,7 @@
 
 #include "headless/lib/headless_content_client.h"
 
+#include "components/embedder_support/origin_trials/origin_trial_policy_impl.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -33,6 +34,17 @@ base::RefCountedMemory* HeadlessContentClient::GetDataResourceBytes(
 gfx::Image& HeadlessContentClient::GetNativeImageNamed(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
+}
+
+blink::OriginTrialPolicy* HeadlessContentClient::GetOriginTrialPolicy() {
+  // Prevent initialization race (see crbug.com/721144). There may be a
+  // race when the policy is needed for worker startup (which happens on a
+  // separate worker thread).
+  base::AutoLock auto_lock(origin_trial_policy_lock_);
+  if (!origin_trial_policy_)
+    origin_trial_policy_ =
+        std::make_unique<embedder_support::OriginTrialPolicyImpl>();
+  return origin_trial_policy_.get();
 }
 
 }  // namespace headless

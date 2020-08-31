@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
+  'use strict';
   TestRunner.addResult(
       `Verify that for a fileSystem UISourceCode with persistence binding TabbedEditorContainer opens filesystem UISourceCode.\n`);
   await TestRunner.loadModule('sources_test_runner');
@@ -28,10 +29,10 @@
 
   function dumpEditorTabs(title) {
     var editorContainer = UI.panels.sources._sourcesView._editorContainer;
-    var openedUISourceCodes = editorContainer._tabIds.keysArray();
+    var openedUISourceCodes = [...editorContainer._tabIds.keys()];
     openedUISourceCodes.sort((a, b) => a.url().compareTo(b.url()));
     TestRunner.addResult(title);
-    for (code of openedUISourceCodes)
+    for (const code of openedUISourceCodes)
       TestRunner.addResult('    ' + code.url());
   }
 })();

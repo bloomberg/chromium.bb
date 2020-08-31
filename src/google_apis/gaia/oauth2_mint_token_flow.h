@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "google_apis/gaia/oauth2_api_call_flow.h"
+#include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
@@ -21,10 +22,6 @@ class OAuth2MintTokenFlowTest;
 
 namespace base {
 class Value;
-}
-
-namespace net {
-class CanonicalCookie;
 }
 
 extern const char kOAuth2MintTokenApiCallResultHistogram[];
@@ -79,16 +76,12 @@ struct RemoteConsentResolutionData {
   RemoteConsentResolutionData();
   ~RemoteConsentResolutionData();
 
-  RemoteConsentResolutionData(const RemoteConsentResolutionData& other) =
-      delete;
+  RemoteConsentResolutionData(const RemoteConsentResolutionData& other);
   RemoteConsentResolutionData& operator=(
-      const RemoteConsentResolutionData& other) = delete;
-
-  RemoteConsentResolutionData(RemoteConsentResolutionData&& other);
-  RemoteConsentResolutionData& operator=(RemoteConsentResolutionData&& other);
+      const RemoteConsentResolutionData& other);
 
   GURL url;
-  std::vector<std::unique_ptr<net::CanonicalCookie>> cookies;
+  net::CookieList cookies;
 
   bool operator==(const RemoteConsentResolutionData& rhs) const;
 };
@@ -119,6 +112,9 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
                const std::string& cid,
                const std::vector<std::string>& scopes_arg,
                const std::string& device_id,
+               const std::string& consent_result,
+               const std::string& version,
+               const std::string& channel,
                Mode mode_arg);
     Parameters(const Parameters& other);
     ~Parameters();
@@ -127,6 +123,9 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
     std::string client_id;
     std::vector<std::string> scopes;
     std::string device_id;
+    std::string consent_result;
+    std::string version;
+    std::string channel;
     Mode mode;
   };
 

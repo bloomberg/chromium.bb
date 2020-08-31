@@ -35,14 +35,14 @@
           .then(sourceCode => SourcesTestRunner.showUISourceCodePromise(sourceCode))
           .then(onSourceFrame);
 
-      function onSourceFrame(sourceFrame) {
-        SourcesTestRunner.setBreakpoint(sourceFrame, 0, '', true);
+      async function onSourceFrame(sourceFrame) {
+        await SourcesTestRunner.setBreakpoint(sourceFrame, 0, '', true);
         SourcesTestRunner.waitBreakpointSidebarPane(true).then(dumpBreakpointSidebarPane).then(next);
       }
     },
 
     async function reloadPageAndDumpBreakpoints(next) {
-      testMapping.removeBinding('foo.js');
+      await testMapping.removeBinding('foo.js');
       await Promise.all([SourcesTestRunner.waitBreakpointSidebarPane(), TestRunner.reloadPagePromise()]);
       testMapping.addBinding('foo.js');
       dumpBreakpointSidebarPane();
@@ -51,11 +51,10 @@
   ]);
 
   function dumpBreakpointSidebarPane() {
-    var paneElement = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane).contentElement;
-    var empty = paneElement.querySelector('.gray-info-message');
-    if (empty)
-      return TestRunner.textContentWithLineBreaks(empty);
-    var entries = Array.from(paneElement.querySelectorAll('.breakpoint-entry'));
+    var pane = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane);
+    if (!pane._emptyElement.classList.contains('hidden'))
+      return TestRunner.textContentWithLineBreaks(pane._emptyElement);
+    var entries = Array.from(pane.contentElement.querySelectorAll('.breakpoint-entry'));
     for (var entry of entries) {
       var uiLocation = entry[Sources.JavaScriptBreakpointsSidebarPane._locationSymbol];
       TestRunner.addResult('    ' + uiLocation.uiSourceCode.url() + ':' + uiLocation.lineNumber);

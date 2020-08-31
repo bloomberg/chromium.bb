@@ -25,9 +25,7 @@ group("deps") {
       # to add the ldflags here as well as in default_sanitizer_flags.
       ":default_sanitizer_ldflags",
     ]
-    deps = [
-      ":options_sources",
-    ]
+    deps = [ ":options_sources" ]
     if (is_win) {
       exe = ".exe"
     } else {
@@ -47,19 +45,15 @@ group("deps") {
     # used (Chromium version of clang versus Xcode version of clang). Only copy
     # the ASAN runtime on iOS if building with Chromium clang.
     if (is_win || is_mac || (is_ios && !use_xcode_clang)) {
-      data_deps = [
-        ":copy_asan_runtime",
-      ]
+      data_deps = [ ":copy_asan_runtime" ]
     }
     if (is_mac || (is_ios && !use_xcode_clang)) {
-      public_deps = [
-        ":asan_runtime_bundle_data",
-      ]
+      public_deps = [ ":asan_runtime_bundle_data" ]
     }
   }
 }
 
-assert(!(is_win && is_asan && target_cpu == "x86"),
+assert(!(is_win && is_asan && current_cpu == "x86"),
        "ASan is only supported in 64-bit builds on Windows.")
 
 if ((is_mac || is_win || (is_ios && !use_xcode_clang)) && is_asan) {
@@ -67,7 +61,7 @@ if ((is_mac || is_win || (is_ios && !use_xcode_clang)) && is_asan) {
     _clang_rt_dso_path = "darwin/libclang_rt.asan_osx_dynamic.dylib"
   } else if (is_ios) {
     _clang_rt_dso_path = "darwin/libclang_rt.asan_iossim_dynamic.dylib"
-  } else if (is_win && target_cpu == "x64") {
+  } else if (is_win && current_cpu == "x64") {
     _clang_rt_dso_path = "windows/clang_rt.asan_dynamic-x86_64.dll"
   }
 
@@ -76,24 +70,16 @@ if ((is_mac || is_win || (is_ios && !use_xcode_clang)) && is_asan) {
 
   if (!is_ios) {
     copy("copy_asan_runtime") {
-      sources = [
-        _clang_rt_dso_full_path,
-      ]
-      outputs = [
-        "$root_out_dir/{{source_file_part}}",
-      ]
+      sources = [ _clang_rt_dso_full_path ]
+      outputs = [ "$root_out_dir/{{source_file_part}}" ]
     }
   } else {
     # On iOS, the runtime library need to be code signed (adhoc signature)
     # starting with Xcode 8, so use an action instead of a copy on iOS.
     action("copy_asan_runtime") {
       script = "//build/config/ios/codesign.py"
-      sources = [
-        _clang_rt_dso_full_path,
-      ]
-      outputs = [
-        "$root_out_dir/" + get_path_info(sources[0], "file"),
-      ]
+      sources = [ _clang_rt_dso_full_path ]
+      outputs = [ "$root_out_dir/" + get_path_info(sources[0], "file") ]
       args = [
         "code-sign-file",
         "--identity=" + ios_code_signing_identity,
@@ -106,12 +92,8 @@ if ((is_mac || is_win || (is_ios && !use_xcode_clang)) && is_asan) {
   if (is_mac || is_ios) {
     bundle_data("asan_runtime_bundle_data") {
       sources = get_target_outputs(":copy_asan_runtime")
-      outputs = [
-        "{{bundle_executable_dir}}/{{source_file_part}}",
-      ]
-      public_deps = [
-        ":copy_asan_runtime",
-      ]
+      outputs = [ "{{bundle_executable_dir}}/{{source_file_part}}" ]
+      public_deps = [ ":copy_asan_runtime" ]
     }
   }
 }
@@ -131,9 +113,7 @@ static_library("options_sources") {
     ":deps",
     "//:gn_visibility",
   ]
-  sources = [
-    "//build/sanitizers/sanitizer_options.cc",
-  ]
+  sources = [ "//build/sanitizers/sanitizer_options.cc" ]
 
   # Don't compile this target with any sanitizer code. It can be called from
   # the sanitizer runtimes, so instrumenting these functions could cause
@@ -242,14 +222,14 @@ config("default_sanitizer_ldflags") {
       # In the static-library build, ASan libraries are different for
       # executables and dlls, see link_executable and link_shared_library below.
       # This here handles only the component build.
-      if (target_cpu == "x64") {
+      if (current_cpu == "x64") {
         # Windows 64-bit.
         libs = [
           "clang_rt.asan_dynamic-x86_64.lib",
           "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib",
         ]
       } else {
-        assert(target_cpu == "x86", "WinASan unsupported architecture")
+        assert(current_cpu == "x86", "WinASan unsupported architecture")
         libs = [
           "clang_rt.asan_dynamic-i386.lib",
           "clang_rt.asan_dynamic_runtime_thunk-i386.lib",
@@ -257,7 +237,7 @@ config("default_sanitizer_ldflags") {
       }
     }
     if (use_libfuzzer) {
-      assert(target_cpu == "x64", "LibFuzzer unsupported architecture")
+      assert(current_cpu == "x64", "LibFuzzer unsupported architecture")
       assert(!is_component_build,
              "LibFuzzer only supports non-component builds on Windows")
 
@@ -273,7 +253,11 @@ config("common_sanitizer_flags") {
 
   if (using_sanitizer) {
     assert(is_clang, "sanitizers only supported with clang")
-    assert(!is_official_build, "sanitizers not supported in official builds")
+
+    # Allow non-default toolchains to enable sanitizers in toolchain_args even
+    # in official builds.
+    assert(current_toolchain != default_toolchain || !is_official_build,
+           "sanitizers not supported in official builds")
 
     cflags += [
       # Column info in debug data confuses Visual Studio's debugger, so don't
@@ -324,10 +308,10 @@ config("asan_flags") {
 
 config("link_executable") {
   if (is_asan && is_win && !is_component_build) {
-    if (target_cpu == "x64") {
+    if (current_cpu == "x64") {
       ldflags = [ "-wholearchive:clang_rt.asan-x86_64.lib" ]
     } else {
-      assert(target_cpu == "x86", "WinASan unsupported architecture")
+      assert(current_cpu == "x86", "WinASan unsupported architecture")
       ldflags = [ "-wholearchive:clang_rt.asan-i386.lib" ]
     }
   }
@@ -335,10 +319,10 @@ config("link_executable") {
 
 config("link_shared_library") {
   if (is_asan && is_win && !is_component_build) {
-    if (target_cpu == "x64") {
+    if (current_cpu == "x64") {
       libs = [ "clang_rt.asan_dll_thunk-x86_64.lib" ]
     } else {
-      assert(target_cpu == "x86", "WinASan unsupported architecture")
+      assert(current_cpu == "x86", "WinASan unsupported architecture")
       libs = [ "clang_rt.asan_dll_thunk-i386.lib" ]
     }
   }
@@ -437,9 +421,6 @@ config("hwasan_flags") {
   if (is_hwasan) {
     asmflags = [ "-fsanitize=hwaddress" ]
     cflags = [ "-fsanitize=hwaddress" ]
-    if (hwasan_platform) {
-      cflags += [ "-fsanitize-hwaddress-abi=platform" ]
-    }
   }
 }
 
@@ -493,7 +474,6 @@ config("ubsan_flags") {
       "-fsanitize=integer-divide-by-zero",
       "-fsanitize=null",
       "-fsanitize=object-size",
-      "-fsanitize=pointer-overflow",
       "-fsanitize=return",
       "-fsanitize=returns-nonnull-attribute",
       "-fsanitize=shift-exponent",
@@ -536,7 +516,6 @@ config("ubsan_security_flags") {
     }
     cflags = [
       "-fsanitize=function",
-      "-fsanitize=pointer-overflow",
       "-fsanitize=shift",
       "-fsanitize=signed-integer-overflow",
       "-fsanitize=vla-bound",

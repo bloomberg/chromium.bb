@@ -13,6 +13,12 @@ Note that we changed the term "layout tests" to "web tests".
 Please assume these terms mean the identical stuff. We also call it as
 "WebKit tests" and "WebKit layout tests".
 
+["Web platform tests"](./web_platform_tests.md) (WPT) are the preferred form of
+web tests and are located at
+[web_tests/external/wpt](/third_party/blink/web_tests/external/wpt).
+Tests that should work across browsers go there. Other directories are for
+Chrome-specific tests only.
+
 [TOC]
 
 ## Running Web Tests
@@ -219,7 +225,9 @@ There are two ways to run web tests with additional command-line arguments:
 
   It will also look for flag-specific expectations in
   `web_tests/FlagExpectations/blocking-repaint`, if this file exists. The
-  suppressions in this file override the main TestExpectations file.
+  suppressions in this file override the main TestExpectations files.
+  However, `[ Slow ]` in either flag-specific expectations or base expectations
+  is always merged into the used expectations.
 
   It will also look for baselines in `web_tests/flag-specific/blocking-repaint`.
   The baselines in this directory override the fallback baselines.
@@ -272,11 +280,13 @@ There are two ways to run web tests with additional command-line arguments:
   These virtual tests exist in addition to the original `compositing/...` and
   `fast/repaint/...` tests. They can have their own expectations in
   `web_tests/TestExpectations`, and their own baselines. The test harness will
-  use the non-virtual baselines as a fallback. However, the non-virtual
-  expectations are not inherited: if `fast/repaint/foo.html` is marked
-  `[ Fail ]`, the test harness still expects
-  `virtual/blocking_repaint/fast/repaint/foo.html` to pass. If you expect the
-  virtual test to also fail, it needs its own suppression.
+  use the non-virtual expectations and baselines as a fallback. If a virtual
+  test has its own expectations, they will override all non-virtual
+  expectations. otherwise the non-virtual expectations will be used. However,
+  `[ Slow ]` in either virtual or non-virtual expectations is always merged
+  into the used expectations. If a virtual test is expected to pass while the
+  non-virtual test is expected to fail, you need to add an explicit `[ Pass ]`
+  entry for the virtual test.
 
   This will also let any real tests under `web_tests/virtual/blocking_repaint`
   directory run with the `--blocking-repaint` flag.
@@ -311,6 +321,13 @@ Consider the following when choosing between them:
   still use `virtual/blocking_repaint` to run all real and virtual tests
   in the suite or `virtual/blocking_repaint/fast/repaint/dir` to run real
   or virtual tests in the suite under a specific directory.
+
+*** note
+We can run a virtual test with additional flags. Both the virtual args and the
+additional flags will be applied. The fallback order of baselines and
+expectations will be: 1) flag-specific virtual, 2) non-flag-specific virtual,
+3) flag-specific base, 4) non-flag-specific base
+***
 
 ## Tracking Test Failures
 
@@ -580,11 +597,6 @@ files. You can follow the steps below for easier review.
 
 3. Request review of the CL and tell the reviewer to compare the patch sets that
    were uploaded in step 1 and step 2 to see the differences of the rebaselines.
-
-## web-platform-tests
-
-In addition to web tests developed and run just by the Blink team, there is
-also a shared test suite, see [web-platform-tests](./web_platform_tests.md).
 
 ## Known Issues
 

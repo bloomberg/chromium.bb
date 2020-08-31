@@ -7,6 +7,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -37,7 +38,7 @@ void QboneControlStreamBase::OnDataAvailable() {
     if (buffer_.size() < pending_message_size_) {
       return;
     }
-    string tmp = buffer_.substr(0, pending_message_size_);
+    std::string tmp = buffer_.substr(0, pending_message_size_);
     buffer_.erase(0, pending_message_size_);
     pending_message_size_ = 0;
     OnMessage(tmp);
@@ -45,7 +46,7 @@ void QboneControlStreamBase::OnDataAvailable() {
 }
 
 bool QboneControlStreamBase::SendMessage(const proto2::Message& proto) {
-  string tmp;
+  std::string tmp;
   if (!proto.SerializeToString(&tmp)) {
     QUIC_BUG << "Failed to serialize QboneControlRequest";
     return false;
@@ -58,10 +59,16 @@ bool QboneControlStreamBase::SendMessage(const proto2::Message& proto) {
   uint16_t size = tmp.size();
   char size_str[kRequestSizeBytes];
   memcpy(size_str, &size, kRequestSizeBytes);
-  WriteOrBufferData(QuicStringPiece(size_str, kRequestSizeBytes), false,
-                    nullptr);
+  WriteOrBufferData(quiche::QuicheStringPiece(size_str, kRequestSizeBytes),
+                    false, nullptr);
   WriteOrBufferData(tmp, false, nullptr);
   return true;
+}
+
+void QboneControlStreamBase::OnStreamReset(
+    const QuicRstStreamFrame& /*frame*/) {
+  stream_delegate()->OnStreamError(QUIC_INVALID_STREAM_ID,
+                                   "Attempt to reset control stream");
 }
 
 }  // namespace quic

@@ -14,8 +14,8 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
+import org.chromium.base.BundleUtils;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.JNIUtils;
@@ -23,12 +23,9 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.memory.MemoryPressureMonitor;
-import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.build.BuildHooks;
-import org.chromium.build.BuildHooksAndroid;
-import org.chromium.build.BuildHooksConfig;
 import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
 import org.chromium.chrome.browser.crash.ApplicationStatusTracker;
 import org.chromium.chrome.browser.crash.FirebaseConfig;
@@ -39,14 +36,18 @@ import org.chromium.chrome.browser.dependency_injection.ChromeAppComponent;
 import org.chromium.chrome.browser.dependency_injection.ChromeAppModule;
 import org.chromium.chrome.browser.dependency_injection.DaggerChromeAppComponent;
 import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
 import org.chromium.components.module_installer.util.ModuleUtil;
+import org.chromium.components.version_info.Channel;
+import org.chromium.components.version_info.VersionConstants;
 import org.chromium.ui.base.ResourceBundle;
+import org.chromium.url.GURL;
 
 /**
  * Basic application functionality that should be shared among all browser applications that use
@@ -79,11 +80,9 @@ public class ChromeApplication extends Application {
         if (isBrowserProcess) UmaUtils.recordMainEntryPointTime();
         super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
-
+        maybeInitProcessType(isBrowserProcess);
+        BundleUtils.setIsBundle(ProductConfig.IS_BUNDLE);
         if (isBrowserProcess) {
-            if (BuildConfig.IS_MULTIDEX_ENABLED) {
-                ChromiumMultiDexInstaller.install(this);
-            }
             checkAppBeingReplaced();
 
             PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
@@ -107,19 +106,20 @@ public class ChromeApplication extends Application {
             tracker.onApplicationStateChange(ApplicationStatus.getStateForApplication());
             ApplicationStatus.registerApplicationStateListener(tracker);
 
-            // Only browser process requires custom resources.
-            BuildHooksAndroid.initCustomResources(this);
-
             // Disable MemoryPressureMonitor polling when Chrome goes to the background.
             ApplicationStatus.registerApplicationStateListener(
                     ChromeApplication::updateMemoryPressurePolling);
 
-            // Record via UMA all modules that have been requested and are currently installed. This
-            // will tell us the install penetration of each module over time.
-            ModuleUtil.recordModuleAvailability();
+            // Initializes the support for dynamic feature modules (browser only).
+            ModuleUtil.initApplication();
 
             // Set Chrome factory for mapping BackgroundTask classes to TaskIds.
             ChromeBackgroundTaskFactory.setAsDefault();
+
+            if (VersionConstants.CHANNEL == Channel.CANARY) {
+                GURL.setReportDebugThrowableCallback(
+                        PureJavaExceptionReporter::reportJavaException);
+            }
         }
 
         // Write installed modules to crash keys. This needs to be done as early as possible so that
@@ -132,28 +132,49 @@ public class ChromeApplication extends Application {
             // Incremental install disables process isolation, so things in this block will actually
             // be run for incremental apks, but not normal apks.
             PureJavaExceptionHandler.installHandler();
-            if (BuildHooksConfig.REPORT_JAVA_ASSERT) {
-                BuildHooks.setReportAssertionCallback(
-                        PureJavaExceptionReporter::reportJavaException);
-            }
         }
+
         AsyncTask.takeOverAndroidThreadPool();
         JNIUtils.setClassLoader(getClassLoader());
         ResourceBundle.setAvailablePakLocales(
                 ProductConfig.COMPRESSED_LOCALES, ProductConfig.UNCOMPRESSED_LOCALES);
-        LibraryLoader.getInstance().setConfiguration(
+        LibraryLoader.getInstance().setLinkerImplementation(
                 ProductConfig.USE_CHROMIUM_LINKER, ProductConfig.USE_MODERN_LINKER);
+        LibraryLoader.getInstance().enableJniChecks();
 
         if (isBrowserProcess) {
             TraceEvent.end("ChromeApplication.attachBaseContext");
         }
     }
 
-    private static Boolean shouldUseDebugFlags() {
-        return FeatureUtilities.isCommandLineOnNonRootedEnabled();
+    private void maybeInitProcessType(boolean isBrowserProcess) {
+        if (isBrowserProcess) {
+            LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_BROWSER);
+            return;
+        }
+        // WebView initialization sets the correct process type.
+        if (isWebViewProcess()) return;
+
+        // Child processes set their own process type when bound.
+        String processName = ContextUtils.getProcessName();
+        if (processName.contains("privileged_process")
+                || processName.contains("sandboxed_process")) {
+            return;
+        }
+
+        // We must be in an isolated service process.
+        LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_CHILD);
     }
 
-    private static boolean isBrowserProcess() {
+    protected boolean isWebViewProcess() {
+        return false;
+    }
+
+    private static Boolean shouldUseDebugFlags() {
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED);
+    }
+
+    protected static boolean isBrowserProcess() {
         return !ContextUtils.getProcessName().contains(":");
     }
 

@@ -32,6 +32,7 @@ class SimpleMenuModel;
 namespace ash {
 
 class AppListModel;
+class AppListNotifier;
 enum class AppListViewState;
 struct AppLaunchedMetricParams;
 class SearchModel;
@@ -46,6 +47,11 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Gets the search model associated with the view delegate. The model may be
   // owned by the delegate, or owned elsewhere (e.g. a profile keyed service).
   virtual SearchModel* GetSearchModel() = 0;
+
+  // Returns the AppListNotifier instance. The notifier is owned by the
+  // AppListClient, and may be nullptr if no client has been set for the
+  // delegate.
+  virtual AppListNotifier* GetNotifier() = 0;
 
   // Invoked to start a new Google Assistant session.
   virtual void StartAssistant() = 0;
@@ -66,8 +72,8 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // by user pressing ENTER key.
   virtual void OpenSearchResult(const std::string& result_id,
                                 int event_flags,
-                                ash::AppListLaunchedFrom launched_from,
-                                ash::AppListLaunchType launch_type,
+                                AppListLaunchedFrom launched_from,
+                                AppListLaunchType launch_type,
                                 int suggestion_index,
                                 bool launch_as_default) = 0;
 
@@ -119,7 +125,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Activates (opens) the item.
   virtual void ActivateItem(const std::string& id,
                             int event_flags,
-                            ash::AppListLaunchedFrom launched_from) = 0;
+                            AppListLaunchedFrom launched_from) = 0;
 
   // Returns the context menu model for a ChromeAppListItem with |id|, or
   // nullptr if there is currently no menu for the item (e.g. during install).
@@ -130,7 +136,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Returns an animation observer if the |target_state| is interesting to the
   // delegate.
   virtual ui::ImplicitAnimationObserver* GetAnimationObserver(
-      ash::AppListViewState target_state) = 0;
+      AppListViewState target_state) = 0;
 
   // Show wallpaper context menu from the specified onscreen location.
   virtual void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
@@ -163,7 +169,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   virtual int GetTargetYForAppListHide(aura::Window* root_window) = 0;
 
   // Returns the AssistantViewDelegate.
-  virtual ash::AssistantViewDelegate* GetAssistantViewDelegate() = 0;
+  virtual AssistantViewDelegate* GetAssistantViewDelegate() = 0;
 
   // Called if a search result has its visibility updated and wants to
   // be notified (i.e. its notify_visibility_change() returns true).
@@ -179,7 +185,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // clicked, |position_index| will be -1).
   virtual void NotifySearchResultsForLogging(
       const base::string16& raw_query,
-      const ash::SearchResultIdWithPositionIndices& results,
+      const SearchResultIdWithPositionIndices& results,
       int position_index) = 0;
 
   // Returns true if the Assistant feature is allowed and enabled.
@@ -196,9 +202,11 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // indicate not to show the view any more.
   virtual void MarkAssistantPrivacyInfoDismissed() = 0;
 
+  // Called when the app list view state is updated.
+  virtual void OnViewStateChanged(AppListViewState state) = 0;
+
   // Called when the app list view animation is completed.
-  virtual void OnStateTransitionAnimationCompleted(
-      ash::AppListViewState state) = 0;
+  virtual void OnStateTransitionAnimationCompleted(AppListViewState state) = 0;
 
   // Fills the given AppLaunchedMetricParams with info known by the delegate.
   virtual void GetAppLaunchedMetricParams(
@@ -208,8 +216,12 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // space. This prevents 1px gaps on displays with non-integer scale factors.
   virtual gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) = 0;
 
-  // Gets the current shelf height from the ShelfConfig.
-  virtual int GetShelfHeight() = 0;
+  // Gets the current shelf height (or width for side-shelf) from the
+  // ShelfConfig.
+  virtual int GetShelfSize() = 0;
+
+  // Returns whether tablet mode is currently enabled.
+  virtual bool IsInTabletMode() = 0;
 };
 
 }  // namespace ash

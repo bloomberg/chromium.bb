@@ -7,11 +7,23 @@
  * editing or creating a credit card entry.
  */
 
-(function() {
-'use strict';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import '../settings_shared_css.m.js';
+import '../settings_vars_css.m.js';
+
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 
 Polymer({
   is: 'settings-credit-card-edit-dialog',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /**
@@ -59,7 +71,7 @@ Polymer({
    * @return {boolean} True iff the provided expiration date is passed.
    * @private
    */
-  checkIfCardExpired_: function(expirationMonth_, expirationYear_) {
+  checkIfCardExpired_(expirationMonth_, expirationYear_) {
     const now = new Date();
     return (
         expirationYear_ < now.getFullYear() ||
@@ -68,7 +80,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.title_ = this.i18n(
         this.creditCard.guid ? 'editCreditCardTitle' : 'addCreditCardTitle');
 
@@ -108,7 +120,7 @@ Polymer({
   },
 
   /** Closes the dialog. */
-  close: function() {
+  close() {
     this.$.dialog.close();
   },
 
@@ -116,7 +128,7 @@ Polymer({
    * Handler for tapping the 'cancel' button. Should just dismiss the dialog.
    * @private
    */
-  onCancelButtonTap_: function() {
+  onCancelButtonTap_() {
     this.$.dialog.cancel();
   },
 
@@ -124,7 +136,7 @@ Polymer({
    * Handler for tapping the save button.
    * @private
    */
-  onSaveButtonTap_: function() {
+  onSaveButtonTap_() {
     if (!this.saveEnabled_()) {
       return;
     }
@@ -136,24 +148,24 @@ Polymer({
   },
 
   /** @private */
-  onMonthChange_: function() {
+  onMonthChange_() {
     this.expirationMonth_ = this.monthList_[this.$.month.selectedIndex];
     this.$.saveButton.disabled = !this.saveEnabled_();
   },
 
   /** @private */
-  onYearChange_: function() {
+  onYearChange_() {
     this.expirationYear_ = this.yearList_[this.$.year.selectedIndex];
     this.$.saveButton.disabled = !this.saveEnabled_();
   },
 
   /** @private */
-  onCreditCardNameOrNumberChanged_: function() {
+  onCreditCardNameOrNumberChanged_() {
     this.$.saveButton.disabled = !this.saveEnabled_();
   },
 
   /** @private */
-  saveEnabled_: function() {
+  saveEnabled_() {
     // The save button is enabled if:
     // There is and name or number for the card
     // and the expiration date is valid.
@@ -163,4 +175,3 @@ Polymer({
         !this.checkIfCardExpired_(this.expirationMonth_, this.expirationYear_);
   },
 });
-})();

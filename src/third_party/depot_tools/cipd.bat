@@ -46,9 +46,9 @@ exit /b %EXPORT_ERRORLEVEL%
 :: and unzipping the depot_tools.zip distribution, we clear the Zone.Identifier
 :: alternate data stream. This is equivalent to clicking the "Unblock" button
 :: in the file's properties dialog.
-echo.>%~dp0cipd.ps1:Zone.Identifier
+echo.>%~dp0.cipd_impl.ps1:Zone.Identifier
 powershell -NoProfile -ExecutionPolicy RemoteSigned ^
-    -Command "%~dp0cipd.ps1" ^
+    -Command "%~dp0.cipd_impl.ps1" ^
     -CipdBinary "%CIPD_BINARY%" ^
     -BackendURL "%CIPD_BACKEND%" ^
     -VersionFile "%VERSION_FILE%" ^

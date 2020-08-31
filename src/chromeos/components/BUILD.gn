@@ -9,9 +9,7 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 # To add a unit test to this target, make a "unit_test" source_set in your
 # component and add a reference here.
 test("chromeos_components_unittests") {
-  sources = [
-    "run_all_unittests.cc",
-  ]
+  sources = [ "run_all_unittests.cc" ]
 
   deps = [
     "//base",
@@ -25,8 +23,11 @@ test("chromeos_components_unittests") {
     "//chromeos/components/power:unit_tests",
     "//chromeos/components/proximity_auth:unit_tests",
     "//chromeos/components/quick_answers:unit_tests",
+    "//chromeos/components/security_token_pin:unit_tests",
+    "//chromeos/components/smbfs:unit_tests",
     "//chromeos/components/sync_wifi:unit_tests",
     "//chromeos/components/tether:unit_tests",
+    "//chromeos/components/trial_group:unit_tests",
     "//mojo/core/embedder",
   ]
 }
@@ -34,7 +35,13 @@ test("chromeos_components_unittests") {
 group("closure_compile") {
   testonly = true
   deps = [
+    "//chromeos/components/help_app_ui:closure_compile",
     "//chromeos/components/media_app_ui:closure_compile",
     "//chromeos/components/multidevice/debug_webui/resources:closure_compile",
+    "//chromeos/components/print_management:closure_compile",
   ]
+
+  if (!is_official_build) {
+    deps += [ "//chromeos/components/sample_system_web_app_ui:closure_compile" ]
+  }
 }

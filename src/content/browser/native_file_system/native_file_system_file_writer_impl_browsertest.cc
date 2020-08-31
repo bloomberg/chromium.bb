@@ -16,6 +16,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -61,8 +62,7 @@ class NativeFileSystemFileWriterBrowserTest : public ContentBrowserTest {
     base::FilePath test_file;
     EXPECT_TRUE(
         base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &test_file));
-    EXPECT_EQ(int{contents.size()},
-              base::WriteFile(test_file, contents.data(), contents.size()));
+    EXPECT_TRUE(base::WriteFile(test_file, contents));
 
     ui::SelectFileDialog::SetFactory(
         new FakeSelectFileDialogFactory({test_file}));
@@ -72,7 +72,7 @@ class NativeFileSystemFileWriterBrowserTest : public ContentBrowserTest {
         EvalJs(
             shell(),
             "(async () => {"
-            "  let e = await self.chooseFileSystemEntries({type: 'openFile'});"
+            "  let e = await self.chooseFileSystemEntries({type: 'open-file'});"
             "  self.entry = e;"
             "  self.writers = [];"
             "  return e.name; })()"));
@@ -88,9 +88,7 @@ class NativeFileSystemFileWriterBrowserTest : public ContentBrowserTest {
     base::FilePath test_file =
         temp_dir_.GetPath().AppendASCII("to_be_quarantined.exe");
     std::string file_data = "hello world!";
-    int file_size = static_cast<int>(file_data.size());
-    EXPECT_EQ(file_size,
-              base::WriteFile(test_file, file_data.c_str(), file_size));
+    EXPECT_TRUE(base::WriteFile(test_file, file_data));
 
     ui::SelectFileDialog::SetFactory(
         new FakeSelectFileDialogFactory({test_file}));
@@ -100,7 +98,7 @@ class NativeFileSystemFileWriterBrowserTest : public ContentBrowserTest {
         EvalJs(
             shell(),
             "(async () => {"
-            "  let e = await self.chooseFileSystemEntries({type: 'openFile'});"
+            "  let e = await self.chooseFileSystemEntries({type: 'open-file'});"
             "  self.entry = e;"
             "  self.writers = [];"
             "  return e.name; })()"));
@@ -125,8 +123,8 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
   EXPECT_EQ(0,
             EvalJs(shell(),
                    JsReplace("(async () => {"
-                             "  const w = await self.entry.createWriter();"
-                             "  await w.write(0, new Blob([$1]));"
+                             "  const w = await self.entry.createWritable();"
+                             "  await w.write(new Blob([$1]));"
                              "  self.writer = w;"
                              "  return (await self.entry.getFile()).size; })()",
                              file_contents)));
@@ -166,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
 
   EXPECT_EQ(nullptr, EvalJs(shell(),
                             "(async () => {"
-                            "    const w = await self.entry.createWriter({"
+                            "    const w = await self.entry.createWritable({"
                             "      keepExistingData: true });"
                             "    self.writer = w;"
                             "})()"));
@@ -181,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
   EXPECT_EQ(int{expected_contents.size()},
             EvalJs(shell(),
                    "(async () => {"
-                   "  await self.writer.write(0, new Blob(['bar']));"
+                   "  await self.writer.write(new Blob(['bar']));"
                    "  await self.writer.close();"
                    "  return (await self.entry.getFile()).size; })()"));
   {
@@ -201,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
 
   EXPECT_EQ(nullptr, EvalJs(shell(),
                             "(async () => {"
-                            "  const w = await self.entry.createWriter({"
+                            "  const w = await self.entry.createWritable({"
                             "    keepExistingData: false });"
                             "  self.writer = w;"
                             "})()"));
@@ -216,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
   EXPECT_EQ(int{expected_contents.size()},
             EvalJs(shell(),
                    "(async () => {"
-                   "  await self.writer.write(0, new Blob(['bar']));"
+                   "  await self.writer.write(new Blob(['bar']));"
                    "  await self.writer.close();"
                    "  return (await self.entry.getFile()).size; })()"));
   {
@@ -236,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
   for (int index = 0; index < num_writers; index++) {
     EXPECT_EQ(nullptr, EvalJs(shell(),
                               "(async () => {"
-                              "  const w = await self.entry.createWriter();"
+                              "  const w = await self.entry.createWritable();"
                               "  self.writers.push(w);"
                               "})()"));
   }
@@ -266,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
         EvalJs(shell(),
                JsReplace("(async () => {"
                          "  for(let i = 0; i < $1; i++ ) {"
-                         "    self.writers.push(self.entry.createWriter());"
+                         "    self.writers.push(self.entry.createWritable());"
                          "  }"
                          "  await Promise.all(self.writers);"
                          "})()",
@@ -301,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemFileWriterBrowserTest,
 
   EXPECT_EQ(nullptr, EvalJs(shell(),
                             "(async () => {"
-                            "  const w = await self.entry.createWriter("
+                            "  const w = await self.entry.createWritable("
                             "    {keepExistingData: true},"
                             "  );"
                             "  self.writer = w;"

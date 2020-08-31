@@ -38,6 +38,23 @@ std::string JsonSerialize(const Json::Value& value) {
   writer->write(value, &s);
   return s.str();
 }
+
+re2::StringPiece Re2StringPiece(std::string_view str) {
+  return re2::StringPiece(str.data(), str.size());
+}
+
+bool MatchesRegex(const GroupedPath& id_path,
+                  const BaseSymbol& sym,
+                  const RE2& regex) {
+  if (RE2::PartialMatch(Re2StringPiece(id_path.path), regex)) {
+    return true;
+  }
+  if (RE2::PartialMatch(Re2StringPiece(id_path.group), regex)) {
+    return true;
+  }
+  return RE2::PartialMatch(Re2StringPiece(sym.FullName()), regex);
+}
+
 }  // namespace
 
 extern "C" {
@@ -60,24 +77,39 @@ void LoadBeforeSizeFile(const char* compressed, size_t size) {
   ParseSizeInfo(compressed, size, before_info.get());
 }
 
-void BuildTree(bool method_count_mode,
+// Updates |builder| with provided filters and constructs the new tree.
+// Typically called when the front-end form updates, to apply any new filters.
+// Returns: True if the resulting tree is a diff, false if it is a snapshot.
+bool BuildTree(bool method_count_mode,
                const char* group_by,
                const char* include_regex_str,
                const char* exclude_regex_str,
                const char* include_sections,
                int minimum_size_bytes,
                int match_flag) {
-  std::vector<std::function<bool(const BaseSymbol&)>> filters;
+  std::vector<TreeBuilder::FilterFunc> filters;
 
   const bool diff_mode = info && before_info;
 
+  if (method_count_mode && diff_mode) {
+    // include_sections is used to filter to just .dex.method symbols.
+    // For diffs, we also want to filter to just adds & removes.
+    filters.push_back([](const GroupedPath&, const BaseSymbol& sym) -> bool {
+      DiffStatus diff_status = sym.GetDiffStatus();
+      return diff_status == DiffStatus::kAdded ||
+             diff_status == DiffStatus::kRemoved;
+    });
+  }
+
   if (minimum_size_bytes > 0) {
     if (!diff_mode) {
-      filters.push_back([minimum_size_bytes](const BaseSymbol& sym) -> bool {
+      filters.push_back([minimum_size_bytes](const GroupedPath&,
+                                             const BaseSymbol& sym) -> bool {
         return sym.Pss() >= minimum_size_bytes;
       });
     } else {
-      filters.push_back([minimum_size_bytes](const BaseSymbol& sym) -> bool {
+      filters.push_back([minimum_size_bytes](const GroupedPath&,
+                                             const BaseSymbol& sym) -> bool {
         return abs(sym.Pss()) >= minimum_size_bytes;
       });
     }
@@ -87,9 +119,10 @@ void BuildTree(bool method_count_mode,
   // |match_flag| can be assumed to be a power of two.
   if (match_flag) {
     std::cout << "Filtering on flag matching " << match_flag << std::endl;
-    filters.push_back([match_flag](const BaseSymbol& sym) -> bool {
-      return match_flag & sym.Flags();
-    });
+    filters.push_back(
+        [match_flag](const GroupedPath&, const BaseSymbol& sym) -> bool {
+          return match_flag & sym.Flags();
+        });
   }
 
   std::array<bool, 256> include_sections_map{};
@@ -98,7 +131,8 @@ void BuildTree(bool method_count_mode,
     for (const char* c = include_sections; *c; c++) {
       include_sections_map[static_cast<uint8_t>(*c)] = true;
     }
-    filters.push_back([&include_sections_map](const BaseSymbol& sym) -> bool {
+    filters.push_back([&include_sections_map](const GroupedPath&,
+                                              const BaseSymbol& sym) -> bool {
       return include_sections_map[static_cast<uint8_t>(sym.Section())];
     });
   }
@@ -107,9 +141,9 @@ void BuildTree(bool method_count_mode,
   if (include_regex_str && *include_regex_str) {
     include_regex.reset(new RE2(include_regex_str));
     if (include_regex->error_code() == RE2::NoError) {
-      filters.push_back([&include_regex](const BaseSymbol& sym) -> bool {
-        re2::StringPiece piece(sym.FullName().data(), sym.FullName().size());
-        return RE2::PartialMatch(piece, *include_regex);
+      filters.push_back([&include_regex](const GroupedPath& id_path,
+                                         const BaseSymbol& sym) -> bool {
+        return MatchesRegex(id_path, sym, *include_regex);
       });
     }
   }
@@ -118,9 +152,9 @@ void BuildTree(bool method_count_mode,
   if (exclude_regex_str && *exclude_regex_str) {
     exclude_regex.reset(new RE2(exclude_regex_str));
     if (exclude_regex->error_code() == RE2::NoError) {
-      filters.push_back([&exclude_regex](const BaseSymbol& sym) -> bool {
-        re2::StringPiece piece(sym.FullName().data(), sym.FullName().size());
-        return !RE2::PartialMatch(piece, *exclude_regex);
+      filters.push_back([&exclude_regex](const GroupedPath& id_path,
+                                         const BaseSymbol& sym) -> bool {
+        return !MatchesRegex(id_path, sym, *exclude_regex);
       });
     }
   }
@@ -148,7 +182,7 @@ void BuildTree(bool method_count_mode,
     sep = '>';
   } else if (!strcmp(group_by, "template")) {
     lens = std::make_unique<TemplateLens>();
-    filters.push_back([](const BaseSymbol& sym) -> bool {
+    filters.push_back([](const GroupedPath&, const BaseSymbol& sym) -> bool {
       return sym.IsTemplate() && sym.IsNative();
     });
   } else if (!strcmp(group_by, "generated_type")) {
@@ -158,6 +192,8 @@ void BuildTree(bool method_count_mode,
     exit(1);
   }
   builder->Build(std::move(lens), sep, method_count_mode, filters);
+
+  return bool(diff_info);
 }
 
 const char* Open(const char* path) {

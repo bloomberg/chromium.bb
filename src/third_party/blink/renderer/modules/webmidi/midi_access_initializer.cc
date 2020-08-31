@@ -8,17 +8,16 @@
 #include <utility>
 
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_midi_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_access.h"
-#include "third_party/blink/renderer/modules/webmidi/midi_options.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_port.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
@@ -31,18 +30,18 @@ using mojom::blink::PermissionStatus;
 
 MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* script_state,
                                              const MIDIOptions* options)
-    : ScriptPromiseResolver(script_state), options_(options) {}
+    : ScriptPromiseResolver(script_state),
+      options_(options),
+      permission_service_(ExecutionContext::From(script_state)) {}
 
 void MIDIAccessInitializer::Dispose() {
   dispatcher_.reset();
-  permission_service_.reset();
 }
 
-void MIDIAccessInitializer::ContextDestroyed(ExecutionContext* context) {
+void MIDIAccessInitializer::ContextDestroyed() {
   dispatcher_.reset();
-  permission_service_.reset();
 
-  ScriptPromiseResolver::ContextDestroyed(context);
+  ScriptPromiseResolver::ContextDestroyed();
 }
 
 ScriptPromise MIDIAccessInitializer::Start() {
@@ -56,10 +55,10 @@ ScriptPromise MIDIAccessInitializer::Start() {
       GetExecutionContext(),
       permission_service_.BindNewPipeAndPassReceiver(std::move(task_runner)));
 
-  Document& doc = To<Document>(*GetExecutionContext());
+  LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
   permission_service_->RequestPermission(
       CreateMidiPermissionDescriptor(options_->hasSysex() && options_->sysex()),
-      LocalFrame::HasTransientUserActivation(doc.GetFrame()),
+      LocalFrame::HasTransientUserActivation(window->GetFrame()),
       WTF::Bind(&MIDIAccessInitializer::OnPermissionsUpdated,
                 WrapPersistent(this)));
 
@@ -127,6 +126,7 @@ void MIDIAccessInitializer::DidStartSession(Result result) {
 
 void MIDIAccessInitializer::Trace(Visitor* visitor) {
   visitor->Trace(options_);
+  visitor->Trace(permission_service_);
   ScriptPromiseResolver::Trace(visitor);
 }
 

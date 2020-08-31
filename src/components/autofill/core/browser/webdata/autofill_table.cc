@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -411,7 +412,8 @@ bool AutofillTable::CreateTablesIfNecessary() {
           InitServerCardMetadataTable() && InitServerAddressesTable() &&
           InitServerAddressMetadataTable() && InitAutofillSyncMetadataTable() &&
           InitModelTypeStateTable() && InitPaymentsCustomerDataTable() &&
-          InitPaymentsUPIVPATable());
+          InitPaymentsUPIVPATable() &&
+          InitServerCreditCardCloudTokenDataTable());
 }
 
 bool AutofillTable::IsSyncable() {
@@ -485,6 +487,18 @@ bool AutofillTable::MigrateToVersion(int version,
     case 81:
       *update_compatible_version = true;
       return MigrateToVersion81CleanUpWrongModelTypeData();
+    case 83:
+      *update_compatible_version = true;
+      return MigrateToVersion83RemoveServerCardTypeColumn();
+    case 84:
+      *update_compatible_version = false;
+      return MigrateToVersion84AddNicknameColumn();
+    case 85:
+      *update_compatible_version = false;
+      return MigrateToVersion85AddCardIssuerColumnToMaskedCreditCard();
+    case 86:
+      *update_compatible_version = false;
+      return MigrateToVersion86RemoveUnmaskedCreditCardsUseColumns();
   }
   return true;
 }
@@ -1212,13 +1226,14 @@ bool AutofillTable::GetServerCreditCards(
       "metadata.use_count,"           // 3
       "metadata.use_date,"            // 4
       "network,"                      // 5
-      "type,"                         // 6
-      "status,"                       // 7
-      "name_on_card,"                 // 8
-      "exp_month,"                    // 9
-      "exp_year,"                     // 10
-      "metadata.billing_address_id,"  // 11
-      "bank_name "                    // 12
+      "status,"                       // 6
+      "name_on_card,"                 // 7
+      "exp_month,"                    // 8
+      "exp_year,"                     // 9
+      "metadata.billing_address_id,"  // 10
+      "bank_name,"                    // 11
+      "nickname,"                     // 12
+      "card_issuer "                  // 13
       "FROM masked_credit_cards masked "
       "LEFT OUTER JOIN unmasked_credit_cards USING (id) "
       "LEFT OUTER JOIN server_card_metadata metadata USING (id)"));
@@ -1255,18 +1270,15 @@ bool AutofillTable::GetServerCreditCards(
       DCHECK_EQ(CreditCard::GetCardNetwork(full_card_number), card_network);
     }
 
-    int card_type = s.ColumnInt(index++);
-    if (card_type >= CreditCard::CARD_TYPE_UNKNOWN &&
-        card_type <= CreditCard::CARD_TYPE_PREPAID) {
-      card->set_card_type(static_cast<CreditCard::CardType>(card_type));
-    }
-
     card->SetServerStatus(ServerStatusStringToEnum(s.ColumnString(index++)));
     card->SetRawInfo(CREDIT_CARD_NAME_FULL, s.ColumnString16(index++));
     card->SetRawInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(index++));
     card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(index++));
     card->set_billing_address_id(s.ColumnString(index++));
     card->set_bank_name(s.ColumnString(index++));
+    card->SetNickname(s.ColumnString16(index++));
+    card->set_card_issuer(
+        static_cast<CreditCard::Issuer>(s.ColumnInt(index++)));
     credit_cards->push_back(std::move(card));
   }
   return s.Succeeded();
@@ -1519,27 +1531,31 @@ void AutofillTable::SetServerCardsData(
       db_->GetUniqueStatement("INSERT INTO masked_credit_cards("
                               "id,"            // 0
                               "network,"       // 1
-                              "type,"          // 2
-                              "status,"        // 3
-                              "name_on_card,"  // 4
-                              "last_four,"     // 5
-                              "exp_month,"     // 6
-                              "exp_year,"      // 7
-                              "bank_name)"     // 8
-                              "VALUES (?,?,?,?,?,?,?,?,?)"));
+                              "status,"        // 2
+                              "name_on_card,"  // 3
+                              "last_four,"     // 4
+                              "exp_month,"     // 5
+                              "exp_year,"      // 6
+                              "bank_name,"     // 7
+                              "nickname,"      // 8
+                              "card_issuer)"   // 9
+                              "VALUES (?,?,?,?,?,?,?,?,?,?)"));
+  int index;
   for (const CreditCard& card : credit_cards) {
     DCHECK_EQ(CreditCard::MASKED_SERVER_CARD, card.record_type());
-    masked_insert.BindString(0, card.server_id());
-    masked_insert.BindString(1, card.network());
-    masked_insert.BindInt(2, card.card_type());
-    masked_insert.BindString(3,
+    index = 0;
+    masked_insert.BindString(index++, card.server_id());
+    masked_insert.BindString(index++, card.network());
+    masked_insert.BindString(index++,
                              ServerStatusEnumToString(card.GetServerStatus()));
-    masked_insert.BindString16(4, card.GetRawInfo(CREDIT_CARD_NAME_FULL));
-    masked_insert.BindString16(5, card.LastFourDigits());
-    masked_insert.BindString16(6, card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
-    masked_insert.BindString16(7,
+    masked_insert.BindString16(index++, card.GetRawInfo(CREDIT_CARD_NAME_FULL));
+    masked_insert.BindString16(index++, card.LastFourDigits());
+    masked_insert.BindString16(index++, card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+    masked_insert.BindString16(index++,
                                card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-    masked_insert.BindString(8, card.bank_name());
+    masked_insert.BindString(index++, card.bank_name());
+    masked_insert.BindString16(index++, card.nickname());
+    masked_insert.BindInt(index++, static_cast<int>(card.card_issuer()));
     masked_insert.Run();
     masked_insert.Reset(true);
   }
@@ -1608,6 +1624,72 @@ void AutofillTable::SetServerAddressesData(
   transaction.Commit();
 }
 
+void AutofillTable::SetCreditCardCloudTokenData(
+    const std::vector<CreditCardCloudTokenData>& credit_card_cloud_token_data) {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return;
+
+  // Deletes all old values.
+  sql::Statement delete_cloud_token(
+      db_->GetUniqueStatement("DELETE FROM server_card_cloud_token_data"));
+  delete_cloud_token.Run();
+
+  // Inserts new values.
+  sql::Statement insert_cloud_token(
+      db_->GetUniqueStatement("INSERT INTO server_card_cloud_token_data("
+                              "id,"                 // 0
+                              "suffix,"             // 1
+                              "exp_month,"          // 2
+                              "exp_year,"           // 3
+                              "card_art_url,"       // 4
+                              "instrument_token) "  // 5
+                              "VALUES (?,?,?,?,?,?)"));
+
+  for (const CreditCardCloudTokenData& data : credit_card_cloud_token_data) {
+    insert_cloud_token.BindString(0, data.masked_card_id);
+    insert_cloud_token.BindString16(1, data.suffix);
+    insert_cloud_token.BindString16(2, data.ExpirationMonthAsString());
+    insert_cloud_token.BindString16(3, data.Expiration4DigitYearAsString());
+    insert_cloud_token.BindString(4, data.card_art_url);
+    insert_cloud_token.BindString(5, data.instrument_token);
+    insert_cloud_token.Run();
+    insert_cloud_token.Reset(true);
+  }
+  transaction.Commit();
+}
+
+bool AutofillTable::GetCreditCardCloudTokenData(
+    std::vector<std::unique_ptr<CreditCardCloudTokenData>>*
+        credit_card_cloud_token_data) {
+  credit_card_cloud_token_data->clear();
+
+  sql::Statement s(
+      db_->GetUniqueStatement("SELECT "
+                              "id, "               // 0
+                              "suffix, "           // 1
+                              "exp_month, "        // 2
+                              "exp_year, "         // 3
+                              "card_art_url, "     // 4
+                              "instrument_token "  // 5
+                              "FROM server_card_cloud_token_data"));
+
+  while (s.Step()) {
+    int index = 0;
+    std::unique_ptr<CreditCardCloudTokenData> data =
+        std::make_unique<CreditCardCloudTokenData>();
+    data->masked_card_id = s.ColumnString(index++);
+    data->suffix = s.ColumnString16(index++);
+    data->SetExpirationMonthFromString(s.ColumnString16(index++));
+    data->SetExpirationYearFromString(s.ColumnString16(index++));
+    data->card_art_url = s.ColumnString(index++);
+    data->instrument_token = s.ColumnString(index++);
+    credit_card_cloud_token_data->push_back(std::move(data));
+  }
+
+  return s.Succeeded();
+}
+
 void AutofillTable::SetPaymentsCustomerData(
     const PaymentsCustomerData* customer_data) {
   sql::Transaction transaction(db_);
@@ -1641,19 +1723,30 @@ bool AutofillTable::GetPaymentsCustomerData(
   return s.Succeeded();
 }
 
-bool AutofillTable::InsertVPA(const std::string& vpa) {
+bool AutofillTable::InsertUpiId(const std::string& upi_id) {
   sql::Transaction transaction(db_);
   if (!transaction.Begin())
     return false;
 
-  sql::Statement insert_vpa_statement(
+  sql::Statement insert_upi_id_statement(
       db_->GetUniqueStatement("INSERT INTO payments_upi_vpa (vpa) VALUES (?)"));
-  insert_vpa_statement.BindString(0, vpa);
-  insert_vpa_statement.Run();
+  insert_upi_id_statement.BindString(0, upi_id);
+  insert_upi_id_statement.Run();
 
   transaction.Commit();
 
   return db_->GetLastChangeCount() > 0;
+}
+
+std::vector<std::string> AutofillTable::GetAllUpiIds() {
+  sql::Statement select_upi_id_statement(
+      db_->GetUniqueStatement("SELECT vpa FROM payments_upi_vpa"));
+
+  std::vector<std::string> upi_ids;
+  while (select_upi_id_statement.Step()) {
+    upi_ids.push_back(select_upi_id_statement.ColumnString(0));
+  }
+  return upi_ids;
 }
 
 bool AutofillTable::ClearAllServerData() {
@@ -1689,6 +1782,11 @@ bool AutofillTable::ClearAllServerData() {
   sql::Statement customer_data(
       db_->GetUniqueStatement("DELETE FROM payments_customer_data"));
   customer_data.Run();
+  changed |= db_->GetLastChangeCount() > 0;
+
+  sql::Statement cloud_token_data(
+      db_->GetUniqueStatement("DELETE FROM server_card_cloud_token_data"));
+  cloud_token_data.Run();
   changed |= db_->GetLastChangeCount() > 0;
 
   transaction.Commit();
@@ -2662,6 +2760,71 @@ bool AutofillTable::MigrateToVersion81CleanUpWrongModelTypeData() {
          transaction.Commit();
 }
 
+bool AutofillTable::MigrateToVersion83RemoveServerCardTypeColumn() {
+  // Sqlite does not support "alter table drop column" syntax, so it has be done
+  // manually.
+  sql::Transaction transaction(db_);
+  return transaction.Begin() &&
+         db_->Execute(
+             "CREATE TABLE masked_credit_cards_temp ("
+             "id VARCHAR,"
+             "status VARCHAR,"
+             "name_on_card VARCHAR,"
+             "network VARCHAR,"
+             "last_four VARCHAR,"
+             "exp_month INTEGER DEFAULT 0,"
+             "exp_year INTEGER DEFAULT 0, "
+             "bank_name VARCHAR)") &&
+         db_->Execute(
+             "INSERT INTO masked_credit_cards_temp "
+             "SELECT id, status, name_on_card, network, last_four, exp_month,"
+             "exp_year, bank_name "
+             "FROM masked_credit_cards") &&
+         db_->Execute("DROP TABLE masked_credit_cards") &&
+         db_->Execute(
+             "ALTER TABLE masked_credit_cards_temp "
+             "RENAME TO masked_credit_cards") &&
+         transaction.Commit();
+}
+
+bool AutofillTable::MigrateToVersion84AddNicknameColumn() {
+  // Add the nickname column to the masked_credit_cards table.
+  return db_->DoesColumnExist("masked_credit_cards", "nickname") ||
+         db_->Execute(
+             "ALTER TABLE masked_credit_cards ADD COLUMN nickname VARCHAR");
+}
+
+bool AutofillTable::MigrateToVersion85AddCardIssuerColumnToMaskedCreditCard() {
+  // Add the new card_issuer column to the masked_credit_cards table and set the
+  // default value to ISSUER_UNKNOWN.
+  return db_->DoesColumnExist("masked_credit_cards", "card_issuer") ||
+         db_->Execute(
+             "ALTER TABLE masked_credit_cards "
+             "ADD COLUMN card_issuer INTEGER "
+             "DEFAULT 0");
+}
+
+bool AutofillTable::MigrateToVersion86RemoveUnmaskedCreditCardsUseColumns() {
+  // Sqlite does not support "alter table drop column" syntax, so it has be done
+  // manually.
+  sql::Transaction transaction(db_);
+  return transaction.Begin() &&
+         db_->Execute(
+             "CREATE TABLE unmasked_credit_cards_temp ("
+             "id VARCHAR,"
+             "card_number_encrypted VARCHAR,"
+             "unmask_date INTEGER NOT NULL DEFAULT 0)") &&
+         db_->Execute(
+             "INSERT INTO unmasked_credit_cards_temp "
+             "SELECT id, card_number_encrypted, unmask_date "
+             "FROM unmasked_credit_cards") &&
+         db_->Execute("DROP TABLE unmasked_credit_cards") &&
+         db_->Execute(
+             "ALTER TABLE unmasked_credit_cards_temp "
+             "RENAME TO unmasked_credit_cards") &&
+         transaction.Commit();
+}
+
 bool AutofillTable::AddFormFieldValuesTime(
     const std::vector<FormFieldData>& elements,
     std::vector<AutofillChange>* changes,
@@ -2822,27 +2985,31 @@ void AutofillTable::AddMaskedCreditCards(
       db_->GetUniqueStatement("INSERT INTO masked_credit_cards("
                               "id,"            // 0
                               "network,"       // 1
-                              "type,"          // 2
-                              "status,"        // 3
-                              "name_on_card,"  // 4
-                              "last_four,"     // 5
-                              "exp_month,"     // 6
-                              "exp_year,"      // 7
-                              "bank_name)"     // 8
-                              "VALUES (?,?,?,?,?,?,?,?,?)"));
+                              "status,"        // 2
+                              "name_on_card,"  // 3
+                              "last_four,"     // 4
+                              "exp_month,"     // 5
+                              "exp_year,"      // 6
+                              "bank_name,"     // 7
+                              "nickname,"      // 8
+                              "card_issuer)"   // 9
+                              "VALUES (?,?,?,?,?,?,?,?,?,?)"));
+  int index;
   for (const CreditCard& card : credit_cards) {
     DCHECK_EQ(CreditCard::MASKED_SERVER_CARD, card.record_type());
-    masked_insert.BindString(0, card.server_id());
-    masked_insert.BindString(1, card.network());
-    masked_insert.BindInt(2, card.card_type());
-    masked_insert.BindString(3,
+    index = 0;
+    masked_insert.BindString(index++, card.server_id());
+    masked_insert.BindString(index++, card.network());
+    masked_insert.BindString(index++,
                              ServerStatusEnumToString(card.GetServerStatus()));
-    masked_insert.BindString16(4, card.GetRawInfo(CREDIT_CARD_NAME_FULL));
-    masked_insert.BindString16(5, card.LastFourDigits());
-    masked_insert.BindString16(6, card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
-    masked_insert.BindString16(7,
+    masked_insert.BindString16(index++, card.GetRawInfo(CREDIT_CARD_NAME_FULL));
+    masked_insert.BindString16(index++, card.LastFourDigits());
+    masked_insert.BindString16(index++, card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+    masked_insert.BindString16(index++,
                                card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-    masked_insert.BindString(8, card.bank_name());
+    masked_insert.BindString(index++, card.bank_name());
+    masked_insert.BindString16(index++, card.nickname());
+    masked_insert.BindInt(index++, static_cast<int>(card.card_issuer()));
     masked_insert.Run();
     masked_insert.Reset(true);
 
@@ -3015,7 +3182,8 @@ bool AutofillTable::InitMaskedCreditCardsTable() {
                       "exp_month INTEGER DEFAULT 0,"
                       "exp_year INTEGER DEFAULT 0, "
                       "bank_name VARCHAR, "
-                      "type INTEGER DEFAULT 0)")) {
+                      "nickname VARCHAR, "
+                      "card_issuer INTEGER DEFAULT 0)")) {
       NOTREACHED();
       return false;
     }
@@ -3027,9 +3195,7 @@ bool AutofillTable::InitUnmaskedCreditCardsTable() {
   if (!db_->DoesTableExist("unmasked_credit_cards")) {
     if (!db_->Execute("CREATE TABLE unmasked_credit_cards ("
                       "id VARCHAR,"
-                      "card_number_encrypted VARCHAR, "
-                      "use_count INTEGER NOT NULL DEFAULT 0, "
-                      "use_date INTEGER NOT NULL DEFAULT 0, "
+                      "card_number_encrypted VARCHAR,"
                       "unmask_date INTEGER NOT NULL DEFAULT 0)")) {
       NOTREACHED();
       return false;
@@ -3131,6 +3297,22 @@ bool AutofillTable::InitPaymentsUPIVPATable() {
   if (!db_->DoesTableExist("payments_upi_vpa")) {
     if (!db_->Execute("CREATE TABLE payments_upi_vpa ("
                       "vpa VARCHAR)")) {
+      NOTREACHED();
+      return false;
+    }
+  }
+  return true;
+}
+
+bool AutofillTable::InitServerCreditCardCloudTokenDataTable() {
+  if (!db_->DoesTableExist("server_card_cloud_token_data")) {
+    if (!db_->Execute("CREATE TABLE server_card_cloud_token_data ( "
+                      "id VARCHAR, "
+                      "suffix VARCHAR, "
+                      "exp_month INTEGER DEFAULT 0, "
+                      "exp_year INTEGER DEFAULT 0, "
+                      "card_art_url VARCHAR, "
+                      "instrument_token VARCHAR)")) {
       NOTREACHED();
       return false;
     }

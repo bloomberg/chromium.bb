@@ -600,13 +600,7 @@ TextureCubeMipmapCase::IterateResult TextureCubeMipmapCase::iterate (void)
 	if (viewport.width < defViewportWidth/2 || viewport.height < defViewportHeight/2)
 		throw tcu::NotSupportedError("Too small viewport", "", __FILE__, __LINE__);
 
-	// Detect compatible GLES context by querying GL_MAJOR_VERSION.
-	// This query does not exist on GLES2 so succeeding query implies GLES3+ context.
-	bool isES3Compatible = false;
-	glw::GLint majorVersion = 0;
-	gl.getIntegerv(GL_MAJOR_VERSION, &majorVersion);
-	if (gl.getError() == GL_NO_ERROR)
-		isES3Compatible = true;
+	bool isES3Compatible = m_renderCtxInfo.isES3Compatible();
 
 	// Upload texture data.
 	m_texture->upload();
@@ -827,7 +821,7 @@ Texture2DGenMipmapCase::IterateResult Texture2DGenMipmapCase::iterate (void)
 
 	const int				numLevels			= deLog2Floor32(de::max(m_width, m_height))+1;
 
-	tcu::Texture2D			resultTexture		(tcu::TextureFormat(tcu::TextureFormat::RGBA, tcu::TextureFormat::UNORM_INT8), m_texture->getRefTexture().getWidth(), m_texture->getRefTexture().getHeight());
+	tcu::Texture2D			resultTexture		(tcu::TextureFormat(tcu::TextureFormat::RGBA, tcu::TextureFormat::UNORM_INT8), m_texture->getRefTexture().getWidth(), m_texture->getRefTexture().getHeight(), isES2Context(m_renderCtx.getType()));
 
 	vector<float>			texCoord;
 

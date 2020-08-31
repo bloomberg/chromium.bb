@@ -124,7 +124,7 @@ base::Value BuildAllocatorsSummary(const AllocationMap& allocations) {
 }
 
 base::Value BuildMemoryMaps(const ExportParams& params) {
-  base::trace_event::TracedValue traced_value(0, /* force_json */ true);
+  base::trace_event::TracedValueJSON traced_value;
   memory_instrumentation::TracingObserver::MemoryMapsAsValueInto(
       params.maps, &traced_value, params.strip_path_from_mapped_files);
   return traced_value.ToBaseValue()->Clone();
@@ -237,7 +237,7 @@ base::Value BuildAllocations(const AllocationMap& allocations,
     // We use double to store size and count, as it can precisely represent
     // values up to 2^52 ~ 4.5 petabytes.
     counts[allocator].push_back(
-        base::Value(static_cast<double>(alloc.second.count)));
+        base::Value(static_cast<double>(round(alloc.second.count))));
     sizes[allocator].push_back(
         base::Value(static_cast<double>(alloc.second.size)));
     types[allocator].push_back(base::Value(alloc.first.context_id));

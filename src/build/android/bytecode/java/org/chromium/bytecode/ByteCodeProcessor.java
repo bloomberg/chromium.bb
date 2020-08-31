@@ -4,8 +4,6 @@
 
 package org.chromium.bytecode;
 
-import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
-
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -43,12 +41,8 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Java application that takes in an input jar, performs a series of bytecode transformations,
- * and generates an output jar.
- *
- * Two types of transformations are performed:
- * 1) Enabling assertions via {@link AssertionEnablerClassAdapter}
- * 2) Providing support for custom resources via {@link CustomResourcesClassAdapter}
+ * Java application that takes in an input jar, performs a series of bytecode
+ * transformations, and generates an output jar.
  */
 class ByteCodeProcessor {
     private static final String CLASS_FILE_SUFFIX = ".class";
@@ -56,13 +50,12 @@ class ByteCodeProcessor {
     private static final int BUFFER_SIZE = 16384;
     private static boolean sVerbose;
     private static boolean sIsPrebuilt;
-    private static boolean sShouldAssert;
-    private static boolean sShouldUseCustomResources;
     private static boolean sShouldUseThreadAnnotations;
     private static boolean sShouldCheckClassPath;
     private static ClassLoader sDirectClassPathClassLoader;
     private static ClassLoader sFullClassPathClassLoader;
     private static Set<String> sFullClassPathJarPaths;
+    private static Set<String> sMissingClassesAllowlist;
     private static ClassPathValidator sValidator;
 
     private static class EntryDataPair {
@@ -94,28 +87,19 @@ class ByteCodeProcessor {
         }
 
         ClassReader reader = new ClassReader(data);
-
         if (sShouldCheckClassPath) {
             sValidator.validateClassPathsAndOutput(reader, sDirectClassPathClassLoader,
-                    sFullClassPathClassLoader, sFullClassPathJarPaths, sIsPrebuilt, sVerbose);
+                    sFullClassPathClassLoader, sFullClassPathJarPaths, sIsPrebuilt, sVerbose,
+                    sMissingClassesAllowlist);
         }
 
-        ClassWriter writer;
-        if (sShouldUseCustomResources) {
-            // Use the COMPUTE_FRAMES flag to have asm figure out the stack map frames.
-            // This is necessary because GCMBaseIntentService in android_gcm_java contains
-            // incorrect stack map frames. This option slows down processing time by 2x.
-            writer = new CustomClassLoaderClassWriter(
-                    sFullClassPathClassLoader, reader, COMPUTE_FRAMES);
-        } else {
-            writer = new ClassWriter(reader, 0);
-        }
+        ClassWriter writer = new ClassWriter(reader, 0);
         ClassVisitor chain = writer;
-        /* DEBUGGING:}
+        /* DEBUGGING:
          To see objectweb.asm code that will generate bytecode for a given class:
 
          java -cp
-         "third_party/ow2_asm/lib/asm.jar:third_party/ow2_asm/lib/asm-util.jar:out/Debug/lib.java/jar_containing_yourclass.jar"
+         "third_party/android_deps/libs/org_ow2_asm_asm/asm-7.0.jar:third_party/android_deps/libs/org_ow2_asm_asm_util/asm-util-7.0.jar:out/Debug/lib.java/jar_containing_yourclass.jar"
          org.objectweb.asm.util.ASMifier org.package.YourClassName
 
          See this pdf for more details: https://asm.ow2.io/asm4-guide.pdf
@@ -128,13 +112,6 @@ class ByteCodeProcessor {
         */
         if (sShouldUseThreadAnnotations) {
             chain = new ThreadAssertionClassAdapter(chain);
-        }
-        if (sShouldAssert) {
-            chain = new AssertionEnablerClassAdapter(chain);
-        }
-        if (sShouldUseCustomResources) {
-            chain = new CustomResourcesClassAdapter(
-                    chain, reader.getClassName(), reader.getSuperName(), sFullClassPathClassLoader);
         }
         reader.accept(chain, 0);
         byte[] patchedByteCode = writer.toByteArray();
@@ -244,6 +221,16 @@ class ByteCodeProcessor {
         return new URLClassLoader(jarUrls);
     }
 
+    /**
+     * Extracts a length-encoded list of strings from the arguments, and adds them to |out|. Returns
+     * the new "next index" to be processed.
+     */
+    private static int parseListArgument(String[] args, int index, Collection<String> out) {
+        int argLength = Integer.parseInt(args[index++]);
+        out.addAll(Arrays.asList(Arrays.copyOfRange(args, index, index + argLength)));
+        return index + argLength;
+    }
+
     public static void main(String[] args) throws ClassPathValidator.ClassNotLoadedException,
                                                   ExecutionException, InterruptedException {
         // Invoke this script using //build/android/gyp/bytecode_processor.py
@@ -252,25 +239,23 @@ class ByteCodeProcessor {
         String outputJarPath = args[currIndex++];
         sVerbose = args[currIndex++].equals("--verbose");
         sIsPrebuilt = args[currIndex++].equals("--is-prebuilt");
-        sShouldAssert = args[currIndex++].equals("--enable-assert");
-        sShouldUseCustomResources = args[currIndex++].equals("--enable-custom-resources");
         sShouldUseThreadAnnotations = args[currIndex++].equals("--enable-thread-annotations");
         sShouldCheckClassPath = args[currIndex++].equals("--enable-check-class-path");
-        int sdkJarsLength = Integer.parseInt(args[currIndex++]);
-        List<String> sdkJarPaths =
-                Arrays.asList(Arrays.copyOfRange(args, currIndex, currIndex + sdkJarsLength));
-        currIndex += sdkJarsLength;
 
-        int directJarsLength = Integer.parseInt(args[currIndex++]);
+        sMissingClassesAllowlist = new HashSet<>();
+        currIndex = parseListArgument(args, currIndex, sMissingClassesAllowlist);
+
+        ArrayList<String> sdkJarPaths = new ArrayList<>();
+        currIndex = parseListArgument(args, currIndex, sdkJarPaths);
+
         ArrayList<String> directClassPathJarPaths = new ArrayList<>();
         directClassPathJarPaths.add(inputJarPath);
         directClassPathJarPaths.addAll(sdkJarPaths);
-        directClassPathJarPaths.addAll(
-                Arrays.asList(Arrays.copyOfRange(args, currIndex, currIndex + directJarsLength)));
-        currIndex += directJarsLength;
+        currIndex = parseListArgument(args, currIndex, directClassPathJarPaths);
         sDirectClassPathClassLoader = loadJars(directClassPathJarPaths);
 
-        // Load all jars that are on the classpath for the input jar for analyzing class hierarchy.
+        // Load all jars that are on the classpath for the input jar for analyzing class
+        // hierarchy.
         sFullClassPathJarPaths = new HashSet<>();
         sFullClassPathJarPaths.clear();
         sFullClassPathJarPaths.add(inputJarPath);

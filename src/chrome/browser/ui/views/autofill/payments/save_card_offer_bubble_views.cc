@@ -65,8 +65,8 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
     : SaveCardBubbleViews(anchor_view, web_contents, controller) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
-  legal_message_view_ = DialogDelegate::SetFootnoteView(
+  SetButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+  legal_message_view_ = SetFootnoteView(
       CreateLegalMessageView(controller->GetLegalMessageLines(), this));
   if (legal_message_view_)
     InitFootnoteView(legal_message_view_);
@@ -74,7 +74,7 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
 
 void SaveCardOfferBubbleViews::Init() {
   SaveCardBubbleViews::Init();
-  DialogDelegate::SetExtraView(CreateUploadExplanationView());
+  SetExtraView(CreateUploadExplanationView());
 }
 
 bool SaveCardOfferBubbleViews::Accept() {
@@ -186,12 +186,8 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
     cardholder_name_label_row->AddChildView(cardholder_name_label.release());
 
     // Prepare the prefilled cardholder name.
-    base::string16 prefilled_name;
-    if (!base::FeatureList::IsEnabled(
-            features::kAutofillUpstreamBlankCardholderNameField)) {
-      prefilled_name =
-          base::UTF8ToUTF16(controller()->GetAccountInfo().full_name);
-    }
+    base::string16 prefilled_name =
+        base::UTF8ToUTF16(controller()->GetAccountInfo().full_name);
 
     // Set up cardholder name label tooltip ONLY if the cardholder name
     // textfield will be prefilled and sync transport for Wallet data is not

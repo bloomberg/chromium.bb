@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,7 @@ chrome.automation.EventType = {
   END_OF_TEST: 'endOfTest',
   EXPANDED_CHANGED: 'expandedChanged',
   FOCUS: 'focus',
+  FOCUS_AFTER_MENU_CLOSE: 'focusAfterMenuClose',
   FOCUS_CONTEXT: 'focusContext',
   HIDE: 'hide',
   HIT_TEST_RESULT: 'hitTestResult',
@@ -111,7 +112,6 @@ chrome.automation.RoleType = {
   COMBO_BOX_GROUPING: 'comboBoxGrouping',
   COMBO_BOX_MENU_BUTTON: 'comboBoxMenuButton',
   COMMENT: 'comment',
-  COMMENT_SECTION: 'commentSection',
   COMPLEMENTARY: 'complementary',
   CONTENT_DELETION: 'contentDeletion',
   CONTENT_INSERTION: 'contentInsertion',
@@ -189,13 +189,13 @@ chrome.automation.RoleType = {
   IGNORED: 'ignored',
   IMAGE: 'image',
   IMAGE_MAP: 'imageMap',
+  IME_CANDIDATE: 'imeCandidate',
   INLINE_TEXT_BOX: 'inlineTextBox',
   INPUT_TIME: 'inputTime',
   KEYBOARD: 'keyboard',
   LABEL_TEXT: 'labelText',
   LAYOUT_TABLE: 'layoutTable',
   LAYOUT_TABLE_CELL: 'layoutTableCell',
-  LAYOUT_TABLE_COLUMN: 'layoutTableColumn',
   LAYOUT_TABLE_ROW: 'layoutTableRow',
   LEGEND: 'legend',
   LINE_BREAK: 'lineBreak',
@@ -224,14 +224,16 @@ chrome.automation.RoleType = {
   NOTE: 'note',
   PANE: 'pane',
   PARAGRAPH: 'paragraph',
+  PDF_ACTIONABLE_HIGHLIGHT: 'pdfActionableHighlight',
+  PLUGIN_OBJECT: 'pluginObject',
   POP_UP_BUTTON: 'popUpButton',
+  PORTAL: 'portal',
   PRE: 'pre',
   PRESENTATIONAL: 'presentational',
   PROGRESS_INDICATOR: 'progressIndicator',
   RADIO_BUTTON: 'radioButton',
   RADIO_GROUP: 'radioGroup',
   REGION: 'region',
-  REVISION: 'revision',
   ROOT_WEB_AREA: 'rootWebArea',
   ROW: 'row',
   ROW_GROUP: 'rowGroup',
@@ -312,9 +314,11 @@ chrome.automation.ActionType = {
   ANNOTATE_PAGE_IMAGES: 'annotatePageImages',
   BLUR: 'blur',
   CLEAR_ACCESSIBILITY_FOCUS: 'clearAccessibilityFocus',
+  COLLAPSE: 'collapse',
   CUSTOM_ACTION: 'customAction',
   DECREMENT: 'decrement',
   DO_DEFAULT: 'doDefault',
+  EXPAND: 'expand',
   FOCUS: 'focus',
   GET_IMAGE_DATA: 'getImageData',
   GET_TEXT_LOCATION: 'getTextLocation',
@@ -434,6 +438,61 @@ chrome.automation.MarkerType = {
 };
 
 /**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-EventCommandType
+ */
+chrome.automation.EventCommandType = {
+  CLEAR_SELECTION: 'clearSelection',
+  CUT: 'cut',
+  DELETE: 'delete',
+  DICTATE: 'dictate',
+  EXTEND_SELECTION: 'extendSelection',
+  FORMAT: 'format',
+  INSERT: 'insert',
+  MARKER: 'marker',
+  MOVE_SELECTION: 'moveSelection',
+  PASTE: 'paste',
+  REPLACE: 'replace',
+  SET_SELECTION: 'setSelection',
+  TYPE: 'type',
+};
+
+/**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-EventTextBoundaryType
+ */
+chrome.automation.EventTextBoundaryType = {
+  CHARACTER: 'character',
+  FORMAT: 'format',
+  LINE_END: 'lineEnd',
+  LINE_START: 'lineStart',
+  LINE_START_OR_END: 'lineStartOrEnd',
+  OBJECT: 'object',
+  PAGE_END: 'pageEnd',
+  PAGE_START: 'pageStart',
+  PAGE_START_OR_END: 'pageStartOrEnd',
+  PARAGRAPH_END: 'paragraphEnd',
+  PARAGRAPH_START: 'paragraphStart',
+  PARAGRAPH_START_OR_END: 'paragraphStartOrEnd',
+  SENTENCE_END: 'sentenceEnd',
+  SENTENCE_START: 'sentenceStart',
+  SENTENCE_START_OR_END: 'sentenceStartOrEnd',
+  WEB_PAGE: 'webPage',
+  WORD_END: 'wordEnd',
+  WORD_START: 'wordStart',
+  WORD_START_OR_END: 'wordStartOrEnd',
+};
+
+/**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-EventMoveDirectionType
+ */
+chrome.automation.EventMoveDirectionType = {
+  FORWARD: 'forward',
+  BACKWARD: 'backward',
+};
+
+/**
  * @typedef {{
  *   left: number,
  *   top: number,
@@ -464,6 +523,16 @@ chrome.automation.FindParams;
  * @see https://developer.chrome.com/extensions/automation#type-SetDocumentSelectionParams
  */
 chrome.automation.SetDocumentSelectionParams;
+
+/**
+ * @typedef {{
+ *   command: !chrome.automation.EventCommandType,
+ *   textBoundary: !chrome.automation.EventTextBoundaryType,
+ *   moveDirection: !chrome.automation.EventMoveDirectionType
+ * }}
+ * @see https://developer.chrome.com/extensions/automation#type-AutomationIntent
+ */
+chrome.automation.AutomationIntent;
 
 /**
  * @constructor
@@ -504,6 +573,13 @@ chrome.automation.AutomationEvent.prototype.mouseX;
  * @see https://developer.chrome.com/extensions/automation#type-mouseY
  */
 chrome.automation.AutomationEvent.prototype.mouseY;
+
+/**
+ * Intents associated with this event.
+ * @type {!Array<!chrome.automation.AutomationIntent>}
+ * @see https://developer.chrome.com/extensions/automation#type-intents
+ */
+chrome.automation.AutomationEvent.prototype.intents;
 
 /**
  * Stops this event from further processing except for any remaining listeners
@@ -772,7 +848,7 @@ chrome.automation.AutomationNode.prototype.inPageLinkTarget;
 
 /**
  * A node that provides more details about the current node.
- * @type {(!chrome.automation.AutomationNode|undefined)}
+ * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-details
  */
 chrome.automation.AutomationNode.prototype.details;
@@ -1438,6 +1514,13 @@ chrome.automation.AutomationNode.prototype.fontSize;
 chrome.automation.AutomationNode.prototype.fontFamily;
 
 /**
+ * Indicates whether this is a root of an editable subtree.
+ * @type {boolean}
+ * @see https://developer.chrome.com/extensions/automation#type-editableRoot
+ */
+chrome.automation.AutomationNode.prototype.editableRoot;
+
+/**
  * Walking the tree.
  * @type {!Array<!chrome.automation.AutomationNode>}
  * @see https://developer.chrome.com/extensions/automation#type-children
@@ -1576,6 +1659,15 @@ chrome.automation.AutomationNode.prototype.performStandardAction = function(acti
  * @see https://developer.chrome.com/extensions/automation#method-replaceSelectedText
  */
 chrome.automation.AutomationNode.prototype.replaceSelectedText = function(value) {};
+
+/**
+ * Sets accessibility focus. Accessibility focus is the node on which an
+ * extension tracks a user's focus. This may be conveyed through a focus ring or
+ * or speech output by the extension. Automation will dispatch more events to
+ * the accessibility focus such as location changes.
+ * @see https://developer.chrome.com/extensions/automation#method-setAccessibilityFocus
+ */
+chrome.automation.AutomationNode.prototype.setAccessibilityFocus = function() {};
 
 /**
  * Sets selection within a text field.
@@ -1793,6 +1885,17 @@ chrome.automation.getDesktop = function(callback) {};
  * @see https://developer.chrome.com/extensions/automation#method-getFocus
  */
 chrome.automation.getFocus = function(callback) {};
+
+/**
+ * Get the automation node that currently has accessibility focus, globally.
+ * Will return null if none of the nodes in any loaded trees have accessibility
+ * focus.
+ * @param {function(!chrome.automation.AutomationNode):void} callback Called
+ *     with the <code>AutomationNode</code> that currently has accessibility
+ *     focus.
+ * @see https://developer.chrome.com/extensions/automation#method-getAccessibilityFocus
+ */
+chrome.automation.getAccessibilityFocus = function(callback) {};
 
 /**
  * Add a tree change observer. Tree change observers are static/global, they

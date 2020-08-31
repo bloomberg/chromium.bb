@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -83,6 +82,9 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
 
   void OnContainerHostConnectionClosed();
   void OnControllerConnectionClosed();
+
+  void EnsureFileAccess(const std::vector<base::FilePath>& file_paths,
+                        base::OnceClosure callback);
 
   void AddBinding(
       mojo::PendingReceiver<blink::mojom::ControllerServiceWorkerConnector>

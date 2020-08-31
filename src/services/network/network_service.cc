@@ -18,12 +18,16 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "build/chromecast_buildflags.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/os_crypt/os_crypt.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/scoped_message_error_crash_key.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_posix.h"
@@ -47,7 +51,9 @@
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/dns_config_change_manager.h"
 #include "services/network/http_auth_cache_copier.h"
+#include "services/network/legacy_tls_config_distributor.h"
 #include "services/network/net_log_exporter.h"
+#include "services/network/net_log_proxy_sink.h"
 #include "services/network/network_context.h"
 #include "services/network/network_usage_accumulator.h"
 #include "services/network/public/cpp/features.h"
@@ -61,17 +67,13 @@
 #include "third_party/boringssl/src/include/openssl/cpu.h"
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(IS_CHROMECAST)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !BUILDFLAG(IS_CHROMECAST)
 #include "components/os_crypt/key_storage_config_linux.h"
 #endif
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
 #include "net/android/http_auth_negotiate_android.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "mojo/public/cpp/system/platform_handle.h"
 #endif
 
 namespace network {
@@ -180,9 +182,7 @@ std::unique_ptr<net::HttpAuthMechanism> CreateAuthSystem(
 // message handling inside the Browser process is sufficient).
 void HandleBadMessage(const std::string& error) {
   LOG(WARNING) << "Mojo error in NetworkService:" << error;
-  static auto* bad_message_reason = base::debug::AllocateCrashKeyString(
-      "bad_message_reason", base::debug::CrashKeySize::Size256);
-  base::debug::SetCrashKeyString(bad_message_reason, error);
+  mojo::debug::ScopedMessageErrorCrashKey crash_key_value(error);
   base::debug::DumpWithoutCrashing();
 }
 
@@ -330,7 +330,12 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
 
   crl_set_distributor_ = std::make_unique<CRLSetDistributor>();
 
+  legacy_tls_config_distributor_ =
+      std::make_unique<LegacyTLSConfigDistributor>();
+
   doh_probe_activator_ = std::make_unique<DelayedDohProbeActivator>(this);
+
+  trust_token_key_commitments_ = std::make_unique<TrustTokenKeyCommitments>();
 }
 
 NetworkService::~NetworkService() {
@@ -407,14 +412,8 @@ void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
 void NetworkService::ReinitializeLogging(mojom::LoggingSettingsPtr settings) {
   logging::LoggingSettings logging_settings;
   logging_settings.logging_dest = settings->logging_dest;
-  int log_file_descriptor = -1;
-  if (mojo::UnwrapPlatformFile(std::move(settings->log_file_descriptor),
-                               &log_file_descriptor) != MOJO_RESULT_OK ||
-      log_file_descriptor < 0) {
-    LOG(ERROR) << "Failed to read new log file handle";
-    return;
-  }
-  logging_settings.log_file = fdopen(log_file_descriptor, "a");
+  base::ScopedFD log_file_descriptor = settings->log_file_descriptor.TakeFD();
+  logging_settings.log_file = fdopen(log_file_descriptor.release(), "a");
   if (!logging_settings.log_file) {
     LOG(ERROR) << "Failed to open new log file handle";
     return;
@@ -449,6 +448,15 @@ void NetworkService::StartNetLog(base::File file,
   file_net_log_observer_ = net::FileNetLogObserver::CreateUnboundedPreExisting(
       std::move(file), std::move(constants));
   file_net_log_observer_->StartObserving(net_log_, capture_mode);
+}
+
+void NetworkService::AttachNetLogProxy(
+    mojo::PendingRemote<mojom::NetLogProxySource> proxy_source,
+    mojo::PendingReceiver<mojom::NetLogProxySink> proxy_sink) {
+  if (!net_log_proxy_sink_)
+    net_log_proxy_sink_ = std::make_unique<NetLogProxySink>();
+  net_log_proxy_sink_->AttachSource(std::move(proxy_source),
+                                    std::move(proxy_sink));
 }
 
 void NetworkService::SetSSLKeyLogFile(base::File file) {
@@ -530,7 +538,7 @@ void NetworkService::ConfigureHttpAuthPrefs(
 }
 
 void NetworkService::SetRawHeadersAccess(
-    uint32_t process_id,
+    int32_t process_id,
     const std::vector<url::Origin>& origins) {
   DCHECK(process_id);
   if (!origins.size()) {
@@ -557,7 +565,7 @@ void NetworkService::SetMaxConnectionsPerProxy(int32_t max_connections) {
       net::HttpNetworkSession::NORMAL_SOCKET_POOL, new_limit);
 }
 
-bool NetworkService::HasRawHeadersAccess(uint32_t process_id,
+bool NetworkService::HasRawHeadersAccess(int32_t process_id,
                                          const GURL& resource_url) const {
   // Allow raw headers for browser-initiated requests.
   if (!process_id)
@@ -598,15 +606,24 @@ void NetworkService::GetNetworkList(
   auto networks = std::make_unique<net::NetworkInterfaceList>();
   auto* raw_networks = networks.get();
   // net::GetNetworkList may block depending on platform.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&net::GetNetworkList, raw_networks, policy),
       base::BindOnce(&OnGetNetworkList, std::move(networks),
                      std::move(callback)));
 }
 
-void NetworkService::UpdateCRLSet(base::span<const uint8_t> crl_set) {
-  crl_set_distributor_->OnNewCRLSet(crl_set);
+void NetworkService::UpdateCRLSet(
+    base::span<const uint8_t> crl_set,
+    mojom::NetworkService::UpdateCRLSetCallback callback) {
+  crl_set_distributor_->OnNewCRLSet(crl_set, std::move(callback));
+}
+
+void NetworkService::UpdateLegacyTLSConfig(
+    base::span<const uint8_t> config,
+    mojom::NetworkService::UpdateLegacyTLSConfigCallback callback) {
+  legacy_tls_config_distributor_->OnNewLegacyTLSConfig(config,
+                                                       std::move(callback));
 }
 
 void NetworkService::OnCertDBChanged() {
@@ -615,7 +632,7 @@ void NetworkService::OnCertDBChanged() {
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 void NetworkService::SetCryptConfig(mojom::CryptConfigPtr crypt_config) {
-#if !defined(IS_CHROMECAST)
+#if !BUILDFLAG(IS_CHROMECAST)
   DCHECK(!os_crypt_config_set_);
   auto config = std::make_unique<os_crypt::Config>();
   config->store = crypt_config->store;
@@ -635,19 +652,38 @@ void NetworkService::SetEncryptionKey(const std::string& encryption_key) {
 }
 #endif
 
-void NetworkService::AddCorbExceptionForPlugin(uint32_t process_id) {
+void NetworkService::AddCorbExceptionForPlugin(int32_t process_id) {
   DCHECK_NE(mojom::kBrowserProcessId, process_id);
   CrossOriginReadBlocking::AddExceptionForPlugin(process_id);
 }
 
-void NetworkService::RemoveCorbExceptionForPlugin(uint32_t process_id) {
+void NetworkService::AddAllowedRequestInitiatorForPlugin(
+    int32_t process_id,
+    const url::Origin& allowed_request_initiator) {
   DCHECK_NE(mojom::kBrowserProcessId, process_id);
-  CrossOriginReadBlocking::RemoveExceptionForPlugin(process_id);
+  std::map<int, std::set<url::Origin>>& map = plugin_origins_;
+  map[process_id].insert(allowed_request_initiator);
 }
 
-void NetworkService::AddExtraMimeTypesForCorb(
-    const std::vector<std::string>& mime_types) {
-  CrossOriginReadBlocking::AddExtraMimeTypesForCorb(mime_types);
+void NetworkService::RemoveSecurityExceptionsForPlugin(int32_t process_id) {
+  DCHECK_NE(mojom::kBrowserProcessId, process_id);
+
+  CrossOriginReadBlocking::RemoveExceptionForPlugin(process_id);
+
+  std::map<int, std::set<url::Origin>>& map = plugin_origins_;
+  map.erase(process_id);
+}
+
+bool NetworkService::IsInitiatorAllowedForPlugin(
+    int process_id,
+    const url::Origin& request_initiator) {
+  const std::map<int, std::set<url::Origin>>& map = plugin_origins_;
+  const auto it = map.find(process_id);
+  if (it == map.end())
+    return false;
+
+  const std::set<url::Origin>& allowed_origins = it->second;
+  return base::Contains(allowed_origins, request_initiator);
 }
 
 void NetworkService::OnMemoryPressure(
@@ -673,6 +709,13 @@ void NetworkService::SetEnvironment(
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   for (const auto& variable : environment)
     env->SetVar(variable->name, variable->value);
+}
+
+void NetworkService::SetTrustTokenKeyCommitments(
+    const std::string& raw_commitments,
+    base::OnceClosure done) {
+  trust_token_key_commitments_->ParseAndSet(raw_commitments);
+  std::move(done).Run();
 }
 
 #if defined(OS_ANDROID)
@@ -775,7 +818,7 @@ void NetworkService::UpdateLoadInfo() {
   // For requests from the same {process_id, routing_id} pair, pick the most
   // important. For ones from the browser, return all of them.
   std::vector<mojom::LoadInfoPtr> infos;
-  std::map<std::pair<uint32_t, uint32_t>, mojom::LoadInfoPtr> frame_infos;
+  std::map<std::pair<int32_t, int32_t>, mojom::LoadInfoPtr> frame_infos;
 
   for (auto* network_context : network_contexts_) {
     for (auto* loader :
@@ -786,7 +829,7 @@ void NetworkService::UpdateLoadInfo() {
 
       auto process_id = url_loader->GetProcessId();
       auto routing_id = url_loader->GetRenderFrameId();
-      if (routing_id == static_cast<uint32_t>(MSG_ROUTING_NONE)) {
+      if (routing_id == MSG_ROUTING_NONE) {
         // If there is no routing_id, then the browser can't associate this with
         // a page so no need to send.
         continue;

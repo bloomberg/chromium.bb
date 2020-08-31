@@ -45,20 +45,20 @@ TEST(DnsSdInstanceKeyTest, TestInstanceKeyEquals) {
 TEST(DnsSdInstanceKeyTest, TestIsInstanceOf) {
   ServiceKey ptr("_service._udp", "domain");
   InstanceKey svc("instance", "_service._udp", "domain");
-  EXPECT_TRUE(svc.IsInstanceOf(ptr));
+  EXPECT_EQ(svc, ptr);
 
   svc = InstanceKey("other id", "_service._udp", "domain");
-  EXPECT_TRUE(svc.IsInstanceOf(ptr));
+  EXPECT_EQ(svc, ptr);
 
   svc = InstanceKey("instance", "_service._udp", "domain2");
-  EXPECT_FALSE(svc.IsInstanceOf(ptr));
+  EXPECT_FALSE(svc == ptr);
   ptr = ServiceKey("_service._udp", "domain2");
-  EXPECT_TRUE(svc.IsInstanceOf(ptr));
+  EXPECT_EQ(svc, ptr);
 
   svc = InstanceKey("instance", "_service2._udp", "domain");
-  EXPECT_FALSE(svc.IsInstanceOf(ptr));
+  EXPECT_NE(svc, ptr);
   ptr = ServiceKey("_service2._udp", "domain");
-  EXPECT_TRUE(svc.IsInstanceOf(ptr));
+  EXPECT_EQ(svc, ptr);
 }
 
 TEST(DnsSdInstanceKeyTest, InstanceKeyInMap) {

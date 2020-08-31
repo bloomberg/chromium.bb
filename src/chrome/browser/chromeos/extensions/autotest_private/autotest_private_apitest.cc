@@ -30,8 +30,10 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -112,6 +114,17 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivateArcEnabled) {
       << message_;
 
   arc::SetArcPlayStoreEnabledForProfile(profile(), false);
+}
+
+IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, ScrollableShelfAPITest) {
+  ASSERT_TRUE(
+      RunComponentExtensionTestWithArg("autotest_private", "scrollableShelf"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, ShelfAPITest) {
+  ASSERT_TRUE(RunComponentExtensionTestWithArg("autotest_private", "shelf"))
+      << message_;
 }
 
 class AutotestPrivateApiOverviewTest : public AutotestPrivateApiTest {
@@ -289,6 +302,29 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateArcPerformanceTracing, Basic) {
 
   ASSERT_TRUE(RunComponentExtensionTestWithArg("autotest_private",
                                                "arcPerformanceTracing"))
+      << message_;
+}
+
+class AutotestPrivateStartStopTracing : public AutotestPrivateApiTest {
+ public:
+  AutotestPrivateStartStopTracing() = default;
+  ~AutotestPrivateStartStopTracing() override = default;
+  AutotestPrivateStartStopTracing(const AutotestPrivateStartStopTracing&) =
+      delete;
+  AutotestPrivateStartStopTracing& operator=(
+      const AutotestPrivateStartStopTracing&) = delete;
+
+ protected:
+  // AutotestPrivateApiTest:
+  void SetUpOnMainThread() override {
+    AutotestPrivateApiTest::SetUpOnMainThread();
+    tracing::PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AutotestPrivateStartStopTracing, StartStopTracing) {
+  ASSERT_TRUE(
+      RunComponentExtensionTestWithArg("autotest_private", "startStopTracing"))
       << message_;
 }
 

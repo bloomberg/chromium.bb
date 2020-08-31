@@ -23,11 +23,10 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_names.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 LoginScreenClient* g_login_screen_client_instance = nullptr;
@@ -180,11 +179,16 @@ void LoginScreenClient::FocusOobeDialog() {
     delegate_->HandleFocusOobeDialog();
 }
 
-void LoginScreenClient::ShowGaiaSignin(bool can_close,
-                                       const AccountId& prefilled_account) {
+void LoginScreenClient::ShowGaiaSignin(const AccountId& prefilled_account) {
   if (chromeos::LoginDisplayHost::default_host()) {
     chromeos::LoginDisplayHost::default_host()->ShowGaiaDialog(
-        can_close, prefilled_account);
+        prefilled_account);
+  }
+}
+
+void LoginScreenClient::HideGaiaSignin() {
+  if (chromeos::LoginDisplayHost::default_host()) {
+    chromeos::LoginDisplayHost::default_host()->HideOobeDialog();
   }
 }
 
@@ -227,21 +231,24 @@ void LoginScreenClient::ShowResetScreen() {
   chromeos::LoginDisplayHost::default_host()->ShowResetScreen();
 }
 
-void LoginScreenClient::ShowAccountAccessHelpApp() {
+void LoginScreenClient::ShowAccountAccessHelpApp(
+    gfx::NativeWindow parent_window) {
   scoped_refptr<chromeos::HelpAppLauncher>(
-      new chromeos::HelpAppLauncher(nullptr))
+      new chromeos::HelpAppLauncher(parent_window))
       ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 }
 
-void LoginScreenClient::ShowParentAccessHelpApp() {
+void LoginScreenClient::ShowParentAccessHelpApp(
+    gfx::NativeWindow parent_window) {
   scoped_refptr<chromeos::HelpAppLauncher>(
-      new chromeos::HelpAppLauncher(nullptr))
+      new chromeos::HelpAppLauncher(parent_window))
       ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_PARENT_ACCESS_CODE);
 }
 
 void LoginScreenClient::ShowLockScreenNotificationSettings() {
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      ProfileManager::GetActiveUserProfile(), chrome::kLockScreenSubPage);
+      ProfileManager::GetActiveUserProfile(),
+      chromeos::settings::mojom::kSecurityAndSignInSubpagePath);
 }
 
 void LoginScreenClient::OnFocusLeavingSystemTray(bool reverse) {

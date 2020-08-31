@@ -87,7 +87,7 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   void MarkSurfaceForDestruction(const SurfaceId& surface_id);
 
   // Returns a Surface corresponding to the provided |surface_id|.
-  Surface* GetSurfaceForId(const SurfaceId& surface_id);
+  Surface* GetSurfaceForId(const SurfaceId& surface_id) const;
 
   void AddObserver(SurfaceObserver* obs) { observer_list_.AddObserver(obs); }
 
@@ -105,12 +105,8 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Called when a surface has an active frame for the first time.
   void FirstSurfaceActivation(const SurfaceInfo& surface_info);
 
-  // Called when a CompositorFrame within |surface| has activated. |duration| is
-  // a measure of the time the frame has spent waiting on dependencies to
-  // arrive. If |duration| is base::nullopt, then that indicates that this frame
-  // was not blocked on dependencies.
-  void SurfaceActivated(Surface* surface,
-                        base::Optional<base::TimeDelta> duration);
+  // Called when a CompositorFrame within |surface| has activated.
+  void SurfaceActivated(Surface* surface);
 
   // Called when |surface| is being destroyed.
   void SurfaceDestroyed(Surface* surface);
@@ -196,6 +192,10 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Returns whether there is any surface blocked on a surface from
   // |frame_sink_id|.
   bool HasBlockedEmbedder(const FrameSinkId& frame_sink_id) const;
+
+  // Indicates that the set of frame sinks being aggregated for display has
+  // changed since the previous aggregation.
+  void AggregatedFrameSinksChanged();
 
  private:
   friend class CompositorFrameSinkSupportTest;

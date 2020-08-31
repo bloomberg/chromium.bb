@@ -3,7 +3,6 @@
 <translationbundle lang="km">
 <translation id="102360288709523007">ជួយធ្វើឲ្យ Chromium ប្រសើរជាងមុនដោយផ្ញើស្ថិតិប្រើប្រាស់ និងរបាយការណ៍គាំងទៅ Google ។</translation>
 <translation id="1185134272377778587">អំពី Chromium</translation>
-<translation id="1289966288285062467">ការជូនដំណឹង​ឯកជនភាព Chromium</translation>
 <translation id="1472013873724362412">គណនីរបស់អ្នកមិនដំណើរការនៅលើ Chromium ទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រងដែនរបស់អ្នក ឫប្រើគណនី Google ធម្មតាដើម្បីចូល។</translation>
 <translation id="1507010443238049608">ជួយ​កែលម្អ​មុខងារ និង​ប្រតិបត្តិការ​របស់ Chromium</translation>
 <translation id="1617663976202781617">ទិន្នន័យពី​សមកាលកម្ម Chromium</translation>
@@ -27,11 +26,10 @@
 <translation id="5573014823074921752">គន្លឹះ​ប្រើប្រាស់ Chromium ។ ដើម្បី​ទទួលបាន​ជម្រើស​ផ្ទាំង​ច្រើន​ទៀត សូម​ចុច​​ប៊ូតុង "បង្ហាញ​ផ្ទាំង" ​ឱ្យ​ជាប់​នៅក្នុងរបារ​ឧបករណ៍ ដែលស្ថិត​នៅផ្នែក​ខាងក្រោម ឬ​ខាងលើ​អេក្រង់​របស់អ្នក។</translation>
 <translation id="5862307444128926510">ស្វាគមន៍មកកាន់ Chromium</translation>
 <translation id="5945387852661427312">អ្នកកំពុងចូលដោយប្រើគណនីដែលគ្រប់គ្រងដោយ <ph name="DOMAIN" /> និងអនុញ្ញាតឲ្យអ្នកគ្រប់គ្រងរបស់វាធ្វើការគ្រប់គ្រងទិន្នន័យ Chromium របស់អ្នក។ ទិន្នន័យរបស់អ្នកនឹងភ្ជាប់ជាមួយគណនីនេះជាអចិន្ត្រៃយ៍។ ការចេញពី Chromium នឹងលុបទិន្នន័យរបស់អ្នកចេញពីឧបករណ៍នេះ ប៉ុន្តែវានឹងនៅតែរក្សាទុកក្នុងគណនី Google របស់អ្នកដដែល។</translation>
-<translation id="6068866989048414399">លក្ខខណ្ឌប្រើប្រាស់ Chromium</translation>
+<translation id="602807004951640891">ប្រសិនបើ​ប្រើ Chromium មានន័យថា​អ្នក​យល់ព្រម​តាម<ph name="BEGIN_LINK_TOS" />លក្ខខណ្ឌ​ប្រើប្រាស់<ph name="END_LINK_TOS" />។</translation>
 <translation id="6268381023930128611">ចាកចេញពី Chromium ឬ?</translation>
 <translation id="6424492062988593837">Chromium កាន់តែប្រសើរជាងមុន! មានកំណែថ្មី។</translation>
 <translation id="6604711459180487467">ទទួលបានការប្រើប្រាស់ Chromium ប្រសើរជាងមុន ដោយផ្អែកលើទីតាំងរបស់អ្នក។</translation>
-<translation id="6626296268883197964">ប្រសិន​បើ​ប្រើ​កម្មវិធីនេះ មាន​ន័យ​ថា​អ្នកយល់ស្រប​តាម<ph name="BEGIN_LINK_TOS" />លក្ខខណ្ឌ​សេវាកម្ម<ph name="END_LINK_TOS" /> និង<ph name="BEGIN_LINK_PRIVACY" />ការជូនដំណឹង​ឯកជនភាព<ph name="END_LINK_PRIVACY" />របស់ Chromium ។</translation>
 <translation id="7099326575020694068">Chromium មិនអាចប្រើកាមេរ៉ារបស់អ្នកនៅក្នុងមុខងារបំបែកការមើលបានទេ</translation>
 <translation id="7208566199746267865">Chromium សន្សំពេលវេលាដោយប្រើគណនីរបស់អ្នកនៅលើបណ្តាញអ៊ីនធឺណិត។ អ្នកអាចបញ្ចូល ឬលុបគណនីនៅក្នុងការកំណត់។</translation>
 <translation id="7269362888766543920">កម្មវិធីបន្ថែមមួយចំនួនអាចធ្វើឲ្យ Chromium គាំង។ សូមសាកល្បងលុបការដំឡើងពួកវា។</translation>

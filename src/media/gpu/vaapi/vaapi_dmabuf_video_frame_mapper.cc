@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "media/base/color_plane_layout.h"
-#include "media/gpu/linux/platform_video_frame_utils.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -47,7 +47,7 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
 
   // All the planes are stored in the same buffer, VAImage.va_buffer.
   std::vector<ColorPlaneLayout> planes(num_planes);
-  std::vector<uint8_t*> addrs(num_planes, nullptr);
+  uint8_t* addrs[VideoFrame::kMaxPlanes] = {};
   for (size_t i = 0; i < num_planes; i++) {
     planes[i].stride = va_image->image()->pitches[i];
     planes[i].offset = va_image->image()->offsets[i];
@@ -129,16 +129,26 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
     return nullptr;
   }
 
-  if (!video_frame->HasDmaBufs()) {
+  if (!video_frame->HasDmaBufs())
+    return nullptr;
+
+  if (video_frame->format() != format_) {
+    VLOGF(1) << "Unexpected format, got: "
+             << VideoPixelFormatToString(video_frame->format())
+             << ", expected: " << VideoPixelFormatToString(format_);
     return nullptr;
   }
-  if (video_frame->format() != format_) {
-    VLOGF(1) << "Unexpected format: " << video_frame->format();
+
+  scoped_refptr<gfx::NativePixmap> pixmap =
+      CreateNativePixmapDmaBuf(video_frame.get());
+  if (!pixmap) {
+    VLOGF(1) << "Failed to create NativePixmap from VideoFrame";
     return nullptr;
   }
 
   scoped_refptr<VASurface> va_surface =
-      vaapi_wrapper_->CreateVASurfaceForVideoFrame(video_frame.get());
+      vaapi_wrapper_->CreateVASurfaceForPixmap(std::move(pixmap));
+
   if (!va_surface) {
     VLOGF(1) << "Failed to create VASurface";
     return nullptr;

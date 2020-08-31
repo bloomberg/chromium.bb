@@ -15,8 +15,10 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/shared_memory_mapping.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "cc/base/synced_property.h"
@@ -27,7 +29,9 @@
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/input/scrollbar_controller.h"
 #include "cc/layers/layer_collections.h"
-#include "cc/metrics/frame_sequence_tracker.h"
+#include "cc/metrics/event_metrics.h"
+#include "cc/metrics/events_metrics_manager.h"
+#include "cc/metrics/frame_sequence_tracker_collection.h"
 #include "cc/paint/discardable_image_map.h"
 #include "cc/paint/paint_worklet_job.h"
 #include "cc/resources/ui_resource_client.h"
@@ -41,6 +45,7 @@
 #include "cc/tiles/tile_manager.h"
 #include "cc/trees/animated_paint_worklet_tracker.h"
 #include "cc/trees/de_jelly_state.h"
+#include "cc/trees/frame_rate_estimator.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
@@ -59,6 +64,7 @@
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_range.h"
+#include "ui/events/types/scroll_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
@@ -79,6 +85,7 @@ class DebugRectHistory;
 class EvictionTilePriorityQueue;
 class FrameRateCounter;
 class ImageAnimationController;
+class LCDTextMetricsReporter;
 class LayerImpl;
 class LayerTreeFrameSink;
 class LayerTreeImpl;
@@ -87,7 +94,6 @@ class MemoryHistory;
 class MutatorEvents;
 class MutatorHost;
 class PageScaleAnimation;
-class PendingTreeDurationHistogramTimer;
 class PendingTreeRasterDurationHistogramTimer;
 class RasterTilePriorityQueue;
 class RasterBufferProvider;
@@ -104,7 +110,7 @@ class Viewport;
 
 enum class GpuRasterizationStatus {
   ON,
-  ON_FORCED,
+  OFF_FORCED,
   OFF_DEVICE,
 };
 
@@ -129,8 +135,6 @@ class LayerTreeHostImplClient {
   virtual void SetNeedsCommitOnImplThread() = 0;
   virtual void SetNeedsPrepareTilesOnImplThread() = 0;
   virtual void SetVideoNeedsBeginFrames(bool needs_begin_frames) = 0;
-  virtual void PostAnimationEventsToMainThreadOnImplThread(
-      std::unique_ptr<MutatorEvents> events) = 0;
   virtual bool IsInsideDraw() = 0;
   virtual void RenewTreePriority() = 0;
   virtual void PostDelayedAnimationTaskOnImplThread(base::OnceClosure task,
@@ -170,8 +174,10 @@ class LayerTreeHostImplClient {
   virtual void NotifyPaintWorkletStateChange(
       Scheduler::PaintWorkletState state) = 0;
 
+  virtual void NotifyThroughputTrackerResults(CustomTrackerResults results) = 0;
+
  protected:
-  virtual ~LayerTreeHostImplClient() {}
+  virtual ~LayerTreeHostImplClient() = default;
 };
 
 // LayerTreeHostImpl owns the LayerImpl trees as well as associated rendering
@@ -259,22 +265,20 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // InputHandler implementation
   void BindToClient(InputHandlerClient* client) override;
-  InputHandler::ScrollStatus ScrollBegin(
+  InputHandler::ScrollStatus ScrollBegin(ScrollState* scroll_state,
+                                         ui::ScrollInputType type) override;
+  InputHandler::ScrollStatus RootScrollBegin(ScrollState* scroll_state,
+                                             ui::ScrollInputType type) override;
+  InputHandlerScrollResult ScrollUpdate(
       ScrollState* scroll_state,
-      InputHandler::ScrollInputType type) override;
-  InputHandler::ScrollStatus RootScrollBegin(
-      ScrollState* scroll_state,
-      InputHandler::ScrollInputType type) override;
-  ScrollStatus ScrollAnimatedBegin(ScrollState* scroll_state) override;
-  InputHandler::ScrollStatus ScrollAnimated(
-      const gfx::Point& viewport_point,
-      const gfx::Vector2dF& scroll_delta,
       base::TimeDelta delayed_by = base::TimeDelta()) override;
-  InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) override;
   void RequestUpdateForSynchronousInputHandler() override;
   void SetSynchronousInputHandlerRootScrollOffset(
       const gfx::ScrollOffset& root_content_offset) override;
   void ScrollEnd(bool should_snap = false) override;
+  void RecordScrollBegin(ui::ScrollInputType input_type,
+                         ScrollBeginThreadState scroll_start_state) override;
+  void RecordScrollEnd(ui::ScrollInputType input_type) override;
 
   InputHandlerPointerResult MouseDown(const gfx::PointF& viewport_point,
                                       bool shift_modifier) override;
@@ -282,6 +286,11 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   InputHandlerPointerResult MouseMoveAt(
       const gfx::Point& viewport_point) override;
   void MouseLeave() override;
+
+  // Returns frame_element_id from the layer hit by the given point.
+  // If the hit test failed, an invalid element ID is returned.
+  ElementId FindFrameElementIdAtPoint(
+      const gfx::PointF& viewport_point) override;
 
   void PinchGestureBegin() override;
   void PinchGestureUpdate(float magnify_delta,
@@ -293,8 +302,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                                base::TimeDelta duration);
   void SetNeedsAnimateInput() override;
   bool IsCurrentlyScrollingViewport() const override;
-  bool IsCurrentlyScrollingLayerAt(
-      const gfx::Point& viewport_point) const override;
   EventListenerProperties GetEventListenerProperties(
       EventListenerClass event_class) const override;
   InputHandler::TouchStartOrMoveEventListenerType
@@ -305,12 +312,16 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       const gfx::Point& viewport_point) const override;
   std::unique_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override;
+  std::unique_ptr<EventsMetricsManager::ScopedMonitor>
+  GetScopedEventMetricsMonitor(
+      std::unique_ptr<EventMetrics> event_metrics) override;
   ScrollElasticityHelper* CreateScrollElasticityHelper() override;
   bool GetScrollOffsetForLayer(ElementId element_id,
                                gfx::ScrollOffset* offset) override;
   bool ScrollLayerTo(ElementId element_id,
                      const gfx::ScrollOffset& offset) override;
   bool ScrollingShouldSwitchtoMainThread() override;
+  void NotifyInputEvent() override;
 
   // BrowserControlsOffsetManagerClient implementation.
   float TopControlsHeight() const override;
@@ -329,6 +340,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void RequestBeginFrameForAnimatedImages() override;
   void RequestInvalidationForAnimatedImages() override;
 
+  EventMetricsSet TakeEventsMetrics();
+  void AppendEventsMetricsFromMainThread(
+      std::vector<EventMetrics> events_metrics);
+
   base::WeakPtr<LayerTreeHostImpl> AsWeakPtr();
 
   void set_resourceless_software_draw_for_testing() {
@@ -345,7 +360,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       CommitEarlyOutReason reason,
       std::vector<std::unique_ptr<SwapPromise>> swap_promises,
       const viz::BeginFrameArgs& args);
-  virtual void ReadyToCommit() {}  // For tests.
+  virtual void ReadyToCommit(const viz::BeginFrameArgs& commit_args);
   virtual void BeginCommit();
   virtual void CommitComplete();
   virtual void UpdateAnimationState(bool start_ready_animations);
@@ -446,6 +461,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // Resets all of the trees to an empty state.
   void ResetTreesForTesting();
 
+  void set_force_smooth_wheel_scrolling_for_testing(bool enabled) {
+    force_smooth_wheel_scrolling_for_testing_ = enabled;
+  }
+
   size_t SourceAnimationFrameNumberForTesting() const;
 
   void RegisterScrollbarAnimationController(ElementId scroll_element_id,
@@ -470,7 +489,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) override;
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override;
-  const gfx::ColorSpace& GetRasterColorSpace() const override;
+  gfx::ColorSpace GetRasterColorSpace(
+      gfx::ContentColorUsage content_color_usage) const override;
   void RequestImplSideInvalidationForCheckerImagedTiles() override;
   size_t GetFrameIndexForImage(const PaintImage& paint_image,
                                WhichTree tree) const override;
@@ -549,6 +569,14 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   uint32_t next_frame_token() const { return *next_frame_token_; }
 
   // Buffers |callback| until a relevant frame swap ocurrs, at which point the
+  // callback will be posted to run on the main thread. A frame swap is
+  // considered relevant if the swapped frame's token is greater than or equal
+  // to |frame_token|.
+  void RegisterMainThreadPresentationTimeCallback(
+      uint32_t frame_token,
+      LayerTreeHost::PresentationTimeCallback callback);
+
+  // Buffers |callback| until a relevant frame swap ocurrs, at which point the
   // callback will be run on the compositor thread. A frame swap is considered
   // relevant if the swapped frame's token is greater than or equal to
   // |frame_token|.
@@ -557,8 +585,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       LayerTreeHost::PresentationTimeCallback callback);
 
   virtual bool WillBeginImplFrame(const viz::BeginFrameArgs& args);
-  virtual void DidFinishImplFrame();
-  void DidNotProduceFrame(const viz::BeginFrameAck& ack);
+  virtual void DidFinishImplFrame(const viz::BeginFrameArgs& args);
+  void DidNotProduceFrame(const viz::BeginFrameAck& ack,
+                          FrameSkippedReason reason);
   void DidModifyTilePriorities();
 
   LayerTreeImpl* active_tree() { return active_tree_.get(); }
@@ -586,14 +615,23 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void QueueSwapPromiseForMainThreadScrollUpdate(
       std::unique_ptr<SwapPromise> swap_promise);
 
-  bool IsActivelyScrolling() const;
+  // Returns true if there is an active scroll in progress.  "Active" here
+  // means that it's been latched (i.e. we have a CurrentlyScrollingNode()) but
+  // also that some ScrollUpdates have been received and their delta consumed
+  // for scrolling. These can differ significantly e.g. the page allows the
+  // touchstart but preventDefaults all the touchmoves. In that case, we latch
+  // and have a CurrentlyScrollingNode() but will never receive a ScrollUpdate.
+  //
+  // "Precision" means it's a non-animated scroll like a touchscreen or
+  // high-precision touchpad. The latter distinction is important for things
+  // like scheduling decisions which might schedule a wheel and a touch
+  // scrolling differently due to user perception.
+  bool IsActivelyPrecisionScrolling() const;
 
   virtual void SetVisible(bool visible);
   bool visible() const { return visible_; }
 
-  bool is_animating_for_snap_for_testing() const {
-    return is_animating_for_snap_;
-  }
+  bool IsAnimatingForSnap() const;
 
   void SetNeedsOneBeginImplFrame();
   void SetNeedsRedraw();
@@ -604,6 +642,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   std::unique_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
   FrameRateCounter* fps_counter() { return fps_counter_.get(); }
+  base::Optional<int> current_universal_throughput() {
+    return frame_trackers_.current_universal_throughput();
+  }
   MemoryHistory* memory_history() { return memory_history_.get(); }
   DebugRectHistory* debug_rect_history() { return debug_rect_history_.get(); }
   viz::ClientResourceProvider* resource_provider() {
@@ -621,6 +662,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   }
 
   MutatorHost* mutator_host() const { return mutator_host_.get(); }
+  ScrollbarController* scrollbar_controller_for_testing() const {
+    return scrollbar_controller_.get();
+  }
 
   void SetDebugState(const LayerTreeDebugState& new_debug_state);
   const LayerTreeDebugState& debug_state() const { return debug_state_; }
@@ -649,7 +693,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // TODO(mithro): Remove this methods which exposes the internal
   // viz::BeginFrameArgs to external callers.
-  virtual viz::BeginFrameArgs CurrentBeginFrameArgs() const;
+  virtual const viz::BeginFrameArgs& CurrentBeginFrameArgs() const;
 
   // Expected time between two begin impl frame calls.
   base::TimeDelta CurrentBeginFrameInterval() const;
@@ -679,10 +723,12 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // visual and layout offsets of the viewport.
   gfx::ScrollOffset GetVisualScrollOffset(const ScrollNode& scroll_node) const;
 
-  bool GetSnapFlingInfoAndSetSnapTarget(
+  bool GetSnapFlingInfoAndSetAnimatingSnapTarget(
       const gfx::Vector2dF& natural_displacement_in_viewport,
       gfx::Vector2dF* out_initial_position,
       gfx::Vector2dF* out_target_position) override;
+
+  void ScrollEndForSnapFling(bool did_finish) override;
 
   // Returns the amount of delta that can be applied to scroll_node, taking
   // page scale into account.
@@ -726,7 +772,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   bool prepare_tiles_needed() const { return tile_priorities_dirty_; }
 
-  gfx::Vector2dF ScrollSingleNode(ScrollNode* scroll_node,
+  gfx::Vector2dF ScrollSingleNode(const ScrollNode& scroll_node,
                                   const gfx::Vector2dF& delta,
                                   const gfx::Point& viewport_point,
                                   bool is_direct_manipulation,
@@ -739,8 +785,13 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                : task_runner_provider_->MainThreadTaskRunner();
   }
 
-  InputHandler::ScrollStatus TryScroll(const gfx::PointF& screen_space_point,
-                                       const ScrollTree& scroll_tree,
+  // Determines whether the given scroll node can scroll on the compositor
+  // thread or if there are any reasons it must be scrolled on the main thread
+  // or not at all. Note: in general, this is not sufficient to determine if a
+  // scroll can occur on the compositor thread. If hit testing to a scroll
+  // node, the caller must also check whether the hit point intersects a
+  // non-fast-scrolling-region of any ancestor scrolling layers.
+  InputHandler::ScrollStatus TryScroll(const ScrollTree& scroll_tree,
                                        ScrollNode* scroll_node) const;
 
   // Return all ScrollNode indices that have an associated layer with a non-fast
@@ -750,10 +801,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // Returns true if a scroll offset animation is created and false if we scroll
   // by the desired amount without an animation.
-  bool ScrollAnimationCreate(ScrollNode* scroll_node,
+  bool ScrollAnimationCreate(const ScrollNode& scroll_node,
                              const gfx::Vector2dF& scroll_amount,
                              base::TimeDelta delayed_by);
-  bool AutoScrollAnimationCreate(ScrollNode* scroll_node,
+  bool AutoScrollAnimationCreate(const ScrollNode& scroll_node,
                                  const gfx::Vector2dF& scroll_amount,
                                  float autoscroll_velocity);
 
@@ -767,11 +818,13 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   void QueueImageDecode(int request_id, const PaintImage& image);
   std::vector<std::pair<int, bool>> TakeCompletedImageDecodeRequests();
+  // Returns mutator events to be handled by BeginMainFrame.
+  std::unique_ptr<MutatorEvents> TakeMutatorEvents();
 
   void ClearCaches();
 
-  bool CanConsumeDelta(const ScrollNode& scroll_node,
-                       const ScrollState& scroll_state);
+  bool CanConsumeDelta(const ScrollState& scroll_state,
+                       const ScrollNode& scroll_node);
 
   void UpdateImageDecodingHints(
       base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
@@ -779,6 +832,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   void InitializeUkm(std::unique_ptr<ukm::UkmRecorder> recorder);
   UkmManager* ukm_manager() { return ukm_manager_.get(); }
+
+  ActiveFrameSequenceTrackers FrameSequenceTrackerActiveTypes() {
+    return frame_trackers_.FrameSequenceTrackerActiveTypes();
+  }
 
   void RenewTreePriorityForTesting() { client_->RenewTreePriority(); }
 
@@ -834,10 +891,12 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       compositor_frame_reporting_controller_;
 
  private:
-  const gfx::ColorSpace& GetRasterColorSpaceAndId(int* id) const;
-
-  void CollectScrollDeltas(ScrollAndScaleSet* scroll_info) const;
+  void CollectScrollDeltas(ScrollAndScaleSet* scroll_info);
   void CollectScrollbarUpdates(ScrollAndScaleSet* scroll_info) const;
+
+  gfx::Vector2dF ResolveScrollPercentageToPixels(
+      const ScrollNode& scroll_node,
+      const gfx::Vector2dF& resolved_pixels);
 
   // Returns the ScrollNode we should use to scroll, accounting for viewport
   // scroll chaining rules.
@@ -854,11 +913,11 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       gfx::Vector2dF* out_local_scroll_delta,
       gfx::PointF* out_local_start_point = nullptr);
   gfx::Vector2dF ScrollNodeWithViewportSpaceDelta(
-      ScrollNode* scroll_node,
+      const ScrollNode& scroll_node,
       const gfx::PointF& viewport_point,
       const gfx::Vector2dF& viewport_delta,
       ScrollTree* scroll_tree);
-  bool ScrollAnimationCreateInternal(ScrollNode* scroll_node,
+  bool ScrollAnimationCreateInternal(const ScrollNode& scroll_node,
                                      const gfx::Vector2dF& delta,
                                      base::TimeDelta delayed_by,
                                      base::Optional<float> autoscroll_velocity);
@@ -894,18 +953,51 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   Viewport& viewport() const { return *viewport_.get(); }
 
-  InputHandler::ScrollStatus ScrollBeginImpl(
-      ScrollState* scroll_state,
-      ScrollNode* scrolling_node,
-      InputHandler::ScrollInputType type);
   bool IsTouchDraggingScrollbar(
       LayerImpl* first_scrolling_layer_or_drawn_scrollbar,
-      InputHandler::ScrollInputType type);
+      ui::ScrollInputType type);
+
+  // Initial scroll hit testing can be unreliable in the presence of squashed
+  // layers. In this case, we fall back to main thread scrolling. This function
+  // compares |layer_impl| returned from a regular hit test to the layer
+  // returned from a hit test performed only on scrollers and scrollbars. If the
+  // closest scrolling ancestor of |layer_impl| is not the other layer, then the
+  // layer_impl must be a squasing layer overtop of some other scroller and we
+  // must rely on the main thread.
+  //
+  // Note, position: fixed layers use the inner viewport as their ScrollNode
+  // (since they don't scroll with the outer viewport), however, scrolls from
+  // the fixed layer still chain to the outer viewport. It's also possible for a
+  // node to have the inner viewport as its ancestor without going through the
+  // outer viewport; however, it may still scroll using the viewport(). Hence,
+  // this method must use the same scroll chaining logic we use in ApplyScroll.
   bool IsInitialScrollHitTestReliable(
       LayerImpl* layer,
-      LayerImpl* first_scrolling_layer_or_drawn_scrollbar);
-  void LatchToScroller(ScrollState* scroll_state, ScrollNode* starting_node);
-  void ScrollLatchedScroller(ScrollState* scroll_state);
+      LayerImpl* first_scrolling_layer_or_drawn_scrollbar) const;
+
+  // Given a starting node (determined by hit-test), walks up the scroll tree
+  // looking for the first node that can consume scroll from the given
+  // scroll_state and returns the first such node. If none is found, or if
+  // starting_node is nullptr, returns nullptr;
+  ScrollNode* FindNodeToLatch(ScrollState* scroll_state,
+                              ScrollNode* starting_node,
+                              ui::ScrollInputType type);
+
+  // Called during ScrollBegin once a scroller was successfully latched to
+  // (i.e.  it can and will consume scroll delta on the compositor thread). The
+  // latched scroller is now available in CurrentlyScrollingNode().
+  // TODO(bokan): There's some debate about the name of this method. We should
+  // get consensus on terminology to use and apply it consistently.
+  // https://crrev.com/c/1981336/9/cc/trees/layer_tree_host_impl.cc#4520
+  void DidLatchToScroller(const ScrollState& scroll_state,
+                          ui::ScrollInputType type);
+
+  // Applies the scroll_state to the currently latched scroller. See comment in
+  // InputHandler::ScrollUpdate declaration for the meaning of |delayed_by|.
+  void ScrollLatchedScroller(ScrollState* scroll_state,
+                             base::TimeDelta delayed_by);
+
+  bool ShouldAnimateScroll(const ScrollState& scroll_state) const;
 
   bool AnimatePageScale(base::TimeTicks monotonic_time);
   bool AnimateScrollbars(base::TimeTicks monotonic_time);
@@ -925,7 +1017,18 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   void ClearCurrentlyScrollingNode();
 
-  ScrollNode* FindScrollNodeForDeviceViewportPoint(
+  // Performs a hit test to determine the ScrollNode to use when scrolling at
+  // |viewport_point|. Can return nullptr if the hit test fails; see the
+  // comment in IsInitialScrollHitTestReliable
+  ScrollNode* HitTestScrollNode(const gfx::PointF& device_viewport_point) const;
+
+  // Similar to above but includes complicated logic to determine whether the
+  // ScrollNode is able to be scrolled on the compositor or requires main
+  // thread scrolling. If main thread scrolling is required
+  // |scroll_on_main_thread| is set to true and the reason is given in
+  // |main_thread_scrolling_reason| to on of the enum values in
+  // main_thread_scrolling_reason.h.
+  ScrollNode* FindScrollNodeForCompositedScrolling(
       const gfx::PointF& device_viewport_point,
       LayerImpl* layer_hit_by_point,
       bool* scroll_on_main_thread,
@@ -954,22 +1057,13 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   void UpdateRootLayerStateForSynchronousInputHandler();
 
-  bool ScrollAnimationUpdateTarget(ScrollNode* scroll_node,
+  bool ScrollAnimationUpdateTarget(const ScrollNode& scroll_node,
                                    const gfx::Vector2dF& scroll_delta,
                                    base::TimeDelta delayed_by);
-
-  void ScrollEndImpl();
 
   // Creates an animation curve and returns true if we need to update the
   // scroll position to a snap point. Otherwise returns false.
   bool SnapAtScrollEnd();
-
-  // Returns true if a target snap position was found.
-  // Updates the scrolling node's snap container data's target snap points
-  // accordingly to the found target.
-  bool FindSnapPositionAndSetTarget(ScrollNode* scroll_node,
-                                    const SnapSelectionStrategy& strategy,
-                                    gfx::ScrollOffset* snap_position) const;
 
   void SetContextVisibility(bool is_visible);
   void ImageDecodeFinished(int request_id, bool decode_succeeded);
@@ -980,8 +1074,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // thread side to keep track of the frequency of scrolling with different
   // sources per page load. TODO(crbug.com/691886): Use GRC API to plumb the
   // scroll source info for Use Counters.
-  void UpdateScrollSourceInfo(InputHandler::ScrollInputType type,
-                              ScrollState* scroll_state);
+  void UpdateScrollSourceInfo(const ScrollState& scroll_state,
+                              ui::ScrollInputType type);
 
   bool IsScrolledBy(LayerImpl* child, ScrollNode* ancestor);
   void ShowScrollbarsForImplScroll(ElementId element_id);
@@ -1010,9 +1104,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   //    happen explicitly via. synchronous calls to appropriate functions).
   // This is usually turned on only in some tests (e.g. web-tests).
   const bool is_synchronous_single_threaded_;
-
-  const int default_color_space_id_ = gfx::ColorSpace::GetNextId();
-  const gfx::ColorSpace default_color_space_ = gfx::ColorSpace::CreateSRGB();
 
   viz::ClientResourceProvider resource_provider_;
 
@@ -1070,17 +1161,26 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<LayerTreeImpl> recycle_tree_;
 
   InputHandlerClient* input_handler_client_ = nullptr;
-  bool touch_scrolling_ = false;
-  bool wheel_scrolling_ = false;
-  bool middle_click_autoscrolling_ = false;
+
+  // This is used to tell the scheduler there are active scroll handlers on the
+  // page so we should prioritize latency during a scroll to try to keep
+  // scroll-linked effects up to data.
+  // TODO(bokan): This is quite old and scheduling has become much more
+  // sophisticated since so it's not clear how much value it's still providing.
   bool scroll_affects_scroll_handler_ = false;
+
   ElementId scroll_element_id_mouse_currently_over_;
   ElementId scroll_element_id_mouse_currently_captured_;
 
   // Tracks, for debugging purposes, the amount of scroll received (not
   // necessarily applied) in this compositor frame. This will be reset each
   // time a CompositorFrame is generated.
-  gfx::ScrollOffset scroll_accumulated_this_frame_;
+  gfx::Vector2dF scroll_accumulated_this_frame_;
+
+  // Tracks the last scroll update/begin state received. Used to infer the most
+  // recent scroll type and direction.
+  base::Optional<ScrollState> last_scroll_begin_state_;
+  base::Optional<ScrollState> last_scroll_update_state_;
 
   std::vector<std::unique_ptr<SwapPromise>>
       swap_promises_for_main_thread_scroll_update_;
@@ -1148,6 +1248,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   gfx::Rect viewport_damage_rect_;
 
   std::unique_ptr<MutatorHost> mutator_host_;
+  std::unique_ptr<MutatorEvents> mutator_events_;
   std::set<VideoFrameController*> video_frame_controllers_;
 
   // Map from scroll element ID to scrollbar animation controller.
@@ -1185,30 +1286,19 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   std::unique_ptr<Viewport> viewport_;
 
-  std::unique_ptr<PendingTreeDurationHistogramTimer>
-      pending_tree_duration_timer_;
   std::unique_ptr<PendingTreeRasterDurationHistogramTimer>
       pending_tree_raster_duration_timer_;
 
-  // The element id of the scroll node to which scroll animations must latch.
-  // This gets reset at ScrollAnimatedBegin, and updated the first time that a
-  // scroll animation is created in ScrollAnimated. We need to use element ids
-  // instead of node ids since they are stable across the property tree update
-  // in SetPropertyTrees.
-  ElementId scroll_animating_latched_element_id_;
+  // If a scroll snap is being animated, then the value of this will be the
+  // element id(s) of the target(s). Otherwise, the ids will be invalid.
+  // At the end of a scroll animation, the target should be set as the scroll
+  // node's snap target.
+  TargetSnapAreaElementIds scroll_animating_snap_target_ids_;
 
-  // In scroll animation path CurrentlyScrollingNode does not exist when there
-  // is no ongoing scroll animation (e.g. during overscrolling). In this case we
-  // need to explicitly store the element id of the overscroll event target. The
-  // overscroll event target is either the element that scroll animation is
-  // latched to (scroll_animating_latched_element_id_) when any scrolling has
-  // happened during the current scroll sequence or the last element in the
-  // scroll chain when no scrolling has happened during the current scroll
-  // sequence. TODO(input-dev): Decouple CurrentlyScrollingNode life cycle from
-  // scroll animation life cycle to use CurrentlyScrollingNode instead of both
-  // scroll_animating_latched_element_id_ and
-  // scroll_animating_overscroll_target_element_id_. https://crbug.com/940508
-  ElementId scroll_animating_overscroll_target_element_id_;
+  // A set of elements that scroll-snapped to a new target since the last
+  // begin main frame. The snap target ids of these elements will be sent to
+  // the main thread in the next begin main frame.
+  base::flat_set<ElementId> updated_snapped_elements_;
 
   // These completion states to be transfered to the main thread when we
   // begin main frame. The pair represents a request id and the completion (ie
@@ -1223,12 +1313,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   bool has_pinch_zoomed_ = false;
 
   ImplThreadPhase impl_thread_phase_ = ImplThreadPhase::IDLE;
-
-  // Tracks whether a BeginMainFrame is expected to be dispatched during an
-  // 'impl frame' (i.e. between WillBeginImplFrame() and DidFinishImplFrame()),
-  // and whether it was actually dispatched during the impl frame.
-  bool begin_main_frame_expected_during_impl_ = false;
-  bool begin_main_frame_sent_during_impl_ = false;
 
   ImageAnimationController image_animation_controller_;
 
@@ -1254,7 +1338,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   PresentationTimeCallbackBuffer presentation_time_callbacks_;
-  bool is_animating_for_snap_;
 
   const PaintImage::GeneratorClientId paint_image_generator_client_id_;
 
@@ -1268,15 +1351,26 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // ended.
   bool scroll_gesture_did_end_;
 
-  // Set in ScrollEnd before clearing the currently scrolling node. This is
-  // used to send the scrollend DOM event when scrolling has happened on CC.
-  ElementId last_scroller_element_id_;
+  // Set in ScrollBegin and outlives the currently scrolling node so it can be
+  // used to send the scrollend and overscroll DOM events from the main thread
+  // when scrolling occurs on the compositor thread. This value is cleared at
+  // the first commit after a GSE.
+  ElementId last_latched_scroller_;
+
+  // The source device type that started the scroll gesture. Only set between a
+  // ScrollBegin and ScrollEnd.
+  base::Optional<ui::ScrollInputType> latched_scroll_type_;
 
   // Scroll animation can finish either before or after GSE arrival.
   // deferred_scroll_end_ is set when the GSE has arrvied before scroll
   // animation completion. ScrollEnd will get called once the animation is
   // over.
   bool deferred_scroll_end_ = false;
+
+  // TODO(bokan): Mac doesn't yet have smooth scrolling for wheel; however, to
+  // allow consistency in tests we use this bit to override that decision.
+  // https://crbug.com/574283.
+  bool force_smooth_wheel_scrolling_for_testing_ = false;
 
   // PaintWorklet painting is controlled from the LayerTreeHostImpl, dispatched
   // to the worklet thread via |paint_worklet_painter_|.
@@ -1300,6 +1394,12 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // Helper for de-jelly logic.
   DeJellyState de_jelly_state_;
+
+  EventsMetricsManager events_metrics_manager_;
+
+  std::unique_ptr<LCDTextMetricsReporter> lcd_text_metrics_reporter_;
+
+  FrameRateEstimator frame_rate_estimator_;
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.

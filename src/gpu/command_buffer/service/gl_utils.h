@@ -9,7 +9,6 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GL_UTILS_H_
 
 #include <string>
-#include <vector>
 
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -64,8 +63,6 @@ struct CALayerSharedState {
   gfx::Transform transform;
 };
 
-std::vector<int> GetAllGLErrors();
-
 bool PrecisionMeetsSpecForHighpFloat(GLint rangeMin,
                                      GLint rangeMax,
                                      GLint precision);
@@ -109,6 +106,8 @@ bool GetCompressedTexSizeInBytes(const char* function_name,
                                  GLenum format,
                                  GLsizei* size_in_bytes,
                                  ErrorState* error_state);
+
+bool ValidateCompressedFormatTarget(GLenum target, GLenum format);
 
 bool ValidateCompressedTexSubDimensions(GLenum target,
                                         GLint level,
@@ -160,6 +159,9 @@ gfx::OverlayTransform GetGFXOverlayTransform(GLenum plane_transform);
 
 bool GetGFXBufferFormat(GLenum internal_format, gfx::BufferFormat* out_format);
 bool GetGFXBufferUsage(GLenum buffer_usage, gfx::BufferUsage* out_usage);
+
+bool IsASTCFormat(GLenum internal_format);
+bool IsCompressedTextureFormat(GLenum internal_format);
 
 }  // namespace gles2
 }  // namespace gpu

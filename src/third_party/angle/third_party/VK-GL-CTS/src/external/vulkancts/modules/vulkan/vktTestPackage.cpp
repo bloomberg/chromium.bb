@@ -27,6 +27,7 @@
 #include "tcuTestCase.hpp"
 #include "tcuTestLog.hpp"
 #include "tcuCommandLine.hpp"
+#include "tcuWaiverUtil.hpp"
 
 #include "vkPlatform.hpp"
 #include "vkPrograms.hpp"
@@ -51,6 +52,7 @@
 #include "vktShaderRenderDerivateTests.hpp"
 #include "vktShaderRenderDiscardTests.hpp"
 #include "vktShaderRenderIndexingTests.hpp"
+#include "vktShaderRenderInvarianceTests.hpp"
 #include "vktShaderRenderLimitTests.hpp"
 #include "vktShaderRenderLoopTests.hpp"
 #include "vktShaderRenderMatrixTests.hpp"
@@ -90,10 +92,13 @@
 #include "vktMemoryModelTests.hpp"
 #include "vktAmberExampleTests.hpp"
 #include "vktAmberGraphicsFuzzTests.hpp"
+#include "vktAmberGlslTests.hpp"
+#include "vktImagelessFramebufferTests.hpp"
 #include "vktTransformFeedbackTests.hpp"
 #include "vktDescriptorIndexingTests.hpp"
 #include "vktImagelessFramebufferTests.hpp"
 #include "vktFragmentShaderInterlockTests.hpp"
+#include "vktShaderClockTests.hpp"
 #include "vktShaderClockTests.hpp"
 
 #include <vector>
@@ -208,6 +213,8 @@ private:
 
 	const UniquePtr<vk::DebugReportRecorder>	m_debugReportRecorder;
 	const UniquePtr<vk::RenderDocUtil>			m_renderDoc;
+	vk::VkPhysicalDeviceProperties				m_deviceProperties;
+	tcu::WaiverUtil								m_waiverMechanism;
 
 	TestInstance*								m_instance;			//!< Current test case instance
 };
@@ -215,6 +222,16 @@ private:
 static MovePtr<vk::Library> createLibrary (tcu::TestContext& testCtx)
 {
 	return MovePtr<vk::Library>(testCtx.getPlatform().getVulkanPlatform().createLibrary());
+}
+
+static vk::VkPhysicalDeviceProperties getPhysicalDeviceProperties(vkt::Context& context)
+{
+	const vk::InstanceInterface&	vki				= context.getInstanceInterface();
+	const vk::VkPhysicalDevice		physicalDevice	= context.getPhysicalDevice();
+
+	vk::VkPhysicalDeviceProperties	properties;
+	vki.getPhysicalDeviceProperties(physicalDevice, &properties);
+	return properties;
 }
 
 TestCaseExecutor::TestCaseExecutor (tcu::TestContext& testCtx)
@@ -229,8 +246,18 @@ TestCaseExecutor::TestCaseExecutor (tcu::TestContext& testCtx)
 	, m_renderDoc			(testCtx.getCommandLine().isRenderDocEnabled()
 							 ? MovePtr<vk::RenderDocUtil>(new vk::RenderDocUtil())
 							 : MovePtr<vk::RenderDocUtil>(DE_NULL))
+	, m_deviceProperties	(getPhysicalDeviceProperties(m_context))
 	, m_instance			(DE_NULL)
 {
+	tcu::SessionInfo sessionInfo(m_deviceProperties.vendorID,
+								 m_deviceProperties.deviceID,
+								 testCtx.getCommandLine().getInitialCmdLine());
+	m_waiverMechanism.setup(testCtx.getCommandLine().getWaiverFileName(),
+							"dEQP-VK",
+							m_deviceProperties.vendorID,
+							m_deviceProperties.deviceID,
+							sessionInfo);
+	testCtx.getLog().writeSessionInfo(sessionInfo.get());
 }
 
 TestCaseExecutor::~TestCaseExecutor (void)
@@ -255,6 +282,9 @@ void TestCaseExecutor::init (tcu::TestCase* testCase, const std::string& casePat
 
 	if (!vktCase)
 		TCU_THROW(InternalError, "Test node not an instance of vkt::TestCase");
+
+	if (m_waiverMechanism.isOnWaiverList(casePath))
+		throw tcu::TestException("Waived test", QP_TEST_RESULT_WAIVER);
 
 	vktCase->checkSupport(m_context);
 
@@ -364,7 +394,7 @@ bool TestCaseExecutor::spirvVersionSupported (vk::SpirvVersion spirvVersion)
 		return true;
 
 	if (spirvVersion <= vk::SPIRV_VERSION_1_4)
-		return vk::isDeviceExtensionSupported(m_context.getUsedApiVersion(), m_context.getDeviceExtensions(), "VK_KHR_spirv_1_4");
+		return m_context.isDeviceFunctionalitySupported("VK_KHR_spirv_1_4");
 
 	return false;
 }
@@ -423,6 +453,7 @@ void createGlslTests (tcu::TestCaseGroup* glslTests)
 	glslTests->addChild(sr::createDiscardTests			(testCtx));
 	glslTests->addChild(sr::createDemoteTests			(testCtx));
 	glslTests->addChild(sr::createIndexingTests			(testCtx));
+	glslTests->addChild(sr::createShaderInvarianceTests	(testCtx));
 	glslTests->addChild(sr::createLimitTests			(testCtx));
 	glslTests->addChild(sr::createLoopTests				(testCtx));
 	glslTests->addChild(sr::createMatrixTests			(testCtx));
@@ -439,6 +470,9 @@ void createGlslTests (tcu::TestCaseGroup* glslTests)
 	glslTests->addChild(shaderexecutor::createOpaqueTypeIndexingTests	(testCtx));
 	glslTests->addChild(shaderexecutor::createAtomicOperationTests		(testCtx));
 	glslTests->addChild(shaderexecutor::createShaderClockTests			(testCtx));
+
+	// Amber GLSL tests.
+	glslTests->addChild(cts_amber::createCombinedOperationsGroup		(testCtx));
 }
 
 // TestPackage
@@ -494,9 +528,9 @@ void TestPackage::init (void)
 	addChild(conditional::createTests			(m_testCtx));
 	addChild(cts_amber::createExampleTests		(m_testCtx));
 	addChild(cts_amber::createGraphicsFuzzTests	(m_testCtx));
+	addChild(imageless::createTests				(m_testCtx));
 	addChild(TransformFeedback::createTests		(m_testCtx));
 	addChild(DescriptorIndexing::createTests	(m_testCtx));
-	addChild(imageless::createTests				(m_testCtx));
 	addChild(FragmentShaderInterlock::createTests(m_testCtx));
 }
 

@@ -5,7 +5,6 @@
 #include <set>
 #include <string>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -15,7 +14,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/external_install_info.h"
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/browser/pref_names.h"

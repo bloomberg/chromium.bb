@@ -29,9 +29,7 @@
 #include "storage/browser/file_system/file_stream_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::LocalFileStreamReader;
-
-namespace content {
+namespace storage {
 
 namespace {
 
@@ -56,7 +54,7 @@ class LocalFileStreamReaderTest : public testing::Test {
     ASSERT_TRUE(file_thread_.Start());
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
-    base::WriteFile(test_path(), kTestData, kTestDataSize);
+    base::WriteFile(test_path(), kTestData);
     base::File::Info info;
     ASSERT_TRUE(base::GetFileInfo(test_path(), &info));
     test_file_modification_time_ = info.last_modified;
@@ -260,4 +258,4 @@ TEST_F(LocalFileStreamReaderTest, DeleteWithUnfinishedRead) {
   EnsureFileTaskFinished();
 }
 
-}  // namespace content
+}  // namespace storage

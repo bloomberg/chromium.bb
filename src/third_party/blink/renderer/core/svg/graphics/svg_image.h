@@ -29,11 +29,13 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
@@ -66,7 +68,7 @@ class CORE_EXPORT SVGImage final : public Image {
   static bool IsInSVGImage(const Node*);
 
   bool IsSVGImage() const override { return true; }
-  IntSize Size() const override { return intrinsic_size_; }
+  IntSize Size() const override;
 
   void CheckLoaded() const;
   bool CurrentFrameHasSingleSecurityOrigin() const override;
@@ -144,7 +146,7 @@ class CORE_EXPORT SVGImage final : public Image {
 
   String FilenameExtension() const override;
 
-  IntSize ContainerSize() const;
+  LayoutSize ContainerSize() const;
 
   SizeAvailability DataChanged(bool all_data_received) override;
 
@@ -227,7 +229,7 @@ class CORE_EXPORT SVGImage final : public Image {
   // belong to multiple containers so the final image size can't be known in
   // SVGImage. SVGImageForContainer carries the final image size, also called
   // the "concrete object size". For more, see: SVGImageForContainer.h
-  IntSize intrinsic_size_;
+  LayoutSize intrinsic_size_;
   bool has_pending_timeline_rewind_;
 
   enum LoadState {
@@ -246,9 +248,13 @@ class CORE_EXPORT SVGImage final : public Image {
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, LayoutShiftTrackerDisabled);
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, SetSizeOnVisualViewport);
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, IsSizeAvailable);
+  FRIEND_TEST_ALL_PREFIXES(SVGImageTest, DisablesSMILEvents);
 };
 
-DEFINE_IMAGE_TYPE_CASTS(SVGImage);
+template <>
+struct DowncastTraits<SVGImage> {
+  static bool AllowFrom(const Image& image) { return image.IsSVGImage(); }
+};
 
 class ImageObserverDisabler {
   STACK_ALLOCATED();

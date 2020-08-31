@@ -8,7 +8,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -90,9 +92,8 @@ HatsNotificationController::HatsNotificationController(Profile* profile)
     : profile_(profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&IsNewDevice),
       base::BindOnce(&HatsNotificationController::Initialize,
                      weak_pointer_factory_.GetWeakPtr()));
@@ -135,6 +136,10 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
 
   // Do not show survey if this is a guest session.
   if (profile->IsGuestSession())
+    return false;
+
+  // Do not show survey if the user is supervised.
+  if (profile->IsChild())
     return false;
 
   const bool is_enterprise_enrolled = g_browser_process->platform_part()

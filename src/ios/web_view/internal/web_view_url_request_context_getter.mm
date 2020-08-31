@@ -7,14 +7,17 @@
 #include <utility>
 
 #include "base/base_paths.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
+#include "ios/components/webui/web_ui_url_constants.h"
 #import "ios/net/cookies/cookie_store_ios.h"
 #include "ios/web/public/browsing_data/system_cookie_store_util.h"
 #import "ios/web/public/web_client.h"
+#include "ios/web/webui/url_data_manager_ios_backend.h"
 #include "net/base/cache_type.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/cert/cert_verifier.h"
@@ -28,8 +31,8 @@
 #include "net/http/transport_security_persister.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config_service_ios.h"
-#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/quic_context.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -55,6 +58,8 @@ WebViewURLRequestContextGetter::WebViewURLRequestContextGetter(
       proxy_config_service_(
           new net::ProxyConfigServiceIOS(NO_TRAFFIC_ANNOTATION_YET)),
       system_cookie_store_(web::CreateSystemCookieStore(browser_state)),
+      protocol_handler_(
+          web::URLDataManagerIOSBackend::CreateProtocolHandler(browser_state)),
       is_shutting_down_(false) {}
 
 WebViewURLRequestContextGetter::~WebViewURLRequestContextGetter() = default;
@@ -89,8 +94,9 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
         std::make_unique<net::StaticHttpUserAgentSettings>("en-us,en",
                                                            user_agent));
     storage_->set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateUsingSystemProxyResolver(
-            std::move(proxy_config_service_), url_request_context_->net_log()));
+        net::ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
+            std::move(proxy_config_service_), url_request_context_->net_log(),
+            /*quick_check_enabled=*/true));
     storage_->set_ssl_config_service(
         std::make_unique<net::SSLConfigServiceDefaults>());
     storage_->set_cert_verifier(
@@ -106,9 +112,8 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
     transport_security_persister_ =
         std::make_unique<net::TransportSecurityPersister>(
             url_request_context_->transport_security_state(), base_path_,
-            base::CreateSequencedTaskRunner({base::ThreadPool(),
-                                             base::MayBlock(),
-                                             base::TaskPriority::BEST_EFFORT}));
+            base::ThreadPool::CreateSequencedTaskRunner(
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
 
     storage_->set_http_server_properties(
         std::make_unique<net::HttpServerProperties>());
@@ -146,7 +151,8 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
         base_path_.Append(FILE_PATH_LITERAL("ChromeWebViewCache"));
     std::unique_ptr<net::HttpCache::DefaultBackend> main_backend(
         new net::HttpCache::DefaultBackend(
-            net::DISK_CACHE, net::CACHE_BACKEND_DEFAULT, cache_path, 0));
+            net::DISK_CACHE, net::CACHE_BACKEND_DEFAULT, cache_path,
+            /*max_bytes=*/0, /*hard_reset=*/false));
 
     storage_->set_http_network_session(
         std::make_unique<net::HttpNetworkSession>(
@@ -157,6 +163,8 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
 
     std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
         new net::URLRequestJobFactoryImpl());
+    job_factory->SetProtocolHandler(kChromeUIScheme,
+                                    std::move(protocol_handler_));
 
     storage_->set_job_factory(std::move(job_factory));
   }

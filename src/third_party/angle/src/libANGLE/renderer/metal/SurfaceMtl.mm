@@ -226,7 +226,13 @@ void SurfaceMtl::destroy(const egl::Display *display)
     mDepthTexture    = nullptr;
     mStencilTexture  = nullptr;
     mCurrentDrawable = nil;
-    mMetalLayer      = nil;
+    if (mMetalLayer && mMetalLayer.get() != mLayer)
+    {
+        // If we created metal layer in SurfaceMtl::initialize(),
+        // we need to detach it from super layer now.
+        [mMetalLayer.get() removeFromSuperlayer];
+    }
+    mMetalLayer = nil;
 }
 
 egl::Error SurfaceMtl::initialize(const egl::Display *display)
@@ -335,6 +341,12 @@ egl::Error SurfaceMtl::releaseTexImage(const gl::Context *context, EGLint buffer
 }
 
 egl::Error SurfaceMtl::getSyncValues(EGLuint64KHR *ust, EGLuint64KHR *msc, EGLuint64KHR *sbc)
+{
+    UNIMPLEMENTED();
+    return egl::EglBadAccess();
+}
+
+egl::Error SurfaceMtl::getMscRate(EGLint *numerator, EGLint *denominator)
 {
     UNIMPLEMENTED();
     return egl::EglBadAccess();
@@ -537,7 +549,7 @@ angle::Result SurfaceMtl::obtainNextDrawable(const gl::Context *context)
         if (defaultFbo)
         {
             FramebufferMtl *framebufferMtl = mtl::GetImpl(defaultFbo);
-            ANGLE_TRY(framebufferMtl->syncState(context, fboDirtyBits));
+            ANGLE_TRY(framebufferMtl->syncState(context, GL_FRAMEBUFFER, fboDirtyBits));
         }
 
         return angle::Result::Continue;

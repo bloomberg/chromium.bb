@@ -16,6 +16,7 @@ class TargetImpl {
   ping() { return Promise.resolve(); }
   repeat(message, numbers) { return {message: message, numbers: numbers}; }
   echo(nested) { return Promise.resolve({nested: nested}); }
+  deconstruct(test_struct) {}
   flatten(values) {}
   flattenUnions(unions) {}
   requestSubinterface(request, client) {}
@@ -55,7 +56,7 @@ promise_test(async (t) => {
   await remote.ping();
   remote.$.close();
 
-  await promise_rejects(t, new Error(), remote.ping());
+  await promise_rejects_js(t, Error, remote.ping());
 }, 'after the pipe is closed all future calls should fail');
 
 promise_test(async (t) => {
@@ -72,7 +73,7 @@ promise_test(async (t) => {
   remote.$.close();
 
   for (const promise of promises) {
-    await promise_rejects(t, new Error(), promise);
+    await promise_rejects_js(t, Error, promise);
   }
 }, 'closing the pipe drops any pending messages');
 
@@ -82,13 +83,13 @@ promise_test(() => {
   // Intercept any browser-bound request for TestMessageTarget and bind it
   // instead to the local |impl| object.
   let interceptor = new MojoInterfaceInterceptor(
-      liteJsTest.mojom.TestMessageTarget.$interfaceName, 'context', true);
+      liteJsTest.mojom.TestMessageTarget.$interfaceName);
   interceptor.oninterfacerequest = e => {
     impl.target.$.bindHandle(e.handle);
   }
   interceptor.start();
 
-  let remote = liteJsTest.mojom.TestMessageTarget.getRemote(true);
+  let remote = liteJsTest.mojom.TestMessageTarget.getRemote();
   remote.poke();
   return remote.ping().then(() => {
     assert_equals(impl.numPokes, 1);
@@ -155,6 +156,23 @@ promise_test(() => {
     subinterfaceRemote.flush();
   });
 }, 'can send and receive interface requests and proxies');
+
+promise_test(() => {
+  const targetRouter = new liteJsTest.mojom.TestMessageTargetCallbackRouter;
+  const targetRemote = targetRouter.$.bindNewPipeAndPassRemote();
+  targetRouter.deconstruct.addListener(({x, y, z}) => ({
+    x: x,
+    y: y,
+    z: z
+  }));
+
+  return targetRemote.deconstruct({x: 1}).then(reply => {
+    assert_equals(reply.x, 1);
+    assert_equals(reply.y, 2);
+    assert_equals(reply.z, 1);
+  });
+}, 'structs with default values from nested enums and constants are ' +
+   'correctly serialized');
 
 promise_test(() => {
   const targetRouter = new liteJsTest.mojom.TestMessageTargetCallbackRouter;

@@ -308,7 +308,6 @@ gl{
         CI{"Costa do Marfil"}
         CZ{"República Checa"}
         SZ{"Suacilandia"}
-        TL{"TL"}
     }
-    Version{"36"}
+    Version{"37"}
 }

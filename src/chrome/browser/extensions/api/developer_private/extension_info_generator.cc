@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
@@ -34,13 +33,16 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/extension_icon_placeholder.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/path_util.h"
+#include "extensions/browser/ui_util.h"
 #include "extensions/browser/warning_service.h"
+#include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
@@ -60,6 +62,11 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skbitmap_operations.h"
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 namespace extensions {
 
@@ -183,20 +190,22 @@ void ConstructCommands(CommandService* command_service,
     command_value.is_extension_action = is_extension_action;
     return command_value;
   };
+  // TODO(https://crbug.com/1067130): Extensions shouldn't be able to specify
+  // commands for actions they don't have, so we should just be able to query
+  // for a single action type.
   bool active = false;
   Command browser_action;
-  if (command_service->GetBrowserActionCommand(extension_id,
-                                               CommandService::ALL,
-                                               &browser_action,
-                                               &active)) {
+  if (command_service->GetExtensionActionCommand(
+          extension_id, ActionInfo::TYPE_BROWSER, CommandService::ALL,
+          &browser_action, &active)) {
     commands->push_back(construct_command(browser_action, active, true));
   }
 
   Command page_action;
-  if (command_service->GetPageActionCommand(extension_id,
-                                            CommandService::ALL,
-                                            &page_action,
-                                            &active)) {
+  active = false;
+  if (command_service->GetExtensionActionCommand(
+          extension_id, ActionInfo::TYPE_PAGE, CommandService::ALL,
+          &page_action, &active)) {
     commands->push_back(construct_command(page_action, active, true));
   }
 
@@ -368,10 +377,15 @@ void AddPermissionsInfo(content::BrowserContext* browser_context,
   } else {
     granted_permissions =
         extension_prefs->GetRuntimeGrantedPermissions(extension.id());
-    runtime_host_permissions->host_access =
-        granted_permissions->effective_hosts().is_empty()
-            ? developer::HOST_ACCESS_ON_CLICK
-            : developer::HOST_ACCESS_ON_SPECIFIC_SITES;
+    if (granted_permissions->effective_hosts().is_empty()) {
+      runtime_host_permissions->host_access = developer::HOST_ACCESS_ON_CLICK;
+    } else if (granted_permissions->ShouldWarnAllHosts(false)) {
+      runtime_host_permissions->host_access =
+          developer::HOST_ACCESS_ON_ALL_SITES;
+    } else {
+      runtime_host_permissions->host_access =
+          developer::HOST_ACCESS_ON_SPECIFIC_SITES;
+    }
   }
 
   runtime_host_permissions->hosts = GetSpecificSiteControls(
@@ -398,7 +412,12 @@ ExtensionInfoGenerator::ExtensionInfoGenerator(
       warning_service_(WarningService::Get(browser_context)),
       error_console_(ErrorConsole::Get(browser_context)),
       image_loader_(ImageLoader::Get(browser_context)),
-      pending_image_loads_(0u) {}
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+      supervised_user_service_(
+          SupervisedUserServiceFactory::GetForBrowserContext(browser_context)),
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+      pending_image_loads_(0u) {
+}
 
 ExtensionInfoGenerator::~ExtensionInfoGenerator() {
 }
@@ -419,7 +438,7 @@ void ExtensionInfoGenerator::CreateExtensionInfo(
   else if ((ext = registry->terminated_extensions().GetByID(id)) != nullptr)
     state = developer::EXTENSION_STATE_TERMINATED;
 
-  if (ext && ui_util::ShouldDisplayInExtensionSettings(ext, browser_context_))
+  if (ext && ui_util::ShouldDisplayInExtensionSettings(*ext))
     CreateExtensionInfoHelper(*ext, state);
 
   if (pending_image_loads_ == 0) {
@@ -439,8 +458,7 @@ void ExtensionInfoGenerator::CreateExtensionsInfo(
   auto add_to_list = [this](const ExtensionSet& extensions,
                             developer::ExtensionState state) {
     for (const scoped_refptr<const Extension>& extension : extensions) {
-      if (ui_util::ShouldDisplayInExtensionSettings(extension.get(),
-                                                    browser_context_)) {
+      if (ui_util::ShouldDisplayInExtensionSettings(*extension)) {
         CreateExtensionInfoHelper(*extension, state);
       }
     }
@@ -549,6 +567,21 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   info->disable_reasons.update_required =
       (disable_reasons & disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY) !=
       0;
+  info->disable_reasons.blocked_by_policy =
+      (disable_reasons & disable_reason::DISABLE_BLOCKED_BY_POLICY) != 0;
+  bool custodian_approval_required =
+      (disable_reasons & disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED) !=
+      0;
+  info->disable_reasons.custodian_approval_required =
+      custodian_approval_required;
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  bool permissions_increase =
+      (disable_reasons & disable_reason::DISABLE_PERMISSIONS_INCREASE) != 0;
+  info->disable_reasons.parent_disabled_permissions =
+      !supervised_user_service_
+           ->GetSupervisedUserExtensionsMayRequestPermissionsPref() &&
+      (custodian_approval_required || permissions_increase);
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
   // Error collection.
   bool error_console_enabled =
@@ -706,7 +739,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
                                  extension_misc::EXTENSION_ICON_MEDIUM,
                                  ExtensionIconSet::MATCH_BIGGER);
   if (icon.empty()) {
-    info->icon_url = GetDefaultIconUrl(extension.is_app(), !is_enabled);
+    info->icon_url = GetDefaultIconUrl(extension.name());
     list_.push_back(std::move(*info));
   } else {
     ++pending_image_loads_;
@@ -721,25 +754,9 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   }
 }
 
-const std::string& ExtensionInfoGenerator::GetDefaultIconUrl(
-    bool is_app,
-    bool is_greyscale) {
-  std::string* str;
-  if (is_app) {
-    str = is_greyscale ? &default_disabled_app_icon_url_ :
-        &default_app_icon_url_;
-  } else {
-    str = is_greyscale ? &default_disabled_extension_icon_url_ :
-        &default_extension_icon_url_;
-  }
-
-  if (str->empty()) {
-    *str = GetIconUrlFromImage(
-        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            is_app ? IDR_APP_DEFAULT_ICON : IDR_EXTENSION_DEFAULT_ICON));
-  }
-
-  return *str;
+std::string ExtensionInfoGenerator::GetDefaultIconUrl(const std::string& name) {
+  return GetIconUrlFromImage(ExtensionIconPlaceholder::CreateImage(
+      extension_misc::EXTENSION_ICON_MEDIUM, name));
 }
 
 std::string ExtensionInfoGenerator::GetIconUrlFromImage(
@@ -759,12 +776,7 @@ void ExtensionInfoGenerator::OnImageLoaded(
   if (!icon.IsEmpty()) {
     info->icon_url = GetIconUrlFromImage(icon);
   } else {
-    bool is_app =
-        info->type == developer::EXTENSION_TYPE_HOSTED_APP ||
-        info->type == developer::EXTENSION_TYPE_LEGACY_PACKAGED_APP ||
-        info->type == developer::EXTENSION_TYPE_PLATFORM_APP;
-    info->icon_url = GetDefaultIconUrl(
-        is_app, info->state != developer::EXTENSION_STATE_ENABLED);
+    info->icon_url = GetDefaultIconUrl(info->name);
   }
 
   list_.push_back(std::move(*info));

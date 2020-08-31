@@ -45,6 +45,7 @@ from __future__ import print_function
 
 import os
 import shutil
+import sys
 
 from elftools.elf.elffile import ELFFile
 import lddtree
@@ -56,6 +57,10 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import portage_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # Directory in sysroot's /tmp directory that this script will use for files it
 # needs to write. We need a directory to write files to because this script uses
@@ -502,7 +507,7 @@ def GenerateCoverageReport(fuzzer, shared_libraries):
   ]
 
   # TODO(metzman): Investigate error messages printed by this command.
-  cros_build_lib.run(command, redirect_stderr=True, debug_level=logging.DEBUG)
+  cros_build_lib.run(command, stderr=True, debug_level=logging.DEBUG)
   return coverage_directory
 
 
@@ -612,8 +617,8 @@ def GetBuildExtraEnv(build_type):
   # No good way to iterate over an enum in python2.
   for use_flag in BuildType.CHOICES:
     if use_flag in use_flags:
-      logging.warn('%s in USE flags. Please use --build_type instead.',
-                   use_flag)
+      logging.warning('%s in USE flags. Please use --build_type instead.',
+                      use_flag)
 
   # Set USE flags.
   fuzzer_build_type = 'fuzzer'
@@ -969,7 +974,7 @@ def EnterSysrootShell():
       command,
       extra_env=GetFuzzExtraEnv(),
       debug_level=logging.INFO,
-      error_code_ok=True).returncode
+      check=False).returncode
 
 
 def StripFuzzerPrefixes(fuzzer_name):
@@ -997,7 +1002,7 @@ def StripFuzzerPrefixes(fuzzer_name):
     fuzzer_name = StripPrefix(prefix)
 
   if initial_name != fuzzer_name:
-    logging.warn(
+    logging.warning(
         '%s contains a prefix from ClusterFuzz (one or more of %s) that is not '
         "part of the fuzzer's name. Interpreting --fuzzer as %s.",
         initial_name, clusterfuzz_prefixes, fuzzer_name)
@@ -1097,7 +1102,8 @@ def ExecuteReproduceCommand(options):
   # Check presence of "-fsanitize=memory" in CFLAGS.
   if options.build_type == BuildType.MSAN:
     cmd = ['portageq-%s' % options.board, 'envvar', 'CFLAGS']
-    cflags = cros_build_lib.run(cmd, capture_output=True).output.splitlines()
+    cflags = cros_build_lib.run(
+        cmd, capture_output=True, encoding='utf-8').stdout.splitlines()
     check_string = '-fsanitize=memory'
     if not any(check_string in s for s in cflags):
       logging.error(

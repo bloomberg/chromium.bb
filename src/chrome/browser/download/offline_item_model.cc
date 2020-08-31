@@ -97,9 +97,10 @@ void OfflineItemModel::OpenDownload() {
   if (!offline_item_)
     return;
 
-  GetProvider()->OpenItem(
-      offline_items_collection::LaunchLocation::DOWNLOAD_SHELF,
-      offline_item_->id);
+  offline_items_collection::OpenParams open_params(
+      offline_items_collection::LaunchLocation::DOWNLOAD_SHELF);
+  // TODO(crbug.com/1058475): Determine if we ever need to open in incognito.
+  GetProvider()->OpenItem(open_params, offline_item_->id);
 }
 
 void OfflineItemModel::Pause() {
@@ -270,6 +271,9 @@ bool OfflineItemModel::IsCommandEnabled(
     case DownloadCommands::KEEP:
     case DownloadCommands::LEARN_MORE_SCANNING:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
+    case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
+    case DownloadCommands::DEEP_SCAN:
+    case DownloadCommands::BYPASS_DEEP_SCANNING:
       return DownloadUIModel::IsCommandEnabled(download_commands, command);
   }
   NOTREACHED();
@@ -294,8 +298,11 @@ bool OfflineItemModel::IsCommandChecked(
     case DownloadCommands::KEEP:
     case DownloadCommands::LEARN_MORE_SCANNING:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
+    case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::ANNOTATE:
+    case DownloadCommands::DEEP_SCAN:
+    case DownloadCommands::BYPASS_DEEP_SCANNING:
       return false;
   }
   return false;
@@ -309,6 +316,7 @@ void OfflineItemModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::ALWAYS_OPEN_TYPE:
     case DownloadCommands::KEEP:
     case DownloadCommands::LEARN_MORE_SCANNING:
+    case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
       NOTIMPLEMENTED();
       return;
     case DownloadCommands::PLATFORM_OPEN:
@@ -319,6 +327,8 @@ void OfflineItemModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::RESUME:
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::ANNOTATE:
+    case DownloadCommands::DEEP_SCAN:
+    case DownloadCommands::BYPASS_DEEP_SCANNING:
       DownloadUIModel::ExecuteCommand(download_commands, command);
       break;
   }

@@ -112,6 +112,9 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // checks in Run(), such as for specific host permissions or user gestures.
   bool HasPermission() const;
 
+  // Sends |error| as an error response.
+  void RespondWithError(std::string error);
+
   // The result of a function call.
   //
   // Use NoArguments(), OneArgument(), ArgumentList(), or Error()
@@ -126,8 +129,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
    protected:
     void SetFunctionResults(ExtensionFunction* function,
                             std::unique_ptr<base::ListValue> results);
-    void SetFunctionError(ExtensionFunction* function,
-                          const std::string& error);
+    void SetFunctionError(ExtensionFunction* function, std::string error);
   };
   typedef std::unique_ptr<ResponseValueObject> ResponseValue;
 
@@ -166,11 +168,13 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // this case). If this returns true, execution continues on to Run().
   virtual bool PreRunValidation(std::string* error);
 
-  // Runs the extension function if PreRunValidation() succeeds.
+  // Runs the extension function if PreRunValidation() succeeds. This should be
+  // called at most once over the lifetime of an ExtensionFunction.
   ResponseAction RunWithValidation();
 
   // Runs the function and returns the action to take when the caller is ready
-  // to respond.
+  // to respond. Callers can expect this is called at most once for the lifetime
+  // of an ExtensionFunction.
   //
   // Typical return values might be:
   //   * RespondNow(NoArguments())
@@ -207,7 +211,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
 
   // Called when the quota limit has been exceeded. The default implementation
   // returns an error.
-  virtual void OnQuotaExceeded(const std::string& violation_error);
+  virtual void OnQuotaExceeded(std::string violation_error);
 
   // Specifies the raw arguments to the function, as a JSON value. Expects a
   // base::Value of type LIST.
@@ -223,7 +227,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
 
   // Specifies the name of the function. A long-lived string (such as a string
   // literal) must be provided.
-  void set_name(const char* name) { name_ = name; }
+  virtual void SetName(const char* name);
   const char* name() const { return name_; }
 
   void set_profile_id(void* profile_id) { profile_id_ = profile_id; }
@@ -347,8 +351,6 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   static bool ignore_all_did_respond_for_testing_do_not_use;
 
  protected:
-  friend struct ExtensionFunctionDeleteTraits;
-
   // ResponseValues.
   //
   // Success, no arguments to pass to caller.
@@ -366,7 +368,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   //   example, alarms::Get::Results::Create(alarm).
   ResponseValue ArgumentList(std::unique_ptr<base::ListValue> results);
   // Error. chrome.runtime.lastError.message will be set to |error|.
-  ResponseValue Error(const std::string& error);
+  ResponseValue Error(std::string error);
   // Error with formatting. Args are processed using
   // ErrorUtils::FormatErrorMessage, that is, each occurrence of * is replaced
   // by the corresponding |s*|:
@@ -458,10 +460,6 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // The arguments to the API. Only non-null if argument were specified.
   std::unique_ptr<base::ListValue> args_;
 
-  // The BrowserContext of this function's extension.
-  // TODO(devlin): Grr... protected members. Move this to be private.
-  content::BrowserContext* context_ = nullptr;
-
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
@@ -516,10 +514,19 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // returning.  Usually we want to kill the message sending process.
   bool bad_message_ = false;
 
+#if DCHECK_IS_ON()
+  // Set to true when RunWithValidation() is called, to look for callers using
+  // the method more than once on a single ExtensionFunction.
+  bool did_run_ = false;
+#endif
+
   // The sample value to record with the histogram API when the function
   // is invoked.
   extensions::functions::HistogramValue histogram_value_ =
       extensions::functions::UNKNOWN;
+
+  // The BrowserContext associated with the requesting renderer
+  content::BrowserContext* context_ = nullptr;
 
   // The type of the JavaScript context where this call originated.
   extensions::Feature::Context source_context_type_ =

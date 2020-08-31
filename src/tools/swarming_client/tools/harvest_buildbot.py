@@ -17,7 +17,8 @@ def get_failed_builds(builder, horizon):
   """Constructs the list of failed builds."""
   builder.builds.cache()
   return [
-      builder.builds[i] for i in xrange(-horizon, 0)
+      builder.builds[i]
+      for i in range(-horizon, 0)
       if not builder.builds[i].simplified_result
   ]
 

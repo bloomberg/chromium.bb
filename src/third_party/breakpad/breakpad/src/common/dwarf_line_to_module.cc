@@ -63,16 +63,16 @@ static string ExpandPath(const string &path,
 
 namespace google_breakpad {
 
-void DwarfLineToModule::DefineDir(const string &name, uint32 dir_num) {
+void DwarfLineToModule::DefineDir(const string &name, uint32_t dir_num) {
   // Directory number zero is reserved to mean the compilation
   // directory. Silently ignore attempts to redefine it.
   if (dir_num != 0)
     directories_[dir_num] = ExpandPath(name, compilation_dir_);
 }
 
-void DwarfLineToModule::DefineFile(const string &name, int32 file_num,
-                                   uint32 dir_num, uint64 mod_time,
-                                   uint64 length) {
+void DwarfLineToModule::DefineFile(const string &name, int32_t file_num,
+                                   uint32_t dir_num, uint64_t mod_time,
+                                   uint64_t length) {
   if (file_num == -1)
     file_num = ++highest_file_number_;
   else if (file_num > highest_file_number_)
@@ -103,9 +103,9 @@ void DwarfLineToModule::DefineFile(const string &name, int32 file_num,
   files_[file_num] = module_->FindFile(full_name);
 }
 
-void DwarfLineToModule::AddLine(uint64 address, uint64 length,
-                                uint32 file_num, uint32 line_num,
-                                uint32 column_num) {
+void DwarfLineToModule::AddLine(uint64_t address, uint64_t length,
+                                uint32_t file_num, uint32_t line_num,
+                                uint32_t column_num) {
   if (length == 0)
     return;
 

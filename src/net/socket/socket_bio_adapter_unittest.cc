@@ -8,9 +8,9 @@
 
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/containers/span.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "crypto/openssl_util.h"
@@ -157,7 +157,7 @@ class SocketBIOAdapterTest : public testing::TestWithParam<ReadIfReadySupport>,
   std::unique_ptr<SocketBIOAdapter>* reset_on_write_ready_ = nullptr;
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SocketBIOAdapterTest,
                          testing::Values(READ_IF_READY_SUPPORTED,
                                          READ_IF_READY_NOT_SUPPORTED));

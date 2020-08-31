@@ -22,13 +22,11 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/test/test_pending_app_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/test/browser_task_environment.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/extension_builder.h"
-#include "extensions/common/extension_paths.h"
 #include "services/network/test/test_cookie_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
@@ -64,7 +62,7 @@ class FakeCookieManager : public network::TestCookieManager {
   void InvokePendingSetCanonicalCookieCallback(
       const std::string& expected_cookie_name,
       const std::string& expected_cookie_value,
-      const std::string& expected_source_scheme,
+      const GURL& expected_source_url,
       bool expected_modify_http_only,
       net::CookieOptions::SameSiteCookieContext expect_same_site_context,
       bool success) {
@@ -74,7 +72,7 @@ class FakeCookieManager : public network::TestCookieManager {
 
     EXPECT_EQ(expected_cookie_name, std::get<0>(params).Name());
     EXPECT_EQ(expected_cookie_value, std::get<0>(params).Value());
-    EXPECT_EQ(expected_source_scheme, std::get<1>(params));
+    EXPECT_EQ(expected_source_url, std::get<1>(params));
     EXPECT_EQ(expected_modify_http_only,
               !std::get<2>(params).exclude_httponly());
     EXPECT_EQ(expect_same_site_context,
@@ -105,10 +103,10 @@ class FakeCookieManager : public network::TestCookieManager {
 
   // network::mojom::CookieManager
   void SetCanonicalCookie(const net::CanonicalCookie& cookie,
-                          const std::string& source_scheme,
+                          const GURL& source_url,
                           const net::CookieOptions& options,
                           SetCanonicalCookieCallback callback) override {
-    set_canonical_cookie_calls_.emplace_back(cookie, source_scheme, options,
+    set_canonical_cookie_calls_.emplace_back(cookie, source_url, options,
                                              std::move(callback));
   }
 
@@ -119,7 +117,7 @@ class FakeCookieManager : public network::TestCookieManager {
 
  private:
   std::vector<std::tuple<net::CanonicalCookie,
-                         std::string,
+                         GURL,
                          net::CookieOptions,
                          SetCanonicalCookieCallback>>
       set_canonical_cookie_calls_;
@@ -143,21 +141,16 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
       if (base::Contains(url_to_pwa_map_, url))
         return;
 
-      // Create a test Extension and add it to |url_to_pwa_map_|.
-      base::FilePath path;
-      base::PathService::Get(extensions::DIR_TEST_DATA, &path);
-      url_to_pwa_map_[url] = extensions::ExtensionBuilder(url.spec())
-                                 .SetPath(path.AppendASCII(url.spec()))
-                                 .Build();
+      url_to_pwa_map_[url] = web_app::GenerateAppIdFromURL(url);
     }
 
     // AndroidSmsAppSetupControllerImpl::PwaDelegate:
-    const extensions::Extension* GetPwaForUrl(const GURL& install_url,
-                                              Profile* profile) override {
+    base::Optional<web_app::AppId> GetPwaForUrl(const GURL& install_url,
+                                                Profile* profile) override {
       if (!base::Contains(url_to_pwa_map_, install_url))
-        return nullptr;
+        return base::nullopt;
 
-      return url_to_pwa_map_[install_url].get();
+      return url_to_pwa_map_[install_url];
     }
 
     network::mojom::CookieManager* GetCookieManager(const GURL& app_url,
@@ -165,23 +158,24 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
       return fake_cookie_manager_;
     }
 
-    bool RemovePwa(const extensions::ExtensionId& extension_id,
-                   base::string16* error,
-                   Profile* profile) override {
+    void RemovePwa(
+        const web_app::AppId& app_id,
+        Profile* profile,
+        AndroidSmsAppSetupController::SuccessCallback callback) override {
       for (const auto& url_pwa_pair : url_to_pwa_map_) {
-        if (url_pwa_pair.second->id() == extension_id) {
+        if (url_pwa_pair.second == app_id) {
           url_to_pwa_map_.erase(url_pwa_pair.first);
-          return true;
+          std::move(callback).Run(true);
+          return;
         }
       }
 
-      return false;
+      std::move(callback).Run(false);
     }
 
    private:
     FakeCookieManager* fake_cookie_manager_;
-    base::flat_map<GURL, scoped_refptr<const extensions::Extension>>
-        url_to_pwa_map_;
+    base::flat_map<GURL, web_app::AppId> url_to_pwa_map_;
   };
 
   AndroidSmsAppSetupControllerImplTest()
@@ -236,9 +230,9 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     fake_cookie_manager_->InvokePendingSetCanonicalCookieCallback(
         "default_to_persist" /* expected_cookie_name */,
         "true" /* expected_cookie_value */,
-        "https" /* expected_source_scheme */,
+        GURL("https://" + app_url.host()) /* expected_source_url */,
         false /* expected_modify_http_only */,
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+        net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
         true /* success */);
 
     fake_cookie_manager_->InvokePendingDeleteCookiesCallback(
@@ -298,9 +292,9 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     fake_cookie_manager_->InvokePendingSetCanonicalCookieCallback(
         "default_to_persist" /* expected_cookie_name */,
         "true" /* expected_cookie_value */,
-        "https" /* expected_source_scheme */,
+        GURL("https://" + app_url.host()) /* expected_source_url */,
         false /* expected_modify_http_only */,
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+        net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
         true /* success */);
 
     fake_cookie_manager_->InvokePendingDeleteCookiesCallback(
@@ -358,7 +352,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     base::HistogramTester histogram_tester;
 
     bool was_installed =
-        test_pwa_delegate_->GetPwaForUrl(install_url, &profile_) != nullptr;
+        test_pwa_delegate_->GetPwaForUrl(install_url, &profile_).has_value();
     setup_controller_->RemoveApp(
         app_url, install_url, migrated_to_app_url,
         base::BindOnce(&AndroidSmsAppSetupControllerImplTest::OnRemoveAppResult,
@@ -373,9 +367,9 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
       fake_cookie_manager_->InvokePendingSetCanonicalCookieCallback(
           "cros_migrated_to" /* expected_cookie_name */,
           migrated_to_app_url.GetContent() /* expected_cookie_value */,
-          "https" /* expected_source_scheme */,
+          GURL("https://" + app_url.host()) /* expected_source_url */,
           false /* expected_modify_http_only */,
-          net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+          net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
           true /* success */);
 
       fake_cookie_manager_->InvokePendingDeleteCookiesCallback(

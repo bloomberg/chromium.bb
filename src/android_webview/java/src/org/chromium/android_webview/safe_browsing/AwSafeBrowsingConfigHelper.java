@@ -11,11 +11,12 @@ import android.content.pm.PackageManager;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
-import org.chromium.android_webview.AwSwitches;
+import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
@@ -30,11 +31,11 @@ public class AwSafeBrowsingConfigHelper {
     private static final String OPT_IN_META_DATA_STR = "android.webkit.WebView.EnableSafeBrowsing";
     private static final boolean DEFAULT_USER_OPT_IN = false;
 
-    private static volatile Boolean sSafeBrowsingUserOptIn;
+    private static volatile boolean sSafeBrowsingUserOptIn;
     private static volatile boolean sEnabledByManifest;
 
     // Used to record the UMA histogram SafeBrowsing.WebView.AppOptIn. Since these values are
-    // persisted to logs, they should never be renumbered nor reused.
+    // persisted to logs, they should never be renumbered or reused.
     @IntDef({AppOptIn.NO_PREFERENCE, AppOptIn.OPT_IN, AppOptIn.OPT_OUT})
     @interface AppOptIn {
         int NO_PREFERENCE = 0;
@@ -45,7 +46,7 @@ public class AwSafeBrowsingConfigHelper {
     }
 
     // Used to record the UMA histogram SafeBrowsing.WebView.UserOptIn. Since these values are
-    // persisted to logs, they should never be renumbered nor reused.
+    // persisted to logs, they should never be renumbered or reused.
     @IntDef({UserOptIn.UNABLE_TO_DETERMINE, UserOptIn.OPT_IN, UserOptIn.OPT_OUT})
     @interface UserOptIn {
         int OPT_OUT = 0;
@@ -143,8 +144,9 @@ public class AwSafeBrowsingConfigHelper {
     }
 
     // Can be called from any thread. This returns true or false, depending on user opt-in
-    // preference. This returns null if we don't know yet what the user's preference is.
-    public static Boolean getSafeBrowsingUserOptIn() {
+    // preference. This returns false if we don't know yet what the user's preference is.
+    @CalledByNative
+    private static boolean getSafeBrowsingUserOptIn() {
         return sSafeBrowsingUserOptIn;
     }
 

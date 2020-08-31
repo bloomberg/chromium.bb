@@ -10,10 +10,10 @@
 
 #include "base/base64url.h"
 #include "base/bind.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/expiring_remote_device_cache.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 
 namespace chromeos {
@@ -51,26 +51,20 @@ DeviceSyncClientImpl::Factory* DeviceSyncClientImpl::Factory::test_factory_ =
     nullptr;
 
 // static
-DeviceSyncClientImpl::Factory* DeviceSyncClientImpl::Factory::Get() {
+std::unique_ptr<DeviceSyncClient> DeviceSyncClientImpl::Factory::Create() {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance();
 
-  static base::NoDestructor<Factory> factory;
-  return factory.get();
+  return std::make_unique<DeviceSyncClientImpl>();
 }
 
 // static
-void DeviceSyncClientImpl::Factory::SetInstanceForTesting(
+void DeviceSyncClientImpl::Factory::SetFactoryForTesting(
     Factory* test_factory) {
   test_factory_ = test_factory;
 }
 
 DeviceSyncClientImpl::Factory::~Factory() = default;
-
-std::unique_ptr<DeviceSyncClient>
-DeviceSyncClientImpl::Factory::BuildInstance() {
-  return std::make_unique<DeviceSyncClientImpl>();
-}
 
 DeviceSyncClientImpl::DeviceSyncClientImpl()
     : expiring_device_cache_(
@@ -128,9 +122,8 @@ multidevice::RemoteDeviceRefList DeviceSyncClientImpl::GetSyncedDevices() {
 base::Optional<multidevice::RemoteDeviceRef>
 DeviceSyncClientImpl::GetLocalDeviceMetadata() {
   DCHECK(is_ready());
-  return local_device_id_
-             ? expiring_device_cache_->GetRemoteDevice(*local_device_id_)
-             : base::nullopt;
+  return expiring_device_cache_->GetRemoteDevice(local_instance_id_,
+                                                 local_legacy_device_id_);
 }
 
 void DeviceSyncClientImpl::SetSoftwareFeatureState(
@@ -259,7 +252,20 @@ void DeviceSyncClientImpl::OnGetLocalDeviceMetadataCompleted(
     return;
   }
 
-  local_device_id_ = local_device_metadata->GetDeviceId();
+  if (features::ShouldUseV1DeviceSync()) {
+    local_instance_id_ = local_device_metadata->instance_id.empty()
+                             ? base::nullopt
+                             : base::make_optional<std::string>(
+                                   local_device_metadata->instance_id);
+    local_legacy_device_id_ = local_device_metadata->GetDeviceId().empty()
+                                  ? base::nullopt
+                                  : base::make_optional<std::string>(
+                                        local_device_metadata->GetDeviceId());
+  } else {
+    DCHECK(!local_device_metadata->instance_id.empty());
+    local_instance_id_ = local_device_metadata->instance_id;
+  }
+
   expiring_device_cache_->UpdateRemoteDevice(*local_device_metadata);
 
   waiting_for_local_device_metadata_ = false;
@@ -285,14 +291,16 @@ void DeviceSyncClientImpl::OnFindEligibleDevicesCompleted(
     std::transform(
         response->eligible_devices.begin(), response->eligible_devices.end(),
         std::back_inserter(eligible_devices), [this](const auto& device) {
-          return *expiring_device_cache_->GetRemoteDevice(device.GetDeviceId());
+          return *expiring_device_cache_->GetRemoteDevice(device.instance_id,
+                                                          device.GetDeviceId());
         });
-    std::transform(
-        response->ineligible_devices.begin(),
-        response->ineligible_devices.end(),
-        std::back_inserter(ineligible_devices), [this](const auto& device) {
-          return *expiring_device_cache_->GetRemoteDevice(device.GetDeviceId());
-        });
+    std::transform(response->ineligible_devices.begin(),
+                   response->ineligible_devices.end(),
+                   std::back_inserter(ineligible_devices),
+                   [this](const auto& device) {
+                     return *expiring_device_cache_->GetRemoteDevice(
+                         device.instance_id, device.GetDeviceId());
+                   });
   }
 
   std::move(callback).Run(result_code, eligible_devices, ineligible_devices);

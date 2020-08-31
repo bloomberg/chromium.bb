@@ -4,6 +4,7 @@
 
 assert(!is_ios)
 
+import("//build/config/compiler/compiler.gni")
 import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 import("//third_party/blink/renderer/config.gni")
@@ -42,6 +43,7 @@ jumbo_component("wtf") {
     "allocator/partitions.h",
     "assertions.cc",
     "assertions.h",
+    "bit_field.h",
     "bloom_filter.h",
     "casting.h",
     "conditional_destructor.h",
@@ -74,6 +76,7 @@ jumbo_component("wtf") {
     "leak_annotations.h",
     "linked_hash_set.h",
     "list_hash_set.h",
+    "lru_cache.h",
     "math_extras.h",
     "pod_arena.h",
     "pod_free_list_arena.h",
@@ -109,6 +112,8 @@ jumbo_component("wtf") {
     "text/integer_to_string_conversion.h",
     "text/line_ending.cc",
     "text/line_ending.h",
+    "text/math_transform.cc",
+    "text/math_transform.h",
     "text/number_parsing_options.h",
     "text/parsing_utilities.h",
     "text/string_buffer.h",
@@ -174,6 +179,7 @@ jumbo_component("wtf") {
     "uuid.cc",
     "uuid.h",
     "vector.h",
+    "vector_backed_linked_list.h",
     "vector_traits.h",
     "wtf.cc",
     "wtf.h",
@@ -235,14 +241,17 @@ jumbo_component("wtf") {
     sources -= [ "text/atomic_string_cf.cc" ]
   }
 
+  if (!is_debug && !optimize_for_size) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
+
   configs -= [ "//build/config/compiler:default_symbols" ]
   configs += blink_symbols_config
 }
 
 test("wtf_unittests") {
-  deps = [
-    ":wtf_unittests_sources",
-  ]
+  deps = [ ":wtf_unittests_sources" ]
 }
 
 jumbo_source_set("wtf_unittests_sources") {
@@ -251,9 +260,11 @@ jumbo_source_set("wtf_unittests_sources") {
   testonly = true
 
   sources = [
+    "allocator/atomic_operations_test.cc",
     "allocator/partitions_test.cc",
     "ascii_ctype_test.cc",
     "assertions_test.cc",
+    "bit_field_test.cc",
     "cross_thread_functional_test.cc",
     "decimal_test.cc",
     "deque_test.cc",
@@ -262,7 +273,9 @@ jumbo_source_set("wtf_unittests_sources") {
     "functional_test.cc",
     "hash_map_test.cc",
     "hash_set_test.cc",
+    "linked_hash_set_test.cc",
     "list_hash_set_test.cc",
+    "lru_cache_test.cc",
     "math_extras_test.cc",
     "pod_arena_test.cc",
     "pod_arena_test_helpers.h",
@@ -278,6 +291,7 @@ jumbo_source_set("wtf_unittests_sources") {
     "text/case_map_test.cc",
     "text/integer_to_string_conversion_test.cc",
     "text/line_ending_test.cc",
+    "text/math_transform_test.cc",
     "text/string_buffer_test.cc",
     "text/string_builder_test.cc",
     "text/string_hasher_test.cc",
@@ -294,6 +308,7 @@ jumbo_source_set("wtf_unittests_sources") {
     "tree_node_test.cc",
     "type_traits_test.cc",
     "uuid_test.cc",
+    "vector_backed_linked_list_test.cc",
     "vector_test.cc",
   ]
 

@@ -377,14 +377,15 @@ size_t GetMaxURLMatches();
 // ---------------------------------------------------------
 // For UI experiments.
 
-// Returns whether preserve default match score is enabled.
-bool IsPreserveDefaultMatchScoreEnabled();
-
 // Returns true if the reverse answers flag is enabled.
 bool IsReverseAnswersEnabled();
 
 // Returns true if the short bookmark suggestions flag is enabled.
 bool IsShortBookmarkSuggestionsEnabled();
+
+// Whether a single row of buttons is shown on suggestions with actionable
+// elements like keywords, tab-switch buttons, and Pedals.
+bool IsSuggestionButtonRowEnabled();
 
 // Returns true if either the tab switch suggestions flag is enabled.
 bool IsTabSwitchSuggestionsEnabled();
@@ -410,13 +411,29 @@ bool IsHideSteadyStateUrlTrivialSubdomainsEnabled();
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();
 
-// Returns whether the group suggestions by type feature is enabled,
-// which "bunches" search suggestions (except for the default match).
-bool IsGroupSuggestionsBySearchVsUrlFeatureEnabled();
-
 // Returns whether the feature to limit the number of shown URL matches
 // is enabled.
 bool IsMaxURLMatchesFeatureEnabled();
+
+// Rich autocompletion.
+bool IsRichAutocompletionEnabled();
+bool RichAutocompletionAutocompleteTitles();
+bool RichAutocompletionTwoLineOmnibox();
+bool RichAutocompletionShowTitles();
+bool RichAutocompletionAutocompleteNonPrefix();
+
+// On Device Head Suggestions feature and its helper functions.
+bool IsOnDeviceHeadSuggestEnabledForIncognito();
+bool IsOnDeviceHeadSuggestEnabledForNonIncognito();
+bool IsOnDeviceHeadSuggestEnabledForAnyMode();
+// Functions can be used in both non-incognito and incognito.
+std::string OnDeviceHeadModelLocaleConstraint(bool is_incognito);
+int OnDeviceHeadSuggestMaxScoreForNonUrlInput(bool is_incognito,
+                                              const int default_score);
+int OnDeviceSearchProviderDefaultLoaderTimeoutMs(bool is_incognito);
+int OnDeviceHeadSuggestDelaySuggestRequestMs(bool is_incognito);
+// Function only works in non-incognito when server suggestions are available.
+std::string OnDeviceHeadSuggestDemoteMode();
 
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
@@ -455,9 +472,6 @@ extern const char kKeywordScoreForSufficientlyCompleteMatchRule[];
 extern const char kHQPAllowDupMatchesForScoringRule[];
 extern const char kEmphasizeTitlesRule[];
 
-// Parameter name used by the Omnibox match capping experiment.
-extern const char kOmniboxMaxURLMatchesParam[];
-
 // Parameter names used by the HUP new scoring experiments.
 extern const char kHUPNewScoringTypedCountRelevanceCapParam[];
 extern const char kHUPNewScoringTypedCountHalfLifeTimeParam[];
@@ -477,14 +491,36 @@ extern const char kHQPExperimentalScoringTopicalityThresholdParam[];
 extern const char kMaxNumHQPUrlsIndexedAtStartupOnLowEndDevicesParam[];
 extern const char kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam[];
 
-// Parameter names used by UI experiments.
-extern const char kUIMaxAutocompleteMatchesParam[];
+// Parameter names used by num suggestion experiments.
+extern const char kMaxZeroSuggestMatchesParam[];
+extern const char kOmniboxMaxURLMatchesParam[];
 extern const char kUIMaxAutocompleteMatchesByProviderParam[];
+extern const char kUIMaxAutocompleteMatchesParam[];
+
+// Parameter names used by on device head provider.
+// These four parameters are shared by both non-incognito and incognito.
+extern const char kOnDeviceHeadModelLocaleConstraint[];
+extern const char kOnDeviceHeadSuggestMaxScoreForNonUrlInput[];
+extern const char kOnDeviceHeadSuggestDelaySuggestRequestMs[];
+extern const char kOnDeviceSearchProviderDefaultLoaderTimeoutMs[];
+// This parameter is for non-incognito which are only useful when server
+// suggestions are available.
+extern const char kOnDeviceHeadSuggestDemoteMode[];
 
 // The amount of time to wait before sending a new suggest request after the
 // previous one unless overridden by a field trial parameter.
 // Non-const because some unittests modify this value.
 extern int kDefaultMinimumTimeBetweenSuggestQueriesMs;
+
+// Parameter names used for rich autocompletion variations.
+extern const char kRichAutocompletionAutocompleteTitlesParam[];
+extern const char kRichAutocompletionTwoLineOmniboxParam[];
+extern const char kRichAutocompletionShowTitlesParam[];
+extern const char kRichAutocompletionAutocompleteNonPrefix[];
+
+// Parameter names used by image search experiment that shows thumbnail in front
+// of the Omnibox clipboard image search suggestion.
+extern const char kImageSearchSuggestionThumbnail[];
 
 namespace internal {
 // The bundled omnibox experiment comes with a set of parameters

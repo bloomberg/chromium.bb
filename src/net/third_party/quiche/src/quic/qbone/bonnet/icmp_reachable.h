@@ -9,9 +9,9 @@
 
 #include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mutex.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/qbone/bonnet/icmp_reachable_interface.h"
 #include "net/third_party/quiche/src/quic/qbone/platform/kernel_interface.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -30,7 +30,7 @@ class IcmpReachable : public IcmpReachableInterface {
   struct ReachableEvent {
     Status status;
     absl::Duration response_time;
-    string source;
+    std::string source;
   };
 
   class StatsInterface {
@@ -80,7 +80,7 @@ class IcmpReachable : public IcmpReachableInterface {
   int64 /* allow-non-std-int */ OnAlarm()
       QUIC_LOCKS_EXCLUDED(header_lock_) override;
 
-  static QuicStringPiece StatusName(Status status);
+  static quiche::QuicheStringPiece StatusName(Status status);
 
  private:
   class EpollCallback : public QuicEpollCallbackInterface {
@@ -105,7 +105,7 @@ class IcmpReachable : public IcmpReachableInterface {
 
     void OnShutdown(QuicEpollServer* eps, int fd) override;
 
-    string Name() const override;
+    std::string Name() const override;
 
    private:
     IcmpReachable* reachable_;

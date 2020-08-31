@@ -6,13 +6,17 @@
 
 #include "base/macros.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace util {
 
 TEST(MultiSourceMemoryPressureMonitorTest, RunDispatchCallback) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
+
   MultiSourceMemoryPressureMonitor monitor;
   monitor.Start();
   auto* aggregator = monitor.aggregator_for_testing();
@@ -30,6 +34,67 @@ TEST(MultiSourceMemoryPressureMonitorTest, RunDispatchCallback) {
   // Clear vote so aggregator's destructor doesn't think there are loose voters.
   aggregator->OnVoteForTesting(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE, base::nullopt);
+}
+
+TEST(MultiSourceMemoryPressureMonitorTest, Histograms) {
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO,
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
+
+  MultiSourceMemoryPressureMonitor monitor;
+  base::HistogramTester histogram_tester;
+  monitor.Start();
+  auto* aggregator = monitor.aggregator_for_testing();
+
+  // Moderate -> None.
+  aggregator->OnVoteForTesting(
+      base::nullopt,
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  task_environment.AdvanceClock(base::TimeDelta::FromSeconds(12));
+  aggregator->OnVoteForTesting(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE);
+  histogram_tester.ExpectTimeBucketCount(
+      "Memory.PressureWindowDuration.ModerateToNone",
+      base::TimeDelta::FromSeconds(12), 1);
+
+  // Moderate -> Critical.
+  aggregator->OnVoteForTesting(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  task_environment.AdvanceClock(base::TimeDelta::FromSeconds(20));
+  aggregator->OnVoteForTesting(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  histogram_tester.ExpectTimeBucketCount(
+      "Memory.PressureWindowDuration.ModerateToCritical",
+      base::TimeDelta::FromSeconds(20), 1);
+
+  // Critical -> None
+  task_environment.AdvanceClock(base::TimeDelta::FromSeconds(25));
+  aggregator->OnVoteForTesting(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE);
+  histogram_tester.ExpectTimeBucketCount(
+      "Memory.PressureWindowDuration.CriticalToNone",
+      base::TimeDelta::FromSeconds(25), 1);
+
+  // Critical -> Moderate
+  aggregator->OnVoteForTesting(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  task_environment.AdvanceClock(base::TimeDelta::FromSeconds(27));
+  aggregator->OnVoteForTesting(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  histogram_tester.ExpectTimeBucketCount(
+      "Memory.PressureWindowDuration.CriticalToModerate",
+      base::TimeDelta::FromSeconds(27), 1);
+
+  // Clear vote so aggregator's destructor doesn't think there are loose voters.
+  aggregator->OnVoteForTesting(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
+      base::nullopt);
 }
 
 }  // namespace util

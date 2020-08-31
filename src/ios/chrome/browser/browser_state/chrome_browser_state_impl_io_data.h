@@ -12,11 +12,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state_io_data.h"
 #include "ios/chrome/browser/net/net_types.h"
 
-class JsonPrefStore;
-
-namespace ios {
 class ChromeBrowserState;
-}
+class JsonPrefStore;
 
 namespace net {
 class CookieStore;
@@ -29,7 +26,7 @@ class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
  public:
   class Handle {
    public:
-    explicit Handle(ios::ChromeBrowserState* browser_state);
+    explicit Handle(ChromeBrowserState* browser_state);
     ~Handle();
 
     // Init() must be called before ~Handle(). It records most of the
@@ -83,7 +80,7 @@ class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
     mutable IOSChromeURLRequestContextGetterMap app_request_context_getter_map_;
     ChromeBrowserStateImplIOData* const io_data_;
 
-    ios::ChromeBrowserState* const browser_state_;
+    ChromeBrowserState* const browser_state_;
 
     mutable bool initialized_;
 

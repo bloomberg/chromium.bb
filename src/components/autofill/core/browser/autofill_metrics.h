@@ -24,7 +24,7 @@
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/security_state/core/security_state.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -35,12 +35,6 @@ class CreditCard;
 
 // A given maximum is enforced to minimize the number of buckets generated.
 extern const int kMaxBucketsCount;
-
-// Reduce FormSignature space (in UKM) to a small range for privacy reasons.
-int64_t HashFormSignature(autofill::FormSignature form_signature);
-
-// Reduce FieldSignature space (in UKM) to a small range for privacy reasons.
-int64_t HashFieldSignature(autofill::FieldSignature field_signature);
 
 class AutofillMetrics {
  public:
@@ -522,6 +516,8 @@ class AutofillMetrics {
   };
 
   // Metrics to track user interactions with the bubble.
+  // TODO(crbug.com/1070799): Remove this enum once the old logging is cleaned
+  // up.
   enum LocalCardMigrationBubbleUserInteractionMetric {
     // The user explicitly accepts the offer.
     LOCAL_CARD_MIGRATION_BUBBLE_CLOSED_ACCEPTED = 0,
@@ -534,6 +530,20 @@ class AutofillMetrics {
     // while the bubble was hidden.
     LOCAL_CARD_MIGRATION_BUBBLE_CLOSED_NAVIGATED_WHILE_HIDDEN = 3,
     NUM_LOCAL_CARD_MIGRATION_BUBBLE_USER_INTERACTION_METRICS,
+  };
+
+  // Metrics to track user action result of the bubble when the bubble is
+  // closed.
+  enum LocalCardMigrationBubbleResultMetric {
+    // The user explicitly accepted the offer.
+    LOCAL_CARD_MIGRATION_BUBBLE_ACCEPTED = 0,
+    // The user explicitly closed the bubble with the close button or ESC.
+    LOCAL_CARD_MIGRATION_BUBBLE_CLOSED = 1,
+    // The user did not interact with the bubble.
+    LOCAL_CARD_MIGRATION_BUBBLE_NOT_INTERACTED = 2,
+    // The bubble lost its focus and was deactivated.
+    LOCAL_CARD_MIGRATION_BUBBLE_LOST_FOCUS = 3,
+    NUM_LOCAL_CARD_MIGRATION_BUBBLE_RESULT_METRICS,
   };
 
   // Metrics to track events when local card migration dialog is offered.
@@ -887,6 +897,75 @@ class AutofillMetrics {
     kMaxValue = CARD_UPLOAD_ENABLED,
   };
 
+  // Enumerates the status of the  different requirements to successfully import
+  // an address profile from a form submission.
+  enum class AddressProfileImportRequirementMetric {
+    // The form must contain either no or only a single unique email address.
+    EMAIL_ADDRESS_UNIQUE_REQUIREMENT_FULFILLED = 0,
+    EMAIL_ADDRESS_UNIQUE_REQUIREMENT_VIOLATED = 1,
+    // The form is not allowed to contain invalid field types.
+    NO_INVALID_FIELD_TYPES_REQUIREMENT_FULFILLED = 2,
+    NO_INVALID_FIELD_TYPES_REQUIREMENT_VIOLATED = 3,
+    // If required by |CountryData|, the form must contain a city entry.
+    CITY_REQUIREMENT_FULFILLED = 4,
+    CITY_REQUIREMENT_VIOLATED = 5,
+    // If required by |CountryData|, the form must contain a state entry.
+    STATE_REQUIREMENT_FULFILLED = 6,
+    STATE_REQUIREMENT_VIOLATED = 7,
+    // If required by |CountryData|, the form must contain a ZIP entry.
+    ZIP_REQUIREMENT_FULFILLED = 8,
+    ZIP_REQUIREMENT_VIOLATED = 9,
+    // If present, the email address must be valid.
+    EMAIL_VALID_REQUIREMENT_FULFILLED = 10,
+    EMAIL_VALID_REQUIREMENT_VIOLATED = 11,
+    // If present, the country must be valid.
+    COUNTRY_VALID_REQUIREMENT_FULFILLED = 12,
+    COUNTRY_VALID_REQUIREMENT_VIOLATED = 13,
+    // If present, the state must be valid (if verifiable).
+    STATE_VALID_REQUIREMENT_FULFILLED = 14,
+    STATE_VALID_REQUIREMENT_VIOLATED = 15,
+    // If present, the ZIP must be valid (if verifiable).
+    ZIP_VALID_REQUIREMENT_FULFILLED = 16,
+    ZIP_VALID_REQUIREMENT_VIOLATED = 17,
+    // If present, the phone number must be valid (if verifiable).
+    PHONE_VALID_REQUIREMENT_FULFILLED = 18,
+    PHONE_VALID_REQUIREMENT_VIOLATED = 19,
+    // Indicates the overall status of the import requirements check.
+    OVERALL_REQUIREMENT_FULFILLED = 20,
+    OVERALL_REQUIREMENT_VIOLATED = 21,
+    // If required by |CountryData|, the form must contain a line1 entry.
+    LINE1_REQUIREMENT_FULFILLED = 22,
+    LINE1_REQUIREMENT_VIOLATED = 23,
+    // If required by |CountryData|, the form must contain a either a zip or a
+    // state entry.
+    ZIP_OR_STATE_REQUIREMENT_FULFILLED = 24,
+    ZIP_OR_STATE_REQUIREMENT_VIOLATED = 25,
+    // Must be set to the last entry.
+    kMaxValue = ZIP_OR_STATE_REQUIREMENT_VIOLATED,
+  };
+
+  // Represents the status of the field type requirements that are specific to
+  // countries.
+  enum class AddressProfileImportCountrySpecificFieldRequirementsMetric {
+    ALL_GOOD = 0,
+    ZIP_REQUIREMENT_VIOLATED = 1,
+    STATE_REQUIREMENT_VIOLATED = 2,
+    ZIP_STATE_REQUIREMENT_VIOLATED = 3,
+    CITY_REQUIREMENT_VIOLATED = 4,
+    ZIP_CITY_REQUIREMENT_VIOLATED = 5,
+    STATE_CITY_REQUIREMENT_VIOLATED = 6,
+    ZIP_STATE_CITY_REQUIREMENT_VIOLATED = 7,
+    LINE1_REQUIREMENT_VIOLATED = 8,
+    LINE1_ZIP_REQUIREMENT_VIOLATED = 9,
+    LINE1_STATE_REQUIREMENT_VIOLATED = 10,
+    LINE1_ZIP_STATE_REQUIREMENT_VIOLATED = 11,
+    LINE1_CITY_REQUIREMENT_VIOLATED = 12,
+    LINE1_ZIP_CITY_REQUIREMENT_VIOLATED = 13,
+    LINE1_STATE_CITY_REQUIREMENT_VIOLATED = 14,
+    LINE1_ZIP_STATE_CITY_REQUIREMENT_VIOLATED = 15,
+    kMaxValue = LINE1_ZIP_STATE_CITY_REQUIREMENT_VIOLATED,
+  };
+
   // Utility to log URL keyed form interaction events.
   class FormInteractionsUkmLogger {
    public:
@@ -968,7 +1047,7 @@ class AutofillMetrics {
   // nested.
   class UkmTimestampPin {
    public:
-    UkmTimestampPin(FormInteractionsUkmLogger* logger);
+    explicit UkmTimestampPin(FormInteractionsUkmLogger* logger);
     ~UkmTimestampPin();
 
    private:
@@ -988,10 +1067,6 @@ class AutofillMetrics {
   // server card's known expiration date.
   static void LogSubmittedServerCardExpirationStatusMetric(
       SubmittedServerCardExpirationStatusMetric metric);
-
-  // When a masked card is compared with another card, logs whether the cards'
-  // networks match.
-  static void LogMaskedCardComparisonNetworksMatch(bool matches);
 
   // When credit card save is not offered (either at all on mobile or by simply
   // not showing the bubble on desktop), logs the occurrence.
@@ -1054,8 +1129,13 @@ class AutofillMetrics {
   static void LogLocalCardMigrationBubbleOfferMetric(
       LocalCardMigrationBubbleOfferMetric metric,
       bool is_reshow);
+  // TODO(crbug.com/1070799): Delete the user interaction metrics when the
+  // experiment is fully launched.
   static void LogLocalCardMigrationBubbleUserInteractionMetric(
       LocalCardMigrationBubbleUserInteractionMetric metric,
+      bool is_reshow);
+  static void LogLocalCardMigrationBubbleResultMetric(
+      LocalCardMigrationBubbleResultMetric metric,
       bool is_reshow);
   static void LogLocalCardMigrationDialogOfferMetric(
       LocalCardMigrationDialogOfferMetric metric);
@@ -1157,12 +1237,28 @@ class AutofillMetrics {
   static void LogUserPerceivedLatencyOnCardSelection(PreflightCallEvent event,
                                                      bool fido_auth_enabled);
 
+  // Logs the duration of any user-perceived latency between selecting a Google
+  // Payments server card and seeing a card unmask prompt (CVC or FIDO).
+  static void LogUserPerceivedLatencyOnCardSelectionDuration(
+      const base::TimeDelta duration);
+
+  // Logs whether or not the verifying pending dialog timed out between
+  // selecting a Google Payments server card and seeing a card unmask prompt.
+  static void LogUserPerceivedLatencyOnCardSelectionTimedOut(bool did_time_out);
+
+  // Logs the duration of WebAuthn's
+  // IsUserVerifiablePlatformAuthenticatorAvailable() call. It is supposedly an
+  // extremely quick IPC.
+  static void LogUserVerifiabilityCheckDuration(
+      const base::TimeDelta& duration);
+
   // Logs the result of a WebAuthn prompt.
   static void LogWebauthnResult(WebauthnFlowEvent event,
                                 WebauthnResultMetric metric);
 
   // Logs |event| to the unmask prompt events histogram.
-  static void LogUnmaskPromptEvent(UnmaskPromptEvent event);
+  static void LogUnmaskPromptEvent(UnmaskPromptEvent event,
+                                   bool has_valid_nickname);
 
   // Logs |event| to cardholder name fix flow prompt events histogram.
   static void LogCardholderNameFixFlowPromptEvent(
@@ -1178,12 +1274,14 @@ class AutofillMetrics {
   // Logs the time elapsed between the unmask prompt being shown and it
   // being closed.
   static void LogUnmaskPromptEventDuration(const base::TimeDelta& duration,
-                                           UnmaskPromptEvent close_event);
+                                           UnmaskPromptEvent close_event,
+                                           bool has_valid_nickname);
 
   // Logs the time elapsed between the user clicking Verify and
   // hitting cancel when abandoning a pending unmasking operation
   // (aka GetRealPan).
-  static void LogTimeBeforeAbandonUnmasking(const base::TimeDelta& duration);
+  static void LogTimeBeforeAbandonUnmasking(const base::TimeDelta& duration,
+                                            bool has_valid_nickname);
 
   // Logs |result| to the get real pan result histogram.
   static void LogRealPanResult(AutofillClient::PaymentsRpcResult result);
@@ -1423,6 +1521,18 @@ class AutofillMetrics {
   // user.
   static void LogCardUploadEnabledMetric(CardUploadEnabledMetric metric,
                                          AutofillSyncSigninState sync_state);
+
+  // Logs the status of an address import requirement defined by type.
+  static void LogAddressFormImportRequirementMetric(
+      AutofillMetrics::AddressProfileImportRequirementMetric metric);
+
+  // Logs the overall status of the country specific field requirements for
+  // importing an address profile from a submitted form.
+  static void LogAddressFormImportCountrySpecificFieldRequirementsMetric(
+      bool is_zip_missing,
+      bool is_state_missing,
+      bool is_city_missing,
+      bool is_line1_missing);
 
   static const char* GetMetricsSyncStateSuffix(
       AutofillSyncSigninState sync_state);

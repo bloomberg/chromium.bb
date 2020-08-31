@@ -45,20 +45,17 @@ class CORE_EXPORT ElementFragmentAnchor final : public FragmentAnchor {
   // Used to let the anchor know the frame's been scrolled and so we should
   // abort keeping the fragment target in view to avoid fighting with user
   // scrolls.
-  void DidScroll(ScrollType type) override;
+  void DidScroll(mojom::blink::ScrollType type) override;
 
   // Attempts to focus the anchor if we couldn't focus right after install
   // (because rendering was blocked at the time). This can cause script to run
   // so we can't do it in Invoke.
   void PerformPreRafActions() override;
 
-  // We can dispose of the fragment once load has been completed.
-  void DidCompleteLoad() override;
-
   // Does nothing as an element anchor does not have any dismissal work.
   bool Dismiss() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ElementFragmentAnchorTest,

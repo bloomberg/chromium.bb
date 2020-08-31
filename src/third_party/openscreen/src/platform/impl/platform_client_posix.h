@@ -10,6 +10,7 @@
 #include <mutex>
 #include <thread>
 
+#include "absl/types/optional.h"
 #include "platform/api/time.h"
 #include "platform/base/macros.h"
 #include "platform/impl/socket_handle_waiter_posix.h"
@@ -18,43 +19,57 @@
 #include "util/operation_loop.h"
 
 namespace openscreen {
-namespace platform {
 
 class UdpSocketReaderPosix;
 
-// A PlatformClientPosix is an access point for all singletons in a standalone
-// application. The static SetInstance method is to be called before library use
-// begins, and the ShutDown() method should be called to deallocate the platform
-// library's global singletons (for example to save memory when libcast is not
-// in use).
+// Creates and provides access to singletons used by the default platform
+// implementation. An instance must be created before an application uses any
+// public modules in the Open Screen Library.
+//
+// ShutDown() should be called to destroy the PlatformClientPosix's singletons
+// and TaskRunner to save resources when library APIs are not in use.
+// ShutDown() calls TaskRunner::RunUntilStopped() to run any pending cleanup
+// tasks.
+//
+// Create and ShutDown must be called in the same sequence.
+//
+// FIXME: Remove Create and Shutdown and use the ctor/dtor directly.
 class PlatformClientPosix {
  public:
-  // This method is expected to be called before the library is used.
-  // The networking_loop_interval parameter here represents the minimum amount
-  // of time that should pass between iterations of the loop used to handle
-  // networking operations. Higher values will result in less time being spent
-  // on these operations, but also potentially less performant networking
-  // operations. The networking_operation_timeout parameter refers to how much
-  // time may be spent on a single networking operation type.
-  // NOTE: This method is NOT thread safe and should only be called from the
-  // embedder thread.
+  // Initializes the platform implementation.
+  //
+  // |networking_loop_interval| sets the minimum amount of time that should pass
+  // between iterations of the loop used to handle networking operations. Higher
+  // values will result in less time being spent on these operations, but also
+  // potentially less performant networking operations.
+  //
+  // |networking_operation_timeout| sets how much time may be spent on a
+  // single networking operation type.
+  //
+  // |task_runner| is a client-provided TaskRunner implementation.
+  static void Create(Clock::duration networking_operation_timeout,
+                     Clock::duration networking_loop_interval,
+                     std::unique_ptr<TaskRunnerImpl> task_runner);
+
+  // Initializes the platform implementation and creates a new TaskRunner (which
+  // starts a new thread).
   static void Create(Clock::duration networking_operation_timeout,
                      Clock::duration networking_loop_interval);
 
   // Shuts down and deletes the PlatformClient instance currently stored as a
   // singleton. This method is expected to be called before program exit. After
   // calling this method, if the client wishes to continue using the platform
-  // library, a new singleton must be created.
-  // NOTE: This method is NOT thread safe and should only be called from the
-  // embedder thread.
+  // library, Create() must be called again.
   static void ShutDown();
 
   static PlatformClientPosix* GetInstance() { return instance_; }
 
   // This method is thread-safe.
+  // FIXME: Rename to GetTlsDataRouter()
   TlsDataRouterPosix* tls_data_router();
 
   // This method is thread-safe.
+  // FIXME: Rename to GetUdpSocketReader()
   UdpSocketReaderPosix* udp_socket_reader();
 
   // Returns the TaskRunner associated with this PlatformClient.
@@ -62,28 +77,18 @@ class PlatformClientPosix {
   TaskRunner* GetTaskRunner();
 
  protected:
-  // The TaskRunner parameter here is a user-provided TaskRunner to be used
-  // instead of the one normally created within PlatformClientPosix. Ownership
-  // of the TaskRunner is transferred to this class.
-  PlatformClientPosix(Clock::duration networking_operation_timeout,
-                      Clock::duration networking_loop_interval,
-                      std::unique_ptr<TaskRunner> task_runner);
-
-  // This method is expected to be called in order to set the singleton instance
-  // (typically from the Create() method). It should only be called from the
-  // embedder thread. Client should be a new instance create via 'new' and
-  // ownership of this instance will be transferred to this class.
-  // NOTE: This method is NOT thread safe and should only be called from the
-  // embedder thread.
-  static void SetInstance(PlatformClientPosix* client);
-
   // Called by ShutDown().
   ~PlatformClientPosix();
 
+  static void SetInstance(PlatformClientPosix* client);
+
  private:
-  // Called by Create().
   PlatformClientPosix(Clock::duration networking_operation_timeout,
                       Clock::duration networking_loop_interval);
+
+  PlatformClientPosix(Clock::duration networking_operation_timeout,
+                      Clock::duration networking_loop_interval,
+                      std::unique_ptr<TaskRunnerImpl> task_runner);
 
   // This method is thread-safe.
   SocketHandleWaiterPosix* socket_handle_waiter();
@@ -97,8 +102,8 @@ class PlatformClientPosix {
   // Instance objects with threads are created at object-creation time.
   // NOTE: Delayed instantiation of networking_loop_ may be useful in future.
   OperationLoop networking_loop_;
-  absl::optional<TaskRunnerImpl> owned_task_runner_;
-  std::unique_ptr<TaskRunner> caller_provided_task_runner_;
+
+  std::unique_ptr<TaskRunnerImpl> task_runner_;
 
   // Track whether the associated instance variable has been created yet.
   std::atomic_bool waiter_created_{false};
@@ -118,14 +123,13 @@ class PlatformClientPosix {
   // Threads for running TaskRunner and OperationLoop instances.
   // NOTE: These must be declared last to avoid nondterministic failures.
   std::thread networking_loop_thread_;
-  std::thread task_runner_thread_;
+  absl::optional<std::thread> task_runner_thread_;
 
   static PlatformClientPosix* instance_;
 
   OSP_DISALLOW_COPY_AND_ASSIGN(PlatformClientPosix);
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_PLATFORM_CLIENT_POSIX_H_

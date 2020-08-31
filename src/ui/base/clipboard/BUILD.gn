@@ -8,7 +8,7 @@ import("//build/config/ui.gni")
 
 # Reset sources_assignment_filter for the BUILD.gn file to prevent
 # regression during the migration of Chromium away from the feature.
-# See build/no_sources_assignment_filter.md for more information.
+# See docs/no_sources_assignment_filter.md for more information.
 # TODO(crbug.com/1018739): remove this when migration is done.
 set_sources_assignment_filter([])
 
@@ -45,11 +45,9 @@ jumbo_component("clipboard_types") {
     sources += [ "clipboard_format_type.h" ]
   }
 
-  defines = [ "IS_BASE_CLIPBOARD_TYPES_IMPL" ]
+  defines = [ "IS_UI_BASE_CLIPBOARD_TYPES_IMPL" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   libs = []
   if (is_mac) {
@@ -100,21 +98,18 @@ jumbo_component("clipboard") {
     ]
   }
 
-  defines = [ "IS_BASE_CLIPBOARD_IMPL" ]
+  defines = [ "IS_UI_BASE_CLIPBOARD_IMPL" ]
 
   deps = [
     "//base",
     "//mojo/public/cpp/base",
     "//net",
     "//skia",
-    "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 
-  public_deps = [
-    ":clipboard_types",
-  ]
+  public_deps = [ ":clipboard_types" ]
 
   if (use_aura) {
     # Aura clipboard.
@@ -131,10 +126,11 @@ jumbo_component("clipboard") {
           "clipboard_x11.cc",
           "clipboard_x11.h",
         ]
-        configs += [ "//build/config/linux:x11" ]
         deps += [
           "//ui/base",
           "//ui/base/x",
+          "//ui/events/platform",
+          "//ui/events/platform/x11",
           "//ui/events/x",
           "//ui/gfx/x",
         ]
@@ -180,9 +176,15 @@ jumbo_source_set("clipboard_test_support") {
 
   if (!is_ios) {
     sources = [
+      "test/clipboard_test_util.cc",
+      "test/clipboard_test_util.h",
       "test/test_clipboard.cc",
       "test/test_clipboard.h",
     ]
+
+    if (is_android) {
+      sources += [ "clipboard_android_test_support.cc" ]
+    }
   }
 
   public_deps = [
@@ -190,6 +192,12 @@ jumbo_source_set("clipboard_test_support") {
     "//base",
     "//skia",
   ]
+
+  deps = [ "//base/test:test_support" ]
+
+  if (is_android) {
+    deps += [ "//ui/android:ui_javatest_jni_headers" ]
+  }
 }
 
 source_set("clipboard_test") {

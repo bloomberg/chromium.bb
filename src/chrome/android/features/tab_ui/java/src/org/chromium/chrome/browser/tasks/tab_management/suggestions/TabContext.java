@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.tasks.tab_management.suggestions;
 
 import android.text.TextUtils;
 
+import org.chromium.chrome.browser.engagement.SiteEngagementService;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -64,18 +66,20 @@ public class TabContext {
         public final int id;
         public final String title;
         public final String originalUrl;
+        public final String visibleUrl;
 
         /**
          * Constructs a new TabInfo object
          */
         protected TabInfo(int id, String title, String url, String originalUrl, String referrerUrl,
-                long timestampMillis) {
+                long timestampMillis, String visibleUrl) {
             this.id = id;
             this.title = title;
             this.url = url;
             this.originalUrl = originalUrl;
             this.referrerUrl = referrerUrl;
             this.timestampMillis = timestampMillis;
+            this.visibleUrl = visibleUrl;
         }
 
         /**
@@ -83,9 +87,14 @@ public class TabContext {
          */
         public static TabInfo createFromTab(Tab tab) {
             String referrerUrl = getReferrerUrlFromTab(tab);
-            return new TabInfo(tab.getId(), tab.getTitle(), tab.getUrl(),
-                    ((TabImpl) tab).getOriginalUrl(), referrerUrl != null ? referrerUrl : "",
-                    tab.getTimestampMillis());
+            return new TabInfo(tab.getId(), tab.getTitle(), tab.getUrlString(),
+                    tab.getOriginalUrl(), referrerUrl != null ? referrerUrl : "",
+                    tab.getTimestampMillis(), tab.getUrlString());
+        }
+
+        public double getSiteEngagementScore() {
+            return SiteEngagementService.getForProfile(Profile.getLastUsedRegularProfile())
+                    .getScore(visibleUrl);
         }
 
         private static String getReferrerUrlFromTab(Tab tab) {
@@ -187,15 +196,27 @@ public class TabContext {
             Tab currentTab = tabModelFilter.getTabAt(i);
             List<Tab> relatedTabs = tabModelFilter.getRelatedTabList(currentTab.getId());
 
-            if (relatedTabs != null && relatedTabs.size() > 1) {
+            if (relatedTabs.size() > 1) {
+                List<Tab> nonClosingTabs = getNonClosingTabs(relatedTabs);
                 existingGroups.add(new TabGroupInfo(
-                        ((TabImpl) currentTab).getRootId(), createTabInfoList(relatedTabs)));
+                        ((TabImpl) currentTab).getRootId(), createTabInfoList(nonClosingTabs)));
             } else {
+                if (currentTab.isClosing()) continue;
                 ungroupedTabs.add(TabInfo.createFromTab(currentTab));
             }
         }
 
         return new TabContext(ungroupedTabs, existingGroups);
+    }
+
+    private static List<Tab> getNonClosingTabs(List<Tab> tabs) {
+        List<Tab> nonClosingTabs = new ArrayList<>();
+        for (int i = 0; i < tabs.size(); i++) {
+            Tab tab = tabs.get(i);
+            if (tab.isClosing()) continue;
+            nonClosingTabs.add(tab);
+        }
+        return nonClosingTabs;
     }
 
     private static List<TabInfo> createTabInfoList(List<Tab> tabs) {

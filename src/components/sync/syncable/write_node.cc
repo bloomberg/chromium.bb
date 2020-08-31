@@ -62,7 +62,7 @@ void WriteNode::SetTitle(const std::string& title) {
   std::string current_legal_title;
   if (BOOKMARKS == type && entry_->GetSpecifics().has_encrypted()) {
     // Encrypted bookmarks only have their title in the unencrypted specifics.
-    current_legal_title = GetBookmarkSpecifics().title();
+    current_legal_title = GetBookmarkSpecifics().legacy_canonicalized_title();
   } else {
     // Non-bookmarks and legacy bookmarks (those with no title in their
     // specifics) store their title in NON_UNIQUE_NAME. Non-legacy bookmarks
@@ -78,8 +78,9 @@ void WriteNode::SetTitle(const std::string& title) {
   // TODO(zea): refactor bookmarks to not need this functionality.
   sync_pb::EntitySpecifics specifics = GetEntitySpecifics();
   if (GetModelType() == BOOKMARKS &&
-      specifics.bookmark().title() != new_legal_title) {
-    specifics.mutable_bookmark()->set_title(new_legal_title);
+      specifics.bookmark().legacy_canonicalized_title() != new_legal_title) {
+    specifics.mutable_bookmark()->set_legacy_canonicalized_title(
+        new_legal_title);
     SetEntitySpecifics(specifics);  // Does it's own encryption checking.
     title_matches = false;
   }
@@ -149,38 +150,6 @@ void WriteNode::SetPasswordSpecifics(
   if (!cryptographer->Encrypt(data, password_specifics->mutable_encrypted())) {
     LOG(ERROR) << "Failed to encrypt password, possibly due to sync node "
                << "corruption";
-    return;
-  }
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetWifiConfigurationSpecifics(
-    const sync_pb::WifiConfigurationSpecificsData& data) {
-  DCHECK_EQ(GetModelType(), WIFI_CONFIGURATIONS);
-
-  const Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
-
-  // We have to do the idempotency check here (vs in UpdateEntryWithEncryption)
-  // because Passwords have their encrypted data within the PasswordSpecifics,
-  // vs within the EntitySpecifics like all the other types.
-  const sync_pb::EntitySpecifics& old_specifics = GetEntitySpecifics();
-  sync_pb::EntitySpecifics entity_specifics;
-  // Copy over the old specifics if they exist.
-  if (GetModelTypeFromSpecifics(old_specifics) == WIFI_CONFIGURATIONS) {
-    entity_specifics.CopyFrom(old_specifics);
-  } else {
-    AddDefaultFieldValue(WIFI_CONFIGURATIONS, &entity_specifics);
-  }
-  sync_pb::WifiConfigurationSpecifics* wifi_configuration_specifics =
-      entity_specifics.mutable_wifi_configuration();
-
-  // This will only update wifi_configuration_specifics if the underlying
-  // unencrypted blob was different from |data| or was not encrypted with the
-  // proper passphrase.
-  if (!cryptographer->Encrypt(
-          data, wifi_configuration_specifics->mutable_encrypted())) {
-    LOG(ERROR) << "Failed to encrypt wifi configuration, possibly due to sync "
-               << "node corruption";
     return;
   }
   SetEntitySpecifics(entity_specifics);

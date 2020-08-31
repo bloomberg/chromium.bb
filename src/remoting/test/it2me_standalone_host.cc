@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -79,9 +78,9 @@ void It2MeStandaloneHost::Run() {
 }
 
 void It2MeStandaloneHost::StartOutputTimer() {
-  timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(1),
-      base::Bind(&OutputFakeConnectionEventLogger, std::cref(event_logger_)));
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
+               base::BindRepeating(&OutputFakeConnectionEventLogger,
+                                   std::cref(event_logger_)));
 }
 
 void It2MeStandaloneHost::Connect() {

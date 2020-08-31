@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 
+#include <inttypes.h>
 #include <stdint.h>
 
 #include <string>
@@ -25,14 +26,19 @@
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes_factory.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -46,6 +52,7 @@
 #include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
+#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -166,10 +173,16 @@ IndexedDBFactoryImpl::IndexedDBFactoryImpl(
   DCHECK(context);
   DCHECK(indexed_db_class_factory);
   DCHECK(clock);
+  base::trace_event::MemoryDumpManager::GetInstance()
+      ->RegisterDumpProviderWithSequencedTaskRunner(
+          this, "IndexedDBFactoryImpl", base::SequencedTaskRunnerHandle::Get(),
+          base::trace_event::MemoryDumpProvider::Options());
 }
 
 IndexedDBFactoryImpl::~IndexedDBFactoryImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 void IndexedDBFactoryImpl::GetDatabaseInfo(
@@ -436,11 +449,12 @@ void IndexedDBFactoryImpl::AbortTransactionsForDatabase(
 
 void IndexedDBFactoryImpl::HandleBackingStoreFailure(const Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // NULL after ContextDestroyed() called, and in some unit tests.
+  // nullptr after ContextDestroyed() called, and in some unit tests.
   if (!context_)
     return;
-  context_->ForceClose(origin,
-                       IndexedDBContextImpl::FORCE_CLOSE_BACKING_STORE_FAILURE);
+  context_->ForceCloseSync(
+      origin,
+      storage::mojom::ForceCloseReason::FORCE_CLOSE_BACKING_STORE_FAILURE);
 }
 
 void IndexedDBFactoryImpl::HandleBackingStoreCorruption(
@@ -560,7 +574,7 @@ void IndexedDBFactoryImpl::ReportOutstandingBlobs(const Origin& origin,
 
 void IndexedDBFactoryImpl::BlobFilesCleaned(const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // NULL after ContextDestroyed() called, and in some unit tests.
+  // nullptr after ContextDestroyed() called, and in some unit tests.
   if (!context_)
     return;
   context_->BlobFilesCleaned(origin);
@@ -655,6 +669,9 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
             IndexedDBDatabaseError(), IndexedDBDataLossInfo(),
             /*was_cold_open=*/false};
   }
+  UMA_HISTOGRAM_ENUMERATION(
+      indexed_db::kBackingStoreActionUmaName,
+      indexed_db::IndexedDBAction::kBackingStoreOpenAttempt);
 
   bool is_incognito_and_in_memory = data_directory.empty();
   base::FilePath blob_path;
@@ -677,6 +694,8 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
   IndexedDBDataLossInfo data_loss_info;
   std::unique_ptr<IndexedDBBackingStore> backing_store;
   bool disk_full = false;
+  base::ElapsedTimer open_timer;
+  leveldb::Status first_try_status;
   for (int i = 0; i < kNumOpenTries; ++i) {
     LevelDBScopesOptions scopes_options;
     scopes_options.lock_manager = lock_manager.get();
@@ -689,11 +708,14 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
           factory->OnDatabaseError(origin, s, nullptr);
         },
         origin, weak_factory_.GetWeakPtr());
+    const bool is_first_attempt = i == 0;
     std::tie(backing_store, s, data_loss_info, disk_full) =
         OpenAndVerifyIndexedDBBackingStore(
             origin, data_directory, database_path, blob_path,
-            std::move(scopes_options), &scopes_factory,
-            /*is_first_attempt=*/i == 0, create_if_missing);
+            std::move(scopes_options), &scopes_factory, is_first_attempt,
+            create_if_missing);
+    if (LIKELY(is_first_attempt))
+      first_try_status = s;
     if (LIKELY(s.ok()))
       break;
     DCHECK(!backing_store);
@@ -711,11 +733,26 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
     }
   }
 
+  UMA_HISTOGRAM_ENUMERATION(
+      "WebCore.IndexedDB.BackingStore.OpenFirstTryResult",
+      leveldb_env::GetLevelDBStatusUMAValue(first_try_status),
+      leveldb_env::LEVELDB_STATUS_MAX);
+
+  if (LIKELY(first_try_status.ok())) {
+    UMA_HISTOGRAM_TIMES(
+        "WebCore.IndexedDB.BackingStore.OpenFirstTrySuccessTime",
+        open_timer.Elapsed());
+  }
+
   if (UNLIKELY(!s.ok())) {
     ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY,
                      origin);
 
     if (disk_full) {
+      context_->IOTaskRunner()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&storage::QuotaManagerProxy::NotifyWriteFailed,
+                         context_->quota_manager_proxy(), origin));
       return {IndexedDBOriginStateHandle(), s,
               IndexedDBDatabaseError(
                   blink::mojom::IDBException::kQuotaError,
@@ -732,7 +769,7 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
   // Scopes must be single sequence to keep methods like ForceClose synchronous.
   // See https://crbug.com/980685
   s = backing_store->db()->scopes()->StartRecoveryAndCleanupTasks(
-      LevelDBScopes::TaskRunnerMode::kUseCurrentSequence);
+      LevelDBScopes::TaskRunnerMode::kNewCleanupAndRevertSequences);
 
   if (UNLIKELY(!s.ok())) {
     ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY,
@@ -778,16 +815,19 @@ std::unique_ptr<IndexedDBBackingStore> IndexedDBFactoryImpl::CreateBackingStore(
     const url::Origin& origin,
     const base::FilePath& blob_path,
     std::unique_ptr<TransactionalLevelDBDatabase> db,
+    storage::mojom::BlobStorageContext* blob_storage_context,
+    storage::mojom::NativeFileSystemContext* native_file_system_context,
     IndexedDBBackingStore::BlobFilesCleanedCallback blob_files_cleaned,
     IndexedDBBackingStore::ReportOutstandingBlobsCallback
         report_outstanding_blobs,
-    base::SequencedTaskRunner* task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
   return std::make_unique<IndexedDBBackingStore>(
       backing_store_mode, transactional_leveldb_factory, origin, blob_path,
-      std::move(db), std::move(blob_files_cleaned),
-      std::move(report_outstanding_blobs), task_runner);
+      std::move(db), blob_storage_context, native_file_system_context,
+      std::move(blob_files_cleaned), std::move(report_outstanding_blobs),
+      std::move(idb_task_runner), std::move(io_task_runner));
 }
-
 std::tuple<std::unique_ptr<IndexedDBBackingStore>,
            leveldb::Status,
            IndexedDBDataLossInfo,
@@ -881,7 +921,8 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
   // Create the TransactionalLevelDBDatabase wrapper.
   std::unique_ptr<TransactionalLevelDBDatabase> database =
       class_factory_->transactional_leveldb_factory().CreateLevelDBDatabase(
-          std::move(database_state), std::move(scopes), context_->TaskRunner(),
+          std::move(database_state), std::move(scopes),
+          context_->IDBTaskRunner(),
           TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
 
   bool are_schemas_known = false;
@@ -912,12 +953,13 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
                                  : IndexedDBBackingStore::Mode::kOnDisk;
   std::unique_ptr<IndexedDBBackingStore> backing_store = CreateBackingStore(
       backing_store_mode, &class_factory_->transactional_leveldb_factory(),
-      origin, blob_path, std::move(database),
+      origin, blob_path, std::move(database), context_->blob_storage_context(),
+      context_->native_file_system_context(),
       base::BindRepeating(&IndexedDBFactoryImpl::BlobFilesCleaned,
                           weak_factory_.GetWeakPtr(), origin),
       base::BindRepeating(&IndexedDBFactoryImpl::ReportOutstandingBlobs,
                           weak_factory_.GetWeakPtr(), origin),
-      context_->TaskRunner());
+      context_->IDBTaskRunner(), context_->IOTaskRunner());
   status = backing_store->Initialize(
       /*cleanup_active_journal=*/(!is_incognito_and_in_memory &&
                                   first_open_since_startup));
@@ -947,6 +989,12 @@ void IndexedDBFactoryImpl::OnDatabaseError(const url::Origin& origin,
                                      base::ASCIIToUTF16(status.ToString()));
     HandleBackingStoreCorruption(origin, error);
   } else {
+    if (status.IsIOError()) {
+      context_->IOTaskRunner()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&storage::QuotaManagerProxy::NotifyWriteFailed,
+                         context_->quota_manager_proxy(), origin));
+    }
     HandleBackingStoreFailure(origin);
   }
 }
@@ -1017,6 +1065,33 @@ bool IndexedDBFactoryImpl::IsBackingStorePendingClose(
   if (it == factories_per_origin_.end())
     return false;
   return it->second->IsClosing();
+}
+
+bool IndexedDBFactoryImpl::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  for (const auto& origin_state_pair : factories_per_origin_) {
+    IndexedDBOriginState* state = origin_state_pair.second.get();
+    base::CheckedNumeric<uint64_t> total_memory_in_flight = 0;
+    for (const auto& db_name_object_pair : state->databases()) {
+      for (IndexedDBConnection* connection :
+           db_name_object_pair.second->connections()) {
+        for (const auto& txn_id_pair : connection->transactions()) {
+          total_memory_in_flight += txn_id_pair.second->in_flight_memory();
+        }
+      }
+    }
+    // This pointer is used to match the pointer used in
+    // TransactionalLevelDBDatabase::OnMemoryDump.
+    leveldb::DB* db = state->backing_store()->db()->db();
+    auto* db_dump = pmd->CreateAllocatorDump(
+        base::StringPrintf("site_storage/index_db/in_flight_0x%" PRIXPTR,
+                           reinterpret_cast<uintptr_t>(db)));
+    db_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                       base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                       total_memory_in_flight.ValueOrDefault(0));
+  }
+  return true;
 }
 
 }  // namespace content

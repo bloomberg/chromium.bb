@@ -445,7 +445,7 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
           '--private-key=%s' % self.PRIVATE_KEY_INSIDE_CHROOT
       ])
       self.assertCommandContains(enter_chroot=True)
-      self.assertCommandContains(error_code_ok=True)
+      self.assertCommandContains(check=False)
 
   def testSimple(self):
     """Test SIMPLE config."""

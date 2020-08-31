@@ -17,12 +17,16 @@
 #include <vector>
 
 #include "absl/memory/memory.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "api/async_resolver_factory.h"
 #include "api/call/call_factory_interface.h"
 #include "api/fec_controller.h"
 #include "api/function_view.h"
+#include "api/media_stream_interface.h"
 #include "api/peer_connection_interface.h"
 #include "api/rtc_event_log/rtc_event_log_factory_interface.h"
+#include "api/rtp_parameters.h"
 #include "api/task_queue/task_queue_factory.h"
 #include "api/test/audio_quality_analyzer_interface.h"
 #include "api/test/frame_generator_interface.h"
@@ -50,6 +54,12 @@ constexpr size_t kDefaultSlidesHeight = 1110;
 // API is in development. Can be changed/removed without notice.
 class PeerConnectionE2EQualityTestFixture {
  public:
+  // The index of required capturing device in OS provided list of video
+  // devices. On Linux and Windows the list will be obtained via
+  // webrtc::VideoCaptureModule::DeviceInfo, on Mac OS via
+  // [RTCCameraVideoCapturer captureDevices].
+  enum class CapturingDeviceIndex : size_t {};
+
   // Contains parameters for screen share scrolling.
   //
   // If scrolling is enabled, then it will be done by putting sliding window
@@ -111,12 +121,7 @@ class PeerConnectionE2EQualityTestFixture {
     // must be equal to |kDefaultSlidesWidth| and
     // |ScrollingParams::source_height| must be equal to |kDefaultSlidesHeight|.
     std::vector<std::string> slides_yuv_file_names;
-    // If true will set VideoTrackInterface::ContentHint::kText for current
-    // video track.
-    bool use_text_content_hint = true;
   };
-
-  enum VideoGeneratorType { kDefault, kI420A, kI010 };
 
   // Config for Vp8 simulcast or Vp9 SVC testing.
   //
@@ -131,6 +136,10 @@ class PeerConnectionE2EQualityTestFixture {
   //    available layer and won't restore lower layers, so analyzer won't
   //    receive required data which will cause wrong results or test failures.
   struct VideoSimulcastConfig {
+    explicit VideoSimulcastConfig(int simulcast_streams_count)
+        : simulcast_streams_count(simulcast_streams_count) {
+      RTC_CHECK_GT(simulcast_streams_count, 1);
+    }
     VideoSimulcastConfig(int simulcast_streams_count, int target_spatial_index)
         : simulcast_streams_count(simulcast_streams_count),
           target_spatial_index(target_spatial_index) {
@@ -152,7 +161,18 @@ class PeerConnectionE2EQualityTestFixture {
     //    in such case |target_spatial_index| will specify the top interesting
     //    spatial layer and all layers below, including target one will be
     //    processed. All layers above target one will be dropped.
-    int target_spatial_index;
+    // If not specified than whatever stream will be received will be analyzed.
+    // It requires Selective Forwarding Unit (SFU) to be configured in the
+    // network.
+    absl::optional<int> target_spatial_index;
+
+    // Encoding parameters per simulcast layer. If not empty, |encoding_params|
+    // size have to be equal to |simulcast_streams_count|. Will be used to set
+    // transceiver send encoding params for simulcast layers. Applicable only
+    // for codecs that support simulcast (ex. Vp8) and will be ignored
+    // otherwise. RtpEncodingParameters::rid may be changed by fixture
+    // implementation to ensure signaling correctness.
+    std::vector<RtpEncodingParameters> encoding_params;
   };
 
   // Contains properties of single video stream.
@@ -168,27 +188,9 @@ class PeerConnectionE2EQualityTestFixture {
     // Have to be unique among all specified configs for all peers in the call.
     // Will be auto generated if omitted.
     absl::optional<std::string> stream_label;
-    // You can specify one of |generator|, |input_file_name|,
-    // |screen_share_config| and |capturing_device_index|.
-    // If none of them are specified:
-    // * If config is added to the PeerConfigurer without specifying any video
-    //   source, then |generator| will be set to VideoGeneratorType::kDefault.
-    // * If config is added with own video source implementation, then that
-    //   video source will be used.
-
-    // If specified generator of this type will be used to produce input video.
-    absl::optional<VideoGeneratorType> generator;
-    // If specified this file will be used as input. Input video will be played
-    // in a circle.
-    absl::optional<std::string> input_file_name;
-    // If specified screen share video stream will be created as input.
-    absl::optional<ScreenShareConfig> screen_share_config;
-    // If specified this capturing device will be used to get input video. The
-    // |capturing_device_index| is the index of required capturing device in OS
-    // provided list of video devices. On Linux and Windows the list will be
-    // obtained via webrtc::VideoCaptureModule::DeviceInfo, on Mac OS via
-    // [RTCCameraVideoCapturer captureDevices].
-    absl::optional<size_t> capturing_device_index;
+    // Will be set for current video track. If equals to kText or kDetailed -
+    // screencast in on.
+    absl::optional<VideoTrackInterface::ContentHint> content_hint;
     // If presented video will be transfered in simulcast/SVC mode depending on
     // which encoder is used.
     //
@@ -202,7 +204,7 @@ class PeerConnectionE2EQualityTestFixture {
     // each RtpEncodingParameters of RtpParameters of corresponding
     // RtpSenderInterface for this video stream.
     absl::optional<int> temporal_layers_count;
-    // Sets the maxiumum encode bitrate in bps. If this value is not set, the
+    // Sets the maximum encode bitrate in bps. If this value is not set, the
     // encoder will be capped at an internal maximum value around 2 Mbps
     // depending on the resolution. This means that it will never be able to
     // utilize a high bandwidth link.
@@ -225,6 +227,11 @@ class PeerConnectionE2EQualityTestFixture {
     absl::optional<std::string> output_dump_file_name;
     // If true will display input and output video on the user's screen.
     bool show_on_screen = false;
+    // If specified, determines a sync group to which this video stream belongs.
+    // According to bugs.webrtc.org/4762 WebRTC supports synchronization only
+    // for pair of single audio and single video stream. Framework won't do any
+    // enforcements on this field.
+    absl::optional<std::string> sync_group;
   };
 
   // Contains properties for audio in the call.
@@ -248,6 +255,11 @@ class PeerConnectionE2EQualityTestFixture {
     cricket::AudioOptions audio_options;
     // Sampling frequency of input audio data (from file or generated).
     int sampling_frequency_in_hz = 48000;
+    // If specified, determines a sync group to which this audio stream belongs.
+    // According to bugs.webrtc.org/4762 WebRTC supports synchronization only
+    // for pair of single audio and single video stream. Framework won't do any
+    // enforcements on this field.
+    absl::optional<std::string> sync_group;
   };
 
   // This class is used to fully configure one peer inside the call.
@@ -255,7 +267,12 @@ class PeerConnectionE2EQualityTestFixture {
    public:
     virtual ~PeerConfigurer() = default;
 
-    // The parameters of the following 8 methods will be passed to the
+    // Sets peer name that will be used to report metrics related to this peer.
+    // If not set, some default name will be assigned. All names have to be
+    // unique.
+    virtual PeerConfigurer* SetName(absl::string_view name) = 0;
+
+    // The parameters of the following 9 methods will be passed to the
     // PeerConnectionFactoryInterface implementation that will be created for
     // this peer.
     virtual PeerConfigurer* SetTaskQueueFactory(
@@ -276,8 +293,11 @@ class PeerConnectionE2EQualityTestFixture {
         std::unique_ptr<VideoEncoderFactory> video_encoder_factory) = 0;
     virtual PeerConfigurer* SetVideoDecoderFactory(
         std::unique_ptr<VideoDecoderFactory> video_decoder_factory) = 0;
+    // Set a custom NetEqFactory to be used in the call.
+    virtual PeerConfigurer* SetNetEqFactory(
+        std::unique_ptr<NetEqFactory> neteq_factory) = 0;
 
-    // The parameters of the following 3 methods will be passed to the
+    // The parameters of the following 4 methods will be passed to the
     // PeerConnectionInterface implementation that will be created for this
     // peer.
     virtual PeerConfigurer* SetAsyncResolverFactory(
@@ -288,14 +308,22 @@ class PeerConnectionE2EQualityTestFixture {
             cert_generator) = 0;
     virtual PeerConfigurer* SetSSLCertificateVerifier(
         std::unique_ptr<rtc::SSLCertificateVerifier> tls_cert_verifier) = 0;
+    virtual PeerConfigurer* SetIceTransportFactory(
+        std::unique_ptr<IceTransportFactory> factory) = 0;
 
     // Add new video stream to the call that will be sent from this peer.
+    // Default implementation of video frames generator will be used.
     virtual PeerConfigurer* AddVideoConfig(VideoConfig config) = 0;
     // Add new video stream to the call that will be sent from this peer with
     // provided own implementation of video frames generator.
     virtual PeerConfigurer* AddVideoConfig(
         VideoConfig config,
         std::unique_ptr<test::FrameGeneratorInterface> generator) = 0;
+    // Add new video stream to the call that will be sent from this peer.
+    // Capturing device with specified index will be used to get input video.
+    virtual PeerConfigurer* AddVideoConfig(
+        VideoConfig config,
+        CapturingDeviceIndex capturing_device_index) = 0;
     // Set the audio stream for the call from this peer. If this method won't
     // be invoked, this peer will send no audio.
     virtual PeerConfigurer* SetAudioConfig(AudioConfig config) = 0;
@@ -317,7 +345,28 @@ class PeerConnectionE2EQualityTestFixture {
   struct EchoEmulationConfig {
     // Delay which represents the echo path delay, i.e. how soon rendered signal
     // should reach capturer.
-    TimeDelta echo_delay = TimeDelta::ms(50);
+    TimeDelta echo_delay = TimeDelta::Millis(50);
+  };
+
+  struct VideoCodecConfig {
+    explicit VideoCodecConfig(std::string name)
+        : name(std::move(name)), required_params() {}
+    VideoCodecConfig(std::string name,
+                     std::map<std::string, std::string> required_params)
+        : name(std::move(name)), required_params(std::move(required_params)) {}
+    // Next two fields are used to specify concrete video codec, that should be
+    // used in the test. Video code will be negotiated in SDP during offer/
+    // answer exchange.
+    // Video codec name. You can find valid names in
+    // media/base/media_constants.h
+    std::string name = cricket::kVp8CodecName;
+    // Map of parameters, that have to be specified on SDP codec. Each parameter
+    // is described by key and value. Codec parameters will match the specified
+    // map if and only if for each key from |required_params| there will be
+    // a parameter with name equal to this key and parameter value will be equal
+    // to the value from |required_params| for this key.
+    // If empty then only name will be used to match the codec.
+    std::map<std::string, std::string> required_params;
   };
 
   // Contains parameters, that describe how long framework should run quality
@@ -330,19 +379,14 @@ class PeerConnectionE2EQualityTestFixture {
     // it will be shut downed.
     TimeDelta run_duration;
 
-    // Next two fields are used to specify concrete video codec, that should be
-    // used in the test. Video code will be negotiated in SDP during offer/
-    // answer exchange.
-    // Video codec name. You can find valid names in
-    // media/base/media_constants.h
-    std::string video_codec_name = cricket::kVp8CodecName;
-    // Map of parameters, that have to be specified on SDP codec. Each parameter
-    // is described by key and value. Codec parameters will match the specified
-    // map if and only if for each key from |video_codec_required_params| there
-    // will be a parameter with name equal to this key and parameter value will
-    // be equal to the value from |video_codec_required_params| for this key.
-    // If empty then only name will be used to match the codec.
-    std::map<std::string, std::string> video_codec_required_params;
+    // List of video codecs to use during the test. These codecs will be
+    // negotiated in SDP during offer/answer exchange. The order of these codecs
+    // during negotiation will be the same as in |video_codecs|. Codecs have
+    // to be available in codecs list provided by peer connection to be
+    // negotiated. If some of specified codecs won't be found, the test will
+    // crash.
+    // If list is empty Vp8 with no required_params will be used.
+    std::vector<VideoCodecConfig> video_codecs;
     bool use_ulp_fec = false;
     bool use_flex_fec = false;
     // Specifies how much video encoder target bitrate should be different than

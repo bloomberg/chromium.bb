@@ -299,6 +299,9 @@ void ArcImeService::OnTextInputTypeChanged(
     ui::TextInputType type,
     bool is_personalized_learning_allowed,
     int flags) {
+  if (!ShouldSendUpdateToInputMethod())
+    return;
+
   if (ime_type_ == type &&
       is_personalized_learning_allowed_ == is_personalized_learning_allowed &&
       ime_flags_ == flags) {
@@ -311,10 +314,23 @@ void ArcImeService::OnTextInputTypeChanged(
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method)
     input_method->OnTextInputTypeChanged(this);
+
+  // Call HideKeyboard() here. On a text field on an ARC++ app, just having
+  // non-null text input type doesn't mean the virtual keyboard is necessary. If
+  // the virtual keyboard is really needed, ShowVirtualKeyboardIfEnabled will be
+  // called later.
+  if (keyboard::KeyboardUIController::HasInstance()) {
+    auto* keyboard_controller = keyboard::KeyboardUIController::Get();
+    if (keyboard_controller->IsEnabled())
+      keyboard_controller->HideKeyboardImplicitlyBySystem();
+  }
 }
 
 void ArcImeService::OnCursorRectChanged(const gfx::Rect& rect,
                                         bool is_screen_coordinates) {
+  if (!ShouldSendUpdateToInputMethod())
+    return;
+
   InvalidateSurroundingTextAndSelectionRange();
   if (!UpdateCursorRect(rect, is_screen_coordinates))
     return;
@@ -325,6 +341,9 @@ void ArcImeService::OnCursorRectChanged(const gfx::Rect& rect,
 }
 
 void ArcImeService::OnCancelComposition() {
+  if (!ShouldSendUpdateToInputMethod())
+    return;
+
   InvalidateSurroundingTextAndSelectionRange();
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method)
@@ -332,6 +351,9 @@ void ArcImeService::OnCancelComposition() {
 }
 
 void ArcImeService::ShowVirtualKeyboardIfEnabled() {
+  if (!ShouldSendUpdateToInputMethod())
+    return;
+
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method && input_method->GetTextInputClient() == this) {
     input_method->ShowVirtualKeyboardIfEnabled();
@@ -344,6 +366,9 @@ void ArcImeService::OnCursorRectChangedWithSurroundingText(
     const base::string16& text_in_range,
     const gfx::Range& selection_range,
     bool is_screen_coordinates) {
+  if (!ShouldSendUpdateToInputMethod())
+    return;
+
   text_range_ = text_range;
   text_in_range_ = text_in_range;
   selection_range_ = selection_range;
@@ -354,18 +379,6 @@ void ArcImeService::OnCursorRectChangedWithSurroundingText(
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method)
     input_method->OnCaretBoundsChanged(this);
-}
-
-void ArcImeService::RequestHideIme() {
-  // Ignore the request when the ARC app is not focused.
-  if (!focused_arc_window_)
-    return;
-
-  if (keyboard::KeyboardUIController::HasInstance()) {
-    auto* keyboard_controller = keyboard::KeyboardUIController::Get();
-    if (keyboard_controller->IsEnabled())
-      keyboard_controller->HideKeyboardImplicitlyBySystem();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -428,8 +441,10 @@ void ArcImeService::InsertChar(const ui::KeyEvent& event) {
   // According to the document in text_input_client.h, InsertChar() is called
   // even when the text input type is NONE. We ignore such events, since for
   // ARC we are only interested in the event as a method of text input.
-  if (ime_type_ == ui::TEXT_INPUT_TYPE_NONE)
+  if (ime_type_ == ui::TEXT_INPUT_TYPE_NONE ||
+      ime_type_ == ui::TEXT_INPUT_TYPE_NULL) {
     return;
+  }
 
   InvalidateSurroundingTextAndSelectionRange();
 
@@ -640,6 +655,14 @@ bool ArcImeService::UpdateCursorRect(const gfx::Rect& rect,
     return false;
   cursor_rect_ = converted;
   return true;
+}
+
+bool ArcImeService::ShouldSendUpdateToInputMethod() const {
+  // New text input state received from Android should not be sent to
+  // InputMethod when the focus is on a non-ARC window. Text input state updates
+  // can be sent from Android anytime because there is a dummy input view in
+  // Android which is synchronized with the text input on a non-ARC window.
+  return focused_arc_window_ != nullptr;
 }
 
 }  // namespace arc

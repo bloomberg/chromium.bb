@@ -52,8 +52,7 @@ namespace internal {
 class AudioState;
 
 class AudioSendStream final : public webrtc::AudioSendStream,
-                              public webrtc::BitrateAllocatorObserver,
-                              public webrtc::OverheadObserver {
+                              public webrtc::BitrateAllocatorObserver {
  public:
   AudioSendStream(Clock* clock,
                   const webrtc::AudioSendStream::Config& config,
@@ -73,7 +72,6 @@ class AudioSendStream final : public webrtc::AudioSendStream,
                   RtpTransportControllerSendInterface* rtp_transport,
                   BitrateAllocatorInterface* bitrate_allocator,
                   RtcEventLog* event_log,
-                  RtcpRttStats* rtcp_rtt_stats,
                   const absl::optional<RtpState>& suspended_rtp_state,
                   std::unique_ptr<voe::ChannelSendInterface> channel_send);
   ~AudioSendStream() override;
@@ -99,10 +97,6 @@ class AudioSendStream final : public webrtc::AudioSendStream,
   uint32_t OnBitrateUpdated(BitrateAllocationUpdate update) override;
 
   void SetTransportOverhead(int transport_overhead_per_packet_bytes);
-
-  // OverheadObserver override reports audio packetization overhead from
-  // RTP/RTCP module or Media Transport.
-  void OnOverheadChanged(size_t overhead_bytes_per_packet_bytes) override;
 
   RtpState GetRtpState() const;
   const voe::ChannelSendInterface* GetChannel() const;
@@ -181,7 +175,7 @@ class AudioSendStream final : public webrtc::AudioSendStream,
       RTC_GUARDED_BY(worker_queue_);
   RtpTransportControllerSendInterface* const rtp_transport_;
 
-  RtpRtcp* rtp_rtcp_module_;
+  RtpRtcp* const rtp_rtcp_module_;
   absl::optional<RtpState> const suspended_rtp_state_;
 
   // RFC 5285: Each distinct extension MUST have a unique ID. The value 0 is
@@ -190,6 +184,7 @@ class AudioSendStream final : public webrtc::AudioSendStream,
   struct ExtensionIds {
     int audio_level = 0;
     int abs_send_time = 0;
+    int abs_capture_time = 0;
     int transport_sequence_number = 0;
     int mid = 0;
     int rid = 0;
@@ -203,10 +198,6 @@ class AudioSendStream final : public webrtc::AudioSendStream,
 
   // Current transport overhead (ICE, TURN, etc.)
   size_t transport_overhead_per_packet_bytes_
-      RTC_GUARDED_BY(overhead_per_packet_lock_) = 0;
-
-  // Current audio packetization overhead (RTP or Media Transport).
-  size_t audio_overhead_per_packet_bytes_
       RTC_GUARDED_BY(overhead_per_packet_lock_) = 0;
 
   bool registered_with_allocator_ RTC_GUARDED_BY(worker_queue_) = false;

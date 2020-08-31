@@ -75,12 +75,6 @@ bool RelaunchRecommendedBubbleView::Accept() {
   return false;
 }
 
-bool RelaunchRecommendedBubbleView::Close() {
-  base::RecordAction(base::UserMetricsAction("RelaunchRecommended_Close"));
-
-  return true;
-}
-
 base::string16 RelaunchRecommendedBubbleView::GetWindowTitle() const {
   return relaunch_recommended_timer_.GetWindowTitle();
 }
@@ -90,9 +84,11 @@ bool RelaunchRecommendedBubbleView::ShouldShowCloseButton() const {
 }
 
 gfx::ImageSkia RelaunchRecommendedBubbleView::GetWindowIcon() {
-  return gfx::CreateVectorIcon(gfx::IconDescription(
-      vector_icons::kBusinessIcon, kTitleIconSize, gfx::kChromeIconGrey,
-      base::TimeDelta(), gfx::kNoneIcon));
+  return gfx::CreateVectorIcon(
+      gfx::IconDescription(vector_icons::kBusinessIcon,
+                           ChromeLayoutProvider::Get()->GetDistanceMetric(
+                               DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE),
+                           gfx::kChromeIconGrey));
 }
 
 bool RelaunchRecommendedBubbleView::ShouldShowWindowIcon() const {
@@ -112,10 +108,11 @@ void RelaunchRecommendedBubbleView::Init() {
   // Align the body label with the left edge of the bubble's title.
   // TODO(bsep): Remove this when fixing https://crbug.com/810970.
   // Note: BubleFrameView applies INSETS_DIALOG_TITLE either side of the icon.
-  int title_offset = 2 * views::LayoutProvider::Get()
-                             ->GetInsetsMetric(views::INSETS_DIALOG_TITLE)
-                             .left() +
-                     kTitleIconSize;
+  const int title_offset = 2 * views::LayoutProvider::Get()
+                                   ->GetInsetsMetric(views::INSETS_DIALOG_TITLE)
+                                   .left() +
+                           ChromeLayoutProvider::Get()->GetDistanceMetric(
+                               DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE);
   label->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(0, title_offset - margins().left(), 0, 0)));
 
@@ -152,10 +149,13 @@ RelaunchRecommendedBubbleView::RelaunchRecommendedBubbleView(
           detection_time,
           base::BindRepeating(&RelaunchRecommendedBubbleView::UpdateWindowTitle,
                               base::Unretained(this))) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_RELAUNCH_ACCEPT_BUTTON));
+  SetButtons(ui::DIALOG_BUTTON_OK);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_RELAUNCH_ACCEPT_BUTTON));
+
+  SetCloseCallback(
+      base::BindOnce(&base::RecordAction,
+                     base::UserMetricsAction("RelaunchRecommended_Close")));
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::RELAUNCH_RECOMMENDED);
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(

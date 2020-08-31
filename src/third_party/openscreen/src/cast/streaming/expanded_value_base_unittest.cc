@@ -6,8 +6,8 @@
 
 #include "gtest/gtest.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 namespace {
 
@@ -104,5 +104,5 @@ TEST(ExpandedValueBaseTest, TruncationAndExpansion) {
   }
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

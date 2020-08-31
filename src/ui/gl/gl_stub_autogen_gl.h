@@ -311,6 +311,8 @@ void glDeleteFencesAPPLEFn(GLsizei n, const GLuint* fences) override {}
 void glDeleteFencesNVFn(GLsizei n, const GLuint* fences) override {}
 void glDeleteFramebuffersEXTFn(GLsizei n, const GLuint* framebuffers) override {
 }
+void glDeleteMemoryObjectsEXTFn(GLsizei n,
+                                const GLuint* memoryObjects) override {}
 void glDeletePathsNVFn(GLuint path, GLsizei range) override {}
 void glDeleteProgramFn(GLuint program) override {}
 void glDeleteProgramPipelinesFn(GLsizei n, const GLuint* pipelines) override {}
@@ -888,9 +890,23 @@ void glImportMemoryFdEXTFn(GLuint memory,
                            GLuint64 size,
                            GLenum handleType,
                            GLint fd) override {}
+void glImportMemoryWin32HandleEXTFn(GLuint memory,
+                                    GLuint64 size,
+                                    GLenum handleType,
+                                    void* handle) override {}
+void glImportMemoryZirconHandleANGLEFn(GLuint memory,
+                                       GLuint64 size,
+                                       GLenum handleType,
+                                       GLuint handle) override {}
 void glImportSemaphoreFdEXTFn(GLuint semaphore,
                               GLenum handleType,
                               GLint fd) override {}
+void glImportSemaphoreWin32HandleEXTFn(GLuint semaphore,
+                                       GLenum handleType,
+                                       void* handle) override {}
+void glImportSemaphoreZirconHandleANGLEFn(GLuint semaphore,
+                                          GLenum handleType,
+                                          GLuint handle) override {}
 void glInsertEventMarkerEXTFn(GLsizei length, const char* marker) override {}
 void glInvalidateFramebufferFn(GLenum target,
                                GLsizei numAttachments,
@@ -932,6 +948,9 @@ void glMatrixLoadIdentityEXTFn(GLenum matrixMode) override {}
 void glMaxShaderCompilerThreadsKHRFn(GLuint count) override {}
 void glMemoryBarrierByRegionFn(GLbitfield barriers) override {}
 void glMemoryBarrierEXTFn(GLbitfield barriers) override {}
+void glMemoryObjectParameterivEXTFn(GLuint memoryObject,
+                                    GLenum pname,
+                                    const GLint* param) override {}
 void glMinSampleShadingFn(GLfloat value) override {}
 void glMultiDrawArraysANGLEFn(GLenum mode,
                               const GLint* firsts,

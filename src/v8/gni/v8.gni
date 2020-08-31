@@ -30,8 +30,8 @@ declare_args() {
   # Support for backtrace_symbols on linux.
   v8_enable_backtrace = ""
 
-  # Enables raw heap snapshots containing internals. Used for debugging memory
-  # on platform and embedder level.
+  # This flag is deprecated and is now available through the inspector interface
+  # as an argument to profiler's method `takeHeapSnapshot`.
   v8_enable_raw_heap_snapshots = false
 
   # Enable several snapshots side-by-side (e.g. default and for trusted code).
@@ -54,9 +54,14 @@ declare_args() {
   # Expose symbols for dynamic linking.
   v8_expose_symbols = false
 
-  # Use Perfetto (https://perfetto.dev) as the default TracingController. Not
-  # currently implemented.
+  # Implement tracing using Perfetto (https://perfetto.dev).
   v8_use_perfetto = false
+
+  # Override global symbol level setting for v8
+  v8_symbol_level = symbol_level
+
+  # Enable WebAssembly debugging via GDB-remote protocol.
+  v8_enable_wasm_gdb_remote_debugging = false
 }
 
 if (v8_use_external_startup_data == "") {
@@ -69,12 +74,17 @@ if (v8_use_multi_snapshots) {
   # Silently disable multi snapshots if they're incompatible with the current
   # build configuration. This allows us to set v8_use_multi_snapshots=true on
   # all bots, and e.g. no-snapshot bots will automatically do the right thing.
-  v8_use_multi_snapshots =
-      v8_use_external_startup_data && !build_with_chromium
+  v8_use_multi_snapshots = v8_use_external_startup_data && !build_with_chromium
 }
 
 if (v8_enable_backtrace == "") {
   v8_enable_backtrace = is_debug && !v8_optimized_debug
+}
+
+# If chromium is configured to use the perfetto client library, v8 should also
+# use perfetto for tracing.
+if (build_with_chromium && use_perfetto_client_library) {
+  v8_use_perfetto = true
 }
 
 # Points to // in v8 stand-alone or to //v8/ in chromium. We need absolute
@@ -110,11 +120,31 @@ if (is_debug && !v8_optimized_debug) {
   }
 }
 
+if (!is_debug) {
+  v8_remove_configs += [
+    # Too much performance impact, unclear security benefit.
+    "//build/config/compiler:default_init_stack_vars",
+  ]
+}
+
 if (v8_code_coverage && !is_clang) {
   v8_add_configs += [
     v8_path_prefix + ":v8_gcov_coverage_cflags",
     v8_path_prefix + ":v8_gcov_coverage_ldflags",
   ]
+}
+
+if (v8_symbol_level != symbol_level) {
+  v8_remove_configs += [ "//build/config/compiler:default_symbols" ]
+  if (v8_symbol_level == 0) {
+    v8_add_configs += [ "//build/config/compiler:no_symbols" ]
+  } else if (v8_symbol_level == 1) {
+    v8_add_configs += [ "//build/config/compiler:minimal_symbols" ]
+  } else if (v8_symbol_level == 2) {
+    v8_add_configs += [ "//build/config/compiler:symbols" ]
+  } else {
+    assert(false)
+  }
 }
 
 if ((is_posix || is_fuchsia) &&
@@ -215,6 +245,25 @@ template("v8_component") {
       configs -= invoker.remove_configs
     }
     configs += invoker.configs
+  }
+}
+
+template("v8_shared_library") {
+  shared_library(target_name) {
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "configs",
+                             "remove_configs",
+                           ])
+    configs -= v8_remove_configs
+    configs += v8_add_configs
+    if (defined(invoker.remove_configs)) {
+      configs -= invoker.remove_configs
+    }
+    if (defined(invoker.configs)) {
+      configs += invoker.configs
+    }
   }
 }
 

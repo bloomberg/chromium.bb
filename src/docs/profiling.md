@@ -10,7 +10,7 @@ These are instructions for collecting a CPU profile of chromium. All of the prof
 
 This doc is intended to be an authoritative one-stop resource for profiling chromium. At the time of writing, there are a number of existing docs with profiling instructions, in varying states of obsolescence:
 
-* [./linux_profiling.md](./linux_profiling.md)
+* [./linux/profiling.md](./linux/profiling.md)
 * [./profiling_content_shell_on_android.md](./profiling_content_shell_on_android.md)
 * https://www.chromium.org/developers/profiling-chromium-and-webkit
 * https://www.chromium.org/developers/telemetry/profiling
@@ -124,6 +124,54 @@ Open devtools, and in the console, use `chrome.gpuBenchmarking.startProfiling` a
 `chrome.gpuBenchmarking` has a number of useful methods for simulating user-gesture-initiated actions; for example, to profile scrolling:
 
     > chrome.gpuBenchmarking.startProfiling('perf.data'); chrome.gpuBenchmarking.smoothScrollBy(1000, () => { chrome.gpuBenchmarking.stopProfiling() });
+
+### Profiling content_shell with callgrind
+
+This section contains instructions on how to do profiling using the callgrind/cachegrind tools provided by valgrind. This is not a sampling profiler, but a profiler based on running on a simulated CPU. The instructions are Linux-centered, but might work on other platforms too.
+
+#### GN configuration
+
+As with the other options you typically profile a release build with symbols. In order to do so, add enable_profiling to `args.gn`:
+
+```
+enable_profiling = true
+```
+
+#### Install valgrind
+
+```
+sudo apt-get install valgrind
+```
+
+#### Profile
+
+Run `content_shell` with callgrind to create a profile. A `callgrind.<pid>` file will be dumped when exiting the browser or stopped with CTRL-C:
+
+```
+valgrind --tool=callgrind content_shell --single-process --no-sandbox <url>
+```
+
+Alternatively use cachegrind which will give you CPU cycles per code line:
+
+```
+valgrind --tool=cachegrind content_shell --single-process --no-sandbox <url>
+```
+
+Using single-process is for simple profiling of the renderer. It should be possible to run in multi-process and attach to a renderer process.
+
+#### Install KCachegrind
+
+Warning: this will install a bunch of KDE dependencies.
+
+```
+sudo apt-get install kcachegrind
+```
+
+#### Explore with KCachegrind
+
+```
+kcachegrind callgrind.<pid>
+```
 
 ## Profiling on Android
 

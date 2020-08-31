@@ -16,6 +16,7 @@
 #include "api/task_queue/default_task_queue_factory.h"
 #include "modules/audio_processing/aec_dump/aec_dump_factory.h"
 #include "modules/audio_processing/include/audio_processing.h"
+#include "modules/audio_processing/test/audio_processing_builder_for_testing.h"
 #include "rtc_base/arraysize.h"
 #include "rtc_base/numerics/safe_minmax.h"
 #include "rtc_base/task_queue.h"
@@ -41,8 +42,6 @@ std::unique_ptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
   bool exp_agc = fuzz_data->ReadOrDefaultValue(true);
   bool exp_ns = fuzz_data->ReadOrDefaultValue(true);
   static_cast<void>(fuzz_data->ReadOrDefaultValue(true));
-  bool ef = fuzz_data->ReadOrDefaultValue(true);
-  bool raf = fuzz_data->ReadOrDefaultValue(true);
   static_cast<void>(fuzz_data->ReadOrDefaultValue(true));
   static_cast<void>(fuzz_data->ReadOrDefaultValue(true));
   bool red = fuzz_data->ReadOrDefaultValue(true);
@@ -108,12 +107,9 @@ std::unique_ptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
 
   config.Set<ExperimentalAgc>(new ExperimentalAgc(exp_agc));
   config.Set<ExperimentalNs>(new ExperimentalNs(exp_ns));
-  config.Set<ExtendedFilter>(new ExtendedFilter(ef));
-  config.Set<RefinedAdaptiveFilter>(new RefinedAdaptiveFilter(raf));
-  config.Set<DelayAgnostic>(new DelayAgnostic(true));
 
   std::unique_ptr<AudioProcessing> apm(
-      AudioProcessingBuilder()
+      AudioProcessingBuilderForTesting()
           .SetEchoControlFactory(std::move(echo_control_factory))
           .Create(config));
 

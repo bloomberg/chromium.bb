@@ -64,9 +64,7 @@ source_set("earl_grey_test_support") {
     "//url",
   ]
 
-  public_deps = [
-    "//build/config/ios:xctest",
-  ]
+  public_deps = [ "//build/config/ios:xctest" ]
 
   sources = [
     "app/navigation_test_util.h",
@@ -216,4 +214,6 @@ ios_eg2_test("ios_web_shell_eg2tests_module") {
     # Test support libraries.
     ":eg_tests+eg2",
   ]
+
+  data_deps = [ ":ios_web_shell_eg2tests" ]
 }

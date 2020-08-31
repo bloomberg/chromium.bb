@@ -220,8 +220,7 @@ NET_ERROR(SSL_BAD_RECORD_MAC_ALERT, -126)
 // The proxy requested authentication (for tunnel establishment).
 NET_ERROR(PROXY_AUTH_REQUESTED, -127)
 
-// The SSL server attempted to use a weak ephemeral Diffie-Hellman key.
-NET_ERROR(SSL_WEAK_SERVER_EPHEMERAL_DH_KEY, -129)
+// Error -129 was removed (SSL_WEAK_SERVER_EPHEMERAL_DH_KEY).
 
 // Could not create a connection to the proxy server. An error occurred
 // either in resolving its name, or in connecting a socket to it.
@@ -543,13 +542,16 @@ NET_ERROR(CERT_SYMANTEC_LEGACY, -215)
 // the device owner.
 NET_ERROR(CERT_KNOWN_INTERCEPTION_BLOCKED, -217)
 
+// The connection uses an obsolete version of SSL/TLS.
+NET_ERROR(SSL_OBSOLETE_VERSION, -218)
+
 // Add new certificate error codes here.
 //
 // Update the value of CERT_END whenever you add a new certificate error
 // code.
 
 // The value immediately past the last certificate error code.
-NET_ERROR(CERT_END, -218)
+NET_ERROR(CERT_END, -219)
 
 // The URL is invalid.
 NET_ERROR(INVALID_URL, -300)
@@ -856,6 +858,15 @@ NET_ERROR(INVALID_SIGNED_EXCHANGE, -504)
 
 // An error occurred while handling a Web Bundle source.
 NET_ERROR(INVALID_WEB_BUNDLE, -505)
+
+// A Trust Tokens protocol operation-executing request failed for one of a
+// number of reasons (precondition failure, internal error, bad response).
+NET_ERROR(TRUST_TOKEN_OPERATION_FAILED, -506)
+
+// When handling a Trust Tokens protocol operation-executing request, the system
+// found that the request's desired Trust Tokens results were already present in
+// a local cache; as a result, the main request was cancelled.
+NET_ERROR(TRUST_TOKEN_OPERATION_CACHE_HIT, -507)
 
 // *** Code -600 is reserved (was FTP_PASV_COMMAND_FAILED). ***
 

@@ -8,7 +8,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -25,60 +25,60 @@ WebTouchPoint::State ToWebTouchPointState(
     SyntheticPointerActionParams::PointerActionType action_type) {
   switch (action_type) {
     case SyntheticPointerActionParams::PointerActionType::PRESS:
-      return WebTouchPoint::kStatePressed;
+      return WebTouchPoint::State::kStatePressed;
     case SyntheticPointerActionParams::PointerActionType::MOVE:
-      return WebTouchPoint::kStateMoved;
+      return WebTouchPoint::State::kStateMoved;
     case SyntheticPointerActionParams::PointerActionType::RELEASE:
-      return WebTouchPoint::kStateReleased;
+      return WebTouchPoint::State::kStateReleased;
     case SyntheticPointerActionParams::PointerActionType::CANCEL:
-      return WebTouchPoint::kStateCancelled;
+      return WebTouchPoint::State::kStateCancelled;
     case SyntheticPointerActionParams::PointerActionType::IDLE:
-      return WebTouchPoint::kStateStationary;
+      return WebTouchPoint::State::kStateStationary;
     case SyntheticPointerActionParams::PointerActionType::LEAVE:
     case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
       NOTREACHED()
           << "Invalid SyntheticPointerActionParams::PointerActionType.";
-      return WebTouchPoint::kStateUndefined;
+      return WebTouchPoint::State::kStateUndefined;
   }
   NOTREACHED() << "Invalid SyntheticPointerActionParams::PointerActionType.";
-  return WebTouchPoint::kStateUndefined;
+  return WebTouchPoint::State::kStateUndefined;
 }
 
 WebInputEvent::Type ToWebMouseEventType(
     SyntheticPointerActionParams::PointerActionType action_type) {
   switch (action_type) {
     case SyntheticPointerActionParams::PointerActionType::PRESS:
-      return WebInputEvent::kMouseDown;
+      return WebInputEvent::Type::kMouseDown;
     case SyntheticPointerActionParams::PointerActionType::MOVE:
-      return WebInputEvent::kMouseMove;
+      return WebInputEvent::Type::kMouseMove;
     case SyntheticPointerActionParams::PointerActionType::RELEASE:
-      return WebInputEvent::kMouseUp;
+      return WebInputEvent::Type::kMouseUp;
     case SyntheticPointerActionParams::PointerActionType::LEAVE:
-      return WebInputEvent::kMouseLeave;
+      return WebInputEvent::Type::kMouseLeave;
     case SyntheticPointerActionParams::PointerActionType::CANCEL:
     case SyntheticPointerActionParams::PointerActionType::IDLE:
     case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
       NOTREACHED()
           << "Invalid SyntheticPointerActionParams::PointerActionType.";
-      return WebInputEvent::kUndefined;
+      return WebInputEvent::Type::kUndefined;
   }
   NOTREACHED() << "Invalid SyntheticPointerActionParams::PointerActionType.";
-  return WebInputEvent::kUndefined;
+  return WebInputEvent::Type::kUndefined;
 }
 
 WebInputEvent::Type WebTouchPointStateToEventType(
     blink::WebTouchPoint::State state) {
   switch (state) {
-    case blink::WebTouchPoint::kStateReleased:
-      return WebInputEvent::kTouchEnd;
-    case blink::WebTouchPoint::kStatePressed:
-      return WebInputEvent::kTouchStart;
-    case blink::WebTouchPoint::kStateMoved:
-      return WebInputEvent::kTouchMove;
-    case blink::WebTouchPoint::kStateCancelled:
-      return WebInputEvent::kTouchCancel;
+    case blink::WebTouchPoint::State::kStateReleased:
+      return WebInputEvent::Type::kTouchEnd;
+    case blink::WebTouchPoint::State::kStatePressed:
+      return WebInputEvent::Type::kTouchStart;
+    case blink::WebTouchPoint::State::kStateMoved:
+      return WebInputEvent::Type::kTouchMove;
+    case blink::WebTouchPoint::State::kStateCancelled:
+      return WebInputEvent::Type::kTouchCancel;
     default:
-      return WebInputEvent::kUndefined;
+      return WebInputEvent::Type::kUndefined;
   }
 }
 
@@ -476,7 +476,7 @@ TEST_F(SyntheticPointerActionTest, PointerTouchAction) {
   int index_array[2] = {0, 1};
   EXPECT_EQ(1, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::kTouchStart);
+  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::Type::kTouchStart);
   EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
       param_list1, index_array));
 
@@ -484,14 +484,14 @@ TEST_F(SyntheticPointerActionTest, PointerTouchAction) {
   EXPECT_EQ(2, num_success_);
   EXPECT_EQ(0, num_failure_);
   // The type of the SyntheticWebTouchEvent is the action of the last finger.
-  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::kTouchStart);
+  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::Type::kTouchStart);
   EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
       param_list2, index_array));
 
   ForwardSyntheticPointerAction();
   EXPECT_EQ(3, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::kTouchMove);
+  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::Type::kTouchMove);
   EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
       param_list3, index_array));
 
@@ -499,7 +499,7 @@ TEST_F(SyntheticPointerActionTest, PointerTouchAction) {
   index_array[1] = 0;
   EXPECT_EQ(4, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::kTouchEnd);
+  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::Type::kTouchEnd);
   EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
       param_list4, index_array));
 }
@@ -547,7 +547,7 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionsMultiPressRelease) {
   int index_array[2] = {0, 1};
   EXPECT_EQ(count_success++, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::kTouchStart);
+  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::Type::kTouchStart);
   EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
       param_list1, index_array));
 
@@ -556,7 +556,7 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionsMultiPressRelease) {
     EXPECT_EQ(count_success++, num_success_);
     EXPECT_EQ(0, num_failure_);
     // The type of the SyntheticWebTouchEvent is the action of the last finger.
-    EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::kTouchStart);
+    EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::Type::kTouchStart);
     EXPECT_TRUE(
         pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
             param_list2, index_array));
@@ -565,7 +565,7 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionsMultiPressRelease) {
     EXPECT_EQ(count_success++, num_success_);
     EXPECT_EQ(0, num_failure_);
     // The type of the SyntheticWebTouchEvent is the action of the last finger.
-    EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::kTouchEnd);
+    EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::Type::kTouchEnd);
     EXPECT_TRUE(
         pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
             param_list3, index_array));
@@ -615,7 +615,7 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionCancel) {
   int index_array[2] = {0, 1};
   EXPECT_EQ(1, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::kTouchStart);
+  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::Type::kTouchStart);
   EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
       param_list1, index_array));
 
@@ -623,7 +623,7 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionCancel) {
   EXPECT_EQ(2, num_success_);
   EXPECT_EQ(0, num_failure_);
   // The type of the SyntheticWebTouchEvent is the action of the last finger.
-  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::kTouchStart);
+  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::Type::kTouchStart);
   EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
       param_list2, index_array));
 
@@ -631,7 +631,7 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionCancel) {
   index_array[1] = 0;
   EXPECT_EQ(3, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::kTouchCancel);
+  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::Type::kTouchCancel);
   EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
       param_list3, index_array));
 }
@@ -675,7 +675,7 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionTypeInvalid) {
       static_cast<MockSyntheticPointerTouchActionTarget*>(target_.get());
   EXPECT_EQ(1, num_success_);
   EXPECT_EQ(2, num_failure_);
-  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::kTouchStart);
+  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::Type::kTouchStart);
   EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionDispatchedCorrectly(
       param, 0, 0));
 
@@ -929,21 +929,25 @@ TEST_F(SyntheticPointerActionTest, PointerMouseActionWithTime) {
       param3, 1, buttons, SyntheticPointerActionParams::Button::LEFT));
 }
 
-TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {
+TEST_F(SyntheticPointerActionTest, PointerMouseRelease) {
   CreateSyntheticPointerActionTarget<MockSyntheticPointerMouseActionTarget>();
 
-  // Cannot send a mouse up without sending a mouse down first.
+  // Verify a mouse up sends without a prior mouse down
   SyntheticPointerActionParams param = SyntheticPointerActionParams(
       SyntheticPointerActionParams::PointerActionType::RELEASE);
   params_.PushPointerActionParams(param);
   pointer_action_.reset(new SyntheticPointerAction(params_));
 
   ForwardSyntheticPointerAction();
-  EXPECT_EQ(0, num_success_);
-  EXPECT_EQ(1, num_failure_);
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+}
+
+TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {
+  CreateSyntheticPointerActionTarget<MockSyntheticPointerMouseActionTarget>();
 
   // Send a mouse down for one finger.
-  param.set_pointer_action_type(
+  SyntheticPointerActionParams param = SyntheticPointerActionParams(
       SyntheticPointerActionParams::PointerActionType::PRESS);
   param.set_position(gfx::PointF(54, 89));
   params_ = SyntheticPointerActionListParams();
@@ -957,7 +961,7 @@ TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {
   MockSyntheticPointerMouseActionTarget* pointer_mouse_target =
       static_cast<MockSyntheticPointerMouseActionTarget*>(target_.get());
   EXPECT_EQ(1, num_success_);
-  EXPECT_EQ(1, num_failure_);
+  EXPECT_EQ(0, num_failure_);
   std::vector<SyntheticPointerActionParams::Button> buttons(
       1, SyntheticPointerActionParams::Button::LEFT);
   EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
@@ -965,7 +969,7 @@ TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {
 
   ForwardSyntheticPointerAction();
   EXPECT_EQ(1, num_success_);
-  EXPECT_EQ(2, num_failure_);
+  EXPECT_EQ(1, num_failure_);
 }
 
 TEST_F(SyntheticPointerActionTest, PointerPenAction) {

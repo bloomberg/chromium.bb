@@ -63,7 +63,7 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
         resolve_type_(type),
         callback_(std::move(callback)) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(observer_);
     ScriptFunction::Trace(visitor);
   }
@@ -107,12 +107,6 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
   ResolveType resolve_type_;
   PromiseSettledCallback callback_;
 };
-
-WaitUntilObserver* WaitUntilObserver::Create(ExecutionContext* context,
-                                             EventType type,
-                                             int event_id) {
-  return MakeGarbageCollected<WaitUntilObserver>(context, type, event_id);
-}
 
 void WaitUntilObserver::WillDispatchEvent() {
   DCHECK(GetExecutionContext());
@@ -195,7 +189,7 @@ bool WaitUntilObserver::IsDispatchingEvent() const {
 WaitUntilObserver::WaitUntilObserver(ExecutionContext* context,
                                      EventType type,
                                      int event_id)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
       type_(type),
       event_id_(event_id),
       consume_window_interaction_timer_(
@@ -280,6 +274,10 @@ void WaitUntilObserver::MaybeCompleteEvent() {
       service_worker_global_scope->DidHandleExtendableMessageEvent(event_id_,
                                                                    status);
       break;
+    case kMessageerror:
+      service_worker_global_scope->DidHandleExtendableMessageEvent(event_id_,
+                                                                   status);
+      break;
     case kNotificationClick:
       service_worker_global_scope->DidHandleNotificationClickEvent(event_id_,
                                                                    status);
@@ -336,8 +334,8 @@ void WaitUntilObserver::ConsumeWindowInteraction(TimerBase*) {
     context->ConsumeWindowInteraction();
 }
 
-void WaitUntilObserver::Trace(blink::Visitor* visitor) {
-  ContextClient::Trace(visitor);
+void WaitUntilObserver::Trace(Visitor* visitor) {
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

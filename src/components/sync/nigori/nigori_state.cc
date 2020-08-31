@@ -61,7 +61,7 @@ bool EncryptKeyBag(const CryptographerImpl& cryptographer,
 void UpdateNigoriSpecificsFromEncryptedTypes(
     ModelTypeSet encrypted_types,
     sync_pb::NigoriSpecifics* specifics) {
-  static_assert(40 == ModelType::NUM_ENTRIES,
+  static_assert(41 == ModelType::NUM_ENTRIES,
                 "If adding an encryptable type, update handling below.");
   specifics->set_encrypt_bookmarks(encrypted_types.Has(BOOKMARKS));
   specifics->set_encrypt_preferences(encrypted_types.Has(PREFERENCES));
@@ -80,9 +80,10 @@ void UpdateNigoriSpecificsFromEncryptedTypes(
   specifics->set_encrypt_extension_settings(
       encrypted_types.Has(EXTENSION_SETTINGS));
   specifics->set_encrypt_dictionary(encrypted_types.Has(DICTIONARY));
-  specifics->set_encrypt_favicon_images(encrypted_types.Has(FAVICON_IMAGES));
+  specifics->set_encrypt_favicon_images(
+      encrypted_types.Has(DEPRECATED_FAVICON_IMAGES));
   specifics->set_encrypt_favicon_tracking(
-      encrypted_types.Has(FAVICON_TRACKING));
+      encrypted_types.Has(DEPRECATED_FAVICON_TRACKING));
   specifics->set_encrypt_app_list(encrypted_types.Has(APP_LIST));
   specifics->set_encrypt_arc_package(encrypted_types.Has(ARC_PACKAGE));
   specifics->set_encrypt_printers(encrypted_types.Has(PRINTERS));
@@ -152,6 +153,12 @@ NigoriState NigoriState::CreateFromLocalProto(
     state.pending_keystore_decryptor_token =
         proto.pending_keystore_decryptor_token();
   }
+
+  if (proto.has_last_default_trusted_vault_key_name()) {
+    state.last_default_trusted_vault_key_name =
+        proto.last_default_trusted_vault_key_name();
+  }
+
   return state;
 }
 
@@ -210,6 +217,10 @@ sync_pb::NigoriModel NigoriState::ToLocalProto() const {
     *proto.mutable_pending_keystore_decryptor_token() =
         *pending_keystore_decryptor_token;
   }
+  if (last_default_trusted_vault_key_name.has_value()) {
+    proto.set_last_default_trusted_vault_key_name(
+        *last_default_trusted_vault_key_name);
+  }
   return proto;
 }
 
@@ -236,6 +247,8 @@ sync_pb::NigoriSpecifics NigoriState::ToSpecificsProto() const {
     UpdateSpecificsFromKeyDerivationParams(
         *custom_passphrase_key_derivation_params, &specifics);
   }
+  // TODO(crbug.com/1020084): populate |keystore_decryptor_token| for trusted
+  // vault passphrase to allow rollbacks.
   if (passphrase_type == sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE) {
     // TODO(crbug.com/922900): it seems possible to have corrupted
     // |pending_keystore_decryptor_token| and an ability to recover it in case
@@ -277,6 +290,8 @@ NigoriState NigoriState::Clone() const {
   result.encrypt_everything = encrypt_everything;
   result.keystore_keys_cryptographer = keystore_keys_cryptographer->Clone();
   result.pending_keystore_decryptor_token = pending_keystore_decryptor_token;
+  result.last_default_trusted_vault_key_name =
+      last_default_trusted_vault_key_name;
   return result;
 }
 

@@ -24,14 +24,14 @@
   let stopRequest;
   let sourceMapRequested;
   let sourceMapRequest = new Promise(resolve => sourceMapRequested = resolve);
-  Host.ResourceLoader.load = function(url, headers, callback){
+  Host.ResourceLoader.setLoadForTest(function(url, headers, callback){
     if (url.endsWith('a.js.map')) {
-      stopRequest = () => callback(404);
+      stopRequest = () => callback(false, [], "", {message:"<error message>"});
       sourceMapRequested();
       return;
     }
     return origLoad.apply(this, arguments);
-  }
+  });
 
   await TestRunner.evaluateInPageAnonymously(`function foo() {
   console.log(42);

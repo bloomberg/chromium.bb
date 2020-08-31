@@ -15,8 +15,9 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
 #include "content/shell/common/web_test/web_test_switches.h"
-#include "content/shell/test_runner/test_preferences.h"
+#include "content/shell/renderer/web_test/test_preferences.h"
 #include "net/base/filename_util.h"
+#include "ui/display/display.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/bundle_locations.h"
@@ -46,7 +47,7 @@ base::FilePath GetWebTestsFilePath() {
 //
 // Note that this isn't applied to external/wpt because tests in external/wpt
 // are accessed via http.
-WebURL RewriteAbsolutePathInCsswgTest(const std::string& utf8_url) {
+WebURL RewriteAbsolutePathInCsswgTest(base::StringPiece utf8_url) {
   static constexpr base::StringPiece kFileScheme = "file:///";
   if (!base::StartsWith(utf8_url, kFileScheme, base::CompareCase::SENSITIVE))
     return WebURL();
@@ -57,9 +58,9 @@ WebURL RewriteAbsolutePathInCsswgTest(const std::string& utf8_url) {
   static constexpr size_t kFileSchemeAndDriveLen = kFileScheme.size() + 3;
   if (utf8_url.size() <= kFileSchemeAndDriveLen)
     return WebURL();
-  std::string path = utf8_url.substr(kFileSchemeAndDriveLen);
+  base::StringPiece path = utf8_url.substr(kFileSchemeAndDriveLen);
 #else
-  std::string path = utf8_url.substr(kFileScheme.size());
+  base::StringPiece path = utf8_url.substr(kFileScheme.size());
 #endif
   base::FilePath new_path = GetWebTestsFilePath().AppendASCII(path);
   return WebURL(net::FilePathToFileURL(new_path));
@@ -69,7 +70,7 @@ WebURL RewriteAbsolutePathInCsswgTest(const std::string& utf8_url) {
 
 namespace content {
 
-void ExportWebTestSpecificPreferences(const test_runner::TestPreferences& from,
+void ExportWebTestSpecificPreferences(const TestPreferences& from,
                                       WebPreferences* to) {
   to->javascript_can_access_clipboard = from.java_script_can_access_clipboard;
   to->editing_behavior = static_cast<EditingBehavior>(from.editing_behavior);
@@ -94,59 +95,7 @@ void ExportWebTestSpecificPreferences(const test_runner::TestPreferences& from,
   to->spatial_navigation_enabled = from.spatial_navigation_enabled;
 }
 
-// Applies settings that differ between web tests and regular mode. Some
-// of the defaults are controlled via command line flags which are
-// automatically set for web tests.
-void ApplyWebTestDefaultPreferences(WebPreferences* prefs) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  prefs->allow_universal_access_from_file_urls = false;
-  prefs->dom_paste_enabled = true;
-  prefs->javascript_can_access_clipboard = true;
-  prefs->xslt_enabled = true;
-#if defined(OS_MACOSX)
-  prefs->editing_behavior = EDITING_BEHAVIOR_MAC;
-#else
-  prefs->editing_behavior = EDITING_BEHAVIOR_WIN;
-#endif
-  prefs->application_cache_enabled = true;
-  prefs->tabs_to_links = false;
-  prefs->hyperlink_auditing_enabled = false;
-  prefs->allow_running_insecure_content = false;
-  prefs->disable_reading_from_canvas = false;
-  prefs->strict_mixed_content_checking = false;
-  prefs->strict_powerful_feature_restrictions = false;
-  prefs->webgl_errors_to_console_enabled = false;
-  base::string16 serif;
-#if defined(OS_MACOSX)
-  prefs->cursive_font_family_map[kCommonScript] =
-      base::ASCIIToUTF16("Apple Chancery");
-  prefs->fantasy_font_family_map[kCommonScript] = base::ASCIIToUTF16("Papyrus");
-  serif = base::ASCIIToUTF16("Times");
-#else
-  prefs->cursive_font_family_map[kCommonScript] =
-      base::ASCIIToUTF16("Comic Sans MS");
-  prefs->fantasy_font_family_map[kCommonScript] = base::ASCIIToUTF16("Impact");
-  serif = base::ASCIIToUTF16("times new roman");
-#endif
-  prefs->serif_font_family_map[kCommonScript] = serif;
-  prefs->standard_font_family_map[kCommonScript] = serif;
-  prefs->fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier");
-  prefs->sans_serif_font_family_map[kCommonScript] =
-      base::ASCIIToUTF16("Helvetica");
-  prefs->minimum_logical_font_size = 9;
-  prefs->accelerated_2d_canvas_enabled =
-      command_line.HasSwitch(switches::kEnableAccelerated2DCanvas);
-  prefs->smart_insert_delete_enabled = true;
-  prefs->viewport_enabled = command_line.HasSwitch(switches::kEnableViewport);
-  prefs->default_minimum_page_scale_factor = 1.f;
-  prefs->default_maximum_page_scale_factor = 4.f;
-  prefs->presentation_receiver =
-      command_line.HasSwitch(switches::kForcePresentationReceiverForTesting);
-  prefs->translate_service_available = true;
-}
-
-base::FilePath GetBuildDirectory() {
+static base::FilePath GetBuildDirectory() {
 #if defined(OS_MACOSX)
   if (base::mac::AmIBundled()) {
     // If this is a bundled Content Shell.app, go up one from the outer bundle
@@ -162,7 +111,7 @@ base::FilePath GetBuildDirectory() {
   return result;
 }
 
-WebURL RewriteWebTestsURL(const std::string& utf8_url, bool is_wpt_mode) {
+WebURL RewriteWebTestsURL(base::StringPiece utf8_url, bool is_wpt_mode) {
   if (is_wpt_mode) {
     WebURL rewritten_url = RewriteAbsolutePathInCsswgTest(utf8_url);
     if (!rewritten_url.IsEmpty())
@@ -176,9 +125,9 @@ WebURL RewriteWebTestsURL(const std::string& utf8_url, bool is_wpt_mode) {
   if (base::StartsWith(utf8_url, kGenPrefix, base::CompareCase::SENSITIVE)) {
     base::FilePath gen_directory_path =
         GetBuildDirectory().Append(FILE_PATH_LITERAL("gen/"));
-    std::string new_url = std::string("file://") +
-                          gen_directory_path.AsUTF8Unsafe() +
-                          utf8_url.substr(kGenPrefix.size());
+    std::string new_url("file://");
+    new_url.append(gen_directory_path.AsUTF8Unsafe());
+    new_url.append(utf8_url.substr(kGenPrefix.size()).data());
     return WebURL(GURL(new_url));
   }
 
@@ -187,10 +136,22 @@ WebURL RewriteWebTestsURL(const std::string& utf8_url, bool is_wpt_mode) {
   if (!base::StartsWith(utf8_url, kPrefix, base::CompareCase::SENSITIVE))
     return WebURL(GURL(utf8_url));
 
-  std::string utf8_path = GetWebTestsFilePath().AsUTF8Unsafe();
-  std::string new_url =
-      std::string("file://") + utf8_path + utf8_url.substr(kPrefix.size());
+  std::string new_url("file://");
+  new_url.append(GetWebTestsFilePath().AsUTF8Unsafe());
+  new_url.append(utf8_url.substr(kPrefix.size()).data());
   return WebURL(GURL(new_url));
+}
+
+WebURL RewriteFileURLToLocalResource(base::StringPiece resource) {
+  // Some web tests use file://// which we resolve as a UNC path. Normalize
+  // them to just file:///.
+  std::string result = resource.as_string();
+  static const size_t kFileLen = sizeof("file:///") - 1;
+  while (base::StartsWith(base::ToLowerASCII(result), "file:////",
+                          base::CompareCase::SENSITIVE)) {
+    result = result.substr(0, kFileLen) + result.substr(kFileLen + 1);
+  }
+  return RewriteWebTestsURL(result, /*is_wpt_mode=*/false);
 }
 
 }  // namespace content

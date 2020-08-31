@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/events/test/event_generator.h"
 
@@ -21,14 +20,12 @@ class VirtualKeyboardTest : public AshTestBase {
   ~VirtualKeyboardTest() override = default;
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    keyboard::SetTouchKeyboardEnabled(true);
+    SetVirtualKeyboardEnabled(true);
   }
 
   void TearDown() override {
-    keyboard::SetTouchKeyboardEnabled(false);
+    SetVirtualKeyboardEnabled(false);
     AshTestBase::TearDown();
   }
 
@@ -113,7 +110,8 @@ TEST_F(VirtualKeyboardTest, HitTestBoundsAreResetWhenContainerTypeChanges) {
   // the whole keyboard window.
   keyboard_controller->HideKeyboardExplicitlyBySystem();
   keyboard_controller->SetContainerType(keyboard::ContainerType::kFloating,
-                                        base::nullopt, base::DoNothing());
+                                        gfx::Rect(0, 0, 400, 200),
+                                        base::DoNothing());
   keyboard_controller->ShowKeyboard(false);
 
   // (0, 0) should no longer pass through the keyboard window.

@@ -11,6 +11,7 @@
 #include "base/auto_reset.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -32,8 +33,6 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
                            public TabStripModelObserver,
                            public ToolbarActionsModel::Observer {
  public:
-  static constexpr gfx::Size kExtensionsMenuIconSize = gfx::Size(28, 28);
-
   ExtensionsMenuView(views::View* anchor_view,
                      Browser* browser,
                      ExtensionsContainer* extensions_container);
@@ -42,9 +41,9 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   // Displays the ExtensionsMenu under |anchor_view|, attached to |browser|, and
   // with the associated |extensions_container|.
   // Only one menu is allowed to be shown at a time (outside of tests).
-  static void ShowBubble(views::View* anchor_view,
-                         Browser* browser,
-                         ExtensionsContainer* extensions_container);
+  static views::Widget* ShowBubble(views::View* anchor_view,
+                                   Browser* browser,
+                                   ExtensionsContainer* extensions_container);
 
   // Returns true if there is currently an ExtensionsMenuView showing (across
   // all browsers and profiles).
@@ -115,8 +114,61 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
     Browser* const browser_;
   };
 
-  void Repopulate();
+  // A "section" within the menu, based on the extension's current access to
+  // the page.
+  struct Section {
+    // The root view for this section; this is used to toggle the visibility of
+    // the entire section (depending on whether there are any menu items).
+    views::View* container;
+
+    // The view containing only the extension menu items for this section. This
+    // is separated for easy sorting, insertion, and iteration of menu items.
+    // The children are guaranteed to only be ExtensionMenuItemViews.
+    views::View* menu_items;
+
+    // The id of the string to use for the section heading.
+    const int header_string_id;
+
+    // The id of the string to use for the longer description of the section.
+    const int description_string_id;
+
+    // The PageInteractionStatus that this section is handling.
+    const ToolbarActionViewController::PageInteractionStatus page_status;
+  };
+
+  // Initially populates the menu by creating sections with menu items for all
+  // extensions.
+  void Populate();
+
   std::unique_ptr<views::View> CreateExtensionButtonsContainer();
+
+  // Returns the appropriate section for the given |status|.
+  Section* GetSectionForStatus(
+      ToolbarActionViewController::PageInteractionStatus status);
+
+  // Updates the states of all actions in the menu.
+  void UpdateActionStates();
+
+  // Sorts the views within all sections by the name of the action.
+  void SortMenuItemsByName();
+
+  // Inserts the menu item into the appropriate section (but not necessarily at
+  // the right spot).
+  void InsertMenuItem(ExtensionsMenuItemView* menu_item);
+
+  // Adds a menu item for a newly-added extension.
+  void CreateAndInsertNewItem(const ToolbarActionsModel::ActionId& id);
+
+  // Updates the visibility of the menu sections. A given section should be
+  // visible if there are any extensions displayed in it.
+  void UpdateSectionVisibility();
+
+  // Updates the menu.
+  void Update();
+
+  // Runs a set of sanity checks on the appearance of the menu. This is a no-op
+  // if DCHECKs are disabled.
+  void SanityCheck();
 
   Browser* const browser_;
   ExtensionsContainer* const extensions_container_;
@@ -127,6 +179,11 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   std::vector<ExtensionsMenuItemView*> extensions_menu_items_;
 
   views::Button* manage_extensions_button_for_testing_ = nullptr;
+
+  // The different sections in the menu.
+  Section cant_access_;
+  Section wants_access_;
+  Section has_access_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuView);
 };

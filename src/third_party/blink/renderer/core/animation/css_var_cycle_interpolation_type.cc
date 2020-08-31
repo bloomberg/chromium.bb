@@ -28,7 +28,7 @@ class CycleChecker : public InterpolationType::ConversionChecker {
  private:
   bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue&) const final {
-    const auto& css_environment = ToCSSInterpolationEnvironment(environment);
+    const auto& css_environment = To<CSSInterpolationEnvironment>(environment);
     bool cycle_detected = false;
     if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
       cycle_detected = !css_environment.Resolve(
@@ -61,13 +61,15 @@ InterpolationValue CSSVarCycleInterpolationType::MaybeConvertSingle(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
   const auto& declaration = *To<CSSCustomPropertyDeclaration>(
-      ToCSSPropertySpecificKeyframe(keyframe).Value());
+      To<CSSPropertySpecificKeyframe>(keyframe).Value());
   DCHECK_EQ(GetProperty().CustomPropertyName(), declaration.GetName());
-  if (!declaration.Value() || !declaration.Value()->NeedsVariableResolution()) {
+  if ((!declaration.Value() ||
+       !declaration.Value()->NeedsVariableResolution()) &&
+      !declaration.IsRevert()) {
     return nullptr;
   }
 
-  const auto& css_environment = ToCSSInterpolationEnvironment(environment);
+  const auto& css_environment = To<CSSInterpolationEnvironment>(environment);
 
   bool cycle_detected = false;
   if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
@@ -114,7 +116,7 @@ PairwiseInterpolationValue CSSVarCycleInterpolationType::MaybeConvertPairwise(
 InterpolationValue CSSVarCycleInterpolationType::MaybeConvertUnderlyingValue(
     const InterpolationEnvironment& environment) const {
   const ComputedStyle& style =
-      ToCSSInterpolationEnvironment(environment).Style();
+      To<CSSInterpolationEnvironment>(environment).Style();
   DCHECK(!style.GetVariableData(GetProperty().CustomPropertyName()) ||
          !style.GetVariableData(GetProperty().CustomPropertyName())
               ->NeedsVariableResolution());
@@ -127,7 +129,7 @@ void CSSVarCycleInterpolationType::Apply(
     InterpolationEnvironment& environment) const {
   StyleBuilder::ApplyProperty(
       GetProperty().GetCSSPropertyName(),
-      ToCSSInterpolationEnvironment(environment).GetState(),
+      To<CSSInterpolationEnvironment>(environment).GetState(),
       *MakeGarbageCollected<CSSCustomPropertyDeclaration>(
           GetProperty().CustomPropertyName(), CSSValueID::kUnset));
 }

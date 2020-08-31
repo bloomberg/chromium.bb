@@ -8,12 +8,14 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
@@ -159,21 +161,25 @@ void ChromeExtensionMessageFilter::OnGetExtMessageBundle(
   }
 
   // This blocks tab loading. Priority is inherited from the calling context.
-  base::PostTask(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::BindOnce(&ChromeExtensionMessageFilter::OnGetExtMessageBundleAsync,
-                     this, paths_to_load, extension_id, default_locale,
-                     reply_msg));
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(
+          &ChromeExtensionMessageFilter::OnGetExtMessageBundleAsync, this,
+          paths_to_load, extension_id, default_locale,
+          extension_l10n_util::GetGzippedMessagesPermissionForExtension(
+              extension),
+          reply_msg));
 }
 
 void ChromeExtensionMessageFilter::OnGetExtMessageBundleAsync(
     const std::vector<base::FilePath>& extension_paths,
     const std::string& main_extension_id,
     const std::string& default_locale,
+    extension_l10n_util::GzippedMessagesPermission gzip_permission,
     IPC::Message* reply_msg) {
   std::unique_ptr<extensions::MessageBundle::SubstitutionMap> dictionary_map(
       extensions::file_util::LoadMessageBundleSubstitutionMapFromPaths(
-          extension_paths, main_extension_id, default_locale));
+          extension_paths, main_extension_id, default_locale, gzip_permission));
 
   ExtensionHostMsg_GetMessageBundle::WriteReplyParams(reply_msg,
                                                       *dictionary_map);

@@ -231,17 +231,17 @@ class BluetoothGattCharacteristicClientImpl
       dbus::ObjectProxy* object_proxy,
       const dbus::ObjectPath& object_path,
       const std::string& interface_name) override {
-    Properties* properties = new Properties(
+    return new Properties(
         object_proxy, interface_name,
-        base::Bind(&BluetoothGattCharacteristicClientImpl::OnPropertyChanged,
-                   weak_ptr_factory_.GetWeakPtr(), object_path));
-    return static_cast<dbus::PropertySet*>(properties);
+        base::BindRepeating(
+            &BluetoothGattCharacteristicClientImpl::OnPropertyChanged,
+            weak_ptr_factory_.GetWeakPtr(), object_path));
   }
 
   // dbus::ObjectManager::Interface override.
   void ObjectAdded(const dbus::ObjectPath& object_path,
                    const std::string& interface_name) override {
-    VLOG(2) << "Remote GATT characteristic added: " << object_path.value();
+    DVLOG(2) << "Remote GATT characteristic added: " << object_path.value();
     for (auto& observer : observers_)
       observer.GattCharacteristicAdded(object_path);
   }
@@ -249,7 +249,7 @@ class BluetoothGattCharacteristicClientImpl
   // dbus::ObjectManager::Interface override.
   void ObjectRemoved(const dbus::ObjectPath& object_path,
                      const std::string& interface_name) override {
-    VLOG(2) << "Remote GATT characteristic removed: " << object_path.value();
+    DVLOG(2) << "Remote GATT characteristic removed: " << object_path.value();
     for (auto& observer : observers_)
       observer.GattCharacteristicRemoved(object_path);
   }
@@ -273,8 +273,8 @@ class BluetoothGattCharacteristicClientImpl
   // observers.
   virtual void OnPropertyChanged(const dbus::ObjectPath& object_path,
                                  const std::string& property_name) {
-    VLOG(2) << "Remote GATT characteristic property changed: "
-            << object_path.value() << ": " << property_name;
+    DVLOG(2) << "Remote GATT characteristic property changed: "
+             << object_path.value() << ": " << property_name;
     for (auto& observer : observers_)
       observer.GattCharacteristicPropertyChanged(object_path, property_name);
   }
@@ -295,7 +295,7 @@ class BluetoothGattCharacteristicClientImpl
     size_t length = 0;
 
     if (!reader.PopArrayOfBytes(&bytes, &length))
-      VLOG(2) << "Error reading array of bytes in ValueCallback";
+      DVLOG(2) << "Error reading array of bytes in ValueCallback";
 
     std::vector<uint8_t> value;
 

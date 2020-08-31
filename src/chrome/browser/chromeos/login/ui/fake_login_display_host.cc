@@ -12,15 +12,15 @@ namespace chromeos {
 class FakeLoginDisplayHost::FakeBaseScreen : public chromeos::BaseScreen {
  public:
   explicit FakeBaseScreen(chromeos::OobeScreenId screen_id)
-      : BaseScreen(screen_id) {}
+      : BaseScreen(screen_id, OobeScreenPriority::DEFAULT) {}
 
   ~FakeBaseScreen() override = default;
 
-  // chromeos::BaseScreen:
-  void Show() override {}
-  void Hide() override {}
-
  private:
+  // chromeos::BaseScreen:
+  void ShowImpl() override {}
+  void HideImpl() override {}
+
   DISALLOW_COPY_AND_ASSIGN(FakeBaseScreen);
 };
 
@@ -57,6 +57,8 @@ void FakeLoginDisplayHost::BeforeSessionStart() {}
 
 void FakeLoginDisplayHost::Finalize(base::OnceClosure) {}
 
+void FakeLoginDisplayHost::FinalizeImmediately() {}
+
 void FakeLoginDisplayHost::SetStatusAreaVisible(bool visible) {}
 
 void FakeLoginDisplayHost::StartWizard(OobeScreenId first_screen) {
@@ -79,8 +81,7 @@ void FakeLoginDisplayHost::StartUserAdding(
 
 void FakeLoginDisplayHost::CancelUserAdding() {}
 
-void FakeLoginDisplayHost::StartSignInScreen(
-    const LoginScreenContext& context) {}
+void FakeLoginDisplayHost::StartSignInScreen() {}
 
 void FakeLoginDisplayHost::OnPreferencesChanged() {}
 
@@ -114,8 +115,7 @@ bool FakeLoginDisplayHost::IsUserWhitelisted(const AccountId& account_id) {
   return false;
 }
 
-void FakeLoginDisplayHost::ShowGaiaDialog(bool can_close,
-                                          const AccountId& prefilled_account) {}
+void FakeLoginDisplayHost::ShowGaiaDialog(const AccountId& prefilled_account) {}
 
 void FakeLoginDisplayHost::HideOobeDialog() {}
 

@@ -12,19 +12,17 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/supports_user_data.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_host.h"
-#include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/common/content_export.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace net {
 class NetworkDelegate;
@@ -32,7 +30,7 @@ class URLRequest;
 }  // namespace net
 
 namespace content {
-class AppCacheJob;
+class AppCacheURLLoader;
 class AppCacheSubresourceURLFactory;
 class AppCacheRequest;
 class AppCacheRequestHandlerTest;
@@ -44,8 +42,7 @@ class AppCacheHost;
 // should use AppCacheHost::CreateRequestHandler to manufacture instances
 // that can retrieve resources for a particular host.
 class CONTENT_EXPORT AppCacheRequestHandler
-    : public base::SupportsUserData::Data,
-      public AppCacheHost::Observer,
+    : public AppCacheHost::Observer,
       public AppCacheServiceImpl::Observer,
       public AppCacheStorage::Delegate,
       public NavigationLoaderInterceptor {
@@ -102,7 +99,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
       const network::ResourceRequest& request,
       base::WeakPtr<AppCacheHost> appcache_host);
 
-  static bool IsMainResourceType(ResourceType type);
+  static bool IsMainResourceType(blink::mojom::ResourceType type);
 
   // Called by unittests to indicate that we are in test mode.
   static void SetRunningInTests(bool in_tests);
@@ -114,7 +111,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   // Callers should use AppCacheHost::CreateRequestHandler.
   AppCacheRequestHandler(AppCacheHost* host,
-                         ResourceType resource_type,
+                         blink::mojom::ResourceType resource_type,
                          bool should_reset_appcache,
                          std::unique_ptr<AppCacheRequest> request);
 
@@ -138,9 +135,9 @@ class CONTENT_EXPORT AppCacheRequestHandler
   void DeliverNetworkResponse();
   void DeliverErrorResponse();
 
-  // Helper method to create an AppCacheJob and populate job_.
+  // Helper method to create an AppCacheURLLoader and populate job_.
   // Caller takes ownership of returned value.
-  std::unique_ptr<AppCacheJob> CreateJob(
+  std::unique_ptr<AppCacheURLLoader> CreateLoader(
       net::NetworkDelegate* network_delegate);
 
   // Helper to retrieve a pointer to the storage object.
@@ -152,11 +149,11 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   // These are called on each request intercept opportunity, by the various
   // MaybeCreateLoader methods in the public API.
-  AppCacheJob* MaybeLoadResource(net::NetworkDelegate* network_delegate);
-  AppCacheJob* MaybeLoadFallbackForRedirect(
+  AppCacheURLLoader* MaybeLoadResource(net::NetworkDelegate* network_delegate);
+  AppCacheURLLoader* MaybeLoadFallbackForRedirect(
       net::NetworkDelegate* network_delegate,
       const GURL& location);
-  AppCacheJob* MaybeLoadFallbackForResponse(
+  AppCacheURLLoader* MaybeLoadFallbackForResponse(
       net::NetworkDelegate* network_delegate);
 
   void GetExtraResponseInfo(int64_t* cache_id, GURL* manifest_url);
@@ -164,7 +161,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // Main-resource loading -------------------------------------
   // Frame and SharedWorker main resources are handled here.
 
-  std::unique_ptr<AppCacheJob> MaybeLoadMainResource(
+  std::unique_ptr<AppCacheURLLoader> MaybeLoadMainResource(
       net::NetworkDelegate* network_delegate);
 
   // AppCacheStorage::Delegate methods
@@ -189,7 +186,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // Sub-resource loading -------------------------------------
   // Dedicated worker and all manner of sub-resources are handled here.
 
-  std::unique_ptr<AppCacheJob> MaybeLoadSubResource(
+  std::unique_ptr<AppCacheURLLoader> MaybeLoadSubResource(
       net::NetworkDelegate* network_delegate);
   void ContinueMaybeLoadSubResource();
 
@@ -202,7 +199,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   AppCacheHost* host_;
 
   // Frame vs subresource vs sharedworker loads are somewhat different.
-  ResourceType resource_type_;
+  blink::mojom::ResourceType resource_type_;
 
   // True if corresponding AppCache group should be resetted before load.
   bool should_reset_appcache_;
@@ -238,7 +235,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // 1) Before request has started a job.
   // 2) Request is not being handled by appcache.
   // 3) Request has been cancelled, and the job killed.
-  base::WeakPtr<AppCacheJob> job_;
+  base::WeakPtr<AppCacheURLLoader> loader_;
 
   // Cached information about the response being currently served by the
   // AppCache, if there is one.

@@ -29,10 +29,10 @@ namespace test {
 
 struct RandomWalkConfig {
   int random_seed = 1;
-  DataRate peak_rate = DataRate::kbps(100);
-  DataSize min_packet_size = DataSize::bytes(200);
-  TimeDelta min_packet_interval = TimeDelta::ms(1);
-  TimeDelta update_interval = TimeDelta::ms(200);
+  DataRate peak_rate = DataRate::KilobitsPerSec(100);
+  DataSize min_packet_size = DataSize::Bytes(200);
+  TimeDelta min_packet_interval = TimeDelta::Millis(1);
+  TimeDelta update_interval = TimeDelta::Millis(200);
   double variance = 0.6;
   double bias = -0.1;
 };
@@ -63,11 +63,11 @@ class RandomWalkCrossTraffic {
 };
 
 struct PulsedPeaksConfig {
-  DataRate peak_rate = DataRate::kbps(100);
-  DataSize min_packet_size = DataSize::bytes(200);
-  TimeDelta min_packet_interval = TimeDelta::ms(1);
-  TimeDelta send_duration = TimeDelta::ms(100);
-  TimeDelta hold_duration = TimeDelta::ms(2000);
+  DataRate peak_rate = DataRate::KilobitsPerSec(100);
+  DataSize min_packet_size = DataSize::Bytes(200);
+  TimeDelta min_packet_interval = TimeDelta::Millis(1);
+  TimeDelta send_duration = TimeDelta::Millis(100);
+  TimeDelta hold_duration = TimeDelta::Millis(2000);
 };
 
 class PulsedPeaksCrossTraffic {
@@ -92,22 +92,17 @@ class PulsedPeaksCrossTraffic {
   bool sending_ RTC_GUARDED_BY(sequence_checker_) = false;
 };
 
-// Simulates a TCP connection, this roughly implements the Reno algorithm. In
-// difference from TCP this only support sending messages with a fixed length,
-// no streaming. This is useful to simulate signaling and cross traffic using
-// message based protocols such as HTTP. It differs from UDP messages in that
-// they are guranteed to be delivered eventually, even on lossy networks.
-class TcpMessageRoute {
+class TcpMessageRouteImpl final : public TcpMessageRoute {
  public:
-  TcpMessageRoute(Clock* clock,
-                  TaskQueueBase* task_queue,
-                  EmulatedRoute* send_route,
-                  EmulatedRoute* ret_route);
+  TcpMessageRouteImpl(Clock* clock,
+                      TaskQueueBase* task_queue,
+                      EmulatedRoute* send_route,
+                      EmulatedRoute* ret_route);
 
   // Sends a TCP message of the given |size| over the route, |on_received| is
   // called when the message has been delivered. Note that the connection
   // parameters are reset iff there's no currently pending message on the route.
-  void SendMessage(size_t size, std::function<void()> on_received);
+  void SendMessage(size_t size, std::function<void()> on_received) override;
 
  private:
   // Represents a message sent over the route. When all fragments has been
@@ -155,10 +150,10 @@ class TcpMessageRoute {
 };
 
 struct FakeTcpConfig {
-  DataSize packet_size = DataSize::bytes(1200);
+  DataSize packet_size = DataSize::Bytes(1200);
   DataSize send_limit = DataSize::PlusInfinity();
-  TimeDelta process_interval = TimeDelta::ms(200);
-  TimeDelta packet_timeout = TimeDelta::seconds(1);
+  TimeDelta process_interval = TimeDelta::Millis(200);
+  TimeDelta packet_timeout = TimeDelta::Seconds(1);
 };
 
 class FakeTcpCrossTraffic

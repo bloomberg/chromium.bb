@@ -81,7 +81,7 @@ TEST_F(QuicTraceVisitorTest, ConnectionId) {
 TEST_F(QuicTraceVisitorTest, Version) {
   std::string version = trace_.protocol_version();
   ASSERT_EQ(4u, version.size());
-  EXPECT_EQ('Q', version[0]);
+  EXPECT_NE(0, version[0]);
 }
 
 // Check that basic metadata about sent packets is recorded.
@@ -160,6 +160,22 @@ TEST_F(QuicTraceVisitorTest, TransportState) {
             acks.rbegin()->transport_state().min_rtt_us());
   EXPECT_GE((4 * kDelay).ToMicroseconds() * 1.25,
             acks.rbegin()->transport_state().min_rtt_us());
+}
+
+TEST_F(QuicTraceVisitorTest, EncryptionLevels) {
+  for (const auto& event : trace_.events()) {
+    switch (event.event_type()) {
+      case quic_trace::PACKET_SENT:
+      case quic_trace::PACKET_RECEIVED:
+      case quic_trace::PACKET_LOST:
+        ASSERT_TRUE(event.has_encryption_level());
+        ASSERT_NE(event.encryption_level(), quic_trace::ENCRYPTION_UNKNOWN);
+        break;
+
+      default:
+        break;
+    }
+  }
 }
 
 }  // namespace

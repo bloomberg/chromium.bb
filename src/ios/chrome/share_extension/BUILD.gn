@@ -13,9 +13,7 @@ import("//ios/chrome/tools/strings/generate_localizable_strings.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 
 group("resources") {
-  deps = [
-    "//ios/chrome/share_extension/strings",
-  ]
+  deps = [ "//ios/chrome/share_extension/strings" ]
 }
 
 extension_repack_all_locales("packed_resources") {
@@ -53,7 +51,7 @@ ios_appex_bundle("share_extension") {
     "//ios/chrome/common/app_group",
     "//ios/chrome/common/app_group:client",
     "//ios/chrome/common/app_group:command",
-    "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/colors",
   ]
   bundle_deps_filter = [ "//third_party/icu:icudata" ]
 
@@ -75,6 +73,7 @@ ios_appex_bundle("share_extension") {
 
   entitlements_target = ":entitlements"
   info_plist_target = ":tweak_info_plist"
+  xcode_product_bundle_id = "$chromium_bundle_id.ShareExtension"
 }
 
 generate_localizable_strings("system_strings") {
@@ -84,7 +83,5 @@ generate_localizable_strings("system_strings") {
   datapack_dir = get_label_info(_packed_resources_target, "target_gen_dir")
   packed_locales = ios_packed_locales_as_mac_outputs
   output_filenames = [ "Localizable.strings" ]
-  deps = [
-    _packed_resources_target,
-  ]
+  deps = [ _packed_resources_target ]
 }

@@ -313,7 +313,7 @@ m_getm2(struct mbuf *m, int len, int how, short type, int flags, int allonebuf)
 			mb = m_gethdr(how, type);
 			MCLGET(mb, how);
 			size = MCLBYTES;
-			//SCTP_BUF_LEN(mb) = MCLBYTES;
+			/* SCTP_BUF_LEN(mb) = MCLBYTES; */
 		} else if (flags & M_PKTHDR) {
 			mb = m_gethdr(how, type);
 			if (len < MHLEN) {
@@ -338,7 +338,7 @@ m_getm2(struct mbuf *m, int len, int how, short type, int flags, int allonebuf)
 		}
 
 		if (allonebuf != 0 && size < space_needed) {
-			m_freem(m);
+			m_freem(mb);
 			return (NULL);
 		}
 

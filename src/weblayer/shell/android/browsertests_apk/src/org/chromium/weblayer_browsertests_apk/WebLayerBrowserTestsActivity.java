@@ -5,15 +5,15 @@
 package org.chromium.weblayer_browsertests_apk;
 
 import android.net.Uri;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-import org.chromium.base.library_loader.LibraryProcessType;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.native_test.NativeBrowserTest;
@@ -39,13 +39,12 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
 
     @Override
     protected void initializeBrowserProcess() {
-        BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
-                .setContentMainCallbackForTests(() -> {
-                    // This jumps into C++ to set up and run the test harness. The test harness runs
-                    // ContentMain()-equivalent code, and then waits for javaStartupTasksComplete()
-                    // to be called.
-                    runTests();
-                });
+        BrowserStartupController.getInstance().setContentMainCallbackForTests(() -> {
+            // This jumps into C++ to set up and run the test harness. The test harness runs
+            // ContentMain()-equivalent code, and then waits for javaStartupTasksComplete()
+            // to be called.
+            runTests();
+        });
 
         try {
             WebLayer.loadAsync(getApplication(), webLayer -> {
@@ -77,7 +76,7 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
                 new RelativeLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        Fragment fragment = WebLayer.createBrowserFragment(null);
+        Fragment fragment = WebLayer.createBrowserFragment("BrowserTestProfile");
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(viewId, fragment);

@@ -51,12 +51,14 @@ class AppListTestHelper {
   void CheckVisibility(bool visible);
 
   // Check the current app list view state.
-  void CheckState(ash::AppListViewState state);
+  void CheckState(AppListViewState state);
 
   // Run all pending in message loop to wait for animation to finish.
   void WaitUntilIdle();
 
   AppListView* GetAppListView();
+
+  TestAppListClient* app_list_client() { return app_list_client_.get(); }
 
  private:
   AppListControllerImpl* app_list_controller_ = nullptr;

@@ -22,17 +22,18 @@
 #include "base/time/time.h"
 #include "net/base/auth.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_states.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
 #include "net/base/network_delegate.h"
-#include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/http/http_raw_request_headers.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -43,7 +44,6 @@
 #include "net/socket/connection_attempts.h"
 #include "net/socket/socket_tag.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -271,28 +271,29 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   //          by starting from some page that redirects to the
   //          host-to-be-attacked.
   //
-  // TODO(mkwst): Convert this to a 'url::Origin'. Several callsites are using
-  // this value as a proxy for the "top-level frame URL", which is simply
-  // incorrect and fragile. We don't need the full URL for any //net checks,
-  // so we should drop the pieces we don't need. https://crbug.com/577565
-  const GURL& site_for_cookies() const { return site_for_cookies_; }
+  const SiteForCookies& site_for_cookies() const { return site_for_cookies_; }
   // This method may only be called before Start().
-  void set_site_for_cookies(const GURL& site_for_cookies);
+  void set_site_for_cookies(const SiteForCookies& site_for_cookies);
 
-  // This key is used to isolate requests from different contexts in accessing
-  // shared network resources like the cache.
-  const NetworkIsolationKey& network_isolation_key() const {
-    return network_isolation_key_;
+  // Sets IsolationInfo for the request, which affects whether SameSite cookies
+  // are sent, what NetworkIsolationKey is used for cached resources, and how
+  // that behavior changes when following redirects. This may only be changed
+  // before Start() is called.
+  //
+  // TODO(https://crbug.com/1060631): This isn't actually used yet for SameSite
+  // cookies. Update consumers and fix that.
+  void set_isolation_info(const IsolationInfo& isolation_info) {
+    isolation_info_ = isolation_info;
   }
-  void set_network_isolation_key(const NetworkIsolationKey& key) {
-    network_isolation_key_ = key;
-  }
+  const IsolationInfo& isolation_info() const { return isolation_info_; }
 
   // Indicate whether SameSite cookies should be attached even though the
   // request is cross-site.
-  bool attach_same_site_cookies() const { return attach_same_site_cookies_; }
-  void set_attach_same_site_cookies(bool attach) {
-    attach_same_site_cookies_ = attach;
+  bool force_ignore_site_for_cookies() const {
+    return force_ignore_site_for_cookies_;
+  }
+  void set_force_ignore_site_for_cookies(bool attach) {
+    force_ignore_site_for_cookies_ = attach;
   }
 
   // The first-party URL policy to apply when updating the first party URL
@@ -686,10 +687,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // encryption, 0 for cached responses.
   int raw_header_size() const { return raw_header_size_; }
 
-  // Returns the error status of the request.
-  // Do not use! Going to be protected!
-  const URLRequestStatus& status() const { return status_; }
-
   const NetworkTrafficAnnotationTag& traffic_annotation() const {
     return traffic_annotation_;
   }
@@ -733,8 +730,15 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Allow the URLRequestJob class to control the is_pending() flag.
   void set_is_pending(bool value) { is_pending_ = value; }
 
-  // Allow the URLRequestJob class to set our status too.
-  void set_status(URLRequestStatus status);
+  // Setter / getter for the status of the request. Status is represented as a
+  // net::Error code. See |status_|.
+  int status() const { return status_; }
+  void set_status(int status);
+
+  // Returns true if the request failed or was cancelled.
+  bool failed() const;
+
+  // Returns the error status of the request.
 
   // Allow the URLRequestJob to redirect this request. If non-null,
   // |removed_headers| and |modified_headers| are changes
@@ -797,7 +801,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // Called by URLRequestJob to allow interception when the final response
   // occurs.
-  void NotifyResponseStarted(const URLRequestStatus& status);
+  void NotifyResponseStarted(int net_error);
 
   // These functions delegate to |delegate_|.  See URLRequest::Delegate for the
   // meaning of these functions.
@@ -844,11 +848,11 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   std::unique_ptr<UploadDataStream> upload_data_stream_;
 
   std::vector<GURL> url_chain_;
-  GURL site_for_cookies_;
+  SiteForCookies site_for_cookies_;
 
-  NetworkIsolationKey network_isolation_key_;
+  IsolationInfo isolation_info_;
 
-  bool attach_same_site_cookies_;
+  bool force_ignore_site_for_cookies_;
   base::Optional<url::Origin> initiator_;
   GURL delegate_redirect_url_;
   std::string method_;  // "GET", "POST", etc. Should be all uppercase.
@@ -872,10 +876,18 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Notify... methods for this.
   Delegate* delegate_;
 
-  // Current error status of the job. When no error has been encountered, this
-  // will be SUCCESS. If multiple errors have been encountered, this will be
-  // the first non-SUCCESS status seen.
-  URLRequestStatus status_;
+  // Current error status of the job, as a net::Error code. When the job is
+  // busy, it is ERR_IO_PENDING. When the job is idle (either completed, or
+  // awaiting a call from the URLRequestDelegate before continuing the request),
+  // it is OK. If the request has been cancelled without a specific error, it is
+  // ERR_ABORTED. And on failure, it's the corresponding error code for that
+  // error.
+  //
+  // |status_| may bounce between ERR_IO_PENDING and OK as a request proceeds,
+  // but once an error is encountered or the request is canceled, it will take
+  // the appropriate error code and never change again. If multiple failures
+  // have been encountered, this will be the first error encountered.
+  int status_;
 
   // The HTTP response info, lazily initialized.
   HttpResponseInfo response_info_;

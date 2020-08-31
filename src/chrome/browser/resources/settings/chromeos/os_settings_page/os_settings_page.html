@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../os_a11y_page/os_a11y_page.html">
+<link rel="import" href="../os_apps_page/android_apps_browser_proxy.html">
 <link rel="import" href="../os_apps_page/os_apps_page.html">
 <link rel="import" href="../os_people_page/os_people_page.html">
 <link rel="import" href="../os_search_page/os_search_page.html">
@@ -13,15 +14,14 @@
 <link rel="import" href="../../settings_page/main_page_behavior.html">
 <link rel="import" href="../../settings_page/settings_section.html">
 <link rel="import" href="../../settings_page_css.html">
-<link rel="import" href="../../android_apps_page/android_apps_browser_proxy.html">
-<link rel="import" href="../../android_apps_page/android_apps_page.html">
-<link rel="import" href="../../bluetooth_page/bluetooth_page.html">
-<link rel="import" href="../../crostini_page/crostini_page.html">
-<link rel="import" href="../../plugin_vm_page/plugin_vm_page.html">
+<link rel="import" href="../bluetooth_page/bluetooth_page.html">
+<link rel="import" href="../crostini_page/crostini_page.html">
 <link rel="import" href="../../prefs/prefs_behavior.html">
-<link rel="import" href="../../device_page/device_page.html">
-<link rel="import" href="../../internet_page/internet_page.html">
-<link rel="import" href="../../multidevice_page/multidevice_page.html">
+<link rel="import" href="../os_route.html">
+<link rel="import" href="../../router.html">
+<link rel="import" href="../device_page/device_page.html">
+<link rel="import" href="../internet_page/internet_page.html">
+<link rel="import" href="../multidevice_page/multidevice_page.html">
 
 <dom-module id="os-settings-page">
   <template>
@@ -142,8 +142,8 @@
           </settings-section>
         </template>
         <template is="dom-if" if="[[!isGuestMode_]]" restamp>
-          <settings-section page-title="$i18n{peoplePageTitle}"
-              section="people">
+          <settings-section page-title="$i18n{osPeoplePageTitle}"
+              section="osPeople">
             <os-settings-people-page prefs="{{prefs}}"
                 page-visibility="[[pageVisibility]]">
             </os-settings-people-page>
@@ -158,38 +158,30 @@
         <template is="dom-if" if="[[!isGuestMode_]]" restamp>
           <settings-section page-title="$i18n{personalizationPageTitle}"
               section="personalization">
-            <settings-personalization-page></settings-personalization-page>
+            <settings-personalization-page prefs="{{prefs}}">
+            </settings-personalization-page>
           </settings-section>
         </template>
         <settings-section page-title="$i18n{osSearchPageTitle}"
-            section="search">
+            section="osSearch">
           <os-settings-search-page prefs="{{prefs}}">
           </os-settings-search-page>
         </settings-section>
-        <template is="dom-if" if="[[showApps]]" restamp>
-          <settings-section page-title="$i18n{appsPageTitle}" section="apps">
-            <os-settings-apps-page
-                prefs="{{prefs}}"
-                android-apps-info="[[androidAppsInfo]]"
-                have-play-store-app="[[havePlayStoreApp]]"
-                show-android-apps="[[showAndroidApps]]"
-                show-app-management="[[showAppManagement]]">
-            </os-settings-apps-page>
-          </settings-section>
-        </template>
+        <settings-section page-title="$i18n{appsPageTitle}" section="apps">
+          <os-settings-apps-page
+              prefs="{{prefs}}"
+              android-apps-info="[[androidAppsInfo]]"
+              have-play-store-app="[[havePlayStoreApp]]"
+              show-android-apps="[[showAndroidApps]]"
+              show-plugin-vm="[[showPluginVm]]">
+          </os-settings-apps-page>
+        </settings-section>
         <template is="dom-if" if="[[showCrostini]]" restamp>
           <settings-section page-title="$i18n{crostiniPageTitle}"
               section="crostini">
             <settings-crostini-page prefs="{{prefs}}"
                 allow-crostini="[[allowCrostini_]]">
             </settings-crostini-page>
-          </settings-section>
-        </template>
-        <template is="dom-if" if="[[showPluginVm]]" restamp>
-          <settings-section page-title="$i18n{pluginVmPageTitle}"
-              section="pluginVm">
-            <settings-plugin-vm-page prefs="{{prefs}}">
-            </settings-plugin-vm-page>
           </settings-section>
         </template>
       </div>
@@ -220,12 +212,12 @@
             </settings-date-time-page>
           </settings-section>
           <settings-section page-title="$i18n{privacyPageTitle}"
-              section="privacy">
+              section="osPrivacy">
             <os-settings-privacy-page prefs="{{prefs}}">
             </os-settings-privacy-page>
           </settings-section>
           <settings-section page-title="$i18n{osLanguagesPageTitle}"
-              section="languages">
+              section="osLanguages">
             <os-settings-languages-section prefs="{{prefs}}">
             </os-settings-languages-section>
           </settings-section>
@@ -237,18 +229,18 @@
             </settings-section>
           </template>
           <settings-section page-title="$i18n{printingPageTitle}"
-              section="printing">
+              section="osPrinting">
             <os-settings-printing-page prefs="{{prefs}}">
             </os-settings-printing-page>
           </settings-section>
           <settings-section page-title="$i18n{a11yPageTitle}"
-              section="a11y">
+              section="osAccessibility">
             <os-settings-a11y-page prefs="{{prefs}}">
             </os-settings-a11y-page>
           </settings-section>
           <template is="dom-if" if="[[showReset]]">
             <settings-section page-title="$i18n{resetPageTitle}"
-                section="reset">
+                section="osReset">
               <os-settings-reset-page></os-settings-reset-page>
             </settings-section>
           </template>

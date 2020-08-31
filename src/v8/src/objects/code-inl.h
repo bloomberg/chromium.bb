@@ -29,7 +29,6 @@ OBJECT_CONSTRUCTORS_IMPL(BytecodeArray, FixedArrayBase)
 OBJECT_CONSTRUCTORS_IMPL(AbstractCode, HeapObject)
 OBJECT_CONSTRUCTORS_IMPL(DependentCode, WeakFixedArray)
 OBJECT_CONSTRUCTORS_IMPL(CodeDataContainer, HeapObject)
-TQ_OBJECT_CONSTRUCTORS_IMPL(SourcePositionTableWithFrameCache)
 
 NEVER_READ_ONLY_SPACE_IMPL(AbstractCode)
 
@@ -62,20 +61,6 @@ ByteArray AbstractCode::source_position_table() {
   } else {
     return GetBytecodeArray().SourcePositionTable();
   }
-}
-
-Object AbstractCode::stack_frame_cache() {
-  Object maybe_table;
-  if (IsCode()) {
-    maybe_table = GetCode().source_position_table();
-  } else {
-    maybe_table = GetBytecodeArray().source_position_table();
-  }
-  if (maybe_table.IsSourcePositionTableWithFrameCache()) {
-    return SourcePositionTableWithFrameCache::cast(maybe_table)
-        .stack_frame_cache();
-  }
-  return Smi::zero();
 }
 
 int AbstractCode::SizeIncludingMetadata() {
@@ -238,10 +223,8 @@ ByteArray Code::SourcePositionTableIfCollected() const {
 ByteArray Code::SourcePositionTable() const {
   Object maybe_table = source_position_table();
   DCHECK(!maybe_table.IsUndefined() && !maybe_table.IsException());
-  if (maybe_table.IsByteArray()) return ByteArray::cast(maybe_table);
-  DCHECK(maybe_table.IsSourcePositionTableWithFrameCache());
-  return SourcePositionTableWithFrameCache::cast(maybe_table)
-      .source_position_table();
+  DCHECK(maybe_table.IsByteArray());
+  return ByteArray::cast(maybe_table);
 }
 
 Object Code::next_code_link() const {
@@ -471,6 +454,17 @@ void Code::set_builtin_index(int index) {
 
 bool Code::is_builtin() const { return builtin_index() != -1; }
 
+unsigned Code::inlined_bytecode_size() const {
+  DCHECK(kind() == OPTIMIZED_FUNCTION ||
+         ReadField<unsigned>(kInlinedBytecodeSizeOffset) == 0);
+  return ReadField<unsigned>(kInlinedBytecodeSizeOffset);
+}
+
+void Code::set_inlined_bytecode_size(unsigned size) {
+  DCHECK(kind() == OPTIMIZED_FUNCTION || size == 0);
+  WriteField<unsigned>(kInlinedBytecodeSizeOffset, size);
+}
+
 bool Code::has_safepoint_info() const {
   return is_turbofanned() || is_wasm_code();
 }
@@ -491,6 +485,24 @@ void Code::set_marked_for_deoptimization(bool flag) {
   DCHECK_IMPLIES(flag, AllowDeoptimization::IsAllowed(GetIsolate()));
   int32_t previous = code_data_container().kind_specific_flags();
   int32_t updated = MarkedForDeoptimizationField::update(previous, flag);
+  code_data_container().set_kind_specific_flags(updated);
+}
+
+int Code::deoptimization_count() const {
+  DCHECK(kind() == OPTIMIZED_FUNCTION);
+  int32_t flags = code_data_container().kind_specific_flags();
+  int count = DeoptCountField::decode(flags);
+  DCHECK_GE(count, 0);
+  return count;
+}
+
+void Code::increment_deoptimization_count() {
+  DCHECK(kind() == OPTIMIZED_FUNCTION);
+  int32_t flags = code_data_container().kind_specific_flags();
+  int32_t count = DeoptCountField::decode(flags);
+  DCHECK_GE(count, 0);
+  CHECK_LE(count + 1, DeoptCountField::kMax);
+  int32_t updated = DeoptCountField::update(flags, count + 1);
   code_data_container().set_kind_specific_flags(updated);
 }
 
@@ -720,28 +732,14 @@ ByteArray BytecodeArray::SourcePositionTable() const {
   Object maybe_table = source_position_table();
   if (maybe_table.IsByteArray()) return ByteArray::cast(maybe_table);
   ReadOnlyRoots roots = GetReadOnlyRoots();
-  if (maybe_table.IsException(roots)) return roots.empty_byte_array();
-
-  DCHECK(!maybe_table.IsUndefined(roots));
-  DCHECK(maybe_table.IsSourcePositionTableWithFrameCache());
-  return SourcePositionTableWithFrameCache::cast(maybe_table)
-      .source_position_table();
+  DCHECK(maybe_table.IsException(roots));
+  return roots.empty_byte_array();
 }
 
 ByteArray BytecodeArray::SourcePositionTableIfCollected() const {
   if (!HasSourcePositionTable()) return GetReadOnlyRoots().empty_byte_array();
 
   return SourcePositionTable();
-}
-
-void BytecodeArray::ClearFrameCacheFromSourcePositionTable() {
-  Object maybe_table = source_position_table();
-  if (maybe_table.IsUndefined() || maybe_table.IsByteArray() ||
-      maybe_table.IsException())
-    return;
-  DCHECK(maybe_table.IsSourcePositionTableWithFrameCache());
-  set_source_position_table(SourcePositionTableWithFrameCache::cast(maybe_table)
-                                .source_position_table());
 }
 
 int BytecodeArray::BytecodeArraySize() { return SizeFor(this->length()); }
@@ -764,6 +762,7 @@ DEFINE_DEOPT_ELEMENT_ACCESSORS(OsrPcOffset, Smi)
 DEFINE_DEOPT_ELEMENT_ACCESSORS(OptimizationId, Smi)
 DEFINE_DEOPT_ELEMENT_ACCESSORS(InliningPositions, PodArray<InliningPosition>)
 DEFINE_DEOPT_ELEMENT_ACCESSORS(DeoptExitStart, Smi)
+DEFINE_DEOPT_ELEMENT_ACCESSORS(NonLazyDeoptCount, Smi)
 
 DEFINE_DEOPT_ENTRY_ACCESSORS(BytecodeOffsetRaw, Smi)
 DEFINE_DEOPT_ENTRY_ACCESSORS(TranslationIndex, Smi)

@@ -39,6 +39,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
@@ -155,7 +156,11 @@ void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
   size->Enlarge(-2 * kBorder, -kBorder);
 
   static const gfx::Size kMaxDialogSize(1000, 660);
-  size->SetToMin(kMaxDialogSize);
+  int max_width = std::max(size->width() * 7 / 10, kMaxDialogSize.width());
+  int max_height =
+      std::max(max_width * kMaxDialogSize.height() / kMaxDialogSize.width(),
+               kMaxDialogSize.height());
+  size->SetToMin(gfx::Size(max_width, max_height));
 }
 
 std::string PrintPreviewDialogDelegate::GetDialogArgs() const {
@@ -248,7 +253,7 @@ PrintPreviewDialogController* PrintPreviewDialogController::GetInstance() {
 // static
 void PrintPreviewDialogController::PrintPreview(WebContents* initiator) {
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  ModuleDatabase::GetInstance()->DisableThirdPartyBlocking();
+  ModuleDatabase::DisableThirdPartyBlocking();
 #endif
 
   if (initiator->ShowingInterstitialPage() || initiator->IsCrashed())

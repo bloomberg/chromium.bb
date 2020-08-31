@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -13,15 +14,14 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/screen.h"
-#include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_event.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_screen_orientation.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -39,29 +39,20 @@ namespace blink {
 
 namespace {
 
-// These values are used for histograms. Do not reorder.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class MetadataAvailabilityMetrics {
   kAvailable = 0,  // Available when lock was attempted.
   kMissing = 1,    // Missing when lock was attempted.
   kReceived = 2,   // Received after being missing in order to lock.
 
   // Keep at the end.
-  kMax = 3
+  kMaxValue = kReceived,
 };
 
 void RecordMetadataAvailability(MetadataAvailabilityMetrics metrics) {
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, metadata_histogram,
-      ("Media.Video.FullscreenOrientationLock.MetadataAvailability",
-       static_cast<int>(MetadataAvailabilityMetrics::kMax)));
-  metadata_histogram.Count(static_cast<int>(metrics));
-}
-
-void RecordAutoRotateEnabled(bool enabled) {
-  DEFINE_STATIC_LOCAL(
-      BooleanHistogram, auto_rotate_histogram,
-      ("Media.Video.FullscreenOrientationLock.AutoRotateEnabled"));
-  auto_rotate_histogram.Count(enabled);
+  base::UmaHistogramEnumeration(
+      "Media.Video.FullscreenOrientationLock.MetadataAvailability", metrics);
 }
 
 // WebLockOrientationCallback implementation that will not react to a success
@@ -78,7 +69,7 @@ constexpr base::TimeDelta MediaControlsOrientationLockDelegate::kLockToAnyDelay;
 
 MediaControlsOrientationLockDelegate::MediaControlsOrientationLockDelegate(
     HTMLVideoElement& video)
-    : video_element_(video) {
+    : monitor_(video.GetExecutionContext()), video_element_(video) {
   if (VideoElement().isConnected())
     Attach();
 }
@@ -121,11 +112,11 @@ void MediaControlsOrientationLockDelegate::MaybeLockOrientation() {
 
   state_ = State::kMaybeLockedFullscreen;
 
-  if (!GetDocument().GetFrame())
+  if (!GetDocument().domWindow())
     return;
 
   auto* controller =
-      ScreenOrientationController::From(*GetDocument().GetFrame());
+      ScreenOrientationController::From(*GetDocument().domWindow());
   if (controller->MaybeHasActiveLock())
     return;
 
@@ -145,8 +136,8 @@ void MediaControlsOrientationLockDelegate::ChangeLockToAnyOrientation() {
   locked_orientation_ = kWebScreenOrientationLockAny;
 
   // The document could have been detached from the frame.
-  if (LocalFrame* frame = GetDocument().GetFrame()) {
-    ScreenOrientationController::From(*frame)->lock(
+  if (LocalDOMWindow* window = GetDocument().domWindow()) {
+    ScreenOrientationController::From(*window)->lock(
         locked_orientation_,
         std::make_unique<DummyScreenOrientationCallback>());
   }
@@ -161,12 +152,10 @@ void MediaControlsOrientationLockDelegate::MaybeUnlockOrientation() {
     return;
 
   monitor_.reset();  // Cancel any GotIsAutoRotateEnabledByUser Mojo callback.
-  if (LocalDOMWindow* dom_window = GetDocument().domWindow()) {
-    dom_window->removeEventListener(event_type_names::kDeviceorientation, this,
-                                    false);
-  }
-
-  ScreenOrientationController::From(*GetDocument().GetFrame())->unlock();
+  LocalDOMWindow* dom_window = GetDocument().domWindow();
+  dom_window->removeEventListener(event_type_names::kDeviceorientation, this,
+                                  false);
+  ScreenOrientationController::From(*dom_window)->unlock();
   locked_orientation_ = kWebScreenOrientationLockDefault /* unlocked */;
 
   lock_to_any_task_.Cancel();
@@ -196,7 +185,8 @@ void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
 #if defined(OS_ANDROID)
   DCHECK(!monitor_.is_bound());
   Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-      monitor_.BindNewPipeAndPassReceiver());
+      monitor_.BindNewPipeAndPassReceiver(
+          GetDocument().GetTaskRunner(TaskType::kMediaElementEvent)));
   monitor_->IsAutoRotateEnabledByUser(WTF::Bind(
       &MediaControlsOrientationLockDelegate::GotIsAutoRotateEnabledByUser,
       WrapPersistent(this)));
@@ -208,8 +198,6 @@ void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
 void MediaControlsOrientationLockDelegate::GotIsAutoRotateEnabledByUser(
     bool enabled) {
   monitor_.reset();
-
-  RecordAutoRotateEnabled(enabled);
 
   if (!enabled) {
     // Since the user has locked their screen orientation, prevent
@@ -267,7 +255,7 @@ void MediaControlsOrientationLockDelegate::Invoke(
         event->InterfaceName() ==
             event_interface_names::kDeviceOrientationEvent) {
       MaybeLockToAnyIfDeviceOrientationMatchesVideo(
-          ToDeviceOrientationEvent(event));
+          To<DeviceOrientationEvent>(event));
     }
 
     return;
@@ -447,8 +435,9 @@ void MediaControlsOrientationLockDelegate::
       kLockToAnyDelay);
 }
 
-void MediaControlsOrientationLockDelegate::Trace(blink::Visitor* visitor) {
+void MediaControlsOrientationLockDelegate::Trace(Visitor* visitor) {
   NativeEventListener::Trace(visitor);
+  visitor->Trace(monitor_);
   visitor->Trace(video_element_);
 }
 

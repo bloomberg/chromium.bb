@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/page_info/chrome_page_info_ui_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/common/origin_util.h"
@@ -28,8 +30,9 @@ PermissionMenuModel::PermissionMenuModel(Profile* profile,
   // The Material UI for site settings uses comboboxes instead of menubuttons,
   // which means the elements of the menu themselves have to be shorter, instead
   // of simply setting a shorter label on the menubutton.
+  auto delegate = ChromePageInfoUiDelegate(profile);
   label = PageInfoUI::PermissionActionToUIString(
-      profile, permission_.type, CONTENT_SETTING_DEFAULT,
+      &delegate, permission_.type, CONTENT_SETTING_DEFAULT,
       permission_.default_setting, permission_.source);
 
   AddCheckItem(CONTENT_SETTING_DEFAULT, label);
@@ -37,14 +40,15 @@ PermissionMenuModel::PermissionMenuModel(Profile* profile,
   // Retrieve the string to show for allowing the permission.
   if (ShouldShowAllow(url)) {
     label = PageInfoUI::PermissionActionToUIString(
-        profile, permission_.type, CONTENT_SETTING_ALLOW,
+        &delegate, permission_.type, CONTENT_SETTING_ALLOW,
         permission_.default_setting, permission_.source);
     AddCheckItem(CONTENT_SETTING_ALLOW, label);
   }
 
   // Retrieve the string to show for blocking the permission.
+
   label = PageInfoUI::PermissionActionToUIString(
-      profile, info.type, CONTENT_SETTING_BLOCK, permission_.default_setting,
+      &delegate, info.type, CONTENT_SETTING_BLOCK, permission_.default_setting,
       info.source);
   AddCheckItem(CONTENT_SETTING_BLOCK, label);
 
@@ -52,7 +56,7 @@ PermissionMenuModel::PermissionMenuModel(Profile* profile,
   // permission.
   if (ShouldShowAsk(url)) {
     label = PageInfoUI::PermissionActionToUIString(
-        profile, info.type, CONTENT_SETTING_ASK, permission_.default_setting,
+        &delegate, info.type, CONTENT_SETTING_ASK, permission_.default_setting,
         info.source);
     AddCheckItem(CONTENT_SETTING_ASK, label);
   }
@@ -85,6 +89,7 @@ bool PermissionMenuModel::ShouldShowAllow(const GURL& url) {
     // Chooser permissions do not support CONTENT_SETTING_ALLOW.
     case ContentSettingsType::SERIAL_GUARD:
     case ContentSettingsType::USB_GUARD:
+    case ContentSettingsType::BLUETOOTH_GUARD:
     // Bluetooth scanning does not support CONTENT_SETTING_ALLOW.
     case ContentSettingsType::BLUETOOTH_SCANNING:
     // Native file system write does not support CONTENT_SETTING_ALLOW.
@@ -99,6 +104,7 @@ bool PermissionMenuModel::ShouldShowAsk(const GURL& url) {
   switch (permission_.type) {
     case ContentSettingsType::USB_GUARD:
     case ContentSettingsType::SERIAL_GUARD:
+    case ContentSettingsType::BLUETOOTH_GUARD:
     case ContentSettingsType::BLUETOOTH_SCANNING:
     case ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD:
       return true;

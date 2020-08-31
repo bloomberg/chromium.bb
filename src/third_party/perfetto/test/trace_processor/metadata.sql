@@ -13,4 +13,4 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-select name, str_value from metadata order by name;
+select name, str_value from metadata where str_value is not null order by name;

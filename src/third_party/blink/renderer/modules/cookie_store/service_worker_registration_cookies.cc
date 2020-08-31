@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/cookie_store/service_worker_registration_cookies.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_store_manager.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
@@ -46,6 +45,13 @@ class ServiceWorkerRegistrationCookiesImpl final
           registration_->GetExecutionContext();
       DCHECK(execution_context);
 
+      // TODO(crbug.com/839117): Remove once Expose on partial interface is
+      // supported or Origin Trial as ended.
+      if (!execution_context->IsDocument() &&
+          !execution_context->IsServiceWorkerGlobalScope()) {
+        return nullptr;
+      }
+
       mojo::Remote<mojom::blink::CookieStore> backend;
       // TODO(pwnall): Replace TaskType::kInternalDefault with the task queue in
       //               the Cookie Store spec, once that spec is finalized.
@@ -58,7 +64,7 @@ class ServiceWorkerRegistrationCookiesImpl final
     return cookie_store_manager_.Get();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(registration_);
     visitor->Trace(cookie_store_manager_);
     Supplement<ServiceWorkerRegistration>::Trace(visitor);

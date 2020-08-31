@@ -26,6 +26,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 
 namespace quic {
@@ -121,7 +122,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
   // Sends |data| to the peer, or buffers if it can't be sent immediately.
-  void WriteOrBufferBody(QuicStringPiece data, bool fin);
+  void WriteOrBufferBody(quiche::QuicheStringPiece data, bool fin);
 
   // Writes the trailers contained in |trailer_block| on the dedicated headers
   // stream or on this stream, depending on VersionUsesHttp3().  Trailers will
@@ -139,6 +140,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
                           QuicByteCount data_length,
                           bool fin_acked,
                           QuicTime::Delta ack_delay_time,
+                          QuicTime receive_timestamp,
                           QuicByteCount* newly_acked_length) override;
 
   // Override to report bytes retransmitted via ack_listener_.
@@ -214,8 +216,15 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   bool IsClosed() { return sequencer()->IsClosed(); }
 
   // QpackDecodedHeadersAccumulator::Visitor implementation.
-  void OnHeadersDecoded(QuicHeaderList headers) override;
-  void OnHeaderDecodingError(QuicStringPiece error_message) override;
+  void OnHeadersDecoded(QuicHeaderList headers,
+                        bool header_list_size_limit_exceeded) override;
+  void OnHeaderDecodingError(quiche::QuicheStringPiece error_message) override;
+
+  QuicSpdySession* spdy_session() const { return spdy_session_; }
+
+  // Send PRIORITY_UPDATE frame and update |last_sent_urgency_| if
+  // |last_sent_urgency_| is different from current priority.
+  void MaybeSendPriorityUpdateFrame() override;
 
  protected:
   // Called when the received headers are too large. By default this will
@@ -233,7 +242,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
       bool fin,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
-  QuicSpdySession* spdy_session() const { return spdy_session_; }
   Visitor* visitor() { return visitor_; }
 
   void set_headers_decompressed(bool val) { headers_decompressed_ = val; }
@@ -243,9 +251,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
     ack_listener_ = std::move(ack_listener);
   }
 
-  // Fills in |frame| with appropriate fields.
-  virtual void PopulatePriorityFrame(PriorityFrame* frame);
-
  private:
   friend class test::QuicSpdyStreamPeer;
   friend class test::QuicStreamPeer;
@@ -253,18 +258,24 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   class HttpDecoderVisitor;
 
   // Called by HttpDecoderVisitor.
-  bool OnDataFrameStart(QuicByteCount header_length);
-  bool OnDataFramePayload(QuicStringPiece payload);
+  bool OnDataFrameStart(QuicByteCount header_length,
+                        QuicByteCount payload_length);
+  bool OnDataFramePayload(quiche::QuicheStringPiece payload);
   bool OnDataFrameEnd();
-  bool OnHeadersFrameStart(QuicByteCount header_length);
-  bool OnHeadersFramePayload(QuicStringPiece payload);
+  bool OnHeadersFrameStart(QuicByteCount header_length,
+                           QuicByteCount payload_length);
+  bool OnHeadersFramePayload(quiche::QuicheStringPiece payload);
   bool OnHeadersFrameEnd();
   bool OnPushPromiseFrameStart(QuicByteCount header_length);
-  bool OnPushPromiseFramePushId(PushId push_id, QuicByteCount push_id_length);
-  bool OnPushPromiseFramePayload(QuicStringPiece payload);
+  bool OnPushPromiseFramePushId(PushId push_id,
+                                QuicByteCount push_id_length,
+                                QuicByteCount header_block_length);
+  bool OnPushPromiseFramePayload(quiche::QuicheStringPiece payload);
   bool OnPushPromiseFrameEnd();
-  bool OnUnknownFrameStart(uint64_t frame_type, QuicByteCount header_length);
-  bool OnUnknownFramePayload(QuicStringPiece payload);
+  bool OnUnknownFrameStart(uint64_t frame_type,
+                           QuicByteCount header_length,
+                           QuicByteCount payload_length);
+  bool OnUnknownFramePayload(quiche::QuicheStringPiece payload);
   bool OnUnknownFrameEnd();
 
   // Given the interval marked by [|offset|, |offset| + |data_length|), return
@@ -289,18 +300,13 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   // Contains a copy of the decompressed header (name, value) pairs until they
   // are consumed via Readv.
   QuicHeaderList header_list_;
-  // Length of HEADERS frame payload.
+  // Length of most recently received HEADERS frame payload.
   QuicByteCount headers_payload_length_;
-  // Length of TRAILERS frame payload.
-  QuicByteCount trailers_payload_length_;
 
   // True if the trailers have been completely decompressed.
   bool trailers_decompressed_;
   // True if the trailers have been consumed.
   bool trailers_consumed_;
-
-  // True if the stream has already sent an priority frame.
-  bool priority_sent_;
 
   // The parsed trailers received from the peer.
   spdy::SpdyHeaderBlock received_trailers_;
@@ -333,6 +339,10 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
 
   // Offset of unacked frame headers.
   QuicIntervalSet<QuicStreamOffset> unacked_frame_headers_offsets_;
+
+  // Urgency value sent in the last PRIORITY_UPDATE frame, or default urgency
+  // defined by the spec if no PRIORITY_UPDATE frame has been sent.
+  int last_sent_urgency_;
 };
 
 }  // namespace quic

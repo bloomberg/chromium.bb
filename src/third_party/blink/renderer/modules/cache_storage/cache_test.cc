@@ -26,16 +26,16 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_request_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_response.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_response_init.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/global_fetch.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
-#include "third_party/blink/renderer/core/fetch/request_init.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
-#include "third_party/blink/renderer/core/fetch/response_init.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -62,7 +62,7 @@ class ScopedFetcherForTests final
   ScriptPromise Fetch(ScriptState* script_state,
                       const RequestInfo& request_info,
                       const RequestInit*,
-                      ExceptionState&) override {
+                      ExceptionState& exception_state) override {
     ++fetch_count_;
     if (expected_url_) {
       String fetched_url;
@@ -80,10 +80,9 @@ class ScopedFetcherForTests final
       response_ = nullptr;
       return promise;
     }
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(),
-                          "Unexpected call to fetch, no response available."));
+    exception_state.ThrowTypeError(
+        "Unexpected call to fetch, no response available.");
+    return ScriptPromise();
   }
 
   // This does not take ownership of its parameter. The provided sample object
@@ -95,7 +94,7 @@ class ScopedFetcherForTests final
 
   int FetchCount() const { return fetch_count_; }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(response_);
     GlobalFetch::ScopedFetcher::Trace(visitor);
   }
@@ -730,7 +729,7 @@ TEST_F(CacheStorageTest, Add) {
   Request* request = NewRequestFromUrl(url);
   Response* response = Response::Create(
       GetScriptState(),
-      MakeGarbageCollected<BodyStreamBuffer>(
+      BodyStreamBuffer::Create(
           GetScriptState(),
           MakeGarbageCollected<FormDataBytesConsumer>(content), nullptr),
       content_type, ResponseInit::Create(), exception_state);

@@ -21,14 +21,14 @@ URL = 'http://go/swarming-ssh'
 
 
 COMMAND = """import os,sys,time
-print 'Mapping task: %(task_url)s'
-print 'Files are mapped into: ' + os.getcwd()
-print 'Original command: %(original_cmd)s'
-print ''
-print 'Bot id: ' + os.environ['SWARMING_BOT_ID']
-print 'Bot leased for: %(duration)d seconds'
-print 'How to access this bot: %(help_url)s'
-print 'When done, reboot the host'
+print('Mapping task: %(task_url)s')
+print('Files are mapped into: ' + os.getcwd())
+print('Original command: %(original_cmd)s')
+print('')
+print('Bot id: ' + os.environ['SWARMING_BOT_ID'])
+print('Bot leased for: %(duration)d seconds')
+print('How to access this bot: %(help_url)s')
+print('When done, reboot the host')
 sys.stdout.flush()
 time.sleep(%(duration)d)
 """

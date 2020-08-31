@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -17,8 +18,8 @@
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -164,9 +165,8 @@ GuestOsSharePath* GuestOsSharePath::GetForProfile(Profile* profile) {
 
 GuestOsSharePath::GuestOsSharePath(Profile* profile)
     : profile_(profile),
-      file_watcher_task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::USER_VISIBLE})),
+      file_watcher_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       seneschal_callback_(base::BindRepeating(LogErrorResult)) {
   if (auto* vmgr = file_manager::VolumeManager::Get(profile_)) {
     vmgr->AddObserver(this);
@@ -223,6 +223,7 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
       file_manager::util::GetMyFilesFolderForProfile(profile_);
   base::FilePath android_files(file_manager::util::kAndroidFilesPath);
   base::FilePath removable_media(file_manager::util::kRemovableMediaPath);
+  base::FilePath system_fonts(file_manager::util::kSystemFontsPath);
   base::FilePath linux_files =
       file_manager::util::GetCrostiniMountDirectory(profile_);
   if (my_files == path || my_files.AppendRelativePath(path, &relative_path)) {
@@ -293,6 +294,10 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
     request.set_storage_location(
         vm_tools::seneschal::SharePathRequest::LINUX_FILES);
     request.set_owner_id(crostini::CryptohomeIdForProfile(profile_));
+  } else if (path == system_fonts ||
+             system_fonts.AppendRelativePath(path, &relative_path)) {
+    allowed_path = true;
+    request.set_storage_location(vm_tools::seneschal::SharePathRequest::FONTS);
   }
 
   if (!allowed_path) {
@@ -316,8 +321,9 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
   // PluginVm before sharing, we can detect that the VM is not started
   // if handle == 0.
   if (vm_name == plugin_vm::kPluginVmName) {
-    request.set_handle(plugin_vm::PluginVmManager::GetForProfile(profile_)
-                           ->seneschal_server_handle());
+    request.set_handle(
+        plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)
+            ->seneschal_server_handle());
   } else {
     // Restart VM if not currently running.
     auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
@@ -345,13 +351,15 @@ void GuestOsSharePath::CallSeneschalUnsharePath(const std::string& vm_name,
 
   // Return success if VM is not currently running.
   if (vm_name == plugin_vm::kPluginVmName) {
-    if (plugin_vm::PluginVmManager::GetForProfile(profile_)->vm_state() !=
+    if (plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)
+            ->vm_state() !=
         vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING) {
       std::move(callback).Run(true, "PluginVm not running");
       return;
     }
-    request.set_handle(plugin_vm::PluginVmManager::GetForProfile(profile_)
-                           ->seneschal_server_handle());
+    request.set_handle(
+        plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)
+            ->seneschal_server_handle());
   } else {
     auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
     base::Optional<crostini::VmInfo> vm_info =
@@ -451,9 +459,13 @@ bool GuestOsSharePath::GetAndSetFirstForSession() {
 std::vector<base::FilePath> GuestOsSharePath::GetPersistedSharedPaths(
     const std::string& vm_name) {
   std::vector<base::FilePath> result;
+  // TODO(crbug.com/1057591): Unexpected crashes here.
+  CHECK(profile_);
+  CHECK(profile_->GetPrefs());
   // |shared_paths| format is {'path': ['vm1', vm2']}.
   const base::DictionaryValue* shared_paths =
       profile_->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
+  CHECK(shared_paths);
   for (const auto& it : shared_paths->DictItems()) {
     base::FilePath path(it.first);
     for (const auto& vm : it.second.GetList()) {
@@ -507,25 +519,6 @@ void GuestOsSharePath::RegisterPersistedPath(const std::string& vm_name,
     vms.Append(base::Value(vm_name));
     shared_paths->SetKey(path.value(), std::move(vms));
   }
-}
-
-void GuestOsSharePath::MigratePersistedPathsToMultiVM(
-    PrefService* profile_prefs) {
-  const base::ListValue* shared_paths =
-      profile_prefs->GetList(prefs::kCrostiniSharedPaths);
-  if (shared_paths->GetSize() == 0) {
-    return;
-  }
-  // Convert ['foo', 'bar'] to {'foo':['termina'], 'bar':['termina']}.
-  base::Value dict(base::Value::Type::DICTIONARY);
-  for (const auto& shared_path : *shared_paths) {
-    base::Value termina(base::Value::Type::LIST);
-    termina.Append(base::Value(crostini::kCrostiniDefaultVmName));
-    dict.SetKey(shared_path.GetString(), std::move(termina));
-  }
-  profile_prefs->Set(prefs::kGuestOSPathsSharedToVms, std::move(dict));
-
-  profile_prefs->ClearPref(prefs::kCrostiniSharedPaths);
 }
 
 void GuestOsSharePath::OnVolumeMounted(chromeos::MountError error_code,
@@ -626,8 +619,8 @@ void GuestOsSharePath::OnFileWatcherDeleted(const base::FilePath& path) {
   const auto volume_list = vmgr->GetVolumeList();
   for (const auto& volume : volume_list) {
     if ((path == volume->mount_path() || volume->mount_path().IsParent(path))) {
-      base::PostTaskAndReplyWithResult(
-          FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::ThreadPool::PostTaskAndReplyWithResult(
+          FROM_HERE, {base::MayBlock()},
           base::BindOnce(&base::PathExists, volume->mount_path()),
           base::BindOnce(&GuestOsSharePath::OnVolumeMountCheck,
                          weak_ptr_factory_.GetWeakPtr(), path));

@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "ui/display/types/display_snapshot.h"
-#include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/display_types.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
@@ -71,9 +70,6 @@ display::DisplaySnapshot::DisplayModeList ExtractDisplayModes(
     const display::DisplayMode** out_current_mode,
     const display::DisplayMode** out_native_mode);
 
-display::DisplayConnectionType GetDisplayType(
-    const drmModeConnector* connector);
-
 // |info| provides the DRM information related to the display, |fd| is the
 // connection to the DRM device.
 std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
@@ -82,13 +78,6 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
     const base::FilePath& sys_path,
     size_t device_index,
     const gfx::Point& origin);
-
-std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
-    const DisplaySnapshot_Params& params);
-
-// Creates a serialized version of MovableDisplaySnapshots for IPC transmission.
-std::vector<DisplaySnapshot_Params> CreateDisplaySnapshotParams(
-    const MovableDisplaySnapshots& displays);
 
 int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format);
 
@@ -100,11 +89,6 @@ ScopedDrmPropertyPtr FindDrmProperty(int fd,
 
 bool HasColorCorrectionMatrix(int fd, drmModeCrtc* crtc);
 
-DisplayMode_Params GetDisplayModeParams(const display::DisplayMode& mode);
-
-std::unique_ptr<display::DisplayMode> CreateDisplayModeFromParams(
-    const DisplayMode_Params& pmode);
-
 bool MatchMode(const display::DisplayMode& display_mode,
                const drmModeModeInfo& m);
 
@@ -113,18 +97,6 @@ const gfx::Size ModeSize(const drmModeModeInfo& mode);
 float ModeRefreshRate(const drmModeModeInfo& mode);
 
 bool ModeIsInterlaced(const drmModeModeInfo& mode);
-
-OverlaySurfaceCandidateList CreateOverlaySurfaceCandidateListFrom(
-    const std::vector<OverlayCheck_Params>& params);
-
-std::vector<OverlayCheck_Params> CreateParamsFromOverlaySurfaceCandidate(
-    const OverlaySurfaceCandidateList& candidates);
-
-OverlayStatusList CreateOverlayStatusListFrom(
-    const std::vector<OverlayCheckReturn_Params>& params);
-
-std::vector<OverlayCheckReturn_Params> CreateParamsFromOverlayStatusList(
-    const OverlayStatusList& returns);
 
 }  // namespace ui
 

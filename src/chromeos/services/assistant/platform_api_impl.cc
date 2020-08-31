@@ -12,7 +12,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/platform/power_manager_provider_impl.h"
-#include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/utils.h"
 #include "libassistant/shared/public/assistant_export.h"
 #include "libassistant/shared/public/platform_api.h"
@@ -78,7 +78,6 @@ void PlatformApiImpl::DummyAuthProvider::Reset() {}
 ////////////////////////////////////////////////////////////////////////////////
 
 PlatformApiImpl::PlatformApiImpl(
-    mojom::Client* client,
     AssistantMediaSession* media_session,
     PowerManagerClient* power_manager_client,
     CrasAudioHandler* cras_audio_handler,
@@ -86,21 +85,19 @@ PlatformApiImpl::PlatformApiImpl(
     scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
     std::string pref_locale)
-    : audio_input_provider_(client, power_manager_client, cras_audio_handler),
-      audio_output_provider_(client,
-                             power_manager_client,
+    : audio_input_provider_(power_manager_client, cras_audio_handler),
+      audio_output_provider_(power_manager_client,
                              cras_audio_handler,
                              media_session,
                              background_task_runner,
                              media::AudioDeviceDescription::kDefaultDeviceId),
-      network_provider_(client),
       pref_locale_(pref_locale),
       cras_audio_handler_(cras_audio_handler) {
   // Only enable native power features if they are supported by the UI.
   std::unique_ptr<PowerManagerProviderImpl> provider;
   if (features::IsPowerManagerEnabled()) {
     provider = std::make_unique<PowerManagerProviderImpl>(
-        client, std::move(main_thread_task_runner));
+        std::move(main_thread_task_runner));
   }
   system_provider_ = std::make_unique<SystemProviderImpl>(
       std::move(provider), std::move(battery_monitor));

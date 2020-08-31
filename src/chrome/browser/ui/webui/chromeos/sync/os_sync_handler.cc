@@ -4,11 +4,15 @@
 
 #include "chrome/browser/ui/webui/chromeos/sync/os_sync_handler.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/sync/base/pref_names.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
@@ -19,12 +23,17 @@ using syncer::SyncUserSettings;
 using syncer::UserSelectableOsType;
 using syncer::UserSelectableOsTypeSet;
 
+namespace {
+const char kWallpaperEnabledKey[] = "wallpaperEnabled";
+}  // namespace
+
 OSSyncHandler::OSSyncHandler(Profile* profile) : profile_(profile) {
   DCHECK(profile_);
 }
 
 OSSyncHandler::~OSSyncHandler() {
   RemoveSyncServiceObserver();
+  CommitFeatureEnabledPref();
 }
 
 void OSSyncHandler::RegisterMessages() {
@@ -35,6 +44,14 @@ void OSSyncHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "DidNavigateAwayFromOsSyncPage",
       base::BindRepeating(&OSSyncHandler::HandleDidNavigateAwayFromOsSyncPage,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "OsSyncPrefsDispatch",
+      base::BindRepeating(&OSSyncHandler::HandleOsSyncPrefsDispatch,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "SetOsSyncFeatureEnabled",
+      base::BindRepeating(&OSSyncHandler::HandleSetOsSyncFeatureEnabled,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SetOsSyncDatatypes",
@@ -51,26 +68,35 @@ void OSSyncHandler::OnJavascriptDisallowed() {
 }
 
 void OSSyncHandler::OnStateChanged(syncer::SyncService* service) {
-  PushSyncPrefs();
+  if (!is_setting_prefs_)
+    PushSyncPrefs();
 }
 
 void OSSyncHandler::HandleDidNavigateToOsSyncPage(const base::ListValue* args) {
+  HandleOsSyncPrefsDispatch(args);
+}
+
+void OSSyncHandler::HandleOsSyncPrefsDispatch(const base::ListValue* args) {
   AllowJavascript();
 
+  // Cache the feature enabled pref.
   SyncService* service = GetSyncService();
-
-  if (service && !sync_blocker_)
-    sync_blocker_ = service->GetSetupInProgressHandle();
-
-  // TODO(jamescook): Sort out consent/opt-in story, then SetSyncRequested()
-  // here.
-
+  if (service)
+    feature_enabled_ = service->GetUserSettings()->IsOsSyncFeatureEnabled();
   PushSyncPrefs();
 }
 
 void OSSyncHandler::HandleDidNavigateAwayFromOsSyncPage(
     const base::ListValue* args) {
-  sync_blocker_.reset();
+  CommitFeatureEnabledPref();
+}
+
+void OSSyncHandler::HandleSetOsSyncFeatureEnabled(const base::ListValue* args) {
+  CHECK_EQ(1u, args->GetSize());
+  CHECK(args->GetBoolean(0, &feature_enabled_));
+  should_commit_feature_enabled_ = true;
+  // Changing the feature enabled state may change toggle state.
+  PushSyncPrefs();
 }
 
 void OSSyncHandler::HandleSetOsSyncDatatypes(const base::ListValue* args) {
@@ -78,15 +104,19 @@ void OSSyncHandler::HandleSetOsSyncDatatypes(const base::ListValue* args) {
   const base::DictionaryValue* result;
   CHECK(args->GetDictionary(0, &result));
 
+  // Wallpaper sync status is stored directly to the profile's prefs.
+  bool wallpaper_synced;
+  CHECK(result->GetBoolean(kWallpaperEnabledKey, &wallpaper_synced));
+  profile_->GetPrefs()->SetBoolean(chromeos::settings::prefs::kSyncOsWallpaper,
+                                   wallpaper_synced);
+
   // Start configuring the SyncService using the configuration passed to us from
   // the JS layer.
   syncer::SyncService* service = GetSyncService();
 
   // If the sync engine has shutdown for some reason, just stop.
-  if (!service || !service->IsEngineInitialized()) {
-    sync_blocker_.reset();
+  if (!service || !service->IsEngineInitialized())
     return;
-  }
 
   bool sync_all_os_types;
   CHECK(result->GetBoolean("syncAllOsTypes", &sync_all_os_types));
@@ -105,19 +135,26 @@ void OSSyncHandler::HandleSetOsSyncDatatypes(const base::ListValue* args) {
   // toggles for in-development features hidden by feature flags.
   SyncUserSettings* settings = service->GetUserSettings();
   selected_types.RetainAll(settings->GetRegisteredSelectableOsTypes());
-  settings->SetSelectedOsTypes(sync_all_os_types, selected_types);
 
-  // Update the enabled state last so that the selected types will be set before
-  // pref observers are notified of the change.
-  bool feature_enabled;
-  CHECK(result->GetBoolean("featureEnabled", &feature_enabled));
-  settings->SetOsSyncFeatureEnabled(feature_enabled);
+  // Don't send updates back to JS while processing values sent from JS.
+  base::AutoReset<bool> reset(&is_setting_prefs_, true);
+  settings->SetSelectedOsTypes(sync_all_os_types, selected_types);
 
   // TODO(jamescook): Add metrics for selected types.
 }
 
 void OSSyncHandler::SetWebUIForTest(content::WebUI* web_ui) {
   set_web_ui(web_ui);
+}
+
+void OSSyncHandler::CommitFeatureEnabledPref() {
+  if (!should_commit_feature_enabled_)
+    return;
+  SyncService* service = GetSyncService();
+  if (!service)
+    return;
+  service->GetUserSettings()->SetOsSyncFeatureEnabled(feature_enabled_);
+  should_commit_feature_enabled_ = false;
 }
 
 void OSSyncHandler::PushSyncPrefs() {
@@ -128,8 +165,8 @@ void OSSyncHandler::PushSyncPrefs() {
 
   base::DictionaryValue args;
   SyncUserSettings* user_settings = service->GetUserSettings();
-  args.SetBoolean("featureEnabled", user_settings->GetOsSyncFeatureEnabled());
   // Tell the UI layer which data types are registered/enabled by the user.
+  args.SetBoolean("syncAllOsTypes", user_settings->IsSyncAllOsTypesEnabled());
   UserSelectableOsTypeSet registered_types =
       user_settings->GetRegisteredSelectableOsTypes();
   UserSelectableOsTypeSet selected_types = user_settings->GetSelectedOsTypes();
@@ -138,18 +175,24 @@ void OSSyncHandler::PushSyncPrefs() {
     std::string type_name = syncer::GetUserSelectableOsTypeName(type);
     args.SetBoolean(type_name + "Registered", registered_types.Has(type));
     args.SetBoolean(type_name + "Synced", selected_types.Has(type));
-    // TODO(crbug.com/1020236): Add SyncUserSettings::GetForcedOsTypes() if we
-    // decide to support Apps sync for supervised users.
-    args.SetBoolean(type_name + "Enforced", false);
   }
-  args.SetBoolean("syncAllOsTypes", user_settings->IsSyncAllOsTypesEnabled());
-  FireWebUIListener("os-sync-prefs-changed", args);
+
+  // Wallpaper sync status is fetched from prefs and is considered enabled if
+  // all OS types are enabled; this mimics behavior of GetSelectedOsTypes().
+  args.SetBoolean(kWallpaperEnabledKey,
+                  user_settings->IsSyncAllOsTypesEnabled() ||
+                      profile_->GetPrefs()->GetBoolean(
+                          chromeos::settings::prefs::kSyncOsWallpaper));
+
+  FireWebUIListener("os-sync-prefs-changed", base::Value(feature_enabled_),
+                    args);
 }
 
 syncer::SyncService* OSSyncHandler::GetSyncService() const {
-  return profile_->IsSyncAllowed()
-             ? ProfileSyncServiceFactory::GetForProfile(profile_)
-             : nullptr;
+  const bool is_sync_allowed =
+      ProfileSyncServiceFactory::IsSyncAllowed(profile_);
+  return is_sync_allowed ? ProfileSyncServiceFactory::GetForProfile(profile_)
+                         : nullptr;
 }
 
 void OSSyncHandler::AddSyncServiceObserver() {

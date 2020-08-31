@@ -12,7 +12,6 @@
 #include "chromecast/base/version.h"
 #include "chromecast/browser/cast_web_contents_impl.h"
 #include "chromecast/browser/webview/proto/webview.pb.h"
-#include "chromecast/browser/webview/webview_layout_manager.h"
 #include "chromecast/browser/webview/webview_navigation_throttle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -46,15 +45,16 @@ class WebviewUserData : public base::SupportsUserData::Data {
 }  // namespace
 
 WebviewController::WebviewController(content::BrowserContext* browser_context,
-                                     Client* client)
-    : WebContentController(client) {
+                                     Client* client,
+                                     bool enabled_for_dev)
+    : WebContentController(client), enabled_for_dev_(enabled_for_dev) {
   content::WebContents::CreateParams create_params(browser_context, nullptr);
   contents_ = content::WebContents::Create(create_params);
   contents_->SetUserData(kWebviewResponseUserDataKey,
                          std::make_unique<WebviewUserData>(this));
   CastWebContents::InitParams cast_contents_init;
   cast_contents_init.is_root_window = true;
-  cast_contents_init.enabled_for_dev = CAST_IS_DEBUG_BUILD();
+  cast_contents_init.enabled_for_dev = enabled_for_dev;
   cast_contents_init.delegate = weak_ptr_factory_.GetWeakPtr();
   cast_web_contents_ = std::make_unique<CastWebContentsImpl>(
       contents_.get(), cast_contents_init);
@@ -84,7 +84,8 @@ WebviewController::MaybeGetNavigationThrottle(
   if (webview_user_data &&
       webview_user_data->controller()->has_navigation_delegate_) {
     return std::make_unique<WebviewNavigationThrottle>(
-        handle, webview_user_data->controller());
+        handle,
+        webview_user_data->controller()->weak_ptr_factory_.GetWeakPtr());
   }
   return nullptr;
 }
@@ -117,9 +118,50 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
       }
       break;
 
+    case webview::WebviewRequest::kUpdateSettings:
+      if (request.has_update_settings()) {
+        HandleUpdateSettings(request.update_settings());
+      } else {
+        client_->OnError("update_settings() not supplied");
+      }
+      break;
+
     default:
       WebContentController::ProcessRequest(request);
       break;
+  }
+}
+
+void WebviewController::HandleUpdateSettings(
+    const webview::UpdateSettingsRequest& request) {
+  content::WebContents* contents = GetWebContents();
+  content::WebPreferences prefs =
+      contents->GetRenderViewHost()->GetWebkitPreferences();
+  prefs.javascript_enabled = request.javascript_enabled();
+  contents->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+
+  has_navigation_delegate_ = request.has_navigation_delegate();
+
+  CastWebContents::FromWebContents(contents)->SetEnabledForRemoteDebugging(
+      request.debugging_enabled() || enabled_for_dev_);
+
+  if (request.has_user_agent() &&
+      request.user_agent().type_case() == webview::UserAgent::kValue) {
+    contents->SetUserAgentOverride(
+        blink::UserAgentOverride::UserAgentOnly(request.user_agent().value()),
+        true);
+  }
+}
+
+void WebviewController::DidFirstVisuallyNonEmptyPaint() {
+  if (client_) {
+    std::unique_ptr<webview::WebviewResponse> response =
+        std::make_unique<webview::WebviewResponse>();
+    auto* event = response->mutable_page_event();
+    event->set_url(contents_->GetURL().spec());
+    event->set_current_page_state(current_state());
+    event->set_did_first_visually_non_empty_paint(true);
+    client_->EnqueueSend(std::move(response));
   }
 }
 
@@ -132,14 +174,12 @@ void WebviewController::SendNavigationEvent(
       std::make_unique<webview::WebviewResponse>();
   auto* navigation_event = response->mutable_navigation_event();
 
-  navigation_event->set_url(navigation_handle->GetURL().GetContent());
+  navigation_event->set_url(navigation_handle->GetURL().spec());
   navigation_event->set_is_for_main_frame(navigation_handle->IsInMainFrame());
   navigation_event->set_is_renderer_initiated(
       navigation_handle->IsRendererInitiated());
   navigation_event->set_is_same_document(navigation_handle->IsSameDocument());
   navigation_event->set_has_user_gesture(navigation_handle->HasUserGesture());
-  navigation_event->set_previous_url(
-      navigation_handle->GetPreviousURL().GetContent());
   navigation_event->set_was_server_redirect(
       navigation_handle->WasServerRedirect());
   navigation_event->set_is_post(navigation_handle->IsPost());
@@ -148,6 +188,12 @@ void WebviewController::SendNavigationEvent(
 
   current_navigation_throttle_ = throttle;
   client_->EnqueueSend(std::move(response));
+}
+
+void WebviewController::OnNavigationThrottleDestroyed(
+    WebviewNavigationThrottle* throttle) {
+  if (current_navigation_throttle_ == throttle)
+    current_navigation_throttle_ = nullptr;
 }
 
 void WebviewController::ClosePage() {
@@ -185,6 +231,7 @@ void WebviewController::OnPageStopped(CastWebContents* cast_web_contents,
     event->set_url(contents_->GetURL().spec());
     event->set_current_page_state(current_state());
     event->set_stopped_error_code(error_code);
+    event->set_stopped_error_description(net::ErrorToShortString(error_code));
     client_->EnqueueSend(std::move(response));
   } else {
     // Can't destroy in an observer callback, so post a task to do it.

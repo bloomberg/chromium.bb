@@ -8,7 +8,6 @@
 #include <cstdlib>
 
 namespace openscreen {
-namespace platform {
 
 // A SocketHandle is the handle used to access a Socket by the underlying
 // platform.
@@ -23,7 +22,6 @@ inline bool operator!=(const SocketHandle& lhs, const SocketHandle& rhs) {
   return !(lhs == rhs);
 }
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_SOCKET_HANDLE_H_

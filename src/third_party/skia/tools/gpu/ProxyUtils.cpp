@@ -13,7 +13,9 @@
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/GrSurfaceContext.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 #include "tools/gpu/ProxyUtils.h"
 
 namespace sk_gpu_test {
@@ -34,21 +36,18 @@ sk_sp<GrTextureProxy> MakeTextureProxyFromData(GrContext* context,
     if (!format.isValid()) {
         return nullptr;
     }
+    GrSwizzle swizzle = caps->getReadSwizzle(format, imageInfo.colorType());
 
     sk_sp<GrTextureProxy> proxy;
-    GrSurfaceDesc desc;
-    desc.fConfig = GrColorTypeToPixelConfig(imageInfo.colorType());
-    desc.fWidth = imageInfo.width();
-    desc.fHeight = imageInfo.height();
-    proxy = context->priv().proxyProvider()->createProxy(format, desc, renderable, 1, origin,
-                                                         GrMipMapped::kNo, SkBackingFit::kExact,
+    proxy = context->priv().proxyProvider()->createProxy(format, imageInfo.dimensions(), renderable,
+                                                         1, GrMipMapped::kNo, SkBackingFit::kExact,
                                                          SkBudgeted::kYes, GrProtected::kNo);
     if (!proxy) {
         return nullptr;
     }
-    auto sContext = context->priv().makeWrappedSurfaceContext(proxy, imageInfo.colorType(),
-                                                              imageInfo.alphaType(),
-                                                              imageInfo.refColorSpace(), nullptr);
+    GrSurfaceProxyView view(proxy, origin, swizzle);
+    auto sContext = GrSurfaceContext::Make(context, std::move(view), imageInfo.colorType(),
+                                           imageInfo.alphaType(), imageInfo.refColorSpace());
     if (!sContext) {
         return nullptr;
     }
@@ -60,53 +59,29 @@ sk_sp<GrTextureProxy> MakeTextureProxyFromData(GrContext* context,
 
 GrProgramInfo* CreateProgramInfo(const GrCaps* caps,
                                  SkArenaAlloc* arena,
-                                 const GrSurfaceProxyView* dstView,
+                                 const GrSurfaceProxyView* writeView,
                                  GrAppliedClip&& appliedClip,
                                  const GrXferProcessor::DstProxyView& dstProxyView,
                                  GrGeometryProcessor* geomProc,
                                  SkBlendMode blendMode,
                                  GrPrimitiveType primitiveType,
                                  GrPipeline::InputFlags flags,
-                                 const GrUserStencilSettings* stencil) {
-
-    GrPipeline::InitArgs initArgs;
-    initArgs.fInputFlags = flags;
-    initArgs.fUserStencil = stencil;
-    initArgs.fCaps = caps;
-    initArgs.fDstProxyView = dstProxyView;
-    initArgs.fOutputSwizzle = dstView->swizzle();
-
-    GrPipeline::FixedDynamicState* fixedDynamicState = nullptr;
-
-    if (appliedClip.scissorState().enabled()) {
-        fixedDynamicState = arena->make<GrPipeline::FixedDynamicState>(
-                                                        appliedClip.scissorState().rect());
-    }
+                                 const GrUserStencilSettings* stencilSettings) {
 
     GrProcessorSet processors = GrProcessorSet(blendMode);
 
     SkPMColor4f analysisColor = { 0, 0, 0, 1 }; // opaque black
 
     SkDEBUGCODE(auto analysis =) processors.finalize(analysisColor,
-                                                     GrProcessorAnalysisCoverage::kNone,
-                                                     &appliedClip, stencil, false,
+                                                     GrProcessorAnalysisCoverage::kSingleChannel,
+                                                     &appliedClip, stencilSettings, false,
                                                      *caps, GrClampType::kAuto, &analysisColor);
     SkASSERT(!analysis.requiresDstTexture());
 
-    GrPipeline* pipeline = arena->make<GrPipeline>(initArgs,
-                                                   std::move(processors),
-                                                   std::move(appliedClip));
-
-    GrRenderTargetProxy* dstProxy = dstView->asRenderTargetProxy();
-    return arena->make<GrProgramInfo>(dstProxy->numSamples(),
-                                      dstProxy->numStencilSamples(),
-                                      dstProxy->backendFormat(),
-                                      dstView->origin(),
-                                      pipeline,
-                                      geomProc,
-                                      fixedDynamicState,
-                                      nullptr, 0,
-                                      primitiveType);
+    return GrSimpleMeshDrawOpHelper::CreateProgramInfo(caps, arena, writeView,
+                                                       std::move(appliedClip), dstProxyView,
+                                                       geomProc, std::move(processors),
+                                                       primitiveType, flags, stencilSettings);
 }
 
 

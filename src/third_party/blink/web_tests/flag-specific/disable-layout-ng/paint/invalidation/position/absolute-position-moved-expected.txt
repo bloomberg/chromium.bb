@@ -5,12 +5,8 @@
       "bounds": [785, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [100, 100, 100, 100],
-          "reason": "chunk appeared"
-        }
+      "invalidations": [
+        [100, 100, 100, 100]
       ]
     },
     {
@@ -18,6 +14,9 @@
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#FF0000",
+      "invalidations": [
+        [100, 100, 100, 100]
+      ],
       "transform": 1
     },
     {

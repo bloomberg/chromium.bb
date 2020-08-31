@@ -13,14 +13,21 @@
 
 class GURL;
 
+namespace url_matcher {
+class URLMatcher;
+}  // namespace url_matcher
+
 namespace chromeos {
 namespace app_time {
+
+class AppTimeLimitsWhitelistPolicyWrapper;
+class AppTimeController;
 
 class WebTimeLimitEnforcer {
  public:
   static bool IsEnabled();
 
-  WebTimeLimitEnforcer();
+  explicit WebTimeLimitEnforcer(AppTimeController* controller);
   ~WebTimeLimitEnforcer();
 
   // Delete copy constructor and copy assignment operator.
@@ -30,14 +37,13 @@ class WebTimeLimitEnforcer {
 
   // TODO(crbug/1015661) The following should be private observer calls once the
   // observer pattern has been set up for this.
-  void OnWebTimeLimitReached();
+  void OnWebTimeLimitReached(base::TimeDelta time_limit);
   void OnWebTimeLimitEnded();
-  void OnWhitelistAdded(const GURL& url);
-  void OnWhitelistRemoved(const GURL& url);
+  void OnTimeLimitWhitelistChanged(
+      const AppTimeLimitsWhitelistPolicyWrapper& value);
 
   bool IsURLWhitelisted(const GURL& url) const;
 
-  void set_time_limit(base::TimeDelta time_limit) { time_limit_ = time_limit; }
   bool blocked() const { return chrome_blocked_; }
   base::TimeDelta time_limit() const { return time_limit_; }
 
@@ -47,7 +53,10 @@ class WebTimeLimitEnforcer {
   bool chrome_blocked_ = false;
   base::TimeDelta time_limit_;
 
-  std::set<GURL> whitelisted_urls_;
+  // |app_time_controller_| is owned by ChildUserService.
+  AppTimeController* const app_time_controller_;
+
+  std::unique_ptr<url_matcher::URLMatcher> url_matcher_;
 };
 
 }  // namespace app_time

@@ -31,9 +31,11 @@
 #include "base/threading/thread.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/video_color_space.h"
+#include "media/base/win/mf_initializer.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_com_defs.h"
+#include "media/gpu/windows/display_helper.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
@@ -352,6 +354,10 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
                                       int height,
                                       const gfx::ColorSpace& color_space);
 
+  // Some devices require HDR metadata.  This will set it if needed, else
+  // do nothing.
+  void SetDX11ProcessorHDRMetadataIfNeeded();
+
   // Returns the output video frame dimensions (width, height).
   // |sample| :- This is the output sample containing the video frame.
   // |width| :- The width is returned here.
@@ -394,6 +400,9 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
 
   // To expose client callbacks from VideoDecodeAccelerator.
   VideoDecodeAccelerator::Client* client_;
+
+  // MediaFoundation session, calls MFShutdown on deletion.
+  MFSessionLifetime session_;
 
   Microsoft::WRL::ComPtr<IMFTransform> decoder_;
 
@@ -554,6 +563,9 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Copy video to FP16 scRGB textures.
   bool use_fp16_ = false;
 
+  // True if decoder's output is P010/P016.
+  bool decoder_output_p010_or_p016_ = false;
+
   // When converting YUV to RGB, make sure we tell the blitter about the input
   // color space so that it can convert it correctly.
   bool use_color_info_ = true;
@@ -562,8 +574,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // H/W decoding.
   bool use_dx11_;
 
-  // True when using Microsoft's VP9 HMFT for decoding.
-  bool using_ms_vp9_mft_ = false;
+  // True when using Microsoft's VPx HMFT for decoding.
+  bool using_ms_vpx_mft_ = false;
 
   // True if we should use DXGI keyed mutexes to synchronize between the two
   // contexts.
@@ -596,6 +608,9 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // fed into the decoder. These may change at a config change.
   gfx::Rect current_visible_rect_;
   VideoColorSpace current_color_space_;
+
+  base::Optional<DisplayHelper> display_helper_;
+  bool use_empty_video_hdr_metadata_ = false;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_{this};

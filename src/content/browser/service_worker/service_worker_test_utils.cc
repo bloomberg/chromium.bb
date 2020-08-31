@@ -4,8 +4,12 @@
 
 #include "content/browser/service_worker/service_worker_test_utils.h"
 
+#include <algorithm>
+#include <map>
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/barrier_closure.h"
 #include "base/run_loop.h"
@@ -30,6 +34,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_info.h"
@@ -101,7 +106,8 @@ class FakeNavigationClient : public mojom::NavigationClient {
   using ReceivedProviderInfoCallback = base::OnceCallback<void(
       blink::mojom::ServiceWorkerProviderInfoForClientPtr)>;
 
-  FakeNavigationClient(ReceivedProviderInfoCallback on_received_callback)
+  explicit FakeNavigationClient(
+      ReceivedProviderInfoCallback on_received_callback)
       : on_received_callback_(std::move(on_received_callback)) {}
   ~FakeNavigationClient() override = default;
 
@@ -132,6 +138,7 @@ class FakeNavigationClient : public mojom::NavigationClient {
       mojom::CommitNavigationParamsPtr commit_params,
       bool has_stale_copy_in_cache,
       int error_code,
+      const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<std::string>& error_page_content,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresource_loaders,
       CommitFailedNavigationCallback callback) override {
@@ -143,10 +150,45 @@ class FakeNavigationClient : public mojom::NavigationClient {
   DISALLOW_COPY_AND_ASSIGN(FakeNavigationClient);
 };
 
+void OnWriteMetadataToDiskCache(
+    std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer,
+    const GURL& script_url,
+    int body_size,
+    int meta_data_size,
+    WriteToDiskCacheCallback callback,
+    int result) {
+  EXPECT_EQ(result, meta_data_size);
+  std::move(callback).Run(storage::mojom::ServiceWorkerResourceRecord::New(
+      metadata_writer->response_id(), script_url, body_size));
+}
+
+void OnWriteBodyDataToDiskCache(
+    std::unique_ptr<ServiceWorkerResponseWriter> writer,
+    std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer,
+    const GURL& script_url,
+    int body_size,
+    const std::string& meta_data,
+    WriteToDiskCacheCallback callback,
+    int result) {
+  EXPECT_EQ(result, body_size);
+  scoped_refptr<net::IOBuffer> meta_data_buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(meta_data);
+  ServiceWorkerResponseMetadataWriter* metadata_writer_rawptr =
+      metadata_writer.get();
+  metadata_writer_rawptr->WriteMetadata(
+      meta_data_buffer.get(), meta_data.size(),
+      base::BindOnce(&OnWriteMetadataToDiskCache, std::move(metadata_writer),
+                     script_url, body_size, meta_data.size(),
+                     std::move(callback)));
+}
+
 void OnWriteBodyInfoToDiskCache(
     std::unique_ptr<ServiceWorkerResponseWriter> writer,
+    std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer,
+    const GURL& script_url,
     const std::string& body,
-    base::OnceClosure callback,
+    const std::string& meta_data,
+    WriteToDiskCacheCallback callback,
     int result) {
   EXPECT_GE(result, 0);
   scoped_refptr<net::IOBuffer> body_buffer =
@@ -154,45 +196,60 @@ void OnWriteBodyInfoToDiskCache(
   ServiceWorkerResponseWriter* writer_rawptr = writer.get();
   writer_rawptr->WriteData(
       body_buffer.get(), body.size(),
-      base::BindOnce(
-          [](std::unique_ptr<ServiceWorkerResponseWriter> /* unused */,
-             base::OnceClosure callback, int expected, int result) {
-            EXPECT_EQ(expected, result);
-            std::move(callback).Run();
-          },
-          std::move(writer), std::move(callback), body.size()));
+      base::BindOnce(&OnWriteBodyDataToDiskCache, std::move(writer),
+                     std::move(metadata_writer), script_url, body.size(),
+                     meta_data, std::move(callback)));
 }
 
-void WriteBodyToDiskCache(std::unique_ptr<ServiceWorkerResponseWriter> writer,
-                          std::unique_ptr<net::HttpResponseInfo> info,
-                          const std::string& body,
-                          base::OnceClosure callback) {
+void WriteToDiskCacheAsyncInternal(
+    const GURL& script_url,
+    const std::vector<std::pair<std::string, std::string>>& headers,
+    const std::string& body,
+    const std::string& meta_data,
+    std::unique_ptr<ServiceWorkerResponseWriter> body_writer,
+    std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer,
+    WriteToDiskCacheCallback callback) {
+  std::unique_ptr<net::HttpResponseInfo> http_info =
+      std::make_unique<net::HttpResponseInfo>();
+  http_info->request_time = base::Time::Now();
+  http_info->response_time = base::Time::Now();
+  http_info->headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.0 200 OK\0\0");
+  for (const auto& header : headers)
+    http_info->headers->AddHeader(header.first, header.second);
+
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
-      base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(info));
+      base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(http_info));
   info_buffer->response_data_size = body.size();
-  ServiceWorkerResponseWriter* writer_rawptr = writer.get();
+  ServiceWorkerResponseWriter* writer_rawptr = body_writer.get();
   writer_rawptr->WriteInfo(
       info_buffer.get(),
-      base::BindOnce(&OnWriteBodyInfoToDiskCache, std::move(writer), body,
+      base::BindOnce(&OnWriteBodyInfoToDiskCache, std::move(body_writer),
+                     std::move(metadata_writer), script_url, body, meta_data,
                      std::move(callback)));
 }
 
-void WriteMetaDataToDiskCache(
-    std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer,
+storage::mojom::ServiceWorkerResourceRecordPtr WriteToDiskCacheSyncInternal(
+    const GURL& script_url,
+    const std::vector<std::pair<std::string, std::string>>& headers,
+    const std::string& body,
     const std::string& meta_data,
-    base::OnceClosure callback) {
-  scoped_refptr<net::IOBuffer> meta_data_buffer =
-      base::MakeRefCounted<net::StringIOBuffer>(meta_data);
-  ServiceWorkerResponseMetadataWriter* writer_rawptr = writer.get();
-  writer_rawptr->WriteMetadata(
-      meta_data_buffer.get(), meta_data.size(),
-      base::BindOnce(
-          [](std::unique_ptr<ServiceWorkerResponseMetadataWriter> /* unused */,
-             base::OnceClosure callback, int expected, int result) {
-            EXPECT_EQ(expected, result);
-            std::move(callback).Run();
-          },
-          std::move(writer), std::move(callback), meta_data.size()));
+    std::unique_ptr<ServiceWorkerResponseWriter> body_writer,
+    std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer) {
+  storage::mojom::ServiceWorkerResourceRecordPtr record;
+
+  base::RunLoop loop;
+  WriteToDiskCacheAsyncInternal(
+      script_url, headers, body, meta_data, std::move(body_writer),
+      std::move(metadata_writer),
+      base::BindLambdaForTesting(
+          [&](storage::mojom::ServiceWorkerResourceRecordPtr result) {
+            record = std::move(result);
+            loop.Quit();
+          }));
+  loop.Run();
+
+  return record;
 }
 
 }  // namespace
@@ -248,34 +305,40 @@ void ServiceWorkerRemoteProviderEndpoint::BindForServiceWorker(
   host_remote_.Bind(std::move(info->host_remote));
 }
 
-ServiceWorkerProviderHostAndInfo::ServiceWorkerProviderHostAndInfo(
-    base::WeakPtr<ServiceWorkerProviderHost> host,
+ServiceWorkerContainerHostAndInfo::ServiceWorkerContainerHostAndInfo(
+    base::WeakPtr<ServiceWorkerContainerHost> host,
     blink::mojom::ServiceWorkerProviderInfoForClientPtr info)
     : host(std::move(host)), info(std::move(info)) {}
 
-ServiceWorkerProviderHostAndInfo::~ServiceWorkerProviderHostAndInfo() = default;
+ServiceWorkerContainerHostAndInfo::~ServiceWorkerContainerHostAndInfo() =
+    default;
 
-base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
+base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWindow(
     int process_id,
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
-  std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
-      CreateProviderHostAndInfoForWindow(context, is_parent_frame_secure);
-  base::WeakPtr<ServiceWorkerProviderHost> host =
+  std::unique_ptr<ServiceWorkerContainerHostAndInfo> host_and_info =
+      CreateContainerHostAndInfoForWindow(context, is_parent_frame_secure);
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
       std::move(host_and_info->host);
   output_endpoint->BindForWindow(std::move(host_and_info->info));
 
+  // Establish a dummy connection to allow sending messages without errors.
+  mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      reporter;
+  auto dummy = reporter.InitWithNewPipeAndPassReceiver();
+
   // In production code this is called from NavigationRequest in the browser
   // process right before navigation commit.
-  host->container_host()->OnBeginNavigationCommit(
-      process_id, 1 /* route_id */,
-      network::mojom::CrossOriginEmbedderPolicy::kNone);
-  return host;
+  container_host->OnBeginNavigationCommit(process_id, 1 /* route_id */,
+                                          network::CrossOriginEmbedderPolicy(),
+                                          std::move(reporter));
+  return container_host;
 }
 
-std::unique_ptr<ServiceWorkerProviderHostAndInfo>
-CreateProviderHostAndInfoForWindow(
+std::unique_ptr<ServiceWorkerContainerHostAndInfo>
+CreateContainerHostAndInfoForWindow(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure) {
   mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
@@ -285,10 +348,10 @@ CreateProviderHostAndInfoForWindow(
   auto info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
   info->client_receiver = client_remote.InitWithNewEndpointAndPassReceiver();
   host_receiver = info->host_remote.InitWithNewEndpointAndPassReceiver();
-  return std::make_unique<ServiceWorkerProviderHostAndInfo>(
-      ServiceWorkerProviderHost::CreateForWindow(
-          context, are_ancestors_secure, FrameTreeNode::kFrameTreeNodeInvalidId,
-          std::move(host_receiver), std::move(client_remote)),
+  return std::make_unique<ServiceWorkerContainerHostAndInfo>(
+      context->CreateContainerHostForWindow(
+          std::move(host_receiver), are_ancestors_secure,
+          std::move(client_remote), FrameTreeNode::kFrameTreeNodeInvalidId),
       std::move(info));
 }
 
@@ -325,7 +388,7 @@ void StopServiceWorker(ServiceWorkerVersion* version) {
   run_loop.Run();
 }
 
-base::WeakPtr<ServiceWorkerProviderHost>
+std::unique_ptr<ServiceWorkerProviderHost>
 CreateProviderHostForServiceWorkerContext(
     int process_id,
     bool is_parent_frame_secure,
@@ -334,10 +397,9 @@ CreateProviderHostForServiceWorkerContext(
     ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
   auto provider_info =
       blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
-  base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::CreateForServiceWorker(
-          std::move(context), base::WrapRefCounted(hosted_version),
-          &provider_info);
+  auto host = std::make_unique<ServiceWorkerProviderHost>(
+      provider_info->host_remote.InitWithNewEndpointAndPassReceiver(),
+      hosted_version, std::move(context));
 
   host->CompleteStartWorkerPreparation(
       process_id,
@@ -346,22 +408,59 @@ CreateProviderHostForServiceWorkerContext(
   return host;
 }
 
+scoped_refptr<ServiceWorkerRegistration> CreateNewServiceWorkerRegistration(
+    ServiceWorkerRegistry* registry,
+    const blink::mojom::ServiceWorkerRegistrationOptions& options) {
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  base::RunLoop run_loop;
+  registry->CreateNewRegistration(
+      options,
+      base::BindLambdaForTesting(
+          [&](scoped_refptr<ServiceWorkerRegistration> new_registration) {
+            registration = std::move(new_registration);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  DCHECK(registration);
+  return registration;
+}
+
+scoped_refptr<ServiceWorkerVersion> CreateNewServiceWorkerVersion(
+    ServiceWorkerRegistry* registry,
+    scoped_refptr<ServiceWorkerRegistration> registration,
+    const GURL& script_url,
+    blink::mojom::ScriptType script_type) {
+  scoped_refptr<ServiceWorkerVersion> version;
+  base::RunLoop run_loop;
+  registry->CreateNewVersion(
+      std::move(registration), script_url, script_type,
+      base::BindLambdaForTesting(
+          [&](scoped_refptr<ServiceWorkerVersion> new_version) {
+            version = std::move(new_version);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  DCHECK(version);
+  return version;
+}
+
 scoped_refptr<ServiceWorkerRegistration>
 CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
                                           const GURL& scope,
-                                          const GURL& script) {
-  ServiceWorkerStorage* storage = context->storage();
-
+                                          const GURL& script,
+                                          int64_t resource_id) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = scope;
-  auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
-      options, storage->NewRegistrationId(), context->AsWeakPtr());
-  auto version = base::MakeRefCounted<ServiceWorkerVersion>(
-      registration.get(), script, blink::mojom::ScriptType::kClassic,
-      storage->NewVersionId(), context->AsWeakPtr());
-  std::vector<ServiceWorkerDatabase::ResourceRecord> records = {
-      ServiceWorkerDatabase::ResourceRecord(storage->NewResourceId(), script,
-                                            100)};
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateNewServiceWorkerRegistration(context->registry(), options);
+  scoped_refptr<ServiceWorkerVersion> version =
+      CreateNewServiceWorkerVersion(context->registry(), registration.get(),
+                                    script, blink::mojom::ScriptType::kClassic);
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
+  records.push_back(
+      storage::mojom::ServiceWorkerResourceRecord::New(resource_id, script,
+                                                       /*size_bytes=*/100));
   version->script_cache_map()->SetResources(records);
   version->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -370,77 +469,73 @@ CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
   return registration;
 }
 
-ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheSync(
+storage::mojom::ServiceWorkerResourceRecordPtr WriteToDiskCacheWithIdSync(
     ServiceWorkerStorage* storage,
     const GURL& script_url,
     int64_t resource_id,
     const std::vector<std::pair<std::string, std::string>>& headers,
     const std::string& body,
     const std::string& meta_data) {
-  base::RunLoop loop;
-  ServiceWorkerDatabase::ResourceRecord record =
-      WriteToDiskCacheAsync(storage, script_url, resource_id, headers, body,
-                            meta_data, loop.QuitClosure());
-  loop.Run();
-  return record;
+  std::unique_ptr<ServiceWorkerResponseWriter> body_writer =
+      storage->CreateResponseWriter(resource_id);
+  std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer =
+      storage->CreateResponseMetadataWriter(resource_id);
+  return WriteToDiskCacheSyncInternal(script_url, headers, body, meta_data,
+                                      std::move(body_writer),
+                                      std::move(metadata_writer));
 }
 
-ServiceWorkerDatabase::ResourceRecord
-WriteToDiskCacheWithCustomResponseInfoSync(
+storage::mojom::ServiceWorkerResourceRecordPtr WriteToDiskCacheSync(
     ServiceWorkerStorage* storage,
     const GURL& script_url,
-    int64_t resource_id,
-    std::unique_ptr<net::HttpResponseInfo> http_info,
+    const std::vector<std::pair<std::string, std::string>>& headers,
     const std::string& body,
     const std::string& meta_data) {
-  base::RunLoop loop;
-  ServiceWorkerDatabase::ResourceRecord record =
-      WriteToDiskCacheWithCustomResponseInfoAsync(
-          storage, script_url, resource_id, std::move(http_info), body,
-          meta_data, loop.QuitClosure());
-  loop.Run();
-  return record;
+  std::unique_ptr<ServiceWorkerResponseWriter> body_writer =
+      CreateNewResponseWriterSync(storage);
+  std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer =
+      storage->CreateResponseMetadataWriter(body_writer->response_id());
+  return WriteToDiskCacheSyncInternal(script_url, headers, body, meta_data,
+                                      std::move(body_writer),
+                                      std::move(metadata_writer));
 }
 
-ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheAsync(
+void WriteToDiskCacheAsync(
     ServiceWorkerStorage* storage,
     const GURL& script_url,
-    int64_t resource_id,
     const std::vector<std::pair<std::string, std::string>>& headers,
     const std::string& body,
     const std::string& meta_data,
-    base::OnceClosure callback) {
-  std::unique_ptr<net::HttpResponseInfo> info =
-      std::make_unique<net::HttpResponseInfo>();
-  info->request_time = base::Time::Now();
-  info->response_time = base::Time::Now();
-  info->headers =
-      base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.0 200 OK\0\0");
-  for (const auto& header : headers)
-    info->headers->AddHeader(header.first + ": " + header.second);
-  return WriteToDiskCacheWithCustomResponseInfoAsync(
-      storage, script_url, resource_id, std::move(info), body, meta_data,
-      std::move(callback));
+    WriteToDiskCacheCallback callback) {
+  std::unique_ptr<ServiceWorkerResponseWriter> body_writer =
+      CreateNewResponseWriterSync(storage);
+  std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer =
+      storage->CreateResponseMetadataWriter(body_writer->response_id());
+  WriteToDiskCacheAsyncInternal(
+      script_url, headers, body, meta_data, std::move(body_writer),
+      std::move(metadata_writer), std::move(callback));
 }
 
-ServiceWorkerDatabase::ResourceRecord
-WriteToDiskCacheWithCustomResponseInfoAsync(
-    ServiceWorkerStorage* storage,
-    const GURL& script_url,
-    int64_t resource_id,
-    std::unique_ptr<net::HttpResponseInfo> http_info,
-    const std::string& body,
-    const std::string& meta_data,
-    base::OnceClosure callback) {
-  base::RepeatingClosure barrier = base::BarrierClosure(2, std::move(callback));
-  auto body_writer = storage->CreateResponseWriter(resource_id);
-  WriteBodyToDiskCache(std::move(body_writer), std::move(http_info), body,
-                       barrier);
-  auto metadata_writer = storage->CreateResponseMetadataWriter(resource_id);
-  WriteMetaDataToDiskCache(std::move(metadata_writer), meta_data,
-                           std::move(barrier));
-  return ServiceWorkerDatabase::ResourceRecord(resource_id, script_url,
-                                               body.size());
+std::unique_ptr<ServiceWorkerResponseWriter> CreateNewResponseWriterSync(
+    ServiceWorkerStorage* storage) {
+  base::RunLoop run_loop;
+  std::unique_ptr<ServiceWorkerResponseWriter> writer;
+  int64_t resource_id = GetNewResourceIdSync(storage);
+  return storage->CreateResponseWriter(resource_id);
+}
+
+int64_t GetNewResourceIdSync(ServiceWorkerStorage* storage) {
+  base::RunLoop run_loop;
+  int64_t resource_id;
+  storage->GetNewResourceId(
+      base::BindLambdaForTesting([&](int64_t new_resource_id) {
+        DCHECK_NE(new_resource_id,
+                  blink::mojom::kInvalidServiceWorkerResourceId);
+        resource_id = new_resource_id;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  return resource_id;
 }
 
 MockServiceWorkerResponseReader::MockServiceWorkerResponseReader()
@@ -450,7 +545,18 @@ MockServiceWorkerResponseReader::~MockServiceWorkerResponseReader() {}
 
 void MockServiceWorkerResponseReader::ReadInfo(
     HttpResponseInfoIOBuffer* info_buf,
-    OnceCompletionCallback callback) {
+    net::CompletionOnceCallback callback) {
+  // We need to allocate HttpResponseInfo for
+  // ServiceWorkerCacheCacheWriterTest.CopyScript_Async to pass.
+  // It reads/writes response headers and the current implementation
+  // of ServiceWorkerCacheWriter::WriteInfo() requires a valid
+  // HttpResponseInfo. This workaround will be gone once we remove
+  // HttpResponseInfo dependencies from service worker codebase.
+  DCHECK(!info_buf->http_info);
+  info_buf->http_info = std::make_unique<net::HttpResponseInfo>();
+  info_buf->http_info->headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.0 200 OK\0\0");
+
   DCHECK(!expected_reads_.empty());
   ExpectedRead expected = expected_reads_.front();
   EXPECT_TRUE(expected.info);
@@ -467,7 +573,7 @@ void MockServiceWorkerResponseReader::ReadInfo(
 void MockServiceWorkerResponseReader::ReadData(
     net::IOBuffer* buf,
     int buf_len,
-    OnceCompletionCallback callback) {
+    net::CompletionOnceCallback callback) {
   DCHECK(!expected_reads_.empty());
   ExpectedRead expected = expected_reads_.front();
   EXPECT_FALSE(expected.info);
@@ -532,7 +638,7 @@ void MockServiceWorkerResponseReader::CompletePendingRead() {
   }
   pending_info_ = nullptr;
   pending_buffer_ = nullptr;
-  OnceCompletionCallback callback = std::move(pending_callback_);
+  net::CompletionOnceCallback callback = std::move(pending_callback_);
   pending_callback_.Reset();
   std::move(callback).Run(expected.result);
 }
@@ -546,7 +652,7 @@ MockServiceWorkerResponseWriter::~MockServiceWorkerResponseWriter() = default;
 
 void MockServiceWorkerResponseWriter::WriteInfo(
     HttpResponseInfoIOBuffer* info_buf,
-    OnceCompletionCallback callback) {
+    net::CompletionOnceCallback callback) {
   DCHECK(!expected_writes_.empty());
   ExpectedWrite write = expected_writes_.front();
   EXPECT_TRUE(write.is_info);
@@ -565,7 +671,7 @@ void MockServiceWorkerResponseWriter::WriteInfo(
 void MockServiceWorkerResponseWriter::WriteData(
     net::IOBuffer* buf,
     int buf_len,
-    OnceCompletionCallback callback) {
+    net::CompletionOnceCallback callback) {
   DCHECK(!expected_writes_.empty());
   ExpectedWrite write = expected_writes_.front();
   EXPECT_FALSE(write.is_info);
@@ -637,13 +743,12 @@ ServiceWorkerUpdateCheckTestUtils::CreatePausedCacheWriter(
       worker_test_helper->context()->storage()->CreateResponseWriter(
           new_resource_id),
       true /* pause_when_not_identical */);
-  auto info = std::make_unique<net::HttpResponseInfo>();
-  info->request_time = base::Time::Now();
-  info->response_time = base::Time::Now();
-  info->was_cached = false;
-  info->headers = base::MakeRefCounted<net::HttpResponseHeaders>(new_headers);
-  cache_writer->headers_to_write_ =
-      base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(info));
+  cache_writer->response_head_to_write_ =
+      network::mojom::URLResponseHead::New();
+  cache_writer->response_head_to_write_->request_time = base::Time::Now();
+  cache_writer->response_head_to_write_->response_time = base::Time::Now();
+  cache_writer->response_head_to_write_->headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>(new_headers);
   cache_writer->bytes_compared_ = bytes_compared;
   cache_writer->data_to_write_ = base::MakeRefCounted<net::WrappedIOBuffer>(
       pending_network_buffer ? pending_network_buffer->buffer() : nullptr);
@@ -689,7 +794,8 @@ void ServiceWorkerUpdateCheckTestUtils::SetComparedScriptInfoForVersion(
       (compare_result ==
        ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent)
           ? script_url
-          : GURL());
+          : GURL(),
+      network::CrossOriginEmbedderPolicy());
 }
 
 void ServiceWorkerUpdateCheckTestUtils::
@@ -743,7 +849,7 @@ bool ServiceWorkerUpdateCheckTestUtils::VerifyStoredResponse(
     ServiceWorkerStorage* storage,
     const std::string& expected_body) {
   DCHECK(storage);
-  if (resource_id == ServiceWorkerConsts::kInvalidServiceWorkerResourceId)
+  if (resource_id == blink::mojom::kInvalidServiceWorkerResourceId)
     return false;
 
   // Verify the response status.
@@ -779,6 +885,52 @@ bool ServiceWorkerUpdateCheckTestUtils::VerifyStoredResponse(
     EXPECT_EQ(expected_body, received_body);
   }
   return true;
+}
+
+void ReadDataPipeInternal(mojo::DataPipeConsumerHandle handle,
+                          std::string* result,
+                          base::OnceClosure quit_closure) {
+  while (true) {
+    uint32_t num_bytes;
+    const void* buffer = nullptr;
+    MojoResult rv =
+        handle.BeginReadData(&buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
+    switch (rv) {
+      case MOJO_RESULT_BUSY:
+      case MOJO_RESULT_INVALID_ARGUMENT:
+        NOTREACHED();
+        return;
+      case MOJO_RESULT_FAILED_PRECONDITION:
+        std::move(quit_closure).Run();
+        return;
+      case MOJO_RESULT_SHOULD_WAIT:
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(&ReadDataPipeInternal, handle, result,
+                                      std::move(quit_closure)));
+        return;
+      case MOJO_RESULT_OK:
+        EXPECT_NE(nullptr, buffer);
+        EXPECT_GT(num_bytes, 0u);
+        uint32_t before_size = result->size();
+        result->append(static_cast<const char*>(buffer), num_bytes);
+        uint32_t read_size = result->size() - before_size;
+        EXPECT_EQ(num_bytes, read_size);
+        rv = handle.EndReadData(read_size);
+        EXPECT_EQ(MOJO_RESULT_OK, rv);
+        break;
+    }
+  }
+  NOTREACHED();
+  return;
+}
+
+std::string ReadDataPipe(mojo::ScopedDataPipeConsumerHandle handle) {
+  EXPECT_TRUE(handle.is_valid());
+  std::string result;
+  base::RunLoop loop;
+  ReadDataPipeInternal(handle.get(), &result, loop.QuitClosure());
+  loop.Run();
+  return result;
 }
 
 }  // namespace content

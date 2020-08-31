@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 
-// Menu model for the menu button in a hosted app browser window.
+// Menu model for the menu button in a web app browser window.
 class WebAppMenuModel : public AppMenuModel {
  public:
   static constexpr int kUninstallAppCommandId = 1;
@@ -16,13 +16,16 @@ class WebAppMenuModel : public AppMenuModel {
   WebAppMenuModel(ui::AcceleratorProvider* provider, Browser* browser);
   ~WebAppMenuModel() override;
 
- private:
   // AppMenuModel:
-  void Build() override;
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
+
+ protected:
+  // AppMenuModel:
+  void Build() override;
   void LogMenuAction(AppMenuAction action_id) override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(WebAppMenuModel);
 };
 

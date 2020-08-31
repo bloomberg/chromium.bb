@@ -27,7 +27,8 @@ class ImageButton;
 class ExtensionsMenuItemView : public views::View,
                                public views::ButtonListener {
  public:
-  static constexpr int kSecondaryIconSizeDp = 16;
+  static constexpr int kMenuItemHeightDp = 40;
+  static constexpr const char kClassName[] = "ExtensionsMenuItemView";
 
   ExtensionsMenuItemView(
       Browser* browser,
@@ -37,17 +38,26 @@ class ExtensionsMenuItemView : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // views::View:
+  const char* GetClassName() const override;
+  void OnThemeChanged() override;
+
   void UpdatePinButton();
 
   bool IsContextMenuRunning();
 
   bool IsPinned();
 
-  ExtensionsMenuButton* primary_action_button_for_testing();
-  views::ImageButton* pin_button_for_testing() { return pin_button_; }
-  ToolbarActionViewController* view_controller_for_testing() {
+  ToolbarActionViewController* view_controller() { return controller_.get(); }
+  const ToolbarActionViewController* view_controller() const {
     return controller_.get();
   }
+
+  ExtensionsMenuButton* primary_action_button_for_testing();
+  views::ImageButton* context_menu_button_for_testing() {
+    return context_menu_button_;
+  }
+  views::ImageButton* pin_button_for_testing() { return pin_button_; }
 
  private:
   ExtensionsMenuButton* const primary_action_button_;

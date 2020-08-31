@@ -817,24 +817,32 @@ DEF_TEST(SkSLShortCircuitBoolFolding, r) {
          "        sk_FragColor.r = 1;"
          "    } else if (false && expr1) {"  // -> if (false) -> block removed
          "        sk_FragColor.r = -2;"
-         "    } else if (false || expr2) {"  // -> if (expr2)
+         "    } else if (true ^^ expr1) {"   // -> if (!expr1)
          "        sk_FragColor.r = 3;"
-         "    } else if (true || expr2) {"   // -> if (true) -> replaces unreachable else
+         "    } else if (false ^^ expr2) {"  // -> if (expr2)
          "        sk_FragColor.r = 4;"
+         "    } else if (false || expr2) {"  // -> if (expr2)
+         "        sk_FragColor.r = 5;"
+         "    } else if (true || expr2) {"   // -> if (true) -> replaces unreachable else
+         "        sk_FragColor.r = 6;"
          "    } else {"                      // removed
-         "        sk_FragColor.r = -5;"
+         "        sk_FragColor.r = -7;"
          "    }"
          // Test short-circuiting of right hand side boolean literals
          "    if (expr1 && true) {"          // -> if (expr1)
          "        sk_FragColor.r = 1;"
          "    } else if (expr1 && false) {"  // -> if (false) -> block removed
          "        sk_FragColor.r = -2;"
-         "    } else if (expr2 || false) {"  // -> if (expr2)
+         "    } else if (expr1 ^^ true) {"   // -> if (!expr1)
          "        sk_FragColor.r = 3;"
-         "    } else if (expr2 || true) {"   // -> if (true) -> replaces unreachable else
+         "    } else if (expr2 ^^ false) {"  // -> if (expr2)
          "        sk_FragColor.r = 4;"
+         "    } else if (expr2 || false) {"  // -> if (expr2)
+         "        sk_FragColor.r = 5;"
+         "    } else if (expr2 || true) {"   // -> if (true) -> replaces unreachable else
+         "        sk_FragColor.r = 6;"
          "    } else {"                      // removed
-         "        sk_FragColor.r = -5;"
+         "        sk_FragColor.r = -7;"
          "    }"
          "}",
          *SkSL::ShaderCapsFactory::Default(),
@@ -845,17 +853,25 @@ DEF_TEST(SkSLShortCircuitBoolFolding, r) {
          "    bool expr2 = gl_FragCoord.y > 0.0;\n"
          "    if (expr1) {\n"
          "        sk_FragColor.x = 1.0;\n"
-         "    } else if (expr2) {\n"
+         "    } else if (!expr1) {\n"
          "        sk_FragColor.x = 3.0;\n"
-         "    } else {\n"
+         "    } else if (expr2) {\n"
          "        sk_FragColor.x = 4.0;\n"
+         "    } else if (expr2) {\n"
+         "        sk_FragColor.x = 5.0;\n"
+         "    } else {\n"
+         "        sk_FragColor.x = 6.0;\n"
          "    }\n"
          "    if (expr1) {\n"
          "        sk_FragColor.x = 1.0;\n"
-         "    } else if (expr2) {\n"
+         "    } else if (!expr1) {\n"
          "        sk_FragColor.x = 3.0;\n"
-         "    } else {\n"
+         "    } else if (expr2) {\n"
          "        sk_FragColor.x = 4.0;\n"
+         "    } else if (expr2) {\n"
+         "        sk_FragColor.x = 5.0;\n"
+         "    } else {\n"
+         "        sk_FragColor.x = 6.0;\n"
          "    }\n"
          "}\n");
 }
@@ -1245,11 +1261,11 @@ DEF_TEST(SkSLFragCoord, r) {
          SkSL::Program::kVertex_Kind);
 
     test(r,
-         "in uniform float4 sk_RTAdjust; in float4 pos; void main() { sk_Position = pos; }",
+         "uniform float4 sk_RTAdjust; in float4 pos; void main() { sk_Position = pos; }",
          *SkSL::ShaderCapsFactory::CannotUseFragCoord(),
          "#version 400\n"
          "out vec4 sk_FragCoord_Workaround;\n"
-         "in uniform vec4 sk_RTAdjust;\n"
+         "uniform vec4 sk_RTAdjust;\n"
          "in vec4 pos;\n"
          "void main() {\n"
          "    sk_FragCoord_Workaround = (gl_Position = pos);\n"

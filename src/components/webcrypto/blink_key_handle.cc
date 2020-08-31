@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/status.h"
@@ -84,7 +84,7 @@ class AsymKey : public Key {
 };
 
 Key* GetKey(const blink::WebCryptoKey& key) {
-  return reinterpret_cast<Key*>(key.Handle());
+  return static_cast<Key*>(key.Handle());
 }
 
 }  // namespace

@@ -27,7 +27,7 @@ For a concrete example, take a look at
 
 The general flow in tests will be:
 
-1. Load the HTML file with loadUrlAndAwaitInitialization - this ensures that any
+1. Load the HTML file with loadFileAndAwaitInitialization - this ensures that any
    pre-test setup in JavaScript is completed.
 2. Run some code on Java's side.
 3. Trigger some JavaScript code and wait for it to signal that it is finished.
@@ -169,10 +169,22 @@ parameterized class. The general things you will need to are:
 ### Add The New File
 
 Add the new test class to [`//chrome/android/BUILD.gn`][build_gn]. If it is a VR
-test class, it should be added to the `java_files` list of the
+test class, it should be added to the `sources` list of the
 `chrome_test_vr_java` `android_library` target. If it is an AR test class, it
-should be added to the `java_files` list of the `chrome_test_ar_java`
+should be added to the `sources` list of the `chrome_test_ar_java`
 `android_library` target.
+
+## AR Playback Datasets
+
+If you are adding an AR test and none of the existing datasets work for it, you
+can create and upload a new dataset that fits your needs. Dataset creation
+requires some internal tools, so contact either bsheedy@ or bialpio@ for
+instructions.
+
+Once you have your playback dataset (.mp4 file), simply place it in
+`//chrome/test/data/xr/ar_playback_datasets/` and upload it using
+`upload_to_google_storage.py` to the `chromium-ar-test-apks/playback_datasets`
+bucket.
 
 
 [xr_instrumentation_deep_dive]: https://chromium.googlesource.com/chromium/src/+/master/chrome/android/javatests/src/org/chromium/chrome/browser/vr/xr_instrumentation_deep_dive.md

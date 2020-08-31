@@ -20,6 +20,8 @@
 #include "dawn_native/d3d12/CommandRecordingContext.h"
 #include "dawn_native/d3d12/D3D12Error.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
+#include "dawn_native/d3d12/HeapD3D12.h"
+#include "dawn_native/d3d12/ResidencyManagerD3D12.h"
 
 namespace dawn_native { namespace d3d12 {
 
@@ -52,6 +54,10 @@ namespace dawn_native { namespace d3d12 {
             if (usage & wgpu::BufferUsage::Storage) {
                 resourceState |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
             }
+            if (usage & kReadOnlyStorageBuffer) {
+                resourceState |= (D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
+                                  D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+            }
             if (usage & wgpu::BufferUsage::Indirect) {
                 resourceState |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
             }
@@ -78,7 +84,9 @@ namespace dawn_native { namespace d3d12 {
         D3D12_RESOURCE_DESC resourceDescriptor;
         resourceDescriptor.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
         resourceDescriptor.Alignment = 0;
-        resourceDescriptor.Width = GetD3D12Size();
+        // TODO(cwallez@chromium.org): Have a global "zero" buffer that can do everything instead
+        // of creating a new 4-byte buffer?
+        resourceDescriptor.Width = std::max(GetSize(), uint64_t(4u));
         resourceDescriptor.Height = 1;
         resourceDescriptor.DepthOrArraySize = 1;
         resourceDescriptor.MipLevels = 1;
@@ -119,13 +127,31 @@ namespace dawn_native { namespace d3d12 {
         DestroyInternal();
     }
 
-    uint32_t Buffer::GetD3D12Size() const {
-        // TODO(enga@google.com): TODO investigate if this needs to be a constraint at the API level
-        return Align(GetSize(), 256);
-    }
-
     ComPtr<ID3D12Resource> Buffer::GetD3D12Resource() const {
         return mResourceAllocation.GetD3D12Resource();
+    }
+
+    // When true is returned, a D3D12_RESOURCE_BARRIER has been created and must be used in a
+    // ResourceBarrier call. Failing to do so will cause the tracked state to become invalid and can
+    // cause subsequent errors.
+    bool Buffer::TrackUsageAndGetResourceBarrier(CommandRecordingContext* commandContext,
+                                                 D3D12_RESOURCE_BARRIER* barrier,
+                                                 wgpu::BufferUsage newUsage) {
+        // Track the underlying heap to ensure residency.
+        Heap* heap = ToBackend(mResourceAllocation.GetResourceHeap());
+        commandContext->TrackHeapUsage(heap, GetDevice()->GetPendingCommandSerial());
+
+        // Return the resource barrier.
+        return TransitionUsageAndGetResourceBarrier(commandContext, barrier, newUsage);
+    }
+
+    void Buffer::TrackUsageAndTransitionNow(CommandRecordingContext* commandContext,
+                                            wgpu::BufferUsage newUsage) {
+        D3D12_RESOURCE_BARRIER barrier;
+
+        if (TrackUsageAndGetResourceBarrier(commandContext, &barrier, newUsage)) {
+            commandContext->GetCommandList()->ResourceBarrier(1, &barrier);
+        }
     }
 
     // When true is returned, a D3D12_RESOURCE_BARRIER has been created and must be used in a
@@ -203,15 +229,6 @@ namespace dawn_native { namespace d3d12 {
         return true;
     }
 
-    void Buffer::TransitionUsageNow(CommandRecordingContext* commandContext,
-                                    wgpu::BufferUsage usage) {
-        D3D12_RESOURCE_BARRIER barrier;
-
-        if (TransitionUsageAndGetResourceBarrier(commandContext, &barrier, usage)) {
-            commandContext->GetCommandList()->ResourceBarrier(1, &barrier);
-        }
-    }
-
     D3D12_GPU_VIRTUAL_ADDRESS Buffer::GetVA() const {
         return mResourceAllocation.GetGPUPointer();
     }
@@ -230,7 +247,12 @@ namespace dawn_native { namespace d3d12 {
     }
 
     MaybeError Buffer::MapAtCreationImpl(uint8_t** mappedPointer) {
-        mWrittenMappedRange = {0, GetSize()};
+        // The mapped buffer can be accessed at any time, so it must be locked to ensure it is never
+        // evicted. This buffer should already have been made resident when it was created.
+        Heap* heap = ToBackend(mResourceAllocation.GetResourceHeap());
+        DAWN_TRY(ToBackend(GetDevice())->GetResidencyManager()->LockHeap(heap));
+
+        mWrittenMappedRange = {0, static_cast<size_t>(GetSize())};
         DAWN_TRY(CheckHRESULT(GetD3D12Resource()->Map(0, &mWrittenMappedRange,
                                                       reinterpret_cast<void**>(mappedPointer)),
                               "D3D12 map at creation"));
@@ -238,8 +260,13 @@ namespace dawn_native { namespace d3d12 {
     }
 
     MaybeError Buffer::MapReadAsyncImpl(uint32_t serial) {
+        // The mapped buffer can be accessed at any time, so we must make the buffer resident and
+        // lock it to ensure it is never evicted.
+        Heap* heap = ToBackend(mResourceAllocation.GetResourceHeap());
+        DAWN_TRY(ToBackend(GetDevice())->GetResidencyManager()->LockHeap(heap));
+
         mWrittenMappedRange = {};
-        D3D12_RANGE readRange = {0, GetSize()};
+        D3D12_RANGE readRange = {0, static_cast<size_t>(GetSize())};
         char* data = nullptr;
         DAWN_TRY(
             CheckHRESULT(GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>(&data)),
@@ -252,7 +279,12 @@ namespace dawn_native { namespace d3d12 {
     }
 
     MaybeError Buffer::MapWriteAsyncImpl(uint32_t serial) {
-        mWrittenMappedRange = {0, GetSize()};
+        // The mapped buffer can be accessed at any time, so we must make the buffer resident and
+        // lock it to ensure it is never evicted.
+        Heap* heap = ToBackend(mResourceAllocation.GetResourceHeap());
+        DAWN_TRY(ToBackend(GetDevice())->GetResidencyManager()->LockHeap(heap));
+
+        mWrittenMappedRange = {0, static_cast<size_t>(GetSize())};
         char* data = nullptr;
         DAWN_TRY(CheckHRESULT(
             GetD3D12Resource()->Map(0, &mWrittenMappedRange, reinterpret_cast<void**>(&data)),
@@ -266,11 +298,31 @@ namespace dawn_native { namespace d3d12 {
 
     void Buffer::UnmapImpl() {
         GetD3D12Resource()->Unmap(0, &mWrittenMappedRange);
+        // When buffers are mapped, they are locked to keep them in resident memory. We must unlock
+        // them when they are unmapped.
+        Heap* heap = ToBackend(mResourceAllocation.GetResourceHeap());
+        ToBackend(GetDevice())->GetResidencyManager()->UnlockHeap(heap);
         mWrittenMappedRange = {};
     }
 
     void Buffer::DestroyImpl() {
+        // We must ensure that if a mapped buffer is destroyed, it does not leave a dangling lock
+        // reference on its heap.
+        if (IsMapped()) {
+            Heap* heap = ToBackend(mResourceAllocation.GetResourceHeap());
+            ToBackend(GetDevice())->GetResidencyManager()->UnlockHeap(heap);
+        }
+
         ToBackend(GetDevice())->DeallocateMemory(mResourceAllocation);
+    }
+
+    bool Buffer::CheckIsResidentForTesting() const {
+        Heap* heap = ToBackend(mResourceAllocation.GetResourceHeap());
+        return heap->IsInList() || heap->IsResidencyLocked();
+    }
+
+    bool Buffer::CheckAllocationMethodForTesting(AllocationMethod allocationMethod) const {
+        return mResourceAllocation.GetInfo().mMethod == allocationMethod;
     }
 
     MapRequestTracker::MapRequestTracker(Device* device) : mDevice(device) {

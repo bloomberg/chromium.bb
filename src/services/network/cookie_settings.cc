@@ -7,9 +7,12 @@
 #include <functional>
 
 #include "base/bind.h"
+#include "base/strings/string_split.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 #include "net/base/net_errors.h"
-#include "net/base/static_cookie_policy.h"
 #include "net/cookies/cookie_util.h"
+#include "net/cookies/static_cookie_policy.h"
+#include "services/network/public/cpp/features.h"
 
 namespace network {
 namespace {
@@ -17,10 +20,41 @@ bool IsDefaultSetting(const ContentSettingPatternSource& setting) {
   return setting.primary_pattern.MatchesAllHosts() &&
          setting.secondary_pattern.MatchesAllHosts();
 }
+
+void AppendEmergencyLegacyCookieAccess(
+    ContentSettingsForOneType* settings_for_legacy_cookie_access) {
+  if (!base::FeatureList::IsEnabled(features::kEmergencyLegacyCookieAccess))
+    return;
+
+  std::vector<std::string> patterns =
+      SplitString(features::kEmergencyLegacyCookieAccessParam.Get(), ",",
+                  base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  for (const auto& pattern_str : patterns) {
+    // Only primary pattern and the setting actually looked at here.
+    settings_for_legacy_cookie_access->push_back(ContentSettingPatternSource(
+        ContentSettingsPattern::FromString(pattern_str),
+        ContentSettingsPattern::Wildcard(),
+        /* legacy, see CookieSettingsBase::GetCookieAccessSemanticsForDomain */
+        base::Value::FromUniquePtrValue(
+            content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
+        std::string(), false));
+  }
+}
+
 }  // namespace
 
-CookieSettings::CookieSettings() {}
-CookieSettings::~CookieSettings() {}
+CookieSettings::CookieSettings() {
+  AppendEmergencyLegacyCookieAccess(&settings_for_legacy_cookie_access_);
+}
+
+CookieSettings::~CookieSettings() = default;
+
+void CookieSettings::set_content_settings_for_legacy_cookie_access(
+    const ContentSettingsForOneType& settings) {
+  settings_for_legacy_cookie_access_ = settings;
+  AppendEmergencyLegacyCookieAccess(&settings_for_legacy_cookie_access_);
+}
 
 SessionCleanupCookieStore::DeleteCookiePredicate
 CookieSettings::CreateDeleteCookieOnExitPredicate() const {
@@ -132,7 +166,33 @@ void CookieSettings::GetCookieSettingInternal(
     }
   }
 
-  if (block_third && is_third_party_request)
+  bool block = block_third && is_third_party_request;
+  if (block) {
+    for (const auto& entry : storage_access_grants_) {
+      // If a valid entry exists that matches both our first party and request
+      // url this indicates a Storage Access API grant that may unblock
+      // storage access despite third party cookies being blocked.
+      // ContentSettingsType::STORAGE_ACCESS stores grants in the following
+      // manner:
+      // Primary Pattern:   Embedded site requiring third party storage access
+      // Secondary Pattern: Top-Level site hosting embedded content
+      // Value:             CONTENT_SETTING_[ALLOW/BLOCK] indicating grant
+      //                    status
+      if (!entry.IsExpired() && entry.primary_pattern.Matches(url) &&
+          entry.secondary_pattern.Matches(first_party_url)) {
+        ContentSetting storage_access_setting = entry.GetContentSetting();
+        // We'll only utilize the SAA grant if our value is set to
+        // CONTENT_SETTING_ALLOW as other values would indicate the user
+        // rejected a prompt to allow access.
+        if (storage_access_setting == CONTENT_SETTING_ALLOW)
+          block = false;
+
+        break;
+      }
+    }
+  }
+
+  if (block)
     *cookie_setting = CONTENT_SETTING_BLOCK;
 }
 

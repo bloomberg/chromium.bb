@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2013 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -30,6 +30,11 @@ CONTENTS = {
 
 
 class IsolateServerArchiveSmokeTest(unittest.TestCase):
+  # This test is touching the live infrastructure. It's a pain if your IP
+  # is not whitelisted so do not run them for now. They should use a local fake
+  # web service instead.
+  no_run = 1
+
   def setUp(self):
     super(IsolateServerArchiveSmokeTest, self).setUp()
     # The namespace must end in '-gzip' since all files are now compressed
@@ -103,7 +108,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
     with open(os.path.join(self.test_data, name), 'wb') as f:
       # Write 2.1gb.
       data = os.urandom(1024)
-      for _ in xrange(2150 * 1024):
+      for _ in range(2150 * 1024):
         f.write(data)
     self._archive_given_files([name])
 
@@ -112,13 +117,13 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
       # Create multiple files over 2.5gb. This test exists to stress the virtual
       # address space on 32 bits systems
       files = []
-      for i in xrange(5):
+      for i in range(5):
         name = '512mb_%d.7z' % i
         files.append(name)
         with open(os.path.join(self.test_data, name), 'wb') as f:
           # Write 512mb.
           data = os.urandom(1024)
-          for _ in xrange(512 * 1024):
+          for _ in range(512 * 1024):
             f.write(data)
       self._archive_given_files(files)
 

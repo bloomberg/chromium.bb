@@ -62,11 +62,15 @@ class FormDataImporter {
 
   // Checks suitability of |profile| for adding to the user's set of profiles.
   static bool IsValidLearnableProfile(const AutofillProfile& profile,
-                                      const std::string& app_locale);
+                                      const std::string& finch_country_code,
+                                      const std::string& app_locale,
+                                      LogBuffer* import_log_buffer);
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   LocalCardMigrationManager* local_card_migration_manager() {
     return local_card_migration_manager_.get();
   }
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
  protected:
   // Exposed for testing.
@@ -75,11 +79,13 @@ class FormDataImporter {
     credit_card_save_manager_ = std::move(credit_card_save_manager);
   }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Exposed for testing.
   void set_local_card_migration_manager(
       std::unique_ptr<LocalCardMigrationManager> local_card_migration_manager) {
     local_card_migration_manager_ = std::move(local_card_migration_manager);
   }
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
  private:
   // Scans the given |form| for importable Autofill data. If the form includes
@@ -90,16 +96,16 @@ class FormDataImporter {
   // data. If the form contains credit card data already present in a local
   // credit card entry *and* |should_return_local_card| is true, the data is
   // stored into |imported_credit_card| so that we can prompt the user whether
-  // to upload it. If the form contains UPI/VPA data and
-  // |credit_card_autofill_enabled| is true, the VPA value will be stored into
-  // |imported_vpa|. Returns |true| if sufficient address or credit card data
+  // to upload it. If the form contains UPI data and
+  // |credit_card_autofill_enabled| is true, the UPI ID will be stored into
+  // |imported_upi_id|. Returns |true| if sufficient address or credit card data
   // was found. Exposed for testing.
   bool ImportFormData(const FormStructure& form,
                       bool profile_autofill_enabled,
                       bool credit_card_autofill_enabled,
                       bool should_return_local_card,
                       std::unique_ptr<CreditCard>* imported_credit_card,
-                      base::Optional<std::string>* imported_vpa);
+                      base::Optional<std::string>* imported_upi_id);
 
   // Go through the |form| fields and attempt to extract and import valid
   // address profiles. Returns true on extraction success of at least one
@@ -110,7 +116,8 @@ class FormDataImporter {
   // Helper method for ImportAddressProfiles which only considers the fields for
   // a specified |section|.
   bool ImportAddressProfileForSection(const FormStructure& form,
-                                      const std::string& section);
+                                      const std::string& section,
+                                      LogBuffer* import_log_buffer);
 
   // Go through the |form| fields and attempt to extract a new credit card in
   // |imported_credit_card|, or update an existing card.
@@ -126,9 +133,9 @@ class FormDataImporter {
   CreditCard ExtractCreditCardFromForm(const FormStructure& form,
                                        bool* hasDuplicateFieldType);
 
-  // Go through the |form| fields and find a UPI/VPA value to import. The return
-  // value will be empty if no VPA was found.
-  base::Optional<std::string> ImportVPA(const FormStructure& form);
+  // Go through the |form| fields and find a UPI ID to import. The return value
+  // will be empty if no UPI ID was found.
+  base::Optional<std::string> ImportUpiId(const FormStructure& form);
 
   // Whether a dynamic change form is imported.
   bool from_dynamic_change_form_ = false;
@@ -143,11 +150,13 @@ class FormDataImporter {
   // Responsible for managing credit card save flows (local or upload).
   std::unique_ptr<CreditCardSaveManager> credit_card_save_manager_;
 
-  // Responsible for managing UPI/VPA save flows.
-  std::unique_ptr<UpiVpaSaveManager> upi_vpa_save_manager_;
-
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Responsible for migrating locally saved credit cards to Google Pay.
   std::unique_ptr<LocalCardMigrationManager> local_card_migration_manager_;
+
+  // Responsible for managing UPI/VPA save flows.
+  std::unique_ptr<UpiVpaSaveManager> upi_vpa_save_manager_;
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
   // The personal data manager, used to save and load personal data to/from the
   // web database.  This is overridden by the AutofillManagerTest.
@@ -212,7 +221,7 @@ class FormDataImporter {
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            ImportFormData_TwoAddressesOneCreditCard);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_DontSetVPAWhenOnlyCreditCardExists);
+                           ImportFormData_DontSetUpiIdWhenOnlyCreditCardExists);
   FRIEND_TEST_ALL_PREFIXES(
       FormDataImporterTest,
       Metrics_SubmittedServerCardExpirationStatus_FullServerCardMatch);
@@ -234,9 +243,9 @@ class FormDataImporter {
   FRIEND_TEST_ALL_PREFIXES(
       FormDataImporterTest,
       Metrics_SubmittedDifferentServerCardExpirationStatus_EmptyExpirationYear);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportVPA);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportVPADisabled);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportVPAIgnoreNonVPA);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportUpiId);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportUpiIdDisabled);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportUpiIdIgnoreNonUpiId);
 
   DISALLOW_COPY_AND_ASSIGN(FormDataImporter);
 };

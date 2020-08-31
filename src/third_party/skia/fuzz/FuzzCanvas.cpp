@@ -32,7 +32,6 @@
 #include "include/core/SkTextBlob.h"
 #include "include/effects/Sk1DPathEffect.h"
 #include "include/effects/Sk2DPathEffect.h"
-#include "include/effects/SkBlurMaskFilter.h"
 #include "include/effects/SkColorMatrixFilter.h"
 #include "include/effects/SkCornerPathEffect.h"
 #include "include/effects/SkDashPathEffect.h"
@@ -49,7 +48,7 @@
 #include "src/utils/SkUTF.h"
 #include "tools/flags/CommandLineFlags.h"
 
-#if SK_SUPPORT_GPU
+#ifdef SK_GL
 #include "include/gpu/gl/GrGLFunctions.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/gl/GrGLGpu.h"
@@ -1376,46 +1375,9 @@ static void fuzz_canvas(Fuzz* fuzz, SkCanvas* canvas, int depth = 9) {
                 break;
             }
             case 42: {
-                SkBitmap img = make_fuzz_bitmap(fuzz);
-                SkIRect center;
-                SkRect dst;
-                bool usePaint;
-                fuzz->next(&usePaint);
-                if (usePaint) {
-                    fuzz_paint(fuzz, &paint, depth - 1);
-                }
-                if (make_fuzz_t<bool>(fuzz)) {
-                    fuzz->next(&center);
-                } else {  // Make valid center, see SkLatticeIter::Valid().
-                    if (img.width() == 0 || img.height() == 0) {
-                        // bitmap may not have had its pixels initialized.
-                        break;
-                    }
-                    fuzz->nextRange(&center.fLeft, 0, img.width() - 1);
-                    fuzz->nextRange(&center.fTop, 0, img.height() - 1);
-                    fuzz->nextRange(&center.fRight, center.fLeft + 1, img.width());
-                    fuzz->nextRange(&center.fBottom, center.fTop + 1, img.height());
-                }
-                fuzz->next(&dst);
-                canvas->drawBitmapNine(img, center, dst, usePaint ? &paint : nullptr);
                 break;
             }
             case 43: {
-                SkBitmap img = make_fuzz_bitmap(fuzz);
-                bool usePaint;
-                SkRect dst;
-                fuzz->next(&usePaint, &dst);
-                if (usePaint) {
-                    fuzz_paint(fuzz, &paint, depth - 1);
-                }
-                constexpr int kMax = 6;
-                int xDivs[kMax], yDivs[kMax];
-                SkCanvas::Lattice lattice{xDivs, yDivs, nullptr, 0, 0, nullptr, nullptr};
-                fuzz->nextRange(&lattice.fXCount, 2, kMax);
-                fuzz->nextRange(&lattice.fYCount, 2, kMax);
-                fuzz->nextN(xDivs, lattice.fXCount);
-                fuzz->nextN(yDivs, lattice.fYCount);
-                canvas->drawBitmapLattice(img, lattice, dst, usePaint ? &paint : nullptr);
                 break;
             }
             case 44: {
@@ -1645,7 +1607,7 @@ DEF_FUZZ(SerializedImageFilter, fuzz) {
     canvas.restore();
 }
 
-#if SK_SUPPORT_GPU
+#ifdef SK_GL
 
 static void dump_GPU_info(GrContext* context) {
     const GrGLInterface* gl = static_cast<GrGLGpu*>(context->priv().getGpu())
@@ -1705,7 +1667,7 @@ DEF_FUZZ(_DumpCanvas, fuzz) {
     SkDynamicMemoryWStream stream;
     SkJSONWriter writer(&stream, SkJSONWriter::Mode::kPretty);
     writer.beginObject(); // root
-    debugCanvas.toJSON(writer, dataManager, debugCanvas.getSize(), nullCanvas.get());
+    debugCanvas.toJSON(writer, dataManager, nullCanvas.get());
     writer.endObject(); // root
     writer.flush();
     sk_sp<SkData> json = stream.detachAsData();

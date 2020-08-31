@@ -7,16 +7,25 @@
 
 #include "net/base/net_export.h"
 
-namespace spdy {
+NET_EXPORT_PRIVATE extern bool spdy_hpack_use_indexed_name;
 
 inline bool GetSpdyReloadableFlagImpl(bool flag) {
   return flag;
 }
 
+#define SPDY_CODE_COUNT_IMPL(name) \
+  do {                             \
+  } while (0)
+
+namespace spdy {
+
 inline bool GetSpdyRestartFlagImpl(bool flag) {
   return flag;
 }
 
+#define SPDY_CODE_COUNT_N_IMPL(name, instance, total) \
+  do {                                                \
+  } while (0)
 }  // namespace spdy
 
 #endif  // NET_SPDY_PLATFORM_IMPL_SPDY_FLAGS_IMPL_H_

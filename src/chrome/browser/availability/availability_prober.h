@@ -42,8 +42,7 @@ class SimpleURLLoader;
 class SharedURLLoaderFactory;
 }  // namespace network
 
-typedef base::RepeatingCallback<void(bool)>
-    AvailabilityProberOnCompleteCallback;
+typedef base::OnceCallback<void(bool)> AvailabilityProberOnCompleteCallback;
 
 // This class is a utility to probe a given URL with a given set of behaviors.
 // This can be used for determining whether a specific network resource is
@@ -71,13 +70,19 @@ class AvailabilityProber
 
   // Callers who wish to use this class should add a value to this enum. This
   // enum is mapped to a string value which is then used in histograms and
-  // prefs.
+  // prefs. Be sure to update the |Availability.Prober.Clients| histogram suffix
+  // in //tools/metrics/histograms.xml whenever a change is made to this enum.
+  //
+  // Please add the header file of the client when new items are added.
   enum class ClientName {
-    kLitepages = 0,
+    kLitepages_DEPRECATED = 0,
+    kLitepagesOriginCheck_DEPRECATED = 1,
 
-    kLitepagesOriginCheck = 1,
+    // chrome/browser/prerender/isolated/
+    // isolated_prerender_url_loader_interceptor.h
+    kIsolatedPrerenderOriginCheck = 2,
 
-    kMaxValue = kLitepagesOriginCheck,
+    kMaxValue = kIsolatedPrerenderOriginCheck,
   };
 
   // This enum describes the different algorithms that can be used to calculate

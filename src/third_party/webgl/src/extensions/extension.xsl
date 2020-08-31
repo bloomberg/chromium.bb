@@ -192,10 +192,10 @@
 <xsl:template name="logo">
   <xsl:comment>begin-logo</xsl:comment>
   <div class="left">
-    <a href="http://webgl.org/"><img alt="WebGL" height="100" src="{concat($basepath,'/resources/WebGL-Logo.png')}" width="240" /></a>
+    <a href="http://webgl.org/"><img alt="WebGL" width="240" height="100" src="{concat($basepath,'/resources/WebGL-Logo.png')}" /></a>
   </div>
   <div class="right">
-    <a href="http://khronos.org/"><img alt="Khronos" height="60" src="{concat($basepath,'/resources/KhronosGroup-3D.png')}" width="220" /></a>
+    <a href="http://khronos.org/"><img alt="Khronos" width="336" height="80" src="{concat($basepath,'/resources/Khronos_100px_June18.png')}" /></a>
   </div>
   <div style="clear: both;">&#160;</div>
   <br/>
@@ -411,7 +411,7 @@
 <xsl:template match="interface" mode="newfun">
   <dt class="idl-code">
 	<xsl:if test="@noobject = 'true'">
-	  <xsl:text>[NoInterfaceObject]</xsl:text><br/>
+	  <xsl:text>[LegacyNoInterfaceObject]</xsl:text><br/>
 	</xsl:if>
     <xsl:text>interface </xsl:text>
     <em><xsl:value-of select="@name" /></em>

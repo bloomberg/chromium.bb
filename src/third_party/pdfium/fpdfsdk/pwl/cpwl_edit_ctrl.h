@@ -8,6 +8,7 @@
 #define FPDFSDK_PWL_CPWL_EDIT_CTRL_H_
 
 #include <memory>
+#include <utility>
 
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_string.h"
@@ -29,7 +30,7 @@ class CPWL_EditCtrl : public CPWL_Wnd {
   ~CPWL_EditCtrl() override;
 
   void SetSelection(int32_t nStartChar, int32_t nEndChar);
-  void GetSelection(int32_t& nStartChar, int32_t& nEndChar) const;
+  std::pair<int32_t, int32_t> GetSelection() const;
   void ClearSelection();
   void SelectAll();
 
@@ -50,9 +51,9 @@ class CPWL_EditCtrl : public CPWL_Wnd {
   void OnCreated() override;
   bool OnKeyDown(uint16_t nChar, uint32_t nFlag) override;
   bool OnChar(uint16_t nChar, uint32_t nFlag) override;
-  bool OnLButtonDown(const CFX_PointF& point, uint32_t nFlag) override;
-  bool OnLButtonUp(const CFX_PointF& point, uint32_t nFlag) override;
-  bool OnMouseMove(const CFX_PointF& point, uint32_t nFlag) override;
+  bool OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) override;
+  bool OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) override;
+  bool OnMouseMove(uint32_t nFlag, const CFX_PointF& point) override;
   void SetScrollInfo(const PWL_SCROLL_INFO& info) override;
   void SetScrollPosition(float pos) override;
   void ScrollWindowVertically(float pos) override;

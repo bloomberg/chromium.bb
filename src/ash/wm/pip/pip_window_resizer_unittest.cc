@@ -16,12 +16,12 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/pip/pip_test_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -80,10 +80,8 @@ class PipWindowResizerTest : public AshTestBase,
   ~PipWindowResizerTest() override = default;
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    SetTouchKeyboardEnabled(true);
+    SetVirtualKeyboardEnabled(true);
 
     const std::string& display_string = std::get<0>(GetParam());
     const std::size_t root_window_index = std::get<1>(GetParam());
@@ -96,7 +94,7 @@ class PipWindowResizerTest : public AshTestBase,
 
   void TearDown() override {
     scoped_root_.reset();
-    SetTouchKeyboardEnabled(false);
+    SetVirtualKeyboardEnabled(false);
     AshTestBase::TearDown();
   }
 
@@ -128,23 +126,24 @@ class PipWindowResizerTest : public AshTestBase,
   }
 
   PipWindowResizer* CreateResizerForTest(int window_component,
-                                         gfx::Point point_in_parent) {
+                                         const gfx::Point& point_in_parent) {
     return CreateResizerForTest(window_component, window(), point_in_parent);
   }
 
   PipWindowResizer* CreateResizerForTest(int window_component,
                                          aura::Window* window,
-                                         gfx::Point point_in_parent) {
+                                         const gfx::Point& point_in_parent) {
     WindowState* window_state = WindowState::Get(window);
-    window_state->CreateDragDetails(point_in_parent, window_component,
+    window_state->CreateDragDetails(gfx::PointF(point_in_parent),
+                                    window_component,
                                     ::wm::WINDOW_MOVE_SOURCE_MOUSE);
     return new PipWindowResizer(window_state);
   }
 
-  gfx::Point CalculateDragPoint(const WindowResizer& resizer,
-                                int delta_x,
-                                int delta_y) const {
-    gfx::Point location = resizer.GetInitialLocation();
+  gfx::PointF CalculateDragPoint(const WindowResizer& resizer,
+                                 int delta_x,
+                                 int delta_y) const {
+    gfx::PointF location = resizer.GetInitialLocation();
     location.set_x(location.x() + delta_x);
     location.set_y(location.y() + delta_y);
     return location;
@@ -567,9 +566,7 @@ TEST_P(PipWindowResizerTest, PipRestoreBoundsSetOnFling) {
   }
 
   WindowState* window_state = WindowState::Get(window());
-  EXPECT_TRUE(window_state->HasRestoreBounds());
-  EXPECT_EQ(gfx::Rect(292, 292, 100, 100),
-            window_state->GetRestoreBoundsInParent());
+  EXPECT_TRUE(PipPositioner::HasSnapFraction(window_state));
 }
 
 TEST_P(PipWindowResizerTest, PipStartAndFinishFreeResizeUmaMetrics) {
@@ -624,7 +621,7 @@ TEST_P(PipWindowResizerTest, DragDetailsAreDestroyed) {
 // TODO: UpdateDisplay() doesn't support different layouts of multiple displays.
 // We should add some way to try multiple layouts.
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     PipWindowResizerTest,
     testing::Values(std::make_tuple("400x400", 0u),
                     std::make_tuple("400x400/r", 0u),
@@ -888,7 +885,7 @@ TEST_P(PipWindowResizerNonSquareAspectRatioTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     PipWindowResizerNonSquareAspectRatioTest,
     testing::Values(std::make_tuple("400x300", 0u),
                     std::make_tuple("400x300,4000x3000", 0u),

@@ -4,6 +4,7 @@
 
 #include "src/compiler/memory-optimizer.h"
 
+#include "src/base/logging.h"
 #include "src/codegen/interface-descriptors.h"
 #include "src/codegen/tick-counter.h"
 #include "src/compiler/js-graph.h"
@@ -24,7 +25,6 @@ bool CanAllocate(const Node* node) {
     case IrOpcode::kAbortCSAAssert:
     case IrOpcode::kBitcastTaggedToWord:
     case IrOpcode::kBitcastWordToTagged:
-    case IrOpcode::kChangeTaggedToCompressed:
     case IrOpcode::kComment:
     case IrOpcode::kDebugBreak:
     case IrOpcode::kDeoptimizeIf:
@@ -240,22 +240,6 @@ void MemoryOptimizer::VisitNode(Node* node, AllocationState const* state) {
 
 bool MemoryOptimizer::AllocationTypeNeedsUpdateToOld(Node* const node,
                                                      const Edge edge) {
-  if (COMPRESS_POINTERS_BOOL &&
-      node->opcode() == IrOpcode::kChangeTaggedToCompressed) {
-    // In Pointer Compression we might have a Compress node between an
-    // AllocateRaw and the value used as input. This case is trickier since we
-    // have to check all of the Compress node edges to test for a StoreField.
-    for (Edge const new_edge : node->use_edges()) {
-      if (AllocationTypeNeedsUpdateToOld(new_edge.from(), new_edge)) {
-        return true;
-      }
-    }
-
-    // If we arrived here, we tested all the edges of the Compress node and
-    // didn't find it necessary to update the AllocationType.
-    return false;
-  }
-
   // Test to see if we need to update the AllocationType.
   if (node->opcode() == IrOpcode::kStoreField && edge.index() == 1) {
     Node* parent = node->InputAt(0);
@@ -283,14 +267,6 @@ void MemoryOptimizer::VisitAllocateRaw(Node* node,
       Node* const user = edge.from();
       if (user->opcode() == IrOpcode::kStoreField && edge.index() == 0) {
         Node* child = user->InputAt(1);
-        // In Pointer Compression we might have a Compress node between an
-        // AllocateRaw and the value used as input. If so, we need to update
-        // child to point to the StoreField.
-        if (COMPRESS_POINTERS_BOOL &&
-            child->opcode() == IrOpcode::kChangeTaggedToCompressed) {
-          child = child->InputAt(0);
-        }
-
         if (child->opcode() == IrOpcode::kAllocateRaw &&
             AllocationTypeOf(child->op()) == AllocationType::kYoung) {
           NodeProperties::ChangeOp(child, node->op());
@@ -346,8 +322,23 @@ void MemoryOptimizer::VisitLoadElement(Node* node,
 
 void MemoryOptimizer::VisitLoadField(Node* node, AllocationState const* state) {
   DCHECK_EQ(IrOpcode::kLoadField, node->opcode());
-  memory_lowering()->ReduceLoadField(node);
+  Reduction reduction = memory_lowering()->ReduceLoadField(node);
+  DCHECK(reduction.Changed());
+  // In case of replacement, the replacement graph should not require futher
+  // lowering, so we can proceed iterating the graph from the node uses.
   EnqueueUses(node, state);
+
+  // Node can be replaced only when V8_HEAP_SANDBOX_BOOL is enabled and
+  // when loading an external pointer value.
+  DCHECK_IMPLIES(!V8_HEAP_SANDBOX_BOOL, reduction.replacement() == node);
+  if (V8_HEAP_SANDBOX_BOOL && reduction.replacement() != node) {
+    // Replace all uses of node and kill the node to make sure we don't leave
+    // dangling dead uses.
+    NodeProperties::ReplaceUses(node, reduction.replacement(),
+                                graph_assembler_.effect(),
+                                graph_assembler_.control());
+    node->Kill();
+  }
 }
 
 void MemoryOptimizer::VisitStoreElement(Node* node,

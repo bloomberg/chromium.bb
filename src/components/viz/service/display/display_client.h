@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_DISPLAY_CLIENT_H_
 
 #include "components/viz/common/quads/render_pass.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 
 namespace gfx {
 struct CALayerParams;
@@ -26,9 +27,11 @@ class DisplayClient {
   virtual void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) = 0;
   virtual void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) = 0;
+  virtual void SetWideColorEnabled(bool enabled) = 0;
   virtual void SetPreferredFrameInterval(base::TimeDelta interval) = 0;
   virtual base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-      const FrameSinkId& id) = 0;
+      const FrameSinkId& id,
+      mojom::CompositorFrameSinkType* type) = 0;
 };
 
 }  // namespace viz

@@ -6,7 +6,9 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/page_setup.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
@@ -78,10 +80,13 @@ PrintingContext::Result PrintingContext::UsePdfSettings() {
   pdf_settings.SetIntKey(kSettingColor, printing::COLOR);
   pdf_settings.SetIntKey(kSettingDpiHorizontal, kPointsPerInch);
   pdf_settings.SetIntKey(kSettingDpiVertical, kPointsPerInch);
-  pdf_settings.SetIntKey(kSettingDuplexMode, printing::SIMPLEX);
+  pdf_settings.SetIntKey(
+      kSettingDuplexMode,
+      static_cast<int>(printing::mojom::DuplexMode::kSimplex));
   pdf_settings.SetBoolKey(kSettingLandscape, false);
   pdf_settings.SetStringKey(kSettingDeviceName, "");
-  pdf_settings.SetIntKey(kSettingPrinterType, kPdfPrinter);
+  pdf_settings.SetIntKey(kSettingPrinterType,
+                         static_cast<int>(PrinterType::kPdf));
   pdf_settings.SetIntKey(kSettingScaleFactor, 100);
   pdf_settings.SetBoolKey(kSettingRasterizePdf, false);
   pdf_settings.SetIntKey(kSettingPagesPerSheet, 1);
@@ -99,14 +104,15 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
 
   PrinterType printer_type = static_cast<PrinterType>(
       job_settings.FindIntKey(kSettingPrinterType).value());
-  bool print_with_privet = printer_type == kPrivetPrinter;
+  bool print_with_privet = printer_type == PrinterType::kPrivet;
   bool print_to_cloud = !!job_settings.FindKey(kSettingCloudPrintId);
   bool open_in_external_preview =
       !!job_settings.FindKey(kSettingOpenPDFInPreview);
 
-  if (!open_in_external_preview &&
-      (print_to_cloud || print_with_privet || printer_type == kPdfPrinter ||
-       printer_type == kCloudPrinter || printer_type == kExtensionPrinter)) {
+  if (!open_in_external_preview && (print_to_cloud || print_with_privet ||
+                                    printer_type == PrinterType::kPdf ||
+                                    printer_type == PrinterType::kCloud ||
+                                    printer_type == PrinterType::kExtension)) {
     settings_->set_dpi(kDefaultPdfDpi);
     gfx::Size paper_size(GetPdfPaperSizeDeviceUnits());
     if (!settings_->requested_media().size_microns.IsEmpty()) {

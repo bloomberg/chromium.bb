@@ -16,9 +16,14 @@
 #include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
+#include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 
 namespace quic {
+
+namespace test {
+class QuicCryptoClientStreamPeer;
+}  // namespace test
 
 class QUIC_EXPORT_PRIVATE QuicCryptoClientStreamBase : public QuicCryptoStream {
  public:
@@ -30,6 +35,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStreamBase : public QuicCryptoStream {
   // is still connected.
   virtual bool CryptoConnect() = 0;
 
+  // DEPRECATED: Use IsResumption, EarlyDataAccepted, and/or
+  // ReceivedInchoateReject instead.
+  //
   // num_sent_client_hellos returns the number of client hello messages that
   // have been sent. If the handshake has completed then this is one greater
   // than the number of round-trips needed for the handshake.
@@ -42,10 +50,22 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStreamBase : public QuicCryptoStream {
   // complete.
   virtual bool IsResumption() const = 0;
 
+  // Returns true if early data (0-RTT) was accepted in the connection.
+  virtual bool EarlyDataAccepted() const = 0;
+
+  // Returns true if the client received an inchoate REJ during the handshake,
+  // extending the handshake by one round trip. This only applies for QUIC
+  // crypto handshakes. The equivalent feature in IETF QUIC is a Retry packet,
+  // but that is handled at the connection layer instead of the crypto layer.
+  virtual bool ReceivedInchoateReject() const = 0;
+
   // The number of server config update messages received by the
   // client.  Does not count update messages that were received prior
   // to handshake confirmation.
   virtual int num_scup_messages_received() const = 0;
+
+  virtual void OnApplicationState(
+      std::unique_ptr<ApplicationState> application_state) = 0;
 };
 
 class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
@@ -62,25 +82,28 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
   //     the client a fallback ServerConfig.
   static const int kMaxClientHellos = 4;
 
-  // QuicCryptoClientStream creates a HandshakerDelegate at construction time
+  // QuicCryptoClientStream creates a HandshakerInterface at construction time
   // based on the QuicTransportVersion of the connection. Different
-  // HandshakerDelegates provide implementations of different crypto handshake
+  // HandshakerInterfaces provide implementations of different crypto handshake
   // protocols. Currently QUIC crypto is the only protocol implemented; a future
-  // HandshakerDelegate will use TLS as the handshake protocol.
+  // HandshakerInterface will use TLS as the handshake protocol.
   // QuicCryptoClientStream delegates all of its public methods to its
-  // HandshakerDelegate.
+  // HandshakerInterface.
   //
   // This setup of the crypto stream delegating its implementation to the
   // handshaker results in the handshaker reading and writing bytes on the
   // crypto stream, instead of the handshaker passing the stream bytes to send.
-  class QUIC_EXPORT_PRIVATE HandshakerDelegate {
+  class QUIC_EXPORT_PRIVATE HandshakerInterface {
    public:
-    virtual ~HandshakerDelegate() {}
+    virtual ~HandshakerInterface() {}
 
     // Performs a crypto handshake with the server. Returns true if the
     // connection is still connected.
     virtual bool CryptoConnect() = 0;
 
+    // DEPRECATED: Use IsResumption, EarlyDataAccepted, and/or
+    // ReceivedInchoateReject instead.
+    //
     // num_sent_client_hellos returns the number of client hello messages that
     // have been sent. If the handshake has completed then this is one greater
     // than the number of round-trips needed for the handshake.
@@ -93,6 +116,15 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
     // complete.
     virtual bool IsResumption() const = 0;
 
+    // Returns true if early data (0-RTT) was accepted in the connection.
+    virtual bool EarlyDataAccepted() const = 0;
+
+    // Returns true if the client received an inchoate REJ during the handshake,
+    // extending the handshake by one round trip. This only applies for QUIC
+    // crypto handshakes. The equivalent feature in IETF QUIC is a Retry packet,
+    // but that is handled at the connection layer instead of the crypto layer.
+    virtual bool ReceivedInchoateReject() const = 0;
+
     // The number of server config update messages received by the
     // client.  Does not count update messages that were received prior
     // to handshake confirmation.
@@ -104,8 +136,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
     // for the connection.
     virtual bool encryption_established() const = 0;
 
-    // Returns true once the crypto handshake has completed.
-    virtual bool handshake_confirmed() const = 0;
+    // Returns true once 1RTT keys are available.
+    virtual bool one_rtt_keys_available() const = 0;
 
     // Returns the parameters negotiated in the crypto handshake.
     virtual const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
@@ -117,6 +149,26 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
     // Used by QuicCryptoStream to know how much unprocessed data can be
     // buffered at each encryption level.
     virtual size_t BufferSizeLimitForLevel(EncryptionLevel level) const = 0;
+
+    // Returns current handshake state.
+    virtual HandshakeState GetHandshakeState() const = 0;
+
+    // Called when a 1RTT packet has been acknowledged.
+    virtual void OnOneRttPacketAcknowledged() = 0;
+
+    // Called when a packet of ENCRYPTION_HANDSHAKE gets sent.
+    virtual void OnHandshakePacketSent() = 0;
+
+    // Called when connection gets closed.
+    virtual void OnConnectionClosed(QuicErrorCode error,
+                                    ConnectionCloseSource source) = 0;
+
+    // Called when handshake done has been received.
+    virtual void OnHandshakeDoneReceived() = 0;
+
+    // Called when application state is received.
+    virtual void OnApplicationState(
+        std::unique_ptr<ApplicationState> application_state) = 0;
   };
 
   // ProofHandler is an interface that handles callbacks from the crypto
@@ -142,7 +194,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
                          QuicSession* session,
                          std::unique_ptr<ProofVerifyContext> verify_context,
                          QuicCryptoClientConfig* crypto_config,
-                         ProofHandler* proof_handler);
+                         ProofHandler* proof_handler,
+                         bool has_application_state);
   QuicCryptoClientStream(const QuicCryptoClientStream&) = delete;
   QuicCryptoClientStream& operator=(const QuicCryptoClientStream&) = delete;
 
@@ -152,27 +205,39 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
   bool CryptoConnect() override;
   int num_sent_client_hellos() const override;
   bool IsResumption() const override;
+  bool EarlyDataAccepted() const override;
+  bool ReceivedInchoateReject() const override;
 
   int num_scup_messages_received() const override;
 
   // From QuicCryptoStream
   bool encryption_established() const override;
-  bool handshake_confirmed() const override;
+  bool one_rtt_keys_available() const override;
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
       const override;
   CryptoMessageParser* crypto_message_parser() override;
   void OnPacketDecrypted(EncryptionLevel /*level*/) override {}
+  void OnOneRttPacketAcknowledged() override;
+  void OnHandshakePacketSent() override;
+  void OnConnectionClosed(QuicErrorCode error,
+                          ConnectionCloseSource source) override;
+  void OnHandshakeDoneReceived() override;
+  HandshakeState GetHandshakeState() const override;
   size_t BufferSizeLimitForLevel(EncryptionLevel level) const override;
+
+  void OnApplicationState(
+      std::unique_ptr<ApplicationState> application_state) override;
 
   std::string chlo_hash() const;
 
  protected:
-  void set_handshaker(std::unique_ptr<HandshakerDelegate> handshaker) {
+  void set_handshaker(std::unique_ptr<HandshakerInterface> handshaker) {
     handshaker_ = std::move(handshaker);
   }
 
  private:
-  std::unique_ptr<HandshakerDelegate> handshaker_;
+  friend class test::QuicCryptoClientStreamPeer;
+  std::unique_ptr<HandshakerInterface> handshaker_;
 };
 
 }  // namespace quic

@@ -75,7 +75,7 @@ syncer::SyncDataList ToSyncerSyncDataList(
   return result;
 }
 
-static_assert(extensions::disable_reason::DISABLE_REASON_LAST == (1LL << 17),
+static_assert(extensions::disable_reason::DISABLE_REASON_LAST == (1LL << 19),
               "Please consider whether your new disable reason should be"
               " syncable, and if so update this bitmask accordingly!");
 const int kKnownSyncableDisableReasons =
@@ -140,23 +140,13 @@ void ExtensionSyncService::SyncExtensionChangeIfNeeded(
   }
 }
 
-bool ExtensionSyncService::HasPendingReenable(
-    const std::string& id,
-    const base::Version& version) const {
-  auto it = pending_updates_.find(id);
-  if (it == pending_updates_.end())
-    return false;
-  const PendingUpdate& pending = it->second;
-  return pending.version == version &&
-         pending.grant_permissions_and_reenable;
-}
-
 void ExtensionSyncService::WaitUntilReadyToSync(base::OnceClosure done) {
   // Wait for the extension system to be ready.
   ExtensionSystem::Get(profile_)->ready().Post(FROM_HERE, std::move(done));
 }
 
-syncer::SyncMergeResult ExtensionSyncService::MergeDataAndStartSyncing(
+base::Optional<syncer::ModelError>
+ExtensionSyncService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
     std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -196,14 +186,14 @@ syncer::SyncMergeResult ExtensionSyncService::MergeDataAndStartSyncing(
   if (type == syncer::APPS)
     ExtensionSystem::Get(profile_)->app_sorting()->FixNTPOrdinalCollisions();
 
-  return syncer::SyncMergeResult(type);
+  return base::nullopt;
 }
 
 void ExtensionSyncService::StopSyncing(syncer::ModelType type) {
   GetSyncBundle(type)->Reset();
 }
 
-syncer::SyncDataList ExtensionSyncService::GetAllSyncData(
+syncer::SyncDataList ExtensionSyncService::GetAllSyncDataForTesting(
     syncer::ModelType type) const {
   const SyncBundle* bundle = GetSyncBundle(type);
   if (!bundle->IsSyncing())
@@ -221,7 +211,7 @@ syncer::SyncDataList ExtensionSyncService::GetAllSyncData(
   return ToSyncerSyncDataList(sync_data_list);
 }
 
-syncer::SyncError ExtensionSyncService::ProcessSyncChanges(
+base::Optional<syncer::ModelError> ExtensionSyncService::ProcessSyncChanges(
     const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   for (const syncer::SyncChange& sync_change : change_list) {
@@ -233,7 +223,7 @@ syncer::SyncError ExtensionSyncService::ProcessSyncChanges(
 
   ExtensionSystem::Get(profile_)->app_sorting()->FixNTPOrdinalCollisions();
 
-  return syncer::SyncError();
+  return base::nullopt;
 }
 
 ExtensionSyncData ExtensionSyncService::CreateSyncData(
@@ -535,10 +525,12 @@ void ExtensionSyncService::ApplyBookmarkAppSyncData(
   }
 
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile_);
-  DCHECK(provider);
-
-  provider->install_manager().InstallWebAppFromSync(
-      extension_sync_data.id(), std::move(web_app_info), base::DoNothing());
+  // Legacy profiles containing server-side bookmark apps data must be excluded
+  // from sync if the web apps system is disabled for such a profile.
+  if (provider) {
+    provider->install_manager().InstallBookmarkAppFromSync(
+        extension_sync_data.id(), std::move(web_app_info), base::DoNothing());
+  }
 }
 
 void ExtensionSyncService::SetSyncStartFlareForTesting(

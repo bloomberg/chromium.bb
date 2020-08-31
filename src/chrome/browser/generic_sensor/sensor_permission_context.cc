@@ -5,26 +5,29 @@
 #include "chrome/browser/generic_sensor/sensor_permission_context.h"
 
 #include "base/feature_list.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/permissions/permission_request_id.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_request_id.h"
 #include "services/device/public/cpp/device_features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 #include "url/gurl.h"
 
-SensorPermissionContext::SensorPermissionContext(Profile* profile)
-    : PermissionContextBase(profile,
+SensorPermissionContext::SensorPermissionContext(
+    content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::SENSORS,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
 SensorPermissionContext::~SensorPermissionContext() {}
 
-void SensorPermissionContext::UpdateTabContext(const PermissionRequestID& id,
-                                               const GURL& requesting_frame,
-                                               bool allowed) {
-  auto* content_settings = TabSpecificContentSettings::GetForFrame(
-      id.render_process_id(), id.render_frame_id());
+void SensorPermissionContext::UpdateTabContext(
+    const permissions::PermissionRequestID& id,
+    const GURL& requesting_frame,
+    bool allowed) {
+  auto* content_settings =
+      content_settings::TabSpecificContentSettings::GetForFrame(
+          id.render_process_id(), id.render_frame_id());
   if (!content_settings)
     return;
 

@@ -137,16 +137,10 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
     kDirectFocusChange
   };
 
-  // TODO: use Direction in place of bool reverse throughout.
-  enum Direction {
-    kForward,
-    kBackward
-  };
+  // TODO(dmazzoni): use Direction in place of bool reverse throughout.
+  enum Direction { kForward, kBackward };
 
-  enum FocusCycleWrappingBehavior {
-    kWrap,
-    kNoWrap
-  };
+  enum class FocusCycleWrapping { kEnabled, kDisabled };
 
   FocusManager(Widget* widget, std::unique_ptr<FocusManagerDelegate> delegate);
   ~FocusManager() override;
@@ -262,6 +256,9 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
   void AddFocusChangeListener(FocusChangeListener* listener);
   void RemoveFocusChangeListener(FocusChangeListener* listener);
 
+  // Whether the given |accelerator| is registered.
+  bool IsAcceleratorRegistered(const ui::Accelerator& accelerator) const;
+
   // Whether the given |accelerator| has a priority handler associated with it.
   bool HasPriorityHandler(const ui::Accelerator& accelerator) const;
 
@@ -275,7 +272,7 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
   // order to trap keyboard focus within that pane. If |wrap| is kWrap,
   // it keeps cycling within this widget, otherwise it returns false after
   // reaching the last pane so that focus can cycle to another widget.
-  bool RotatePaneFocus(Direction direction, FocusCycleWrappingBehavior wrap);
+  bool RotatePaneFocus(Direction direction, FocusCycleWrapping wrapping);
 
   // Convenience method that returns true if the passed |key_event| should
   // trigger tab traversal (if it is a TAB key press with or without SHIFT
@@ -299,11 +296,10 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
   }
 
   // Returns the next focusable view. Traversal starts at |starting_view|. If
-  // |starting_view| is NULL |starting_widget| is consuled to determine which
-  // Widget to start from. See
-  // WidgetDelegate::ShouldAdvanceFocusToTopLevelWidget() for details. If both
-  // |starting_view| and |starting_widget| are NULL, traversal starts at
-  // |widget_|.
+  // |starting_view| is null, |starting_widget| is consulted to determine which
+  // Widget to start from. See WidgetDelegate::Params::focus_traverses_out for
+  // details. If both |starting_view| and |starting_widget| are null, traversal
+  // starts at |widget_|.
   View* GetNextFocusableView(View* starting_view,
                              Widget* starting_widget,
                              bool reverse,
@@ -334,6 +330,14 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
 
   // ViewObserver:
   void OnViewIsDeleting(View* view) override;
+
+  // Try to redirect the accelerator to bubble's anchor widget to process it if
+  // the bubble didn't.
+  bool RedirectAcceleratorToBubbleAnchorWidget(
+      const ui::Accelerator& accelerator);
+
+  // Returns bubble's anchor widget.
+  Widget* GetBubbleAnchorWidget();
 
   // Whether arrow key traversal is enabled globally.
   static bool arrow_key_traversal_enabled_;

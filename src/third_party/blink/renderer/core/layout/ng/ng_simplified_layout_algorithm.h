@@ -43,10 +43,14 @@ class CORE_EXPORT NGSimplifiedLayoutAlgorithm
                               const NGLayoutResult&);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
+  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override {
+    NOTREACHED();
+    return {MinMaxSizes(), true};
+  }
+
+  NOINLINE scoped_refptr<const NGLayoutResult> LayoutWithItemsBuilder();
 
  private:
-  void HandleOutOfFlowPositioned(const NGBlockNode&);
-
   void AddChildFragment(const NGLink& old_fragment,
                         const NGPhysicalContainerFragment& new_fragment);
 
@@ -56,11 +60,7 @@ class CORE_EXPORT NGSimplifiedLayoutAlgorithm
   const WritingMode writing_mode_;
   const TextDirection direction_;
 
-  LayoutUnit child_available_inline_size_;
   PhysicalSize previous_physical_container_size_;
-
-  LayoutUnit static_block_offset_;
-  NGExclusionSpace exclusion_space_;
 };
 
 }  // namespace blink

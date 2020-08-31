@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/css/resolver/media_query_result.h"
 #include "third_party/blink/renderer/core/css/rule_feature_set.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
-#include "third_party/blink/renderer/platform/heap/heap_linked_stack.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_stack.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
@@ -68,7 +68,7 @@ class MinimalRuleData {
   MinimalRuleData(StyleRule* rule, unsigned selector_index, AddRuleFlags flags)
       : rule_(rule), selector_index_(selector_index), flags_(flags) {}
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   Member<StyleRule> rule_;
   unsigned selector_index_;
@@ -127,7 +127,7 @@ class CORE_EXPORT RuleData : public GarbageCollected<RuleData> {
     return descendant_selector_identifier_hashes_;
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   // This number is picked fairly arbitrary. If lowered, be aware that there
   // might be sites and extensions using style rules with selector lists
@@ -284,11 +284,13 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
            HasV0BoundaryCrossingRules();
   }
 
+  bool DidMediaQueryResultsChange(const MediaQueryEvaluator& evaluator) const;
+
 #ifndef NDEBUG
   void Show() const;
 #endif
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   using PendingRuleMap =
@@ -304,6 +306,8 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   void AddKeyframesRule(StyleRuleKeyframes*);
   void AddPropertyRule(StyleRuleProperty*);
 
+  bool MatchMediaForAddRules(const MediaQueryEvaluator& evaluator,
+                             const MediaQuerySet* media_queries);
   void AddChildRules(const HeapVector<Member<StyleRuleBase>>&,
                      const MediaQueryEvaluator& medium,
                      AddRuleFlags);
@@ -321,7 +325,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
     PendingRuleMap tag_rules;
     PendingRuleMap shadow_pseudo_element_rules;
 
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
   };
 
   PendingRuleMaps* EnsurePendingRules() {
@@ -349,6 +353,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   HeapVector<MinimalRuleData> deep_combinator_or_shadow_pseudo_rules_;
   HeapVector<MinimalRuleData> content_pseudo_element_rules_;
   HeapVector<MinimalRuleData> slotted_pseudo_element_rules_;
+  Vector<MediaQuerySetResult> media_query_set_results_;
 
   unsigned rule_count_;
   Member<PendingRuleMaps> pending_rules_;

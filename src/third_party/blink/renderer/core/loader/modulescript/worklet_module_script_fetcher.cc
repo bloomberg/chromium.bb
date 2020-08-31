@@ -9,13 +9,14 @@
 namespace blink {
 
 WorkletModuleScriptFetcher::WorkletModuleScriptFetcher(
-    WorkletModuleResponsesMap* module_responses_map)
-    : module_responses_map_(module_responses_map) {}
+    WorkletModuleResponsesMap* module_responses_map,
+    util::PassKey<ModuleScriptLoader> pass_key)
+    : ModuleScriptFetcher(pass_key),
+      module_responses_map_(module_responses_map) {}
 
 void WorkletModuleScriptFetcher::Fetch(
     FetchParameters& fetch_params,
     ResourceFetcher* fetch_client_settings_object_fetcher,
-    const Modulator* modulator_for_built_in_modules,
     ModuleGraphLevel level,
     ModuleScriptFetcher::Client* client) {
   if (module_responses_map_->GetEntry(

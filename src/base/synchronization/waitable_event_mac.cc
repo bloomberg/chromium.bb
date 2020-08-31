@@ -48,7 +48,8 @@ void WaitableEvent::Reset() {
   PeekPort(receive_right_->Name(), true);
 }
 
-void WaitableEvent::Signal() {
+// NO_THREAD_SAFETY_ANALYSIS: Runtime dependent locking.
+void WaitableEvent::Signal() NO_THREAD_SAFETY_ANALYSIS {
   // If using the slow watch-list, copy the watchers to a local. After
   // mach_msg(), the event object may be deleted by an awoken thread.
   const bool use_slow_path = UseSlowWatchList(policy_);
@@ -121,7 +122,7 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
       scoped_blocking_call;
   if (waiting_is_blocking_) {
     event_activity.emplace(this);
-    scoped_blocking_call.emplace(BlockingType::MAY_BLOCK);
+    scoped_blocking_call.emplace(FROM_HERE, BlockingType::MAY_BLOCK);
   }
 
   mach_msg_empty_rcv_t msg{};
@@ -192,7 +193,7 @@ bool WaitableEvent::UseSlowWatchList(ResetPolicy policy) {
 size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables, size_t count) {
   DCHECK(count) << "Cannot wait on no events";
   internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
-      BlockingType::MAY_BLOCK);
+      FROM_HERE, BlockingType::MAY_BLOCK);
   // Record an event (the first) that this thread is blocking upon.
   debug::ScopedEventWaitActivity event_activity(raw_waitables[0]);
 

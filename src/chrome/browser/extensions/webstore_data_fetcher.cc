@@ -10,7 +10,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
-#include "components/safe_browsing/features.h"
+#include "components/safe_browsing/core/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -99,23 +99,25 @@ void WebstoreDataFetcher::Start(
 void WebstoreDataFetcher::OnJsonParsed(
     data_decoder::DataDecoder::ValueOrError result) {
   if (!result.value) {
-    delegate_->OnWebstoreResponseParseFailure(*result.error);
+    delegate_->OnWebstoreResponseParseFailure(id_, *result.error);
     return;
   }
 
   if (!result.value->is_dict()) {
-    delegate_->OnWebstoreResponseParseFailure(kInvalidWebstoreResponseError);
+    delegate_->OnWebstoreResponseParseFailure(id_,
+                                              kInvalidWebstoreResponseError);
     return;
   }
 
-  delegate_->OnWebstoreResponseParseSuccess(base::DictionaryValue::From(
-      base::Value::ToUniquePtrValue(std::move(*result.value))));
+  delegate_->OnWebstoreResponseParseSuccess(
+      id_, base::DictionaryValue::From(
+               base::Value::ToUniquePtrValue(std::move(*result.value))));
 }
 
 void WebstoreDataFetcher::OnSimpleLoaderComplete(
     std::unique_ptr<std::string> response_body) {
   if (!response_body) {
-    delegate_->OnWebstoreRequestFailure();
+    delegate_->OnWebstoreRequestFailure(id_);
     return;
   }
 

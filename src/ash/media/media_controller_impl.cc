@@ -9,6 +9,7 @@
 #include "ash/public/cpp/media_client.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
@@ -17,12 +18,15 @@
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/media_session/public/mojom/media_session_service.mojom.h"
 #include "ui/base/accelerators/media_keys_util.h"
 
 namespace ash {
 
 namespace {
+
+constexpr base::TimeDelta kDefaultSeekTime =
+    base::TimeDelta::FromSeconds(media_session::mojom::kDefaultSeekTimeSeconds);
 
 bool IsMediaSessionActionEligibleForKeyControl(
     media_session::mojom::MediaSessionAction action) {
@@ -34,8 +38,7 @@ bool IsMediaSessionActionEligibleForKeyControl(
 
 }  // namespace
 
-MediaControllerImpl::MediaControllerImpl(service_manager::Connector* connector)
-    : connector_(connector) {
+MediaControllerImpl::MediaControllerImpl() {
   // If media session media key handling is enabled this will setup a connection
   // and bind an observer to the media session service.
   if (base::FeatureList::IsEnabled(media::kHardwareMediaKeyHandling))
@@ -128,6 +131,81 @@ void MediaControllerImpl::HandleMediaPlayPause() {
     client_->HandleMediaPlayPause();
 }
 
+void MediaControllerImpl::HandleMediaPlay() {
+  if (Shell::Get()->session_controller()->IsScreenLocked() &&
+      !AreLockScreenMediaKeysEnabled()) {
+    return;
+  }
+
+  ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kPlay);
+
+  // If the |client_| is force handling the keys then we should forward them.
+  if (client_ && force_media_client_key_handling_) {
+    client_->HandleMediaPlay();
+    return;
+  }
+
+  // If media session media key handling is enabled. Fire play using the media
+  // session service.
+  if (ShouldUseMediaSession()) {
+    GetMediaSessionController()->Resume();
+    return;
+  }
+
+  if (client_)
+    client_->HandleMediaPlay();
+}
+
+void MediaControllerImpl::HandleMediaPause() {
+  if (Shell::Get()->session_controller()->IsScreenLocked() &&
+      !AreLockScreenMediaKeysEnabled()) {
+    return;
+  }
+
+  ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kPause);
+
+  // If the |client_| is force handling the keys then we should forward them.
+  if (client_ && force_media_client_key_handling_) {
+    client_->HandleMediaPause();
+    return;
+  }
+
+  // If media session media key handling is enabled. Fire pause using the media
+  // session service.
+  if (ShouldUseMediaSession()) {
+    GetMediaSessionController()->Suspend();
+    return;
+  }
+
+  if (client_)
+    client_->HandleMediaPause();
+}
+
+void MediaControllerImpl::HandleMediaStop() {
+  if (Shell::Get()->session_controller()->IsScreenLocked() &&
+      !AreLockScreenMediaKeysEnabled()) {
+    return;
+  }
+
+  ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kStop);
+
+  // If the |client_| is force handling the keys then we should forward them.
+  if (client_ && force_media_client_key_handling_) {
+    client_->HandleMediaStop();
+    return;
+  }
+
+  // If media session media key handling is enabled. Fire stop using the media
+  // session service.
+  if (ShouldUseMediaSession()) {
+    GetMediaSessionController()->Stop();
+    return;
+  }
+
+  if (client_)
+    client_->HandleMediaStop();
+}
+
 void MediaControllerImpl::HandleMediaNextTrack() {
   if (Shell::Get()->session_controller()->IsScreenLocked() &&
       !AreLockScreenMediaKeysEnabled()) {
@@ -178,6 +256,56 @@ void MediaControllerImpl::HandleMediaPrevTrack() {
     client_->HandleMediaPrevTrack();
 }
 
+void MediaControllerImpl::HandleMediaSeekBackward() {
+  if (Shell::Get()->session_controller()->IsScreenLocked() &&
+      !AreLockScreenMediaKeysEnabled()) {
+    return;
+  }
+
+  ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kSeekBackward);
+
+  // If the |client_| is force handling the keys then we should forward them.
+  if (client_ && force_media_client_key_handling_) {
+    client_->HandleMediaSeekBackward();
+    return;
+  }
+
+  // If media session media key handling is enabled. Seek backward with
+  // kDefaultSeekTime using the media session service.
+  if (ShouldUseMediaSession()) {
+    GetMediaSessionController()->Seek(kDefaultSeekTime * -1);
+    return;
+  }
+
+  if (client_)
+    client_->HandleMediaSeekBackward();
+}
+
+void MediaControllerImpl::HandleMediaSeekForward() {
+  if (Shell::Get()->session_controller()->IsScreenLocked() &&
+      !AreLockScreenMediaKeysEnabled()) {
+    return;
+  }
+
+  ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kSeekForward);
+
+  // If the |client_| is force handling the keys then we should forward them.
+  if (client_ && force_media_client_key_handling_) {
+    client_->HandleMediaSeekForward();
+    return;
+  }
+
+  // If media session media key handling is enabled. Seek forward with
+  // kDefaultSeekTime using the media session service.
+  if (ShouldUseMediaSession()) {
+    GetMediaSessionController()->Seek(kDefaultSeekTime);
+    return;
+  }
+
+  if (client_)
+    client_->HandleMediaSeekForward();
+}
+
 void MediaControllerImpl::RequestCaptureState() {
   if (client_)
     client_->RequestCaptureState();
@@ -218,25 +346,34 @@ void MediaControllerImpl::FlushForTesting() {
 
 media_session::mojom::MediaController*
 MediaControllerImpl::GetMediaSessionController() {
-  // |connector_| can be null in tests.
-  if (connector_ && !media_session_controller_remote_.is_bound()) {
-    mojo::Remote<media_session::mojom::MediaControllerManager>
-        controller_manager_remote;
-    connector_->Connect(media_session::mojom::kServiceName,
-                        controller_manager_remote.BindNewPipeAndPassReceiver());
-    controller_manager_remote->CreateActiveMediaController(
-        media_session_controller_remote_.BindNewPipeAndPassReceiver());
+  // NOTE: |media_session_controller_remote_| may be overridden by tests and
+  // therefore non-null even if the real Media Session Service is unavailable.
+  if (media_session_controller_remote_)
+    return media_session_controller_remote_.get();
 
-    media_session_controller_remote_.set_disconnect_handler(
-        base::BindRepeating(&MediaControllerImpl::OnMediaSessionControllerError,
-                            base::Unretained(this)));
+  // The service may be unavailable in some test environments.
+  if (!Shell::HasInstance())
+    return nullptr;
 
-    BindMediaControllerObserver();
-  }
+  media_session::mojom::MediaSessionService* service =
+      Shell::Get()->shell_delegate()->GetMediaSessionService();
+  if (!service)
+    return nullptr;
 
-  return media_session_controller_remote_.is_bound()
-             ? media_session_controller_remote_.get()
-             : nullptr;
+  mojo::Remote<media_session::mojom::MediaControllerManager>
+      controller_manager_remote;
+  service->BindMediaControllerManager(
+      controller_manager_remote.BindNewPipeAndPassReceiver());
+  controller_manager_remote->CreateActiveMediaController(
+      media_session_controller_remote_.BindNewPipeAndPassReceiver());
+
+  media_session_controller_remote_.set_disconnect_handler(
+      base::BindOnce(&MediaControllerImpl::OnMediaSessionControllerError,
+                     base::Unretained(this)));
+
+  BindMediaControllerObserver();
+
+  return media_session_controller_remote_.get();
 }
 
 void MediaControllerImpl::OnMediaSessionControllerError() {

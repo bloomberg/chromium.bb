@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -89,7 +90,8 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, DISABLED_BasicApiTest) {
   composition.text = base::UTF8ToUTF16("test_set_composition");
   composition.ime_text_spans.push_back(ui::ImeTextSpan(
       ui::ImeTextSpan::Type::kComposition, 0, composition.text.length(),
-      ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
+      ui::ImeTextSpan::Thickness::kThin,
+      ui::ImeTextSpan::UnderlineStyle::kSolid, SK_ColorTRANSPARENT));
   composition.selection = gfx::Range(2, 2);
   const std::vector<ui::CompositionText>& composition_history =
       client->composition_history();
@@ -108,6 +110,8 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, DISABLED_BasicApiTest) {
   input_method->DetachTextInputClient(client2.get());
 }
 
+// The following test verifies that key events do not get sent on any page.
+// This is in preparation of deprecating the sendKeyEvents API.
 // TODO(crbug.com/1004628) Flakes on Windows and Linux
 #if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_SendKeyEventsOnNormalPage DISABLED_SendKeyEventsOnNormalPage
@@ -132,24 +136,17 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, MAYBE_SendKeyEventsOnNormalPage) {
   ASSERT_TRUE(RunExtensionTest("input_ime_nonchromeos")) << message_;
 
   std::vector<std::unique_ptr<ui::KeyEvent>> key_events;
-  key_events.push_back(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE)));
-  key_events.push_back(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_NONE)));
-  key_events.push_back(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_CONTROL_DOWN)));
-  key_events.push_back(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_CONTROL_DOWN)));
-  key_events.push_back(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE)));
 
   EXPECT_TRUE(CompareKeyEvents(key_events, input_method));
 
   input_method->DetachTextInputClient(client.get());
 }
 
+// The following test verifies that key events do not get sent on any page.
+// This is in preparation of deprecating the sendKeyEvents API.
 // TODO(https://crbug.com/795631): This test is failing on the Linux bot.
-#if defined(OS_LINUX)
+// TODO(https://crbug.com/795631): This testis failing on Windows bot.
+#if defined(OS_WIN) || defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(InputImeApiTest, DISABLED_SendKeyEventsOnSpecialPage) {
 #else
 IN_PROC_BROWSER_TEST_F(InputImeApiTest, SendKeyEventsOnSpecialPage) {
@@ -170,10 +167,6 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, SendKeyEventsOnSpecialPage) {
   ASSERT_TRUE(RunExtensionTest("input_ime_nonchromeos")) << message_;
 
   std::vector<std::unique_ptr<ui::KeyEvent>> key_events;
-  key_events.push_back(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE)));
-  key_events.push_back(std::unique_ptr<ui::KeyEvent>(
-      new ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_NONE)));
 
   EXPECT_TRUE(CompareKeyEvents(key_events, input_method));
   input_method->DetachTextInputClient(client.get());

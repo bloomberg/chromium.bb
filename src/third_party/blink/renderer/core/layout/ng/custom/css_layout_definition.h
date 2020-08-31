@@ -17,13 +17,15 @@ namespace blink {
 
 class CustomLayoutScope;
 class FragmentResultOptions;
+class IntrinsicSizesResultOptions;
+class LayoutUnit;
 struct LogicalSize;
 class NGBlockNode;
 struct NGBoxStrut;
 class NGConstraintSpace;
 class ScriptState;
 class SerializedScriptValue;
-class V8Function;
+class V8IntrinsicSizesCallback;
 class V8LayoutCallback;
 class V8NoArgumentConstructor;
 
@@ -36,7 +38,7 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
   CSSLayoutDefinition(
       ScriptState*,
       V8NoArgumentConstructor* constructor,
-      V8Function* intrinsic_sizes,
+      V8IntrinsicSizesCallback* intrinsic_sizes,
       V8LayoutCallback* layout,
       const Vector<CSSPropertyID>& native_invalidation_properties,
       const Vector<AtomicString>& custom_invalidation_properties,
@@ -53,16 +55,30 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
     // Runs the web developer defined layout, returns true if everything
     // succeeded. It populates the FragmentResultOptions dictionary, and
     // fragment_result_data.
-    bool Layout(const NGConstraintSpace&,
-                const Document&,
-                const NGBlockNode&,
-                const LogicalSize& border_box_size,
-                const NGBoxStrut& border_scrollbar_padding,
-                CustomLayoutScope*,
-                FragmentResultOptions*,
-                scoped_refptr<SerializedScriptValue>* fragment_result_data);
+    bool Layout(
+        const NGConstraintSpace&,
+        const Document&,
+        const NGBlockNode&,
+        const LogicalSize& border_box_size,
+        const NGBoxStrut& border_scrollbar_padding,
+        CustomLayoutScope*,
+        FragmentResultOptions*&,
+        scoped_refptr<SerializedScriptValue>* fragment_result_data);
 
-    void Trace(blink::Visitor*);
+    // Runs the web developer defined intrinsicSizes, returns true if everything
+    // succeeded. It populates the IntrinsicSizesResultOptions dictionary.
+    bool IntrinsicSizes(
+        const NGConstraintSpace&,
+        const Document&,
+        const NGBlockNode&,
+        const LogicalSize& border_box_size,
+        const NGBoxStrut& border_scrollbar_padding,
+        const LayoutUnit child_percentage_resolution_block_size_for_min_max,
+        CustomLayoutScope*,
+        IntrinsicSizesResultOptions**,
+        bool* child_depends_on_percentage_block_size);
+
+    void Trace(Visitor*);
 
    private:
     void ReportException(ExceptionState*);
@@ -90,7 +106,7 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
 
   ScriptState* GetScriptState() const { return script_state_; }
 
-  virtual void Trace(blink::Visitor* visitor);
+  virtual void Trace(Visitor* visitor);
 
   const char* NameInHeapSnapshot() const override {
     return "CSSLayoutDefinition";
@@ -103,7 +119,7 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
   // sizes function, and layout function alive. It participates in wrapper
   // tracing as it holds onto V8 wrappers.
   Member<V8NoArgumentConstructor> constructor_;
-  Member<V8Function> unused_intrinsic_sizes_;
+  Member<V8IntrinsicSizesCallback> intrinsic_sizes_;
   Member<V8LayoutCallback> layout_;
 
   // If a constructor call ever fails, we'll refuse to create any more

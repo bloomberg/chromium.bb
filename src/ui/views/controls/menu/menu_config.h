@@ -24,6 +24,10 @@ struct VIEWS_EXPORT MenuConfig {
   MenuConfig();
   ~MenuConfig();
 
+  // Menus are the only place using kGroupingPropertyKey, so any value (other
+  // than 0) is fine.
+  static constexpr int kMenuControllerGroupingId = 1001;
+
   static const MenuConfig& instance();
 
   // Helper methods to simplify access to MenuConfig:
@@ -38,9 +42,6 @@ struct VIEWS_EXPORT MenuConfig {
 
   // Font list used by menus.
   gfx::FontList font_list;
-
-  // Color for the arrow to scroll bookmarks.
-  SkColor arrow_color = SK_ColorBLACK;
 
   // Menu border sizes. The vertical border size does not apply to menus with
   // rounded corners - those menus always use the corner radius as the vertical

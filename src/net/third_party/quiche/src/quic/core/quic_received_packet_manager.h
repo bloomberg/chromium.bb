@@ -90,6 +90,9 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
   // received.
   QuicPacketNumber PeerFirstSendingPacketNumber() const;
 
+  // Returns true if ack frame is empty.
+  bool IsAckFrameEmpty() const;
+
   void set_connection_stats(QuicConnectionStats* stats) { stats_ = stats; }
 
   // For logging purposes.
@@ -175,6 +178,8 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
   // When true, use a 1ms delayed ack timer if it's been an SRTT since a packet
   // was received.
   bool fast_ack_after_quiescence_;
+  // When true, only send 1 immediate ACK when reordering is detected.
+  bool one_immediate_ack_;
 
   // The local node's maximum ack delay time. This is the maximum amount of
   // time to wait before sending an acknowledgement.

@@ -10,9 +10,9 @@
 #include "base/android/jni_string.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/browser/touch_to_fill/android/jni_headers/Credential_jni.h"
 #include "chrome/browser/touch_to_fill/android/jni_headers/TouchToFillBridge_jni.h"
+#include "chrome/browser/touch_to_fill/touch_to_fill_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "ui/android/view_android.h"
@@ -48,20 +48,23 @@ UiCredential ConvertJavaCredential(JNIEnv* env,
 }  // namespace
 
 TouchToFillViewImpl::TouchToFillViewImpl(TouchToFillController* controller)
-    : controller_(controller) {
-  java_object_ = Java_TouchToFillBridge_create(
-      AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
-      controller_->GetNativeView()->GetWindowAndroid()->GetJavaObject());
-}
+    : controller_(controller) {}
 
 TouchToFillViewImpl::~TouchToFillViewImpl() {
-  Java_TouchToFillBridge_destroy(AttachCurrentThread(), java_object_);
+  if (java_object_internal_) {
+    // Don't create an object just for destruction.
+    Java_TouchToFillBridge_destroy(AttachCurrentThread(),
+                                   java_object_internal_);
+  }
 }
 
 void TouchToFillViewImpl::Show(
     const GURL& url,
     IsOriginSecure is_origin_secure,
     base::span<const password_manager::UiCredential> credentials) {
+  auto java_object = GetOrCreateJavaObject();
+  if (!java_object)
+    return;
   // Serialize the |credentials| span into a Java array and instruct the bridge
   // to show it together with |url| to the user.
   JNIEnv* env = AttachCurrentThread();
@@ -80,7 +83,7 @@ void TouchToFillViewImpl::Show(
   }
 
   Java_TouchToFillBridge_showCredentials(
-      env, java_object_, ConvertUTF8ToJavaString(env, url.spec()),
+      env, java_object, ConvertUTF8ToJavaString(env, url.spec()),
       is_origin_secure.value(), credential_array);
 }
 
@@ -104,4 +107,18 @@ void TouchToFillViewImpl::OnManagePasswordsSelected(JNIEnv* env) {
 
 void TouchToFillViewImpl::OnDismiss(JNIEnv* env) {
   OnDismiss();
+}
+
+base::android::ScopedJavaGlobalRef<jobject>
+TouchToFillViewImpl::GetOrCreateJavaObject() {
+  if (java_object_internal_) {
+    return java_object_internal_;
+  }
+  if (controller_->GetNativeView() == nullptr ||
+      controller_->GetNativeView()->GetWindowAndroid() == nullptr) {
+    return nullptr;  // No window attached (yet or anymore).
+  }
+  return java_object_internal_ = Java_TouchToFillBridge_create(
+             AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
+             controller_->GetNativeView()->GetWindowAndroid()->GetJavaObject());
 }

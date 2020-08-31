@@ -25,18 +25,12 @@
 // location, the context menu will originate from |location| in |view|.
 // Context menu will be presented from |viewController|.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
                                      title:(NSString*)title
                                     inView:(UIView*)view
                                 atLocation:(CGPoint)location
     NS_DESIGNATED_INITIALIZER;
 
-// Params are needed for the initialization.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;
 

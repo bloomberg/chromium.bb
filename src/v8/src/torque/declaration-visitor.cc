@@ -81,26 +81,30 @@ Builtin* DeclarationVisitor::CreateBuiltin(BuiltinDeclaration* decl,
     for (size_t i = signature.implicit_count;
          i < signature.parameter_types.types.size(); ++i) {
       const Type* parameter_type = signature.parameter_types.types[i];
-      if (parameter_type != TypeOracle::GetJSAnyType()) {
-        Error("Parameters of JavaScript-linkage builtins have to be JSAny.")
+      if (!TypeOracle::GetJSAnyType()->IsSubtypeOf(parameter_type)) {
+        Error(
+            "Parameters of JavaScript-linkage builtins have to be a supertype "
+            "of JSAny.")
             .Position(decl->parameters.types[i]->pos);
       }
     }
   }
 
   for (size_t i = 0; i < signature.types().size(); ++i) {
-    if (const StructType* type =
-            StructType::DynamicCast(signature.types()[i])) {
-      Error("Builtin '", decl->name, "' uses the struct '", type->name(),
-            "' as argument '", signature.parameter_names[i],
-            "', which is not supported.");
+    if (signature.types()[i]->StructSupertype()) {
+      Error("Builtin do not support structs as arguments, but argument ",
+            signature.parameter_names[i], " has type ", *signature.types()[i],
+            ".");
     }
   }
 
-  if (const StructType* struct_type =
-          StructType::DynamicCast(signature.return_type)) {
-    Error("Builtins ", decl->name, " cannot return structs ",
-          struct_type->name());
+  if (signature.return_type->StructSupertype()) {
+    Error("Builtins cannot return structs, but the return type is ",
+          *signature.return_type, ".");
+  }
+
+  if (signature.return_type == TypeOracle::GetVoidType()) {
+    Error("Builtins cannot have return type void.");
   }
 
   return Declarations::CreateBuiltin(std::move(external_name),
@@ -117,12 +121,17 @@ void DeclarationVisitor::Visit(ExternalBuiltinDeclaration* decl) {
 
 void DeclarationVisitor::Visit(ExternalRuntimeDeclaration* decl) {
   Signature signature = TypeVisitor::MakeSignature(decl);
-  if (signature.parameter_types.types.size() == 0 ||
-      !(signature.parameter_types.types[0] == TypeOracle::GetContextType())) {
+  if (signature.parameter_types.types.size() == 0) {
+    ReportError(
+        "Missing parameters for runtime function, at least the context "
+        "parameter is required.");
+  }
+  if (!(signature.parameter_types.types[0] == TypeOracle::GetContextType() ||
+        signature.parameter_types.types[0] == TypeOracle::GetNoContextType())) {
     ReportError(
         "first parameter to runtime functions has to be the context and have "
-        "type Context, but found type ",
-        signature.parameter_types.types[0]);
+        "type Context or NoContext, but found type ",
+        *signature.parameter_types.types[0]);
   }
   if (!(signature.return_type->IsSubtypeOf(TypeOracle::GetObjectType()) ||
         signature.return_type == TypeOracle::GetVoidType() ||

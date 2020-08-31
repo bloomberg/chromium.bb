@@ -336,6 +336,11 @@ class CORE_EXPORT LayoutTableSection final
                    HitTestAction) override;
 
  private:
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const final {
+    NOTREACHED();
+    return MinMaxSizes();
+  }
+
   void ComputeVisualOverflowFromDescendants();
 
   bool IsOfType(LayoutObjectType type) const override {
@@ -420,8 +425,6 @@ class CORE_EXPORT LayoutTableSection final
   // The offset at which the first row in the section will get positioned to
   // avoid any repeating headers in its table or ancestor tables.
   int OffsetForRepeatedHeader() const;
-
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
 
   bool HeaderGroupShouldRepeat() const {
     return Table()->Header() == this && GroupShouldRepeat();

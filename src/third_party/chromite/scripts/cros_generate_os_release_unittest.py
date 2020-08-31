@@ -8,11 +8,15 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
-import cros_generate_os_release
+from chromite.scripts import cros_generate_os_release
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class CrosGenerateOsReleaseTest(cros_test_lib.TempDirTestCase):

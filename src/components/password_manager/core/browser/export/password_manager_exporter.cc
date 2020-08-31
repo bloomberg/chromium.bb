@@ -10,7 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/lazy_task_runner.h"
+#include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
@@ -26,28 +26,29 @@ namespace {
 // destination and one of them was cancelled and will delete the file. We use
 // TaskPriority::USER_VISIBLE, because a busy UI is displayed while the
 // passwords are being exported.
-base::LazySingleThreadTaskRunner g_task_runner =
-    LAZY_SINGLE_THREAD_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::ThreadPool(),
-                         base::MayBlock(),
-                         base::TaskPriority::USER_VISIBLE),
+base::LazyThreadPoolSingleThreadTaskRunner g_task_runner =
+    LAZY_THREAD_POOL_SINGLE_THREAD_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(), base::TaskPriority::USER_VISIBLE),
         base::SingleThreadTaskRunnerThreadMode::SHARED);
 
 // A wrapper for |write_function|, which can be bound and keep a copy of its
 // data on the closure.
-bool Write(
+bool DoWriteOnTaskRunner(
     password_manager::PasswordManagerExporter::WriteCallback write_function,
     password_manager::PasswordManagerExporter::SetPosixFilePermissionsCallback
         set_permissions_function,
     const base::FilePath& destination,
     const std::string& serialised) {
-  if (write_function.Run(destination, serialised.c_str(), serialised.size()) !=
-      static_cast<int>(serialised.size())) {
+  if (!write_function.Run(destination, serialised))
     return false;
-  }
+
   // Set file permissions. This is a no-op outside of Posix.
   set_permissions_function.Run(destination, 0600 /* -rw------- */);
   return true;
+}
+
+bool DefaultWriteFunction(const base::FilePath& file, base::StringPiece data) {
+  return base::WriteFile(file, data);
 }
 
 }  // namespace
@@ -61,7 +62,7 @@ PasswordManagerExporter::PasswordManagerExporter(
     : credential_provider_interface_(credential_provider_interface),
       on_progress_(std::move(on_progress)),
       last_progress_status_(ExportProgressStatus::NOT_STARTED),
-      write_function_(base::BindRepeating(&base::WriteFile)),
+      write_function_(base::BindRepeating(&DefaultWriteFunction)),
       delete_function_(base::BindRepeating(&base::DeleteFile)),
 #if defined(OS_POSIX)
       set_permissions_function_(
@@ -157,8 +158,9 @@ void PasswordManagerExporter::Export() {
 
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::BindOnce(::Write, write_function_, set_permissions_function_,
-                     destination_, std::move(serialised_password_list_)),
+      base::BindOnce(DoWriteOnTaskRunner, write_function_,
+                     set_permissions_function_, destination_,
+                     std::move(serialised_password_list_)),
       base::BindOnce(&PasswordManagerExporter::OnPasswordsExported,
                      weak_factory_.GetWeakPtr()));
 }

@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
@@ -31,6 +32,8 @@ class TestWebState : public WebState {
   ~TestWebState() override;
 
   // WebState implementation.
+  Getter CreateDefaultGetter() override;
+  OnceGetter CreateDefaultOnceGetter() override;
   WebStateDelegate* GetDelegate() override;
   void SetDelegate(WebStateDelegate* delegate) override;
   bool IsWebUsageEnabled() const override;
@@ -79,9 +82,11 @@ class TestWebState : public WebState {
 
   void RemoveObserver(WebStateObserver* observer) override;
 
+  void CloseWebState() override;
+
   void AddPolicyDecider(WebStatePolicyDecider* decider) override;
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override;
-  void DidChangeVisibleSecurityState() override {}
+  void DidChangeVisibleSecurityState() override;
   bool HasOpener() const override;
   void SetHasOpener(bool has_opener) override;
   bool CanTakeSnapshot() const override;
@@ -109,19 +114,25 @@ class TestWebState : public WebState {
 
   // Getters for test data.
   // Uses |policy_deciders| to return whether the navigation corresponding to
-  // |request| should be allowed. Defaults to true.
-  bool ShouldAllowRequest(
+  // |request| should be allowed. Defaults to PolicyDecision::Allow().
+  WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
       NSURLRequest* request,
       const WebStatePolicyDecider::RequestInfo& request_info);
-  // Uses |policy_deciders| to return whether the navigation corresponding to
-  // |response| should be allowed. Defaults to true.
-  bool ShouldAllowResponse(NSURLResponse* response, bool for_main_frame);
+  // Uses |policy_deciders| to determine whether the navigation corresponding to
+  // |response| should be allowed. Calls |callback| with the decision. Defaults
+  // to PolicyDecision::Allow().
+  void ShouldAllowResponse(
+      NSURLResponse* response,
+      bool for_main_frame,
+      base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)> callback);
   base::string16 GetLastExecutedJavascript() const;
   NSData* GetLastLoadedData() const;
+  bool IsClosed() const;
 
   // Notifier for tests.
   void OnPageLoaded(PageLoadCompletionStatus load_completion_status);
   void OnNavigationStarted(NavigationContext* navigation_context);
+  void OnNavigationRedirected(NavigationContext* context);
   void OnNavigationFinished(NavigationContext* navigation_context);
   void OnRenderProcessGone();
   void OnBackForwardStateChanged();
@@ -139,6 +150,7 @@ class TestWebState : public WebState {
   bool is_evicted_;
   bool has_opener_;
   bool can_take_snapshot_;
+  bool is_closed_;
   GURL url_;
   base::string16 title_;
   base::string16 last_executed_javascript_;
@@ -157,6 +169,8 @@ class TestWebState : public WebState {
   // All the WebStatePolicyDeciders asked for navigation decision. Weak
   // references.
   base::ObserverList<WebStatePolicyDecider, true>::Unchecked policy_deciders_;
+
+  base::WeakPtrFactory<TestWebState> weak_factory_{this};
 };
 
 }  // namespace web

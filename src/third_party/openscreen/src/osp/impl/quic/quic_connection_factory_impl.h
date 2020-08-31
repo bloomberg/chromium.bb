@@ -22,14 +22,13 @@ class QuicTaskRunner;
 
 class QuicConnectionFactoryImpl final : public QuicConnectionFactory {
  public:
-  QuicConnectionFactoryImpl(platform::TaskRunner* task_runner);
+  QuicConnectionFactoryImpl(TaskRunner* task_runner);
   ~QuicConnectionFactoryImpl() override;
 
   // UdpSocket::Client overrides.
-  void OnError(platform::UdpSocket* socket, Error error) override;
-  void OnSendError(platform::UdpSocket* socket, Error error) override;
-  void OnRead(platform::UdpSocket* socket,
-              ErrorOr<platform::UdpPacket> packet) override;
+  void OnError(UdpSocket* socket, Error error) override;
+  void OnSendError(UdpSocket* socket, Error error) override;
+  void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet) override;
 
   // QuicConnectionFactory overrides.
   void SetServerDelegate(ServerDelegate* delegate,
@@ -48,18 +47,18 @@ class QuicConnectionFactoryImpl final : public QuicConnectionFactory {
 
   ServerDelegate* server_delegate_ = nullptr;
 
-  std::vector<platform::UdpSocketUniquePtr> sockets_;
+  std::vector<std::unique_ptr<UdpSocket>> sockets_;
 
   struct OpenConnection {
     QuicConnection* connection;
-    platform::UdpSocket* socket;  // References one of the owned |sockets_|.
+    UdpSocket* socket;  // References one of the owned |sockets_|.
   };
-  std::map<IPEndpoint, OpenConnection, IPEndpointComparator> connections_;
+  std::map<IPEndpoint, OpenConnection> connections_;
 
   // NOTE: Must be provided in constructor and stored as an instance variable
   // rather than using the static accessor method to allow for UTs to mock this
   // layer.
-  platform::TaskRunner* const task_runner_;
+  TaskRunner* const task_runner_;
 };
 
 }  // namespace osp

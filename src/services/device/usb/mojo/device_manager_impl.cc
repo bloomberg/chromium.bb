@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/device/public/cpp/usb/usb_utils.h"
@@ -50,17 +51,16 @@ void DeviceManagerImpl::AddReceiver(
 void DeviceManagerImpl::EnumerateDevicesAndSetClient(
     mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client,
     EnumerateDevicesAndSetClientCallback callback) {
-  usb_service_->GetDevices(base::Bind(
+  usb_service_->GetDevices(base::BindOnce(
       &DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
-      /*options=*/nullptr, base::Passed(&client), base::Passed(&callback)));
+      /*options=*/nullptr, std::move(client), std::move(callback)));
 }
 
 void DeviceManagerImpl::GetDevices(mojom::UsbEnumerationOptionsPtr options,
                                    GetDevicesCallback callback) {
-  usb_service_->GetDevices(
-      base::Bind(&DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
-                 base::Passed(&options), mojo::NullAssociatedRemote(),
-                 base::Passed(&callback)));
+  usb_service_->GetDevices(base::BindOnce(
+      &DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
+      std::move(options), mojo::NullAssociatedRemote(), std::move(callback)));
 }
 
 void DeviceManagerImpl::GetDevice(

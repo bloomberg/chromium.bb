@@ -10,7 +10,6 @@
 #include "platform/base/trivial_clock_traits.h"
 
 namespace openscreen {
-namespace platform {
 
 // The "reasonably high-resolution" source of monotonic time from the embedder,
 // exhibiting the traits described in TrivialClockTraits. This class is not
@@ -33,7 +32,6 @@ class Clock : public TrivialClockTraits {
 // time."
 std::chrono::seconds GetWallTimeSinceUnixEpoch() noexcept;
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_API_TIME_H_

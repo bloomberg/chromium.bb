@@ -6,7 +6,8 @@
 
 #include <utility>
 
-#include "chrome/browser/sharing/sharing_constants.h"
+#include "base/time/time.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/sharing/sharing_dialog_data.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
@@ -56,6 +57,7 @@ base::string16 SharingUiController::GetTitle(SharingDialogType dialog_type) {
     case SharingSendMessageResult::kDeviceNotFound:
     case SharingSendMessageResult::kNetworkError:
     case SharingSendMessageResult::kAckTimeout:
+    case SharingSendMessageResult::kCommitTimeout:
       return l10n_util::GetStringFUTF16(
           IDS_BROWSER_SHARING_ERROR_DIALOG_TITLE_GENERIC_ERROR,
           base::ToLowerASCII(GetContentType()));
@@ -66,6 +68,7 @@ base::string16 SharingUiController::GetTitle(SharingDialogType dialog_type) {
 
     case SharingSendMessageResult::kPayloadTooLarge:
     case SharingSendMessageResult::kInternalError:
+    case SharingSendMessageResult::kEncryptionError:
       return l10n_util::GetStringFUTF16(
           IDS_BROWSER_SHARING_ERROR_DIALOG_TITLE_INTERNAL_ERROR,
           base::ToLowerASCII(GetContentType()));
@@ -79,6 +82,7 @@ base::string16 SharingUiController::GetErrorDialogText() const {
           IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_DEVICE_NOT_FOUND,
           GetTargetDeviceName());
 
+    case SharingSendMessageResult::kCommitTimeout:
     case SharingSendMessageResult::kNetworkError:
       return l10n_util::GetStringUTF16(
           IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_NETWORK_ERROR);
@@ -93,6 +97,7 @@ base::string16 SharingUiController::GetErrorDialogText() const {
 
     case SharingSendMessageResult::kPayloadTooLarge:
     case SharingSendMessageResult::kInternalError:
+    case SharingSendMessageResult::kEncryptionError:
       return l10n_util::GetStringUTF16(
           IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_INTERNAL_ERROR);
   }
@@ -177,9 +182,10 @@ void SharingUiController::SendMessageToDevice(
   UpdateIcon();
 
   sharing_service_->SendMessageToDevice(
-      device, kSendMessageTimeout, std::move(sharing_message),
-      base::Bind(&SharingUiController::OnMessageSentToDevice,
-                 weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
+      device, base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get()),
+      std::move(sharing_message),
+      base::BindOnce(&SharingUiController::OnMessageSentToDevice,
+                     weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
 }
 
 void SharingUiController::UpdateIcon() {

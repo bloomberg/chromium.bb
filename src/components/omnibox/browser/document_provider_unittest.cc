@@ -16,7 +16,7 @@
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
-#include "components/omnibox/browser/omnibox_pref_names.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -392,23 +392,158 @@ TEST_F(DocumentProviderTest, ProductDescriptionStringsAndAccessibleLabels) {
   EXPECT_EQ(
       AutocompleteMatchType::ToAccessibilityLabel(
           matches[0], base::ASCIIToUTF16(matches[0].destination_url.spec()), 1,
-          4, false),
+          4),
       base::ASCIIToUTF16("My Google Doc, 10/15/07 - Google Docs, "
                          "https://documentprovider.tld/doc?id=1, 2 of 4"));
   // Unhandled MIME Type falls back to "Google Drive" where the file was stored.
   EXPECT_EQ(
       AutocompleteMatchType::ToAccessibilityLabel(
           matches[1], base::ASCIIToUTF16(matches[1].destination_url.spec()), 2,
-          4, false),
+          4),
       base::ASCIIToUTF16("My File in Drive, 10/10/10 - Google Drive, "
                          "https://documentprovider.tld/doc?id=2, 3 of 4"));
   // No modified time was specified for the last file.
   EXPECT_EQ(
       AutocompleteMatchType::ToAccessibilityLabel(
           matches[2], base::ASCIIToUTF16(matches[2].destination_url.spec()), 3,
-          4, false),
+          4),
       base::ASCIIToUTF16("Shared Spreadsheet, Google Sheets, "
                          "https://documentprovider.tld/doc?id=3, 4 of 4"));
+}
+
+TEST_F(DocumentProviderTest, MatchDescriptionString) {
+  const std::string kGoodJSONResponseWithMimeTypes = base::StringPrintf(
+      R"({
+      "results": [
+        {
+          "title": "Date, mime, and owner provided",
+          "url": "https://documentprovider.tld/doc?id=1",
+          "score": 999,
+          "originalUrl": "%s",
+          "metadata": {
+            "updateTime": "1994-01-12T08:10:05Z",
+            "mimeType": "application/vnd.google-apps.document",
+            "owner": {
+              "personNames": [
+                {"displayName": "Green Moon"}
+              ]
+            }
+          }
+        },
+        {
+          "title": "Missing mime",
+          "score": 998,
+          "url": "https://documentprovider.tld/doc?id=2",
+          "metadata": {
+            "updateTime": "12 Jan 1994 08:10:05 GMT",
+            "owner": {
+              "personNames": [
+                {"displayName": "Blue Sunset"},
+                {"displayName": "White Aurora"}
+              ]
+            }
+          }
+        },
+        {
+          "title": "Missing owner",
+          "score": 997,
+          "url": "https://documentprovider.tld/doc?id=3",
+          "metadata": {
+            "updateTime": "12 Jan 1994 08:10:05 GMT",
+            "mimeType": "application/vnd.google-apps.spreadsheet"
+          }
+        },
+        {
+          "title": "Missing date",
+          "score": 997,
+          "url": "https://documentprovider.tld/doc?id=3",
+          "metadata": {
+            "mimeType": "application/vnd.google-apps.spreadsheet",
+            "owner": {
+              "personNames": [
+                {"displayName": "Red Lightning"}
+              ]
+            }
+          }
+        },
+        {
+          "title": "Missing metadata",
+          "score": 997,
+          "url": "https://documentprovider.tld/doc?id=4"
+        }
+      ]
+    })",
+      SAMPLE_ORIGINAL_URL.c_str());
+
+  base::Optional<base::Value> response =
+      base::JSONReader::Read(kGoodJSONResponseWithMimeTypes);
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->is_dict());
+  provider_->input_.UpdateText(base::UTF8ToUTF16("input"), 0, {});
+
+  // Verify correct formatting when the DisplayOwner feature param is false.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        omnibox::kDocumentProvider, {
+                                        {"DisplayOwner", "false"},
+                                    });
+    ACMatches matches = provider_->ParseDocumentSearchResults(*response);
+
+    EXPECT_EQ(matches.size(), 5u);
+    EXPECT_EQ(matches[0].description,
+              base::ASCIIToUTF16("1/12/94 - Google Docs"));
+    EXPECT_EQ(matches[1].description,
+              base::ASCIIToUTF16("1/12/94 - Google Drive"));
+    EXPECT_EQ(matches[2].description,
+              base::ASCIIToUTF16("1/12/94 - Google Sheets"));
+    EXPECT_EQ(matches[3].description, base::ASCIIToUTF16("Google Sheets"));
+    EXPECT_EQ(matches[4].description, base::ASCIIToUTF16(""));
+
+    // Also verify description_for_shortcuts does not include dates.
+    EXPECT_EQ(matches[0].description_for_shortcuts,
+              base::ASCIIToUTF16("Google Docs"));
+    EXPECT_EQ(matches[1].description_for_shortcuts,
+              base::ASCIIToUTF16("Google Drive"));
+    EXPECT_EQ(matches[2].description_for_shortcuts,
+              base::ASCIIToUTF16("Google Sheets"));
+    EXPECT_EQ(matches[3].description_for_shortcuts,
+              base::ASCIIToUTF16("Google Sheets"));
+    EXPECT_EQ(matches[4].description_for_shortcuts, base::ASCIIToUTF16(""));
+  }
+
+  // Verify correct formatting when the DisplayOwner feature param is true.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        omnibox::kDocumentProvider, {
+                                        {"DisplayOwner", "true"},
+                                    });
+    ACMatches matches = provider_->ParseDocumentSearchResults(*response);
+
+    EXPECT_EQ(matches.size(), 5u);
+    EXPECT_EQ(matches[0].description,
+              base::ASCIIToUTF16("1/12/94 - Green Moon - Google Docs"));
+    EXPECT_EQ(matches[1].description,
+              base::ASCIIToUTF16("1/12/94 - Blue Sunset - Google Drive"));
+    EXPECT_EQ(matches[2].description,
+              base::ASCIIToUTF16("1/12/94 - Google Sheets"));
+    EXPECT_EQ(matches[3].description,
+              base::ASCIIToUTF16("Red Lightning - Google Sheets"));
+    EXPECT_EQ(matches[4].description, base::ASCIIToUTF16(""));
+
+    // Also verify description_for_shortcuts does not include dates.
+    EXPECT_EQ(matches.size(), 5u);
+    EXPECT_EQ(matches[0].description_for_shortcuts,
+              base::ASCIIToUTF16("Green Moon - Google Docs"));
+    EXPECT_EQ(matches[1].description_for_shortcuts,
+              base::ASCIIToUTF16("Blue Sunset - Google Drive"));
+    EXPECT_EQ(matches[2].description_for_shortcuts,
+              base::ASCIIToUTF16("Google Sheets"));
+    EXPECT_EQ(matches[3].description_for_shortcuts,
+              base::ASCIIToUTF16("Red Lightning - Google Sheets"));
+    EXPECT_EQ(matches[4].description_for_shortcuts, base::ASCIIToUTF16(""));
+  }
 }
 
 TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTies) {
@@ -1005,4 +1140,25 @@ TEST_F(DocumentProviderTest, MinQueryLength) {
   long_input.set_want_asynchronous_matches(false);
   provider_->Start(long_input, false);
   EXPECT_EQ(long_input.text(), provider_->input_.text());
+}
+
+TEST_F(DocumentProviderTest, StartCallsStop) {
+  // Test that a call to ::Start will stop old requests to prevent their results
+  // from appearing with the new input
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
+  EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsAuthenticated()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsSyncActive()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
+
+  AutocompleteInput invalid_input(base::ASCIIToUTF16("12"),
+                                  metrics::OmniboxEventProto::OTHER,
+                                  TestSchemeClassifier());
+  invalid_input.set_want_asynchronous_matches(true);
+
+  provider_->done_ = false;
+  provider_->Start(invalid_input, false);
+  EXPECT_TRUE(provider_->done());
 }

@@ -4,7 +4,6 @@
 
 #include "content/browser/android/render_widget_host_connector.h"
 
-#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -35,11 +34,14 @@ class RenderWidgetHostConnector::Observer
   void RenderWidgetHostViewDestroyed(
       RenderWidgetHostViewAndroid* rwhva) override;
 
+  void DestroyEarly();
   void UpdateRenderWidgetHostView(RenderWidgetHostViewAndroid* new_rwhva);
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid() const;
   RenderWidgetHostViewAndroid* active_rwhva() const { return active_rwhva_; }
 
  private:
+  void DoDestroy(WebContentsAndroid* web_contents_android);
+
   RenderWidgetHostConnector* const connector_;
 
   // Active RenderWidgetHostView connected to this instance. Can also point to
@@ -72,10 +74,6 @@ void RenderWidgetHostConnector::Observer::RenderViewHostChanged(
     RenderViewHost* old_host,
     RenderViewHost* new_host) {
   // |RenderViewHostChanged| is called only for main rwhva change.
-  // No need to update connection if an interstitial page is active.
-  if (web_contents()->ShowingInterstitialPage())
-    return;
-
   auto* new_view = new_host ? static_cast<RenderWidgetHostViewBase*>(
                                   new_host->GetWidget()->GetView())
                             : nullptr;
@@ -93,6 +91,16 @@ void RenderWidgetHostConnector::Observer::DidDetachInterstitialPage() {
 }
 
 void RenderWidgetHostConnector::Observer::WebContentsAndroidDestroyed(
+    WebContentsAndroid* web_contents_android) {
+  DoDestroy(web_contents_android);
+}
+
+void RenderWidgetHostConnector::Observer::DestroyEarly() {
+  DoDestroy(
+      static_cast<WebContentsImpl*>(web_contents())->GetWebContentsAndroid());
+}
+
+void RenderWidgetHostConnector::Observer::DoDestroy(
     WebContentsAndroid* web_contents_android) {
   web_contents_android->RemoveDestructionObserver(this);
   DCHECK_EQ(active_rwhva_, GetRenderWidgetHostViewAndroid());
@@ -124,15 +132,6 @@ void RenderWidgetHostConnector::Observer::UpdateRenderWidgetHostView(
 RenderWidgetHostViewAndroid*
 RenderWidgetHostConnector::Observer::GetRenderWidgetHostViewAndroid() const {
   RenderWidgetHostView* rwhv = web_contents()->GetRenderWidgetHostView();
-  WebContentsImpl* web_contents_impl =
-      static_cast<WebContentsImpl*>(web_contents());
-  if (web_contents_impl->ShowingInterstitialPage()) {
-    rwhv = web_contents_impl->GetInterstitialPage()
-               ->GetMainFrame()
-               ->GetRenderViewHost()
-               ->GetWidget()
-               ->GetView();
-  }
   DCHECK(!rwhv || !static_cast<RenderWidgetHostViewBase*>(rwhv)
                        ->IsRenderWidgetHostViewChildFrame());
   return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
@@ -151,6 +150,10 @@ RenderWidgetHostConnector::~RenderWidgetHostConnector() {}
 RenderWidgetHostViewAndroid* RenderWidgetHostConnector::GetRWHVAForTesting()
     const {
   return render_widget_observer_->active_rwhva();
+}
+
+void RenderWidgetHostConnector::DestroyEarly() {
+  render_widget_observer_->DestroyEarly();
 }
 
 WebContents* RenderWidgetHostConnector::web_contents() const {

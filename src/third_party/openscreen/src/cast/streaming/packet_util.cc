@@ -7,10 +7,8 @@
 #include "cast/streaming/rtcp_common.h"
 #include "cast/streaming/rtp_defines.h"
 
-using openscreen::ReadBigEndian;
-
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 std::pair<ApparentPacketType, Ssrc> InspectPacketForRouting(
     absl::Span<const uint8_t> packet) {
@@ -40,5 +38,5 @@ std::pair<ApparentPacketType, Ssrc> InspectPacketForRouting(
   return std::make_pair(ApparentPacketType::UNKNOWN, Ssrc{0});
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

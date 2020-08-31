@@ -8,9 +8,9 @@
 #include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
-#include "content/browser/service_worker/service_worker_navigation_handle.h"
-#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
-#include "content/browser/service_worker/service_worker_request_handler.h"
+#include "content/browser/service_worker/service_worker_main_resource_handle.h"
+#include "content/browser/service_worker/service_worker_main_resource_handle_core.h"
+#include "content/browser/service_worker/service_worker_navigation_loader_interceptor.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,12 +21,14 @@ namespace content {
 
 WorkerScriptLoader::WorkerScriptLoader(
     int process_id,
+    DedicatedWorkerId dedicated_worker_id,
+    SharedWorkerId shared_worker_id,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-    base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle,
+    base::WeakPtr<ServiceWorkerMainResourceHandle> service_worker_handle,
     base::WeakPtr<AppCacheHost> appcache_host,
     const BrowserContextGetter& browser_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
@@ -42,14 +44,15 @@ WorkerScriptLoader::WorkerScriptLoader(
       traffic_annotation_(traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor;
   if (!service_worker_handle_) {
     // The DedicatedWorkerHost or SharedWorkerHost is already destroyed.
     Abort();
     return;
   }
-  service_worker_interceptor = ServiceWorkerRequestHandler::CreateForWorker(
-      resource_request_, process_id, service_worker_handle_);
+  auto service_worker_interceptor =
+      ServiceWorkerNavigationLoaderInterceptor::CreateForWorker(
+          resource_request_, process_id, dedicated_worker_id, shared_worker_id,
+          service_worker_handle_);
 
   if (service_worker_interceptor)
     interceptors_.push_back(std::move(service_worker_interceptor));
@@ -168,6 +171,7 @@ void WorkerScriptLoader::LoadFromNetwork(bool reset_subresource_loader_params) {
 void WorkerScriptLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     const base::Optional<GURL>& new_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!new_url.has_value()) << "Redirect with modified URL was not "
@@ -181,6 +185,9 @@ void WorkerScriptLoader::FollowRedirect(
       resource_request_.url, resource_request_.method, *redirect_info_,
       removed_headers, modified_headers, &resource_request_.headers,
       &should_clear_upload);
+  resource_request_.cors_exempt_headers.MergeFrom(modified_cors_exempt_headers);
+  for (const std::string& name : removed_headers)
+    resource_request_.cors_exempt_headers.RemoveHeader(name);
 
   resource_request_.url = redirect_info_->new_url;
   resource_request_.method = redirect_info_->new_method;
@@ -322,7 +329,7 @@ void WorkerScriptLoader::CommitCompleted(
     // TODO(https://crbug.com/999049): Parse the COEP header and pass it to
     // the service worker handle.
     service_worker_handle_->OnBeginWorkerCommit(
-        network::mojom::CrossOriginEmbedderPolicy::kNone);
+        network::CrossOriginEmbedderPolicy());
   }
 
   client_->OnComplete(status);

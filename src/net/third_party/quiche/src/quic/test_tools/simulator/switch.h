@@ -77,10 +77,10 @@ class Switch {
   void DispatchPacket(SwitchPortNumber port_number,
                       std::unique_ptr<Packet> packet);
 
-  // This can not be a QuicDeque since pointers into this are
+  // This can not be a QuicCircularDeque since pointers into this are
   // assumed to be stable.
   std::deque<Port> ports_;
-  QuicUnorderedMap<std::string, Port*> switching_table_;
+  QuicHashMap<std::string, Port*> switching_table_;
 };
 
 }  // namespace simulator

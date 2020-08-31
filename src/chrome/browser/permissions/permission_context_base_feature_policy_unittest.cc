@@ -3,15 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/media/midi_permission_context.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/contexts/geolocation_permission_context.h"
+#include "components/permissions/permission_request_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
@@ -19,6 +20,12 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/geolocation/geolocation_permission_context_delegate_android.h"
+#else
+#include "chrome/browser/geolocation/geolocation_permission_context_delegate.h"
+#endif
 
 // Integration tests for querying permissions that have a feature policy set.
 // These tests are not meant to cover every edge case as the FeaturePolicy class
@@ -72,7 +79,7 @@ class PermissionContextBaseFeaturePolicyTest
     *rfh = current;
   }
 
-  ContentSetting GetPermissionForFrame(PermissionContextBase* pcb,
+  ContentSetting GetPermissionForFrame(permissions::PermissionContextBase* pcb,
                                        content::RenderFrameHost* rfh) {
     return pcb
         ->GetPermissionStatus(
@@ -81,18 +88,32 @@ class PermissionContextBaseFeaturePolicyTest
         .content_setting;
   }
 
-  ContentSetting RequestPermissionForFrame(PermissionContextBase* pcb,
-                                           content::RenderFrameHost* rfh) {
-    PermissionRequestID id(rfh, request_id_++);
-    pcb->RequestPermission(content::WebContents::FromRenderFrameHost(rfh), id,
-                           rfh->GetLastCommittedURL(), /*user_gesture=*/true,
-                           base::Bind(&PermissionContextBaseFeaturePolicyTest::
-                                          RequestPermissionForFrameFinished,
-                                      base::Unretained(this)));
+  ContentSetting RequestPermissionForFrame(
+      permissions::PermissionContextBase* pcb,
+      content::RenderFrameHost* rfh) {
+    permissions::PermissionRequestID id(rfh, request_id_++);
+    pcb->RequestPermission(
+        content::WebContents::FromRenderFrameHost(rfh), id,
+        rfh->GetLastCommittedURL(), /*user_gesture=*/true,
+        base::BindOnce(&PermissionContextBaseFeaturePolicyTest::
+                           RequestPermissionForFrameFinished,
+                       base::Unretained(this)));
     EXPECT_NE(CONTENT_SETTING_DEFAULT, last_request_result_);
     ContentSetting result = last_request_result_;
     last_request_result_ = CONTENT_SETTING_DEFAULT;
     return result;
+  }
+
+  std::unique_ptr<permissions::GeolocationPermissionContext>
+  MakeGeolocationPermissionContext() {
+    return std::make_unique<permissions::GeolocationPermissionContext>(
+        profile(),
+#if defined(OS_ANDROID)
+        std::make_unique<GeolocationPermissionContextDelegateAndroid>(profile())
+#else
+        std::make_unique<GeolocationPermissionContextDelegate>(profile())
+#endif
+    );
   }
 
  private:
@@ -121,9 +142,11 @@ TEST_F(PermissionContextBaseFeaturePolicyTest, DefaultPolicy) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK, GetPermissionForFrame(&midi, child));
 
   // Geolocation is ask by default in top level frames but not in subframes.
-  GeolocationPermissionContext geolocation(profile());
-  EXPECT_EQ(CONTENT_SETTING_ASK, GetPermissionForFrame(&geolocation, parent));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, GetPermissionForFrame(&geolocation, child));
+  auto geolocation = MakeGeolocationPermissionContext();
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            GetPermissionForFrame(geolocation.get(), parent));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetPermissionForFrame(geolocation.get(), child));
 
   // Notifications is ask by default in top level frames but not in subframes.
   NotificationPermissionContext notifications(profile());
@@ -149,9 +172,11 @@ TEST_F(PermissionContextBaseFeaturePolicyTest, DisabledTopLevelFrame) {
       &parent, blink::mojom::FeaturePolicyFeature::kGeolocation,
       std::vector<std::string>());
   child = AddChildRFH(parent, kOrigin2);
-  GeolocationPermissionContext geolocation(profile());
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, GetPermissionForFrame(&geolocation, parent));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, GetPermissionForFrame(&geolocation, child));
+  auto geolocation = MakeGeolocationPermissionContext();
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetPermissionForFrame(geolocation.get(), parent));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetPermissionForFrame(geolocation.get(), child));
 }
 
 TEST_F(PermissionContextBaseFeaturePolicyTest, EnabledForChildFrame) {
@@ -171,9 +196,11 @@ TEST_F(PermissionContextBaseFeaturePolicyTest, EnabledForChildFrame) {
       &parent, blink::mojom::FeaturePolicyFeature::kGeolocation,
       {kOrigin1, kOrigin2});
   child = AddChildRFH(parent, kOrigin2);
-  GeolocationPermissionContext geolocation(profile());
-  EXPECT_EQ(CONTENT_SETTING_ASK, GetPermissionForFrame(&geolocation, parent));
-  EXPECT_EQ(CONTENT_SETTING_ASK, GetPermissionForFrame(&geolocation, child));
+  auto geolocation = MakeGeolocationPermissionContext();
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            GetPermissionForFrame(geolocation.get(), parent));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            GetPermissionForFrame(geolocation.get(), child));
 }
 
 TEST_F(PermissionContextBaseFeaturePolicyTest, RequestPermission) {
@@ -184,9 +211,9 @@ TEST_F(PermissionContextBaseFeaturePolicyTest, RequestPermission) {
                                  CONTENT_SETTING_ALLOW);
 
   // Request geolocation in the top level frame, request should work.
-  GeolocationPermissionContext geolocation(profile());
+  auto geolocation = MakeGeolocationPermissionContext();
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            RequestPermissionForFrame(&geolocation, parent));
+            RequestPermissionForFrame(geolocation.get(), parent));
 
   // Disable geolocation in the top level frame.
   RefreshPageAndSetHeaderPolicy(
@@ -195,5 +222,5 @@ TEST_F(PermissionContextBaseFeaturePolicyTest, RequestPermission) {
 
   // Request should fail.
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            RequestPermissionForFrame(&geolocation, parent));
+            RequestPermissionForFrame(geolocation.get(), parent));
 }

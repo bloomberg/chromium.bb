@@ -72,7 +72,8 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
 
   // Reports usage metrics to UMA.
   void ReportMetrics(const std::string& sync_username,
-                     bool custom_passphrase_sync_enabled);
+                     bool custom_passphrase_sync_enabled,
+                     BulkCheckDone bulk_check_done);
 
   // Adds |form| to the list of remembered password forms. Returns the list of
   // changes applied ({}, {ADD}, {REMOVE, ADD}). If it returns {REMOVE, ADD}
@@ -82,12 +83,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   PasswordStoreChangeList AddLogin(const autofill::PasswordForm& form,
                                    AddLoginError* error = nullptr)
       WARN_UNUSED_RESULT;
-
-  // This function does the same thing as AddLogin() with the difference that
-  // doesn't check if a site is already blacklisted before adding it. This is
-  // needed for tests that will require to have duplicates in the database.
-  PasswordStoreChangeList AddBlacklistedLoginForTesting(
-      const autofill::PasswordForm& form) WARN_UNUSED_RESULT;
 
   // Updates existing password form. Returns the list of applied changes ({},
   // {UPDATE}). The password is looked up by the tuple {origin,
@@ -235,6 +230,19 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // empty string if the row for this |form| is not found.
   std::string GetEncryptedPasswordById(int id) const;
 #endif
+
+  // Returns a suffix (infix, really) to be used in histogram names to
+  // differentiate the profile store from the account store.
+  base::StringPiece GetMetricsSuffixForStore() const;
+
+  void ReportNumberOfAccountsMetrics(bool custom_passphrase_sync_enabled);
+  void RecordTimesPasswordUsedMetrics(bool custom_passphrase_sync_enabled);
+  void ReportSyncingAccountStateMetrics(const std::string& sync_username);
+  void ReportEmptyUsernamesMetrics();
+  void ReportLoginsWithSchemesMetrics();
+  void ReportBubbleSuppressionMetrics();
+  void ReportInaccessiblePasswordsMetrics();
+  void ReportDuplicateCredentialsMetrics();
 
   // Result values for encryption/decryption actions.
   enum EncryptionResult {

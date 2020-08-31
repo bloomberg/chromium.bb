@@ -10,9 +10,9 @@
 #include "base/optional.h"
 #include "media/base/limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_constraint_factory.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 
 namespace blink {
 
@@ -60,7 +60,7 @@ double AspectRatio(const media::VideoCaptureFormat& format) {
 
 VideoCaptureSettings SelectSettingsVideoDeviceCapture(
     const VideoDeviceCaptureCapabilities& capabilities,
-    const WebMediaConstraints& constraints) {
+    const MediaConstraints& constraints) {
   return SelectSettingsVideoDeviceCapture(
       capabilities, constraints, MediaStreamVideoSource::kDefaultWidth,
       MediaStreamVideoSource::kDefaultHeight,
@@ -180,8 +180,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
 
  protected:
   VideoCaptureSettings SelectSettings() {
-    WebMediaConstraints constraints =
-        constraint_factory_.CreateWebMediaConstraints();
+    MediaConstraints constraints = constraint_factory_.CreateMediaConstraints();
     return SelectSettingsVideoDeviceCapture(capabilities_, constraints);
   }
 
@@ -215,8 +214,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, Unconstrained) {
 // constraint results in failure to select a candidate.
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnDeviceID) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().device_id.SetExact(
-      WebString::FromASCII("NONEXISTING"));
+  constraint_factory_.basic().device_id.SetExact("NONEXISTING");
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().device_id.GetName(),
@@ -225,8 +223,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnDeviceID) {
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnGroupID) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().group_id.SetExact(
-      WebString::FromASCII("NONEXISTING"));
+  constraint_factory_.basic().group_id.SetExact("NONEXISTING");
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().group_id.GetName(),
@@ -236,8 +233,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnGroupID) {
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnFacingMode) {
   constraint_factory_.Reset();
   // No device in |capabilities_| has facing mode equal to LEFT.
-  constraint_factory_.basic().facing_mode.SetExact(
-      WebString::FromASCII("left"));
+  constraint_factory_.basic().facing_mode.SetExact("left");
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().facing_mode.GetName(),
@@ -248,7 +244,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        OverconstrainedOnEmptyFacingMode) {
   constraint_factory_.Reset();
   // Empty is not a valid facingMode value.
-  constraint_factory_.basic().facing_mode.SetExact(WebString::FromASCII(""));
+  constraint_factory_.basic().facing_mode.SetExact("");
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().facing_mode.GetName(),
@@ -258,8 +254,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        OverconstrainedOnInvalidResizeMode) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().resize_mode.SetExact(
-      WebString::FromASCII("invalid"));
+  constraint_factory_.basic().resize_mode.SetExact("invalid");
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().resize_mode.GetName(),
@@ -269,7 +264,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        OverconstrainedOnEmptyResizeMode) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().resize_mode.SetExact(WebString::FromASCII(""));
+  constraint_factory_.basic().resize_mode.SetExact("");
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().resize_mode.GetName(),
@@ -279,8 +274,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnVideoKind) {
   constraint_factory_.Reset();
   // No device in |capabilities_| has video kind infrared.
-  constraint_factory_.basic().video_kind.SetExact(
-      WebString::FromASCII("infrared"));
+  constraint_factory_.basic().video_kind.SetExact("infrared");
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().video_kind.GetName(),
@@ -400,7 +394,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 
   constraint_factory_.Reset();
   constraint_factory_.basic().goog_noise_reduction.SetExact(true);
-  auto constraints = constraint_factory_.CreateWebMediaConstraints();
+  auto constraints = constraint_factory_.CreateMediaConstraints();
   auto result = SelectSettingsVideoDeviceCapture(capabilities, constraints);
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().goog_noise_reduction.GetName(),
@@ -411,23 +405,20 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 // for each individual constraint in the basic constraint set.
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryDeviceID) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().device_id.SetExact(
-      WebString(default_device_->device_id));
+  constraint_factory_.basic().device_id.SetExact(default_device_->device_id);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(default_device_->device_id.Utf8(), result.device_id());
   EXPECT_EQ(*default_closest_format_, result.Format());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
-  constraint_factory_.basic().device_id.SetExact(
-      WebString(low_res_device_->device_id));
+  constraint_factory_.basic().device_id.SetExact(low_res_device_->device_id);
   result = SelectSettings();
   EXPECT_EQ(low_res_device_->device_id.Utf8(), result.device_id());
   EXPECT_EQ(*low_res_closest_format_, result.Format());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
-  constraint_factory_.basic().device_id.SetExact(
-      WebString(high_res_device_->device_id));
+  constraint_factory_.basic().device_id.SetExact(high_res_device_->device_id);
   result = SelectSettings();
   EXPECT_EQ(high_res_device_->device_id.Utf8(), result.device_id());
   EXPECT_EQ(*high_res_closest_format_, result.Format());
@@ -436,23 +427,20 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryDeviceID) {
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryGroupID) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().group_id.SetExact(
-      WebString(default_device_->group_id));
+  constraint_factory_.basic().group_id.SetExact(default_device_->group_id);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(default_device_->device_id.Utf8(), result.device_id());
   EXPECT_EQ(*default_closest_format_, result.Format());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
-  constraint_factory_.basic().group_id.SetExact(
-      WebString(low_res_device_->group_id));
+  constraint_factory_.basic().group_id.SetExact(low_res_device_->group_id);
   result = SelectSettings();
   EXPECT_EQ(low_res_device_->device_id.Utf8(), result.device_id());
   EXPECT_EQ(*low_res_closest_format_, result.Format());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
-  constraint_factory_.basic().group_id.SetExact(
-      WebString(high_res_device_->group_id));
+  constraint_factory_.basic().group_id.SetExact(high_res_device_->group_id);
   result = SelectSettings();
   EXPECT_EQ(high_res_device_->device_id.Utf8(), result.device_id());
   EXPECT_EQ(*high_res_closest_format_, result.Format());
@@ -461,8 +449,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryGroupID) {
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryFacingMode) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().facing_mode.SetExact(
-      WebString::FromASCII("environment"));
+  constraint_factory_.basic().facing_mode.SetExact("environment");
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // Only the low-res device supports environment facing mode. Should select
@@ -473,8 +460,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryFacingMode) {
   EXPECT_EQ(*low_res_closest_format_, result.Format());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
-  constraint_factory_.basic().facing_mode.SetExact(
-      WebString::FromASCII("user"));
+  constraint_factory_.basic().facing_mode.SetExact("user");
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // Only the high-res device supports user facing mode. Should select default
@@ -487,16 +473,14 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryFacingMode) {
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryVideoKind) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().video_kind.SetExact(
-      WebString::FromASCII("depth"));
+  constraint_factory_.basic().video_kind.SetExact("depth");
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(kDeviceID4, result.device_id());
   EXPECT_EQ(media::PIXEL_FORMAT_Y16, result.Format().pixel_format);
   CheckTrackAdapterSettingsEqualsFormat(result);
 
-  constraint_factory_.basic().video_kind.SetExact(
-      WebString::FromASCII("color"));
+  constraint_factory_.basic().video_kind.SetExact("color");
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(default_device_->device_id.Utf8(), result.device_id());
@@ -1688,8 +1672,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryResizeMode) {
   constraint_factory_.Reset();
   constraint_factory_.basic().width.SetIdeal(kIdealWidth);
   constraint_factory_.basic().height.SetIdeal(kIdealHeight);
-  constraint_factory_.basic().resize_mode.SetExact(
-      WebString::FromASCII("none"));
+  constraint_factory_.basic().resize_mode.SetExact("none");
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // A native mode of 640x480 should be selected since it is closest native mode
@@ -1698,8 +1681,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryResizeMode) {
   EXPECT_EQ(result.Height(), 480);
   EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
 
-  constraint_factory_.basic().resize_mode.SetExact(
-      WebString::FromASCII("crop-and-scale"));
+  constraint_factory_.basic().resize_mode.SetExact("crop-and-scale");
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_GE(result.Width(), kIdealWidth);
@@ -1710,8 +1692,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryResizeMode) {
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealResizeMode) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().resize_mode.SetIdeal(
-      WebString::FromASCII("crop-and-scale"));
+  constraint_factory_.basic().resize_mode.SetIdeal("crop-and-scale");
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // Since no constraints are given, the default device with resolution closest
@@ -1743,8 +1724,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(result.Height(), 480);
   EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
 
-  constraint_factory_.basic().resize_mode.SetIdeal(
-      WebString::FromASCII("crop-and-scale"));
+  constraint_factory_.basic().resize_mode.SetIdeal("crop-and-scale");
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_GE(result.Width(), kIdealWidth);
@@ -1771,8 +1751,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(result.Height(), 480);
   EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
 
-  constraint_factory_.basic().resize_mode.SetIdeal(
-      WebString::FromASCII("crop-and-scale"));
+  constraint_factory_.basic().resize_mode.SetIdeal("crop-and-scale");
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // Rescaling is preferred, therefore a native mode greater than the ideal
@@ -1823,8 +1802,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, TwoIdealResizeValues) {
   constraint_factory_.Reset();
   constraint_factory_.basic().width.SetIdeal(641);
   constraint_factory_.basic().height.SetIdeal(481);
-  constraint_factory_.basic().resize_mode.SetIdeal(WebVector<WebString>(
-      {WebString::FromASCII("none"), WebString::FromASCII("crop-and-scale")}));
+  constraint_factory_.basic().resize_mode.SetIdeal({"none", "crop-and-scale"});
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // 800x600 rescaled to 641x481 is closest to the specified ideal values.
@@ -1838,8 +1816,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, TwoIdealResizeValues) {
   EXPECT_EQ(result.track_adapter_settings().target_height(), 481);
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().resize_mode.SetIdeal(WebVector<WebString>(
-      {WebString::FromASCII("none"), WebString::FromASCII("crop-and-scale")}));
+  constraint_factory_.basic().resize_mode.SetIdeal({"none", "crop-and-scale"});
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // Given that both resize modes are ideal, the default device with the
@@ -1855,7 +1832,8 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, TwoIdealResizeValues) {
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedMinMaxResolutionFrameRate) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
   advanced1.width.SetMin(4000);
   advanced1.height.SetMin(4000);
   // No device supports the first advanced set. This first advanced constraint
@@ -1866,7 +1844,8 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(*default_closest_format_, result.Format());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
   advanced2.width.SetMin(320);
   advanced2.height.SetMin(240);
   advanced2.width.SetMax(640);
@@ -1882,7 +1861,8 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(640.0 / 240.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 
-  WebMediaTrackConstraintSet& advanced3 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced3 =
+      constraint_factory_.AddAdvanced();
   advanced3.frame_rate.SetMax(10.0);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
@@ -1896,7 +1876,8 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(640.0 / 240.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result, 10.0);
 
-  WebMediaTrackConstraintSet& advanced4 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced4 =
+      constraint_factory_.AddAdvanced();
   advanced4.width.SetMax(1000);
   advanced4.height.SetMax(1000);
   result = SelectSettings();
@@ -1951,12 +1932,15 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedResolutionAndFrameRate) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
   advanced1.width.SetExact(1920);
   advanced1.height.SetExact(1080);
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
   advanced2.frame_rate.SetExact(60.0);
-  WebMediaTrackConstraintSet& advanced3 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced3 =
+      constraint_factory_.AddAdvanced();
   advanced3.width.SetExact(2304);
   advanced3.height.SetExact(1536);
   auto result = SelectSettings();
@@ -1979,10 +1963,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedNoiseReduction) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
   advanced1.width.SetMin(640);
   advanced1.height.SetMin(480);
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
   advanced2.width.SetMin(1920);
   advanced2.height.SetMin(1080);
   advanced2.goog_noise_reduction.SetExact(false);
@@ -2004,11 +1990,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedContradictoryNoiseReduction) {
   {
     constraint_factory_.Reset();
-    WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+    MediaTrackConstraintSetPlatform& advanced1 =
+        constraint_factory_.AddAdvanced();
     advanced1.width.SetMin(640);
     advanced1.height.SetMin(480);
     advanced1.goog_noise_reduction.SetExact(true);
-    WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+    MediaTrackConstraintSetPlatform& advanced2 =
+        constraint_factory_.AddAdvanced();
     advanced2.width.SetMin(1920);
     advanced2.height.SetMin(1080);
     advanced2.goog_noise_reduction.SetExact(false);
@@ -2032,10 +2020,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // Same test without noise reduction
   {
     constraint_factory_.Reset();
-    WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+    MediaTrackConstraintSetPlatform& advanced1 =
+        constraint_factory_.AddAdvanced();
     advanced1.width.SetMin(640);
     advanced1.height.SetMin(480);
-    WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+    MediaTrackConstraintSetPlatform& advanced2 =
+        constraint_factory_.AddAdvanced();
     advanced2.width.SetMin(1920);
     advanced2.height.SetMin(1080);
     auto result = SelectSettings();
@@ -2058,10 +2048,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedContradictoryExactResolution) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
   advanced1.width.SetExact(640);
   advanced1.height.SetExact(480);
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
   advanced2.width.SetExact(1920);
   advanced2.height.SetExact(1080);
   auto result = SelectSettings();
@@ -2081,10 +2073,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedContradictoryMaxMinResolutionFrameRate) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
   advanced1.width.SetMax(640);
   advanced1.height.SetMax(480);
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
   advanced2.width.SetMin(1920);
   advanced2.height.SetMin(1080);
   advanced2.frame_rate.SetExact(60.0);
@@ -2108,10 +2102,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedContradictoryMinMaxResolutionFrameRate) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
   advanced1.width.SetMin(800);
   advanced1.height.SetMin(600);
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
   advanced2.width.SetMax(640);
   advanced2.height.SetMax(480);
   advanced2.frame_rate.SetExact(60.0);
@@ -2136,9 +2132,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedContradictoryExactAspectRatio) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
   advanced1.aspect_ratio.SetExact(2300.0);
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
   advanced2.aspect_ratio.SetExact(3.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
@@ -2159,9 +2157,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedContradictoryAspectRatioRange) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
   advanced1.aspect_ratio.SetMin(2300.0);
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
   advanced2.aspect_ratio.SetMax(3.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
@@ -2182,9 +2182,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedContradictoryExactFrameRate) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
   advanced1.frame_rate.SetExact(40.0);
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
   advanced2.frame_rate.SetExact(45.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
@@ -2198,9 +2200,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedContradictoryFrameRateRange) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
   advanced1.frame_rate.SetMin(40.0);
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
   advanced2.frame_rate.SetMax(35.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
@@ -2214,12 +2218,15 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedContradictoryWidthFrameRate) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
   advanced1.width.SetMax(1920);
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
   advanced2.width.SetMin(2000);
   advanced2.frame_rate.SetExact(10.0);
-  WebMediaTrackConstraintSet& advanced3 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced3 =
+      constraint_factory_.AddAdvanced();
   advanced3.frame_rate.SetExact(30.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
@@ -2235,12 +2242,15 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedContradictoryHeightFrameRate) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
   advanced1.height.SetMax(1080);
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
   advanced2.height.SetMin(1500);
   advanced2.frame_rate.SetExact(10.0);
-  WebMediaTrackConstraintSet& advanced3 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced3 =
+      constraint_factory_.AddAdvanced();
   advanced3.frame_rate.SetExact(60.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
@@ -2256,16 +2266,14 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedDeviceID) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
-  WebString id_vector1[] = {WebString::FromASCII(kDeviceID1),
-                            WebString::FromASCII(kDeviceID2)};
-  advanced1.device_id.SetExact(
-      WebVector<WebString>(id_vector1, base::size(id_vector1)));
-  WebString id_vector2[] = {WebString::FromASCII(kDeviceID2),
-                            WebString::FromASCII(kDeviceID3)};
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
-  advanced2.device_id.SetExact(
-      WebVector<WebString>(id_vector2, base::size(id_vector2)));
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
+  Vector<String> id_vector1 = {kDeviceID1, kDeviceID2};
+  advanced1.device_id.SetExact(id_vector1);
+  Vector<String> id_vector2 = {kDeviceID2, kDeviceID3};
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.device_id.SetExact(id_vector2);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kDeviceID2 must be selected because it is the only one that satisfies both
@@ -2276,16 +2284,14 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedDeviceID) {
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedGroupID) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
-  WebString id_vector1[] = {WebString::FromASCII(kGroupID1),
-                            WebString::FromASCII(kGroupID2)};
-  advanced1.group_id.SetExact(
-      WebVector<WebString>(id_vector1, base::size(id_vector1)));
-  WebString id_vector2[] = {WebString::FromASCII(kGroupID2),
-                            WebString::FromASCII(kGroupID3)};
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
-  advanced2.group_id.SetExact(
-      WebVector<WebString>(id_vector2, base::size(id_vector2)));
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
+  Vector<String> id_vector1 = {kGroupID1, kGroupID2};
+  advanced1.group_id.SetExact(id_vector1);
+  Vector<String> id_vector2 = {kGroupID2, kGroupID3};
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.group_id.SetExact(id_vector2);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // The device with group_id kGroupID2 must be selected because it is the only
@@ -2297,16 +2303,14 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedGroupID) {
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedContradictoryDeviceID) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
-  WebString id_vector1[] = {WebString::FromASCII(kDeviceID1),
-                            WebString::FromASCII(kDeviceID2)};
-  advanced1.device_id.SetExact(
-      WebVector<WebString>(id_vector1, base::size(id_vector1)));
-  WebString id_vector2[] = {WebString::FromASCII(kDeviceID3),
-                            WebString::FromASCII(kDeviceID4)};
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
-  advanced2.device_id.SetExact(
-      WebVector<WebString>(id_vector2, base::size(id_vector2)));
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
+  Vector<String> id_vector1 = {kDeviceID1, kDeviceID2};
+  advanced1.device_id.SetExact(id_vector1);
+  Vector<String> id_vector2 = {kDeviceID3, kDeviceID4};
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.device_id.SetExact(id_vector2);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // The second advanced set must be ignored because it contradicts the first
@@ -2318,15 +2322,18 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedContradictoryDeviceIDAndResolution) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
-  advanced1.device_id.SetExact({WebString(low_res_device_->device_id)});
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
+  advanced1.device_id.SetExact({low_res_device_->device_id});
 
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
-  advanced2.device_id.SetExact({WebString(high_res_device_->device_id)});
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.device_id.SetExact({high_res_device_->device_id});
   advanced2.width.SetMax(50);
   advanced2.height.SetMax(50);
 
-  WebMediaTrackConstraintSet& advanced3 = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced3 =
+      constraint_factory_.AddAdvanced();
   advanced3.width.SetExact(800);
   advanced3.height.SetExact(600);
 
@@ -2343,16 +2350,14 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedContradictoryGroupID) {
   constraint_factory_.Reset();
-  WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
-  WebString id_vector1[] = {WebString::FromASCII(kGroupID1),
-                            WebString::FromASCII(kGroupID2)};
-  advanced1.group_id.SetExact(
-      WebVector<WebString>(id_vector1, base::size(id_vector1)));
-  WebString id_vector2[] = {WebString::FromASCII(kGroupID3),
-                            WebString::FromASCII(kGroupID4)};
-  WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
-  advanced2.group_id.SetExact(
-      WebVector<WebString>(id_vector2, base::size(id_vector2)));
+  MediaTrackConstraintSetPlatform& advanced1 =
+      constraint_factory_.AddAdvanced();
+  Vector<String> id_vector1 = {kGroupID1, kGroupID2};
+  advanced1.group_id.SetExact(id_vector1);
+  Vector<String> id_vector2 = {kGroupID3, kGroupID4};
+  MediaTrackConstraintSetPlatform& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.group_id.SetExact(id_vector2);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // The second advanced set must be ignored because it contradicts the first
@@ -2365,9 +2370,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        AdvancedContradictoryAspectRatioWidth) {
   {
     constraint_factory_.Reset();
-    WebMediaTrackConstraintSet& advanced1 = constraint_factory_.AddAdvanced();
+    MediaTrackConstraintSetPlatform& advanced1 =
+        constraint_factory_.AddAdvanced();
     advanced1.aspect_ratio.SetMin(17);
-    WebMediaTrackConstraintSet& advanced2 = constraint_factory_.AddAdvanced();
+    MediaTrackConstraintSetPlatform& advanced2 =
+        constraint_factory_.AddAdvanced();
     advanced2.width.SetMax(1);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
@@ -2390,9 +2397,9 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedResize) {
   constraint_factory_.Reset();
   constraint_factory_.basic().width.SetIdeal(1);
   constraint_factory_.basic().height.SetIdeal(1);
-  WebMediaTrackConstraintSet& advanced = constraint_factory_.AddAdvanced();
+  MediaTrackConstraintSetPlatform& advanced = constraint_factory_.AddAdvanced();
 
-  advanced.resize_mode.SetExact(WebString::FromASCII("none"));
+  advanced.resize_mode.SetExact("none");
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // The native mode closest to 1x1 is 40x30 with the low-res device.
@@ -2411,8 +2418,8 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 
   // This advanced set must be ignored because there are no native resolutions
   // with width equal to 639.
-  WebMediaTrackConstraintSet& advanced = constraint_factory_.AddAdvanced();
-  advanced.resize_mode.SetExact(WebString::FromASCII("none"));
+  MediaTrackConstraintSetPlatform& advanced = constraint_factory_.AddAdvanced();
+  advanced.resize_mode.SetExact("none");
   advanced.frame_rate.SetExact(19.0);
 
   auto result = SelectSettings();
@@ -2459,7 +2466,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, NoDevicesNoConstraints) {
   constraint_factory_.Reset();
   VideoDeviceCaptureCapabilities capabilities;
   auto result = SelectSettingsVideoDeviceCapture(
-      capabilities, constraint_factory_.CreateWebMediaConstraints());
+      capabilities, constraint_factory_.CreateMediaConstraints());
   EXPECT_FALSE(result.HasValue());
   EXPECT_TRUE(std::string(result.failed_constraint_name()).empty());
 }
@@ -2469,7 +2476,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, NoDevicesWithConstraints) {
   constraint_factory_.basic().height.SetExact(100);
   VideoDeviceCaptureCapabilities capabilities;
   auto result = SelectSettingsVideoDeviceCapture(
-      capabilities, constraint_factory_.CreateWebMediaConstraints());
+      capabilities, constraint_factory_.CreateMediaConstraints());
   EXPECT_FALSE(result.HasValue());
   EXPECT_TRUE(std::string(result.failed_constraint_name()).empty());
 }
@@ -2479,7 +2486,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, NoDevicesWithConstraints) {
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, InvalidFrameRateDevice) {
   constraint_factory_.Reset();
   constraint_factory_.basic().device_id.SetExact(
-      WebString(invalid_frame_rate_device_->device_id));
+      invalid_frame_rate_device_->device_id);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(invalid_frame_rate_device_->device_id.Utf8(), result.device_id());
@@ -2505,8 +2512,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, InvalidFrameRateDevice) {
 // the actual default resolution.
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, InvertedDefaultResolution) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().device_id.SetExact(
-      WebString(high_res_device_->device_id));
+  constraint_factory_.basic().device_id.SetExact(high_res_device_->device_id);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(high_res_device_->device_id.Utf8(), result.device_id());

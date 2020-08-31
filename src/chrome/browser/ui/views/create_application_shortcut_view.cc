@@ -10,6 +10,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -37,25 +40,63 @@ void ShowCreateChromeAppShortcutsDialog(
       parent_window)->Show();
 }
 
+void ShowCreateChromeAppShortcutsDialog(
+    gfx::NativeWindow parent_window,
+    Profile* profile,
+    const std::string& web_app_id,
+    const base::Callback<void(bool)>& close_callback) {
+  constrained_window::CreateBrowserModalDialogViews(
+      new CreateChromeApplicationShortcutView(profile, web_app_id,
+                                              close_callback),
+      parent_window)
+      ->Show();
+}
+
 }  // namespace chrome
 
 CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
     Profile* profile,
     const extensions::Extension* app,
     const base::Callback<void(bool)>& close_callback)
-    : profile_(profile), close_callback_(close_callback) {
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_COMMIT));
-  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::TEXT, views::TEXT));
-  InitControls();
-
+    : CreateChromeApplicationShortcutView(profile, close_callback) {
   // Get shortcut and icon information; needed for creating the shortcut.
   web_app::GetShortcutInfoForApp(
       app, profile,
       base::Bind(&CreateChromeApplicationShortcutView::OnAppInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
+    Profile* profile,
+    const std::string& web_app_id,
+    const base::Callback<void(bool)>& close_callback)
+    : CreateChromeApplicationShortcutView(profile, close_callback) {
+  web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile);
+  provider->shortcut_manager().GetShortcutInfoForApp(
+      web_app_id,
+      base::Bind(&CreateChromeApplicationShortcutView::OnAppInfoLoaded,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
+    Profile* profile,
+    const base::Callback<void(bool)>& close_callback)
+    : profile_(profile), close_callback_(close_callback) {
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_COMMIT));
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::TEXT, views::TEXT));
+  SetAcceptCallback(
+      base::BindOnce(&CreateChromeApplicationShortcutView::OnDialogAccepted,
+                     base::Unretained(this)));
+  auto canceled = [](CreateChromeApplicationShortcutView* dialog) {
+    if (!dialog->close_callback_.is_null())
+      dialog->close_callback_.Run(false);
+  };
+  SetCancelCallback(base::BindOnce(canceled, base::Unretained(this)));
+  SetCloseCallback(base::BindOnce(canceled, base::Unretained(this)));
+  InitControls();
+
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::CREATE_CHROME_APPLICATION_SHORTCUT);
 }
@@ -110,7 +151,7 @@ void CreateChromeApplicationShortcutView::InitControls() {
   static const int kHeaderColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kHeaderColumnSetId);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
-                        views::GridLayout::FIXED, 0, 0);
+                        views::GridLayout::ColumnSize::kFixed, 0, 0);
 
   static const int kTableColumnSetId = 1;
   column_set = layout->AddColumnSet(kTableColumnSetId);
@@ -118,7 +159,7 @@ void CreateChromeApplicationShortcutView::InitControls() {
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT));
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, kHeaderColumnSetId);
   layout->AddView(std::move(create_shortcuts_label));
@@ -146,7 +187,6 @@ void CreateChromeApplicationShortcutView::InitControls() {
 }
 
 gfx::Size CreateChromeApplicationShortcutView::CalculatePreferredSize() const {
-  // TODO(evanm): should this use IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS?
   static const int kDialogWidth = 360;
   int height = GetLayoutManager()->GetPreferredHeightForWidth(this,
       kDialogWidth);
@@ -155,13 +195,25 @@ gfx::Size CreateChromeApplicationShortcutView::CalculatePreferredSize() const {
 
 bool CreateChromeApplicationShortcutView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return desktop_check_box_->GetChecked() ||
-           ((menu_check_box_ != nullptr) && menu_check_box_->GetChecked()) ||
-           ((quick_launch_check_box_ != nullptr) &&
-            quick_launch_check_box_->GetChecked());
+  if (button != ui::DIALOG_BUTTON_OK)
+    // It's always possible to cancel out of creating a shortcut.
+    return true;
 
-  return true;
+  if (!shortcut_info_)
+    // Dialog's not ready because app info hasn't been loaded.
+    return false;
+
+  // One of the three location checkboxes must be checked:
+  if (desktop_check_box_->GetChecked())
+    return true;
+
+  if (menu_check_box_ && menu_check_box_->GetChecked())
+    return true;
+
+  if (quick_launch_check_box_ && quick_launch_check_box_->GetChecked())
+    return true;
+
+  return false;
 }
 
 ui::ModalType CreateChromeApplicationShortcutView::GetModalType() const {
@@ -172,17 +224,15 @@ base::string16 CreateChromeApplicationShortcutView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_TITLE);
 }
 
-bool CreateChromeApplicationShortcutView::Accept() {
-  // NOTE: This procedure will reset |shortcut_info_| to null.
+void CreateChromeApplicationShortcutView::OnDialogAccepted() {
+  DCHECK(IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+
   if (!close_callback_.is_null())
-    close_callback_.Run(true);
+    close_callback_.Run(/*success=*/shortcut_info_ != nullptr);
 
-  // Can happen if the shortcut data is not yet loaded.
+  // Shortcut can't be created because app info hasn't been loaded.
   if (!shortcut_info_)
-    return false;
-
-  if (!IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK))
-    return false;
+    return;
 
   web_app::ShortcutLocations creation_locations;
   creation_locations.on_desktop = desktop_check_box_->GetChecked();
@@ -203,13 +253,6 @@ bool CreateChromeApplicationShortcutView::Accept() {
   web_app::CreateShortcutsWithInfo(web_app::SHORTCUT_CREATION_BY_USER,
                                    creation_locations, base::DoNothing(),
                                    std::move(shortcut_info_));
-  return true;
-}
-
-bool CreateChromeApplicationShortcutView::Cancel() {
-  if (!close_callback_.is_null())
-    close_callback_.Run(false);
-  return true;
 }
 
 void CreateChromeApplicationShortcutView::ButtonPressed(
@@ -240,5 +283,10 @@ CreateChromeApplicationShortcutView::AddCheckbox(const base::string16& text,
 
 void CreateChromeApplicationShortcutView::OnAppInfoLoaded(
     std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
+  // GetShortcutInfoForApp request may return nullptr |shortcut_info| to this
+  // callback if web app was uninstalled during that asynchronous request.
   shortcut_info_ = std::move(shortcut_info);
+  // This may cause there to be shortcut info when there was none before, so
+  // make sure the accept button gets enabled.
+  DialogModelChanged();
 }

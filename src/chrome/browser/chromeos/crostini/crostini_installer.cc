@@ -13,14 +13,20 @@
 #include "base/strings/string16.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_disk.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
+#include "chrome/browser/chromeos/crostini/crostini_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_dialog.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -37,6 +43,7 @@ namespace crostini {
 
 namespace {
 using SetupResult = CrostiniInstaller::SetupResult;
+constexpr char kCrostiniSetupSourceHistogram[] = "Crostini.SetupSource";
 
 class CrostiniInstallerFactory : public BrowserContextKeyedServiceFactory {
  public:
@@ -84,8 +91,8 @@ constexpr char kCrostiniAvailableDiskCancel[] = "Crostini.AvailableDiskCancel";
 constexpr char kCrostiniAvailableDiskError[] = "Crostini.AvailableDiskError";
 
 void RecordTimeFromDeviceSetupToInstallMetric() {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&chromeos::StartupUtils::GetTimeSinceOobeFlagFileCreation),
       base::BindOnce([](base::TimeDelta time_from_device_setup) {
         if (time_from_device_setup.is_zero())
@@ -126,6 +133,10 @@ SetupResult ErrorToSetupResult(InstallerError error) {
       return SetupResult::kErrorSettingUpContainer;
     case InstallerError::kErrorInsufficientDiskSpace:
       return SetupResult::kErrorInsufficientDiskSpace;
+    case InstallerError::kErrorCreateContainer:
+      return SetupResult::kErrorCreateContainer;
+    case InstallerError::kErrorUnknown:
+      return SetupResult::kErrorUnknown;
   }
 
   NOTREACHED();
@@ -182,6 +193,20 @@ void CrostiniInstaller::Shutdown() {
   }
 }
 
+void CrostiniInstaller::ShowDialog(CrostiniUISurface ui_surface) {
+  // Defensive check to prevent showing the installer when crostini is not
+  // allowed.
+  if (!CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
+    return;
+  }
+  base::UmaHistogramEnumeration(kCrostiniSetupSourceHistogram, ui_surface,
+                                crostini::CrostiniUISurface::kCount);
+
+  // TODO(lxj): We should pass the dialog |this| here instead of letting the
+  // webui to call |GetForProfile()| later.
+  chromeos::CrostiniInstallerDialog::Show(profile_);
+}
+
 void CrostiniInstaller::Install(CrostiniManager::RestartOptions options,
                                 ProgressCallback progress_callback,
                                 ResultCallback result_callback) {
@@ -204,8 +229,8 @@ void CrostiniInstaller::Install(CrostiniManager::RestartOptions options,
   container_download_percent_ = 0;
   UpdateState(State::INSTALLING);
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
                      base::FilePath(crostini::kHomeDirectory)),
       base::BindOnce(&CrostiniInstaller::OnAvailableDiskSpace,
@@ -345,6 +370,15 @@ void CrostiniInstaller::OnContainerDownloading(int32_t download_percent) {
 
 void CrostiniInstaller::OnContainerCreated(CrostiniResult result) {
   DCHECK_EQ(installing_state_, InstallerState::kCreateContainer);
+  if (result != CrostiniResult::SUCCESS) {
+    if (content::GetNetworkConnectionTracker()->IsOffline()) {
+      LOG(ERROR) << "Network connection dropped while creating container";
+      HandleError(InstallerError::kErrorOffline);
+    } else {
+      HandleError(InstallerError::kErrorCreateContainer);
+    }
+    return;
+  }
   UpdateInstallingState(InstallerState::kSetupContainer);
 }
 
@@ -361,8 +395,10 @@ void CrostiniInstaller::OnContainerSetup(bool success) {
     return;
   }
   UpdateInstallingState(InstallerState::kStartContainer);
-  ansible_management_service_observer_.Add(
-      AnsibleManagementService::GetForProfile(profile_));
+  if (ShouldConfigureDefaultContainer(profile_)) {
+    ansible_management_service_observer_.Add(
+        AnsibleManagementService::GetForProfile(profile_));
+  }
 }
 
 void CrostiniInstaller::OnAnsibleSoftwareConfigurationStarted() {
@@ -596,17 +632,11 @@ void CrostiniInstaller::OnCrostiniRestartFinished(CrostiniResult result) {
   restart_id_ = CrostiniManager::kUninitializedRestartId;
 
   if (result != CrostiniResult::SUCCESS) {
-    if (state_ != State::ERROR) {
+    if (state_ != State::ERROR && result != CrostiniResult::RESTART_ABORTED) {
       DCHECK_EQ(state_, State::INSTALLING);
       LOG(ERROR) << "Failed to restart Crostini with error code: "
                  << static_cast<int>(result);
-      // TODO(lxj): The error code here is probably incorrect. If
-      // |CrostiniManager::CrostiniRestarter| failed to mount the container, it
-      // still calls this function with |SUCCESS| (see
-      // |CrostiniRestarter::OnMountEvent()|), so if we reach here (i.e.
-      // |state_| has not been set to |ERROR| but this function receives a
-      // failure result), something else is probably wrong.
-      HandleError(InstallerError::kErrorMountingContainer);
+      HandleError(InstallerError::kErrorUnknown);
     }
     return;
   }
@@ -653,8 +683,10 @@ void CrostiniInstaller::OnAvailableDiskSpace(int64_t bytes) {
   free_disk_space_ = bytes;
   // Don't enforce minimum disk size on dev box or trybots because
   // base::SysInfo::AmountOfFreeDiskSpace returns zero in testing.
-  if (free_disk_space_ < kMinimumFreeDiskSpace &&
-      base::SysInfo::IsRunningOnChromeOS()) {
+  if (base::SysInfo::IsRunningOnChromeOS() &&
+      free_disk_space_ < restart_options_.disk_size_bytes.value_or(
+                             crostini::disk::kDiskHeadroomBytes +
+                             crostini::disk::kMinimumDiskSizeBytes)) {
     HandleError(InstallerError::kErrorInsufficientDiskSpace);
     return;
   }

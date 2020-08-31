@@ -351,6 +351,7 @@ llvm-sb-configure() {
         --disable-jit \
         --enable-optimized \
         --enable-libcpp \
+        --disable-compiler-version-checks \
         --target=${CROSS_TARGET_ARM} \
         llvm_cv_link_use_export_dynamic=no \
         ac_cv_func_getrusage=no \
@@ -385,8 +386,6 @@ llvm-sb-make() {
       SUBZERO_SRC_ROOT="${TC_SRC_SUBZERO}" \
       BUILD_CC="${HOST_CLANG}" \
       BUILD_CXX="${HOST_CLANG}++" \
-      BUILD_CXXFLAGS="-stdlib=libc++ -I${HOST_LIBCXX}/include/c++/v1" \
-      BUILD_LDFLAGS="-L${HOST_LIBCXX}/lib" \
       ${export_dyn_env} \
       make ${MAKE_OPTS} tools-only
 
@@ -478,6 +477,7 @@ translate-sb-tool() {
 
 # install-sb-tool <toolname> <arches>
 #
+
 # Install <toolname>.<arch>.nexe from the current directory
 # into the right location (as <toolname>.nexe)
 install-sb-tool() {

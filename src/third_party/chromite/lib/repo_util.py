@@ -11,6 +11,7 @@ import collections
 import contextlib
 import os
 import re
+import sys
 
 import six
 
@@ -19,6 +20,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import repo_manifest
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Match `repo` error: "error: project <name> not found"
@@ -300,7 +304,7 @@ class Repository(object):
           cros_build_lib.run(
               ['cp', '--archive', '--link', '--parents', objects_dir,
                dest_path],
-              debug_level=logging.DEBUG, capture_output=True,
+              debug_level=logging.DEBUG, capture_output=True, encoding='utf-8',
               extra_env={'LC_MESSAGES': 'C'}, cwd=self.root)
         except cros_build_lib.RunCommandError as e:
           if 'Invalid cross-device link' in e.result.error:
@@ -312,7 +316,7 @@ class Repository(object):
       try:
         cros_build_lib.run(
             ['cp', '--archive', '--no-clobber', '.repo', dest_path],
-            debug_level=logging.DEBUG, capture_output=True,
+            debug_level=logging.DEBUG, capture_output=True, encoding='utf-8',
             extra_env={'LC_MESSAGES': 'C'}, cwd=self.root)
       except cros_build_lib.RunCommandError as e:
         # Despite the --no-clobber, `cp` still complains when trying to copy a

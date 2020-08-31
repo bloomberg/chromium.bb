@@ -67,6 +67,7 @@ typedef enum VkStringErrorFlagBits {
     VK_STRING_ERROR_NONE = 0x00000000,
     VK_STRING_ERROR_LENGTH = 0x00000001,
     VK_STRING_ERROR_BAD_DATA = 0x00000002,
+    VK_STRING_ERROR_NULL_PTR = 0x00000004,
 } VkStringErrorFlagBits;
 typedef VkFlags VkStringErrorFlags;
 
@@ -419,9 +420,6 @@ static inline void loader_init_dispatch(void *obj, const void *data) {
 // Global variables used across files
 extern struct loader_struct loader;
 extern THREAD_LOCAL_DECL struct loader_instance *tls_instance;
-#if defined(_WIN32) && !defined(LOADER_DYNAMIC_LIB)
-extern LOADER_PLATFORM_THREAD_ONCE_DEFINITION(once_init);
-#endif
 extern loader_platform_thread_mutex loader_lock;
 extern loader_platform_thread_mutex loader_json_lock;
 
@@ -454,6 +452,8 @@ VkResult loader_validate_instance_extensions(struct loader_instance *inst, const
                                              const VkInstanceCreateInfo *pCreateInfo);
 
 void loader_initialize(void);
+void loader_preload_icds(void);
+void loader_unload_preloaded_icds(void);
 bool has_vk_extension_property_array(const VkExtensionProperties *vk_ext_prop, const uint32_t count,
                                      const VkExtensionProperties *ext_array);
 bool has_vk_extension_property(const VkExtensionProperties *vk_ext_prop, const struct loader_extension_list *ext_list);
@@ -480,7 +480,7 @@ void loaderScanForImplicitLayers(struct loader_instance *inst, struct loader_lay
 bool loaderImplicitLayerIsEnabled(const struct loader_instance *inst, const struct loader_layer_properties *prop);
 VkResult loader_get_icd_loader_instance_extensions(const struct loader_instance *inst, struct loader_icd_tramp_list *icd_tramp_list,
                                                    struct loader_extension_list *inst_exts);
-struct loader_icd_term *loader_get_icd_and_device(const VkDevice device, struct loader_device **found_dev, uint32_t *icd_index);
+struct loader_icd_term *loader_get_icd_and_device(const void *device, struct loader_device **found_dev, uint32_t *icd_index);
 void loader_init_dispatch_dev_ext(struct loader_instance *inst, struct loader_device *dev);
 void *loader_dev_ext_gpa(struct loader_instance *inst, const char *funcName);
 void *loader_get_dev_ext_trampoline(uint32_t index);

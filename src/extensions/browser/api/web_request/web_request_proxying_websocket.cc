@@ -52,7 +52,7 @@ WebRequestProxyingWebSocket::WebRequestProxyingWebSocket(
     int process_id,
     int render_frame_id,
     content::BrowserContext* browser_context,
-    scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
+    WebRequestAPI::RequestIDGenerator* request_id_generator,
     WebRequestAPI::ProxySet* proxies)
     : factory_(std::move(factory)),
       browser_context_(browser_context),
@@ -60,16 +60,17 @@ WebRequestProxyingWebSocket::WebRequestProxyingWebSocket(
       request_headers_(request.headers),
       response_(network::mojom::URLResponseHead::New()),
       has_extra_headers_(has_extra_headers),
-      info_(WebRequestInfoInitParams(request_id_generator->Generate(),
-                                     process_id,
-                                     render_frame_id,
-                                     nullptr,
-                                     MSG_ROUTING_NONE,
-                                     request,
-                                     /*is_download=*/false,
-                                     /*is_async=*/true,
-                                     /*is_service_worker_script=*/false,
-                                     /*navigation_id=*/base::nullopt)),
+      info_(WebRequestInfoInitParams(
+          request_id_generator->Generate(MSG_ROUTING_NONE, 0),
+          process_id,
+          render_frame_id,
+          nullptr,
+          MSG_ROUTING_NONE,
+          request,
+          /*is_download=*/false,
+          /*is_async=*/true,
+          /*is_service_worker_script=*/false,
+          /*navigation_id=*/base::nullopt)),
       proxies_(proxies) {
   // base::Unretained is safe here because the callback will be canceled when
   // |shutdown_notifier_| is destroyed, and |proxies_| owns this.
@@ -165,7 +166,8 @@ void WebRequestProxyingWebSocket::OnConnectionEstablished(
     mojo::PendingRemote<network::mojom::WebSocket> websocket,
     mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
     network::mojom::WebSocketHandshakeResponsePtr response,
-    mojo::ScopedDataPipeConsumerHandle readable) {
+    mojo::ScopedDataPipeConsumerHandle readable,
+    mojo::ScopedDataPipeProducerHandle writable) {
   DCHECK(forwarding_handshake_client_);
   DCHECK(!is_done_);
   is_done_ = true;
@@ -173,6 +175,7 @@ void WebRequestProxyingWebSocket::OnConnectionEstablished(
   client_receiver_ = std::move(client_receiver);
   handshake_response_ = std::move(response);
   readable_ = std::move(readable);
+  writable_ = std::move(writable);
 
   response_->remote_endpoint = handshake_response_->remote_endpoint;
 
@@ -190,7 +193,7 @@ void WebRequestProxyingWebSocket::OnConnectionEstablished(
           handshake_response_->status_code,
           handshake_response_->status_text.c_str()));
   for (const auto& header : handshake_response_->headers)
-    response_->headers->AddHeader(header->name + ": " + header->value);
+    response_->headers->AddHeader(header->name, header->value);
 
   ContinueToHeadersReceived();
 }
@@ -202,7 +205,8 @@ void WebRequestProxyingWebSocket::ContinueToCompleted() {
       browser_context_, &info_, net::ERR_WS_UPGRADE);
   forwarding_handshake_client_->OnConnectionEstablished(
       std::move(websocket_), std::move(client_receiver_),
-      std::move(handshake_response_), std::move(readable_));
+      std::move(handshake_response_), std::move(readable_),
+      std::move(writable_));
 
   // Deletes |this|.
   proxies_->RemoveProxy(this);
@@ -274,14 +278,14 @@ void WebRequestProxyingWebSocket::StartProxying(
     bool has_extra_headers,
     int process_id,
     int render_frame_id,
-    scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
+    WebRequestAPI::RequestIDGenerator* request_id_generator,
     const url::Origin& origin,
     content::BrowserContext* browser_context,
     WebRequestAPI::ProxySet* proxies) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   network::ResourceRequest request;
   request.url = url;
-  request.site_for_cookies = site_for_cookies;
+  request.site_for_cookies = net::SiteForCookies::FromUrl(site_for_cookies);
   if (user_agent) {
     request.headers.SetHeader(net::HttpRequestHeaders::kUserAgent, *user_agent);
   }
@@ -290,7 +294,7 @@ void WebRequestProxyingWebSocket::StartProxying(
   auto proxy = std::make_unique<WebRequestProxyingWebSocket>(
       std::move(factory), request, std::move(handshake_client),
       has_extra_headers, process_id, render_frame_id, browser_context,
-      std::move(request_id_generator), proxies);
+      request_id_generator, proxies);
 
   auto* raw_proxy = proxy.get();
   proxies->AddProxy(std::move(proxy));
@@ -388,6 +392,10 @@ void WebRequestProxyingWebSocket::ContinueToStartRequest(int error_code) {
   // See also CreateWebSocket in
   // //network/services/public/mojom/network_context.mojom.
   receiver_as_handshake_client_.set_disconnect_with_reason_handler(
+      base::BindOnce(
+          &WebRequestProxyingWebSocket::OnMojoConnectionErrorWithCustomReason,
+          base::Unretained(this)));
+  forwarding_handshake_client_.set_disconnect_handler(
       base::BindOnce(&WebRequestProxyingWebSocket::OnMojoConnectionError,
                      base::Unretained(this)));
 }
@@ -493,10 +501,17 @@ void WebRequestProxyingWebSocket::OnError(int error_code) {
   proxies_->RemoveProxy(this);
 }
 
-void WebRequestProxyingWebSocket::OnMojoConnectionError(
+void WebRequestProxyingWebSocket::OnMojoConnectionErrorWithCustomReason(
     uint32_t custom_reason,
     const std::string& description) {
+  // Here we want to nofiy the custom reason to the client, which is why
+  // we reset |forwarding_handshake_client_| manually.
   forwarding_handshake_client_.ResetWithReason(custom_reason, description);
+  OnError(net::ERR_FAILED);
+  // Deletes |this|.
+}
+
+void WebRequestProxyingWebSocket::OnMojoConnectionError() {
   OnError(net::ERR_FAILED);
   // Deletes |this|.
 }

@@ -31,7 +31,7 @@ import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/po
 
 import {ItemDelegate} from './item.js';
 import {ItemBehavior} from './item_behavior.js';
-import {computeInspectableViewLabel, getItemSource, getItemSourceString, isControlled, isEnabled, userCanChangeEnablement} from './item_util.js';
+import {computeInspectableViewLabel, EnableControl, getEnableControl, getItemSource, getItemSourceString, isControlled, isEnabled, userCanChangeEnablement} from './item_util.js';
 import {navigation, Page} from './navigation_helper.js';
 
 Polymer({
@@ -82,7 +82,7 @@ Polymer({
    * Focuses the extensions options button. This should be used after the
    * dialog closes.
    */
-  focusOptionsButton: function() {
+  focusOptionsButton() {
     this.$$('#extensions-options').focus();
   },
 
@@ -90,7 +90,7 @@ Polymer({
    * Focuses the back button when page is loaded.
    * @private
    */
-  onViewEnterStart_: function() {
+  onViewEnterStart_() {
     const elementToFocus = this.fromActivityLog ?
         this.$.extensionsActivityLogLink :
         this.$.closeButton;
@@ -99,7 +99,7 @@ Polymer({
   },
 
   /** @private */
-  onItemIdChanged_: function() {
+  onItemIdChanged_() {
     // Clear the size, since this view is reused, such that no obsolete size
     // is displayed.:
     this.size_ = '';
@@ -109,7 +109,7 @@ Polymer({
   },
 
   /** @private */
-  onActivityLogTap_: function() {
+  onActivityLogTap_() {
     navigation.navigateTo({page: Page.ACTIVITY_LOG, extensionId: this.data.id});
   },
 
@@ -119,12 +119,12 @@ Polymer({
    * @return {string}
    * @private
    */
-  getDescription_: function(description, fallback) {
+  getDescription_(description, fallback) {
     return description || fallback;
   },
 
   /** @private */
-  onCloseButtonTap_: function() {
+  onCloseButtonTap_() {
     navigation.navigateTo({page: Page.LIST});
   },
 
@@ -132,7 +132,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isControlled_: function() {
+  isControlled_() {
     return isControlled(this.data);
   },
 
@@ -140,7 +140,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isEnabled_: function() {
+  isEnabled_() {
     return isEnabled(this.data.state);
   },
 
@@ -148,24 +148,15 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isEnableToggleEnabled_: function() {
+  isEnableToggleEnabled_() {
     return userCanChangeEnablement(this.data);
   },
 
   /**
-   * Returns true if the extension is in the terminated state.
    * @return {boolean}
    * @private
    */
-  isTerminated_: function() {
-    return this.data.state == chrome.developerPrivate.ExtensionState.TERMINATED;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  hasDependentExtensions_: function() {
+  hasDependentExtensions_() {
     return this.data.dependentExtensions.length > 0;
   },
 
@@ -173,7 +164,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasWarnings_: function() {
+  hasWarnings_() {
     return this.data.disableReasons.corruptInstall ||
         this.data.disableReasons.suspiciousInstall ||
         this.data.disableReasons.updateRequired || !!this.data.blacklistText ||
@@ -184,7 +175,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeEnabledStyle_: function() {
+  computeEnabledStyle_() {
     return this.isEnabled_() ? 'enabled-text' : '';
   },
 
@@ -195,7 +186,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeEnabledText_: function(state, onText, offText) {
+  computeEnabledText_(state, onText, offText) {
     // TODO(devlin): Get the full spectrum of these strings from bettes.
     return isEnabled(state) ? onText : offText;
   },
@@ -205,7 +196,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeInspectLabel_: function(view) {
+  computeInspectLabel_(view) {
     return computeInspectableViewLabel(view);
   },
 
@@ -213,7 +204,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowOptionsLink_: function() {
+  shouldShowOptionsLink_() {
     return !!this.data.optionsPage;
   },
 
@@ -221,7 +212,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowOptionsSection_: function() {
+  shouldShowOptionsSection_() {
     return this.data.incognitoAccess.isEnabled ||
         this.data.fileAccess.isEnabled || this.data.errorCollection.isEnabled;
   },
@@ -230,75 +221,76 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowIncognitoOption_: function() {
+  shouldShowIncognitoOption_() {
     return this.data.incognitoAccess.isEnabled && this.incognitoAvailable;
   },
 
   /** @private */
-  onEnableChange_: function() {
-    this.delegate.setItemEnabled(this.data.id, this.$['enable-toggle'].checked);
+  onEnableToggleChange_() {
+    this.delegate.setItemEnabled(this.data.id, this.$.enableToggle.checked);
+    this.$.enableToggle.checked = this.isEnabled_();
   },
 
   /**
    * @param {!{model: !{item: !chrome.developerPrivate.ExtensionView}}} e
    * @private
    */
-  onInspectTap_: function(e) {
+  onInspectTap_(e) {
     this.delegate.inspectItemView(this.data.id, e.model.item);
   },
 
   /** @private */
-  onExtensionOptionsTap_: function() {
+  onExtensionOptionsTap_() {
     this.delegate.showItemOptionsPage(this.data);
   },
 
   /** @private */
-  onReloadTap_: function() {
+  onReloadTap_() {
     this.delegate.reloadItem(this.data.id).catch(loadError => {
       this.fire('load-error', loadError);
     });
   },
 
   /** @private */
-  onRemoveTap_: function() {
+  onRemoveTap_() {
     this.delegate.deleteItem(this.data.id);
   },
 
   /** @private */
-  onRepairTap_: function() {
+  onRepairTap_() {
     this.delegate.repairItem(this.data.id);
   },
 
   /** @private */
-  onLoadPathTap_: function() {
+  onLoadPathTap_() {
     this.delegate.showInFolder(this.data.id);
   },
 
   /** @private */
-  onAllowIncognitoChange_: function() {
+  onAllowIncognitoChange_() {
     this.delegate.setItemAllowedIncognito(
         this.data.id, this.$$('#allow-incognito').checked);
   },
 
   /** @private */
-  onAllowOnFileUrlsChange_: function() {
+  onAllowOnFileUrlsChange_() {
     this.delegate.setItemAllowedOnFileUrls(
         this.data.id, this.$$('#allow-on-file-urls').checked);
   },
 
   /** @private */
-  onCollectErrorsChange_: function() {
+  onCollectErrorsChange_() {
     this.delegate.setItemCollectsErrors(
         this.data.id, this.$$('#collect-errors').checked);
   },
 
   /** @private */
-  onExtensionWebSiteTap_: function() {
+  onExtensionWebSiteTap_() {
     this.delegate.openUrl(this.data.manifestHomePageUrl);
   },
 
   /** @private */
-  onViewInStoreTap_: function() {
+  onViewInStoreTap_() {
     this.delegate.openUrl(this.data.webStoreUrl);
   },
 
@@ -307,7 +299,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeDependentEntry_: function(item) {
+  computeDependentEntry_(item) {
     return loadTimeData.getStringF('itemDependentEntry', item.name, item.id);
   },
 
@@ -315,7 +307,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeSourceString_: function() {
+  computeSourceString_() {
     return this.data.locationText ||
         getItemSourceString(getItemSource(this.data));
   },
@@ -325,7 +317,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getIndicatorIcon_: function(type) {
+  getIndicatorIcon_(type) {
     switch (type) {
       case 'POLICY':
         return 'cr20:domain';
@@ -340,7 +332,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasPermissions_: function() {
+  hasPermissions_() {
     return this.data.permissions.simplePermissions.length > 0 ||
         this.hasRuntimeHostPermissions_();
   },
@@ -349,7 +341,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasRuntimeHostPermissions_: function() {
+  hasRuntimeHostPermissions_() {
     return !!this.data.permissions.runtimeHostPermissions;
   },
 
@@ -357,7 +349,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showSiteAccessContent_: function() {
+  showSiteAccessContent_() {
     return this.showFreeformRuntimeHostPermissions_() ||
         this.showHostPermissionsToggleList_();
   },
@@ -366,7 +358,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showFreeformRuntimeHostPermissions_: function() {
+  showFreeformRuntimeHostPermissions_() {
     return this.hasRuntimeHostPermissions_() &&
         this.data.permissions.runtimeHostPermissions.hasAllHosts;
   },
@@ -375,8 +367,39 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showHostPermissionsToggleList_: function() {
+  showHostPermissionsToggleList_() {
     return this.hasRuntimeHostPermissions_() &&
         !this.data.permissions.runtimeHostPermissions.hasAllHosts;
+  },
+
+  /**
+   * Returns true if the reload button should be shown.
+   * @return {boolean}
+   * @private
+   */
+  showReloadButton_() {
+    return getEnableControl(this.data) === EnableControl.RELOAD;
+  },
+
+  /**
+   * Returns true if the repair button should be shown.
+   * @return {boolean}
+   * @private
+   */
+  showRepairButton_() {
+    return getEnableControl(this.data) === EnableControl.REPAIR;
+  },
+
+  /**
+   * Returns true if the enable toggle should be shown.
+   * @return {boolean}
+   * @private
+   */
+  showEnableToggle_() {
+    const enableControl = getEnableControl(this.data);
+    // We still show the toggle even if we also show the repair button in the
+    // detail view, because the repair button appears just beneath it.
+    return enableControl === EnableControl.ENABLE_TOGGLE ||
+        enableControl === EnableControl.REPAIR;
   },
 });

@@ -4,9 +4,10 @@
 
 #import "ios/chrome/browser/main/browser_impl.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser_agent_util.h"
 #import "ios/chrome/browser/main/browser_observer.h"
 #import "ios/chrome/browser/main/browser_web_state_list_delegate.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
@@ -19,7 +20,7 @@
 #error "This file requires ARC support."
 #endif
 
-BrowserImpl::BrowserImpl(ios::ChromeBrowserState* browser_state)
+BrowserImpl::BrowserImpl(ChromeBrowserState* browser_state)
     : browser_state_(browser_state),
       command_dispatcher_([[CommandDispatcher alloc] init]) {
   DCHECK(browser_state_);
@@ -27,14 +28,13 @@ BrowserImpl::BrowserImpl(ios::ChromeBrowserState* browser_state)
   web_state_list_delegate_ = std::make_unique<BrowserWebStateListDelegate>();
   web_state_list_ =
       std::make_unique<WebStateList>(web_state_list_delegate_.get());
-
-  tab_model_ =
-      [[TabModel alloc] initWithSessionService:[SessionServiceIOS sharedService]
-                                  browserState:browser_state_
-                                  webStateList:web_state_list_.get()];
 }
 
-BrowserImpl::BrowserImpl(ios::ChromeBrowserState* browser_state,
+void BrowserImpl::CreateTabModel() {
+  tab_model_ = [[TabModel alloc] initWithBrowser:this];
+}
+
+BrowserImpl::BrowserImpl(ChromeBrowserState* browser_state,
                          TabModel* tab_model,
                          std::unique_ptr<WebStateList> web_state_list)
     : browser_state_(browser_state),
@@ -50,7 +50,7 @@ BrowserImpl::~BrowserImpl() {
   }
 }
 
-ios::ChromeBrowserState* BrowserImpl::GetBrowserState() const {
+ChromeBrowserState* BrowserImpl::GetBrowserState() const {
   return browser_state_;
 }
 
@@ -75,7 +75,10 @@ void BrowserImpl::RemoveObserver(BrowserObserver* observer) {
 }
 
 // static
-std::unique_ptr<Browser> Browser::Create(
-    ios::ChromeBrowserState* browser_state) {
-  return std::make_unique<BrowserImpl>(browser_state);
+std::unique_ptr<Browser> Browser::Create(ChromeBrowserState* browser_state) {
+  std::unique_ptr<BrowserImpl> browser =
+      std::make_unique<BrowserImpl>(browser_state);
+  AttachBrowserAgents(browser.get());
+  browser->CreateTabModel();
+  return browser;
 }

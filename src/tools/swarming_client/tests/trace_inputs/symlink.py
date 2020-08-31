@@ -8,7 +8,7 @@ import sys
 
 
 def main():
-  print 'symlink: touches files2/'
+  print('symlink: touches files2/')
   assert len(sys.argv) == 1
 
   expected = {
@@ -17,7 +17,7 @@ def main():
   }
 
   if not os.path.basename(os.getcwd()) == 'tests':
-    print 'Start this script from inside "tests"'
+    print('Start this script from inside "tests"')
     return 1
 
   root = os.path.join('trace_inputs', 'files2')
@@ -26,9 +26,9 @@ def main():
       for filename in (os.listdir(root)) if filename != '.svn')
 
   if actual != expected:
-    print 'Failure'
-    print actual
-    print expected
+    print('Failure')
+    print(actual)
+    print(expected)
     return 2
   return 0
 

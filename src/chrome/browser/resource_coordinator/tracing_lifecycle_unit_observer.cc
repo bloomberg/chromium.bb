@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
 
 namespace resource_coordinator {
 
@@ -14,7 +15,6 @@ namespace {
 
 bool IsPendingState(LifecycleUnitState state) {
   return state == LifecycleUnitState::PENDING_FREEZE ||
-         state == LifecycleUnitState::PENDING_DISCARD ||
          state == LifecycleUnitState::PENDING_UNFREEZE;
 }
 
@@ -23,8 +23,6 @@ const char* GetTabStateEventName(LifecycleUnitState state) {
   switch (state) {
     case LifecycleUnitState::PENDING_FREEZE:
       return kPendingFreezeTracingEventName;
-    case LifecycleUnitState::PENDING_DISCARD:
-      return kPendingDiscardTracingEventName;
     case LifecycleUnitState::PENDING_UNFREEZE:
       return kPendingUnfreezeTracingEventName;
     default:
@@ -36,7 +34,6 @@ const char* GetTabStateEventName(LifecycleUnitState state) {
 }  // namespace
 
 const char kPendingFreezeTracingEventName[] = "Tab State: Pending Freeze";
-const char kPendingDiscardTracingEventName[] = "Tab State: Pending Discard";
 const char kPendingUnfreezeTracingEventName[] = "Tab State: Pending Unfreeze";
 
 TracingLifecycleUnitObserver::TracingLifecycleUnitObserver() = default;
@@ -76,11 +73,12 @@ void TracingLifecycleUnitObserver::MaybeEmitStateEndEvent(
 
 void TracingLifecycleUnitObserver::EmitStateBeginEvent(const char* event_name,
                                                        const char* title) {
-  TRACE_EVENT_ASYNC_BEGIN1("browser", event_name, this, "Title", title);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("browser", event_name, this, "Title",
+                                    title);
 }
 
 void TracingLifecycleUnitObserver::EmitStateEndEvent(const char* event_name) {
-  TRACE_EVENT_ASYNC_END0("browser", event_name, this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("browser", event_name, this);
 }
 
 }  // namespace resource_coordinator

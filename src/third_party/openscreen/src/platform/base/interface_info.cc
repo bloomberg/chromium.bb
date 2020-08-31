@@ -4,8 +4,9 @@
 
 #include "platform/base/interface_info.h"
 
+#include <algorithm>
+
 namespace openscreen {
-namespace platform {
 
 InterfaceInfo::InterfaceInfo() = default;
 InterfaceInfo::InterfaceInfo(NetworkInterfaceIndex index,
@@ -27,6 +28,24 @@ IPSubnet::IPSubnet(IPAddress address, uint8_t prefix_length)
     : address(std::move(address)), prefix_length(prefix_length) {}
 IPSubnet::~IPSubnet() = default;
 
+IPAddress InterfaceInfo::GetIpAddressV4() const {
+  for (const auto& address : addresses) {
+    if (address.address.IsV4()) {
+      return address.address;
+    }
+  }
+  return IPAddress{};
+}
+
+IPAddress InterfaceInfo::GetIpAddressV6() const {
+  for (const auto& address : addresses) {
+    if (address.address.IsV6()) {
+      return address.address;
+    }
+  }
+  return IPAddress{};
+}
+
 std::ostream& operator<<(std::ostream& out, const IPSubnet& subnet) {
   if (subnet.address.IsV6()) {
     out << '[';
@@ -38,23 +57,30 @@ std::ostream& operator<<(std::ostream& out, const IPSubnet& subnet) {
   return out << '/' << std::dec << static_cast<int>(subnet.prefix_length);
 }
 
-std::ostream& operator<<(std::ostream& out, const InterfaceInfo& info) {
-  std::string media_type;
-  switch (info.type) {
+std::ostream& operator<<(std::ostream& out, InterfaceInfo::Type type) {
+  switch (type) {
     case InterfaceInfo::Type::kEthernet:
-      media_type = "Ethernet";
+      out << "Ethernet";
       break;
     case InterfaceInfo::Type::kWifi:
-      media_type = "Wifi";
+      out << "Wifi";
+      break;
+    case InterfaceInfo::Type::kLoopback:
+      out << "Loopback";
       break;
     case InterfaceInfo::Type::kOther:
-      media_type = "Other";
+      out << "Other";
       break;
   }
+
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const InterfaceInfo& info) {
   out << '{' << info.index << " (a.k.a. " << info.name
-      << "); media_type=" << media_type << "; MAC=" << std::hex
+      << "); media_type=" << info.type << "; MAC=" << std::hex
       << static_cast<int>(info.hardware_address[0]);
-  for (size_t i = 1; i < sizeof(info.hardware_address); ++i) {
+  for (size_t i = 1; i < info.hardware_address.size(); ++i) {
     out << ':' << static_cast<int>(info.hardware_address[i]);
   }
   for (const IPSubnet& ip : info.addresses) {
@@ -63,5 +89,4 @@ std::ostream& operator<<(std::ostream& out, const InterfaceInfo& info) {
   return out << '}';
 }
 
-}  // namespace platform
 }  // namespace openscreen

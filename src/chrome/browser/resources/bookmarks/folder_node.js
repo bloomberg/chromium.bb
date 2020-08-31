@@ -79,7 +79,7 @@ Polymer({
   ],
 
   /** @override */
-  attached: function() {
+  attached() {
     this.watch('item_', state => {
       return /** @type {!BookmarksPageState} */ (state).nodes[this.itemId];
     });
@@ -100,12 +100,12 @@ Polymer({
   },
 
   /** @return {!HTMLElement} */
-  getFocusTarget: function() {
+  getFocusTarget() {
     return /** @type {!HTMLDivElement} */ (this.$.container);
   },
 
   /** @return {HTMLElement} */
-  getDropTarget: function() {
+  getDropTarget() {
     return /** @type {!HTMLDivElement} */ (this.$.container);
   },
 
@@ -113,25 +113,25 @@ Polymer({
    * @private
    * @param {!Event} e
    */
-  onKeydown_: function(e) {
+  onKeydown_(e) {
     let yDirection = 0;
     let xDirection = 0;
     let handled = true;
-    if (e.key == 'ArrowUp') {
+    if (e.key === 'ArrowUp') {
       yDirection = -1;
-    } else if (e.key == 'ArrowDown') {
+    } else if (e.key === 'ArrowDown') {
       yDirection = 1;
-    } else if (e.key == 'ArrowLeft') {
+    } else if (e.key === 'ArrowLeft') {
       xDirection = -1;
-    } else if (e.key == 'ArrowRight') {
+    } else if (e.key === 'ArrowRight') {
       xDirection = 1;
-    } else if (e.key == ' ') {
+    } else if (e.key === ' ') {
       this.selectFolder_();
     } else {
       handled = false;
     }
 
-    if (this.getComputedStyleValue('direction') == 'rtl') {
+    if (this.getComputedStyleValue('direction') === 'rtl') {
       xDirection *= -1;
     }
 
@@ -157,12 +157,12 @@ Polymer({
    * @param {number} yDirection
    * @param {!HTMLElement} currentFocus
    */
-  changeKeyboardSelection_: function(xDirection, yDirection, currentFocus) {
+  changeKeyboardSelection_(xDirection, yDirection, currentFocus) {
     let newFocusFolderNode = null;
     const isChildFolderNodeFocused =
-        currentFocus && currentFocus.tagName == 'BOOKMARKS-FOLDER-NODE';
+        currentFocus && currentFocus.tagName === 'BOOKMARKS-FOLDER-NODE';
 
-    if (xDirection == 1) {
+    if (xDirection === 1) {
       // The right arrow opens a folder if closed and goes to the first child
       // otherwise.
       if (this.hasChildFolder_) {
@@ -172,14 +172,14 @@ Polymer({
           yDirection = 1;
         }
       }
-    } else if (xDirection == -1) {
+    } else if (xDirection === -1) {
       // The left arrow closes a folder if open and goes to the parent
       // otherwise.
       if (this.hasChildFolder_ && this.isOpen) {
         this.dispatch(changeFolderOpen(this.item_.id, false));
       } else {
         const parentFolderNode = this.getParentFolderNode_();
-        if (parentFolderNode.itemId != ROOT_NODE_ID) {
+        if (parentFolderNode.itemId !== ROOT_NODE_ID) {
           parentFolderNode.getFocusTarget().focus();
         }
       }
@@ -190,7 +190,7 @@ Polymer({
     }
 
     // The current node's successor is its first child when open.
-    if (!isChildFolderNodeFocused && yDirection == 1 && this.isOpen) {
+    if (!isChildFolderNodeFocused && yDirection === 1 && this.isOpen) {
       const children = this.getChildFolderNodes_();
       if (children.length) {
         newFocusFolderNode = children[0];
@@ -201,19 +201,19 @@ Polymer({
       // Get the next child folder node if a child is focused.
       if (!newFocusFolderNode) {
         newFocusFolderNode = this.getNextChild_(
-            yDirection == -1,
+            yDirection === -1,
             /** @type {!BookmarksFolderNodeElement} */ (currentFocus));
       }
 
       // The first child's predecessor is this node.
-      if (!newFocusFolderNode && yDirection == -1) {
+      if (!newFocusFolderNode && yDirection === -1) {
         newFocusFolderNode = this;
       }
     }
 
     // If there is no newly focused node, allow the parent to handle the change.
     if (!newFocusFolderNode) {
-      if (this.itemId != ROOT_NODE_ID) {
+      if (this.itemId !== ROOT_NODE_ID) {
         this.getParentFolderNode_().changeKeyboardSelection_(
             0, yDirection, this);
       }
@@ -222,7 +222,7 @@ Polymer({
     }
 
     // The root node is not navigable.
-    if (newFocusFolderNode.itemId != ROOT_NODE_ID) {
+    if (newFocusFolderNode.itemId !== ROOT_NODE_ID) {
       newFocusFolderNode.getFocusTarget().focus();
     }
   },
@@ -235,17 +235,17 @@ Polymer({
    * @return {BookmarksFolderNodeElement|null} Returns null if there is no child
    *     before/after |child|.
    */
-  getNextChild_: function(reverse, child) {
+  getNextChild_(reverse, child) {
     let newFocus = null;
     const children = this.getChildFolderNodes_();
 
     const index = children.indexOf(child);
-    assert(index != -1);
+    assert(index !== -1);
     if (reverse) {
       // A child node's predecessor is either the previous child's last visible
       // descendant, or this node, which is its immediate parent.
       newFocus =
-          index == 0 ? null : children[index - 1].getLastVisibleDescendant_();
+          index === 0 ? null : children[index - 1].getLastVisibleDescendant_();
     } else if (index < children.length - 1) {
       // A successor to a child is the next child.
       newFocus = children[index + 1];
@@ -259,10 +259,10 @@ Polymer({
    * @private
    * @return {BookmarksFolderNodeElement|null}
    */
-  getParentFolderNode_: function() {
+  getParentFolderNode_() {
     let parentFolderNode = this.parentNode;
     while (parentFolderNode &&
-           parentFolderNode.tagName != 'BOOKMARKS-FOLDER-NODE') {
+           parentFolderNode.tagName !== 'BOOKMARKS-FOLDER-NODE') {
       parentFolderNode = parentFolderNode.parentNode || parentFolderNode.host;
     }
     return parentFolderNode || null;
@@ -272,9 +272,9 @@ Polymer({
    * @private
    * @return {BookmarksFolderNodeElement}
    */
-  getLastVisibleDescendant_: function() {
+  getLastVisibleDescendant_() {
     const children = this.getChildFolderNodes_();
-    if (!this.isOpen || children.length == 0) {
+    if (!this.isOpen || children.length === 0) {
       return this;
     }
 
@@ -282,7 +282,7 @@ Polymer({
   },
 
   /** @private */
-  selectFolder_: function() {
+  selectFolder_() {
     if (!this.isSelectedFolder_) {
       this.dispatch(selectFolder(this.itemId, this.getState().nodes));
     }
@@ -292,7 +292,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onContextMenu_: function(e) {
+  onContextMenu_(e) {
     e.preventDefault();
     this.selectFolder_();
     CommandManager.getInstance().openCommandMenuAtPosition(
@@ -303,7 +303,7 @@ Polymer({
    * @private
    * @return {!Array<!BookmarksFolderNodeElement>}
    */
-  getChildFolderNodes_: function() {
+  getChildFolderNodes_() {
     return Array.from(this.root.querySelectorAll('bookmarks-folder-node'));
   },
 
@@ -312,7 +312,7 @@ Polymer({
    * @private
    * @param {!Event} e
    */
-  toggleFolder_: function(e) {
+  toggleFolder_(e) {
     this.dispatch(changeFolderOpen(this.itemId, !this.isOpen));
     e.stopPropagation();
   },
@@ -321,7 +321,7 @@ Polymer({
    * @private
    * @param {!Event} e
    */
-  preventDefault_: function(e) {
+  preventDefault_(e) {
     e.preventDefault();
   },
 
@@ -331,22 +331,22 @@ Polymer({
    * @param {string} selectedFolder
    * @return {boolean}
    */
-  computeIsSelected_: function(itemId, selectedFolder, searchActive) {
-    return itemId == selectedFolder && !searchActive;
+  computeIsSelected_(itemId, selectedFolder, searchActive) {
+    return itemId === selectedFolder && !searchActive;
   },
 
   /**
    * @private
    * @return {boolean}
    */
-  computeHasChildFolder_: function() {
+  computeHasChildFolder_() {
     return hasChildFolders(this.itemId, this.getState().nodes);
   },
 
   /** @private */
-  depthChanged_: function() {
+  depthChanged_() {
     this.style.setProperty('--node-depth', String(this.depth));
-    if (this.depth == -1) {
+    if (this.depth === -1) {
       this.$.descendants.removeAttribute('role');
     }
   },
@@ -355,7 +355,7 @@ Polymer({
    * @private
    * @return {number}
    */
-  getChildDepth_: function() {
+  getChildDepth_() {
     return this.depth + 1;
   },
 
@@ -364,7 +364,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  isFolder_: function(itemId) {
+  isFolder_(itemId) {
     return !this.getState().nodes[itemId].url;
   },
 
@@ -372,19 +372,19 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  isRootFolder_: function() {
-    return this.itemId == ROOT_NODE_ID;
+  isRootFolder_() {
+    return this.itemId === ROOT_NODE_ID;
   },
 
   /**
    * @private
    * @return {string}
    */
-  getTabIndex_: function() {
+  getTabIndex_() {
     // This returns a tab index of 0 for the cached selected folder when the
     // search is active, even though this node is not technically selected. This
     // allows the sidebar to be focusable during a search.
-    return this.selectedFolder_ == this.itemId ? '0' : '-1';
+    return this.selectedFolder_ === this.itemId ? '0' : '-1';
   },
 
   /**
@@ -394,7 +394,7 @@ Polymer({
    * @param {boolean} isOpen
    * @private
    */
-  updateAriaExpanded_: function(hasChildFolder, isOpen) {
+  updateAriaExpanded_(hasChildFolder, isOpen) {
     if (hasChildFolder) {
       this.getFocusTarget().setAttribute('aria-expanded', String(isOpen));
     } else {
@@ -406,7 +406,7 @@ Polymer({
    * Scrolls the folder node into view when the folder is selected.
    * @private
    */
-  scrollIntoViewIfNeeded_: function() {
+  scrollIntoViewIfNeeded_() {
     if (!this.isSelectedFolder_) {
       return;
     }
@@ -419,7 +419,7 @@ Polymer({
    * @param {number} depth
    * @return {boolean}
    */
-  computeIsOpen_: function(openState, depth) {
+  computeIsOpen_(openState, depth) {
     return openState != null ? openState :
                                depth <= FOLDER_OPEN_BY_DEFAULT_DEPTH;
   },

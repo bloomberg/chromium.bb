@@ -27,6 +27,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import * as Common from '../common/common.js';
+import * as TextUtils from '../text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
+
+import {UISourceCode, UISourceCodeMetadata} from './UISourceCode.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @interface
  */
@@ -35,24 +41,28 @@ export class ProjectSearchConfig {
    * @return {string}
    */
   query() {
+    throw new Error('not implemented');
   }
 
   /**
    * @return {boolean}
    */
   ignoreCase() {
+    throw new Error('not implemented');
   }
 
   /**
    * @return {boolean}
    */
   isRegex() {
+    throw new Error('not implemented');
   }
 
   /**
    * @return {!Array.<string>}
    */
   queries() {
+    throw new Error('not implemented');
   }
 
   /**
@@ -60,6 +70,7 @@ export class ProjectSearchConfig {
    * @return {boolean}
    */
   filePathMatchesFileQuery(filePath) {
+    throw new Error('not implemented');
   }
 }
 
@@ -71,85 +82,97 @@ export class Project {
    * @return {!WorkspaceImpl}
    */
   workspace() {
+    throw new Error('not implemented');
   }
 
   /**
    * @return {string}
    */
   id() {
+    throw new Error('not implemented');
   }
 
   /**
    * @return {string}
    */
   type() {
+    throw new Error('not implemented');
   }
 
   /**
    * @return {boolean}
    */
   isServiceProject() {
+    throw new Error('not implemented');
   }
 
   /**
    * @return {string}
    */
   displayName() {
+    throw new Error('not implemented');
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @return {!Promise<?Workspace.UISourceCodeMetadata>}
+   * @param {!UISourceCode} uiSourceCode
+   * @return {!Promise<?UISourceCodeMetadata>}
    */
   requestMetadata(uiSourceCode) {
+    throw new Error('not implemented');
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @returns {!Promise<!Common.DeferredContent>}
+   * @param {!UISourceCode} uiSourceCode
+   * @return {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   requestFileContent(uiSourceCode) {
+    throw new Error('not implemented');
   }
 
   /**
    * @return {boolean}
    */
   canSetFileContent() {
+    throw new Error('not implemented');
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!UISourceCode} uiSourceCode
    * @param {string} newContent
    * @param {boolean} isBase64
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   setFileContent(uiSourceCode, newContent, isBase64) {
+    throw new Error('not implemented');
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!UISourceCode} uiSourceCode
    * @return {string}
    */
   fullDisplayName(uiSourceCode) {
+    throw new Error('not implemented');
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!UISourceCode} uiSourceCode
    * @return {string}
    */
   mimeType(uiSourceCode) {
+    throw new Error('not implemented');
   }
 
   /**
    * @return {boolean}
    */
   canRename() {
+    throw new Error('not implemented');
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!UISourceCode} uiSourceCode
    * @param {string} newName
-   * @param {function(boolean, string=, string=, !Common.ResourceType=)} callback
+   * @param {function(boolean, string=, string=, !Common.ResourceType.ResourceType=):void} callback
    */
   rename(uiSourceCode, newName, callback) {
   }
@@ -165,6 +188,7 @@ export class Project {
    * @return {boolean}
    */
   canExcludeFolder(path) {
+    throw new Error('not implemented');
   }
 
   /**
@@ -172,19 +196,21 @@ export class Project {
    * @param {?string} name
    * @param {string} content
    * @param {boolean=} isBase64
-   * @return {!Promise<?Workspace.UISourceCode>}
+   * @return {!Promise<?UISourceCode>}
    */
   createFile(path, name, content, isBase64) {
+    throw new Error('not implemented');
   }
 
   /**
    * @return {boolean}
    */
   canCreateFile() {
+    throw new Error('not implemented');
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!UISourceCode} uiSourceCode
    */
   deleteFile(uiSourceCode) {
   }
@@ -193,41 +219,45 @@ export class Project {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!UISourceCode} uiSourceCode
    * @param {string} query
    * @param {boolean} caseSensitive
    * @param {boolean} isRegex
-   * @return {!Promise<!Array<!Common.ContentProvider.SearchMatch>>}
+   * @return {!Promise<!Array<!TextUtils.ContentProvider.SearchMatch>>}
    */
   searchInFileContent(uiSourceCode, query, caseSensitive, isRegex) {
+    throw new Error('not implemented');
   }
 
   /**
    * @param {!ProjectSearchConfig} searchConfig
    * @param {!Array.<string>} filesMathingFileQuery
-   * @param {!Common.Progress} progress
+   * @param {!Common.Progress.Progress} progress
    * @return {!Promise<!Array<string>>}
    */
   findFilesMatchingSearchRequest(searchConfig, filesMathingFileQuery, progress) {
+    throw new Error('not implemented');
   }
 
   /**
-   * @param {!Common.Progress} progress
+   * @param {!Common.Progress.Progress} progress
    */
   indexContent(progress) {
   }
 
   /**
    * @param {string} url
-   * @return {?Workspace.UISourceCode}
+   * @return {?UISourceCode}
    */
   uiSourceCodeForURL(url) {
+    throw new Error('not implemented');
   }
 
   /**
-   * @return {!Array.<!Workspace.UISourceCode>}
+   * @return {!Array.<!UISourceCode>}
    */
   uiSourceCodes() {
+    throw new Error('not implemented');
   }
 }
 
@@ -250,7 +280,7 @@ export class ProjectStore {
   /**
    * @param {!WorkspaceImpl} workspace
    * @param {string} id
-   * @param {!Workspace.projectTypes} type
+   * @param {projectTypes} type
    * @param {string} displayName
    */
   constructor(workspace, id, type, displayName) {
@@ -259,12 +289,12 @@ export class ProjectStore {
     this._type = type;
     this._displayName = displayName;
 
-    /** @type {!Map.<string, !{uiSourceCode: !Workspace.UISourceCode, index: number}>} */
+    /** @type {!Map.<string, !{uiSourceCode: !UISourceCode, index: number}>} */
     this._uiSourceCodesMap = new Map();
-    /** @type {!Array.<!Workspace.UISourceCode>} */
+    /** @type {!Array.<!UISourceCode>} */
     this._uiSourceCodesList = [];
 
-    this._project = /** @type {!Project} */ (this);
+    this._project = /** @type {!Project} */ (/** @type {*} */ (this));
   }
 
   /**
@@ -297,15 +327,15 @@ export class ProjectStore {
 
   /**
    * @param {string} url
-   * @param {!Common.ResourceType} contentType
-   * @return {!Workspace.UISourceCode}
+   * @param {!Common.ResourceType.ResourceType} contentType
+   * @return {!UISourceCode}
    */
   createUISourceCode(url, contentType) {
-    return new Workspace.UISourceCode(this._project, url, contentType);
+    return new UISourceCode(this._project, url, contentType);
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!UISourceCode} uiSourceCode
    * @return {boolean}
    */
   addUISourceCode(uiSourceCode) {
@@ -329,10 +359,15 @@ export class ProjectStore {
     }
 
     const entry = this._uiSourceCodesMap.get(url);
+    if (!entry) {
+      return;
+    }
     const movedUISourceCode = this._uiSourceCodesList[this._uiSourceCodesList.length - 1];
     this._uiSourceCodesList[entry.index] = movedUISourceCode;
     const movedEntry = this._uiSourceCodesMap.get(movedUISourceCode.url());
-    movedEntry.index = entry.index;
+    if (movedEntry) {
+      movedEntry.index = entry.index;
+    }
     this._uiSourceCodesList.splice(this._uiSourceCodesList.length - 1, 1);
     this._uiSourceCodesMap.delete(url);
     this._workspace.dispatchEventToListeners(Events.UISourceCodeRemoved, entry.uiSourceCode);
@@ -346,7 +381,7 @@ export class ProjectStore {
 
   /**
    * @param {string} url
-   * @return {?Workspace.UISourceCode}
+   * @return {?UISourceCode}
    */
   uiSourceCodeForURL(url) {
     const entry = this._uiSourceCodesMap.get(url);
@@ -354,30 +389,38 @@ export class ProjectStore {
   }
 
   /**
-   * @return {!Array.<!Workspace.UISourceCode>}
+   * @return {!Array.<!UISourceCode>}
    */
   uiSourceCodes() {
     return this._uiSourceCodesList;
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!UISourceCode} uiSourceCode
    * @param {string} newName
    */
   renameUISourceCode(uiSourceCode, newName) {
     const oldPath = uiSourceCode.url();
     const newPath = uiSourceCode.parentURL() ? uiSourceCode.parentURL() + '/' + newName : newName;
     const value =
-        /** @type {!{uiSourceCode: !Workspace.UISourceCode, index: number}} */ (this._uiSourceCodesMap.get(oldPath));
+        /** @type {!{uiSourceCode: !UISourceCode, index: number}} */ (this._uiSourceCodesMap.get(oldPath));
     this._uiSourceCodesMap.set(newPath, value);
     this._uiSourceCodesMap.delete(oldPath);
   }
 }
 
 /**
+ * @type {!WorkspaceImpl}
+ */
+let workspaceInstance;
+
+/**
  * @unrestricted
  */
-export default class WorkspaceImpl extends Common.Object {
+export class WorkspaceImpl extends Common.ObjectWrapper.ObjectWrapper {
+  /**
+   * @private
+   */
   constructor() {
     super();
     /** @type {!Map<string, !Project>} */
@@ -386,9 +429,21 @@ export default class WorkspaceImpl extends Common.Object {
   }
 
   /**
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!workspaceInstance || forceNew) {
+      workspaceInstance = new WorkspaceImpl();
+    }
+
+    return workspaceInstance;
+  }
+
+  /**
    * @param {string} projectId
    * @param {string} url
-   * @return {?Workspace.UISourceCode}
+   * @return {?UISourceCode}
    */
   uiSourceCode(projectId, url) {
     const project = this._projects.get(projectId);
@@ -397,7 +452,7 @@ export default class WorkspaceImpl extends Common.Object {
 
   /**
    * @param {string} url
-   * @return {?Workspace.UISourceCode}
+   * @return {?UISourceCode}
    */
   uiSourceCodeForURL(url) {
     for (const project of this._projects.values()) {
@@ -411,13 +466,14 @@ export default class WorkspaceImpl extends Common.Object {
 
   /**
    * @param {string} type
-   * @return {!Array.<!Workspace.UISourceCode>}
+   * @return {!Array.<!UISourceCode>}
    */
   uiSourceCodesForProjectType(type) {
-    let result = [];
+    /** @type {!Array<!UISourceCode>} */
+    const result = [];
     for (const project of this._projects.values()) {
       if (project.type() === type) {
-        result = result.concat(project.uiSourceCodes());
+        result.push(...project.uiSourceCodes());
       }
     }
     return result;
@@ -452,7 +508,7 @@ export default class WorkspaceImpl extends Common.Object {
    * @return {!Array.<!Project>}
    */
   projects() {
-    return this._projects.valuesArray();
+    return [...this._projects.values()];
   }
 
   /**
@@ -460,6 +516,9 @@ export default class WorkspaceImpl extends Common.Object {
    * @return {!Array.<!Project>}
    */
   projectsForType(type) {
+    /**
+     * @param {!Project} project
+     */
     function filterByType(project) {
       return project.type() === type;
     }
@@ -467,12 +526,13 @@ export default class WorkspaceImpl extends Common.Object {
   }
 
   /**
-   * @return {!Array.<!Workspace.UISourceCode>}
+   * @return {!Array.<!UISourceCode>}
    */
   uiSourceCodes() {
-    let result = [];
+    /** @type {!Array.<!UISourceCode>} */
+    const result = [];
     for (const project of this._projects.values()) {
-      result = result.concat(project.uiSourceCodes());
+      result.push(...project.uiSourceCodes());
     }
     return result;
   }
@@ -503,32 +563,3 @@ export const Events = {
   ProjectAdded: Symbol('ProjectAdded'),
   ProjectRemoved: Symbol('ProjectRemoved')
 };
-
-/* Legacy exported object */
-self.Workspace = self.Workspace || {};
-
-/* Legacy exported object */
-Workspace = Workspace || {};
-
-/** @constructor */
-Workspace.Workspace = WorkspaceImpl;
-
-/** @enum {symbol} */
-Workspace.Workspace.Events = Events;
-
-/** @interface */
-Workspace.ProjectSearchConfig = ProjectSearchConfig;
-
-/** @interface */
-Workspace.Project = Project;
-
-/** @enum {string} */
-Workspace.projectTypes = projectTypes;
-
-/** @constructor */
-Workspace.ProjectStore = ProjectStore;
-
-/**
- * @type {!WorkspaceImpl}
- */
-Workspace.workspace;

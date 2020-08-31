@@ -105,6 +105,7 @@ void CastSessionTracker::HandleReceiverStatusMessage(
 
 void CastSessionTracker::HandleMediaStatusMessage(const MediaSinkInternal& sink,
                                                   const base::Value& message) {
+  DVLOG(2) << "Initial MEDIA_STATUS: " << message;
   auto session_it = sessions_by_sink_id_.find(sink.sink().id());
   if (session_it == sessions_by_sink_id_.end()) {
     DVLOG(2) << "Got media status message, but no session for: "
@@ -131,35 +132,24 @@ void CastSessionTracker::HandleMediaStatusMessage(const MediaSinkInternal& sink,
     return;
   }
 
-  auto& media_list = updated_status->GetList();
-
-  // First filter out any idle media objects.
-  base::EraseIf(media_list, [](const base::Value& media) {
-    const base::Value* player_state =
-        media.FindKeyOfType("playerState", base::Value::Type::STRING);
-    return player_state && player_state->GetString() == "IDLE";
-  });
-  if (media_list.size() > 1) {
-    DVLOG(2) << "Media list unexpectedly contains more than one live media: "
-             << media_list.size() << ", session: " << session_id;
-  }
+  base::Value::ListView media_list = updated_status->GetList();
 
   // Backfill messages from receivers to make them compatible with Cast SDK.
   for (auto& media : media_list) {
     media.SetKey("sessionId", base::Value(session_id));
-    const base::Value* supported_media_requests = media.FindKeyOfType(
-        "supportedMediaRequests", base::Value::Type::INTEGER);
-    if (!supported_media_requests)
+    const base::Value* supported_media_commands = media.FindKeyOfType(
+        "supportedMediaCommands", base::Value::Type::INTEGER);
+    if (!supported_media_commands)
       continue;
 
     media.SetKey(
-        "supportedMediaRequests",
-        SupportedMediaRequestsToListValue(supported_media_requests->GetInt()));
+        "supportedMediaCommands",
+        SupportedMediaCommandsToListValue(supported_media_commands->GetInt()));
   }
 
-  CopySavedMediaFieldsToMediaList(session, &media_list);
+  CopySavedMediaFieldsToMediaList(session, media_list);
 
-  DVLOG(2) << "Final updated status: " << updated_status;
+  DVLOG(2) << "Final updated MEDIA_STATUS: " << *updated_status;
   session->UpdateMedia(*updated_status);
 
   base::Optional<int> request_id =
@@ -172,7 +162,7 @@ void CastSessionTracker::HandleMediaStatusMessage(const MediaSinkInternal& sink,
 
 void CastSessionTracker::CopySavedMediaFieldsToMediaList(
     CastSession* session,
-    std::vector<base::Value>* media_list) {
+    base::Value::ListView media_list) {
   // When |session| has saved media objects with a mediaSessionId corresponding
   // to a value in |media_list|, copy the 'media' field from the saved objects
   // to the corresponding objects in |media_list|.
@@ -181,10 +171,10 @@ void CastSessionTracker::CopySavedMediaFieldsToMediaList(
   if (!session_media_value)
     return;
   const auto& session_media_value_list = session_media_value->GetList();
-  for (auto& media : *media_list) {
+  for (auto& media : media_list) {
     const base::Value* media_session_id_value =
         media.FindKeyOfType("mediaSessionId", base::Value::Type::INTEGER);
-    if (!media_session_id_value)
+    if (!media_session_id_value || media.FindKey("media"))
       continue;
 
     auto session_media_it = std::find_if(

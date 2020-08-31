@@ -4,6 +4,7 @@
 
 #include "net/third_party/quiche/src/quic/core/frames/quic_frame.h"
 
+#include "net/third_party/quiche/src/quic/core/quic_buffer_allocator.h"
 #include "net/third_party/quiche/src/quic/core/quic_constants.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
@@ -17,6 +18,9 @@ QuicFrame::QuicFrame(QuicPaddingFrame padding_frame)
 
 QuicFrame::QuicFrame(QuicStreamFrame stream_frame)
     : stream_frame(stream_frame) {}
+
+QuicFrame::QuicFrame(QuicHandshakeDoneFrame handshake_done_frame)
+    : handshake_done_frame(handshake_done_frame) {}
 
 QuicFrame::QuicFrame(QuicCryptoFrame* crypto_frame)
     : type(CRYPTO_FRAME), crypto_frame(crypto_frame) {}
@@ -88,6 +92,7 @@ void DeleteFrame(QuicFrame* frame) {
     case STOP_WAITING_FRAME:
     case STREAMS_BLOCKED_FRAME:
     case STREAM_FRAME:
+    case HANDSHAKE_DONE_FRAME:
       break;
     case ACK_FRAME:
       delete frame->ack_frame;
@@ -158,6 +163,7 @@ bool IsControlFrame(QuicFrameType type) {
     case MAX_STREAMS_FRAME:
     case PING_FRAME:
     case STOP_SENDING_FRAME:
+    case HANDSHAKE_DONE_FRAME:
       return true;
     default:
       return false;
@@ -182,6 +188,8 @@ QuicControlFrameId GetControlFrameId(const QuicFrame& frame) {
       return frame.ping_frame.control_frame_id;
     case STOP_SENDING_FRAME:
       return frame.stop_sending_frame->control_frame_id;
+    case HANDSHAKE_DONE_FRAME:
+      return frame.handshake_done_frame.control_frame_id;
     default:
       return kInvalidControlFrameId;
   }
@@ -212,6 +220,9 @@ void SetControlFrameId(QuicControlFrameId control_frame_id, QuicFrame* frame) {
       return;
     case STOP_SENDING_FRAME:
       frame->stop_sending_frame->control_frame_id = control_frame_id;
+      return;
+    case HANDSHAKE_DONE_FRAME:
+      frame->handshake_done_frame.control_frame_id = control_frame_id;
       return;
     default:
       QUIC_BUG
@@ -245,6 +256,10 @@ QuicFrame CopyRetransmittableControlFrame(const QuicFrame& frame) {
       break;
     case MAX_STREAMS_FRAME:
       copy = QuicFrame(QuicMaxStreamsFrame(frame.max_streams_frame));
+      break;
+    case HANDSHAKE_DONE_FRAME:
+      copy = QuicFrame(
+          QuicHandshakeDoneFrame(frame.handshake_done_frame.control_frame_id));
       break;
     default:
       QUIC_BUG << "Try to copy a non-retransmittable control frame: " << frame;
@@ -319,10 +334,11 @@ QuicFrame CopyQuicFrame(QuicBufferAllocator* allocator,
       copy.message_frame->data = frame.message_frame->data;
       copy.message_frame->message_length = frame.message_frame->message_length;
       for (const auto& slice : frame.message_frame->message_data) {
-        QuicMemSlice copy_slice(allocator, slice.length());
-        memcpy(const_cast<char*>(copy_slice.data()), slice.data(),
-               slice.length());
-        copy.message_frame->message_data.push_back(std::move(copy_slice));
+        QuicUniqueBufferPtr buffer =
+            MakeUniqueBuffer(allocator, slice.length());
+        memcpy(buffer.get(), slice.data(), slice.length());
+        copy.message_frame->message_data.push_back(
+            QuicMemSlice(std::move(buffer), slice.length()));
       }
       break;
     case NEW_TOKEN_FRAME:
@@ -331,6 +347,10 @@ QuicFrame CopyQuicFrame(QuicBufferAllocator* allocator,
     case RETIRE_CONNECTION_ID_FRAME:
       copy = QuicFrame(
           new QuicRetireConnectionIdFrame(*frame.retire_connection_id_frame));
+      break;
+    case HANDSHAKE_DONE_FRAME:
+      copy = QuicFrame(
+          QuicHandshakeDoneFrame(frame.handshake_done_frame.control_frame_id));
       break;
     default:
       QUIC_BUG << "Cannot copy frame: " << frame;
@@ -427,6 +447,9 @@ std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
       break;
     case NEW_TOKEN_FRAME:
       os << "type { NEW_TOKEN_FRAME }" << *(frame.new_token_frame);
+      break;
+    case HANDSHAKE_DONE_FRAME:
+      os << "type { HANDSHAKE_DONE_FRAME } " << frame.handshake_done_frame;
       break;
     default: {
       QUIC_LOG(ERROR) << "Unknown frame type: " << frame.type;

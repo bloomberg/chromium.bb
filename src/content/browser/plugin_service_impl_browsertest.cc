@@ -17,6 +17,7 @@
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -88,8 +89,9 @@ class PluginServiceImplBrowserTest : public ContentBrowserTest {
     base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&PluginServiceImpl::OpenChannelToPpapiPlugin,
-                       base::Unretained(service), 0, plugin_path_, profile_dir_,
-                       origin, base::Unretained(client)));
+                       base::Unretained(service), /*render_process_id=*/0,
+                       /*embedder_origin=*/url::Origin(), plugin_path_,
+                       profile_dir_, origin, base::Unretained(client)));
     client->WaitForQuit();
     client->SetRunLoop(nullptr);
   }

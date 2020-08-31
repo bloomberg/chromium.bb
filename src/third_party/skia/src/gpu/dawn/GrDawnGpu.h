@@ -9,15 +9,17 @@
 #define GrDawnGpu_DEFINED
 
 #include "src/gpu/GrGpu.h"
-#include "src/gpu/GrProgramDesc.h"
+
 #include "dawn/webgpu_cpp.h"
 #include "src/core/SkLRUCache.h"
+#include "src/gpu/GrFinishCallbacks.h"
+#include "src/gpu/GrProgramDesc.h"
 #include "src/gpu/dawn/GrDawnRingBuffer.h"
-#include "src/gpu/dawn/GrDawnStagingManager.h"
 
 #include <unordered_map>
 
 class GrDawnOpsRenderPass;
+class GrDawnStagingBuffer;
 class GrPipeline;
 struct GrDawnProgram;
 
@@ -39,13 +41,10 @@ public:
 
     void xferBarrier(GrRenderTarget*, GrXferBarrierType) override {}
 
-    GrBackendTexture onCreateBackendTexture(SkISize,
-                                            const GrBackendFormat&,
-                                            GrRenderable,
-                                            const BackendTextureData* data,
-                                            int numMipLevels,
-                                            GrProtected isProtected) override;
     void deleteBackendTexture(const GrBackendTexture&) override;
+
+    bool compile(const GrProgramDesc&, const GrProgramInfo&) override;
+
 #if GR_TEST_UTILS
     bool isTestingOnlyBackendTexture(const GrBackendTexture&) const override;
 
@@ -54,7 +53,7 @@ public:
 
     void testingOnly_flushGpuAndSync() override;
 #endif
-    void flush();
+    std::unique_ptr<GrStagingBuffer> createStagingBuffer(size_t size) override;
 
     GrStencilAttachment* createStencilAttachmentForRenderTarget(const GrRenderTarget*,
                                                                 int width,
@@ -74,7 +73,7 @@ public:
     void submit(GrOpsRenderPass*) override;
 
     GrFence SK_WARN_UNUSED_RESULT insertFence() override;
-    bool waitFence(GrFence, uint64_t timeout) override;
+    bool waitFence(GrFence) override;
     void deleteFence(GrFence) const override;
 
     std::unique_ptr<GrSemaphore> SK_WARN_UNUSED_RESULT makeSemaphore(bool isOwned = true) override;
@@ -90,11 +89,9 @@ public:
 
     sk_sp<GrDawnProgram> getOrCreateRenderPipeline(GrRenderTarget*, const GrProgramInfo&);
 
-    wgpu::Sampler getOrCreateSampler(const GrSamplerState& samplerState);
+    wgpu::Sampler getOrCreateSampler(GrSamplerState samplerState);
 
     GrDawnRingBuffer::Slice allocateUniformRingBufferSlice(int size);
-    GrDawnStagingBuffer* getStagingBuffer(size_t size);
-    GrDawnStagingManager* getStagingManager() { return &fStagingManager; }
     wgpu::CommandEncoder getCopyEncoder();
     void flushCopyEncoder();
     void appendCommandBuffer(wgpu::CommandBuffer commandBuffer);
@@ -104,7 +101,7 @@ private:
 
     virtual void querySampleLocations(GrRenderTarget*, SkTArray<SkPoint>*) override {}
 
-    sk_sp<GrTexture> onCreateTexture(const GrSurfaceDesc& desc,
+    sk_sp<GrTexture> onCreateTexture(SkISize,
                                      const GrBackendFormat&,
                                      GrRenderable,
                                      int renderTargetSampleCnt,
@@ -113,20 +110,45 @@ private:
                                      int mipLevelCount,
                                      uint32_t levelClearMask) override;
 
-    sk_sp<GrTexture> onCreateCompressedTexture(int width, int height, const GrBackendFormat&,
-                                               SkImage::CompressionType, SkBudgeted,
-                                               const void* data) override;
+    sk_sp<GrTexture> onCreateCompressedTexture(SkISize dimensions,
+                                               const GrBackendFormat&,
+                                               SkBudgeted,
+                                               GrMipMapped,
+                                               GrProtected,
+                                               const void* data, size_t dataSize) override;
 
-    sk_sp<GrTexture> onWrapBackendTexture(const GrBackendTexture&, GrColorType, GrWrapOwnership,
-                                          GrWrapCacheable, GrIOType) override;
-    sk_sp<GrTexture> onWrapRenderableBackendTexture(const GrBackendTexture&, int sampleCnt,
-                                                    GrColorType, GrWrapOwnership,
+    sk_sp<GrTexture> onWrapBackendTexture(const GrBackendTexture&,
+                                          GrWrapOwnership,
+                                          GrWrapCacheable,
+                                          GrIOType) override;
+    sk_sp<GrTexture> onWrapCompressedBackendTexture(const GrBackendTexture&,
+                                                    GrWrapOwnership,
                                                     GrWrapCacheable) override;
-    sk_sp<GrRenderTarget> onWrapBackendRenderTarget(const GrBackendRenderTarget&,
-                                                    GrColorType) override;
+    sk_sp<GrTexture> onWrapRenderableBackendTexture(const GrBackendTexture&,
+                                                    int sampleCnt,
+                                                    GrWrapOwnership,
+                                                    GrWrapCacheable) override;
+    sk_sp<GrRenderTarget> onWrapBackendRenderTarget(const GrBackendRenderTarget&) override;
 
-    sk_sp<GrRenderTarget> onWrapBackendTextureAsRenderTarget(const GrBackendTexture&, int sampleCnt,
-                                                             GrColorType) override;
+    sk_sp<GrRenderTarget> onWrapBackendTextureAsRenderTarget(const GrBackendTexture&,
+                                                             int sampleCnt) override;
+
+    GrBackendTexture onCreateBackendTexture(SkISize dimensions,
+                                            const GrBackendFormat&,
+                                            GrRenderable,
+                                            GrMipMapped,
+                                            GrProtected) override;
+
+    bool onUpdateBackendTexture(const GrBackendTexture&,
+                                sk_sp<GrRefCntedCallback> finishedCallback,
+                                const BackendTextureData*) override;
+
+    GrBackendTexture onCreateCompressedBackendTexture(SkISize dimensions,
+                                                      const GrBackendFormat&,
+                                                      GrMipMapped,
+                                                      GrProtected,
+                                                      sk_sp<GrRefCntedCallback> finishedCallback,
+                                                      const BackendTextureData*) override;
 
     sk_sp<GrGpuBuffer> onCreateBuffer(size_t size, GrGpuBufferType type, GrAccessPattern,
                                       const void* data) override;
@@ -148,16 +170,19 @@ private:
                               GrColorType surfaceColorType, GrColorType bufferColorType,
                               GrGpuBuffer* transferBuffer, size_t offset) override;
 
-    void onResolveRenderTarget(GrRenderTarget*, const SkIRect&, GrSurfaceOrigin,
-                               ForExternalIO) override {}
+    void onResolveRenderTarget(GrRenderTarget*, const SkIRect&, ForExternalIO) override {}
 
     bool onRegenerateMipMapLevels(GrTexture*) override;
 
     bool onCopySurface(GrSurface* dst, GrSurface* src,
                        const SkIRect& srcRect, const SkIPoint& dstPoint) override;
 
-    bool onFinishFlush(GrSurfaceProxy*[], int n, SkSurface::BackendSurfaceAccess access,
-                       const GrFlushInfo& info, const GrPrepareForExternalIORequests&) override;
+    void addFinishedProc(GrGpuFinishedProc finishedProc,
+                         GrGpuFinishedContext finishedContext) override;
+
+    bool onSubmitToGpu(bool syncCpu) override;
+
+    void mapStagingBuffers();
 
     wgpu::Device                                    fDevice;
     wgpu::Queue                                     fQueue;
@@ -174,14 +199,15 @@ private:
     };
 
     struct SamplerHash {
-        size_t operator()(const GrSamplerState& samplerState) const {
+        size_t operator()(GrSamplerState samplerState) const {
             return SkOpts::hash_fn(&samplerState, sizeof(samplerState), 0);
         }
     };
 
     SkLRUCache<GrProgramDesc, sk_sp<GrDawnProgram>, ProgramDescHash>    fRenderPipelineCache;
     std::unordered_map<GrSamplerState, wgpu::Sampler, SamplerHash> fSamplers;
-    GrDawnStagingManager fStagingManager;
+
+    GrFinishCallbacks         fFinishCallbacks;
 
     typedef GrGpu INHERITED;
 };

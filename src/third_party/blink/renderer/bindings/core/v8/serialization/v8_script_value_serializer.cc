@@ -185,7 +185,7 @@ void V8ScriptValueSerializer::FinalizeTransfer(
     if (exception_state.HadException())
       return;
 
-    if (RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+    if (TransferableStreamsEnabled()) {
       // Order matters here, because the order in which streams are added to the
       // |stream_ports_| array must match the indexes which are calculated in
       // WriteDOMObject().
@@ -261,7 +261,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
       return false;
     }
 
-    auto* execution_context = ExecutionContext::From(script_state_.Get());
+    auto* execution_context = ExecutionContext::From(script_state_);
     // If this ImageBitmap was transferred, it can be serialized by index.
     size_t index = kNotFound;
     if (transferables_)
@@ -520,7 +520,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     return true;
   }
   if (wrapper_type_info == V8ReadableStream::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+      TransferableStreamsEnabled()) {
     ReadableStream* stream = wrappable->ToImpl<ReadableStream>();
     size_t index = kNotFound;
     if (transferables_)
@@ -544,7 +544,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     return true;
   }
   if (wrapper_type_info == V8WritableStream::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+      TransferableStreamsEnabled()) {
     WritableStream* stream = wrappable->ToImpl<WritableStream>();
     size_t index = kNotFound;
     if (transferables_)
@@ -555,9 +555,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
                                         "because it was not transferred.");
       return false;
     }
-    if (stream->IsLocked(script_state_, exception_state).value_or(true)) {
-      if (exception_state.HadException())
-        return false;
+    if (stream->locked()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kDataCloneError,
           "A WritableStream could not be cloned because it was locked");
@@ -573,7 +571,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     return true;
   }
   if (wrapper_type_info == V8TransformStream::GetWrapperTypeInfo() &&
-      RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+      TransferableStreamsEnabled()) {
     TransformStream* stream = wrappable->ToImpl<TransformStream>();
     size_t index = kNotFound;
     if (transferables_)
@@ -587,9 +585,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     if (stream->Readable()
             ->IsLocked(script_state_, exception_state)
             .value_or(true) ||
-        stream->Writable()
-            ->IsLocked(script_state_, exception_state)
-            .value_or(true)) {
+        stream->Writable()->locked()) {
       if (exception_state.HadException())
         return false;
       exception_state.ThrowDOMException(
@@ -628,12 +624,9 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
   if (blob_info_array_) {
     size_t index = blob_info_array_->size();
     DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
-    uint64_t size;
-    base::Optional<base::Time> last_modified_time;
-    file->CaptureSnapshot(size, last_modified_time);
-    blob_info_array_->emplace_back(file->GetBlobDataHandle(), file->GetPath(),
-                                   file->name(), file->type(),
-                                   last_modified_time, size);
+    blob_info_array_->emplace_back(
+        file->GetBlobDataHandle(), file->name(), file->type(),
+        file->LastModifiedTimeForSerialization(), file->size());
     WriteUint32(static_cast<uint32_t>(index));
   } else {
     WriteUTF8String(file->HasBackingFile() ? file->GetPath() : g_empty_string);
@@ -641,20 +634,15 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
     WriteUTF8String(file->webkitRelativePath());
     WriteUTF8String(file->Uuid());
     WriteUTF8String(file->type());
-    // TODO(jsbell): metadata is unconditionally captured in the index case.
-    // Why this inconsistency?
-    if (file->HasValidSnapshotMetadata()) {
-      WriteUint32(1);
-      uint64_t size;
-      base::Optional<base::Time> last_modified;
-      file->CaptureSnapshot(size, last_modified);
-      DCHECK_NE(size, std::numeric_limits<uint64_t>::max());
-      WriteUint64(size);
-      WriteDouble(last_modified ? last_modified->ToJsTimeIgnoringNull()
-                                : std::numeric_limits<double>::quiet_NaN());
-    } else {
-      WriteUint32(0);
-    }
+    // Historically we sometimes wouldn't write metadata. This next integer was
+    // 1 or 0 to indicate if metadata is present. Now we always write metadata,
+    // hence always have this hardcoded 1.
+    WriteUint32(1);
+    WriteUint64(file->size());
+    base::Optional<base::Time> last_modified =
+        file->LastModifiedTimeForSerialization();
+    WriteDouble(last_modified ? last_modified->ToJsTimeIgnoringNull()
+                              : std::numeric_limits<double>::quiet_NaN());
     WriteUint32(file->GetUserVisibility() == File::kIsUserVisible ? 1 : 0);
   }
   return true;
@@ -788,6 +776,11 @@ void* V8ScriptValueSerializer::ReallocateBufferMemory(void* old_buffer,
 
 void V8ScriptValueSerializer::FreeBufferMemory(void* buffer) {
   return WTF::Partitions::BufferFree(buffer);
+}
+
+bool V8ScriptValueSerializer::TransferableStreamsEnabled() const {
+  return RuntimeEnabledFeatures::TransferableStreamsEnabled(
+      ExecutionContext::From(script_state_));
 }
 
 }  // namespace blink

@@ -2,6 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+#saml-close-button {
+  --cr-icon-button-margin-end: 0;
+  --cr-icon-button-margin-start: 0;
+}
+
 .signin-link {
   color: rgb(37, 79, 155);
   cursor: pointer;
@@ -14,31 +19,25 @@
   transition: outline-color 200ms;
 }
 
-#gaia-signin-form-container {
-  height: 100%;
-  position: relative;
-  width: 100%;
+/* Use the opacity CSS property in order to make the element invisible without
+actually making it formally "hidden". This is used for hiding the webview
+element during loading, without affecting its loading events. */
+[transparent] {
+  opacity: 0;
 }
 
-.transparent {
-  opacity: 0;
+[animated-transparency][transparent] {
   transition: opacity 500ms ease-in;
 }
 
-.non-transparent {
-  opacity: 1;
+[animated-transparency]:not([transparent]) {
   transition: opacity 500ms ease-out;
 }
 
-#signin-frame,
-#signin-frame-container {
-  height: 100%;
-  width: 100%;
-}
-
 #signin-frame {
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
+  /* TODO(https://crbug.com/1021866): Uncomment when the bug is fixed.
+   * border-top-left-radius: 4px;
+   * border-top-right-radius: 4px; */
   display: block;
   overflow: hidden;
   position: static;
@@ -52,15 +51,11 @@
 
 #saml-notice-container {
   align-items: center;
+  background: rgb(241, 243, 244); /* #F1F3F4 */
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.17);
   display: flex;
   height: 44px;
-  justify-content: center;
-  left: 0;
   min-height: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
 }
 
 #saml-notice-recording-indicator {
@@ -85,6 +80,11 @@
   top: 0;
 }
 
+.icon20 {
+  height: 20px;
+  width: 20px;
+}
+
 #gaia-whitelist-error {
   bottom: 0;
   display: block;
@@ -94,6 +94,17 @@
   top: 0;
 }
 
-:host(.saml) #signin-frame-container {
-  padding-top: 44px;
+#signin-frame-container {
+  z-index: 10;
+}
+
+/* WebviewScrollShadowsHelper */
+#signin-frame-container:not([hideshadows]) #signin-frame.can-scroll:not(.is-scrolled):not(.scrolled-to-bottom)::before {
+  @apply --oobe-scroll-shadow-bottom;
+}
+#signin-frame-container:not([hideshadows]) #signin-frame.can-scroll.is-scrolled:not(.scrolled-to-bottom)::before {
+  @apply --oobe-scroll-shadow-top-and-bottom;
+}
+#signin-frame-container:not([hideshadows]) #signin-frame.is-scrolled.scrolled-to-bottom::before {
+  @apply --oobe-scroll-shadow-top;
 }

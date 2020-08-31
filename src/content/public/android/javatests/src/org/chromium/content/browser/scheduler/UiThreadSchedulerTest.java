@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
-import org.chromium.base.task.SingleThreadTaskRunner;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
@@ -72,17 +71,13 @@ public class UiThreadSchedulerTest {
     public void testSimpleUiThreadPostingBeforeNativeLoaded() {
         TaskRunner uiThreadTaskRunner =
                 PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.DEFAULT);
-        try {
-            List<Integer> orderList = new ArrayList<>();
-            SchedulerTestHelpers.postRecordOrderTask(uiThreadTaskRunner, orderList, 1);
-            SchedulerTestHelpers.postRecordOrderTask(uiThreadTaskRunner, orderList, 2);
-            SchedulerTestHelpers.postRecordOrderTask(uiThreadTaskRunner, orderList, 3);
-            SchedulerTestHelpers.postTaskAndBlockUntilRun(uiThreadTaskRunner);
+        List<Integer> orderList = new ArrayList<>();
+        SchedulerTestHelpers.postRecordOrderTask(uiThreadTaskRunner, orderList, 1);
+        SchedulerTestHelpers.postRecordOrderTask(uiThreadTaskRunner, orderList, 2);
+        SchedulerTestHelpers.postRecordOrderTask(uiThreadTaskRunner, orderList, 3);
+        SchedulerTestHelpers.postTaskAndBlockUntilRun(uiThreadTaskRunner);
 
-            assertThat(orderList, contains(1, 2, 3));
-        } finally {
-            uiThreadTaskRunner.destroy();
-        }
+        assertThat(orderList, contains(1, 2, 3));
     }
 
     @Test
@@ -92,28 +87,23 @@ public class UiThreadSchedulerTest {
                 PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.DEFAULT);
         TaskRunner bootstrapTaskRunner =
                 PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.BOOTSTRAP);
-        try {
-            List<Integer> orderList = new ArrayList<>();
-            // We want to enqueue these tasks atomically but we're not on the mUiThread. So
-            // we post a task to enqueue them.
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
-                @Override
-                public void run() {
-                    SchedulerTestHelpers.postRecordOrderTask(defaultTaskRunner, orderList, 1);
-                    SchedulerTestHelpers.postRecordOrderTask(defaultTaskRunner, orderList, 2);
-                    SchedulerTestHelpers.postRecordOrderTask(defaultTaskRunner, orderList, 3);
-                    SchedulerTestHelpers.postRecordOrderTask(bootstrapTaskRunner, orderList, 10);
-                    SchedulerTestHelpers.postRecordOrderTask(bootstrapTaskRunner, orderList, 20);
-                    SchedulerTestHelpers.postRecordOrderTask(bootstrapTaskRunner, orderList, 30);
-                }
-            });
+        List<Integer> orderList = new ArrayList<>();
+        // We want to enqueue these tasks atomically but we're not on the mUiThread. So
+        // we post a task to enqueue them.
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+            @Override
+            public void run() {
+                SchedulerTestHelpers.postRecordOrderTask(defaultTaskRunner, orderList, 1);
+                SchedulerTestHelpers.postRecordOrderTask(defaultTaskRunner, orderList, 2);
+                SchedulerTestHelpers.postRecordOrderTask(defaultTaskRunner, orderList, 3);
+                SchedulerTestHelpers.postRecordOrderTask(bootstrapTaskRunner, orderList, 10);
+                SchedulerTestHelpers.postRecordOrderTask(bootstrapTaskRunner, orderList, 20);
+                SchedulerTestHelpers.postRecordOrderTask(bootstrapTaskRunner, orderList, 30);
+            }
+        });
 
-            SchedulerTestHelpers.preNativeRunUntilIdle(mUiThread);
-            assertThat(orderList, contains(10, 20, 30, 1, 2, 3));
-        } finally {
-            defaultTaskRunner.destroy();
-            bootstrapTaskRunner.destroy();
-        }
+        SchedulerTestHelpers.preNativeRunUntilIdle(mUiThread);
+        assertThat(orderList, contains(10, 20, 30, 1, 2, 3));
     }
 
     @Test
@@ -121,21 +111,17 @@ public class UiThreadSchedulerTest {
     public void testUiThreadTaskRunnerMigrationToNative() {
         TaskRunner uiThreadTaskRunner =
                 PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.DEFAULT);
-        try {
-            List<Integer> orderList = new ArrayList<>();
-            SchedulerTestHelpers.postRecordOrderTask(uiThreadTaskRunner, orderList, 1);
+        List<Integer> orderList = new ArrayList<>();
+        SchedulerTestHelpers.postRecordOrderTask(uiThreadTaskRunner, orderList, 1);
 
-            postRepeatingTaskAndStartNativeSchedulerThenWaitForTaskToRun(
-                    uiThreadTaskRunner, new Runnable() {
-                        @Override
-                        public void run() {
-                            orderList.add(2);
-                        }
-                    });
-            assertThat(orderList, contains(1, 2));
-        } finally {
-            uiThreadTaskRunner.destroy();
-        }
+        postRepeatingTaskAndStartNativeSchedulerThenWaitForTaskToRun(
+                uiThreadTaskRunner, new Runnable() {
+                    @Override
+                    public void run() {
+                        orderList.add(2);
+                    }
+                });
+        assertThat(orderList, contains(1, 2));
     }
 
     @Test
@@ -143,116 +129,15 @@ public class UiThreadSchedulerTest {
     public void testSimpleUiThreadPostingAfterNativeLoaded() {
         TaskRunner uiThreadTaskRunner =
                 PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.DEFAULT);
-        try {
-            startContentMainOnUiThread();
-
-            uiThreadTaskRunner.postTask(new Runnable() {
-                @Override
-                public void run() {
-                    Assert.assertTrue(ThreadUtils.runningOnUiThread());
-                }
-            });
-            SchedulerTestHelpers.postTaskAndBlockUntilRun(uiThreadTaskRunner);
-        } finally {
-            uiThreadTaskRunner.destroy();
-        }
-    }
-
-    @Test
-    @MediumTest
-    public void testPostTaskCurrentThreadBeforeNativeLoaded() throws Exception {
-        // This should not timeout.
-        final Object lock = new Object();
-        final AtomicBoolean taskExecuted = new AtomicBoolean();
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
-            @Override
-            public void run() {
-                PostTask.postTask(TaskTraits.CURRENT_THREAD, new Runnable() {
-                    @Override
-                    public void run() {
-                        synchronized (lock) {
-                            taskExecuted.set(true);
-                            lock.notify();
-                        }
-                    }
-                });
-            }
-        });
-
-        synchronized (lock) {
-            while (!taskExecuted.get()) {
-                lock.wait();
-            }
-        }
-    }
-
-    @Test
-    @MediumTest
-    public void testPostTaskCurrentThreadAfterNativeLoaded() throws Exception {
         startContentMainOnUiThread();
 
-        // This should not timeout.
-        final Object lock = new Object();
-        final AtomicBoolean taskExecuted = new AtomicBoolean();
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+        uiThreadTaskRunner.postTask(new Runnable() {
             @Override
             public void run() {
-                PostTask.postTask(TaskTraits.CURRENT_THREAD, new Runnable() {
-                    @Override
-                    public void run() {
-                        synchronized (lock) {
-                            taskExecuted.set(true);
-                            lock.notify();
-                        }
-                    }
-                });
+                Assert.assertTrue(ThreadUtils.runningOnUiThread());
             }
         });
-
-        synchronized (lock) {
-            while (!taskExecuted.get()) {
-                lock.wait();
-            }
-        }
-    }
-
-    @Test
-    @MediumTest
-    public void testPostTaskCurrentThreadInThreadpoolAfterNativeLoaded() throws Exception {
-        startContentMainOnUiThread();
-        SingleThreadTaskRunner threadpoolTaskRunner =
-                PostTask.createSingleThreadTaskRunner(TaskTraits.THREAD_POOL_USER_BLOCKING);
-        SingleThreadTaskRunner uiThreadTaskRunner =
-                PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.DEFAULT);
-
-        // This should not timeout.
-        final Object lock = new Object();
-        final AtomicBoolean taskExecuted = new AtomicBoolean();
-        threadpoolTaskRunner.postTask(new Runnable() {
-            @Override
-            public void run() {
-                PostTask.postTask(TaskTraits.CURRENT_THREAD, new Runnable() {
-                    @Override
-                    public void run() {
-                        synchronized (lock) {
-                            Assert.assertTrue(threadpoolTaskRunner.belongsToCurrentThread());
-                            Assert.assertFalse(uiThreadTaskRunner.belongsToCurrentThread());
-                            taskExecuted.set(true);
-                            lock.notify();
-                        }
-                    }
-                });
-            }
-        });
-
-        synchronized (lock) {
-            while (!taskExecuted.get()) {
-                lock.wait();
-            }
-        }
-
-        uiThreadTaskRunner.destroy();
-        threadpoolTaskRunner.destroy();
+        SchedulerTestHelpers.postTaskAndBlockUntilRun(uiThreadTaskRunner);
     }
 
     @Test
@@ -260,22 +145,18 @@ public class UiThreadSchedulerTest {
     public void testTaskNotRunOnUiThreadWithoutUiThreadTaskTraits() {
         TaskRunner uiThreadTaskRunner =
                 PostTask.createSingleThreadTaskRunner(TaskTraits.USER_BLOCKING);
-        try {
-            // Test times out without this.
-            UiThreadSchedulerTestUtils.postBrowserMainLoopStartupTasks(true);
-            startContentMainOnUiThread();
+        // Test times out without this.
+        UiThreadSchedulerTestUtils.postBrowserMainLoopStartupTasks(true);
+        startContentMainOnUiThread();
 
-            uiThreadTaskRunner.postTask(new Runnable() {
-                @Override
-                public void run() {
-                    Assert.assertFalse(ThreadUtils.runningOnUiThread());
-                }
-            });
+        uiThreadTaskRunner.postTask(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertFalse(ThreadUtils.runningOnUiThread());
+            }
+        });
 
-            SchedulerTestHelpers.postTaskAndBlockUntilRun(uiThreadTaskRunner);
-        } finally {
-            uiThreadTaskRunner.destroy();
-        }
+        SchedulerTestHelpers.postTaskAndBlockUntilRun(uiThreadTaskRunner);
     }
 
     @Test

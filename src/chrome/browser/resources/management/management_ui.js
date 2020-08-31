@@ -219,12 +219,22 @@ Polymer({
         return 'management:bar-chart';
       case DeviceReportingType.DEVICE:
         return 'cr:computer';
+      case DeviceReportingType.CRASH_REPORT:
+        return 'management:crash';
       case DeviceReportingType.LOGS:
         return 'management:report';
       case DeviceReportingType.PRINT:
         return 'cr:print';
       case DeviceReportingType.CROSTINI:
         return 'management:linux';
+      case DeviceReportingType.USERNAME:
+        return 'management:account-circle';
+      case DeviceReportingType.EXTENSION:
+        return 'cr:extension';
+      case DeviceReportingType.ANDROID_APPLICATION:
+        return 'management:play-store';
+      case DeviceReportingType.PROXY_SERVER:
+        return 'management:vpn-lock';
       default:
         return 'cr:computer';
     }
@@ -277,7 +287,7 @@ Polymer({
    * @param {!CustomEvent<string>} e
    * @private
    */
-  onSearchChanged_: function(e) {
+  onSearchChanged_(e) {
     const query = e.detail;
     window.location.href =
         `chrome://settings?search=${encodeURIComponent(query)}`;

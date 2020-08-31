@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -148,13 +149,15 @@ EphemeralRangeInFlatTree FindMatchInRangeWithContext(
       // No search_text match in remaining range
       if (potential_match.IsNull())
         return EphemeralRangeInFlatTree();
+
+      search_start = potential_match.EndPosition();
     }
 
+    PositionInFlatTree suffix_start = potential_match.EndPosition();
     DCHECK(potential_match.IsNotNull());
-    search_start = potential_match.EndPosition();
     if (!suffix.IsEmpty()) {
       EphemeralRangeInFlatTree suffix_match =
-          FindImmediateMatch(suffix, search_start, search_end);
+          FindImmediateMatch(suffix, suffix_start, search_end);
 
       // No suffix match after current potential_match
       if (suffix_match.IsNull())
@@ -174,17 +177,33 @@ TextFragmentFinder::TextFragmentFinder(Client& client,
                                        const TextFragmentSelector& selector)
     : client_(client), selector_(selector) {
   DCHECK(!selector_.Start().IsEmpty());
+  DCHECK(selector_.Type() != TextFragmentSelector::SelectorType::kInvalid);
 }
 
 void TextFragmentFinder::FindMatch(Document& document) {
   PositionInFlatTree search_start =
       PositionInFlatTree::FirstPositionInNode(document);
 
+  auto forced_lock_scope =
+      document.GetDisplayLockDocumentState().GetScopedForceActivatableLocks();
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kFindInPage);
+
   EphemeralRangeInFlatTree match =
       FindMatchFromPosition(document, search_start);
 
   if (match.IsNotNull()) {
-    client_.DidFindMatch(match);
+    TextFragmentAnchorMetrics::Match match_metrics(selector_);
+
+    if (selector_.Type() == TextFragmentSelector::SelectorType::kExact) {
+      // If it's an exact match, we don't need to do the PlainText conversion,
+      // we can just use the text from the selector.
+      DCHECK_EQ(selector_.Start().length(), PlainText(match).length());
+      match_metrics.text = selector_.Start();
+    } else if (selector_.Type() == TextFragmentSelector::SelectorType::kRange) {
+      match_metrics.text = PlainText(match);
+    }
+
+    client_.DidFindMatch(match, match_metrics);
 
     // Continue searching to see if we have an ambiguous selector.
     // TODO(crbug.com/919204): This is temporary and only for measuring

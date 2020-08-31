@@ -8,11 +8,6 @@
 CanvasKit.onRuntimeInitialized = function() {
   // All calls to 'this' need to go in externs.js so closure doesn't minify them away.
 
-  // buffer is the underlying ArrayBuffer that is the WASM memory blob.
-  // It was removed from Emscripten proper in https://github.com/emscripten-core/emscripten/pull/8277
-  // but it is convenient to have a reference to, so we add it back in.
-  CanvasKit.buffer = CanvasKit.HEAPU8.buffer;
-
   // Add some helpers for matrices. This is ported from SkMatrix.cpp
   // to save complexity and overhead of going back and forth between
   // C++ and JS layers.
@@ -21,29 +16,67 @@ CanvasKit.onRuntimeInitialized = function() {
   // have a mapPoints() function (which could maybe be tacked on here).
   // If DOMMatrix catches on, it would be worth re-considering this usage.
   CanvasKit.SkMatrix = {};
-  function sdot(a, b, c, d, e, f) {
-    e = e || 0;
-    f = f || 0;
-    return a * b + c * d + e * f;
+  function sdot() { // to be called with an even number of scalar args
+    var acc = 0;
+    for (var i=0; i < arguments.length-1; i+=2) {
+      acc += arguments[i] * arguments[i+1];
+    }
+    return acc;
+  }
+
+
+  // Private general matrix functions used in both 3x3s and 4x4s.
+  // Return a square identity matrix of size n.
+  var identityN = function(n) {
+    var size = n*n;
+    var m = new Array(size);
+    while(size--) {
+      m[size] = size%(n+1) == 0 ? 1.0 : 0.0;
+    }
+    return m;
+  }
+
+  // Stride, a function for compactly representing several ways of copying an array into another.
+  // Write vector `v` into matrix `m`. `m` is a matrix encoded as an array in row-major
+  // order. Its width is passed as `width`. `v` is an array with length < (m.length/width).
+  // An element of `v` is copied into `m` starting at `offset` and moving `colStride` cols right
+  // each row.
+  //
+  // For example, a width of 4, offset of 3, and stride of -1 would put the vector here.
+  // _ _ 0 _
+  // _ 1 _ _
+  // 2 _ _ _
+  // _ _ _ 3
+  //
+  var stride = function(v, m, width, offset, colStride) {
+    for (var i=0; i<v.length; i++) {
+      m[i * width + // column
+        (i * colStride + offset + width) % width // row
+      ] = v[i];
+    }
+    return m;
   }
 
   CanvasKit.SkMatrix.identity = function() {
-    return [
-      1, 0, 0,
-      0, 1, 0,
-      0, 0, 1,
-    ];
+    return identityN(3);
   };
 
   // Return the inverse (if it exists) of this matrix.
-  // Otherwise, return the identity.
+  // Otherwise, return null.
   CanvasKit.SkMatrix.invert = function(m) {
+    // Find the determinant by the sarrus rule. https://en.wikipedia.org/wiki/Rule_of_Sarrus
     var det = m[0]*m[4]*m[8] + m[1]*m[5]*m[6] + m[2]*m[3]*m[7]
             - m[2]*m[4]*m[6] - m[1]*m[3]*m[8] - m[0]*m[5]*m[7];
     if (!det) {
       SkDebug('Warning, uninvertible matrix');
-      return CanvasKit.SkMatrix.identity();
+      return null;
     }
+    // Return the inverse by the formula adj(m)/det.
+    // adj (adjugate) of a 3x3 is the transpose of it's cofactor matrix.
+    // a cofactor matrix is a matrix where each term is +-det(N) where matrix N is the 2x2 formed
+    // by removing the row and column we're currently setting from the source.
+    // the sign alternates in a checkerboard pattern with a `+` at the top left.
+    // that's all been combined here into one expression.
     return [
       (m[4]*m[8] - m[5]*m[7])/det, (m[2]*m[7] - m[1]*m[8])/det, (m[1]*m[5] - m[2]*m[4])/det,
       (m[5]*m[6] - m[3]*m[8])/det, (m[0]*m[8] - m[2]*m[6])/det, (m[2]*m[3] - m[0]*m[5])/det,
@@ -55,7 +88,7 @@ CanvasKit.onRuntimeInitialized = function() {
   // Results are done in place.
   // See SkMatrix.h::mapPoints for the docs on the math.
   CanvasKit.SkMatrix.mapPoints = function(matrix, ptArr) {
-    if (ptArr.length % 2) {
+    if (skIsDebug && (ptArr.length % 2)) {
       throw 'mapPoints requires an even length arr';
     }
     for (var i = 0; i < ptArr.length; i+=2) {
@@ -72,18 +105,56 @@ CanvasKit.onRuntimeInitialized = function() {
     return ptArr;
   };
 
-  CanvasKit.SkMatrix.multiply = function(m1, m2) {
-    var result = [0,0,0, 0,0,0, 0,0,0];
-    for (var r = 0; r < 3; r++) {
-      for (var c = 0; c < 3; c++) {
-        // m1 and m2 are 1D arrays pretending to be 2D arrays
-        result[3*r + c] = sdot(m1[3*r + 0], m2[3*0 + c],
-                               m1[3*r + 1], m2[3*1 + c],
-                               m1[3*r + 2], m2[3*2 + c]);
+  function isnumber(val) { return val !== NaN; };
+
+  // generalized iterative algorithm for multiplying two matrices.
+  function multiply(m1, m2, size) {
+
+    if (skIsDebug && (!m1.every(isnumber) || !m2.every(isnumber))) {
+      throw 'Some members of matrices are NaN m1='+m1+', m2='+m2+'';
+    }
+    if (skIsDebug && (m1.length !== m2.length)) {
+      throw 'Undefined for matrices of different sizes. m1.length='+m1.length+', m2.length='+m2.length;
+    }
+    if (skIsDebug && (size*size !== m1.length)) {
+      throw 'Undefined for non-square matrices. array size was '+size;
+    }
+
+    var result = Array(m1.length);
+    for (var r = 0; r < size; r++) {
+      for (var c = 0; c < size; c++) {
+        // accumulate a sum of m1[r,k]*m2[k, c]
+        var acc = 0;
+        for (var k = 0; k < size; k++) {
+          acc += m1[size * r + k] * m2[size * k + c];
+        }
+        result[r * size + c] = acc;
       }
     }
     return result;
-  }
+  };
+
+  // Accept an integer indicating the size of the matrices being multiplied (3 for 3x3), and any
+  // number of matrices following it.
+  function multiplyMany(size, listOfMatrices) {
+    if (skIsDebug && (listOfMatrices.length < 2)) {
+      throw 'multiplication expected two or more matrices';
+    }
+    var result = multiply(listOfMatrices[0], listOfMatrices[1], size);
+    var next = 2;
+    while (next < listOfMatrices.length) {
+      result = multiply(result, listOfMatrices[next], size);
+      next++;
+    }
+    return result;
+  };
+
+  // Accept any number 3x3 of matrices as arguments, multiply them together.
+  // Matrix multiplication is associative but not commutative. the order of the arguments
+  // matters, but it does not matter that this implementation multiplies them left to right.
+  CanvasKit.SkMatrix.multiply = function() {
+    return multiplyMany(3, arguments);
+  };
 
   // Return a matrix representing a rotation by n radians.
   // px, py optionally say which point the rotation should be around
@@ -103,30 +174,251 @@ CanvasKit.onRuntimeInitialized = function() {
   CanvasKit.SkMatrix.scaled = function(sx, sy, px, py) {
     px = px || 0;
     py = py || 0;
-    return [
-      sx, 0, px - sx * px,
-      0, sy, py - sy * py,
-      0,  0,            1,
-    ];
+    var m = stride([sx, sy], identityN(3), 3, 0, 1);
+    return stride([px-sx*px, py-sy*py], m, 3, 2, 0);
   };
 
   CanvasKit.SkMatrix.skewed = function(kx, ky, px, py) {
     px = px || 0;
     py = py || 0;
-    return [
-      1, kx, -kx * px,
-      ky, 1, -ky * py,
-      0,  0,        1,
-    ];
+    var m = stride([kx, ky], identityN(3), 3, 1, -1);
+    return stride([-kx*px, -ky*py], m, 3, 2, 0);
   };
 
   CanvasKit.SkMatrix.translated = function(dx, dy) {
-    return [
-      1, 0, dx,
-      0, 1, dy,
-      0, 0,  1,
-    ];
+    return stride(arguments, identityN(3), 3, 2, 0);
   };
+
+  // Functions for manipulating vectors.
+  // Loosely based off of SkV3 in SkM44.h but skia also has SkVec2 and Skv4. This combines them and
+  // works on vectors of any length.
+  CanvasKit.SkVector = {};
+  CanvasKit.SkVector.dot = function(a, b) {
+    if (skIsDebug && (a.length !== b.length)) {
+      throw 'Cannot perform dot product on arrays of different length ('+a.length+' vs '+b.length+')';
+    }
+    return a.map(function(v, i) { return v*b[i] }).reduce(function(acc, cur) { return acc + cur; });
+  }
+  CanvasKit.SkVector.lengthSquared = function(v) {
+    return CanvasKit.SkVector.dot(v, v);
+  }
+  CanvasKit.SkVector.length = function(v) {
+    return Math.sqrt(CanvasKit.SkVector.lengthSquared(v));
+  }
+  CanvasKit.SkVector.mulScalar = function(v, s) {
+    return v.map(function(i) { return i*s });
+  }
+  CanvasKit.SkVector.add = function(a, b) {
+    return a.map(function(v, i) { return v+b[i] });
+  }
+  CanvasKit.SkVector.sub = function(a, b) {
+    return a.map(function(v, i) { return v-b[i]; });
+  }
+  CanvasKit.SkVector.dist = function(a, b) {
+    return CanvasKit.SkVector.length(CanvasKit.SkVector.sub(a, b));
+  }
+  CanvasKit.SkVector.normalize = function(v) {
+    return CanvasKit.SkVector.mulScalar(v, 1/CanvasKit.SkVector.length(v));
+  }
+  CanvasKit.SkVector.cross = function(a, b) {
+    if (skIsDebug && (a.length !== 3 || a.length !== 3)) {
+      throw 'Cross product is only defined for 3-dimensional vectors (a.length='+a.length+', b.length='+b.length+')';
+    }
+    return [
+      a[1]*b[2] - a[2]*b[1],
+      a[2]*b[0] - a[0]*b[2],
+      a[0]*b[1] - a[1]*b[0],
+    ];
+  }
+
+  // Functions for creating and manipulating (row-major) 4x4 matrices. Accepted in place of
+  // SkM44 in canvas methods, for the same reasons as the 3x3 matrices above.
+  // ported from C++ code in SkM44.cpp
+  CanvasKit.SkM44 = {};
+  // Create a 4x4 identity matrix
+  CanvasKit.SkM44.identity = function() {
+    return identityN(4);
+  }
+
+  // Anything named vec below is an array of length 3 representing a vector/point in 3D space.
+  // Create a 4x4 matrix representing a translate by the provided 3-vec
+  CanvasKit.SkM44.translated = function(vec) {
+    return stride(vec, identityN(4), 4, 3, 0);
+  }
+  // Create a 4x4 matrix representing a scaling by the provided 3-vec
+  CanvasKit.SkM44.scaled = function(vec) {
+    return stride(vec, identityN(4), 4, 0, 1);
+  }
+  // Create a 4x4 matrix representing a rotation about the provided axis 3-vec.
+  // axis does not need to be normalized.
+  CanvasKit.SkM44.rotated = function(axisVec, radians) {
+    return CanvasKit.SkM44.rotatedUnitSinCos(
+      CanvasKit.SkVector.normalize(axisVec), Math.sin(radians), Math.cos(radians));
+  }
+  // Create a 4x4 matrix representing a rotation about the provided normalized axis 3-vec.
+  // Rotation is provided redundantly as both sin and cos values.
+  // This rotate can be used when you already have the cosAngle and sinAngle values
+  // so you don't have to atan(cos/sin) to call roatated() which expects an angle in radians.
+  // this does no checking! Behavior for invalid sin or cos values or non-normalized axis vectors
+  // is incorrect. Prefer rotate().
+  CanvasKit.SkM44.rotatedUnitSinCos = function(axisVec, sinAngle, cosAngle) {
+    var x = axisVec[0];
+    var y = axisVec[1];
+    var z = axisVec[2];
+    var c = cosAngle;
+    var s = sinAngle;
+    var t = 1 - c;
+    return [
+      t*x*x + c,   t*x*y - s*z, t*x*z + s*y, 0,
+      t*x*y + s*z, t*y*y + c,   t*y*z - s*x, 0,
+      t*x*z - s*y, t*y*z + s*x, t*z*z + c,   0,
+      0,           0,           0,           1
+    ];
+  }
+  // Create a 4x4 matrix representing a camera at eyeVec, pointed at centerVec.
+  CanvasKit.SkM44.lookat = function(eyeVec, centerVec, upVec) {
+    var f = CanvasKit.SkVector.normalize(CanvasKit.SkVector.sub(centerVec, eyeVec));
+    var u = CanvasKit.SkVector.normalize(upVec);
+    var s = CanvasKit.SkVector.normalize(CanvasKit.SkVector.cross(f, u));
+
+    var m = CanvasKit.SkM44.identity();
+    // set each column's top three numbers
+    stride(s,                                   m, 4, 0, 0);
+    stride(CanvasKit.SkVector.cross(s, f),      m, 4, 1, 0);
+    stride(CanvasKit.SkVector.mulScalar(f, -1), m, 4, 2, 0);
+    stride(eyeVec,                              m, 4, 3, 0);
+
+    var m2 = CanvasKit.SkM44.invert(m);
+    if (m2 === null) {
+      return CanvasKit.SkM44.identity();
+    }
+    return m2;
+  }
+  // Create a 4x4 matrix representing a perspective. All arguments are scalars.
+  // angle is in radians.
+  CanvasKit.SkM44.perspective = function(near, far, angle) {
+    if (skIsDebug && (far <= near)) {
+      throw "far must be greater than near when constructing SkM44 using perspective.";
+    }
+    var dInv = 1 / (far - near);
+    var halfAngle = angle / 2;
+    var cot = Math.cos(halfAngle) / Math.sin(halfAngle);
+    return [
+      cot, 0,   0,               0,
+      0,   cot, 0,               0,
+      0,   0,   (far+near)*dInv, 2*far*near*dInv,
+      0,   0,   -1,              1,
+    ];
+  }
+  // Returns the number at the given row and column in matrix m.
+  CanvasKit.SkM44.rc = function(m, r, c) {
+    return m[r*4+c];
+  }
+  // Accepts any number of 4x4 matrix arguments, multiplies them left to right.
+  CanvasKit.SkM44.multiply = function() {
+    return multiplyMany(4, arguments);
+  }
+
+  // Invert the 4x4 matrix if it is invertible and return it. if not, return null.
+  // taken from SkM44.cpp (altered to use row-major order)
+  // m is not altered.
+  CanvasKit.SkM44.invert = function(m) {
+    if (skIsDebug && !m.every(isnumber)) {
+      throw 'some members of matrix are NaN m='+m;
+    }
+
+    var a00 = m[0];
+    var a01 = m[4];
+    var a02 = m[8];
+    var a03 = m[12];
+    var a10 = m[1];
+    var a11 = m[5];
+    var a12 = m[9];
+    var a13 = m[13];
+    var a20 = m[2];
+    var a21 = m[6];
+    var a22 = m[10];
+    var a23 = m[14];
+    var a30 = m[3];
+    var a31 = m[7];
+    var a32 = m[11];
+    var a33 = m[15];
+
+    var b00 = a00 * a11 - a01 * a10;
+    var b01 = a00 * a12 - a02 * a10;
+    var b02 = a00 * a13 - a03 * a10;
+    var b03 = a01 * a12 - a02 * a11;
+    var b04 = a01 * a13 - a03 * a11;
+    var b05 = a02 * a13 - a03 * a12;
+    var b06 = a20 * a31 - a21 * a30;
+    var b07 = a20 * a32 - a22 * a30;
+    var b08 = a20 * a33 - a23 * a30;
+    var b09 = a21 * a32 - a22 * a31;
+    var b10 = a21 * a33 - a23 * a31;
+    var b11 = a22 * a33 - a23 * a32;
+
+    // calculate determinate
+    var det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+    var invdet = 1.0 / det;
+
+    // bail out if the matrix is not invertible
+    if (det === 0 || invdet === Infinity) {
+      SkDebug('Warning, uninvertible matrix');
+      return null;
+    }
+
+    b00 *= invdet;
+    b01 *= invdet;
+    b02 *= invdet;
+    b03 *= invdet;
+    b04 *= invdet;
+    b05 *= invdet;
+    b06 *= invdet;
+    b07 *= invdet;
+    b08 *= invdet;
+    b09 *= invdet;
+    b10 *= invdet;
+    b11 *= invdet;
+
+    // store result in row major order
+    var tmp = [
+      a11 * b11 - a12 * b10 + a13 * b09,
+      a12 * b08 - a10 * b11 - a13 * b07,
+      a10 * b10 - a11 * b08 + a13 * b06,
+      a11 * b07 - a10 * b09 - a12 * b06,
+
+      a02 * b10 - a01 * b11 - a03 * b09,
+      a00 * b11 - a02 * b08 + a03 * b07,
+      a01 * b08 - a00 * b10 - a03 * b06,
+      a00 * b09 - a01 * b07 + a02 * b06,
+
+      a31 * b05 - a32 * b04 + a33 * b03,
+      a32 * b02 - a30 * b05 - a33 * b01,
+      a30 * b04 - a31 * b02 + a33 * b00,
+      a31 * b01 - a30 * b03 - a32 * b00,
+
+      a22 * b04 - a21 * b05 - a23 * b03,
+      a20 * b05 - a22 * b02 + a23 * b01,
+      a21 * b02 - a20 * b04 - a23 * b00,
+      a20 * b03 - a21 * b01 + a22 * b00,
+    ];
+
+
+    if (!tmp.every(function(val) { return val !== NaN && val !== Infinity && val !== -Infinity; })) {
+      SkDebug('inverted matrix contains infinities or NaN '+tmp);
+      return null;
+    }
+    return tmp;
+  }
+
+  CanvasKit.SkM44.transpose = function(m) {
+    return [
+      m[0], m[4], m[8], m[12],
+      m[1], m[5], m[9], m[13],
+      m[2], m[6], m[10], m[14],
+      m[3], m[7], m[11], m[15],
+    ];
+  }
 
   // An SkColorMatrix is a 4x4 color matrix that transforms the 4 color channels
   //  with a 1x4 matrix that post-translates those 4 channels.
@@ -418,13 +710,6 @@ CanvasKit.onRuntimeInitialized = function() {
     return this;
   };
 
-  CanvasKit.SkPath.prototype.op = function(otherPath, op) {
-    if (this._op(otherPath, op)) {
-      return this;
-    }
-    return null;
-  };
-
   CanvasKit.SkPath.prototype.quadTo = function(cpx, cpy, x, y) {
     this._quadTo(cpx, cpy, x, y);
     return this;
@@ -460,13 +745,6 @@ CanvasKit.onRuntimeInitialized = function() {
   CanvasKit.SkPath.prototype.rQuadTo = function(cpx, cpy, x, y) {
     this._rQuadTo(cpx, cpy, x, y);
     return this;
-  };
-
-  CanvasKit.SkPath.prototype.simplify = function() {
-    if (this._simplify()) {
-      return this;
-    }
-    return null;
   };
 
   CanvasKit.SkPath.prototype.stroke = function(opts) {
@@ -514,19 +792,6 @@ CanvasKit.onRuntimeInitialized = function() {
     return null;
   };
 
-  // bones should be a 3d array.
-  // Each bone is a 3x2 transformation matrix in column major order:
-  // | scaleX   skewX transX |
-  // |  skewY  scaleY transY |
-  // and bones is an array of those matrices.
-  // Returns a copy of this (SkVertices) with the bones applied.
-  CanvasKit.SkVertices.prototype.applyBones = function(bones) {
-    var bPtr = copy3dArray(bones, CanvasKit.HEAPF32);
-    var vert = this._applyBones(bPtr, bones.length);
-    CanvasKit._free(bPtr);
-    return vert;
-  }
-
   CanvasKit.SkImage.prototype.encodeToData = function() {
     if (!arguments.length) {
       return this._encodeToData();
@@ -541,20 +806,17 @@ CanvasKit.onRuntimeInitialized = function() {
   }
 
   CanvasKit.SkImage.prototype.makeShader = function(xTileMode, yTileMode, localMatrix) {
-    if (localMatrix) {
-      // Add perspective args if not provided.
-      if (localMatrix.length === 6) {
-        localMatrix.push(0, 0, 1);
-      }
-      return this._makeShader(xTileMode, yTileMode, localMatrix);
-    } else {
-      return this._makeShader(xTileMode, yTileMode);
-    }
+    var localMatrixPtr = copy3x3MatrixToWasm(localMatrix);
+    var shader = this._makeShader(xTileMode, yTileMode, localMatrixPtr);
+    CanvasKit._free(localMatrixPtr);
+    return shader;
   }
 
   CanvasKit.SkImage.prototype.readPixels = function(imageInfo, srcX, srcY) {
     var rowBytes;
-    switch (imageInfo.colorType){
+    // Important to use ["string"] notation here, otherwise the closure compiler will
+    // minify away the colorType.
+    switch (imageInfo["colorType"]) {
       case CanvasKit.ColorType.RGBA_8888:
         rowBytes = imageInfo.width * 4; // 1 byte per channel == 4 bytes per pixel in 8888
         break;
@@ -576,26 +838,42 @@ CanvasKit.onRuntimeInitialized = function() {
     // Put those pixels into a typed array of the right format and then
     // make a copy with slice() that we can return.
     var retVal = null;
-    switch (imageInfo.colorType){
+    switch (imageInfo["colorType"]) {
       case CanvasKit.ColorType.RGBA_8888:
-        retVal = new Uint8Array(CanvasKit.buffer, pPtr, pBytes).slice();
+        retVal = new Uint8Array(CanvasKit.HEAPU8.buffer, pPtr, pBytes).slice();
         break;
       case CanvasKit.ColorType.RGBA_F32:
-        retVal = new Float32Array(CanvasKit.buffer, pPtr, pBytes).slice();
+        retVal = new Float32Array(CanvasKit.HEAPU8.buffer, pPtr, pBytes).slice();
         break;
     }
 
     // Free the allocated pixels in the WASM memory
     CanvasKit._free(pPtr);
     return retVal;
-
   }
+
+  // Accepts an array of four numbers in the range of 0-1 representing a 4f color
+  CanvasKit.SkCanvas.prototype.clear = function (color4f) {
+    var cPtr = copy1dArray(color4f, CanvasKit.HEAPF32);
+    this._clear(cPtr);
+    CanvasKit._free(cPtr);
+  }
+
+  // concat takes a 3x2, a 3x3, or a 4x4 matrix and upscales it (if needed) to 4x4. This is because
+  // under the hood, SkCanvas uses a 4x4 matrix.
+  CanvasKit.SkCanvas.prototype.concat = function(matr) {
+    var matrPtr = copy4x4MatrixToWasm(matr);
+    this._concat(matrPtr);
+    CanvasKit._free(matrPtr);
+  }
+
+  // Deprecated - just use concat
+  CanvasKit.SkCanvas.prototype.concat44 = CanvasKit.SkCanvas.prototype.concat;
 
   // atlas is an SkImage, e.g. from CanvasKit.MakeImageFromEncoded
   // srcRects and dstXforms should be CanvasKit.SkRectBuilder and CanvasKit.RSXFormBuilder
   // or just arrays of floats in groups of 4.
-  // colors, if provided, should be a CanvasKit.SkColorBuilder or array of SkColor
-  // (from CanvasKit.Color)
+  // colors, if provided, should be a CanvasKit.SkColorBuilder or array of float colors (arrays of 4 floats)
   CanvasKit.SkCanvas.prototype.drawAtlas = function(atlas, srcRects, dstXforms, paint,
                                        /*optional*/ blendMode, colors) {
     if (!atlas || !paint || !srcRects || !dstXforms) {
@@ -604,6 +882,7 @@ CanvasKit.onRuntimeInitialized = function() {
     }
     if (srcRects.length !== dstXforms.length || (colors && colors.length !== dstXforms.length)) {
       SkDebug('Doing nothing since input arrays length mismatches');
+      return;
     }
     if (!blendMode) {
       blendMode = CanvasKit.BlendMode.SrcOver;
@@ -623,11 +902,18 @@ CanvasKit.onRuntimeInitialized = function() {
       dstXformPtr = copy1dArray(dstXforms, CanvasKit.HEAPF32);
     }
 
-    var colorPtr = 0; // enscriptem doesn't like undefined for nullptr
+    var colorPtr = nullptr;
     if (colors) {
       if (colors.build) {
         colorPtr = colors.build();
       } else {
+        if (!isCanvasKitColor(colors[0])) {
+          SkDebug('DrawAtlas color argument expected to be CanvasKit.SkRectBuilder or array of ' +
+            'float arrays, but got '+colors);
+          return;
+        }
+        // convert here
+        colors = colors.map(toUint32Color);
         colorPtr = copy1dArray(colors, CanvasKit.HEAPU32);
       }
     }
@@ -645,6 +931,16 @@ CanvasKit.onRuntimeInitialized = function() {
       CanvasKit._free(colorPtr);
     }
 
+  }
+
+  CanvasKit.SkCanvas.prototype.drawColor = function (color4f, mode) {
+    var cPtr = copy1dArray(color4f, CanvasKit.HEAPF32);
+    if (mode !== undefined) {
+      this._drawColor(cPtr, mode);
+    } else {
+      this._drawColor(cPtr);
+    }
+    CanvasKit._free(cPtr);
   }
 
   // points is either an array of [x, y] where x and y are numbers or
@@ -666,20 +962,47 @@ CanvasKit.onRuntimeInitialized = function() {
     CanvasKit._free(ptr);
   }
 
-  // str can be either a text string or a ShapedText object
-  CanvasKit.SkCanvas.prototype.drawText = function(str, x, y, paint, font) {
-    if (typeof str === 'string') {
-      // lengthBytesUTF8 and stringToUTF8Array are defined in the emscripten
-      // JS.  See https://kripken.github.io/emscripten-site/docs/api_reference/preamble.js.html#stringToUTF8
-      var strLen = lengthBytesUTF8(str);
-      // Add 1 for null terminator, which we need when copying/converting, but can ignore
-      // when we call into Skia.
-      var strPtr = CanvasKit._malloc(strLen + 1);
-      stringToUTF8(str, strPtr, strLen + 1);
-      this._drawSimpleText(strPtr, strLen, x, y, font, paint);
-    } else {
-      this._drawShapedText(str, x, y, paint);
+  CanvasKit.SkCanvas.prototype.drawShadow = function(path, zPlaneParams, lightPos, lightRadius, ambientColor, spotColor, flags) {
+    var ambiPtr = copy1dArray(ambientColor, CanvasKit.HEAPF32);
+    var spotPtr = copy1dArray(spotColor, CanvasKit.HEAPF32);
+    this._drawShadow(path, zPlaneParams, lightPos, lightRadius, ambiPtr, spotPtr, flags);
+    CanvasKit._free(ambiPtr);
+    CanvasKit._free(spotPtr);
+  }
+
+  // getLocalToDevice returns a 4x4 matrix.
+  CanvasKit.SkCanvas.prototype.getLocalToDevice = function() {
+    var matrPtr = CanvasKit._malloc(16 * 4); // allocate space for the matrix
+    // _getLocalToDevice will copy the values into the pointer.
+    this._getLocalToDevice(matrPtr);
+    return copy4x4MatrixFromWasm(matrPtr);
+  }
+
+  // findMarkedCTM returns a 4x4 matrix, or null if a matrix was not found at
+  // the provided marker.
+  CanvasKit.SkCanvas.prototype.findMarkedCTM = function(marker) {
+    var matrPtr = CanvasKit._malloc(16 * 4); // allocate space for the matrix
+    // _getLocalToDevice will copy the values into the pointer.
+    var found = this._findMarkedCTM(marker, matrPtr);
+    if (!found) {
+      return null;
     }
+    return copy4x4MatrixFromWasm(matrPtr);
+  }
+
+  // getTotalMatrix returns the current matrix as a 3x3 matrix.
+  CanvasKit.SkCanvas.prototype.getTotalMatrix = function() {
+    var matrPtr = CanvasKit._malloc(9 * 4); // allocate space for the matrix
+    // _getTotalMatrix will copy the values into the pointer.
+    this._getTotalMatrix(matrPtr);
+    // read them out into an array. TODO(kjlubick): If we change SkMatrix to be
+    // typedArrays, then we should return a typed array here too.
+    var rv = new Array(9);
+    for (var i = 0; i < 9; i++) {
+      rv[i] = CanvasKit.HEAPF32[matrPtr/4 + i]; // divide by 4 to "cast" to float.
+    }
+    CanvasKit._free(matrPtr);
+    return rv;
   }
 
   // returns Uint8Array
@@ -705,7 +1028,7 @@ CanvasKit.onRuntimeInitialized = function() {
 
     // The first typed array is just a view into memory. Because we will
     // be free-ing that, we call slice to make a persistent copy.
-    var pixels = new Uint8Array(CanvasKit.buffer, pptr, len).slice();
+    var pixels = new Uint8Array(CanvasKit.HEAPU8.buffer, pptr, len).slice();
     CanvasKit._free(pptr);
     return pixels;
   }
@@ -737,11 +1060,17 @@ CanvasKit.onRuntimeInitialized = function() {
     return ok;
   }
 
+  CanvasKit.SkColorFilter.MakeBlend = function(color4f, mode) {
+    var cPtr = copy1dArray(color4f, CanvasKit.HEAPF32);
+    var result = CanvasKit.SkColorFilter._MakeBlend(cPtr, mode);
+    CanvasKit._free(cPtr);
+    return result;
+  }
+
   // colorMatrix is an SkColorMatrix (e.g. Float32Array of length 20)
   CanvasKit.SkColorFilter.MakeMatrix = function(colorMatrix) {
     if (!colorMatrix || colorMatrix.length !== 20) {
-      SkDebug('ignoring invalid color matrix');
-      return;
+      throw 'invalid color matrix';
     }
     var fptr = copy1dArray(colorMatrix, CanvasKit.HEAPF32);
     // We know skia memcopies the floats, so we can free our memory after the call returns.
@@ -750,96 +1079,24 @@ CanvasKit.onRuntimeInitialized = function() {
     return m;
   }
 
-  // Returns an array of the widths of the glyphs in this string.
-  CanvasKit.SkFont.prototype.getWidths = function(str) {
-    // add 1 for null terminator
-    var codePoints = str.length + 1;
-    // lengthBytesUTF8 and stringToUTF8Array are defined in the emscripten
-    // JS.  See https://kripken.github.io/emscripten-site/docs/api_reference/preamble.js.html#stringToUTF8
-    // Add 1 for null terminator
-    var strBytes = lengthBytesUTF8(str) + 1;
-    var strPtr = CanvasKit._malloc(strBytes);
-    stringToUTF8(str, strPtr, strBytes);
+  CanvasKit.SkImageFilter.MakeMatrixTransform = function(matr, filterQuality, input) {
+    var matrPtr = copy3x3MatrixToWasm(matr);
+    var imgF = CanvasKit.SkImageFilter._MakeMatrixTransform(matrPtr, filterQuality, input);
 
-    var bytesPerFloat = 4;
-    // allocate widths == numCodePoints
-    var widthPtr = CanvasKit._malloc(codePoints * bytesPerFloat);
-    if (!this._getWidths(strPtr, strBytes, codePoints, widthPtr)) {
-      SkDebug('Could not compute widths');
-      CanvasKit._free(strPtr);
-      CanvasKit._free(widthPtr);
-      return null;
-    }
-    // reminder, this shouldn't copy the data, just is a nice way to
-    // wrap 4 bytes together into a float.
-    var widths = new Float32Array(CanvasKit.buffer, widthPtr, codePoints);
-    // This copies the data so we can free the CanvasKit memory
-    var retVal = Array.from(widths);
-    CanvasKit._free(strPtr);
-    CanvasKit._free(widthPtr);
-    return retVal;
+    CanvasKit._free(matrPtr);
+    return imgF;
   }
 
-  // arguments should all be arrayBuffers or be an array of arrayBuffers.
-  CanvasKit.SkFontMgr.FromData = function() {
-    if (!arguments.length) {
-      SkDebug('Could not make SkFontMgr from no font sources');
-      return null;
-    }
-    var fonts = arguments;
-    if (fonts.length === 1 && Array.isArray(fonts[0])) {
-      fonts = arguments[0];
-    }
-    if (!fonts.length) {
-      SkDebug('Could not make SkFontMgr from no font sources');
-      return null;
-    }
-    var dPtrs = [];
-    var sizes = [];
-    for (var i = 0; i < fonts.length; i++) {
-      var data = new Uint8Array(fonts[i]);
-      var dptr = copy1dArray(data, CanvasKit.HEAPU8);
-      dPtrs.push(dptr);
-      sizes.push(data.byteLength);
-    }
-    // Pointers are 32 bit unsigned ints
-    var datasPtr = copy1dArray(dPtrs, CanvasKit.HEAPU32);
-    var sizesPtr = copy1dArray(sizes, CanvasKit.HEAPU32);
-    var fm = CanvasKit.SkFontMgr._fromData(datasPtr, sizesPtr, fonts.length);
-    // The SkFontMgr has taken ownership of the bytes we allocated in the for loop.
-    CanvasKit._free(datasPtr);
-    CanvasKit._free(sizesPtr);
-    return fm;
+  CanvasKit.SkPaint.prototype.getColor = function() {
+    var cPtr = CanvasKit._malloc(16); // 4 floats, 4 bytes each
+    this._getColor(cPtr);
+    return copyColorFromWasm(cPtr);
   }
 
-  // fontData should be an arrayBuffer
-  CanvasKit.SkFontMgr.prototype.MakeTypefaceFromData = function(fontData) {
-    var data = new Uint8Array(fontData);
-
-    var fptr = copy1dArray(data, CanvasKit.HEAPU8);
-    var font = this._makeTypefaceFromData(fptr, data.byteLength);
-    if (!font) {
-      SkDebug('Could not decode font data');
-      // We do not need to free the data since the C++ will do that for us
-      // when the font is deleted (or fails to decode);
-      return null;
-    }
-    return font;
-  }
-
-  // The serialized format of an SkPicture (informally called an "skp"), is not something
-  // that clients should ever rely on. It is useful when filing bug reports, but that's
-  // about it. The format may change at anytime and no promises are made for backwards
-  // or forward compatibility.
-  CanvasKit.SkPicture.prototype.DEBUGONLY_saveAsFile = function(skpName) {
-    var data = this.DEBUGONLY_serialize();
-    if (!data) {
-      SkDebug('Could not serialize to skpicture.');
-      return;
-    }
-    var bytes = CanvasKit.getSkDataBytes(data);
-    saveBytesToFile(bytes, skpName);
-    data.delete();
+  CanvasKit.SkPaint.prototype.setColor = function(color4f) {
+    var cPtr = copy1dArray(color4f, CanvasKit.HEAPF32);
+    this._setColor(cPtr);
+    CanvasKit._free(cPtr);
   }
 
   CanvasKit.SkSurface.prototype.captureFrameAsSkPicture = function(drawFrame) {
@@ -866,114 +1123,121 @@ CanvasKit.onRuntimeInitialized = function() {
 
       callback(this._cached_canvas);
 
+      // We do not dispose() of the SkSurface here, as the client will typically
+      // call requestAnimationFrame again from within the supplied callback.
+      // For drawing a single frame, prefer drawOnce().
       this.flush();
     }.bind(this));
   }
 
-  CanvasKit.SkTextBlob.MakeOnPath = function(str, path, font, initialOffset) {
-    if (!str || !str.length) {
-      SkDebug('ignoring 0 length string');
-      return;
+  // drawOnce will dispose of the surface after drawing the frame using the provided
+  // callback.
+  CanvasKit.SkSurface.prototype.drawOnce = function(callback, dirtyRect) {
+    if (!this._cached_canvas) {
+      this._cached_canvas = this.getCanvas();
     }
-    if (!path || !path.countPoints()) {
-      SkDebug('ignoring empty path');
-      return;
-    }
-    if (path.countPoints() === 1) {
-      SkDebug('path has 1 point, returning normal textblob');
-      return this.MakeFromText(str, font);
-    }
-
-    if (!initialOffset) {
-      initialOffset = 0;
-    }
-
-    var widths = font.getWidths(str);
-
-    var rsx = new CanvasKit.RSXFormBuilder();
-    var meas = new CanvasKit.SkPathMeasure(path, false, 1);
-    var dist = initialOffset;
-    for (var i = 0; i < str.length; i++) {
-      var width = widths[i];
-      dist += width/2;
-      if (dist > meas.getLength()) {
-        // jump to next contour
-        if (!meas.nextContour()) {
-          // We have come to the end of the path - terminate the string
-          // right here.
-          str = str.substring(0, i);
-          break;
-        }
-        dist = width/2;
+    window.requestAnimationFrame(function() {
+      if (this._context !== undefined) {
+        CanvasKit.setCurrentContext(this._context);
       }
+      callback(this._cached_canvas);
 
-      // Gives us the (x, y) coordinates as well as the cos/sin of the tangent
-      // line at that position.
-      var xycs = meas.getPosTan(dist);
-      var cx = xycs[0];
-      var cy = xycs[1];
-      var cosT = xycs[2];
-      var sinT = xycs[3];
-
-      var adjustedX = cx - (width/2 * cosT);
-      var adjustedY = cy - (width/2 * sinT);
-
-      rsx.push(cosT, sinT, adjustedX, adjustedY);
-      dist += width/2;
-    }
-    var retVal = this.MakeFromRSXform(str, rsx, font);
-    rsx.delete();
-    meas.delete();
-    return retVal;
+      this.flush();
+      this.dispose();
+    }.bind(this));
   }
 
-  CanvasKit.SkTextBlob.MakeFromRSXform = function(str, rsxBuilder, font) {
-    // lengthBytesUTF8 and stringToUTF8Array are defined in the emscripten
-    // JS.  See https://kripken.github.io/emscripten-site/docs/api_reference/preamble.js.html#stringToUTF8
-    // Add 1 for null terminator
-    var strLen = lengthBytesUTF8(str) + 1;
-    var strPtr = CanvasKit._malloc(strLen);
-    // Add 1 for the null terminator.
-    stringToUTF8(str, strPtr, strLen);
-    var rptr = rsxBuilder.build();
-
-    var blob = CanvasKit.SkTextBlob._MakeFromRSXform(strPtr, strLen - 1,
-                          rptr, font, CanvasKit.TextEncoding.UTF8);
-    if (!blob) {
-      SkDebug('Could not make textblob from string "' + str + '"');
-      return null;
+  CanvasKit.SkPathEffect.MakeDash = function(intervals, phase) {
+    if (!phase) {
+      phase = 0;
     }
-
-    var origDelete = blob.delete.bind(blob);
-    blob.delete = function() {
-      CanvasKit._free(strPtr);
-      origDelete();
+    if (!intervals.length || intervals.length % 2 === 1) {
+      throw 'Intervals array must have even length';
     }
-    return blob;
+    var ptr = copy1dArray(intervals, CanvasKit.HEAPF32);
+    var dpe = CanvasKit.SkPathEffect._MakeDash(ptr, intervals.length, phase);
+    CanvasKit._free(ptr);
+    return dpe;
   }
 
-  CanvasKit.SkTextBlob.MakeFromText = function(str, font) {
-    // lengthBytesUTF8 and stringToUTF8Array are defined in the emscripten
-    // JS.  See https://kripken.github.io/emscripten-site/docs/api_reference/preamble.js.html#stringToUTF8
-    // Add 1 for null terminator
-    var strLen = lengthBytesUTF8(str) + 1;
-    var strPtr = CanvasKit._malloc(strLen);
-    // Add 1 for the null terminator.
-    stringToUTF8(str, strPtr, strLen);
-
-    var blob = CanvasKit.SkTextBlob._MakeFromText(strPtr, strLen - 1, font, CanvasKit.TextEncoding.UTF8);
-    if (!blob) {
-      SkDebug('Could not make textblob from string "' + str + '"');
-      return null;
-    }
-
-    var origDelete = blob.delete.bind(blob);
-    blob.delete = function() {
-      CanvasKit._free(strPtr);
-      origDelete();
-    }
-    return blob;
+  CanvasKit.SkShader.Color = function(color4f) {
+    var cPtr = copy1dArray(color4f, CanvasKit.HEAPF32);
+    var result = CanvasKit.SkShader._Color(cPtr);
+    CanvasKit._free(cPtr);
+    return result;
   }
+
+  CanvasKit.SkShader.MakeLinearGradient = function(start, end, colors, pos, mode, localMatrix, flags) {
+    var colorPtr = copy2dArray(colors, CanvasKit.HEAPF32);
+    var posPtr =   copy1dArray(pos,    CanvasKit.HEAPF32);
+    flags = flags || 0;
+    var localMatrixPtr = copy3x3MatrixToWasm(localMatrix);
+
+    var lgs = CanvasKit._MakeLinearGradientShader(start, end, colorPtr, posPtr,
+                                                  colors.length, mode, flags, localMatrixPtr);
+
+    CanvasKit._free(localMatrixPtr);
+    CanvasKit._free(colorPtr);
+    CanvasKit._free(posPtr);
+    return lgs;
+  }
+
+  CanvasKit.SkShader.MakeRadialGradient = function(center, radius, colors, pos, mode, localMatrix, flags) {
+    var colorPtr = copy2dArray(colors, CanvasKit.HEAPF32);
+    var posPtr =   copy1dArray(pos,    CanvasKit.HEAPF32);
+    flags = flags || 0;
+    var localMatrixPtr = copy3x3MatrixToWasm(localMatrix);
+
+    var rgs = CanvasKit._MakeRadialGradientShader(center, radius, colorPtr, posPtr,
+                                                  colors.length, mode, flags, localMatrixPtr);
+
+    CanvasKit._free(localMatrixPtr);
+    CanvasKit._free(colorPtr);
+    CanvasKit._free(posPtr);
+    return rgs;
+  }
+
+  CanvasKit.SkShader.MakeSweepGradient = function(cx, cy, colors, pos, mode, localMatrix, flags, startAngle, endAngle) {
+    var colorPtr = copy2dArray(colors, CanvasKit.HEAPF32);
+    var posPtr =   copy1dArray(pos,    CanvasKit.HEAPF32);
+    flags = flags || 0;
+    startAngle = startAngle || 0;
+    endAngle = endAngle || 360;
+    var localMatrixPtr = copy3x3MatrixToWasm(localMatrix);
+
+    var sgs = CanvasKit._MakeSweepGradientShader(cx, cy, colorPtr, posPtr,
+                                                 colors.length, mode,
+                                                 startAngle, endAngle, flags,
+                                                 localMatrixPtr);
+
+    CanvasKit._free(localMatrixPtr);
+    CanvasKit._free(colorPtr);
+    CanvasKit._free(posPtr);
+    return sgs;
+  }
+
+  CanvasKit.SkShader.MakeTwoPointConicalGradient = function(start, startRadius, end, endRadius,
+                                                            colors, pos, mode, localMatrix, flags) {
+    var colorPtr = copy2dArray(colors, CanvasKit.HEAPF32);
+    var posPtr =   copy1dArray(pos,    CanvasKit.HEAPF32);
+    flags = flags || 0;
+    var localMatrixPtr = copy3x3MatrixToWasm(localMatrix);
+
+    var rgs = CanvasKit._MakeTwoPointConicalGradientShader(
+                          start, startRadius, end, endRadius,
+                          colorPtr, posPtr, colors.length, mode, flags, localMatrixPtr);
+
+    CanvasKit._free(localMatrixPtr);
+    CanvasKit._free(colorPtr);
+    CanvasKit._free(posPtr);
+    return rgs;
+  }
+
+  // temporary support for deprecated names.
+  CanvasKit.MakeSkDashPathEffect = CanvasKit.SkPathEffect.MakeDash;
+  CanvasKit.MakeLinearGradientShader = CanvasKit.SkShader.MakeLinearGradient;
+  CanvasKit.MakeRadialGradientShader = CanvasKit.SkShader.MakeRadialGradient;
+  CanvasKit.MakeTwoPointConicalGradientShader = CanvasKit.SkShader.MakeTwoPointConicalGradient;
 
   // Run through the JS files that are added at compile time.
   if (CanvasKit._extraInitializations) {
@@ -982,6 +1246,23 @@ CanvasKit.onRuntimeInitialized = function() {
     });
   }
 }; // end CanvasKit.onRuntimeInitialized, that is, anything changing prototypes or dynamic.
+
+// Accepts an object holding two canvaskit colors.
+// {
+//    ambient: {r, g, b, a},
+//    spot: {r, g, b, a},
+// }
+// Returns the same format
+CanvasKit.computeTonalColors = function(tonalColors) {
+    var cPtrAmbi = copy1dArray(tonalColors['ambient'], CanvasKit.HEAPF32);
+    var cPtrSpot = copy1dArray(tonalColors['spot'], CanvasKit.HEAPF32);
+    this._computeTonalColors(cPtrAmbi, cPtrSpot);
+    var result =  {
+      'ambient': copyColorFromWasm(cPtrAmbi),
+      'spot': copyColorFromWasm(cPtrSpot),
+    }
+    return result;
+}
 
 CanvasKit.LTRBRect = function(l, t, r, b) {
   return {
@@ -1022,19 +1303,6 @@ CanvasKit.MakePathFromCmds = function(cmds) {
   var path = CanvasKit._MakePathFromCmds(ptrLen[0], ptrLen[1]);
   CanvasKit._free(ptrLen[0]);
   return path;
-}
-
-CanvasKit.MakeSkDashPathEffect = function(intervals, phase) {
-  if (!phase) {
-    phase = 0;
-  }
-  if (!intervals.length || intervals.length % 2 === 1) {
-    throw 'Intervals array must have even length';
-  }
-  var ptr = copy1dArray(intervals, CanvasKit.HEAPF32);
-  var dpe = CanvasKit._MakeSkDashPathEffect(ptr, intervals.length, phase);
-  CanvasKit._free(ptr);
-  return dpe;
 }
 
 // data is a TypedArray or ArrayBuffer e.g. from fetch().then(resp.arrayBuffer())
@@ -1081,77 +1349,9 @@ CanvasKit.MakeImage = function(pixels, width, height, alphaType, colorType) {
   return CanvasKit._MakeImage(info, pptr, pixels.length, width * bytesPerPixel);
 }
 
-CanvasKit.MakeLinearGradientShader = function(start, end, colors, pos, mode, localMatrix, flags) {
-  var colorPtr = copy1dArray(colors, CanvasKit.HEAPU32);
-  var posPtr =   copy1dArray(pos,    CanvasKit.HEAPF32);
-  flags = flags || 0;
-
-  if (localMatrix) {
-    // Add perspective args if not provided.
-    if (localMatrix.length === 6) {
-      localMatrix.push(0, 0, 1);
-    }
-    var lgs = CanvasKit._MakeLinearGradientShader(start, end, colorPtr, posPtr,
-                                                  colors.length, mode, flags, localMatrix);
-  } else {
-    var lgs = CanvasKit._MakeLinearGradientShader(start, end, colorPtr, posPtr,
-                                                  colors.length, mode, flags);
-  }
-
-  CanvasKit._free(colorPtr);
-  CanvasKit._free(posPtr);
-  return lgs;
-}
-
-CanvasKit.MakeRadialGradientShader = function(center, radius, colors, pos, mode, localMatrix, flags) {
-  var colorPtr = copy1dArray(colors, CanvasKit.HEAPU32);
-  var posPtr =   copy1dArray(pos,    CanvasKit.HEAPF32);
-  flags = flags || 0;
-
-  if (localMatrix) {
-    // Add perspective args if not provided.
-    if (localMatrix.length === 6) {
-      localMatrix.push(0, 0, 1);
-    }
-    var rgs = CanvasKit._MakeRadialGradientShader(center, radius, colorPtr, posPtr,
-                                                  colors.length, mode, flags, localMatrix);
-  } else {
-    var rgs = CanvasKit._MakeRadialGradientShader(center, radius, colorPtr, posPtr,
-                                                  colors.length, mode, flags);
-  }
-
-  CanvasKit._free(colorPtr);
-  CanvasKit._free(posPtr);
-  return rgs;
-}
-
-CanvasKit.MakeTwoPointConicalGradientShader = function(start, startRadius, end, endRadius,
-                                                       colors, pos, mode, localMatrix, flags) {
-  var colorPtr = copy1dArray(colors, CanvasKit.HEAPU32);
-  var posPtr =   copy1dArray(pos,    CanvasKit.HEAPF32);
-  flags = flags || 0;
-
-  if (localMatrix) {
-    // Add perspective args if not provided.
-    if (localMatrix.length === 6) {
-      localMatrix.push(0, 0, 1);
-    }
-    var rgs = CanvasKit._MakeTwoPointConicalGradientShader(
-                        start, startRadius, end, endRadius,
-                        colorPtr, posPtr, colors.length, mode, flags, localMatrix);
-  } else {
-    var rgs = CanvasKit._MakeTwoPointConicalGradientShader(
-                        start, startRadius, end, endRadius,
-                        colorPtr, posPtr, colors.length, mode, flags);
-  }
-
-  CanvasKit._free(colorPtr);
-  CanvasKit._free(posPtr);
-  return rgs;
-}
-
+// colors is an array of float color arrays
 CanvasKit.MakeSkVertices = function(mode, positions, textureCoordinates, colors,
-                                    boneIndices, boneWeights, indices, isVolatile) {
+                                    indices, isVolatile) {
   // Default isVolitile to true if not set
   isVolatile = isVolatile === undefined ? true : isVolatile;
   var idxCount = (indices && indices.length) || 0;
@@ -1164,11 +1364,8 @@ CanvasKit.MakeSkVertices = function(mode, positions, textureCoordinates, colors,
   if (colors && colors.length) {
     flags |= (1 << 1);
   }
-  if (boneIndices && boneIndices.length) {
-    flags |= (1 << 2);
-  }
   if (!isVolatile) {
-    flags |= (1 << 3);
+    flags |= (1 << 2);
   }
 
   var builder = new CanvasKit._SkVerticesBuilder(mode,  positions.length, idxCount, flags);
@@ -1178,13 +1375,8 @@ CanvasKit.MakeSkVertices = function(mode, positions, textureCoordinates, colors,
     copy2dArray(textureCoordinates, CanvasKit.HEAPF32, builder.texCoords());
   }
   if (builder.colors()) {
-    copy1dArray(colors,             CanvasKit.HEAPU32, builder.colors());
-  }
-  if (builder.boneIndices()) {
-    copy2dArray(boneIndices,        CanvasKit.HEAP32, builder.boneIndices());
-  }
-  if (builder.boneWeights()) {
-    copy2dArray(boneWeights,        CanvasKit.HEAPF32, builder.boneWeights());
+    // Convert from canvaskit 4f colors to 32 bit uint colors which builder supports.
+    copy1dArray(colors.map(toUint32Color), CanvasKit.HEAPU32, builder.colors());
   }
   if (builder.indices()) {
     copy1dArray(indices,            CanvasKit.HEAPU16, builder.indices());

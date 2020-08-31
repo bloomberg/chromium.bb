@@ -26,7 +26,6 @@ import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -52,7 +51,7 @@ public class BookmarkModelTest {
     @Before
     public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Profile profile = Profile.getLastUsedProfile();
+            Profile profile = Profile.getLastUsedRegularProfile();
             mBookmarkModel = new BookmarkModel(profile);
             mBookmarkModel.loadEmptyPartnerBookmarkShimForTesting();
         });
@@ -121,7 +120,7 @@ public class BookmarkModelTest {
         mBookmarkModel.moveBookmarks(new ArrayList<BookmarkId>(movedBookmarks), folderAA);
 
         // Order of the moved bookmarks is not tested.
-        verifyBookmarkListNoOrder(mBookmarkModel.getChildIDs(folderAA, true, true), movedBookmarks);
+        verifyBookmarkListNoOrder(mBookmarkModel.getChildIDs(folderAA), movedBookmarks);
     }
 
     @Test
@@ -139,7 +138,7 @@ public class BookmarkModelTest {
         mBookmarkModel.moveBookmarks(new ArrayList<BookmarkId>(movedBookmarks), folder);
 
         // Order of the moved bookmarks is not tested.
-        verifyBookmarkListNoOrder(mBookmarkModel.getChildIDs(folder, true, true), movedBookmarks);
+        verifyBookmarkListNoOrder(mBookmarkModel.getChildIDs(folder), movedBookmarks);
     }
 
     @Test
@@ -212,16 +211,9 @@ public class BookmarkModelTest {
         expectedChildren.add(addBookmark(folderA, 0, "a", "http://a.com"));
         expectedChildren.add(addBookmark(folderA, 0, "a", "http://a.com"));
         BookmarkId folderAA = mBookmarkModel.addFolder(folderA, 0, "faa");
-        // urls only
-        verifyBookmarkListNoOrder(
-                mBookmarkModel.getChildIDs(folderA, false, true), expectedChildren);
-        // folders only
-        verifyBookmarkListNoOrder(mBookmarkModel.getChildIDs(folderA, true, false),
-                new HashSet<BookmarkId>(Arrays.asList(folderAA)));
         // folders and urls
         expectedChildren.add(folderAA);
-        verifyBookmarkListNoOrder(
-                mBookmarkModel.getChildIDs(folderA, true, true), expectedChildren);
+        verifyBookmarkListNoOrder(mBookmarkModel.getChildIDs(folderA), expectedChildren);
     }
 
     // Moved from BookmarkBridgeTest
@@ -255,12 +247,17 @@ public class BookmarkModelTest {
         verifyBookmark(folderAA, "faa", null, true, folderA);
     }
 
-    private BookmarkId addBookmark(final BookmarkId parent, final int index, final String title,
-            final String url) {
+    private BookmarkId addBookmark(
+            final BookmarkId parent, final int index, final String title, final String url) {
+        return addBookmark(mBookmarkModel, parent, index, title, url);
+    }
+
+    public static BookmarkId addBookmark(BookmarkModel model, final BookmarkId parent,
+            final int index, final String title, final String url) {
         final AtomicReference<BookmarkId> result = new AtomicReference<BookmarkId>();
         final Semaphore semaphore = new Semaphore(0);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            result.set(mBookmarkModel.addBookmark(parent, index, title, url));
+            result.set(model.addBookmark(parent, index, title, url));
             semaphore.release();
         });
         try {

@@ -37,6 +37,7 @@ from __future__ import print_function
 
 import getpass
 import os
+import sys
 import tempfile
 
 from six.moves import urllib
@@ -45,6 +46,9 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import perf_uploader
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 MASTER_NAME = 'ChromeOSPerfTest'

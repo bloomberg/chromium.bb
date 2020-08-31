@@ -5,11 +5,12 @@
 #ifndef CAST_COMMON_CHANNEL_CAST_MESSAGE_HANDLER_H_
 #define CAST_COMMON_CHANNEL_CAST_MESSAGE_HANDLER_H_
 
+#include "cast/common/channel/proto/cast_channel.pb.h"
+
+namespace openscreen {
 namespace cast {
-namespace channel {
 
 class CastSocket;
-class CastMessage;
 class VirtualConnectionRouter;
 
 class CastMessageHandler {
@@ -18,10 +19,10 @@ class CastMessageHandler {
 
   virtual void OnMessage(VirtualConnectionRouter* router,
                          CastSocket* socket,
-                         CastMessage&& message) = 0;
+                         ::cast::channel::CastMessage message) = 0;
 };
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_COMMON_CHANNEL_CAST_MESSAGE_HANDLER_H_

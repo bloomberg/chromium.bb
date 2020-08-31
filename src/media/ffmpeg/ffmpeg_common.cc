@@ -19,6 +19,10 @@
 #include "media/formats/mp4/box_definitions.h"
 #include "media/media_buildflags.h"
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#include "media/formats/mp4/aac.h"
+#endif
+
 namespace media {
 
 namespace {
@@ -116,6 +120,10 @@ AudioCodec CodecIDToAudioCodec(AVCodecID codec_id) {
       return kCodecOpus;
     case AV_CODEC_ID_ALAC:
       return kCodecALAC;
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
+    case AV_CODEC_ID_MPEGH_3D_AUDIO:
+      return kCodecMpegHAudio;
+#endif
     default:
       DVLOG(1) << "Unknown audio CodecID: " << codec_id;
   }
@@ -167,6 +175,10 @@ AVCodecID AudioCodecToCodecID(AudioCodec audio_codec,
       return AV_CODEC_ID_PCM_MULAW;
     case kCodecOpus:
       return AV_CODEC_ID_OPUS;
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
+    case kCodecMpegHAudio:
+      return AV_CODEC_ID_MPEGH_3D_AUDIO;
+#endif
     default:
       DVLOG(1) << "Unknown AudioCodec: " << audio_codec;
   }
@@ -348,6 +360,12 @@ bool AVCodecContextToAudioDecoderConfig(const AVCodecContext* codec_context,
       NOTREACHED();
 #endif
       break;
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
+    case kCodecMpegHAudio:
+      channel_layout = CHANNEL_LAYOUT_BITSTREAM;
+      sample_format = kSampleFormatMpegHAudio;
+      break;
+#endif
 
     default:
       break;
@@ -386,6 +404,22 @@ bool AVCodecContextToAudioDecoderConfig(const AVCodecContext* codec_context,
   // a known sample format size.
   if (codec == kCodecAC3 || codec == kCodecEAC3)
     return true;
+#endif
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
+  if (codec == kCodecMpegHAudio)
+    return true;
+#endif
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+  // TODO(dalecurtis): Just use the profile from the codec context if ffmpeg
+  // ever starts supporting xHE-AAC.
+  if (codec == kCodecAAC && codec_context->profile == FF_PROFILE_UNKNOWN) {
+    // Errors aren't fatal here, so just drop any MediaLog messages.
+    NullMediaLog media_log;
+    mp4::AAC aac_parser;
+    if (aac_parser.Parse(extra_data, &media_log))
+      config->set_profile(aac_parser.GetProfile());
+  }
 #endif
 
   // Verify that AudioConfig.bits_per_channel was calculated correctly for

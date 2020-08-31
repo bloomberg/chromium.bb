@@ -296,7 +296,7 @@ bool RecordPaintCanvas::isClipEmpty() const {
   return GetCanvas()->isClipEmpty();
 }
 
-const SkMatrix& RecordPaintCanvas::getTotalMatrix() const {
+SkMatrix RecordPaintCanvas::getTotalMatrix() const {
   return GetCanvas()->getTotalMatrix();
 }
 
@@ -308,6 +308,10 @@ void RecordPaintCanvas::Annotate(AnnotationType type,
 
 void RecordPaintCanvas::recordCustomData(uint32_t id) {
   list_->push<CustomDataOp>(id);
+}
+
+void RecordPaintCanvas::setNodeId(int node_id) {
+  list_->push<SetNodeIdOp>(node_id);
 }
 
 const SkNoDrawCanvas* RecordPaintCanvas::GetCanvas() const {

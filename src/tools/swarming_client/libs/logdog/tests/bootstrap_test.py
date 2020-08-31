@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2016 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -11,6 +11,10 @@ ROOT_DIR = os.path.dirname(os.path.abspath(os.path.join(
     __file__.decode(sys.getfilesystemencoding()),
     os.pardir, os.pardir, os.pardir)))
 sys.path.insert(0, ROOT_DIR)
+
+# pylint: disable=no-name-in-module
+from utils import tools
+tools.force_local_third_party(ROOT_DIR)
 
 from libs.logdog import bootstrap, stream
 

@@ -129,29 +129,17 @@ const char* GetSiteBreakdownOtherHostName() {
 
 namespace protobuf_parser {
 
-net::ProxyServer::Scheme SchemeFromProxyScheme(
-    ProxyServer_ProxyScheme proxy_scheme) {
+std::string SchemeFromPrefetchScheme(
+    PrefetchProxyConfig_Proxy_Scheme proxy_scheme) {
   switch (proxy_scheme) {
-    case ProxyServer_ProxyScheme_HTTP:
-      return net::ProxyServer::SCHEME_HTTP;
-    case ProxyServer_ProxyScheme_HTTPS:
-      return net::ProxyServer::SCHEME_HTTPS;
+    case PrefetchProxyConfig_Proxy_Scheme_HTTP:
+      return "http";
+    case PrefetchProxyConfig_Proxy_Scheme_HTTPS:
+      return "https";
     default:
-      return net::ProxyServer::SCHEME_INVALID;
+      return std::string();
   }
 }
-
-ProxyServer_ProxyScheme ProxySchemeFromScheme(net::ProxyServer::Scheme scheme) {
-  switch (scheme) {
-    case net::ProxyServer::SCHEME_HTTP:
-      return ProxyServer_ProxyScheme_HTTP;
-    case net::ProxyServer::SCHEME_HTTPS:
-      return ProxyServer_ProxyScheme_HTTPS;
-    default:
-      return ProxyServer_ProxyScheme_UNSPECIFIED;
-  }
-}
-
 
 void TimeDeltaToDuration(const base::TimeDelta& time_delta,
                          Duration* duration) {

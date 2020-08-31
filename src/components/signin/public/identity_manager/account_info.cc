@@ -7,8 +7,8 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
-#include "components/signin/internal/identity_manager/android/jni_headers/CoreAccountId_jni.h"
-#include "components/signin/internal/identity_manager/android/jni_headers/CoreAccountInfo_jni.h"
+#include "components/signin/public/android/jni_headers/CoreAccountId_jni.h"
+#include "components/signin/public/android/jni_headers/CoreAccountInfo_jni.h"
 #endif
 
 namespace {
@@ -153,7 +153,7 @@ CoreAccountInfo ConvertFromJavaCoreAccountInfo(
   account.gaia = base::android::ConvertJavaStringToUTF8(
       signin::Java_CoreAccountInfo_getGaiaId(env, j_core_account_info));
   account.email = base::android::ConvertJavaStringToUTF8(
-      signin::Java_CoreAccountInfo_getName(env, j_core_account_info));
+      signin::Java_CoreAccountInfo_getEmail(env, j_core_account_info));
   return account;
 }
 

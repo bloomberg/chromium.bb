@@ -321,10 +321,11 @@ bool Mp2tStreamParser::Parse(const uint8_t* buf, int size) {
     if (it == pids_.end() &&
         ts_packet->pid() == TsSection::kPidPat) {
       // Create the PAT state here if needed.
-      std::unique_ptr<TsSection> pat_section_parser(new TsSectionPat(
-          base::Bind(&Mp2tStreamParser::RegisterPmt, base::Unretained(this))));
-      std::unique_ptr<PidState> pat_pid_state(new PidState(
-          ts_packet->pid(), PidState::kPidPat, std::move(pat_section_parser)));
+      auto pat_section_parser =
+          std::make_unique<TsSectionPat>(base::BindRepeating(
+              &Mp2tStreamParser::RegisterPmt, base::Unretained(this)));
+      auto pat_pid_state = std::make_unique<PidState>(
+          ts_packet->pid(), PidState::kPidPat, std::move(pat_section_parser));
       pat_pid_state->Enable();
       it = pids_
                .insert(
@@ -376,10 +377,10 @@ void Mp2tStreamParser::RegisterPmt(int program_number, int pmt_pid) {
 
   // Create the PMT state here if needed.
   DVLOG(1) << "Create a new PMT parser";
-  std::unique_ptr<TsSection> pmt_section_parser(new TsSectionPmt(
-      base::Bind(&Mp2tStreamParser::RegisterPes, base::Unretained(this))));
-  std::unique_ptr<PidState> pmt_pid_state(
-      new PidState(pmt_pid, PidState::kPidPmt, std::move(pmt_section_parser)));
+  auto pmt_section_parser = std::make_unique<TsSectionPmt>(base::BindRepeating(
+      &Mp2tStreamParser::RegisterPes, base::Unretained(this)));
+  auto pmt_pid_state = std::make_unique<PidState>(
+      pmt_pid, PidState::kPidPmt, std::move(pmt_section_parser));
   pmt_pid_state->Enable();
   pids_.insert(std::make_pair(pmt_pid, std::move(pmt_pid_state)));
 
@@ -395,32 +396,33 @@ void Mp2tStreamParser::RegisterPmt(int program_number, int pmt_pid) {
 }
 
 std::unique_ptr<EsParser> Mp2tStreamParser::CreateH264Parser(int pes_pid) {
-  auto on_video_config_changed = base::Bind(
+  auto on_video_config_changed = base::BindRepeating(
       &Mp2tStreamParser::OnVideoConfigChanged, base::Unretained(this), pes_pid);
-  auto on_emit_video_buffer = base::Bind(&Mp2tStreamParser::OnEmitVideoBuffer,
-                                         base::Unretained(this), pes_pid);
+  auto on_emit_video_buffer = base::BindRepeating(
+      &Mp2tStreamParser::OnEmitVideoBuffer, base::Unretained(this), pes_pid);
 
-  return std::make_unique<EsParserH264>(on_video_config_changed,
-                                        on_emit_video_buffer);
+  return std::make_unique<EsParserH264>(std::move(on_video_config_changed),
+                                        std::move(on_emit_video_buffer));
 }
 
 std::unique_ptr<EsParser> Mp2tStreamParser::CreateAacParser(int pes_pid) {
-  auto on_audio_config_changed = base::Bind(
+  auto on_audio_config_changed = base::BindRepeating(
       &Mp2tStreamParser::OnAudioConfigChanged, base::Unretained(this), pes_pid);
-  auto on_emit_audio_buffer = base::Bind(&Mp2tStreamParser::OnEmitAudioBuffer,
-                                         base::Unretained(this), pes_pid);
+  auto on_emit_audio_buffer = base::BindRepeating(
+      &Mp2tStreamParser::OnEmitAudioBuffer, base::Unretained(this), pes_pid);
   return std::make_unique<EsParserAdts>(on_audio_config_changed,
-                                        on_emit_audio_buffer, sbr_in_mimetype_);
+                                        std::move(on_emit_audio_buffer),
+                                        sbr_in_mimetype_);
 }
 
 std::unique_ptr<EsParser> Mp2tStreamParser::CreateMpeg1AudioParser(
     int pes_pid) {
-  auto on_audio_config_changed = base::Bind(
+  auto on_audio_config_changed = base::BindRepeating(
       &Mp2tStreamParser::OnAudioConfigChanged, base::Unretained(this), pes_pid);
-  auto on_emit_audio_buffer = base::Bind(&Mp2tStreamParser::OnEmitAudioBuffer,
-                                         base::Unretained(this), pes_pid);
-  return std::make_unique<EsParserMpeg1Audio>(on_audio_config_changed,
-                                              on_emit_audio_buffer, media_log_);
+  auto on_emit_audio_buffer = base::BindRepeating(
+      &Mp2tStreamParser::OnEmitAudioBuffer, base::Unretained(this), pes_pid);
+  return std::make_unique<EsParserMpeg1Audio>(
+      on_audio_config_changed, std::move(on_emit_audio_buffer), media_log_);
 }
 
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
@@ -435,33 +437,36 @@ bool Mp2tStreamParser::ShouldForceEncryptedParser() {
 std::unique_ptr<EsParser> Mp2tStreamParser::CreateEncryptedH264Parser(
     int pes_pid,
     bool emit_clear_buffers) {
-  auto on_video_config_changed = base::Bind(
+  auto on_video_config_changed = base::BindRepeating(
       &Mp2tStreamParser::OnVideoConfigChanged, base::Unretained(this), pes_pid);
-  auto on_emit_video_buffer = base::Bind(&Mp2tStreamParser::OnEmitVideoBuffer,
-                                         base::Unretained(this), pes_pid);
-  auto get_decrypt_config =
-      emit_clear_buffers ? EsParser::GetDecryptConfigCB()
-                         : base::Bind(&Mp2tStreamParser::GetDecryptConfig,
-                                      base::Unretained(this));
+  auto on_emit_video_buffer = base::BindRepeating(
+      &Mp2tStreamParser::OnEmitVideoBuffer, base::Unretained(this), pes_pid);
+  EsParserAdts::GetDecryptConfigCB get_decrypt_config;
+  if (!emit_clear_buffers) {
+    get_decrypt_config = base::BindRepeating(
+        &Mp2tStreamParser::GetDecryptConfig, base::Unretained(this));
+  }
   return std::make_unique<EsParserH264>(
-      on_video_config_changed, on_emit_video_buffer, initial_encryption_scheme_,
-      get_decrypt_config);
+      std::move(on_video_config_changed), on_emit_video_buffer,
+      initial_encryption_scheme_, std::move(get_decrypt_config));
 }
 
 std::unique_ptr<EsParser> Mp2tStreamParser::CreateEncryptedAacParser(
     int pes_pid,
     bool emit_clear_buffers) {
-  auto on_audio_config_changed = base::Bind(
+  auto on_audio_config_changed = base::BindRepeating(
       &Mp2tStreamParser::OnAudioConfigChanged, base::Unretained(this), pes_pid);
-  auto on_emit_audio_buffer = base::Bind(&Mp2tStreamParser::OnEmitAudioBuffer,
-                                         base::Unretained(this), pes_pid);
-  auto get_decrypt_config =
-      emit_clear_buffers ? EsParser::GetDecryptConfigCB()
-                         : base::Bind(&Mp2tStreamParser::GetDecryptConfig,
-                                      base::Unretained(this));
+  auto on_emit_audio_buffer = base::BindRepeating(
+      &Mp2tStreamParser::OnEmitAudioBuffer, base::Unretained(this), pes_pid);
+  EsParserAdts::GetDecryptConfigCB get_decrypt_config;
+  if (!emit_clear_buffers) {
+    get_decrypt_config = base::BindRepeating(
+        &Mp2tStreamParser::GetDecryptConfig, base::Unretained(this));
+  }
   return std::make_unique<EsParserAdts>(
-      on_audio_config_changed, on_emit_audio_buffer, get_decrypt_config,
-      initial_encryption_scheme_, sbr_in_mimetype_);
+      on_audio_config_changed, std::move(on_emit_audio_buffer),
+      std::move(get_decrypt_config), initial_encryption_scheme_,
+      sbr_in_mimetype_);
 }
 #endif
 
@@ -546,12 +551,12 @@ void Mp2tStreamParser::RegisterPes(int pes_pid,
 
   // Create the PES state here.
   DVLOG(1) << "Create a new PES state";
-  std::unique_ptr<TsSection> pes_section_parser(
-      new TsSectionPes(std::move(es_parser), &timestamp_unroller_));
+  auto pes_section_parser = std::make_unique<TsSectionPes>(
+      std::move(es_parser), &timestamp_unroller_);
   PidState::PidType pid_type =
       is_audio ? PidState::kPidAudioPes : PidState::kPidVideoPes;
-  std::unique_ptr<PidState> pes_pid_state(
-      new PidState(pes_pid, pid_type, std::move(pes_section_parser)));
+  auto pes_pid_state = std::make_unique<PidState>(
+      pes_pid, pid_type, std::move(pes_section_parser));
   pids_.insert(std::make_pair(pes_pid, std::move(pes_pid_state)));
 
   // A new PES pid has been added, the PID filter might change.
@@ -665,7 +670,7 @@ void Mp2tStreamParser::OnAudioConfigChanged(
 std::unique_ptr<MediaTracks> GenerateMediaTrackInfo(
     const AudioDecoderConfig& audio_config,
     const VideoDecoderConfig& video_config) {
-  std::unique_ptr<MediaTracks> media_tracks(new MediaTracks());
+  auto media_tracks = std::make_unique<MediaTracks>();
   // TODO(servolk): Implement proper sourcing of media track info as described
   // in crbug.com/590085
   if (audio_config.IsValidConfig()) {
@@ -841,13 +846,13 @@ bool Mp2tStreamParser::EmitRemainingBuffers() {
 
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
 std::unique_ptr<PidState> Mp2tStreamParser::MakeCatPidState() {
-  std::unique_ptr<TsSection> cat_section_parser(new TsSectionCat(
+  auto cat_section_parser = std::make_unique<TsSectionCat>(
       base::BindRepeating(&Mp2tStreamParser::RegisterCencPids,
                           base::Unretained(this)),
       base::BindRepeating(&Mp2tStreamParser::RegisterEncryptionScheme,
-                          base::Unretained(this))));
-  std::unique_ptr<PidState> cat_pid_state(new PidState(
-      TsSection::kPidCat, PidState::kPidCat, std::move(cat_section_parser)));
+                          base::Unretained(this)));
+  auto cat_pid_state = std::make_unique<PidState>(
+      TsSection::kPidCat, PidState::kPidCat, std::move(cat_section_parser));
   cat_pid_state->Enable();
   return cat_pid_state;
 }
@@ -862,19 +867,17 @@ void Mp2tStreamParser::UnregisterCat() {
 }
 
 void Mp2tStreamParser::RegisterCencPids(int ca_pid, int pssh_pid) {
-  std::unique_ptr<TsSectionCetsEcm> ecm_parser(
-      new TsSectionCetsEcm(base::BindRepeating(
-          &Mp2tStreamParser::RegisterNewKeyIdAndIv, base::Unretained(this))));
-  std::unique_ptr<PidState> ecm_pid_state(
-      new PidState(ca_pid, PidState::kPidCetsEcm, std::move(ecm_parser)));
+  auto ecm_parser = std::make_unique<TsSectionCetsEcm>(base::BindRepeating(
+      &Mp2tStreamParser::RegisterNewKeyIdAndIv, base::Unretained(this)));
+  auto ecm_pid_state = std::make_unique<PidState>(ca_pid, PidState::kPidCetsEcm,
+                                                  std::move(ecm_parser));
   ecm_pid_state->Enable();
   pids_.insert(std::make_pair(ca_pid, std::move(ecm_pid_state)));
 
-  std::unique_ptr<TsSectionCetsPssh> pssh_parser(
-      new TsSectionCetsPssh(base::Bind(&Mp2tStreamParser::RegisterPsshBoxes,
-                                       base::Unretained(this))));
-  std::unique_ptr<PidState> pssh_pid_state(
-      new PidState(pssh_pid, PidState::kPidCetsPssh, std::move(pssh_parser)));
+  auto pssh_parser = std::make_unique<TsSectionCetsPssh>(base::BindRepeating(
+      &Mp2tStreamParser::RegisterPsshBoxes, base::Unretained(this)));
+  auto pssh_pid_state = std::make_unique<PidState>(
+      pssh_pid, PidState::kPidCetsPssh, std::move(pssh_parser));
   pssh_pid_state->Enable();
   pids_.insert(std::make_pair(pssh_pid, std::move(pssh_pid_state)));
 }

@@ -159,13 +159,15 @@ class HeadlessProtocolBrowserTest
   }
 
   // HeadlessDevToolsClient::RawProtocolListener
-  bool OnProtocolMessage(const std::string& json_message,
+  bool OnProtocolMessage(base::span<const uint8_t> json_message,
                          const base::DictionaryValue& parsed_message) override {
-    SendMessageToJS(json_message);
+    SendMessageToJS(
+        base::StringPiece(reinterpret_cast<const char*>(json_message.data()),
+                          json_message.size()));
     return true;
   }
 
-  void SendMessageToJS(const std::string& message) {
+  void SendMessageToJS(base::StringPiece message) {
     if (test_finished_)
       return;
 
@@ -251,6 +253,8 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeHistoryNavigationSameDoc,
                        "emulation/virtual-time-history-navigation-same-doc.js")
 HEADLESS_PROTOCOL_TEST(VirtualTimeFetchKeepalive,
                        "emulation/virtual-time-fetch-keepalive.js")
+HEADLESS_PROTOCOL_TEST(VirtualTimeDisposeWhileRunning,
+                       "emulation/virtual-time-dispose-while-running.js")
 
 // http://crbug.com/633321
 #if defined(OS_ANDROID)
@@ -269,6 +273,9 @@ HEADLESS_PROTOCOL_TEST(MAYBE_VirtualTimeTimerSuspend,
 
 HEADLESS_PROTOCOL_TEST(HeadlessSessionBasicsTest,
                        "sessions/headless-session-basics.js")
+
+HEADLESS_PROTOCOL_TEST(HeadlessSessionCreateContextDisposeOnDetach,
+                       "sessions/headless-createContext-disposeOnDetach.js")
 
 class HeadlessProtocolCompositorBrowserTest
     : public HeadlessProtocolBrowserTest {

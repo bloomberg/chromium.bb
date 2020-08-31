@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/notification_utils.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
@@ -16,17 +17,16 @@
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/vector_icons/vector_icons.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "services/device/public/cpp/usb/usb_utils.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -108,7 +108,8 @@ class CrosUsbNotificationDelegate
 
   void HandleShowSettings() {
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-        profile(), chrome::kCrostiniSharedUsbDevicesSubPage);
+        profile(),
+        chromeos::settings::mojom::kCrostiniUsbPreferencesSubpagePath);
     Close(false);
   }
 
@@ -277,8 +278,7 @@ std::vector<CrosUsbDeviceInfo> CrosUsbDetector::GetDevicesSharableWithCrostini()
 void CrosUsbDetector::ConnectToDeviceManager() {
   // Tests may set a fake manager.
   if (!device_manager_) {
-    content::GetSystemConnector()->Connect(
-        device::mojom::kServiceName,
+    content::GetDeviceService().BindUsbDeviceManager(
         device_manager_.BindNewPipeAndPassReceiver());
   }
   DCHECK(device_manager_);

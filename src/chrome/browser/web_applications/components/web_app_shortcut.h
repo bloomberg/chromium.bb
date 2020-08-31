@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_SHORTCUT_H_
 
 #include <memory>
+#include <set>
 #include <string>
-#include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
@@ -19,6 +20,10 @@
 
 namespace base {
 class TaskRunner;
+}
+
+namespace gfx {
+class ImageSkia;
 }
 
 namespace web_app {
@@ -40,7 +45,8 @@ struct ShortcutInfo {
   base::FilePath profile_path;
   std::string profile_name;
   std::string version_for_display;
-  std::vector<std::string> mime_types;
+  std::set<std::string> file_handler_extensions;
+  std::set<std::string> file_handler_mime_types;
 
  private:
   // Since gfx::ImageFamily |favicon| has a non-thread-safe reference count in
@@ -93,17 +99,28 @@ enum ShortcutCreationReason {
 // Compute a deterministic name based on data in the shortcut_info.
 std::string GenerateApplicationNameFromInfo(const ShortcutInfo& shortcut_info);
 
-// Gets the user data directory for given web app. The path for the directory is
-// based on |extension_id|. If |extension_id| is empty then |url| is used
-// to construct a unique ID.
-base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
-                                      const std::string& extension_id,
-                                      const GURL& url);
+// Returns a per-app directory for OS-specific web app data to handle OS
+// registration and unregistration. To store manifest resources, use
+// GetManifestResourcesDirectoryForApp() declared in web_app_utils.h.
+//
+// The path for the directory is based on |app_id|. If |app_id| is empty then
+// |url| is used to construct a unique ID.
+base::FilePath GetOsIntegrationResourcesDirectoryForApp(
+    const base::FilePath& profile_path,
+    const std::string& app_id,
+    const GURL& url);
 
 // Callback made when CreateShortcuts has finished trying to create the
 // platform shortcuts indicating whether or not they were successfully
 // created.
 using CreateShortcutsCallback = base::OnceCallback<void(bool shortcut_created)>;
+
+// Returns an array of desired icon sizes (in px) to be contained in an app OS
+// shortcut, sorted in ascending order (biggest desired icon size is last).
+base::span<const int> GetDesiredIconSizesForShortcut();
+
+// Load the standard application icon from resources.
+gfx::ImageSkia CreateDefaultApplicationIcon(int size);
 
 namespace internals {
 

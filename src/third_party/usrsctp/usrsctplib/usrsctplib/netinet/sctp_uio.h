@@ -34,7 +34,7 @@
 
 #ifdef __FreeBSD__
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: head/sys/netinet/sctp_uio.h 326672 2017-12-07 22:19:08Z tuexen $");
+__FBSDID("$FreeBSD: head/sys/netinet/sctp_uio.h 336511 2018-07-19 20:16:33Z tuexen $");
 #endif
 
 #ifndef _NETINET_SCTP_UIO_H_
@@ -1136,24 +1136,14 @@ struct sctpstat {
 #define SCTP_STAT_DECR_COUNTER64(_x) SCTP_STAT_DECR(_x)
 #define SCTP_STAT_DECR_GAUGE32(_x) SCTP_STAT_DECR(_x)
 
+union sctp_sockstore {
+	struct sockaddr_in sin;
+	struct sockaddr_in6 sin6;
 #if defined(__Userspace__)
-union sctp_sockstore {
-#if defined(INET)
-	struct sockaddr_in sin;
-#endif
-#if defined(INET6)
-	struct sockaddr_in6 sin6;
-#endif
 	struct sockaddr_conn sconn;
-	struct sockaddr sa;
-};
-#else
-union sctp_sockstore {
-	struct sockaddr_in sin;
-	struct sockaddr_in6 sin6;
-	struct sockaddr sa;
-};
 #endif
+	struct sockaddr sa;
+};
 
 
 /***********************************/
@@ -1210,10 +1200,10 @@ struct xsctp_inpcb {
 	uint16_t qlen;
 	uint16_t maxqlen;
 #endif
-#if defined(__Windows__)
-	uint16_t padding;
-#endif
-#if !(defined(__FreeBSD__) && (__FreeBSD_version < 1001517))
+	uint16_t __spare16;
+#if defined(__FreeBSD__)
+	kvaddr_t socket;
+#else
 	void *socket;
 #endif
 #if defined(__FreeBSD__) && __FreeBSD_version > 1100096
@@ -1225,19 +1215,7 @@ struct xsctp_inpcb {
 #elif defined(__FreeBSD__) && (__FreeBSD_version < 1001517)
 	uint32_t extra_padding[31]; /* future */
 #else
-#if defined(__LP64__)
-#if defined(__FreeBSD__) && __FreeBSD_version > 1100096
-	uint32_t extra_padding[27]; /* future */
-#else
-	uint32_t extra_padding[29]; /* future */
-#endif
-#else
-#if defined(__FreeBSD__) && __FreeBSD_version > 1100096
-	uint32_t extra_padding[28]; /* future */
-#else
-	uint32_t extra_padding[30]; /* future */
-#endif
-#endif
+	uint32_t extra_padding[26]; /* future */
 #endif
 };
 

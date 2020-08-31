@@ -171,10 +171,6 @@ static int copy_stream_props(AVStream *st, AVStream *source_st)
 
     if (st->codecpar->codec_id || !source_st->codecpar->codec_id) {
         if (st->codecpar->extradata_size < source_st->codecpar->extradata_size) {
-            if (st->codecpar->extradata) {
-                av_freep(&st->codecpar->extradata);
-                st->codecpar->extradata_size = 0;
-            }
             ret = ff_alloc_extradata(st->codecpar,
                                      source_st->codecpar->extradata_size);
             if (ret < 0)
@@ -546,7 +542,6 @@ static int filter_packet(AVFormatContext *avf, ConcatStream *cs, AVPacket *pkt)
         if (ret < 0) {
             av_log(avf, AV_LOG_ERROR, "h264_mp4toannexb filter "
                    "failed to send input packet\n");
-            av_packet_unref(pkt);
             return ret;
         }
 
@@ -596,7 +591,6 @@ static int concat_read_packet(AVFormatContext *avf, AVPacket *pkt)
         if (ret < 0)
             return ret;
         if ((ret = match_streams(avf)) < 0) {
-            av_packet_unref(pkt);
             return ret;
         }
         if (packet_after_outpoint(cat, pkt)) {
@@ -612,7 +606,7 @@ static int concat_read_packet(AVFormatContext *avf, AVPacket *pkt)
         }
         break;
     }
-    if ((ret = filter_packet(avf, cs, pkt)))
+    if ((ret = filter_packet(avf, cs, pkt)) < 0)
         return ret;
 
     st = cat->avf->streams[pkt->stream_index];

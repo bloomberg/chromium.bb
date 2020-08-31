@@ -7,33 +7,76 @@
 
 #include <stddef.h>
 #include <string>
+#include <vector>
 
+#include "base/logging.h"
 #include "base/optional.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 
 namespace extensions {
 namespace declarative_net_request {
 
-// Holds the ParseResult together with the id of the rule at which the error
-// occurred, if any.
+// Holds the result of indexing a JSON ruleset.
 class ParseInfo {
  public:
-  explicit ParseInfo(ParseResult result);
-  ParseInfo(ParseResult result, int rule_id);
-  ParseInfo(const ParseInfo&);
-  ParseInfo& operator=(const ParseInfo&);
+  // Constructor to be used on success.
+  ParseInfo(size_t rules_count,
+            size_t regex_rules_count,
+            int ruleset_checksum,
+            std::vector<int> regex_limit_exceeded_rules);
 
-  ParseResult result() const { return result_; }
+  // Constructor to be used on error.
+  ParseInfo(ParseResult error_reason, const int* rule_id);
 
-  // Returns the error string corresponding to this ParseInfo. Should not be
-  // called on a successful parse.
-  std::string GetErrorDescription() const;
+  ParseInfo(ParseInfo&&);
+  ParseInfo& operator=(ParseInfo&&);
+  ~ParseInfo();
+
+
+  bool has_error() const { return has_error_; }
+  ParseResult error_reason() const {
+    DCHECK(has_error_);
+    return error_reason_;
+  }
+  const std::string& error() const {
+    DCHECK(has_error_);
+    return error_;
+  }
+
+  // Rules which exceed the per-rule regex memory limit. These are ignored
+  // during indexing.
+  const std::vector<int>& regex_limit_exceeded_rules() const {
+    DCHECK(!has_error_);
+    return regex_limit_exceeded_rules_;
+  }
+
+  size_t rules_count() const {
+    DCHECK(!has_error_);
+    return rules_count_;
+  }
+
+  size_t regex_rules_count() const {
+    DCHECK(!has_error_);
+    return regex_rules_count_;
+  }
+
+  int ruleset_checksum() const {
+    DCHECK(!has_error_);
+    return ruleset_checksum_;
+  }
 
  private:
-  ParseResult result_;
-  // When set, denotes the id of the rule with which the |result_| is
-  // associated.
-  base::Optional<int> rule_id_;
+  bool has_error_ = false;
+
+  // Only valid iff |has_error_| is true.
+  std::string error_;
+  ParseResult error_reason_ = ParseResult::NONE;
+
+  // Only valid iff |has_error_| is false.
+  size_t rules_count_ = 0;
+  size_t regex_rules_count_ = 0;
+  int ruleset_checksum_ = -1;
+  std::vector<int> regex_limit_exceeded_rules_;
 };
 
 }  // namespace declarative_net_request

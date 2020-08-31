@@ -16,7 +16,7 @@
 
 #include "source/opt/build_module.h"
 #include "source/reduce/operand_to_const_reduction_opportunity_finder.h"
-#include "source/reduce/remove_unreferenced_instruction_reduction_opportunity_finder.h"
+#include "source/reduce/remove_unused_instruction_reduction_opportunity_finder.h"
 #include "test/reduce/reduce_test_util.h"
 
 namespace spvtools {
@@ -125,19 +125,21 @@ TEST(ReducerTest, ExprToConstantAndRemoveUnreferenced) {
          %29 = OpAccessChain %28 %27 %9
          %30 = OpLoad %24 %29
          %32 = OpFOrdGreaterThan %22 %30 %31
-               OpSelectionMerge %34 None
+               OpSelectionMerge %90 None
                OpBranchConditional %32 %33 %46
          %33 = OpLabel
          %40 = OpFAdd %24 %71 %30
          %45 = OpISub %6 %73 %21
-               OpBranch %34
+               OpBranch %90
          %46 = OpLabel
          %50 = OpFMul %24 %71 %30
          %54 = OpSDiv %6 %73 %21
-               OpBranch %34
-         %34 = OpLabel
+               OpBranch %90
+         %90 = OpLabel
          %77 = OpPhi %6 %45 %33 %54 %46
          %76 = OpPhi %24 %40 %33 %50 %46
+               OpBranch %34
+         %34 = OpLabel
          %57 = OpIAdd %6 %70 %56
                OpBranch %10
          %12 = OpLabel
@@ -155,35 +157,17 @@ TEST(ReducerTest, ExprToConstantAndRemoveUnreferenced) {
                OpCapability Shader
           %1 = OpExtInstImport "GLSL.std.450"
                OpMemoryModel Logical GLSL450
-               OpEntryPoint Fragment %4 "main" %60
+               OpEntryPoint Fragment %4 "main"
                OpExecutionMode %4 OriginUpperLeft
-               OpMemberDecorate %16 0 Offset 0
-               OpDecorate %16 Block
-               OpDecorate %18 DescriptorSet 0
-               OpDecorate %18 Binding 2
-               OpMemberDecorate %25 0 Offset 0
-               OpDecorate %25 Block
-               OpDecorate %27 DescriptorSet 0
-               OpDecorate %27 Binding 1
-               OpDecorate %60 Location 0
           %2 = OpTypeVoid
           %3 = OpTypeFunction %2
           %6 = OpTypeInt 32 1
           %9 = OpConstant %6 0
-         %16 = OpTypeStruct %6
-         %17 = OpTypePointer Uniform %16
-         %18 = OpVariable %17 Uniform
          %22 = OpTypeBool
         %100 = OpConstantTrue %22
          %24 = OpTypeFloat 32
-         %25 = OpTypeStruct %24
-         %26 = OpTypePointer Uniform %25
-         %27 = OpVariable %26 Uniform
          %31 = OpConstant %24 2
          %56 = OpConstant %6 1
-         %58 = OpTypeVector %24 4
-         %59 = OpTypePointer Output %58
-         %60 = OpVariable %59 Output
          %72 = OpUndef %24
          %74 = OpUndef %6
           %4 = OpFunction %2 None %3
@@ -193,11 +177,13 @@ TEST(ReducerTest, ExprToConstantAndRemoveUnreferenced) {
                OpLoopMerge %12 %34 None
                OpBranchConditional %100 %11 %12
          %11 = OpLabel
-               OpSelectionMerge %34 None
+               OpSelectionMerge %90 None
                OpBranchConditional %100 %33 %46
          %33 = OpLabel
-               OpBranch %34
+               OpBranch %90
          %46 = OpLabel
+               OpBranch %90
+         %90 = OpLabel
                OpBranch %34
          %34 = OpLabel
                OpBranch %10
@@ -214,8 +200,7 @@ TEST(ReducerTest, ExprToConstantAndRemoveUnreferenced) {
         return ping_pong_interesting.IsInteresting(binary);
       });
   reducer.AddReductionPass(
-      MakeUnique<RemoveUnreferencedInstructionReductionOpportunityFinder>(
-          false));
+      MakeUnique<RemoveUnusedInstructionReductionOpportunityFinder>(false));
   reducer.AddReductionPass(
       MakeUnique<OperandToConstReductionOpportunityFinder>());
 
@@ -345,7 +330,6 @@ const std::string kShaderWithLoopsDivAndMul = R"(
                OpLoopMerge %33 %38 None
                OpBranch %32
          %32 = OpLabel
-               OpSelectionMerge %38 None
                OpBranchConditional %30 %37 %38
          %37 = OpLabel
                OpSelectionMerge %42 None

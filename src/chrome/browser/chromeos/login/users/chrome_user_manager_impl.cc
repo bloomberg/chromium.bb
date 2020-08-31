@@ -29,7 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/task_runner.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -43,8 +43,8 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/enterprise_user_session_metrics.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/signin/auth_sync_observer.h"
-#include "chrome/browser/chromeos/login/signin/auth_sync_observer_factory.h"
+#include "chrome/browser/chromeos/login/signin/auth_error_observer.h"
+#include "chrome/browser/chromeos/login/signin/auth_error_observer_factory.h"
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
@@ -175,7 +175,7 @@ bool GetUserLockAttributes(const user_manager::User* user,
   return true;
 }
 
-// Sets the neccessary delegates in Public Session. They will be active for the
+// Sets the necessary delegates in Public Session. They will be active for the
 // whole user-session and they will go away together with the browser process
 // during logout (the browser process is destroyed during logout), ie. they are
 // not freed and they leak but that is fine.
@@ -203,7 +203,7 @@ void MaybeStartBluetoothLogging(const AccountId& account_id) {
     return;
 
   chromeos::UpstartClient::Get()->StartJob(kBluetoothLoggingUpstartJob, {},
-                                           EmptyVoidDBusMethodCallback());
+                                           base::DoNothing());
 }
 
 bool IsManagedSessionEnabled(policy::DeviceLocalAccountPolicyBroker* broker) {
@@ -213,16 +213,6 @@ bool IsManagedSessionEnabled(policy::DeviceLocalAccountPolicyBroker* broker) {
   if (!entry)
     return kManagedSessionEnabledByDefault;
   return entry->value && entry->value->GetBool();
-}
-
-base::span<const base::Value> GetListPolicyValue(
-    const policy::PolicyMap& policy_map,
-    const char* policy_key) {
-  const policy::PolicyMap::Entry* entry = policy_map.Get(policy_key);
-  if (!entry || !entry->value || !entry->value->is_list())
-    return {};
-
-  return entry->value->GetList();
 }
 
 bool AreRiskyPoliciesUsed(policy::DeviceLocalAccountPolicyBroker* broker) {
@@ -252,39 +242,6 @@ bool IsProxyUsed(const PrefService* local_state_prefs) {
   if (!proxy_config || !proxy_config->GetMode(&mode))
     return false;
   return mode != ProxyPrefs::MODE_DIRECT;
-}
-
-bool AreRiskyExtensionsForceInstalled(
-    policy::DeviceLocalAccountPolicyBroker* broker) {
-  const policy::PolicyMap& policy_map = broker->core()->store()->policy_map();
-
-  auto forcelist =
-      GetListPolicyValue(policy_map, policy::key::kExtensionInstallForcelist);
-
-  // Extension is risky if it's present in force-installed extensions and is not
-  // whitelisted for public sessions.
-
-  if (forcelist.empty())
-    return false;
-
-  for (const base::Value& extension : forcelist) {
-    if (!extension.is_string())
-      continue;
-
-    // Each extension entry contains an extension id and optional update URL
-    // separated by ';'.
-    std::vector<std::string> extension_items =
-        base::SplitString(extension.GetString(), ";", base::TRIM_WHITESPACE,
-                          base::SPLIT_WANT_NONEMPTY);
-    if (extension_items.empty())
-      continue;
-
-    // If current force-installed extension is not whitelisted for public
-    // sessions, consider the extension risky.
-    if (!extensions::IsWhitelistedForPublicSession(extension_items[0]))
-      return true;
-  }
-  return false;
 }
 
 bool PolicyHasWebTrustedAuthorityCertificate(
@@ -334,7 +291,7 @@ void ChromeUserManagerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
                                std::string());
   registry->RegisterListPref(prefs::kReportingUsers);
 
-  SupervisedUserManager::RegisterPrefs(registry);
+  SupervisedUserManager::RegisterLocalStatePrefs(registry);
   SessionLengthLimiter::RegisterPrefs(registry);
   enterprise_user_session_metrics::RegisterPrefs(registry);
 }
@@ -355,7 +312,7 @@ void ChromeUserManagerImpl::ResetPublicAccountDelegatesForTesting() {
 ChromeUserManagerImpl::ChromeUserManagerImpl()
     : ChromeUserManager(base::ThreadTaskRunnerHandle::IsSet()
                             ? base::ThreadTaskRunnerHandle::Get()
-                            : scoped_refptr<base::TaskRunner>()),
+                            : nullptr),
       cros_settings_(CrosSettings::Get()),
       device_local_account_policy_service_(NULL),
       supervised_user_manager_(new SupervisedUserManagerImpl(this)) {
@@ -640,9 +597,9 @@ void ChromeUserManagerImpl::Observe(
   Profile* profile = content::Details<Profile>(details).ptr();
   if (IsUserLoggedIn() && !IsLoggedInAsGuest() && !IsLoggedInAsAnyKioskApp()) {
     if (!profile->IsOffTheRecord()) {
-      if (AuthSyncObserver::ShouldObserve(profile)) {
-        AuthSyncObserver* sync_observer =
-            AuthSyncObserverFactory::GetInstance()->GetForProfile(profile);
+      if (AuthErrorObserver::ShouldObserve(profile)) {
+        AuthErrorObserver* sync_observer =
+            AuthErrorObserverFactory::GetInstance()->GetForProfile(profile);
         sync_observer->StartObserving();
       }
       multi_profile_user_controller_->StartObserving(profile);
@@ -747,9 +704,6 @@ void ChromeUserManagerImpl::LoadDeviceLocalAccounts(
 
     users_.push_back(
         CreateUserFromDeviceLocalAccount(account_id, type).release());
-    if (type == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION ||
-        type == policy::DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION)
-      UpdatePublicAccountDisplayName(account_id.GetUserEmail());
   }
 }
 
@@ -811,8 +765,8 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
   // Schedule a callback if device policy has not yet been verified.
   if (CrosSettingsProvider::TRUSTED !=
       cros_settings_->PrepareTrustedValues(
-          base::Bind(&ChromeUserManagerImpl::RetrieveTrustedDevicePolicies,
-                     weak_factory_.GetWeakPtr()))) {
+          base::BindOnce(&ChromeUserManagerImpl::RetrieveTrustedDevicePolicies,
+                         weak_factory_.GetWeakPtr()))) {
     return;
   }
 
@@ -1018,7 +972,7 @@ void ChromeUserManagerImpl::ArcKioskAppLoggedIn(user_manager::User* user) {
       user_manager::User::USER_IMAGE_INVALID, false);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(::switches::kForceAndroidAppMode);
+  command_line->AppendSwitch(::switches::kForceAppMode);
   command_line->AppendSwitch(::switches::kSilentLaunch);
 
   // Disable window animation since kiosk app runs in a single full screen
@@ -1037,7 +991,7 @@ void ChromeUserManagerImpl::WebKioskAppLoggedIn(user_manager::User* user) {
       user_manager::User::USER_IMAGE_INVALID, false);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(::switches::kForceWebAppMode);
+  command_line->AppendSwitch(::switches::kForceAppMode);
   command_line->AppendSwitch(
       ::switches::kSilentLaunch);  // To open no extra windows.
 
@@ -1244,13 +1198,13 @@ void ChromeUserManagerImpl::UpdatePublicAccountDisplayName(
   if (device_local_account_policy_service_) {
     policy::DeviceLocalAccountPolicyBroker* broker =
         device_local_account_policy_service_->GetBrokerForUser(user_id);
-    if (broker)
+    if (broker) {
       display_name = broker->GetDisplayName();
+      // Set or clear the display name.
+      SaveUserDisplayName(AccountId::FromUserEmail(user_id),
+                          base::UTF8ToUTF16(display_name));
+    }
   }
-
-  // Set or clear the display name.
-  SaveUserDisplayName(AccountId::FromUserEmail(user_id),
-                      base::UTF8ToUTF16(display_name));
 }
 
 UserFlow* ChromeUserManagerImpl::GetCurrentUserFlow() const {
@@ -1320,6 +1274,15 @@ void ChromeUserManagerImpl::OnProfileAdded(Profile* profile) {
 
     if (user->HasGaiaAccount())
       GetUserImageManager(user->GetAccountId())->UserProfileCreated();
+
+    // Allow managed guest session user to lock if
+    // |kLoginExtensionApiLaunchExtensionId| is set.
+    if (user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT &&
+        !profile->GetPrefs()
+             ->GetString(prefs::kLoginExtensionApiLaunchExtensionId)
+             .empty()) {
+      user->set_can_lock(true);
+    }
   }
 
   // If there is pending user switch, do it now.
@@ -1338,8 +1301,7 @@ bool ChromeUserManagerImpl::IsUserAllowed(
 
   return chrome_user_manager_util::IsUserAllowed(
       user, AreSupervisedUsersAllowed(), IsGuestSessionAllowed(),
-      user.HasGaiaAccount() && IsGaiaUserAllowed(user),
-      GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied());
+      user.HasGaiaAccount() && IsGaiaUserAllowed(user));
 }
 
 UserFlow* ChromeUserManagerImpl::GetDefaultUserFlow() const {
@@ -1460,7 +1422,8 @@ bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
     policy::DeviceLocalAccountPolicyBroker* broker) const {
   return IsManagedSessionEnabled(broker) &&
          (AreRiskyPoliciesUsed(broker) ||
-          AreRiskyExtensionsForceInstalled(broker) ||
+          g_browser_process->local_state()->GetBoolean(
+              prefs::kManagedSessionUseFullLoginWarning) ||
           PolicyHasWebTrustedAuthorityCertificate(broker) ||
           IsProxyUsed(GetLocalState()));
 }
@@ -1538,9 +1501,8 @@ void ChromeUserManagerImpl::ScheduleResolveLocale(
     const std::string& locale,
     base::OnceClosure on_resolved_callback,
     std::string* out_resolved_locale) const {
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(ResolveLocale, locale,
                      base::Unretained(out_resolved_locale)),
       std::move(on_resolved_callback));

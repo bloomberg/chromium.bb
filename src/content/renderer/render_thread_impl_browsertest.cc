@@ -38,17 +38,18 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/public/test/test_launcher.h"
 #include "content/renderer/render_process_impl.h"
-#include "content/test/mock_render_process.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/config/gpu_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/scheduler/test/web_mock_thread_scheduler.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -163,7 +164,7 @@ class RenderThreadImplBrowserTest : public testing::Test,
         ChildProcessHost::Create(this, ChildProcessHost::IpcMode::kNormal);
     process_host_->CreateChannelMojo();
 
-    mock_process_.reset(new MockRenderProcess);
+    process_.reset(new RenderProcess);
     test_task_counter_ = base::MakeRefCounted<TestTaskCounter>();
 
     // RenderThreadImpl expects the browser to pass these flags.
@@ -179,6 +180,7 @@ class RenderThreadImplBrowserTest : public testing::Test,
     // in RenderThreadImpl::Init().
     cmd->AppendSwitch(switches::kIgnoreGpuBlacklist);
 
+    blink::Platform::InitializeBlink();
     auto main_thread_scheduler =
         blink::scheduler::CreateMockWebMainThreadSchedulerForTests();
     scoped_refptr<base::SingleThreadTaskRunner> test_task_counter(
@@ -205,11 +207,11 @@ class RenderThreadImplBrowserTest : public testing::Test,
   void TearDown() override {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kSingleProcessTests)) {
-      // In a single-process mode, we need to avoid destructing mock_process_
+      // In a single-process mode, we need to avoid destructing process_
       // because it will call _exit(0) and kill the process before the browser
       // side is ready to exit.
-      ANNOTATE_LEAKING_OBJECT_PTR(mock_process_.get());
-      mock_process_.release();
+      ANNOTATE_LEAKING_OBJECT_PTR(process_.get());
+      process_.release();
     }
   }
 
@@ -249,7 +251,7 @@ class RenderThreadImplBrowserTest : public testing::Test,
   const base::Process null_process_;
   std::unique_ptr<ChildProcessHost> process_host_;
 
-  std::unique_ptr<MockRenderProcess> mock_process_;
+  std::unique_ptr<RenderProcess> process_;
   scoped_refptr<QuitOnTestMsgFilter> test_msg_filter_;
 
   blink::scheduler::WebMockThreadScheduler* main_thread_scheduler_;

@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
+
+import {StylesSidebarPane} from './StylesSidebarPane.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
-export default class StylePropertyHighlighter {
+export class StylePropertyHighlighter {
   /**
-   * @param {!Elements.StylesSidebarPane} ssp
-   * @param {!SDK.CSSProperty} cssProperty
+   * @param {!StylesSidebarPane} ssp
+   * @param {!SDK.CSSProperty.CSSProperty} cssProperty
    */
   constructor(ssp, cssProperty) {
     this._styleSidebarPane = ssp;
@@ -52,12 +56,3 @@ export default class StylePropertyHighlighter {
         {duration: 2000, easing: 'cubic-bezier(0, 0, 0.2, 1)'});
   }
 }
-
-/* Legacy exported object */
-self.Elements = self.Elements || {};
-
-/* Legacy exported object */
-Elements = Elements || {};
-
-/** @constructor */
-Elements.StylePropertyHighlighter = StylePropertyHighlighter;

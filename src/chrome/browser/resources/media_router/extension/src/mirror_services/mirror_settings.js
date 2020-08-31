@@ -29,8 +29,6 @@ mr.mirror.VideoCodec = {
   RTX: 'rtx'
 };
 
-
-
 /**
  * Settings that affect capture and transport (via Cast Streaming or WebRTC).
  * Generally, these should all be left unchanged from their defaults.
@@ -65,19 +63,33 @@ mr.mirror.VideoCodec = {
  */
 mr.mirror.Settings = class {
   constructor() {
+    // When all streaming endpoints support adaptive capture and/or we ship VP9
+    // support, we plan to raise these limits.
+    /**
+     * The absolute maximum width we are willing to capture.
+     * @const {number}
+     */
+    this.maxCaptureWidth = 1920;
+
+    /**
+     * The absolute maximum height we are willing to capture.
+     * @const {number}
+     */
+    this.maxCaptureHeight = 1080;
+
     /**
      * Maximum video width in pixels.
      *
      * @export {number}
      */
-    this.maxWidth = 1920;
+    this.maxWidth = this.maxCaptureWidth;
 
     /**
      * Maximum video height in pixels.
      *
      * @export {number}
      */
-    this.maxHeight = 1080;
+    this.maxHeight = this.maxCaptureHeight;
 
     /**
      * Minimum video width in pixels.
@@ -144,7 +156,7 @@ mr.mirror.Settings = class {
      *
      * @export {number}
      */
-    this.maxLatencyMillis = 800;
+    this.maxLatencyMillis = 400;
 
     /**
      * Minimum end-to-end latency (in milliseconds). This allows cast streaming
@@ -300,8 +312,15 @@ mr.mirror.Settings = class {
   clampMaxDimensionsToScreenSize_() {
     const widthStep = 160;
     const heightStep = 90;
-    const screenWidth = mr.mirror.Settings.getScreenWidth();
-    const screenHeight = mr.mirror.Settings.getScreenHeight();
+    let screenWidth = mr.mirror.Settings.getScreenWidth();
+    let screenHeight = mr.mirror.Settings.getScreenHeight();
+
+    // If the device is in portrait mode, then set capture dimensions
+    // based on landscape orientation.  Otherwise the chosen capture dimensions
+    // are artificially low.
+    if (screenHeight > screenWidth) {
+      [screenWidth, screenHeight] = [screenHeight, screenWidth];
+    }
     const x = this.maxWidth * screenHeight;
     const y = this.maxHeight * screenWidth;
     let clampedWidth = 0;
@@ -383,12 +402,12 @@ mr.mirror.Settings = class {
 
   /** @return {number} */
   static getScreenWidth() {
-    return screen.width;
+    return Math.round(screen.width * window.devicePixelRatio);
   }
 
   /** @return {number} */
   static getScreenHeight() {
-    return screen.height;
+    return Math.round(screen.height * window.devicePixelRatio);
   }
 };
 

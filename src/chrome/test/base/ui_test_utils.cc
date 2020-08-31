@@ -32,21 +32,20 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/find_bar/find_notification_details.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/find_result_waiter.h"
-#include "components/app_modal/app_modal_dialog_queue.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/download/public/common/download_item.h"
+#include "components/find_in_page/find_notification_details.h"
+#include "components/find_in_page/find_tab_helper.h"
 #include "components/history/core/browser/history_service_observer.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_queue.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -107,12 +106,12 @@ Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
   return new_browser;
 }
 
-class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
+class AppModalDialogWaiter : public javascript_dialogs::AppModalDialogObserver {
  public:
-  AppModalDialogWaiter() : dialog_(nullptr) {}
-  ~AppModalDialogWaiter() override {}
+  AppModalDialogWaiter() = default;
+  ~AppModalDialogWaiter() override = default;
 
-  app_modal::JavaScriptAppModalDialog* Wait() {
+  javascript_dialogs::AppModalDialogController* Wait() {
     if (dialog_)
       return dialog_;
     message_loop_runner_ = new content::MessageLoopRunner;
@@ -122,7 +121,7 @@ class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
   }
 
   // AppModalDialogObserver:
-  void Notify(app_modal::JavaScriptAppModalDialog* dialog) override {
+  void Notify(javascript_dialogs::AppModalDialogController* dialog) override {
     DCHECK(!dialog_);
     dialog_ = dialog;
     CheckForHangMonitorDisabling(dialog);
@@ -131,7 +130,7 @@ class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
   }
 
   static void CheckForHangMonitorDisabling(
-      app_modal::JavaScriptAppModalDialog* dialog) {
+      javascript_dialogs::AppModalDialogController* dialog) {
     // If a test waits for a beforeunload dialog but hasn't disabled the
     // beforeunload hang timer before triggering it, there will be a race
     // between the dialog and the timer and the test will be flaky. We can't
@@ -155,58 +154,14 @@ class AppModalDialogWaiter : public app_modal::AppModalDialogObserver {
   }
 
  private:
-  app_modal::JavaScriptAppModalDialog* dialog_;
+  javascript_dialogs::AppModalDialogController* dialog_ = nullptr;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogWaiter);
 };
 
-class BrowserChangeObserver : public BrowserListObserver {
- public:
-  enum class ChangeType {
-    kAdded,
-    kRemoved,
-  };
 
-  BrowserChangeObserver(Browser* browser, ChangeType type)
-      : browser_(browser), type_(type) {
-    BrowserList::AddObserver(this);
-  }
-
-  ~BrowserChangeObserver() override { BrowserList::RemoveObserver(this); }
-
-  Browser* Wait() {
-    run_loop_.Run();
-    return browser_;
-  }
-
-  // BrowserListObserver:
-  void OnBrowserAdded(Browser* browser) override {
-    if (type_ == ChangeType::kAdded) {
-      browser_ = browser;
-      run_loop_.Quit();
-    }
-  }
-
-  void OnBrowserRemoved(Browser* browser) override {
-    if (browser_ && browser_ != browser)
-      return;
-
-    if (type_ == ChangeType::kRemoved) {
-      browser_ = browser;
-      run_loop_.Quit();
-    }
-  }
-
- private:
-  Browser* browser_;
-  ChangeType type_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserChangeObserver);
-};
-
-class AutocompleteChangeObserver : public OmniboxControllerEmitter::Observer {
+class AutocompleteChangeObserver : public AutocompleteController::Observer {
  public:
   explicit AutocompleteChangeObserver(Profile* profile) {
     scoped_observer_.Add(
@@ -217,18 +172,16 @@ class AutocompleteChangeObserver : public OmniboxControllerEmitter::Observer {
 
   void Wait() { run_loop_.Run(); }
 
-  // OmniboxControllerEmitter::Observer:
-  void OnOmniboxQuery(AutocompleteController* controller,
-                      const AutocompleteInput& input) override {}
-  void OnOmniboxResultChanged(bool default_match_changed,
-                              AutocompleteController* controller) override {
+  // AutocompleteController::Observer:
+  void OnResultChanged(AutocompleteController* controller,
+                       bool default_match_changed) override {
     if (run_loop_.running())
       run_loop_.Quit();
   }
 
  private:
   base::RunLoop run_loop_;
-  ScopedObserver<OmniboxControllerEmitter, OmniboxControllerEmitter::Observer>
+  ScopedObserver<OmniboxControllerEmitter, AutocompleteController::Observer>
       scoped_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteChangeObserver);
@@ -266,7 +219,7 @@ void NavigateToURLWithPost(Browser* browser, const GURL& url) {
 content::RenderProcessHost* NavigateToURL(Browser* browser, const GURL& url) {
   return NavigateToURLWithDisposition(browser, url,
                                       WindowOpenDisposition::CURRENT_TAB,
-                                      BROWSER_TEST_WAIT_FOR_NAVIGATION);
+                                      BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 }
 
 content::RenderProcessHost*
@@ -296,7 +249,7 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     browser = WaitForBrowserNotInSet(initial_browsers);
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_TAB)
     tab_added_waiter.Wait();
-  if (!(browser_test_flags & BROWSER_TEST_WAIT_FOR_NAVIGATION)) {
+  if (!(browser_test_flags & BROWSER_TEST_WAIT_FOR_LOAD_STOP)) {
     // Some other flag caused the wait prior to this.
     return nullptr;
   }
@@ -347,7 +300,7 @@ content::RenderProcessHost* NavigateToURLBlockUntilNavigationsComplete(
     int number_of_navigations) {
   return NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       browser, url, number_of_navigations, WindowOpenDisposition::CURRENT_TAB,
-      BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 }
 
 base::FilePath GetTestFilePath(const base::FilePath& dir,
@@ -406,9 +359,8 @@ bool GetRelativeBuildDirectory(base::FilePath* build_dir) {
   return true;
 }
 
-app_modal::JavaScriptAppModalDialog* WaitForAppModalDialog() {
-  app_modal::AppModalDialogQueue* dialog_queue =
-      app_modal::AppModalDialogQueue::GetInstance();
+javascript_dialogs::AppModalDialogController* WaitForAppModalDialog() {
+  auto* dialog_queue = javascript_dialogs::AppModalDialogQueue::GetInstance();
   if (dialog_queue->HasActiveDialog()) {
     AppModalDialogWaiter::CheckForHangMonitorDisabling(
         dialog_queue->active_dialog());
@@ -441,7 +393,8 @@ int FindInPage(WebContents* tab,
                bool match_case,
                int* ordinal,
                gfx::Rect* selection_rect) {
-  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(tab);
+  find_in_page::FindTabHelper* find_tab_helper =
+      find_in_page::FindTabHelper::FromWebContents(tab);
   find_tab_helper->StartFinding(search_string, forward, match_case,
                                 true /* run_synchronously_for_testing */);
   FindResultWaiter observer(tab);
@@ -480,8 +433,7 @@ void SendToOmniboxAndSubmit(Browser* browser,
                             base::TimeTicks match_selection_timestamp) {
   LocationBar* location_bar = browser->window()->GetLocationBar();
   OmniboxView* omnibox = location_bar->GetOmniboxView();
-  omnibox->model()->OnSetFocus(/*control_down=*/false,
-                               /*suppress_on_focus_suggestions=*/false);
+  omnibox->model()->OnSetFocus(/*control_down=*/false);
   omnibox->SetUserText(base::ASCIIToUTF16(input));
   location_bar->AcceptInput(match_selection_timestamp);
 
@@ -664,6 +616,37 @@ void AllBrowserTabAddedWaiter::OnTabStripModelChanged(
 
 void AllBrowserTabAddedWaiter::OnBrowserAdded(Browser* browser) {
   browser->tab_strip_model()->AddObserver(this);
+}
+
+BrowserChangeObserver::BrowserChangeObserver(Browser* browser, ChangeType type)
+    : browser_(browser), type_(type) {
+  BrowserList::AddObserver(this);
+}
+
+BrowserChangeObserver::~BrowserChangeObserver() {
+  BrowserList::RemoveObserver(this);
+}
+
+Browser* BrowserChangeObserver::Wait() {
+  run_loop_.Run();
+  return browser_;
+}
+
+void BrowserChangeObserver::OnBrowserAdded(Browser* browser) {
+  if (type_ == ChangeType::kAdded) {
+    browser_ = browser;
+    run_loop_.Quit();
+  }
+}
+
+void BrowserChangeObserver::OnBrowserRemoved(Browser* browser) {
+  if (browser_ && browser_ != browser)
+    return;
+
+  if (type_ == ChangeType::kRemoved) {
+    browser_ = browser;
+    run_loop_.Quit();
+  }
 }
 
 }  // namespace ui_test_utils

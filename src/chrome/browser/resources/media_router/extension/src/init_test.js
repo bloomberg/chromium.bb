@@ -32,7 +32,6 @@ describe('Tests init', function() {
       'mrInstanceId': 'mrInstanceId',
       'mrConfig': {
         'enable_dial_discovery': true,
-        'enable_dial_sink_query': true,
         'enable_cast_discovery': true,
         'enable_cast_sink_query': true,
         'use_views_dialog': true

@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
@@ -68,8 +69,7 @@ void LayoutEmbeddedContent::WillBeDestroyed() {
   LayoutReplaced::WillBeDestroyed();
 }
 
-void LayoutEmbeddedContent::Destroy() {
-  WillBeDestroyed();
+void LayoutEmbeddedContent::DeleteThis() {
   // We call clearNode here because LayoutEmbeddedContent is ref counted. This
   // call to destroy may not actually destroy the layout object. We can keep it
   // around because of references from the LocalFrameView class. (The actual
@@ -95,7 +95,7 @@ FrameView* LayoutEmbeddedContent::ChildFrameView() const {
 WebPluginContainerImpl* LayoutEmbeddedContent::Plugin() const {
   EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
   if (embedded_content_view && embedded_content_view->IsPluginView())
-    return ToWebPluginContainerImpl(embedded_content_view);
+    return To<WebPluginContainerImpl>(embedded_content_view);
   return nullptr;
 }
 
@@ -128,8 +128,15 @@ bool LayoutEmbeddedContent::RequiresAcceleratedCompositing() const {
   if (!element)
     return false;
 
-  if (element->ContentFrame() && element->ContentFrame()->IsRemoteFrame())
-    return true;
+  if (Frame* content_frame = element->ContentFrame()) {
+    if (content_frame->IsRemoteFrame())
+      return true;
+    if (base::FeatureList::IsEnabled(
+            blink::features::kCompositeCrossOriginIframes) &&
+        content_frame->IsCrossOriginToParentFrame()) {
+      return true;
+    }
+  }
 
   if (Document* content_document = element->contentDocument()) {
     auto* layout_view = content_document->GetLayoutView();
@@ -302,7 +309,7 @@ void LayoutEmbeddedContent::InvalidatePaint(
 }
 
 CursorDirective LayoutEmbeddedContent::GetCursor(const PhysicalOffset& point,
-                                                 Cursor& cursor) const {
+                                                 ui::Cursor& cursor) const {
   if (Plugin()) {
     // A plugin is responsible for setting the cursor when the pointer is over
     // it.

@@ -8,6 +8,7 @@ import("../../testing/test.gni")
 source_set("fxcrt") {
   sources = [
     "autorestorer.h",
+    "byteorder.h",
     "bytestring.cpp",
     "bytestring.h",
     "cfx_binarybuf.cpp",
@@ -61,6 +62,7 @@ source_set("fxcrt") {
     "retain_ptr.h",
     "retained_tree_node.h",
     "shared_copy_on_write.h",
+    "string_data_template.cpp",
     "string_data_template.h",
     "string_pool_template.h",
     "string_view_template.h",
@@ -100,9 +102,7 @@ source_set("fxcrt") {
     "../../third_party:pdfium_base",
     "../../xfa/*",
   ]
-  deps = [
-    "../../third_party:pdfium_base",
-  ]
+  deps = [ "../../third_party:pdfium_base" ]
   public_deps = [
     "../../:freetype_common",
     "../../third_party:pdfium_base",
@@ -133,6 +133,7 @@ source_set("fxcrt") {
 pdfium_unittest_source_set("unittests") {
   sources = [
     "autorestorer_unittest.cpp",
+    "byteorder_unittest.cpp",
     "bytestring_unittest.cpp",
     "cfx_bitstream_unittest.cpp",
     "cfx_seekablestreamproxy_unittest.cpp",
@@ -170,15 +171,7 @@ pdfium_unittest_source_set("unittests") {
   pdfium_root_dir = "../../"
 
   if (pdf_enable_xfa) {
-    sources += [
-      "cfx_memorystream_unittest.cpp",
-      "css/cfx_cssdeclaration_unittest.cpp",
-      "css/cfx_cssstylesheet_unittest.cpp",
-      "css/cfx_cssvaluelistparser_unittest.cpp",
-    ]
-    deps += [
-      "../fpdfapi/parser",
-      "css",
-    ]
+    sources += [ "cfx_memorystream_unittest.cpp" ]
+    deps += [ "../fpdfapi/parser" ]
   }
 }

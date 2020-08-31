@@ -126,14 +126,14 @@ RenderDelayBufferImpl::RenderDelayBufferImpl(const EchoCanceller3Config& config,
           std::pow(10.0f, config_.render_levels.render_power_gain_db / 20.f)),
       delay_log_level_(config_.delay.log_warning_on_delay_changes
                            ? rtc::LS_WARNING
-                           : rtc::LS_INFO),
+                           : rtc::LS_VERBOSE),
       down_sampling_factor_(config.delay.down_sampling_factor),
       sub_block_size_(static_cast<int>(down_sampling_factor_ > 0
                                            ? kBlockSize / down_sampling_factor_
                                            : kBlockSize)),
       blocks_(GetRenderDelayBufferSize(down_sampling_factor_,
                                        config.delay.num_filters,
-                                       config.filter.main.length_blocks),
+                                       config.filter.refined.length_blocks),
               NumBandsForRate(sample_rate_hz),
               num_render_channels,
               kBlockSize),
@@ -147,7 +147,7 @@ RenderDelayBufferImpl::RenderDelayBufferImpl(const EchoCanceller3Config& config,
       render_decimator_(down_sampling_factor_),
       fft_(),
       render_ds_(sub_block_size_, 0.f),
-      buffer_headroom_(config.filter.main.length_blocks) {
+      buffer_headroom_(config.filter.refined.length_blocks) {
   RTC_DCHECK_EQ(blocks_.buffer.size(), ffts_.buffer.size());
   RTC_DCHECK_EQ(spectra_.buffer.size(), ffts_.buffer.size());
   for (size_t i = 0; i < blocks_.buffer.size(); ++i) {

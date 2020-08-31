@@ -189,6 +189,7 @@ component("vr_ui") {
     "//components/omnibox/browser:vector_icons",
     "//components/url_formatter",
     "//components/vector_icons",
+    "//device/base",
     "//device/vr/buildflags:buildflags",
     "//media",
     "//net",
@@ -234,6 +235,8 @@ component("vr_common") {
     "browser_renderer.cc",
     "browser_renderer.h",
     "browser_renderer_browser_interface.h",
+    "consent/xr_session_request_consent_manager.cc",
+    "consent/xr_session_request_consent_manager.h",
     "frame_type.h",
     "gesture_detector.cc",
     "gesture_detector.h",
@@ -244,19 +247,6 @@ component("vr_common") {
     "platform_controller.h",
     "scheduler_browser_renderer_interface.h",
     "scheduler_delegate.h",
-    "service/browser_xr_runtime.cc",
-    "service/browser_xr_runtime.h",
-    "service/gvr_consent_helper.cc",
-    "service/gvr_consent_helper.h",
-    "service/vr_service_impl.cc",
-    "service/vr_service_impl.h",
-    "service/xr_device_service.cc",
-    "service/xr_device_service.h",
-    "service/xr_runtime_manager.cc",
-    "service/xr_runtime_manager.h",
-    "service/xr_runtime_manager_observer.h",
-    "service/xr_session_request_consent_manager.cc",
-    "service/xr_session_request_consent_manager.h",
     "sounds_manager_audio_delegate.cc",
     "sounds_manager_audio_delegate.h",
     "vr_export.h",
@@ -270,13 +260,6 @@ component("vr_common") {
     "platform_controller_for_testing.cc",
     "platform_controller_for_testing.h",
   ]
-
-  if (enable_arcore) {
-    sources += [
-      "service/arcore_consent_prompt_interface.cc",
-      "service/arcore_consent_prompt_interface.h",
-    ]
-  }
 
   public_deps = [
     ":vr_base",
@@ -293,6 +276,7 @@ component("vr_common") {
     "//components/rappor/public:public",
     "//components/ukm/content",
     "//content/public/browser",
+    "//device/base",
     "//device/vr",
     "//device/vr/buildflags:buildflags",
     "//device/vr/public/mojom",
@@ -321,15 +305,6 @@ component("vr_common") {
 
     # Windows doesn't have app bundles, so include the UI directly.
     deps += [ ":vr_ui" ]
-  }
-
-  if (!is_android) {
-    sources += [
-      "service/isolated_device_provider.cc",
-      "service/isolated_device_provider.h",
-      "service/vr_ui_host.cc",
-      "service/vr_ui_host.h",
-    ]
   }
 
   defines = [ "VR_IMPLEMENTATION" ]
@@ -368,8 +343,6 @@ component("vr_base") {
     "metrics/consent_flow_metrics_helper.h",
     "metrics/metrics_helper.cc",
     "metrics/metrics_helper.h",
-    "metrics/session_metrics_helper.cc",
-    "metrics/session_metrics_helper.h",
     "mode.h",
     "model/assets.cc",
     "model/assets.h",
@@ -395,7 +368,6 @@ component("vr_base") {
     "pose_util.h",
     "render_info.h",
     "scheduler_ui_interface.h",
-    "service/xr_consent_prompt_level.h",
     "speech_recognizer.cc",
     "speech_recognizer.h",
     "text_edit_action.cc",
@@ -430,6 +402,7 @@ component("vr_base") {
     "//components/omnibox/browser",
     "//components/strings:components_strings_grit",
     "//content/public/common",
+    "//device/vr/public/cpp",
     "//ui/base",
   ]
 
@@ -454,18 +427,12 @@ component("vr_base") {
 }
 
 source_set("vr_gl_bindings") {
-  sources = [
-    "gl_bindings.h",
-  ]
+  sources = [ "gl_bindings.h" ]
   public_configs = [ ":vr_gl_mode" ]
   if (use_command_buffer) {
-    public_deps = [
-      "//gpu/command_buffer/client:gles2_c_lib",
-    ]
+    public_deps = [ "//gpu/command_buffer/client:gles2_c_lib" ]
   } else {
-    public_deps = [
-      "//ui/gl",
-    ]
+    public_deps = [ "//ui/gl" ]
   }
 }
 
@@ -501,7 +468,6 @@ test("vr_common_unittests") {
     "gesture_detector_unittest.cc",
     "model/text_input_info_unittest.cc",
     "platform_ui_input_delegate_unittest.cc",
-    "service/xr_runtime_manager_unittest.cc",
     "speech_recognizer_unittest.cc",
     "test/paths.cc",
     "test/paths.h",
@@ -514,22 +480,26 @@ test("vr_common_unittests") {
     "vr_geometry_util_unittest.cc",
   ]
 
-  # TODO(mthiesse, crbug.com/769373): The dependency on device/vr:fakes requires
-  # some workarounds for tests, since we are static-linking to the fakes instead
-  # of loading them from a dll on Windows.
-  defines = [ "DEVICE_VR_IMPLEMENTATION" ]
-
   deps = [
     ":vr_test_support",
+    "//chrome/browser",
+    "//chrome/test:test_support",
     "//components/url_formatter",
     "//components/vector_icons",
+    "//content/test:test_support",
     "//mojo/public/cpp/bindings",
     "//services/network:test_support",
     "//testing/gmock",
     "//ui/gfx/geometry",
   ]
   if (is_android) {
-    deps += [ "//ui/android:ui_java" ]
+    deps += [
+      "//chrome:chrome_android_core",
+      "//ui/android:ui_java",
+    ]
+  }
+  if (is_win) {
+    configs += [ "//build/config/win:delayloads" ]
   }
 }
 
@@ -567,9 +537,7 @@ test("vr_common_perftests") {
   }
 
   # Needed for isolate script to execute
-  data_deps = [
-    "//testing:run_perf_test",
-  ]
+  data_deps = [ "//testing:run_perf_test" ]
 }
 
 source_set("vr_test_support") {
@@ -598,7 +566,6 @@ source_set("vr_test_support") {
 
   public_deps = [
     ":vr_common",
-    ":vr_test_pak",
     ":vr_ui",
     "//base/test:test_support",
     "//cc:test_support",
@@ -613,15 +580,13 @@ source_set("vr_test_support") {
     "//ui/gfx:test_support",
 
     # TODO(mthiesse, crbug.com/769373): Remove dependency on device/vr:fakes.
-    "//device/vr:fakes",
+    "//device/vr:vr_fakes",
 
     # TODO(cjgrant): Figure out why including //ui/android:ui_java here
     # doesn't propagate to individual test executable targets.
   ]
 
-  data = [
-    "$root_out_dir/vr_test.pak",
-  ]
+  data_deps = [ ":vr_test_pak" ]
 }
 
 source_set("vr_gl_test_support") {
@@ -699,6 +664,7 @@ if (!is_android) {
       "//chrome/test:xr_browser_tests_common",
       "//device/vr:vr",
       "//device/vr/buildflags:buildflags",
+      "//device/vr/orientation",
       "//device/vr/public/mojom",
       "//device/vr/public/mojom:test_mojom",
     ]
@@ -746,9 +712,7 @@ if (!is_android) {
 }
 
 fuzzer_test("vr_omnibox_formatting_fuzzer") {
-  sources = [
-    "elements/omnibox_formatting_fuzzer.cc",
-  ]
+  sources = [ "elements/omnibox_formatting_fuzzer.cc" ]
   deps = [
     ":vr_common",
     ":vr_ui",

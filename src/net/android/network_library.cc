@@ -8,7 +8,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/net_jni_headers/AndroidNetworkLibrary_jni.h"
 #include "net/net_jni_headers/DnsStatus_jni.h"
@@ -142,13 +142,11 @@ internal::ConfigParsePosixResult GetDnsServers(
     return internal::CONFIG_PARSE_POSIX_NO_NAMESERVERS;
 
   // Parse the DNS servers.
-  std::vector<std::string> dns_servers_strings;
-  base::android::JavaArrayOfByteArrayToStringVector(
-      env, Java_DnsStatus_getDnsServers(env, result), &dns_servers_strings);
-  for (const std::string& dns_address_string : dns_servers_strings) {
-    IPAddress dns_address(
-        reinterpret_cast<const uint8_t*>(dns_address_string.c_str()),
-        dns_address_string.size());
+  std::vector<std::vector<uint8_t>> dns_servers_data;
+  base::android::JavaArrayOfByteArrayToBytesVector(
+      env, Java_DnsStatus_getDnsServers(env, result), &dns_servers_data);
+  for (const std::vector<uint8_t>& dns_address_data : dns_servers_data) {
+    IPAddress dns_address(dns_address_data.data(), dns_address_data.size());
     IPEndPoint dns_server(dns_address, dns_protocol::kDefaultPort);
     dns_servers->push_back(dns_server);
   }

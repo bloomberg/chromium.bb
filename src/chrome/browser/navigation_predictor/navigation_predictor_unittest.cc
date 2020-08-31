@@ -5,7 +5,9 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 
 #include <map>
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -31,9 +33,9 @@ class TestNavigationPredictor : public NavigationPredictor {
  public:
   TestNavigationPredictor(
       mojo::PendingReceiver<AnchorElementMetricsHost> receiver,
-      content::RenderFrameHost* render_frame_host,
+      content::WebContents* web_contents,
       bool init_feature_list)
-      : NavigationPredictor(render_frame_host),
+      : NavigationPredictor(web_contents),
         receiver_(this, std::move(receiver)) {
     if (init_feature_list) {
       const std::vector<base::Feature> features = {
@@ -54,7 +56,7 @@ class TestNavigationPredictor : public NavigationPredictor {
   double CalculateAnchorNavigationScore(
       const blink::mojom::AnchorElementMetrics& metrics,
       int area_rank) const override {
-    area_rank_map_.emplace(std::make_pair(metrics.target_url, area_rank));
+    area_rank_map_.emplace(metrics.target_url, area_rank);
     return 100 * metrics.ratio_area;
   }
 
@@ -81,10 +83,10 @@ class TestNavigationPredictorBasedOnScroll : public TestNavigationPredictor {
  public:
   TestNavigationPredictorBasedOnScroll(
       mojo::PendingReceiver<AnchorElementMetricsHost> receiver,
-      content::RenderFrameHost* render_frame_host,
+      content::WebContents* web_contents,
       bool init_feature_list)
       : TestNavigationPredictor(std::move(receiver),
-                                render_frame_host,
+                                web_contents,
                                 init_feature_list) {}
 
   ~TestNavigationPredictorBasedOnScroll() override {}
@@ -137,7 +139,7 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
-        predictor_service_.BindNewPipeAndPassReceiver(), main_rfh(),
+        predictor_service_.BindNewPipeAndPassReceiver(), web_contents(),
         !field_trial_initiated_);
   }
 
@@ -202,7 +204,7 @@ TEST_F(NavigationPredictorTest, ReportAnchorElementMetricsOnLoad) {
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Visible.HighestNavigationScore", 1);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 1);
 }
 
 // Test that if source/target url is not http or https, no score will be
@@ -217,7 +219,7 @@ TEST_F(NavigationPredictorTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 0);
 }
 
 // Test that if source/target url is not http or https, no navigation score will
@@ -235,7 +237,7 @@ TEST_F(NavigationPredictorTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 0);
 }
 
 // Test that if the target url is not https, no navigation score will
@@ -253,7 +255,7 @@ TEST_F(NavigationPredictorTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 0);
 }
 
 // Test that if the source url is not https, no navigation score will
@@ -271,7 +273,7 @@ TEST_F(NavigationPredictorTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 0);
 }
 
 TEST_F(NavigationPredictorTest, Merge_UniqueAnchorElements) {
@@ -297,9 +299,6 @@ TEST_F(NavigationPredictorTest, Merge_UniqueAnchorElements) {
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements",
-      number_of_metrics_sent, 1);
-  histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge",
       number_of_metrics_sent, 1);
 }
@@ -322,14 +321,9 @@ TEST_F(NavigationPredictorTest, Merge_DuplicateAnchorElements) {
   metrics.push_back(CreateMetricsPtr(source, href_query_1, 0.01));
   metrics.push_back(CreateMetricsPtr(source, href_query_ref, 0.01));
 
-  int number_of_metrics_sent = metrics.size();
   predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics),
                                                         GetDefaultViewport());
   base::RunLoop().RunUntilIdle();
-
-  histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements",
-      number_of_metrics_sent, 1);
 
   // Only two anchor elements are unique: |href| and |href_query_1|.
   histogram_tester.ExpectUniqueSample(
@@ -354,14 +348,10 @@ TEST_F(NavigationPredictorTest, Merge_AnchorElementSameAsDocumentURL) {
   metrics.push_back(CreateMetricsPtr(source, href_query_1, 0.01));
   metrics.push_back(CreateMetricsPtr(source, href_query_ref, 0.01));
 
-  int number_of_metrics_sent = metrics.size();
   predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics),
                                                         GetDefaultViewport());
   base::RunLoop().RunUntilIdle();
 
-  histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements",
-      number_of_metrics_sent, 1);
   // Only two anchor elements are unique and different from the document URL:
   // |href_ref_2| and |href_query_1|.
   histogram_tester.ExpectUniqueSample(
@@ -370,7 +360,7 @@ TEST_F(NavigationPredictorTest, Merge_AnchorElementSameAsDocumentURL) {
 
 // In this test, multiple anchor element metrics are sent to
 // ReportAnchorElementMetricsOnLoad. Test that CalculateAnchorNavigationScore
-// works, and that highest navigation score can be recorded correctly.
+// works.
 TEST_F(NavigationPredictorTest, MultipleAnchorElementMetricsOnLoad) {
   base::HistogramTester histogram_tester;
 
@@ -405,14 +395,6 @@ TEST_F(NavigationPredictorTest, MultipleAnchorElementMetricsOnLoad) {
   EXPECT_EQ(3, area_rank_map.find(GURL(href_small))->second);
   EXPECT_EQ(4, area_rank_map.find(GURL(href_xsmall))->second);
   EXPECT_EQ(area_rank_map.end(), area_rank_map.find(GURL(http_href_xsmall)));
-
-  // The highest score is 100 (scale factor) * 0.1 (largest area) = 10.
-  // After scaling the navigation score across all anchor elements, the score
-  // becomes 38.
-  histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.HighestNavigationScore", 38, 1);
-  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
-                                    5);
 }
 
 // URL with highest prefetch score is from the same origin. Prefetch is done.
@@ -474,7 +456,6 @@ TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch_NotSameOrigin) {
   predictor_service()->ReportAnchorElementMetricsOnClick(
       std::move(metrics_clicked));
   base::RunLoop().RunUntilIdle();
-
 }
 
 TEST_F(NavigationPredictorTest,
@@ -508,7 +489,7 @@ class NavigationPredictorSendUkmMetricsEnabledTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
-        predictor_service_.BindNewPipeAndPassReceiver(), main_rfh(), false);
+        predictor_service_.BindNewPipeAndPassReceiver(), web_contents(), false);
   }
 
   struct TestMetrics {
@@ -743,7 +724,8 @@ class NavigationPredictorPrefetchAfterPreconnectEnabledTest
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ =
         std::make_unique<TestNavigationPredictorBasedOnScroll>(
-            predictor_service_.BindNewPipeAndPassReceiver(), main_rfh(), false);
+            predictor_service_.BindNewPipeAndPassReceiver(), web_contents(),
+            false);
   }
 
   blink::mojom::AnchorElementMetricsPtr CreateMetricsPtrWithRatioDistance(
@@ -802,7 +784,7 @@ class NavigationPredictorPrefetchDisabledTest : public NavigationPredictorTest {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
-        predictor_service_.BindNewPipeAndPassReceiver(), main_rfh(), false);
+        predictor_service_.BindNewPipeAndPassReceiver(), web_contents(), false);
   }
 };
 
@@ -871,7 +853,6 @@ TEST_F(NavigationPredictorPrefetchDisabledTest,
   predictor_service()->ReportAnchorElementMetricsOnClick(
       std::move(metrics_clicked));
   base::RunLoop().RunUntilIdle();
-
 }
 
 // Framework for testing cases where preconnect and prefetch are effectively
@@ -886,7 +867,7 @@ class NavigationPredictorPreconnectPrefetchDisabledTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
-        predictor_service_.BindNewPipeAndPassReceiver(), main_rfh(), false);
+        predictor_service_.BindNewPipeAndPassReceiver(), web_contents(), false);
   }
 };
 
@@ -917,5 +898,4 @@ TEST_F(NavigationPredictorPreconnectPrefetchDisabledTest,
   predictor_service()->ReportAnchorElementMetricsOnClick(
       std::move(metrics_clicked));
   base::RunLoop().RunUntilIdle();
-
 }

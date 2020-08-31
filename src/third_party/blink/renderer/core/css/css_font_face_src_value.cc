@@ -88,9 +88,12 @@ FontResource& CSSFontFaceSrcValue::Fetch(ExecutionContext* context,
     resource_request.SetReferrerPolicy(
         ReferrerPolicyResolveDefault(referrer_.referrer_policy));
     resource_request.SetReferrerString(referrer_.referrer);
+    if (is_ad_related_)
+      resource_request.SetIsAdResource();
     ResourceLoaderOptions options;
     options.initiator_info.name = fetch_initiator_type_names::kCSS;
-    FetchParameters params(resource_request, options);
+    options.initiator_info.referrer = referrer_.referrer;
+    FetchParameters params(std::move(resource_request), options);
     if (base::FeatureList::IsEnabled(
             features::kWebFontsCacheAwareTimeoutAdaption)) {
       params.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);
@@ -137,7 +140,9 @@ void CSSFontFaceSrcValue::RestoreCachedResourceIfNeeded(
             fetched_->GetResource()->Options().content_security_policy_option);
   context->Fetcher()->EmulateLoadStartedForInspector(
       fetched_->GetResource(), KURL(resource_url),
-      mojom::RequestContextType::FONT, fetch_initiator_type_names::kCSS);
+      mojom::RequestContextType::FONT,
+      network::mojom::RequestDestination::kFont,
+      fetch_initiator_type_names::kCSS);
 }
 
 bool CSSFontFaceSrcValue::Equals(const CSSFontFaceSrcValue& other) const {

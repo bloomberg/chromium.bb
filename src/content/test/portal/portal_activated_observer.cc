@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/run_loop.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 
 namespace content {
 

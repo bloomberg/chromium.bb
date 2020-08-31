@@ -16,6 +16,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -41,9 +42,8 @@ constexpr base::ProcessId kProducerPid = 1234;
 class ThreadedPerfettoService : public mojom::TracingSessionClient {
  public:
   ThreadedPerfettoService()
-      : task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+      : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
              base::WithBaseSyncPrimitives(),
              base::TaskPriority::BEST_EFFORT})) {
     perfetto_service_ = std::make_unique<PerfettoService>(task_runner_);
@@ -131,7 +131,7 @@ class ThreadedPerfettoService : public mojom::TracingSessionClient {
     producer_ = std::make_unique<MockProducer>(
         base::StrCat({mojom::kPerfettoProducerNamePrefix,
                       base::NumberToString(kProducerPid)}),
-        data_source_name, perfetto_service_->GetService(),
+        data_source_name, perfetto_service_.get(),
         std::move(on_datasource_registered), std::move(on_tracing_started),
         num_packets);
   }
@@ -654,7 +654,7 @@ TEST_F(TracingConsumerTest, PrivacyFilterConfigInJson) {
                    .privacy_filtering_enabled());
 
   base::RunLoop no_more_data;
-  ExpectPackets("\"perfetto_trace_stats\":\"__stripped__\"",
+  ExpectPackets("\"trace_processor_stats\":\"__stripped__\"",
                 no_more_data.QuitClosure());
 
   base::RunLoop write_done;

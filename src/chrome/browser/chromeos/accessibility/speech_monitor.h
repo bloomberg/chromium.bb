@@ -25,33 +25,50 @@ struct SpeechMonitorUtterance {
 };
 
 // For testing purpose installs itself as the platform speech synthesis engine,
-// allowing it to intercept all speech calls, and then provides a method to
-// block until the next utterance is spoken.
+// allowing it to intercept all speech calls. Provides an api to make
+// asynchronous function calls and expectations about resulting speech.
 class SpeechMonitor : public content::TtsPlatform {
  public:
   SpeechMonitor();
   virtual ~SpeechMonitor();
 
-  // Blocks until the next utterance is spoken, and returns its text.
-  std::string GetNextUtterance();
-  // Blocks until the next utterance is spoken, and returns its text.
-  SpeechMonitorUtterance GetNextUtteranceWithLanguage();
+  // Use these apis if you want to write an async test e.g.
+  // sm_.ExpectSpeech("foo");
+  // sm_.Call([this]() { DoSomething(); })
+  // sm_.Replay();
 
-  // Wait for next utterance and return true if next utterance is ChromeVox
-  // enabled message.
-  bool SkipChromeVoxEnabledMessage();
-  bool SkipChromeVoxMessage(const std::string& message);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpredefined-identifier-outside-function"
 
-  // Returns true if StopSpeaking() was called on TtsController.
-  bool DidStop();
+  // Adds an expectation of spoken text.
+  void ExpectSpeech(const std::string& text,
+                    const base::Location& location = FROM_HERE);
+  void ExpectSpeechPattern(const std::string& pattern,
+                           const base::Location& location = FROM_HERE);
+  void ExpectSpeechPatternWithLocale(
+      const std::string& pattern,
+      const std::string& locale,
+      const base::Location& location = FROM_HERE);
+  void ExpectNextSpeechIsNot(const std::string& text,
+                             const base::Location& location = FROM_HERE);
+  void ExpectNextSpeechIsNotPattern(const std::string& pattern,
+                                    const base::Location& location = FROM_HERE);
 
-  // Blocks until StopSpeaking() is called on TtsController.
-  void BlockUntilStop();
+  // Adds a call to be included in replay.
+  void Call(std::function<void()> func,
+            const base::Location& location = FROM_HERE);
+
+#pragma clang diagnostic pop
+
+  // Replays all expectations.
+  void Replay();
 
   // Delayed utterances.
   double GetDelayForLastUtteranceMS();
 
  private:
+  typedef std::pair<std::function<bool()>, std::string> ReplayArgs;
+
   // TtsPlatform implementation.
   bool PlatformImplAvailable() override;
   void Speak(int utterance_id,
@@ -73,19 +90,39 @@ class SpeechMonitor : public content::TtsPlatform {
   void ClearError() override;
   void SetError(const std::string& error) override;
 
-  scoped_refptr<content::MessageLoopRunner> loop_runner_;
+  void MaybeContinueReplay();
+  void MaybePrintExpectations();
+
   // Our list of utterances and specified language.
   base::circular_deque<SpeechMonitorUtterance> utterance_queue_;
-  bool did_stop_ = false;
+
   std::string error_;
 
-  // Delayed utterances.
   // Calculates the milliseconds elapsed since the last call to Speak().
   double CalculateUtteranceDelayMS();
+
   // Stores the milliseconds elapsed since the last call to Speak().
-  double delay_for_last_utterance_MS_;
+  double delay_for_last_utterance_ms_;
+
   // Stores the last time Speak() was called.
   std::chrono::steady_clock::time_point time_of_last_utterance_;
+
+  // Queue of expectations to be replayed.
+  std::vector<ReplayArgs> replay_queue_;
+
+  // Queue of expectations already satisfied.
+  std::vector<std::string> replayed_queue_;
+
+  // Blocks this test when replaying expectations.
+  scoped_refptr<content::MessageLoopRunner> replay_loop_runner_;
+
+  // Used to track the size of |replay_queue_| for knowing when to print errors.
+  size_t last_replay_queue_size_ = 0;
+
+  // Whether |Replay| was called.
+  bool replay_called_ = false;
+
+  base::WeakPtrFactory<SpeechMonitor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpeechMonitor);
 };

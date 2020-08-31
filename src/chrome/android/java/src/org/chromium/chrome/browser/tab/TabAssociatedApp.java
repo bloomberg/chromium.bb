@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.tab;
 
 import android.text.TextUtils;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -38,8 +39,9 @@ public final class TabAssociatedApp extends TabWebContentsUserData implements Im
         super(tab);
         tab.addObserver(new EmptyTabObserver() {
             @Override
-            public void onInitialized(Tab tab, TabState tabState) {
-                if (tabState != null) setAppId(tabState.openerAppId);
+            public void onInitialized(
+                    Tab tab, String appId, @Nullable Boolean hasThemeColor, int themeColor) {
+                if (appId != null) setAppId(appId);
             }
 
             @Override

@@ -143,7 +143,6 @@ class PLATFORM_EXPORT TaskQueueThrottler : public BudgetPoolController {
     bool DecrementRefCount();
 
     // TaskQueue::Observer implementation:
-    void OnPostTask(base::Location from_here, base::TimeDelta delay) override;
     void OnQueueNextWakeUpChanged(base::TimeTicks wake_up) override;
 
     size_t throttling_ref_count() const { return throttling_ref_count_; }
@@ -157,6 +156,8 @@ class PLATFORM_EXPORT TaskQueueThrottler : public BudgetPoolController {
     TaskQueueThrottler* const throttler_;
     size_t throttling_ref_count_ = 0;
     HashSet<BudgetPool*> budget_pools_;
+
+    DISALLOW_COPY_AND_ASSIGN(Metadata);
   };
 
   using TaskQueueMap =
@@ -181,7 +182,9 @@ class PLATFORM_EXPORT TaskQueueThrottler : public BudgetPoolController {
                      base::TimeTicks moment,
                      bool is_wake_up);
 
-  base::Optional<base::TimeTicks> GetTimeTasksCanRunUntil(
+  // Returns the time until which tasks in |queue| can run. TimeTicks::Max()
+  // means that there are no known limits.
+  base::TimeTicks GetTimeTasksCanRunUntil(
       base::sequence_manager::TaskQueue* queue,
       base::TimeTicks now,
       bool is_wake_up) const;

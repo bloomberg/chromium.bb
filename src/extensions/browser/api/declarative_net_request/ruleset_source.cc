@@ -11,15 +11,19 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/flat_ruleset_indexer.h"
@@ -32,6 +36,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
@@ -47,10 +52,6 @@ namespace {
 namespace dnr_api = extensions::api::declarative_net_request;
 using Status = ReadJSONRulesResult::Status;
 
-// Dynamic rulesets get more priority over static rulesets.
-const size_t kStaticRulesetPriority = 1;
-const size_t kDynamicRulesetPriority = 2;
-
 constexpr const char kFileDoesNotExistError[] = "File does not exist.";
 constexpr const char kFileReadError[] = "File read error.";
 
@@ -63,17 +64,51 @@ std::string GetFilename(const base::FilePath& file_path) {
   return file_path.BaseName().AsUTF8Unsafe();
 }
 
-std::string GetErrorWithFilename(const base::FilePath& path,
+std::string GetErrorWithFilename(const base::FilePath& json_path,
                                  const std::string& error) {
-  return base::StrCat({GetFilename(path), ": ", error});
+  return base::StrCat({GetFilename(json_path), ": ", error});
 }
 
-InstallWarning CreateInstallWarning(const std::string& message) {
-  return InstallWarning(message, manifest_keys::kDeclarativeNetRequestKey,
+InstallWarning CreateInstallWarning(const base::FilePath& json_path,
+                                    const std::string& message) {
+  std::string message_with_filename = GetErrorWithFilename(json_path, message);
+  return InstallWarning(message_with_filename,
+                        manifest_keys::kDeclarativeNetRequestKey,
                         manifest_keys::kDeclarativeRuleResourcesKey);
 }
 
-ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
+// Adds install warnings for rules which exceed the per-rule regex memory limit.
+void AddRegexLimitExceededWarnings(
+    const base::FilePath& json_path,
+    std::vector<InstallWarning>* warnings,
+    const std::vector<int>& regex_limit_exceeded_rule_ids) {
+  DCHECK(warnings);
+
+  std::vector<std::string> rule_ids;
+  rule_ids.reserve(regex_limit_exceeded_rule_ids.size());
+  for (int rule_id : regex_limit_exceeded_rule_ids)
+    rule_ids.push_back(base::NumberToString(rule_id));
+
+  constexpr size_t kMaxRegexLimitExceededWarnings = 10;
+  if (rule_ids.size() <= kMaxRegexLimitExceededWarnings) {
+    for (const std::string& rule_id: rule_ids) {
+      warnings->push_back(CreateInstallWarning(
+          json_path, ErrorUtils::FormatErrorMessage(kErrorRegexTooLarge,
+                                                    rule_id, kRegexFilterKey)));
+    }
+
+    return;
+  }
+
+  warnings->push_back(CreateInstallWarning(
+      json_path,
+      ErrorUtils::FormatErrorMessage(
+          kErrorRegexesTooLarge,
+          base::JoinString(rule_ids, ", " /* separator */), kRegexFilterKey)));
+}
+
+ReadJSONRulesResult ParseRulesFromJSON(const base::FilePath& json_path,
+                                       const base::Value& rules,
                                        size_t rule_limit) {
   ReadJSONRulesResult result;
 
@@ -87,6 +122,9 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
   bool unparsed_warnings_limit_exeeded = false;
   size_t unparsed_warning_count = 0;
 
+  int regex_rule_count = 0;
+  bool regex_rule_count_exceeded = false;
+
   // We don't use json_schema_compiler::util::PopulateArrayFromList since it
   // fails if a single Value can't be deserialized. However we want to ignore
   // values which can't be parsed to maintain backwards compatibility.
@@ -99,8 +137,21 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
         parse_error.empty()) {
       if (result.rules.size() == rule_limit) {
         result.rule_parse_warnings.push_back(
-            CreateInstallWarning(kRuleCountExceeded));
+            CreateInstallWarning(json_path, kRuleCountExceeded));
         break;
+      }
+
+      const bool is_regex_rule = !!parsed_rule.condition.regex_filter;
+      if (is_regex_rule &&
+          ++regex_rule_count > dnr_api::MAX_NUMBER_OF_REGEX_RULES) {
+        // Only add the install warning once.
+        if (!regex_rule_count_exceeded) {
+          regex_rule_count_exceeded = true;
+          result.rule_parse_warnings.push_back(
+              CreateInstallWarning(json_path, kRegexRuleCountExceeded));
+        }
+
+        continue;
       }
 
       result.rules.push_back(std::move(parsed_rule));
@@ -126,6 +177,7 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
     }
 
     result.rule_parse_warnings.push_back(CreateInstallWarning(
+        json_path,
         ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning, rule_location,
                                        base::UTF16ToUTF8(parse_error))));
   }
@@ -133,13 +185,47 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
   DCHECK_LE(result.rules.size(), rule_limit);
 
   if (unparsed_warnings_limit_exeeded) {
-    result.rule_parse_warnings.push_back(
-        CreateInstallWarning(ErrorUtils::FormatErrorMessage(
-            kTooManyParseFailuresWarning,
-            std::to_string(kMaxUnparsedRulesWarnings))));
+    result.rule_parse_warnings.push_back(CreateInstallWarning(
+        json_path, ErrorUtils::FormatErrorMessage(
+                       kTooManyParseFailuresWarning,
+                       std::to_string(kMaxUnparsedRulesWarnings))));
   }
 
   return result;
+}
+
+IndexAndPersistJSONRulesetResult IndexAndPersistRuleset(
+    const RulesetSource& source,
+    ReadJSONRulesResult read_result,
+    const base::ElapsedTimer& timer) {
+  if (read_result.status != Status::kSuccess) {
+    return IndexAndPersistJSONRulesetResult::CreateErrorResult(
+        GetErrorWithFilename(source.json_path(), read_result.error));
+  }
+
+  const ParseInfo info =
+      source.IndexAndPersistRules(std::move(read_result.rules));
+
+  if (info.has_error()) {
+    std::string error = GetErrorWithFilename(source.json_path(), info.error());
+    return IndexAndPersistJSONRulesetResult::CreateErrorResult(
+        std::move(error));
+  }
+
+  // Don't cause a hard error if the regex failed compilation due to
+  // exceeding the memory limit. This is because it's not a syntactical
+  // error and the developers don't have an easy way to determine whether
+  // the regex filter will exceed the memory limit or not. Also, the re2
+  // implementation can change causing the memory consumption of a regex to
+  // change as well.
+  std::vector<InstallWarning> warnings =
+      std::move(read_result.rule_parse_warnings);
+  AddRegexLimitExceededWarnings(source.json_path(), &warnings,
+                                info.regex_limit_exceeded_rules());
+
+  return IndexAndPersistJSONRulesetResult::CreateSuccessResult(
+      info.ruleset_checksum(), std::move(warnings), info.rules_count(),
+      info.regex_rules_count(), timer.Elapsed());
 }
 
 void OnSafeJSONParse(const base::FilePath& json_path,
@@ -154,29 +240,10 @@ void OnSafeJSONParse(const base::FilePath& json_path,
 
   base::ElapsedTimer timer;
   ReadJSONRulesResult read_result =
-      ParseRulesFromJSON(*result.value, source.rule_count_limit());
-  if (read_result.status != Status::kSuccess) {
-    std::move(callback).Run(IndexAndPersistJSONRulesetResult::CreateErrorResult(
-        GetErrorWithFilename(source.json_path(), read_result.error)));
-    return;
-  }
+      ParseRulesFromJSON(json_path, *result.value, source.rule_count_limit());
 
-  int ruleset_checksum;
-  size_t rules_count = read_result.rules.size();
-  const ParseInfo info = source.IndexAndPersistRules(
-      std::move(read_result.rules), &ruleset_checksum);
-  if (info.result() == ParseResult::SUCCESS) {
-    std::move(callback).Run(
-        IndexAndPersistJSONRulesetResult::CreateSuccessResult(
-            ruleset_checksum, std::move(read_result.rule_parse_warnings),
-            rules_count, timer.Elapsed()));
-    return;
-  }
-
-  std::string error =
-      GetErrorWithFilename(source.json_path(), info.GetErrorDescription());
-  std::move(callback).Run(
-      IndexAndPersistJSONRulesetResult::CreateErrorResult(std::move(error)));
+  std::move(callback).Run(IndexAndPersistRuleset(
+      source, std::move(read_result), timer));
 }
 
 }  // namespace
@@ -187,12 +254,14 @@ IndexAndPersistJSONRulesetResult::CreateSuccessResult(
     int ruleset_checksum,
     std::vector<InstallWarning> warnings,
     size_t rules_count,
+    size_t regex_rules_count,
     base::TimeDelta index_and_persist_time) {
   IndexAndPersistJSONRulesetResult result;
   result.success = true;
   result.ruleset_checksum = ruleset_checksum;
   result.warnings = std::move(warnings);
   result.rules_count = rules_count;
+  result.regex_rules_count = regex_rules_count;
   result.index_and_persist_time = index_and_persist_time;
   return result;
 }
@@ -229,37 +298,45 @@ ReadJSONRulesResult& ReadJSONRulesResult::operator=(ReadJSONRulesResult&&) =
     default;
 
 // static
-const size_t RulesetSource::kStaticRulesetID = 1;
-const size_t RulesetSource::kDynamicRulesetID = 2;
+std::vector<RulesetSource> RulesetSource::CreateStatic(
+    const Extension& extension) {
+  const std::vector<DNRManifestData::RulesetInfo>& rulesets =
+      declarative_net_request::DNRManifestData::GetRulesets(extension);
 
-// static
-RulesetSource RulesetSource::CreateStatic(const Extension& extension) {
+  std::vector<RulesetSource> sources;
+  for (const auto& info : rulesets)
+    sources.push_back(CreateStatic(extension, info));
+
+  return sources;
+}
+
+RulesetSource RulesetSource::CreateStatic(
+    const Extension& extension,
+    const DNRManifestData::RulesetInfo& info) {
   return RulesetSource(
-      declarative_net_request::DNRManifestData::GetRulesetPath(extension),
-      file_util::GetIndexedRulesetPath(extension.path()), kStaticRulesetID,
-      kStaticRulesetPriority, dnr_api::SOURCE_TYPE_MANIFEST,
-      dnr_api::MAX_NUMBER_OF_RULES, extension.id());
+      extension.path().Append(info.relative_path),
+      extension.path().Append(
+          file_util::GetIndexedRulesetRelativePath(info.id.value())),
+      info.id, dnr_api::MAX_NUMBER_OF_RULES, extension.id(), info.enabled);
 }
 
 // static
 RulesetSource RulesetSource::CreateDynamic(content::BrowserContext* context,
-                                           const Extension& extension) {
+                                           const ExtensionId& extension_id) {
   base::FilePath dynamic_ruleset_directory =
       context->GetPath()
           .AppendASCII(kDynamicRulesetDirectory)
-          .AppendASCII(extension.id());
+          .AppendASCII(extension_id);
   return RulesetSource(
       dynamic_ruleset_directory.AppendASCII(kDynamicRulesJSONFilename),
       dynamic_ruleset_directory.AppendASCII(kDynamicIndexedRulesFilename),
-      kDynamicRulesetID, kDynamicRulesetPriority, dnr_api::SOURCE_TYPE_DYNAMIC,
-      dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES, extension.id());
+      kDynamicRulesetID, dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES, extension_id,
+      true /* enabled_by_default */);
 }
 
 // static
 std::unique_ptr<RulesetSource> RulesetSource::CreateTemporarySource(
-    size_t id,
-    size_t priority,
-    dnr_api::SourceType type,
+    RulesetID id,
     size_t rule_count_limit,
     ExtensionId extension_id) {
   base::FilePath temporary_file_indexed;
@@ -269,33 +346,20 @@ std::unique_ptr<RulesetSource> RulesetSource::CreateTemporarySource(
     return nullptr;
   }
 
-  return std::make_unique<RulesetSource>(
+  // Use WrapUnique since RulesetSource constructor is private.
+  return base::WrapUnique(new RulesetSource(
       std::move(temporary_file_json), std::move(temporary_file_indexed), id,
-      priority, type, rule_count_limit, std::move(extension_id));
+      rule_count_limit, std::move(extension_id),
+      true /* enabled_by_default */));
 }
-
-RulesetSource::RulesetSource(base::FilePath json_path,
-                             base::FilePath indexed_path,
-                             size_t id,
-                             size_t priority,
-                             dnr_api::SourceType type,
-                             size_t rule_count_limit,
-                             ExtensionId extension_id)
-    : json_path_(std::move(json_path)),
-      indexed_path_(std::move(indexed_path)),
-      id_(id),
-      priority_(priority),
-      type_(type),
-      rule_count_limit_(rule_count_limit),
-      extension_id_(std::move(extension_id)) {}
 
 RulesetSource::~RulesetSource() = default;
 RulesetSource::RulesetSource(RulesetSource&&) = default;
 RulesetSource& RulesetSource::operator=(RulesetSource&&) = default;
 
 RulesetSource RulesetSource::Clone() const {
-  return RulesetSource(json_path_, indexed_path_, id_, priority_, type_,
-                       rule_count_limit_, extension_id_);
+  return RulesetSource(json_path_, indexed_path_, id_, rule_count_limit_,
+                       extension_id_, enabled_by_default_);
 }
 
 IndexAndPersistJSONRulesetResult
@@ -303,25 +367,8 @@ RulesetSource::IndexAndPersistJSONRulesetUnsafe() const {
   DCHECK(IsAPIAvailable());
 
   base::ElapsedTimer timer;
-  ReadJSONRulesResult result = ReadJSONRulesUnsafe();
-  if (result.status != Status::kSuccess) {
-    return IndexAndPersistJSONRulesetResult::CreateErrorResult(
-        GetErrorWithFilename(json_path_, result.error));
-  }
-
-  int ruleset_checksum;
-  size_t rules_count = result.rules.size();
-  const ParseInfo info =
-      IndexAndPersistRules(std::move(result.rules), &ruleset_checksum);
-  if (info.result() == ParseResult::SUCCESS) {
-    return IndexAndPersistJSONRulesetResult::CreateSuccessResult(
-        ruleset_checksum, std::move(result.rule_parse_warnings), rules_count,
-        timer.Elapsed());
-  }
-
-  std::string error =
-      GetErrorWithFilename(json_path_, info.GetErrorDescription());
-  return IndexAndPersistJSONRulesetResult::CreateErrorResult(std::move(error));
+  return IndexAndPersistRuleset(*this, ReadJSONRulesUnsafe(),
+                                             timer);
 }
 
 void RulesetSource::IndexAndPersistJSONRuleset(
@@ -347,14 +394,17 @@ void RulesetSource::IndexAndPersistJSONRuleset(
                                     std::move(callback)));
 }
 
-ParseInfo RulesetSource::IndexAndPersistRules(std::vector<dnr_api::Rule> rules,
-                                              int* ruleset_checksum) const {
+ParseInfo RulesetSource::IndexAndPersistRules(
+    std::vector<dnr_api::Rule> rules) const {
   DCHECK_LE(rules.size(), rule_count_limit_);
-  DCHECK(ruleset_checksum);
   DCHECK(IsAPIAvailable());
 
   FlatRulesetIndexer indexer;
 
+  size_t rules_count = 0;
+  size_t regex_rules_count = 0;
+  int ruleset_checksum = -1;
+  std::vector<int> large_regex_rule_ids;
   {
     std::set<int> id_set;  // Ensure all ids are distinct.
     const GURL base_url = Extension::GetBaseURLFromExtensionId(extension_id_);
@@ -362,25 +412,48 @@ ParseInfo RulesetSource::IndexAndPersistRules(std::vector<dnr_api::Rule> rules,
       int rule_id = rule.id;
       bool inserted = id_set.insert(rule_id).second;
       if (!inserted)
-        return ParseInfo(ParseResult::ERROR_DUPLICATE_IDS, rule_id);
+        return ParseInfo(ParseResult::ERROR_DUPLICATE_IDS, &rule_id);
+
+      // Ensure modifyHeaders actions don't have any side-effects on Stable
+      // since it's under development.
+      // TODO(crbug.com/947591): Remove the channel check once implementation
+      // of modifyHeaders action is complete.
+      if (rule.action.type == dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS &&
+          GetCurrentChannel() == version_info::Channel::STABLE) {
+        continue;
+      }
 
       IndexedRule indexed_rule;
       ParseResult parse_result = IndexedRule::CreateIndexedRule(
           std::move(rule), base_url, &indexed_rule);
+
+      if (parse_result == ParseResult::ERROR_REGEX_TOO_LARGE) {
+        large_regex_rule_ids.push_back(rule_id);
+        continue;
+      }
+
       if (parse_result != ParseResult::SUCCESS)
-        return ParseInfo(parse_result, rule_id);
+        return ParseInfo(parse_result, &rule_id);
 
       indexer.AddUrlRule(indexed_rule);
+      rules_count++;
+
+      if (indexed_rule.url_pattern_type ==
+          url_pattern_index::flat::UrlPatternType_REGEXP) {
+        regex_rules_count++;
+      }
     }
   }
   indexer.Finish();
 
   if (!PersistIndexedRuleset(indexed_path_, indexer.GetData(),
-                             ruleset_checksum)) {
-    return ParseInfo(ParseResult::ERROR_PERSISTING_RULESET);
+                             &ruleset_checksum)) {
+    return ParseInfo(ParseResult::ERROR_PERSISTING_RULESET,
+                     nullptr /* rule_id */);
   }
 
-  return ParseInfo(ParseResult::SUCCESS);
+  return ParseInfo(rules_count, regex_rules_count, ruleset_checksum,
+                   std::move(large_regex_rule_ids));
 }
 
 ReadJSONRulesResult RulesetSource::ReadJSONRulesUnsafe() const {
@@ -405,7 +478,8 @@ ReadJSONRulesResult RulesetSource::ReadJSONRulesUnsafe() const {
         Status::kJSONParseError, std::move(value_with_error.error_message));
   }
 
-  return ParseRulesFromJSON(*value_with_error.value, rule_count_limit_);
+  return ParseRulesFromJSON(json_path(), *value_with_error.value,
+                            rule_count_limit_);
 }
 
 bool RulesetSource::WriteRulesToJSON(
@@ -430,6 +504,19 @@ bool RulesetSource::WriteRulesToJSON(
   return base::WriteFile(json_path_, json_contents.data(), data_size) ==
          data_size;
 }
+
+RulesetSource::RulesetSource(base::FilePath json_path,
+                             base::FilePath indexed_path,
+                             RulesetID id,
+                             size_t rule_count_limit,
+                             ExtensionId extension_id,
+                             bool enabled_by_default)
+    : json_path_(std::move(json_path)),
+      indexed_path_(std::move(indexed_path)),
+      id_(id),
+      rule_count_limit_(rule_count_limit),
+      extension_id_(std::move(extension_id)),
+      enabled_by_default_(enabled_by_default) {}
 
 }  // namespace declarative_net_request
 }  // namespace extensions

@@ -46,6 +46,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/drive/chromeos/search_metadata.h"
 #include "components/drive/event_logger.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -1040,7 +1041,9 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
   const ChromeExtensionFunctionDetails chrome_details(this);
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(chrome_details.GetProfile());
-  const CoreAccountId& account_id = identity_manager->GetPrimaryAccountId();
+  // This class doesn't care about browser sync consent.
+  const CoreAccountId& account_id =
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
   std::vector<std::string> scopes;
   scopes.emplace_back("https://www.googleapis.com/auth/drive.readonly");
 
@@ -1050,7 +1053,7 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
           ->GetURLLoaderFactoryForBrowserProcess();
   auth_service_ = std::make_unique<google_apis::AuthService>(
       identity_manager, account_id, url_loader_factory, scopes);
-  auth_service_->StartAuthentication(base::Bind(
+  auth_service_->StartAuthentication(base::BindOnce(
       &FileManagerPrivateInternalGetDownloadUrlFunction::OnTokenFetched, this));
 }
 

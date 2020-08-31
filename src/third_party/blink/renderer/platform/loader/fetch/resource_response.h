@@ -33,6 +33,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -282,6 +283,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool IsLegacyTLSVersion() const { return is_legacy_tls_version_; }
   void SetIsLegacyTLSVersion(bool value) { is_legacy_tls_version_ = value; }
 
+  bool TimingAllowPassed() const { return timing_allow_passed_; }
+  void SetTimingAllowPassed(bool value) { timing_allow_passed_ = value; }
+
   SecurityStyle GetSecurityStyle() const { return security_style_; }
   void SetSecurityStyle(SecurityStyle security_style) {
     security_style_ = security_style;
@@ -465,6 +469,9 @@ class PLATFORM_EXPORT ResourceResponse final {
     was_in_prefetch_cache_ = was_in_prefetch_cache;
   }
 
+  network::mojom::CrossOriginEmbedderPolicyValue GetCrossOriginEmbedderPolicy()
+      const;
+
  private:
   void UpdateHeaderParsedState(const AtomicString& name);
 
@@ -503,6 +510,10 @@ class PLATFORM_EXPORT ResourceResponse final {
   // True if the response was sent over TLS 1.0 or 1.1, which are deprecated and
   // will be removed in the future.
   bool is_legacy_tls_version_ = false;
+
+  // True if the Timing-Allow-Origin check passes.
+  // https://fetch.spec.whatwg.org/#concept-response-timing-allow-passed
+  bool timing_allow_passed_ = false;
 
   // The time at which the resource's certificate expires. Null if there was no
   // certificate.

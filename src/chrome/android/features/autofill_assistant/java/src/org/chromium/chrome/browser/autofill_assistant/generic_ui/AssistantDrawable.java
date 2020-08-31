@@ -5,15 +5,15 @@
 package org.chromium.chrome.browser.autofill_assistant.generic_ui;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.support.annotation.ColorInt;
-import android.support.annotation.Nullable;
 
-import org.chromium.base.ApiCompatibilityUtils;
+import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
+
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -49,12 +49,7 @@ public abstract class AssistantDrawable {
         if (drawableId == 0) {
             return false;
         }
-        try {
-            ApiCompatibilityUtils.getDrawable(context.getResources(), drawableId);
-            return true;
-        } catch (Resources.NotFoundException e) {
-            return false;
-        }
+        return AppCompatResources.getDrawable(context, drawableId) != null;
     }
 
     @CalledByNative
@@ -135,12 +130,7 @@ public abstract class AssistantDrawable {
             if (drawableId == 0) {
                 callback.onResult(null);
             }
-            try {
-                callback.onResult(
-                        ApiCompatibilityUtils.getDrawable(context.getResources(), drawableId));
-            } catch (Resources.NotFoundException e) {
-                callback.onResult(null);
-            }
+            callback.onResult(AppCompatResources.getDrawable(context, drawableId));
         }
     }
 }

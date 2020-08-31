@@ -119,7 +119,7 @@ void reference_idct_1d(const double *in, double *out, int size) {
   }
 }
 
-// TODO(any): Copied from the old 'fadst4' (same as the new 'av1_fadst4_new'
+// TODO(any): Copied from the old 'fadst4' (same as the new 'av1_fadst4'
 // function). Should be replaced by a proper reference function that takes
 // 'double' input & output.
 static void fadst4_new(const tran_low_t *input, tran_low_t *output) {

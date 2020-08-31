@@ -1,8 +1,10 @@
-#!/bin/bash
+#!/bin/sh
+
+set -u
 
 # The following symbols (past the first nine) are taken from tegra.h.
 
-FUNCS=$(nm -D --format=bsd --defined-only ${1-.libs/libdrm_tegra.so} | awk '{print $3}'| while read func; do
+FUNCS=$($NM -D --format=bsd --defined-only ${1-.libs/libdrm_tegra.so} | awk '{print $3}'| while read func; do
 ( grep -q "^$func$" || echo $func )  <<EOF
 __bss_end__
 __bss_start__

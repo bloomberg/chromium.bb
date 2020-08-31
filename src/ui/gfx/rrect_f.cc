@@ -6,9 +6,11 @@
 
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "third_party/skia/include/core/SkMatrix.h"
 
 namespace gfx {
 

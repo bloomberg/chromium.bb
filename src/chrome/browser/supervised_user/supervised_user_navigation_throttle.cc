@@ -5,10 +5,11 @@
 #include "chrome/browser/supervised_user/supervised_user_navigation_throttle.h"
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
@@ -115,23 +116,6 @@ void RecordFilterResultEvent(
     base::UmaHistogramSparse("ManagedUsers.FilteringResult", value);
 }
 
-bool IsMainFrameWhitelisted(content::WebContents* web_contents) {
-  auto* navigation_observer =
-      SupervisedUserNavigationObserver::FromWebContents(web_contents);
-  if (!navigation_observer)
-    return false;
-  auto behavior = navigation_observer->main_frame_filtering_behavior();
-  auto reason = navigation_observer->main_frame_filtering_behavior_reason();
-  bool is_allowed =
-      behavior == SupervisedUserURLFilter::FilteringBehavior::ALLOW;
-  bool is_whitelisted =
-      reason == supervised_user_error_page::FilteringBehaviorReason::WHITELIST;
-  bool is_manual =
-      reason == supervised_user_error_page::FilteringBehaviorReason::MANUAL;
-
-  return is_allowed && (is_whitelisted || is_manual);
-}
-
 }  // namespace
 
 // static
@@ -148,11 +132,6 @@ SupervisedUserNavigationThrottle::MaybeCreateThrottleFor(
     SupervisedUserService* service =
         SupervisedUserServiceFactory::GetForProfile(profile);
     if (!service->IsSupervisedUserIframeFilterEnabled())
-      return nullptr;
-
-    // If the url in the main main frame has already been whitelisted by
-    // parents, then don't create the throttle for the subframe.
-    if (IsMainFrameWhitelisted(navigation_handle->GetWebContents()))
       return nullptr;
   }
 
@@ -180,8 +159,8 @@ SupervisedUserNavigationThrottle::CheckURL() {
   DCHECK_EQ(SupervisedUserURLFilter::INVALID, behavior_);
   GURL url = navigation_handle()->GetURL();
   bool got_result = url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
-      url, base::Bind(&SupervisedUserNavigationThrottle::OnCheckDone,
-                      weak_ptr_factory_.GetWeakPtr(), url));
+      url, base::BindOnce(&SupervisedUserNavigationThrottle::OnCheckDone,
+                          weak_ptr_factory_.GetWeakPtr(), url));
   DCHECK_EQ(got_result, behavior_ != SupervisedUserURLFilter::INVALID);
   // If we got a "not blocked" result synchronously, don't defer.
   deferred_ = !got_result || (behavior_ == SupervisedUserURLFilter::BLOCK);
@@ -273,7 +252,9 @@ void SupervisedUserNavigationThrottle::OnCheckDone(
 }
 
 void SupervisedUserNavigationThrottle::OnInterstitialResult(
-    CallbackActions action) {
+    CallbackActions action,
+    bool already_sent_request,
+    bool is_main_frame) {
   switch (action) {
     case kCancelNavigation: {
       CancelDeferredNavigation(CANCEL);
@@ -284,7 +265,7 @@ void SupervisedUserNavigationThrottle::OnInterstitialResult(
           SupervisedUserInterstitial::GetHTMLContents(
               Profile::FromBrowserContext(
                   navigation_handle()->GetWebContents()->GetBrowserContext()),
-              reason_);
+              reason_, already_sent_request, is_main_frame);
       CancelDeferredNavigation(content::NavigationThrottle::ThrottleCheckResult(
           CANCEL, net::ERR_BLOCKED_BY_CLIENT, interstitial_html));
     }

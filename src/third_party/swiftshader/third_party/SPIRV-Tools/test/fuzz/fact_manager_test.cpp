@@ -738,393 +738,6 @@ TEST(FactManagerTest, AmbiguousFact) {
                              uniform_buffer_element_descriptor));
 }
 
-TEST(FactManagerTest, DataSynonymFacts) {
-  // The SPIR-V types and constants come from the following code.  The body of
-  // the SPIR-V function then constructs a composite that is synonymous with
-  // myT.
-  //
-  // #version 310 es
-  //
-  // precision highp float;
-  //
-  // struct S {
-  //   int a;
-  //   uvec2 b;
-  // };
-  //
-  // struct T {
-  //   bool c[5];
-  //   mat4x2 d;
-  //   S e;
-  // };
-  //
-  // void main() {
-  //   T myT = T(bool[5](true, false, true, false, true),
-  //             mat4x2(vec2(1.0, 2.0), vec2(3.0, 4.0),
-  // 	           vec2(5.0, 6.0), vec2(7.0, 8.0)),
-  //             S(10, uvec2(100u, 200u)));
-  // }
-
-  std::string shader = R"(
-               OpCapability Shader
-          %1 = OpExtInstImport "GLSL.std.450"
-               OpMemoryModel Logical GLSL450
-               OpEntryPoint Fragment %4 "main"
-               OpExecutionMode %4 OriginUpperLeft
-               OpSource ESSL 310
-               OpName %4 "main"
-               OpName %15 "S"
-               OpMemberName %15 0 "a"
-               OpMemberName %15 1 "b"
-               OpName %16 "T"
-               OpMemberName %16 0 "c"
-               OpMemberName %16 1 "d"
-               OpMemberName %16 2 "e"
-               OpName %18 "myT"
-               OpMemberDecorate %15 0 RelaxedPrecision
-               OpMemberDecorate %15 1 RelaxedPrecision
-          %2 = OpTypeVoid
-          %3 = OpTypeFunction %2
-          %6 = OpTypeBool
-          %7 = OpTypeInt 32 0
-          %8 = OpConstant %7 5
-          %9 = OpTypeArray %6 %8
-         %10 = OpTypeFloat 32
-         %11 = OpTypeVector %10 2
-         %12 = OpTypeMatrix %11 4
-         %13 = OpTypeInt 32 1
-         %14 = OpTypeVector %7 2
-         %15 = OpTypeStruct %13 %14
-         %16 = OpTypeStruct %9 %12 %15
-         %17 = OpTypePointer Function %16
-         %19 = OpConstantTrue %6
-         %20 = OpConstantFalse %6
-         %21 = OpConstantComposite %9 %19 %20 %19 %20 %19
-         %22 = OpConstant %10 1
-         %23 = OpConstant %10 2
-         %24 = OpConstantComposite %11 %22 %23
-         %25 = OpConstant %10 3
-         %26 = OpConstant %10 4
-         %27 = OpConstantComposite %11 %25 %26
-         %28 = OpConstant %10 5
-         %29 = OpConstant %10 6
-         %30 = OpConstantComposite %11 %28 %29
-         %31 = OpConstant %10 7
-         %32 = OpConstant %10 8
-         %33 = OpConstantComposite %11 %31 %32
-         %34 = OpConstantComposite %12 %24 %27 %30 %33
-         %35 = OpConstant %13 10
-         %36 = OpConstant %7 100
-         %37 = OpConstant %7 200
-         %38 = OpConstantComposite %14 %36 %37
-         %39 = OpConstantComposite %15 %35 %38
-         %40 = OpConstantComposite %16 %21 %34 %39
-          %4 = OpFunction %2 None %3
-          %5 = OpLabel
-         %18 = OpVariable %17 Function
-               OpStore %18 %40
-        %100 = OpCompositeConstruct %9 %19 %20 %19 %20 %19
-        %101 = OpCompositeConstruct %11 %22 %23
-        %102 = OpCompositeConstruct %11 %25 %26
-        %103 = OpCompositeConstruct %11 %28 %29
-        %104 = OpCompositeConstruct %11 %31 %32
-        %105 = OpCompositeConstruct %12 %101 %102 %103 %104
-        %106 = OpCompositeConstruct %14 %36 %37
-        %107 = OpCompositeConstruct %15 %35 %106
-        %108 = OpCompositeConstruct %16 %100 %105 %107
-               OpReturn
-               OpFunctionEnd
-  )";
-
-  const auto env = SPV_ENV_UNIVERSAL_1_3;
-  const auto consumer = nullptr;
-  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
-  ASSERT_TRUE(IsValid(env, context.get()));
-
-  FactManager fact_manager;
-
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(24, {}), MakeDataDescriptor(101, {}), context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(24, {0}),
-                                         MakeDataDescriptor(101, {0}),
-                                         context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(24, {1}),
-                                         MakeDataDescriptor(101, {1}),
-                                         context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(24, {0}),
-                                         MakeDataDescriptor(101, {1}),
-                                         context.get()));
-
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(24, {}),
-                                  MakeDataDescriptor(101, {}), context.get());
-  ASSERT_TRUE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(24, {}), MakeDataDescriptor(101, {}), context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(24, {0}),
-                                        MakeDataDescriptor(101, {0}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(24, {1}),
-                                        MakeDataDescriptor(101, {1}),
-                                        context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(24, {0}),
-                                         MakeDataDescriptor(101, {1}),
-                                         context.get()));
-
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(27, {}), MakeDataDescriptor(102, {}), context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(27, {0}),
-                                         MakeDataDescriptor(102, {0}),
-                                         context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(27, {1}),
-                                         MakeDataDescriptor(102, {1}),
-                                         context.get()));
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(27, {0}),
-                                  MakeDataDescriptor(102, {0}), context.get());
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(27, {}), MakeDataDescriptor(102, {}), context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(27, {0}),
-                                        MakeDataDescriptor(102, {0}),
-                                        context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(27, {1}),
-                                         MakeDataDescriptor(102, {1}),
-                                         context.get()));
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(27, {1}),
-                                  MakeDataDescriptor(102, {1}), context.get());
-  ASSERT_TRUE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(27, {}), MakeDataDescriptor(102, {}), context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(27, {0}),
-                                        MakeDataDescriptor(102, {0}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(27, {1}),
-                                        MakeDataDescriptor(102, {1}),
-                                        context.get()));
-
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(30, {}), MakeDataDescriptor(103, {}), context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(30, {0}),
-                                         MakeDataDescriptor(103, {0}),
-                                         context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(30, {1}),
-                                         MakeDataDescriptor(103, {1}),
-                                         context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(33, {}), MakeDataDescriptor(104, {}), context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(33, {0}),
-                                         MakeDataDescriptor(104, {0}),
-                                         context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(33, {1}),
-                                         MakeDataDescriptor(104, {1}),
-                                         context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(34, {}), MakeDataDescriptor(105, {}), context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(34, {0}),
-                                         MakeDataDescriptor(105, {0}),
-                                         context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(34, {1}),
-                                         MakeDataDescriptor(105, {1}),
-                                         context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(34, {2}),
-                                         MakeDataDescriptor(105, {2}),
-                                         context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(34, {3}),
-                                         MakeDataDescriptor(105, {3}),
-                                         context.get()));
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(30, {}),
-                                  MakeDataDescriptor(103, {}), context.get());
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(33, {}),
-                                  MakeDataDescriptor(104, {}), context.get());
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(34, {0}),
-                                  MakeDataDescriptor(105, {0}), context.get());
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(34, {1}),
-                                  MakeDataDescriptor(105, {1}), context.get());
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(34, {2}),
-                                  MakeDataDescriptor(105, {2}), context.get());
-  ASSERT_TRUE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(30, {}), MakeDataDescriptor(103, {}), context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(30, {0}),
-                                        MakeDataDescriptor(103, {0}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(30, {1}),
-                                        MakeDataDescriptor(103, {1}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(33, {}), MakeDataDescriptor(104, {}), context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(33, {0}),
-                                        MakeDataDescriptor(104, {0}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(33, {1}),
-                                        MakeDataDescriptor(104, {1}),
-                                        context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(34, {}), MakeDataDescriptor(105, {}), context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(34, {0}),
-                                        MakeDataDescriptor(105, {0}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(34, {1}),
-                                        MakeDataDescriptor(105, {1}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(34, {2}),
-                                        MakeDataDescriptor(105, {2}),
-                                        context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(34, {3}),
-                                         MakeDataDescriptor(105, {3}),
-                                         context.get()));
-
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(34, {3}),
-                                  MakeDataDescriptor(105, {3}), context.get());
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(33, {0}),
-                                        MakeDataDescriptor(104, {0}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(34, {3}),
-                                        MakeDataDescriptor(105, {3}),
-                                        context.get()));
-
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(21, {}), MakeDataDescriptor(100, {}), context.get()));
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(21, {0}),
-                                  MakeDataDescriptor(100, {0}), context.get());
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(21, {1}),
-                                  MakeDataDescriptor(100, {1}), context.get());
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(21, {2}),
-                                  MakeDataDescriptor(100, {2}), context.get());
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(21, {3}),
-                                  MakeDataDescriptor(100, {3}), context.get());
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(21, {4}),
-                                  MakeDataDescriptor(100, {4}), context.get());
-  ASSERT_TRUE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(21, {}), MakeDataDescriptor(100, {}), context.get()));
-
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(39, {0}),
-                                         MakeDataDescriptor(107, {0}),
-                                         context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(35, {}), MakeDataDescriptor(39, {0}), context.get()));
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(39, {0}),
-                                  MakeDataDescriptor(35, {}), context.get());
-  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(39, {0}),
-                                         MakeDataDescriptor(107, {0}),
-                                         context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(35, {}), MakeDataDescriptor(39, {0}), context.get()));
-
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(38, {0}), MakeDataDescriptor(36, {}), context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(38, {1}), MakeDataDescriptor(37, {}), context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(106, {0}), MakeDataDescriptor(36, {}), context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(106, {1}), MakeDataDescriptor(37, {}), context.get()));
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(38, {}), MakeDataDescriptor(106, {}), context.get()));
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(38, {0}),
-                                  MakeDataDescriptor(36, {}), context.get());
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(106, {0}),
-                                  MakeDataDescriptor(36, {}), context.get());
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(38, {1}),
-                                  MakeDataDescriptor(37, {}), context.get());
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(106, {1}),
-                                  MakeDataDescriptor(37, {}), context.get());
-  ASSERT_TRUE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(38, {0}), MakeDataDescriptor(36, {}), context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(38, {1}), MakeDataDescriptor(37, {}), context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(106, {0}), MakeDataDescriptor(36, {}), context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(106, {1}), MakeDataDescriptor(37, {}), context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(38, {}), MakeDataDescriptor(106, {}), context.get()));
-
-  ASSERT_FALSE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(40, {}), MakeDataDescriptor(108, {}), context.get()));
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(107, {0}),
-                                  MakeDataDescriptor(35, {}), context.get());
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(40, {0}),
-                                  MakeDataDescriptor(108, {0}), context.get());
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(40, {1}),
-                                  MakeDataDescriptor(108, {1}), context.get());
-  fact_manager.AddFactDataSynonym(MakeDataDescriptor(40, {2}),
-                                  MakeDataDescriptor(108, {2}), context.get());
-  ASSERT_TRUE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(40, {}), MakeDataDescriptor(108, {}), context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {0}),
-                                        MakeDataDescriptor(108, {0}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {1}),
-                                        MakeDataDescriptor(108, {1}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {2}),
-                                        MakeDataDescriptor(108, {2}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {0, 0}),
-                                        MakeDataDescriptor(108, {0, 0}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {0, 1}),
-                                        MakeDataDescriptor(108, {0, 1}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {0, 2}),
-                                        MakeDataDescriptor(108, {0, 2}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {0, 3}),
-                                        MakeDataDescriptor(108, {0, 3}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {0, 4}),
-                                        MakeDataDescriptor(108, {0, 4}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {1, 0}),
-                                        MakeDataDescriptor(108, {1, 0}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {1, 1}),
-                                        MakeDataDescriptor(108, {1, 1}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {1, 2}),
-                                        MakeDataDescriptor(108, {1, 2}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {1, 3}),
-                                        MakeDataDescriptor(108, {1, 3}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {1, 0, 0}),
-                                        MakeDataDescriptor(108, {1, 0, 0}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {1, 1, 0}),
-                                        MakeDataDescriptor(108, {1, 1, 0}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {1, 2, 0}),
-                                        MakeDataDescriptor(108, {1, 2, 0}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {1, 3, 0}),
-                                        MakeDataDescriptor(108, {1, 3, 0}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {1, 0, 1}),
-                                        MakeDataDescriptor(108, {1, 0, 1}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {1, 1, 1}),
-                                        MakeDataDescriptor(108, {1, 1, 1}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {1, 2, 1}),
-                                        MakeDataDescriptor(108, {1, 2, 1}),
-                                        context.get()));
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {1, 3, 1}),
-                                        MakeDataDescriptor(108, {1, 3, 1}),
-                                        context.get()));
-
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {2, 0}),
-                                        MakeDataDescriptor(108, {2, 0}),
-                                        context.get()));
-
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {2, 1}),
-                                        MakeDataDescriptor(108, {2, 1}),
-                                        context.get()));
-
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {2, 1, 0}),
-                                        MakeDataDescriptor(108, {2, 1, 0}),
-                                        context.get()));
-
-  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(40, {2, 1, 1}),
-                                        MakeDataDescriptor(108, {2, 1, 1}),
-                                        context.get()));
-}
-
 TEST(FactManagerTest, RecursiveAdditionOfFacts) {
   std::string shader = R"(
                OpCapability Shader
@@ -1157,20 +770,552 @@ TEST(FactManagerTest, RecursiveAdditionOfFacts) {
   fact_manager.AddFactDataSynonym(MakeDataDescriptor(10, {}),
                                   MakeDataDescriptor(11, {2}), context.get());
 
-  ASSERT_TRUE(fact_manager.IsSynonymous(
-      MakeDataDescriptor(10, {}), MakeDataDescriptor(11, {2}), context.get()));
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(10, {}),
+                                        MakeDataDescriptor(11, {2})));
   ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(10, {0}),
-                                        MakeDataDescriptor(11, {2, 0}),
-                                        context.get()));
+                                        MakeDataDescriptor(11, {2, 0})));
   ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(10, {1}),
-                                        MakeDataDescriptor(11, {2, 1}),
-                                        context.get()));
+                                        MakeDataDescriptor(11, {2, 1})));
   ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(10, {2}),
-                                        MakeDataDescriptor(11, {2, 2}),
-                                        context.get()));
+                                        MakeDataDescriptor(11, {2, 2})));
   ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(10, {3}),
-                                        MakeDataDescriptor(11, {2, 3}),
-                                        context.get()));
+                                        MakeDataDescriptor(11, {2, 3})));
+}
+
+TEST(FactManagerTest, CorollaryConversionFacts) {
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %12 "main"
+               OpExecutionMode %12 OriginUpperLeft
+               OpSource ESSL 310
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+          %7 = OpTypeInt 32 0
+          %8 = OpTypeVector %6 2
+          %9 = OpTypeVector %7 2
+         %10 = OpTypeFloat 32
+         %11 = OpTypeVector %10 2
+         %15 = OpConstant %6 24 ; synonym of %16
+         %16 = OpConstant %6 24
+         %17 = OpConstant %7 24 ; synonym of %18
+         %18 = OpConstant %7 24
+         %19 = OpConstantComposite %8 %15 %15 ; synonym of %20
+         %20 = OpConstantComposite %8 %16 %16
+         %21 = OpConstantComposite %9 %17 %17 ; synonym of %22
+         %22 = OpConstantComposite %9 %18 %18
+         %23 = OpConstantComposite %8 %15 %15 ; not a synonym of %19
+         %12 = OpFunction %2 None %3
+         %13 = OpLabel
+         %24 = OpConvertSToF %10 %15 ; synonym of %25
+         %25 = OpConvertSToF %10 %16
+         %26 = OpConvertUToF %10 %17 ; not a synonym of %27 (different opcode)
+         %27 = OpConvertSToF %10 %18
+         %28 = OpConvertUToF %11 %19 ; synonym of %29
+         %29 = OpConvertUToF %11 %20
+         %30 = OpConvertSToF %11 %21 ; not a synonym of %31 (different opcode)
+         %31 = OpConvertUToF %11 %22
+         %32 = OpConvertUToF %11 %23 ; not a synonym of %28 (operand is not synonymous)
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  ASSERT_TRUE(IsValid(env, context.get()));
+
+  FactManager fact_manager;
+
+  // Add equation facts
+  fact_manager.AddFactIdEquation(24, SpvOpConvertSToF, {15}, context.get());
+  fact_manager.AddFactIdEquation(25, SpvOpConvertSToF, {16}, context.get());
+  fact_manager.AddFactIdEquation(26, SpvOpConvertUToF, {17}, context.get());
+  fact_manager.AddFactIdEquation(27, SpvOpConvertSToF, {18}, context.get());
+  fact_manager.AddFactIdEquation(28, SpvOpConvertUToF, {19}, context.get());
+  fact_manager.AddFactIdEquation(29, SpvOpConvertUToF, {20}, context.get());
+  fact_manager.AddFactIdEquation(30, SpvOpConvertSToF, {21}, context.get());
+  fact_manager.AddFactIdEquation(31, SpvOpConvertUToF, {22}, context.get());
+  fact_manager.AddFactIdEquation(32, SpvOpConvertUToF, {23}, context.get());
+
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(15, {}),
+                                  MakeDataDescriptor(16, {}), context.get());
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(24, {}),
+                                        MakeDataDescriptor(25, {})));
+
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(17, {}),
+                                  MakeDataDescriptor(18, {}), context.get());
+  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(26, {}),
+                                         MakeDataDescriptor(27, {})));
+
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(19, {}),
+                                  MakeDataDescriptor(20, {}), context.get());
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(28, {}),
+                                        MakeDataDescriptor(29, {})));
+
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(21, {}),
+                                  MakeDataDescriptor(22, {}), context.get());
+  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(30, {}),
+                                         MakeDataDescriptor(31, {})));
+
+  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(32, {}),
+                                         MakeDataDescriptor(28, {})));
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(23, {}),
+                                  MakeDataDescriptor(19, {}), context.get());
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(32, {}),
+                                        MakeDataDescriptor(28, {})));
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(32, {}),
+                                        MakeDataDescriptor(29, {})));
+}
+
+TEST(FactManagerTest, LogicalNotEquationFacts) {
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %12 "main"
+               OpExecutionMode %12 OriginUpperLeft
+               OpSource ESSL 310
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeBool
+          %7 = OpConstantTrue %6
+         %12 = OpFunction %2 None %3
+         %13 = OpLabel
+         %14 = OpLogicalNot %6 %7
+         %15 = OpCopyObject %6 %7
+         %16 = OpCopyObject %6 %14
+         %17 = OpLogicalNot %6 %16
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  ASSERT_TRUE(IsValid(env, context.get()));
+
+  FactManager fact_manager;
+
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(15, {}),
+                                  MakeDataDescriptor(7, {}), context.get());
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(16, {}),
+                                  MakeDataDescriptor(14, {}), context.get());
+  fact_manager.AddFactIdEquation(14, SpvOpLogicalNot, {7}, context.get());
+  fact_manager.AddFactIdEquation(17, SpvOpLogicalNot, {16}, context.get());
+
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(15, {}),
+                                        MakeDataDescriptor(7, {})));
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(17, {}),
+                                        MakeDataDescriptor(7, {})));
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(15, {}),
+                                        MakeDataDescriptor(17, {})));
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(16, {}),
+                                        MakeDataDescriptor(14, {})));
+}
+
+TEST(FactManagerTest, SignedNegateEquationFacts) {
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %12 "main"
+               OpExecutionMode %12 OriginUpperLeft
+               OpSource ESSL 310
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+          %7 = OpConstant %6 24
+         %12 = OpFunction %2 None %3
+         %13 = OpLabel
+         %14 = OpSNegate %6 %7
+         %15 = OpSNegate %6 %14
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  ASSERT_TRUE(IsValid(env, context.get()));
+
+  FactManager fact_manager;
+
+  fact_manager.AddFactIdEquation(14, SpvOpSNegate, {7}, context.get());
+  fact_manager.AddFactIdEquation(15, SpvOpSNegate, {14}, context.get());
+
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(7, {}),
+                                        MakeDataDescriptor(15, {})));
+}
+
+TEST(FactManagerTest, AddSubNegateFacts1) {
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %12 "main"
+               OpExecutionMode %12 OriginUpperLeft
+               OpSource ESSL 310
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+         %15 = OpConstant %6 24
+         %16 = OpConstant %6 37
+         %12 = OpFunction %2 None %3
+         %13 = OpLabel
+         %14 = OpIAdd %6 %15 %16
+         %17 = OpCopyObject %6 %15
+         %18 = OpCopyObject %6 %16
+         %19 = OpISub %6 %14 %18 ; ==> synonymous(%19, %15)
+         %20 = OpISub %6 %14 %17 ; ==> synonymous(%20, %16)
+         %21 = OpCopyObject %6 %14
+         %22 = OpISub %6 %16 %21
+         %23 = OpCopyObject %6 %22
+         %24 = OpSNegate %6 %23 ; ==> synonymous(%24, %15)
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  ASSERT_TRUE(IsValid(env, context.get()));
+
+  FactManager fact_manager;
+
+  fact_manager.AddFactIdEquation(14, SpvOpIAdd, {15, 16}, context.get());
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(17, {}),
+                                  MakeDataDescriptor(15, {}), context.get());
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(18, {}),
+                                  MakeDataDescriptor(16, {}), context.get());
+  fact_manager.AddFactIdEquation(19, SpvOpISub, {14, 18}, context.get());
+  fact_manager.AddFactIdEquation(20, SpvOpISub, {14, 17}, context.get());
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(21, {}),
+                                  MakeDataDescriptor(14, {}), context.get());
+  fact_manager.AddFactIdEquation(22, SpvOpISub, {16, 21}, context.get());
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(23, {}),
+                                  MakeDataDescriptor(22, {}), context.get());
+  fact_manager.AddFactIdEquation(24, SpvOpSNegate, {23}, context.get());
+
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(19, {}),
+                                        MakeDataDescriptor(15, {})));
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(20, {}),
+                                        MakeDataDescriptor(16, {})));
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(24, {}),
+                                        MakeDataDescriptor(15, {})));
+}
+
+TEST(FactManagerTest, AddSubNegateFacts2) {
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %12 "main"
+               OpExecutionMode %12 OriginUpperLeft
+               OpSource ESSL 310
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+         %15 = OpConstant %6 24
+         %16 = OpConstant %6 37
+         %12 = OpFunction %2 None %3
+         %13 = OpLabel
+         %14 = OpISub %6 %15 %16
+         %17 = OpIAdd %6 %14 %16 ; ==> synonymous(%17, %15)
+         %18 = OpIAdd %6 %16 %14 ; ==> synonymous(%17, %18, %15)
+         %19 = OpISub %6 %14 %15
+         %20 = OpSNegate %6 %19 ; ==> synonymous(%20, %16)
+         %21 = OpISub %6 %14 %19 ; ==> synonymous(%21, %15)
+         %22 = OpISub %6 %14 %18
+         %23 = OpSNegate %6 %22 ; ==> synonymous(%23, %16)
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  ASSERT_TRUE(IsValid(env, context.get()));
+
+  FactManager fact_manager;
+
+  fact_manager.AddFactIdEquation(14, SpvOpISub, {15, 16}, context.get());
+  fact_manager.AddFactIdEquation(17, SpvOpIAdd, {14, 16}, context.get());
+
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(17, {}),
+                                        MakeDataDescriptor(15, {})));
+
+  fact_manager.AddFactIdEquation(18, SpvOpIAdd, {16, 14}, context.get());
+
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(18, {}),
+                                        MakeDataDescriptor(15, {})));
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(17, {}),
+                                        MakeDataDescriptor(18, {})));
+
+  fact_manager.AddFactIdEquation(19, SpvOpISub, {14, 15}, context.get());
+  fact_manager.AddFactIdEquation(20, SpvOpSNegate, {19}, context.get());
+
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(20, {}),
+                                        MakeDataDescriptor(16, {})));
+
+  fact_manager.AddFactIdEquation(21, SpvOpISub, {14, 19}, context.get());
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(21, {}),
+                                        MakeDataDescriptor(15, {})));
+
+  fact_manager.AddFactIdEquation(22, SpvOpISub, {14, 18}, context.get());
+  fact_manager.AddFactIdEquation(23, SpvOpSNegate, {22}, context.get());
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(23, {}),
+                                        MakeDataDescriptor(16, {})));
+}
+
+TEST(FactManagerTest, ConversionEquations) {
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %12 "main"
+               OpExecutionMode %12 OriginUpperLeft
+               OpSource ESSL 310
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %4 = OpTypeInt 32 1
+          %5 = OpTypeInt 32 0
+          %6 = OpTypeFloat 32
+         %14 = OpTypeVector %4 2
+         %15 = OpTypeVector %5 2
+         %24 = OpTypeVector %6 2
+         %16 = OpConstant %4 32 ; synonym of %17
+         %17 = OpConstant %4 32
+         %18 = OpConstant %5 32 ; synonym of %19
+         %19 = OpConstant %5 32
+         %20 = OpConstantComposite %14 %16 %16 ; synonym of %21
+         %21 = OpConstantComposite %14 %17 %17
+         %22 = OpConstantComposite %15 %18 %18 ; synonym of %23
+         %23 = OpConstantComposite %15 %19 %19
+         %12 = OpFunction %2 None %3
+         %13 = OpLabel
+         %25 = OpConvertUToF %6 %16 ; synonym of %26
+         %26 = OpConvertUToF %6 %17
+         %27 = OpConvertSToF %24 %20 ; not a synonym of %28 (wrong opcode)
+         %28 = OpConvertUToF %24 %21
+         %29 = OpConvertSToF %6 %18 ; not a synonym of %30 (wrong opcode)
+         %30 = OpConvertUToF %6 %19
+         %31 = OpConvertSToF %24 %22 ; synonym of %32
+         %32 = OpConvertSToF %24 %23
+         %33 = OpConvertUToF %6 %17 ; synonym of %26
+         %34 = OpConvertSToF %24 %23 ; synonym of %32
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  ASSERT_TRUE(IsValid(env, context.get()));
+
+  FactManager fact_manager;
+
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(16, {}),
+                                  MakeDataDescriptor(17, {}), context.get());
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(18, {}),
+                                  MakeDataDescriptor(19, {}), context.get());
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(20, {}),
+                                  MakeDataDescriptor(21, {}), context.get());
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(22, {}),
+                                  MakeDataDescriptor(23, {}), context.get());
+
+  fact_manager.AddFactIdEquation(25, SpvOpConvertUToF, {16}, context.get());
+  fact_manager.AddFactIdEquation(26, SpvOpConvertUToF, {17}, context.get());
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(25, {}),
+                                        MakeDataDescriptor(26, {})));
+
+  fact_manager.AddFactIdEquation(27, SpvOpConvertSToF, {20}, context.get());
+  fact_manager.AddFactIdEquation(28, SpvOpConvertUToF, {21}, context.get());
+  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(27, {}),
+                                         MakeDataDescriptor(28, {})));
+
+  fact_manager.AddFactIdEquation(29, SpvOpConvertSToF, {18}, context.get());
+  fact_manager.AddFactIdEquation(30, SpvOpConvertUToF, {19}, context.get());
+  ASSERT_FALSE(fact_manager.IsSynonymous(MakeDataDescriptor(29, {}),
+                                         MakeDataDescriptor(30, {})));
+
+  fact_manager.AddFactIdEquation(31, SpvOpConvertSToF, {22}, context.get());
+  fact_manager.AddFactIdEquation(32, SpvOpConvertSToF, {23}, context.get());
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(31, {}),
+                                        MakeDataDescriptor(32, {})));
+
+  fact_manager.AddFactIdEquation(33, SpvOpConvertUToF, {17}, context.get());
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(33, {}),
+                                        MakeDataDescriptor(26, {})));
+
+  fact_manager.AddFactIdEquation(34, SpvOpConvertSToF, {23}, context.get());
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(32, {}),
+                                        MakeDataDescriptor(34, {})));
+}
+
+TEST(FactManagerTest, EquationAndEquivalenceFacts) {
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %12 "main"
+               OpExecutionMode %12 OriginUpperLeft
+               OpSource ESSL 310
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+         %15 = OpConstant %6 24
+         %16 = OpConstant %6 37
+         %12 = OpFunction %2 None %3
+         %13 = OpLabel
+         %14 = OpISub %6 %15 %16
+        %114 = OpCopyObject %6 %14
+         %17 = OpIAdd %6 %114 %16 ; ==> synonymous(%17, %15)
+         %18 = OpIAdd %6 %16 %114 ; ==> synonymous(%17, %18, %15)
+         %19 = OpISub %6 %114 %15
+        %119 = OpCopyObject %6 %19
+         %20 = OpSNegate %6 %119 ; ==> synonymous(%20, %16)
+         %21 = OpISub %6 %14 %19 ; ==> synonymous(%21, %15)
+         %22 = OpISub %6 %14 %18
+        %220 = OpCopyObject %6 %22
+         %23 = OpSNegate %6 %220 ; ==> synonymous(%23, %16)
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  ASSERT_TRUE(IsValid(env, context.get()));
+
+  FactManager fact_manager;
+
+  fact_manager.AddFactIdEquation(14, SpvOpISub, {15, 16}, context.get());
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(114, {}),
+                                  MakeDataDescriptor(14, {}), context.get());
+  fact_manager.AddFactIdEquation(17, SpvOpIAdd, {114, 16}, context.get());
+
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(17, {}),
+                                        MakeDataDescriptor(15, {})));
+
+  fact_manager.AddFactIdEquation(18, SpvOpIAdd, {16, 114}, context.get());
+
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(18, {}),
+                                        MakeDataDescriptor(15, {})));
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(17, {}),
+                                        MakeDataDescriptor(18, {})));
+
+  fact_manager.AddFactIdEquation(19, SpvOpISub, {14, 15}, context.get());
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(119, {}),
+                                  MakeDataDescriptor(19, {}), context.get());
+  fact_manager.AddFactIdEquation(20, SpvOpSNegate, {119}, context.get());
+
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(20, {}),
+                                        MakeDataDescriptor(16, {})));
+
+  fact_manager.AddFactIdEquation(21, SpvOpISub, {14, 19}, context.get());
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(21, {}),
+                                        MakeDataDescriptor(15, {})));
+
+  fact_manager.AddFactIdEquation(22, SpvOpISub, {14, 18}, context.get());
+  fact_manager.AddFactDataSynonym(MakeDataDescriptor(22, {}),
+                                  MakeDataDescriptor(220, {}), context.get());
+  fact_manager.AddFactIdEquation(23, SpvOpSNegate, {220}, context.get());
+  ASSERT_TRUE(fact_manager.IsSynonymous(MakeDataDescriptor(23, {}),
+                                        MakeDataDescriptor(16, {})));
+}
+
+TEST(FactManagerTest, CheckingFactsDoesNotAddConstants) {
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 320
+               OpMemberDecorate %9 0 Offset 0
+               OpDecorate %9 Block
+               OpDecorate %11 DescriptorSet 0
+               OpDecorate %11 Binding 0
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+          %7 = OpTypePointer Function %6
+          %9 = OpTypeStruct %6
+         %10 = OpTypePointer Uniform %9
+         %11 = OpVariable %10 Uniform
+         %12 = OpConstant %6 0
+         %13 = OpTypePointer Uniform %6
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+          %8 = OpVariable %7 Function
+         %14 = OpAccessChain %13 %11 %12
+         %15 = OpLoad %6 %14
+               OpStore %8 %15
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  ASSERT_TRUE(IsValid(env, context.get()));
+
+  FactManager fact_manager;
+
+  // 8[0] == int(1)
+  ASSERT_TRUE(AddFactHelper(&fact_manager, context.get(), {1},
+                            MakeUniformBufferElementDescriptor(0, 0, {0})));
+
+  // Although 8[0] has the value 1, we do not have the constant 1 in the module.
+  // We thus should not find any constants available from uniforms for int type.
+  // Furthermore, the act of looking for appropriate constants should not change
+  // which constants are known to the constant manager.
+  auto int_type = context->get_type_mgr()->GetType(6)->AsInteger();
+  opt::analysis::IntConstant constant_one(int_type, {1});
+  ASSERT_FALSE(context->get_constant_mgr()->FindConstant(&constant_one));
+  auto available_constants =
+      fact_manager.GetConstantsAvailableFromUniformsForType(context.get(), 6);
+  ASSERT_EQ(0, available_constants.size());
+  ASSERT_TRUE(IsEqual(env, shader, context.get()));
+  ASSERT_FALSE(context->get_constant_mgr()->FindConstant(&constant_one));
+}
+
+TEST(FactManagerTest, IdIsIrrelevant) {
+  std::string shader = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %4 "main"
+               OpExecutionMode %4 OriginUpperLeft
+               OpSource ESSL 320
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeInt 32 1
+         %12 = OpConstant %6 0
+         %13 = OpConstant %6 1
+          %4 = OpFunction %2 None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto consumer = nullptr;
+  const auto context = BuildModule(env, consumer, shader, kFuzzAssembleOption);
+  ASSERT_TRUE(IsValid(env, context.get()));
+
+  FactManager fact_manager;
+
+  ASSERT_FALSE(fact_manager.IdIsIrrelevant(12));
+  ASSERT_FALSE(fact_manager.IdIsIrrelevant(13));
+
+  fact_manager.AddFactIdIsIrrelevant(12);
+
+  ASSERT_TRUE(fact_manager.IdIsIrrelevant(12));
+  ASSERT_FALSE(fact_manager.IdIsIrrelevant(13));
 }
 
 }  // namespace

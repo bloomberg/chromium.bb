@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/aura/window_observer.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {
@@ -33,8 +32,7 @@ class NonClientFrameViewAshImmersiveHelper;
 // The window header overlay slides onscreen when the user hovers the mouse at
 // the top of the screen. See also views::CustomFrameView and
 // BrowserNonClientFrameViewAsh.
-class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
-                                         public aura::WindowObserver {
+class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -89,17 +87,13 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   gfx::Size GetMaximumSize() const override;
   void SetVisible(bool visible) override;
 
-  // aura::WindowObserver:
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override;
-  void OnWindowDestroying(aura::Window* window) override;
-
   // If |paint| is false, we should not paint the header. Used for overview mode
   // with OnOverviewModeStarting() and OnOverviewModeEnded() to hide/show the
   // header of v2 and ARC apps.
   virtual void SetShouldPaintHeader(bool paint);
+
+  // Height from top of window to top of client area.
+  int NonClientTopBorderHeight() const;
 
   const views::View* GetAvatarIconViewForTest() const;
 
@@ -125,9 +119,6 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   // Returns the container for the minimize/maximize/close buttons that is
   // held by the HeaderView. Used in testing.
   FrameCaptionButtonContainerView* GetFrameCaptionButtonContainerViewForTest();
-
-  // Height from top of window to top of client area.
-  int NonClientTopBorderHeight() const;
 
   // Not owned.
   views::Widget* frame_;

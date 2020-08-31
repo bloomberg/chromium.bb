@@ -4,10 +4,10 @@
 
 #include "ash/display/cursor_window_controller.h"
 
-#include "ash/components/cursor/cursor_view.h"
 #include "ash/display/display_color_manager.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/fast_ink/cursor/cursor_view.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -23,6 +23,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/cursor/cursors_aura.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -302,15 +303,15 @@ void CursorWindowController::UpdateCursorImage() {
       ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(original_scale));
 
   gfx::ImageSkia image;
-  if (cursor_.native_type() == ui::CursorType::kCustom) {
-    SkBitmap bitmap = cursor_.GetBitmap();
+  if (cursor_.type() == ui::mojom::CursorType::kCustom) {
+    SkBitmap bitmap = GetCursorBitmap(cursor_);
     if (bitmap.isNull())
       return;
     image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-    hot_point_ = cursor_.GetHotspot();
+    hot_point_ = GetCursorHotspot(cursor_);
   } else {
     int resource_id;
-    if (!ui::GetCursorDataFor(cursor_size_, cursor_.native_type(), cursor_scale,
+    if (!ui::GetCursorDataFor(cursor_size_, cursor_.type(), cursor_scale,
                               &resource_id, &hot_point_)) {
       return;
     }
@@ -353,7 +354,7 @@ void CursorWindowController::UpdateCursorImage() {
 }
 
 void CursorWindowController::UpdateCursorVisibility() {
-  bool visible = (visible_ && cursor_.native_type() != ui::CursorType::kNone);
+  bool visible = (visible_ && cursor_.type() != ui::mojom::CursorType::kNone);
   if (visible) {
     if (cursor_view_)
       cursor_view_->GetWidget()->Show();

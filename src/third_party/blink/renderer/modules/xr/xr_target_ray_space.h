@@ -5,8 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_TARGET_RAY_SPACE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_TARGET_RAY_SPACE_H_
 
-#include <memory>
-
+#include "base/optional.h"
 #include "third_party/blink/renderer/modules/xr/xr_space.h"
 
 namespace blink {
@@ -14,21 +13,18 @@ namespace blink {
 class XRTargetRaySpace : public XRSpace {
  public:
   XRTargetRaySpace(XRSession* session, XRInputSource* input_space);
-  XRPose* getPose(XRSpace* other_space,
-                  const TransformationMatrix* base_pose_matrix) override;
+
+  base::Optional<TransformationMatrix> MojoFromNative() override;
+  base::Optional<TransformationMatrix> NativeFromMojo() override;
+  bool EmulatedPosition() const override;
 
   base::Optional<XRNativeOriginInformation> NativeOrigin() const override;
 
-  void Trace(blink::Visitor*) override;
+  bool IsStationary() const override;
+
+  void Trace(Visitor*) override;
 
  private:
-  std::unique_ptr<TransformationMatrix> OtherSpaceFromScreenTap(
-      XRSpace* other_space,
-      const TransformationMatrix& mojo_from_viewer);
-  std::unique_ptr<TransformationMatrix> OtherSpaceFromTrackedPointer(
-      XRSpace* other_space,
-      const TransformationMatrix& mojo_from_viewer);
-
   Member<XRInputSource> input_source_;
 };
 

@@ -15,51 +15,24 @@
 #ifndef sw_Config_hpp
 #define sw_Config_hpp
 
-#include "System/Types.hpp"
+namespace sw {
 
-namespace sw
+enum
 {
-	enum
-	{
-		PERF_PIXEL,
-		PERF_PIPE,
-		PERF_INTERP,
-		PERF_SHADER,
-		PERF_TEX,
-		PERF_ROP,
+	OUTLINE_RESOLUTION = 8192,  // Maximum vertical resolution of the render target
+	MIPMAP_LEVELS = 14,
+	MAX_UNIFORM_BLOCK_SIZE = 16384,
+	MAX_CLIP_DISTANCES = 8,
+	MAX_CULL_DISTANCES = 8,
+	MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS = 64,
+	MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS = 64,
+	MIN_TEXEL_OFFSET = -8,
+	MAX_TEXEL_OFFSET = 7,
+	MAX_TEXTURE_LOD = MIPMAP_LEVELS - 2,  // Trilinear accesses lod+1
+	RENDERTARGETS = 8,
+	MAX_INTERFACE_COMPONENTS = 32 * 4,  // Must be multiple of 4 for 16-byte alignment.
+};
 
-		PERF_TIMERS
-	};
+}  // namespace sw
 
-	struct Profiler
-	{
-		Profiler();
-
-		void reset();
-		void nextFrame();
-
-		int framesSec;
-		int framesTotal;
-		double FPS;
-	};
-
-	extern Profiler profiler;
-
-	enum
-	{
-		OUTLINE_RESOLUTION = 8192,   // Maximum vertical resolution of the render target
-		MIPMAP_LEVELS = 14,
-		MAX_UNIFORM_BLOCK_SIZE = 16384,
-		MAX_CLIP_DISTANCES = 8,
-		MAX_CULL_DISTANCES = 8,
-		MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS = 64,
-		MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS = 64,
-		MIN_TEXEL_OFFSET = -8,
-		MAX_TEXEL_OFFSET = 7,
-		MAX_TEXTURE_LOD = MIPMAP_LEVELS - 2,   // Trilinear accesses lod+1
-		RENDERTARGETS = 8,
-		MAX_INTERFACE_COMPONENTS = 32 * 4,  // Must be multiple of 4 for 16-byte alignment.
-	};
-}
-
-#endif   // sw_Config_hpp
+#endif  // sw_Config_hpp

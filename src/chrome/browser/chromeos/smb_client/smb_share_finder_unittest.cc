@@ -42,7 +42,9 @@ class SmbShareFinderTest : public testing::Test {
 
   // Adds host with |hostname| and |address| as the resolved url.
   void AddHost(const std::string& hostname, const std::string& address) {
-    host_locator_->AddHost(hostname, address);
+    net::IPAddress ip_address;
+    EXPECT_TRUE(ip_address.AssignFromIPLiteral(address));
+    host_locator_->AddHost(hostname, ip_address);
   }
 
   // Adds the default host with the default address.
@@ -112,7 +114,7 @@ class SmbShareFinderTest : public testing::Test {
 
   // Helper function that expects |url| to resolve to |expected|.
   void ExpectResolvedHost(const SmbUrl& url, const std::string& expected) {
-    EXPECT_EQ(expected, share_finder_->GetResolvedUrl(url));
+    EXPECT_EQ(expected, share_finder_->GetResolvedUrl(url).ToString());
   }
 
   void ExpectDiscoveryCalled(int32_t expected) {

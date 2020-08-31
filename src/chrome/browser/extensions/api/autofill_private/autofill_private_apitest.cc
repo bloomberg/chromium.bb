@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/extensions/api/autofill_private.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/switches.h"
 
@@ -31,9 +32,8 @@ class AutofillPrivateApiTest : public ExtensionApiTest {
 
  protected:
   bool RunAutofillSubtest(const std::string& subtest) {
-    return RunExtensionSubtest("autofill_private",
-                               "main.html?" + subtest,
-                               kFlagLoadAsComponent);
+    return RunExtensionSubtest("autofill_private", "main.html?" + subtest,
+                               kFlagNone, kFlagLoadAsComponent);
   }
 
  private:
@@ -66,9 +66,7 @@ IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, AddAndUpdateAddress) {
   EXPECT_TRUE(RunAutofillSubtest("addAndUpdateAddress")) << message_;
 }
 
-// TODO(crbug.com/934631) Disabled for flakiness.
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest,
-                       DISABLED_AddAndUpdateCreditCard) {
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, AddAndUpdateCreditCard) {
   EXPECT_TRUE(RunAutofillSubtest("addAndUpdateCreditCard")) << message_;
 }
 

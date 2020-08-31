@@ -25,6 +25,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -237,12 +238,13 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                   ->IsKeyboardLockActive());
 
   content::NativeWebKeyboardEvent key_down_event(
-      blink::WebKeyboardEvent::kRawKeyDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebKeyboardEvent::Type::kRawKeyDown,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   key_down_event.windows_key_code = ui::VKEY_ESCAPE;
 
   content::NativeWebKeyboardEvent key_up_event(
-      blink::WebKeyboardEvent::kKeyUp, blink::WebInputEvent::kNoModifiers,
+      blink::WebKeyboardEvent::Type::kKeyUp, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   key_up_event.windows_key_code = ui::VKEY_ESCAPE;
 
@@ -285,12 +287,13 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                   ->IsKeyboardLockActive());
 
   content::NativeWebKeyboardEvent key_down_event(
-      blink::WebKeyboardEvent::kRawKeyDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebKeyboardEvent::Type::kRawKeyDown,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   key_down_event.windows_key_code = ui::VKEY_ESCAPE;
 
   content::NativeWebKeyboardEvent key_up_event(
-      blink::WebKeyboardEvent::kKeyUp, blink::WebInputEvent::kNoModifiers,
+      blink::WebKeyboardEvent::Type::kKeyUp, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   key_up_event.windows_key_code = ui::VKEY_ESCAPE;
 

@@ -23,8 +23,8 @@ Are you a Google employee? See
 
 ### Visual Studio
 
-Chromium requires Visual Studio 2017 (>=15.7.2) or 2019 (>=16.0.0) to build.
-Visual Studio can also be used to debug Chromium and Visual Studio 2019 is
+Chromium requires Visual Studio 2017 (>=15.7.2) to build, but VS2019 (>=16.0.0)
+is preferred. Visual Studio can also be used to debug Chromium, and VS2019 is
 preferred for this as it handles Chromium's large debug information much better.
 The clang-cl compiler is used but Visual Studio's header files, libraries, and
 some tools are required. Visual Studio Community Edition should work if its
@@ -88,9 +88,7 @@ if your system PATH has a Python in it, you will be out of luck.
 
 Also, add a DEPOT_TOOLS_WIN_TOOLCHAIN system variable in the same way, and set
 it to 0. This tells depot_tools to use your locally installed version of Visual
-Studio (by default, depot_tools will try to use a google-internal version). If
-you want to build with Visual Studio 2019 instead of Visual Studio 2017 (the
-default) then set the GYP_MSVS_VERSION environment variable to 2019.
+Studio (by default, depot_tools will try to use a google-internal version).
 
 From a cmd.exe shell, run the command gclient (without arguments). On first
 run, gclient will install all the Windows-specific bits needed to work with
@@ -168,7 +166,8 @@ $ gn gen out/Default
   update the build files as needed.
 * You can replace `Default` with another name, but
   it should be a subdirectory of `out`.
-* For other build arguments, including release settings, see [GN build
+* For other build arguments, including release settings or using an alternate
+  version of Visual Studio, see [GN build
   configuration](https://www.chromium.org/developers/gn-build-configuration).
   The default will be a debug component build matching the current host
   operating system and CPU.
@@ -249,10 +248,13 @@ don't' set enable_nacl = false then build times may get worse.
 * `blink_symbol_level = 0` - turn off source-level debugging for
 blink to reduce build times, appropriate if you don't plan to debug blink.
 
-In order to speed up linking you can set `symbol_level = 1` - this option
-reduces the work the linker has to do but when this option is set you cannot do
-source-level debugging. Switching from `symbol_level = 2` (the default) to
-`symbol_level = 1` requires recompiling everything.
+In order to speed up linking you can set `symbol_level = 1` or
+`symbol_level = 0` - these options reduce the work the compiler and linker have
+to do. With `symbol_level = 1` the compiler emits file name and line number
+information so you can still do source-level debugging but there will be no
+local variable or type information. With `symbol_level = 0` there is no
+source-level debugging but call stacks still have function names. Changing
+`symbol_level` requires recompiling everything.
 
 In addition, Google employees should use goma, a distributed compilation system.
 Detailed information is available internally but the relevant gn arg is:

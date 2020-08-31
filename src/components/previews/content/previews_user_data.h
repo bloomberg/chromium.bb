@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/common/previews_state.h"
 
 namespace previews {
@@ -25,28 +24,6 @@ namespace previews {
 class PreviewsUserData {
  public:
   explicit PreviewsUserData(uint64_t page_id);
-
-  struct ServerLitePageInfo {
-    std::unique_ptr<ServerLitePageInfo> Clone() {
-      return std::make_unique<ServerLitePageInfo>(*this);
-    }
-
-    // The start time of the original navigation, that is, the one started by
-    // the user.
-    base::TimeTicks original_navigation_start = base::TimeTicks();
-
-    // The page id used for this preview.
-    uint64_t page_id = 0;
-
-    // The DRP session key used for this preview.
-    std::string drp_session_key = std::string();
-
-    // The current state of the preview.
-    ServerLitePageStatus status = ServerLitePageStatus::kUnknown;
-
-    // The number of navigation restarts seen by this info instance.
-    size_t restart_count = 0;
-  };
 
   ~PreviewsUserData();
 
@@ -173,23 +150,6 @@ class PreviewsUserData {
     coin_flip_holdback_result_ = coin_flip_holdback_result;
   }
 
-  // Metadata for an attempted or committed Lite Page Redirect preview.
-  ServerLitePageInfo* server_lite_page_info() {
-    return server_lite_page_info_.get();
-  }
-  void set_server_lite_page_info(std::unique_ptr<ServerLitePageInfo> info) {
-    server_lite_page_info_ = std::move(info);
-  }
-
-  // The serialized hints version for the hint that was used for the page load.
-  base::Optional<std::string> serialized_hint_version_string() const {
-    return serialized_hint_version_string_;
-  }
-  void set_serialized_hint_version_string(
-      const std::string& serialized_hint_version_string) {
-    serialized_hint_version_string_ = serialized_hint_version_string;
-  }
-
  private:
   // A session unique ID related to this navigation.
   const uint64_t page_id_;
@@ -238,17 +198,10 @@ class PreviewsUserData {
   CoinFlipHoldbackResult coin_flip_holdback_result_ =
       CoinFlipHoldbackResult::kNotSet;
 
-  // Metadata for an attempted or committed Lite Page Redirect preview. See
-  // struct comments for more detail.
-  std::unique_ptr<ServerLitePageInfo> server_lite_page_info_;
-
   // A mapping from PreviewType to the last known reason why that preview type
   // was or was not triggered for this navigation. Used only for metrics.
   std::unordered_map<PreviewsType, PreviewsEligibilityReason>
       preview_eligibility_reasons_ = {};
-
-  // The serialized hints version for the hint that was used for the page load.
-  base::Optional<std::string> serialized_hint_version_string_ = base::nullopt;
 
   DISALLOW_ASSIGN(PreviewsUserData);
 };

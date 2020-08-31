@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/cookies/canonical_cookie.h"
@@ -46,6 +45,24 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
       const net::CookieAndLineStatusList& cookies_with_status,
       std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
       const base::Optional<std::string>& raw_response_headers) override;
+  void OnCorsPreflightRequest(int32_t process_id,
+                              int32_t routing_id,
+                              const base::UnguessableToken& devtool_request_id,
+                              const network::ResourceRequest& request,
+                              const GURL& initiator_url) override;
+  void OnCorsPreflightResponse(
+      int32_t process_id,
+      int32_t routing_id,
+      const base::UnguessableToken& devtool_request_id,
+      const GURL& url,
+      network::mojom::URLResponseHeadPtr head) override;
+  void OnCorsPreflightRequestCompleted(
+      int32_t process_id,
+      int32_t routing_id,
+      const base::UnguessableToken& devtool_request_id,
+      const network::URLLoaderCompletionStatus& status) override;
+  void LogCrossOriginFetchFromContentScript3(
+      const std::string& isolated_world_host) override;
 
  private:
   mojo::Receiver<mojom::NetworkServiceClient> receiver_;

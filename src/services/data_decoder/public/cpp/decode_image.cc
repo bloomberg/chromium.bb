@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -104,8 +105,8 @@ void DecodeAnimation(DataDecoder* data_decoder,
 
   // |call_once| runs |callback| on its first invocation.
   auto call_once = base::AdaptCallbackForRepeating(std::move(callback));
-  decoder.set_disconnect_handler(base::BindOnce(
-      call_once, base::Passed(std::vector<mojom::AnimationFramePtr>())));
+  decoder.set_disconnect_handler(
+      base::BindOnce(call_once, std::vector<mojom::AnimationFramePtr>()));
 
   mojom::ImageDecoder* raw_decoder = decoder.get();
   raw_decoder->DecodeAnimation(

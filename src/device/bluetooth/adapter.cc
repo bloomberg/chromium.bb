@@ -7,7 +7,9 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "device/bluetooth/adapter.h"
 #include "device/bluetooth/device.h"
 #include "device/bluetooth/discovery_session.h"
@@ -39,10 +41,10 @@ void Adapter::ConnectToDevice(const std::string& address,
 
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   device->CreateGattConnection(
-      base::Bind(&Adapter::OnGattConnected, weak_ptr_factory_.GetWeakPtr(),
-                 copyable_callback),
-      base::Bind(&Adapter::OnConnectError, weak_ptr_factory_.GetWeakPtr(),
-                 copyable_callback));
+      base::BindOnce(&Adapter::OnGattConnected, weak_ptr_factory_.GetWeakPtr(),
+                     copyable_callback),
+      base::BindOnce(&Adapter::OnConnectError, weak_ptr_factory_.GetWeakPtr(),
+                     copyable_callback));
 }
 
 void Adapter::GetDevices(GetDevicesCallback callback) {
@@ -61,6 +63,9 @@ void Adapter::GetInfo(GetInfoCallback callback) {
   mojom::AdapterInfoPtr adapter_info = mojom::AdapterInfo::New();
   adapter_info->address = adapter_->GetAddress();
   adapter_info->name = adapter_->GetName();
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  adapter_info->system_name = adapter_->GetSystemName();
+#endif
   adapter_info->initialized = adapter_->IsInitialized();
   adapter_info->present = adapter_->IsPresent();
   adapter_info->powered = adapter_->IsPowered();
@@ -76,10 +81,10 @@ void Adapter::SetClient(mojo::PendingRemote<mojom::AdapterClient> client) {
 void Adapter::StartDiscoverySession(StartDiscoverySessionCallback callback) {
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   adapter_->StartDiscoverySession(
-      base::Bind(&Adapter::OnStartDiscoverySession,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback),
-      base::Bind(&Adapter::OnDiscoverySessionError,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+      base::BindOnce(&Adapter::OnStartDiscoverySession,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback),
+      base::BindOnce(&Adapter::OnDiscoverySessionError,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
 }
 
 void Adapter::AdapterPresentChanged(device::BluetoothAdapter* adapter,

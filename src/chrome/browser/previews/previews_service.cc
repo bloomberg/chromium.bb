@@ -10,16 +10,17 @@
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
-#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/blacklist/opt_out_blacklist/sql/opt_out_store_sql.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/previews/content/previews_decider_impl.h"
@@ -55,19 +56,15 @@ std::unique_ptr<previews::RegexpList> GetDenylistRegexpsForDeferAllScript() {
 
 // Returns true if previews can be shown for |type|.
 bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
-  bool server_previews_enabled =
-      previews::params::ArePreviewsAllowed() &&
-      base::FeatureList::IsEnabled(
-          data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
   switch (type) {
     case previews::PreviewsType::OFFLINE:
       return previews::params::IsOfflinePreviewsEnabled();
     case previews::PreviewsType::DEPRECATED_LOFI:
       return false;
-    case previews::PreviewsType::LITE_PAGE_REDIRECT:
-      return previews::params::IsLitePageServerPreviewsEnabled();
+    case previews::PreviewsType::DEPRECATED_LITE_PAGE_REDIRECT:
+      return false;
     case previews::PreviewsType::LITE_PAGE:
-      return server_previews_enabled;
+      return false;
     case previews::PreviewsType::NOSCRIPT:
       return previews::params::IsNoScriptPreviewsEnabled();
     case previews::PreviewsType::RESOURCE_LOADING_HINTS:
@@ -94,9 +91,7 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
     case previews::PreviewsType::OFFLINE:
       return previews::params::OfflinePreviewsVersion();
     case previews::PreviewsType::LITE_PAGE:
-      return data_reduction_proxy::params::LitePageVersion();
-    case previews::PreviewsType::LITE_PAGE_REDIRECT:
-      return previews::params::LitePageServerPreviewsVersion();
+      return 0;
     case previews::PreviewsType::NOSCRIPT:
       return previews::params::NoScriptPreviewsVersion();
     case previews::PreviewsType::RESOURCE_LOADING_HINTS:
@@ -108,6 +103,7 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
     case previews::PreviewsType::LAST:
     case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
     case previews::PreviewsType::DEPRECATED_LOFI:
+    case previews::PreviewsType::DEPRECATED_LITE_PAGE_REDIRECT:
       break;
   }
   NOTREACHED();
@@ -159,8 +155,9 @@ PreviewsService::GetAllowedPreviews() {
 }
 
 PreviewsService::PreviewsService(content::BrowserContext* browser_context)
-    : previews_lite_page_redirect_decider_(
-          std::make_unique<PreviewsLitePageRedirectDecider>(browser_context)),
+    : previews_https_notification_infobar_decider_(
+          std::make_unique<PreviewsHTTPSNotificationInfoBarDecider>(
+              browser_context)),
       previews_offline_helper_(
           std::make_unique<PreviewsOfflineHelper>(browser_context)),
       browser_context_(browser_context),
@@ -188,15 +185,18 @@ void PreviewsService::Initialize(
 
   // Get the background thread to run SQLite on.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::TaskPriority::BEST_EFFORT});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);
 
   std::unique_ptr<previews::PreviewsOptimizationGuide> previews_opt_guide;
   OptimizationGuideKeyedService* optimization_guide_keyed_service =
       OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
-  if (optimization_guide_keyed_service) {
+  if (optimization_guide_keyed_service &&
+      data_reduction_proxy::DataReductionProxySettings::
+          IsDataSaverEnabledByUser(profile->IsOffTheRecord(),
+                                   profile->GetPrefs())) {
     previews_opt_guide = std::make_unique<previews::PreviewsOptimizationGuide>(
         optimization_guide_keyed_service);
   }
@@ -212,8 +212,8 @@ void PreviewsService::Initialize(
 }
 
 void PreviewsService::Shutdown() {
-  if (previews_lite_page_redirect_decider_)
-    previews_lite_page_redirect_decider_->Shutdown();
+  if (previews_https_notification_infobar_decider_)
+    previews_https_notification_infobar_decider_->Shutdown();
 
   if (previews_offline_helper_)
     previews_offline_helper_->Shutdown();
@@ -223,9 +223,6 @@ void PreviewsService::ClearBlackList(base::Time begin_time,
                                      base::Time end_time) {
   if (previews_ui_service_)
     previews_ui_service_->ClearBlackList(begin_time, end_time);
-
-  if (previews_lite_page_redirect_decider_)
-    previews_lite_page_redirect_decider_->ClearBlacklist();
 }
 
 void PreviewsService::ReportObservedRedirectWithDeferAllScriptPreview(

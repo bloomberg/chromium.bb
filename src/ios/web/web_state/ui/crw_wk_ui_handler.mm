@@ -36,16 +36,17 @@
 
 @implementation CRWWKUIHandler
 
-#pragma mark - Public
+#pragma mark - CRWWebViewHandler
 
 - (void)close {
+  [super close];
   _mojoFacade.reset();
 }
 
 #pragma mark - Property
 
 - (web::WebStateImpl*)webStateImpl {
-  return [self.delegate webStateImplForUIHandler:self];
+  return [self.delegate webStateImplForWebViewHandler:self];
 }
 
 - (web::MojoFacade*)mojoFacade {
@@ -72,7 +73,7 @@
       valueForHTTPHeaderField:web::wk_navigation_util::kReferrerHeaderName];
   GURL openerURL = referrer.length
                        ? GURL(base::SysNSStringToUTF8(referrer))
-                       : [self.delegate documentURLForUIHandler:self];
+                       : [self.delegate documentURLForWebViewHandler:self];
 
   // There is no reliable way to tell if there was a user gesture, so this code
   // checks if user has recently tapped on web view. TODO(crbug.com/809706):
@@ -188,6 +189,59 @@
     commitPreviewingViewController:(UIViewController*)previewingViewController {
   return self.webStateImpl->CommitPreviewingViewController(
       previewingViewController);
+}
+
+- (void)webView:(WKWebView*)webView
+    contextMenuConfigurationForElement:(WKContextMenuElementInfo*)elementInfo
+                     completionHandler:
+                         (void (^)(UIContextMenuConfiguration* _Nullable))
+                             completionHandler API_AVAILABLE(ios(13.0)) {
+  web::WebStateDelegate* delegate = self.webStateImpl->GetDelegate();
+  if (!delegate) {
+    return;
+  }
+
+  delegate->ContextMenuConfiguration(self.webStateImpl,
+                                     net::GURLWithNSURL(elementInfo.linkURL),
+                                     completionHandler);
+}
+
+- (void)webView:(WKWebView*)webView
+    contextMenuDidEndForElement:(WKContextMenuElementInfo*)elementInfo
+    API_AVAILABLE(ios(13.0)) {
+  web::WebStateDelegate* delegate = self.webStateImpl->GetDelegate();
+  if (!delegate) {
+    return;
+  }
+
+  delegate->ContextMenuDidEnd(self.webStateImpl,
+                              net::GURLWithNSURL(elementInfo.linkURL));
+}
+
+- (void)webView:(WKWebView*)webView
+     contextMenuForElement:(nonnull WKContextMenuElementInfo*)elementInfo
+    willCommitWithAnimator:
+        (nonnull id<UIContextMenuInteractionCommitAnimating>)animator
+    API_AVAILABLE(ios(13.0)) {
+  web::WebStateDelegate* delegate = self.webStateImpl->GetDelegate();
+  if (!delegate) {
+    return;
+  }
+
+  delegate->ContextMenuWillCommitWithAnimator(
+      self.webStateImpl, net::GURLWithNSURL(elementInfo.linkURL), animator);
+}
+
+- (void)webView:(WKWebView*)webView
+    contextMenuWillPresentForElement:(WKContextMenuElementInfo*)elementInfo
+    API_AVAILABLE(ios(13.0)) {
+  web::WebStateDelegate* delegate = self.webStateImpl->GetDelegate();
+  if (!delegate) {
+    return;
+  }
+
+  delegate->ContextMenuWillPresent(self.webStateImpl,
+                                   net::GURLWithNSURL(elementInfo.linkURL));
 }
 
 #pragma mark - Helper

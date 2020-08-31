@@ -10,12 +10,15 @@ import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/cors.mojom";
+import "services/network/public/mojom/cookie_access_observer.mojom";
 import "services/network/public/mojom/chunked_data_pipe_getter.mojom";
 import "services/network/public/mojom/data_pipe_getter.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
-import "services/network/public/mojom/network_isolation_key.mojom";
+import "services/network/public/mojom/isolation_info.mojom";
 import "services/network/public/mojom/network_param.mojom";
+import "services/network/public/mojom/site_for_cookies.mojom";
+import "services/network/public/mojom/trust_tokens.mojom";
 import "services/network/public/mojom/url_response_head.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -69,31 +72,12 @@ enum DataElementType {
   kBytes,
 };
 
-// Used to determine if URLRequest::trusted_network_isolation_key should be
-// updated on redirect.
-enum UpdateNetworkIsolationKeyOnRedirect {
-  kDoNotUpdate,
-
-  // The updated network isolation key will take the redirected url's origin as
-  // the top frame origin and frame origin.
-  kUpdateTopFrameAndFrameOrigin,
-
-  // The updated network isolation key will take the existing
-  // NetworkIsolationKey's top frame origin and redirected url's origin as the
-  // frame origin.
-  kUpdateFrameOrigin
-};
-
 // Options that may only be set on URLRequests passed to a URLLoaderFactory
 // created with |is_trusted| set to true.
 struct TrustedUrlRequestParams {
-  // This resource request will be keyed using |network_isolation_key| for
-  // accessing shared network resources like the http cache.
-  NetworkIsolationKey? network_isolation_key;
-
-  // Whether or not the network isolation key needs to be recomputed on
-  // redirects. Typically this is only done for navigations.
-  UpdateNetworkIsolationKeyOnRedirect update_network_isolation_key_on_redirect;
+  // If non-empty, this value will be used to set the SiteForCookies and
+  // NetworkIsolationKey used by the network request.
+  IsolationInfo isolation_info;
 
   // Whether secure DNS should be disabled for the request.
   bool disable_secure_dns;
@@ -102,6 +86,11 @@ struct TrustedUrlRequestParams {
   // Always true for navigations except the one triggered from a document
   // without user gesture. Used to determine the `Sec-Fetch-User` header.
   bool has_user_activation;
+
+  // Observer which should be notified when this URLRequest reads or writes
+  // a cookie. If this is set to non-null, the observer passed to
+  // URLLoaderFactory will be ignored.
+  CookieAccessObserver? cookie_observer;
 };
 
 // Typemapped to network::ResourceRequest.
@@ -112,18 +101,27 @@ struct URLRequest {
   // The absolute requested URL encoded in ASCII per the rules of RFC-2396.
   url.mojom.Url url;
 
-  // URL representing the first-party origin for the request, which may be
-  // checked by the third-party cookie blocking policy. This is usually the URL
-  // of the document in the top-level window. Leaving it empty may lead to
-  // undesired cookie blocking. Third-party cookie blocking can be bypassed by
-  // setting site_for_cookies = url, but this should ideally only be
-  // done if there really is no way to determine the correct value.
-  url.mojom.Url site_for_cookies;
+  // Represents the first-party for the request, which may be checked by
+  // the third-party cookie blocking policy or by some cookies. Leaving it empty
+  // may lead to undesired cookie blocking. Third-party cookie blocking can be
+  // bypassed by setting site_for_cookies = SiteForCookies::FromUrl(url), but
+  // this should only be done if the fetch can be reasonably said to be done by
+  // the same principal as what |url| represents.
+  //
+  // Currently if a renderer is compromised an attacker could alter the
+  // SiteForCookies. This would allow the renderer to send cookies to a
+  // third-party context when it otherwise wouldn't be able to.
+  // https://crbug.com/1060631 will move the SFC computation into the browser
+  // process to prevent this.
+  // TODO(https://crbug.com/1060631): Remove this message after the fix is
+  // landed.
+  SiteForCookies site_for_cookies;
 
-  // Boolean indicating whether SameSite cookies are allowed to be attached
-  // to the request. It should be used as additional input to network side
-  // checks.
-  bool attach_same_site_cookies;
+  // Boolean indicating whether SameSite cookies should be indiscriminately
+  // attached to the request, bypassing the usual site_for_cookies checks.
+  // Setting this param to true causes SameSite cookies to be included on
+  // cross-site requests (or requests that "look" cross-site).
+  bool force_ignore_site_for_cookies;
 
   // First-party URL redirect policy: During server redirects, the first-party
   // URL for cookies normally doesn't change. However, if this is true, the
@@ -193,16 +191,18 @@ struct URLRequest {
   // set additional HTTP headers, but such internal headers must be ignored by
   // CORS check (which run inside Network Service), so the values are stored
   // here (rather than in |headers|) and later merged into the |headers| after
-  // CORS check.
+  // CORS check. If this request is sent to the network service, the header
+  // names stored in this member should be declared in
+  // NetworkContextParams::cors_exempt_header_list for the NetworkContext.
+  // Otherwise, the request will fail.
   //
-  // *Warning*: Adding new headers to this list is strongly discouraged. What
+  // *Warning*: Adding new headers to this list is strongly discouraged and
+  // should only be done for non-standard headers used for legacy reasons. What
   // usually you need is to update the fetch spec, and add your custom headers
   // to the CORS-safelisted header so to pass proper CORS checks. 'Proxy-' or
   // 'Sec-' prefixes are also available. See cors::IsCORSSafelistedHeader and
-  // cors::IsForbiddenHeader for details.
-  //
-  // You should ask Loading and CORS OWNERS when you need to add your own
-  // headers to the list.
+  // cors::IsForbiddenHeader for details, and Loading and CORS OWNERS when you
+  // need to add your own headers to the list.
   HttpRequestHeaders cors_exempt_headers;  // See Note above before using.
 
   // net::URLRequest load flags.
@@ -210,7 +210,7 @@ struct URLRequest {
 
   // What this resource load is for (main frame, sub-frame, sub-resource,
   // object).
-  // Note: this is an enum of type content::ResourceType.
+  // Note: this is an enum of type blink::mojom::ResourceType.
   // TODO(jam): remove this from the struct since network service shouldn't know
   // about this.
   int32 resource_type;
@@ -269,11 +269,8 @@ struct URLRequest {
   // The integrity used in Fetch API.
   string fetch_integrity;
 
-  // The request context passed to the ServiceWorker.
-  // Note: this is an enum of type content::RequestContextType.
-  // TODO(jam): remove this from the struct since network service shouldn't know
-  // about this.
-  int32 fetch_request_context_type;
+  // https://fetch.spec.whatwg.org/#concept-request-destiantion
+  RequestDestination destination;
 
   // Optional resource request body.
   URLRequestBody? request_body;
@@ -342,13 +339,6 @@ struct URLRequest {
   // The profile ID of network conditions to throttle the network request.
   mojo_base.mojom.UnguessableToken? throttling_profile_id;
 
-  // Headers that will be added pre and post cache for http:// requests if the
-  // network context uses the custom proxy for this request. The custom proxy
-  // is used for requests that match the custom proxy config, and would
-  // otherwise be made direct.
-  HttpRequestHeaders custom_proxy_pre_cache_headers;
-  HttpRequestHeaders custom_proxy_post_cache_headers;
-
   // See https://fetch.spec.whatwg.org/#concept-request-window
   //
   // This is an opaque id of the original requestor of the resource, which might
@@ -392,6 +382,11 @@ struct URLRequest {
   // response headers. For more information on these requests see
   // https://github.com/w3c/resource-hints/issues/77.
   mojo_base.mojom.UnguessableToken? recursive_prefetch_token;
+
+  // Set when Trust Tokens (https://github.com/wicg/trust-token-api) is enabled
+  // and the request has set the trustToken Fetch parameter, denoting that it
+  // wishes to execute a Trust Tokens protocol operation.
+  TrustTokenParams? trust_token_params;
 };
 
 // URLRequestBody represents body (i.e. upload data) of a HTTP request.
@@ -447,12 +442,17 @@ interface URLLoader {
   // |removed_headers| can be used to remove existing headers for the redirect.
   // This parameter is before |modified_headers| since removing headers is
   // applied first in the URLLoader::FollowRedirect().  |modified_headers| can
-  // be used to add or override existing headers for the redirect. If |new_url|
-  // is specified, then the request will be made to it instead of the redirected
-  // URL. Note: it has to be in the same origin as the redirected URL, and this
-  // is only supported when the network service is enabled.
+  // be used to add or override existing headers for the redirect.
+  // |modified_cors_exempt_headers| can be used to modify |cors_exempt_headers|
+  // in the URLRequest. See NetworkContextParams::cors_exempt_header_list
+  // and URLRequest::cors_exempt_headers for details.
+  // If |new_url| is specified, then the request will be made to
+  // it instead of the redirected URL.
+  // Note: it has to be in the same origin as the redirected URL, and this is
+  // only supported when the network service is enabled.
   FollowRedirect(array<string> removed_headers,
                  network.mojom.HttpRequestHeaders modified_headers,
+                 network.mojom.HttpRequestHeaders modified_cors_exempt_headers,
                  url.mojom.Url? new_url);
 
   // Sets the request priority.

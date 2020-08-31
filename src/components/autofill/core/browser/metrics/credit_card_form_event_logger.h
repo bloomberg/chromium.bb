@@ -16,21 +16,22 @@
 #include "components/autofill/core/browser/metrics/form_events.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/sync_utils.h"
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/signatures.h"
 
 namespace autofill {
 
+enum class UnmaskAuthFlowType;
+
 class CreditCardFormEventLogger : public FormEventLoggerBase {
  public:
-  // Form Events for autofill with bank name available for display.
-  enum BankNameDisplayedFormEvent {
-    // A dropdown with suggestions was shown and at least one suggestion has a
-    // bank name. Logged at most once per page load.
-    FORM_EVENT_SUGGESTIONS_SHOWN_WITH_BANK_NAME_AVAILABLE_ONCE = 0,
-    // A server suggestion was used to fill the form and at least one suggestion
-    // has a bank name. Logged at most once per page load.
-    FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE,
-    BANK_NAME_NUM_FORM_EVENTS,
+  enum class UnmaskAuthFlowEvent {
+    // Authentication prompt is shown.
+    kPromptShown = 0,
+    // Authentication prompt successfully completed.
+    kPromptCompleted = 1,
+    // Form was submitted.
+    kFormSubmitted = 2,
+    kMaxValue = kFormSubmitted,
   };
 
   CreditCardFormEventLogger(
@@ -41,15 +42,17 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
 
   ~CreditCardFormEventLogger() override;
 
-  inline void set_is_context_secure(bool is_context_secure) {
+  void set_is_context_secure(bool is_context_secure) {
     is_context_secure_ = is_context_secure;
+  }
+
+  void set_has_server_nickname(bool has_server_nickname) {
+    has_server_nickname_ = has_server_nickname;
   }
 
   void OnDidSelectCardSuggestion(const CreditCard& credit_card,
                                  const FormStructure& form,
                                  AutofillSyncSigninState sync_state);
-
-  void SetBankNameAvailable();
 
   // In case of masked cards, caller must make sure this gets called before
   // the card is upgraded to a full card.
@@ -57,6 +60,12 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
                            const FormStructure& form,
                            const AutofillField& field,
                            AutofillSyncSigninState sync_state);
+
+  // Logging what type of authentication flow was prompted.
+  void LogCardUnmaskAuthenticationPromptShown(UnmaskAuthFlowType flow);
+
+  // Logging when an authentication prompt is completed.
+  void LogCardUnmaskAuthenticationPromptCompleted(UnmaskAuthFlowType flow);
 
  protected:
   // FormEventLoggerBase pure-virtual overrides.
@@ -78,13 +87,21 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   using FormEventLoggerBase::Log;
 
  private:
-  void Log(BankNameDisplayedFormEvent event) const;
   FormEvent GetCardNumberStatusFormEvent(const CreditCard& credit_card);
+  void RecordCardUnmaskFlowEvent(UnmaskAuthFlowType flow,
+                                 UnmaskAuthFlowEvent event);
 
   bool is_context_secure_ = false;
-  bool has_logged_bank_name_available_ = false;
+  UnmaskAuthFlowType current_authentication_flow_;
   bool has_logged_masked_server_card_suggestion_selected_ = false;
+  bool has_logged_suggestion_selected_timestamp_ = false;
   bool logged_suggestion_filled_was_masked_server_card_ = false;
+  base::TimeTicks first_suggestion_shown_timestamp_;
+
+  // True when ANY of the masked server cards has a nickname. Note that,
+  // depending on the experimental setup, the user may not be shown the
+  // nickname.
+  bool has_server_nickname_ = false;
 
   // Weak references.
   PersonalDataManager* personal_data_manager_;

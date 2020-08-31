@@ -4,17 +4,28 @@
 
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 
 namespace chromeos {
 
+// static
+std::string KioskAutolaunchScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::COMPLETED:
+      return "Completed";
+    case Result::CANCELED:
+      return "Canceled";
+  }
+}
+
 KioskAutolaunchScreen::KioskAutolaunchScreen(
     KioskAutolaunchScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(KioskAutolaunchScreenView::kScreenId),
+    : BaseScreen(KioskAutolaunchScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);
@@ -28,6 +39,8 @@ KioskAutolaunchScreen::~KioskAutolaunchScreen() {
 }
 
 void KioskAutolaunchScreen::OnExit(bool confirmed) {
+  if (is_hidden())
+    return;
   exit_callback_.Run(confirmed ? Result::COMPLETED : Result::CANCELED);
 }
 
@@ -36,11 +49,11 @@ void KioskAutolaunchScreen::OnViewDestroyed(KioskAutolaunchScreenView* view) {
     view_ = NULL;
 }
 
-void KioskAutolaunchScreen::Show() {
+void KioskAutolaunchScreen::ShowImpl() {
   if (view_)
     view_->Show();
 }
 
-void KioskAutolaunchScreen::Hide() {}
+void KioskAutolaunchScreen::HideImpl() {}
 
 }  // namespace chromeos

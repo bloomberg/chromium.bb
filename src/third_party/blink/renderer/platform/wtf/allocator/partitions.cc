@@ -36,7 +36,6 @@
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_root_base.h"
 #include "base/debug/alias.h"
-#include "base/lazy_instance.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
@@ -45,63 +44,54 @@ namespace WTF {
 const char* const Partitions::kAllocatedObjectPoolName =
     "partition_alloc/allocated_objects";
 
-static base::LazyInstance<base::subtle::SpinLock>::Leaky initialization_lock_ =
-    LAZY_INSTANCE_INITIALIZER;
 bool Partitions::initialized_ = false;
 
-// These statics are inlined, so cannot be LazyInstances. We create
-// LazyInstances below, and then set the pointers correctly in Initialize().
+// These statics are inlined, so cannot be LazyInstances. We create the values,
+// and then set the pointers correctly in Initialize().
 base::PartitionRootGeneric* Partitions::fast_malloc_root_ = nullptr;
 base::PartitionRootGeneric* Partitions::array_buffer_root_ = nullptr;
 base::PartitionRootGeneric* Partitions::buffer_root_ = nullptr;
 base::PartitionRoot* Partitions::layout_root_ = nullptr;
 
-static base::LazyInstance<base::PartitionAllocatorGeneric>::Leaky
-    lazy_fast_malloc = LAZY_INSTANCE_INITIALIZER;
-static base::LazyInstance<base::PartitionAllocatorGeneric>::Leaky
-    lazy_array_buffer = LAZY_INSTANCE_INITIALIZER;
-static base::LazyInstance<base::PartitionAllocatorGeneric>::Leaky lazy_buffer =
-    LAZY_INSTANCE_INITIALIZER;
-static base::LazyInstance<base::SizeSpecificPartitionAllocator<1024>>::Leaky
-    lazy_layout = LAZY_INSTANCE_INITIALIZER;
-
+// static
 void Partitions::Initialize() {
-  base::subtle::SpinLock::Guard guard(initialization_lock_.Get());
+  static bool initialized = InitializeOnce();
+  DCHECK(initialized);
+}
 
-  if (!initialized_) {
-    base::PartitionAllocatorGeneric* fast_malloc_allocator =
-        lazy_fast_malloc.Pointer();
-    base::PartitionAllocatorGeneric* array_buffer_allocator =
-        lazy_array_buffer.Pointer();
-    base::PartitionAllocatorGeneric* buffer_allocator = lazy_buffer.Pointer();
-    base::SizeSpecificPartitionAllocator<1024>* layout_allocator =
-        lazy_layout.Pointer();
+// static
+bool Partitions::InitializeOnce() {
+  static base::PartitionAllocatorGeneric fast_malloc_allocator{};
+  static base::PartitionAllocatorGeneric array_buffer_allocator{};
+  static base::PartitionAllocatorGeneric buffer_allocator{};
+  static base::SizeSpecificPartitionAllocator<1024> layout_allocator{};
 
-    base::PartitionAllocGlobalInit(&Partitions::HandleOutOfMemory);
-    fast_malloc_allocator->init();
-    array_buffer_allocator->init();
-    buffer_allocator->init();
-    layout_allocator->init();
+  base::PartitionAllocGlobalInit(&Partitions::HandleOutOfMemory);
 
-    fast_malloc_root_ = fast_malloc_allocator->root();
-    array_buffer_root_ = array_buffer_allocator->root();
-    buffer_root_ = buffer_allocator->root();
-    layout_root_ = layout_allocator->root();
+  fast_malloc_allocator.init();
+  array_buffer_allocator.init();
+  buffer_allocator.init();
+  layout_allocator.init();
 
-    initialized_ = true;
-  }
+  fast_malloc_root_ = fast_malloc_allocator.root();
+  array_buffer_root_ = array_buffer_allocator.root();
+  buffer_root_ = buffer_allocator.root();
+  layout_root_ = layout_allocator.root();
+
+  initialized_ = true;
+  return initialized_;
 }
 
 // static
 void Partitions::StartPeriodicReclaim(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   CHECK(IsMainThread());
-  if (!initialized_)
-    return;
+  DCHECK(initialized_);
 
   base::PartitionAllocMemoryReclaimer::Instance()->Start(task_runner);
 }
 
+// static
 void Partitions::DumpMemoryStats(
     bool is_light_dump,
     base::PartitionStatsDumper* partition_stats_dumper) {
@@ -141,6 +131,7 @@ class LightPartitionStatsDumperImpl : public base::PartitionStatsDumper {
 
 }  // namespace
 
+// static
 size_t Partitions::TotalSizeOfCommittedPages() {
   DCHECK(initialized_);
   size_t total_size = 0;
@@ -151,118 +142,128 @@ size_t Partitions::TotalSizeOfCommittedPages() {
   return total_size;
 }
 
+// static
 size_t Partitions::TotalActiveBytes() {
   LightPartitionStatsDumperImpl dumper;
   WTF::Partitions::DumpMemoryStats(true, &dumper);
   return dumper.TotalActiveBytes();
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing2G() {
+static NOINLINE void PartitionsOutOfMemoryUsing2G(size_t size) {
   size_t signature = 2UL * 1024 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing1G() {
+static NOINLINE void PartitionsOutOfMemoryUsing1G(size_t size) {
   size_t signature = 1UL * 1024 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing512M() {
+static NOINLINE void PartitionsOutOfMemoryUsing512M(size_t size) {
   size_t signature = 512 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing256M() {
+static NOINLINE void PartitionsOutOfMemoryUsing256M(size_t size) {
   size_t signature = 256 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing128M() {
+static NOINLINE void PartitionsOutOfMemoryUsing128M(size_t size) {
   size_t signature = 128 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing64M() {
+static NOINLINE void PartitionsOutOfMemoryUsing64M(size_t size) {
   size_t signature = 64 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing32M() {
+static NOINLINE void PartitionsOutOfMemoryUsing32M(size_t size) {
   size_t signature = 32 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing16M() {
+static NOINLINE void PartitionsOutOfMemoryUsing16M(size_t size) {
   size_t signature = 16 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsingLessThan16M() {
+static NOINLINE void PartitionsOutOfMemoryUsingLessThan16M(size_t size) {
   size_t signature = 16 * 1024 * 1024 - 1;
   base::debug::Alias(&signature);
-  DLOG(FATAL) << "ParitionAlloc: out of memory with < 16M usage (error:"
+  DLOG(FATAL) << "PartitionAlloc: out of memory with < 16M usage (error:"
               << base::GetAllocPageErrorCode() << ")";
+  OOM_CRASH(size);
 }
 
+// static
 void* Partitions::BufferMalloc(size_t n, const char* type_name) {
   return BufferPartition()->Alloc(n, type_name);
 }
 
+// static
 void* Partitions::BufferTryRealloc(void* p, size_t n, const char* type_name) {
   return BufferPartition()->TryRealloc(p, n, type_name);
 }
 
+// static
 void Partitions::BufferFree(void* p) {
   BufferPartition()->Free(p);
 }
 
+// static
 size_t Partitions::BufferActualSize(size_t n) {
   return BufferPartition()->ActualSize(n);
 }
 
+// static
 void* Partitions::FastMalloc(size_t n, const char* type_name) {
   return FastMallocPartition()->Alloc(n, type_name);
 }
 
+// static
 void* Partitions::FastZeroedMalloc(size_t n, const char* type_name) {
   return FastMallocPartition()->AllocFlags(base::PartitionAllocZeroFill, n,
                                            type_name);
 }
 
+// static
 void Partitions::FastFree(void* p) {
   FastMallocPartition()->Free(p);
 }
 
-void Partitions::HandleOutOfMemory() {
+// static
+void Partitions::HandleOutOfMemory(size_t size) {
   volatile size_t total_usage = TotalSizeOfCommittedPages();
   uint32_t alloc_page_error_code = base::GetAllocPageErrorCode();
   base::debug::Alias(&alloc_page_error_code);
 
   if (total_usage >= 2UL * 1024 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing2G();
+    PartitionsOutOfMemoryUsing2G(size);
   if (total_usage >= 1UL * 1024 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing1G();
+    PartitionsOutOfMemoryUsing1G(size);
   if (total_usage >= 512 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing512M();
+    PartitionsOutOfMemoryUsing512M(size);
   if (total_usage >= 256 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing256M();
+    PartitionsOutOfMemoryUsing256M(size);
   if (total_usage >= 128 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing128M();
+    PartitionsOutOfMemoryUsing128M(size);
   if (total_usage >= 64 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing64M();
+    PartitionsOutOfMemoryUsing64M(size);
   if (total_usage >= 32 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing32M();
+    PartitionsOutOfMemoryUsing32M(size);
   if (total_usage >= 16 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing16M();
-  PartitionsOutOfMemoryUsingLessThan16M();
+    PartitionsOutOfMemoryUsing16M(size);
+  PartitionsOutOfMemoryUsingLessThan16M(size);
 }
 
 }  // namespace WTF

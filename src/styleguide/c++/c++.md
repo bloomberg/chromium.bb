@@ -16,7 +16,7 @@ You can propose changes to this style guide by sending an email to
 request review for a change to this file. If there's no consensus,
 `src/styleguide/c++/OWNERS` get to decide.
 
-Blink code in `third_party/WebKit` uses [Blink style](blink-c++.md).
+Blink code in `third_party/blink` uses [Blink style](blink-c++.md).
 
 ## Modern C++ features
 
@@ -34,8 +34,10 @@ features in Chromium is tracked in the separate
 ## Test-only Code
 
   * Functions used only for testing should be restricted to test-only usages
-    with the `ForTesting` suffix. This is checked at presubmit time to ensure
-    these functions are only called by test files.
+    with the testing suffixes supported by [PRESUMBIT.py](https://chromium.googlesource.com/chromium/src/+/master/PRESUBMIT.py).
+    `ForTesting` is the conventional suffix although similar patterns, such as
+    `ForTest`, are also accepted. These suffixes are checked at presubmit time
+    to ensure the functions are called only by test files.
 
 ## Code formatting
 

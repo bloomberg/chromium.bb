@@ -160,7 +160,7 @@ class CommandDispatcher(object):
     commands = self.enumerate_commands()
     docs = sorted(
         (cmd_name, self._create_command_summary(cmd_name, handler))
-        for cmd_name, handler in commands.iteritems())
+        for cmd_name, handler in commands.items())
     # Skip commands without a docstring.
     docs = [i for i in docs if i[1]]
     # Then calculate maximum length for alignment:

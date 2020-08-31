@@ -1199,6 +1199,8 @@ void TargetX86Base<TraitsType>::addProlog(CfgNode *Node) {
   SpillAreaSizeBytes = StackSize - StackOffset; // Adjust for alignment, if any
 
   if (SpillAreaSizeBytes) {
+    emitStackProbe(SpillAreaSizeBytes);
+
     // Generate "sub stackptr, SpillAreaSizeBytes"
     _sub_sp(Ctx->getConstantInt32(SpillAreaSizeBytes));
   }
@@ -1570,7 +1572,7 @@ void TargetX86Base<TraitsType>::lowerAlloca(const InstAlloca *Instr) {
   // Add enough to the returned address to account for the out args area.
   uint32_t OutArgsSize = maxOutArgsSizeBytes();
   if (OutArgsSize > 0) {
-    Variable *T = makeReg(IceType_i32);
+    Variable *T = makeReg(Dest->getType());
     auto *CalculateOperand = X86OperandMem::create(
         Func, IceType_void, esp, Ctx->getConstantInt(IceType_i32, OutArgsSize));
     _lea(T, CalculateOperand);
@@ -2814,7 +2816,8 @@ void TargetX86Base<TraitsType>::lowerCall(const InstCall *Instr) {
   // Emit the call to the function.
   Operand *CallTarget =
       legalize(Instr->getCallTarget(), Legal_Reg | Legal_Imm | Legal_AddrAbs);
-  Inst *NewCall = emitCallToTarget(CallTarget, ReturnReg);
+  size_t NumVariadicFpArgs = Instr->isVariadic() ? XmmArgs.size() : 0;
+  Inst *NewCall = emitCallToTarget(CallTarget, ReturnReg, NumVariadicFpArgs);
   // Keep the upper return register live on 32-bit platform.
   if (ReturnRegHi)
     Context.insert<InstFakeDef>(ReturnRegHi);
@@ -3292,7 +3295,10 @@ void TargetX86Base<TraitsType>::lowerCast(const InstCast *Instr) {
         // use v16i8 vectors.
         assert(getFlags().getApplicationBinaryInterface() != ABI_PNaCl &&
                "PNaCl only supports real 128-bit vectors");
-        _movd(Dest, legalize(Src0, Legal_Reg | Legal_Mem));
+        Operand *Src0RM = legalize(Src0, Legal_Reg | Legal_Mem);
+        Variable *T = makeReg(DestTy);
+        _movd(T, Src0RM);
+        _mov(Dest, T);
       } else {
         _movp(Dest, legalizeToReg(Src0));
       }
@@ -6487,8 +6493,6 @@ void TargetX86Base<TraitsType>::lowerShuffleVector(
       }
       break;
       CASE_SRCS_IN(0, 0, 0, 1) : {
-        assert(false && "Following code is untested but likely correct; test "
-                        "and remove assert.");
         auto *Unified = lowerShuffleVector_UnifyFromDifferentSrcs(Src0, Index2,
                                                                   Src1, Index3);
         T = lowerShuffleVector_TwoFromSameSrc(Src0, Index0, Index1, Unified,
@@ -6523,8 +6527,6 @@ void TargetX86Base<TraitsType>::lowerShuffleVector(
           _movp(T, Src0R);
           _punpckl(T, Src1RM);
         } else if (Index0 == Index2 && Index1 == Index3) {
-          assert(false && "Following code is untested but likely correct; test "
-                          "and remove assert.");
           auto *Unified = lowerShuffleVector_UnifyFromDifferentSrcs(
               Src0, Index0, Src1, Index1);
           T = lowerShuffleVector_AllFromSameSrc(
@@ -6560,8 +6562,6 @@ void TargetX86Base<TraitsType>::lowerShuffleVector(
       }
       break;
       CASE_SRCS_IN(0, 1, 1, 1) : {
-        assert(false && "Following code is untested but likely correct; test "
-                        "and remove assert.");
         auto *Unified = lowerShuffleVector_UnifyFromDifferentSrcs(Src0, Index0,
                                                                   Src1, Index1);
         T = lowerShuffleVector_TwoFromSameSrc(
@@ -6577,16 +6577,12 @@ void TargetX86Base<TraitsType>::lowerShuffleVector(
       break;
       CASE_SRCS_IN(1, 0, 0, 1) : {
         if (Index0 == Index3 && Index1 == Index2) {
-          assert(false && "Following code is untested but likely correct; test "
-                          "and remove assert.");
           auto *Unified = lowerShuffleVector_UnifyFromDifferentSrcs(
               Src1, Index0, Src0, Index1);
           T = lowerShuffleVector_AllFromSameSrc(
               Unified, UNIFIED_INDEX_0, UNIFIED_INDEX_1, UNIFIED_INDEX_1,
               UNIFIED_INDEX_0);
         } else {
-          assert(false && "Following code is untested but likely correct; test "
-                          "and remove assert.");
           auto *Unified0 = lowerShuffleVector_UnifyFromDifferentSrcs(
               Src1, Index0, Src0, Index1);
           auto *Unified1 = lowerShuffleVector_UnifyFromDifferentSrcs(
@@ -6623,8 +6619,6 @@ void TargetX86Base<TraitsType>::lowerShuffleVector(
       }
       break;
       CASE_SRCS_IN(1, 0, 1, 1) : {
-        assert(false && "Following code is untested but likely correct; test "
-                        "and remove assert.");
         auto *Unified = lowerShuffleVector_UnifyFromDifferentSrcs(Src1, Index0,
                                                                   Src0, Index1);
         T = lowerShuffleVector_TwoFromSameSrc(
@@ -6637,8 +6631,6 @@ void TargetX86Base<TraitsType>::lowerShuffleVector(
       }
       break;
       CASE_SRCS_IN(1, 1, 0, 1) : {
-        assert(false && "Following code is untested but likely correct; test "
-                        "and remove assert.");
         auto *Unified = lowerShuffleVector_UnifyFromDifferentSrcs(Src0, Index2,
                                                                   Src1, Index3);
         T = lowerShuffleVector_TwoFromSameSrc(Src1, Index0, Index1, Unified,
@@ -6653,8 +6645,6 @@ void TargetX86Base<TraitsType>::lowerShuffleVector(
       }
       break;
       CASE_SRCS_IN(1, 1, 1, 1) : {
-        assert(false && "Following code is untested but likely correct; test "
-                        "and remove assert.");
         T = lowerShuffleVector_AllFromSameSrc(Src1, Index0, Index1, Index2,
                                               Index3);
       }

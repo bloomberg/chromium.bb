@@ -63,6 +63,7 @@
       "putImageData.html", 
       "toBlob_duration.html", 
       "toBlob_duration_jpeg.html", 
+      "toBlob-small-canvas-in-worker.html", 
       "transferFromImageBitmap.html", 
       "upload-canvas-2d-to-texture.html", 
       "upload-video-to-sub-texture.html", 
@@ -2158,18 +2159,6 @@
       "https://www.youtube.com_warm"
     ], 
     "name": "v8.runtime_stats.top_25"
-  }, 
-  {
-    "repeat": 3, 
-    "stories": [
-      "AsmJsZenGarden", 
-      "WasmSpaceBuggy", 
-      "WasmStylizedRenderer", 
-      "WasmSunTemple", 
-      "WasmTanks", 
-      "WasmZenGarden"
-    ], 
-    "name": "wasm"
   }, 
   {
     "repeat": 1, 

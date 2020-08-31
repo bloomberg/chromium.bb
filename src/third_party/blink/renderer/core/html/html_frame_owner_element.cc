@@ -20,8 +20,10 @@
 
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -224,6 +226,7 @@ void HTMLFrameOwnerElement::ClearContentFrame() {
 
   DCHECK_EQ(content_frame_->Owner(), this);
   content_frame_ = nullptr;
+  embedding_token_ = base::nullopt;
 
   for (ContainerNode* node = this; node; node = node->ParentOrShadowHostNode())
     node->DecrementConnectedSubframeCount();
@@ -271,12 +274,23 @@ DOMWindow* HTMLFrameOwnerElement::contentWindow() const {
   return content_frame_ ? content_frame_->DomWindow() : nullptr;
 }
 
-void HTMLFrameOwnerElement::SetSandboxFlags(WebSandboxFlags flags) {
+void HTMLFrameOwnerElement::SetSandboxFlags(
+    network::mojom::blink::WebSandboxFlags flags) {
   frame_policy_.sandbox_flags = flags;
   // Recalculate the container policy in case the allow-same-origin flag has
   // changed.
   frame_policy_.container_policy = ConstructContainerPolicy(nullptr);
 
+  // Don't notify about updates if ContentFrame() is null, for example when
+  // the subframe hasn't been created yet.
+  if (ContentFrame()) {
+    GetDocument().GetFrame()->Client()->DidChangeFramePolicy(ContentFrame(),
+                                                             frame_policy_);
+  }
+}
+
+void HTMLFrameOwnerElement::SetDisallowDocumentAccesss(bool disallowed) {
+  frame_policy_.disallow_document_access = disallowed;
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {
@@ -307,14 +321,61 @@ void HTMLFrameOwnerElement::UpdateContainerPolicy(Vector<String>* messages) {
   }
 }
 
+void HTMLFrameOwnerElement::UpdateRequiredPolicy() {
+  const auto* frame = GetDocument().GetFrame();
+  DocumentPolicy::FeatureState new_required_policy =
+      frame
+          ? DocumentPolicy::MergeFeatureState(
+                ConstructRequiredPolicy(), /* self_required_policy */
+                frame->GetRequiredDocumentPolicy() /* parent_required_policy */)
+          : ConstructRequiredPolicy();
+
+  // Filter out policies that are disabled by origin trials.
+  frame_policy_.required_document_policy.clear();
+  for (auto i = new_required_policy.begin(), last = new_required_policy.end();
+       i != last;) {
+    if (!DisabledByOriginTrial(i->first, &GetDocument()))
+      frame_policy_.required_document_policy.insert(*i);
+    ++i;
+  }
+
+  if (ContentFrame()) {
+    frame->Client()->DidChangeFramePolicy(ContentFrame(), frame_policy_);
+  }
+}
+
+network::mojom::blink::TrustTokenParamsPtr
+HTMLFrameOwnerElement::ConstructTrustTokenParams() const {
+  return nullptr;
+}
+
 void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet; or if we are in the middle of
   // swapping one frame for another, in which case the final state of
   // properties will be propagated at the end of the swapping operation.
-  if (!is_swapping_frames_ && ContentFrame()) {
-    GetDocument().GetFrame()->Client()->DidChangeFrameOwnerProperties(this);
-  }
+  if (is_swapping_frames_ || !ContentFrame())
+    return;
+
+  mojom::blink::FrameOwnerPropertiesPtr properties =
+      mojom::blink::FrameOwnerProperties::New();
+  properties->name = BrowsingContextContainerName().IsNull()
+                         ? WTF::g_empty_string
+                         : BrowsingContextContainerName(),
+  properties->scrollbar_mode = ScrollbarMode();
+  properties->margin_width = MarginWidth();
+  properties->margin_height = MarginHeight();
+  properties->allow_fullscreen = AllowFullscreen();
+  properties->allow_payment_request = AllowPaymentRequest();
+  properties->is_display_none = IsDisplayNone();
+  properties->required_csp =
+      RequiredCsp().IsNull() ? WTF::g_empty_string : RequiredCsp();
+
+  GetDocument()
+      .GetFrame()
+      ->GetLocalFrameHostRemote()
+      .DidChangeFrameOwnerProperties(ContentFrame()->GetFrameToken(),
+                                     std::move(properties));
 }
 
 void HTMLFrameOwnerElement::AddResourceTiming(const ResourceTimingInfo& info) {
@@ -349,7 +410,7 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
     bool will_be_display_none = !embedded_content_view;
     if (IsDisplayNone() != will_be_display_none) {
       doc->WillChangeFrameOwnerProperties(
-          MarginWidth(), MarginHeight(), ScrollingMode(), will_be_display_none);
+          MarginWidth(), MarginHeight(), ScrollbarMode(), will_be_display_none);
     }
   }
 
@@ -359,7 +420,7 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
     if (old_view->IsAttached()) {
       old_view->DetachFromLayout();
       if (old_view->IsPluginView())
-        DisposePluginSoon(ToWebPluginContainerImpl(old_view));
+        DisposePluginSoon(To<WebPluginContainerImpl>(old_view));
       else
         old_view->Dispose();
     }
@@ -423,10 +484,16 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   }
 
   UpdateContainerPolicy();
+  UpdateRequiredPolicy();
 
   KURL url_to_request = url.IsNull() ? BlankURL() : url;
-  ResourceRequest request(url_to_request);
+  ResourceRequestHead request(url_to_request);
   request.SetReferrerPolicy(ReferrerPolicyAttribute());
+
+  network::mojom::blink::TrustTokenParamsPtr trust_token_params =
+      ConstructTrustTokenParams();
+  if (trust_token_params)
+    request.SetTrustTokenParams(*trust_token_params);
 
   if (ContentFrame()) {
     // TODO(sclittle): Support lazily loading frame navigations.
@@ -499,8 +566,8 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     }
   }
 
-  child_frame->Loader().StartNavigation(
-      FrameLoadRequest(&GetDocument(), request), child_load_type);
+  FrameLoadRequest frame_load_request(&GetDocument(), request);
+  child_frame->Loader().StartNavigation(frame_load_request, child_load_type);
 
   return true;
 }
@@ -539,6 +606,20 @@ void HTMLFrameOwnerElement::ParseAttribute(
   }
 }
 
+void HTMLFrameOwnerElement::FrameCrossOriginToParentFrameChanged() {
+  if (base::FeatureList::IsEnabled(
+          blink::features::kCompositeCrossOriginIframes)) {
+    SetNeedsCompositingUpdate();
+  }
+}
+
+void HTMLFrameOwnerElement::SetEmbeddingToken(
+    const base::UnguessableToken& embedding_token) {
+  DCHECK(content_frame_);
+  DCHECK(content_frame_->IsRemoteFrame());
+  embedding_token_ = embedding_token;
+}
+
 void HTMLFrameOwnerElement::Trace(Visitor* visitor) {
   visitor->Trace(content_frame_);
   visitor->Trace(embedded_content_view_);
@@ -550,7 +631,7 @@ void HTMLFrameOwnerElement::Trace(Visitor* visitor) {
 bool HTMLFrameOwnerElement::IsLoadingFrameDefaultEagerEnforced() const {
   return RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
          !GetDocument().IsFeatureEnabled(
-             mojom::FeaturePolicyFeature::kLoadingFrameDefaultEager);
+             mojom::blink::FeaturePolicyFeature::kLoadingFrameDefaultEager);
 }
 
 }  // namespace blink

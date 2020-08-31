@@ -17,10 +17,11 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">চুপাৰিছ কৰা এপ্‌</translation>
 <translation id="1368832886055348810">বাওঁফালৰ পৰা সোঁফাললৈ</translation>
-<translation id="1383876407941801731">সন্ধান</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="1398853756734560583">সৰ্বাধিক মাত্ৰালৈ বঢ়াওক</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, ইনষ্টল হৈ থকা এপ্‌</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> শ্বেয়াৰ কৰিব নোৱাৰি</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" />ক <ph name="SECOND_ITEM_TITLE" />ৰ সৈতে সলনাসলনি কৰা হৈছে</translation>
 <translation id="1498028757988366001">আপুনি এই বিষয়ে পূর্বে সন্ধান কৰিছে। আপোনাৰ ইতিহাসৰ পৰা "<ph name="QUERY" />"ক মচা কার্যয়ে আপোনাৰ সকলো ডিভাইচৰ পৰাই ইয়াক স্থায়ীভাৱে আঁতৰাব।</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{১ মিনিট আৰু }one{# মিনিট আৰু }other{# মিনিট আৰু }}</translation>
 <translation id="1643823602425662293">জাননী</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;সকলো বাছনি কৰক</translation>
-<translation id="1938451708255335766">ৱিণ্ড’ ডিছপ্লে’ৰ ঘনত্ব মিলাবলৈ এপ্‌টো ৰিষ্টাৰ্ট কৰক।</translation>
 <translation id="2006524834898217237">নিশ্চিত হৈ লওক যে এই ডিভাইচটো ইণ্টাৰনেটৰ সৈতে সংযুক্ত হৈ আছে।</translation>
 <translation id="208586643495776849">অনুগ্ৰহ কৰি পুনৰ চেষ্টা কৰক</translation>
 <translation id="2090963878406559571"><ph name="ORIGIN" />ৰ পৰা আপোনাৰ Android ফ’নলৈ এটা নম্বৰ পঠিয়াবলৈ দুয়োটা ডিভাইচৰ ছেটিংসমূহত <ph name="TROUBLESHOOT_LINK" />।</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">তলমুৱা কাঁড়</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{১ দিন}one{# দিন}other{# দিন}}</translation>
 <translation id="3295886253693811851">ইয়াৰপৰা এটা কল কৰক</translation>
+<translation id="3306688585798492231">বিল্ট-ইন ডিছপ্লে’</translation>
 <translation id="335581015389089642">কথন</translation>
 <translation id="3389286852084373014">পাঠখিনি যথেষ্ট দীঘল</translation>
-<translation id="3479552764303398839">এতিয়া নহয়</translation>
 <translation id="348799646910989694">শ্বেল্ফ স্বয়ংক্রিয়ভাৱে লুকুওৱা হয়</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> পিন কৰা হৈছে</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{১ দিন বাকী আছে}one{# দিন বাকী আছে}other{# দিন বাকী আছে}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">আপোনাৰ ম’বাইল ডিভাইচ <ph name="TITLE" />ৰ পৰা পঢ়ি থাকক</translation>
 <translation id="385051799172605136">উভতি যাওক</translation>
 <translation id="3889424535448813030">সোঁমুৱা কাঁড়</translation>
-<translation id="3892641579809465218">আভ্যন্তৰীণ ডিছপ্লে’</translation>
 <translation id="3897092660631435901">মেনু</translation>
 <translation id="3909791450649380159">কা&amp;ট কৰক</translation>
 <translation id="3990502903496589789">সোঁ কাষ</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{১ মিনিট}one{# মিনিট}other{# মিনিট}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{আজি সক্ৰিয় হৈছে}=1{১দিনৰ পূৰ্বে সক্ৰিয় আছিল}one{#দিনৰ পূৰ্বে সক্ৰিয় আছিল}other{#দিনৰ পূৰ্বে সক্ৰিয় আছিল}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{১দিন আৰু }one{# দিন আৰু }other{# দিন আৰু }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{১ বছৰত}one{# বছৰত}other{# বছৰত}}</translation>
-<translation id="5895138241574237353">ৰিষ্টাৰ্ট কৰক</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{১ ছেকেণ্ড বাকী আছে}one{# ছেকেণ্ড বাকী আছে}other{# ছেকেণ্ড বাকী আছে}}</translation>
 <translation id="5941711191222866238">সৰু কৰক</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{১ ঘণ্টা}one{# ঘণ্টা}other{# ঘণ্টা}}</translation>
@@ -188,6 +187,7 @@
 <translation id="6974053822202609517">সোঁফালৰ পৰা বাওঁফাললৈ</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">আটাইতকৈ বেছি পচন্দৰ</translation>
+<translation id="7170202025028120564">পাছৰবাৰ এইটো ৰিষ্টাৰ্ট কৰিলে আপোনাৰ এপ্লিকেশ্বনৰ ডিছপ্লে’ৰ ছেটিংসমূহ কার্যকৰী হ’ব।</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{১ মিনিট বাকী আছে}one{# মিনিট বাকী আছে}other{# মিনিট বাকী আছে}}</translation>
 <translation id="7319740667687257810">লঞ্চাৰ, আংশিক ভিউ</translation>

@@ -14,7 +14,6 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_web_ui_controller_factory.h"
 #include "android_webview/browser/metrics/aw_metrics_service_client.h"
-#include "android_webview/browser/metrics/memory_metrics_logger.h"
 #include "android_webview/browser/network_service/aw_network_change_notifier_factory.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_paths.h"
@@ -25,6 +24,7 @@
 #include "base/android/build_info.h"
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/base_paths_android.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -33,7 +33,9 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
-#include "components/heap_profiling/supervisor.h"
+#include "components/crash/core/common/crash_key.h"
+#include "components/embedder_support/android/metrics/memory_metrics_logger.h"
+#include "components/heap_profiling/multi_process/supervisor.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/variations_crash_keys.h"
@@ -113,18 +115,20 @@ int AwBrowserMainParts::PreCreateThreads() {
         std::make_unique<AwBrowserTerminator>());
   }
 
+  crash_reporter::InitializeCrashKeys();
   variations::InitCrashKeys();
 
   return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
 
 void AwBrowserMainParts::PreMainMessageLoopRun() {
+  TRACE_EVENT0("startup", "AwBrowserMainParts::PreMainMessageLoopRun");
   AwBrowserProcess::GetInstance()->PreMainMessageLoopRun();
   browser_client_->InitBrowserContext();
   content::WebUIControllerFactory::RegisterFactory(
       AwWebUIControllerFactory::GetInstance());
   content::RenderFrameHost::AllowInjectingJavaScript();
-  metrics_logger_ = std::make_unique<MemoryMetricsLogger>();
+  metrics_logger_ = std::make_unique<metrics::MemoryMetricsLogger>();
 }
 
 bool AwBrowserMainParts::MainMessageLoopRun(int* result_code) {

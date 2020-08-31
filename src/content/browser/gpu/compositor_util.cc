@@ -71,11 +71,6 @@ struct GpuFeatureData {
   bool fallback_to_software;
 };
 
-bool IsForceGpuRasterizationEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kForceGpuRasterization);
-}
-
 gpu::GpuFeatureStatus SafeGetFeatureStatus(
     const gpu::GpuFeatureInfo& gpu_feature_info,
     gpu::GpuFeatureType feature) {
@@ -165,8 +160,7 @@ const GpuFeatureData GetGpuFeatureData(
     {"rasterization",
      SafeGetFeatureStatus(gpu_feature_info,
                           gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION),
-     (command_line.HasSwitch(switches::kDisableGpuRasterization) &&
-      !IsForceGpuRasterizationEnabled()),
+     (command_line.HasSwitch(switches::kDisableGpuRasterization)),
      DisableInfo::Problem(
          "Accelerated rasterization has been disabled, either via blacklist, "
          "about:flags or the command line."),
@@ -214,9 +208,6 @@ const GpuFeatureData GetGpuFeatureData(
      DisableInfo::Problem(
          "WebGL2 has been disabled via blacklist or the command line."),
      false},
-    {"viz_display_compositor", gpu::kGpuFeatureStatusEnabled,
-     !features::IsVizDisplayCompositorEnabled(), DisableInfo::NotProblem(),
-     false},
     {"skia_renderer", gpu::kGpuFeatureStatusEnabled,
      !features::IsUsingSkiaRenderer(), DisableInfo::NotProblem(), false},
   };
@@ -244,8 +235,7 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatusImpl(
         GetGpuFeatureData(gpu_feature_info, i, &eof);
     std::string status;
     // Features undergoing a finch controlled roll out.
-    if (gpu_feature_data.name == "viz_display_compositor" ||
-        gpu_feature_data.name == "skia_renderer" ||
+    if (gpu_feature_data.name == "skia_renderer" ||
         gpu_feature_data.name == "viz_hit_test_surface_layer") {
       status = (gpu_feature_data.disabled ? "disabled_off_ok" : "enabled_on");
     } else if (gpu_feature_data.disabled || gpu_access_blocked ||
@@ -266,7 +256,9 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatusImpl(
           manager->IsGpuCompositingDisabled())
         status += "_readback";
       if (gpu_feature_data.name == "rasterization") {
-        if (IsForceGpuRasterizationEnabled())
+        const base::CommandLine& command_line =
+            *base::CommandLine::ForCurrentProcess();
+        if (command_line.HasSwitch(switches::kEnableGpuRasterization))
           status += "_force";
       }
       if (gpu_feature_data.name == "multiple_raster_threads") {

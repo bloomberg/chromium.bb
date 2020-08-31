@@ -14,9 +14,10 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.components.url_formatter.SchemeDisplay;
+import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -47,25 +48,41 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
     private ModalDialogManager mModalDialogManager;
     private long mNativeArConsentDialog;
     private WindowAndroid mWindowAndroid;
+    // URL of the page entering AR.
+    private String mUrl;
 
     @CalledByNative
     private static ArConsentDialog showDialog(long instance, @NonNull final Tab tab) {
-        ArConsentDialog dialog = new ArConsentDialog(instance);
-        dialog.show(((TabImpl) tab).getActivity());
+        WebContents webContents = tab.getWebContents();
+        String url = webContents.getLastCommittedUrl();
+        ArConsentDialog dialog = new ArConsentDialog(instance, url);
+
+        dialog.show(tab.getWindowAndroid());
+
         return dialog;
     }
 
-    private ArConsentDialog(long arConsentDialog) {
-        mNativeArConsentDialog = arConsentDialog;
+    @CalledByNative
+    private void onNativeDestroy() {
+        mNativeArConsentDialog = 0;
+        mModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
     }
 
-    public void show(ChromeActivity activity) {
-        mWindowAndroid = activity.getWindowAndroid();
-        Resources resources = activity.getResources();
+    private ArConsentDialog(long arConsentDialog, String url) {
+        mNativeArConsentDialog = arConsentDialog;
+        mUrl = url;
+    }
+
+    public void show(WindowAndroid window) {
+        mWindowAndroid = window;
+        Resources resources = window.getContext().get().getResources();
+
+        String dialogTitle = resources.getString(R.string.ar_immersive_mode_consent_title,
+                UrlFormatter.formatUrlForSecurityDisplay(mUrl, SchemeDisplay.OMIT_HTTP_AND_HTTPS));
+
         PropertyModel model = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                                       .with(ModalDialogProperties.CONTROLLER, this)
-                                      .with(ModalDialogProperties.TITLE, resources,
-                                              R.string.ar_immersive_mode_consent_title)
+                                      .with(ModalDialogProperties.TITLE, dialogTitle)
                                       .with(ModalDialogProperties.MESSAGE, resources,
                                               R.string.ar_immersive_mode_consent_message)
                                       .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
@@ -74,7 +91,7 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
                                               R.string.cancel)
                                       .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
                                       .build();
-        mModalDialogManager = activity.getModalDialogManager();
+        mModalDialogManager = window.getModalDialogManager();
         mModalDialogManager.showDialog(model, ModalDialogManager.ModalDialogType.TAB);
     }
 
@@ -133,13 +150,18 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
 
     private void consentGranted() {
         if (DEBUG_LOGS) Log.i(TAG, "consentGranted");
-        // We have user consent to start the session.
-        ArConsentDialogJni.get().onUserConsentResult(mNativeArConsentDialog, true);
+        if (mNativeArConsentDialog != 0) {
+            // We have user consent to start the session.
+            ArConsentDialogJni.get().onUserConsentResult(mNativeArConsentDialog, true);
+        }
     }
 
     private void consentDenied() {
         if (DEBUG_LOGS) Log.i(TAG, "consentDenied");
-        ArConsentDialogJni.get().onUserConsentResult(mNativeArConsentDialog, false);
+
+        if (mNativeArConsentDialog != 0) {
+            ArConsentDialogJni.get().onUserConsentResult(mNativeArConsentDialog, false);
+        }
     }
 
     @NativeMethods

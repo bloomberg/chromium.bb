@@ -71,7 +71,7 @@ class TextureManagerTest : public GpuServiceTest {
   static const GLint kMax3dLevels = 10;
   static const bool kUseDefaultTextures = false;
 
-  TextureManagerTest() {
+  TextureManagerTest() : discardable_manager_(GpuPreferences()) {
     GpuDriverBugWorkarounds gpu_driver_bug_workaround;
     feature_info_ =
         new FeatureInfo(gpu_driver_bug_workaround, GpuFeatureInfo());
@@ -638,8 +638,8 @@ class TextureTestBase : public GpuServiceTest {
   static const bool kUseDefaultTextures = false;
 
   TextureTestBase()
-      : feature_info_(new FeatureInfo()) {
-  }
+      : feature_info_(new FeatureInfo()),
+        discardable_manager_(GpuPreferences()) {}
   ~TextureTestBase() override { texture_ref_ = nullptr; }
 
  protected:
@@ -2186,7 +2186,8 @@ class CountingMemoryTracker : public MemoryTracker {
   }
   ~CountingMemoryTracker() override = default;
 
-  void TrackMemoryAllocatedChange(uint64_t delta) override {
+  void TrackMemoryAllocatedChange(int64_t delta) override {
+    DCHECK(delta >= 0 || current_size_ >= static_cast<uint64_t>(-delta));
     current_size_ += delta;
   }
 
@@ -2207,7 +2208,9 @@ class SharedTextureTest : public GpuServiceTest {
  public:
   static const bool kUseDefaultTextures = false;
 
-  SharedTextureTest() : feature_info_(new FeatureInfo()) {}
+  SharedTextureTest()
+      : feature_info_(new FeatureInfo()),
+        discardable_manager_(GpuPreferences()) {}
 
   ~SharedTextureTest() override = default;
 
@@ -2750,18 +2753,19 @@ TEST_F(TextureFormatTypeValidationTest, ES3Basic) {
   ExpectInvalid(true, GL_RGB_INTEGER, GL_INT, GL_RGBA8);
 }
 
-TEST_F(TextureFormatTypeValidationTest, ES2WithTextureNorm16) {
-  SetupFeatureInfo("GL_EXT_texture_norm16", "OpenGL ES 2.0",
-                   CONTEXT_TYPE_OPENGLES2);
-
-  ExpectValid(true, GL_RED, GL_UNSIGNED_SHORT, GL_RED);
-}
-
 TEST_F(TextureFormatTypeValidationTest, ES3WithTextureNorm16) {
   SetupFeatureInfo("GL_EXT_texture_norm16", "OpenGL ES 3.0",
                    CONTEXT_TYPE_OPENGLES3);
 
   ExpectValid(true, GL_RED, GL_UNSIGNED_SHORT, GL_R16_EXT);
+  ExpectValid(true, GL_RG, GL_UNSIGNED_SHORT, GL_RG16_EXT);
+  ExpectValid(true, GL_RGB, GL_UNSIGNED_SHORT, GL_RGB16_EXT);
+  ExpectValid(true, GL_RGBA, GL_UNSIGNED_SHORT, GL_RGBA16_EXT);
+
+  ExpectValid(true, GL_RED, GL_SHORT, GL_R16_SNORM_EXT);
+  ExpectValid(true, GL_RG, GL_SHORT, GL_RG16_SNORM_EXT);
+  ExpectValid(true, GL_RGB, GL_SHORT, GL_RGB16_SNORM_EXT);
+  ExpectValid(true, GL_RGBA, GL_SHORT, GL_RGBA16_SNORM_EXT);
 }
 
 }  // namespace gles2

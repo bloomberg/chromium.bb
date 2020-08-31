@@ -34,7 +34,7 @@ Samples
     height: 400px;
   }
 
-  #sk_legos, #sk_drinks, #sk_party, #sk_onboarding {
+  #sk_legos, #sk_drinks, #sk_party, #sk_onboarding, #shader1 {
     width: 300px;
     height: 300px;
   }
@@ -55,7 +55,7 @@ Samples
   <figure>
     <canvas id=patheffect width=400 height=400></canvas>
     <figcaption>
-      <a href="https://jsfiddle.skia.org/canvaskit/ea89749ae8c90bce807ea2e7e34fb7b09b950cee70d9db0a9cdfd2d67bd48ef0"
+      <a href="https://jsfiddle.skia.org/canvaskit/43b38b83ca77dabe47f18f31cafe83f3018b3a24e569db27fe711c70bc3f7d62"
           target=_blank rel=noopener>
         Star JSFiddle</a>
     </figcaption>
@@ -63,7 +63,7 @@ Samples
   <figure>
     <canvas id=ink width=400 height=400></canvas>
     <figcaption>
-      <a href="https://jsfiddle.skia.org/canvaskit/43475699d6d7d3d7dad1004c29f84015752a6a6dee2bb90f2e891b53e31d45cc"
+      <a href="https://jsfiddle.skia.org/canvaskit/ad0a5454db3ac757684ed2fa8ce9f1f0175f1c043d2cbe33597d81481cdb4baa"
           target=_blank rel=noopener>
         Ink JSFiddle</a>
     </figcaption>
@@ -97,16 +97,25 @@ Samples
     </figcaption>
   </figure>
 
+  <h3>SKSL for writing custom shaders</h3>
+  <a href="https://jsfiddle.skia.org/canvaskit/33ff9bed883cd5742b4770169da0b36fb0cbc18fd395ddd9563213e178362d30"
+    target=_blank rel=noopener>
+    <canvas id=shader1 width=512 height=512></canvas>
+  </a>
+
 </div>
 
 <script type="text/javascript" charset="utf-8">
 (function() {
   // Tries to load the WASM version if supported, shows error otherwise
   let s = document.createElement('script');
-  var locate_file = '';
+  let locate_file = '';
+  // Hey, if you are looking at this code for an example of how to do it yourself, please use
+  // an actual CDN, such as https://unpkg.com/canvaskit-wasm - it will have better reliability
+  // and niceties like brotli compression.
   if (window.WebAssembly && typeof window.WebAssembly.compile === 'function') {
     console.log('WebAssembly is supported!');
-    locate_file = 'https://unpkg.com/canvaskit-wasm@0.9.0/bin/';
+    locate_file = 'https://particles.skia.org/static/';
   } else {
     console.log('WebAssembly is not supported (yet) on this browser.');
     document.getElementById('demo').innerHTML = "<div>WASM not supported by your browser. Try a recent version of Chrome, Firefox, Edge, or Safari.</div>";
@@ -114,12 +123,12 @@ Samples
   }
   s.src = locate_file + 'canvaskit.js';
   s.onload = () => {
-  var CanvasKit = null;
-  var legoJSON = null;
-  var drinksJSON = null;
-  var confettiJSON = null;
-  var onboardingJSON = null;
-  var fullBounds = {fLeft: 0, fTop: 0, fRight: 500, fBottom: 500};
+  let CanvasKit = null;
+  let legoJSON = null;
+  let drinksJSON = null;
+  let confettiJSON = null;
+  let onboardingJSON = null;
+  let fullBounds = {fLeft: 0, fTop: 0, fRight: 500, fBottom: 500};
   CanvasKitInit({
     locateFile: (file) => locate_file + file,
   }).ready().then((CK) => {
@@ -133,6 +142,7 @@ Samples
     SkottieExample(CanvasKit, 'sk_drinks', drinksJSON, fullBounds);
     SkottieExample(CanvasKit, 'sk_party', confettiJSON, fullBounds);
     SkottieExample(CanvasKit, 'sk_onboarding', onboardingJSON, fullBounds);
+    ShaderExample1(CanvasKit);
   });
 
   fetch('https://storage.googleapis.com/skia-cdn/misc/lego_loader.json').then((resp) => {
@@ -196,7 +206,7 @@ Samples
     function drawFrame() {
       const path = starPath(CanvasKit, X, Y);
       CanvasKit.setCurrentContext(context);
-      const dpe = CanvasKit.MakeSkDashPathEffect([15, 5, 5, 10], i/5);
+      const dpe = CanvasKit.SkPathEffect.MakeDash([15, 5, 5, 10], i/5);
       i++;
 
       paint.setPathEffect(dpe);
@@ -248,7 +258,7 @@ Samples
     paint.setStyle(CanvasKit.PaintStyle.Stroke);
     paint.setStrokeWidth(4.0);
     // This effect smooths out the drawn lines a bit.
-    paint.setPathEffect(CanvasKit.MakeSkCornerPathEffect(50));
+    paint.setPathEffect(CanvasKit.SkPathEffect.MakeCorner(50));
 
     // Draw I N K
     let path = new CanvasKit.SkPath();
@@ -445,6 +455,59 @@ Samples
     window.requestAnimationFrame(drawFrame);
     //animation.delete();
   }
+
+  function ShaderExample1(CanvasKit) {
+    if (!CanvasKit) {
+      return;
+    }
+    const surface = CanvasKit.MakeCanvasSurface('shader1');
+    if (!surface) {
+      throw 'Could not make surface';
+    }
+    const skcanvas = surface.getCanvas();
+    const paint = new CanvasKit.SkPaint();
+
+    const prog = `
+uniform float rad_scale;
+uniform float2 in_center;
+uniform float4 in_colors0;
+uniform float4 in_colors1;
+
+void main(float2 p, inout half4 color) {
+    float2 pp = p - in_center;
+    float radius = sqrt(dot(pp, pp));
+    radius = sqrt(radius);
+    float angle = atan(pp.y / pp.x);
+    float t = (angle + 3.1415926/2) / (3.1415926);
+    t += radius * rad_scale;
+    t = fract(t);
+    color = half4(mix(in_colors0, in_colors1, t));
+}
+`;
+
+    // If there are multiple contexts on the screen, we need to make sure
+    // we switch to this one before we draw.
+    const context = CanvasKit.currentContext();
+    const fact = CanvasKit.SkRuntimeEffect.Make(prog);
+    function drawFrame() {
+      CanvasKit.setCurrentContext(context);
+      skcanvas.clear(CanvasKit.WHITE);
+      const shader = fact.makeShader([
+        Math.sin(Date.now() / 2000) / 5,
+        256, 256,
+        1, 0, 0, 1,
+        0, 1, 0, 1],
+        true/*=opaque*/);
+
+      paint.setShader(shader);
+      skcanvas.drawRect(CanvasKit.LTRBRect(0, 0, 512, 512), paint);
+      surface.flush();
+      requestAnimationFrame(drawFrame);
+      shader.delete();
+    }
+    requestAnimationFrame(drawFrame);
+  }
+
   }
   document.head.appendChild(s);
 })();

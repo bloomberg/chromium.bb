@@ -7,6 +7,7 @@
 Assumes that apk_path.mapping and apk_path.jar.info is available.
 """
 
+import collections
 import logging
 import os
 import subprocess
@@ -35,7 +36,7 @@ def _RunApkAnalyzer(apk_path, mapping_path):
     args.extend(['--proguard-mappings', mapping_path])
   env = os.environ.copy()
   env['JAVA_HOME'] = path_util.GetJavaHome()
-  output = subprocess.check_output(args, env=env)
+  output = subprocess.check_output(args, env=env).decode('ascii')
   data = []
   for line in output.splitlines():
     try:
@@ -135,6 +136,13 @@ def UndoHierarchicalSizing(data):
   return nodes
 
 
+def _TruncateFrom(value, delimiter, rfind=False):
+  idx = value.rfind(delimiter) if rfind else value.find(delimiter)
+  if idx != -1:
+    return value[:idx]
+  return value
+
+
 def CreateDexSymbols(apk_path, mapping_path, size_info_prefix):
   source_map = _ParseJarInfoFile(size_info_prefix + '.jar.info')
 
@@ -142,7 +150,7 @@ def CreateDexSymbols(apk_path, mapping_path, size_info_prefix):
   nodes = UndoHierarchicalSizing(nodes)
 
   dex_expected_size = _ExpectedDexTotalSize(apk_path)
-  total_node_size = sum(map(lambda x: x[2], nodes))
+  total_node_size = sum([x[2] for x in nodes])
   # TODO(agrieve): Figure out why this log is triggering for
   #     ChromeModernPublic.apk (https://crbug.com/851535).
   # Reporting: dex_expected_size=6546088 total_node_size=6559549
@@ -154,10 +162,33 @@ def CreateDexSymbols(apk_path, mapping_path, size_info_prefix):
   # We have more than 100KB of ids for methods, strings
   id_metadata_overhead_size = dex_expected_size - total_node_size
   symbols = []
+  lambda_by_class_counter = collections.defaultdict(int)
+  lambda_name_to_nested_number = {}
   for _, name, node_size in nodes:
-    package = name.split(' ', 1)[0]
-    class_path = package.split('$')[0]
-    source_path = source_map.get(class_path, '')
+    package = _TruncateFrom(name, ' ')
+    # Make d8 desugared lambdas look the same as Desugar ones.
+    # D8 lambda: -$$Lambda$Promise$Nested1$kjevdDQ8V2zqCrdieLqWLHzk.dex
+    # Desugar lambda: Promise$Nested1$$Lambda$0
+    # 1) Need to prefix with proper class name so that they will show as nested.
+    # 2) Need to suffix with number so that they diff better.
+    # Original name will be kept as "object_path".
+    is_d8_lambda = '-$$Lambda$' in package
+    class_path = package
+    if is_d8_lambda:
+      class_path = package.replace('-$$Lambda$', '')
+      base_name = _TruncateFrom(class_path, '$', rfind=True)
+      # Map all methods of the lambda class to the same nested number.
+      lambda_number = lambda_name_to_nested_number.get(class_path)
+      if lambda_number is None:
+        # First time we've seen this lambda, increment nested class count.
+        lambda_number = lambda_by_class_counter[base_name]
+        lambda_name_to_nested_number[class_path] = lambda_number
+        lambda_by_class_counter[base_name] = lambda_number + 1
+
+      name = '{}$$Lambda${}{}'.format(base_name, lambda_number,
+                                      name[len(package):])
+    # Map all nested classes to outer class.
+    source_path = source_map.get(_TruncateFrom(class_path, '$'), '')
     if source_path:
       object_path = package
     elif package == _TOTAL_NODE_NAME:

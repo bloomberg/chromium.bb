@@ -40,6 +40,52 @@ void NGTextPainter::Paint(unsigned start_offset,
   }
 }
 
+// This function paints text twice with different styles in order to:
+// 1. Paint glyphs inside of |selection_rect| using |selection_style|, and
+//    outside using |text_style|.
+// 2. Paint parts of a ligature glyph.
+void NGTextPainter::PaintSelectedText(unsigned start_offset,
+                                      unsigned end_offset,
+                                      unsigned length,
+                                      const TextPaintStyle& text_style,
+                                      const TextPaintStyle& selection_style,
+                                      const PhysicalRect& selection_rect,
+                                      DOMNodeId node_id) {
+  if (!fragment_paint_info_.shape_result)
+    return;
+
+  // Use fast path if all glyphs fit in |selection_rect|. Note |text_bounds_| is
+  // the bounds of all glyphs of this text fragment, including characters before
+  // |start_offset| or after |end_offset|. Computing exact bounds is expensive
+  // that this code only checks bounds of all glyphs.
+  if (selection_rect.Contains(text_bounds_)) {
+    Paint(start_offset, end_offset, length, selection_style, node_id);
+    return;
+  }
+
+  // Adjust start/end offset when they are in the middle of a ligature. e.g.,
+  // when |start_offset| is between a ligature of "fi", it needs to be adjusted
+  // to before "f".
+  fragment_paint_info_.shape_result->ExpandRangeToIncludePartialGlyphs(
+      &start_offset, &end_offset);
+
+  // Because only a part of the text glyph can be selected, we need to draw
+  // the selection twice. First, draw the glyphs outside the selection area,
+  // with the original style.
+  FloatRect float_selection_rect(selection_rect);
+  {
+    GraphicsContextStateSaver state_saver(graphics_context_);
+    graphics_context_.ClipOut(float_selection_rect);
+    Paint(start_offset, end_offset, length, text_style, node_id);
+  }
+  // Then draw the glyphs inside the selection area, with the selection style.
+  {
+    GraphicsContextStateSaver state_saver(graphics_context_);
+    graphics_context_.Clip(float_selection_rect);
+    Paint(start_offset, end_offset, length, selection_style, node_id);
+  }
+}
+
 template <NGTextPainter::PaintInternalStep step>
 void NGTextPainter::PaintInternalFragment(
     unsigned from,

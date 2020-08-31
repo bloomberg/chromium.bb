@@ -9,7 +9,7 @@
 #define GrRenderTarget_DEFINED
 
 #include "include/core/SkRect.h"
-#include "include/gpu/GrSurface.h"
+#include "src/gpu/GrSurface.h"
 
 class GrCaps;
 class GrRenderTargetPriv;
@@ -50,7 +50,7 @@ public:
     const GrRenderTargetPriv renderTargetPriv() const;
 
 protected:
-    GrRenderTarget(GrGpu*, const SkISize&, GrPixelConfig, int sampleCount, GrProtected,
+    GrRenderTarget(GrGpu*, const SkISize&, int sampleCount, GrProtected,
                    GrStencilAttachment* = nullptr);
     ~GrRenderTarget() override;
 

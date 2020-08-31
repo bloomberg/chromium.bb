@@ -22,16 +22,16 @@ class CORE_EXPORT WorkerModuleScriptFetcher final
   USING_GARBAGE_COLLECTED_MIXIN(WorkerModuleScriptFetcher);
 
  public:
-  explicit WorkerModuleScriptFetcher(WorkerGlobalScope*);
+  WorkerModuleScriptFetcher(WorkerGlobalScope*,
+                            util::PassKey<ModuleScriptLoader>);
 
   // Implements ModuleScriptFetcher.
   void Fetch(FetchParameters&,
              ResourceFetcher*,
-             const Modulator* modulator_for_built_in_modules,
              ModuleGraphLevel,
              ModuleScriptFetcher::Client*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Implements ResourceClient
@@ -40,6 +40,7 @@ class CORE_EXPORT WorkerModuleScriptFetcher final
 
   const Member<WorkerGlobalScope> global_scope_;
 
+  Member<ResourceFetcher> fetch_client_settings_object_fetcher_;
   Member<Client> client_;
   ModuleGraphLevel level_;
 };

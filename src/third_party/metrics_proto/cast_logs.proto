@@ -241,10 +241,10 @@ message CastLogsProto {
   optional fixed32 virtual_release_track = 4;
 
   // Cast specific device information which is expected to change over time.
-  // Next tag: 9
+  // Next tag: 10
   message CastDeviceMutableInfo {
     // This is the last type of reboot the device encountered
-    // Next tag: 12
+    // Next tag: 14
     enum RebootType {
       REBOOT_TYPE_UNKNOWN = 0;  // Fail to get reboot type from system property
       REBOOT_TYPE_FORCED = 1;   // Power removed from device
@@ -258,6 +258,11 @@ message CastLogsProto {
       REBOOT_TYPE_HW_WATCHDOG = 9;
       REBOOT_TYPE_SW_OTHER = 10;
       REBOOT_TYPE_OVERHEAT = 11;
+      // The device got into a state such that it needs to regenerate the cloud
+      // device id.
+      REBOOT_TYPE_REGENERATE_CLOUD_ID = 12;
+      // Reboot triggered due to successive OOM events.
+      REBOOT_TYPE_REPEATED_OOM = 13;
     }
     optional RebootType last_reboot_type = 1;
 
@@ -289,6 +294,9 @@ message CastLogsProto {
     optional string timezone_id = 7;
     // Optional value to log latest ui version.
     optional string latest_ui_version = 8;
+
+    // Station ID of the device if connected to Google WiFi network
+    optional string google_wifi_station_shmac = 9;
   }
   // The device sends this information at least once per day.
   optional CastDeviceMutableInfo cast_device_mutable_info = 5;

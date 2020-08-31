@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import uuid
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -15,41 +16,11 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 
 
-class ChrootPaths(object):
-  """Value object to hold common cros_sdk path arguments."""
-
-  def __init__(self, cache_dir=None, chroot_path=None):
-    """Chroot paths init.
-
-    Args:
-      cache_dir (str): Override the default cache directory.
-      chroot_path (str): Set the path the chroot resides (or will be created).
-    """
-    self.cache_dir = cache_dir
-    self.chroot_path = chroot_path
-
-  def GetArgList(self):
-    """Get the list of the corresponding commandline arguments.
-
-    Returns:
-      list - The list of the corresponding command line arguments.
-    """
-    args = []
-
-    if self.cache_dir:
-      args.extend(['--cache-dir', self.cache_dir])
-
-    if self.chroot_path:
-      args.extend(['--chroot', self.chroot_path])
-
-    return args
-
-
 class CreateArguments(object):
   """Value object to handle the chroot creation arguments."""
 
   def __init__(self, replace=False, bootstrap=False, use_image=True,
-               paths=None):
+               chroot_path=None, cache_dir=None):
     """Create arguments init.
 
     Args:
@@ -57,12 +28,14 @@ class CreateArguments(object):
       bootstrap (bool): Whether to build the SDK from source.
       use_image (bool): Whether to mount the chroot on a loopback image or
         create it directly in a directory.
-      paths (ChrootPaths): Path arguments.
+      chroot_path: Path to where the chroot should be reside.
+      cache_dir: Alternative directory to use as a cache for the chroot.
     """
     self.replace = replace
     self.bootstrap = bootstrap
     self.use_image = use_image
-    self.paths = paths or ChrootPaths()
+    self.chroot_path = chroot_path
+    self.cache_dir = cache_dir
 
   def GetArgList(self):
     """Get the list of the corresponding command line arguments.
@@ -83,27 +56,32 @@ class CreateArguments(object):
     if not self.use_image:
       args.append('--nouse-image')
 
-    args.extend(self.paths.GetArgList())
+    if self.cache_dir:
+      args.extend(['--cache-dir', self.cache_dir])
+
+    if self.chroot_path:
+      args.extend(['--chroot', self.chroot_path])
 
     return args
-
-  @property
-  def chroot_path(self):
-    return self.paths.chroot_path
 
 
 class UpdateArguments(object):
   """Value object to handle the update arguments."""
 
-  def __init__(self, build_source=False, toolchain_targets=None):
+  def __init__(self,
+               build_source=False,
+               toolchain_targets=None,
+               toolchain_changed=False):
     """Update arguments init.
 
     Args:
       build_source (bool): Whether to build the source or use prebuilts.
       toolchain_targets (list): The list of build targets whose toolchains
         should be updated.
+      toolchain_changed (bool): Whether a toolchain change has occurred. Implies
+        build_source.
     """
-    self.build_source = build_source
+    self.build_source = build_source or toolchain_changed
     self.toolchain_targets = toolchain_targets
 
   def GetArgList(self):
@@ -116,11 +94,8 @@ class UpdateArguments(object):
 
     if self.build_source:
       args.append('--nousepkg')
-
-    if self.toolchain_targets:
+    elif self.toolchain_targets:
       args.extend(['--toolchain_boards', ','.join(self.toolchain_targets)])
-    else:
-      args.append('--skip_toolchain_update')
 
     return args
 
@@ -218,6 +193,21 @@ def Delete(chroot=None):
   Clean(chroot, images=True)
 
 
+def Unmount(chroot=None):
+  """Unmount the chroot.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot being unmounted, or None for the
+      default chroot.
+  """
+  logging.info('Unmounting the chroot.')
+  cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk'), '--unmount']
+  if chroot:
+    cmd.extend(['--chroot', chroot.path])
+
+  cros_build_lib.run(cmd)
+
+
 def GetChrootVersion(chroot_path=None):
   """Get the chroot version.
 
@@ -252,6 +242,105 @@ def Update(arguments):
   cmd = [os.path.join(constants.CROSUTILS_DIR, 'update_chroot')]
   cmd.extend(arguments.GetArgList())
 
-  cros_build_lib.run(cmd)
+  # The sdk update uses splitdebug instead of separatedebug. Make sure
+  # separatedebug is disabled and enable splitdebug.
+  existing = os.environ.get('FEATURES', '')
+  features = ' '.join((existing, '-separatedebug splitdebug')).strip()
+  extra_env = {'FEATURES': features}
+
+  cros_build_lib.run(cmd, extra_env=extra_env)
 
   return GetChrootVersion()
+
+
+def CreateSnapshot(chroot=None, replace_if_needed=False):
+  """Create a logical volume snapshot of a chroot.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot to perform the operation on.
+    replace_if_needed (bool): If true, will replace the existing chroot with
+      a new one capable of being mounted as a loopback image if needed.
+
+  Returns:
+    str - The name of the snapshot created.
+  """
+  _EnsureSnapshottableState(chroot, replace=replace_if_needed)
+
+  snapshot_token = str(uuid.uuid4())
+  logging.info('Creating SDK snapshot with token ID: %s', snapshot_token)
+
+  cmd = [
+      os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk'),
+      '--snapshot-create',
+      snapshot_token,
+  ]
+  if chroot:
+    cmd.extend(['--chroot', chroot.path])
+
+  cros_build_lib.run(cmd)
+
+  return snapshot_token
+
+
+def RestoreSnapshot(snapshot_token, chroot=None):
+  """Restore a logical volume snapshot of a chroot.
+
+  Args:
+    snapshot_token (str): The name of the snapshot to restore. Typically an
+      opaque generated name returned from `CreateSnapshot`.
+    chroot (chroot_lib.Chroot): The chroot to perform the operation on.
+  """
+  # Unmount to clean up stale processes that may still be in the chroot, in
+  # order to prevent 'device busy' errors from umount.
+  Unmount(chroot)
+  logging.info('Restoring SDK snapshot with ID: %s', snapshot_token)
+  cmd = [
+      os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk'),
+      '--snapshot-restore',
+      snapshot_token,
+  ]
+  if chroot:
+    cmd.extend(['--chroot', chroot.path])
+
+  # '--snapshot-restore' will automatically remount the image after restoring.
+  cros_build_lib.run(cmd)
+
+
+def _EnsureSnapshottableState(chroot=None, replace=False):
+  """Ensures that a chroot is in a capable state to create an LVM snapshot.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot to perform the operation on.
+    replace (bool): If true, will replace the existing chroot with a new one
+      capable of being mounted as a loopback image if needed.
+  """
+  cmd = [
+      os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk'),
+      '--snapshot-list',
+  ]
+  if chroot:
+    cmd.extend(['--chroot', chroot.path])
+
+  cache_dir = chroot.cache_dir if chroot else None
+  chroot_path = chroot.path if chroot else None
+
+  res = cros_build_lib.run(cmd, check=False, encoding='utf-8',
+                           capture_output=True)
+
+  if res.returncode == 0:
+    return
+  elif 'Unable to find VG' in res.stderr and replace:
+    logging.warning('SDK was created with nouse-image which does not support '
+                    'snapshots. Recreating SDK to support snapshots.')
+
+    args = CreateArguments(
+        replace=True,
+        bootstrap=False,
+        use_image=True,
+        cache_dir=cache_dir,
+        chroot_path=chroot_path)
+
+    Create(args)
+    return
+  else:
+    res.check_returncode()

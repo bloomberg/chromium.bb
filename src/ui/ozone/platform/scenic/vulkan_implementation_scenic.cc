@@ -18,6 +18,7 @@
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "gpu/vulkan/vulkan_util.h"
@@ -57,7 +58,7 @@ bool VulkanImplementationScenic::InitializeVulkanInstance(bool using_surface) {
 
   gpu::VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
-  vulkan_function_pointers->vulkan_loader_library_ = handle;
+  vulkan_function_pointers->vulkan_loader_library = handle;
   std::vector<const char*> required_extensions = {
       VK_KHR_SURFACE_EXTENSION_NAME,
       VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME,
@@ -110,7 +111,7 @@ VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
   }
 
   return std::make_unique<gpu::VulkanSurface>(
-      vulkan_instance_.vk_instance(), surface,
+      vulkan_instance_.vk_instance(), window, surface,
       enforce_protected_memory() /* use_protected_memory */);
 }
 
@@ -118,9 +119,6 @@ bool VulkanImplementationScenic::GetPhysicalDevicePresentationSupport(
     VkPhysicalDevice physical_device,
     const std::vector<VkQueueFamilyProperties>& queue_family_properties,
     uint32_t queue_family_index) {
-  // TODO(spang): vkGetPhysicalDeviceMagmaPresentationSupportKHR returns false
-  // here. Use it once it is fixed.
-  NOTIMPLEMENTED();
   return true;
 }
 
@@ -138,6 +136,11 @@ VulkanImplementationScenic::GetRequiredDeviceExtensions() {
       VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME,
       VK_KHR_SWAPCHAIN_EXTENSION_NAME,
   };
+}
+
+std::vector<const char*>
+VulkanImplementationScenic::GetOptionalDeviceExtensions() {
+  return {};
 }
 
 VkFence VulkanImplementationScenic::CreateVkFenceForGpuFence(
@@ -230,33 +233,52 @@ bool VulkanImplementationScenic::CanImportGpuMemoryBuffer(
   return memory_buffer_type == gfx::NATIVE_PIXMAP;
 }
 
-bool VulkanImplementationScenic::CreateImageFromGpuMemoryHandle(
-    VkDevice vk_device,
+std::unique_ptr<gpu::VulkanImage>
+VulkanImplementationScenic::CreateImageFromGpuMemoryHandle(
+    gpu::VulkanDeviceQueue* device_queue,
     gfx::GpuMemoryBufferHandle gmb_handle,
     gfx::Size size,
-    VkImage* vk_image,
-    VkImageCreateInfo* vk_image_info,
-    VkDeviceMemory* vk_device_memory,
-    VkDeviceSize* mem_allocation_size,
-    base::Optional<gpu::VulkanYCbCrInfo>* ycbcr_info) {
+    VkFormat vk_format) {
   if (gmb_handle.type != gfx::NATIVE_PIXMAP)
-    return false;
+    return nullptr;
 
   if (!gmb_handle.native_pixmap_handle.buffer_collection_id) {
     DLOG(ERROR) << "NativePixmapHandle.buffer_collection_id is not set.";
-    return false;
+    return nullptr;
   }
 
   auto collection = sysmem_buffer_manager_->GetCollectionById(
       gmb_handle.native_pixmap_handle.buffer_collection_id.value());
   if (!collection) {
-    DLOG(ERROR) << "Tried to use an unknown buffer collection ID";
-    return false;
+    DLOG(ERROR) << "Tried to use an unknown buffer collection ID.";
+    return nullptr;
+  }
+  VkImage vk_image = VK_NULL_HANDLE;
+  VkImageCreateInfo vk_image_info = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+  VkDeviceMemory vk_device_memory = VK_NULL_HANDLE;
+  VkDeviceSize vk_device_size = 0;
+  base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info;
+  if (!collection->CreateVkImage(gmb_handle.native_pixmap_handle.buffer_index,
+                                 device_queue->GetVulkanDevice(), size,
+                                 &vk_image, &vk_image_info, &vk_device_memory,
+                                 &vk_device_size, &ycbcr_info)) {
+    DLOG(ERROR) << "CreateVkImage failed.";
+    return nullptr;
   }
 
-  return collection->CreateVkImage(
-      gmb_handle.native_pixmap_handle.buffer_index, vk_device, size, vk_image,
-      vk_image_info, vk_device_memory, mem_allocation_size, ycbcr_info);
+  auto image = gpu::VulkanImage::Create(
+      device_queue, vk_image, vk_device_memory, size, vk_image_info.format,
+      vk_image_info.tiling, vk_device_size, 0 /* memory_type_index */,
+      ycbcr_info);
+
+  if (image->format() != vk_format) {
+    DLOG(ERROR) << "Unexpected format " << vk_format << " vs "
+                << image->format();
+    image->Destroy();
+    return nullptr;
+  }
+
+  return image;
 }
 
 class SysmemBufferCollectionImpl : public gpu::SysmemBufferCollection {

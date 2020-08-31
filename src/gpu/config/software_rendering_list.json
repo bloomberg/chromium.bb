@@ -46,7 +46,7 @@
     {
       "id": 5,
       "description": "ATI/AMD cards with older drivers in Linux are crash-prone",
-      "cr_bugs": [71381, 76428, 73910, 101225, 136240, 357314],
+      "cr_bugs": [71381, 76428, 73910, 101225, 136240, 357314, 719213],
       "os": {
         "type": "linux"
       },
@@ -69,6 +69,9 @@
         },
         {
           "driver_vendor": ".*ANGLE.*"
+        },
+        {
+          "driver_vendor": ".*Brahma.*"
         }
       ],
       "features": [
@@ -335,10 +338,15 @@
     {
       "id": 48,
       "description": "Accelerated video decode is unavailable on Linux",
-      "cr_bugs": [137247],
+      "cr_bugs": [137247, 1032907],
       "os": {
         "type": "linux"
       },
+      "exceptions": [
+        {
+          "machine_model_name": ["Chromecast"]
+        }
+      ],
       "features": [
         "accelerated_video_decode"
       ]
@@ -359,14 +367,6 @@
             "value": "9.2.1"
           },
           "gl_renderer": ".*SVGA3D.*"
-        },
-        {
-          "driver_vendor": "Mesa",
-          "driver_version": {
-            "op": ">=",
-            "value": "10.1.3"
-          },
-          "gl_renderer": ".*llvmpipe.*"
         }
       ],
       "features": [
@@ -618,41 +618,6 @@
       ]
     },
     {
-      "id": 88,
-      "description": "Accelerated video decode on AMD driver 13.152.1.8000 is incompatible with the GPU sandbox",
-      "cr_bugs": [298968],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x1002",
-      "driver_version": {
-        "comment": "INF_version: 13.152.1.8000; date: 10/08/2013",
-        "op": "=",
-        "value": "8.17.10.1230"
-      },
-      "features": [
-        "accelerated_video_decode"
-      ]
-    },
-    {
-      "id": 89,
-      "description": "Accelerated video decode interferes with GPU sandbox on certain AMD drivers",
-      "cr_bugs": [298968],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x1002",
-      "driver_version": {
-        "comment": "INF_version: 8.810.4.5000, 8.970.100.1100; date: 4/7/2011, 04/29/2013",
-        "op": "between",
-        "value": "8.17.10.1060",
-        "value2": "8.17.10.1129"
-      },
-      "features": [
-        "accelerated_video_decode"
-      ]
-    },
-    {
       "id": 90,
       "description": "Accelerated video decode interferes with GPU sandbox on certain NVIDIA drivers",
       "cr_bugs": [298968],
@@ -894,8 +859,8 @@
           "value": "3.19.1"
         }
       },
-      "gpu_series": [
-        "intel_haswell"
+      "intel_gpu_series": [
+        "haswell"
       ],
       "features": [
         "all"
@@ -932,23 +897,6 @@
       },
       "features": [
         "accelerated_video_decode"
-      ]
-    },
-    {
-      "id": 110,
-      "description": "Only enable WebGL for the Mesa Gallium llvmpipe driver",
-      "cr_bugs": [571899],
-      "os": {
-        "type": "linux"
-      },
-      "driver_vendor": "Mesa",
-      "gl_vendor": "VMware.*",
-      "gl_renderer": ".*llvmpipe.*",
-      "features": [
-        "all",
-        {"exceptions": [
-          "accelerated_webgl"
-        ]}
       ]
     },
     {
@@ -1122,7 +1070,7 @@
     {
       "id": 122,
       "description": "GPU rasterization should only be enabled on NVIDIA and Intel and AMD RX-R2 GPUs with DX11+ or any GPU using ANGLE's GL backend.",
-      "cr_bugs": [643850],
+      "cr_bugs": [1047002],
       "os": {
         "type": "win"
       },
@@ -1312,7 +1260,7 @@
     {
       "id": 136,
       "description": "GPU rasterization is blacklisted on NVidia Fermi architecture for now.",
-      "cr_bugs": [643850],
+      "cr_bugs": [1047002],
       "os": {
         "type": "win"
       },
@@ -1364,7 +1312,7 @@
     {
       "id": 139,
       "description": "GPU Rasterization is disabled on pre-GCN AMD cards",
-      "cr_bugs": [643850],
+      "cr_bugs": [1047002],
       "os": {
         "type": "win"
       },
@@ -1460,7 +1408,6 @@
       },
       "vendor_id": "0x8086",
       "driver_version": {
-        "comment": "INF_version: 8.16.0.0",
         "op": "<",
         "value": "8.16.0.0"
       },
@@ -1633,32 +1580,16 @@
          }
       },
       "vendor_id": "0x8086",
-      "gpu_series": [
-        "intel_sandybridge",
-        "intel_baytrail",
-        "intel_ivybridge",
-        "intel_haswell",
-        "intel_cherrytrail",
-        "intel_broadwell",
-        "intel_apollolake",
-        "intel_skylake",
-        "intel_geminilake"
-      ]
-    },
-    {
-      "id": 156,
-      "cr_bugs": [870964],
-      "description": "Frequent crashes on Adreno (TM) on L and below",
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "6.0"
-        }
-      },
-      "gl_renderer": "Adreno.*",
-      "features": [
-        "oop_rasterization"
+      "intel_gpu_series": [
+        "sandybridge",
+        "baytrail",
+        "ivybridge",
+        "haswell",
+        "cherrytrail",
+        "broadwell",
+        "apollolake",
+        "skylake",
+        "geminilake"
       ]
     },
     {
@@ -1773,6 +1704,39 @@
         "flash3d",
         "flash_stage3d",
         "accelerated_2d_canvas"
+      ]
+    },
+    {
+      "id": 165,
+      "description": "Accelerated video decode is broken with some older Intel drivers.",
+      "cr_bugs": [1070439],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "=",
+        "value": "10.18.10.3958"
+      },
+      "features": [
+        "accelerated_video_decode"
+      ]
+    },
+    {
+      "id": 166,
+      "description": "8.17.10.* AMD drivers are buggy",
+      "driver_update_url": "https://www.amd.com/en/support/apu/amd-series-processors/amd-a8-series-apu-for-laptops/a8-5550m-radeon-hd-8550g",
+      "cr_bugs": [298968, 1069262],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "driver_version": {
+        "op": "=",
+        "value": "8.17.10"
+      },
+      "features": [
+        "accelerated_video_decode"
       ]
     }
   ]

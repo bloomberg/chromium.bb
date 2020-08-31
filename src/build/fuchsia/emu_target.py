@@ -22,6 +22,7 @@ class EmuTarget(target.Target):
     super(EmuTarget, self).__init__(output_dir, target_cpu)
     self._emu_process = None
     self._system_log_file = system_log_file
+    self._amber_repo = None
 
   def __enter__(self):
     return self
@@ -74,11 +75,24 @@ class EmuTarget(target.Target):
                      open(temporary_system_log_file.name, 'r').read())
       raise
 
-  def _GetAmberRepo(self):
-    return amber_repo.ManagedAmberRepo(self)
+  def GetAmberRepo(self):
+    if not self._amber_repo:
+      self._amber_repo = amber_repo.ManagedAmberRepo(self)
+
+    return self._amber_repo
 
   def Shutdown(self):
-    if self._IsEmuStillRunning():
+    if not self._emu_process:
+      logging.error('%s did not start' % (self._GetEmulatorName()))
+      return
+    returncode = self._emu_process.poll()
+    if returncode:
+      logging.error('%s quit unexpectedly with exit code %d' %
+                    (self._GetEmulatorName(), returncode))
+    elif returncode == 0:
+      logging.info('%s quit unexpectedly without errors' %
+                   self._GetEmulatorName())
+    else:
       logging.info('Shutting down %s' % (self._GetEmulatorName()))
       self._emu_process.kill()
 

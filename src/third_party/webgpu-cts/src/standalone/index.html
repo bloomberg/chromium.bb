@@ -1,0 +1,192 @@
+<html>
+  <head>
+    <title></title>
+    <link
+      id="favicon"
+      rel="shortcut icon"
+      type="image/png"
+      href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAACVBMVEUAAAAAAAD///+D3c/SAAAAAXRSTlMAQObYZgAAAEpJREFUCB0FwbERgDAMA0BdSkbJQBSuaPABE0WuaKILmpJ/rNVejPKBUXGhqAC5J0gn9ESg2wvdNua8hUoKJQo8b6HyE6a2QHdbP0CPITh2pewWAAAAAElFTkSuQmCC"
+    />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="third_party/normalize.min.css" />
+    <script src="third_party/jquery/jquery-3.3.1.min.js"></script>
+    <style>
+      html {
+        overflow-x: hidden;
+      }
+      body {
+        font-family: monospace;
+        min-width: 400px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      #info {
+        font-family: monospace;
+      }
+      #resultsJSON {
+        font-family: monospace;
+        width: 100%;
+        height: 15em;
+      }
+
+      #resultsVis {
+        border-right: 1px solid gray;
+      }
+
+      /* tree nodes */
+
+      .nodeheader {
+        display: flex;
+        width: 100%;
+        padding: 1px 2px 1px 1px;
+      }
+      .noderun,
+      .nodelink,
+      .testcaselogbtn {
+        display: inline-block;
+        flex-shrink: 0;
+        flex-grow: 0;
+        vertical-align: top;
+        background-color: #eee;
+        background-repeat: no-repeat;
+        background-position: center;
+        border: 1px solid #888;
+      }
+      @media (pointer: fine) {
+        .noderun,
+        .nodelink,
+        .testcaselogbtn {
+          flex-basis: 24px;
+          border-radius: 4px;
+          width: 24px;
+          height: 24px;
+        }
+      }
+      @media (pointer: coarse) {
+        .noderun,
+        .nodelink,
+        .testcaselogbtn {
+          flex-basis: 36px;
+          border-radius: 6px;
+          width: 36px;
+          height: 36px;
+        }
+      }
+      .noderun {
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAANklEQVQoU2NkYGD4zwABjFAagwJJwBTBJDEUY1OEoRifIrhiYhSBHYvuJnSHM5LtJry+wxlOAGPTCQmAB/WwAAAAAElFTkSuQmCC);
+      }
+      .nodelink {
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMAQMAAABsu86kAAAABlBMVEUAAAAAAAClZ7nPAAAAAXRSTlMAQObYZgAAACRJREFUCNdjYGBg+P+BoUGAYesFhj4BhvsFDPYNDHwMCMTAAACqJwbp3VgbrAAAAABJRU5ErkJggg==);
+      }
+      .nodetitle {
+        flex: 10 0 4em;
+      }
+      .nodename {
+        user-select: all;
+        word-break: break-word;
+      }
+      @media only screen and (max-width: 600px) {
+        /* TODO: make the uninteresting part of the name be really small or something, such that it gets
+         * auto selected but doesn't take space. */
+      }
+      .nodedescription {
+        margin: 0;
+        color: gray;
+      }
+
+      /* tree nodes which are subtrees */
+
+      .subtree {
+        margin: 0px;
+        border-width: 1px 0 0 1px;
+        border-style: solid;
+        border-color: gray;
+      }
+      .subtreechildren {
+        margin-left: 6px;
+      }
+
+      /* tree nodes which are test cases */
+
+      .testcase {
+        border-width: 1px 0 0 1px;
+        border-style: solid;
+        border-color: gray;
+        background: white;
+      }
+      .testcase[data-status='fail'] {
+        background: #fcc;
+      }
+      .testcase[data-status='warn'] {
+        background: #ffb;
+      }
+      .testcase[data-status='pass'] {
+        background: #cfc;
+      }
+      .testcase[data-status='skip'] {
+        background: #ccc;
+      }
+      .testcasetime {
+        white-space: nowrap;
+        text-align: right;
+        flex: 1 0 5.5em;
+      }
+      .testcaselogs {
+        margin-left: 6px;
+        width: calc(100% - 6px);
+        border-width: 0 0px 0 1px;
+        border-style: solid;
+        border-color: gray;
+        background: white;
+      }
+      .testcaselog {
+        display: flex;
+      }
+      .testcaselog:nth-child(odd) {
+        background: #fff;
+      }
+      .testcaselog:nth-child(even) {
+        background: #f8f8f8;
+      }
+      .testcaselogbtn {
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMAQMAAABsu86kAAAABlBMVEUAAAAAAAClZ7nPAAAAAXRSTlMAQObYZgAAACRJREFUCNdjYGBg+H+AwUGBwV+BQUGAQX0CiNQQYFABk8ogLgBsYQUt2gNKPwAAAABJRU5ErkJggg==);
+      }
+      .testcaselogtext {
+        flex: 1 0;
+        font-size: 10pt;
+        white-space: pre-wrap;
+        word-break: break-word;
+        margin: 0;
+        color: #666;
+      }
+      .testcaselogtext::first-line {
+        color: #000;
+      }
+
+      @media only screen and (max-width: 600px) {
+        .subtreechildren {
+          margin-left: 2px;
+        }
+        .testcaselogs {
+          margin-left: 2px;
+          width: calc(100% - 2px);
+        }
+      }
+    </style>
+    <script>
+      if (!window.location.search) {
+        window.location += '?runnow=0&worker=0&debug=0&q=webgpu:';
+      }
+    </script>
+  </head>
+  <body>
+    <h1>WebGPU Conformance Test Suite</h1>
+
+    <div id="info"></div>
+    <div id="resultsVis"></div>
+    <textarea id="resultsJSON"></textarea>
+
+    <script type="module" src="../out/common/runtime/standalone.js"></script>
+  </body>
+</html>

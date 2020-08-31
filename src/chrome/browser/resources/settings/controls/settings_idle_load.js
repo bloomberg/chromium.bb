@@ -11,8 +11,6 @@
 Polymer({
   is: 'settings-idle-load',
 
-  behaviors: [Polymer.Templatizer],
-
   properties: {
     /**
      * If specified, it will be loaded via an HTML import before stamping the
@@ -24,39 +22,41 @@ Polymer({
   /** @private {?Element} */
   child_: null,
 
-  /** @private {?Element} */
+  /** @private {?Element|?TemplateInstanceBase} */
   instance_: null,
 
   /** @private {number} */
   idleCallback_: 0,
 
   /** @override */
-  attached: function() {
-    this.idleCallback_ = requestIdleCallback(this.get.bind(this));
+  attached() {
+    this.idleCallback_ = requestIdleCallback(() => {
+      this.get();
+    });
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     // No-op if callback already fired.
     cancelIdleCallback(this.idleCallback_);
   },
 
   /**
-   * @return {!Promise<Element>} Child element which has been stamped into the
-   *     DOM tree.
+   * @param {!function():!Promise} requestFn Requests the lazy module.
+   * @return {!Promise<!Element>} Resolves with the stamped child element after
+   *     the lazy module has been loaded.
    */
-  get: function() {
-    if (this.loading_) {
-      return this.loading_;
-    }
+  requestLazyModule_(requestFn) {
+    return new Promise((resolve, reject) => {
+      requestFn().then(() => {
+        const template =
+            /** @type {!HTMLTemplateElement} */ (this.getContentChildren()[0]);
+        const TemplateClass = Polymer.Templatize.templatize(template, this, {
+          mutableData: false,
+          forwardHostProp: this._forwardHostPropV2,
+        });
 
-    this.loading_ = new Promise((resolve, reject) => {
-      this.importHref(this.url, () => {
-        assert(!this.ctor);
-        this.templatize(this.getContentChildren()[0]);
-        assert(this.ctor);
-
-        this.instance_ = this.stamp({});
+        this.instance_ = new TemplateClass();
 
         assert(!this.child_);
         this.child_ = this.instance_.root.firstElementChild;
@@ -65,9 +65,32 @@ Polymer({
         resolve(this.child_);
 
         this.fire('lazy-loaded');
-      }, reject, true);
+      }, reject);
     });
+  },
 
+  /**
+   * @return {!Promise<Element>} Child element which has been stamped into the
+   *     DOM tree.
+   */
+  get() {
+    if (this.loading_) {
+      return this.loading_;
+    }
+
+    // clang-format off
+    // Polymer 2 codepath
+    /* #ignore */ const requestLazyModuleFn = () => {
+      /* #ignore */ return new Promise((resolve, reject) => {
+        /* #ignore */ this.importHref(this.url, resolve, reject, true);
+      /* #ignore */ });
+    /* #ignore */ };
+    // clang-format on
+
+    // Polymer 3 codepath, do not delete next line comment.
+    // #polymer3 const requestLazyModuleFn = ensureLazyLoaded;
+
+    this.loading_ = this.requestLazyModule_(requestLazyModuleFn);
     return this.loading_;
   },
 
@@ -75,7 +98,7 @@ Polymer({
    * @param {string} prop
    * @param {Object} value
    */
-  _forwardHostPropV2: function(prop, value) {
+  _forwardHostPropV2(prop, value) {
     if (this.instance_) {
       this.instance_.forwardHostProp(prop, value);
     }

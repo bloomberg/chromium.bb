@@ -74,4 +74,40 @@ v8.wasm.streamFromResponseCallback Properties:
     startTime : <number>
     type : "v8.wasm.streamFromResponseCallback"
 }
+v8.wasm.compiledModule Properties:
+{
+    data : {
+        url : http://127.0.0.1:8000/wasm/resources/load-wasm.php?name=small.wasm&cors
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.compiledModule"
+}
+v8.wasm.compiledModule Properties:
+{
+    data : {
+        url : http://127.0.0.1:8000/wasm/resources/load-wasm.php?name=small.wasm&cors
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.compiledModule"
+}
+v8.wasm.compiledModule Properties:
+{
+    data : {
+        url : http://127.0.0.1:8000/wasm/resources/load-wasm.php?name=small.wasm&cors
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.compiledModule"
+}
+v8.wasm.compiledModule Properties:
+{
+    data : {
+        url : http://127.0.0.1:8000/wasm/resources/load-wasm.php?name=small.wasm&cors
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.wasm.compiledModule"
+}
 

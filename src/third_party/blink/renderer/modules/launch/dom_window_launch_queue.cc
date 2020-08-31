@@ -17,7 +17,6 @@ const char DOMWindowLaunchQueue::kSupplementName[] = "DOMWindowLaunchQueue";
 
 DOMWindowLaunchQueue::DOMWindowLaunchQueue()
     : launch_queue_(MakeGarbageCollected<LaunchQueue>()) {}
-DOMWindowLaunchQueue::~DOMWindowLaunchQueue() = default;
 
 Member<LaunchQueue> DOMWindowLaunchQueue::launchQueue(LocalDOMWindow& window) {
   return FromState(&window)->launch_queue_;
@@ -30,7 +29,7 @@ void DOMWindowLaunchQueue::UpdateLaunchFiles(
       MakeGarbageCollected<LaunchParams>(std::move(files)));
 }
 
-void DOMWindowLaunchQueue::Trace(blink::Visitor* visitor) {
+void DOMWindowLaunchQueue::Trace(Visitor* visitor) {
   visitor->Trace(launch_queue_);
   Supplement<LocalDOMWindow>::Trace(visitor);
 }

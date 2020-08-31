@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_picture/cr_png_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_picture/png.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -14,34 +14,29 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../controls/settings_toggle_button.html">
-<link rel="import" href="../../icons.html">
-<link rel="import" href="../../parental_controls_page/parental_controls_page.html">
-<link rel="import" href="../../people_page/account_manager.html">
+<link rel="import" href="../parental_controls_page/parental_controls_page.html">
 <link rel="import" href="../../people_page/account_manager_browser_proxy.html">
-<link rel="import" href="../../people_page/fingerprint_list.html">
-<link rel="import" href="../../people_page/kerberos_accounts.html">
-<link rel="import" href="../../people_page/lock_screen.html">
-<link rel="import" href="../../people_page/lock_state_behavior.html">
 <link rel="import" href="../../people_page/profile_info_browser_proxy.html">
 <link rel="import" href="../../people_page/signout_dialog.html">
 <link rel="import" href="../../people_page/sync_browser_proxy.html">
 <link rel="import" href="../../people_page/sync_controls.html">
 <link rel="import" href="../../people_page/sync_page.html">
-<link rel="import" href="../../people_page/users_page.html">
-<link rel="import" href="../../route.html">
+<link rel="import" href="../os_route.html">
+<link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_page/settings_animated_pages.html">
 <link rel="import" href="../../settings_page/settings_subpage.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="account_manager.html">
+<link rel="import" href="fingerprint_list.html">
+<link rel="import" href="kerberos_accounts.html">
+<link rel="import" href="lock_screen.html">
+<link rel="import" href="lock_state_behavior.html">
+<link rel="import" href="users_page.html">
 <link rel="import" href="os_sync_controls.html">
 
 <dom-module id="os-settings-people-page">
   <template>
     <style include="settings-shared iron-flex">
-      setting-box.middle {
-        /* Per spec, middle text is indented 20px in this section. */
-        margin-inline-start: 20px;
-      }
-
       .sync-row {
         align-items: center;
         flex: auto;
@@ -56,9 +51,7 @@
       }
 
       #sync-setup {
-        --cr-secondary-text: {
-          color: var(--cros-error-color);
-        }
+        --cr-secondary-text-color: var(--cros-error-color);
       }
 
       cr-link-row {
@@ -74,53 +67,40 @@
       }
 
     </style>
-    <settings-animated-pages id="pages" section="people"
+    <settings-animated-pages id="pages" section="osPeople"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-          <div class="settings-box first two-line">
-            <template is="dom-if" if="[[syncStatus]]">
-              <!-- Does not use <cr-link-row> due to custom aria label. -->
-              <div id="profile-icon"
-                  style="background-image: [[getIconImageSet_(
-                      profileIconUrl_)]]"
-                  on-click="onAccountManagerTap_"
-                  actionable$="[[isAccountManagerEnabled_]]">
-              </div>
-              <div class="middle two-line no-min-width"
-                  id="profile-row"
-                  on-click="onAccountManagerTap_"
-                  actionable$="[[isAccountManagerEnabled_]]">
-                <div class="flex text-elide settings-box-text">
-                  <span id="profile-name" aria-hidden="true">
-                    [[profileName_]]
-                  </span>
-                  <div id="profile-label" class="secondary"
-                      aria-hidden="true">
-                    [[profileLabel_]]
-                  </div>
-                </div>
-                <cr-icon-button class="subpage-arrow"
-                    hidden="[[!isAccountManagerEnabled_]]"
-                    id="account-manager-subpage-trigger"
-                    aria-label="$i18n{accountManagerSubMenuLabel}"
-                    aria-describedby="profile-name profile-label"
-                    aria-roledescription="$i18n{subpageArrowRoleDescription}">
-                </cr-icon-button>
-              </div>
-            </template>
-          </div>
-
-        <template is="dom-if" if="[[!syncStatus.signedIn]]">
-            <div class="settings-box two-line" id="sync-overview"
-                hidden="[[!syncStatus.signinAllowed]]">
-              <div class="start settings-box-text">
-                $i18n{syncOverview}
-                <a target="_blank" href="$i18n{syncLearnMoreUrl}">
-                  $i18n{learnMore}
-                </a>
-              </div>
+        <div class="settings-box first two-line">
+          <template is="dom-if" if="[[syncStatus]]">
+            <!-- Does not use <cr-link-row> due to custom aria label. -->
+            <div id="profile-icon"
+                style="background-image: [[getIconImageSet_(profileIconUrl_)]]"
+                on-click="onAccountManagerTap_"
+                actionable$="[[isAccountManagerEnabled_]]">
             </div>
-        </template>
+            <div class="middle two-line no-min-width"
+                id="profile-row"
+                on-click="onAccountManagerTap_"
+                actionable$="[[isAccountManagerEnabled_]]">
+              <div class="flex text-elide settings-box-text">
+                <span id="profile-name" aria-hidden="true">
+                  [[profileName_]]
+                </span>
+                <div id="profile-label" class="secondary"
+                    aria-hidden="true">
+                  [[profileLabel_]]
+                </div>
+              </div>
+              <cr-icon-button class="subpage-arrow"
+                  hidden="[[!isAccountManagerEnabled_]]"
+                  id="account-manager-subpage-trigger"
+                  aria-label="$i18n{accountManagerSubMenuLabel}"
+                  aria-describedby="profile-name profile-label"
+                  aria-roledescription="$i18n{subpageArrowRoleDescription}">
+              </cr-icon-button>
+            </div>
+          </template>
+        </div>
 
         <cr-link-row id="sync-setup"
             label="[[getSyncRowLabel_()]]"
@@ -171,30 +151,37 @@
       </template>
 
       <!-- Pre-SplitSettingsSync we show the browser's sync controls. -->
-      <template is="dom-if" route-path="/syncSetup/advanced">
-        <settings-subpage page-title="$i18n{syncAdvancedPageTitle}"
-            associated-control="[[$$('#sync-setup')]]"
-            learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
-          <settings-sync-controls sync-status="[[syncStatus]]">
-          </settings-sync-controls>
-        </settings-subpage>
+      <template is="dom-if" if="[[!splitSettingsSyncEnabled_]]">
+        <template is="dom-if" route-path="/syncSetup/advanced">
+          <settings-subpage page-title="$i18n{syncAdvancedPageTitle}"
+              associated-control="[[$$('#sync-setup')]]"
+              learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
+            <settings-sync-controls sync-status="[[syncStatus]]">
+            </settings-sync-controls>
+          </settings-subpage>
+        </template>
       </template>
 
       <!-- Post-SplitSettingsSync we have separate OS sync controls. -->
-      <template is="dom-if" route-path="/osSync">
-        <settings-subpage page-title="$i18n{syncAdvancedPageTitle}"
-            associated-control="[[$$('#sync-setup')]]"
-            learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
-          <os-sync-controls sync-status="[[syncStatus]]">
-          </os-sync-controls>
-        </settings-subpage>
+      <template is="dom-if" if="[[splitSettingsSyncEnabled_]]">
+        <template is="dom-if" route-path="/osSync">
+          <settings-subpage page-title="$i18n{osSyncPageTitle}"
+              associated-control="[[$$('#sync-setup')]]"
+              learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
+            <os-sync-controls sync-status="[[syncStatus]]"
+                profile-icon-url="[[profileIconUrl_]]"
+                profile-name="[[profileName_]]"
+                profile-email="[[profileEmail_]]">
+            </os-sync-controls>
+          </settings-subpage>
+        </template>
       </template>
 
       <template is="dom-if" route-path="/lockScreen">
         <settings-subpage
             page-title="[[selectLockScreenTitleString(hasPinLogin)]]"
             associated-control="[[$$('#lock-screen-subpage-trigger')]]">
-          <settings-lock-screen
+          <settings-lock-screen id="lock-screen"
               prefs="{{prefs}}" auth-token="{{authToken_}}">
           </settings-lock-screen>
         </settings-subpage>
@@ -202,7 +189,8 @@
       <template is="dom-if" if="[[fingerprintUnlockEnabled_]]">
         <template is="dom-if" route-path="/lockScreen/fingerprint" no-search>
           <settings-subpage page-title="$i18n{lockScreenFingerprintTitle}">
-            <settings-fingerprint-list auth-token="[[authToken_]]">
+            <settings-fingerprint-list id="fingerprint-list"
+                auth-token="[[authToken_.token]]">
             </settings-fingerprint-list>
           </settings-subpage>
         </template>

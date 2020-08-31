@@ -11,11 +11,19 @@ import android.app.Notification;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.RemoteException;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.browser.trusted.Token;
+import androidx.browser.trusted.TrustedWebActivityService;
+import androidx.browser.trusted.TrustedWebActivityServiceConnection;
+import androidx.browser.trusted.TrustedWebActivityServiceConnectionPool;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -28,9 +36,11 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
-import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.embedder_support.util.Origin;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.List;
@@ -40,12 +50,6 @@ import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import androidx.annotation.Nullable;
-import androidx.browser.trusted.Token;
-import androidx.browser.trusted.TrustedWebActivityService;
-import androidx.browser.trusted.TrustedWebActivityServiceConnection;
-import androidx.browser.trusted.TrustedWebActivityServiceConnectionPool;
 
 /**
  * Uses a Trusted Web Activity client to display notifications.
@@ -104,9 +108,10 @@ public class TrustedWebActivityClient {
         Resources res = ContextUtils.getApplicationContext().getResources();
         String channelDisplayName = res.getString(R.string.notification_category_group_general);
 
-        return connectAndExecute(origin.uri(), service ->
-                callback.onPermissionCheck(service.getComponentName(),
-                        service.areNotificationsEnabled(channelDisplayName)));
+        return connectAndExecute(origin.uri(),
+                (originCopy, service)
+                        -> callback.onPermissionCheck(service.getComponentName(),
+                                service.areNotificationsEnabled(channelDisplayName)));
     }
 
     /**
@@ -122,12 +127,12 @@ public class TrustedWebActivityClient {
             NotificationBuilderBase builder, NotificationUmaTracker notificationUmaTracker) {
         Resources res = ContextUtils.getApplicationContext().getResources();
         String channelDisplayName = res.getString(R.string.notification_category_group_general);
-        Origin origin = Origin.createOrThrow(scope);
 
-        connectAndExecute(scope, service -> {
+        connectAndExecute(scope, (origin, service) -> {
             if (!service.areNotificationsEnabled(channelDisplayName)) {
                 mDelegatesManager.updatePermission(origin,
-                        service.getComponentName().getPackageName(), false);
+                        service.getComponentName().getPackageName(),
+                        ContentSettingsType.NOTIFICATIONS, false);
 
                 // Attempting to notify when notifications are disabled won't have any effect, but
                 // returning here just saves us from doing unnecessary work.
@@ -187,15 +192,18 @@ public class TrustedWebActivityClient {
      * @param platformId The id of the notification to cancel.
      */
     public void cancelNotification(Uri scope, String platformTag, int platformId) {
-        connectAndExecute(scope, service -> service.cancel(platformTag, platformId));
+        connectAndExecute(scope, (origin, service) -> service.cancel(platformTag, platformId));
     }
 
     private interface ExecutionCallback {
-        void onConnected(TrustedWebActivityServiceConnection service) throws RemoteException;
+        void onConnected(Origin origin, TrustedWebActivityServiceConnection service)
+                throws RemoteException;
     }
 
     private boolean connectAndExecute(Uri scope, ExecutionCallback callback) {
-        Origin origin = Origin.createOrThrow(scope);
+        Origin origin = Origin.create(scope);
+        if (origin == null) return false;
+
         Set<Token> possiblePackages = mDelegatesManager.getAllDelegateApps(origin);
         if (possiblePackages == null || possiblePackages.isEmpty()) return false;
 
@@ -203,9 +211,10 @@ public class TrustedWebActivityClient {
                 mConnection.connect(scope, possiblePackages, AsyncTask.THREAD_POOL_EXECUTOR);
         connection.addListener(() -> {
             try {
-                callback.onConnected(connection.get());
-            } catch (RemoteException | ExecutionException | InterruptedException e) {
-                Log.w(TAG, "Failed to execute TWA command.");
+                callback.onConnected(origin, connection.get());
+            } catch (RemoteException | ExecutionException | InterruptedException
+                    | SecurityException e) {
+                Log.w(TAG, "Failed to execute TWA command.", e);
             }
         }, UI_THREAD_EXECUTOR);
 
@@ -229,38 +238,41 @@ public class TrustedWebActivityClient {
 
     private @Nullable Intent createLaunchIntentForTwaInternal(Context appContext, String url,
             List<ResolveInfo> resolveInfosForUrl) {
-        Origin origin = Origin.createOrThrow(url);
+        Origin origin = Origin.create(url);
+        if (origin == null) return null;
 
         // Trusted Web Activities only work with https so we can shortcut here.
         if (!UrlConstants.HTTPS_SCHEME.equals(origin.uri().getScheme())) return null;
 
-        Set<Token> verifiedPackages = mDelegatesManager.getAllDelegateApps(origin);
-        if (verifiedPackages == null || verifiedPackages.size() == 0) return null;
+        ComponentName componentName = searchVerifiedApps(appContext.getPackageManager(),
+                mDelegatesManager.getAllDelegateApps(origin), resolveInfosForUrl);
 
-        String twaPackageName = null;
-        String twaActivityName = null;
-        for (ResolveInfo info : resolveInfosForUrl) {
-            if (info.activityInfo == null) continue;
-
-            Token token =
-                    Token.create(info.activityInfo.packageName, appContext.getPackageManager());
-            if (token == null) continue;
-
-            if (verifiedPackages.contains(token)) {
-                twaPackageName = info.activityInfo.packageName;
-                twaActivityName = info.activityInfo.name;
-                break;
-            }
-        }
-
-        if (twaPackageName == null) return null;
+        if (componentName == null) return null;
 
         Intent intent = new Intent();
         intent.setData(Uri.parse(url));
         intent.setAction(Intent.ACTION_VIEW);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.setComponent(new ComponentName(twaPackageName, twaActivityName));
+        intent.setComponent(componentName);
         return intent;
+    }
+
+    @Nullable
+    private static ComponentName searchVerifiedApps(@NonNull PackageManager pm,
+            @Nullable Set<Token> verifiedPackages, @NonNull List<ResolveInfo> resolveInfosForUrl) {
+        if (verifiedPackages == null || verifiedPackages.isEmpty()) return null;
+
+        for (ResolveInfo info : resolveInfosForUrl) {
+            if (info.activityInfo == null) continue;
+
+            for (Token v : verifiedPackages) {
+                if (!v.matches(info.activityInfo.packageName, pm)) continue;
+
+                return new ComponentName(info.activityInfo.packageName, info.activityInfo.name);
+            }
+        }
+
+        return null;
     }
 }

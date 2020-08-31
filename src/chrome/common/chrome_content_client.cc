@@ -39,6 +39,7 @@
 #include "chrome/grit/common_resources.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/embedder_support/origin_trials/origin_trial_policy_impl.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "content/public/common/cdm_info.h"
@@ -660,8 +661,7 @@ void ChromeContentClient::AddContentDecryptionModules(
           {}, {media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs},
           {media::CdmSessionType::kTemporary,
            media::CdmSessionType::kPersistentLicense,
-           media::CdmSessionType::kPersistentUsageRecord},
-          {});
+           media::CdmSessionType::kPersistentUsageRecord});
 
       // Register kExternalClearKeyDifferentGuidTestKeySystem first separately.
       // Otherwise, it'll be treated as a sub-key-system of normal
@@ -706,10 +706,11 @@ void ChromeContentClient::AddContentDecryptionModules(
 // Example standard schemes: https://, chrome-extension://, chrome://, file://
 // Example nonstandard schemes: mailto:, data:, javascript:, about:
 static const char* const kChromeStandardURLSchemes[] = {
-    extensions::kExtensionScheme,
-    chrome::kChromeNativeScheme,
-    chrome::kChromeSearchScheme,
-    dom_distiller::kDomDistillerScheme,
+    extensions::kExtensionScheme, chrome::kChromeNativeScheme,
+    chrome::kChromeSearchScheme,  dom_distiller::kDomDistillerScheme,
+#if defined(OS_ANDROID)
+    chrome::kAndroidAppScheme,
+#endif
 #if defined(OS_CHROMEOS)
     chrome::kCrosScheme,
 #endif
@@ -830,7 +831,8 @@ blink::OriginTrialPolicy* ChromeContentClient::GetOriginTrialPolicy() {
   // separate worker thread).
   base::AutoLock auto_lock(origin_trial_policy_lock_);
   if (!origin_trial_policy_)
-    origin_trial_policy_ = std::make_unique<ChromeOriginTrialPolicy>();
+    origin_trial_policy_ =
+        std::make_unique<embedder_support::OriginTrialPolicyImpl>();
   return origin_trial_policy_.get();
 }
 

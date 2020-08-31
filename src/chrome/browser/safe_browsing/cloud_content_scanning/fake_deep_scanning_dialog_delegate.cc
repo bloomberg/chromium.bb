@@ -6,21 +6,37 @@
 
 #include <base/callback.h>
 #include <base/logging.h>
+#include "base/task/post_task.h"
+#include "base/time/time.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {
+
+namespace {
+
+base::TimeDelta response_delay = base::TimeDelta::FromSeconds(0);
+
+}  // namespace
+
+BinaryUploadService::Result FakeDeepScanningDialogDelegate::result_ =
+    BinaryUploadService::Result::SUCCESS;
 
 FakeDeepScanningDialogDelegate::FakeDeepScanningDialogDelegate(
     base::RepeatingClosure delete_closure,
     StatusCallback status_callback,
+    EncryptionStatusCallback encryption_callback,
     std::string dm_token,
     content::WebContents* web_contents,
     Data data,
     CompletionCallback callback)
     : DeepScanningDialogDelegate(web_contents,
                                  std::move(data),
-                                 std::move(callback)),
+                                 std::move(callback),
+                                 DeepScanAccessPoint::UPLOAD),
       delete_closure_(delete_closure),
       status_callback_(status_callback),
+      encryption_callback_(encryption_callback),
       dm_token_(std::move(dm_token)) {}
 
 FakeDeepScanningDialogDelegate::~FakeDeepScanningDialogDelegate() {
@@ -29,17 +45,30 @@ FakeDeepScanningDialogDelegate::~FakeDeepScanningDialogDelegate() {
 }
 
 // static
+void FakeDeepScanningDialogDelegate::SetResponseResult(
+    BinaryUploadService::Result result) {
+  result_ = result;
+}
+
+// static
 std::unique_ptr<DeepScanningDialogDelegate>
-FakeDeepScanningDialogDelegate::Create(base::RepeatingClosure delete_closure,
-                                       StatusCallback status_callback,
-                                       std::string dm_token,
-                                       content::WebContents* web_contents,
-                                       Data data,
-                                       CompletionCallback callback) {
+FakeDeepScanningDialogDelegate::Create(
+    base::RepeatingClosure delete_closure,
+    StatusCallback status_callback,
+    EncryptionStatusCallback encryption_callback,
+    std::string dm_token,
+    content::WebContents* web_contents,
+    Data data,
+    CompletionCallback callback) {
   auto ret = std::make_unique<FakeDeepScanningDialogDelegate>(
-      delete_closure, status_callback, std::move(dm_token), web_contents,
-      std::move(data), std::move(callback));
+      delete_closure, status_callback, encryption_callback, std::move(dm_token),
+      web_contents, std::move(data), std::move(callback));
   return ret;
+}
+
+// static
+void FakeDeepScanningDialogDelegate::SetResponseDelay(base::TimeDelta delay) {
+  response_delay = delay;
 }
 
 // static
@@ -52,8 +81,6 @@ DeepScanningClientResponse FakeDeepScanningDialogDelegate::SuccessfulResponse(
         DlpDeepScanningVerdict::SUCCESS);
   }
   if (include_malware) {
-    response.mutable_malware_scan_verdict()->set_status(
-        MalwareDeepScanningVerdict::SUCCESS);
     response.mutable_malware_scan_verdict()->set_verdict(
         MalwareDeepScanningVerdict::CLEAN);
   }
@@ -65,8 +92,6 @@ DeepScanningClientResponse FakeDeepScanningDialogDelegate::SuccessfulResponse(
 DeepScanningClientResponse FakeDeepScanningDialogDelegate::MalwareResponse(
     MalwareDeepScanningVerdict::Verdict verdict) {
   DeepScanningClientResponse response;
-  response.mutable_malware_scan_verdict()->set_status(
-      MalwareDeepScanningVerdict::SUCCESS);
   response.mutable_malware_scan_verdict()->set_verdict(verdict);
   return response;
 }
@@ -109,13 +134,15 @@ FakeDeepScanningDialogDelegate::MalwareAndDlpResponse(
 void FakeDeepScanningDialogDelegate::Response(
     base::FilePath path,
     std::unique_ptr<BinaryUploadService::Request> request) {
-  DeepScanningClientResponse response = status_callback_.is_null()
-                                            ? DeepScanningClientResponse()
-                                            : status_callback_.Run(path);
+  DeepScanningClientResponse response =
+      (status_callback_.is_null() ||
+       result_ != BinaryUploadService::Result::SUCCESS)
+          ? DeepScanningClientResponse()
+          : status_callback_.Run(path);
   if (path.empty())
-    StringRequestCallback(BinaryUploadService::Result::SUCCESS, response);
+    StringRequestCallback(result_, response);
   else
-    FileRequestCallback(path, BinaryUploadService::Result::SUCCESS, response);
+    FileRequestCallback(path, result_, response);
 }
 
 void FakeDeepScanningDialogDelegate::UploadTextForDeepScanning(
@@ -126,27 +153,27 @@ void FakeDeepScanningDialogDelegate::UploadTextForDeepScanning(
   DCHECK_EQ(dm_token_, request->deep_scanning_request().dm_token());
 
   // Simulate a response.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeDeepScanningDialogDelegate::Response,
-                                base::Unretained(this), base::FilePath(),
-                                std::move(request)));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&FakeDeepScanningDialogDelegate::Response,
+                     weakptr_factory_.GetWeakPtr(), base::FilePath(),
+                     std::move(request)),
+      response_delay);
 }
 
 void FakeDeepScanningDialogDelegate::UploadFileForDeepScanning(
+    BinaryUploadService::Result result,
     const base::FilePath& path,
     std::unique_ptr<BinaryUploadService::Request> request) {
   DCHECK(!path.empty());
   DCHECK_EQ(dm_token_, request->deep_scanning_request().dm_token());
 
   // Simulate a response.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FakeDeepScanningDialogDelegate::Response,
-                     base::Unretained(this), path, std::move(request)));
-}
-
-bool FakeDeepScanningDialogDelegate::CloseTabModalDialog() {
-  return false;
+                     weakptr_factory_.GetWeakPtr(), path, std::move(request)),
+      response_delay);
 }
 
 }  // namespace safe_browsing

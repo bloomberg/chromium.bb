@@ -20,6 +20,7 @@
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/cast/overlay_manager_cast.h"
 #include "ui/ozone/platform/cast/platform_window_cast.h"
 #include "ui/ozone/platform/cast/surface_factory_cast.h"
@@ -109,7 +110,8 @@ class OzonePlatformCast : public OzonePlatform {
     return nullptr;
   }
   std::unique_ptr<InputMethod> CreateInputMethod(
-      internal::InputMethodDelegate* delegate) override {
+      internal::InputMethodDelegate* delegate,
+      gfx::AcceleratedWidget) override {
     return std::make_unique<InputMethodMinimal>(delegate);
   }
 
@@ -123,9 +125,6 @@ class OzonePlatformCast : public OzonePlatform {
     device_manager_ = CreateDeviceManager();
     cursor_factory_ = std::make_unique<CursorFactoryOzone>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
-
-    if (!params.viz_display_compositor)
-      overlay_manager_ = std::make_unique<OverlayManagerCast>();
 
     // Enable dummy software rendering support if GPU process disabled
     // or if we're an audio-only build.
@@ -148,9 +147,7 @@ class OzonePlatformCast : public OzonePlatform {
       surface_factory_ = std::make_unique<SurfaceFactoryCast>();
   }
   void InitializeGPU(const InitParams& params) override {
-    if (params.viz_display_compositor) {
-      overlay_manager_ = std::make_unique<OverlayManagerCast>();
-    }
+    overlay_manager_ = std::make_unique<OverlayManagerCast>();
     surface_factory_ =
         std::make_unique<SurfaceFactoryCast>(std::move(egl_platform_));
   }

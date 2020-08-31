@@ -2,32 +2,66 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
+
+import * as ARIAUtils from './ARIAUtils.js';
+import {ContextMenu} from './ContextMenu.js';  // eslint-disable-line no-unused-vars
+import {Icon} from './Icon.js';
+import {Events as TabbedPaneEvents, TabbedPane} from './TabbedPane.js';
+import {Toolbar, ToolbarItem, ToolbarMenuButton} from './Toolbar.js';  // eslint-disable-line no-unused-vars
+import {ProvidedView, TabbedViewLocation, View, ViewLocation, ViewLocationResolver, widgetSymbol,} from './View.js';  // eslint-disable-line no-unused-vars
+import {VBox, Widget} from './Widget.js';  // eslint-disable-line no-unused-vars
+
+/**
+ * @type {!ViewManager}
+ */
+let viewManagerInstance;
+
 /**
  * @unrestricted
  */
-export default class ViewManager {
+export class ViewManager {
+  /**
+   * @private
+   */
   constructor() {
-    /** @type {!Map<string, !UI.View>} */
+    /** @type {!Map<string, !View>} */
     this._views = new Map();
     /** @type {!Map<string, string>} */
     this._locationNameByViewId = new Map();
 
     for (const extension of self.runtime.extensions('view')) {
       const descriptor = extension.descriptor();
-      this._views.set(descriptor['id'], new UI.ProvidedView(extension));
+      this._views.set(descriptor['id'], new ProvidedView(extension));
       this._locationNameByViewId.set(descriptor['id'], descriptor['location']);
     }
   }
 
   /**
-   * @param {!Array<!UI.ToolbarItem>} toolbarItems
+   * @param {{forceNew: ?boolean}} opts
+   */
+  static instance(opts = {forceNew: null}) {
+    const {forceNew} = opts;
+    if (!viewManagerInstance || forceNew) {
+      viewManagerInstance = new ViewManager();
+    }
+
+    return viewManagerInstance;
+  }
+
+  /**
+   * @param {!Array<!ToolbarItem>} toolbarItems
    * @return {?Element}
    */
   static _createToolbar(toolbarItems) {
     if (!toolbarItems.length) {
       return null;
     }
-    const toolbar = new UI.Toolbar('');
+    const toolbar = new Toolbar('');
     for (const item of toolbarItems) {
       toolbar.appendToolbarItem(item);
     }
@@ -35,8 +69,8 @@ export default class ViewManager {
   }
 
   /**
-   * @param {!UI.View} view
-   * @return {!Promise}
+   * @param {!View} view
+   * @return {!Promise<void>}
    */
   revealView(view) {
     const location = /** @type {?_Location} */ (view[_Location.symbol]);
@@ -49,7 +83,7 @@ export default class ViewManager {
 
   /**
    * @param {string} viewId
-   * @return {?UI.View}
+   * @return {?View}
    */
   view(viewId) {
     return this._views.get(viewId);
@@ -57,18 +91,18 @@ export default class ViewManager {
 
   /**
    * @param {string} viewId
-   * @return {?UI.Widget}
+   * @return {?Widget}
    */
   materializedWidget(viewId) {
     const view = this.view(viewId);
-    return view ? view[UI.View.widgetSymbol] : null;
+    return view ? view[widgetSymbol] : null;
   }
 
   /**
    * @param {string} viewId
    * @param {boolean=} userGesture
    * @param {boolean=} omitFocus
-   * @return {!Promise}
+   * @return {!Promise<void>}
    */
   showView(viewId, userGesture, omitFocus) {
     const view = this._views.get(viewId);
@@ -103,8 +137,8 @@ export default class ViewManager {
       return /** @type {!Promise<?_Location>} */ (Promise.resolve(null));
     }
 
-    const resolverExtensions = self.runtime.extensions(UI.ViewLocationResolver)
-                                   .filter(extension => extension.descriptor()['name'] === location);
+    const resolverExtensions =
+        self.runtime.extensions(ViewLocationResolver).filter(extension => extension.descriptor()['name'] === location);
     if (!resolverExtensions.length) {
       throw new Error('Unresolved location: ' + location);
     }
@@ -114,22 +148,21 @@ export default class ViewManager {
   }
 
   /**
-   * @param {function()=} revealCallback
+   * @param {function():void=} revealCallback
    * @param {string=} location
    * @param {boolean=} restoreSelection
    * @param {boolean=} allowReorder
    * @param {?string=} defaultTab
-   * @return {!UI.TabbedViewLocation}
+   * @return {!TabbedViewLocation}
    */
   createTabbedLocation(revealCallback, location, restoreSelection, allowReorder, defaultTab) {
-    return new UI.ViewManager._TabbedLocation(
-        this, revealCallback, location, restoreSelection, allowReorder, defaultTab);
+    return new _TabbedLocation(this, revealCallback, location, restoreSelection, allowReorder, defaultTab);
   }
 
   /**
-   * @param {function()=} revealCallback
+   * @param {function():void=} revealCallback
    * @param {string=} location
-   * @return {!UI.ViewLocation}
+   * @return {!ViewLocation}
    */
   createStackLocation(revealCallback, location) {
     return new _StackLocation(this, revealCallback, location);
@@ -145,7 +178,7 @@ export default class ViewManager {
 
   /**
    * @param {string} location
-   * @return {!Array<!UI.View>}
+   * @return {!Array<!View>}
    */
   _viewsForLocation(location) {
     const result = [];
@@ -162,22 +195,22 @@ export default class ViewManager {
 /**
  * @unrestricted
  */
-export class _ContainerWidget extends UI.VBox {
+export class ContainerWidget extends VBox {
   /**
-   * @param {!UI.View} view
+   * @param {!View} view
    */
   constructor(view) {
     super();
     this.element.classList.add('flex-auto', 'view-container', 'overflow-auto');
     this._view = view;
     this.element.tabIndex = -1;
-    UI.ARIAUtils.markAsTabpanel(this.element);
-    UI.ARIAUtils.setAccessibleName(this.element, ls`${view.title()} panel`);
+    ARIAUtils.markAsTabpanel(this.element);
+    ARIAUtils.setAccessibleName(this.element, ls`${view.title()} panel`);
     this.setDefaultFocusedElement(this.element);
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<*>}
    */
   _materialize() {
     if (this._materializePromise) {
@@ -186,7 +219,7 @@ export class _ContainerWidget extends UI.VBox {
     const promises = [];
     // TODO(crbug.com/1006759): Transform to async-await
     promises.push(this._view.toolbarItems().then(toolbarItems => {
-      const toolbarElement = UI.ViewManager._createToolbar(toolbarItems);
+      const toolbarElement = ViewManager._createToolbar(toolbarItems);
       if (toolbarElement) {
         this.element.insertBefore(toolbarElement, this.element.firstChild);
       }
@@ -195,7 +228,7 @@ export class _ContainerWidget extends UI.VBox {
       // Move focus from |this| to loaded |widget| if any.
       const shouldFocus = this.element.hasFocus();
       this.setDefaultFocusedElement(null);
-      this._view[UI.View.widgetSymbol] = widget;
+      this._view[widgetSymbol] = widget;
       widget.show(this.element);
       if (shouldFocus) {
         widget.focus();
@@ -210,6 +243,7 @@ export class _ContainerWidget extends UI.VBox {
    */
   wasShown() {
     this._materialize().then(() => {
+      this._view[widgetSymbol].show(this.element);
       this._wasShownForTest();
     });
   }
@@ -222,34 +256,45 @@ export class _ContainerWidget extends UI.VBox {
 /**
  * @unrestricted
  */
-export class _ExpandableContainerWidget extends UI.VBox {
+export class _ExpandableContainerWidget extends VBox {
   /**
-   * @param {!UI.View} view
+   * @param {!View} view
    */
   constructor(view) {
     super(true);
     this.element.classList.add('flex-none');
     this.registerRequiredCSS('ui/viewContainers.css');
 
-    this._titleElement = createElementWithClass('div', 'expandable-view-title');
-    UI.ARIAUtils.markAsButton(this._titleElement);
-    this._titleExpandIcon = UI.Icon.create('smallicon-triangle-right', 'title-expand-icon');
+    this._titleElement = document.createElement('div');
+    this._titleElement.classList.add('expandable-view-title');
+    ARIAUtils.markAsButton(this._titleElement);
+    this._titleExpandIcon = Icon.create('smallicon-triangle-right', 'title-expand-icon');
     this._titleElement.appendChild(this._titleExpandIcon);
     const titleText = view.title();
     this._titleElement.createTextChild(titleText);
-    UI.ARIAUtils.setAccessibleName(this._titleElement, titleText);
+    ARIAUtils.setAccessibleName(this._titleElement, titleText);
+    ARIAUtils.setExpanded(this._titleElement, false);
     this._titleElement.tabIndex = 0;
     self.onInvokeElement(this._titleElement, this._toggleExpanded.bind(this));
     this._titleElement.addEventListener('keydown', this._onTitleKeyDown.bind(this), false);
     this.contentElement.insertBefore(this._titleElement, this.contentElement.firstChild);
 
-    UI.ARIAUtils.setControls(this._titleElement, this.contentElement.createChild('slot'));
+    ARIAUtils.setControls(this._titleElement, this.contentElement.createChild('slot'));
     this._view = view;
-    view[UI.ViewManager._ExpandableContainerWidget._symbol] = this;
+    view[_ExpandableContainerWidget._symbol] = this;
   }
 
   /**
-   * @return {!Promise}
+   * @override
+   */
+  wasShown() {
+    if (this._widget) {
+      this._materializePromise.then(() => this._widget.show(this.element));
+    }
+  }
+
+  /**
+   * @return {!Promise<*>}
    */
   _materialize() {
     if (this._materializePromise) {
@@ -258,14 +303,14 @@ export class _ExpandableContainerWidget extends UI.VBox {
     // TODO(crbug.com/1006759): Transform to async-await
     const promises = [];
     promises.push(this._view.toolbarItems().then(toolbarItems => {
-      const toolbarElement = UI.ViewManager._createToolbar(toolbarItems);
+      const toolbarElement = ViewManager._createToolbar(toolbarItems);
       if (toolbarElement) {
         this._titleElement.appendChild(toolbarElement);
       }
     }));
     promises.push(this._view.widget().then(widget => {
       this._widget = widget;
-      this._view[UI.View.widgetSymbol] = widget;
+      this._view[widgetSymbol] = widget;
       widget.show(this.element);
     }));
     this._materializePromise = Promise.all(promises);
@@ -273,14 +318,14 @@ export class _ExpandableContainerWidget extends UI.VBox {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise<*>}
    */
   _expand() {
     if (this._titleElement.classList.contains('expanded')) {
       return this._materialize();
     }
     this._titleElement.classList.add('expanded');
-    UI.ARIAUtils.setExpanded(this._titleElement, true);
+    ARIAUtils.setExpanded(this._titleElement, true);
     this._titleExpandIcon.setIconType('smallicon-triangle-down');
     return this._materialize().then(() => this._widget.show(this.element));
   }
@@ -290,7 +335,7 @@ export class _ExpandableContainerWidget extends UI.VBox {
       return;
     }
     this._titleElement.classList.remove('expanded');
-    UI.ARIAUtils.setExpanded(this._titleElement, false);
+    ARIAUtils.setExpanded(this._titleElement, false);
     this._titleExpandIcon.setIconType('smallicon-triangle-right');
     this._materialize().then(() => this._widget.detach());
   }
@@ -335,9 +380,9 @@ _ExpandableContainerWidget._symbol = Symbol('container');
  */
 class _Location {
   /**
-   * @param {!UI.ViewManager} manager
-   * @param {!UI.Widget} widget
-   * @param {function()=} revealCallback
+   * @param {!ViewManager} manager
+   * @param {!Widget} widget
+   * @param {function():void=} revealCallback
    */
   constructor(manager, widget, revealCallback) {
     this._manager = manager;
@@ -346,7 +391,7 @@ class _Location {
   }
 
   /**
-   * @return {!UI.Widget}
+   * @return {!Widget}
    */
   widget() {
     return this._widget;
@@ -362,20 +407,20 @@ class _Location {
 _Location.symbol = Symbol('location');
 
 /**
- * @implements {UI.TabbedViewLocation}
+ * @implements {TabbedViewLocation}
  * @unrestricted
  */
 export class _TabbedLocation extends _Location {
   /**
-   * @param {!UI.ViewManager} manager
-   * @param {function()=} revealCallback
+   * @param {!ViewManager} manager
+   * @param {function():void=} revealCallback
    * @param {string=} location
    * @param {boolean=} restoreSelection
    * @param {boolean=} allowReorder
    * @param {?string=} defaultTab
    */
   constructor(manager, revealCallback, location, restoreSelection, allowReorder, defaultTab) {
-    const tabbedPane = new UI.TabbedPane();
+    const tabbedPane = new TabbedPane();
     if (allowReorder) {
       tabbedPane.setAllowTabReorder(true);
     }
@@ -384,17 +429,20 @@ export class _TabbedLocation extends _Location {
     this._tabbedPane = tabbedPane;
     this._allowReorder = allowReorder;
 
-    this._tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this._tabSelected, this);
-    this._tabbedPane.addEventListener(UI.TabbedPane.Events.TabClosed, this._tabClosed, this);
-    this._closeableTabSetting = Common.settings.createSetting(location + '-closeableTabs', {});
-    this._tabOrderSetting = Common.settings.createSetting(location + '-tabOrder', {});
-    this._tabbedPane.addEventListener(UI.TabbedPane.Events.TabOrderChanged, this._persistTabOrder, this);
+    this._tabbedPane.addEventListener(TabbedPaneEvents.TabSelected, this._tabSelected, this);
+    this._tabbedPane.addEventListener(TabbedPaneEvents.TabClosed, this._tabClosed, this);
+    // Note: go via self.Common for globally-namespaced singletons.
+    this._closeableTabSetting = Common.Settings.Settings.instance().createSetting(location + '-closeableTabs', {});
+    // Note: go via self.Common for globally-namespaced singletons.
+    this._tabOrderSetting = Common.Settings.Settings.instance().createSetting(location + '-tabOrder', {});
+    this._tabbedPane.addEventListener(TabbedPaneEvents.TabOrderChanged, this._persistTabOrder, this);
     if (restoreSelection) {
-      this._lastSelectedTabSetting = Common.settings.createSetting(location + '-selectedTab', '');
+      // Note: go via self.Common for globally-namespaced singletons.
+      this._lastSelectedTabSetting = Common.Settings.Settings.instance().createSetting(location + '-selectedTab', '');
     }
     this._defaultTab = defaultTab;
 
-    /** @type {!Map.<string, !UI.View>} */
+    /** @type {!Map.<string, !View>} */
     this._views = new Map();
 
     if (location) {
@@ -404,7 +452,7 @@ export class _TabbedLocation extends _Location {
 
   /**
    * @override
-   * @return {!UI.Widget}
+   * @return {!Widget}
    */
   widget() {
     return this._tabbedPane;
@@ -412,7 +460,7 @@ export class _TabbedLocation extends _Location {
 
   /**
    * @override
-   * @return {!UI.TabbedPane}
+   * @return {!TabbedPane}
    */
   tabbedPane() {
     return this._tabbedPane;
@@ -420,10 +468,10 @@ export class _TabbedLocation extends _Location {
 
   /**
    * @override
-   * @return {!UI.ToolbarMenuButton}
+   * @return {!ToolbarMenuButton}
    */
   enableMoreTabsButton() {
-    const moreTabsButton = new UI.ToolbarMenuButton(this._appendTabsToMenu.bind(this));
+    const moreTabsButton = new ToolbarMenuButton(this._appendTabsToMenu.bind(this));
     this._tabbedPane.leftToolbar().appendToolbarItem(moreTabsButton);
     this._tabbedPane.disableOverflowMenu();
     return moreTabsButton;
@@ -440,7 +488,7 @@ export class _TabbedLocation extends _Location {
       const persistedOrders = this._tabOrderSetting.get();
       const orders = new Map();
       for (const view of views) {
-        orders.set(view.viewId(), persistedOrders[view.viewId()] || (++i) * UI.ViewManager._TabbedLocation.orderStep);
+        orders.set(view.viewId(), persistedOrders[view.viewId()] || (++i) * _TabbedLocation.orderStep);
       }
       views.sort((a, b) => orders.get(a.viewId()) - orders.get(b.viewId()));
     }
@@ -466,31 +514,40 @@ export class _TabbedLocation extends _Location {
   }
 
   /**
-   * @param {!UI.ContextMenu} contextMenu
+   * @param {!ContextMenu} contextMenu
    */
   _appendTabsToMenu(contextMenu) {
     const views = Array.from(this._views.values());
     views.sort((viewa, viewb) => viewa.title().localeCompare(viewb.title()));
     for (const view of views) {
-      const title = Common.UIString(view.title());
+      const title = Common.UIString.UIString(view.title());
+
+      if (view.viewId() === 'issues-pane') {
+        contextMenu.defaultSection().appendItem(title, () => {
+          Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.HamburgerMenu);
+          this.showView(view, undefined, true);
+        });
+        continue;
+      }
+
       contextMenu.defaultSection().appendItem(title, this.showView.bind(this, view, undefined, true));
     }
   }
 
   /**
-   * @param {!UI.View} view
+   * @param {!View} view
    * @param {number=} index
    */
   _appendTab(view, index) {
     this._tabbedPane.appendTab(
-        view.viewId(), view.title(), new UI.ViewManager._ContainerWidget(view), undefined, false,
+        view.viewId(), view.title(), new ContainerWidget(view), undefined, false,
         view.isCloseable() || view.isTransient(), index);
   }
 
   /**
    * @override
-   * @param {!UI.View} view
-   * @param {?UI.View=} insertBefore
+   * @param {!View} view
+   * @param {?View=} insertBefore
    */
   appendView(view, insertBefore) {
     if (this._tabbedPane.hasTab(view.viewId())) {
@@ -537,11 +594,11 @@ export class _TabbedLocation extends _Location {
 
   /**
    * @override
-   * @param {!UI.View} view
-   * @param {?UI.View=} insertBefore
+   * @param {!View} view
+   * @param {?View=} insertBefore
    * @param {boolean=} userGesture
    * @param {boolean=} omitFocus
-   * @return {!Promise}
+   * @return {!Promise<*>}
    */
   showView(view, insertBefore, userGesture, omitFocus) {
     this.appendView(view, insertBefore);
@@ -549,12 +606,12 @@ export class _TabbedLocation extends _Location {
     if (!omitFocus) {
       this._tabbedPane.focus();
     }
-    const widget = /** @type {!UI.ViewManager._ContainerWidget} */ (this._tabbedPane.tabView(view.viewId()));
+    const widget = /** @type {!ContainerWidget} */ (this._tabbedPane.tabView(view.viewId()));
     return widget._materialize();
   }
 
   /**
-   * @param {!UI.View} view
+   * @param {!View} view
    * @override
    */
   removeView(view) {
@@ -569,7 +626,7 @@ export class _TabbedLocation extends _Location {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _tabSelected(event) {
     const tabId = /** @type {string} */ (event.data.tabId);
@@ -579,7 +636,7 @@ export class _TabbedLocation extends _Location {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _tabClosed(event) {
     const id = /** @type {string} */ (event.data['tabId']);
@@ -595,7 +652,7 @@ export class _TabbedLocation extends _Location {
     const tabIds = this._tabbedPane.tabIds();
     const tabOrders = {};
     for (let i = 0; i < tabIds.length; i++) {
-      tabOrders[tabIds[i]] = (i + 1) * UI.ViewManager._TabbedLocation.orderStep;
+      tabOrders[tabIds[i]] = (i + 1) * _TabbedLocation.orderStep;
     }
 
     const oldTabOrder = this._tabOrderSetting.get();
@@ -616,21 +673,21 @@ export class _TabbedLocation extends _Location {
 _TabbedLocation.orderStep = 10;  // Keep in sync with descriptors.
 
 /**
- * @implements {UI.ViewLocation}
+ * @implements {ViewLocation}
  * @unrestricted
  */
 class _StackLocation extends _Location {
   /**
-   * @param {!UI.ViewManager} manager
-   * @param {function()=} revealCallback
+   * @param {!ViewManager} manager
+   * @param {function():void=} revealCallback
    * @param {string=} location
    */
   constructor(manager, revealCallback, location) {
-    const vbox = new UI.VBox();
+    const vbox = new VBox();
     super(manager, vbox, revealCallback);
     this._vbox = vbox;
 
-    /** @type {!Map<string, !UI.ViewManager._ExpandableContainerWidget>} */
+    /** @type {!Map<string, !_ExpandableContainerWidget>} */
     this._expandableContainers = new Map();
 
     if (location) {
@@ -640,8 +697,8 @@ class _StackLocation extends _Location {
 
   /**
    * @override
-   * @param {!UI.View} view
-   * @param {?UI.View=} insertBefore
+   * @param {!View} view
+   * @param {?View=} insertBefore
    */
   appendView(view, insertBefore) {
     const oldLocation = view[_Location.symbol];
@@ -653,10 +710,10 @@ class _StackLocation extends _Location {
     if (!container) {
       view[_Location.symbol] = this;
       this._manager._views.set(view.viewId(), view);
-      container = new UI.ViewManager._ExpandableContainerWidget(view);
+      container = new _ExpandableContainerWidget(view);
       let beforeElement = null;
       if (insertBefore) {
-        const beforeContainer = insertBefore[UI.ViewManager._ExpandableContainerWidget._symbol];
+        const beforeContainer = insertBefore[_ExpandableContainerWidget._symbol];
         beforeElement = beforeContainer ? beforeContainer.element : null;
       }
       container.show(this._vbox.contentElement, beforeElement);
@@ -666,9 +723,9 @@ class _StackLocation extends _Location {
 
   /**
    * @override
-   * @param {!UI.View} view
-   * @param {?UI.View=} insertBefore
-   * @return {!Promise}
+   * @param {!View} view
+   * @param {?View=} insertBefore
+   * @return {!Promise<*>}
    */
   showView(view, insertBefore) {
     this.appendView(view, insertBefore);
@@ -677,7 +734,7 @@ class _StackLocation extends _Location {
   }
 
   /**
-   * @param {!UI.View} view
+   * @param {!View} view
    * @override
    */
   removeView(view) {
@@ -702,26 +759,3 @@ class _StackLocation extends _Location {
     }
   }
 }
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/**
- * @type {!UI.ViewManager}
- */
-UI.viewManager;
-
-/** @constructor */
-UI.ViewManager = ViewManager;
-
-/** @constructor */
-UI.ViewManager._ContainerWidget = _ContainerWidget;
-
-/** @constructor */
-UI.ViewManager._ExpandableContainerWidget = _ExpandableContainerWidget;
-
-/** @constructor */
-UI.ViewManager._TabbedLocation = _TabbedLocation;

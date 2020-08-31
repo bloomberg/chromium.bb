@@ -45,17 +45,6 @@ Event.prototype.isMetaOrCtrlForTest;
 Event.prototype.code;
 
 /**
- * TODO(luoe): MouseEvent properties movementX and movementY from the
- * PointerLock API are not yet standard. Once they are included in
- * Closure Compiler, these custom externs can be removed.
- */
-/** @type {number} */
-MouseEvent.prototype.movementX;
-
-/** @type {number} */
-MouseEvent.prototype.movementY;
-
-/**
  * @type {number}
  */
 KeyboardEvent.DOM_KEY_LOCATION_NUMPAD;
@@ -68,28 +57,11 @@ KeyboardEvent.DOM_KEY_LOCATION_NUMPAD;
  */
 Array.prototype.remove = function(value, onlyFirst) {};
 /**
- * @param {!Array.<!T>} array
- * @this {Array.<!T>}
- * @template T
- */
-Array.prototype.pushAll = function(array) {};
-/**
  * @return {!Object.<string, boolean>}
  * @this {Array.<T>}
  * @template T
  */
 Array.prototype.keySet = function() {};
-/**
- * @param {number} index
- * @return {!Array.<!T>}
- * @this {Array.<T>}
- * @template T
- */
-Array.prototype.rotate = function(index) {};
-/**
- * @this {Array.<number>}
- */
-Array.prototype.sortNumbers = function() {};
 /**
  * @param {!S} object
  * @param {function(!S,!T):number=} comparator
@@ -193,18 +165,6 @@ const bigint = null;
 /** @typedef {Array|NodeList|Arguments|{length: number}} */
 let ArrayLike;
 
-// File System API
-/**
- * @constructor
- */
-function DOMFileSystem() {
-}
-
-/**
- * @type {DirectoryEntry}
- */
-DOMFileSystem.prototype.root = null;
-
 /**
  * @type {*}
  */
@@ -273,7 +233,7 @@ DevToolsHost.isHostedMode = function() {};
 /**
  * @param {string} fileSystemId
  * @param {string} registeredName
- * @return {?DOMFileSystem}
+ * @return {?FileSystem}
  */
 DevToolsHost.isolatedFileSystem = function(fileSystemId, registeredName) {};
 
@@ -768,6 +728,8 @@ ESTree.Node = function() {
   /** @type {string} */
   this.type;
   /** @type {(!ESTree.Node|undefined)} */
+  this.key;
+  /** @type {(!ESTree.Node|undefined)} */
   this.body;
   /** @type {(!Array.<!ESTree.Node>|undefined)} */
   this.declarations;
@@ -867,14 +829,6 @@ const createElement = function(tagName, customElementType) {};
 const createTextNode = function(data) {};
 
 /**
- * @param {string} elementName
- * @param {string=} className
- * @param {string=} customElementType
- * @return {!Element}
- */
-const createElementWithClass = function(elementName, className, customElementType) {};
-
-/**
  * @param {string} childType
  * @param {string=} className
  * @return {!Element}
@@ -905,7 +859,7 @@ const isEnterOrSpaceKey = function(event) {};
 const isEscKey = function(event) {};
 
 /**
- * @param {!ExtensionDescriptor} extensionInfo
+ * @param {!{startPage: string, name: string, exposeExperimentalAPIs: boolean}} extensionInfo
  * @param {string} inspectedTabId
  * @param {string} themeName
  * @param {!Array<number>} keysToForward
@@ -937,13 +891,6 @@ const createSearchRegex = function(query, caseSensitive, isRegex) {};
 const createPlainTextSearchRegex = function(query, flags) {};
 
 /**
- * @param {!RegExp} regex
- * @param {string} content
- * @return {number}
- */
-const countRegexMatches = function(regex, content) {};
-
-/**
  * @param {number} spacesCount
  * @return {string}
  */
@@ -955,12 +902,6 @@ const spacesPadding = function(spacesCount) {};
  * @return {string}
  */
 const numberToStringWithSpacesPadding = function(value, symbolsCount) {};
-
-/**
- * @param {string} url
- * @return {!Promise.<string>}
- */
-const loadXHR = function(url) {};
 
 /**
  * @param {*} value
@@ -985,6 +926,12 @@ const singleton = function(constructorFunction) {};
  * @return {number}
  */
 const base64ToSize = function(content) {};
+
+/**
+ * @param {?string} input
+ * @return {string}
+ */
+const unescapeCssString = function(input) {};
 
 /**
  * @constructor
@@ -1189,22 +1136,15 @@ DetailsRenderer.SourceLocationDetailsJSON;
  */
 DetailsRenderer.OpportunitySummary;
 
-const Lighthouse = {};
-
-Lighthouse.ReportGenerator = {};
-
-/**
- * @param {!ReportRenderer.ReportJSON} lhr
- * @return {string}
- */
-Lighthouse.ReportGenerator.generateReportHtml;
-
-/**
- * @param {string} source
- * @param {Array<{search: string, replacement: string}>} replacements
- * @return {string}
- */
-Lighthouse.ReportGenerator.replaceStrings;
+const LighthouseReportGenerator = class {
+  /**
+   * @param {!ReportRenderer.ReportJSON} lhr
+   * @return {string}
+   */
+  generateReportHtml(lhr) {
+    return '';
+  }
+};
 
 /** @interface */
 class InspectorFrontendHostAPI {
@@ -1327,7 +1267,7 @@ class InspectorFrontendHostAPI {
   /**
    * @param {string} fileSystemId
    * @param {string} registeredName
-   * @return {?DOMFileSystem}
+   * @return {?FileSystem}
    */
   isolatedFileSystem(fileSystemId, registeredName) {
   }
@@ -1514,7 +1454,11 @@ InspectorFrontendHostAPI.ContextMenuDescriptor;
 /** @typedef
 {{
     statusCode: number,
-    headers: (!Object.<string, string>|undefined)
+    headers: (!Object.<string, string>|undefined),
+    netError: (number|undefined),
+    netErrorName: (string|undefined),
+    urlValid: (boolean|undefined),
+    messageOverride: (string|undefined)
 }} */
 InspectorFrontendHostAPI.LoadNetworkResourceResult;
 
@@ -1540,5 +1484,55 @@ class ServicePort {
    * @return {!Promise<boolean>}
    */
   close() {
+  }
+}
+
+const fabric = {};
+
+class AnchorBox {
+  /**
+   * @param {number=} x
+   * @param {number=} y
+   * @param {number=} width
+   * @param {number=} height
+   */
+  constructor(x, y, width, height) {
+    /** @type {number} */
+    this.x;
+    /** @type {number} */
+    this.y;
+    /** @type {number} */
+    this.width;
+    /** @type {number} */
+    this.height;
+  }
+
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @return {boolean}
+   */
+  contains(x, y) {
+  }
+
+  /**
+   * @param {!AnchorBox} box
+   * @return {!AnchorBox}
+   */
+  relativeTo(box) {
+  }
+
+  /**
+   * @param {!Element} element
+   * @return {!AnchorBox}
+   */
+  relativeToElement(element) {
+  }
+
+  /**
+   * @param {?AnchorBox} anchorBox
+   * @return {boolean}
+   */
+  equals(anchorBox) {
   }
 }

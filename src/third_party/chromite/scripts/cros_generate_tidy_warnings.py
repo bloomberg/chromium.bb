@@ -9,11 +9,16 @@ from __future__ import print_function
 
 import os
 import shutil
+import sys
 
 from chromite.lib import cros_build_lib
 from chromite.lib import commandline
 from chromite.lib import osutils
 from chromite.lib import sudo
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 DEFAULT_NAME = 'clang_tidy_warnings.tar.xz'
 TIDY_WARNINGS = 'clang_tidy_warnings'

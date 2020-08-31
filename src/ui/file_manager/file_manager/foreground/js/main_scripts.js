@@ -89,6 +89,7 @@
 //
 // <include src="constants.js">
 // <include src="web_store_utils.js">
+// <include src="ui/multi_menu.js">
 // <include src="ui/combobutton.js">
 // <include src="ui/commandbutton.js">
 // <include src="ui/file_manager_dialog_base.js">
@@ -155,6 +156,7 @@
 // <include src="providers_model.js">
 // <include src="ui/actions_submenu.js">
 // <include src="ui/banners.js">
+// <include src="ui/breadcrumb.js">
 // <include src="ui/default_task_dialog.js">
 // <include src="ui/dialog_footer.js">
 // <include src="ui/directory_tree.js">
@@ -175,7 +177,6 @@
 // <include src="ui/import_crostini_image_dialog.js">
 // <include src="ui/list_container.js">
 // <include src="ui/location_line.js">
-// <include src="ui/multi_menu.js">
 // <include src="ui/progress_center_panel.js">
 // <include src="ui/providers_menu.js">
 // <include src="ui/search_box.js">

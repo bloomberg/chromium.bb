@@ -15,15 +15,7 @@ struct ResourceRequest;
 
 namespace debug {
 
-class ScopedOriginCrashKey : public base::debug::ScopedCrashKeyString {
- public:
-  ScopedOriginCrashKey(base::debug::CrashKeyString* crash_key,
-                       const base::Optional<url::Origin>& value);
-  ~ScopedOriginCrashKey();
-
-  ScopedOriginCrashKey(const ScopedOriginCrashKey&) = delete;
-  ScopedOriginCrashKey& operator=(const ScopedOriginCrashKey&) = delete;
-};
+base::debug::CrashKeyString* GetRequestInitiatorSiteLockCrashKey();
 
 class ScopedRequestCrashKeys {
  public:
@@ -35,7 +27,7 @@ class ScopedRequestCrashKeys {
 
  private:
   base::debug::ScopedCrashKeyString url_;
-  ScopedOriginCrashKey request_initiator_;
+  url::debug::ScopedOriginCrashKey request_initiator_;
 };
 
 }  // namespace debug

@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/test/task_environment.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_package/mock_web_bundle_reader_factory.h"
 #include "content/browser/web_package/web_bundle_reader.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -64,6 +64,13 @@ class WebBundleURLLoaderFactoryTest : public testing::Test {
     // Set some useful default values for |resource_request_|.
     resource_request_.url = primary_url_;
     resource_request_.method = net::HttpRequestHeaders::kGetMethod;
+  }
+
+  void TearDown() override {
+    // Shut down the loader factory and allow its cleanup tasks in the
+    // ThreadPool to run so that temp dirs can be deleted.
+    loader_factory_.reset();
+    task_environment_.RunUntilIdle();
   }
 
   // This function creates a URLLoader with |resource_request_|, and simulates
@@ -158,7 +165,7 @@ class WebBundleURLLoaderFactoryTest : public testing::Test {
   network::ResourceRequest resource_request_;
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<MockWebBundleReaderFactory> mock_factory_;
   std::unique_ptr<WebBundleURLLoaderFactory> loader_factory_;
   WebBundleReader* reader_;

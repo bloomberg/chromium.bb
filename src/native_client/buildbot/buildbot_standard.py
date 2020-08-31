@@ -78,15 +78,13 @@ def ArchiveCoverage(context):
   print('@@@STEP_LINK@view@%s@@@' % link_url)
 
 
-def DoGNBuild(status, context, force_clang=False, force_arch=None):
+def DoGNBuild(status, context, force_arch=None):
   if context['no_gn']:
     return False
 
-  use_clang = force_clang or context['clang']
-
   # Linux builds (or cross-builds) for every target.  Mac builds for
   # x86-32 and x86-64, and can build untrusted code for others.
-  if context.Windows() and context['arch'] != '64':
+  if context.Windows() and context['arch'] != '64' and force_arch == None:
     # The GN scripts for MSVC barf for a target_cpu other than x86 or x64
     # even if we only try to build the untrusted code.  Windows does build
     # for both x86-32 and x86-64 targets, but the GN Windows MSVC toolchain
@@ -115,8 +113,6 @@ def DoGNBuild(status, context, force_clang=False, force_arch=None):
                             '--arch=' + sysroot_arch])
 
   out_suffix = '_' + arch
-  if force_clang:
-    out_suffix += '_clang'
   gn_out = '../out' + out_suffix
 
   def BoolFlag(cond):
@@ -137,12 +133,6 @@ def DoGNBuild(status, context, force_clang=False, force_arch=None):
       'use_clang_newlib=' + gn_newlib,
   ]
 
-  # is_clang is the GN default for Mac and Linux, so
-  # don't override that on "non-clang" bots, but do set
-  # it explicitly for an explicitly "clang" bot.
-  if use_clang:
-    gn_gen_args.append('is_clang=true')
-
   # The ASan runtime requires libstdc++, and the version on the bots is older
   # than the version in the sysroot, so ASan-built sel_ldr from the sysroot
   # won't run. For now we disable the sysroot (this matches the SCons build)
@@ -157,22 +147,13 @@ def DoGNBuild(status, context, force_clang=False, force_arch=None):
 
   # Mac can build the untrusted code for machines Mac doesn't
   # support, but the GN files will get confused in a couple of ways.
+  # Just don't do the build, as there are no current Chrome configurations
+  # for non-CrOS ARM.
   if context.Mac() and arch not in ('32', '64'):
-    gn_gen_args += [
-        # Subtle GN issues mean that $host_toolchain context will
-        # wind up seeing current_cpu=="arm" when target_os is left
-        # to default to "mac", because host_toolchain matches
-        # _default_toolchain and toolchain_args() does not apply to
-        # the default toolchain.  Using target_os="ios" ensures that
-        # the default toolchain is something different from
-        # host_toolchain and thus that toolchain's toolchain_args()
-        # block will be applied and set current_cpu correctly.
-        'target_os="ios"',
-        # build/config/ios/ios_sdk.gni will try to find some
-        # XCode magic that won't exist.  This GN flag disables
-        # the problematic code.
-        'ios_enable_code_signing=false',
-        ]
+    return False
+
+  if context.Mac():
+    gn_gen_args += ['use_system_xcode=false']
 
   gn_out_trusted = gn_out
   gn_out_irt = os.path.join(gn_out, 'irt_' + gn_arch_name)
@@ -222,6 +203,9 @@ def DoGNTest(status, context, using_gn, gn_perf_prefix, gn_step_suffix):
   if context.Linux():
     gn_extra.append('force_bootstrap=' +
                     os.path.join(gn_out_trusted, 'nacl_helper_bootstrap'))
+  elif context.Windows():
+    gn_extra.append('force_tls_edit=' +
+                    os.path.join(gn_out_trusted, 'tls_edit.exe'))
   def RunGNTests(step_suffix, extra_scons_modes, suite_suffix):
     for suite in ['small_tests', 'medium_tests', 'large_tests']:
       with Step(suite + step_suffix + gn_step_suffix, status,
@@ -333,21 +317,19 @@ def BuildScript(status, context):
 
   # Make sure our GN build is working.
   using_gn = DoGNBuild(status, context)
-  using_gn_clang = False
-  if (context.Windows() and
-      not context['clang'] and
-      context['arch'] in ('32', '64')):
-    # On Windows, do a second GN build with is_clang=true.
-    using_gn_clang = DoGNBuild(status, context, True)
 
-  if context.Windows() and context['arch'] == '64':
-    # On Windows, do a second pair of GN builds for 32-bit.  The 32-bit
-    # bots can't do GN builds at all, because the toolchains GN uses don't
-    # support 32-bit hosts.  The 32-bit binaries built here cannot be
-    # tested on a 64-bit host, but compile time issues can be caught.
-    DoGNBuild(status, context, False, '32')
-    if not context['clang']:
-      DoGNBuild(status, context, True, '32')
+  if context.Windows():
+    if context['arch'] == '64':
+      # On Windows, do a second GN build for 32-bit.  The 32-bit
+      # bots can't do GN builds at all, because the toolchains GN uses don't
+      # support 32-bit hosts.  The 32-bit binaries built here cannot be
+      # tested on a 64-bit host, but compile time issues can be caught.
+      DoGNBuild(status, context, '32')
+    elif using_gn == False:
+      # The GN build we want is not supported (e.g. ARM), then force-substitute
+      # a host arch that will run on the buildbot, so we can at last use
+      # tls_edit.exe to test the Scons build
+      using_gn = DoGNBuild(status, context, '64')
 
   # Just build both bitages of validator and test for --validator mode.
   if context['validator']:
@@ -394,7 +376,7 @@ def BuildScript(status, context):
       if context.Linux():
         cc = 'CC=../../third_party/llvm-build/Release+Asserts/bin/clang'
         cxx = 'CXX=../../third_party/llvm-build/Release+Asserts/bin/clang++'
-        flags = ''
+        flags = ' -Wno-non-c-typedef-for-linkage'
         if context['arch'] == '32':
           flags += ' -m32'
           sysroot_arch = 'i386'
@@ -428,8 +410,9 @@ def BuildScript(status, context):
               cwd='breakpad-out')
 
   # The main compile step.
-  with Step('scons_compile', status):
-    SCons(context, parallel=True, args=[])
+  if not context['no_scons']:
+    with Step('scons_compile', status):
+      SCons(context, parallel=True, args=[])
 
   if context['coverage']:
     with Step('collect_coverage', status, halt_on_fail=True):
@@ -447,7 +430,7 @@ def BuildScript(status, context):
     return
 
   ### BEGIN tests ###
-  if not context['use_glibc']:
+  if not context['use_glibc'] and not context['no_scons']:
     # Bypassing the IRT with glibc is not a supported case,
     # and in fact does not work at all with the new glibc.
     with Step('small_tests', status, halt_on_fail=False):
@@ -458,22 +441,33 @@ def BuildScript(status, context):
       SCons(context, args=['large_tests'])
 
   with Step('compile IRT tests', status):
-    SCons(context, parallel=True, mode=['nacl_irt_test'])
+    args = []
+    if context.Windows():
+      # Windows can't build trusted code. Using force_tls_edit prevents
+      # that and allows tls_edit.exe to be used to build the tests.
+      # See https://bugs.chromium.org/p/nativeclient/issues/detail?id=4408
+      tls_edit = os.path.join(using_gn[0], 'tls_edit.exe')
+      args=['force_tls_edit=' + tls_edit]
+    SCons(context, parallel=True, mode=['nacl,nacl_irt_test'], args=args)
 
-  with Step('small_tests under IRT', status, halt_on_fail=False):
-    SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
-          args=['small_tests_irt'])
-  with Step('medium_tests under IRT', status, halt_on_fail=False):
-    SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
-          args=['medium_tests_irt'])
-  with Step('large_tests under IRT', status, halt_on_fail=False):
-    SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
-          args=['large_tests_irt'])
+  if not context['no_scons']:
+    with Step('small_tests under IRT', status, halt_on_fail=False):
+      SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
+            args=['small_tests_irt'])
+    with Step('medium_tests under IRT', status, halt_on_fail=False):
+      SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
+            args=['medium_tests_irt'])
+    with Step('large_tests under IRT', status, halt_on_fail=False):
+      SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
+            args=['large_tests_irt'])
   ### END tests ###
 
+  if context.Windows() and context['arch'] != '64':
+    # Currently only the only Windows bots are 64-bit, and they can't run the
+    # 32-bit sandbox.
+    return
   ### BEGIN GN tests ###
   DoGNTest(status, context, using_gn, 'gn_', ' (GN)')
-  DoGNTest(status, context, using_gn_clang, 'gn_clang_', '(GN, Clang)')
   ### END GN tests ###
 
 
@@ -484,7 +478,8 @@ def Main():
   ParseStandardCommandLine(context)
   SetupContextVars(context)
   if context.Windows():
-    SetupWindowsEnvironment(context)
+    if not context['no_scons']:
+      SetupWindowsEnvironment(context)
   elif context.Linux():
     if not context['android']:
       SetupLinuxEnvironment(context)

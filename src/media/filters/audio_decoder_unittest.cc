@@ -247,7 +247,12 @@ class AudioDecoderTest
   void InitializeDecoderWithResult(const AudioDecoderConfig& config,
                                    bool success) {
     decoder_->Initialize(
-        config, nullptr, NewExpectedBoolCB(success),
+        config, nullptr,
+        base::BindOnce(
+            [](bool success, Status status) {
+              EXPECT_EQ(status.is_ok(), success);
+            },
+            success),
         base::Bind(&AudioDecoderTest::OnDecoderOutput, base::Unretained(this)),
         base::DoNothing());
     base::RunLoop().RunUntilIdle();
@@ -279,8 +284,8 @@ class AudioDecoderTest
   void Reset() {
     ASSERT_FALSE(pending_reset_);
     pending_reset_ = true;
-    decoder_->Reset(
-        base::Bind(&AudioDecoderTest::ResetFinished, base::Unretained(this)));
+    decoder_->Reset(base::BindOnce(&AudioDecoderTest::ResetFinished,
+                                   base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
     ASSERT_FALSE(pending_reset_);
   }

@@ -16,10 +16,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -40,19 +40,14 @@ class TimeDelta;
 
 namespace net {
 class HttpRequestHeaders;
-class ProxyList;
 }  // namespace net
 
 namespace data_reduction_proxy {
 
 class DataReductionProxyCompressionStats;
-class DataReductionProxyConfig;
 class DataReductionProxyConfigServiceClient;
-class DataReductionProxyConfigurator;
 class DataReductionProxyRequestOptions;
-class DataReductionProxyServer;
 class DataReductionProxySettings;
-class NetworkPropertiesManager;
 
 // Contains and initializes all Data Reduction Proxy objects that have a
 // lifetime based on the UI thread.
@@ -60,8 +55,7 @@ class DataReductionProxyService
     : public data_use_measurement::DataUseMeasurement::ServicesDataUseObserver,
       public network::NetworkQualityTracker::EffectiveConnectionTypeObserver,
       public network::NetworkQualityTracker::RTTAndThroughputEstimatesObserver,
-      public network::NetworkConnectionTracker::NetworkConnectionObserver,
-      public mojom::DataReductionProxy {
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // The caller must ensure that |settings|, |prefs|, |request_context|, and
   // |io_task_runner| remain alive for the lifetime of the
@@ -119,9 +113,9 @@ class DataReductionProxyService
   virtual void SetProxyPrefs(bool enabled, bool at_startup);
 
   void LoadHistoricalDataUsage(
-      const HistoricalDataUsageCallback& load_data_usage_callback);
+      HistoricalDataUsageCallback load_data_usage_callback);
   void LoadCurrentDataUsageBucket(
-      const LoadCurrentDataUsageCallback& load_current_data_usage_callback);
+      LoadCurrentDataUsageCallback load_current_data_usage_callback);
   void StoreCurrentDataUsageBucket(std::unique_ptr<DataUsageBucket> current);
   void DeleteHistoricalDataUsage();
   void DeleteBrowsingHistory(const base::Time& start, const base::Time& end);
@@ -129,11 +123,6 @@ class DataReductionProxyService
   void SetSettingsForTesting(DataReductionProxySettings* settings) {
     settings_ = settings;
   }
-
-  // Notifies |this| that the user has requested to clear the browser
-  // cache. This method is not called if only a subset of site entries are
-  // cleared.
-  void OnCacheCleared(const base::Time start, const base::Time end);
 
   // When triggering previews, prevent long term black list rules. Virtual for
   // testing.
@@ -149,20 +138,17 @@ class DataReductionProxyService
   // Sends the given |headers| to |DataReductionProxySettings|.
   void UpdateProxyRequestHeaders(const net::HttpRequestHeaders& headers);
 
+  // Sends the given |prefetch_proxies| to |DataReductionProxySettings|.
+  void UpdatePrefetchProxyHosts(const std::vector<GURL>& prefetch_proxies);
+
   // Adds a config client that can be used to update Data Reduction Proxy
   // settings.
   void AddCustomProxyConfigClient(
       mojo::Remote<network::mojom::CustomProxyConfigClient> config_client);
 
-  // mojom::DataReductionProxy implementation:
-  void MarkProxiesAsBad(base::TimeDelta bypass_duration,
-                        const net::ProxyList& bad_proxies,
-                        MarkProxiesAsBadCallback callback) override;
-  void AddThrottleConfigObserver(
-      mojo::PendingRemote<mojom::DataReductionProxyThrottleConfigObserver>
-          observer) override;
-  void Clone(
-      mojo::PendingReceiver<mojom::DataReductionProxy> receiver) override;
+  // Returns the percentage of data savings estimate provided by save-data for
+  // an origin.
+  double GetSaveDataSavingsPercentEstimate(const std::string& origin) const;
 
   // Accessor methods.
   DataReductionProxyCompressionStats* compression_stats() const {
@@ -174,11 +160,6 @@ class DataReductionProxyService
     return url_loader_factory_->Clone();
   }
 
-  DataReductionProxyConfigurator* configurator() const {
-    return configurator_.get();
-  }
-
-  DataReductionProxyConfig* config() const { return config_.get(); }
 
   DataReductionProxyConfigServiceClient* config_client() const {
     return config_client_.get();
@@ -201,9 +182,7 @@ class DataReductionProxyService
   }
 
   void SetDependenciesForTesting(
-      std::unique_ptr<DataReductionProxyConfig> config,
       std::unique_ptr<DataReductionProxyRequestOptions> request_options,
-      std::unique_ptr<DataReductionProxyConfigurator> configurator,
       std::unique_ptr<DataReductionProxyConfigServiceClient> config_client);
 
  private:
@@ -232,23 +211,6 @@ class DataReductionProxyService
 
   // Called when the list of proxies changes.
   void OnProxyConfigUpdated();
-
-  // Should be called whenever there is a possible change to the custom proxy
-  // config.
-  void UpdateCustomProxyConfig();
-
-  // Should be called whenever there is a possible change to the throttle
-  // config.
-  void UpdateThrottleConfig();
-
-  // Creates a config that can be sent to the DataReductionProxyThrottleManager.
-  mojom::DataReductionProxyThrottleConfigPtr CreateThrottleConfig() const;
-
-  // Creates a config using |proxies_for_http| that can be sent to the
-  // NetworkContext.
-  network::mojom::CustomProxyConfigPtr CreateCustomProxyConfig(
-      bool is_warmup_url,
-      const std::vector<DataReductionProxyServer>& proxies_for_http) const;
 
   // Stores a serialized Data Reduction Proxy configuration in preferences
   // storage.
@@ -288,11 +250,6 @@ class DataReductionProxyService
   // The type of Data Reduction Proxy client.
   const Client client_;
 
-  // Parameters including DNS names and allowable configurations.
-  std::unique_ptr<DataReductionProxyConfig> config_;
-
-  // Setter of the Data Reduction Proxy-specific proxy configuration.
-  std::unique_ptr<DataReductionProxyConfigurator> configurator_;
 
   // Constructs credentials suitable for authenticating the client.
   std::unique_ptr<DataReductionProxyRequestOptions> request_options_;
@@ -304,19 +261,12 @@ class DataReductionProxyService
   // The production channel of this build.
   const std::string channel_;
 
-  // Created on the UI thread. Guaranteed to be destroyed on IO thread if the
-  // IO thread is still available at the time of destruction. If the IO thread
-  // is unavailable, then the destruction will happen on the UI thread.
-  std::unique_ptr<NetworkPropertiesManager> network_properties_manager_;
+  // Dictionary of save-data savings estimates by origin.
+  const base::Optional<base::Value> save_data_savings_estimate_dict_;
 
   // The set of clients that will get updates about changes to the proxy config.
   mojo::RemoteSet<network::mojom::CustomProxyConfigClient>
       proxy_config_clients_;
-
-  mojo::ReceiverSet<mojom::DataReductionProxy> drp_receivers_;
-
-  mojo::RemoteSet<mojom::DataReductionProxyThrottleConfigObserver>
-      drp_throttle_config_observers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

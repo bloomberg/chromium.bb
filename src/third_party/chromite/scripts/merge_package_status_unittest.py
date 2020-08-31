@@ -16,6 +16,9 @@ from chromite.lib import table
 from chromite.scripts import merge_package_status as mps
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 # pylint: disable=protected-access
 
 

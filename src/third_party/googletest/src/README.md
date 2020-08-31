@@ -9,8 +9,8 @@
 
 #### Release 1.10.x
 
-[Release 1.10.x](https://github.com/google/googletest/releases/tag/v1.10.x) is
-now available.
+[Release 1.10.x](https://github.com/google/googletest/releases/tag/release-1.10.0)
+is now available.
 
 #### Coming Soon
 
@@ -101,6 +101,13 @@ runs tests from your binary in parallel to provide significant speed-up.
 [GoogleTest Adapter](https://marketplace.visualstudio.com/items?itemName=DavidSchuldenfrei.gtest-adapter)
 is a VS Code extension allowing to view Google Tests in a tree view, and
 run/debug your tests.
+
+[Catch2 and Google Test Explorer](https://github.com/matepek/vscode-catch2-test-adapter)
+is a VS Code extension allowing to view Google Tests in a tree view, and
+run/debug your tests.
+
+[Cornichon](https://pypi.org/project/cornichon/) is a small Gherkin DSL parser
+that generates stub code for Google Test.
 
 ## Requirements
 

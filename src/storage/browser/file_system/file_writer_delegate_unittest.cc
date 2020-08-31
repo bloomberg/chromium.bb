@@ -39,17 +39,14 @@
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
-using content::AsyncFileTestHelper;
-using storage::FileSystemURL;
-using storage::FileWriterDelegate;
-
-namespace content {
+namespace storage {
 
 namespace {
 
-const GURL kOrigin("http://example.com");
-const storage::FileSystemType kFileSystemType = storage::kFileSystemTypeTest;
+const char kOrigin[] = "http://example.com";
+const FileSystemType kFileSystemType = kFileSystemTypeTest;
 
 const char kData[] = "The quick brown fox jumps over the lazy dog.\n";
 const int kDataSize = base::size(kData) - 1;
@@ -102,7 +99,8 @@ class FileWriterDelegateTest : public PlatformTest {
 
   int64_t usage() {
     return file_system_context_->GetQuotaUtil(kFileSystemType)
-        ->GetOriginUsageOnFileTaskRunner(file_system_context_.get(), kOrigin,
+        ->GetOriginUsageOnFileTaskRunner(file_system_context_.get(),
+                                         url::Origin::Create(GURL(kOrigin)),
                                          kFileSystemType);
   }
 
@@ -121,14 +119,15 @@ class FileWriterDelegateTest : public PlatformTest {
 
   FileSystemURL GetFileSystemURL(const char* file_name) const {
     return file_system_context_->CreateCrackedFileSystemURL(
-        kOrigin, kFileSystemType, base::FilePath().FromUTF8Unsafe(file_name));
+        url::Origin::Create(GURL(kOrigin)), kFileSystemType,
+        base::FilePath().FromUTF8Unsafe(file_name));
   }
 
-  std::unique_ptr<storage::SandboxFileStreamWriter> CreateWriter(
+  std::unique_ptr<SandboxFileStreamWriter> CreateWriter(
       const char* test_file_path,
       int64_t offset,
       int64_t allowed_growth) {
-    auto writer = std::make_unique<storage::SandboxFileStreamWriter>(
+    auto writer = std::make_unique<SandboxFileStreamWriter>(
         file_system_context_.get(), GetFileSystemURL(test_file_path), offset,
         *file_system_context_->GetUpdateObservers(kFileSystemType));
     writer->set_default_quota(allowed_growth);
@@ -141,7 +140,7 @@ class FileWriterDelegateTest : public PlatformTest {
       int64_t allowed_growth) {
     auto writer = CreateWriter(test_file_path, offset, allowed_growth);
     return std::make_unique<FileWriterDelegate>(
-        std::move(writer), storage::FlushPolicy::FLUSH_ON_COMPLETION);
+        std::move(writer), FlushPolicy::FLUSH_ON_COMPLETION);
   }
 
   FileWriterDelegate::DelegateWriteCallback GetWriteCallback(Result* result) {
@@ -157,9 +156,8 @@ class FileWriterDelegateTest : public PlatformTest {
         CreateWriterDelegate(test_file_path, offset, allowed_growth);
   }
 
-  std::unique_ptr<storage::BlobDataHandle> CreateBlob(
-      const std::string& contents) {
-    auto builder = std::make_unique<storage::BlobDataBuilder>("blob-uuid");
+  std::unique_ptr<BlobDataHandle> CreateBlob(const std::string& contents) {
+    auto builder = std::make_unique<BlobDataBuilder>("blob-uuid");
     builder->AppendData(contents);
     return blob_context_->AddFinishedBlob(std::move(builder));
   }
@@ -167,8 +165,8 @@ class FileWriterDelegateTest : public PlatformTest {
   // This should be alive until the very end of this instance.
   base::test::TaskEnvironment task_environment_;
 
-  scoped_refptr<storage::FileSystemContext> file_system_context_;
-  std::unique_ptr<storage::BlobStorageContext> blob_context_;
+  scoped_refptr<FileSystemContext> file_system_context_;
+  std::unique_ptr<BlobStorageContext> blob_context_;
 
   std::unique_ptr<FileWriterDelegate> file_writer_delegate_;
 
@@ -183,7 +181,7 @@ void FileWriterDelegateTest::SetUp() {
   ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::CreateFile(file_system_context_.get(),
                                             GetFileSystemURL("test")));
-  blob_context_ = std::make_unique<storage::BlobStorageContext>();
+  blob_context_ = std::make_unique<BlobStorageContext>();
 }
 
 void FileWriterDelegateTest::TearDown() {
@@ -411,4 +409,4 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   }
 }
 
-}  // namespace content
+}  // namespace storage

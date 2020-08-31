@@ -28,105 +28,13 @@ static const uint8_t ip_shuffle_f4f5[32] = { 4, 5, 6,  7,  6,  7,  8,  9,
                                              4, 5, 6,  7,  6,  7,  8,  9,
                                              8, 9, 10, 11, 10, 11, 12, 13 };
 
-void aom_highbd_convolve_copy_avx2(const uint8_t *src8, ptrdiff_t src_stride,
-                                   uint8_t *dst8, ptrdiff_t dst_stride,
-                                   const int16_t *filter_x, int filter_x_stride,
-                                   const int16_t *filter_y, int filter_y_stride,
-                                   int width, int h, int bd) {
-  const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-  uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
-  (void)filter_x;
-  (void)filter_y;
-  (void)filter_x_stride;
-  (void)filter_y_stride;
-  (void)bd;
-
-  assert(width % 4 == 0);
-  if (width > 32) {  // width = 64
-    do {
-      const __m256i p0 = _mm256_loadu_si256((const __m256i *)src);
-      const __m256i p1 = _mm256_loadu_si256((const __m256i *)(src + 16));
-      const __m256i p2 = _mm256_loadu_si256((const __m256i *)(src + 32));
-      const __m256i p3 = _mm256_loadu_si256((const __m256i *)(src + 48));
-      src += src_stride;
-      _mm256_storeu_si256((__m256i *)dst, p0);
-      _mm256_storeu_si256((__m256i *)(dst + 16), p1);
-      _mm256_storeu_si256((__m256i *)(dst + 32), p2);
-      _mm256_storeu_si256((__m256i *)(dst + 48), p3);
-      dst += dst_stride;
-      h--;
-    } while (h > 0);
-  } else if (width > 16) {  // width = 32
-    do {
-      const __m256i p0 = _mm256_loadu_si256((const __m256i *)src);
-      const __m256i p1 = _mm256_loadu_si256((const __m256i *)(src + 16));
-      src += src_stride;
-      _mm256_storeu_si256((__m256i *)dst, p0);
-      _mm256_storeu_si256((__m256i *)(dst + 16), p1);
-      dst += dst_stride;
-      h--;
-    } while (h > 0);
-  } else if (width > 8) {  // width = 16
-    __m256i p0, p1;
-    do {
-      p0 = _mm256_loadu_si256((const __m256i *)src);
-      src += src_stride;
-      p1 = _mm256_loadu_si256((const __m256i *)src);
-      src += src_stride;
-
-      _mm256_storeu_si256((__m256i *)dst, p0);
-      dst += dst_stride;
-      _mm256_storeu_si256((__m256i *)dst, p1);
-      dst += dst_stride;
-      h -= 2;
-    } while (h > 0);
-  } else if (width > 4) {  // width = 8
-    __m128i p0, p1;
-    do {
-      p0 = _mm_loadu_si128((const __m128i *)src);
-      src += src_stride;
-      p1 = _mm_loadu_si128((const __m128i *)src);
-      src += src_stride;
-
-      _mm_storeu_si128((__m128i *)dst, p0);
-      dst += dst_stride;
-      _mm_storeu_si128((__m128i *)dst, p1);
-      dst += dst_stride;
-      h -= 2;
-    } while (h > 0);
-  } else {  // width = 4
-    __m128i p0, p1;
-    do {
-      p0 = _mm_loadl_epi64((const __m128i *)src);
-      src += src_stride;
-      p1 = _mm_loadl_epi64((const __m128i *)src);
-      src += src_stride;
-
-      _mm_storel_epi64((__m128i *)dst, p0);
-      dst += dst_stride;
-      _mm_storel_epi64((__m128i *)dst, p1);
-      dst += dst_stride;
-      h -= 2;
-    } while (h > 0);
-  }
-}
-
 void av1_highbd_convolve_y_sr_avx2(const uint16_t *src, int src_stride,
                                    uint16_t *dst, int dst_stride, int w, int h,
-                                   const InterpFilterParams *filter_params_x,
                                    const InterpFilterParams *filter_params_y,
-                                   const int subpel_x_q4, const int subpel_y_q4,
-                                   ConvolveParams *conv_params, int bd) {
+                                   const int subpel_y_qn, int bd) {
   int i, j;
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const uint16_t *const src_ptr = src - fo_vert * src_stride;
-  (void)filter_params_x;
-  (void)subpel_x_q4;
-  (void)conv_params;
-
-  assert(conv_params->round_0 <= FILTER_BITS);
-  assert(((conv_params->round_0 + conv_params->round_1) <= (FILTER_BITS + 1)) ||
-         ((conv_params->round_0 + conv_params->round_1) == (2 * FILTER_BITS)));
 
   __m256i s[8], coeffs_y[4];
 
@@ -138,7 +46,7 @@ void av1_highbd_convolve_y_sr_avx2(const uint16_t *src, int src_stride,
       _mm256_set1_epi16(bd == 10 ? 1023 : (bd == 12 ? 4095 : 255));
   const __m256i zero = _mm256_setzero_si256();
 
-  prepare_coeffs(filter_params_y, subpel_y_q4, coeffs_y);
+  prepare_coeffs(filter_params_y, subpel_y_qn, coeffs_y);
 
   for (j = 0; j < w; j += 8) {
     const uint16_t *data = &src_ptr[j];
@@ -263,14 +171,11 @@ void av1_highbd_convolve_y_sr_avx2(const uint16_t *src, int src_stride,
 void av1_highbd_convolve_x_sr_avx2(const uint16_t *src, int src_stride,
                                    uint16_t *dst, int dst_stride, int w, int h,
                                    const InterpFilterParams *filter_params_x,
-                                   const InterpFilterParams *filter_params_y,
-                                   const int subpel_x_q4, const int subpel_y_q4,
+                                   const int subpel_x_qn,
                                    ConvolveParams *conv_params, int bd) {
   int i, j;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const uint16_t *const src_ptr = src - fo_horiz;
-  (void)subpel_y_q4;
-  (void)filter_params_y;
 
   // Check that, even with 12-bit input, the intermediate values will fit
   // into an unsigned 16-bit intermediate array.
@@ -293,7 +198,7 @@ void av1_highbd_convolve_x_sr_avx2(const uint16_t *src, int src_stride,
   assert((FILTER_BITS - conv_params->round_1) >= 0 ||
          ((conv_params->round_0 + conv_params->round_1) == 2 * FILTER_BITS));
 
-  prepare_coeffs(filter_params_x, subpel_x_q4, coeffs_x);
+  prepare_coeffs(filter_params_x, subpel_x_qn, coeffs_x);
 
   for (j = 0; j < w; j += 8) {
     /* Horizontal filter */

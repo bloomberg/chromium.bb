@@ -34,10 +34,10 @@ class VIEWS_EXPORT AXAuraObjWrapper {
 
   // Traversal and serialization.
   virtual AXAuraObjWrapper* GetParent() = 0;
-  virtual void GetChildren(
-      std::vector<AXAuraObjWrapper*>* out_children) = 0;
+  virtual void GetChildren(std::vector<AXAuraObjWrapper*>* out_children) = 0;
   virtual void Serialize(ui::AXNodeData* out_node_data) = 0;
   virtual int32_t GetUniqueId() const = 0;
+  virtual std::string ToString() const = 0;
 
   // Actions.
   virtual bool HandleAccessibleAction(const ui::AXActionData& action);

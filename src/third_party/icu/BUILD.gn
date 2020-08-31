@@ -13,6 +13,9 @@ if (is_mac) {
   import("//build/config/sanitizers/sanitizers.gni")
 }
 
+assert(!icu_disable_thin_archive || !is_component_build,
+       "icu_disable_thin_archive only works in static library builds")
+
 # Meta target that includes both icuuc and icui18n. Most targets want both.
 # You can depend on the individually if you need to.
 group("icu") {
@@ -35,6 +38,11 @@ config("icu_config") {
 
     # v8/Blink need to know whether Chromium's copy of ICU is used or not.
     "USE_CHROMIUM_ICU=1",
+
+    # Enable tracing to connect to UMA but disable tracing of resource
+    # to avoid performance issues.
+    "U_ENABLE_TRACING=1",
+    "U_ENABLE_RESOURCE_TRACING=0",
   ]
 
   if (!is_component_build) {
@@ -278,6 +286,8 @@ component("icui18n") {
     "source/i18n/listformatter.cpp",
     "source/i18n/measfmt.cpp",
     "source/i18n/measunit.cpp",
+    "source/i18n/measunit_extra.cpp",
+    "source/i18n/measunit_impl.h",
     "source/i18n/measure.cpp",
     "source/i18n/msgfmt.cpp",
     "source/i18n/msgfmt_impl.h",
@@ -634,6 +644,13 @@ component("icui18n") {
     # Fuchsia puts its own libicui18n.so in /system/lib where we need to put our
     # .so when doing component builds, so we need to give this a different name.
     output_name = "icui18n_cr"
+  }
+
+  # Make icu into a standalone static library. Currently This is only useful on
+  # Chrome OS.
+  if (icu_disable_thin_archive) {
+    configs -= [ "//build/config/compiler:thin_archive" ]
+    complete_static_lib = true
   }
 }
 

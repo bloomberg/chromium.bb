@@ -10,12 +10,14 @@
 #include "helpers.h"
 #include "util.h"
 
-static const uint32_t render_target_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888 };
+static const uint32_t scanout_render_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888,
+						   DRM_FORMAT_ABGR8888, DRM_FORMAT_XBGR8888,
+						   DRM_FORMAT_BGR888, DRM_FORMAT_BGR565};
 
 static int meson_init(struct driver *drv)
 {
-	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-			     &LINEAR_METADATA, BO_USE_RENDER_MASK);
+	drv_add_combinations(drv, scanout_render_formats, ARRAY_SIZE(scanout_render_formats),
+			     &LINEAR_METADATA, BO_USE_RENDER_MASK | BO_USE_SCANOUT);
 
 	return drv_modify_linear_combinations(drv);
 }

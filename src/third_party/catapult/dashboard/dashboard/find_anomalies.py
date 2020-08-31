@@ -20,10 +20,12 @@ from google.appengine.ext import ndb
 from dashboard import email_sheriff
 from dashboard import find_change_points
 from dashboard.common import utils
+from dashboard.models import alert_group
 from dashboard.models import anomaly
 from dashboard.models import anomaly_config
 from dashboard.models import graph_data
 from dashboard.models import histogram
+from dashboard.models import subscription
 from dashboard.sheriff_config_client import SheriffConfigClient
 from tracing.value.diagnostics import reserved_infos
 
@@ -65,15 +67,6 @@ def _ProcessTest(test_key):
 
   test = yield test_key.get_async()
 
-  sheriff, (new_sheriffs, err_msg) = yield _GetSheriffForTest(test)
-  logging.info('Sheriff for %s: old: %s, new: %s', test.test_path,
-               'None' if sheriff is None else sheriff.key.string_id(),
-               err_msg if new_sheriffs is None
-               else [s.key.string_id() for s in new_sheriffs])
-  if not sheriff:
-    logging.error('No sheriff for %s', test_key)
-    raise ndb.Return(None)
-
   config = yield anomaly_config.GetAnomalyConfigDictAsync(test)
   max_num_rows = config.get('max_window_size', DEFAULT_NUM_POINTS)
   rows_by_stat = yield GetRowsToAnalyzeAsync(test, max_num_rows)
@@ -85,20 +78,20 @@ def _ProcessTest(test_key):
 
   for s, rows in rows_by_stat.items():
     if rows:
-      yield _ProcesssTestStat(
-          config, sheriff, test, s, rows, ref_rows_by_stat.get(s))
+      logging.info('Processing test: %s', test_key.id())
+      yield _ProcessTestStat(
+          config, test, s, rows, ref_rows_by_stat.get(s))
 
 
-def _EmailSheriff(sheriff_key, test_key, anomaly_key):
-  sheriff_entity = sheriff_key.get()
+def _EmailSheriff(sheriff, test_key, anomaly_key):
   test_entity = test_key.get()
   anomaly_entity = anomaly_key.get()
 
-  email_sheriff.EmailSheriff(sheriff_entity, test_entity, anomaly_entity)
+  email_sheriff.EmailSheriff(sheriff, test_entity, anomaly_entity)
 
 
 @ndb.tasklet
-def _ProcesssTestStat(config, sheriff, test, stat, rows, ref_rows):
+def _ProcessTestStat(config, test, stat, rows, ref_rows):
   test_key = test.key
 
   # If there were no rows fetched, then there's nothing to analyze.
@@ -126,7 +119,26 @@ def _ProcesssTestStat(config, sheriff, test, stat, rows, ref_rows):
   logging.info('Created %d anomalies', len(anomalies))
   logging.info(' Test: %s', test_key.id())
   logging.info(' Stat: %s', stat)
-  logging.info(' Sheriff: %s', test.sheriff.id())
+
+  # Get all the sheriff from sheriff-config match the path
+  client = SheriffConfigClient()
+  subscriptions, err_msg = client.Match(test.test_path)
+  subscription_names = [s.name for s in subscriptions or []]
+
+  # Breaks the process when Match failed to ensure find_anomaly do the best
+  # effort to find the subscriber. Leave retrying to upstream.
+  if err_msg is not None:
+    raise RuntimeError(err_msg)
+
+  if not subscriptions:
+    logging.warning('No subscription for %s', test.test_path)
+
+  for a in anomalies:
+    a.subscriptions = subscriptions
+    a.subscription_names = subscription_names
+    a.internal_only = (any([s.visibility != subscription.VISIBILITY.PUBLIC
+                            for s in subscriptions]) or test.internal_only)
+    a.groups = alert_group.AlertGroup.GetGroupsForAnomaly(a)
 
   yield ndb.put_multi_async(anomalies)
 
@@ -135,9 +147,9 @@ def _ProcesssTestStat(config, sheriff, test, stat, rows, ref_rows):
   # Email sheriff about any new regressions.
   for anomaly_entity in anomalies:
     if (anomaly_entity.bug_id is None and
-        not anomaly_entity.is_improvement and
-        not sheriff.summarize):
-      deferred.defer(_EmailSheriff, sheriff.key, test.key, anomaly_entity.key)
+        not anomaly_entity.is_improvement):
+      deferred.defer(_EmailSheriff, anomaly_entity.subscriptions, test.key,
+                     anomaly_entity.key)
 
 
 @ndb.tasklet
@@ -275,20 +287,6 @@ def _IsAnomalyInRef(change_point, ref_change_points):
   return False
 
 
-@ndb.tasklet
-def _GetSheriffForTest(test):
-  """Gets the Sheriff for a test, or None if no sheriff."""
-  # Get all the sheriff from sheriff-config match the path
-  # Currently just used for logging
-  client = SheriffConfigClient()
-  match_res = client.Match(test.test_path)
-  # Old one. Get the sheriff from TestMetadata
-  sheriff = None
-  if test.sheriff:
-    sheriff = yield test.sheriff.get_async()
-  raise ndb.Return((sheriff, match_res))
-
-
 def _GetImmediatelyPreviousRevisionNumber(later_revision, rows):
   """Gets the revision number of the Row immediately before the given one.
 
@@ -408,7 +406,6 @@ def _MakeAnomalyEntity(change_point, test, stat, rows):
       ref_test=_GetRefBuildKeyForTest(test),
       test=test.key,
       statistic=stat,
-      sheriff=test.sheriff,
       internal_only=test.internal_only,
       units=test.units,
       display_start=display_start,

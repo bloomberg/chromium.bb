@@ -80,14 +80,13 @@ class SyncManagerImpl
   void ConfigureSyncer(ConfigureReason reason,
                        ModelTypeSet to_download,
                        SyncFeatureState sync_feature_state,
-                       const base::Closure& ready_task) override;
+                       base::OnceClosure ready_task) override;
   void SetInvalidatorEnabled(bool invalidator_enabled) override;
   void OnIncomingInvalidation(
       ModelType type,
       std::unique_ptr<InvalidationInterface> invalidation) override;
   void AddObserver(SyncManager::Observer* observer) override;
   void RemoveObserver(SyncManager::Observer* observer) override;
-  SyncStatus GetDetailedStatus() const override;
   void SaveChanges() override;
   void ShutdownOnSyncThread() override;
   UserShare* GetUserShare() override;
@@ -173,8 +172,6 @@ class SyncManagerImpl
   void NudgeForInitialDownload(ModelType type) override;
   void NudgeForCommit(ModelType type) override;
 
-  static std::string GenerateCacheGUIDForTest();
-
  protected:
   // Helper functions.  Virtual for testing.
   virtual void NotifyInitializationSuccess();
@@ -214,7 +211,7 @@ class SyncManagerImpl
                                const Cryptographer* cryptographer) const;
 
   // Opens the directory.
-  bool OpenDirectory(InitArgs* args);
+  bool OpenDirectory(const InitArgs* args);
 
   void RequestNudgeForDataTypes(const base::Location& nudge_location,
                                 ModelTypeSet type);
@@ -311,7 +308,7 @@ class SyncManagerImpl
 
   ProtocolEventBuffer protocol_event_buffer_;
 
-  base::Closure report_unrecoverable_error_function_;
+  base::RepeatingClosure report_unrecoverable_error_function_;
 
   SyncEncryptionHandler* sync_encryption_handler_;
 

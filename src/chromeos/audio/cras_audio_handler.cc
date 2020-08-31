@@ -15,17 +15,16 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/system/system_monitor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/media_session/public/mojom/media_controller.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "chromeos/constants/chromeos_features.h"
 
 using std::max;
 using std::min;
@@ -94,15 +93,21 @@ void CrasAudioHandler::AudioObserver::OnHotwordTriggered(
     uint64_t /* tv_sec */,
     uint64_t /* tv_nsec */) {}
 
+void CrasAudioHandler::AudioObserver::OnBluetoothBatteryChanged(
+    const std::string& /* address */,
+    uint32_t /* level */) {}
+
 void CrasAudioHandler::AudioObserver::OnOutputStarted() {}
 
 void CrasAudioHandler::AudioObserver::OnOutputStopped() {}
 
 // static
 void CrasAudioHandler::Initialize(
-    service_manager::Connector* connector,
+    mojo::PendingRemote<media_session::mojom::MediaControllerManager>
+        media_controller_manager,
     scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler) {
-  g_cras_audio_handler = new CrasAudioHandler(connector, audio_pref_handler);
+  g_cras_audio_handler = new CrasAudioHandler(
+      std::move(media_controller_manager), audio_pref_handler);
 }
 
 // static
@@ -110,7 +115,7 @@ void CrasAudioHandler::InitializeForTesting() {
   // Make sure CrasAudioClient has been initialized.
   if (!CrasAudioClient::Get())
     CrasAudioClient::InitializeFake();
-  CrasAudioHandler::Initialize(/*connector=*/nullptr,
+  CrasAudioHandler::Initialize(mojo::NullRemote(),
                                new AudioDevicesPrefHandlerStub());
 }
 
@@ -230,6 +235,78 @@ void CrasAudioHandler::OnVideoCaptureStoppedOnMainThread(
   DeviceActivateType activated_by =
       HasExternalDevice(true) ? ACTIVATE_BY_USER : ACTIVATE_BY_PRIORITY;
   SwitchToDevice(*GetDeviceByType(AUDIO_TYPE_FRONT_MIC), true, activated_by);
+}
+
+void CrasAudioHandler::HandleMediaSessionMetadataReset() {
+  const std::map<std::string, std::string> empty_metadata_map = {
+      {"title", ""}, {"artist", ""}, {"album", ""}};
+
+  CrasAudioClient::Get()->SetPlayerMetadata(empty_metadata_map);
+  CrasAudioClient::Get()->SetPlayerIdentity("");
+  CrasAudioClient::Get()->SetPlayerPlaybackStatus("stopped");
+}
+
+void CrasAudioHandler::MediaSessionInfoChanged(
+    media_session::mojom::MediaSessionInfoPtr session_info) {
+  if (!session_info)
+    return;
+
+  std::string state;
+
+  switch (session_info->state) {
+    case media_session::mojom::MediaSessionInfo::SessionState::kActive:
+    case media_session::mojom::MediaSessionInfo::SessionState::kDucking:
+      state = "playing";
+      break;
+    case media_session::mojom::MediaSessionInfo::SessionState::kSuspended:
+      state = "paused";
+      break;
+    case media_session::mojom::MediaSessionInfo::SessionState::kInactive:
+      state = "stopped";
+      break;
+  }
+
+  CrasAudioClient::Get()->SetPlayerPlaybackStatus(state);
+}
+
+void CrasAudioHandler::MediaSessionMetadataChanged(
+    const base::Optional<media_session::MediaMetadata>& metadata) {
+  if (!metadata || metadata->IsEmpty()) {
+    HandleMediaSessionMetadataReset();
+    return;
+  }
+
+  const std::map<std::string, std::string> metadata_map = {
+      {"title", base::UTF16ToUTF8(metadata->title)},
+      {"artist", base::UTF16ToUTF8(metadata->artist)},
+      {"album", base::UTF16ToUTF8(metadata->album)}};
+  const std::string source_title = base::UTF16ToUTF8(metadata->source_title);
+
+  // Assume media duration/length should always change with new metadata.
+  fetch_media_session_duration_ = true;
+  CrasAudioClient::Get()->SetPlayerMetadata(metadata_map);
+  CrasAudioClient::Get()->SetPlayerIdentity(source_title);
+}
+
+void CrasAudioHandler::MediaSessionPositionChanged(
+    const base::Optional<media_session::MediaPosition>& position) {
+  if (!position)
+    return;
+
+  int64_t duration = 0;
+  if (fetch_media_session_duration_) {
+    duration = position->duration().InMicroseconds();
+    if (duration > 0) {
+      CrasAudioClient::Get()->SetPlayerDuration(duration);
+      fetch_media_session_duration_ = false;
+    }
+  }
+
+  int64_t current_position = position->GetPosition().InMicroseconds();
+  if (current_position < 0 || (duration > 0 && current_position > duration))
+    return;
+
+  CrasAudioClient::Get()->SetPlayerPosition(current_position);
 }
 
 void CrasAudioHandler::AddAudioObserver(AudioObserver* observer) {
@@ -651,13 +728,16 @@ void CrasAudioHandler::SetActiveHDMIOutoutRediscoveringIfNecessary(
 }
 
 CrasAudioHandler::CrasAudioHandler(
-    service_manager::Connector* connector,
+    mojo::PendingRemote<media_session::mojom::MediaControllerManager>
+        media_controller_manager,
     scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler)
-    : connector_(connector), audio_pref_handler_(audio_pref_handler) {
+    : media_controller_manager_(std::move(media_controller_manager)),
+      audio_pref_handler_(audio_pref_handler) {
   DCHECK(audio_pref_handler);
   DCHECK(CrasAudioClient::Get());
   CrasAudioClient::Get()->AddObserver(this);
   audio_pref_handler_->AddAudioPrefObserver(this);
+  BindMediaControllerObserver();
   InitializeAudioState();
   // Unittest may not have the task runner for the current thread.
   if (base::ThreadTaskRunnerHandle::IsSet())
@@ -675,6 +755,15 @@ CrasAudioHandler::~CrasAudioHandler() {
 
   DCHECK(g_cras_audio_handler);
   g_cras_audio_handler = nullptr;
+}
+
+void CrasAudioHandler::BindMediaControllerObserver() {
+  if (!media_controller_manager_)
+    return;
+  media_controller_manager_->CreateActiveMediaController(
+      media_session_controller_remote_.BindNewPipeAndPassReceiver());
+  media_session_controller_remote_->AddObserver(
+      media_controller_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
 void CrasAudioHandler::AudioClientRestarted() {
@@ -762,6 +851,12 @@ void CrasAudioHandler::HotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec) {
 
 void CrasAudioHandler::NumberOfActiveStreamsChanged() {
   GetNumberOfOutputStreams();
+}
+
+void CrasAudioHandler::BluetoothBatteryChanged(const std::string& address,
+                                               uint32_t level) {
+  for (auto& observer : observers_)
+    observer.OnBluetoothBatteryChanged(address, level);
 }
 
 void CrasAudioHandler::OnAudioPolicyPrefChanged() {
@@ -898,6 +993,10 @@ void CrasAudioHandler::InitializeAudioAfterCrasServiceAvailable(
   GetSystemAecGroupId();
   GetNodes();
   GetNumberOfOutputStreams();
+  CrasAudioClient::Get()->SetFixA2dpPacketSize(base::FeatureList::IsEnabled(
+      chromeos::features::kBluetoothFixA2dpPacketSize));
+  CrasAudioClient::Get()->SetNextHandsfreeProfile(base::FeatureList::IsEnabled(
+      chromeos::features::kBluetoothNextHandsfreeProfile));
 }
 
 void CrasAudioHandler::ApplyAudioPolicy() {
@@ -1183,14 +1282,8 @@ bool CrasAudioHandler::GetActiveDeviceFromUserPref(bool is_input,
 }
 
 void CrasAudioHandler::PauseAllStreams() {
-  if (!connector_) {
-    LOG(ERROR) << "Failed to get connector";
-    return;
-  }
-  mojo::Remote<media_session::mojom::MediaControllerManager> controller_manager;
-  connector_->Connect(media_session::mojom::kServiceName,
-                      controller_manager.BindNewPipeAndPassReceiver());
-  controller_manager->SuspendAllSessions();
+  if (media_controller_manager_)
+    media_controller_manager_->SuspendAllSessions();
 }
 
 void CrasAudioHandler::HandleNonHotplugNodesChange(

@@ -50,14 +50,14 @@ void SVGElementRareData::ClearOverriddenComputedStyle() {
   override_computed_style_ = nullptr;
 }
 
-SVGResourceClient& SVGElementRareData::EnsureSVGResourceClient(
+SVGElementResourceClient& SVGElementRareData::EnsureSVGResourceClient(
     SVGElement* element) {
   if (!resource_client_)
     resource_client_ = MakeGarbageCollected<SVGElementResourceClient>(element);
   return *resource_client_;
 }
 
-void SVGElementRareData::Trace(blink::Visitor* visitor) {
+void SVGElementRareData::Trace(Visitor* visitor) {
   visitor->Trace(outgoing_references_);
   visitor->Trace(incoming_references_);
   visitor->Trace(animated_smil_style_properties_);

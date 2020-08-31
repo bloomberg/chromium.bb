@@ -54,9 +54,11 @@ extern const base::Feature kIPHContextualSearchOptInFeature;
 extern const base::Feature kIPHDownloadSettingsFeature;
 extern const base::Feature kIPHDownloadInfoBarDownloadContinuingFeature;
 extern const base::Feature kIPHDownloadInfoBarDownloadsAreFasterFeature;
+extern const base::Feature kIPHEphemeralTabFeature;
 extern const base::Feature kIPHFeedCardMenuFeature;
 extern const base::Feature kIPHHomePageButtonFeature;
 extern const base::Feature kIPHHomepageTileFeature;
+extern const base::Feature kIPHHomepagePromoCardFeature;
 extern const base::Feature kIPHIdentityDiscFeature;
 extern const base::Feature kIPHKeyboardAccessoryAddressFillingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPasswordFillingFeature;
@@ -70,6 +72,10 @@ extern const base::Feature kIPHTabGroupsYourTabsAreTogetherFeature;
 extern const base::Feature kIPHTabGroupsDragAndDropFeature;
 extern const base::Feature kIPHTranslateMenuButtonFeature;
 extern const base::Feature kIPHExploreSitesTileFeature;
+extern const base::Feature kIPHFeedHeaderMenuFeature;
+extern const base::Feature kIPHChromeReengagementNotification1Feature;
+extern const base::Feature kIPHChromeReengagementNotification2Feature;
+extern const base::Feature kIPHChromeReengagementNotification3Feature;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_IOS)

@@ -88,7 +88,7 @@ class MockModelTypeWorker : public CommitQueue {
   // the same version) or new updates.
   //
   // |ekn| is the encryption key name this item will fake having.
-  std::unique_ptr<syncer::UpdateResponseData> GenerateUpdateData(
+  syncer::UpdateResponseData GenerateUpdateData(
       const ClientTagHash& tag_hash,
       const sync_pb::EntitySpecifics& specifics,
       int64_t version_offset,
@@ -96,14 +96,19 @@ class MockModelTypeWorker : public CommitQueue {
 
   // Mostly same as GenerateUpdateData above, but set 1 as |version_offset|, and
   // use model_type_state_.encryption_key_name() as |ekn|.
-  std::unique_ptr<syncer::UpdateResponseData> GenerateUpdateData(
+  syncer::UpdateResponseData GenerateUpdateData(
       const ClientTagHash& tag_hash,
       const sync_pb::EntitySpecifics& specifics);
 
   // Returns an UpdateResponseData representing an update received from
   // the server for a type root node.
-  std::unique_ptr<syncer::UpdateResponseData> GenerateTypeRootUpdateData(
+  syncer::UpdateResponseData GenerateTypeRootUpdateData(
       const ModelType& model_type);
+
+  // Returns an UpdateResponseData representing an update received from
+  // the server for a deleted entity.
+  syncer::UpdateResponseData GenerateTombstoneUpdateData(
+      const ClientTagHash& tag_hash);
 
   // Triggers a server-side deletion of the entity with |tag_hash|; updates
   // server state accordingly.
@@ -140,6 +145,10 @@ class MockModelTypeWorker : public CommitQueue {
   CommitResponseData SuccessfulCommitResponse(
       const CommitRequestData& request_data,
       int64_t version_offset);
+  // Returns a commit response that indicates a failed commit of the
+  // given |request_data|.
+  FailedCommitResponseData FailedCommitResponse(
+      const CommitRequestData& request_data);
 
   // Retrieve or set the server version.
   int64_t GetServerVersion(const ClientTagHash& tag_hash);

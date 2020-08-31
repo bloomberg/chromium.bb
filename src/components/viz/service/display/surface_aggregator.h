@@ -19,7 +19,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/service/viz_service_export.h"
-#include "ui/gfx/color_space.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/overlay_transform.h"
 
 namespace viz {
@@ -69,7 +69,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   // Set the color spaces for the created RenderPasses, which is propagated
   // to the output surface.
-  void SetOutputColorSpace(const gfx::ColorSpace& output_color_space);
+  void SetDisplayColorSpaces(const gfx::DisplayColorSpaces& color_spaces);
 
   void SetMaximumTextureSize(int max_texture_size);
 
@@ -198,6 +198,12 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   //    surfaces found in the process.
   //  - |pixel_moving_backdrop_filters_rect| is another output that is union of
   //    bounds of render passes that have a pixel moving backdrop filter.
+  //  - |has_backdrop_cache_flags_to_update| indicates if any
+  //    RenderPassDrawQuad(s) contained in the surface have
+  //    |can_use_backdrop_filter_cache| flag set to true and having to be
+  //    updated. This is used to avoid iterating through all the render passes
+  //    in the surface frame when not needed (i.e. no flag needs to be
+  //    updated).
   // TODO(mohsen): Consider refactoring this backtracking algorithm into a
   // self-contained class.
   void FindChildSurfaces(
@@ -206,7 +212,24 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       RenderPassMapEntry* current_pass_entry,
       const gfx::Transform& transform_to_root_target,
       base::flat_map<SurfaceRange, ChildSurfaceInfo>* child_surfaces,
-      gfx::Rect* pixel_moving_backdrop_filters_rect);
+      std::vector<gfx::Rect>* pixel_moving_backdrop_filters_rects,
+      bool* has_backdrop_cache_flags_to_update);
+
+  // Recursively updates the |can_use_backdrop_filter_cache| flag on all
+  // RenderPassDrawQuads(RPDQ) in the specified render pass. The function
+  // recursively traverses any render pass referenced by a RPDQ but doesn't
+  // traverse any render passes in the frame of any embedded surfaces. The
+  // function returns the damage rect of the render pass in its own content
+  // space.
+  // - |id| specifies the render pass whose quads are to be updated
+  // - |result| is the result of a prewalk of a root surface that contains the
+  //   render pass
+  // - |render_pass_map| is a map that contains all render passes and their
+  // entry data
+  gfx::Rect UpdateRPDQCanUseBackdropFilterCacheWithSurfaceDamage(
+      RenderPassId id,
+      PrewalkResult* result,
+      base::flat_map<RenderPassId, RenderPassMapEntry>* render_pass_map);
 
   gfx::Rect PrewalkTree(Surface* surface,
                         bool in_moved_pixel_surface,
@@ -304,7 +327,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // The color space for the root render pass. If this is different from its
   // blending color space (e.g. for HDR), then a final render pass to convert
   // between the two will be added. This space must always be valid.
-  gfx::ColorSpace output_color_space_ = gfx::ColorSpace::CreateSRGB();
+  gfx::DisplayColorSpaces display_color_spaces_;
+
   // Maximum texture size which if positive, will limit the size of render
   // passes.
   int max_texture_size_ = 0;
@@ -362,6 +386,13 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // The root damage rect of the currently-aggregating frame.
   gfx::Rect root_damage_rect_;
 
+  // The aggregate color content usage of the currently-aggregating frame. This
+  // is computed by the prewalk, and is used to determine the format and color
+  // space of all render passes. Note that that is more heavy-handed than is
+  // desirable.
+  gfx::ContentColorUsage root_content_color_usage_ =
+      gfx::ContentColorUsage::kSRGB;
+
   // Occluding damage rect will be calculated for qualified candidates
   const bool needs_surface_occluding_damage_rect_;
 
@@ -376,6 +407,11 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // True if the frame that's currently being aggregated has cached render
   // passes. This is valid during Aggregate after PrewalkTree is called.
   bool has_cached_render_passes_;
+
+  // True if any RenderPasses in the aggregated frame have a backdrop filter
+  // that moves pixels. This is valid during Aggregate after PrewalkTree is
+  // called.
+  bool has_pixel_moving_backdrop_filter_ = false;
 
   // For each FrameSinkId, contains a vector of SurfaceRanges that will damage
   // the display if they're damaged.
@@ -393,8 +429,12 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // The set of surfacees being drawn for the first time. Used to determine if
   // de-jelly skew should be applied to a surface.
   base::flat_set<SurfaceId> new_surfaces_;
-  // Whether the last drawn frame had de-jelly skew applied.
+  // Whether the last drawn frame had de-jelly skew applied. Used in production
+  // on Android only.
   bool last_frame_had_jelly_ = false;
+  // Whether the last drawn frame had a color conversion pass applied. Used in
+  // production on Windows only (does not interact with jelly).
+  bool last_frame_had_color_conversion_pass_ = false;
 
   base::WeakPtrFactory<SurfaceAggregator> weak_factory_{this};
 

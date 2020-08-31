@@ -158,8 +158,8 @@ VideoCaptureDeviceClient::VideoCaptureDeviceClient(
       buffer_pool_(std::move(buffer_pool)),
       last_captured_pixel_format_(PIXEL_FORMAT_UNKNOWN) {
   on_started_using_gpu_cb_ =
-      base::Bind(&VideoFrameReceiver::OnStartedUsingGpuDecode,
-                 base::Unretained(receiver_.get()));
+      base::BindOnce(&VideoFrameReceiver::OnStartedUsingGpuDecode,
+                     base::Unretained(receiver_.get()));
 }
 #else
 VideoCaptureDeviceClient::VideoCaptureDeviceClient(
@@ -291,6 +291,10 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     case PIXEL_FORMAT_YUY2:
       DCHECK(!chopped_width && !chopped_height);
       fourcc_format = libyuv::FOURCC_YUY2;
+      break;
+    case PIXEL_FORMAT_UYVY:
+      DCHECK(!chopped_width && !chopped_height);
+      fourcc_format = libyuv::FOURCC_UYVY;
       break;
     case PIXEL_FORMAT_RGB24:
 // Linux RGB24 defines red at lowest byte address,

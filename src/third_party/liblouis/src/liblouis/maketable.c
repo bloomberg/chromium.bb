@@ -24,10 +24,11 @@
 #include "internal.h"
 
 static const TranslationTableHeader *table;
+static const DisplayTableHeader *displayTable;
 
 extern void
 loadTable(const char *tableList) {
-	table = lou_getTable(tableList);
+	_lou_getTable(tableList, tableList, &table, &displayTable);
 }
 
 extern int
@@ -71,7 +72,7 @@ toDotPattern(widechar *braille, char *pattern) {
 	for (length = 0; braille[length]; length++)
 		;
 	dots = (widechar *)malloc((length + 1) * sizeof(widechar));
-	for (i = 0; i < length; i++) dots[i] = _lou_getDotsForChar(braille[i]);
+	for (i = 0; i < length; i++) dots[i] = _lou_getDotsForChar(braille[i], displayTable);
 	strcpy(pattern, _lou_showDots(dots, length));
 	free(dots);
 }
@@ -94,8 +95,25 @@ printRule(TranslationTableRule *rule, widechar *rule_string) {
 		rule_string[l++] = ' ';
 		for (int k = 0; k < rule->charslen; k++) rule_string[l++] = rule->charsdots[k];
 		rule_string[l++] = ' ';
-		for (int k = 0; k < rule->dotslen; k++)
-			rule_string[l++] = _lou_getCharFromDots(rule->charsdots[rule->charslen + k]);
+		for (int k = 0; k < rule->dotslen; k++) {
+			rule_string[l] = _lou_getCharFromDots(
+					rule->charsdots[rule->charslen + k], displayTable);
+			if (rule_string[l] == '\0') {
+				// if a dot pattern can not be displayed, print an error message
+				char *message = (char *)malloc(50 * sizeof(char));
+				sprintf(message, "ERROR: provide a display rule for %s",
+						_lou_showDots(&rule->charsdots[rule->charslen + k], 1));
+				l = 0;
+				while (message[l]) {
+					rule_string[l] = message[l];
+					l++;
+				}
+				rule_string[l++] = '\0';
+				free(message);
+				return 1;
+			}
+			l++;
+		}
 		rule_string[l++] = '\0';
 		return 1;
 	}
@@ -229,8 +247,8 @@ find_matching_rules(widechar *text, int text_len, widechar *braille, int braille
 					(rule->dotslen == braille_len && rule->charslen < text_len))
 				goto inhibit;
 			for (k = 0; k < rule->dotslen; k++)
-				if (_lou_getCharFromDots(rule->charsdots[rule->charslen + k]) !=
-						braille[k])
+				if (_lou_getCharFromDots(rule->charsdots[rule->charslen + k],
+							displayTable) != braille[k])
 					goto inhibit;
 
 			/* don't let this rule be inhibited by an earlier rule */

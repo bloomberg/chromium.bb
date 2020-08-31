@@ -10,8 +10,11 @@
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
+struct InstallabilityError;
 class WebContents;
 }
+
+class SkBitmap;
 
 class PageHandler : public protocol::Page::Backend,
                     public content::WebContentsObserver {
@@ -29,10 +32,17 @@ class PageHandler : public protocol::Page::Backend,
   void GetInstallabilityErrors(
       std::unique_ptr<GetInstallabilityErrorsCallback> callback) override;
 
+  void GetManifestIcons(
+      std::unique_ptr<GetManifestIconsCallback> callback) override;
+
  private:
   static void GotInstallabilityErrors(
       std::unique_ptr<GetInstallabilityErrorsCallback> callback,
-      std::vector<std::string> errors);
+      std::vector<content::InstallabilityError> installability_errors);
+
+  static void GotManifestIcons(
+      std::unique_ptr<GetManifestIconsCallback> callback,
+      const SkBitmap* primary_icon);
 
   bool enabled_ = false;
 

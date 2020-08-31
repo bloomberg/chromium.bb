@@ -18,11 +18,9 @@
 #include "helpers.h"
 #include "util.h"
 
-#ifdef __ANDROID__
-#define DRI_PATH "/vendor/lib/dri/radeonsi_dri.so"
-#else
-#define DRI_PATH "/usr/lib64/dri/radeonsi_dri.so"
-#endif
+// clang-format off
+#define DRI_PATH STRINGIZE(DRI_DRIVER_DIR/radeonsi_dri.so)
+// clang-format on
 
 #define TILE_TYPE_LINEAR 0
 /* DRI backend decides tiling in this case. */
@@ -140,13 +138,48 @@ static void amdgpu_close(struct driver *drv)
 	drv->priv = NULL;
 }
 
-static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			    uint64_t use_flags)
+static int amdgpu_create_bo_linear(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+				   uint64_t use_flags)
 {
 	int ret;
 	uint32_t plane, stride;
-	struct combination *combo;
 	union drm_amdgpu_gem_create gem_create;
+
+	stride = drv_stride_from_format(format, width, 0);
+	stride = ALIGN(stride, 256);
+
+	drv_bo_from_format(bo, stride, height, format);
+
+	memset(&gem_create, 0, sizeof(gem_create));
+	gem_create.in.bo_size = bo->meta.total_size;
+	gem_create.in.alignment = 256;
+	gem_create.in.domain_flags = 0;
+
+	if (use_flags & (BO_USE_LINEAR | BO_USE_SW_MASK))
+		gem_create.in.domain_flags |= AMDGPU_GEM_CREATE_CPU_ACCESS_REQUIRED;
+
+	gem_create.in.domains = AMDGPU_GEM_DOMAIN_GTT;
+	if (!(use_flags & (BO_USE_SW_READ_OFTEN | BO_USE_SCANOUT)))
+		gem_create.in.domain_flags |= AMDGPU_GEM_CREATE_CPU_GTT_USWC;
+
+	/* Allocate the buffer with the preferred heap. */
+	ret = drmCommandWriteRead(drv_get_fd(bo->drv), DRM_AMDGPU_GEM_CREATE, &gem_create,
+				  sizeof(gem_create));
+	if (ret < 0)
+		return ret;
+
+	for (plane = 0; plane < bo->meta.num_planes; plane++)
+		bo->handles[plane].u32 = gem_create.out.handle;
+
+	bo->meta.format_modifiers[0] = DRM_FORMAT_MOD_LINEAR;
+
+	return 0;
+}
+
+static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+			    uint64_t use_flags)
+{
+	struct combination *combo;
 
 	combo = drv_get_combination(bo->drv, format, use_flags);
 	if (!combo)
@@ -177,43 +210,38 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 		return dri_bo_create(bo, width, height, format, use_flags);
 	}
 
-	stride = drv_stride_from_format(format, width, 0);
-	stride = ALIGN(stride, 256);
+	return amdgpu_create_bo_linear(bo, width, height, format, use_flags);
+}
 
-	drv_bo_from_format(bo, stride, height, format);
+static int amdgpu_create_bo_with_modifiers(struct bo *bo, uint32_t width, uint32_t height,
+					   uint32_t format, const uint64_t *modifiers,
+					   uint32_t count)
+{
+	bool only_use_linear = true;
 
-	memset(&gem_create, 0, sizeof(gem_create));
-	gem_create.in.bo_size = bo->total_size;
-	gem_create.in.alignment = 256;
-	gem_create.in.domain_flags = 0;
+	for (uint32_t i = 0; i < count; ++i)
+		if (modifiers[i] != DRM_FORMAT_MOD_LINEAR)
+			only_use_linear = false;
 
-	if (use_flags & (BO_USE_LINEAR | BO_USE_SW_MASK))
-		gem_create.in.domain_flags |= AMDGPU_GEM_CREATE_CPU_ACCESS_REQUIRED;
+	if (only_use_linear)
+		return amdgpu_create_bo_linear(bo, width, height, format, BO_USE_SCANOUT);
 
-	gem_create.in.domains = AMDGPU_GEM_DOMAIN_GTT;
-	if (!(use_flags & (BO_USE_SW_READ_OFTEN | BO_USE_SCANOUT)))
-		gem_create.in.domain_flags |= AMDGPU_GEM_CREATE_CPU_GTT_USWC;
-
-	/* Allocate the buffer with the preferred heap. */
-	ret = drmCommandWriteRead(drv_get_fd(bo->drv), DRM_AMDGPU_GEM_CREATE, &gem_create,
-				  sizeof(gem_create));
-	if (ret < 0)
-		return ret;
-
-	for (plane = 0; plane < bo->num_planes; plane++)
-		bo->handles[plane].u32 = gem_create.out.handle;
-
-	return 0;
+	return dri_bo_create_with_modifiers(bo, width, height, format, modifiers, count);
 }
 
 static int amdgpu_import_bo(struct bo *bo, struct drv_import_fd_data *data)
 {
-	struct combination *combo;
-	combo = drv_get_combination(bo->drv, data->format, data->use_flags);
-	if (!combo)
-		return -EINVAL;
+	bool dri_tiling = data->format_modifiers[0] != DRM_FORMAT_MOD_LINEAR;
+	if (data->format_modifiers[0] == DRM_FORMAT_MOD_INVALID) {
+		struct combination *combo;
+		combo = drv_get_combination(bo->drv, data->format, data->use_flags);
+		if (!combo)
+			return -EINVAL;
 
-	if (combo->metadata.tiling == TILE_TYPE_DRI)
+		dri_tiling = combo->metadata.tiling == TILE_TYPE_DRI;
+	}
+
+	if (dri_tiling)
 		return dri_bo_import(bo, data);
 	else
 		return drv_prime_bo_import(bo, data);
@@ -244,9 +272,9 @@ static void *amdgpu_map_bo(struct bo *bo, struct vma *vma, size_t plane, uint32_
 		return MAP_FAILED;
 	}
 
-	vma->length = bo->total_size;
+	vma->length = bo->meta.total_size;
 
-	return mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+	return mmap(0, bo->meta.total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 		    gem_map.out.addr_ptr);
 }
 
@@ -305,12 +333,14 @@ const struct backend backend_amdgpu = {
 	.init = amdgpu_init,
 	.close = amdgpu_close,
 	.bo_create = amdgpu_create_bo,
+	.bo_create_with_modifiers = amdgpu_create_bo_with_modifiers,
 	.bo_destroy = amdgpu_destroy_bo,
 	.bo_import = amdgpu_import_bo,
 	.bo_map = amdgpu_map_bo,
 	.bo_unmap = amdgpu_unmap_bo,
 	.bo_invalidate = amdgpu_bo_invalidate,
 	.resolve_format = amdgpu_resolve_format,
+	.num_planes_from_modifier = dri_num_planes_from_modifier,
 };
 
 #endif

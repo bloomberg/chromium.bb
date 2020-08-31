@@ -42,7 +42,7 @@ static WTF::String PaintPhaseAsDebugString(int paint_phase) {
     case 8:
       return "PaintPhaseDescendantOutlinesOnly";
     case 9:
-      return "PaintPhaseOverlayScrollbars";
+      return "PaintPhaseOverlayOverflowControls";
     case 10:
       return "PaintPhaseSelection";
     case 11:
@@ -78,10 +78,10 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(ClippingMask);
     DEBUG_STRING_CASE(ColumnRules);
     DEBUG_STRING_CASE(DebugDrawing);
+    DEBUG_STRING_CASE(DocumentRootBackdrop);
     DEBUG_STRING_CASE(DocumentBackground);
     DEBUG_STRING_CASE(DragImage);
     DEBUG_STRING_CASE(DragCaret);
-    DEBUG_STRING_CASE(EmptyContentForFilters);
     DEBUG_STRING_CASE(ForcedColorsModeBackplate);
     DEBUG_STRING_CASE(SVGImage);
     DEBUG_STRING_CASE(LinkHighlight);
@@ -123,11 +123,18 @@ static String ForeignLayerTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(ForeignLayerDevToolsOverlay);
     DEBUG_STRING_CASE(ForeignLayerPlugin);
     DEBUG_STRING_CASE(ForeignLayerVideo);
-    DEBUG_STRING_CASE(ForeignLayerWrapper);
+    DEBUG_STRING_CASE(ForeignLayerRemoteFrame);
     DEBUG_STRING_CASE(ForeignLayerContentsWrapper);
     DEBUG_STRING_CASE(ForeignLayerLinkHighlight);
     DEBUG_STRING_CASE(ForeignLayerViewportScroll);
     DEBUG_STRING_CASE(ForeignLayerViewportScrollbar);
+    DEFAULT_CASE;
+  }
+}
+
+static String GraphicsLayerWrapperTypeAsDebugString(DisplayItem::Type type) {
+  switch (type) {
+    DEBUG_STRING_CASE(GraphicsLayerWrapper);
     DEFAULT_CASE;
   }
 }
@@ -139,6 +146,9 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
   if (IsForeignLayerType(type))
     return ForeignLayerTypeAsDebugString(type);
 
+  if (IsGraphicsLayerWrapperType(type))
+    return GraphicsLayerWrapperTypeAsDebugString(type);
+
   PAINT_PHASE_BASED_DEBUG_STRINGS(Clip);
   PAINT_PHASE_BASED_DEBUG_STRINGS(Scroll);
   PAINT_PHASE_BASED_DEBUG_STRINGS(SVGTransform);
@@ -149,12 +159,9 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
     DEBUG_STRING_CASE(ScrollHitTest);
     DEBUG_STRING_CASE(ResizerScrollHitTest);
     DEBUG_STRING_CASE(PluginScrollHitTest);
-    DEBUG_STRING_CASE(LayerChunkBackground);
-    DEBUG_STRING_CASE(LayerChunkNegativeZOrderChildren);
-    DEBUG_STRING_CASE(LayerChunkDescendantBackgrounds);
-    DEBUG_STRING_CASE(LayerChunkFloat);
+    DEBUG_STRING_CASE(CustomScrollbarHitTest);
+    DEBUG_STRING_CASE(LayerChunk);
     DEBUG_STRING_CASE(LayerChunkForeground);
-    DEBUG_STRING_CASE(LayerChunkNormalFlowAndPositiveZOrderChildren);
     DEBUG_STRING_CASE(ScrollbarHorizontal);
     DEBUG_STRING_CASE(ScrollbarVertical);
     DEBUG_STRING_CASE(UninitializedType);

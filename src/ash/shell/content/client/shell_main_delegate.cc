@@ -8,10 +8,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "content/public/utility/utility_thread.h"
-#include "services/service_manager/public/cpp/service.h"
 #include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -22,14 +20,13 @@ ShellMainDelegate::ShellMainDelegate() = default;
 
 ShellMainDelegate::~ShellMainDelegate() = default;
 
-bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
-  content::SetContentClient(&content_client_);
-  return false;
-}
-
 void ShellMainDelegate::PreSandboxStartup() {
   InitializeResourceBundle();
   ui::InitializeInputMethodForTesting();
+}
+
+content::ContentClient* ShellMainDelegate::CreateContentClient() {
+  return &content_client_;
 }
 
 content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {

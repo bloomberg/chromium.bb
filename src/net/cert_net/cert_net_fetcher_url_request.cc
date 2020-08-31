@@ -63,7 +63,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
@@ -71,12 +71,14 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
-#include "net/base/network_isolation_key.h"
 #include "net/cert/cert_net_fetcher.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
+#include "url/origin.h"
 
 // TODO(eroman): Add support for POST parameters.
 // TODO(eroman): Add controls for bypassing the cache.
@@ -284,7 +286,6 @@ struct CertNetFetcherURLRequest::RequestParams {
 
   GURL url;
   HttpMethod http_method;
-  NetworkIsolationKey network_isolation_key;
   size_t max_response_bytes;
 
   // If set to a value <= 0 then means "no timeout".
@@ -301,10 +302,9 @@ CertNetFetcherURLRequest::RequestParams::RequestParams()
 
 bool CertNetFetcherURLRequest::RequestParams::operator<(
     const RequestParams& other) const {
-  return std::tie(url, http_method, network_isolation_key, max_response_bytes,
-                  timeout) < std::tie(other.url, other.http_method,
-                                      other.network_isolation_key,
-                                      other.max_response_bytes, other.timeout);
+  return std::tie(url, http_method, max_response_bytes, timeout) <
+         std::tie(other.url, other.http_method, other.max_response_bytes,
+                  other.timeout);
 }
 
 namespace {
@@ -508,9 +508,25 @@ void Job::StartURLRequest(URLRequestContext* context) {
                                         this, traffic_annotation);
   if (request_params_->http_method == HTTP_METHOD_POST)
     url_request_->set_method("POST");
-  url_request_->set_network_isolation_key(
-      request_params_->network_isolation_key);
   url_request_->set_allow_credentials(false);
+
+  // Disable secure DNS for hostname lookups triggered by certificate network
+  // fetches to prevent deadlock.
+  url_request_->SetDisableSecureDns(true);
+
+  // Create IsolationInfo based on the origin of the requested URL.
+  // TODO(https://crbug.com/1016890): Cert validation needs to either be
+  // double-keyed or based on a static database, to protect it from being used
+  // as a cross-site user tracking vector. For now, just treat it as if it were
+  // a subresource request of the origin used for the request. This allows the
+  // result to still be cached in the HTTP cache, and lets URLRequest DCHECK
+  // that all requests have non-empty IsolationInfos.
+  url::Origin origin = url::Origin::Create(request_params_->url);
+  url_request_->set_isolation_info(
+      IsolationInfo::Create(IsolationInfo::RedirectMode::kUpdateNothing,
+                            origin /* top_frame_origin */,
+                            origin /* frame_origin */, SiteForCookies()));
+
   url_request_->Start();
 
   // Start a timer to limit how long the job runs for.
@@ -777,16 +793,13 @@ void CertNetFetcherURLRequest::Shutdown() {
 }
 
 std::unique_ptr<CertNetFetcher::Request>
-CertNetFetcherURLRequest::FetchCaIssuers(
-    const GURL& url,
-    const NetworkIsolationKey& network_isolation_key,
-    int timeout_milliseconds,
-    int max_response_bytes) {
+CertNetFetcherURLRequest::FetchCaIssuers(const GURL& url,
+                                         int timeout_milliseconds,
+                                         int max_response_bytes) {
   std::unique_ptr<RequestParams> request_params(new RequestParams);
 
   request_params->url = url;
   request_params->http_method = HTTP_METHOD_GET;
-  request_params->network_isolation_key = network_isolation_key;
   request_params->timeout = GetTimeout(timeout_milliseconds);
   request_params->max_response_bytes =
       GetMaxResponseBytes(max_response_bytes, kMaxResponseSizeInBytesForAia);
@@ -796,14 +809,12 @@ CertNetFetcherURLRequest::FetchCaIssuers(
 
 std::unique_ptr<CertNetFetcher::Request> CertNetFetcherURLRequest::FetchCrl(
     const GURL& url,
-    const NetworkIsolationKey& network_isolation_key,
     int timeout_milliseconds,
     int max_response_bytes) {
   std::unique_ptr<RequestParams> request_params(new RequestParams);
 
   request_params->url = url;
   request_params->http_method = HTTP_METHOD_GET;
-  request_params->network_isolation_key = network_isolation_key;
   request_params->timeout = GetTimeout(timeout_milliseconds);
   request_params->max_response_bytes =
       GetMaxResponseBytes(max_response_bytes, kMaxResponseSizeInBytesForCrl);
@@ -813,14 +824,12 @@ std::unique_ptr<CertNetFetcher::Request> CertNetFetcherURLRequest::FetchCrl(
 
 std::unique_ptr<CertNetFetcher::Request> CertNetFetcherURLRequest::FetchOcsp(
     const GURL& url,
-    const NetworkIsolationKey& network_isolation_key,
     int timeout_milliseconds,
     int max_response_bytes) {
   std::unique_ptr<RequestParams> request_params(new RequestParams);
 
   request_params->url = url;
   request_params->http_method = HTTP_METHOD_GET;
-  request_params->network_isolation_key = network_isolation_key;
   request_params->timeout = GetTimeout(timeout_milliseconds);
   request_params->max_response_bytes =
       GetMaxResponseBytes(max_response_bytes, kMaxResponseSizeInBytesForAia);

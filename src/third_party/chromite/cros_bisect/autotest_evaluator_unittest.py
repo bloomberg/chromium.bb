@@ -426,7 +426,7 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
 
     rsh_mock.AddCmdResult(
         [self.REMOTE_REPORT_FILE, report_file], returncode=0,
-        kwargs={'error_code_ok': True}, mock_attr='ScpToLocal')
+        kwargs={'check': False}, mock_attr='ScpToLocal')
 
     eval_score = self.evaluator.Evaluate(self.DUT, self.BUILD_LABEL)
     self.assertEqual(1, len(eval_score.values))

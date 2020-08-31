@@ -24,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -140,7 +141,7 @@ NaClDomHandler::NaClDomHandler()
     : has_plugin_info_(false),
       pnacl_path_validated_(false),
       pnacl_path_exists_(false) {
-  PluginService::GetInstance()->GetPlugins(base::Bind(
+  PluginService::GetInstance()->GetPlugins(base::BindOnce(
       &NaClDomHandler::OnGotPlugins, weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -371,13 +372,12 @@ void NaClDomHandler::MaybeRespondToPage() {
 
   if (!pnacl_path_validated_) {
     std::string* version_string = new std::string;
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::Bind(&CheckPathAndVersion, version_string),
-        base::Bind(&NaClDomHandler::DidCheckPathAndVersion,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Owned(version_string)));
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(&CheckPathAndVersion, version_string),
+        base::BindOnce(&NaClDomHandler::DidCheckPathAndVersion,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Owned(version_string)));
     return;
   }
 

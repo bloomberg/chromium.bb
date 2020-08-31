@@ -4,8 +4,8 @@
 
 #import "ios/chrome/share_extension/share_extension_view.h"
 
-#include "base/logging.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
+#include "base/check.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/share_extension/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -103,6 +103,24 @@ const CGFloat kButtonFontSize = 17;
     UIButton* openButton =
         [self buttonWithTitle:openInChromeTitle
                      selector:@selector(openInChromePressed:)];
+
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      for (UIButton* button in
+           @[ self.readingListButton, bookmarksButton, openButton ]) {
+        button.pointerInteractionEnabled = YES;
+        button.pointerStyleProvider = ^UIPointerStyle*(
+            UIButton* button, __unused UIPointerEffect* proposedEffect,
+            __unused UIPointerShape* proposedShape) {
+          UITargetedPreview* preview =
+              [[UITargetedPreview alloc] initWithView:button];
+          UIPointerHoverEffect* effect =
+              [UIPointerHoverEffect effectWithPreview:preview];
+          return [UIPointerStyle styleWithEffect:effect shape:nil];
+        };
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
 
     UIStackView* contentStack = [[UIStackView alloc] initWithArrangedSubviews:@[
       [self navigationBar], [self dividerView], [self sharedItemView],

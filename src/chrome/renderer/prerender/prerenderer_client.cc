@@ -5,14 +5,10 @@
 #include "chrome/renderer/prerender/prerenderer_client.h"
 
 #include "base/logging.h"
-#include "chrome/renderer/prerender/prerender_extra_data.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/blink/public/web/web_view.h"
-
-namespace {
-static int s_last_prerender_id = 0;
-}
 
 namespace prerender {
 
@@ -23,16 +19,7 @@ PrerendererClient::PrerendererClient(content::RenderView* render_view)
   render_view->GetWebView()->SetPrerendererClient(this);
 }
 
-PrerendererClient::~PrerendererClient() {
-}
-
-void PrerendererClient::WillAddPrerender(blink::WebPrerender* prerender) {
-  DVLOG(3) << "PrerendererClient::willAddPrerender url = "
-           << prerender->Url().GetString().Utf8();
-  prerender->SetExtraData(
-      new PrerenderExtraData(++s_last_prerender_id, routing_id(),
-                             render_view()->GetWebView()->GetSize()));
-}
+PrerendererClient::~PrerendererClient() = default;
 
 bool PrerendererClient::IsPrefetchOnly() {
   return PrerenderHelper::GetPrerenderMode(

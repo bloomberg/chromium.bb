@@ -4,6 +4,26 @@
 
 import("//components/metrics/generate_expired_histograms_array.gni")
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "testing/sync_metrics_test_utils.cc",
+    "testing/sync_metrics_test_utils.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/browser",
+    "//components/signin/public/identity_manager",
+    "//components/sync/test/fake_server",
+    "//third_party/metrics_proto",
+  ]
+
+  if (!is_fuchsia) {
+    deps += [ "//chrome/test:sync_integration_test_support" ]
+  }
+}
+
 generate_expired_histograms_array("expired_histograms_array") {
   inputs = [
     "//tools/metrics/histograms/histograms.xml",

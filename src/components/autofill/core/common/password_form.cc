@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/core/common/password_form.h"
+
 #include <algorithm>
 #include <ostream>
 #include <sstream>
@@ -11,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/autofill/core/common/password_form.h"
 
 namespace autofill {
 
@@ -51,29 +52,28 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetBoolean("has_renderer_ids", form.has_renderer_ids);
   target->SetString("username_element", form.username_element);
   target->SetInteger("username_element_renderer_id",
-                     form.username_element_renderer_id);
+                     form.username_element_renderer_id.value());
   target->SetBoolean("username_marked_by_site", form.username_marked_by_site);
   target->SetString("username_value", form.username_value);
   target->SetString("password_element", form.password_element);
   target->SetString("password_value", form.password_value);
   target->SetInteger("password_element_renderer_id",
-                     form.password_element_renderer_id);
+                     form.password_element_renderer_id.value());
   target->SetString("new_password_element", form.new_password_element);
   target->SetInteger("password_element_renderer_id",
-                     form.password_element_renderer_id);
+                     form.password_element_renderer_id.value());
   target->SetString("new_password_value", form.new_password_value);
   target->SetBoolean("new_password_marked_by_site",
                      form.new_password_marked_by_site);
   target->SetString("confirmation_password_element",
                     form.confirmation_password_element);
   target->SetInteger("confirmation_password_element_renderer_id",
-                     form.confirmation_password_element_renderer_id);
+                     form.confirmation_password_element_renderer_id.value());
   target->SetString("all_possible_usernames",
                     ValueElementVectorToString(form.all_possible_usernames));
   target->SetString("all_possible_passwords",
                     ValueElementVectorToString(form.all_possible_passwords));
   target->SetBoolean("blacklisted", form.blacklisted_by_user);
-  target->SetBoolean("preferred", form.preferred);
   target->SetDouble("date_last_used", form.date_last_used.ToDoubleT());
   target->SetDouble("date_created", form.date_created.ToDoubleT());
   target->SetDouble("date_synced", form.date_synced.ToDoubleT());
@@ -97,6 +97,13 @@ void PasswordFormToJSON(const PasswordForm& form,
                      form.form_data.is_gaia_with_skip_save_password_form);
   target->SetBoolean("is_new_password_reliable", form.is_new_password_reliable);
   target->SetString("in_store", StoreToString(form.in_store));
+
+  std::vector<std::string> hashes;
+  hashes.reserve(form.moving_blocked_for_list.size());
+  for (const auto& gaia_id_hash : form.moving_blocked_for_list) {
+    hashes.push_back(gaia_id_hash.ToBase64());
+  }
+  target->SetString("moving_blocked_for_list", base::JoinString(hashes, ", "));
 }
 
 }  // namespace
@@ -122,20 +129,17 @@ bool PasswordForm::IsPossibleChangePasswordFormWithoutUsername() const {
 }
 
 bool PasswordForm::HasUsernameElement() const {
-  return has_renderer_ids ? username_element_renderer_id !=
-                                FormFieldData::kNotSetFormControlRendererId
+  return has_renderer_ids ? !username_element_renderer_id.is_null()
                           : !username_element.empty();
 }
 
 bool PasswordForm::HasPasswordElement() const {
-  return has_renderer_ids ? password_element_renderer_id !=
-                                FormFieldData::kNotSetFormControlRendererId
+  return has_renderer_ids ? !password_element_renderer_id.is_null()
                           : !password_element.empty();
 }
 
 bool PasswordForm::HasNewPasswordElement() const {
-  return has_renderer_ids ? new_password_element_renderer_id !=
-                                FormFieldData::kNotSetFormControlRendererId
+  return has_renderer_ids ? !new_password_element_renderer_id.is_null()
                           : !new_password_element.empty();
 }
 
@@ -179,8 +183,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          confirmation_password_element_renderer_id ==
              form.confirmation_password_element_renderer_id &&
          new_password_value == form.new_password_value &&
-         preferred == form.preferred && date_created == form.date_created &&
-         date_synced == form.date_synced &&
+         date_created == form.date_created && date_synced == form.date_synced &&
          date_last_used == form.date_last_used &&
          blacklisted_by_user == form.blacklisted_by_user && type == form.type &&
          times_used == form.times_used &&
@@ -201,7 +204,8 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          submission_event == form.submission_event &&
          only_for_fallback == form.only_for_fallback &&
          is_new_password_reliable == form.is_new_password_reliable &&
-         in_store == form.in_store;
+         in_store == form.in_store &&
+         moving_blocked_for_list == form.moving_blocked_for_list;
 }
 
 bool PasswordForm::operator!=(const PasswordForm& form) const {

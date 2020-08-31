@@ -35,7 +35,8 @@ int main(int argc, char** argv) {
 
   if (argc < 2) {
     dprintf(STDERR_FILENO,
-            "Missing port number\nusage: demo_client <server-port>\n");
+            "Missing port number\nusage: streaming_playback_controller "
+            "<server-port>\n");
     return 1;
   }
   int port = atoi(argv[1]);

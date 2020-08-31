@@ -19,17 +19,6 @@ rtc_library("cascaded_biquad_filter") {
   ]
 }
 
-rtc_library("block_mean_calculator") {
-  sources = [
-    "block_mean_calculator.cc",
-    "block_mean_calculator.h",
-  ]
-  deps = [
-    "../../../rtc_base:checks",
-    "../../../rtc_base:rtc_base_approved",
-  ]
-}
-
 rtc_library("legacy_delay_estimator") {
   sources = [
     "delay_estimator.cc",
@@ -38,51 +27,7 @@ rtc_library("legacy_delay_estimator") {
     "delay_estimator_wrapper.cc",
     "delay_estimator_wrapper.h",
   ]
-  deps = [
-    "../../../rtc_base:checks",
-  ]
-}
-
-rtc_library("ooura_fft") {
-  sources = [
-    "ooura_fft.cc",
-    "ooura_fft.h",
-    "ooura_fft_tables_common.h",
-  ]
-  deps = [
-    "../../../rtc_base/system:arch",
-    "../../../system_wrappers:cpu_features_api",
-  ]
-  cflags = []
-
-  if (current_cpu == "x86" || current_cpu == "x64") {
-    sources += [
-      "ooura_fft_sse2.cc",
-      "ooura_fft_tables_neon_sse2.h",
-    ]
-    if (is_posix || is_fuchsia) {
-      cflags += [ "-msse2" ]
-    }
-  }
-
-  if (rtc_build_with_neon) {
-    sources += [
-      "ooura_fft_neon.cc",
-      "ooura_fft_tables_neon_sse2.h",
-    ]
-
-    deps += [ "../../../common_audio" ]
-
-    if (current_cpu != "arm64") {
-      # Enable compilation for the NEON instruction set.
-      suppressed_configs += [ "//build/config/compiler:compiler_arm_fpu" ]
-      cflags += [ "-mfpu=neon" ]
-    }
-  }
-
-  if (current_cpu == "mipsel" && mips_float_abi == "hard") {
-    sources += [ "ooura_fft_mips.cc" ]
-  }
+  deps = [ "../../../rtc_base:checks" ]
 }
 
 rtc_library("pffft_wrapper") {
@@ -102,25 +47,9 @@ if (rtc_include_tests) {
   rtc_library("cascaded_biquad_filter_unittest") {
     testonly = true
 
-    sources = [
-      "cascaded_biquad_filter_unittest.cc",
-    ]
+    sources = [ "cascaded_biquad_filter_unittest.cc" ]
     deps = [
       ":cascaded_biquad_filter",
-      "../../../rtc_base:rtc_base_approved",
-      "../../../test:test_support",
-      "//testing/gtest",
-    ]
-  }
-
-  rtc_library("block_mean_calculator_unittest") {
-    testonly = true
-
-    sources = [
-      "block_mean_calculator_unittest.cc",
-    ]
-    deps = [
-      ":block_mean_calculator",
       "../../../rtc_base:rtc_base_approved",
       "../../../test:test_support",
       "//testing/gtest",
@@ -130,9 +59,7 @@ if (rtc_include_tests) {
   rtc_library("legacy_delay_estimator_unittest") {
     testonly = true
 
-    sources = [
-      "delay_estimator_unittest.cc",
-    ]
+    sources = [ "delay_estimator_unittest.cc" ]
     deps = [
       ":legacy_delay_estimator",
       "../../../rtc_base:rtc_base_approved",
@@ -143,9 +70,7 @@ if (rtc_include_tests) {
 
   rtc_library("pffft_wrapper_unittest") {
     testonly = true
-    sources = [
-      "pffft_wrapper_unittest.cc",
-    ]
+    sources = [ "pffft_wrapper_unittest.cc" ]
     deps = [
       ":pffft_wrapper",
       "../../../test:test_support",

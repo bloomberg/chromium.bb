@@ -346,6 +346,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
                        const std::string& description) override {
     POWER_LOG(USER) << "RequestShutdown: " << reason << " (" << description
                     << ")";
+    for (auto& observer : observers_)
+      observer.ShutdownRequested(reason);
     dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
                                  power_manager::kRequestShutdownMethod);
     dbus::MessageWriter writer(&method_call);
@@ -975,7 +977,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     // powerd gives clients a limited amount of time to report suspend
     // readiness. Log the stragglers within Chrome to aid in debugging.
-    for (const auto it : suspend_readiness_registry_) {
+    for (const auto& it : suspend_readiness_registry_) {
       LOG(WARNING) << "Didn't report suspend readiness due to "
                    << it.second.debug_info;
     }

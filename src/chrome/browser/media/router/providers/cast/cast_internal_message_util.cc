@@ -116,17 +116,16 @@ constexpr char kReceiverActionTypeStop[] = "stop";
 
 base::ListValue CapabilitiesToListValue(uint8_t capabilities) {
   base::ListValue value;
-  auto& storage = value.GetList();
   if (capabilities & cast_channel::VIDEO_OUT)
-    storage.emplace_back("video_out");
+    value.Append("video_out");
   if (capabilities & cast_channel::VIDEO_IN)
-    storage.emplace_back("video_in");
+    value.Append("video_in");
   if (capabilities & cast_channel::AUDIO_OUT)
-    storage.emplace_back("audio_out");
+    value.Append("audio_out");
   if (capabilities & cast_channel::AUDIO_IN)
-    storage.emplace_back("audio_in");
+    value.Append("audio_in");
   if (capabilities & cast_channel::MULTIZONE_GROUP)
-    storage.emplace_back("multizone_group");
+    value.Append("multizone_group");
   return value;
 }
 
@@ -518,17 +517,20 @@ blink::mojom::PresentationConnectionMessagePtr CreateErrorMessage(
                              std::move(error), client_id, sequence_number);
 }
 
-base::Value SupportedMediaRequestsToListValue(int media_requests) {
+base::Value SupportedMediaCommandsToListValue(int media_commands) {
   base::Value value(base::Value::Type::LIST);
-  auto& storage = value.GetList();
-  if (media_requests & 1)
-    storage.emplace_back("pause");
-  if (media_requests & 2)
-    storage.emplace_back("seek");
-  if (media_requests & 4)
-    storage.emplace_back("stream_volume");
-  if (media_requests & 8)
-    storage.emplace_back("stream_mute");
+  if (media_commands & static_cast<int>(MediaCommand::kPause))
+    value.Append(kMediaCommandPause);
+  if (media_commands & static_cast<int>(MediaCommand::kSeek))
+    value.Append(kMediaCommandSeek);
+  if (media_commands & static_cast<int>(MediaCommand::kStreamVolume))
+    value.Append(kMediaCommandStreamVolume);
+  if (media_commands & static_cast<int>(MediaCommand::kStreamMute))
+    value.Append(kMediaCommandStreamMute);
+  if (media_commands & static_cast<int>(MediaCommand::kQueueNext))
+    value.Append(kMediaCommandQueueNext);
+  if (media_commands & static_cast<int>(MediaCommand::kQueuePrev))
+    value.Append(kMediaCommandQueuePrev);
   return value;
 }
 

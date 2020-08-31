@@ -26,6 +26,8 @@ tools.force_local_third_party()
 from scandir import scandir
 import six
 
+import isolated_format
+
 # The file size to be used when we don't know the correct file size,
 # generally used for .isolated files.
 UNKNOWN_FILE_SIZE = None
@@ -185,11 +187,11 @@ class CachePolicies(object):
     self.max_age_secs = max_age_secs
 
   def __str__(self):
-    return (
-        'CachePolicies(max_cache_size=%s; max_items=%s; min_free_space=%s; '
-        'max_age_secs=%s)') % (
-            self.max_cache_size, self.max_items, self.min_free_space,
-            self.max_age_secs)
+    return ('CachePolicies(max_cache_size=%s (%.3f GiB); max_items=%s; '
+            'min_free_space=%s (%.3f GiB); max_age_secs=%s)') % (
+                self.max_cache_size, float(self.max_cache_size) / 1024**3,
+                self.max_items, self.min_free_space,
+                float(self.min_free_space) / 1024**3, self.max_age_secs)
 
 
 class CacheMiss(Exception):
@@ -203,7 +205,7 @@ class CacheMiss(Exception):
 class Cache(object):
   def __init__(self, cache_dir):
     if cache_dir is not None:
-      assert isinstance(cache_dir, unicode), cache_dir
+      assert isinstance(cache_dir, six.text_type), cache_dir
       assert file_path.isabs(cache_dir), cache_dir
     self.cache_dir = cache_dir
     self._lock = threading_utils.LockWithAssert()
@@ -366,7 +368,7 @@ class MemoryContentAddressedCache(ContentAddressedCache):
   @property
   def total_size(self):
     with self._lock:
-      return sum(len(i) for i in self._lru.itervalues())
+      return sum(len(i) for i in self._lru.values())
 
   def get_oldest(self):
     with self._lock:
@@ -419,7 +421,7 @@ class MemoryContentAddressedCache(ContentAddressedCache):
 
   def write(self, digest, content):
     # Assemble whole stream before taking the lock.
-    data = ''.join(content)
+    data = six.b('').join(content)
     with self._lock:
       self._lru.add(digest, data)
       self._added.append(len(data))
@@ -479,7 +481,7 @@ class DiskContentAddressedCache(ContentAddressedCache):
   @property
   def total_size(self):
     with self._lock:
-      return sum(self._lru.itervalues())
+      return sum(self._lru.values())
 
   def get_oldest(self):
     with self._lock:
@@ -545,19 +547,24 @@ class DiskContentAddressedCache(ContentAddressedCache):
           self._lru.pop(filename)
         self._save()
 
-    # What remains to be done is to hash every single item to
-    # detect corruption, then save to ensure state.json is up to date.
-    # Sadly, on a 50GiB cache with 100MiB/s I/O, this is still over 8 minutes.
-    # TODO(maruel): Let's revisit once directory metadata is stored in
-    # state.json so only the files that had been mapped since the last cleanup()
-    # call are manually verified.
-    #
-    #with self._lock:
-    #  for digest in self._lru:
-    #    if not isolated_format.is_valid_hash(
-    #        self._path(digest), self.hash_algo):
-    #      self.evict(digest)
-    #      logging.info('Deleted corrupted item: %s', digest)
+    # Verify hash of every single item to detect corruption. the corrupted
+    # files will be evicted.
+    with self._lock:
+      for digest, (_, timestamp) in self._lru._items.items():
+        # verify only if the mtime is grather than the timestamp in state.json
+        # to avoid take too long time.
+        if self._get_mtime(digest) <= timestamp:
+          continue
+        logging.warning('Item has been modified. item: %s', digest)
+        if self._is_valid_hash(digest):
+          # Update timestamp in state.json
+          self._lru.touch(digest)
+          continue
+        # remove corrupted file from LRU and file system
+        self._lru.pop(digest)
+        self._delete_file(digest, UNKNOWN_FILE_SIZE)
+        logging.error('Deleted corrupted item: %s', digest)
+      self._save()
 
   # ContentAddressedCache interface implementation.
 
@@ -653,8 +660,10 @@ class DiskContentAddressedCache(ContentAddressedCache):
         self._lru = lru.LRUDict.load(self.state_file)
       except ValueError as err:
         logging.error('Failed to load cache state: %s' % (err,))
-        # Don't want to keep broken state file.
-        file_path.try_remove(self.state_file)
+        # Don't want to keep broken cache dir.
+        file_path.rmtree(self.cache_dir)
+        fs.makedirs(self.cache_dir)
+        self._free_disk = file_path.get_free_space(self.cache_dir)
     if time_fn:
       self._lru.time_fn = time_fn
     if trim:
@@ -689,7 +698,7 @@ class DiskContentAddressedCache(ContentAddressedCache):
 
     # Ensure maximum cache size.
     if self.policies.max_cache_size:
-      total_size = sum(self._lru.itervalues())
+      total_size = sum(self._lru.values())
       while total_size > self.policies.max_cache_size:
         e = self._remove_lru_file(True)
         evicted.append(e)
@@ -697,7 +706,7 @@ class DiskContentAddressedCache(ContentAddressedCache):
 
     # Ensure maximum number of items in the cache.
     if self.policies.max_items and len(self._lru) > self.policies.max_items:
-      for _ in xrange(len(self._lru) - self.policies.max_items):
+      for _ in range(len(self._lru) - self.policies.max_items):
         evicted.append(self._remove_lru_file(True))
 
     # Ensure enough free space.
@@ -710,7 +719,7 @@ class DiskContentAddressedCache(ContentAddressedCache):
       evicted.append(self._remove_lru_file(True))
 
     if evicted:
-      total_usage = sum(self._lru.itervalues())
+      total_usage = sum(self._lru.values())
       usage_percent = 0.
       if total_usage:
         usage_percent = 100. * float(total_usage) / self.policies.max_cache_size
@@ -732,19 +741,21 @@ class DiskContentAddressedCache(ContentAddressedCache):
     return os.path.join(self.cache_dir, digest)
 
   def _remove_lru_file(self, allow_protected):
-    """Removes the lastest recently used file and returns its size.
+    """Removes the latest recently used file and returns its size.
 
     Updates self._free_disk.
     """
     self._lock.assert_locked()
     try:
-      digest, (size, _ts) = self._lru.get_oldest()
+      digest, _ = self._lru.get_oldest()
       if not allow_protected and digest == self._protected:
-        total_size = sum(self._lru.itervalues())+size
-        msg = (
-            'Not enough space to fetch the whole isolated tree.\n'
-            '  %s\n  cache=%dbytes, %d items; %sb free_space') % (
-              self.policies, total_size, len(self._lru)+1, self._free_disk)
+        total_size = sum(self._lru.values())
+        msg = ('Not enough space to fetch the whole isolated tree.\n'
+               ' %s\n  cache=%d bytes (%.3f GiB), %d items; '
+               '%s bytes (%.3f GiB) free_space') % (
+                   self.policies, total_size, float(total_size) / 1024**3,
+                   len(self._lru), self._free_disk,
+                   float(self._free_disk) / 1024**3)
         raise NoMoreSpace(msg)
     except KeyError:
       # That means an internal error.
@@ -794,6 +805,17 @@ class DiskContentAddressedCache(ContentAddressedCache):
       if e.errno != errno.ENOENT:
         logging.error('Error attempting to delete a file %s:\n%s' % (digest, e))
 
+  def _get_mtime(self, digest):
+    """Get mtime of cache file."""
+    return  os.path.getmtime(self._path(digest))
+
+  def _is_valid_hash(self, digest):
+    """Verify digest with supported hash algos."""
+    for _, algo in isolated_format.SUPPORTED_ALGOS.items():
+      if digest == isolated_format.hash_file(self._path(digest), algo):
+        return True
+    return False
+
 
 class NamedCache(Cache):
   """Manages cache directories.
@@ -832,6 +854,7 @@ class NamedCache(Cache):
         logging.exception(
             'NamedCache: failed to load named cache state file; obliterating')
         file_path.rmtree(self.cache_dir)
+        fs.makedirs(self.cache_dir)
       with self._lock:
         self._try_upgrade()
     if time_fn:
@@ -984,14 +1007,14 @@ class NamedCache(Cache):
     # This is not thread-safe.
     return self._lru.__iter__()
 
-  def __contains__(self, digest):
+  def __contains__(self, name):
     with self._lock:
-      return digest in self._lru
+      return name in self._lru
 
   @property
   def total_size(self):
     with self._lock:
-      return sum(size for _rel_path, size in self._lru.itervalues())
+      return sum(size for _rel_path, size in self._lru.values())
 
   def get_oldest(self):
     with self._lock:
@@ -1010,6 +1033,13 @@ class NamedCache(Cache):
   def save(self):
     with self._lock:
       return self._save()
+
+  def touch(self, *names):
+    with self._lock:
+      for name in names:
+        if name in self._lru:
+          self._lru.touch(name)
+      self._save()
 
   def trim(self):
     evicted = []
@@ -1054,7 +1084,7 @@ class NamedCache(Cache):
       # Trim according to maximum total size.
       if self._policies.max_cache_size:
         while self._lru:
-          total = sum(size for _rel_cache, size in self._lru.itervalues())
+          total = sum(size for _rel_cache, size in self._lru.values())
           if total <= self._policies.max_cache_size:
             break
           name, size = self._remove_lru_item()
@@ -1078,7 +1108,7 @@ class NamedCache(Cache):
         actual = set(fs.listdir(self.cache_dir))
         actual.discard(self.NAMED_DIR)
         actual.discard(self.STATE_FILE)
-        expected = {v[0]: k for k, v in self._lru.iteritems()}
+        expected = {v[0]: k for k, v in self._lru.items()}
         # First, handle the actual cache content.
         # Remove missing entries.
         for missing in (set(expected) - actual):

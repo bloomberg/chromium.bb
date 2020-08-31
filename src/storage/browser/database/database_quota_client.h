@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
@@ -20,17 +21,17 @@ namespace storage {
 
 class DatabaseTracker;
 
-// A QuotaClient implementation to integrate WebSQLDatabases
-// with the quota  management system. This interface is used
-// on the IO thread by the quota manager.
+// Integrates WebSQL databases with the quota management system.
+//
+// This interface is used on the IO thread by the quota manager.
 class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseQuotaClient
-    : public storage::QuotaClient {
+    : public QuotaClient {
  public:
-  DatabaseQuotaClient(scoped_refptr<DatabaseTracker> tracker);
+  explicit DatabaseQuotaClient(scoped_refptr<DatabaseTracker> tracker);
 
   // QuotaClient method overrides
-  ID id() const override;
-  void OnQuotaManagerDestroyed() override {}
+  storage::QuotaClientType type() const override;
+  void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,
                       GetUsageCallback callback) override;
@@ -42,6 +43,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseQuotaClient
   void DeleteOriginData(const url::Origin& origin,
                         blink::mojom::StorageType type,
                         DeletionCallback callback) override;
+  void PerformStorageCleanup(blink::mojom::StorageType type,
+                             base::OnceClosure callback) override;
   bool DoesSupport(blink::mojom::StorageType type) const override;
 
  private:

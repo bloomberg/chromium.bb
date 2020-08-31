@@ -28,6 +28,7 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -92,7 +93,7 @@ class AutofillAutocompleteTest : public InProcessBrowserTest {
         ->DriverForFrame(web_contents->GetMainFrame())
         ->autofill_manager()
         ->client()
-        ->HideAutofillPopup();
+        ->HideAutofillPopup(PopupHidingReason::kTabGone);
     test::ReenableSystemServices();
   }
 

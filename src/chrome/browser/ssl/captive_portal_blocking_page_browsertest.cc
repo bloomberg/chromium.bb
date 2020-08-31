@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/captive_portal_blocking_page.h"
+#include "components/security_interstitials/content/captive_portal_blocking_page.h"
 
 #include <string>
 #include <utility>
@@ -31,7 +31,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/captive_portal/captive_portal_detector.h"
+#include "components/captive_portal/core/captive_portal_detector.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/cert_report_helper.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
@@ -39,9 +39,9 @@
 #include "components/security_state/core/security_state.h"
 #include "components/variations/variations_params_manager.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
@@ -120,8 +120,9 @@ CaptivePortalTestingNavigationThrottle::WillFailRequest() {
   ssl_info.cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   ssl_info.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
-  CaptivePortalBlockingPage* blocking_page =
-      ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
+  ChromeSecurityBlockingPageFactory blocking_page_factory;
+  std::unique_ptr<CaptivePortalBlockingPage> blocking_page =
+      blocking_page_factory.CreateCaptivePortalBlockingPage(
           navigation_handle()->GetWebContents(), GURL(kBrokenSSL), login_url_,
           std::move(ssl_cert_reporter_), ssl_info,
           net::ERR_CERT_COMMON_NAME_INVALID);
@@ -132,8 +133,7 @@ CaptivePortalTestingNavigationThrottle::WillFailRequest() {
   // security_interstitials::SecurityInterstitialTabHelper to own.
   security_interstitials::SecurityInterstitialTabHelper::AssociateBlockingPage(
       navigation_handle()->GetWebContents(),
-      navigation_handle()->GetNavigationId(),
-      std::unique_ptr<CaptivePortalBlockingPage>(blocking_page));
+      navigation_handle()->GetNavigationId(), std::move(blocking_page));
   return {CANCEL, net::ERR_CERT_COMMON_NAME_INVALID, html};
 }
 
@@ -423,12 +423,13 @@ class CaptivePortalBlockingPageIDNTest : public SecurityInterstitialIDNTest {
       const GURL& request_url) const override {
     net::SSLInfo empty_ssl_info;
     // Blocking page is owned by the interstitial.
-    CaptivePortalBlockingPage* blocking_page =
-        ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
+    ChromeSecurityBlockingPageFactory blocking_page_factory;
+    std::unique_ptr<CaptivePortalBlockingPage> blocking_page =
+        blocking_page_factory.CreateCaptivePortalBlockingPage(
             contents, GURL(kBrokenSSL), request_url, nullptr, empty_ssl_info,
             net::ERR_CERT_COMMON_NAME_INVALID);
     blocking_page->OverrideWifiInfoForTesting(false, "");
-    return blocking_page;
+    return blocking_page.release();
   }
 };
 

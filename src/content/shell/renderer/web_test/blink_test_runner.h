@@ -6,22 +6,26 @@
 #define CONTENT_SHELL_RENDERER_WEB_TEST_BLINK_TEST_RUNNER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/public/common/page_state.h"
-#include "content/public/renderer/render_view_observer.h"
-#include "content/public/renderer/render_view_observer_tracker.h"
-#include "content/shell/common/web_test.mojom.h"
+#include "content/shell/common/web_test/web_test.mojom.h"
 #include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
-#include "content/shell/test_runner/test_preferences.h"
-#include "content/shell/test_runner/web_test_delegate.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "url/origin.h"
 #include "v8/include/v8.h"
 
 class SkBitmap;
@@ -30,172 +34,203 @@ namespace base {
 class DictionaryValue;
 }  // namespace base
 
-namespace blink {
-class WebView;
-}  // namespace blink
-
-namespace test_runner {
-class AppBannerService;
-}  // namespace test_runner
-
 namespace content {
+class WebViewTestProxy;
+struct WebPreferences;
 
-// This is the renderer side of the webkit test runner.
-// TODO(lukasza): Rename to WebTestRenderViewObserver for consistency with
-// WebTestRenderFrameObserver.
-class BlinkTestRunner : public RenderViewObserver,
-                        public RenderViewObserverTracker<BlinkTestRunner>,
-                        public test_runner::WebTestDelegate {
+// An instance of this class is attached to each RenderView in each renderer
+// process during a web test. It handles IPCs (forwarded from
+// WebTestRenderFrameObserver) from the browser to manage the web test state
+// machine.
+class BlinkTestRunner {
  public:
-  explicit BlinkTestRunner(RenderView* render_view);
-  ~BlinkTestRunner() override;
+  explicit BlinkTestRunner(WebViewTestProxy* web_view_test_proxy);
+  ~BlinkTestRunner();
 
-  // RenderViewObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
-  void DidClearWindowObject(blink::WebLocalFrame* frame) override;
+  // Add a message to stderr (not saved to expected output files, for debugging
+  // only).
+  void PrintMessageToStderr(const std::string& message);
 
-  // WebTestDelegate implementation.
-  void ClearEditCommand() override;
-  void SetEditCommand(const std::string& name,
-                      const std::string& value) override;
-  void PrintMessageToStderr(const std::string& message) override;
-  void PrintMessage(const std::string& message) override;
-  void PostTask(base::OnceClosure task) override;
-  void PostDelayedTask(base::OnceClosure task, base::TimeDelta delay) override;
+  // Add a message to the text dump for the web test.
+  void PrintMessage(const std::string& message);
+
+  // Register a new isolated filesystem with the given files, and return the
+  // new filesystem id.
   blink::WebString RegisterIsolatedFileSystem(
-      const blink::WebVector<blink::WebString>& absolute_filenames) override;
-  long long GetCurrentTimeInMillisecond() override;
-  blink::WebString GetAbsoluteWebStringFromUTF8Path(
-      const std::string& utf8_path) override;
-  blink::WebURL LocalFileToDataURL(const blink::WebURL& file_url) override;
-  blink::WebURL RewriteWebTestsURL(const std::string& utf8_url,
-                                   bool is_wpt_mode) override;
-  test_runner::TestPreferences* Preferences() override;
-  void ApplyPreferences() override;
-  void SetPopupBlockingEnabled(bool block_popups) override;
-  void UseUnfortunateSynchronousResizeMode(bool enable) override;
-  void EnableAutoResizeMode(const blink::WebSize& min_size,
-                            const blink::WebSize& max_size) override;
-  void DisableAutoResizeMode(const blink::WebSize& new_size) override;
-  void ResetAutoResizeMode() override;
-  void NavigateSecondaryWindow(const GURL& url) override;
-  void InspectSecondaryWindow() override;
-  void ClearAllDatabases() override;
-  void SetDatabaseQuota(int quota) override;
+      const blink::WebVector<blink::WebString>& absolute_filenames);
+
+  // Convert the provided relative path into an absolute path.
+  blink::WebString GetAbsoluteWebStringFromUTF8Path(const std::string& path);
+
+  void SetPopupBlockingEnabled(bool block_popups);
+
+  // Controls WebSQL databases.
+  void ClearAllDatabases();
+  // Setting quota to kDefaultDatabaseQuota will reset it to the default value.
+  void SetDatabaseQuota(int quota);
+
+  // Controls Web Notifications.
   void SimulateWebNotificationClick(
       const std::string& title,
       const base::Optional<int>& action_index,
-      const base::Optional<base::string16>& reply) override;
-  void SimulateWebNotificationClose(const std::string& title,
-                                    bool by_user) override;
-  void SimulateWebContentIndexDelete(const std::string& id) override;
-  void SetDeviceScaleFactor(float factor) override;
-  void SetDeviceColorSpace(const std::string& name) override;
-  std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
-      test_runner::WebWidgetTestProxy* web_widget_test_proxy,
-      const blink::WebInputEvent& event) override;
-  test_runner::WebWidgetTestProxy* GetWebWidgetTestProxy(
-      blink::WebLocalFrame* frame) override;
-  void EnableUseZoomForDSF() override;
-  bool IsUseZoomForDSFEnabled() override;
+      const base::Optional<base::string16>& reply);
+  void SimulateWebNotificationClose(const std::string& title, bool by_user);
+
+  // Controls Content Index entries.
+  void SimulateWebContentIndexDelete(const std::string& id);
+
+  // Set the bluetooth adapter while running a web test, uses Mojo to
+  // communicate with the browser.
   void SetBluetoothFakeAdapter(const std::string& adapter_name,
-                               base::OnceClosure callback) override;
-  void SetBluetoothManualChooser(bool enable) override;
+                               base::OnceClosure callback);
+
+  // If |enable| is true makes the Bluetooth chooser record its input and wait
+  // for instructions from the test program on how to proceed. Otherwise
+  // fall backs to the browser's default chooser.
+  void SetBluetoothManualChooser(bool enable);
+
+  // Returns the events recorded since the last call to this function.
   void GetBluetoothManualChooserEvents(
-      base::OnceCallback<void(const std::vector<std::string>&)> callback)
-      override;
+      base::OnceCallback<void(const std::vector<std::string>& events)>
+          callback);
+
+  // Calls the BluetoothChooser::EventHandler with the arguments here. Valid
+  // event strings are:
+  //  * "cancel" - simulates the user canceling the chooser.
+  //  * "select" - simulates the user selecting a device whose device ID is in
+  //               |argument|.
   void SendBluetoothManualChooserEvent(const std::string& event,
-                                       const std::string& argument) override;
-  void SetFocus(blink::WebView* web_view, bool focus) override;
-  void SetBlockThirdPartyCookies(bool block) override;
-  std::string PathToLocalResource(const std::string& resource) override;
-  void SetLocale(const std::string& locale) override;
+                                       const std::string& argument);
+
+  // Controls whether all cookies should be accepted or writing cookies in a
+  // third-party context is blocked.
+  void SetBlockThirdPartyCookies(bool block);
+
+  // Sets the POSIX locale of the current process.
+  void SetLocale(const std::string& locale);
+
+  // Returns the absolute path to a directory this test can write data in. This
+  // returns the path to a fresh empty directory for each test that calls this
+  // method, but repeatedly calling this from the same test will return the same
+  // directory.
+  base::FilePath GetWritableDirectory();
+
+  // Sets the path that should be returned when the test shows a file dialog.
+  void SetFilePathForMockFileDialog(const base::FilePath& path);
+
+  // Invoked when web test runtime flags change.
   void OnWebTestRuntimeFlagsChanged(
-      const base::DictionaryValue& changed_values) override;
-  void TestFinished() override;
-  void CloseRemainingWindows() override;
-  void DeleteAllCookies() override;
-  int NavigationEntryCount() override;
-  void GoToOffset(int offset) override;
-  void Reload() override;
-  void LoadURLForFrame(const blink::WebURL& url,
-                       const std::string& frame_name) override;
-  bool AllowExternalPages() override;
-  void FetchManifest(
-      blink::WebView* view,
-      base::OnceCallback<void(const blink::WebURL&, const blink::Manifest&)>
-          callback) override;
-  void SetPermission(const std::string& name,
-                     const std::string& value,
+      const base::DictionaryValue& changed_values);
+
+  // Invoked when the test finished.
+  void TestFinished();
+
+  // Invoked when the embedder should close all but the main WebView.
+  void CloseRemainingWindows();
+
+  void DeleteAllCookies();
+
+  // Returns the length of the back/forward history of the main WebView.
+  int NavigationEntryCount();
+
+  // The following trigger navigations on the main WebView.
+  void GoToOffset(int offset);
+  void Reload();
+  void LoadURLForFrame(const blink::WebURL& url, const std::string& frame_name);
+
+  // Returns true if resource requests to external URLs should be permitted.
+  bool AllowExternalPages();
+
+  // Sends a message to the WebTestPermissionManager in order for it to
+  // update its database.
+  void SetPermission(const std::string& permission_name,
+                     const std::string& permission_value,
                      const GURL& origin,
-                     const GURL& embedding_origin) override;
-  void ResetPermissions() override;
+                     const GURL& embedding_origin);
+
+  // Clear all the permissions set via SetPermission().
+  void ResetPermissions();
+
+  // Causes the beforeinstallprompt event to be sent to the renderer.
+  // |event_platforms| are the platforms to be sent with the event. Once the
+  // event listener completes, |callback| will be called with a boolean
+  // argument. This argument will be true if the event is canceled, and false
+  // otherwise.
   void DispatchBeforeInstallPromptEvent(
       const std::vector<std::string>& event_platforms,
-      base::OnceCallback<void(bool)> callback) override;
-  void ResolveBeforeInstallPromptPromise(const std::string& platform) override;
-  blink::WebPlugin* CreatePluginPlaceholder(
-      const blink::WebPluginParams& params) override;
-  void RunIdleTasks(base::OnceClosure callback) override;
-  void ForceTextInputStateUpdate(blink::WebLocalFrame* frame) override;
+      base::OnceCallback<void(bool)> callback);
 
-  // Resets a RenderView to a known state for web tests. It is used both when
-  // a RenderView is created and when reusing an existing RenderView for the
-  // next test case.
-  // When reusing an existing RenderView, |for_new_test| should be true, which
-  // also resets additional state, like the main frame's name and opener.
-  void Reset(bool for_new_test);
+  // Mark the orientation changed for fullscreen layout tests.
+  void SetScreenOrientationChanged();
+
+  // Sets the network service-global Trust Tokens key commitments.
+  // |raw_commitments| should be JSON-encoded according to the format expected
+  // by NetworkService::SetTrustTokenKeyCommitments.
+  void SetTrustTokenKeyCommitments(const std::string& raw_commitments,
+                                   base::OnceClosure callback);
+
+  // Clears persistent Trust Token API state
+  // (https://github.com/wicg/trust-token-api).
+  void ClearTrustTokenState(base::OnceClosure callback);
+
+  // Moves focus and active state to the secondary devtools window, which exists
+  // only in devtools JS tests.
+  void FocusDevtoolsSecondaryWindow();
+
+  // Pass the overridden WebPreferences to the browser.
+  void OverridePreferences(const WebPreferences& prefs);
 
   // Message handlers forwarded by WebTestRenderFrameObserver.
-  void OnSetTestConfiguration(mojom::ShellTestConfigurationPtr params);
-  void OnReplicateTestConfiguration(mojom::ShellTestConfigurationPtr params);
-  void OnSetupSecondaryRenderer();
-  void CaptureDump(mojom::WebTestControl::CaptureDumpCallback callback);
+  void OnSetTestConfiguration(mojom::WebTestRunTestConfigurationPtr params);
+  void OnReplicateTestConfiguration(
+      mojom::WebTestRunTestConfigurationPtr params);
+  void OnSetupRendererProcessForNonTestWindow();
+  void CaptureDump(mojom::WebTestRenderFrame::CaptureDumpCallback callback);
   void DidCommitNavigationInMainFrame();
-
- private:
-  // Message handlers.
-  void OnReset();
-  void OnTestFinishedInSecondaryRenderer();
+  void OnResetRendererAfterWebTest();
+  void OnFinishTestInMainWindow();
+  void OnLayoutDumpCompleted(std::string completed_layout_dump);
   void OnReplyBluetoothManualChooserEvents(
       const std::vector<std::string>& events);
 
-  // RenderViewObserver implementation.
-  void OnDestruct() override;
-
+ private:
   // Helper reused by OnSetTestConfiguration and OnReplicateTestConfiguration.
-  void ApplyTestConfiguration(mojom::ShellTestConfigurationPtr params);
+  void ApplyTestConfiguration(mojom::WebTestRunTestConfigurationPtr params);
 
   // After finishing the test, retrieves the audio, text, and pixel dumps from
   // the TestRunner library and sends them to the browser process.
-  void OnLayoutDumpCompleted(std::string completed_layout_dump);
   void OnPixelsDumpCompleted(const SkBitmap& snapshot);
   void CaptureDumpComplete();
   void CaptureLocalAudioDump();
   void CaptureLocalLayoutDump();
   void CaptureLocalPixelsDump();
 
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
-
   mojom::WebTestBluetoothFakeAdapterSetter& GetBluetoothFakeAdapterSetter();
   mojo::Remote<mojom::WebTestBluetoothFakeAdapterSetter>
       bluetooth_fake_adapter_setter_;
 
-  test_runner::TestPreferences prefs_;
+  void HandleWebTestControlHostDisconnected();
+  mojo::AssociatedRemote<mojom::WebTestControlHost>&
+  GetWebTestControlHostRemote();
+  mojo::AssociatedRemote<mojom::WebTestControlHost>
+      web_test_control_host_remote_;
 
-  mojom::ShellTestConfigurationPtr test_config_;
+  void HandleWebTestClientDisconnected();
+  mojo::AssociatedRemote<mojom::WebTestClient>& GetWebTestClientRemote();
+  mojo::AssociatedRemote<mojom::WebTestClient> web_test_client_remote_;
+
+  WebViewTestProxy* const web_view_test_proxy_;
+
+  mojom::WebTestRunTestConfigurationPtr test_config_;
 
   base::circular_deque<
       base::OnceCallback<void(const std::vector<std::string>&)>>
       get_bluetooth_events_callbacks_;
 
   bool is_main_window_ = false;
+  bool waiting_for_reset_navigation_to_about_blank_ = false;
 
-  bool waiting_for_reset_ = false;
-
-  std::unique_ptr<test_runner::AppBannerService> app_banner_service_;
-
-  mojom::WebTestControl::CaptureDumpCallback dump_callback_;
+  mojom::WebTestRenderFrame::CaptureDumpCallback dump_callback_;
   mojom::WebTestDumpPtr dump_result_;
   bool waiting_for_layout_dump_results_ = false;
   bool waiting_for_pixels_dump_result_ = false;

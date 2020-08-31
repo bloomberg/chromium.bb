@@ -4,10 +4,15 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -169,8 +174,7 @@ void DesktopWindowTreeHostWin::OnWidgetInitDone() {}
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostWin::CreateTooltip() {
   bool force_legacy_tooltips =
       (base::win::GetVersion() < base::win::Version::WIN8);
-  if (base::FeatureList::IsEnabled(features::kEnableAuraTooltipsOnWindows) &&
-      !force_legacy_tooltips)
+  if (!force_legacy_tooltips)
     return std::make_unique<corewm::TooltipAura>();
 
   DCHECK(!tooltip_);
@@ -230,8 +234,8 @@ bool DesktopWindowTreeHostWin::IsVisible() const {
 }
 
 void DesktopWindowTreeHostWin::SetSize(const gfx::Size& size) {
-  gfx::Size size_in_pixels = display::win::ScreenWin::DIPToScreenSize(GetHWND(),
-                                                                      size);
+  gfx::Size size_in_pixels =
+      display::win::ScreenWin::DIPToScreenSize(GetHWND(), size);
   gfx::Size expanded =
       GetExpandedWindowSize(message_handler_->is_translucent(), size_in_pixels);
   window_enlargement_ =
@@ -251,8 +255,8 @@ void DesktopWindowTreeHostWin::StackAtTop() {
 }
 
 void DesktopWindowTreeHostWin::CenterWindow(const gfx::Size& size) {
-  gfx::Size size_in_pixels = display::win::ScreenWin::DIPToScreenSize(GetHWND(),
-                                                                      size);
+  gfx::Size size_in_pixels =
+      display::win::ScreenWin::DIPToScreenSize(GetHWND(), size);
   gfx::Size expanded_size;
   expanded_size =
       GetExpandedWindowSize(message_handler_->is_translucent(), size_in_pixels);
@@ -295,9 +299,9 @@ std::string DesktopWindowTreeHostWin::GetWorkspace() const {
 gfx::Rect DesktopWindowTreeHostWin::GetWorkAreaBoundsInScreen() const {
   MONITORINFO monitor_info;
   monitor_info.cbSize = sizeof(monitor_info);
-  GetMonitorInfo(MonitorFromWindow(message_handler_->hwnd(),
-                                   MONITOR_DEFAULTTONEAREST),
-                 &monitor_info);
+  GetMonitorInfo(
+      MonitorFromWindow(message_handler_->hwnd(), MONITOR_DEFAULTTONEAREST),
+      &monitor_info);
   gfx::Rect pixel_bounds = gfx::Rect(monitor_info.rcWork);
   return display::win::ScreenWin::ScreenToDIPRect(GetHWND(), pixel_bounds);
 }
@@ -412,8 +416,9 @@ Widget::MoveLoopResult DesktopWindowTreeHostWin::RunMoveLoop(
     Widget::MoveLoopEscapeBehavior escape_behavior) {
   const bool hide_on_escape =
       escape_behavior == Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_HIDE;
-  return message_handler_->RunMoveLoop(drag_offset, hide_on_escape) ?
-      Widget::MOVE_LOOP_SUCCESSFUL : Widget::MOVE_LOOP_CANCELED;
+  return message_handler_->RunMoveLoop(drag_offset, hide_on_escape)
+             ? Widget::MOVE_LOOP_SUCCESSFUL
+             : Widget::MOVE_LOOP_CANCELED;
 }
 
 void DesktopWindowTreeHostWin::EndMoveLoop() {
@@ -477,8 +482,8 @@ void DesktopWindowTreeHostWin::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
                                    aspect_ratio.height());
 }
 
-void DesktopWindowTreeHostWin::SetWindowIcons(
-    const gfx::ImageSkia& window_icon, const gfx::ImageSkia& app_icon) {
+void DesktopWindowTreeHostWin::SetWindowIcons(const gfx::ImageSkia& window_icon,
+                                              const gfx::ImageSkia& app_icon) {
   message_handler_->SetWindowIcons(window_icon, app_icon);
 }
 
@@ -618,6 +623,8 @@ DesktopWindowTreeHostWin::GetKeyboardLayoutMap() {
 }
 
 void DesktopWindowTreeHostWin::SetCursorNative(gfx::NativeCursor cursor) {
+  TRACE_EVENT1("ui,input", "DesktopWindowTreeHostWin::SetCursorNative",
+               "cursor", cursor.type());
   ui::CursorLoaderWin cursor_loader;
   cursor_loader.SetPlatformCursor(&cursor);
 
@@ -729,8 +736,8 @@ bool DesktopWindowTreeHostWin::WillProcessWorkAreaChange() const {
 
 int DesktopWindowTreeHostWin::GetNonClientComponent(
     const gfx::Point& point) const {
-  gfx::Point dip_position = display::win::ScreenWin::ClientToDIPPoint(GetHWND(),
-                                                                      point);
+  gfx::Point dip_position =
+      display::win::ScreenWin::ClientToDIPPoint(GetHWND(), point);
   return native_widget_delegate_->GetNonClientComponent(dip_position);
 }
 
@@ -794,11 +801,11 @@ void DesktopWindowTreeHostWin::HandleActivationChanged(bool active) {
   desktop_native_widget_aura_->HandleActivationChanged(active);
 }
 
-bool DesktopWindowTreeHostWin::HandleAppCommand(short command) {
+bool DesktopWindowTreeHostWin::HandleAppCommand(int command) {
   // We treat APPCOMMAND ids as an extension of our command namespace, and just
   // let the delegate figure out what to do...
   return GetWidget()->widget_delegate() &&
-      GetWidget()->widget_delegate()->ExecuteWindowsCommand(command);
+         GetWidget()->widget_delegate()->ExecuteWindowsCommand(command);
 }
 
 void DesktopWindowTreeHostWin::HandleCancelMode() {
@@ -918,8 +925,20 @@ bool DesktopWindowTreeHostWin::HandleMouseEvent(ui::MouseEvent* event) {
   // marked occluded, or getting stuck in the occluded state. Event can cause
   // this object to be deleted so check occlusion state before we do anything
   // with the event.
-  if (GetNativeWindowOcclusionState() == aura::Window::OcclusionState::OCCLUDED)
-    UMA_HISTOGRAM_BOOLEAN("OccludedWindowMouseEvents", true);
+  // This stat tries to detect the user moving the mouse over a window falsely
+  // determined to be occluded, so ignore mouse events that have the same
+  // location as the first event, and exit events.
+  if (GetNativeWindowOcclusionState() ==
+      aura::Window::OcclusionState::OCCLUDED) {
+    if (occluded_window_mouse_event_loc_ != gfx::Point() &&
+        event->location() != occluded_window_mouse_event_loc_ &&
+        event->type() != ui::ET_MOUSE_EXITED) {
+      UMA_HISTOGRAM_BOOLEAN("OccludedWindowMouseEvents", true);
+    }
+    occluded_window_mouse_event_loc_ = event->location();
+  } else {
+    occluded_window_mouse_event_loc_ = gfx::Point();
+  }
 
   SendEventToSink(event);
   return event->handled();
@@ -1025,8 +1044,7 @@ bool DesktopWindowTreeHostWin::PreHandleMSG(UINT message,
 
 void DesktopWindowTreeHostWin::PostHandleMSG(UINT message,
                                              WPARAM w_param,
-                                             LPARAM l_param) {
-}
+                                             LPARAM l_param) {}
 
 bool DesktopWindowTreeHostWin::HandleScrollEvent(ui::ScrollEvent* event) {
   SendEventToSink(event);

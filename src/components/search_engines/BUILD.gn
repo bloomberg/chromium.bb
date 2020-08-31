@@ -13,6 +13,8 @@ static_library("search_engines") {
   sources = [
     "default_search_manager.cc",
     "default_search_manager.h",
+    "default_search_policy_handler.cc",
+    "default_search_policy_handler.h",
     "keyword_table.cc",
     "keyword_table.h",
     "keyword_web_data_service.cc",
@@ -63,6 +65,8 @@ static_library("search_engines") {
     "//components/country_codes",
     "//components/history/core/browser",
     "//components/infobars/core",
+    "//components/policy:generated",
+    "//components/policy/core/browser",
     "//components/pref_registry",
     "//components/strings",
     "//components/url_formatter",
@@ -87,25 +91,15 @@ static_library("search_engines") {
       "android/template_url_service_android.h",
     ]
 
-    deps += [ "//components/search_engines/android:jni_headers" ]
-  }
-
-  if (!is_ios) {
-    sources += [
-      "default_search_policy_handler.cc",
-      "default_search_policy_handler.h",
-    ]
     deps += [
-      "//components/policy:generated",
-      "//components/policy/core/browser",
+      "//components/search_engines/android:jni_headers",
+      "//url:gurl_android",
     ]
   }
 }
 
 source_set("search_engine_type") {
-  sources = [
-    "search_engine_type.h",
-  ]
+  sources = [ "search_engine_type.h" ]
 }
 
 static_library("test_support") {
@@ -174,15 +168,11 @@ json_to_struct("prepopulated_engines") {
   source = "prepopulated_engines.json"
   schema_file = "prepopulated_engines_schema.json"
   namespace = "TemplateURLPrepopulateData"
-  deps = [
-    ":search_engine_type",
-  ]
+  deps = [ ":search_engine_type" ]
 }
 
 if (is_android) {
   java_cpp_enum("search_engine_type_java") {
-    sources = [
-      "search_engine_type.h",
-    ]
+    sources = [ "search_engine_type.h" ]
   }
 }

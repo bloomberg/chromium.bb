@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Note: Cast Streaming uses a subset of the messages in the RTP/RTCP
 // specification, but also adds some of its own extensions. See:
@@ -90,6 +90,7 @@ enum class RtpPayloadType : uint8_t {
   kVideoVp8 = 100,
   kVideoH264 = 101,
   kVideoVarious = 102,  // Codec being used is not fixed.
+  kVideoLast = 102,
 
   // Some AndroidTV receivers require the payload type for audio to be 127, and
   // video to be 96; regardless of the codecs actually being used. This is
@@ -141,6 +142,7 @@ enum class RtcpPacketType : uint8_t {
 
   kSenderReport = 200,
   kReceiverReport = 201,
+  kSourceDescription = 202,
   kApplicationDefined = 204,
   kPayloadSpecific = 206,
   kExtendedReports = 207,
@@ -338,7 +340,7 @@ constexpr int kRtcpReceiverReferenceTimeReportBlockSize = 8;
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 constexpr int kRtcpPictureLossIndicatorHeaderSize = 8;
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_RTP_DEFINES_H_

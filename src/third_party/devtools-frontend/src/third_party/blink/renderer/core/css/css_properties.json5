@@ -354,10 +354,30 @@
       physical_group: {
         valid_type: "str",
         valid_values: ["border", "border-color", "border-style", "border-width",
-                       "inset", "intrinsic-size", "margin", "max-size",
+                       "inset", "margin", "max-size",
                        "min-size", "overflow", "padding", "scroll-margin",
                        "scroll-padding", "size", "visited-border-color"],
       }
+    },
+
+    // - surrogate_for: "other-property"
+    //
+    // A surrogate is a property which acts like another property. Unlike an
+    // alias (which is resolved as parse-time), a surrogate exists alongside
+    // the original in the parsed rule, and in the cascade.
+    //
+    // However, surrogates modify the same fields on ComputedStyle. Examples of
+    // surrogates are:
+    //
+    //  * -webkit-writing-mode (surrogate of writing-mode)
+    //  * inline-size (surrogate for width, or height)
+    //  * All css-logical propeties in general
+    //
+    // Note that for properties that use direction_aware_options,
+    // 'surrogate_for' should not be set, as the mapping is determined at
+    // run-time (depending og e.g. 'direction').
+    surrogate_for: {
+      valid_type: "str",
     },
 
     // - priority: "High"
@@ -404,6 +424,30 @@
       default: false,
       valid_type: "bool",
     },
+
+    // - valid_for_first_letter: true
+    //
+    // https://drafts.csswg.org/css-pseudo-4/#first-letter-styling
+    valid_for_first_letter: {
+      default: false,
+      valid_type: "bool",
+    },
+
+    // - valid_for_cue: true
+    //
+    // https://w3c.github.io/webvtt/#the-cue-pseudo-element
+    valid_for_cue: {
+      default: false,
+      valid_type: "bool",
+    },
+
+    // - valid_for_marker: true
+    //
+    // https://drafts.csswg.org/css-pseudo-4/#marker-pseudo
+    valid_for_marker: {
+      default: false,
+      valid_type: "bool",
+    },
   },
 
   // Members in the data objects should appear in the same order as in the
@@ -422,6 +466,7 @@
       priority: "Animation",
       typedom_types: ["Time"],
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "animation-direction",
@@ -435,6 +480,7 @@
       },
       priority: "Animation",
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "animation-duration",
@@ -447,6 +493,7 @@
       priority: "Animation",
       typedom_types: ["Time"],
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "animation-fill-mode",
@@ -459,6 +506,7 @@
       keywords: ["none", "forwards", "backwards", "both"],
       typedom_types: ["Keyword"],
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "animation-iteration-count",
@@ -473,6 +521,7 @@
       keywords: ["infinite"],
       typedom_types: ["Keyword", "Number"],
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "animation-name",
@@ -484,7 +533,8 @@
       priority: "Animation",
       keywords: ["none"],
       typedom_types: ["Keyword"],
-      separator: ","
+      separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "animation-play-state",
@@ -497,6 +547,7 @@
       keywords: ["running", "paused"],
       typedom_types: ["Keyword"],
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "animation-timing-function",
@@ -521,6 +572,7 @@
       ],
       typedom_types: ["Keyword"],
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "transition-delay",
@@ -532,6 +584,7 @@
       priority: "Animation",
       typedom_types: ["Time"],
       separator: ",",
+      valid_for_marker: true,
     },
     {
       name: "transition-duration",
@@ -543,6 +596,7 @@
         attribute: "Duration",
       },
       priority: "Animation",
+      valid_for_marker: true,
     },
     {
       name: "transition-property",
@@ -553,7 +607,8 @@
       },
       priority: "Animation",
       keywords: ["none"],
-      typedom_types: ["Keyword"]
+      typedom_types: ["Keyword"],
+      valid_for_marker: true,
     },
     {
       name: "transition-timing-function",
@@ -577,6 +632,7 @@
         "step-end"],
       typedom_types: ["Keyword"],
       separator: ",",
+      valid_for_marker: true,
     },
 
     // High Priority and all other font properties.
@@ -598,6 +654,9 @@
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
       affected_by_forced_colors: true,
+      valid_for_first_letter: true,
+      valid_for_cue: true,
+      valid_for_marker: true,
     },
     {
       name: "direction",
@@ -612,6 +671,7 @@
       type_name: "TextDirection",
       style_builder_custom_functions: ["value"],
       priority: "High",
+      valid_for_marker: true,
     },
     {
       name: "font-family",
@@ -623,6 +683,9 @@
       type_name: "FontDescription::FamilyDescription",
       converter: "ConvertFontFamily",
       priority: "High",
+      valid_for_first_letter: true,
+      valid_for_cue: true,
+      valid_for_marker: true,
     },
     {
       name: "font-kerning",
@@ -634,6 +697,8 @@
       priority: "High",
       keywords: ["auto", "normal", "none"],
       typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
+      valid_for_marker: true,
     },
     {
       name: "font-optical-sizing",
@@ -644,7 +709,9 @@
       type_name: "OpticalSizing",
       priority: "High",
       keywords: ["auto", "none"],
-      typedom_types: ["Keyword"]
+      typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
+      valid_for_marker: true,
     },
     {
       name: "font-size",
@@ -657,7 +724,10 @@
       converter: "ConvertFontSize",
       priority: "High",
       keywords: ["xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large", "xxx-large", "larger", "smaller", "-webkit-xxx-large"],
-      typedom_types: ["Keyword", "Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"],
+      valid_for_first_letter: true,
+      valid_for_cue: true,
+      valid_for_marker: true,
     },
     {
       name: "font-size-adjust",
@@ -670,7 +740,9 @@
       converter: "ConvertFontSizeAdjust",
       priority: "High",
       keywords: ["none"],
-      typedom_types: ["Keyword", "Number"]
+      typedom_types: ["Keyword", "Number"],
+      valid_for_first_letter: true,
+      valid_for_marker: true,
     },
     {
       name: "font-stretch",
@@ -685,7 +757,10 @@
         "normal", "ultra-condensed", "extra-condensed", "condensed",
         "semi-condensed", "semi-expanded", "expanded", "extra-expanded", "ultra-expanded"
       ],
-      typedom_types: ["Keyword", "Percentage"]
+      typedom_types: ["Keyword", "Percentage"],
+      valid_for_first_letter: true,
+      valid_for_cue: true,
+      valid_for_marker: true,
     },
     {
       name: "font-style",
@@ -698,6 +773,9 @@
       priority: "High",
       keywords: ["normal", "italic", "oblique"],
       typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
+      valid_for_cue: true,
+      valid_for_marker: true,
     },
     {
       name: "font-variant-ligatures",
@@ -715,6 +793,8 @@
          "no-contextual"
       ],
       typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
+      valid_for_marker: true,
     },
     {
       name: "font-variant-caps",
@@ -729,6 +809,8 @@
         "all-petite-caps", "unicase", "titling-caps"
       ],
       typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
+      valid_for_marker: true,
     },
     {
       name: "font-variant-east-asian",
@@ -743,6 +825,8 @@
          "traditional", "full-width", "proportional-width", "ruby"
       ],
       typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
+      valid_for_marker: true,
     },
     {
       name: "font-variant-numeric",
@@ -758,6 +842,8 @@
         "slashed-zero"
       ],
       typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
+      valid_for_marker: true,
     },
     {
       name: "font-weight",
@@ -770,7 +856,10 @@
       converter: "ConvertFontWeight",
       priority: "High",
       keywords: ["normal", "bold", "bolder", "lighter"],
-      typedom_types: ["Keyword", "Number"]
+      typedom_types: ["Keyword", "Number"],
+      valid_for_first_letter: true,
+      valid_for_cue: true,
+      valid_for_marker: true,
     },
     {
       name: "font-feature-settings",
@@ -783,6 +872,8 @@
       priority: "High",
       keywords: ["normal"],
       typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
+      valid_for_marker: true,
     },
     {
       name: "font-variation-settings",
@@ -794,7 +885,10 @@
       converter: "ConvertFontVariationSettings",
       priority: "High",
       keywords: ["normal"],
-      typedom_types: ["Keyword"]
+      typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
+      valid_for_cue: true,
+      valid_for_marker: true,
     },
     {
       name: "-webkit-font-smoothing",
@@ -803,6 +897,7 @@
       font: true,
       type_name: "FontSmoothingMode",
       priority: "High",
+      valid_for_first_letter: true,
     },
     {
       name: "forced-color-adjust",
@@ -864,6 +959,7 @@
       type_name: "WritingMode",
       style_builder_custom_functions: ["value"],
       priority: "High",
+      surrogate_for: "writing-mode",
     },
     {
       name: "text-rendering",
@@ -924,6 +1020,19 @@
       converter: "ConvertSelfOrDefaultAlignmentData",
     },
     {
+      name: "aspect-ratio",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      interpolable: false,
+      field_group: "box",
+      field_template: "external",
+      keywords: ["auto"],
+      default_value: "base::nullopt",
+      type_name: "base::Optional<IntSize>",
+      converter: "ConvertAspectRatio",
+      include_paths: ["third_party/blink/renderer/platform/geometry/length_size.h"],
+      runtime_flag: "CSSAspectRatioProperty"
+    },
+    {
       name: "backdrop-filter",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
@@ -958,6 +1067,8 @@
       style_builder_template_args: {
         fill_type: "Attachment",
       },
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "background-blend-mode",
@@ -974,6 +1085,7 @@
         fill_type: "BlendMode",
         fill_type_getter: "GetBlendMode",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "background-clip",
@@ -985,6 +1097,8 @@
       style_builder_template_args: {
         fill_type: "Clip",
       },
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "background-color",
@@ -1004,6 +1118,8 @@
         initial_color: "ComputedStyleInitialValues::InitialBackgroundColor",
       },
       affected_by_forced_colors: true,
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "background-image",
@@ -1017,6 +1133,8 @@
         fill_type: "Image",
         fill_type_getter: "GetImage",
       },
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "background-origin",
@@ -1028,6 +1146,8 @@
       style_builder_template_args: {
         fill_type: "Origin",
       },
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "background-position-x",
@@ -1037,6 +1157,8 @@
       style_builder_template_args: {
         fill_type: "PositionX",
       },
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "background-position-y",
@@ -1046,6 +1168,8 @@
       style_builder_template_args: {
         fill_type: "PositionY",
       },
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "background-repeat-x",
@@ -1053,6 +1177,8 @@
       style_builder_template_args: {
         fill_type: "RepeatX",
       },
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "background-repeat-y",
@@ -1060,6 +1186,8 @@
       style_builder_template_args: {
         fill_type: "RepeatY",
       },
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "background-size",
@@ -1072,6 +1200,8 @@
       style_builder_template_args: {
         fill_type: "Size",
       },
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "baseline-shift",
@@ -1097,6 +1227,7 @@
       converter: "ConvertStyleColor",
       style_builder_template: "color",
       affected_by_forced_colors: true,
+      valid_for_first_letter: true,
     },
     {
       name: "border-bottom-left-radius",
@@ -1109,6 +1240,7 @@
       type_name: "LengthSize",
       converter: "ConvertRadius",
       typedom_types: ["Length", "Percentage"],
+      valid_for_first_letter: true,
     },
     {
       name: "border-bottom-right-radius",
@@ -1121,6 +1253,7 @@
       type_name: "LengthSize",
       converter: "ConvertRadius",
       typedom_types: ["Length", "Percentage"],
+      valid_for_first_letter: true,
     },
     {
       name: "border-bottom-style",
@@ -1134,6 +1267,7 @@
       typedom_types: ["Keyword"],
       default_value: "none",
       type_name: "EBorderStyle",
+      valid_for_first_letter: true,
     },
     {
       name: "border-bottom-width",
@@ -1148,6 +1282,7 @@
       type_name: "LayoutUnit",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertBorderWidth",
+      valid_for_first_letter: true,
     },
     {
       name: "border-collapse",
@@ -1168,6 +1303,7 @@
       style_builder_template_args: {
         modifier_type: "Outset",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-image-repeat",
@@ -1178,6 +1314,7 @@
       style_builder_template_args: {
         modifier_type: "Repeat",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-image-slice",
@@ -1188,6 +1325,7 @@
       style_builder_template_args: {
         modifier_type: "Slice",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-image-source",
@@ -1196,6 +1334,7 @@
       keywords: ["none"],
       typedom_types: ["Keyword", "Image"],
       style_builder_custom_functions: ["value"],
+      valid_for_first_letter: true,
     },
     {
       name: "border-image-width",
@@ -1207,6 +1346,7 @@
       style_builder_template_args: {
         modifier_type: "Width",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-left-color",
@@ -1223,6 +1363,7 @@
       converter: "ConvertStyleColor",
       style_builder_template: "color",
       affected_by_forced_colors: true,
+      valid_for_first_letter: true,
     },
     {
       name: "border-left-style",
@@ -1236,6 +1377,7 @@
       typedom_types: ["Keyword"],
       default_value: "none",
       type_name: "EBorderStyle",
+      valid_for_first_letter: true,
     },
     {
       name: "border-left-width",
@@ -1250,6 +1392,7 @@
       type_name: "LayoutUnit",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertBorderWidth",
+      valid_for_first_letter: true,
     },
     {
       name: "border-right-color",
@@ -1266,6 +1409,7 @@
       converter: "ConvertStyleColor",
       style_builder_template: "color",
       affected_by_forced_colors: true,
+      valid_for_first_letter: true,
     },
     {
       name: "border-right-style",
@@ -1279,6 +1423,7 @@
       typedom_types: ["Keyword"],
       default_value: "none",
       type_name: "EBorderStyle",
+      valid_for_first_letter: true,
     },
     {
       name: "border-right-width",
@@ -1293,6 +1438,7 @@
       type_name: "LayoutUnit",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertBorderWidth",
+      valid_for_first_letter: true,
     },
     {
       name: "border-top-color",
@@ -1309,6 +1455,7 @@
       converter: "ConvertStyleColor",
       style_builder_template: "color",
       affected_by_forced_colors: true,
+      valid_for_first_letter: true,
     },
     {
       name: "border-top-left-radius",
@@ -1321,6 +1468,7 @@
       type_name: "LengthSize",
       converter: "ConvertRadius",
       typedom_types: ["Length", "Percentage"],
+      valid_for_first_letter: true,
     },
     {
       name: "border-top-right-radius",
@@ -1333,6 +1481,7 @@
       type_name: "LengthSize",
       converter: "ConvertRadius",
       typedom_types: ["Length", "Percentage"],
+      valid_for_first_letter: true,
     },
     {
       name: "border-top-style",
@@ -1346,6 +1495,7 @@
       typedom_types: ["Keyword"],
       default_value: "none",
       type_name: "EBorderStyle",
+      valid_for_first_letter: true,
     },
     {
       name: "border-top-width",
@@ -1360,6 +1510,7 @@
       type_name: "LayoutUnit",
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertBorderWidth",
+      valid_for_first_letter: true,
     },
     {
       name: "bottom",
@@ -1387,6 +1538,7 @@
       keywords: ["none"],
       typedom_types: ["Keyword"],
       affected_by_forced_colors: true,
+      valid_for_first_letter: true,
     },
     {
       name: "box-sizing",
@@ -1572,6 +1724,19 @@
       typedom_types: ["Keyword"],
     },
     {
+      name: "contain-intrinsic-size",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      interpolable: true,
+      field_group: "box",
+      field_template: "external",
+      keywords: ["auto"],
+      default_value: "LengthSize(Length::Auto(), Length::Auto())",
+      type_name: "LengthSize",
+      converter: "ConvertIntrinsicSize",
+      include_paths: ["third_party/blink/renderer/platform/geometry/length_size.h"],
+      runtime_flag: "CSSIntrinsicSize"
+    },
+    {
       name: "content",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*",
@@ -1583,6 +1748,7 @@
       type_name: "ContentData",
       computed_style_custom_functions: ["getter", "setter"],
       style_builder_custom_functions: ["initial", "inherit", "value"],
+      valid_for_marker: true,
     },
     {
       name: "counter-increment",
@@ -1783,6 +1949,7 @@
       default_value: "none",
       name_for_methods: "Floating",
       type_name: "EFloat",
+      valid_for_first_letter: true,
     },
     {
       name: "flood-color",
@@ -1975,54 +2142,10 @@
       runtime_flag: "ImageOrientation",
       field_group: "*",
       field_template: "primitive",
-      default_value: "false",
+      default_value: "true",
       name_for_methods: "RespectImageOrientation",
       type_name: "bool",
       converter: "ConvertImageOrientation",
-    },
-    {
-      name: "intrinsic-block-size",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        resolver: "block",
-        physical_group: "intrinsic-size"
-      },
-      runtime_flag: "CSSIntrinsicSize"
-    },
-    {
-      name: "intrinsic-height",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      interpolable: true,
-      field_group: "box",
-      field_template: "external",
-      keywords: ["auto", "legacy"],
-      default_value: "IntrinsicLength()",
-      type_name: "IntrinsicLength",
-      converter: "ConvertIntrinsicLength",
-      include_paths: ["third_party/blink/renderer/core/style/intrinsic_length.h"],
-      runtime_flag: "CSSIntrinsicSize"
-    },
-    {
-      name: "intrinsic-inline-size",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        resolver: "inline",
-        physical_group: "intrinsic-size"
-      },
-      runtime_flag: "CSSIntrinsicSize"
-    },
-    {
-      name: "intrinsic-width",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      interpolable: true,
-      field_group: "box",
-      field_template: "external",
-      keywords: ["auto", "legacy"],
-      default_value: "IntrinsicLength()",
-      type_name: "IntrinsicLength",
-      converter: "ConvertIntrinsicLength",
-      include_paths: ["third_party/blink/renderer/core/style/intrinsic_length.h"],
-      runtime_flag: "CSSIntrinsicSize"
     },
     {
       name: "isolation",
@@ -2082,7 +2205,8 @@
       inherited: true,
       converter: "ConvertSpacing",
       keywords: ["normal"],
-      typedom_types: ["Keyword", "Length"]
+      typedom_types: ["Keyword", "Length"],
+      valid_for_first_letter: true,
     },
     {
       name: "lighting-color",
@@ -2105,7 +2229,9 @@
       computed_style_custom_functions: ["getter"],
       converter: "ConvertLineHeight",
       keywords: ["normal"],
-      typedom_types: ["Keyword", "Length", "Number", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Number", "Percentage"],
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "line-height-step",
@@ -2177,7 +2303,8 @@
       converter: "ConvertQuirkyLength",
       computed_style_custom_functions: ["setter"],
       keywords: ["auto"],
-      typedom_types: ["Keyword", "Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"],
+      valid_for_first_letter: true,
     },
     {
       name: "margin-left",
@@ -2190,7 +2317,8 @@
       converter: "ConvertQuirkyLength",
       computed_style_custom_functions: ["setter"],
       keywords: ["auto"],
-      typedom_types: ["Keyword", "Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"],
+      valid_for_first_letter: true,
     },
     {
       name: "margin-right",
@@ -2203,7 +2331,8 @@
       converter: "ConvertQuirkyLength",
       computed_style_custom_functions: ["setter"],
       keywords: ["auto"],
-      typedom_types: ["Keyword", "Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"],
+      valid_for_first_letter: true,
     },
     {
       name: "margin-top",
@@ -2216,7 +2345,8 @@
       converter: "ConvertQuirkyLength",
       computed_style_custom_functions: ["setter"],
       keywords: ["auto"],
-      typedom_types: ["Keyword", "Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"],
+      valid_for_first_letter: true,
     },
     {
       name: "marker-end",
@@ -2271,6 +2401,27 @@
       keywords: ["luminance", "alpha"],
       typedom_types: ["Keyword"]
     },
+    // TODO(rbuis): should be moved to high priority later.
+    {
+      name: "math-style",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
+      field_template: "keyword",
+      inherited: true,
+      keywords: ["inline", "display"],
+      typedom_types: ["Keyword"],
+      default_value: "inline",
+      runtime_flag: "CSSMathStyle"
+    },
+    {
+      name: "math-superscript-shift-style",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
+      field_template: "keyword",
+      inherited: true,
+      keywords: ["inline", "display"],
+      typedom_types: ["Keyword"],
+      default_value: "display",
+      runtime_flag: "CSSMathSuperscriptShiftStyle"
+    },
     {
       name: "max-height",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
@@ -2278,7 +2429,7 @@
       interpolable: true,
       field_group: "box",
       field_template: "<length>",
-      default_value: "Length::MaxSizeNone()",
+      default_value: "Length::None()",
       converter: "ConvertLengthMaxSizing",
       keywords: ["none"],
       typedom_types: ["Keyword", "Length", "Percentage"]
@@ -2290,7 +2441,7 @@
       interpolable: true,
       field_group: "box",
       field_template: "<length>",
-      default_value: "Length::MaxSizeNone()",
+      default_value: "Length::None()",
       converter: "ConvertLengthMaxSizing",
       keywords: ["none"],
       typedom_types: ["Keyword", "Length", "Percentage"]
@@ -2430,7 +2581,9 @@
       default_value: "1.0",
       type_name: "float",
       computed_style_custom_functions: ["setter"],
-      typedom_types: ["Number"]
+      typedom_types: ["Number"],
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "order",
@@ -2442,6 +2595,17 @@
       type_name: "int",
       computed_style_custom_functions: ["setter"],
       typedom_types: ["Number"]
+    },
+    {
+      // This property is used for testing with origin trial intergration only.
+      // It should never be web-exposed.
+      name: "origin-trial-test-property",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
+      field_template: "keyword",
+      default_value: "normal",
+      keywords: ["normal", "none"],
+      typedom_types: ["Keyword"],
+      runtime_flag: "OriginTrialsSampleAPI"
     },
     {
       name: "orphans",
@@ -2470,6 +2634,7 @@
       converter: "ConvertStyleColor",
       style_builder_template: "color",
       affected_by_forced_colors: true,
+      valid_for_cue: true,
     },
     {
       name: "outline-offset",
@@ -2479,9 +2644,9 @@
       field_template: "primitive",
       default_value: "0",
       type_name: "int",
-      computed_style_custom_functions: ["getter"],
       converter: "ConvertComputedLength<int>",
       typedom_types: ["Length"],
+      valid_for_cue: true,
     },
     {
       name: "outline-style",
@@ -2496,6 +2661,7 @@
       default_value: "none",
       type_name: "EBorderStyle",
       style_builder_custom_functions: ["initial", "inherit", "value"],
+      valid_for_cue: true,
     },
     {
       name: "outline-width",
@@ -2510,6 +2676,7 @@
       converter: "ConvertLineWidth<unsigned short>",
       keywords: ["thin", "medium", "thick"],
       typedom_types: ["Keyword", "Length"],
+      valid_for_cue: true,
     },
     {
       name: "overflow-anchor",
@@ -2612,7 +2779,8 @@
       default_value: "Length::Fixed()",
       converter: "ConvertLength",
       computed_style_custom_functions: ["setter"],
-      typedom_types: ["Keyword", "Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"],
+      valid_for_first_letter: true,
     },
     {
       name: "padding-left",
@@ -2624,7 +2792,8 @@
       default_value: "Length::Fixed()",
       converter: "ConvertLength",
       computed_style_custom_functions: ["setter"],
-      typedom_types: ["Keyword", "Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"],
+      valid_for_first_letter: true,
     },
     {
       name: "padding-right",
@@ -2636,7 +2805,8 @@
       default_value: "Length::Fixed()",
       converter: "ConvertLength",
       computed_style_custom_functions: ["setter"],
-      typedom_types: ["Keyword", "Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"],
+      valid_for_first_letter: true,
     },
     {
       name: "padding-top",
@@ -2648,7 +2818,20 @@
       default_value: "Length::Fixed()",
       converter: "ConvertLength",
       computed_style_custom_functions: ["setter"],
-      typedom_types: ["Keyword", "Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"],
+      valid_for_first_letter: true,
+    },
+    {
+      name: "page",
+      field_group: "*",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      converter: "ConvertPage",
+      type_name: "AtomicString",
+      default_value: "AtomicString()",
+      field_template: "external",
+      keywords: ["auto"],
+      typedom_types: ["Keyword"],
+      runtime_flag: "NamedPages"
     },
     {
       name: "paint-order",
@@ -2724,18 +2907,13 @@
       typedom_types: ["Keyword"]
     },
     {
-      name: "render-subtree",
+      name: "content-visibility",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      field_group: "*",
-      field_size: 3,
-      field_template: "multi_keyword",
-      keywords: ["none", "invisible", "skip-activation", "skip-viewport-activation"],
-      default_value: "none",
-      name_for_methods: "RenderSubtree",
-      type_name: "RenderSubtreeFlags",
-      converter: "ConvertFlags<RenderSubtreeFlags>",
+      field_template: "keyword",
+      keywords: ["visible", "auto", "hidden", "hidden-matchable"],
+      default_value: "visible",
       typedom_types: ["Keyword"],
-      runtime_flag: "CSSRenderSubtree"
+      runtime_flag: "CSSContentVisibility"
     },
     {
       name: "resize",
@@ -2792,8 +2970,8 @@
       field_group: "*",
       field_size: 2, // FIXME: Convert this to a keyword field
       field_template: "primitive",
-      default_value: "kScrollBehaviorAuto",
-      type_name: "ScrollBehavior",
+      default_value: "mojom::blink::ScrollBehavior::kAuto",
+      type_name: "mojom::blink::ScrollBehavior",
       keywords: ["auto", "smooth"],
       typedom_types: ["Keyword"],
     },
@@ -3238,6 +3416,7 @@
       typedom_types: ["Keyword"],
       default_value: "none",
       name_for_methods: "TextCombine",
+      valid_for_marker: true,
     },
     {
       name: "text-decoration-color",
@@ -3253,6 +3432,8 @@
       converter: "ConvertStyleColor",
       style_builder_template: "color",
       affected_by_forced_colors: true,
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "text-decoration-line",
@@ -3265,6 +3446,8 @@
       name_for_methods: "TextDecoration",
       type_name: "TextDecoration",
       converter: "ConvertFlags<TextDecoration>",
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "text-decoration-skip-ink",
@@ -3275,6 +3458,8 @@
       keywords: ["none", "auto"],
       typedom_types: ["Keyword"],
       default_value: "auto",
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "text-decoration-style",
@@ -3284,6 +3469,8 @@
       keywords: ["solid", "double", "dotted", "dashed", "wavy"],
       typedom_types: ["Keyword"],
       default_value: "solid",
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "text-indent",
@@ -3308,7 +3495,8 @@
       default_value: "auto",
       getter: "GetTextJustify",
       type_name: "TextJustify",
-      typedom_types: ["Keyword"]
+      typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
     },
     {
       name: "text-overflow",
@@ -3334,6 +3522,8 @@
       keywords: ["none"],
       typedom_types: ["Keyword"],
       affected_by_forced_colors: true,
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "text-size-adjust",
@@ -3359,20 +3549,36 @@
       keywords: ["capitalize", "uppercase", "lowercase", "none"],
       typedom_types: ["Keyword"],
       default_value: "none",
+      valid_for_first_letter: true,
+    },
+    {
+      name: "text-underline-offset",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      inherited: true,
+      field_group: "*",
+      field_template: "<length>",
+      default_value: "Length()",
+      name_for_methods: "TextUnderlineOffset",
+      runtime_flag: "UnderlineOffsetThickness",
+      converter: "ConvertTextUnderlineOffset",
+      keywords: ["auto"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
+      valid_for_first_letter: true,
     },
     {
       name: "text-underline-position",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
-      field_size: 3,
+      field_size: 4,
       field_template: "primitive",
       default_value: "kTextUnderlinePositionAuto",
       name_for_methods: "TextUnderlinePosition",
       type_name: "unsigned",
       converter: "ConvertTextUnderlinePosition",
-      keywords: ["auto", "under", "left", "right"],
+      keywords: ["auto", "from-font", "under", "left", "right"],
       typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
     },
     {
       name: "top",
@@ -3393,7 +3599,7 @@
       field_size: 6, // FIXME: Make this use "kTouchActionBits".
       field_template: "primitive",
       include_paths: ["third_party/blink/renderer/platform/graphics/touch_action.h"],
-      default_value: "TouchAction::kTouchActionAuto",
+      default_value: "TouchAction::kAuto",
       type_name: "TouchAction",
       converter: "ConvertFlags<blink::TouchAction>",
       keywords: ["auto", "none", "pan-x", "pan-left", "pan-right", "pan-y", "pan-up", "pan-down", "pinch-zoom", "manipulation"],
@@ -3501,6 +3707,7 @@
       typedom_types: ["Keyword"],
       default_value: "normal",
       type_name: "UnicodeBidi",
+      valid_for_marker: true,
     },
     {
       name: "vector-effect",
@@ -3516,6 +3723,7 @@
       style_builder_custom_functions: ["inherit", "value"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       keywords: ["baseline", "sub", "super", "text-top", "text-bottom", "middle"],
+      valid_for_first_letter: true,
     },
     {
       name: "visibility",
@@ -3527,6 +3735,8 @@
       keywords: ["visible", "hidden", "collapse"],
       typedom_types: ["Keyword"],
       default_value: "visible",
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "x",
@@ -3545,14 +3755,18 @@
       converter: "ConvertLength",
     },
     {
-      name: "-webkit-appearance",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
+      name: "appearance",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_size: 5,
       field_template: "primitive",
       computed_style_custom_functions: ["getter"],
       default_value: "kNoControlPart",
       type_name: "ControlPart",
+    },
+    {
+      name: "-webkit-appearance",
+      alias_for: "appearance",
     },
     {
       name: "-webkit-app-region",
@@ -3575,11 +3789,13 @@
       name_for_methods: "HorizontalBorderSpacing",
       type_name: "short",
       converter: "ConvertComputedLength<short>",
+      valid_for_first_letter: true,
     },
     {
       name: "-webkit-border-image",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       style_builder_custom_functions: ["value"],
+      valid_for_first_letter: true,
     },
     {
       name: "-webkit-border-vertical-spacing",
@@ -3592,6 +3808,7 @@
       name_for_methods: "VerticalBorderSpacing",
       type_name: "short",
       converter: "ConvertComputedLength<short>",
+      valid_for_first_letter: true,
     },
     // For valid values of box-align see
     // http://www.w3.org/TR/2009/WD-css3-flexbox-20090723/#alignment
@@ -3822,36 +4039,6 @@
       type_name: "int",
     },
     {
-      name: "-webkit-margin-after-collapse",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
-      field_group: "*",
-      field_template: "keyword",
-      keywords: ["collapse", "separate", "discard"],
-      default_value: "collapse",
-      type_name: "EMarginCollapse",
-    },
-    {
-      name: "-webkit-margin-before-collapse",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
-      field_group: "*",
-      field_template: "keyword",
-      keywords: ["collapse", "separate", "discard"],
-      default_value: "collapse",
-      type_name: "EMarginCollapse",
-    },
-    {
-      name: "-webkit-margin-bottom-collapse",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
-      name_for_methods: "MarginAfterCollapse",
-      type_name: "EMarginCollapse",
-    },
-    {
-      name: "-webkit-margin-top-collapse",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
-      name_for_methods: "MarginBeforeCollapse",
-      type_name: "EMarginCollapse",
-    },
-    {
       name: "-webkit-mask-box-image-outset",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
@@ -4009,6 +4196,15 @@
       keywords: ["before", "after"],
       default_value: "before",
       type_name: "RubyPosition",
+      converter: "ConvertRubyPosition",
+    },
+    {
+      name: "ruby-position",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
+      inherited: true,
+      type_name: "RubyPosition",
+      converter: "ConvertRubyPosition",
+      surrogate_for: "-webkit-ruby-position",
     },
     {
       name: "-webkit-tap-highlight-color",
@@ -4159,6 +4355,8 @@
       ],
       typedom_types: ["Keyword"],
       default_value: "normal",
+      valid_for_cue: true,
+      valid_for_marker: true,
     },
     {
       name: "widows",
@@ -4211,7 +4409,8 @@
       converter: "ConvertSpacing",
       keywords: ["normal"],
       typedom_types: ["normal"],
-      typedom_types: ["Keyword", "Length"]
+      typedom_types: ["Keyword", "Length"],
+      valid_for_first_letter: true,
     },
     {
       name: "z-index",
@@ -4297,7 +4496,8 @@
         physical_group: "margin",
       },
       typedom_types: ["Length", "Percentage"],
-      keywords: ["auto"]
+      keywords: ["auto"],
+      valid_for_first_letter: true,
     },
     {
       name: "margin-inline-end",
@@ -4308,7 +4508,8 @@
         physical_group: "margin",
       },
       typedom_types: ["Length", "Percentage"],
-      keywords: ["auto"]
+      keywords: ["auto"],
+      valid_for_first_letter: true,
     },
     {
       name: "margin-block-start",
@@ -4319,7 +4520,8 @@
         physical_group: "margin",
       },
       typedom_types: ["Length", "Percentage"],
-      keywords: ["auto"]
+      keywords: ["auto"],
+      valid_for_first_letter: true,
     },
     {
       name: "margin-block-end",
@@ -4330,7 +4532,8 @@
         physical_group: "margin",
       },
       typedom_types: ["Length", "Percentage"],
-      keywords: ["auto"]
+      keywords: ["auto"],
+      valid_for_first_letter: true,
     },
     {
       name: "padding-inline-start",
@@ -4379,6 +4582,7 @@
         resolver: "inline-start",
         physical_group: "border-width",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-inline-start-style",
@@ -4386,6 +4590,7 @@
         resolver: "inline-start",
         physical_group: "border-style",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-inline-start-color",
@@ -4394,6 +4599,7 @@
         resolver: "inline-start",
         physical_group: "border-color",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-inline-end-width",
@@ -4402,6 +4608,7 @@
         resolver: "inline-end",
         physical_group: "border-width",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-inline-end-style",
@@ -4409,6 +4616,7 @@
         resolver: "inline-end",
         physical_group: "border-style",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-inline-end-color",
@@ -4417,6 +4625,7 @@
         resolver: "inline-end",
         physical_group: "border-color",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-block-start-width",
@@ -4425,6 +4634,7 @@
         resolver: "block-start",
         physical_group: "border-width",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-block-start-style",
@@ -4432,6 +4642,7 @@
         resolver: "block-start",
         physical_group: "border-style",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-block-start-color",
@@ -4440,6 +4651,7 @@
         resolver: "block-start",
         physical_group: "border-color",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-block-end-width",
@@ -4448,6 +4660,7 @@
         resolver: "block-end",
         physical_group: "border-width",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-block-end-style",
@@ -4455,6 +4668,7 @@
         resolver: "block-end",
         physical_group: "border-style",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "border-block-end-color",
@@ -4463,6 +4677,7 @@
         resolver: "block-end",
         physical_group: "border-color",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "inset-inline-start",
@@ -4618,11 +4833,6 @@
     {
       name: "all",
       affected_by_all: false,
-      style_builder_template: "empty",
-    },
-    {
-      name: "page",
-      property_methods: ["ParseSingleValue"],
       style_builder_template: "empty",
     },
     {
@@ -5033,12 +5243,6 @@
       runtime_flag: "CSSLogical",
     },
     {
-      name: "intrinsic-size",
-      longhands: ["intrinsic-width", "intrinsic-height"],
-      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSIntrinsicSize"
-    },
-    {
       name: "list-style",
       longhands: ["list-style-position", "list-style-image", "list-style-type"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
@@ -5215,13 +5419,6 @@
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
-      name: "-webkit-margin-collapse",
-      longhands: [
-        "-webkit-margin-before-collapse", "-webkit-margin-after-collapse"
-      ],
-      property_methods: ["ParseShorthand"],
-    },
-    {
       name: "-webkit-mask",
       longhands: [
         "-webkit-mask-image", "-webkit-mask-position-x",
@@ -5274,6 +5471,10 @@
       computed_style_custom_functions: ["getter", "setter"],
       style_builder_custom_functions: ["initial", "inherit", "value"],
       priority: "High",
+      affected_by_forced_colors: true,
+      valid_for_first_letter: true,
+      valid_for_cue: true,
+      valid_for_marker: true,
     },
     {
       name: "-internal-visited-caret-color",
@@ -5304,6 +5505,7 @@
       computed_style_custom_functions: ["getter","setter"],
       converter: "ConvertStyleColor",
       style_builder_template: "visited_color",
+      affected_by_forced_colors: true,
     },
     {
       name: "-internal-visited-background-color",
@@ -5320,6 +5522,9 @@
       style_builder_template_args: {
         initial_color: "ComputedStyleInitialValues::InitialBackgroundColor",
       },
+      affected_by_forced_colors: true,
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "-internal-visited-border-left-color",
@@ -5333,6 +5538,8 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
       style_builder_template: "visited_color",
+      affected_by_forced_colors: true,
+      valid_for_first_letter: true,
     },
     {
       name: "-internal-visited-border-right-color",
@@ -5346,6 +5553,8 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
       style_builder_template: "visited_color",
+      affected_by_forced_colors: true,
+      valid_for_first_letter: true,
     },
     {
       name: "-internal-visited-border-top-color",
@@ -5359,6 +5568,8 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
       style_builder_template: "visited_color",
+      affected_by_forced_colors: true,
+      valid_for_first_letter: true,
     },
     {
       name: "-internal-visited-border-bottom-color",
@@ -5372,6 +5583,8 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
       style_builder_template: "visited_color",
+      affected_by_forced_colors: true,
+      valid_for_first_letter: true,
     },
     {
       name: "-internal-visited-border-inline-start-color",
@@ -5381,6 +5594,7 @@
         resolver: "inline-start",
         physical_group: "visited-border-color",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "-internal-visited-border-inline-end-color",
@@ -5390,6 +5604,7 @@
         resolver: "inline-end",
         physical_group: "visited-border-color",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "-internal-visited-border-block-start-color",
@@ -5399,6 +5614,7 @@
         resolver: "block-start",
         physical_group: "visited-border-color",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "-internal-visited-border-block-end-color",
@@ -5408,6 +5624,7 @@
         resolver: "block-end",
         physical_group: "visited-border-color",
       },
+      valid_for_first_letter: true,
     },
     {
       name: "-internal-visited-fill",
@@ -5419,6 +5636,7 @@
       setter: "SetInternalVisitedFillPaint",
       getter: "FillPaint",
       converter: "ConvertSVGPaint",
+      affected_by_forced_colors: true,
     },
     {
       name: "-internal-visited-outline-color",
@@ -5432,6 +5650,8 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
       style_builder_template: "visited_color",
+      affected_by_forced_colors: true,
+      valid_for_cue: true,
     },
     {
       name: "-internal-visited-stroke",
@@ -5443,6 +5663,7 @@
       setter: "SetInternalVisitedStrokePaint",
       getter: "StrokePaint",
       converter: "ConvertSVGPaint",
+      affected_by_forced_colors: true,
     },
     {
       name: "-internal-visited-text-decoration-color",
@@ -5456,6 +5677,9 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
       style_builder_template: "visited_color",
+      affected_by_forced_colors: true,
+      valid_for_first_letter: true,
+      valid_for_cue: true,
     },
     {
       name: "-internal-visited-text-emphasis-color",
@@ -5473,6 +5697,7 @@
       style_builder_template_args: {
         initial_color: "StyleColor::CurrentColor",
       },
+      affected_by_forced_colors: true,
     },
     {
       name: "-internal-visited-text-fill-color",
@@ -5508,16 +5733,27 @@
         initial_color: "StyleColor::CurrentColor",
       },
     },
+
+    // Name: -internal-empty-line-height:
+    // Value: none | fabricated
+    //    If the element is inline or contains visible text, this property has
+    //    no effect.
+    //
+    // 'none'
+    //   The box's intrinsic height is 0, and it defines no baseline.
+    // 'fabricated'
+    //   The box has intrinsic height and baseline, computed from the current
+    //   font metrics.
     {
-      name: "-internal-effective-zoom",
-      property_methods: ["ParseSingleValue"],
-      inherited: true,
-      field_template: "primitive",
-      type_name: "float",
-      default_value: "1.0f",
+      name: "-internal-empty-line-height",
+      property_methods: ["ParseSingleValue" ],
+      inherited: false,
       field_group: "*",
-      priority: "High",
-      style_builder_custom_functions: ["initial", "inherit", "value"],
+      field_template: "primitive",
+      type_name: "bool",
+      default_value: "false",
+      name_for_methods: "HasLineIfEmpty",
+      converter: "ConvertInternalEmptyLineHeight",
     },
 
     // Aliases; these map to the same CSSPropertyID

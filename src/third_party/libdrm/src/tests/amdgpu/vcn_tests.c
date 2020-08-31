@@ -21,10 +21,6 @@
  *
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <stdio.h>
 #include <inttypes.h>
 
@@ -48,6 +44,14 @@ struct amdgpu_vcn_bo {
 	uint8_t *ptr;
 };
 
+struct amdgpu_vcn_reg {
+	uint32_t data0;
+	uint32_t data1;
+	uint32_t cmd;
+	uint32_t nop;
+	uint32_t cntl;
+};
+
 static amdgpu_device_handle device_handle;
 static uint32_t major_version;
 static uint32_t minor_version;
@@ -61,6 +65,7 @@ static uint32_t *ib_cpu;
 
 static amdgpu_bo_handle resources[MAX_RESOURCES];
 static unsigned num_resources;
+static struct amdgpu_vcn_reg reg;
 
 static void amdgpu_cs_vcn_dec_create(void);
 static void amdgpu_cs_vcn_dec_decode(void);
@@ -99,6 +104,21 @@ CU_BOOL suite_vcn_tests_enable(void)
 		printf("\n\nThe ASIC NOT support VCN, suite disabled\n");
 		return CU_FALSE;
 	}
+
+	if (family_id == AMDGPU_FAMILY_RV) {
+		reg.data0 = 0x81c4;
+		reg.data1 = 0x81c5;
+		reg.cmd = 0x81c3;
+		reg.nop = 0x81ff;
+		reg.cntl = 0x81c6;
+	} else if (family_id == AMDGPU_FAMILY_NV) {
+		reg.data0 = 0x504;
+		reg.data1 = 0x505;
+		reg.cmd = 0x503;
+		reg.nop = 0x53f;
+		reg.cntl = 0x506;
+	} else
+		return CU_FALSE;
 
 	return CU_TRUE;
 }
@@ -241,11 +261,11 @@ static void free_resource(struct amdgpu_vcn_bo *vcn_bo)
 
 static void vcn_dec_cmd(uint64_t addr, unsigned cmd, int *idx)
 {
-	ib_cpu[(*idx)++] = 0x81C4;
+	ib_cpu[(*idx)++] = reg.data0;
 	ib_cpu[(*idx)++] = addr;
-	ib_cpu[(*idx)++] = 0x81C5;
+	ib_cpu[(*idx)++] = reg.data1;
 	ib_cpu[(*idx)++] = addr >> 32;
-	ib_cpu[(*idx)++] = 0x81C3;
+	ib_cpu[(*idx)++] = reg.cmd;
 	ib_cpu[(*idx)++] = cmd << 1;
 }
 
@@ -266,14 +286,16 @@ static void amdgpu_cs_vcn_dec_create(void)
 	memcpy(msg_buf.ptr, vcn_dec_create_msg, sizeof(vcn_dec_create_msg));
 
 	len = 0;
-	ib_cpu[len++] = 0x81C4;
+	ib_cpu[len++] = reg.data0;
 	ib_cpu[len++] = msg_buf.addr;
-	ib_cpu[len++] = 0x81C5;
+	ib_cpu[len++] = reg.data1;
 	ib_cpu[len++] = msg_buf.addr >> 32;
-	ib_cpu[len++] = 0x81C3;
+	ib_cpu[len++] = reg.cmd;
 	ib_cpu[len++] = 0;
-	for (; len % 16; ++len)
-		ib_cpu[len] = 0x81ff;
+	for (; len % 16; ) {
+		ib_cpu[len++] = reg.nop;
+		ib_cpu[len++] = 0;
+	}
 
 	r = submit(len, AMDGPU_HW_IP_VCN_DEC);
 	CU_ASSERT_EQUAL(r, 0);
@@ -283,7 +305,7 @@ static void amdgpu_cs_vcn_dec_create(void)
 
 static void amdgpu_cs_vcn_dec_decode(void)
 {
-	const unsigned dpb_size = 15923584, ctx_size = 5287680, dt_size = 737280;
+	const unsigned dpb_size = 15923584, dt_size = 737280;
 	uint64_t msg_addr, fb_addr, bs_addr, dpb_addr, ctx_addr, dt_addr, it_addr, sum;
 	struct amdgpu_vcn_bo dec_buf;
 	int size, len, i, r;
@@ -338,10 +360,12 @@ static void amdgpu_cs_vcn_dec_decode(void)
 	vcn_dec_cmd(it_addr, 0x204, &len);
 	vcn_dec_cmd(ctx_addr, 0x206, &len);
 
-	ib_cpu[len++] = 0x81C6;
+	ib_cpu[len++] = reg.cntl;
 	ib_cpu[len++] = 0x1;
-	for (; len % 16; ++len)
-		ib_cpu[len] = 0x80000000;
+	for (; len % 16; ) {
+		ib_cpu[len++] = reg.nop;
+		ib_cpu[len++] = 0;
+	}
 
 	r = submit(len, AMDGPU_HW_IP_VCN_DEC);
 	CU_ASSERT_EQUAL(r, 0);
@@ -371,14 +395,16 @@ static void amdgpu_cs_vcn_dec_destroy(void)
 	memcpy(msg_buf.ptr, vcn_dec_destroy_msg, sizeof(vcn_dec_destroy_msg));
 
 	len = 0;
-	ib_cpu[len++] = 0x81C4;
+	ib_cpu[len++] = reg.data0;
 	ib_cpu[len++] = msg_buf.addr;
-	ib_cpu[len++] = 0x81C5;
+	ib_cpu[len++] = reg.data1;
 	ib_cpu[len++] = msg_buf.addr >> 32;
-	ib_cpu[len++] = 0x81C3;
+	ib_cpu[len++] = reg.cmd;
 	ib_cpu[len++] = 0;
-	for (; len % 16; ++len)
-		ib_cpu[len] = 0x80000000;
+	for (; len % 16; ) {
+		ib_cpu[len++] = reg.nop;
+		ib_cpu[len++] = 0;
+	}
 
 	r = submit(len, AMDGPU_HW_IP_VCN_DEC);
 	CU_ASSERT_EQUAL(r, 0);

@@ -4,6 +4,7 @@
 
 #include <chrome/browser/chromeos/login/web_kiosk_controller.h>
 
+#include "base/bind_helpers.h"
 #include "base/syslog_logging.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_base.h"
@@ -56,8 +57,8 @@ void WebKioskController::StartWebKiosk(const AccountId& account_id) {
     return;
 
   splash_wait_timer_.Start(FROM_HERE, kWebKioskSplashScreenMinTime,
-                           base::Bind(&WebKioskController::OnTimerFire,
-                                      weak_ptr_factory_.GetWeakPtr()));
+                           base::BindOnce(&WebKioskController::OnTimerFire,
+                                          weak_ptr_factory_.GetWeakPtr()));
 
   login_performer_ = std::make_unique<ChromeLoginPerformer>(this);
   login_performer_->LoginAsWebKioskAccount(account_id_);
@@ -67,19 +68,25 @@ KioskAppManagerBase::App WebKioskController::GetAppData() {
   const WebKioskAppData* app =
       WebKioskAppManager::Get()->GetAppByAccountId(account_id_);
   DCHECK(app);
-  return KioskAppManagerBase::App(*app);
+
+  auto data = KioskAppManagerBase::App(*app);
+  data.url = app->install_url();
+  return data;
 }
 
 void WebKioskController::OnTimerFire() {
   // Start launching now.
   if (app_state_ == AppState::INSTALLED) {
-    app_launcher_->LaunchApp();
+    LaunchApp();
   } else {
     launch_on_install_ = true;
   }
 }
 
 void WebKioskController::OnCancelAppLaunch() {
+  if (WebKioskAppManager::Get()->GetDisableBailoutShortcut())
+    return;
+
   KioskAppLaunchError::Save(KioskAppLaunchError::USER_CANCEL);
   CleanUp();
   chrome::AttemptUserExit();
@@ -108,8 +115,9 @@ void WebKioskController::OnNetworkConfigRequested() {
 void WebKioskController::OnNetworkConfigFinished() {
   network_ui_state_ = NetworkUIState::NOT_SHOWING;
   OnNetworkStateChanged(/*online=*/true);
-  if (app_state_ == AppState::INSTALLED)
-    app_launcher_->LaunchApp();
+  if (app_state_ == AppState::INSTALLED) {
+    LaunchApp();
+  }
 }
 
 void WebKioskController::MaybeShowNetworkConfigureUI() {
@@ -255,11 +263,6 @@ void WebKioskController::OnProfilePrepared(Profile* profile,
   // Reset virtual keyboard to use IME engines in app profile early.
   ChromeKeyboardControllerClient::Get()->RebuildKeyboardIfEnabled();
 
-  // We need to change the session state so we are able to create browser
-  // windows.
-  session_manager::SessionManager::Get()->SetSessionState(
-      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
-
   // Can be not null in tests.
   if (!app_launcher_)
     app_launcher_.reset(new WebKioskAppLauncher(profile, this));
@@ -288,7 +291,33 @@ void WebKioskController::OnAppPrepared() {
           APP_LAUNCH_STATE_WAITING_APP_WINDOW);
   web_kiosk_splash_screen_view_->Show();
   if (launch_on_install_)
-    app_launcher_->LaunchApp();
+    LaunchApp();
+}
+
+void WebKioskController::OnAppInstallFailed() {
+  // When app installation, still try running the app(there can network/app
+  // restrictions that block app launch until we handle them).
+  // For example, chat.google.com on the first launch opens accounts.google.com
+  // to get the gaia id.
+  app_state_ = AppState::INSTALLED;
+
+  if (!web_kiosk_splash_screen_view_)
+    return;
+  web_kiosk_splash_screen_view_->UpdateAppLaunchState(
+      AppLaunchSplashScreenView::AppLaunchState::
+          APP_LAUNCH_STATE_WAITING_APP_WINDOW_INSTALL_FAILED);
+  web_kiosk_splash_screen_view_->Show();
+  if (launch_on_install_)
+    LaunchApp();
+}
+
+void WebKioskController::LaunchApp() {
+  DCHECK(app_state_ == AppState::INSTALLED);
+  // We need to change the session state so we are able to create browser
+  // windows.
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
+  app_launcher_->LaunchApp();
 }
 
 void WebKioskController::OnAppLaunched() {

@@ -6,12 +6,10 @@
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_MAILTO_MAILTO_HANDLER_PROVIDER_H_
 
 #import <UIKit/UIKit.h>
+
 #include "base/macros.h"
 
-namespace ios {
 class ChromeBrowserState;
-}  // namespace ios
-
 @class ChromeIdentity;
 
 typedef ChromeIdentity* (^SignedInIdentityBlock)(void);
@@ -24,7 +22,7 @@ class MailtoHandlerProvider {
   virtual ~MailtoHandlerProvider();
 
   // Sets up mailto handling for |browser_state|.
-  virtual void PrepareMailtoHandling(ios::ChromeBrowserState* browser_state);
+  virtual void PrepareMailtoHandling(ChromeBrowserState* browser_state);
 
   // Unregisters the mailto handler for browser state.
   virtual void RemoveMailtoHandling();

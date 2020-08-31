@@ -11,6 +11,7 @@
 #include <lib/sys/cpp/component_context.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
@@ -24,10 +25,9 @@ WebComponent::WebComponent(
     : runner_(runner),
       startup_context_(std::move(context)),
       controller_binding_(this),
-      module_context_(
-          startup_context()
-              ->incoming_services()
-              ->ConnectToService<fuchsia::modular::ModuleContext>()) {
+      module_context_(startup_context()
+                          ->svc()
+                          ->Connect<fuchsia::modular::ModuleContext>()) {
   DCHECK(runner);
 
   // If the ComponentController request is valid then bind it, and configure it
@@ -65,8 +65,7 @@ void WebComponent::StartComponent() {
   // Create the underlying Frame and get its NavigationController.
   fuchsia::web::CreateFrameParams create_params;
   create_params.set_enable_remote_debugging(enable_remote_debugging_);
-  runner_->GetContext()->CreateFrameWithParams(std::move(create_params),
-                                               frame_.NewRequest());
+  frame_ = runner_->CreateFrame(std::move(create_params));
 
   // If the Frame unexpectedly disconnect us then tear-down this Component.
   frame_.set_error_handler([this](zx_status_t status) {

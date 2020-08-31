@@ -31,8 +31,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/scoped_thread_priority.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/win/registry.h"
@@ -111,10 +112,10 @@ base::string16 GetExpectedAppId(const base::CommandLine& command_line,
   base::FilePath user_data_dir;
   if (command_line.HasSwitch(switches::kUserDataDir))
     user_data_dir = command_line.GetSwitchValuePath(switches::kUserDataDir);
-  else
-    chrome::GetDefaultUserDataDirectory(&user_data_dir);
   // Adjust with any policy that overrides any other way to set the path.
   policy::path_parser::CheckUserDataDirPolicy(&user_data_dir);
+  if (user_data_dir.empty())
+    chrome::GetDefaultUserDataDirectory(&user_data_dir);
   DCHECK(!user_data_dir.empty());
 
   base::FilePath profile_subdir;
@@ -342,10 +343,10 @@ class OpenSystemSettingsHelper {
     // Only the watchers that were succesfully initialized are counted.
     registry_watcher_count_ = registry_key_watchers_.size();
 
-    timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMinutes(2),
-        base::Bind(&OpenSystemSettingsHelper::ConcludeInteraction,
-                   weak_ptr_factory_.GetWeakPtr(), ConcludeReason::TIMEOUT));
+    timer_.Start(FROM_HERE, base::TimeDelta::FromMinutes(2),
+                 base::BindOnce(&OpenSystemSettingsHelper::ConcludeInteraction,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                ConcludeReason::TIMEOUT));
   }
 
   ~OpenSystemSettingsHelper() {
@@ -390,10 +391,9 @@ class OpenSystemSettingsHelper {
     auto reg_key = std::make_unique<base::win::RegKey>(HKEY_CURRENT_USER,
                                                        key_path, KEY_NOTIFY);
 
-    if (reg_key->Valid() &&
-        reg_key->StartWatching(
-            base::Bind(&OpenSystemSettingsHelper::OnRegistryKeyChanged,
-                       weak_ptr_factory_.GetWeakPtr()))) {
+    if (reg_key->Valid() && reg_key->StartWatching(base::BindOnce(
+                                &OpenSystemSettingsHelper::OnRegistryKeyChanged,
+                                weak_ptr_factory_.GetWeakPtr()))) {
       registry_key_watchers_.push_back(std::move(reg_key));
     }
   }
@@ -483,8 +483,8 @@ IsPinnedToTaskbarHelper::IsPinnedToTaskbarHelper(
   remote_util_win_.set_disconnect_handler(base::BindOnce(
       &IsPinnedToTaskbarHelper::OnConnectionError, base::Unretained(this)));
   remote_util_win_->IsPinnedToTaskbar(
-      base::Bind(&IsPinnedToTaskbarHelper::OnIsPinnedToTaskbarResult,
-                 base::Unretained(this)));
+      base::BindOnce(&IsPinnedToTaskbarHelper::OnIsPinnedToTaskbarResult,
+                     base::Unretained(this)));
 }
 
 void IsPinnedToTaskbarHelper::OnConnectionError() {
@@ -730,28 +730,32 @@ base::string16 GetChromiumModelIdForProfile(
       profile_path);
 }
 
-void MigrateTaskbarPins() {
+void MigrateTaskbarPins(base::OnceClosure completion_callback) {
   // This needs to happen (e.g. so that the appid is fixed and the
   // run-time Chrome icon is merged with the taskbar shortcut), but it is not an
   // urgent task.
-  base::FilePath taskbar_path;
-  if (!base::PathService::Get(base::DIR_TASKBAR_PINS, &taskbar_path)) {
-    NOTREACHED();
-    return;
-  }
-
-  // Migrate any pinned shortcuts in ImplicitApps sub-directories.
-  base::FilePath implicit_apps_path;
-  if (!base::PathService::Get(base::DIR_IMPLICIT_APP_SHORTCUTS,
-                              &implicit_apps_path)) {
-    NOTREACHED();
-    return;
-  }
-
-  base::CreateCOMSTATaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT})
-      ->PostTask(FROM_HERE, base::BindOnce(&MigrateTaskbarPinsCallback,
-                                           taskbar_path, implicit_apps_path));
+  // MigrateTaskbarPinsCallback just calls MigrateShortcutsInPathInternal
+  // several times with different parameters.  Each call may or may not load
+  // DLL's. Since the callback may take the loader lock several times, and this
+  // is the bulk of the callback's work, run the whole thing on a foreground
+  // thread.
+  //
+  // BEST_EFFORT means it will be scheduled after higher-priority tasks, but
+  // MUST_USE_FOREGROUND means that when it is scheduled it will run in the
+  // foregound.
+  base::ThreadPool::CreateCOMSTATaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::ThreadPolicy::MUST_USE_FOREGROUND})
+      ->PostTaskAndReply(
+          FROM_HERE, base::BindOnce([]() {
+            base::FilePath taskbar_path;
+            base::FilePath implicit_apps_path;
+            base::PathService::Get(base::DIR_TASKBAR_PINS, &taskbar_path);
+            base::PathService::Get(base::DIR_IMPLICIT_APP_SHORTCUTS,
+                                   &implicit_apps_path);
+            MigrateTaskbarPinsCallback(taskbar_path, implicit_apps_path);
+          }),
+          std::move(completion_callback));
 }
 
 void MigrateTaskbarPinsCallback(const base::FilePath& taskbar_path,
@@ -762,8 +766,12 @@ void MigrateTaskbarPinsCallback(const base::FilePath& taskbar_path,
     return;
   base::FilePath chrome_proxy_path(web_app::GetChromeProxyPath());
 
-  MigrateChromeAndChromeProxyShortcuts(chrome_exe, chrome_proxy_path,
-                                       taskbar_path);
+  if (!taskbar_path.empty()) {
+    MigrateChromeAndChromeProxyShortcuts(chrome_exe, chrome_proxy_path,
+                                         taskbar_path);
+  }
+  if (implicit_apps_path.empty())
+    return;
   base::FileEnumerator directory_enum(implicit_apps_path, /*recursive=*/false,
                                       base::FileEnumerator::DIRECTORIES);
   for (base::FilePath implicit_app_sub_directory = directory_enum.Next();
@@ -782,9 +790,10 @@ void GetIsPinnedToTaskbarState(
 
 int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
                                    const base::FilePath& path) {
-  // Mitigate the issues caused by loading DLLs on a background thread
-  // (http://crbug/973868).
-  base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+  // This function may load DLL's so ensure it is running in a foreground
+  // thread.
+  DCHECK_GT(base::PlatformThread::GetCurrentThreadPriority(),
+            base::ThreadPriority::BACKGROUND);
 
   // Enumerate all pinned shortcuts in the given path directly.
   base::FileEnumerator shortcuts_enum(

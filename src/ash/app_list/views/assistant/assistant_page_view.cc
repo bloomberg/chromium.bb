@@ -16,16 +16,15 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
-#include "ash/assistant/ui/assistant_web_view.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/view_shadow.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/services/assistant/public/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
+#include "ui/compositor_extra/shadow.h"
 #include "ui/views/background.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/fill_layout.h"
@@ -58,42 +57,32 @@ AssistantPageView::AssistantPageView(
       min_height_dip_(kMinHeightEmbeddedDip) {
   InitLayout();
 
-  // |assistant_view_delegate_| could be nullptr in test.
-  if (assistant_view_delegate_)
-    assistant_view_delegate_->AddUiModelObserver(this);
+  if (AssistantController::Get())  // May be |nullptr| in tests.
+    assistant_controller_observer_.Add(AssistantController::Get());
+
+  if (AssistantUiController::Get())  // May be |nullptr| in tests.
+    assistant_ui_model_observer_.Add(AssistantUiController::Get());
 }
 
-AssistantPageView::~AssistantPageView() {
-  if (assistant_view_delegate_)
-    assistant_view_delegate_->RemoveUiModelObserver(this);
-}
+AssistantPageView::~AssistantPageView() = default;
 
 void AssistantPageView::InitLayout() {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
+
   view_shadow_ = std::make_unique<ViewShadow>(this, kShadowElevation);
   view_shadow_->SetRoundedCornerRadius(
       search_box::kSearchBoxBorderCornerRadiusSearchResult);
 
   SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
-
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  if (assistant_view_delegate_) {
-    assistant_main_view_ = AddChildView(
-        std::make_unique<AssistantMainView>(assistant_view_delegate_));
+  // |assistant_view_delegate_| could be nullptr in test.
+  if (!assistant_view_delegate_)
+    return;
 
-    // Do not add web view when Assistant web container is enabled.
-    if (!chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
-      assistant_web_view_ = AddChildView(std::make_unique<AssistantWebView>(
-          assistant_view_delegate_,
-          /*web_container_view_delegate=*/nullptr));
-    }
-
-    // Update the view state based on the current UI mode.
-    OnUiModeChanged(assistant_view_delegate_->GetUiModel()->ui_mode(),
-                    /*due_to_interaction=*/false);
-  }
+  assistant_main_view_ = AddChildView(
+      std::make_unique<AssistantMainView>(assistant_view_delegate_));
 }
 
 const char* AssistantPageView::GetClassName() const {
@@ -125,25 +114,15 @@ void AssistantPageView::OnBoundsChanged(const gfx::Rect& prev_bounds) {
 }
 
 void AssistantPageView::RequestFocus() {
-  if (!assistant_view_delegate_)
+  if (!AssistantUiController::Get())  // May be |nullptr| in tests.
     return;
 
-  switch (assistant_view_delegate_->GetUiModel()->ui_mode()) {
+  switch (AssistantUiController::Get()->GetModel()->ui_mode()) {
     case AssistantUiMode::kLauncherEmbeddedUi:
       if (assistant_main_view_)
         assistant_main_view_->RequestFocus();
       break;
-    case AssistantUiMode::kWebUi:
-      if (!chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
-        if (assistant_web_view_)
-          assistant_web_view_->RequestFocus();
-        break;
-      }
-      NOTREACHED();
-      break;
     case AssistantUiMode::kAmbientUi:
-    case AssistantUiMode::kMainUi:
-    case AssistantUiMode::kMiniUi:
       NOTREACHED();
       break;
   }
@@ -221,6 +200,40 @@ base::Optional<int> AssistantPageView::GetSearchBoxTop(
   return base::nullopt;
 }
 
+views::View* AssistantPageView::GetFirstFocusableView() {
+  return GetFocusManager()->GetNextFocusableView(
+      this, GetWidget(), /*reverse=*/false, /*dont_loop=*/false);
+}
+
+views::View* AssistantPageView::GetLastFocusableView() {
+  return GetFocusManager()->GetNextFocusableView(
+      this, GetWidget(), /*reverse=*/true, /*dont_loop=*/false);
+}
+
+void AssistantPageView::AnimateYPosition(AppListViewState target_view_state,
+                                         const TransformAnimator& animator,
+                                         float default_offset) {
+  // Assistant page view may host native views for its content. The native view
+  // hosts use view to widget coordinate conversion to calculate the native view
+  // bounds, and thus depend on the view transform values.
+  // Make sure the view is laid out before starting the transform animation so
+  // native views are not placed according to interim, animated page transform
+  // value.
+  layer()->GetAnimator()->StopAnimatingProperty(
+      ui::LayerAnimationElement::TRANSFORM);
+  if (needs_layout())
+    Layout();
+
+  animator.Run(default_offset, layer(), this);
+  animator.Run(default_offset, view_shadow_->shadow()->shadow_layer(), nullptr);
+}
+
+void AssistantPageView::UpdatePageOpacityForState(AppListState state,
+                                                  float search_box_opacity,
+                                                  bool restore_opacity) {
+  layer()->SetOpacity(search_box_opacity);
+}
+
 gfx::Rect AssistantPageView::GetPageBoundsForState(
     AppListState state,
     const gfx::Rect& contents_bounds,
@@ -232,43 +245,12 @@ gfx::Rect AssistantPageView::GetPageBoundsForState(
   return bounds;
 }
 
-views::View* AssistantPageView::GetFirstFocusableView() {
-  return GetFocusManager()->GetNextFocusableView(
-      this, GetWidget(), /*reverse=*/false, /*dont_loop=*/false);
-}
+void AssistantPageView::OnAssistantControllerDestroying() {
+  if (AssistantUiController::Get())  // May be |nullptr| in tests.
+    assistant_ui_model_observer_.Remove(AssistantUiController::Get());
 
-views::View* AssistantPageView::GetLastFocusableView() {
-  return GetFocusManager()->GetNextFocusableView(
-      this, GetWidget(), /*reverse=*/true, /*dont_loop=*/false);
-}
-
-void AssistantPageView::OnUiModeChanged(AssistantUiMode ui_mode,
-                                        bool due_to_interaction) {
-  for (auto* child : children())
-    child->SetVisible(false);
-
-  switch (ui_mode) {
-    case AssistantUiMode::kLauncherEmbeddedUi:
-      if (assistant_main_view_)
-        assistant_main_view_->SetVisible(true);
-      break;
-    case AssistantUiMode::kWebUi:
-      if (!chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
-        if (assistant_web_view_)
-          assistant_web_view_->SetVisible(true);
-        break;
-      }
-      NOTREACHED();
-      break;
-    case AssistantUiMode::kAmbientUi:
-    case AssistantUiMode::kMainUi:
-    case AssistantUiMode::kMiniUi:
-      NOTREACHED();
-      break;
-  }
-
-  PreferredSizeChanged();
-  RequestFocus();
+  if (AssistantController::Get())  // May be |nullptr| in tests.
+    assistant_controller_observer_.Remove(AssistantController::Get());
 }
 
 void AssistantPageView::OnUiVisibilityChanged(
@@ -284,6 +266,10 @@ void AssistantPageView::OnUiVisibilityChanged(
     return;
   }
 
+  // Assistant page will get focus when widget shown.
+  if (GetWidget() && GetWidget()->IsActive())
+    RequestFocus();
+
   const bool prefer_voice =
       assistant_view_delegate_->IsTabletMode() ||
       AssistantState::Get()->launch_with_mic_open().value_or(false);
@@ -294,23 +280,13 @@ void AssistantPageView::OnUiVisibilityChanged(
 
 int AssistantPageView::GetChildViewHeightForWidth(int width) const {
   int height = 0;
-  if (assistant_view_delegate_) {
-    switch (assistant_view_delegate_->GetUiModel()->ui_mode()) {
+  if (AssistantUiController::Get()) {  // May be |nullptr| in tests.
+    switch (AssistantUiController::Get()->GetModel()->ui_mode()) {
       case AssistantUiMode::kLauncherEmbeddedUi:
         if (assistant_main_view_)
           height = assistant_main_view_->GetHeightForWidth(width);
         break;
-      case AssistantUiMode::kWebUi:
-        if (!chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
-          if (assistant_web_view_)
-            height = assistant_web_view_->GetHeightForWidth(width);
-          break;
-        }
-        NOTREACHED();
-        break;
       case AssistantUiMode::kAmbientUi:
-      case AssistantUiMode::kMainUi:
-      case AssistantUiMode::kMiniUi:
         NOTREACHED();
         break;
     }

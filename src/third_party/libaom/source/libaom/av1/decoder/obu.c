@@ -25,25 +25,6 @@
 #include "av1/decoder/decodeframe.h"
 #include "av1/decoder/obu.h"
 
-// Picture prediction structures (0-12 are predefined) in scalability metadata.
-enum {
-  SCALABILITY_L1T2 = 0,
-  SCALABILITY_L1T3 = 1,
-  SCALABILITY_L2T1 = 2,
-  SCALABILITY_L2T2 = 3,
-  SCALABILITY_L2T3 = 4,
-  SCALABILITY_S2T1 = 5,
-  SCALABILITY_S2T2 = 6,
-  SCALABILITY_S2T3 = 7,
-  SCALABILITY_L2T1h = 8,
-  SCALABILITY_L2T2h = 9,
-  SCALABILITY_L2T3h = 10,
-  SCALABILITY_S2T1h = 11,
-  SCALABILITY_S2T2h = 12,
-  SCALABILITY_S2T3h = 13,
-  SCALABILITY_SS = 14
-} UENUM1BYTE(SCALABILITY_STRUCTURES);
-
 aom_codec_err_t aom_get_num_layers_from_operating_point_idc(
     int operating_point_idc, unsigned int *number_spatial_layers,
     unsigned int *number_temporal_layers) {
@@ -98,20 +79,22 @@ static int byte_alignment(AV1_COMMON *const cm,
 static uint32_t read_temporal_delimiter_obu() { return 0; }
 
 // Returns a boolean that indicates success.
-static int read_bitstream_level(BitstreamLevel *bl,
+static int read_bitstream_level(AV1_LEVEL *seq_level_idx,
                                 struct aom_read_bit_buffer *rb) {
-  const uint8_t seq_level_idx = aom_rb_read_literal(rb, LEVEL_BITS);
-  if (!is_valid_seq_level_idx(seq_level_idx)) return 0;
-  bl->major = (seq_level_idx >> LEVEL_MINOR_BITS) + LEVEL_MAJOR_MIN;
-  bl->minor = seq_level_idx & ((1 << LEVEL_MINOR_BITS) - 1);
+  *seq_level_idx = aom_rb_read_literal(rb, LEVEL_BITS);
+  if (!is_valid_seq_level_idx(*seq_level_idx)) return 0;
   return 1;
 }
 
 // Returns whether two sequence headers are consistent with each other.
-// TODO(huisu,wtc@google.com): make sure the code matches the spec exactly.
+// Note that the 'op_params' field is not compared per Section 7.5 in the spec:
+//   Within a particular coded video sequence, the contents of
+//   sequence_header_obu must be bit-identical each time the sequence header
+//   appears except for the contents of operating_parameters_info.
 static int are_seq_headers_consistent(const SequenceHeader *seq_params_old,
                                       const SequenceHeader *seq_params_new) {
-  return !memcmp(seq_params_old, seq_params_new, sizeof(SequenceHeader));
+  return !memcmp(seq_params_old, seq_params_new,
+                 offsetof(SequenceHeader, op_params));
 }
 
 // On success, sets pbi->sequence_header_ready to 1 and returns the number of
@@ -146,26 +129,26 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   }
 
   if (seq_params->reduced_still_picture_hdr) {
-    cm->timing_info_present = 0;
+    seq_params->timing_info_present = 0;
     seq_params->decoder_model_info_present_flag = 0;
     seq_params->display_model_info_present_flag = 0;
     seq_params->operating_points_cnt_minus_1 = 0;
     seq_params->operating_point_idc[0] = 0;
-    if (!read_bitstream_level(&seq_params->level[0], rb)) {
+    if (!read_bitstream_level(&seq_params->seq_level_idx[0], rb)) {
       cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
       return 0;
     }
     seq_params->tier[0] = 0;
-    cm->op_params[0].decoder_model_param_present_flag = 0;
-    cm->op_params[0].display_model_param_present_flag = 0;
+    seq_params->op_params[0].decoder_model_param_present_flag = 0;
+    seq_params->op_params[0].display_model_param_present_flag = 0;
   } else {
-    cm->timing_info_present = aom_rb_read_bit(rb);  // timing_info_present_flag
-    if (cm->timing_info_present) {
-      av1_read_timing_info_header(cm, rb);
+    seq_params->timing_info_present = aom_rb_read_bit(rb);
+    if (seq_params->timing_info_present) {
+      av1_read_timing_info_header(&seq_params->timing_info, &cm->error, rb);
 
       seq_params->decoder_model_info_present_flag = aom_rb_read_bit(rb);
       if (seq_params->decoder_model_info_present_flag)
-        av1_read_decoder_model_info(cm, rb);
+        av1_read_decoder_model_info(&seq_params->decoder_model_info, rb);
     } else {
       seq_params->decoder_model_info_present_flag = 0;
     }
@@ -175,63 +158,68 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
     for (int i = 0; i < seq_params->operating_points_cnt_minus_1 + 1; i++) {
       seq_params->operating_point_idc[i] =
           aom_rb_read_literal(rb, OP_POINTS_IDC_BITS);
-      if (!read_bitstream_level(&seq_params->level[i], rb)) {
+      if (!read_bitstream_level(&seq_params->seq_level_idx[i], rb)) {
         cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
         return 0;
       }
       // This is the seq_level_idx[i] > 7 check in the spec. seq_level_idx 7
       // is equivalent to level 3.3.
-      if (seq_params->level[i].major > 3)
+      if (seq_params->seq_level_idx[i] >= SEQ_LEVEL_4_0)
         seq_params->tier[i] = aom_rb_read_bit(rb);
       else
         seq_params->tier[i] = 0;
       if (seq_params->decoder_model_info_present_flag) {
-        cm->op_params[i].decoder_model_param_present_flag = aom_rb_read_bit(rb);
-        if (cm->op_params[i].decoder_model_param_present_flag)
-          av1_read_op_parameters_info(cm, rb, i);
+        seq_params->op_params[i].decoder_model_param_present_flag =
+            aom_rb_read_bit(rb);
+        if (seq_params->op_params[i].decoder_model_param_present_flag)
+          av1_read_op_parameters_info(&seq_params->op_params[i],
+                                      seq_params->decoder_model_info
+                                          .encoder_decoder_buffer_delay_length,
+                                      rb);
       } else {
-        cm->op_params[i].decoder_model_param_present_flag = 0;
+        seq_params->op_params[i].decoder_model_param_present_flag = 0;
       }
-      if (cm->timing_info_present &&
-          (cm->timing_info.equal_picture_interval ||
-           cm->op_params[i].decoder_model_param_present_flag)) {
-        cm->op_params[i].bitrate = max_level_bitrate(
-            seq_params->profile,
-            major_minor_to_seq_level_idx(seq_params->level[i]),
+      if (seq_params->timing_info_present &&
+          (seq_params->timing_info.equal_picture_interval ||
+           seq_params->op_params[i].decoder_model_param_present_flag)) {
+        seq_params->op_params[i].bitrate = av1_max_level_bitrate(
+            seq_params->profile, seq_params->seq_level_idx[i],
             seq_params->tier[i]);
         // Level with seq_level_idx = 31 returns a high "dummy" bitrate to pass
         // the check
-        if (cm->op_params[i].bitrate == 0)
+        if (seq_params->op_params[i].bitrate == 0)
           aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                              "AV1 does not support this combination of "
                              "profile, level, and tier.");
         // Buffer size in bits/s is bitrate in bits/s * 1 s
-        cm->op_params[i].buffer_size = cm->op_params[i].bitrate;
+        seq_params->op_params[i].buffer_size = seq_params->op_params[i].bitrate;
       }
-      if (cm->timing_info_present && cm->timing_info.equal_picture_interval &&
-          !cm->op_params[i].decoder_model_param_present_flag) {
+      if (seq_params->timing_info_present &&
+          seq_params->timing_info.equal_picture_interval &&
+          !seq_params->op_params[i].decoder_model_param_present_flag) {
         // When the decoder_model_parameters are not sent for this op, set
         // the default ones that can be used with the resource availability mode
-        cm->op_params[i].decoder_buffer_delay = 70000;
-        cm->op_params[i].encoder_buffer_delay = 20000;
-        cm->op_params[i].low_delay_mode_flag = 0;
+        seq_params->op_params[i].decoder_buffer_delay = 70000;
+        seq_params->op_params[i].encoder_buffer_delay = 20000;
+        seq_params->op_params[i].low_delay_mode_flag = 0;
       }
 
       if (seq_params->display_model_info_present_flag) {
-        cm->op_params[i].display_model_param_present_flag = aom_rb_read_bit(rb);
-        if (cm->op_params[i].display_model_param_present_flag) {
-          cm->op_params[i].initial_display_delay =
+        seq_params->op_params[i].display_model_param_present_flag =
+            aom_rb_read_bit(rb);
+        if (seq_params->op_params[i].display_model_param_present_flag) {
+          seq_params->op_params[i].initial_display_delay =
               aom_rb_read_literal(rb, 4) + 1;
-          if (cm->op_params[i].initial_display_delay > 10)
+          if (seq_params->op_params[i].initial_display_delay > 10)
             aom_internal_error(
                 &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                 "AV1 does not support more than 10 decoded frames delay");
         } else {
-          cm->op_params[i].initial_display_delay = 10;
+          seq_params->op_params[i].initial_display_delay = 10;
         }
       } else {
-        cm->op_params[i].display_model_param_present_flag = 0;
-        cm->op_params[i].initial_display_delay = 10;
+        seq_params->op_params[i].display_model_param_present_flag = 0;
+        seq_params->op_params[i].initial_display_delay = 10;
       }
     }
   }
@@ -300,11 +288,12 @@ static int32_t read_tile_group_header(AV1Decoder *pbi,
                                       int *start_tile, int *end_tile,
                                       int tile_start_implicit) {
   AV1_COMMON *const cm = &pbi->common;
+  CommonTileParams *const tiles = &cm->tiles;
   uint32_t saved_bit_offset = rb->bit_offset;
   int tile_start_and_end_present_flag = 0;
-  const int num_tiles = pbi->common.tile_rows * pbi->common.tile_cols;
+  const int num_tiles = tiles->rows * tiles->cols;
 
-  if (!pbi->common.large_scale_tile && num_tiles > 1) {
+  if (!tiles->large_scale && num_tiles > 1) {
     tile_start_and_end_present_flag = aom_rb_read_bit(rb);
     if (tile_start_implicit && tile_start_and_end_present_flag) {
       aom_internal_error(
@@ -313,20 +302,35 @@ static int32_t read_tile_group_header(AV1Decoder *pbi,
       return -1;
     }
   }
-  if (pbi->common.large_scale_tile || num_tiles == 1 ||
+  if (tiles->large_scale || num_tiles == 1 ||
       !tile_start_and_end_present_flag) {
     *start_tile = 0;
     *end_tile = num_tiles - 1;
   } else {
-    int tile_bits = cm->log2_tile_rows + cm->log2_tile_cols;
+    int tile_bits = tiles->log2_rows + tiles->log2_cols;
     *start_tile = aom_rb_read_literal(rb, tile_bits);
     *end_tile = aom_rb_read_literal(rb, tile_bits);
   }
-  if (*start_tile > *end_tile) {
+  if (*start_tile != pbi->next_start_tile) {
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "tg_end must be greater than or equal to tg_start");
+                       "tg_start (%d) must be equal to %d", *start_tile,
+                       pbi->next_start_tile);
     return -1;
   }
+  if (*start_tile > *end_tile) {
+    aom_internal_error(
+        &cm->error, AOM_CODEC_CORRUPT_FRAME,
+        "tg_end (%d) must be greater than or equal to tg_start (%d)", *end_tile,
+        *start_tile);
+    return -1;
+  }
+  if (*end_tile >= num_tiles) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "tg_end (%d) must be less than NumTiles (%d)", *end_tile,
+                       num_tiles);
+    return -1;
+  }
+  pbi->next_start_tile = (*end_tile == num_tiles - 1) ? 0 : *end_tile + 1;
 
   return ((rb->bit_offset - saved_bit_offset + 7) >> 3);
 }
@@ -353,8 +357,7 @@ static uint32_t read_one_tile_group_obu(
 
   tg_payload_size = (uint32_t)(*p_data_end - data);
 
-  // TODO(shan):  For now, assume all tile groups received in order
-  *is_last_tg = end_tile == cm->tile_rows * cm->tile_cols - 1;
+  *is_last_tg = end_tile == cm->tiles.rows * cm->tiles.cols - 1;
   return header_size + tg_payload_size;
 }
 
@@ -386,7 +389,7 @@ static void alloc_tile_list_buffer(AV1Decoder *pbi) {
                              cm->seq_params.subsampling_y,
                              (cm->seq_params.use_highbitdepth &&
                               (cm->seq_params.bit_depth > AOM_BITS_8)),
-                             0, cm->byte_alignment))
+                             0, cm->features.byte_alignment))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate the tile list output buffer");
 }
@@ -482,7 +485,7 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
                                               int *frame_decoding_finished) {
   AV1_COMMON *const cm = &pbi->common;
   uint32_t tile_list_payload_size = 0;
-  const int num_tiles = cm->tile_cols * cm->tile_rows;
+  const int num_tiles = cm->tiles.cols * cm->tiles.rows;
   const int start_tile = 0;
   const int end_tile = num_tiles - 1;
   int i = 0;
@@ -518,13 +521,14 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return 0;
     }
-    av1_set_reference_dec(cm, 0, 1, &pbi->ext_refs.refs[ref_idx]);
+    av1_set_reference_dec(cm, cm->remapped_ref_idx[0], 1,
+                          &pbi->ext_refs.refs[ref_idx]);
 
     pbi->dec_tile_row = aom_rb_read_literal(rb, 8);
     pbi->dec_tile_col = aom_rb_read_literal(rb, 8);
     if (pbi->dec_tile_row < 0 || pbi->dec_tile_col < 0 ||
-        pbi->dec_tile_row >= cm->tile_rows ||
-        pbi->dec_tile_col >= cm->tile_cols) {
+        pbi->dec_tile_row >= cm->tiles.rows ||
+        pbi->dec_tile_col >= cm->tiles.cols) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return 0;
     }
@@ -555,129 +559,295 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
   return tile_list_payload_size;
 }
 
-static void read_metadata_itut_t35(const uint8_t *data, size_t sz) {
-  struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
-  for (size_t i = 0; i < sz; i++) {
-    aom_rb_read_literal(&rb, 8);
+// Returns the last nonzero byte index in 'data'. If there is no nonzero byte in
+// 'data', returns -1.
+static int get_last_nonzero_byte_index(const uint8_t *data, size_t sz) {
+  // Scan backward and return on the first nonzero byte.
+  int i = (int)sz - 1;
+  while (i >= 0 && data[i] == 0) {
+    --i;
   }
+  return i;
 }
 
-static void read_metadata_hdr_cll(const uint8_t *data, size_t sz) {
-  struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
-  aom_rb_read_literal(&rb, 16);  // max_cll
-  aom_rb_read_literal(&rb, 16);  // max_fall
+// Allocates metadata that was read and adds it to the decoders metadata array.
+static void alloc_read_metadata(AV1Decoder *const pbi,
+                                OBU_METADATA_TYPE metadata_type,
+                                const uint8_t *data, size_t sz,
+                                aom_metadata_insert_flags_t insert_flag) {
+  AV1_COMMON *const cm = &pbi->common;
+  aom_metadata_t *metadata =
+      aom_img_metadata_alloc(metadata_type, data, sz, insert_flag);
+  if (!metadata) {
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                       "Error allocating metadata");
+  }
+  if (!pbi->metadata) {
+    pbi->metadata = aom_img_metadata_array_alloc(1);
+    if (!pbi->metadata) {
+      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                         "Failed to allocate metadata array");
+    }
+  } else {
+    aom_metadata_t **metadata_array =
+        (aom_metadata_t **)realloc(pbi->metadata->metadata_array,
+                                   (pbi->metadata->sz + 1) * sizeof(metadata));
+    if (!metadata_array) {
+      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                         "Error allocating metadata");
+    }
+    pbi->metadata->metadata_array = metadata_array;
+    pbi->metadata->sz++;
+  }
+  pbi->metadata->metadata_array[pbi->metadata->sz - 1] = metadata;
 }
 
-static void read_metadata_hdr_mdcv(const uint8_t *data, size_t sz) {
-  struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
-  for (int i = 0; i < 3; i++) {
-    aom_rb_read_literal(&rb, 16);  // primary_i_chromaticity_x
-    aom_rb_read_literal(&rb, 16);  // primary_i_chromaticity_y
+// On success, returns the number of bytes read from 'data'. On failure, calls
+// aom_internal_error() and does not return.
+static size_t read_metadata_itut_t35(AV1Decoder *const pbi, const uint8_t *data,
+                                     size_t sz) {
+  const int kMinItuT35PayloadSize = 2;
+  AV1_COMMON *const cm = &pbi->common;
+  if (sz == 0) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "itu_t_t35_country_code is missing");
   }
+  int bytes_read = get_last_nonzero_byte_index(data, sz);
+  if (bytes_read < 0) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "No trailing bits found on metadata");
+  }
+  if (*data == 0xFF && bytes_read < kMinItuT35PayloadSize) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "itu_t_t35_country_code_extension_byte is missing");
+  }
+  alloc_read_metadata(pbi, OBU_METADATA_TYPE_ITUT_T35, data, (size_t)bytes_read,
+                      AOM_MIF_ANY_FRAME);
+  return (size_t)bytes_read;
+}
 
-  aom_rb_read_literal(&rb, 16);  // white_point_chromaticity_x
-  aom_rb_read_literal(&rb, 16);  // white_point_chromaticity_y
+// On success, returns the number of bytes read from 'data'. On failure, calls
+// aom_internal_error() and does not return.
+static size_t read_metadata_hdr_cll(AV1Decoder *const pbi, const uint8_t *data,
+                                    size_t sz) {
+  const int kHdrCllPayloadSize = 4;
+  AV1_COMMON *const cm = &pbi->common;
+  if (sz == 0) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "HDR CLL metadata payload is missing");
+  }
+  int bytes_read = get_last_nonzero_byte_index(data, sz);
+  if (bytes_read < 0) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "No trailing bits found on metadata");
+  }
+  if (bytes_read != kHdrCllPayloadSize) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Incorrect HDR CLL metadata payload size");
+  }
+  alloc_read_metadata(pbi, OBU_METADATA_TYPE_HDR_CLL, data, (size_t)bytes_read,
+                      AOM_MIF_ANY_FRAME);
+  return (size_t)bytes_read;
+}
 
-  aom_rb_read_unsigned_literal(&rb, 32);  // luminance_max
-  aom_rb_read_unsigned_literal(&rb, 32);  // luminance_min
+// On success, returns the number of bytes read from 'data'. On failure, calls
+// aom_internal_error() and does not return.
+static size_t read_metadata_hdr_mdcv(AV1Decoder *const pbi, const uint8_t *data,
+                                     size_t sz) {
+  const int kMdcvPayloadSize = 24;
+  AV1_COMMON *const cm = &pbi->common;
+  if (sz == 0) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "HDR MDCV metadata payload is missing");
+  }
+  int bytes_read = get_last_nonzero_byte_index(data, sz);
+  if (bytes_read < 0) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "No trailing bits found on HDR MDCV metadata");
+  }
+  if (bytes_read != kMdcvPayloadSize) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Incorrect HDR MDCV metadata payload size");
+  }
+  alloc_read_metadata(pbi, OBU_METADATA_TYPE_HDR_MDCV, data, (size_t)bytes_read,
+                      AOM_MIF_ANY_FRAME);
+  return (size_t)bytes_read;
 }
 
 static void scalability_structure(struct aom_read_bit_buffer *rb) {
-  int spatial_layers_cnt = aom_rb_read_literal(rb, 2);
-  int spatial_layer_dimensions_present_flag = aom_rb_read_bit(rb);
-  int spatial_layer_description_present_flag = aom_rb_read_bit(rb);
-  int temporal_group_description_present_flag = aom_rb_read_bit(rb);
+  const int spatial_layers_cnt_minus_1 = aom_rb_read_literal(rb, 2);
+  const int spatial_layer_dimensions_present_flag = aom_rb_read_bit(rb);
+  const int spatial_layer_description_present_flag = aom_rb_read_bit(rb);
+  const int temporal_group_description_present_flag = aom_rb_read_bit(rb);
   aom_rb_read_literal(rb, 3);  // reserved
 
   if (spatial_layer_dimensions_present_flag) {
-    int i;
-    for (i = 0; i < spatial_layers_cnt + 1; i++) {
+    for (int i = 0; i <= spatial_layers_cnt_minus_1; i++) {
       aom_rb_read_literal(rb, 16);
       aom_rb_read_literal(rb, 16);
     }
   }
   if (spatial_layer_description_present_flag) {
-    int i;
-    for (i = 0; i < spatial_layers_cnt + 1; i++) {
+    for (int i = 0; i <= spatial_layers_cnt_minus_1; i++) {
       aom_rb_read_literal(rb, 8);
     }
   }
   if (temporal_group_description_present_flag) {
-    int i, j, temporal_group_size;
-    temporal_group_size = aom_rb_read_literal(rb, 8);
-    for (i = 0; i < temporal_group_size; i++) {
+    const int temporal_group_size = aom_rb_read_literal(rb, 8);
+    for (int i = 0; i < temporal_group_size; i++) {
       aom_rb_read_literal(rb, 3);
       aom_rb_read_bit(rb);
       aom_rb_read_bit(rb);
-      int temporal_group_ref_cnt = aom_rb_read_literal(rb, 3);
-      for (j = 0; j < temporal_group_ref_cnt; j++) {
+      const int temporal_group_ref_cnt = aom_rb_read_literal(rb, 3);
+      for (int j = 0; j < temporal_group_ref_cnt; j++) {
         aom_rb_read_literal(rb, 8);
       }
     }
   }
 }
 
-static void read_metadata_scalability(const uint8_t *data, size_t sz) {
-  struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
-  int scalability_mode_idc = aom_rb_read_literal(&rb, 8);
+static void read_metadata_scalability(struct aom_read_bit_buffer *rb) {
+  const int scalability_mode_idc = aom_rb_read_literal(rb, 8);
   if (scalability_mode_idc == SCALABILITY_SS) {
-    scalability_structure(&rb);
+    scalability_structure(rb);
   }
 }
 
-static void read_metadata_timecode(const uint8_t *data, size_t sz) {
-  struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
-  aom_rb_read_literal(&rb, 5);                     // counting_type f(5)
-  int full_timestamp_flag = aom_rb_read_bit(&rb);  // full_timestamp_flag f(1)
-  aom_rb_read_bit(&rb);                            // discontinuity_flag (f1)
-  aom_rb_read_bit(&rb);                            // cnt_dropped_flag f(1)
-  aom_rb_read_literal(&rb, 9);                     // n_frames f(9)
+static void read_metadata_timecode(struct aom_read_bit_buffer *rb) {
+  aom_rb_read_literal(rb, 5);  // counting_type f(5)
+  const int full_timestamp_flag =
+      aom_rb_read_bit(rb);     // full_timestamp_flag f(1)
+  aom_rb_read_bit(rb);         // discontinuity_flag (f1)
+  aom_rb_read_bit(rb);         // cnt_dropped_flag f(1)
+  aom_rb_read_literal(rb, 9);  // n_frames f(9)
   if (full_timestamp_flag) {
-    aom_rb_read_literal(&rb, 6);  // seconds_value f(6)
-    aom_rb_read_literal(&rb, 6);  // minutes_value f(6)
-    aom_rb_read_literal(&rb, 5);  // hours_value f(5)
+    aom_rb_read_literal(rb, 6);  // seconds_value f(6)
+    aom_rb_read_literal(rb, 6);  // minutes_value f(6)
+    aom_rb_read_literal(rb, 5);  // hours_value f(5)
   } else {
-    int seconds_flag = aom_rb_read_bit(&rb);  // seconds_flag f(1)
+    const int seconds_flag = aom_rb_read_bit(rb);  // seconds_flag f(1)
     if (seconds_flag) {
-      aom_rb_read_literal(&rb, 6);              // seconds_value f(6)
-      int minutes_flag = aom_rb_read_bit(&rb);  // minutes_flag f(1)
+      aom_rb_read_literal(rb, 6);                    // seconds_value f(6)
+      const int minutes_flag = aom_rb_read_bit(rb);  // minutes_flag f(1)
       if (minutes_flag) {
-        aom_rb_read_literal(&rb, 6);            // minutes_value f(6)
-        int hours_flag = aom_rb_read_bit(&rb);  // hours_flag f(1)
+        aom_rb_read_literal(rb, 6);                  // minutes_value f(6)
+        const int hours_flag = aom_rb_read_bit(rb);  // hours_flag f(1)
         if (hours_flag) {
-          aom_rb_read_literal(&rb, 5);  // hours_value f(5)
+          aom_rb_read_literal(rb, 5);  // hours_value f(5)
         }
       }
     }
   }
   // time_offset_length f(5)
-  int time_offset_length = aom_rb_read_literal(&rb, 5);
+  const int time_offset_length = aom_rb_read_literal(rb, 5);
   if (time_offset_length) {
-    aom_rb_read_literal(&rb, time_offset_length);  // f(time_offset_length)
+    // time_offset_value f(time_offset_length)
+    aom_rb_read_literal(rb, time_offset_length);
   }
 }
 
-// Not fully implemented. Always succeeds and returns sz.
-static size_t read_metadata(const uint8_t *data, size_t sz) {
+// Returns the last nonzero byte in 'data'. If there is no nonzero byte in
+// 'data', returns 0.
+//
+// Call this function to check the following requirement in the spec:
+//   This implies that when any payload data is present for this OBU type, at
+//   least one byte of the payload data (including the trailing bit) shall not
+//   be equal to 0.
+static uint8_t get_last_nonzero_byte(const uint8_t *data, size_t sz) {
+  // Scan backward and return on the first nonzero byte.
+  size_t i = sz;
+  while (i != 0) {
+    --i;
+    if (data[i] != 0) return data[i];
+  }
+  return 0;
+}
+
+// Checks the metadata for correct syntax but ignores the parsed metadata.
+//
+// On success, returns the number of bytes read from 'data'. On failure, sets
+// pbi->common.error.error_code and returns 0, or calls aom_internal_error()
+// and does not return.
+static size_t read_metadata(AV1Decoder *pbi, const uint8_t *data, size_t sz) {
+  AV1_COMMON *const cm = &pbi->common;
   size_t type_length;
   uint64_t type_value;
-  OBU_METADATA_TYPE metadata_type;
   if (aom_uleb_decode(data, sz, &type_value, &type_length) < 0) {
+    cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+    return 0;
+  }
+  const OBU_METADATA_TYPE metadata_type = (OBU_METADATA_TYPE)type_value;
+  if (metadata_type == 0 || metadata_type >= 6) {
+    // If metadata_type is reserved for future use or a user private value,
+    // ignore the entire OBU and just check trailing bits.
+    if (get_last_nonzero_byte(data + type_length, sz - type_length) == 0) {
+      pbi->common.error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return 0;
+    }
     return sz;
   }
-  metadata_type = (OBU_METADATA_TYPE)type_value;
   if (metadata_type == OBU_METADATA_TYPE_ITUT_T35) {
-    read_metadata_itut_t35(data + type_length, sz - type_length);
+    size_t bytes_read =
+        type_length +
+        read_metadata_itut_t35(pbi, data + type_length, sz - type_length);
+    // itu_t_t35_payload_bytes is byte aligned and the first
+    // trailing byte should be 0x80.
+    if (get_last_nonzero_byte(data + bytes_read, sz - bytes_read) != 0x80) {
+      pbi->common.error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return 0;
+    }
+    return sz;
   } else if (metadata_type == OBU_METADATA_TYPE_HDR_CLL) {
-    read_metadata_hdr_cll(data + type_length, sz - type_length);
+    size_t bytes_read =
+        type_length +
+        read_metadata_hdr_cll(pbi, data + type_length, sz - type_length);
+    if (get_last_nonzero_byte(data + bytes_read, sz - bytes_read) != 0x80) {
+      pbi->common.error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return 0;
+    }
+    return sz;
   } else if (metadata_type == OBU_METADATA_TYPE_HDR_MDCV) {
-    read_metadata_hdr_mdcv(data + type_length, sz - type_length);
-  } else if (metadata_type == OBU_METADATA_TYPE_SCALABILITY) {
-    read_metadata_scalability(data + type_length, sz - type_length);
-  } else if (metadata_type == OBU_METADATA_TYPE_TIMECODE) {
-    read_metadata_timecode(data + type_length, sz - type_length);
+    size_t bytes_read =
+        type_length +
+        read_metadata_hdr_mdcv(pbi, data + type_length, sz - type_length);
+    if (get_last_nonzero_byte(data + bytes_read, sz - bytes_read) != 0x80) {
+      pbi->common.error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return 0;
+    }
+    return sz;
   }
 
+  struct aom_read_bit_buffer rb;
+  av1_init_read_bit_buffer(pbi, &rb, data + type_length, data + sz);
+  if (metadata_type == OBU_METADATA_TYPE_SCALABILITY) {
+    read_metadata_scalability(&rb);
+  } else {
+    assert(metadata_type == OBU_METADATA_TYPE_TIMECODE);
+    read_metadata_timecode(&rb);
+  }
+  if (av1_check_trailing_bits(pbi, &rb) != 0) {
+    // cm->error.error_code is already set.
+    return 0;
+  }
+  assert((rb.bit_offset & 7) == 0);
+  return type_length + (rb.bit_offset >> 3);
+}
+
+// On success, returns 'sz'. On failure, sets pbi->common.error.error_code and
+// returns 0.
+static size_t read_padding(AV1_COMMON *const cm, const uint8_t *data,
+                           size_t sz) {
+  // The spec allows a padding OBU to be header-only (i.e., obu_size = 0). So
+  // check trailing bits only if sz > 0.
+  if (sz > 0) {
+    // The payload of a padding OBU is byte aligned. Therefore the first
+    // trailing byte should be 0x80. See https://crbug.com/aomedia/2393.
+    const uint8_t last_nonzero_byte = get_last_nonzero_byte(data, sz);
+    if (last_nonzero_byte != 0x80) {
+      cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return 0;
+    }
+  }
   return sz;
 }
 
@@ -694,14 +864,15 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   ObuHeader obu_header;
   memset(&obu_header, 0, sizeof(obu_header));
   pbi->seen_frame_header = 0;
+  pbi->next_start_tile = 0;
 
   if (data_end < data) {
     cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
     return -1;
   }
 
-  // Reset pbi->camera_frame_header_ready to 0 if cm->large_scale_tile = 0.
-  if (!cm->large_scale_tile) pbi->camera_frame_header_ready = 0;
+  // Reset pbi->camera_frame_header_ready to 0 if cm->tiles.large_scale = 0.
+  if (!cm->tiles.large_scale) pbi->camera_frame_header_ready = 0;
 
   // decode frame as a series of OBUs
   while (!frame_decoding_finished && cm->error.error_code == AOM_CODEC_OK) {
@@ -719,7 +890,7 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     }
 
     aom_codec_err_t status =
-        aom_read_obu_header_and_size(data, bytes_available, cm->is_annexb,
+        aom_read_obu_header_and_size(data, bytes_available, pbi->is_annexb,
                                      &obu_header, &payload_size, &bytes_read);
 
     if (status != AOM_CODEC_OK) {
@@ -759,21 +930,39 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       case OBU_TEMPORAL_DELIMITER:
         decoded_payload_size = read_temporal_delimiter_obu();
         pbi->seen_frame_header = 0;
+        pbi->next_start_tile = 0;
         break;
       case OBU_SEQUENCE_HEADER:
         decoded_payload_size = read_sequence_header_obu(pbi, &rb);
         if (cm->error.error_code != AOM_CODEC_OK) return -1;
+        // The sequence header should not change in the middle of a frame.
+        if (pbi->sequence_header_changed && pbi->seen_frame_header) {
+          cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+          return -1;
+        }
         break;
       case OBU_FRAME_HEADER:
       case OBU_REDUNDANT_FRAME_HEADER:
       case OBU_FRAME:
+        if (obu_header.type == OBU_REDUNDANT_FRAME_HEADER) {
+          if (!pbi->seen_frame_header) {
+            cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+            return -1;
+          }
+        } else {
+          // OBU_FRAME_HEADER or OBU_FRAME.
+          if (pbi->seen_frame_header) {
+            cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+            return -1;
+          }
+        }
         // Only decode first frame header received
         if (!pbi->seen_frame_header ||
-            (cm->large_scale_tile && !pbi->camera_frame_header_ready)) {
+            (cm->tiles.large_scale && !pbi->camera_frame_header_ready)) {
           frame_header_size = read_frame_header_obu(
               pbi, &rb, data, p_data_end, obu_header.type != OBU_FRAME);
           pbi->seen_frame_header = 1;
-          if (!pbi->ext_tile_debug && cm->large_scale_tile)
+          if (!pbi->ext_tile_debug && cm->tiles.large_scale)
             pbi->camera_frame_header_ready = 1;
         } else {
           // TODO(wtc): Verify that the frame_header_obu is identical to the
@@ -835,7 +1024,8 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         if (frame_decoding_finished) pbi->seen_frame_header = 0;
         break;
       case OBU_METADATA:
-        decoded_payload_size = read_metadata(data, payload_size);
+        decoded_payload_size = read_metadata(pbi, data, payload_size);
+        if (cm->error.error_code != AOM_CODEC_OK) return -1;
         break;
       case OBU_TILE_LIST:
         if (CONFIG_NORMAL_TILE_MODE) {
@@ -850,7 +1040,7 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           return -1;
         }
 
-        cm->large_scale_tile = 1;
+        cm->tiles.large_scale = 1;
         av1_set_single_tile_decoding_mode(cm);
         decoded_payload_size =
             read_and_decode_one_tile_list(pbi, &rb, data, data + payload_size,
@@ -858,8 +1048,16 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         if (cm->error.error_code != AOM_CODEC_OK) return -1;
         break;
       case OBU_PADDING:
+        decoded_payload_size = read_padding(&pbi->common, data, payload_size);
+        if (cm->error.error_code != AOM_CODEC_OK) return -1;
+        break;
       default:
         // Skip unrecognized OBUs
+        if (payload_size > 0 &&
+            get_last_nonzero_byte(data, payload_size) == 0) {
+          cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+          return -1;
+        }
         decoded_payload_size = payload_size;
         break;
     }

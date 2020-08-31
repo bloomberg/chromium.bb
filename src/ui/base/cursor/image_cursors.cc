@@ -7,12 +7,14 @@
 #include <float.h>
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/cursor/cursors_aura.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -20,43 +22,43 @@ namespace ui {
 
 namespace {
 
-const CursorType kImageCursorIds[] = {
-    CursorType::kNull,
-    CursorType::kPointer,
-    CursorType::kNoDrop,
-    CursorType::kNotAllowed,
-    CursorType::kCopy,
-    CursorType::kHand,
-    CursorType::kMove,
-    CursorType::kNorthEastResize,
-    CursorType::kSouthWestResize,
-    CursorType::kSouthEastResize,
-    CursorType::kNorthWestResize,
-    CursorType::kNorthResize,
-    CursorType::kSouthResize,
-    CursorType::kEastResize,
-    CursorType::kWestResize,
-    CursorType::kIBeam,
-    CursorType::kAlias,
-    CursorType::kCell,
-    CursorType::kContextMenu,
-    CursorType::kCross,
-    CursorType::kHelp,
-    CursorType::kVerticalText,
-    CursorType::kZoomIn,
-    CursorType::kZoomOut,
-    CursorType::kRowResize,
-    CursorType::kColumnResize,
-    CursorType::kEastWestResize,
-    CursorType::kNorthSouthResize,
-    CursorType::kNorthEastSouthWestResize,
-    CursorType::kNorthWestSouthEastResize,
-    CursorType::kGrab,
-    CursorType::kGrabbing,
+const mojom::CursorType kImageCursorIds[] = {
+    mojom::CursorType::kNull,
+    mojom::CursorType::kPointer,
+    mojom::CursorType::kNoDrop,
+    mojom::CursorType::kNotAllowed,
+    mojom::CursorType::kCopy,
+    mojom::CursorType::kHand,
+    mojom::CursorType::kMove,
+    mojom::CursorType::kNorthEastResize,
+    mojom::CursorType::kSouthWestResize,
+    mojom::CursorType::kSouthEastResize,
+    mojom::CursorType::kNorthWestResize,
+    mojom::CursorType::kNorthResize,
+    mojom::CursorType::kSouthResize,
+    mojom::CursorType::kEastResize,
+    mojom::CursorType::kWestResize,
+    mojom::CursorType::kIBeam,
+    mojom::CursorType::kAlias,
+    mojom::CursorType::kCell,
+    mojom::CursorType::kContextMenu,
+    mojom::CursorType::kCross,
+    mojom::CursorType::kHelp,
+    mojom::CursorType::kVerticalText,
+    mojom::CursorType::kZoomIn,
+    mojom::CursorType::kZoomOut,
+    mojom::CursorType::kRowResize,
+    mojom::CursorType::kColumnResize,
+    mojom::CursorType::kEastWestResize,
+    mojom::CursorType::kNorthSouthResize,
+    mojom::CursorType::kNorthEastSouthWestResize,
+    mojom::CursorType::kNorthWestSouthEastResize,
+    mojom::CursorType::kGrab,
+    mojom::CursorType::kGrabbing,
 };
 
-const CursorType kAnimatedCursorIds[] = {CursorType::kWait,
-                                         CursorType::kProgress};
+const mojom::CursorType kAnimatedCursorIds[] = {mojom::CursorType::kWait,
+                                                mojom::CursorType::kProgress};
 
 }  // namespace
 
@@ -94,12 +96,12 @@ bool ImageCursors::SetDisplay(const display::Display& display,
                               float scale_factor) {
   if (!cursor_loader_) {
     cursor_loader_.reset(CursorLoader::Create());
-  } else if (cursor_loader_->rotation() == display.rotation() &&
+  } else if (cursor_loader_->rotation() == display.panel_rotation() &&
              cursor_loader_->scale() == scale_factor) {
     return false;
   }
 
-  cursor_loader_->set_rotation(display.rotation());
+  cursor_loader_->set_rotation(display.panel_rotation());
   cursor_loader_->set_scale(scale_factor);
   ReloadCursors();
   return true;

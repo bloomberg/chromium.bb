@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
@@ -15,6 +14,7 @@
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -94,10 +94,8 @@ class MediaSessionImplVisibilityBrowserTest
 
     VisibilityTestData params = GetVisibilityTestData();
 
-    if (params.media_suspend == MediaSuspend::ENABLED)
-      command_line->AppendSwitch(switches::kEnableMediaSuspend);
-    else
-      command_line->AppendSwitch(switches::kDisableMediaSuspend);
+    if (params.media_suspend == MediaSuspend::DISABLED)
+      command_line->AppendSwitch(switches::kDisableBackgroundMediaSuspend);
   }
 
   const VisibilityTestData& GetVisibilityTestData() {

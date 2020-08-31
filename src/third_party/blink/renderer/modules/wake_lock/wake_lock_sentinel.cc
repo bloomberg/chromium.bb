@@ -16,7 +16,7 @@ namespace blink {
 WakeLockSentinel::WakeLockSentinel(ScriptState* script_state,
                                    WakeLockType type,
                                    WakeLockManager* manager)
-    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
+    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
       manager_(manager),
       type_(type) {}
 
@@ -46,17 +46,17 @@ String WakeLockSentinel::type() const {
 }
 
 ExecutionContext* WakeLockSentinel::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 const AtomicString& WakeLockSentinel::InterfaceName() const {
   return event_target_names::kWakeLockSentinel;
 }
 
-void WakeLockSentinel::Trace(blink::Visitor* visitor) {
+void WakeLockSentinel::Trace(Visitor* visitor) {
   visitor->Trace(manager_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 bool WakeLockSentinel::HasPendingActivity() const {
@@ -66,7 +66,7 @@ bool WakeLockSentinel::HasPendingActivity() const {
   return manager_ && HasEventListeners();
 }
 
-void WakeLockSentinel::ContextDestroyed(ExecutionContext*) {
+void WakeLockSentinel::ContextDestroyed() {
   // Release all event listeners so that HasPendingActivity() does not return
   // true forever once a listener has been added to the object.
   RemoveAllEventListeners();

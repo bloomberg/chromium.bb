@@ -15,9 +15,9 @@
 #include "dawn_native/Instance.h"
 
 #include "common/Assert.h"
+#include "common/Log.h"
 #include "dawn_native/ErrorData.h"
-
-#include <iostream>
+#include "dawn_native/Surface.h"
 
 namespace dawn_native {
 
@@ -45,11 +45,24 @@ namespace dawn_native {
 #endif  // defined(DAWN_ENABLE_BACKEND_OPENGL)
 #if defined(DAWN_ENABLE_BACKEND_VULKAN)
     namespace vulkan {
-        BackendConnection* Connect(InstanceBase* instance);
+        BackendConnection* Connect(InstanceBase* instance, bool useSwiftshader);
     }
 #endif  // defined(DAWN_ENABLE_BACKEND_VULKAN)
 
     // InstanceBase
+
+    // static
+    InstanceBase* InstanceBase::Create(const InstanceDescriptor* descriptor) {
+        Ref<InstanceBase> instance = AcquireRef(new InstanceBase);
+        if (!instance->Initialize(descriptor)) {
+            return nullptr;
+        }
+        return instance.Detach();
+    }
+
+    bool InstanceBase::Initialize(const InstanceDescriptor*) {
+        return true;
+    }
 
     void InstanceBase::DiscoverDefaultAdapters() {
         EnsureBackendConnections();
@@ -108,7 +121,7 @@ namespace dawn_native {
             return;
         }
 
-        auto Register = [this](BackendConnection* connection, BackendType expectedType) {
+        auto Register = [this](BackendConnection* connection, wgpu::BackendType expectedType) {
             if (connection != nullptr) {
                 ASSERT(connection->GetType() == expectedType);
                 ASSERT(connection->GetInstance() == this);
@@ -117,59 +130,64 @@ namespace dawn_native {
         };
 
 #if defined(DAWN_ENABLE_BACKEND_D3D12)
-        Register(d3d12::Connect(this), BackendType::D3D12);
+        Register(d3d12::Connect(this), wgpu::BackendType::D3D12);
 #endif  // defined(DAWN_ENABLE_BACKEND_D3D12)
 #if defined(DAWN_ENABLE_BACKEND_METAL)
-        Register(metal::Connect(this), BackendType::Metal);
+        Register(metal::Connect(this), wgpu::BackendType::Metal);
 #endif  // defined(DAWN_ENABLE_BACKEND_METAL)
 #if defined(DAWN_ENABLE_BACKEND_VULKAN)
-        Register(vulkan::Connect(this), BackendType::Vulkan);
+        // TODO(https://github.com/KhronosGroup/Vulkan-Loader/issues/287):
+        // When we can load SwiftShader in parallel with the system driver, we should create the
+        // backend only once and expose SwiftShader as an additional adapter. For now, we create two
+        // VkInstances, one from SwiftShader, and one from the system. Note: If the Vulkan driver
+        // *is* SwiftShader, then this would load SwiftShader twice.
+        Register(vulkan::Connect(this, false), wgpu::BackendType::Vulkan);
+#    if defined(DAWN_ENABLE_SWIFTSHADER)
+        Register(vulkan::Connect(this, true), wgpu::BackendType::Vulkan);
+#    endif  // defined(DAWN_ENABLE_SWIFTSHADER)
 #endif  // defined(DAWN_ENABLE_BACKEND_VULKAN)
 #if defined(DAWN_ENABLE_BACKEND_OPENGL)
-        Register(opengl::Connect(this), BackendType::OpenGL);
+        Register(opengl::Connect(this), wgpu::BackendType::OpenGL);
 #endif  // defined(DAWN_ENABLE_BACKEND_OPENGL)
 #if defined(DAWN_ENABLE_BACKEND_NULL)
-        Register(null::Connect(this), BackendType::Null);
+        Register(null::Connect(this), wgpu::BackendType::Null);
 #endif  // defined(DAWN_ENABLE_BACKEND_NULL)
 
         mBackendsConnected = true;
     }
 
-    ResultOrError<BackendConnection*> InstanceBase::FindBackend(BackendType type) {
-        for (std::unique_ptr<BackendConnection>& backend : mBackends) {
-            if (backend->GetType() == type) {
-                return backend.get();
-            }
-        }
-
-        return DAWN_VALIDATION_ERROR("Backend isn't present.");
-    }
-
     MaybeError InstanceBase::DiscoverAdaptersInternal(const AdapterDiscoveryOptionsBase* options) {
         EnsureBackendConnections();
 
-        BackendConnection* backend;
-        DAWN_TRY_ASSIGN(backend, FindBackend(options->backendType));
+        bool foundBackend = false;
+        for (std::unique_ptr<BackendConnection>& backend : mBackends) {
+            if (backend->GetType() != static_cast<wgpu::BackendType>(options->backendType)) {
+                continue;
+            }
+            foundBackend = true;
 
-        std::vector<std::unique_ptr<AdapterBase>> newAdapters;
-        DAWN_TRY_ASSIGN(newAdapters, backend->DiscoverAdapters(options));
+            std::vector<std::unique_ptr<AdapterBase>> newAdapters;
+            DAWN_TRY_ASSIGN(newAdapters, backend->DiscoverAdapters(options));
 
-        for (std::unique_ptr<AdapterBase>& adapter : newAdapters) {
-            ASSERT(adapter->GetBackendType() == backend->GetType());
-            ASSERT(adapter->GetInstance() == this);
-            mAdapters.push_back(std::move(adapter));
+            for (std::unique_ptr<AdapterBase>& adapter : newAdapters) {
+                ASSERT(adapter->GetBackendType() == backend->GetType());
+                ASSERT(adapter->GetInstance() == this);
+                mAdapters.push_back(std::move(adapter));
+            }
         }
 
+        if (!foundBackend) {
+            return DAWN_VALIDATION_ERROR("Backend isn't present.");
+        }
         return {};
     }
 
     bool InstanceBase::ConsumedError(MaybeError maybeError) {
         if (maybeError.IsError()) {
-            ErrorData* error = maybeError.AcquireError();
+            std::unique_ptr<ErrorData> error = maybeError.AcquireError();
 
             ASSERT(error != nullptr);
-            std::cout << error->GetMessage() << std::endl;
-            delete error;
+            dawn::InfoLog() << error->GetMessage();
 
             return true;
         }
@@ -198,6 +216,14 @@ namespace dawn_native {
 
     dawn_platform::Platform* InstanceBase::GetPlatform() const {
         return mPlatform;
+    }
+
+    Surface* InstanceBase::CreateSurface(const SurfaceDescriptor* descriptor) {
+        if (ConsumedError(ValidateSurfaceDescriptor(this, descriptor))) {
+            return nullptr;
+        }
+
+        return new Surface(this, descriptor);
     }
 
 }  // namespace dawn_native

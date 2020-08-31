@@ -12,6 +12,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 from chromite.api.gen.test_platform.phosphorus import common_pb2 as test__platform_dot_phosphorus_dot_common__pb2
 
 
@@ -20,11 +21,45 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.phosphorus',
   syntax='proto3',
   serialized_options=_b('ZBgo.chromium.org/chromiumos/infra/proto/go/test_platform/phosphorus'),
-  serialized_pb=_b('\n%test_platform/phosphorus/prejob.proto\x12\x18test_platform.phosphorus\x1a%test_platform/phosphorus/common.proto\"\xde\x04\n\rPrejobRequest\x12\x30\n\x06\x63onfig\x18\x01 \x01(\x0b\x32 .test_platform.phosphorus.Config\x12\x14\n\x0c\x64ut_hostname\x18\x02 \x01(\t\x12\x62\n\x14provisionable_labels\x18\x03 \x03(\x0b\x32@.test_platform.phosphorus.PrejobRequest.ProvisionableLabelsEntryB\x02\x18\x01\x12m\n\x1c\x64\x65sired_provisionable_labels\x18\x04 \x03(\x0b\x32G.test_platform.phosphorus.PrejobRequest.DesiredProvisionableLabelsEntry\x12o\n\x1d\x65xisting_provisionable_labels\x18\x05 \x03(\x0b\x32H.test_platform.phosphorus.PrejobRequest.ExistingProvisionableLabelsEntry\x1a:\n\x18ProvisionableLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a\x41\n\x1f\x44\x65siredProvisionableLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a\x42\n ExistingProvisionableLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42\x44ZBgo.chromium.org/chromiumos/infra/proto/go/test_platform/phosphorusb\x06proto3')
+  serialized_pb=_b('\n%test_platform/phosphorus/prejob.proto\x12\x18test_platform.phosphorus\x1a\x1fgoogle/protobuf/timestamp.proto\x1a%test_platform/phosphorus/common.proto\"\x8c\x05\n\rPrejobRequest\x12\x30\n\x06\x63onfig\x18\x01 \x01(\x0b\x32 .test_platform.phosphorus.Config\x12\x14\n\x0c\x64ut_hostname\x18\x02 \x01(\t\x12\x62\n\x14provisionable_labels\x18\x03 \x03(\x0b\x32@.test_platform.phosphorus.PrejobRequest.ProvisionableLabelsEntryB\x02\x18\x01\x12m\n\x1c\x64\x65sired_provisionable_labels\x18\x04 \x03(\x0b\x32G.test_platform.phosphorus.PrejobRequest.DesiredProvisionableLabelsEntry\x12o\n\x1d\x65xisting_provisionable_labels\x18\x05 \x03(\x0b\x32H.test_platform.phosphorus.PrejobRequest.ExistingProvisionableLabelsEntry\x12,\n\x08\x64\x65\x61\x64line\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x1a:\n\x18ProvisionableLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a\x41\n\x1f\x44\x65siredProvisionableLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a\x42\n ExistingProvisionableLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa6\x01\n\x0ePrejobResponse\x12=\n\x05state\x18\x01 \x01(\x0e\x32..test_platform.phosphorus.PrejobResponse.State\"U\n\x05State\x12\x15\n\x11STATE_UNSPECIFIED\x10\x00\x12\r\n\tSUCCEEDED\x10\x01\x12\n\n\x06\x46\x41ILED\x10\x02\x12\r\n\tTIMED_OUT\x10\x03\x12\x0b\n\x07\x41\x42ORTED\x10\x04\x42\x44ZBgo.chromium.org/chromiumos/infra/proto/go/test_platform/phosphorusb\x06proto3')
   ,
-  dependencies=[test__platform_dot_phosphorus_dot_common__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,test__platform_dot_phosphorus_dot_common__pb2.DESCRIPTOR,])
 
 
+
+_PREJOBRESPONSE_STATE = _descriptor.EnumDescriptor(
+  name='State',
+  full_name='test_platform.phosphorus.PrejobResponse.State',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='STATE_UNSPECIFIED', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='SUCCEEDED', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='FAILED', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='TIMED_OUT', index=3, number=3,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ABORTED', index=4, number=4,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=876,
+  serialized_end=961,
+)
+_sym_db.RegisterEnumDescriptor(_PREJOBRESPONSE_STATE)
 
 
 _PREJOBREQUEST_PROVISIONABLELABELSENTRY = _descriptor.Descriptor(
@@ -60,8 +95,8 @@ _PREJOBREQUEST_PROVISIONABLELABELSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=520,
-  serialized_end=578,
+  serialized_start=599,
+  serialized_end=657,
 )
 
 _PREJOBREQUEST_DESIREDPROVISIONABLELABELSENTRY = _descriptor.Descriptor(
@@ -97,8 +132,8 @@ _PREJOBREQUEST_DESIREDPROVISIONABLELABELSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=580,
-  serialized_end=645,
+  serialized_start=659,
+  serialized_end=724,
 )
 
 _PREJOBREQUEST_EXISTINGPROVISIONABLELABELSENTRY = _descriptor.Descriptor(
@@ -134,8 +169,8 @@ _PREJOBREQUEST_EXISTINGPROVISIONABLELABELSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=647,
-  serialized_end=713,
+  serialized_start=726,
+  serialized_end=792,
 )
 
 _PREJOBREQUEST = _descriptor.Descriptor(
@@ -180,6 +215,13 @@ _PREJOBREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='deadline', full_name='test_platform.phosphorus.PrejobRequest.deadline', index=5,
+      number=6, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -192,8 +234,40 @@ _PREJOBREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=107,
-  serialized_end=713,
+  serialized_start=140,
+  serialized_end=792,
+)
+
+
+_PREJOBRESPONSE = _descriptor.Descriptor(
+  name='PrejobResponse',
+  full_name='test_platform.phosphorus.PrejobResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='state', full_name='test_platform.phosphorus.PrejobResponse.state', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _PREJOBRESPONSE_STATE,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=795,
+  serialized_end=961,
 )
 
 _PREJOBREQUEST_PROVISIONABLELABELSENTRY.containing_type = _PREJOBREQUEST
@@ -203,7 +277,11 @@ _PREJOBREQUEST.fields_by_name['config'].message_type = test__platform_dot_phosph
 _PREJOBREQUEST.fields_by_name['provisionable_labels'].message_type = _PREJOBREQUEST_PROVISIONABLELABELSENTRY
 _PREJOBREQUEST.fields_by_name['desired_provisionable_labels'].message_type = _PREJOBREQUEST_DESIREDPROVISIONABLELABELSENTRY
 _PREJOBREQUEST.fields_by_name['existing_provisionable_labels'].message_type = _PREJOBREQUEST_EXISTINGPROVISIONABLELABELSENTRY
+_PREJOBREQUEST.fields_by_name['deadline'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_PREJOBRESPONSE.fields_by_name['state'].enum_type = _PREJOBRESPONSE_STATE
+_PREJOBRESPONSE_STATE.containing_type = _PREJOBRESPONSE
 DESCRIPTOR.message_types_by_name['PrejobRequest'] = _PREJOBREQUEST
+DESCRIPTOR.message_types_by_name['PrejobResponse'] = _PREJOBRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 PrejobRequest = _reflection.GeneratedProtocolMessageType('PrejobRequest', (_message.Message,), dict(
@@ -236,6 +314,13 @@ _sym_db.RegisterMessage(PrejobRequest)
 _sym_db.RegisterMessage(PrejobRequest.ProvisionableLabelsEntry)
 _sym_db.RegisterMessage(PrejobRequest.DesiredProvisionableLabelsEntry)
 _sym_db.RegisterMessage(PrejobRequest.ExistingProvisionableLabelsEntry)
+
+PrejobResponse = _reflection.GeneratedProtocolMessageType('PrejobResponse', (_message.Message,), dict(
+  DESCRIPTOR = _PREJOBRESPONSE,
+  __module__ = 'test_platform.phosphorus.prejob_pb2'
+  # @@protoc_insertion_point(class_scope:test_platform.phosphorus.PrejobResponse)
+  ))
+_sym_db.RegisterMessage(PrejobResponse)
 
 
 DESCRIPTOR._options = None

@@ -4,42 +4,12 @@
 
 #include "components/performance_manager/public/decorators/page_live_state_decorator.h"
 
-#include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
-#include "components/performance_manager/performance_manager_test_harness.h"
+#include "components/performance_manager/test_support/decorators_utils.h"
+#include "components/performance_manager/test_support/performance_manager_test_harness.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
-
-namespace {
-
-// Helper function that allows testing that a PageLiveStateDecorator::Data
-// property has the expected value. This function should be called from the main
-// thread and be passed the WebContents pointer associated with the PageNode to
-// check.
-template <typename T>
-void TestPropertyOnPMSequence(content::WebContents* contents,
-                              T (PageLiveStateDecorator::Data::*getter)() const,
-                              T expected_value) {
-  base::RunLoop run_loop;
-  auto quit_closure = run_loop.QuitClosure();
-
-  base::WeakPtr<PageNode> node =
-      PerformanceManager::GetPageNodeForWebContents(contents);
-
-  PerformanceManager::CallOnGraph(
-      FROM_HERE, base::BindLambdaForTesting([&](Graph* unused) {
-        EXPECT_TRUE(node);
-        auto* data =
-            PageLiveStateDecorator::Data::GetOrCreateForTesting(node.get());
-        EXPECT_TRUE(data);
-        EXPECT_EQ((data->*getter)(), expected_value);
-        std::move(quit_closure).Run();
-      }));
-  run_loop.Run();
-}
-
-}  // namespace
 
 class PageLiveStateDecoratorTest : public PerformanceManagerTestHarness {
  protected:
@@ -48,29 +18,60 @@ class PageLiveStateDecoratorTest : public PerformanceManagerTestHarness {
   PageLiveStateDecoratorTest(const PageLiveStateDecoratorTest& other) = delete;
   PageLiveStateDecoratorTest& operator=(const PageLiveStateDecoratorTest&) =
       delete;
+
+  void SetUp() override {
+    PerformanceManagerTestHarness::SetUp();
+    SetContents(CreateTestWebContents());
+  }
+
+  void TearDown() override {
+    DeleteContents();
+    PerformanceManagerTestHarness::TearDown();
+  }
 };
 
-TEST_F(PageLiveStateDecoratorTest, OnWebContentsAttachedToUSBChange) {
-  auto contents = CreateTestWebContents();
-  auto* contents_raw = contents.get();
-  SetContents(std::move(contents));
+TEST_F(PageLiveStateDecoratorTest, OnIsConnectedToUSBDeviceChanged) {
+  testing::EndToEndBooleanPropertyTest(
+      web_contents(), &PageLiveStateDecorator::Data::IsConnectedToUSBDevice,
+      &PageLiveStateDecorator::OnIsConnectedToUSBDeviceChanged);
+}
 
-  // By default the page shouldn't be connected to a USB device.
-  TestPropertyOnPMSequence(
-      contents_raw, &PageLiveStateDecorator::Data::IsAttachedToUSB, false);
+TEST_F(PageLiveStateDecoratorTest, OnIsConnectedToBluetoothDeviceChanged) {
+  testing::EndToEndBooleanPropertyTest(
+      web_contents(),
+      &PageLiveStateDecorator::Data::IsConnectedToBluetoothDevice,
+      &PageLiveStateDecorator::OnIsConnectedToBluetoothDeviceChanged);
+}
 
-  // Pretend that it attached to a USB device and make sure that the PageNode
-  // data get updated.
-  PageLiveStateDecorator::OnWebContentsAttachedToUSBChange(contents_raw, true);
-  TestPropertyOnPMSequence(
-      contents_raw, &PageLiveStateDecorator::Data::IsAttachedToUSB, true);
+TEST_F(PageLiveStateDecoratorTest, OnIsCapturingVideoChanged) {
+  testing::EndToEndBooleanPropertyTest(
+      web_contents(), &PageLiveStateDecorator::Data::IsCapturingVideo,
+      &PageLiveStateDecorator::OnIsCapturingVideoChanged);
+}
 
-  // Switch back to the default state.
-  PageLiveStateDecorator::OnWebContentsAttachedToUSBChange(contents_raw, false);
-  TestPropertyOnPMSequence(
-      contents_raw, &PageLiveStateDecorator::Data::IsAttachedToUSB, false);
+TEST_F(PageLiveStateDecoratorTest, OnIsCapturingAudioChanged) {
+  testing::EndToEndBooleanPropertyTest(
+      web_contents(), &PageLiveStateDecorator::Data::IsCapturingAudio,
+      &PageLiveStateDecorator::OnIsCapturingAudioChanged);
+}
 
-  DeleteContents();
+TEST_F(PageLiveStateDecoratorTest, OnIsBeingMirroredChanged) {
+  testing::EndToEndBooleanPropertyTest(
+      web_contents(), &PageLiveStateDecorator::Data::IsBeingMirrored,
+      &PageLiveStateDecorator::OnIsBeingMirroredChanged);
+}
+
+TEST_F(PageLiveStateDecoratorTest, OnIsCapturingDesktopChanged) {
+  testing::EndToEndBooleanPropertyTest(
+      web_contents(), &PageLiveStateDecorator::Data::IsCapturingDesktop,
+      &PageLiveStateDecorator::OnIsCapturingDesktopChanged);
+}
+
+TEST_F(PageLiveStateDecoratorTest, SetIsAutoDiscardable) {
+  testing::EndToEndBooleanPropertyTest(
+      web_contents(), &PageLiveStateDecorator::Data::IsAutoDiscardable,
+      &PageLiveStateDecorator::SetIsAutoDiscardable,
+      /*default_state=*/true);
 }
 
 }  // namespace performance_manager

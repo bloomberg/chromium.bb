@@ -121,19 +121,25 @@ Polymer({
   bluetoothPrivateOnPairingListener_: null,
 
   /**
+   * Listener for chrome.bluetoothPrivate.deviceAddressChanged events.
+   * @private {?function(!chrome.bluetooth.Device, !string)}
+   */
+  bluetoothPrivateDeviceAddressChangedListener_: null,
+
+  /**
    * Listener for chrome.bluetooth.onBluetoothDeviceChanged events.
    * @private {?function(!chrome.bluetooth.Device)}
    */
   bluetoothDeviceChangedListener_: null,
 
-  open: function() {
+  open() {
     this.startPairing();
     this.pinOrPass_ = '';
     this.getDialog_().showModal();
     this.itemWasFocused_ = false;
   },
 
-  close: function() {
+  close() {
     this.endPairing();
     const dialog = this.getDialog_();
     if (dialog.open) {
@@ -152,11 +158,13 @@ Polymer({
    * @return {boolean} True if the dialog considers this a fatal error and
    *     is displaying an error message.
    */
-  endConnectionAttempt: function(device, wasPairing, lastError, result) {
+  endConnectionAttempt(device, wasPairing, lastError, result) {
     if (wasPairing) {
       const transport = device.transport ? device.transport :
                                            chrome.bluetooth.Transport.INVALID;
-      this.recordPairingMetrics_(transport, lastError, result);
+      const connectResult = lastError ? undefined : result;
+      chrome.bluetoothPrivate.recordPairing(
+          transport, this.getPairingDurationMs_(), connectResult);
     }
 
     let error;
@@ -178,6 +186,13 @@ Polymer({
     // Attempting to connect and pair has failed. Remove listeners.
     this.endPairing();
 
+    if (!wasPairing && !this.getDialog_().open &&
+        (result === chrome.bluetoothPrivate.ConnectResultType.FAILED)) {
+      // Inform the caller to not open the dialog; the user is informed by
+      // other UI that the connection failed.
+      return false;
+    }
+
     const name = device.name || device.address;
     let id = 'bluetooth_connect_' + error;
     if (!this.i18nExists(id)) {
@@ -192,7 +207,7 @@ Polymer({
   },
 
   /** @private */
-  dialogUpdated_: function() {
+  dialogUpdated_() {
     if (this.showEnterPincode_()) {
       this.$$('#pincode').focus();
     } else if (this.showEnterPasskey_()) {
@@ -206,17 +221,17 @@ Polymer({
    * @return {!CrDialogElement}
    * @private
    */
-  getDialog_: function() {
+  getDialog_() {
     return /** @type {!CrDialogElement} */ (this.$.dialog);
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.getDialog_().cancel();
   },
 
   /** @private */
-  onDialogCanceled_: function() {
+  onDialogCanceled_() {
     if (!this.errorMessage_) {
       this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.CANCEL);
     }
@@ -224,7 +239,7 @@ Polymer({
   },
 
   /** Called when the dialog is opened. Starts listening for pairing events. */
-  startPairing: function() {
+  startPairing() {
     if (!this.bluetoothPrivateOnPairingListener_) {
       this.bluetoothPrivateOnPairingListener_ =
           this.onBluetoothPrivateOnPairing_.bind(this);
@@ -232,6 +247,12 @@ Polymer({
           this.bluetoothPrivateOnPairingListener_);
 
       this.connectionAttemptStartTimestampMs_ = Date.now();
+    }
+    if (!this.bluetoothPrivateDeviceAddressChangedListener_) {
+      this.bluetoothPrivateDeviceAddressChangedListener_ =
+          this.onBluetoothPrivateDeviceAddressChanged_.bind(this);
+      this.bluetoothPrivate.onDeviceAddressChanged.addListener(
+          this.bluetoothPrivateDeviceAddressChangedListener_);
     }
     if (!this.bluetoothDeviceChangedListener_) {
       this.bluetoothDeviceChangedListener_ =
@@ -242,11 +263,16 @@ Polymer({
   },
 
   /** Called when the dialog is closed. */
-  endPairing: function() {
+  endPairing() {
     if (this.bluetoothPrivateOnPairingListener_) {
       this.bluetoothPrivate.onPairing.removeListener(
           this.bluetoothPrivateOnPairingListener_);
       this.bluetoothPrivateOnPairingListener_ = null;
+    }
+    if (this.bluetoothPrivateDeviceAddressChangedListener_) {
+      this.bluetoothPrivate.onDeviceAddressChanged.removeListener(
+          this.bluetoothPrivateDeviceAddressChangedListener_);
+      this.bluetoothPrivateDeviceAddressChangedListener_ = null;
     }
     if (this.bluetoothDeviceChangedListener_) {
       this.bluetooth.onDeviceChanged.removeListener(
@@ -261,12 +287,12 @@ Polymer({
    * @param {!chrome.bluetoothPrivate.PairingEvent} event
    * @private
    */
-  onBluetoothPrivateOnPairing_: function(event) {
+  onBluetoothPrivateOnPairing_(event) {
     if (!this.pairingDevice ||
-        event.device.address != this.pairingDevice.address) {
+        event.device.address !== this.pairingDevice.address) {
       return;
     }
-    if (event.pairing == PairingEventType.KEYS_ENTERED &&
+    if (event.pairing === PairingEventType.KEYS_ENTERED &&
         event.passkey === undefined && this.pairingEvent_) {
       // 'keysEntered' event might not include the updated passkey so preserve
       // the current one.
@@ -276,20 +302,33 @@ Polymer({
   },
 
   /**
+   * Process bluetoothPrivate.onDeviceAddressChanged events.
+   * @param {!chrome.bluetooth.Device} device
+   * @param {!string} oldAddress
+   * @private
+   */
+  onBluetoothPrivateDeviceAddressChanged_(device, oldAddress) {
+    if (!this.pairingDevice || oldAddress !== this.pairingDevice.address) {
+      return;
+    }
+    this.pairingDevice = device;
+  },
+
+  /**
    * Process bluetooth.onDeviceChanged events. This ensures that the dialog
    * updates when the connection state changes.
    * @param {!chrome.bluetooth.Device} device
    * @private
    */
-  onBluetoothDeviceChanged_: function(device) {
-    if (!this.pairingDevice || device.address != this.pairingDevice.address) {
+  onBluetoothDeviceChanged_(device) {
+    if (!this.pairingDevice || device.address !== this.pairingDevice.address) {
       return;
     }
     this.pairingDevice = device;
   },
 
   /** @private */
-  pairingChanged_: function() {
+  pairingChanged_() {
     if (this.pairingDevice === undefined) {
       return;
     }
@@ -322,7 +361,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getMessage_: function() {
+  getMessage_() {
     let message;
     if (!this.pairingEvent_) {
       message = 'bluetoothStartConnecting';
@@ -342,68 +381,68 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showEnterPincode_: function() {
+  showEnterPincode_() {
     return !!this.pairingEvent_ &&
-        this.pairingEvent_.pairing == PairingEventType.REQUEST_PINCODE;
+        this.pairingEvent_.pairing === PairingEventType.REQUEST_PINCODE;
   },
 
   /**
    * @return {boolean}
    * @private
    */
-  showEnterPasskey_: function() {
+  showEnterPasskey_() {
     return !!this.pairingEvent_ &&
-        this.pairingEvent_.pairing == PairingEventType.REQUEST_PASSKEY;
+        this.pairingEvent_.pairing === PairingEventType.REQUEST_PASSKEY;
   },
 
   /**
    * @return {boolean}
    * @private
    */
-  showDisplayPassOrPin_: function() {
+  showDisplayPassOrPin_() {
     if (!this.pairingEvent_) {
       return false;
     }
     const pairing = this.pairingEvent_.pairing;
     return (
-        pairing == PairingEventType.DISPLAY_PINCODE ||
-        pairing == PairingEventType.DISPLAY_PASSKEY ||
-        pairing == PairingEventType.CONFIRM_PASSKEY ||
-        pairing == PairingEventType.KEYS_ENTERED);
+        pairing === PairingEventType.DISPLAY_PINCODE ||
+        pairing === PairingEventType.DISPLAY_PASSKEY ||
+        pairing === PairingEventType.CONFIRM_PASSKEY ||
+        pairing === PairingEventType.KEYS_ENTERED);
   },
 
   /**
    * @return {boolean}
    * @private
    */
-  showAcceptReject_: function() {
+  showAcceptReject_() {
     return !!this.pairingEvent_ &&
-        this.pairingEvent_.pairing == PairingEventType.CONFIRM_PASSKEY;
+        this.pairingEvent_.pairing === PairingEventType.CONFIRM_PASSKEY;
   },
 
   /**
    * @return {boolean}
    * @private
    */
-  showConnect_: function() {
+  showConnect_() {
     if (!this.pairingEvent_) {
       return false;
     }
     const pairing = this.pairingEvent_.pairing;
-    return pairing == PairingEventType.REQUEST_PINCODE ||
-        pairing == PairingEventType.REQUEST_PASSKEY;
+    return pairing === PairingEventType.REQUEST_PINCODE ||
+        pairing === PairingEventType.REQUEST_PASSKEY;
   },
 
   /**
    * @return {boolean}
    * @private
    */
-  enableConnect_: function() {
+  enableConnect_() {
     if (!this.showConnect_()) {
       return false;
     }
     const inputId =
-        (this.pairingEvent_.pairing == PairingEventType.REQUEST_PINCODE) ?
+        (this.pairingEvent_.pairing === PairingEventType.REQUEST_PINCODE) ?
         '#pincode' :
         '#passkey';
     const crInput = /** @type {!CrInputElement} */ (this.$$(inputId));
@@ -416,24 +455,24 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showDismiss_: function() {
+  showDismiss_() {
     return (!!this.pairingDevice && this.pairingDevice.paired) ||
         (!!this.pairingEvent_ &&
-         this.pairingEvent_.pairing == PairingEventType.COMPLETE);
+         this.pairingEvent_.pairing === PairingEventType.COMPLETE);
   },
 
   /** @private */
-  onAcceptTap_: function() {
+  onAcceptTap_() {
     this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.CONFIRM);
   },
 
   /** @private */
-  onConnectTap_: function() {
+  onConnectTap_() {
     this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.CONFIRM);
   },
 
   /** @private */
-  onRejectTap_: function() {
+  onRejectTap_() {
     this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.REJECT);
   },
 
@@ -441,18 +480,18 @@ Polymer({
    * @param {!chrome.bluetoothPrivate.PairingResponse} response
    * @private
    */
-  sendResponse_: function(response) {
+  sendResponse_(response) {
     if (!this.pairingDevice) {
       return;
     }
     const options =
         /** @type {!chrome.bluetoothPrivate.SetPairingResponseOptions} */ (
             {device: this.pairingDevice, response: response});
-    if (response == chrome.bluetoothPrivate.PairingResponse.CONFIRM) {
+    if (response === chrome.bluetoothPrivate.PairingResponse.CONFIRM) {
       const pairing = this.pairingEvent_.pairing;
-      if (pairing == PairingEventType.REQUEST_PINCODE) {
+      if (pairing === PairingEventType.REQUEST_PINCODE) {
         options.pincode = this.$$('#pincode').value;
-      } else if (pairing == PairingEventType.REQUEST_PASSKEY) {
+      } else if (pairing === PairingEventType.REQUEST_PASSKEY) {
         options.passkey = parseInt(this.$$('#passkey').value, 10);
       }
     }
@@ -475,10 +514,10 @@ Polymer({
    * @return {string}
    * @private
    */
-  getEventDesc_: function(eventType) {
+  getEventDesc_(eventType) {
     assert(eventType);
-    if (eventType == PairingEventType.COMPLETE ||
-        eventType == PairingEventType.REQUEST_AUTHORIZATION) {
+    if (eventType === PairingEventType.COMPLETE ||
+        eventType === PairingEventType.REQUEST_AUTHORIZATION) {
       return 'bluetoothStartConnecting';
     }
     return 'bluetooth_' + /** @type {string} */ (eventType);
@@ -489,21 +528,21 @@ Polymer({
    * @return {string}
    * @private
    */
-  getPinDigit_: function(index) {
+  getPinDigit_(index) {
     if (!this.pairingEvent_) {
       return '';
     }
     let digit = '0';
     const pairing = this.pairingEvent_.pairing;
-    if (pairing == PairingEventType.DISPLAY_PINCODE &&
+    if (pairing === PairingEventType.DISPLAY_PINCODE &&
         this.pairingEvent_.pincode &&
         index < this.pairingEvent_.pincode.length) {
       digit = this.pairingEvent_.pincode[index];
     } else if (
         this.pairingEvent_.passkey &&
-        (pairing == PairingEventType.DISPLAY_PASSKEY ||
-         pairing == PairingEventType.KEYS_ENTERED ||
-         pairing == PairingEventType.CONFIRM_PASSKEY)) {
+        (pairing === PairingEventType.DISPLAY_PASSKEY ||
+         pairing === PairingEventType.KEYS_ENTERED ||
+         pairing === PairingEventType.CONFIRM_PASSKEY)) {
       const passkeyString =
           String(this.pairingEvent_.passkey).padStart(this.digits_.length, '0');
       digit = passkeyString[index];
@@ -516,26 +555,27 @@ Polymer({
    * @return {string}
    * @private
    */
-  getPinClass_: function(index) {
+  getPinClass_(index) {
     if (!this.pairingEvent_) {
       return '';
     }
-    if (this.pairingEvent_.pairing == PairingEventType.CONFIRM_PASSKEY) {
+    if (this.pairingEvent_.pairing === PairingEventType.CONFIRM_PASSKEY) {
       return 'confirm';
     }
     let cssClass = 'display';
-    if (this.pairingEvent_.pairing == PairingEventType.DISPLAY_PASSKEY) {
-      if (index == 0) {
+    if (this.pairingEvent_.pairing === PairingEventType.DISPLAY_PASSKEY) {
+      if (index === 0) {
         cssClass += ' next';
       } else {
         cssClass += ' untyped';
       }
     } else if (
-        this.pairingEvent_.pairing == PairingEventType.KEYS_ENTERED &&
+        this.pairingEvent_.pairing === PairingEventType.KEYS_ENTERED &&
         this.pairingEvent_.enteredKey) {
       const enteredKey = this.pairingEvent_.enteredKey;  // 1-7
       const lastKey = this.digits_.length;               // 6
-      if ((index == -1 && enteredKey > lastKey) || (index + 1 == enteredKey)) {
+      if ((index === -1 && enteredKey > lastKey) ||
+          (index + 1 === enteredKey)) {
         cssClass += ' next';
       } else if (index > enteredKey) {
         cssClass += ' untyped';
@@ -545,51 +585,12 @@ Polymer({
   },
 
   /**
-   * Record metrics for pairing attempt results.
-   * @param {!chrome.bluetooth.Transport} transport The transport type of the
-   *     device.
-   * @param {!{message: string}} lastError chrome.runtime.lastError.
-   * @param {!chrome.bluetoothPrivate.ConnectResultType} result The connection
-   *     result.
-   * @private
-   */
-  recordPairingMetrics_: function(transport, lastError, result) {
-    // TODO(crbug.com/953149): Also create metrics which break down the simple
-    // boolean success/failure metric with error reasons, including |lastError|.
-
-    let success;
-    if (lastError) {
-      success = false;
-    } else {
-      switch (result) {
-        case chrome.bluetoothPrivate.ConnectResultType.SUCCESS:
-          success = true;
-          break;
-        case chrome.bluetoothPrivate.ConnectResultType.IN_PROGRESS:
-        case chrome.bluetoothPrivate.ConnectResultType.ALREADY_CONNECTED:
-        case chrome.bluetoothPrivate.ConnectResultType.AUTH_CANCELED:
-        case chrome.bluetoothPrivate.ConnectResultType.AUTH_REJECTED:
-          // Cases like this do not reflect success or failure to pair,
-          // particularly AUTH_CANCELED or AUTH_REJECTED. Do not emit to
-          // metrics.
-          return;
-        default:
-          success = false;
-          break;
-      }
-    }
-
-    chrome.bluetoothPrivate.recordPairing(
-        success, transport, this.getPairingDurationMs_());
-  },
-
-  /**
    * Calculate how long it took to complete pairing, excluding how long the user
    * took to confirm the pairing auth process.
    * @return {number}
    * @private
    */
-  getPairingDurationMs_: function() {
+  getPairingDurationMs_() {
     let unadjustedPairingDurationMs = 0;
     if (this.connectionAttemptStartTimestampMs_) {
       unadjustedPairingDurationMs =

@@ -30,7 +30,7 @@
 namespace blink {
 
 class ElementSMILAnimations;
-class SVGResourceClient;
+class SVGElementResourceClient;
 
 class SVGElementRareData final : public GarbageCollected<SVGElementRareData> {
  public:
@@ -76,7 +76,7 @@ class SVGElementRareData final : public GarbageCollected<SVGElementRareData> {
     return web_animated_attributes_dirty_;
   }
 
-  HashSet<const QualifiedName*>& WebAnimatedAttributes() {
+  HashSet<QualifiedName>& WebAnimatedAttributes() {
     return web_animated_attributes_;
   }
 
@@ -99,25 +99,25 @@ class SVGElementRareData final : public GarbageCollected<SVGElementRareData> {
     needs_override_computed_style_update_ = true;
   }
 
-  SVGResourceClient* GetSVGResourceClient() { return resource_client_; }
-  SVGResourceClient& EnsureSVGResourceClient(SVGElement*);
+  SVGElementResourceClient* GetSVGResourceClient() { return resource_client_; }
+  SVGElementResourceClient& EnsureSVGResourceClient(SVGElement*);
 
   AffineTransform* AnimateMotionTransform();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   SVGElementSet outgoing_references_;
   SVGElementSet incoming_references_;
   HeapHashSet<WeakMember<SVGElement>> element_instances_;
   Member<SVGElement> corresponding_element_;
-  Member<SVGResourceClient> resource_client_;
+  Member<SVGElementResourceClient> resource_client_;
   Member<ElementSMILAnimations> smil_animations_;
   bool instances_updates_blocked_ : 1;
   bool use_override_computed_style_ : 1;
   bool needs_override_computed_style_update_ : 1;
   bool web_animated_attributes_dirty_ : 1;
-  HashSet<const QualifiedName*> web_animated_attributes_;
+  HashSet<QualifiedName> web_animated_attributes_;
   Member<MutableCSSPropertyValueSet> animated_smil_style_properties_;
   scoped_refptr<ComputedStyle> override_computed_style_;
   // Used by <animateMotion>

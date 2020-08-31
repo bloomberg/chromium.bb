@@ -27,7 +27,16 @@ using ::testing::_;
 namespace media_router {
 
 namespace {
-static constexpr char kCastSource[] = "cast:ABCDEFGH?clientId=123";
+static constexpr char kAppId[] = "ABCDEFGH";
+static constexpr char kAppParams[] =
+    "{requiredFeatures:[\"STREAM_TRANSFER\"],launchCheckerParams:{"
+    "credentialsData:{credentialsType:\"mobile\",credentials:"
+    "\"99843n2idsguyhga\"}}}";
+static constexpr char kCastSource[] =
+    "cast:ABCDEFGH?clientId=123&appParams=%7BrequiredFeatures%3A%5B%22STREAM_"
+    "TRANSFER%22%5D%2ClaunchCheckerParams%3A%7BcredentialsData%3A%"
+    "7BcredentialsType%3A%22mobile%22%2Ccredentials%3A%2299843n2idsguyhga%22%"
+    "7D%7D%7D";
 static constexpr char kPresentationId[] = "presentationId";
 static constexpr char kOrigin[] = "https://www.youtube.com";
 static constexpr int kTabId = 1;
@@ -178,7 +187,11 @@ TEST_F(CastMediaRouteProviderTest, CreateRoute) {
   MediaSinkInternal sink = CreateCastSink(1);
   media_sink_service_.AddOrUpdateSink(sink);
 
-  EXPECT_CALL(message_handler_, LaunchSession(_, _, _, _));
+  std::vector<std::string> default_supported_app_types = {"WEB"};
+  EXPECT_CALL(message_handler_,
+              LaunchSession(sink.cast_data().cast_channel_id, kAppId,
+                            kDefaultLaunchTimeout, default_supported_app_types,
+                            kAppParams, _));
   provider_->CreateRoute(
       kCastSource, sink.sink().id(), kPresentationId, origin_, kTabId,
       kRouteTimeout, /* incognito */ false,
@@ -191,7 +204,7 @@ TEST_F(CastMediaRouteProviderTest, TerminateRoute) {
   MediaSinkInternal sink = CreateCastSink(1);
   media_sink_service_.AddOrUpdateSink(sink);
 
-  EXPECT_CALL(message_handler_, LaunchSession(_, _, _, _));
+  EXPECT_CALL(message_handler_, LaunchSession(_, _, _, _, _, _));
   provider_->CreateRoute(
       kCastSource, sink.sink().id(), kPresentationId, origin_, kTabId,
       kRouteTimeout, /* incognito */ false,
@@ -204,6 +217,40 @@ TEST_F(CastMediaRouteProviderTest, TerminateRoute) {
       route_->media_route_id(),
       base::BindOnce(&CastMediaRouteProviderTest::ExpectTerminateRouteSuccess,
                      base::Unretained(this)));
+}
+
+TEST_F(CastMediaRouteProviderTest, GetState) {
+  MediaSinkInternal sink = CreateCastSink(1);
+  media_sink_service_.AddOrUpdateSink(sink);
+  session_tracker_->HandleReceiverStatusMessage(sink, base::test::ParseJson(R"({
+    "status": {
+      "applications": [{
+        "appId": "ABCDEFGH",
+        "displayName": "App display name",
+        "namespaces": [
+          {"name": "urn:x-cast:com.google.cast.media"},
+          {"name": "urn:x-cast:com.google.foo"}
+        ],
+        "sessionId": "theSessionId",
+        "statusText":"App status",
+        "transportId":"theTransportId"
+      }]
+    }
+  })"));
+
+  provider_->GetState(base::BindOnce([](mojom::ProviderStatePtr state) {
+    ASSERT_TRUE(state);
+    ASSERT_TRUE(state->is_cast_provider_state());
+    const mojom::CastProviderState& cast_state =
+        *(state->get_cast_provider_state());
+    ASSERT_EQ(cast_state.session_state.size(), 1UL);
+    const mojom::CastSessionState& session_state =
+        *(cast_state.session_state[0]);
+    EXPECT_EQ(session_state.sink_id, "cast:<id1>");
+    EXPECT_EQ(session_state.app_id, "ABCDEFGH");
+    EXPECT_EQ(session_state.session_id, "theSessionId");
+    EXPECT_EQ(session_state.route_description, "App status");
+  }));
 }
 
 }  // namespace media_router

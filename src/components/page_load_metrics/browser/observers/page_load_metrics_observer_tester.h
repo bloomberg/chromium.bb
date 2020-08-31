@@ -14,6 +14,7 @@
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "components/page_load_metrics/common/test/weak_mock_timer.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/browser/cookie_access_details.h"
 #include "net/cookies/canonical_cookie.h"
 #include "ui/base/page_transition_types.h"
 
@@ -36,7 +37,7 @@ struct GlobalRequestID;
 namespace mojom {
 class FrameRenderDataUpdate;
 class PageLoadFeatures;
-class PageLoadMetadata;
+class FrameMetadata;
 class PageLoadTiming;
 }  // namespace mojom
 
@@ -91,9 +92,12 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   void SimulateCpuTimingUpdate(const mojom::CpuTiming& cpu_timing);
   void SimulateCpuTimingUpdate(const mojom::CpuTiming& cpu_timing,
                                content::RenderFrameHost* rfh);
+  void SimulateInputTimingUpdate(const mojom::InputTiming& input_timing);
+  void SimulateInputTimingUpdate(const mojom::InputTiming& input_timing,
+                                 content::RenderFrameHost* rfh);
   void SimulateTimingAndMetadataUpdate(const mojom::PageLoadTiming& timing,
-                                       const mojom::PageLoadMetadata& metadata);
-  void SimulateMetadataUpdate(const mojom::PageLoadMetadata& metadata,
+                                       const mojom::FrameMetadata& metadata);
+  void SimulateMetadataUpdate(const mojom::FrameMetadata& metadata,
                               content::RenderFrameHost* rfh);
   void SimulateFeaturesUpdate(const mojom::PageLoadFeatures& new_features);
   void SimulateResourceDataUseUpdate(
@@ -128,23 +132,14 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   // Simulate playing a media element.
   void SimulateMediaPlayed();
 
-  // Simulate reading cookies.
-  void SimulateCookiesRead(const GURL& url,
-                           const GURL& first_party_url,
-                           const net::CookieList& cookie_list,
-                           bool blocked_by_policy);
-
-  // Simulate writing a cookie.
-  void SimulateCookieChange(const GURL& url,
-                            const GURL& first_party_url,
-                            const net::CanonicalCookie& cookie,
-                            bool blocked_by_policy);
+  // Simulate accessingcookies.
+  void SimulateCookieAccess(const content::CookieAccessDetails& details);
 
   // Simulate accessing the local storage or session storage.
-  void SimulateDomStorageAccess(const GURL& url,
-                                const GURL& first_party_url,
-                                bool local,
-                                bool blocked_by_policy);
+  void SimulateStorageAccess(const GURL& url,
+                             const GURL& first_party_url,
+                             bool blocked_by_policy,
+                             StorageType storage_type);
 
   MetricsWebContentsObserver* metrics_web_contents_observer() {
     return metrics_web_contents_observer_;
@@ -161,11 +156,12 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
  private:
   void SimulatePageLoadTimingUpdate(
       const mojom::PageLoadTiming& timing,
-      const mojom::PageLoadMetadata& metadata,
+      const mojom::FrameMetadata& metadata,
       const mojom::PageLoadFeatures& new_features,
       const mojom::FrameRenderDataUpdate& render_data,
       const mojom::CpuTiming& cpu_timing,
       const mojom::DeferredResourceCounts& new_deferred_resource_data,
+      const mojom::InputTiming& input_timing,
       content::RenderFrameHost* rfh);
 
   content::WebContents* web_contents() const { return web_contents_; }

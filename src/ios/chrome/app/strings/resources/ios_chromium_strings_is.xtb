@@ -3,7 +3,6 @@
 <translationbundle lang="is">
 <translation id="102360288709523007">Hjálpaðu til við að bæta Chromium með því að senda talnagögn um notkun og hrunskýrslur til Google.</translation>
 <translation id="1185134272377778587">Um Chromium</translation>
-<translation id="1289966288285062467">Upplýsingar um persónuvernd Chromium</translation>
 <translation id="1472013873724362412">Reikningurinn þinn virkar ekki í Chromium. Hafðu samband við stjórnanda lénsins eða notaðu venjulegan Google reikning til að skrá þig inn.</translation>
 <translation id="1507010443238049608">Hjálpa til við að bæta eiginleika og afköst Chromium</translation>
 <translation id="1617663976202781617">Gögn úr Chromium samstillingu</translation>
@@ -27,11 +26,10 @@
 <translation id="5573014823074921752">Ábending um Chromium. Til að sjá fleiri valkosti fyrir flipa skaltu halda hnappinum „Sýna flipa“ inni á tækjastikunni, sem er neðst eða efst á skjánum.</translation>
 <translation id="5862307444128926510">Velkomin(n) í Chromium</translation>
 <translation id="5945387852661427312">Þú ert að skrá þig út af reikningi sem stýrt er af <ph name="DOMAIN" /> og veitir í leiðinni stjórnanda lénsins umsjón með Chromium gögnunum þínum. Gögnin þín verða tengd við þennan reikning til frambúðar. Ef þú skráir þig út af Chromium verður gögnunum þínum á þessu tæki eytt, en þau verða áfram geymd á Google reikningnum þínum.</translation>
-<translation id="6068866989048414399">Þjónustuskilmálar Chromium</translation>
+<translation id="602807004951640891">Með því að nota Chromium samþykkirðu <ph name="BEGIN_LINK_TOS" />þjónustuskilmálana<ph name="END_LINK_TOS" />.</translation>
 <translation id="6268381023930128611">Skrá út af Chromium?</translation>
 <translation id="6424492062988593837">Chromium er nú enn betra! Ný útgáfa er í boði.</translation>
 <translation id="6604711459180487467">Fáðu betri upplifun í Chromium út frá staðsetningu þinni.</translation>
-<translation id="6626296268883197964">Með því að nota þetta forrit samþykkirðu <ph name="BEGIN_LINK_TOS" />þjónustuskilmála<ph name="END_LINK_TOS" /> og <ph name="BEGIN_LINK_PRIVACY" />upplýsingar um persónuvernd<ph name="END_LINK_PRIVACY" /> Chromium.</translation>
 <translation id="7099326575020694068">Chromium getur ekki notað myndavélina á tvískiptum skjá</translation>
 <translation id="7208566199746267865">Chromium sparar þér tíma með því að færa reikningana þína yfir á vefinn. Þú getur bætt við reikningum eða fjarlægt þá í stillingum.</translation>
 <translation id="7269362888766543920">Einhverjar viðbætur valda því að Chromium hrynur. Prófaðu að fjarlægja þær.</translation>

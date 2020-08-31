@@ -12,12 +12,14 @@
 #include "base/no_destructor.h"
 #include "base/unguessable_token.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
+#include "chromecast/common/mojom/service_connector.mojom.h"
+#include "chromecast/media/api/cma_backend_factory.h"
 #include "chromecast/media/base/video_resolution_policy.h"
-#include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "chromecast/media/service/mojom/video_geometry_setter.mojom.h"
 #include "media/base/renderer.h"
 #include "media/base/waiting.h"
 #include "media/mojo/mojom/cast_application_media_info_manager.mojom.h"
+#include "media/mojo/mojom/frame_interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -26,13 +28,6 @@
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
-
-namespace service_manager {
-class Connector;
-namespace mojom {
-class InterfaceProvider;
-}  // namespace mojom
-}  // namespace service_manager
 
 namespace chromecast {
 class TaskRunnerImpl;
@@ -48,15 +43,13 @@ class CastRenderer : public ::media::Renderer,
                      public VideoResolutionPolicy::Observer,
                      public mojom::VideoGeometryChangeClient {
  public:
-  // |connector| provides interfaces for services hosted by ServiceManager.
-  // |host_interfaces| provides interfaces tied to RenderFrameHost.
+  // |frame_interfaces| provides interfaces tied to RenderFrameHost.
   CastRenderer(CmaBackendFactory* backend_factory,
                const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                VideoModeSwitcher* video_mode_switcher,
                VideoResolutionPolicy* video_resolution_policy,
                const base::UnguessableToken& overlay_plane_id,
-               service_manager::Connector* connector,
-               service_manager::mojom::InterfaceProvider* host_interfaces);
+               ::media::mojom::FrameInterfaceFactory* frame_interfaces);
   ~CastRenderer() final;
   // For CmaBackend implementation, CastRenderer must be connected to
   // VideoGeometrySetterService.
@@ -121,8 +114,8 @@ class CastRenderer : public ::media::Renderer,
   VideoModeSwitcher* video_mode_switcher_;
   VideoResolutionPolicy* video_resolution_policy_;
   base::UnguessableToken overlay_plane_id_;
-  service_manager::Connector* connector_;
-  service_manager::mojom::InterfaceProvider* host_interfaces_;
+  mojo::Remote<chromecast::mojom::ServiceConnector> service_connector_;
+  ::media::mojom::FrameInterfaceFactory* frame_interfaces_;
 
   ::media::RendererClient* client_;
   CastCdmContext* cast_cdm_context_;

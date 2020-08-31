@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.api import api_config
 from chromite.api import controller
 from chromite.api.controller import payload
@@ -14,6 +16,9 @@ from chromite.api.gen.chromite.api import payload_pb2
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import cros_test_lib
 from chromite.lib.paygen import paygen_payload_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class PayloadApiTests(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
@@ -37,8 +42,12 @@ class PayloadApiTests(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
         build=tgt_build, image_type=6, milestone='R70')
 
     self.req = payload_pb2.PayloadGenerationRequest(
-        tgt_unsigned_image=tgt_image, src_unsigned_image=src_image,
-        bucket='test-destination-bucket', verify=True, keyset='update_signer')
+        tgt_unsigned_image=tgt_image,
+        src_unsigned_image=src_image,
+        bucket='test-destination-bucket',
+        verify=True,
+        keyset='update_signer',
+        dryrun=False)
 
     self.result = payload_pb2.PayloadGenerationResult()
 
@@ -55,3 +64,21 @@ class PayloadApiTests(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     self.PatchObject(paygen_payload_lib, 'PaygenPayload')
     res = payload.GeneratePayload(self.req, self.result, self.api_config)
     self.assertEqual(res, controller.RETURN_CODE_SUCCESS)
+
+  def testMockError(self):
+    """Test mock error call does not execute any logic, returns error."""
+    patch = self.PatchObject(paygen_payload_lib, 'PaygenPayload')
+
+    res = payload.GeneratePayload(self.req, self.result,
+                                  self.mock_error_config)
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY, res)
+
+  def testMockCall(self):
+    """Test mock call does not execute any logic, returns success."""
+    patch = self.PatchObject(paygen_payload_lib, 'PaygenPayload')
+
+    res = payload.GeneratePayload(self.req, self.result,
+                                  self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_SUCCESS, res)

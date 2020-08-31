@@ -9,11 +9,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -22,7 +23,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/feedback/feedback_report.h"
-#include "components/feedback/feedback_util.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "components/feedback/tracing_manager.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -31,6 +31,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/feedback_private.h"
 #include "extensions/common/constants.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "extensions/browser/api/feedback_private/log_source_access_manager.h"
@@ -213,7 +214,7 @@ FeedbackPrivateGetSystemInformationFunction::Run() {
       ExtensionsAPIClient::Get()
           ->GetFeedbackPrivateDelegate()
           ->CreateSystemLogsFetcher(browser_context());
-  fetcher->Fetch(base::Bind(
+  fetcher->Fetch(base::BindOnce(
       &FeedbackPrivateGetSystemInformationFunction::OnCompleted, this));
 
   return RespondLater();
@@ -224,7 +225,7 @@ void FeedbackPrivateGetSystemInformationFunction::OnCompleted(
   SystemInformationList sys_info_list;
   if (sys_info) {
     sys_info_list.reserve(sys_info->size());
-    const bool google_email = feedback_util::IsGoogleEmail(
+    const bool google_email = gaia::IsGoogleInternalAccountEmail(
         ExtensionsAPIClient::Get()
             ->GetFeedbackPrivateDelegate()
             ->GetSignedInUserEmail(browser_context()));
@@ -262,8 +263,8 @@ ExtensionFunction::ResponseAction FeedbackPrivateReadLogSourceFunction::Run() {
 
   if (!log_source_manager->FetchFromSource(
           api_params->params, extension_id(),
-          base::Bind(&FeedbackPrivateReadLogSourceFunction::OnCompleted,
-                     this))) {
+          base::BindOnce(&FeedbackPrivateReadLogSourceFunction::OnCompleted,
+                         this))) {
     return RespondNow(Error(base::StringPrintf(
         "Unable to initiate fetch from log source %s.",
         feedback_private::ToString(api_params->params.source))));
@@ -324,11 +325,6 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
     feedback_data->set_screenshot_uuid(*feedback_info.screenshot_blob_uuid);
   }
 
-  const bool send_histograms =
-      feedback_info.send_histograms && *feedback_info.send_histograms;
-  const bool send_bluetooth_logs =
-      feedback_info.send_bluetooth_logs && *feedback_info.send_bluetooth_logs;
-
 #if defined(OS_CHROMEOS)
   feedback_data->set_from_assistant(feedback_info.from_assistant &&
                                     *feedback_info.from_assistant);
@@ -337,6 +333,13 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
       *feedback_info.assistant_debug_info_allowed);
 #endif  // defined(OS_CHROMEOS)
 
+  const bool send_histograms =
+      feedback_info.send_histograms && *feedback_info.send_histograms;
+  const bool send_bluetooth_logs =
+      feedback_info.send_bluetooth_logs && *feedback_info.send_bluetooth_logs;
+  const bool send_tab_titles =
+      feedback_info.send_tab_titles && *feedback_info.send_tab_titles;
+
   if (params->feedback.system_information) {
     for (SystemInformation& info : *params->feedback.system_information)
       feedback_data->AddLog(std::move(info.key), std::move(info.value));
@@ -344,12 +347,14 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
     delegate->FetchExtraLogs(
         feedback_data,
         base::BindOnce(&FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched,
-                       this, send_histograms, send_bluetooth_logs));
+                       this, send_histograms, send_bluetooth_logs,
+                       send_tab_titles));
     return RespondLater();
 #endif  // defined(OS_CHROMEOS)
   }
 
-  OnAllLogsFetched(send_histograms, send_bluetooth_logs, feedback_data);
+  OnAllLogsFetched(send_histograms, send_bluetooth_logs, send_tab_titles,
+                   feedback_data);
 
   return RespondLater();
 }
@@ -357,8 +362,12 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
 void FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched(
     bool send_histograms,
     bool send_bluetooth_logs,
+    bool send_tab_titles,
     scoped_refptr<feedback::FeedbackData> feedback_data) {
-
+  if (!send_tab_titles) {
+    feedback_data->RemoveLog(
+        feedback::FeedbackReport::kMemUsageWithTabTitlesKey);
+  }
   feedback_data->CompressSystemInfo();
 
   if (send_histograms) {

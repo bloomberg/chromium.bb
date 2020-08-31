@@ -35,6 +35,9 @@ void RobustThroughputEstimator::IncomingPacketFeedbackVector(
   for (const auto& packet : packet_feedback_vector) {
     // Insert the new packet.
     window_.push_back(packet);
+    window_.back().sent_packet.prior_unacked_data =
+        window_.back().sent_packet.prior_unacked_data *
+        settings_.unacked_weight;
     // In most cases, receive timestamps should already be in order, but in the
     // rare case where feedback packets have been reordered, we do some swaps to
     // ensure that the window is sorted.
@@ -53,11 +56,11 @@ void RobustThroughputEstimator::IncomingPacketFeedbackVector(
 }
 
 absl::optional<DataRate> RobustThroughputEstimator::bitrate() const {
-  if (window_.size() < settings_.min_packets)
+  if (window_.size() < settings_.initial_packets)
     return absl::nullopt;
 
-  TimeDelta largest_recv_gap(TimeDelta::ms(0));
-  TimeDelta second_largest_recv_gap(TimeDelta::ms(0));
+  TimeDelta largest_recv_gap(TimeDelta::Millis(0));
+  TimeDelta second_largest_recv_gap(TimeDelta::Millis(0));
   for (size_t i = 1; i < window_.size(); i++) {
     // Find receive time gaps
     TimeDelta gap = window_[i].receive_time - window_[i - 1].receive_time;
@@ -73,7 +76,7 @@ absl::optional<DataRate> RobustThroughputEstimator::bitrate() const {
   Timestamp max_send_time = window_[0].sent_packet.send_time;
   Timestamp min_recv_time = window_[0].receive_time;
   Timestamp max_recv_time = window_[0].receive_time;
-  DataSize data_size = DataSize::bytes(0);
+  DataSize data_size = DataSize::Bytes(0);
   for (const auto& packet : window_) {
     min_send_time = std::min(min_send_time, packet.sent_packet.send_time);
     max_send_time = std::max(max_send_time, packet.sent_packet.send_time);
@@ -124,8 +127,8 @@ absl::optional<DataRate> RobustThroughputEstimator::bitrate() const {
     recv_duration += recv_duration / (window_.size() - 2);
   }
 
-  send_duration = std::max(send_duration, TimeDelta::ms(1));
-  recv_duration = std::max(recv_duration, TimeDelta::ms(1));
+  send_duration = std::max(send_duration, TimeDelta::Millis(1));
+  recv_duration = std::max(recv_duration, TimeDelta::Millis(1));
   return std::min(send_size / send_duration, recv_size / recv_duration);
 }
 

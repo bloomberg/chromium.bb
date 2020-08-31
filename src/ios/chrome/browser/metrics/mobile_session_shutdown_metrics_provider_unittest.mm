@@ -16,8 +16,8 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
-#include "components/metrics/test_enabled_state_provider.h"
-#include "components/metrics/test_metrics_service_client.h"
+#include "components/metrics/test/test_enabled_state_provider.h"
+#include "components/metrics/test/test_metrics_service_client.h"
 #include "components/prefs/testing_pref_service.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/metrics/previous_session_info_private.h"
@@ -115,8 +115,8 @@ TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
       SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_WITH_MEMORY_WARNING,
       SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN,
       SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN,
-      SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN,
-      SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN,
+      SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_NO_MEMORY_WARNING,
+      SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_WITH_MEMORY_WARNING,
       // If wasLastShutdownClean is true, the memory warning and crash log don't
       // matter.
       SHUTDOWN_IN_BACKGROUND,
@@ -217,7 +217,7 @@ TEST_F(MobileSessionShutdownMetricsProviderTest,
   histogram_tester->ExpectUniqueSample(
       "Stability.iOS.UTE.HasPossibleExplanation", false, 1);
 
-  // Test UTE with low battery when OS restarted after previous session.
+  // Test UTE when OS restarted after previous session.
   [PreviousSessionInfo sharedInstance].OSRestartedAfterPreviousSession = YES;
   histogram_tester = std::make_unique<base::HistogramTester>();
   metrics_provider_->ProvidePreviousSessionData(nullptr);
@@ -225,15 +225,6 @@ TEST_F(MobileSessionShutdownMetricsProviderTest,
       "Stability.iOS.UTE.OSRestartedAfterPreviousSession", true, 1);
   histogram_tester->ExpectUniqueSample(
       "Stability.iOS.UTE.HasPossibleExplanation", true, 1);
-
-  // Test UTE with normal battery when OS restarted after previous session.
-  [PreviousSessionInfo sharedInstance].deviceBatteryLevel = 50;
-  histogram_tester = std::make_unique<base::HistogramTester>();
-  metrics_provider_->ProvidePreviousSessionData(nullptr);
-  histogram_tester->ExpectUniqueSample(
-      "Stability.iOS.UTE.OSRestartedAfterPreviousSession", true, 1);
-  histogram_tester->ExpectUniqueSample(
-      "Stability.iOS.UTE.HasPossibleExplanation", false, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(/* No InstantiationName */,

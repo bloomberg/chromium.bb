@@ -152,12 +152,12 @@ const char* getShaderTypeName (ShaderType shaderType)
 		"tess_control",
 		"tess_eval",
 		"compute",
-		"unused for GL",
-		"unused for GL",
-		"unused for GL",
-		"unused for GL",
-		"unused for GL",
-		"unused for GL",
+		"ray_gen",
+		"any_hit",
+		"closest_hit",
+		"miss",
+		"intersection",
+		"callable",
 	};
 
 	DE_STATIC_ASSERT(DE_LENGTH_OF_ARRAY(s_names) == SHADERTYPE_LAST);
@@ -1115,6 +1115,43 @@ int getDataTypeMatrixNumColumns (DataType dataType)
 		default:
 			DE_ASSERT(false);
 			return 0;
+	}
+}
+
+DataType getDataTypeMatrixColumnType (DataType dataType)
+{
+	switch (dataType)
+	{
+		case TYPE_FLOAT_MAT2:		return TYPE_FLOAT_VEC2;
+		case TYPE_FLOAT_MAT2X3:		return TYPE_FLOAT_VEC3;
+		case TYPE_FLOAT_MAT2X4:		return TYPE_FLOAT_VEC4;
+		case TYPE_FLOAT_MAT3X2:		return TYPE_FLOAT_VEC2;
+		case TYPE_FLOAT_MAT3:		return TYPE_FLOAT_VEC3;
+		case TYPE_FLOAT_MAT3X4:		return TYPE_FLOAT_VEC4;
+		case TYPE_FLOAT_MAT4X2:		return TYPE_FLOAT_VEC2;
+		case TYPE_FLOAT_MAT4X3:		return TYPE_FLOAT_VEC3;
+		case TYPE_FLOAT_MAT4:		return TYPE_FLOAT_VEC4;
+		case TYPE_DOUBLE_MAT2:		return TYPE_DOUBLE_VEC2;
+		case TYPE_DOUBLE_MAT2X3:	return TYPE_DOUBLE_VEC3;
+		case TYPE_DOUBLE_MAT2X4:	return TYPE_DOUBLE_VEC4;
+		case TYPE_DOUBLE_MAT3X2:	return TYPE_DOUBLE_VEC2;
+		case TYPE_DOUBLE_MAT3:		return TYPE_DOUBLE_VEC3;
+		case TYPE_DOUBLE_MAT3X4:	return TYPE_DOUBLE_VEC4;
+		case TYPE_DOUBLE_MAT4X2:	return TYPE_DOUBLE_VEC2;
+		case TYPE_DOUBLE_MAT4X3:	return TYPE_DOUBLE_VEC3;
+		case TYPE_DOUBLE_MAT4:		return TYPE_DOUBLE_VEC4;
+		case TYPE_FLOAT16_MAT2:		return TYPE_FLOAT16_VEC2;
+		case TYPE_FLOAT16_MAT2X3:	return TYPE_FLOAT16_VEC3;
+		case TYPE_FLOAT16_MAT2X4:	return TYPE_FLOAT16_VEC4;
+		case TYPE_FLOAT16_MAT3X2:	return TYPE_FLOAT16_VEC2;
+		case TYPE_FLOAT16_MAT3:		return TYPE_FLOAT16_VEC3;
+		case TYPE_FLOAT16_MAT3X4:	return TYPE_FLOAT16_VEC4;
+		case TYPE_FLOAT16_MAT4X2:	return TYPE_FLOAT16_VEC2;
+		case TYPE_FLOAT16_MAT4X3:	return TYPE_FLOAT16_VEC3;
+		case TYPE_FLOAT16_MAT4:		return TYPE_FLOAT16_VEC4;
+		default:
+			DE_ASSERT(false);
+			return TYPE_INVALID;
 	}
 }
 

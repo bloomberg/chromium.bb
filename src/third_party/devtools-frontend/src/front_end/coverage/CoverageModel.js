@@ -1,12 +1,11 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @typedef {{startOffset: number, endOffset: number, count: number}} */
-Coverage.RangeUseCount;
-
-/** @typedef {{end: number, count: (number|undefined)}} */
-Coverage.CoverageSegment;
+import * as Bindings from '../bindings/bindings.js';  // eslint-disable-line no-unused-vars
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 
 /**
  * @enum {number}
@@ -26,28 +25,35 @@ export const SuspensionState = {
 
 /** @enum {symbol} */
 export const Events = {
-  CoverageUpdated: Symbol('CoverageUpdated')
+  CoverageUpdated: Symbol('CoverageUpdated'),
+  CoverageReset: Symbol('CoverageReset'),
 };
 
 /** @type {number} */
 const _coveragePollingPeriodMs = 200;
 
-export default class CoverageModel extends SDK.SDKModel {
+export class CoverageModel extends SDK.SDKModel.SDKModel {
   /**
-   * @param {!SDK.Target} target
+   * @param {!SDK.SDKModel.Target} target
    */
   constructor(target) {
     super(target);
-    this._cpuProfilerModel = target.model(SDK.CPUProfilerModel);
-    this._cssModel = target.model(SDK.CSSModel);
-    this._debuggerModel = target.model(SDK.DebuggerModel);
+    this._cpuProfilerModel = target.model(SDK.CPUProfilerModel.CPUProfilerModel);
+    this._cssModel = target.model(SDK.CSSModel.CSSModel);
+    this._debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
 
-    /** @type {!Map<string, !Coverage.URLCoverageInfo>} */
+    /** @type {!Map<string, !URLCoverageInfo>} */
     this._coverageByURL = new Map();
-    /** @type {!Map<!Common.ContentProvider, !Coverage.CoverageInfo>} */
+    /** @type {!Map<!TextUtils.ContentProvider.ContentProvider, !CoverageInfo>} */
     this._coverageByContentProvider = new Map();
 
-    /** @type {!Coverage.SuspensionState} */
+    // We keep track of the update times, because the other data-structures don't change if an
+    // update doesn't change the coverage. Some visualizations want to convey to the user that
+    // an update was received at a certain time, but did not result in a coverage change.
+    /** @type {!Set<number>} */
+    this._coverageUpdateTimes = new Set();
+
+    /** @type {!SuspensionState} */
     this._suspensionState = SuspensionState.Active;
     /** @type {?number} */
     this._pollTimer = null;
@@ -81,11 +87,17 @@ export default class CoverageModel extends SDK.SDKModel {
       promises.push(this._cssModel.startCoverage());
     }
     if (this._cpuProfilerModel) {
-      promises.push(this._cpuProfilerModel.startPreciseCoverage(jsCoveragePerBlock));
+      promises.push(
+          this._cpuProfilerModel.startPreciseCoverage(jsCoveragePerBlock, this.preciseCoverageDeltaUpdate.bind(this)));
     }
 
     await Promise.all(promises);
     return !!(this._cssModel || this._cpuProfilerModel);
+  }
+
+  preciseCoverageDeltaUpdate(timestamp, occasion, coverageData) {
+    this._coverageUpdateTimes.add(timestamp);
+    this._backlogOrProcessJSCoverage(coverageData, timestamp);
   }
 
   /**
@@ -107,6 +119,8 @@ export default class CoverageModel extends SDK.SDKModel {
   reset() {
     this._coverageByURL = new Map();
     this._coverageByContentProvider = new Map();
+    this._coverageUpdateTimes = new Set();
+    this.dispatchEventToListeners(CoverageModel.Events.CoverageReset);
   }
 
   /**
@@ -219,14 +233,23 @@ export default class CoverageModel extends SDK.SDKModel {
   }
 
   /**
-   * @return {!Array<!Coverage.URLCoverageInfo>}
+   * @return {!Array<!URLCoverageInfo>}
    */
   entries() {
     return Array.from(this._coverageByURL.values());
   }
 
   /**
-   * @param {!Common.ContentProvider} contentProvider
+   *
+   * @param {string} url
+   * @return {?URLCoverageInfo}
+   */
+  getCoverageForUrl(url) {
+    return this._coverageByURL.get(url);
+  }
+
+  /**
+   * @param {!TextUtils.ContentProvider.ContentProvider} contentProvider
    * @param {number} startOffset
    * @param {number} endOffset
    * @return {boolean|undefined}
@@ -241,7 +264,7 @@ export default class CoverageModel extends SDK.SDKModel {
       if (entry.type() !== CoverageType.CSS) {
         continue;
       }
-      const contentProvider = /** @type {!SDK.CSSStyleSheetHeader} */ (entry.contentProvider());
+      const contentProvider = /** @type {!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader} */ (entry.contentProvider());
       this._coverageByContentProvider.delete(contentProvider);
       const key = `${contentProvider.startLine}:${contentProvider.startColumn}`;
       const urlEntry = this._coverageByURL.get(entry.url());
@@ -260,7 +283,7 @@ export default class CoverageModel extends SDK.SDKModel {
   }
 
   /**
-   * @return {!Promise<!Array<!Coverage.CoverageInfo>>}
+   * @return {!Promise<!Array<!CoverageInfo>>}
    */
   async _takeAllCoverage() {
     const [updatesCSS, updatesJS] = await Promise.all([this._takeCSSCoverage(), this._takeJSCoverage()]);
@@ -268,36 +291,44 @@ export default class CoverageModel extends SDK.SDKModel {
   }
 
   /**
-   * @return {!Promise<!Array<!Coverage.CoverageInfo>>}
+   * @return {!Promise<!Array<!CoverageInfo>>}
    */
   async _takeJSCoverage() {
     if (!this._cpuProfilerModel) {
       return [];
     }
-    const now = Date.now();
-    const freshRawCoverageData = await this._cpuProfilerModel.takePreciseCoverage();
-    if (this._suspensionState !== SuspensionState.Active) {
-      if (freshRawCoverageData.length > 0) {
-        this._jsBacklog.push({rawCoverageData: freshRawCoverageData, stamp: now});
-      }
+    const {coverage, timestamp} = await this._cpuProfilerModel.takePreciseCoverage();
+    this._coverageUpdateTimes.add(timestamp);
+    return this._backlogOrProcessJSCoverage(coverage, timestamp);
+  }
 
+  coverageUpdateTimes() {
+    return this._coverageUpdateTimes;
+  }
+
+  async _backlogOrProcessJSCoverage(freshRawCoverageData, freshTimestamp) {
+    if (freshRawCoverageData.length > 0) {
+      this._jsBacklog.push({rawCoverageData: freshRawCoverageData, stamp: freshTimestamp});
+    }
+    if (this._suspensionState !== SuspensionState.Active) {
       return [];
     }
+    const ascendingByTimestamp = (x, y) => x.stamp - y.stamp;
     const results = [];
-    for (const {rawCoverageData, stamp} of this._jsBacklog) {
+    for (const {rawCoverageData, stamp} of this._jsBacklog.sort(ascendingByTimestamp)) {
       results.push(this._processJSCoverage(rawCoverageData, stamp));
     }
-
     this._jsBacklog = [];
-    if (freshRawCoverageData.length > 0) {
-      results.push(this._processJSCoverage(freshRawCoverageData, now));
-    }
     return results.flat();
+  }
+
+  async processJSBacklog() {
+    this._backlogOrProcessJSCoverage([], 0);
   }
 
   /**
    * @param {!Array<!Protocol.Profiler.ScriptCoverage>} scriptsCoverage
-   * @return {!Array<!Coverage.CoverageInfo>}
+   * @return {!Array<!CoverageInfo>}
    */
   _processJSCoverage(scriptsCoverage, stamp) {
     const updatedEntries = [];
@@ -323,7 +354,7 @@ export default class CoverageModel extends SDK.SDKModel {
       }
       const subentry = this._addCoverage(
           script, script.contentLength, script.lineOffset, script.columnOffset, ranges,
-          /** @type {!Coverage.CoverageType} */ (type), stamp);
+          /** @type {!CoverageType} */ (type), stamp);
       if (subentry) {
         updatedEntries.push(subentry);
       }
@@ -332,46 +363,47 @@ export default class CoverageModel extends SDK.SDKModel {
   }
 
   _handleStyleSheetAdded(event) {
-    const styleSheetHeader = /** @type {!SDK.CSSStyleSheetHeader} */ (event.data);
+    const styleSheetHeader = /** @type {!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader} */ (event.data);
 
     this._addStyleSheetToCSSCoverage(styleSheetHeader);
   }
 
   /**
-   * @return {!Promise<!Array<!Coverage.CoverageInfo>>}
+   * @return {!Promise<!Array<!CoverageInfo>>}
    */
   async _takeCSSCoverage() {
-    if (!this._cssModel) {
+    // Don't poll if we have no model, or are suspended.
+    if (!this._cssModel || this._suspensionState !== SuspensionState.Active) {
       return [];
     }
-    const now = Date.now();
-    const freshRawCoverageData = await this._cssModel.takeCoverageDelta();
-    if (this._suspensionState !== SuspensionState.Active) {
-      if (freshRawCoverageData.length > 0) {
-        this._cssBacklog.push({rawCoverageData: freshRawCoverageData, stamp: now});
-      }
+    const {coverage, timestamp} = await this._cssModel.takeCoverageDelta();
+    this._coverageUpdateTimes.add(timestamp);
+    return this._backlogOrProcessCSSCoverage(coverage, timestamp);
+  }
 
+  async _backlogOrProcessCSSCoverage(freshRawCoverageData, freshTimestamp) {
+    if (freshRawCoverageData.length > 0) {
+      this._cssBacklog.push({rawCoverageData: freshRawCoverageData, stamp: freshTimestamp});
+    }
+    if (this._suspensionState !== SuspensionState.Active) {
       return [];
     }
+    const ascendingByTimestamp = (x, y) => x.stamp - y.stamp;
     const results = [];
-    for (const {rawCoverageData, stamp} of this._cssBacklog) {
+    for (const {rawCoverageData, stamp} of this._cssBacklog.sort(ascendingByTimestamp)) {
       results.push(this._processCSSCoverage(rawCoverageData, stamp));
     }
-
     this._cssBacklog = [];
-    if (freshRawCoverageData.length > 0) {
-      results.push(this._processCSSCoverage(freshRawCoverageData, now));
-    }
     return results.flat();
   }
 
   /**
    * @param {!Array<!Protocol.CSS.RuleUsage>} ruleUsageList
-   * @return {!Array<!Coverage.CoverageInfo>}
+   * @return {!Array<!CoverageInfo>}
    */
   _processCSSCoverage(ruleUsageList, stamp) {
     const updatedEntries = [];
-    /** @type {!Map<!SDK.CSSStyleSheetHeader, !Array<!Coverage.RangeUseCount>>} */
+    /** @type {!Map<!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader, !Array<!RangeUseCount>>} */
     const rulesByStyleSheet = new Map();
     for (const rule of ruleUsageList) {
       const styleSheetHeader = this._cssModel.styleSheetHeaderForId(rule.styleSheetId);
@@ -386,8 +418,8 @@ export default class CoverageModel extends SDK.SDKModel {
       ranges.push({startOffset: rule.startOffset, endOffset: rule.endOffset, count: Number(rule.used)});
     }
     for (const entry of rulesByStyleSheet) {
-      const styleSheetHeader = /** @type {!SDK.CSSStyleSheetHeader} */ (entry[0]);
-      const ranges = /** @type {!Array<!Coverage.RangeUseCount>} */ (entry[1]);
+      const styleSheetHeader = /** @type {!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader} */ (entry[0]);
+      const ranges = /** @type {!Array<!RangeUseCount>} */ (entry[1]);
       const subentry = this._addCoverage(
           styleSheetHeader, styleSheetHeader.contentLength, styleSheetHeader.startLine, styleSheetHeader.startColumn,
           ranges, CoverageType.CSS, stamp);
@@ -399,8 +431,8 @@ export default class CoverageModel extends SDK.SDKModel {
   }
 
   /**
-   * @param {!Array<!Coverage.RangeUseCount>} ranges
-   * @return {!Array<!Coverage.CoverageSegment>}
+   * @param {!Array<!RangeUseCount>} ranges
+   * @return {!Array<!CoverageSegment>}
    */
   static _convertToDisjointSegments(ranges, stamp) {
     ranges.sort((a, b) => a.startOffset - b.startOffset);
@@ -445,7 +477,7 @@ export default class CoverageModel extends SDK.SDKModel {
   }
 
   /**
-   * @param {!SDK.CSSStyleSheetHeader} styleSheetHeader
+   * @param {!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader} styleSheetHeader
    */
   _addStyleSheetToCSSCoverage(styleSheetHeader) {
     this._addCoverage(
@@ -454,13 +486,13 @@ export default class CoverageModel extends SDK.SDKModel {
   }
 
   /**
-   * @param {!Common.ContentProvider} contentProvider
+   * @param {!TextUtils.ContentProvider.ContentProvider} contentProvider
    * @param {number} contentLength
    * @param {number} startLine
    * @param {number} startColumn
-   * @param {!Array<!Coverage.RangeUseCount>} ranges
-   * @param {!Coverage.CoverageType} type
-   * @return {?Coverage.CoverageInfo}
+   * @param {!Array<!RangeUseCount>} ranges
+   * @param {!CoverageType} type
+   * @return {?CoverageInfo}
    */
   _addCoverage(contentProvider, contentLength, startLine, startColumn, ranges, type, stamp) {
     const url = contentProvider.contentURL();
@@ -471,13 +503,13 @@ export default class CoverageModel extends SDK.SDKModel {
     let isNewUrlCoverage = false;
     if (!urlCoverage) {
       isNewUrlCoverage = true;
-      urlCoverage = new Coverage.URLCoverageInfo(url);
+      urlCoverage = new URLCoverageInfo(url);
       this._coverageByURL.set(url, urlCoverage);
     }
 
     const coverageInfo = urlCoverage._ensureEntry(contentProvider, contentLength, startLine, startColumn, type);
     this._coverageByContentProvider.set(contentProvider, coverageInfo);
-    const segments = Coverage.CoverageModel._convertToDisjointSegments(ranges, stamp);
+    const segments = CoverageModel._convertToDisjointSegments(ranges, stamp);
     if (segments.length && segments.peekLast().end < contentLength) {
       segments.push({end: contentLength, stamp: stamp});
     }
@@ -491,7 +523,7 @@ export default class CoverageModel extends SDK.SDKModel {
   }
 
   /**
-   * @param {!Bindings.FileOutputStream} fos
+   * @param {!Bindings.FileUtils.FileOutputStream} fos
    */
   async exportReport(fos) {
     const result = [];
@@ -519,9 +551,9 @@ export default class CoverageModel extends SDK.SDKModel {
 
       let fullText = null;
       if (useFullText) {
-        const resource = SDK.ResourceTreeModel.resourceForURL(url);
+        const resource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
         const content = (await resource.requestContent()).content;
-        fullText = resource ? new TextUtils.Text(content || '') : null;
+        fullText = resource ? new TextUtils.Text.Text(content || '') : null;
       }
 
       const coverageByLocationKeys = Array.from(urlInfo._coverageInfoByLocation.keys()).sort(locationCompare);
@@ -565,22 +597,24 @@ export default class CoverageModel extends SDK.SDKModel {
   }
 }
 
-SDK.SDKModel.register(CoverageModel, SDK.Target.Capability.None, false);
+SDK.SDKModel.SDKModel.register(CoverageModel, SDK.SDKModel.Capability.None, false);
 
 /**
  * @unrestricted
  */
-export class URLCoverageInfo {
+export class URLCoverageInfo extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {string} url
    */
   constructor(url) {
+    super();
+
     this._url = url;
-    /** @type {!Map<string, !Coverage.CoverageInfo>} */
+    /** @type {!Map<string, !CoverageInfo>} */
     this._coverageInfoByLocation = new Map();
     this._size = 0;
     this._usedSize = 0;
-    /** @type {!Coverage.CoverageType} */
+    /** @type {!CoverageType} */
     this._type;
     this._isContentScript = false;
   }
@@ -593,7 +627,7 @@ export class URLCoverageInfo {
   }
 
   /**
-   * @return {!Coverage.CoverageType}
+   * @return {!CoverageType}
    */
   type() {
     return this._type;
@@ -656,22 +690,26 @@ export class URLCoverageInfo {
   _addToSizes(usedSize, size) {
     this._usedSize += usedSize;
     this._size += size;
+
+    if (usedSize !== 0 || size !== 0) {
+      this.dispatchEventToListeners(URLCoverageInfo.Events.SizesChanged);
+    }
   }
 
   /**
-   * @param {!Common.ContentProvider} contentProvider
+   * @param {!TextUtils.ContentProvider.ContentProvider} contentProvider
    * @param {number} contentLength
    * @param {number} lineOffset
    * @param {number} columnOffset
-   * @param {!Coverage.CoverageType} type
-   * @return {!Coverage.CoverageInfo}
+   * @param {!CoverageType} type
+   * @return {!CoverageInfo}
    */
   _ensureEntry(contentProvider, contentLength, lineOffset, columnOffset, type) {
     const key = `${lineOffset}:${columnOffset}`;
     let entry = this._coverageInfoByLocation.get(key);
 
     if ((type & CoverageType.JavaScript) && !this._coverageInfoByLocation.size) {
-      this._isContentScript = /** @type {!SDK.Script} */ (contentProvider).isContentScript();
+      this._isContentScript = /** @type {!SDK.Script.Script} */ (contentProvider).isContentScript();
     }
     this._type |= type;
 
@@ -681,10 +719,10 @@ export class URLCoverageInfo {
     }
 
     if ((type & CoverageType.JavaScript) && !this._coverageInfoByLocation.size) {
-      this._isContentScript = /** @type {!SDK.Script} */ (contentProvider).isContentScript();
+      this._isContentScript = /** @type {!SDK.Script.Script} */ (contentProvider).isContentScript();
     }
 
-    entry = new Coverage.CoverageInfo(contentProvider, contentLength, lineOffset, columnOffset, type);
+    entry = new CoverageInfo(contentProvider, contentLength, lineOffset, columnOffset, type);
     this._coverageInfoByLocation.set(key, entry);
     this._addToSizes(0, contentLength);
 
@@ -692,16 +730,21 @@ export class URLCoverageInfo {
   }
 }
 
+/** @enum {symbol} */
+URLCoverageInfo.Events = {
+  SizesChanged: Symbol('SizesChanged')
+};
+
 /**
  * @unrestricted
  */
 export class CoverageInfo {
   /**
-   * @param {!Common.ContentProvider} contentProvider
+   * @param {!TextUtils.ContentProvider.ContentProvider} contentProvider
    * @param {number} size
    * @param {number} lineOffset
    * @param {number} columnOffset
-   * @param {!Coverage.CoverageType} type
+   * @param {!CoverageType} type
    */
   constructor(contentProvider, size, lineOffset, columnOffset, type) {
     this._contentProvider = contentProvider;
@@ -712,12 +755,12 @@ export class CoverageInfo {
     this._columnOffset = columnOffset;
     this._coverageType = type;
 
-    /** !Array<!Coverage.CoverageSegment> */
+    /** !Array<!CoverageSegment> */
     this._segments = [];
   }
 
   /**
-   * @return {!Common.ContentProvider}
+   * @return {!TextUtils.ContentProvider.ContentProvider}
    */
   contentProvider() {
     return this._contentProvider;
@@ -731,17 +774,17 @@ export class CoverageInfo {
   }
 
   /**
-   * @return {!Coverage.CoverageType}
+   * @return {!CoverageType}
    */
   type() {
     return this._coverageType;
   }
 
   /**
-   * @param {!Array<!Coverage.CoverageSegment>} segments
+   * @param {!Array<!CoverageSegment>} segments
    */
   mergeCoverage(segments) {
-    this._segments = Coverage.CoverageInfo._mergeCoverage(this._segments, segments);
+    this._segments = CoverageInfo._mergeCoverage(this._segments, segments);
     this._updateStats();
   }
 
@@ -769,8 +812,8 @@ export class CoverageInfo {
   }
 
   /**
-   * @param {!Array<!Coverage.CoverageSegment>} segmentsA
-   * @param {!Array<!Coverage.CoverageSegment>} segmentsB
+   * @param {!Array<!CoverageSegment>} segmentsA
+   * @param {!Array<!CoverageSegment>} segmentsB
    */
   static _mergeCoverage(segmentsA, segmentsB) {
     const result = [];
@@ -827,34 +870,8 @@ export class CoverageInfo {
   }
 }
 
-/* Legacy exported object */
-self.Coverage = self.Coverage || {};
+/** @typedef {{startOffset: number, endOffset: number, count: number}} */
+export let RangeUseCount;
 
-/* Legacy exported object */
-Coverage = Coverage || {};
-
-/**
- * @constructor
- */
-Coverage.CoverageModel = CoverageModel;
-
-/** @enum {symbol} */
-Coverage.CoverageModel.Events = Events;
-
-/**
- * @enum {number}
- */
-Coverage.CoverageType = CoverageType;
-
-/** @enum {symbol} */
-Coverage.SuspensionState = SuspensionState;
-
-/**
- * @constructor
- */
-Coverage.URLCoverageInfo = URLCoverageInfo;
-
-/**
- * @constructor
- */
-Coverage.CoverageInfo = CoverageInfo;
+/** @typedef {{end: number, count: (number|undefined)}} */
+export let CoverageSegment;

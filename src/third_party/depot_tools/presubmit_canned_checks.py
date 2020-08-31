@@ -416,7 +416,7 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
   JAVA_FILE_EXTS = ('java',)
   JAVA_EXCEPTIONS = ('import ', 'package ')
   JS_FILE_EXTS = ('js',)
-  JS_EXCEPTIONS = ("GEN('#include",)
+  JS_EXCEPTIONS = ("GEN('#include", 'import ')
   OBJC_FILE_EXTS = ('h', 'm', 'mm')
   OBJC_EXCEPTIONS = ('#define', '#endif', '#if', '#import', '#include',
                      '#pragma')
@@ -688,7 +688,8 @@ def GetUnitTests(
 
 
 def GetUnitTestsRecursively(input_api, output_api, directory,
-                            whitelist, blacklist):
+                            whitelist, blacklist, run_on_python2=True,
+                            run_on_python3=True):
   """Gets all files in the directory tree (git repo) that match the whitelist.
 
   Restricts itself to only find files within the Change's source repo, not
@@ -714,7 +715,9 @@ def GetUnitTestsRecursively(input_api, output_api, directory,
           % (found, whitelist, blacklist, directory))
     ]
 
-  return GetUnitTests(input_api, output_api, tests)
+  return GetUnitTests(input_api, output_api, tests,
+                      run_on_python2=run_on_python2,
+                      run_on_python3=run_on_python3)
 
 
 def GetPythonUnitTests(input_api, output_api, unit_tests):
@@ -885,8 +888,18 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
     # the interpreter to use. It also has limitations on the size of
     # the command-line, so we pass arguments via a pipe.
     tool = input_api.os_path.join(_HERE, 'pylint')
+    kwargs = {'env': env}
     if input_api.platform == 'win32':
+      # On Windows, scripts on the current directory take precedence over PATH.
+      # When `pylint.bat` calls `vpython`, it will execute the `vpython` of the
+      # depot_tools under test instead of the one in the bot.
+      # As a workaround, we run the tests from the parent directory instead.
+      cwd = input_api.change.RepositoryRoot()
+      if input_api.os_path.basename(cwd) == 'depot_tools':
+        kwargs['cwd'] = input_api.os_path.dirname(cwd)
+        flist = [input_api.os_path.join('depot_tools', f) for f in flist]
       tool += '.bat'
+
     cmd = [tool, '--args-on-stdin']
     if len(flist) == 1:
       description = flist[0]
@@ -901,10 +914,12 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
       args.append('--jobs=%s' % input_api.cpu_count)
       description += ' on %d cores' % input_api.cpu_count
 
+    kwargs['stdin'] = '\n'.join(args + flist)
+
     return input_api.Command(
         name='Pylint (%s)' % description,
         cmd=cmd,
-        kwargs={'env': env, 'stdin': '\n'.join(args + flist)},
+        kwargs=kwargs,
         message=error_type)
 
   # Always run pylint and pass it all the py files at once.
@@ -1207,6 +1222,10 @@ def PanProjectChecks(input_api, output_api,
     snapshot("checking do not submit in files")
     results.extend(input_api.canned_checks.CheckDoNotSubmitInFiles(
         input_api, output_api))
+    if input_api.change.scm == 'git':
+      snapshot("checking for commit objects in tree")
+      results.extend(input_api.canned_checks.CheckForCommitObjects(
+          input_api, output_api))
   snapshot("done")
   return results
 
@@ -1214,6 +1233,7 @@ def PanProjectChecks(input_api, output_api,
 def CheckPatchFormatted(input_api,
                         output_api,
                         bypass_warnings=True,
+                        check_clang_format=True,
                         check_js=False,
                         check_python=None,
                         result_factory=None):
@@ -1221,6 +1241,9 @@ def CheckPatchFormatted(input_api,
   import git_cl
 
   display_args = []
+  if not check_clang_format:
+    display_args.append('--no-clang-format')
+
   if check_js:
     display_args.append('--js')
 
@@ -1363,6 +1386,57 @@ def CheckCIPDClientDigests(input_api, output_api, client_version_file):
       cmd,
       {'shell': True} if input_api.is_windows else {},  # to resolve cipd.bat
       output_api.PresubmitError)
+
+
+def CheckForCommitObjects(input_api, output_api):
+  """Validates that there are no commit objects in the repository.
+
+  Commit objects are put into the git tree typically by submodule tooling.
+  Because we use gclient to handle external repository references instead,
+  we want to avoid this. Having commit objects in the tree can confuse git
+  tooling in some scenarios into thinking that the tree is dirty (e.g. the
+  presence of a DEPS subrepo at a location where a commit object is stored
+  in the tree).
+
+  Args:
+    input_api: Bag of input related interfaces.
+    output_api: Bag of output related interfaces.
+
+  Returns:
+    A presubmit error if a commit object is present in the tree.
+  """
+
+  def parse_tree_entry(ent):
+    """Splits a tree entry into components
+
+    Args:
+      ent: a tree entry in the form "filemode type hash\tname"
+
+    Returns:
+      The tree entry split into component parts
+    """
+    tabparts = ent.split('\t', 1)
+    spaceparts = tabparts[0].split(' ', 2)
+    return (spaceparts[0], spaceparts[1], spaceparts[2], tabparts[1])
+
+  full_tree = input_api.subprocess.check_output(
+          ['git', 'ls-tree', '-r', '--full-tree', 'HEAD'],
+          cwd=input_api.PresubmitLocalPath()
+        )
+  tree_entries = full_tree.split('\n')
+  tree_entries = filter(lambda x: len(x) > 0, tree_entries)
+  tree_entries = map(parse_tree_entry, tree_entries)
+  bad_tree_entries = filter(lambda x: x[1] == 'commit', tree_entries)
+  bad_tree_entries = map(lambda x: x[3], bad_tree_entries)
+  if len(bad_tree_entries) > 0:
+    return [output_api.PresubmitError(
+      'Commit objects present within tree.\n'
+      'This may be due to submodule-related interactions; the presence of a\n'
+      'commit object in the tree may lead to odd situations where files are\n'
+      'inconsistently checked-out. Remove these commit entries and validate\n'
+      'your changeset again:\n',
+      bad_tree_entries)]
+  return []
 
 
 def CheckVPythonSpec(input_api, output_api, file_filter=None):

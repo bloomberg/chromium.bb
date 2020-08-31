@@ -12,6 +12,7 @@
 #include "net/third_party/quiche/src/quic/qbone/platform/internet_checksum.h"
 #include "net/third_party/quiche/src/quic/qbone/platform/tcp_packet.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace {
 
@@ -50,15 +51,17 @@ QbonePacketProcessor::StatsInterface::~StatsInterface() {}
 QbonePacketProcessor::Filter::~Filter() {}
 
 QbonePacketProcessor::ProcessingResult
-QbonePacketProcessor::Filter::FilterPacket(Direction direction,
-                                           QuicStringPiece full_packet,
-                                           QuicStringPiece payload,
-                                           icmp6_hdr* icmp_header,
-                                           OutputInterface* output) {
+QbonePacketProcessor::Filter::FilterPacket(
+    Direction direction,
+    quiche::QuicheStringPiece full_packet,
+    quiche::QuicheStringPiece payload,
+    icmp6_hdr* icmp_header,
+    OutputInterface* output) {
   return ProcessingResult::OK;
 }
 
-void QbonePacketProcessor::ProcessPacket(string* packet, Direction direction) {
+void QbonePacketProcessor::ProcessPacket(std::string* packet,
+                                         Direction direction) {
   if (QUIC_PREDICT_FALSE(!IsValid())) {
     QUIC_BUG << "QuicPacketProcessor is invoked in an invalid state.";
     stats_->OnPacketDroppedSilently(direction);
@@ -75,7 +78,7 @@ void QbonePacketProcessor::ProcessPacket(string* packet, Direction direction) {
   switch (result) {
     case ProcessingResult::OK:
       switch (direction) {
-        case Direction::FROM_CLIENT:
+        case Direction::FROM_OFF_NETWORK:
           output_->SendPacketToNetwork(*packet);
           break;
         case Direction::FROM_NETWORK:
@@ -104,7 +107,7 @@ void QbonePacketProcessor::ProcessPacket(string* packet, Direction direction) {
 }
 
 QbonePacketProcessor::ProcessingResult
-QbonePacketProcessor::ProcessIPv6HeaderAndFilter(string* packet,
+QbonePacketProcessor::ProcessIPv6HeaderAndFilter(std::string* packet,
                                                  Direction direction,
                                                  uint8_t* transport_protocol,
                                                  char** transport_data,
@@ -125,7 +128,8 @@ QbonePacketProcessor::ProcessIPv6HeaderAndFilter(string* packet,
 
     result = filter_->FilterPacket(
         direction, *packet,
-        QuicStringPiece(*transport_data, packet->size() - header_size),
+        quiche::QuicheStringPiece(*transport_data,
+                                  packet->size() - header_size),
         icmp_header, output_);
   }
 
@@ -151,7 +155,7 @@ QbonePacketProcessor::ProcessIPv6HeaderAndFilter(string* packet,
 }
 
 QbonePacketProcessor::ProcessingResult QbonePacketProcessor::ProcessIPv6Header(
-    string* packet,
+    std::string* packet,
     Direction direction,
     uint8_t* transport_protocol,
     char** transport_data,
@@ -184,7 +188,7 @@ QbonePacketProcessor::ProcessingResult QbonePacketProcessor::ProcessIPv6Header(
   uint8_t address_reject_code;
   bool ip_parse_result;
   switch (direction) {
-    case Direction::FROM_CLIENT:
+    case Direction::FROM_OFF_NETWORK:
       // Expect the source IP to match the client.
       ip_parse_result = address_to_check.FromPackedString(
           reinterpret_cast<const char*>(&header->ip6_src),
@@ -233,31 +237,34 @@ QbonePacketProcessor::ProcessingResult QbonePacketProcessor::ProcessIPv6Header(
   return ProcessingResult::OK;
 }
 
-void QbonePacketProcessor::SendIcmpResponse(icmp6_hdr* icmp_header,
-                                            QuicStringPiece original_packet,
-                                            Direction original_direction) {
+void QbonePacketProcessor::SendIcmpResponse(
+    icmp6_hdr* icmp_header,
+    quiche::QuicheStringPiece original_packet,
+    Direction original_direction) {
   in6_addr dst;
   // TODO(b/70339814): ensure this is actually a unicast address.
   memcpy(dst.s6_addr, &original_packet[8], kIPv6AddressSize);
 
-  CreateIcmpPacket(self_ip_, dst, *icmp_header, original_packet,
-                   [this, original_direction](QuicStringPiece packet) {
-                     SendResponse(original_direction, packet);
-                   });
+  CreateIcmpPacket(
+      self_ip_, dst, *icmp_header, original_packet,
+      [this, original_direction](quiche::QuicheStringPiece packet) {
+        SendResponse(original_direction, packet);
+      });
 }
 
-void QbonePacketProcessor::SendTcpReset(QuicStringPiece original_packet,
-                                        Direction original_direction) {
-  CreateTcpResetPacket(original_packet,
-                       [this, original_direction](QuicStringPiece packet) {
-                         SendResponse(original_direction, packet);
-                       });
+void QbonePacketProcessor::SendTcpReset(
+    quiche::QuicheStringPiece original_packet,
+    Direction original_direction) {
+  CreateTcpResetPacket(original_packet, [this, original_direction](
+                                            quiche::QuicheStringPiece packet) {
+    SendResponse(original_direction, packet);
+  });
 }
 
 void QbonePacketProcessor::SendResponse(Direction original_direction,
-                                        QuicStringPiece packet) {
+                                        quiche::QuicheStringPiece packet) {
   switch (original_direction) {
-    case Direction::FROM_CLIENT:
+    case Direction::FROM_OFF_NETWORK:
       output_->SendPacketToClient(packet);
       break;
     case Direction::FROM_NETWORK:

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/extension_prefs.h"
@@ -29,34 +30,6 @@ apps::AppLaunchParams CreateAppLaunchParamsUserContainer(
   return apps::AppLaunchParams(extension->id(), container, disposition, source);
 }
 
-apps::AppLaunchParams CreateAppIdLaunchParamsWithEventFlags(
-    const std::string& app_id,
-    int event_flags,
-    apps::mojom::AppLaunchSource source,
-    int64_t display_id,
-    apps::mojom::LaunchContainer fallback_container) {
-  WindowOpenDisposition raw_disposition =
-      ui::DispositionFromEventFlags(event_flags);
-
-  apps::mojom::LaunchContainer container;
-  WindowOpenDisposition disposition;
-  if (raw_disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
-      raw_disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
-    container = apps::mojom::LaunchContainer::kLaunchContainerTab;
-    disposition = raw_disposition;
-  } else if (raw_disposition == WindowOpenDisposition::NEW_WINDOW) {
-    container = apps::mojom::LaunchContainer::kLaunchContainerWindow;
-    disposition = raw_disposition;
-  } else {
-    // Look at preference to find the right launch container.  If no preference
-    // is set, launch as a regular tab.
-    container = fallback_container;
-    disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  }
-  return apps::AppLaunchParams(app_id, container, disposition, source,
-                               display_id);
-}
-
 apps::AppLaunchParams CreateAppLaunchParamsWithEventFlags(
     Profile* profile,
     const extensions::Extension* extension,
@@ -65,6 +38,6 @@ apps::AppLaunchParams CreateAppLaunchParamsWithEventFlags(
     int64_t display_id) {
   apps::mojom::LaunchContainer fallback_container =
       extensions::GetLaunchContainer(ExtensionPrefs::Get(profile), extension);
-  return CreateAppIdLaunchParamsWithEventFlags(
+  return apps::CreateAppIdLaunchParamsWithEventFlags(
       extension->id(), event_flags, source, display_id, fallback_container);
 }

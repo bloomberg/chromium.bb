@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <memory>
+#include <utility>
 
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
@@ -17,12 +17,14 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
+#include "ash/app_list/views/search_result_page_anchored_dialog.h"
 #include "ash/app_list/views/search_result_tile_item_list_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/view_shadow.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
@@ -41,6 +43,7 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/window/dialog_delegate.h"
 
 namespace ash {
 
@@ -199,7 +202,7 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate,
   scroller->ClipHeightTo(0, 0);
   scroller->SetVerticalScrollBar(
       std::make_unique<ZeroWidthVerticalScrollBar>());
-  scroller->SetBackgroundColor(SK_ColorTRANSPARENT);
+  scroller->SetBackgroundColor(base::nullopt);
   AddChildView(std::move(scroller));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -232,47 +235,13 @@ bool SearchResultPageView::IsFirstResultTile() const {
   if (!first_result_view_ || !first_result_view_->result())
     return false;
 
-  // |kRecommendation| result type refers to tiles in Zero State.
   return first_result_view_->result()->display_type() ==
-             SearchResultDisplayType::kTile ||
-         first_result_view_->result()->display_type() ==
-             SearchResultDisplayType::kRecommendation;
+         SearchResultDisplayType::kTile;
 }
 
 bool SearchResultPageView::IsFirstResultHighlighted() const {
   DCHECK(first_result_view_);
   return first_result_view_->selected();
-}
-
-bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
-  // Let the FocusManager handle Left/Right keys.
-  if (!IsUnhandledUpDownKeyEvent(event))
-    return false;
-
-  views::View* next_focusable_view = nullptr;
-  if (event.key_code() == ui::VKEY_UP) {
-    next_focusable_view = GetFocusManager()->GetNextFocusableView(
-        GetFocusManager()->GetFocusedView(), GetWidget(), true, false);
-  } else {
-    DCHECK_EQ(event.key_code(), ui::VKEY_DOWN);
-    next_focusable_view = GetFocusManager()->GetNextFocusableView(
-        GetFocusManager()->GetFocusedView(), GetWidget(), false, false);
-  }
-
-  if (next_focusable_view && !Contains(next_focusable_view)) {
-    // Hitting up key when focus is on first search result or hitting down
-    // key when focus is on last search result should move focus onto search
-    // box and select all text.
-    views::Textfield* search_box =
-        AppListPage::contents_view()->GetSearchBoxView()->search_box();
-    search_box->RequestFocus();
-    search_box->SelectAll(false);
-    return true;
-  }
-
-  // Return false to let FocusManager to handle default focus move by key
-  // events.
-  return false;
 }
 
 const char* SearchResultPageView::GetClassName() const {
@@ -340,7 +309,7 @@ void SearchResultPageView::ReorderSearchResultContainers() {
     if (i > 0) {
       HorizontalSeparator* separator = separators_[i - 1];
       // Hides the separator above the container that has no results.
-      if (!view->container_score())
+      if (!view->num_results())
         separator->SetVisible(false);
       else
         separator->SetVisible(true);
@@ -425,8 +394,7 @@ void SearchResultPageView::NotifySelectedResultChanged() {
 void SearchResultPageView::OnSearchResultContainerResultsChanging() {
   // Block any result selection changes while result updates are in flight.
   // The selection will be reset once the results are all updated.
-  if (app_list_features::IsSearchBoxSelectionEnabled())
-    result_selection_controller_->set_block_selection_changes(true);
+  result_selection_controller_->set_block_selection_changes(true);
 
   notify_a11y_results_changed_timer_.Stop();
   SetIgnoreResultChangesForA11y(true);
@@ -450,60 +418,17 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
   ScheduleResultsChangedA11yNotification();
 
-  if (!app_list_features::IsSearchBoxSelectionEnabled()) {
-    views::View* focused_view = GetFocusManager()->GetFocusedView();
-
-    // Clear the first search result view's background highlight.
-    if (first_result_view_ && first_result_view_ != focused_view)
-      first_result_view_->SetSelected(false, base::nullopt);
-  }
-
   first_result_view_ = result_container_views_[0]->GetFirstResultView();
-
-  if (!app_list_features::IsSearchBoxSelectionEnabled()) {
-    views::View* focused_view = GetFocusManager()->GetFocusedView();
-    // If one of the search result is focused, do not highlight the first search
-    // result.
-    if (Contains(focused_view))
-      return;
-  }
 
   // Update SearchBoxView search box autocomplete as necessary based on new
   // first result view.
   AppListPage::contents_view()->GetSearchBoxView()->ProcessAutocomplete();
 
-  if (app_list_features::IsSearchBoxSelectionEnabled()) {
-    // Reset selection to first when things change. The first result is set as
-    // as the default result.
-    result_selection_controller_->set_block_selection_changes(false);
-    result_selection_controller_->ResetSelection(nullptr /*key_event*/,
-                                                 true /* default_selection */);
-  } else {
-    // Highlight the first result after search results are updated. Note that
-    // the focus is not set on the first result to prevent frequent focus switch
-    // between the search box and the first result when the user is typing
-    // query.
-    first_result_view_->SetSelected(true, base::nullopt);
-  }
-}
-
-void SearchResultPageView::OnSearchResultContainerResultFocused(
-    SearchResultBaseView* focused_result_view) {
-  if (!focused_result_view->result())
-    return;
-
-  if (app_list_features::IsSearchBoxSelectionEnabled())
-    return;
-
-  views::Textfield* search_box =
-      AppListPage::contents_view()->GetSearchBoxView()->search_box();
-  if (focused_result_view->result()->result_type() ==
-          AppListSearchResultType::kOmnibox &&
-      !focused_result_view->result()->is_omnibox_search()) {
-    search_box->SetText(focused_result_view->result()->details());
-  } else {
-    search_box->SetText(focused_result_view->result()->title());
-  }
+  // Reset selection to first when things change. The first result is set as
+  // as the default result.
+  result_selection_controller_->set_block_selection_changes(false);
+  result_selection_controller_->ResetSelection(nullptr /*key_event*/,
+                                               true /* default_selection */);
 }
 
 void SearchResultPageView::HintTextChanged() {}
@@ -518,6 +443,27 @@ void SearchResultPageView::ShowAssistantChanged() {}
 
 void SearchResultPageView::OnAssistantPrivacyInfoViewCloseButtonPressed() {
   ReorderSearchResultContainers();
+}
+
+void SearchResultPageView::ShowAnchoredDialog(
+    std::unique_ptr<views::DialogDelegateView> dialog) {
+  ContentsView* const contents_view = AppListPage::contents_view();
+  if (contents_view->GetActiveState() != AppListState::kStateSearchResults)
+    return;
+
+  anchored_dialog_ = std::make_unique<SearchResultPageAnchoredDialog>(
+      std::move(dialog), contents_view,
+      base::BindOnce(&SearchResultPageView::OnAnchoredDialogClosed,
+                     base::Unretained(this)));
+  const gfx::Rect anchor_bounds =
+      contents_view->GetSearchBoxBounds(AppListState::kStateSearchResults);
+  anchored_dialog_->UpdateBounds(anchor_bounds);
+
+  anchored_dialog_->widget()->Show();
+}
+
+void SearchResultPageView::OnWillBeHidden() {
+  anchored_dialog_.reset();
 }
 
 void SearchResultPageView::OnHidden() {
@@ -537,6 +483,65 @@ void SearchResultPageView::OnShown() {
     container_view->SetShown(true);
   }
   ScheduleResultsChangedA11yNotification();
+}
+
+void SearchResultPageView::AnimateYPosition(AppListViewState target_view_state,
+                                            const TransformAnimator& animator,
+                                            float default_offset) {
+  // Search result page view may host a native view to show answer card results.
+  // The native view hosts use view to widget coordinate conversion to calculate
+  // the native view bounds, and thus depend on the view transform values.
+  // Make sure the view is laid out before starting the transform animation so
+  // native views are not placed according to interim, animated page transform
+  // value.
+  layer()->GetAnimator()->StopAnimatingProperty(
+      ui::LayerAnimationElement::TRANSFORM);
+  if (needs_layout())
+    Layout();
+
+  animator.Run(default_offset, layer(), this);
+  animator.Run(default_offset, view_shadow_->shadow()->shadow_layer(), nullptr);
+  if (anchored_dialog_) {
+    const float offset =
+        anchored_dialog_->AdjustVerticalTransformOffset(default_offset);
+    animator.Run(offset, anchored_dialog_->widget()->GetLayer(), nullptr);
+  }
+}
+
+void SearchResultPageView::UpdatePageOpacityForState(AppListState state,
+                                                     float search_box_opacity,
+                                                     bool restore_opacity) {
+  layer()->SetOpacity(search_box_opacity);
+}
+
+void SearchResultPageView::UpdatePageBoundsForState(
+    AppListState state,
+    const gfx::Rect& contents_bounds,
+    const gfx::Rect& search_box_bounds) {
+  AppListPage::UpdatePageBoundsForState(state, contents_bounds,
+                                        search_box_bounds);
+  if (anchored_dialog_)
+    anchored_dialog_->UpdateBounds(search_box_bounds);
+}
+
+gfx::Rect SearchResultPageView::GetPageBoundsForState(
+    AppListState state,
+    const gfx::Rect& contents_bounds,
+    const gfx::Rect& search_box_bounds) const {
+  if (state != AppListState::kStateSearchResults) {
+    // Hides this view behind the search box by using the same bounds.
+    return search_box_bounds;
+  }
+
+  gfx::Rect bounding_rect = contents_bounds;
+  bounding_rect.Inset(0, 0, 0, kSearchResultPageMinimumBottomMargin);
+
+  gfx::Rect preferred_bounds =
+      gfx::Rect(search_box_bounds.origin(),
+                gfx::Size(search_box_bounds.width(), kHeight));
+  preferred_bounds.Intersect(bounding_rect);
+
+  return preferred_bounds;
 }
 
 void SearchResultPageView::OnAnimationStarted(AppListState from_state,
@@ -626,26 +631,6 @@ base::Optional<int> SearchResultPageView::GetSearchBoxTop(
   return base::nullopt;
 }
 
-gfx::Rect SearchResultPageView::GetPageBoundsForState(
-    AppListState state,
-    const gfx::Rect& contents_bounds,
-    const gfx::Rect& search_box_bounds) const {
-  if (state != AppListState::kStateSearchResults) {
-    // Hides this view behind the search box by using the same bounds.
-    return search_box_bounds;
-  }
-
-  gfx::Rect bounding_rect = contents_bounds;
-  bounding_rect.Inset(0, 0, 0, kSearchResultPageMinimumBottomMargin);
-
-  gfx::Rect preferred_bounds =
-      gfx::Rect(search_box_bounds.origin(),
-                gfx::Size(search_box_bounds.width(), kHeight));
-  preferred_bounds.Intersect(bounding_rect);
-
-  return preferred_bounds;
-}
-
 views::View* SearchResultPageView::GetFirstFocusableView() {
   return GetFocusManager()->GetNextFocusableView(
       this, GetWidget(), false /* reverse */, false /* dont_loop */);
@@ -654,6 +639,10 @@ views::View* SearchResultPageView::GetFirstFocusableView() {
 views::View* SearchResultPageView::GetLastFocusableView() {
   return GetFocusManager()->GetNextFocusableView(
       this, GetWidget(), true /* reverse */, false /* dont_loop */);
+}
+
+void SearchResultPageView::OnAnchoredDialogClosed() {
+  anchored_dialog_.reset();
 }
 
 }  // namespace ash

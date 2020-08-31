@@ -15,7 +15,7 @@ const ADB_SIDELOADING_SCREEN_STATE = {
 Polymer({
   is: 'oobe-adb-sideloading-screen',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
   properties: {
     uiState_: String,
@@ -25,7 +25,7 @@ Polymer({
     'setScreenState',
   ],
 
-  ready: function() {
+  ready() {
     this.initializeLoginScreen('EnableAdbSideloadingScreen', {
       noAnimatedTransition: true,
       resetAllowed: true,
@@ -33,7 +33,7 @@ Polymer({
     this.setScreenState(this.SCREEN_STATE_SETUP);
   },
 
-  focus: function() {
+  focus() {
     if (this.uiState_ === ADB_SIDELOADING_SCREEN_STATE.SETUP) {
       this.$.enableAdbSideloadDialog.focus();
     } else if (this.uiState_ === ADB_SIDELOADING_SCREEN_STATE.ERROR) {
@@ -44,11 +44,15 @@ Polymer({
   /*
    * Executed on language change.
    */
-  updateLocalizedContent: function() {
+  updateLocalizedContent() {
     this.i18nUpdateLocale();
   },
 
-  onBeforeShow: function(data) {
+  onBeforeShow(data) {
+    this.behaviors.forEach((behavior) => {
+      if (behavior.onBeforeShow)
+        behavior.onBeforeShow.call(this);
+    });
     this.setScreenState(this.SCREEN_STATE_SETUP);
   },
 
@@ -56,7 +60,7 @@ Polymer({
    * Sets UI state for the dialog to show corresponding content.
    * @param {ADB_SIDELOADING_SCREEN_STATE} state.
    */
-  setScreenState: function(state) {
+  setScreenState(state) {
     if (state == ADB_SIDELOADING_SCREEN_STATE.ERROR) {
       this.uiState_ = 'error';
     } else if (state == ADB_SIDELOADING_SCREEN_STATE.SETUP) {
@@ -64,7 +68,7 @@ Polymer({
     }
   },
 
-  isState_: function(uiState, state) {
+  isState_(uiState, state) {
     return uiState === state;
   },
 
@@ -73,9 +77,8 @@ Polymer({
    *
    * @private
    */
-  onEnableTap_: function() {
-    chrome.send(
-        'login.EnableAdbSideloadingScreen.userActed', ['enable-pressed']);
+  onEnableTap_() {
+    this.userActed('enable-pressed');
   },
 
   /**
@@ -83,9 +86,8 @@ Polymer({
    *
    * @private
    */
-  onCancelTap_: function() {
-    chrome.send(
-        'login.EnableAdbSideloadingScreen.userActed', ['cancel-pressed']);
+  onCancelTap_() {
+    this.userActed('cancel-pressed');
   },
 
 
@@ -94,8 +96,7 @@ Polymer({
    *
    * @private
    */
-  onLearnMoreTap_: function() {
-    chrome.send(
-        'login.EnableAdbSideloadingScreen.userActed', ['learn-more-link']);
+  onLearnMoreTap_() {
+    this.userActed('learn-more-link');
   },
 });

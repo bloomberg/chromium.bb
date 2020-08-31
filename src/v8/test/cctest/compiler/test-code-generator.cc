@@ -5,6 +5,7 @@
 #include "src/base/utils/random-number-generator.h"
 #include "src/codegen/assembler-inl.h"
 #include "src/codegen/code-stub-assembler.h"
+#include "src/codegen/macro-assembler-inl.h"
 #include "src/codegen/optimized-compilation-info.h"
 #include "src/compiler/backend/code-generator.h"
 #include "src/compiler/backend/instruction.h"
@@ -215,11 +216,11 @@ Handle<Code> BuildTeardownFunction(Isolate* isolate,
         param =
             tester.raw_assembler_for_testing()->ChangeFloat32ToFloat64(param);
         V8_FALLTHROUGH;
-      case MachineRepresentation::kFloat64:
+      case MachineRepresentation::kFloat64: {
         __ StoreObjectFieldNoWriteBarrier(
-            __ LoadFixedArrayElement(result_array, i), HeapNumber::kValueOffset,
-            param, MachineRepresentation::kFloat64);
-        break;
+            __ Cast(__ LoadFixedArrayElement(result_array, i)),
+            HeapNumber::kValueOffset, __ UncheckedCast<Float64T>(param));
+      } break;
       case MachineRepresentation::kSimd128: {
         TNode<FixedArray> vector =
             __ Cast(__ LoadFixedArrayElement(result_array, i));
@@ -992,13 +993,17 @@ class CodeGeneratorTester {
     }
 
     static constexpr size_t kMaxUnoptimizedFrameHeight = 0;
+    static constexpr size_t kMaxPushedArgumentCount = 0;
     generator_ = new CodeGenerator(
         environment->main_zone(), &frame_, &linkage_,
         environment->instructions(), &info_, environment->main_isolate(),
         base::Optional<OsrHelper>(), kNoSourcePosition, nullptr,
         PoisoningMitigationLevel::kDontPoison,
         AssemblerOptions::Default(environment->main_isolate()),
-        Builtins::kNoBuiltinId, kMaxUnoptimizedFrameHeight);
+        Builtins::kNoBuiltinId, kMaxUnoptimizedFrameHeight,
+        kMaxPushedArgumentCount);
+
+    generator_->tasm()->CodeEntry();
 
     // Force a frame to be created.
     generator_->frame_access_state()->MarkHasFrame(true);
@@ -1067,7 +1072,7 @@ class CodeGeneratorTester {
                                  CodeGeneratorTester::PushTypeFlag push_type) {
     generator_->AssembleTailCallBeforeGap(instr, first_unused_stack_slot);
 #if defined(V8_TARGET_ARCH_ARM) || defined(V8_TARGET_ARCH_S390) || \
-    defined(V8_TARGET_ARCH_PPC)
+    defined(V8_TARGET_ARCH_PPC) || defined(V8_TARGET_ARCH_PPC64)
     // Only folding register pushes is supported on ARM.
     bool supported = ((push_type & CodeGenerator::kRegisterPush) == push_type);
 #elif defined(V8_TARGET_ARCH_X64) || defined(V8_TARGET_ARCH_IA32) || \

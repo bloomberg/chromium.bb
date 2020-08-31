@@ -56,12 +56,13 @@ class PLATFORM_EXPORT FetchParameters {
     kInDocument,  // The request was discovered in the main document
     kInserted     // The request was discovered in a document.write()
   };
-  enum ImageRequestOptimization {
+  enum ImageRequestBehavior {
     kNone = 0,          // No optimization.
-    kAllowPlaceholder,  // The image is allowed to be a placeholder.
-    kDeferImageLoad,  // Defer loading the image from network. Full image might
-                      // still load if the request is already-loaded or in
-                      // memory cache.
+    kDeferImageLoad,    // Defer loading the image from network. Full image
+                        // might still load if the request is already-loaded or
+                        // in memory cache.
+    kNonBlockingImage   // The image load may continue, but must be placed in
+                        // ResourceFetcher::non_blocking_loaders_.
   };
   struct ResourceWidth {
     DISALLOW_NEW();
@@ -71,8 +72,8 @@ class PLATFORM_EXPORT FetchParameters {
     ResourceWidth() : width(0), is_set(false) {}
   };
 
-  explicit FetchParameters(const ResourceRequest&);
-  FetchParameters(const ResourceRequest&, const ResourceLoaderOptions&);
+  explicit FetchParameters(ResourceRequest);
+  FetchParameters(ResourceRequest, const ResourceLoaderOptions&);
   FetchParameters(const FetchParameters&) = delete;
   FetchParameters& operator=(const FetchParameters&) = delete;
   FetchParameters(FetchParameters&&);
@@ -86,6 +87,10 @@ class PLATFORM_EXPORT FetchParameters {
 
   void SetRequestContext(mojom::RequestContextType context) {
     resource_request_.SetRequestContext(context);
+  }
+
+  void SetRequestDestination(network::mojom::RequestDestination destination) {
+    resource_request_.SetRequestDestination(destination);
   }
 
   void SetFetchImportanceMode(mojom::FetchImportanceMode importance_mode) {
@@ -139,7 +144,7 @@ class PLATFORM_EXPORT FetchParameters {
   }
 
   void SetContentSecurityCheck(
-      ContentSecurityPolicyDisposition content_security_policy_option) {
+      network::mojom::CSPDisposition content_security_policy_option) {
     options_.content_security_policy_option = content_security_policy_option;
   }
   // Configures the request to use the "cors" mode and the credentials mode
@@ -175,21 +180,13 @@ class PLATFORM_EXPORT FetchParameters {
 
   void MakeSynchronous();
 
-  ImageRequestOptimization GetImageRequestOptimization() const {
-    return image_request_optimization_;
+  ImageRequestBehavior GetImageRequestBehavior() const {
+    return image_request_behavior_;
   }
 
-  // Configures the request to load an image as a placeholder or defers the
-  // image and sets the lazy image load bit.
-  void SetLazyImagePlaceholder();
+  // Configures the request to defer the image and set the lazy image load bit.
   void SetLazyImageDeferred();
-  void SetLazyImageAutoReload();
-
-  // Configures the request to load an image placeholder if the request is
-  // eligible (e.g. the url's protocol is HTTP, etc.). If this request is
-  // non-eligible, this method doesn't modify the ResourceRequest. Calling this
-  // method sets image_request_optimization_ to the appropriate value.
-  void SetAllowImagePlaceholder();
+  void SetLazyImageNonBlocking();
 
   // See documentation in blink::ResourceRequest.
   bool IsFromOriginDirtyStyleSheet() const {
@@ -214,7 +211,7 @@ class PLATFORM_EXPORT FetchParameters {
   DeferOption defer_;
   ResourceWidth resource_width_;
   ClientHintsPreferences client_hint_preferences_;
-  ImageRequestOptimization image_request_optimization_;
+  ImageRequestBehavior image_request_behavior_;
   bool is_stale_revalidation_ = false;
   bool is_from_origin_dirty_style_sheet_ = false;
 };

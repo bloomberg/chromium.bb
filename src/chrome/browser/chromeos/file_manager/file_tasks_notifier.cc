@@ -11,10 +11,12 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier_factory.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/network_service_instance.h"
@@ -155,6 +157,7 @@ void FileTasksNotifier::NotifyObservers(
   std::vector<FileTasksObserver::FileOpenEvent> opens;
   for (const auto& path : paths) {
     if (profile_->GetPath().IsParent(path) ||
+        util::GetMyFilesFolderForProfile(profile_).IsParent(path) ||
         base::FilePath("/run/arc/sdcard/write/emulated/0").IsParent(path) ||
         base::FilePath("/media/fuse").IsParent(path)) {
       opens.push_back({path, open_type});
@@ -171,8 +174,8 @@ void FileTasksNotifier::NotifyObservers(
 void FileTasksNotifier::GetFileAvailability(PendingFileAvailabilityTask task) {
   if (task.url.type() != storage::kFileSystemTypeDriveFs) {
     base::FilePath path = std::move(task.url.path());
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
         base::BindOnce(&base::PathExists, std::move(path)),
         base::BindOnce(&FileTasksNotifier::ForwardQueryResult,
                        std::move(task)));

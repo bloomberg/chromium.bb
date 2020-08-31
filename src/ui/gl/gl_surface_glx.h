@@ -38,6 +38,7 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
   // These aren't particularly tied to surfaces, but since we already
   // have the static InitializeOneOff here, it's easiest to reuse its
   // initialization guards.
+  static std::string QueryGLXExtensions();
   static const char* GetGLXExtensions();
   static bool HasGLXExtension(const char* name);
   static bool IsCreateContextSupported();
@@ -54,8 +55,6 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
   // Get the FB config that the surface was created with or NULL if it is not
   // a GLX drawable.
   void* GetConfig() override = 0;
-
-  unsigned long GetCompatibilityKey() override = 0;
 
  protected:
   ~GLSurfaceGLX() override;
@@ -75,7 +74,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
-              ColorSpace color_space,
+              const gfx::ColorSpace& color_space,
               bool has_alpha) override;
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
@@ -84,7 +83,6 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   bool SupportsPostSubBuffer() override;
   void* GetConfig() override;
   GLSurfaceFormat GetFormat() override;
-  unsigned long GetCompatibilityKey() override;
   gfx::SwapResult PostSubBuffer(int x,
                                 int y,
                                 int width,
@@ -148,7 +146,6 @@ class GL_EXPORT UnmappedNativeViewGLSurfaceGLX : public GLSurfaceGLX {
   void* GetHandle() override;
   void* GetConfig() override;
   GLSurfaceFormat GetFormat() override;
-  unsigned long GetCompatibilityKey() override;
 
  protected:
   ~UnmappedNativeViewGLSurfaceGLX() override;

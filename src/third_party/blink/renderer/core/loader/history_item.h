@@ -50,8 +50,6 @@ enum class FetchCacheMode : int32_t;
 
 class CORE_EXPORT HistoryItem final : public GarbageCollected<HistoryItem> {
  public:
-  static HistoryItem* Create() { return MakeGarbageCollected<HistoryItem>(); }
-
   HistoryItem();
   ~HistoryItem();
 
@@ -121,7 +119,7 @@ class CORE_EXPORT HistoryItem final : public GarbageCollected<HistoryItem> {
 
   ResourceRequest GenerateResourceRequest(mojom::FetchCacheMode);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   String url_string_;

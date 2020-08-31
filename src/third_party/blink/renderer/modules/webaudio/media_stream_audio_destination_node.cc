@@ -25,15 +25,15 @@
 
 #include "third_party/blink/renderer/modules/webaudio/media_stream_audio_destination_node.h"
 
-#include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_node_options.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_utils.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
-#include "third_party/blink/renderer/modules/webaudio/audio_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
@@ -80,6 +80,9 @@ MediaStreamAudioDestinationHandler::~MediaStreamAudioDestinationHandler() {
 }
 
 void MediaStreamAudioDestinationHandler::Process(uint32_t number_of_frames) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("webaudio.audionode"),
+               "MediaStreamAudioDestinationHandler::Process");
+
   // Conform the input bus into the internal mix bus, which represents
   // MediaStreamDestination's channel count.
 
@@ -207,6 +210,11 @@ MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
+  // TODO(crbug.com/1055983): Remove this when the execution context validity
+  // check is not required in the AudioNode factory methods.
+  if (!context.CheckExecutionContextAndThrowIfNecessary(exception_state))
+    return nullptr;
+
   return MakeGarbageCollected<MediaStreamAudioDestinationNode>(
       context, number_of_channels);
 }
@@ -217,7 +225,9 @@ MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  // Default to stereo; |options| will update it approriately if needed.
+  if (!context->CheckExecutionContextAndThrowIfNecessary(exception_state))
+    return nullptr;
+  // Default to stereo; |options| will update it appropriately if needed.
   MediaStreamAudioDestinationNode* node =
       MakeGarbageCollected<MediaStreamAudioDestinationNode>(*context, 2);
 

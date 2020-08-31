@@ -38,7 +38,7 @@ bool IsComponentExtensionWhitelisted(const std::string& extension_id) {
     extension_misc::kSelectToSpeakExtensionId,
     extension_misc::kSwitchAccessExtensionId,
     extension_misc::kZipArchiverExtensionId,
-    extension_misc::kChromeCameraAppId,
+    extension_misc::kCameraAppId,
 #endif
   };
 
@@ -81,7 +81,6 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
     case IDR_CHROME_APP_MANIFEST:
     case IDR_CONNECTIVITY_DIAGNOSTICS_LAUNCHER_MANIFEST:
     case IDR_CONNECTIVITY_DIAGNOSTICS_MANIFEST:
-    case IDR_CROSH_BUILTIN_MANIFEST:
     case IDR_DEMO_APP_MANIFEST:
     case IDR_ECHO_MANIFEST:
     case IDR_FILEMANAGER_MANIFEST:

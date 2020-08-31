@@ -14,7 +14,7 @@ PasswordStoreSigninNotifierImpl::PasswordStoreSigninNotifierImpl(
   DCHECK(identity_manager_);
 }
 
-PasswordStoreSigninNotifierImpl::~PasswordStoreSigninNotifierImpl() {}
+PasswordStoreSigninNotifierImpl::~PasswordStoreSigninNotifierImpl() = default;
 
 void PasswordStoreSigninNotifierImpl::SubscribeToSigninEvents(
     PasswordStore* store) {

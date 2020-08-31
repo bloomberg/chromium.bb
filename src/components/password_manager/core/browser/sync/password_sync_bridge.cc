@@ -8,10 +8,12 @@
 
 #include "base/auto_reset.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -27,6 +29,27 @@
 namespace password_manager {
 
 namespace {
+
+// Controls whether we should delete the sync metadata when they aren't
+// readable.
+const base::Feature kDeletePasswordSyncMetadataWhenNoReadable{
+    "DeletePasswordSyncMetadataWhenNoReadable",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Error values for reading sync metadata.
+// Used in metrics: "PasswordManager.SyncMetadataReadError". These values
+// are persisted to logs. Entries should not be renumbered and numeric values
+// should never be reused.
+enum class SyncMetadataReadError {
+  // Success.
+  kNone = 0,
+  // Database not available.
+  kDbNotAvailable = 1,
+  // Reading failure.
+  kReadFailed = 2,
+
+  kMaxValue = kReadFailed,
+};
 
 std::string ComputeClientTag(
     const sync_pb::PasswordSpecificsData& password_data) {
@@ -54,7 +77,6 @@ sync_pb::PasswordSpecifics SpecificsFromPassword(
       base::UTF16ToUTF8(password_form.username_value));
   password_data->set_password_value(
       base::UTF16ToUTF8(password_form.password_value));
-  password_data->set_preferred(password_form.preferred);
   password_data->set_date_last_used(
       password_form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
   password_data->set_date_created(
@@ -91,7 +113,6 @@ autofill::PasswordForm PasswordFromEntityChange(
       base::UTF8ToUTF16(password_data.password_element());
   password.username_value = base::UTF8ToUTF16(password_data.username_value());
   password.password_value = base::UTF8ToUTF16(password_data.password_value());
-  password.preferred = password_data.preferred();
   if (password_data.has_date_last_used()) {
     password.date_last_used = base::Time::FromDeltaSinceWindowsEpoch(
         base::TimeDelta::FromMicroseconds(password_data.date_last_used()));
@@ -114,7 +135,6 @@ autofill::PasswordForm PasswordFromEntityChange(
   password.federation_origin =
       url::Origin::Create(GURL(password_data.federation_url()));
   password.date_synced = sync_time;
-
   return password;
 }
 
@@ -153,7 +173,6 @@ bool AreLocalAndRemotePasswordsEqual(
           password_specifics.username_value() &&
       base::UTF16ToUTF8(password_form.password_value) ==
           password_specifics.password_value() &&
-      password_form.preferred == password_specifics.preferred() &&
       password_form.date_last_used ==
           base::Time::FromDeltaSinceWindowsEpoch(
               base::TimeDelta::FromMicroseconds(
@@ -172,8 +191,20 @@ bool AreLocalAndRemotePasswordsEqual(
               .Serialize() == password_form.federation_origin.Serialize());
 }
 
+// Whether we should try to recover undecryptable local passwords by deleting
+// the local copy, to be replaced by the remote version coming from Sync during
+// merge.
 bool ShouldRecoverPasswordsDuringMerge() {
+  // Delete the local undecryptable copy under the following conditions:
+  // 1. This is MacOS only.
+  // 2. The more general feature kDeleteCorruptedPasswords is disabled.
+  //    kDeleteCorruptedPasswords takes cares of deleting undecryptable entities
+  //    for Sync and non-Sync users upon reading from the LoginDatabase.
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   return !base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
+#else
+  return false;
+#endif
 }
 
 // A simple class for scoping a password store sync transaction. If the
@@ -219,19 +250,35 @@ PasswordSyncBridge::PasswordSyncBridge(
   DCHECK(sync_enabled_or_disabled_cb_);
   // The metadata store could be null if the login database initialization
   // fails.
+  SyncMetadataReadError sync_metadata_read_error = SyncMetadataReadError::kNone;
+  std::unique_ptr<syncer::MetadataBatch> batch;
   if (!password_store_sync_->GetMetadataStore()) {
     this->change_processor()->ReportError(
         {FROM_HERE, "Password metadata store isn't available."});
-    return;
+    sync_metadata_read_error = SyncMetadataReadError::kDbNotAvailable;
+  } else {
+    batch = password_store_sync_->GetMetadataStore()->GetAllSyncMetadata();
+    if (!batch) {
+      if (base::FeatureList::IsEnabled(
+              kDeletePasswordSyncMetadataWhenNoReadable)) {
+        // If the metadata cannot be read, it's mostly a persistent error, and
+        // hence we should drop the metadata to go throw the initial sync flow.
+        password_store_sync_->GetMetadataStore()->DeleteAllSyncMetadata();
+        batch = std::make_unique<syncer::MetadataBatch>();
+      } else {
+        this->change_processor()->ReportError(
+            {FROM_HERE,
+             "Failed reading passwords metadata from password store."});
+      }
+      sync_metadata_read_error = SyncMetadataReadError::kReadFailed;
+    }
   }
-  std::unique_ptr<syncer::MetadataBatch> batch =
-      password_store_sync_->GetMetadataStore()->GetAllSyncMetadata();
-  if (!batch) {
-    this->change_processor()->ReportError(
-        {FROM_HERE, "Failed reading passwords metadata from password store."});
-    return;
+  base::UmaHistogramEnumeration("PasswordManager.SyncMetadataReadError",
+                                sync_metadata_read_error);
+
+  if (batch) {
+    this->change_processor()->ModelReadyToSync(std::move(batch));
   }
-  this->change_processor()->ModelReadyToSync(std::move(batch));
 }
 
 PasswordSyncBridge::~PasswordSyncBridge() = default;
@@ -282,21 +329,6 @@ PasswordSyncBridge::CreateMetadataChangeList() {
 }
 
 base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
-    std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
-    syncer::EntityChangeList entity_data) {
-  base::Optional<syncer::ModelError> error = MergeSyncDataInternal(
-      std::move(metadata_change_list), std::move(entity_data));
-  if (error) {
-    base::UmaHistogramCounts10000(
-        "Sync.DownloadedPasswordsCountWhenInitialMergeFails",
-        entity_data.size());
-  } else {
-    sync_enabled_or_disabled_cb_.Run();
-  }
-  return error;
-}
-
-base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
   // This method merges the local and remote passwords based on their client
@@ -535,6 +567,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
   }
 
   metrics_util::LogPasswordSyncState(metrics_util::SYNCING_OK);
+  sync_enabled_or_disabled_cb_.Run();
   return base::nullopt;
 }
 
@@ -754,30 +787,73 @@ bool PasswordSyncBridge::SupportsGetStorageKey() const {
 
 void PasswordSyncBridge::ApplyStopSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  if (delete_metadata_change_list) {
+  if (!delete_metadata_change_list) {
+    return;
+  }
+  if (!password_store_sync_->IsAccountStore()) {
     password_store_sync_->GetMetadataStore()->DeleteAllSyncMetadata();
+    return;
+  }
+  // For the account store, the data should be deleted too. So do the following:
+  // 1. Collect the credentials that will be deleted.
+  // 2. Collect which credentials out of those to be deleted are unsynced.
+  // 3. Delete the metadata and the data.
+  // 4. Notify the store about deleted credentials, to notify store observers.
+  // 5. Notify the store about deleted unsynced credentials, to take care of
+  //    notifying the UI and offering the user to save those credentials in the
+  //    profile store.
+  base::AutoReset<bool> processing_changes(&is_processing_remote_sync_changes_,
+                                           true);
 
-    // If this is the account store, also delete the actual data.
-    if (password_store_sync_->IsAccountStore()) {
-      base::AutoReset<bool> processing_changes(
-          &is_processing_remote_sync_changes_, true);
-
-      PasswordStoreChangeList password_store_changes;
-      PrimaryKeyToFormMap logins;
-      FormRetrievalResult result = password_store_sync_->ReadAllLogins(&logins);
-      if (result == FormRetrievalResult::kSuccess) {
-        for (const auto& primary_key_and_form : logins) {
-          password_store_changes.emplace_back(PasswordStoreChange::REMOVE,
-                                              *primary_key_and_form.second,
-                                              primary_key_and_form.first);
-        }
+  PasswordStoreChangeList password_store_changes;
+  std::vector<autofill::PasswordForm> unsynced_logins_being_deleted;
+  PrimaryKeyToFormMap logins;
+  FormRetrievalResult result = password_store_sync_->ReadAllLogins(&logins);
+  if (result == FormRetrievalResult::kSuccess) {
+    std::set<int> unsynced_passwords_storage_keys =
+        GetUnsyncedPasswordsStorageKeys();
+    for (const auto& primary_key_and_form : logins) {
+      int primary_key = primary_key_and_form.first;
+      const autofill::PasswordForm& form = *primary_key_and_form.second;
+      password_store_changes.emplace_back(PasswordStoreChange::REMOVE, form,
+                                          primary_key);
+      if (unsynced_passwords_storage_keys.count(primary_key) != 0) {
+        unsynced_logins_being_deleted.push_back(form);
       }
-      password_store_sync_->DeleteAndRecreateDatabaseFile();
-      password_store_sync_->NotifyLoginsChanged(password_store_changes);
-
-      sync_enabled_or_disabled_cb_.Run();
     }
   }
+  password_store_sync_->GetMetadataStore()->DeleteAllSyncMetadata();
+  password_store_sync_->DeleteAndRecreateDatabaseFile();
+  password_store_sync_->NotifyLoginsChanged(password_store_changes);
+
+  if (!unsynced_logins_being_deleted.empty()) {
+    password_store_sync_->NotifyUnsyncedCredentialsWillBeDeleted(
+        unsynced_logins_being_deleted);
+  }
+
+  sync_enabled_or_disabled_cb_.Run();
+}
+
+std::set<int> PasswordSyncBridge::GetUnsyncedPasswordsStorageKeys() {
+  std::set<int> storage_keys;
+  DCHECK(password_store_sync_);
+  PasswordStoreSync::MetadataStore* metadata_store =
+      password_store_sync_->GetMetadataStore();
+  // The metadata store could be null if the login database initialization
+  // fails.
+  if (!metadata_store) {
+    return storage_keys;
+  }
+  std::unique_ptr<syncer::MetadataBatch> batch =
+      metadata_store->GetAllSyncMetadata();
+  for (const auto& metadata_entry : batch->GetAllMetadata()) {
+    // Ignore unsynced deletions.
+    if (!metadata_entry.second->is_deleted() &&
+        change_processor()->IsEntityUnsynced(metadata_entry.first)) {
+      storage_keys.insert(ParsePrimaryKey(metadata_entry.first));
+    }
+  }
+  return storage_keys;
 }
 
 // static

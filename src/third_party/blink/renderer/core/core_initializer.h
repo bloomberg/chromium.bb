@@ -61,7 +61,6 @@ class WebMediaPlayerClient;
 class WebMediaPlayerSource;
 class WebRemotePlaybackClient;
 class WebViewClient;
-class WorkerGlobalScope;
 
 class CORE_EXPORT CoreInitializer {
   USING_FAST_MALLOC(CoreInitializer);
@@ -88,7 +87,6 @@ class CORE_EXPORT CoreInitializer {
   virtual void InitLocalFrame(LocalFrame&) const = 0;
   // Supplements installed on a frame using ChromeClient
   virtual void InstallSupplements(LocalFrame&) const = 0;
-  virtual void ProvideLocalFileSystemToWorker(WorkerGlobalScope&) const = 0;
   virtual MediaControls* CreateMediaControls(HTMLMediaElement&,
                                              ShadowRoot&) const = 0;
   virtual PictureInPictureController* CreatePictureInPictureController(
@@ -125,8 +123,8 @@ class CORE_EXPORT CoreInitializer {
       Page* clone_from_page,
       const SessionStorageNamespaceId& clone_to_namespace) = 0;
 
-  virtual void DidCommitLoad(LocalFrame&) = 0;
   virtual void DidChangeManifest(LocalFrame&) = 0;
+  virtual void NotifyOrientationChanged(LocalFrame&) = 0;
 
  protected:
   // CoreInitializer is only instantiated by subclass ModulesInitializer.

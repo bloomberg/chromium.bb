@@ -24,9 +24,10 @@
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/input_stream.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_ANDROID)
 #include "components/download/internal/common/android/download_collection_bridge.h"
@@ -91,7 +92,7 @@ void BeginResourceDownload(
     const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_referrer_url,
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider,
     bool is_background_mode,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner) {
   DCHECK(GetIOTaskRunner()->BelongsToCurrentThread());
@@ -101,8 +102,8 @@ void BeginResourceDownload(
           network::SharedURLLoaderFactory::Create(
               std::move(pending_url_loader_factory)),
           url_security_policy, site_url, tab_url, tab_referrer_url,
-          is_new_download, false, std::move(connector), is_background_mode,
-          main_task_runner)
+          is_new_download, false, std::move(wake_lock_provider),
+          is_background_mode, main_task_runner)
           .release(),
       base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
 
@@ -126,24 +127,18 @@ void CreateDownloadHandlerForNavigation(
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_url_loader_factory,
     const URLSecurityPolicy& url_security_policy,
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner) {
   DCHECK(GetIOTaskRunner()->BelongsToCurrentThread());
-  UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader(
-      ResourceDownloader::InterceptNavigationResponse(
-          download_manager, std::move(resource_request), render_process_id,
-          render_frame_id, site_url, tab_url, tab_referrer_url,
-          std::move(url_chain), std::move(cert_status),
-          std::move(response_head), std::move(response_body),
-          std::move(url_loader_client_endpoints),
-          network::SharedURLLoaderFactory::Create(
-              std::move(pending_url_loader_factory)),
-          url_security_policy, std::move(connector), main_task_runner)
-          .release(),
-      base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
 
-  OnUrlDownloadHandlerCreated(std::move(downloader), download_manager,
-                              main_task_runner);
+  ResourceDownloader::InterceptNavigationResponse(
+      download_manager, std::move(resource_request), render_process_id,
+      render_frame_id, site_url, tab_url, tab_referrer_url,
+      std::move(url_chain), std::move(cert_status), std::move(response_head),
+      std::move(response_body), std::move(url_loader_client_endpoints),
+      network::SharedURLLoaderFactory::Create(
+          std::move(pending_url_loader_factory)),
+      url_security_policy, std::move(wake_lock_provider), main_task_runner);
 }
 
 #if defined(OS_ANDROID)
@@ -156,14 +151,14 @@ void OnDownloadDisplayNamesReturned(
       base::BindOnce(std::move(callback), std::move(download_names)));
 }
 
-void OnPathReserved(
-    const DownloadItemImplDelegate::DownloadTargetCallback& callback,
-    DownloadDangerType danger_type,
-    const InProgressDownloadManager::IntermediatePathCallback&
-        intermediate_path_cb,
-    const base::FilePath& forced_file_path,
-    PathValidationResult result,
-    const base::FilePath& target_path) {
+void OnPathReserved(DownloadItemImplDelegate::DownloadTargetCallback callback,
+                    DownloadDangerType danger_type,
+                    DownloadItem::MixedContentStatus mixed_content_status,
+                    const InProgressDownloadManager::IntermediatePathCallback&
+                        intermediate_path_cb,
+                    const base::FilePath& forced_file_path,
+                    PathValidationResult result,
+                    const base::FilePath& target_path) {
   base::FilePath intermediate_path;
   if (!target_path.empty() &&
       (result == PathValidationResult::SUCCESS ||
@@ -180,10 +175,11 @@ void OnPathReserved(
       intermediate_path.empty()
           ? BackgroudTargetDeterminationResultTypes::kPathReservationFailed
           : BackgroudTargetDeterminationResultTypes::kSuccess);
-  callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               danger_type, intermediate_path,
-               intermediate_path.empty() ? DOWNLOAD_INTERRUPT_REASON_FILE_FAILED
-                                         : DOWNLOAD_INTERRUPT_REASON_NONE);
+  std::move(callback).Run(
+      target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE, danger_type,
+      mixed_content_status, intermediate_path,
+      intermediate_path.empty() ? DOWNLOAD_INTERRUPT_REASON_FILE_FAILED
+                                : DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 #endif
 
@@ -205,13 +201,13 @@ InProgressDownloadManager::InProgressDownloadManager(
     leveldb_proto::ProtoDatabaseProvider* db_provider,
     const IsOriginSecureCallback& is_origin_secure_cb,
     const URLSecurityPolicy& url_security_policy,
-    service_manager::Connector* connector)
+    WakeLockProviderBinder wake_lock_provider_binder)
     : delegate_(delegate),
       file_factory_(new DownloadFileFactory()),
       download_start_observer_(nullptr),
       is_origin_secure_cb_(is_origin_secure_cb),
       url_security_policy_(url_security_policy),
-      connector_(connector) {
+      wake_lock_provider_binder_(std::move(wake_lock_provider_binder)) {
   Initialize(in_progress_db_dir, db_provider);
 }
 
@@ -309,15 +305,20 @@ void InProgressDownloadManager::BeginDownload(
     const GURL& tab_referrer_url) {
   std::unique_ptr<network::ResourceRequest> request =
       CreateResourceRequest(params.get());
+  mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider;
+  if (wake_lock_provider_binder_) {
+    wake_lock_provider_binder_.Run(
+        wake_lock_provider.InitWithNewPipeAndPassReceiver());
+  }
   GetIOTaskRunner()->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &BeginResourceDownload, std::move(params), std::move(request),
-          std::move(pending_url_loader_factory), url_security_policy_,
-          is_new_download, weak_factory_.GetWeakPtr(), site_url, tab_url,
-          tab_referrer_url, connector_ ? connector_->Clone() : nullptr,
-          !delegate_ /* is_background_mode */,
-          base::ThreadTaskRunnerHandle::Get()));
+      base::BindOnce(&BeginResourceDownload, std::move(params),
+                     std::move(request), std::move(pending_url_loader_factory),
+                     url_security_policy_, is_new_download,
+                     weak_factory_.GetWeakPtr(), site_url, tab_url,
+                     tab_referrer_url, std::move(wake_lock_provider),
+                     !delegate_ /* is_background_mode */,
+                     base::ThreadTaskRunnerHandle::Get()));
 }
 
 void InProgressDownloadManager::InterceptDownloadFromNavigation(
@@ -334,6 +335,12 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_url_loader_factory) {
+  mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider;
+  if (wake_lock_provider_binder_) {
+    wake_lock_provider_binder_.Run(
+        wake_lock_provider.InitWithNewPipeAndPassReceiver());
+  }
+
   GetIOTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -343,8 +350,7 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
           std::move(cert_status), std::move(response_head),
           std::move(response_body), std::move(url_loader_client_endpoints),
           std::move(pending_url_loader_factory), url_security_policy_,
-          connector_ ? connector_->Clone() : nullptr,
-          base::ThreadTaskRunnerHandle::Get()));
+          std::move(wake_lock_provider), base::ThreadTaskRunnerHandle::Get()));
 }
 
 void InProgressDownloadManager::Initialize(
@@ -376,15 +382,16 @@ void InProgressDownloadManager::ShutDown() {
 
 void InProgressDownloadManager::DetermineDownloadTarget(
     DownloadItemImpl* download,
-    const DownloadTargetCallback& callback) {
+    DownloadTargetCallback callback) {
   base::FilePath target_path = download->GetForcedFilePath().empty()
                                    ? download->GetTargetFilePath()
                                    : download->GetForcedFilePath();
 #if defined(OS_ANDROID)
   if (target_path.empty()) {
-    callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                 download->GetDangerType(), target_path,
-                 DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+    std::move(callback).Run(
+        target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+        download->GetDangerType(), download->GetMixedContentStatus(),
+        target_path, DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
     RecordBackgroundTargetDeterminationResult(
         BackgroudTargetDeterminationResultTypes::kTargetPathMissing);
     return;
@@ -393,9 +400,10 @@ void InProgressDownloadManager::DetermineDownloadTarget(
   // If final target is a content URI, the intermediate path should
   // be identical to it.
   if (target_path.IsContentUri()) {
-    callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                 download->GetDangerType(), target_path,
-                 DOWNLOAD_INTERRUPT_REASON_NONE);
+    std::move(callback).Run(
+        target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+        download->GetDangerType(), download->GetMixedContentStatus(),
+        target_path, DOWNLOAD_INTERRUPT_REASON_NONE);
     RecordBackgroundTargetDeterminationResult(
         BackgroudTargetDeterminationResultTypes::kSuccess);
     return;
@@ -407,15 +415,18 @@ void InProgressDownloadManager::DetermineDownloadTarget(
       download->GetForcedFilePath().empty()
           ? DownloadPathReservationTracker::UNIQUIFY
           : DownloadPathReservationTracker::OVERWRITE,
-      base::Bind(&OnPathReserved, callback, download->GetDangerType(),
-                 intermediate_path_cb_, download->GetForcedFilePath()));
+      base::BindOnce(&OnPathReserved, std::move(callback),
+                     download->GetDangerType(),
+                     download->GetMixedContentStatus(), intermediate_path_cb_,
+                     download->GetForcedFilePath()));
 #else
   // For non-android, the code below is only used by tests.
   base::FilePath intermediate_path =
       download->GetFullPath().empty() ? target_path : download->GetFullPath();
-  callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               download->GetDangerType(), intermediate_path,
-               DOWNLOAD_INTERRUPT_REASON_NONE);
+  std::move(callback).Run(
+      target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+      download->GetDangerType(), download->GetMixedContentStatus(),
+      intermediate_path, DOWNLOAD_INTERRUPT_REASON_NONE);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -431,7 +442,7 @@ void InProgressDownloadManager::ResumeInterruptedDownload(
 
 bool InProgressDownloadManager::ShouldOpenDownload(
     DownloadItemImpl* item,
-    const ShouldOpenDownloadCallback& callback) {
+    ShouldOpenDownloadCallback callback) {
   return true;
 }
 
@@ -475,11 +486,6 @@ void InProgressDownloadManager::StartDownload(
   GURL url = info->url();
   std::vector<GURL> url_chain = info->url_chain;
   std::string mime_type = info->mime_type;
-
-  if (info->is_new_download) {
-    RecordDownloadContentTypeSecurity(info->url(), info->url_chain,
-                                      info->mime_type, is_origin_secure_cb_);
-  }
 
   // If the download cannot be found locally, ask |delegate_| to provide the
   // DownloadItem.

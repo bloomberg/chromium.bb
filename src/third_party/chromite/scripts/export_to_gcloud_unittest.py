@@ -8,21 +8,29 @@
 from __future__ import print_function
 
 import io
-
-from gcloud import datastore  # pylint: disable=import-error
+import sys
 
 from chromite.lib import cros_test_lib
 from chromite.scripts import export_to_gcloud
+
+try:
+  import pytest  # pylint: disable=import-error
+  datastore = pytest.importorskip('gcloud.datastore')
+except ImportError:
+  from gcloud import datastore
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class GetEntitiesTest(cros_test_lib.TestCase):
   """Test that GetEntities behaves correctly."""
 
-  _BASIC_JSON = """{"id": ["Foo", 1], "foo": "bar"}
+  _BASIC_JSON = b"""{"id": ["Foo", 1], "foo": "bar"}
 {"id": ["Bar", 1], "bar": "baz"}
 {"id": ["Bar", 2], "foo": "qux", "parent": ["Bar", 1]}"""
 
-  _DUPE_KEY_JSON = _BASIC_JSON + '\n{"id": ["Bar", 1], "bar": "baz"}'
+  _DUPE_KEY_JSON = _BASIC_JSON + b'\n{"id": ["Bar", 1], "bar": "baz"}'
 
   def testBasicFunctionality(self):
     """Tests that GetEntities handles well formed input as expected."""

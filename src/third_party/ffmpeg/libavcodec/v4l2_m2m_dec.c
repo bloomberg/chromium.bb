@@ -39,7 +39,7 @@ static int v4l2_try_start(AVCodecContext *avctx)
     V4L2m2mContext *s = ((V4L2m2mPriv*)avctx->priv_data)->context;
     V4L2Context *const capture = &s->capture;
     V4L2Context *const output = &s->output;
-    struct v4l2_selection selection;
+    struct v4l2_selection selection = { 0 };
     int ret;
 
     /* 1. start the output process */
@@ -123,6 +123,13 @@ static int v4l2_prepare_decoder(V4L2m2mContext *s)
         }
     }
 
+    memset(&sub, 0, sizeof(sub));
+    sub.type = V4L2_EVENT_EOS;
+    ret = ioctl(s->fd, VIDIOC_SUBSCRIBE_EVENT, &sub);
+    if (ret < 0)
+        av_log(s->avctx, AV_LOG_WARNING,
+               "the v4l2 driver does not support end of stream VIDIOC_SUBSCRIBE_EVENT\n");
+
     return 0;
 }
 
@@ -201,6 +208,7 @@ static av_cold int v4l2_decode_init(AVCodecContext *avctx)
     capture->av_codec_id = AV_CODEC_ID_RAWVIDEO;
     capture->av_pix_fmt = avctx->pix_fmt;
 
+    s->avctx = avctx;
     ret = ff_v4l2_m2m_codec_init(priv);
     if (ret) {
         av_log(avctx, AV_LOG_ERROR, "can't configure decoder\n");
@@ -209,7 +217,6 @@ static av_cold int v4l2_decode_init(AVCodecContext *avctx)
 
         return ret;
     }
-    s->avctx = avctx;
 
     return v4l2_prepare_decoder(s);
 }
@@ -217,7 +224,7 @@ static av_cold int v4l2_decode_init(AVCodecContext *avctx)
 static av_cold int v4l2_decode_close(AVCodecContext *avctx)
 {
     V4L2m2mPriv *priv = avctx->priv_data;
-    V4L2m2mContext* s = priv->context;
+    V4L2m2mContext *s = priv->context;
     av_packet_unref(&s->buf_pkt);
     return ff_v4l2_m2m_codec_end(priv);
 }

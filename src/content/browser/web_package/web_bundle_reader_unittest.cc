@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
@@ -25,13 +24,18 @@ namespace content {
 namespace {
 
 class WebBundleReaderTest : public testing::Test {
- public:
+ protected:
   void SetUp() override {
     reader_factory_ = MockWebBundleReaderFactory::Create();
     reader_ = reader_factory_->CreateReader(body_);
   }
 
- protected:
+  void TearDown() override {
+    reader_.reset();
+    // Allow cleanup tasks posted by the reader's dtor to run.
+    task_environment_.RunUntilIdle();
+  }
+
   void ReadMetadata() {
     base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> items;
     data_decoder::mojom::BundleIndexValuePtr item =

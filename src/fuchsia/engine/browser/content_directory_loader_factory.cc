@@ -22,6 +22,8 @@
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
+#include "fuchsia/base/fuchsia_dir_scheme.h"
 #include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/switches.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -101,21 +103,23 @@ ContentDirectoriesMap* GetContentDirectories() {
 scoped_refptr<net::HttpResponseHeaders> CreateHeaders(
     base::StringPiece mime_type,
     const base::Optional<std::string>& charset) {
-  constexpr char kXFrameOptionsHeader[] = "X-Frame-Options: DENY";
-  constexpr char kCacheHeader[] = "Cache-Control: no-cache";
-  constexpr char kContentTypePrefix[] = "Content-Type: ";
+  constexpr char kXFrameOptions[] = "X-Frame-Options";
+  constexpr char kXFrameOptionsValue[] = "DENY";
+  constexpr char kCacheControl[] = "Cache-Control";
+  constexpr char kCacheControlValue[] = "no-cache";
+  constexpr char kContentType[] = "Content-Type";
   constexpr char kCharsetSeparator[] = "; charset=";
 
   auto headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK\r\n");
-  headers->AddHeader(kXFrameOptionsHeader);
-  headers->AddHeader(kCacheHeader);
+  headers->SetHeader(kXFrameOptions, kXFrameOptionsValue);
+  headers->SetHeader(kCacheControl, kCacheControlValue);
 
   if (charset) {
-    headers->AddHeader(base::StrCat(
-        {kContentTypePrefix, mime_type, kCharsetSeparator, *charset}));
+    headers->SetHeader(kContentType,
+                       base::StrCat({mime_type, kCharsetSeparator, *charset}));
   } else {
-    headers->AddHeader(base::StrCat({kContentTypePrefix, mime_type}));
+    headers->SetHeader(kContentType, mime_type);
   }
 
   return headers;
@@ -300,9 +304,11 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
   }
 
   // network::mojom::URLLoader implementation:
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_request_headers,
-                      const base::Optional<GURL>& new_url) override {}
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_request_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_request_headers,
+      const base::Optional<GURL>& new_url) override {}
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
   void PauseReadingBodyFromNet() override {}
@@ -341,9 +347,8 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
 }  // namespace
 
 ContentDirectoryLoaderFactory::ContentDirectoryLoaderFactory()
-    : task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE,
+    : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
 
 ContentDirectoryLoaderFactory::~ContentDirectoryLoaderFactory() {}
@@ -382,8 +387,7 @@ void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  if (!request.url.SchemeIs(
-          WebEngineContentClient::kFuchsiaContentDirectoryScheme) ||
+  if (!request.url.SchemeIs(cr_fuchsia::kFuchsiaDirScheme) ||
       !request.url.is_valid()) {
     mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
         ->OnComplete(network::URLLoaderCompletionStatus(net::ERR_INVALID_URL));

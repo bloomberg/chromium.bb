@@ -3,13 +3,24 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator.h"
+#import "ios/chrome/browser/ui/overlays/overlay_request_coordinator+subclassing.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
+#include "ios/chrome/browser/overlays/public/overlay_request_support.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/overlays/overlay_request_mediator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+@interface OverlayRequestCoordinator () <OverlayRequestMediatorDelegate> {
+  // Subclassing properties.
+  BOOL _started;
+  OverlayRequestMediator* _mediator;
+}
+@end
 
 @implementation OverlayRequestCoordinator
 
@@ -21,8 +32,9 @@
   [self stopAnimated:NO];
 }
 
-+ (BOOL)supportsRequest:(OverlayRequest*)request {
-  return NO;
++ (const OverlayRequestSupport*)requestSupport {
+  NOTREACHED() << "Subclasses implement.";
+  return OverlayRequestSupport::None();
 }
 
 + (BOOL)showsOverlayUsingChildViewController {
@@ -34,7 +46,7 @@
                                    request:(OverlayRequest*)request
                                   delegate:(OverlayRequestCoordinatorDelegate*)
                                                delegate {
-  DCHECK([[self class] supportsRequest:request]);
+  DCHECK([self class].requestSupport->IsRequestSupported(request));
   self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     _request = request;
@@ -63,6 +75,34 @@
 
 - (void)stop {
   [self stopAnimated:YES];
+}
+
+#pragma mark - OverlayRequestMediatorDelegate
+
+- (void)stopOverlayForMediator:(OverlayRequestMediator*)mediator {
+  [self stopAnimated:YES];
+}
+
+@end
+
+@implementation OverlayRequestCoordinator (Subclassing)
+
+- (void)setStarted:(BOOL)started {
+  _started = started;
+}
+
+- (BOOL)isStarted {
+  return _started;
+}
+
+- (void)setMediator:(OverlayRequestMediator*)mediator {
+  _mediator.delegate = nil;
+  _mediator = mediator;
+  _mediator.delegate = self;
+}
+
+- (OverlayRequestMediator*)mediator {
+  return _mediator;
 }
 
 @end

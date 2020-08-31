@@ -19,8 +19,8 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/native_library.h"
-#include "base/path_service.h"
+#include "base/metrics/metrics_hashes.h"
+#include "base/profiler/sample_metadata.h"
 #include "base/profiler/stack_sampler.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/profiler/stack_sampling_profiler_test_util.h"
@@ -64,82 +64,23 @@ using SamplingParams = StackSamplingProfiler::SamplingParams;
 
 namespace {
 
-// Calls into |wait_for_sample| after using alloca(), to test unwinding with a
-// frame pointer.
-// Disable inlining for this function so that it gets its own stack frame.
-NOINLINE FunctionAddressRange CallWithAlloca(OnceClosure wait_for_sample) {
-  const void* start_program_counter = GetProgramCounter();
-
-  // Volatile to force a dynamic stack allocation.
-  const volatile size_t alloca_size = 100;
-  // Use the memory via volatile writes to prevent the allocation from being
-  // optimized out.
-  volatile char* const allocation =
-      const_cast<volatile char*>(static_cast<char*>(alloca(alloca_size)));
-  for (volatile char* p = allocation; p < allocation + alloca_size; ++p)
-    *p = '\0';
-
-  if (!wait_for_sample.is_null())
-    std::move(wait_for_sample).Run();
-
-  // Volatile to prevent a tail call to GetProgramCounter().
-  const void* volatile end_program_counter = GetProgramCounter();
-  return {start_program_counter, end_program_counter};
-}
-
-// The function to be executed by the code in the other library.
-void OtherLibraryCallback(void* arg) {
-  OnceClosure* wait_for_sample = static_cast<OnceClosure*>(arg);
-
-  std::move(*wait_for_sample).Run();
-
-  // Prevent tail call.
-  volatile int i = 0;
-  ALLOW_UNUSED_LOCAL(i);
-}
-
-// Calls into |wait_for_sample| through a function within another library, to
-// test unwinding through multiple modules and scenarios involving unloaded
-// modules.
-// Disable inlining for this function so that it gets its own stack frame.
-NOINLINE FunctionAddressRange
-CallThroughOtherLibrary(NativeLibrary library, OnceClosure wait_for_sample) {
-  const void* start_program_counter = GetProgramCounter();
-
-  if (!wait_for_sample.is_null()) {
-    // A function whose arguments are a function accepting void*, and a void*.
-    using InvokeCallbackFunction = void (*)(void (*)(void*), void*);
-    EXPECT_TRUE(library);
-    InvokeCallbackFunction function = reinterpret_cast<InvokeCallbackFunction>(
-        GetFunctionPointerFromNativeLibrary(library, "InvokeCallbackFunction"));
-    EXPECT_TRUE(function);
-
-    (*function)(&OtherLibraryCallback, &wait_for_sample);
-  }
-
-  // Volatile to prevent a tail call to GetProgramCounter().
-  const void* volatile end_program_counter = GetProgramCounter();
-  return {start_program_counter, end_program_counter};
-}
+// State provided to the ProfileBuilder's ApplyMetadataRetrospectively function.
+struct RetrospectiveMetadata {
+  TimeTicks period_start;
+  TimeTicks period_end;
+  MetadataRecorder::Item item;
+};
 
 // Profile consists of a set of samples and other sampling information.
 struct Profile {
-  Profile() = default;
-  Profile(Profile&& other) = default;
-  Profile(const std::vector<std::vector<Frame>>& samples,
-          int metadata_count,
-          TimeDelta profile_duration,
-          TimeDelta sampling_period);
-
-  ~Profile() = default;
-
-  Profile& operator=(Profile&& other) = default;
-
   // The collected samples.
   std::vector<std::vector<Frame>> samples;
 
   // The number of invocations of RecordMetadata().
-  int metadata_count;
+  int record_metadata_count;
+
+  // The retrospective metadata requests.
+  std::vector<RetrospectiveMetadata> retrospective_metadata;
 
   // Duration of this profile.
   TimeDelta profile_duration;
@@ -147,15 +88,6 @@ struct Profile {
   // Time between samples.
   TimeDelta sampling_period;
 };
-
-Profile::Profile(const std::vector<std::vector<Frame>>& samples,
-                 int metadata_count,
-                 TimeDelta profile_duration,
-                 TimeDelta sampling_period)
-    : samples(samples),
-      metadata_count(metadata_count),
-      profile_duration(profile_duration),
-      sampling_period(sampling_period) {}
 
 // The callback type used to collect a profile. The passed Profile is move-only.
 // Other threads, including the UI thread, may block on callback completion so
@@ -173,8 +105,13 @@ class TestProfileBuilder : public ProfileBuilder {
   // ProfileBuilder:
   ModuleCache* GetModuleCache() override;
   void RecordMetadata(
-      ProfileBuilder::MetadataProvider* metadata_provider) override;
-  void OnSampleCompleted(std::vector<Frame> sample) override;
+      const MetadataRecorder::MetadataProvider& metadata_provider) override;
+  void ApplyMetadataRetrospectively(
+      TimeTicks period_start,
+      TimeTicks period_end,
+      const MetadataRecorder::Item& item) override;
+  void OnSampleCompleted(std::vector<Frame> sample,
+                         TimeTicks sample_timestamp) override;
   void OnProfileCompleted(TimeDelta profile_duration,
                           TimeDelta sampling_period) override;
 
@@ -185,7 +122,10 @@ class TestProfileBuilder : public ProfileBuilder {
   std::vector<std::vector<Frame>> samples_;
 
   // The number of invocations of RecordMetadata().
-  int metadata_count_ = 0;
+  int record_metadata_count_ = 0;
+
+  // The retrospective metadata requests.
+  std::vector<RetrospectiveMetadata> retrospective_metadata_;
 
   // Callback made when sampling a profile completes.
   ProfileCompletedCallback callback_;
@@ -204,39 +144,28 @@ ModuleCache* TestProfileBuilder::GetModuleCache() {
 }
 
 void TestProfileBuilder::RecordMetadata(
-    ProfileBuilder::MetadataProvider* metadata_provider) {
-  ++metadata_count_;
+    const MetadataRecorder::MetadataProvider& metadata_provider) {
+  ++record_metadata_count_;
 }
 
-void TestProfileBuilder::OnSampleCompleted(std::vector<Frame> sample) {
+void TestProfileBuilder::ApplyMetadataRetrospectively(
+    TimeTicks period_start,
+    TimeTicks period_end,
+    const MetadataRecorder::Item& item) {
+  retrospective_metadata_.push_back(
+      RetrospectiveMetadata{period_start, period_end, item});
+}
+
+void TestProfileBuilder::OnSampleCompleted(std::vector<Frame> sample,
+                                           TimeTicks sample_timestamp) {
   samples_.push_back(std::move(sample));
 }
 
 void TestProfileBuilder::OnProfileCompleted(TimeDelta profile_duration,
                                             TimeDelta sampling_period) {
-  std::move(callback_).Run(
-      Profile(samples_, metadata_count_, profile_duration, sampling_period));
-}
-
-// Loads the other library, which defines a function to be called in the
-// WITH_OTHER_LIBRARY configuration.
-NativeLibrary LoadOtherLibrary() {
-  // The lambda gymnastics works around the fact that we can't use ASSERT_*
-  // macros in a function returning non-null.
-  const auto load = [](NativeLibrary* library) {
-    FilePath other_library_path;
-    ASSERT_TRUE(PathService::Get(DIR_EXE, &other_library_path));
-    other_library_path = other_library_path.AppendASCII(
-        GetNativeLibraryName("base_profiler_test_support_library"));
-    NativeLibraryLoadError load_error;
-    *library = LoadNativeLibrary(other_library_path, &load_error);
-    ASSERT_TRUE(*library) << "error loading " << other_library_path.value()
-                          << ": " << load_error.ToString();
-  };
-
-  NativeLibrary library = nullptr;
-  load(&library);
-  return library;
+  std::move(callback_).Run(Profile{samples_, record_metadata_count_,
+                                   retrospective_metadata_, profile_duration,
+                                   sampling_period});
 }
 
 // Unloads |library| and returns when it has completed unloading. Unloading a
@@ -284,6 +213,7 @@ struct TestProfilerInfo {
                        profile = std::move(result_profile);
                        completed.Signal();
                      })),
+                 nullptr,
                  delegate) {}
 
   // The order here is important to ensure objects being referenced don't get
@@ -417,7 +347,7 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
                 profile = std::move(result_profile);
                 sampling_thread_completed.Signal();
               })),
-      &test_delegate);
+      nullptr, &test_delegate);
 
   profiler.Start();
 
@@ -541,7 +471,7 @@ class TestAuxUnwinder : public Unwinder {
   TestAuxUnwinder(const TestAuxUnwinder&) = delete;
   TestAuxUnwinder& operator=(const TestAuxUnwinder&) = delete;
 
-  bool CanUnwindFrom(const Frame* current_frame) const override { return true; }
+  bool CanUnwindFrom(const Frame& current_frame) const override { return true; }
 
   UnwindResult TryUnwind(RegisterContext* thread_context,
                          uintptr_t stack_top,
@@ -864,7 +794,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, ProfileGeneralInfo) {
 
         // The number of invocations of RecordMetadata() should be equal to the
         // number of samples recorded.
-        EXPECT_EQ(3, profiler_info.profile.metadata_count);
+        EXPECT_EQ(3, profiler_info.profile.record_metadata_count);
       }));
 }
 
@@ -1366,6 +1296,103 @@ PROFILER_TEST_F(StackSamplingProfilerTest, AddAuxUnwinder_AfterStop) {
 
   // The AuxUnwinder should be accepted without error. It will have no effect
   // since the collection has stopped.
+}
+
+// Checks that requests to apply metadata to past samples are passed on to the
+// profile builder.
+PROFILER_TEST_F(StackSamplingProfilerTest,
+                ApplyMetadataToPastSamples_PassedToProfileBuilder) {
+  // Runs the passed closure on the profiler thread after a sample is taken.
+  class PostSampleInvoker : public StackSamplerTestDelegate {
+   public:
+    explicit PostSampleInvoker(RepeatingClosure post_sample_closure)
+        : post_sample_closure_(std::move(post_sample_closure)) {}
+
+    void OnPreStackWalk() override { post_sample_closure_.Run(); }
+
+   private:
+    RepeatingClosure post_sample_closure_;
+  };
+
+  // Thread-safe representation of the times that samples were taken.
+  class SynchronizedSampleTimes {
+   public:
+    void AddNow() {
+      AutoLock lock(lock_);
+      times_.push_back(TimeTicks::Now());
+    }
+
+    std::vector<TimeTicks> GetTimes() {
+      AutoLock lock(lock_);
+      return times_;
+    }
+
+   private:
+    Lock lock_;
+    std::vector<TimeTicks> times_;
+  };
+
+  SamplingParams params;
+  params.sampling_interval = TimeDelta::FromMilliseconds(10);
+  // 10,000 samples ensures the profiler continues running until manually
+  // stopped, after applying metadata.
+  params.samples_per_profile = 10000;
+
+  UnwindScenario scenario(BindRepeating(&CallWithPlainFunction));
+
+  std::vector<TimeTicks> sample_times;
+  Profile profile;
+  WithTargetThread(
+      &scenario,
+      BindLambdaForTesting(
+          [&](SamplingProfilerThreadToken target_thread_token) {
+            SynchronizedSampleTimes synchronized_sample_times;
+            WaitableEvent sample_seen(WaitableEvent::ResetPolicy::AUTOMATIC);
+            PostSampleInvoker post_sample_invoker(BindLambdaForTesting([&]() {
+              synchronized_sample_times.AddNow();
+              sample_seen.Signal();
+            }));
+
+            StackSamplingProfiler profiler(
+                target_thread_token, params,
+                std::make_unique<TestProfileBuilder>(
+                    module_cache(),
+                    BindLambdaForTesting([&profile](Profile result_profile) {
+                      profile = std::move(result_profile);
+                    })),
+                nullptr, &post_sample_invoker);
+            profiler.Start();
+            // Wait for 5 samples to be collected.
+            for (int i = 0; i < 5; ++i)
+              sample_seen.Wait();
+            sample_times = synchronized_sample_times.GetTimes();
+            // Record metadata on past samples, with and without a key value.
+            // The range [times[1], times[3]] is guaranteed to include only
+            // samples 2 and 3, and likewise [times[2], times[4]] is guaranteed
+            // to include only samples 3 and 4.
+            ApplyMetadataToPastSamples(sample_times[1], sample_times[3],
+                                       "TestMetadata1", 10);
+            ApplyMetadataToPastSamples(sample_times[2], sample_times[4],
+                                       "TestMetadata2", 100, 11);
+            profiler.Stop();
+          }));
+
+  ASSERT_EQ(2u, profile.retrospective_metadata.size());
+
+  const RetrospectiveMetadata& metadata1 = profile.retrospective_metadata[0];
+  EXPECT_EQ(sample_times[1], metadata1.period_start);
+  EXPECT_EQ(sample_times[3], metadata1.period_end);
+  EXPECT_EQ(HashMetricName("TestMetadata1"), metadata1.item.name_hash);
+  EXPECT_FALSE(metadata1.item.key.has_value());
+  EXPECT_EQ(10, metadata1.item.value);
+
+  const RetrospectiveMetadata& metadata2 = profile.retrospective_metadata[1];
+  EXPECT_EQ(sample_times[2], metadata2.period_start);
+  EXPECT_EQ(sample_times[4], metadata2.period_end);
+  EXPECT_EQ(HashMetricName("TestMetadata2"), metadata2.item.name_hash);
+  ASSERT_TRUE(metadata2.item.key.has_value());
+  EXPECT_EQ(100, *metadata2.item.key);
+  EXPECT_EQ(11, metadata2.item.value);
 }
 
 }  // namespace base

@@ -10,11 +10,16 @@ import os
 import glob
 import gzip
 import shutil
+import sys
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 
 # TODO(pwang): Move CTS upload logic from autotest to here for consistency.
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # Autotest test to collect list of CTS tests
 TEST_LIST_COLLECTOR = 'tradefed-run-collect-tests-only'

@@ -83,7 +83,6 @@ void MojoAudioOutputIPC::CreateStream(
   DCHECK_EQ(delegate_, delegate);
   // Since the creation callback won't fire if the provider receiver is gone
   // and |this| owns |stream_provider_|, unretained is safe.
-  stream_creation_start_time_ = base::TimeTicks::Now();
   mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
       client_remote;
   receiver_.Bind(client_remote.InitWithNewPipeAndPassReceiver());
@@ -91,7 +90,7 @@ void MojoAudioOutputIPC::CreateStream(
   receiver_.set_disconnect_with_reason_handler(
       base::BindOnce(&MojoAudioOutputIPC::ProviderClientBindingDisconnected,
                      base::Unretained(this)));
-  stream_provider_->Acquire(params, std::move(client_remote), processing_id);
+  stream_provider_->Acquire(params, std::move(client_remote));
 }
 
 void MojoAudioOutputIPC::PlayStream() {
@@ -231,21 +230,18 @@ void MojoAudioOutputIPC::Created(
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate_);
 
-  UMA_HISTOGRAM_TIMES("Media.Audio.Render.OutputDeviceStreamCreationTime",
-                      base::TimeTicks::Now() - stream_creation_start_time_);
   stream_.reset();
   stream_.Bind(std::move(pending_stream));
 
-  base::PlatformFile socket_handle;
-  auto result =
-      mojo::UnwrapPlatformFile(std::move(data_pipe->socket), &socket_handle);
-  DCHECK_EQ(result, MOJO_RESULT_OK);
+  DCHECK(data_pipe->socket.is_valid_platform_file());
+  base::ScopedPlatformFile socket_handle = data_pipe->socket.TakePlatformFile();
 
   base::UnsafeSharedMemoryRegion& shared_memory_region =
       data_pipe->shared_memory;
   DCHECK(shared_memory_region.IsValid());
 
-  delegate_->OnStreamCreated(std::move(shared_memory_region), socket_handle,
+  delegate_->OnStreamCreated(std::move(shared_memory_region),
+                             std::move(socket_handle),
                              expected_state_ == kPlaying);
 
   if (volume_)

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_helper.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/grit/generated_resources.h"
@@ -46,9 +46,6 @@ std::string PrepareHeavyAdPage() {
   load_time_data.SetString("tabTitle", "");
   load_time_data.SetBoolean("overridable", false);
   load_time_data.SetBoolean("is_giant", false);
-
-  security_interstitials::common_string_util::PopulateDarkModeDisplaySetting(
-      &load_time_data);
 
   webui::SetLoadTimeDataDefaults(g_browser_process->GetApplicationLocale(),
                                  &load_time_data);

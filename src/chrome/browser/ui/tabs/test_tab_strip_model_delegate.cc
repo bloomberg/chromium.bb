@@ -8,17 +8,17 @@
 
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "components/tab_groups/tab_group_id.h"
 
-TestTabStripModelDelegate::TestTabStripModelDelegate() {
-}
+TestTabStripModelDelegate::TestTabStripModelDelegate() = default;
 
-TestTabStripModelDelegate::~TestTabStripModelDelegate() {
-}
+TestTabStripModelDelegate::~TestTabStripModelDelegate() = default;
 
-void TestTabStripModelDelegate::AddTabAt(const GURL& url,
-                                         int index,
-                                         bool foreground,
-                                         base::Optional<TabGroupId> group) {}
+void TestTabStripModelDelegate::AddTabAt(
+    const GURL& url,
+    int index,
+    bool foreground,
+    base::Optional<tab_groups::TabGroupId> group) {}
 
 Browser* TestTabStripModelDelegate::CreateNewStripWithContents(
     std::vector<NewStripContents> contentses,
@@ -46,6 +46,27 @@ bool TestTabStripModelDelegate::CanDuplicateContentsAt(int index) {
 void TestTabStripModelDelegate::DuplicateContentsAt(int index) {
 }
 
+void TestTabStripModelDelegate::MoveToExistingWindow(
+    const std::vector<int>& indices,
+    int browser_index) {}
+
+std::vector<base::string16>
+TestTabStripModelDelegate::GetExistingWindowsForMoveMenu() const {
+  std::vector<base::string16> existing_windows;
+  return existing_windows;
+}
+
+bool TestTabStripModelDelegate::CanMoveTabsToWindow(
+    const std::vector<int>& indices) {
+  return false;
+}
+
+void TestTabStripModelDelegate::MoveTabsToNewWindow(
+    const std::vector<int>& indices) {}
+
+void TestTabStripModelDelegate::MoveGroupToNewWindow(
+    const tab_groups::TabGroupId& group) {}
+
 void TestTabStripModelDelegate::CreateHistoricalTab(
     content::WebContents* contents) {
 }
@@ -58,4 +79,9 @@ bool TestTabStripModelDelegate::ShouldRunUnloadListenerBeforeClosing(
 bool TestTabStripModelDelegate::RunUnloadListenerBeforeClosing(
     content::WebContents* contents) {
   return false;
+}
+
+bool TestTabStripModelDelegate::ShouldDisplayFavicon(
+    content::WebContents* web_contents) const {
+  return true;
 }

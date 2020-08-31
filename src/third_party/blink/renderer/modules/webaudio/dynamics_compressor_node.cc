@@ -25,9 +25,9 @@
 
 #include "third_party/blink/renderer/modules/webaudio/dynamics_compressor_node.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_dynamics_compressor_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
-#include "third_party/blink/renderer/modules/webaudio/dynamics_compressor_options.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/audio/dynamics_compressor.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -81,11 +81,11 @@ void DynamicsCompressorHandler::Process(uint32_t frames_to_process) {
   AudioBus* output_bus = Output(0).Bus();
   DCHECK(output_bus);
 
-  float threshold = threshold_->Value();
-  float knee = knee_->Value();
-  float ratio = ratio_->Value();
-  float attack = attack_->Value();
-  float release = release_->Value();
+  float threshold = threshold_->FinalValue();
+  float knee = knee_->FinalValue();
+  float ratio = ratio_->FinalValue();
+  float attack = attack_->FinalValue();
+  float release = release_->FinalValue();
 
   dynamics_compressor_->SetParameterValue(DynamicsCompressor::kParamThreshold,
                                           threshold);
@@ -97,7 +97,8 @@ void DynamicsCompressorHandler::Process(uint32_t frames_to_process) {
   dynamics_compressor_->SetParameterValue(DynamicsCompressor::kParamRelease,
                                           release);
 
-  dynamics_compressor_->Process(Input(0).Bus(), output_bus, frames_to_process);
+  scoped_refptr<AudioBus> input_bus = Input(0).Bus();
+  dynamics_compressor_->Process(input_bus.get(), output_bus, frames_to_process);
 
   float reduction =
       dynamics_compressor_->ParameterValue(DynamicsCompressor::kParamReduction);
@@ -272,7 +273,7 @@ DynamicsCompressorNode* DynamicsCompressorNode::Create(
   return node;
 }
 
-void DynamicsCompressorNode::Trace(blink::Visitor* visitor) {
+void DynamicsCompressorNode::Trace(Visitor* visitor) {
   visitor->Trace(threshold_);
   visitor->Trace(knee_);
   visitor->Trace(ratio_);

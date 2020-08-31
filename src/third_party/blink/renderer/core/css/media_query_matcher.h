@@ -42,8 +42,6 @@ class MediaQuerySet;
 class CORE_EXPORT MediaQueryMatcher final
     : public GarbageCollected<MediaQueryMatcher> {
  public:
-  static MediaQueryMatcher* Create(Document&);
-
   explicit MediaQueryMatcher(Document&);
   ~MediaQueryMatcher();
 
@@ -61,7 +59,7 @@ class CORE_EXPORT MediaQueryMatcher final
   void ViewportChanged();
   bool Evaluate(const MediaQuerySet*);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   MediaQueryEvaluator* CreateEvaluator() const;

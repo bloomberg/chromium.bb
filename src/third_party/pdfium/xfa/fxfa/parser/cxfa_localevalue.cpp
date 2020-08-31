@@ -58,8 +58,8 @@ bool ValueSplitDateTime(const WideString& wsDateTime,
   if (!nSplitIndex.has_value())
     return false;
 
-  wsDate = wsDateTime.Left(nSplitIndex.value());
-  wsTime = wsDateTime.Right(wsDateTime.GetLength() - nSplitIndex.value() - 1);
+  wsDate = wsDateTime.First(nSplitIndex.value());
+  wsTime = wsDateTime.Last(wsDateTime.GetLength() - nSplitIndex.value() - 1);
   return true;
 }
 
@@ -673,9 +673,9 @@ bool CXFA_LocaleValue::ValidateNumericTemp(const WideString& wsNumeric,
   bool bLimit = true;
   int32_t nCount = wsNumeric.GetLength();
   int32_t nCountFmt = wsFormat.GetLength();
-  while (n < nCount && (bLimit ? nf < nCountFmt : true) &&
+  while (n < nCount && (!bLimit || nf < nCountFmt) &&
          FXSYS_IsDecimalDigit(c = spNum[n])) {
-    if (bLimit == true) {
+    if (bLimit) {
       if ((cf = spFmt[nf]) == L'*')
         bLimit = false;
       else if (cf == L'z')

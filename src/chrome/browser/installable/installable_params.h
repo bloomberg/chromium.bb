@@ -25,8 +25,8 @@ struct InstallableParams {
   bool prefer_maskable_icon = false;
 
   // Check whether there is a fetchable, non-empty icon in the manifest
-  // conforming to the badge icon size parameters.
-  bool valid_badge_icon = false;
+  // conforming to the splash icon size parameters.
+  bool valid_splash_icon = false;
 
   // Check whether the site has a manifest valid for a web app.
   bool valid_manifest = false;

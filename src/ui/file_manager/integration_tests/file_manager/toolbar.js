@@ -25,6 +25,34 @@ testcase.toolbarDeleteWithMenuItemNoEntrySelected = async () => {
 };
 
 /**
+ * Tests Delete button keeps focus after closing confirmation
+ * dialog.
+ */
+testcase.toolbarDeleteButtonKeepFocus = async () => {
+  const entries = [ENTRIES.desktop];
+
+  // Open Files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, entries, []);
+
+  // Select My Desktop Background.png
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, [ENTRIES.desktop.nameText]));
+
+  await remoteCall.simulateUiClick(appId, '#delete-button');
+
+  // Confirm that the confirmation dialog is shown.
+  await remoteCall.waitForElement(appId, '.cr-dialog-container.shown');
+
+  // Press cancel button.
+  await remoteCall.waitAndClickElement(appId, 'button.cr-dialog-cancel');
+
+  // Check focused element is Delete button.
+  const focusedElement =
+      await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+  chrome.test.assertEq('delete-button', focusedElement.attributes['id']);
+};
+
+/**
  * Tests deleting an entry using the toolbar.
  */
 testcase.toolbarDeleteEntry = async () => {
@@ -57,7 +85,7 @@ testcase.toolbarDeleteEntry = async () => {
 
   // Click delete button in the toolbar.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['button#delete-button']));
+      'fakeMouseClick', appId, ['#delete-button']));
 
 
   // Confirm that the confirmation dialog is shown.
@@ -123,4 +151,70 @@ testcase.toolbarRefreshButtonHiddenInRecents = async () => {
 
   // Check that the button should be hidden.
   await remoteCall.waitForElement(appId, '#refresh-button[hidden]');
+};
+
+/**
+ * Tests that command Alt+A focus the toolbar.
+ */
+testcase.toolbarAltACommand = async () => {
+  // Open files app.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+  // Press Alt+A in the File List.
+  const altA = ['#file-list', 'a', false, false, true];
+  await remoteCall.fakeKeyDown(appId, ...altA);
+
+  // Check that a menu-button should be focused.
+  const focusedElement =
+      await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+  const cssClasses = focusedElement.attributes['class'] || '';
+  chrome.test.assertTrue(cssClasses.includes('menu-button'));
+};
+
+/**
+ * Tests that the menu drop down follows the button if the button moves. This
+ * happens when the search box is expanded and then collapsed.
+ */
+testcase.toolbarMultiMenuFollowsButton = async () => {
+  const entry = ENTRIES.hello;
+
+  // Open Files app on Downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
+
+  // Override the tasks so the "Open" button becomes a dropdown button.
+  await remoteCall.callRemoteTestUtil(
+      'overrideTasks', appId, [DOWNLOADS_FAKE_TASKS]);
+
+  // Select an entry in the file list.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, [entry.nameText]));
+
+  // Click the toolbar search button.
+  await remoteCall.waitAndClickElement(appId, '#search-button');
+
+  // Wait for the search box to expand.
+  await remoteCall.waitForElementLost(appId, '#search-wrapper[collapsed]');
+
+  // Click the toolbar "Open" dropdown button.
+  await remoteCall.simulateUiClick(appId, '#tasks');
+
+  // Wait for the search box to collapse.
+  await remoteCall.waitForElement(appId, '#search-wrapper[collapsed]');
+
+  // Check that the dropdown menu and "Open" button are aligned.
+  const caller = getCaller();
+  await repeatUntil(async () => {
+    const openButton =
+        await remoteCall.waitForElementStyles(appId, '#tasks', ['width']);
+    const menu =
+        await remoteCall.waitForElementStyles(appId, '#tasks-menu', ['width']);
+
+    if (openButton.renderedLeft !== menu.renderedLeft) {
+      return pending(
+          caller,
+          `Waiting for the menu and button to be aligned: ` +
+              `${openButton.renderedLeft} != ${menu.renderedLeft}`);
+    }
+  });
 };

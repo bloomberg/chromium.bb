@@ -218,10 +218,6 @@ std::string GetNetworkName(const std::string& service_path) {
 
 }  // namespace
 
-// LoginScreenContext implementation ------------------------------------------
-
-LoginScreenContext::LoginScreenContext() = default;
-
 // SigninScreenHandler implementation ------------------------------------------
 
 SigninScreenHandler::SigninScreenHandler(
@@ -263,11 +259,6 @@ SigninScreenHandler::SigninScreenHandler(
       chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
   if (keyboard)
     keyboard->AddObserver(this);
-  allowed_input_methods_subscription_ =
-      chromeos::CrosSettings::Get()->AddSettingsObserver(
-          chromeos::kDeviceLoginScreenInputMethods,
-          base::Bind(&SigninScreenHandler::OnAllowedInputMethodsChanged,
-                     base::Unretained(this)));
 
   ash::TabletMode* tablet_mode = ash::TabletMode::Get();
   tablet_mode->AddObserver(this);
@@ -298,13 +289,6 @@ SigninScreenHandler::~SigninScreenHandler() {
   network_state_informer_->RemoveObserver(this);
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
   proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(EmptyAccountId());
-  // TODO(https://crbug.com/1033572) Quick fix to close feedback form when login
-  // was performed.
-  login_feedback_.reset();
-  extensions::FeedbackPrivateDelegate* feedback_private_delegate =
-      extensions::ExtensionsAPIClient::Get()->GetFeedbackPrivateDelegate();
-  feedback_private_delegate->UnloadFeedbackExtension(
-      Profile::FromWebUI(web_ui()));
 }
 
 void SigninScreenHandler::DeclareLocalizedValues(
@@ -492,16 +476,12 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("sendFeedback", &SigninScreenHandler::HandleSendFeedback);
 }
 
-void SigninScreenHandler::Show(const LoginScreenContext& context,
-                               bool oobe_ui) {
+void SigninScreenHandler::Show(bool oobe_ui) {
   CHECK(delegate_);
 
   // Just initialize internal fields from context and call ShowImpl().
   oobe_ui_ = oobe_ui;
 
-  std::string email;
-  email = context.email();
-  gaia_screen_handler_->set_populated_email(email);
   ShowImpl();
   histogram_helper_->OnScreenShow();
 }
@@ -527,11 +507,6 @@ void SigninScreenHandler::UpdateState(NetworkError::ErrorReason reason) {
   // force network error UI update.
   bool force_update = reason == NetworkError::ERROR_REASON_FRAME_ERROR;
   UpdateStateInternal(reason, force_update);
-}
-
-void SigninScreenHandler::SetFocusPODCallbackForTesting(
-    base::Closure callback) {
-  test_focus_pod_callback_ = callback;
 }
 
 void SigninScreenHandler::SetOfflineTimeoutForTesting(
@@ -1153,7 +1128,7 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
   std::string email;
   args->GetString(0, &email);
 
-  gaia_screen_handler_->set_populated_email(email);
+  gaia_screen_handler_->set_populated_account(AccountId::FromUserEmail(email));
   gaia_screen_handler_->LoadAuthExtension(true /* force */, true /* offline */);
   UpdateUIState(UI_STATE_GAIA_SIGNIN);
 }
@@ -1267,13 +1242,12 @@ void SigninScreenHandler::HandleLoginVisible(const std::string& source) {
         chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
         content::NotificationService::AllSources(),
         content::NotificationService::NoDetails());
-    TRACE_EVENT_ASYNC_END0("ui", "ShowLoginWebUI",
-                           LoginDisplayHostWebUI::kShowLoginWebUIid);
+    TRACE_EVENT_NESTABLE_ASYNC_END0("ui", "ShowLoginWebUI",
+                                    LoginDisplayHostWebUI::kShowLoginWebUIid);
   }
   webui_visible_ = true;
   if (preferences_changed_delayed_)
     OnPreferencesChanged();
-  OnAllowedInputMethodsChanged();
 }
 
 void SigninScreenHandler::HandleCancelPasswordChangedFlow(
@@ -1340,8 +1314,6 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
 
   if (delegate_ && !is_same_pod_focused)
     delegate_->CheckUserStatus(account_id);
-  if (!test_focus_pod_callback_.is_null())
-    test_focus_pod_callback_.Run();
 
   focused_pod_account_id_ = std::make_unique<AccountId>(account_id);
 
@@ -1359,8 +1331,11 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
   if (is_same_pod_focused)
     return;
 
-  lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
-                                        ime_state_.get());
+  // TODO(https://crbug.com/1071779): Migrate KioskTest to Views Account picker.
+  // DCHECK_EQ(session_manager::SessionManager::Get()->session_state(),
+  //           session_manager::SessionState::LOGIN_SECONDARY);
+  lock_screen_utils::SetUserInputMethod(account_id, ime_state_.get(),
+                                        false /*honor_device_policy*/);
   lock_screen_utils::SetKeyboardSettings(account_id);
 
   bool use_24hour_clock = false;
@@ -1375,7 +1350,6 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
 
 void SigninScreenHandler::HandleNoPodFocused() {
   focused_pod_account_id_.reset();
-  lock_screen_utils::EnforcePolicyInputMethods(std::string());
 }
 
 void SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts(
@@ -1493,19 +1467,6 @@ void SigninScreenHandler::OnCapsLockChanged(bool enabled) {
 
 void SigninScreenHandler::OnFeedbackFinished() {
   login_feedback_.reset();
-}
-
-void SigninScreenHandler::OnAllowedInputMethodsChanged() {
-  if (!webui_visible_)
-    return;
-
-  if (focused_pod_account_id_) {
-    std::string user_input_method = lock_screen_utils::GetUserLastInputMethod(
-        focused_pod_account_id_->GetUserEmail());
-    lock_screen_utils::EnforcePolicyInputMethods(user_input_method);
-  } else {
-    lock_screen_utils::EnforcePolicyInputMethods(std::string());
-  }
 }
 
 }  // namespace chromeos

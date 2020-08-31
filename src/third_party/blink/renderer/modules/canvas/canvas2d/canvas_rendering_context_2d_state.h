@@ -37,7 +37,7 @@ class CanvasRenderingContext2DState final
                                 ClipListCopyMode);
   ~CanvasRenderingContext2DState() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   enum PaintType {
     kFillPaintType,
@@ -45,14 +45,8 @@ class CanvasRenderingContext2DState final
     kImagePaintType,
   };
 
-  static CanvasRenderingContext2DState* Create(
-      const CanvasRenderingContext2DState& other,
-      ClipListCopyMode mode) {
-    return MakeGarbageCollected<CanvasRenderingContext2DState>(other, mode);
-  }
-
   // FontSelectorClient implementation
-  void FontsNeedUpdate(FontSelector*) override;
+  void FontsNeedUpdate(FontSelector*, FontInvalidationReason) override;
 
   bool HasUnrealizedSaves() const { return unrealized_save_count_; }
   void Save() { ++unrealized_save_count_; }
@@ -84,8 +78,9 @@ class CanvasRenderingContext2DState final
     return clip_list_.GetCurrentClipPath();
   }
 
-  void SetFont(const Font&, FontSelector*);
+  void SetFont(const FontDescription&, FontSelector*);
   const Font& GetFont() const;
+  const FontDescription& GetFontDescription() const;
   bool HasRealizedFont() const { return realized_font_; }
   void SetUnparsedFont(const String& font) { unparsed_font_ = font; }
   const String& UnparsedFont() const { return unparsed_font_; }

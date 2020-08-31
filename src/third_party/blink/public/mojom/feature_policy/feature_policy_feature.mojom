@@ -51,12 +51,6 @@ enum FeaturePolicyFeature {
   kAmbientLightSensor = 18,
   kGyroscope = 19,
   kMagnetometer = 20,
-  // Controls the layout size of intrinsically sized images and videos. When
-  // disabled, default size (300 x 150) is used to prevent relayout.
-  kUnsizedMedia = 21,
-  // When disallowed, restricts source image size to be no more 2x larger than
-  // the image's containing block.
-  kOversizedImages = 25,
   // Controls access to Picture-in-Picture.
   kPictureInPicture = 26,
   // Controls the ability to block and interfere with vertical scrolling.
@@ -68,13 +62,8 @@ enum FeaturePolicyFeature {
   // TODO(ekaramad): kLazyLoad is deprecated; remove.
   // Used to enforce lazyloading for a frame and any nested <iframe> or image.
   kLazyLoad = 29,
-  // Restricts the usage of layout-causing animations in a document.
-  kLayoutAnimations = 30,
-  // Controls access to WakeLock
-  kWakeLock = 31,
-  // Controls access to font-display attribute in @font-face CSS rule
-  kFontDisplay = 32,
-
+  // Controls access to Screen Wake Lock
+  kScreenWakeLock = 31,
   // These are the defined sandbox features implemented as policy-controlled
   // features.
   kTopNavigation = 33,
@@ -95,11 +84,6 @@ enum FeaturePolicyFeature {
   kHid = 43,
   // Controls access to Idle Detection
   kIdleDetection = 44,
-
-  // When disallowed, these policies require images to have a reasonable byte-to-pixel ratio.
-  kUnoptimizedLossyImages = 45,
-  kUnoptimizedLosslessImages = 46,
-  kUnoptimizedLosslessImagesStrict = 47,
 
   // Loading policies.
   kLoadingFrameDefaultEager = 48,
@@ -133,7 +117,28 @@ enum FeaturePolicyFeature {
   kWebXr = 66,
 
   // Web Authentication (https://w3c.github.io/webauthn/#sctn-iframe-guidance)
-  kPublicKeyCredentials = 67,
+  kPublicKeyCredentialsGet = 67,
+
+  // Controls use of Clipboard API.
+  kClipboard = 68,
+
+  //Additional Client Hint
+  kClientHintUAMobile = 69,
+
+  // Storage Access API
+  kStorageAccessAPI = 70,
+
+  // Client Hint for the full browser version.
+  kClientHintUAFullVersion = 71,
+
+  // Trust Token API redemption and request signing operations
+  kTrustTokenRedemption = 72,
+
+  // Controls use of Conversion Measurement API
+  kConversionMeasurement = 73,
+
+  // Client Hint for UA platform version.
+  kClientHintUAPlatformVersion = 74,
 
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.

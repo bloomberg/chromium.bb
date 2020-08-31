@@ -14,10 +14,10 @@
 #include "chrome/browser/ui/webui/reset_password/reset_password.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/password_protection/metrics_util.h"
-#include "components/safe_browsing/password_protection/password_protection_service.h"
-#include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/content/password_protection/metrics_util.h"
+#include "components/safe_browsing/content/password_protection/password_protection_service.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/user_prefs/user_prefs.h"
@@ -121,14 +121,13 @@ ResetPasswordUI::ResetPasswordUI(content::WebUI* web_ui)
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html_source.release());
-
-  AddHandlerToRegistry(base::BindRepeating(
-      &ResetPasswordUI::BindResetPasswordHandler, base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(ResetPasswordUI)
 
 ResetPasswordUI::~ResetPasswordUI() {}
 
-void ResetPasswordUI::BindResetPasswordHandler(
+void ResetPasswordUI::BindInterface(
     mojo::PendingReceiver<mojom::ResetPasswordHandler> receiver) {
   ui_handler_ = std::make_unique<ResetPasswordHandlerImpl>(
       web_ui()->GetWebContents(), std::move(receiver));

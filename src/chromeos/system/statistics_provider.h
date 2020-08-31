@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 
@@ -50,11 +51,11 @@ COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kEthernetMacAddressKey[];
 
 // Firmware write protect switch value.
 COMPONENT_EXPORT(CHROMEOS_SYSTEM)
-extern const char kFirmwareWriteProtectBootKey[];
+extern const char kFirmwareWriteProtectCurrentKey[];
 COMPONENT_EXPORT(CHROMEOS_SYSTEM)
-extern const char kFirmwareWriteProtectBootValueOn[];
+extern const char kFirmwareWriteProtectCurrentValueOn[];
 COMPONENT_EXPORT(CHROMEOS_SYSTEM)
-extern const char kFirmwareWriteProtectBootValueOff[];
+extern const char kFirmwareWriteProtectCurrentValueOff[];
 
 // Firmware type and associated values. The values are from crossystem output
 // for the mainfw_type key. Normal and developer correspond to Chrome OS
@@ -110,6 +111,10 @@ COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kRegionKey[];
 COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kInitialLocaleKey[];
 COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kInitialTimezoneKey[];
 COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kKeyboardLayoutKey[];
+
+// The key that will be present in RO VPD to indicate what identifier is used
+// for attestation-based registration of a device.
+COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kAttestedDeviceIdKey[];
 
 // Serial number key (VPD v2+ devices, Samsung: caroline and later) for use in
 // tests. Outside of tests GetEnterpriseMachineID() is the backward-compatible

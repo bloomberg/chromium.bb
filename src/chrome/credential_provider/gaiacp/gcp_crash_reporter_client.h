@@ -6,7 +6,7 @@
 #define CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_CRASH_REPORTER_CLIENT_H_
 
 #include "base/macros.h"
-#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/core/app/crash_reporter_client.h"
 
 namespace base {
 class FilePath;
@@ -31,7 +31,6 @@ class GcpCrashReporterClient : public crash_reporter::CrashReporterClient {
                                base::string16* message,
                                bool* is_rtl_locale) override;
   bool AboutToRestart() override;
-  bool GetDeferredUploadsSupported(bool is_per_user_install) override;
   bool GetIsPerUserInstall() override;
   bool GetShouldDumpLargerDumps() override;
   int GetResultCodeRespawnFailed() override;

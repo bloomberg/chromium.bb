@@ -6,7 +6,6 @@
 #include <cmath>
 #include <tuple>
 
-#include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/skia_color_space_util.h"
@@ -88,14 +87,13 @@ TEST(ColorSpace, RasterAndBlend) {
   // A linear transfer function being used for HDR should be blended using an
   // sRGB-like transfer function.
   display_color_space = ColorSpace::CreateSCRGBLinear();
-  EXPECT_EQ(ColorSpace::CreateExtendedSRGB(),
-            display_color_space.GetBlendingColorSpace());
+  EXPECT_FALSE(display_color_space.IsSuitableForBlending());
   EXPECT_EQ(ColorSpace::CreateDisplayP3D65(),
             display_color_space.GetRasterColorSpace());
 
   // If not used for HDR, a linear transfer function should be left unchanged.
   display_color_space = ColorSpace::CreateXYZD50();
-  EXPECT_EQ(display_color_space, display_color_space.GetBlendingColorSpace());
+  EXPECT_TRUE(display_color_space.IsSuitableForBlending());
   EXPECT_EQ(display_color_space, display_color_space.GetRasterColorSpace());
 }
 

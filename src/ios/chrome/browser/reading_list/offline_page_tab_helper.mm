@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
 #include "components/reading_list/core/offline_url_utils.h"
 #include "components/reading_list/core/reading_list_entry.h"
@@ -275,22 +276,22 @@ void OfflinePageTabHelper::PresentOfflinePageForOnlineUrl(const GURL& url) {
     web_state_->GetNavigationManager()->LoadURLWithParams(params);
     return;
   }
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   base::FilePath offline_root =
       ReadingListDownloadServiceFactory::GetForBrowserState(browser_state)
           ->OfflineRoot()
           .DirName();
 
   base::FilePath offline_path = entry->DistilledPath();
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&GetOfflineData, offline_root, offline_path),
-      base::BindOnce(&OfflinePageTabHelper::LoadData, base::Unretained(this),
-                     last_navigation_started_, entry_url,
-                     offline_path.Extension()));
+      base::BindOnce(&OfflinePageTabHelper::LoadData,
+                     weak_factory_.GetWeakPtr(), last_navigation_started_,
+                     entry_url, offline_path.Extension()));
 }
 
 bool OfflinePageTabHelper::HasDistilledVersionForOnlineUrl(

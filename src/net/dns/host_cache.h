@@ -19,7 +19,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/clamped_math.h"
-#include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -279,15 +278,19 @@ class NET_EXPORT HostCache {
     virtual void ScheduleWrite() = 0;
   };
 
-  // Delegate to receive cache invalidation notifications. Get the Invalidator
-  // for a HostCache via HostCache::invalidator() or override for testing via
-  // HostCache::set_invalidator_for_testing().
-  class Invalidator : public base::CheckedObserver {
-   public:
-    virtual void Invalidate() = 0;
-  };
-
   using EntryMap = std::map<Key, Entry>;
+
+  // The two ways to serialize the cache to a value.
+  enum class SerializationType {
+    // Entries with transient NetworkIsolationKeys are not serialized, and
+    // RestoreFromListValue() can load the returned value.
+    kRestorable,
+    // Entries with transient NetworkIsolationKeys are serialized, and
+    // RestoreFromListValue() cannot load the returned value, since the debug
+    // serialization of NetworkIsolationKeys is used instead of the
+    // deserializable representation.
+    kDebug,
+  };
 
   // A HostCache::EntryStaleness representing a non-stale (fresh) cache entry.
   static const HostCache::EntryStaleness kNotStale;
@@ -334,7 +337,6 @@ class NET_EXPORT HostCache {
 
   // Marks all entries as stale on account of a network change.
   void Invalidate();
-  Invalidator* invalidator() { return invalidator_; }
 
   void set_persistence_delegate(PersistenceDelegate* delegate);
 
@@ -347,19 +349,14 @@ class NET_EXPORT HostCache {
 
   // Clears hosts matching |host_filter| from the cache.
   void ClearForHosts(
-      const base::Callback<bool(const std::string&)>& host_filter);
+      const base::RepeatingCallback<bool(const std::string&)>& host_filter);
 
   // Fills the provided base::ListValue with the contents of the cache for
   // serialization. |entry_list| must be non-null and will be cleared before
-  // adding the cache contents. Entries with ephemeral NetworkIsolationKeys will
-  // not be written to the resulting list.
-  //
-  // TODO(mmenke): This is used both in combination with RestoreFromListValue()
-  // and for NetLog. Update the NetLogViewer's display to handle
-  // NetworkIsolationKeys, and add some way for to get a result with ephemeral
-  // NIKs included.
+  // adding the cache contents.
   void GetAsListValue(base::ListValue* entry_list,
-                      bool include_staleness) const;
+                      bool include_staleness,
+                      SerializationType serialization_type) const;
   // Takes a base::ListValue representing cache entries and stores them in the
   // cache, skipping any that already have entries. Returns true on success,
   // false on failure.
@@ -375,11 +372,6 @@ class NET_EXPORT HostCache {
   size_t max_entries() const;
   int network_changes() const { return network_changes_; }
   const EntryMap& entries() const { return entries_; }
-
-  void set_invalidator_for_testing(Invalidator* invalidator) {
-    owned_invalidator_ = nullptr;
-    invalidator_ = invalidator;
-  }
 
   // Creates a default cache.
   static std::unique_ptr<HostCache> CreateDefaultCache();
@@ -431,9 +423,6 @@ class NET_EXPORT HostCache {
   PersistenceDelegate* delegate_;
   // Shared tick clock, overridden for testing.
   const base::TickClock* tick_clock_;
-
-  std::unique_ptr<Invalidator> owned_invalidator_;
-  Invalidator* invalidator_;
 
   THREAD_CHECKER(thread_checker_);
 

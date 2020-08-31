@@ -121,7 +121,8 @@ class CC_EXPORT SchedulerStateMachine {
   }
 
   bool NewActiveTreeLikely() const {
-    return needs_begin_main_frame_ || CommitPending() || has_pending_tree_;
+    return (needs_begin_main_frame_ && !last_commit_had_no_updates_) ||
+           CommitPending() || has_pending_tree_;
   }
 
   bool RedrawPending() const { return needs_redraw_; }
@@ -171,9 +172,7 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates that the system has entered and left a BeginImplFrame callback.
   // The scheduler will not draw more than once in a given BeginImplFrame
   // callback nor send more than one BeginMainFrame message.
-  void OnBeginImplFrame(uint64_t source_id,
-                        uint64_t sequence_number,
-                        bool animate_only);
+  void OnBeginImplFrame(const viz::BeginFrameId& frame_id, bool animate_only);
   // Indicates that the scheduler has entered the draw phase. The scheduler
   // will not draw more than once in a single draw phase.
   // TODO(sunnyps): Rename OnBeginImplFrameDeadline to OnDraw or similar.
@@ -324,6 +323,9 @@ class CC_EXPORT SchedulerStateMachine {
   bool video_needs_begin_frames() const { return video_needs_begin_frames_; }
 
   bool did_submit_in_last_frame() const { return did_submit_in_last_frame_; }
+  bool draw_succeeded_in_last_frame() const {
+    return draw_succeeded_in_last_frame_;
+  }
 
   bool needs_impl_side_invalidation() const {
     return needs_impl_side_invalidation_;
@@ -451,7 +453,8 @@ class CC_EXPORT SchedulerStateMachine {
   bool video_needs_begin_frames_ = false;
   bool last_commit_had_no_updates_ = false;
   bool active_tree_is_ready_to_draw_ = true;
-  bool did_draw_in_last_frame_ = false;
+  bool did_attempt_draw_in_last_frame_ = false;
+  bool draw_succeeded_in_last_frame_ = false;
   bool did_submit_in_last_frame_ = false;
   bool needs_impl_side_invalidation_ = false;
   bool next_invalidation_needs_first_draw_on_activation_ = false;

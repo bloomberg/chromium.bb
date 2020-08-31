@@ -44,12 +44,7 @@ void MojoAudioInputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
   factory_client_receiver_.set_disconnect_handler(base::BindOnce(
       &media::AudioInputIPCDelegate::OnError, base::Unretained(delegate_)));
 
-  stream_creation_start_time_ = base::TimeTicks::Now();
-  mojo::PendingReceiver<audio::mojom::AudioProcessorControls> controls_receiver;
-  if (source_params_.processing.has_value())
-    controls_receiver = processor_controls_.BindNewPipeAndPassReceiver();
-  stream_creator_.Run(source_params_, std::move(client),
-                      std::move(controls_receiver), params,
+  stream_creator_.Run(source_params_, std::move(client), params,
                       automatic_gain_control, total_segments);
 }
 
@@ -74,35 +69,12 @@ void MojoAudioInputIPC::SetOutputDeviceForAec(
     stream_associator_.Run(*stream_id_, output_device_id);
 }
 
-media::AudioProcessorControls* MojoAudioInputIPC::GetProcessorControls() {
-  return processor_controls_ ? this : nullptr;
-}
-
 void MojoAudioInputIPC::CloseStream() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_ = nullptr;
   factory_client_receiver_.reset();
   stream_client_receiver_.reset();
   stream_.reset();
-  processor_controls_.reset();
-}
-
-void MojoAudioInputIPC::GetStats(GetStatsCB callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (processor_controls_)
-    processor_controls_->GetStats(std::move(callback));
-}
-
-void MojoAudioInputIPC::StartEchoCancellationDump(base::File file) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (processor_controls_)
-    processor_controls_->StartEchoCancellationDump(std::move(file));
-}
-
-void MojoAudioInputIPC::StopEchoCancellationDump() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (processor_controls_)
-    processor_controls_->StopEchoCancellationDump();
 }
 
 void MojoAudioInputIPC::StreamCreated(
@@ -117,9 +89,6 @@ void MojoAudioInputIPC::StreamCreated(
   DCHECK(!stream_);
   DCHECK(!stream_client_receiver_.is_bound());
 
-  UMA_HISTOGRAM_TIMES("Media.Audio.Render.InputDeviceStreamCreationTime",
-                      base::TimeTicks::Now() - stream_creation_start_time_);
-
   stream_.Bind(std::move(stream));
   stream_client_receiver_.Bind(std::move(stream_client_receiver));
 
@@ -127,17 +96,15 @@ void MojoAudioInputIPC::StreamCreated(
   // but Loopback streams do not.
   stream_id_ = stream_id;
 
-  base::PlatformFile socket_handle;
-  auto result =
-      mojo::UnwrapPlatformFile(std::move(data_pipe->socket), &socket_handle);
-  DCHECK_EQ(result, MOJO_RESULT_OK);
+  DCHECK(data_pipe->socket.is_valid_platform_file());
+  base::ScopedPlatformFile socket_handle = data_pipe->socket.TakePlatformFile();
 
   base::ReadOnlySharedMemoryRegion& shared_memory_region =
       data_pipe->shared_memory;
   DCHECK(shared_memory_region.IsValid());
 
-  delegate_->OnStreamCreated(std::move(shared_memory_region), socket_handle,
-                             initially_muted);
+  delegate_->OnStreamCreated(std::move(shared_memory_region),
+                             std::move(socket_handle), initially_muted);
 }
 
 void MojoAudioInputIPC::OnError() {

@@ -610,11 +610,11 @@ TEST_P(ResizeRealtimeTest, DISABLED_TestExternalResizeSmallerWidthBiggerSize) {
 // Run at low bitrate, with resize_allowed = 1, and verify that we get
 // one resize down event.
 TEST_P(ResizeRealtimeTest, TestInternalResizeDown) {
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                       30, 1, 0, 299);
+  ::libvpx_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30, 1,
+                                       0, 299);
   DefaultConfig();
-  cfg_.g_w = 352;
-  cfg_.g_h = 288;
+  cfg_.g_w = 640;
+  cfg_.g_h = 480;
   change_bitrate_ = false;
   mismatch_psnr_ = 0.0;
   mismatch_nframes_ = 0;
@@ -648,11 +648,11 @@ TEST_P(ResizeRealtimeTest, TestInternalResizeDown) {
 // Start at low target bitrate, raise the bitrate in the middle of the clip,
 // scaling-up should occur after bitrate changed.
 TEST_P(ResizeRealtimeTest, TestInternalResizeDownUpChangeBitRate) {
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                       30, 1, 0, 359);
+  ::libvpx_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30, 1,
+                                       0, 400);
   DefaultConfig();
-  cfg_.g_w = 352;
-  cfg_.g_h = 288;
+  cfg_.g_w = 640;
+  cfg_.g_h = 480;
   change_bitrate_ = true;
   mismatch_psnr_ = 0.0;
   mismatch_nframes_ = 0;
@@ -672,11 +672,11 @@ TEST_P(ResizeRealtimeTest, TestInternalResizeDownUpChangeBitRate) {
     ASSERT_EQ(info->h, GetFrameHeight(idx));
     if (info->w != last_w || info->h != last_h) {
       resize_count++;
-      if (resize_count == 1) {
+      if (resize_count <= 2) {
         // Verify that resize down occurs.
         ASSERT_LT(info->w, last_w);
         ASSERT_LT(info->h, last_h);
-      } else if (resize_count == 2) {
+      } else if (resize_count > 2) {
         // Verify that resize up occurs.
         ASSERT_GT(info->w, last_w);
         ASSERT_GT(info->h, last_h);
@@ -687,8 +687,8 @@ TEST_P(ResizeRealtimeTest, TestInternalResizeDownUpChangeBitRate) {
   }
 
 #if CONFIG_VP9_DECODER
-  // Verify that we get 2 resize events in this test.
-  ASSERT_EQ(resize_count, 2) << "Resizing should occur twice.";
+  // Verify that we get 4 resize events in this test.
+  ASSERT_EQ(resize_count, 4) << "Resizing should occur twice.";
   EXPECT_EQ(static_cast<unsigned int>(0), GetMismatchFrames());
 #else
   printf("Warning: VP9 decoder unavailable, unable to check resize count!\n");

@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
 #include "net/base/backoff_entry.h"
@@ -225,7 +226,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionURLLoaderThrottleWithSplitCacheBrowserTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     ExtensionURLLoaderThrottleWithSplitCacheBrowserTest,
     testing::Bool());
 

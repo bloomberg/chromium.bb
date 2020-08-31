@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -20,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -40,7 +42,6 @@
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/ip_endpoint.h"
 #include "services/viz/public/cpp/gpu/gpu.h"
@@ -171,10 +172,16 @@ void AddSenderConfig(int32_t sender_ssrc,
                      FrameSenderConfig config,
                      const std::string& aes_key,
                      const std::string& aes_iv,
+                     const mojom::SessionParameters& session_params,
                      std::vector<FrameSenderConfig>* config_list) {
   config.aes_key = aes_key;
   config.aes_iv_mask = aes_iv;
   config.sender_ssrc = sender_ssrc;
+  if (session_params.target_playout_delay) {
+    config.animated_playout_delay = session_params.target_playout_delay.value();
+    config.min_playout_delay = session_params.target_playout_delay.value();
+    config.max_playout_delay = session_params.target_playout_delay.value();
+  }
   config_list->emplace_back(config);
 }
 
@@ -431,16 +438,18 @@ Session::Session(
         gpu_channel_host_->gpu_feature_info().status_values
                 [gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] ==
             gpu::kGpuFeatureStatusEnabled) {
-      supported_profiles_ = gpu_channel_host_->gpu_info()
-                                .video_encode_accelerator_supported_profiles;
+      supported_profiles_ =
+          media::GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
+              gpu_channel_host_->gpu_info()
+                  .video_encode_accelerator_supported_profiles);
     }
   }
+
   if (supported_profiles_.empty()) {
     // HW encoding is not supported.
     gpu_channel_host_ = nullptr;
     gpu_.reset();
   }
-
   CreateAndSendOffer();
 }
 
@@ -533,8 +542,7 @@ void Session::OnEncoderStatusChange(OperationalStatus status) {
 
 media::VideoEncodeAccelerator::SupportedProfiles
 Session::GetSupportedVeaProfiles() {
-  return media::GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
-      supported_profiles_);
+  return supported_profiles_;
 }
 
 void Session::CreateVideoEncodeAccelerator(
@@ -563,7 +571,7 @@ void Session::CreateVideoEncodeMemory(
   DVLOG(1) << __func__;
 
   base::UnsafeSharedMemoryRegion buf =
-      mojo::CreateUnsafeSharedMemoryRegion(size);
+      base::UnsafeSharedMemoryRegion::Create(size);
 
   if (!buf.IsValid())
     LOG(WARNING) << "Browser failed to allocate shared memory.";
@@ -667,12 +675,12 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
   const bool initially_starting_session =
       !audio_encode_thread_ && !video_encode_thread_;
   if (initially_starting_session) {
-    audio_encode_thread_ = base::CreateSingleThreadTaskRunner(
-        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
+    audio_encode_thread_ = base::ThreadPool::CreateSingleThreadTaskRunner(
+        {base::TaskPriority::USER_BLOCKING,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-    video_encode_thread_ = base::CreateSingleThreadTaskRunner(
-        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
+    video_encode_thread_ = base::ThreadPool::CreateSingleThreadTaskRunner(
+        {base::TaskPriority::USER_BLOCKING,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::SingleThreadTaskRunnerThreadMode::DEDICATED);
   }
@@ -700,8 +708,8 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
     if (has_audio) {
       auto audio_sender = std::make_unique<media::cast::AudioSender>(
           cast_environment_, audio_config,
-          base::BindRepeating(&Session::OnEncoderStatusChange,
-                              weak_factory_.GetWeakPtr()),
+          base::BindOnce(&Session::OnEncoderStatusChange,
+                         weak_factory_.GetWeakPtr()),
           cast_transport_.get());
       audio_stream_ = std::make_unique<AudioRtpStream>(
           std::move(audio_sender), weak_factory_.GetWeakPtr());
@@ -822,13 +830,15 @@ void Session::CreateAndSendOffer() {
     if (state_ == MIRRORING) {
       FrameSenderConfig config = MirrorSettings::GetDefaultAudioConfig(
           RtpPayloadType::AUDIO_OPUS, Codec::CODEC_AUDIO_OPUS);
-      AddSenderConfig(audio_ssrc, config, aes_key, aes_iv, &audio_configs);
+      AddSenderConfig(audio_ssrc, config, aes_key, aes_iv, session_params_,
+                      &audio_configs);
       AddStreamObject(stream_index++, "OPUS", audio_configs.back(),
                       mirror_settings_, &stream_list);
     } else /* REMOTING */ {
       FrameSenderConfig config = MirrorSettings::GetDefaultAudioConfig(
           RtpPayloadType::REMOTE_AUDIO, Codec::CODEC_AUDIO_REMOTE);
-      AddSenderConfig(audio_ssrc, config, aes_key, aes_iv, &audio_configs);
+      AddSenderConfig(audio_ssrc, config, aes_key, aes_iv, session_params_,
+                      &audio_configs);
       AddStreamObject(stream_index++, "REMOTE_AUDIO", audio_configs.back(),
                       mirror_settings_, &stream_list);
     }
@@ -840,7 +850,8 @@ void Session::CreateAndSendOffer() {
         FrameSenderConfig config = MirrorSettings::GetDefaultVideoConfig(
             RtpPayloadType::VIDEO_VP8, Codec::CODEC_VIDEO_VP8);
         config.use_external_encoder = true;
-        AddSenderConfig(video_ssrc, config, aes_key, aes_iv, &video_configs);
+        AddSenderConfig(video_ssrc, config, aes_key, aes_iv, session_params_,
+                        &video_configs);
         AddStreamObject(stream_index++, "VP8", video_configs.back(),
                         mirror_settings_, &stream_list);
       }
@@ -848,21 +859,24 @@ void Session::CreateAndSendOffer() {
         FrameSenderConfig config = MirrorSettings::GetDefaultVideoConfig(
             RtpPayloadType::VIDEO_H264, Codec::CODEC_VIDEO_H264);
         config.use_external_encoder = true;
-        AddSenderConfig(video_ssrc, config, aes_key, aes_iv, &video_configs);
+        AddSenderConfig(video_ssrc, config, aes_key, aes_iv, session_params_,
+                        &video_configs);
         AddStreamObject(stream_index++, "H264", video_configs.back(),
                         mirror_settings_, &stream_list);
       }
       if (video_configs.empty()) {
         FrameSenderConfig config = MirrorSettings::GetDefaultVideoConfig(
             RtpPayloadType::VIDEO_VP8, Codec::CODEC_VIDEO_VP8);
-        AddSenderConfig(video_ssrc, config, aes_key, aes_iv, &video_configs);
+        AddSenderConfig(video_ssrc, config, aes_key, aes_iv, session_params_,
+                        &video_configs);
         AddStreamObject(stream_index++, "VP8", video_configs.back(),
                         mirror_settings_, &stream_list);
       }
     } else /* REMOTING */ {
       FrameSenderConfig config = MirrorSettings::GetDefaultVideoConfig(
           RtpPayloadType::REMOTE_VIDEO, Codec::CODEC_VIDEO_REMOTE);
-      AddSenderConfig(video_ssrc, config, aes_key, aes_iv, &video_configs);
+      AddSenderConfig(video_ssrc, config, aes_key, aes_iv, session_params_,
+                      &video_configs);
       AddStreamObject(stream_index++, "REMOTE_VIDEO", video_configs.back(),
                       mirror_settings_, &stream_list);
     }

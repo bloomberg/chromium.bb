@@ -13,7 +13,8 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/threading/thread.h"
+#include "base/sequence_checker.h"
+#include "base/single_thread_task_runner.h"
 #include "media/filters/h264_bitstream_buffer.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/vaapi/accelerated_video_encoder.h"
@@ -70,8 +71,8 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   static constexpr size_t kNumSurfacesForOutputPicture = 1;
 
   //
-  // Tasks for each of the VEA interface calls to be executed on the
-  // encoder thread.
+  // Tasks for each of the VEA interface calls to be executed on
+  // |encoder_task_runner_|.
   //
   void InitializeTask(const Config& config);
 
@@ -89,7 +90,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
       uint32_t framerate);
 
   void DestroyTask();
-  void FlushTask();
+  void FlushTask(FlushCallback flush_callback);
 
   // Checks if sufficient resources for a new encode job with |frame| as input
   // are available, and if so, claims them by associating them with
@@ -147,14 +148,23 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // Submits a H264BitstreamBuffer |buffer| to the driver.
   void SubmitH264BitstreamBuffer(scoped_refptr<H264BitstreamBuffer> buffer);
 
+  // The unchanged values are filled upon the construction. The varied values
+  // (e.g. ScalingSettings) are filled properly during encoding.
+  VideoEncoderInfo encoder_info_;
+
   // VaapiWrapper is the owner of all HW resources (surfaces and buffers)
   // and will free them on destruction.
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
   // The aligned size of the allocated physical buffer for input buffer.
-  gfx::Size aligned_input_frame_size_;
-  // The visible rect of a blit surface.
-  gfx::Rect blit_visible_rect_;
+  gfx::Size aligned_va_surface_size_;
+
+  // The expected coded size of incoming video frames when |native_input_mode_|
+  // is false.
+  gfx::Size expected_input_coded_size_;
+
+  // The visible rect to be encoded.
+  gfx::Rect visible_rect_;
 
   // Size in bytes required for output bitstream buffers.
   size_t output_buffer_byte_size_;
@@ -175,7 +185,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // The number of frames that needs to be held on encoding.
   size_t num_frames_in_flight_;
 
-  // All of the members below must be accessed on the encoder_thread_,
+  // All of the members below must be accessed on the encoder_task_runner_,
   // while it is running.
 
   // Encoder state. Encode tasks will only run in kEncoding state.
@@ -209,11 +219,13 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // available.
   base::queue<std::unique_ptr<VaapiEncodeJob>> submitted_encode_jobs_;
 
-  // Encoder thread. All tasks are executed on it.
-  base::Thread encoder_thread_;
-  scoped_refptr<base::SingleThreadTaskRunner> encoder_thread_task_runner_;
-
+  // Task runner for interacting with the client, and its checker.
   const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
+  SEQUENCE_CHECKER(child_sequence_checker_);
+
+  // Encoder sequence and its checker. All tasks are executed on it.
+  const scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner_;
+  SEQUENCE_CHECKER(encoder_sequence_checker_);
 
   // To expose client callbacks from VideoEncodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on
@@ -225,16 +237,17 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // for the picture send to vaapi encoder.
   scoped_refptr<VaapiWrapper> vpp_vaapi_wrapper_;
 
-  // WeakPtr to post from the encoder thread back to the ChildThread, as it may
-  // outlive this. Posting from the ChildThread using base::Unretained(this)
-  // to the encoder thread is safe, because |this| always outlives the encoder
-  // thread (it's a member of this class).
-  base::WeakPtr<VaapiVideoEncodeAccelerator> weak_this_;
-
   // The completion callback of the Flush() function.
   FlushCallback flush_callback_;
 
-  base::WeakPtrFactory<VaapiVideoEncodeAccelerator> weak_this_ptr_factory_;
+  // WeakPtr of this, bound to |child_task_runner_|.
+  base::WeakPtr<VaapiVideoEncodeAccelerator> child_weak_this_;
+  // WeakPtr of this, bound to |encoder_task_runner_|.
+  base::WeakPtr<VaapiVideoEncodeAccelerator> encoder_weak_this_;
+  base::WeakPtrFactory<VaapiVideoEncodeAccelerator> child_weak_this_factory_{
+      this};
+  base::WeakPtrFactory<VaapiVideoEncodeAccelerator> encoder_weak_this_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(VaapiVideoEncodeAccelerator);
 };

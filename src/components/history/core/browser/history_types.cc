@@ -6,7 +6,8 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "components/history/core/browser/page_usage_data.h"
 
@@ -274,6 +275,13 @@ HistoryAddPageArgs::HistoryAddPageArgs(const HistoryAddPageArgs& other) =
     default;
 
 HistoryAddPageArgs::~HistoryAddPageArgs() {}
+
+// DomainMetricSet ------------------------------------------------------------
+
+DomainMetricSet::DomainMetricSet() {}
+DomainMetricSet::DomainMetricSet(const DomainMetricSet&) = default;
+DomainMetricSet::~DomainMetricSet() {}
+DomainMetricSet& DomainMetricSet::operator=(const DomainMetricSet&) = default;
 
 // IconMapping ----------------------------------------------------------------
 

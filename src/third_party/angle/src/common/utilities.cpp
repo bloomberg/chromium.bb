@@ -164,6 +164,7 @@ GLenum VariableComponentType(GLenum type)
         case GL_INT_IMAGE_CUBE:
         case GL_UNSIGNED_INT_IMAGE_CUBE:
         case GL_UNSIGNED_INT_ATOMIC_COUNTER:
+        case GL_SAMPLER_VIDEO_IMAGE_WEBGL:
             return GL_INT;
         case GL_UNSIGNED_INT:
         case GL_UNSIGNED_INT_VEC2:
@@ -205,6 +206,54 @@ size_t VariableInternalSize(GLenum type)
 size_t VariableExternalSize(GLenum type)
 {
     return VariableComponentSize(VariableComponentType(type)) * VariableComponentCount(type);
+}
+
+std::string GetGLSLTypeString(GLenum type)
+{
+    switch (type)
+    {
+        case GL_BOOL:
+            return "bool";
+        case GL_INT:
+            return "int";
+        case GL_UNSIGNED_INT:
+            return "uint";
+        case GL_FLOAT:
+            return "float";
+        case GL_BOOL_VEC2:
+            return "bvec2";
+        case GL_BOOL_VEC3:
+            return "bvec3";
+        case GL_BOOL_VEC4:
+            return "bvec4";
+        case GL_INT_VEC2:
+            return "ivec2";
+        case GL_INT_VEC3:
+            return "ivec3";
+        case GL_INT_VEC4:
+            return "ivec4";
+        case GL_FLOAT_VEC2:
+            return "vec2";
+        case GL_FLOAT_VEC3:
+            return "vec3";
+        case GL_FLOAT_VEC4:
+            return "vec4";
+        case GL_UNSIGNED_INT_VEC2:
+            return "uvec2";
+        case GL_UNSIGNED_INT_VEC3:
+            return "uvec3";
+        case GL_UNSIGNED_INT_VEC4:
+            return "uvec4";
+        case GL_FLOAT_MAT2:
+            return "mat2";
+        case GL_FLOAT_MAT3:
+            return "mat3";
+        case GL_FLOAT_MAT4:
+            return "mat4";
+        default:
+            UNREACHABLE();
+            return nullptr;
+    }
 }
 
 GLenum VariableBoolVectorType(GLenum type)
@@ -292,6 +341,7 @@ int VariableRowCount(GLenum type)
         case GL_INT_IMAGE_CUBE:
         case GL_UNSIGNED_INT_IMAGE_CUBE:
         case GL_UNSIGNED_INT_ATOMIC_COUNTER:
+        case GL_SAMPLER_VIDEO_IMAGE_WEBGL:
             return 1;
         case GL_FLOAT_MAT2:
         case GL_FLOAT_MAT3x2:
@@ -358,6 +408,7 @@ int VariableColumnCount(GLenum type)
         case GL_INT_IMAGE_CUBE:
         case GL_UNSIGNED_INT_IMAGE_CUBE:
         case GL_UNSIGNED_INT_ATOMIC_COUNTER:
+        case GL_SAMPLER_VIDEO_IMAGE_WEBGL:
             return 1;
         case GL_BOOL_VEC2:
         case GL_FLOAT_VEC2:
@@ -417,6 +468,7 @@ bool IsSamplerType(GLenum type)
         case GL_SAMPLER_2D_SHADOW:
         case GL_SAMPLER_CUBE_SHADOW:
         case GL_SAMPLER_2D_ARRAY_SHADOW:
+        case GL_SAMPLER_VIDEO_IMAGE_WEBGL:
             return true;
     }
 
@@ -760,6 +812,7 @@ int VariableSortOrder(GLenum type)
         case GL_INT_IMAGE_CUBE:
         case GL_UNSIGNED_INT_IMAGE_CUBE:
         case GL_UNSIGNED_INT_ATOMIC_COUNTER:
+        case GL_SAMPLER_VIDEO_IMAGE_WEBGL:
             return 6;
 
         default:
@@ -894,6 +947,13 @@ unsigned int ParseArrayIndex(const std::string &name, size_t *nameLengthWithoutA
                 indexIsValidDecimalNumber = false;
                 break;
             }
+
+            // Leading zeroes are invalid
+            if ((i == (open + 1)) && (name[i] == '0') && (name[i + 1] != ']'))
+            {
+                indexIsValidDecimalNumber = false;
+                break;
+            }
         }
         if (indexIsValidDecimalNumber)
         {
@@ -973,6 +1033,66 @@ PipelineType GetPipelineType(ShaderType type)
     }
 }
 
+const char *GetDebugMessageSourceString(GLenum source)
+{
+    switch (source)
+    {
+        case GL_DEBUG_SOURCE_API:
+            return "API";
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+            return "Window System";
+        case GL_DEBUG_SOURCE_SHADER_COMPILER:
+            return "Shader Compiler";
+        case GL_DEBUG_SOURCE_THIRD_PARTY:
+            return "Third Party";
+        case GL_DEBUG_SOURCE_APPLICATION:
+            return "Application";
+        case GL_DEBUG_SOURCE_OTHER:
+            return "Other";
+        default:
+            return "Unknown Source";
+    }
+}
+
+const char *GetDebugMessageTypeString(GLenum type)
+{
+    switch (type)
+    {
+        case GL_DEBUG_TYPE_ERROR:
+            return "Error";
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+            return "Deprecated behavior";
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+            return "Undefined behavior";
+        case GL_DEBUG_TYPE_PORTABILITY:
+            return "Portability";
+        case GL_DEBUG_TYPE_PERFORMANCE:
+            return "Performance";
+        case GL_DEBUG_TYPE_OTHER:
+            return "Other";
+        case GL_DEBUG_TYPE_MARKER:
+            return "Marker";
+        default:
+            return "Unknown Type";
+    }
+}
+
+const char *GetDebugMessageSeverityString(GLenum severity)
+{
+    switch (severity)
+    {
+        case GL_DEBUG_SEVERITY_HIGH:
+            return "High";
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            return "Medium";
+        case GL_DEBUG_SEVERITY_LOW:
+            return "Low";
+        case GL_DEBUG_SEVERITY_NOTIFICATION:
+            return "Notification";
+        default:
+            return "Unknown Severity";
+    }
+}
 }  // namespace gl
 
 namespace egl
@@ -1035,6 +1155,7 @@ bool IsExternalImageTarget(EGLenum target)
     {
         case EGL_NATIVE_BUFFER_ANDROID:
         case EGL_D3D11_TEXTURE_ANGLE:
+        case EGL_LINUX_DMA_BUF_EXT:
             return true;
 
         default:

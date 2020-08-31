@@ -14,6 +14,40 @@
 namespace mojo {
 
 template <>
+struct StructTraits<
+    media::mojom::VideoEncodeAcceleratorSupportedProfileDataView,
+    media::VideoEncodeAccelerator::SupportedProfile> {
+  static media::VideoCodecProfile profile(
+      const media::VideoEncodeAccelerator::SupportedProfile& profile) {
+    return profile.profile;
+  }
+
+  static const gfx::Size& min_resolution(
+      const media::VideoEncodeAccelerator::SupportedProfile& profile) {
+    return profile.min_resolution;
+  }
+
+  static const gfx::Size& max_resolution(
+      const media::VideoEncodeAccelerator::SupportedProfile& profile) {
+    return profile.max_resolution;
+  }
+
+  static uint32_t max_framerate_numerator(
+      const media::VideoEncodeAccelerator::SupportedProfile& profile) {
+    return profile.max_framerate_numerator;
+  }
+
+  static uint32_t max_framerate_denominator(
+      const media::VideoEncodeAccelerator::SupportedProfile& profile) {
+    return profile.max_framerate_denominator;
+  }
+
+  static bool Read(
+      media::mojom::VideoEncodeAcceleratorSupportedProfileDataView data,
+      media::VideoEncodeAccelerator::SupportedProfile* out);
+};
+
+template <>
 struct EnumTraits<media::mojom::VideoEncodeAccelerator::Error,
                   media::VideoEncodeAccelerator::Error> {
   static media::mojom::VideoEncodeAccelerator::Error ToMojom(
@@ -98,6 +132,43 @@ struct EnumTraits<media::mojom::VideoEncodeAcceleratorConfig::ContentType,
 };
 
 template <>
+struct StructTraits<media::mojom::SpatialLayerDataView,
+                    media::VideoEncodeAccelerator::Config::SpatialLayer> {
+  static int32_t width(
+      const media::VideoEncodeAccelerator::Config::SpatialLayer& input) {
+    return input.width;
+  }
+
+  static int32_t height(
+      const media::VideoEncodeAccelerator::Config::SpatialLayer& input) {
+    return input.height;
+  }
+
+  static uint32_t bitrate_bps(
+      const media::VideoEncodeAccelerator::Config::SpatialLayer& input) {
+    return input.bitrate_bps;
+  }
+
+  static uint32_t framerate(
+      const media::VideoEncodeAccelerator::Config::SpatialLayer& input) {
+    return input.framerate;
+  }
+
+  static uint8_t max_qp(
+      const media::VideoEncodeAccelerator::Config::SpatialLayer& input) {
+    return input.max_qp;
+  }
+
+  static uint8_t num_of_temporal_layers(
+      const media::VideoEncodeAccelerator::Config::SpatialLayer& input) {
+    return input.num_of_temporal_layers;
+  }
+
+  static bool Read(media::mojom::SpatialLayerDataView input,
+                   media::VideoEncodeAccelerator::Config::SpatialLayer* output);
+};
+
+template <>
 struct StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
                     media::VideoEncodeAccelerator::Config> {
   static media::VideoPixelFormat input_format(
@@ -164,6 +235,11 @@ struct StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
   static media::VideoEncodeAccelerator::Config::ContentType content_type(
       const media::VideoEncodeAccelerator::Config& input) {
     return input.content_type;
+  }
+
+  static const std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>&
+  spatial_layers(const media::VideoEncodeAccelerator::Config& input) {
+    return input.spatial_layers;
   }
 
   static bool Read(media::mojom::VideoEncodeAcceleratorConfigDataView input,

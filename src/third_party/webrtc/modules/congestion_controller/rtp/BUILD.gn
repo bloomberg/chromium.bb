@@ -45,6 +45,8 @@ rtc_library("transport_feedback") {
   sources = [
     "transport_feedback_adapter.cc",
     "transport_feedback_adapter.h",
+    "transport_feedback_demuxer.cc",
+    "transport_feedback_demuxer.h",
   ]
 
   deps = [
@@ -52,6 +54,7 @@ rtc_library("transport_feedback") {
     "../../../api/transport:network_control",
     "../../../api/units:data_size",
     "../../../api/units:timestamp",
+    "../../../rtc_base",
     "../../../rtc_base:checks",
     "../../../rtc_base:rtc_base_approved",
     "../../../rtc_base/network:sent_packet",
@@ -69,6 +72,7 @@ if (rtc_include_tests) {
 
     sources = [
       "transport_feedback_adapter_unittest.cc",
+      "transport_feedback_demuxer_unittest.cc",
     ]
     deps = [
       ":transport_feedback",

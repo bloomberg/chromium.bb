@@ -97,9 +97,9 @@ EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::Run() {
       api_epkp::ChallengeMachineKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   chromeos::attestation::TpmChallengeKeyCallback callback =
-      base::Bind(&EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::
-                     OnChallengedKey,
-                 this);
+      base::BindOnce(&EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::
+                         OnChallengedKey,
+                     this);
 
   std::string challenge;
   if (!base::Base64Decode(params->challenge, &challenge)) {
@@ -124,7 +124,7 @@ void EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::OnChallengedKey(
     const chromeos::attestation::TpmChallengeKeyResult& result) {
   if (result.IsSuccess()) {
     std::string encoded_response;
-    base::Base64Encode(result.data, &encoded_response);
+    base::Base64Encode(result.challenge_response, &encoded_response);
     Respond(ArgumentList(
         api_epkp::ChallengeMachineKey::Results::Create(encoded_response)));
   } else {
@@ -143,7 +143,7 @@ EnterprisePlatformKeysPrivateChallengeUserKeyFunction::Run() {
   std::unique_ptr<api_epkp::ChallengeUserKey::Params> params(
       api_epkp::ChallengeUserKey::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  chromeos::attestation::TpmChallengeKeyCallback callback = base::Bind(
+  chromeos::attestation::TpmChallengeKeyCallback callback = base::BindOnce(
       &EnterprisePlatformKeysPrivateChallengeUserKeyFunction::OnChallengedKey,
       this);
 
@@ -169,7 +169,7 @@ void EnterprisePlatformKeysPrivateChallengeUserKeyFunction::OnChallengedKey(
     const chromeos::attestation::TpmChallengeKeyResult& result) {
   if (result.IsSuccess()) {
     std::string encoded_response;
-    base::Base64Encode(result.data, &encoded_response);
+    base::Base64Encode(result.challenge_response, &encoded_response);
     Respond(ArgumentList(
         api_epkp::ChallengeUserKey::Results::Create(encoded_response)));
   } else {

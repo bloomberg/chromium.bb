@@ -68,12 +68,8 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // For signed_cert_timestamps_received_ and stapled_ocsp_response_received_.
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
                            ConnectSignedCertTimestampsTLSExtension);
-  FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
+  FRIEND_TEST_ALL_PREFIXES(SSLClientSocketVersionTest,
                            ConnectSignedCertTimestampsEnablesOCSP);
-  FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
-                           ConnectSignedCertTimestampsDisabled);
-  FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
-                           VerifyServerChainProperlyOrdered);
 
   // True if SCTs were received via a TLS extension.
   bool signed_cert_timestamps_received_;

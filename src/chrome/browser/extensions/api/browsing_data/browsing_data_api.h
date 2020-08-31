@@ -9,15 +9,16 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BROWSING_DATA_BROWSING_DATA_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BROWSING_DATA_BROWSING_DATA_API_H_
 
-#include <string>
+#include <memory>
 #include <vector>
 
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "extensions/browser/extension_function.h"
+#include "ppapi/buildflags/buildflags.h"
 
 class PluginPrefs;
 class PrefService;
@@ -96,7 +97,7 @@ class BrowsingDataSettingsFunction : public ExtensionFunction {
 // Each child class must implement GetRemovalMask(), which returns the bitmask
 // of data types to remove.
 class BrowsingDataRemoverFunction
-    : public ChromeAsyncExtensionFunction,
+    : public ExtensionFunction,
       public content::BrowsingDataRemover::Observer {
  public:
   BrowsingDataRemoverFunction();
@@ -105,7 +106,7 @@ class BrowsingDataRemoverFunction
   void OnBrowsingDataRemoverDone() override;
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  protected:
   ~BrowsingDataRemoverFunction() override;
@@ -123,10 +124,12 @@ class BrowsingDataRemoverFunction
   // pausing Sync would prevent the data from being deleted on the server.
   virtual bool IsPauseSyncAllowed();
 
+#if BUILDFLAG(ENABLE_PLUGINS)
   // Updates the removal bitmask according to whether removing plugin data is
   // supported or not.
   void CheckRemovingPluginDataSupported(
       scoped_refptr<PluginPrefs> plugin_prefs);
+#endif
 
   // Parse the developer-provided |origin_types| object into |origin_type_mask|
   // that can be used with the BrowsingDataRemover.
@@ -134,10 +137,12 @@ class BrowsingDataRemoverFunction
   bool ParseOriginTypeMask(const base::DictionaryValue& options,
                            int* origin_type_mask);
 
-  // Parse the developer-provided list of origins into |result|.
-  // Returns true if parsing was successful.
+  // Parses the developer-provided list of origins into |result|.
+  // Returns whether or not parsing was successful. In case of parse failure,
+  // |error_response| will contain the error response.
   bool ParseOrigins(const base::Value& list_value,
-                    std::vector<url::Origin>* result);
+                    std::vector<url::Origin>* result,
+                    ResponseValue* error_response);
 
   // Called when we're ready to start removing data.
   void StartRemoving();

@@ -4,8 +4,10 @@
 
 #include "net/http/alternative_service.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros_local.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 
 namespace net {
@@ -41,7 +43,7 @@ AlternativeProxyUsage ConvertProtocolUsageToProxyUsage(
 quic::ParsedQuicVersion ParsedQuicVersionFromAlpn(
     base::StringPiece str,
     quic::ParsedQuicVersionVector supported_versions) {
-  for (const quic::ParsedQuicVersion version : supported_versions) {
+  for (const quic::ParsedQuicVersion& version : supported_versions) {
     if (AlpnForVersion(version) == str)
       return version;
   }
@@ -54,9 +56,9 @@ void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage,
                                      bool proxy_server_used) {
   if (proxy_server_used) {
     DCHECK_LE(usage, ALTERNATE_PROTOCOL_USAGE_LOST_RACE);
-    UMA_HISTOGRAM_ENUMERATION("Net.QuicAlternativeProxy.Usage",
-                              ConvertProtocolUsageToProxyUsage(usage),
-                              ALTERNATIVE_PROXY_USAGE_MAX);
+    LOCAL_HISTOGRAM_ENUMERATION("Net.QuicAlternativeProxy.Usage",
+                                ConvertProtocolUsageToProxyUsage(usage),
+                                ALTERNATIVE_PROXY_USAGE_MAX);
   } else {
     UMA_HISTOGRAM_ENUMERATION("Net.AlternateProtocolUsage", usage,
                               ALTERNATE_PROTOCOL_USAGE_MAX);
@@ -133,8 +135,6 @@ AlternativeServiceInfo::AlternativeServiceInfo(
     : alternative_service_(alternative_service), expiration_(expiration) {
   if (alternative_service_.protocol == kProtoQUIC) {
     advertised_versions_ = advertised_versions;
-    std::sort(advertised_versions_.begin(), advertised_versions_.end(),
-              TransportVersionLessThan);
   }
 }
 

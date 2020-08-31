@@ -12,9 +12,9 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
+#include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service_factory.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
 #include "chrome/common/extensions/api/platform_keys_internal.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -75,9 +75,7 @@ const struct NameValuePair {
   const char* const name;
   const int value;
 } kCertStatusErrors[] = {
-#define CERT_STATUS_FLAG(name, value) \
-  { #name, value }                    \
-  ,
+#define CERT_STATUS_FLAG(name, value) {#name, value},
 #include "net/cert/cert_status_flags_list.h"
 #undef CERT_STATUS_FLAG
 };
@@ -120,8 +118,7 @@ std::string PlatformKeysTokenIdToApiId(
 }  // namespace platform_keys
 
 PlatformKeysInternalGetPublicKeyFunction::
-    ~PlatformKeysInternalGetPublicKeyFunction() {
-}
+    ~PlatformKeysInternalGetPublicKeyFunction() {}
 
 ExtensionFunction::ResponseAction
 PlatformKeysInternalGetPublicKeyFunction::Run() {
@@ -170,8 +167,7 @@ PlatformKeysInternalGetPublicKeyFunction::Run() {
 }
 
 PlatformKeysInternalSelectClientCertificatesFunction::
-    ~PlatformKeysInternalSelectClientCertificatesFunction() {
-}
+    ~PlatformKeysInternalSelectClientCertificatesFunction() {}
 
 ExtensionFunction::ResponseAction
 PlatformKeysInternalSelectClientCertificatesFunction::Run() {
@@ -179,8 +175,8 @@ PlatformKeysInternalSelectClientCertificatesFunction::Run() {
       api_pki::SelectClientCertificates::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  chromeos::PlatformKeysService* service =
-      chromeos::PlatformKeysServiceFactory::GetForBrowserContext(
+  chromeos::ExtensionPlatformKeysService* service =
+      chromeos::ExtensionPlatformKeysServiceFactory::GetForBrowserContext(
           browser_context());
   DCHECK(service);
 
@@ -289,8 +285,7 @@ void PlatformKeysInternalSelectClientCertificatesFunction::
       api_pki::SelectClientCertificates::Results::Create(result_matches)));
 }
 
-PlatformKeysInternalSignFunction::~PlatformKeysInternalSignFunction() {
-}
+PlatformKeysInternalSignFunction::~PlatformKeysInternalSignFunction() {}
 
 ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
   std::unique_ptr<api_pki::Sign::Params> params(
@@ -303,12 +298,16 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
     return RespondNow(Error(platform_keys::kErrorInvalidToken));
   }
 
-  chromeos::PlatformKeysService* service =
-      chromeos::PlatformKeysServiceFactory::GetForBrowserContext(
+  chromeos::ExtensionPlatformKeysService* service =
+      chromeos::ExtensionPlatformKeysServiceFactory::GetForBrowserContext(
           browser_context());
   DCHECK(service);
 
   if (params->hash_algorithm_name == "none") {
+    // Signing without digesting is only supported for RSASSA-PKCS1-v1_5.
+    if (params->algorithm_name != "RSASSA-PKCS1-v1_5")
+      return RespondNow(Error(kErrorAlgorithmNotSupported));
+
     service->SignRSAPKCS1Raw(
         platform_keys_token_id,
         std::string(params->data.begin(), params->data.end()),
@@ -328,11 +327,21 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
     } else {
       return RespondNow(Error(kErrorAlgorithmNotSupported));
     }
-    service->SignRSAPKCS1Digest(
+
+    chromeos::platform_keys::KeyType key_type;
+    if (params->algorithm_name == "RSASSA-PKCS1-v1_5") {
+      key_type = chromeos::platform_keys::KeyType::kRsassaPkcs1V15;
+    } else if (params->algorithm_name == "ECDSA") {
+      key_type = chromeos::platform_keys::KeyType::kEcdsa;
+    } else {
+      return RespondNow(Error(kErrorAlgorithmNotSupported));
+    }
+
+    service->SignDigest(
         platform_keys_token_id,
         std::string(params->data.begin(), params->data.end()),
         std::string(params->public_key.begin(), params->public_key.end()),
-        hash_algorithm, extension_id(),
+        key_type, hash_algorithm, extension_id(),
         base::Bind(&PlatformKeysInternalSignFunction::OnSigned, this));
   }
 
@@ -352,8 +361,7 @@ void PlatformKeysInternalSignFunction::OnSigned(
 }
 
 PlatformKeysVerifyTLSServerCertificateFunction::
-    ~PlatformKeysVerifyTLSServerCertificateFunction() {
-}
+    ~PlatformKeysVerifyTLSServerCertificateFunction() {}
 
 ExtensionFunction::ResponseAction
 PlatformKeysVerifyTLSServerCertificateFunction::Run() {

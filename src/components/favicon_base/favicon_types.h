@@ -25,12 +25,14 @@ typedef int64_t FaviconID;
 //
 // IMPORTANT: these values must stay in sync with the FaviconType enum in
 // tools/metrics/histograms/enum.xml.
+// When you update the types please also check if it needs to be reflected in
+// blink::mojom::FaviconIconType enums
 //
 // The values of the IconTypes are used to select the priority in which favicon
 // data is returned in HistoryBackend and ThumbnailDatabase.
 //
 // A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.favicon
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ui.favicon
 enum class IconType {
   kInvalid = 0,
   kFavicon,

@@ -15,7 +15,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/resource_type.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/shared_user_script_master.h"
 #include "extensions/common/extension.h"
@@ -23,7 +22,6 @@
 #include "extensions/common/url_pattern.h"
 
 using content::NavigationThrottle;
-using content::ResourceType;
 
 namespace extensions {
 
@@ -228,9 +226,8 @@ void UserScriptListener::OnExtensionLoaded(
 
   URLPatterns new_patterns;
   CollectURLPatterns(extension, &new_patterns);
-  if (!new_patterns.empty()) {
-    AppendNewURLPatterns(browser_context, new_patterns);
-  }
+  DCHECK(!new_patterns.empty());
+  AppendNewURLPatterns(browser_context, new_patterns);
 }
 
 void UserScriptListener::OnExtensionUnloaded(
@@ -239,6 +236,12 @@ void UserScriptListener::OnExtensionUnloaded(
     UnloadedExtensionReason reason) {
   if (ContentScriptsInfo::GetContentScripts(extension).empty())
     return;  // No patterns to delete for this extension.
+
+  // It's possible to unload extensions before loading extensions when the
+  // ExtensionService uninstalls an orphaned extension. In this case we don't
+  // need to update |profile_data_|. See crbug.com/1036028
+  if (profile_data_.count(browser_context) == 0)
+    return;
 
   // Clear all our patterns and reregister all the still-loaded extensions.
   const ExtensionSet& extensions =

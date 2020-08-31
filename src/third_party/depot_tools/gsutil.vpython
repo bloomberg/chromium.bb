@@ -11,6 +11,8 @@
 # "gsutil", where a stock system-deployed file in "/etc/" explicitly specifies
 # that the "google_compute_engine" and "boto" Python packages are available.
 
+python_version: "2.7"
+
 wheel <
   name: "infra/python/wheels/google_compute_engine-py2_py3"
   version: "version:2.6.2"

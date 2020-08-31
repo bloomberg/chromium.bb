@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/events/transition_event.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_transition_event_init.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
 
 namespace blink {
@@ -72,7 +73,7 @@ const AtomicString& TransitionEvent::InterfaceName() const {
   return event_interface_names::kTransitionEvent;
 }
 
-void TransitionEvent::Trace(blink::Visitor* visitor) {
+void TransitionEvent::Trace(Visitor* visitor) {
   Event::Trace(visitor);
 }
 

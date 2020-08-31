@@ -21,10 +21,6 @@
  * IN THE SOFTWARE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <errno.h>
 #include <string.h>
 
@@ -59,8 +55,10 @@ static int kms_plane_probe(struct kms_plane *plane)
 	}
 
 	plane->formats = calloc(p->count_formats, sizeof(uint32_t));
-	if (!plane->formats)
+	if (!plane->formats) {
+		drmModeFreePlane(p);
 		return -ENOMEM;
+	}
 
 	for (i = 0; i < p->count_formats; i++)
 		plane->formats[i] = p->formats[i];

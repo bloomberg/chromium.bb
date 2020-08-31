@@ -26,7 +26,9 @@
 namespace blink {
 class TestPaintWorklet : public PaintWorklet {
  public:
-  explicit TestPaintWorklet(LocalFrame* frame) : PaintWorklet(frame) {}
+  explicit TestPaintWorklet(LocalDOMWindow& window) : PaintWorklet(window) {
+    ResetIsPaintOffThreadForTesting();
+  }
 
   void SetPaintsToSwitch(int num) { paints_to_switch_ = num; }
 
@@ -49,8 +51,8 @@ class PaintWorkletTest : public PageTestBase {
  public:
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    test_paint_worklet_ = MakeGarbageCollected<TestPaintWorklet>(
-        GetDocument().domWindow()->GetFrame());
+    test_paint_worklet_ =
+        MakeGarbageCollected<TestPaintWorklet>(*GetDocument().domWindow());
     proxy_ = test_paint_worklet_->CreateGlobalScope();
   }
 
@@ -75,7 +77,7 @@ class PaintWorkletTest : public PageTestBase {
                                size_t expected_num_paints_before_switch,
                                TestPaintWorklet* paint_worklet_to_test) {
     paint_worklet_to_test->GetFrame()->View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+        DocumentUpdateReason::kTest);
     paint_worklet_to_test->SetPaintsToSwitch(paint_cnt_to_switch);
     size_t previously_selected_global_scope =
         paint_worklet_to_test->GetActiveGlobalScope();
@@ -158,8 +160,14 @@ TEST_F(PaintWorkletTest, SinglyRegisteredDocumentDefinitionNotUsed) {
   EXPECT_TRUE(generator);
   EXPECT_EQ(generator->GetRegisteredDefinitionCountForTesting(), 1u);
   DocumentPaintDefinition* definition;
-  EXPECT_FALSE(generator->GetValidDocumentDefinitionForTesting(definition));
-  EXPECT_FALSE(definition);
+  // Please refer to CSSPaintImageGeneratorImpl::GetValidDocumentDefinition for
+  // the logic.
+  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+    EXPECT_TRUE(generator->GetValidDocumentDefinitionForTesting(definition));
+  } else {
+    EXPECT_FALSE(generator->GetValidDocumentDefinitionForTesting(definition));
+    EXPECT_FALSE(definition);
+  }
 }
 
 // In this test, we set a list of "paints_to_switch" numbers, and in each frame,
@@ -225,6 +233,7 @@ class MockObserver final : public CSSPaintImageGenerator::Observer {
 TEST_P(MainOrOffThreadPaintWorkletTest, ConsistentGlobalScopeOnMainThread) {
   PaintWorklet* paint_worklet_to_test =
       PaintWorklet::From(*GetFrame().GetDocument()->domWindow());
+  paint_worklet_to_test->ResetIsPaintOffThreadForTesting();
 
   MockObserver* observer = MakeGarbageCollected<MockObserver>();
   CSSPaintImageGeneratorImpl* generator_foo =
@@ -295,7 +304,8 @@ TEST_P(MainOrOffThreadPaintWorkletTest, ConsistentGlobalScopeOnMainThread) {
 
 TEST_P(MainOrOffThreadPaintWorkletTest, AllGlobalScopesMustBeCreated) {
   PaintWorklet* paint_worklet_to_test =
-      MakeGarbageCollected<PaintWorklet>(&GetFrame());
+      MakeGarbageCollected<PaintWorklet>(*GetFrame().DomWindow());
+  paint_worklet_to_test->ResetIsPaintOffThreadForTesting();
 
   EXPECT_TRUE(paint_worklet_to_test->GetGlobalScopesForTesting().IsEmpty());
 
@@ -323,6 +333,7 @@ TEST_F(PaintWorkletTest, ConsistentGlobalScopeCrossThread) {
   ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
   PaintWorklet* paint_worklet_to_test =
       PaintWorklet::From(*GetFrame().GetDocument()->domWindow());
+  paint_worklet_to_test->ResetIsPaintOffThreadForTesting();
 
   MockObserver* observer = MakeGarbageCollected<MockObserver>();
   CSSPaintImageGeneratorImpl* generator_foo =
@@ -492,6 +503,7 @@ TEST_F(PaintWorkletTest, GeneratorNotifiedAfterAllRegistrations) {
   ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
   PaintWorklet* paint_worklet_to_test =
       PaintWorklet::From(*GetFrame().GetDocument()->domWindow());
+  paint_worklet_to_test->ResetIsPaintOffThreadForTesting();
 
   MockObserver* observer = MakeGarbageCollected<MockObserver>();
   CSSPaintImageGeneratorImpl* generator =

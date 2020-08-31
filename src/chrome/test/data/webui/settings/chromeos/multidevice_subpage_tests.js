@@ -97,13 +97,13 @@ suite('Multidevice', function() {
       setMode(mode);
       assertEquals(
           !!multideviceSubpage.$$('#smartLockItem'),
-          mode == settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+          mode === settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
       assertEquals(
           !!multideviceSubpage.$$('#instantTetheringItem'),
-          mode == settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+          mode === settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
       assertEquals(
           !!multideviceSubpage.$$('#messagesItem'),
-          mode == settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+          mode === settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
     }
   });
 
@@ -135,7 +135,9 @@ suite('Multidevice', function() {
 
   test('clicking SmartLock item routes to SmartLock subpage', function() {
     multideviceSubpage.$$('#smartLockItem').$$('.link-wrapper').click();
-    assertEquals(settings.getCurrentRoute(), settings.routes.SMART_LOCK);
+    assertEquals(
+        settings.Router.getInstance().getCurrentRoute(),
+        settings.routes.SMART_LOCK);
   });
 
   test('AndroidMessages item shows button when not set up', function() {

@@ -5,9 +5,6 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 
 #import <Cocoa/Cocoa.h>
-#include <stdlib.h>
-#include <sys/mount.h>
-#include <sys/param.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -17,32 +14,33 @@
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/path_service.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/branding_buildflags.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/first_run/upgrade_util_mac.h"
 #include "chrome/browser/mac/install_from_dmg.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/mac_startup_profiler.h"
 #include "chrome/browser/ui/cocoa/main_menu_builder.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/mac/staging_watcher.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/metrics/metrics_service.h"
 #include "components/os_crypt/os_crypt.h"
+#include "components/version_info/channel.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -67,326 +65,195 @@ void EnsureMetadataNeverIndexFileOnFileThread(
 }
 
 void EnsureMetadataNeverIndexFile(const base::FilePath& user_data_dir) {
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(&EnsureMetadataNeverIndexFileOnFileThread, user_data_dir));
 }
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class FilesystemType {
-  kUnknown,
-  kOther,
-  k_acfs,
-  k_afpfs,
-  k_apfs,
-  k_cdd9660,
-  k_cddafs,
-  k_exfat,
-  k_ftp,
-  k_hfs,
-  k_hfs_rodmg,
-  k_msdos,
-  k_nfs,
-  k_ntfs,
-  k_smbfs,
-  k_udf,
-  k_webdav,
-  kGoogleDriveFS,
-  kMaxValue = kGoogleDriveFS,
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
+// These values are persisted to logs as OSXOtherChromeInstancesResult.
+// Entries should not be renumbered and numeric values should never be reused.
+enum class OtherInstancesResult {
+  kFailureDontKnowWhenOtherChromeUsed,
+  kFailureToReadPlist,
+  kNoOtherChrome,
+  kOneOtherChromeAndLastUsedWithinWeek,
+  kOneOtherChromeAndLastUsedWithinMonth,
+  kOneOtherChromeAndLastUsedMoreThanAMonthAgo,
+  kMoreThanOneOtherChromeAndLastUsedWithinWeek,
+  kMoreThanOneOtherChromeAndLastUsedWithinMonth,
+  kMoreThanOneOtherChromeAndLastUsedMoreThanAMonthAgo,
+  kMaxValue = kMoreThanOneOtherChromeAndLastUsedMoreThanAMonthAgo,
 };
 
-FilesystemType FilesystemStringToType(DiskImageStatus is_ro_dmg,
-                                      NSString* filesystem_type) {
-  if ([filesystem_type isEqualToString:@"acfs"])
-    return FilesystemType::k_acfs;
-  if ([filesystem_type isEqualToString:@"afpfs"])
-    return FilesystemType::k_afpfs;
-  if ([filesystem_type isEqualToString:@"apfs"])
-    return FilesystemType::k_apfs;
-  if ([filesystem_type isEqualToString:@"cdd9660"])
-    return FilesystemType::k_cdd9660;
-  if ([filesystem_type isEqualToString:@"cddafs"])
-    return FilesystemType::k_cddafs;
-  if ([filesystem_type isEqualToString:@"exfat"])
-    return FilesystemType::k_exfat;
-  if ([filesystem_type isEqualToString:@"hfs"]) {
-    switch (is_ro_dmg) {
-      case DiskImageStatusFailure:
-      case DiskImageStatusFalse:
-        return FilesystemType::k_hfs;
-        break;
+struct WhenLastUsed {
+  int within_last_week = 0;
+  int within_last_month = 0;
+  int before_last_month = 0;
+};
 
-      case DiskImageStatusTrue:
-        return FilesystemType::k_hfs_rodmg;
-        break;
+OtherInstancesResult OtherInstancesResultForWhenLastUsed(
+    const WhenLastUsed& used) {
+  if (used.within_last_week + used.within_last_month + used.before_last_month ==
+      0) {
+    return OtherInstancesResult::kNoOtherChrome;
+  }
+
+  if (used.within_last_week + used.within_last_month + used.before_last_month ==
+      1) {
+    if (used.within_last_week)
+      return OtherInstancesResult::kOneOtherChromeAndLastUsedWithinWeek;
+
+    if (used.within_last_month)
+      return OtherInstancesResult::kOneOtherChromeAndLastUsedWithinMonth;
+
+    return OtherInstancesResult::kOneOtherChromeAndLastUsedMoreThanAMonthAgo;
+  }
+
+  if (used.within_last_week)
+    return OtherInstancesResult::kMoreThanOneOtherChromeAndLastUsedWithinWeek;
+
+  if (used.within_last_month)
+    return OtherInstancesResult::kMoreThanOneOtherChromeAndLastUsedWithinMonth;
+
+  return OtherInstancesResult::
+      kMoreThanOneOtherChromeAndLastUsedMoreThanAMonthAgo;
+}
+
+void RecordChromeQueryResults(NSMetadataQuery* query) {
+  __block bool other_chrome_last_used_unknown = false;
+  __block bool failed_to_read_plist = false;
+  __block WhenLastUsed same_channel;
+  __block WhenLastUsed different_channel;
+
+  NSURL* this_url = NSBundle.mainBundle.bundleURL;
+  std::string this_channel = chrome::GetChannelName();
+  NSDate* about_a_week_ago =
+      [[NSDate date] dateByAddingTimeInterval:-7 * 24 * 60 * 60];
+  NSDate* about_a_month_ago =
+      [[NSDate date] dateByAddingTimeInterval:-30 * 24 * 60 * 60];
+
+  [query enumerateResultsUsingBlock:^(id result, NSUInteger idx, BOOL* stop) {
+    // Skip this copy of Chrome. Note that NSMetadataItemURLKey is not used as
+    // it always returns nil while NSMetadataItemPathKey returns a legit path.
+    // Filed as FB7689234.
+    NSString* app_path = base::mac::ObjCCast<NSString>(
+        [result valueForAttribute:NSMetadataItemPathKey]);
+    if (!app_path) {
+      // It seems implausible, but there are Macs in the field for which
+      // Spotlight will find results for the query of locating Chrome but cannot
+      // actually return a path to the result. https://crbug.com/1086555
+      failed_to_read_plist = true;
+      *stop = YES;
+      return;
     }
-  }
-  if ([filesystem_type isEqualToString:@"msdos"])
-    return FilesystemType::k_msdos;
-  if ([filesystem_type isEqualToString:@"nfs"])
-    return FilesystemType::k_nfs;
-  if ([filesystem_type isEqualToString:@"ntfs"])
-    return FilesystemType::k_ntfs;
-  if ([filesystem_type isEqualToString:@"smbfs"])
-    return FilesystemType::k_smbfs;
-  if ([filesystem_type isEqualToString:@"udf"])
-    return FilesystemType::k_udf;
-  if ([filesystem_type isEqualToString:@"webdav"])
-    return FilesystemType::k_webdav;
-  if ([filesystem_type isEqualToString:@"dfsfuse_DFS"])
-    return FilesystemType::kGoogleDriveFS;
-  return FilesystemType::kOther;
-}
 
-void RecordFilesystemStats() {
-  DiskImageStatus is_ro_dmg = IsAppRunningFromReadOnlyDiskImage(nullptr);
-  // Note that -getFileSystemInfoForPath:... is implemented with Disk
-  // Arbitration and |filesystem_type_string| is the value from
-  // kDADiskDescriptionVolumeKindKey. Furthermore, for built-in filesystems, the
-  // string returned specifies which file in /System/Library/Filesystems is
-  // handling it.
-  NSString* filesystem_type_string;
-  BOOL success = [[NSWorkspace sharedWorkspace]
-      getFileSystemInfoForPath:[base::mac::OuterBundle() bundlePath]
-                   isRemovable:nil
-                    isWritable:nil
-                 isUnmountable:nil
-                   description:nil
-                          type:&filesystem_type_string];
+    NSURL* app_url = [NSURL fileURLWithPath:app_path isDirectory:YES];
+    if ([app_url isEqual:this_url])
+      return;
 
-  FilesystemType filesystem_type = FilesystemType::kUnknown;
-  if (success)
-    filesystem_type = FilesystemStringToType(is_ro_dmg, filesystem_type_string);
+    NSURL* plist_url = [[app_url URLByAppendingPathComponent:@"Contents"
+                                                 isDirectory:YES]
+        URLByAppendingPathComponent:@"Info.plist"
+                        isDirectory:NO];
+    NSDictionary* plist = [NSDictionary dictionaryWithContentsOfURL:plist_url];
+    if (!plist) {
+      failed_to_read_plist = true;
+      *stop = YES;
+      return;
+    }
 
-  base::UmaHistogramEnumeration("OSX.InstallationFilesystem", filesystem_type);
-}
+    // Skip any SxS-capable copies of Chrome.
+    if (plist[@"CrProductDirName"])
+      return;
 
-void RecordInstanceStats() {
-  upgrade_util::ThisAndOtherUserCounts counts =
-      upgrade_util::GetCountOfOtherInstancesOfThisBinary();
+    WhenLastUsed* when_last_used = &different_channel;
+    if (this_channel == base::SysNSStringToUTF8(plist[@"KSChannelID"]))
+      when_last_used = &same_channel;
 
-  base::UmaHistogramCounts100("OSX.OtherInstances.ThisUser",
-                              counts.this_user_count);
-  base::UmaHistogramCounts100("OSX.OtherInstances.OtherUser",
-                              counts.other_user_count);
-}
+    NSDate* last_used = base::mac::ObjCCast<NSDate>(
+        [result valueForAttribute:NSMetadataItemLastUsedDateKey]);
+    if (!last_used) {
+      other_chrome_last_used_unknown = true;
+      *stop = YES;
+      return;
+    }
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class FastUserSwitchEvent {
-  kUserDidBecomeActiveEvent,
-  kUserDidBecomeInactiveEvent,
-  kMaxValue = kUserDidBecomeInactiveEvent,
-};
-
-void LogFastUserSwitchStat(FastUserSwitchEvent event) {
-  base::UmaHistogramEnumeration("OSX.FastUserSwitch", event);
-}
-
-void InstallFastUserSwitchStatRecorder() {
-  NSNotificationCenter* notification_center =
-      [[NSWorkspace sharedWorkspace] notificationCenter];
-  [notification_center
-      addObserverForName:NSWorkspaceSessionDidBecomeActiveNotification
-                  object:nil
-                   queue:nil
-              usingBlock:^(NSNotification* note) {
-                LogFastUserSwitchStat(
-                    FastUserSwitchEvent::kUserDidBecomeActiveEvent);
-              }];
-  [notification_center
-      addObserverForName:NSWorkspaceSessionDidResignActiveNotification
-                  object:nil
-                   queue:nil
-              usingBlock:^(NSNotification* note) {
-                LogFastUserSwitchStat(
-                    FastUserSwitchEvent::kUserDidBecomeInactiveEvent);
-              }];
-}
-
-bool IsDirectoryWriteable(NSString* dir_path) {
-  NSString* file_path = [dir_path stringByAppendingPathComponent:@"tempfile"];
-  NSData* data = [NSData dataWithBytes:"\01\02\03\04\05" length:5];
-  BOOL success = [data writeToFile:file_path atomically:NO];
-  if (success)
-    [[NSFileManager defaultManager] removeItemAtPath:file_path error:nil];
-
-  return success;
-}
-
-bool IsOnSameFilesystemAsChromium(NSString* dir_path) {
-  static const base::Optional<fsid_t> cr_fsid = []() -> base::Optional<fsid_t> {
-    struct statfs buf;
-    int result = statfs(
-        [[base::mac::OuterBundle() bundlePath] fileSystemRepresentation], &buf);
-    if (result != 0)
-      return base::nullopt;
-    return buf.f_fsid;
-  }();
-
-  if (!cr_fsid)
-    return false;
-
-  struct statfs buf;
-  int result = statfs([dir_path fileSystemRepresentation], &buf);
-  if (result != 0)
-    return false;
-
-  return cr_fsid->val[0] == buf.f_fsid.val[0] &&
-         cr_fsid->val[1] == buf.f_fsid.val[1];
-}
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class StagingDirectoryStep {
-  kFailedToFindDirectory,
-  kItemReplacementDirectory,
-  kSiblingDirectory,
-  kNSTemporaryDirectory,
-  kTMPDIRDirectory,
-  kTmpDirectory,
-  kTmpDirectoryDifferentVolume,
-  kMaxValue = kTmpDirectoryDifferentVolume,
-};
-
-void LogStagingDirectoryLocation(StagingDirectoryStep step) {
-  base::UmaHistogramEnumeration("OSX.StagingDirectoryLocation2", step);
-}
-
-void RecordStagingDirectoryStats() {
-  NSURL* bundle_url = [base::mac::OuterBundle() bundleURL];
-  NSFileManager* file_manager = [NSFileManager defaultManager];
-
-  // 1. A directory alongside Chromium.
-
-  NSURL* bundle_parent_url =
-      [[bundle_url URLByStandardizingPath] URLByDeletingLastPathComponent];
-  NSURL* sibling_dir =
-      [bundle_parent_url URLByAppendingPathComponent:@".GoogleChromeStaging"
-                                         isDirectory:YES];
-  NSString* sibling_dir_path = [sibling_dir path];
-
-  BOOL is_directory;
-  BOOL path_existed = [file_manager fileExistsAtPath:sibling_dir_path
-                                         isDirectory:&is_directory];
-
-  BOOL success = true;
-  NSError* error = nil;
-  if (!path_existed) {
-    success = [file_manager createDirectoryAtURL:sibling_dir
-                     withIntermediateDirectories:YES
-                                      attributes:nil
-                                           error:&error];
-  } else if (!is_directory) {
-    // There is a non-directory there; don't attempt to use this location
-    // further.
-    success = false;
-  }
-
-  if (success) {
-    success &= !error && IsDirectoryWriteable(sibling_dir_path);
-
-    // Only delete this directory if this was the code that created it.
-    if (!path_existed)
-      [file_manager removeItemAtURL:sibling_dir error:nil];
-  }
-
-  if (success) {
-    LogStagingDirectoryLocation(StagingDirectoryStep::kSiblingDirectory);
-    return;
-  }
-
-  // 2. NSItemReplacementDirectory
-
-  error = nil;
-  NSURL* item_replacement_dir =
-      [file_manager URLForDirectory:NSItemReplacementDirectory
-                           inDomain:NSUserDomainMask
-                  appropriateForURL:bundle_url
-                             create:YES
-                              error:&error];
-  if (item_replacement_dir && !error &&
-      IsDirectoryWriteable([item_replacement_dir path])) {
-    LogStagingDirectoryLocation(
-        StagingDirectoryStep::kItemReplacementDirectory);
-    return;
-  }
-
-  // 3. NSTemporaryDirectory()
-
-  NSString* ns_temporary_dir = NSTemporaryDirectory();
-  if (ns_temporary_dir && IsOnSameFilesystemAsChromium(ns_temporary_dir) &&
-      IsDirectoryWriteable(ns_temporary_dir)) {
-    LogStagingDirectoryLocation(StagingDirectoryStep::kNSTemporaryDirectory);
-    return;
-  }
-
-  // 4. $TMPDIR
-
-  const char* tmpdir_cstr = getenv("TMPDIR");
-  NSString* tmpdir = tmpdir_cstr ? @(tmpdir_cstr) : nil;
-  if (tmpdir && IsOnSameFilesystemAsChromium(tmpdir) &&
-      IsDirectoryWriteable(tmpdir)) {
-    LogStagingDirectoryLocation(StagingDirectoryStep::kTMPDIRDirectory);
-    return;
-  }
-
-  // 5. /tmp
-
-  NSString* tmp = @"/tmp";
-  if (IsOnSameFilesystemAsChromium(tmp) && IsDirectoryWriteable(tmp)) {
-    LogStagingDirectoryLocation(StagingDirectoryStep::kTmpDirectory);
-    return;
-  }
-
-  // 6. /tmp, but different volume
-
-  if (IsDirectoryWriteable(tmp)) {
-    LogStagingDirectoryLocation(StagingDirectoryStep::kTmpDirectory);
-    return;
-  }
-
-  // 7. Give up.
-
-  LogStagingDirectoryLocation(StagingDirectoryStep::kFailedToFindDirectory);
-}
-
-// Records various bits of information about the local Chromium installation in
-// UMA.
-void RecordInstallationStats() {
-  RecordFilesystemStats();
-  RecordInstanceStats();
-  InstallFastUserSwitchStatRecorder();
-  RecordStagingDirectoryStats();
-}
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class StartupUpdateState {
-  kUpdateKeyNotSet,
-  kUpdateKeySetAndStagedCopyPresent,
-  kUpdateKeySetAndStagedCopyNotPresent,
-  kMaxValue = kUpdateKeySetAndStagedCopyNotPresent,
-};
-
-// Records about the state of Chrome updates. This is pre-emptory data
-// gathering to make sure that a situation that the team thinks will be OK is
-// actually OK in the field.
-void RecordUpdateState() {
-  StartupUpdateState state = StartupUpdateState::kUpdateKeyNotSet;
-  NSString* staging_location = [CrStagingKeyWatcher stagingLocation];
-  if (staging_location) {
-    if ([[NSFileManager defaultManager] fileExistsAtPath:staging_location])
-      state = StartupUpdateState::kUpdateKeySetAndStagedCopyPresent;
+    if ([last_used compare:about_a_week_ago] == NSOrderedDescending)
+      ++when_last_used->within_last_week;
+    else if ([last_used compare:about_a_month_ago] == NSOrderedDescending)
+      ++when_last_used->within_last_month;
     else
-      state = StartupUpdateState::kUpdateKeySetAndStagedCopyNotPresent;
+      ++when_last_used->before_last_month;
+  }];
+
+  if (other_chrome_last_used_unknown) {
+    base::UmaHistogramEnumeration(
+        "OSX.Installation.OtherChromeInstances.SameChannel",
+        OtherInstancesResult::kFailureDontKnowWhenOtherChromeUsed);
+    base::UmaHistogramEnumeration(
+        "OSX.Installation.OtherChromeInstances.DifferentChannel",
+        OtherInstancesResult::kFailureDontKnowWhenOtherChromeUsed);
+    return;
   }
 
-  base::UmaHistogramEnumeration("OSX.StartupUpdateState", state);
+  if (failed_to_read_plist) {
+    base::UmaHistogramEnumeration(
+        "OSX.Installation.OtherChromeInstances.SameChannel",
+        OtherInstancesResult::kFailureToReadPlist);
+    base::UmaHistogramEnumeration(
+        "OSX.Installation.OtherChromeInstances.DifferentChannel",
+        OtherInstancesResult::kFailureToReadPlist);
+    return;
+  }
+
+  base::UmaHistogramEnumeration(
+      "OSX.Installation.OtherChromeInstances.SameChannel",
+      OtherInstancesResultForWhenLastUsed(same_channel));
+  base::UmaHistogramEnumeration(
+      "OSX.Installation.OtherChromeInstances.DifferentChannel",
+      OtherInstancesResultForWhenLastUsed(different_channel));
 }
+
+void ExecuteChromeQuery() {
+  __block NSMetadataQuery* query = [[NSMetadataQuery alloc] init];
+
+  __block id token = [[NSNotificationCenter defaultCenter]
+      addObserverForName:NSMetadataQueryDidFinishGatheringNotification
+                  object:query
+                   queue:[NSOperationQueue mainQueue]
+              usingBlock:^(NSNotification* note) {
+                [query stopQuery];
+                RecordChromeQueryResults(query);
+                [query release];
+                [[NSNotificationCenter defaultCenter] removeObserver:token];
+              }];
+
+  query.predicate =
+      [NSPredicate predicateWithFormat:
+                       @"kMDItemContentType == 'com.apple.application-bundle'"
+                       @"AND kMDItemCFBundleIdentifier == 'com.google.Chrome'"];
+
+  [query startQuery];
+}
+
+// Records statistics about this install of Chromium if it is a Google Chrome
+// Beta or Google Chrome Dev instance. This is to allow for decisions to be made
+// about the migration of user data directories.
+void RecordBetaAndDevStats() {
+  version_info::Channel channel = chrome::GetChannel();
+  if (channel != version_info::Channel::BETA &&
+      channel != version_info::Channel::DEV) {
+    return;
+  }
+
+  ExecuteChromeQuery();
+}
+
+#endif  // GOOGLE_CHROME_BRANDING
 
 }  // namespace
 
@@ -459,9 +326,6 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
-  // Initialize the OSCrypt.
-  OSCrypt::Init(local_state);
-
   // AppKit only restores windows to their original spaces when relaunching
   // apps after a restart, and puts them all on the current space when an app
   // is manually quit and relaunched. If Chrome restarted itself, ask AppKit to
@@ -478,9 +342,9 @@ void ChromeBrowserMainPartsMac::PostMainMessageLoopStart() {
       MacStartupProfiler::POST_MAIN_MESSAGE_LOOP_START);
   ChromeBrowserMainPartsPosix::PostMainMessageLoopStart();
 
-  RecordInstallationStats();
-
-  RecordUpdateState();
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  RecordBetaAndDevStats();
+#endif  // GOOGLE_CHROME_BRANDING
 }
 
 void ChromeBrowserMainPartsMac::PreProfileInit() {

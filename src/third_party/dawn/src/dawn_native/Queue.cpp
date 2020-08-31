@@ -32,8 +32,26 @@ namespace dawn_native {
     QueueBase::QueueBase(DeviceBase* device) : ObjectBase(device) {
     }
 
+    QueueBase::QueueBase(DeviceBase* device, ObjectBase::ErrorTag tag) : ObjectBase(device, tag) {
+    }
+
+    // static
+    QueueBase* QueueBase::MakeError(DeviceBase* device) {
+        return new QueueBase(device, ObjectBase::kError);
+    }
+
+    MaybeError QueueBase::SubmitImpl(uint32_t commandCount, CommandBufferBase* const* commands) {
+        UNREACHABLE();
+        return {};
+    }
+
     void QueueBase::Submit(uint32_t commandCount, CommandBufferBase* const* commands) {
         DeviceBase* device = GetDevice();
+        if (device->ConsumedError(device->ValidateIsAlive())) {
+            // If device is lost, don't let any commands be submitted
+            return;
+        }
+
         TRACE_EVENT0(device->GetPlatform(), General, "Queue::Submit");
         if (device->IsValidationEnabled() &&
             device->ConsumedError(ValidateSubmit(commandCount, commands))) {
@@ -66,6 +84,10 @@ namespace dawn_native {
             return Fence::MakeError(GetDevice());
         }
 
+        if (descriptor == nullptr) {
+            FenceDescriptor defaultDescriptor = {};
+            return new Fence(this, &defaultDescriptor);
+        }
         return new Fence(this, descriptor);
     }
 
@@ -100,6 +122,7 @@ namespace dawn_native {
     }
 
     MaybeError QueueBase::ValidateSignal(const Fence* fence, uint64_t signalValue) {
+        DAWN_TRY(GetDevice()->ValidateIsAlive());
         DAWN_TRY(GetDevice()->ValidateObject(this));
         DAWN_TRY(GetDevice()->ValidateObject(fence));
 
@@ -114,8 +137,11 @@ namespace dawn_native {
     }
 
     MaybeError QueueBase::ValidateCreateFence(const FenceDescriptor* descriptor) {
+        DAWN_TRY(GetDevice()->ValidateIsAlive());
         DAWN_TRY(GetDevice()->ValidateObject(this));
-        DAWN_TRY(ValidateFenceDescriptor(descriptor));
+        if (descriptor != nullptr) {
+            DAWN_TRY(ValidateFenceDescriptor(descriptor));
+        }
 
         return {};
     }

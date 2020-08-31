@@ -49,7 +49,7 @@ class LayoutFieldset final : public LayoutBlockFlow {
   LayoutObject* LayoutSpecialExcludedChild(bool relayout_children,
                                            SubtreeLayoutScope&) override;
 
-  void ComputePreferredLogicalWidths() override;
+  MinMaxSizes PreferredLogicalWidths() const override;
 
   void PaintBoxDecorationBackground(
       const PaintInfo&,
@@ -57,8 +57,6 @@ class LayoutFieldset final : public LayoutBlockFlow {
   void PaintMask(const PaintInfo&,
                  const PhysicalOffset& paint_offset) const override;
 };
-
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFieldset, IsFieldset());
 
 }  // namespace blink
 

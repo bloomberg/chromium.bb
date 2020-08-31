@@ -18,6 +18,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using metrics::WindowMetricsEvent;
@@ -66,7 +67,7 @@ class TabMetricsLoggerTest : public InProcessBrowserTest {
   void DiscardTabAt(const int index) {
     auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(index);
     auto* external = TabLifecycleUnitExternal::FromWebContents(web_contents);
-    external->DiscardTab();
+    external->DiscardTab(mojom::LifecycleUnitDiscardReason::URGENT);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

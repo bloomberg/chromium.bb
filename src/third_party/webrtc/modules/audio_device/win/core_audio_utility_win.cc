@@ -284,7 +284,8 @@ ComPtr<IMMDevice> CreateDeviceInternal(const std::string& device_id,
                                        EDataFlow data_flow,
                                        ERole role) {
   RTC_DLOG(INFO) << "CreateDeviceInternal: "
-                 << "id=" << device_id << ", flow=" << FlowToString(data_flow)
+                    "id="
+                 << device_id << ", flow=" << FlowToString(data_flow)
                  << ", role=" << RoleToString(role);
   ComPtr<IMMDevice> audio_endpoint_device;
 
@@ -967,7 +968,7 @@ HRESULT GetBufferSizeLimits(IAudioClient2* client,
     // This API seems to be supported in off-load mode only but it is not
     // documented as a valid error code. Making a special note about it here.
     RTC_LOG(LS_ERROR) << "IAudioClient2::GetBufferSizeLimits failed: "
-                      << "AUDCLNT_E_OFFLOAD_MODE_ONLY";
+                         "AUDCLNT_E_OFFLOAD_MODE_ONLY";
   } else if (FAILED(error.Error())) {
     RTC_LOG(LS_ERROR) << "IAudioClient2::GetBufferSizeLimits failed: "
                       << ErrorToString(error);
@@ -1504,7 +1505,7 @@ std::string WaveFormatToString(const WaveFormatWrapper format) {
 
 webrtc::TimeDelta ReferenceTimeToTimeDelta(REFERENCE_TIME time) {
   // Each unit of reference time is 100 nanoseconds <=> 0.1 microsecond.
-  return webrtc::TimeDelta::us(0.1 * time + 0.5);
+  return webrtc::TimeDelta::Micros(0.1 * time + 0.5);
 }
 
 double FramesToMilliseconds(uint32_t num_frames, uint16_t sample_rate) {

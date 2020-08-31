@@ -34,7 +34,7 @@ class ObjectBuiltinsAssembler : public CodeStubAssembler {
                          Handle<Name> name, TNode<Object> value,
                          Label* bailout);
   TNode<JSObject> FromPropertyDescriptor(TNode<Context> context,
-                                         TNode<FixedArray> desc);
+                                         TNode<PropertyDescriptorObject> desc);
   TNode<JSObject> FromPropertyDetails(TNode<Context> context,
                                       TNode<Object> raw_value,
                                       TNode<Word32T> details,
@@ -230,7 +230,7 @@ TNode<JSArray> ObjectEntriesValuesBuiltinsAssembler::FastGetOwnValuesOrEntries(
   Label if_has_enum_cache(this), if_not_has_enum_cache(this),
       collect_entries(this);
   TNode<IntPtrT> object_enum_length =
-      Signed(DecodeWordFromWord32<Map::EnumLengthBits>(bit_field3));
+      Signed(DecodeWordFromWord32<Map::Bits3::EnumLengthBits>(bit_field3));
   TNode<BoolT> has_enum_cache = WordNotEqual(
       object_enum_length, IntPtrConstant(kInvalidEnumCacheSentinel));
 
@@ -350,22 +350,6 @@ ObjectEntriesValuesBuiltinsAssembler::FinalizeValuesOrEntriesJSArray(
   return TNode<JSArray>::UncheckedCast(array);
 }
 
-TF_BUILTIN(ObjectPrototypeToLocaleString, CodeStubAssembler) {
-  TNode<Context> context = CAST(Parameter(Descriptor::kContext));
-  TNode<Object> receiver = CAST(Parameter(Descriptor::kReceiver));
-
-  Label if_null_or_undefined(this, Label::kDeferred);
-  GotoIf(IsNullOrUndefined(receiver), &if_null_or_undefined);
-
-  TNode<Object> method =
-      GetProperty(context, receiver, factory()->toString_string());
-  Return(CallJS(CodeFactory::Call(isolate()), context, method, receiver));
-
-  BIND(&if_null_or_undefined);
-  ThrowTypeError(context, MessageTemplate::kCalledOnNullOrUndefined,
-                 "Object.prototype.toLocaleString");
-}
-
 TF_BUILTIN(ObjectPrototypeHasOwnProperty, ObjectBuiltinsAssembler) {
   TNode<Object> object = CAST(Parameter(Descriptor::kReceiver));
   TNode<Object> key = CAST(Parameter(Descriptor::kKey));
@@ -380,7 +364,9 @@ TF_BUILTIN(ObjectPrototypeHasOwnProperty, ObjectBuiltinsAssembler) {
   Branch(TaggedIsSmi(object), &to_primitive, &if_objectisnotsmi);
   BIND(&if_objectisnotsmi);
 
-  TNode<Map> map = LoadMap(CAST(object));
+  TNode<HeapObject> heap_object = CAST(object);
+
+  TNode<Map> map = LoadMap(heap_object);
   TNode<Uint16T> instance_type = LoadMapInstanceType(map);
 
   {
@@ -393,12 +379,12 @@ TF_BUILTIN(ObjectPrototypeHasOwnProperty, ObjectBuiltinsAssembler) {
               &call_runtime, &if_notunique_name);
 
     BIND(&if_unique_name);
-    TryHasOwnProperty(object, map, instance_type, var_unique.value(),
+    TryHasOwnProperty(heap_object, map, instance_type, var_unique.value(),
                       &return_true, &return_false, &call_runtime);
 
     BIND(&if_index);
     {
-      TryLookupElement(object, map, instance_type, var_index.value(),
+      TryLookupElement(heap_object, map, instance_type, var_index.value(),
                        &return_true, &return_false, &return_false,
                        &call_runtime);
     }
@@ -435,8 +421,8 @@ TF_BUILTIN(ObjectPrototypeHasOwnProperty, ObjectBuiltinsAssembler) {
 
 // ES #sec-object.assign
 TF_BUILTIN(ObjectAssign, ObjectBuiltinsAssembler) {
-  TNode<IntPtrT> argc =
-      ChangeInt32ToIntPtr(Parameter(Descriptor::kJSActualArgumentsCount));
+  TNode<IntPtrT> argc = ChangeInt32ToIntPtr(
+      UncheckedCast<Int32T>(Parameter(Descriptor::kJSActualArgumentsCount)));
   CodeStubArguments args(this, argc);
 
   TNode<Context> context = CAST(Parameter(Descriptor::kContext));
@@ -480,7 +466,7 @@ TF_BUILTIN(ObjectKeys, ObjectBuiltinsAssembler) {
   TNode<Map> object_map = LoadMap(CAST(object));
   TNode<Uint32T> object_bit_field3 = LoadMapBitField3(object_map);
   TNode<UintPtrT> object_enum_length =
-      DecodeWordFromWord32<Map::EnumLengthBits>(object_bit_field3);
+      DecodeWordFromWord32<Map::Bits3::EnumLengthBits>(object_bit_field3);
   GotoIf(
       WordEqual(object_enum_length, IntPtrConstant(kInvalidEnumCacheSentinel)),
       &if_slow);
@@ -502,8 +488,8 @@ TF_BUILTIN(ObjectKeys, ObjectBuiltinsAssembler) {
     TNode<DescriptorArray> object_descriptors = LoadMapDescriptors(object_map);
     TNode<EnumCache> object_enum_cache = LoadObjectField<EnumCache>(
         object_descriptors, DescriptorArray::kEnumCacheOffset);
-    TNode<Object> object_enum_keys =
-        LoadObjectField(object_enum_cache, EnumCache::kKeysOffset);
+    auto object_enum_keys = LoadObjectField<FixedArrayBase>(
+        object_enum_cache, EnumCache::kKeysOffset);
 
     // Allocate a JSArray and copy the elements from the {object_enum_keys}.
     TNode<JSArray> array;
@@ -577,14 +563,15 @@ TF_BUILTIN(ObjectGetOwnPropertyNames, ObjectBuiltinsAssembler) {
   BIND(&if_empty_elements);
   TNode<Uint32T> object_bit_field3 = LoadMapBitField3(object_map);
   TNode<UintPtrT> object_enum_length =
-      DecodeWordFromWord32<Map::EnumLengthBits>(object_bit_field3);
+      DecodeWordFromWord32<Map::Bits3::EnumLengthBits>(object_bit_field3);
   GotoIf(
       WordEqual(object_enum_length, IntPtrConstant(kInvalidEnumCacheSentinel)),
       &try_fast);
 
   // Check whether all own properties are enumerable.
   TNode<UintPtrT> number_descriptors =
-      DecodeWordFromWord32<Map::NumberOfOwnDescriptorsBits>(object_bit_field3);
+      DecodeWordFromWord32<Map::Bits3::NumberOfOwnDescriptorsBits>(
+          object_bit_field3);
   GotoIfNot(WordEqual(object_enum_length, number_descriptors), &if_slow);
 
   // Check whether there are enumerable properties.
@@ -597,8 +584,8 @@ TF_BUILTIN(ObjectGetOwnPropertyNames, ObjectBuiltinsAssembler) {
     TNode<DescriptorArray> object_descriptors = LoadMapDescriptors(object_map);
     TNode<EnumCache> object_enum_cache = CAST(
         LoadObjectField(object_descriptors, DescriptorArray::kEnumCacheOffset));
-    TNode<Object> object_enum_keys =
-        LoadObjectField(object_enum_cache, EnumCache::kKeysOffset);
+    auto object_enum_keys = LoadObjectField<FixedArrayBase>(
+        object_enum_cache, EnumCache::kKeysOffset);
 
     // Allocate a JSArray and copy the elements from the {object_enum_keys}.
     TNode<NativeContext> native_context = LoadNativeContext(context);
@@ -721,20 +708,13 @@ TF_BUILTIN(ObjectPrototypeIsPrototypeOf, ObjectBuiltinsAssembler) {
   Return(FalseConstant());
 }
 
-// ES #sec-object.prototype.tostring
-TF_BUILTIN(ObjectPrototypeToString, CodeStubAssembler) {
-  TNode<Object> receiver = CAST(Parameter(Descriptor::kReceiver));
-  TNode<Context> context = CAST(Parameter(Descriptor::kContext));
-  Return(CallBuiltin(Builtins::kObjectToString, context, receiver));
-}
-
 TF_BUILTIN(ObjectToString, ObjectBuiltinsAssembler) {
-  Label checkstringtag(this), if_apiobject(this, Label::kDeferred),
-      if_arguments(this), if_array(this), if_boolean(this), if_date(this),
-      if_error(this), if_function(this), if_number(this, Label::kDeferred),
-      if_object(this), if_primitive(this), if_proxy(this, Label::kDeferred),
-      if_regexp(this), if_string(this), if_symbol(this, Label::kDeferred),
-      if_value(this), if_bigint(this, Label::kDeferred);
+  Label checkstringtag(this), if_arguments(this), if_array(this),
+      if_boolean(this), if_date(this), if_error(this), if_function(this),
+      if_number(this, Label::kDeferred), if_object(this), if_primitive(this),
+      if_proxy(this, Label::kDeferred), if_regexp(this), if_string(this),
+      if_symbol(this, Label::kDeferred), if_value(this),
+      if_bigint(this, Label::kDeferred);
 
   TNode<Object> receiver = CAST(Parameter(Descriptor::kReceiver));
   TNode<Context> context = CAST(Parameter(Descriptor::kContext));
@@ -745,9 +725,9 @@ TF_BUILTIN(ObjectToString, ObjectBuiltinsAssembler) {
   // This is arranged to check the likely cases first.
   GotoIf(TaggedIsSmi(receiver), &if_number);
 
-  TNode<HeapObject> reciever_heap_object = CAST(receiver);
-  TNode<Map> receiver_map = LoadMap(reciever_heap_object);
-  var_holder = reciever_heap_object;
+  TNode<HeapObject> receiver_heap_object = CAST(receiver);
+  TNode<Map> receiver_map = LoadMap(receiver_heap_object);
+  var_holder = receiver_heap_object;
   TNode<Uint16T> receiver_instance_type = LoadMapInstanceType(receiver_map);
   GotoIf(IsPrimitiveInstanceType(receiver_instance_type), &if_primitive);
   const struct {
@@ -760,8 +740,8 @@ TF_BUILTIN(ObjectToString, ObjectBuiltinsAssembler) {
                     {JS_ARGUMENTS_OBJECT_TYPE, &if_arguments},
                     {JS_DATE_TYPE, &if_date},
                     {JS_BOUND_FUNCTION_TYPE, &if_function},
-                    {JS_API_OBJECT_TYPE, &if_apiobject},
-                    {JS_SPECIAL_API_OBJECT_TYPE, &if_apiobject},
+                    {JS_API_OBJECT_TYPE, &if_object},
+                    {JS_SPECIAL_API_OBJECT_TYPE, &if_object},
                     {JS_PROXY_TYPE, &if_proxy},
                     {JS_ERROR_TYPE, &if_error},
                     {JS_PRIMITIVE_WRAPPER_TYPE, &if_value}};
@@ -774,25 +754,6 @@ TF_BUILTIN(ObjectToString, ObjectBuiltinsAssembler) {
   }
   Switch(receiver_instance_type, &if_object, case_values, case_labels,
          arraysize(case_values));
-
-  BIND(&if_apiobject);
-  {
-    // Lookup the @@toStringTag property on the {receiver}.
-    TVARIABLE(Object, var_tag,
-              GetProperty(context, receiver,
-                          isolate()->factory()->to_string_tag_symbol()));
-    Label if_tagisnotstring(this), if_tagisstring(this);
-    GotoIf(TaggedIsSmi(var_tag.value()), &if_tagisnotstring);
-    Branch(IsString(CAST(var_tag.value())), &if_tagisstring,
-           &if_tagisnotstring);
-    BIND(&if_tagisnotstring);
-    {
-      var_tag = CallRuntime(Runtime::kClassOf, context, receiver);
-      Goto(&if_tagisstring);
-    }
-    BIND(&if_tagisstring);
-    ReturnToStringFormat(context, CAST(var_tag.value()));
-  }
 
   BIND(&if_arguments);
   {
@@ -968,10 +929,10 @@ TF_BUILTIN(ObjectToString, ObjectBuiltinsAssembler) {
         if_value_is_string(this, Label::kDeferred);
 
     TNode<Object> receiver_value =
-        LoadJSPrimitiveWrapperValue(CAST(reciever_heap_object));
+        LoadJSPrimitiveWrapperValue(CAST(receiver_heap_object));
     // We need to start with the object to see if the value was a subclass
     // which might have interesting properties.
-    var_holder = reciever_heap_object;
+    var_holder = receiver_heap_object;
     GotoIf(TaggedIsSmi(receiver_value), &if_value_is_number);
     TNode<Map> receiver_value_map = LoadMap(CAST(receiver_value));
     GotoIf(IsHeapNumberMap(receiver_value_map), &if_value_is_number);
@@ -1029,7 +990,8 @@ TF_BUILTIN(ObjectToString, ObjectBuiltinsAssembler) {
       GotoIf(IsNull(holder), &return_default);
       TNode<Map> holder_map = LoadMap(holder);
       TNode<Uint32T> holder_bit_field3 = LoadMapBitField3(holder_map);
-      GotoIf(IsSetWord32<Map::MayHaveInterestingSymbolsBit>(holder_bit_field3),
+      GotoIf(IsSetWord32<Map::Bits3::MayHaveInterestingSymbolsBit>(
+                 holder_bit_field3),
              &return_generic);
       var_holder = LoadMapPrototype(holder_map);
       Goto(&loop);
@@ -1049,21 +1011,13 @@ TF_BUILTIN(ObjectToString, ObjectBuiltinsAssembler) {
   }
 }
 
-// ES6 #sec-object.prototype.valueof
-TF_BUILTIN(ObjectPrototypeValueOf, CodeStubAssembler) {
-  TNode<Object> receiver = CAST(Parameter(Descriptor::kReceiver));
-  TNode<Context> context = CAST(Parameter(Descriptor::kContext));
-
-  Return(ToObject_Inline(context, receiver));
-}
-
 // ES #sec-object.create
 TF_BUILTIN(ObjectCreate, ObjectBuiltinsAssembler) {
   int const kPrototypeArg = 0;
   int const kPropertiesArg = 1;
 
-  TNode<IntPtrT> argc =
-      ChangeInt32ToIntPtr(Parameter(Descriptor::kJSActualArgumentsCount));
+  TNode<IntPtrT> argc = ChangeInt32ToIntPtr(
+      UncheckedCast<Int32T>(Parameter(Descriptor::kJSActualArgumentsCount)));
   CodeStubArguments args(this, argc);
 
   TNode<Object> prototype = args.GetOptionalArgumentValue(kPrototypeArg);
@@ -1093,8 +1047,9 @@ TF_BUILTIN(ObjectCreate, ObjectBuiltinsAssembler) {
         &call_runtime);
     // Handle dictionary objects or fast objects with properties in runtime.
     TNode<Uint32T> bit_field3 = LoadMapBitField3(properties_map);
-    GotoIf(IsSetWord32<Map::IsDictionaryMapBit>(bit_field3), &call_runtime);
-    Branch(IsSetWord32<Map::NumberOfOwnDescriptorsBits>(bit_field3),
+    GotoIf(IsSetWord32<Map::Bits3::IsDictionaryMapBit>(bit_field3),
+           &call_runtime);
+    Branch(IsSetWord32<Map::Bits3::NumberOfOwnDescriptorsBits>(bit_field3),
            &call_runtime, &no_properties);
   }
 
@@ -1235,11 +1190,11 @@ TF_BUILTIN(CreateGeneratorObject, ObjectBuiltinsAssembler) {
   TNode<BytecodeArray> bytecode_array =
       LoadSharedFunctionInfoBytecodeArray(shared);
 
-  TNode<IntPtrT> formal_parameter_count = ChangeInt32ToIntPtr(
-      LoadObjectField(shared, SharedFunctionInfo::kFormalParameterCountOffset,
-                      MachineType::Uint16()));
-  TNode<IntPtrT> frame_size = ChangeInt32ToIntPtr(LoadObjectField(
-      bytecode_array, BytecodeArray::kFrameSizeOffset, MachineType::Int32()));
+  TNode<IntPtrT> formal_parameter_count =
+      ChangeInt32ToIntPtr(LoadObjectField<Uint16T>(
+          shared, SharedFunctionInfo::kFormalParameterCountOffset));
+  TNode<IntPtrT> frame_size = ChangeInt32ToIntPtr(
+      LoadObjectField<Int32T>(bytecode_array, BytecodeArray::kFrameSizeOffset));
   TNode<IntPtrT> size =
       IntPtrAdd(WordSar(frame_size, IntPtrConstant(kTaggedSizeLog2)),
                 formal_parameter_count);
@@ -1333,7 +1288,7 @@ TF_BUILTIN(ObjectGetOwnPropertyDescriptor, ObjectBuiltinsAssembler) {
       Label if_found_value(this), return_empty(this), if_not_found(this);
 
       TVARIABLE(Object, var_value);
-      TVARIABLE(Word32T, var_details);
+      TVARIABLE(Uint32T, var_details);
       TVARIABLE(Object, var_raw_value);
 
       TryGetOwnProperty(context, object, object, map, instance_type,
@@ -1366,10 +1321,10 @@ TF_BUILTIN(ObjectGetOwnPropertyDescriptor, ObjectBuiltinsAssembler) {
 
     GotoIf(IsUndefined(desc), &return_undefined);
 
-    TNode<FixedArray> desc_array = CAST(desc);
+    TNode<PropertyDescriptorObject> desc_object = CAST(desc);
 
     // 4. Return FromPropertyDescriptor(desc).
-    TNode<JSObject> js_desc = FromPropertyDescriptor(context, desc_array);
+    TNode<JSObject> js_desc = FromPropertyDescriptor(context, desc_object);
     args.PopAndReturn(js_desc);
   }
   BIND(&return_undefined);
@@ -1389,7 +1344,7 @@ void ObjectBuiltinsAssembler::AddToDictionaryIf(
 }
 
 TNode<JSObject> ObjectBuiltinsAssembler::FromPropertyDescriptor(
-    TNode<Context> context, TNode<FixedArray> desc) {
+    TNode<Context> context, TNode<PropertyDescriptorObject> desc) {
   TVARIABLE(JSObject, js_descriptor);
 
   TNode<Int32T> flags = LoadAndUntagToWord32ObjectField(

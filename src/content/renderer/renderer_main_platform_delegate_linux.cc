@@ -7,9 +7,9 @@
 #include <errno.h>
 #include <sys/stat.h>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
@@ -31,7 +31,7 @@ void RendererMainPlatformDelegate::PlatformUninitialize() {
 
 bool RendererMainPlatformDelegate::EnableSandbox() {
   // The setuid sandbox is started in the zygote process: zygote_main_linux.cc
-  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_suid_sandbox.md
+  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux/suid_sandbox.md
   //
   // Anything else is started in InitializeSandbox().
   service_manager::SandboxLinux::Options options;

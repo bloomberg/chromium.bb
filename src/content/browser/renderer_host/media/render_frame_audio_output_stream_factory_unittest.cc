@@ -23,7 +23,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
@@ -35,9 +34,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
-#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,9 +50,7 @@ class RenderFrameAudioOutputStreamFactoryTest
     : public RenderViewHostTestHarness {
  public:
   RenderFrameAudioOutputStreamFactoryTest()
-      : test_service_manager_context_(
-            std::make_unique<TestServiceManagerContext>()),
-        audio_manager_(std::make_unique<media::TestAudioThread>(),
+      : audio_manager_(std::make_unique<media::TestAudioThread>(),
                        &log_factory_),
         audio_system_(media::AudioSystemImpl::CreateInstance()),
         media_stream_manager_(std::make_unique<MediaStreamManager>(
@@ -69,13 +64,7 @@ class RenderFrameAudioOutputStreamFactoryTest
     RenderFrameHostTester::For(main_rfh())->InitializeRenderFrameIfNeeded();
 
     // Set up the ForwardingAudioStreamFactory.
-    service_manager::Connector* connector =
-        ForwardingAudioStreamFactory::ForFrame(main_rfh())
-            ->core()
-            ->get_connector_for_testing();
-    connector->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(audio::mojom::kServiceName),
-        audio::mojom::StreamFactory::Name_,
+    ForwardingAudioStreamFactory::OverrideStreamFactoryBinderForTesting(
         base::BindRepeating(
             &RenderFrameAudioOutputStreamFactoryTest::BindFactory,
             base::Unretained(this)));
@@ -84,15 +73,15 @@ class RenderFrameAudioOutputStreamFactoryTest
   }
 
   void TearDown() override {
+    ForwardingAudioStreamFactory::OverrideStreamFactoryBinderForTesting(
+        base::NullCallback());
     audio_manager_.Shutdown();
-    test_service_manager_context_.reset();
     RenderViewHostTestHarness::TearDown();
   }
 
-  void BindFactory(mojo::ScopedMessagePipeHandle factory_receiver) {
-    audio_service_stream_factory_.receiver_.Bind(
-        mojo::PendingReceiver<audio::mojom::StreamFactory>(
-            std::move(factory_receiver)));
+  void BindFactory(
+      mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) {
+    audio_service_stream_factory_.receiver_.Bind(std::move(receiver));
   }
 
   class MockStreamFactory : public audio::FakeStreamFactory {
@@ -108,7 +97,6 @@ class RenderFrameAudioOutputStreamFactoryTest
         const std::string& output_device_id,
         const media::AudioParameters& params,
         const base::UnguessableToken& group_id,
-        const base::Optional<base::UnguessableToken>& processing_id,
         CreateOutputStreamCallback created_callback) override {
       last_created_callback = std::move(created_callback);
     }
@@ -127,7 +115,6 @@ class RenderFrameAudioOutputStreamFactoryTest
   const media::AudioParameters kParams =
       media::AudioParameters::UnavailableDeviceParams();
   MockStreamFactory audio_service_stream_factory_;
-  std::unique_ptr<TestServiceManagerContext> test_service_manager_context_;
   media::FakeAudioLogFactory log_factory_;
   media::FakeAudioManager audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
@@ -222,7 +209,7 @@ TEST_F(RenderFrameAudioOutputStreamFactoryTest,
   {
     mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client;
     ignore_result(client.InitWithNewPipeAndPassReceiver());
-    provider_remote->Acquire(kParams, std::move(client), base::nullopt);
+    provider_remote->Acquire(kParams, std::move(client));
   }
 
   audio::mojom::StreamFactory::CreateOutputStreamCallback created_callback;
@@ -259,7 +246,7 @@ TEST_F(RenderFrameAudioOutputStreamFactoryTest,
   {
     mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client;
     ignore_result(client.InitWithNewPipeAndPassReceiver());
-    provider_remote->Acquire(kParams, std::move(client), base::nullopt);
+    provider_remote->Acquire(kParams, std::move(client));
   }
 
   base::RunLoop().RunUntilIdle();

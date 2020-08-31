@@ -9,10 +9,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import multiprocessing.pool
+import sys
+import threading
+
 from multiprocessing.pool import IMapIterator
+
 def wrapper(func):
   def wrap(self, timeout=None):
-    return func(self, timeout=timeout or 1 << 31)
+    default_timeout = (1 << 31 if sys.version_info.major == 2 else
+                       threading.TIMEOUT_MAX)
+    return func(self, timeout=timeout or default_timeout)
+
   return wrap
 IMapIterator.next = wrapper(IMapIterator.next)
 IMapIterator.__next__ = IMapIterator.next
@@ -29,14 +36,17 @@ import re
 import setup_color
 import shutil
 import signal
-import sys
 import tempfile
 import textwrap
-import threading
 
 import subprocess2
 
 from io import BytesIO
+
+
+if sys.version_info.major == 2:
+  # On Python 3, BrokenPipeError is raised instead.
+  BrokenPipeError = IOError
 
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
@@ -444,7 +454,7 @@ def freeze():
       die("Cannot freeze unmerged changes!")
     if limit_mb > 0:
       if s.lstat == '?':
-        untracked_bytes += os.stat(os.path.join(root_path, f)).st_size
+        untracked_bytes += os.lstat(os.path.join(root_path, f)).st_size
   if limit_mb > 0 and untracked_bytes > limit_mb * MB:
     die("""\
       You appear to have too much untracked+unignored data in your git
@@ -459,7 +469,7 @@ def freeze():
         .git/info/exclude
       file. See `git help ignore` for the format of this file.
 
-      If this data is indended as part of your commit, you may adjust the
+      If this data is intended as part of your commit, you may adjust the
       freeze limit by running:
         git config %s <new_limit>
       Where <new_limit> is an integer threshold in megabytes.""",
@@ -652,7 +662,8 @@ def rebase(parent, start, branch, abort=False):
   except subprocess2.CalledProcessError as cpe:
     if abort:
       run_with_retcode('rebase', '--abort')  # ignore failure
-    return RebaseRet(False, cpe.stdout, cpe.stderr)
+    return RebaseRet(False, cpe.stdout.decode('utf-8', 'replace'),
+                     cpe.stderr.decode('utf-8', 'replace'))
 
 
 def remove_merge_base(branch):
@@ -683,6 +694,8 @@ def less():  # pragma: no cover
 
   Automatically checks if sys.stdout is a non-TTY stream. If so, it avoids
   running less and just yields sys.stdout.
+
+  The returned PIPE is opened on binary mode.
   """
   if not setup_color.IS_TTY:
     # On Python 3, sys.stdout doesn't accept bytes, and sys.stdout.buffer must
@@ -699,7 +712,11 @@ def less():  # pragma: no cover
     proc = subprocess2.Popen(cmd, stdin=subprocess2.PIPE)
     yield proc.stdin
   finally:
-    proc.stdin.close()
+    try:
+      proc.stdin.close()
+    except BrokenPipeError:
+      # BrokenPipeError is raised if proc has already completed,
+      pass
     proc.wait()
 
 
@@ -750,7 +767,7 @@ def run_stream_with_retcode(*cmd, **kwargs):
     retcode = proc.wait()
     if retcode != 0:
       raise subprocess2.CalledProcessError(retcode, cmd, os.getcwd(),
-                                           None, None)
+                                           b'', b'')
 
 
 def run_with_stderr(*cmd, **kwargs):

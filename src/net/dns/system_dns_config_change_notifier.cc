@@ -8,14 +8,15 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "net/dns/dns_config_service.h"
 
@@ -185,9 +186,9 @@ class SystemDnsConfigChangeNotifier::Core {
 };
 
 SystemDnsConfigChangeNotifier::SystemDnsConfigChangeNotifier()
-    : SystemDnsConfigChangeNotifier(base::CreateSequencedTaskRunner(
-                                        {base::ThreadPool(), base::MayBlock()}),
-                                    DnsConfigService::CreateSystemService()) {}
+    : SystemDnsConfigChangeNotifier(
+          base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}),
+          DnsConfigService::CreateSystemService()) {}
 
 SystemDnsConfigChangeNotifier::SystemDnsConfigChangeNotifier(
     scoped_refptr<base::SequencedTaskRunner> task_runner,

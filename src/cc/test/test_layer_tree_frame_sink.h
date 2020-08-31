@@ -114,9 +114,11 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
   void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override;
+  void SetWideColorEnabled(bool enabled) override {}
   void SetPreferredFrameInterval(base::TimeDelta interval) override {}
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-      const viz::FrameSinkId& id) override;
+      const viz::FrameSinkId& id,
+      viz::mojom::CompositorFrameSinkType* type) override;
 
   const std::set<viz::SharedBitmapId>& owned_bitmaps() const {
     return owned_bitmaps_;
@@ -142,7 +144,7 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
       parent_local_surface_id_allocator_;
   gfx::Size display_size_;
   float device_scale_factor_ = 0;
-  gfx::ColorSpace output_color_space_ = gfx::ColorSpace::CreateSRGB();
+  gfx::DisplayColorSpaces display_color_spaces_;
 
   // Uses surface_manager_.
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;

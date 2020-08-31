@@ -4,19 +4,50 @@
 
 #include "services/network/public/cpp/resource_request.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_flags.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
 
 namespace network {
+
+namespace {
+
+mojo::PendingRemote<mojom::CookieAccessObserver> Clone(
+    mojo::PendingRemote<mojom::CookieAccessObserver>* observer) {
+  if (!*observer)
+    return mojo::NullRemote();
+  mojo::Remote<mojom::CookieAccessObserver> remote(std::move(*observer));
+  mojo::PendingRemote<mojom::CookieAccessObserver> new_remote;
+  remote->Clone(new_remote.InitWithNewPipeAndPassReceiver());
+  *observer = remote.Unbind();
+  return new_remote;
+}
+
+}  // namespace
 
 ResourceRequest::TrustedParams::TrustedParams() = default;
 ResourceRequest::TrustedParams::~TrustedParams() = default;
 
-bool ResourceRequest::TrustedParams::operator==(
-    const TrustedParams& other) const {
-  return network_isolation_key == other.network_isolation_key &&
-         update_network_isolation_key_on_redirect ==
-             other.update_network_isolation_key_on_redirect &&
-         disable_secure_dns == other.disable_secure_dns;
+ResourceRequest::TrustedParams::TrustedParams(const TrustedParams& other) {
+  *this = other;
+}
+
+ResourceRequest::TrustedParams& ResourceRequest::TrustedParams::operator=(
+    const TrustedParams& other) {
+  isolation_info = other.isolation_info;
+  disable_secure_dns = other.disable_secure_dns;
+  has_user_activation = other.has_user_activation;
+  cookie_observer =
+      Clone(&const_cast<mojo::PendingRemote<mojom::CookieAccessObserver>&>(
+          other.cookie_observer));
+  return *this;
+}
+
+bool ResourceRequest::TrustedParams::EqualsForTesting(
+    const TrustedParams& trusted_params) const {
+  return isolation_info.IsEqualForTesting(trusted_params.isolation_info) &&
+         disable_secure_dns == trusted_params.disable_secure_dns &&
+         has_user_activation == trusted_params.has_user_activation;
 }
 
 ResourceRequest::ResourceRequest() {}
@@ -24,9 +55,18 @@ ResourceRequest::ResourceRequest(const ResourceRequest& request) = default;
 ResourceRequest::~ResourceRequest() {}
 
 bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
+  if ((trusted_params && !request.trusted_params) ||
+      (!trusted_params && request.trusted_params)) {
+    return false;
+  }
+  if (trusted_params && request.trusted_params) {
+    if (!trusted_params->EqualsForTesting(*request.trusted_params))
+      return false;
+  }
   return method == request.method && url == request.url &&
-         site_for_cookies == request.site_for_cookies &&
-         attach_same_site_cookies == request.attach_same_site_cookies &&
+         site_for_cookies.IsEquivalent(request.site_for_cookies) &&
+         force_ignore_site_for_cookies ==
+             request.force_ignore_site_for_cookies &&
          update_first_party_url_on_redirect ==
              request.update_first_party_url_on_redirect &&
          request_initiator == request.request_initiator &&
@@ -50,7 +90,7 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          credentials_mode == request.credentials_mode &&
          redirect_mode == request.redirect_mode &&
          fetch_integrity == request.fetch_integrity &&
-         fetch_request_context_type == request.fetch_request_context_type &&
+         destination == request.destination &&
          request_body == request.request_body &&
          keepalive == request.keepalive &&
          has_user_gesture == request.has_user_gesture &&
@@ -69,15 +109,13 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
              request.custom_proxy_pre_cache_headers.ToString() &&
          custom_proxy_post_cache_headers.ToString() ==
              request.custom_proxy_post_cache_headers.ToString() &&
-         custom_proxy_use_alternate_proxy_list ==
-             request.custom_proxy_use_alternate_proxy_list &&
          fetch_window_id == request.fetch_window_id &&
          devtools_request_id == request.devtools_request_id &&
          is_signed_exchange_prefetch_cache_enabled ==
              request.is_signed_exchange_prefetch_cache_enabled &&
          obey_origin_policy == request.obey_origin_policy &&
-         trusted_params == trusted_params &&
-         recursive_prefetch_token == request.recursive_prefetch_token;
+         recursive_prefetch_token == request.recursive_prefetch_token &&
+         trust_token_params == request.trust_token_params;
 }
 
 bool ResourceRequest::SendsCookies() const {
@@ -88,6 +126,35 @@ bool ResourceRequest::SendsCookies() const {
 bool ResourceRequest::SavesCookies() const {
   return credentials_mode == network::mojom::CredentialsMode::kInclude &&
          !(load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
+}
+
+net::URLRequest::ReferrerPolicy ReferrerPolicyForUrlRequest(
+    mojom::ReferrerPolicy referrer_policy) {
+  switch (referrer_policy) {
+    case mojom::ReferrerPolicy::kAlways:
+      return net::URLRequest::NEVER_CLEAR_REFERRER;
+    case mojom::ReferrerPolicy::kNever:
+      return net::URLRequest::NO_REFERRER;
+    case mojom::ReferrerPolicy::kOrigin:
+      return net::URLRequest::ORIGIN;
+    case mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
+      return net::URLRequest::
+          CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
+    case mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
+      return net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
+    case mojom::ReferrerPolicy::kSameOrigin:
+      return net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN;
+    case mojom::ReferrerPolicy::kStrictOrigin:
+      return net::URLRequest::
+          ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
+    case mojom::ReferrerPolicy::kDefault:
+      CHECK(false);
+      return net::URLRequest::NO_REFERRER;
+    case mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
+      return net::URLRequest::
+          REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
+  }
+  return net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
 }
 
 }  // namespace network

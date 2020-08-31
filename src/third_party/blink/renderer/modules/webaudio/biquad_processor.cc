@@ -37,7 +37,7 @@ BiquadProcessor::BiquadProcessor(float sample_rate,
                                  AudioParamHandler& gain,
                                  AudioParamHandler& detune)
     : AudioDSPKernelProcessor(sample_rate, number_of_channels),
-      type_(kLowPass),
+      type_(FilterType::kLowPass),
       parameter1_(&frequency),
       parameter2_(&q),
       parameter3_(&gain),
@@ -67,8 +67,14 @@ void BiquadProcessor::CheckForDirtyCoefficients() {
       parameter2_->HasSampleAccurateValues() ||
       parameter3_->HasSampleAccurateValues() ||
       parameter4_->HasSampleAccurateValues()) {
+    // Coefficients are dirty if any of them has automations or if there are
+    // connections to the AudioParam.
     filter_coefficients_dirty_ = true;
     has_sample_accurate_values_ = true;
+    // If any parameter is a-rate, then the filter must do a-rate processing for
+    // everything.
+    is_audio_rate_ = parameter1_->IsAudioRate() || parameter2_->IsAudioRate() ||
+                     parameter3_->IsAudioRate() || parameter4_->IsAudioRate();
   } else {
     if (has_just_reset_) {
       // Snap to exact values first time after reset, then smooth for subsequent

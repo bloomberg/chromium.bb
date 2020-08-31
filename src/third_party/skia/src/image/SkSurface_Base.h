@@ -19,10 +19,13 @@ public:
     SkSurface_Base(const SkImageInfo&, const SkSurfaceProps*);
     virtual ~SkSurface_Base();
 
+    virtual GrContext* onGetContext();
+
     virtual GrBackendTexture onGetBackendTexture(BackendHandleAccess);
     virtual GrBackendRenderTarget onGetBackendRenderTarget(BackendHandleAccess);
     virtual bool onReplaceBackendTexture(const GrBackendTexture&,
                                          GrSurfaceOrigin,
+                                         ContentChangeMode,
                                          TextureReleaseProc,
                                          ReleaseContext);
     /**

@@ -17,31 +17,41 @@ namespace chromeos {
 
 class DemoSetupScreenView;
 
-// Controlls demo mode setup. The screen can be shown during OOBE. It allows
+// Controls demo mode setup. The screen can be shown during OOBE. It allows
 // user to setup retail demo mode on the device.
 class DemoSetupScreen : public BaseScreen {
  public:
   enum class Result { COMPLETED, CANCELED };
+
+  static std::string GetResultString(Result result);
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   DemoSetupScreen(DemoSetupScreenView* view,
                   const ScreenExitCallback& exit_callback);
   ~DemoSetupScreen() override;
 
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-  void OnUserAction(const std::string& action_id) override;
-
   // Called when view is being destroyed. If Screen is destroyed earlier
   // then it has to call Bind(nullptr).
   void OnViewDestroyed(DemoSetupScreenView* view);
 
+  // Test utilities.
+  void SetCurrentSetupStepForTest(
+      const DemoSetupController::DemoSetupStep current_step);
+
  protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+  void OnUserAction(const std::string& action_id) override;
+
   ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
  private:
   void StartEnrollment();
+
+  // Updates current setup step.
+  void SetCurrentSetupStep(
+      const DemoSetupController::DemoSetupStep current_step);
 
   // Called when the setup flow finished with error.
   void OnSetupError(const DemoSetupController::DemoSetupError& error);

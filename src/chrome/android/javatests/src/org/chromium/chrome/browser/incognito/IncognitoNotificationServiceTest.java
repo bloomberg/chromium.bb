@@ -18,12 +18,13 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.TabStateInfo;
@@ -119,6 +120,8 @@ public class IncognitoNotificationServiceTest {
     @Feature("Incognito")
     @MediumTest
     @RetryOnFailure
+    @DisabledTest
+    // https://crbug.com/1033835
     public void testNoAliveProcess() throws Exception {
         Context context = InstrumentationRegistry.getTargetContext();
         final TestTabModelDirectory tabbedModeDirectory = new TestTabModelDirectory(

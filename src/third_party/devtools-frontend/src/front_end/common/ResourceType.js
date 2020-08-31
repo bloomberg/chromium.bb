@@ -27,8 +27,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {ls} from '../platform/platform.js';
+
 import {ParsedURL} from './ParsedURL.js';
-import {ls} from './UIString.js';
 
 /**
  * @unrestricted
@@ -89,7 +90,7 @@ export class ResourceType {
    * @return {?ResourceType}
    */
   static fromURL(url) {
-    return ResourceType._resourceTypeByExtension.get(ParsedURL.extractExtension(url)) || null;
+    return _resourceTypeByExtension.get(ParsedURL.extractExtension(url)) || null;
   }
 
   /**
@@ -98,7 +99,7 @@ export class ResourceType {
    */
   static fromName(name) {
     for (const resourceTypeId in resourceTypes) {
-      const resourceType = resourceTypes[resourceTypeId];
+      const resourceType = /** @type {!Object<string, !ResourceType>} */(resourceTypes)[resourceTypeId];
       if (resourceType.name() === name) {
         return resourceType;
       }
@@ -112,12 +113,12 @@ export class ResourceType {
    */
   static mimeFromURL(url) {
     const name = ParsedURL.extractName(url);
-    if (ResourceType._mimeTypeByName.has(name)) {
-      return ResourceType._mimeTypeByName.get(name);
+    if (_mimeTypeByName.has(name)) {
+      return _mimeTypeByName.get(name);
     }
 
     const ext = ParsedURL.extractExtension(url).toLowerCase();
-    return ResourceType._mimeTypeByExtension.get(ext);
+    return _mimeTypeByExtension.get(ext);
   }
 
   /**
@@ -125,7 +126,7 @@ export class ResourceType {
    * @return {string|undefined}
    */
   static mimeFromExtension(ext) {
-    return ResourceType._mimeTypeByExtension.get(ext);
+    return _mimeTypeByExtension.get(ext);
   }
 
   /**
@@ -250,7 +251,7 @@ export const resourceCategories = {
   Document: new ResourceCategory(ls`Documents`, ls`Doc`),
   WebSocket: new ResourceCategory(ls`WebSockets`, ls`WS`),
   Manifest: new ResourceCategory(ls`Manifest`, ls`Manifest`),
-  Other: new ResourceCategory(ls`Other`, ls`Other`)
+  Other: new ResourceCategory(ls`Other`, ls`Other`),
 };
 
 /**
@@ -258,22 +259,24 @@ export const resourceCategories = {
  * @enum {!ResourceType}
  */
 export const resourceTypes = {
-  XHR: new ResourceType('xhr', ls`XHR`, resourceCategories.XHR, true),
-  Fetch: new ResourceType('fetch', ls`Fetch`, resourceCategories.XHR, true),
-  EventSource: new ResourceType('eventsource', ls`EventSource`, resourceCategories.XHR, true),
-  Script: new ResourceType('script', ls`Script`, resourceCategories.Script, true),
+  Document: new ResourceType('document', ls`Document`, resourceCategories.Document, true),
   Stylesheet: new ResourceType('stylesheet', ls`Stylesheet`, resourceCategories.Stylesheet, true),
   Image: new ResourceType('image', ls`Image`, resourceCategories.Image, false),
   Media: new ResourceType('media', ls`Media`, resourceCategories.Media, false),
   Font: new ResourceType('font', ls`Font`, resourceCategories.Font, false),
-  Document: new ResourceType('document', ls`Document`, resourceCategories.Document, true),
+  Script: new ResourceType('script', ls`Script`, resourceCategories.Script, true),
   TextTrack: new ResourceType('texttrack', ls`TextTrack`, resourceCategories.Other, true),
+  XHR: new ResourceType('xhr', ls`XHR`, resourceCategories.XHR, true),
+  Fetch: new ResourceType('fetch', ls`Fetch`, resourceCategories.XHR, true),
+  EventSource: new ResourceType('eventsource', ls`EventSource`, resourceCategories.XHR, true),
   WebSocket: new ResourceType('websocket', ls`WebSocket`, resourceCategories.WebSocket, false),
+  Manifest: new ResourceType('manifest', ls`Manifest`, resourceCategories.Manifest, true),
+  SignedExchange: new ResourceType('signed-exchange', ls`SignedExchange`, resourceCategories.Other, false),
+  Ping: new ResourceType('ping', ls`Ping`, resourceCategories.Other, false),
+  CSPViolationReport: new ResourceType('csp-violation-report', ls`CSPViolationReport`, resourceCategories.Other, false),
   Other: new ResourceType('other', ls`Other`, resourceCategories.Other, false),
   SourceMapScript: new ResourceType('sm-script', ls`Script`, resourceCategories.Script, true),
   SourceMapStyleSheet: new ResourceType('sm-stylesheet', ls`Stylesheet`, resourceCategories.Stylesheet, true),
-  Manifest: new ResourceType('manifest', ls`Manifest`, resourceCategories.Manifest, true),
-  SignedExchange: new ResourceType('signed-exchange', ls`SignedExchange`, resourceCategories.Other, false)
 };
 
 
@@ -366,31 +369,3 @@ export const _mimeTypeByExtension = new Map([
   // Font
   ['ttf', 'font/opentype'], ['otf', 'font/opentype'], ['ttc', 'font/opentype'], ['woff', 'application/font-woff']
 ]);
-
-/* Legacy exported object */
-self.Common = self.Common || {};
-Common = Common || {};
-
-/**
- * @enum {!ResourceType}
- */
-Common.resourceTypes = resourceTypes;
-
-/**
- * @enum {!ResourceCategory}
- */
-Common.resourceCategories = resourceCategories;
-
-/**
- * @constructor
- */
-Common.ResourceCategory = ResourceCategory;
-
-/**
- * @constructor
- */
-Common.ResourceType = ResourceType;
-
-Common.ResourceType._mimeTypeByName = _mimeTypeByName;
-Common.ResourceType._resourceTypeByExtension = _resourceTypeByExtension;
-Common.ResourceType._mimeTypeByExtension = _mimeTypeByExtension;

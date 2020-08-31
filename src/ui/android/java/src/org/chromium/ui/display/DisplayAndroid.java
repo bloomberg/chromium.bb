@@ -20,7 +20,7 @@ import java.util.WeakHashMap;
  * anywhere, as long as the corresponding WindowAndroids are destroyed. The observers are
  * held weakly so to not lead to leaks.
  */
-public class DisplayAndroid {
+public abstract class DisplayAndroid {
     /**
      * DisplayAndroidObserver interface for changes to this Display.
      */
@@ -137,7 +137,7 @@ public class DisplayAndroid {
     /**
      * @return current orientation in degrees. One of the values 0, 90, 180, 270.
      */
-    /* package */ int getRotationDegrees() {
+    public int getRotationDegrees() {
         switch (getRotation()) {
             case Surface.ROTATION_0:
                 return 0;
@@ -253,6 +253,8 @@ public class DisplayAndroid {
     public void updateIsDisplayServerWideColorGamut(Boolean isDisplayServerWideColorGamut) {
         update(null, null, null, null, null, null, isDisplayServerWideColorGamut, null, null, null);
     }
+
+    public abstract boolean applyDisableSurfaceControlWorkaround();
 
     /**
      * Update the display to the provided parameters. Null values leave the parameter unchanged.

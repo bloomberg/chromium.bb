@@ -43,18 +43,6 @@
 #include "xfa/fxfa/parser/cxfa_node.h"
 #include "xfa/fxfa/parser/cxfa_passwordedit.h"
 
-namespace {
-
-CXFA_FFDropDown* ToDropDown(CXFA_FFWidget* widget) {
-  return static_cast<CXFA_FFDropDown*>(widget);
-}
-
-CXFA_FFComboBox* ToComboBox(CXFA_FFWidget* widget) {
-  return static_cast<CXFA_FFComboBox*>(widget);
-}
-
-}  // namespace
-
 CXFA_FFNotify::CXFA_FFNotify(CXFA_FFDoc* pDoc) : m_pDoc(pDoc) {}
 
 CXFA_FFNotify::~CXFA_FFNotify() {}
@@ -73,9 +61,9 @@ void CXFA_FFNotify::OnWidgetListItemAdded(CXFA_Node* pSender,
     return;
 
   CXFA_FFWidget* pWidget = m_pDoc->GetDocView()->GetWidgetForNode(pSender);
-  for (; pWidget; pWidget = pSender->GetNextWidget(pWidget)) {
+  for (; pWidget; pWidget = pWidget->GetNextFFWidget()) {
     if (pWidget->IsLoaded())
-      ToDropDown(pWidget)->InsertItem(wsLabel, iIndex);
+      ToDropDown(ToField(pWidget))->InsertItem(wsLabel, iIndex);
   }
 }
 
@@ -85,9 +73,9 @@ void CXFA_FFNotify::OnWidgetListItemRemoved(CXFA_Node* pSender,
     return;
 
   CXFA_FFWidget* pWidget = m_pDoc->GetDocView()->GetWidgetForNode(pSender);
-  for (; pWidget; pWidget = pSender->GetNextWidget(pWidget)) {
+  for (; pWidget; pWidget = pWidget->GetNextFFWidget()) {
     if (pWidget->IsLoaded())
-      ToDropDown(pWidget)->DeleteItem(iIndex);
+      ToDropDown(ToField(pWidget))->DeleteItem(iIndex);
   }
 }
 
@@ -249,16 +237,37 @@ CXFA_FFWidgetHandler* CXFA_FFNotify::GetWidgetHandler() {
   return pDocView ? pDocView->GetWidgetHandler() : nullptr;
 }
 
-void CXFA_FFNotify::OpenDropDownList(CXFA_FFWidget* hWidget) {
+void CXFA_FFNotify::OpenDropDownList(CXFA_Node* pNode) {
+  auto* pDocLayout = CXFA_LayoutProcessor::FromDocument(m_pDoc->GetXFADoc());
+  CXFA_LayoutItem* pLayoutItem = pDocLayout->GetLayoutItem(pNode);
+  if (!pLayoutItem)
+    return;
+
+  CXFA_FFWidget* hWidget = XFA_GetWidgetFromLayoutItem(pLayoutItem);
+  if (!hWidget)
+    return;
+
+  // SetFocusWidget() may destroy |hWidget| object by JS callback.
+  ObservedPtr<CXFA_FFWidget> pObservedWidget(hWidget);
+  CXFA_FFDoc* hDoc = GetHDOC();
+  hDoc->GetDocEnvironment()->SetFocusWidget(hDoc, hWidget);
+  if (!pObservedWidget)
+    return;
+
   if (hWidget->GetNode()->GetFFWidgetType() != XFA_FFWidgetType::kChoiceList)
     return;
 
   if (!hWidget->IsLoaded())
     return;
 
+  CXFA_FFDropDown* pDropDown = ToDropDown(ToField(hWidget));
+  CXFA_FFComboBox* pComboBox = ToComboBox(pDropDown);
+  if (!pComboBox)
+    return;
+
   CXFA_FFDocView* pDocView = m_pDoc->GetDocView();
   pDocView->LockUpdate();
-  ToComboBox(hWidget)->OpenDropDownList();
+  pComboBox->OpenDropDownList();
   pDocView->UnlockUpdate();
   pDocView->UpdateDocView();
 }
@@ -341,7 +350,7 @@ void CXFA_FFNotify::OnValueChanging(CXFA_Node* pSender, XFA_Attribute eAttr) {
     return;
 
   CXFA_FFWidget* pWidget = m_pDoc->GetDocView()->GetWidgetForNode(pSender);
-  for (; pWidget; pWidget = pSender->GetNextWidget(pWidget)) {
+  for (; pWidget; pWidget = pWidget->GetNextFFWidget()) {
     if (pWidget->IsLoaded())
       pWidget->InvalidateRect();
   }
@@ -388,19 +397,19 @@ void CXFA_FFNotify::OnValueChanged(CXFA_Node* pSender,
     pDocView->AddCalculateNodeNotify(pSender);
     if (eType == XFA_Element::Value || bIsContainerNode) {
       if (bIsContainerNode) {
-        pWidgetNode->UpdateUIDisplay(m_pDoc->GetDocView(), nullptr);
+        m_pDoc->GetDocView()->UpdateUIDisplay(pWidgetNode, nullptr);
         pDocView->AddCalculateNode(pWidgetNode);
         pDocView->AddValidateNode(pWidgetNode);
       } else if (pWidgetNode->GetParent()->GetElementType() ==
                  XFA_Element::ExclGroup) {
-        pWidgetNode->UpdateUIDisplay(m_pDoc->GetDocView(), nullptr);
+        m_pDoc->GetDocView()->UpdateUIDisplay(pWidgetNode, nullptr);
       }
       return;
     }
   }
 
   CXFA_FFWidget* pWidget = m_pDoc->GetDocView()->GetWidgetForNode(pWidgetNode);
-  for (; pWidget; pWidget = pWidgetNode->GetNextWidget(pWidget)) {
+  for (; pWidget; pWidget = pWidget->GetNextFFWidget()) {
     if (!pWidget->IsLoaded())
       continue;
 
@@ -412,8 +421,7 @@ void CXFA_FFNotify::OnValueChanged(CXFA_Node* pSender,
 }
 
 void CXFA_FFNotify::OnContainerChanged(CXFA_Node* pNode) {
-  auto* pLayout = CXFA_LayoutProcessor::FromDocument(m_pDoc->GetXFADoc());
-  pLayout->AddChangedContainer(pNode);
+  m_pDoc->GetXFADoc()->GetLayoutProcessor()->AddChangedContainer(pNode);
 }
 
 void CXFA_FFNotify::OnChildAdded(CXFA_Node* pSender) {

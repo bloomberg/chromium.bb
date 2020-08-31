@@ -38,32 +38,32 @@ static const char* specific_layout_qualifier_name(GrBlendEquation equation) {
     };
     return kLayoutQualifierNames[equation - kFirstAdvancedGrBlendEquation];
 
-    GR_STATIC_ASSERT(0 == kScreen_GrBlendEquation - kFirstAdvancedGrBlendEquation);
-    GR_STATIC_ASSERT(1 == kOverlay_GrBlendEquation - kFirstAdvancedGrBlendEquation);
-    GR_STATIC_ASSERT(2 == kDarken_GrBlendEquation - kFirstAdvancedGrBlendEquation);
-    GR_STATIC_ASSERT(3 == kLighten_GrBlendEquation - kFirstAdvancedGrBlendEquation);
-    GR_STATIC_ASSERT(4 == kColorDodge_GrBlendEquation - kFirstAdvancedGrBlendEquation);
-    GR_STATIC_ASSERT(5 == kColorBurn_GrBlendEquation - kFirstAdvancedGrBlendEquation);
-    GR_STATIC_ASSERT(6 == kHardLight_GrBlendEquation - kFirstAdvancedGrBlendEquation);
-    GR_STATIC_ASSERT(7 == kSoftLight_GrBlendEquation - kFirstAdvancedGrBlendEquation);
-    GR_STATIC_ASSERT(8 == kDifference_GrBlendEquation - kFirstAdvancedGrBlendEquation);
-    GR_STATIC_ASSERT(9 == kExclusion_GrBlendEquation - kFirstAdvancedGrBlendEquation);
-    GR_STATIC_ASSERT(10 == kMultiply_GrBlendEquation - kFirstAdvancedGrBlendEquation);
-    GR_STATIC_ASSERT(11 == kHSLHue_GrBlendEquation - kFirstAdvancedGrBlendEquation);
-    GR_STATIC_ASSERT(12 == kHSLSaturation_GrBlendEquation - kFirstAdvancedGrBlendEquation);
-    GR_STATIC_ASSERT(13 == kHSLColor_GrBlendEquation - kFirstAdvancedGrBlendEquation);
-    GR_STATIC_ASSERT(14 == kHSLLuminosity_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(0 == kScreen_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(1 == kOverlay_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(2 == kDarken_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(3 == kLighten_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(4 == kColorDodge_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(5 == kColorBurn_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(6 == kHardLight_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(7 == kSoftLight_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(8 == kDifference_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(9 == kExclusion_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(10 == kMultiply_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(11 == kHSLHue_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(12 == kHSLSaturation_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(13 == kHSLColor_GrBlendEquation - kFirstAdvancedGrBlendEquation);
+    static_assert(14 == kHSLLuminosity_GrBlendEquation - kFirstAdvancedGrBlendEquation);
     // There's an illegal GrBlendEquation at the end there, hence the -1.
-    GR_STATIC_ASSERT(SK_ARRAY_COUNT(kLayoutQualifierNames) ==
-                     kGrBlendEquationCnt - kFirstAdvancedGrBlendEquation - 1);
+    static_assert(SK_ARRAY_COUNT(kLayoutQualifierNames) ==
+                  kGrBlendEquationCnt - kFirstAdvancedGrBlendEquation - 1);
 }
 
 uint8_t GrGLSLFragmentShaderBuilder::KeyForSurfaceOrigin(GrSurfaceOrigin origin) {
     SkASSERT(kTopLeft_GrSurfaceOrigin == origin || kBottomLeft_GrSurfaceOrigin == origin);
     return origin + 1;
 
-    GR_STATIC_ASSERT(0 == kTopLeft_GrSurfaceOrigin);
-    GR_STATIC_ASSERT(1 == kBottomLeft_GrSurfaceOrigin);
+    static_assert(0 == kTopLeft_GrSurfaceOrigin);
+    static_assert(1 == kBottomLeft_GrSurfaceOrigin);
 }
 
 GrGLSLFragmentShaderBuilder::GrGLSLFragmentShaderBuilder(GrGLSLProgramBuilder* program)
@@ -71,20 +71,30 @@ GrGLSLFragmentShaderBuilder::GrGLSLFragmentShaderBuilder(GrGLSLProgramBuilder* p
     fSubstageIndices.push_back(0);
 }
 
-SkString GrGLSLFragmentShaderBuilder::ensureCoords2D(const GrShaderVar& coords) {
+SkString GrGLSLFragmentShaderBuilder::ensureCoords2D(const GrShaderVar& coords,
+                                                     const SkSL::SampleMatrix& matrix) {
+    SkString result;
     if (!coords.getName().size()) {
-        return SkString("_coords");
-    }
-    if (kFloat3_GrSLType != coords.getType() && kHalf3_GrSLType != coords.getType()) {
+        result = "_coords";
+    } else if (kFloat3_GrSLType != coords.getType() && kHalf3_GrSLType != coords.getType()) {
         SkASSERT(kFloat2_GrSLType == coords.getType() || kHalf2_GrSLType == coords.getType());
-        return coords.getName();
+        result = coords.getName();
+    } else {
+        SkString coords2D;
+        coords2D.printf("%s_ensure2D", coords.c_str());
+        this->codeAppendf("\tfloat2 %s = %s.xy / %s.z;", coords2D.c_str(), coords.c_str(),
+                          coords.c_str());
+        result = coords2D;
     }
-
-    SkString coords2D;
-    coords2D.printf("%s_ensure2D", coords.c_str());
-    this->codeAppendf("\tfloat2 %s = %s.xy / %s.z;", coords2D.c_str(), coords.c_str(),
-                      coords.c_str());
-    return coords2D;
+    switch (matrix.fKind) {
+        case SkSL::SampleMatrix::Kind::kMixed:
+        case SkSL::SampleMatrix::Kind::kVariable:
+            result = SkStringPrintf("(_matrix * float3(%s, 1)).xy", result.c_str());
+            break;
+        default:
+            break;
+    }
+    return result;
 }
 
 const char* GrGLSLFragmentShaderBuilder::sampleOffsets() {
@@ -163,26 +173,45 @@ SkString GrGLSLFPFragmentBuilder::writeProcessorFunction(GrGLSLFragmentProcessor
                                                          GrGLSLFragmentProcessor::EmitArgs& args) {
     this->onBeforeChildProcEmitCode();
     this->nextStage();
-    if (!args.fFp.coordTransformsApplyToLocalCoords() && args.fTransformedCoords.count() > 0) {
+    bool hasVariableMatrix = args.fFp.sampleMatrix().fKind == SkSL::SampleMatrix::Kind::kVariable ||
+                             args.fFp.sampleMatrix().fKind == SkSL::SampleMatrix::Kind::kMixed;
+    if (args.fFp.isSampledWithExplicitCoords() && args.fTransformedCoords.count() > 0) {
         // we currently only support overriding a single coordinate pair
         SkASSERT(args.fTransformedCoords.count() == 1);
-        const GrGLSLProgramDataManager::UniformHandle& mat =
-                                                          args.fTransformedCoords[0].fUniformMatrix;
-        if (mat.isValid()) {
-            args.fUniformHandler->updateUniformVisibility(mat, kFragment_GrShaderFlag);
+        const GrShaderVar& transform = args.fTransformedCoords[0].fTransform;
+        switch (transform.getType()) {
+            case kFloat4_GrSLType:
+                this->codeAppendf("_coords = _coords * %s.xz + %s.yw;\n", transform.c_str(),
+                                  transform.c_str());
+                break;
+            case kFloat3x3_GrSLType:
+                this->codeAppendf("_coords = (%s * float3(_coords, 1)).xy;\n", transform.c_str());
+                break;
+            default:
+                SkASSERT(transform.getType() == kVoid_GrSLType);
+                break;
+        }
+        if (args.fFp.sampleMatrix().fKind != SkSL::SampleMatrix::Kind::kNone) {
+            SkASSERT(!hasVariableMatrix);
+            this->codeAppend("{\n");
+            args.fUniformHandler->writeUniformMappings(args.fFp.sampleMatrix().fOwner, this);
             this->codeAppendf("_coords = (%s * float3(_coords, 1)).xy;\n",
-                              args.fTransformedCoords[0].fMatrixCode.c_str());
+                              args.fFp.sampleMatrix().fExpression.c_str());
+            this->codeAppend("}\n");
         }
     }
+
     this->codeAppendf("half4 %s;\n", args.fOutputColor);
     fp->emitCode(args);
     this->codeAppendf("return %s;\n", args.fOutputColor);
     GrShaderVar params[] = { GrShaderVar(args.fInputColor, kHalf4_GrSLType),
-                             GrShaderVar("_coords", kFloat2_GrSLType) };
+                             hasVariableMatrix ? GrShaderVar("_matrix", kFloat3x3_GrSLType)
+                                               : GrShaderVar("_coords", kFloat2_GrSLType) };
     SkString result;
     this->emitFunction(kHalf4_GrSLType,
-                       "stage",
-                       args.fFp.coordTransformsApplyToLocalCoords() ? 1 : 2,
+                       args.fFp.name(),
+                       args.fFp.isSampledWithExplicitCoords() || hasVariableMatrix ? 2
+                                                                                   : 1,
                        params,
                        this->code().c_str(),
                        &result);
@@ -203,7 +232,7 @@ const char* GrGLSLFragmentShaderBuilder::dstColor() {
         const char* fbFetchColorName = "sk_LastFragColor";
         if (shaderCaps->fbFetchNeedsCustomOutput()) {
             this->enableCustomOutput();
-            fOutputs[fCustomColorOutputIndex].setTypeModifier(GrShaderVar::kInOut_TypeModifier);
+            fCustomColorOutput->setTypeModifier(GrShaderVar::TypeModifier::InOut);
             fbFetchColorName = DeclaredColorOutputName();
             // Set the dstColor to an intermediate variable so we don't override it with the output
             this->codeAppendf("half4 %s = %s;", kDstColorName, fbFetchColorName);
@@ -232,11 +261,9 @@ void GrGLSLFragmentShaderBuilder::enableAdvancedBlendEquationIfNeeded(GrBlendEqu
 }
 
 void GrGLSLFragmentShaderBuilder::enableCustomOutput() {
-    if (!fHasCustomColorOutput) {
-        fHasCustomColorOutput = true;
-        fCustomColorOutputIndex = fOutputs.count();
-        fOutputs.push_back().set(kHalf4_GrSLType, DeclaredColorOutputName(),
-                                 GrShaderVar::kOut_TypeModifier);
+    if (!fCustomColorOutput) {
+        fCustomColorOutput = &fOutputs.emplace_back(DeclaredColorOutputName(), kHalf4_GrSLType,
+                                                    GrShaderVar::TypeModifier::Out);
         fProgramBuilder->finalizeFragmentOutputColor(fOutputs.back());
     }
 }
@@ -254,19 +281,19 @@ void GrGLSLFragmentShaderBuilder::enableSecondaryOutput() {
     // output. The condition also co-incides with the condition in whici GLES SL 2.0
     // requires the built-in gl_SecondaryFragColorEXT, where as 3.0 requires a custom output.
     if (caps.mustDeclareFragmentShaderOutput()) {
-        fOutputs.push_back().set(kHalf4_GrSLType, DeclaredSecondaryColorOutputName(),
-                                 GrShaderVar::kOut_TypeModifier);
+        fOutputs.emplace_back(DeclaredSecondaryColorOutputName(), kHalf4_GrSLType,
+                              GrShaderVar::TypeModifier::Out);
         fProgramBuilder->finalizeFragmentSecondaryColor(fOutputs.back());
     }
 }
 
 const char* GrGLSLFragmentShaderBuilder::getPrimaryColorOutputName() const {
-    return fHasCustomColorOutput ? DeclaredColorOutputName() : "sk_FragColor";
+    return this->hasCustomColorOutput() ? DeclaredColorOutputName() : "sk_FragColor";
 }
 
 bool GrGLSLFragmentShaderBuilder::primaryColorOutputIsInOut() const {
-    return fHasCustomColorOutput &&
-           fOutputs[fCustomColorOutputIndex].getTypeModifier() == GrShaderVar::kInOut_TypeModifier;
+    return fCustomColorOutput &&
+           fCustomColorOutput->getTypeModifier() == GrShaderVar::TypeModifier::InOut;
 }
 
 void GrGLSLFragmentBuilder::declAppendf(const char* fmt, ...) {

@@ -10,6 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_browsertest.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -1428,6 +1429,19 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Mp4aVariants) {
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"mp4a.4.5\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"mp4a.400.5\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"mp4a.040.5\"'"));
+
+// xHE-AAC support is currently only available on P+.
+#if defined(OS_ANDROID)
+  const char* kXHE_AACProbably =
+      base::android::BuildInfo::GetInstance()->sdk_int() >=
+              base::android::SDK_VERSION_P
+          ? kProbably
+          : kNot;
+#else
+  const char* kXHE_AACProbably = kNot;
+#endif
+  EXPECT_EQ(kXHE_AACProbably, CanPlay("'audio/mp4; codecs=\"mp4a.40.42\"'"));
+  EXPECT_EQ(kXHE_AACProbably, CanPlay("'video/mp4; codecs=\"mp4a.40.42\"'"));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_HLS) {
@@ -1537,8 +1551,9 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Mpeg2TsAudio) {
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_NewVp9Variants) {
   const std::string kSupportedMimeTypes[] = {"video/webm", "video/mp4"};
   for (const auto& mime_type : kSupportedMimeTypes) {
-// Profile 2 and 3 support is currently disabled on ARM and MIPS.
-#if defined(ARCH_CPU_ARM_FAMILY) || defined(ARCH_CPU_MIPS_FAMILY)
+// Profile 2 and 3 support is currently disabled on Android prior to P and MIPS.
+#if (defined(ARCH_CPU_ARM_FAMILY) && !defined(OS_WIN)) || \
+    defined(ARCH_CPU_MIPS_FAMILY)
 #if defined(OS_ANDROID)
     const char* kVP9Profile2And3Probably =
         base::android::BuildInfo::GetInstance()->sdk_int() >=

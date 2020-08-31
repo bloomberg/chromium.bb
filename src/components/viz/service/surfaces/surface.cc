@@ -237,7 +237,7 @@ Surface::QueueFrameResult Surface::QueueFrame(
 
   if (activation_dependencies_.empty()) {
     // If there are no blockers, then immediately activate the frame.
-    ActivateFrame(FrameData(std::move(frame), frame_index), base::nullopt);
+    ActivateFrame(FrameData(std::move(frame), frame_index));
   } else {
     pending_frame_data_ = FrameData(std::move(frame), frame_index);
 
@@ -261,6 +261,8 @@ Surface::QueueFrameResult Surface::QueueFrame(
 
 void Surface::RequestCopyOfOutput(
     std::unique_ptr<CopyOutputRequest> copy_request) {
+  TRACE_EVENT1("viz", "Surface::RequestCopyOfOutput", "has_active_frame_data",
+               !!active_frame_data_);
   if (!active_frame_data_)
     return;  // |copy_request| auto-sends empty result on out-of-scope.
 
@@ -317,8 +319,14 @@ void Surface::ActivatePendingFrame() {
   pending_frame_data_.reset();
 
   base::Optional<base::TimeDelta> duration = deadline_->Cancel();
+  if (duration.has_value()) {
+    TRACE_EVENT_INSTANT2("viz", "SurfaceSynchronizationEvent",
+                         TRACE_EVENT_SCOPE_THREAD, "surface_id",
+                         surface_info_.id().ToString(), "duration_ms",
+                         duration.value().InMilliseconds());
+  }
 
-  ActivateFrame(std::move(frame_data), std::move(duration));
+  ActivateFrame(std::move(frame_data));
 }
 
 void Surface::UpdateReferencedAllocationGroups(
@@ -385,13 +393,9 @@ void Surface::RecomputeActiveReferencedSurfaces() {
   UpdateSurfaceReferences();
 }
 
-// A frame is activated if all its Surface ID dependences are active or a
-// deadline has hit and the frame was forcibly activated. |duration| is a
-// measure of the time the frame has spent waiting on dependencies to arrive.
-// If |duration| is base::nullopt, then that indicates that this frame was not
-// blocked on dependencies.
-void Surface::ActivateFrame(FrameData frame_data,
-                            base::Optional<base::TimeDelta> duration) {
+// A frame is activated if all its Surface ID dependencies are active or a
+// deadline has hit and the frame was forcibly activated.
+void Surface::ActivateFrame(FrameData frame_data) {
   TRACE_EVENT1("viz", "Surface::ActivateFrame", "FrameSinkId",
                surface_id().frame_sink_id().ToString());
 
@@ -443,7 +447,7 @@ void Surface::ActivateFrame(FrameData frame_data,
     surface_manager_->FirstSurfaceActivation(surface_info_);
   }
 
-  surface_manager_->SurfaceActivated(this, duration);
+  surface_manager_->SurfaceActivated(this);
 
   // Defer notifying the embedder of an updated token until the frame has been
   // completely processed.
@@ -645,10 +649,16 @@ void Surface::UnrefFrameResourcesAndRunCallbacks(
 
   // If we won't be getting a presented notification, we'll notify the client
   // when the frame is unref'd.
-  if (!frame_data->will_be_notified_of_presentation && surface_client_)
+  if (!frame_data->will_be_notified_of_presentation && surface_client_) {
     surface_client_->OnSurfacePresented(frame_data->frame.metadata.frame_token,
                                         base::TimeTicks(), gfx::SwapTimings(),
                                         gfx::PresentationFeedback::Failure());
+  }
+
+  // Usually the LatencyInfo was already taken during aggregation or when the
+  // surface was replaced. If neither happened, terminate the LatencyInfo now.
+  for (ui::LatencyInfo& info : frame_data->frame.metadata.latency_info)
+    info.Terminate();
 }
 
 void Surface::ClearCopyRequests() {

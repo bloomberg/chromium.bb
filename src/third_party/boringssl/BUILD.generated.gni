@@ -84,6 +84,9 @@ crypto_sources = [
   "src/crypto/cpu-intel.c",
   "src/crypto/cpu-ppc64le.c",
   "src/crypto/crypto.c",
+  "src/crypto/curve25519/curve25519.c",
+  "src/crypto/curve25519/curve25519_tables.h",
+  "src/crypto/curve25519/internal.h",
   "src/crypto/curve25519/spake25519.c",
   "src/crypto/dh/check.c",
   "src/crypto/dh/dh.c",
@@ -94,6 +97,8 @@ crypto_sources = [
   "src/crypto/dsa/dsa_asn1.c",
   "src/crypto/ec_extra/ec_asn1.c",
   "src/crypto/ec_extra/ec_derive.c",
+  "src/crypto/ec_extra/hash_to_curve.c",
+  "src/crypto/ec_extra/internal.h",
   "src/crypto/ecdh_extra/ecdh_extra.c",
   "src/crypto/ecdsa_extra/ecdsa_asn1.c",
   "src/crypto/engine/engine.c",
@@ -130,10 +135,13 @@ crypto_sources = [
   "src/crypto/fipsmodule/ec/internal.h",
   "src/crypto/fipsmodule/ec/p256-x86_64-table.h",
   "src/crypto/fipsmodule/ec/p256-x86_64.h",
+  "src/crypto/fipsmodule/ec/p256_table.h",
   "src/crypto/fipsmodule/fips_shared_support.c",
   "src/crypto/fipsmodule/is_fips.c",
   "src/crypto/fipsmodule/md5/internal.h",
   "src/crypto/fipsmodule/modes/internal.h",
+  "src/crypto/fipsmodule/rand/fork_detect.h",
+  "src/crypto/fipsmodule/rand/getrandom_fillin.h",
   "src/crypto/fipsmodule/rand/internal.h",
   "src/crypto/fipsmodule/rsa/internal.h",
   "src/crypto/fipsmodule/sha/internal.h",
@@ -184,6 +192,9 @@ crypto_sources = [
   "src/crypto/thread_none.c",
   "src/crypto/thread_pthread.c",
   "src/crypto/thread_win.c",
+  "src/crypto/trust_token/internal.h",
+  "src/crypto/trust_token/pmbtoken.c",
+  "src/crypto/trust_token/trust_token.c",
   "src/crypto/x509/a_digest.c",
   "src/crypto/x509/a_sign.c",
   "src/crypto/x509/a_strex.c",
@@ -272,11 +283,8 @@ crypto_sources = [
   "src/crypto/x509v3/v3_skey.c",
   "src/crypto/x509v3/v3_sxnet.c",
   "src/crypto/x509v3/v3_utl.c",
-  "src/third_party/fiat/curve25519.c",
   "src/third_party/fiat/curve25519_32.h",
   "src/third_party/fiat/curve25519_64.h",
-  "src/third_party/fiat/curve25519_tables.h",
-  "src/third_party/fiat/internal.h",
   "src/third_party/fiat/p256_32.h",
   "src/third_party/fiat/p256_64.h",
 ]
@@ -348,6 +356,7 @@ crypto_headers = [
   "src/include/openssl/span.h",
   "src/include/openssl/stack.h",
   "src/include/openssl/thread.h",
+  "src/include/openssl/trust_token.h",
   "src/include/openssl/type_check.h",
   "src/include/openssl/x509.h",
   "src/include/openssl/x509_vfy.h",
@@ -417,7 +426,6 @@ crypto_sources_ios_aarch64 = [
 
 crypto_sources_ios_arm = [
   "ios-arm/crypto/chacha/chacha-armv4.S",
-  "ios-arm/crypto/fipsmodule/aes-armv4.S",
   "ios-arm/crypto/fipsmodule/aesv8-armx32.S",
   "ios-arm/crypto/fipsmodule/armv4-mont.S",
   "ios-arm/crypto/fipsmodule/bsaes-armv7.S",
@@ -445,7 +453,6 @@ crypto_sources_linux_aarch64 = [
 
 crypto_sources_linux_arm = [
   "linux-arm/crypto/chacha/chacha-armv4.S",
-  "linux-arm/crypto/fipsmodule/aes-armv4.S",
   "linux-arm/crypto/fipsmodule/aesv8-armx32.S",
   "linux-arm/crypto/fipsmodule/armv4-mont.S",
   "linux-arm/crypto/fipsmodule/bsaes-armv7.S",
@@ -468,7 +475,6 @@ crypto_sources_linux_ppc64le = [
 
 crypto_sources_linux_x86 = [
   "linux-x86/crypto/chacha/chacha-x86.S",
-  "linux-x86/crypto/fipsmodule/aes-586.S",
   "linux-x86/crypto/fipsmodule/aesni-x86.S",
   "linux-x86/crypto/fipsmodule/bn-586.S",
   "linux-x86/crypto/fipsmodule/co-586.S",
@@ -487,7 +493,6 @@ crypto_sources_linux_x86_64 = [
   "linux-x86_64/crypto/chacha/chacha-x86_64.S",
   "linux-x86_64/crypto/cipher_extra/aes128gcmsiv-x86_64.S",
   "linux-x86_64/crypto/cipher_extra/chacha20_poly1305_x86_64.S",
-  "linux-x86_64/crypto/fipsmodule/aes-x86_64.S",
   "linux-x86_64/crypto/fipsmodule/aesni-gcm-x86_64.S",
   "linux-x86_64/crypto/fipsmodule/aesni-x86_64.S",
   "linux-x86_64/crypto/fipsmodule/ghash-ssse3-x86_64.S",
@@ -509,7 +514,6 @@ crypto_sources_linux_x86_64 = [
 
 crypto_sources_mac_x86 = [
   "mac-x86/crypto/chacha/chacha-x86.S",
-  "mac-x86/crypto/fipsmodule/aes-586.S",
   "mac-x86/crypto/fipsmodule/aesni-x86.S",
   "mac-x86/crypto/fipsmodule/bn-586.S",
   "mac-x86/crypto/fipsmodule/co-586.S",
@@ -528,7 +532,6 @@ crypto_sources_mac_x86_64 = [
   "mac-x86_64/crypto/chacha/chacha-x86_64.S",
   "mac-x86_64/crypto/cipher_extra/aes128gcmsiv-x86_64.S",
   "mac-x86_64/crypto/cipher_extra/chacha20_poly1305_x86_64.S",
-  "mac-x86_64/crypto/fipsmodule/aes-x86_64.S",
   "mac-x86_64/crypto/fipsmodule/aesni-gcm-x86_64.S",
   "mac-x86_64/crypto/fipsmodule/aesni-x86_64.S",
   "mac-x86_64/crypto/fipsmodule/ghash-ssse3-x86_64.S",
@@ -549,7 +552,6 @@ crypto_sources_mac_x86_64 = [
 
 crypto_sources_win_x86 = [
   "win-x86/crypto/chacha/chacha-x86.asm",
-  "win-x86/crypto/fipsmodule/aes-586.asm",
   "win-x86/crypto/fipsmodule/aesni-x86.asm",
   "win-x86/crypto/fipsmodule/bn-586.asm",
   "win-x86/crypto/fipsmodule/co-586.asm",
@@ -568,7 +570,6 @@ crypto_sources_win_x86_64 = [
   "win-x86_64/crypto/chacha/chacha-x86_64.asm",
   "win-x86_64/crypto/cipher_extra/aes128gcmsiv-x86_64.asm",
   "win-x86_64/crypto/cipher_extra/chacha20_poly1305_x86_64.asm",
-  "win-x86_64/crypto/fipsmodule/aes-x86_64.asm",
   "win-x86_64/crypto/fipsmodule/aesni-gcm-x86_64.asm",
   "win-x86_64/crypto/fipsmodule/aesni-x86_64.asm",
   "win-x86_64/crypto/fipsmodule/ghash-ssse3-x86_64.asm",

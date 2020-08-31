@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -21,9 +20,9 @@ class MockClipboardHost : public blink::mojom::ClipboardHost {
   ~MockClipboardHost() override;
 
   void Bind(mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver);
+  // Clears all clipboard data.
   void Reset();
 
- private:
   // blink::mojom::ClipboardHost
   void GetSequenceNumber(ui::ClipboardBuffer clipboard_buffer,
                          GetSequenceNumberCallback callback) override;
@@ -48,7 +47,6 @@ class MockClipboardHost : public blink::mojom::ClipboardHost {
   void WriteSmartPasteMarker() override;
   void WriteCustomData(
       const base::flat_map<base::string16, base::string16>& data) override;
-  void WriteRawData(const base::string16&, mojo_base::BigBuffer) override;
   void WriteBookmark(const std::string& url,
                      const base::string16& title) override;
   void WriteImage(const SkBitmap& bitmap) override;
@@ -56,7 +54,7 @@ class MockClipboardHost : public blink::mojom::ClipboardHost {
 #if defined(OS_MACOSX)
   void WriteStringToFindPboard(const base::string16& text) override;
 #endif
-
+ private:
   mojo::ReceiverSet<blink::mojom::ClipboardHost> receivers_;
   uint64_t sequence_number_ = 0;
   base::string16 plain_text_;
@@ -64,7 +62,6 @@ class MockClipboardHost : public blink::mojom::ClipboardHost {
   GURL url_;
   SkBitmap image_;
   std::map<base::string16, base::string16> custom_data_;
-  std::map<base::string16, mojo_base::BigBuffer> raw_data_;
   bool write_smart_paste_ = false;
   bool needs_reset_ = false;
 

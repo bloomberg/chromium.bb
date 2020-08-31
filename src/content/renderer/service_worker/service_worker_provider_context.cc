@@ -14,6 +14,8 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
@@ -60,16 +62,15 @@ void CreateSubresourceLoaderFactoryForProviderContext(
 
 }  // namespace
 
-// For service worker clients.
 ServiceWorkerProviderContext::ServiceWorkerProviderContext(
-    blink::mojom::ServiceWorkerProviderType provider_type,
+    blink::mojom::ServiceWorkerContainerType container_type,
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainer>
         receiver,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainerHost>
         host_remote,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory)
-    : provider_type_(provider_type),
+    : container_type_(container_type),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       receiver_(this, std::move(receiver)),
       fallback_loader_factory_(std::move(fallback_loader_factory)) {
@@ -130,11 +131,8 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactoryInternal() {
 
     // Create a SubresourceLoaderFactory on a background thread to avoid
     // extra contention on the main thread.
-    auto task_runner = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-    auto current_task_runner =
-        base::CreateSequencedTaskRunner({base::CurrentThread()});
+    auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
     task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(
@@ -143,7 +141,7 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactoryInternal() {
             client_id_, fallback_loader_factory_->Clone(),
             controller_connector_.BindNewPipeAndPassReceiver(),
             subresource_loader_factory_.BindNewPipeAndPassReceiver(),
-            task_runner, std::move(current_task_runner),
+            task_runner, base::SequencedTaskRunnerHandle::Get(),
             base::BindRepeating(
                 &ServiceWorkerProviderContext::AddPendingWorkerTimingReceiver,
                 weak_factory_.GetWeakPtr())));
@@ -170,8 +168,8 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
 
 blink::mojom::ServiceWorkerContainerHost*
 ServiceWorkerProviderContext::container_host() const {
-  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow,
-            provider_type_);
+  DCHECK_EQ(blink::mojom::ServiceWorkerContainerType::kForWindow,
+            container_type_);
   return container_host_ ? container_host_.get() : nullptr;
 }
 
@@ -245,8 +243,8 @@ void ServiceWorkerProviderContext::DispatchNetworkQuiet() {
 
 void ServiceWorkerProviderContext::NotifyExecutionReady() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK_EQ(provider_type(),
-            blink::mojom::ServiceWorkerProviderType::kForWindow)
+  DCHECK_EQ(container_type(),
+            blink::mojom::ServiceWorkerContainerType::kForWindow)
       << "only windows need to send this message; shared workers have "
          "execution ready set on the browser-side when the response is "
          "committed";

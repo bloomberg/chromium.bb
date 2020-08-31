@@ -41,6 +41,10 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
+namespace net {
+class SiteForCookies;
+}
+
 namespace blink {
 
 class WebString;
@@ -53,17 +57,20 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   // Called when following a redirect. |new_.*| arguments contain the
   // information about the received redirect. When |report_raw_headers| is
   // updated it'll be used for filtering data of the next redirect or response.
+  // |removed_headers| outputs headers that need to be removed from the
+  // redirect request.
   //
   // Implementations should return true to instruct the loader to follow the
   // redirect, or false otherwise.
   virtual bool WillFollowRedirect(
       const WebURL& new_url,
-      const WebURL& new_site_for_cookies,
+      const net::SiteForCookies& new_site_for_cookies,
       const WebString& new_referrer,
       network::mojom::ReferrerPolicy new_referrer_policy,
       const WebString& new_method,
       const WebURLResponse& passed_redirect_response,
-      bool& report_raw_headers) {
+      bool& report_raw_headers,
+      std::vector<std::string>* removed_headers) {
     return true;
   }
 

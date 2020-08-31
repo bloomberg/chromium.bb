@@ -432,12 +432,8 @@ class BookmarkModelTest : public testing::Test,
   BookmarkPermanentNode* ReloadModelWithManagedNode() {
     model_->RemoveObserver(this);
 
-    auto owned_managed_node =
-        std::make_unique<BookmarkPermanentNode>(100, BookmarkNode::FOLDER);
-    BookmarkPermanentNode* managed_node = owned_managed_node.get();
-
-    std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient);
-    client->SetManagedNodeToLoad(std::move(owned_managed_node));
+    auto client = std::make_unique<TestBookmarkClient>();
+    BookmarkPermanentNode* managed_node = client->EnableManagedNode();
 
     model_ = TestBookmarkClient::CreateModelWithClient(std::move(client));
     model_->AddObserver(this);
@@ -1122,17 +1118,6 @@ TEST_F(BookmarkModelTest, NodeVisibility) {
   // Mobile node invisible by default
   EXPECT_TRUE(model_->bookmark_bar_node()->IsVisible());
   EXPECT_TRUE(model_->other_node()->IsVisible());
-  EXPECT_FALSE(model_->mobile_node()->IsVisible());
-
-  // Visibility of permanent node can only be changed if they are not
-  // forced to be visible by the client.
-  model_->SetPermanentNodeVisible(BookmarkNode::BOOKMARK_BAR, false);
-  EXPECT_TRUE(model_->bookmark_bar_node()->IsVisible());
-  model_->SetPermanentNodeVisible(BookmarkNode::OTHER_NODE, false);
-  EXPECT_TRUE(model_->other_node()->IsVisible());
-  model_->SetPermanentNodeVisible(BookmarkNode::MOBILE, true);
-  EXPECT_TRUE(model_->mobile_node()->IsVisible());
-  model_->SetPermanentNodeVisible(BookmarkNode::MOBILE, false);
   EXPECT_FALSE(model_->mobile_node()->IsVisible());
 
   // Arbitrary node should be visible

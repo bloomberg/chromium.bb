@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/v4l2/v4l2_device.h"
+#include "ui/gfx/native_pixmap_handle.h"
 
 namespace media {
 
@@ -43,25 +44,24 @@ class GenericV4L2Device : public V4L2Device {
       size_t num_planes,
       enum v4l2_buf_type buf_type) override;
 
-  bool CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) override;
-  EGLImageKHR CreateEGLImage(
-      EGLDisplay egl_display,
-      EGLContext egl_context,
-      GLuint texture_id,
-      const gfx::Size& size,
-      unsigned int buffer_index,
-      uint32_t v4l2_pixfmt,
-      const std::vector<base::ScopedFD>& dmabuf_fds) override;
+  bool CanCreateEGLImageFrom(const Fourcc fourcc) const override;
+  EGLImageKHR CreateEGLImage(EGLDisplay egl_display,
+                             EGLContext egl_context,
+                             GLuint texture_id,
+                             const gfx::Size& size,
+                             unsigned int buffer_index,
+                             const Fourcc fourcc,
+                             gfx::NativePixmapHandle handle) const override;
 
   scoped_refptr<gl::GLImage> CreateGLImage(
       const gfx::Size& size,
-      uint32_t fourcc,
-      const std::vector<base::ScopedFD>& dmabuf_fds) override;
+      const Fourcc fourcc,
+      gfx::NativePixmapHandle handle) const override;
 
   EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
-                             EGLImageKHR egl_image) override;
-  GLenum GetTextureTarget() override;
-  std::vector<uint32_t> PreferredInputFormat(Type type) override;
+                             EGLImageKHR egl_image) const override;
+  GLenum GetTextureTarget() const override;
+  std::vector<uint32_t> PreferredInputFormat(Type type) const override;
 
   std::vector<uint32_t> GetSupportedImageProcessorPixelformats(
       v4l2_buf_type buf_type) override;
@@ -78,14 +78,15 @@ class GenericV4L2Device : public V4L2Device {
   bool IsJpegDecodingSupported() override;
   bool IsJpegEncodingSupported() override;
 
+ protected:
+  ~GenericV4L2Device() override;
+
+  bool Initialize() override;
+
  private:
   // Vector of video device node paths and corresponding pixelformats supported
   // by each device node.
   using Devices = std::vector<std::pair<std::string, std::vector<uint32_t>>>;
-
-  ~GenericV4L2Device() override;
-
-  bool Initialize() override;
 
   // Open device node for |path| as a device of |type|.
   bool OpenDevicePath(const std::string& path, Type type);

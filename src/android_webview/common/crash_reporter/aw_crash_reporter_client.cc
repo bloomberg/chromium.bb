@@ -23,8 +23,8 @@
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "build/build_config.h"
-#include "components/crash/content/app/crash_reporter_client.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crash_reporter_client.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/version_info/android/channel_getter.h"
 #include "components/version_info/version_info.h"
 #include "components/version_info/version_info_values.h"
@@ -64,10 +64,10 @@ class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
     return base::PathService::Get(android_webview::DIR_CRASH_DUMPS, crash_dir);
   }
 
-  void GetSanitizationInformation(const char* const** annotations_whitelist,
+  void GetSanitizationInformation(const char* const** crash_key_allowlist,
                                   void** target_module,
                                   bool* sanitize_stacks) override {
-    *annotations_whitelist = crash_keys::kWebViewCrashKeyWhiteList;
+    *crash_key_allowlist = crash_keys::kWebViewCrashKeyAllowList;
 #if defined(COMPONENT_BUILD)
     *target_module = nullptr;
 #else
@@ -91,6 +91,8 @@ class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
     }
     return true;
   }
+
+  bool ShouldWriteMinidumpToLog() override { return true; }
 
   bool JavaExceptionFilter(
       const base::android::JavaRef<jthrowable>& java_exception) {

@@ -22,13 +22,16 @@
 #include "base/strings/string16.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes_factory.h"
+#include "components/services/storage/public/mojom/native_file_system_context.mojom-forward.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_data_loss_info.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
 #include "content/browser/indexed_db/indexed_db_task_helper.h"
+#include "storage/browser/blob/mojom/blob_storage_context.mojom-forward.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "url/origin.h"
 
@@ -48,7 +51,9 @@ class IndexedDBContextImpl;
 class IndexedDBFactoryImpl;
 class IndexedDBOriginState;
 
-class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
+class CONTENT_EXPORT IndexedDBFactoryImpl
+    : public IndexedDBFactory,
+      base::trace_event::MemoryDumpProvider {
  public:
   IndexedDBFactoryImpl(IndexedDBContextImpl* context,
                        IndexedDBClassFactory* indexed_db_class_factory,
@@ -146,10 +151,13 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
       const url::Origin& origin,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
+      storage::mojom::BlobStorageContext* blob_storage_context,
+      storage::mojom::NativeFileSystemContext* native_file_system_context,
       IndexedDBBackingStore::BlobFilesCleanedCallback blob_files_cleaned,
       IndexedDBBackingStore::ReportOutstandingBlobsCallback
           report_outstanding_blobs,
-      base::SequencedTaskRunner* task_runner);
+      scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
   IndexedDBContextImpl* context() const { return context_; }
 
@@ -206,6 +214,9 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
                       const base::string16& name) const;
   bool IsBackingStoreOpen(const url::Origin& origin) const;
   bool IsBackingStorePendingClose(const url::Origin& origin) const;
+
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   SEQUENCE_CHECKER(sequence_checker_);
   // Raw pointer is safe because IndexedDBContextImpl owns this object.

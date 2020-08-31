@@ -4,12 +4,30 @@
 
 #include "chrome/browser/android/background_task_scheduler/chrome_background_task_factory.h"
 
-#include "chrome/android/chrome_jni_headers/ChromeBackgroundTaskFactory_jni.h"
+#include <memory>
+#include <utility>
 
-ChromeBackgroundTaskFactory::~ChromeBackgroundTaskFactory() = default;
+#include "chrome/android/chrome_jni_headers/ChromeBackgroundTaskFactory_jni.h"
+#include "chrome/browser/android/feed/v2/background_refresh_task.h"
+#include "chrome/browser/query_tiles/tile_background_task.h"
+#include "components/background_task_scheduler/task_ids.h"
 
 // static
 void ChromeBackgroundTaskFactory::SetAsDefault() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ChromeBackgroundTaskFactory_setAsDefault(env);
+}
+
+std::unique_ptr<background_task::BackgroundTask>
+ChromeBackgroundTaskFactory::GetNativeBackgroundTaskFromTaskId(int task_id) {
+  // Add your tasks here with mappings to the given task_id.
+  switch (task_id) {
+    case static_cast<int>(background_task::TaskIds::QUERY_TILE_JOB_ID):
+      return std::make_unique<query_tiles::TileBackgroundTask>();
+    case static_cast<int>(background_task::TaskIds::FEEDV2_REFRESH_JOB_ID):
+      return std::make_unique<feed::BackgroundRefreshTask>();
+    default:
+      break;
+  }
+  return nullptr;
 }

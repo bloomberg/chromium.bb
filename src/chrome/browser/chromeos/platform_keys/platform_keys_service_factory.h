@@ -1,11 +1,10 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_SERVICE_FACTORY_H_
 
-#include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace base {
@@ -14,6 +13,7 @@ struct DefaultSingletonTraits;
 }  // namespace base
 
 namespace chromeos {
+namespace platform_keys {
 
 class PlatformKeysService;
 
@@ -29,6 +29,9 @@ class PlatformKeysServiceFactory : public BrowserContextKeyedServiceFactory {
   friend struct base::DefaultSingletonTraits<PlatformKeysServiceFactory>;
 
   PlatformKeysServiceFactory();
+  PlatformKeysServiceFactory(const PlatformKeysServiceFactory&) = delete;
+  PlatformKeysServiceFactory& operator=(const PlatformKeysServiceFactory&) =
+      delete;
   ~PlatformKeysServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
@@ -36,10 +39,8 @@ class PlatformKeysServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformKeysServiceFactory);
 };
-
+}  // namespace platform_keys
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_SERVICE_FACTORY_H_

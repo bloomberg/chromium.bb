@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
@@ -55,6 +56,10 @@ void WaitForNetworkSelectionScreen() {
 }
 
 void TapNetworkSelectionNext() {
+  test::OobeJS()
+      .CreateEnabledWaiter(true /* enabled */,
+                           {"oobe-network-md", "nextButton"})
+      ->Wait();
   test::OobeJS().TapOnPath({"oobe-network-md", "nextButton"});
 }
 
@@ -137,6 +142,12 @@ void WaitForEnrollmentScreen() {
   WaitFor(EnrollmentScreenView::kScreenId);
 }
 
+void WaitForLastScreenAndTapGetStarted() {
+  WaitFor(MarketingOptInScreenView::kScreenId);
+  test::OobeJS().TapOnPath(
+      {"marketing-opt-in", "marketing-opt-in-next-button"});
+}
+
 void WaitForEulaScreen() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   WaitFor(EulaView::kScreenId);
@@ -165,6 +176,23 @@ void ExitScreenSyncConsent() {
   screen->OnStateChanged(nullptr);
   WaitForExit(SyncConsentScreenView::kScreenId);
 #endif
+}
+
+LanguageReloadObserver::LanguageReloadObserver(WelcomeScreen* welcome_screen)
+    : welcome_screen_(welcome_screen) {
+  welcome_screen_->AddObserver(this);
+}
+
+void LanguageReloadObserver::OnLanguageListReloaded() {
+  run_loop_.Quit();
+}
+
+void LanguageReloadObserver::Wait() {
+  run_loop_.Run();
+}
+
+LanguageReloadObserver::~LanguageReloadObserver() {
+  welcome_screen_->RemoveObserver(this);
 }
 
 }  // namespace test

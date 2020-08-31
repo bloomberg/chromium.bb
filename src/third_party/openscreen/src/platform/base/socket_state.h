@@ -10,7 +10,6 @@
 #include <string>
 
 namespace openscreen {
-namespace platform {
 
 // SocketState should be used by TCP and TLS sockets for indicating
 // current state. NOTE: socket state transitions should only happen in
@@ -30,7 +29,6 @@ enum class SocketState {
   kClosed
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_BASE_SOCKET_STATE_H_

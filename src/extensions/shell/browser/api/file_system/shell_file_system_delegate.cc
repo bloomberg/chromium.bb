@@ -7,7 +7,7 @@
 #include "apps/saved_files_service.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "extensions/browser/api/file_system/saved_files_service_interface.h"
 
 namespace extensions {
@@ -41,12 +41,12 @@ void ShellFileSystemDelegate::ConfirmSensitiveDirectoryAccess(
     bool has_write_permission,
     const base::string16& app_name,
     content::WebContents* web_contents,
-    const base::Closure& on_accept,
-    const base::Closure& on_cancel) {
+    base::OnceClosure on_accept,
+    base::OnceClosure on_cancel) {
   NOTIMPLEMENTED();
 
   // Run the cancel callback by default.
-  on_cancel.Run();
+  std::move(on_cancel).Run();
 }
 
 int ShellFileSystemDelegate::GetDescriptionIdForAcceptType(

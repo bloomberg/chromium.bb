@@ -26,7 +26,7 @@ class SystemThemeX11 : public CustomThemeSupplier {
   bool GetTint(int id, color_utils::HSL* hsl) const override;
   bool GetColor(int id, SkColor* color) const override;
   bool GetDisplayProperty(int id, int* result) const override;
-  gfx::Image GetImageNamed(int id) override;
+  gfx::Image GetImageNamed(int id) const override;
   bool HasCustomImage(int id) const override;
 
  private:
@@ -62,14 +62,16 @@ bool SystemThemeX11::GetTint(int id, color_utils::HSL* hsl) const {
 }
 
 bool SystemThemeX11::GetColor(int id, SkColor* color) const {
-  return linux_ui_ && linux_ui_->GetColor(id, color, pref_service_);
+  return linux_ui_ && linux_ui_->GetColor(id, color,
+                                          pref_service_->GetBoolean(
+                                              prefs::kUseCustomChromeFrame));
 }
 
 bool SystemThemeX11::GetDisplayProperty(int id, int* result) const {
   return linux_ui_ && linux_ui_->GetDisplayProperty(id, result);
 }
 
-gfx::Image SystemThemeX11::GetImageNamed(int id) {
+gfx::Image SystemThemeX11::GetImageNamed(int id) const {
   return gfx::Image();
 }
 
@@ -80,8 +82,6 @@ bool SystemThemeX11::HasCustomImage(int id) const {
 SystemThemeX11::~SystemThemeX11() {}
 
 }  // namespace
-
-ThemeServiceAuraLinux::ThemeServiceAuraLinux() = default;
 
 ThemeServiceAuraLinux::~ThemeServiceAuraLinux() = default;
 
@@ -97,14 +97,9 @@ bool ThemeServiceAuraLinux::IsSystemThemeDistinctFromDefaultTheme() const {
   return true;
 }
 
-bool ThemeServiceAuraLinux::UsingDefaultTheme() const {
-  return ThemeService::UsingDefaultTheme() && !UsingSystemTheme();
-}
-
 bool ThemeServiceAuraLinux::UsingSystemTheme() const {
-  const CustomThemeSupplier* theme_supplier = get_theme_supplier();
-  return theme_supplier &&
-         theme_supplier->get_theme_type() == CustomThemeSupplier::NATIVE_X11;
+  return GetThemeSupplier() && GetThemeSupplier()->get_theme_type() ==
+                                   CustomThemeSupplier::NATIVE_X11;
 }
 
 void ThemeServiceAuraLinux::FixInconsistentPreferencesIfNeeded() {
@@ -112,7 +107,7 @@ void ThemeServiceAuraLinux::FixInconsistentPreferencesIfNeeded() {
 
   // When using the system theme, the theme ID should match the default. Give
   // precedence to the non-default theme specified.
-  if (GetThemeID() != ThemeService::kDefaultThemeID &&
+  if (GetThemeID() != ThemeHelper::kDefaultThemeID &&
       prefs->GetBoolean(prefs::kUsesSystemTheme)) {
     prefs->SetBoolean(prefs::kUsesSystemTheme, false);
   }

@@ -1,6 +1,6 @@
-document
-++group
-++++img Name='pipe'
-++++description Name=' '
-++++description Name=' '
-++++img Name='  '
+Document
+++Group IsControlElement=false
+++++Image Name='pipe'
+++++Text Name=' '
+++++Text Name=' '
+++++Image Name='  '

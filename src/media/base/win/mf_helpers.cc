@@ -4,17 +4,7 @@
 
 #include "media/base/win/mf_helpers.h"
 
-#include "base/metrics/histogram_functions.h"
-
 namespace media {
-
-namespace mf {
-
-void LogDXVAError(int line) {
-  LOG(ERROR) << "Error in dxva_video_decode_accelerator_win.cc on line "
-             << line;
-  base::UmaHistogramSparse("Media.DXVAVDA.ErrorLine", line);
-}
 
 Microsoft::WRL::ComPtr<IMFSample> CreateEmptySampleWithBuffer(
     uint32_t buffer_length,
@@ -22,7 +12,7 @@ Microsoft::WRL::ComPtr<IMFSample> CreateEmptySampleWithBuffer(
   CHECK_GT(buffer_length, 0U);
 
   Microsoft::WRL::ComPtr<IMFSample> sample;
-  HRESULT hr = MFCreateSample(sample.GetAddressOf());
+  HRESULT hr = MFCreateSample(&sample);
   RETURN_ON_HR_FAILURE(hr, "MFCreateSample failed",
                        Microsoft::WRL::ComPtr<IMFSample>());
 
@@ -30,10 +20,9 @@ Microsoft::WRL::ComPtr<IMFSample> CreateEmptySampleWithBuffer(
   if (align == 0) {
     // Note that MFCreateMemoryBuffer is same as MFCreateAlignedMemoryBuffer
     // with the align argument being 0.
-    hr = MFCreateMemoryBuffer(buffer_length, buffer.GetAddressOf());
+    hr = MFCreateMemoryBuffer(buffer_length, &buffer);
   } else {
-    hr = MFCreateAlignedMemoryBuffer(buffer_length, align - 1,
-                                     buffer.GetAddressOf());
+    hr = MFCreateAlignedMemoryBuffer(buffer_length, align - 1, &buffer);
   }
   RETURN_ON_HR_FAILURE(hr, "Failed to create memory buffer for sample",
                        Microsoft::WRL::ComPtr<IMFSample>());
@@ -60,6 +49,32 @@ MediaBufferScopedPointer::~MediaBufferScopedPointer() {
   CHECK(SUCCEEDED(hr));
 }
 
-}  // namespace mf
+DXGIDeviceScopedHandle::DXGIDeviceScopedHandle(
+    IMFDXGIDeviceManager* device_manager)
+    : device_manager_(device_manager) {}
+
+DXGIDeviceScopedHandle::~DXGIDeviceScopedHandle() {
+  if (device_handle_ != INVALID_HANDLE_VALUE) {
+    HRESULT hr = device_manager_->CloseDeviceHandle(device_handle_);
+    CHECK(SUCCEEDED(hr));
+    device_handle_ = INVALID_HANDLE_VALUE;
+  }
+}
+
+HRESULT DXGIDeviceScopedHandle::LockDevice(REFIID riid, void** device_out) {
+  HRESULT hr;
+  if (device_handle_ == INVALID_HANDLE_VALUE) {
+    hr = device_manager_->OpenDeviceHandle(&device_handle_);
+    if (FAILED(hr)) {
+      return hr;
+    }
+  }
+  // see
+  // https://docs.microsoft.com/en-us/windows/win32/api/mfobjects/nf-mfobjects-imfdxgidevicemanager-lockdevice
+  // for details of LockDevice call.
+  hr = device_manager_->LockDevice(device_handle_, riid, device_out,
+                                   /*block=*/FALSE);
+  return hr;
+}
 
 }  // namespace media

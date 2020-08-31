@@ -79,6 +79,11 @@ class AndroidBrowserBackendSettings(_BackendSettingsTuple):
     else:
       return util.FindLatestApkOnHost(chrome_root, apk_name)
 
+  # returns True if this is a WebView browser and WebView-specific
+  # field trial configurations should apply.
+  def IsWebView(self):
+    return False
+
 
 class GenericChromeBackendSettings(AndroidBrowserBackendSettings):
   def __new__(cls, **kwargs):
@@ -95,6 +100,7 @@ class GenericChromeBackendSettings(AndroidBrowserBackendSettings):
 
 class GenericChromeBundleBackendSettings(GenericChromeBackendSettings):
   def GetApkName(self, device):
+    assert self.apk_name.endswith('_bundle')
     del device  # unused
     # Bundles are created using the generated tool in the output directory's
     # bin directory instead of being output to the apk directory at compile
@@ -155,15 +161,17 @@ class WebViewBackendSettings(WebViewBasedBackendSettings):
       return 'SystemWebView.apk'
 
   def FindSupportApks(self, apk_path, chrome_root):
+    del chrome_root
     # Try to find the WebView embedder next to the local APK found.
     if apk_path is not None:
       embedder_apk_path = os.path.join(
           os.path.dirname(apk_path), self.embedder_apk_name)
       if os.path.exists(embedder_apk_path):
         return [embedder_apk_path]
-    # Otherwise fall back to an APK found among possible build directories.
-    apk = util.FindLatestApkOnHost(chrome_root, self.embedder_apk_name)
-    return [apk] if apk else []
+    return []
+
+  def IsWebView(self):
+    return True
 
 
 class WebViewGoogleBackendSettings(WebViewBackendSettings):
@@ -176,6 +184,26 @@ class WebViewGoogleBackendSettings(WebViewBackendSettings):
       return 'SystemWebViewGoogle.apk'
 
 
+class WebViewBundleBackendSettings(WebViewBackendSettings):
+  def GetApkName(self, device):
+    assert self.apk_name.endswith('_bundle')
+    del device  # unused
+    # Bundles are created using the generated tool in the output directory's
+    # bin directory instead of being output to the apk directory at compile
+    # time like a normal APK.
+    return os.path.join('..', 'bin', self.apk_name)
+
+  def FindSupportApks(self, apk_path, chrome_root):
+    del chrome_root
+    # Try to find the WebView embedder in apk directory
+    if apk_path is not None:
+      embedder_apk_path = os.path.join(
+          os.path.dirname(apk_path), '..', 'apks', self.embedder_apk_name)
+      if os.path.exists(embedder_apk_path):
+        return [embedder_apk_path]
+    return []
+
+
 class WebLayerBackendSettings(WebViewBackendSettings):
   def __new__(cls, **kwargs):
     # Provide some defaults for backends that work via weblayer_shell,
@@ -185,8 +213,8 @@ class WebLayerBackendSettings(WebViewBackendSettings):
                       'localabstract:weblayer_devtools_remote_{pid}')
     kwargs.setdefault('package', 'org.chromium.weblayer.shell')
     kwargs.setdefault('activity',
-                      'org.chromium.weblayer.shell.WebLayerShellActivity')
-    kwargs.setdefault('embedder_apk_name', 'WebLayerShell.apk')
+                      'org.chromium.weblayer.shell.TelemetryActivity')
+    kwargs.setdefault('embedder_apk_name', 'WebLayerShellSystemWebView.apk')
     kwargs.setdefault('command_line_name', 'weblayer-command-line')
     return super(WebLayerBackendSettings, cls).__new__(cls, **kwargs)
 
@@ -194,6 +222,9 @@ class WebLayerBackendSettings(WebViewBackendSettings):
     del device # Unused
     assert self.apk_name is None
     return 'Monochrome.apk'
+
+  def IsWebView(self):
+    return False
 
 
 ANDROID_CONTENT_SHELL = AndroidBrowserBackendSettings(
@@ -207,14 +238,28 @@ ANDROID_CONTENT_SHELL = AndroidBrowserBackendSettings(
     supports_tab_control=False,
     supports_spki_list=True)
 
+# TODO(crbug.com/1038137): Add reference setting for android-weblayer
 ANDROID_WEBLAYER = WebLayerBackendSettings(
     browser_type='android-weblayer')
 
+# TODO(crbug.com/1038137): Add reference setting for android-webview
 ANDROID_WEBVIEW = WebViewBackendSettings(
     browser_type='android-webview')
 
+# TODO(crbug.com/1038137): Add reference setting for android-webview-bundle
+ANDROID_WEBVIEW_BUNDLE = WebViewBundleBackendSettings(
+    browser_type='android-webview-bundle',
+    apk_name='monochrome_public_bundle')
+
+# TODO(crbug.com/1038137): Add reference setting for android-webview-google
 ANDROID_WEBVIEW_GOOGLE = WebViewGoogleBackendSettings(
     browser_type='android-webview-google')
+
+# TODO(crbug.com/1038137): Add reference setting for
+# android-webview-google-bundle
+ANDROID_WEBVIEW_GOOGLE_BUNDLE = WebViewBundleBackendSettings(
+    browser_type='android-webview-google-bundle',
+    apk_name='monochrome_bundle')
 
 ANDROID_WEBVIEW_INSTRUMENTATION = WebViewBasedBackendSettings(
     browser_type='android-webview-instrumentation',
@@ -233,8 +278,24 @@ ANDROID_CHROMIUM_BUNDLE = GenericChromeBundleBackendSettings(
     package='org.chromium.chrome',
     apk_name='chrome_modern_public_bundle')
 
+ANDROID_CHROMIUM_MONOCHROME = GenericChromeBackendSettings(
+    browser_type='android-chromium-monochrome',
+    package='org.chromium.chrome',
+    apk_name='MonochromePublic.apk'
+)
+
+# TODO(crbug.com/1038137): Add reference setting for android-chrome
 ANDROID_CHROME = ChromeBackendSettings(
     browser_type='android-chrome',
+    package='com.google.android.apps.chrome')
+
+ANDROID_CHROME_BUNDLE = GenericChromeBundleBackendSettings(
+    browser_type='android-chrome-bundle',
+    package='com.google.android.apps.chrome',
+    apk_name='monochrome_bundle')
+
+REFERENCE_ANDROID_CHROME_BUNDLE = GenericChromeBackendSettings(
+    browser_type='reference-android-chrome-bundle',
     package='com.google.android.apps.chrome')
 
 ANDROID_CHROME_BETA = GenericChromeBackendSettings(
@@ -258,11 +319,16 @@ ANDROID_BACKEND_SETTINGS = (
     ANDROID_CONTENT_SHELL,
     ANDROID_WEBLAYER,
     ANDROID_WEBVIEW,
+    ANDROID_WEBVIEW_BUNDLE,
     ANDROID_WEBVIEW_GOOGLE,
+    ANDROID_WEBVIEW_GOOGLE_BUNDLE,
     ANDROID_WEBVIEW_INSTRUMENTATION,
     ANDROID_CHROMIUM,
     ANDROID_CHROMIUM_BUNDLE,
+    ANDROID_CHROMIUM_MONOCHROME,
+    REFERENCE_ANDROID_CHROME_BUNDLE,
     ANDROID_CHROME,
+    ANDROID_CHROME_BUNDLE,
     ANDROID_CHROME_BETA,
     ANDROID_CHROME_DEV,
     ANDROID_CHROME_CANARY,

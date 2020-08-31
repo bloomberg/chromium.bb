@@ -28,6 +28,7 @@
 #include "call/call.h"
 #include "call/video_receive_stream.h"
 #include "call/video_send_stream.h"
+#include "logging/rtc_event_log/rtc_event_processor.h"
 #include "logging/rtc_event_log/rtc_stream_config.h"
 #include "modules/audio_coding/audio_network_adaptor/include/audio_network_adaptor.h"
 #include "modules/audio_coding/neteq/tools/audio_sink.h"
@@ -614,6 +615,94 @@ void EventLogAnalyzer::CreateAccumulatedPacketsGraph(PacketDirection direction,
                  "Time (s)", kLeftMargin, kRightMargin);
   plot->SetSuggestedYAxis(0, 1, "Received Packets", kBottomMargin, kTopMargin);
   plot->SetTitle(std::string("Accumulated ") + GetDirectionAsString(direction) +
+                 " RTP/RTCP packets");
+}
+
+void EventLogAnalyzer::CreatePacketRateGraph(PacketDirection direction,
+                                             Plot* plot) {
+  auto CountPackets = [](auto packet) { return 1.0; };
+  for (const auto& stream : parsed_log_.rtp_packets_by_ssrc(direction)) {
+    // Filter on SSRC.
+    if (!MatchingSsrc(stream.ssrc, desired_ssrc_)) {
+      continue;
+    }
+    TimeSeries time_series(
+        std::string("RTP ") + GetStreamName(direction, stream.ssrc),
+        LineStyle::kLine);
+    MovingAverage<LoggedRtpPacket, double>(CountPackets, stream.packet_view,
+                                           config_, &time_series);
+    plot->AppendTimeSeries(std::move(time_series));
+  }
+  TimeSeries time_series(
+      std::string("RTCP ") + "(" + GetDirectionAsShortString(direction) + ")",
+      LineStyle::kLine);
+  if (direction == kIncomingPacket) {
+    MovingAverage<LoggedRtcpPacketIncoming, double>(
+        CountPackets, parsed_log_.incoming_rtcp_packets(), config_,
+        &time_series);
+  } else {
+    MovingAverage<LoggedRtcpPacketOutgoing, double>(
+        CountPackets, parsed_log_.outgoing_rtcp_packets(), config_,
+        &time_series);
+  }
+  plot->AppendTimeSeries(std::move(time_series));
+
+  plot->SetXAxis(config_.CallBeginTimeSec(), config_.CallEndTimeSec(),
+                 "Time (s)", kLeftMargin, kRightMargin);
+  plot->SetSuggestedYAxis(0, 1, "Packet Rate (packets/s)", kBottomMargin,
+                          kTopMargin);
+  plot->SetTitle("Rate of " + GetDirectionAsString(direction) +
+                 " RTP/RTCP packets");
+}
+
+void EventLogAnalyzer::CreateTotalPacketRateGraph(PacketDirection direction,
+                                                  Plot* plot) {
+  // Contains a log timestamp to enable counting logged events of different
+  // types using MovingAverage().
+  class LogTime {
+   public:
+    explicit LogTime(int64_t log_time_us) : log_time_us_(log_time_us) {}
+
+    int64_t log_time_us() const { return log_time_us_; }
+
+   private:
+    int64_t log_time_us_;
+  };
+
+  std::vector<LogTime> packet_times;
+  auto handle_rtp = [&](const LoggedRtpPacket& packet) {
+    packet_times.emplace_back(packet.log_time_us());
+  };
+  RtcEventProcessor process;
+  for (const auto& stream : parsed_log_.rtp_packets_by_ssrc(direction)) {
+    process.AddEvents(stream.packet_view, handle_rtp);
+  }
+  if (direction == kIncomingPacket) {
+    auto handle_incoming_rtcp = [&](const LoggedRtcpPacketIncoming& packet) {
+      packet_times.emplace_back(packet.log_time_us());
+    };
+    process.AddEvents(parsed_log_.incoming_rtcp_packets(),
+                      handle_incoming_rtcp);
+  } else {
+    auto handle_outgoing_rtcp = [&](const LoggedRtcpPacketOutgoing& packet) {
+      packet_times.emplace_back(packet.log_time_us());
+    };
+    process.AddEvents(parsed_log_.outgoing_rtcp_packets(),
+                      handle_outgoing_rtcp);
+  }
+  process.ProcessEventsInOrder();
+  TimeSeries time_series(std::string("Total ") + "(" +
+                             GetDirectionAsShortString(direction) + ") packets",
+                         LineStyle::kLine);
+  MovingAverage<LogTime, uint64_t>([](auto packet) { return 1; }, packet_times,
+                                   config_, &time_series);
+  plot->AppendTimeSeries(std::move(time_series));
+
+  plot->SetXAxis(config_.CallBeginTimeSec(), config_.CallEndTimeSec(),
+                 "Time (s)", kLeftMargin, kRightMargin);
+  plot->SetSuggestedYAxis(0, 1, "Packet Rate (packets/s)", kBottomMargin,
+                          kTopMargin);
+  plot->SetTitle("Rate of all " + GetDirectionAsString(direction) +
                  " RTP/RTCP packets");
 }
 
@@ -1228,8 +1317,9 @@ void EventLogAnalyzer::CreateSendSideBweSimulationGraph(Plot* plot) {
   // TODO(holmer): Log the call config and use that here instead.
   static const uint32_t kDefaultStartBitrateBps = 300000;
   NetworkControllerConfig cc_config;
-  cc_config.constraints.at_time = Timestamp::us(clock.TimeInMicroseconds());
-  cc_config.constraints.starting_rate = DataRate::bps(kDefaultStartBitrateBps);
+  cc_config.constraints.at_time = Timestamp::Micros(clock.TimeInMicroseconds());
+  cc_config.constraints.starting_rate =
+      DataRate::BitsPerSec(kDefaultStartBitrateBps);
   cc_config.event_log = &null_event_log;
   auto goog_cc = factory.Create(cc_config);
 
@@ -1293,12 +1383,11 @@ void EventLogAnalyzer::CreateSendSideBweSimulationGraph(Plot* plot) {
         packet_info.transport_sequence_number =
             rtp_packet.rtp.header.extension.transportSequenceNumber;
         packet_info.rtp_sequence_number = rtp_packet.rtp.header.sequenceNumber;
-        packet_info.has_rtp_sequence_number = true;
         packet_info.length = rtp_packet.rtp.total_length;
         transport_feedback.AddPacket(
             packet_info,
             0u,  // Per packet overhead bytes.
-            Timestamp::us(rtp_packet.rtp.log_time_us()));
+            Timestamp::Micros(rtp_packet.rtp.log_time_us()));
         rtc::SentPacket sent_packet(
             rtp_packet.rtp.header.extension.transportSequenceNumber,
             rtp_packet.rtp.log_time_us() / 1000);
@@ -1313,7 +1402,7 @@ void EventLogAnalyzer::CreateSendSideBweSimulationGraph(Plot* plot) {
 
       auto feedback_msg = transport_feedback.ProcessTransportFeedback(
           rtcp_iterator->transport_feedback,
-          Timestamp::ms(clock.TimeInMilliseconds()));
+          Timestamp::Millis(clock.TimeInMilliseconds()));
       absl::optional<uint32_t> bitrate_bps;
       if (feedback_msg) {
         observer.Update(goog_cc->OnTransportPacketsFeedback(*feedback_msg));
@@ -1345,7 +1434,7 @@ void EventLogAnalyzer::CreateSendSideBweSimulationGraph(Plot* plot) {
     if (clock.TimeInMicroseconds() >= NextProcessTime()) {
       RTC_DCHECK_EQ(clock.TimeInMicroseconds(), NextProcessTime());
       ProcessInterval msg;
-      msg.at_time = Timestamp::us(clock.TimeInMicroseconds());
+      msg.at_time = Timestamp::Micros(clock.TimeInMicroseconds());
       observer.Update(goog_cc->OnProcessInterval(msg));
       next_process_time_us_ += process_interval.us();
     }
@@ -1934,8 +2023,9 @@ std::unique_ptr<test::NetEqStatsGetter> CreateNetEqTestAndRun(
   callbacks.post_insert_packet = neteq_stats_getter->delay_analyzer();
   callbacks.get_audio_callback = neteq_stats_getter.get();
 
-  test::NetEqTest test(config, decoder_factory, codecs, nullptr,
-                       std::move(input), std::move(output), callbacks);
+  test::NetEqTest test(config, decoder_factory, codecs, /*text_log=*/nullptr,
+                       /*factory=*/nullptr, std::move(input), std::move(output),
+                       callbacks);
   test.Run();
   return neteq_stats_getter;
 }

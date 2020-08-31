@@ -10,12 +10,13 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
+#include "ui/accessibility/ax_base_export.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
-#include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node_text_styles.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -24,16 +25,23 @@ namespace ui {
 
 // Return true if |attr| should be interpreted as the id of another node
 // in the same tree.
-AX_EXPORT bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr);
+AX_BASE_EXPORT bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr);
 
 // Return true if |attr| should be interpreted as a list of ids of
 // nodes in the same tree.
-AX_EXPORT bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr);
+AX_BASE_EXPORT bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr);
 
 // A compact representation of the accessibility information for a
 // single accessible object, in a form that can be serialized and sent from
 // one process to another.
-struct AX_EXPORT AXNodeData {
+struct AX_BASE_EXPORT AXNodeData {
+  // Defines the type used for AXNode IDs.
+  using AXID = int32_t;
+
+  // If a node is not yet or no longer valid, its ID should have a value of
+  // kInvalidAXID.
+  static constexpr AXID kInvalidAXID = 0;
+
   AXNodeData();
   virtual ~AXNodeData();
 
@@ -156,9 +164,9 @@ struct AX_EXPORT AXNodeData {
   bool HasDropeffect(ax::mojom::Dropeffect dropeffect) const;
 
   // Set or remove bits in the given enum's corresponding bitfield.
-  ax::mojom::State AddState(ax::mojom::State state);
-  ax::mojom::State RemoveState(ax::mojom::State state);
-  ax::mojom::Action AddAction(ax::mojom::Action action);
+  void AddState(ax::mojom::State state);
+  void RemoveState(ax::mojom::State state);
+  void AddAction(ax::mojom::Action action);
   void AddTextStyle(ax::mojom::TextStyle text_style);
   // aria-dropeffect is deprecated in WAI-ARIA 1.1.
   void AddDropeffect(ax::mojom::Dropeffect dropeffect);
@@ -190,6 +198,14 @@ struct AX_EXPORT AXNodeData {
   ax::mojom::ImageAnnotationStatus GetImageAnnotationStatus() const;
   void SetImageAnnotationStatus(ax::mojom::ImageAnnotationStatus status);
 
+  // Helper to determine if the data belongs to a node that gains focus when
+  // clicked, such as a text field or a native HTML list box.
+  bool IsActivatable() const;
+
+  // Helper to determine if the data belongs to a node that is a native button
+  // or ARIA role="button" in a pressed state.
+  bool IsButtonPressed() const;
+
   // Helper to determine if the data belongs to a node that can respond to
   // clicks.
   bool IsClickable() const;
@@ -197,14 +213,41 @@ struct AX_EXPORT AXNodeData {
   // Helper to determine if the data has the ignored state or ignored role.
   bool IsIgnored() const;
 
+  // Helper to determine if the data has the ignored state, the invisible state
+  // or the ignored role.
+  bool IsInvisibleOrIgnored() const;
+
   // Helper to determine if the data belongs to a node that is invocable.
   bool IsInvocable() const;
 
-  // Helper to determine if the data belongs to a node that is a plain
-  // textfield.
+  // Helper to determine if the data belongs to a node that is a menu button.
+  bool IsMenuButton() const;
+
+  // This data belongs to a text field. This is any widget in which the user
+  // should be able to enter and edit text.
+  //
+  // Examples include <input type="text">, <input type="password">, <textarea>,
+  // <div contenteditable="true">, <div role="textbox">, <div role="searchbox">
+  // and <div role="combobox">. Note that when an ARIA role that indicates that
+  // the widget is editable is used, such as "role=textbox", the element doesn't
+  // need to be contenteditable for this method to return true, as in theory
+  // JavaScript could be used to implement editing functionality. In practice,
+  // this situation should be rare.
+  bool IsTextField() const;
+
+  // This data belongs to a text field that is used for entering passwords.
+  bool IsPasswordField() const;
+
+  // This data belongs to a text field that doesn't accept rich text content,
+  // such as text with special formatting or styling.
   bool IsPlainTextField() const;
 
+  // This data belongs to a text field that accepts rich text content, such as
+  // text with special formatting or styling.
+  bool IsRichTextField() const;
+
   // Helper to determine if |GetRestriction| is either ReadOnly or Disabled.
+  // By default, all nodes that can't be edited are readonly.
   bool IsReadOnlyOrDisabled() const;
 
   // Helper to determine if the data belongs to a node that supports
@@ -231,7 +274,7 @@ struct AX_EXPORT AXNodeData {
   int32_t id = -1;
   ax::mojom::Role role;
   uint32_t state;
-  uint32_t actions;
+  uint64_t actions;
   std::vector<std::pair<ax::mojom::StringAttribute, std::string>>
       string_attributes;
   std::vector<std::pair<ax::mojom::IntAttribute, int32_t>> int_attributes;

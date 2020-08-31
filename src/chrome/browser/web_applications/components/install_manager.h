@@ -6,10 +6,14 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_INSTALL_MANAGER_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
+#include "base/optional.h"
+#include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 
@@ -28,6 +32,7 @@ enum class InstallResultCode;
 class InstallFinalizer;
 class AppRegistrar;
 class AppShortcutManager;
+class FileHandlerManager;
 
 // TODO(loyso): Rework this interface. Unify the API and merge similar
 // InstallWebAppZZZZ functions.
@@ -66,9 +71,6 @@ class InstallManager {
       InstallableCheckResult result,
       base::Optional<AppId> app_id)>;
 
-  // Returns true if a web app can be installed for a given |web_contents|.
-  virtual bool CanInstallWebApp(content::WebContents* web_contents) = 0;
-
   // Checks a WebApp installability, retrieves manifest and icons and
   // than performs the actual installation.
   virtual void InstallWebAppFromManifest(
@@ -91,26 +93,44 @@ class InstallManager {
 
   // Starts a web app installation process using prefilled
   // |web_application_info| which holds all the data needed for installation.
-  // InstallManager doesn't fetch a manifest.
+  // This doesn't fetch a manifest and doesn't perform all required steps for
+  // External installed apps: use |PendingAppManager::Install| instead.
   virtual void InstallWebAppFromInfo(
       std::unique_ptr<WebApplicationInfo> web_application_info,
       ForInstallableSite for_installable_site,
       WebappInstallSource install_source,
       OnceInstallCallback callback) = 0;
 
-  // These params are a subset of ExternalInstallOptions.
+  // See related ExternalInstallOptions struct and
+  // ConvertExternalInstallOptionsToParams function.
   struct InstallParams {
+    InstallParams();
+    ~InstallParams();
+    InstallParams(const InstallParams&);
+
     DisplayMode user_display_mode = DisplayMode::kUndefined;
 
     // URL to be used as start_url if manifest is unavailable.
     GURL fallback_start_url;
 
+    // App name to be used if manifest is unavailable.
+    base::Optional<base::string16> fallback_app_name;
+
+    bool locally_installed = true;
+    // These OS shortcut fields can't be true if |locally_installed| is false.
     bool add_to_applications_menu = true;
     bool add_to_desktop = true;
     bool add_to_quick_launch_bar = true;
 
+    // These have no effect outside of Chrome OS.
+    bool add_to_search = true;
+    bool add_to_management = true;
+    bool is_disabled = false;
+
     bool bypass_service_worker_check = false;
     bool require_manifest = false;
+
+    std::vector<std::string> additional_search_terms;
   };
   // Starts a background web app installation process for a given
   // |web_contents|.
@@ -119,11 +139,11 @@ class InstallManager {
                                        WebappInstallSource install_source,
                                        OnceInstallCallback callback) = 0;
 
-  // For the old ExtensionSyncService-based system only:
-  // Starts background installation or an update of a web app from the sync
+  // For backward compatibility with ExtensionSyncService-based system:
+  // Starts background installation or an update of a bookmark app from the sync
   // system. |web_application_info| contains received sync data. Icons will be
   // downloaded from the icon URLs provided in |web_application_info|.
-  virtual void InstallWebAppFromSync(
+  virtual void InstallBookmarkAppFromSync(
       const AppId& app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) = 0;
@@ -142,6 +162,7 @@ class InstallManager {
 
   void SetSubsystems(AppRegistrar* registrar,
                      AppShortcutManager* shortcut_manager,
+                     FileHandlerManager* file_handler_manager,
                      InstallFinalizer* finalizer);
 
   // Loads |web_app_url| in a new WebContents and determines whether it is
@@ -155,6 +176,7 @@ class InstallManager {
   Profile* profile() { return profile_; }
   AppRegistrar* registrar() { return registrar_; }
   AppShortcutManager* shortcut_manager() { return shortcut_manager_; }
+  FileHandlerManager* file_handler_manager() { return file_handler_manager_; }
   InstallFinalizer* finalizer() { return finalizer_; }
 
  private:
@@ -163,6 +185,7 @@ class InstallManager {
 
   AppRegistrar* registrar_ = nullptr;
   AppShortcutManager* shortcut_manager_ = nullptr;
+  FileHandlerManager* file_handler_manager_ = nullptr;
   InstallFinalizer* finalizer_ = nullptr;
 };
 

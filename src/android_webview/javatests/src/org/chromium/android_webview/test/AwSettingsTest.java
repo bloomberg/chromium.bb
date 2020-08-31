@@ -37,6 +37,7 @@ import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
 import org.chromium.base.Callback;
+import org.chromium.base.FileUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -57,6 +58,8 @@ import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.net.URLEncoder;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,7 +70,8 @@ import java.util.regex.Pattern;
  * application
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
+@CommandLineFlags.Add({ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1",
+        "enable-features=WebViewOriginCheckForStreamReader"})
 public class AwSettingsTest {
     @Rule
     public AwActivityTestRule mActivityTestRule =
@@ -1555,6 +1559,63 @@ public class AwSettingsTest {
         });
     }
 
+    class AwSettingsCorsTestHelper {
+        private static final String TEST_HTML_FILE_PATH = "android_webview/test/data/cors.html";
+        private static final String TEST_IMAGE_FILE_PATH = "android_webview/test/data/chrome.png";
+        private static final String TEST_HTML_CONTENT_PATH = "cors.html";
+
+        private final TestAwContentsClient mContentClient;
+        private final AwTestContainerView mTestContainerView;
+        private final AwContents mAwContents;
+        private final AwSettings mAwSettings;
+
+        public final String mContentMainUrl;
+        public final String mFileMainUrl;
+        public final String mContentImageUrl;
+        public final String mFileImageUrl;
+
+        AwSettingsCorsTestHelper() throws Throwable {
+            mContentClient = new TestAwContentsClient();
+            mTestContainerView =
+                    mActivityTestRule.createAwTestContainerViewOnMainSync(mContentClient);
+            mAwContents = mTestContainerView.getAwContents();
+            mAwSettings = mActivityTestRule.getAwSettingsOnUiThread(mAwContents);
+
+            TestContentProvider.register(TEST_HTML_CONTENT_PATH, "text/html",
+                    FileUtils.readStream(new FileInputStream(
+                            UrlUtils.getIsolatedTestFilePath(TEST_HTML_FILE_PATH))));
+            AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+            mAwSettings.setAllowFileAccess(true);
+            mAwSettings.setAllowContentAccess(true);
+            mAwSettings.setAllowFileAccessFromFileURLs(false);
+            mAwSettings.setAllowUniversalAccessFromFileURLs(false);
+
+            mContentMainUrl = TestContentProvider.createContentUrl(TEST_HTML_CONTENT_PATH);
+            mFileMainUrl = UrlUtils.getIsolatedTestFileUrl(TEST_HTML_FILE_PATH);
+            mContentImageUrl = TestContentProvider.createContentUrl("image");
+            mFileImageUrl = UrlUtils.getIsolatedTestFileUrl(TEST_IMAGE_FILE_PATH);
+        }
+
+        public String getTestResult(String api, String mainUrl, String resourceUrl)
+                throws Throwable {
+            final String targetUrl =
+                    mainUrl + "?api=" + api + "&url=" + URLEncoder.encode(resourceUrl);
+            mActivityTestRule.loadUrlSync(
+                    mAwContents, mContentClient.getOnPageFinishedHelper(), targetUrl);
+            AwActivityTestRule.pollInstrumentationThread(
+                    () -> !"running".equals(mActivityTestRule.getTitleOnUiThread(mAwContents)));
+            return mActivityTestRule.getTitleOnUiThread(mAwContents);
+        }
+
+        public void allowFileAccessFromFileURLs() {
+            mAwSettings.setAllowFileAccessFromFileURLs(true);
+        }
+
+        public void allowUniversalAccessFromFileURLs() {
+            mAwSettings.setAllowUniversalAccessFromFileURLs(true);
+        }
+    }
+
     // The test verifies that JavaScript is disabled upon WebView
     // creation without accessing AwSettings. If the test passes,
     // it means that WebView-specific web preferences configuration
@@ -2013,6 +2074,124 @@ public class AwSettingsTest {
                         views.getContainer0(), views.getClient0(), 0),
                 new AwSettingsContentUrlAccessFromFileTestHelper(
                         views.getContainer1(), views.getClient1(), 1));
+    }
+
+    // Resources under content:// and file:// should not be accessed via XHR
+    // from content:// and file://.
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences", "CORS"})
+    public void testContentUrlMakesXhrRequests() throws Throwable {
+        final AwSettingsCorsTestHelper corsTestHelper = new AwSettingsCorsTestHelper();
+
+        // Case a) content:// to content:// should fail.
+        Assert.assertEquals("error",
+                corsTestHelper.getTestResult(
+                        "xhr", corsTestHelper.mContentMainUrl, corsTestHelper.mContentImageUrl));
+
+        // Case b) content:// to file:// should fail.
+        Assert.assertEquals("error",
+                corsTestHelper.getTestResult(
+                        "xhr", corsTestHelper.mContentMainUrl, corsTestHelper.mFileImageUrl));
+
+        // Case c) file:// to content:// should fail.
+        Assert.assertEquals("error",
+                corsTestHelper.getTestResult(
+                        "xhr", corsTestHelper.mFileMainUrl, corsTestHelper.mContentImageUrl));
+
+        // Case d) file:// to file:// should fail.
+        Assert.assertEquals("error",
+                corsTestHelper.getTestResult(
+                        "xhr", corsTestHelper.mFileMainUrl, corsTestHelper.mFileImageUrl));
+    }
+
+    // Check if setAllowFileAccessFromFileURLs(true) allows same-scheme CORS accesses.
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences", "CORS"})
+    public void testContentUrlMakesXhrRequestsWithAllowFileAccess() throws Throwable {
+        final AwSettingsCorsTestHelper corsTestHelper = new AwSettingsCorsTestHelper();
+        corsTestHelper.allowFileAccessFromFileURLs();
+
+        // Case a) content:// to content:// should pass.
+        Assert.assertEquals("load",
+                corsTestHelper.getTestResult(
+                        "xhr", corsTestHelper.mContentMainUrl, corsTestHelper.mContentImageUrl));
+
+        // Case b) content:// to file:// should fail.
+        Assert.assertEquals("error",
+                corsTestHelper.getTestResult(
+                        "xhr", corsTestHelper.mContentMainUrl, corsTestHelper.mFileImageUrl));
+
+        // Case c) file:// to content:// should fail.
+        Assert.assertEquals("error",
+                corsTestHelper.getTestResult(
+                        "xhr", corsTestHelper.mFileMainUrl, corsTestHelper.mContentImageUrl));
+
+        // Case d) file:// to file:// should pass.
+        Assert.assertEquals("load",
+                corsTestHelper.getTestResult(
+                        "xhr", corsTestHelper.mFileMainUrl, corsTestHelper.mFileImageUrl));
+    }
+
+    // Check if setAllowUniversalAccessFromFileURLs(true) allows any CORS access from file://.
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences", "CORS"})
+    public void testContentUrlMakesXhrRequestsWithAllowUniversalAccess() throws Throwable {
+        final AwSettingsCorsTestHelper corsTestHelper = new AwSettingsCorsTestHelper();
+        corsTestHelper.allowUniversalAccessFromFileURLs();
+
+        // Case a) content:// to content:// should pass.
+        Assert.assertEquals("load",
+                corsTestHelper.getTestResult(
+                        "xhr", corsTestHelper.mContentMainUrl, corsTestHelper.mContentImageUrl));
+
+        // Case b) content:// to file:// should fail.
+        Assert.assertEquals("error",
+                corsTestHelper.getTestResult(
+                        "xhr", corsTestHelper.mContentMainUrl, corsTestHelper.mFileImageUrl));
+
+        // Case c) file:// to content:// should pass.
+        Assert.assertEquals("load",
+                corsTestHelper.getTestResult(
+                        "xhr", corsTestHelper.mFileMainUrl, corsTestHelper.mContentImageUrl));
+
+        // Case d) file:// to file:// should pass.
+        Assert.assertEquals("load",
+                corsTestHelper.getTestResult(
+                        "xhr", corsTestHelper.mFileMainUrl, corsTestHelper.mFileImageUrl));
+    }
+
+    // Check if the Fetch API always fails on file:// and content://.
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences", "CORS"})
+    public void testContentUrlMakesFetchRequests() throws Throwable {
+        final AwSettingsCorsTestHelper corsTestHelper = new AwSettingsCorsTestHelper();
+        // Run tests with the most relaxed settings.
+        corsTestHelper.allowFileAccessFromFileURLs();
+        corsTestHelper.allowUniversalAccessFromFileURLs();
+
+        // Case a) content:// to content:// should fail.
+        Assert.assertEquals("error",
+                corsTestHelper.getTestResult(
+                        "fetch", corsTestHelper.mContentMainUrl, corsTestHelper.mContentImageUrl));
+
+        // Case b) content:// to file:// should fail.
+        Assert.assertEquals("error",
+                corsTestHelper.getTestResult(
+                        "fetch", corsTestHelper.mContentMainUrl, corsTestHelper.mFileImageUrl));
+
+        // Case c) file:// to content:// should fail.
+        Assert.assertEquals("error",
+                corsTestHelper.getTestResult(
+                        "fetch", corsTestHelper.mFileMainUrl, corsTestHelper.mContentImageUrl));
+
+        // Case d) file:// to file:// should fail.
+        Assert.assertEquals("error",
+                corsTestHelper.getTestResult(
+                        "fetch", corsTestHelper.mFileMainUrl, corsTestHelper.mFileImageUrl));
     }
 
     @Test

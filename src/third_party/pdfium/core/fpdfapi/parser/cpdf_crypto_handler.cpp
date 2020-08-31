@@ -58,12 +58,11 @@ void CPDF_CryptoHandler::CryptBlock(bool bEncrypt,
     uint8_t key1[32];
     PopulateKey(objnum, gennum, key1);
 
-    if (m_Cipher == FXCIPHER_AES) {
+    if (m_Cipher == FXCIPHER_AES)
       memcpy(key1 + m_KeyLen + 5, "sAlT", 4);
-    }
-    CRYPT_MD5Generate(
-        key1, m_Cipher == FXCIPHER_AES ? m_KeyLen + 9 : m_KeyLen + 5, realkey);
-    realkeylen = std::min<size_t>(m_KeyLen + 5, sizeof(realkey));
+    size_t len = m_Cipher == FXCIPHER_AES ? m_KeyLen + 9 : m_KeyLen + 5;
+    CRYPT_MD5Generate({key1, len}, realkey);
+    realkeylen = std::min(m_KeyLen + 5, sizeof(realkey));
   }
   if (m_Cipher == FXCIPHER_AES) {
     CRYPT_AESSetKey(m_pAESContext.get(),
@@ -97,7 +96,7 @@ void CPDF_CryptoHandler::CryptBlock(bool bEncrypt,
     ASSERT(dest_size == source.size());
     if (dest_buf != source.data())
       memcpy(dest_buf, source.data(), source.size());
-    CRYPT_ArcFourCryptBlock(dest_buf, dest_size, realkey, realkeylen);
+    CRYPT_ArcFourCryptBlock({dest_buf, dest_size}, {realkey, realkeylen});
   }
 }
 
@@ -130,16 +129,14 @@ void* CPDF_CryptoHandler::CryptStart(uint32_t objnum,
   uint8_t key1[48];
   PopulateKey(objnum, gennum, key1);
 
-  if (m_Cipher == FXCIPHER_AES) {
+  if (m_Cipher == FXCIPHER_AES)
     memcpy(key1 + m_KeyLen + 5, "sAlT", 4);
-  }
+
   uint8_t realkey[16];
-  CRYPT_MD5Generate(
-      key1, m_Cipher == FXCIPHER_AES ? m_KeyLen + 9 : m_KeyLen + 5, realkey);
-  int realkeylen = m_KeyLen + 5;
-  if (realkeylen > 16) {
-    realkeylen = 16;
-  }
+  size_t len = m_Cipher == FXCIPHER_AES ? m_KeyLen + 9 : m_KeyLen + 5;
+  CRYPT_MD5Generate({key1, len}, realkey);
+  size_t realkeylen = std::min(m_KeyLen + 5, sizeof(realkey));
+
   if (m_Cipher == FXCIPHER_AES) {
     AESCryptContext* pContext = FX_Alloc(AESCryptContext, 1);
     pContext->m_bIV = true;
@@ -154,7 +151,7 @@ void* CPDF_CryptoHandler::CryptStart(uint32_t objnum,
     return pContext;
   }
   CRYPT_rc4_context* pContext = FX_Alloc(CRYPT_rc4_context, 1);
-  CRYPT_ArcFourSetup(pContext, realkey, realkeylen);
+  CRYPT_ArcFourSetup(pContext, {realkey, realkeylen});
   return pContext;
 }
 
@@ -173,7 +170,7 @@ bool CPDF_CryptoHandler::CryptStream(void* context,
     int old_size = dest_buf.GetSize();
     dest_buf.AppendBlock(source.data(), source.size());
     CRYPT_ArcFourCrypt(static_cast<CRYPT_rc4_context*>(context),
-                       dest_buf.GetBuffer() + old_size, source.size());
+                       dest_buf.GetSpan().subspan(old_size, source.size()));
     return true;
   }
   AESCryptContext* pContext = static_cast<AESCryptContext*>(context);
@@ -331,10 +328,7 @@ bool CPDF_CryptoHandler::DecryptObjectTree(RetainPtr<CPDF_Object> object) {
 
         void* context = DecryptStart(obj_num, gen_num);
         bool decrypt_result =
-            DecryptStream(context,
-                          pdfium::make_span(stream_access->GetData(),
-                                            stream_access->GetSize()),
-                          decrypted_buf);
+            DecryptStream(context, stream_access->GetSpan(), decrypted_buf);
         decrypt_result &= DecryptFinish(context, decrypted_buf);
         if (decrypt_result) {
           const uint32_t decrypted_size = decrypted_buf.GetSize();
@@ -385,8 +379,8 @@ bool CPDF_CryptoHandler::EncryptContent(uint32_t objnum,
 
 CPDF_CryptoHandler::CPDF_CryptoHandler(int cipher,
                                        const uint8_t* key,
-                                       int keylen)
-    : m_KeyLen(std::min(keylen, 32)), m_Cipher(cipher) {
+                                       size_t keylen)
+    : m_KeyLen(std::min<size_t>(keylen, 32)), m_Cipher(cipher) {
   ASSERT(cipher != FXCIPHER_AES || keylen == 16 || keylen == 24 ||
          keylen == 32);
   ASSERT(cipher != FXCIPHER_AES2 || keylen == 32);
@@ -399,7 +393,7 @@ CPDF_CryptoHandler::CPDF_CryptoHandler(int cipher,
     m_pAESContext.reset(FX_Alloc(CRYPT_aes_context, 1));
 }
 
-CPDF_CryptoHandler::~CPDF_CryptoHandler() {}
+CPDF_CryptoHandler::~CPDF_CryptoHandler() = default;
 
 void CPDF_CryptoHandler::PopulateKey(uint32_t objnum,
                                      uint32_t gennum,

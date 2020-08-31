@@ -31,10 +31,8 @@ try:
 except ImportError:
   yaml = None
 
-debug = True
-
 # See https://crbug.com/207004 for discussion.
-PER_PKG_LICENSE_DIR = 'var/db/pkg'
+PER_PKG_LICENSE_DIR = portage_util.VDB_PATH
 
 STOCK_LICENSE_DIRS = [
     'src/third_party/portage-stable/licenses',
@@ -176,6 +174,13 @@ LICENCES_IGNORE = [
     '||',
 ]
 
+# The full names of packages which we want to generate license information for
+# even though they have an empty installation size.
+SIZE_EXEMPT_PACKAGES = [
+    'net-print/konica-minolta-printing-license',
+    'net-print/xerox-printing-license',
+]
+
 # Find the directory of this script.
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -279,11 +284,8 @@ class PackageInfo(object):
     try:
       cpv = portage_util.SplitCPV(fullnamerev)
     except ValueError:
-      cpv = None
-
-    # A bad package can either raise a TypeError exception or return None.
-    if not cpv:
-      raise AssertionError(
+      # A bad package can either raise a TypeError exception or return None.
+      raise ValueError(
           "portage couldn't find %s, missing version number?" % fullnamerev)
 
     #
@@ -354,8 +356,8 @@ class PackageInfo(object):
     ebuild_cmd = cros_build_lib.GetSysrootToolPath(
         cros_build_lib.GetSysroot(self.board), 'ebuild')
     return cros_build_lib.run(
-        [ebuild_cmd, ebuild_path] + phases, print_cmd=debug,
-        redirect_stdout=True, encoding='utf-8')
+        [ebuild_cmd, ebuild_path] + phases,
+        stdout=True, encoding='utf-8')
 
   def _GetOverrideLicense(self):
     """Look in COPYRIGHT_ATTRIBUTION_DIR for license with copyright attribution.
@@ -461,8 +463,7 @@ class PackageInfo(object):
     # to find the MIT license:
     # dev-libs/libatomic_ops-7.2d/work/gc-7.2/libatomic_ops/doc/LICENSING.txt
     args = ['find', src_dir, '-type', 'f']
-    result = cros_build_lib.run(args, print_cmd=debug, redirect_stdout=True,
-                                encoding='utf-8')
+    result = cros_build_lib.run(args, stdout=True, encoding='utf-8')
     # Truncate results to look like this: swig-2.0.4/COPYRIGHT
     files = [x[len(src_dir):].lstrip('/') for x in result.stdout.splitlines()]
     license_files = []
@@ -569,7 +570,7 @@ being scraped currently).""",
     args = [equery_cmd, '-q', '-C', 'which', self.fullnamerev]
     try:
       path = cros_build_lib.run(args, print_cmd=True, encoding='utf-8',
-                                redirect_stdout=True).output.strip()
+                                stdout=True).output.strip()
     except cros_build_lib.RunCommandError:
       path = None
 
@@ -610,8 +611,11 @@ being scraped currently).""",
     """
     # If the total size installed is zero, we installed no content to license.
     if _BuildInfo(build_info_dir, 'SIZE').strip() == '0':
-      self.skip = True
-      return
+      # Allow for license generation for the whitelisted empty packages.
+      if self.fullname not in SIZE_EXEMPT_PACKAGES:
+        logging.debug('Build directory is empty')
+        self.skip = True
+        return
 
     self.homepages = _BuildInfo(build_info_dir, 'HOMEPAGE').split()
     ebuild_license_names = _BuildInfo(build_info_dir, 'LICENSE').split()
@@ -804,7 +808,6 @@ class Licensing(object):
     # ready for us, but in case they're not, they can be generated.
     self.gen_licenses = gen_licenses
 
-    self.package_text = {}
     self.entry_template = None
 
     # We need to have a dict for the list of packages objects, index by package
@@ -948,7 +951,6 @@ class Licensing(object):
           'chromeos-base/houdini-pi',
           'chromeos-base/houdini-qt',
           'chromeos-base/intel-hdcp',
-          'chromeos-base/intel-wifi-fw-dump',
           'chromeos-base/monotype-fonts',
           'chromeos-base/rialto-cellular-autoconnect',
           'chromeos-base/rialto-modem-watchdog',
@@ -981,12 +983,10 @@ class Licensing(object):
           'media-libs/mfc-fw-v8',
           'media-libs/rk3399-hotword-support',
           'media-libs/skl-hotword-support',
-          'media-libs/vpu-fw',
           'sys-apps/accelerator-bootstrap',
           'sys-apps/eid',
           'sys-apps/loonix-hydrogen',
           'sys-boot/chromeos-firmware-ps8751',
-          'sys-boot/chromeos-firmware-ps8805',
           'sys-boot/chromeos-vendor-strings-wilco',
           'sys-boot/coreboot-private-files-amenia',
           'sys-boot/coreboot-private-files-aplrvp',
@@ -1142,23 +1142,22 @@ after fixing the license.""" % (license_name, '\n'.join(set(stock + custom))))
       template = template.replace('{{%s}}' % key, val)
     return template
 
-  def _GeneratePackageLicenseText(self, pkg):
-    """Concatenate all licenses related to a pkg.
+  def _GeneratePackageLicenseHTML(self, pkg, license_text):
+    """Concatenate all licenses related to a pkg in HTML format.
 
     This means a combination of ebuild shared licenses and licenses read from
     the pkg source tree, if any.
 
     Args:
       pkg: PackageInfo object
+      license_text: the license in plain text.
+
+    Returns:
+      The license for a file->package in HTML format.
 
     Raises:
       AssertionError: on runtime errors
     """
-    license_text = []
-    for license_text_scanned in pkg.license_text_scanned:
-      license_text.append(license_text_scanned)
-      license_text.append('%s\n' % ('-=' * 40))
-
     license_pointers = []
     # sln: shared license name.
     for sln in pkg.license_names:
@@ -1174,28 +1173,33 @@ after fixing the license.""" % (license_name, '\n'.join(set(stock + custom))))
                            pkg.fullnamerev)
 
     env = {
-        'name': '%s-%s' % (pkg.name, pkg.version),
+        'name': pkg.name,
+        'namerev': '%s-%s' % (pkg.name, pkg.version),
         'url': cgi.escape(pkg.homepages[0]) if pkg.homepages else '',
         'licenses_txt': cgi.escape('\n'.join(license_text)) or '',
         'licenses_ptr': '\n'.join(license_pointers) or '',
     }
-    self.package_text[pkg] = self.EvaluateTemplate(self.entry_template, env)
+    return self.EvaluateTemplate(self.entry_template, env)
 
-  def GenerateHTMLLicenseOutput(self, output_file,
-                                output_template=TMPL,
-                                entry_template=ENTRY_TMPL,
-                                license_template=SHARED_LICENSE_TMPL):
-    """Generate the combined html license file used in ChromeOS.
+  def _GeneratePackageLicenseText(self, pkg):
+    """Concatenate all licenses related to a pkg.
+
+    This means a combination of ebuild shared licenses and licenses read from
+    the pkg source tree, if any.
 
     Args:
-      output_file: resulting HTML license output.
-      output_template: template for the entire HTML file.
-      entry_template: template for per package entries.
-      license_template: template for shared license entries.
+      pkg: PackageInfo object
     """
-    self.entry_template = ReadUnknownEncodedFile(entry_template)
-    sorted_license_txt = []
+    license_text = []
+    for license_text_scanned in pkg.license_text_scanned:
+      license_text.append(license_text_scanned)
+      license_text.append('%s\n' % ('-=' * 40))
 
+    return license_text
+
+  def GenerateLicenseText(self):
+    """Generate the license text for all packages."""
+    license_txts = {}
     # Keep track of which licenses are used by which packages.
     for pkg in self.packages.values():
       if pkg.skip:
@@ -1220,13 +1224,34 @@ after fixing the license.""" % (license_name, '\n'.join(set(stock + custom))))
         pkg.license_names.remove(sln)
         del self.licenses[sln]
 
-    for pkg in sorted(self.packages.values(),
-                      key=lambda x: (x.name.lower(), x.version, x.revision)):
+    for pkg in self.packages.values():
       if pkg.skip:
         logging.debug('Skipping package %s', pkg.fullnamerev)
         continue
-      self._GeneratePackageLicenseText(pkg)
-      sorted_license_txt += [self.package_text[pkg]]
+      license_txts[pkg] = self._GeneratePackageLicenseText(pkg)
+
+    return license_txts
+
+  def GenerateHTMLLicenseOutput(self, output_file,
+                                output_template=TMPL,
+                                entry_template=ENTRY_TMPL,
+                                license_template=SHARED_LICENSE_TMPL):
+    """Generate the combined html license file.
+
+    Args:
+      output_file: resulting HTML license output.
+      output_template: template for the entire HTML file.
+      entry_template: template for per package entries.
+      license_template: template for shared license entries.
+    """
+    self.entry_template = ReadUnknownEncodedFile(entry_template)
+    license_txts = self.GenerateLicenseText()
+    sorted_license_txt = []
+    for pkg in sorted(license_txts.keys(),
+                      key=lambda x: (x.name.lower(), x.version, x.revision)):
+      sorted_license_txt += [
+          self._GeneratePackageLicenseHTML(pkg, license_txts[pkg])]
+
 
     # Now generate the bottom of the page that will contain all the shared
     # licenses and a list of who is pointing to them.
@@ -1272,8 +1297,8 @@ def ListInstalledPackages(board, all_packages=False):
     equery_cmd = cros_build_lib.GetSysrootToolPath(
         cros_build_lib.GetSysroot(board), 'equery')
     args = [equery_cmd, 'list', '*']
-    packages = cros_build_lib.run(args, print_cmd=debug, encoding='utf-8',
-                                  redirect_stdout=True).output.splitlines()
+    packages = cros_build_lib.run(args, encoding='utf-8',
+                                  stdout=True).output.splitlines()
   else:
     # The following returns all packages that were part of the build tree
     # (many get built or used during the build, but do not get shipped).
@@ -1283,8 +1308,8 @@ def ListInstalledPackages(board, all_packages=False):
         cros_build_lib.GetSysroot(board), 'emerge')
     args = [emerge_cmd, '--with-bdeps=y', '--usepkgonly',
             '--emptytree', '--pretend', '--color=n', 'virtual/target-os']
-    emerge = cros_build_lib.run(args, print_cmd=debug, encoding='utf-8',
-                                redirect_stdout=True).output.splitlines()
+    emerge = cros_build_lib.run(args, encoding='utf-8',
+                                stdout=True).output.splitlines()
     # Another option which we've decided not to use, is bdeps=n.  This outputs
     # just the packages we ship, but does not packages that were used to build
     # them, including a package like flex which generates a .a that is included

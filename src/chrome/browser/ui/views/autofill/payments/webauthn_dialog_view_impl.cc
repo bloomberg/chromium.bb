@@ -32,10 +32,11 @@ WebauthnDialogViewImpl::WebauthnDialogViewImpl(
       AddChildView(CreateSheetViewForAutofillWebAuthn(std::move(model)));
   sheet_view_->ReInitChildViews();
 
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   model_->GetAcceptButtonLabel());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
-                                   model_->GetCancelButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, model_->GetAcceptButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, model_->GetCancelButtonLabel());
+  SetButtons(model_->IsAcceptButtonVisible()
+                 ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+                 : ui::DIALOG_BUTTON_CANCEL);
 }
 
 WebauthnDialogViewImpl::~WebauthnDialogViewImpl() {
@@ -99,14 +100,6 @@ bool WebauthnDialogViewImpl::Cancel() {
   return true;
 }
 
-int WebauthnDialogViewImpl::GetDialogButtons() const {
-  // Cancel button is always visible but OK button depends on dialog state.
-  DCHECK(model_->IsCancelButtonVisible());
-  return model_->IsAcceptButtonVisible()
-             ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
-             : ui::DIALOG_BUTTON_CANCEL;
-}
-
 bool WebauthnDialogViewImpl::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_OK ? model_->IsAcceptButtonEnabled()
@@ -143,10 +136,13 @@ void WebauthnDialogViewImpl::Hide() {
 void WebauthnDialogViewImpl::RefreshContent() {
   sheet_view_->ReInitChildViews();
   sheet_view_->InvalidateLayout();
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   model_->GetAcceptButtonLabel());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
-                                   model_->GetCancelButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, model_->GetAcceptButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, model_->GetCancelButtonLabel());
+  DCHECK(model_->IsCancelButtonVisible());
+  SetButtons(model_->IsAcceptButtonVisible()
+                 ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+                 : ui::DIALOG_BUTTON_CANCEL);
+
   DialogModelChanged();
   Layout();
 

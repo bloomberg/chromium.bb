@@ -6,7 +6,22 @@
  * @fileoverview
  * 'settings-on-startup-page' is a settings page.
  */
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '../controls/controlled_radio_button.m.js';
+import '../controls/extension_controlled_indicator.m.js';
+import '../controls/settings_radio_group.m.js';
+import './startup_urls_page.js';
+import '../i18n_setup.js';
+import '../settings_shared_css.m.js';
+
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {NtpExtension, OnStartupBrowserProxyImpl} from './on_startup_browser_proxy.js';
+
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'settings-on-startup-page',
 
   behaviors: [WebUIListenerBehavior],
@@ -36,14 +51,23 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     const updateNtpExtension = ntpExtension => {
       // Note that |ntpExtension| is empty if there is no NTP extension.
       this.ntpExtension_ = ntpExtension;
     };
-    settings.OnStartupBrowserProxyImpl.getInstance().getNtpExtension().then(
+    OnStartupBrowserProxyImpl.getInstance().getNtpExtension().then(
         updateNtpExtension);
     this.addWebUIListener('update-ntp-extension', updateNtpExtension);
+  },
+
+  /**
+   * @param {number} value
+   * @return {string}
+   * @private
+   */
+  getName_(value) {
+    return value.toString();
   },
 
   /**
@@ -52,7 +76,7 @@ Polymer({
    * @return {boolean} Whether the open specific pages is selected.
    * @private
    */
-  showStartupUrls_: function(restoreOnStartup) {
-    return restoreOnStartup == this.prefValues_.OPEN_SPECIFIC;
+  showStartupUrls_(restoreOnStartup) {
+    return restoreOnStartup === this.prefValues_.OPEN_SPECIFIC;
   },
 });

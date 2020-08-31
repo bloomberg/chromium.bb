@@ -45,7 +45,7 @@ simplified when running as root and are required due to SELinux when running as
 $ cd perfetto
 
 # Prepare for the build (as per instructions linked above).
-$ tools/install-build-deps --no-android
+$ tools/install-build-deps
 $ tools/gn gen out/mac_release --args="is_debug=false"
 
 # Compiles the textual protobuf into binary format
@@ -53,7 +53,7 @@ $ tools/gn gen out/mac_release --args="is_debug=false"
 $ tools/ninja -C out/mac_release/ long_trace.cfg.protobuf
 
 # Alternatively, the more verbose variant:
-$ protoc=$(pwd)/out/mac_release/gcc_like_host/protoc
+$ alias protoc=$(pwd)/out/mac_release/protoc
 $ protoc --encode=perfetto.protos.TraceConfig \
         -I$(pwd) \
         $(pwd)/protos/perfetto/config/perfetto_config.proto \

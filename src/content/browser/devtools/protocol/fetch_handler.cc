@@ -59,13 +59,13 @@ Response ToInterceptionPatterns(
     std::vector<DevToolsURLLoaderInterceptor::Pattern>* result) {
   result->clear();
   if (!maybe_patterns.isJust()) {
-    result->emplace_back("*", base::flat_set<ResourceType>(),
+    result->emplace_back("*", base::flat_set<blink::mojom::ResourceType>(),
                          DevToolsURLLoaderInterceptor::REQUEST);
-    return Response::OK();
+    return Response::Success();
   }
   Array<Fetch::RequestPattern>& patterns = *maybe_patterns.fromJust();
   for (const std::unique_ptr<Fetch::RequestPattern>& pattern : patterns) {
-    base::flat_set<ResourceType> resource_types;
+    base::flat_set<blink::mojom::ResourceType> resource_types;
     std::string resource_type = pattern->GetResourceType("");
     if (!resource_type.empty()) {
       if (!NetworkHandler::AddInterceptedResourceType(resource_type,
@@ -80,7 +80,7 @@ Response ToInterceptionPatterns(
         RequestStageToInterceptorStage(
             pattern->GetRequestStage(Fetch::RequestStageEnum::Request)));
   }
-  return Response::OK();
+  return Response::Success();
 }
 
 bool FetchHandler::MaybeCreateProxyForInterception(
@@ -88,11 +88,10 @@ bool FetchHandler::MaybeCreateProxyForInterception(
     const base::UnguessableToken& frame_token,
     bool is_navigation,
     bool is_download,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
-        target_factory_receiver) {
+    network::mojom::URLLoaderFactoryOverride* intercepting_factory) {
   return interceptor_ && interceptor_->CreateProxyForInterception(
                              rph, frame_token, is_navigation, is_download,
-                             target_factory_receiver);
+                             intercepting_factory);
 }
 
 void FetchHandler::Enable(Maybe<Array<Fetch::RequestPattern>> patterns,
@@ -105,7 +104,7 @@ void FetchHandler::Enable(Maybe<Array<Fetch::RequestPattern>> patterns,
   }
   std::vector<DevToolsURLLoaderInterceptor::Pattern> interception_patterns;
   Response response = ToInterceptionPatterns(patterns, &interception_patterns);
-  if (!response.isSuccess()) {
+  if (!response.IsSuccess()) {
     callback->sendFailure(response);
     return;
   }
@@ -125,7 +124,7 @@ Response FetchHandler::Disable() {
   interceptor_.reset();
   if (was_enabled)
     update_loader_factories_callback_.Run(base::DoNothing());
-  return Response::OK();
+  return Response::Success();
 }
 
 namespace {
@@ -176,7 +175,7 @@ void FetchHandler::FailRequest(const String& requestId,
                                const String& errorReason,
                                std::unique_ptr<FailRequestCallback> callback) {
   if (!interceptor_) {
-    callback->sendFailure(Response::Error("Fetch domain is not enabled"));
+    callback->sendFailure(Response::ServerError("Fetch domain is not enabled"));
     return;
   }
   bool ok = false;
@@ -200,7 +199,7 @@ void FetchHandler::FulfillRequest(
     Maybe<String> responsePhrase,
     std::unique_ptr<FulfillRequestCallback> callback) {
   if (!interceptor_) {
-    callback->sendFailure(Response::Error("Fetch domain is not enabled"));
+    callback->sendFailure(Response::ServerError("Fetch domain is not enabled"));
     return;
   }
   std::string status_phrase =
@@ -254,7 +253,7 @@ void FetchHandler::ContinueRequest(
     Maybe<Array<Fetch::HeaderEntry>> headers,
     std::unique_ptr<ContinueRequestCallback> callback) {
   if (!interceptor_) {
-    callback->sendFailure(Response::Error("Fetch domain is not enabled"));
+    callback->sendFailure(Response::ServerError("Fetch domain is not enabled"));
     return;
   }
   std::unique_ptr<DevToolsURLLoaderInterceptor::Modifications::HeadersVector>
@@ -283,7 +282,7 @@ void FetchHandler::ContinueWithAuth(
         authChallengeResponse,
     std::unique_ptr<ContinueWithAuthCallback> callback) {
   if (!interceptor_) {
-    callback->sendFailure(Response::Error("Fetch domain is not enabled"));
+    callback->sendFailure(Response::ServerError("Fetch domain is not enabled"));
     return;
   }
   using AuthChallengeResponse =
@@ -316,6 +315,10 @@ void FetchHandler::ContinueWithAuth(
 void FetchHandler::GetResponseBody(
     const String& requestId,
     std::unique_ptr<GetResponseBodyCallback> callback) {
+  if (!interceptor_) {
+    callback->sendFailure(Response::ServerError("Fetch domain is not enabled"));
+    return;
+  }
   auto weapped_callback = std::make_unique<CallbackWrapper<
       GetResponseBodyCallback,
       DevToolsURLLoaderInterceptor::GetResponseBodyForInterceptionCallback,
@@ -326,6 +329,10 @@ void FetchHandler::GetResponseBody(
 void FetchHandler::TakeResponseBodyAsStream(
     const String& requestId,
     std::unique_ptr<TakeResponseBodyAsStreamCallback> callback) {
+  if (!interceptor_) {
+    callback->sendFailure(Response::ServerError("Fetch domain is not enabled"));
+    return;
+  }
   interceptor_->TakeResponseBodyPipe(
       requestId,
       base::BindOnce(&FetchHandler::OnResponseBodyPipeTaken,
@@ -338,8 +345,8 @@ void FetchHandler::OnResponseBodyPipeTaken(
     mojo::ScopedDataPipeConsumerHandle pipe,
     const std::string& mime_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(response.isSuccess(), pipe.is_valid());
-  if (!response.isSuccess()) {
+  DCHECK_EQ(response.IsSuccess(), pipe.is_valid());
+  if (!response.IsSuccess()) {
     callback->sendFailure(std::move(response));
     return;
   }

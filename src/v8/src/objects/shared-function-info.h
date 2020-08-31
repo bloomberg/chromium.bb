@@ -17,7 +17,9 @@
 #include "src/objects/slots.h"
 #include "src/objects/smi.h"
 #include "src/objects/struct.h"
+#include "src/roots/roots.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+#include "torque-generated/bit-fields-tq.h"
 #include "torque-generated/field-offsets-tq.h"
 
 // Has to be the last include (doesn't have include guards):
@@ -97,11 +99,14 @@ class PreparseData
 class UncompiledData
     : public TorqueGeneratedUncompiledData<UncompiledData, HeapObject> {
  public:
-  inline void Init(
+  template <typename LocalIsolate>
+  inline void Init(LocalIsolate* isolate, String inferred_name,
+                   int start_position, int end_position);
+
+  inline void InitAfterBytecodeFlush(
       String inferred_name, int start_position, int end_position,
       std::function<void(HeapObject object, ObjectSlot slot, HeapObject target)>
-          gc_notify_updated_slot =
-              [](HeapObject object, ObjectSlot slot, HeapObject target) {});
+          gc_notify_updated_slot);
 
   using BodyDescriptor =
       FixedBodyDescriptor<kStartOfStrongFieldsOffset, kEndOfStrongFieldsOffset,
@@ -133,12 +138,10 @@ class UncompiledDataWithPreparseData
  public:
   DECL_PRINTER(UncompiledDataWithPreparseData)
 
-  inline void Init(
-      String inferred_name, int start_position, int end_position,
-      PreparseData scope_data,
-      std::function<void(HeapObject object, ObjectSlot slot, HeapObject target)>
-          gc_notify_updated_slot =
-              [](HeapObject object, ObjectSlot slot, HeapObject target) {});
+  template <typename LocalIsolate>
+  inline void Init(LocalIsolate* isolate, String inferred_name,
+                   int start_position, int end_position,
+                   PreparseData scope_data);
 
   using BodyDescriptor = SubclassBodyDescriptor<
       UncompiledData::BodyDescriptor,
@@ -168,6 +171,8 @@ class InterpreterData : public Struct {
 class SharedFunctionInfo : public HeapObject {
  public:
   NEVER_READ_ONLY_SPACE
+  DEFINE_TORQUE_GENERATED_SHARED_FUNCTION_INFO_FLAGS()
+  DEFINE_TORQUE_GENERATED_SHARED_FUNCTION_INFO_FLAGS2()
 
   // This initializes the SharedFunctionInfo after allocation. It must
   // initialize all fields, and leave the SharedFunctionInfo in a state where
@@ -199,9 +204,10 @@ class SharedFunctionInfo : public HeapObject {
 
   // Set up the link between shared function info and the script. The shared
   // function info is added to the list on the script.
-  V8_EXPORT_PRIVATE static void SetScript(
-      Handle<SharedFunctionInfo> shared, Handle<HeapObject> script_object,
-      int function_literal_id, bool reset_preparsed_scope_data = true);
+  V8_EXPORT_PRIVATE void SetScript(ReadOnlyRoots roots,
+                                   HeapObject script_object,
+                                   int function_literal_id,
+                                   bool reset_preparsed_scope_data = true);
 
   // Layout description of the optimized code map.
   static const int kEntriesStart = 0;
@@ -218,6 +224,9 @@ class SharedFunctionInfo : public HeapObject {
   // Set scope_info without moving the existing name onto the ScopeInfo.
   inline void set_raw_scope_info(ScopeInfo scope_info,
                                  WriteBarrierMode mode = UPDATE_WRITE_BARRIER);
+
+  inline bool is_script() const;
+  inline bool needs_script_context() const;
 
   // End position of this function in the script source.
   V8_EXPORT_PRIVATE int EndPosition() const;
@@ -271,7 +280,7 @@ class SharedFunctionInfo : public HeapObject {
 
   // [expected_nof_properties]: Expected number of properties for the
   // function. The value is only reliable when the function has been compiled.
-  DECL_UINT16_ACCESSORS(expected_nof_properties)
+  DECL_UINT8_ACCESSORS(expected_nof_properties)
 
   // [function_literal_id] - uniquely identifies the FunctionLiteral this
   // SharedFunctionInfo represents within its script, or -1 if this
@@ -301,7 +310,7 @@ class SharedFunctionInfo : public HeapObject {
 
   inline bool IsApiFunction() const;
   inline bool is_class_constructor() const;
-  inline FunctionTemplateInfo get_api_func_data();
+  inline FunctionTemplateInfo get_api_func_data() const;
   inline void set_api_func_data(FunctionTemplateInfo data);
   inline bool HasBytecodeArray() const;
   inline BytecodeArray GetBytecodeArray() const;
@@ -394,6 +403,12 @@ class SharedFunctionInfo : public HeapObject {
 
   // [flags] Bit field containing various flags about the function.
   DECL_INT32_ACCESSORS(flags)
+  DECL_UINT8_ACCESSORS(flags2)
+
+  // True if the outer class scope contains a private brand for
+  // private instance methdos.
+  DECL_BOOLEAN_ACCESSORS(class_scope_has_private_brand)
+  DECL_BOOLEAN_ACCESSORS(has_static_private_methods_or_accessors)
 
   // Is this function a top-level function (scripts, evals).
   DECL_BOOLEAN_ACCESSORS(is_toplevel)
@@ -546,7 +561,9 @@ class SharedFunctionInfo : public HeapObject {
   inline bool has_simple_parameters();
 
   // Initialize a SharedFunctionInfo from a parsed function literal.
-  static void InitFromFunctionLiteral(Handle<SharedFunctionInfo> shared_info,
+  template <typename LocalIsolate>
+  static void InitFromFunctionLiteral(LocalIsolate* isolate,
+                                      Handle<SharedFunctionInfo> shared_info,
                                       FunctionLiteral* lit, bool is_toplevel);
 
   // Updates the expected number of properties based on estimate from parser.
@@ -579,6 +596,7 @@ class SharedFunctionInfo : public HeapObject {
   // Dispatched behavior.
   DECL_PRINTER(SharedFunctionInfo)
   DECL_VERIFIER(SharedFunctionInfo)
+  void SharedFunctionInfoVerify(OffThreadIsolate* isolate);
 #ifdef OBJECT_PRINT
   void PrintSourceCode(std::ostream& os);
 #endif
@@ -603,8 +621,6 @@ class SharedFunctionInfo : public HeapObject {
   DECL_CAST(SharedFunctionInfo)
 
   // Constants.
-  static const uint16_t kDontAdaptArgumentsSentinel = static_cast<uint16_t>(-1);
-
   static const int kMaximumFunctionTokenOffset = kMaxUInt16 - 1;
   static const uint16_t kFunctionTokenOutOfRange = static_cast<uint16_t>(-1);
   STATIC_ASSERT(kMaximumFunctionTokenOffset + 1 == kFunctionTokenOutOfRange);
@@ -615,31 +631,6 @@ class SharedFunctionInfo : public HeapObject {
   static const int kAlignedSize = POINTER_SIZE_ALIGN(kSize);
 
   class BodyDescriptor;
-
-// Bit positions in |flags|.
-#define FLAGS_BIT_FIELDS(V, _)                               \
-  /* Have FunctionKind first to make it cheaper to access */ \
-  V(FunctionKindBits, FunctionKind, 5, _)                    \
-  V(IsNativeBit, bool, 1, _)                                 \
-  V(IsStrictBit, bool, 1, _)                                 \
-  V(FunctionSyntaxKindBits, FunctionSyntaxKind, 3, _)        \
-  V(IsClassConstructorBit, bool, 1, _)                       \
-  V(HasDuplicateParametersBit, bool, 1, _)                   \
-  V(AllowLazyCompilationBit, bool, 1, _)                     \
-  V(NeedsHomeObjectBit, bool, 1, _)                          \
-  V(IsAsmWasmBrokenBit, bool, 1, _)                          \
-  V(FunctionMapIndexBits, int, 5, _)                         \
-  V(DisabledOptimizationReasonBits, BailoutReason, 4, _)     \
-  V(RequiresInstanceMembersInitializer, bool, 1, _)          \
-  V(ConstructAsBuiltinBit, bool, 1, _)                       \
-  V(NameShouldPrintAsAnonymousBit, bool, 1, _)               \
-  V(HasReportedBinaryCoverageBit, bool, 1, _)                \
-  V(IsTopLevelBit, bool, 1, _)                               \
-  V(IsOneshotIIFEOrPropertiesAreFinalBit, bool, 1, _)        \
-  V(IsSafeToSkipArgumentsAdaptorBit, bool, 1, _)             \
-  V(PrivateNameLookupSkipsOuterClassBit, bool, 1, _)
-  DEFINE_BIT_FIELDS(FLAGS_BIT_FIELDS)
-#undef FLAGS_BIT_FIELDS
 
   // Bailout reasons must fit in the DisabledOptimizationReason bitfield.
   STATIC_ASSERT(BailoutReason::kLastErrorMessage <=
@@ -655,6 +646,8 @@ class SharedFunctionInfo : public HeapObject {
   inline bool needs_home_object() const;
 
  private:
+  void SharedFunctionInfoVerify(ReadOnlyRoots roots);
+
   // [name_or_scope_info]: Function name string, kNoSharedNameSentinel or
   // ScopeInfo.
   DECL_ACCESSORS(name_or_scope_info, Object)
@@ -677,7 +670,8 @@ class SharedFunctionInfo : public HeapObject {
 
   inline uint16_t get_property_estimate_from_literal(FunctionLiteral* literal);
 
-  friend class Factory;
+  template <typename Impl>
+  friend class FactoryBase;
   friend class V8HeapExplorer;
   FRIEND_TEST(PreParserTest, LazyFunctionLength);
 

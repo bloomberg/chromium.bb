@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/gcm_driver/gcm_driver.h"
-#include "services/network/test/test_url_loader_factory.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -34,14 +33,12 @@ class FakeGCMDriver : public GCMDriver {
   void OnSignedOut() override;
   void AddConnectionObserver(GCMConnectionObserver* observer) override;
   void RemoveConnectionObserver(GCMConnectionObserver* observer) override;
-  void Enable() override;
-  void Disable() override;
   GCMClient* GetGCMClientForTesting() const override;
   bool IsStarted() const override;
   bool IsConnected() const override;
-  void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
+  void GetGCMStatistics(GetGCMStatisticsCallback callback,
                         ClearActivityLogs clear_logs) override;
-  void SetGCMRecording(const GetGCMStatisticsCallback& callback,
+  void SetGCMRecording(const GCMStatisticsRecordingCallback& callback,
                        bool recording) override;
   void SetAccountTokens(
       const std::vector<GCMClient::AccountTokenInfo>& account_tokens) override;
@@ -68,8 +65,6 @@ class FakeGCMDriver : public GCMDriver {
                                GCMDecryptionResult result) override;
 
  private:
-  network::TestURLLoaderFactory test_url_loader_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(FakeGCMDriver);
 };
 

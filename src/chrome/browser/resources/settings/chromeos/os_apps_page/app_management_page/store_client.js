@@ -16,21 +16,21 @@ cr.define('app_management', function() {
      * @param {string} localProperty
      * @param {function(!AppManagementPageState)} valueGetter
      */
-    watch: function(localProperty, valueGetter) {
+    watch(localProperty, valueGetter) {
       this.watch_(localProperty, valueGetter);
     },
 
     /**
      * @return {AppManagementPageState}
      */
-    getState: function() {
+    getState() {
       return this.getStore().data;
     },
 
     /**
      * @return {cr.ui.Store<AppManagementPageState>}
      */
-    getStore: function() {
+    getStore() {
       return app_management.Store.getInstance();
     },
   };
@@ -41,6 +41,7 @@ cr.define('app_management', function() {
    */
   const StoreClient = [cr.ui.StoreClient, AppManagementStoreClientImpl];
 
+  // #cr_define_end
   return {
     AppManagementStoreClientImpl: AppManagementStoreClientImpl,
     StoreClient: StoreClient,

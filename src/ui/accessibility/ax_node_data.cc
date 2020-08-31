@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <set>
+#include <utility>
 
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
@@ -18,7 +19,6 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_role_properties.h"
-#include "ui/accessibility/ax_text_utils.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
@@ -26,11 +26,19 @@ namespace ui {
 namespace {
 
 bool IsFlagSet(uint32_t bitfield, uint32_t flag) {
-  return (bitfield & (1 << flag)) != 0;
+  return (bitfield & (1U << flag)) != 0;
+}
+
+bool IsFlagSet(uint64_t bitfield, uint32_t flag) {
+  return (bitfield & (1ULL << flag)) != 0;
 }
 
 uint32_t ModifyFlag(uint32_t bitfield, uint32_t flag, bool set) {
-  return set ? (bitfield |= (1 << flag)) : (bitfield &= ~(1 << flag));
+  return set ? (bitfield |= (1U << flag)) : (bitfield &= ~(1U << flag));
+}
+
+uint64_t ModifyFlag(uint64_t bitfield, uint32_t flag, bool set) {
+  return set ? (bitfield |= (1ULL << flag)) : (bitfield &= ~(1ULL << flag));
 }
 
 std::string StateBitfieldToString(uint32_t state_enum) {
@@ -44,7 +52,7 @@ std::string StateBitfieldToString(uint32_t state_enum) {
   return str;
 }
 
-std::string ActionsBitfieldToString(uint32_t actions) {
+std::string ActionsBitfieldToString(uint64_t actions) {
   std::string str;
   for (uint32_t i = static_cast<uint32_t>(ax::mojom::Action::kNone) + 1;
        i <= static_cast<uint32_t>(ax::mojom::Action::kMaxValue); ++i) {
@@ -68,10 +76,9 @@ std::string IntVectorToString(const std::vector<int>& items) {
 }
 
 // Predicate that returns true if the first value of a pair is |first|.
-template<typename FirstType, typename SecondType>
+template <typename FirstType, typename SecondType>
 struct FirstIs {
-  FirstIs(FirstType first)
-      : first_(first) {}
+  explicit FirstIs(FirstType first) : first_(first) {}
   bool operator()(std::pair<FirstType, SecondType> const& p) {
     return p.first == first_;
   }
@@ -80,13 +87,12 @@ struct FirstIs {
 
 // Helper function that finds a key in a vector of pairs by matching on the
 // first value, and returns an iterator.
-template<typename FirstType, typename SecondType>
+template <typename FirstType, typename SecondType>
 typename std::vector<std::pair<FirstType, SecondType>>::const_iterator
-    FindInVectorOfPairs(
-        FirstType first,
-        const std::vector<std::pair<FirstType, SecondType>>& vector) {
-  return std::find_if(vector.begin(),
-                      vector.end(),
+FindInVectorOfPairs(
+    FirstType first,
+    const std::vector<std::pair<FirstType, SecondType>>& vector) {
+  return std::find_if(vector.begin(), vector.end(),
                       FirstIs<FirstType, SecondType>(first));
 }
 
@@ -97,7 +103,6 @@ typename std::vector<std::pair<FirstType, SecondType>>::const_iterator
 bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
   switch (attr) {
     case ax::mojom::IntAttribute::kActivedescendantId:
-    case ax::mojom::IntAttribute::kDetailsId:
     case ax::mojom::IntAttribute::kErrormessageId:
     case ax::mojom::IntAttribute::kInPageLinkTargetId:
     case ax::mojom::IntAttribute::kMemberOfId:
@@ -162,6 +167,7 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kAriaCellRowSpan:
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
     case ax::mojom::IntAttribute::kDropeffect:
+    case ax::mojom::IntAttribute::kDOMNodeId:
       return false;
   }
 
@@ -174,6 +180,7 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
 bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr) {
   switch (attr) {
     case ax::mojom::IntListAttribute::kControlsIds:
+    case ax::mojom::IntListAttribute::kDetailsIds:
     case ax::mojom::IntListAttribute::kDescribedbyIds:
     case ax::mojom::IntListAttribute::kFlowtoIds:
     case ax::mojom::IntListAttribute::kIndirectChildIds:
@@ -202,9 +209,7 @@ bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr) {
 }
 
 AXNodeData::AXNodeData()
-    : role(ax::mojom::Role::kUnknown),
-      state(static_cast<uint32_t>(ax::mojom::State::kNone)),
-      actions(static_cast<uint32_t>(ax::mojom::Action::kNone)) {}
+    : role(ax::mojom::Role::kUnknown), state(0U), actions(0ULL) {}
 
 AXNodeData::~AXNodeData() = default;
 
@@ -419,8 +424,8 @@ bool AXNodeData::GetStringListAttribute(
   return false;
 }
 
-bool AXNodeData::GetHtmlAttribute(
-    const char* html_attr, std::string* value) const {
+bool AXNodeData::GetHtmlAttribute(const char* html_attr,
+                                  std::string* value) const {
   for (const std::pair<std::string, std::string>& html_attribute :
        html_attributes) {
     const std::string& attr = html_attribute.first;
@@ -433,8 +438,8 @@ bool AXNodeData::GetHtmlAttribute(
   return false;
 }
 
-bool AXNodeData::GetHtmlAttribute(
-    const char* html_attr, base::string16* value) const {
+bool AXNodeData::GetHtmlAttribute(const char* html_attr,
+                                  base::string16* value) const {
   std::string value_utf8;
   if (!GetHtmlAttribute(html_attr, &value_utf8))
     return false;
@@ -612,33 +617,33 @@ bool AXNodeData::HasAction(ax::mojom::Action action) const {
 
 bool AXNodeData::HasTextStyle(ax::mojom::TextStyle text_style_enum) const {
   int32_t style = GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
-  return IsFlagSet(style, static_cast<uint32_t>(text_style_enum));
+  return IsFlagSet(static_cast<uint32_t>(style),
+                   static_cast<uint32_t>(text_style_enum));
 }
 
 bool AXNodeData::HasDropeffect(ax::mojom::Dropeffect dropeffect_enum) const {
   int32_t dropeffect = GetIntAttribute(ax::mojom::IntAttribute::kDropeffect);
-  return IsFlagSet(dropeffect, static_cast<uint32_t>(dropeffect_enum));
+  return IsFlagSet(static_cast<uint32_t>(dropeffect),
+                   static_cast<uint32_t>(dropeffect_enum));
 }
 
-ax::mojom::State AXNodeData::AddState(ax::mojom::State state_enum) {
+void AXNodeData::AddState(ax::mojom::State state_enum) {
   DCHECK_GT(static_cast<int>(state_enum),
             static_cast<int>(ax::mojom::State::kNone));
   DCHECK_LE(static_cast<int>(state_enum),
             static_cast<int>(ax::mojom::State::kMaxValue));
   state = ModifyFlag(state, static_cast<uint32_t>(state_enum), true);
-  return static_cast<ax::mojom::State>(state);
 }
 
-ax::mojom::State AXNodeData::RemoveState(ax::mojom::State state_enum) {
+void AXNodeData::RemoveState(ax::mojom::State state_enum) {
   DCHECK_GT(static_cast<int>(state_enum),
             static_cast<int>(ax::mojom::State::kNone));
   DCHECK_LE(static_cast<int>(state_enum),
             static_cast<int>(ax::mojom::State::kMaxValue));
   state = ModifyFlag(state, static_cast<uint32_t>(state_enum), false);
-  return static_cast<ax::mojom::State>(state);
 }
 
-ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
+void AXNodeData::AddAction(ax::mojom::Action action_enum) {
   switch (action_enum) {
     case ax::mojom::Action::kNone:
       NOTREACHED();
@@ -653,12 +658,16 @@ ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
       ax::mojom::Action excluded_action =
           (action_enum == ax::mojom::Action::kBlur) ? ax::mojom::Action::kFocus
                                                     : ax::mojom::Action::kBlur;
-      DCHECK(HasAction(excluded_action));
-    } break;
+      DCHECK(!HasAction(excluded_action)) << excluded_action;
+      break;
+    }
+
     case ax::mojom::Action::kClearAccessibilityFocus:
+    case ax::mojom::Action::kCollapse:
     case ax::mojom::Action::kCustomAction:
     case ax::mojom::Action::kDecrement:
     case ax::mojom::Action::kDoDefault:
+    case ax::mojom::Action::kExpand:
     case ax::mojom::Action::kGetImageData:
     case ax::mojom::Action::kHitTest:
     case ax::mojom::Action::kIncrement:
@@ -688,7 +697,6 @@ ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
   }
 
   actions = ModifyFlag(actions, static_cast<uint32_t>(action_enum), true);
-  return static_cast<ax::mojom::Action>(actions);
 }
 
 void AXNodeData::AddTextStyle(ax::mojom::TextStyle text_style_enum) {
@@ -697,7 +705,8 @@ void AXNodeData::AddTextStyle(ax::mojom::TextStyle text_style_enum) {
   DCHECK_LE(static_cast<int>(text_style_enum),
             static_cast<int>(ax::mojom::TextStyle::kMaxValue));
   int32_t style = GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
-  style = ModifyFlag(style, static_cast<uint32_t>(text_style_enum), true);
+  style = ModifyFlag(static_cast<uint32_t>(style),
+                     static_cast<uint32_t>(text_style_enum), true);
   RemoveIntAttribute(ax::mojom::IntAttribute::kTextStyle);
   AddIntAttribute(ax::mojom::IntAttribute::kTextStyle, style);
 }
@@ -708,8 +717,8 @@ void AXNodeData::AddDropeffect(ax::mojom::Dropeffect dropeffect_enum) {
   DCHECK_LE(static_cast<int>(dropeffect_enum),
             static_cast<int>(ax::mojom::Dropeffect::kMaxValue));
   int32_t dropeffect = GetIntAttribute(ax::mojom::IntAttribute::kDropeffect);
-  dropeffect =
-      ModifyFlag(dropeffect, static_cast<uint32_t>(dropeffect_enum), true);
+  dropeffect = ModifyFlag(static_cast<uint32_t>(dropeffect),
+                          static_cast<uint32_t>(dropeffect_enum), true);
   RemoveIntAttribute(ax::mojom::IntAttribute::kDropeffect);
   AddIntAttribute(ax::mojom::IntAttribute::kDropeffect, dropeffect);
 }
@@ -871,6 +880,20 @@ void AXNodeData::SetTextDirection(ax::mojom::TextDirection text_direction) {
   }
 }
 
+bool AXNodeData::IsActivatable() const {
+  return IsTextField() || role == ax::mojom::Role::kListBox;
+}
+
+bool AXNodeData::IsButtonPressed() const {
+  // Currently there is no internal representation for |aria-pressed|, and
+  // we map |aria-pressed="true"| to ax::mojom::CheckedState::kTrue for a native
+  // button or role="button".
+  // https://www.w3.org/TR/wai-aria-1.1/#aria-pressed
+  if (IsButton(role) && GetCheckedState() == ax::mojom::CheckedState::kTrue)
+    return true;
+  return false;
+}
+
 bool AXNodeData::IsClickable() const {
   // If it has a custom default action verb except for
   // ax::mojom::DefaultActionVerb::kClickAncestor, it's definitely clickable.
@@ -884,18 +907,45 @@ bool AXNodeData::IsClickable() const {
 }
 
 bool AXNodeData::IsIgnored() const {
-  if (HasState(ax::mojom::State::kIgnored) || role == ax::mojom::Role::kIgnored)
-    return true;
-  return false;
+  return HasState(ax::mojom::State::kIgnored) ||
+         role == ax::mojom::Role::kIgnored;
+}
+
+bool AXNodeData::IsInvisibleOrIgnored() const {
+  return IsIgnored() || HasState(ax::mojom::State::kInvisible);
 }
 
 bool AXNodeData::IsInvocable() const {
   // A control is "invocable" if it initiates an action when activated but
   // does not maintain any state. A control that maintains state when activated
   // would be considered a toggle or expand-collapse element - these elements
-  // are "clickable" but not "invocable".
-  return IsClickable() && !SupportsExpandCollapse() &&
-         !ui::SupportsToggle(role);
+  // are "clickable" but not "invocable". Similarly, if the action only involves
+  // activating the control, such as when clicking a text field, the control is
+  // not considered "invocable".
+  return IsClickable() && !IsActivatable() && !SupportsExpandCollapse() &&
+         !SupportsToggle(role);
+}
+
+bool AXNodeData::IsMenuButton() const {
+  // According to the WAI-ARIA spec, a menu button is a native button or an ARIA
+  // role="button" that opens a menu. Although ARIA does not include a role
+  // specifically for menu buttons, screen readers identify buttons that have
+  // aria-haspopup="true" or aria-haspopup="menu" as menu buttons, and Blink
+  // maps both to HasPopup::kMenu.
+  // https://www.w3.org/TR/wai-aria-practices/#menubutton
+  // https://www.w3.org/TR/wai-aria-1.1/#aria-haspopup
+  if (IsButton(role) && GetHasPopup() == ax::mojom::HasPopup::kMenu)
+    return true;
+
+  return false;
+}
+
+bool AXNodeData::IsTextField() const {
+  return IsPlainTextField() || IsRichTextField();
+}
+
+bool AXNodeData::IsPasswordField() const {
+  return IsTextField() && HasState(ax::mojom::State::kProtected);
 }
 
 bool AXNodeData::IsPlainTextField() const {
@@ -909,35 +959,37 @@ bool AXNodeData::IsPlainTextField() const {
           GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot));
 }
 
+bool AXNodeData::IsRichTextField() const {
+  return GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot) &&
+         HasState(ax::mojom::State::kRichlyEditable);
+}
+
 bool AXNodeData::IsReadOnlyOrDisabled() const {
   switch (GetRestriction()) {
     case ax::mojom::Restriction::kReadOnly:
     case ax::mojom::Restriction::kDisabled:
       return true;
-    case ax::mojom::Restriction::kNone:
-      return false;
+    case ax::mojom::Restriction::kNone: {
+      if (HasState(ax::mojom::State::kEditable) ||
+          HasState(ax::mojom::State::kRichlyEditable)) {
+        return false;
+      }
+
+      // By default, when readonly is not supported, we assume the node is never
+      // editable - then always readonly.
+      return ShouldHaveReadonlyStateByDefault(role) ||
+             !IsReadOnlySupported(role);
+    }
   }
-  return false;
 }
 
 bool AXNodeData::IsRangeValueSupported() const {
-  // https://www.w3.org/TR/wai-aria-1.1/#aria-valuenow
-  // https://www.w3.org/TR/wai-aria-1.1/#aria-valuetext
-  // Roles that support aria-valuetext / aria-valuenow
-  switch (role) {
-    case ax::mojom::Role::kMeter:
-    case ax::mojom::Role::kProgressIndicator:
-    case ax::mojom::Role::kScrollBar:
-    case ax::mojom::Role::kSlider:
-    case ax::mojom::Role::kSpinButton:
-      return true;
-    case ax::mojom::Role::kSplitter:
-      // According to the ARIA spec, role="separator" acts as a splitter only
-      // when focusable, and supports a range only in that case.
-      return HasState(ax::mojom::State::kFocusable);
-    default:
-      return false;
+  if (role == ax::mojom::Role::kSplitter) {
+    // According to the ARIA spec, role="separator" acts as a splitter only
+    // when focusable, and supports a range only in that case.
+    return HasState(ax::mojom::State::kFocusable);
   }
+  return ui::IsRangeValueSupported(role);
 }
 
 bool AXNodeData::SupportsExpandCollapse() const {
@@ -980,9 +1032,9 @@ std::string AXNodeData::ToString() const {
     std::string value = base::NumberToString(int_attribute.second);
     switch (int_attribute.first) {
       case ax::mojom::IntAttribute::kDefaultActionVerb:
-        result += " action=" + base::UTF16ToUTF8(ActionVerbToUnlocalizedString(
-                                   static_cast<ax::mojom::DefaultActionVerb>(
-                                       int_attribute.second)));
+        result += std::string(" action=") +
+                  ui::ToString(static_cast<ax::mojom::DefaultActionVerb>(
+                      int_attribute.second));
         break;
       case ax::mojom::IntAttribute::kScrollX:
         result += " scroll_x=" + value;
@@ -1092,9 +1144,6 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::IntAttribute::kActivedescendantId:
         result += " activedescendant=" + value;
-        break;
-      case ax::mojom::IntAttribute::kDetailsId:
-        result += " details=" + value;
         break;
       case ax::mojom::IntAttribute::kErrormessageId:
         result += " errormessage=" + value;
@@ -1326,6 +1375,9 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::IntAttribute::kDropeffect:
         result += " dropeffect=" + value;
         break;
+      case ax::mojom::IntAttribute::kDOMNodeId:
+        result += " dom_node_id=" + value;
+        break;
       case ax::mojom::IntAttribute::kNone:
         break;
     }
@@ -1499,6 +1551,9 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::BoolAttribute::kIsPageBreakingObject:
         result += " is_page_breaking_object=" + value;
         break;
+      case ax::mojom::BoolAttribute::kHasAriaAttribute:
+        result += " has_aria_attribute=" + value;
+        break;
       case ax::mojom::BoolAttribute::kNone:
         break;
     }
@@ -1516,6 +1571,9 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::IntListAttribute::kDescribedbyIds:
         result += " describedby_ids=" + IntVectorToString(values);
+        break;
+      case ax::mojom::IntListAttribute::kDetailsIds:
+        result += " details_ids=" + IntVectorToString(values);
         break;
       case ax::mojom::IntListAttribute::kFlowtoIds:
         result += " flowto_ids=" + IntVectorToString(values);

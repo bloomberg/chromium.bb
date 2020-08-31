@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/search_suggest/search_suggest_loader.h"
 #include "chrome/common/pref_names.h"
@@ -98,16 +99,19 @@ class SearchSuggestService::SigninObserver
 
 // static
 bool SearchSuggestService::IsEnabled() {
-  return !base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP) &&
-         !base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTPRealbox) &&
-         !(base::FeatureList::IsEnabled(omnibox::kOnFocusSuggestions) &&
-           (!OmniboxFieldTrial::GetZeroSuggestVariants(
-                 metrics::OmniboxEventProto::NTP_REALBOX)
-                 .empty() ||
-            !OmniboxFieldTrial::GetZeroSuggestVariants(
-                 metrics::OmniboxEventProto::
-                     INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS)
-                 .empty()));
+  if (base::FeatureList::IsEnabled(ntp_features::kDisableSearchSuggestChips))
+    return false;
+
+  if (base::FeatureList::IsEnabled(ntp_features::kSearchSuggestChips))
+    return true;
+
+  return OmniboxFieldTrial::GetZeroSuggestVariants(
+             metrics::OmniboxEventProto::NTP_REALBOX)
+             .empty() &&
+         OmniboxFieldTrial::GetZeroSuggestVariants(
+             metrics::OmniboxEventProto::
+                 INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS)
+             .empty();
 }
 
 SearchSuggestService::SearchSuggestService(

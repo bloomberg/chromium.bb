@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/blacklist_site_task.h"
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
 #include "chrome/browser/android/explore_sites/clear_activities_task.h"
@@ -26,6 +26,7 @@
 #include "chrome/browser/android/explore_sites/increment_shown_count_task.h"
 #include "chrome/browser/android/explore_sites/record_site_click_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "components/offline_pages/task/task.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -69,10 +70,7 @@ ExploreSitesServiceImpl::~ExploreSitesServiceImpl() {}
 
 // static
 bool ExploreSitesServiceImpl::IsExploreSitesEnabled() {
-  ExploreSitesVariation variation = GetExploreSitesVariation();
-  return variation == ExploreSitesVariation::ENABLED ||
-         variation == ExploreSitesVariation::PERSONALIZED ||
-         variation == ExploreSitesVariation::MOST_LIKELY;
+  return GetExploreSitesVariation() == ExploreSitesVariation::ENABLED;
 }
 
 void ExploreSitesServiceImpl::GetCatalog(CatalogCallback callback) {
@@ -84,16 +82,6 @@ void ExploreSitesServiceImpl::GetCatalog(CatalogCallback callback) {
   task_queue_.AddTask(std::make_unique<GetCatalogTask>(
       explore_sites_store_.get(), /*update_current*/ true,
       std::move(callback)));
-}
-
-void ExploreSitesServiceImpl::GetCategoryImage(int category_id,
-                                               int pixel_size,
-                                               BitmapCallback callback) {
-  task_queue_.AddTask(std::make_unique<GetImagesTask>(
-      explore_sites_store_.get(), category_id, kFaviconsPerCategoryImage,
-      base::BindOnce(&ExploreSitesServiceImpl::ComposeCategoryImage,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     pixel_size)));
 }
 
 void ExploreSitesServiceImpl::GetSummaryImage(int pixel_size,
@@ -164,11 +152,6 @@ void ExploreSitesServiceImpl::ClearActivities(base::Time begin,
       base::BindOnce(
           [](base::OnceClosure callback, bool) { std::move(callback).Run(); },
           std::move(callback))));
-}
-
-void ExploreSitesServiceImpl::IncrementNtpShownCount(int category_id) {
-  task_queue_.AddTask(std::make_unique<IncrementShownCountTask>(
-      explore_sites_store_.get(), category_id));
 }
 
 void ExploreSitesServiceImpl::ClearCachedCatalogsForDebugging() {

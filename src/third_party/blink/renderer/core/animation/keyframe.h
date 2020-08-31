@@ -78,7 +78,6 @@ class CORE_EXPORT Keyframe : public GarbageCollected<Keyframe> {
     return composite_.value();
   }
 
-  // TODO(smcgruer): The keyframe timing function should be immutable.
   void SetEasing(scoped_refptr<TimingFunction> easing) {
     if (easing)
       easing_ = std::move(easing);
@@ -86,6 +85,7 @@ class CORE_EXPORT Keyframe : public GarbageCollected<Keyframe> {
       easing_ = LinearTimingFunction::Shared();
   }
   TimingFunction& Easing() const { return *easing_; }
+  void CopyEasing(const Keyframe& other) { SetEasing(other.easing_); }
 
   // Returns a set of the properties represented in this keyframe.
   virtual PropertyHandleSet Properties() const = 0;
@@ -108,7 +108,8 @@ class CORE_EXPORT Keyframe : public GarbageCollected<Keyframe> {
   //
   // Subclasses should override this to add the (property, value) pairs they
   // store, and call into the base version to add the basic Keyframe properties.
-  virtual void AddKeyframePropertiesToV8Object(V8ObjectBuilder&) const;
+  virtual void AddKeyframePropertiesToV8Object(V8ObjectBuilder&,
+                                               Element*) const;
 
   virtual bool IsStringKeyframe() const { return false; }
   virtual bool IsTransitionKeyframe() const { return false; }
@@ -131,6 +132,7 @@ class CORE_EXPORT Keyframe : public GarbageCollected<Keyframe> {
       return composite_ == EffectModel::kCompositeReplace ? 0 : 1;
     }
     virtual bool IsNeutral() const = 0;
+    virtual bool IsRevert() const = 0;
     virtual PropertySpecificKeyframe* CloneWithOffset(double offset) const = 0;
 
     // FIXME: Remove this once CompositorAnimations no longer depends on

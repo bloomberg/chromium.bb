@@ -4,7 +4,7 @@
 
 #include "components/sync/test/test_directory_backing_store.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace syncer {
 namespace syncable {
@@ -12,11 +12,7 @@ namespace syncable {
 TestDirectoryBackingStore::TestDirectoryBackingStore(
     const std::string& dir_name,
     sql::Database* db)
-    : DirectoryBackingStore(dir_name,
-                            base::BindRepeating([]() -> std::string {
-                              return "test_cache_guid";
-                            }),
-                            db) {}
+    : DirectoryBackingStore(dir_name, db) {}
 
 TestDirectoryBackingStore::~TestDirectoryBackingStore() {
   // This variant of the DirectoryBackingStore does not own its connection, so

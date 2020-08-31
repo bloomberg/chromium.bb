@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/value_conversions.h"
@@ -70,7 +71,7 @@ PrefServiceSyncable::PrefServiceSyncable(
 #endif
 
   // Let PrefModelAssociators know about changes to preference values.
-  pref_value_store_->set_callback(base::Bind(
+  pref_value_store_->set_callback(base::BindRepeating(
       &PrefServiceSyncable::ProcessPrefChange, base::Unretained(this)));
 
   // Add already-registered syncable preferences to PrefModelAssociator.
@@ -89,8 +90,7 @@ PrefServiceSyncable::PrefServiceSyncable(
 
 PrefServiceSyncable::~PrefServiceSyncable() {
   // Remove our callback from the registry, since it may outlive us.
-  pref_registry_->SetSyncableRegistrationCallback(
-      user_prefs::PrefRegistrySyncable::SyncableRegistrationCallback());
+  pref_registry_->SetSyncableRegistrationCallback(base::NullCallback());
 }
 
 std::unique_ptr<PrefServiceSyncable>
@@ -126,24 +126,22 @@ PrefServiceSyncable::CreateIncognitoPrefService(
 }
 
 bool PrefServiceSyncable::IsSyncing() {
-  if (pref_sync_associator_.models_associated())
-    return true;
-#if defined(OS_CHROMEOS)
-  if (os_pref_sync_associator_.models_associated())
-    return true;
-#endif
-  return false;
+  return pref_sync_associator_.models_associated();
 }
 
 bool PrefServiceSyncable::IsPrioritySyncing() {
-  if (priority_pref_sync_associator_.models_associated())
-    return true;
-#if defined(OS_CHROMEOS)
-  if (os_priority_pref_sync_associator_.models_associated())
-    return true;
-#endif
-  return false;
+  return priority_pref_sync_associator_.models_associated();
 }
+
+#if defined(OS_CHROMEOS)
+bool PrefServiceSyncable::AreOsPrefsSyncing() {
+  return os_pref_sync_associator_.models_associated();
+}
+
+bool PrefServiceSyncable::AreOsPriorityPrefsSyncing() {
+  return os_priority_pref_sync_associator_.models_associated();
+}
+#endif  // defined(OS_CHROMEOS)
 
 void PrefServiceSyncable::AddObserver(PrefServiceSyncableObserver* observer) {
   observer_list_.AddObserver(observer);

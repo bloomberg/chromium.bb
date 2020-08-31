@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -25,9 +27,13 @@ using ::testing::_;
 
 namespace media {
 
+namespace {
+
 MATCHER(ContainsDecoderErrorLog, "") {
   return CONTAINS_STRING(arg, "aom_codec_decode() failed");
 }
+
+}  // namespace
 
 class AomVideoDecoderTest : public testing::Test {
  public:
@@ -43,10 +49,15 @@ class AomVideoDecoderTest : public testing::Test {
 
   void InitializeWithConfigWithResult(const VideoDecoderConfig& config,
                                       bool success) {
-    decoder_->Initialize(
-        config, false, nullptr, NewExpectedBoolCB(success),
-        base::Bind(&AomVideoDecoderTest::FrameReady, base::Unretained(this)),
-        base::NullCallback());
+    decoder_->Initialize(config, false, nullptr,
+                         base::BindOnce(
+                             [](bool success, Status status) {
+                               EXPECT_EQ(status.is_ok(), success);
+                             },
+                             success),
+                         base::BindRepeating(&AomVideoDecoderTest::FrameReady,
+                                             base::Unretained(this)),
+                         base::NullCallback());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -147,9 +158,9 @@ class AomVideoDecoderTest : public testing::Test {
     DecodeStatus status;
     EXPECT_CALL(*this, DecodeDone(_)).WillOnce(testing::SaveArg<0>(&status));
 
-    decoder_->Decode(
-        std::move(buffer),
-        base::Bind(&AomVideoDecoderTest::DecodeDone, base::Unretained(this)));
+    decoder_->Decode(std::move(buffer),
+                     base::BindOnce(&AomVideoDecoderTest::DecodeDone,
+                                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
 
     return status;

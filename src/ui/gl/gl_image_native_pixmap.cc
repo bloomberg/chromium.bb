@@ -29,8 +29,8 @@
 #define DRM_FORMAT_ABGR8888 FOURCC('A', 'B', '2', '4')
 #define DRM_FORMAT_XRGB8888 FOURCC('X', 'R', '2', '4')
 #define DRM_FORMAT_XBGR8888 FOURCC('X', 'B', '2', '4')
-#define DRM_FORMAT_XBGR2101010 FOURCC('X', 'B', '3', '0')
-#define DRM_FORMAT_XRGB2101010 FOURCC('X', 'R', '3', '0')
+#define DRM_FORMAT_ABGR2101010 FOURCC('A', 'B', '3', '0')
+#define DRM_FORMAT_ARGB2101010 FOURCC('A', 'R', '3', '0')
 #define DRM_FORMAT_YVU420 FOURCC('Y', 'V', '1', '2')
 #define DRM_FORMAT_NV12 FOURCC('N', 'V', '1', '2')
 #define DRM_FORMAT_P010 FOURCC('P', '0', '1', '0')
@@ -69,10 +69,10 @@ EGLint FourCC(gfx::BufferFormat format) {
       return DRM_FORMAT_ARGB8888;
     case gfx::BufferFormat::BGRX_8888:
       return DRM_FORMAT_XRGB8888;
-    case gfx::BufferFormat::RGBX_1010102:
-      return DRM_FORMAT_XBGR2101010;
-    case gfx::BufferFormat::BGRX_1010102:
-      return DRM_FORMAT_XRGB2101010;
+    case gfx::BufferFormat::RGBA_1010102:
+      return DRM_FORMAT_ABGR2101010;
+    case gfx::BufferFormat::BGRA_1010102:
+      return DRM_FORMAT_ARGB2101010;
     case gfx::BufferFormat::YVU_420:
       return DRM_FORMAT_YVU420;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -102,8 +102,10 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
       return gfx::BufferFormat::BGRA_8888;
     case DRM_FORMAT_XRGB8888:
       return gfx::BufferFormat::BGRX_8888;
-    case DRM_FORMAT_XBGR2101010:
-      return gfx::BufferFormat::RGBX_1010102;
+    case DRM_FORMAT_ABGR2101010:
+      return gfx::BufferFormat::RGBA_1010102;
+    case DRM_FORMAT_ARGB2101010:
+      return gfx::BufferFormat::BGRA_1010102;
     case DRM_FORMAT_RGB565:
       return gfx::BufferFormat::BGR_565;
     case DRM_FORMAT_NV12:
@@ -351,6 +353,10 @@ void GLImageNativePixmap::OnMemoryDump(
     uint64_t process_tracing_id,
     const std::string& dump_name) {
   // TODO(ericrk): Implement GLImage OnMemoryDump. crbug.com/514914
+}
+
+scoped_refptr<gfx::NativePixmap> GLImageNativePixmap::GetNativePixmap() {
+  return pixmap_;
 }
 
 }  // namespace gl

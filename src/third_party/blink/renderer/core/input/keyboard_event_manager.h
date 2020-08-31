@@ -7,8 +7,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/web_focus_type.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -36,7 +35,7 @@ class CORE_EXPORT KeyboardEventManager final
 #endif
 
   KeyboardEventManager(LocalFrame&, ScrollManager&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   bool HandleAccessKey(const WebKeyboardEvent&);
   WebInputEventResult KeyEvent(const WebKeyboardEvent&);
@@ -58,7 +57,6 @@ class CORE_EXPORT KeyboardEventManager final
   void DefaultEnterEventHandler(KeyboardEvent*);
   void DefaultImeSubmitHandler(KeyboardEvent*);
   void DefaultArrowEventHandler(KeyboardEvent*, Node*);
-  bool DefaultSpatNavBackEventHandler(KeyboardEvent*);
 
   const Member<LocalFrame> frame_;
 

@@ -38,11 +38,11 @@
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/data_element.mojom-blink.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/blob/blob_bytes_provider.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -85,10 +85,10 @@ mojom::blink::BlobRegistry* GetThreadSpecificRegistry() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       ThreadSpecific<mojo::Remote<mojom::blink::BlobRegistry>>, registry, ());
   if (UNLIKELY(!registry.IsSet())) {
-    // TODO(mek): Going through InterfaceProvider to get a
+    // TODO(mek): Going through BrowserInterfaceBroker to get a
     // mojom::blink::BlobRegistry ends up going through the main thread. Ideally
     // workers wouldn't need to do that.
-    Platform::Current()->GetInterfaceProvider()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         (*registry).BindNewPipeAndPassReceiver());
   }
   return registry->get();
@@ -103,7 +103,7 @@ RawData::RawData() = default;
 BlobData::BlobData(FileCompositionStatus composition)
     : file_composition_(composition) {}
 
-BlobData::~BlobData() {}
+BlobData::~BlobData() = default;
 
 Vector<mojom::blink::DataElementPtr> BlobData::ReleaseElements() {
   return std::move(elements_);
@@ -173,6 +173,7 @@ void BlobData::AppendFile(
          "create a blob with a single file with unknown size, use "
          "BlobData::createForFileWithUnknownSize. Otherwise please provide the "
          "file size.";
+  DCHECK_GE(length, 0);
   // Skip zero-byte items, as they don't matter for the contents of the blob.
   if (length == 0)
     return;
@@ -201,6 +202,7 @@ void BlobData::AppendFileSystemURL(
     const base::Optional<base::Time>& expected_modification_time) {
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
+  DCHECK_GE(length, 0);
   // Skip zero-byte items, as they don't matter for the contents of the blob.
   if (length == 0)
     return;
@@ -359,8 +361,7 @@ BlobDataHandle::BlobDataHandle(
   DCHECK(blob_remote_.is_valid());
 }
 
-BlobDataHandle::~BlobDataHandle() {
-}
+BlobDataHandle::~BlobDataHandle() = default;
 
 mojo::PendingRemote<mojom::blink::Blob> BlobDataHandle::CloneBlobRemote() {
   MutexLocker locker(blob_remote_mutex_);
@@ -413,6 +414,16 @@ void BlobDataHandle::ReadRange(
   mojo::Remote<mojom::blink::Blob> blob(std::move(blob_remote_));
   blob->ReadRange(offset, length, std::move(pipe), std::move(client));
   blob_remote_ = blob.Unbind();
+}
+
+bool BlobDataHandle::CaptureSnapshot(
+    uint64_t* snapshot_size,
+    base::Optional<base::Time>* snapshot_modification_time) {
+  // This method operates on a cloned blob remote; this lets us avoid holding
+  // the |blob_remote_mutex_| locked during the duration of the (synchronous)
+  // CaptureSnapshot call.
+  mojo::Remote<mojom::blink::Blob> remote(CloneBlobRemote());
+  return remote->CaptureSnapshot(snapshot_size, snapshot_modification_time);
 }
 
 // static

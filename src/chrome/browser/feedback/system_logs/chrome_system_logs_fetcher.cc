@@ -4,6 +4,8 @@
 
 #include "chrome/browser/feedback/system_logs/chrome_system_logs_fetcher.h"
 
+#include <memory>
+
 #include "build/build_config.h"
 #include "chrome/browser/feedback/system_logs/log_sources/chrome_internal_log_source.h"
 #include "chrome/browser/feedback/system_logs/log_sources/crash_ids_source.h"
@@ -18,6 +20,7 @@
 #include "chrome/browser/chromeos/system_logs/device_event_log_source.h"
 #include "chrome/browser/chromeos/system_logs/iwlwifi_dump_log_source.h"
 #include "chrome/browser/chromeos/system_logs/touch_log_source.h"
+#include "chrome/browser/chromeos/system_logs/ui_hierarchy_log_source.h"
 #endif
 
 namespace system_logs {
@@ -42,6 +45,7 @@ SystemLogsFetcher* BuildChromeSystemLogsFetcher() {
   // the scrub_data parameter, but the others still get scrubbed by
   // SystemLogsFetcher.
   fetcher->AddSource(std::make_unique<DebugDaemonLogSource>(scrub_data));
+  fetcher->AddSource(std::make_unique<UiHierarchyLogSource>(scrub_data));
 #endif
 
   return fetcher;

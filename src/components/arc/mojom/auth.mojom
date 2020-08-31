@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 23
+// Next MinVersion: 25
 
 module arc.mojom;
 
@@ -256,7 +256,7 @@ struct ArcAccountInfo {
   string gaia_id;
 };
 
-// Next Method ID: 18.
+// Next Method ID: 19.
 interface AuthHost {
   // Notifies Chrome that the authorization flow is completed and provides
   // resulting |status|. If |initial_signin| is true then this indicates that
@@ -294,6 +294,13 @@ interface AuthHost {
   [MinVersion=13] ReportSupervisionChangeStatus@11(
       SupervisionChangeStatus status);
 
+  // Returns the primary account from Chrome.
+  // |account_name| is the email address of the primary account for consumer and
+  // managed Gaia accounts and empty for all other cases (like demo sessions,
+  // Active Directory sessions, etc).
+  [MinVersion=23] RequestPrimaryAccount@18()
+      => (string account_name, ChromeAccountType account_type);
+
   // Requests an authorization code, as well as the account information for the
   // Primary/Device Account in Chrome OS Account Manager.
   // This is called for ARC's initial provisioning flow.
@@ -311,8 +318,12 @@ interface AuthHost {
   // |account_info| is not null.
   // In case of an error, |status| must contain the reason of failure, other
   // than SUCCESS, and |account_info| is null.
+  // |persistent_error| flag set to true indicates that error cannot be
+  // eliminated by retrying the request.
   [MinVersion=15] RequestAccountInfo@13(string account_name)
-      => (ArcSignInStatus status, AccountInfo? account_info);
+      => (ArcSignInStatus status,
+          AccountInfo? account_info,
+          [MinVersion=24] bool persistent_error);
 
   // Returns |true| if Chrome OS Account Manager is available for this session.
   // Account Manager is not available in Guest Sessions and Public Sessions

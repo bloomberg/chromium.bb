@@ -22,8 +22,10 @@ import "services/network/public/mojom/network_interface.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_quality_estimator_manager.mojom";
 import "services/network/public/mojom/network_service_test.mojom";
+import "services/network/public/mojom/trust_tokens.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
+import "services/network/public/mojom/url_response_head.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -31,8 +33,8 @@ import "url/mojom/url.mojom";
 import "mojo/public/mojom/base/application_state.mojom";
 
 struct LoadInfo {
-  uint32 process_id;
-  uint32 routing_id;
+  int32 process_id;
+  int32 routing_id;
   string host;
   uint32 load_state;  // net::LoadState enum
   mojo_base.mojom.String16 state_param;
@@ -74,6 +76,43 @@ interface NetworkServiceClient {
     array<CookieAndLineWithStatus> cookies_with_status,
     array<HttpRawHeaderPair> headers,
     string? raw_response_headers);
+
+  // Called to send the CORS preflight request information. Only called when
+  // |devtool_request_id| is available on the original request.
+  OnCorsPreflightRequest(
+    int32 process_id,
+    int32 render_frame_id,
+    mojo_base.mojom.UnguessableToken devtool_request_id,
+    URLRequest request,
+    url.mojom.Url initiator_url);
+
+  // Called to send the CORS preflight response information. Only called when
+  // |devtool_request_id| is available on the original request.
+  OnCorsPreflightResponse(
+    int32 process_id,
+    int32 render_frame_id,
+    mojo_base.mojom.UnguessableToken devtool_request_id,
+    url.mojom.Url url,
+    URLResponseHead head);
+
+  // Called to send the CORS preflight completion status. Only called when
+  // |devtool_request_id| is available on the original request.
+  OnCorsPreflightRequestCompleted(
+    int32 process_id,
+    int32 render_frame_id,
+    mojo_base.mojom.UnguessableToken devtool_request_id,
+    URLLoaderCompletionStatus status);
+
+  // Called to log a UKM event for the
+  // Extensions.CrossOriginFetchFromContentScript3 metric.  See the metric
+  // definition in //tools/metrics/ukm/ukm.xml for more details, including when
+  // this event should be logged.
+  //
+  // |isolated_world_hostname| is the hostname of the isolated world origin
+  // that has initiated the network request.  See the doc comment for
+  // network.mojom.URLRequest.isolated_world_origin for more details.
+  // In practice, |isolated_world_hostname| is the Chrome Extension ID.
+  LogCrossOriginFetchFromContentScript3(string isolated_world_hostname);
 };
 
 // Values for configuring HTTP authentication that can only be set once.
@@ -161,7 +200,7 @@ struct NetworkServiceParams {
 [EnableIf=is_chromeos]
 struct LoggingSettings {
   uint32 logging_dest;
-  handle log_file_descriptor;
+  handle<platform> log_file_descriptor;
 };
 
 // Browser interface to the network service.
@@ -187,6 +226,13 @@ interface NetworkService {
   StartNetLog(mojo_base.mojom.File file,
               NetLogCaptureMode capture_mode,
               mojo_base.mojom.DictionaryValue constants);
+
+  // Attaches an external source of NetLog events. Control events will be sent
+  // to the |proxy_source| pipe indicating when netlogging is active, the
+  // NetLog events should be sent to the |proxy_sink| pipe, and must use a
+  // non-conflicting source id space.
+  AttachNetLogProxy(pending_remote<NetLogProxySource> proxy_source,
+                    pending_receiver<NetLogProxySink> proxy_sink);
 
   // Starts logging SSL key material to the |file|. This must be called before
   // any SSL connections are made. (See |SSLClientSocket::SetSSLKeyLogger()|
@@ -247,7 +293,7 @@ interface NetworkService {
   // Granting a permission increases risks in case the child process becomes
   // compromised, so this should be done only in specific cases
   // (e.g. DevTools attached).
-  SetRawHeadersAccess(uint32 process_id, array<url.mojom.Origin> origins);
+  SetRawHeadersAccess(int32 process_id, array<url.mojom.Origin> origins);
 
   // Sets the maximum number of connections for a proxy server.
   //   * Negative values will set the default proxy connection limit (32)
@@ -280,7 +326,12 @@ interface NetworkService {
   // CRLSets (where older is determined by the sequence number). All Network
   // Contexts created by the Network Service, including those created after
   // this call, will use the same CRLSet.
-  UpdateCRLSet(mojo_base.mojom.ReadOnlyBuffer crl_set);
+  UpdateCRLSet(mojo_base.mojom.ReadOnlyBuffer crl_set) => ();
+
+  // Updates the configuration used for determining if a site should have legacy
+  // TLS warnings suppressed. Configs that cannot be parsed as a
+  // LegacyTLSExperimentConfig (protobuf) will be ignored.
+  UpdateLegacyTLSConfig(mojo_base.mojom.ReadOnlyBuffer config) => ();
 
   // Notification that the certificate database has been modified.
   OnCertDBChanged();
@@ -305,17 +356,20 @@ interface NetworkService {
   // TODO(lukasza, laforge): https://crbug.com/702995: Remove the ...ForPlugin
   // methods once Flash support is removed from Chromium (probably around 2020
   // - see https://www.chromium.org/flash-roadmap).
-  AddCorbExceptionForPlugin(uint32 process_id);
+  AddCorbExceptionForPlugin(int32 process_id);
 
-  // Reverts AddCorbExceptionForPlugin.
-  RemoveCorbExceptionForPlugin(uint32 process_id);
-
-  // Registers additional MIME types that can be protected by CORB (without any
-  // confirmation sniffing).
+  // Notifies |request_initiator_site_lock| enforcement code that |process_id|
+  // is proxying requests on behalf of a plugin from
+  // |allowed_request_initiator| origin.
   //
-  // TODO(lukasza): https://crbug.com/944162: Remove the method below once
-  // kMimeHandlerViewInCrossProcessFrame feature ships.
-  AddExtraMimeTypesForCorb(array<string> mime_types);
+  // TODO(lukasza, kmoon): https://crbug.com/702993: Remove the code here once
+  // PDF support doesn't depend on PPAPI anymore.
+  AddAllowedRequestInitiatorForPlugin(
+      int32 process_id,
+      url.mojom.Origin allowed_request_initiator);
+
+  // Reverts AddCorbExceptionForPlugin and AddAllowedRequestInitiatorForPlugin.
+  RemoveSecurityExceptionsForPlugin(int32 process_id);
 
   // Called when the system is low on memory.
   OnMemoryPressure(mojo_base.mojom.MemoryPressureLevel memory_pressure_level);
@@ -332,6 +386,13 @@ interface NetworkService {
   // This method won't modify variables that aren't present in the
   // |environment| array.
   SetEnvironment(array<EnvironmentVariable> environment);
+
+  // Sets Trust Tokens key commitment state. |raw_commitments| is the
+  // JSON-encoded string representation of a collection of issuers' key
+  // commitments according to the format specified, for now, in the Trust
+  // Tokens design doc:
+  // https://docs.google.com/document/d/1TNnya6B8pyomDK2F1R9CL3dY10OAmqWlnCxsWyOBDVQ/edit#heading=h.z52drgpfgulz.
+  SetTrustTokenKeyCommitments(string raw_commitments) => ();
 
   // Calls base::debug::DumpWithoutCrashing for the network process.
   // TODO(http://crbug.com/934317): Remove this once done debugging renderer

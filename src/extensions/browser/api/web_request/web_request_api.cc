@@ -34,7 +34,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/resource_type.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/activity_log/web_request_constants.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
@@ -481,22 +480,6 @@ void RecordAddEventListenerUMAs(int extra_info_spec) {
     LogEventListenerFlag(WebRequestEventListenerFlag::kExtraHeaders);
 }
 
-// Helper to remove headers from |response_headers|. Returns whether or not any
-// headers were removed.
-bool FilterResponseHeaders(net::HttpResponseHeaders* response_headers,
-                           const std::vector<const char*>& headers_to_remove) {
-  bool headers_filtered = false;
-  for (const char* header : headers_to_remove) {
-    if (!response_headers->HasHeader(header))
-      continue;
-
-    headers_filtered = true;
-    response_headers->RemoveHeader(header);
-  }
-
-  return headers_filtered;
-}
-
 // Helper to record a matched DNR action in RulesetManager's ActionTracker.
 void OnDNRActionMatched(content::BrowserContext* browser_context,
                         const WebRequestInfo& request,
@@ -510,28 +493,6 @@ void OnDNRActionMatched(content::BrowserContext* browser_context,
 
   action_tracker.OnRuleMatched(action, request);
   action.tracked = true;
-}
-
-// Helper to remove request headers based on a matched DNR action. Returns
-// whether or not request headers were actually removed and populates the
-// removed headers in |removed_headers|.
-bool RemoveRequestHeadersForAction(net::HttpRequestHeaders* headers,
-                                   const DNRRequestAction& action,
-                                   std::set<std::string>* removed_headers) {
-  bool headers_removed = false;
-
-  for (const char* header : action.request_headers_to_remove) {
-    if (!headers->HasHeader(header))
-      continue;
-
-    removed_headers->insert(header);
-    headers_removed = true;
-    do {
-      headers->RemoveHeader(header);
-    } while (headers->HasHeader(header));
-  }
-
-  return headers_removed;
 }
 
 }  // namespace
@@ -627,9 +588,36 @@ void WebRequestAPI::ProxySet::MaybeProxyAuthRequest(
                            request_id.request_id, std::move(callback));
 }
 
+WebRequestAPI::RequestIDGenerator::RequestIDGenerator() = default;
+WebRequestAPI::RequestIDGenerator::~RequestIDGenerator() = default;
+
+int64_t WebRequestAPI::RequestIDGenerator::Generate(
+    int32_t routing_id,
+    int32_t network_service_request_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto it = saved_id_map_.find({routing_id, network_service_request_id});
+  if (it != saved_id_map_.end()) {
+    int64_t id = it->second;
+    saved_id_map_.erase(it);
+    return id;
+  }
+  return ++id_;
+}
+
+void WebRequestAPI::RequestIDGenerator::SaveID(
+    int32_t routing_id,
+    int32_t network_service_request_id,
+    uint64_t request_id) {
+  // If |network_service_request_id| is 0, we cannot reliably match the
+  // generated ID to a future request, so ignore it.
+  if (network_service_request_id != 0) {
+    saved_id_map_.insert(
+        {{routing_id, network_service_request_id}, request_id});
+  }
+}
+
 WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
     : browser_context_(context),
-      request_id_generator_(base::MakeRefCounted<RequestIDGenerator>()),
       proxies_(std::make_unique<ProxySet>()),
       may_have_proxies_(MayHaveProxies()) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
@@ -756,7 +744,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
               browser_context_));
   WebRequestProxyingURLLoaderFactory::StartProxying(
       browser_context, is_navigation ? -1 : render_process_id,
-      request_id_generator_, std::move(navigation_ui_data),
+      &request_id_generator_, std::move(navigation_ui_data),
       std::move(navigation_id), std::move(proxied_receiver),
       std::move(target_factory_remote), std::move(header_client_receiver),
       proxies_.get(), type);
@@ -808,7 +796,7 @@ void WebRequestAPI::ProxyWebSocket(
       std::move(factory), url, site_for_cookies, user_agent,
       std::move(handshake_client), has_extra_headers,
       frame->GetProcess()->GetID(), frame->GetRoutingID(),
-      request_id_generator_, frame->GetLastCommittedOrigin(),
+      &request_id_generator_, frame->GetLastCommittedOrigin(),
       frame->GetProcess()->GetBrowserContext(), proxies_.get());
 }
 
@@ -904,10 +892,6 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   // The request headers that will be issued along with this request. Only valid
   // for OnBeforeSendHeaders.
   net::HttpRequestHeaders* request_headers = nullptr;
-
-  // The request headers removed from this request by the Declarative Net
-  // Request API.
-  std::set<std::string> request_headers_removed;
 
   // The response headers that were received from the server and subsequently
   // filtered by the Declarative Net Request API. Only valid for
@@ -1107,24 +1091,21 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
         *should_collapse_initiator = true;
         return net::ERR_BLOCKED_BY_CLIENT;
       case DNRRequestAction::Type::ALLOW:
-        NOTREACHED();
+      case DNRRequestAction::Type::ALLOW_ALL_REQUESTS:
+        DCHECK_EQ(1u, actions.size());
+        OnDNRActionMatched(browser_context, *request, action);
         break;
       case DNRRequestAction::Type::REDIRECT:
+      case DNRRequestAction::Type::UPGRADE:
         ClearPendingCallbacks(*request);
         DCHECK_EQ(1u, actions.size());
         DCHECK(action.redirect_url);
         OnDNRActionMatched(browser_context, *request, action);
         *new_url = action.redirect_url.value();
         return net::OK;
-      case DNRRequestAction::Type::REMOVE_HEADERS:
-        // Unlike other actions, allow web request extensions to intercept the
-        // request here. The headers will be removed during subsequent request
-        // stages.
-        DCHECK(std::all_of(request->dnr_actions->begin(),
-                           request->dnr_actions->end(), [](const auto& action) {
-                             return action.type ==
-                                    DNRRequestAction::Type::REMOVE_HEADERS;
-                           }));
+      case DNRRequestAction::Type::MODIFY_HEADERS:
+        // TODO(crbug.com/947591): Evaluate modify headers DNR actions.
+        NOTREACHED();
         break;
     }
   }
@@ -1155,19 +1136,8 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   if (ShouldHideEvent(browser_context, *request))
     return net::OK;
 
-  // Remove request headers for the Declarative Net Request API. It is given
-  // preference over the Web Request API and this also hides the removed headers
-  // from extensions using the Web Request API.
-  DCHECK(request->dnr_actions);
-  std::set<std::string> removed_headers;
-
-  for (const auto& action : *request->dnr_actions) {
-    bool headers_removed_for_action =
-        RemoveRequestHeadersForAction(headers, action, &removed_headers);
-
-    if (headers_removed_for_action)
-      OnDNRActionMatched(browser_context, *request, action);
-  }
+  // TODO(crbug.com/947591): Handle request header modification by the
+  // Declarative Net Request API.
 
   bool initialize_blocked_requests = false;
 
@@ -1203,7 +1173,6 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   blocked_request.request = request;
   blocked_request.before_send_headers_callback = std::move(callback);
   blocked_request.request_headers = headers;
-  blocked_request.request_headers_removed = std::move(removed_headers);
 
   if (blocked_request.num_handlers_blocking == 0) {
     // If there are no blocking handlers, only the declarative rules tried
@@ -1248,45 +1217,10 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   if (ShouldHideEvent(browser_context, *request))
     return net::OK;
 
-  // Handle header removal by the Declarative Net Request API. We filter these
-  // headers so that headers removed by Declarative Net Request API are not
-  // visible to web request extensions.
-  DCHECK(request->dnr_actions);
-  bool should_remove_headers = !request->dnr_actions->empty() &&
-                               (*request->dnr_actions)[0].type ==
-                                   DNRRequestAction::Type::REMOVE_HEADERS &&
-                               original_response_headers;
-
-  scoped_refptr<const net::HttpResponseHeaders> filtered_response_headers;
-  if (!should_remove_headers) {
-    filtered_response_headers = original_response_headers;
-  } else {
-    // Make a non-const copy of |original_response_headers| in order to be
-    // modified in-place by FilterResponseHeaders.
-    scoped_refptr<net::HttpResponseHeaders> mutable_response_headers =
-        base::MakeRefCounted<net::HttpResponseHeaders>(
-            original_response_headers->raw_headers());
-
-    bool headers_filtered = false;
-    for (const auto& action : *request->dnr_actions) {
-      bool headers_filtered_for_action = FilterResponseHeaders(
-          mutable_response_headers.get(), action.response_headers_to_remove);
-
-      if (headers_filtered_for_action)
-        OnDNRActionMatched(browser_context, *request, action);
-
-      headers_filtered |= headers_filtered_for_action;
-    }
-
-    filtered_response_headers = mutable_response_headers;
-    if (headers_filtered) {
-      // Create a deep copy to ensure |filtered_response_headers| and
-      // |override_response_headers| don't point to the same object.
-      *override_response_headers =
-          base::MakeRefCounted<net::HttpResponseHeaders>(
-              filtered_response_headers->raw_headers());
-    }
-  }
+  // TODO(crbug.com/947591): Handle header modification by the Declarative Net
+  // Request API.
+  scoped_refptr<const net::HttpResponseHeaders> filtered_response_headers =
+      original_response_headers;
 
   bool initialize_blocked_requests = false;
 
@@ -1895,7 +1829,7 @@ bool ExtensionWebRequestEventRouter::HasAnyExtraHeadersListenerImpl(
 
 bool ExtensionWebRequestEventRouter::IsPageLoad(
     const WebRequestInfo& request) const {
-  return request.type == content::ResourceType::kMainFrame;
+  return request.type == blink::mojom::ResourceType::kMainFrame;
 }
 
 void ExtensionWebRequestEventRouter::NotifyPageLoad() {
@@ -2308,11 +2242,6 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
         &request_headers_removed, &request_headers_set,
         &request_headers_modified);
 
-    // Also include headers removed by the declarative net request API.
-    request_headers_removed.insert(
-        blocked_request.request_headers_removed.begin(),
-        blocked_request.request_headers_removed.end());
-
   } else if (blocked_request.event == kOnHeadersReceived) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnHeadersReceivedResponses(
@@ -2533,10 +2462,11 @@ void ExtensionWebRequestEventRouter::ClearSignaled(uint64_t request_id,
 // when the cache is cleared (when page loads happen).
 class ClearCacheQuotaHeuristic : public QuotaLimitHeuristic {
  public:
-  ClearCacheQuotaHeuristic(const Config& config, BucketMapper* map)
+  ClearCacheQuotaHeuristic(const Config& config,
+                           std::unique_ptr<BucketMapper> map)
       : QuotaLimitHeuristic(
             config,
-            map,
+            std::move(map),
             "MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES"),
         callback_registered_(false) {}
   ~ClearCacheQuotaHeuristic() override {}
@@ -2597,7 +2527,7 @@ WebRequestInternalAddEventListenerFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(filter.InitFromValue(*value, &error) ||
                               !error.empty());
   if (!error.empty())
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   int extra_info_spec = 0;
   if (HasOptionalArgument(2)) {
@@ -2837,14 +2767,12 @@ void WebRequestHandlerBehaviorChangedFunction::GetQuotaLimitHeuristics(
       // See web_request.json for current value.
       web_request::MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES,
       base::TimeDelta::FromMinutes(10)};
-  QuotaLimitHeuristic::BucketMapper* bucket_mapper =
-      new QuotaLimitHeuristic::SingletonBucketMapper();
-  heuristics->push_back(
-      std::make_unique<ClearCacheQuotaHeuristic>(config, bucket_mapper));
+  heuristics->push_back(std::make_unique<ClearCacheQuotaHeuristic>(
+      config, std::make_unique<QuotaLimitHeuristic::SingletonBucketMapper>()));
 }
 
 void WebRequestHandlerBehaviorChangedFunction::OnQuotaExceeded(
-    const std::string& violation_error) {
+    std::string violation_error) {
   // Post warning message.
   WarningSet warnings;
   warnings.insert(

@@ -4,10 +4,12 @@
 
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper_delegate.h"
 #import "ios/chrome/browser/network_activity/network_activity_indicator_manager.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/download/download_task.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -40,20 +42,12 @@ void DownloadManagerTabHelper::CreateForWebState(
 void DownloadManagerTabHelper::Download(
     std::unique_ptr<web::DownloadTask> task) {
   __block std::unique_ptr<web::DownloadTask> block_task = std::move(task);
-  if (!task_) {
+  // If downloads are persistent, they cannot be lost once completed.
+  if (!task_ || (base::FeatureList::IsEnabled(
+                     web::features::kEnablePersistentDownloads) &&
+                 task_->GetState() == web::DownloadTask::State::kComplete)) {
     // The task is the first download for this web state.
     DidCreateDownload(std::move(block_task));
-    return;
-  }
-
-  // Another download is already in progress. Ask the user if current download
-  // should be replaced if new download was initiated by a link click or typed
-  // into the omnibox. Otherwise silently drop the download to prevent web pages
-  // from spamming the user.
-  ui::PageTransition transition = block_task->GetTransitionType();
-  if (!(transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) &&
-      !ui::PageTransitionTypeIncludingQualifiersIs(transition,
-                                                   ui::PAGE_TRANSITION_LINK)) {
     return;
   }
 

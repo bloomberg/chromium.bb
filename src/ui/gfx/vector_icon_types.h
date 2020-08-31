@@ -46,7 +46,12 @@ namespace gfx {
   DECLARE_VECTOR_COMMAND(CUBIC_TO)                                             \
   DECLARE_VECTOR_COMMAND(R_CUBIC_TO)                                           \
   DECLARE_VECTOR_COMMAND(CUBIC_TO_SHORTHAND)                                   \
+  DECLARE_VECTOR_COMMAND(QUADRATIC_TO)                                         \
+  DECLARE_VECTOR_COMMAND(R_QUADRATIC_TO)                                       \
+  DECLARE_VECTOR_COMMAND(QUADRATIC_TO_SHORTHAND)                               \
+  DECLARE_VECTOR_COMMAND(R_QUADRATIC_TO_SHORTHAND)                             \
   DECLARE_VECTOR_COMMAND(CIRCLE)                                               \
+  DECLARE_VECTOR_COMMAND(OVAL)                                                 \
   DECLARE_VECTOR_COMMAND(ROUND_RECT)                                           \
   DECLARE_VECTOR_COMMAND(CLOSE)                                                \
   /* Sets the dimensions of the canvas in dip. */                              \
@@ -58,13 +63,7 @@ namespace gfx {
   DECLARE_VECTOR_COMMAND(DISABLE_AA)                                           \
   /* Flips the x-axis in RTL locales. Default is false, this command sets */   \
   /* it to true. */                                                            \
-  DECLARE_VECTOR_COMMAND(FLIPS_IN_RTL)                                         \
-  /* Defines a timed transition for other elements. */                         \
-  DECLARE_VECTOR_COMMAND(TRANSITION_FROM)                                      \
-  DECLARE_VECTOR_COMMAND(TRANSITION_TO)                                        \
-  /* Parameters are delay (ms), duration (ms), and tween type */               \
-  /* (gfx::Tween::Type). */                                                    \
-  DECLARE_VECTOR_COMMAND(TRANSITION_END)
+  DECLARE_VECTOR_COMMAND(FLIPS_IN_RTL)
 
 #define DECLARE_VECTOR_COMMAND(x) x,
 

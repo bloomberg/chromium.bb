@@ -26,7 +26,7 @@
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/prefs/pref_member.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/material_design/material_design_controller_observer.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/button/button.h"
@@ -37,7 +37,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/mojom/intent_helper.mojom.h"  // nogncheck https://crbug.com/784179
+#include "components/arc/mojom/intent_helper.mojom-forward.h"  // nogncheck https://crbug.com/784179
 #endif  // defined(OS_CHROMEOS)
 
 class AppMenuButton;
@@ -75,8 +75,7 @@ class ToolbarView : public views::AccessiblePaneView,
                     public AppMenuIconController::Delegate,
                     public UpgradeObserver,
                     public ToolbarButtonProvider,
-                    public BrowserRootView::DropTarget,
-                    public ui::MaterialDesignControllerObserver {
+                    public BrowserRootView::DropTarget {
  public:
   // Types of display mode this toolbar can have.
   enum class DisplayMode {
@@ -199,9 +198,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // AccessiblePaneView:
   bool SetPaneFocusAndFocusDefault() override;
 
-  // ui::MaterialDesignControllerObserver:
-  void OnTouchUiChanged() override;
-
   // This controls Toolbar, LocationBar and CustomTabBar visibility.
   // If we don't set all three, tab navigation from the app menu breaks
   // on Chrome OS.
@@ -221,16 +217,17 @@ class ToolbarView : public views::AccessiblePaneView,
   // AppMenuIconController::Delegate:
   void UpdateTypeAndSeverity(
       AppMenuIconController::TypeAndSeverity type_and_severity) override;
-  const ui::ThemeProvider* GetViewThemeProvider() const override;
-  ui::NativeTheme* GetViewNativeTheme() override;
+  SkColor GetDefaultColorForSeverity(
+      AppMenuIconController::Severity severity) const override;
 
   // ToolbarButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;
-  ToolbarActionView* GetToolbarActionViewForId(const std::string& id) override;
+  ExtensionsToolbarContainer* GetExtensionsToolbarContainer() override;
+  gfx::Size GetToolbarButtonSize() const override;
   views::View* GetDefaultExtensionDialogAnchorView() override;
   PageActionIconView* GetPageActionIconView(PageActionIconType type) override;
   AppMenuButton* GetAppMenuButton() override;
-  gfx::Rect GetFindBarBoundingBox(int contents_bottom) const override;
+  gfx::Rect GetFindBarBoundingBox(int contents_bottom) override;
   void FocusToolbar() override;
   views::AccessiblePaneView* GetAsAccessiblePaneView() override;
   views::View* GetAnchorView(PageActionIconType type) override;
@@ -257,6 +254,8 @@ class ToolbarView : public views::AccessiblePaneView,
   void OnShowHomeButtonChanged();
   void UpdateHomeButtonVisibility();
 
+  void OnTouchUiChanged();
+
   gfx::SlideAnimation size_animation_{this};
 
   // Controls. Most of these can be null, e.g. in popup windows. Only
@@ -279,7 +278,7 @@ class ToolbarView : public views::AccessiblePaneView,
   Browser* const browser_;
   BrowserView* const browser_view_;
 
-  views::FlexLayout* layout_manager_;
+  views::FlexLayout* layout_manager_ = nullptr;
 
   AppMenuIconController app_menu_icon_controller_;
 
@@ -289,9 +288,10 @@ class ToolbarView : public views::AccessiblePaneView,
   // The display mode used when laying out the toolbar.
   const DisplayMode display_mode_;
 
-  ScopedObserver<ui::MaterialDesignController,
-                 ui::MaterialDesignControllerObserver>
-      md_observer_{this};
+  std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
+      ui::TouchUiController::Get()->RegisterCallback(
+          base::BindRepeating(&ToolbarView::OnTouchUiChanged,
+                              base::Unretained(this)));
 
   // Whether this toolbar has been initialized.
   bool initialized_ = false;

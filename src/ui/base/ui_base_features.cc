@@ -16,11 +16,24 @@ const base::Feature kCalculateNativeWinOcclusion{
     "CalculateNativeWinOcclusion", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // OW_WIN
 
+// Whether or not to delegate color queries to the color provider.
+const base::Feature kColorProviderRedirection = {
+    "ColorProviderRedirection", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_CHROMEOS)
 // Integrate input method specific settings to Chrome OS settings page.
 // https://crbug.com/895886.
 const base::Feature kSettingsShowsPerKeyboardSettings = {
     "InputMethodIntegratedSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Experimental shortcut handling and mapping to address i18n issues.
+// https://crbug.com/1067269
+const base::Feature kNewShortcutMapping = {"NewShortcutMapping",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsNewShortcutMappingEnabled() {
+  return base::FeatureList::IsEnabled(kNewShortcutMapping);
+}
 #endif  // defined(OS_CHROMEOS)
 
 // Update of the virtual keyboard settings UI as described in
@@ -79,14 +92,23 @@ const base::Feature kUiCompositorScrollWithLayers = {
 // Enables compositor threaded scrollbar scrolling by mapping pointer events to
 // gesture events.
 const base::Feature kCompositorThreadedScrollbarScrolling = {
-    "CompositorThreadedScrollbarScrolling", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CompositorThreadedScrollbarScrolling", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the use of a touch fling curve that is based on the behavior of
 // native apps on Windows.
-const base::Feature kExperimentalFlingAnimation{
-    "ExperimentalFlingAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kExperimentalFlingAnimation {
+  "ExperimentalFlingAnimation",
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 #if defined(OS_WIN)
+const base::Feature kElasticOverscrollWin = {"ElasticOverscrollWin",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables InputPane API for controlling on screen keyboard.
 const base::Feature kInputPaneOnScreenKeyboard = {
     "InputPaneOnScreenKeyboard", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -103,24 +125,10 @@ bool IsUsingWMPointerForTouch() {
          base::FeatureList::IsEnabled(kPointerEventsForTouch);
 }
 
-// Enables DirectManipulation API for processing Precision Touchpad events.
-const base::Feature kPrecisionTouchpad{"PrecisionTouchpad",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables Logging for DirectManipulation.
 const base::Feature kPrecisionTouchpadLogging{
     "PrecisionTouchpadLogging", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables Swipe left/right to navigation back/forward API for processing
-// Precision Touchpad events.
-const base::Feature kPrecisionTouchpadScrollPhase{
-    "PrecisionTouchpadScrollPhase", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
-
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-const base::Feature kEnableAutomaticUiAdjustmentsForTouch{
-    "EnableAutomaticUiAdjustmentsForTouch", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 // Enables stylus appearing as touch when in contact with digitizer.
@@ -134,35 +142,66 @@ const base::Feature kDirectManipulationStylus = {
 };
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
+// Enables forced colors mode for web content.
+const base::Feature kForcedColors{"ForcedColors",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsForcedColorsEnabled() {
+  static const bool forced_colors_enabled =
+      base::FeatureList::IsEnabled(features::kForcedColors);
+  return forced_colors_enabled;
+}
+
+// Enables the eye-dropper in the refresh color-picker.
+const base::Feature kEyeDropper{"EyeDropper",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsEyeDropperEnabled() {
+  return IsFormControlsRefreshEnabled() &&
+         base::FeatureList::IsEnabled(features::kEyeDropper);
+}
+
+// Enable the FormControlsRefresh feature for Windows, ChromeOS, Linux, and Mac.
+// This feature will be released for Android in later milestones. See
+// crbug.com/1012106 for the Windows launch bug, and crbug.com/1012108 for the
+// Mac launch bug.
 const base::Feature kFormControlsRefresh = {"FormControlsRefresh",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX) || \
+    defined(OS_MACOSX)
+                                            base::FEATURE_ENABLED_BY_DEFAULT
+#else
+                                            base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
+bool IsFormControlsRefreshEnabled() {
+  static const bool form_controls_refresh_enabled =
+      base::FeatureList::IsEnabled(features::kFormControlsRefresh);
+  return form_controls_refresh_enabled;
+}
+
+// Enable the common select popup.
+const base::Feature kUseCommonSelectPopup = {"UseCommonSelectPopup",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsUseCommonSelectPopupEnabled() {
+  return base::FeatureList::IsEnabled(features::kUseCommonSelectPopup);
+}
 
 // Enable WebUI accessibility enhancements for review and testing.
 const base::Feature kWebUIA11yEnhancements{"WebUIA11yEnhancements",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsFormControlsRefreshEnabled() {
-  return base::FeatureList::IsEnabled(features::kFormControlsRefresh);
-}
-
-bool IsAutomaticUiAdjustmentsForTouchEnabled() {
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-  return base::FeatureList::IsEnabled(
-      features::kEnableAutomaticUiAdjustmentsForTouch);
-#else
-  return false;
-#endif
-}
-
-const base::Feature kEnableOzoneDrmMojo = {"OzoneDrmMojo",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsOzoneDrmMojo() {
-  return base::FeatureList::IsEnabled(kEnableOzoneDrmMojo);
-}
-
 #if defined(OS_CHROMEOS)
 const base::Feature kHandwritingGesture = {"HandwritingGesture",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+const base::Feature kSynchronousPageFlipTesting{
+    "SynchronousPageFlipTesting", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsSynchronousPageFlipTestingEnabled() {
+  return base::FeatureList::IsEnabled(kSynchronousPageFlipTesting);
+}
+
 }  // namespace features

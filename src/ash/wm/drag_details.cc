@@ -61,7 +61,7 @@ gfx::Rect GetWindowInitialBoundsInParent(aura::Window* window) {
 }  // namespace
 
 DragDetails::DragDetails(aura::Window* window,
-                         const gfx::Point& location,
+                         const gfx::PointF& location,
                          int window_component,
                          ::wm::WindowMoveSource source)
     : initial_state_type(WindowState::Get(window)->GetStateType()),
@@ -70,7 +70,6 @@ DragDetails::DragDetails(aura::Window* window,
       // When drag starts, we might be in the middle of a window opacity
       // animation, on drag completion we must set the opacity to the target
       // opacity rather than the current opacity (crbug.com/687003).
-      initial_opacity(window->layer()->GetTargetOpacity()),
       window_component(window_component),
       bounds_change(
           WindowResizer::GetBoundsChangeForWindowComponent(window_component)),
@@ -84,18 +83,19 @@ DragDetails::DragDetails(aura::Window* window,
   if (window_component != HTCAPTION)
     return;
 
-  WindowState* window_state = WindowState::Get(window);
-  const bool is_tablet_mode =
-      Shell::Get()->tablet_mode_controller()->InTabletMode();
   // TODO(xdai): Move these logic to WindowState::GetRestoreBoundsInScreen()
   // and let it return the right value.
-  if (!is_tablet_mode && window_state->IsNormalOrSnapped() &&
-      window_state->HasRestoreBounds()) {
-    restore_bounds = window_state->GetRestoreBoundsInScreen();
-  } else if (is_tablet_mode) {
+  WindowState* window_state = WindowState::Get(window);
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     gfx::Rect* override_bounds = window->GetProperty(kRestoreBoundsOverrideKey);
     if (override_bounds && !override_bounds->IsEmpty())
       restore_bounds = *override_bounds;
+  } else if (window_state->IsSnapped() || window_state->IsMaximized()) {
+    DCHECK(window_state->HasRestoreBounds());
+    restore_bounds = window_state->GetRestoreBoundsInScreen();
+  } else if (window_state->IsNormalStateType() &&
+             window_state->HasRestoreBounds()) {
+    restore_bounds = window_state->GetRestoreBoundsInScreen();
   }
 }
 

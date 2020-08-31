@@ -4,45 +4,73 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/script_cached_metadata_handler.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 
 namespace blink {
+
+namespace {
+
+void RecordState(StateOnGet state) {
+  UMA_HISTOGRAM_ENUMERATION("Memory.Renderer.BlinkCachedMetadataGetResult",
+                            state);
+}
+
+}  // namespace
 
 ScriptCachedMetadataHandler::ScriptCachedMetadataHandler(
     const WTF::TextEncoding& encoding,
     std::unique_ptr<CachedMetadataSender> sender)
     : sender_(std::move(sender)), encoding_(encoding) {}
 
-void ScriptCachedMetadataHandler::Trace(blink::Visitor* visitor) {
+void ScriptCachedMetadataHandler::Trace(Visitor* visitor) {
   CachedMetadataHandler::Trace(visitor);
 }
 
-void ScriptCachedMetadataHandler::SetCachedMetadata(
-    uint32_t data_type_id,
-    const uint8_t* data,
-    size_t size,
-    CachedMetadataHandler::CacheType cache_type) {
-  // Currently, only one type of cached metadata per resource is supported. If
-  // the need arises for multiple types of metadata per resource this could be
-  // enhanced to store types of metadata in a map.
+void ScriptCachedMetadataHandler::SetCachedMetadata(uint32_t data_type_id,
+                                                    const uint8_t* data,
+                                                    size_t size) {
   DCHECK(!cached_metadata_);
+  // Having been discarded once, the further attempts to overwrite the
+  // CachedMetadata are ignored. This behavior is slightly easier to simulate in
+  // tests. Should happen rarely enough not to affect performance. The
+  // JSModuleScript behaves similarly by preventing the creation of the code
+  // cache.
+  if (cached_metadata_discarded_)
+    return;
   cached_metadata_ = CachedMetadata::Create(data_type_id, data, size);
-  if (cache_type == CachedMetadataHandler::kSendToPlatform)
-    SendToPlatform();
+  if (!disable_send_to_platform_for_testing_)
+    CommitToPersistentStorage();
 }
 
 void ScriptCachedMetadataHandler::ClearCachedMetadata(
-    CachedMetadataHandler::CacheType cache_type) {
+    ClearCacheType cache_type) {
   cached_metadata_ = nullptr;
-  if (cache_type == CachedMetadataHandler::kSendToPlatform)
-    SendToPlatform();
+  switch (cache_type) {
+    case kClearLocally:
+      break;
+    case kDiscardLocally:
+      cached_metadata_discarded_ = true;
+      break;
+    case kClearPersistentStorage:
+      CommitToPersistentStorage();
+      break;
+  }
 }
 
 scoped_refptr<CachedMetadata> ScriptCachedMetadataHandler::GetCachedMetadata(
     uint32_t data_type_id) const {
-  if (!cached_metadata_ || cached_metadata_->DataTypeID() != data_type_id)
+  if (!cached_metadata_) {
+    RecordState(cached_metadata_discarded_ ? StateOnGet::kWasDiscarded
+                                           : StateOnGet::kWasNeverPresent);
     return nullptr;
+  }
+  if (cached_metadata_->DataTypeID() != data_type_id) {
+    RecordState(StateOnGet::kDataTypeMismatch);
+    return nullptr;
+  }
+  RecordState(StateOnGet::kPresent);
   return cached_metadata_;
 }
 
@@ -79,7 +107,7 @@ size_t ScriptCachedMetadataHandler::GetCodeCacheSize() const {
   return (cached_metadata_) ? cached_metadata_->SerializedData().size() : 0;
 }
 
-void ScriptCachedMetadataHandler::SendToPlatform() {
+void ScriptCachedMetadataHandler::CommitToPersistentStorage() {
   if (cached_metadata_) {
     base::span<const uint8_t> serialized_data =
         cached_metadata_->SerializedData();

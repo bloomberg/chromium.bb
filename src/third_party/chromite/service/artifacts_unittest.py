@@ -14,13 +14,14 @@ import shutil
 import mock
 
 from chromite.lib import autotest_util
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
+from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.lib import toolchain_util
 from chromite.lib.paygen import partition_lib
@@ -95,7 +96,7 @@ class ArchiveChromeEbuildEnvTest(cros_test_lib.MockTempDirTestCase):
     osutils.SafeMakedirs(self.output_dir)
 
     # The sysroot's /var/db/pkg prefix for the chrome package directories.
-    var_db_pkg = os.path.join(self.sysroot_path, 'var', 'db', 'pkg')
+    var_db_pkg = os.path.join(self.sysroot_path, portage_util.VDB_PATH)
     # Create the var/db/pkg dir so we have that much for no-chrome tests.
     osutils.SafeMakedirs(var_db_pkg)
 
@@ -191,7 +192,7 @@ class CreateChromeRootTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def setUp(self):
     # Create the build target.
-    self.build_target = build_target_util.BuildTarget('board')
+    self.build_target = build_target_lib.BuildTarget('board')
 
     # Create the chroot.
     self.chroot_dir = os.path.join(self.tempdir, 'chroot')
@@ -422,7 +423,7 @@ class BundleAFDOGenerationArtifacts(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     # Create the build target.
-    self.build_target = build_target_util.BuildTarget('board')
+    self.build_target = build_target_lib.BuildTarget('board')
 
     # Create the chroot.
     self.chroot_dir = os.path.join(self.tempdir, 'chroot')
@@ -626,7 +627,16 @@ class GenerateCpeExportTest(cros_test_lib.RunCommandTempDirTestCase):
     result = artifacts.GenerateCpeReport(self.chroot, self.sysroot,
                                          self.output_dir)
 
+    expected_cmd = ['cros_extract_deps', '--sysroot', '/build/board',
+                    '--format', 'cpe', 'virtual/target-os', '--output-path',
+                    self.result_file]
+    self.assertCommandCalled(expected_cmd, capture_output=True,
+                             chroot_args=['--chroot', mock.ANY],
+                             enter_chroot=True)
+
     self.assertEqual(self.result_file, result.report)
     self.assertEqual(self.warnings_file, result.warnings)
-    self.assertFileContents(self.result_file, report)
+    # We cannot assert that self.result_file exists and check contents since we
+    # are mocking  cros_extract_deps, but we verified the args to
+    # cros_extract_deps.
     self.assertFileContents(self.warnings_file, warnings)

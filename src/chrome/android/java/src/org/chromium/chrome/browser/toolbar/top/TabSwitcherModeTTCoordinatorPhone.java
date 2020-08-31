@@ -11,22 +11,24 @@ import android.view.ViewStub;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
-import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
-import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
-import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 
 /**
  * The coordinator for the tab switcher mode top toolbar shown on phones, responsible for
  * communication with other UI components and lifecycle. Lazily creates the tab
  * switcher mode top toolbar the first time it's needed.
  */
-class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
+class TabSwitcherModeTTCoordinatorPhone {
     private final ViewStub mTabSwitcherToolbarStub;
 
     // TODO(twellington): Create a model to hold all of these properties. Consider using
@@ -44,9 +46,7 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
     private TabSwitcherModeTTPhone mTabSwitcherModeToolbar;
 
     @Nullable
-    private IncognitoSwitchCoordinator mIncognitoSwitchCoordinator;
-    @Nullable
-    private View mLogo;
+    private TabModelObserver mTabModelObserver;
 
     TabSwitcherModeTTCoordinatorPhone(ViewStub tabSwitcherToolbarStub) {
         mTabSwitcherToolbarStub = tabSwitcherToolbarStub;
@@ -60,20 +60,9 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
             mTabSwitcherModeToolbar.destroy();
             mTabSwitcherModeToolbar = null;
         }
-        if (mIncognitoSwitchCoordinator != null) {
-            mIncognitoSwitchCoordinator.destroy();
-            mIncognitoSwitchCoordinator = null;
+        if (mTabModelSelector != null && mTabModelObserver != null) {
+            mTabModelSelector.getModel(true).removeObserver(mTabModelObserver);
         }
-        if (FeatureUtilities.isStartSurfaceEnabled()) {
-            TemplateUrlServiceFactory.get().removeObserver(this);
-        }
-    }
-
-    @Override
-    public void onTemplateURLServiceChanged() {
-        mLogo.setVisibility(
-                (TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle() ? View.VISIBLE
-                                                                               : View.GONE));
     }
 
     /**
@@ -174,7 +163,7 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
         final float targetAlpha = shouldShowTabSwitcherToolbar ? 1.0f : 0.0f;
         mTabSwitcherModeToolbar.animate()
                 .alpha(targetAlpha)
-                .setDuration(ToolbarManager.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS)
+                .setDuration(TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationStart(Animator animation) {
@@ -223,14 +212,34 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
 
         assert mTabModelSelector != null;
         mTabSwitcherModeToolbar.setTabModelSelector(mTabModelSelector);
-        if (FeatureUtilities.isStartSurfaceEnabled()) {
-            mIncognitoSwitchCoordinator =
-                    new IncognitoSwitchCoordinator(mTabSwitcherModeToolbar, mTabModelSelector);
-            mLogo = mTabSwitcherModeToolbar.findViewById(R.id.logo);
-            if (TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()) {
-                mLogo.setVisibility(View.VISIBLE);
-            }
-            TemplateUrlServiceFactory.get().addObserver(this);
+        if (isNewTabVariationEnabled()) {
+            mTabModelObserver = new TabModelObserver() {
+                @Override
+                public void didAddTab(Tab tab, int type, @TabCreationState int creationState) {
+                    assert tab.isIncognito();
+                    updateIncognitoTabsCount();
+                }
+
+                @Override
+                public void didCloseTab(int tabId, boolean incognito) {
+                    assert incognito;
+                    updateIncognitoTabsCount();
+                }
+
+                @Override
+                public void tabRemoved(Tab tab) {
+                    assert tab.isIncognito();
+                    updateIncognitoTabsCount();
+                }
+
+                private void updateIncognitoTabsCount() {
+                    int incognitoTabsCount = mTabModelSelector.getModel(true).getCount();
+                    mTabSwitcherModeToolbar.onIncognitoTabsCountChanged(incognitoTabsCount);
+                }
+            };
+            TabModel incognitoTabModel = mTabModelSelector.getModel(true);
+            incognitoTabModel.addObserver(mTabModelObserver);
+            mTabSwitcherModeToolbar.onIncognitoTabsCountChanged(incognitoTabModel.getCount());
         }
 
         assert mIncognitoStateProvider != null;
@@ -240,5 +249,14 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
             mTabSwitcherModeToolbar.onAccessibilityStatusChanged(mAccessibilityEnabled);
         }
         mTabSwitcherModeToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
+    }
+
+    private boolean isNewTabVariationEnabled() {
+        return TabUiFeatureUtilities.isGridTabSwitcherEnabled() && ChromeFeatureList.isInitialized()
+                && IncognitoUtils.isIncognitoModeEnabled()
+                && ChromeFeatureList
+                           .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+                                   "tab_grid_layout_android_new_tab")
+                           .equals("NewTabVariation");
     }
 }

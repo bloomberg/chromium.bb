@@ -16,6 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using preferences_helper::BooleanPrefMatches;
@@ -38,9 +39,6 @@ class TwoClientPreferencesSyncTest : public SyncTest {
 
   ~TwoClientPreferencesSyncTest() override {}
 
-  // Needed for AwaitQuiescence().
-  bool TestUsesSelfNotifications() override { return true; }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientPreferencesSyncTest);
 };
@@ -49,8 +47,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, E2E_ENABLED(Sanity)) {
   ResetSyncForPrimaryAccount();
   DisableVerifier();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  // Wait until sync settles before we override the prefs below.
-  ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());
   const std::string new_home_page = base::StringPrintf(
       "https://example.com/%s", base::GenerateGUID().c_str());
@@ -184,8 +180,6 @@ class TwoClientPreferencesSyncTestWithSelfNotifications : public SyncTest {
     SyncTest::SetUp();
   }
 
-  bool TestUsesSelfNotifications() override { return true; }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientPreferencesSyncTestWithSelfNotifications);
 };
@@ -228,8 +222,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTestWithSelfNotifications,
 // Verifies that priority synced preferences and regular sycned preferences are
 // kept separate.
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTestWithSelfNotifications,
-                       E2E_ENABLED(ShouldIsolatePriorityPreferences)) {
-  ResetSyncForPrimaryAccount();
+                       ShouldIsolatePriorityPreferences) {
   // Register a pref as priority with client0 and regular synced with client1.
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   constexpr char pref_name[] = "testing.my-test-preference";

@@ -83,6 +83,11 @@ def CopyFileSegment(in_file, in_mode, in_len, out_file, out_mode, in_seek=0):
     out_mode: The mode to open the output file
     in_seek: How many bytes to seek from the |in_file|
   """
+  if 'b' not in in_mode:
+    raise ValueError('in_mode must contain "b"')
+  if 'b' not in out_mode:
+    raise ValueError('out_mode must contian "b"')
+
   with open(in_file, in_mode) as in_stream, \
        open(out_file, out_mode) as out_stream:
     in_stream.seek(in_seek)

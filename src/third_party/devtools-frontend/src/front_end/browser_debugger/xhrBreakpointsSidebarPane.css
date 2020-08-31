@@ -38,6 +38,10 @@
     background-color: #eee;
 }
 
+.breakpoint-list .breakpoint-entry[data-keyboard-focus="true"] {
+    background-color: var(--focus-bg-color);
+}
+
 .breakpoint-entry [is=dt-checkbox] {
     max-width: 100%;
 }
@@ -50,4 +54,16 @@
 :host-context(.-theme-with-dark-background) .breakpoint-hit {
     background-color: hsl(46, 98%, 22%);
     color: #ccc;
+}
+
+@media (forced-colors: active) {
+    .breakpoint-list .breakpoint-entry:hover,
+    .breakpoint-list .breakpoint-entry[data-keyboard-focus="true"] {
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+    .breakpoint-list .breakpoint-entry:hover *,
+    .breakpoint-list .breakpoint-entry[data-keyboard-focus="true"] * {
+        color: HighlightText;
+    }
 }

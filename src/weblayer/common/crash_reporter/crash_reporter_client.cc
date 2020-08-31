@@ -13,8 +13,8 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
-#include "components/crash/content/app/crash_reporter_client.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crash_reporter_client.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/version_info/android/channel_getter.h"
 #include "components/version_info/version_info.h"
 #include "components/version_info/version_info_values.h"
@@ -41,15 +41,19 @@ class CrashReporterClientImpl : public crash_reporter::CrashReporterClient {
   }
 
   bool GetCrashDumpLocation(base::FilePath* crash_dir) override {
-    return base::PathService::Get(weblayer::DIR_CRASH_DUMPS, crash_dir);
+    return base::PathService::Get(DIR_CRASH_DUMPS, crash_dir);
   }
 
   void GetSanitizationInformation(const char* const** annotations_whitelist,
                                   void** target_module,
                                   bool* sanitize_stacks) override {
-    // TODO(tobiasjs) implement appropriate crash filtering.
     *annotations_whitelist = nullptr;
+#if defined(COMPONENT_BUILD)
     *target_module = nullptr;
+#else
+    // The supplied address is used to identify the .so containing WebLayer.
+    *target_module = reinterpret_cast<void*>(&EnableCrashReporter);
+#endif
     *sanitize_stacks = false;
   }
 

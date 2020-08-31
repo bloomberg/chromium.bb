@@ -48,7 +48,7 @@ void AppListTestViewDelegate::OpenSearchResult(
   for (size_t i = 0; i < results->item_count(); ++i) {
     if (results->GetItemAt(i)->id() == result_id) {
       open_search_result_counts_[i]++;
-      if (app_list_features::IsAssistantLauncherUIEnabled() &&
+      if (app_list_features::IsAssistantSearchEnabled() &&
           results->GetItemAt(i)->is_omnibox_search()) {
         ++open_assistant_ui_count_;
       }
@@ -82,6 +82,10 @@ void AppListTestViewDelegate::ReplaceTestModel(int item_count) {
 
 void AppListTestViewDelegate::SetSearchEngineIsGoogle(bool is_google) {
   search_model_->SetSearchEngineIsGoogle(is_google);
+}
+
+void AppListTestViewDelegate::SetIsTabletModeEnabled(bool is_tablet_mode) {
+  is_tablet_mode_ = is_tablet_mode;
 }
 
 const std::vector<SkColor>&
@@ -187,6 +191,8 @@ void AppListTestViewDelegate::MarkAssistantPrivacyInfoDismissed() {}
 void AppListTestViewDelegate::OnStateTransitionAnimationCompleted(
     ash::AppListViewState state) {}
 
+void AppListTestViewDelegate::OnViewStateChanged(AppListViewState state) {}
+
 void AppListTestViewDelegate::GetAppLaunchedMetricParams(
     AppLaunchedMetricParams* metric_params) {}
 
@@ -195,10 +201,18 @@ gfx::Rect AppListTestViewDelegate::SnapBoundsToDisplayEdge(
   return bounds;
 }
 
-int AppListTestViewDelegate::GetShelfHeight() {
+int AppListTestViewDelegate::GetShelfSize() {
   // TODO(mmourgos): change this to 48 once shelf-hotseat flag is enabled.
   // Return the height of the shelf when clamshell mode is active.
   return 56;
+}
+
+bool AppListTestViewDelegate::IsInTabletMode() {
+  return is_tablet_mode_;
+}
+
+AppListNotifier* AppListTestViewDelegate::GetNotifier() {
+  return nullptr;
 }
 
 void AppListTestViewDelegate::RecordAppLaunched(

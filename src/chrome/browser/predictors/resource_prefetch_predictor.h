@@ -21,7 +21,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
-#include "chrome/browser/predictors/loading_predictor_key_value_data.h"
 #include "chrome/browser/predictors/navigation_id.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "components/history/core/browser/history_db_task.h"
@@ -29,7 +28,8 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/common/resource_type.h"
+#include "components/optimization_guide/optimization_guide_decider.h"
+#include "components/sqlite_proto/key_value_data.h"
 #include "net/base/network_isolation_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -85,6 +85,17 @@ struct PreconnectPrediction {
   std::vector<PreconnectRequest> requests;
 };
 
+// Stores a result of a prediction from the optimization guide.
+struct OptimizationGuidePrediction {
+  OptimizationGuidePrediction();
+  OptimizationGuidePrediction(const OptimizationGuidePrediction& other);
+  ~OptimizationGuidePrediction();
+
+  optimization_guide::OptimizationGuideDecision decision;
+  PreconnectPrediction preconnect_prediction;
+  std::vector<GURL> predicted_subresources;
+};
+
 // Contains logic for learning what can be prefetched and for kicking off
 // speculative prefetching.
 // - The class is a profile keyed service owned by the profile.
@@ -121,10 +132,9 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   };
 
   using RedirectDataMap =
-      LoadingPredictorKeyValueData<RedirectData,
-                                   internal::LastVisitTimeCompare>;
+      sqlite_proto::KeyValueData<RedirectData, internal::LastVisitTimeCompare>;
   using OriginDataMap =
-      LoadingPredictorKeyValueData<OriginData, internal::LastVisitTimeCompare>;
+      sqlite_proto::KeyValueData<OriginData, internal::LastVisitTimeCompare>;
   using NavigationMap =
       std::map<NavigationID, std::unique_ptr<PageRequestSummary>>;
 

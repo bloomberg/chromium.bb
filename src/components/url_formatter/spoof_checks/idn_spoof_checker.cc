@@ -4,11 +4,13 @@
 
 #include "components/url_formatter/spoof_checks/idn_spoof_checker.h"
 
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local_storage.h"
 #include "build/build_config.h"
 #include "net/base/lookup_string_in_fixed_set.h"
@@ -69,6 +71,14 @@ class TopDomainPreloadDecoder : public net::extras::PreloadDecoder {
   TopDomainEntry result_;
 };
 
+// Stores whole-script-confusable information about a written script.
+// Used to populate a list of WholeScriptConfusable structs.
+struct WholeScriptConfusableData {
+  const char* const script_regex;
+  const char* const latin_lookalike_letters;
+  const std::vector<std::string> allowed_tlds;
+};
+
 void OnThreadTermination(void* regex_matcher) {
   delete reinterpret_cast<icu::RegexMatcher*>(regex_matcher);
 }
@@ -108,6 +118,15 @@ bool HasUnsafeMiddleDot(const icu::UnicodeString& label_string,
   return false;
 }
 
+bool IsSubdomainOf(base::StringPiece16 hostname,
+                   const base::string16& top_domain) {
+  DCHECK_NE(hostname, top_domain);
+  DCHECK(!hostname.empty());
+  DCHECK(!top_domain.empty());
+  return base::EndsWith(hostname, base::ASCIIToUTF16(".") + top_domain,
+                        base::CompareCase::INSENSITIVE_ASCII);
+}
+
 #include "components/url_formatter/spoof_checks/top_domains/domains-trie-inc.cc"
 
 // All the domains in the above file have 4 or fewer labels.
@@ -118,6 +137,16 @@ IDNSpoofChecker::HuffmanTrieParams g_trie_params{
     kTopDomainsTrieBits, kTopDomainsRootPosition};
 
 }  // namespace
+
+IDNSpoofChecker::WholeScriptConfusable::WholeScriptConfusable(
+    std::unique_ptr<icu::UnicodeSet> arg_all_letters,
+    std::unique_ptr<icu::UnicodeSet> arg_latin_lookalike_letters,
+    const std::vector<std::string>& arg_allowed_tlds)
+    : all_letters(std::move(arg_all_letters)),
+      latin_lookalike_letters(std::move(arg_latin_lookalike_letters)),
+      allowed_tlds(arg_allowed_tlds) {}
+
+IDNSpoofChecker::WholeScriptConfusable::~WholeScriptConfusable() = default;
 
 IDNSpoofChecker::IDNSpoofChecker() {
   UErrorCode status = U_ZERO_ERROR;
@@ -173,15 +202,94 @@ IDNSpoofChecker::IDNSpoofChecker() {
       icu::UnicodeSet(UNICODE_STRING_SIMPLE("[\\u0300-\\u0339]"), status);
   combining_diacritics_exceptions_.freeze();
 
-  // These Cyrillic letters look like Latin. A domain label entirely made of
-  // these letters is blocked as a simplified whole-script-spoofable.
-  cyrillic_letters_latin_alike_ = icu::UnicodeSet(
-      icu::UnicodeString::fromUTF8("[аысԁеԍһіюјӏорԗԛѕԝхуъЬҽпгѵѡ]"), status);
-  cyrillic_letters_latin_alike_.freeze();
-
-  cyrillic_letters_ =
-      icu::UnicodeSet(UNICODE_STRING_SIMPLE("[[:Cyrl:]]"), status);
-  cyrillic_letters_.freeze();
+  const WholeScriptConfusableData kWholeScriptConfusables[] = {
+      {// Armenian
+       "[[:Armn:]]",
+       "[ագզէլհյոսւօՙ]",
+       {"am"}},
+      {// Cyrillic
+       "[[:Cyrl:]]",
+       "[аысԁеԍһіюјӏорԗԛѕԝхуъЬҽпгѵѡ]",
+       // TLDs containing most of the Cyrillic domains.
+       {"bg", "by", "kz", "pyc", "ru", "su", "ua", "uz"}},
+      {// Ethiopic (Ge'ez). Variants of these characters such as ሁ and ሡ could
+       // arguably be added to this list. However, we are only restricting
+       // the more obvious characters to keep the list short and to reduce the
+       // probability of false positives.
+       // Potential set: [ሀሁሃሠሡሰሱሲስበቡቢተቱቲታነከኩኪካኬክዐዑዕዖዘዙዚዛዝዞጠጡጢጣጦፐፒꬁꬂꬅ]
+       "[[:Ethi:]]",
+       "[ሀሠሰስበነተከዐዕዘጠፐꬅ]",
+       {"er", "et"}},
+      {// Georgian
+       "[[:Geor:]]",
+       "[იოყძხჽჿ]",
+       {"ge"}},
+      {// Greek
+       "[[:Grek:]]",
+       // This ignores variants such as ά, έ, ή, ί.
+       "[αικνρυωηοτ]",
+       {"gr"}},
+      {// Hebrew
+       "[[:Hebr:]]",
+       "[דוחיןסװײ׳ﬦ]",
+       // TLDs containing most of the Hebrew domains.
+       {"il"}},
+      // Indic scripts in the recommended set. No ccTLDs are allowlisted.
+      {// Bengali
+       "[[:Beng:]]", "[০৭]"},
+      {// Devanagari
+       "[[:Deva:]]", "[ऽ०ॱ]"},
+      {// Gujarati
+       "[[:Gujr:]]", "[ડટ૦૧]"},
+      {// Gurmukhi
+       "[[:Guru:]]", "[੦੧]"},
+      {// Kannada
+       "[[:Knda:]]", "[ಽ೦೧]"},
+      {// Malayalam
+       "[[:Mlym:]]", "[ടഠധനറ൦]"},
+      {// Oriya
+       "[[:Orya:]]", "[ଠ୦୮]"},
+      {// Tamil
+       "[[:Taml:]]", "[டப௦]"},
+      {// Telugu
+       "[[:Telu:]]", "[౦౧]"},
+      {// Myanmar. Shan digits (႐႑႕႖႗) are already blocked from mixing with
+       // other Myanmar characters. However, they can still be used to form
+       // WSC spoofs, so they are included here (they are encoded because macOS
+       // doesn't display them properly).
+       // U+104A (၊) and U+U+104A(။) are excluded as they are signs and are
+       // blocked.
+       "[[:Mymr:]]",
+       "[ခဂငထပဝ၀၂ၔၜ\u1090\u1091\u1095\u1096\u1097]",
+       {"mm"}},
+      {// Thai
+       "[[:Thai:]]",
+  // Some of the Thai characters are only confusable on Linux, so the Linux
+  // set is larger than other platforms. Ideally we don't want to have any
+  // differences between platforms, but doing so is unavoidable here as
+  // these characters look significantly different between Linux and other
+  // platforms.
+  // The ideal fix would be to change the omnibox font used for Thai. In
+  // that case, the Linux-only list should be revisited and potentially
+  // removed.
+#if defined(OS_LINUX)
+       "[ทนบพรหเแ๐ดลปฟม]",
+#else
+       "[บพเแ๐]",
+#endif
+       {"th"}},
+  };
+  for (const WholeScriptConfusableData& data : kWholeScriptConfusables) {
+    auto all_letters = std::make_unique<icu::UnicodeSet>(
+        icu::UnicodeString::fromUTF8(data.script_regex), status);
+    DCHECK(U_SUCCESS(status));
+    auto latin_lookalikes = std::make_unique<icu::UnicodeSet>(
+        icu::UnicodeString::fromUTF8(data.latin_lookalike_letters), status);
+    DCHECK(U_SUCCESS(status));
+    auto script = std::make_unique<WholeScriptConfusable>(
+        std::move(all_letters), std::move(latin_lookalikes), data.allowed_tlds);
+    wholescriptconfusables_.push_back(std::move(script));
+  }
 
   // These characters are, or look like, digits. A domain label entirely made of
   // digit-lookalikes or digits is blocked.
@@ -216,86 +324,11 @@ IDNSpoofChecker::IDNSpoofChecker() {
       icu::UnicodeSet(UNICODE_STRING_SIMPLE("[\\u00fe\\u00f0]"), status);
   icelandic_characters_.freeze();
 
-  // Used for diacritics-removal before the skeleton calculation. Add
-  // "ł > l; ø > o; đ > d" that are not handled by "NFD; Nonspacing mark
-  // removal; NFC".
-  // TODO(jshin): Revisit "ł > l; ø > o" mapping.
-  UParseError parse_error;
-  diacritic_remover_.reset(icu::Transliterator::createFromRules(
-      UNICODE_STRING_SIMPLE("DropAcc"),
-      icu::UnicodeString::fromUTF8("::NFD; ::[:Nonspacing Mark:] Remove; ::NFC;"
-                                   " ł > l; ø > o; đ > d;"),
-      UTRANS_FORWARD, parse_error, status));
-
-  // Supplement the Unicode confusable list by the following mapping.
-  //  NOTE: Adding a digit-lookalike? Add it to digit_lookalikes_ above, too.
-  //   - {U+00E6 (æ), U+04D5 (ӕ)}  => "ae"
-  //   - {U+03FC (ϼ), U+048F (ҏ)} => p
-  //   - {U+0127 (ħ), U+043D (н), U+045B (ћ), U+04A3 (ң), U+04A5 (ҥ),
-  //      U+04C8 (ӈ), U+04CA (ӊ), U+050B (ԋ), U+0527 (ԧ), U+0529 (ԩ)} => h
-  //   - {U+0138 (ĸ), U+03BA (κ), U+043A (к), U+049B (қ), U+049D (ҝ),
-  //      U+049F (ҟ), U+04A1(ҡ), U+04C4 (ӄ), U+051F (ԟ)} => k
-  //   - {U+014B (ŋ), U+043F (п), U+0525 (ԥ), U+0E01 (ก), U+05D7 (ח)} => n
-  //   - U+0153 (œ) => "ce"
-  //     TODO: see https://crbug.com/843352 for further work on
-  //     U+0525 and U+0153.
-  //   - {U+0167 (ŧ), U+0442 (т), U+04AD (ҭ), U+050F (ԏ), U+4E03 (七),
-  //     U+4E05 (丅), U+4E06 (丆), U+4E01 (丁)} => t
-  //   - {U+0185 (ƅ), U+044C (ь), U+048D (ҍ), U+0432 (в)} => b
-  //   - {U+03C9 (ω), U+0448 (ш), U+0449 (щ), U+0E1E (พ),
-  //      U+0E1F (ฟ), U+0E9E (ພ), U+0E9F (ຟ)} => w
-  //   - {U+043C (м), U+04CE (ӎ)} => m
-  //   - {U+0454 (є), U+04BD (ҽ), U+04BF (ҿ), U+1054 (ၔ)} => e
-  //   - U+0491 (ґ) => r
-  //   - {U+0493 (ғ), U+04FB (ӻ)} => f
-  //   - {U+04AB (ҫ), U+1004 (င)} => c
-  //   - {U+04B1 (ұ), U+4E2B (丫)} => y
-  //   - {U+03C7 (χ), U+04B3 (ҳ), U+04FD (ӽ), U+04FF (ӿ), U+4E42 (乂)} => x
-  //   - {U+0503 (ԃ), U+10EB (ძ)} => d
-  //   - {U+050D (ԍ), U+100c (ဌ)} => g
-  //   - {U+0D1F (ട), U+0E23 (ร), U+0EA3 (ຣ), U+0EAE (ຮ)} => s
-  //   - U+1042 (၂) => j
-  //   - {U+0966 (०), U+09E6 (০), U+0A66 (੦), U+0AE6 (૦), U+0B30 (ଠ),
-  //      U+0B66 (୦), U+0CE6 (೦)} => o,
-  //   - {U+09ED (৭), U+0A67 (੧), U+0AE7 (૧)} => q,
-  //   - {U+0E1A (บ), U+0E9A (ບ)} => u,
-  //   - {U+03B8 (θ)} => 0,
-  //   - {U+0968 (२), U+09E8 (২), U+0A68 (੨), U+0A68 (੨), U+0AE8 (૨),
-  //      U+0ce9 (೩), U+0ced (೭), U+0577 (շ)} => 2,
-  //   - {U+0437 (з), U+0499 (ҙ), U+04E1 (ӡ), U+0909 (उ), U+0993 (ও),
-  //      U+0A24 (ਤ), U+0A69 (੩), U+0AE9 (૩), U+0C69 (౩),
-  //      U+1012 (ဒ), U+10D5 (ვ), U+10DE (პ)} => 3
-  //   - {U+0A6B (੫), U+4E29 (丩), U+3110 (ㄐ)} => 4,
-  //   - U+0573 (ճ) => 6
-  //   - {U+09EA (৪), U+0A6A (੪), U+0b6b (୫)} => 8,
-  //   - {U+0AED (૭), U+0b68 (୨), U+0C68 (౨)} => 9,
-  //   Map a few dashes that ICU doesn't map. These are already blocked by ICU,
-  //   but mapping them allows us to detect same skeletons.
-  //   - {U+2014 (—), U+4E00 (一), U+2015 (―), U+23EA (⸺), U+2E3B (⸻)} => -,
-  extra_confusable_mapper_.reset(icu::Transliterator::createFromRules(
-      UNICODE_STRING_SIMPLE("ExtraConf"),
-      icu::UnicodeString::fromUTF8(
-          "[æӕ] > ae; [ϼҏ] > p; [ħнћңҥӈӊԋԧԩ] > h;"
-          "[ĸκкқҝҟҡӄԟ] > k; [ŋпԥกח] > n; œ > ce;"
-          "[ŧтҭԏ七丅丆丁] > t; [ƅьҍв] > b;  [ωшщพฟພຟ] > w;"
-          "[мӎ] > m; [єҽҿၔ] > e; ґ > r; [ғӻ] > f;"
-          "[ҫင] > c; [ұ丫] > y; [χҳӽӿ乂] > x;"
-          "[ԃძ]  > d; [ԍဌ] > g; [ടรຣຮ] > s; ၂ > j;"
-          "[०০੦૦ଠ୦೦] > o;"
-          "[৭੧૧] > q;"
-          "[บບ] > u;"
-          "[θ] > 0;"
-          "[२২੨੨૨೩೭շ] > 2;"
-          "[зҙӡउওਤ੩૩౩ဒვპ] > 3;"
-          "[੫丩ㄐ] > 4;"
-          "[ճ] > 6;"
-          "[৪੪୫] > 8;"
-          "[૭୨౨] > 9;"
-          "[—一―⸺⸻] > \\-;"),
-      UTRANS_FORWARD, parse_error, status));
   DCHECK(U_SUCCESS(status))
       << "Spoofchecker initalization failed due to an error: "
       << u_errorName(status);
+
+  skeleton_generator_ = std::make_unique<SkeletonGenerator>(checker_);
 }
 
 IDNSpoofChecker::~IDNSpoofChecker() {
@@ -350,8 +383,8 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
   // If there's no script mixing, the input is regarded as safe without any
   // extra check unless it falls into one of three categories:
   //   - contains Kana letter exceptions
-  //   - the TLD is ASCII and the input is made entirely of Cyrillic letters
-  //     that look like Latin letters.
+  //   - the TLD is ASCII and the input is made entirely of whole script
+  //     characters confusable that look like Latin letters.
   //   - it has combining diacritic marks.
   // Note that the following combinations of scripts are treated as a 'logical'
   // single script.
@@ -364,11 +397,14 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
   if (result == USPOOF_SINGLE_SCRIPT_RESTRICTIVE &&
       kana_letters_exceptions_.containsNone(label_string) &&
       combining_diacritics_exceptions_.containsNone(label_string)) {
-    // Check Cyrillic confusable only for TLDs where Cyrillic characters are
-    // uncommon.
-    return IsCyrillicTopLevelDomain(top_level_domain,
-                                    top_level_domain_unicode) ||
-           !IsMadeOfLatinAlikeCyrillic(label_string);
+    for (auto const& script : wholescriptconfusables_) {
+      if (IsLabelWholeScriptConfusableForScript(*script.get(), label_string) &&
+          !IsWholeScriptConfusableAllowedForTLD(*script.get(), top_level_domain,
+                                                top_level_domain_unicode)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   // Disallow domains that contain only numbers and number-spoofs.
@@ -482,6 +518,15 @@ TopDomainEntry IDNSpoofChecker::GetSimilarTopDomain(
     DCHECK(!skeleton.empty());
     TopDomainEntry matching_top_domain = LookupSkeletonInTopDomains(skeleton);
     if (!matching_top_domain.domain.empty()) {
+      const base::string16 top_domain =
+          base::UTF8ToUTF16(matching_top_domain.domain);
+      // Return an empty result if hostname is a top domain itself, or a
+      // subdomain of top domain. This prevents subdomains of top domains from
+      // being marked as spoofs. Without this check, éxample.blogspot.com
+      // would return blogspot.com and treated as a top domain lookalike.
+      if (hostname == top_domain || IsSubdomainOf(hostname, top_domain)) {
+        return TopDomainEntry();
+      }
       return matching_top_domain;
     }
   }
@@ -489,47 +534,7 @@ TopDomainEntry IDNSpoofChecker::GetSimilarTopDomain(
 }
 
 Skeletons IDNSpoofChecker::GetSkeletons(base::StringPiece16 hostname) {
-  Skeletons skeletons;
-  size_t hostname_length = hostname.length() - (hostname.back() == '.' ? 1 : 0);
-  icu::UnicodeString host(FALSE, hostname.data(), hostname_length);
-  // If input has any characters outside Latin-Greek-Cyrillic and [0-9._-],
-  // there is no point in getting rid of diacritics because combining marks
-  // attached to non-LGC characters are already blocked.
-  if (lgc_letters_n_ascii_.span(host, 0, USET_SPAN_CONTAINED) == host.length())
-    diacritic_remover_->transliterate(host);
-  extra_confusable_mapper_->transliterate(host);
-
-  UErrorCode status = U_ZERO_ERROR;
-  icu::UnicodeString ustr_skeleton;
-
-  // Map U+04CF (ӏ) to lowercase L in addition to what uspoof_getSkeleton does
-  // (mapping it to lowercase I).
-  int32_t u04cf_pos;
-  if ((u04cf_pos = host.indexOf(0x4CF)) != -1) {
-    icu::UnicodeString host_alt(host);
-    size_t length = host_alt.length();
-    char16_t* buffer = host_alt.getBuffer(-1);
-    for (char16_t* uc = buffer + u04cf_pos; uc < buffer + length; ++uc) {
-      if (*uc == 0x4CF)
-        *uc = 0x6C;  // Lowercase L
-    }
-    host_alt.releaseBuffer(length);
-    uspoof_getSkeletonUnicodeString(checker_, 0, host_alt, ustr_skeleton,
-                                    &status);
-    if (U_SUCCESS(status)) {
-      std::string skeleton;
-      ustr_skeleton.toUTF8String(skeleton);
-      skeletons.insert(skeleton);
-    }
-  }
-
-  uspoof_getSkeletonUnicodeString(checker_, 0, host, ustr_skeleton, &status);
-  if (U_SUCCESS(status)) {
-    std::string skeleton;
-    ustr_skeleton.toUTF8String(skeleton);
-    skeletons.insert(skeleton);
-  }
-  return skeletons;
+  return skeleton_generator_->GetSkeletons(hostname);
 }
 
 TopDomainEntry IDNSpoofChecker::LookupSkeletonInTopDomains(
@@ -650,25 +655,6 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
   uspoof_setAllowedUnicodeSet(checker_, &allowed_set, status);
 }
 
-bool IDNSpoofChecker::IsMadeOfLatinAlikeCyrillic(
-    const icu::UnicodeString& label) {
-  // Collect all the Cyrillic letters in |label_string| and see if they're
-  // a subset of |cyrillic_letters_latin_alike_|.
-  // A shortcut of defining cyrillic_letters_latin_alike_ to include [0-9] and
-  // [_-] and checking if the set contains all letters of |label|
-  // would work in most cases, but not if a label has non-letters outside
-  // ASCII.
-  icu::UnicodeSet cyrillic_in_label;
-  icu::StringCharacterIterator it(label);
-  for (it.setToStart(); it.hasNext();) {
-    const UChar32 c = it.next32PostInc();
-    if (cyrillic_letters_.contains(c))
-      cyrillic_in_label.add(c);
-  }
-  return !cyrillic_in_label.isEmpty() &&
-         cyrillic_letters_latin_alike_.containsAll(cyrillic_in_label);
-}
-
 bool IDNSpoofChecker::IsDigitLookalike(const icu::UnicodeString& label) {
   bool has_lookalike_char = false;
   icu::StringCharacterIterator it(label);
@@ -686,19 +672,41 @@ bool IDNSpoofChecker::IsDigitLookalike(const icu::UnicodeString& label) {
   return has_lookalike_char;
 }
 
-bool IDNSpoofChecker::IsCyrillicTopLevelDomain(
+// static
+bool IDNSpoofChecker::IsWholeScriptConfusableAllowedForTLD(
+    const WholeScriptConfusable& script,
     base::StringPiece tld,
-    base::StringPiece16 tld_unicode) const {
+    base::StringPiece16 tld_unicode) {
   icu::UnicodeString tld_string(
       FALSE /* isTerminated */, tld_unicode.data(),
       base::checked_cast<int32_t>(tld_unicode.size()));
-  if (cyrillic_letters_.containsSome(tld_string)) {
+  // Allow if the TLD contains any letter from the script, in which case it's
+  // likely to be a TLD in that script.
+  if (script.all_letters->containsSome(tld_string)) {
     return true;
   }
-  // These ASCII TLDs contain a large number of domains with Cyrillic
-  // characters.
-  return tld == "bg" || tld == "by" || tld == "kz" || tld == "pyc" ||
-         tld == "ru" || tld == "su" || tld == "ua" || tld == "uz";
+  return base::Contains(script.allowed_tlds, tld);
+}
+
+// static
+bool IDNSpoofChecker::IsLabelWholeScriptConfusableForScript(
+    const WholeScriptConfusable& script,
+    const icu::UnicodeString& label) {
+  // Collect all the letters of |label| using |script.all_letters| and see if
+  // they're a subset of |script.latin_lookalike_letters|.
+  // An alternative approach is to include [0-9] and [_-] in script.all_letters
+  // and checking if it contains all letters of |label|. However, this would not
+  // work if a label has non-letters outside ASCII.
+  icu::UnicodeSet label_characters_belonging_to_script;
+  icu::StringCharacterIterator it(label);
+  for (it.setToStart(); it.hasNext();) {
+    const UChar32 c = it.next32PostInc();
+    if (script.all_letters->contains(c))
+      label_characters_belonging_to_script.add(c);
+  }
+  return !label_characters_belonging_to_script.isEmpty() &&
+         script.latin_lookalike_letters->containsAll(
+             label_characters_belonging_to_script);
 }
 
 // static

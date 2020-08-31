@@ -23,6 +23,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
@@ -155,7 +156,7 @@ class ExtendedDesktopTest : public AshTestBase {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.bounds = bounds;
     views::Widget* widget = new views::Widget;
-    params.context = CurrentContext();
+    params.context = GetContext();
     widget->Init(std::move(params));
     widget->Show();
     return widget;
@@ -233,9 +234,8 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
   EXPECT_EQ(root_windows[0], Shell::GetRootWindowForNewWindows());
 
   // Open system modal. Make sure it's on 2nd root window and active.
-  views::Widget* modal_widget = views::Widget::CreateWindowWithContextAndBounds(
-      new ModalWidgetDelegate(), CurrentContext(),
-      gfx::Rect(1200, 100, 100, 100));
+  views::Widget* modal_widget = views::Widget::CreateWindowWithContext(
+      new ModalWidgetDelegate(), GetContext(), gfx::Rect(1200, 100, 100, 100));
   modal_widget->Show();
   EXPECT_TRUE(wm::IsActiveWindow(modal_widget->GetNativeView()));
   EXPECT_EQ(root_windows[1], modal_widget->GetNativeView()->GetRootWindow());
@@ -262,11 +262,11 @@ TEST_F(ExtendedDesktopTest, TestCursor) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::WindowTreeHost* host0 = root_windows[0]->GetHost();
   aura::WindowTreeHost* host1 = root_windows[1]->GetHost();
-  EXPECT_EQ(ui::CursorType::kPointer, host0->last_cursor().native_type());
-  EXPECT_EQ(ui::CursorType::kNull, host1->last_cursor().native_type());
-  Shell::Get()->cursor_manager()->SetCursor(ui::CursorType::kCopy);
-  EXPECT_EQ(ui::CursorType::kCopy, host0->last_cursor().native_type());
-  EXPECT_EQ(ui::CursorType::kCopy, host1->last_cursor().native_type());
+  EXPECT_EQ(ui::mojom::CursorType::kPointer, host0->last_cursor().type());
+  EXPECT_EQ(ui::mojom::CursorType::kNull, host1->last_cursor().type());
+  Shell::Get()->cursor_manager()->SetCursor(ui::mojom::CursorType::kCopy);
+  EXPECT_EQ(ui::mojom::CursorType::kCopy, host0->last_cursor().type());
+  EXPECT_EQ(ui::mojom::CursorType::kCopy, host1->last_cursor().type());
 }
 
 TEST_F(ExtendedDesktopTest, TestCursorLocation) {
@@ -801,15 +801,8 @@ TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
 
   aura::Window* status_container =
       Shell::GetPrimaryRootWindowController()->GetContainer(
-          kShellWindowId_ShelfControlContainer);
+          kShellWindowId_ShelfContainer);
   window = aura::test::CreateTestWindowWithId(100, status_container);
-  window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50), GetSecondaryDisplay());
-  EXPECT_EQ(root_windows[0], window->GetRootWindow());
-
-  aura::Window* overview_focus_container =
-      Shell::GetPrimaryRootWindowController()->GetContainer(
-          kShellWindowId_OverviewFocusContainer);
-  window = aura::test::CreateTestWindowWithId(100, overview_focus_container);
   window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50), GetSecondaryDisplay());
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 }
@@ -833,8 +826,8 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
   views::Textfield* textfield = new views::Textfield;
   lock_widget->client_view()->AddChildView(textfield);
 
-  ash::Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-                           ash::kShellWindowId_LockScreenContainer)
+  Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                      kShellWindowId_LockScreenContainer)
       ->AddChild(lock_widget->GetNativeView());
   lock_widget->Show();
   textfield->RequestFocus();

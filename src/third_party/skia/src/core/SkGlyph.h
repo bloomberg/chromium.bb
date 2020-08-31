@@ -17,7 +17,6 @@
 #include "src/core/SkMask.h"
 
 class SkArenaAlloc;
-class SkStrike;
 class SkScalerContext;
 
 // needs to be != to any valid SkMask::Format
@@ -130,17 +129,33 @@ private:
     // causes truncation and floor to be the same. Coincidentally, masking to produce the field also
     // removes the +1.
     static uint32_t PackIDSkPoint(SkGlyphID glyphID, SkPoint pt, SkIPoint mask) {
+    #if 0
+        // TODO: why does this code not work on GCC 8.3 x86 Debug builds?
         using namespace skvx;
         using XY = Vec<2, float>;
         using SubXY = Vec<2, int>;
+
         const XY magic = {1.f * (1u << (kSubPixelPosLen + kSubPixelX)),
                           1.f * (1u << (kSubPixelPosLen + kSubPixelY))};
         XY pos{pt.x(), pt.y()};
         XY subPos = (pos - floor(pos)) + 1.0f;
         SubXY sub = cast<int>(subPos * magic) & SubXY{mask.x(), mask.y()};
+    #else
+        const float magicX = 1.f * (1u << (kSubPixelPosLen + kSubPixelX)),
+                    magicY = 1.f * (1u << (kSubPixelPosLen + kSubPixelY));
+
+        float x = pt.x(),
+              y = pt.y();
+        x = (x - floorf(x)) + 1.0f;
+        y = (y - floorf(y)) + 1.0f;
+        int sub[] = {
+            (int)(x * magicX) & mask.x(),
+            (int)(y * magicY) & mask.y(),
+        };
+    #endif
+
         SkASSERT(sub[0] / (1u << kSubPixelX) < (1u << kSubPixelPosLen));
         SkASSERT(sub[1] / (1u << kSubPixelY) < (1u << kSubPixelPosLen));
-
         return (glyphID << kGlyphID) | sub[0] | sub[1];
     }
 
@@ -167,7 +182,6 @@ public:
     // SkGlyph() is used for testing.
     constexpr SkGlyph() : fID{SkPackedGlyphID()} { }
     constexpr explicit SkGlyph(SkPackedGlyphID id) : fID{id} { }
-    explicit SkGlyph(const SkGlyphPrototype& p);
 
     SkVector advanceVector() const { return SkVector{fAdvanceX, fAdvanceY}; }
     SkScalar advanceX() const { return fAdvanceX; }
@@ -282,6 +296,7 @@ private:
     friend class SkStrikeServer;
     friend class SkTestScalerContext;
     friend class SkTestSVGScalerContext;
+    friend class SkUserScalerContext;
     friend class TestSVGTypeface;
     friend class TestTypeface;
 
@@ -338,25 +353,6 @@ private:
     int8_t    fForceBW = 0;
 
     const SkPackedGlyphID fID;
-};
-
-struct SkGlyphPrototype {
-    SkPackedGlyphID id;
-
-    float           advanceX = 0,
-                    advanceY = 0;
-
-    // The width and height of the glyph mask.
-    uint16_t        width  = 0,
-                    height = 0;
-
-    // The offset from the glyphs origin on the baseline to the top left of the glyph mask.
-    int16_t         left = 0,
-                    top  = 0;
-
-    SkMask::Format  maskFormat = SkMask::kBW_Format;
-
-    bool            forceBW = false;
 };
 
 #endif

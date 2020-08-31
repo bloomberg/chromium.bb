@@ -14,11 +14,10 @@
 #include "content/common/frame_replication_state.h"
 #include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "content/public/common/three_d_api_types.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
-#include "third_party/blink/public/web/web_tree_scope_type.h"
+#include "third_party/blink/public/mojom/frame/tree_scope_type.mojom.h"
 #include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -79,12 +78,6 @@ class CONTENT_EXPORT RenderFrameMessageFilter : public BrowserMessageFilter {
       const FrameHostMsg_CreateChildFrame_Params& params,
       FrameHostMsg_CreateChildFrame_Params_Reply* params_reply);
 
-
-  void OnAre3DAPIsBlocked(int render_frame_id,
-                          const GURL& top_origin_url,
-                          ThreeDAPIType requester,
-                          bool* blocked);
-
   void OnRenderProcessGone();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -96,6 +89,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter : public BrowserMessageFilter {
                        WebPluginInfo* info,
                        std::string* actual_mime_type);
   void OnOpenChannelToPepperPlugin(
+      const url::Origin& embedder_origin,
       const base::FilePath& path,
       const base::Optional<url::Origin>& origin_lock,
       IPC::Message* reply_msg);

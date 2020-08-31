@@ -36,7 +36,7 @@ cr.define('cr.ui', function() {
     /**
      * Called when an element is decorated as a grid item.
      */
-    decorate: function() {
+    decorate() {
       ListItem.prototype.decorate.apply(this, arguments);
       this.textContent = this.dataItem;
     }
@@ -87,7 +87,7 @@ cr.define('cr.ui', function() {
      *     and width of the items.
      * @private
      */
-    getColumnCount_: function() {
+    getColumnCount_() {
       // Size comes here with margin already collapsed.
       const size = this.getDefaultItemSize_();
 
@@ -133,7 +133,7 @@ cr.define('cr.ui', function() {
      * Measure and cache client width and height with and without scrollbar.
      * Must be updated when offsetWidth and/or offsetHeight changed.
      */
-    updateMetrics_: function() {
+    updateMetrics_() {
       // Check changings that may affect number of columns.
       const offsetWidth = this.offsetWidth;
       const offsetHeight = this.offsetHeight;
@@ -142,9 +142,9 @@ cr.define('cr.ui', function() {
       const horizontalPadding =
           parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
 
-      if (this.lastOffsetWidth_ == offsetWidth &&
-          this.lastOverflowY == overflowY &&
-          this.horizontalPadding_ == horizontalPadding) {
+      if (this.lastOffsetWidth_ === offsetWidth &&
+          this.lastOverflowY === overflowY &&
+          this.horizontalPadding_ === horizontalPadding) {
         this.lastOffsetHeight_ = offsetHeight;
         return;
       }
@@ -155,7 +155,7 @@ cr.define('cr.ui', function() {
       this.horizontalPadding_ = horizontalPadding;
       this.columns_ = 0;
 
-      if (overflowY == 'auto' && offsetWidth > 0) {
+      if (overflowY === 'auto' && offsetWidth > 0) {
         // Column number may depend on whether scrollbar is present or not.
         const originalClientWidth = this.clientWidth;
         // At first make sure there is no scrollbar and calculate clientWidth
@@ -163,7 +163,7 @@ cr.define('cr.ui', function() {
         this.style.overflowY = 'hidden';
         this.clientWidthWithoutScrollbar_ = this.clientWidth;
         this.clientHeight_ = this.clientHeight;
-        if (this.clientWidth != originalClientWidth) {
+        if (this.clientWidth !== originalClientWidth) {
           // If clientWidth changed then previously scrollbar was shown.
           this.clientWidthWithScrollbar_ = originalClientWidth;
         } else {
@@ -191,7 +191,7 @@ cr.define('cr.ui', function() {
       return this.columns_ || 1;
     },
     set columns(value) {
-      if (value >= 0 && value != this.columns_) {
+      if (value >= 0 && value !== this.columns_) {
         this.columns_ = value;
         this.redraw();
       }
@@ -203,7 +203,7 @@ cr.define('cr.ui', function() {
      *     into account lead item. May vary in the case of multiple columns.
      * @override
      */
-    getItemTop: function(index) {
+    getItemTop(index) {
       return Math.floor(index / this.columns) * this.getDefaultItemHeight_();
     },
 
@@ -213,7 +213,7 @@ cr.define('cr.ui', function() {
      *     of multiple columns.
      * @override
      */
-    getItemRow: function(index) {
+    getItemRow(index) {
       return Math.floor(index / this.columns);
     },
 
@@ -222,7 +222,7 @@ cr.define('cr.ui', function() {
      * @return {number} The index of the first item in the row.
      * @override
      */
-    getFirstItemInRow: function(row) {
+    getFirstItemInRow(row) {
       return row * this.columns;
     },
 
@@ -233,7 +233,7 @@ cr.define('cr.ui', function() {
      *     controller.
      * @override
      */
-    createSelectionController: function(sm) {
+    createSelectionController(sm) {
       return new GridSelectionController(sm, this);
     },
 
@@ -245,7 +245,7 @@ cr.define('cr.ui', function() {
      *     first item in view port, The number of items, The item past the last.
      * @override
      */
-    getItemsInViewPort: function(scrollTop, clientHeight) {
+    getItemsInViewPort(scrollTop, clientHeight) {
       const itemHeight = this.getDefaultItemHeight_();
       const firstIndex =
           this.autoExpands ? 0 : this.getIndexForListOffset_(scrollTop);
@@ -267,13 +267,13 @@ cr.define('cr.ui', function() {
      * @param {number} lastIndex The index of last item, exclusively.
      * @override
      */
-    mergeItems: function(firstIndex, lastIndex) {
+    mergeItems(firstIndex, lastIndex) {
       List.prototype.mergeItems.call(this, firstIndex, lastIndex);
 
       const afterFiller = this.afterFiller_;
       const columns = this.columns;
 
-      for (let item = this.beforeFiller_.nextSibling; item != afterFiller;) {
+      for (let item = this.beforeFiller_.nextSibling; item !== afterFiller;) {
         const next = item.nextSibling;
         if (isSpacer(item)) {
           // Spacer found on a place it mustn't be.
@@ -287,7 +287,7 @@ cr.define('cr.ui', function() {
         // Invisible pinned item could be outside of the
         // [firstIndex, lastIndex). Ignore it.
         if (index >= firstIndex && nextIndex < lastIndex &&
-            nextIndex % columns == 0) {
+            nextIndex % columns === 0) {
           if (isSpacer(next)) {
             // Leave the spacer on its place.
             item = next.nextSibling;
@@ -305,7 +305,7 @@ cr.define('cr.ui', function() {
 
       function isSpacer(child) {
         return child.classList.contains('spacer') &&
-            child != afterFiller;  // Must not be removed.
+            child !== afterFiller;  // Must not be removed.
       }
     },
 
@@ -315,7 +315,7 @@ cr.define('cr.ui', function() {
      * @return {number} The height of after filler.
      * @override
      */
-    getAfterFillerHeight: function(lastIndex) {
+    getAfterFillerHeight(lastIndex) {
       const columns = this.columns;
       const itemHeight = this.getDefaultItemHeight_();
       // We calculate the row of last item, and the row of last shown item.
@@ -330,16 +330,16 @@ cr.define('cr.ui', function() {
      * @param {Node} child Child of the list.
      * @return {boolean} True if a list item.
      */
-    isItem: function(child) {
+    isItem(child) {
       // Non-items are before-, afterFiller and spacers added in mergeItems.
-      return child.nodeType == Node.ELEMENT_NODE &&
+      return child.nodeType === Node.ELEMENT_NODE &&
           !child.classList.contains('spacer');
     },
 
-    redraw: function() {
+    redraw() {
       this.updateMetrics_();
       const itemCount = this.dataModel ? this.dataModel.length : 0;
-      if (this.lastItemCount_ != itemCount) {
+      if (this.lastItemCount_ !== itemCount) {
         this.lastItemCount_ = itemCount;
         // Force recalculation.
         this.columns_ = 0;
@@ -373,7 +373,7 @@ cr.define('cr.ui', function() {
      * user who is relying on spoken feedback to flatten it.
      * @return {boolean} True if accessibility is enabled.
      */
-    isAccessibilityEnabled: function() {
+    isAccessibilityEnabled() {
       return window.cvox && window.cvox.Api &&
           window.cvox.Api.isChromeVoxActive &&
           window.cvox.Api.isChromeVoxActive();
@@ -385,12 +385,12 @@ cr.define('cr.ui', function() {
      * @return {number} The index below or -1 if not found.
      * @override
      */
-    getIndexBelow: function(index) {
+    getIndexBelow(index) {
       if (this.isAccessibilityEnabled()) {
         return this.getIndexAfter(index);
       }
       const last = this.getLastIndex();
-      if (index == last) {
+      if (index === last) {
         return -1;
       }
       index += this.grid_.columns;
@@ -403,11 +403,11 @@ cr.define('cr.ui', function() {
      * @return {number} The index below or -1 if not found.
      * @override
      */
-    getIndexAbove: function(index) {
+    getIndexAbove(index) {
       if (this.isAccessibilityEnabled()) {
         return this.getIndexBefore(index);
       }
-      if (index == 0) {
+      if (index === 0) {
         return -1;
       }
       index -= this.grid_.columns;
@@ -420,7 +420,7 @@ cr.define('cr.ui', function() {
      * @return {number} The index before or -1 if not found.
      * @override
      */
-    getIndexBefore: function(index) {
+    getIndexBefore(index) {
       return index - 1;
     },
 
@@ -430,8 +430,8 @@ cr.define('cr.ui', function() {
      * @return {number} The index after or -1 if not found.
      * @override
      */
-    getIndexAfter: function(index) {
-      if (index == this.getLastIndex()) {
+    getIndexAfter(index) {
+      if (index === this.getLastIndex()) {
         return -1;
       }
       return index + 1;

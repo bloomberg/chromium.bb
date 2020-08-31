@@ -5,8 +5,8 @@
 #include "android_webview/browser/aw_web_ui_controller_factory.h"
 
 #include "base/memory/ptr_util.h"
-#include "components/safe_browsing/web_ui/constants.h"
-#include "components/safe_browsing/web_ui/safe_browsing_ui.h"
+#include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
+#include "components/safe_browsing/core/web_ui/constants.h"
 #include "content/public/browser/web_ui.h"
 #include "url/gurl.h"
 
@@ -29,6 +29,9 @@ WebUIController* NewWebUI(WebUI* web_ui, const GURL& url) {
 }
 
 WebUIFactoryFunctionPointer GetWebUIFactoryFunctionPointer(const GURL& url) {
+  // WebUI pages here must remain in the base module instead of being moved to
+  // the Developer UI Dynamic Feature Module (DevUI DFM). Therefore the hosts
+  // here must not appear in IsWebUiHostInDevUiDfm().
   if (url.host() == safe_browsing::kChromeUISafeBrowsingHost) {
     return &NewWebUI<safe_browsing::SafeBrowsingUI>;
   }

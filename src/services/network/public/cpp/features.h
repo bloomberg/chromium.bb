@@ -29,10 +29,6 @@ extern const base::Feature kThrottleDelayable;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kDelayRequestsOnMultiplexedConnections;
 COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::Feature kFetchMetadata;
-COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::Feature kFetchMetadataDestination;
-COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kRequestInitiatorSiteLock;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kPauseBrowserInitiatedHeavyTrafficForP2P;
@@ -41,11 +37,13 @@ extern const base::Feature kCORBProtectionSniffing;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kProactivelyThrottleLowPriorityRequests;
 COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::Feature kCrossOriginIsolation;
+extern const base::Feature kCrossOriginOpenerPolicy;
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kCrossOriginOpenerPolicyReporting;
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kCrossOriginEmbedderPolicy;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kBlockNonSecureExternalRequests;
-COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::Feature kPrefetchMainResourceNetworkIsolationKey;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kSplitAuthCacheByNetworkIsolationKey;
 COMPONENT_EXPORT(NETWORK_CPP)
@@ -62,6 +60,32 @@ extern const base::Feature kOutOfBlinkFrameAncestors;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature
     kDeriveOriginFromUrlForNeitherGetNorHeadRequestWhenHavingSpecialAccess;
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kEmergencyLegacyCookieAccess;
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const char kEmergencyLegacyCookieAccessParamName[];
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::FeatureParam<std::string> kEmergencyLegacyCookieAccessParam;
+
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kCorbAllowlistAlsoAppliesToOorCors;
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const char kCorbAllowlistAlsoAppliesToOorCorsParamName[];
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kStrictAccessControlAllowListCheck;
+
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kTrustTokens;
+
+enum class TrustTokenOriginTrialSpec {
+  // See the .cc file for definitions.
+  kAllOperationsRequireOriginTrial,
+  kOnlyIssuanceRequiresOriginTrial,
+  kOriginTrialNotRequired,
+};
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::FeatureParam<TrustTokenOriginTrialSpec>
+    kTrustTokenOperationsRequiringOriginTrial;
 
 COMPONENT_EXPORT(NETWORK_CPP)
 bool ShouldEnableOutOfBlinkCorsForTesting();

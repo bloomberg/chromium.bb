@@ -7,10 +7,10 @@
 #include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_status.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "net/third_party/quiche/src/spdy/platform/api/spdy_flags.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
 
 using ::http2::DecodeBuffer;
-using ::http2::HpackEntryType;
 using ::http2::HpackString;
 
 namespace spdy {
@@ -22,7 +22,8 @@ HpackDecoderAdapter::HpackDecoderAdapter()
     : hpack_decoder_(&listener_adapter_, kMaxDecodeBufferSizeBytes),
       max_decode_buffer_size_bytes_(kMaxDecodeBufferSizeBytes),
       max_header_block_bytes_(0),
-      header_block_started_(false) {}
+      header_block_started_(false),
+      error_(http2::HpackDecodingError::kOk) {}
 
 HpackDecoderAdapter::~HpackDecoderAdapter() = default;
 
@@ -49,6 +50,7 @@ bool HpackDecoderAdapter::HandleControlFrameHeadersData(
     header_block_started_ = true;
     if (!hpack_decoder_.StartDecodingBlock()) {
       header_block_started_ = false;
+      error_ = hpack_decoder_.error();
       return false;
     }
   }
@@ -62,16 +64,21 @@ bool HpackDecoderAdapter::HandleControlFrameHeadersData(
       SPDY_DVLOG(1) << "max_decode_buffer_size_bytes_ < headers_data_length: "
                     << max_decode_buffer_size_bytes_ << " < "
                     << headers_data_length;
+      error_ = http2::HpackDecodingError::kFragmentTooLong;
       return false;
     }
     listener_adapter_.AddToTotalHpackBytes(headers_data_length);
     if (max_header_block_bytes_ != 0 &&
         listener_adapter_.total_hpack_bytes() > max_header_block_bytes_) {
+      error_ = http2::HpackDecodingError::kCompressedHeaderSizeExceedsLimit;
       return false;
     }
     http2::DecodeBuffer db(headers_data, headers_data_length);
     bool ok = hpack_decoder_.DecodeFragment(&db);
     DCHECK(!ok || db.Empty()) << "Remaining=" << db.Remaining();
+    if (!ok) {
+      error_ = hpack_decoder_.error();
+    }
     return ok;
   }
   return true;
@@ -85,6 +92,7 @@ bool HpackDecoderAdapter::HandleControlFrameHeadersComplete(
   }
   if (!hpack_decoder_.EndDecodingBlock()) {
     SPDY_DVLOG(3) << "EndDecodingBlock returned false";
+    error_ = hpack_decoder_.error();
     return false;
   }
   header_block_started_ = false;
@@ -146,8 +154,7 @@ void HpackDecoderAdapter::ListenerAdapter::OnHeaderListStart() {
   }
 }
 
-void HpackDecoderAdapter::ListenerAdapter::OnHeader(HpackEntryType entry_type,
-                                                    const HpackString& name,
+void HpackDecoderAdapter::ListenerAdapter::OnHeader(const HpackString& name,
                                                     const HpackString& value) {
   SPDY_DVLOG(2) << "HpackDecoderAdapter::ListenerAdapter::OnHeader:\n name: "
                 << name << "\n value: " << value;
@@ -173,21 +180,22 @@ void HpackDecoderAdapter::ListenerAdapter::OnHeaderListEnd() {
 }
 
 void HpackDecoderAdapter::ListenerAdapter::OnHeaderErrorDetected(
-    SpdyStringPiece error_message) {
+    quiche::QuicheStringPiece error_message) {
   SPDY_VLOG(1) << error_message;
 }
 
 int64_t HpackDecoderAdapter::ListenerAdapter::OnEntryInserted(
-    const http2::HpackStringPair& sp,
+    const http2::HpackStringPair& entry,
     size_t insert_count) {
   SPDY_DVLOG(2) << "HpackDecoderAdapter::ListenerAdapter::OnEntryInserted: "
-                << sp << ",  insert_count=" << insert_count;
+                << entry << ",  insert_count=" << insert_count;
   if (visitor_ == nullptr) {
     return 0;
   }
-  HpackEntry entry(sp.name.ToStringPiece(), sp.value.ToStringPiece(),
-                   /*is_static*/ false, insert_count);
-  int64_t time_added = visitor_->OnNewEntry(entry);
+  HpackEntry hpack_entry(entry.name.ToStringPiece(),
+                         entry.value.ToStringPiece(),
+                         /*is_static*/ false, insert_count);
+  int64_t time_added = visitor_->OnNewEntry(hpack_entry);
   SPDY_DVLOG(2)
       << "HpackDecoderAdapter::ListenerAdapter::OnEntryInserted: time_added="
       << time_added;
@@ -195,17 +203,18 @@ int64_t HpackDecoderAdapter::ListenerAdapter::OnEntryInserted(
 }
 
 void HpackDecoderAdapter::ListenerAdapter::OnUseEntry(
-    const http2::HpackStringPair& sp,
+    const http2::HpackStringPair& entry,
     size_t insert_count,
     int64_t time_added) {
-  SPDY_DVLOG(2) << "HpackDecoderAdapter::ListenerAdapter::OnUseEntry: " << sp
+  SPDY_DVLOG(2) << "HpackDecoderAdapter::ListenerAdapter::OnUseEntry: " << entry
                 << ",  insert_count=" << insert_count
                 << ",  time_added=" << time_added;
   if (visitor_ != nullptr) {
-    HpackEntry entry(sp.name.ToStringPiece(), sp.value.ToStringPiece(),
-                     /*is_static*/ false, insert_count);
-    entry.set_time_added(time_added);
-    visitor_->OnUseEntry(entry);
+    HpackEntry hpack_entry(entry.name.ToStringPiece(),
+                           entry.value.ToStringPiece(), /*is_static*/ false,
+                           insert_count);
+    hpack_entry.set_time_added(time_added);
+    visitor_->OnUseEntry(hpack_entry);
   }
 }
 

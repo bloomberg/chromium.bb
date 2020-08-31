@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -16,13 +17,13 @@
 SandboxedDMGAnalyzer::SandboxedDMGAnalyzer(
     const base::FilePath& dmg_file,
     const uint64_t max_size,
-    const ResultCallback& callback,
+    ResultCallback callback,
     mojo::PendingRemote<chrome::mojom::FileUtilService> service)
     : file_path_(dmg_file),
       max_size_(max_size),
-      callback_(callback),
+      callback_(std::move(callback)),
       service_(std::move(service)) {
-  DCHECK(callback);
+  DCHECK(callback_);
   service_->BindSafeArchiveAnalyzer(
       remote_analyzer_.BindNewPipeAndPassReceiver());
   remote_analyzer_.set_disconnect_handler(base::BindOnce(
@@ -33,9 +34,9 @@ SandboxedDMGAnalyzer::SandboxedDMGAnalyzer(
 void SandboxedDMGAnalyzer::Start() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&SandboxedDMGAnalyzer::PrepareFileToAnalyze, this));
 }
@@ -70,9 +71,9 @@ void SandboxedDMGAnalyzer::PrepareFileToAnalyze() {
 void SandboxedDMGAnalyzer::ReportFileFailure() {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(callback_, safe_browsing::ArchiveAnalyzerResults()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(callback_),
+                                safe_browsing::ArchiveAnalyzerResults()));
 }
 
 void SandboxedDMGAnalyzer::AnalyzeFile(base::File file) {
@@ -87,5 +88,5 @@ void SandboxedDMGAnalyzer::AnalyzeFileDone(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   remote_analyzer_.reset();
-  callback_.Run(results);
+  std::move(callback_).Run(results);
 }

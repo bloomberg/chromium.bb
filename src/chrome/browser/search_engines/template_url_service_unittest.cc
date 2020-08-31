@@ -1774,6 +1774,49 @@ TEST_F(TemplateURLServiceTest, CheckEnginesWithSameKeywords) {
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("common_keyword")));
 }
 
+// Verifies that we don't have reentrant behavior when resolving default search
+// provider keyword conflicts. crbug.com/1031506
+TEST_F(TemplateURLServiceTest, DefaultSearchProviderKeywordConflictReentrancy) {
+  // Merely loading should increment the count once.
+  test_util()->VerifyLoad();
+  EXPECT_EQ(1, test_util()->dsp_set_to_google_callback_count());
+
+  // We use a fake {google:baseURL} to take advantage of our existing
+  // dsp_change_callback mechanism. The actual behavior we are testing is common
+  // to all search providers - this is just for testing convenience.
+  //
+  // Add two of these with different keywords. Note they should be replaceable,
+  // so that we can trigger the reentrant behavior.
+  TemplateURL* google_1 =
+      AddKeywordWithDate("name1", "key1", "{google:baseURL}/{searchTerms}",
+                         std::string(), std::string(), std::string(), true);
+  TemplateURL* google_2 =
+      AddKeywordWithDate("name2", "key2", "{google:baseURL}/{searchTerms}",
+                         std::string(), std::string(), std::string(), true);
+  ASSERT_TRUE(google_1);
+  ASSERT_TRUE(google_2);
+  EXPECT_NE(google_1->data().sync_guid, google_2->data().sync_guid);
+
+  // Set the DSE to google_1, and see that we've changed the DSP twice now.
+  model()->SetUserSelectedDefaultSearchProvider(google_1);
+  EXPECT_EQ(2, test_util()->dsp_set_to_google_callback_count());
+
+  // Set the DSE to the google_2 (with a different GUID), but with a keyword
+  // that conflicts with the google_1. This should remove google_1.
+  TemplateURLData google_2_data_copy = google_2->data();
+  google_2_data_copy.SetKeyword(base::ASCIIToUTF16("key1"));
+  TemplateURL google_2_copy(google_2_data_copy);
+  model()->SetUserSelectedDefaultSearchProvider(&google_2_copy);
+
+  // Verify that we only changed the DSP one additional time for a total of 3.
+  // If this fails with a larger count, likely the code is doing something
+  // reentrant or thrashing the DSP in other ways that can cause undesirable
+  // behavior.
+  EXPECT_EQ(3, test_util()->dsp_set_to_google_callback_count())
+      << "A failure here means you're likey getting undesired reentrant "
+         "behavior on ApplyDefaultSearchChangeNoMetrics.";
+}
+
 TEST_F(TemplateURLServiceTest, ConflictingReplaceableEnginesShouldOverwrite) {
   test_util()->VerifyLoad();
   // Add 2 replaceable user engine with different keywords.
@@ -2039,4 +2082,95 @@ TEST_F(TemplateURLServiceTest, ChangeDefaultEngineBeforeLoad) {
   histogram_tester.ExpectTotalCount("Search.DefaultSearchChangeOrigin", 1);
   model()->SetUserSelectedDefaultSearchProvider(search_engine2);
   histogram_tester.ExpectTotalCount("Search.DefaultSearchChangeOrigin", 2);
+}
+
+TEST_F(TemplateURLServiceTest, GetDefaultSearchProviderIgnoringExtensions) {
+  test_util()->VerifyLoad();
+
+  const TemplateURL* const initial_default =
+      model()->GetDefaultSearchProvider();
+  ASSERT_TRUE(initial_default);
+
+  EXPECT_EQ(initial_default,
+            model()->GetDefaultSearchProviderIgnoringExtensions());
+
+  // Add a new TemplateURL and set it as the default.
+  TemplateURL* const new_user_default = AddKeywordWithDate(
+      "name1", "key1", "http://foo1/{searchTerms}", "http://sugg1",
+      std::string(), "http://icon1", true, "UTF-8;UTF-16");
+  model()->SetUserSelectedDefaultSearchProvider(new_user_default);
+
+  EXPECT_EQ(new_user_default, model()->GetDefaultSearchProvider());
+  EXPECT_EQ(new_user_default,
+            model()->GetDefaultSearchProviderIgnoringExtensions());
+
+  // Add an extension-provided search engine. This becomes the new default.
+  const TemplateURL* const extension_turl =
+      AddExtensionSearchEngine("keyword", "extension id", true);
+  EXPECT_EQ(extension_turl, model()->GetDefaultSearchProvider());
+  EXPECT_EQ(new_user_default,
+            model()->GetDefaultSearchProviderIgnoringExtensions());
+
+  // Add a policy search engine; this takes priority over both the user-selected
+  // and extension-provided engines.
+  std::unique_ptr<TemplateURLData> managed_data = CreateTestSearchEngine();
+  SetManagedDefaultSearchPreferences(*managed_data, true,
+                                     test_util()->profile());
+
+  const TemplateURL* const new_default = model()->GetDefaultSearchProvider();
+  EXPECT_NE(new_default, extension_turl);
+  ExpectSimilar(managed_data.get(), &new_default->data());
+  EXPECT_EQ(new_default, model()->GetDefaultSearchProviderIgnoringExtensions());
+}
+
+TEST_F(TemplateURLServiceTest,
+       EngineReturnedByGetDefaultSearchProviderIgnoringExtensionsTakesOver) {
+  test_util()->VerifyLoad();
+
+  // Add a new TemplateURL and set it as the default.
+  TemplateURL* const new_user_default = AddKeywordWithDate(
+      "name1", "key1", "http://foo1/{searchTerms}", "http://sugg1",
+      std::string(), "http://icon1", true, "UTF-8;UTF-16");
+  model()->SetUserSelectedDefaultSearchProvider(new_user_default);
+
+  // Add an extension-provided search engine. This becomes the new default.
+  constexpr char kExtensionId[] = "extension_id";
+  const TemplateURL* const extension_turl =
+      AddExtensionSearchEngine("keyword", kExtensionId, true);
+  EXPECT_EQ(extension_turl, model()->GetDefaultSearchProvider());
+  EXPECT_EQ(new_user_default,
+            model()->GetDefaultSearchProviderIgnoringExtensions());
+
+  // Remove the extension-provided engine; the |new_user_default| should take
+  // over.
+  test_util()->RemoveExtensionControlledTURL(kExtensionId);
+  EXPECT_EQ(new_user_default, model()->GetDefaultSearchProvider());
+  EXPECT_EQ(new_user_default,
+            model()->GetDefaultSearchProviderIgnoringExtensions());
+}
+
+TEST_F(
+    TemplateURLServiceTest,
+    GetDefaultSearchProviderIgnoringExtensionsWhenDefaultSearchDisabledByPolicy) {
+  test_util()->VerifyLoad();
+
+  // Add a new TemplateURL and set it as the default.
+  TemplateURL* const new_user_default = AddKeywordWithDate(
+      "name1", "key1", "http://foo1/{searchTerms}", "http://sugg1",
+      std::string(), "http://icon1", true, "UTF-8;UTF-16");
+  model()->SetUserSelectedDefaultSearchProvider(new_user_default);
+
+  // Disable default search by policy. Even though there's a user-selected
+  // search, the default should be null.
+  std::unique_ptr<TemplateURLData> managed_search = CreateTestSearchEngine();
+  SetManagedDefaultSearchPreferences(*managed_search, false,
+                                     test_util()->profile());
+  EXPECT_EQ(nullptr, model()->GetDefaultSearchProvider());
+  EXPECT_EQ(nullptr, model()->GetDefaultSearchProviderIgnoringExtensions());
+
+  // Add an extension-provided engine; default search should still be null since
+  // it's disabled by policy.
+  AddExtensionSearchEngine("keyword", "extension id", true);
+  EXPECT_EQ(nullptr, model()->GetDefaultSearchProvider());
+  EXPECT_EQ(nullptr, model()->GetDefaultSearchProviderIgnoringExtensions());
 }

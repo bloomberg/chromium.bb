@@ -236,12 +236,13 @@ class Downloader(cherrypy_log_util.Loggable):
                               args=(artifacts, False))
     thread.start()
 
-  def Wait(self, name, is_regex_name, timeout):
+  def Wait(self, name, is_regex_name, alt_name, timeout):
     """Waits for artifact to exist and returns the appropriate names.
 
     Args:
       name: Name to look at.
       is_regex_name: True if the name is a regex pattern.
+      alt_name: Alternate name.
       timeout: How long to wait for the artifact to become available.
 
     Returns:
@@ -280,22 +281,24 @@ class GoogleStorageDownloader(Downloader):
   """
 
   def __init__(self, static_dir, archive_url, build_id):
-    build = build_id.split('/')[-1]
+    (board, build) = build_id.split('/')[-2:]
     build_dir = os.path.join(static_dir, build_id)
 
     super(GoogleStorageDownloader, self).__init__(static_dir, build_dir, build)
 
     self._archive_url = archive_url
+    self._board = board
 
     cache_user = 'chronos' if common_util.IsRunningOnMoblab() else None
     self._ctx = gs.GSContext(cache_user=cache_user)
 
-  def Wait(self, name, is_regex_name, timeout):
+  def Wait(self, name, is_regex_name, alt_name, timeout):
     """Waits for artifact to exist and returns the appropriate names.
 
     Args:
       name: Name to look at.
       is_regex_name: True if the name is a regex pattern.
+      alt_name: Name to use if we don't have list permission.
       timeout: How long to wait for the artifact to become available.
 
     Returns:
@@ -304,9 +307,20 @@ class GoogleStorageDownloader(Downloader):
     Raises:
       ArtifactDownloadError: An error occurred when obtaining artifact.
     """
-    names = self._ctx.GetGsNamesWithWait(
-        name, self._archive_url, timeout=timeout,
-        is_regex_pattern=is_regex_name)
+    names = []
+    try:
+      names = self._ctx.GetGsNamesWithWait(
+          name, self._archive_url, timeout=timeout,
+          is_regex_pattern=is_regex_name)
+    except gs.GSCommandError as e:
+      # Anonymous callers don't have list permission. Instead,
+      # construct the alt name and attempt to download that.
+      if common_util.IsAnonymousCaller(e) and alt_name:
+        if not isinstance(alt_name, list):
+          alt_name = [alt_name]
+        names = [n.format(build=self._build,
+                          board=self._board.replace('-', '_'))
+                 for n in alt_name]
     if not names:
       raise build_artifact.ArtifactDownloadError(
           'Could not find %s in Google Storage at %s' %
@@ -366,12 +380,13 @@ class LocalDownloader(Downloader):
 
     super(LocalDownloader, self).__init__(static_dir, build_dir, build)
 
-  def Wait(self, name, is_regex_name, timeout):
+  def Wait(self, name, is_regex_name, alt_name, timeout):
     """Verifies the local artifact exists and returns the appropriate names.
 
     Args:
       name: Name to look at.
       is_regex_name: True if the name is a regex pattern.
+      alt_name: Not used.
       timeout: How long to wait for the artifact to become available.
 
     Returns:
@@ -430,12 +445,13 @@ class AndroidBuildDownloader(Downloader):
 
     super(AndroidBuildDownloader, self).__init__(static_dir, build_dir, build)
 
-  def Wait(self, name, is_regex_name, timeout):
+  def Wait(self, name, is_regex_name, alt_name, timeout):
     """Verifies the local artifact exists and returns the appropriate names.
 
     Args:
       name: Name to look at.
       is_regex_name: True if the name is a regex pattern.
+      alt_name: Not used.
       timeout: How long to wait for the artifact to become available.
 
     Returns:

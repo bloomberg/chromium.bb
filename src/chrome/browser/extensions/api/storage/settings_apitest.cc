@@ -32,6 +32,7 @@
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/model/syncable_service.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/api/storage/backend_task_runner.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
@@ -129,8 +130,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
                 std::make_unique<syncer::SyncChangeProcessorWrapperForTest>(
                     sync_processor),
                 std::make_unique<syncer::SyncErrorFactoryMock>())
-            .error()
-            .IsSet());
+            .has_value());
   }
 
   void InitSync(syncer::SyncChangeProcessor* sync_processor) {
@@ -156,8 +156,8 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
     base::WeakPtr<syncer::SyncableService> syncable_service =
         std::move(syncable_service_provider).Run();
     DCHECK(syncable_service.get());
-    EXPECT_FALSE(
-        syncable_service->ProcessSyncChanges(FROM_HERE, change_list).IsSet());
+    EXPECT_FALSE(syncable_service->ProcessSyncChanges(FROM_HERE, change_list)
+                     .has_value());
   }
 
   void SendChanges(const syncer::SyncChangeList& change_list) {

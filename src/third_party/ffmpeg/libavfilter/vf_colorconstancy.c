@@ -121,7 +121,6 @@ static int set_gauss(AVFilterContext *ctx)
             for (; i >= 0; --i) {
                 av_freep(&s->gauss[i]);
             }
-            av_log(ctx, AV_LOG_ERROR, "Out of memory while allocating gauss buffers.\n");
             return AVERROR(ENOMEM);
         }
     }
@@ -223,7 +222,6 @@ static int setup_derivative_buffers(AVFilterContext* ctx, ThreadData *td)
             td->data[b][p] = av_mallocz_array(s->planeheight[p] * s->planewidth[p], sizeof(*td->data[b][p]));
             if (!td->data[b][p]) {
                 cleanup_derivative_buffers(td, b + 1, p);
-                av_log(ctx, AV_LOG_ERROR, "Out of memory while allocating derivatives buffers.\n");
                 return AVERROR(ENOMEM);
             }
         }
@@ -682,23 +680,29 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFilterLink *outlink = ctx->outputs[0];
     AVFrame *out;
     int ret;
+    int direct = 0;
 
     ret = illumination_estimation(ctx, in);
     if (ret) {
+        av_frame_free(&in);
         return ret;
     }
 
     if (av_frame_is_writable(in)) {
+        direct = 1;
         out = in;
     } else {
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            av_log(ctx, AV_LOG_ERROR, "Out of memory while allocating output video buffer.\n");
+            av_frame_free(&in);
             return AVERROR(ENOMEM);
         }
         av_frame_copy_props(out, in);
     }
     chromatic_adaptation(ctx, in, out);
+
+    if (!direct)
+        av_frame_free(&in);
 
     return ff_filter_frame(outlink, out);
 }

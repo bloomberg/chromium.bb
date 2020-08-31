@@ -6,12 +6,12 @@
  */
 
 #include "include/gpu/GrContext.h"
-#include "include/gpu/GrTexture.h"
 #include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/GrSurfacePriv.h"
-#include "src/gpu/GrTextureContext.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/GrTexturePriv.h"
 #include "src/gpu/GrTextureProxyPriv.h"
 #include "src/gpu/gl/GrGLGpu.h"
@@ -87,10 +87,10 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(EGLImageTest, reporter, ctxInfo) {
     // Use GL Context 1 to create a texture unknown to GrContext.
     context1->flush();
     static const int kSize = 100;
-    backendTexture1 =
-        context1->createBackendTexture(kSize, kSize, kRGBA_8888_SkColorType,
-                                       SkColors::kTransparent,
-                                       GrMipMapped::kNo, GrRenderable::kNo, GrProtected::kNo);
+
+    CreateBackendTexture(context1.get(), &backendTexture1, kSize, kSize, kRGBA_8888_SkColorType,
+                         SkColors::kTransparent, GrMipMapped::kNo, GrRenderable::kNo,
+                         GrProtected::kNo);
 
     if (!backendTexture1.isValid()) {
         ERRORF(reporter, "Error creating texture for EGL Image");
@@ -156,11 +156,23 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(EGLImageTest, reporter, ctxInfo) {
     // Wrap this texture ID in a GrTexture
     GrBackendTexture backendTex(kSize, kSize, GrMipMapped::kNo, externalTexture);
 
+    GrColorType colorType = GrColorType::kRGBA_8888;
+    SkAlphaType alphaType = kPremul_SkAlphaType;
     // TODO: If I make this TopLeft origin to match resolve_origin calls for kDefault, this test
     // fails on the Nexus5. Why?
-    auto surfaceContext = context0->priv().makeBackendTextureContext(
-            backendTex, kBottomLeft_GrSurfaceOrigin, GrColorType::kRGBA_8888, kPremul_SkAlphaType,
-            nullptr);
+    GrSurfaceOrigin origin = kBottomLeft_GrSurfaceOrigin;
+    sk_sp<GrSurfaceProxy> texProxy = context0->priv().proxyProvider()->wrapBackendTexture(
+            backendTex, kBorrow_GrWrapOwnership, GrWrapCacheable::kNo, kRW_GrIOType);
+    if (!texProxy) {
+        ERRORF(reporter, "Error wrapping external texture in GrTextureProxy.");
+        cleanup(glCtx0, externalTexture.fID, glCtx1.get(), context1, &backendTexture1, image);
+        return;
+    }
+    GrSwizzle swizzle =
+            context0->priv().caps()->getReadSwizzle(texProxy->backendFormat(), colorType);
+    GrSurfaceProxyView view(std::move(texProxy), origin, swizzle);
+    auto surfaceContext =
+            GrSurfaceContext::Make(context0, std::move(view), colorType, alphaType, nullptr);
 
     if (!surfaceContext) {
         ERRORF(reporter, "Error wrapping external texture in GrSurfaceContext.");
@@ -180,8 +192,8 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(EGLImageTest, reporter, ctxInfo) {
 
     // Should not be able to wrap as a RT
     {
-        auto temp = context0->priv().makeBackendTextureRenderTargetContext(
-                backendTex, kBottomLeft_GrSurfaceOrigin, 1, GrColorType::kRGBA_8888, nullptr);
+        auto temp = GrRenderTargetContext::MakeFromBackendTexture(
+                context0, colorType, nullptr, backendTex, 1, origin, nullptr, nullptr, nullptr);
         if (temp) {
             ERRORF(reporter, "Should not be able to wrap an EXTERNAL texture as a RT.");
         }
@@ -195,7 +207,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(EGLImageTest, reporter, ctxInfo) {
     // Only test RT-config
     // TODO: why do we always need to draw to copy from an external texture?
     TestCopyFromSurface(reporter, context0, surfaceContext->asSurfaceProxy(),
-                        GrColorType::kRGBA_8888, pixels.get(), "EGLImageTest-copy");
+                        surfaceContext->origin(), colorType, pixels.get(), "EGLImageTest-copy");
 
     cleanup(glCtx0, externalTexture.fID, glCtx1.get(), context1, &backendTexture1, image);
 }

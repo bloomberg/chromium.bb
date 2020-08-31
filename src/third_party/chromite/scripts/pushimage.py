@@ -14,6 +14,7 @@ from __future__ import print_function
 import getpass
 import os
 import re
+import sys
 import textwrap
 
 from six.moves import configparser
@@ -26,6 +27,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import signing
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # This will split a fully qualified ChromeOS version string up.
@@ -89,7 +93,7 @@ class InputInsns(object):
 
     config = configparser.ConfigParser()
     with open(self.GetInsnFile('DEFAULT')) as fp:
-      config.readfp(fp)
+      config.read_file(fp)
 
     # What pushimage internally refers to as 'recovery', are the basic signing
     # instructions in practice, and other types are stacked on top.
@@ -101,7 +105,7 @@ class InputInsns(object):
       # This board doesn't have any signing instructions.
       raise MissingBoardInstructions(self.board, image_type, input_insns)
     with open(input_insns) as fp:
-      config.readfp(fp)
+      config.read_file(fp)
 
     if image_type is not None:
       input_insns = self.GetInsnFile(image_type)
@@ -111,7 +115,7 @@ class InputInsns(object):
 
       self.image_type = image_type
       with open(input_insns) as fp:
-        config.readfp(fp)
+        config.read_file(fp)
 
     self.cfg = config
 
@@ -205,7 +209,7 @@ class InputInsns(object):
 
     # Create a new ConfigParser from the serialized data.
     ret = configparser.ConfigParser()
-    ret.readfp(data)
+    ret.read_file(data)
 
     return ret
 

@@ -11,6 +11,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import socket
+import sys
 
 import mock
 import psutil  # pylint: disable=import-error
@@ -19,9 +20,15 @@ from chromite.lib import cros_test_lib
 from chromite.scripts.sysmon import net_metrics
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 snetio = psutil._common.snetio
 snicstats = psutil._common.snicstats
-snic = psutil._common.snic
+snic = getattr(psutil._common, 'snic', None)
+
+pytestmark = cros_test_lib.pytestmark_skipif(snic is None,
+                                             reason='Wrong version of psutil')
 
 
 class TestNetMetrics(cros_test_lib.TestCase):

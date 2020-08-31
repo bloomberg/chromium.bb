@@ -15,26 +15,6 @@ using namespace angle;
 
 namespace
 {
-
-Vector4 RandomVec4(int seed, float minValue, float maxValue)
-{
-    RNG rng(seed);
-    srand(seed);
-    return Vector4(
-        rng.randomFloatBetween(minValue, maxValue), rng.randomFloatBetween(minValue, maxValue),
-        rng.randomFloatBetween(minValue, maxValue), rng.randomFloatBetween(minValue, maxValue));
-}
-
-GLColor Vec4ToColor(const Vector4 &vec)
-{
-    GLColor color;
-    color.R = static_cast<uint8_t>(vec.x() * 255.0f);
-    color.G = static_cast<uint8_t>(vec.y() * 255.0f);
-    color.B = static_cast<uint8_t>(vec.z() * 255.0f);
-    color.A = static_cast<uint8_t>(vec.w() * 255.0f);
-    return color;
-}
-
 class ClearTestBase : public ANGLETest
 {
   protected:
@@ -235,7 +215,7 @@ class MaskedScissoredClearTestBase
         setConfigStencilBits(8);
     }
 
-    void MaskedScissoredColorDepthStencilClear(
+    void maskedScissoredColorDepthStencilClear(
         const MaskedScissoredClearVariationsTestParams &params);
 
     bool mHasDepth   = true;
@@ -393,13 +373,17 @@ TEST_P(ClearTest, ChangeFramebufferAttachmentFromRGBAtoRGB)
     glBindFramebuffer(GL_FRAMEBUFFER, mFBOs[0]);
 
     GLTexture texture;
-    glColorMask(GL_TRUE, GL_FALSE, GL_TRUE, GL_TRUE);
-
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, getWindowWidth(), getWindowHeight(), 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, nullptr);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
+    // Initially clear to black.
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Clear with masked color.
+    glColorMask(GL_TRUE, GL_FALSE, GL_TRUE, GL_TRUE);
     glClearColor(0.5f, 0.5f, 0.5f, 0.75f);
     glClear(GL_COLOR_BUFFER_BIT);
     ASSERT_GL_NO_ERROR();
@@ -862,6 +846,65 @@ TEST_P(ClearTestES3, MaskedScissoredClearMultipleAttachments)
     }
 }
 
+// Test clearing multiple attachments in the presence of an indexed color mask.
+TEST_P(ClearTestES3, MaskedIndexedClearMultipleAttachments)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_draw_buffers_indexed"));
+
+    constexpr uint32_t kSize            = 16;
+    constexpr uint32_t kAttachmentCount = 4;
+    std::vector<unsigned char> pixelData(kSize * kSize * 4, 255);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, mFBOs[0]);
+
+    GLTexture textures[kAttachmentCount];
+    GLenum drawBuffers[kAttachmentCount];
+
+    for (uint32_t i = 0; i < kAttachmentCount; ++i)
+    {
+        glBindTexture(GL_TEXTURE_2D, textures[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kSize, kSize, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                     pixelData.data());
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, textures[i],
+                               0);
+        drawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
+    }
+
+    glDrawBuffers(kAttachmentCount, drawBuffers);
+
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::white);
+
+    // Masked clear
+    GLColor clearColorMasked(31, 63, 255, 191);
+    angle::Vector4 clearColor = GLColor(31, 63, 127, 191).toNormalizedVector();
+
+    // Block blue channel for all attachements
+    glColorMask(GL_TRUE, GL_TRUE, GL_FALSE, GL_TRUE);
+
+    // Unblock blue channel for attachments 0 and 1
+    glColorMaskiOES(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glColorMaskiOES(1, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+    glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ASSERT_GL_NO_ERROR();
+
+    // All attachments should be cleared, with the blue channel untouched for all attachments but 1.
+    for (uint32_t i = 0; i < kAttachmentCount; ++i)
+    {
+        glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
+        ASSERT_GL_NO_ERROR();
+
+        const GLColor attachmentColor = (i > 1) ? clearColorMasked : clearColor;
+        EXPECT_PIXEL_COLOR_EQ(0, 0, attachmentColor);
+        EXPECT_PIXEL_COLOR_EQ(0, kSize - 1, attachmentColor);
+        EXPECT_PIXEL_COLOR_EQ(kSize - 1, 0, attachmentColor);
+        EXPECT_PIXEL_COLOR_EQ(kSize - 1, kSize - 1, attachmentColor);
+        EXPECT_PIXEL_COLOR_EQ(kSize / 2, kSize / 2, attachmentColor);
+    }
+}
+
 // Test that clearing multiple attachments of different nature (float, int and uint) in the
 // presence of a color mask works correctly.  In the Vulkan backend, this exercises clearWithDraw
 // and the relevant internal shaders.
@@ -1120,6 +1163,7 @@ TEST_P(ClearTestES3, RepeatedClear)
 {
     // Fails on 431.02 driver. http://anglebug.com/3748
     ANGLE_SKIP_TEST_IF(IsWindows() && IsNVIDIA() && IsVulkan());
+    ANGLE_SKIP_TEST_IF(IsARM64() && IsWindows() && IsD3D());
 
     constexpr char kVS[] =
         "#version 300 es\n"
@@ -1209,9 +1253,9 @@ TEST_P(ClearTestES3, RepeatedClear)
     {
         for (int cellX = 0; cellX < numRowsCols; cellX++)
         {
-            int seed              = cellX + cellY * numRowsCols;
-            const Vector4 color   = RandomVec4(seed, fmtValueMin, fmtValueMax);
-            GLColor expectedColor = Vec4ToColor(color);
+            int seed            = cellX + cellY * numRowsCols;
+            const Vector4 color = RandomVec4(seed, fmtValueMin, fmtValueMax);
+            GLColor expectedColor(color);
 
             int testN = cellX * cellSize + cellY * backFBOSize * cellSize + backFBOSize + 1;
             GLColor actualColor = pixelData[testN];
@@ -1225,7 +1269,7 @@ TEST_P(ClearTestES3, RepeatedClear)
     ASSERT_GL_NO_ERROR();
 }
 
-void MaskedScissoredClearTestBase::MaskedScissoredColorDepthStencilClear(
+void MaskedScissoredClearTestBase::maskedScissoredColorDepthStencilClear(
     const MaskedScissoredClearVariationsTestParams &params)
 {
     // Flaky on Android Nexus 5x and Pixel 2, possible Qualcomm driver bug.
@@ -1406,7 +1450,7 @@ void MaskedScissoredClearTestBase::MaskedScissoredColorDepthStencilClear(
 // Tests combinations of color, depth, stencil clears with or without masks or scissor.
 TEST_P(MaskedScissoredClearTest, Test)
 {
-    MaskedScissoredColorDepthStencilClear(GetParam());
+    maskedScissoredColorDepthStencilClear(GetParam());
 }
 
 // Tests combinations of color, depth, stencil clears with or without masks or scissor.
@@ -1440,7 +1484,7 @@ TEST_P(VulkanClearTest, Test)
         bindColorStencilFBO();
     }
 
-    MaskedScissoredColorDepthStencilClear(GetParam());
+    maskedScissoredColorDepthStencilClear(GetParam());
 }
 
 // Test that just clearing a nonexistent drawbuffer of the default framebuffer doesn't cause an
@@ -1453,6 +1497,85 @@ TEST_P(ClearTestES3, ClearBuffer1OnDefaultFramebufferNoAssert)
     glClearBufferiv(GL_COLOR, 1, testInt.data());
     std::vector<GLfloat> testFloat(4);
     glClearBufferfv(GL_COLOR, 1, testFloat.data());
+    EXPECT_GL_NO_ERROR();
+}
+
+// Clears many small concentric rectangles using scissor regions.
+TEST_P(ClearTest, InceptionScissorClears)
+{
+    angle::RNG rng;
+
+    constexpr GLuint kSize = 16;
+
+    // Create a square user FBO so we have more control over the dimensions.
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    GLRenderbuffer rbo;
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, kSize, kSize);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+
+    glViewport(0, 0, kSize, kSize);
+
+    // Draw small concentric squares using scissor.
+    std::vector<GLColor> expectedColors;
+    for (GLuint index = 0; index < (kSize - 1) / 2; index++)
+    {
+        // Do the first clear without the scissor.
+        if (index > 0)
+        {
+            glEnable(GL_SCISSOR_TEST);
+            glScissor(index, index, kSize - (index * 2), kSize - (index * 2));
+        }
+
+        GLColor color = RandomColor(&rng);
+        expectedColors.push_back(color);
+        Vector4 floatColor = color.toNormalizedVector();
+        glClearColor(floatColor[0], floatColor[1], floatColor[2], floatColor[3]);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    ASSERT_GL_NO_ERROR();
+
+    std::vector<GLColor> actualColors(expectedColors.size());
+    glReadPixels(0, kSize / 2, actualColors.size(), 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                 actualColors.data());
+
+    EXPECT_EQ(expectedColors, actualColors);
+}
+
+// Test that clearBuffer with disabled non-zero drawbuffer or disabled read source doesn't cause an
+// assert.
+TEST_P(ClearTestES3, ClearDisabledNonZeroAttachmentNoAssert)
+{
+    // http://anglebug.com/4612
+    ANGLE_SKIP_TEST_IF(IsOSX() && IsDesktopOpenGL());
+
+    GLFramebuffer fb;
+    glBindFramebuffer(GL_FRAMEBUFFER, fb);
+
+    GLRenderbuffer rb;
+    glBindRenderbuffer(GL_RENDERBUFFER, rb);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 16, 16);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_RENDERBUFFER, rb);
+    glDrawBuffers(0, nullptr);
+    glReadBuffer(GL_NONE);
+
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+
+    float clearColorf[4] = {0.5, 0.5, 0.5, 0.5};
+    glClearBufferfv(GL_COLOR, 1, clearColorf);
+
+    GLuint clearColorui[4] = {255, 255, 255, 255};
+    glClearBufferuiv(GL_COLOR, 1, clearColorui);
+
+    GLint clearColori[4] = {-127, -127, -127, -127};
+    glClearBufferiv(GL_COLOR, 1, clearColori);
+
     EXPECT_GL_NO_ERROR();
 }
 

@@ -48,8 +48,9 @@ struct TabRendererData {
   bool show_icon = true;
   bool pinned = false;
   bool blocked = false;
-  base::Optional<TabAlertState> alert_state;
+  std::vector<TabAlertState> alert_state;
   bool should_hide_throbber = false;
+  bool should_render_empty_title = false;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_RENDERER_DATA_H_

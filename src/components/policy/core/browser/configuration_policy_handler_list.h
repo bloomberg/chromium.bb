@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/policy/core/browser/policy_conversions_client.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_export.h"
@@ -28,7 +29,7 @@ class Schema;
 // up policy values for display.
 class POLICY_EXPORT ConfigurationPolicyHandlerList {
  public:
-  typedef base::Callback<void(PolicyHandlerParameters*)>
+  typedef base::RepeatingCallback<void(PolicyHandlerParameters*)>
       PopulatePolicyHandlerParametersCallback;
 
   explicit ConfigurationPolicyHandlerList(
@@ -39,12 +40,15 @@ class POLICY_EXPORT ConfigurationPolicyHandlerList {
   // Adds a policy handler to the list.
   void AddHandler(std::unique_ptr<ConfigurationPolicyHandler> handler);
 
-  // Translates |policies| to their corresponding preferences in |prefs|.  Any
-  // errors found while processing the policies are stored in |errors|.  |prefs|
-  // or |errors| can be nullptr, and won't be filled in that case.
+  // Translates |policies| to their corresponding preferences in |prefs|. Any
+  // errors found while processing the policies are stored in |errors|.
+  // All deprecated policies will be stored into |deprecated_policies|. |prefs|,
+  // |deprecated_policies| or |errors| can be nullptr, and won't be filled in
+  // that case.
   void ApplyPolicySettings(const PolicyMap& policies,
                            PrefValueMap* prefs,
-                           PolicyErrorMap* errors) const;
+                           PolicyErrorMap* errors,
+                           DeprecatedPoliciesSet* deprecated_policies) const;
 
   // Converts sensitive policy values to others more appropriate for displaying.
   void PrepareForDisplaying(PolicyMap* policies) const;
@@ -61,9 +65,9 @@ class POLICY_EXPORT ConfigurationPolicyHandlerList {
 
 // Callback with signature of BuildHandlerList(), to be used in constructor of
 // BrowserPolicyConnector.
-typedef base::Callback<std::unique_ptr<ConfigurationPolicyHandlerList>(
-    const Schema&)>
-    HandlerListFactory;
+using HandlerListFactory =
+    base::RepeatingCallback<std::unique_ptr<ConfigurationPolicyHandlerList>(
+        const Schema&)>;
 
 }  // namespace policy
 

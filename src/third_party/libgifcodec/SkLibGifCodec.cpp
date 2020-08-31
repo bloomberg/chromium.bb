@@ -36,7 +36,6 @@
 #include "src/codec/SkCodecPriv.h"
 #include "src/codec/SkColorTable.h"
 #include "src/codec/SkSwizzler.h"
-#include "src/core/SkMakeUnique.h"
 
 #include <algorithm>
 
@@ -465,7 +464,7 @@ void SkLibGifCodec::haveDecodedRow(int frameIndex, const unsigned char* rowBegin
     } else {
         // Make sure the repeatCount does not take us beyond the end of the dst
         SkASSERT(this->dstInfo().height() >= yBegin);
-        repeatCount = SkTMin(repeatCount, this->dstInfo().height() - yBegin);
+        repeatCount = std::min(repeatCount, this->dstInfo().height() - yBegin);
     }
 
     if (!fFilledBackground) {

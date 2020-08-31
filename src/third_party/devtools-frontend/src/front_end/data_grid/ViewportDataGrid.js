@@ -1,25 +1,27 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Platform from '../platform/platform.js';
+
+import {DataGridImpl, DataGridNode, Parameters} from './DataGrid.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
- * @extends {DataGrid.DataGrid<!NODE_TYPE>}
+ * @extends {DataGridImpl<!NODE_TYPE>}
  * @template NODE_TYPE
  */
-export default class ViewportDataGrid extends DataGrid.DataGrid {
+export class ViewportDataGrid extends DataGridImpl {
   /**
-   * @param {!Array.<!DataGrid.DataGrid.ColumnDescriptor>} columnsArray
-   * @param {function(!NODE_TYPE, string, string, string)=} editCallback
-   * @param {function(!NODE_TYPE)=} deleteCallback
-   * @param {function()=} refreshCallback
+   * @param {!Parameters} dataGridParameters
    */
-  constructor(columnsArray, editCallback, deleteCallback, refreshCallback) {
-    super(columnsArray, editCallback, deleteCallback, refreshCallback);
+  constructor(dataGridParameters) {
+    super(dataGridParameters);
 
     this._onScrollBound = this._onScroll.bind(this);
     this.scrollContainer.addEventListener('scroll', this._onScrollBound, true);
 
-    /** @type {!Array.<!DataGrid.ViewportDataGridNode>} */
+    /** @type {!Array.<!ViewportDataGridNode>} */
     this._visibleNodes = [];
     /**
      * @type {boolean}
@@ -32,7 +34,7 @@ export default class ViewportDataGrid extends DataGrid.DataGrid {
     this._firstVisibleIsStriped = false;
     this._isStriped = false;
 
-    this.setRootNode(new DataGrid.ViewportDataGridNode());
+    this.setRootNode(new ViewportDataGridNode());
   }
 
   /**
@@ -137,7 +139,7 @@ export default class ViewportDataGrid extends DataGrid.DataGrid {
   /**
    * @param {number} clientHeight
    * @param {number} scrollTop
-   * @return {{topPadding: number, bottomPadding: number, contentHeight: number, visibleNodes: !Array.<!DataGrid.ViewportDataGridNode>, offset: number}}
+   * @return {{topPadding: number, bottomPadding: number, contentHeight: number, visibleNodes: !Array.<!ViewportDataGridNode>, offset: number}}
    */
   _calculateVisibleNodes(clientHeight, scrollTop) {
     const nodes = this.rootNode().flatChildren();
@@ -256,7 +258,7 @@ export default class ViewportDataGrid extends DataGrid.DataGrid {
   }
 
   /**
-   * @param {!DataGrid.ViewportDataGridNode} node
+   * @param {!ViewportDataGridNode} node
    */
   _revealViewportNode(node) {
     const nodes = this.rootNode().flatChildren();
@@ -290,10 +292,10 @@ export const Events = {
 
 /**
  * @unrestricted
- * @extends {DataGrid.DataGridNode<!NODE_TYPE>}
+ * @extends {DataGridNode<!NODE_TYPE>}
  * @template NODE_TYPE
  */
-export class ViewportDataGridNode extends DataGrid.DataGridNode {
+export class ViewportDataGridNode extends DataGridNode {
   /**
    * @param {?Object.<string, *>=} data
    * @param {boolean=} hasChildren
@@ -302,7 +304,7 @@ export class ViewportDataGridNode extends DataGrid.DataGridNode {
     super(data, hasChildren);
     /** @type {boolean} */
     this._stale = false;
-    /** @type {?Array<!DataGrid.ViewportDataGridNode>} */
+    /** @type {?Array<!ViewportDataGridNode>} */
     this._flatNodes = null;
     this._isStriped = false;
   }
@@ -341,22 +343,22 @@ export class ViewportDataGridNode extends DataGrid.DataGridNode {
    */
   clearFlatNodes() {
     this._flatNodes = null;
-    const parent = /** @type {!DataGrid.ViewportDataGridNode} */ (this.parent);
+    const parent = /** @type {!ViewportDataGridNode} */ (this.parent);
     if (parent) {
       parent.clearFlatNodes();
     }
   }
 
   /**
-   * @return {!Array<!DataGrid.ViewportDataGridNode>}
+   * @return {!Array<!ViewportDataGridNode>}
    */
   flatChildren() {
     if (this._flatNodes) {
       return this._flatNodes;
     }
-    /** @type {!Array<!DataGrid.ViewportDataGridNode>} */
+    /** @type {!Array<!ViewportDataGridNode>} */
     const flatNodes = [];
-    /** @type {!Array<!Array<!DataGrid.ViewportDataGridNode>>} */
+    /** @type {!Array<!Array<!ViewportDataGridNode>>} */
     const children = [this.children];
     /** @type {!Array<number>} */
     const counters = [0];
@@ -430,7 +432,7 @@ export class ViewportDataGridNode extends DataGrid.DataGridNode {
       throw 'removeChild: Node is not a child of this node.';
     }
 
-    this.children.remove(child, true);
+    Platform.ArrayUtilities.removeElement(this.children, child, true);
     child._unlink();
 
     if (!this.children.length) {
@@ -480,6 +482,9 @@ export class ViewportDataGridNode extends DataGrid.DataGridNode {
     this._expanded = false;
     if (this.existingElement()) {
       this.existingElement().classList.remove('expanded');
+    }
+    if (this.selected) {
+      this.dataGrid.updateGridAccessibleName(/* text */ ls`collapsed`);
     }
     this.dataGrid.scheduleUpdateStructure();
   }
@@ -533,28 +538,3 @@ export class ViewportDataGridNode extends DataGrid.DataGridNode {
     super.recalculateSiblings(index);
   }
 }
-
-/* Legacy exported object */
-self.DataGrid = self.DataGrid || {};
-
-/* Legacy exported object */
-DataGrid = DataGrid || {};
-
-/**
- * @unrestricted
- * @extends {DataGrid.DataGrid<!NODE_TYPE>}
- * @constructor
- */
-DataGrid.ViewportDataGrid = ViewportDataGrid;
-
-/**
- * @override @suppress {checkPrototypalTypes} @enum {symbol}
- */
-DataGrid.ViewportDataGrid.Events = Events;
-
-/**
- * @unrestricted
- * @extends {DataGrid.DataGridNode<!NODE_TYPE>}
- * @constructor
- */
-DataGrid.ViewportDataGridNode = ViewportDataGridNode;

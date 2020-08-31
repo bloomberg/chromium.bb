@@ -63,7 +63,9 @@ class CommonMenuModel : public ui::MenuModel {
 
   int GetGroupIdAt(int index) const override { return 0; }
 
-  bool GetIconAt(int index, gfx::Image* icon) const override { return false; }
+  ui::ImageModel GetIconAt(int index) const override {
+    return ui::ImageModel();
+  }
 
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override {
     return nullptr;
@@ -154,34 +156,31 @@ class TopMenuModel : public CommonMenuModel {
 class MenuModelAdapterTest : public ViewEventTestBase,
                              public views::ButtonListener {
  public:
-  MenuModelAdapterTest()
-      : ViewEventTestBase(),
-        button_(nullptr),
-        menu_model_adapter_(&top_menu_model_),
-        menu_(nullptr) {}
-
-  ~MenuModelAdapterTest() override {}
+  MenuModelAdapterTest() = default;
+  ~MenuModelAdapterTest() override = default;
 
   // ViewEventTestBase implementation.
 
   void SetUp() override {
-    button_ =
-        new views::MenuButton(base::ASCIIToUTF16("Menu Adapter Test"), this);
+    ViewEventTestBase::SetUp();
 
     menu_ = menu_model_adapter_.CreateMenu();
-    menu_runner_.reset(
-        new views::MenuRunner(menu_, views::MenuRunner::HAS_MNEMONICS));
-
-    ViewEventTestBase::SetUp();
+    menu_runner_ = std::make_unique<views::MenuRunner>(
+        menu_, views::MenuRunner::HAS_MNEMONICS);
   }
 
   void TearDown() override {
-    menu_runner_ = nullptr;
-    menu_ = nullptr;
+    menu_runner_.reset();
+
     ViewEventTestBase::TearDown();
   }
 
-  views::View* CreateContentsView() override { return button_; }
+  std::unique_ptr<views::View> CreateContentsView() override {
+    auto button = std::make_unique<views::MenuButton>(
+        base::ASCIIToUTF16("Menu Adapter Test"), this);
+    button_ = button.get();
+    return button;
+  }
 
   gfx::Size GetPreferredSizeForContents() const override {
     return button_->GetPreferredSize();
@@ -261,10 +260,10 @@ class MenuModelAdapterTest : public ViewEventTestBase,
         std::move(next));
   }
 
-  views::MenuButton* button_;
+  views::MenuButton* button_ = nullptr;
   TopMenuModel top_menu_model_;
-  views::MenuModelAdapter menu_model_adapter_;
-  views::MenuItemView* menu_;
+  views::MenuModelAdapter menu_model_adapter_{&top_menu_model_};
+  views::MenuItemView* menu_ = nullptr;
   std::unique_ptr<views::MenuRunner> menu_runner_;
 };
 

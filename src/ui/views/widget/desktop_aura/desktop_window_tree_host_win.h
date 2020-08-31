@@ -19,8 +19,8 @@ namespace aura {
 namespace client {
 class DragDropClient;
 class FocusClient;
-}
-}
+}  // namespace client
+}  // namespace aura
 
 namespace ui {
 enum class DomCode;
@@ -181,7 +181,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void ResetWindowControls() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void HandleActivationChanged(bool active) override;
-  bool HandleAppCommand(short command) override;
+  bool HandleAppCommand(int command) override;
   void HandleCancelMode() override;
   void HandleCaptureLost() override;
   void HandleClose() override;
@@ -306,6 +306,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // Indicates if current window will receive mouse events when should not
   // become activated.
   bool wants_mouse_events_when_inactive_ = false;
+
+  // The location of the most recent mouse event on an occluded window. This is
+  // used to generate the OccludedWindowMouseEvents stat and can be removed
+  // when that stat is no longer tracked.
+  gfx::Point occluded_window_mouse_event_loc_;
 
   // The z-order level of the window; the window exhibits "always on top"
   // behavior if > 0.

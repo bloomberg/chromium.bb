@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
+#include "base/metrics/histogram_functions.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
@@ -24,7 +24,7 @@ namespace device_sync {
 
 namespace {
 
-// Timeout values for asynchronous operation.
+// Timeout values for asynchronous operations.
 // TODO(https://crbug.com/933656): Use async execution time metric to tune these
 // timeout values.
 constexpr base::TimeDelta kWaitingForClientAppMetadataTimeout =
@@ -34,14 +34,27 @@ constexpr base::TimeDelta kWaitingForBatchSetFeatureStatusesResponseTimeout =
 
 void RecordClientAppMetadataFetchMetrics(const base::TimeDelta& execution_time,
                                          CryptAuthAsyncTaskResult result) {
-  // TODO(https://crbug.com/933656, https://crbug.com/936273): Add metrics to
-  // track async execution times and failure rates due to async timeouts.
+  base::UmaHistogramCustomTimes(
+      "CryptAuth.DeviceSyncV2.FeatureStatusSetter.ExecutionTime."
+      "ClientAppMetadataFetch",
+      execution_time, base::TimeDelta::FromSeconds(1) /* min */,
+      kWaitingForClientAppMetadataTimeout /* max */, 100 /* buckets */);
+  LogCryptAuthAsyncTaskSuccessMetric(
+      "CryptAuth.DeviceSyncV2.FeatureStatusSetter.AsyncTaskResult."
+      "ClientAppMetadataFetch",
+      result);
 }
 
 void RecordBatchSetFeatureStatusesMetrics(const base::TimeDelta& execution_time,
                                           CryptAuthApiCallResult result) {
-  // TODO(https://crbug.com/933656, https://crbug.com/936273): Add metrics to
-  // track async execution times and failure rates due to async timeouts.
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.DeviceSyncV2.FeatureStatusSetter.ExecutionTime."
+      "SetFeatureStatuses",
+      execution_time);
+  LogCryptAuthApiCallSuccessMetric(
+      "CryptAuth.DeviceSyncV2.FeatureStatusSetter.ApiCallResult."
+      "SetFeatureStatuses",
+      result);
 }
 
 }  // namespace
@@ -51,13 +64,20 @@ CryptAuthFeatureStatusSetterImpl::Factory*
     CryptAuthFeatureStatusSetterImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthFeatureStatusSetterImpl::Factory*
-CryptAuthFeatureStatusSetterImpl::Factory::Get() {
+std::unique_ptr<CryptAuthFeatureStatusSetter>
+CryptAuthFeatureStatusSetterImpl::Factory::Create(
+    ClientAppMetadataProvider* client_app_metadata_provider,
+    CryptAuthClientFactory* client_factory,
+    CryptAuthGCMManager* gcm_manager,
+    std::unique_ptr<base::OneShotTimer> timer) {
   if (test_factory_)
-    return test_factory_;
+    return test_factory_->CreateInstance(client_app_metadata_provider,
+                                         client_factory, gcm_manager,
+                                         std::move(timer));
 
-  static base::NoDestructor<CryptAuthFeatureStatusSetterImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new CryptAuthFeatureStatusSetterImpl(
+      client_app_metadata_provider, client_factory, gcm_manager,
+      std::move(timer)));
 }
 
 // static
@@ -67,17 +87,6 @@ void CryptAuthFeatureStatusSetterImpl::Factory::SetFactoryForTesting(
 }
 
 CryptAuthFeatureStatusSetterImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthFeatureStatusSetter>
-CryptAuthFeatureStatusSetterImpl::Factory::BuildInstance(
-    ClientAppMetadataProvider* client_app_metadata_provider,
-    CryptAuthClientFactory* client_factory,
-    CryptAuthGCMManager* gcm_manager,
-    std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(new CryptAuthFeatureStatusSetterImpl(
-      client_app_metadata_provider, client_factory, gcm_manager,
-      std::move(timer)));
-}
 
 CryptAuthFeatureStatusSetterImpl::CryptAuthFeatureStatusSetterImpl(
     ClientAppMetadataProvider* client_app_metadata_provider,

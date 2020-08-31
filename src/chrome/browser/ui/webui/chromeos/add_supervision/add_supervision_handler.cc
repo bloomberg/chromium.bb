@@ -23,7 +23,9 @@
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -89,7 +91,7 @@ void AddSupervisionHandler::GetInstalledArcApps(
 }
 
 void AddSupervisionHandler::GetOAuthToken(GetOAuthTokenCallback callback) {
-  identity::ScopeSet scopes;
+  signin::ScopeSet scopes;
   scopes.insert(GaiaConstants::kKidsSupervisionSetupChildOAuth2Scope);
   scopes.insert(GaiaConstants::kPeopleApiReadOnlyOAuth2Scope);
   scopes.insert(GaiaConstants::kAccountsReauthOAuth2Scope);
@@ -98,7 +100,9 @@ void AddSupervisionHandler::GetOAuthToken(GetOAuthTokenCallback callback) {
 
   oauth2_access_token_fetcher_ =
       identity_manager_->CreateAccessTokenFetcherForAccount(
-          identity_manager_->GetPrimaryAccountId(), "add_supervision", scopes,
+          identity_manager_->GetPrimaryAccountId(
+              signin::ConsentLevel::kNotRequired),
+          "add_supervision", scopes,
           base::BindOnce(&AddSupervisionHandler::OnAccessTokenFetchComplete,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
           signin::AccessTokenFetcher::Mode::kImmediate);
@@ -140,6 +144,10 @@ void AddSupervisionHandler::OnAccessTokenFetchComplete(
     std::move(callback).Run(add_supervision::mojom::OAuthTokenFetchStatus::OK,
                             access_token_info.token);
   }
+}
+
+void AddSupervisionHandler::SetCloseOnEscape(bool enabled) {
+  delegate_->SetCloseOnEscape(enabled);
 }
 
 }  // namespace chromeos

@@ -298,7 +298,6 @@ lv{
         ZZ{"nezināms reģions"}
     }
     Countries%short{
-        GB{"Apvienotā Karaliste"}
         UN{"ANO"}
         US{"ASV"}
     }
@@ -308,7 +307,6 @@ lv{
         CI{"Ziloņkaula krasts"}
         CZ{"Čehijas Republika"}
         SZ{"Svazilenda"}
-        TL{"Austrumtimora"}
     }
-    Version{"36"}
+    Version{"37"}
 }

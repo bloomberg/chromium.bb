@@ -14,9 +14,9 @@
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/process_resource_usage.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -51,10 +51,6 @@ bool IsRendererResourceSamplingDisabled(int64_t flags) {
   return (flags & (REFRESH_TYPE_V8_MEMORY | REFRESH_TYPE_WEBCACHE_STATS)) == 0;
 }
 
-std::string GetRapporSampleName(content::WebContents* web_contents) {
-  return web_contents->GetVisibleURL().GetOrigin().spec();
-}
-
 }  // namespace
 
 RendererTask::RendererTask(const base::string16& title,
@@ -78,7 +74,6 @@ RendererTask::RendererTask(const base::string16& title,
                            content::WebContents* web_contents,
                            content::RenderProcessHost* render_process_host)
     : Task(title,
-           GetRapporSampleName(web_contents),
            icon,
            render_process_host->GetProcess().Handle()),
       web_contents_(web_contents),
@@ -104,10 +99,6 @@ RendererTask::RendererTask(const base::string16& title,
 RendererTask::~RendererTask() {
   favicon::ContentFaviconDriver::FromWebContents(web_contents())->
       RemoveObserver(this);
-}
-
-void RendererTask::UpdateRapporSampleName() {
-  set_rappor_sample_name(GetRapporSampleName(web_contents()));
 }
 
 void RendererTask::Activate() {
@@ -159,7 +150,7 @@ base::string16 RendererTask::GetProfileName() const {
 }
 
 SessionID RendererTask::GetTabId() const {
-  return SessionTabHelper::IdForTab(web_contents_);
+  return sessions::SessionTabHelper::IdForTab(web_contents_);
 }
 
 int64_t RendererTask::GetV8MemoryAllocated() const {

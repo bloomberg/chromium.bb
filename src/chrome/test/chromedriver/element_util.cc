@@ -442,9 +442,9 @@ Status IsDocumentTypeXml(
     bool* is_xml_document) {
 
   std::unique_ptr<base::Value> contentType;
-  Status status = web_view->EvaluateScript(
-      session->GetCurrentFrameId(),
-      "document.contentType", &contentType);
+  Status status =
+      web_view->EvaluateScript(session->GetCurrentFrameId(),
+                               "document.contentType", false, &contentType);
   if (status.IsError())
           return status;
   if (base::LowerCaseEqualsASCII(contentType->GetString(),
@@ -554,6 +554,9 @@ Status GetElementClickableLocation(
   status = GetElementRegion(session, web_view, element_id, &rect);
   if (status.IsError())
     return status;
+
+  if (rect.Width() == 0 || rect.Height() == 0)
+    return Status(kElementNotInteractable, "element has zero size");
 
   status = ScrollElementRegionIntoView(
       session, web_view, target_element_id, rect,

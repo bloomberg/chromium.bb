@@ -9,10 +9,6 @@ namespace net {
 class HttpRequestHeaders;
 }  // namespace net
 
-namespace network {
-struct ResourceRequest;
-}  // namespace network
-
 namespace blink {
 namespace mojom {
 class RendererPreferences;
@@ -22,19 +18,6 @@ class RendererPreferences;
 namespace content {
 
 class BrowserContext;
-
-// Returns true if either of FetchMetadata or experimental-web-platform-features
-// is enabled.
-bool IsFetchMetadataEnabled();
-
-// Returns true if either of FetchMetadataDestination or
-// experimental-web-platform-features is enabled.
-bool IsFetchMetadataDestinationEnabled();
-
-// Sets Fetch metadata headers on |resource_request| if appropriate:
-// https://w3c.github.io/webappsec-fetch-metadata
-void SetFetchMetadataHeadersForBrowserInitiatedRequest(
-    network::ResourceRequest* resource_request);
 
 // Sets request headers appropriate for browser-initiated resource requests,
 // i.e., requests for navigations and dedicated/shared/service worker

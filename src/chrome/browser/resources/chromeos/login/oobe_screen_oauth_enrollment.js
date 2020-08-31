@@ -5,14 +5,9 @@
 login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
   return {
     EXTERNAL_API: [
-      'showStep',
-      'showError',
-      'doReload',
-      'setAvailableLicenseTypes',
-      'showAttributePromptStep',
-      'showAttestationBasedEnrollmentSuccess',
-      'setAdJoinParams',
-      'setAdJoinConfiguration',
+      'showStep', 'showError', 'doReload', 'showAttributePromptStep',
+      'setAdJoinParams', 'setAdJoinConfiguration',
+      'setEnterpriseDomainAndDeviceType'
     ],
 
     /**
@@ -22,16 +17,21 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       return $('enterprise-enrollment');
     },
 
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.ENROLLMENT;
+    },
+
     /**
      * This is called after resources are updated.
      */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       $('enterprise-enrollment').updateLocalizedContent();
     },
 
 
     /** @override */
-    decorate: function() {
+    decorate() {
       $('enterprise-enrollment').screen = this;
     },
 
@@ -39,27 +39,20 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * Shows attribute-prompt step with pre-filled asset ID and
      * location.
      */
-    showAttributePromptStep: function(annotatedAssetId, annotatedLocation) {
+    showAttributePromptStep(annotatedAssetId, annotatedLocation) {
       $('enterprise-enrollment')
           .showAttributePromptStep(annotatedAssetId, annotatedLocation);
     },
 
     /**
-     * Shows a success card for attestation-based enrollment that shows
-     * which domain the device was enrolled into.
+     * Sets the type of the device and the enterprise domain to be shown.
+     *
+     * @param {string} enterprise_domain
+     * @param {string} device_type
      */
-    showAttestationBasedEnrollmentSuccess: function(
-        device, enterpriseEnrollmentDomain) {
+    setEnterpriseDomainAndDeviceType(enterprise_domain, device_type) {
       $('enterprise-enrollment')
-          .showAttestationBasedEnrollmentSuccess(
-              device, enterpriseEnrollmentDomain);
-    },
-
-    /**
-     * Updates the list of available license types in license selection dialog.
-     */
-    setAvailableLicenseTypes: function(licenseTypes) {
-      $('enterprise-enrollment').setAvailableLicenseTypes(licenseTypes);
+          .setEnterpriseDomainAndDeviceType(enterprise_domain, device_type);
     },
 
     /**
@@ -67,7 +60,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * @param {string} step the steps to show, one of "signin", "working",
      * "attribute-prompt", "error", "success".
      */
-    showStep: function(step) {
+    showStep(step) {
       $('enterprise-enrollment').showStep(step);
     },
 
@@ -76,11 +69,11 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * @param {string} message the error message.
      * @param {boolean} retry whether the retry link should be shown.
      */
-    showError: function(message, retry) {
+    showError(message, retry) {
       $('enterprise-enrollment').showError(message, retry);
     },
 
-    doReload: function() {
+    doReload() {
       $('enterprise-enrollment').doReload();
     },
 
@@ -92,8 +85,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * @param {boolean} showUnlockConfig true if there is an encrypted
      * configuration (and not unlocked yet).
      */
-    setAdJoinParams: function(
-        machineName, userName, errorState, showUnlockConfig) {
+    setAdJoinParams(machineName, userName, errorState, showUnlockConfig) {
       $('enterprise-enrollment')
           .setAdJoinParams(machineName, userName, errorState, showUnlockConfig);
     },
@@ -102,27 +94,27 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * Sets Active Directory join screen with the unlocked configuration.
      * @param {Array<JoinConfigType>} options
      */
-    setAdJoinConfiguration: function(options) {
+    setAdJoinConfiguration(options) {
       $('enterprise-enrollment').setAdJoinConfiguration(options);
     },
 
-    closeEnrollment_: function(result) {
+    closeEnrollment_(result) {
       chrome.send('oauthEnrollClose', [result]);
     },
 
-    onAttributesEntered_: function(asset_id, location) {
+    onAttributesEntered_(asset_id, location) {
       chrome.send('oauthEnrollAttributes', [asset_id, location]);
     },
 
-    onAuthCompleted_: function(email) {
+    onAuthCompleted_(email) {
       chrome.send('oauthEnrollCompleteLogin', [email]);
     },
 
-    onAuthFrameLoaded_: function() {
+    onAuthFrameLoaded_() {
       chrome.send('frameLoadingCompleted');
     },
 
-    onAdCompleteLogin_: function(
+    onAdCompleteLogin_(
         machine_name, distinguished_name, encryption_types, username,
         password) {
       chrome.send('oauthEnrollAdCompleteLogin', [
@@ -130,12 +122,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       ]);
     },
 
-    onAdUnlockConfiguration_: function(unlock_password) {
+    onAdUnlockConfiguration_(unlock_password) {
       chrome.send('oauthEnrollAdUnlockConfiguration', [unlock_password]);
     },
-
-    onLicenseTypeSelected_: function(license_type) {
-      chrome.send('onLicenseTypeSelected', [license_type]);
-    },
   };
+}, {
+  changeRequisitonProhibited: true,
 });

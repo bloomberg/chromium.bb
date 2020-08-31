@@ -84,6 +84,8 @@ bool SizeMayChange(const NGBlockNode& node,
 
   DCHECK_EQ(new_space.IsFixedInlineSize(), old_space.IsFixedInlineSize());
   DCHECK_EQ(new_space.IsFixedBlockSize(), old_space.IsFixedBlockSize());
+  DCHECK_EQ(new_space.IsFixedBlockSizeIndefinite(),
+            old_space.IsFixedBlockSizeIndefinite());
   DCHECK_EQ(new_space.IsShrinkToFit(), old_space.IsShrinkToFit());
   DCHECK_EQ(new_space.TableCellChildLayoutMode(),
             old_space.TableCellChildLayoutMode());
@@ -180,27 +182,63 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
   LayoutUnit block_size = fragment_geometry.border_box_size.block_size;
   bool is_initial_block_size_indefinite = block_size == kIndefiniteSize;
   if (is_initial_block_size_indefinite) {
-    // The intrinsic size of column flex-boxes can depend on the
-    // %-resolution-block-size. This occurs when a flex-box has "max-height:
-    // 100%" or similar on itself.
-    //
-    // Due to this we can't use cached |NGLayoutResult::IntrinsicBlockSize|
-    // value, as the following |block_size| calculation would be incorrect.
-    if (node.IsFlexibleBox() && style.ResolvedIsColumnFlexDirection() &&
-        layout_result.PhysicalFragment().DependsOnPercentageBlockSize()) {
-      if (new_space.PercentageResolutionBlockSize() !=
-          old_space.PercentageResolutionBlockSize())
+    if (node.IsFlexibleBox()) {
+      // Flex-boxes can have their children calculate their size based in their
+      // parent's final block-size. E.g.
+      // <div style="display: flex;">
+      //   <div style="display: flex;">
+      //     <!-- Child will stretch to the parent's fixed block-size -->
+      //     <div></div>
+      //   </div>
+      // </div>
+      // <div style="display: flex;">
+      //   <div style="display: flex; flex-direction: column;">
+      //     <!-- Child will grow to the parent's fixed block-size -->
+      //     <div style="flex: 1;"></div>
+      //   </div>
+      // </div>
+      //
+      // If the previous |layout_result| was produced by a space which had a
+      // fixed block-size we can't use |NGLayoutResult::IntrinsicBlockSize()|,
+      // and need to layout.
+      //
+      // TODO(ikilpatrick): Similar to %-block-size descendants we could store
+      // a bit on the |NGLayoutResult| which indicates if it had a child which
+      // sized itself based on the parent's block-size.
+      // We should consider this optimization if we are missing this cache
+      // often within this branch (and could have re-used the result).
+      // TODO(ikilaptrick): This may occur for other layout modes, e.g.
+      // grid/custom-layout/etc.
+      if (old_space.IsFixedBlockSize())
         return NGLayoutCacheStatus::kNeedsLayout;
+
+      // The intrinsic size of column flex-boxes can depend on the
+      // %-resolution-block-size. This occurs when a flex-box has "max-height:
+      // 100%" or similar on itself.
+      //
+      // Due to this we can't use cached |NGLayoutResult::IntrinsicBlockSize|
+      // value, as the following |block_size| calculation would be incorrect.
+      if (style.ResolvedIsColumnFlexDirection() &&
+          layout_result.PhysicalFragment().DependsOnPercentageBlockSize()) {
+        if (new_space.PercentageResolutionBlockSize() !=
+            old_space.PercentageResolutionBlockSize())
+          return NGLayoutCacheStatus::kNeedsLayout;
+      }
     }
 
     block_size = ComputeBlockSizeForFragment(
         new_space, style, fragment_geometry.border + fragment_geometry.padding,
-        layout_result.IntrinsicBlockSize());
+        layout_result.IntrinsicBlockSize(),
+        fragment_geometry.border_box_size.inline_size);
   }
 
   bool is_block_size_equal = block_size == fragment.BlockSize();
 
   if (!is_block_size_equal) {
+    // Only block-flow supports changing the block-size for simplified layout.
+    if (!node.IsBlockFlow() || node.IsLayoutNGCustom())
+      return NGLayoutCacheStatus::kNeedsLayout;
+
     // If we are the document or body element in quirks mode, changing our size
     // means that a scrollbar was added/removed. Require full layout.
     if (node.IsQuirkyAndFillsViewport())
@@ -209,7 +247,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     // If a block (within a formatting-context) changes to/from an empty-block,
     // margins may collapse through this node, requiring full layout. We
     // approximate this check by checking if the block-size is/was zero.
-    if (!physical_fragment.IsBlockFormattingContextRoot() &&
+    if (!physical_fragment.IsFormattingContextRoot() &&
         !block_size != !fragment.BlockSize())
       return NGLayoutCacheStatus::kNeedsLayout;
   }

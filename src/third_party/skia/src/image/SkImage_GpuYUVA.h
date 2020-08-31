@@ -24,18 +24,28 @@ class SkImage_GpuYUVA : public SkImage_GpuBase {
 public:
     friend class GrYUVAImageTextureMaker;
 
-    SkImage_GpuYUVA(sk_sp<GrContext>, SkISize size, uint32_t uniqueID, SkYUVColorSpace,
-                    sk_sp<GrTextureProxy> proxies[], GrColorType proxyColorTypes[], int numProxies,
-                    const SkYUVAIndex[4], GrSurfaceOrigin, sk_sp<SkColorSpace>);
+    SkImage_GpuYUVA(sk_sp<GrContext>,
+                    SkISize size,
+                    uint32_t uniqueID,
+                    SkYUVColorSpace,
+                    GrSurfaceProxyView views[],
+                    int numViews,
+                    const SkYUVAIndex[4],
+                    GrSurfaceOrigin,
+                    sk_sp<SkColorSpace>);
 
     GrSemaphoresSubmitted onFlush(GrContext*, const GrFlushInfo&) override;
 
     // This returns the single backing proxy if the YUV channels have already been flattened but
     // nullptr if they have not.
     GrTextureProxy* peekProxy() const override;
-    sk_sp<GrTextureProxy> asTextureProxyRef(GrRecordingContext*) const override;
 
-    virtual bool onIsTextureBacked() const override { return fProxies[0] || fRGBProxy; }
+    const GrSurfaceProxyView* view(GrRecordingContext* context) const override;
+
+    bool onIsTextureBacked() const override {
+        SkASSERT(fViews[0].proxy() || fRGBView.proxy());
+        return true;
+    }
 
     sk_sp<SkImage> onMakeColorTypeAndColorSpace(GrRecordingContext*,
                                                 SkColorType, sk_sp<SkColorSpace>) const final;
@@ -46,14 +56,14 @@ public:
 
     bool setupMipmapsForPlanes(GrRecordingContext*) const;
 
-    // Returns a ref-ed texture proxy with miplevels
-    sk_sp<GrTextureProxy> asMippedTextureProxyRef(GrRecordingContext*) const;
+    // Returns a ref-ed texture proxy view with miplevels
+    GrSurfaceProxyView refMippedView(GrRecordingContext*) const;
 
 #if GR_TEST_UTILS
     bool testingOnly_IsFlattened() const {
         // We should only have the flattened proxy or the planar proxies at one point in time.
-        SkASSERT(SkToBool(fRGBProxy) != SkToBool(fProxies[0]));
-        return SkToBool(fRGBProxy);
+        SkASSERT(SkToBool(fRGBView.proxy()) != SkToBool(fViews[0].proxy()));
+        return SkToBool(fRGBView.proxy());
     }
 #endif
 
@@ -78,18 +88,19 @@ public:
 private:
     SkImage_GpuYUVA(const SkImage_GpuYUVA* image, sk_sp<SkColorSpace>);
 
+    void flattenToRGB(GrRecordingContext*) const;
+
     // This array will usually only be sparsely populated.
     // The actual non-null fields are dictated by the 'fYUVAIndices' indices
-    mutable sk_sp<GrTextureProxy>    fProxies[4];
-    mutable GrColorType              fProxyColorTypes[4];
-    int                              fNumProxies;
+    mutable GrSurfaceProxyView       fViews[4];
+    int                              fNumViews;
     SkYUVAIndex                      fYUVAIndices[4];
     const SkYUVColorSpace            fYUVColorSpace;
     GrSurfaceOrigin                  fOrigin;
     // If this is non-null then the planar data should be converted from fFromColorSpace to
     // this->colorSpace(). Otherwise we assume the planar data (post YUV->RGB conversion) is already
     // in this->colorSpace().
-    const sk_sp<SkColorSpace> fFromColorSpace;
+    const sk_sp<SkColorSpace>        fFromColorSpace;
 
     // Repeated calls to onMakeColorSpace will result in a proliferation of unique IDs and
     // SkImage_GpuYUVA instances. Cache the result of the last successful onMakeColorSpace call.
@@ -98,8 +109,8 @@ private:
 
     // This is only allocated when the image needs to be flattened rather than
     // using the separate YUVA planes. From thence forth we will only use the
-    // the RGBProxy.
-    mutable sk_sp<GrTextureProxy>    fRGBProxy;
+    // the RGBView.
+    mutable GrSurfaceProxyView       fRGBView;
     typedef SkImage_GpuBase INHERITED;
 };
 

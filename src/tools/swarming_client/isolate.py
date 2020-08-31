@@ -13,7 +13,9 @@ See more information at
 """
 # Run ./isolate.py --help for more detailed information.
 
-__version__ = '0.4.5'
+from __future__ import print_function
+
+__version__ = '0.4.6'
 
 import datetime
 import itertools
@@ -31,6 +33,7 @@ import isolated_format
 import isolateserver
 import run_isolated
 
+from utils import net
 from utils import tools
 tools.force_local_third_party()
 
@@ -38,6 +41,7 @@ tools.force_local_third_party()
 import colorama
 from depot_tools import fix_encoding
 from depot_tools import subcommand
+import six
 
 # pylint: disable=ungrouped-imports
 from utils import logging_utils
@@ -63,8 +67,8 @@ ISOLATED_GEN_JSON_VERSION = 1
 # Warning printed when variables are used. This is meant to reduce the use of
 # variables.
 _VARIABLE_WARNING = """\
-WARNING: --config-variables, --path-variables and --extra-variables
-will be unsupported soon. Please contact the LUCI team.
+WARNING: --config-variables and --path-variables will be unsupported soon.
+Please contact the LUCI team.
 https://crbug.com/907880
 """
 
@@ -97,7 +101,7 @@ def recreate_tree(outdir, indir, infiles, action, as_hash):
     logging.info('Creating %s' % outdir)
     fs.makedirs(outdir)
 
-  for relfile, metadata in infiles.iteritems():
+  for relfile, metadata in infiles.items():
     infile = os.path.join(indir, relfile)
     if as_hash:
       # Do the hashtable specific checks.
@@ -114,7 +118,7 @@ def recreate_tree(outdir, indir, infiles, action, as_hash):
         if metadata['s'] == fs.stat(outfile).st_size:
           continue
         else:
-          logging.warn('Overwriting %s' % metadata['h'])
+          logging.warning('Overwriting %s' % metadata['h'])
           fs.remove(outfile)
     else:
       outfile = os.path.join(outdir, relfile)
@@ -158,12 +162,12 @@ def normalize_path_variables(cwd, path_variables, relative_base_dir):
   logging.info(
       'normalize_path_variables(%s, %s, %s)', cwd, path_variables,
       relative_base_dir)
-  assert isinstance(cwd, unicode), cwd
-  assert isinstance(relative_base_dir, unicode), relative_base_dir
+  assert isinstance(cwd, six.text_type), cwd
+  assert isinstance(relative_base_dir, six.text_type), relative_base_dir
   relative_base_dir = file_path.get_native_path_case(relative_base_dir)
   return dict(
       (k, _normalize_path_variable(cwd, relative_base_dir, k, v))
-      for k, v in path_variables.iteritems())
+      for k, v in path_variables.items())
 
 
 ### Internal state files.
@@ -255,7 +259,7 @@ class Flattenable(object):
     except (IOError, ValueError) as e:
       # On failure, loads the default instance.
       out = cls(*args, **kwargs)
-      logging.warn('Failed to load %s: %s', filename, e)
+      logging.warning('Failed to load %s: %s', filename, e)
     return out
 
 
@@ -287,9 +291,6 @@ class SavedState(Flattenable):
     # GYP variables that are used to generate conditions. The most frequent
     # example is 'OS'.
     'config_variables',
-    # GYP variables that will be replaced in 'command' and paths but will not be
-    # considered a relative directory.
-    'extra_variables',
     # Cache of the files found so the next run can skip hash calculation.
     'files',
     # Path of the original .isolate file. Relative path to isolated_basedir.
@@ -334,7 +335,6 @@ class SavedState(Flattenable):
     self.child_isolated_files = []
     self.command = []
     self.config_variables = {}
-    self.extra_variables = {}
     self.files = {}
     self.isolate_file = None
     self.path_variables = {}
@@ -348,7 +348,7 @@ class SavedState(Flattenable):
     """Updates the saved state with only config variables."""
     self.config_variables.update(config_variables)
 
-  def update(self, isolate_file, path_variables, extra_variables):
+  def update(self, isolate_file, path_variables):
     """Updates the saved state with new data to keep GYP variables and internal
     reference to the original .isolate file.
     """
@@ -362,7 +362,6 @@ class SavedState(Flattenable):
     # .isolated.state.
     assert isolate_file == self.isolate_file or not self.isolate_file, (
         isolate_file, self.isolate_file)
-    self.extra_variables.update(extra_variables)
     self.isolate_file = isolate_file
     self.path_variables.update(path_variables)
 
@@ -395,7 +394,7 @@ class SavedState(Flattenable):
     out = {
       'algo': self.algo_name,
       'files': dict(
-          (filepath, strip(data)) for filepath, data in self.files.iteritems()),
+          (filepath, strip(data)) for filepath, data in self.files.items()),
       # The version of the .state file is different than the one of the
       # .isolated file.
       'version': isolated_format.ISOLATED_FILE_VERSION,
@@ -478,7 +477,6 @@ class SavedState(Flattenable):
     out += '  child_isolated_files: %s\n' % self.child_isolated_files
     out += '  path_variables: %s\n' % dict_to_str(self.path_variables)
     out += '  config_variables: %s\n' % dict_to_str(self.config_variables)
-    out += '  extra_variables: %s\n' % dict_to_str(self.extra_variables)
     return out
 
 
@@ -501,9 +499,8 @@ class CompleteState(object):
         isolatedfile_to_state(isolated_filepath), algo_name, isolated_basedir)
     return cls(isolated_filepath, s)
 
-  def load_isolate(
-      self, cwd, isolate_file, path_variables, config_variables,
-      extra_variables, blacklist, ignore_broken_items, collapse_symlinks):
+  def load_isolate(self, cwd, isolate_file, path_variables, config_variables,
+                   blacklist, ignore_broken_items, collapse_symlinks):
     """Updates self.isolated and self.saved_state with information loaded from a
     .isolate file.
 
@@ -512,10 +509,9 @@ class CompleteState(object):
     # Make sure to not depend on os.getcwd().
     assert os.path.isabs(isolate_file), isolate_file
     isolate_file = file_path.get_native_path_case(isolate_file)
-    logging.info(
-        'CompleteState.load_isolate(%s, %s, %s, %s, %s, %s, %s)',
-        cwd, isolate_file, path_variables, config_variables, extra_variables,
-        ignore_broken_items, collapse_symlinks)
+    logging.info('CompleteState.load_isolate(%s, %s, %s, %s, %s, %s)', cwd,
+                 isolate_file, path_variables, config_variables,
+                 ignore_broken_items, collapse_symlinks)
 
     # Config variables are not affected by the paths and must be used to
     # retrieve the paths, so update them first.
@@ -534,17 +530,15 @@ class CompleteState(object):
     path_variables = normalize_path_variables(
         cwd, path_variables, isolate_cmd_dir)
     # Update the rest of the saved state.
-    self.saved_state.update(isolate_file, path_variables, extra_variables)
+    self.saved_state.update(isolate_file, path_variables)
 
     total_variables = self.saved_state.path_variables.copy()
     total_variables.update(self.saved_state.config_variables)
-    total_variables.update(self.saved_state.extra_variables)
     command = [
         isolate_format.eval_variables(i, total_variables) for i in command
     ]
 
     total_variables = self.saved_state.path_variables.copy()
-    total_variables.update(self.saved_state.extra_variables)
     infiles = [
         isolate_format.eval_variables(f, total_variables) for f in infiles
     ]
@@ -559,7 +553,7 @@ class CompleteState(object):
     relative_cwd = os.path.relpath(isolate_cmd_dir, self.saved_state.root_dir)
     # Now that we know where the root is, check that the path_variables point
     # inside it.
-    for k, v in self.saved_state.path_variables.iteritems():
+    for k, v in self.saved_state.path_variables.items():
       dest = os.path.join(isolate_cmd_dir, relative_cwd, v)
       if not file_path.path_starts_with(self.saved_state.root_dir, dest):
         raise isolated_format.MappingError(
@@ -624,7 +618,7 @@ class CompleteState(object):
         self.saved_state.path_variables,
         self.saved_state.algo)
     total_bytes = sum(
-        i.get('s', 0) for i in self.saved_state.files.itervalues())
+        i.get('s', 0) for i in self.saved_state.files.values())
     if total_bytes:
       # TODO(maruel): Stats are missing the .isolated files.
       logging.debug('Total size: %d bytes' % total_bytes)
@@ -706,14 +700,14 @@ def load_complete_state(options, cwd, subdir, skip_update):
 
   if not skip_update:
     # Then load the .isolate and expands directories.
-    complete_state.load_isolate(
-        cwd, isolate, options.path_variables, options.config_variables,
-        options.extra_variables, options.blacklist, options.ignore_broken_items,
-        options.collapse_symlinks)
+    complete_state.load_isolate(cwd, isolate, options.path_variables,
+                                options.config_variables, options.blacklist,
+                                options.ignore_broken_items,
+                                options.collapse_symlinks)
 
   # Regenerate complete_state.saved_state.files.
   if subdir:
-    subdir = unicode(subdir)
+    subdir = six.text_type(subdir)
     # This is tricky here. If it is a path, take it from the root_dir. If
     # it is a variable, it must be keyed from the directory containing the
     # .isolate file. So translate all variables first.
@@ -721,7 +715,7 @@ def load_complete_state(options, cwd, subdir, skip_update):
         (k,
           os.path.normpath(os.path.join(complete_state.saved_state.relative_cwd,
             v)))
-        for k, v in complete_state.saved_state.path_variables.iteritems())
+        for k, v in complete_state.saved_state.path_variables.items())
     subdir = isolate_format.eval_variables(subdir, translated_path_variables)
     subdir = subdir.replace('/', os.path.sep)
 
@@ -877,7 +871,7 @@ def isolate_and_archive(trees, server_ref):
   # Helper generator to avoid materializing the full (huge) list of files until
   # the very end (in upload_items()).
   def emit_files(root_dir, files):
-    for path, meta in files.iteritems():
+    for path, meta in files.items():
       yield (os.path.join(root_dir, path), meta)
 
   # Process all *.isolate files, it involves parsing, file system traversal and
@@ -899,7 +893,7 @@ def isolate_and_archive(trees, server_ref):
         isolated_hashes[target_name] = None
 
   # All bad? Nothing to upload.
-  if all(v is None for v in isolated_hashes.itervalues()):
+  if all(v is None for v in isolated_hashes.values()):
     return isolated_hashes
 
   # Now upload all necessary files at once.
@@ -951,7 +945,8 @@ def CMDarchive(parser, args):
   isolateserver.process_isolate_server_options(parser, options, True, True)
   server_ref = isolate_storage.ServerRef(
       options.isolate_server, options.namespace)
-  result = isolate_and_archive([(options, unicode(os.getcwd()))], server_ref)
+  result = isolate_and_archive([(options, six.text_type(os.getcwd()))],
+                               server_ref)
   if result is None:
     return EXIT_CODE_UPLOAD_ERROR
   assert len(result) == 1, result
@@ -1000,11 +995,11 @@ def CMDbatcharchive(parser, args):
     if data.get('version') != ISOLATED_GEN_JSON_VERSION:
       parser.error('Invalid version in %s' % gen_json_path)
     cwd = data.get('dir')
-    if not isinstance(cwd, unicode) or not fs.isdir(cwd):
+    if not isinstance(cwd, six.text_type) or not fs.isdir(cwd):
       parser.error('Invalid dir in %s' % gen_json_path)
     args = data.get('args')
     if (not isinstance(args, list) or
-        not all(isinstance(x, unicode) for x in args)):
+        not all(isinstance(x, six.text_type) for x in args)):
       parser.error('Invalid args in %s' % gen_json_path)
     # Convert command line (embedded in JSON) to Options object.
     work_units.append((parse_archive_command_line(args, cwd), cwd))
@@ -1025,7 +1020,7 @@ def CMDbatcharchive(parser, args):
     return EXIT_CODE_UPLOAD_ERROR
 
   # isolated_hashes[x] is None if 'x.isolate' contains a error.
-  if not all(isolated_hashes.itervalues()):
+  if not all(isolated_hashes.values()):
     return EXIT_CODE_ISOLATE_ERROR
 
   return 0
@@ -1160,7 +1155,6 @@ def add_variable_option(parser):
       '-r', '--result',
       dest='isolated',
       help=optparse.SUPPRESS_HELP)
-  is_win = sys.platform in ('win32', 'cygwin')
   # There is really 3 kind of variables:
   # - path variables, like DEPTH or PRODUCT_DIR that should be
   #   replaced opportunistically when tracing tests.
@@ -1176,9 +1170,9 @@ def add_variable_option(parser):
       dest='config_variables',
       metavar='FOO BAR',
       help='Config variables are used to determine which conditions should be '
-           'matched when loading a .isolate file, default: %default. '
-            'All 3 kinds of variables are persistent accross calls, they are '
-            'saved inside <.isolated>.state')
+      'matched when loading a .isolate file, default: %default. '
+      'All 3 kinds of variables are persistent across calls, they are '
+      'saved inside <.isolated>.state')
   parser.add_option(
       '--path-variable',
       action='callback',
@@ -1188,16 +1182,6 @@ def add_variable_option(parser):
       metavar='FOO BAR',
       help='Path variables are used to replace file paths when loading a '
            '.isolate file, default: %default')
-  parser.add_option(
-      '--extra-variable',
-      action='callback',
-      callback=_process_variable_arg,
-      default=[('EXECUTABLE_SUFFIX', '.exe' if is_win else '')],
-      dest='extra_variables',
-      metavar='FOO BAR',
-      help='Extraneous variables are replaced on the \'command\' entry and on '
-           'paths in the .isolate file but are not considered relative paths.')
-
 
 def add_isolate_options(parser):
   """Adds --isolate, --isolated, --out and --<foo>-variable options."""
@@ -1253,7 +1237,7 @@ def process_outdir_options(parser, options, cwd):
     parser.error('--outdir is required.')
   if file_path.is_url(options.outdir):
     parser.error('Can\'t use an URL for --outdir.')
-  options.outdir = unicode(options.outdir).replace('/', os.path.sep)
+  options.outdir = six.text_type(options.outdir).replace('/', os.path.sep)
   # outdir doesn't need native path case since tracing is never done from there.
   options.outdir = os.path.abspath(
       os.path.normpath(os.path.join(cwd, options.outdir)))
@@ -1272,7 +1256,8 @@ def process_isolate_options(parser, options, cwd=None, require_isolated=True):
   # Parse --isolated option.
   if options.isolated:
     options.isolated = os.path.abspath(
-        os.path.join(cwd, unicode(options.isolated).replace('/', os.path.sep)))
+        os.path.join(cwd,
+                     six.text_type(options.isolated).replace('/', os.path.sep)))
   if require_isolated and not options.isolated:
     parser.error('--isolated is required.')
   if options.isolated and not options.isolated.endswith('.isolated'):
@@ -1288,17 +1273,15 @@ def process_isolate_options(parser, options, cwd=None, require_isolated=True):
   options.config_variables = dict(
       (k, try_make_int(v)) for k, v in options.config_variables)
   options.path_variables = dict(options.path_variables)
-  options.extra_variables = dict(options.extra_variables)
   # Account for default EXECUTABLE_SUFFIX.
-  if (options.config_variables or options.path_variables or
-      len(options.extra_variables) > 1):
+  if options.config_variables or options.path_variables:
     sys.stderr.write(_VARIABLE_WARNING)
 
   # Normalize the path in --isolate.
   if options.isolate:
     # TODO(maruel): Work with non-ASCII.
     # The path must be in native path case for tracing purposes.
-    options.isolate = unicode(options.isolate).replace('/', os.path.sep)
+    options.isolate = six.text_type(options.isolate).replace('/', os.path.sep)
     options.isolate = os.path.abspath(os.path.join(cwd, options.isolate))
     options.isolate = file_path.get_native_path_case(options.isolate)
 
@@ -1310,10 +1293,10 @@ def main(argv):
   try:
     return dispatcher.execute(parser, argv)
   except isolated_format.MappingError as e:
-    print >> sys.stderr, 'Failed to find an input file: %s' % e
+    print('Failed to find an input file: %s' % e, file=sys.stderr)
     return 1
   except ExecutionError as e:
-    print >> sys.stderr, 'Execution failure: %s' % e
+    print('Execution failure: %s' % e, file=sys.stderr)
     return 1
 
 
@@ -1322,4 +1305,5 @@ if __name__ == '__main__':
   fix_encoding.fix_encoding()
   tools.disable_buffering()
   colorama.init()
+  net.set_user_agent('isolate.py/' + __version__)
   sys.exit(main(sys.argv[1:]))

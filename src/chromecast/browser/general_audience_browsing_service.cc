@@ -4,7 +4,6 @@
 
 #include "chromecast/browser/general_audience_browsing_service.h"
 
-#include "base/logging.h"
 #include "chromecast/common/mojom/constants.mojom.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/safe_search_api/safe_search/safe_search_url_checker_client.h"
@@ -104,7 +103,7 @@ GeneralAudienceBrowsingService::CreateSafeSearchURLChecker() {
   return std::make_unique<safe_search_api::URLChecker>(
       std::make_unique<safe_search_api::SafeSearchURLCheckerClient>(
           shared_url_loader_factory_, CreateNetworkTrafficAnnotationTag(),
-          std::string(), api_key_),
+          api_key_),
       /* cache size */ 1000);
 }
 

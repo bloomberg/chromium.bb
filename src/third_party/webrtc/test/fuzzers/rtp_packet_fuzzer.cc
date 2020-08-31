@@ -99,10 +99,11 @@ void FuzzOneInput(const uint8_t* data, size_t size) {
                                                        &feedback_request);
         break;
       }
-      case kRtpExtensionPlayoutDelay:
-        PlayoutDelay playout;
+      case kRtpExtensionPlayoutDelay: {
+        PlayoutDelay playout = PlayoutDelay::Noop();
         packet.GetExtension<PlayoutDelayLimits>(&playout);
         break;
+      }
       case kRtpExtensionVideoContentType:
         VideoContentType content_type;
         packet.GetExtension<VideoContentTypeExtension>(&content_type);
@@ -133,11 +134,6 @@ void FuzzOneInput(const uint8_t* data, size_t size) {
       case kRtpExtensionGenericFrameDescriptor00: {
         RtpGenericFrameDescriptor descriptor;
         packet.GetExtension<RtpGenericFrameDescriptorExtension00>(&descriptor);
-        break;
-      }
-      case kRtpExtensionGenericFrameDescriptor01: {
-        RtpGenericFrameDescriptor descriptor;
-        packet.GetExtension<RtpGenericFrameDescriptorExtension01>(&descriptor);
         break;
       }
       case kRtpExtensionColorSpace: {

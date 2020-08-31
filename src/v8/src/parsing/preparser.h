@@ -8,6 +8,7 @@
 #include "src/ast/ast-value-factory.h"
 #include "src/ast/ast.h"
 #include "src/ast/scopes.h"
+#include "src/parsing/parse-info.h"
 #include "src/parsing/parser-base.h"
 #include "src/parsing/pending-compilation-error-handler.h"
 #include "src/parsing/preparser-logger.h"
@@ -416,6 +417,10 @@ class PreParserStatement {
     return PreParserStatement(kUnknownStatement);
   }
 
+  static PreParserStatement Iteration() {
+    return PreParserStatement(kIterationStatement);
+  }
+
   static PreParserStatement Null() {
     return PreParserStatement(kNullStatement);
   }
@@ -450,6 +455,8 @@ class PreParserStatement {
 
   bool IsNull() { return code_ == kNullStatement; }
 
+  bool IsIterationStatement() { return code_ == kIterationStatement; }
+
   bool IsEmptyStatement() {
     DCHECK(!IsNull());
     return code_ == kEmptyStatement;
@@ -478,6 +485,7 @@ class PreParserStatement {
     kEmptyStatement,
     kUnknownStatement,
     kJumpStatement,
+    kIterationStatement,
     kStringLiteralExpressionStatement,
   };
 
@@ -691,8 +699,7 @@ class PreParserFactory {
     return PreParserBlock::Default();
   }
 
-  PreParserBlock NewBlock(bool ignore_completion_value,
-                          ZonePtrList<const AstRawString>* labels) {
+  PreParserBlock NewBlock(bool ignore_completion_value, bool is_breakable) {
     return PreParserBlock::Default();
   }
 
@@ -737,20 +744,15 @@ class PreParserFactory {
     return PreParserStatement::Default();
   }
 
-  PreParserStatement NewDoWhileStatement(
-      ZonePtrList<const AstRawString>* labels,
-      ZonePtrList<const AstRawString>* own_labels, int pos) {
-    return PreParserStatement::Default();
+  PreParserStatement NewDoWhileStatement(int pos) {
+    return PreParserStatement::Iteration();
   }
 
-  PreParserStatement NewWhileStatement(
-      ZonePtrList<const AstRawString>* labels,
-      ZonePtrList<const AstRawString>* own_labels, int pos) {
-    return PreParserStatement::Default();
+  PreParserStatement NewWhileStatement(int pos) {
+    return PreParserStatement::Iteration();
   }
 
-  PreParserStatement NewSwitchStatement(ZonePtrList<const AstRawString>* labels,
-                                        const PreParserExpression& tag,
+  PreParserStatement NewSwitchStatement(const PreParserExpression& tag,
                                         int pos) {
     return PreParserStatement::Default();
   }
@@ -761,23 +763,17 @@ class PreParserFactory {
     return PreParserStatement::Default();
   }
 
-  PreParserStatement NewForStatement(
-      ZonePtrList<const AstRawString>* labels,
-      ZonePtrList<const AstRawString>* own_labels, int pos) {
-    return PreParserStatement::Default();
+  PreParserStatement NewForStatement(int pos) {
+    return PreParserStatement::Iteration();
   }
 
-  PreParserStatement NewForEachStatement(
-      ForEachStatement::VisitMode visit_mode,
-      ZonePtrList<const AstRawString>* labels,
-      ZonePtrList<const AstRawString>* own_labels, int pos) {
-    return PreParserStatement::Default();
+  PreParserStatement NewForEachStatement(ForEachStatement::VisitMode visit_mode,
+                                         int pos) {
+    return PreParserStatement::Iteration();
   }
 
-  PreParserStatement NewForOfStatement(
-      ZonePtrList<const AstRawString>* labels,
-      ZonePtrList<const AstRawString>* own_labels, int pos, IteratorType type) {
-    return PreParserStatement::Default();
+  PreParserStatement NewForOfStatement(int pos, IteratorType type) {
+    return PreParserStatement::Iteration();
   }
 
   PreParserExpression NewCallRuntime(
@@ -817,17 +813,6 @@ class PreParserFormalParameters : public FormalParametersBase {
  private:
   bool has_duplicate_ = false;
   bool strict_parameter_error_ = false;
-};
-
-class PreParserTarget {
- public:
-  PreParserTarget(ParserBase<PreParser>* preparser,
-                  PreParserStatement statement) {}
-};
-
-class PreParserTargetScope {
- public:
-  explicit PreParserTargetScope(ParserBase<PreParser>* preparser) {}
 };
 
 class PreParserFuncNameInferrer {
@@ -904,8 +889,6 @@ struct ParserTypes<PreParser> {
   using FuncNameInferrer = PreParserFuncNameInferrer;
   using SourceRange = PreParserSourceRange;
   using SourceRangeScope = PreParserSourceRangeScope;
-  using Target = PreParserTarget;
-  using TargetScope = PreParserTargetScope;
 };
 
 
@@ -939,12 +922,11 @@ class PreParser : public ParserBase<PreParser> {
             AstValueFactory* ast_value_factory,
             PendingCompilationErrorHandler* pending_error_handler,
             RuntimeCallStats* runtime_call_stats, Logger* logger,
-            int script_id = -1, bool parsing_module = false,
-            bool parsing_on_main_thread = true)
+            UnoptimizedCompileFlags flags, bool parsing_on_main_thread = true)
       : ParserBase<PreParser>(zone, scanner, stack_limit, nullptr,
                               ast_value_factory, pending_error_handler,
-                              runtime_call_stats, logger, script_id,
-                              parsing_module, parsing_on_main_thread),
+                              runtime_call_stats, logger, flags,
+                              parsing_on_main_thread),
         use_counts_(nullptr),
         preparse_data_builder_(nullptr),
         preparse_data_builder_buffer_() {
@@ -972,8 +954,7 @@ class PreParser : public ParserBase<PreParser> {
   PreParseResult PreParseFunction(
       const AstRawString* function_name, FunctionKind kind,
       FunctionSyntaxKind function_syntax_kind, DeclarationScope* function_scope,
-      int* use_counts, ProducedPreparseData** produced_preparser_scope_data,
-      int script_id);
+      int* use_counts, ProducedPreparseData** produced_preparser_scope_data);
 
   PreparseDataBuilder* preparse_data_builder() const {
     return preparse_data_builder_;
@@ -1069,18 +1050,6 @@ class PreParser : public ParserBase<PreParser> {
   V8_INLINE void RewriteAsyncFunctionBody(
       const PreParserScopedStatementList* body, PreParserStatement block,
       const PreParserExpression& return_value) {}
-
-  V8_INLINE void DeclareLabel(ZonePtrList<const AstRawString>** labels,
-                              ZonePtrList<const AstRawString>** own_labels,
-                              const AstRawString* label) {
-    DCHECK(!parsing_module_ || !label->IsOneByteEqualTo("await"));
-  }
-
-  // TODO(nikolaos): The preparser currently does not keep track of labels.
-  V8_INLINE bool ContainsLabel(ZonePtrList<const AstRawString>* labels,
-                               const PreParserIdentifier& label) {
-    return false;
-  }
 
   V8_INLINE PreParserExpression
   RewriteReturn(const PreParserExpression& return_value, int pos) {
@@ -1185,17 +1154,6 @@ class PreParser : public ParserBase<PreParser> {
 
   bool IdentifierEquals(const PreParserIdentifier& identifier,
                         const AstRawString* other);
-
-  // TODO(nikolaos): The preparser currently does not keep track of labels
-  // and targets.
-  V8_INLINE PreParserStatement
-  LookupBreakTarget(const PreParserIdentifier& label) {
-    return PreParserStatement::Default();
-  }
-  V8_INLINE PreParserStatement
-  LookupContinueTarget(const PreParserIdentifier& label) {
-    return PreParserStatement::Default();
-  }
 
   V8_INLINE PreParserStatement DeclareFunction(
       const PreParserIdentifier& variable_name,
@@ -1498,7 +1456,7 @@ class PreParser : public ParserBase<PreParser> {
   V8_INLINE void ReportMessageAt(Scanner::Location source_location,
                                  MessageTemplate message,
                                  const PreParserIdentifier& arg) {
-    UNREACHABLE();
+    ReportMessageAt(source_location, message, arg.string_);
   }
 
   void ReportMessageAt(Scanner::Location source_location,
@@ -1511,6 +1469,8 @@ class PreParser : public ParserBase<PreParser> {
   const AstRawString* GetRawNameFromIdentifier(const PreParserIdentifier& arg) {
     return arg.string_;
   }
+
+  PreParserStatement AsIterationStatement(PreParserStatement s) { return s; }
 
   // "null" return type creators.
   V8_INLINE static PreParserIdentifier NullIdentifier() {
@@ -1536,6 +1496,10 @@ class PreParser : public ParserBase<PreParser> {
   template <typename T>
   V8_INLINE static bool IsNull(T subject) {
     return subject.IsNull();
+  }
+
+  V8_INLINE static bool IsIterationStatement(PreParserStatement subject) {
+    return subject.IsIterationStatement();
   }
 
   V8_INLINE PreParserIdentifier EmptyIdentifierString() const {

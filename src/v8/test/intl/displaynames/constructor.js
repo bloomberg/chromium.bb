@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Flags: --harmony-intl-displaynames
 // DisplayNames constructor can't be called as function.
 assertThrows(() => Intl.DisplayNames('sr'), TypeError);
 
@@ -83,21 +82,6 @@ assertDoesNotThrow(
 
 assertDoesNotThrow(
     () => new Intl.DisplayNames('sr', {type: 'currency'}));
-
-assertDoesNotThrow(
-    () => new Intl.DisplayNames('sr', {type: 'month'}));
-
-assertDoesNotThrow(
-    () => new Intl.DisplayNames('sr', {type: 'weekday'}));
-
-assertDoesNotThrow(
-    () => new Intl.DisplayNames('sr', {type: 'quarter'}));
-
-assertDoesNotThrow(
-    () => new Intl.DisplayNames('sr', {type: 'dayPeriod'}));
-
-assertDoesNotThrow(
-    () => new Intl.DisplayNames('sr', {type: 'dateTimeField'}));
 
 assertThrows(
     () => new Intl.DisplayNames('sr', {type: ''}),

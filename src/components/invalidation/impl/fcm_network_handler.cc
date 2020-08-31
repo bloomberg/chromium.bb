@@ -10,6 +10,7 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -21,6 +22,7 @@
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/status.h"
 #include "components/invalidation/public/invalidator_state.h"
 
@@ -40,6 +42,37 @@ const char kGCMScope[] = "GCM";
 
 // Lower bound time between two token validations when listening.
 const int kTokenValidationPeriodMinutesDefault = 60 * 24;
+
+// Returns the TTL (time-to-live) for the Instance ID token, or 0 if no TTL
+// should be specified.
+base::TimeDelta GetTimeToLive(const std::string& sender_id) {
+  // This magic value is identical to kInvalidationGCMSenderId, i.e. the value
+  // that Sync uses for its invalidations.
+  if (sender_id == "8181035976") {
+    if (!base::FeatureList::IsEnabled(
+            invalidation::switches::kSyncInstanceIDTokenTTL)) {
+      return base::TimeDelta();
+    }
+
+    return base::TimeDelta::FromSeconds(
+        invalidation::switches::kSyncInstanceIDTokenTTLSeconds.Get());
+  }
+
+  // This magic value is identical to kPolicyFCMInvalidationSenderID, i.e. the
+  // value that ChromeOS policy uses for its invalidations.
+  if (sender_id == "1013309121859") {
+    if (!base::FeatureList::IsEnabled(
+            invalidation::switches::kPolicyInstanceIDTokenTTL)) {
+      return base::TimeDelta();
+    }
+
+    return base::TimeDelta::FromSeconds(
+        invalidation::switches::kPolicyInstanceIDTokenTTLSeconds.Get());
+  }
+
+  // The default for all other FCM clients is no TTL.
+  return base::TimeDelta();
+}
 
 std::string GetValueFromMessage(const gcm::IncomingMessage& message,
                                 const std::string& key) {
@@ -98,6 +131,28 @@ InvalidationParsingStatus ParseIncomingMessage(
   return InvalidationParsingStatus::kSuccess;
 }
 
+void RecordFCMMessageStatus(InvalidationParsingStatus status,
+                            const std::string& sender_id) {
+  // These histograms are recorded quite frequently, so use the macros rather
+  // than the functions.
+  UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.FCMMessageStatus", status);
+  // Also split the histogram by a few well-known senders. The actual constants
+  // aren't accessible here (they're defined in higher layers), so we simply
+  // duplicate them here, strictly only for the purpose of metrics.
+  constexpr char kInvalidationGCMSenderId[] = "8181035976";
+  constexpr char kDriveFcmSenderId[] = "947318989803";
+  constexpr char kPolicyFCMInvalidationSenderID[] = "1013309121859";
+  if (sender_id == kInvalidationGCMSenderId) {
+    UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.FCMMessageStatus.Sync", status);
+  } else if (sender_id == kDriveFcmSenderId) {
+    UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.FCMMessageStatus.Drive",
+                              status);
+  } else if (sender_id == kPolicyFCMInvalidationSenderID) {
+    UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.FCMMessageStatus.Policy",
+                              status);
+  }
+}
+
 }  // namespace
 
 FCMNetworkHandler::FCMNetworkHandler(
@@ -135,7 +190,7 @@ void FCMNetworkHandler::StartListening() {
 
   diagnostic_info_.instance_id_token_requested = base::Time::Now();
   instance_id_driver_->GetInstanceID(app_id_)->GetToken(
-      sender_id_, kGCMScope,
+      sender_id_, kGCMScope, GetTimeToLive(sender_id_),
       /*options=*/std::map<std::string, std::string>(),
       /*flags=*/{InstanceID::Flags::kIsLazy},
       base::BindRepeating(&FCMNetworkHandler::DidRetrieveToken,
@@ -153,8 +208,8 @@ bool FCMNetworkHandler::IsListening() const {
 
 void FCMNetworkHandler::DidRetrieveToken(const std::string& subscription_token,
                                          InstanceID::Result result) {
-  UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.InitialTokenRetrievalStatus",
-                            result, InstanceID::Result::LAST_RESULT + 1);
+  base::UmaHistogramEnumeration("FCMInvalidations.InitialTokenRetrievalStatus",
+                                result);
   diagnostic_info_.registration_result = result;
   diagnostic_info_.token = subscription_token;
   diagnostic_info_.instance_id_token_was_received = base::Time::Now();
@@ -196,10 +251,11 @@ void FCMNetworkHandler::StartTokenValidation() {
   diagnostic_info_.instance_id_token_verification_requested = base::Time::Now();
   diagnostic_info_.token_validation_requested_num++;
   instance_id_driver_->GetInstanceID(app_id_)->GetToken(
-      sender_id_, kGCMScope, std::map<std::string, std::string>(),
+      sender_id_, kGCMScope, GetTimeToLive(sender_id_),
+      std::map<std::string, std::string>(),
       /*flags=*/{InstanceID::Flags::kIsLazy},
-      base::Bind(&FCMNetworkHandler::DidReceiveTokenForValidation,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FCMNetworkHandler::DidReceiveTokenForValidation,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FCMNetworkHandler::DidReceiveTokenForValidation(
@@ -239,16 +295,15 @@ void FCMNetworkHandler::OnStoreReset() {}
 void FCMNetworkHandler::OnMessage(const std::string& app_id,
                                   const gcm::IncomingMessage& message) {
   DCHECK_EQ(app_id, app_id_);
+
   std::string payload;
   std::string private_topic;
   std::string public_topic;
   int64_t version = 0;
-
   InvalidationParsingStatus status = ParseIncomingMessage(
       message, &payload, &private_topic, &public_topic, &version);
-  // This histogram is recorded quite frequently, so use the macro rather than
-  // the function.
-  UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.FCMMessageStatus", status);
+
+  RecordFCMMessageStatus(status, sender_id_);
 
   if (status == InvalidationParsingStatus::kSuccess)
     DeliverIncomingMessage(payload, private_topic, public_topic, version);
@@ -256,10 +311,7 @@ void FCMNetworkHandler::OnMessage(const std::string& app_id,
 
 void FCMNetworkHandler::OnMessagesDeleted(const std::string& app_id) {
   DCHECK_EQ(app_id, app_id_);
-  base::UmaHistogramBoolean("FCMInvalidations.FCMMessagesDeleted", true);
-  // Note: If this actually happens in practice, consider notifying the client
-  // that messages were deleted so it can act on it, e.g. in case of sync by
-  // triggering a GetUpdates.
+  // Note: As of 2020-02, this doesn't actually happen in practice.
 }
 
 void FCMNetworkHandler::OnSendError(

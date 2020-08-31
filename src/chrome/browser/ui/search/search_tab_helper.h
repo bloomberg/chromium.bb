@@ -6,22 +6,25 @@
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/search/chrome_colors/chrome_colors_service.h"
 #include "chrome/browser/search/instant_service_observer.h"
+#include "chrome/browser/ui/omnibox/omnibox_tab_helper.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
-#include "chrome/common/search.mojom.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "components/ntp_tiles/ntp_tile_impression.h"
-#include "components/omnibox/browser/autocomplete_controller_delegate.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
+#include "components/omnibox/browser/favicon_cache.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -37,13 +40,17 @@ class WebContents;
 struct LoadCommittedDetails;
 }
 
+namespace gfx {
+class Image;
+}
+
 class AutocompleteController;
 class GURL;
 class InstantService;
-class OmniboxView;
 class Profile;
 class SearchIPCRouterTest;
 class SearchSuggestService;
+class SkBitmap;
 
 // This is the browser-side, per-tab implementation of the embeddedSearch API
 // (see https://www.chromium.org/embeddedsearch).
@@ -52,18 +59,10 @@ class SearchTabHelper : public content::WebContentsObserver,
                         public InstantServiceObserver,
                         public SearchIPCRouter::Delegate,
                         public ui::SelectFileDialog::Listener,
-                        public AutocompleteControllerDelegate {
+                        public AutocompleteController::Observer,
+                        public OmniboxTabHelper::Observer {
  public:
   ~SearchTabHelper() override;
-
-  // Invoked when the omnibox input state is changed in some way that might
-  // affect the search mode.
-  void OmniboxInputStateChanged();
-
-  // Called to indicate that the omnibox focus state changed with the given
-  // |reason|.
-  void OmniboxFocusChanged(OmniboxFocusState state,
-                           OmniboxFocusChangeReason reason);
 
   // Called when the tab corresponding to |this| instance is activated.
   void OnTabActivated();
@@ -75,6 +74,11 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OnTabClosing();
 
   SearchIPCRouter& ipc_router_for_testing() { return ipc_router_; }
+
+  // Returns an equivalent SVG for the given Omnibox vector icon for use in the
+  // NTP Realbox.
+  static std::string AutocompleteMatchVectorIconToResourceName(
+      const gfx::VectorIcon& icon);
 
  private:
   friend class content::WebContentsUserData<SearchTabHelper>;
@@ -142,7 +146,14 @@ class SearchTabHelper : public content::WebContentsObserver,
                          bool prevent_inline_autocomplete) override;
   void DeleteAutocompleteMatch(uint8_t line) override;
   void StopAutocomplete(bool clear_result) override;
+  void ToggleSuggestionGroupIdVisibility(int32_t suggestion_group_id) override;
+  void LogCharTypedToRepaintLatency(uint32_t latency_ms) override;
   void BlocklistPromo(const std::string& promo_id) override;
+  void OpenExtensionsPage(double button,
+                          bool alt_key,
+                          bool ctrl_key,
+                          bool meta_key,
+                          bool shift_key) override;
   void OpenAutocompleteMatch(uint8_t line,
                              const GURL& url,
                              bool are_matches_showing,
@@ -164,11 +175,22 @@ class SearchTabHelper : public content::WebContentsObserver,
                     void* params) override;
   void FileSelectionCanceled(void* params) override;
 
-  // Overridden from AutocompleteControllerDelegate:
-  void OnResultChanged(bool default_match_changed) override;
+  // Overridden from AutocompleteController::Observer:
+  void OnResultChanged(AutocompleteController* controller,
+                       bool default_match_changed) override;
 
-  OmniboxView* GetOmniboxView();
-  const OmniboxView* GetOmniboxView() const;
+  // Overridden from OmniboxTabHelper::Observer:
+  void OnOmniboxInputStateChanged() override;
+  void OnOmniboxFocusChanged(OmniboxFocusState state,
+                             OmniboxFocusChangeReason reason) override;
+
+  void OnBitmapFetched(int match_index,
+                       const std::string& image_url,
+                       const SkBitmap& bitmap);
+
+  void OnFaviconFetched(int match_index,
+                        const std::string& page_url,
+                        const gfx::Image& favicon);
 
   Profile* profile() const;
 
@@ -199,6 +221,10 @@ class SearchTabHelper : public content::WebContentsObserver,
 
   std::unique_ptr<AutocompleteController> autocomplete_controller_;
   base::TimeTicks time_of_first_autocomplete_query_;
+
+  base::CancelableTaskTracker cancelable_task_tracker_;
+
+  FaviconCache favicon_cache_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

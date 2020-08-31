@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/overview/overview_types.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -21,15 +21,9 @@
 #include "ui/gfx/transform.h"
 
 namespace aura {
-
-class Window;
 class ScopedWindowEventTargetingBlocker;
-
+class Window;
 }  // namespace aura
-
-namespace ui {
-class Layer;
-}
 
 namespace ash {
 class OverviewItem;
@@ -43,22 +37,8 @@ class ScopedOverviewHideWindows;
 class ASH_EXPORT ScopedOverviewTransformWindow
     : public aura::client::TransientWindowClientObserver {
  public:
-  // Overview windows have certain properties if their aspect ratio exceeds a
-  // threshold. This enum keeps track of which category the window falls into,
-  // based on its aspect ratio.
-  enum class GridWindowFillMode {
-    kNormal = 0,
-    kLetterBoxed,
-    kPillarBoxed,
-  };
-
   using ScopedAnimationSettings =
       std::vector<std::unique_ptr<ScopedOverviewAnimationSettings>>;
-
-  // Windows whose aspect ratio surpass this (width twice as large as height or
-  // vice versa) will be classified as too wide or too tall and will be handled
-  // slightly differently in overview mode.
-  static constexpr float kExtremeWindowRatioThreshold = 2.f;
 
   // Calculates and returns an optimal scale ratio. This is only taking into
   // account |size.height()| as the width can vary.
@@ -66,6 +46,9 @@ class ASH_EXPORT ScopedOverviewTransformWindow
                             const gfx::SizeF& target,
                             int top_view_inset,
                             int title_height);
+
+  static OverviewGridWindowFillMode GetWindowDimensionsType(
+      const gfx::Size& size);
 
   ScopedOverviewTransformWindow(OverviewItem* overview_item,
                                 aura::Window* window);
@@ -80,11 +63,10 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   //  ScopedOverviewTransformWindow overview_window(window);
   //  ScopedOverviewTransformWindow::ScopedAnimationSettings animation_settings;
   //  overview_window.BeginScopedAnimation(
-  //      OVERVIEW_ANIMATION_SELECTOR_ITEM_SCROLL_CANCEL,
-  //      &animation_settings);
+  //      OVERVIEW_ANIMATION_RESTORE_WINDOW, &animation_settings);
   //  // Calls to SetTransform & SetOpacity will use the same animation settings
   //  // until animation_settings is destroyed.
-  //  overview_window.SetTransform(root_window, new_transform);
+  //  OverviewUtil::SetTransform(root_window, new_transform);
   //  overview_window.SetOpacity(1);
   void BeginScopedAnimation(OverviewAnimationType animation_type,
                             ScopedAnimationSettings* animation_settings);
@@ -119,8 +101,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // Returns |rect| having been shrunk to fit within |bounds| (preserving the
   // aspect ratio). Takes into account a window header that is |top_view_inset|
   // tall in the original window getting replaced by a window caption that is
-  // |title_height| tall in the transformed window. If |type_| is not normal,
-  // write |overview_bounds_|, which would differ than the return bounds.
+  // |title_height| tall in the transformed window.
   gfx::RectF ShrinkRectToFitPreservingAspectRatio(const gfx::RectF& rect,
                                                   const gfx::RectF& bounds,
                                                   int top_view_inset,
@@ -142,11 +123,14 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // change. Must be called before PositionWindows in OverviewGrid.
   void UpdateWindowDimensionsType();
 
-  // Updates the rounded corners on the window. Makes the rounded corners if
-  // |show| is true, otherwise removes it. If |update_clip| is true, it will
-  // clip the top portion of the window that normally contains the caption (if
-  // any), otherwise it will skip updating that clip.
-  void UpdateRoundedCorners(bool show, bool update_clip);
+  // Updates the rounded corners and clipping on the window. Note that the
+  // rounded corners can be hidden with |show| set to false, but the clipping
+  // stays for the duration of overview once applied.
+  void UpdateRoundedCornersAndClip(bool show);
+
+  // Clip the top portion of the window that normally contains the caption (if
+  // any).
+  void ClipHeaderIfNeeded(bool animate);
 
   // aura::client::TransientWindowClientObserver:
   void OnTransientChildWindowAdded(aura::Window* parent,
@@ -156,18 +140,12 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   aura::Window* window() const { return window_; }
 
-  GridWindowFillMode type() const { return type_; }
-
-  base::Optional<gfx::RectF> overview_bounds() const {
-    return overview_bounds_;
-  }
+  OverviewGridWindowFillMode type() const { return type_; }
 
  private:
   friend class OverviewHighlightControllerTest;
   friend class OverviewSessionTest;
   class LayerCachingAndFilteringObserver;
-  FRIEND_TEST_ALL_PREFIXES(ScopedOverviewTransformWindowWithMaskTest,
-                           WindowBoundsChangeTest);
 
   // Closes the window managed by |this|.
   void CloseWidget();
@@ -182,18 +160,11 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // A weak pointer to the real window in the overview.
   aura::Window* window_;
 
-  // True if the window has been transformed for overview mode.
-  bool overview_started_ = false;
-
   // The original opacity of the window before entering overview mode.
   float original_opacity_;
 
   // Specifies how the window is laid out in the grid.
-  GridWindowFillMode type_ = GridWindowFillMode::kNormal;
-
-  // Empty if window is of type normal. Contains the bounds the overview item
-  // should be if the window is too wide or too tall.
-  base::Optional<gfx::RectF> overview_bounds_;
+  OverviewGridWindowFillMode type_ = OverviewGridWindowFillMode::kNormal;
 
   // The observers associated with the layers we requested caching render
   // surface and trilinear filtering. The requests will be removed in dtor if
@@ -207,9 +178,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   base::flat_map<aura::Window*,
                  std::unique_ptr<aura::ScopedWindowEventTargetingBlocker>>
       event_targeting_blocker_map_;
-
-  // The original mask layer of the window before entering overview mode.
-  ui::Layer* original_mask_layer_ = nullptr;
 
   // The original clipping on the layer of the window before entering overview
   // mode.

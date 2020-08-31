@@ -4,6 +4,7 @@
 
 #include "media/capabilities/video_decode_stats_db.h"
 
+#include "base/check_op.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "media/capabilities/bucket_utility.h"

@@ -16,6 +16,7 @@ yfriedman@chromium.org
 dtrainor@chromium.org
 nyquist@chromium.org
 sky@chromium.org
+tedchoc@chromium.org
 thestig@chromium.org
 twellington@chromium.org
 
@@ -28,5 +29,5 @@ per-file VERSION=amineer@chromium.org
 per-file VERSION=anantha@chromium.org
 per-file VERSION=govind@chromium.org
 per-file VERSION=mmoss@chromium.org
-# COMPONENT: Build
+# COMPONENT: UI>Browser
 # TEAM: chromium-reviews@chromium.org

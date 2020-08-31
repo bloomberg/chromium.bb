@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/dummy_histogram.h"
 #include "base/metrics/metrics_hashes.h"
@@ -15,7 +16,13 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/values.h"
+
+namespace {
+constexpr char kAsciiNewLine[] = "\n";
+}  // namespace
 
 namespace base {
 
@@ -117,7 +124,8 @@ void SparseHistogram::AddCount(Sample value, int count) {
     unlogged_samples_->Accumulate(value, count);
   }
 
-  FindAndRunCallback(value);
+  if (UNLIKELY(StatisticsRecorder::have_active_callbacks()))
+    FindAndRunCallback(value);
 }
 
 std::unique_ptr<HistogramSamples> SparseHistogram::SnapshotSamples() const {
@@ -162,14 +170,27 @@ bool SparseHistogram::AddSamplesFromPickle(PickleIterator* iter) {
   return unlogged_samples_->AddFromPickle(iter);
 }
 
-void SparseHistogram::WriteHTMLGraph(std::string* output) const {
-  output->append("<PRE>");
-  WriteAsciiImpl(true, "<br>", output);
-  output->append("</PRE>");
+void SparseHistogram::WriteAscii(std::string* output) const {
+  // Get a local copy of the data so we are consistent.
+  std::unique_ptr<HistogramSamples> snapshot = SnapshotSamples();
+
+  WriteAsciiHeader(*snapshot, output);
+  output->append(kAsciiNewLine);
+  WriteAsciiBody(*snapshot, true, kAsciiNewLine, output);
 }
 
-void SparseHistogram::WriteAscii(std::string* output) const {
-  WriteAsciiImpl(true, "\n", output);
+base::DictionaryValue SparseHistogram::ToGraphDict() const {
+  std::unique_ptr<HistogramSamples> snapshot = SnapshotSamples();
+  std::string header;
+  std::string body;
+  base::DictionaryValue dict;
+
+  WriteAsciiHeader(*snapshot, &header);
+  WriteAsciiBody(*snapshot, true, kAsciiNewLine, &body);
+  dict.SetString("header", header);
+  dict.SetString("body", body);
+
+  return dict;
 }
 
 void SparseHistogram::SerializeInfoImpl(Pickle* pickle) const {
@@ -226,16 +247,12 @@ void SparseHistogram::GetCountAndBucketData(Count* count,
   // TODO(kaiwang): Implement. (See HistogramBase::WriteJSON.)
 }
 
-void SparseHistogram::WriteAsciiImpl(bool graph_it,
+void SparseHistogram::WriteAsciiBody(const HistogramSamples& snapshot,
+                                     bool graph_it,
                                      const std::string& newline,
                                      std::string* output) const {
-  // Get a local copy of the data so we are consistent.
-  std::unique_ptr<HistogramSamples> snapshot = SnapshotSamples();
-  Count total_count = snapshot->TotalCount();
+  Count total_count = snapshot.TotalCount();
   double scaled_total_count = total_count / 100.0;
-
-  WriteAsciiHeader(total_count, output);
-  output->append(newline);
 
   // Determine how wide the largest bucket range is (how many digits to print),
   // so that we'll be able to right-align starts for the graphical bars.
@@ -243,7 +260,7 @@ void SparseHistogram::WriteAsciiImpl(bool graph_it,
   // normalize the graphical bar-width relative to that sample count.
   Count largest_count = 0;
   Sample largest_sample = 0;
-  std::unique_ptr<SampleCountIterator> it = snapshot->Iterator();
+  std::unique_ptr<SampleCountIterator> it = snapshot.Iterator();
   while (!it->Done()) {
     Sample min;
     int64_t max;
@@ -258,7 +275,7 @@ void SparseHistogram::WriteAsciiImpl(bool graph_it,
   size_t print_width = GetSimpleAsciiBucketRange(largest_sample).size() + 1;
 
   // iterate over each item and display them
-  it = snapshot->Iterator();
+  it = snapshot.Iterator();
   while (!it->Done()) {
     Sample min;
     int64_t max;
@@ -279,10 +296,10 @@ void SparseHistogram::WriteAsciiImpl(bool graph_it,
   }
 }
 
-void SparseHistogram::WriteAsciiHeader(const Count total_count,
+void SparseHistogram::WriteAsciiHeader(const HistogramSamples& snapshot,
                                        std::string* output) const {
   StringAppendF(output, "Histogram: %s recorded %d samples", histogram_name(),
-                total_count);
+                snapshot.TotalCount());
   if (flags())
     StringAppendF(output, " (flags = 0x%x)", flags());
 }

@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">menyu bandi</translation>
 <translation id="10623998915015855">almashtirgich tugmasi</translation>
 <translation id="1088086359088493902">Soniyalar</translation>
+<translation id="1142001580032786438">Hafta tanlash oynasini chiqarish</translation>
 <translation id="1171774979989969504">Iltimos, e-pochta manzilini kiriting.</translation>
 <translation id="1178581264944972037">Pauza</translation>
 <translation id="1188858454923323853">qo‘shimcha</translation>
@@ -11,6 +12,7 @@
 <translation id="1206693055195146388">slayder</translation>
 <translation id="1211441953136645838">yakuniy izoh</translation>
 <translation id="1281252709823657822">muloqot oynasi</translation>
+<translation id="1306460908038601864">Yoqilmagan</translation>
 <translation id="1335095011850992622">mualliflar</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -21,6 +23,7 @@
 <translation id="1727886345390570319">taglavha menyusini yopish</translation>
 <translation id="1729654308190250600">Bo‘sh bo‘lmagan e-pochta manzilini kiriting.</translation>
 <translation id="1758486001363313524">Boshqa...</translation>
+<translation id="1787192514241997742">umimiy vaqt: <ph name="REMAINING_TIME" /></translation>
 <translation id="1806710327868736751">ogohlantirish muloqot oynasi</translation>
 <translation id="1821985195704844674">daraxtsimon jadval</translation>
 <translation id="1822429046913737220">AM/PM</translation>
@@ -32,6 +35,7 @@
 <translation id="1938124657309484470">Maksimal qiymat <ph name="MAXIMUM_DATE_OR_TIME" /> bo‘lishi mumkin</translation>
 <translation id="1946271899482435442">Sana tanlash oynasini ochish</translation>
 <translation id="1993104285338243655">Tasvir boshqa ekranga uzatilmoqda</translation>
+<translation id="2031987842108996681">Qizil kanal</translation>
 <translation id="2060505056492490888">“<ph name="INVALIDDOMAIN" />” manzilida <ph name="DOT" /> belgisi noto‘g‘ri qo‘yildi.</translation>
 <translation id="2148716181193084225">Bugun</translation>
 <translation id="2158401438286456825">sahifalar ro‘yxati</translation>
@@ -42,6 +46,7 @@
 <translation id="2291999235780842123">belgilash katakchasi</translation>
 <translation id="2311842470354187719">sahifa oxiri</translation>
 <translation id="2335594187091864976">sana va vaqt tanlash oynasi</translation>
+<translation id="2393030564806080191">Rangning 16 raqamli qiymati</translation>
 <translation id="245932805758469625">qolgan video vaqti, soniyada</translation>
 <translation id="248395913932153421">Kun</translation>
 <translation id="2507943997699731163">Bu maydonni to‘ldiring.</translation>
@@ -49,6 +54,7 @@
 <translation id="2561842179657104141">yana boshqa boshqaruv elementlari</translation>
 <translation id="2572483411312390101">ijro etish</translation>
 <translation id="2613802280814924224">Yaroqli qiymat kiriting. Eng yaqin yaroqli qiymat: <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Yashil kanal</translation>
 <translation id="2653659639078652383">Yuborish</translation>
 <translation id="2657045182931379222">grafik obyekt</translation>
 <translation id="2674318244760992338">pastki kolontitul</translation>
@@ -69,6 +75,7 @@
 <translation id="310520048233152454">URL kiriting.</translation>
 <translation id="3175736971608411871">taymer</translation>
 <translation id="3199563858620722075">ro‘yxatli maydon</translation>
+<translation id="3329013043687509092">To‘liqlik</translation>
 <translation id="3450233048674729344">Qiymat <ph name="MAXIMUM" /> ga teng yoki undan kichik bo‘lishi kerak.</translation>
 <translation id="3486220673238053218">ta’rif</translation>
 <translation id="3557673793733683882">sarlavha <ph name="HEADING_LEVEL" /></translation>
@@ -82,7 +89,6 @@
 <translation id="3822383571486410024">Matndagi belgilar soni <ph name="MIN_CHARACTERS" /> tadan ko‘p bo‘lishi kerak (siz esa <ph name="CURRENT_LENGTH" /> ta belgidan foydalanyapsiz).</translation>
 <translation id="383465348367842624">Manzilning “<ph name="ATSIGN" />” qismida “<ph name="INVALIDCHARACTER" />” belgisi bo‘lmasligi kerak.</translation>
 <translation id="3846214748874656680">To‘liq ekran rejimidan chiqish</translation>
-<translation id="3889183436948184105">tahrir</translation>
 <translation id="3920932319529768807">xulosa</translation>
 <translation id="3924558731517983934">ilova</translation>
 <translation id="3944740393230681990">muqaddima</translation>
@@ -100,7 +106,6 @@
 <translation id="4444765639179266822">Bunday yozilgan shekilli: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">lug‘at havolasi</translation>
 <translation id="4522570452068850558">Tafsilotlar</translation>
-<translation id="4542388879936266156">qolgan vaqt: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">shakl</translation>
 <translation id="4661075872484491155">daraxt</translation>
 <translation id="4664250907885839816">Manzillar qatorining “<ph name="ATSIGN" />” qismida “<ph name="INVALIDCHARACTER" />” belgisi bo‘lmasligi kerak.</translation>
@@ -114,7 +119,10 @@
 <translation id="479989351350248267">qidiruv</translation>
 <translation id="4812940957355064477">Raqam kiriting.</translation>
 <translation id="4912536737030637138">bibliografiya yozuvi</translation>
+<translation id="4915360478455618802">Vaqt tanlash oynasini chiqarish</translation>
 <translation id="492244087561876220">fikr</translation>
+<translation id="4950364064308314478">Mahalliy sana va vaqt tanlash oynasini chiqarish</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> tanlandi</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> ta element tanlandi</translation>
 <translation id="4992066212339426712">Ovozni yoqish</translation>
 <translation id="49969490063480558">Elektron manzilning qolgan qismini “<ph name="ATSIGN" />” belgisidan keyin kiriting. “<ph name="INVALIDADDRESS" />” manzili to‘liq emas.</translation>
@@ -122,6 +130,7 @@
 <translation id="5034860022980953847">jarayon holati ko‘rsatkichi</translation>
 <translation id="5090250355906949916">video ijro yoʻlagi</translation>
 <translation id="5093189678851173835">epigraf</translation>
+<translation id="509897012892853729">Koʻk kanal</translation>
 <translation id="5117590920725113268">Keyingi oyni ko‘rsatish</translation>
 <translation id="512758898067543763">satr sarlavhasi</translation>
 <translation id="5143125788380636750">epilog</translation>
@@ -129,6 +138,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Elektron manzilning “<ph name="ATSIGN" />” belgisidan keyingi qismini kiriting. “<ph name="INVALIDADDRESS" />” manzili to‘liq emas.</translation>
 <translation id="5334352251556557839">Media fayl ijro etilmadi.</translation>
+<translation id="537648784377940524">Minimal sana (<ph name="MIN_DATE_OR_TIME" />) maksimal sanadan (<ph name="MAX_DATE_OR_TIME" />) oldin boʻlsin.</translation>
 <translation id="5406322316791861025">shakl</translation>
 <translation id="5453733299334684579">daraxt elementi</translation>
 <translation id="5466621249238537318">Bir yoki bir nechta faylni tanlang</translation>
@@ -144,7 +154,6 @@
 <translation id="5677946354068040947">boshqa sozlamalar</translation>
 <translation id="576709008726043716">kirish</translation>
 <translation id="57838592816432529">Ovozni o‘chirib qo‘yish</translation>
-<translation id="5860033963881614850">O‘chiq</translation>
 <translation id="588258955323874662">Butun ekran</translation>
 <translation id="5888666972993069672"><ph name="DEVICE_FRIENDLY_NAME" /> ekraniga namoyish etilmoqda</translation>
 <translation id="591047860372322273">qidiruv maydonchasi</translation>
@@ -159,6 +168,7 @@
 <translation id="6166809985690652833">xotima</translation>
 <translation id="6209276755895393898">Bizningcha bu: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">lug‘at</translation>
+<translation id="6281588256137006900">Yorqinlik</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Tasvir ustida tasvir rejimidan chiqish</translation>
 <translation id="6398862346408813489">Oy tanlash panelini ko‘rsatish</translation>
@@ -179,6 +189,7 @@
 <translation id="6790428901817661496">Ijro etish</translation>
 <translation id="6820355525329141109">Plagin yuklanmadi.</translation>
 <translation id="6820615603175220800">bibliografiya havolasi</translation>
+<translation id="6831465880655513317">2D slayder uchun rang toʻqligi va yorqinligini tanlash</translation>
 <translation id="6843725295806269523">ovozsiz qilish</translation>
 <translation id="6885760532393684712">katalog</translation>
 <translation id="689129560213475294">nashriyot ramzi</translation>
@@ -196,6 +207,7 @@
 <translation id="7263440858009898357">Ro‘yxat bandlaridan birini tanlang.</translation>
 <translation id="727747134524199931">ustun sarlavhasi</translation>
 <translation id="7320576522385648310">buferlanyapti</translation>
+<translation id="7341556277900466204">Rang tanlash</translation>
 <translation id="7353453495576941748">hissa</translation>
 <translation id="7364796246159120393">Fayl tanlang</translation>
 <translation id="739024184232394898">Boshqa...</translation>
@@ -216,9 +228,11 @@
 <translation id="775297008183122718">Xato kiritildi</translation>
 <translation id="7789962463072032349">pauza</translation>
 <translation id="7802800022689234070">yoyiluvchi uchburchak</translation>
+<translation id="7852167693871241274">Rang tusi slayderi</translation>
 <translation id="7888071071722539607">Elektron pochta manzilida “<ph name="ATSIGN" />” belgisi bo‘lishi kerak. “<ph name="INVALIDADDRESS" />” manzilida “<ph name="ATSIGN" />” belgisi yo‘q.</translation>
 <translation id="7891486169920085145">ajratkich</translation>
 <translation id="795667975304826397">Hech qanday fayl tanlanmagan</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> tanlanmagan</translation>
 <translation id="8034303206267677282">kuchli</translation>
 <translation id="8053789581856978548">qidiruv maydoni</translation>
 <translation id="8057695513531652401">eslatma</translation>
@@ -231,6 +245,7 @@
 <translation id="8284326494547611709">Taglavhalar</translation>
 <translation id="8346634859695247203">qism</translation>
 <translation id="835897206747267392">Qiymat yaroqsiz.</translation>
+<translation id="839593075537728968">Qiymati <ph name="MINIMUM_TIME" /> va <ph name="MAXIMUM_TIME" /> orasida boʻlsin.</translation>
 <translation id="8403857369060869934">oʻtgan vaqt: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">qism</translation>
 <translation id="8433900881053900389">asboblar paneli</translation>
@@ -247,17 +262,19 @@
 <translation id="860475260694818407">mundarija</translation>
 <translation id="8613126697340063924">ijroni masofadan turib boshqarish</translation>
 <translation id="862370744433916922">taglavha</translation>
+<translation id="8634971699417195529">Oy tanlash oynasini chiqarish</translation>
 <translation id="8711688047404765493">chiqish</translation>
 <translation id="8750798805984357768">Bu parametrlardan birini tanlang.</translation>
 <translation id="8808573423886751634">bob</translation>
 <translation id="8845239796550121995">Televizoringizga translatsiya qilinmoqda</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8875657656876809964">Video ijro etilmadi</translation>
+<translation id="8889402386540077796">Tus</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Formatni almashtirish</translation>
 <translation id="8987927404178983737">Oy</translation>
 <translation id="901493112792887934">joriy vaqt soniyalarda</translation>
 <translation id="901834265349196618">e-pochta</translation>
-<translation id="9023835124071926463">fikrlar boʻlimi</translation>
 <translation id="9048119486235211610">navigatsiya</translation>
 <translation id="9062295712474918030">hujjat</translation>
 <translation id="9093215626363556771">tasvir ustida tasvir rejimidan chiqish</translation>

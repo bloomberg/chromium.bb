@@ -6,21 +6,23 @@
 
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/media_controls_header_view.h"
+#include "ash/login/ui/views_utils.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/media_message_center/media_controls_progress_view.h"
 #include "components/media_message_center/media_notification_util.h"
 #include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/cpp/util.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/media_session/public/mojom/media_session_service.mojom.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -30,9 +32,10 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/vector_icons.h"
-#include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -125,6 +128,8 @@ const gfx::VectorIcon& GetVectorIconForMediaAction(MediaSessionAction action) {
     case MediaSessionAction::kSkipAd:
     case MediaSessionAction::kSeekTo:
     case MediaSessionAction::kScrubTo:
+    case MediaSessionAction::kEnterPictureInPicture:
+    case MediaSessionAction::kExitPictureInPicture:
       NOTREACHED();
       break;
   }
@@ -141,8 +146,6 @@ class MediaActionButton : public views::ImageButton {
                     MediaSessionAction action,
                     const base::string16& accessible_name)
       : views::ImageButton(listener),
-        is_play_pause_(action == MediaSessionAction::kPause ||
-                       action == MediaSessionAction::kPlay),
         icon_size_(icon_size) {
     SetInkDropMode(views::Button::InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
@@ -151,10 +154,17 @@ class MediaActionButton : public views::ImageButton {
     SetBorder(
         views::CreateEmptyBorder(views::LayoutProvider::Get()->GetInsetsMetric(
             views::INSETS_VECTOR_IMAGE_BUTTON)));
-    SetPreferredSize(is_play_pause_ ? kPlayPauseButtonSize
-                                    : kMediaControlsButtonSize);
+
+    const bool is_play_pause = action == MediaSessionAction::kPause ||
+                               action == MediaSessionAction::kPlay;
+    SetPreferredSize(is_play_pause ? kPlayPauseButtonSize
+                                   : kMediaControlsButtonSize);
     SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     SetAction(action, accessible_name);
+
+    SetInstallFocusRingOnFocus(true);
+    login_views_utils::ConfigureRectFocusRingCircleInkDrop(this, focus_ring(),
+                                                           base::nullopt);
   }
 
   ~MediaActionButton() override = default;
@@ -170,15 +180,13 @@ class MediaActionButton : public views::ImageButton {
             AshColorProvider::AshColorMode::kDark));
   }
 
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::CircleInkDropMask>(
-        size(), GetLocalBounds().CenterPoint(),
-        is_play_pause_ ? kPlayPauseButtonSize.width() / 2
-                       : kMediaControlsButtonSize.width() / 2);
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override {
+    return std::make_unique<views::InkDropHighlight>(gfx::SizeF(size()),
+                                                     GetInkDropBaseColor());
   }
 
  private:
-  const bool is_play_pause_;
   int const icon_size_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaActionButton);
@@ -201,10 +209,8 @@ LockScreenMediaControlsView::Callbacks::Callbacks() = default;
 LockScreenMediaControlsView::Callbacks::~Callbacks() = default;
 
 LockScreenMediaControlsView::LockScreenMediaControlsView(
-    service_manager::Connector* connector,
     const Callbacks& callbacks)
-    : connector_(connector),
-      hide_controls_timer_(new base::OneShotTimer()),
+    : hide_controls_timer_(new base::OneShotTimer()),
       hide_artwork_timer_(new base::OneShotTimer()),
       media_controls_enabled_(callbacks.media_controls_enabled),
       hide_media_controls_(callbacks.hide_media_controls),
@@ -213,8 +219,15 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   DCHECK(callbacks.hide_media_controls);
   DCHECK(callbacks.show_media_controls);
 
-  // Media controls should observer power events.
+  // Media controls should observe power events and handle the case of being
+  // created in suspended state.
   base::PowerMonitor::AddObserver(this);
+  if (base::PowerMonitor::IsProcessSuspended()) {
+    // Post OnSuspend call to run after LockContentsView is initialized.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&LockScreenMediaControlsView::OnSuspend,
+                                  weak_ptr_factory_.GetWeakPtr()));
+  }
 
   // Media controls have not been dismissed initially.
   Shell::Get()->media_controller()->SetMediaControlsDismissed(false);
@@ -229,7 +242,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
       views::BoxLayout::Orientation::kVertical, kMediaControlsInsets));
   contents_view_->SetBackground(views::CreateRoundedRectBackground(
       AshColorProvider::Get()->GetBaseLayerColor(
-          AshColorProvider::BaseLayerType::kTransparent74,
+          AshColorProvider::BaseLayerType::kTransparent80,
           AshColorProvider::AshColorMode::kDark),
       kMediaControlsCornerRadius));
 
@@ -393,16 +406,18 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
       media_session::mojom::MediaSessionImageType::kSourceIcon, SkBitmap());
   SetArtwork(base::nullopt);
 
-  // |connector_| can be null in tests.
-  if (!connector_)
+  // |service| can be null in tests.
+  media_session::mojom::MediaSessionService* service =
+      Shell::Get()->shell_delegate()->GetMediaSessionService();
+  if (!service)
     return;
 
   // Connect to the MediaControllerManager and create a MediaController that
   // controls the active session so we can observe it.
   mojo::Remote<media_session::mojom::MediaControllerManager>
       controller_manager_remote;
-  connector_->Connect(media_session::mojom::kServiceName,
-                      controller_manager_remote.BindNewPipeAndPassReceiver());
+  service->BindMediaControllerManager(
+      controller_manager_remote.BindNewPipeAndPassReceiver());
   controller_manager_remote->CreateActiveMediaController(
       media_controller_remote_.BindNewPipeAndPassReceiver());
 
@@ -798,7 +813,7 @@ void LockScreenMediaControlsView::SetArtwork(
   session_artwork_->SetImage(*img);
 
   Layout();
-  session_artwork_->set_clip_path(GetArtworkClipPath());
+  session_artwork_->SetClipPath(GetArtworkClipPath());
 }
 
 SkPath LockScreenMediaControlsView::GetArtworkClipPath() const {

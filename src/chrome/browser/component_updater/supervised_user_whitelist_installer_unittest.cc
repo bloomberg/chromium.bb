@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -75,7 +76,7 @@ std::string JsonToString(const base::DictionaryValue& dict) {
 class MockComponentUpdateService : public ComponentUpdateService,
                                    public OnDemandUpdater {
  public:
-  ~MockComponentUpdateService() override {}
+  ~MockComponentUpdateService() override = default;
 
   bool on_demand_update_called() const { return on_demand_update_called_; }
 
@@ -201,7 +202,7 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   SupervisedUserWhitelistInstallerTest()
       : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
-  ~SupervisedUserWhitelistInstallerTest() override {}
+  ~SupervisedUserWhitelistInstallerTest() override = default;
 
   void SetUp() override {
     SupervisedUserWhitelistInstaller::RegisterPrefs(local_state_.registry());
@@ -360,8 +361,8 @@ TEST_F(SupervisedUserWhitelistInstallerTest, InstallNewWhitelist) {
   // installer only calls |ComponentReady| if the install of the component
   // has succeeded.
   component->installer->Install(
-      unpacked_path, std::string(),
-      base::Bind(
+      unpacked_path, std::string(), nullptr, base::DoNothing(),
+      base::BindOnce(
           [](WhitelistLoadObserver* observer,
              const update_client::CrxInstaller::Result& result) {
             EXPECT_EQ(0, result.error);

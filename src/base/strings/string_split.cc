@@ -78,7 +78,7 @@ bool AppendStringKeyValue(StringPiece input,
     DVLOG(1) << "cannot find delimiter in: " << input;
     return false;    // No delimiter.
   }
-  input.substr(0, end_key_pos).CopyToString(&result_pair.first);
+  result_pair.first = std::string(input.substr(0, end_key_pos));
 
   // Find the value string.
   StringPiece remains = input.substr(end_key_pos, input.size() - end_key_pos);
@@ -87,8 +87,9 @@ bool AppendStringKeyValue(StringPiece input,
     DVLOG(1) << "cannot parse value from input: " << input;
     return false;   // No value.
   }
-  remains.substr(begin_value_pos, remains.size() - begin_value_pos)
-      .CopyToString(&result_pair.second);
+
+  result_pair.second = std::string(
+      remains.substr(begin_value_pos, remains.size() - begin_value_pos));
 
   return true;
 }
@@ -103,6 +104,11 @@ std::vector<OutputStringType> SplitStringUsingSubstrT(
   using size_type = typename Piece::size_type;
 
   std::vector<OutputStringType> result;
+  if (delimiter.size() == 0) {
+    result.emplace_back(input);
+    return result;
+  }
+
   for (size_type begin_index = 0, end_index = 0; end_index != Piece::npos;
        begin_index = end_index + delimiter.size()) {
     end_index = input.find(delimiter, begin_index);

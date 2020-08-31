@@ -5,7 +5,6 @@
 #import <Foundation/Foundation.h>
 #include <objc/runtime.h>
 
-#include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #import "components/crash/core/common/objc_zombie.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,7 +12,7 @@
 
 @interface ZombieCxxDestructTest : NSObject
 {
-  base::scoped_nsobject<id> aRef_;
+  base::scoped_nsobject<id> _aRef;
 }
 - (instancetype)initWith:(id)anObject;
 @end
@@ -22,7 +21,7 @@
 - (instancetype)initWith:(id)anObject {
   self = [super init];
   if (self) {
-    aRef_.reset([anObject retain]);
+    _aRef.reset([anObject retain]);
   }
   return self;
 }

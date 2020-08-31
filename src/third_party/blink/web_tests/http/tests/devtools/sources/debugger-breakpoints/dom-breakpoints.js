@@ -23,7 +23,7 @@
       function step2(node) {
         rootElement = node;
         TestRunner.domDebuggerModel.setDOMBreakpoint(
-            node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+            node, Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified);
         TestRunner.addResult(
             'Set \'Subtree Modified\' DOM breakpoint on rootElement.');
         TestRunner.evaluateInPageWithTimeout(
@@ -38,9 +38,10 @@
           'Test that DOM breakpoint toggles properly using checkbox.');
       var breakpoint = TestRunner.domDebuggerModel.setDOMBreakpoint(
           rootElement,
-          SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+          Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
       TestRunner.addResult('Set DOM breakpoint.');
-      pane._items.get(breakpoint).checkbox.click();
+      const breakpointElement = pane._list._itemToElement.get(breakpoint);
+      breakpointElement.firstElementChild.checkboxElement.click();
       TestRunner.addResult('Uncheck DOM breakpoint.');
       TestRunner
           .evaluateInPagePromise(
@@ -50,7 +51,8 @@
 
       function step2() {
         TestRunner.addResult('Check DOM breakpoint.');
-        pane._items.get(breakpoint).checkbox.click();
+        const breakpointElement = pane._list._itemToElement.get(breakpoint);
+        breakpointElement.firstElementChild.checkboxElement.click();
         TestRunner.evaluateInPageWithTimeout(
             'modifyAttribute(\'rootElement\', \'data-test-breakpoint-toggle\', \'bar\')');
         TestRunner.addResult(
@@ -92,11 +94,11 @@
             'Call breakDebugger, expect it to show up in next stack trace.');
       }
 
-      function step3(frames) {
-        SourcesTestRunner.captureStackTrace(frames);
+      async function step3(frames) {
+        await SourcesTestRunner.captureStackTrace(frames);
         TestRunner.domDebuggerModel.removeDOMBreakpoint(
             rootElement,
-            SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+            Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified);
         SourcesTestRunner.resumeExecution(next);
       }
     },
@@ -106,7 +108,7 @@
           'Test that \'Attribute Modified\' breakpoint is hit when modifying attribute.');
       TestRunner.domDebuggerModel.setDOMBreakpoint(
           rootElement,
-          SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+          Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
       TestRunner.addResult(
           'Set \'Attribute Modified\' DOM breakpoint on rootElement.');
       TestRunner.evaluateInPageWithTimeout(
@@ -117,7 +119,7 @@
       function step2(callFrames) {
         TestRunner.domDebuggerModel.removeDOMBreakpoint(
             rootElement,
-            SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+            Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
         next();
       }
     },
@@ -127,7 +129,7 @@
           'Test that \'Attribute Modified\' breakpoint is hit when modifying Attr node.');
       TestRunner.domDebuggerModel.setDOMBreakpoint(
           rootElement,
-          SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+          Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
       TestRunner.addResult(
           'Set \'Attribute Modified\' DOM breakpoint on rootElement.');
       TestRunner.evaluateInPageWithTimeout(
@@ -138,7 +140,7 @@
       function step2(callFrames) {
         TestRunner.domDebuggerModel.removeDOMBreakpoint(
             rootElement,
-            SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+            Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
         next();
       }
     },
@@ -148,7 +150,7 @@
           'Test that \'Attribute Modified\' breakpoint is hit when adding a new Attr node.');
       TestRunner.domDebuggerModel.setDOMBreakpoint(
           rootElement,
-          SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+          Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
       TestRunner.addResult(
           'Set \'Attribute Modified\' DOM breakpoint on rootElement.');
       TestRunner.evaluateInPageWithTimeout(
@@ -159,7 +161,7 @@
       function step2(callFrames) {
         TestRunner.domDebuggerModel.removeDOMBreakpoint(
             rootElement,
-            SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+            Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
         next();
       }
     },
@@ -169,7 +171,7 @@
           'Test that \'Attribute Modified\' breakpoint is hit when modifying style attribute.');
       TestRunner.domDebuggerModel.setDOMBreakpoint(
           rootElement,
-          SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+          Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
       TestRunner.addResult(
           'Set \'Attribute Modified\' DOM breakpoint on rootElement.');
       TestRunner.evaluateInPageWithTimeout(
@@ -180,7 +182,7 @@
       function step2(callFrames) {
         TestRunner.domDebuggerModel.removeDOMBreakpoint(
             rootElement,
-            SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+            Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
         next();
       }
     },
@@ -192,7 +194,7 @@
 
       function step2(node) {
         TestRunner.domDebuggerModel.setDOMBreakpoint(
-            node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.NodeRemoved);
+            node, Protocol.DOMDebugger.DOMBreakpointType.NodeRemoved);
         TestRunner.addResult(
             'Set \'Node Removed\' DOM breakpoint on elementToRemove.');
         TestRunner.evaluateInPageWithTimeout(
@@ -201,78 +203,6 @@
         SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(next);
       }
     },
-
-    function testReload(next) {
-      TestRunner.addResult(
-          'Test that DOM breakpoints are persisted between page reloads.');
-      ElementsTestRunner.nodeWithId('rootElement', step2);
-
-      function step2(node) {
-        TestRunner.domDebuggerModel.setDOMBreakpoint(
-            node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
-        TestRunner.addResult(
-            'Set \'Subtree Modified\' DOM breakpoint on rootElement.');
-        TestRunner.reloadPage(step3);
-      }
-
-      function step3() {
-        ElementsTestRunner.expandElementsTree(step4);
-      }
-
-      function step4() {
-        TestRunner.evaluateInPageWithTimeout(
-            'appendElement(\'rootElement\', \'childElement\')');
-        TestRunner.addResult('Append childElement to rootElement.');
-        SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(next);
-      }
-    },
-
-    function testInsertChildIntoAuthorShadowTree(next) {
-      ElementsTestRunner.shadowRootByHostId('hostElement', callback);
-
-      function callback(node) {
-        authorShadowRoot = node;
-        TestRunner.addResult(
-            'Test that \'Subtree Modified\' breakpoint on author shadow root is hit when appending a child.');
-        TestRunner.domDebuggerModel.setDOMBreakpoint(
-            authorShadowRoot,
-            SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
-        TestRunner.addResult(
-            'Set \'Subtree Modified\' DOM breakpoint on author shadow root.');
-        TestRunner.evaluateInPageWithTimeout(
-            'appendElementToOpenShadowRoot(\'childElement\')');
-        TestRunner.addResult('Append childElement to author shadow root.');
-        SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(next);
-      }
-    },
-
-    function testReloadWithShadowElementBreakpoint(next) {
-      ElementsTestRunner.nodeWithId('outerElement', step1);
-
-      function step1(node) {
-        outerElement = node;
-
-        TestRunner.addResult(
-            'Test that shadow DOM breakpoints are persisted between page reloads.');
-        TestRunner.domDebuggerModel.setDOMBreakpoint(
-            outerElement,
-            SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
-        TestRunner.addResult(
-            'Set \'Subtree Modified\' DOM breakpoint on outerElement.');
-        TestRunner.reloadPage(step2);
-      }
-
-      function step2() {
-        ElementsTestRunner.expandElementsTree(step3);
-      }
-
-      function step3() {
-        TestRunner.evaluateInPageWithTimeout(
-            'appendElementToAuthorShadowTree(\'outerElement\', \'childElement\')');
-        TestRunner.addResult('Append childElement to outerElement.');
-        SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(next);
-      }
-    }
 
   ]);
 })();

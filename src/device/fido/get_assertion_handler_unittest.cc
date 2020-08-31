@@ -62,7 +62,6 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 
   void ForgeDiscoveries() {
     discovery_ = fake_discovery_factory_->ForgeNextHidDiscovery();
-    ble_discovery_ = fake_discovery_factory_->ForgeNextBleDiscovery();
     cable_discovery_ = fake_discovery_factory_->ForgeNextCableDiscovery();
     nfc_discovery_ = fake_discovery_factory_->ForgeNextNfcDiscovery();
     platform_discovery_ = fake_discovery_factory_->ForgeNextPlatformDiscovery();
@@ -99,8 +98,8 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
     ForgeDiscoveries();
 
     auto handler = std::make_unique<GetAssertionRequestHandler>(
-        nullptr /* connector */, fake_discovery_factory_.get(),
-        supported_transports_, std::move(request),
+        fake_discovery_factory_.get(), supported_transports_,
+        std::move(request),
         /*allow_skipping_pin_touch=*/true, get_assertion_cb_.callback());
     return handler;
   }
@@ -111,8 +110,6 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
     using Transport = FidoTransportProtocol;
     if (base::Contains(transports, Transport::kUsbHumanInterfaceDevice))
       discovery()->WaitForCallToStartAndSimulateSuccess();
-    if (base::Contains(transports, Transport::kBluetoothLowEnergy))
-      ble_discovery()->WaitForCallToStartAndSimulateSuccess();
     if (base::Contains(transports, Transport::kCloudAssistedBluetoothLowEnergy))
       cable_discovery()->WaitForCallToStartAndSimulateSuccess();
     if (base::Contains(transports, Transport::kNearFieldCommunication))
@@ -125,8 +122,6 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 
     if (!base::Contains(transports, Transport::kUsbHumanInterfaceDevice))
       EXPECT_FALSE(discovery()->is_start_requested());
-    if (!base::Contains(transports, Transport::kBluetoothLowEnergy))
-      EXPECT_FALSE(ble_discovery()->is_start_requested());
     if (!base::Contains(transports,
                         Transport::kCloudAssistedBluetoothLowEnergy))
       EXPECT_FALSE(cable_discovery()->is_start_requested());
@@ -142,12 +137,15 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 
   void ExpectAllTransportsAreAllowedForRequest(
       GetAssertionRequestHandler* request_handler) {
-    ExpectAllowedTransportsForRequestAre(request_handler,
-                                         GetAllTransportProtocols());
+    ExpectAllowedTransportsForRequestAre(
+        request_handler,
+        {FidoTransportProtocol::kUsbHumanInterfaceDevice,
+         FidoTransportProtocol::kInternal,
+         FidoTransportProtocol::kNearFieldCommunication,
+         FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy});
   }
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
-  test::FakeFidoDiscovery* ble_discovery() const { return ble_discovery_; }
   test::FakeFidoDiscovery* cable_discovery() const { return cable_discovery_; }
   test::FakeFidoDiscovery* nfc_discovery() const { return nfc_discovery_; }
   test::FakeFidoDiscovery* platform_discovery() const {
@@ -168,14 +166,16 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   std::unique_ptr<test::FakeFidoDiscoveryFactory> fake_discovery_factory_ =
       std::make_unique<test::FakeFidoDiscoveryFactory>();
   test::FakeFidoDiscovery* discovery_;
-  test::FakeFidoDiscovery* ble_discovery_;
   test::FakeFidoDiscovery* cable_discovery_;
   test::FakeFidoDiscovery* nfc_discovery_;
   test::FakeFidoDiscovery* platform_discovery_;
   scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
   TestGetAssertionRequestCallback get_assertion_cb_;
-  base::flat_set<FidoTransportProtocol> supported_transports_ =
-      GetAllTransportProtocols();
+  base::flat_set<FidoTransportProtocol> supported_transports_ = {
+      FidoTransportProtocol::kUsbHumanInterfaceDevice,
+      FidoTransportProtocol::kInternal,
+      FidoTransportProtocol::kNearFieldCommunication,
+      FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
 };
 
 TEST_F(FidoGetAssertionHandlerTest, TransportAvailabilityInfo) {
@@ -419,7 +419,7 @@ TEST_F(FidoGetAssertionHandlerTest,
           CredentialType::kPublicKey,
           fido_parsing_utils::Materialize(
               test_data::kTestGetAssertionCredentialId),
-          {FidoTransportProtocol::kBluetoothLowEnergy}),
+          {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
       PublicKeyCredentialDescriptor(
           CredentialType::kPublicKey,
           fido_parsing_utils::Materialize(kBogusCredentialId)),
@@ -439,7 +439,7 @@ TEST_F(FidoGetAssertionHandlerTest,
           CredentialType::kPublicKey,
           fido_parsing_utils::Materialize(
               test_data::kTestGetAssertionCredentialId),
-          {FidoTransportProtocol::kBluetoothLowEnergy}),
+          {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
       PublicKeyCredentialDescriptor(
           CredentialType::kPublicKey,
           fido_parsing_utils::Materialize(kBogusCredentialId),
@@ -447,26 +447,23 @@ TEST_F(FidoGetAssertionHandlerTest,
            FidoTransportProtocol::kNearFieldCommunication}),
   };
 
-  EXPECT_CALL(*mock_adapter_, IsPresent()).WillOnce(::testing::Return(true));
   auto request_handler =
       CreateGetAssertionHandlerWithRequest(std::move(request));
   ExpectAllowedTransportsForRequestAre(
-      request_handler.get(), {FidoTransportProtocol::kBluetoothLowEnergy,
+      request_handler.get(), {FidoTransportProtocol::kUsbHumanInterfaceDevice,
                               FidoTransportProtocol::kInternal,
                               FidoTransportProtocol::kNearFieldCommunication});
 }
 
-TEST_F(FidoGetAssertionHandlerTest, SupportedTransportsAreOnlyBleAndNfc) {
-  const base::flat_set<FidoTransportProtocol> kBleAndNfc = {
-      FidoTransportProtocol::kBluetoothLowEnergy,
+TEST_F(FidoGetAssertionHandlerTest, SupportedTransportsAreOnlyNfc) {
+  const base::flat_set<FidoTransportProtocol> kNfc = {
       FidoTransportProtocol::kNearFieldCommunication,
   };
 
-  set_supported_transports(kBleAndNfc);
-  EXPECT_CALL(*mock_adapter_, IsPresent()).WillOnce(::testing::Return(true));
+  set_supported_transports(kNfc);
   auto request_handler = CreateGetAssertionHandlerWithRequest(
       CreateTestRequestWithCableExtension());
-  ExpectAllowedTransportsForRequestAre(request_handler.get(), kBleAndNfc);
+  ExpectAllowedTransportsForRequestAre(request_handler.get(), kNfc);
 }
 
 TEST_F(FidoGetAssertionHandlerTest,
@@ -514,39 +511,6 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyUsbTransportAllowed) {
       request_handler->transport_availability_info().available_transports,
       ::testing::UnorderedElementsAre(
           FidoTransportProtocol::kUsbHumanInterfaceDevice));
-}
-
-TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyBleTransportAllowed) {
-  auto request = CreateTestRequestWithCableExtension();
-  request.allow_list = {
-      PublicKeyCredentialDescriptor(
-          CredentialType::kPublicKey,
-          fido_parsing_utils::Materialize(
-              test_data::kTestGetAssertionCredentialId),
-          {FidoTransportProtocol::kBluetoothLowEnergy}),
-  };
-
-  set_supported_transports({FidoTransportProtocol::kBluetoothLowEnergy});
-  EXPECT_CALL(*mock_adapter_, IsPresent()).WillOnce(::testing::Return(true));
-  auto request_handler =
-      CreateGetAssertionHandlerWithRequest(std::move(request));
-
-  auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
-  device->SetDeviceTransport(FidoTransportProtocol::kBluetoothLowEnergy);
-  device->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetAssertion,
-      test_data::kTestGetAssertionResponse);
-  ble_discovery()->WaitForCallToStartAndSimulateSuccess();
-  ble_discovery()->AddDevice(std::move(device));
-
-  get_assertion_callback().WaitForCallback();
-
-  EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
-  EXPECT_TRUE(get_assertion_callback().value<0>());
-  EXPECT_THAT(
-      request_handler->transport_availability_info().available_transports,
-      ::testing::UnorderedElementsAre(
-          FidoTransportProtocol::kBluetoothLowEnergy));
 }
 
 TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyNfcTransportAllowed) {
@@ -756,7 +720,7 @@ TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
 
   TestGetAssertionRequestCallback cb;
   auto request_handler = std::make_unique<GetAssertionRequestHandler>(
-      nullptr /* connector */, &virtual_device_factory,
+      &virtual_device_factory,
       base::flat_set<FidoTransportProtocol>(
           {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
       std::move(request), /*allow_skipping_pin_touch=*/true, cb.callback());
@@ -788,19 +752,17 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
   void FidoAuthenticatorAdded(const FidoAuthenticator& authenticator) override {
   }
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override {}
-  void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
-                                  std::string new_authenticator_id) override {}
-  void FidoAuthenticatorPairingModeChanged(
-      base::StringPiece authenticator_id,
-      bool is_in_pairing_mode,
-      base::string16 display_name) override {}
   bool SupportsPIN() const override { return false; }
   void CollectPIN(
       base::Optional<int> attempts,
       base::OnceCallback<void(std::string)> provide_pin_cb) override {
     NOTREACHED();
   }
-  void FinishCollectPIN() override { NOTREACHED(); }
+  void StartBioEnrollment(base::OnceClosure next_callback) override {}
+  void OnSampleCollected(int bio_samples_remaining) override {}
+  void FinishCollectToken() override { NOTREACHED(); }
+  void OnRetryUserVerification(int attempts) override {}
+  void OnInternalUserVerificationLocked() override {}
   void SetMightCreateResidentCredential(bool v) override {}
 
   bool controls_dispatch_ = false;
@@ -824,7 +786,7 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
     FidoDiscoveryFactory fido_discovery_factory;
     fido_discovery_factory.set_win_webauthn_api(&api);
     auto handler = std::make_unique<GetAssertionRequestHandler>(
-        fake_hid_manager.service_manager_connector(), &fido_discovery_factory,
+        &fido_discovery_factory,
         base::flat_set<FidoTransportProtocol>(
             {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         CtapGetAssertionRequest(test_data::kRelyingPartyId,
@@ -843,7 +805,7 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
     EXPECT_EQ(handler->AuthenticatorsForTesting().size(), 1u);
     EXPECT_EQ(handler->AuthenticatorsForTesting()
                   .begin()
-                  ->second->IsWinNativeApiAuthenticator(),
+                  ->second->authenticator->IsWinNativeApiAuthenticator(),
               enable_api);
   }
 }

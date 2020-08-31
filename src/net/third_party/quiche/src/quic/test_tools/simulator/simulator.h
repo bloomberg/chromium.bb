@@ -22,6 +22,7 @@ namespace simulator {
 class Simulator : public QuicConnectionHelperInterface {
  public:
   Simulator();
+  explicit Simulator(QuicRandom* random_generator);
   Simulator(const Simulator&) = delete;
   Simulator& operator=(const Simulator&) = delete;
   ~Simulator() override;
@@ -129,8 +130,8 @@ class Simulator : public QuicConnectionHelperInterface {
   std::multimap<QuicTime, Actor*> schedule_;
   // For each actor, maintain the time it is scheduled at.  The value for
   // unscheduled actors is QuicTime::Infinite().
-  QuicUnorderedMap<Actor*, QuicTime> scheduled_times_;
-  QuicUnorderedSet<std::string> actor_names_;
+  QuicHashMap<Actor*, QuicTime> scheduled_times_;
+  QuicHashSet<std::string> actor_names_;
 };
 
 template <class TerminationPredicate>

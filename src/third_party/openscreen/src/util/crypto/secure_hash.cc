@@ -10,7 +10,7 @@
 
 #include "openssl/mem.h"
 #include "util/crypto/openssl_util.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 

@@ -76,7 +76,7 @@ int main() {
   cmd += ['-l%s' % lib for lib in used_libs]
   try:
     cros_build_lib.run(
-        cmd, cwd=outdir, redirect_stdout=True, redirect_stderr=True,
+        cmd, cwd=outdir, stdout=True, stderr=True,
         print_cmd=False)
   except cros_build_lib.RunCommandError as e:
     raise BuildELFError('%s\n%s' % (e, e.result.error))

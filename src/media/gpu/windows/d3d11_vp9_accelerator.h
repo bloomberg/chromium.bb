@@ -19,13 +19,11 @@
 #include "media/gpu/windows/d3d11_vp9_picture.h"
 
 namespace media {
-class CdmProxyContext;
 
 class D3D11VP9Accelerator : public VP9Decoder::VP9Accelerator {
  public:
   D3D11VP9Accelerator(D3D11VideoDecoderClient* client,
                       MediaLog* media_log,
-                      CdmProxyContext* cdm_proxy_context,
                       ComD3D11VideoDecoder video_decoder,
                       ComD3D11VideoDevice video_device,
                       std::unique_ptr<VideoContextWrapper> video_context);
@@ -37,7 +35,7 @@ class D3D11VP9Accelerator : public VP9Decoder::VP9Accelerator {
                     const Vp9SegmentationParams& segmentation_params,
                     const Vp9LoopFilterParams& loop_filter_params,
                     const Vp9ReferenceFrameVector& reference_frames,
-                    const base::Closure& on_finished_cb) override;
+                    base::OnceClosure on_finished_cb) override;
 
   bool OutputPicture(scoped_refptr<VP9Picture> picture) override;
 
@@ -73,11 +71,14 @@ class D3D11VP9Accelerator : public VP9Decoder::VP9Accelerator {
 
   D3D11VideoDecoderClient* client_;
   MediaLog* const media_log_;
-  CdmProxyContext* cdm_proxy_context_;
   UINT status_feedback_;
   ComD3D11VideoDecoder video_decoder_;
   ComD3D11VideoDevice video_device_;
   std::unique_ptr<VideoContextWrapper> video_context_;
+
+  // Used to set |use_prev_in_find_mv_refs| properly.
+  gfx::Size last_frame_size_;
+  bool last_show_frame_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(D3D11VP9Accelerator);
 };

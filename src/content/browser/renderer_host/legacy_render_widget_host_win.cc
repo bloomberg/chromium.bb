@@ -135,17 +135,16 @@ LegacyRenderWidgetHostHWND::~LegacyRenderWidgetHostHWND() {
   DCHECK(!::IsWindow(hwnd()));
 }
 
-bool LegacyRenderWidgetHostHWND::Init() {
+void LegacyRenderWidgetHostHWND::Init() {
   // Only register a touch window if we are using WM_TOUCH.
   if (!features::IsUsingWMPointerForTouch())
     RegisterTouchWindow(hwnd(), TWF_WANTPALM);
 
-  HRESULT hr;
-  hr = ::CreateStdAccessibleObject(hwnd(), OBJID_WINDOW,
-                                   IID_PPV_ARGS(&window_accessible_));
-
-  if (FAILED(hr))
-    return false;
+  // Ignore failure from this call. Some SKUs of Windows such as Hololens do not
+  // support MSAA, and this call failing should not stop us from initializing
+  // UI Automation support.
+  ::CreateStdAccessibleObject(hwnd(), OBJID_WINDOW,
+                              IID_PPV_ARGS(&window_accessible_));
 
   if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
     // The usual way for UI Automation to obtain a fragment root is through
@@ -169,8 +168,6 @@ bool LegacyRenderWidgetHostHWND::Init() {
 
   // Disable pen flicks (http://crbug.com/506977)
   base::win::DisableFlicks(hwnd());
-
-  return true;
 }
 
 // static
@@ -197,8 +194,8 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
     // When an MSAA client has responded to fake event for this id,
     // only basic accessibility support is enabled. (Full screen reader support
     // is detected later when specific, more advanced APIs are accessed.)
-    for (ui::IAccessible2UsageObserver& observer :
-         ui::GetIAccessible2UsageObserverList()) {
+    for (ui::WinAccessibilityAPIUsageObserver& observer :
+         ui::GetWinAccessibilityAPIUsageObserverList()) {
       observer.OnScreenReaderHoneyPotQueried();
     }
     return static_cast<LRESULT>(0L);
@@ -213,14 +210,6 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
   if ((is_uia_request &&
        ::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) ||
       is_msaa_request) {
-    if (is_uia_request) {
-      // UIA, by design, insulates providers from knowing about the client(s)
-      // asking for information. When UIA interface is requested, the presence
-      // of a full-fledged accessibility technology is assumed and all support
-      // is enabled.
-      BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
-    }
-
     gfx::NativeViewAccessible root =
         GetOrCreateWindowRootAccessible(is_uia_request);
 
@@ -555,36 +544,20 @@ LegacyRenderWidgetHostHWND::GetOrCreateBrowserAccessibilityRoot() {
 
   BrowserAccessibility* root_node = manager->GetRoot();
 
-  // A datetime popup will have a second window with its own kRootWebArea.
-  // However, the BrowserAccessibilityManager is shared with the main window,
-  // and the popup window's kRootWebArea will be inserted as a sibling of the
-  // popup button. When this is called on a popup, we must return the popup
-  // window's kRootWebArea instead of the root document's kRootWebArea. This
-  // will ensure that we're not placing duplicate document roots in the
-  // accessibility tree.
+  // Popups with HTML content (such as <input type="date">) will create a new
+  // HWND with its own fragment root, but will also inject accessible nodes into
+  // the main document's accessibility tree, thus sharing a
+  // BrowserAccessibilityManager with the main document (see documentation for
+  // BrowserAccessibilityManager::child_root_id_). We can't return the same root
+  // node as the main document, as that will cause a cardinality problem - there
+  // would be two different HWND's pointing to the same root. The popup HWND
+  // should return the root of the popup, not the root of the main document
   if (host_->GetWidgetType() == WidgetType::kPopup) {
-    OneShotAccessibilityTreeSearch tree_search(root_node);
-    tree_search.SetStartNode(root_node);
-    tree_search.SetDirection(OneShotAccessibilityTreeSearch::FORWARDS);
-    tree_search.SetImmediateDescendantsOnly(false);
-    tree_search.SetCanWrapToLastElement(false);
-    tree_search.AddPredicate(AccessibilityPopupButtonPredicate);
-
-    size_t matches = tree_search.CountMatches();
-    for (size_t i = 0; i < matches; ++i) {
-      BrowserAccessibility* match = tree_search.GetMatchAtIndex(i);
-      DCHECK(match);
-
-      // The web root should be the next sibling of the popup node, however it
-      // is not created instantly, so sometimes the popup window exists before
-      // the popup's kRootWebArea has been added to the tree. In this case we
-      // will fall back to the main document's root.
-      BrowserAccessibility* popup_web_root = match->PlatformGetNextSibling();
-      if (popup_web_root &&
-          popup_web_root->GetRole() == ax::mojom::Role::kRootWebArea) {
-        return popup_web_root->GetNativeViewAccessible();
-      }
-    }
+    // Check to see if the manager has a child root (it's expected that there
+    // won't be in popups without HTML-based content such as <select> controls).
+    BrowserAccessibility* child_root = manager->GetPopupRoot();
+    if (child_root)
+      return child_root->GetNativeViewAccessible();
   }
 
   return root_node->GetNativeViewAccessible();

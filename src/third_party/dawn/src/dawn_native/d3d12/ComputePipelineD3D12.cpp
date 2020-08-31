@@ -22,8 +22,16 @@
 
 namespace dawn_native { namespace d3d12 {
 
-    ComputePipeline::ComputePipeline(Device* device, const ComputePipelineDescriptor* descriptor)
-        : ComputePipelineBase(device, descriptor) {
+    ResultOrError<ComputePipeline*> ComputePipeline::Create(
+        Device* device,
+        const ComputePipelineDescriptor* descriptor) {
+        Ref<ComputePipeline> pipeline = AcquireRef(new ComputePipeline(device, descriptor));
+        DAWN_TRY(pipeline->Initialize(descriptor));
+        return pipeline.Detach();
+    }
+
+    MaybeError ComputePipeline::Initialize(const ComputePipelineDescriptor* descriptor) {
+        Device* device = ToBackend(GetDevice());
         uint32_t compileFlags = 0;
 #if defined(_DEBUG)
         // Enable better shader debugging with the graphics debugging tools.
@@ -33,7 +41,8 @@ namespace dawn_native { namespace d3d12 {
         compileFlags |= D3DCOMPILE_PACK_MATRIX_ROW_MAJOR;
 
         ShaderModule* module = ToBackend(descriptor->computeStage.module);
-        const std::string hlslSource = module->GetHLSLSource(ToBackend(GetLayout()));
+        std::string hlslSource;
+        DAWN_TRY_ASSIGN(hlslSource, module->GetHLSLSource(ToBackend(GetLayout())));
 
         ComPtr<ID3DBlob> compiledShader;
         ComPtr<ID3DBlob> errors;
@@ -47,20 +56,21 @@ namespace dawn_native { namespace d3d12 {
         }
 
         D3D12_COMPUTE_PIPELINE_STATE_DESC d3dDesc = {};
-        d3dDesc.pRootSignature = ToBackend(GetLayout())->GetRootSignature().Get();
+        d3dDesc.pRootSignature = ToBackend(GetLayout())->GetRootSignature();
         d3dDesc.CS.pShaderBytecode = compiledShader->GetBufferPointer();
         d3dDesc.CS.BytecodeLength = compiledShader->GetBufferSize();
 
         device->GetD3D12Device()->CreateComputePipelineState(&d3dDesc,
                                                              IID_PPV_ARGS(&mPipelineState));
+        return {};
     }
 
     ComputePipeline::~ComputePipeline() {
         ToBackend(GetDevice())->ReferenceUntilUnused(mPipelineState);
     }
 
-    ComPtr<ID3D12PipelineState> ComputePipeline::GetPipelineState() {
-        return mPipelineState;
+    ID3D12PipelineState* ComputePipeline::GetPipelineState() const {
+        return mPipelineState.Get();
     }
 
 }}  // namespace dawn_native::d3d12

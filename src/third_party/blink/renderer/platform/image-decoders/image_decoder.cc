@@ -23,6 +23,8 @@
 #include <memory>
 
 #include "base/numerics/safe_conversions.h"
+#include "media/media_buildflags.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_decoder.h"
 #include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
 #include "third_party/blink/renderer/platform/image-decoders/gif/gif_image_decoder.h"
@@ -33,6 +35,10 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "ui/gfx/geometry/size.h"
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+#include "third_party/blink/renderer/platform/image-decoders/avif/avif_image_decoder.h"
+#endif
 
 namespace blink {
 
@@ -51,6 +57,12 @@ cc::ImageType FileExtensionToImageType(String image_extension) {
     return cc::ImageType::kICO;
   if (image_extension == "bmp")
     return cc::ImageType::kBMP;
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  if (base::FeatureList::IsEnabled(features::kAVIF) &&
+      image_extension == "avif") {
+    return cc::ImageType::kAVIF;
+  }
+#endif
   return cc::ImageType::kInvalid;
 }
 
@@ -130,24 +142,31 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
 
   std::unique_ptr<ImageDecoder> decoder;
   if (MatchesJPEGSignature(contents)) {
-    decoder.reset(new JPEGImageDecoder(alpha_option, color_behavior,
-                                       max_decoded_bytes, allow_decode_to_yuv));
+    decoder = std::make_unique<JPEGImageDecoder>(
+        alpha_option, color_behavior, max_decoded_bytes, allow_decode_to_yuv);
   } else if (MatchesPNGSignature(contents)) {
-    decoder.reset(new PNGImageDecoder(alpha_option,
-                                      high_bit_depth_decoding_option,
-                                      color_behavior, max_decoded_bytes));
+    decoder = std::make_unique<PNGImageDecoder>(
+        alpha_option, high_bit_depth_decoding_option, color_behavior,
+        max_decoded_bytes);
   } else if (MatchesGIFSignature(contents)) {
-    decoder.reset(
-        new GIFImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+    decoder = std::make_unique<GIFImageDecoder>(alpha_option, color_behavior,
+                                                max_decoded_bytes);
   } else if (MatchesWebPSignature(contents)) {
-    decoder.reset(
-        new WEBPImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+    decoder = std::make_unique<WEBPImageDecoder>(alpha_option, color_behavior,
+                                                 max_decoded_bytes);
   } else if (MatchesICOSignature(contents) || MatchesCURSignature(contents)) {
-    decoder.reset(
-        new ICOImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+    decoder = std::make_unique<ICOImageDecoder>(alpha_option, color_behavior,
+                                                max_decoded_bytes);
   } else if (MatchesBMPSignature(contents)) {
-    decoder.reset(
-        new BMPImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+    decoder = std::make_unique<BMPImageDecoder>(alpha_option, color_behavior,
+                                                max_decoded_bytes);
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  } else if (base::FeatureList::IsEnabled(features::kAVIF) &&
+             AVIFImageDecoder::MatchesAVIFSignature(fast_reader)) {
+    decoder = std::make_unique<AVIFImageDecoder>(
+        alpha_option, high_bit_depth_decoding_option, color_behavior,
+        max_decoded_bytes);
+#endif
   }
 
   if (decoder)
@@ -182,6 +201,13 @@ String ImageDecoder::SniffImageType(scoped_refptr<SharedBuffer> image_data) {
     return "image/x-icon";
   if (MatchesBMPSignature(contents))
     return "image/bmp";
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  if (base::FeatureList::IsEnabled(features::kAVIF) &&
+      AVIFImageDecoder::MatchesAVIFSignature(fast_reader)) {
+    // TODO(wtc): Sniff AVIF image sequences and return image/avif-sequence.
+    return "image/avif";
+  }
+#endif
   return String();
 }
 
@@ -202,8 +228,8 @@ ImageDecoder::CompressionFormat ImageDecoder::GetCompressionFormat(
     return kUndefinedFormat;
 
   // Attempt to sniff whether a WebP image is using a lossy or lossless
-  // compression algorithm. Note: Will return kUndefinedFormat in the case of an
-  // animated WebP image.
+  // compression algorithm. Note: Will return kWebPAnimationFormat in the case
+  // of an animated WebP image.
   size_t available_data = image_data ? image_data->size() : 0;
   if (EqualIgnoringASCIICase(mime_type, "image/webp") && available_data >= 16) {
     // Attempt to sniff only 8 bytes (the second half of the first 16). This
@@ -245,6 +271,18 @@ ImageDecoder::CompressionFormat ImageDecoder::GetCompressionFormat(
       NOTREACHED();
     }
   }
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  // Attempt to sniff whether an AVIF image is using a lossy or lossless
+  // compression algorithm.
+  // TODO(wtc): Implement this. Figure out whether to return kUndefinedFormat or
+  // a new kAVIFAnimationFormat in the case of an animated AVIF image.
+  if (base::FeatureList::IsEnabled(features::kAVIF) &&
+      (EqualIgnoringASCIICase(mime_type, "image/avif") ||
+       EqualIgnoringASCIICase(mime_type, "image/avif-sequence"))) {
+    return kLossyFormat;
+  }
+#endif
 
   if (MIMETypeRegistry::IsLossyImageMIMEType(mime_type))
     return kLossyFormat;

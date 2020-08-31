@@ -45,16 +45,16 @@ static int exynos_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint
 		width = ALIGN(width, 16);
 		height = ALIGN(height, 32);
 		chroma_height = ALIGN(height / 2, 32);
-		bo->strides[0] = bo->strides[1] = width;
+		bo->meta.strides[0] = bo->meta.strides[1] = width;
 		/* MFC v8+ requires 64 byte padding in the end of luma and chroma buffers. */
-		bo->sizes[0] = bo->strides[0] * height + 64;
-		bo->sizes[1] = bo->strides[1] * chroma_height + 64;
-		bo->offsets[0] = bo->offsets[1] = 0;
-		bo->total_size = bo->sizes[0] + bo->sizes[1];
+		bo->meta.sizes[0] = bo->meta.strides[0] * height + 64;
+		bo->meta.sizes[1] = bo->meta.strides[1] * chroma_height + 64;
+		bo->meta.offsets[0] = bo->meta.offsets[1] = 0;
+		bo->meta.total_size = bo->meta.sizes[0] + bo->meta.sizes[1];
 	} else if (format == DRM_FORMAT_XRGB8888 || format == DRM_FORMAT_ARGB8888) {
-		bo->strides[0] = drv_stride_from_format(format, width, 0);
-		bo->total_size = bo->sizes[0] = height * bo->strides[0];
-		bo->offsets[0] = 0;
+		bo->meta.strides[0] = drv_stride_from_format(format, width, 0);
+		bo->meta.total_size = bo->meta.sizes[0] = height * bo->meta.strides[0];
+		bo->meta.offsets[0] = 0;
 	} else {
 		drv_log("unsupported format %X\n", format);
 		assert(0);
@@ -62,8 +62,8 @@ static int exynos_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint
 	}
 
 	int ret;
-	for (plane = 0; plane < bo->num_planes; plane++) {
-		size_t size = bo->sizes[plane];
+	for (plane = 0; plane < bo->meta.num_planes; plane++) {
+		size_t size = bo->meta.sizes[plane];
 		struct drm_exynos_gem_create gem_create;
 
 		memset(&gem_create, 0, sizeof(gem_create));

@@ -2,7 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {settings.AppearanceBrowserProxy} */
+// clang-format off
+import {isChromeOS, isLinux} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// clang-format on
+
+/** @implements {AppearanceBrowserProxy} */
 class TestAppearanceBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
@@ -81,14 +88,8 @@ let appearancePage = null;
 /** @type {?TestAppearanceBrowserProxy} */
 let appearanceBrowserProxy = null;
 
-/** @type {?TestWallpaperBrowserProxy} */
-let wallpaperBrowserProxy = null;
-
 function createAppearancePage() {
   appearanceBrowserProxy.reset();
-  if (cr.isChromeOS) {
-    wallpaperBrowserProxy.reset();
-  }
   PolymerTest.clearBody();
 
   appearancePage = document.createElement('settings-appearance-page');
@@ -110,19 +111,13 @@ function createAppearancePage() {
   });
 
   document.body.appendChild(appearancePage);
-  Polymer.dom.flush();
+  flush();
 }
 
 suite('AppearanceHandler', function() {
   setup(function() {
     appearanceBrowserProxy = new TestAppearanceBrowserProxy();
-    settings.AppearanceBrowserProxyImpl.instance_ = appearanceBrowserProxy;
-
-    if (cr.isChromeOS) {
-      wallpaperBrowserProxy = new TestWallpaperBrowserProxy();
-      settings.WallpaperBrowserProxyImpl.instance_ = wallpaperBrowserProxy;
-    }
-
+    AppearanceBrowserProxyImpl.instance_ = appearanceBrowserProxy;
     createAppearancePage();
   });
 
@@ -130,57 +125,9 @@ suite('AppearanceHandler', function() {
     appearancePage.remove();
   });
 
-  if (cr.isChromeOS) {
-    // TODO(crbug/950007): Remove when SplitSettings is complete.
-    test('wallpaperManager', function() {
-      wallpaperBrowserProxy.setIsWallpaperPolicyControlled(false);
-      // TODO(dschuyler): This should notice the policy change without needing
-      // the page to be recreated.
-      createAppearancePage();
-      return wallpaperBrowserProxy.whenCalled('isWallpaperPolicyControlled')
-          .then(() => {
-            const button = appearancePage.$.wallpaperButton;
-            assertTrue(!!button);
-            assertFalse(button.disabled);
-            button.click();
-            return wallpaperBrowserProxy.whenCalled('openWallpaperManager');
-          });
-    });
-
-    // TODO(crbug/950007): Remove when SplitSettings is complete.
-    test('wallpaperSettingVisible', function() {
-      appearancePage.set('pageVisibility.setWallpaper', false);
-      return wallpaperBrowserProxy.whenCalled('isWallpaperSettingVisible')
-          .then(function() {
-            Polymer.dom.flush();
-            assertTrue(appearancePage.$$('#wallpaperButton').hidden);
-          });
-    });
-
-    // TODO(crbug/950007): Remove when SplitSettings is complete.
-    test('wallpaperPolicyControlled', function() {
-      // Should show the wallpaper policy indicator and disable the toggle
-      // button if the wallpaper is policy controlled.
-      wallpaperBrowserProxy.setIsWallpaperPolicyControlled(true);
-      createAppearancePage();
-      return wallpaperBrowserProxy.whenCalled('isWallpaperPolicyControlled')
-          .then(function() {
-            Polymer.dom.flush();
-            assertFalse(appearancePage.$$('#wallpaperPolicyIndicator').hidden);
-            assertTrue(appearancePage.$$('#wallpaperButton').disabled);
-          });
-    });
-  } else {
-    test('noWallpaperManager', function() {
-      // The wallpaper button should not be present.
-      const button = appearancePage.$.wallpaperButton;
-      assertFalse(!!button);
-    });
-  }
-
   const THEME_ID_PREF = 'prefs.extensions.theme.id.value';
 
-  if (cr.isLinux && !cr.isChromeOS) {
+  if (isLinux && !isChromeOS) {
     const USE_SYSTEM_PREF = 'prefs.extensions.theme.use_system.value';
 
     test('useDefaultThemeLinux', function() {
@@ -190,13 +137,13 @@ suite('AppearanceHandler', function() {
       assertFalse(!!appearancePage.$$('#useDefault'));
 
       appearancePage.set(USE_SYSTEM_PREF, true);
-      Polymer.dom.flush();
+      flush();
       // If the system theme is in use, "USE CLASSIC" should show.
       assertTrue(!!appearancePage.$$('#useDefault'));
 
       appearancePage.set(USE_SYSTEM_PREF, false);
       appearancePage.set(THEME_ID_PREF, 'fake theme id');
-      Polymer.dom.flush();
+      flush();
 
       // With a custom theme installed, "USE CLASSIC" should show.
       const button = appearancePage.$$('#useDefault');
@@ -209,13 +156,13 @@ suite('AppearanceHandler', function() {
     test('useSystemThemeLinux', function() {
       assertFalse(!!appearancePage.get(THEME_ID_PREF));
       appearancePage.set(USE_SYSTEM_PREF, true);
-      Polymer.dom.flush();
+      flush();
       // The "USE GTK+" button shouldn't be showing if it's already in use.
       assertFalse(!!appearancePage.$$('#useSystem'));
 
       appearanceBrowserProxy.setIsSupervised(true);
       appearancePage.set(USE_SYSTEM_PREF, false);
-      Polymer.dom.flush();
+      flush();
       // Supervised users have their own theme and can't use GTK+ theme.
       assertFalse(!!appearancePage.$$('#useDefault'));
       assertFalse(!!appearancePage.$$('#useSystem'));
@@ -224,7 +171,7 @@ suite('AppearanceHandler', function() {
 
       appearanceBrowserProxy.setIsSupervised(false);
       appearancePage.set(THEME_ID_PREF, 'fake theme id');
-      Polymer.dom.flush();
+      flush();
       // If there's "USE" buttons again, the container should be visible.
       assertTrue(!!appearancePage.$$('#useDefault'));
       assertFalse(appearancePage.$$('#themesSecondaryActions').hidden);
@@ -241,7 +188,7 @@ suite('AppearanceHandler', function() {
       assertFalse(!!appearancePage.$$('#useDefault'));
 
       appearancePage.set(THEME_ID_PREF, 'fake theme id');
-      Polymer.dom.flush();
+      flush();
 
       // With a custom theme installed, "RESET TO DEFAULT" should show.
       const button = appearancePage.$$('#useDefault');
@@ -291,7 +238,7 @@ suite('AppearanceHandler', function() {
       browser: {show_home_button: {value: true}},
       extensions: {theme: {id: {value: ''}}},
     });
-    Polymer.dom.flush();
+    flush();
 
     assertTrue(!!appearancePage.$$('.list-frame'));
   });
@@ -302,7 +249,7 @@ suite('HomeUrlInput', function() {
 
   setup(function() {
     appearanceBrowserProxy = new TestAppearanceBrowserProxy();
-    settings.AppearanceBrowserProxyImpl.instance_ = appearanceBrowserProxy;
+    AppearanceBrowserProxyImpl.instance_ = appearanceBrowserProxy;
     PolymerTest.clearBody();
 
     homeUrlInput = document.createElement('home-url-input');
@@ -310,7 +257,7 @@ suite('HomeUrlInput', function() {
         'pref', {type: chrome.settingsPrivate.PrefType.URL, value: 'test'});
 
     document.body.appendChild(homeUrlInput);
-    Polymer.dom.flush();
+    flush();
   });
 
   test('home button urls', function() {
@@ -324,13 +271,13 @@ suite('HomeUrlInput', function() {
     return appearanceBrowserProxy.whenCalled('validateStartupPage')
         .then(function(url) {
           assertEquals(homeUrlInput.value, url);
-          Polymer.dom.flush();
+          flush();
           assertEquals(homeUrlInput.value, '@@@');  // Value hasn't changed.
           assertTrue(homeUrlInput.invalid);
 
           // Should reset to default value on change event.
           homeUrlInput.$.input.fire('change');
-          Polymer.dom.flush();
+          flush();
           assertEquals(homeUrlInput.value, 'test');
         });
   });

@@ -28,12 +28,13 @@
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 
 namespace blink {
 
-StyleMedia::StyleMedia(LocalFrame* frame) : ContextClient(frame) {}
+StyleMedia::StyleMedia(LocalFrame* frame) : ExecutionContextClient(frame) {}
 
 AtomicString StyleMedia::type() const {
   LocalFrameView* view = GetFrame() ? GetFrame()->View() : nullptr;
@@ -54,16 +55,16 @@ bool StyleMedia::matchMedium(const String& query) const {
     return false;
 
   scoped_refptr<MediaQuerySet> media = MediaQuerySet::Create();
-  if (!media->Set(query))
+  if (!media->Set(query, GetFrame()->DomWindow()))
     return false;
 
   MediaQueryEvaluator screen_eval(GetFrame());
   return screen_eval.Eval(*media);
 }
 
-void StyleMedia::Trace(blink::Visitor* visitor) {
+void StyleMedia::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

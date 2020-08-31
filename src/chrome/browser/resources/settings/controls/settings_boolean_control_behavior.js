@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {CrPolicyPrefBehavior} from 'chrome://resources/cr_elements/policy/cr_policy_pref_behavior.m.js';
+// #import {PrefControlBehavior} from './pref_control_behavior.m.js';
+// clang-format on
+
 /**
  * @fileoverview
  * A behavior to help controls that handle a boolean preference, such as
@@ -71,7 +77,7 @@ const SettingsBooleanControlBehaviorImpl = {
     'prefValueChanged_(pref.value)',
   ],
 
-  notifyChangedByUserInteraction: function() {
+  notifyChangedByUserInteraction() {
     this.fire('settings-boolean-control-change');
 
     if (!this.pref || this.noSetPref) {
@@ -81,12 +87,12 @@ const SettingsBooleanControlBehaviorImpl = {
   },
 
   /** Reset the checked state to match the current pref value. */
-  resetToPrefValue: function() {
+  resetToPrefValue() {
     this.checked = this.getNewValue_(this.pref.value);
   },
 
   /** Update the pref to the current |checked| value. */
-  sendPrefChange: function() {
+  sendPrefChange() {
     // Ensure that newValue is the correct type for the pref type, either
     // a boolean or a number.
     if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER) {
@@ -102,7 +108,7 @@ const SettingsBooleanControlBehaviorImpl = {
    * @param {*} prefValue
    * @private
    */
-  prefValueChanged_: function(prefValue) {
+  prefValueChanged_(prefValue) {
     this.checked = this.getNewValue_(prefValue);
   },
 
@@ -111,7 +117,7 @@ const SettingsBooleanControlBehaviorImpl = {
    * @return {boolean} The value as a boolean, inverted if |inverted| is true.
    * @private
    */
-  getNewValue_: function(value) {
+  getNewValue_(value) {
     // For numeric prefs, the control is only false if the value is exactly
     // equal to the unchecked-equivalent value.
     if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER) {
@@ -125,13 +131,13 @@ const SettingsBooleanControlBehaviorImpl = {
    * @return {boolean} Whether the control should be disabled.
    * @protected
    */
-  controlDisabled: function() {
+  controlDisabled() {
     return this.disabled || this.isPrefEnforced();
   },
 };
 
 /** @polymerBehavior */
-const SettingsBooleanControlBehavior = [
+/* #export */ const SettingsBooleanControlBehavior = [
   CrPolicyPrefBehavior,
   PrefControlBehavior,
   SettingsBooleanControlBehaviorImpl,

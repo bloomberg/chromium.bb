@@ -5,9 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGE_DOWNLOADER_IMAGE_DOWNLOADER_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGE_DOWNLOADER_IMAGE_DOWNLOADER_IMPL_H_
 
-#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom-blink.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
@@ -21,7 +22,7 @@ struct WebSize;
 
 class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
                                   public Supplement<LocalFrame>,
-                                  public ContextLifecycleObserver,
+                                  public ExecutionContextLifecycleObserver,
                                   public mojom::blink::ImageDownloader {
   USING_PRE_FINALIZER(ImageDownloaderImpl, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(ImageDownloaderImpl);
@@ -41,8 +42,8 @@ class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
 
   void Trace(Visitor*) override;
 
-  // OverContextLifecycleObserver overrides.
-  void ContextDestroyed(ExecutionContext*) override;
+  // OverExecutionContextLifecycleObserver overrides.
+  void ContextDestroyed() override;
 
  private:
   // ImageDownloader implementation. Request to asynchronously download an
@@ -96,7 +97,10 @@ class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
   // ImageResourceFetchers schedule via FetchImage.
   ImageResourceFetcherList image_fetchers_;
 
-  mojo::Receiver<mojom::blink::ImageDownloader> receiver_{this};
+  HeapMojoReceiver<mojom::blink::ImageDownloader,
+                   ImageDownloaderImpl,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDownloaderImpl);
 };

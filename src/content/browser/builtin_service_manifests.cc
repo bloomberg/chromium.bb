@@ -11,45 +11,12 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/service_names.mojom.h"
-#include "media/mojo/buildflags.h"
-#include "media/mojo/services/cdm_manifest.h"
-#include "media/mojo/services/media_manifest.h"
-#include "services/audio/public/cpp/manifest.h"
-#include "services/device/public/cpp/manifest.h"
-#include "services/media_session/public/cpp/manifest.h"
-#include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace content {
 
-namespace {
-
-bool IsAudioServiceOutOfProcess() {
-  return base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess) &&
-         !GetContentClient()->browser()->OverridesAudioManager();
-}
-
-}  // namespace
-
 const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{
-      std::vector<service_manager::Manifest>{
-          GetContentBrowserManifest(),
-
-          audio::GetManifest(IsAudioServiceOutOfProcess()
-                                 ? service_manager::Manifest::ExecutionMode::
-                                       kOutOfProcessBuiltin
-                                 : service_manager::Manifest::ExecutionMode::
-                                       kInProcessBuiltin),
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-          media::GetCdmManifest(),
-#endif
-          media::GetMediaManifest(),
-          media::GetMediaRendererManifest(),
-          device::GetManifest(),
-          media_session::GetManifest(),
-      }};
+      std::vector<service_manager::Manifest>{GetContentBrowserManifest()}};
   return *manifests;
 }
 

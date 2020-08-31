@@ -9,8 +9,10 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.support.v4.view.ViewCompat;
 import android.view.View;
+
+import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.chrome.browser.feed.library.piet.host.ActionHandler;
 import org.chromium.chrome.browser.feed.library.piet.host.ActionHandler.ActionType;
@@ -151,7 +153,7 @@ public class ViewUtils {
      * new
      * {@link Drawable}; If overlayColor is null, returns the original {@link Drawable}.
      */
-    static Drawable applyOverlayColor(Drawable drawable, /*@Nullable*/ Integer overlayColor) {
+    static Drawable applyOverlayColor(Drawable drawable, @Nullable Integer overlayColor) {
         if (overlayColor == null) {
             return drawable;
         }

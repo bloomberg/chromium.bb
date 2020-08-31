@@ -25,8 +25,10 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
+#include "third_party/blink/renderer/platform/wtf/vector_backed_linked_list.h"
 
 namespace WTF {
 
@@ -49,20 +51,51 @@ template <typename Value,
 class LinkedHashSet;
 
 template <typename LinkedHashSet>
-class LinkedHashSetIterator;
-template <typename LinkedHashSet>
 class LinkedHashSetConstIterator;
-template <typename LinkedHashSet>
-class LinkedHashSetReverseIterator;
 template <typename LinkedHashSet>
 class LinkedHashSetConstReverseIterator;
 
-template <typename Value, typename HashFunctions, typename Allocator>
+template <typename Value, typename HashFunctions, typename TraitsArg>
 struct LinkedHashSetTranslator;
-template <typename Value, typename Allocator>
+template <typename Value>
 struct LinkedHashSetExtractor;
 template <typename Value, typename ValueTraits, typename Allocator>
 struct LinkedHashSetTraits;
+class LinkedHashSetNodeBase;
+
+class LinkedHashSetNodeBasePointer {
+ public:
+  LinkedHashSetNodeBasePointer(LinkedHashSetNodeBase* node) : node_(node) {}
+
+  LinkedHashSetNodeBasePointer& operator=(
+      const LinkedHashSetNodeBasePointer& other) {
+    SetSafe(other);
+    return *this;
+  }
+
+  LinkedHashSetNodeBasePointer& operator=(LinkedHashSetNodeBase* other) {
+    SetSafe(other);
+    return *this;
+  }
+
+  LinkedHashSetNodeBasePointer& operator=(std::nullptr_t) {
+    SetSafe(nullptr);
+    return *this;
+  }
+
+  LinkedHashSetNodeBase* Get() const { return node_; }
+  explicit operator bool() const { return Get(); }
+  operator LinkedHashSetNodeBase*() const { return Get(); }
+  LinkedHashSetNodeBase* operator->() const { return Get(); }
+  LinkedHashSetNodeBase& operator*() const { return *Get(); }
+
+ private:
+  void SetSafe(LinkedHashSetNodeBase* node) {
+    AsAtomicPtr(&node_)->store(node, std::memory_order_relaxed);
+  }
+
+  LinkedHashSetNodeBase* node_ = nullptr;
+};
 
 class LinkedHashSetNodeBase {
   DISALLOW_NEW();
@@ -75,10 +108,16 @@ class LinkedHashSetNodeBase {
     if (!next_)
       return;
     DCHECK(prev_);
-    DCHECK(next_->prev_ == this);
-    DCHECK(prev_->next_ == this);
-    next_->prev_ = prev_;
-    prev_->next_ = next_;
+    {
+      AsanUnpoisonScope unpoison_scope(next_, sizeof(LinkedHashSetNodeBase));
+      DCHECK(next_->prev_ == this);
+      next_->prev_ = prev_;
+    }
+    {
+      AsanUnpoisonScope unpoison_scope(prev_, sizeof(LinkedHashSetNodeBase));
+      DCHECK(prev_->next_ == this);
+      prev_->next_ = next_;
+    }
   }
 
   ~LinkedHashSetNodeBase() { Unlink(); }
@@ -111,8 +150,8 @@ class LinkedHashSetNodeBase {
     DCHECK((prev && next) || (!prev && !next));
   }
 
-  LinkedHashSetNodeBase* prev_;
-  LinkedHashSetNodeBase* next_;
+  LinkedHashSetNodeBasePointer prev_;
+  LinkedHashSetNodeBasePointer next_;
 
  protected:
   // If we take a copy of a node we can't copy the next and prev pointers,
@@ -177,7 +216,7 @@ class LinkedHashSet {
   typedef TraitsArg Traits;
   typedef LinkedHashSetNode<Value> Node;
   typedef LinkedHashSetNodeBase NodeBase;
-  typedef LinkedHashSetTranslator<Value, HashFunctions, Allocator>
+  typedef LinkedHashSetTranslator<Value, HashFunctions, Traits>
       NodeHashFunctions;
   typedef LinkedHashSetTraits<Value, Traits, Allocator> NodeHashTraits;
 
@@ -191,13 +230,11 @@ class LinkedHashSet {
       ImplType;
 
  public:
-  typedef LinkedHashSetIterator<LinkedHashSet> iterator;
-  friend class LinkedHashSetIterator<LinkedHashSet>;
+  typedef LinkedHashSetConstIterator<LinkedHashSet> iterator;
   typedef LinkedHashSetConstIterator<LinkedHashSet> const_iterator;
   friend class LinkedHashSetConstIterator<LinkedHashSet>;
 
-  typedef LinkedHashSetReverseIterator<LinkedHashSet> reverse_iterator;
-  friend class LinkedHashSetReverseIterator<LinkedHashSet>;
+  typedef LinkedHashSetConstReverseIterator<LinkedHashSet> reverse_iterator;
   typedef LinkedHashSetConstReverseIterator<LinkedHashSet>
       const_reverse_iterator;
   friend class LinkedHashSetConstReverseIterator<LinkedHashSet>;
@@ -210,11 +247,11 @@ class LinkedHashSet {
         : stored_value(&hash_table_add_result.stored_value->value_),
           is_new_entry(hash_table_add_result.is_new_entry) {}
 
-    Value* stored_value;
+    const Value* stored_value;
     bool is_new_entry;
   };
 
-  typedef typename HashTraits<Value>::PeekInType ValuePeekInType;
+  typedef typename TraitsArg::PeekInType ValuePeekInType;
 
   LinkedHashSet();
   LinkedHashSet(const LinkedHashSet&);
@@ -224,11 +261,6 @@ class LinkedHashSet {
 
   // Needs finalization. The anchor needs to unlink itself from the chain.
   ~LinkedHashSet();
-
-  static void Finalize(void* pointer) {
-    reinterpret_cast<LinkedHashSet*>(pointer)->~LinkedHashSet();
-  }
-  void FinalizeGarbageCollectedObject() { Finalize(this); }
 
   void Swap(LinkedHashSet&);
 
@@ -277,13 +309,6 @@ class LinkedHashSet {
   template <typename IncomingValueType>
   AddResult insert(IncomingValueType&&);
 
-  // Same as insert() except that the return value is an
-  // iterator. Useful in cases where it's needed to have the
-  // same return value as find() and where it's not possible to
-  // use a pointer to the storedValue.
-  template <typename IncomingValueType>
-  iterator AddReturnIterator(IncomingValueType&&);
-
   // Add the value to the end of the collection. If the value was already in
   // the list, it is moved to the end.
   template <typename IncomingValueType>
@@ -298,13 +323,13 @@ class LinkedHashSet {
   AddResult InsertBefore(ValuePeekInType before_value,
                          IncomingValueType&& new_value);
   template <typename IncomingValueType>
-  AddResult InsertBefore(iterator it, IncomingValueType&& new_value) {
+  AddResult InsertBefore(const_iterator it, IncomingValueType&& new_value) {
     return impl_.template insert<NodeHashFunctions>(
         std::forward<IncomingValueType>(new_value), it.GetNode());
   }
 
   void erase(ValuePeekInType);
-  void erase(iterator);
+  void erase(const_iterator);
   void clear() { impl_.clear(); }
   template <typename Collection>
   void RemoveAll(const Collection& other) {
@@ -312,13 +337,26 @@ class LinkedHashSet {
   }
 
   template <typename VisitorDispatcher>
-  void Trace(VisitorDispatcher visitor) {
+  void Trace(VisitorDispatcher visitor) const {
+    if (!NodeHashTraits::kCanTraceConcurrently) {
+      if (visitor->DeferredTraceIfConcurrent(
+              {this, [](blink::Visitor* visitor, const void* object) {
+                 reinterpret_cast<const LinkedHashSet<ValueArg, HashFunctions,
+                                                      TraitsArg, Allocator>*>(
+                     object)
+                     ->Trace(visitor);
+               }}))
+        return;
+    }
+
     impl_.Trace(visitor);
     // Should the underlying table be moved by GC, register a callback
     // that fixes up the interior pointers that the (Heap)LinkedHashSet keeps.
-    if (impl_.table_) {
+    const auto* table =
+        AsAtomicPtr(&impl_.table_)->load(std::memory_order_relaxed);
+    if (table) {
       Allocator::RegisterBackingStoreCallback(
-          visitor, impl_.table_,
+          visitor, table,
           NodeHashTraits::template MoveBackingCallback<ImplType>);
     }
   }
@@ -336,13 +374,13 @@ class LinkedHashSet {
  private:
   Node* Anchor() { return reinterpret_cast<Node*>(&anchor_); }
   const Node* Anchor() const { return reinterpret_cast<const Node*>(&anchor_); }
-  Node* FirstNode() { return reinterpret_cast<Node*>(anchor_.next_); }
+  Node* FirstNode() { return reinterpret_cast<Node*>(anchor_.next_.Get()); }
   const Node* FirstNode() const {
-    return reinterpret_cast<const Node*>(anchor_.next_);
+    return reinterpret_cast<const Node*>(anchor_.next_.Get());
   }
-  Node* LastNode() { return reinterpret_cast<Node*>(anchor_.prev_); }
+  Node* LastNode() { return reinterpret_cast<Node*>(anchor_.prev_.Get()); }
   const Node* LastNode() const {
-    return reinterpret_cast<const Node*>(anchor_.prev_);
+    return reinterpret_cast<const Node*>(anchor_.prev_.Get());
   }
 
   iterator MakeIterator(const Node* position) {
@@ -362,12 +400,12 @@ class LinkedHashSet {
   NodeBase anchor_;
 };
 
-template <typename Value, typename HashFunctions, typename Allocator>
+template <typename Value, typename HashFunctions, typename TraitsArg>
 struct LinkedHashSetTranslator {
   STATIC_ONLY(LinkedHashSetTranslator);
   typedef LinkedHashSetNode<Value> Node;
   typedef LinkedHashSetNodeBase NodeBase;
-  typedef typename HashTraits<Value>::PeekInType ValuePeekInType;
+  typedef typename TraitsArg::PeekInType ValuePeekInType;
   static unsigned GetHash(const Node& node) {
     return HashFunctions::GetHash(node.value_);
   }
@@ -395,7 +433,7 @@ struct LinkedHashSetTranslator {
   static const bool safe_to_compare_to_empty_or_deleted = false;
 };
 
-template <typename Value, typename Allocator>
+template <typename Value>
 struct LinkedHashSetExtractor {
   STATIC_ONLY(LinkedHashSetExtractor);
   static const Value& Extract(const LinkedHashSetNode<Value>& node) {
@@ -449,10 +487,14 @@ struct LinkedHashSetTraits
   }
 
   template <typename HashTable>
-  static void MoveBackingCallback(void* from, void* to, size_t size) {
+  static void MoveBackingCallback(const void* const_from,
+                                  const void* const_to,
+                                  size_t size) {
     // Note: the hash table move may have been overlapping; linearly scan the
     // entire table and fixup interior pointers into the old region with
     // correspondingly offset ones into the new.
+    void* from = const_cast<void*>(const_from);
+    void* to = const_cast<void*>(const_to);
     const size_t table_size = size / sizeof(Node);
     Node* table = reinterpret_cast<Node*>(to);
     NodeBase* from_start = reinterpret_cast<NodeBase*>(from);
@@ -464,7 +506,7 @@ struct LinkedHashSetTraits
       if (HashTable::IsEmptyOrDeletedBucket(node))
         continue;
       if (node.next_ >= from_start && node.next_ < from_end) {
-        const size_t diff = reinterpret_cast<uintptr_t>(node.next_) -
+        const size_t diff = reinterpret_cast<uintptr_t>(node.next_.Get()) -
                             reinterpret_cast<uintptr_t>(from);
         node.next_ =
             reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
@@ -473,7 +515,7 @@ struct LinkedHashSetTraits
         anchor_node = node.next_;
       }
       if (node.prev_ >= from_start && node.prev_ < from_end) {
-        const size_t diff = reinterpret_cast<uintptr_t>(node.prev_) -
+        const size_t diff = reinterpret_cast<uintptr_t>(node.prev_.Get()) -
                             reinterpret_cast<uintptr_t>(from);
         node.prev_ =
             reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
@@ -490,72 +532,24 @@ struct LinkedHashSetTraits
     }
     {
       DCHECK(anchor_node->prev_ >= from_start && anchor_node->prev_ < from_end);
-      const size_t diff = reinterpret_cast<uintptr_t>(anchor_node->prev_) -
-                          reinterpret_cast<uintptr_t>(from);
+      const size_t diff =
+          reinterpret_cast<uintptr_t>(anchor_node->prev_.Get()) -
+          reinterpret_cast<uintptr_t>(from);
       anchor_node->prev_ =
           reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
     }
     {
       DCHECK(anchor_node->next_ >= from_start && anchor_node->next_ < from_end);
-      const size_t diff = reinterpret_cast<uintptr_t>(anchor_node->next_) -
-                          reinterpret_cast<uintptr_t>(from);
+      const size_t diff =
+          reinterpret_cast<uintptr_t>(anchor_node->next_.Get()) -
+          reinterpret_cast<uintptr_t>(from);
       anchor_node->next_ =
           reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
     }
   }
-};
 
-template <typename LinkedHashSetType>
-class LinkedHashSetIterator {
-  DISALLOW_NEW();
-
- private:
-  typedef typename LinkedHashSetType::Node Node;
-  typedef typename LinkedHashSetType::Traits Traits;
-
-  typedef typename LinkedHashSetType::Value& ReferenceType;
-  typedef typename LinkedHashSetType::Value* PointerType;
-
-  typedef LinkedHashSetConstIterator<LinkedHashSetType> const_iterator;
-
-  Node* GetNode() { return const_cast<Node*>(iterator_.GetNode()); }
-
- protected:
-  LinkedHashSetIterator(const Node* position, LinkedHashSetType* container)
-      : iterator_(position, container) {}
-
- public:
-  // Default copy, assignment and destructor are OK.
-
-  PointerType Get() const { return const_cast<PointerType>(iterator_.Get()); }
-  ReferenceType operator*() const { return *Get(); }
-  PointerType operator->() const { return Get(); }
-
-  LinkedHashSetIterator& operator++() {
-    ++iterator_;
-    return *this;
-  }
-  LinkedHashSetIterator& operator--() {
-    --iterator_;
-    return *this;
-  }
-
-  // Postfix ++ and -- intentionally omitted.
-
-  // Comparison.
-  bool operator==(const LinkedHashSetIterator& other) const {
-    return iterator_ == other.iterator_;
-  }
-  bool operator!=(const LinkedHashSetIterator& other) const {
-    return iterator_ != other.iterator_;
-  }
-
-  operator const_iterator() const { return iterator_; }
-
- protected:
-  const_iterator iterator_;
-  template <typename T, typename U, typename V, typename W>
-  friend class LinkedHashSet;
+  static constexpr bool kCanTraceConcurrently =
+      ValueTraitsArg::kCanTraceConcurrently;
 };
 
 template <typename LinkedHashSetType>
@@ -569,7 +563,9 @@ class LinkedHashSetConstIterator {
   typedef const typename LinkedHashSetType::Value& ReferenceType;
   typedef const typename LinkedHashSetType::Value* PointerType;
 
-  const Node* GetNode() const { return static_cast<const Node*>(position_); }
+  Node* GetNode() const {
+    return const_cast<Node*>(static_cast<const Node*>(position_));
+  }
 
  protected:
   LinkedHashSetConstIterator(const LinkedHashSetNodeBase* position,
@@ -626,42 +622,6 @@ class LinkedHashSetConstIterator {
 #else
   void CheckModifications() const {}
 #endif
-  template <typename T, typename U, typename V, typename W>
-  friend class LinkedHashSet;
-  friend class LinkedHashSetIterator<LinkedHashSetType>;
-};
-
-template <typename LinkedHashSetType>
-class LinkedHashSetReverseIterator
-    : public LinkedHashSetIterator<LinkedHashSetType> {
-  typedef LinkedHashSetReverseIterator<LinkedHashSetType> reverse_iterator;
-  typedef LinkedHashSetIterator<LinkedHashSetType> Superclass;
-  typedef LinkedHashSetConstReverseIterator<LinkedHashSetType>
-      const_reverse_iterator;
-  typedef typename LinkedHashSetType::Node Node;
-
- protected:
-  LinkedHashSetReverseIterator(const Node* position,
-                               LinkedHashSetType* container)
-      : Superclass(position, container) {}
-
- public:
-  LinkedHashSetReverseIterator& operator++() {
-    Superclass::operator--();
-    return *this;
-  }
-  LinkedHashSetReverseIterator& operator--() {
-    Superclass::operator++();
-    return *this;
-  }
-
-  // Postfix ++ and -- intentionally omitted.
-
-  operator const_reverse_iterator() const {
-    return *reinterpret_cast<const_reverse_iterator*>(
-        const_cast<reverse_iterator*>(this));
-  }
-
   template <typename T, typename U, typename V, typename W>
   friend class LinkedHashSet;
 };
@@ -797,7 +757,7 @@ inline const T& LinkedHashSet<T, U, V, W>::front() const {
 template <typename T, typename U, typename V, typename W>
 inline void LinkedHashSet<T, U, V, W>::RemoveFirst() {
   DCHECK(!IsEmpty());
-  impl_.erase(static_cast<Node*>(anchor_.next_));
+  impl_.erase(static_cast<Node*>(anchor_.next_.Get()));
 }
 
 template <typename T, typename U, typename V, typename W>
@@ -815,7 +775,7 @@ inline const T& LinkedHashSet<T, U, V, W>::back() const {
 template <typename T, typename U, typename V, typename W>
 inline void LinkedHashSet<T, U, V, W>::pop_back() {
   DCHECK(!IsEmpty());
-  impl_.erase(static_cast<Node*>(anchor_.prev_));
+  impl_.erase(static_cast<Node*>(anchor_.prev_.Get()));
 }
 
 template <typename T, typename U, typename V, typename W>
@@ -903,16 +863,6 @@ LinkedHashSet<Value, HashFunctions, Traits, Allocator>::insert(
 
 template <typename T, typename U, typename V, typename W>
 template <typename IncomingValueType>
-typename LinkedHashSet<T, U, V, W>::iterator
-LinkedHashSet<T, U, V, W>::AddReturnIterator(IncomingValueType&& value) {
-  typename ImplType::AddResult result =
-      impl_.template insert<NodeHashFunctions>(
-          std::forward<IncomingValueType>(value), &anchor_);
-  return MakeIterator(result.stored_value);
-}
-
-template <typename T, typename U, typename V, typename W>
-template <typename IncomingValueType>
 typename LinkedHashSet<T, U, V, W>::AddResult
 LinkedHashSet<T, U, V, W>::AppendOrMoveToLast(IncomingValueType&& value) {
   typename ImplType::AddResult result =
@@ -951,7 +901,7 @@ LinkedHashSet<T, U, V, W>::InsertBefore(ValuePeekInType before_value,
 }
 
 template <typename T, typename U, typename V, typename W>
-inline void LinkedHashSet<T, U, V, W>::erase(iterator it) {
+inline void LinkedHashSet<T, U, V, W>::erase(const_iterator it) {
   if (it == end())
     return;
   impl_.erase(it.GetNode());
@@ -964,20 +914,284 @@ inline void LinkedHashSet<T, U, V, W>::erase(ValuePeekInType value) {
 
 template <typename T, typename Allocator>
 inline void swap(LinkedHashSetNode<T>& a, LinkedHashSetNode<T>& b) {
-  typedef LinkedHashSetNodeBase Base;
   // The key and value cannot be swapped atomically, and it would be
   // wrong to have a GC when only one was swapped and the other still
   // contained garbage (eg. from a previous use of the same slot).
   // Therefore we forbid a GC until both the key and the value are
   // swapped.
   Allocator::EnterGCForbiddenScope();
-  swap(static_cast<Base&>(a), static_cast<Base&>(b));
+  swap(static_cast<LinkedHashSetNodeBase&>(a),
+       static_cast<LinkedHashSetNodeBase&>(b));
   swap(a.value_, b.value_);
   Allocator::LeaveGCForbiddenScope();
+}
+
+// TODO(keinakashima): replace existing LinkedHashSet with NewLinkedHashSet
+// after completion
+
+// This class is still experimental. Do not use this class.
+
+// LinkedHashSet provides a Set interface like HashSet, but also has a
+// predictable iteration order. It has O(1) insertion, removal, and test for
+// containership. It maintains a linked list through its contents such that
+// iterating it yields values in the order in which they were inserted.
+// The linked list is implementing in a vector (with links being indexes instead
+// of pointers), to simplify the move of backing during GC compaction.
+
+// TODO(keinakashima): implement NewLinkedHashTraits (now we cannot insert
+// deleted/empty value) and add it to template parameter
+
+template <typename ValueArg, typename Allocator = PartitionAllocator>
+class NewLinkedHashSet {
+  USE_ALLOCATOR(NewLinkedHashSet, Allocator);
+
+ private:
+  using Value = ValueArg;
+  using Map = HashMap<Value,
+                      wtf_size_t,
+                      typename DefaultHash<Value>::Hash,
+                      HashTraits<Value>,
+                      HashTraits<wtf_size_t>,
+                      Allocator>;
+  using ListType = VectorBackedLinkedList<Value, Allocator>;
+
+ public:
+  using iterator = typename ListType::const_iterator;
+  using reverse_iterator = typename ListType::const_reverse_iterator;
+  using const_iterator = typename ListType::const_iterator;
+  using const_reverse_iterator = typename ListType::const_reverse_iterator;
+
+  // TODO(keinakashima): add security check
+  struct AddResult final {
+    STACK_ALLOCATED();
+
+   public:
+    AddResult(const Value* stored_value, bool is_new_entry)
+        : stored_value(stored_value), is_new_entry(is_new_entry) {}
+    const Value* stored_value;
+    bool is_new_entry;
+  };
+
+  typedef typename HashTraits<Value>::PeekInType ValuePeekInType;
+
+  NewLinkedHashSet();
+  NewLinkedHashSet(const NewLinkedHashSet&) = default;
+  NewLinkedHashSet(NewLinkedHashSet&&) = default;
+  NewLinkedHashSet& operator=(const NewLinkedHashSet&) = default;
+  NewLinkedHashSet& operator=(NewLinkedHashSet&&) = default;
+
+  ~NewLinkedHashSet() = default;
+
+  void Swap(NewLinkedHashSet&);
+
+  wtf_size_t size() const { return list_.size(); }
+  bool IsEmpty() const { return list_.empty(); }
+
+  iterator begin() { return list_.begin(); }
+  const_iterator begin() const { return list_.cbegin(); }
+  const_iterator cbegin() const { return list_.cbegin(); }
+  iterator end() { return list_.end(); }
+  const_iterator end() const { return list_.cend(); }
+  const_iterator cend() const { return list_.cend(); }
+
+  reverse_iterator rbegin() { return list_.rbegin(); }
+  const_reverse_iterator rbegin() const { return list_.crbegin(); }
+  const_reverse_iterator crbegin() const { return list_.crbegin(); }
+  reverse_iterator rend() { return list_.rend(); }
+  const_reverse_iterator rend() const { return list_.crend(); }
+  const_reverse_iterator crend() const { return list_.crend(); }
+
+  const Value& front() const { return list_.front(); }
+  const Value& back() const { return list_.back(); }
+
+  iterator find(ValuePeekInType);
+  const_iterator find(ValuePeekInType) const;
+  bool Contains(ValuePeekInType) const;
+
+  template <typename IncomingValueType>
+  AddResult insert(IncomingValueType&&);
+
+  // If |value| already exists in the set, nothing happens.
+  // If |before_value| doesn't exist in the set, appends |value|.
+  template <typename IncomingValueType>
+  AddResult InsertBefore(ValuePeekInType before_value,
+                         IncomingValueType&& value);
+
+  template <typename IncomingValueType>
+  AddResult InsertBefore(const_iterator it, IncomingValueType&& value);
+
+  template <typename IncomingValueType>
+  AddResult AppendOrMoveToLast(IncomingValueType&&);
+
+  template <typename IncomingValueType>
+  AddResult PrependOrMoveToFirst(IncomingValueType&&);
+
+  void erase(ValuePeekInType);
+  void erase(const_iterator);
+  void RemoveFirst();
+  void pop_back();
+
+  void clear() {
+    value_to_index_.clear();
+    list_.clear();
+  }
+
+  template <typename VisitorDispatcher, typename A = Allocator>
+  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher visitor) {
+    value_to_index_.Trace(visitor);
+    list_.Trace(visitor);
+  }
+
+ private:
+  enum class MoveType {
+    kMoveIfValueExists,
+    kDontMove,
+  };
+
+  template <typename IncomingValueType>
+  AddResult InsertOrMoveBefore(const_iterator, IncomingValueType&&, MoveType);
+
+  Map value_to_index_;
+  ListType list_;
+};
+
+template <typename T, typename Allocator>
+inline NewLinkedHashSet<T, Allocator>::NewLinkedHashSet() {
+  static_assert(Allocator::kIsGarbageCollected ||
+                    !IsPointerToGarbageCollectedType<T>::value,
+                "Cannot put raw pointers to garbage-collected classes into "
+                "an off-heap NewLinkedHashSet. Use "
+                "HeapNewLinkedHashSet<Member<T>> instead.");
+}
+
+template <typename T, typename Allocator>
+inline void NewLinkedHashSet<T, Allocator>::Swap(NewLinkedHashSet& other) {
+  value_to_index_.swap(other.value_to_index_);
+  list_.swap(other.list_);
+}
+
+template <typename T, typename Allocator>
+typename NewLinkedHashSet<T, Allocator>::iterator
+NewLinkedHashSet<T, Allocator>::find(ValuePeekInType value) {
+  typename Map::const_iterator it = value_to_index_.find(value);
+
+  if (it == value_to_index_.end())
+    return end();
+  return list_.MakeIterator(it->value);
+}
+
+template <typename T, typename Allocator>
+typename NewLinkedHashSet<T, Allocator>::const_iterator
+NewLinkedHashSet<T, Allocator>::find(ValuePeekInType value) const {
+  typename Map::const_iterator it = value_to_index_.find(value);
+
+  if (it == value_to_index_.end())
+    return end();
+  return list_.MakeConstIterator(it->value);
+}
+
+template <typename T, typename Allocator>
+bool NewLinkedHashSet<T, Allocator>::Contains(ValuePeekInType value) const {
+  return value_to_index_.Contains(value);
+}
+
+template <typename T, typename Allocator>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T, Allocator>::AddResult
+NewLinkedHashSet<T, Allocator>::insert(IncomingValueType&& value) {
+  return InsertOrMoveBefore(end(), std::forward<IncomingValueType>(value),
+                            MoveType::kDontMove);
+}
+
+template <typename T, typename Allocator>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T, Allocator>::AddResult
+NewLinkedHashSet<T, Allocator>::InsertBefore(ValuePeekInType before_value,
+                                             IncomingValueType&& value) {
+  return InsertOrMoveBefore(find(before_value),
+                            std::forward<IncomingValueType>(value),
+                            MoveType::kDontMove);
+}
+
+template <typename T, typename Allocator>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T, Allocator>::AddResult
+NewLinkedHashSet<T, Allocator>::InsertBefore(const_iterator it,
+                                             IncomingValueType&& value) {
+  return InsertOrMoveBefore(it, std::forward<IncomingValueType>(value),
+                            MoveType::kDontMove);
+}
+
+template <typename T, typename Allocator>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T, Allocator>::AddResult
+NewLinkedHashSet<T, Allocator>::AppendOrMoveToLast(IncomingValueType&& value) {
+  return InsertOrMoveBefore(end(), std::forward<IncomingValueType>(value),
+                            MoveType::kMoveIfValueExists);
+}
+
+template <typename T, typename Allocator>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T, Allocator>::AddResult
+NewLinkedHashSet<T, Allocator>::PrependOrMoveToFirst(
+    IncomingValueType&& value) {
+  return InsertOrMoveBefore(begin(), std::forward<IncomingValueType>(value),
+                            MoveType::kMoveIfValueExists);
+}
+
+template <typename T, typename Allocator>
+inline void NewLinkedHashSet<T, Allocator>::erase(ValuePeekInType value) {
+  erase(find(value));
+}
+
+template <typename T, typename Allocator>
+inline void NewLinkedHashSet<T, Allocator>::erase(const_iterator it) {
+  if (it == end())
+    return;
+  value_to_index_.erase(*it);
+  list_.erase(it);
+}
+
+template <typename T, typename Allocator>
+inline void NewLinkedHashSet<T, Allocator>::RemoveFirst() {
+  DCHECK(!IsEmpty());
+  erase(begin());
+}
+
+template <typename T, typename Allocator>
+inline void NewLinkedHashSet<T, Allocator>::pop_back() {
+  DCHECK(!IsEmpty());
+  erase(--end());
+}
+
+template <typename T, typename Allocator>
+template <typename IncomingValueType>
+typename NewLinkedHashSet<T, Allocator>::AddResult
+NewLinkedHashSet<T, Allocator>::InsertOrMoveBefore(const_iterator position,
+                                                   IncomingValueType&& value,
+                                                   MoveType type) {
+  typename Map::AddResult result = value_to_index_.insert(value, kNotFound);
+
+  if (result.is_new_entry) {
+    const_iterator stored_position_iterator =
+        list_.insert(position, std::forward<IncomingValueType>(value));
+    result.stored_value->value = stored_position_iterator.GetIndex();
+    return AddResult(stored_position_iterator.Get(), true);
+  }
+
+  const_iterator stored_position_iterator =
+      list_.MakeConstIterator(result.stored_value->value);
+  if (type == MoveType::kDontMove)
+    return AddResult(stored_position_iterator.Get(), false);
+
+  const_iterator moved_position_iterator =
+      list_.MoveTo(stored_position_iterator, position);
+  return AddResult(moved_position_iterator.Get(), false);
 }
 
 }  // namespace WTF
 
 using WTF::LinkedHashSet;
+using WTF::NewLinkedHashSet;
 
 #endif /* WTF_LinkedHashSet_h */

@@ -50,10 +50,6 @@
     outline-width: 0;
 }
 
-input[type=radio]:focus {
-    outline: auto 5px -webkit-focus-ring-color;
-}
-
 img {
     -webkit-user-drag: none;
 }
@@ -180,6 +176,7 @@ input::placeholder {
     padding: 3px 6px;
     height: 24px;
     border: none;
+    box-shadow: var(--focus-ring-inactive-shadow);
 }
 
 .harmony-input:not([type]):not(.error-input):not(:invalid):hover,
@@ -235,7 +232,7 @@ input::placeholder {
 
 .chrome-select {
     -webkit-appearance: none;
-    -webkit-user-select: none;
+    user-select: none;
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 2px;
     color: #333;
@@ -298,6 +295,7 @@ input::placeholder {
 :not(.platform-mac).-theme-with-dark-background ::-webkit-scrollbar-track,
 :host-context(:not(.platform-mac).-theme-with-dark-background) ::-webkit-scrollbar-track {
     -webkit-box-shadow: inset 0 0 1px rgba(255,255,255,0.3);
+    background: rgb(36, 36, 36);
 }
 
 :not(.platform-mac).-theme-with-dark-background ::-webkit-scrollbar-thumb,
@@ -420,9 +418,9 @@ span[is=dt-icon-label] {
 
 .undisplayable-text,
 .expandable-inline-button {
-    padding: 2px 4px;
+    padding: 1px 3px;
     margin: 0 2px;
-    font-size: 12px;
+    font-size: 11px;
     font-family: sans-serif;
     white-space: nowrap;
     display: inline-block;
@@ -471,4 +469,23 @@ button.link[data-keyboard-focus="true"]:focus {
     animation: ANIMATION-HACK 0s;
 }
 @keyframes ANIMATION-HACK {
+}
+
+@media (forced-colors: active) {
+    .dimmed,
+    .chrome-select:disabled {
+        opacity: 1;
+    }
+    [is=ui-icon].icon-mask,
+    :host-context(.force-white-icons) [is=ui-icon].spritesheet-smallicons, .force-white-icons [is=ui-icon].spritesheet-smallicons, [is=ui-icon].force-white-icons.spritesheet-smallicons, -theme-preserve,
+    :host-context(.force-white-icons) [is=ui-icon].spritesheet-largeicons, .force-white-icons [is=ui-icon].spritesheet-largeicons, [is=ui-icon].force-white-icons.spritesheet-largeicons, -theme-preserve,
+    :host-context(.force-white-icons) [is=ui-icon].spritesheet-mediumicon, .force-white-icons [is=ui-icon].spritesheet-mediumicons, [is=ui-icon].force-white-icons.spritesheet-mediumicons, -theme-preserve {
+        forced-color-adjust: none;
+        background-color: ButtonText;
+    }
+    .harmony-input:not([type]),
+    .harmony-input[type=number],
+    .harmony-input[type=text] {
+        border: 1px solid ButtonText;
+    }
 }

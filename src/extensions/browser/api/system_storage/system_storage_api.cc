@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -49,9 +50,8 @@ ExtensionFunction::ResponseAction SystemStorageEjectDeviceFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   StorageMonitor::GetInstance()->EnsureInitialized(
-      base::Bind(&SystemStorageEjectDeviceFunction::OnStorageMonitorInit,
-                 this,
-                 params->id));
+      base::BindOnce(&SystemStorageEjectDeviceFunction::OnStorageMonitorInit,
+                     this, params->id));
   // EnsureInitialized() above can result in synchronous Respond().
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
@@ -71,7 +71,7 @@ void SystemStorageEjectDeviceFunction::OnStorageMonitorInit(
 
   monitor->EjectDevice(
       device_id_str,
-      base::Bind(&SystemStorageEjectDeviceFunction::HandleResponse, this));
+      base::BindOnce(&SystemStorageEjectDeviceFunction::HandleResponse, this));
 }
 
 void SystemStorageEjectDeviceFunction::HandleResponse(
@@ -98,15 +98,12 @@ void SystemStorageEjectDeviceFunction::HandleResponse(
 
 SystemStorageGetAvailableCapacityFunction::
     SystemStorageGetAvailableCapacityFunction()
-    : query_runner_(base::CreateSequencedTaskRunner(
-          base::TaskTraits(base::ThreadPool(),
-                           base::TaskPriority::BEST_EFFORT,
-                           base::MayBlock(),
-                           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))) {}
+    : query_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
 SystemStorageGetAvailableCapacityFunction::
-    ~SystemStorageGetAvailableCapacityFunction() {
-}
+    ~SystemStorageGetAvailableCapacityFunction() = default;
 
 ExtensionFunction::ResponseAction
 SystemStorageGetAvailableCapacityFunction::Run() {
@@ -116,9 +113,8 @@ SystemStorageGetAvailableCapacityFunction::Run() {
       GetAvailableCapacity::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
-      &SystemStorageGetAvailableCapacityFunction::OnStorageMonitorInit,
-      this,
+  StorageMonitor::GetInstance()->EnsureInitialized(base::BindOnce(
+      &SystemStorageGetAvailableCapacityFunction::OnStorageMonitorInit, this,
       params->id));
   return RespondLater();
 }

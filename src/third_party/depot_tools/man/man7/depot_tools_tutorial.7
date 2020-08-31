@@ -222,13 +222,13 @@ Clone the \fIdepot_tools\fR repository:
 .\}
 .sp
 .sp
-Add \fIdepot_tools\fR to the \fIend\fR of your PATH (you will probably want to put this in your ~/\&.bashrc or ~/\&.zshrc)\&. Assuming you cloned \fIdepot_tools\fR to /path/to/depot_tools:
+Add \fIdepot_tools\fR to the \fIfront\fR of your PATH (you will probably want to put this in your ~/\&.bashrc or ~/\&.zshrc)\&. Assuming you cloned \fIdepot_tools\fR to /path/to/depot_tools:
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-\fB$ export PATH=$PATH:/path/to/depot_tools\fR
+\fB$ export PATH=/path/to/depot_tools:$PATH\fR
 .fi
 .if n \{\
 .RE

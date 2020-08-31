@@ -34,10 +34,6 @@ class ExtensionTestNotificationObserver : public content::NotificationObserver,
   explicit ExtensionTestNotificationObserver(content::BrowserContext* context);
   ~ExtensionTestNotificationObserver() override;
 
-  // Wait for an extension install error to be raised. Returns true if an
-  // error was raised.
-  bool WaitForExtensionInstallError();
-
   // Waits for an extension load error. Returns true if the error really
   // happened.
   bool WaitForExtensionLoadError();
@@ -115,7 +111,7 @@ class ExtensionTestNotificationObserver : public content::NotificationObserver,
   // notifications to wait for and to check |condition| when observing. This
   // can be NULL if we are instead waiting for a different observer method, like
   // OnPageActionsUpdated().
-  void WaitForCondition(const base::Callback<bool(void)>& condition,
+  void WaitForCondition(const base::RepeatingCallback<bool(void)>& condition,
                         NotificationSet* notification_set);
 
   void WaitForNotification(int notification_type);
@@ -130,16 +126,15 @@ class ExtensionTestNotificationObserver : public content::NotificationObserver,
   std::unique_ptr<content::WindowedNotificationObserver> observer_;
 
   std::string last_loaded_extension_id_;
-  int extension_installs_observed_;
   int extension_load_errors_observed_;
   int crx_installers_done_observed_;
 
   // The condition for which we are waiting. This should be checked in any
   // observing methods that could trigger it.
-  base::Callback<bool(void)> condition_;
+  base::RepeatingCallback<bool(void)> condition_;
 
   // The closure to quit the currently-running message loop.
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   // Listens to extension loaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

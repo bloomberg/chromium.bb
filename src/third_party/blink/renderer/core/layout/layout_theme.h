@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/geometry/length_box.h"
 #include "third_party/blink/renderer/platform/geometry/length_size.h"
@@ -42,12 +43,11 @@ namespace blink {
 
 class ComputedStyle;
 class Element;
-class FileList;
-class Font;
+class File;
 class FontDescription;
 class HTMLInputElement;
+class IntRect;
 class LengthSize;
-class Locale;
 class LocalFrame;
 class Node;
 class ThemePainter;
@@ -169,15 +169,10 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
                                 bool in_forced_colors_mode,
                                 WebColorScheme color_scheme) const;
 
-  virtual bool IsFocusRingOutset() const;
-  Color FocusRingColor() const;
+  virtual Color FocusRingColor() const;
   virtual Color PlatformFocusRingColor() const { return Color(0, 0, 0); }
   void SetCustomFocusRingColor(const Color&);
   static Color TapHighlightColor();
-
-  // Root element text color. It can be different from the initial color in
-  // other color schemes than the light theme.
-  Color RootElementColor(WebColorScheme) const;
 
   virtual Color PlatformTapHighlightColor() const {
     return LayoutTheme::kDefaultTapHighlightColor;
@@ -185,7 +180,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual Color PlatformDefaultCompositionBackgroundColor() const {
     return kDefaultCompositionBackgroundColor;
   }
-  virtual void PlatformColorsDidChange();
+  void PlatformColorsDidChange();
   virtual void ColorSchemeDidChange();
 
   void SetCaretBlinkInterval(base::TimeDelta);
@@ -236,16 +231,16 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual bool ShouldHaveSpinButton(HTMLInputElement*) const;
 
   // Functions for <select> elements.
-  virtual bool DelegatesMenuListRendering() const { return false; }
+  virtual bool DelegatesMenuListRendering() const;
+  // This function has no effect for LayoutThemeAndroid, of which
+  // DelegatesMenuListRendering() always returns true.
+  void SetDelegatesMenuListRenderingForTesting(bool flag);
   virtual bool PopsMenuByArrowKeys() const { return false; }
   virtual bool PopsMenuBySpaceKey() const { return false; }
   virtual bool PopsMenuByReturnKey() const { return false; }
   virtual bool PopsMenuByAltDownUpOrF4Key() const { return false; }
 
-  virtual String FileListNameForWidth(Locale&,
-                                      const FileList*,
-                                      const Font&,
-                                      int width) const;
+  virtual String DisplayNameForFile(const File& file) const;
 
   virtual bool ShouldOpenPickerWithF4Key() const;
 
@@ -356,6 +351,10 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   static bool IsSpinUpButtonPartHovered(const Node*);
   static bool IsReadOnlyControl(const Node*);
 
+ protected:
+  bool HasCustomFocusRingColor() const;
+  Color GetCustomFocusRingColor() const;
+
  private:
   // This function is to be implemented in your platform-specific theme
   // implementation to hand back the appropriate platform theme.
@@ -371,6 +370,8 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   bool has_custom_focus_ring_color_;
   base::TimeDelta caret_blink_interval_ =
       base::TimeDelta::FromMilliseconds(500);
+
+  bool delegates_menu_list_rendering_ = false;
 
   // This color is expected to be drawn on a semi-transparent overlay,
   // making it more transparent than its alpha value indicates.

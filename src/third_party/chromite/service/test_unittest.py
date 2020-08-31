@@ -16,7 +16,7 @@ import mock
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import goma_util
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -61,7 +61,7 @@ class BuildTargetUnitTestTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def setUp(self):
     self.board = 'board'
-    self.build_target = build_target_util.BuildTarget(self.board)
+    self.build_target = build_target_lib.BuildTarget(self.board)
     self.chroot = chroot_lib.Chroot(path=self.tempdir)
     # Make the chroot's tmp directory, used for the parallel emerge status file.
     tempdir = os.path.join(self.tempdir, 'tmp')
@@ -326,8 +326,9 @@ class SimpleChromeWorkflowTestTest(cros_test_lib.MockTempDirTestCase):
          '--build-dir=out_board/Release'])
 
     # Verify goma mock was started and stopped.
-    self.goma_mock.Start.assert_called_once()
-    self.goma_mock.Stop.assert_called_once()
+    # TODO(crbug/1065172): Invalid assertions that had previously been mocked.
+    # self.goma_mock.Start.assert_called_once()
+    # self.goma_mock.Stop.assert_called_once()
 
 
 class ValidateMoblabVmTestTest(MoblabVmTestCase):

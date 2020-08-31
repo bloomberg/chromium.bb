@@ -16,18 +16,17 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
-import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
-import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.BrowserStartupController;
 
 import java.lang.annotation.Retention;
@@ -78,8 +77,7 @@ public class SearchEngineLogoUtils {
             return !isOffTheRecord
                     && isSearchEngineLogoEnabled()
                     // Using the profile now, so we need to pay attention to browser initialization.
-                    && BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                               .isFullBrowserStarted();
+                    && BrowserStartupController.getInstance().isFullBrowserStarted();
         }
 
         /** @see SearchEngineLogoUtils#shouldShowRoundedSearchEngineLogo */
@@ -171,7 +169,7 @@ public class SearchEngineLogoUtils {
     /** @return Whether the status icon should be hidden when the LocationBar is unfocused. */
     public static boolean currentlyOnNTP(
             ToolbarCommonPropertiesModel toolbarCommonPropertiesModel) {
-        return toolbarCommonPropertiesModel.getNewTabPageForCurrentTab() != null
+        return toolbarCommonPropertiesModel != null
                 && NewTabPage.isNTPUrl(toolbarCommonPropertiesModel.getCurrentUrl());
     }
 

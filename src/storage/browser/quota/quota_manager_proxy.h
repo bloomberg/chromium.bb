@@ -39,17 +39,17 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerProxy
   using UsageAndQuotaCallback = QuotaManager::UsageAndQuotaCallback;
 
   virtual void RegisterClient(scoped_refptr<QuotaClient> client);
-  virtual void NotifyStorageAccessed(QuotaClient::ID client_id,
-                                     const url::Origin& origin,
+  virtual void NotifyStorageAccessed(const url::Origin& origin,
                                      blink::mojom::StorageType type);
-  virtual void NotifyStorageModified(QuotaClient::ID client_id,
+  virtual void NotifyStorageModified(QuotaClientType client_id,
                                      const url::Origin& origin,
                                      blink::mojom::StorageType type,
                                      int64_t delta);
   virtual void NotifyOriginInUse(const url::Origin& origin);
   virtual void NotifyOriginNoLongerInUse(const url::Origin& origin);
+  virtual void NotifyWriteFailed(const url::Origin& origin);
 
-  virtual void SetUsageCacheEnabled(QuotaClient::ID client_id,
+  virtual void SetUsageCacheEnabled(QuotaClientType client_id,
                                     const url::Origin& origin,
                                     blink::mojom::StorageType type,
                                     bool enabled);

@@ -7,8 +7,13 @@
 namespace invalidation {
 namespace switches {
 
-const base::Feature kFCMInvalidationsConservativeEnabling = {
-    "FCMInvalidationsConservativeEnabling", base::FEATURE_ENABLED_BY_DEFAULT};
+namespace {
+
+// Default TTL (if the SyncInstanceIDTokenTTL/PolicyInstanceIDTokenTTL feature
+// is enabled) is 4 weeks. Exposed for testing.
+const int kDefaultInstanceIDTokenTTLSeconds = 28 * 24 * 60 * 60;
+
+}  // namespace
 
 // This feature affects only Android.
 const base::Feature kFCMInvalidationsStartOnceActiveAccountAvailable = {
@@ -26,6 +31,20 @@ const base::Feature kFCMInvalidationsForSyncDontCheckVersion = {
 const base::Feature kTiclInvalidationsStartInvalidatorOnActiveHandler = {
     "TiclInvalidationsStartInvalidatorOnActiveHandler",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSyncInstanceIDTokenTTL{"SyncInstanceIDTokenTTL",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<int> kSyncInstanceIDTokenTTLSeconds{
+    &kSyncInstanceIDTokenTTL, "time_to_live_seconds",
+    kDefaultInstanceIDTokenTTLSeconds};
+
+const base::Feature kPolicyInstanceIDTokenTTL{
+    "PolicyInstanceIDTokenTTL", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<int> kPolicyInstanceIDTokenTTLSeconds{
+    &kPolicyInstanceIDTokenTTL, "time_to_live_seconds",
+    kDefaultInstanceIDTokenTTLSeconds};
 
 }  // namespace switches
 }  // namespace invalidation

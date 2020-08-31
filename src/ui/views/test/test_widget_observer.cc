@@ -4,14 +4,13 @@
 
 #include "ui/views/test/test_widget_observer.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
 namespace test {
 
-TestWidgetObserver::TestWidgetObserver(Widget* widget)
-    : widget_(widget) {
+TestWidgetObserver::TestWidgetObserver(Widget* widget) : widget_(widget) {
   widget_->AddObserver(this);
 }
 

@@ -8,11 +8,15 @@
 from __future__ import print_function
 
 import collections
+import sys
 
 import six
 
 from chromite.lib import json_lib
 from chromite.lib import user_db
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 GROUPS_KEY = 'groups'

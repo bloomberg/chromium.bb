@@ -14,7 +14,6 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
-#include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_controller.h"
@@ -215,6 +214,10 @@ class OmniboxEditModel {
       WindowOpenDisposition disposition,
       base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
+  // Executes the |pedal| associated with given match.
+  void ExecutePedal(const AutocompleteMatch& match,
+                    base::TimeTicks match_selection_timestamp);
+
   // Asks the browser to load |match|. |index| is only used for logging, and
   // can be kNoMatch if the popup was closed, or if none of the suggestions
   // in the popup were used (in the unusual no-default-match case). In that
@@ -295,10 +298,7 @@ class OmniboxEditModel {
 
   // Called when the view is gaining focus.  |control_down| is whether the
   // control key is down (at the time we're gaining focus).
-  // |suppress_on_focus_suggestions| is set to true when on-focus suggestions
-  // should not appear for this focus event. For instance, for
-  // renderer-initiated focus events, it should be set to true.
-  void OnSetFocus(bool control_down, bool suppress_on_focus_suggestions);
+  void OnSetFocus(bool control_down);
 
   // Shows On-Focus Suggestions (ZeroSuggest) if no query is currently running
   // and the popup is closed. This can be called multiple times without harm,
@@ -350,6 +350,10 @@ class OmniboxEditModel {
   // negative for moving up, positive for moving down. Virtual for testing.
   virtual void OnUpOrDownKeyPressed(int count);
 
+  // If no query is in progress, starts working on an autocomplete query.
+  // Returns true if started; false otherwise.
+  bool MaybeStartQueryForPopup();
+
   // Called when any relevant data changes.  This rolls together several
   // separate pieces of data into one call so we can update all the UI
   // efficiently:
@@ -391,6 +395,10 @@ class OmniboxEditModel {
 
   // Just forwards the call to the OmniboxView referred within.
   void SetAccessibilityLabel(const AutocompleteMatch& match);
+
+  // Reverts the edit box from a temporary text back to the original user text.
+  // Also resets the popup to the initial state.
+  void RevertTemporaryTextAndPopup();
 
  private:
   friend class OmniboxControllerTest;
@@ -447,10 +455,6 @@ class OmniboxEditModel {
   void GetInfoForCurrentText(AutocompleteMatch* match,
                              GURL* alternate_nav_url) const;
 
-  // Reverts the edit box from a temporary text back to the original user text.
-  // Also resets the popup to the initial state.
-  void RevertTemporaryTextAndPopup();
-
   // Accepts current keyword if the user just typed a space at the end of
   // |new_text|.  This handles both of the following cases:
   //   (assume "foo" is a keyword, | is the input caret, [] is selected text)
@@ -482,11 +486,6 @@ class OmniboxEditModel {
   // change). If the caret visibility changes, we call ApplyCaretVisibility() on
   // the view.
   void SetFocusState(OmniboxFocusState state, OmniboxFocusChangeReason reason);
-
-  // Calculates the new selected line based on |count|, how many
-  // suggestions are currently in the results, and any features
-  // that are enabled.
-  size_t GetNewSelectedLine(int count);
 
   // NOTE: |client_| must outlive |omnibox_controller_|, as the latter has a
   // reference to the former.

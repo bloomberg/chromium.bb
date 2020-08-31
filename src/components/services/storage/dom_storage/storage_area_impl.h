@@ -16,7 +16,6 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
-#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -165,8 +164,9 @@ class StorageAreaImpl : public blink::mojom::StorageArea {
   // Commits any uncommitted data to the database as soon as possible. This
   // usually means data will be committed immediately, but if we're currently
   // waiting on the result of initializing our map the commit won't happen
-  // until the load has finished.
-  void ScheduleImmediateCommit();
+  // until the load has finished. If provided, |callback| is run only once the
+  // commit is fully completed.
+  void ScheduleImmediateCommit(base::OnceClosure callback = {});
 
   // Clears the in-memory cache if currently no changes are pending. If there
   // are uncommitted changes this method does nothing.
@@ -182,8 +182,7 @@ class StorageAreaImpl : public blink::mojom::StorageArea {
 
   // blink::mojom::StorageArea:
   void AddObserver(
-      mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver> observer)
-      override;
+      mojo::PendingRemote<blink::mojom::StorageAreaObserver> observer) override;
   void Put(const std::vector<uint8_t>& key,
            const std::vector<uint8_t>& value,
            const base::Optional<std::vector<uint8_t>>& client_old_value,
@@ -193,12 +192,14 @@ class StorageAreaImpl : public blink::mojom::StorageArea {
               const base::Optional<std::vector<uint8_t>>& client_old_value,
               const std::string& source,
               DeleteCallback callback) override;
-  void DeleteAll(const std::string& source,
-                 DeleteAllCallback callback) override;
+  void DeleteAll(
+      const std::string& source,
+      mojo::PendingRemote<blink::mojom::StorageAreaObserver> new_observer,
+      DeleteAllCallback callback) override;
   void Get(const std::vector<uint8_t>& key, GetCallback callback) override;
-  void GetAll(mojo::PendingAssociatedRemote<
-                  blink::mojom::StorageAreaGetAllCallback> complete_callback,
-              GetAllCallback callback) override;
+  void GetAll(
+      mojo::PendingRemote<blink::mojom::StorageAreaObserver> new_observer,
+      GetAllCallback callback) override;
 
   void SetOnLoadCallbackForTesting(base::OnceClosure callback) {
     on_load_callback_for_testing_ = std::move(callback);
@@ -293,8 +294,8 @@ class StorageAreaImpl : public blink::mojom::StorageArea {
   void StartCommitTimer();
   base::TimeDelta ComputeCommitDelay() const;
 
-  void CommitChanges();
-  void OnCommitComplete(leveldb::Status status);
+  void CommitChanges(base::OnceClosure callback = {});
+  void OnCommitComplete(base::OnceClosure callback, leveldb::Status status);
 
   void UnloadMapIfPossible();
 
@@ -322,7 +323,7 @@ class StorageAreaImpl : public blink::mojom::StorageArea {
 
   std::vector<uint8_t> prefix_;
   mojo::ReceiverSet<blink::mojom::StorageArea> receivers_;
-  mojo::AssociatedRemoteSet<blink::mojom::StorageAreaObserver> observers_;
+  mojo::RemoteSet<blink::mojom::StorageAreaObserver> observers_;
   Delegate* delegate_;
   AsyncDomStorageDatabase* database_;
 

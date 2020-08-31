@@ -23,6 +23,10 @@ inline const EffectPaintPropertyNode& e0() {
   return EffectPaintPropertyNode::Root();
 }
 
+constexpr int c0_id = 1;
+constexpr int e0_id = 1;
+constexpr int t0_id = 1;
+
 inline scoped_refptr<EffectPaintPropertyNode> CreateOpacityEffect(
     const EffectPaintPropertyNode& parent,
     const TransformPaintPropertyNode& local_transform_space,
@@ -111,14 +115,13 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateBackdropFilterEffect(
     const TransformPaintPropertyNode& local_transform_space,
     const ClipPaintPropertyNode* output_clip,
     CompositorFilterOperations backdrop_filter,
-    const FloatPoint& filters_origin = FloatPoint(),
-    CompositingReasons compositing_reasons = CompositingReason::kNone) {
+    const FloatPoint& filters_origin = FloatPoint()) {
   EffectPaintPropertyNode::State state;
   state.local_transform_space = &local_transform_space;
   state.output_clip = output_clip;
   state.backdrop_filter = std::move(backdrop_filter);
   state.filters_origin = filters_origin;
-  state.direct_compositing_reasons = compositing_reasons;
+  state.direct_compositing_reasons = CompositingReason::kBackdropFilter;
   state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
       NewUniqueObjectId(), CompositorElementIdNamespace::kPrimary);
   return EffectPaintPropertyNode::Create(parent, std::move(state));
@@ -127,12 +130,10 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateBackdropFilterEffect(
 inline scoped_refptr<EffectPaintPropertyNode> CreateBackdropFilterEffect(
     const EffectPaintPropertyNode& parent,
     CompositorFilterOperations backdrop_filter,
-    const FloatPoint& paint_offset = FloatPoint(),
-    CompositingReasons compositing_reasons = CompositingReason::kNone) {
+    const FloatPoint& paint_offset = FloatPoint()) {
   return CreateBackdropFilterEffect(
       parent, parent.Unalias().LocalTransformSpace(),
-      parent.Unalias().OutputClip(), backdrop_filter, paint_offset,
-      compositing_reasons);
+      parent.Unalias().OutputClip(), backdrop_filter, paint_offset);
 }
 
 inline scoped_refptr<EffectPaintPropertyNode>
@@ -156,9 +157,17 @@ inline scoped_refptr<ClipPaintPropertyNode> CreateClip(
     const ClipPaintPropertyNode& parent,
     const TransformPaintPropertyNode& local_transform_space,
     const FloatRoundedRect& clip_rect) {
-  ClipPaintPropertyNode::State state;
-  state.local_transform_space = &local_transform_space;
-  state.clip_rect = clip_rect;
+  ClipPaintPropertyNode::State state(&local_transform_space, clip_rect);
+  return ClipPaintPropertyNode::Create(parent, std::move(state));
+}
+
+inline scoped_refptr<ClipPaintPropertyNode> CreateClip(
+    const ClipPaintPropertyNode& parent,
+    const TransformPaintPropertyNode& local_transform_space,
+    const FloatRoundedRect& clip_rect,
+    const FloatRoundedRect& pixel_snapped_clip_rect) {
+  ClipPaintPropertyNode::State state(&local_transform_space, clip_rect,
+                                     pixel_snapped_clip_rect);
   return ClipPaintPropertyNode::Create(parent, std::move(state));
 }
 
@@ -166,9 +175,7 @@ inline scoped_refptr<ClipPaintPropertyNode> CreateClipPathClip(
     const ClipPaintPropertyNode& parent,
     const TransformPaintPropertyNode& local_transform_space,
     const FloatRoundedRect& clip_rect) {
-  ClipPaintPropertyNode::State state;
-  state.local_transform_space = &local_transform_space;
-  state.clip_rect = clip_rect;
+  ClipPaintPropertyNode::State state(&local_transform_space, clip_rect);
   state.clip_path = base::AdoptRef(new RefCountedPath);
   return ClipPaintPropertyNode::Create(parent, std::move(state));
 }
@@ -186,8 +193,7 @@ inline scoped_refptr<TransformPaintPropertyNode> CreateTransform(
     const TransformationMatrix& matrix,
     const FloatPoint3D& origin = FloatPoint3D(),
     CompositingReasons compositing_reasons = CompositingReason::kNone) {
-  TransformPaintPropertyNode::State state{
-      TransformPaintPropertyNode::TransformAndOrigin(matrix, origin)};
+  TransformPaintPropertyNode::State state{{matrix, origin}};
   state.direct_compositing_reasons = compositing_reasons;
   return TransformPaintPropertyNode::Create(parent, std::move(state));
 }
@@ -196,8 +202,7 @@ inline scoped_refptr<TransformPaintPropertyNode> CreateAnimatingTransform(
     const TransformPaintPropertyNode& parent,
     const TransformationMatrix& matrix = TransformationMatrix(),
     const FloatPoint3D& origin = FloatPoint3D()) {
-  TransformPaintPropertyNode::State state{
-      TransformPaintPropertyNode::TransformAndOrigin(matrix, origin)};
+  TransformPaintPropertyNode::State state{{matrix, origin}};
   state.direct_compositing_reasons =
       CompositingReason::kActiveTransformAnimation;
   state.compositor_element_id = CompositorElementIdFromUniqueObjectId(

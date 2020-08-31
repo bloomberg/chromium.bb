@@ -4,6 +4,7 @@
 
 import bisect
 import collections
+from six.moves import range  # pylint: disable=redefined-builtin
 
 
 class _Bucketer(object):
@@ -81,12 +82,13 @@ class _Bucketer(object):
             self.scale == other.scale)
 
   def _linear_bounds(self):
-    return [self.width * i for i in xrange(self.num_finite_buckets + 1)]
+    return [self.width * i for i in range(self.num_finite_buckets + 1)]
 
   def _exponential_bounds(self):
     return [
-        self.scale * self.growth_factor ** i
-        for i in xrange(self.num_finite_buckets + 1)]
+        self.scale * self.growth_factor**i
+        for i in range(self.num_finite_buckets + 1)
+    ]
 
   def bucket_for_value(self, value):
     """Returns the index of the bucket that this value belongs to."""

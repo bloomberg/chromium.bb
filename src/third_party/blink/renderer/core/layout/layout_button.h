@@ -48,9 +48,6 @@ class LayoutButton final : public LayoutFlexibleBox {
   void RemoveLeftoverAnonymousBlock(LayoutBlock*) override {}
   bool CreatesAnonymousWrapper() const override { return true; }
 
-  bool HasControlClip() const override;
-  PhysicalRect ControlClipRect(const PhysicalOffset&) const override;
-
   LayoutUnit BaselinePosition(FontBaseline,
                               bool first_line,
                               LineDirectionMode,
@@ -59,10 +56,6 @@ class LayoutButton final : public LayoutFlexibleBox {
  private:
   void UpdateAnonymousChildStyle(const LayoutObject* child,
                                  ComputedStyle& child_style) const override;
-
-  bool HasLineIfEmpty() const override {
-    return IsA<HTMLInputElement>(GetNode());
-  }
 
   LayoutBlock* inner_;
 };

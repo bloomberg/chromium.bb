@@ -6,24 +6,33 @@
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_BOOKMARKS_HELPER_H_
 
 #include <memory>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/sync/test/integration/await_match_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
+#include "components/bookmarks/browser/bookmark_model_observer.h"
+#include "components/bookmarks/browser/bookmark_node.h"
+#include "components/bookmarks/browser/bookmark_test_util.h"
 #include "components/sync/engine_impl/loopback_server/loopback_server_entity.h"
 #include "components/sync/nigori/cryptographer.h"
 #include "components/sync/test/fake_server/fake_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
+class BookmarkUndoService;
 class GURL;
 
 namespace bookmarks {
 class BookmarkModel;
-class BookmarkNode;
 }  // namespace bookmarks
 
 namespace gfx {
@@ -31,6 +40,14 @@ class Image;
 }  // namespace gfx
 
 namespace bookmarks_helper {
+
+MATCHER_P(HasGuid, expected_guid, "") {
+  const bookmarks::BookmarkNode* actual_node = arg;
+  return actual_node->guid() == expected_guid;
+}
+
+// Used to access the bookmark undo service within a particular sync profile.
+BookmarkUndoService* GetBookmarkUndoService(int index) WARN_UNUSED_RESULT;
 
 // Used to access the bookmark model within a particular sync profile.
 bookmarks::BookmarkModel* GetBookmarkModel(int index) WARN_UNUSED_RESULT;
@@ -237,29 +254,164 @@ std::unique_ptr<syncer::LoopbackServerEntity> CreateBookmarkServerEntity(
     const std::string& title,
     const GURL& url);
 
+// Helper class that reacts to any BookmarkModelObserver event by running a
+// callback provided in the constructor.
+class AnyBookmarkChangeObserver : public bookmarks::BookmarkModelObserver {
+ public:
+  explicit AnyBookmarkChangeObserver(const base::RepeatingClosure& cb);
+  ~AnyBookmarkChangeObserver() override;
+
+  AnyBookmarkChangeObserver(const AnyBookmarkChangeObserver&) = delete;
+  AnyBookmarkChangeObserver& operator=(const AnyBookmarkChangeObserver&) =
+      delete;
+
+  // BookmarkModelObserver overrides.
+  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
+                           bool ids_reassigned) override;
+  void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
+  void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
+                         const bookmarks::BookmarkNode* old_parent,
+                         size_t old_index,
+                         const bookmarks::BookmarkNode* new_parent,
+                         size_t new_index) override;
+  void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
+                         const bookmarks::BookmarkNode* parent,
+                         size_t index) override;
+  void OnWillRemoveBookmarks(bookmarks::BookmarkModel* model,
+                             const bookmarks::BookmarkNode* parent,
+                             size_t old_index,
+                             const bookmarks::BookmarkNode* node) override;
+  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
+                           const bookmarks::BookmarkNode* parent,
+                           size_t old_index,
+                           const bookmarks::BookmarkNode* node,
+                           const std::set<GURL>& no_longer_bookmarked) override;
+  void OnWillChangeBookmarkNode(bookmarks::BookmarkModel* model,
+                                const bookmarks::BookmarkNode* node) override;
+  void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
+                           const bookmarks::BookmarkNode* node) override;
+  void OnWillChangeBookmarkMetaInfo(
+      bookmarks::BookmarkModel* model,
+      const bookmarks::BookmarkNode* node) override;
+  void BookmarkMetaInfoChanged(bookmarks::BookmarkModel* model,
+                               const bookmarks::BookmarkNode* node) override;
+  void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
+                                  const bookmarks::BookmarkNode* node) override;
+  void OnWillReorderBookmarkNode(bookmarks::BookmarkModel* model,
+                                 const bookmarks::BookmarkNode* node) override;
+  void BookmarkNodeChildrenReordered(
+      bookmarks::BookmarkModel* model,
+      const bookmarks::BookmarkNode* node) override;
+  void ExtensiveBookmarkChangesBeginning(
+      bookmarks::BookmarkModel* model) override;
+  void ExtensiveBookmarkChangesEnded(bookmarks::BookmarkModel* model) override;
+  void OnWillRemoveAllUserBookmarks(bookmarks::BookmarkModel* model) override;
+  void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
+                                   const std::set<GURL>& removed_urls) override;
+  void GroupedBookmarkChangesBeginning(
+      bookmarks::BookmarkModel* model) override;
+  void GroupedBookmarkChangesEnded(bookmarks::BookmarkModel* model) override;
+
+ private:
+  const base::RepeatingClosure cb_;
+};
+
+// Base class used for checkers that verify the state of an arbitrary number
+// of BookmarkModel instances.
+class BookmarkModelStatusChangeChecker : public StatusChangeChecker {
+ public:
+  BookmarkModelStatusChangeChecker();
+  ~BookmarkModelStatusChangeChecker() override;
+
+  BookmarkModelStatusChangeChecker(const BookmarkModelStatusChangeChecker&) =
+      delete;
+  BookmarkModelStatusChangeChecker& operator=(
+      const BookmarkModelStatusChangeChecker&) = delete;
+
+ protected:
+  void Observe(bookmarks::BookmarkModel* model);
+
+  // StatusChangeChecker override.
+  void CheckExitCondition() override;
+
+ private:
+  // Equivalent of CheckExitCondition() that instead posts a task in the current
+  // task runner.
+  void PostCheckExitCondition();
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  std::vector<std::pair<bookmarks::BookmarkModel*,
+                        std::unique_ptr<AnyBookmarkChangeObserver>>>
+      observers_;
+
+  bool pending_check_exit_condition_ = false;
+  base::WeakPtrFactory<BookmarkModelStatusChangeChecker> weak_ptr_factory_{
+      this};
+};
+
 // Checker used to block until bookmarks match on all clients.
-class BookmarksMatchChecker : public MultiClientStatusChangeChecker {
+class BookmarksMatchChecker : public BookmarkModelStatusChangeChecker {
  public:
   BookmarksMatchChecker();
 
   // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied(std::ostream* os) override;
+  bool Wait() override;
+};
+
+// Base class used for checkers that verify the state of a single BookmarkModel
+// instance.
+class SingleBookmarkModelStatusChangeChecker
+    : public BookmarkModelStatusChangeChecker {
+ public:
+  explicit SingleBookmarkModelStatusChangeChecker(int profile_index);
+  ~SingleBookmarkModelStatusChangeChecker() override;
+
+  SingleBookmarkModelStatusChangeChecker(
+      const SingleBookmarkModelStatusChangeChecker&) = delete;
+  SingleBookmarkModelStatusChangeChecker& operator=(
+      const SingleBookmarkModelStatusChangeChecker&) = delete;
+
+ protected:
+  int profile_index() const;
+  bookmarks::BookmarkModel* bookmark_model() const;
+
+ private:
+  const int profile_index_;
+  bookmarks::BookmarkModel* bookmark_model_;
 };
 
 // Checker used to block until bookmarks match the verifier bookmark model.
-class BookmarksMatchVerifierChecker : public MultiClientStatusChangeChecker {
+class BookmarksMatchVerifierChecker : public BookmarkModelStatusChangeChecker {
  public:
   BookmarksMatchVerifierChecker();
 
   // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied(std::ostream* os) override;
+  bool Wait() override;
+};
+
+// Generic status change checker that waits until a predicate as defined by
+// a gMock matches becomes true.
+class SingleBookmarksModelMatcherChecker
+    : public SingleBookmarkModelStatusChangeChecker {
+ public:
+  using Matcher = testing::Matcher<std::vector<const bookmarks::BookmarkNode*>>;
+
+  SingleBookmarksModelMatcherChecker(int profile_index, const Matcher& matcher);
+  ~SingleBookmarksModelMatcherChecker();
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied(std::ostream* os) final;
+
+ private:
+  const Matcher matcher_;
 };
 
 // Checker used to block until the actual number of bookmarks with the given
 // title match the expected count.
-// TODO(pvalenzuela): Remove this class and instead use
-// AwaitMatchStatusChangeChecker.
-class BookmarksTitleChecker : public SingleClientStatusChangeChecker {
+class BookmarksTitleChecker : public SingleBookmarkModelStatusChangeChecker {
  public:
   BookmarksTitleChecker(int profile_index,
                         const std::string& title,
@@ -272,6 +424,22 @@ class BookmarksTitleChecker : public SingleClientStatusChangeChecker {
   const int profile_index_;
   const std::string title_;
   const int expected_count_;
+};
+
+// Checker used to wait until the favicon of a bookmark has been loaded. It
+// doesn't itself trigger the load of the favicon.
+class BookmarkFaviconLoadedChecker
+    : public SingleBookmarkModelStatusChangeChecker {
+ public:
+  // There must be exactly one bookmark for |page_url| in the BookmarkModel in
+  // |profile_index|.
+  BookmarkFaviconLoadedChecker(int profile_index, const GURL& page_url);
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied(std::ostream* os) override;
+
+ private:
+  const bookmarks::BookmarkNode* const bookmark_node_;
 };
 
 // Checker used to block until the bookmarks on the server match a given set of
@@ -306,15 +474,23 @@ class ServerBookmarksEqualityChecker : public SingleClientStatusChangeChecker {
 
 // Checker used to block until the actual number of bookmarks with the given url
 // match the expected count.
-class BookmarksUrlChecker : public AwaitMatchStatusChangeChecker {
+class BookmarksUrlChecker : public SingleBookmarkModelStatusChangeChecker {
  public:
   BookmarksUrlChecker(int profile, const GURL& url, int expected_count);
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied(std::ostream* os) override;
+
+ private:
+  const GURL url_;
+  const int expected_count_;
 };
 
 // Checker used to block until there exists a bookmark with the given GUID.
-class BookmarksGUIDChecker : public AwaitMatchStatusChangeChecker {
+class BookmarksGUIDChecker : public SingleBookmarksModelMatcherChecker {
  public:
-  BookmarksGUIDChecker(int profile_index, const std::string& guid);
+  BookmarksGUIDChecker(int profile, const std::string& guid);
+  ~BookmarksGUIDChecker() override;
 };
 
 }  // namespace bookmarks_helper

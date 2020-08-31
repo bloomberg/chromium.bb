@@ -4,9 +4,10 @@
 
 #include "content/common/service_worker/service_worker_utils.h"
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/content_features.h"
@@ -18,6 +19,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace content {
@@ -44,12 +46,13 @@ bool PathContainsDisallowedCharacter(const GURL& url) {
 }  // namespace
 
 // static
-bool ServiceWorkerUtils::IsMainResourceType(ResourceType type) {
+bool ServiceWorkerUtils::IsMainResourceType(blink::mojom::ResourceType type) {
   // When PlzDedicatedWorker is enabled, a dedicated worker script is considered
   // to be a main resource.
-  if (type == ResourceType::kWorker)
+  if (type == blink::mojom::ResourceType::kWorker)
     return base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker);
-  return IsResourceTypeFrame(type) || type == ResourceType::kSharedWorker;
+  return blink::IsResourceTypeFrame(type) ||
+         type == blink::mojom::ResourceType::kSharedWorker;
 }
 
 // static
@@ -101,6 +104,13 @@ bool ServiceWorkerUtils::IsPathRestrictionSatisfiedInternal(
     GURL max_scope = script_url.Resolve(*service_worker_allowed_header_value);
     if (!max_scope.is_valid()) {
       *error_message = "An invalid Service-Worker-Allowed header value ('";
+      error_message->append(*service_worker_allowed_header_value);
+      error_message->append("') was received when fetching the script.");
+      return false;
+    }
+
+    if (max_scope.GetOrigin() != script_url.GetOrigin()) {
+      *error_message = "A cross-origin Service-Worker-Allowed header value ('";
       error_message->append(*service_worker_allowed_header_value);
       error_message->append("') was received when fetching the script.");
       return false;
@@ -226,8 +236,9 @@ const char* ServiceWorkerUtils::FetchResponseSourceToSuffix(
 }
 
 ServiceWorkerUtils::ResourceResponseHeadAndMetadata::
-    ResourceResponseHeadAndMetadata(network::mojom::URLResponseHeadPtr head,
-                                    std::vector<uint8_t> metadata)
+    ResourceResponseHeadAndMetadata(
+        network::mojom::URLResponseHeadPtr head,
+        scoped_refptr<net::IOBufferWithSize> metadata)
     : head(std::move(head)), metadata(std::move(metadata)) {}
 
 ServiceWorkerUtils::ResourceResponseHeadAndMetadata::
@@ -245,6 +256,7 @@ ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
     base::TimeTicks response_start_time,
     int response_data_size) {
   DCHECK(http_info);
+  DCHECK(http_info->headers);
 
   auto head = network::mojom::URLResponseHead::New();
   head->request_start = request_start_time;
@@ -265,13 +277,7 @@ ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
   if (options & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)
     head->ssl_info = http_info->ssl_info;
 
-  std::vector<uint8_t> metadata;
-  if (http_info->metadata) {
-    const uint8_t* data =
-        reinterpret_cast<const uint8_t*>(http_info->metadata->data());
-    metadata = {data, data + http_info->metadata->size()};
-  }
-  return {std::move(head), std::move(metadata)};
+  return {std::move(head), std::move(http_info->metadata)};
 }
 
 bool LongestScopeMatcher::MatchLongest(const GURL& scope) {

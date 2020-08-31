@@ -8,13 +8,15 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_command_line.h"
@@ -26,9 +28,12 @@
 #include "chrome/browser/chromeos/arc/session/arc_play_store_enabled_preference_handler.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/ui/fake_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -39,6 +44,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
@@ -49,6 +55,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -94,6 +101,26 @@ class ArcInitialStartHandler : public ArcSessionManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(ArcInitialStartHandler);
 };
 
+class FileExpansionObserver : public ArcSessionManager::Observer {
+ public:
+  FileExpansionObserver() = default;
+  ~FileExpansionObserver() override = default;
+  FileExpansionObserver(const FileExpansionObserver&) = delete;
+  FileExpansionObserver& operator=(const FileExpansionObserver&) = delete;
+
+  const base::Optional<bool>& property_files_expansion_result() const {
+    return property_files_expansion_result_;
+  }
+
+  // ArcSessionManager::Observer:
+  void OnPropertyFilesExpanded(bool result) override {
+    property_files_expansion_result_ = result;
+  }
+
+ private:
+  base::Optional<bool> property_files_expansion_result_;
+};
+
 class ArcSessionManagerInLoginScreenTest : public testing::Test {
  public:
   ArcSessionManagerInLoginScreenTest()
@@ -106,7 +133,7 @@ class ArcSessionManagerInLoginScreenTest : public testing::Test {
 
     arc_service_manager_ = std::make_unique<ArcServiceManager>();
     arc_session_manager_ =
-        std::make_unique<ArcSessionManager>(std::make_unique<ArcSessionRunner>(
+        CreateTestArcSessionManager(std::make_unique<ArcSessionRunner>(
             base::BindRepeating(FakeArcSession::Create)));
   }
 
@@ -182,7 +209,7 @@ class ArcSessionManagerTestBase : public testing::Test {
 
     arc_service_manager_ = std::make_unique<ArcServiceManager>();
     arc_session_manager_ =
-        std::make_unique<ArcSessionManager>(std::make_unique<ArcSessionRunner>(
+        CreateTestArcSessionManager(std::make_unique<ArcSessionRunner>(
             base::BindRepeating(FakeArcSession::Create)));
 
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -262,8 +289,17 @@ class ArcSessionManagerTest : public ArcSessionManagerTestBase {
     GetFakeUserManager()->AddUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
 
+    chromeos::CryptohomeClient::InitializeFake();
+    chromeos::FakeCryptohomeClient::Get()->set_requires_powerwash(false);
+    policy::PowerwashRequirementsChecker::InitializeSynchronouslyForTesting();
+
     ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
               arc_session_manager()->state());
+  }
+
+  void TearDown() override {
+    chromeos::CryptohomeClient::Shutdown();
+    ArcSessionManagerTestBase::TearDown();
   }
 
  private:
@@ -289,9 +325,10 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   ASSERT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
             arc_session_manager()->state());
+  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
   arc_session_manager()->StartArcForTesting();
 
-  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
+  EXPECT_FALSE(arc_session_manager()->sign_in_start_time().is_null());
   EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
 
   ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
@@ -473,7 +510,9 @@ TEST_F(ArcSessionManagerTest, Provisioning_Success) {
   arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   ASSERT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
             arc_session_manager()->state());
+  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
   arc_session_manager()->StartArcForTesting();
+  EXPECT_FALSE(arc_session_manager()->sign_in_start_time().is_null());
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Here, provisining is not yet completed, so kArcSignedIn should be false.
@@ -485,7 +524,6 @@ TEST_F(ArcSessionManagerTest, Provisioning_Success) {
   arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
   EXPECT_TRUE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
 }
 
@@ -1242,12 +1280,9 @@ class ArcSessionOobeOptInNegotiatorTest
  protected:
   bool IsManagedUser() { return GetParam(); }
 
-  void ReportResult(bool accepted) {
+  void ReportAccepted() {
     for (auto& observer : observer_list_) {
-      if (accepted)
-        observer.OnAccept(false);
-      else
-        observer.OnSkip();
+      observer.OnAccept(false);
     }
     base::RunLoop().RunUntilIdle();
   }
@@ -1309,30 +1344,9 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsAccepted) {
   view()->Show();
   EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
-  ReportResult(true);
+  ReportAccepted();
   EXPECT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
             arc_session_manager()->state());
-}
-
-TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsRejected) {
-  view()->Show();
-  EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
-            arc_session_manager()->state());
-  ReportResult(false);
-  if (!IsManagedUser()) {
-    // ArcPlayStoreEnabledPreferenceHandler is not running, so the state should
-    // be kept as is
-    EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
-              arc_session_manager()->state());
-    EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
-  } else {
-    // For managed case we handle closing outside of
-    // ArcPlayStoreEnabledPreferenceHandler. So it session turns to STOPPED.
-    EXPECT_EQ(ArcSessionManager::State::STOPPED,
-              arc_session_manager()->state());
-    // Managed user's preference should not be overwritten.
-    EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
-  }
 }
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsViewDestroyed) {
@@ -1545,6 +1559,99 @@ TEST_F(ArcSessionManagerTest, SerialNumber_Existing) {
             profile()->GetPrefs()->GetString(prefs::kArcSerialNumber));
 }
 
-}  // namespace
+// Test that when files have already been expaneded, AddObserver() immediately
+// calls OnPropertyFilesExpanded().
+TEST_F(ArcSessionManagerTest, FileExpansion_AlreadyDone) {
+  arc_session_manager()->reset_property_files_expansion_result();
+  FileExpansionObserver observer;
+  arc_session_manager()->OnExpandPropertyFilesForTesting(true);
+  arc_session_manager()->AddObserver(&observer);
+  ASSERT_TRUE(observer.property_files_expansion_result().has_value());
+  EXPECT_TRUE(observer.property_files_expansion_result().value());
+}
 
+// Tests that OnPropertyFilesExpanded() is called with true when the files are
+// expended.
+TEST_F(ArcSessionManagerTest, FileExpansion) {
+  arc_session_manager()->reset_property_files_expansion_result();
+  FileExpansionObserver observer;
+  arc_session_manager()->AddObserver(&observer);
+  EXPECT_FALSE(observer.property_files_expansion_result().has_value());
+  arc_session_manager()->OnExpandPropertyFilesForTesting(true);
+  ASSERT_TRUE(observer.property_files_expansion_result().has_value());
+  EXPECT_TRUE(observer.property_files_expansion_result().value());
+}
+
+// Tests that OnPropertyFilesExpanded() is called with false when the expansion
+// failed.
+TEST_F(ArcSessionManagerTest, FileExpansion_Fail) {
+  arc_session_manager()->reset_property_files_expansion_result();
+  FileExpansionObserver observer;
+  arc_session_manager()->AddObserver(&observer);
+  EXPECT_FALSE(observer.property_files_expansion_result().has_value());
+  arc_session_manager()->OnExpandPropertyFilesForTesting(false);
+  ASSERT_TRUE(observer.property_files_expansion_result().has_value());
+  EXPECT_FALSE(observer.property_files_expansion_result().value());
+}
+
+class ArcSessionManagerPowerwashTest : public ArcSessionManagerTestBase {
+ public:
+  ArcSessionManagerPowerwashTest() = default;
+  ~ArcSessionManagerPowerwashTest() override = default;
+  ArcSessionManagerPowerwashTest(const ArcSessionManagerPowerwashTest&) =
+      delete;
+  ArcSessionManagerPowerwashTest& operator=(
+      const ArcSessionManagerPowerwashTest&) = delete;
+
+  void SetUp() override {
+    ArcSessionManagerTestBase::SetUp();
+    chromeos::CryptohomeClient::InitializeFake();
+  }
+
+  void TearDown() override {
+    chromeos::CryptohomeClient::Shutdown();
+    ArcSessionManagerTestBase::TearDown();
+  }
+};
+
+TEST_F(ArcSessionManagerPowerwashTest, PowerwashRequestBlocksArcStart) {
+  EXPECT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+            arc_session_manager()->state());
+
+  // Set up the situation that provisioning is successfully done in the
+  // previous session.
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  prefs->SetBoolean(prefs::kArcSignedIn, true);
+
+  // Login unaffiliated user.
+  const AccountId account_id(AccountId::FromUserEmailGaiaId(
+      profile()->GetProfileUserName(), "1234567890"));
+  GetFakeUserManager()->AddUserWithAffiliation(account_id, false);
+  GetFakeUserManager()->LoginUser(account_id);
+
+  // Set DeviceRebootOnUserSignout to ALWAYS.
+  chromeos::ScopedCrosSettingsTestHelper settings_helper{
+      /* create_settings_service=*/false};
+  settings_helper.ReplaceDeviceSettingsProviderWithStub();
+  settings_helper.SetInteger(
+      chromeos::kDeviceRebootOnUserSignout,
+      enterprise_management::DeviceRebootOnUserSignoutProto::ALWAYS);
+
+  // Initialize cryptohome to require powerwash.
+  chromeos::FakeCryptohomeClient::Get()->set_requires_powerwash(true);
+  policy::PowerwashRequirementsChecker::InitializeSynchronouslyForTesting();
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+
+  arc_session_manager()->RequestEnable();
+  // Wait for manager's state.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+
+  arc_session_manager()->Shutdown();
+}
+
+}  // namespace
 }  // namespace arc

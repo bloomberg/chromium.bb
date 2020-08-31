@@ -82,12 +82,17 @@ inspectedElement1{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "inspectedElement1",
     "className": ".inspected",
     "nodeWidth": "250",
-    "nodeHeight": "250"
+    "nodeHeight": "250",
+    "showAccessibilityInfo": true,
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 inspectedElement2{
@@ -172,12 +177,17 @@ inspectedElement2{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "inspectedElement2",
     "className": ".inspected",
     "nodeWidth": "250",
-    "nodeHeight": "250"
+    "nodeHeight": "250",
+    "showAccessibilityInfo": true,
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic"
   }
 }
 

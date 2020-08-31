@@ -74,12 +74,9 @@ static_assert(net::EFFECTIVE_CONNECTION_TYPE_LAST == 6,
               "If net::EFFECTIVE_CONNECTION_TYPE changes, "
               "PageloadMetrics_EffectiveConnectionType needs to be updated.");
 
-// Returns the |net::ProxyServer::Scheme| for a ProxyServer_ProxyScheme.
-net::ProxyServer::Scheme SchemeFromProxyScheme(
-    ProxyServer_ProxyScheme proxy_scheme);
-
-// Returns the ProxyServer_ProxyScheme for a |net::ProxyServer::Scheme|.
-ProxyServer_ProxyScheme ProxySchemeFromScheme(net::ProxyServer::Scheme scheme);
+// Returns the corresponding scheme string for the prefetch proto scheme.
+std::string SchemeFromPrefetchScheme(
+    PrefetchProxyConfig_Proxy_Scheme proxy_scheme);
 
 // Returns the |Duration| representation of |time_delta|.
 void TimeDeltaToDuration(const base::TimeDelta& time_delta, Duration* duration);

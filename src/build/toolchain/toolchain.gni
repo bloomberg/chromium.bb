@@ -30,14 +30,15 @@ if (generate_linker_map) {
   assert(
       is_official_build,
       "Linker map files should only be generated when is_official_build = true")
-  assert(current_os == "android" || target_os == "linux",
+  assert(current_os == "android" || current_os == "linux" ||
+             target_os == "android" || target_os == "linux",
          "Linker map files should only be generated for Android and Linux")
 }
 
 declare_args() {
   if (is_clang) {
     # Clang compiler version. Clang files are placed at version-dependent paths.
-    clang_version = "10.0.0"
+    clang_version = "11.0.0"
   }
 }
 
@@ -95,3 +96,13 @@ if (host_os == "win") {
   stamp_command = "touch {{output}}"
   copy_command = "ln -f {{source}} {{output}} 2>/dev/null || (rm -rf {{output}} && cp -af {{source}} {{output}})"
 }
+
+# This variable is true if the current toolchain is one of the target
+# toolchains, i.e. a toolchain which is being used to build the main Chrome
+# binary. This generally means "not the host toolchain", but in the case where
+# we're targeting the host it's true then as well. We do require current_os to
+# match target_os so that for example we avoid considering Android as a target
+# toolchain when targeting CrOS.
+is_a_target_toolchain =
+    (current_toolchain != host_toolchain ||
+     default_toolchain == host_toolchain) && current_os == target_os

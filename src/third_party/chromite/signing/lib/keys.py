@@ -162,7 +162,7 @@ class KeyPair(object):
       RunCommandError: if vbutil_key fails
     """
     res = cros_build_lib.run(['vbutil_key', '--unpack', self.public],
-                             check=False, encoding='utf-8')
+                             check=False, encoding='utf-8', stdout=True)
 
     # Match line that looks like: 'Key sha1sum: <sha1sum>'.
     match = re.search(r'Key sha1sum: +(\w+)', res.output)

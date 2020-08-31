@@ -6,17 +6,20 @@
 
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_root_base.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace base {
 namespace internal {
 
 namespace {
 
-ALWAYS_INLINE void PartitionDirectUnmap(PartitionPage* page) {
-  PartitionRootBase* root = PartitionRootBase::FromPage(page);
-  const PartitionDirectMapExtent* extent =
-      PartitionDirectMapExtent::FromPage(page);
+template <bool thread_safe>
+ALWAYS_INLINE DeferredUnmap
+PartitionDirectUnmap(PartitionPage<thread_safe>* page) {
+  PartitionRootBase<thread_safe>* root =
+      PartitionRootBase<thread_safe>::FromPage(page);
+  const PartitionDirectMapExtent<thread_safe>* extent =
+      PartitionDirectMapExtent<thread_safe>::FromPage(page);
   size_t unmap_size = extent->map_size;
 
   // Maintain the doubly-linked list of all direct mappings.
@@ -42,17 +45,21 @@ ALWAYS_INLINE void PartitionDirectUnmap(PartitionPage* page) {
 
   DCHECK(!(unmap_size & kPageAllocationGranularityOffsetMask));
 
-  char* ptr = reinterpret_cast<char*>(PartitionPage::ToPointer(page));
+  char* ptr =
+      reinterpret_cast<char*>(PartitionPage<thread_safe>::ToPointer(page));
   // Account for the mapping starting a partition page before the actual
   // allocation address.
   ptr -= kPartitionPageSize;
-
-  FreePages(ptr, unmap_size);
+  return {ptr, unmap_size};
 }
 
-ALWAYS_INLINE void PartitionRegisterEmptyPage(PartitionPage* page) {
+template <bool thread_safe>
+ALWAYS_INLINE void PartitionRegisterEmptyPage(
+    PartitionPage<thread_safe>* page) {
   DCHECK(page->is_empty());
-  PartitionRootBase* root = PartitionRootBase::FromPage(page);
+  PartitionRootBase<thread_safe>* root =
+      PartitionRootBase<thread_safe>::FromPage(page);
+  root->lock_.AssertAcquired();
 
   // If the page is already registered as empty, give it another life.
   if (page->empty_cache_index != -1) {
@@ -63,7 +70,8 @@ ALWAYS_INLINE void PartitionRegisterEmptyPage(PartitionPage* page) {
   }
 
   int16_t current_index = root->global_empty_page_ring_index;
-  PartitionPage* page_to_decommit = root->global_empty_page_ring[current_index];
+  PartitionPage<thread_safe>* page_to_decommit =
+      root->global_empty_page_ring[current_index];
   // The page might well have been re-activated, filled up, etc. before we get
   // around to looking at it here.
   if (page_to_decommit)
@@ -84,19 +92,22 @@ ALWAYS_INLINE void PartitionRegisterEmptyPage(PartitionPage* page) {
 }  // namespace
 
 // static
-PartitionPage PartitionPage::sentinel_page_;
+template <bool thread_safe>
+PartitionPage<thread_safe> PartitionPage<thread_safe>::sentinel_page_;
 
-PartitionPage* PartitionPage::get_sentinel_page() {
+// static
+template <bool thread_safe>
+PartitionPage<thread_safe>* PartitionPage<thread_safe>::get_sentinel_page() {
   return &sentinel_page_;
 }
 
-void PartitionPage::FreeSlowPath() {
+template <bool thread_safe>
+DeferredUnmap PartitionPage<thread_safe>::FreeSlowPath() {
   DCHECK(this != get_sentinel_page());
   if (LIKELY(num_allocated_slots == 0)) {
     // Page became fully unused.
     if (UNLIKELY(bucket->is_direct_mapped())) {
-      PartitionDirectUnmap(this);
-      return;
+      return PartitionDirectUnmap(this);
     }
     // If it's the current active page, change it. We bounce the page to
     // the empty list as a force towards defragmentation.
@@ -130,11 +141,15 @@ void PartitionPage::FreeSlowPath() {
     // Special case: for a partition page with just a single slot, it may
     // now be empty and we want to run it through the empty logic.
     if (UNLIKELY(num_allocated_slots == 0))
-      FreeSlowPath();
+      return FreeSlowPath();
   }
+  return {};
 }
 
-void PartitionPage::Decommit(PartitionRootBase* root) {
+template <bool thread_safe>
+void PartitionPage<thread_safe>::Decommit(
+    PartitionRootBase<thread_safe>* root) {
+  root->lock_.AssertAcquired();
   DCHECK(is_empty());
   DCHECK(!bucket->is_direct_mapped());
   void* addr = PartitionPage::ToPointer(this);
@@ -151,7 +166,10 @@ void PartitionPage::Decommit(PartitionRootBase* root) {
   DCHECK(is_decommitted());
 }
 
-void PartitionPage::DecommitIfPossible(PartitionRootBase* root) {
+template <bool thread_safe>
+void PartitionPage<thread_safe>::DecommitIfPossible(
+    PartitionRootBase<thread_safe>* root) {
+  root->lock_.AssertAcquired();
   DCHECK(empty_cache_index >= 0);
   DCHECK(static_cast<unsigned>(empty_cache_index) < kMaxFreeableSpans);
   DCHECK(this == root->global_empty_page_ring[empty_cache_index]);
@@ -159,6 +177,13 @@ void PartitionPage::DecommitIfPossible(PartitionRootBase* root) {
   if (is_empty())
     Decommit(root);
 }
+
+void DeferredUnmap::Unmap() {
+  FreePages(ptr, size);
+}
+
+template struct PartitionPage<ThreadSafe>;
+template struct PartitionPage<NotThreadSafe>;
 
 }  // namespace internal
 }  // namespace base

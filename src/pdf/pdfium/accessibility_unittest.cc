@@ -89,7 +89,7 @@ TEST_F(AccessibilityTest, GetAccessibilityPage) {
   for (size_t i = 0; i < kExpectedTextRunCount; ++i) {
     const auto& expected = kExpectedTextRuns[i];
     EXPECT_EQ(expected.len, text_runs[i].len) << i;
-    EXPECT_DOUBLE_EQ(expected.font_size, text_runs[i].style.font_size) << i;
+    EXPECT_FLOAT_EQ(expected.font_size, text_runs[i].style.font_size) << i;
     EXPECT_FLOAT_EQ(expected.bounds_x, text_runs[i].bounds.point.x) << i;
     EXPECT_FLOAT_EQ(expected.bounds_y, text_runs[i].bounds.point.y) << i;
     float expected_bounds_w =
@@ -337,6 +337,28 @@ TEST_F(AccessibilityTest, TestScrollToNearestEdge) {
   ComparePoint({-199, -199}, client.GetScrollRequestPoints());
 }
 
+TEST_F(AccessibilityTest, TestScrollToGlobalPoint) {
+  ScrollEnabledTestClient client;
+  std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  ASSERT_TRUE(engine);
+  engine->PluginSizeUpdated({400, 400});
+  PP_PdfAccessibilityActionData action_data;
+  action_data.action = PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_GLOBAL_POINT;
+
+  // Scroll up if global point is below the target rect
+  action_data.target_rect = {{201, 201}, {10, 10}};
+  action_data.target_point = {230, 230};
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({-29, -29}, client.GetScrollRequestPoints());
+
+  // Scroll down if global point is above the target rect
+  action_data.target_rect = {{230, 230}, {10, 10}};
+  action_data.target_point = {201, 201};
+  engine->HandleAccessibilityAction(action_data);
+  ComparePoint({29, 29}, client.GetScrollRequestPoints());
+}
+
 // This class is required to just override the NavigateTo
 // functionality for testing in a specific way. It will
 // keep the TestClient class clean for extension by others.
@@ -389,7 +411,8 @@ TEST_F(AccessibilityTest, TestWebLinkClickActionHandling) {
   PP_PdfAccessibilityActionData action_data;
   action_data.action = PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION;
   action_data.page_index = 0;
-  action_data.link_index = 0;
+  action_data.annotation_type = PP_PdfAccessibilityAnnotationType::PP_PDF_LINK;
+  action_data.annotation_index = 0;
   engine->HandleAccessibilityAction(action_data);
   EXPECT_EQ("http://yahoo.com", client.url());
   EXPECT_EQ(WindowOpenDisposition::CURRENT_TAB, client.disposition());
@@ -404,7 +427,8 @@ TEST_F(AccessibilityTest, TestInternalLinkClickActionHandling) {
   PP_PdfAccessibilityActionData action_data;
   action_data.action = PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION;
   action_data.page_index = 0;
-  action_data.link_index = 1;
+  action_data.annotation_type = PP_PdfAccessibilityAnnotationType::PP_PDF_LINK;
+  action_data.annotation_index = 1;
   engine->HandleAccessibilityAction(action_data);
   EXPECT_EQ(1, client.page());
   EXPECT_EQ(266, client.x_in_pixels());
@@ -456,10 +480,14 @@ TEST_F(AccessibilityTest, GetAccessibilityLinkInfo) {
 }
 
 TEST_F(AccessibilityTest, GetAccessibilityHighlightInfo) {
+  constexpr uint32_t kHighlightDefaultColor = MakeARGB(255, 255, 255, 0);
+  constexpr uint32_t kHighlightRedColor = MakeARGB(102, 230, 0, 0);
+  constexpr uint32_t kHighlightNoColor = MakeARGB(0, 0, 0, 0);
   static const pp::PDF::PrivateAccessibilityHighlightInfo
-      kExpectedHighlightInfo[] = {{"", 0, 0, 1, {{5, 196}, {49, 26}}},
-                                  {"", 1, 2, 1, {{110, 196}, {77, 26}}},
-                                  {"", 2, 3, 1, {{192, 196}, {13, 26}}}};
+      kExpectedHighlightInfo[] = {
+          {"", 0, 0, 1, {{5, 196}, {49, 26}}, kHighlightDefaultColor},
+          {"", 1, 2, 1, {{110, 196}, {77, 26}}, kHighlightRedColor},
+          {"", 2, 3, 1, {{192, 196}, {13, 26}}, kHighlightNoColor}};
 
   static const pp::Rect kExpectedPageRect = {{5, 3}, {533, 266}};
 
@@ -491,6 +519,130 @@ TEST_F(AccessibilityTest, GetAccessibilityHighlightInfo) {
               kExpectedHighlightInfo[i].text_run_index);
     EXPECT_EQ(highlight_info.text_run_count,
               kExpectedHighlightInfo[i].text_run_count);
+    EXPECT_EQ(highlight_info.color, kExpectedHighlightInfo[i].color);
+  }
+}
+
+TEST_F(AccessibilityTest, GetAccessibilityTextFieldInfo) {
+  static const pp::PDF::PrivateAccessibilityTextFieldInfo
+      kExpectedTextFieldInfo[] = {
+          {"Text Box", "Text", false, false, false, 0, 5, {138, 230, 135, 41}},
+          {"ReadOnly",
+           "Elephant",
+           true,
+           false,
+           false,
+           1,
+           5,
+           {138, 163, 135, 41}},
+          {"Required",
+           "Required Field",
+           false,
+           true,
+           false,
+           2,
+           5,
+           {138, 303, 135, 34}},
+          {"Password", "", false, false, true, 3, 5, {138, 356, 135, 35}}};
+
+  static const pp::Rect kExpectedPageRect = {{5, 3}, {400, 400}};
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("form_text_fields.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  PP_PrivateAccessibilityPageInfo page_info;
+  std::vector<pp::PDF::PrivateAccessibilityTextRunInfo> text_runs;
+  std::vector<PP_PrivateAccessibilityCharInfo> chars;
+  pp::PDF::PrivateAccessibilityPageObjects page_objects;
+  ASSERT_TRUE(GetAccessibilityInfo(engine.get(), 0, &page_info, &text_runs,
+                                   &chars, &page_objects));
+  EXPECT_EQ(0u, page_info.page_index);
+  CompareRect(kExpectedPageRect, page_info.bounds);
+  EXPECT_EQ(text_runs.size(), page_info.text_run_count);
+  EXPECT_EQ(chars.size(), page_info.char_count);
+  ASSERT_EQ(page_objects.text_fields.size(),
+            base::size(kExpectedTextFieldInfo));
+
+  for (size_t i = 0; i < page_objects.text_fields.size(); ++i) {
+    const pp::PDF::PrivateAccessibilityTextFieldInfo& text_field_info =
+        page_objects.text_fields[i];
+    EXPECT_EQ(kExpectedTextFieldInfo[i].name, text_field_info.name);
+    EXPECT_EQ(kExpectedTextFieldInfo[i].value, text_field_info.value);
+    EXPECT_EQ(kExpectedTextFieldInfo[i].is_read_only,
+              text_field_info.is_read_only);
+    EXPECT_EQ(kExpectedTextFieldInfo[i].is_required,
+              text_field_info.is_required);
+    EXPECT_EQ(kExpectedTextFieldInfo[i].is_password,
+              text_field_info.is_password);
+    EXPECT_EQ(kExpectedTextFieldInfo[i].index_in_page,
+              text_field_info.index_in_page);
+    EXPECT_EQ(kExpectedTextFieldInfo[i].text_run_index,
+              text_field_info.text_run_index);
+    CompareRect(kExpectedTextFieldInfo[i].bounds, text_field_info.bounds);
+  }
+}
+
+TEST_F(AccessibilityTest, TestSelectionActionHandling) {
+  struct Selection {
+    uint32_t start_page_index;
+    uint32_t start_char_index;
+    uint32_t end_page_index;
+    uint32_t end_char_index;
+  };
+
+  struct TestCase {
+    Selection action;
+    Selection expected_result;
+  };
+
+  static constexpr TestCase kTestCases[] = {
+      {{0, 0, 0, 0}, {0, 0, 0, 0}},
+      {{0, 0, 1, 5}, {0, 0, 1, 5}},
+      // Selection action data with invalid char index.
+      // GetSelection() should return the previous selection in this case.
+      {{0, 0, 0, 50}, {0, 0, 1, 5}},
+      // Selection action data for reverse selection where start selection
+      // index is greater than end selection index. GetSelection() should
+      // return the sanitized selection value where start selection index
+      // is less than end selection index.
+      {{1, 10, 0, 5}, {0, 5, 1, 10}},
+      {{0, 10, 0, 4}, {0, 4, 0, 10}},
+      // Selection action data with invalid page index.
+      // GetSelection() should return the previous selection in this case.
+      {{0, 10, 2, 4}, {0, 4, 0, 10}},
+  };
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("hello_world2.pdf"));
+  ASSERT_TRUE(engine);
+
+  for (const auto& test_case : kTestCases) {
+    PP_PdfAccessibilityActionData action_data;
+    action_data.action = PP_PdfAccessibilityAction::PP_PDF_SET_SELECTION;
+    const Selection& sel_action = test_case.action;
+    action_data.selection_start_index.page_index = sel_action.start_page_index;
+    action_data.selection_start_index.char_index = sel_action.start_char_index;
+    action_data.selection_end_index.page_index = sel_action.end_page_index;
+    action_data.selection_end_index.char_index = sel_action.end_char_index;
+
+    engine->HandleAccessibilityAction(action_data);
+    Selection actual_selection;
+    engine->GetSelection(
+        &actual_selection.start_page_index, &actual_selection.start_char_index,
+        &actual_selection.end_page_index, &actual_selection.end_char_index);
+    const Selection& expected_selection = test_case.expected_result;
+    EXPECT_EQ(actual_selection.start_page_index,
+              expected_selection.start_page_index);
+    EXPECT_EQ(actual_selection.start_char_index,
+              expected_selection.start_char_index);
+    EXPECT_EQ(actual_selection.end_page_index,
+              expected_selection.end_page_index);
+    EXPECT_EQ(actual_selection.end_char_index,
+              expected_selection.end_char_index);
   }
 }
 

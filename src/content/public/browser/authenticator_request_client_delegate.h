@@ -54,10 +54,32 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
     // because the authenticator has insufficient storage.
     kStorageFull,
     kUserConsentDenied,
+    // kWinUserCancelled means that the user clicked "Cancel" in the native
+    // Windows UI.
+    kWinUserCancelled,
   };
 
   AuthenticatorRequestClientDelegate();
   ~AuthenticatorRequestClientDelegate() override;
+
+  // Permits the embedder to override normal relying party ID processing. Is
+  // given the untrusted, claimed relying party ID from the WebAuthn call, as
+  // well as the origin of the caller, and may return a relying party ID to
+  // override normal validation.
+  //
+  // This is an access-control decision: RP IDs are used to control access to
+  // credentials so thought is required before allowing an origin to assert an
+  // RP ID. RP ID strings may be stored on authenticators and may later appear
+  // in management UI.
+  virtual base::Optional<std::string> MaybeGetRelyingPartyIdOverride(
+      const std::string& claimed_relying_party_id,
+      const url::Origin& caller_origin);
+
+  // SetRelyingPartyId sets the RP ID for this request. This is called after
+  // |MaybeGetRelyingPartyIdOverride| is given the opportunity to affect this
+  // value. For typical origins, the RP ID is just a domain name, but
+  // |MaybeGetRelyingPartyIdOverride| may return other forms of strings.
+  virtual void SetRelyingPartyId(const std::string& rp_id);
 
   // Called when the request fails for the given |reason|.
   //
@@ -77,8 +99,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
       base::OnceClosure cancel_callback,
       base::RepeatingClosure start_over_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
-      base::RepeatingClosure bluetooth_adapter_power_on_callback,
-      device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback);
+      base::RepeatingClosure bluetooth_adapter_power_on_callback);
 
   // Returns true if the given relying party ID is permitted to receive
   // individual attestation certificates. This:
@@ -176,15 +197,17 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   using TouchIdAuthenticatorConfig = device::fido::mac::AuthenticatorConfig;
 
   // Returns configuration data for the built-in Touch ID platform
-  // authenticator. May return nullopt if the authenticator is not used or not
-  // available.
+  // authenticator. May return nullopt if the authenticator is not available in
+  // the current context, in which case the Touch ID authenticator will be
+  // unavailable.
   virtual base::Optional<TouchIdAuthenticatorConfig>
   GetTouchIdAuthenticatorConfig();
 #endif  // defined(OS_MACOSX)
 
-  // Returns true if a user verifying platform authenticator is available and
-  // configured.
-  virtual bool IsUserVerifyingPlatformAuthenticatorAvailable();
+  // Returns a bool if the result of the isUserVerifyingPlatformAuthenticator
+  // API call should be overridden with that value, or base::nullopt otherwise.
+  virtual base::Optional<bool>
+  IsUserVerifyingPlatformAuthenticatorAvailableOverride();
 
   // Returns a FidoDiscoveryFactory that has been configured for the current
   // environment.
@@ -218,17 +241,15 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   void FidoAuthenticatorAdded(
       const device::FidoAuthenticator& authenticator) override;
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
-  void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
-                                  std::string new_authenticator_id) override;
-  void FidoAuthenticatorPairingModeChanged(
-      base::StringPiece authenticator_id,
-      bool is_in_pairing_mode,
-      base::string16 display_name) override;
   bool SupportsPIN() const override;
   void CollectPIN(
       base::Optional<int> attempts,
       base::OnceCallback<void(std::string)> provide_pin_cb) override;
-  void FinishCollectPIN() override;
+  void StartBioEnrollment(base::OnceClosure next_callback) override;
+  void OnSampleCollected(int bio_samples_remaining) override;
+  void FinishCollectToken() override;
+  void OnRetryUserVerification(int attempts) override;
+  void OnInternalUserVerificationLocked() override;
 
  protected:
   // CustomizeDiscoveryFactory may be overridden in order to configure

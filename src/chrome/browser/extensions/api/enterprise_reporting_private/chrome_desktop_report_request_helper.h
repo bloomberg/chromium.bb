@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 class Profile;
@@ -26,10 +27,13 @@ std::unique_ptr<enterprise_management::ChromeDesktopReportRequest>
 GenerateChromeDesktopReportRequest(const base::DictionaryValue& report,
                                    Profile* profile);
 
+// Override the path where Endpoint Verification data is stored for tests.
+void OverrideEndpointVerificationDirForTesting(const base::FilePath& path);
+
 // Store the |data| associated with the identifier |id|. Calls |callback| on
 // completion with true on success.
 void StoreDeviceData(const std::string& id,
-                     const std::vector<uint8_t>& data,
+                     const std::unique_ptr<std::vector<uint8_t>> data,
                      base::OnceCallback<void(bool)> callback);
 
 // Retrieves the data associated with the identifier |id|. Calls |callback| on

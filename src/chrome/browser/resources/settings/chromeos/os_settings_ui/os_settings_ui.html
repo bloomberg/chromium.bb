@@ -8,25 +8,26 @@
 <link rel="import" href="chrome://resources/html/find_shortcut_behavior.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="../metrics_recorder.html">
 <link rel="import" href="../os_settings_menu/os_settings_menu.html">
 <link rel="import" href="../os_settings_main/os_settings_main.html">
 <link rel="import" href="../os_toolbar/os_toolbar.html">
 <link rel="import" href="../../global_scroll_target_behavior.html">
 <link rel="import" href="../../i18n_setup.html">
-<link rel="import" href="../../icons.html">
 <link rel="import" href="../../settings_shared_css.html">
-<link rel="import" href="../../page_visibility.html">
+<link rel="import" href="../os_page_visibility.html">
 <link rel="import" href="../../prefs/prefs.html">
-<link rel="import" href="../../route.html">
+<link rel="import" href="../os_route.html">
+<link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_vars_css.html">
 
 <dom-module id="os-settings-ui">
   <template>
     <style include="cr-page-host-style settings-shared">
       :host {
-        @apply --layout-fit;
         display: flex;
         flex-direction: column;
+        height: 100%;
         --settings-menu-width: 250px;
         /* Centered cards has a max-width of var(--cr-centered-card-max-width)
          * and a width of a certain percentage. Therefore, to make room for the
@@ -37,10 +38,11 @@
       }
 
       os-toolbar {
-        @apply --layout-center;
         /* TODO(hsuregan): update for dark mode when needed. */
         min-height: 56px;
-        z-index: 2;
+        /* Needs to be higher than #cr-container-show-top's z-index so that the
+         * new settings search dropdown is not struck through by the shadow. */
+        z-index: 3;
       }
 
       cr-drawer {
@@ -105,23 +107,43 @@
       }
     </style>
     <settings-prefs id="prefs" prefs="{{prefs}}"></settings-prefs>
-    <os-toolbar on-os-toolbar-menu-tap="onMenuButtonTap_"
-        spinner-active="[[toolbarSpinnerActive_]]"
-        on-search-changed="onSearchChanged_"
-        role="banner"
-        narrow="{{isNarrow}}"
-        narrow-threshold="980"
-        show-menu="[[isNarrow]]">
-    </os-toolbar>
-    <cr-drawer id="drawer" on-close="onMenuClose_" heading="$i18n{settings}"
-        align="$i18n{textdirection}" icon-name="cr20:menu"
-        icon-title="$i18n{close}">
-      <div class="drawer-content">
-        <template is="dom-if" id="drawerTemplate">
-          <os-settings-menu
-              show-apps="[[showApps_]]"
+    <iron-media-query query="(max-width: [[narrowThreshold_]]px)"
+        query-matches="{{isNarrow}}">
+    </iron-media-query>
+    <template is="dom-if" if="[[showToolbar_]]">
+      <os-toolbar on-os-toolbar-menu-tap="onMenuButtonTap_"
+          spinner-active="[[toolbarSpinnerActive_]]"
+          on-search-changed="onSearchChanged_"
+          role="banner"
+          narrow="[[isNarrow]]"
+          narrow-threshold="980"
+          show-menu="[[isNarrow]]">
+      </os-toolbar>
+    </template>
+    <template is="dom-if" if="[[showNavMenu_]]">
+      <cr-drawer id="drawer" on-close="onMenuClose_" heading="$i18n{settings}"
+          align="$i18n{textdirection}" icon-name="cr20:menu"
+          icon-title="$i18n{close}">
+        <div class="drawer-content">
+          <template is="dom-if" id="drawerTemplate">
+            <os-settings-menu
+                show-apps="[[showApps_]]"
+                show-crostini="[[showCrostini_]]"
+                show-plugin-vm="[[showPluginVm_]]"
+                show-reset="[[showReset_]]"
+                have-play-store-app="[[havePlayStoreApp_]]"
+                on-iron-activate="onIronActivate_"
+                advanced-opened="{{advancedOpenedInMenu_}}">
+            </os-settings-menu>
+          </template>
+        </div>
+      </cr-drawer>
+    </template>
+    <div id="container" class="no-outline">
+      <div id="left">
+        <template is="dom-if" if="[[showNavMenu_]]">
+          <os-settings-menu page-visibility="[[pageVisibility_]]"
               show-crostini="[[showCrostini_]]"
-              show-plugin-vm="[[showPluginVm_]]"
               show-reset="[[showReset_]]"
               have-play-store-app="[[havePlayStoreApp_]]"
               on-iron-activate="onIronActivate_"
@@ -129,25 +151,10 @@
           </os-settings-menu>
         </template>
       </div>
-    </cr-drawer>
-    <div id="container" class="no-outline">
-      <div id="left">
-        <os-settings-menu page-visibility="[[pageVisibility_]]"
-            show-apps="[[showApps_]]"
-            show-crostini="[[showCrostini_]]"
-            show-plugin-vm="[[showPluginVm_]]"
-            show-reset="[[showReset_]]"
-            have-play-store-app="[[havePlayStoreApp_]]"
-            on-iron-activate="onIronActivate_"
-            advanced-opened="{{advancedOpenedInMenu_}}">
-        </os-settings-menu>
-      </div>
       <os-settings-main id="main" prefs="{{prefs}}"
           toolbar-spinner-active="{{toolbarSpinnerActive_}}"
           page-visibility="[[pageVisibility_]]"
           show-android-apps="[[showAndroidApps_]]"
-          show-app-management="[[showAppManagement_]]"
-          show-apps="[[showApps_]]"
           show-crostini="[[showCrostini_]]"
           show-plugin-vm="[[showPluginVm_]]"
           show-reset="[[showReset_]]"

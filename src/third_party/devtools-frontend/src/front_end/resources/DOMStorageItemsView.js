@@ -24,35 +24,59 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-Resources.DOMStorageItemsView = class extends Resources.StorageItemsView {
+import * as Common from '../common/common.js';
+import * as DataGrid from '../data_grid/data_grid.js';
+import * as SourceFrame from '../source_frame/source_frame.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+import * as UI from '../ui/ui.js';
+
+import {DOMStorage} from './DOMStorageModel.js';
+import {StorageItemsView} from './StorageItemsView.js';
+
+export class DOMStorageItemsView extends StorageItemsView {
   /**
-   * @param {!Resources.DOMStorage} domStorage
+   * @param {!DOMStorage} domStorage
    */
   constructor(domStorage) {
-    super(Common.UIString('DOM Storage'), 'domStoragePanel');
+    super(Common.UIString.UIString('DOM Storage'), 'domStoragePanel');
 
     this._domStorage = domStorage;
 
     this.element.classList.add('storage-view', 'table');
 
     const columns = /** @type {!Array<!DataGrid.DataGrid.ColumnDescriptor>} */ ([
-      {id: 'key', title: Common.UIString('Key'), sortable: false, editable: true, longText: true, weight: 50},
-      {id: 'value', title: Common.UIString('Value'), sortable: false, editable: true, longText: true, weight: 50}
+      {id: 'key', title: Common.UIString.UIString('Key'), sortable: false, editable: true, longText: true, weight: 50},
+      {
+        id: 'value',
+        title: Common.UIString.UIString('Value'),
+        sortable: false,
+        editable: true,
+        longText: true,
+        weight: 50
+      }
     ]);
-    this._dataGrid = new DataGrid.DataGrid(
-        columns, this._editingCallback.bind(this), this._deleteCallback.bind(this), this.refreshItems.bind(this));
-    this._dataGrid.addEventListener(
-        DataGrid.DataGrid.Events.SelectedNode,
-        event => this._previewEntry(/** @type {!DataGrid.DataGridNode} */ (event.data)));
-    this._dataGrid.addEventListener(DataGrid.DataGrid.Events.DeselectedNode, event => this._previewEntry(null));
+    this._dataGrid = new DataGrid.DataGrid.DataGridImpl({
+      displayName: ls`DOM Storage Items`,
+      columns,
+      editCallback: this._editingCallback.bind(this),
+      deleteCallback: this._deleteCallback.bind(this),
+      refreshCallback: this.refreshItems.bind(this)
+    });
+    this._dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, event => {
+      this._previewEntry(/** @type {!DataGrid.DataGrid.DataGridNode} */ (event.data));
+    });
+    this._dataGrid.addEventListener(DataGrid.DataGrid.Events.DeselectedNode, event => {
+      this._previewEntry(null);
+    });
     this._dataGrid.setStriped(true);
     this._dataGrid.setName('DOMStorageItemsView');
 
-    this._splitWidget = new UI.SplitWidget(false, false);
+    this._splitWidget = new UI.SplitWidget.SplitWidget(
+        /* isVertical: */ false, /* secondIsSidebar: */ true, 'domStorageSplitViewState');
     this._splitWidget.show(this.element);
-    this._splitWidget.setSecondIsSidebar(true);
 
-    this._previewPanel = new UI.VBox();
+    this._previewPanel = new UI.Widget.VBox();
+    this._previewPanel.setMinimumSize(0, 50);
     const resizer = this._previewPanel.element.createChild('div', 'preview-panel-resizer');
     const dataGridWidget = this._dataGrid.asWidget();
     dataGridWidget.setMinimumSize(0, 50);
@@ -60,7 +84,7 @@ Resources.DOMStorageItemsView = class extends Resources.StorageItemsView {
     this._splitWidget.setSidebarWidget(this._previewPanel);
     this._splitWidget.installResizer(resizer);
 
-    /** @type {?UI.Widget} */
+    /** @type {?UI.Widget.Widget} */
     this._preview = null;
     /** @type {?string} */
     this._previewValue = null;
@@ -72,20 +96,16 @@ Resources.DOMStorageItemsView = class extends Resources.StorageItemsView {
   }
 
   /**
-   * @param {!Resources.DOMStorage} domStorage
+   * @param {!DOMStorage} domStorage
    */
   setStorage(domStorage) {
-    Common.EventTarget.removeEventListeners(this._eventListeners);
+    Common.EventTarget.EventTarget.removeEventListeners(this._eventListeners);
     this._domStorage = domStorage;
     this._eventListeners = [
-      this._domStorage.addEventListener(
-          Resources.DOMStorage.Events.DOMStorageItemsCleared, this._domStorageItemsCleared, this),
-      this._domStorage.addEventListener(
-          Resources.DOMStorage.Events.DOMStorageItemRemoved, this._domStorageItemRemoved, this),
-      this._domStorage.addEventListener(
-          Resources.DOMStorage.Events.DOMStorageItemAdded, this._domStorageItemAdded, this),
-      this._domStorage.addEventListener(
-          Resources.DOMStorage.Events.DOMStorageItemUpdated, this._domStorageItemUpdated, this),
+      this._domStorage.addEventListener(DOMStorage.Events.DOMStorageItemsCleared, this._domStorageItemsCleared, this),
+      this._domStorage.addEventListener(DOMStorage.Events.DOMStorageItemRemoved, this._domStorageItemRemoved, this),
+      this._domStorage.addEventListener(DOMStorage.Events.DOMStorageItemAdded, this._domStorageItemAdded, this),
+      this._domStorage.addEventListener(DOMStorage.Events.DOMStorageItemUpdated, this._domStorageItemUpdated, this),
     ];
     this.refreshItems();
   }
@@ -101,7 +121,7 @@ Resources.DOMStorageItemsView = class extends Resources.StorageItemsView {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _domStorageItemRemoved(event) {
     if (!this.isShowing() || !this._dataGrid) {
@@ -123,7 +143,7 @@ Resources.DOMStorageItemsView = class extends Resources.StorageItemsView {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _domStorageItemAdded(event) {
     if (!this.isShowing() || !this._dataGrid) {
@@ -140,12 +160,12 @@ Resources.DOMStorageItemsView = class extends Resources.StorageItemsView {
       }
     }
 
-    const childNode = new DataGrid.DataGridNode({key: storageData.key, value: storageData.value}, false);
+    const childNode = new DataGrid.DataGrid.DataGridNode({key: storageData.key, value: storageData.value}, false);
     rootNode.insertChild(childNode, children.length - 1);
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _domStorageItemUpdated(event) {
     if (!this.isShowing() || !this._dataGrid) {
@@ -186,7 +206,7 @@ Resources.DOMStorageItemsView = class extends Resources.StorageItemsView {
     for (const item of this.filter(items, filteredItems)) {
       const key = item[0];
       const value = item[1];
-      const node = new DataGrid.DataGridNode({key: key, value: value}, false);
+      const node = new DataGrid.DataGrid.DataGridNode({key: key, value: value}, false);
       node.selectable = true;
       rootNode.appendChild(node);
       if (!selectedNode || key === selectedKey) {
@@ -241,7 +261,7 @@ Resources.DOMStorageItemsView = class extends Resources.StorageItemsView {
   }
 
   /**
-   * @param {!DataGrid.DataGridNode} masterNode
+   * @param {!DataGrid.DataGrid.DataGridNode} masterNode
    */
   _removeDupes(masterNode) {
     const rootNode = this._dataGrid.rootNode();
@@ -265,7 +285,7 @@ Resources.DOMStorageItemsView = class extends Resources.StorageItemsView {
   }
 
   /**
-   * @param {?UI.Widget} preview
+   * @param {?UI.Widget.Widget} preview
    * @param {?string} value
    */
   _showPreview(preview, value) {
@@ -276,7 +296,7 @@ Resources.DOMStorageItemsView = class extends Resources.StorageItemsView {
       this._preview.detach();
     }
     if (!preview) {
-      preview = new UI.EmptyWidget(Common.UIString('Select a value to preview'));
+      preview = new UI.EmptyWidget.EmptyWidget(Common.UIString.UIString('Select a value to preview'));
     }
     this._previewValue = value;
     this._preview = preview;
@@ -284,7 +304,7 @@ Resources.DOMStorageItemsView = class extends Resources.StorageItemsView {
   }
 
   /**
-   * @param {?DataGrid.DataGridNode} entry
+   * @param {?DataGrid.DataGrid.DataGridNode} entry
    */
   async _previewEntry(entry) {
     const value = entry && entry.data && entry.data.value;
@@ -294,13 +314,13 @@ Resources.DOMStorageItemsView = class extends Resources.StorageItemsView {
     }
     const protocol = this._domStorage.isLocalStorage ? 'localstorage' : 'sessionstorage';
     const url = `${protocol}://${entry.key}`;
-    const provider =
-        Common.StaticContentProvider.fromString(url, Common.resourceTypes.XHR, /** @type {string} */ (value));
-    const preview = await SourceFrame.PreviewFactory.createPreview(provider, 'text/plain');
+    const provider = TextUtils.StaticContentProvider.StaticContentProvider.fromString(
+        url, Common.ResourceType.resourceTypes.XHR, /** @type {string} */ (value));
+    const preview = await SourceFrame.PreviewFactory.PreviewFactory.createPreview(provider, 'text/plain');
     // Selection could've changed while the preview was loaded
     if (!entry.selected) {
       return;
     }
     this._showPreview(preview, value);
   }
-};
+}

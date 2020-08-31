@@ -85,7 +85,8 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   gpu::Mailbox CreateSharedImage(viz::ResourceFormat format,
                                  const gfx::Size& size,
                                  const gfx::ColorSpace& color_space,
-                                 uint32_t usage) override {
+                                 uint32_t usage,
+                                 gpu::SurfaceHandle surface_handle) override {
     NOTREACHED();
     return gpu::Mailbox();
   }
@@ -169,6 +170,11 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
 
   void Flush() override { NOTREACHED(); }
 
+  scoped_refptr<gfx::NativePixmap> GetNativePixmap(
+      const gpu::Mailbox& mailbox) override {
+    return nullptr;
+  }
+
  private:
   base::flat_map<gfx::SysmemBufferCollectionId,
                  std::unique_ptr<TestBufferCollection>>
@@ -195,8 +201,8 @@ class FuchsiaVideoDecoderTest : public testing::Test {
     decoder_->Initialize(
         config, true, /*cdm_context=*/nullptr,
         base::BindRepeating(
-            [](bool* init_cb_result, base::RunLoop* run_loop, bool result) {
-              *init_cb_result = result;
+            [](bool* init_cb_result, base::RunLoop* run_loop, Status status) {
+              *init_cb_result = status.is_ok();
               run_loop->Quit();
             },
             &init_cb_result, &run_loop),

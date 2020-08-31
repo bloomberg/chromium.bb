@@ -39,20 +39,29 @@ class StyleResolverState;
 class CachedMatchedProperties final
     : public GarbageCollected<CachedMatchedProperties> {
  public:
-  // Caches data of MachedProperties. See MatchedPropertiesCache::Cache for
+  // Caches data of MatchedProperties. See |MatchedPropertiesCache::Cache| for
   // semantics.
+  // We use UntracedMember<> here because WeakMember<> would require using a
+  // HeapHashSet which is slower to iterate.
   Vector<UntracedMember<CSSPropertyValueSet>> matched_properties;
   Vector<MatchedProperties::Data> matched_properties_types;
 
   scoped_refptr<ComputedStyle> computed_style;
   scoped_refptr<ComputedStyle> parent_computed_style;
 
+  Vector<CSSPropertyName> dependencies;
+
   void Set(const ComputedStyle&,
            const ComputedStyle& parent_style,
-           const MatchedPropertiesVector&);
+           const MatchedPropertiesVector&,
+           const HashSet<CSSPropertyName>& dependencies);
   void Clear();
 
-  void Trace(blink::Visitor*) {}
+  // True if the computed value for each dependency is equal for the
+  // cached parent style vs. the incoming parent style.
+  bool DependenciesEqual(const StyleResolverState&);
+
+  void Trace(Visitor*) {}
 
   bool operator==(const MatchedPropertiesVector& properties);
   bool operator!=(const MatchedPropertiesVector& properties);
@@ -65,13 +74,28 @@ class CORE_EXPORT MatchedPropertiesCache {
   MatchedPropertiesCache();
   ~MatchedPropertiesCache() { DCHECK(cache_.IsEmpty()); }
 
-  const CachedMatchedProperties* Find(unsigned hash,
-                                      const StyleResolverState&,
-                                      const MatchedPropertiesVector&);
-  void Add(const ComputedStyle&,
+  class CORE_EXPORT Key {
+    STACK_ALLOCATED();
+
+   public:
+    explicit Key(const MatchResult&);
+    bool IsValid() const { return hash_ != 0; }
+
+   private:
+    friend class MatchedPropertiesCache;
+    friend class MatchedPropertiesCacheTestKey;
+
+    Key(const MatchResult&, unsigned hash);
+
+    const MatchResult& result_;
+    unsigned hash_;
+  };
+
+  const CachedMatchedProperties* Find(const Key&, const StyleResolverState&);
+  void Add(const Key&,
+           const ComputedStyle&,
            const ComputedStyle& parent_style,
-           unsigned hash,
-           const MatchedPropertiesVector&);
+           const HashSet<CSSPropertyName>& dependencies);
 
   void Clear();
   void ClearViewportDependent();
@@ -79,7 +103,7 @@ class CORE_EXPORT MatchedPropertiesCache {
   static bool IsCacheable(const StyleResolverState&);
   static bool IsStyleCacheable(const ComputedStyle&);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   // The cache is mapping a hash to a cached entry where the entry is kept as
@@ -91,7 +115,7 @@ class CORE_EXPORT MatchedPropertiesCache {
                             DefaultHash<unsigned>::Hash,
                             HashTraits<unsigned>>;
 
-  void RemoveCachedMatchedPropertiesWithDeadEntries(const WeakCallbackInfo&);
+  void RemoveCachedMatchedPropertiesWithDeadEntries(const LivenessBroker&);
 
   Cache cache_;
   DISALLOW_COPY_AND_ASSIGN(MatchedPropertiesCache);

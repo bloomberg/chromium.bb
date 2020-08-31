@@ -173,7 +173,7 @@ class SyncEncryptionHandler {
   // the operation via OnTrustedVaultKeyAccepted if the provided keys
   // successfully decrypted pending keys.
   virtual void AddTrustedVaultDecryptionKeys(
-      const std::vector<std::string>& keys) = 0;
+      const std::vector<std::vector<uint8_t>>& keys) = 0;
 
   // Enables encryption of all datatypes.
   virtual void EnableEncryptEverything() = 0;
@@ -190,10 +190,6 @@ class SyncEncryptionHandler {
   // Returns KeystoreKeysHandler, allowing to pass new keystore keys and to
   // check whether keystore keys need to be requested from the server.
   virtual KeystoreKeysHandler* GetKeystoreKeysHandler() = 0;
-
-  // Returns the last known keystore key or an empty string if none available.
-  // TODO(crbug.com/1012226): Remove API when VAPID migration is over.
-  virtual std::string GetLastKeystoreKey() const = 0;
 };
 
 }  // namespace syncer

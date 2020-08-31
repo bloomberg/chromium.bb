@@ -8,7 +8,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/os_crypt/key_storage_config_linux.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/network_service_instance.h"
@@ -17,8 +16,10 @@
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/http/http_auth_preferences.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/url_request_context_builder_mojo.h"
 
@@ -27,7 +28,7 @@ namespace headless {
 namespace {
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-static char kProductName[] = "HeadlessChrome";
+constexpr char kProductName[] = "HeadlessChrome";
 #endif
 
 net::NetworkTrafficAnnotationTag GetProxyConfigTrafficAnnotationTag() {
@@ -93,7 +94,7 @@ class HeadlessProxyConfigMonitor
     // We must create the proxy config service on the UI loop on Linux because
     // it must synchronously run on the glib message loop.
     proxy_config_service_ =
-        net::ProxyResolutionService::CreateSystemProxyConfigService(
+        net::ConfiguredProxyResolutionService::CreateSystemProxyConfigService(
             task_runner_);
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&net::ProxyConfigService::AddObserver,
@@ -172,9 +173,19 @@ HeadlessRequestContextManager::CreateSystemContext(
   auto* network_service = content::GetNetworkService();
   network_service->ConfigureHttpAuthPrefs(std::move(auth_params));
 
+  ::network::mojom::NetworkContextParamsPtr network_context_params =
+      ::network::mojom::NetworkContextParams::New();
+  ::network::mojom::CertVerifierCreationParamsPtr
+      cert_verifier_creation_params =
+          ::network::mojom::CertVerifierCreationParams::New();
+  manager->ConfigureNetworkContextParamsInternal(
+      /* is_system = */ true, network_context_params.get(),
+      cert_verifier_creation_params.get());
+  network_context_params->cert_verifier_creation_params =
+      std::move(cert_verifier_creation_params);
   network_service->CreateNetworkContext(
       manager->system_context_.InitWithNewPipeAndPassReceiver(),
-      manager->CreateNetworkContextParams(/* is_system = */ true));
+      std::move(network_context_params));
 
   return manager;
 }
@@ -182,9 +193,16 @@ HeadlessRequestContextManager::CreateSystemContext(
 HeadlessRequestContextManager::HeadlessRequestContextManager(
     const HeadlessBrowserContextOptions* options,
     base::FilePath user_data_path)
-    : cookie_encryption_enabled_(
+    :
+// On Windows, Cookie encryption requires access to local_state prefs, which are
+// unavailable.
+#if defined(OS_WIN)
+      cookie_encryption_enabled_(false),
+#else
+      cookie_encryption_enabled_(
           !base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisableCookieEncryption)),
+#endif
       user_data_path_(std::move(user_data_path)),
       accept_language_(options->accept_language()),
       user_agent_(options->user_agent()),
@@ -210,21 +228,22 @@ HeadlessRequestContextManager::~HeadlessRequestContextManager() {
     HeadlessProxyConfigMonitor::DeleteSoon(std::move(proxy_config_monitor_));
 }
 
-mojo::Remote<::network::mojom::NetworkContext>
-HeadlessRequestContextManager::CreateNetworkContext(
+void HeadlessRequestContextManager::ConfigureNetworkContextParams(
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
-  mojo::Remote<::network::mojom::NetworkContext> network_context;
-  content::GetNetworkService()->CreateNetworkContext(
-      network_context.BindNewPipeAndPassReceiver(),
-      CreateNetworkContextParams(/* is_system = */ false));
-  return network_context;
+    const base::FilePath& relative_partition_path,
+    ::network::mojom::NetworkContextParams* network_context_params,
+    ::network::mojom::CertVerifierCreationParams*
+        cert_verifier_creation_params) {
+  ConfigureNetworkContextParamsInternal(
+      /*is_system=*/false, network_context_params,
+      cert_verifier_creation_params);
 }
 
-::network::mojom::NetworkContextParamsPtr
-HeadlessRequestContextManager::CreateNetworkContextParams(bool is_system) {
-  auto context_params = ::network::mojom::NetworkContextParams::New();
-
+void HeadlessRequestContextManager::ConfigureNetworkContextParamsInternal(
+    bool is_system,
+    ::network::mojom::NetworkContextParams* context_params,
+    ::network::mojom::CertVerifierCreationParams*
+        cert_verifier_creation_params) {
   context_params->user_agent = user_agent_;
   context_params->accept_language = accept_language_;
   context_params->primary_network_context = is_system;
@@ -252,10 +271,9 @@ HeadlessRequestContextManager::CreateNetworkContextParams(bool is_system) {
     context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
         *proxy_config_, GetProxyConfigTrafficAnnotationTag());
   } else {
-    proxy_config_monitor_->AddToNetworkContextParams(context_params.get());
+    proxy_config_monitor_->AddToNetworkContextParams(context_params);
   }
-  content::UpdateCorsExemptHeader(context_params.get());
-  return context_params;
+  content::UpdateCorsExemptHeader(context_params);
 }
 
 }  // namespace headless

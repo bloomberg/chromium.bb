@@ -17,12 +17,13 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +34,7 @@ import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguration;
@@ -52,6 +53,7 @@ import org.chromium.chrome.browser.feed.library.sharedstream.logging.LoggingList
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.VisibilityMonitor;
 import org.chromium.chrome.browser.feed.library.sharedstream.piet.PietEventLogger;
 import org.chromium.chrome.browser.feed.library.testing.host.stream.FakeCardConfiguration;
+import org.chromium.chrome.feed.R;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionPayloadProto.FeedActionPayload;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedAction;
 import org.chromium.components.feed.core.proto.ui.piet.ActionsProto.Action;

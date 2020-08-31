@@ -2,11 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-PerfUI.LineLevelProfile = {};
+import * as Bindings from '../bindings/bindings.js';
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+import * as Profiler from '../profiler/profiler.js';  // eslint-disable-line no-unused-vars
+import * as SDK from '../sdk/sdk.js';
+import * as SourceFrame from '../source_frame/source_frame.js';  // eslint-disable-line no-unused-vars
+import * as TextEditor from '../text_editor/text_editor.js';     // eslint-disable-line no-unused-vars
+import * as Workspace from '../workspace/workspace.js';          // eslint-disable-line no-unused-vars
 
-PerfUI.LineLevelProfile.Performance = class {
+export class Performance {
   constructor() {
-    this._helper = new PerfUI.LineLevelProfile._Helper('performance');
+    this._helper = new Helper('performance');
   }
 
   reset() {
@@ -14,7 +21,7 @@ PerfUI.LineLevelProfile.Performance = class {
   }
 
   /**
-   * @param {!SDK.CPUProfileDataModel} profile
+   * @param {!SDK.CPUProfileDataModel.CPUProfileDataModel} profile
    */
   _appendLegacyCPUProfile(profile) {
     const target = profile.target();
@@ -39,7 +46,7 @@ PerfUI.LineLevelProfile.Performance = class {
   }
 
   /**
-   * @param {!SDK.CPUProfileDataModel} profile
+   * @param {!SDK.CPUProfileDataModel.CPUProfileDataModel} profile
    */
   appendCPUProfile(profile) {
     if (!profile.lines) {
@@ -63,11 +70,11 @@ PerfUI.LineLevelProfile.Performance = class {
     }
     this._helper.scheduleUpdate();
   }
-};
+}
 
-PerfUI.LineLevelProfile.Memory = class {
+export class Memory {
   constructor() {
-    this._helper = new PerfUI.LineLevelProfile._Helper('memory');
+    this._helper = new Helper('memory');
   }
 
   reset() {
@@ -76,7 +83,7 @@ PerfUI.LineLevelProfile.Memory = class {
 
   /**
    * @param {!Protocol.HeapProfiler.SamplingHeapProfile} profile
-   * @param {?SDK.Target} target
+   * @param {?SDK.SDKModel.Target} target
    */
   appendHeapProfile(profile, target) {
     const helper = this._helper;
@@ -99,28 +106,28 @@ PerfUI.LineLevelProfile.Memory = class {
       helper.addLineData(target, script, line, node.selfSize);
     }
   }
-};
+}
 
-PerfUI.LineLevelProfile._Helper = class {
+export class Helper {
   /**
    * @param {string} type
    */
   constructor(type) {
     this._type = type;
-    this._locationPool = new Bindings.LiveLocationPool();
+    this._locationPool = new Bindings.LiveLocation.LiveLocationPool();
     this._updateTimer = null;
     this.reset();
   }
 
   reset() {
     // The second map uses string keys for script URLs and numbers for scriptId.
-    /** @type {!Map<?SDK.Target, !Map<string|number, !Map<number, number>>>} */
+    /** @type {!Map<?SDK.SDKModel.Target, !Map<string|number, !Map<number, number>>>} */
     this._lineData = new Map();
     this.scheduleUpdate();
   }
 
   /**
-   * @param {?SDK.Target} target
+   * @param {?SDK.SDKModel.Target} target
    * @param {string|number} scriptIdOrUrl
    * @param {number} line
    * @param {number} data
@@ -151,10 +158,11 @@ PerfUI.LineLevelProfile._Helper = class {
 
   _doUpdate() {
     this._locationPool.disposeAll();
-    Workspace.workspace.uiSourceCodes().forEach(uiSourceCode => uiSourceCode.removeDecorationsForType(this._type));
+    Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodes().forEach(
+        uiSourceCode => uiSourceCode.removeDecorationsForType(this._type));
     for (const targetToScript of this._lineData) {
-      const target = /** @type {?SDK.Target} */ (targetToScript[0]);
-      const debuggerModel = target ? target.model(SDK.DebuggerModel) : null;
+      const target = /** @type {?SDK.SDKModel.Target} */ (targetToScript[0]);
+      const debuggerModel = target ? target.model(SDK.DebuggerModel.DebuggerModel) : null;
       const scriptToLineMap = /** @type {!Map<string|number, !Map<number, number>>} */ (targetToScript[1]);
       for (const scriptToLine of scriptToLineMap) {
         const scriptIdOrUrl = /** @type {string|number} */ (scriptToLine[0]);
@@ -162,7 +170,7 @@ PerfUI.LineLevelProfile._Helper = class {
         // debuggerModel is null when the profile is loaded from file.
         // Try to get UISourceCode by the URL in this case.
         const uiSourceCode = !debuggerModel && typeof scriptIdOrUrl === 'string' ?
-            Workspace.workspace.uiSourceCodeForURL(scriptIdOrUrl) :
+            Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(scriptIdOrUrl) :
             null;
         if (!debuggerModel && !uiSourceCode) {
           continue;
@@ -178,50 +186,51 @@ PerfUI.LineLevelProfile._Helper = class {
               debuggerModel.createRawLocationByURL(scriptIdOrUrl, line, 0) :
               debuggerModel.createRawLocationByScriptId(String(scriptIdOrUrl), line, 0);
           if (rawLocation) {
-            new PerfUI.LineLevelProfile.Presentation(rawLocation, this._type, data, this._locationPool);
+            new Presentation(rawLocation, this._type, data, this._locationPool);
           }
         }
       }
     }
   }
-};
+}
 
-PerfUI.LineLevelProfile.Presentation = class {
+export class Presentation {
   /**
    * @param {!SDK.DebuggerModel.Location} rawLocation
    * @param {string} type
    * @param {number} time
-   * @param {!Bindings.LiveLocationPool} locationPool
+   * @param {!Bindings.LiveLocation.LiveLocationPool} locationPool
    */
   constructor(rawLocation, type, time, locationPool) {
     this._type = type;
     this._time = time;
     this._uiLocation = null;
-    Bindings.debuggerWorkspaceBinding.createLiveLocation(rawLocation, this.updateLocation.bind(this), locationPool);
+    Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createLiveLocation(
+        rawLocation, this.updateLocation.bind(this), locationPool);
   }
 
   /**
-   * @param {!Bindings.LiveLocation} liveLocation
+   * @param {!Bindings.LiveLocation.LiveLocation} liveLocation
    */
-  updateLocation(liveLocation) {
+  async updateLocation(liveLocation) {
     if (this._uiLocation) {
       this._uiLocation.uiSourceCode.removeDecorationsForType(this._type);
     }
-    this._uiLocation = liveLocation.uiLocation();
+    this._uiLocation = await liveLocation.uiLocation();
     if (this._uiLocation) {
       this._uiLocation.uiSourceCode.addLineDecoration(this._uiLocation.lineNumber, this._type, this._time);
     }
   }
-};
+}
 
 /**
- * @implements {SourceFrame.LineDecorator}
+ * @implements {SourceFrame.SourceFrame.LineDecorator}
  */
-PerfUI.LineLevelProfile.LineDecorator = class {
+export class LineDecorator {
   /**
    * @override
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @param {!TextEditor.CodeMirrorTextEditor} textEditor
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+   * @param {!TextEditor.CodeMirrorTextEditor.CodeMirrorTextEditor} textEditor
    * @param {string} type
    */
   decorate(uiSourceCode, textEditor, type) {
@@ -245,14 +254,15 @@ PerfUI.LineLevelProfile.LineDecorator = class {
    * @return {!Element}
    */
   _createElement(type, value) {
-    const element = createElementWithClass('div', 'text-editor-line-marker-text');
+    const element = document.createElement('div');
+    element.classList.add('text-editor-line-marker-text');
     if (type === 'performance') {
-      const intensity = Number.constrain(Math.log10(1 + 10 * value) / 5, 0.02, 1);
-      element.textContent = Common.UIString('%.1f', value);
+      const intensity = Platform.NumberUtilities.clamp(Math.log10(1 + 10 * value) / 5, 0.02, 1);
+      element.textContent = Common.UIString.UIString('%.1f', value);
       element.style.backgroundColor = `hsla(44, 100%, 50%, ${intensity.toFixed(3)})`;
       element.createChild('span', 'line-marker-units').textContent = ls`ms`;
     } else {
-      const intensity = Number.constrain(Math.log10(1 + 2e-3 * value) / 5, 0.02, 1);
+      const intensity = Platform.NumberUtilities.clamp(Math.log10(1 + 2e-3 * value) / 5, 0.02, 1);
       element.style.backgroundColor = `hsla(217, 100%, 70%, ${intensity.toFixed(3)})`;
       value /= 1e3;
       let units;
@@ -265,9 +275,9 @@ PerfUI.LineLevelProfile.LineDecorator = class {
         units = ls`KB`;
         fractionDigits = 0;
       }
-      element.textContent = Common.UIString(`%.${fractionDigits}f`, value);
+      element.textContent = Common.UIString.UIString(`%.${fractionDigits}f`, value);
       element.createChild('span', 'line-marker-units').textContent = units;
     }
     return element;
   }
-};
+}

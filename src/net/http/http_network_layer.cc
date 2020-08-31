@@ -4,7 +4,7 @@
 
 #include "net/http/http_network_layer.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -55,7 +55,7 @@ HttpNetworkSession* HttpNetworkLayer::GetSession() {
 
 void HttpNetworkLayer::OnSuspend() {
   suspended_ = true;
-  session_->CloseIdleConnections();
+  session_->CloseIdleConnections("Entering suspend mode");
 }
 
 void HttpNetworkLayer::OnResume() {

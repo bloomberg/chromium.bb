@@ -5,8 +5,9 @@
 #include "components/keyed_service/core/dependency_manager.h"
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/supports_user_data.h"
 #include "components/keyed_service/core/keyed_service_base_factory.h"
 
@@ -174,7 +175,7 @@ void DependencyManager::DumpDependenciesAsGraphviz(
     const base::FilePath& dot_file) const {
   DCHECK(!dot_file.empty());
   std::string contents = dependency_graph_.DumpAsGraphviz(
-      top_level_name, base::Bind(&KeyedServiceBaseFactoryGetNodeName));
+      top_level_name, base::BindRepeating(&KeyedServiceBaseFactoryGetNodeName));
   base::WriteFile(dot_file, contents.c_str(), contents.size());
 }
 #endif  // NDEBUG

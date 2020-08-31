@@ -8,13 +8,10 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/utility/transformer_util.h"
 #include "ash/wm/cursor_manager_test_api.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
-#include "components/viz/common/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -23,6 +20,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display_switches.h"
+#include "ui/display/display_transform.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/display/types/display_constants.h"
@@ -60,22 +58,6 @@ class MirrorOnBootTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(MirrorOnBootTest);
 };
 
-class MirrorUsingSurfaceLayersTest : public AshTestBase {
- public:
-  MirrorUsingSurfaceLayersTest() = default;
-  ~MirrorUsingSurfaceLayersTest() override = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures({features::kVizDisplayCompositor},
-                                          {});
-    AshTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(MirrorUsingSurfaceLayersTest);
-};
 }  // namespace
 
 using MirrorWindowControllerTest = AshTestBase;
@@ -179,7 +161,7 @@ TEST_P(MirrorWindowControllerRotationAndPanelOrientationTest, MirrorSize) {
 
     // Mirror should have a display transform hint that matches the active
     // rotation (excluding the panel orientation) of the source.
-    EXPECT_EQ(DisplayRotationToOverlayTransform(active_rotation),
+    EXPECT_EQ(display::DisplayRotationToOverlayTransform(active_rotation),
               root_window->GetHost()->compositor()->display_transform_hint());
   }
 }

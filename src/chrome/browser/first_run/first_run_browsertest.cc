@@ -40,6 +40,7 @@
 #include "components/variations/variations_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,8 +74,7 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
     ASSERT_TRUE(text_.get());
 
     ASSERT_TRUE(base::CreateTemporaryFile(&prefs_file_));
-    EXPECT_EQ(static_cast<int>(text_->size()),
-              base::WriteFile(prefs_file_, text_->c_str(), text_->size()));
+    EXPECT_TRUE(base::WriteFile(prefs_file_, *text_));
     SetMasterPrefsPathForTesting(prefs_file_);
 
     // This invokes BrowserMain, and does the import, so must be done last.
@@ -294,7 +294,7 @@ INSTANTIATE_TEST_SUITE_P(
 constexpr char kCompressedSeedTestValue[] = COMPRESSED_SEED_TEST_VALUE;
 constexpr char kSignatureValue[] = SEED_SIGNATURE_TEST_VALUE;
 
-extern const char kWithVariationsPrefs[] =
+const char kWithVariationsPrefs[] =
     "{\n"
     "  \"variations_compressed_seed\": \"" COMPRESSED_SEED_TEST_VALUE
     "\",\n"
@@ -331,10 +331,7 @@ class FirstRunMasterPrefsVariationsSeedTest
   // Writes the trial group to the temporary file.
   void WriteTrialGroupToTestFile(const std::string& trial_group) {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    int bytes_to_write = base::checked_cast<int>(trial_group.length());
-    int bytes_written =
-        base::WriteFile(GetTestFilePath(), trial_group.c_str(), bytes_to_write);
-    EXPECT_EQ(bytes_to_write, bytes_written);
+    EXPECT_TRUE(base::WriteFile(GetTestFilePath(), trial_group));
   }
 
   // Reads the trial group from the temporary file.

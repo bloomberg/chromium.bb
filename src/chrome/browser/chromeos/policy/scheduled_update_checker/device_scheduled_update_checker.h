@@ -19,13 +19,9 @@
 #include "chromeos/dbus/power/native_timer.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/timezone_settings.h"
-#include "services/device/public/mojom/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock.mojom-forward.h"
 #include "third_party/icu/source/i18n/unicode/calendar.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace policy {
 
@@ -36,8 +32,7 @@ class DeviceScheduledUpdateChecker
  public:
   DeviceScheduledUpdateChecker(
       chromeos::CrosSettings* cros_settings,
-      chromeos::NetworkStateHandler* network_state_handler,
-      service_manager::Connector* connector);
+      chromeos::NetworkStateHandler* network_state_handler);
   ~DeviceScheduledUpdateChecker() override;
 
   // Frequency at which the update check should occur.
@@ -133,9 +128,6 @@ class DeviceScheduledUpdateChecker
 
   // Used to retrieve Chrome OS settings. Not owned.
   chromeos::CrosSettings* const cros_settings_;
-
-  // Owned by chromeos::assistant::Service.
-  service_manager::Connector* const connector_;
 
   // Used to observe when settings change.
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>

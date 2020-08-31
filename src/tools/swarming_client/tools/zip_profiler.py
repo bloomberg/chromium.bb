@@ -103,7 +103,7 @@ def main():
     file_set = tree_files(temp_dir)
 
     if options.largest_files:
-      sorted_by_size = sorted(file_set.iteritems(), key=lambda x: x[1],
+      sorted_by_size = sorted(file_set.items(), key=lambda x: x[1],
                               reverse=True)
       files_to_compress = sorted_by_size[:options.largest_files]
 
@@ -116,7 +116,7 @@ def main():
                          filename)
     else:
       print('Number of files: %s' % len(file_set))
-      print('Total size: %s' % sum(file_set.itervalues()))
+      print('Total size: %s' % sum(file_set.values()))
 
       # Profile!
       profile_compress('zlib', zlib.compressobj, range(10), zip_directory,

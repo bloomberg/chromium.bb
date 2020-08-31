@@ -149,18 +149,18 @@ class CFWL_MonthCalendar final : public CFWL_Widget {
   void OnMouseLeave(CFWL_MessageMouse* pMsg);
 
   bool m_bInitialized = false;
-  CFX_RectF m_rtHead;
-  CFX_RectF m_rtWeek;
-  CFX_RectF m_rtLBtn;
-  CFX_RectF m_rtRBtn;
-  CFX_RectF m_rtDates;
-  CFX_RectF m_rtHSep;
-  CFX_RectF m_rtHeadText;
-  CFX_RectF m_rtToday;
-  CFX_RectF m_rtTodayFlag;
+  CFX_RectF m_HeadRect;
+  CFX_RectF m_WeekRect;
+  CFX_RectF m_LBtnRect;
+  CFX_RectF m_RBtnRect;
+  CFX_RectF m_DatesRect;
+  CFX_RectF m_HSepRect;
+  CFX_RectF m_HeadTextRect;
+  CFX_RectF m_TodayRect;
+  CFX_RectF m_TodayFlagRect;
   WideString m_wsHead;
   WideString m_wsToday;
-  std::vector<std::unique_ptr<DATEINFO>> m_arrDates;
+  std::vector<std::unique_ptr<DATEINFO>> m_DateArray;
   int32_t m_iCurYear = 2011;
   int32_t m_iCurMonth = 1;
   int32_t m_iYear = 2011;
@@ -171,11 +171,11 @@ class CFWL_MonthCalendar final : public CFWL_Widget {
   int32_t m_iRBtnPartStates = CFWL_PartState_Normal;
   DATE m_dtMin;
   DATE m_dtMax;
-  CFX_SizeF m_szHead;
-  CFX_SizeF m_szCell;
-  CFX_SizeF m_szToday;
-  std::vector<int32_t> m_arrSelDays;
-  CFX_RectF m_rtClient;
+  CFX_SizeF m_HeadSize;
+  CFX_SizeF m_CellSize;
+  CFX_SizeF m_TodaySize;
+  std::vector<int32_t> m_SelDayArray;
+  CFX_RectF m_ClientRect;
 };
 
 #endif  // XFA_FWL_CFWL_MONTHCALENDAR_H_

@@ -35,18 +35,31 @@ struct VariableReference : public Expression {
 
     ~VariableReference() override;
 
+    VariableReference(const VariableReference&) = delete;
+    VariableReference& operator=(const VariableReference&) = delete;
+
     RefKind refKind() const {
         return fRefKind;
     }
 
     void setRefKind(RefKind refKind);
 
-    bool hasSideEffects() const override {
-        return false;
+    bool hasProperty(Property property) const override {
+        switch (property) {
+            case Property::kSideEffects:      return false;
+            case Property::kContainsRTAdjust: return fVariable.fName == "sk_RTAdjust";
+            default:
+                SkASSERT(false);
+                return false;
+        }
     }
 
     bool isConstant() const override {
         return 0 != (fVariable.fModifiers.fFlags & Modifiers::kConst_Flag);
+    }
+
+    bool isConstantOrUniform() const override {
+        return (fVariable.fModifiers.fFlags & Modifiers::kUniform_Flag) != 0;
     }
 
     std::unique_ptr<Expression> clone() const override {

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feedback;
 
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +20,8 @@ public class DuetFeedbackSource implements FeedbackSource {
     DuetFeedbackSource() {
         mMap = new HashMap<>(1);
         mMap.put(DUET_KEY,
-                FeatureUtilities.isBottomToolbarEnabled() ? ENABLED_VALUE : DISABLED_VALUE);
+                BottomToolbarConfiguration.isBottomToolbarEnabled() ? ENABLED_VALUE
+                                                                    : DISABLED_VALUE);
     }
 
     @Override

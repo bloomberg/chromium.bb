@@ -32,10 +32,36 @@ class ToolbarActionViewController {
   enum class PageInteractionStatus {
     // The extension cannot run on the page.
     kNone,
-    // The extension tried to access the page, but is pending user approval.
+    // The extension would like access to the page, but is pending user
+    // approval.
     kPending,
     // The extension has permission to run on the page.
     kActive,
+  };
+
+  // The source for the action invocation. Used in UMA; do not reorder or delete
+  // entries.
+  enum class InvocationSource {
+    // The action was invoked from a command (keyboard shortcut).
+    kCommand = 0,
+
+    // The action was invoked by the user activating (via mouse or keyboard)
+    // the button in the toolbar.
+    kToolbarButton = 1,
+
+    // The action was invoked by the user activating (via mouse or keyboard)
+    // the entry in the Extensions Menu.
+    kMenuEntry = 2,
+
+    // The action was invoked by the user activiating (via mouse or keyboard)
+    // the entry in the legacy overflow (3-dot) menu.
+    // TODO(devlin): Remove this entry when the extensions menu fully launches.
+    kLegacyOverflowedEntry = 3,
+
+    // The action was invoked programmatically via an API.
+    kApi = 4,
+
+    kMaxValue = kApi,
   };
 
   virtual ~ToolbarActionViewController() {}
@@ -57,7 +83,7 @@ class ToolbarActionViewController {
 
   // Returns the accessible name to use for the given |web_contents|.
   // May be passed null, or a |web_contents| that returns -1 for
-  // |SessionTabHelper::IdForTab(..)|.
+  // |sessions::SessionTabHelper::IdForTab(..)|.
   virtual base::string16 GetAccessibleName(content::WebContents* web_contents)
       const = 0;
 
@@ -67,10 +93,6 @@ class ToolbarActionViewController {
 
   // Returns true if the action should be enabled on the given |web_contents|.
   virtual bool IsEnabled(content::WebContents* web_contents) const = 0;
-
-  // Returns true if the action wants to run, and should be popped out of the
-  // overflow menu on the given |web_contents|.
-  virtual bool WantsToRun(content::WebContents* web_contents) const = 0;
 
   // Returns true if the action has a popup for the given |web_contents|.
   virtual bool HasPopup(content::WebContents* web_contents) const = 0;
@@ -87,6 +109,10 @@ class ToolbarActionViewController {
   // Returns the context menu model, or null if no context menu should be shown.
   virtual ui::MenuModel* GetContextMenu() = 0;
 
+  // Called when a context menu is shown so the controller can perform any
+  // necessary setup.
+  virtual void OnContextMenuShown() {}
+
   // Called when a context menu has closed so the controller can perform any
   // necessary cleanup.
   virtual void OnContextMenuClosed() {}
@@ -95,7 +121,7 @@ class ToolbarActionViewController {
   // |by_user| is true, then this was through a direct user action (as oppposed
   // to, e.g., an API call).
   // Returns true if a popup is shown.
-  virtual bool ExecuteAction(bool by_user) = 0;
+  virtual bool ExecuteAction(bool by_user, InvocationSource source) = 0;
 
   // Updates the current state of the action.
   virtual void UpdateState() = 0;

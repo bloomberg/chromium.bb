@@ -4,14 +4,12 @@
 
 """Runs a server to let the user interact with supersize using a web UI."""
 
-import BaseHTTPServer
+import http.server
 import logging
 import os
-import SimpleHTTPServer
 
 
-class SupersizeHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler,
-                                  object):
+class SupersizeHTTPRequestHandler(http.server.SimpleHTTPRequestHandler, object):
   # Directory to serve files from
   serve_from = None
   # Path to data file
@@ -46,7 +44,8 @@ def AddArguments(parser):
                       help='Address for the HTTP server')
 
 
-def Run(args, _parser):
+# pylint: disable=unused-argument
+def Run(args, on_config_error):
   logging.info('Starting server')
   server_addr = (args.address, args.port)
 
@@ -56,7 +55,7 @@ def Run(args, _parser):
   SupersizeHTTPRequestHandler.data_file_path = args.report_file
   SupersizeHTTPRequestHandler.before_file_path = args.before_file
   SupersizeHTTPRequestHandler.extensions_map['.wasm'] = 'application/wasm'
-  httpd = BaseHTTPServer.HTTPServer(server_addr, SupersizeHTTPRequestHandler)
+  httpd = http.server.HTTPServer(server_addr, SupersizeHTTPRequestHandler)
 
   sa = httpd.socket.getsockname()
   is_ndjson = args.report_file.endswith('ndjson')

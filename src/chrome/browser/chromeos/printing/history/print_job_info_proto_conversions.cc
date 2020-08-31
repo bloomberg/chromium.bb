@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/printing/history/print_job_info_proto_conversions.h"
 
+#include "base/optional.h"
+#include "printing/mojom/print.mojom.h"
+
 namespace chromeos {
 
 namespace proto = printing::proto;
@@ -11,19 +14,19 @@ namespace proto = printing::proto;
 namespace {
 
 proto::PrintSettings_ColorMode ColorModelToProto(::printing::ColorModel color) {
-  return ::printing::IsColorModelSelected(color)
-             ? proto::PrintSettings_ColorMode_COLOR
-             : proto::PrintSettings_ColorMode_BLACK_AND_WHITE;
+  base::Optional<bool> is_color = ::printing::IsColorModelSelected(color);
+  return is_color.value() ? proto::PrintSettings_ColorMode_COLOR
+                          : proto::PrintSettings_ColorMode_BLACK_AND_WHITE;
 }
 
 proto::PrintSettings_DuplexMode DuplexModeToProto(
-    ::printing::DuplexMode duplex) {
+    ::printing::mojom::DuplexMode duplex) {
   switch (duplex) {
-    case ::printing::DuplexMode::SIMPLEX:
+    case ::printing::mojom::DuplexMode::kSimplex:
       return proto::PrintSettings_DuplexMode_ONE_SIDED;
-    case ::printing::DuplexMode::LONG_EDGE:
+    case ::printing::mojom::DuplexMode::kLongEdge:
       return proto::PrintSettings_DuplexMode_TWO_SIDED_LONG_EDGE;
-    case ::printing::DuplexMode::SHORT_EDGE:
+    case ::printing::mojom::DuplexMode::kShortEdge:
       return proto::PrintSettings_DuplexMode_TWO_SIDED_SHORT_EDGE;
     default:
       NOTREACHED();
@@ -47,6 +50,10 @@ proto::PrintJobInfo_PrintJobSource PrintJobSourceToProto(
       return proto::PrintJobInfo_PrintJobSource_PRINT_PREVIEW;
     case ::printing::PrintJob::Source::ARC:
       return proto::PrintJobInfo_PrintJobSource_ARC;
+    case ::printing::PrintJob::Source::EXTENSION:
+      return proto::PrintJobInfo_PrintJobSource_EXTENSION;
+    case ::printing::PrintJob::Source::PRINT_PREVIEW_INCOGNITO:
+      return proto::PrintJobInfo_PrintJobSource_PRINT_PREVIEW_INCOGNITO;
     default:
       NOTREACHED();
   }

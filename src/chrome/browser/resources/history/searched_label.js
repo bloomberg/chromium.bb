@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {quoteString} from 'chrome://resources/js/util.m.js';
+
 Polymer({
   is: 'history-searched-label',
 
@@ -20,14 +23,15 @@ Polymer({
    * occurrences of the search term in bold.
    * @private
    */
-  setSearchedTextToBold_: function() {
+  setSearchedTextToBold_() {
     if (this.title === undefined) {
       return;
     }
 
     const titleText = this.title;
 
-    if (this.searchTerm == '' || this.searchTerm == null) {
+    if (this.searchTerm === '' || this.searchTerm === null ||
+        this.searchTerm === undefined) {
       this.textContent = titleText;
       return;
     }

@@ -61,6 +61,44 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
+      "-r",
+      "[TMP_BASE]",
+      "gs://example/some/random/path"
+    ],
+    "infra_step": true,
+    "name": "gsutil upload -r",
+    "~followup_annotations": [
+      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/example/some/random/path@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "--recursive",
+      "[TMP_BASE]",
+      "gs://example/some/other/random/path"
+    ],
+    "infra_step": true,
+    "name": "gsutil upload --recursive",
+    "~followup_annotations": [
+      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/example/some/other/random/path@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
       "gs://example/some/random/path/**",
       "gs://example/staging"
     ],

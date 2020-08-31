@@ -6,8 +6,10 @@
 
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
+
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
+GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "services/network/public/cpp/features.h"');
 
 /**
@@ -107,6 +109,11 @@ TEST_F('CrExtensionsToolbarTest', 'Layout', function() {
 
 TEST_F('CrExtensionsToolbarTest', 'DevModeToggle', function() {
   this.runMochaTest(extension_toolbar_tests.TestNames.DevModeToggle);
+});
+
+TEST_F('CrExtensionsToolbarTest', 'FailedUpdateFiresLoadError', function() {
+  this.runMochaTest(
+      extension_toolbar_tests.TestNames.FailedUpdateFiresLoadError);
 });
 
 // TODO(crbug.com/882342) Disabled on other platforms but MacOS due to timeouts.
@@ -279,6 +286,12 @@ TEST_F('CrExtensionsDetailViewTest', 'Layout', function() {
 TEST_F('CrExtensionsDetailViewTest', 'LayoutSource', function() {
   this.runMochaTest(extension_detail_view_tests.TestNames.LayoutSource);
 });
+
+TEST_F(
+    'CrExtensionsDetailViewTest', 'SupervisedUserDisableReasons', function() {
+      this.runMochaTest(
+          extension_detail_view_tests.TestNames.SupervisedUserDisableReasons);
+    });
 
 TEST_F('CrExtensionsDetailViewTest', 'ClickableElements', function() {
   this.runMochaTest(extension_detail_view_tests.TestNames.ClickableElements);
@@ -756,7 +769,6 @@ var CrExtensionsErrorConsoleTest = class extends CrExtensionsBrowserTest {
   /** @override */
   testGenPreamble() {
     GEN('  SetDevModeEnabled(true);');
-    GEN('  EnableErrorConsole();');
     GEN('  InstallErrorsExtension();');
   }
 

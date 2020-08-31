@@ -21,7 +21,7 @@ QuicSimpleServerSession::QuicSimpleServerSession(
     const ParsedQuicVersionVector& supported_versions,
     QuicConnection* connection,
     QuicSession::Visitor* visitor,
-    QuicCryptoServerStream::Helper* helper,
+    QuicCryptoServerStreamBase::Helper* helper,
     const QuicCryptoServerConfig* crypto_config,
     QuicCompressedCertsCache* compressed_certs_cache,
     QuicSimpleServerBackend* quic_simple_server_backend)
@@ -39,15 +39,15 @@ QuicSimpleServerSession::QuicSimpleServerSession(
 }
 
 QuicSimpleServerSession::~QuicSimpleServerSession() {
-  delete connection();
+  DeleteConnection();
 }
 
-QuicCryptoServerStreamBase*
+std::unique_ptr<QuicCryptoServerStreamBase>
 QuicSimpleServerSession::CreateQuicCryptoServerStream(
     const QuicCryptoServerConfig* crypto_config,
     QuicCompressedCertsCache* compressed_certs_cache) {
-  return new QuicCryptoServerStream(crypto_config, compressed_certs_cache, this,
-                                    stream_helper());
+  return CreateCryptoServerStream(crypto_config, compressed_certs_cache, this,
+                                  stream_helper());
 }
 
 void QuicSimpleServerSession::OnStreamFrame(const QuicStreamFrame& frame) {
@@ -74,12 +74,15 @@ void QuicSimpleServerSession::PromisePushResources(
   for (QuicBackendResponse::ServerPushInfo resource : resources) {
     spdy::SpdyHeaderBlock headers = SynthesizePushRequestHeaders(
         request_url, resource, original_request_headers);
-    highest_promised_stream_id_ +=
+    // TODO(b/136295430): Use sequential push IDs for IETF QUIC.
+    auto new_highest_promised_stream_id =
+        highest_promised_stream_id_ +
         QuicUtils::StreamIdDelta(transport_version());
     if (VersionUsesHttp3(transport_version()) &&
-        highest_promised_stream_id_ > max_allowed_push_id()) {
+        !CanCreatePushStreamWithId(new_highest_promised_stream_id)) {
       return;
     }
+    highest_promised_stream_id_ = new_highest_promised_stream_id;
     SendPushPromise(original_stream_id, highest_promised_stream_id_,
                     headers.Clone());
     promised_streams_.push_back(PromisedStreamInfo(

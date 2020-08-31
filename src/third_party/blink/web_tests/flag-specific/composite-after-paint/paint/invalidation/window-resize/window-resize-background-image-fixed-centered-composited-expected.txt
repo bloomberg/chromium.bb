@@ -5,13 +5,14 @@
       "bounds": [600, 250],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 600, 250],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 600, 250]
       ]
+    },
+    {
+      "name": "LayoutNGBlockFlow HTML",
+      "bounds": [600, 8],
+      "drawsContent": false
     }
   ]
 }
@@ -22,13 +23,14 @@
       "bounds": [400, 250],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 400, 250],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 400, 250]
       ]
+    },
+    {
+      "name": "LayoutNGBlockFlow HTML",
+      "bounds": [400, 8],
+      "drawsContent": false
     }
   ]
 }
@@ -39,13 +41,14 @@
       "bounds": [400, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 400, 600],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 400, 600]
       ]
+    },
+    {
+      "name": "LayoutNGBlockFlow HTML",
+      "bounds": [400, 8],
+      "drawsContent": false
     }
   ]
 }
@@ -56,13 +59,14 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 800, 600]
       ]
+    },
+    {
+      "name": "LayoutNGBlockFlow HTML",
+      "bounds": [800, 8],
+      "drawsContent": false
     }
   ]
 }

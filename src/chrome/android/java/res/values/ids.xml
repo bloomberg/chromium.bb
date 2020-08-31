@@ -11,7 +11,6 @@
     <item name="bookmark_page" type="id"/>
     <item name="foreground_drawable" type="id"/>
     <item name="fre_pager" type="id"/>
-    <item name="page_info_click_callback" type="id" />
     <item name="refine_view_id" type="id"/>
     <item name="tabswitcher_multiple_drawable" type="id"/>
     <item name="tabswitcher_single_drawable" type="id"/>
@@ -21,10 +20,9 @@
     <!-- Tab Actions -->
     <item type="id" name="close_tab" />
     <item type="id" name="ungroup_tab" />
+    <item type="id" name="share_tab_group" />
 
     <!-- InfoBar constants -->
-    <item type="id" name="infobar_icon" />
-    <item type="id" name="infobar_close_button" />
     <item type="id" name="infobar_extra_check" />
     <item type="id" name="infobar_message" />
     <item type="id" name="permission_infobar_persist_toggle" />
@@ -97,6 +95,7 @@
     <item type="id" name="contextmenu_open_image" />
     <item type="id" name="contextmenu_open_image_in_new_tab" />
     <item type="id" name="contextmenu_open_image_in_ephemeral_tab" />
+    <item type="id" name="contextmenu_copy_image" />
     <item type="id" name="contextmenu_search_by_image" />
     <item type="id" name="contextmenu_search_with_google_lens" />
     <item type="id" name="contextmenu_share_image" />
@@ -120,4 +119,13 @@
     <item type="id" name="item_animator" />
     <item type="id" name="highlight_color" />
     <item type="id" name="context_menu_delegate" />
+
+    <!-- NTP-->
+    <item type="id" name="ntp_feed_header_menu_item_activity" />
+    <item type="id" name="ntp_feed_header_menu_item_interest" />
+    <item type="id" name="ntp_feed_header_menu_item_learn" />
+    <item type="id" name="ntp_feed_header_menu_item_toggle_switch" />
+
+    <!-- Homepage Promo -->
+    <item type="id" name="homepage_promo" />
 </resources>

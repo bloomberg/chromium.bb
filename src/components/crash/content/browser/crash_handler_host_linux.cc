@@ -32,6 +32,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -52,7 +53,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"  // nogncheck
 #include "third_party/crashpad/crashpad/util/posix/signals.h"      // nogncheck
 #endif
@@ -106,7 +107,7 @@ void CrashDumpTask(CrashHandlerHostLinux* handler,
 
 // Since instances of CrashHandlerHostLinux are leaked, they are only destroyed
 // at the end of the processes lifetime, which is greater in span than the
-// lifetime of the IO message loop. Thus, all calls to base::Bind() use
+// lifetime of the IO message loop. Thus, all calls to base::BindOnce() use
 // non-refcounted pointers.
 
 CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,
@@ -118,9 +119,8 @@ CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,
       upload_(upload),
 #endif
       fd_watch_controller_(FROM_HERE),
-      blocking_task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::USER_VISIBLE})) {
+      blocking_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})) {
   int fds[2];
   // We use SOCK_SEQPACKET rather than SOCK_DGRAM to prevent the process from
   // sending datagrams to other sockets on the system. The sandbox may prevent
@@ -173,7 +173,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   // for writing the minidump as well as a file descriptor and a credentials
   // block so that they can't lie about their pid.
   //
-  // The message sender is in components/crash/content/app/breakpad_linux.cc.
+  // The message sender is in components/crash/core/app/breakpad_linux.cc.
 
   struct msghdr msg = {nullptr};
   struct iovec iov[kCrashIovSize];
@@ -567,7 +567,8 @@ void CrashHandlerHost::Init() {
 }
 
 bool CrashHandlerHost::ReceiveClientMessage(int client_fd,
-                                            base::ScopedFD* handler_fd) {
+                                            base::ScopedFD* handler_fd,
+                                            bool* write_minidump_to_database) {
   int signo;
   unsigned char request_dump;
   iovec iov[2];
@@ -622,11 +623,8 @@ bool CrashHandlerHost::ReceiveClientMessage(int client_fd,
     NotifyCrashSignalObservers(child_pid, signo);
   }
 
-  if (!request_dump) {
-    return false;
-  }
-
   handler_fd->reset(child_fd.release());
+  *write_minidump_to_database = request_dump;
   return true;
 }
 
@@ -646,12 +644,13 @@ void CrashHandlerHost::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK_EQ(browser_socket_.get(), fd);
 
   base::ScopedFD handler_fd;
-  if (!ReceiveClientMessage(fd, &handler_fd)) {
+  bool write_minidump_to_database = false;
+  if (!ReceiveClientMessage(fd, &handler_fd, &write_minidump_to_database)) {
     return;
   }
 
-  bool result =
-      crash_reporter::internal::StartHandlerForClient(handler_fd.get());
+  bool result = crash_reporter::internal::StartHandlerForClient(
+      handler_fd.get(), write_minidump_to_database);
   DCHECK(result);
 }
 

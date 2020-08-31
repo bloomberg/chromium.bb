@@ -14,11 +14,6 @@
 #include "headless/lib/browser/protocol/forward.h"
 #include "headless/lib/browser/protocol/protocol.h"
 
-namespace content {
-class DevToolsAgentHost;
-class DevToolsAgentHostClient;
-}  // namespace content
-
 namespace headless {
 class HeadlessBrowserImpl;
 class UberDispatcher;
@@ -30,35 +25,31 @@ class DomainHandler;
 class HeadlessDevToolsSession : public FrontendChannel {
  public:
   HeadlessDevToolsSession(base::WeakPtr<HeadlessBrowserImpl> browser,
-                          content::DevToolsAgentHost* agent_host,
-                          content::DevToolsAgentHostClient* client);
+                          content::DevToolsAgentHostClientChannel* channel);
   ~HeadlessDevToolsSession() override;
 
   void HandleCommand(
-      const std::string& method,
-      const std::string& message,
+      base::span<const uint8_t> message,
       content::DevToolsManagerDelegate::NotHandledCallback callback);
 
  private:
   void AddHandler(std::unique_ptr<DomainHandler> handler);
 
   // FrontendChannel:
-  void sendProtocolResponse(int call_id,
+  void SendProtocolResponse(int call_id,
                             std::unique_ptr<Serializable> message) override;
-  void sendProtocolNotification(std::unique_ptr<Serializable> message) override;
-  void flushProtocolNotifications() override;
-  void fallThrough(int call_id,
-                   const std::string& method,
-                   const std::string& message) override;
+  void SendProtocolNotification(std::unique_ptr<Serializable> message) override;
+  void FlushProtocolNotifications() override;
+  void FallThrough(int call_id,
+                   crdtp::span<uint8_t> method,
+                   crdtp::span<uint8_t> message) override;
 
   base::WeakPtr<HeadlessBrowserImpl> browser_;
-  content::DevToolsAgentHost* const agent_host_;
-  content::DevToolsAgentHostClient* const client_;
   UberDispatcher dispatcher_;
   std::vector<std::unique_ptr<DomainHandler>> handlers_;
   base::flat_map<int, content::DevToolsManagerDelegate::NotHandledCallback>
       pending_commands_;
-
+  content::DevToolsAgentHostClientChannel* client_channel_;
   DISALLOW_COPY_AND_ASSIGN(HeadlessDevToolsSession);
 };
 

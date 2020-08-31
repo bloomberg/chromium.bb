@@ -5,15 +5,15 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/all_web_state_list_observation_registrar.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache_tab_model_list_observer.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_web_state_list_observer.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -22,10 +22,10 @@
 
 namespace {
 // C++ wrapper around SnapshotCache, owning the SnapshotCache and allowing it
-// bind it to an ios::ChromeBrowserState as a KeyedService.
+// bind it to an ChromeBrowserState as a KeyedService.
 class SnapshotCacheWrapper : public KeyedService {
  public:
-  explicit SnapshotCacheWrapper(ios::ChromeBrowserState* browser_state,
+  explicit SnapshotCacheWrapper(ChromeBrowserState* browser_state,
                                 SnapshotCache* snapshot_cache);
   ~SnapshotCacheWrapper() override;
 
@@ -36,20 +36,18 @@ class SnapshotCacheWrapper : public KeyedService {
 
  private:
   __strong SnapshotCache* snapshot_cache_;
-  std::unique_ptr<SnapshotCacheTabModelListObserver> tab_model_list_observer_;
+  std::unique_ptr<AllWebStateListObservationRegistrar> registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SnapshotCacheWrapper);
 };
 
-SnapshotCacheWrapper::SnapshotCacheWrapper(
-    ios::ChromeBrowserState* browser_state,
-    SnapshotCache* snapshot_cache)
+SnapshotCacheWrapper::SnapshotCacheWrapper(ChromeBrowserState* browser_state,
+                                           SnapshotCache* snapshot_cache)
     : snapshot_cache_(snapshot_cache) {
   DCHECK(snapshot_cache);
-  tab_model_list_observer_ =
-      std::make_unique<SnapshotCacheTabModelListObserver>(
-          browser_state,
-          std::make_unique<SnapshotCacheWebStateListObserver>(snapshot_cache));
+  registrar_ = std::make_unique<AllWebStateListObservationRegistrar>(
+      browser_state,
+      std::make_unique<SnapshotCacheWebStateListObserver>(snapshot_cache));
 }
 
 SnapshotCacheWrapper::~SnapshotCacheWrapper() {
@@ -57,15 +55,15 @@ SnapshotCacheWrapper::~SnapshotCacheWrapper() {
 }
 
 void SnapshotCacheWrapper::Shutdown() {
-  tab_model_list_observer_.reset();
+  registrar_.reset();
   [snapshot_cache_ shutdown];
   snapshot_cache_ = nil;
 }
 
 std::unique_ptr<KeyedService> BuildSnapshotCacheWrapper(
     web::BrowserState* context) {
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* chrome_browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<SnapshotCacheWrapper>(chrome_browser_state,
                                                 [[SnapshotCache alloc] init]);
 }
@@ -73,7 +71,7 @@ std::unique_ptr<KeyedService> BuildSnapshotCacheWrapper(
 
 // static
 SnapshotCache* SnapshotCacheFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   SnapshotCacheWrapper* wrapper = static_cast<SnapshotCacheWrapper*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
   return wrapper ? wrapper->snapshot_cache() : nil;

@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/test/test_context_provider.h"
@@ -87,7 +88,7 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
   }
 
   static std::unique_ptr<FakeLayerTreeFrameSink> Create3dForGpuRasterization(
-      int max_msaa_samples = 0,
+      int max_msaa_samples = -1,
       bool msaa_is_slow = false) {
     return Builder()
         .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization, true)
@@ -97,7 +98,7 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
   }
 
   static std::unique_ptr<FakeLayerTreeFrameSink> Create3dForOopRasterization(
-      int max_msaa_samples = 0,
+      int max_msaa_samples = -1,
       bool msaa_is_slow = false) {
     // TODO(enne): this should really use a TestRasterInterface.
     // It's very fake to use "supports oop raster" on a gles2 interface.
@@ -140,6 +141,12 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
   }
 
   void ReturnResourcesHeldByParent();
+
+  // A BeginFrame request usually comes with the frames that have been
+  // presented. This allows a test to inform the compositor when a frame should
+  // be considered as presented to the user.
+  void NotifyDidPresentCompositorFrame(uint32_t frame_token,
+                                       const viz::FrameTimingDetails& details);
 
  protected:
   FakeLayerTreeFrameSink(

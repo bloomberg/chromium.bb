@@ -24,4 +24,34 @@ public abstract class TabCallback {
      * reclaim memory.
      */
     public void onRenderProcessGone() {}
+
+    /**
+     * Triggered when a context menu should be displayed.
+     * Added in M82.
+     */
+    public void showContextMenu(@NonNull ContextMenuParams params) {}
+
+    /**
+     * Triggered when a tab's contents have been rendered inactive due to a modal overlay, or active
+     * due to the dismissal of a modal overlay (dialog/bubble/popup).
+     *
+     * @param isTabModalShowing true when a dialog is blocking interaction with the web contents.
+     *
+     * @since 82
+     */
+    public void onTabModalStateChanged(boolean isTabModalShowing) {}
+
+    /**
+     * Called when the title of this tab changes. Note before the page sets a title, the title may
+     * be a portion of the Uri.
+     * @param title New title of this tab.
+     * @since 83
+     */
+    public void onTitleUpdated(@NonNull String title) {}
+
+    /**
+     * Called when user attention should be brought to this tab. This should cause the tab, its
+     * containing Activity, and the task to be foregrounded.
+     */
+    public void bringTabToFront() {}
 }

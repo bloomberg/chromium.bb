@@ -13,6 +13,9 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::FormRendererId;
+using autofill::FieldRendererId;
+
 @implementation FakeAutofillAgent {
   NSMutableDictionary<NSString*, NSMutableArray<FormSuggestion*>*>*
       _suggestionsByFormAndFieldName;
@@ -58,12 +61,8 @@
 
 #pragma mark - FormSuggestionProvider
 
-- (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
-                           fieldIdentifier:(NSString*)fieldIdentifier
-                                 fieldType:(NSString*)fieldType
-                                      type:(NSString*)type
-                                typedValue:(NSString*)typedValue
-                                   frameID:(NSString*)frameID
+- (void)checkIfSuggestionsAvailableForForm:
+            (FormSuggestionProviderQuery*)formQuery
                                isMainFrame:(BOOL)isMainFrame
                             hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
@@ -71,32 +70,30 @@
                              (SuggestionsAvailableCompletion)completion {
   base::PostTask(
       FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
-        NSString* key = [self keyForFormName:formName
-                             fieldIdentifier:fieldIdentifier
-                                     frameID:frameID];
+        NSString* key = [self keyForFormName:formQuery.formName
+                             fieldIdentifier:formQuery.fieldIdentifier
+                                     frameID:formQuery.frameID];
         completion([_suggestionsByFormAndFieldName[key] count] ? YES : NO);
       }));
 }
 
-- (void)retrieveSuggestionsForForm:(NSString*)formName
-                   fieldIdentifier:(NSString*)fieldIdentifier
-                         fieldType:(NSString*)fieldType
-                              type:(NSString*)type
-                        typedValue:(NSString*)typedValue
-                           frameID:(NSString*)frameID
+- (void)retrieveSuggestionsForForm:(FormSuggestionProviderQuery*)formQuery
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   base::PostTask(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
-                   NSString* key = [self keyForFormName:formName
-                                        fieldIdentifier:fieldIdentifier
-                                                frameID:frameID];
+                   NSString* key =
+                       [self keyForFormName:formQuery.formName
+                            fieldIdentifier:formQuery.fieldIdentifier
+                                    frameID:formQuery.frameID];
                    completion(_suggestionsByFormAndFieldName[key], self);
                  }));
 }
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion
                        form:(NSString*)formName
+               uniqueFormID:(FormRendererId)uniqueFormID
             fieldIdentifier:(NSString*)fieldIdentifier
+              uniqueFieldID:(FieldRendererId)uniqueFieldID
                     frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   base::PostTask(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{

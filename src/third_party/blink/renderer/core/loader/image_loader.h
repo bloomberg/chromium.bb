@@ -53,7 +53,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
   explicit ImageLoader(Element*);
   ~ImageLoader() override;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   enum UpdateFromElementBehavior {
     // This should be the update behavior when the element is attached to a
@@ -109,19 +109,27 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
   void SetImageForTest(ImageResourceContent*);
 
   // Image document loading:
-  // When |loading_image_document_| is true:
-  //   Loading via ImageDocument.
-  //   |image_resource_for_image_document_| points to a ImageResource that is
-  //   not associated with a ResourceLoader.
-  //   The corresponding ImageDocument is responsible for supplying the response
-  //   and data to |image_resource_for_image_document_| and thus
-  //   |image_content_|.
+  //
+  // Loading via ImageDocument:
+  //   ImageDocumentParser creates an ImageResource.
+  //   The associated ImageResourceContent is provided to
+  //   SetImageDocumentContent and set as
+  //   |image_content_for_image_document_|. This ImageResourceContent is not
+  //   associated with a ResourceLoader.
+  //   When loading is initiated (through the HTMLImageElement that is the
+  //   owner of the ImageLoader), |image_content_for_image_document_| is picked
+  //   as the ImageResourceContent to use and is then reset to null. Thus
+  //   |image_content_for_image_document_| should only be set (and used) when
+  //   HTMLImageElement::StartLoadingImageDocument() is in the caller chain to
+  //   UpdateFromElement().
+  //   The corresponding ImageDocument is responsible for supplying the
+  //   response and data via the ImageResourceContent it provided (which is now
+  //   set as |image_content_|).
   // Otherwise:
   //   Normal loading via ResourceFetcher/ResourceLoader.
-  //   |image_resource_for_image_document_| is null.
-  void SetLoadingImageDocument() { loading_image_document_ = true; }
-  ImageResource* ImageResourceForImageDocument() const {
-    return image_resource_for_image_document_;
+  //   |image_content_for_image_document_| is null.
+  void SetImageDocumentContent(ImageResourceContent* image_content) {
+    image_content_for_image_document_ = image_content;
   }
 
   bool HasPendingActivity() const { return HasPendingEvent() || pending_task_; }
@@ -152,20 +160,17 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
   enum class LazyImageLoadState {
     kNone,      // LazyImages not active.
     kDeferred,  // Full image load not started, and image load event will not be
-                // fired. If image dimensions is present, document load event
-                // will be unblocked. Otherwise placeholder fetch will start,
-                // and once its done document load event is unblocked.
+                // fired. Image will not block the document's load event.
     kFullImage  // Full image is loading/loaded, due to element coming near the
-                // viewport or if a placeholder load actually fetched the full
-                // image. image_complete_ can differentiate if the fetch is
-                // complete or not. After the fetch, image load event is fired.
+                // viewport. image_complete_ can be used to differentiate if the
+                // fetch is complete or not. After the fetch, image load event
+                // is fired.
   };
 
   // Called from the task or from updateFromElement to initiate the load.
   void DoUpdateFromElement(
       BypassMainWorldBehavior,
       UpdateFromElementBehavior,
-      const KURL&,
       network::mojom::ReferrerPolicy = network::mojom::ReferrerPolicy::kDefault,
       UpdateType = UpdateType::kAsync);
 
@@ -183,15 +188,13 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
   // Note: SetImage.*() are not a simple setter.
   // Check the implementation to see what they do.
   // TODO(hiroshige): Cleanup these methods.
-  void SetImageForImageDocument(ImageResource*);
   void SetImageWithoutConsideringPendingLoadEvent(ImageResourceContent*);
   void UpdateImageState(ImageResourceContent*);
 
   void ClearFailedLoadURL();
   void DispatchErrorEvent();
   void CrossSiteOrCSPViolationOccurred(AtomicString);
-  void EnqueueImageLoadingMicroTask(const KURL&,
-                                    UpdateFromElementBehavior,
+  void EnqueueImageLoadingMicroTask(UpdateFromElementBehavior,
                                     network::mojom::ReferrerPolicy);
 
   KURL ImageSourceToKURL(AtomicString) const;
@@ -213,7 +216,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
 
   Member<Element> element_;
   Member<ImageResourceContent> image_content_;
-  Member<ImageResource> image_resource_for_image_document_;
+  Member<ImageResourceContent> image_content_for_image_document_;
 
   String last_base_element_url_;
   network::mojom::ReferrerPolicy last_referrer_policy_ =
@@ -244,9 +247,13 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
   TaskHandle pending_error_event_;
 
   bool image_complete_ : 1;
-  bool loading_image_document_ : 1;
   bool suppress_error_events_ : 1;
-  bool was_fully_deferred_ : 1;  // Used by LazyImageLoad.
+  // Tracks whether or not an image whose load was deferred was explicitly lazy
+  // (i.e., had developer-supplied `loading=lazy`). This matters because images
+  // that were not explicitly lazy but were deferred via automatic lazy image
+  // loading should continue to block the window load event, whereas explicitly
+  // lazy images should never block the window load event.
+  bool was_deferred_explicitly_ : 1;
 
   LazyImageLoadState lazy_image_load_state_;
 
@@ -275,7 +282,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollected<ImageLoader>,
     DecodeRequest(ImageLoader*, ScriptPromiseResolver*);
     ~DecodeRequest() = default;
 
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
     uint64_t request_id() const { return request_id_; }
     State state() const { return state_; }

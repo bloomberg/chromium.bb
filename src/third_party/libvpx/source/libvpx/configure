@@ -149,6 +149,7 @@ all_platforms="${all_platforms} x86_64-darwin15-gcc"
 all_platforms="${all_platforms} x86_64-darwin16-gcc"
 all_platforms="${all_platforms} x86_64-darwin17-gcc"
 all_platforms="${all_platforms} x86_64-darwin18-gcc"
+all_platforms="${all_platforms} x86_64-darwin19-gcc"
 all_platforms="${all_platforms} x86_64-iphonesimulator-gcc"
 all_platforms="${all_platforms} x86_64-linux-gcc"
 all_platforms="${all_platforms} x86_64-linux-icc"
@@ -627,6 +628,7 @@ process_toolchain() {
         check_add_cflags -Wmissing-declarations
         check_add_cflags -Wmissing-prototypes
         check_add_cflags -Wuninitialized
+        check_add_cflags -Wunreachable-code-loop-increment
         check_add_cflags -Wunused
         check_add_cflags -Wextra
         # check_add_cflags also adds to cxxflags. gtest does not do well with
@@ -732,6 +734,7 @@ process_toolchain() {
             # GTestLog must be modified to use Android logging utilities.
         ;;
         *-darwin-*)
+            check_add_cxxflags -std=c++11
             # iOS/ARM builds do not work with gtest. This does not match
             # x86 targets.
         ;;

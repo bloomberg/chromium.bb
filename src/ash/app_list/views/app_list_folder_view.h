@@ -57,6 +57,10 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   // Hides the view immediately without animation.
   void HideViewImmediately();
 
+  // Prepares folder item grid for closing the folder - it ends any in-progress
+  // drag, and clears any selected view.
+  void ResetItemsGridForClose();
+
   // Closes the folder page and goes back the top level page.
   void CloseFolderPage();
 
@@ -190,8 +194,9 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   std::unique_ptr<Animation> top_icon_animation_;
   std::unique_ptr<Animation> contents_container_animation_;
 
-  // The compositor frame number when animation starts.
-  base::Optional<int> animation_start_frame_number_;
+  // Records smoothness of the folder show/hide animation.
+  std::unique_ptr<AppListAnimationMetricsRecorder> show_hide_metrics_recorder_;
+  std::unique_ptr<FolderShowHideAnimationReporter> show_hide_metrics_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListFolderView);
 };

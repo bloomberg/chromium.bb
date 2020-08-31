@@ -28,6 +28,7 @@ namespace {
 const int32_t kDrmNumNodes = 64;
 const int32_t kMinNodeNumber = 128;
 
+// TODO(https://crbug.com/1043007): use ui/gfx/linux/gbm_device.h instead.
 gbm_device* CreateGbmDevice() {
   int fd;
   int32_t min_node = kMinNodeNumber;
@@ -96,7 +97,9 @@ class GpuMemoryBufferImplGbm : public gfx::GpuMemoryBuffer {
     handle_.type = gfx::NATIVE_PIXMAP;
     // Set a dummy id since this is for testing only.
     handle_.id = gfx::GpuMemoryBufferId(0);
-    for (size_t i = 0; i < gbm_bo_get_plane_count(buffer_object); ++i) {
+
+    for (size_t i = 0;
+         i < static_cast<size_t>(gbm_bo_get_plane_count(buffer_object)); ++i) {
       handle_.native_pixmap_handle.planes.push_back(gfx::NativePixmapPlane(
           gbm_bo_get_stride_for_plane(buffer_object, i),
           gbm_bo_get_offset(buffer_object, i),
@@ -123,9 +126,9 @@ class GpuMemoryBufferImplGbm : public gfx::GpuMemoryBuffer {
     for (size_t i = 0; i < num_planes; ++i) {
       void* mapped_data;
       void* addr =
-          gbm_bo_map(buffer_object_, 0, 0, gbm_bo_get_width(buffer_object_),
-                     gbm_bo_get_height(buffer_object_),
-                     GBM_BO_TRANSFER_READ_WRITE, &stride, &mapped_data, i);
+          gbm_bo_map2(buffer_object_, 0, 0, gbm_bo_get_width(buffer_object_),
+                      gbm_bo_get_height(buffer_object_),
+                      GBM_BO_TRANSFER_READ_WRITE, &stride, &mapped_data, i);
       if (!addr) {
         LOG(ERROR) << "Failed to map GpuMemoryBufferImplGbm plane " << i;
         Unmap();

@@ -10,8 +10,8 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "chrome/android/chrome_jni_headers/OriginVerifier_jni.h"
-#include "chrome/browser/android/digital_asset_links/digital_asset_links_handler.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/installable/digital_asset_links/digital_asset_links_handler.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,9 +38,9 @@ OriginVerifier::OriginVerifier(JNIEnv* env,
   DCHECK(profile);
   asset_link_handler_ =
       std::make_unique<digital_asset_links::DigitalAssetLinksHandler>(
-          content::WebContents::FromJavaWebContents(jweb_contents),
           content::BrowserContext::GetDefaultStoragePartition(profile)
-              ->GetURLLoaderFactoryForBrowserProcess());
+              ->GetURLLoaderFactoryForBrowserProcess(),
+          content::WebContents::FromJavaWebContents(jweb_contents));
 }
 
 OriginVerifier::~OriginVerifier() = default;
@@ -65,10 +65,10 @@ bool OriginVerifier::VerifyOrigin(JNIEnv* env,
   // UrlFetcher making the request will also get killed, so we won't get any
   // dangling callback reference issues.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return asset_link_handler_->CheckDigitalAssetLinkRelationship(
-      base::Bind(&customtabs::OriginVerifier::OnRelationshipCheckComplete,
-                 base::Unretained(this)),
-      origin, package_name, fingerprint, relationship);
+  return asset_link_handler_->CheckDigitalAssetLinkRelationshipForAndroidApp(
+      origin, relationship, fingerprint, package_name,
+      base::BindOnce(&customtabs::OriginVerifier::OnRelationshipCheckComplete,
+                     base::Unretained(this)));
 }
 
 void OriginVerifier::OnRelationshipCheckComplete(

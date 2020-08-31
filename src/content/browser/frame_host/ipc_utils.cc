@@ -48,7 +48,16 @@ bool VerifyBlobToken(int process_id,
 
 bool VerifyInitiatorOrigin(int process_id,
                            const url::Origin& initiator_origin) {
-  // TODO(lukasza, nasko): Verify precursor origin via CanAccessDataForOrigin.
+  // TODO(acolwell, nasko): https://crbug.com/1029092: Ensure the precursor of
+  // opaque origins matches the origin lock.  One known problematic case are
+  // reloads initiated from error pages - see the following
+  // RenderFrameHostManagerTest tests:
+  // 1. ErrorPageNavigationReload:
+  //    - renderer origin lock = chrome-error://chromewebdata/
+  //    - precursor of initiator origin = http://127.0.0.1:.../
+  // 2. ErrorPageNavigationReload_InSubframe_BlockedByClient
+  //    - renderer origin lock = http://b.com:.../
+  //    - precursor of initiator origin = http://c.com:.../
   if (initiator_origin.opaque())
     return true;
 
@@ -65,7 +74,7 @@ bool VerifyInitiatorOrigin(int process_id,
 }  // namespace
 
 bool VerifyDownloadUrlParams(SiteInstance* site_instance,
-                             const FrameHostMsg_DownloadUrl_Params& params,
+                             blink::mojom::DownloadURLParams* params,
                              mojo::PendingRemote<blink::mojom::BlobURLToken>*
                                  out_blob_url_token_remote) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -75,19 +84,21 @@ bool VerifyDownloadUrlParams(SiteInstance* site_instance,
   int process_id = process->GetID();
 
   // Verify |params.blob_url_token| and populate |out_blob_url_token_remote|.
-  if (!VerifyBlobToken(process_id, params.blob_url_token, params.url,
-                       out_blob_url_token_remote)) {
+  if (params->blob_url_token &&
+      !VerifyBlobToken(process_id, params->blob_url_token.release(),
+                       params->url, out_blob_url_token_remote)) {
     return false;
   }
 
   // Verify |params.initiator_origin|.
-  if (!VerifyInitiatorOrigin(process_id, params.initiator_origin))
+  if (params->initiator_origin &&
+      !VerifyInitiatorOrigin(process_id, *params->initiator_origin))
     return false;
 
   // For large data URLs, they are passed through |params.data_url_blob| and
   // |params.url| should be empty.
-  if (!params.url.is_valid())
-    return params.data_url_blob.is_valid();
+  if (!params->url.is_valid())
+    return params->data_url_blob.is_valid();
 
   // Verification succeeded.
   return true;

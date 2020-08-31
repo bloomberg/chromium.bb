@@ -11,10 +11,6 @@ package authpolicy;
 // D-Bus call error codes. These values are written to logs. New enum values can
 // be added, but existing enums must never be renumbered or deleted and reused.
 enum ErrorType {
-  // TODO(ljusten): Remove this and ERROR_NO_WINDOWS_POLICY when Chrome is
-  // switched over, see crbug.com/807999.
-  option allow_alias = true;
-
   // Everything is A-OK!
   ERROR_NONE = 0;
   // Unspecified error.
@@ -88,7 +84,6 @@ enum ErrorType {
   ERROR_SETTING_OU_FAILED = 33;
   // Fetching user policy failed because device policy was unavailable.
   ERROR_NO_DEVICE_POLICY = 34;
-  ERROR_NO_WINDOWS_POLICY = 34;
   // Domain join failed because the device is already joined.
   ERROR_ALREADY_JOINED = 35;
   // Domain join failed because KDC does not support the encryption enforced in
@@ -174,12 +169,15 @@ message KerberosFiles {
   // Next ID to use: 3
 }
 
-// What Kerberos encryption types kinit should use.
+// What Kerberos encryption types kinit should use. These values are written to
+// logs. New enum values can be added, but existing enums must never be
+// renumbered or deleted and reused.
 enum KerberosEncryptionTypes {
   ENC_TYPES_ALL = 0;     // AES + RC4_HMAC.
   ENC_TYPES_STRONG = 1;  // AES only.
   ENC_TYPES_LEGACY = 2;  // RC4_HMAC only.
-  // Next ID to use: 3
+  // Should be the last.
+  ENC_TYPES_COUNT = 3;
 }
 
 // Message sent by Chrome to authpolicyd with JoinAdDomain call.

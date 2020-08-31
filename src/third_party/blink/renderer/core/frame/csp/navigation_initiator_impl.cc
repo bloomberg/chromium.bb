@@ -4,53 +4,53 @@
 
 #include "third_party/blink/renderer/core/frame/csp/navigation_initiator_impl.h"
 
+#include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 NavigationInitiatorImpl::NavigationInitiatorImpl(Document& document)
-    : document_(document) {}
+    : navigation_initiator_receivers_(this, document.GetExecutionContext()),
+      document_(document) {
+  DCHECK(document.GetExecutionContext());
+}
 
 void NavigationInitiatorImpl::Trace(Visitor* visitor) {
   visitor->Trace(document_);
+  visitor->Trace(navigation_initiator_receivers_);
 }
 
 void NavigationInitiatorImpl::SendViolationReport(
-    mojom::blink::CSPViolationParamsPtr violation_params) {
-  std::unique_ptr<SourceLocation> source_location =
-      std::make_unique<SourceLocation>(
-          violation_params->source_location->url,
-          violation_params->source_location->line_number,
-          violation_params->source_location->column_number, nullptr);
+    network::mojom::blink::CSPViolationPtr violation) {
+  auto source_location = std::make_unique<SourceLocation>(
+      violation->source_location->url, violation->source_location->line,
+      violation->source_location->column, nullptr);
 
-  Vector<String> report_endpoints;
-  for (const String& end_point : violation_params->report_endpoints)
-    report_endpoints.push_back(end_point);
-
-  document_->AddConsoleMessage(ConsoleMessage::Create(
+  document_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kSecurity,
-      mojom::ConsoleMessageLevel::kError, violation_params->console_message));
+      mojom::ConsoleMessageLevel::kError, violation->console_message));
+
   document_->GetContentSecurityPolicy()->ReportViolation(
-      violation_params->directive,
-      ContentSecurityPolicy::GetDirectiveType(
-          violation_params->effective_directive),
-      violation_params->console_message, KURL(violation_params->blocked_url),
-      report_endpoints, violation_params->use_reporting_api,
-      violation_params->header,
-      static_cast<ContentSecurityPolicyHeaderType>(
-          violation_params->disposition),
+      violation->directive,
+      ContentSecurityPolicy::GetDirectiveType(violation->effective_directive),
+      violation->console_message, KURL(violation->blocked_url),
+      violation->report_endpoints, violation->use_reporting_api,
+      violation->header, violation->type,
       ContentSecurityPolicy::ViolationType::kURLViolation,
       std::move(source_location), nullptr /* LocalFrame */,
-      violation_params->after_redirect ? RedirectStatus::kFollowedRedirect
-                                       : RedirectStatus::kNoRedirect,
+      violation->after_redirect ? RedirectStatus::kFollowedRedirect
+                                : RedirectStatus::kNoRedirect,
       nullptr /* Element */);
 }
 
-void NavigationInitiatorImpl::Dispose() {
-  navigation_initiator_receivers_.Clear();
+void NavigationInitiatorImpl::BindReceiver(
+    mojo::PendingReceiver<mojom::blink::NavigationInitiator> receiver) {
+  navigation_initiator_receivers_.Add(
+      std::move(receiver), document_->GetTaskRunner(TaskType::kNetworking));
 }
 
 }  // namespace blink

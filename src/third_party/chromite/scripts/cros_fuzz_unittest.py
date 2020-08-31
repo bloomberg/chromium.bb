@@ -8,10 +8,15 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.scripts import cros_fuzz
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 DEFAULT_MAX_TOTAL_TIME_OPTION = cros_fuzz.GetLibFuzzerOption(
     cros_fuzz.MAX_TOTAL_TIME_OPTION_NAME,
@@ -251,7 +256,7 @@ class GenerateCoverageReportTest(cros_test_lib.RunCommandTestCase):
         output_dir_option,
     ]
     self.assertCommandCalled(
-        expected_command, redirect_stderr=True, debug_level=logging.DEBUG)
+        expected_command, stderr=True, debug_level=logging.DEBUG)
 
   def testNoSharedLibraries(self):
     """Tests the right coverage command is used without shared libraries."""
@@ -264,7 +269,7 @@ class GenerateCoverageReportTest(cros_test_lib.RunCommandTestCase):
         instr_profile_option, output_dir_option
     ]
     self.assertCommandCalled(
-        expected_command, redirect_stderr=True, debug_level=logging.DEBUG)
+        expected_command, stderr=True, debug_level=logging.DEBUG)
 
 
 class RunSysrootCommandTest(cros_test_lib.RunCommandTestCase):
@@ -273,8 +278,8 @@ class RunSysrootCommandTest(cros_test_lib.RunCommandTestCase):
   def testRunSysrootCommand(self):
     """Tests RunSysrootCommand creates a proper command to run in sysroot."""
     command = ['./fuzz', '-rss_limit_mb=4096']
-    cros_fuzz.RunSysrootCommand(command)
     sysroot_path = _SetPathToSysroot()
+    cros_fuzz.RunSysrootCommand(command)
     expected_command = ['sudo', '--', 'chroot', sysroot_path]
     expected_command.extend(command)
     self.assertCommandCalled(expected_command, debug_level=logging.DEBUG)

@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/html/html_details_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/parser/nesting_level_incrementer.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 
 namespace blink {
 
@@ -43,7 +44,7 @@ void SlotAssignment::DidAddSlot(HTMLSlotElement& slot) {
   needs_collect_slots_ = true;
 
   if (owner_->IsManualSlotting()) {
-    SetNeedsAssignmentRecalc();
+    // Adding a new slot should not require assignment recalc.
     return;
   }
 
@@ -66,7 +67,13 @@ void SlotAssignment::DidRemoveSlot(HTMLSlotElement& slot) {
   needs_collect_slots_ = true;
 
   if (owner_->IsManualSlotting()) {
-    SetNeedsAssignmentRecalc();
+    auto& candidates = slot.AssignedNodesCandidates();
+    if (candidates.size()) {
+      ClearCandidateNodes(candidates);
+      slot.ClearAssignedNodesCandidates();
+      SetNeedsAssignmentRecalc();
+      slot.DidSlotChangeAfterRemovedFromShadowTree();
+    }
     return;
   }
 
@@ -259,17 +266,36 @@ void SlotAssignment::RecalcAssignment() {
         FindSlotByName(HTMLSlotElement::UserAgentCustomAssignSlotName());
   }
 
+  bool is_manual_slot_assignment = owner_->IsManualSlotting();
+  // Replaces candidate_assigned_slot_map_ after the loop, to avoid stale
+  // references resulting from calls to slot->DidRecalcAssignedNodes().
+  HeapHashMap<Member<Node>, Member<HTMLSlotElement>> candidate_map;
+
   for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
     if (!child.IsSlotable())
       continue;
 
     HTMLSlotElement* slot = nullptr;
     if (!is_user_agent) {
-      if (owner_->IsManualSlotting()) {
-        for (auto candidate_slot : Slots()) {
-          if (candidate_slot->AssignedNodesCandidate().Contains(&child)) {
+      if (is_manual_slot_assignment) {
+        if (auto* candidate_slot = candidate_assigned_slot_map_.at(&child)) {
+          if (candidate_slot->ContainingShadowRoot() == owner_) {
             slot = candidate_slot;
-            break;
+          } else {
+            candidate_assigned_slot_map_.erase(&child);
+            const AtomicString& slot_name =
+                (candidate_slot->GetName() != g_empty_atom)
+                    ? candidate_slot->GetName()
+                    : "SLOT";
+            owner_->GetDocument().AddConsoleMessage(
+                MakeGarbageCollected<ConsoleMessage>(
+                    mojom::blink::ConsoleMessageSource::kRendering,
+                    mojom::blink::ConsoleMessageLevel::kWarning,
+                    "This code triggered a slot assignment recalculation. At "
+                    "the time of this recalculation, the assigned node '" +
+                        child.nodeName() + "' was no longer a child of '" +
+                        slot_name +
+                        "'s parent shadow host, so it could not be assigned."));
           }
         }
       } else {
@@ -285,6 +311,8 @@ void SlotAssignment::RecalcAssignment() {
 
     if (slot) {
       slot->AppendAssignedNode(child);
+      if (is_manual_slot_assignment)
+        candidate_map.Set(&child, slot);
     } else {
       child.ClearFlatTreeNodeData();
       child.RemovedFromFlatTree();
@@ -299,6 +327,9 @@ void SlotAssignment::RecalcAssignment() {
 
   for (auto& slot : Slots())
     slot->DidRecalcAssignedNodes();
+
+  if (is_manual_slot_assignment)
+    candidate_assigned_slot_map_.swap(candidate_map);
 }
 
 const HeapVector<Member<HTMLSlotElement>>& SlotAssignment::Slots() {
@@ -334,10 +365,10 @@ HTMLSlotElement* SlotAssignment::FindSlotInUserAgentShadow(
 }
 
 HTMLSlotElement* SlotAssignment::FindSlotInManualSlotting(const Node& node) {
-  for (auto& slot : Slots()) {
-    if (slot->AssignedNodesCandidate().Contains(const_cast<Node*>(&node)))
-      return slot;
-  }
+  auto* slot = candidate_assigned_slot_map_.at(const_cast<Node*>(&node));
+  if (slot && slot->ContainingShadowRoot() == owner_)
+    return slot;
+
   return nullptr;
 }
 
@@ -363,10 +394,29 @@ HTMLSlotElement* SlotAssignment::GetCachedFirstSlotWithoutAccessingNodeTree(
   return nullptr;
 }
 
+bool SlotAssignment::UpdateCandidateNodeAssignedSlot(Node& node,
+                                                     HTMLSlotElement& slot) {
+  bool updated = false;
+  auto* prev_slot = candidate_assigned_slot_map_.at(&node);
+  if (prev_slot && prev_slot != &slot) {
+    prev_slot->RemoveAssignedNodeCandidate(node);
+    updated = true;
+  }
+
+  candidate_assigned_slot_map_.Set(&node, &slot);
+  return updated;
+}
+
+void SlotAssignment::ClearCandidateNodes(
+    const HeapLinkedHashSet<Member<Node>>& candidates) {
+  candidate_assigned_slot_map_.RemoveAll(candidates);
+}
+
 void SlotAssignment::Trace(Visitor* visitor) {
   visitor->Trace(slots_);
   visitor->Trace(slot_map_);
   visitor->Trace(owner_);
+  visitor->Trace(candidate_assigned_slot_map_);
 }
 
 }  // namespace blink

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/screens/app_downloading_screen.h"
 
+#include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
 
 namespace chromeos {
@@ -16,10 +17,17 @@ constexpr const char kUserActionButtonContinueSetup[] =
 
 }  // namespace
 
+// static
+AppDownloadingScreen* AppDownloadingScreen::Get(ScreenManager* manager) {
+  return static_cast<AppDownloadingScreen*>(
+      manager->GetScreen(AppDownloadingScreenView::kScreenId));
+}
+
 AppDownloadingScreen::AppDownloadingScreen(
     AppDownloadingScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(AppDownloadingScreenView::kScreenId),
+    : BaseScreen(AppDownloadingScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);
@@ -30,12 +38,12 @@ AppDownloadingScreen::~AppDownloadingScreen() {
   view_->Bind(nullptr);
 }
 
-void AppDownloadingScreen::Show() {
+void AppDownloadingScreen::ShowImpl() {
   // Show the screen.
   view_->Show();
 }
 
-void AppDownloadingScreen::Hide() {
+void AppDownloadingScreen::HideImpl() {
   view_->Hide();
 }
 

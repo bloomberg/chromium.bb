@@ -23,6 +23,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -240,6 +241,11 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
     return test_api_->GetRenderText()->cursor_enabled();
   }
 
+  ui::MouseEvent CreateMouseEvent(ui::EventType type, const gfx::Point& point) {
+    return ui::MouseEvent(type, point, point, ui::EventTimeForNow(),
+                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  }
+
  protected:
   Profile* profile() { return profile_.get(); }
   TestingOmniboxEditController* omnibox_edit_controller() {
@@ -298,12 +304,7 @@ void OmniboxViewViewsTest::SetUp() {
   util_ = std::make_unique<TemplateURLServiceFactoryTestUtil>(profile_.get());
 
   // We need a widget so OmniboxView can be correctly focused and unfocused.
-  widget_ = std::make_unique<views::Widget>();
-  views::Widget::InitParams params =
-      CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 400, 80);
-  widget_->Init(std::move(params));
+  widget_ = CreateTestWidget();
   widget_->Show();
 
 #if defined(OS_CHROMEOS)
@@ -693,6 +694,18 @@ TEST_F(OmniboxViewViewsTest, SelectAllOnReactivateTabAfterDeleteAll) {
   EXPECT_TRUE(omnibox_view()->IsSelectAll());
 }
 
+TEST_F(OmniboxViewViewsTest, SelectAllDuringMouseDown) {
+  omnibox_textfield()->OnMousePressed(
+      CreateMouseEvent(ui::ET_MOUSE_PRESSED, {0, 0}));
+  omnibox_view()->SetUserText(base::ASCIIToUTF16("abc"));
+  ui::KeyEvent event_a(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
+  EXPECT_FALSE(omnibox_view()->IsSelectAll());
+  omnibox_textfield_view()->OnKeyPressed(event_a);
+  // Normally SelectAll happens after OnMouseRelease. Verifying this happens
+  // during OnKeyPress when the mouse is down.
+  EXPECT_TRUE(omnibox_view()->IsSelectAll());
+}
+
 class OmniboxViewViewsClipboardTest
     : public OmniboxViewViewsTest,
       public ::testing::WithParamInterface<ui::TextEditCommand> {
@@ -827,11 +840,6 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
   bool IsElidedUrlDisplayed() {
     return omnibox_view()->GetText() == base::ASCIIToUTF16("example.com") &&
            !omnibox_view()->model()->user_input_in_progress();
-  }
-
-  ui::MouseEvent CreateMouseEvent(ui::EventType type, const gfx::Point& point) {
-    return ui::MouseEvent(type, point, point, ui::EventTimeForNow(),
-                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   }
 
   // Gets a point at |x_offset| from the beginning of the RenderText.
@@ -1181,12 +1189,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest,
 
   // Create a different Widget that will take focus away from the test widget
   // containing our test Omnibox.
-  auto other_widget = std::make_unique<views::Widget>();
-  views::Widget::InitParams params =
-      CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 100, 100);
-  other_widget->Init(std::move(params));
+  std::unique_ptr<views::Widget> other_widget = CreateTestWidget();
   other_widget->Show();
   ExpectFullUrlDisplayed();
 

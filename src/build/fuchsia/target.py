@@ -16,12 +16,17 @@ import time
 
 
 _SHUTDOWN_CMD = ['dm', 'poweroff']
-_ATTACH_MAX_RETRIES = 10
 _ATTACH_RETRY_INTERVAL = 1
+_ATTACH_RETRY_SECONDS = 120
 
 # Amount of time to wait for Amber to complete package installation, as a
 # mitigation against hangs due to amber/network-related failures.
 _INSTALL_TIMEOUT_SECS = 5 * 60
+
+
+def _GetPackageUri(package_name):
+  """Returns the URI for the specified package name."""
+  return 'fuchsia-pkg://fuchsia.com/%s' % (package_name)
 
 
 def _GetPackageInfo(package_path):
@@ -206,11 +211,12 @@ class Target(object):
   def _AssertIsStarted(self):
     assert self.IsStarted()
 
-  def _WaitUntilReady(self, retries=_ATTACH_MAX_RETRIES):
+  def _WaitUntilReady(self):
     logging.info('Connecting to Fuchsia using SSH.')
 
-    for retry in xrange(retries + 1):
-      host, port = self._GetEndpoint()
+    host, port = self._GetEndpoint()
+    end_time = time.time() + _ATTACH_RETRY_SECONDS
+    while time.time() < end_time:
       runner = remote_cmd.CommandRunner(self._GetSshConfigPath(), host, port)
       if runner.RunCommand(['true'], True) == 0:
         logging.info('Connected!')
@@ -235,8 +241,12 @@ class Target(object):
       return 'x86_64'
     raise Exception('Unknown target_cpu %s:' % self._target_cpu)
 
-  def _GetAmberRepo(self):
-    """Returns an AmberRepo instance which serves packages for this Target."""
+  def GetAmberRepo(self):
+    """Returns an AmberRepo instance which serves packages for this Target.
+    Callers should typically call GetAmberRepo() in a |with| statement, and
+    install and execute commands inside the |with| block, so that the returned
+    AmberRepo can teardown correctly, if necessary.
+    """
     pass
 
   def InstallPackage(self, package_paths):
@@ -245,21 +255,39 @@ class Target(object):
 
     package_paths: Paths to the .far files to install."""
 
-    with self._GetAmberRepo() as amber_repo:
+    with self.GetAmberRepo() as amber_repo:
       # Publish all packages to the serving TUF repository under |tuf_root|.
-      for next_package_path in package_paths:
-        amber_repo.PublishPackage(next_package_path)
+      for package_path in package_paths:
+        amber_repo.PublishPackage(package_path)
 
-      # Install all packages.
-      for next_package_path in package_paths:
-        install_package_name, package_version = \
-            _GetPackageInfo(next_package_path)
-        logging.info('Installing %s version %s.' %
-                     (install_package_name, package_version))
-        return_code = self.RunCommand(['amberctl', 'get_up', '-n',
-                                       install_package_name, '-v',
-                                       package_version],
-                                       timeout_secs=_INSTALL_TIMEOUT_SECS)
+      # Resolve all packages, to have them pulled into the device/VM cache.
+      for package_path in package_paths:
+        package_name, package_version = _GetPackageInfo(package_path)
+        logging.info('Resolving %s into cache.' % (package_name))
+        return_code = self.RunCommand(
+            ['pkgctl', 'resolve',
+             _GetPackageUri(package_name), '>/dev/null'],
+            timeout_secs=_INSTALL_TIMEOUT_SECS)
         if return_code != 0:
-          raise Exception('Error while installing %s.' % install_package_name)
+          raise Exception('Error while resolving %s.' % package_name)
 
+      # Verify that the newly resolved versions of packages are reported.
+      for package_path in package_paths:
+        # Use pkgctl get-hash to determine which version will be resolved.
+        package_name, package_version = _GetPackageInfo(package_path)
+        pkgctl = self.RunCommandPiped(
+            ['pkgctl', 'get-hash',
+             _GetPackageUri(package_name)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+        pkgctl_out, pkgctl_err = pkgctl.communicate()
+
+        # Read the expected version from the meta.far Merkel hash file alongside
+        # the package's FAR.
+        meta_far_path = os.path.join(os.path.dirname(package_path), 'meta.far')
+        meta_far_merkel = subprocess.check_output(
+            [common.GetHostToolPathFromPlatform('merkleroot'),
+             meta_far_path]).split()[0]
+        if pkgctl_out != meta_far_merkel:
+          raise Exception('Hash mismatch for %s after resolve (%s vs %s).' %
+                          (package_name, pkgctl_out, meta_far_merkel))

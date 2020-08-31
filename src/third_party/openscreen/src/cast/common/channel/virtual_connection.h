@@ -9,8 +9,8 @@
 #include <cstdint>
 #include <string>
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 
 // Transport system on top of CastSocket that allows routing messages over a
 // single socket to different virtual endpoints (e.g. system messages vs.
@@ -35,16 +35,23 @@ struct VirtualConnection {
     //  - Receiver app can only send broadcast messages over an invisible
     //    connection.
     kInvisible,
+
+    kMinValue = kStrong,
+    kMaxValue = kInvisible,
   };
 
   // Cast V2 protocol version constants.  Must be in sync with
   // proto/cast_channel.proto.
   enum class ProtocolVersion {
     kV2_1_0,
+    kV2_1_1,
+    kV2_1_2,
+    kV2_1_3,
   };
 
   enum CloseReason {
     kUnknown,
+    kFirstReason = kUnknown,
 
     // Underlying socket has been closed by peer. This happens when Cast sender
     // closed transport connection normally without graceful virtual connection
@@ -68,6 +75,7 @@ struct VirtualConnection {
 
     // The virtual connection has been closed by the peer gracefully.
     kClosedByPeer,
+    kLastReason = kClosedByPeer,
   };
 
   struct AssociatedData {
@@ -91,7 +99,7 @@ struct VirtualConnection {
   //    app on the device.
   std::string local_id;
   std::string peer_id;
-  uint32_t socket_id;
+  int socket_id;
 };
 
 inline bool operator==(const VirtualConnection& a, const VirtualConnection& b) {
@@ -103,7 +111,7 @@ inline bool operator!=(const VirtualConnection& a, const VirtualConnection& b) {
   return !(a == b);
 }
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_COMMON_CHANNEL_VIRTUAL_CONNECTION_H_

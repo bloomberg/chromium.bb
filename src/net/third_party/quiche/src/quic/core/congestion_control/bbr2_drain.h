@@ -17,8 +17,10 @@ class QUIC_EXPORT_PRIVATE Bbr2DrainMode final : public Bbr2ModeBase {
  public:
   using Bbr2ModeBase::Bbr2ModeBase;
 
-  void Enter(const Bbr2CongestionEvent& congestion_event) override;
-  void Leave(const Bbr2CongestionEvent& /*congestion_event*/) override {}
+  void Enter(QuicTime /*now*/,
+             const Bbr2CongestionEvent* /*congestion_event*/) override {}
+  void Leave(QuicTime /*now*/,
+             const Bbr2CongestionEvent* /*congestion_event*/) override {}
 
   Bbr2Mode OnCongestionEvent(
       QuicByteCount prior_in_flight,
@@ -32,6 +34,11 @@ class QUIC_EXPORT_PRIVATE Bbr2DrainMode final : public Bbr2ModeBase {
   }
 
   bool IsProbingForBandwidth() const override { return false; }
+
+  Bbr2Mode OnExitQuiescence(QuicTime /*now*/,
+                            QuicTime /*quiescence_start_time*/) override {
+    return Bbr2Mode::DRAIN;
+  }
 
   struct QUIC_EXPORT_PRIVATE DebugState {
     QuicByteCount drain_target;

@@ -8,14 +8,16 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "components/component_updater/component_updater_service.h"
@@ -31,24 +33,33 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/sessions/core/session_id_generator.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/ukm/ukm_service.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/update_query_params.h"
 #include "components/variations/service/variations_service.h"
+#include "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager_impl.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/component_updater/ios_component_updater_configurator.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/application_breadcrumbs_logger.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_services_manager_client.h"
+#include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
+#include "ios/chrome/browser/policy/configuration_policy_handler_list_factory.h"
+#include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
+#include "ios/chrome/browser/safe_browsing/safe_browsing_service_impl.h"
 #include "ios/chrome/browser/update_client/ios_chrome_update_query_params_delegate.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/thread/web_task_traits.h"
@@ -62,6 +73,7 @@
 #include "services/network/network_change_manager.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -123,6 +135,20 @@ void ApplicationContextImpl::PreCreateThreads() {
 
 void ApplicationContextImpl::PreMainMessageLoopRun() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // BrowserPolicyConnectorIOS is created very early because local_state()
+  // needs policy to be initialized with the managed preference values.
+  // However, policy fetches from the network and loading of disk caches
+  // requires that threads are running; this Init() call lets the connector
+  // resume its initialization now that the loops are spinning and the
+  // system request context is available for the fetchers.
+  BrowserPolicyConnectorIOS* browser_policy_connector =
+      GetBrowserPolicyConnector();
+  if (browser_policy_connector) {
+    DCHECK(IsEnterprisePolicyEnabled());
+    browser_policy_connector->Init(GetLocalState(),
+                                   GetSharedURLLoaderFactory());
+  }
 }
 
 void ApplicationContextImpl::StartTearDown() {
@@ -137,8 +163,18 @@ void ApplicationContextImpl::StartTearDown() {
 
   net_export_file_writer_.reset();
 
+  if (safe_browsing_service_)
+    safe_browsing_service_->ShutDown();
+
   // Need to clear browser states before the IO thread.
   chrome_browser_state_manager_.reset();
+
+  // The policy providers managed by |browser_policy_connector_| need to shut
+  // down while the IO threads is still alive. The monitoring framework owned by
+  // |browser_policy_connector_| relies on |gcm_driver_|, so this must be
+  // shutdown before |gcm_driver_| below.
+  if (browser_policy_connector_)
+    browser_policy_connector_->Shutdown();
 
   // The GCMDriver must shut down while the IO thread is still alive.
   if (gcm_driver_)
@@ -182,14 +218,21 @@ void ApplicationContextImpl::OnAppEnterForeground() {
   ukm::UkmService* ukm_service = GetMetricsServicesManager()->GetUkmService();
   if (ukm_service)
     ukm_service->OnAppEnterForeground();
+
+  if (base::FeatureList::IsEnabled(kLogBreadcrumbs) && !breadcrumb_manager_) {
+    breadcrumb_manager_ = std::make_unique<BreadcrumbManager>();
+    application_breadcrumbs_logger_ =
+        std::make_unique<ApplicationBreadcrumbsLogger>(
+            breadcrumb_manager_.get());
+  }
 }
 
 void ApplicationContextImpl::OnAppEnterBackground() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Mark all the ChromeBrowserStates as clean and persist history.
-  std::vector<ios::ChromeBrowserState*> loaded_browser_state =
+  std::vector<ChromeBrowserState*> loaded_browser_state =
       GetChromeBrowserStateManager()->GetLoadedBrowserStates();
-  for (ios::ChromeBrowserState* browser_state : loaded_browser_state) {
+  for (ChromeBrowserState* browser_state : loaded_browser_state) {
     if (history::HistoryService* history_service =
             ios::HistoryServiceFactory::GetForBrowserStateIfExists(
                 browser_state, ServiceAccessType::EXPLICIT_ACCESS)) {
@@ -345,6 +388,16 @@ ApplicationContextImpl::GetComponentUpdateService() {
   return component_updater_.get();
 }
 
+SafeBrowsingService* ApplicationContextImpl::GetSafeBrowsingService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (base::FeatureList::IsEnabled(
+          safe_browsing::kSafeBrowsingAvailableOnIOS) &&
+      !safe_browsing_service_) {
+    safe_browsing_service_ = base::MakeRefCounted<SafeBrowsingServiceImpl>();
+  }
+  return safe_browsing_service_.get();
+}
+
 network::NetworkConnectionTracker*
 ApplicationContextImpl::GetNetworkConnectionTracker() {
   if (!network_connection_tracker_) {
@@ -358,6 +411,31 @@ ApplicationContextImpl::GetNetworkConnectionTracker() {
             base::Unretained(network_change_manager_.get())));
   }
   return network_connection_tracker_.get();
+}
+
+BrowserPolicyConnectorIOS* ApplicationContextImpl::GetBrowserPolicyConnector() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (IsEnterprisePolicyEnabled()) {
+    if (!browser_policy_connector_.get()) {
+      // Ensure that the ResourceBundle has already been initialized. If this
+      // DCHECK ever fails, a call to
+      // BrowserPolicyConnector::OnResourceBundleCreated() will need to be added
+      // later in the startup sequence, after the ResourceBundle is initialized.
+      DCHECK(ui::ResourceBundle::HasSharedInstance());
+      browser_policy_connector_ = std::make_unique<BrowserPolicyConnectorIOS>(
+          base::Bind(&BuildPolicyHandlerList));
+
+      // Install a mock platform policy provider, if running under EG2 and one
+      // is supplied.
+      policy::ConfigurationPolicyProvider* test_policy_provider =
+          tests_hook::GetOverriddenPlatformPolicyProvider();
+      if (test_policy_provider) {
+        browser_policy_connector_->SetPolicyProviderForTesting(
+            test_policy_provider);
+      }
+    }
+  }
+  return browser_policy_connector_.get();
 }
 
 void ApplicationContextImpl::SetApplicationLocale(const std::string& locale) {
@@ -378,8 +456,14 @@ void ApplicationContextImpl::CreateLocalState() {
   // Register local state preferences.
   RegisterLocalStatePrefs(pref_registry.get());
 
+  policy::BrowserPolicyConnector* browser_policy_connector =
+      GetBrowserPolicyConnector();
+  policy::PolicyService* policy_service =
+      browser_policy_connector ? browser_policy_connector->GetPolicyService()
+                               : nullptr;
   local_state_ = ::CreateLocalState(
-      local_state_path, local_state_task_runner_.get(), pref_registry);
+      local_state_path, local_state_task_runner_.get(), pref_registry,
+      policy_service, browser_policy_connector);
   DCHECK(local_state_);
 
   sessions::SessionIdGenerator::GetInstance()->Init(local_state_.get());
@@ -405,13 +489,13 @@ void ApplicationContextImpl::CreateGCMDriver() {
   CHECK(base::PathService::Get(ios::DIR_GLOBAL_GCM_STORE, &store_path));
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   gcm_driver_ = gcm::CreateGCMDriverDesktop(
       base::WrapUnique(new gcm::GCMClientFactory), GetLocalState(), store_path,
+      /*remove_account_mappings_with_email_key=*/true,
       // Because ApplicationContextImpl is destroyed after all WebThreads have
       // been shut down, base::Unretained() is safe here.
       base::BindRepeating(&RequestProxyResolvingSocketFactory,

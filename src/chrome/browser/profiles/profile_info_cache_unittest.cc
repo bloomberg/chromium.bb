@@ -16,7 +16,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -128,41 +126,17 @@ void ProfileInfoCacheTest::ResetCache() {
   testing_profile_manager_.DeleteProfileInfoCache();
 }
 
-class ProfileInfoCacheTestWithParam
-    : public ProfileInfoCacheTest,
-      public ::testing::WithParamInterface<bool> {
- public:
-  ProfileInfoCacheTestWithParam() : ProfileInfoCacheTest() {
-    concatenate_enabled_ = GetParam();
-    if (concatenate_enabled_) {
-      scoped_feature_list_.InitAndEnableFeature(features::kProfileMenuRevamp);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(features::kProfileMenuRevamp);
-    }
-  }
+base::string16 ProfileInfoCacheTest::GetConcatenation(
+    const base::string16& gaia_name,
+    const base::string16 profile_name) {
+  base::string16 name_to_display(gaia_name);
+  name_to_display.append(base::UTF8ToUTF16(" ("));
+  name_to_display.append(profile_name);
+  name_to_display.append(base::UTF8ToUTF16(")"));
+  return name_to_display;
+}
 
-  base::string16 GetConcatenation(const base::string16& gaia_name,
-                                  const base::string16 profile_name) {
-    base::string16 name_to_display(gaia_name);
-    name_to_display.append(base::UTF8ToUTF16(" ("));
-    name_to_display.append(profile_name);
-    name_to_display.append(base::UTF8ToUTF16(")"));
-    return name_to_display;
-  }
-
- protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  bool concatenate_enabled_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileInfoCacheTestWithParam);
-};
-
-INSTANTIATE_TEST_SUITE_P(ProfileInfoCacheTest,
-                         ProfileInfoCacheTestWithParam,
-                         testing::Bool());
-
-TEST_P(ProfileInfoCacheTestWithParam, AddProfiles) {
+TEST_F(ProfileInfoCacheTest, AddProfiles) {
   EXPECT_EQ(0u, GetCache()->GetNumberOfProfiles());
   // Avatar icons not used on Android.
 #if !defined(OS_ANDROID)
@@ -179,7 +153,7 @@ TEST_P(ProfileInfoCacheTestWithParam, AddProfiles) {
         profiles::GetDefaultAvatarIconResourceIDAtIndex(
             i)).ToSkBitmap();
 #endif
-    std::string supervised_user_id = "";
+    std::string supervised_user_id;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     if (i == 3)
       supervised_user_id = supervised_users::kChildAccountSUID;
@@ -197,8 +171,7 @@ TEST_P(ProfileInfoCacheTestWithParam, AddProfiles) {
 
     EXPECT_EQ(i + 1, GetCache()->GetNumberOfProfiles());
     base::string16 expected_profile_name =
-        concatenate_enabled_ ? GetConcatenation(gaia_name, profile_name)
-                             : profile_name;
+        GetConcatenation(gaia_name, profile_name);
 
     EXPECT_EQ(expected_profile_name, entry->GetName());
 
@@ -232,8 +205,7 @@ TEST_P(ProfileInfoCacheTestWithParam, AddProfiles) {
         ASCIIToUTF16(base::StringPrintf("name_%ud", index));
     base::string16 gaia_name = ASCIIToUTF16(base::StringPrintf("gaia_%ud", i));
     base::string16 expected_profile_name =
-        concatenate_enabled_ ? GetConcatenation(gaia_name, profile_name)
-                             : profile_name;
+        GetConcatenation(gaia_name, profile_name);
     EXPECT_EQ(expected_profile_name, entry->GetName());
 #if !defined(OS_ANDROID)
     EXPECT_EQ(i, GetCache()->GetAvatarIconIndexOfProfileAtIndex(index));
@@ -243,7 +215,7 @@ TEST_P(ProfileInfoCacheTestWithParam, AddProfiles) {
   }
 }
 
-TEST_P(ProfileInfoCacheTestWithParam, GAIAName) {
+TEST_F(ProfileInfoCacheTest, GAIAName) {
   base::FilePath profile_path_1 = GetProfilePath("path_1");
   GetCache()->AddProfileToCache(profile_path_1, ASCIIToUTF16("Person 1"),
                                 std::string(), base::string16(), false, 0,
@@ -275,8 +247,7 @@ TEST_P(ProfileInfoCacheTestWithParam, GAIAName) {
   entry_2->SetIsUsingDefaultName(false);
 
   base::string16 expected_profile_name =
-      concatenate_enabled_ ? GetConcatenation(gaia_name, custom_name)
-                           : custom_name;
+      GetConcatenation(gaia_name, custom_name);
   EXPECT_EQ(expected_profile_name, entry_2->GetName());
   EXPECT_EQ(gaia_name, entry_2->GetGAIAName());
 }
@@ -288,8 +259,6 @@ TEST_F(ProfileInfoCacheTest, ConcatenateGaiaNameAndProfileName) {
   //   clear ambiguity.
   // If one of the two conditions hold, we will show the profile name in this
   // format |GAIA name (Profile local name)|
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kProfileMenuRevamp);
   // Single profile.
   GetCache()->AddProfileToCache(
       GetProfilePath("path_1"), ASCIIToUTF16("Person 1"), std::string(),
@@ -426,7 +395,7 @@ TEST_F(ProfileInfoCacheTest, MutateProfile) {
   std::string new_gaia_id = "12345";
   entry_2->SetAuthInfo(new_gaia_id, new_user_name, true);
   EXPECT_EQ(new_user_name, entry_2->GetUserName());
-  EXPECT_EQ(new_gaia_id, GetCache()->GetGAIAIdOfProfileAtIndex(1));
+  EXPECT_EQ(new_gaia_id, entry_2->GetGAIAId());
   EXPECT_NE(new_user_name, entry_1->GetUserName());
 
   // Avatar icons not used on Android.
@@ -511,8 +480,9 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   // Set GAIA picture.
   gfx::Image gaia_image(gfx::test::CreateImage(
       kGaiaPictureSize, kGaiaPictureSize));
-  GetCache()->SetGAIAPictureOfProfileAtIndex(1, gaia_image);
-  EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
+  GetCache()->SetGAIAPictureOfProfileAtIndex(1, "GAIA_IMAGE_URL_WITH_SIZE_1",
+                                             gaia_image);
+  EXPECT_EQ(nullptr, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(1)));
   // Since we're still using the default avatar, the GAIA image should be
@@ -561,18 +531,25 @@ TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
       base::string16(), false, 0, std::string(), EmptyAccountId());
   gfx::Image gaia_image(gfx::test::CreateImage());
 
-  GetCache()->SetGAIAPictureOfProfileAtIndex(0, gaia_image);
+  GetCache()->SetGAIAPictureOfProfileAtIndex(0, "GAIA_IMAGE_URL_WITH_SIZE_0",
+                                             gaia_image);
 
   // Make sure everything has completed, and the file has been written to disk.
   content::RunAllTasksUntilIdle();
 
+  EXPECT_EQ(
+      GetCache()->GetLastDownloadedGAIAPictureUrlWithSizeOfProfileAtIndex(0),
+      "GAIA_IMAGE_URL_WITH_SIZE_0");
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(0)));
 
   ResetCache();
   // Try to get the GAIA picture. This should return NULL until the read from
   // disk is done.
-  EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
+  EXPECT_EQ(nullptr, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
+  EXPECT_EQ(
+      GetCache()->GetLastDownloadedGAIAPictureUrlWithSizeOfProfileAtIndex(0),
+      "GAIA_IMAGE_URL_WITH_SIZE_0");
   content::RunAllTasksUntilIdle();
 
   EXPECT_TRUE(gfx::test::AreImagesEqual(
@@ -618,10 +595,21 @@ TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
   ProfileAttributesEntry* entry = nullptr;
   GetCache()->GetProfileAttributesWithPath(profile_path, &entry);
 
+  gfx::Image gaia_image(gfx::test::CreateImage());
+  GetCache()->SetGAIAPictureOfProfileAtIndex(0, "GAIA_IMAGE_URL_WITH_SIZE_0",
+                                             gaia_image);
+
+  // Make sure everything has completed, and the file has been written to disk.
+  content::RunAllTasksUntilIdle();
+
   // Set empty GAIA info.
   entry->SetGAIAName(base::string16());
-  GetCache()->SetGAIAPictureOfProfileAtIndex(0, gfx::Image());
+  GetCache()->SetGAIAPictureOfProfileAtIndex(0, std::string(), gfx::Image());
   GetCache()->SetIsUsingGAIAPictureOfProfileAtIndex(0, true);
+
+  EXPECT_TRUE(GetCache()
+                  ->GetLastDownloadedGAIAPictureUrlWithSizeOfProfileAtIndex(0)
+                  .empty());
 
   // Verify that the profile name and picture are not empty.
   EXPECT_EQ(profile_name, entry->GetName());
@@ -785,8 +773,6 @@ TEST_F(ProfileInfoCacheTest, EntriesInAttributesStorage) {
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 TEST_F(ProfileInfoCacheTest, MigrateLegacyProfileNamesAndRecomputeIfNeeded) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kProfileMenuRevamp);
   EXPECT_EQ(0U, GetCache()->GetNumberOfProfiles());
   // Mimick a pre-existing Directory with profiles that has legacy profile
   // names.
@@ -869,7 +855,8 @@ TEST_F(ProfileInfoCacheTest, GetGaiaImageForAvatarMenu) {
                                 std::string(), EmptyAccountId());
 
   gfx::Image gaia_image(gfx::test::CreateImage());
-  GetCache()->SetGAIAPictureOfProfileAtIndex(0, gaia_image);
+  GetCache()->SetGAIAPictureOfProfileAtIndex(0, "GAIA_IMAGE_URL_WITH_SIZE_0",
+                                             gaia_image);
 
   // Make sure everything has completed, and the file has been written to disk.
   content::RunAllTasksUntilIdle();

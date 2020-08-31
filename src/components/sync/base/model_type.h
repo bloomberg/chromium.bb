@@ -36,7 +36,7 @@ namespace syncer {
 // |kModelTypeInfoMap| struct entries are in the same order as their definition
 // in ModelType enum. When you make changes in ModelType enum, don't forget to
 // update the |kModelTypeInfoMap| struct in model_type.cc and also the
-// SyncModelType and SyncModelTypeByMacro histogram suffixes in histograms.xml
+// SyncModelType histogram suffix in histograms.xml
 enum ModelType {
   // Object type unknown.  Objects may transition through
   // the unknown state during their initial creation, before
@@ -97,11 +97,9 @@ enum ModelType {
   // Custom spelling dictionary entries.
   DICTIONARY,
   // Favicon images, including both the image URL and the actual pixels.
-  // TODO(https://crbug.com/978775): Prepend DEPRECATED to the name of favicon
-  // data types.
-  FAVICON_IMAGES,
+  DEPRECATED_FAVICON_IMAGES,
   // Favicon tracking information, i.e. metadata such as last visit date.
-  FAVICON_TRACKING,
+  DEPRECATED_FAVICON_TRACKING,
   // Client-specific metadata, synced before other user types.
   DEVICE_INFO,
   // These preferences are synced before other user types and are never
@@ -136,6 +134,8 @@ enum ModelType {
   OS_PREFERENCES,
   // Synced before other user types. Never encrypted. Chrome OS only.
   OS_PRIORITY_PREFERENCES,
+  // Commit only sharing message object.
+  SHARING_MESSAGE,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered
@@ -177,8 +177,7 @@ inline ModelType ModelTypeFromInt(int i) {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. When you add a new entry or when you
 // deprecate an existing one, also update SyncModelTypes in enums.xml and
-// SyncModelType and SyncModelTypeByMacro suffixes in histograms.xml.
-// TODO(crbug.com/1019744): Remove the SyncModelTypeByMacro suffixes.
+// SyncModelType suffix in histograms.xml.
 enum class ModelTypeForHistograms {
   kUnspecified = 0,
   kTopLevelFolder = 1,
@@ -228,7 +227,8 @@ enum class ModelTypeForHistograms {
   kWebApps = 45,
   kOsPreferences = 46,
   kOsPriorityPreferences = 47,
-  kMaxValue = kOsPriorityPreferences
+  kSharingMessage = 48,
+  kMaxValue = kSharingMessage
 };
 
 // Used to mark the type of EntitySpecifics that has no actual data.
@@ -253,12 +253,13 @@ constexpr ModelTypeSet ProtocolTypes() {
       BOOKMARKS, PREFERENCES, PASSWORDS, AUTOFILL_PROFILE, AUTOFILL,
       AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_METADATA, THEMES, TYPED_URLS,
       EXTENSIONS, SEARCH_ENGINES, SESSIONS, APPS, APP_SETTINGS,
-      EXTENSION_SETTINGS, HISTORY_DELETE_DIRECTIVES, DICTIONARY, FAVICON_IMAGES,
-      FAVICON_TRACKING, DEVICE_INFO, PRIORITY_PREFERENCES,
-      SUPERVISED_USER_SETTINGS, APP_LIST, SUPERVISED_USER_WHITELISTS,
-      ARC_PACKAGE, PRINTERS, READING_LIST, USER_EVENTS, NIGORI,
-      DEPRECATED_EXPERIMENTS, USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS,
-      WEB_APPS, WIFI_CONFIGURATIONS, OS_PREFERENCES, OS_PRIORITY_PREFERENCES);
+      EXTENSION_SETTINGS, HISTORY_DELETE_DIRECTIVES, DICTIONARY,
+      DEPRECATED_FAVICON_IMAGES, DEPRECATED_FAVICON_TRACKING, DEVICE_INFO,
+      PRIORITY_PREFERENCES, SUPERVISED_USER_SETTINGS, APP_LIST,
+      SUPERVISED_USER_WHITELISTS, ARC_PACKAGE, PRINTERS, READING_LIST,
+      USER_EVENTS, NIGORI, DEPRECATED_EXPERIMENTS, USER_CONSENTS,
+      SEND_TAB_TO_SELF, SECURITY_EVENTS, WEB_APPS, WIFI_CONFIGURATIONS,
+      OS_PREFERENCES, OS_PRIORITY_PREFERENCES, SHARING_MESSAGE);
 }
 
 // These are the normal user-controlled types. This is to distinguish from
@@ -271,7 +272,8 @@ constexpr ModelTypeSet UserTypes() {
 // User types, which are not user-controlled.
 constexpr ModelTypeSet AlwaysPreferredUserTypes() {
   return ModelTypeSet(DEVICE_INFO, USER_CONSENTS, SECURITY_EVENTS,
-                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS);
+                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS,
+                      SHARING_MESSAGE);
 }
 
 // User types which are always encrypted.
@@ -287,7 +289,7 @@ constexpr ModelTypeSet AlwaysEncryptedUserTypes() {
 constexpr ModelTypeSet PriorityUserTypes() {
   return ModelTypeSet(DEVICE_INFO, PRIORITY_PREFERENCES,
                       SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS,
-                      OS_PRIORITY_PREFERENCES);
+                      OS_PRIORITY_PREFERENCES, SHARING_MESSAGE);
 }
 
 // Proxy types are placeholder types for handling implicitly enabling real
@@ -319,8 +321,10 @@ constexpr bool IsControlType(ModelType model_type) {
 }
 
 // Types that may commit data, but should never be included in a GetUpdates.
+// These are never encrypted.
 constexpr ModelTypeSet CommitOnlyTypes() {
-  return ModelTypeSet(USER_EVENTS, USER_CONSENTS, SECURITY_EVENTS);
+  return ModelTypeSet(USER_EVENTS, USER_CONSENTS, SECURITY_EVENTS,
+                      SHARING_MESSAGE);
 }
 
 // User types that can be encrypted, which is a subset of UserTypes() and a

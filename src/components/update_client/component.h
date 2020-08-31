@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "components/update_client/crx_downloader.h"
@@ -36,8 +36,8 @@ class Configurator;
 struct CrxUpdateItem;
 struct UpdateContext;
 
-// Describes a CRX component managed by the UpdateEngine. Each |Component| is
-// associated with an UpdateContext.
+// Describes a CRX component managed by the UpdateEngine. Each instance of
+// this class is associated with one instance of UpdateContext.
 class Component {
  public:
   using Events = UpdateClient::Observer::Events;
@@ -61,6 +61,10 @@ class Component {
       const base::Optional<ProtocolParser::Result>& result,
       ErrorCategory error_category,
       int error);
+
+  // Called by the UpdateEngine when a component enters a wait for throttling
+  // purposes.
+  void NotifyWait();
 
   // Returns true if the component has reached a final state and no further
   // handling and state transitions are possible.
@@ -165,7 +169,7 @@ class Component {
     Component& component() { return component_; }
     const Component& component() const { return component_; }
 
-    base::ThreadChecker thread_checker_;
+    SEQUENCE_CHECKER(sequence_checker_);
 
     const ComponentState state_;
 
@@ -251,10 +255,9 @@ class Component {
     // Called when progress is being made downloading a CRX. Can be called
     // multiple times due to how the CRX downloader switches between
     // different downloaders and fallback urls.
-    void DownloadProgress(const std::string& id);
+    void DownloadProgress(int64_t downloaded_bytes, int64_t total_bytes);
 
-    void DownloadComplete(const std::string& id,
-                          const CrxDownloader::Result& download_result);
+    void DownloadComplete(const CrxDownloader::Result& download_result);
 
     // Downloads updates for one CRX id only.
     std::unique_ptr<CrxDownloader> crx_downloader_;
@@ -274,10 +277,9 @@ class Component {
     // Called when progress is being made downloading a CRX. Can be called
     // multiple times due to how the CRX downloader switches between
     // different downloaders and fallback urls.
-    void DownloadProgress(const std::string& id);
+    void DownloadProgress(int64_t downloaded_bytes, int64_t total_bytes);
 
-    void DownloadComplete(const std::string& id,
-                          const CrxDownloader::Result& download_result);
+    void DownloadComplete(const CrxDownloader::Result& download_result);
 
     // Downloads updates for one CRX id only.
     std::unique_ptr<CrxDownloader> crx_downloader_;
@@ -294,6 +296,7 @@ class Component {
     // State overrides.
     void DoHandle() override;
 
+    void InstallProgress(int install_progress);
     void InstallComplete(ErrorCategory error_category,
                          int error_code,
                          int extra_code1);
@@ -310,6 +313,7 @@ class Component {
     // State overrides.
     void DoHandle() override;
 
+    void InstallProgress(int install_progress);
     void InstallComplete(ErrorCategory error_category,
                          int error_code,
                          int extra_code1);
@@ -370,6 +374,9 @@ class Component {
   void ChangeState(std::unique_ptr<State> next_state);
 
   // Notifies registered observers about changes in the state of the component.
+  // If an UpdateClient::CrxStateChangeCallback is provided as an argument to
+  // UpdateClient::Install or UpdateClient::Update function calls, then the
+  // callback is invoked as well.
   void NotifyObservers(Events event) const;
 
   void SetParseResult(const ProtocolParser::Result& result);
@@ -384,7 +391,9 @@ class Component {
                                  int error_code,
                                  int extra_code1) const;
 
-  base::ThreadChecker thread_checker_;
+  std::unique_ptr<CrxInstaller::InstallParams> install_params() const;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   const std::string id_;
   base::Optional<CrxComponent> crx_component_;
@@ -424,6 +433,17 @@ class Component {
 
   base::FilePath crx_path_;
 
+  // The byte counts below are valid for the current url being fetched.
+  // |total_bytes| is equal to the size of the CRX file and |downloaded_bytes|
+  // represents how much has been downloaded up to that point. A value of -1
+  // means that the byte count is unknown.
+  int64_t downloaded_bytes_ = -1;
+  int64_t total_bytes_ = -1;
+
+  // Install progress, in the range of [0, 100]. A value of -1 means that the
+  // progress is unknown.
+  int install_progress_ = -1;
+
   // The error information for full and differential updates.
   // The |error_category| contains a hint about which module in the component
   // updater generated the error. The |error_code| constains the error and
@@ -436,6 +456,14 @@ class Component {
   ErrorCategory diff_error_category_ = ErrorCategory::kNone;
   int diff_error_code_ = 0;
   int diff_extra_code1_ = 0;
+
+  // Contains app-specific custom response attributes from the server, sent in
+  // the last update check.
+  std::map<std::string, std::string> custom_attrs_;
+
+  // Contains the optional |run| and |arguments| values in the update response
+  // manifest. This data is provided as an argument to the |Install| call.
+  base::Optional<CrxInstaller::InstallParams> install_params_;
 
   // Contains the events which are therefore serialized in the requests.
   std::vector<base::Value> events_;

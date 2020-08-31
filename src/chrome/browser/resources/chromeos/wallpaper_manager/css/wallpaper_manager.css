@@ -441,6 +441,7 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
   font-family: 'Roboto';
   font-size: 13px;
   font-weight: 500;
+  line-height: 13px;
 }
 
 :not(.no-images) .top-header-contents {
@@ -801,6 +802,7 @@ html[dir='rtl'] .daily-refresh-label {
 #current-wallpaper-title {
   color: rgb(32, 33, 36);
   font-size: 14px;
+  line-height: 14px;
   padding-top: 9px;
 }
 

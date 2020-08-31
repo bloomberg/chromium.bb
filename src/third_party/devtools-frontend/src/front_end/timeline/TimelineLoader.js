@@ -2,40 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Bindings from '../bindings/bindings.js';
+import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
+import * as SDK from '../sdk/sdk.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+import * as TimelineModel from '../timeline_model/timeline_model.js';
+
 /**
- * @implements {Common.OutputStream}
+ * @implements {Common.StringOutputStream.OutputStream}
  * @unrestricted
  */
-Timeline.TimelineLoader = class {
+export class TimelineLoader {
   /**
-   * @param {!Timeline.TimelineLoader.Client} client
+   * @param {!Client} client
    */
   constructor(client) {
     this._client = client;
 
-    this._backingStorage = new Bindings.TempFileBackingStorage();
-    this._tracingModel = new SDK.TracingModel(this._backingStorage);
+    this._backingStorage = new Bindings.TempFile.TempFileBackingStorage();
+    this._tracingModel = new SDK.TracingModel.TracingModel(this._backingStorage);
 
     /** @type {?function()} */
     this._canceledCallback = null;
-    this._state = Timeline.TimelineLoader.State.Initial;
+    this._state = State.Initial;
     this._buffer = '';
     this._firstRawChunk = true;
     this._firstChunk = true;
     this._loadedBytes = 0;
     /** @type {number} */
     this._totalSize;
-    this._jsonTokenizer = new TextUtils.BalancedJSONTokenizer(this._writeBalancedJSON.bind(this), true);
+    this._jsonTokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(this._writeBalancedJSON.bind(this), true);
   }
 
   /**
    * @param {!File} file
-   * @param {!Timeline.TimelineLoader.Client} client
-   * @return {!Timeline.TimelineLoader}
+   * @param {!Client} client
+   * @return {!TimelineLoader}
    */
   static loadFromFile(file, client) {
-    const loader = new Timeline.TimelineLoader(client);
-    const fileReader = new Bindings.ChunkedFileReader(file, Timeline.TimelineLoader.TransferChunkLengthBytes);
+    const loader = new TimelineLoader(client);
+    const fileReader = new Bindings.FileUtils.ChunkedFileReader(file, TransferChunkLengthBytes);
     loader._canceledCallback = fileReader.cancel.bind(fileReader);
     loader._totalSize = file.size;
     fileReader.read(loader).then(success => {
@@ -48,11 +55,11 @@ Timeline.TimelineLoader = class {
 
   /**
    * @param {!Array.<!SDK.TracingManager.EventPayload>} events
-   * @param {!Timeline.TimelineLoader.Client} client
-   * @return {!Timeline.TimelineLoader}
+   * @param {!Client} client
+   * @return {!TimelineLoader}
    */
   static loadFromEvents(events, client) {
-    const loader = new Timeline.TimelineLoader(client);
+    const loader = new TimelineLoader(client);
 
     setTimeout(async () => {
       const eventsPerChunk = 5000;
@@ -71,11 +78,11 @@ Timeline.TimelineLoader = class {
 
   /**
    * @param {string} url
-   * @param {!Timeline.TimelineLoader.Client} client
-   * @return {!Timeline.TimelineLoader}
+   * @param {!Client} client
+   * @return {!TimelineLoader}
    */
   static loadFromURL(url, client) {
-    const loader = new Timeline.TimelineLoader(client);
+    const loader = new TimelineLoader(client);
     Host.ResourceLoader.loadAsStream(url, null, loader);
     return loader;
   }
@@ -107,25 +114,25 @@ Timeline.TimelineLoader = class {
     }
     this._firstRawChunk = false;
 
-    if (this._state === Timeline.TimelineLoader.State.Initial) {
+    if (this._state === State.Initial) {
       if (chunk.startsWith('{"nodes":[')) {
-        this._state = Timeline.TimelineLoader.State.LoadingCPUProfileFormat;
+        this._state = State.LoadingCPUProfileFormat;
       } else if (chunk[0] === '{') {
-        this._state = Timeline.TimelineLoader.State.LookingForEvents;
+        this._state = State.LookingForEvents;
       } else if (chunk[0] === '[') {
-        this._state = Timeline.TimelineLoader.State.ReadingEvents;
+        this._state = State.ReadingEvents;
       } else {
-        this._reportErrorAndCancelLoading(Common.UIString('Malformed timeline data: Unknown JSON format'));
+        this._reportErrorAndCancelLoading(Common.UIString.UIString('Malformed timeline data: Unknown JSON format'));
         return Promise.resolve();
       }
     }
 
-    if (this._state === Timeline.TimelineLoader.State.LoadingCPUProfileFormat) {
+    if (this._state === State.LoadingCPUProfileFormat) {
       this._buffer += chunk;
       return Promise.resolve();
     }
 
-    if (this._state === Timeline.TimelineLoader.State.LookingForEvents) {
+    if (this._state === State.LookingForEvents) {
       const objectName = '"traceEvents":';
       const startPos = this._buffer.length - objectName.length;
       this._buffer += chunk;
@@ -134,18 +141,19 @@ Timeline.TimelineLoader = class {
         return Promise.resolve();
       }
       chunk = this._buffer.slice(pos + objectName.length);
-      this._state = Timeline.TimelineLoader.State.ReadingEvents;
+      this._state = State.ReadingEvents;
     }
 
-    if (this._state !== Timeline.TimelineLoader.State.ReadingEvents) {
+    if (this._state !== State.ReadingEvents) {
       return Promise.resolve();
     }
     if (this._jsonTokenizer.write(chunk)) {
       return Promise.resolve();
     }
-    this._state = Timeline.TimelineLoader.State.SkippingTail;
+    this._state = State.SkippingTail;
     if (this._firstChunk) {
-      this._reportErrorAndCancelLoading(Common.UIString('Malformed timeline input, wrong JSON brackets balance'));
+      this._reportErrorAndCancelLoading(
+          Common.UIString.UIString('Malformed timeline input, wrong JSON brackets balance'));
     }
     return Promise.resolve();
   }
@@ -168,14 +176,14 @@ Timeline.TimelineLoader = class {
     try {
       items = /** @type {!Array.<!SDK.TracingManager.EventPayload>} */ (JSON.parse(json));
     } catch (e) {
-      this._reportErrorAndCancelLoading(Common.UIString('Malformed timeline data: %s', e.toString()));
+      this._reportErrorAndCancelLoading(Common.UIString.UIString('Malformed timeline data: %s', e.toString()));
       return;
     }
 
     if (this._firstChunk) {
       this._firstChunk = false;
       if (this._looksLikeAppVersion(items[0])) {
-        this._reportErrorAndCancelLoading(Common.UIString('Legacy Timeline format is not supported.'));
+        this._reportErrorAndCancelLoading(Common.UIString.UIString('Legacy Timeline format is not supported.'));
         return;
       }
     }
@@ -183,7 +191,7 @@ Timeline.TimelineLoader = class {
     try {
       this._tracingModel.addEvents(items);
     } catch (e) {
-      this._reportErrorAndCancelLoading(Common.UIString('Malformed timeline data: %s', e.toString()));
+      this._reportErrorAndCancelLoading(Common.UIString.UIString('Malformed timeline data: %s', e.toString()));
     }
   }
 
@@ -192,7 +200,7 @@ Timeline.TimelineLoader = class {
    */
   _reportErrorAndCancelLoading(message) {
     if (message) {
-      Common.console.error(message);
+      Common.Console.Console.instance().error(message);
     }
     this.cancel();
   }
@@ -217,7 +225,7 @@ Timeline.TimelineLoader = class {
   }
 
   _finalizeTrace() {
-    if (this._state === Timeline.TimelineLoader.State.LoadingCPUProfileFormat) {
+    if (this._state === State.LoadingCPUProfileFormat) {
       this._parseCPUProfileFormat(this._buffer);
       this._buffer = '';
     }
@@ -232,44 +240,45 @@ Timeline.TimelineLoader = class {
     let traceEvents;
     try {
       const profile = JSON.parse(text);
-      traceEvents = TimelineModel.TimelineJSProfileProcessor.buildTraceProfileFromCpuProfile(
+      traceEvents = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.buildTraceProfileFromCpuProfile(
           profile, /* tid */ 1, /* injectPageEvent */ true);
     } catch (e) {
-      this._reportErrorAndCancelLoading(Common.UIString('Malformed CPU profile format'));
+      this._reportErrorAndCancelLoading(Common.UIString.UIString('Malformed CPU profile format'));
       return;
     }
     this._tracingModel.addEvents(traceEvents);
   }
-};
+}
 
-
-Timeline.TimelineLoader.TransferChunkLengthBytes = 5000000;
+export const TransferChunkLengthBytes = 5000000;
 
 /**
  * @interface
  */
-Timeline.TimelineLoader.Client = function() {};
-
-Timeline.TimelineLoader.Client.prototype = {
-  loadingStarted() {},
+export class Client {
+  loadingStarted() {
+  }
 
   /**
    * @param {number=} progress
    */
-  loadingProgress(progress) {},
+  loadingProgress(progress) {
+  }
 
-  processingStarted() {},
+  processingStarted() {
+  }
 
   /**
-   * @param {?SDK.TracingModel} tracingModel
+   * @param {?SDK.TracingModel.TracingModel} tracingModel
    */
-  loadingComplete(tracingModel) {},
-};
+  loadingComplete(tracingModel) {
+  }
+}
 
 /**
  * @enum {symbol}
  */
-Timeline.TimelineLoader.State = {
+export const State = {
   Initial: Symbol('Initial'),
   LookingForEvents: Symbol('LookingForEvents'),
   ReadingEvents: Symbol('ReadingEvents'),

@@ -38,6 +38,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -49,8 +50,6 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
     : delegate_(delegate),
       model_(delegate->GetModel()),
       search_model_(delegate->GetSearchModel()),
-      search_box_view_(nullptr),
-      contents_view_(nullptr),
       app_list_view_(app_list_view) {
   // We need a layer to apply transform to in small display so that the apps
   // grid fits in the display.
@@ -70,20 +69,33 @@ void AppListMainView::Init(int initial_apps_page,
   AddContentsViews();
 
   // Switch the apps grid view to the specified page.
-  ash::PaginationModel* pagination_model = GetAppsPaginationModel();
+  PaginationModel* pagination_model = GetAppsPaginationModel();
   if (pagination_model->is_valid_page(initial_apps_page))
     pagination_model->SelectPage(initial_apps_page, false);
 }
 
 void AppListMainView::AddContentsViews() {
   DCHECK(search_box_view_);
-  contents_view_ = new ContentsView(app_list_view_);
-  contents_view_->Init(model_);
-  contents_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
-  contents_view_->layer()->SetMasksToBounds(true);
-  AddChildView(contents_view_);
+  auto contents_view = std::make_unique<ContentsView>(app_list_view_);
+  contents_view->Init(model_);
+  contents_view->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
+  contents_view->layer()->SetMasksToBounds(true);
+  contents_view_ = AddChildView(std::move(contents_view));
 
   search_box_view_->set_contents_view(contents_view_);
+}
+
+void AppListMainView::ShowAppListWhenReady() {
+  // After switching to tablet mode, other app windows may be active. Show the
+  // app list without activating it to avoid breaking other windows' state.
+  const aura::Window* active_window =
+      wm::GetActivationClient(
+          app_list_view_->GetWidget()->GetNativeView()->GetRootWindow())
+          ->GetActiveWindow();
+  if (app_list_view_->is_tablet_mode() && active_window)
+    GetWidget()->ShowInactive();
+  else
+    GetWidget()->Show();
 }
 
 void AppListMainView::ModelChanged() {
@@ -103,8 +115,8 @@ void AppListMainView::SetDragAndDropHostOfCurrentAppList(
   contents_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
 }
 
-ash::PaginationModel* AppListMainView::GetAppsPaginationModel() {
-  return contents_view_->GetAppsContainerView()
+PaginationModel* AppListMainView::GetAppsPaginationModel() {
+  return contents_view_->apps_container_view()
       ->apps_grid_view()
       ->pagination_model();
 }
@@ -142,12 +154,12 @@ void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
     // may bring the crash like https://crbug.com/990282.
     const std::string id = item->id();
     delegate_->ActivateItem(id, event_flags,
-                            ash::AppListLaunchedFrom::kLaunchedFromGrid);
+                            AppListLaunchedFrom::kLaunchedFromGrid);
   }
 }
 
 void AppListMainView::CancelDragInActiveFolder() {
-  contents_view_->GetAppsContainerView()
+  contents_view_->apps_container_view()
       ->app_list_folder_view()
       ->items_grid_view()
       ->EndDrag(true);
@@ -186,7 +198,7 @@ void AppListMainView::ActiveChanged(search_box::SearchBoxViewBase* sender) {
   if (!app_list_features::IsZeroStateSuggestionsEnabled())
     return;
   // Do not update views on closing.
-  if (app_list_view_->app_list_state() == ash::AppListViewState::kClosed)
+  if (app_list_view_->app_list_state() == AppListViewState::kClosed)
     return;
 
   if (search_box_view_->is_search_box_active()) {

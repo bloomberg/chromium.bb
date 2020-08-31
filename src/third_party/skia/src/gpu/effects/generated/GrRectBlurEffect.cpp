@@ -10,7 +10,7 @@
  **************************************************************************************************/
 #include "GrRectBlurEffect.h"
 
-#include "include/gpu/GrTexture.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
@@ -33,15 +33,15 @@ public:
                  abs(rect.right()) > 16000.0) ||
                 abs(rect.bottom()) > 16000.0;
         if (highp) {
-            rectFVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kFloat4_GrSLType,
-                                                        "rectF");
+            rectFVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
+                                                        kFloat4_GrSLType, "rectF");
         }
         if (!highp) {
-            rectHVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kHalf4_GrSLType,
-                                                        "rectH");
+            rectHVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
+                                                        kHalf4_GrSLType, "rectH");
         }
-        invSixSigmaVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kHalf_GrSLType,
-                                                          "invSixSigma");
+        invSixSigmaVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
+                                                          kHalf_GrSLType, "invSixSigma");
         fragBuilder->codeAppendf(
                 "/* key */ bool highp = %s;\nhalf xCoverage, yCoverage;\n@if (%s) {\n    half x, "
                 "y;\n    @if (highp) {\n        x = max(half(%s.x - sk_FragCoord.x), "
@@ -132,8 +132,8 @@ private:
         (void)rectF;
         UniformHandle& rectH = rectHVar;
         (void)rectH;
-        GrSurfaceProxy& integralProxy = *_outer.textureSampler(0).proxy();
-        GrTexture& integral = *integralProxy.peekTexture();
+        const GrSurfaceProxyView& integralView = _outer.textureSampler(0).view();
+        GrTexture& integral = *integralView.proxy()->peekTexture();
         (void)integral;
         UniformHandle& invSixSigma = invSixSigmaVar;
         (void)invSixSigma;
@@ -188,7 +188,7 @@ std::unique_ptr<GrFragmentProcessor> GrRectBlurEffect::TestCreate(GrProcessorTes
     float sigma = data->fRandom->nextRangeF(3, 8);
     float width = data->fRandom->nextRangeF(200, 300);
     float height = data->fRandom->nextRangeF(200, 300);
-    return GrRectBlurEffect::Make(data->proxyProvider(), *data->caps()->shaderCaps(),
+    return GrRectBlurEffect::Make(data->context(), *data->caps()->shaderCaps(),
                                   SkRect::MakeWH(width, height), sigma);
 }
 #endif

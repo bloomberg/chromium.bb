@@ -89,10 +89,10 @@ void ImportCookies(base::RepeatingClosure completion_callback,
     net::CookieOptions options;
     options.set_include_httponly();
     options.set_same_site_cookie_context(
-        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+        net::CookieOptions::SameSiteCookieContext::MakeInclusive());
     cookie_manager->SetCanonicalCookie(
-        cookie, "https", options,
-        base::BindOnce(&OnCookieSet, cookie_completion_callback));
+        cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
+        options, base::BindOnce(&OnCookieSet, cookie_completion_callback));
   }
 }
 

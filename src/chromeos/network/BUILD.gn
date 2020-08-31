@@ -71,6 +71,7 @@ component("network") {
     "network_certificate_handler.h",
     "network_configuration_handler.cc",
     "network_configuration_handler.h",
+    "network_configuration_observer.cc",
     "network_configuration_observer.h",
     "network_connect.cc",
     "network_connect.h",
@@ -84,6 +85,7 @@ component("network") {
     "network_device_handler.h",
     "network_device_handler_impl.cc",
     "network_device_handler_impl.h",
+    "network_event_log.cc",
     "network_event_log.h",
     "network_handler.cc",
     "network_handler.h",
@@ -91,6 +93,10 @@ component("network") {
     "network_handler_callbacks.h",
     "network_ip_config.cc",
     "network_ip_config.h",
+    "network_metadata_observer.cc",
+    "network_metadata_observer.h",
+    "network_metadata_store.cc",
+    "network_metadata_store.h",
     "network_profile.cc",
     "network_profile.h",
     "network_profile_handler.cc",
@@ -168,15 +174,14 @@ component("network") {
 
 source_set("test_support") {
   testonly = true
-  public_deps = [
-    ":network",
-  ]
+  public_deps = [ ":network" ]
   deps = [
     "//base",
     "//chromeos:test_utils",
     "//chromeos/dbus:test_support",
     "//chromeos/services/network_config/public/cpp",
     "//chromeos/services/network_config/public/mojom",
+    "//components/sync_preferences:test_support",
     "//dbus",
     "//net:test_support",
     "//testing/gmock",
@@ -222,6 +227,7 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/proxy_config",
     "//components/sync_preferences:test_support",
+    "//components/user_manager:test_support",
     "//crypto",
     "//crypto:test_support",
     "//dbus",
@@ -245,6 +251,8 @@ source_set("unit_tests") {
     "network_connect_unittest.cc",
     "network_connection_handler_impl_unittest.cc",
     "network_device_handler_unittest.cc",
+    "network_event_log_unittest.cc",
+    "network_metadata_store_unittest.cc",
     "network_sms_handler_unittest.cc",
     "network_state_handler_unittest.cc",
     "network_state_unittest.cc",
@@ -268,9 +276,7 @@ source_set("unit_tests") {
 }
 
 fuzzer_test("variable_expander_fuzzer") {
-  sources = [
-    "onc/variable_expander_fuzzer.cc",
-  ]
+  sources = [ "onc/variable_expander_fuzzer.cc" ]
   seed_corpus = "//chromeos/test/data/variable_expander/fuzzer_corpus"
   dict = "//chromeos/test/data/variable_expander/fuzzer.dict"
   deps = [

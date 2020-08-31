@@ -18,6 +18,7 @@
 #include <limits>
 #include <string>
 
+#include "base/debug/alias.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
@@ -28,6 +29,7 @@
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -37,6 +39,7 @@
 #include "base/threading/scoped_thread_priority.h"
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_types.h"
 #include "base/win/windows_version.h"
 
 namespace base {
@@ -94,16 +97,16 @@ void RecordPostOperationState(const FilePath& path,
     }
   }
 
-  std::string histogram_name = "Windows.PostOperationState.";
-  operation.AppendToString(&histogram_name);
+  std::string histogram_name =
+      base::StrCat({"Windows.PostOperationState.", operation});
   UmaHistogramEnumeration(histogram_name, metric, PostOperationState::kCount);
 }
 
 // Records the sample |error| in a histogram named
 // "Windows.FilesystemError.|operation|".
 void RecordFilesystemError(StringPiece operation, DWORD error) {
-  std::string histogram_name = "Windows.FilesystemError.";
-  operation.AppendToString(&histogram_name);
+  std::string histogram_name =
+      base::StrCat({"Windows.FilesystemError.", operation});
   UmaHistogramSparse(histogram_name, error);
 }
 
@@ -185,7 +188,7 @@ bool DoCopyFile(const FilePath& from_path,
 
   // Mitigate the issues caused by loading DLLs on a background thread
   // (http://crbug/973868).
-  ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
 
   // Unlike the posix implementation that copies the file manually and discards
   // the ACL bits, CopyFile() copies the complete SECURITY_DESCRIPTOR and access
@@ -401,27 +404,39 @@ bool ReplaceFile(const FilePath& from_path,
                  const FilePath& to_path,
                  File::Error* error) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-  // Try a simple move first.  It will only succeed when |to_path| doesn't
-  // already exist.
-  if (::MoveFile(from_path.value().c_str(), to_path.value().c_str()))
-    return true;
-  File::Error move_error = File::OSErrorToFileError(GetLastError());
 
-  // Try the full-blown replace if the move fails, as ReplaceFile will only
-  // succeed when |to_path| does exist. When writing to a network share, we may
-  // not be able to change the ACLs. Ignore ACL errors then
-  // (REPLACEFILE_IGNORE_MERGE_ERRORS).
+  // Alias paths for investigation of shutdown hangs. crbug.com/1054164
+  FilePath::CharType from_path_str[MAX_PATH];
+  base::wcslcpy(from_path_str, from_path.value().c_str(),
+                base::size(from_path_str));
+  base::debug::Alias(from_path_str);
+  FilePath::CharType to_path_str[MAX_PATH];
+  base::wcslcpy(to_path_str, to_path.value().c_str(), base::size(to_path_str));
+  base::debug::Alias(to_path_str);
+
+  // Assume that |to_path| already exists and try the normal replace. This will
+  // fail with ERROR_FILE_NOT_FOUND if |to_path| does not exist. When writing to
+  // a network share, we may not be able to change the ACLs. Ignore ACL errors
+  // then (REPLACEFILE_IGNORE_MERGE_ERRORS).
   if (::ReplaceFile(to_path.value().c_str(), from_path.value().c_str(), NULL,
                     REPLACEFILE_IGNORE_MERGE_ERRORS, NULL, NULL)) {
     return true;
   }
+
+  File::Error replace_error = File::OSErrorToFileError(GetLastError());
+
+  // Try a simple move next. It will only succeed when |to_path| doesn't already
+  // exist.
+  if (::MoveFile(from_path.value().c_str(), to_path.value().c_str()))
+    return true;
+
   // In the case of FILE_ERROR_NOT_FOUND from ReplaceFile, it is likely that
   // |to_path| does not exist. In this case, the more relevant error comes
   // from the call to MoveFile.
   if (error) {
-    File::Error replace_error = File::OSErrorToFileError(GetLastError());
-    *error = replace_error == File::FILE_ERROR_NOT_FOUND ? move_error
-                                                         : replace_error;
+    *error = replace_error == File::FILE_ERROR_NOT_FOUND
+                 ? File::GetLastFileError()
+                 : replace_error;
   }
   return false;
 }
@@ -493,39 +508,15 @@ FilePath GetHomeDir() {
   return FilePath(FILE_PATH_LITERAL("C:\\"));
 }
 
-bool CreateTemporaryFile(FilePath* path) {
+File CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
-  FilePath temp_file;
-
-  if (!GetTempDir(path))
-    return false;
-
-  if (CreateTemporaryFileInDir(*path, &temp_file)) {
-    *path = temp_file;
-    return true;
-  }
-
-  return false;
-}
-
-// On POSIX we have semantics to create and open a temporary file
-// atomically.
-// TODO(jrg): is there equivalent call to use on Windows instead of
-// going 2-step?
-FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
-  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-  if (!CreateTemporaryFileInDir(dir, path)) {
-    return NULL;
-  }
-  // Open file in binary mode, to avoid problems with fwrite. On Windows
-  // it replaces \n's with \r\n's, which may surprise you.
-  // Reference: http://msdn.microsoft.com/en-us/library/h9t88zwz(VS.71).aspx
-  return OpenFile(*path, "wb+");
-}
-
-bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
-  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  // Open the file with exclusive r/w/d access, and allow the caller to decide
+  // to mark it for deletion upon close after the fact.
+  constexpr uint32_t kFlags = File::FLAG_CREATE | File::FLAG_READ |
+                              File::FLAG_WRITE | File::FLAG_EXCLUSIVE_READ |
+                              File::FLAG_EXCLUSIVE_WRITE |
+                              File::FLAG_CAN_DELETE_ON_CLOSE;
 
   // Use GUID instead of ::GetTempFileName() to generate unique file names.
   // "Due to the algorithm used to generate file names, GetTempFileName can
@@ -535,39 +526,48 @@ bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
   // https://msdn.microsoft.com/library/windows/desktop/aa364991.aspx
 
   FilePath temp_name;
-  bool create_file_success = false;
+  File file;
 
   // Although it is nearly impossible to get a duplicate name with GUID, we
   // still use a loop here in case it happens.
   for (int i = 0; i < 100; ++i) {
     temp_name =
         dir.Append(UTF8ToWide(GenerateGUID()) + FILE_PATH_LITERAL(".tmp"));
-    File file(temp_name,
-              File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE);
-    if (file.IsValid()) {
-      file.Close();
-      create_file_success = true;
+    file.Initialize(temp_name, kFlags);
+    if (file.IsValid())
       break;
-    }
   }
 
-  if (!create_file_success) {
+  if (!file.IsValid()) {
     DPLOG(WARNING) << "Failed to get temporary file name in " << dir.value();
-    return false;
+    return file;
   }
 
   wchar_t long_temp_name[MAX_PATH + 1];
-  DWORD long_name_len =
+  const DWORD long_name_len =
       GetLongPathName(temp_name.value().c_str(), long_temp_name, MAX_PATH);
-  if (long_name_len > MAX_PATH || long_name_len == 0) {
+  if (long_name_len != 0 && long_name_len <= MAX_PATH) {
+    *temp_file =
+        FilePath(FilePath::StringPieceType(long_temp_name, long_name_len));
+  } else {
     // GetLongPathName() failed, but we still have a temporary file.
     *temp_file = std::move(temp_name);
-    return true;
   }
 
-  FilePath::StringPieceType long_temp_name_str(long_temp_name, long_name_len);
-  *temp_file = FilePath(long_temp_name_str);
-  return true;
+  return file;
+}
+
+bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
+  return CreateAndOpenTemporaryFileInDir(dir, temp_file).IsValid();
+}
+
+ScopedFILE CreateAndOpenTemporaryStreamInDir(const FilePath& dir,
+                                             FilePath* path) {
+  // Open file in binary mode, to avoid problems with fwrite. On Windows
+  // it replaces \n's with \r\n's, which may surprise you.
+  // Reference: http://msdn.microsoft.com/en-us/library/h9t88zwz(VS.71).aspx
+  return ScopedFILE(
+      FileToFILE(CreateAndOpenTemporaryFileInDir(dir, path), "wb+"));
 }
 
 bool CreateTemporaryDirInDir(const FilePath& base_dir,
@@ -617,8 +617,6 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
   const DWORD fileattr = ::GetFileAttributes(full_path_str);
   if (fileattr != INVALID_FILE_ATTRIBUTES) {
     if ((fileattr & FILE_ATTRIBUTE_DIRECTORY) != 0) {
-      DVLOG(1) << "CreateDirectory(" << full_path_str << "), "
-               << "directory already exists.";
       return true;
     }
     DLOG(WARNING) << "CreateDirectory(" << full_path_str << "), "
@@ -754,6 +752,12 @@ FilePath MakeLongFilePath(const FilePath& input) {
   return FilePath(path_long_str);
 }
 
+bool CreateWinHardLink(const FilePath& to_file, const FilePath& from_file) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  return ::CreateHardLink(to_file.value().c_str(), from_file.value().c_str(),
+                          nullptr);
+}
+
 // TODO(rkc): Work out if we want to handle NTFS junctions here or not, handle
 // them if we do decide to.
 bool IsLink(const FilePath& file_path) {
@@ -796,6 +800,7 @@ FILE* OpenFile(const FilePath& filename, const char* mode) {
 }
 
 FILE* FileToFILE(File file, const char* mode) {
+  DCHECK(!file.async());
   if (!file.IsValid())
     return NULL;
   int fd =
@@ -807,6 +812,29 @@ FILE* FileToFILE(File file, const char* mode) {
   if (!stream)
     _close(fd);
   return stream;
+}
+
+File FILEToFile(FILE* file_stream) {
+  if (!file_stream)
+    return File();
+
+  int fd = _fileno(file_stream);
+  DCHECK_GE(fd, 0);
+  intptr_t file_handle = _get_osfhandle(fd);
+  DCHECK_NE(file_handle, reinterpret_cast<intptr_t>(INVALID_HANDLE_VALUE));
+
+  HANDLE other_handle = nullptr;
+  if (!::DuplicateHandle(
+          /*hSourceProcessHandle=*/GetCurrentProcess(),
+          reinterpret_cast<HANDLE>(file_handle),
+          /*hTargetProcessHandle=*/GetCurrentProcess(), &other_handle,
+          /*dwDesiredAccess=*/0,
+          /*bInheritHandle=*/FALSE,
+          /*dwOptions=*/DUPLICATE_SAME_ACCESS)) {
+    return File(File::GetLastFileError());
+  }
+
+  return File(ScopedPlatformFile(other_handle));
 }
 
 int ReadFile(const FilePath& filename, char* data, int max_size) {

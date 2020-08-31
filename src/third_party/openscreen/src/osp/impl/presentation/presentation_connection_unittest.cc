@@ -58,12 +58,11 @@ class MockConnectRequest final
 class ConnectionTest : public ::testing::Test {
  public:
   ConnectionTest() {
-    fake_clock_ = std::make_unique<platform::FakeClock>(
-        platform::Clock::time_point(std::chrono::milliseconds(1298424)));
-    task_runner_ =
-        std::make_unique<platform::FakeTaskRunner>(fake_clock_.get());
-    quic_bridge_ = std::make_unique<FakeQuicBridge>(task_runner_.get(),
-                                                    platform::FakeClock::now);
+    fake_clock_ = std::make_unique<FakeClock>(
+        Clock::time_point(std::chrono::milliseconds(1298424)));
+    task_runner_ = std::make_unique<FakeTaskRunner>(fake_clock_.get());
+    quic_bridge_ =
+        std::make_unique<FakeQuicBridge>(task_runner_.get(), FakeClock::now);
     controller_connection_manager_ = std::make_unique<ConnectionManager>(
         quic_bridge_->controller_demuxer.get());
     receiver_connection_manager_ = std::make_unique<ConnectionManager>(
@@ -89,8 +88,8 @@ class ConnectionTest : public ::testing::Test {
     return response;
   }
 
-  std::unique_ptr<platform::FakeClock> fake_clock_;
-  std::unique_ptr<platform::FakeTaskRunner> task_runner_;
+  std::unique_ptr<FakeClock> fake_clock_;
+  std::unique_ptr<FakeTaskRunner> task_runner_;
   std::unique_ptr<FakeQuicBridge> quic_bridge_;
   std::unique_ptr<ConnectionManager> controller_connection_manager_;
   std::unique_ptr<ConnectionManager> receiver_connection_manager_;

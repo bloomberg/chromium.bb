@@ -161,6 +161,9 @@ src:*device/udev_linux/udev1_loader.cc
 # Calls to auto-generated stubs by ui/gl/generate_bindings.py
 src:*ui/gl/gl_bindings_autogen_*
 
+# Calls to vulkan function pointers from shared library.
+src:*third_party/vulkan_memory_allocator/src/vk_mem_alloc.h
+
 src:*components/os_crypt/*
 
 src:*content/browser/accessibility/browser_accessibility_auralinux.cc
@@ -173,8 +176,8 @@ src:*third_party/webrtc/modules/desktop_capture/linux/x_server_pixel_buffer.cc
 src:*media/cdm/*
 src:*third_party/swiftshader/*
 src:*base/native_library_unittest.cc
-src:*chrome/browser/ui/libgtkui/app_indicator_icon.cc
-src:*chrome/browser/ui/libgtkui/unity_service.cc
+src:*ui/gtk/app_indicator_icon.cc
+src:*ui/gtk/unity_service.cc
 src:*components/cronet/native/*
 src:*third_party/breakpad/breakpad/src/client/linux/handler/exception_handler_unittest.cc
 
@@ -191,6 +194,10 @@ src:*third_party/breakpad/breakpad/src/common/linux/http_upload.cc
 fun:*XImageDeleter*
 
 src:*mojo/public/c/system/thunks.cc
+
+# Call to vulkan function pointers from shared library.
+src:*/third_party/skia/src/gpu/vk/*
+src:*/third_party/skia/third_party/vulkanmemoryallocator/*
 
 # The follow entries are speculatively disabled. They're included in the
 # chromium build and include calls to dynamically resolved symbols; however,

@@ -35,13 +35,13 @@ FuchsiaRendererFactory::~FuchsiaRendererFactory() = default;
 std::vector<std::unique_ptr<media::VideoDecoder>>
 FuchsiaRendererFactory::CreateVideoDecoders(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    const media::RequestOverlayInfoCB& request_overlay_info_cb,
+    media::RequestOverlayInfoCB request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space,
     media::GpuVideoAcceleratorFactories* gpu_factories) {
   std::vector<std::unique_ptr<media::VideoDecoder>> video_decoders;
-  decoder_factory_->CreateVideoDecoders(media_task_runner, gpu_factories,
-                                        media_log_, request_overlay_info_cb,
-                                        target_color_space, &video_decoders);
+  decoder_factory_->CreateVideoDecoders(
+      media_task_runner, gpu_factories, media_log_,
+      std::move(request_overlay_info_cb), target_color_space, &video_decoders);
   return video_decoders;
 }
 
@@ -50,15 +50,15 @@ std::unique_ptr<media::Renderer> FuchsiaRendererFactory::CreateRenderer(
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     media::AudioRendererSink* audio_renderer_sink,
     media::VideoRendererSink* video_renderer_sink,
-    const media::RequestOverlayInfoCB& request_overlay_info_cb,
+    media::RequestOverlayInfoCB request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space) {
-  mojo::PendingRemote<media::mojom::FuchsiaAudioConsumerProvider>
-      audio_consumer_provider;
+  mojo::PendingRemote<media::mojom::FuchsiaMediaResourceProvider>
+      media_resource_provider;
   interface_broker_->GetInterface(
-      audio_consumer_provider.InitWithNewPipeAndPassReceiver());
+      media_resource_provider.InitWithNewPipeAndPassReceiver());
 
   auto audio_renderer = std::make_unique<media::FuchsiaAudioRenderer>(
-      media_log_, std::move(audio_consumer_provider));
+      media_log_, std::move(media_resource_provider));
 
   media::GpuVideoAcceleratorFactories* gpu_factories = nullptr;
   if (get_gpu_factories_cb_)
@@ -83,8 +83,8 @@ std::unique_ptr<media::Renderer> FuchsiaRendererFactory::CreateRenderer(
           // owned by WMPI and gets called after WMPI destructor finishes.
           base::BindRepeating(&FuchsiaRendererFactory::CreateVideoDecoders,
                               base::Unretained(this), media_task_runner,
-                              request_overlay_info_cb, target_color_space,
-                              gpu_factories),
+                              std::move(request_overlay_info_cb),
+                              target_color_space, gpu_factories),
           /*drop_frames=*/true, media_log_, std::move(gmb_pool)));
 
   return std::make_unique<media::RendererImpl>(

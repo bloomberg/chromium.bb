@@ -33,6 +33,7 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -58,6 +59,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "dbus/object_path.h"
 #include "extensions/browser/api/networking_private/networking_private_chromeos.h"
@@ -475,6 +477,8 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
     PrefProxyConfigTrackerImpl::RegisterPrefs(local_state_.registry());
     ::onc::RegisterProfilePrefs(user_prefs_.registry());
     ::onc::RegisterPrefs(local_state_.registry());
+    chromeos::NetworkMetadataStore::RegisterPrefs(user_prefs_.registry());
+    chromeos::NetworkMetadataStore::RegisterPrefs(local_state_.registry());
 
     chromeos::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
                                                             &local_state_);
@@ -608,8 +612,6 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
           ->network_state_handler()
           ->FirstNetworkByType(chromeos::NetworkTypePattern::Cellular());
   ASSERT_TRUE(cellular);
-  std::string cellular_guid = std::string(kCellular1ServicePath) + "_guid";
-  EXPECT_EQ(cellular_guid, cellular->guid());
   // Remove the Cellular service. This should create a default Cellular network.
   service_test_->RemoveService(kCellular1ServicePath);
   content::RunAllPendingInMessageLoop();
@@ -617,7 +619,6 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                  ->network_state_handler()
                  ->FirstNetworkByType(chromeos::NetworkTypePattern::Cellular());
   ASSERT_TRUE(cellular);
-  EXPECT_EQ(cellular_guid, cellular->guid());
   EXPECT_TRUE(RunNetworkingSubtest("getPropertiesCellularDefault")) << message_;
 }
 

@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_callback.h"
 #include "third_party/blink/renderer/core/dom/idle_deadline.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -25,7 +25,7 @@ class ThreadScheduler;
 
 class CORE_EXPORT ScriptedIdleTaskController
     : public GarbageCollected<ScriptedIdleTaskController>,
-      public ContextLifecycleStateObserver,
+      public ExecutionContextLifecycleStateObserver,
       public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptedIdleTaskController);
 
@@ -82,8 +82,8 @@ class CORE_EXPORT ScriptedIdleTaskController
   int RegisterCallback(IdleTask*, const IdleRequestOptions*);
   void CancelCallback(CallbackId);
 
-  // ContextLifecycleStateObserver interface.
-  void ContextDestroyed(ExecutionContext*) override;
+  // ExecutionContextLifecycleStateObserver interface.
+  void ContextDestroyed() override;
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
 
   void CallbackFired(CallbackId,
@@ -91,25 +91,6 @@ class CORE_EXPORT ScriptedIdleTaskController
                      IdleDeadline::CallbackType);
 
  private:
-  class QueuedIdleTask : public GarbageCollected<QueuedIdleTask> {
-   public:
-    QueuedIdleTask(IdleTask*,
-                   base::TimeTicks queue_timestamp,
-                   uint32_t timeout_millis);
-    virtual ~QueuedIdleTask() = default;
-
-    virtual void Trace(Visitor*);
-
-    IdleTask* task() { return task_; }
-    base::TimeTicks queue_timestamp() const { return queue_timestamp_; }
-    uint32_t timeout_millis() const { return timeout_millis_; }
-
-   private:
-    Member<IdleTask> task_;
-    base::TimeTicks queue_timestamp_;
-    uint32_t timeout_millis_;
-  };
-
   friend class internal::IdleRequestCallbackWrapper;
 
   void ContextPaused();
@@ -129,12 +110,8 @@ class CORE_EXPORT ScriptedIdleTaskController
                    base::TimeTicks deadline,
                    IdleDeadline::CallbackType);
 
-  void RecordIdleTaskMetrics(QueuedIdleTask*,
-                             base::TimeTicks run_timestamp,
-                             IdleDeadline::CallbackType);
-
   ThreadScheduler* scheduler_;  // Not owned.
-  HeapHashMap<CallbackId, Member<QueuedIdleTask>> idle_tasks_;
+  HeapHashMap<CallbackId, Member<IdleTask>> idle_tasks_;
   Vector<CallbackId> pending_timeouts_;
   CallbackId next_callback_id_;
   bool paused_;

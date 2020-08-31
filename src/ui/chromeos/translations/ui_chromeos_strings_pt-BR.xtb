@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">Fazer upload</translation>
 <translation id="1249250836236328755">Gênero</translation>
 <translation id="1278813325885878377">Teclado QWERTY húngaro</translation>
+<translation id="1293556467332435079">Arquivos</translation>
 <translation id="1297922636971898492">O Google Drive não está disponível no momento. O upload será reiniciado automaticamente assim que o Google Drive estiver de volta.</translation>
 <translation id="1307931752636661898">Não é possível ver os arquivos do Linux</translation>
 <translation id="1310751437842832374">Transliteração (mausam → ନମସ୍ତେ)</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">Salvo</translation>
 <translation id="1864756863218646478">O arquivo não foi encontrado.</translation>
 <translation id="1921986354447415460">Teclado padrão F em turco</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> formatado</translation>
 <translation id="1931134289871235022">Eslovaco</translation>
 <translation id="1933345018156373194">Falha ao mover, erro inesperado: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finlandês</translation>
@@ -88,6 +90,7 @@
 <translation id="1947424002851288782">Teclado alemão</translation>
 <translation id="1972984168337863910">Expandir painéis de feedback de arquivos</translation>
 <translation id="1984603991036629094">Teclado fonético armênio</translation>
+<translation id="1995337122023280937">Acessar local do arquivo</translation>
 <translation id="2001796770603320721">Gerenciar no Drive</translation>
 <translation id="2009067268969781306">A formatação de uma unidade excluirá todos os dados armazenados nela. Esta ação não pode ser desfeita.</translation>
 <translation id="2028997212275086731">Arquivo RAR</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">Não foi possível acessar o Google Drive. <ph name="BEGIN_LINK" />Saia<ph name="END_LINK" /> e faça login novamente.</translation>
 <translation id="2649120831653069427">Peixe arco-íris</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Localização do arquivo</translation>
 <translation id="2672394958563893062">Ocorreu um erro. Clique para voltar ao início.</translation>
 <translation id="2676946222714718093">Reproduzindo em</translation>
 <translation id="2735698359135166290">Teclado romeno padrão</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">Teclado alemão NEO 2</translation>
 <translation id="2943400156390503548">Apresentações</translation>
 <translation id="2943503720238418293">Use um nome mais curto</translation>
+<translation id="2949781154072577687">Formatando <ph name="DRIVE_NAME" />…</translation>
 <translation id="2951236788251446349">Água-viva</translation>
 <translation id="2963783323012015985">Teclado turco</translation>
 <translation id="2966459079597787514">Teclado sueco</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> erros.</translation>
 <translation id="3519867315646775981">Transliteração (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Português</translation>
+<translation id="3524311639100184459">Atenção: esses arquivos são temporários e podem ser excluídos automaticamente para liberar espaço em disco.  <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3549797760399244642">Ir para drive.google.com...</translation>
 <translation id="357479282490346887">Lituano</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">Player de áudio</translation>
 <translation id="4002066346123236978">Título</translation>
+<translation id="4065397611279318371">Para abrir arquivos com os apps <ph name="APP_NAME" />, mova-os para a pasta "<ph name="SHARED_DIRECTORY_LABEL" />".</translation>
 <translation id="4070370845051020638">Método de entrada cantonês</translation>
 <translation id="4072248638558688893">Teclado tâmil (fonético)</translation>
 <translation id="4124935795427217608">Unicórnio</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">Falha na operação de cópia. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">Melão</translation>
 <translation id="4372884569765913867">1x1</translation>
+<translation id="4394214039309501350">Link externo</translation>
 <translation id="4425149324548788773">Meu Drive</translation>
 <translation id="4465830120256509958">Teclado brasileiro</translation>
 <translation id="4470564870223067757">Conjunto de letras coreanas (Hangul 2)</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">Correção automática</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4886021172213954916">Teclado tâmil (máquina de escrever)</translation>
+<translation id="4892969127351273348">Não é possível abrir com <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Pronto para fazer backup de <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Corrigida</translation>
 <translation id="4935975195727477204">Flor Gazânia</translation>
@@ -354,7 +363,7 @@
        A remoção do dispositivo enquanto ele está em uso pode causar perda de dados. Espere até que a operação esteja terminada e remova o dispositivo usando o aplicativo Arquivos.</translation>
 <translation id="5163869187418756376">Falha no compartilhamento. Verifique sua conexão e tente novamente mais tarde.</translation>
 <translation id="516592729076796170">Programmer Dvorak americano</translation>
-<translation id="5167131699331641907">Teclado da Países Baixos</translation>
+<translation id="5167131699331641907">Teclado dos Países Baixos</translation>
 <translation id="5170477580121653719">Espaço restante no Google Drive: <ph name="SPACE_AVAILABLE" />.</translation>
 <translation id="5177526793333269655">Visualização em miniatura</translation>
 <translation id="5194713942430106590">Clique para classificar a coluna em ordem crescente.</translation>
@@ -496,6 +505,7 @@
 <translation id="6806699711453372963">Gerenciar compartilhamento do Linux</translation>
 <translation id="6808193438228982088">Raposa</translation>
 <translation id="6820687829547641339">Arquivo tar comprimido Gzip</translation>
+<translation id="6823166707458800069">Todos os arquivos salvos nessa pasta são salvos em backup on-line automaticamente.</translation>
 <translation id="6825883775269213504">Russo</translation>
 <translation id="6827236167376090743">Este vídeo continuará sendo reproduzido indefinidamente.</translation>
 <translation id="6847101934483209767">Removido da seleção: <ph name="ENTRY_NAME" />.</translation>
@@ -505,6 +515,7 @@
 <translation id="6878261347041253038">Teclado devanágari (fonético)</translation>
 <translation id="6885780034956018177">Caracol</translation>
 <translation id="6896758677409633944">Copiar</translation>
+<translation id="6898028766943174120">Mais subpastas…</translation>
 <translation id="691516599546977041">Não é possível salvar em <ph name="FOLDER_NAME" />. As imagens editadas serão salvas na pasta Downloads.</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">Workman dos EUA</translation>
@@ -517,6 +528,7 @@
 <translation id="696203921837389374">Ativar a sincronização de dados móveis</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6970230597523682626">Búlgaro</translation>
+<translation id="6973630695168034713">Pastas</translation>
 <translation id="6978611942794658017">Este arquivo foi projetado para um computador que utilize o software Windows. Ele não é compatível com seu dispositivo, que executa o Chrome OS. Procure na Chrome Web Store por um app substituto adequado.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6990081529015358884">Não há espaço suficiente</translation>
@@ -550,6 +562,7 @@
 <translation id="7417705661718309329">Mapa do Google</translation>
 <translation id="7419631653042041064">Teclado catalão</translation>
 <translation id="7434823369735508263">Teclado Dvorak do Reino Unido</translation>
+<translation id="7447678886297481665">Os arquivos dessa pasta são somente leitura. Algumas atividades estão indisponíveis.</translation>
 <translation id="7460898608667578234">Ucraniano</translation>
 <translation id="7474889694310679759">Teclado canadense (inglês)</translation>
 <translation id="7489215562877293245">Total de arquivos encontrados: <ph name="FILE_COUNT" />
@@ -568,6 +581,7 @@
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7654209398114106148">Movendo <ph name="NUMBER_OF_ITEMS" /> itens…</translation>
 <translation id="7658239707568436148">Cancelar</translation>
+<translation id="7695430100978772476">Não foi possível formatar <ph name="DRIVE_NAME" />.</translation>
 <translation id="770015031906360009">Grego</translation>
 <translation id="7706319470528945664">Teclado português</translation>
 <translation id="7711920809702896782">Informações sobre a imagem</translation>

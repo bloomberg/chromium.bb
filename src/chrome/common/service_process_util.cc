@@ -11,11 +11,12 @@
 #include <utility>
 
 #include "base/base_switches.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/hash/sha1.h"
-#include "base/logging.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/singleton.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -28,6 +29,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "components/crash/core/app/crash_switches.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_paths.h"
@@ -112,6 +115,19 @@ std::unique_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
 #if defined(OS_WIN)
   command_line->AppendArg(switches::kPrefetchArgumentOther);
 #endif  // defined(OS_WIN)
+
+#if defined(OS_LINUX)
+  if (crash_reporter::IsCrashpadEnabled()) {
+    command_line->AppendSwitch(crash_reporter::kEnableCrashpad);
+
+    pid_t pid;
+    if (crash_reporter::GetHandlerSocket(nullptr, &pid)) {
+      command_line->AppendSwitchASCII(
+          crash_reporter::switches::kCrashpadHandlerPid,
+          base::NumberToString(pid));
+    }
+  }
+#endif  // defined(OS_LINUX)
 
   static const char* const kSwitchesToCopy[] = {
     network::switches::kIgnoreUrlFetcherCertRequests,

@@ -2,7 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Sources.GoToLineQuickOpen = class extends QuickOpen.FilteredListWidget.Provider {
+import * as Common from '../common/common.js';
+import * as QuickOpen from '../quick_open/quick_open.js';
+import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
+
+import {SourcesView} from './SourcesView.js';
+import {UISourceCodeFrame} from './UISourceCodeFrame.js';  // eslint-disable-line no-unused-vars
+
+export class GoToLineQuickOpen extends QuickOpen.FilteredListWidget.Provider {
   /**
    * @override
    * @param {?number} itemIndex
@@ -27,7 +34,7 @@ Sources.GoToLineQuickOpen = class extends QuickOpen.FilteredListWidget.Provider 
    */
   notFoundText(query) {
     if (!this._currentUISourceCode()) {
-      return Common.UIString('No file selected.');
+      return Common.UIString.UIString('No file selected.');
     }
     const position = this._parsePosition(query);
     if (!position) {
@@ -63,10 +70,10 @@ Sources.GoToLineQuickOpen = class extends QuickOpen.FilteredListWidget.Provider 
   }
 
   /**
-   * @return {?Workspace.UISourceCode}
+   * @return {?Workspace.UISourceCode.UISourceCode}
    */
   _currentUISourceCode() {
-    const sourcesView = UI.context.flavor(Sources.SourcesView);
+    const sourcesView = self.UI.context.flavor(SourcesView);
     if (!sourcesView) {
       return null;
     }
@@ -74,13 +81,13 @@ Sources.GoToLineQuickOpen = class extends QuickOpen.FilteredListWidget.Provider 
   }
 
   /**
-   * @return {?Sources.UISourceCodeFrame}
+   * @return {?UISourceCodeFrame}
    */
   _currentSourceFrame() {
-    const sourcesView = UI.context.flavor(Sources.SourcesView);
+    const sourcesView = self.UI.context.flavor(SourcesView);
     if (!sourcesView) {
       return null;
     }
     return sourcesView.currentSourceFrame();
   }
-};
+}

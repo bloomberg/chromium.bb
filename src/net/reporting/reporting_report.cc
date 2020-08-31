@@ -24,27 +24,35 @@ void RecordReportOutcome(ReportingReport::Outcome outcome) {
 
 }  // namespace
 
-ReportingReport::ReportingReport(const GURL& url,
-                                 const std::string& user_agent,
-                                 const std::string& group,
-                                 const std::string& type,
-                                 std::unique_ptr<const base::Value> body,
-                                 int depth,
-                                 base::TimeTicks queued,
-                                 int attempts)
-    : url(url),
+ReportingReport::ReportingReport(
+    const NetworkIsolationKey& network_isolation_key,
+    const GURL& url,
+    const std::string& user_agent,
+    const std::string& group,
+    const std::string& type,
+    std::unique_ptr<const base::Value> body,
+    int depth,
+    base::TimeTicks queued,
+    int attempts)
+    : network_isolation_key(network_isolation_key),
+      url(url),
       user_agent(user_agent),
       group(group),
       type(type),
       body(std::move(body)),
       depth(depth),
       queued(queued),
-      attempts(attempts),
-      outcome(Outcome::UNKNOWN),
-      recorded_outcome(false) {}
+      attempts(attempts) {}
 
 ReportingReport::~ReportingReport() {
-  DCHECK(recorded_outcome);
+  if (outcome == Outcome::DELIVERED) {
+    // |delivered| should always have a value here, since the ReportingCache
+    // records the delivery time for any successful delivery.
+    UMA_HISTOGRAM_LONG_TIMES_100("Net.Reporting.ReportDeliveredLatency",
+                                 delivered.value() - queued);
+    UMA_HISTOGRAM_COUNTS_100("Net.Reporting.ReportDeliveredAttempts", attempts);
+  }
+  RecordReportOutcome(outcome);
 }
 
 // static
@@ -57,18 +65,8 @@ void ReportingReport::RecordReportDiscardedForNoReportingService() {
   RecordReportOutcome(Outcome::DISCARDED_NO_REPORTING_SERVICE);
 }
 
-void ReportingReport::RecordOutcome(base::TimeTicks now) {
-  DCHECK(!recorded_outcome);
-
-  RecordReportOutcome(outcome);
-
-  if (outcome == Outcome::DELIVERED) {
-    UMA_HISTOGRAM_LONG_TIMES_100("Net.Reporting.ReportDeliveredLatency",
-                                 now - queued);
-    UMA_HISTOGRAM_COUNTS_100("Net.Reporting.ReportDeliveredAttempts", attempts);
-  }
-
-  recorded_outcome = true;
+bool ReportingReport::IsUploadPending() const {
+  return status == Status::PENDING || status == Status::DOOMED;
 }
 
 }  // namespace net

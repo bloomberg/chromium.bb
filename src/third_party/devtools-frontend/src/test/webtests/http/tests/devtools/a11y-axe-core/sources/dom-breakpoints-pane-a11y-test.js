@@ -19,12 +19,11 @@
 
   TestRunner.addResult('Setting DOM breakpoints.');
   const rootElement = await ElementsTestRunner.nodeWithIdPromise('rootElement');
-  TestRunner.domDebuggerModel.setDOMBreakpoint(
-      rootElement, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+  TestRunner.domDebuggerModel.setDOMBreakpoint(rootElement, Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified);
 
   const hostElement = await ElementsTestRunner.nodeWithIdPromise('hostElement');
-  const breakpoint = TestRunner.domDebuggerModel.setDOMBreakpoint(
-      hostElement, SDK.DOMDebuggerModel.DOMBreakpoint.Type.NodeRemoved);
+  const breakpoint =
+      TestRunner.domDebuggerModel.setDOMBreakpoint(hostElement, Protocol.DOMDebugger.DOMBreakpointType.NodeRemoved);
   TestRunner.domDebuggerModel.toggleDOMBreakpoint(breakpoint, false);
 
   const domBreakpointsPane =
@@ -36,7 +35,6 @@
   TestRunner.addResult(
       'Running the axe-core linter on the DOM breakpoints pane.');
 
-  //TODO(crbug.com/1004940): expected.txt file has 'label' exceptions
   await AxeCoreTestRunner.runValidation(domBreakpointContainer.element);
   TestRunner.completeTest();
 })();

@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.feed.library.piet;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.support.annotation.VisibleForTesting;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
@@ -106,7 +108,7 @@ public class MediaQueryHelper {
     }
 
     @Override
-    public boolean equals(/*@Nullable*/ Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) {
             return true;
         }

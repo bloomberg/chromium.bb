@@ -4,16 +4,15 @@
 
 #include "chrome/browser/chromeos/policy/app_install_event_log_util.h"
 
+#include <set>
+
 #include "base/hash/md5.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chromeos/system/statistics_provider.h"
-#include "components/account_id/account_id.h"
-#include "components/user_manager/user.h"
 
 namespace em = enterprise_management;
 
@@ -22,6 +21,7 @@ namespace policy {
 namespace {
 // Key names used when building the dictionary to pass to the Chrome Reporting
 // API.
+constexpr char kAndroidId[] = "androidId";
 constexpr char kAppPackage[] = "appPackage";
 constexpr char kEventType[] = "eventType";
 constexpr char kStatefulTotal[] = "statefulTotal";
@@ -30,7 +30,6 @@ constexpr char kCloudDpsResponse[] = "clouddpsResponse";
 constexpr char kOnline[] = "online";
 constexpr char kSessionStateChangeType[] = "sessionStateChangeType";
 constexpr char kSerialNumber[] = "serialNumber";
-constexpr char kGaiaId[] = "gaiaId";
 constexpr char kAndroidAppInstallEvent[] = "androidAppInstallEvent";
 constexpr char kTime[] = "time";
 constexpr char kEventId[] = "eventId";
@@ -65,18 +64,6 @@ bool GetHash(const base::Value& event,
 
 }  // namespace
 
-bool GetGaiaId(Profile* profile, int* gaia_id) {
-  if (!profile)
-    return false;
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  if (!user)
-    return false;
-  if (!base::StringToInt(user->GetAccountId().GetGaiaId(), gaia_id))
-    return false;
-  return true;
-}
-
 std::string GetSerialNumber() {
   return chromeos::system::StatisticsProvider::GetInstance()
       ->GetEnterpriseMachineID();
@@ -84,10 +71,11 @@ std::string GetSerialNumber() {
 
 base::Value ConvertProtoToValue(
     const em::AppInstallReportRequest* app_install_report_request,
-    Profile* profile) {
+    const base::Value& context) {
   DCHECK(app_install_report_request);
 
   base::Value event_list(base::Value::Type::LIST);
+  std::set<std::string> seen_ids;
 
   for (const em::AppInstallReport& app_install_report :
        app_install_report_request->app_install_reports()) {
@@ -96,7 +84,16 @@ base::Value ConvertProtoToValue(
       base::Value wrapper;
       wrapper = ConvertEventToValue(
           app_install_report.has_package() ? app_install_report.package() : "",
-          app_install_report_log_event, profile);
+          app_install_report_log_event, context);
+      auto* id = wrapper.FindStringKey(kEventId);
+      if (id) {
+        if (seen_ids.find(*id) != seen_ids.end()) {
+          LOG(WARNING) << "Skipping duplicate event (" << *id
+                       << "): " << wrapper;
+          continue;
+        }
+        seen_ids.insert(*id);
+      }
       event_list.Append(std::move(wrapper));
     }
   }
@@ -107,7 +104,7 @@ base::Value ConvertProtoToValue(
 base::Value ConvertEventToValue(
     const std::string& package,
     const em::AppInstallReportLogEvent& app_install_report_log_event,
-    Profile* profile) {
+    const base::Value& context) {
   base::Value event(base::Value::Type::DICTIONARY);
 
   if (!package.empty())
@@ -118,13 +115,17 @@ base::Value ConvertEventToValue(
   }
 
   if (app_install_report_log_event.has_stateful_total()) {
-    event.SetIntKey(kStatefulTotal,
-                    app_install_report_log_event.stateful_total());
+    // 64-bit ints aren't supported by JSON - must be stored as strings
+    std::ostringstream str;
+    str << app_install_report_log_event.stateful_total();
+    event.SetStringKey(kStatefulTotal, str.str());
   }
 
   if (app_install_report_log_event.has_stateful_free()) {
-    event.SetIntKey(kStatefulFree,
-                    app_install_report_log_event.stateful_free());
+    // 64-bit ints aren't supported by JSON - must be stored as strings
+    std::ostringstream str;
+    str << app_install_report_log_event.stateful_free();
+    event.SetStringKey(kStatefulFree, str.str());
   }
 
   if (app_install_report_log_event.has_clouddps_response()) {
@@ -140,11 +141,14 @@ base::Value ConvertEventToValue(
                     app_install_report_log_event.session_state_change_type());
   }
 
-  event.SetStringKey(kSerialNumber, GetSerialNumber());
+  if (app_install_report_log_event.has_android_id()) {
+    // 64-bit ints aren't supporetd by JSON - must be stored as strings
+    std::ostringstream str;
+    str << app_install_report_log_event.android_id();
+    event.SetStringKey(kAndroidId, str.str());
+  }
 
-  int gaia_id;
-  if (GetGaiaId(profile, &gaia_id))
-    event.SetIntKey(kGaiaId, gaia_id);
+  event.SetStringKey(kSerialNumber, GetSerialNumber());
 
   base::Value wrapper(base::Value::Type::DICTIONARY);
   wrapper.SetKey(kAndroidAppInstallEvent, std::move(event));
@@ -163,18 +167,12 @@ base::Value ConvertEventToValue(
     wrapper.SetStringKey(kTime, time_str);
   }
 
-  return wrapper;
-}
-
-void AppendEventId(base::Value* event_list, const base::Value& context) {
-  DCHECK(event_list);
-
-  DCHECK(event_list->is_list());
-  for (auto& event : event_list->GetList()) {
-    std::string event_id;
-    if (GetHash(event, context, &event_id))
-      event.SetStringKey(kEventId, event_id);
+  std::string event_id;
+  if (GetHash(wrapper, context, &event_id)) {
+    wrapper.SetStringKey(kEventId, event_id);
   }
+
+  return wrapper;
 }
 
 }  // namespace policy

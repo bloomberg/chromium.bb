@@ -24,8 +24,16 @@ struct ExternalFunctionCall : public Expression {
     , fFunction(function)
     , fArguments(std::move(arguments)) {}
 
-    bool hasSideEffects() const override {
-        return true;
+    bool hasProperty(Property property) const override {
+        if (property == Property::kSideEffects) {
+            return true;
+        }
+        for (const auto& arg : fArguments) {
+            if (arg->hasProperty(property)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     std::unique_ptr<Expression> clone() const override {

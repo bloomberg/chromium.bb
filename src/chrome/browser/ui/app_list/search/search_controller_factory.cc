@@ -22,15 +22,18 @@
 #include "chrome/browser/ui/app_list/search/arc/arc_app_reinstall_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
+#include "chrome/browser/ui/app_list/search/assistant_search_provider.h"
 #include "chrome/browser/ui/app_list/search/drive_quick_access_provider.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
+#include "chrome/browser/ui/app_list/search/os_settings_provider.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/settings_shortcut/settings_shortcut_provider.h"
 #include "chrome/browser/ui/app_list/search/zero_state_file_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/arc/arc_util.h"
 
 namespace app_list {
@@ -44,9 +47,12 @@ namespace {
 // number of results to be displayed in UI.
 constexpr size_t kMaxAppsGroupResults = 7;
 constexpr size_t kMaxLauncherSearchResults = 2;
-constexpr size_t kMaxZeroStateFileResults = 6;
-constexpr size_t kMaxDriveQuickAccessResults = 6;
+// We need twice as many ZeroState and Drive file results as we need
+// duplicates of these results for the suggestion chips.
+constexpr size_t kMaxZeroStateFileResults = 20;
+constexpr size_t kMaxDriveQuickAccessResults = 10;
 constexpr size_t kMaxAppReinstallSearchResults = 1;
+constexpr size_t kMaxOsSettingsResults = 5;
 // We show up to 6 Play Store results. However, part of Play Store results may
 // be filtered out because they may correspond to already installed Web apps. So
 // we request twice as many Play Store apps as we can show. Note that this still
@@ -58,6 +64,10 @@ constexpr size_t kMaxPlayStoreResults = 12;
 // TODO(warx): Need UX spec.
 constexpr size_t kMaxAppDataResults = 4;
 constexpr size_t kMaxAppShortcutResults = 4;
+
+// Assistant provides a single search result when launcher chip integration is
+// enabled from its internal cache of conversation starters.
+constexpr size_t kMaxAssistantResults = 1;
 
 // TODO(wutao): Need UX spec.
 constexpr size_t kMaxSettingsShortcutResults = 6;
@@ -71,10 +81,11 @@ constexpr float kBoostOfApps = 8.0f;
 std::unique_ptr<SearchController> CreateSearchController(
     Profile* profile,
     AppListModelUpdater* model_updater,
-    AppListControllerDelegate* list_controller) {
+    AppListControllerDelegate* list_controller,
+    ash::AppListNotifier* notifier) {
   std::unique_ptr<SearchController> controller =
       std::make_unique<SearchController>(model_updater, list_controller,
-                                         profile);
+                                         notifier, profile);
 
   // Set up rankers for search results.
   controller->InitializeRankers();
@@ -104,6 +115,15 @@ std::unique_ptr<SearchController> CreateSearchController(
     controller->AddProvider(answer_card_group_id,
                             std::make_unique<AnswerCardSearchProvider>(
                                 profile, model_updater, list_controller));
+  }
+
+  // The Assistant search provider currently only contributes search results
+  // when launcher chip integration is enabled.
+  if (chromeos::assistant::features::IsLauncherChipIntegrationEnabled()) {
+    size_t assistant_group_id = controller->AddGroup(
+        kMaxAssistantResults, /*multiplier=*/1.0, kBoostOfApps);
+    controller->AddProvider(assistant_group_id,
+                            std::make_unique<AssistantSearchProvider>());
   }
 
   // LauncherSearchProvider is added only when not in guest
@@ -173,7 +193,14 @@ std::unique_ptr<SearchController> CreateSearchController(
         controller->AddGroup(kMaxDriveQuickAccessResults, 1.0, 0.0);
     controller->AddProvider(
         drive_quick_access_group_id,
-        std::make_unique<DriveQuickAccessProvider>(profile));
+        std::make_unique<DriveQuickAccessProvider>(profile, controller.get()));
+  }
+
+  if (app_list_features::IsLauncherSettingsSearchEnabled()) {
+    size_t os_settings_search_group_id =
+        controller->AddGroup(kMaxOsSettingsResults, 1.0, 0.0);
+    controller->AddProvider(os_settings_search_group_id,
+                            std::make_unique<OsSettingsProvider>(profile));
   }
 
   return controller;

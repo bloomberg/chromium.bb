@@ -59,24 +59,26 @@ bool SkImageGenerator::getYUVA8Planes(const SkYUVASizeInfo& sizeInfo,
 }
 
 #if SK_SUPPORT_GPU
-#include "src/gpu/GrTextureProxy.h"
+#include "src/gpu/GrSurfaceProxyView.h"
 
-sk_sp<GrTextureProxy> SkImageGenerator::generateTexture(GrRecordingContext* ctx,
-                                                        const SkImageInfo& info,
-                                                        const SkIPoint& origin,
-                                                        bool willNeedMipMaps) {
+GrSurfaceProxyView SkImageGenerator::generateTexture(GrRecordingContext* ctx,
+                                                     const SkImageInfo& info,
+                                                     const SkIPoint& origin,
+                                                     GrMipMapped mipMapped,
+                                                     GrImageTexGenPolicy texGenPolicy) {
     SkIRect srcRect = SkIRect::MakeXYWH(origin.x(), origin.y(), info.width(), info.height());
     if (!SkIRect::MakeWH(fInfo.width(), fInfo.height()).contains(srcRect)) {
-        return nullptr;
+        return {};
     }
-    return this->onGenerateTexture(ctx, info, origin, willNeedMipMaps);
+    return this->onGenerateTexture(ctx, info, origin, mipMapped, texGenPolicy);
 }
 
-sk_sp<GrTextureProxy> SkImageGenerator::onGenerateTexture(GrRecordingContext*,
-                                                          const SkImageInfo&,
-                                                          const SkIPoint&,
-                                                          bool willNeedMipMaps) {
-    return nullptr;
+GrSurfaceProxyView SkImageGenerator::onGenerateTexture(GrRecordingContext*,
+                                                       const SkImageInfo&,
+                                                       const SkIPoint&,
+                                                       GrMipMapped,
+                                                       GrImageTexGenPolicy) {
+    return {};
 }
 #endif
 

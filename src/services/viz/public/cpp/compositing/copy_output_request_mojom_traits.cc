@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/trace_event/trace_event.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/viz/public/cpp/compositing/copy_output_result_mojom_traits.h"
@@ -37,6 +38,7 @@ class CopyOutputResultSenderImpl : public viz::mojom::CopyOutputResultSender {
 
   // mojom::CopyOutputResultSender implementation.
   void SendResult(std::unique_ptr<viz::CopyOutputResult> result) override {
+    TRACE_EVENT0("viz", "CopyOutputResultSenderImpl::SendResult");
     if (!result_callback_)
       return;
     std::move(result_callback_).Run(std::move(result));
@@ -50,6 +52,7 @@ class CopyOutputResultSenderImpl : public viz::mojom::CopyOutputResultSender {
 void SendResult(
     mojo::PendingRemote<viz::mojom::CopyOutputResultSender> pending_remote,
     std::unique_ptr<viz::CopyOutputResult> result) {
+  TRACE_EVENT0("viz", "viz::mojom::CopyOutputResultSender::SendResult");
   mojo::Remote<viz::mojom::CopyOutputResultSender> remote(
       std::move(pending_remote));
   remote->SendResult(std::move(result));
@@ -85,7 +88,7 @@ bool StructTraits<viz::mojom::CopyOutputRequestDataView,
       mojo::PendingRemote<viz::mojom::CopyOutputResultSender>>();
 
   auto request = std::make_unique<viz::CopyOutputRequest>(
-      result_format, base::BindOnce(SendResult, base::Passed(&result_sender)));
+      result_format, base::BindOnce(SendResult, std::move(result_sender)));
 
   gfx::Vector2d scale_from;
   if (!data.ReadScaleFrom(&scale_from) || scale_from.x() <= 0 ||

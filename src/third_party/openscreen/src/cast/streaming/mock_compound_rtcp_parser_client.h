@@ -8,13 +8,13 @@
 #include "cast/streaming/compound_rtcp_parser.h"
 #include "gmock/gmock.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 class MockCompoundRtcpParserClient : public CompoundRtcpParser::Client {
  public:
   MOCK_METHOD1(OnReceiverReferenceTimeAdvanced,
-               void(openscreen::platform::Clock::time_point reference_time));
+               void(Clock::time_point reference_time));
   MOCK_METHOD1(OnReceiverReport, void(const RtcpReportBlock& receiver_report));
   MOCK_METHOD0(OnReceiverIndicatesPictureLoss, void());
   MOCK_METHOD2(OnReceiverCheckpoint,
@@ -23,7 +23,7 @@ class MockCompoundRtcpParserClient : public CompoundRtcpParser::Client {
   MOCK_METHOD1(OnReceiverIsMissingPackets, void(std::vector<PacketNack> nacks));
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_MOCK_COMPOUND_RTCP_PARSER_CLIENT_H_

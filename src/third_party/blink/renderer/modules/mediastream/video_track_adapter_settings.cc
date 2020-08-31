@@ -8,6 +8,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_op.h"
+
 namespace blink {
 
 VideoTrackAdapterSettings::VideoTrackAdapterSettings()

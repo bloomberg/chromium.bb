@@ -83,6 +83,7 @@ enum TestType
 	TEST_TYPE_POINT_SIZE,
 	TEST_TYPE_MULTISAMPLE,
 	TEST_TYPE_QUERIES,
+	TEST_TYPE_NON_PRECISE_QUERIES,
 	TEST_TYPE_READBACK_WITH_IMPLICIT_CLEAR,
 	TEST_TYPE_READBACK_WITH_EXPLICIT_CLEAR,
 	TEST_TYPE_DEPTH,
@@ -318,7 +319,7 @@ protected:
 
 MultiViewRenderTestInstance::MultiViewRenderTestInstance (Context& context, const TestParameters& parameters)
 	: TestInstance			(context)
-	, m_extensionSupported	((parameters.renderPassType == RENDERPASS_TYPE_RENDERPASS2) && context.requireDeviceExtension("VK_KHR_create_renderpass2"))
+	, m_extensionSupported	((parameters.renderPassType == RENDERPASS_TYPE_RENDERPASS2) && context.requireDeviceFunctionality("VK_KHR_create_renderpass2"))
 	, m_parameters			(fillMissingParameters(parameters))
 	, m_seed				(context.getTestContext().getCommandLine().getBaseSeed())
 	, m_squareCount			(4u)
@@ -581,7 +582,7 @@ void MultiViewRenderTestInstance::createVertexBuffer (void)
 
 		VK_CHECK(m_device->bindBufferMemory(*m_logicalDevice, *m_vertexCoordBuffer, m_vertexCoordAlloc->getMemory(), m_vertexCoordAlloc->getOffset()));
 		deMemcpy(m_vertexCoordAlloc->getHostPtr(), m_vertexCoord.data(), static_cast<size_t>(dataSize));
-		flushMappedMemoryRange(*m_device, *m_logicalDevice, m_vertexCoordAlloc->getMemory(), m_vertexCoordAlloc->getOffset(), static_cast<size_t>(bufferDataSize));
+		flushAlloc(*m_device, *m_logicalDevice, *m_vertexCoordAlloc);
 	}
 
 	// Upload vertex colors
@@ -595,7 +596,7 @@ void MultiViewRenderTestInstance::createVertexBuffer (void)
 
 		VK_CHECK(m_device->bindBufferMemory(*m_logicalDevice, *m_vertexColorBuffer, m_vertexColorAlloc->getMemory(), m_vertexColorAlloc->getOffset()));
 		deMemcpy(m_vertexColorAlloc->getHostPtr(), m_vertexColor.data(), static_cast<size_t>(dataSize));
-		flushMappedMemoryRange(*m_device, *m_logicalDevice, m_vertexColorAlloc->getMemory(), m_vertexColorAlloc->getOffset(), static_cast<size_t>(bufferDataSize));
+		flushAlloc(*m_device, *m_logicalDevice, *m_vertexColorAlloc);
 	}
 
 	// Upload vertex indices
@@ -613,7 +614,7 @@ void MultiViewRenderTestInstance::createVertexBuffer (void)
 		// Init host buffer data
 		VK_CHECK(m_device->bindBufferMemory(*m_logicalDevice, *m_vertexIndicesBuffer, m_vertexIndicesAllocation->getMemory(), m_vertexIndicesAllocation->getOffset()));
 		deMemcpy(m_vertexIndicesAllocation->getHostPtr(), m_vertexIndices.data(), static_cast<size_t>(dataSize));
-		flushMappedMemoryRange(*m_device, *m_logicalDevice, m_vertexIndicesAllocation->getMemory(), m_vertexIndicesAllocation->getOffset(), static_cast<size_t>(bufferDataSize));
+		flushAlloc(*m_device, *m_logicalDevice, *m_vertexIndicesAllocation);
 	}
 	else
 		DE_ASSERT(m_vertexIndices.empty());
@@ -773,6 +774,7 @@ void MultiViewRenderTestInstance::madeShaderModule (map<VkShaderStageFlagBits, S
 		case TEST_TYPE_POINT_SIZE:
 		case TEST_TYPE_MULTISAMPLE:
 		case TEST_TYPE_QUERIES:
+		case TEST_TYPE_NON_PRECISE_QUERIES:
 		case TEST_TYPE_READBACK_WITH_IMPLICIT_CLEAR:
 		case TEST_TYPE_READBACK_WITH_EXPLICIT_CLEAR:
 		case TEST_TYPE_DEPTH:
@@ -1046,7 +1048,7 @@ void MultiViewRenderTestInstance::readImage (VkImage image, const tcu::PixelBuff
 		VK_CHECK(m_device->bindBufferMemory(*m_logicalDevice, *buffer, bufferAlloc->getMemory(), bufferAlloc->getOffset()));
 
 		deMemset(bufferAlloc->getHostPtr(), 0, static_cast<size_t>(pixelDataSize));
-		flushMappedMemoryRange(*m_device, *m_logicalDevice, bufferAlloc->getMemory(), bufferAlloc->getOffset(), pixelDataSize);
+		flushAlloc(*m_device, *m_logicalDevice, *bufferAlloc);
 	}
 
 	const VkBufferMemoryBarrier	bufferBarrier	=
@@ -1102,7 +1104,7 @@ void MultiViewRenderTestInstance::readImage (VkImage image, const tcu::PixelBuff
 	submitCommandsAndWait(*m_device, *m_logicalDevice, m_queue, *m_cmdBuffer);
 
 	// Read buffer data
-	invalidateMappedMemoryRange(*m_device, *m_logicalDevice, bufferAlloc->getMemory(), bufferAlloc->getOffset(), pixelDataSize);
+	invalidateAlloc(*m_device, *m_logicalDevice, *bufferAlloc);
 	tcu::copy(dst, tcu::ConstPixelBufferAccess(dst.getFormat(), dst.getSize(), bufferAlloc->getHostPtr()));
 }
 
@@ -1666,7 +1668,7 @@ void MultiViewAttachmentsTestInstance::setImageData (VkImage image)
 
 	// Write buffer data
 	deMemcpy(bufferAlloc->getHostPtr(), data->getLevel(0).getDataPtr(), bufferSize);
-	flushMappedMemoryRange(*m_device, *m_logicalDevice, bufferAlloc->getMemory(), bufferAlloc->getOffset(), bufferSize);
+	flushAlloc(*m_device, *m_logicalDevice, *bufferAlloc);
 
 	beginCommandBuffer(*m_device, *m_cmdBuffer);
 
@@ -1913,7 +1915,7 @@ void MultiViewDrawIndirectTestInstance::draw (const deUint32 subpassCount, VkRen
 
 		deMemcpy(allocationBuffer->getHostPtr(), drawCommandsDataPtr, static_cast<size_t>(dataSize));
 
-		flushMappedMemoryRange(*m_device, *m_logicalDevice, allocationBuffer->getMemory(), allocationBuffer->getOffset(), static_cast<size_t>(bufferDataSize));
+		flushAlloc(*m_device, *m_logicalDevice, *allocationBuffer);
 		indirectBuffers[subpassNdx] = (BufferSP(new Unique<VkBuffer>(indirectBuffer)));
 		indirectAllocations[subpassNdx] = (AllocationSP(new UniquePtr<Allocation>(allocationBuffer)));
 	}
@@ -2444,21 +2446,23 @@ protected:
 	deUint32			getUsedViewsCount				(const deUint32			viewMaskIndex);
 	deUint32			getQueryCountersNumber			();
 private:
-	const deUint32		m_verticesPerPrimitive;
-	deUint64			m_timestampMask;
-	vector<deUint64>	m_timestampStartValues;
-	vector<deUint64>	m_timestampEndValues;
-	vector<deBool>		m_counterSeriesStart;
-	vector<deBool>		m_counterSeriesEnd;
-	vector<deUint64>	m_occlusionValues;
-	vector<deUint64>	m_occlusionExpectedValues;
-	deUint32			m_occlusionObjectsOffset;
-	vector<deUint64>	m_occlusionObjectPixelsCount;
+	const deUint32				m_verticesPerPrimitive;
+	const VkQueryControlFlags	m_occlusionQueryFlags;
+	deUint64					m_timestampMask;
+	vector<deUint64>			m_timestampStartValues;
+	vector<deUint64>			m_timestampEndValues;
+	vector<deBool>				m_counterSeriesStart;
+	vector<deBool>				m_counterSeriesEnd;
+	vector<deUint64>			m_occlusionValues;
+	vector<deUint64>			m_occlusionExpectedValues;
+	deUint32					m_occlusionObjectsOffset;
+	vector<deUint64>			m_occlusionObjectPixelsCount;
 };
 
 MultiViewQueriesTestInstance::MultiViewQueriesTestInstance (Context& context, const TestParameters& parameters)
 	: MultiViewRenderTestInstance	(context, parameters)
-	, m_verticesPerPrimitive(4u)
+	, m_verticesPerPrimitive		(4u)
+	, m_occlusionQueryFlags			((parameters.viewIndex == TEST_TYPE_QUERIES) * VK_QUERY_CONTROL_PRECISE_BIT)
 {
 	// Generate the timestamp mask
 	const std::vector<VkQueueFamilyProperties>	queueProperties = vk::getPhysicalDeviceQueueFamilyProperties(m_context.getInstanceInterface(), m_context.getPhysicalDevice());
@@ -2503,8 +2507,18 @@ tcu::TestStatus MultiViewQueriesTestInstance::iterate (void)
 		occlusionExpectedValue	+= m_occlusionExpectedValues[ndx];
 
 		if (m_counterSeriesEnd[ndx])
-			if (occlusionExpectedValue != occlusionValue)
-				return tcu::TestStatus::fail("occlusion, result:" + de::toString(occlusionValue) + ", expected:" + de::toString(occlusionExpectedValue));
+		{
+			if (m_parameters.viewIndex == TEST_TYPE_QUERIES)
+			{
+				if (occlusionExpectedValue != occlusionValue)
+					return tcu::TestStatus::fail("occlusion, result:" + de::toString(occlusionValue) + ", expected:" + de::toString(occlusionExpectedValue));
+			}
+			else // verify non precise occlusion query
+			{
+				if (occlusionValue == 0)
+					return tcu::TestStatus::fail("occlusion, result: 0, expected non zero value");
+			}
+		}
 	}
 
 	DE_ASSERT(!m_timestampStartValues.empty());
@@ -2634,7 +2648,6 @@ void MultiViewQueriesTestInstance::draw (const deUint32 subpassCount, VkRenderPa
 	const Unique<VkQueryPool>	occlusionQueryPool				(createQueryPool(*m_device, *m_logicalDevice, &occlusionQueryPoolCreateInfo));
 	const Unique<VkQueryPool>	timestampStartQueryPool			(createQueryPool(*m_device, *m_logicalDevice, &timestampQueryPoolCreateInfo));
 	const Unique<VkQueryPool>	timestampEndQueryPool			(createQueryPool(*m_device, *m_logicalDevice, &timestampQueryPoolCreateInfo));
-	VkQueryControlFlags			occlusionQueryFlags				= VK_QUERY_CONTROL_PRECISE_BIT;
 	deUint32					queryStartIndex					= 0;
 
 	beginCommandBuffer(*m_device, *m_cmdBuffer);
@@ -2670,7 +2683,7 @@ void MultiViewQueriesTestInstance::draw (const deUint32 subpassCount, VkRenderPa
 				m_device->cmdDraw(*m_cmdBuffer, m_verticesPerPrimitive, 1u, firstVertex, 0u);
 
 				// Render occluded object
-				m_device->cmdBeginQuery(*m_cmdBuffer, *occlusionQueryPool, queryStartIndex, occlusionQueryFlags);
+				m_device->cmdBeginQuery(*m_cmdBuffer, *occlusionQueryPool, queryStartIndex, m_occlusionQueryFlags);
 				m_device->cmdDraw(*m_cmdBuffer, m_verticesPerPrimitive, 1u, m_occlusionObjectsOffset + firstVertex, 0u);
 				m_device->cmdEndQuery(*m_cmdBuffer, *occlusionQueryPool, queryStartIndex);
 
@@ -2977,7 +2990,7 @@ void MultiViewDepthStencilTestInstance::readImage (VkImage image, const tcu::Pix
 		VK_CHECK(m_device->bindBufferMemory(*m_logicalDevice, *buffer, bufferAlloc->getMemory(), bufferAlloc->getOffset()));
 
 		deMemset(bufferAlloc->getHostPtr(), 0xCC, static_cast<size_t>(pixelDataSize));
-		flushMappedMemoryRange(*m_device, *m_logicalDevice, bufferAlloc->getMemory(), bufferAlloc->getOffset(), pixelDataSize);
+		flushAlloc(*m_device, *m_logicalDevice, *bufferAlloc);
 	}
 
 	const VkBufferMemoryBarrier	bufferBarrier	=
@@ -3025,7 +3038,7 @@ void MultiViewDepthStencilTestInstance::readImage (VkImage image, const tcu::Pix
 	submitCommandsAndWait(*m_device, *m_logicalDevice, m_queue, *m_cmdBuffer);
 
 	// Read buffer data
-	invalidateMappedMemoryRange(*m_device, *m_logicalDevice, bufferAlloc->getMemory(), bufferAlloc->getOffset(), pixelDataSize);
+	invalidateAlloc(*m_device, *m_logicalDevice, *bufferAlloc);
 
 	if (m_depthTest)
 	{
@@ -3340,7 +3353,8 @@ private:
 		if (TEST_TYPE_MULTISAMPLE == m_parameters.viewIndex)
 			return new MultiViewMultsampleTestInstance(context, m_parameters);
 
-		if (TEST_TYPE_QUERIES == m_parameters.viewIndex)
+		if (TEST_TYPE_QUERIES == m_parameters.viewIndex ||
+			TEST_TYPE_NON_PRECISE_QUERIES == m_parameters.viewIndex)
 			return new MultiViewQueriesTestInstance(context, m_parameters);
 
 		if (TEST_TYPE_VIEW_MASK == m_parameters.viewIndex ||
@@ -3364,7 +3378,7 @@ private:
 
 	virtual void		checkSupport		(Context& context) const
 	{
-		context.requireDeviceExtension("VK_KHR_multiview");
+		context.requireDeviceFunctionality("VK_KHR_multiview");
 	}
 
 	void				initPrograms		(SourceCollections& programCollection) const
@@ -3621,6 +3635,7 @@ void multiViewRenderCreateTests (tcu::TestCaseGroup* group)
 		"point_size",
 		"multisample",
 		"queries",
+		"non_precise_queries",
 		"readback_implicit_clear",
 		"readback_explicit_clear",
 		"depth",
@@ -3734,6 +3749,7 @@ void multiViewRenderCreateTests (tcu::TestCaseGroup* group)
 				case TEST_TYPE_POINT_SIZE:
 				case TEST_TYPE_MULTISAMPLE:
 				case TEST_TYPE_QUERIES:
+				case TEST_TYPE_NON_PRECISE_QUERIES:
 				case TEST_TYPE_READBACK_WITH_IMPLICIT_CLEAR:
 				case TEST_TYPE_READBACK_WITH_EXPLICIT_CLEAR:
 				case TEST_TYPE_DEPTH:

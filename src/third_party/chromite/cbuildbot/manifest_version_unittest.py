@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 import tempfile
 
 import mock
@@ -22,6 +23,9 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 from chromite.lib.buildstore import FakeBuildStore, BuildIdentifier
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 FAKE_VERSION = """
@@ -232,6 +236,27 @@ class ResolveHelpersTest(cros_test_lib.TempDirTestCase):
       manifest_version.ResolveBuildspecVersion(
           self.mv_path, '1.2.0')
 
+
+class FilterManifestTest(cros_test_lib.TempDirTestCase):
+  """Test for FilterManifest."""
+
+  def testSimple(self):
+    """Basic check of functionality."""
+    path = os.path.join(self.tempdir, 'input.xml')
+    osutils.WriteFile(path, """\
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <include name="default.xml" />
+</manifest>
+""")
+    new_path = manifest_version.FilterManifest(path)
+    self.assertEqual("""\
+<?xml version="1.0" encoding="utf-8"?><manifest>
+<include name="default.xml"/>
+</manifest>\
+""", osutils.ReadFile(new_path))
+
+
 class BuildSpecFunctionsTest(cros_test_lib.MockTempDirTestCase):
   """Tests for methods related to publishing buildspecs."""
 
@@ -247,28 +272,6 @@ class BuildSpecFunctionsTest(cros_test_lib.MockTempDirTestCase):
     """Test OfficialBuildSpecPath."""
     result = manifest_version.OfficialBuildSpecPath(self.version_info)
     self.assertEqual(result, 'buildspecs/11/1.2.3.xml')
-
-  def testCandidateBuildSpecPathEmptyCategory(self):
-    """Test CandidateBuildSpecPath, with no existing candidates."""
-    result = manifest_version.CandidateBuildSpecPath(
-        self.version_info, 'new_cat', self.manifest_versions_int)
-    self.assertEqual(result, 'new_cat/buildspecs/11/1.2.3-rc1.xml')
-
-  def testCandidateBuildSpecPathExistingCandidates(self):
-    """Test CandidateBuildSpecPath, with existing candidates."""
-    # Create some preexisting build specs.
-    osutils.Touch(
-        os.path.join(self.manifest_versions_int,
-                     'cat/buildspecs/11/1.2.3-rc1.xml'),
-        makedirs=True)
-    osutils.Touch(
-        os.path.join(self.manifest_versions_int,
-                     'cat/buildspecs/11/1.2.3-rc2.xml'),
-        makedirs=True)
-
-    result = manifest_version.CandidateBuildSpecPath(
-        self.version_info, 'cat', self.manifest_versions_int)
-    self.assertEqual(result, 'cat/buildspecs/11/1.2.3-rc3.xml')
 
   def testPopulateAndPublishBuildSpec(self):
     """Test PopulateAndPublishBuildSpec."""

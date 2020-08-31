@@ -6,11 +6,13 @@
 #include <string>
 
 #include "ash/public/cpp/login_screen_test_api.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -27,6 +29,7 @@
 #include "components/arc/test/fake_arc_session.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_type.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_launcher.h"
 
 namespace chromeos {
@@ -47,12 +50,14 @@ class SupervisionTransitionScreenTest
   }
 
   void SetUpOnMainThread() override {
-    CHECK(logged_in_user_mixin_.GetUserPolicyMixin()->RequestPolicyUpdate());
+    ASSERT_TRUE(arc_temp_dir_.CreateUniqueTempDir());
 
     arc::ArcServiceLauncher::Get()->ResetForTesting();
     arc::ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
         std::make_unique<arc::ArcSessionRunner>(
             base::BindRepeating(arc::FakeArcSession::Create)));
+    EXPECT_TRUE(arc::ExpandPropertyFilesForTesting(
+        arc::ArcSessionManager::Get(), arc_temp_dir_.GetPath()));
 
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
     // For this test class, the PRE tests just happen to always wait for active
@@ -62,7 +67,8 @@ class SupervisionTransitionScreenTest
     // WaitForActiveSession() otherwise.
     logged_in_user_mixin_.LogInUser(
         false /*issue_any_scope_token*/,
-        content::IsPreTest() /*wait_for_active_session*/);
+        content::IsPreTest() /*wait_for_active_session*/,
+        true /*request_policy_update*/);
   }
 
   // The tests simulate user type changes between regular and child user.
@@ -81,6 +87,7 @@ class SupervisionTransitionScreenTest
   LoggedInUserMixin logged_in_user_mixin_{
       &mixin_host_, content::IsPreTest() ? GetParam() : GetTargetUserType(),
       embedded_test_server(), this, false /*should_launch_browser*/};
+  base::ScopedTempDir arc_temp_dir_;
 };
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
@@ -117,7 +124,9 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, PRE_TransitionTimeout) {
   arc::SetArcPlayStoreEnabledForProfile(profile, true);
 }
 
-IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, TransitionTimeout) {
+// Flaky on linux-chromeos-rel (see https://crbug.com/1032997)
+IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
+                       DISABLED_TransitionTimeout) {
   OobeScreenWaiter(SupervisionTransitionScreenView::kScreenId).Wait();
 
   test::OobeJS().ExpectVisiblePath(
@@ -164,7 +173,7 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
   logged_in_user_mixin().GetLoginManagerMixin()->WaitForActiveSession();
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+INSTANTIATE_TEST_SUITE_P(All,
                          SupervisionTransitionScreenTest,
                          testing::Values(LoggedInUserMixin::LogInType::kRegular,
                                          LoggedInUserMixin::LogInType::kChild));

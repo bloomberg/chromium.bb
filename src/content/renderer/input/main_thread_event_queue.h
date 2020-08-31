@@ -13,22 +13,21 @@
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/input_event_ack_state.h"
 #include "content/renderer/input/input_event_prediction.h"
 #include "content/renderer/input/main_thread_event_queue_task_list.h"
-#include "content/renderer/input/scoped_web_input_event_with_latency_info.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
-#include "third_party/blink/public/platform/web_input_event.h"
-#include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/latency/latency_info.h"
 
 namespace content {
 
 using HandledEventCallback =
-    base::OnceCallback<void(InputEventAckState ack_state,
+    base::OnceCallback<void(blink::mojom::InputEventResultState ack_state,
                             const ui::LatencyInfo& latency_info,
-                            std::unique_ptr<ui::DidOverscrollParams>,
+                            blink::mojom::DidOverscrollParamsPtr,
                             base::Optional<cc::TouchAction>)>;
 
 // All interaction with the MainThreadEventQueueClient will occur
@@ -39,7 +38,6 @@ class CONTENT_EXPORT MainThreadEventQueueClient {
   // another event). Returns false if the event will not be handled, and the
   // |handled_callback| will not be run.
   virtual bool HandleInputEvent(const blink::WebCoalescedInputEvent& event,
-                                const ui::LatencyInfo& latency_info,
                                 HandledEventCallback handled_callback) = 0;
   // Requests a BeginMainFrame callback from the compositor.
   virtual void SetNeedsMainFrame() = 0;
@@ -95,7 +93,8 @@ class CONTENT_EXPORT MainThreadEventQueue
   void HandleEvent(ui::WebScopedInputEvent event,
                    const ui::LatencyInfo& latency,
                    InputEventDispatchType dispatch_type,
-                   InputEventAckState ack_result,
+                   blink::mojom::InputEventResultState ack_result,
+                   const blink::WebInputEventAttribution& attribution,
                    HandledEventCallback handled_callback);
   void DispatchRafAlignedInput(base::TimeTicks frame_time);
   void QueueClosure(base::OnceClosure closure);
@@ -114,9 +113,11 @@ class CONTENT_EXPORT MainThreadEventQueue
       const std::unique_ptr<MainThreadEventQueueTask>& item,
       base::TimeTicks frame_time);
 
-  static bool IsForwardedAndSchedulerKnown(InputEventAckState ack_state) {
-    return ack_state == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
-           ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING;
+  static bool IsForwardedAndSchedulerKnown(
+      blink::mojom::InputEventResultState ack_state) {
+    return ack_state == blink::mojom::InputEventResultState::kNotConsumed ||
+           ack_state ==
+               blink::mojom::InputEventResultState::kSetNonBlockingDueToFling;
   }
 
  protected:
@@ -129,9 +130,10 @@ class CONTENT_EXPORT MainThreadEventQueue
   void SetNeedsMainFrame();
   // Returns false if the event can not be handled and the HandledEventCallback
   // will not be run.
-  bool HandleEventOnMainThread(const blink::WebCoalescedInputEvent& event,
-                               const ui::LatencyInfo& latency,
-                               HandledEventCallback handled_callback);
+  bool HandleEventOnMainThread(
+      const blink::WebCoalescedInputEvent& event,
+      const blink::WebInputEventAttribution& attribution,
+      HandledEventCallback handled_callback);
 
   bool IsRawUpdateEvent(
       const std::unique_ptr<MainThreadEventQueueTask>& item) const;
@@ -150,7 +152,6 @@ class CONTENT_EXPORT MainThreadEventQueue
   friend class MainThreadEventQueueInitializationTest;
   MainThreadEventQueueClient* client_;
   bool last_touch_start_forced_nonblocking_due_to_fling_;
-  bool enable_fling_passive_listener_flag_;
   bool needs_low_latency_;
   bool needs_unbuffered_input_for_debugger_;
   bool allow_raf_aligned_input_;

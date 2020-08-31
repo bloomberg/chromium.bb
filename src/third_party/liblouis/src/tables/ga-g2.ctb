@@ -2,6 +2,7 @@
 # Version: INBAF May 2019
 #  Copyright (C) 2019 Ronan McGuirk, <ronan.p.mcguirk@gmail.com>.
 #
+#-index-name: Irish, contracted
 #-display-name: Irish contracted braille
 #
 #+locale:ga

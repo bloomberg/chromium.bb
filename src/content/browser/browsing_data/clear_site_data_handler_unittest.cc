@@ -15,7 +15,6 @@
 #include "base/test/task_environment.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -102,7 +101,7 @@ class VectorConsoleMessagesDelegate : public ConsoleMessagesDelegate {
 
   void OutputMessages(const base::RepeatingCallback<WebContents*()>&
                           web_contents_getter) override {
-    *message_buffer_ = messages();
+    *message_buffer_ = GetMessagesForTesting();
   }
 
  private:
@@ -283,7 +282,7 @@ TEST_F(ClearSiteDataHandlerTest, InvalidHeader) {
         &console_delegate, GURL()));
 
     std::string multiline_message;
-    for (const auto& message : console_delegate.messages()) {
+    for (const auto& message : console_delegate.GetMessagesForTesting()) {
       EXPECT_EQ(blink::mojom::ConsoleMessageLevel::kError, message.level);
       multiline_message += message.text + "\n";
     }

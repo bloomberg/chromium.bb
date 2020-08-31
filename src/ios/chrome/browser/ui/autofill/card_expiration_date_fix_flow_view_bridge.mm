@@ -17,7 +17,7 @@
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -231,8 +231,8 @@ void CardExpirationDateFixFlowViewBridge::DeleteSelf() {
   DCHECK(_expirationDateYear.length > 0);
 
   _bridge->OnConfirmedExpirationDate(
-      base::SysNSStringToUTF16(_expirationDateYear),
-      base::SysNSStringToUTF16(_expirationDateMonth));
+      base::SysNSStringToUTF16(_expirationDateMonth),
+      base::SysNSStringToUTF16(_expirationDateYear));
 }
 
 - (void)didSelectMonth:(NSString*)month year:(NSString*)year {

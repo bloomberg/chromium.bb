@@ -4,7 +4,9 @@
 
 #include "media/base/audio_fifo.h"
 
-#include "base/logging.h"
+#include <cstring>
+
+#include "base/check_op.h"
 
 namespace media {
 

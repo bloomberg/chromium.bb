@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './Widget.js';
-import './GlassPane.js';
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
 
 import * as Action from './Action.js';
 import * as ActionDelegate from './ActionDelegate.js';
@@ -54,8 +54,9 @@ import * as TextPrompt from './TextPrompt.js';
 import * as ThrottledWidget from './ThrottledWidget.js';
 import * as Toolbar from './Toolbar.js';
 import * as Tooltip from './Tooltip.js';
-import * as Treeoutline from './Treeoutline.js';
+import * as TreeOutline from './Treeoutline.js';
 import * as UIUtils from './UIUtils.js';
+import * as Utils from './utils/utils.js';
 import * as View from './View.js';
 import * as ViewManager from './ViewManager.js';
 import * as Widget from './Widget.js';
@@ -63,6 +64,9 @@ import * as XElement from './XElement.js';
 import * as XLink from './XLink.js';
 import * as XWidget from './XWidget.js';
 import * as ZoomManager from './ZoomManager.js';
+
+/** @typedef {{box: !AnchorBox, show:(function(!GlassPane.GlassPane):!Promise<boolean>), hide:(function():void|undefined)}} */
+export let PopoverRequest;
 
 export {
   Action,
@@ -114,13 +118,14 @@ export {
   ThrottledWidget,
   Toolbar,
   Tooltip,
-  Treeoutline,
+  TreeOutline,
   UIUtils,
+  Utils,
   View,
   ViewManager,
   Widget,
   XElement,
   XLink,
   XWidget,
-  ZoomManager,
+  ZoomManager
 };

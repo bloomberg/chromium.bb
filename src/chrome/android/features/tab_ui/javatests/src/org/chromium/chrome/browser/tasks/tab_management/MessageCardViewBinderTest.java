@@ -18,10 +18,10 @@ import org.junit.runner.RunWith;
 
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.test.util.DummyUiActivityTestCase;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -43,18 +43,14 @@ public class MessageCardViewBinderTest extends DummyUiActivityTestCase {
     private AtomicBoolean mMessageServiceReviewCallbackRan = new AtomicBoolean();
     private AtomicBoolean mMessageServiceDismissCallbackRan = new AtomicBoolean();
 
-    private MessageCardView.ReviewActionProvider mUiReviewHandler = () -> {
-        mReviewButtonClicked.set(true);
-    };
-    private MessageCardView.DismissActionProvider mUiDismissHandler = () -> {
-        mDismissButtonClicked.set(true);
-    };
-    private MessageCardView.ReviewActionProvider mMessageServiceActionHandler = () -> {
-        mMessageServiceReviewCallbackRan.set(true);
-    };
-    private MessageCardView.DismissActionProvider mMessageServiceDismissHandler = () -> {
-        mMessageServiceDismissCallbackRan.set(true);
-    };
+    private MessageCardView.ReviewActionProvider mUiReviewHandler =
+            () -> mReviewButtonClicked.set(true);
+    private MessageCardView.DismissActionProvider mUiDismissHandler =
+            (int messageType) -> mDismissButtonClicked.set(true);
+    private MessageCardView.ReviewActionProvider mMessageServiceActionHandler =
+            () -> mMessageServiceReviewCallbackRan.set(true);
+    private MessageCardView.DismissActionProvider mMessageServiceDismissHandler =
+            (int messageType) -> mMessageServiceDismissCallbackRan.set(true);
 
     @Override
     public void setUpTest() throws Exception {
@@ -68,15 +64,16 @@ public class MessageCardViewBinderTest extends DummyUiActivityTestCase {
             mItemView = (ViewGroup) getActivity().getLayoutInflater().inflate(
                     R.layout.tab_grid_message_card_item, null);
             view.addView(mItemView);
+
+            mItemViewModel =
+                    new PropertyModel.Builder(MessageCardViewProperties.ALL_KEYS)
+                            .with(MessageCardViewProperties.ACTION_TEXT, ACTION_TEXT)
+                            .with(MessageCardViewProperties.DESCRIPTION_TEXT, DESCRIPTION_TEXT)
+                            .build();
+
+            mItemMCP = PropertyModelChangeProcessor.create(
+                    mItemViewModel, mItemView, MessageCardViewBinder::bind);
         });
-
-        mItemViewModel = new PropertyModel.Builder(MessageCardViewProperties.ALL_KEYS)
-                                 .with(MessageCardViewProperties.ACTION_TEXT, ACTION_TEXT)
-                                 .with(MessageCardViewProperties.DESCRIPTION_TEXT, DESCRIPTION_TEXT)
-                                 .build();
-
-        mItemMCP = PropertyModelChangeProcessor.create(
-                mItemViewModel, mItemView, MessageCardViewBinder::bind);
     }
 
     private String getDescriptionText() {
@@ -140,6 +137,26 @@ public class MessageCardViewBinderTest extends DummyUiActivityTestCase {
         mItemView.findViewById(R.id.close_button).performClick();
         assertTrue(mDismissButtonClicked.get());
         assertTrue(mMessageServiceDismissCallbackRan.get());
+    }
+
+    @Test
+    @UiThreadTest
+    @SmallTest
+    public void testSetIconVisibility() {
+        int margin = (int) getActivity().getResources().getDimension(
+                R.dimen.tab_grid_iph_item_description_margin);
+        ViewGroup.MarginLayoutParams params =
+                (ViewGroup.MarginLayoutParams) mItemView.findViewById(R.id.description)
+                        .getLayoutParams();
+        assertEquals(4, mItemView.getChildCount());
+
+        mItemViewModel.set(MessageCardViewProperties.IS_ICON_VISIBLE, false);
+        assertEquals(3, mItemView.getChildCount());
+        assertEquals(margin, params.leftMargin);
+
+        mItemViewModel.set(MessageCardViewProperties.IS_ICON_VISIBLE, true);
+        assertEquals(4, mItemView.getChildCount());
+        assertEquals(0, params.leftMargin);
     }
 
     @Override

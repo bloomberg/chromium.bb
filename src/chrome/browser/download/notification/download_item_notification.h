@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_ui_model.h"
-#include "chrome/browser/image_decoder.h"
+#include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/download/public/common/download_item.h"
 #include "components/offline_items_collection/core/offline_item.h"
@@ -114,7 +114,8 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest,
   // Get the status text.
   base::string16 GetStatusString() const;
 
-  bool IsNotificationVisible() const;
+  bool IsScanning() const;
+  bool AllowedToOpenWhileScanning() const;
 
   Browser* GetBrowser() const;
   Profile* profile() const;
@@ -140,6 +141,7 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest,
   download::DownloadItem::DownloadState previous_download_state_ =
       download::DownloadItem::MAX_DOWNLOAD_STATE;  // As uninitialized state
   bool previous_dangerous_state_ = false;
+  bool previous_mixed_content_state_ = false;
   std::unique_ptr<message_center::Notification> notification_;
 
   DownloadUIModel::DownloadUIModelPtr item_;

@@ -188,9 +188,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       content::RenderFrameHost* rfh,
       const mojom::FrameRenderDataUpdate& render_data) override;
   void OnMainFrameMetadataChanged() override;
-  void OnSubframeMetadataChanged(
-      content::RenderFrameHost* rfh,
-      const mojom::PageLoadMetadata& metadata) override;
+  void OnSubframeMetadataChanged(content::RenderFrameHost* rfh,
+                                 const mojom::FrameMetadata& metadata) override;
   void UpdateFeaturesUsage(
       content::RenderFrameHost* rfh,
       const mojom::PageLoadFeatures& new_features) override;
@@ -201,6 +200,9 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       const mojom::DeferredResourceCounts& new_deferred_resource_data) override;
   void UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
                             const mojom::CpuTiming& timing) override;
+  void OnFrameIntersectionUpdate(
+      content::RenderFrameHost* rfh,
+      const mojom::FrameIntersectionUpdate& frame_intersection_update) override;
 
   // PageLoadMetricsDelegate implementation:
   content::WebContents* GetWebContents() const override;
@@ -217,9 +219,10 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   PageEndReason GetPageEndReason() const override;
   const UserInitiatedInfo& GetPageEndUserInitiatedInfo() const override;
   base::Optional<base::TimeDelta> GetPageEndTime() const override;
-  const mojom::PageLoadMetadata& GetMainFrameMetadata() const override;
-  const mojom::PageLoadMetadata& GetSubframeMetadata() const override;
+  const mojom::FrameMetadata& GetMainFrameMetadata() const override;
+  const mojom::FrameMetadata& GetSubframeMetadata() const override;
   const PageRenderData& GetPageRenderData() const override;
+  const mojom::InputTiming& GetPageInputTiming() const override;
   const PageRenderData& GetMainFrameRenderData() const override;
   const ui::ScopedVisibilityTracker& GetVisibilityTracker() const override;
   const ResourceTracker& GetResourceTracker() const override;
@@ -238,8 +241,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       content::NavigationHandle* navigation_handle);
   void FailedProvisionalLoad(content::NavigationHandle* navigation_handle,
                              base::TimeTicks failed_load_time);
-  void WebContentsHidden();
-  void WebContentsShown();
+  void PageHidden();
+  void PageShown();
   void FrameDeleted(content::RenderFrameHost* rfh);
 
   void OnInputEvent(const blink::WebInputEvent& event);
@@ -256,7 +259,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
     visibility_tracker_ = tracker;
   }
 
-  void NotifyClientRedirectTo(const PageLoadTracker& destination);
+  void NotifyClientRedirectTo(content::NavigationHandle* destination);
 
   void OnLoadedResource(
       const ExtraRequestCompleteInfo& extra_request_complete_info);
@@ -277,10 +280,10 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
                       const net::CanonicalCookie& cookie,
                       bool blocked_by_policy);
 
-  void OnDomStorageAccessed(const GURL& url,
-                            const GURL& first_party_url,
-                            bool local,
-                            bool blocked_by_policy);
+  void OnStorageAccessed(const GURL& url,
+                         const GURL& first_party_url,
+                         bool blocked_by_policy,
+                         StorageType access_type);
 
   // Signals that we should stop tracking metrics for the associated page load.
   // We may stop tracking a page load if it doesn't meet the criteria for
@@ -351,6 +354,9 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // Informs the observers that the event corresponding to |event_key| has
   // occurred.
   void BroadcastEventToObservers(const void* const event_key);
+
+  void OnEnterBackForwardCache();
+  void OnRestoreFromBackForwardCache();
 
  private:
   // This function converts a TimeTicks value taken in the browser process

@@ -33,7 +33,40 @@ class CORE_EXPORT NGLineTruncator final {
                           NGLineBoxFragmentBuilder::ChildList* line_box,
                           NGInlineLayoutStateStack* box_states);
 
+  LayoutUnit TruncateLineInTheMiddle(
+      LayoutUnit line_width,
+      NGLineBoxFragmentBuilder::ChildList* line_box,
+      NGInlineLayoutStateStack* box_states);
+
  private:
+  const ComputedStyle& EllipsisStyle() const;
+
+  // Initialize four ellipsis_*_ data members.
+  void SetupEllipsis();
+
+  // Add a child for ellipsis next to |ellipsized_child|.
+  LayoutUnit PlaceEllipsisNextTo(
+      NGLineBoxFragmentBuilder::ChildList* line_box,
+      NGLineBoxFragmentBuilder::Child* ellipsized_child);
+
+  static constexpr wtf_size_t kDidNotAddChild = WTF::kNotFound;
+  // Add a child with truncated text of (*line_box)[source_index].
+  // This function returns the index of the new child.
+  // If the truncated text is empty, kDidNotAddChild is returned.
+  //
+  // |leave_one_character| - Force to leave at least one character regardless of
+  //                         |position|.
+  // |position| and |edge| - Indicate truncation point and direction.
+  //                         If |edge| is TextDirection::kLtr, the left side of
+  //                         |position| will be copied to the new child.
+  //                         Otherwise, the right side of |position| will be
+  //                         copied.
+  wtf_size_t AddTruncatedChild(wtf_size_t source_index,
+                               bool leave_one_character,
+                               LayoutUnit position,
+                               TextDirection edge,
+                               NGLineBoxFragmentBuilder::ChildList* line_box,
+                               NGInlineLayoutStateStack* box_states);
   bool EllipsizeChild(
       LayoutUnit line_width,
       LayoutUnit ellipsis_width,
@@ -50,6 +83,15 @@ class CORE_EXPORT NGLineTruncator final {
   scoped_refptr<const ComputedStyle> line_style_;
   LayoutUnit available_width_;
   TextDirection line_direction_;
+
+  // The following 3 data members are available after SetupEllipsis().
+  const SimpleFontData* ellipsis_font_data_;
+  String ellipsis_text_;
+  LayoutUnit ellipsis_width_;
+
+  // This data member is available between SetupEllipsis() and
+  // PlaceEllipsisNextTo().
+  scoped_refptr<ShapeResultView> ellipsis_shape_result_;
 };
 
 }  // namespace blink

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_
 
 #include "build/build_config.h"
+#include "components/sync/driver/sync_service_utils.h"
 
 class Browser;
 class GURL;
@@ -54,20 +55,31 @@ enum ActionType {
 
 // Sync errors that should be exposed to the user through the avatar button.
 enum AvatarSyncErrorType {
-  NO_SYNC_ERROR,                     // No sync error.
-  MANAGED_USER_UNRECOVERABLE_ERROR,  // Unrecoverable error for managed users.
-  UNRECOVERABLE_ERROR,               // Unrecoverable error for regular users.
-  AUTH_ERROR,                        // Authentication error.
-  UPGRADE_CLIENT_ERROR,              // Out-of-date client error.
-  PASSPHRASE_ERROR,                  // Sync passphrase error.
-  TRUSTED_VAULT_KEY_MISSING_ERROR,   // Trusted vault keys missing.
-  SETTINGS_UNCONFIRMED_ERROR,        // Sync settings dialog not confirmed yet.
+  // No sync error.
+  NO_SYNC_ERROR,
+  // Unrecoverable error for managed users.
+  MANAGED_USER_UNRECOVERABLE_ERROR,
+  // Unrecoverable error for regular users.
+  UNRECOVERABLE_ERROR,
+  // Authentication error.
+  AUTH_ERROR,
+  // Out-of-date client error.
+  UPGRADE_CLIENT_ERROR,
+  // Sync passphrase error.
+  PASSPHRASE_ERROR,
+  // Trusted vault keys missing for all sync datatypes (encrypt everything is
+  // enabled).
+  TRUSTED_VAULT_KEY_MISSING_FOR_EVERYTHING_ERROR,
+  // Trusted vault keys missing for always-encrypted datatypes (passwords).
+  TRUSTED_VAULT_KEY_MISSING_FOR_PASSWORDS_ERROR,
+  // Sync settings dialog not confirmed yet.
+  SETTINGS_UNCONFIRMED_ERROR,
 };
 
 struct StatusLabels {
   MessageType message_type;
   int status_label_string_id;
-  int link_label_string_id;
+  int button_string_id;
   ActionType action_type;
 };
 
@@ -86,14 +98,12 @@ StatusLabels GetStatusLabels(Profile* profile);
 // actual labels, only in the return value.
 MessageType GetStatus(Profile* profile);
 
-#if !defined(OS_CHROMEOS)
 // Gets the error message and button label for the sync errors that should be
 // exposed to the user through the titlebar avatar button.
 AvatarSyncErrorType GetMessagesForAvatarSyncError(
     Profile* profile,
     int* content_string_id,
     int* button_string_id);
-#endif
 
 // Whether sync is currently blocked from starting because the sync
 // confirmation dialog hasn't been shown. Note that once the dialog is
@@ -109,7 +119,9 @@ bool ShouldShowPassphraseError(const syncer::SyncService* service);
 bool ShouldShowSyncKeysMissingError(const syncer::SyncService* service);
 
 // Opens a tab to trigger a reauth to retrieve the trusted vault keys.
-void OpenTabForSyncKeyRetrieval(Browser* browser);
+void OpenTabForSyncKeyRetrieval(
+    Browser* browser,
+    syncer::KeyRetrievalTriggerForUMA key_retrieval_trigger);
 
 // Testing-only variant of the above which allows the caller to specify the
 // URL.

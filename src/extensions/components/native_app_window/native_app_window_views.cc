@@ -169,34 +169,6 @@ void NativeAppWindowViews::SetZOrderLevel(ui::ZOrderLevel order) {
   widget_->SetZOrderLevel(order);
 }
 
-gfx::NativeView NativeAppWindowViews::GetHostView() const {
-  return widget_->GetNativeView();
-}
-
-gfx::Point NativeAppWindowViews::GetDialogPosition(const gfx::Size& size) {
-  gfx::Size app_window_size = widget_->GetWindowBoundsInScreen().size();
-  return gfx::Point((app_window_size.width() - size.width()) / 2,
-                    (app_window_size.height() - size.height()) / 2);
-}
-
-gfx::Size NativeAppWindowViews::GetMaximumDialogSize() {
-  return widget_->GetWindowBoundsInScreen().size();
-}
-
-void NativeAppWindowViews::AddObserver(
-    web_modal::ModalDialogHostObserver* observer) {
-  observer_list_.AddObserver(observer);
-}
-void NativeAppWindowViews::RemoveObserver(
-    web_modal::ModalDialogHostObserver* observer) {
-  observer_list_.RemoveObserver(observer);
-}
-
-void NativeAppWindowViews::OnViewWasResized() {
-  for (auto& observer : observer_list_)
-    observer.OnPositionRequiresUpdate();
-}
-
 // WidgetDelegate implementation.
 
 void NativeAppWindowViews::OnWidgetMove() {
@@ -437,5 +409,33 @@ void NativeAppWindowViews::SetVisibleOnAllWorkspaces(bool always_visible) {
 }
 
 void NativeAppWindowViews::SetActivateOnPointer(bool activate_on_pointer) {}
+
+gfx::NativeView NativeAppWindowViews::GetHostView() const {
+  return widget_->GetNativeView();
+}
+
+gfx::Point NativeAppWindowViews::GetDialogPosition(const gfx::Size& size) {
+  gfx::Size app_window_size = widget_->GetWindowBoundsInScreen().size();
+  return gfx::Point((app_window_size.width() - size.width()) / 2,
+                    (app_window_size.height() - size.height()) / 2);
+}
+
+gfx::Size NativeAppWindowViews::GetMaximumDialogSize() {
+  return widget_->GetWindowBoundsInScreen().size();
+}
+
+void NativeAppWindowViews::AddObserver(
+    web_modal::ModalDialogHostObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+void NativeAppWindowViews::RemoveObserver(
+    web_modal::ModalDialogHostObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void NativeAppWindowViews::OnViewWasResized() {
+  for (auto& observer : observer_list_)
+    observer.OnPositionRequiresUpdate();
+}
 
 }  // namespace native_app_window

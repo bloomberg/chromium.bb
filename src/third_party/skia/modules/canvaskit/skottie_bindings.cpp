@@ -11,14 +11,13 @@
 #include "include/core/SkTypes.h"
 #include "modules/skottie/include/Skottie.h"
 #include "modules/sksg/include/SkSGInvalidationController.h"
-#include "src/core/SkMakeUnique.h"
 
 #include <string>
 #include <vector>
 
 #include <emscripten.h>
 #include <emscripten/bind.h>
-#include "modules/canvaskit/WasmAliases.h"
+#include "modules/canvaskit/WasmCommon.h"
 
 #if SK_INCLUDE_MANAGED_SKOTTIE
 #include "modules/skottie/include/SkottieProperty.h"
@@ -65,6 +64,11 @@ public:
         return this->findAsset(name);
     }
 
+    sk_sp<SkData> load(const char[]/*path*/, const char name[]) const override {
+        // Ignore paths.
+        return this->findAsset(name);
+    }
+
 private:
     explicit SkottieAssetProvider(AssetVec assets) : fAssets(std::move(assets)) {}
 
@@ -86,11 +90,15 @@ class ManagedAnimation final : public SkRefCnt {
 public:
     static sk_sp<ManagedAnimation> Make(const std::string& json,
                                         sk_sp<skottie::ResourceProvider> rp) {
-        auto mgr = skstd::make_unique<skottie_utils::CustomPropertyManager>();
+        auto mgr = std::make_unique<skottie_utils::CustomPropertyManager>();
+        static constexpr char kInterceptPrefix[] = "__";
+        auto pinterceptor =
+            sk_make_sp<skottie_utils::ExternalAnimationPrecompInterceptor>(rp, kInterceptPrefix);
         auto animation = skottie::Animation::Builder()
                             .setMarkerObserver(mgr->getMarkerObserver())
                             .setPropertyObserver(mgr->getPropertyObserver())
-                            .setResourceProvider(rp)
+                            .setResourceProvider(std::move(rp))
+                            .setPrecompInterceptor(std::move(pinterceptor))
                             .make(json.c_str(), json.size());
 
         return animation
@@ -221,7 +229,11 @@ EMSCRIPTEN_BINDINGS(Skottie) {
         .function("render"    , select_overload<void(SkCanvas*) const>(&ManagedAnimation::render), allow_raw_pointers())
         .function("render"    , select_overload<void(SkCanvas*, const SkRect&) const>
                                     (&ManagedAnimation::render), allow_raw_pointers())
-        .function("setColor"  , &ManagedAnimation::setColor)
+        .function("_setColor"  , optional_override([](ManagedAnimation& self, const std::string& key, uintptr_t /* float* */ cPtr) {
+            float* fourFloats = reinterpret_cast<float*>(cPtr);
+            SkColor4f color = { fourFloats[0], fourFloats[1], fourFloats[2], fourFloats[3] };
+            self.setColor(key, color.toSkColor());
+        }))
         .function("setOpacity", &ManagedAnimation::setOpacity)
         .function("getMarkers", &ManagedAnimation::getMarkers)
         .function("getColorProps"  , &ManagedAnimation::getColorProps)

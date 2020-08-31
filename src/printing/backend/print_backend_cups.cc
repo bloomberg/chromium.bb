@@ -24,15 +24,14 @@
 #include "printing/backend/print_backend_consts.h"
 #include "url/gurl.h"
 
+#if defined(OS_MACOSX)
+#include "printing/backend/cups_connection.h"
+#include "printing/backend/cups_ipp_utils.h"
+#include "printing/backend/print_backend_cups_ipp.h"
+#include "printing/printing_features.h"
+#endif  // defined(OS_MACOSX)
+
 namespace printing {
-
-namespace {
-
-const char kCUPSPrinterInfoOpt[] = "printer-info";
-const char kCUPSPrinterStateOpt[] = "printer-state";
-const char kCUPSPrinterTypeOpt[] = "printer-type";
-
-}  // namespace
 
 PrintBackendCUPS::PrintBackendCUPS(const GURL& print_server_url,
                                    http_encryption_t encryption,
@@ -47,29 +46,36 @@ PrintBackendCUPS::PrintBackendCUPS(const GURL& print_server_url,
 bool PrintBackendCUPS::PrinterBasicInfoFromCUPS(
     const cups_dest_t& printer,
     PrinterBasicInfo* printer_info) {
-  // CUPS can have 'printers' that are actually scanners. (not MFC)
-  // At least on Mac. Check for scanners and skip them.
   const char* type_str =
-      cupsGetOption(kCUPSPrinterTypeOpt, printer.num_options, printer.options);
+      cupsGetOption(kCUPSOptPrinterType, printer.num_options, printer.options);
   if (type_str) {
-    int type;
-    if (base::StringToInt(type_str, &type) && (type & CUPS_PRINTER_SCANNER))
-      return false;
+    cups_ptype_t type;
+    if (base::StringToUint(type_str, &type)) {
+      // Exclude fax and scanner devices.
+      // Also exclude discovered printers that have not been added locally.
+      // On macOS, AirPrint destinations show up even if they're not added to
+      // the system, and their capabilities cannot be read in that situation.
+      // (crbug.com/1027834)
+      constexpr cups_ptype_t kMask =
+          CUPS_PRINTER_FAX | CUPS_PRINTER_SCANNER | CUPS_PRINTER_DISCOVERED;
+      if (type & kMask)
+        return false;
+    }
   }
 
   printer_info->printer_name = printer.name;
   printer_info->is_default = printer.is_default;
 
   const char* info =
-      cupsGetOption(kCUPSPrinterInfoOpt, printer.num_options, printer.options);
+      cupsGetOption(kCUPSOptPrinterInfo, printer.num_options, printer.options);
 
   const char* state =
-      cupsGetOption(kCUPSPrinterStateOpt, printer.num_options, printer.options);
+      cupsGetOption(kCUPSOptPrinterState, printer.num_options, printer.options);
   if (state)
     base::StringToInt(state, &printer_info->printer_status);
 
-  const char* drv_info =
-      cupsGetOption(kDriverNameTagName, printer.num_options, printer.options);
+  const char* drv_info = cupsGetOption(kCUPSOptPrinterMakeAndModel,
+                                       printer.num_options, printer.options);
   if (drv_info)
     printer_info->options[kDriverInfoTagName] = *drv_info;
 
@@ -158,7 +164,7 @@ bool PrintBackendCUPS::GetPrinterSemanticCapsAndDefaults(
   if (!GetPrinterCapsAndDefaults(printer_name, &info))
     return false;
 
-  return ParsePpdCapabilities(printer_name, info.printer_capabilities,
+  return ParsePpdCapabilities(printer_name, locale(), info.printer_capabilities,
                               printer_info);
 }
 
@@ -212,10 +218,17 @@ bool PrintBackendCUPS::IsValidPrinter(const std::string& printer_name) {
   return !!GetNamedDest(printer_name);
 }
 
-#if !defined(OS_CHROMEOS)
 scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
     const base::DictionaryValue* print_backend_settings,
-    const std::string& locale) {
+    const std::string& locale,
+    bool for_cloud_print) {
+#if defined(OS_MACOSX)
+  if (!for_cloud_print &&
+      base::FeatureList::IsEnabled(features::kCupsIppPrintingBackend)) {
+    return base::MakeRefCounted<PrintBackendCupsIpp>(
+        CreateConnection(print_backend_settings), locale);
+  }
+#endif  // defined(OS_MACOSX)
   std::string print_server_url_str, cups_blocking;
   int encryption = HTTP_ENCRYPT_NEVER;
   if (print_backend_settings) {
@@ -231,14 +244,16 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
       print_server_url, static_cast<http_encryption_t>(encryption),
       cups_blocking == kValueTrue, locale);
 }
-#endif  // !defined(OS_CHROMEOS)
 
 int PrintBackendCUPS::GetDests(cups_dest_t** dests) {
-  if (print_server_url_.is_empty())  // Use default (local) print server.
-    return cupsGetDests(dests);
+  // Default to the local print server (CUPS scheduler)
+  if (print_server_url_.is_empty())
+    return cupsGetDests2(CUPS_HTTP_DEFAULT, dests);
 
-  HttpConnectionCUPS http(print_server_url_, cups_encryption_);
-  http.SetBlocking(blocking_);
+  HttpConnectionCUPS http(print_server_url_, cups_encryption_, blocking_);
+
+  // This call must be made in the same scope as |http| because its destructor
+  // closes the connection.
   return cupsGetDests2(http.http(), dests);
 }
 
@@ -261,8 +276,7 @@ base::FilePath PrintBackendCUPS::GetPPD(const char* name) {
     // connection will timeout after 10 seconds of no data period. And it will
     // return the same way as if data was completely and successfully
     // downloaded.
-    HttpConnectionCUPS http(print_server_url_, cups_encryption_);
-    http.SetBlocking(blocking_);
+    HttpConnectionCUPS http(print_server_url_, cups_encryption_, blocking_);
     ppd_file_path = cupsGetPPD2(http.http(), name);
     // Check if the get full PPD, since non-blocking call may simply return
     // normally after timeout expired.
@@ -298,8 +312,7 @@ PrintBackendCUPS::ScopedDestination PrintBackendCUPS::GetNamedDest(
     // Use default (local) print server.
     dest = cupsGetNamedDest(CUPS_HTTP_DEFAULT, printer_name.c_str(), nullptr);
   } else {
-    HttpConnectionCUPS http(print_server_url_, cups_encryption_);
-    http.SetBlocking(blocking_);
+    HttpConnectionCUPS http(print_server_url_, cups_encryption_, blocking_);
     dest = cupsGetNamedDest(http.http(), printer_name.c_str(), nullptr);
   }
   return ScopedDestination(dest);

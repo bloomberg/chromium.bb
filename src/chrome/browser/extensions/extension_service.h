@@ -22,6 +22,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_management.h"
+#include "chrome/browser/extensions/forced_extensions/installation_metrics.h"
 #include "chrome/browser/extensions/forced_extensions/installation_tracker.h"
 #include "chrome/browser/extensions/install_gate.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
@@ -31,6 +32,7 @@
 #include "components/sync/model/string_ordinal.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
@@ -41,6 +43,7 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
 
@@ -55,13 +58,12 @@ class Profile;
 namespace base {
 class CommandLine;
 class OneShotEvent;
-}
+}  // namespace base
 
 FORWARD_DECLARE_TEST(BlacklistedExtensionSyncServiceTest,
                      SyncBlacklistedExtension);
 
 namespace extensions {
-class AppDataMigrator;
 class ComponentLoader;
 class CrxInstaller;
 class ExtensionActionStorageManager;
@@ -72,6 +74,19 @@ class ExtensionUpdater;
 class ExternalInstallManager;
 class SharedModuleService;
 class UpdateObserver;
+enum class UnloadedExtensionReason;
+
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// "ExtensionUpdateCheckDataKey" in src/tools/metrics/histograms/enums.xml.
+enum class ExtensionUpdateCheckDataKey {
+  // No update check data keys were found so no action was taken.
+  kNoKey = 0,
+  // The update check daya keys had a "_malware" key resulting in the extension
+  // being disabled.
+  kMalware = 1,
+  kMaxValue = kMalware
+};
 
 // This is an interface class to encapsulate the dependencies that
 // various classes have on ExtensionService. This allows easy mocking.
@@ -143,6 +158,10 @@ class ExtensionServiceInterface
 
   // Whether the extension service is ready.
   virtual bool is_ready() = 0;
+
+  // Whether a user is able to disable a given extension.
+  virtual bool UserCanDisableInstalledExtension(
+      const std::string& extension_id) = 0;
 };
 
 // Manages installed and running Chromium extensions. An instance is shared
@@ -238,9 +257,13 @@ class ExtensionService : public ExtensionServiceInterface,
                           UninstallReason reason,
                           base::string16* error);
 
-  // Enables the extension.  If the extension is already enabled, does
+  // Enables the extension. If the extension is already enabled, does
   // nothing.
   void EnableExtension(const std::string& extension_id);
+
+  // Performs action based on Omaha attributes for the extension.
+  void PerformActionBasedOnOmahaAttributes(const std::string& extension_id,
+                                           const base::Value& attributes);
 
   // Disables the extension. If the extension is already disabled, just adds
   // the |disable_reasons| (a bitmask of disable_reason::DisableReason - there
@@ -292,13 +315,13 @@ class ExtensionService : public ExtensionServiceInterface,
   // |extension|            the extension
   // |page_ordinal|         the location of the extension in the app launcher
   // |install_flags|        a bitmask of InstallFlags
-  // |dnr_ruleset_checksum| Checksum of the indexed ruleset for the Declarative
-  //                        Net Request API.
+  // |ruleset_checksums|    Checksums of the indexed rulesets for the
+  //                        Declarative Net Request API.
   void OnExtensionInstalled(
       const Extension* extension,
       const syncer::StringOrdinal& page_ordinal,
       int install_flags,
-      const base::Optional<int>& dnr_ruleset_checksum = base::nullopt);
+      const declarative_net_request::RulesetChecksums& ruleset_checksums = {});
   void OnExtensionInstalled(const Extension* extension,
                             const syncer::StringOrdinal& page_ordinal) {
     OnExtensionInstalled(extension, page_ordinal,
@@ -338,6 +361,11 @@ class ExtensionService : public ExtensionServiceInterface,
                            InstallGate* install_delayer);
   void UnregisterInstallGate(InstallGate* install_delayer);
 
+  // Returns whether a user is able to disable a given extension or if that is
+  // not possible (for instance, extension was enabled by policy).
+  bool UserCanDisableInstalledExtension(
+      const std::string& extension_id) override;
+
   //////////////////////////////////////////////////////////////////////////////
   // Simple Accessors
 
@@ -368,6 +396,10 @@ class ExtensionService : public ExtensionServiceInterface,
 
   ExternalInstallManager* external_install_manager() {
     return external_install_manager_.get();
+  }
+
+  InstallationTracker* forced_extensions_tracker() {
+    return &forced_extensions_tracker_;
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -480,10 +512,15 @@ class ExtensionService : public ExtensionServiceInterface,
       int install_flags,
       const syncer::StringOrdinal& page_ordinal,
       const std::string& install_parameter,
-      const base::Optional<int>& dnr_ruleset_checksum);
+      const declarative_net_request::RulesetChecksums& ruleset_checksums);
 
   // Common helper to finish installing the given extension.
   void FinishInstallation(const Extension* extension);
+
+  // Sets the policy settings for the extension basically
+  // by delegating this to the permission_data_updater.
+  // Holds for default and policy settings.
+  void SetPolicySettingsForExtension(const Extension* extension);
 
   // Disables the extension if the privilege level has increased
   // (e.g., due to an upgrade).
@@ -500,6 +537,9 @@ class ExtensionService : public ExtensionServiceInterface,
 
   // Helper method to determine if an extension can be blocked.
   bool CanBlockExtension(const Extension* extension) const;
+
+  // Enables an extension that was only previously disabled remotely.
+  void MaybeEnableRemotelyDisabledExtension(const std::string& extension_id);
 
   // Helper to determine if installing an extensions should proceed immediately,
   // or if we should delay the install until further notice, or if the install
@@ -653,14 +693,14 @@ class ExtensionService : public ExtensionServiceInterface,
 
   base::ObserverList<UpdateObserver, true>::Unchecked update_observers_;
 
-  // Migrates app data when upgrading a legacy packaged app to a platform app
-  std::unique_ptr<AppDataMigrator> app_data_migrator_;
-
   // Helper to register and unregister extensions.
   ExtensionRegistrar extension_registrar_;
 
   // Tracker of enterprise policy forced installation.
   InstallationTracker forced_extensions_tracker_;
+
+  // Reports force-installed extension metrics to UMA.
+  InstallationMetrics forced_extensions_metrics_;
 
   ScopedObserver<ProfileManager, ProfileManagerObserver>
       profile_manager_observer_{this};
@@ -679,15 +719,12 @@ class ExtensionService : public ExtensionServiceInterface,
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            WillNotLoadBlacklistedExtensionsFromDirectory);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, ReloadBlacklistedExtension);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
-                           RemoveExtensionFromBlacklist);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, RemoveExtensionFromBlacklist);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, BlacklistedInPrefsFromStartup);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
-                           GreylistedExtensionDisabled);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, GreylistedExtensionDisabled);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            GreylistDontEnableManuallyDisabled);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
-                           GreylistUnknownDontChange);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, GreylistUnknownDontChange);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            ManagementPolicyProhibitsEnableOnInstalled);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,

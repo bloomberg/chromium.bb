@@ -14,6 +14,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 
 import org.chromium.base.BuildInfo;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.net.MimeTypeFilter;
@@ -21,19 +22,23 @@ import org.chromium.ui.base.WindowAndroid;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * A worker task to enumerate image files on disk.
  */
 class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
+    // A tag for logging error messages.
+    private static final String TAG = "PhotoPicker";
+
     /**
      * An interface to use to communicate back the results to the client.
      */
     public interface FilesEnumeratedCallback {
         /**
          * A callback to define to receive the list of all images on disk.
-         * @param files The list of images.
+         * @param files The list of images, or null if the function fails.
          */
         void filesEnumeratedCallback(List<PickerBitmap> files);
     }
@@ -96,7 +101,7 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
      */
     @Override
     protected List<PickerBitmap> doInBackground() {
-        assert !ThreadUtils.runningOnUiThread();
+        ThreadUtils.assertOnBackgroundThread();
 
         if (isCancelled()) return null;
 
@@ -153,7 +158,16 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
 
         Uri contentUri = MediaStore.Files.getContentUri("external");
         Cursor imageCursor =
-                mContentResolver.query(contentUri, selectColumns, whereClause, whereArgs, orderBy);
+                createImageCursor(contentUri, selectColumns, whereClause, whereArgs, orderBy);
+        if (imageCursor == null) {
+            Log.e(TAG, "Content Resolver query() returned null");
+            return null;
+        }
+
+        Log.i(TAG,
+                "Found " + imageCursor.getCount() + " media files, when requesting columns: "
+                        + Arrays.toString(selectColumns) + ", with WHERE " + whereClause
+                        + ", params: " + Arrays.toString(whereArgs));
 
         while (imageCursor.moveToNext()) {
             int mimeTypeIndex = imageCursor.getColumnIndex(MediaStore.Files.FileColumns.MIME_TYPE);
@@ -175,16 +189,17 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
         imageCursor.close();
 
         pickerBitmaps.add(0, new PickerBitmap(null, 0, PickerBitmap.TileTypes.GALLERY));
-        boolean hasCameraAppAvailable =
-                mWindowAndroid.canResolveActivity(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
-        boolean hasOrCanRequestCameraPermission =
-                mWindowAndroid.hasPermission(Manifest.permission.CAMERA)
-                || mWindowAndroid.canRequestPermission(Manifest.permission.CAMERA);
-        if (hasCameraAppAvailable && hasOrCanRequestCameraPermission) {
+        if (shouldShowCameraTile()) {
             pickerBitmaps.add(0, new PickerBitmap(null, 0, PickerBitmap.TileTypes.CAMERA));
         }
 
         return pickerBitmaps;
+    }
+
+    @Override
+    protected void onCancelled() {
+        super.onCancelled();
+        mCallback.filesEnumeratedCallback(null);
     }
 
     /**
@@ -198,5 +213,26 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
         }
 
         mCallback.filesEnumeratedCallback(files);
+    }
+
+    /**
+     * Creates a cursor containing the image files to show. Can be overridden in tests to provide
+     * fake data.
+     */
+    protected Cursor createImageCursor(Uri contentUri, String[] selectColumns, String whereClause,
+            String[] whereArgs, String orderBy) {
+        return mContentResolver.query(contentUri, selectColumns, whereClause, whereArgs, orderBy);
+    }
+
+    /**
+     * Returns whether to include the Camera tile also.
+     */
+    protected boolean shouldShowCameraTile() {
+        boolean hasCameraAppAvailable =
+                mWindowAndroid.canResolveActivity(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
+        boolean hasOrCanRequestCameraPermission =
+                (mWindowAndroid.hasPermission(Manifest.permission.CAMERA)
+                        || mWindowAndroid.canRequestPermission(Manifest.permission.CAMERA));
+        return hasCameraAppAvailable && hasOrCanRequestCameraPermission;
     }
 }

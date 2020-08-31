@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/device/serial/serial_io_handler.h"
 
@@ -46,7 +47,7 @@ class SerialIoHandlerWin : public SerialIoHandler,
                      DWORD bytes_transfered,
                      DWORD error) override;
 
-  void OnDeviceRemoved(const std::string& device_path);
+  void OnDeviceRemoved(const base::string16& device_path);
 
   // Context used for asynchronous WaitCommEvent calls.
   std::unique_ptr<base::MessagePumpForIO::IOContext> comm_context_;
@@ -58,16 +59,16 @@ class SerialIoHandlerWin : public SerialIoHandler,
   std::unique_ptr<base::MessagePumpForIO::IOContext> write_context_;
 
   // Asynchronous event mask state
-  DWORD event_mask_;
+  DWORD event_mask_ = 0;
 
   // Indicates if a pending read is waiting on initial data arrival via
   // WaitCommEvent, as opposed to waiting on actual ReadFile completion
   // after a corresponding WaitCommEvent has completed.
-  bool is_comm_pending_;
+  bool is_comm_pending_ = false;
 
   // The helper lives on the UI thread and holds a weak reference back to the
   // handler that owns it.
-  UiThreadHelper* helper_;
+  UiThreadHelper* helper_ = nullptr;
   base::WeakPtrFactory<SerialIoHandlerWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SerialIoHandlerWin);

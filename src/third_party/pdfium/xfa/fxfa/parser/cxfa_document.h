@@ -54,6 +54,7 @@ class CXFA_Document final : public CXFA_NodeOwner {
     LayoutProcessorIface();
     virtual ~LayoutProcessorIface();
     virtual void SetForceRelayout(bool enable) = 0;
+    virtual void AddChangedContainer(CXFA_Node* pContainer) = 0;
 
     void SetDocument(CXFA_Document* pDocument) { m_pDocument = pDocument; }
     CXFA_Document* GetDocument() const { return m_pDocument.Get(); }
@@ -96,7 +97,7 @@ class CXFA_Document final : public CXFA_NodeOwner {
   void set_is_scripting() { m_bScripting = true; }
 
   bool IsInteractive();
-  XFA_VERSION GetCurVersionMode() { return m_eCurVersionMode; }
+  XFA_VERSION GetCurVersionMode() const { return m_eCurVersionMode; }
   XFA_VERSION RecognizeXFAVersionNumber(const WideString& wsTemplateNS);
   FormType GetFormType() const;
 

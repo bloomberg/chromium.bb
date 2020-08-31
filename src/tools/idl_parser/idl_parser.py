@@ -35,12 +35,18 @@ import os.path
 import sys
 import time
 
-from idl_lexer import IDLLexer
-from idl_node import IDLAttribute
-from idl_node import IDLNode
+# Can't use relative imports if we don't have a parent package.
+if __package__:
+  from .idl_lexer import IDLLexer
+  from .idl_node import IDLAttribute, IDLNode
+else:
+  from idl_lexer import IDLLexer
+  from idl_node import IDLAttribute, IDLNode
 
-SRC_DIR = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
-sys.path.insert(0, os.path.join(SRC_DIR, 'third_party'))
+SRC_DIR = os.path.abspath(os.path.dirname(__file__))
+# Preserve sys.path[0] as is.
+# https://docs.python.org/3/library/sys.html?highlight=path[0]#sys.path
+sys.path.insert(1, os.path.join(SRC_DIR, os.pardir, os.pardir, 'third_party'))
 from ply import lex
 from ply import yacc
 
@@ -62,7 +68,7 @@ ERROR_REMAP = {
 }
 
 _EXTENDED_ATTRIBUTES_APPLICABLE_TO_TYPES = [
-    'Clamp', 'EnforceRange', 'TreatNullAs']
+    'Clamp', 'EnforceRange', 'StringContext', 'TreatNullAs']
 
 
 def Boolean(val):
@@ -912,7 +918,8 @@ class IDLParser(object):
 
     if len(p) == 6:
       cls = 'Sequence' if p[1] == 'sequence' else 'FrozenArray'
-      p[0] = self.BuildProduction(cls, p, 1, ListFromConcat(p[3], p[5]))
+      p[0] = self.BuildProduction(cls, p, 1, p[3])
+      p[0] = ListFromConcat(p[0], p[5])
 
   # Added StringType, OBJECT
   def p_PrimitiveType(self, p):

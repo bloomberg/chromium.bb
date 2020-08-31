@@ -17,13 +17,12 @@
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/device_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/manager/display_configurator.h"
 
 namespace arc {
@@ -61,8 +60,8 @@ class ArcPowerBridgeFactory
 class ArcPowerBridge::WakeLockRequestor {
  public:
   WakeLockRequestor(device::mojom::WakeLockType type,
-                    service_manager::Connector* connector)
-      : type_(type), connector_(connector) {}
+                    device::mojom::WakeLockProvider* provider)
+      : type_(type), provider_(provider) {}
   ~WakeLockRequestor() = default;
 
   // Increments the number of outstanding requests from Android and requests a
@@ -74,10 +73,7 @@ class ArcPowerBridge::WakeLockRequestor {
 
     // Initialize |wake_lock_| if this is the first time we're using it.
     if (!wake_lock_) {
-      mojo::Remote<device::mojom::WakeLockProvider> provider;
-      connector_->Connect(device::mojom::kServiceName,
-                          provider.BindNewPipeAndPassReceiver());
-      provider->GetWakeLockWithoutContext(
+      provider_->GetWakeLockWithoutContext(
           type_, device::mojom::WakeLockReason::kOther, "ARC",
           wake_lock_.BindNewPipeAndPassReceiver());
     }
@@ -106,10 +102,10 @@ class ArcPowerBridge::WakeLockRequestor {
 
  private:
   // Type of wake lock to request.
-  device::mojom::WakeLockType type_;
+  const device::mojom::WakeLockType type_;
 
-  // Used to get services. Not owned.
-  service_manager::Connector* const connector_ = nullptr;
+  // The WakeLockProvider implementation we use to request WakeLocks. Not owned.
+  device::mojom::WakeLockProvider* const provider_;
 
   // Number of outstanding Android requests.
   int num_android_requests_ = 0;
@@ -136,6 +132,10 @@ ArcPowerBridge::ArcPowerBridge(content::BrowserContext* context,
 ArcPowerBridge::~ArcPowerBridge() {
   arc_bridge_service_->power()->RemoveObserver(this);
   arc_bridge_service_->power()->SetHost(nullptr);
+}
+
+void ArcPowerBridge::SetUserIdHash(const std::string& user_id_hash) {
+  user_id_hash_ = user_id_hash;
 }
 
 bool ArcPowerBridge::TriggerNotifyBrightnessTimerForTesting() {
@@ -177,19 +177,66 @@ void ArcPowerBridge::SuspendImminent(
 
   auto token = base::UnguessableToken::Create();
   chromeos::PowerManagerClient::Get()->BlockSuspend(token, "ArcPowerBridge");
-  power_instance->Suspend(base::BindOnce(
-      [](base::UnguessableToken token) {
-        chromeos::PowerManagerClient::Get()->UnblockSuspend(token);
-      },
-      token));
+  power_instance->Suspend(base::BindOnce(&ArcPowerBridge::OnAndroidSuspendReady,
+                                         weak_ptr_factory_.GetWeakPtr(),
+                                         token));
+}
+
+void ArcPowerBridge::OnAndroidSuspendReady(base::UnguessableToken token) {
+  if (arc::IsArcVmEnabled()) {
+    vm_tools::concierge::SuspendVmRequest request;
+    request.set_name(kArcVmName);
+    request.set_owner_id(user_id_hash_);
+    chromeos::DBusThreadManager::Get()->GetConciergeClient()->SuspendVm(
+        request, base::BindOnce(&ArcPowerBridge::OnConciergeSuspendVmResponse,
+                                weak_ptr_factory_.GetWeakPtr(), token));
+    return;
+  }
+
+  chromeos::PowerManagerClient::Get()->UnblockSuspend(token);
+}
+
+void ArcPowerBridge::OnConciergeSuspendVmResponse(
+    base::UnguessableToken token,
+    base::Optional<vm_tools::concierge::SuspendVmResponse> reply) {
+  if (!reply.has_value())
+    LOG(ERROR) << "Failed to suspend arcvm, no reply received.";
+  else if (!reply.value().success())
+    LOG(ERROR) << "Failed to suspend arcvm: " << reply.value().failure_reason();
+  chromeos::PowerManagerClient::Get()->UnblockSuspend(token);
 }
 
 void ArcPowerBridge::SuspendDone(const base::TimeDelta& sleep_duration) {
+  if (arc::IsArcVmEnabled()) {
+    vm_tools::concierge::ResumeVmRequest request;
+    request.set_name(kArcVmName);
+    request.set_owner_id(user_id_hash_);
+    chromeos::DBusThreadManager::Get()->GetConciergeClient()->ResumeVm(
+        request, base::BindOnce(&ArcPowerBridge::OnConciergeResumeVmResponse,
+                                weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+  DispatchAndroidResume();
+}
+
+void ArcPowerBridge::OnConciergeResumeVmResponse(
+    base::Optional<vm_tools::concierge::ResumeVmResponse> reply) {
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to resume arcvm, no reply received.";
+    return;
+  }
+  if (!reply.value().success()) {
+    LOG(ERROR) << "Failed to resume arcvm: " << reply.value().failure_reason();
+    return;
+  }
+  DispatchAndroidResume();
+}
+
+void ArcPowerBridge::DispatchAndroidResume() {
   mojom::PowerInstance* power_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->power(), Resume);
   if (!power_instance)
     return;
-
   power_instance->Resume();
 }
 
@@ -290,12 +337,14 @@ ArcPowerBridge::WakeLockRequestor* ArcPowerBridge::GetWakeLockRequestor(
   if (it != wake_lock_requestors_.end())
     return it->second.get();
 
-  service_manager::Connector* connector =
-      connector_for_test_ ? connector_for_test_ : content::GetSystemConnector();
-  DCHECK(connector);
+  if (!wake_lock_provider_) {
+    content::GetDeviceService().BindWakeLockProvider(
+        wake_lock_provider_.BindNewPipeAndPassReceiver());
+  }
 
   it = wake_lock_requestors_
-           .emplace(type, std::make_unique<WakeLockRequestor>(type, connector))
+           .emplace(type, std::make_unique<WakeLockRequestor>(
+                              type, wake_lock_provider_.get()))
            .first;
   return it->second.get();
 }

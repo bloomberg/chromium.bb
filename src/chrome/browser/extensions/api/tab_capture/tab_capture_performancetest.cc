@@ -19,6 +19,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/tracing.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -277,6 +278,10 @@ class TabCapturePerformanceTest : public TabCapturePerformanceTestBase,
 }  // namespace
 
 IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
+  if (!is_full_performance_run()) {
+    // TODO(crbug.com/1042457): Flaky failures across multiple CQ builders.
+    return;
+  }
   // Load the extension and test page, and tell the extension to start tab
   // capture.
   LoadExtension(GetApiTestDataDir()

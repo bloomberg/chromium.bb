@@ -92,7 +92,9 @@ class NotificationChannelsProviderAndroid
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const content_settings::ResourceIdentifier& resource_identifier,
-      std::unique_ptr<base::Value>&& value) override;
+      std::unique_ptr<base::Value>&& value,
+      const content_settings::ContentSettingConstraints& constraints = {})
+      override;
   void ClearAllContentSettingsRules(ContentSettingsType content_type) override;
   void ShutdownOnUIThread() override;
   base::Time GetWebsiteSettingLastModified(
@@ -100,11 +102,11 @@ class NotificationChannelsProviderAndroid
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const content_settings::ResourceIdentifier& resource_identifier) override;
+  void SetClockForTesting(base::Clock* clock) override;
 
  private:
   explicit NotificationChannelsProviderAndroid(
-      std::unique_ptr<NotificationChannelsBridge> bridge,
-      std::unique_ptr<base::Clock> clock);
+      std::unique_ptr<NotificationChannelsBridge> bridge);
   friend class NotificationChannelsProviderAndroidTest;
 
   std::vector<NotificationChannel> UpdateCachedChannels() const;
@@ -120,7 +122,7 @@ class NotificationChannelsProviderAndroid
 
   bool platform_supports_channels_;
 
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // Flag to keep track of whether |cached_channels_| has been initialized yet.
   bool initialized_cached_channels_;

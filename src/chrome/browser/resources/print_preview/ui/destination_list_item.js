@@ -17,7 +17,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {Destination, DestinationOrigin} from '../data/destination.js';
 
-import {HighlightResults, updateHighlights} from './highlight_utils.js';
+import {updateHighlights} from './highlight_utils.js';
 
 
 // <if expr="chromeos">
@@ -79,7 +79,7 @@ Polymer({
   highlights_: [],
 
   /** @private */
-  onDestinationPropertiesChange_: function() {
+  onDestinationPropertiesChange_() {
     this.title = this.destination.displayName;
     this.stale_ = this.destination.isOfflineOrInvalid;
     if (this.destination.isExtension) {
@@ -97,10 +97,10 @@ Polymer({
    * Called if the printer configuration request is accepted. Show the waiting
    * message to the user as the configuration might take longer than expected.
    */
-  onConfigureRequestAccepted: function() {
+  onConfigureRequestAccepted() {
     // It must be a Chrome OS CUPS printer which hasn't been set up before.
     assert(
-        this.destination.origin == DestinationOrigin.CROS &&
+        this.destination.origin === DestinationOrigin.CROS &&
         !this.destination.capabilities);
     this.configurationStatus_ = DestinationConfigStatus.IN_PROGRESS;
   },
@@ -109,7 +109,7 @@ Polymer({
    * Called when the printer configuration request completes.
    * @param {boolean} success Whether configuration was successful.
    */
-  onConfigureComplete: function(success) {
+  onConfigureComplete(success) {
     this.configurationStatus_ =
         success ? DestinationConfigStatus.IDLE : DestinationConfigStatus.FAILED;
   },
@@ -119,20 +119,20 @@ Polymer({
    * @return {boolean} Whether the current configuration status is |status|.
    * @private
    */
-  checkConfigurationStatus_: function(status) {
-    return this.configurationStatus_ == status;
+  checkConfigurationStatus_(status) {
+    return this.configurationStatus_ === status;
   },
   // </if>
 
   /** @private */
-  updateHighlightsAndHint_: function() {
+  updateHighlightsAndHint_() {
     this.updateSearchHint_();
     removeHighlights(this.highlights_);
-    this.highlights_ = this.updateHighlighting_().highlights;
+    this.highlights_ = updateHighlights(this, this.searchQuery, new Map);
   },
 
   /** @private */
-  updateSearchHint_: function() {
+  updateSearchHint_() {
     const matches = !this.searchQuery ?
         [] :
         this.destination.extraPropertiesToMatch.filter(
@@ -143,19 +143,10 @@ Polymer({
   },
 
   /**
-   * @return {!HighlightResults} The highlight wrappers and
-   *     search bubbles that were created.
-   * @private
-   */
-  updateHighlighting_: function() {
-    return updateHighlights(this, this.searchQuery);
-  },
-
-  /**
    * @return {string} A tooltip for the extension printer icon.
    * @private
    */
-  getExtensionPrinterTooltip_: function() {
+  getExtensionPrinterTooltip_() {
     if (!this.destination.isExtension) {
       return '';
     }

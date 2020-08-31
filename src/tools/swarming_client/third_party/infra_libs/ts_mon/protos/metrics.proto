@@ -16,9 +16,20 @@ message MetricsPayload {
 
 message MetricsCollection {
   repeated MetricsDataSet metrics_data_set = 1;
+  repeated RootLabels root_labels = 2;
+
   oneof target_schema {
     NetworkDevice network_device = 11;
     Task task = 12;
+  }
+
+  message RootLabels {
+    required string key = 1;
+    oneof value {
+      string string_value = 2;
+      int64 int64_value = 3;
+      bool bool_value = 4;
+    }
   }
 }
 

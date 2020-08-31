@@ -20,17 +20,12 @@ DEPS = [
 ]
 
 
-PROPERTIES = {
-  'patch_project': recipe_api.Property(None),
-  'patch_repository_url': recipe_api.Property(None),
-}
-
-
-def RunSteps(api, patch_project, patch_repository_url):
+def RunSteps(api):
   api.gclient.set_config('infra')
   with api.context(cwd=api.path['cache'].join('builder')):
     bot_update_step = api.presubmit.prepare()
-    return api.presubmit.execute(bot_update_step)
+    skip_owners = api.properties.get('skip_owners', False)
+    return api.presubmit.execute(bot_update_step, skip_owners)
 
 
 def GenTests(api):
@@ -53,6 +48,17 @@ def GenTests(api):
       api.cq(dry_run=True) +
       api.post_process(post_process.StatusSuccess) +
       api.post_process(post_process.StepCommandContains, 'presubmit', ['--dry_run']) +
+      api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+      api.test('skip_owners') +
+      api.runtime(is_experimental=False, is_luci=True) +
+      api.buildbucket.try_build(project='infra') +
+      api.properties(skip_owners=True) +
+      api.post_process(post_process.StatusSuccess) +
+      api.post_process(
+          post_process.StepCommandContains, 'presubmit', ['--skip_canned', 'CheckOwners']) +
       api.post_process(post_process.DropExpectation)
   )
 

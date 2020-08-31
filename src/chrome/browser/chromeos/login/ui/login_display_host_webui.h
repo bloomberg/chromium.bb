@@ -14,6 +14,7 @@
 #include "ash/public/cpp/multi_user_window_manager_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/signin_screen_controller.h"
@@ -76,14 +77,11 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   WizardController* GetWizardController() override;
   void OnStartUserAdding() override;
   void CancelUserAdding() override;
-  void OnStartSignInScreen(const LoginScreenContext& context) override;
+  void OnStartSignInScreen() override;
   void OnPreferencesChanged() override;
   void OnStartAppLaunch() override;
-  void OnStartArcKiosk() override;
-  void OnStartWebKiosk() override;
   void OnBrowserCreated() override;
-  void ShowGaiaDialog(bool can_close,
-                      const AccountId& prefilled_account) override;
+  void ShowGaiaDialog(const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;
   const user_manager::UserList GetUsers() override;
@@ -92,12 +90,11 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
   void RequestSystemInfoUpdate() override;
-
   void OnCancelPasswordChangedFlow() override;
 
   // Trace id for ShowLoginWebUI event (since there exists at most one login
   // WebUI at a time).
-  static const int kShowLoginWebUIid;
+  static const trace_event_internal::TraceID kShowLoginWebUIid;
 
   views::Widget* login_window_for_test() { return login_window_; }
 

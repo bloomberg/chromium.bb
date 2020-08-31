@@ -6,10 +6,16 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_profiler_init_options.h"
 #include "third_party/blink/renderer/core/timing/profiler.h"
-#include "third_party/blink/renderer/core/timing/profiler_init_options.h"
 
 namespace blink {
+
+namespace {
+
+static constexpr int kLargeProfilerCount = 128;
+
+}  // namespace
 
 // Tests that a leaked profiler doesn't crash the isolate on heap teardown.
 TEST(ProfilerGroupTest, LeakProfiler) {
@@ -142,6 +148,30 @@ TEST(ProfilerGroupTest, OverflowSamplingInterval) {
                                  base::TimeTicks(), scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
+}
+
+// Tests behaviour when exceeding the maximum number of concurrent profiles
+// supported by the V8 profiling API (https://crbug.com/1052341).
+TEST(ProfilerGroupTest, V8ProfileLimit) {
+  V8TestingScope scope;
+
+  ProfilerGroup* profiler_group = ProfilerGroup::From(scope.GetIsolate());
+
+  ProfilerInitOptions* init_options = ProfilerInitOptions::Create();
+  init_options->setSampleInterval(0);
+
+  HeapVector<Member<Profiler>> profilers;
+  for (auto i = 0; i < kLargeProfilerCount; i++) {
+    // TODO(acomminos): The V8 public API should likely be changed to expose
+    // exceeding the profile limit during creation. This would enable
+    // instantiation of profiles to cause a promise rejection instead.
+    profilers.push_back(profiler_group->CreateProfiler(
+        scope.GetScriptState(), *init_options, base::TimeTicks(),
+        scope.GetExceptionState()));
+  }
+  for (auto profiler : profilers) {
+    profiler->stop(scope.GetScriptState());
+  }
 }
 
 }  // namespace blink

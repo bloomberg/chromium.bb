@@ -35,6 +35,10 @@ enum SharedImageUsage : uint32_t {
   // TODO(crbug.com/969114): This usage is currently not supported in GL/Vulkan
   // interop cases.
   SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE = 1 << 9,
+  // Image will be used for video decode acceleration on Chrome OS.
+  SHARED_IMAGE_USAGE_VIDEO_DECODE = 1 << 10,
+  // Image will be used as a WebGPU swapbuffer
+  SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE = 1 << 11,
 };
 
 }  // namespace gpu

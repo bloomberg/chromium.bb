@@ -136,9 +136,8 @@
     chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
         'selectFile', appId, [entry.nameText]));
 
-    // Focus the toolbar search button.
-    chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-        'fakeEvent', appId, ['#search-button', 'click']));
+    // Click the toolbar search button.
+    await remoteCall.waitAndClickElement(appId, '#search-button');
 
     // Verify the toolbar search text entry box is enabled.
     let textInputElement =
@@ -162,5 +161,87 @@
     textInputElement =
         await remoteCall.waitForElement(appId, ['#search-box cr-input']);
     chrome.test.assertEq('false', textInputElement.attributes['aria-disabled']);
+  };
+
+  /**
+   * Tests that the search box collapses when empty and Tab out of the box.
+   */
+  testcase.searchHidingViaTab = async () => {
+    const entry = ENTRIES.hello;
+
+    // Open Files app on Downloads.
+    const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
+
+    // Search box should start collapsed.
+    await remoteCall.waitForElement(appId, '#search-wrapper[collapsed]');
+
+    // Click the toolbar search button.
+    await remoteCall.waitAndClickElement(appId, '#search-button');
+
+    // Wait for the search box to expand.
+    await remoteCall.waitForElementLost(appId, '#search-wrapper[collapsed]');
+
+    // Verify the search input has focus.
+    const input =
+        await remoteCall.callRemoteTestUtil('deepGetActiveElement', appId, []);
+    chrome.test.assertEq(input.attributes['id'], 'input');
+    chrome.test.assertEq(input.attributes['aria-label'], 'Search');
+
+    // Send Tab key to focus the next element.
+    const result = await sendTestMessage({name: 'dispatchTabKey'});
+    chrome.test.assertEq(
+        result, 'tabKeyDispatched', 'Tab key dispatch failure');
+
+    // Check: the search box should collapse.
+    await remoteCall.waitForElement(appId, '#search-wrapper[collapsed]');
+
+  };
+
+  /**
+   * Tests that clicking the search button expands and collapses the search box.
+   */
+  testcase.searchButtonToggles = async () => {
+    const entry = ENTRIES.hello;
+
+    // Open Files app on Downloads.
+    const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
+
+    // Search box should start collapsed.
+    await remoteCall.waitForElement(appId, '#search-wrapper[collapsed]');
+
+    // Measure the width of the search box when it's collapsed.
+    const collapsedSearchBox = await remoteCall.waitForElementStyles(
+        appId, '#search-wrapper', ['width']);
+
+    // Click the toolbar search button.
+    await remoteCall.waitAndClickElement(appId, '#search-button');
+
+    // Wait for the search box to expand.
+    await remoteCall.waitForElementLost(appId, '#search-wrapper[collapsed]');
+
+    // Check: The search box width should have increased.
+    const caller = getCaller();
+    await repeatUntil(async () => {
+      const element = await remoteCall.waitForElementStyles(
+          appId, '#search-wrapper', ['width']);
+      if (collapsedSearchBox.renderedWidth >= element.renderedWidth) {
+        return pending(caller, 'Waiting search box to expand');
+      }
+    });
+
+    // Click the toolbar search button again.
+    await remoteCall.waitAndClickElement(appId, '#search-button');
+
+    // Check: the search box should collapse.
+    await remoteCall.waitForElement(appId, '#search-wrapper[collapsed]');
+
+    // Check: the search box width should decrease.
+    await repeatUntil(async () => {
+      const element = await remoteCall.waitForElementStyles(
+          appId, '#search-wrapper', ['width']);
+      if (collapsedSearchBox.renderedWidth < element.renderedWidth) {
+        return pending(caller, 'Waiting search box to collapse');
+      }
+    });
   };
 })();

@@ -33,6 +33,11 @@
 namespace blink {
 
 SpeechSynthesisUtterance* SpeechSynthesisUtterance::Create(
+    ExecutionContext* context) {
+  return MakeGarbageCollected<SpeechSynthesisUtterance>(context, String());
+}
+
+SpeechSynthesisUtterance* SpeechSynthesisUtterance::Create(
     ExecutionContext* context,
     const String& text) {
   return MakeGarbageCollected<SpeechSynthesisUtterance>(context, text);
@@ -40,7 +45,8 @@ SpeechSynthesisUtterance* SpeechSynthesisUtterance::Create(
 
 SpeechSynthesisUtterance::SpeechSynthesisUtterance(ExecutionContext* context,
                                                    const String& text)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
+      receiver_(this, context),
       mojom_utterance_(mojom::blink::SpeechSynthesisUtterance::New()) {
   // Set default values. |voice| intentionally left null.
   mojom_utterance_->text = text;
@@ -69,10 +75,11 @@ void SpeechSynthesisUtterance::setVoice(SpeechSynthesisVoice* voice) {
   mojom_utterance_->voice = voice_ ? voice_->name() : String();
 }
 
-void SpeechSynthesisUtterance::Trace(blink::Visitor* visitor) {
+void SpeechSynthesisUtterance::Trace(Visitor* visitor) {
+  visitor->Trace(receiver_);
   visitor->Trace(synthesis_);
   visitor->Trace(voice_);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
 
@@ -117,6 +124,10 @@ void SpeechSynthesisUtterance::OnEncounteredSpeakingError() {
 }
 
 void SpeechSynthesisUtterance::Start(SpeechSynthesis* synthesis) {
+  ExecutionContext* context = GetExecutionContext();
+  if (!context)
+    return;
+
   finished_ = false;
 
   mojom::blink::SpeechSynthesisUtterancePtr mojom_utterance_to_send =
@@ -129,8 +140,10 @@ void SpeechSynthesisUtterance::Start(SpeechSynthesis* synthesis) {
   receiver_.reset();
 
   synthesis_ = synthesis;
-  synthesis_->MojomSynthesis()->Speak(std::move(mojom_utterance_to_send),
-                                      receiver_.BindNewPipeAndPassRemote());
+  synthesis_->MojomSynthesis()->Speak(
+      std::move(mojom_utterance_to_send),
+      receiver_.BindNewPipeAndPassRemote(
+          context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
 
   // Add a disconnect handler so we can cleanup appropriately.
   receiver_.set_disconnect_handler(WTF::Bind(

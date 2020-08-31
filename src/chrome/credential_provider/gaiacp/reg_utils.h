@@ -56,6 +56,9 @@ base::string16 GetGlobalFlagOrDefault(const base::string16& reg_key,
 DWORD GetGlobalFlagOrDefault(const base::string16& reg_key,
                              const DWORD& default_value);
 
+// Sets global DWORD flag.
+HRESULT SetGlobalFlag(const base::string16& name, DWORD value);
+
 // Sets global flag. Used for testing purposes only.
 HRESULT SetGlobalFlagForTesting(const base::string16& name,
                                 const base::string16& value);
@@ -101,6 +104,7 @@ HRESULT RemoveAllUserProperties(const base::string16& sid);
 
 struct UserTokenHandleInfo {
   base::string16 gaia_id;
+  base::string16 email_address;
   base::string16 token_handle;
 };
 
@@ -116,6 +120,19 @@ HRESULT GetUserTokenHandles(
 // Gets the SID associated with the given gaia id.  If none exists, returns
 // HRESULT_FROM_WIN32(ERROR_NONE_MAPPED).
 HRESULT GetSidFromId(const base::string16& id, wchar_t* sid, ULONG length);
+
+// Gets the SID associated with the given email.  If none exists, returns
+// HRESULT_FROM_WIN32(ERROR_NONE_MAPPED).
+HRESULT GetSidFromEmail(const base::string16& email,
+                        wchar_t* sid,
+                        ULONG length);
+
+// Gets the SID associated with the given input key. If none exists, returns
+// HRESULT_FROM_WIN32(ERROR_NONE_MAPPED).
+HRESULT GetSidFromKey(const wchar_t* key,
+                      const base::string16& value,
+                      wchar_t* sid,
+                      ULONG length);
 
 // Gets the gaia id associated with the given SID.  If none exists, returns
 // HRESULT_FROM_WIN32(ERROR_NONE_MAPPED).
@@ -139,6 +156,9 @@ HRESULT GetMachineGuid(base::string16* machine_guid);
 // Sets  HKLM\SOFTWARE\Microsoft\Cryptography\MachineGuid registry for testing.
 HRESULT SetMachineGuidForTesting(const base::string16& machine_guid);
 
+// Set corresponding registry entry that would make GCPW as the default
+// credential provider.
+HRESULT MakeGcpwDefaultCP();
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_GAIACP_REG_UTILS_H_

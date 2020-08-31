@@ -6,42 +6,61 @@
 
 """Runs Android's lint tool."""
 
+
 from __future__ import print_function
 
 import argparse
+import logging
 import os
 import re
 import shutil
 import sys
+import time
 import traceback
 from xml.dom import minidom
 from xml.etree import ElementTree
 
 from util import build_utils
 from util import manifest_utils
+from util import resource_utils
 
 _LINT_MD_URL = 'https://chromium.googlesource.com/chromium/src/+/master/build/android/docs/lint.md' # pylint: disable=line-too-long
 
+# These checks are not useful for test targets and adds an unnecessary burden
+# to suppress them.
+_DISABLED_FOR_TESTS = [
+    # We should not require test strings.xml files to explicitly add
+    # translatable=false since they are not translated and not used in
+    # production.
+    "MissingTranslation",
+    # Test strings.xml files often have simple names and are not translatable,
+    # so it may conflict with a production string and cause this error.
+    "Untranslatable",
+    # Test targets often use the same strings target and resources target as the
+    # production targets but may not use all of them.
+    "UnusedResources",
+]
 
-def _OnStaleMd5(lint_path,
-                config_path,
-                processed_config_path,
-                manifest_path,
-                result_path,
-                product_dir,
-                sources,
-                jar_path,
-                cache_dir,
-                android_sdk_version,
-                srcjars,
-                min_sdk_version,
-                manifest_package,
-                resource_sources,
-                disable=None,
-                classpath=None,
-                can_fail_build=False,
-                include_unexpected=False,
-                silent=False):
+
+def _RunLint(lint_path,
+             config_path,
+             manifest_path,
+             result_path,
+             product_dir,
+             sources,
+             cache_dir,
+             android_sdk_version,
+             srcjars,
+             min_sdk_version,
+             manifest_package,
+             resource_sources,
+             resource_zips,
+             android_sdk_root,
+             testonly_target=False,
+             can_fail_build=False,
+             include_unexpected=False,
+             silent=False):
+  logging.info('Lint starting')
 
   def _RebasePath(path):
     """Returns relative path to top-level src dir.
@@ -54,19 +73,6 @@ def _OnStaleMd5(lint_path,
     if ret.startswith('..'):
       ret = os.path.abspath(path)
     return ret
-
-  def _ProcessConfigFile():
-    if not config_path or not processed_config_path:
-      return
-    if not build_utils.IsTimeStale(processed_config_path, [config_path]):
-      return
-
-    with open(config_path, 'rb') as f:
-      content = f.read().replace(
-          'PRODUCT_DIR', _RebasePath(product_dir))
-
-    with open(processed_config_path, 'wb') as f:
-      f.write(content)
 
   def _ProcessResultFile():
     with open(result_path, 'rb') as f:
@@ -87,11 +93,7 @@ def _OnStaleMd5(lint_path,
         location_elem = issue.getElementsByTagName('location')[0]
         path = location_elem.attributes['file'].value
         line = location_elem.getAttribute('line')
-        if line:
-          error = '%s:%s %s: %s [warning]' % (path, line, message, issue_id)
-        else:
-          # Issues in class files don't have a line number.
-          error = '%s %s: %s [warning]' % (path, message, issue_id)
+        error = '%s:%s %s: %s [warning]' % (path, line, message, issue_id)
         print(error.encode('utf-8'), file=sys.stderr)
         for attr in ['errorLine1', 'errorLine2']:
           error_line = issue.getAttribute(attr)
@@ -100,17 +102,25 @@ def _OnStaleMd5(lint_path,
     return len(issues)
 
   with build_utils.TempDir() as temp_dir:
-    _ProcessConfigFile()
-
     cmd = [
-        _RebasePath(lint_path), '-Werror', '--exitcode', '--showall',
-        '--xml', _RebasePath(result_path),
+        _RebasePath(lint_path),
+        '-Werror',
+        '--exitcode',
+        '--showall',
+        '--xml',
+        _RebasePath(result_path),
+        # An explicit sdk root needs to be specified since we have an extra
+        # intermediate 'lastest' directory under cmdline-tools which prevents
+        # lint from automatically deducing the location of the sdk. The sdk is
+        # required for many checks (e.g. NewApi). Lint also requires absolute
+        # paths.
+        '--sdk-home',
+        os.path.abspath(android_sdk_root),
     ]
-    if jar_path:
-      # --classpath is just for .class files for this one target.
-      cmd.extend(['--classpath', _RebasePath(jar_path)])
-    if processed_config_path:
-      cmd.extend(['--config', _RebasePath(processed_config_path)])
+    if config_path:
+      cmd.extend(['--config', _RebasePath(config_path)])
+    if testonly_target:
+      cmd.extend(['--disable', ','.join(_DISABLED_FOR_TESTS)])
 
     tmp_dir_counter = [0]
     def _NewTempSubdir(prefix, append_digit=True):
@@ -123,24 +133,16 @@ def _OnStaleMd5(lint_path,
       os.makedirs(new_dir)
       return new_dir
 
-    resource_dirs = []
-    for resource_source in resource_sources:
-      if os.path.isdir(resource_source):
-        resource_dirs.append(resource_source)
-      else:
-        # This is a zip file with generated resources (e. g. strings from GRD).
-        # Extract it to temporary folder.
-        resource_dir = _NewTempSubdir(resource_source, append_digit=False)
-        resource_dirs.append(resource_dir)
-        build_utils.ExtractAll(resource_source, path=resource_dir)
+    resource_dirs = resource_utils.DeduceResourceDirsFromFileList(
+        resource_sources)
+    # These are zip files with generated resources (e. g. strings from GRD).
+    for resource_zip in resource_zips:
+      resource_dir = _NewTempSubdir(resource_zip, append_digit=False)
+      resource_dirs.append(resource_dir)
+      build_utils.ExtractAll(resource_zip, path=resource_dir)
 
     for resource_dir in resource_dirs:
       cmd.extend(['--resources', _RebasePath(resource_dir)])
-
-    if classpath:
-      # --libraries is the classpath (excluding active target).
-      cp = ':'.join(_RebasePath(p) for p in classpath)
-      cmd.extend(['--libraries', cp])
 
     # There may be multiple source files with the same basename (but in
     # different directories). It is difficult to determine what part of the path
@@ -176,17 +178,21 @@ def _OnStaleMd5(lint_path,
       os.symlink(src, dst)
 
     if srcjars:
-      srcjar_paths = build_utils.ParseGnList(srcjars)
-      if srcjar_paths:
-        srcjar_dir = _NewTempSubdir('SRC_ROOT')
-        cmd.extend(['--sources', _RebasePath(srcjar_dir)])
-        for srcjar in srcjar_paths:
-          build_utils.ExtractAll(srcjar, path=srcjar_dir)
+      srcjar_dir = _NewTempSubdir('GENERATED_SRC_ROOT', append_digit=False)
+      cmd.extend(['--sources', _RebasePath(srcjar_dir)])
+      for srcjar in srcjars:
+        # We choose to allow srcjars that contain java files which have the
+        # same package and name to clobber each other. This happens for
+        # generated files like BuildConfig.java. It is generated for
+        # targets like base_build_config_gen as well as targets like
+        # chrome_modern_public_base_bundle_module__build_config_srcjar.
+        # Although we could extract each srcjar to a separate folder, that
+        # slows down some invocations of lint by 20 seconds or more.
+        # TODO(wnwen): Switch lint.py to generate a project.xml file which
+        #              supports srcjar inputs by default.
+        build_utils.ExtractAll(srcjar, path=srcjar_dir, no_clobber=False)
 
-    if disable:
-      cmd.extend(['--disable', ','.join(disable)])
-
-    project_dir = _NewTempSubdir('SRC_ROOT')
+    project_dir = _NewTempSubdir('PROJECT_ROOT', append_digit=False)
     if android_sdk_version:
       # Create dummy project.properies file in a temporary "project" directory.
       # It is the only way to add Android SDK to the Lint's classpath. Proper
@@ -226,14 +232,17 @@ def _OnStaleMd5(lint_path,
       os.remove(result_path)
 
     env = os.environ.copy()
-    stderr_filter = None
+    stderr_filter = build_utils.FilterReflectiveAccessJavaWarnings
     if cache_dir:
       env['_JAVA_OPTIONS'] = '-Duser.home=%s' % _RebasePath(cache_dir)
       # When _JAVA_OPTIONS is set, java prints to stderr:
       # Picked up _JAVA_OPTIONS: ...
       #
       # We drop all lines that contain _JAVA_OPTIONS from the output
-      stderr_filter = lambda l: re.sub(r'.*_JAVA_OPTIONS.*\n?', '', l)
+      stderr_filter = lambda l: re.sub(
+          r'.*_JAVA_OPTIONS.*\n?',
+          '',
+          build_utils.FilterReflectiveAccessJavaWarnings(l))
 
     def fail_func(returncode, stderr):
       if returncode != 0:
@@ -244,9 +253,15 @@ def _OnStaleMd5(lint_path,
       return False
 
     try:
+      env['JAVA_HOME'] = os.path.relpath(build_utils.JAVA_HOME,
+                                         build_utils.DIR_SOURCE_ROOT)
+      logging.debug('Lint command %s', cmd)
+      start = time.time()
       build_utils.CheckOutput(cmd, cwd=build_utils.DIR_SOURCE_ROOT,
                               env=env or None, stderr_filter=stderr_filter,
                               fail_func=fail_func)
+      end = time.time() - start
+      logging.info('Lint command took %ss', end)
     except build_utils.CalledProcessError:
       # There is a problem with lint usage
       if not os.path.exists(result_path):
@@ -290,6 +305,8 @@ def _OnStaleMd5(lint_path,
       if can_fail_build:
         raise Exception('Lint failed.')
 
+  logging.info('Lint completed')
+
 
 def _FindInDirectories(directories, filename_filter):
   all_files = []
@@ -298,10 +315,17 @@ def _FindInDirectories(directories, filename_filter):
   return all_files
 
 
-def main():
+def _ParseArgs(argv):
   parser = argparse.ArgumentParser()
   build_utils.AddDepfileOption(parser)
-
+  parser.add_argument('--android-sdk-root',
+                      required=True,
+                      help='Lint needs an explicit path to the android sdk.')
+  parser.add_argument('--testonly',
+                      action='store_true',
+                      help='If set, some checks like UnusedResources will be '
+                      'disabled since they are not helpful for test '
+                      'targets.')
   parser.add_argument('--lint-path', required=True,
                       help='Path to lint executable.')
   parser.add_argument('--product-dir', required=True,
@@ -324,30 +348,25 @@ def main():
                            ' if lint itself crashes with unexpected failures.')
   parser.add_argument('--config-path',
                       help='Path to lint suppressions file.')
-  parser.add_argument('--disable',
-                      help='List of checks to disable.')
-  parser.add_argument('--jar-path',
-                      help='Jar file containing class files.')
-  parser.add_argument('--java-sources-file',
-                      help='File containing a list of java files.')
+  parser.add_argument('--java-sources',
+                      help='File containing a list of java sources files.')
   parser.add_argument('--manifest-path',
                       help='Path to AndroidManifest.xml')
-  parser.add_argument('--classpath', default=[], action='append',
-                      help='GYP-list of classpath .jar files')
-  parser.add_argument('--processed-config-path',
-                      help='Path to processed lint suppressions file.')
-  parser.add_argument('--resource-dir',
-                      help='Path to resource dir.')
-  parser.add_argument('--resource-sources', default=[], action='append',
-                      help='GYP-list of resource sources (directories with '
-                      'resources or archives created by resource-generating '
-                      'tasks.')
+  parser.add_argument('--resource-sources',
+                      default=[],
+                      action='append',
+                      help='GYP-list of resource sources files, similar to '
+                      'java sources files, but for resource files.')
+  parser.add_argument('--resource-zips',
+                      default=[],
+                      action='append',
+                      help='GYP-list of resource zips, zip files of generated '
+                      'resource files.')
   parser.add_argument('--silent', action='store_true',
                       help='If set, script will not log anything.')
-  parser.add_argument('--src-dirs',
-                      help='Directories containing java files.')
   parser.add_argument('--srcjars',
                       help='GN list of included srcjars.')
+  parser.add_argument('--stamp', help='Path to stamp upon success.')
   parser.add_argument(
       '--min-sdk-version',
       required=True,
@@ -355,91 +374,61 @@ def main():
   parser.add_argument(
       '--manifest-package', help='Package name of the AndroidManifest.xml.')
 
-  args = parser.parse_args(build_utils.ExpandFileArgs(sys.argv[1:]))
+  args = parser.parse_args(build_utils.ExpandFileArgs(argv))
+
+  args.java_sources = build_utils.ParseGnList(args.java_sources)
+  args.srcjars = build_utils.ParseGnList(args.srcjars)
+  args.resource_sources = build_utils.ParseGnList(args.resource_sources)
+  args.resource_zips = build_utils.ParseGnList(args.resource_zips)
+
+  return args
+
+
+def main():
+  build_utils.InitLogging('LINT_DEBUG')
+  args = _ParseArgs(sys.argv[1:])
 
   sources = []
-  if args.src_dirs:
-    src_dirs = build_utils.ParseGnList(args.src_dirs)
-    sources = _FindInDirectories(src_dirs, '*.java')
-  elif args.java_sources_file:
-    sources.extend(build_utils.ReadSourcesList(args.java_sources_file))
-
-  if args.config_path and not args.processed_config_path:
-    parser.error('--config-path specified without --processed-config-path')
-  elif args.processed_config_path and not args.config_path:
-    parser.error('--processed-config-path specified without --config-path')
-
-  input_paths = [
-      args.lint_path,
-      args.platform_xml_path,
-  ]
-  if args.config_path:
-    input_paths.append(args.config_path)
-  if args.jar_path:
-    input_paths.append(args.jar_path)
-  if args.manifest_path:
-    input_paths.append(args.manifest_path)
-  if sources:
-    input_paths.extend(sources)
-  classpath = []
-  for gyp_list in args.classpath:
-    classpath.extend(build_utils.ParseGnList(gyp_list))
-  input_paths.extend(classpath)
+  for java_sources_file in args.java_sources:
+    sources.extend(build_utils.ReadSourcesList(java_sources_file))
 
   resource_sources = []
-  if args.resource_dir:
-    # Backward compatibility with GYP
-    resource_sources += [ args.resource_dir ]
+  for resource_sources_file in args.resource_sources:
+    resource_sources.extend(build_utils.ReadSourcesList(resource_sources_file))
 
-  for gyp_list in args.resource_sources:
-    resource_sources += build_utils.ParseGnList(gyp_list)
+  possible_depfile_deps = (args.srcjars + args.resource_zips + sources +
+                           resource_sources + [
+                               args.manifest_path,
+                           ])
 
-  for resource_source in resource_sources:
-    if os.path.isdir(resource_source):
-      input_paths.extend(build_utils.FindInDirectory(resource_source, '*'))
-    else:
-      input_paths.append(resource_source)
+  depfile_deps = [p for p in possible_depfile_deps if p]
 
-  input_strings = [
-    args.can_fail_build,
-    args.include_unexpected_failures,
-    args.silent,
-  ]
-  if args.android_sdk_version:
-    input_strings.append(args.android_sdk_version)
-  if args.processed_config_path:
-    input_strings.append(args.processed_config_path)
+  _RunLint(args.lint_path,
+           args.config_path,
+           args.manifest_path,
+           args.result_path,
+           args.product_dir,
+           sources,
+           args.cache_dir,
+           args.android_sdk_version,
+           args.srcjars,
+           args.min_sdk_version,
+           args.manifest_package,
+           resource_sources,
+           args.resource_zips,
+           args.android_sdk_root,
+           testonly_target=args.testonly,
+           can_fail_build=args.can_fail_build,
+           include_unexpected=args.include_unexpected_failures,
+           silent=args.silent)
+  logging.info('Creating stamp file')
+  build_utils.Touch(args.stamp)
 
-  disable = []
-  if args.disable:
-    disable = build_utils.ParseGnList(args.disable)
-    input_strings.extend(disable)
-
-  output_paths = [args.result_path, args.processed_config_path]
-
-  build_utils.CallAndWriteDepfileIfStale(
-      lambda: _OnStaleMd5(args.lint_path,
-                          args.config_path,
-                          args.processed_config_path,
-                          args.manifest_path, args.result_path,
-                          args.product_dir, sources,
-                          args.jar_path,
-                          args.cache_dir,
-                          args.android_sdk_version,
-                          args.srcjars,
-                          args.min_sdk_version,
-                          args.manifest_package,
-                          resource_sources,
-                          disable=disable,
-                          classpath=classpath,
-                          can_fail_build=args.can_fail_build,
-                          include_unexpected=args.include_unexpected_failures,
-                          silent=args.silent),
-      args,
-      input_paths=input_paths,
-      input_strings=input_strings,
-      output_paths=output_paths,
-      depfile_deps=classpath)
+  if args.depfile:
+    build_utils.WriteDepfile(args.depfile,
+                             args.stamp,
+                             depfile_deps,
+                             add_pydeps=False)  # pydeps listed in GN.
 
 
 if __name__ == '__main__':

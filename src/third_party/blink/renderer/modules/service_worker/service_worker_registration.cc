@@ -9,16 +9,20 @@
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "third_party/blink/public/common/security_context/insecure_request_policy.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom-blink.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_navigation_preload_state.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
-#include "third_party/blink/renderer/modules/service_worker/navigation_preload_state.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_container.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
@@ -128,14 +132,14 @@ ServiceWorkerRegistration* ServiceWorkerRegistration::Take(
     ScriptPromiseResolver* resolver,
     WebServiceWorkerRegistrationObjectInfo info) {
   return ServiceWorkerContainer::From(
-             To<Document>(resolver->GetExecutionContext()))
+             *To<LocalDOMWindow>(resolver->GetExecutionContext()))
       ->GetOrCreateServiceWorkerRegistration(std::move(info));
 }
 
 ServiceWorkerRegistration::ServiceWorkerRegistration(
     ExecutionContext* execution_context,
     WebServiceWorkerRegistrationObjectInfo info)
-    : ContextLifecycleObserver(execution_context),
+    : ExecutionContextLifecycleObserver(execution_context),
       registration_id_(info.registration_id),
       scope_(std::move(info.scope)),
       stopped_(false) {
@@ -147,7 +151,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
 ServiceWorkerRegistration::ServiceWorkerRegistration(
     ExecutionContext* execution_context,
     mojom::blink::ServiceWorkerRegistrationObjectInfoPtr info)
-    : ContextLifecycleObserver(execution_context),
+    : ExecutionContextLifecycleObserver(execution_context),
       registration_id_(info->registration_id),
       scope_(std::move(info->scope)),
       stopped_(false) {
@@ -178,10 +182,7 @@ void ServiceWorkerRegistration::Attach(
   // If |host_| is bound, it already points to the same object host as
   // |info.host_remote|, so there is no need to bind again.
   if (!host_) {
-    host_.Bind(mojo::PendingAssociatedRemote<
-                   mojom::blink::ServiceWorkerRegistrationObjectHost>(
-                   std::move(info.host_remote),
-                   mojom::blink::ServiceWorkerRegistrationObjectHost::Version_),
+    host_.Bind(std::move(info.host_remote),
                GetExecutionContext()->GetTaskRunner(
                    blink::TaskType::kInternalDefault));
   }
@@ -211,7 +212,7 @@ const AtomicString& ServiceWorkerRegistration::InterfaceName() const {
 
 NavigationPreloadManager* ServiceWorkerRegistration::navigationPreload() {
   if (!navigation_preload_)
-    navigation_preload_ = NavigationPreloadManager::Create(this);
+    navigation_preload_ = MakeGarbageCollected<NavigationPreloadManager>(this);
   return navigation_preload_;
 }
 
@@ -253,13 +254,15 @@ void ServiceWorkerRegistration::SetNavigationPreloadHeader(
       WTF::Bind(&DidSetNavigationPreloadHeader, WrapPersistent(resolver)));
 }
 
-ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
+ScriptPromise ServiceWorkerRegistration::update(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   if (!GetExecutionContext()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Failed to update a ServiceWorkerRegistration: No "
-                          "associated provider is available."));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Failed to update a ServiceWorkerRegistration: No associated provider "
+        "is available.");
+    return ScriptPromise();
   }
 
   // The fetcher is lazily loaded in a worker global scope.
@@ -274,8 +277,9 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
   auto mojom_settings_object = mojom::blink::FetchClientSettingsObject::New(
       settings_object.GetReferrerPolicy(),
       KURL(settings_object.GetOutgoingReferrer()),
-      settings_object.GetInsecureRequestsPolicy() &
-              blink::kUpgradeInsecureRequests
+      (settings_object.GetInsecureRequestsPolicy() &
+       mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests) !=
+              mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone
           ? blink::mojom::InsecureRequestsPolicy::kUpgrade
           : blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade);
 
@@ -286,14 +290,15 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
   return resolver->Promise();
 }
 
-ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* script_state) {
+ScriptPromise ServiceWorkerRegistration::unregister(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   if (!GetExecutionContext()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Failed to unregister a "
-                          "ServiceWorkerRegistration: No "
-                          "associated provider is available."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Failed to unregister a "
+                                      "ServiceWorkerRegistration: No "
+                                      "associated provider is available.");
+    return ScriptPromise();
   }
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   host_->Unregister(WTF::Bind(&DidUnregister, WrapPersistent(resolver)));
@@ -307,17 +312,17 @@ void ServiceWorkerRegistration::Dispose() {
   receiver_.reset();
 }
 
-void ServiceWorkerRegistration::Trace(blink::Visitor* visitor) {
+void ServiceWorkerRegistration::Trace(Visitor* visitor) {
   visitor->Trace(installing_);
   visitor->Trace(waiting_);
   visitor->Trace(active_);
   visitor->Trace(navigation_preload_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   Supplementable<ServiceWorkerRegistration>::Trace(visitor);
 }
 
-void ServiceWorkerRegistration::ContextDestroyed(ExecutionContext*) {
+void ServiceWorkerRegistration::ContextDestroyed() {
   if (stopped_)
     return;
   stopped_ = true;

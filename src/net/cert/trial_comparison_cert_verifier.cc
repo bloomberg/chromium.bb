@@ -300,7 +300,7 @@ int TrialComparisonCertVerifier::Job::Start(
   // callback on destruction.
   primary_error_ = parent_->primary_verifier()->Verify(
       params_, &primary_result_,
-      base::Bind(&Job::OnPrimaryJobCompleted, base::Unretained(this)),
+      base::BindOnce(&Job::OnPrimaryJobCompleted, base::Unretained(this)),
       &primary_request_, net_log_);
 
   if (primary_error_ != ERR_IO_PENDING) {
@@ -362,7 +362,8 @@ void TrialComparisonCertVerifier::Job::Finish(
         params_.hostname(), params_.certificate(), config_.enable_rev_checking,
         config_.require_rev_checking_local_anchors,
         config_.enable_sha1_local_anchors, config_.disable_symantec_enforcement,
-        primary_result_, trial_result_);
+        params_.ocsp_response(), params_.sct_list(), primary_result_,
+        trial_result_);
   }
 
   if (weak_this) {

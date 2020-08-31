@@ -1851,8 +1851,8 @@
           "value": "10.13.2"
         }
       },
-      "gpu_series" : [
-        "intel_skylake"
+      "intel_gpu_series" : [
+        "skylake"
       ],
       "features" : [
         "emulate_isnan_on_float"
@@ -2283,10 +2283,10 @@
       "os": {
         "type": "win"
       },
-      "gpu_series": [
-        "intel_broadwell",
-        "intel_skylake",
-        "intel_cherrytrail"
+      "intel_gpu_series": [
+        "broadwell",
+        "skylake",
+        "cherrytrail"
       ],
       "features": [
         "disable_accelerated_vpx_decode"
@@ -2518,10 +2518,10 @@
       "os": {
         "type": "macosx"
       },
-      "gpu_series": [
-        "intel_skylake",
-        "intel_kabylake",
-        "intel_coffeelake"
+      "intel_gpu_series": [
+        "skylake",
+        "kabylake",
+        "coffeelake"
       ],
       "multi_gpu_category": "any",
       "features": [
@@ -2868,17 +2868,6 @@
       ]
     },
     {
-      "id":273,
-      "cr_bugs": [866613, 860021],
-      "description": "Frequent crashes on Adreno (TM) on L and below",
-      "os": {
-        "type": "android"
-      },
-      "features": [
-        "use_es2_for_oopr"
-      ]
-    },
-    {
       "id": 274,
       "description": "glTexStorage* are buggy when base mipmap level is not 0",
       "cr_bugs": [877874],
@@ -2950,30 +2939,6 @@
       ]
     },
     {
-      "id":281,
-      "cr_bugs": [838725],
-      "description": "Disable AImageReader on Imagination Technologies GPU as its buggy.",
-      "os": {
-        "type": "android"
-      },
-      "gl_vendor": "Imagination Technologies.*",
-      "features": [
-        "disable_aimagereader"
-      ]
-    },
-    {
-      "id":282,
-      "cr_bugs": [838725],
-      "description": "Disable AImageReader on NVIDIA GPU for as its buggy.",
-      "os": {
-        "type": "android"
-      },
-      "gl_vendor": "NVIDIA.*",
-      "features": [
-        "disable_aimagereader"
-      ]
-    },
-    {
       "id": 283,
       "cr_bugs": [893177],
       "description": "Some drivers can't recover after OUT_OF_MEM and context lost",
@@ -3026,8 +2991,9 @@
         "type": "win"
       },
       "driver_version": {
-        "op": ">=",
-        "value": "24"
+        "schema": "intel_driver",
+        "op": ">",
+        "value": "0.0.100.0"
       },
       "hardware_overlay": "unsupported",
       "features": [
@@ -3099,25 +3065,6 @@
       ]
     },
     {
-      "id": 294,
-      "cr_bugs": [932879, 1025427],
-      "description": "Hardware overlays are only supported on certain Intel/AMD gpus",
-      "os": {
-        "type": "win"
-      },
-      "exceptions": [
-        {
-          "vendor_id": "0x8086"
-        },
-        {
-          "vendor_id": "0x1002"
-        }
-      ],
-      "features": [
-        "disable_direct_composition_video_overlays"
-      ]
-    },
-    {
       "id": 295,
       "description": "Avoid waiting on a egl fence before swapping buffers and rely on implicit sync on Intel GPUs",
       "cr_bugs": [938286],
@@ -3173,9 +3120,9 @@
       "os": {
         "type" : "win"
       },
-      "gpu_series": [
-        "intel_sandybridge",
-        "intel_ivybridge"
+      "intel_gpu_series": [
+        "sandybridge",
+        "ivybridge"
       ],
       "features": [
         "disable_direct_composition"
@@ -3207,8 +3154,9 @@
       },
       "vendor_id": "0x8086",
       "driver_version": {
+        "schema": "intel_driver",
         "op": "<",
-        "value": "24.0.0.0"
+        "value": "0.0.0.9999"
       },
       "features": [
         "disable_nv12_dynamic_textures"
@@ -3270,13 +3218,16 @@
     {
       "id": 309,
       "cr_bugs": [993233],
-      "description": "Don't use video processor scaling on non-Intel GPUs.",
+      "description": "Don't use video processor scaling on non-Intel, non-NVIDIA GPUs.",
       "os": {
         "type" : "win"
       },
       "exceptions": [
         {
           "vendor_id": "0x8086"
+        },
+        {
+          "vendor_id": "0x10de"
         }
       ],
       "features": [
@@ -3486,6 +3437,19 @@
       ]
     },
     {
+      "id": 326,
+      "description": "Migrating OpenGL contexts between low- and high-power GPUs is unreliable on Mac NVIDIA laptops",
+      "cr_bugs": [681341],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x10de",
+      "multi_gpu_category": "any",
+      "features": [
+        "force_low_power_gpu"
+      ]
+    },
+    {
       "id": 327,
       "cr_bugs": [1027981],
       "description": "Disable dual source blending support",
@@ -3499,6 +3463,191 @@
       "gl_vendor": "Intel.*",
       "features": [
         "disable_dual_source_blending_support"
+      ]
+    },
+    {
+      "id": 328,
+      "cr_bugs": [1041166],
+      "description": "Disable D3D11VideoDecoder due to crashes on NVIDIA",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "features": [
+        "disable_d3d11_video_decoder"
+      ]
+    },
+    {
+      "id": 329,
+      "cr_bugs": [1012464],
+      "description": "Limit D3D11VideoDecoder to 11.0 due to crashes on AMD",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "limit_d3d11_video_decoder_to_11_0"
+      ]
+    },
+    {
+      "id": 331,
+      "cr_bugs": [1046462],
+      "description": "GL and Vulkan interop doesn't work with AMD GPU properly",
+      "os": {
+        "type": "linux"
+      },
+      "driver_vendor": "Mesa",
+      "driver_version": {
+        "op": "<",
+        "value": "19.3.5"
+      },
+      "vendor_id": "0x1002",
+      "disabled_extensions": [
+        "GL_EXT_memory_object_fd",
+        "GL_EXT_semaphore_fd"
+      ]
+    },
+    {
+      "id": 332,
+      "cr_bugs": [1045586],
+      "description": "Send empty video hdr metadata due to crashes on AMD",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "use_empty_video_hdr_metadata"
+      ]
+    },
+    {
+      "id": 334,
+      "description": "NVidia drivers seem corrupt memory when all siblings of eglImage are destroyed",
+      "cr_bugs": [1052114],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "dont_delete_source_texture_for_egl_image"
+      ]
+    },
+    {
+      "id": 336,
+      "cr_bugs": [625785],
+      "description": "DXVA video decoder crashes on some AMD GPUs",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x15d8", "0x15dd"],
+      "exceptions": [
+        {
+          "driver_version": {
+            "op": "between",
+            "value": "26.20.11030.2",
+            "value2": "26.20.11999.99999"
+          },
+          "driver_version": {
+            "op": "between",
+            "value": "26.20.12020.15",
+            "value2": "26.20.12999.99999"
+          },
+          "driver_version": {
+            "op": "between",
+            "value": "26.20.13001.27002",
+            "value2": "26.20.13999.99999"
+          },
+          "driver_version": {
+            "op": ">=",
+            "value": "26.20.14001.7001"
+          }
+        }
+      ],
+      "features": [
+        "disable_dxva_video_decoder"
+      ]
+    },
+    {
+      "id": 337,
+      "description": "Disable hardware MFT H264 encoder on older NVIDIA drivers",
+      "cr_bugs": [1058583],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "<",
+        "value": "24.21.13.9827"
+      },
+      "features": [
+        "disable_mediafoundation_async_h264_encoding"
+      ]
+    },
+    {
+      "id": 338,
+      "description": "Disable hardware overlay on icelake with older Intel drivers",
+      "cr_bugs": [1062653],
+      "os": {
+        "type": "win"
+      },
+      "intel_gpu_series" : [
+        "icelake"
+      ],
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "<",
+        "value": "26.20.100.7755"
+      },
+      "features": [
+        "disable_direct_composition_video_overlays"
+      ]
+    },
+    {
+      "id": 339,
+      "description": "NV12 textures trigger crash on Intel driver 20.19.15.*",
+      "cr_bugs": [971952],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "value": "10"
+        }
+      },
+      "vendor_id": "0x8086",
+      "intel_gpu_series": [
+        "skylake"
+      ],
+      "driver_version": {
+        "op": "between",
+        "value": "20.19.15.4285",
+        "value2": "20.19.15.4380"
+      },
+      "features": [
+        "disable_nv12_dxgi_video"
+      ]
+    },
+    {
+      "id": 340,
+      "description": "NV12 textures trigger crash on Intel driver 10.18.15.*",
+      "cr_bugs": [971952],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "value": "10"
+        }
+      },
+      "vendor_id": "0x8086",
+      "intel_gpu_series": [
+        "skylake"
+      ],
+      "driver_version": {
+        "op": "between",
+        "value": "10.18.15.4256",
+        "value2": "10.18.15.4293"
+      },
+      "features": [
+        "disable_nv12_dxgi_video"
       ]
     }
   ]

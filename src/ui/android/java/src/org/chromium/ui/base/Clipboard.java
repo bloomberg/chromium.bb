@@ -10,23 +10,38 @@ import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.style.CharacterStyle;
 import android.text.style.ParagraphStyle;
 import android.text.style.UpdateAppearance;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.ui.R;
 import org.chromium.ui.widget.Toast;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Simple proxy that provides C++ code with an access pathway to the Android clipboard.
@@ -43,6 +58,42 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     private final ClipboardManager mClipboardManager;
 
     private long mNativeClipboard;
+
+    private ImageFileProvider mImageFileProvider;
+
+    /**
+     * Interface to be implemented for sharing image through FileProvider.
+     */
+    public interface ImageFileProvider {
+        /**
+         * Saves the given set of image bytes and provides that URI to a callback for
+         * sharing the image.
+         *
+         * @param context The context used to trigger the action.
+         * @param imageData The image data to be shared in |fileExtension| format.
+         * @param fileExtension File extension which |imageData| encoded to.
+         * @param callback A provided callback function which will act on the generated URI.
+         */
+        void storeImageAndGenerateUri(final Context context, final byte[] imageData,
+                String fileExtension, Callback<Uri> callback);
+
+        /**
+         * Store the last image uri we put in the sytstem clipboard, this is special case for
+         * Android O.
+         */
+        void storeLastCopiedImageUri(@NonNull Uri uri);
+
+        /**
+         * Get stored the last image uri, this is special case for Android O.
+         */
+        @Nullable
+        Uri getLastCopiedImageUri();
+
+        /**
+         * Clear the image uri which stored by |storeLastCopiedImageUri|.
+         */
+        void clearLastCopiedImageUri();
+    }
 
     /**
      * Get the singleton Clipboard instance (creating it if needed).
@@ -142,6 +193,64 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     }
 
     /**
+     * Gets the Uri of top item on the primary clip on the Android clipboard if the mime type is
+     * image.
+     *
+     * @return an Uri if mime type is image type, or null if there is no Uri or no entries on the
+     *         primary clip.
+     */
+    public @Nullable Uri getImageUri() {
+        // getPrimaryClip() has been observed to throw unexpected exceptions for some devices (see
+        // crbug.com/654802).
+        try {
+            ClipData clipData = mClipboardManager.getPrimaryClip();
+            if (clipData == null || clipData.getItemCount() == 0) return null;
+
+            ClipDescription description = clipData.getDescription();
+            if (description == null || !description.hasMimeType("image/*")) {
+                return null;
+            }
+
+            return clipData.getItemAt(0).getUri();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @CalledByNative
+    private String getImageUriString() {
+        Uri uri = getImageUri();
+        return uri == null ? null : uri.toString();
+    }
+
+    /**
+     * Reads the Uri of top item on the primary clip on the Android clipboard, and try to get the
+     * {@link Bitmap}. for that Uri.
+     * Fetching images can result in I/O, so should not be called on UI thread.
+     *
+     * @return an {@link Bitmap} if available, otherwise null.
+     */
+    @CalledByNative
+    public Bitmap getImage() {
+        ThreadUtils.assertOnBackgroundThread();
+        try {
+            Uri uri = getImageUri();
+            if (uri == null) return null;
+
+            // TODO(crbug.com/1065914): Use ImageDecoder.decodeBitmap for API level 29 and up.
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(
+                    ContextUtils.getApplicationContext().getContentResolver(), uri);
+
+            if (!bitmapSupportByGfx(bitmap)) {
+                return bitmap.copy(Bitmap.Config.ARGB_8888, /*mutable=*/false);
+            }
+            return bitmap;
+        } catch (IOException | SecurityException e) {
+            return null;
+        }
+    }
+
+    /**
      * Emulates the behavior of the now-deprecated
      * {@link android.text.ClipboardManager#setText(CharSequence)}, setting the
      * clipboard's current primary clip to a plain-text clip that consists of
@@ -166,6 +275,53 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     }
 
     /**
+     * Setting the clipboard's current primary clip to an image.
+     * This method requires background work and might not be immediately committed upon returning
+     * from this method.
+     * @param Uri The {@link Uri} will become the content of the clipboard's primary clip.
+     */
+    public void setImageUri(final Uri uri) {
+        if (uri == null) {
+            showCopyToClipboardFailureMessage();
+            return;
+        }
+
+        grantUriPermission(uri);
+
+        // ClipData.newUri may access the disk (for reading mime types), and cause
+        // StrictModeDiskReadViolation if do it on UI thread.
+        new AsyncTask<ClipData>() {
+            @Override
+            protected ClipData doInBackground() {
+                return ClipData.newUri(
+                        ContextUtils.getApplicationContext().getContentResolver(), "image", uri);
+            }
+            @Override
+            protected void onPostExecute(ClipData clipData) {
+                setPrimaryClipNoException(clipData);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * Setting the clipboard's current primary clip to an image.
+     * @param imageData The image data to be shared in |extension| format.
+     * @param extension Image file extension which |imageData| encoded to.
+     */
+    @CalledByNative
+    @VisibleForTesting
+    public void setImage(final byte[] imageData, final String extension) {
+        if (mImageFileProvider == null) {
+            // Since |mImageFileProvider| is set on very early on during process init, and if
+            // setImage is called before the file provider is set, we can just drop it on the floor.
+            return;
+        }
+
+        mImageFileProvider.storeImageAndGenerateUri(
+                mContext, imageData, extension, (Uri uri) -> { setImageUri(uri); });
+    }
+
+    /**
      * Clears the Clipboard Primary clip.
      *
      */
@@ -179,14 +335,26 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
             mClipboardManager.setPrimaryClip(clip);
         } catch (Exception ex) {
             // Ignore any exceptions here as certain devices have bugs and will fail.
-            String text = mContext.getString(R.string.copy_to_clipboard_failure_message);
-            Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
+            showCopyToClipboardFailureMessage();
         }
+    }
+
+    private void showCopyToClipboardFailureMessage() {
+        String text = mContext.getString(R.string.copy_to_clipboard_failure_message);
+        Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
     }
 
     @CalledByNative
     private void setNativePtr(long nativeClipboard) {
         mNativeClipboard = nativeClipboard;
+    }
+
+    /**
+     * Set {@link ImageFileProvider} for sharing image.
+     * @param imageFileProvider The implementation of {@link ImageFileProvider}.
+     */
+    public void setImageFileProvider(ImageFileProvider imageFileProvider) {
+        mImageFileProvider = imageFileProvider;
     }
 
     /**
@@ -197,6 +365,7 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     @Override
     public void onPrimaryClipChanged() {
         RecordUserAction.record("MobileClipboardChanged");
+        revokeUriPermissionForLastSharedImage();
         if (mNativeClipboard != 0) {
             ClipboardJni.get().onPrimaryClipChanged(mNativeClipboard, Clipboard.this);
         }
@@ -241,6 +410,73 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     public long getLastModifiedTimeMs() {
         if (mNativeClipboard == 0) return 0;
         return ClipboardJni.get().getLastModifiedTimeToJavaTime(mNativeClipboard);
+    }
+
+    /**
+     * Grant permission to access a specific Uri to other packages. For sharing images through the
+     * system’s clipboard, Outside of Android O permissions are already managed properly by the
+     * system. But on Android O, sharing images/files needs to grant permission to each app/packages
+     * individually. Note: Don't forget to revoke the permission once the clipboard is updated.
+     */
+    private void grantUriPermission(@NonNull Uri uri) {
+        if ((Build.VERSION.SDK_INT != Build.VERSION_CODES.O
+                    && Build.VERSION.SDK_INT != Build.VERSION_CODES.O_MR1)
+                || mImageFileProvider == null) {
+            return;
+        }
+
+        // Cache the Uri for revoking permission later.
+        mImageFileProvider.storeLastCopiedImageUri(uri);
+        List<PackageInfo> installedPackages = mContext.getPackageManager().getInstalledPackages(0);
+        for (PackageInfo installedPackage : installedPackages) {
+            mContext.grantUriPermission(
+                    installedPackage.packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
+    }
+
+    /**
+     * Revoke the permission for previously shared image uri. This operation is only needed for
+     * Android O.
+     */
+    private void revokeUriPermissionForLastSharedImage() {
+        if (Build.VERSION.SDK_INT != Build.VERSION_CODES.O
+                && Build.VERSION.SDK_INT != Build.VERSION_CODES.O_MR1) {
+            return;
+        }
+
+        if (mImageFileProvider == null) {
+            // It is ok to not revoke permission. Since |mImageFileProvider| is set very early on
+            // during process init, |mImageFileProvider| == null means we are starting.
+            // ShareImageFileUtils#clearSharedImages will clear cached image files during
+            // startup if they are not being shared. Therefore even if permission is not revoked,
+            // the other package will not get the image. The permission will be revoked later, once
+            // onPrimaryClipChanged triggered. Also, since shared images use timestamp as file
+            // name, the file name will not be reused.
+            return;
+        }
+
+        Uri uri = mImageFileProvider.getLastCopiedImageUri();
+        // Exit early if the URI is empty or event onPrimaryClipChanges was caused by sharing
+        // image.
+        if (uri == null || uri.equals(Uri.EMPTY) || uri.equals(getImageUri())) return;
+
+        // https://developer.android.com/reference/android/content/Context#revokeUriPermission(android.net.Uri,%20int)
+        // According to the above link, it is not necessary to enumerate all of the packages like
+        // what was done in |grantUriPermission|. Context#revokeUriPermission(Uri, int) will revoke
+        // all permissions.
+        mContext.revokeUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        // Clear uri to avoid revoke over and over.
+        mImageFileProvider.clearLastCopiedImageUri();
+    }
+
+    /**
+     * Check if |bitmap| is support by native side. gfx::CreateSkBitmapFromJavaBitmap only support
+     * ARGB_8888 and ALPHA_8.
+     */
+    private boolean bitmapSupportByGfx(Bitmap bitmap) {
+        return bitmap != null
+                && (bitmap.getConfig() == Bitmap.Config.ARGB_8888
+                        || bitmap.getConfig() == Bitmap.Config.ALPHA_8);
     }
 
     @NativeMethods

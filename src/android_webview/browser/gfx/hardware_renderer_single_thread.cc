@@ -13,8 +13,9 @@
 #include "android_webview/browser/gfx/render_thread_manager.h"
 #include "android_webview/browser/gfx/surfaces_instance.h"
 #include "android_webview/common/aw_switches.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -176,11 +177,9 @@ void HardwareRendererSingleThread::OnBeginFramePausedChanged(bool paused) {}
 
 void HardwareRendererSingleThread::CreateNewCompositorFrameSinkSupport() {
   constexpr bool is_root = false;
-  constexpr bool needs_sync_points = true;
   support_.reset();
   support_ = std::make_unique<viz::CompositorFrameSinkSupport>(
-      this, surfaces_->GetFrameSinkManager(), frame_sink_id_, is_root,
-      needs_sync_points);
+      this, surfaces_->GetFrameSinkManager(), frame_sink_id_, is_root);
 }
 
 }  // namespace android_webview

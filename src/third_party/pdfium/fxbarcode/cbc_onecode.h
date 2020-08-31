@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/fx_system.h"
 #include "fxbarcode/cbc_codebase.h"
 
@@ -18,15 +17,8 @@ class CFX_Font;
 
 class CBC_OneCode : public CBC_CodeBase {
  public:
-  // Limit the size of 1D barcodes. Typical 1D barcodes are short so this should
-  // be sufficient for most use cases.
-  static constexpr size_t kMaxInputLengthBytes = 8192;
-
   explicit CBC_OneCode(std::unique_ptr<CBC_Writer> pWriter);
   ~CBC_OneCode() override;
-
-  virtual bool CheckContentValidity(WideStringView contents);
-  virtual WideString FilterContents(WideStringView contents);
 
   void SetPrintChecksum(bool checksum);
   void SetDataLength(int32_t length);

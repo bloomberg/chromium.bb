@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import sys
+
 import mock
 
 from chromite.lib import cidb
@@ -15,6 +17,10 @@ from chromite.lib import cros_test_lib
 from chromite.lib import buildstore
 from chromite.lib import buildbucket_v2
 from chromite.lib import failure_message_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 BuildStore = buildstore.BuildStore
 
@@ -315,6 +321,17 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
       bs.FinishBuildStage(constants.MOCK_BUILD_ID, 'status')
+
+  def testUpdateLuciNotifyProperties(self):
+    """Tests the redirect for the UpdateLuciNotifyProperties function."""
+    init = self.PatchObject(BuildStore, 'InitializeClients', return_value=True)
+    bs = BuildStore(_write_to_bb=True)
+    buildbucket_v2.UpdateSelfCommonBuildProperties = mock.MagicMock()
+    email_notify = mock.MagicMock()
+    bs.UpdateLuciNotifyProperties(email_notify=email_notify)
+    buildbucket_v2.UpdateSelfCommonBuildProperties.assert_called_once_with(
+        email_notify=email_notify)
+    init.return_value = False
 
   def testFinishBuild(self):
     """Tests the redirect for FinishBuild function."""

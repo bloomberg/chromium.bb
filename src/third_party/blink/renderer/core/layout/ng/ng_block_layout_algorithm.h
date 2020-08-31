@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BLOCK_LAYOUT_ALGORITHM_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
@@ -17,6 +18,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 
 namespace blink {
 
@@ -24,7 +26,6 @@ enum class NGBreakStatus;
 class NGConstraintSpace;
 class NGEarlyBreak;
 class NGFragment;
-class NGPhysicalLineBoxFragment;
 
 // This struct is used for communicating to a child the position of the previous
 // inflow child. This will be used to calculate the position of the next child.
@@ -58,14 +59,14 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   void SetBoxType(NGPhysicalFragment::NGBoxType type);
 
-  base::Optional<MinMaxSize> ComputeMinMaxSize(
-      const MinMaxSizeInput&) const override;
+  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
   scoped_refptr<const NGLayoutResult> Layout() override;
 
  private:
   NOINLINE scoped_refptr<const NGLayoutResult>
-  LayoutWithInlineChildLayoutContext();
+  LayoutWithInlineChildLayoutContext(const NGLayoutInputNode& first_child);
   NOINLINE scoped_refptr<const NGLayoutResult> LayoutWithItemsBuilder(
+      const NGInlineNode& first_child,
       NGInlineChildLayoutContext* context);
 
   // Lay out again, this time with a predefined good breakpoint that we
@@ -75,10 +76,13 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NOINLINE scoped_refptr<const NGLayoutResult> RelayoutAndBreakEarlier(
       const NGEarlyBreak&);
 
+  NOINLINE scoped_refptr<const NGLayoutResult> RelayoutIgnoringLineClamp();
+
   inline scoped_refptr<const NGLayoutResult> Layout(
       NGInlineChildLayoutContext* inline_child_layout_context);
 
-  scoped_refptr<const NGLayoutResult> FinishLayout(NGPreviousInflowPosition*);
+  scoped_refptr<const NGLayoutResult> FinishLayout(
+      NGPreviousInflowPosition* previous_inflow_position);
 
   // Return the BFC block offset of this block.
   LayoutUnit BfcBlockOffset() const {
@@ -101,11 +105,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NGBoxStrut CalculateMargins(NGLayoutInputNode child,
                               bool is_new_fc,
                               bool* margins_fully_resolved);
-
-  void StopMarginCollapsing(EMarginCollapse collapse_value,
-                            LayoutUnit this_margin,
-                            LayoutUnit* logical_block_offset,
-                            NGMarginStrut* margin_strut);
 
   // Creates a new constraint space for the current child.
   NGConstraintSpace CreateConstraintSpaceForChild(
@@ -149,10 +148,10 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // function adds part of cached fragments to |container_builder_|, update
   // |break_token_| to continue layout from the last reused fragment, and
   // returns |true|. Otherwise returns |false|.
-  const NGInlineBreakToken* TryReuseFragmentsFromCache(
+  bool TryReuseFragmentsFromCache(
       NGInlineNode child,
       NGPreviousInflowPosition*,
-      bool* abort_out);
+      scoped_refptr<const NGInlineBreakToken>* inline_break_token_out);
 
   void HandleOutOfFlowPositioned(const NGPreviousInflowPosition&, NGBlockNode);
   void HandleFloat(const NGPreviousInflowPosition&,
@@ -238,25 +237,16 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NGBreakStatus BreakBeforeChildIfNeeded(NGLayoutInputNode child,
                                          const NGLayoutResult&,
                                          NGPreviousInflowPosition*,
-                                         LayoutUnit block_offset,
+                                         LayoutUnit bfc_block_offset,
                                          bool has_container_separation);
 
   // Look for a better breakpoint (than we already have) between lines (i.e. a
   // class B breakpoint), and store it.
   void UpdateEarlyBreakBetweenLines();
 
-  void PropagateBaselinesFromChildren();
-  bool AddBaseline(const NGBaselineRequest&,
-                   const NGPhysicalFragment&,
-                   LayoutUnit child_offset);
-
-  // Compute the baseline offset of a line box from the content box.
-  // Line boxes are in line-relative coordinates. This function returns the
-  // offset in flow-relative coordinates.
-  LayoutUnit ComputeLineBoxBaselineOffset(
-      const NGBaselineRequest&,
-      const NGPhysicalLineBoxFragment&,
-      LayoutUnit line_box_block_offset) const;
+  // Propagates the baseline from the given |child| if needed.
+  void PropagateBaselineFromChild(const NGPhysicalContainerFragment& child,
+                                  LayoutUnit block_offset);
 
   // If still unresolved, resolve the fragment's BFC block offset.
   //
@@ -344,6 +334,14 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   base::Optional<LayoutUnit> CalculateQuirkyBodyMarginBlockSum(
       const NGMarginStrut& end_margin_strut);
 
+  // Returns true if |this| is a ruby segment (LayoutNGRubyRun) and the
+  // specified |child| is a ruby annotation box (LayoutNGRubyText).
+  bool IsRubyText(const NGLayoutInputNode& child) const;
+
+  // Layout |ruby_text_child| content, and decide the location of
+  // |ruby_text_child|. This is called only if IsRubyText() returns true.
+  void LayoutRubyText(NGLayoutInputNode* ruby_text_child);
+
   // Border + padding sum, resolved from the node's computed style.
   const NGBoxStrut border_padding_;
 
@@ -355,6 +353,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   LogicalSize child_available_size_;
   LogicalSize child_percentage_size_;
   LogicalSize replaced_child_percentage_size_;
+
+  scoped_refptr<const NGLayoutResult> previous_result_;
 
   // Intrinsic block size based on child layout and containment.
   LayoutUnit intrinsic_block_size_;
@@ -395,6 +395,17 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   bool did_break_before_child_ = false;
 
   NGExclusionSpace exclusion_space_;
+
+  // If set, this is the number of lines until a clamp. A value of 1 indicates
+  // the current line should be clamped. This may go negative.
+  base::Optional<int> lines_until_clamp_;
+
+  // If true, ignore the line-clamp property as truncation wont be required.
+  bool ignore_line_clamp_ = false;
+
+  // If set, one of the lines was clamped and this is the intrinsic size at the
+  // time of the clamp.
+  base::Optional<LayoutUnit> intrinsic_block_size_when_clamped_;
 
   // When set, this will specify where to break before or inside.
   const NGEarlyBreak* early_break_ = nullptr;

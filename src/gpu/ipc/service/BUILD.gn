@@ -53,14 +53,12 @@ jumbo_component("service") {
     "webgpu_command_buffer_stub.h",
   ]
   defines = [ "GPU_IPC_SERVICE_IMPLEMENTATION" ]
-  if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
-  }
   if (subpixel_font_rendering_disabled) {
     defines += [ "SUBPIXEL_FONT_RENDERING_DISABLED" ]
   }
   public_deps = [
     "//base",
+    "//build:chromecast_buildflags",
     "//components/viz/common",
     "//gpu/config",
     "//ipc",
@@ -136,6 +134,7 @@ jumbo_component("service") {
   if (use_x11) {
     sources += [ "x_util.h" ]
     libs += [ "X11" ]
+    deps += [ "//ui/gfx/linux:gpu_memory_buffer_support_x11" ]
   }
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
@@ -150,9 +149,7 @@ jumbo_component("service") {
 
 source_set("test_support") {
   testonly = true
-  sources = [
-    "gpu_memory_buffer_factory_test_template.h",
-  ]
+  sources = [ "gpu_memory_buffer_factory_test_template.h" ]
   public_deps = [
     ":service",
     "//testing/gtest:gtest",

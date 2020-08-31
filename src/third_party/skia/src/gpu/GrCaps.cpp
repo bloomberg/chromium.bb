@@ -7,9 +7,9 @@
 
 #include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrContextOptions.h"
-#include "include/gpu/GrSurface.h"
 #include "include/private/GrTypesPriv.h"
 #include "src/gpu/GrCaps.h"
+#include "src/gpu/GrSurface.h"
 #include "src/gpu/GrSurfaceProxy.h"
 #include "src/gpu/GrWindowRectangles.h"
 #include "src/utils/SkJSONWriter.h"
@@ -24,12 +24,16 @@ GrCaps::GrCaps(const GrContextOptions& options) {
     fTextureBarrierSupport = false;
     fSampleLocationsSupport = false;
     fMultisampleDisableSupport = false;
-    fInstanceAttribSupport = false;
+    fDrawInstancedSupport = false;
+    fNativeDrawIndirectSupport = false;
     fMixedSamplesSupport = false;
+    fConservativeRasterSupport = false;
+    fWireframeSupport = false;
     fMSAAResolvesAutomatically = false;
     fUsePrimitiveRestart = false;
     fPreferClientSideDynamicBuffers = false;
     fPreferFullscreenClears = false;
+    fTwoSidedStencilRefsAndMasksMustMatch = false;
     fMustClearUploadedBufferData = false;
     fShouldInitializeTextures = false;
     fSupportsAHardwareBufferImages = false;
@@ -43,9 +47,11 @@ GrCaps::GrCaps(const GrContextOptions& options) {
     fAvoidLargeIndexBufferDraws = false;
     fPerformStencilClearsAsDraws = false;
     fAllowCoverageCounting = false;
-    fTransferBufferSupport = false;
+    fTransferFromBufferToTextureSupport = false;
+    fTransferFromSurfaceToBufferSupport = false;
     fWritePixelsRowBytesSupport = false;
     fReadPixelsRowBytesSupport = false;
+    fShouldCollapseSrcOverToSrcWhenAble = false;
     fDriverBlacklistCCPR = false;
     fDriverBlacklistMSAACCPR = false;
 
@@ -70,6 +76,8 @@ GrCaps::GrCaps(const GrContextOptions& options) {
     fBufferMapThreshold = options.fBufferMapThreshold;
     fAvoidStencilBuffers = false;
     fAvoidWritePixelsFastPath = false;
+    fRequiresManualFBBarrierAfterTessellatedStencilDraw = false;
+    fNativeDrawIndexedIndirectIsBroken = false;
 
     fPreferVRAMUseOverFlushes = true;
 
@@ -99,6 +107,9 @@ void GrCaps::applyOptionsOverrides(const GrContextOptions& options) {
         SkASSERT(!fDriverBlacklistCCPR);
         SkASSERT(!fDriverBlacklistMSAACCPR);
         SkASSERT(!fAvoidStencilBuffers);
+        SkASSERT(!fAvoidWritePixelsFastPath);
+        SkASSERT(!fRequiresManualFBBarrierAfterTessellatedStencilDraw);
+        SkASSERT(!fNativeDrawIndexedIndirectIsBroken);
         SkASSERT(!fAdvBlendEqBlacklist);
         SkASSERT(!fPerformColorClearsAsDraws);
         SkASSERT(!fPerformStencilClearsAsDraws);
@@ -115,7 +126,7 @@ void GrCaps::applyOptionsOverrides(const GrContextOptions& options) {
 
     fAllowCoverageCounting = !options.fDisableCoverageCountingPaths;
 
-    fMaxTextureSize = SkTMin(fMaxTextureSize, options.fMaxTextureSizeOverride);
+    fMaxTextureSize = std::min(fMaxTextureSize, options.fMaxTextureSizeOverride);
     fMaxTileSize = fMaxTextureSize;
 #if GR_TEST_UTILS
     // If the max tile override is zero, it means we should use the max texture size.
@@ -187,12 +198,17 @@ void GrCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Texture Barrier Support", fTextureBarrierSupport);
     writer->appendBool("Sample Locations Support", fSampleLocationsSupport);
     writer->appendBool("Multisample disable support", fMultisampleDisableSupport);
-    writer->appendBool("Instance Attrib Support", fInstanceAttribSupport);
+    writer->appendBool("Draw Instanced Support", fDrawInstancedSupport);
+    writer->appendBool("Native Draw Indirect Support", fNativeDrawIndirectSupport);
     writer->appendBool("Mixed Samples Support", fMixedSamplesSupport);
+    writer->appendBool("Conservative Raster Support", fConservativeRasterSupport);
+    writer->appendBool("Wireframe Support", fWireframeSupport);
     writer->appendBool("MSAA Resolves Automatically", fMSAAResolvesAutomatically);
     writer->appendBool("Use primitive restart", fUsePrimitiveRestart);
     writer->appendBool("Prefer client-side dynamic buffers", fPreferClientSideDynamicBuffers);
     writer->appendBool("Prefer fullscreen clears (and stencil discard)", fPreferFullscreenClears);
+    writer->appendBool("Two-sided Stencil Refs And Masks Must Match",
+                       fTwoSidedStencilRefsAndMasksMustMatch);
     writer->appendBool("Must clear buffer memory", fMustClearUploadedBufferData);
     writer->appendBool("Should initialize textures", fShouldInitializeTextures);
     writer->appendBool("Supports importing AHardwareBuffers", fSupportsAHardwareBufferImages);
@@ -207,7 +223,10 @@ void GrCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Avoid Large IndexBuffer Draws", fAvoidLargeIndexBufferDraws);
     writer->appendBool("Use draws for stencil clip clears", fPerformStencilClearsAsDraws);
     writer->appendBool("Allow coverage counting shortcuts", fAllowCoverageCounting);
-    writer->appendBool("Supports transfer buffers", fTransferBufferSupport);
+    writer->appendBool("Supports transfers from buffers to textures",
+                       fTransferFromBufferToTextureSupport);
+    writer->appendBool("Supports transfers from textures to buffers",
+                       fTransferFromSurfaceToBufferSupport);
     writer->appendBool("Write pixels row bytes support", fWritePixelsRowBytesSupport);
     writer->appendBool("Read pixels row bytes support", fReadPixelsRowBytesSupport);
     writer->appendBool("Blacklist CCPR on current driver [workaround]", fDriverBlacklistCCPR);
@@ -219,6 +238,11 @@ void GrCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Prefer more triangles over sample mask [MSAA only]",
                        fPreferTrianglesOverSampleMask);
     writer->appendBool("Avoid stencil buffers [workaround]", fAvoidStencilBuffers);
+    writer->appendBool("Avoid writePixels fast path [workaround]", fAvoidWritePixelsFastPath);
+    writer->appendBool("Requires manual FB barrier after tessellated stencilDraw [workaround]",
+                       fRequiresManualFBBarrierAfterTessellatedStencilDraw);
+    writer->appendBool("Native draw indexed indirect is broken [workaround]",
+                       fNativeDrawIndexedIndirectIsBroken);
 
     if (this->advancedBlendEquationSupport()) {
         writer->appendHexU32("Advanced Blend Equation Blacklist", fAdvBlendEqBlacklist);
@@ -237,10 +261,10 @@ void GrCaps::dumpJSON(SkJSONWriter* writer) const {
         "Advanced",
         "Advanced Coherent",
     };
-    GR_STATIC_ASSERT(0 == kBasic_BlendEquationSupport);
-    GR_STATIC_ASSERT(1 == kAdvanced_BlendEquationSupport);
-    GR_STATIC_ASSERT(2 == kAdvancedCoherent_BlendEquationSupport);
-    GR_STATIC_ASSERT(SK_ARRAY_COUNT(kBlendEquationSupportNames) == kLast_BlendEquationSupport + 1);
+    static_assert(0 == kBasic_BlendEquationSupport);
+    static_assert(1 == kAdvanced_BlendEquationSupport);
+    static_assert(2 == kAdvancedCoherent_BlendEquationSupport);
+    static_assert(SK_ARRAY_COUNT(kBlendEquationSupportNames) == kLast_BlendEquationSupport + 1);
 
     writer->appendString("Blend Equation Support",
                          kBlendEquationSupportNames[fBlendEquationSupport]);
@@ -266,22 +290,16 @@ bool GrCaps::canCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src
     if (dst->readOnly()) {
         return false;
     }
-    // Currently we only ever do copies where the configs are the same. This check really should be
-    // checking if the backend formats, color types, and swizzle are compatible. Our copy always
-    // copies exact byte to byte from src to dst so when need to check the if we do this, the dst
-    // has the expected values stored in the right places taking the swizzle into account. For now
-    // we can be more restrictive and just make sure the configs are the same and if we generalize
-    // copies and swizzles more in the future this can be updated.
-    if (this->makeConfigSpecific(dst->config(), dst->backendFormat()) !=
-        this->makeConfigSpecific(src->config(), src->backendFormat())) {
+
+    if (dst->backendFormat() != src->backendFormat()) {
         return false;
     }
     return this->onCanCopySurface(dst, src, srcRect, dstPoint);
 }
 
 bool GrCaps::validateSurfaceParams(const SkISize& dimensions, const GrBackendFormat& format,
-                                   GrPixelConfig config, GrRenderable renderable,
-                                   int renderTargetSampleCnt, GrMipMapped mipped) const {
+                                   GrRenderable renderable, int renderTargetSampleCnt,
+                                   GrMipMapped mipped) const {
     if (!this->isFormatTexturable(format)) {
         return false;
     }
@@ -329,11 +347,9 @@ GrCaps::SupportedRead GrCaps::supportedReadPixelsColorType(GrColorType srcColorT
     }
     // It's very convenient to access 1 byte-per-channel 32 bit color types as uint32_t on the CPU.
     // Make those aligned reads out of the buffer even if the underlying API doesn't require it.
-    auto componentFlags = GrColorTypeComponentFlags(read.fColorType);
-    if ((componentFlags == kRGBA_SkColorTypeComponentFlags ||
-         componentFlags == kRGB_SkColorTypeComponentFlags  ||
-         componentFlags == kAlpha_SkColorTypeComponentFlag ||
-         componentFlags == kGray_SkColorTypeComponentFlag) &&
+    auto channelFlags = GrColorTypeChannelFlags(read.fColorType);
+    if ((channelFlags == kRGBA_SkColorChannelFlags || channelFlags == kRGB_SkColorChannelFlags ||
+         channelFlags == kAlpha_SkColorChannelFlag || channelFlags == kGray_SkColorChannelFlag) &&
         GrColorTypeBytesPerPixel(read.fColorType) == 4) {
         switch (read.fOffsetAlignmentForTransferBuffer & 0b11) {
             // offset alignment already a multiple of 4
@@ -350,60 +366,25 @@ GrCaps::SupportedRead GrCaps::supportedReadPixelsColorType(GrColorType srcColorT
     return read;
 }
 
-#ifdef SK_DEBUG
-bool GrCaps::AreConfigsCompatible(GrPixelConfig genericConfig, GrPixelConfig specificConfig) {
-    bool compatible = false;
-
-    switch (genericConfig) {
-        case kAlpha_8_GrPixelConfig:
-            compatible = kAlpha_8_GrPixelConfig == specificConfig || // here bc of the mock context
-                         kAlpha_8_as_Alpha_GrPixelConfig == specificConfig ||
-                         kAlpha_8_as_Red_GrPixelConfig == specificConfig;
-            break;
-        case kGray_8_GrPixelConfig:
-            compatible = kGray_8_GrPixelConfig == specificConfig ||  // here bc of the mock context
-                         kGray_8_as_Lum_GrPixelConfig == specificConfig ||
-                         kGray_8_as_Red_GrPixelConfig == specificConfig;
-            break;
-        case kAlpha_half_GrPixelConfig:
-            compatible = kAlpha_half_GrPixelConfig == specificConfig || // bc of the mock context
-                         kAlpha_half_as_Red_GrPixelConfig == specificConfig ||
-                         kAlpha_half_as_Lum_GrPixelConfig == specificConfig;
-            break;
-        case kRGB_888_GrPixelConfig:
-            compatible = kRGB_888_GrPixelConfig == specificConfig ||
-                         kRGB_888X_GrPixelConfig == specificConfig;
-            break;
-        case kRGBA_8888_GrPixelConfig:
-            compatible = kRGBA_8888_GrPixelConfig == specificConfig ||
-                         kBGRA_8888_GrPixelConfig == specificConfig;
-            break;
-        default:
-            compatible = genericConfig == specificConfig;
-            break;
-    }
-
-    if (!compatible) {
-        SkDebugf("Configs are not compatible: %d %d\n", genericConfig, specificConfig);
-    }
-
-    return compatible;
-}
-#endif
-
-GrBackendFormat GrCaps::getDefaultBackendFormat(GrColorType grColorType,
+GrBackendFormat GrCaps::getDefaultBackendFormat(GrColorType colorType,
                                                 GrRenderable renderable) const {
-    GrBackendFormat format = this->onGetDefaultBackendFormat(grColorType, renderable);
-    if (!this->isFormatTexturableAndUploadable(grColorType, format)) {
+    auto format = this->onGetDefaultBackendFormat(colorType);
+    if (!this->isFormatTexturable(format)) {
         return {};
     }
-
-    if (renderable == GrRenderable::kYes) {
-        if (!this->isFormatAsColorTypeRenderable(grColorType, format)) {
-            return {};
-        }
+    if (!this->areColorTypeAndFormatCompatible(colorType, format)) {
+        return {};
     }
-
+    // Currently we require that it be possible to write pixels into the "default" format. Perhaps,
+    // that could be a separate requirement from the caller. It seems less necessary if
+    // renderability was requested.
+    if (this->supportedWritePixelsColorType(colorType, format, colorType).fColorType ==
+        GrColorType::kUnknown) {
+        return {};
+    }
+    if (renderable == GrRenderable::kYes &&
+        !this->isFormatAsColorTypeRenderable(colorType, format)) {
+        return {};
+    }
     return format;
 }
-

@@ -5,6 +5,10 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_coordinator.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
+#include "base/scoped_observer.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
@@ -14,6 +18,7 @@
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/favicon/large_icon_cache.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -23,6 +28,7 @@
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
@@ -39,18 +45,20 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
+#import "ios/chrome/browser/voice/voice_search_availability.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface ContentSuggestionsCoordinator ()<
+@interface ContentSuggestionsCoordinator () <
     ContentSuggestionsViewControllerAudience,
-    OverscrollActionsControllerDelegate>
+    OverscrollActionsControllerDelegate> {
+  // Helper object managing the availability of the voice search feature.
+  VoiceSearchAvailability _voiceSearchAvailability;
+}
 
 @property(nonatomic, strong)
     ContentSuggestionsViewController* suggestionsViewController;
@@ -69,12 +77,10 @@
 
 @implementation ContentSuggestionsCoordinator
 
-@synthesize browserState = _browserState;
-
 - (void)start {
-  if (self.visible || !self.browserState) {
-    // Prevent this coordinator from being started twice in a row or without a
-    // browser state.
+  DCHECK(self.browser);
+  if (self.visible) {
+    // Prevent this coordinator from being started twice in a row
     return;
   }
 
@@ -82,7 +88,7 @@
 
   ntp_snippets::ContentSuggestionsService* contentSuggestionsService =
       IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
-          self.browserState);
+          self.browser->GetBrowserState());
   contentSuggestionsService->remote_suggestions_scheduler()
       ->OnSuggestionsSurfaceOpened();
   contentSuggestionsService->user_classifier()->OnEvent(
@@ -90,11 +96,12 @@
   contentSuggestionsService->user_classifier()->OnEvent(
       ntp_snippets::UserClassifier::Metric::SUGGESTIONS_SHOWN);
   PrefService* prefs =
-      ios::ChromeBrowserState::FromBrowserState(self.browserState)->GetPrefs();
+      ChromeBrowserState::FromBrowserState(self.browser->GetBrowserState())
+          ->GetPrefs();
   bool contentSuggestionsEnabled =
       prefs->GetBoolean(prefs::kArticlesForYouEnabled);
   bool contentSuggestionsVisible =
-      prefs->GetBoolean(ntp_snippets::prefs::kArticlesListVisible);
+      prefs->GetBoolean(feed::prefs::kArticlesListVisible);
   if (contentSuggestionsEnabled) {
     if (contentSuggestionsVisible) {
       ntp_home::RecordNTPImpression(ntp_home::REMOTE_SUGGESTIONS);
@@ -105,41 +112,48 @@
     ntp_home::RecordNTPImpression(ntp_home::LOCAL_SUGGESTIONS);
   }
 
-  UrlLoadingService* urlLoadingService =
-      UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
+  UrlLoadingBrowserAgent* URLLoader =
+      UrlLoadingBrowserAgent::FromBrowser(self.browser);
 
   self.NTPMediator = [[NTPHomeMediator alloc]
-        initWithWebState:self.webState
-      templateURLService:ios::TemplateURLServiceFactory::GetForBrowserState(
-                             self.browserState)
-       urlLoadingService:urlLoadingService
-             authService:AuthenticationServiceFactory::GetForBrowserState(
-                             self.browserState)
-         identityManager:IdentityManagerFactory::GetForBrowserState(
-                             self.browserState)
-              logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
-                             self.browserState)];
+             initWithWebState:self.webState
+           templateURLService:ios::TemplateURLServiceFactory::
+                                  GetForBrowserState(
+                                      self.browser->GetBrowserState())
+                    URLLoader:URLLoader
+                  authService:AuthenticationServiceFactory::GetForBrowserState(
+                                  self.browser->GetBrowserState())
+              identityManager:IdentityManagerFactory::GetForBrowserState(
+                                  self.browser->GetBrowserState())
+                   logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
+                                  self.browser, self.webState)
+      voiceSearchAvailability:&_voiceSearchAvailability];
+  self.NTPMediator.browser = self.browser;
 
-  BOOL voiceSearchEnabled = ios::GetChromeBrowserProvider()
-                                ->GetVoiceSearchProvider()
-                                ->IsVoiceSearchEnabled();
-  self.headerController = [[ContentSuggestionsHeaderViewController alloc]
-      initWithVoiceSearchEnabled:voiceSearchEnabled];
-  self.headerController.dispatcher = self.dispatcher;
+  self.headerController = [[ContentSuggestionsHeaderViewController alloc] init];
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  self.headerController.dispatcher =
+      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxCommands,
+                     FakeboxFocuser>>(self.browser->GetCommandDispatcher());
   self.headerController.commandHandler = self.NTPMediator;
   self.headerController.delegate = self.NTPMediator;
   self.headerController.readingListModel =
-      ReadingListModelFactory::GetForBrowserState(self.browserState);
+      ReadingListModelFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   self.headerController.toolbarDelegate = self.toolbarDelegate;
 
   favicon::LargeIconService* largeIconService =
-      IOSChromeLargeIconServiceFactory::GetForBrowserState(self.browserState);
-  LargeIconCache* cache =
-      IOSChromeLargeIconCacheFactory::GetForBrowserState(self.browserState);
+      IOSChromeLargeIconServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+  LargeIconCache* cache = IOSChromeLargeIconCacheFactory::GetForBrowserState(
+      self.browser->GetBrowserState());
   std::unique_ptr<ntp_tiles::MostVisitedSites> mostVisitedFactory =
-      IOSMostVisitedSitesFactory::NewForBrowserState(self.browserState);
+      IOSMostVisitedSitesFactory::NewForBrowserState(
+          self.browser->GetBrowserState());
   ReadingListModel* readingListModel =
-      ReadingListModelFactory::GetForBrowserState(self.browserState);
+      ReadingListModelFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   self.contentSuggestionsMediator = [[ContentSuggestionsMediator alloc]
       initWithContentService:contentSuggestionsService
             largeIconService:largeIconService
@@ -152,7 +166,7 @@
   self.contentSuggestionsMediator.contentArticlesExpanded =
       [[PrefBackedBoolean alloc]
           initWithPrefService:prefs
-                     prefName:ntp_snippets::prefs::kArticlesListVisible];
+                     prefName:feed::prefs::kArticlesListVisible];
 
   self.headerController.promoCanShow =
       [self.contentSuggestionsMediator notificationPromo]->CanShow();
@@ -168,12 +182,19 @@
   self.suggestionsViewController.audience = self;
   self.suggestionsViewController.overscrollDelegate = self;
   self.suggestionsViewController.metricsRecorder = self.metricsRecorder;
-  self.suggestionsViewController.dispatcher = self.dispatcher;
+  id<SnackbarCommands> dispatcher = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), SnackbarCommands);
+  self.suggestionsViewController.dispatcher = dispatcher;
 
   self.NTPMediator.consumer = self.headerController;
-  self.NTPMediator.dispatcher = self.dispatcher;
-  self.NTPMediator.NTPMetrics =
-      [[NTPHomeMetrics alloc] initWithBrowserState:self.browserState];
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  self.NTPMediator.dispatcher =
+      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxCommands,
+                     SnackbarCommands>>(self.browser->GetCommandDispatcher());
+  self.NTPMediator.NTPMetrics = [[NTPHomeMetrics alloc]
+      initWithBrowserState:self.browser->GetBrowserState()
+                  webState:self.webState];
   self.NTPMediator.metricsRecorder = self.metricsRecorder;
   self.NTPMediator.suggestionsViewController = self.suggestionsViewController;
   self.NTPMediator.suggestionsMediator = self.contentSuggestionsMediator;
@@ -217,12 +238,19 @@
 
 - (void)overscrollActionsController:(OverscrollActionsController*)controller
                    didTriggerAction:(OverscrollAction)action {
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  id<ApplicationCommands, BrowserCommands, OmniboxCommands, SnackbarCommands>
+      handler = static_cast<id<ApplicationCommands, BrowserCommands,
+                               OmniboxCommands, SnackbarCommands>>(
+          self.browser->GetCommandDispatcher());
   switch (action) {
     case OverscrollAction::NEW_TAB: {
-      [_dispatcher openURLInNewTab:[OpenNewTabCommand command]];
+      [handler openURLInNewTab:[OpenNewTabCommand command]];
     } break;
     case OverscrollAction::CLOSE_TAB: {
-      [_dispatcher closeCurrentTab];
+      [handler closeCurrentTab];
+      base::RecordAction(base::UserMetricsAction("OverscrollActionCloseTab"));
     } break;
     case OverscrollAction::REFRESH:
       [self reload];
@@ -233,28 +261,38 @@
   }
 }
 
-- (BOOL)shouldAllowOverscrollActions {
+- (BOOL)shouldAllowOverscrollActionsForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
   return YES;
 }
 
-- (UIView*)toolbarSnapshotView {
+- (UIView*)toolbarSnapshotViewForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
   return
       [[self.headerController toolBarView] snapshotViewAfterScreenUpdates:NO];
 }
 
-- (UIView*)headerView {
+- (UIView*)headerViewForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
   return self.suggestionsViewController.view;
 }
 
-- (CGFloat)overscrollActionsControllerHeaderInset:
+- (CGFloat)headerInsetForOverscrollActionsController:
     (OverscrollActionsController*)controller {
   return 0;
 }
 
-- (CGFloat)overscrollHeaderHeight {
+- (CGFloat)headerHeightForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
   CGFloat height = [self.headerController toolBarView].bounds.size.height;
   CGFloat topInset = self.suggestionsViewController.view.safeAreaInsets.top;
   return height + topInset;
+}
+
+- (FullscreenController*)fullscreenControllerForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
+  // Fullscreen isn't supported here.
+  return nullptr;
 }
 
 #pragma mark - Public methods
@@ -285,6 +323,13 @@
 
 - (void)reload {
   [self.contentSuggestionsMediator.dataSink reloadAllData];
+}
+
+- (void)locationBarDidBecomeFirstResponder {
+  [self.NTPMediator locationBarDidBecomeFirstResponder];
+}
+- (void)locationBarDidResignFirstResponder {
+  [self.NTPMediator locationBarDidResignFirstResponder];
 }
 
 @end

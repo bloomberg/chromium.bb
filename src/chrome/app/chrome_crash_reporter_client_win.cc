@@ -20,11 +20,12 @@
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/user_data_dir.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/version_info/channel.h"
 
 ChromeCrashReporterClient::ChromeCrashReporterClient() {}
@@ -118,11 +119,6 @@ bool ChromeCrashReporterClient::AboutToRestart() {
 
   install_static::SetEnvironmentString16(install_static::kShowRestart, L"1");
   return true;
-}
-
-bool ChromeCrashReporterClient::GetDeferredUploadsSupported(
-    bool is_per_user_install) {
-  return false;
 }
 
 bool ChromeCrashReporterClient::GetIsPerUserInstall() {

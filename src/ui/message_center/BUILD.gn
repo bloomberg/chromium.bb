@@ -32,9 +32,7 @@ jumbo_component("message_center") {
     "//url",
   ]
 
-  public_deps = [
-    "//ui/message_center/public/cpp",
-  ]
+  public_deps = [ "//ui/message_center/public/cpp" ]
 
   defines = [ "MESSAGE_CENTER_IMPLEMENTATION" ]
 
@@ -105,8 +103,6 @@ jumbo_component("message_center") {
         "views/message_view_factory.h",
         "views/notification_background_painter.cc",
         "views/notification_background_painter.h",
-        "views/notification_button.cc",
-        "views/notification_button.h",
         "views/notification_control_buttons_view.cc",
         "views/notification_control_buttons_view.h",
         "views/notification_header_view.cc",
@@ -131,9 +127,7 @@ jumbo_component("message_center") {
     }
   } else {
     # Notification service disabled.
-    sources = [
-      "dummy_message_center.cc",
-    ]
+    sources = [ "dummy_message_center.cc" ]
   }
 }
 
@@ -202,6 +196,7 @@ if (enable_message_center) {
     if (toolkit_views) {
       sources += [
         "views/message_popup_collection_unittest.cc",
+        "views/notification_control_buttons_unittest.cc",
         "views/notification_header_view_unittest.cc",
         "views/notification_view_md_unittest.cc",
         "views/relative_time_formatter_unittest.cc",

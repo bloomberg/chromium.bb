@@ -12,8 +12,7 @@
 
 .elements-disclosure li {
     /** Keep margin-left & padding-left in sync with ElementsTreeElements.updateDecorators **/
-    padding: 0 0 0 14px;
-    border-top: 1px solid transparent;
+    padding: 1px 0 0 14px;
     margin-left: -2px;
     word-wrap: break-word;
     position: relative;
@@ -43,7 +42,7 @@
 }
 
 .elements-disclosure li.parent::before {
-    -webkit-user-select: none;
+    user-select: none;
     -webkit-mask-image: url(Images/treeoutlineTriangles.svg);
     -webkit-mask-size: 32px 24px;
     content: '\00a0\00a0';
@@ -325,4 +324,38 @@ li.hovered:not(.always-parent) + ol.children:not(.shadow-root) {
 
 li.selected:not(.always-parent) + ol.children {
     border-color: hsla(216,68%,80%,1) !important;
+}
+
+@media (forced-colors: active) {
+    .elements-disclosure li.parent::before {
+        forced-color-adjust: none;
+        background-color: ButtonText !important;
+    }
+    .elements-disclosure .elements-tree-outline:not(.hide-selection-when-blurred) li.selected .selected-hint:before {
+        opacity: unset;
+    }
+    .elements-disclosure li.hovered:not(.selected) .selection,
+    .elements-disclosure .elements-tree-outline:not(.hide-selection-when-blurred) li.selected:focus .selection,
+    .elements-disclosure .elements-tree-outline:not(.hide-selection-when-blurred) .selection {
+        forced-color-adjust: none;
+        background: Canvas !important;
+        border: 1px solid Highlight !important;
+    }
+    .gutter-menu-icon {
+        forced-color-adjust: none;
+    }
+}
+
+/** Adorner */
+.adorner-container {
+    display: inline-block;
+}
+
+.adorner-container.hidden {
+    display: none;
+}
+
+.adorner-container devtools-adorner {
+    margin-left: 3px;
+    vertical-align: middle;
 }

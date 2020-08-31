@@ -14,8 +14,8 @@
 #include "components/viz/common/resources/single_release_callback.h"
 #include "services/viz/public/mojom/compositing/frame_timing_details.mojom-blink.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom-blink.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
@@ -69,7 +69,7 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
 
   DCHECK(!sink_.is_bound());
   mojo::Remote<mojom::blink::EmbeddedFrameSinkProvider> provider;
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       provider.BindNewPipeAndPassReceiver());
 
   DCHECK(provider);
@@ -216,8 +216,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
 
   // TODO(crbug.com/652931): update the device_scale_factor
   frame->metadata.device_scale_factor = 1.0f;
-  if (current_begin_frame_ack_.sequence_number ==
-      viz::BeginFrameArgs::kInvalidFrameNumber) {
+  if (!current_begin_frame_ack_.frame_id.IsSequenceValid()) {
     // TODO(eseckler): This shouldn't be necessary when OffscreenCanvas no
     // longer submits CompositorFrames without prior BeginFrame.
     current_begin_frame_ack_ = viz::BeginFrameAck::CreateManualAckWithDamage();
@@ -231,7 +230,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
   const gfx::Rect bounds(size_.Width(), size_.Height());
   constexpr int kRenderPassId = 1;
   constexpr bool is_clipped = false;
-  std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
+  auto pass = viz::RenderPass::Create(/*shared_quad_state_list_size=*/1u,
+                                      /*quad_list_size=*/1u);
   pass->SetNew(kRenderPassId, bounds,
                gfx::Rect(damage_rect.x(), damage_rect.y(), damage_rect.width(),
                          damage_rect.height()),
@@ -353,7 +353,7 @@ void CanvasResourceDispatcher::OnBeginFrame(
   }
 
   // TODO(fserb): Update this with the correct value if we are on RAF submit.
-  current_begin_frame_ack_.sequence_number =
+  current_begin_frame_ack_.frame_id.sequence_number =
       viz::BeginFrameArgs::kInvalidFrameNumber;
 }
 
@@ -401,15 +401,14 @@ void CanvasResourceDispatcher::Reshape(const IntSize& size) {
 
 void CanvasResourceDispatcher::DidAllocateSharedBitmap(
     base::ReadOnlySharedMemoryRegion region,
-    ::gpu::mojom::blink::MailboxPtr id) {
+    const gpu::Mailbox& id) {
   if (sink_)
-    sink_->DidAllocateSharedBitmap(std::move(region), std::move(id));
+    sink_->DidAllocateSharedBitmap(std::move(region), id);
 }
 
-void CanvasResourceDispatcher::DidDeleteSharedBitmap(
-    ::gpu::mojom::blink::MailboxPtr id) {
+void CanvasResourceDispatcher::DidDeleteSharedBitmap(const gpu::Mailbox& id) {
   if (sink_)
-    sink_->DidDeleteSharedBitmap(std::move(id));
+    sink_->DidDeleteSharedBitmap(id);
 }
 
 void CanvasResourceDispatcher::SetFilterQuality(

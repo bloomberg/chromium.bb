@@ -7,23 +7,20 @@
 
 #include <openssl/ssl.h>
 
-#include <atomic>
 #include <memory>
 
 #include "platform/api/tls_connection.h"
 #include "platform/impl/platform_client_posix.h"
 #include "platform/impl/stream_socket_posix.h"
 #include "platform/impl/tls_write_buffer.h"
-#include "platform/impl/weak_ptr.h"
+#include "util/weak_ptr.h"
 
 namespace openscreen {
-namespace platform {
 
 class TaskRunner;
 class TlsConnectionFactoryPosix;
 
-class TlsConnectionPosix : public TlsConnection,
-                           public TlsWriteBuffer::Observer {
+class TlsConnectionPosix : public TlsConnection {
  public:
   ~TlsConnectionPosix() override;
 
@@ -36,49 +33,37 @@ class TlsConnectionPosix : public TlsConnection,
 
   // TlsConnection overrides.
   void SetClient(Client* client) override;
-  void Write(const void* data, size_t len) override;
+  bool Send(const void* data, size_t len) override;
   IPEndpoint GetLocalEndpoint() const override;
   IPEndpoint GetRemoteEndpoint() const override;
 
-  // TlsWriteBuffer::Observer overrides.
-  void NotifyWriteBufferFill(double fraction) override;
+  // Registers |this| with the platform TlsDataRouterPosix.  This is called
+  // automatically by TlsConnectionFactoryPosix after the handshake completes.
+  void RegisterConnectionWithDataRouter(PlatformClientPosix* platform_client);
+
+  const SocketHandle& socket_handle() const { return socket_->socket_handle(); }
 
  protected:
   friend class TlsConnectionFactoryPosix;
 
-  TlsConnectionPosix(IPEndpoint local_address,
-                     TaskRunner* task_runner,
-                     PlatformClientPosix* platform_client =
-                         PlatformClientPosix::GetInstance());
-  TlsConnectionPosix(IPAddress::Version version,
-                     TaskRunner* task_runner,
-                     PlatformClientPosix* platform_client =
-                         PlatformClientPosix::GetInstance());
+  TlsConnectionPosix(IPEndpoint local_address, TaskRunner* task_runner);
+  TlsConnectionPosix(IPAddress::Version version, TaskRunner* task_runner);
   TlsConnectionPosix(std::unique_ptr<StreamSocket> socket,
-                     TaskRunner* task_runner,
-                     PlatformClientPosix* platform_client =
-                         PlatformClientPosix::GetInstance());
+                     TaskRunner* task_runner);
 
  private:
   // Called on any thread, to post a task to notify the Client that an |error|
   // has occurred.
   void DispatchError(Error error);
 
-  // Helper to call OnWriteBlocked() or OnWriteUnblocked(). If this is not
-  // called within a task run by |task_runner_|, it trampolines by posting a
-  // task to call itself back via |task_runner_|. See comments in implementation
-  // of NotifyWriteBufferFill() for further details.
-  void NotifyClientOfWriteBlockStatusSequentially(bool is_blocked);
-
   TaskRunner* const task_runner_;
-  PlatformClientPosix* const platform_client_;
+  PlatformClientPosix* platform_client_ = nullptr;
 
   Client* client_ = nullptr;
 
   std::unique_ptr<StreamSocket> socket_;
   bssl::UniquePtr<SSL> ssl_;
 
-  std::atomic_bool notified_client_buffer_is_blocked_{false};
   TlsWriteBuffer buffer_;
 
   WeakPtrFactory<TlsConnectionPosix> weak_factory_{this};
@@ -86,7 +71,6 @@ class TlsConnectionPosix : public TlsConnection,
   OSP_DISALLOW_COPY_AND_ASSIGN(TlsConnectionPosix);
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_TLS_CONNECTION_POSIX_H_

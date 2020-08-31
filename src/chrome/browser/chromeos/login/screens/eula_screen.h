@@ -31,6 +31,23 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
     BACK
   };
 
+  // This enum is tied directly to a UMA enum defined in
+  // //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+  // change one without changing the other).  Entries should be never modified
+  // or deleted.  Only additions possible.
+  enum class UserAction {
+    kAcceptButtonClicked = 0,
+    kBackButtonClicked = 1,
+    kShowAdditionalTos = 2,
+    kShowSecuritySettings = 3,
+    kShowStatsUsageLearnMore = 4,
+    kUnselectStatsUsage = 5,
+    kSelectStatsUsage = 6,
+    kMaxValue = kSelectStatsUsage
+  };
+
+  static std::string GetResultString(Result result);
+
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   EulaScreen(EulaView* view, const ScreenExitCallback& exit_callback);
   ~EulaScreen() override;
@@ -56,9 +73,9 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
   ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
  private:
-  // BaseScreen implementation:
-  void Show() override;
-  void Hide() override;
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
 
   // TpmPasswordFetcherDelegate implementation:

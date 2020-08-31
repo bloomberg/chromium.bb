@@ -9,6 +9,10 @@
 
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 
+namespace web_app {
+class WebAppMigrationManager;
+}  // namespace web_app
+
 namespace extensions {
 
 class BookmarkAppFileHandlerManager : public web_app::FileHandlerManager {
@@ -16,8 +20,11 @@ class BookmarkAppFileHandlerManager : public web_app::FileHandlerManager {
   explicit BookmarkAppFileHandlerManager(Profile* profile);
   ~BookmarkAppFileHandlerManager() override;
 
-  const std::vector<apps::FileHandlerInfo>* GetFileHandlers(
+ protected:
+  const apps::FileHandlers* GetAllFileHandlers(
       const web_app::AppId& app_id) override;
+
+  friend class web_app::WebAppMigrationManager;
 };
 
 }  // namespace extensions

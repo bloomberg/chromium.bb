@@ -24,10 +24,6 @@
  *    Christian Gmeiner <christian.gmeiner@gmail.com>
  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #include "etnaviv_priv.h"
 #include "etnaviv_drmif.h"
 
@@ -48,7 +44,7 @@ static uint64_t get_param(struct etna_device *dev, uint32_t core, uint32_t param
 	return req.value;
 }
 
-struct etna_gpu *etna_gpu_new(struct etna_device *dev, unsigned int core)
+drm_public struct etna_gpu *etna_gpu_new(struct etna_device *dev, unsigned int core)
 {
 	struct etna_gpu *gpu;
 
@@ -77,12 +73,12 @@ fail:
 	return NULL;
 }
 
-void etna_gpu_del(struct etna_gpu *gpu)
+drm_public void etna_gpu_del(struct etna_gpu *gpu)
 {
 	free(gpu);
 }
 
-int etna_gpu_get_param(struct etna_gpu *gpu, enum etna_param_id param,
+drm_public int etna_gpu_get_param(struct etna_gpu *gpu, enum etna_param_id param,
 		uint64_t *value)
 {
 	struct etna_device *dev = gpu->dev;

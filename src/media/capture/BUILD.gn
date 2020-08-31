@@ -17,6 +17,15 @@ group("capture") {
   ]
 }
 
+component("capture_switches") {
+  defines = [ "CAPTURE_IMPLEMENTATION" ]
+  sources = [
+    "capture_export.h",
+    "capture_switches.cc",
+    "capture_switches.h",
+  ]
+}
+
 # Things needed by //media/capture/mojom/video_capture_types.mojom.
 jumbo_component("capture_base") {
   defines = [ "CAPTURE_IMPLEMENTATION" ]
@@ -78,9 +87,7 @@ jumbo_source_set("capture_device_specific") {
     "video/video_capture_device_factory.h",
   ]
 
-  public_deps = [
-    ":capture_base",
-  ]
+  public_deps = [ ":capture_base" ]
   deps = [
     "//base",
     "//base:i18n",
@@ -302,6 +309,14 @@ jumbo_component("capture_lib") {
     sources += [
       "video/fuchsia/video_capture_device_factory_fuchsia.cc",
       "video/fuchsia/video_capture_device_factory_fuchsia.h",
+      "video/fuchsia/video_capture_device_fuchsia.cc",
+      "video/fuchsia/video_capture_device_fuchsia.h",
+    ]
+    deps += [
+      "//media/fuchsia/common",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.camera3",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
+      "//third_party/libyuv",
     ]
   }
 }
@@ -355,9 +370,7 @@ test("capture_unittests") {
     "video_capture_types_unittest.cc",
   ]
 
-  data = [
-    "//media/test/data/bear.mjpeg",
-  ]
+  data = [ "//media/test/data/bear.mjpeg" ]
 
   deps = [
     ":capture",
@@ -378,6 +391,16 @@ test("capture_unittests") {
       "//media/capture/video/android",
       "//media/capture/video/android:capture_java",
     ]
+  }
+
+  if (is_fuchsia) {
+    deps += [
+      "//media/fuchsia/camera:test_support",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.camera3",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sysmem",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
+    ]
+    sources += [ "video/fuchsia/video_capture_device_fuchsia_test.cc" ]
   }
 
   if (is_win) {
@@ -401,7 +424,8 @@ test("capture_unittests") {
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   }
 
-  if (is_linux) {
+  # TODO(https://crbug.com/1043007): use is_linux.
+  if (is_chromeos) {
     deps += [ "//media/gpu/test:local_gpu_memory_buffer_manager" ]
   }
 

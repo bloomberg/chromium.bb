@@ -46,6 +46,7 @@ class LayoutSliderContainer final : public LayoutFlexibleBox {
   void ComputeLogicalHeight(LayoutUnit logical_height,
                             LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
+  MinMaxSizes ComputeIntrinsicLogicalWidths() const override;
 
  private:
   void UpdateLayout() override;

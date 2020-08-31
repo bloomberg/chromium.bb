@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event_processor.h"
@@ -14,7 +15,9 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -47,19 +50,6 @@ class TestDialog : public DialogDelegateView {
   bool ShouldShowCloseButton() const override { return show_close_button_; }
 
   // DialogDelegateView overrides:
-  bool Cancel() override {
-    canceled_ = true;
-    return closeable_;
-  }
-  bool Accept() override {
-    accepted_ = true;
-    return closeable_;
-  }
-  bool Close() override {
-    closed_ = true;
-    return closeable_;
-  }
-
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(200, 200);
   }
@@ -68,21 +58,8 @@ class TestDialog : public DialogDelegateView {
   }
   base::string16 GetWindowTitle() const override { return title_; }
   View* GetInitiallyFocusedView() override { return input_; }
-  int GetDialogButtons() const override { return dialog_buttons_; }
-
-  void CheckAndResetStates(bool canceled,
-                           bool accepted,
-                           bool closed) {
-    EXPECT_EQ(canceled, canceled_);
-    canceled_ = false;
-    EXPECT_EQ(accepted, accepted_);
-    accepted_ = false;
-    EXPECT_EQ(closed, closed_);
-    closed_ = false;
-  }
 
   void TearDown() {
-    closeable_ = true;
     GetWidget()->Close();
   }
 
@@ -93,23 +70,14 @@ class TestDialog : public DialogDelegateView {
   void set_should_handle_escape(bool should_handle_escape) {
     should_handle_escape_ = should_handle_escape;
   }
-  void set_dialog_buttons(int dialog_buttons) {
-    dialog_buttons_ = dialog_buttons;
-  }
 
   views::Textfield* input() { return input_; }
 
  private:
   views::Textfield* input_;
-  bool canceled_ = false;
-  bool accepted_ = false;
-  bool closed_ = false;
-  // Prevent the dialog from closing, for repeated ok and cancel button clicks.
-  bool closeable_ = false;
   base::string16 title_;
   bool show_close_button_ = true;
   bool should_handle_escape_ = false;
-  int dialog_buttons_ = ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 
   DISALLOW_COPY_AND_ASSIGN(TestDialog);
 };
@@ -125,12 +93,8 @@ class DialogTest : public ViewsTestBase {
     // These tests all expect to use a custom frame on the dialog so they can
     // control hit-testing and other behavior. Custom frames are only supported
     // with a parent widget, so create the parent widget here.
-    views::Widget::InitParams params =
-        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    params.bounds = gfx::Rect(10, 11, 200, 200);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    parent_widget_.Init(std::move(params));
-    parent_widget_.Show();
+    parent_widget_ = CreateTestWidget();
+    parent_widget_->Show();
 
     InitializeDialog();
     ShowDialog();
@@ -138,7 +102,7 @@ class DialogTest : public ViewsTestBase {
 
   void TearDown() override {
     dialog_->TearDown();
-    parent_widget_.Close();
+    parent_widget_.reset();
     ViewsTestBase::TearDown();
   }
 
@@ -148,27 +112,39 @@ class DialogTest : public ViewsTestBase {
 
     dialog_ = new TestDialog();
     dialog_->Init();
+
+    dialog_->SetAcceptCallback(
+        base::BindLambdaForTesting([&]() { accepted_ = true; }));
+    dialog_->SetCancelCallback(
+        base::BindLambdaForTesting([&]() { cancelled_ = true; }));
+    dialog_->SetCloseCallback(
+        base::BindLambdaForTesting([&]() { closed_ = true; }));
   }
 
   views::Widget* CreateDialogWidget(DialogDelegate* dialog) {
     views::Widget* widget = DialogDelegate::CreateDialogWidget(
-        dialog, GetContext(), parent_widget_.GetNativeView());
+        dialog, GetContext(), parent_widget_->GetNativeView());
     return widget;
   }
 
   void ShowDialog() { CreateDialogWidget(dialog_)->Show(); }
 
-  void SimulateKeyEvent(const ui::KeyEvent& event) {
-    ui::KeyEvent event_copy = event;
-    if (dialog()->GetFocusManager()->OnKeyEvent(event_copy))
-      dialog()->GetWidget()->OnKeyEvent(&event_copy);
+  void SimulateKeyPress(ui::KeyboardCode key) {
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key, ui::EF_NONE);
+    if (dialog()->GetFocusManager()->OnKeyEvent(event))
+      dialog()->GetWidget()->OnKeyEvent(&event);
   }
 
   TestDialog* dialog() const { return dialog_; }
-  views::Widget* parent_widget() { return &parent_widget_; }
+  views::Widget* parent_widget() { return parent_widget_.get(); }
+
+ protected:
+  bool accepted_ = false;
+  bool cancelled_ = false;
+  bool closed_ = false;
 
  private:
-  views::Widget parent_widget_;
+  std::unique_ptr<views::Widget> parent_widget_;
   TestDialog* dialog_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DialogTest);
@@ -176,51 +152,69 @@ class DialogTest : public ViewsTestBase {
 
 }  // namespace
 
-TEST_F(DialogTest, AcceptAndCancel) {
-  LabelButton* ok_button = dialog()->GetOkButton();
-  LabelButton* cancel_button = dialog()->GetCancelButton();
-
-  // Check that return/escape accelerators accept/close dialogs.
+TEST_F(DialogTest, InputIsInitiallyFocused) {
   EXPECT_EQ(dialog()->input(), dialog()->GetFocusManager()->GetFocusedView());
-  const ui::KeyEvent return_event(
-      ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
-  SimulateKeyEvent(return_event);
-  dialog()->CheckAndResetStates(false, true, false);
-  const ui::KeyEvent escape_event(
-      ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, ui::EF_NONE);
-  SimulateKeyEvent(escape_event);
-  dialog()->CheckAndResetStates(false, false, true);
+}
 
-// Check ok and cancel button behavior on a directed return key event. Buttons
-// won't respond to a return key event on Mac, since it performs the default
-// action.
-#if defined(OS_MACOSX)
-  EXPECT_FALSE(ok_button->OnKeyPressed(return_event));
-  dialog()->CheckAndResetStates(false, false, false);
-  EXPECT_FALSE(cancel_button->OnKeyPressed(return_event));
-  dialog()->CheckAndResetStates(false, false, false);
-#else
-  EXPECT_TRUE(ok_button->OnKeyPressed(return_event));
-  dialog()->CheckAndResetStates(false, true, false);
-  EXPECT_TRUE(cancel_button->OnKeyPressed(return_event));
-  dialog()->CheckAndResetStates(true, false, false);
-#endif
+TEST_F(DialogTest, OkButtonAccepts) {
+  EXPECT_FALSE(accepted_);
+  SimulateKeyPress(ui::VKEY_RETURN);
+  EXPECT_TRUE(accepted_);
+}
 
-  // Check that return accelerators cancel dialogs if cancel is focused, except
-  // on Mac where return should perform the default action.
-  cancel_button->RequestFocus();
-  EXPECT_EQ(cancel_button, dialog()->GetFocusManager()->GetFocusedView());
-  SimulateKeyEvent(return_event);
-#if defined(OS_MACOSX)
-  dialog()->CheckAndResetStates(false, true, false);
-#else
-  dialog()->CheckAndResetStates(true, false, false);
-#endif
+TEST_F(DialogTest, EscButtonCloses) {
+  EXPECT_FALSE(closed_);
+  SimulateKeyPress(ui::VKEY_ESCAPE);
+  EXPECT_TRUE(closed_);
+}
 
-  // Check that escape can be overridden.
+TEST_F(DialogTest, ReturnDirectedToOkButtonPlatformStyle) {
+  const ui::KeyEvent return_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN,
+                                  ui::EF_NONE);
+  if (PlatformStyle::kReturnClicksFocusedControl) {
+    EXPECT_TRUE(dialog()->GetOkButton()->OnKeyPressed(return_event));
+    EXPECT_TRUE(accepted_);
+  } else {
+    EXPECT_FALSE(dialog()->GetOkButton()->OnKeyPressed(return_event));
+    EXPECT_FALSE(accepted_);
+    // If the return key press was not directed *specifically* to the Ok button,
+    // it would bubble upwards here, reach the dialog, and accept it. The
+    // OkButtonAccepts test above covers that behavior.
+  }
+}
+
+TEST_F(DialogTest, ReturnDirectedToCancelButtonPlatformBehavior) {
+  const ui::KeyEvent return_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN,
+                                  ui::EF_NONE);
+  if (PlatformStyle::kReturnClicksFocusedControl) {
+    EXPECT_TRUE(dialog()->GetCancelButton()->OnKeyPressed(return_event));
+    EXPECT_TRUE(cancelled_);
+  } else {
+    EXPECT_FALSE(dialog()->GetCancelButton()->OnKeyPressed(return_event));
+    EXPECT_FALSE(cancelled_);
+    // If the return key press was not directed *specifically* to the Ok button,
+    // it would bubble upwards here, reach the dialog, and accept it. The
+    // OkButtonAccepts test above covers that behavior.
+  }
+}
+
+// Unlike the previous two tests, this test simulates a key press at the level
+// of the dialog's Widget, so the return-to-close-dialog behavior does happen.
+TEST_F(DialogTest, ReturnOnCancelButtonPlatformBehavior) {
+  dialog()->GetCancelButton()->RequestFocus();
+  SimulateKeyPress(ui::VKEY_RETURN);
+  if (PlatformStyle::kReturnClicksFocusedControl) {
+    EXPECT_TRUE(cancelled_);
+  } else {
+    EXPECT_TRUE(accepted_);
+  }
+}
+
+TEST_F(DialogTest, CanOverrideEsc) {
   dialog()->set_should_handle_escape(true);
-  SimulateKeyEvent(escape_event);
-  dialog()->CheckAndResetStates(false, false, false);
+  SimulateKeyPress(ui::VKEY_ESCAPE);
+  EXPECT_FALSE(cancelled_);
+  EXPECT_FALSE(closed_);
 }
 
 TEST_F(DialogTest, RemoveDefaultButton) {
@@ -368,11 +362,10 @@ TEST_F(DialogTest, InitialFocus) {
 // A dialog for testing initial focus with only an OK button.
 class InitialFocusTestDialog : public DialogDelegateView {
  public:
-  InitialFocusTestDialog() = default;
+  InitialFocusTestDialog() {
+    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
+  }
   ~InitialFocusTestDialog() override = default;
-
-  // DialogDelegateView overrides:
-  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_OK; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InitialFocusTestDialog);
@@ -421,6 +414,8 @@ TEST_F(DialogTest, UnfocusableInitialFocus) {
   // This achieves the same effect as disabling full keyboard access.
   dialog->GetOkButton()->SetFocusBehavior(View::FocusBehavior::NEVER);
   dialog->GetCancelButton()->SetFocusBehavior(View::FocusBehavior::NEVER);
+  dialog->GetBubbleFrameView()->GetCloseButtonForTesting()->SetFocusBehavior(
+      View::FocusBehavior::NEVER);
 #endif
 
   // On showing the dialog, the initially focused View will be the OK button.
@@ -430,6 +425,94 @@ TEST_F(DialogTest, UnfocusableInitialFocus) {
   EXPECT_TRUE(textfield->HasFocus());
   EXPECT_EQ(textfield, dialog->GetFocusManager()->GetFocusedView());
   dialog_widget->CloseNow();
+}
+
+TEST_F(DialogTest, ButtonEnableUpdatesState) {
+  test::WidgetTest::WidgetAutoclosePtr widget(
+      CreateDialogWidget(new DialogDelegateView));
+  auto* dialog = static_cast<DialogDelegateView*>(widget->widget_delegate());
+
+  EXPECT_TRUE(dialog->GetOkButton()->GetEnabled());
+  dialog->SetButtonEnabled(ui::DIALOG_BUTTON_OK, false);
+  dialog->DialogModelChanged();
+  EXPECT_FALSE(dialog->GetOkButton()->GetEnabled());
+}
+
+using DialogDelegateCloseTest = ViewsTestBase;
+
+TEST_F(DialogDelegateCloseTest, AnyCallbackInhibitsDefaultClose) {
+  DialogDelegateView dialog;
+
+  bool cancelled = false;
+  bool accepted = false;
+
+  dialog.SetCancelCallback(
+      base::BindLambdaForTesting([&]() { cancelled = true; }));
+  dialog.SetAcceptCallback(
+      base::BindLambdaForTesting([&]() { accepted = true; }));
+
+  // At this point DefaultClose() would invoke either Accept() or Cancel().
+  EXPECT_TRUE(dialog.Close());
+
+  EXPECT_FALSE(cancelled);
+  EXPECT_FALSE(accepted);
+}
+
+TEST_F(DialogDelegateCloseTest,
+       RecursiveCloseFromAcceptCallbackDoesNotTriggerSecondCallback) {
+  DialogDelegateView dialog;
+
+  bool closed = false;
+  bool accepted = false;
+
+  dialog.SetCloseCallback(
+      base::BindLambdaForTesting([&]() { closed = true; }));
+  dialog.SetAcceptCallback(base::BindLambdaForTesting([&]() {
+    accepted = true;
+    dialog.Close();
+  }));
+
+  EXPECT_TRUE(dialog.Accept());
+
+  EXPECT_TRUE(accepted);
+  EXPECT_FALSE(closed);
+}
+
+class TestDialogDelegateView : public DialogDelegateView {
+ public:
+  TestDialogDelegateView(bool* accepted, bool* cancelled)
+      : accepted_(accepted), cancelled_(cancelled) {}
+  ~TestDialogDelegateView() override = default;
+
+ private:
+  bool Accept() override {
+    *(accepted_) = true;
+    return true;
+  }
+  bool Cancel() override {
+    *(cancelled_) = true;
+    return true;
+  }
+
+  bool* accepted_;
+  bool* cancelled_;
+};
+
+TEST_F(DialogDelegateCloseTest, OldClosePathDoesNotDoubleClose) {
+  bool accepted = false;
+  bool cancelled = false;
+
+  auto* dialog = new TestDialogDelegateView(&accepted, &cancelled);
+  Widget* widget =
+      DialogDelegate::CreateDialogWidget(dialog, GetContext(), nullptr);
+  widget->Show();
+
+  views::test::WidgetDestroyedWaiter destroyed_waiter(widget);
+  dialog->AcceptDialog();
+  destroyed_waiter.Wait();
+
+  EXPECT_TRUE(accepted);
+  EXPECT_FALSE(cancelled);
 }
 
 }  // namespace views

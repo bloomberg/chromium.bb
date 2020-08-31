@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/profiler/frame.h"
+#include "base/profiler/module_cache.h"
 #include "base/profiler/register_context.h"
-#include "base/sampling_heap_profiler/module_cache.h"
 
 namespace base {
 
@@ -31,15 +31,26 @@ enum class UnwindResult {
 // use with the StackSamplingProfiler. The profiler is expected to call
 // CanUnwind() to determine if the Unwinder thinks it can unwind from the frame
 // represented by the context values, then TryUnwind() to attempt the
-// unwind. Note that the stack samples for multiple collection scenarios are
-// interleaved on a single Unwinder instance.
+// unwind.
 class Unwinder {
  public:
   virtual ~Unwinder() = default;
 
-  // Invoked to allow the unwinder to add any non-native modules it recognizes
-  // to the ModuleCache.
-  virtual void AddNonNativeModules(ModuleCache* module_cache) {}
+  // Invoked to allow the unwinder to add any modules it recognizes to the
+  // ModuleCache.
+  virtual void AddInitialModules(ModuleCache* module_cache) {}
+
+  // Invoked at the time the stack is captured. IMPORTANT NOTE: this function is
+  // invoked while the target thread is suspended. To avoid deadlock it must not
+  // invoke any non-reentrant code that is also invoked by the target thread. In
+  // particular, it may not perform any heap allocation or deallocation,
+  // including indirectly via use of DCHECK/CHECK or other logging statements.
+  virtual void OnStackCapture() {}
+
+  // Allows the unwinder to update ModuleCache with any modules it's responsible
+  // for. Invoked for each sample between OnStackCapture() and the initial
+  // invocations of CanUnwindFrom()/TryUnwind().
+  virtual void UpdateModules(ModuleCache* module_cache) {}
 
   // Returns true if the unwinder recognizes the code referenced by
   // |current_frame| as code from which it should be able to unwind. When
@@ -47,13 +58,18 @@ class Unwinder {
   // of frames. Note that if the unwinder returns true it may still legitmately
   // fail to unwind; e.g. in the case of a native unwind for a function that
   // doesn't have unwind information.
-  virtual bool CanUnwindFrom(const Frame* current_frame) const = 0;
+  virtual bool CanUnwindFrom(const Frame& current_frame) const = 0;
 
   // Attempts to unwind the frame represented by the context values.
   // Walks the native frames on the stack pointed to by the stack pointer in
   // |thread_context|, appending the frames to |stack|. When invoked
   // stack->back() contains the frame corresponding to the state in
   // |thread_context|.
+  // Precondition: RegisterContextStackPointer(thread_context) is less than
+  // |stack_top|.
+  // Postcondition: If the implementation returns UNRECOGNIZED_FRAME, indicating
+  // that it successfully unwound, RegisterContextStackPointer(thread_context)
+  // is greater than the previous value and less than |stack_top|.
   virtual UnwindResult TryUnwind(RegisterContext* thread_context,
                                  uintptr_t stack_top,
                                  ModuleCache* module_cache,

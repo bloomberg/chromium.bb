@@ -6,8 +6,9 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -97,8 +98,7 @@ ManifestFetchData::ManifestFetchData(const GURL& update_url,
   request_ids_.insert(request_id);
 }
 
-ManifestFetchData::~ManifestFetchData() {
-}
+ManifestFetchData::~ManifestFetchData() = default;
 
 // The format for request parameters in update checks is:
 //
@@ -127,7 +127,7 @@ bool ManifestFetchData::AddExtension(const std::string& id,
                                      const PingData* ping_data,
                                      const std::string& update_url_data,
                                      const std::string& install_source,
-                                     const std::string& install_location,
+                                     Manifest::Location extension_location,
                                      FetchPriority fetch_priority) {
   if (extension_ids_.find(id) != extension_ids_.end()) {
     NOTREACHED() << "Duplicate extension id " << id;
@@ -137,6 +137,9 @@ bool ManifestFetchData::AddExtension(const std::string& id,
   if (fetch_priority_ != FOREGROUND) {
     fetch_priority_ = fetch_priority;
   }
+
+  const std::string install_location =
+      GetSimpleLocationString(extension_location);
 
   // Compute the string we'd append onto the full_url_, and see if it fits.
   std::vector<std::string> parts;

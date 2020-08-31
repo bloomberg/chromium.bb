@@ -15,7 +15,11 @@
 @protocol ApplicationCommands;
 class Browser;
 @protocol BrowserCommands;
+@protocol BrowsingDataCommands;
 @class ChromeIdentity;
+namespace syncer {
+enum class KeyRetrievalTriggerForUMA;
+}  // namespace syncer
 
 // The coordinator for Sign In Interaction. This coordinator handles the
 // presentation and dismissal of the UI. This object should not be destroyed
@@ -31,17 +35,7 @@ class Browser;
     BOOL settingsViewPresented;
 
 // Designated initializer.
-// * |browserState| is the current browser state. Must not be nil.
-// * |dispatcher| is the dispatcher to be sent commands from this class.
-- (instancetype)initWithBrowser:(Browser*)browser
-                     dispatcher:
-                         (id<ApplicationCommands, BrowserCommands>)dispatcher
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
+- (instancetype)initWithBrowser:(Browser*)browser NS_DESIGNATED_INITIALIZER;
 
 // Creates a coordinator that uses |viewController| and |browser|.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
@@ -92,6 +86,18 @@ class Browser;
 // * |presentingViewController| is the top presented view controller.
 - (void)showAdvancedSigninSettingsWithPresentingViewController:
     (UIViewController*)viewController;
+
+// Presents the Trusted Vault re-authentication dialog.
+// |viewController| presents the sign-in.
+// |retrievalTrigger| UI elements where the trusted vault reauth has been
+// triggered.
+- (void)
+    showTrustedVaultReauthenticationWithPresentingViewController:
+        (UIViewController*)viewController
+                                                retrievalTrigger:
+                                                    (syncer::
+                                                         KeyRetrievalTriggerForUMA)
+                                                        retrievalTrigger;
 
 // Cancels any current process. Calls the completion callback when done.
 // |abortAndDismissSettingsViewAnimated:completion:| should not be called after

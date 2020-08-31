@@ -13,7 +13,6 @@
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
@@ -32,6 +31,7 @@ class TimeTicks;
 namespace update_client {
 
 class Configurator;
+class PersistedData;
 struct UpdateContext;
 
 // Handles updates for a group of components. Updates for different groups
@@ -41,8 +41,8 @@ class UpdateEngine : public base::RefCounted<UpdateEngine> {
  public:
   using Callback = base::OnceCallback<void(Error error)>;
   using NotifyObserversCallback =
-      base::Callback<void(UpdateClient::Observer::Events event,
-                          const std::string& id)>;
+      base::RepeatingCallback<void(UpdateClient::Observer::Events event,
+                                   const std::string& id)>;
   using CrxDataCallback = UpdateClient::CrxDataCallback;
 
   UpdateEngine(scoped_refptr<Configurator> config,
@@ -50,6 +50,8 @@ class UpdateEngine : public base::RefCounted<UpdateEngine> {
                CrxDownloader::Factory crx_downloader_factory,
                scoped_refptr<PingManager> ping_manager,
                const NotifyObserversCallback& notify_observers_callback);
+  UpdateEngine(const UpdateEngine&) = delete;
+  UpdateEngine& operator=(const UpdateEngine&) = delete;
 
   // Returns true and the state of the component identified by |id|, if the
   // component is found in any update context. Returns false if the component
@@ -59,6 +61,7 @@ class UpdateEngine : public base::RefCounted<UpdateEngine> {
   void Update(bool is_foreground,
               const std::vector<std::string>& ids,
               UpdateClient::CrxDataCallback crx_data_callback,
+              UpdateClient::CrxStateChangeCallback crx_state_change_callback,
               Callback update_callback);
 
   void SendUninstallPing(const std::string& id,
@@ -114,8 +117,6 @@ class UpdateEngine : public base::RefCounted<UpdateEngine> {
   // a certain time, which is negotiated with the server as part of the
   // update protocol. See the comments for X-Retry-After header.
   base::TimeTicks throttle_updates_until_;
-
-  DISALLOW_COPY_AND_ASSIGN(UpdateEngine);
 };
 
 // Describes a group of components which are installed or updated together.
@@ -125,9 +126,13 @@ struct UpdateContext : public base::RefCounted<UpdateContext> {
       bool is_foreground,
       const std::vector<std::string>& ids,
       UpdateClient::CrxDataCallback crx_data_callback,
+      UpdateClient::CrxStateChangeCallback crx_state_change_callback,
       const UpdateEngine::NotifyObserversCallback& notify_observers_callback,
       UpdateEngine::Callback callback,
-      CrxDownloader::Factory crx_downloader_factory);
+      CrxDownloader::Factory crx_downloader_factory,
+      PersistedData* persisted_data);
+  UpdateContext(const UpdateContext&) = delete;
+  UpdateContext& operator=(const UpdateContext&) = delete;
 
   scoped_refptr<Configurator> config;
 
@@ -146,6 +151,9 @@ struct UpdateContext : public base::RefCounted<UpdateContext> {
 
   // Called before an update check, when update metadata is needed.
   UpdateEngine::CrxDataCallback crx_data_callback;
+
+  // Called when the observable state of the CRX component has changed.
+  UpdateClient::CrxStateChangeCallback crx_state_change_callback;
 
   // Called when there is a state change for any update in this context.
   const UpdateEngine::NotifyObserversCallback notify_observers_callback;
@@ -189,11 +197,12 @@ struct UpdateContext : public base::RefCounted<UpdateContext> {
   // to uniquely identify an update context.
   const std::string session_id;
 
+  // Persists data using the prefs service. Not owned by this class.
+  PersistedData* persisted_data = nullptr;
+
  private:
   friend class base::RefCounted<UpdateContext>;
   ~UpdateContext();
-
-  DISALLOW_COPY_AND_ASSIGN(UpdateContext);
 };
 
 }  // namespace update_client

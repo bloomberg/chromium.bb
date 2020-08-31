@@ -18,11 +18,7 @@
 #include "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #include "ios/web/public/web_state_observer.h"
 
-class GURL;
-
-namespace ios {
 class ChromeBrowserState;
-}
 
 namespace sync_sessions {
 class SyncSessionsClient;
@@ -37,7 +33,7 @@ class IOSChromeLocalSessionEventRouter
       public TabModelListObserver {
  public:
   IOSChromeLocalSessionEventRouter(
-      ios::ChromeBrowserState* browser_state,
+      ChromeBrowserState* browser_state,
       sync_sessions::SyncSessionsClient* sessions_client_,
       const syncer::SyncableService::StartSyncFlare& flare);
   ~IOSChromeLocalSessionEventRouter() override;
@@ -50,14 +46,12 @@ class IOSChromeLocalSessionEventRouter
   // TabModelListObserver:
   void TabModelRegisteredWithBrowserState(
       TabModel* tab_model,
-      ios::ChromeBrowserState* browser_state) override;
+      ChromeBrowserState* browser_state) override;
   void TabModelUnregisteredFromBrowserState(
       TabModel* tab_model,
-      ios::ChromeBrowserState* browser_state) override;
+      ChromeBrowserState* browser_state) override;
 
   // web::WebStateObserver:
-  void NavigationItemsPruned(web::WebState* web_state,
-                             size_t pruned_item_count) override;
   void TitleWasSet(web::WebState* web_state) override;
   void DidFinishNavigation(web::WebState* web_state,
                            web::NavigationContext* navigation_context) override;
@@ -79,6 +73,8 @@ class IOSChromeLocalSessionEventRouter
   void WebStateDetachedAt(WebStateList* web_state_list,
                           web::WebState* web_state,
                           int index) override;
+  void WillBeginBatchOperation(WebStateList* web_state_list) override;
+  void BatchOperationEnded(WebStateList* web_state_list) override;
 
  private:
   // Methods to add and remove WebStateList observer.
@@ -91,24 +87,17 @@ class IOSChromeLocalSessionEventRouter
   // Called on observation of a change in |web_state|.
   void OnWebStateChange(web::WebState* web_state);
 
-  // Called when the favicons for the given page URLs
-  // (e.g. http://www.google.com) and the given icon URL (e.g.
-  // http://www.google.com/favicon.ico) have changed. It is valid to call
-  // OnFaviconsChanged() with non-empty |page_urls| and an empty |icon_url|
-  // and vice versa.
-  void OnFaviconsChanged(const std::set<GURL>& page_urls, const GURL& icon_url);
-
   sync_sessions::LocalSessionEventHandler* handler_;
-  ios::ChromeBrowserState* const browser_state_;
+  ChromeBrowserState* const browser_state_;
   sync_sessions::SyncSessionsClient* const sessions_client_;
   syncer::SyncableService::StartSyncFlare flare_;
 
-  std::unique_ptr<base::CallbackList<void(const std::set<GURL>&,
-                                          const GURL&)>::Subscription>
-      favicon_changed_subscription_;
-
   std::unique_ptr<base::CallbackList<void(web::WebState*)>::Subscription>
       tab_parented_subscription_;
+
+  // Track the number of WebStateList we are observing that are in a batch
+  // operation.
+  int batch_in_progress_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeLocalSessionEventRouter);
 };

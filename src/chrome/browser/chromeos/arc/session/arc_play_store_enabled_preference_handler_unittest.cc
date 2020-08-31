@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
@@ -27,6 +28,7 @@
 #include "components/arc/session/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -72,7 +74,7 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_.get());
 
     arc_session_manager_ =
-        std::make_unique<ArcSessionManager>(std::make_unique<ArcSessionRunner>(
+        CreateTestArcSessionManager(std::make_unique<ArcSessionRunner>(
             base::BindRepeating(FakeArcSession::Create)));
     preference_handler_ =
         std::make_unique<ArcPlayStoreEnabledPreferenceHandler>(
@@ -82,8 +84,8 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
     GetFakeUserManager()->AddUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
 
-    identity_test_env_profile_adaptor_->identity_test_env()->SetPrimaryAccount(
-        kTestEmail);
+    identity_test_env_profile_adaptor_->identity_test_env()
+        ->MakeUnconsentedPrimaryAccountAvailable(kTestEmail);
   }
 
   void TearDown() override {
@@ -112,11 +114,13 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
         ConsentAuditorFactory::GetForProfile(profile()));
   }
 
-  CoreAccountId GetAuthenticatedAccountId() const {
+  CoreAccountId GetAccountId() const {
     auto* identity_manager =
         identity_test_env_profile_adaptor_->identity_test_env()
             ->identity_manager();
-    return identity_manager->GetPrimaryAccountInfo().account_id;
+    return identity_manager
+        ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+        .account_id;
   }
 
  private:
@@ -193,7 +197,7 @@ TEST_F(ArcPlayStoreEnabledPreferenceHandlerTest, PrefChangeRevokesConsent) {
   play_consent.set_consent_flow(
       UserConsentTypes::ArcPlayTermsOfServiceConsent::SETTING_CHANGE);
   EXPECT_CALL(*auditor, RecordArcPlayConsent(
-                            GetAuthenticatedAccountId(),
+                            GetAccountId(),
                             consent_auditor::ArcPlayConsentEq(play_consent)));
 
   ASSERT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));

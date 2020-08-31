@@ -13,7 +13,7 @@
 #endif
 
 #if SK_ANGLE
-    #include "tools/gpu/gl/angle/GLTestContext_angle.h"
+#include "tools/gpu/gl/angle/GLTestContext_angle.h"
 #endif
 #include "tools/gpu/gl/command_buffer/GLTestContext_command_buffer.h"
 #ifdef SK_VULKAN
@@ -21,6 +21,9 @@
 #endif
 #ifdef SK_METAL
 #include "tools/gpu/mtl/MtlTestContext.h"
+#endif
+#ifdef SK_DIRECT3D
+#include "tools/gpu/d3d/D3DTestContext.h"
 #endif
 #ifdef SK_DAWN
 #include "tools/gpu/dawn/DawnTestContext.h"
@@ -86,10 +89,18 @@ void GrContextFactory::abandonContexts() {
             if (context.fTestContext) {
                 auto restore = context.fTestContext->makeCurrentAndAutoRestore();
                 context.fTestContext->testAbandon();
+            }
+            bool requiresEarlyAbandon = (context.fGrContext->backend() == GrBackendApi::kVulkan);
+            if (requiresEarlyAbandon) {
+                context.fGrContext->abandonContext();
+            }
+            if (context.fTestContext) {
                 delete(context.fTestContext);
                 context.fTestContext = nullptr;
             }
-            context.fGrContext->abandonContext();
+            if (!requiresEarlyAbandon) {
+                context.fGrContext->abandonContext();
+            }
             context.fAbandoned = true;
         }
     }
@@ -108,11 +119,11 @@ void GrContextFactory::releaseResourcesAndAbandonContexts() {
                 restore = context.fTestContext->makeCurrentAndAutoRestore();
             }
             context.fGrContext->releaseResourcesAndAbandonContext();
-            context.fAbandoned = true;
             if (context.fTestContext) {
                 delete context.fTestContext;
                 context.fTestContext = nullptr;
             }
+            context.fAbandoned = true;
         }
     }
 }
@@ -170,6 +181,16 @@ ContextInfo GrContextFactory::getContextInfoInternal(ContextType type, ContextOv
                 case kANGLE_D3D9_ES2_ContextType:
                     glCtx = MakeANGLETestContext(ANGLEBackend::kD3D9, ANGLEContextVersion::kES2,
                                                  glShareContext).release();
+                    // Chrome will only run on D3D9 with NVIDIA for 2012 and earlier drivers.
+                    // (<= 269.73). We get shader link failures when testing on recent drivers
+                    // using this backend.
+                    if (glCtx) {
+                        auto [backend, vendor, renderer] = GrGLGetANGLEInfo(glCtx->gl());
+                        if (vendor == GrGLANGLEVendor::kNVIDIA) {
+                            delete glCtx;
+                            return ContextInfo();
+                        }
+                    }
                     break;
                 case kANGLE_D3D11_ES2_ContextType:
                     glCtx = MakeANGLETestContext(ANGLEBackend::kD3D11, ANGLEContextVersion::kES2,
@@ -213,17 +234,17 @@ ContextInfo GrContextFactory::getContextInfoInternal(ContextType type, ContextOv
                 return ContextInfo();
             }
 
-#ifdef SK_GL
-            // There is some bug (either in Skia or the NV Vulkan driver) where VkDevice
-            // destruction will hang occaisonally. For some reason having an existing GL
-            // context fixes this.
+            // We previously had an issue where the VkDevice destruction would occasionally hang
+            // on systems with NVIDIA GPUs and having an existing GL context fixed it. Now (March
+            // 2020) we still need the GL context to keep Vulkan/TSAN bots from running incredibly
+            // slow. Perhaps this prevents repeated driver loading/unloading? Note that keeping
+            // a persistent VkTestContext around instead was tried and did not work.
             if (!fSentinelGLContext) {
                 fSentinelGLContext.reset(CreatePlatformGLTestContext(kGL_GrGLStandard));
                 if (!fSentinelGLContext) {
                     fSentinelGLContext.reset(CreatePlatformGLTestContext(kGLES_GrGLStandard));
                 }
             }
-#endif
             break;
         }
 #endif
@@ -233,6 +254,18 @@ ContextInfo GrContextFactory::getContextInfoInternal(ContextType type, ContextOv
                     ? static_cast<MtlTestContext*>(masterContext->fTestContext) : nullptr;
             SkASSERT(kMetal_ContextType == type);
             testCtx.reset(CreatePlatformMtlTestContext(mtlSharedContext));
+            if (!testCtx) {
+                return ContextInfo();
+            }
+            break;
+        }
+#endif
+#ifdef SK_DIRECT3D
+        case GrBackendApi::kDirect3D: {
+            D3DTestContext* d3dSharedContext = masterContext
+                    ? static_cast<D3DTestContext*>(masterContext->fTestContext) : nullptr;
+            SkASSERT(kDirect3D_ContextType == type);
+            testCtx.reset(CreatePlatformD3DTestContext(d3dSharedContext));
             if (!testCtx) {
                 return ContextInfo();
             }

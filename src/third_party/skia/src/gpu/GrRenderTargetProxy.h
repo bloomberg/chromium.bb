@@ -10,6 +10,7 @@
 
 #include "include/private/GrTypesPriv.h"
 #include "src/gpu/GrCaps.h"
+#include "src/gpu/GrNativeRect.h"
 #include "src/gpu/GrSurfaceProxy.h"
 #include "src/gpu/GrSwizzle.h"
 
@@ -41,7 +42,7 @@ public:
      */
     void setNeedsStencil(int8_t numStencilSamples) {
         SkASSERT(numStencilSamples >= fSampleCnt);
-        fNumStencilSamples = SkTMax(numStencilSamples, fNumStencilSamples);
+        fNumStencilSamples = std::max(numStencilSamples, fNumStencilSamples);
     }
 
     /**
@@ -58,10 +59,12 @@ public:
 
     bool wrapsVkSecondaryCB() const { return fWrapsVkSecondaryCB == WrapsVkSecondaryCB::kYes; }
 
-    void markMSAADirty(const SkIRect& dirtyRect) {
+    void markMSAADirty(const SkIRect& dirtyRect, GrSurfaceOrigin origin) {
         SkASSERT(SkIRect::MakeSize(this->dimensions()).contains(dirtyRect));
         SkASSERT(this->requiresManualMSAAResolve());
-        fMSAADirtyRect.join(dirtyRect);
+        auto nativeRect = GrNativeRect::MakeRelativeTo(
+                origin, this->backingStoreDimensions().height(), dirtyRect);
+        fMSAADirtyRect.join(nativeRect.asSkIRect());
     }
     void markMSAAResolved() {
         SkASSERT(this->requiresManualMSAAResolve());
@@ -90,10 +93,8 @@ protected:
     // Deferred version
     GrRenderTargetProxy(const GrCaps&,
                         const GrBackendFormat&,
-                        const GrSurfaceDesc&,
+                        SkISize,
                         int sampleCount,
-                        GrSurfaceOrigin,
-                        const GrSwizzle& textureSwizzle,
                         SkBackingFit,
                         SkBudgeted,
                         GrProtected,
@@ -114,10 +115,8 @@ protected:
     // know the final size until flush time.
     GrRenderTargetProxy(LazyInstantiateCallback&&,
                         const GrBackendFormat&,
-                        const GrSurfaceDesc&,
+                        SkISize,
                         int sampleCount,
-                        GrSurfaceOrigin,
-                        const GrSwizzle& textureSwizzle,
                         SkBackingFit,
                         SkBudgeted,
                         GrProtected,
@@ -127,8 +126,6 @@ protected:
 
     // Wrapped version
     GrRenderTargetProxy(sk_sp<GrSurface>,
-                        GrSurfaceOrigin,
-                        const GrSwizzle& textureSwizzle,
                         UseAllocator,
                         WrapsVkSecondaryCB = WrapsVkSecondaryCB::kNo);
 
@@ -145,6 +142,8 @@ private:
 
     size_t onUninstantiatedGpuMemorySize(const GrCaps&) const override;
     SkDEBUGCODE(void onValidateSurface(const GrSurface*) override;)
+
+            LazySurfaceDesc callbackDesc() const override;
 
     // WARNING: Be careful when adding or removing fields here. ASAN is likely to trigger warnings
     // when instantiating GrTextureRenderTargetProxy. The std::function in GrSurfaceProxy makes

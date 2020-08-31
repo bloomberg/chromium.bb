@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/accessibility/accessibility_permission_context.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
-AccessibilityPermissionContext::AccessibilityPermissionContext(Profile* profile)
+AccessibilityPermissionContext::AccessibilityPermissionContext(
+    content::BrowserContext* browser_context)
     : PermissionContextBase(
-          profile,
+          browser_context,
           ContentSettingsType::ACCESSIBILITY_EVENTS,
           blink::mojom::FeaturePolicyFeature::kAccessibilityEvents) {}
 

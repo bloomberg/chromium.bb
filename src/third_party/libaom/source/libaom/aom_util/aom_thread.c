@@ -48,7 +48,7 @@ static THREADFN thread_loop(void *ptr) {
     // thread_name is too long, pthread_setname_np returns -1 with errno
     // ENAMETOOLONG (63).
     char thread_name[64];
-    strncpy(thread_name, worker->thread_name, sizeof(thread_name));
+    strncpy(thread_name, worker->thread_name, sizeof(thread_name) - 1);
     thread_name[sizeof(thread_name) - 1] = '\0';
     pthread_setname_np(thread_name);
   }
@@ -57,7 +57,7 @@ static THREADFN thread_loop(void *ptr) {
     // Linux and Android require names (with nul) fit in 16 chars, otherwise
     // pthread_setname_np() returns ERANGE (34).
     char thread_name[16];
-    strncpy(thread_name, worker->thread_name, sizeof(thread_name));
+    strncpy(thread_name, worker->thread_name, sizeof(thread_name) - 1);
     thread_name[sizeof(thread_name) - 1] = '\0';
     pthread_setname_np(pthread_self(), thread_name);
   }

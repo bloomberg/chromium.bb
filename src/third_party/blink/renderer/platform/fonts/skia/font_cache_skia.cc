@@ -33,6 +33,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/linux/web_sandbox_support.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -244,6 +246,13 @@ sk_sp<SkTypeface> FontCache::CreateTypeface(
   return SkTypeface_Factory::FromFamilyNameAndFontStyle(
       name.c_str(), font_description.SkiaFontStyle());
 }
+
+#if !defined(OS_MACOSX)
+std::vector<FontEnumerationEntry> FontCache::EnumeratePlatformAvailableFonts() {
+  NOTIMPLEMENTED();
+  return std::vector<FontEnumerationEntry>();
+}
+#endif  // !defined(OS_MACOSX)
 
 #if !defined(OS_WIN)
 std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(

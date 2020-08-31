@@ -10,36 +10,33 @@ import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.SystemClock;
-import android.support.v4.content.ContextCompat;
 import android.system.Os;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.BuildConfig;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.FileUtils;
+import org.chromium.base.JNIUtils;
 import org.chromium.base.Log;
-import org.chromium.base.StreamUtil;
+import org.chromium.base.NativeLibraryLoadedStatus;
+import org.chromium.base.NativeLibraryLoadedStatus.NativeLibraryLoadedStatusProvider;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.base.compat.ApiHelperForM;
-import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.UmaRecorderHolder;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Locale;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import javax.annotation.concurrent.GuardedBy;
 
@@ -62,23 +59,6 @@ import javax.annotation.concurrent.GuardedBy;
 public class LibraryLoader {
     private static final String TAG = "LibraryLoader";
 
-    // Experience shows that on some devices, the PackageManager fails to properly extract
-    // native shared libraries to the /data partition at installation or upgrade time,
-    // which creates all kind of chaos (https://crbug.com/806998).
-    //
-    // We implement a fallback when we detect the issue by manually extracting the library
-    // into Chromium's own data directory, then retrying to load the new library from here.
-    //
-    // This will work for any device running K-. Starting with Android L, render processes
-    // cannot access the file system anymore, and extraction will always fail for them.
-    // However, the issue doesn't seem to appear in the field for Android L.
-    //
-    // Also, starting with M, the issue doesn't exist if shared libraries are stored
-    // uncompressed in the APK (as Chromium does), because the system linker can access them
-    // directly, and the PackageManager will thus never extract them in the first place.
-    public static final boolean PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION =
-            Build.VERSION.SDK_INT <= VERSION_CODES.KITKAT;
-
     // Location of extracted native libraries.
     private static final String LIBRARY_DIR = "native_libraries";
 
@@ -88,15 +68,21 @@ public class LibraryLoader {
     // The singleton instance of LibraryLoader. Never null (not final for tests).
     private static LibraryLoader sInstance = new LibraryLoader();
 
-    // One-way switch becomes true when the libraries are initialized (
-    // by calling LibraryLoaderJni.get().libraryLoaded, which forwards to LibraryLoaded(...) in
-    // library_loader_hooks.cc).
-    // Note that this member should remain a one-way switch, since it accessed from multiple
-    // threads without a lock.
+    // One-way switch becomes true when the libraries are initialized (by calling
+    // LibraryLoaderJni.get().libraryLoaded, which forwards to LibraryLoaded(...) in
+    // library_loader_hooks.cc).  Note that this member should remain a one-way switch, since it
+    // accessed from multiple threads without a lock.
     private volatile boolean mInitialized;
+
+    // State that only transitions one-way from 0->1->2. Volatile for the same reasons as
+    // mInitialized.
+    private volatile @LoadState int mLoadState;
 
     // Guards all fields below.
     private final Object mLock = new Object();
+
+    // Guards non-Main Dex initialization, which doesn't touch any fields guarded by mLock.
+    private final Object mNonMainDexLock = new Object();
 
     private NativeLibraryPreloader mLibraryPreloader;
     private boolean mLibraryPreloaderCalled;
@@ -110,8 +96,13 @@ public class LibraryLoader {
     // Whether the configuration has been set.
     private boolean mConfigurationSet;
 
-    // One-way switch becomes true when the libraries are loaded.
-    private boolean mLoaded;
+    @IntDef({LoadState.NOT_LOADED, LoadState.MAIN_DEX_LOADED, LoadState.LOADED})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface LoadState {
+        int NOT_LOADED = 0;
+        int MAIN_DEX_LOADED = 1;
+        int LOADED = 2;
+    }
 
     // Similar to |mLoaded| but is limited case of being loaded in app zygote.
     // This is exposed to clients.
@@ -128,10 +119,6 @@ public class LibraryLoader {
     // will be reported via UMA. Set once when the libraries are done loading.
     private long mLibraryLoadTimeMs;
 
-    // Stores information about attempts to load the library and eventually emits those bits as
-    // UMA histograms.
-    private static final LoadStatusRecorder sLoadStatusRecorder = new LoadStatusRecorder();
-
     /**
      * Call this method to determine if the chromium project must load the library
      * directly from a zip file.
@@ -142,22 +129,68 @@ public class LibraryLoader {
         return NativeLibraries.sUseLibraryInZipFile;
     }
 
+    public static LibraryLoader getInstance() {
+        return sInstance;
+    }
+
+    @VisibleForTesting
+    protected LibraryLoader() {}
+
+    /**
+     * Set the {@Link LibraryProcessType} for this process.
+     *
+     * Since this function is called extremely early on in startup, locking is not required.
+     *
+     * @param type the process type.
+     */
+    public void setLibraryProcessType(@LibraryProcessType int type) {
+        assert type != LibraryProcessType.PROCESS_UNINITIALIZED;
+        if (type == mLibraryProcessType) return;
+        if (mLibraryProcessType != LibraryProcessType.PROCESS_UNINITIALIZED) {
+            throw new IllegalStateException(
+                    String.format("Trying to change the LibraryProcessType from %d to %d",
+                            mLibraryProcessType, type));
+        }
+        mLibraryProcessType = type;
+    }
+
     /**
      * Set native library preloader, if set, the NativeLibraryPreloader.loadLibrary will be invoked
      * before calling System.loadLibrary, this only applies when not using the chromium linker.
+     *
+     * Since this function is called extremely early on in startup, locking is not required.
      *
      * @param loader the NativeLibraryPreloader, it shall only be set once and before the
      *               native library loaded.
      */
     public void setNativeLibraryPreloader(NativeLibraryPreloader loader) {
-        synchronized (mLock) {
-            assert mLibraryPreloader == null && !mLoaded;
-            mLibraryPreloader = loader;
-        }
+        assert mLibraryPreloader == null;
+        assert mLoadState == LoadState.NOT_LOADED;
+        mLibraryPreloader = loader;
+    }
+
+    /**
+     * Sets the configuration for library loading.
+     *
+     * Must be called before loading the library. Since this function is called extremely early on
+     * in startup, locking is not required.
+     *
+     * @param useChromiumLinker Whether to use the chromium linker.
+     * @param useModernLinker Whether to use ModernLinker.
+     */
+    public void setLinkerImplementation(boolean useChromiumLinker, boolean useModernLinker) {
+        assert !mInitialized;
+
+        mUseChromiumLinker = useChromiumLinker;
+        mUseModernLinker = useModernLinker;
+
+        Log.d(TAG, "Configuration, useChromiumLinker = %b, useModernLinker = %b",
+                mUseChromiumLinker, mUseModernLinker);
+        mConfigurationSet = true;
     }
 
     @GuardedBy("mLock")
-    private void setConfigurationIfNeeded() {
+    private void setLinkerImplementationIfNeededAlreadyLocked() {
         if (mConfigurationSet) return;
 
         // Cannot use initializers for the variables below, as this makes roboelectric tests fail,
@@ -167,43 +200,49 @@ public class LibraryLoader {
         mConfigurationSet = true;
     }
 
-    public static LibraryLoader getInstance() {
-        return sInstance;
-    }
-
-    private LibraryLoader() {}
-
-    /**
-     * Sets the configuration for library loading.
-     *
-     * Must be called before loading the library.
-     *
-     * @param useChromiumLinker Whether to use the chromium linker.
-     * @param useModernLinker Whether to use ModernLinker.
-     */
-    public void setConfiguration(boolean useChromiumLinker, boolean useModernLinker) {
-        synchronized (mLock) {
-            assert !mInitialized;
-
-            mUseChromiumLinker = useChromiumLinker;
-            mUseModernLinker = useModernLinker;
-
-            Log.d(TAG, "Configuration, useChromiumLinker = %b, useModernLinker = %b",
-                    mUseChromiumLinker, mUseModernLinker);
-            mConfigurationSet = true;
+    // LegacyLinker is buggy on Android 10, causing crashes (see crbug.com/980304).
+    //
+    // Rather than preventing people from running chrome_public_apk on Android 10, fallback to the
+    // system linker on this platform. We lose relocation sharing as a side-effect, but this
+    // configuration does not ship to users (since we only use LegacyLinker for APKs targeted at
+    // pre-N users).
+    //
+    // Note: This cannot be done in the build configuration, as otherwise chrome_public_apk cannot
+    // both be used as the basis to ship on L, and the default APK used by developers on 10+.
+    private boolean forceSystemLinker() {
+        boolean result =
+                mUseChromiumLinker && !mUseModernLinker && Build.VERSION.SDK_INT >= VERSION_CODES.Q;
+        if (result) {
+            Log.d(TAG,
+                    "Forcing system linker, relocations will not be shared. "
+                            + "This negatively impacts memory usage.");
         }
+        return result;
     }
 
     public boolean useChromiumLinker() {
-        return mUseChromiumLinker;
+        return mUseChromiumLinker && !forceSystemLinker();
     }
 
-    public boolean useModernLinker() {
+    boolean useModernLinker() {
         return mUseModernLinker;
     }
 
-    public boolean areTestsEnabled() {
-        return NativeLibraries.sEnableLinkerTests;
+    @RemovableInRelease
+    public void enableJniChecks() {
+        if (!BuildConfig.DCHECK_IS_ON) return;
+
+        NativeLibraryLoadedStatus.setProvider(new NativeLibraryLoadedStatusProvider() {
+            @Override
+            public boolean areMainDexNativeMethodsReady() {
+                return mLoadState >= LoadState.MAIN_DEX_LOADED;
+            }
+
+            @Override
+            public boolean areNativeMethodsReady() {
+                return isInitialized();
+            }
+        });
     }
 
     /**
@@ -215,16 +254,28 @@ public class LibraryLoader {
 
     /**
      *  This method blocks until the library is fully loaded and initialized.
-     *
-     * @param processType the process the shared library is loaded in.
      */
-    public void ensureInitialized(@LibraryProcessType int processType) {
-        synchronized (mLock) {
-            if (mInitialized) return;
+    public void ensureInitialized() {
+        if (isInitialized()) return;
+        ensureMainDexInitialized();
+        loadNonMainDex();
+    }
 
-            loadAlreadyLocked(ContextUtils.getApplicationContext().getApplicationInfo(),
-                    false /* inZygote */);
-            initializeAlreadyLocked(processType);
+    /**
+     * This method blocks until the native library is initialized, and the Main Dex is loaded
+     * (MainDex JNI is registered).
+     *
+     * You should use this if you would like to use isolated parts of the native library that don't
+     * depend on content initialization, and only use MainDex classes with JNI.
+     *
+     * However, you should be careful not to call this too early in startup on the UI thread, or you
+     * may significantly increase the time to first draw.
+     */
+    public void ensureMainDexInitialized() {
+        synchronized (mLock) {
+            loadMainDexAlreadyLocked(
+                    ContextUtils.getApplicationContext().getApplicationInfo(), false);
+            initializeAlreadyLocked();
         }
     }
 
@@ -243,16 +294,17 @@ public class LibraryLoader {
      */
     public void preloadNowOverrideApplicationContext(Context appContext) {
         synchronized (mLock) {
-            setConfigurationIfNeeded();
+            setLinkerImplementationIfNeededAlreadyLocked();
             if (mUseChromiumLinker) return;
-            preloadAlreadyLocked(appContext.getApplicationInfo());
+            preloadAlreadyLocked(appContext.getApplicationInfo(), false /* inZygote */);
         }
     }
 
-    private void preloadAlreadyLocked(ApplicationInfo appInfo) {
+    @GuardedBy("mLock")
+    private void preloadAlreadyLocked(ApplicationInfo appInfo, boolean inZygote) {
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.preloadAlreadyLocked")) {
             // Preloader uses system linker, we shouldn't preload if Chromium linker is used.
-            assert !mUseChromiumLinker;
+            assert !useChromiumLinker() || inZygote;
             if (mLibraryPreloader != null && !mLibraryPreloaderCalled) {
                 mLibraryPreloader.loadLibrary(appInfo);
                 mLibraryPreloaderCalled = true;
@@ -264,7 +316,7 @@ public class LibraryLoader {
      * Checks if library is fully loaded and initialized.
      */
     public boolean isInitialized() {
-        return mInitialized;
+        return mInitialized && mLoadState == LoadState.LOADED;
     }
 
     /**
@@ -287,17 +339,20 @@ public class LibraryLoader {
      */
     public void loadNowOverrideApplicationContext(Context appContext) {
         synchronized (mLock) {
-            if (mLoaded && appContext != ContextUtils.getApplicationContext()) {
+            if (mLoadState != LoadState.NOT_LOADED
+                    && appContext != ContextUtils.getApplicationContext()) {
                 throw new IllegalStateException("Attempt to load again from alternate context.");
             }
-            loadAlreadyLocked(appContext.getApplicationInfo(), false /* inZygote */);
+            loadMainDexAlreadyLocked(appContext.getApplicationInfo(), false /* inZygote */);
         }
+        loadNonMainDex();
     }
 
     public void loadNowInZygote(ApplicationInfo appInfo) {
         synchronized (mLock) {
-            assert !mLoaded;
-            loadAlreadyLocked(appInfo, true /* inZygote */);
+            assert mLoadState == LoadState.NOT_LOADED;
+            loadMainDexAlreadyLocked(appInfo, true /* inZygote */);
+            loadNonMainDex();
             mLoadedByZygote = true;
         }
     }
@@ -306,12 +361,10 @@ public class LibraryLoader {
      * Initializes the library here and now: must be called on the thread that the
      * native will call its "main" thread. The library must have previously been
      * loaded with loadNow.
-     *
-     * @param processType the process the shared library is loaded in.
      */
-    public void initialize(@LibraryProcessType int processType) {
+    public void initialize() {
         synchronized (mLock) {
-            initializeAlreadyLocked(processType);
+            initializeAlreadyLocked();
         }
     }
 
@@ -345,38 +398,17 @@ public class LibraryLoader {
 
     // Helper for loadAlreadyLocked(). Load a native shared library with the Chromium linker.
     // Records UMA histograms depending on the results of loading.
-    private static void loadLibraryWithCustomLinker(
-            Linker linker, String library, boolean isFirstAttempt) {
+    private void loadLibraryWithCustomLinker(Linker linker, String library) {
         // Attempt shared RELROs, and if that fails then retry without.
-        boolean loadAtFixedAddress = true;
-        boolean success = true;
         try {
             linker.loadLibrary(library, true /* isFixedAddressPermitted */);
         } catch (UnsatisfiedLinkError e) {
             Log.w(TAG, "Failed to load native library with shared RELRO, retrying without");
-            sLoadStatusRecorder.recordLoadAttempt(
-                    false /* success */, isFirstAttempt, true /* loadAtFixedAddress */);
-            loadAtFixedAddress = false;
-            success = false;
             linker.loadLibrary(library, false /* isFixedAddressPermitted */);
-            success = true;
-        } finally {
-            sLoadStatusRecorder.recordLoadAttempt(success, isFirstAttempt, loadAtFixedAddress);
         }
     }
 
-    // Experience shows that on some devices, the system sometimes fails to extract native libraries
-    // at installation or update time from the APK. This function will extract the library and
-    // return the extracted file path.
-    static String getExtractedLibraryPath(ApplicationInfo appInfo, String libName) {
-        assert PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION;
-        Log.w(TAG, "Failed to load libName %s, attempting fallback extraction then trying again",
-                libName);
-        String libraryEntry = LibraryLoader.makeLibraryPathInZipFile(libName, false, false);
-        return extractFileIfStale(appInfo, libraryEntry, makeLibraryDirAndSetPermission());
-    }
-
-    private static void loadWithChromiumLinker(ApplicationInfo appInfo, String library) {
+    private void loadWithChromiumLinker(ApplicationInfo appInfo, String library) {
         Linker linker = Linker.getInstance();
 
         if (isInZipFile()) {
@@ -387,24 +419,15 @@ public class LibraryLoader {
             Log.i(TAG, "Loading %s", library);
         }
 
-        try {
-            // Load the library using this Linker. May throw UnsatisfiedLinkError.
-            loadLibraryWithCustomLinker(linker, library, true /* isFirstAttempt */);
-        } catch (UnsatisfiedLinkError e) {
-            if (!isInZipFile() && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
-                loadLibraryWithCustomLinker(linker, getExtractedLibraryPath(appInfo, library),
-                        false /* isFirstAttempt */);
-            } else {
-                throw e;
-            }
-        }
+        // Load the library using this Linker. May throw UnsatisfiedLinkError.
+        loadLibraryWithCustomLinker(linker, library);
     }
 
     @GuardedBy("mLock")
     @SuppressLint("UnsafeDynamicallyLoadedCode")
-    private void loadWithSystemLinkerAlreadyLocked(ApplicationInfo appInfo) {
+    private void loadWithSystemLinkerAlreadyLocked(ApplicationInfo appInfo, boolean inZygote) {
         setEnvForNative();
-        preloadAlreadyLocked(appInfo);
+        preloadAlreadyLocked(appInfo, inZygote);
 
         // If the libraries are located in the zip file, assert that the device API level is M or
         // higher. On devices <=M, the libraries should always be loaded by LegacyLinker.
@@ -413,15 +436,14 @@ public class LibraryLoader {
         // Load libraries using the system linker.
         for (String library : NativeLibraries.LIBRARIES) {
             if (!isInZipFile()) {
-                // The extract and retry logic isn't needed because this path is used only for local
-                // development.
                 System.loadLibrary(library);
             } else {
                 // Load directly from the APK.
                 boolean is64Bit = ApiHelperForM.isProcess64Bit();
                 String zipFilePath = appInfo.sourceDir;
-                String fullPath =
-                        zipFilePath + "!/" + makeLibraryPathInZipFile(library, false, is64Bit);
+                boolean crazyPrefix = forceSystemLinker(); // See comment in this function.
+                String fullPath = zipFilePath + "!/"
+                        + makeLibraryPathInZipFile(library, crazyPrefix, is64Bit);
 
                 Log.i(TAG, "libraryName: %s", fullPath);
                 System.load(fullPath);
@@ -432,15 +454,17 @@ public class LibraryLoader {
     // Invoke either Linker.loadLibrary(...), System.loadLibrary(...) or System.load(...),
     // triggering JNI_OnLoad in native code.
     @GuardedBy("mLock")
-    private void loadAlreadyLocked(ApplicationInfo appInfo, boolean inZygote) {
-        try (TraceEvent te = TraceEvent.scoped("LibraryLoader.loadAlreadyLocked")) {
-            if (mLoaded) return;
+    @VisibleForTesting
+    protected void loadMainDexAlreadyLocked(ApplicationInfo appInfo, boolean inZygote) {
+        if (mLoadState >= LoadState.MAIN_DEX_LOADED) return;
+        try (TraceEvent te = TraceEvent.scoped("LibraryLoader.loadMainDexAlreadyLocked")) {
             assert !mInitialized;
-            setConfigurationIfNeeded();
+            assert mLibraryProcessType != LibraryProcessType.PROCESS_UNINITIALIZED || inZygote;
+            setLinkerImplementationIfNeededAlreadyLocked();
 
             long startTime = SystemClock.uptimeMillis();
 
-            if (mUseChromiumLinker && !inZygote) {
+            if (useChromiumLinker() && !inZygote) {
                 Log.d(TAG, "Loading with the Chromium linker.");
                 // See base/android/linker/config.gni, the chromium linker is only enabled when
                 // we have a single library.
@@ -449,16 +473,32 @@ public class LibraryLoader {
                 loadWithChromiumLinker(appInfo, library);
             } else {
                 Log.d(TAG, "Loading with the System linker.");
-                loadWithSystemLinkerAlreadyLocked(appInfo);
+                loadWithSystemLinkerAlreadyLocked(appInfo, inZygote);
             }
 
             long stopTime = SystemClock.uptimeMillis();
             mLibraryLoadTimeMs = stopTime - startTime;
             Log.d(TAG, "Time to load native libraries: %d ms", mLibraryLoadTimeMs);
 
-            mLoaded = true;
+            mLoadState = LoadState.MAIN_DEX_LOADED;
         } catch (UnsatisfiedLinkError e) {
             throw new ProcessInitException(LoaderErrors.NATIVE_LIBRARY_LOAD_FAILED, e);
+        }
+    }
+
+    @VisibleForTesting
+    // After Android M, this function is likely a no-op.
+    protected void loadNonMainDex() {
+        if (mLoadState == LoadState.LOADED) return;
+        synchronized (mNonMainDexLock) {
+            assert mLoadState != LoadState.NOT_LOADED;
+            if (mLoadState == LoadState.LOADED) return;
+            try (TraceEvent te = TraceEvent.scoped("LibraryLoader.loadNonMainDex")) {
+                if (!JNIUtils.isSelectiveJniRegistrationEnabled()) {
+                    LibraryLoaderJni.get().registerNonMainDexJni();
+                }
+                mLoadState = LoadState.LOADED;
+            }
         }
     }
 
@@ -516,7 +556,7 @@ public class LibraryLoader {
     // switch the Java CommandLine will delegate all calls the native CommandLine).
     @GuardedBy("mLock")
     private void ensureCommandLineSwitchedAlreadyLocked() {
-        assert mLoaded;
+        assert mLoadState >= LoadState.MAIN_DEX_LOADED;
         if (mCommandLineSwitched) {
             return;
         }
@@ -524,17 +564,20 @@ public class LibraryLoader {
         mCommandLineSwitched = true;
     }
 
+    /**
+     * Assert that library process type in the LibraryLoarder is compatible with provided type.
+     *
+     * @param libraryProcessType a library process type to assert.
+     */
+    public void assertCompatibleProcessType(@LibraryProcessType int libraryProcessType) {
+        assert libraryProcessType == mLibraryProcessType;
+    }
+
     // Invoke base::android::LibraryLoaded in library_loader_hooks.cc
     @GuardedBy("mLock")
-    private void initializeAlreadyLocked(@LibraryProcessType int processType) {
-        if (mInitialized) {
-            if (mLibraryProcessType != processType) {
-                throw new ProcessInitException(LoaderErrors.NATIVE_LIBRARY_LOAD_FAILED);
-            }
-            return;
-        }
-        mLibraryProcessType = processType;
-        sLoadStatusRecorder.setProcessType(processType);
+    private void initializeAlreadyLocked() {
+        if (mInitialized) return;
+        assert mLibraryProcessType != LibraryProcessType.PROCESS_UNINITIALIZED;
 
         // Add a switch for the reached code profiler as late as possible since it requires a read
         // from the shared preferences. At this point the shared preferences are usually warmed up.
@@ -563,43 +606,13 @@ public class LibraryLoader {
             Log.i(TAG, "Loaded native library version number \"%s\"",
                     NativeLibraries.sVersionNumber);
         }
+        UmaRecorderHolder.onLibraryLoaded();
 
         // From now on, keep tracing in sync with native.
         TraceEvent.registerNativeEnabledObserver();
 
-        if (processType == LibraryProcessType.PROCESS_BROWSER
-                && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
-            // Perform the detection and deletion of obsolete native libraries on a
-            // background thread.
-            new Thread(() -> {
-                final String suffix = BuildInfo.getInstance().extractedFileSuffix;
-                final File[] files = getLibraryDir().listFiles();
-                if (files == null) return;
-
-                for (File file : files) {
-                    // NOTE: Do not simply look for <suffix> at the end of the file.
-                    //
-                    // Extracted library files have names like 'libfoo.so<suffix>', but
-                    // extractFileIfStale() will use FileUtils.copyFileStreamAtomicWithBuffer()
-                    // to create them, and this method actually uses a transient temporary file
-                    // named like 'libfoo.so<suffix>.tmp' to do that. These temporary files, if
-                    // detected here, should be preserved; hence the reason why contains() is
-                    // used below.
-                    if (!file.getName().contains(suffix)) {
-                        String fileName = file.getName();
-                        if (!file.delete()) {
-                            Log.w(TAG, "Unable to remove %s", fileName);
-                        } else {
-                            Log.i(TAG, "Removed obsolete file %s", fileName);
-                        }
-                    }
-                }
-            }).start();
-        }
-
-        // From this point on, native code is ready to use and checkIsReady()
-        // shouldn't complain from now on (and in fact, it's used by the
-        // following calls).
+        // From this point on, native code is ready to use, but non-MainDex JNI may not yet have
+        // been registered. Check isInitialized() to be sure that initialization is fully complete.
         // Note that this flag can be accessed asynchronously, so any initialization
         // must be performed before.
         mInitialized = true;
@@ -625,7 +638,8 @@ public class LibraryLoader {
     }
 
     /**
-     * Override the library loader (normally with a mock) for testing.
+     * Overrides the library loader (normally with a mock) for testing.
+     *
      * @param loader the mock library loader.
      */
     @VisibleForTesting
@@ -654,62 +668,14 @@ public class LibraryLoader {
         }
     }
 
-    @CalledByNative
-    public static void onUmaRecordingReadyInRenderer() {
-        CachedMetrics.commitCachedMetrics();
-    }
-
-    // Android system sometimes fails to extract libraries from APK (https://crbug.com/806998).
-    // This function manually extract libraries as a fallback.
-    @SuppressLint({"SetWorldReadable"})
-    private static String extractFileIfStale(
-            ApplicationInfo appInfo, String pathWithinApk, File destDir) {
-        assert PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION;
-
-        String apkPath = appInfo.sourceDir;
-        String fileName =
-                (new File(pathWithinApk)).getName() + BuildInfo.getInstance().extractedFileSuffix;
-        File libraryFile = new File(destDir, fileName);
-
-        if (!libraryFile.exists()) {
-            ZipFile zipFile = null;
-            try {
-                zipFile = new ZipFile(apkPath);
-                ZipEntry zipEntry = zipFile.getEntry(pathWithinApk);
-                if (zipEntry == null) {
-                    throw new RuntimeException("Cannot find ZipEntry" + pathWithinApk);
-                }
-                InputStream inputStream = zipFile.getInputStream(zipEntry);
-
-                FileUtils.copyStreamToFile(inputStream, libraryFile);
-                libraryFile.setReadable(true, false);
-                libraryFile.setExecutable(true, false);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } finally {
-                StreamUtil.closeQuietly(zipFile);
-            }
-        }
-        return libraryFile.getAbsolutePath();
-    }
-
-    // Ensure the extracted native libraries is created with the right permissions.
-    private static File makeLibraryDirAndSetPermission() {
-        if (!ContextUtils.isIsolatedProcess()) {
-            File cacheDir = ContextCompat.getCodeCacheDir(ContextUtils.getApplicationContext());
-            File libDir = new File(cacheDir, LIBRARY_DIR);
-            cacheDir.mkdir();
-            cacheDir.setExecutable(true, false);
-            libDir.mkdir();
-            libDir.setExecutable(true, false);
-        }
-        return getLibraryDir();
-    }
-
-    // Return File object for the directory containing extracted native libraries.
-    private static File getLibraryDir() {
-        return new File(
-                ContextCompat.getCodeCacheDir(ContextUtils.getApplicationContext()), LIBRARY_DIR);
+    /**
+     * This sets the LibraryLoader internal state to its fully initialized state and should *only*
+     * be used by clients like NativeTests which manually load their native libraries without using
+     * the LibraryLoader.
+     */
+    public void setLibrariesLoadedForNativeTests() {
+        mLoadState = LoadState.LOADED;
+        mInitialized = true;
     }
 
     @NativeMethods
@@ -721,6 +687,8 @@ public class LibraryLoader {
         //
         // Return true on success and false on failure.
         boolean libraryLoaded(@LibraryProcessType int processType);
+
+        void registerNonMainDexJni();
 
         // Records the number of milliseconds it took to load the libraries in the renderer.
         void recordRendererLibraryLoadTime(long libraryLoadTime);

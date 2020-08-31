@@ -40,12 +40,14 @@ _spec_to_java_type = {
   mojom.INT64.spec: 'long',
   mojom.INT8.spec: 'byte',
   mojom.MSGPIPE.spec: 'org.chromium.mojo.system.MessagePipeHandle',
+  mojom.PLATFORMHANDLE.spec: 'org.chromium.mojo.system.UntypedHandle',
   mojom.NULLABLE_DCPIPE.spec:
       'org.chromium.mojo.system.DataPipe.ConsumerHandle',
   mojom.NULLABLE_DPPIPE.spec:
       'org.chromium.mojo.system.DataPipe.ProducerHandle',
   mojom.NULLABLE_HANDLE.spec: 'org.chromium.mojo.system.UntypedHandle',
   mojom.NULLABLE_MSGPIPE.spec: 'org.chromium.mojo.system.MessagePipeHandle',
+  mojom.NULLABLE_PLATFORMHANDLE.spec: 'org.chromium.mojo.system.UntypedHandle',
   mojom.NULLABLE_SHAREDBUFFER.spec:
       'org.chromium.mojo.system.SharedBufferHandle',
   mojom.NULLABLE_STRING.spec: 'String',
@@ -69,10 +71,12 @@ _spec_to_decode_method = {
   mojom.INT64.spec:                 'readLong',
   mojom.INT8.spec:                  'readByte',
   mojom.MSGPIPE.spec:               'readMessagePipeHandle',
+  mojom.PLATFORMHANDLE.spec:        'readUntypedHandle',
   mojom.NULLABLE_DCPIPE.spec:       'readConsumerHandle',
   mojom.NULLABLE_DPPIPE.spec:       'readProducerHandle',
   mojom.NULLABLE_HANDLE.spec:       'readUntypedHandle',
   mojom.NULLABLE_MSGPIPE.spec:      'readMessagePipeHandle',
+  mojom.NULLABLE_PLATFORMHANDLE.spec: 'readUntypedHandle',
   mojom.NULLABLE_SHAREDBUFFER.spec: 'readSharedBufferHandle',
   mojom.NULLABLE_STRING.spec:       'readString',
   mojom.SHAREDBUFFER.spec:          'readSharedBufferHandle',
@@ -107,7 +111,8 @@ def CamelCase(name):
   return uccc[0].lower() + uccc[1:]
 
 def ConstantStyle(name):
-  return generator.ToConstantCase(name)
+  return generator.ToUpperSnakeCase(name)
+
 
 def GetNameForElement(element):
   if (mojom.IsEnumKind(element) or mojom.IsInterfaceKind(element) or
@@ -144,29 +149,29 @@ def GetJavaTrueFalse(value):
   return 'true' if value else 'false'
 
 def GetArrayNullabilityFlags(kind):
-    """Returns nullability flags for an array type, see Decoder.java.
+  """Returns nullability flags for an array type, see Decoder.java.
 
     As we have dedicated decoding functions for arrays, we have to pass
     nullability information about both the array itself, as well as the array
     element type there.
     """
-    assert mojom.IsArrayKind(kind)
-    ARRAY_NULLABLE   = \
-        'org.chromium.mojo.bindings.BindingsHelper.ARRAY_NULLABLE'
-    ELEMENT_NULLABLE = \
-        'org.chromium.mojo.bindings.BindingsHelper.ELEMENT_NULLABLE'
-    NOTHING_NULLABLE = \
-        'org.chromium.mojo.bindings.BindingsHelper.NOTHING_NULLABLE'
+  assert mojom.IsArrayKind(kind)
+  ARRAY_NULLABLE   = \
+      'org.chromium.mojo.bindings.BindingsHelper.ARRAY_NULLABLE'
+  ELEMENT_NULLABLE = \
+      'org.chromium.mojo.bindings.BindingsHelper.ELEMENT_NULLABLE'
+  NOTHING_NULLABLE = \
+      'org.chromium.mojo.bindings.BindingsHelper.NOTHING_NULLABLE'
 
-    flags_to_set = []
-    if mojom.IsNullableKind(kind):
-        flags_to_set.append(ARRAY_NULLABLE)
-    if mojom.IsNullableKind(kind.kind):
-        flags_to_set.append(ELEMENT_NULLABLE)
+  flags_to_set = []
+  if mojom.IsNullableKind(kind):
+    flags_to_set.append(ARRAY_NULLABLE)
+  if mojom.IsNullableKind(kind.kind):
+    flags_to_set.append(ELEMENT_NULLABLE)
 
-    if not flags_to_set:
-        flags_to_set = [NOTHING_NULLABLE]
-    return ' | '.join(flags_to_set)
+  if not flags_to_set:
+    flags_to_set = [NOTHING_NULLABLE]
+  return ' | '.join(flags_to_set)
 
 
 def AppendEncodeDecodeParams(initial_params, context, kind, bit):

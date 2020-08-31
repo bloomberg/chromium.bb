@@ -12,10 +12,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -61,8 +62,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
-#include "net/url_request/url_request_intercepting_job_factory.h"
-#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -85,7 +84,7 @@ void NotifyContextGettersOfShutdownOnIO(
 }  // namespace
 
 void ChromeBrowserStateIOData::InitializeOnUIThread(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   PrefService* pref_service = browser_state->GetPrefs();
   std::unique_ptr<ProfileParams> params(new ProfileParams);
@@ -149,7 +148,7 @@ ChromeBrowserStateIOData::ProfileParams::ProfileParams()
 ChromeBrowserStateIOData::ProfileParams::~ProfileParams() {}
 
 ChromeBrowserStateIOData::ChromeBrowserStateIOData(
-    ios::ChromeBrowserStateType browser_state_type)
+    ChromeBrowserStateType browser_state_type)
     : initialized_(false), browser_state_type_(browser_state_type) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
 }
@@ -249,7 +248,7 @@ HostContentSettingsMap* ChromeBrowserStateIOData::GetHostContentSettingsMap()
 
 bool ChromeBrowserStateIOData::IsOffTheRecord() const {
   return browser_state_type() ==
-         ios::ChromeBrowserStateType::INCOGNITO_BROWSER_STATE;
+         ChromeBrowserStateType::INCOGNITO_BROWSER_STATE;
 }
 
 void ChromeBrowserStateIOData::InitializeMetricsEnabledStateOnUIThread() {
@@ -310,9 +309,8 @@ void ChromeBrowserStateIOData::Init(
     transport_security_persister_ =
         std::make_unique<net::TransportSecurityPersister>(
             transport_security_state_.get(), profile_params_->path,
-            base::CreateSequencedTaskRunner(
-                {base::ThreadPool(), base::MayBlock(),
-                 base::TaskPriority::BEST_EFFORT,
+            base::ThreadPool::CreateSequencedTaskRunner(
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                  base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
   }
 

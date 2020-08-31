@@ -6,6 +6,9 @@
 
 #include <memory>
 
+#include "base/base64.h"
+#include "base/containers/flat_map.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -14,7 +17,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/extensions/extension_checkup.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +30,7 @@
 #include "chrome/browser/search/chrome_colors/chrome_colors_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/search/promos/promo_service_factory.h"
@@ -29,7 +38,6 @@
 #include "chrome/browser/search/search_suggest/search_suggest_service.h"
 #include "chrome/browser/search/search_suggest/search_suggest_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
@@ -39,35 +47,44 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "chrome/browser/ui/search/ntp_user_data_logger.h"
+#include "chrome/browser/ui/search/omnibox_mojo_utils.h"
+#include "chrome/browser/ui/search/omnibox_utils.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/search.mojom.h"
+#include "chrome/common/search/omnibox.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/google/core/common/google_util.h"
 #include "components/navigation_metrics/navigation_metrics.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/omnibox/browser/search_suggestion_parser.h"
 #include "components/omnibox/browser/suggestion_answer.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -75,44 +92,20 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/extension_features.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "url/gurl.h"
 
 namespace {
 
-std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
-    const AutocompleteResult& result) {
-  std::vector<chrome::mojom::AutocompleteMatchPtr> matches;
-  for (const AutocompleteMatch& match : result) {
-    chrome::mojom::AutocompleteMatchPtr mojom_match =
-        chrome::mojom::AutocompleteMatch::New();
-    mojom_match->allowed_to_be_default_match =
-        match.allowed_to_be_default_match;
-    mojom_match->contents = match.contents;
-    for (const auto& contents_class : match.contents_class) {
-      mojom_match->contents_class.push_back(
-          chrome::mojom::ACMatchClassification::New(contents_class.offset,
-                                                    contents_class.style));
-    }
-    mojom_match->description = match.description;
-    for (const auto& description_class : match.description_class) {
-      mojom_match->description_class.push_back(
-          chrome::mojom::ACMatchClassification::New(description_class.offset,
-                                                    description_class.style));
-    }
-    mojom_match->destination_url = match.destination_url.spec();
-    mojom_match->fill_into_edit = match.fill_into_edit;
-    mojom_match->inline_autocompletion = match.inline_autocompletion;
-    mojom_match->is_search_type = AutocompleteMatch::IsSearchType(match.type);
-    mojom_match->swap_contents_and_description =
-        match.swap_contents_and_description;
-    mojom_match->type = AutocompleteMatchType::ToString(match.type);
-    mojom_match->supports_deletion = match.SupportsDeletion();
-    matches.push_back(std::move(mojom_match));
-  }
-  return matches;
+// Converts an in-memory bitmap data to a base64 data url.
+std::string GetBitmapDataUrl(const char* data, size_t size) {
+  std::string base_64;
+  base::Base64Encode(base::StringPiece(data, size), &base_64);
+  return "data:image/png;base64," + base_64;
 }
 
 bool IsCacheableNTP(content::WebContents* contents) {
@@ -167,7 +160,13 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
       ipc_router_(web_contents,
                   this,
                   std::make_unique<SearchIPCRouterPolicyImpl>(web_contents)),
-      instant_service_(nullptr) {
+      instant_service_(nullptr),
+      favicon_cache_(FaviconServiceFactory::GetForProfile(
+                         profile(),
+                         ServiceAccessType::EXPLICIT_ACCESS),
+                     HistoryServiceFactory::GetForProfile(
+                         profile(),
+                         ServiceAccessType::EXPLICIT_ACCESS)) {
   DCHECK(search::IsInstantExtendedAPIEnabled());
 
   instant_service_ = InstantServiceFactory::GetForProfile(profile());
@@ -179,26 +178,16 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
 
   chrome_colors_service_ =
       chrome_colors::ChromeColorsFactory::GetForProfile(profile());
+
+  OmniboxTabHelper::CreateForWebContents(web_contents);
+  OmniboxTabHelper::FromWebContents(web_contents_)->AddObserver(this);
 }
 
 SearchTabHelper::~SearchTabHelper() {
   if (instant_service_)
     instant_service_->RemoveObserver(this);
-}
-
-void SearchTabHelper::OmniboxInputStateChanged() {
-  ipc_router_.SetInputInProgress(IsInputInProgress());
-}
-
-void SearchTabHelper::OmniboxFocusChanged(OmniboxFocusState state,
-                                          OmniboxFocusChangeReason reason) {
-  ipc_router_.OmniboxFocusChanged(state, reason);
-
-  // Don't send oninputstart/oninputend updates in response to focus changes
-  // if there's a navigation in progress. This prevents Chrome from sending
-  // a spurious oninputend when the user accepts a match in the omnibox.
-  if (web_contents_->GetController().GetPendingEntry() == nullptr)
-    ipc_router_.SetInputInProgress(IsInputInProgress());
+  if (auto* helper = OmniboxTabHelper::FromWebContents(web_contents_))
+    helper->RemoveObserver(this);
 }
 
 void SearchTabHelper::OnTabActivated() {
@@ -305,30 +294,7 @@ void SearchTabHelper::MostVisitedInfoChanged(
 }
 
 void SearchTabHelper::FocusOmnibox(bool focus) {
-  OmniboxView* omnibox_view = GetOmniboxView();
-  if (!omnibox_view)
-    return;
-
-  if (focus) {
-    // This is an invisible focus to support "realbox" implementations on NTPs
-    // (including other search providers). We shouldn't consider it as the user
-    // explicitly focusing the omnibox.
-    omnibox_view->SetFocus(/*is_user_initiated=*/false);
-    omnibox_view->model()->SetCaretVisibility(false);
-    // If the user clicked on the fakebox, any text already in the omnibox
-    // should get cleared when they start typing. Selecting all the existing
-    // text is a convenient way to accomplish this. It also gives a slight
-    // visual cue to users who really understand selection state about what
-    // will happen if they start typing.
-    omnibox_view->SelectAll(false);
-    omnibox_view->ShowVirtualKeyboardIfEnabled();
-  } else {
-    // Remove focus only if the popup is closed. This will prevent someone
-    // from changing the omnibox value and closing the popup without user
-    // interaction.
-    if (!omnibox_view->model()->popup_model()->IsOpen())
-      web_contents()->Focus();
-  }
+  search::FocusOmnibox(focus, web_contents_);
 }
 
 void SearchTabHelper::OnDeleteMostVisitedItem(const GURL& url) {
@@ -426,30 +392,7 @@ void SearchTabHelper::OnLogMostVisitedNavigation(
 }
 
 void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
-  OmniboxView* omnibox_view = GetOmniboxView();
-  if (!omnibox_view)
-    return;
-  // The first case is for right click to paste, where the text is retrieved
-  // from the clipboard already sanitized. The second case is needed to handle
-  // drag-and-drop value and it has to be sanitazed before setting it into the
-  // omnibox.
-  base::string16 text_to_paste = text.empty()
-                                     ? GetClipboardText()
-                                     : omnibox_view->SanitizeTextForPaste(text);
-
-  if (text_to_paste.empty())
-    return;
-
-  if (!omnibox_view->model()->has_focus()) {
-    // Pasting into a "realbox" should not be considered the user explicitly
-    // focusing the omnibox.
-    omnibox_view->SetFocus(/*is_user_initiated=*/false);
-  }
-
-  omnibox_view->OnBeforePossibleChange();
-  omnibox_view->model()->OnPaste();
-  omnibox_view->SetUserText(text_to_paste);
-  omnibox_view->OnAfterPossibleChange(true);
+  search::PasteIntoOmnibox(text, web_contents_);
 }
 
 void SearchTabHelper::OnSetCustomBackgroundInfo(
@@ -496,22 +439,85 @@ void SearchTabHelper::FileSelectionCanceled(void* params) {
       ->LogEvent(NTP_BACKGROUND_UPLOAD_CANCEL, base::TimeDelta::FromSeconds(0));
 }
 
-void SearchTabHelper::OnResultChanged(bool default_result_changed) {
+void SearchTabHelper::OnResultChanged(AutocompleteController* controller,
+                                      bool default_result_changed) {
+  DCHECK(controller == autocomplete_controller_.get());
+
   if (!autocomplete_controller_) {
     NOTREACHED();
     return;
   }
 
-  if (!autocomplete_controller_->done())
-    return;
-
   if (!search::DefaultSearchProviderIsGoogle(profile())) {
     return;
   }
 
-  ipc_router_.AutocompleteResultChanged(chrome::mojom::AutocompleteResult::New(
+  ipc_router_.AutocompleteResultChanged(omnibox::CreateAutocompleteResult(
       autocomplete_controller_->input().text(),
-      CreateAutocompleteMatches(autocomplete_controller_->result())));
+      autocomplete_controller_->result(), profile()->GetPrefs()));
+
+  BitmapFetcherService* bitmap_fetcher_service =
+      BitmapFetcherServiceFactory::GetForBrowserContext(profile());
+
+  int match_index = -1;
+  for (const auto& match : autocomplete_controller_->result()) {
+    match_index++;
+
+    // Create new bitmap requests.
+    if (!match.image_url.is_empty()) {
+      bitmap_fetcher_service->RequestImage(
+          match.image_url, base::BindOnce(&SearchTabHelper::OnBitmapFetched,
+                                          weak_factory_.GetWeakPtr(),
+                                          match_index, match.image_url.spec()));
+    }
+
+    // Request favicons for navigational matches.
+    if (!AutocompleteMatch::IsSearchType(match.type) &&
+        match.type != AutocompleteMatchType::DOCUMENT_SUGGESTION) {
+      gfx::Image favicon = favicon_cache_.GetLargestFaviconForPageUrl(
+          match.destination_url,
+          base::BindOnce(&SearchTabHelper::OnFaviconFetched,
+                         weak_factory_.GetWeakPtr(), match_index,
+                         match.destination_url.spec()));
+      if (!favicon.IsEmpty()) {
+        OnFaviconFetched(match_index, match.destination_url.spec(), favicon);
+      }
+    }
+  }
+}
+
+void SearchTabHelper::OnOmniboxInputStateChanged() {
+  ipc_router_.SetInputInProgress(IsInputInProgress());
+}
+
+void SearchTabHelper::OnOmniboxFocusChanged(OmniboxFocusState state,
+                                            OmniboxFocusChangeReason reason) {
+  ipc_router_.OmniboxFocusChanged(state, reason);
+
+  // Don't send oninputstart/oninputend updates in response to focus changes
+  // if there's a navigation in progress. This prevents Chrome from sending
+  // a spurious oninputend when the user accepts a match in the omnibox.
+  if (web_contents_->GetController().GetPendingEntry() == nullptr)
+    ipc_router_.SetInputInProgress(IsInputInProgress());
+}
+
+void SearchTabHelper::OnBitmapFetched(int match_index,
+                                      const std::string& image_url,
+                                      const SkBitmap& bitmap) {
+  auto data = gfx::Image::CreateFrom1xBitmap(bitmap).As1xPNGBytes();
+  std::string data_url = GetBitmapDataUrl(data->front_as<char>(), data->size());
+
+  ipc_router_.AutocompleteMatchImageAvailable(match_index, image_url, data_url);
+}
+
+void SearchTabHelper::OnFaviconFetched(int match_index,
+                                       const std::string& page_url,
+                                       const gfx::Image& favicon) {
+  DCHECK(!favicon.IsEmpty());
+  auto data = favicon.As1xPNGBytes();
+  std::string data_url = GetBitmapDataUrl(data->front_as<char>(), data->size());
+
+  ipc_router_.AutocompleteMatchImageAvailable(match_index, page_url, data_url);
 }
 
 void SearchTabHelper::OnSelectLocalBackgroundImage() {
@@ -537,14 +543,6 @@ void SearchTabHelper::OnSelectLocalBackgroundImage() {
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_OPEN_FILE, base::string16(), directory,
       &file_types, 0, base::FilePath::StringType(), parent_window, nullptr);
-}
-
-const OmniboxView* SearchTabHelper::GetOmniboxView() const {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  if (!browser)
-    return nullptr;
-
-  return browser->window()->GetLocationBar()->GetOmniboxView();
 }
 
 void SearchTabHelper::OnBlocklistSearchSuggestion(int task_version,
@@ -601,16 +599,15 @@ void SearchTabHelper::QueryAutocomplete(const base::string16& input,
     return;
 
   if (!autocomplete_controller_) {
-    int providers = AutocompleteProvider::TYPE_BOOKMARK |
-                    AutocompleteProvider::TYPE_BUILTIN |
-                    AutocompleteProvider::TYPE_HISTORY_QUICK |
-                    AutocompleteProvider::TYPE_HISTORY_URL |
-                    AutocompleteProvider::TYPE_SEARCH |
-                    AutocompleteProvider::TYPE_ZERO_SUGGEST |
-                    AutocompleteProvider::TYPE_ZERO_SUGGEST_LOCAL_HISTORY;
     autocomplete_controller_ = std::make_unique<AutocompleteController>(
-        std::make_unique<ChromeAutocompleteProviderClient>(profile()), this,
-        providers);
+        std::make_unique<ChromeAutocompleteProviderClient>(profile()),
+        AutocompleteClassifier::DefaultOmniboxProviders());
+    autocomplete_controller_->AddObserver(this);
+
+    OmniboxControllerEmitter* emitter =
+        OmniboxControllerEmitter::GetForBrowserContext(profile());
+    if (emitter)
+      autocomplete_controller_->AddObserver(emitter);
   }
 
   if (time_of_first_autocomplete_query_.is_null() && !input.empty())
@@ -622,6 +619,12 @@ void SearchTabHelper::QueryAutocomplete(const base::string16& input,
   autocomplete_input.set_from_omnibox_focus(input.empty());
   autocomplete_input.set_prevent_inline_autocomplete(
       prevent_inline_autocomplete);
+
+  // We do not want keyword matches for the NTP realbox, which has no UI
+  // facilities to support them.
+  autocomplete_input.set_prefer_keyword(false);
+  autocomplete_input.set_allow_exact_keyword_match(false);
+
   autocomplete_controller_->Start(autocomplete_input);
 }
 
@@ -719,7 +722,7 @@ void SearchTabHelper::OnDeleteAutocompleteMatchConfirm(
   DCHECK(autocomplete_controller_);
 
   bool success = false;
-  std::vector<chrome::mojom::AutocompleteMatchPtr> matches;
+  std::vector<search::mojom::AutocompleteMatchPtr> matches;
 
   if (accepted && search::DefaultSearchProviderIsGoogle(profile()) &&
       autocomplete_controller_->result().size() > line) {
@@ -728,7 +731,8 @@ void SearchTabHelper::OnDeleteAutocompleteMatchConfirm(
       success = true;
       autocomplete_controller_->Stop(false);
       autocomplete_controller_->DeleteMatch(match);
-      matches = CreateAutocompleteMatches(autocomplete_controller_->result());
+      matches = omnibox::CreateAutocompleteMatches(
+          autocomplete_controller_->result());
     }
   }
 }
@@ -743,6 +747,20 @@ void SearchTabHelper::StopAutocomplete(bool clear_result) {
     time_of_first_autocomplete_query_ = base::TimeTicks();
 }
 
+void SearchTabHelper::ToggleSuggestionGroupIdVisibility(
+    int32_t suggestion_group_id) {
+  if (!autocomplete_controller_)
+    return;
+
+  omnibox::ToggleSuggestionGroupIdVisibility(profile()->GetPrefs(),
+                                             suggestion_group_id);
+}
+
+void SearchTabHelper::LogCharTypedToRepaintLatency(uint32_t latency_ms) {
+  UMA_HISTOGRAM_TIMES("NewTabPage.Realbox.CharTypedToRepaintLatency.ToPaint",
+                      base::TimeDelta::FromMillisecondsD(latency_ms));
+}
+
 void SearchTabHelper::BlocklistPromo(const std::string& promo_id) {
   auto* promo_service = PromoServiceFactory::GetForProfile(profile());
   if (!promo_service) {
@@ -751,6 +769,31 @@ void SearchTabHelper::BlocklistPromo(const std::string& promo_id) {
   }
 
   promo_service->BlocklistPromo(promo_id);
+}
+
+void SearchTabHelper::OpenExtensionsPage(double button,
+                                         bool alt_key,
+                                         bool ctrl_key,
+                                         bool meta_key,
+                                         bool shift_key) {
+  if (!search::DefaultSearchProviderIsGoogle(profile()))
+    return;
+  base::RecordAction(base::UserMetricsAction("Extensions.NtpPromoClicked"));
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.Checkup.NtpPromoClicked",
+      static_cast<extensions::CheckupMessage>(
+          base::GetFieldTrialParamByFeatureAsInt(
+              extensions_features::kExtensionsCheckup,
+              extensions_features::kExtensionsCheckupBannerMessageParameter,
+              static_cast<int>(extensions::CheckupMessage::NEUTRAL))));
+
+  WindowOpenDisposition disposition =
+      (button > 1) ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                   : ui::DispositionFromClick((button == 1.0), alt_key,
+                                              ctrl_key, meta_key, shift_key);
+  web_contents_->OpenURL(content::OpenURLParams(
+      GURL(chrome::kChromeUIExtensionsURL), content::Referrer(), disposition,
+      ui::PAGE_TRANSITION_LINK, false));
 }
 
 void SearchTabHelper::OpenAutocompleteMatch(
@@ -777,6 +820,10 @@ void SearchTabHelper::OpenAutocompleteMatch(
     // Either way: don't navigate.
     return;
   }
+
+  // TODO(crbug.com/1041129): The following logic for recording Omnibox metrics
+  // is largely copied over to NewTabPageHandler::OpenAutocompleteMatch(). Make
+  // sure any changes here is reflected there until one code path is obsolete.
 
   const auto now = base::TimeTicks::Now();
   base::TimeDelta elapsed_time_since_first_autocomplete_query =
@@ -846,7 +893,7 @@ void SearchTabHelper::OpenAutocompleteMatch(
       /*selected_index=*/line,
       /*disposition=*/disposition,
       /*is_paste_and_go=*/false,
-      /*tab_id=*/SessionTabHelper::IdForTab(web_contents_),
+      /*tab_id=*/sessions::SessionTabHelper::IdForTab(web_contents_),
       /*current_page_classification=*/metrics::OmniboxEventProto::NTP_REALBOX,
       /*elapsed_time_since_user_first_modified_omnibox=*/
       elapsed_time_since_first_autocomplete_query,
@@ -869,19 +916,12 @@ void SearchTabHelper::OpenAutocompleteMatch(
   // May delete us.
 }
 
-OmniboxView* SearchTabHelper::GetOmniboxView() {
-  return const_cast<OmniboxView*>(
-      const_cast<const SearchTabHelper*>(this)->GetOmniboxView());
-}
-
 Profile* SearchTabHelper::profile() const {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
 bool SearchTabHelper::IsInputInProgress() const {
-  const OmniboxView* omnibox_view = GetOmniboxView();
-  return omnibox_view && omnibox_view->model()->user_input_in_progress() &&
-         omnibox_view->model()->focus_state() == OMNIBOX_FOCUS_VISIBLE;
+  return search::IsOmniboxInputInProgress(web_contents_);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SearchTabHelper)

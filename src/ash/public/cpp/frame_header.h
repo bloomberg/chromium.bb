@@ -78,11 +78,15 @@ class ASH_PUBLIC_EXPORT FrameHeader : public views::AnimationDelegateViews {
   virtual void UpdateFrameColors() = 0;
 
   // Sets text to display in place of the window's title. This will be shown
-  // regardless of what WidgetDelegate::ShouldShowWindowTitle() returns.
+  // regardless of what ShouldShowWindowTitle() returns.
   void SetFrameTextOverride(const base::string16& frame_text_override);
 
   // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
+
+  void UpdateFrameHeaderKey();
+
+  views::View* view() { return view_; }
 
  protected:
   FrameHeader(views::Widget* target_widget, views::View* view);
@@ -101,8 +105,6 @@ class ASH_PUBLIC_EXPORT FrameHeader : public views::AnimationDelegateViews {
 
   void SetCaptionButtonContainer(
       FrameCaptionButtonContainerView* caption_button_container);
-
-  views::View* view() { return view_; }
 
   FrameCaptionButtonContainerView* caption_button_container() {
     return caption_button_container_;

@@ -126,7 +126,7 @@ ByteString::ByteString(const uint8_t* pStr, size_t nLen) {
         StringData::Create(reinterpret_cast<const char*>(pStr), nLen));
 }
 
-ByteString::ByteString() {}
+ByteString::ByteString() = default;
 
 ByteString::ByteString(const ByteString& other) : m_pData(other.m_pData) {}
 
@@ -143,9 +143,10 @@ ByteString::ByteString(const char* ptr)
     : ByteString(ptr, ptr ? strlen(ptr) : 0) {}
 
 ByteString::ByteString(ByteStringView bstrc) {
-  if (!bstrc.IsEmpty())
-    m_pData.Reset(StringData::Create(bstrc.unterminated_c_str(),
-                                     bstrc.GetLength()));
+  if (!bstrc.IsEmpty()) {
+    m_pData.Reset(
+        StringData::Create(bstrc.unterminated_c_str(), bstrc.GetLength()));
+  }
 }
 
 ByteString::ByteString(ByteStringView str1, ByteStringView str2) {
@@ -468,7 +469,7 @@ intptr_t ByteString::ReferenceCountForTesting() const {
   return m_pData ? m_pData->m_nRefs : 0;
 }
 
-ByteString ByteString::Mid(size_t first, size_t count) const {
+ByteString ByteString::Substr(size_t first, size_t count) const {
   if (!m_pData)
     return ByteString();
 
@@ -489,16 +490,16 @@ ByteString ByteString::Mid(size_t first, size_t count) const {
   return dest;
 }
 
-ByteString ByteString::Left(size_t count) const {
+ByteString ByteString::First(size_t count) const {
   if (count == 0 || !IsValidLength(count))
     return ByteString();
-  return Mid(0, count);
+  return Substr(0, count);
 }
 
-ByteString ByteString::Right(size_t count) const {
+ByteString ByteString::Last(size_t count) const {
   if (count == 0 || !IsValidLength(count))
     return ByteString();
-  return Mid(GetLength() - count, count);
+  return Substr(GetLength() - count, count);
 }
 
 void ByteString::AllocCopy(ByteString& dest,

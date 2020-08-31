@@ -15,6 +15,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "url/gurl.h"
 
 constexpr int WebAppMenuModel::kUninstallAppCommandId;
@@ -24,6 +25,21 @@ WebAppMenuModel::WebAppMenuModel(ui::AcceleratorProvider* provider,
     : AppMenuModel(provider, browser) {}
 
 WebAppMenuModel::~WebAppMenuModel() {}
+
+bool WebAppMenuModel::IsCommandIdEnabled(int command_id) const {
+  return command_id == kUninstallAppCommandId
+             ? browser()->app_controller()->CanUninstall()
+             : AppMenuModel::IsCommandIdEnabled(command_id);
+}
+
+void WebAppMenuModel::ExecuteCommand(int command_id, int event_flags) {
+  if (command_id == kUninstallAppCommandId) {
+    LogMenuAction(MENU_ACTION_UNINSTALL_APP);
+    browser()->app_controller()->Uninstall();
+  } else {
+    AppMenuModel::ExecuteCommand(command_id, event_flags);
+  }
+}
 
 void WebAppMenuModel::Build() {
   if (CreateActionToolbarOverflowMenu())
@@ -37,7 +53,8 @@ void WebAppMenuModel::Build() {
                                        ->GetActiveWebContents()
                                        ->GetVisibleURL()));
   SetMinorIcon(app_info_index,
-               browser()->location_bar_model()->GetVectorIcon());
+               ui::ImageModel::FromVectorIcon(
+                   browser()->location_bar_model()->GetVectorIcon()));
 
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_COPY_URL, IDS_COPY_URL);
@@ -68,21 +85,8 @@ void WebAppMenuModel::Build() {
   CreateCutCopyPasteMenu();
 }
 
-bool WebAppMenuModel::IsCommandIdEnabled(int command_id) const {
-  return command_id == kUninstallAppCommandId
-             ? browser()->app_controller()->CanUninstall()
-             : AppMenuModel::IsCommandIdEnabled(command_id);
-}
-
-void WebAppMenuModel::ExecuteCommand(int command_id, int event_flags) {
-  if (command_id == kUninstallAppCommandId) {
-    browser()->app_controller()->Uninstall();
-  } else {
-    AppMenuModel::ExecuteCommand(command_id, event_flags);
-  }
-}
-
 void WebAppMenuModel::LogMenuAction(AppMenuAction action_id) {
+  AppMenuModel::LogMenuAction(action_id);
   UMA_HISTOGRAM_ENUMERATION("HostedAppFrame.WrenchMenu.MenuAction", action_id,
                             LIMIT_MENU_ACTION);
 }

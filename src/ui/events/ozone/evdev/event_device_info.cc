@@ -25,6 +25,20 @@ namespace {
 // unusual.
 const size_t kMaximumDeviceNameLength = 256;
 
+constexpr struct {
+  uint16_t vendor;
+  uint16_t product_id;
+} kKeyboardBlocklist[] = {
+  {0x045e, 0x0b05},  // Xbox One Elite Series 2 gamepad
+};
+
+constexpr struct {
+  uint16_t vendor;
+  uint16_t product_id;
+} kStylusButtonDevices[] = {
+    {0x413c, 0x81d5},  // Dell Active Pen PN579X
+};
+
 bool GetEventBits(int fd,
                   const base::FilePath& path,
                   unsigned int type,
@@ -435,8 +449,32 @@ bool EventDeviceInfo::HasStylus() const {
          HasKeyEvent(BTN_STYLUS2);
 }
 
+bool EventDeviceInfo::IsStylusButtonDevice() const {
+  for (const auto& device_id : kStylusButtonDevices) {
+    if (input_id_.vendor == device_id.vendor &&
+        input_id_.product == device_id.product_id)
+      return true;
+  }
+
+  return false;
+}
+
+bool IsInKeyboardBlockList(input_id input_id_) {
+  for (const auto& blocklist_id : kKeyboardBlocklist) {
+    if (input_id_.vendor == blocklist_id.vendor &&
+        input_id_.product == blocklist_id.product_id)
+      return true;
+  }
+
+  return false;
+}
+
 bool EventDeviceInfo::HasKeyboard() const {
   if (!HasEventType(EV_KEY))
+    return false;
+  if (IsInKeyboardBlockList(input_id_))
+    return false;
+  if (IsStylusButtonDevice())
     return false;
 
   // Check first 31 keys: If we have all of them, consider it a full
@@ -491,6 +529,7 @@ ui::InputDeviceType EventDeviceInfo::GetInputDeviceTypeFromId(input_id id) {
       {0x18d1, 0x5030},  // Google, Whiskers PID (nocturne)
       {0x18d1, 0x503c},  // Google, Masterball PID (krane)
       {0x18d1, 0x503d},  // Google, Magnemite PID (kodama)
+      {0x18d1, 0x5044},  // Google, Moonball PID (kakadu)
       {0x1fd2, 0x8103},  // LG, Internal TouchScreen PID
   };
 

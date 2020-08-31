@@ -47,7 +47,10 @@ const char kRawPtrToGCManagedClassNote[] =
     "[blink-gc] Raw pointer field %0 to a GC managed class declared here:";
 
 const char kRefPtrToGCManagedClassNote[] =
-    "[blink-gc] RefPtr field %0 to a GC managed class declared here:";
+    "[blink-gc] scoped_refptr field %0 to a GC managed class declared here:";
+
+const char kWeakPtrToGCManagedClassNote[] =
+    "[blink-gc] WeakPtr field %0 to a GC managed class declared here:";
 
 const char kReferencePtrToGCManagedClassNote[] =
     "[blink-gc] Reference pointer field %0 to a GC managed class"
@@ -130,6 +133,10 @@ const char kTraceMethodOfStackAllocatedParentNote[] =
     "[blink-gc] The stack allocated class %0 provides an unnecessary "
     "trace method:";
 
+const char kMemberInStackAllocated[] =
+    "[blink-gc] Member field %0 in stack allocated class declared here (use "
+    "raw pointer or reference instead):";
+
 const char kUniquePtrUsedWithGC[] =
     "[blink-gc] Disallowed use of %0 found; %1 is a garbage-collected type. "
     "std::unique_ptr cannot hold garbage-collected objects.";
@@ -203,6 +210,8 @@ DiagnosticsReporter::DiagnosticsReporter(
       getErrorLevel(), kIteratorToGCManagedCollectionNote);
   diag_trace_method_of_stack_allocated_parent_ = diagnostic_.getCustomDiagID(
       getErrorLevel(), kTraceMethodOfStackAllocatedParentNote);
+  diag_member_in_stack_allocated_class_ =
+      diagnostic_.getCustomDiagID(getErrorLevel(), kMemberInStackAllocated);
 
   // Register note messages.
   diag_base_requires_tracing_note_ = diagnostic_.getCustomDiagID(
@@ -215,6 +224,8 @@ DiagnosticsReporter::DiagnosticsReporter(
       DiagnosticsEngine::Note, kRawPtrToGCManagedClassNote);
   diag_ref_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
       DiagnosticsEngine::Note, kRefPtrToGCManagedClassNote);
+  diag_weak_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
+      DiagnosticsEngine::Note, kWeakPtrToGCManagedClassNote);
   diag_reference_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
       DiagnosticsEngine::Note, kReferencePtrToGCManagedClassNote);
   diag_unique_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
@@ -320,6 +331,8 @@ void DiagnosticsReporter::ClassContainsInvalidFields(
       note = diag_raw_ptr_to_gc_managed_class_note_;
     } else if (error.second == CheckFieldsVisitor::kRefPtrToGCManaged) {
       note = diag_ref_ptr_to_gc_managed_class_note_;
+    } else if (error.second == CheckFieldsVisitor::kWeakPtrToGCManaged) {
+      note = diag_weak_ptr_to_gc_managed_class_note_;
     } else if (error.second == CheckFieldsVisitor::kReferencePtrToGCManaged) {
       note = diag_reference_ptr_to_gc_managed_class_note_;
     } else if (error.second == CheckFieldsVisitor::kUniquePtrToGCManaged) {
@@ -334,6 +347,8 @@ void DiagnosticsReporter::ClassContainsInvalidFields(
       note = diag_part_object_to_gc_derived_class_note_;
     } else if (error.second == CheckFieldsVisitor::kIteratorToGCManaged) {
       note = diag_iterator_to_gc_managed_collection_note_;
+    } else if (error.second == CheckFieldsVisitor::kMemberInStackAllocated) {
+      note = diag_member_in_stack_allocated_class_;
     } else {
       llvm_unreachable("Unknown field error.");
     }

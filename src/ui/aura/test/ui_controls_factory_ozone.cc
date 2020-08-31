@@ -112,11 +112,11 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     return true;
   }
 
-  bool SendMouseMove(long screen_x, long screen_y) override {
+  bool SendMouseMove(int screen_x, int screen_y) override {
     return SendMouseMoveNotifyWhenDone(screen_x, screen_y, base::OnceClosure());
   }
-  bool SendMouseMoveNotifyWhenDone(long screen_x,
-                                   long screen_y,
+  bool SendMouseMoveNotifyWhenDone(int screen_x,
+                                   int screen_y,
                                    base::OnceClosure closure) override {
     gfx::PointF host_location(screen_x, screen_y);
     int64_t display_id = display::kInvalidDisplayId;
@@ -313,8 +313,8 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
                           int id,
                           int64_t display_id,
                           base::OnceClosure closure) {
-    ui::PointerDetails details(ui::EventPointerType::POINTER_TYPE_TOUCH, id,
-                               1.0f, 1.0f, 0.0f);
+    ui::PointerDetails details(ui::EventPointerType::kTouch, id, 1.0f, 1.0f,
+                               0.0f);
     ui::TouchEvent touch_event(type, host_location, host_location,
                                ui::EventTimeForNow(), details);
     SendEventToSink(&touch_event, display_id, std::move(closure));

@@ -58,10 +58,10 @@ public:
             const SkMatrix* localMatrix = nullptr) {
         // Since this provides stencil settings to drawFilledQuad, it performs a different AA type
         // resolution compared to regular rect draws, which is the main reason it remains separate.
-        GrQuad localQuad = localMatrix ? GrQuad::MakeFromRect(rect, *localMatrix) : GrQuad(rect);
-        fRenderTargetContext->drawFilledQuad(
-                clip, std::move(paint), doStencilMSAA, GrQuadAAFlags::kNone,
-                GrQuad::MakeFromRect(rect, viewMatrix), localQuad, ss);
+        DrawQuad quad{GrQuad::MakeFromRect(rect, viewMatrix),
+                      localMatrix ? GrQuad::MakeFromRect(rect, *localMatrix) : GrQuad(rect),
+                      GrQuadAAFlags::kNone};
+        fRenderTargetContext->drawFilledQuad(clip, std::move(paint), doStencilMSAA, &quad, ss);
     }
 
     void stencilPath(
@@ -88,7 +88,7 @@ public:
      * guaranteed to match the uniqueID of the underlying GrRenderTarget - beware!
      */
     GrSurfaceProxy::UniqueID uniqueID() const {
-        return fRenderTargetContext->fRenderTargetProxy->uniqueID();
+        return fRenderTargetContext->asSurfaceProxy()->uniqueID();
     }
 
     uint32_t testingOnly_getOpsTaskID();
@@ -99,7 +99,7 @@ public:
                                const std::function<WillAddOpFn>& = std::function<WillAddOpFn>());
 
     bool refsWrappedObjects() const {
-        return fRenderTargetContext->fRenderTargetProxy->refsWrappedObjects();
+        return fRenderTargetContext->asRenderTargetProxy()->refsWrappedObjects();
     }
 
 private:

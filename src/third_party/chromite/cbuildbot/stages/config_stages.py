@@ -296,6 +296,27 @@ class UpdateConfigStage(generic_stages.BuilderStage):
       return False
 
   def _RunUnitTest(self):
+    """Run chromeos_config_unittest on top of the changes.
+
+    Runs either the new pytest style test or old test depending
+    on the milestone version.
+    TODO(crbug/1062657): remove the legacy fallback when ConfigUpdater
+    no longer runs on a milestone <= 83.
+    """
+    if self.branch == 'master':
+      self._RunNewUnitTest()
+    else:
+      match = re.search(r'release-R(.+)-.*', self.branch)
+      if not match:
+        raise UpdateConfigException(
+            'Unable to determine milestone from %s' % self.branch)
+      milestone = int(match.group(1))
+      if milestone > 83:
+        self._RunNewUnitTest()
+      else:
+        self._RunLegacyUnitTest()
+
+  def _RunLegacyUnitTest(self):
     """Run chromeos_config_unittest on top of the changes."""
     logging.debug('Running chromeos_config_unittest')
     test_path = path_util.ToChrootPath(
@@ -305,6 +326,28 @@ class UpdateConfigStage(generic_stages.BuilderStage):
     # Because of --update, this updates our generated files.
     cmd = ['cros_sdk', '--', test_path, '--update']
     cros_build_lib.run(cmd, cwd=os.path.dirname(self.chromite_dir))
+
+  def _RunNewUnitTest(self):
+    """Run chromeos_config_unittest on top of the changes."""
+    logging.info('Updating generated configuration files.')
+    refresh_script_path = path_util.ToChrootPath(
+        os.path.join(self.chromite_dir, self.config_dir,
+                     'refresh_generated_files'))
+
+    # Update our generated files.
+    cmd = ['cros_sdk', '--', refresh_script_path]
+    cros_build_lib.run(cmd, cwd=os.path.dirname(self.chromite_dir))
+
+    # Run the unit tests over the newly generated files.
+
+    logging.debug('Running chromeos_config_unittest, to confirm sane state.')
+    test_runner = os.path.join(constants.CHROMITE_DIR, 'run_pytest')
+    # run_pytest re-executes itself inside the chroot and sets its own working
+    # directory to chromite, so using a relative path to the unittest works fine
+    # here.
+    test_path = os.path.join('config', 'chromeos_config_unittest.py')
+    cmd = [test_runner, test_path]
+    cros_build_lib.run(cmd, cwd=constants.CHROMITE_DIR)
 
   def _CreateConfigPatch(self):
     """Create and return a diff patch file for config changes."""
@@ -374,10 +417,12 @@ class DeployLuciSchedulerStage(generic_stages.BuilderStage):
   def _RunUnitTest(self):
     """Run chromeos_config_unittest to confirm a clean scheduler config."""
     logging.debug('Running chromeos_config_unittest, to confirm sane state.')
-    test_path = path_util.ToChrootPath(
-        os.path.join(constants.CHROMITE_DIR, 'config',
-                     'chromeos_config_unittest'))
-    cmd = ['cros_sdk', '--', test_path]
+    test_runner = os.path.join(constants.CHROMITE_DIR, 'run_pytest')
+    # run_pytest re-executes itself inside the chroot and sets its own working
+    # directory to chromite, so using a relative path to the unittest works fine
+    # here.
+    test_path = os.path.join('config', 'chromeos_config_unittest.py')
+    cmd = [test_runner, test_path]
     cros_build_lib.run(cmd, cwd=constants.CHROMITE_DIR)
 
   def _MakeWorkDir(self, name):

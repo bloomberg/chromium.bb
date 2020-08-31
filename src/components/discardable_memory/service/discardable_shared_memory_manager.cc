@@ -28,6 +28,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/discardable_memory/common/discardable_shared_memory_heap.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -92,16 +93,16 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
  public:
   DiscardableMemoryImpl(
       std::unique_ptr<base::DiscardableSharedMemory> shared_memory,
-      const base::Closure& deleted_callback)
+      base::OnceClosure deleted_callback)
       : shared_memory_(std::move(shared_memory)),
-        deleted_callback_(deleted_callback),
+        deleted_callback_(std::move(deleted_callback)),
         is_locked_(true) {}
 
   ~DiscardableMemoryImpl() override {
     if (is_locked_)
       shared_memory_->Unlock(0, 0);
 
-    deleted_callback_.Run();
+    std::move(deleted_callback_).Run();
   }
 
   // Overridden from base::DiscardableMemory:
@@ -145,7 +146,7 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
 
  private:
   std::unique_ptr<base::DiscardableSharedMemory> shared_memory_;
-  const base::Closure deleted_callback_;
+  base::OnceClosure deleted_callback_;
   bool is_locked_;
 
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryImpl);
@@ -157,16 +158,10 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
 int64_t GetDefaultMemoryLimit() {
   const int kMegabyte = 1024 * 1024;
 
-#if defined(CHROMECAST_BUILD)
+#if BUILDFLAG(IS_CHROMECAST)
   // Bypass IsLowEndDevice() check and fix max_default_memory_limit to 64MB on
   // Chromecast devices. Set value here as IsLowEndDevice() is used on some, but
   // not all Chromecast devices.
-  int64_t max_default_memory_limit = 64 * kMegabyte;
-#elif defined(OS_FUCHSIA)
-  // Fuchsia doesn't implement MemoryPressureMonitor and the default limit is
-  // too high for some devices. Set it to the same value as for low-end devices.
-  // TODO(crbug.com/996030): Implement MemoryPressureMonitor for Fuchsia and
-  // remove this ifdef.
   int64_t max_default_memory_limit = 64 * kMegabyte;
 #else
 #if defined(OS_ANDROID)
@@ -233,8 +228,8 @@ DiscardableSharedMemoryManager::DiscardableSharedMemoryManager()
       memory_limit_(default_memory_limit_),
       bytes_allocated_(0),
       memory_pressure_listener_(new base::MemoryPressureListener(
-          base::Bind(&DiscardableSharedMemoryManager::OnMemoryPressure,
-                     base::Unretained(this)))),
+          base::BindRepeating(&DiscardableSharedMemoryManager::OnMemoryPressure,
+                              base::Unretained(this)))),
       // Current thread might not have a task runner in tests.
       enforce_memory_policy_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       enforce_memory_policy_pending_(false),
@@ -244,8 +239,8 @@ DiscardableSharedMemoryManager::DiscardableSharedMemoryManager()
   g_instance = this;
   DCHECK_NE(memory_limit_, 0u);
   enforce_memory_policy_callback_ =
-      base::Bind(&DiscardableSharedMemoryManager::EnforceMemoryPolicy,
-                 weak_ptr_factory_.GetWeakPtr());
+      base::BindRepeating(&DiscardableSharedMemoryManager::EnforceMemoryPolicy,
+                          weak_ptr_factory_.GetWeakPtr());
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "DiscardableSharedMemoryManager",
       base::ThreadTaskRunnerHandle::Get());
@@ -325,7 +320,7 @@ DiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(size_t size) {
   memory->Close();
   return std::make_unique<DiscardableMemoryImpl>(
       std::move(memory),
-      base::Bind(
+      base::BindOnce(
           &DiscardableSharedMemoryManager::DeletedDiscardableSharedMemory,
           base::Unretained(this), new_id, kInvalidUniqueClientID));
 }

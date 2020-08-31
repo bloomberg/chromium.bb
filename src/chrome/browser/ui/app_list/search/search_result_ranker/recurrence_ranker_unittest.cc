@@ -267,13 +267,19 @@ TEST_F(RecurrenceRankerTest, RankTopN) {
                /* using_fake_predictor = */ true);
 }
 
+TEST_F(RecurrenceRankerTest, Empty) {
+  auto ranker = MakeSimpleRanker();
+
+  EXPECT_TRUE(ranker->empty());
+  ranker->Record("A");
+  EXPECT_FALSE(ranker->empty());
+}
+
 TEST_F(RecurrenceRankerTest, LoadFromDisk) {
   // Serialise a testing proto.
   RecurrenceRankerProto proto = MakeTestingProto();
   const std::string proto_str = proto.SerializeAsString();
-  EXPECT_NE(
-      base::WriteFile(ranker_filepath_, proto_str.c_str(), proto_str.size()),
-      -1);
+  EXPECT_TRUE(base::WriteFile(ranker_filepath_, proto_str));
 
   // Make a ranker.
   RecurrenceRanker ranker("MyModel", ranker_filepath_, MakeSimpleConfig(),

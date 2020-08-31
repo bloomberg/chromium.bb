@@ -11,8 +11,9 @@
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
 #include "components/version_info/channel.h"
+#include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -26,14 +27,6 @@
 namespace extensions {
 
 namespace {
-
-// TODO(devlin): We don't need this separate enum now that SystemIndicator is
-// no longer part of ActionInfo.
-enum class TestActionType {
-  kBrowserAction,
-  kPageAction,
-  kAction,
-};
 
 base::FilePath GetTestDataDir() {
   base::FilePath path;
@@ -55,8 +48,10 @@ TEST(ExtensionActionHandlerTest, LoadInvisibleBrowserActionIconUnpacked) {
       extension_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
   file_util::SetReportErrorForInvisibleIconForTesting(false);
   EXPECT_FALSE(extension);
-  EXPECT_EQ("The icon is not sufficiently visible 'invisible_icon.png'.",
-            error);
+  EXPECT_EQ(
+      "Icon 'invisible_icon.png' specified in 'browser_action' is not "
+      "sufficiently visible.",
+      error);
 }
 
 // Tests that an unpacked extension with an invisible page action
@@ -71,15 +66,17 @@ TEST(ExtensionActionHandlerTest, LoadInvisiblePageActionIconUnpacked) {
       extension_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
   file_util::SetReportErrorForInvisibleIconForTesting(false);
   EXPECT_FALSE(extension);
-  EXPECT_EQ("The icon is not sufficiently visible 'invisible_icon.png'.",
-            error);
+  EXPECT_EQ(
+      "Icon 'invisible_icon.png' specified in 'page_action' is not "
+      "sufficiently visible.",
+      error);
 }
 
 // A parameterized test suite to test each different extension action key
 // ("page_action", "browser_action", "action").
 class ExtensionActionManifestTest
     : public ManifestTest,
-      public testing::WithParamInterface<TestActionType> {
+      public testing::WithParamInterface<ActionInfo::Type> {
  public:
   ExtensionActionManifestTest() {}
   ~ExtensionActionManifestTest() override {}
@@ -95,43 +92,13 @@ class ExtensionActionManifestTest
              "%s": %s
            })";
 
-    const char* action_key = nullptr;
-    switch (GetParam()) {
-      case TestActionType::kBrowserAction:
-        action_key = manifest_keys::kBrowserAction;
-        break;
-      case TestActionType::kPageAction:
-        action_key = manifest_keys::kPageAction;
-        break;
-      case TestActionType::kAction:
-        action_key = manifest_keys::kAction;
-        break;
-    }
+    const char* action_key = GetManifestKeyForActionType(GetParam());
 
     base::Value manifest_value = base::test::ParseJson(
         base::StringPrintf(kManifestStub, action_key, action_spec));
     EXPECT_TRUE(manifest_value.is_dict());
     EXPECT_FALSE(manifest_value.is_none());
     return ManifestData(std::move(manifest_value), "test");
-  }
-
-  // Returns the ActionInfo for the given |extension| corresponding with the
-  // action key of the test param.
-  const ActionInfo* GetActionInfo(const Extension& extension) {
-    const ActionInfo* action_info = nullptr;
-    switch (GetParam()) {
-      case TestActionType::kBrowserAction:
-        action_info = ActionInfo::GetBrowserActionInfo(&extension);
-        break;
-      case TestActionType::kPageAction:
-        action_info = ActionInfo::GetPageActionInfo(&extension);
-        break;
-      case TestActionType::kAction:
-        action_info = ActionInfo::GetExtensionActionInfo(&extension);
-        break;
-    }
-
-    return action_info;
   }
 
  private:
@@ -153,7 +120,7 @@ TEST_P(ExtensionActionManifestTest, Basic) {
   scoped_refptr<const Extension> extension =
       LoadAndExpectSuccess(GetManifestData(kValidAllFields));
   ASSERT_TRUE(extension);
-  const ActionInfo* action_info = GetActionInfo(*extension);
+  const ActionInfo* action_info = GetActionInfoOfType(*extension, GetParam());
   ASSERT_TRUE(action_info);
 
   EXPECT_EQ(extension->GetResourceURL("popup.html"),
@@ -173,7 +140,7 @@ TEST_P(ExtensionActionManifestTest, TestEmptyAction) {
   scoped_refptr<const Extension> extension =
       LoadAndExpectSuccess(GetManifestData(kValidNoFields));
   ASSERT_TRUE(extension);
-  const ActionInfo* action_info = GetActionInfo(*extension);
+  const ActionInfo* action_info = GetActionInfoOfType(*extension, GetParam());
   ASSERT_TRUE(action_info);
 
   EXPECT_EQ(GURL(), action_info->default_popup_url);
@@ -197,7 +164,7 @@ TEST_P(ExtensionActionManifestTest, ValidIconDictionary) {
   scoped_refptr<const Extension> extension =
       LoadAndExpectSuccess(GetManifestData(kValidIconDictionary));
   ASSERT_TRUE(extension);
-  const ActionInfo* action_info = GetActionInfo(*extension);
+  const ActionInfo* action_info = GetActionInfoOfType(*extension, GetParam());
   ASSERT_TRUE(action_info);
 
   EXPECT_EQ(GURL(), action_info->default_popup_url);
@@ -219,13 +186,13 @@ TEST_P(ExtensionActionManifestTest, Invalid) {
 
   const char* expected_error = nullptr;
   switch (GetParam()) {
-    case TestActionType::kBrowserAction:
+    case ActionInfo::TYPE_BROWSER:
       expected_error = manifest_errors::kInvalidBrowserAction;
       break;
-    case TestActionType::kPageAction:
+    case ActionInfo::TYPE_PAGE:
       expected_error = manifest_errors::kInvalidPageAction;
       break;
-    case TestActionType::kAction:
+    case ActionInfo::TYPE_ACTION:
       expected_error = manifest_errors::kInvalidAction;
       break;
   }
@@ -253,7 +220,7 @@ TEST_P(ExtensionActionManifestTest, DefaultState) {
   constexpr char kDefaultStateInvalid[] = R"({"default_state": "foo"})";
 
   // default_state is only valid for "action" types.
-  const bool default_state_allowed = GetParam() == TestActionType::kAction;
+  const bool default_state_allowed = GetParam() == ActionInfo::TYPE_ACTION;
   const char* key_disallowed_error =
       manifest_errors::kDefaultStateShouldNotBeSet;
 
@@ -287,7 +254,8 @@ TEST_P(ExtensionActionManifestTest, DefaultState) {
       scoped_refptr<const Extension> extension =
           LoadAndExpectSuccess(GetManifestData(test_case.spec));
       ASSERT_TRUE(extension);
-      const ActionInfo* action_info = GetActionInfo(*extension);
+      const ActionInfo* action_info =
+          GetActionInfoOfType(*extension, GetParam());
       ASSERT_TRUE(action_info);
       EXPECT_EQ(*test_case.expected_state, action_info->default_state);
     } else {
@@ -300,8 +268,8 @@ TEST_P(ExtensionActionManifestTest, DefaultState) {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          ExtensionActionManifestTest,
-                         testing::Values(TestActionType::kBrowserAction,
-                                         TestActionType::kPageAction,
-                                         TestActionType::kAction));
+                         testing::Values(ActionInfo::TYPE_BROWSER,
+                                         ActionInfo::TYPE_PAGE,
+                                         ActionInfo::TYPE_ACTION));
 
 }  // namespace extensions

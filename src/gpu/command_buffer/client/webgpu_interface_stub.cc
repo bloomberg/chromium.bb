@@ -23,10 +23,11 @@ const DawnProcTable& WebGPUInterfaceStub::GetProcs() const {
   return null_procs_;
 }
 void WebGPUInterfaceStub::FlushCommands() {}
-WGPUDevice WebGPUInterfaceStub::GetDefaultDevice() {
+WGPUDevice WebGPUInterfaceStub::GetDevice(DawnDeviceClientID device_client_id) {
   return nullptr;
 }
-ReservedTexture WebGPUInterfaceStub::ReserveTexture(WGPUDevice device) {
+ReservedTexture WebGPUInterfaceStub::ReserveTexture(
+    DawnDeviceClientID device_client_id) {
   return {nullptr, 0, 0};
 }
 bool WebGPUInterfaceStub::RequestAdapterAsync(
@@ -35,11 +36,14 @@ bool WebGPUInterfaceStub::RequestAdapterAsync(
         request_adapter_callback) {
   return false;
 }
-bool WebGPUInterfaceStub::RequestDevice(
+bool WebGPUInterfaceStub::RequestDeviceAsync(
     uint32_t adapter_service_id,
-    const WGPUDeviceProperties* requested_device_properties) {
+    const WGPUDeviceProperties& requested_device_properties,
+    base::OnceCallback<void(bool, DawnDeviceClientID)>
+        request_device_callback) {
   return false;
 }
+void WebGPUInterfaceStub::RemoveDevice(DawnDeviceClientID device_client_id) {}
 
 // Include the auto-generated part of this class. We split this because
 // it means we can easily edit the non-auto generated parts right here in

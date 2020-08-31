@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.gesturenav;
 
 import android.app.Activity;
 import android.graphics.Point;
+import android.os.Build;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
@@ -21,16 +23,17 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -46,6 +49,7 @@ public class NavigationHandlerTest {
     private static final String RENDERED_PAGE = "/chrome/test/data/android/navigate/simple.html";
     private static final boolean LEFT_EDGE = true;
     private static final boolean RIGHT_EDGE = false;
+    private static final int PAGELOAD_TIMEOUT_MS = 4000;
 
     private EmbeddedTestServer mTestServer;
     private float mEdgeWidthPx;
@@ -79,8 +83,8 @@ public class NavigationHandlerTest {
 
     private void assertNavigateOnSwipeFrom(boolean edge, String toUrl) {
         ChromeTabUtils.waitForTabPageLoaded(currentTab(), toUrl, () -> swipeFromEdge(edge), 10);
-        CriteriaHelper.pollUiThread(Criteria.equals(toUrl, () -> currentTab().getUrl()));
-        Assert.assertEquals("Didn't navigate back", toUrl, currentTab().getUrl());
+        CriteriaHelper.pollUiThread(Criteria.equals(toUrl, () -> currentTab().getUrlString()));
+        Assert.assertEquals("Didn't navigate back", toUrl, currentTab().getUrlString());
     }
 
     private void swipeFromEdge(boolean leftEdge) {
@@ -114,43 +118,31 @@ public class NavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testLeftSwipeNavigateBackOnNativePage() {
-        ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), UrlConstants.RECENT_TABS_URL, false);
-
-        assertNavigateOnSwipeFrom(LEFT_EDGE, UrlConstants.NTP_URL);
-    }
-
-    @Test
-    @SmallTest
-    public void testRightSwipeNavigateForwardOnNativePage() {
-        ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), UrlConstants.RECENT_TABS_URL, false);
-
+    @DisableIf.
+    Build(sdk_is_greater_than = Build.VERSION_CODES.O_MR1, message = "Flaky on P crbug.com/1041233")
+    public void testSwipeNavigateOnNativePage() {
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+        mActivityTestRule.loadUrl(UrlConstants.RECENT_TABS_URL);
         assertNavigateOnSwipeFrom(LEFT_EDGE, UrlConstants.NTP_URL);
         assertNavigateOnSwipeFrom(RIGHT_EDGE, UrlConstants.RECENT_TABS_URL);
     }
 
     @Test
     @SmallTest
-    @RetryOnFailure
-    public void testLeftSwipeNavigateBackOnRenderedPage() {
-        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), mTestServer.getURL(RENDERED_PAGE), false);
-
-        assertNavigateOnSwipeFrom(LEFT_EDGE, UrlConstants.NTP_URL);
-    }
-
-    @Test
-    @SmallTest
-    public void testRightSwipeNavigateForwardOnRenderedPage() {
-        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), mTestServer.getURL(RENDERED_PAGE), false);
+    @DisableIf.
+    Build(sdk_is_greater_than = Build.VERSION_CODES.O_MR1, message = "Flaky on P crbug.com/1041233")
+    public void testSwipeNavigateOnRenderedPage() {
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
+        mActivityTestRule.loadUrl(mTestServer.getURL(RENDERED_PAGE));
         mActivityTestRule.loadUrl(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         assertNavigateOnSwipeFrom(LEFT_EDGE, mTestServer.getURL(RENDERED_PAGE));
-        assertNavigateOnSwipeFrom(RIGHT_EDGE, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        // clang-format off
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            new Handler().postDelayed(() -> assertNavigateOnSwipeFrom(
+                    RIGHT_EDGE, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL), PAGELOAD_TIMEOUT_MS);
+        });
+        // clang-format on
     }
 }

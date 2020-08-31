@@ -15,6 +15,8 @@ animationIterationCount
 animationName
 animationPlayState
 animationTimingFunction
+appearance
+aspectRatio
 backdropFilter
 backfaceVisibility
 background
@@ -107,6 +109,7 @@ color
 colorInterpolation
 colorInterpolationFilters
 colorRendering
+colorScheme
 columnCount
 columnFill
 columnGap
@@ -118,7 +121,9 @@ columnSpan
 columnWidth
 columns
 contain
+containIntrinsicSize
 content
+contentVisibility
 counterIncrement
 counterReset
 cssFloat
@@ -187,6 +192,8 @@ height
 hyphens
 imageOrientation
 imageRendering
+inherits
+initialValue
 inlineSize
 inset
 insetBlock
@@ -195,11 +202,6 @@ insetBlockStart
 insetInline
 insetInlineEnd
 insetInlineStart
-intrinsicBlockSize
-intrinsicHeight
-intrinsicInlineSize
-intrinsicSize
-intrinsicWidth
 isolation
 item
 justifyContent
@@ -234,6 +236,8 @@ markerStart
 mask
 maskSourceType
 maskType
+mathStyle
+mathSuperscriptShiftStyle
 maxBlockSize
 maxHeight
 maxInlineSize
@@ -289,6 +293,7 @@ page
 pageBreakAfter
 pageBreakBefore
 pageBreakInside
+pageOrientation
 paintOrder
 parentRule
 perspective
@@ -301,11 +306,11 @@ position
 quotes
 r
 removeProperty
-renderSubtree
 resize
 right
 rotate
 rowGap
+rubyPosition
 rx
 ry
 scale
@@ -353,6 +358,7 @@ strokeLinejoin
 strokeMiterlimit
 strokeOpacity
 strokeWidth
+syntax
 tabSize
 tableLayout
 textAlign
@@ -364,6 +370,7 @@ textDecorationColor
 textDecorationLine
 textDecorationSkipInk
 textDecorationStyle
+textDecorationThickness
 textIndent
 textJustify
 textOrientation
@@ -372,6 +379,7 @@ textRendering
 textShadow
 textSizeAdjust
 textTransform
+textUnderlineOffset
 textUnderlinePosition
 top
 touchAction
@@ -477,14 +485,9 @@ webkitLocale
 webkitLogicalHeight
 webkitLogicalWidth
 webkitMarginAfter
-webkitMarginAfterCollapse
 webkitMarginBefore
-webkitMarginBeforeCollapse
-webkitMarginBottomCollapse
-webkitMarginCollapse
 webkitMarginEnd
 webkitMarginStart
-webkitMarginTopCollapse
 webkitMask
 webkitMaskBoxImage
 webkitMaskBoxImageOutset

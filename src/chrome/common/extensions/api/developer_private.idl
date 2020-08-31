@@ -136,6 +136,9 @@ namespace developerPrivate {
     boolean suspiciousInstall;
     boolean corruptInstall;
     boolean updateRequired;
+    boolean blockedByPolicy;
+    boolean custodianApprovalRequired;
+    boolean parentDisabledPermissions;
   };
 
   dictionary OptionsPage {
@@ -257,7 +260,6 @@ namespace developerPrivate {
   };
 
   dictionary ProfileInfo {
-    boolean appInfoDialogEnabled;
     boolean canLoadUnpacked;
     boolean inDeveloperMode;
     boolean isDeveloperModeControlledByPolicy;

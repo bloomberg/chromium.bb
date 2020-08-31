@@ -23,10 +23,6 @@
 #include <fontconfig/fontconfig.h>
 #include <unistd.h>
 
-#ifdef SK_DEBUG
-#    include "src/core/SkTLS.h"
-#endif
-
 namespace {
 
 // Fontconfig is not threadsafe before 2.10.91. Before that, we lock with a global mutex.
@@ -36,23 +32,12 @@ static SkMutex& f_c_mutex() {
     return mutex;
 }
 
-#ifdef SK_DEBUG
-void* CreateThreadFcLocked() { return new bool(false); }
-void DeleteThreadFcLocked(void* v) { delete static_cast<bool*>(v); }
-#   define THREAD_FC_LOCKED \
-        static_cast<bool*>(SkTLS::Get(CreateThreadFcLocked, DeleteThreadFcLocked))
-#endif
-
 struct FCLocker {
     // Assume FcGetVersion() has always been thread safe.
 
     FCLocker() {
         if (FcGetVersion() < 21091) {
             f_c_mutex().acquire();
-        } else {
-            SkDEBUGCODE(bool* threadLocked = THREAD_FC_LOCKED);
-            SkASSERT(false == *threadLocked);
-            SkDEBUGCODE(*threadLocked = true);
         }
     }
 
@@ -60,19 +45,17 @@ struct FCLocker {
         AssertHeld();
         if (FcGetVersion() < 21091) {
             f_c_mutex().release();
-        } else {
-            SkDEBUGCODE(*THREAD_FC_LOCKED = false);
         }
     }
 
     static void AssertHeld() { SkDEBUGCODE(
         if (FcGetVersion() < 21091) {
             f_c_mutex().assertHeld();
-        } else {
-            SkASSERT(true == *THREAD_FC_LOCKED);
         }
     ) }
 };
+
+using UniqueFCConfig = std::unique_ptr<FcConfig, SkFunctionWrapper<decltype(FcConfigDestroy), FcConfigDestroy>>;
 
 } // namespace
 
@@ -509,10 +492,6 @@ const char* kFontFormatCFF = "CFF";
 #endif
 
 SkFontConfigInterfaceDirect::SkFontConfigInterfaceDirect() {
-    FCLocker lock;
-
-    FcInit();
-
     SkDEBUGCODE(fontconfiginterface_unittest();)
 }
 
@@ -542,7 +521,8 @@ bool SkFontConfigInterfaceDirect::isValidPattern(FcPattern* pattern) {
     if (!c_filename) {
         return false;
     }
-    const char* sysroot = (const char*)FcConfigGetSysRoot(nullptr);
+    UniqueFCConfig fcConfig(FcConfigReference(nullptr));
+    const char* sysroot = (const char*)FcConfigGetSysRoot(fcConfig.get());
     SkString resolvedFilename;
     if (sysroot) {
         resolvedFilename = sysroot;
@@ -603,7 +583,7 @@ bool SkFontConfigInterfaceDirect::matchFamilyName(const char familyName[],
     }
 
     FCLocker lock;
-
+    UniqueFCConfig fcConfig(FcConfigReference(nullptr));
     FcPattern* pattern = FcPatternCreate();
 
     if (familyName) {
@@ -613,7 +593,7 @@ bool SkFontConfigInterfaceDirect::matchFamilyName(const char familyName[],
 
     FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
 
-    FcConfigSubstitute(nullptr, pattern, FcMatchPattern);
+    FcConfigSubstitute(fcConfig.get(), pattern, FcMatchPattern);
     FcDefaultSubstitute(pattern);
 
     // Font matching:
@@ -652,7 +632,7 @@ bool SkFontConfigInterfaceDirect::matchFamilyName(const char familyName[],
     }
 
     FcResult result;
-    FcFontSet* font_set = FcFontSort(nullptr, pattern, 0, nullptr, &result);
+    FcFontSet* font_set = FcFontSort(fcConfig.get(), pattern, 0, nullptr, &result);
     if (!font_set) {
         FcPatternDestroy(pattern);
         return false;
@@ -680,7 +660,7 @@ bool SkFontConfigInterfaceDirect::matchFamilyName(const char familyName[],
         FcFontSetDestroy(font_set);
         return false;
     }
-    const char* sysroot = (const char*)FcConfigGetSysRoot(nullptr);
+    const char* sysroot = (const char*)FcConfigGetSysRoot(fcConfig.get());
     SkString resolvedFilename;
     if (sysroot) {
         resolvedFilename = sysroot;

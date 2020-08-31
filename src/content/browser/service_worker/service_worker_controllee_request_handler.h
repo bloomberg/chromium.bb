@@ -16,12 +16,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
+#include "content/browser/service_worker/service_worker_accessed_callback.h"
 #include "content/browser/service_worker/service_worker_navigation_loader.h"
 #include "content/common/content_export.h"
-#include "content/public/common/resource_type.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -44,8 +45,9 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
   ServiceWorkerControlleeRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerContainerHost> container_host,
-      ResourceType resource_type,
-      bool skip_service_worker);
+      blink::mojom::ResourceType resource_type,
+      bool skip_service_worker,
+      ServiceWorkerAccessedCallback service_worker_accessed_callback);
   ~ServiceWorkerControlleeRequestHandler();
 
   // This could get called multiple times during the lifetime in redirect
@@ -106,7 +108,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
 
   const base::WeakPtr<ServiceWorkerContextCore> context_;
   const base::WeakPtr<ServiceWorkerContainerHost> container_host_;
-  const ResourceType resource_type_;
+  const blink::mojom::ResourceType resource_type_;
 
   // If true, service workers are bypassed for request interception.
   const bool skip_service_worker_;
@@ -120,6 +122,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
 
   ServiceWorkerLoaderCallback loader_callback_;
   NavigationLoaderInterceptor::FallbackCallback fallback_callback_;
+
+  ServiceWorkerAccessedCallback service_worker_accessed_callback_;
 
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_{
       this};

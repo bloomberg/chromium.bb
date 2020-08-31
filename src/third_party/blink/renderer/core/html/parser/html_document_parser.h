@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/parser_content_policy.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/html/parser/background_html_input_stream.h"
 #include "third_party/blink/renderer/core/html/parser/html_input_stream.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
@@ -59,14 +58,20 @@ class DocumentEncodingData;
 class DocumentFragment;
 class Element;
 class HTMLDocument;
+class HTMLParserMetrics;
 class HTMLParserScheduler;
 class HTMLParserScriptRunner;
 class HTMLPreloadScanner;
 class HTMLResourcePreloader;
 class HTMLTreeBuilder;
 
+// TODO(https://crbug.com/1049898): These are only exposed to make it possible
+// to delete an expired histogram. The test should be rewritten to test at a
+// different level, so it won't have to make assertions about internal state.
+void CORE_EXPORT ResetDiscardedTokenCountForTesting();
+size_t CORE_EXPORT GetDiscardedTokenCountForTesting();
+
 class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
-                                       public ContextLifecycleStateObserver,
                                        private HTMLParserScriptRunnerHost {
   USING_GARBAGE_COLLECTED_MIXIN(HTMLDocumentParser);
   USING_PRE_FINALIZER(HTMLDocumentParser, Dispose);
@@ -101,8 +106,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   TextPosition GetTextPosition() const final;
   bool IsParsingAtLineNumber() const final;
   OrdinalNumber LineNumber() const final;
-
-  void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
 
   HTMLParserReentryPermit* ReentryPermit() { return reentry_permit_.get(); }
 
@@ -159,7 +162,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void ExecuteScriptsWaitingForResources() final;
   void DidAddPendingParserBlockingStylesheet() final;
   void DidLoadAllPendingParserBlockingStylesheets() final;
-  void CheckIfBodyStylesheetAdded();
+  void CheckIfBlockingStylesheetAdded();
   void DocumentElementAvailable() override;
 
   // HTMLParserScriptRunnerHost
@@ -178,7 +181,8 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
       std::unique_ptr<HTMLToken>,
       std::unique_ptr<HTMLTokenizer>);
   size_t ProcessTokenizedChunkFromBackgroundParser(
-      std::unique_ptr<TokenizedChunk>);
+      std::unique_ptr<TokenizedChunk>,
+      bool*);
   void PumpPendingSpeculations();
 
   bool CanTakeNextToken();
@@ -245,6 +249,11 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   Member<HTMLResourcePreloader> preloader_;
   PreloadRequestStream queued_preloads_;
 
+  // Metrics gathering and reporting
+  std::unique_ptr<HTMLParserMetrics> metrics_reporter_;
+  // A timer for how long we are inactive after yielding
+  std::unique_ptr<base::ElapsedTimer> yield_timer_;
+
   // If this is non-null, then there is a meta CSP token somewhere in the
   // speculation buffer. Preloads will be deferred until a token matching this
   // pointer is parsed and the CSP policy is applied. Note that this pointer
@@ -264,8 +273,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool tried_loading_link_headers_;
   bool added_pending_parser_blocking_stylesheet_;
   bool is_waiting_for_stylesheets_;
-
-  base::WeakPtrFactory<HTMLDocumentParser> weak_factory_{this};
 };
 
 }  // namespace blink

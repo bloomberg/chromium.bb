@@ -14,6 +14,7 @@
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
+#include "core/fpdfapi/render/cpdf_renderoptions.h"
 #include "core/fpdfdoc/cpdf_annot.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fpdfdoc/cpdf_metadata.h"
@@ -35,6 +36,16 @@ bool RaiseUnsupportedError(int nError) {
   if (g_unsupport_info->FSDK_UnSupport_Handler)
     g_unsupport_info->FSDK_UnSupport_Handler(g_unsupport_info, nError);
   return true;
+}
+
+// Use the existence of the XFA array as a signal for XFA forms.
+bool DocHasXFA(const CPDF_Document* doc) {
+  const CPDF_Dictionary* root = doc->GetRoot();
+  if (!root)
+    return false;
+
+  const CPDF_Dictionary* form = root->GetDictFor("AcroForm");
+  return form && form->GetArrayFor("XFA");
 }
 
 unsigned long GetStreamMaybeCopyAndReturnLengthImpl(const CPDF_Stream* stream,
@@ -247,16 +258,33 @@ bool GetQuadPointsAtIndex(const CPDF_Array* array,
   return true;
 }
 
-CFX_FloatRect CFXFloatRectFromFSRECTF(const FS_RECTF& rect) {
+CFX_PointF CFXPointFFromFSPointF(const FS_POINTF& point) {
+  return CFX_PointF(point.x, point.y);
+}
+
+CFX_FloatRect CFXFloatRectFromFSRectF(const FS_RECTF& rect) {
   return CFX_FloatRect(rect.left, rect.bottom, rect.right, rect.top);
 }
 
-FS_RECTF FSRECTFFromCFXFloatRect(const CFX_FloatRect& rect) {
+FS_RECTF FSRectFFromCFXFloatRect(const CFX_FloatRect& rect) {
   return {rect.left, rect.top, rect.right, rect.bottom};
 }
 
 CFX_Matrix CFXMatrixFromFSMatrix(const FS_MATRIX& matrix) {
   return CFX_Matrix(matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f);
+}
+
+FS_MATRIX FSMatrixFromCFXMatrix(const CFX_Matrix& matrix) {
+  return {matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f};
+}
+
+unsigned long NulTerminateMaybeCopyAndReturnLength(const ByteString& text,
+                                                   void* buffer,
+                                                   unsigned long buflen) {
+  unsigned long len = text.GetLength() + 1;
+  if (buffer && len <= buflen)
+    memcpy(buffer, text.c_str(), len);
+  return len;
 }
 
 unsigned long Utf16EncodeMaybeCopyAndReturnLength(const WideString& text,
@@ -312,51 +340,46 @@ void SetPDFUnsupportInfo(UNSUPPORT_INFO* unsp_info) {
   g_unsupport_info = unsp_info;
 }
 
-UNSUPPORT_INFO* GetPDFUnssuportInto() {
-  return g_unsupport_info;
-}
-
-void ReportUnsupportedFeatures(CPDF_Document* pDoc) {
+void ReportUnsupportedFeatures(const CPDF_Document* pDoc) {
   const CPDF_Dictionary* pRootDict = pDoc->GetRoot();
-  if (pRootDict) {
-    // Portfolios and Packages
-    if (pRootDict->KeyExist("Collection")) {
-      RaiseUnsupportedError(FPDF_UNSP_DOC_PORTABLECOLLECTION);
-      return;
-    }
-    if (pRootDict->KeyExist("Names")) {
-      const CPDF_Dictionary* pNameDict = pRootDict->GetDictFor("Names");
-      if (pNameDict && pNameDict->KeyExist("EmbeddedFiles")) {
-        RaiseUnsupportedError(FPDF_UNSP_DOC_ATTACHMENT);
-        return;
-      }
-      if (pNameDict && pNameDict->KeyExist("JavaScript")) {
-        const CPDF_Dictionary* pJSDict = pNameDict->GetDictFor("JavaScript");
-        const CPDF_Array* pArray =
-            pJSDict ? pJSDict->GetArrayFor("Names") : nullptr;
-        if (pArray) {
-          for (size_t i = 0; i < pArray->size(); i++) {
-            ByteString cbStr = pArray->GetStringAt(i);
-            if (cbStr.Compare("com.adobe.acrobat.SharedReview.Register") == 0) {
-              RaiseUnsupportedError(FPDF_UNSP_DOC_SHAREDREVIEW);
-              return;
-            }
+  if (!pRootDict)
+    return;
+
+  // Portfolios and Packages
+  if (pRootDict->KeyExist("Collection"))
+    RaiseUnsupportedError(FPDF_UNSP_DOC_PORTABLECOLLECTION);
+
+  const CPDF_Dictionary* pNameDict = pRootDict->GetDictFor("Names");
+  if (pNameDict) {
+    if (pNameDict->KeyExist("EmbeddedFiles"))
+      RaiseUnsupportedError(FPDF_UNSP_DOC_ATTACHMENT);
+
+    const CPDF_Dictionary* pJSDict = pNameDict->GetDictFor("JavaScript");
+    if (pJSDict) {
+      const CPDF_Array* pArray = pJSDict->GetArrayFor("Names");
+      if (pArray) {
+        for (size_t i = 0; i < pArray->size(); i++) {
+          ByteString cbStr = pArray->GetStringAt(i);
+          if (cbStr.Compare("com.adobe.acrobat.SharedReview.Register") == 0) {
+            RaiseUnsupportedError(FPDF_UNSP_DOC_SHAREDREVIEW);
+            break;
           }
         }
       }
     }
-
-    // SharedForm
-    const CPDF_Stream* pStream = pRootDict->GetStreamFor("Metadata");
-    if (pStream) {
-      CPDF_Metadata metaData(pStream);
-      for (const auto& err : metaData.CheckForSharedForm())
-        RaiseUnsupportedError(static_cast<int>(err));
-    }
   }
 
-  // XFA Forms
-  if (!pDoc->GetExtension() && CPDF_InteractiveForm(pDoc).HasXFAForm())
+  // SharedForm
+  const CPDF_Stream* pStream = pRootDict->GetStreamFor("Metadata");
+  if (pStream) {
+    CPDF_Metadata metadata(pStream);
+    for (const UnsupportedFeature& feature : metadata.CheckForSharedForm())
+      RaiseUnsupportedError(static_cast<int>(feature));
+  }
+}
+
+void ReportUnsupportedXFA(const CPDF_Document* pDoc) {
+  if (!pDoc->GetExtension() && DocHasXFA(pDoc))
     RaiseUnsupportedError(FPDF_UNSP_DOC_XFAFORM);
 }
 
@@ -417,4 +440,14 @@ void ProcessParseError(CPDF_Parser::Error err) {
       break;
   }
   FXSYS_SetLastError(err_code);
+}
+
+void SetColorFromScheme(const FPDF_COLORSCHEME* pColorScheme,
+                        CPDF_RenderOptions* pRenderOptions) {
+  CPDF_RenderOptions::ColorScheme color_scheme;
+  color_scheme.path_fill_color = pColorScheme->path_fill_color;
+  color_scheme.path_stroke_color = pColorScheme->path_stroke_color;
+  color_scheme.text_fill_color = pColorScheme->text_fill_color;
+  color_scheme.text_stroke_color = pColorScheme->text_stroke_color;
+  pRenderOptions->SetColorScheme(color_scheme);
 }

@@ -9,16 +9,16 @@
 // A test object that counts the number of times a message is sent to it.
 @interface TestTrackingAreaOwner : NSObject {
  @private
-  NSUInteger messageCount_;
+  NSUInteger _messageCount;
 }
 @property(nonatomic, assign) NSUInteger messageCount;
 - (void)performMessage;
 @end
 
 @implementation TestTrackingAreaOwner
-@synthesize messageCount = messageCount_;
+@synthesize messageCount = _messageCount;
 - (void)performMessage {
-  ++messageCount_;
+  ++_messageCount;
 }
 @end
 
@@ -52,19 +52,6 @@ TEST_F(CrTrackingAreaTest, OwnerStopsForwarding) {
   EXPECT_EQ(1U, [owner_ messageCount]);
 
   [trackingArea_ clearOwner];
-
-  [[trackingArea_ owner] performMessage];
-  EXPECT_EQ(1U, [owner_ messageCount]);
-}
-
-TEST_F(CrTrackingAreaTest, OwnerAutomaticallyStopsForwardingOnClose) {
-  [test_window() orderFront:nil];
-  [trackingArea_ clearOwnerWhenWindowWillClose:test_window()];
-
-  [[trackingArea_ owner] performMessage];
-  EXPECT_EQ(1U, [owner_ messageCount]);
-
-  [test_window() close];
 
   [[trackingArea_ owner] performMessage];
   EXPECT_EQ(1U, [owner_ messageCount]);

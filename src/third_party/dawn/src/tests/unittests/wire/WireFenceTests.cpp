@@ -21,7 +21,7 @@ namespace {
 
     class MockFenceOnCompletionCallback {
       public:
-        MOCK_METHOD2(Call, void(WGPUFenceCompletionStatus status, void* userdata));
+        MOCK_METHOD(void, Call, (WGPUFenceCompletionStatus status, void* userdata));
     };
 
     std::unique_ptr<StrictMock<MockFenceOnCompletionCallback>> mockFenceOnCompletionCallback;
@@ -44,15 +44,7 @@ class WireFenceTests : public WireTest {
             std::make_unique<StrictMock<MockFenceOnCompletionCallback>>();
 
         {
-            queue = wgpuDeviceCreateQueue(device);
-            apiQueue = api.GetNewQueue();
-            EXPECT_CALL(api, DeviceCreateQueue(apiDevice)).WillOnce(Return(apiQueue));
-            FlushClient();
-        }
-        {
-            WGPUFenceDescriptor descriptor;
-            descriptor.nextInChain = nullptr;
-            descriptor.label = nullptr;
+            WGPUFenceDescriptor descriptor = {};
             descriptor.initialValue = 1;
 
             apiFence = api.GetNewFence();
@@ -91,9 +83,6 @@ class WireFenceTests : public WireTest {
     // A successfully created fence
     WGPUFence fence;
     WGPUFence apiFence;
-
-    WGPUQueue queue;
-    WGPUQueue apiQueue;
 };
 
 // Check that signaling a fence succeeds
@@ -229,10 +218,11 @@ TEST_F(WireFenceTests, DestroyBeforeOnCompletionEnd) {
 }
 
 // Test that signaling a fence on a wrong queue is invalid
-TEST_F(WireFenceTests, SignalWrongQueue) {
-    WGPUQueue queue2 = wgpuDeviceCreateQueue(device);
+// DISABLED until we have support for multiple queues.
+TEST_F(WireFenceTests, DISABLED_SignalWrongQueue) {
+    WGPUQueue queue2 = wgpuDeviceGetDefaultQueue(device);
     WGPUQueue apiQueue2 = api.GetNewQueue();
-    EXPECT_CALL(api, DeviceCreateQueue(apiDevice)).WillOnce(Return(apiQueue2));
+    EXPECT_CALL(api, DeviceGetDefaultQueue(apiDevice)).WillOnce(Return(apiQueue2));
     FlushClient();
 
     wgpuQueueSignal(queue2, fence, 2u);  // error
@@ -242,10 +232,11 @@ TEST_F(WireFenceTests, SignalWrongQueue) {
 }
 
 // Test that signaling a fence on a wrong queue does not update fence signaled value
-TEST_F(WireFenceTests, SignalWrongQueueDoesNotUpdateValue) {
-    WGPUQueue queue2 = wgpuDeviceCreateQueue(device);
+// DISABLED until we have support for multiple queues.
+TEST_F(WireFenceTests, DISABLED_SignalWrongQueueDoesNotUpdateValue) {
+    WGPUQueue queue2 = wgpuDeviceGetDefaultQueue(device);
     WGPUQueue apiQueue2 = api.GetNewQueue();
-    EXPECT_CALL(api, DeviceCreateQueue(apiDevice)).WillOnce(Return(apiQueue2));
+    EXPECT_CALL(api, DeviceGetDefaultQueue(apiDevice)).WillOnce(Return(apiQueue2));
     FlushClient();
 
     wgpuQueueSignal(queue2, fence, 2u);  // error

@@ -6,7 +6,7 @@
       "sub_dir" : "glslang",
       "build_dir" : "glslang/build",
       "install_dir" : "glslang/build/install",
-      "commit" : "b131630e7c749a5dc19faa458024260c71fb170f",
+      "commit" : "e157435c1e777aa1052f446dafed162b4a722e03",
       "prebuild" : [
         "python update_glslang_sources.py"
       ],
@@ -15,84 +15,25 @@
       ]
     },
     {
-      "name" : "Vulkan-Headers",
-      "url" : "https://github.com/KhronosGroup/Vulkan-Headers.git",
-      "sub_dir" : "Vulkan-Headers",
-      "build_dir" : "Vulkan-Headers/build",
-      "install_dir" : "Vulkan-Headers/build/install",
-      "commit" : "v1.1.128"
+      "name": "Vulkan-Headers",
+      "url": "https://github.com/KhronosGroup/Vulkan-Headers.git",
+      "sub_dir": "Vulkan-Headers",
+      "build_dir": "Vulkan-Headers/build",
+      "install_dir": "Vulkan-Headers/build/install",
+      "commit": "v1.2.140"
     },
     {
-      "name" : "VulkanTools",
-      "url" : "https://github.com/LunarG/VulkanTools.git",
-      "sub_dir" : "VulkanTools",
-      "build_dir" : "VulkanTools/build",
-      "install_dir" : "VulkanTools/build/install",
-      "commit" : "2e800639b5f09f8e572a08a5798488155a9f7b75",
-      "deps" : [
-        {
-          "var_name" : "VULKAN_HEADERS_INSTALL_DIR",
-          "repo_name" : "Vulkan-Headers"
-        },
-        {
-          "var_name" : "VULKAN_LOADER_INSTALL_DIR",
-          "repo_name" : "Vulkan-Loader"
-        },
-        {
-          "var_name" : "VULKAN_VALIDATIONLAYERS_INSTALL_DIR",
-          "repo_name" : "Vulkan-ValidationLayers"
-        }
-      ],
-      "prebuild_linux" : [
-        "bash update_external_sources.sh"
-      ],
-      "prebuild_windows" : [
-        ".\\update_external_sources.bat"
-      ],
-      "cmake_options" : [
-        "-DBUILD_TESTS=NO",
-        "-DBUILD_VKTRACE=NO",
-        "-DBUILD_VLF=NO",
-        "-DBUILD_VIA=NO"
-      ],
-      "ci_only" : [
-        "TRAVIS"
-      ],
-      "build_step" : "skip"
-    },
-    {
-      "name" : "Vulkan-Tools",
-      "url" : "https://github.com/KhronosGroup/Vulkan-Tools.git",
-      "sub_dir" : "Vulkan-Tools",
-      "build_dir" : "Vulkan-Tools/build",
-      "install_dir" : "Vulkan-Tools/build/install",
-      "commit" : "99b986c82b14fc75c261feae2fac4fb7bd8ee364",
-      "deps" : [
-        {
-          "var_name" : "VULKAN_HEADERS_INSTALL_DIR",
-          "repo_name" : "Vulkan-Headers"
-        },
-        {
-          "var_name" : "GLSLANG_INSTALL_DIR",
-          "repo_name" : "glslang"
-        },
-        {
-          "var_name" : "MOLTENVK_REPO_ROOT",
-          "repo_name" : "MoltenVK"
-        }
-      ],
-      "cmake_options" : [
-        "-DBUILD_CUBE=NO",
-        "-DBUILD_VULKANINFO=NO",
-        "-DINSTALL_ICD=ON"
-      ],
-      "ci_only" : [
-        "TRAVIS"
-      ]
+      "name": "SPIRV-Headers",
+      "url": "https://github.com/KhronosGroup/SPIRV-Headers.git",
+      "sub_dir": "SPIRV-Headers",
+      "build_dir": "SPIRV-Headers/build",
+      "install_dir": "SPIRV-Headers/build/install",
+      "commit": "master"
     }
   ],
   "install_names" : {
       "glslang" : "GLSLANG_INSTALL_DIR",
-      "Vulkan-Headers" : "VULKAN_HEADERS_INSTALL_DIR"
-    }
+      "Vulkan-Headers" : "VULKAN_HEADERS_INSTALL_DIR",
+      "SPIRV-Headers" : "SPIRV_HEADERS_INSTALL_DIR"
+  }
 }

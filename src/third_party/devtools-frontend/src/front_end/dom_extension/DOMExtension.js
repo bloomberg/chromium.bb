@@ -29,6 +29,10 @@
  * Contains diff method based on Javascript Diff Algorithm By John Resig
  * http://ejohn.org/files/jsdiff.js (released under the MIT license).
  */
+
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
 /**
  * @param {number} offset
  * @param {string} stopCharacters
@@ -379,17 +383,6 @@ Document.prototype.createElementWithClass = function(elementName, className, cus
 };
 
 /**
- * @param {string} elementName
- * @param {string=} className
- * @param {string=} customElementType
- * @return {!Element}
- * @suppressGlobalPropertiesCheck
- */
-self.createElementWithClass = function(elementName, className, customElementType) {
-  return document.createElementWithClass(elementName, className, customElementType);
-};
-
-/**
  * @param {string} childType
  * @param {string=} className
  * @return {!Element}
@@ -493,7 +486,7 @@ Element.prototype.createSVGChild = function(childType, className) {
 /**
  * @unrestricted
  */
-var AnchorBox = class {  // eslint-disable-line
+self.AnchorBox = class {
   /**
    * @param {number=} x
    * @param {number=} y
@@ -541,9 +534,6 @@ var AnchorBox = class {  // eslint-disable-line
         this.height === anchorBox.height;
   }
 };
-
-/** @constructor */
-self.AnchorBox = AnchorBox;
 
 /**
  * @param {?Window=} targetWindow

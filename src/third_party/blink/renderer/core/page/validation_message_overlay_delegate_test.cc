@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
-#include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/page/page_widget_delegate.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/page/validation_message_client_impl.h"
@@ -64,8 +64,8 @@ TEST_P(ValidationMessageOverlayDelegateTest,
   auto overlay =
       std::make_unique<FrameOverlay>(&GetFrame(), std::move(delegate));
   delegate_ptr->CreatePage(*overlay);
-  ASSERT_TRUE(
-      GetFrame().View()->UpdateLifecycleToCompositingCleanPlusScrolling());
+  ASSERT_TRUE(GetFrame().View()->UpdateLifecycleToCompositingCleanPlusScrolling(
+      DocumentUpdateReason::kTest));
 
   // Trigger the overlay animations.
   auto paint_controller =
@@ -78,7 +78,8 @@ TEST_P(ValidationMessageOverlayDelegateTest,
       To<LocalFrame>(delegate_ptr->GetPageForTesting()->MainFrame())
           ->GetDocument();
   HeapVector<Member<Animation>> animations =
-      internal_document->Timeline().getAnimations();
+      internal_document->GetDocumentAnimations().getAnimations(
+          *internal_document);
   ASSERT_FALSE(animations.IsEmpty());
 
   for (const auto& animation : animations) {

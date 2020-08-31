@@ -56,7 +56,8 @@ namespace blink {
 HTMLLinkElement::HTMLLinkElement(Document& document,
                                  const CreateElementFlags flags)
     : HTMLElement(html_names::kLinkTag, document),
-      link_loader_(LinkLoader::Create(this)),
+      link_loader_(
+          MakeGarbageCollected<LinkLoader>(this, GetLoadingTaskRunner())),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       sizes_(MakeGarbageCollected<DOMTokenList>(*this, html_names::kSizesAttr)),
       rel_list_(MakeGarbageCollected<RelList>(this)),
@@ -79,7 +80,7 @@ void HTMLLinkElement::ParseAttribute(
         // be silent.
         if (LocalDOMWindow* window = GetDocument().ExecutingWindow()) {
           if (LocalFrame* frame = window->GetFrame()) {
-            frame->Console().AddMessage(ConsoleMessage::Create(
+            frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
                 mojom::ConsoleMessageSource::kRendering,
                 mojom::ConsoleMessageLevel::kWarning,
                 "HTML Imports is deprecated and has now been removed as of "
@@ -90,6 +91,16 @@ void HTMLLinkElement::ParseAttribute(
           }
         }
       }
+    }
+    if (rel_attribute_.IsMonetization() && !GetDocument().ParentDocument()) {
+      // TODO(1031476): The Web Monetization specification is an unofficial
+      // draft, available at https://webmonetization.org/specification.html
+      // Currently it relies on a <meta> tag but there is an open issue about
+      // whether the <link rel="monetization"> should be used instead:
+      // https://github.com/interledger/webmonetization.org/issues/19
+      // For now, only use counters are implemented in Blink.
+      UseCounter::Count(&GetDocument(),
+                        WebFeature::kHTMLLinkElementMonetization);
     }
     rel_list_->DidUpdateAttributeValue(params.old_value, value);
     Process();
@@ -112,7 +123,7 @@ void HTMLLinkElement::ParseAttribute(
     }
   } else if (name == html_names::kSizesAttr) {
     sizes_->DidUpdateAttributeValue(params.old_value, value);
-    WebVector<WebSize> web_icon_sizes =
+    WebVector<gfx::Size> web_icon_sizes =
         WebIconSizesParser::ParseIconSizes(value);
     icon_sizes_.resize(SafeCast<wtf_size_t>(web_icon_sizes.size()));
     for (wtf_size_t i = 0; i < icon_sizes_.size(); ++i)
@@ -251,9 +262,9 @@ Node::InsertionNotificationRequest HTMLLinkElement::InsertedInto(
 
   if (!ShouldLoadLink() && IsInShadowTree()) {
     String message = "HTML element <link> is ignored in shadow tree.";
-    GetDocument().AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning, message));
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning, message));
     return kInsertionDone;
   }
 
@@ -387,8 +398,8 @@ bool HTMLLinkElement::HasLegalLinkAttribute(const QualifiedName& name) const {
 
 const QualifiedName& HTMLLinkElement::SubResourceAttributeName() const {
   // If the link element is not css, ignore it.
-  if (DeprecatedEqualIgnoringCase(FastGetAttribute(html_names::kTypeAttr),
-                                  "text/css")) {
+  if (EqualIgnoringASCIICase(FastGetAttribute(html_names::kTypeAttr),
+                             "text/css")) {
     // FIXME: Add support for extracting links of sub-resources which
     // are inside style-sheet such as @import, @font-face, url(), etc.
     return html_names::kHrefAttr;
@@ -415,11 +426,11 @@ bool HTMLLinkElement::Async() const {
   return FastHasAttribute(html_names::kAsyncAttr);
 }
 
-IconType HTMLLinkElement::GetIconType() const {
+mojom::blink::FaviconIconType HTMLLinkElement::GetIconType() const {
   return rel_attribute_.GetIconType();
 }
 
-const Vector<IntSize>& HTMLLinkElement::IconSizes() const {
+const Vector<gfx::Size>& HTMLLinkElement::IconSizes() const {
   return icon_sizes_;
 }
 

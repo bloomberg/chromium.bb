@@ -10,6 +10,7 @@ if (is_android) {
 
 source_set("browser") {
   sources = [
+    "platform_spell_checker.h",
     "pref_names.cc",
     "pref_names.h",
     "spell_check_host_impl.cc",
@@ -32,7 +33,11 @@ source_set("browser") {
   }
 
   if (is_win) {
-    sources += [ "spellcheck_platform_win.cc" ]
+    sources += [
+      "spellcheck_platform_win.cc",
+      "windows_spell_checker.cc",
+      "windows_spell_checker.h",
+    ]
   }
 
   public_deps = [
@@ -60,8 +65,11 @@ source_set("unit_tests") {
   sources = [
     "spellcheck_host_metrics_unittest.cc",
     "spellcheck_platform_mac_unittest.cc",
-    "spellcheck_platform_win_unittest.cc",
   ]
+
+  if (is_win) {
+    sources += [ "windows_spell_checker_unittest.cc" ]
+  }
 
   deps = [
     ":browser",

@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_utils.h"
 
 namespace viz {
@@ -49,6 +50,7 @@ void GLOutputSurfaceOffscreen::EnsureBackbuffer() {
     const uint32_t flags = gpu::SHARED_IMAGE_USAGE_GLES2 |
                            gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
                            gpu::SHARED_IMAGE_USAGE_DISPLAY;
+
     mailbox_ = sii->CreateSharedImage(kFboTextureFormat, texture_size,
                                       color_space_, flags);
 
@@ -92,7 +94,7 @@ void GLOutputSurfaceOffscreen::BindFramebuffer() {
 void GLOutputSurfaceOffscreen::Reshape(const gfx::Size& size,
                                        float scale_factor,
                                        const gfx::ColorSpace& color_space,
-                                       bool alpha,
+                                       gfx::BufferFormat format,
                                        bool stencil) {
   size_ = size;
   color_space_ = color_space;
@@ -101,7 +103,7 @@ void GLOutputSurfaceOffscreen::Reshape(const gfx::Size& size,
 }
 
 void GLOutputSurfaceOffscreen::SwapBuffers(OutputSurfaceFrame frame) {
-  DCHECK(frame.size == size_);
+  DCHECK_EQ(frame.size, size_);
 
   gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
 

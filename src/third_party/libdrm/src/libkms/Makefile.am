@@ -2,6 +2,7 @@ include Makefile.sources
 
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
+	-fvisibility=hidden \
 	-I$(top_srcdir)/include/drm \
 	-I$(top_srcdir)
 
@@ -39,5 +40,6 @@ libkmsinclude_HEADERS = $(LIBKMS_H_FILES)
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libkms.pc
 
+AM_TESTS_ENVIRONMENT = NM='$(NM)'
 TESTS = kms-symbol-check
 EXTRA_DIST = $(TESTS)

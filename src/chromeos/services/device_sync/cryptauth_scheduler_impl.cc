@@ -9,11 +9,11 @@
 
 #include "base/base64.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/services/device_sync/pref_names.h"
+#include "chromeos/services/device_sync/proto/cryptauth_logging.h"
 #include "chromeos/services/device_sync/value_string_encoding.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -104,12 +104,21 @@ CryptAuthSchedulerImpl::Factory*
     CryptAuthSchedulerImpl::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthSchedulerImpl::Factory* CryptAuthSchedulerImpl::Factory::Get() {
-  if (test_factory_)
-    return test_factory_;
+std::unique_ptr<CryptAuthScheduler> CryptAuthSchedulerImpl::Factory::Create(
+    PrefService* pref_service,
+    NetworkStateHandler* network_state_handler,
+    base::Clock* clock,
+    std::unique_ptr<base::OneShotTimer> enrollment_timer,
+    std::unique_ptr<base::OneShotTimer> device_sync_timer) {
+  if (test_factory_) {
+    return test_factory_->CreateInstance(pref_service, network_state_handler,
+                                         clock, std::move(enrollment_timer),
+                                         std::move(device_sync_timer));
+  }
 
-  static base::NoDestructor<CryptAuthSchedulerImpl::Factory> factory;
-  return factory.get();
+  return base::WrapUnique(new CryptAuthSchedulerImpl(
+      pref_service, network_state_handler, clock, std::move(enrollment_timer),
+      std::move(device_sync_timer)));
 }
 
 // static
@@ -119,18 +128,6 @@ void CryptAuthSchedulerImpl::Factory::SetFactoryForTesting(
 }
 
 CryptAuthSchedulerImpl::Factory::~Factory() = default;
-
-std::unique_ptr<CryptAuthScheduler>
-CryptAuthSchedulerImpl::Factory::BuildInstance(
-    PrefService* pref_service,
-    NetworkStateHandler* network_state_handler,
-    base::Clock* clock,
-    std::unique_ptr<base::OneShotTimer> enrollment_timer,
-    std::unique_ptr<base::OneShotTimer> device_sync_timer) {
-  return base::WrapUnique(new CryptAuthSchedulerImpl(
-      pref_service, network_state_handler, clock, std::move(enrollment_timer),
-      std::move(device_sync_timer)));
-}
 
 // static
 void CryptAuthSchedulerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -335,7 +332,7 @@ void CryptAuthSchedulerImpl::HandleResult(
 
   if (new_client_directive && IsClientDirectiveValid(*new_client_directive)) {
     client_directive_ = *new_client_directive;
-
+    PA_LOG(VERBOSE) << "New client directive:\n" << client_directive_;
     pref_service_->Set(
         prefs::kCryptAuthSchedulerClientDirective,
         util::EncodeProtoMessageAsValueString(&client_directive_));
@@ -513,7 +510,18 @@ void CryptAuthSchedulerImpl::ScheduleNextRequest(RequestType request_type) {
                             base::nullopt /* session_id */);
   }
 
+  // Schedule a first-time DeviceSync if one has never successfully completed.
+  // However, unlike Enrollment, there are no periodic DeviceSyncs.
+  if (request_type == RequestType::kDeviceSync &&
+      !pending_requests_[request_type] && !GetLastSuccessTime(request_type)) {
+    pending_requests_[request_type] = BuildClientMetadata(
+        0 /* retry_count */, cryptauthv2::ClientMetadata::INITIALIZATION,
+        base::nullopt /* session_id */);
+  }
+
   if (!pending_requests_[request_type]) {
+    // By this point, only DeviceSync can have no requests pending because it
+    // does not schedule periodic syncs.
     DCHECK_EQ(RequestType::kDeviceSync, request_type);
     pref_service_->SetString(GetPendingRequestPrefName(request_type),
                              kNoClientMetadata);

@@ -39,11 +39,12 @@ source_set("grid_ui") {
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/tab_grid/transitions",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/colors",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/util",
     "//ui/base",
   ]
 }
@@ -51,9 +52,7 @@ source_set("grid_ui") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "grid_view_controller_unittest.mm",
-  ]
+  sources = [ "grid_view_controller_unittest.mm" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 

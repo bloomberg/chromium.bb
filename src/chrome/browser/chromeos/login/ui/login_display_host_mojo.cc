@@ -10,7 +10,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
@@ -24,10 +26,13 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -172,7 +177,7 @@ void LoginDisplayHostMojo::OnFinalize() {
 }
 
 void LoginDisplayHostMojo::SetStatusAreaVisible(bool visible) {
-  NOTIMPLEMENTED();
+  SystemTrayClient::Get()->SetPrimaryTrayVisible(visible);
 }
 
 void LoginDisplayHostMojo::StartWizard(OobeScreenId first_screen) {
@@ -183,8 +188,12 @@ void LoginDisplayHostMojo::StartWizard(OobeScreenId first_screen) {
   // screens to show.
   ObserveOobeUI();
 
-  wizard_controller_ = std::make_unique<WizardController>();
-  wizard_controller_->Init(first_screen);
+  if (features::IsOobeScreensPriorityEnabled() && wizard_controller_) {
+    wizard_controller_->AdvanceToScreen(first_screen);
+  } else {
+    wizard_controller_ = std::make_unique<WizardController>();
+    wizard_controller_->Init(first_screen);
+  }
 }
 
 WizardController* LoginDisplayHostMojo::GetWizardController() {
@@ -199,8 +208,7 @@ void LoginDisplayHostMojo::CancelUserAdding() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostMojo::OnStartSignInScreen(
-    const LoginScreenContext& context) {
+void LoginDisplayHostMojo::OnStartSignInScreen() {
   // This function may be called early in startup flow, before LoginScreenClient
   // has been initialized. Wait until LoginScreenClient is initialized as it is
   // a common dependency.
@@ -208,7 +216,7 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
     // TODO(jdufault): Add a timeout here / make sure we do not post infinitely.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&LoginDisplayHostMojo::OnStartSignInScreen,
-                                  weak_factory_.GetWeakPtr(), context));
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -249,27 +257,18 @@ void LoginDisplayHostMojo::OnStartAppLaunch() {
   ShowFullScreen();
 }
 
-void LoginDisplayHostMojo::OnStartArcKiosk() {
-  ShowFullScreen();
-}
-
-void LoginDisplayHostMojo::OnStartWebKiosk() {
-  ShowFullScreen();
-}
-
 void LoginDisplayHostMojo::OnBrowserCreated() {
-  NOTIMPLEMENTED();
+  base::TimeTicks startup_time = startup_metric_utils::MainEntryPointTicks();
+  if (startup_time.is_null())
+    return;
+  base::TimeDelta delta = base::TimeTicks::Now() - startup_time;
+  UMA_HISTOGRAM_CUSTOM_TIMES("OOBE.BootToSignInCompleted", delta,
+                             base::TimeDelta::FromMilliseconds(10),
+                             base::TimeDelta::FromMinutes(30), 100);
 }
 
-void LoginDisplayHostMojo::ShowGaiaDialog(bool can_close,
-                                          const AccountId& prefilled_account) {
+void LoginDisplayHostMojo::ShowGaiaDialog(const AccountId& prefilled_account) {
   DCHECK(GetOobeUI());
-  can_close_dialog_ = can_close;
-
-  // Always disabling closing if there are no users, otherwise a blank screen
-  // will be displayed.
-  if (users_.empty())
-    can_close_dialog_ = false;
 
   ShowGaiaDialogCommon(prefilled_account);
 
@@ -278,16 +277,22 @@ void LoginDisplayHostMojo::ShowGaiaDialog(bool can_close,
 
 void LoginDisplayHostMojo::HideOobeDialog() {
   DCHECK(dialog_);
-  if (!can_close_dialog_)
-    return;
 
   // The dialog can not be hidden if there are no users on the login screen.
   // Reload it instead.
-  if (!login_display_->IsSigninInProgress() && users_.empty()) {
+
+  // As ShowDialogCommon will not reload GAIA upon show for performance reasons,
+  // reload it to ensure that no state is persisted between hide and
+  // subsequent show.
+  const bool no_users =
+      !login_display_->IsSigninInProgress() && users_.empty();
+  if (no_users || GetOobeUI()->current_screen() == GaiaView::kScreenId) {
     GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(EmptyAccountId());
-    return;
+    if (no_users)
+      return;
   }
 
+  user_selection_screen_->OnBeforeShow();
   LoadWallpaper(focused_pod_account_id_);
   HideDialog();
 }
@@ -398,16 +403,13 @@ void LoginDisplayHostMojo::HandleHardlockPod(const AccountId& account_id) {
 }
 
 void LoginDisplayHostMojo::HandleOnFocusPod(const AccountId& account_id) {
-  // TODO(jdufault): Share common code between this and
-  // ViewsScreenLocker::HandleOnFocusPod See https://crbug.com/831787.
-  proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(account_id);
-  user_selection_screen_->CheckUserStatus(account_id);
+  user_selection_screen_->HandleFocusPod(account_id);
   WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
   focused_pod_account_id_ = account_id;
 }
 
 void LoginDisplayHostMojo::HandleOnNoPodFocused() {
-  NOTIMPLEMENTED();
+  user_selection_screen_->HandleNoPodFocused();
 }
 
 bool LoginDisplayHostMojo::HandleFocusLockScreenApps(bool reverse) {

@@ -20,11 +20,14 @@
 #include "base/observer_list_threadsafe.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
+#include "content/browser/service_worker/service_worker_registry.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/dedicated_worker_id.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/shared_worker_id.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 class GURL;
@@ -36,14 +39,13 @@ class FilePath;
 namespace storage {
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
-}
+}  // namespace storage
 
 namespace content {
 
 class ServiceWorkerContextCoreObserver;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerJobCoordinator;
-class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class URLLoaderFactoryGetter;
 
@@ -68,13 +70,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                               int64_t registration_id)>;
   using UnregistrationCallback =
       base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;
-  using ProviderByIdMap =
-      std::map<int, std::unique_ptr<ServiceWorkerProviderHost>>;
   using ContainerHostByClientUUIDMap =
-      std::map<std::string, ServiceWorkerContainerHost*>;
-
-  // Directory for ServiceWorkerStorage and ServiceWorkerCacheManager.
-  static const base::FilePath::CharType kServiceWorkerDirectory[];
+      std::map<std::string, std::unique_ptr<ServiceWorkerContainerHost>>;
 
   // Iterates over ServiceWorkerContainerHost objects in the
   // ContainerHostByClientUUIDMap.
@@ -121,18 +118,38 @@ class CONTENT_EXPORT ServiceWorkerContextCore
           observer_list,
       ServiceWorkerContextWrapper* wrapper);
   // TODO(https://crbug.com/877356): Remove this copy mechanism.
-  ServiceWorkerContextCore(
-      ServiceWorkerContextCore* old_context,
-      ServiceWorkerContextWrapper* wrapper);
+  ServiceWorkerContextCore(ServiceWorkerContextCore* old_context,
+                           ServiceWorkerContextWrapper* wrapper);
   ~ServiceWorkerContextCore() override;
 
   void OnStorageWiped();
+
+  void OnMainScriptResponseSet(
+      int64_t version_id,
+      const ServiceWorkerVersion::MainScriptResponse& response);
+
+  // OnControlleeAdded/Removed are called asynchronously. It is possible the
+  // container host identified by |client_uuid| was already destroyed when they
+  // are called.
+  // Note regarding BackForwardCache integration:
+  // OnControlleeRemoved is called when a controllee enters back-forward
+  // cache, and OnControlleeAdded is called when a controllee is restored from
+  // back-forward cache.
+  void OnControlleeAdded(ServiceWorkerVersion* version,
+                         const std::string& client_uuid,
+                         const ServiceWorkerClientInfo& client_info);
+  void OnControlleeRemoved(ServiceWorkerVersion* version,
+                           const std::string& client_uuid);
+
+  // Called when all controllees are removed.
+  // Note regarding BackForwardCache integration:
+  // Clients in back-forward cache don't count as controllees.
+  void OnNoControllees(ServiceWorkerVersion* version);
 
   // ServiceWorkerVersion::Observer overrides.
   void OnRunningStateChanged(ServiceWorkerVersion* version) override;
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
   void OnDevToolsRoutingIdChanged(ServiceWorkerVersion* version) override;
-  void OnMainScriptHttpResponseInfoSet(ServiceWorkerVersion* version) override;
   void OnErrorReported(ServiceWorkerVersion* version,
                        const base::string16& error_message,
                        int line_number,
@@ -144,33 +161,27 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                               const base::string16& message,
                               int line_number,
                               const GURL& source_url) override;
-  void OnControlleeAdded(ServiceWorkerVersion* version,
-                         const std::string& client_uuid,
-                         const ServiceWorkerClientInfo& client_info) override;
-  void OnControlleeRemoved(ServiceWorkerVersion* version,
-                           const std::string& client_uuid) override;
-  void OnNoControllees(ServiceWorkerVersion* version) override;
 
   ServiceWorkerContextWrapper* wrapper() const { return wrapper_; }
-  ServiceWorkerStorage* storage() { return storage_.get(); }
+  ServiceWorkerRegistry* registry() const { return registry_.get(); }
+  // TODO(crbug.com/1016064): Remove this accessor once some parts of
+  // ServiceWorkerStorage are moved to the Storage Service.
+  ServiceWorkerStorage* storage() const;
   ServiceWorkerProcessManager* process_manager();
   ServiceWorkerJobCoordinator* job_coordinator() {
     return job_coordinator_.get();
   }
 
-  // The context class owns the set of ProviderHosts.
-  void AddProviderHost(
-      std::unique_ptr<ServiceWorkerProviderHost> provider_host);
-  void RemoveProviderHost(int provider_id);
-
   // Returns a ContainerHost iterator for all service worker clients for the
-  // |origin|. If |include_reserved_clients| is false, this only returns clients
-  // that are execution ready (i.e., for windows, the document has been
-  // created and for workers, the final response after redirects has been
-  // delivered).
+  // |origin|. If |include_reserved_clients| is true, this includes clients that
+  // are not execution ready (i.e., for windows, the document has not yet been
+  // created and for workers, the final response after redirects has not yet
+  // been delivered). If |include_back_forward_cached_clients| is true, this
+  // includes the clients whose documents are stored in BackForward Cache.
   std::unique_ptr<ContainerHostIterator> GetClientContainerHostIterator(
       const GURL& origin,
-      bool include_reserved_clients);
+      bool include_reserved_clients,
+      bool include_back_forward_cached_clients);
 
   // Returns a ContainerHost iterator for service worker window clients for the
   // |origin|. If |include_reserved_clients| is false, this only returns clients
@@ -180,24 +191,45 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       bool include_reserved_clients);
 
   // Runs the callback with true if there is a ContainerHost for |origin| of
-  // type blink::mojom::ServiceWorkerProviderType::kForWindow which is a main
+  // type blink::mojom::ServiceWorkerContainerType::kForWindow which is a main
   // (top-level) frame. Reserved clients are ignored.
   // TODO(crbug.com/824858): Make this synchronously return bool when the core
   // thread is UI.
   void HasMainFrameWindowClient(const GURL& origin, BoolCallback callback);
 
-  // Maintains a map from Client UUID to ServiceWorkerContainerHost for service
-  // worker clients. |container_host| should not be for a service worker
-  // execution context.
-  // (Note: instead of maintaining 2 maps we might be able to uniformly use
-  // UUID instead of process_id+provider_id elsewhere. For now I'm leaving
-  // these as provider_id is deeply wired everywhere)
-  void RegisterContainerHostByClientID(
-      const std::string& client_uuid,
-      ServiceWorkerContainerHost* container_host);
-  void UnregisterContainerHostByClientID(const std::string& client_uuid);
+  // Used to create a ServiceWorkerContainerHost for a window during a
+  // navigation. |are_ancestors_secure| should be true for main frames.
+  // Otherwise it is true iff all ancestor frames of this frame have a secure
+  // origin. |frame_tree_node_id| is FrameTreeNode id.
+  base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWindow(
+      mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+          host_receiver,
+      bool are_ancestors_secure,
+      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+          container_remote,
+      int frame_tree_node_id);
+
+  // Used for starting a web worker (dedicated worker or shared worker). Returns
+  // a container host for the worker.
+  base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWorker(
+      mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+          host_receiver,
+      int process_id,
+      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+          container_remote,
+      blink::mojom::ServiceWorkerClientType client_type,
+      DedicatedWorkerId dedicated_worker_id,
+      SharedWorkerId shared_worker_id);
+
+  // Updates the client UUID of an existing container host.
+  void UpdateContainerHostClientID(const std::string& current_client_uuid,
+                                   const std::string& new_client_uuid);
+
+  // Retrieves a container host given its client UUID.
   ServiceWorkerContainerHost* GetContainerHostByClientID(
       const std::string& client_uuid);
+
+  void OnContainerHostReceiverDisconnected();
 
   void RegisterServiceWorker(
       const GURL& script_url,
@@ -205,10 +237,14 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
       RegistrationCallback callback);
+
+  // If |is_immediate| is true, unregister clears the active worker from the
+  // registration without waiting for the controlled clients to unload.
   void UnregisterServiceWorker(const GURL& scope,
+                               bool is_immediate,
                                UnregistrationCallback callback);
 
-  // Callback is called after all deletions occured. The status code is
+  // Callback is called after all deletions occurred. The status code is
   // blink::ServiceWorkerStatusCode::kOk if all succeed, or
   // SERVICE_WORKER_FAILED if any did not succeed.
   void DeleteForOrigin(const GURL& origin, StatusCallback callback);
@@ -281,6 +317,13 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       const GURL& url,
       const ServiceWorkerContext::CheckHasServiceWorkerCallback callback);
 
+  // Returns OfflineCapability of the service worker matching |url|.
+  // See ServiceWorkerContext::CheckOfflineCapability for more
+  // details.
+  void CheckOfflineCapability(
+      const GURL& url,
+      const ServiceWorkerContext::CheckOfflineCapabilityCallback callback);
+
   void UpdateVersionFailureCount(int64_t version_id,
                                  blink::ServiceWorkerStatusCode status);
   // Returns the count of consecutive start worker failures for the given
@@ -338,6 +381,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                               std::string* out_error) const;
 
   void DidGetRegistrationsForDeleteForOrigin(
+      const GURL& origin,
       base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback,
       blink::ServiceWorkerStatusCode status,
       const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
@@ -356,16 +400,21 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // Bind() to hold a reference to |wrapper_| until |this| is fully destroyed.
   ServiceWorkerContextWrapper* wrapper_;
 
-  // |providers_| owns the provider hosts.
-  std::unique_ptr<ProviderByIdMap> providers_;
+  // |container_host_by_uuid_| owns container hosts for service worker clients.
+  // Container hosts for service worker execution contexts are owned by
+  // ServiceWorkerProviderHost.
+  ContainerHostByClientUUIDMap container_host_by_uuid_;
 
-  // |container_host_by_uuid_| contains raw pointers to container hosts for
-  // service worker clients. This doesn't contain container hosts for service
-  // worker execution contexts.
-  std::unique_ptr<ContainerHostByClientUUIDMap> container_host_by_uuid_;
+  std::unique_ptr<
+      mojo::AssociatedReceiverSet<blink::mojom::ServiceWorkerContainerHost,
+                                  ServiceWorkerContainerHost*>>
+      container_host_receivers_;
 
-  std::unique_ptr<ServiceWorkerStorage> storage_;
+  std::unique_ptr<ServiceWorkerRegistry> registry_;
   std::unique_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
+  // TODO(bashi): Move |live_registrations_| to ServiceWorkerRegistry as
+  // ServiceWorkerRegistry is a better place to manage in-memory representation
+  // of registrations.
   std::map<int64_t, ServiceWorkerRegistration*> live_registrations_;
   std::map<int64_t, ServiceWorkerVersion*> live_versions_;
   std::map<int64_t, scoped_refptr<ServiceWorkerVersion>> protected_versions_;

@@ -4,14 +4,15 @@
 
 #include "chrome/browser/ui/views/crostini/crostini_app_restart_view.h"
 
-#include "chrome/browser/ui/ash/launcher/app_service_app_window_crostini_tracker.h"
-#include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_crostini_tracker.h"
+#include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/display/screen.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -31,34 +32,16 @@ gfx::NativeWindow GetNativeWindowFromDisplayId(int64_t display_id) {
 }  // namespace
 
 // static
-void CrostiniAppRestartView::Show(const ash::ShelfID& id, int64_t display_id) {
-  CrostiniAppRestartView* view = new CrostiniAppRestartView(id, display_id);
+void CrostiniAppRestartView::Show(int64_t display_id) {
+  CrostiniAppRestartView* view = new CrostiniAppRestartView();
   views::DialogDelegate::CreateDialogWidget(
       view, GetNativeWindowFromDisplayId(display_id), nullptr);
   view->GetWidget()->Show();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CROSTINI_APP_RESTART);
 }
 
-int CrostiniAppRestartView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
-}
-
 bool CrostiniAppRestartView::ShouldShowCloseButton() const {
   return false;
-}
-
-bool CrostiniAppRestartView::Accept() {
-  if (base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
-    ChromeLauncherController::instance()
-        ->app_service_app_window_controller()
-        ->app_service_crostini_tracker()
-        ->Restart(id_, display_id_);
-  } else {
-    ChromeLauncherController::instance()
-        ->crostini_app_window_shelf_controller()
-        ->Restart(id_, display_id_);
-  }
-  return true;  // Should close the dialog
 }
 
 gfx::Size CrostiniAppRestartView::CalculatePreferredSize() const {
@@ -68,15 +51,9 @@ gfx::Size CrostiniAppRestartView::CalculatePreferredSize() const {
   return gfx::Size(dialog_width, GetHeightForWidth(dialog_width));
 }
 
-CrostiniAppRestartView::CrostiniAppRestartView(const ash::ShelfID& id,
-                                               int64_t display_id)
-    : id_(id), display_id_(display_id) {
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_CROSTINI_APP_RESTART_BUTTON));
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_CANCEL,
-      l10n_util::GetStringUTF16(IDS_CROSTINI_NOT_NOW_BUTTON));
+CrostiniAppRestartView::CrostiniAppRestartView() {
+  // This dialog just has a generic "ok".
+  SetButtons(ui::DIALOG_BUTTON_OK);
 
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(

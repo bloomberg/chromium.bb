@@ -36,11 +36,16 @@ using base::UserMetricsAction;
 CriticalNotificationBubbleView::CriticalNotificationBubbleView(
     views::View* anchor_view)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT) {
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_RESTART));
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
-                                   l10n_util::GetStringUTF16(IDS_CANCEL));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_RESTART));
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 l10n_util::GetStringUTF16(IDS_CANCEL));
+  SetAcceptCallback(
+      base::BindOnce(&CriticalNotificationBubbleView::OnDialogAccepted,
+                     base::Unretained(this)));
+  SetCancelCallback(
+      base::BindOnce(&CriticalNotificationBubbleView::OnDialogCancelled,
+                     base::Unretained(this)));
   set_close_on_deactivate(false);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CRITICAL_NOTIFICATION);
 }
@@ -92,7 +97,7 @@ void CriticalNotificationBubbleView::WindowClosing() {
   refresh_timer_.Stop();
 }
 
-bool CriticalNotificationBubbleView::Cancel() {
+void CriticalNotificationBubbleView::OnDialogCancelled() {
   UpgradeDetector::GetInstance()->acknowledge_critical_update();
   base::RecordAction(UserMetricsAction("CriticalNotification_Ignore"));
   // If the counter reaches 0, we set a restart flag that must be cleared if
@@ -101,14 +106,12 @@ bool CriticalNotificationBubbleView::Cancel() {
   PrefService* prefs = g_browser_process->local_state();
   if (prefs->HasPrefPath(prefs::kRestartLastSessionOnShutdown))
     prefs->ClearPref(prefs::kRestartLastSessionOnShutdown);
-  return true;
 }
 
-bool CriticalNotificationBubbleView::Accept() {
+void CriticalNotificationBubbleView::OnDialogAccepted() {
   UpgradeDetector::GetInstance()->acknowledge_critical_update();
   base::RecordAction(UserMetricsAction("CriticalNotification_Restart"));
   chrome::AttemptRestart();
-  return true;
 }
 
 void CriticalNotificationBubbleView::Init() {

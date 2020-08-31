@@ -14,6 +14,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "services/network/public/mojom/parsed_headers.mojom.h"
 
 namespace content {
 
@@ -33,11 +34,12 @@ CachedNavigationURLLoader::CachedNavigationURLLoader(
 }
 
 void CachedNavigationURLLoader::OnResponseStarted() {
-  GlobalRequestID global_id = NavigationURLLoaderImpl::MakeGlobalRequestID();
+  GlobalRequestID global_id = GlobalRequestID::MakeBrowserInitiated();
 
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->parsed_headers = network::mojom::ParsedHeaders::New();
   delegate_->OnResponseStarted(
-      /*url_loader_client_endpoints=*/nullptr,
-      network::mojom::URLResponseHead::New(),
+      /*url_loader_client_endpoints=*/nullptr, std::move(response_head),
       /*response_body=*/mojo::ScopedDataPipeConsumerHandle(), global_id,
       /*is_download=*/false, NavigationDownloadPolicy(), base::nullopt);
 }
@@ -54,6 +56,7 @@ std::unique_ptr<NavigationURLLoader> CachedNavigationURLLoader::Create(
 void CachedNavigationURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     PreviewsState new_previews_state) {
   NOTREACHED();
 }

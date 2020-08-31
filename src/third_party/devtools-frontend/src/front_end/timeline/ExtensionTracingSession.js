@@ -2,14 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Extensions from '../extensions/extensions.js';  // eslint-disable-line no-unused-vars
+import * as SDK from '../sdk/sdk.js';                       // eslint-disable-line no-unused-vars
+
+import {PerformanceModel} from './PerformanceModel.js';      // eslint-disable-line no-unused-vars
+import {Client, TimelineLoader} from './TimelineLoader.js';  // eslint-disable-line no-unused-vars
+
 /**
- * @implements {Extensions.TracingSession}
- * @implements {Timeline.TimelineLoader.Client}
+ * @implements {Extensions.ExtensionTraceProvider.TracingSession}
+ * @implements {Client}
  */
-Timeline.ExtensionTracingSession = class {
+export class ExtensionTracingSession {
   /**
-   * @param {!Extensions.ExtensionTraceProvider} provider
-   * @param {!Timeline.PerformanceModel} performanceModel
+   * @param {!Extensions.ExtensionTraceProvider.ExtensionTraceProvider} provider
+   * @param {!PerformanceModel} performanceModel
    */
   constructor(provider, performanceModel) {
     this._provider = provider;
@@ -39,7 +45,7 @@ Timeline.ExtensionTracingSession = class {
 
   /**
    * @override
-   * @param {?SDK.TracingModel} tracingModel
+   * @param {?SDK.TracingModel.TracingModel} tracingModel
    */
   loadingComplete(tracingModel) {
     if (!tracingModel) {
@@ -60,7 +66,7 @@ Timeline.ExtensionTracingSession = class {
       return;
     }
     this._timeOffset = timeOffsetMicroseconds;
-    Timeline.TimelineLoader.loadFromURL(url, this);
+    TimelineLoader.loadFromURL(url, this);
   }
 
   start() {
@@ -72,4 +78,4 @@ Timeline.ExtensionTracingSession = class {
     this._provider.stop();
     return this._completionPromise;
   }
-};
+}

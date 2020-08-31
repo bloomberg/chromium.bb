@@ -21,6 +21,7 @@
 #include "chromeos/network/onc/onc_signature.h"
 #include "components/crx_file/id_util.h"
 #include "components/device_event_log/device_event_log.h"
+#include "components/onc/onc_constants.h"
 
 namespace chromeos {
 namespace onc {
@@ -30,10 +31,10 @@ namespace {
 // According to the IEEE 802.11 standard the SSID is a series of 0 to 32 octets.
 const int kMaximumSSIDLengthInBytes = 32;
 
-void AddKeyToList(const char* key, base::Value::ListStorage& list) {
+void AddKeyToList(const char* key, base::Value* list) {
   base::Value key_value(key);
-  if (!base::Contains(list, key_value))
-    list.push_back(std::move(key_value));
+  if (!base::Contains(list->GetList(), key_value))
+    list->Append(std::move(key_value));
 }
 
 std::string GetStringFromDict(const base::Value& dict, const char* key) {
@@ -157,6 +158,8 @@ std::unique_ptr<base::DictionaryValue> Validator::MapObject(
       valid = ValidateProxyLocation(repaired.get());
     } else if (&signature == &kEAPSignature) {
       valid = ValidateEAP(repaired.get());
+    } else if (&signature == &kEAPSubjectAlternativeNameMatchSignature) {
+      valid = ValidateSubjectAlternativeNameMatch(repaired.get());
     } else if (&signature == &kCertificateSignature) {
       valid = ValidateCertificate(repaired.get());
     } else if (&signature == &kScopeSignature) {
@@ -332,12 +335,18 @@ bool Validator::ValidateClientCertFields(bool allow_cert_type_none,
                                                ::onc::client_cert::kPKCS11Id};
   if (allow_cert_type_none)
     valid_cert_types.push_back(::onc::client_cert::kClientCertTypeNone);
-  if (FieldExistsAndHasNoValidValue(
-          *result, ::onc::client_cert::kClientCertType, valid_cert_types))
-    return false;
 
   std::string cert_type =
       GetStringFromDict(*result, ::onc::client_cert::kClientCertType);
+
+  // TODO(https://crbug.com/1049955): Remove the client certificate type empty
+  // check. Ignored fields should be removed by normalizer before validating.
+  if (cert_type.empty())
+    return true;
+
+  if (!IsValidValue(cert_type, valid_cert_types))
+    return false;
+
   bool all_required_exist = true;
 
   if (cert_type == ::onc::client_cert::kPattern)
@@ -847,10 +856,8 @@ bool Validator::ValidateIPsec(base::DictionaryValue* result) {
                        ::onc::ipsec::kServerCARef))
     return false;
 
-  if (!ValidateClientCertFields(false,  // don't allow ClientCertType None
-                                result)) {
+  if (!ValidateClientCertFields(/*allow_cert_type_none=*/false, result))
     return false;
-  }
 
   bool all_required_exist =
       RequireField(*result, ::onc::ipsec::kAuthenticationType) &&
@@ -888,6 +895,12 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
       ::onc::openvpn::kNoInteract};
   const std::vector<const char*> valid_cert_tls_values = {
       ::onc::openvpn::kNone, ::onc::openvpn::kServer};
+  const std::vector<const char*> valid_compression_algorithm_values = {
+      ::onc::openvpn_compression_algorithm::kFramingOnly,
+      ::onc::openvpn_compression_algorithm::kLz4,
+      ::onc::openvpn_compression_algorithm::kLz4V2,
+      ::onc::openvpn_compression_algorithm::kLzo,
+      ::onc::openvpn_compression_algorithm::kNone};
   const std::vector<const char*> valid_user_auth_types = {
       ::onc::openvpn_user_auth_type::kNone, ::onc::openvpn_user_auth_type::kOTP,
       ::onc::openvpn_user_auth_type::kPassword,
@@ -897,6 +910,9 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
                                     valid_auth_retry_values) ||
       FieldExistsAndHasNoValidValue(*result, ::onc::openvpn::kRemoteCertTLS,
                                     valid_cert_tls_values) ||
+      FieldExistsAndHasNoValidValue(*result,
+                                    ::onc::openvpn::kCompressionAlgorithm,
+                                    valid_compression_algorithm_values) ||
       FieldExistsAndHasNoValidValue(*result,
                                     ::onc::openvpn::kUserAuthenticationType,
                                     valid_user_auth_types) ||
@@ -917,11 +933,9 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
       recommended = result->SetKey(::onc::kRecommended, base::ListValue());
 
     // If kUserAuthenticationType is unspecified, allow Password and OTP.
-    base::Value::ListStorage& recommended_list = recommended->GetList();
-    if (!result->FindKeyOfType(::onc::openvpn::kUserAuthenticationType,
-                               base::Value::Type::STRING)) {
-      AddKeyToList(::onc::openvpn::kPassword, recommended_list);
-      AddKeyToList(::onc::openvpn::kOTP, recommended_list);
+    if (!result->FindStringKey(::onc::openvpn::kUserAuthenticationType)) {
+      AddKeyToList(::onc::openvpn::kPassword, recommended);
+      AddKeyToList(::onc::openvpn::kOTP, recommended);
     }
 
     // If client cert type is not provided, empty, or 'None', allow client cert
@@ -930,8 +944,8 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
         GetStringFromDict(*result, ::onc::client_cert::kClientCertType);
     if (client_cert_type.empty() ||
         client_cert_type == ::onc::client_cert::kClientCertTypeNone) {
-      AddKeyToList(::onc::client_cert::kClientCertType, recommended_list);
-      AddKeyToList(::onc::client_cert::kClientCertPKCS11Id, recommended_list);
+      AddKeyToList(::onc::client_cert::kClientCertType, recommended);
+      AddKeyToList(::onc::client_cert::kClientCertPKCS11Id, recommended);
     }
   }
 
@@ -1072,6 +1086,26 @@ bool Validator::ValidateEAP(base::DictionaryValue* result) {
     return false;
 
   bool all_required_exist = RequireField(*result, ::onc::eap::kOuter);
+
+  return !error_on_missing_field_ || all_required_exist;
+}
+
+bool Validator::ValidateSubjectAlternativeNameMatch(
+    base::DictionaryValue* result) {
+  const std::vector<const char*> valid_types = {
+      ::onc::eap_subject_alternative_name_match::kEMAIL,
+      ::onc::eap_subject_alternative_name_match::kDNS,
+      ::onc::eap_subject_alternative_name_match::kURI};
+
+  if (FieldExistsAndHasNoValidValue(
+          *result, ::onc::eap_subject_alternative_name_match::kType,
+          valid_types)) {
+    return false;
+  }
+
+  bool all_required_exist =
+      RequireField(*result, ::onc::eap_subject_alternative_name_match::kType) &&
+      RequireField(*result, ::onc::eap_subject_alternative_name_match::kValue);
 
   return !error_on_missing_field_ || all_required_exist;
 }

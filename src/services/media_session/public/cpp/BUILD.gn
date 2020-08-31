@@ -48,9 +48,7 @@ component("cpp") {
     "util.h",
   ]
 
-  public_deps = [
-    ":base_cpp",
-  ]
+  public_deps = [ ":base_cpp" ]
 
   deps = [
     "//base",
@@ -82,18 +80,5 @@ source_set("tests") {
     "//services/media_session/public/mojom",
     "//skia",
     "//testing/gtest",
-  ]
-}
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//services/media_session/public/mojom",
-    "//services/service_manager/public/cpp",
   ]
 }

@@ -7,34 +7,43 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/hash/hash.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/paint_preview/common/file_utils.h"
 #include "third_party/zlib/google/zip.h"
 
 namespace paint_preview {
 
 namespace {
 
+constexpr char kProtoName[] = "proto.pb";
 constexpr char kZipExt[] = ".zip";
-
-std::string HashToHex(const GURL& url) {
-  uint32_t hash = base::PersistentHash(url.spec());
-  return base::HexEncode(&hash, sizeof(uint32_t));
-}
 
 }  // namespace
 
-FileManager::FileManager(const base::FilePath& root_directory)
-    : root_directory_(root_directory) {}
+FileManager::FileManager(
+    const base::FilePath& root_directory,
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
+    : root_directory_(root_directory), io_task_runner_(io_task_runner) {}
+
 FileManager::~FileManager() = default;
 
-size_t FileManager::GetSizeOfArtifactsFor(const GURL& url) {
+DirectoryKey FileManager::CreateKey(const GURL& url) const {
+  uint32_t hash = base::PersistentHash(url.spec());
+  return DirectoryKey{base::HexEncode(&hash, sizeof(uint32_t))};
+}
+
+DirectoryKey FileManager::CreateKey(uint64_t tab_id) const {
+  return DirectoryKey{base::NumberToString(tab_id)};
+}
+
+size_t FileManager::GetSizeOfArtifacts(const DirectoryKey& key) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   base::FilePath path;
-  StorageType storage_type = GetPathForUrl(url, &path);
+  StorageType storage_type = GetPathForKey(key, &path);
   switch (storage_type) {
     case kDirectory: {
       return base::ComputeDirectorySize(
-          root_directory_.AppendASCII(HashToHex(url)));
+          root_directory_.AppendASCII(key.AsciiDirname()));
     }
     case kZip: {
       int64_t file_size = 0;
@@ -48,75 +57,86 @@ size_t FileManager::GetSizeOfArtifactsFor(const GURL& url) {
   }
 }
 
-bool FileManager::GetCreatedTime(const GURL& url, base::Time* created_time) {
+base::Optional<base::File::Info> FileManager::GetInfo(
+    const DirectoryKey& key) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   base::FilePath path;
-  StorageType storage_type = GetPathForUrl(url, &path);
+  StorageType storage_type = GetPathForKey(key, &path);
   if (storage_type == FileManager::StorageType::kNone)
-    return false;
+    return base::nullopt;
   base::File::Info info;
   if (!base::GetFileInfo(path, &info))
-    return false;
-  *created_time = info.creation_time;
-  return true;
+    return base::nullopt;
+  return info;
 }
 
-bool FileManager::GetLastModifiedTime(const GURL& url,
-                                      base::Time* last_modified_time) {
+bool FileManager::DirectoryExists(const DirectoryKey& key) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   base::FilePath path;
-  StorageType storage_type = GetPathForUrl(url, &path);
-  if (storage_type == FileManager::StorageType::kNone)
-    return false;
-  base::File::Info info;
-  if (!base::GetFileInfo(path, &info))
-    return false;
-  *last_modified_time = info.last_modified;
-  return true;
+  return GetPathForKey(key, &path) != StorageType::kNone;
 }
 
-bool FileManager::CreateOrGetDirectoryFor(const GURL& url,
-                                          base::FilePath* directory) {
+bool FileManager::CaptureExists(const DirectoryKey& key) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   base::FilePath path;
-  StorageType storage_type = GetPathForUrl(url, &path);
+  StorageType storage_type = GetPathForKey(key, &path);
   switch (storage_type) {
-    case kNone: {
-      base::FilePath new_path = root_directory_.AppendASCII(HashToHex(url));
-      base::File::Error error = base::File::FILE_OK;
-      if (base::CreateDirectoryAndGetError(new_path, &error)) {
-        *directory = new_path;
-        return true;
-      }
-      DVLOG(1) << "ERROR: failed to create directory: " << path
-               << " with error code " << error;
-      return false;
-    }
-    case kDirectory: {
-      *directory = path;
+    case kDirectory:
+      return base::PathExists(path.AppendASCII(kProtoName));
+    case kZip:
       return true;
-    }
-    case kZip: {
-      base::FilePath dst_path = root_directory_.AppendASCII(HashToHex(url));
-      base::File::Error error = base::File::FILE_OK;
-      if (!base::CreateDirectoryAndGetError(dst_path, &error)) {
-        DVLOG(1) << "ERROR: failed to create directory: " << path
-                 << " with error code " << error;
-        return false;
-      }
-      if (!zip::Unzip(path, dst_path)) {
-        DVLOG(1) << "ERROR: failed to unzip: " << path << " to " << dst_path;
-        return false;
-      }
-      base::DeleteFile(path, true);
-      *directory = dst_path;
-      return true;
-    }
+    case kNone:  // fallthrough;
     default:
       return false;
   }
 }
 
-bool FileManager::CompressDirectoryFor(const GURL& url) {
+base::Optional<base::FilePath> FileManager::CreateOrGetDirectory(
+    const DirectoryKey& key,
+    bool clear) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  if (clear)
+    DeleteArtifactSet(key);
+
   base::FilePath path;
-  StorageType storage_type = GetPathForUrl(url, &path);
+  StorageType storage_type = GetPathForKey(key, &path);
+  switch (storage_type) {
+    case kNone: {
+      base::FilePath new_path = root_directory_.AppendASCII(key.AsciiDirname());
+      base::File::Error error = base::File::FILE_OK;
+      if (base::CreateDirectoryAndGetError(new_path, &error)) {
+        return new_path;
+      }
+      DVLOG(1) << "ERROR: failed to create directory: " << path
+               << " with error code " << error;
+      return base::nullopt;
+    }
+    case kDirectory:
+      return path;
+    case kZip: {
+      base::FilePath dst_path = root_directory_.AppendASCII(key.AsciiDirname());
+      base::File::Error error = base::File::FILE_OK;
+      if (!base::CreateDirectoryAndGetError(dst_path, &error)) {
+        DVLOG(1) << "ERROR: failed to create directory: " << path
+                 << " with error code " << error;
+        return base::nullopt;
+      }
+      if (!zip::Unzip(path, dst_path)) {
+        DVLOG(1) << "ERROR: failed to unzip: " << path << " to " << dst_path;
+        return base::nullopt;
+      }
+      base::DeleteFileRecursively(path);
+      return dst_path;
+    }
+    default:
+      return base::nullopt;
+  }
+}
+
+bool FileManager::CompressDirectory(const DirectoryKey& key) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  base::FilePath path;
+  StorageType storage_type = GetPathForKey(key, &path);
   switch (storage_type) {
     case kDirectory: {
       // If there are no files in the directory, zip will succeed, but unzip
@@ -126,7 +146,7 @@ bool FileManager::CompressDirectoryFor(const GURL& url) {
       base::FilePath dst_path = path.AddExtensionASCII(kZipExt);
       if (!zip::Zip(path, dst_path, /* hidden files */ true))
         return false;
-      base::DeleteFile(path, true);
+      base::DeleteFileRecursively(path);
       return true;
     }
     case kZip:
@@ -137,23 +157,66 @@ bool FileManager::CompressDirectoryFor(const GURL& url) {
   }
 }
 
-void FileManager::DeleteArtifactsFor(const std::vector<GURL>& urls) {
-  for (const auto& url : urls) {
-    base::FilePath path;
-    StorageType storage_type = GetPathForUrl(url, &path);
-    if (storage_type == FileManager::StorageType::kNone)
-      continue;
-    base::DeleteFile(path, true);
-  }
+void FileManager::DeleteArtifactSet(const DirectoryKey& key) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  base::FilePath path;
+  StorageType storage_type = GetPathForKey(key, &path);
+  if (storage_type == FileManager::StorageType::kNone)
+    return;
+  base::DeleteFileRecursively(path);
 }
 
-void FileManager::DeleteAll() {
+void FileManager::DeleteArtifactSets(
+    const std::vector<DirectoryKey>& keys) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  for (const auto& key : keys)
+    DeleteArtifactSet(key);
+}
+
+void FileManager::DeleteAll() const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   base::DeleteFileRecursively(root_directory_);
 }
 
-FileManager::StorageType FileManager::GetPathForUrl(const GURL& url,
-                                                    base::FilePath* path) {
-  base::FilePath directory_path = root_directory_.AppendASCII(HashToHex(url));
+bool FileManager::SerializePaintPreviewProto(const DirectoryKey& key,
+                                             const PaintPreviewProto& proto,
+                                             bool compress) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  auto path = CreateOrGetDirectory(key, false);
+  if (!path.has_value())
+    return false;
+  return WriteProtoToFile(path->AppendASCII(kProtoName), proto) &&
+         (!compress || CompressDirectory(key));
+}
+
+std::unique_ptr<PaintPreviewProto> FileManager::DeserializePaintPreviewProto(
+    const DirectoryKey& key) const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  auto path = CreateOrGetDirectory(key, false);
+  if (!path.has_value())
+    return nullptr;
+  return ReadProtoFromFile(path->AppendASCII(kProtoName));
+}
+
+base::flat_set<DirectoryKey> FileManager::ListUsedKeys() const {
+  base::FileEnumerator enumerator(
+      root_directory_,
+      /*recursive=*/false,
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+  std::vector<DirectoryKey> keys;
+  for (base::FilePath name = enumerator.Next(); !name.empty();
+       name = enumerator.Next()) {
+    keys.push_back(
+        DirectoryKey{name.BaseName().RemoveExtension().MaybeAsASCII()});
+  }
+  return base::flat_set<DirectoryKey>(std::move(keys));
+}
+
+FileManager::StorageType FileManager::GetPathForKey(
+    const DirectoryKey& key,
+    base::FilePath* path) const {
+  base::FilePath directory_path =
+      root_directory_.AppendASCII(key.AsciiDirname());
   if (base::PathExists(directory_path)) {
     *path = directory_path;
     return kDirectory;

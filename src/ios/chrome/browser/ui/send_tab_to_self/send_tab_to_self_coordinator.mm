@@ -4,20 +4,36 @@
 
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_coordinator.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/send_tab_to_self/send_tab_to_self_browser_agent.h"
 #include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/commands/send_tab_to_self_command.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
+#import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_modal_delegate.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_modal_positioner.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_modal_presentation_controller.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_table_view_controller.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
+#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// Snackbar category for activity services.
+NSString* const kActivityServicesSnackbarCategory =
+    @"ActivityServicesSnackbarCategory";
+
+}  // namespace
 
 @interface SendTabToSelfCoordinator () <UIViewControllerTransitioningDelegate,
                                         SendTabToSelfModalPositioner,
@@ -35,7 +51,8 @@
 
 - (void)start {
   send_tab_to_self::SendTabToSelfSyncService* syncService =
-      SendTabToSelfSyncServiceFactory::GetForBrowserState(self.browserState);
+      SendTabToSelfSyncServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   // This modal should not be launched in incognito mode where syncService is
   // undefined.
   DCHECK(syncService);
@@ -107,12 +124,29 @@
 
 - (void)sendTabToTargetDeviceCacheGUID:(NSString*)cacheGUID
                       targetDeviceName:(NSString*)deviceName {
-  // TODO(crbug.com/970284) log histogram of send event.
-  SendTabToSelfCommand* command =
-      [[SendTabToSelfCommand alloc] initWithTargetDeviceID:cacheGUID
-                                          targetDeviceName:deviceName];
+  id<ToolbarCommands> toolbarHandler =
+      HandlerForProtocol(self.browser->GetCommandDispatcher(), ToolbarCommands);
 
-  [self.dispatcher sendTabToSelf:command];
+  id<SnackbarCommands> snackbarHandler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), SnackbarCommands);
+
+  // TODO(crbug.com/970284) log histogram of send event.
+  SendTabToSelfBrowserAgent::FromBrowser(self.browser)
+      ->SendCurrentTabToDevice(cacheGUID);
+
+  [toolbarHandler triggerToolsMenuButtonAnimation];
+
+  TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
+
+  NSString* text =
+      l10n_util::GetNSStringF(IDS_IOS_SEND_TAB_TO_SELF_SNACKBAR_MESSAGE,
+                              base::SysNSStringToUTF16(deviceName));
+  MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
+  message.accessibilityLabel = text;
+  message.duration = 2.0;
+  message.category = kActivityServicesSnackbarCategory;
+  [snackbarHandler showSnackbarMessage:message];
+
   [self stop];
 }
 

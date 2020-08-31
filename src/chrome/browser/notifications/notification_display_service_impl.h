@@ -11,6 +11,7 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification_common.h"
@@ -20,6 +21,10 @@
 class GURL;
 class NotificationPlatformBridge;
 class Profile;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 // Implementation of the NotificationDisplayService interface. Methods that are
 // not available in the base interface should only be used by the platform
@@ -37,6 +42,8 @@ class NotificationDisplayServiceImpl : public NotificationDisplayService {
   // |profile|. This should be removed in favor of multiple statics for handling
   // the individual notification operations.
   static NotificationDisplayServiceImpl* GetForProfile(Profile* profile);
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Used to propagate back events originate from the user. The events are
   // received and dispatched to the right consumer depending on the type of
@@ -70,6 +77,8 @@ class NotificationDisplayServiceImpl : public NotificationDisplayService {
   void Close(NotificationHandler::Type notification_type,
              const std::string& notification_id) override;
   void GetDisplayed(DisplayedNotificationsCallback callback) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
 
   static void ProfileLoadedCallback(NotificationCommon::Operation operation,
                                     NotificationHandler::Type notification_type,
@@ -100,6 +109,8 @@ class NotificationDisplayServiceImpl : public NotificationDisplayService {
   // Map containing the notification handlers responsible for processing events.
   std::map<NotificationHandler::Type, std::unique_ptr<NotificationHandler>>
       notification_handlers_;
+
+  base::ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<NotificationDisplayServiceImpl> weak_factory_{this};
 

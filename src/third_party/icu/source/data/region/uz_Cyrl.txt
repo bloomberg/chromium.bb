@@ -294,7 +294,6 @@ uz_Cyrl{
         ZZ{"Номаълум минтақа"}
     }
     Countries%short{
-        GB{"Буюк Британия"}
         US{"АҚШ"}
     }
     Countries%variant{
@@ -304,5 +303,5 @@ uz_Cyrl{
         CZ{"Чехия Республикаси"}
         TL{"Шарқий Тимор"}
     }
-    Version{"36"}
+    Version{"37"}
 }

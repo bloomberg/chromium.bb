@@ -41,9 +41,10 @@ namespace {
 const char kFullPageMimeHandlerViewHTML[] =
     "<!doctype html><html><body style='height: 100%%; width: 100%%; overflow: "
     "hidden; margin:0px; background-color: rgb(%d, %d, %d);'><embed "
+    "name='%s' "
     "style='position:absolute; left: 0; top: 0;'width='100%%' height='100%%'"
     " src='about:blank' type='%s' "
-    "internalid='%s'></embed></body></html>";
+    "internalid='%s'></body></html>";
 const uint32_t kFullPageMimeHandlerViewDataPipeSize = 512U;
 
 SkColor GetBackgroundColorStringForMimeType(const GURL& url,
@@ -97,7 +98,7 @@ bool MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
   std::string token = base::UnguessableToken::Create().ToString();
   auto html_str = base::StringPrintf(
       kFullPageMimeHandlerViewHTML, SkColorGetR(color), SkColorGetG(color),
-      SkColorGetB(color), mime_type.c_str(), token.c_str());
+      SkColorGetB(color), token.c_str(), mime_type.c_str(), token.c_str());
   payload->assign(html_str);
   *data_pipe_size = kFullPageMimeHandlerViewDataPipeSize;
   base::PostTaskAndReply(

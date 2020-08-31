@@ -29,28 +29,23 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
 #include "third_party/blink/renderer/core/input/touch_list.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
-TouchEventContext* TouchEventContext::Create() {
-  return MakeGarbageCollected<TouchEventContext>();
-}
-
 TouchEventContext::TouchEventContext()
-    : touches_(MakeGarbageCollected<TouchList>()),
-      target_touches_(MakeGarbageCollected<TouchList>()),
-      changed_touches_(MakeGarbageCollected<TouchList>()) {}
+    : touches_(TouchList::Create()),
+      target_touches_(TouchList::Create()),
+      changed_touches_(TouchList::Create()) {}
 
 void TouchEventContext::HandleLocalEvents(Event& event) const {
-  DCHECK(event.IsTouchEvent());
-  TouchEvent& touch_event = ToTouchEvent(event);
+  DCHECK(IsA<TouchEvent>(event));
+  auto& touch_event = To<TouchEvent>(event);
   touch_event.SetTouches(touches_);
   touch_event.SetTargetTouches(target_touches_);
   touch_event.SetChangedTouches(changed_touches_);
 }
 
-void TouchEventContext::Trace(blink::Visitor* visitor) {
+void TouchEventContext::Trace(Visitor* visitor) {
   visitor->Trace(touches_);
   visitor->Trace(target_touches_);
   visitor->Trace(changed_touches_);

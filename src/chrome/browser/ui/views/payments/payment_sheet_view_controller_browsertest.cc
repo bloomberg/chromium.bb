@@ -12,21 +12,16 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace payments {
 
 // A simple PaymentRequest which simply requests 'visa' or 'mastercard' and
 // nothing else.
-class PaymentSheetViewControllerNoShippingTest
-    : public PaymentRequestBrowserTestBase {
- protected:
-  PaymentSheetViewControllerNoShippingTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaymentSheetViewControllerNoShippingTest);
-};
+typedef PaymentRequestBrowserTestBase PaymentSheetViewControllerNoShippingTest;
 
 // With no data present, the pay button should be disabled.
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest, NoData) {
@@ -48,6 +43,11 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
 
   InvokePaymentRequestUI();
   EXPECT_TRUE(IsPayButtonEnabled());
+
+  // When an autofill payment app is selected the primary button should have
+  // "Pay" label.
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_PAY_BUTTON),
+            GetPrimaryButtonLabel());
 }
 
 // With only an unsupported card (Amex) in the database, the pay button should
@@ -220,6 +220,11 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
   // Payment button should be enabled with blank autofill profiles since the
   // payment handler supports shipping delegation.
   EXPECT_TRUE(IsPayButtonEnabled());
+
+  // When a 3rd party payment app is selected the primary button should have
+  // "Continue" label.
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_CONTINUE_BUTTON),
+            GetPrimaryButtonLabel());
 }
 
 // Payment sheet view skips showing contact section when the selected instrument
@@ -425,6 +430,73 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
 
   EXPECT_EQ(base::ASCIIToUTF16("ERROR MESSAGE"),
             GetLabelText(DialogViewID::WARNING_LABEL));
+}
+
+typedef PaymentRequestBrowserTestBase PaymentHandlerUITest;
+
+IN_PROC_BROWSER_TEST_F(PaymentHandlerUITest, BackReturnsToPaymentSheet) {
+  NavigateTo("/payment_handler.html");
+
+  // Add an autofill profile and credit card so the payment sheet is shown.
+  autofill::AutofillProfile profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(profile);
+  autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.
+  card.set_billing_address_id(profile.guid());
+  AddCreditCard(card);
+
+  // Installs a payment handler which opens a window.
+  EXPECT_EQ("success", content::EvalJs(GetActiveWebContents(), "install()"));
+
+  ResetEventWaiterForDialogOpened();
+  EXPECT_EQ(
+      "success",
+      content::EvalJs(GetActiveWebContents(),
+                      "paymentRequestWithOptions({requestShipping: true})"));
+  WaitForObservedEvent();
+
+  EXPECT_TRUE(IsPayButtonEnabled());
+  EXPECT_FALSE(IsViewVisible(DialogViewID::PAYMENT_APP_OPENED_WINDOW_SHEET));
+
+  // Click on Pay to show the payment handler window. The presence of Pay
+  // indicates that the payment sheet is presenting.
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::PAYMENT_HANDLER_WINDOW_OPENED});
+  ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view());
+
+  EXPECT_TRUE(IsViewVisible(DialogViewID::BACK_BUTTON));
+  EXPECT_TRUE(IsViewVisible(DialogViewID::PAYMENT_APP_OPENED_WINDOW_SHEET));
+
+  // Click on back arrow to return to the payment sheet.
+  ClickOnBackArrow();
+
+  EXPECT_TRUE(IsPayButtonEnabled());
+  EXPECT_FALSE(IsViewVisible(DialogViewID::PAYMENT_APP_OPENED_WINDOW_SHEET));
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentHandlerUITest, BackAbortsRequestIfSkipSheet) {
+  NavigateTo("/payment_handler.html");
+  EXPECT_EQ("success", content::EvalJs(GetActiveWebContents(), "install()"));
+
+  // Skip the sheet flow skips directly to the payment handler window.
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::DIALOG_OPENED,
+                               DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::PAYMENT_HANDLER_WINDOW_OPENED});
+
+  EXPECT_EQ("success", content::EvalJs(GetActiveWebContents(),
+                                       "launchWithoutWaitForResponse()"));
+  WaitForObservedEvent();
+
+  EXPECT_TRUE(IsViewVisible(DialogViewID::BACK_BUTTON));
+  EXPECT_TRUE(IsViewVisible(DialogViewID::PAYMENT_APP_OPENED_WINDOW_SHEET));
+
+  // Click on back arrow aborts the payment request.
+  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
+  ClickOnDialogViewAndWait(DialogViewID::BACK_BUTTON,
+                           /* wait_for_animation= */ false);
 }
 
 }  // namespace payments

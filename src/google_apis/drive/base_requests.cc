@@ -250,8 +250,8 @@ void GenerateMultipartBody(MultipartType multipart_type,
 
 UrlFetchRequestBase::UrlFetchRequestBase(
     RequestSender* sender,
-    const ProgressCallback& upload_progress_callback,
-    const ProgressCallback& download_progress_callback)
+    ProgressCallback upload_progress_callback,
+    ProgressCallback download_progress_callback)
     : re_authenticate_count_(0),
       sender_(sender),
       upload_progress_callback_(upload_progress_callback),
@@ -262,30 +262,30 @@ UrlFetchRequestBase::~UrlFetchRequestBase() {}
 
 void UrlFetchRequestBase::Start(const std::string& access_token,
                                 const std::string& custom_user_agent,
-                                const ReAuthenticateCallback& callback) {
+                                ReAuthenticateCallback callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!access_token.empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   DCHECK(re_authenticate_callback_.is_null());
-  Prepare(base::Bind(&UrlFetchRequestBase::StartAfterPrepare,
-                     weak_ptr_factory_.GetWeakPtr(), access_token,
-                     custom_user_agent, callback));
+  Prepare(base::BindOnce(&UrlFetchRequestBase::StartAfterPrepare,
+                         weak_ptr_factory_.GetWeakPtr(), access_token,
+                         custom_user_agent, std::move(callback)));
 }
 
-void UrlFetchRequestBase::Prepare(const PrepareCallback& callback) {
+void UrlFetchRequestBase::Prepare(PrepareCallback callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
-  callback.Run(HTTP_SUCCESS);
+  std::move(callback).Run(HTTP_SUCCESS);
 }
 
 void UrlFetchRequestBase::StartAfterPrepare(
     const std::string& access_token,
     const std::string& custom_user_agent,
-    const ReAuthenticateCallback& callback,
+    ReAuthenticateCallback callback,
     DriveApiErrorCode code) {
   DCHECK(CalledOnValidThread());
   DCHECK(!access_token.empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   DCHECK(re_authenticate_callback_.is_null());
 
   const GURL url = GetURL();
@@ -378,17 +378,15 @@ void UrlFetchRequestBase::StartAfterPrepare(
   url_loader_->DownloadAsStream(sender_->url_loader_factory(), this);
 }
 
-void UrlFetchRequestBase::OnDownloadProgress(
-    const ProgressCallback& progress_callback,
-    uint64_t current) {
+void UrlFetchRequestBase::OnDownloadProgress(ProgressCallback progress_callback,
+                                             uint64_t current) {
   progress_callback.Run(static_cast<int64_t>(current),
                         response_content_length_);
 }
 
-void UrlFetchRequestBase::OnUploadProgress(
-    const ProgressCallback& progress_callback,
-    uint64_t position,
-    uint64_t total) {
+void UrlFetchRequestBase::OnUploadProgress(ProgressCallback progress_callback,
+                                           uint64_t position,
+                                           uint64_t total) {
   progress_callback.Run(static_cast<int64_t>(position),
                         static_cast<int64_t>(total));
 }
@@ -682,7 +680,7 @@ UploadRangeResponse::~UploadRangeResponse() {
 UploadRangeRequestBase::UploadRangeRequestBase(
     RequestSender* sender,
     const GURL& upload_url,
-    const ProgressCallback& progress_callback)
+    ProgressCallback progress_callback)
     : UrlFetchRequestBase(sender, progress_callback, ProgressCallback()),
       upload_url_(upload_url) {}
 
@@ -786,7 +784,7 @@ ResumeUploadRequestBase::ResumeUploadRequestBase(
     int64_t content_length,
     const std::string& content_type,
     const base::FilePath& local_file_path,
-    const ProgressCallback& progress_callback)
+    ProgressCallback progress_callback)
     : UploadRangeRequestBase(sender, upload_location, progress_callback),
       start_position_(start_position),
       end_position_(end_position),
@@ -872,18 +870,18 @@ MultipartUploadRequestBase::MultipartUploadRequestBase(
     const std::string& content_type,
     int64_t content_length,
     const base::FilePath& local_file_path,
-    const FileResourceCallback& callback,
-    const ProgressCallback& progress_callback)
+    FileResourceCallback callback,
+    ProgressCallback progress_callback)
     : blocking_task_runner_(blocking_task_runner),
       metadata_json_(metadata_json),
       content_type_(content_type),
       local_path_(local_file_path),
-      callback_(callback),
+      callback_(std::move(callback)),
       progress_callback_(progress_callback) {
   DCHECK(!content_type.empty());
   DCHECK_GE(content_length, 0);
   DCHECK(!local_file_path.empty());
-  DCHECK(!callback.is_null());
+  DCHECK(!callback_.is_null());
 }
 
 MultipartUploadRequestBase::~MultipartUploadRequestBase() {
@@ -894,34 +892,35 @@ std::vector<std::string> MultipartUploadRequestBase::GetExtraRequestHeaders()
   return std::vector<std::string>();
 }
 
-void MultipartUploadRequestBase::Prepare(const PrepareCallback& callback) {
+void MultipartUploadRequestBase::Prepare(PrepareCallback callback) {
   // If the request is cancelled, the request instance will be deleted in
   // |UrlFetchRequestBase::Cancel| and OnPrepareUploadContent won't be called.
   std::string* const upload_content_type = new std::string();
   std::string* const upload_content_data = new std::string();
   PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&GetMultipartContent, boundary_, metadata_json_, content_type_,
-                 local_path_, base::Unretained(upload_content_type),
-                 base::Unretained(upload_content_data)),
-      base::Bind(&MultipartUploadRequestBase::OnPrepareUploadContent,
-                 weak_ptr_factory_.GetWeakPtr(), callback,
-                 base::Owned(upload_content_type),
-                 base::Owned(upload_content_data)));
+      base::BindOnce(&GetMultipartContent, boundary_, metadata_json_,
+                     content_type_, local_path_,
+                     base::Unretained(upload_content_type),
+                     base::Unretained(upload_content_data)),
+      base::BindOnce(&MultipartUploadRequestBase::OnPrepareUploadContent,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     base::Owned(upload_content_type),
+                     base::Owned(upload_content_data)));
 }
 
 void MultipartUploadRequestBase::OnPrepareUploadContent(
-    const PrepareCallback& callback,
+    PrepareCallback callback,
     std::string* upload_content_type,
     std::string* upload_content_data,
     bool result) {
   if (!result) {
-    callback.Run(DRIVE_FILE_ERROR);
+    std::move(callback).Run(DRIVE_FILE_ERROR);
     return;
   }
   upload_content_type_.swap(*upload_content_type);
   upload_content_data_.swap(*upload_content_data);
-  callback.Run(HTTP_SUCCESS);
+  std::move(callback).Run(HTTP_SUCCESS);
 }
 
 void MultipartUploadRequestBase::SetBoundaryForTesting(
@@ -941,7 +940,7 @@ bool MultipartUploadRequestBase::GetContentData(
 void MultipartUploadRequestBase::NotifyResult(
     DriveApiErrorCode code,
     const std::string& body,
-    const base::Closure& notify_complete_callback) {
+    base::OnceClosure notify_complete_callback) {
   // The upload is successfully done. Parse the response which should be
   // the entry's metadata.
   if (code == HTTP_CREATED || code == HTTP_SUCCESS) {
@@ -949,15 +948,15 @@ void MultipartUploadRequestBase::NotifyResult(
         blocking_task_runner_.get(), body,
         base::BindOnce(&MultipartUploadRequestBase::OnDataParsed,
                        weak_ptr_factory_.GetWeakPtr(), code,
-                       notify_complete_callback));
+                       std::move(notify_complete_callback)));
   } else {
     NotifyError(MapJsonError(code, body));
-    notify_complete_callback.Run();
+    std::move(notify_complete_callback).Run();
   }
 }
 
 void MultipartUploadRequestBase::NotifyError(DriveApiErrorCode code) {
-  callback_.Run(code, std::unique_ptr<FileResource>());
+  std::move(callback_).Run(code, std::unique_ptr<FileResource>());
 }
 
 void MultipartUploadRequestBase::NotifyUploadProgress(int64_t current,
@@ -968,14 +967,15 @@ void MultipartUploadRequestBase::NotifyUploadProgress(int64_t current,
 
 void MultipartUploadRequestBase::OnDataParsed(
     DriveApiErrorCode code,
-    const base::Closure& notify_complete_callback,
+    base::OnceClosure notify_complete_callback,
     std::unique_ptr<base::Value> value) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (value)
-    callback_.Run(code, google_apis::FileResource::CreateFrom(*value));
+    std::move(callback_).Run(code,
+                             google_apis::FileResource::CreateFrom(*value));
   else
     NotifyError(DRIVE_PARSE_ERROR);
-  notify_complete_callback.Run();
+  std::move(notify_complete_callback).Run();
 }
 
 //============================ DownloadFileRequestBase =========================
@@ -984,7 +984,7 @@ DownloadFileRequestBase::DownloadFileRequestBase(
     RequestSender* sender,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
-    const ProgressCallback& progress_callback,
+    ProgressCallback progress_callback,
     const GURL& download_url,
     const base::FilePath& output_file_path)
     : UrlFetchRequestBase(sender, ProgressCallback(), progress_callback),

@@ -18,13 +18,6 @@
 
 namespace webrtc {
 namespace {
-std::string ProduceDebugText(size_t num_render_channels,
-                             size_t num_capture_channels) {
-  rtc::StringBuilder ss;
-  ss << "Render channels: " << num_render_channels;
-  ss << ", Capture channels: " << num_capture_channels;
-  return ss.Release();
-}
 
 void RunNormalUsageTest(size_t num_render_channels,
                         size_t num_capture_channels) {
@@ -39,7 +32,7 @@ void RunNormalUsageTest(size_t num_render_channels,
       DelayEstimate(DelayEstimate::Quality::kRefined, 10);
   std::unique_ptr<RenderDelayBuffer> render_delay_buffer(
       RenderDelayBuffer::Create(config, kSampleRateHz, num_render_channels));
-  std::vector<std::array<float, kFftLengthBy2Plus1>> E2_main(
+  std::vector<std::array<float, kFftLengthBy2Plus1>> E2_refined(
       num_capture_channels);
   std::vector<std::array<float, kFftLengthBy2Plus1>> Y2(num_capture_channels);
   std::vector<std::vector<std::vector<float>>> x(
@@ -51,10 +44,10 @@ void RunNormalUsageTest(size_t num_render_channels,
   std::vector<SubtractorOutput> subtractor_output(num_capture_channels);
   for (size_t ch = 0; ch < num_capture_channels; ++ch) {
     subtractor_output[ch].Reset();
-    subtractor_output[ch].s_main.fill(100.f);
-    subtractor_output[ch].e_main.fill(100.f);
+    subtractor_output[ch].s_refined.fill(100.f);
+    subtractor_output[ch].e_refined.fill(100.f);
     y[ch].fill(1000.f);
-    E2_main[ch].fill(0.f);
+    E2_refined[ch].fill(0.f);
     Y2[ch].fill(0.f);
   }
   Aec3Fft fft;
@@ -73,8 +66,8 @@ void RunNormalUsageTest(size_t num_render_channels,
   converged_filter_frequency_response[0][2][0] = 1.f;
   std::vector<std::vector<float>> impulse_response(
       num_capture_channels,
-      std::vector<float>(GetTimeDomainLength(config.filter.main.length_blocks),
-                         0.f));
+      std::vector<float>(
+          GetTimeDomainLength(config.filter.refined.length_blocks), 0.f));
 
   // Verify that linear AEC usability is true when the filter is converged
   for (size_t band = 0; band < kNumBands; ++band) {
@@ -89,7 +82,7 @@ void RunNormalUsageTest(size_t num_render_channels,
     }
     state.Update(delay_estimate, converged_filter_frequency_response,
                  impulse_response, *render_delay_buffer->GetRenderBuffer(),
-                 E2_main, Y2, subtractor_output);
+                 E2_refined, Y2, subtractor_output);
   }
   EXPECT_TRUE(state.UsableLinearEstimate());
 
@@ -102,7 +95,7 @@ void RunNormalUsageTest(size_t num_render_channels,
       false, EchoPathVariability::DelayAdjustment::kBufferReadjustment, false));
   state.Update(delay_estimate, converged_filter_frequency_response,
                impulse_response, *render_delay_buffer->GetRenderBuffer(),
-               E2_main, Y2, subtractor_output);
+               E2_refined, Y2, subtractor_output);
   EXPECT_FALSE(state.UsableLinearEstimate());
 
   // Verify that the active render detection works as intended.
@@ -117,7 +110,7 @@ void RunNormalUsageTest(size_t num_render_channels,
       true, EchoPathVariability::DelayAdjustment::kNewDetectedDelay, false));
   state.Update(delay_estimate, converged_filter_frequency_response,
                impulse_response, *render_delay_buffer->GetRenderBuffer(),
-               E2_main, Y2, subtractor_output);
+               E2_refined, Y2, subtractor_output);
   EXPECT_FALSE(state.ActiveRender());
 
   for (int k = 0; k < 1000; ++k) {
@@ -127,7 +120,7 @@ void RunNormalUsageTest(size_t num_render_channels,
     }
     state.Update(delay_estimate, converged_filter_frequency_response,
                  impulse_response, *render_delay_buffer->GetRenderBuffer(),
-                 E2_main, Y2, subtractor_output);
+                 E2_refined, Y2, subtractor_output);
   }
   EXPECT_TRUE(state.ActiveRender());
 
@@ -159,7 +152,7 @@ void RunNormalUsageTest(size_t num_render_channels,
     }
     state.Update(delay_estimate, converged_filter_frequency_response,
                  impulse_response, *render_delay_buffer->GetRenderBuffer(),
-                 E2_main, Y2, subtractor_output);
+                 E2_refined, Y2, subtractor_output);
   }
 
   ASSERT_TRUE(state.UsableLinearEstimate());
@@ -171,11 +164,11 @@ void RunNormalUsageTest(size_t num_render_channels,
   EXPECT_EQ(erl[erl.size() - 2], erl[erl.size() - 1]);
 
   // Verify that the ERLE is properly estimated
-  for (auto& E2_main_ch : E2_main) {
-    E2_main_ch.fill(1.f * 10000.f * 10000.f);
+  for (auto& E2_refined_ch : E2_refined) {
+    E2_refined_ch.fill(1.f * 10000.f * 10000.f);
   }
   for (auto& Y2_ch : Y2) {
-    Y2_ch.fill(10.f * E2_main[0][0]);
+    Y2_ch.fill(10.f * E2_refined[0][0]);
   }
   for (size_t k = 0; k < 1000; ++k) {
     for (size_t ch = 0; ch < num_capture_channels; ++ch) {
@@ -183,7 +176,7 @@ void RunNormalUsageTest(size_t num_render_channels,
     }
     state.Update(delay_estimate, converged_filter_frequency_response,
                  impulse_response, *render_delay_buffer->GetRenderBuffer(),
-                 E2_main, Y2, subtractor_output);
+                 E2_refined, Y2, subtractor_output);
   }
   ASSERT_TRUE(state.UsableLinearEstimate());
   {
@@ -200,11 +193,11 @@ void RunNormalUsageTest(size_t num_render_channels,
     }
     EXPECT_EQ(erle[erle.size() - 2], erle[erle.size() - 1]);
   }
-  for (auto& E2_main_ch : E2_main) {
-    E2_main_ch.fill(1.f * 10000.f * 10000.f);
+  for (auto& E2_refined_ch : E2_refined) {
+    E2_refined_ch.fill(1.f * 10000.f * 10000.f);
   }
   for (auto& Y2_ch : Y2) {
-    Y2_ch.fill(5.f * E2_main[0][0]);
+    Y2_ch.fill(5.f * E2_refined[0][0]);
   }
   for (size_t k = 0; k < 1000; ++k) {
     for (size_t ch = 0; ch < num_capture_channels; ++ch) {
@@ -212,7 +205,7 @@ void RunNormalUsageTest(size_t num_render_channels,
     }
     state.Update(delay_estimate, converged_filter_frequency_response,
                  impulse_response, *render_delay_buffer->GetRenderBuffer(),
-                 E2_main, Y2, subtractor_output);
+                 E2_refined, Y2, subtractor_output);
   }
 
   ASSERT_TRUE(state.UsableLinearEstimate());
@@ -232,14 +225,20 @@ void RunNormalUsageTest(size_t num_render_channels,
 
 }  // namespace
 
+class AecStateMultiChannel
+    : public ::testing::Test,
+      public ::testing::WithParamInterface<std::tuple<size_t, size_t>> {};
+
+INSTANTIATE_TEST_SUITE_P(MultiChannel,
+                         AecStateMultiChannel,
+                         ::testing::Combine(::testing::Values(1, 2, 8),
+                                            ::testing::Values(1, 2, 8)));
+
 // Verify the general functionality of AecState
-TEST(AecState, NormalUsage) {
-  for (size_t num_render_channels : {1, 2, 8}) {
-    for (size_t num_capture_channels : {1, 2, 8}) {
-      SCOPED_TRACE(ProduceDebugText(num_render_channels, num_capture_channels));
-      RunNormalUsageTest(num_render_channels, num_capture_channels);
-    }
-  }
+TEST_P(AecStateMultiChannel, NormalUsage) {
+  const size_t num_render_channels = std::get<0>(GetParam());
+  const size_t num_capture_channels = std::get<1>(GetParam());
+  RunNormalUsageTest(num_render_channels, num_capture_channels);
 }
 
 // Verifies the delay for a converged filter is correctly identified.
@@ -251,7 +250,7 @@ TEST(AecState, ConvergedFilterDelay) {
   std::unique_ptr<RenderDelayBuffer> render_delay_buffer(
       RenderDelayBuffer::Create(config, 48000, 1));
   absl::optional<DelayEstimate> delay_estimate;
-  std::vector<std::array<float, kFftLengthBy2Plus1>> E2_main(
+  std::vector<std::array<float, kFftLengthBy2Plus1>> E2_refined(
       kNumCaptureChannels);
   std::vector<std::array<float, kFftLengthBy2Plus1>> Y2(kNumCaptureChannels);
   std::array<float, kBlockSize> x;
@@ -260,7 +259,7 @@ TEST(AecState, ConvergedFilterDelay) {
   std::vector<SubtractorOutput> subtractor_output(kNumCaptureChannels);
   for (auto& output : subtractor_output) {
     output.Reset();
-    output.s_main.fill(100.f);
+    output.s_refined.fill(100.f);
   }
   std::array<float, kBlockSize> y;
   x.fill(0.f);
@@ -278,8 +277,8 @@ TEST(AecState, ConvergedFilterDelay) {
 
   std::vector<std::vector<float>> impulse_response(
       kNumCaptureChannels,
-      std::vector<float>(GetTimeDomainLength(config.filter.main.length_blocks),
-                         0.f));
+      std::vector<float>(
+          GetTimeDomainLength(config.filter.refined.length_blocks), 0.f));
 
   // Verify that the filter delay for a converged filter is properly
   // identified.
@@ -292,7 +291,7 @@ TEST(AecState, ConvergedFilterDelay) {
     state.HandleEchoPathChange(echo_path_variability);
     subtractor_output[0].ComputeMetrics(y);
     state.Update(delay_estimate, frequency_response, impulse_response,
-                 *render_delay_buffer->GetRenderBuffer(), E2_main, Y2,
+                 *render_delay_buffer->GetRenderBuffer(), E2_refined, Y2,
                  subtractor_output);
   }
 }

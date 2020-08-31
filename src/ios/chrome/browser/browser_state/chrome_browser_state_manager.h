@@ -15,11 +15,9 @@ class FilePath;
 }
 
 class BrowserStateInfoCache;
-
-namespace ios {
-
 class ChromeBrowserState;
 
+namespace ios {
 // Provides methods that allow for various ways of creating non-incognito
 // ChromeBrowserState instances. Owns all instances that it creates.
 class ChromeBrowserStateManager {

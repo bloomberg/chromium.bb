@@ -65,6 +65,8 @@ class ArcAuthService : public KeyedService,
   // OS Account Manager.
   void GetGoogleAccountsInArc(GetGoogleAccountsInArcCallback callback);
 
+  void RequestPrimaryAccount(RequestPrimaryAccountCallback callback) override;
+
   // For supporting ArcServiceManager::GetService<T>().
   static const char kArcServiceName[];
 
@@ -107,8 +109,6 @@ class ArcAuthService : public KeyedService,
 
   // KeyedService:
   void Shutdown() override;
-
-  void SkipMergeSessionForTesting();
 
  private:
   // Callback when Active Directory Enrollment Token is fetched.
@@ -207,8 +207,6 @@ class ArcAuthService : public KeyedService,
   // Pending callback for |GetGoogleAccountsInArc| if ARC bridge is not yet
   // ready.
   GetGoogleAccountsInArcCallback pending_get_arc_accounts_callback_;
-
-  bool skip_merge_session_for_testing_ = false;
 
   base::WeakPtrFactory<ArcAuthService> weak_ptr_factory_{this};
 

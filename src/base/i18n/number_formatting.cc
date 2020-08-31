@@ -8,11 +8,11 @@
 
 #include <memory>
 
+#include "base/check.h"
 #include "base/format_macros.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/unicodestring.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -85,13 +85,9 @@ string16 FormatPercent(int number) {
       ASCIIToUTF16("{0,number,percent}"), static_cast<double>(number) / 100.0);
 }
 
-namespace testing {
-
-void ResetFormatters() {
+void ResetFormattersForTesting() {
   g_number_format_int.Get().Reset();
   g_number_format_float.Get().Reset();
 }
-
-}  // namespace testing
 
 }  // namespace base

@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_paint_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
-#include "third_party/blink/renderer/modules/csspaint/paint_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
@@ -37,7 +37,7 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
                           float zoom,
                           float device_scale_factor);
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(context_settings_);
     ScriptWrappable::Trace(visitor);
     BaseRenderingContext2D::Trace(visitor);
@@ -54,8 +54,8 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
 
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 
-  cc::PaintCanvas* DrawingCanvas() const final;
-  cc::PaintCanvas* ExistingDrawingCanvas() const final;
+  cc::PaintCanvas* GetOrCreatePaintCanvas() final { return GetPaintCanvas(); }
+  cc::PaintCanvas* GetPaintCanvas() const final;
 
   void DidDraw(const SkIRect&) final;
 
@@ -72,7 +72,7 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   sk_sp<PaintFilter> StateGetFilter() final;
   void SnapshotStateForFilter() final {}
 
-  void ValidateStateStack() const final;
+  void ValidateStateStackWithCanvas(const cc::PaintCanvas*) const final;
 
   bool HasAlpha() const final { return context_settings_->alpha(); }
 
@@ -84,13 +84,13 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   bool CanCreateCanvas2dResourceProvider() const final { return false; }
   bool IsAccelerated() const final { return false; }
 
-  void setTransform(double m11,
-                    double m12,
-                    double m21,
-                    double m22,
-                    double dx,
-                    double dy) final;
-  void setTransform(DOMMatrix2DInit*, ExceptionState&) final;
+  // CSS Paint doesn't have any notion of image orientation.
+  RespectImageOrientationEnum RespectImageOrientation() const final {
+    return kRespectImageOrientation;
+  }
+
+  DOMMatrix* getTransform() final;
+  void resetTransform() final;
 
   sk_sp<PaintRecord> GetRecord();
 
@@ -100,7 +100,6 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
 
  private:
   void InitializePaintRecorder();
-  cc::PaintCanvas* Canvas() const;
 
   std::unique_ptr<PaintRecorder> paint_recorder_;
   sk_sp<PaintRecord> previous_frame_;

@@ -17,8 +17,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/color_palette.h"
@@ -28,19 +28,14 @@
 
 namespace {
 
-// Contents of the Reload drop-down menu.
-const int kReloadMenuItems[]  = {
-  IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM,
-  IDS_RELOAD_MENU_HARD_RELOAD_ITEM,
-  IDS_RELOAD_MENU_EMPTY_AND_HARD_RELOAD_ITEM,
-};
-
 const gfx::VectorIcon& GetIconForMode(ReloadButton::IconStyle icon_style,
                                       bool is_reload) {
+  const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
+
 #if defined(OS_WIN)
   if (icon_style == ReloadButton::IconStyle::kMinimalUi &&
       UseWindowsIconsForMinimalUI()) {
-    if (ui::MaterialDesignController::touch_ui()) {
+    if (touch_ui) {
       return is_reload ? kReloadWindowsTouchIcon
                        : kNavigateStopWindowsTouchIcon;
     }
@@ -49,7 +44,7 @@ const gfx::VectorIcon& GetIconForMode(ReloadButton::IconStyle icon_style,
   }
 #endif
 
-  if (ui::MaterialDesignController::touch_ui())
+  if (touch_ui)
     return is_reload ? kReloadTouchIcon : kNavigateStopTouchIcon;
 
   return is_reload ? vector_icons::kReloadIcon : kNavigateStopIcon;
@@ -69,9 +64,7 @@ ReloadButton::ReloadButton(CommandUpdater* command_updater,
       icon_style_(icon_style),
       double_click_timer_delay_(
           base::TimeDelta::FromMilliseconds(views::GetDoubleClickInterval())),
-      mode_switch_timer_delay_(base::TimeDelta::FromMilliseconds(1350)),
-      normal_color_(gfx::kPlaceholderColor),
-      disabled_color_(gfx::kPlaceholderColor) {}
+      mode_switch_timer_delay_(base::TimeDelta::FromMilliseconds(1350)) {}
 
 ReloadButton::~ReloadButton() {}
 
@@ -86,8 +79,8 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
                              : (visible_mode_ != Mode::kStop))) {
     double_click_timer_.Stop();
     mode_switch_timer_.Stop();
-    if (mode != visible_mode_)
-      ChangeModeInternal(mode);
+    visible_mode_ = mode;
+    UpdateIcon();
     SetEnabled(true);
 
     // We want to disable the button if we're preventing a change from stop to
@@ -110,7 +103,29 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
 void ReloadButton::SetColors(SkColor normal_color, SkColor disabled_color) {
   normal_color_ = normal_color;
   disabled_color_ = disabled_color;
-  ChangeModeInternal(visible_mode_);
+  UpdateIcon();
+}
+
+void ReloadButton::OnThemeChanged() {
+  ToolbarButton::OnThemeChanged();
+  UpdateIcon();
+}
+
+void ReloadButton::UpdateIcon() {
+  // There's no reason to make graphical changes when we're not yet in a
+  // Widget.  This function will be called again after widget addition.
+  if (!GetWidget())
+    return;
+
+  const gfx::VectorIcon& icon =
+      GetIconForMode(icon_style_, visible_mode_ == Mode::kReload);
+  DCHECK_EQ(normal_color_.has_value(), disabled_color_.has_value());
+  if (normal_color_.has_value()) {
+    UpdateIconsWithColors(icon, normal_color_.value(), normal_color_.value(),
+                          normal_color_.value(), disabled_color_.value());
+  } else {
+    UpdateIconsWithStandardColors(icon);
+  }
 }
 
 void ReloadButton::OnMouseExited(const ui::MouseEvent& event) {
@@ -202,39 +217,21 @@ bool ReloadButton::IsCommandIdVisible(int command_id) const {
 bool ReloadButton::GetAcceleratorForCommandId(
     int command_id,
     ui::Accelerator* accelerator) const {
-  switch (command_id) {
-    case IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM:
-      GetWidget()->GetAccelerator(IDC_RELOAD, accelerator);
-      return true;
-    case IDS_RELOAD_MENU_HARD_RELOAD_ITEM:
-      GetWidget()->GetAccelerator(IDC_RELOAD_BYPASSING_CACHE, accelerator);
-      return true;
-  }
   return GetWidget()->GetAccelerator(command_id, accelerator);
 }
 
 void ReloadButton::ExecuteCommand(int command_id, int event_flags) {
-  int browser_command = 0;
-  switch (command_id) {
-    case IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM:
-      browser_command = IDC_RELOAD;
-      break;
-    case IDS_RELOAD_MENU_HARD_RELOAD_ITEM:
-      browser_command = IDC_RELOAD_BYPASSING_CACHE;
-      break;
-    case IDS_RELOAD_MENU_EMPTY_AND_HARD_RELOAD_ITEM:
-      browser_command = IDC_RELOAD_CLEARING_CACHE;
-      break;
-    default:
-      NOTREACHED();
-  }
-  ExecuteBrowserCommand(browser_command, event_flags);
+  ExecuteBrowserCommand(command_id, event_flags);
 }
 
 std::unique_ptr<ui::SimpleMenuModel> ReloadButton::CreateMenuModel() {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
-  for (int item : kReloadMenuItems)
-    menu_model->AddItemWithStringId(item, item);
+  menu_model->AddItemWithStringId(IDC_RELOAD,
+                                  IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM);
+  menu_model->AddItemWithStringId(IDC_RELOAD_BYPASSING_CACHE,
+                                  IDS_RELOAD_MENU_HARD_RELOAD_ITEM);
+  menu_model->AddItemWithStringId(IDC_RELOAD_CLEARING_CACHE,
+                                  IDS_RELOAD_MENU_EMPTY_AND_HARD_RELOAD_ITEM);
   return menu_model;
 }
 
@@ -243,18 +240,6 @@ void ReloadButton::ExecuteBrowserCommand(int command, int event_flags) {
     return;
   command_updater_->ExecuteCommandWithDisposition(
       command, ui::DispositionFromEventFlags(event_flags));
-}
-
-void ReloadButton::ChangeModeInternal(Mode mode) {
-  const gfx::VectorIcon& icon =
-      GetIconForMode(icon_style_, mode == Mode::kReload);
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, normal_color_));
-  SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(icon, disabled_color_));
-
-  visible_mode_ = mode;
-  SchedulePaint();
 }
 
 void ReloadButton::OnDoubleClickTimer() {

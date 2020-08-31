@@ -36,10 +36,11 @@ class VIZ_COMMON_EXPORT BeginFrameObserver {
   virtual ~BeginFrameObserver() {}
 
   // The |args| given to OnBeginFrame is guaranteed to have
-  // |args|.IsValid()==true. If |args|.source_id did not change between
-  // invocations, |args|.sequence_number is guaranteed to be be strictly greater
-  // than the previous call. Further, |args|.frame_time is guaranteed to be
-  // greater than or equal to the previous call even if the source_id changes.
+  // |args|.IsValid()==true. If |args|.frame_id.source_id did not change
+  // between invocations, |args|.frame_id.sequence_number is guaranteed to be
+  // be strictly greater than the previous call. Further, |args|.frame_time is
+  // guaranteed to be greater than or equal to the previous call even if the
+  // source_id changes.
   //
   // Side effects: This function can (and most of the time *will*) change the
   // return value of the LastUsedBeginFrameArgs method. See the documentation
@@ -129,6 +130,34 @@ class VIZ_COMMON_EXPORT BeginFrameObserverBase : public BeginFrameObserver {
 // all BeginFrameSources *must* provide.
 class VIZ_COMMON_EXPORT BeginFrameSource {
  public:
+  class VIZ_COMMON_EXPORT BeginFrameArgsGenerator {
+   public:
+    BeginFrameArgsGenerator() = default;
+    ~BeginFrameArgsGenerator() = default;
+
+    BeginFrameArgs GenerateBeginFrameArgs(uint64_t source_id,
+                                          base::TimeTicks frame_time,
+                                          base::TimeTicks next_frame_time,
+                                          base::TimeDelta vsync_interval);
+
+   private:
+    static uint64_t EstimateTickCountsBetween(
+        base::TimeTicks frame_time,
+        base::TimeTicks next_expected_frame_time,
+        base::TimeDelta vsync_interval);
+
+    // Used for determining what the sequence number should be on
+    // CreateBeginFrameArgs.
+    base::TimeTicks next_expected_frame_time_;
+
+    // This is what the sequence number should be for any args created between
+    // |next_expected_frame_time_| to |next_expected_frame_time_| + vsync
+    // interval. Args created outside of this range will have their sequence
+    // number assigned relative to this, based on how many intervals the frame
+    // time is off.
+    uint64_t next_sequence_number_ = BeginFrameArgs::kStartingFrameNumber;
+  };
+
   // This restart_id should be used for BeginFrameSources that don't have to
   // worry about process restart. For example, if a BeginFrameSource won't
   // generate and forward BeginFrameArgs to another process or the process can't
@@ -301,16 +330,7 @@ class VIZ_COMMON_EXPORT DelayBasedBeginFrameSource
   base::TimeTicks last_timebase_;
   BeginFrameArgs last_begin_frame_args_;
 
-  // Used for determining what the sequence number should be on
-  // CreateBeginFrameArgs.
-  base::TimeTicks next_expected_frame_time_;
-
-  // This is what the sequence number should be for any args created between
-  // |next_expected_frame_time_| to |next_expected_frame_time_| + vsync
-  // interval. Args created outside of this range will have their sequence
-  // number assigned relative to this, based on how many intervals the frame
-  // time is off.
-  uint64_t next_sequence_number_;
+  BeginFrameArgsGenerator begin_frame_args_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayBasedBeginFrameSource);
 };
@@ -351,6 +371,10 @@ class VIZ_COMMON_EXPORT ExternalBeginFrameSource : public BeginFrameSource {
   // the rate in frames per second.
   virtual void UpdateRefreshRate(float refresh_rate) {}
 #endif
+
+  // Notifies the begin frame source of the desired frame interval for the
+  // observers.
+  virtual void SetPreferredInterval(base::TimeDelta interval) {}
 
  protected:
   // Called on AddObserver and gets missed BeginFrameArgs for the given

@@ -62,7 +62,7 @@ struct DestructionObservableMCVD : public DestructionObservable,
 
 class MockVideoFrameFactory : public VideoFrameFactory {
  public:
-  MOCK_METHOD2(Initialize, void(OverlayMode overlay_mode, InitCb init_cb));
+  MOCK_METHOD2(Initialize, void(OverlayMode overlay_mode, InitCB init_cb));
   MOCK_METHOD1(MockSetSurfaceBundle, void(scoped_refptr<CodecSurfaceBundle>));
   MOCK_METHOD5(
       MockCreateVideoFrame,
@@ -93,7 +93,7 @@ class MockVideoFrameFactory : public VideoFrameFactory {
       base::TimeDelta timestamp,
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-      VideoFrameFactory::OnceOutputCb output_cb) override {
+      VideoFrameFactory::OnceOutputCB output_cb) override {
     MockCreateVideoFrame(output_buffer.get(), texture_owner_, timestamp,
                          natural_size, promotion_hint_cb);
     last_output_buffer_ = std::move(output_buffer);
@@ -145,7 +145,7 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
     auto video_frame_factory =
         std::make_unique<NiceMock<MockVideoFrameFactory>>();
     video_frame_factory_ = video_frame_factory.get();
-    // Set up VFF to pass |texture_owner_| via its InitCb.
+    // Set up VFF to pass |texture_owner_| via its InitCB.
     ON_CALL(*video_frame_factory_, Initialize(ExpectedOverlayMode(), _))
         .WillByDefault(RunCallback<1>(texture_owner));
 
@@ -153,8 +153,8 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
         gpu_preferences_, gpu_feature_info_, std::make_unique<NullMediaLog>(),
         device_info_.get(), codec_allocator_.get(), std::move(surface_chooser),
         base::BindRepeating(&CreateAndroidOverlayCb),
-        base::Bind(&MediaCodecVideoDecoderTest::RequestOverlayInfoCb,
-                   base::Unretained(this)),
+        base::BindRepeating(&MediaCodecVideoDecoderTest::RequestOverlayInfoCb,
+                            base::Unretained(this)),
         std::move(video_frame_factory));
     mcvd_.reset(observable_mcvd);
     mcvd_raw_ = observable_mcvd;
@@ -189,7 +189,9 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
     if (!mcvd_)
       CreateMcvd();
     bool result = false;
-    auto init_cb = [](bool* result_out, bool result) { *result_out = result; };
+    auto init_cb = [](bool* result_out, Status result) {
+      *result_out = result.is_ok();
+    };
     mcvd_->Initialize(
         config, false, cdm_.get(), base::BindOnce(init_cb, &result),
         base::BindRepeating(&OutputCb, &most_recent_frame_), base::DoNothing());
@@ -259,7 +261,7 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
   // Start and finish a reset.
   void DoReset() {
     bool reset_complete = false;
-    mcvd_->Reset(base::BindRepeating(
+    mcvd_->Reset(base::BindOnce(
         [](bool* reset_complete) { *reset_complete = true; }, &reset_complete));
     base::RunLoop().RunUntilIdle();
     if (!reset_complete) {
@@ -272,11 +274,10 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
     }
   }
 
-  void RequestOverlayInfoCb(
-      bool restart_for_transitions,
-      const ProvideOverlayInfoCB& provide_overlay_info_cb) {
+  void RequestOverlayInfoCb(bool restart_for_transitions,
+                            ProvideOverlayInfoCB provide_overlay_info_cb) {
     restart_for_transitions_ = restart_for_transitions;
-    provide_overlay_info_cb_ = provide_overlay_info_cb;
+    provide_overlay_info_cb_ = std::move(provide_overlay_info_cb);
   }
 
  protected:
@@ -598,7 +599,7 @@ TEST_P(MediaCodecVideoDecoderTest, TransitionToSameSurfaceIsIgnored) {
 TEST_P(MediaCodecVideoDecoderTest,
        ResetBeforeCodecInitializedSucceedsImmediately) {
   InitializeWithTextureOwner_OneDecodePending(TestVideoConfig::Large(codec_));
-  base::MockCallback<base::Closure> reset_cb;
+  base::MockCallback<base::OnceClosure> reset_cb;
   EXPECT_CALL(reset_cb, Run());
   mcvd_->Reset(reset_cb.Get());
   testing::Mock::VerifyAndClearExpectations(&reset_cb);
@@ -636,7 +637,7 @@ TEST_P(MediaCodecVideoDecoderTest, ResetDoesNotFlushAnAlreadyFlushedCodec) {
 
   // The codec is still in the flushed state so Reset() doesn't need to flush.
   EXPECT_CALL(*codec, Flush()).Times(0);
-  base::MockCallback<base::Closure> reset_cb;
+  base::MockCallback<base::OnceClosure> reset_cb;
   EXPECT_CALL(reset_cb, Run());
   mcvd_->Reset(reset_cb.Get());
   testing::Mock::VerifyAndClearExpectations(&decode_cb_);
@@ -652,7 +653,7 @@ TEST_P(MediaCodecVideoDecoderVp8Test, ResetDrainsVP8CodecsBeforeFlushing) {
   // The reset should not complete immediately because the codec needs to be
   // drained.
   EXPECT_CALL(*codec, Flush()).Times(0);
-  base::MockCallback<base::Closure> reset_cb;
+  base::MockCallback<base::OnceClosure> reset_cb;
   EXPECT_CALL(reset_cb, Run()).Times(0);
   mcvd_->Reset(reset_cb.Get());
 
@@ -721,7 +722,7 @@ TEST_P(MediaCodecVideoDecoderVp8Test, ResetDoesNotDrainVp8WithAsyncApi) {
   // The reset should complete immediately because the codec is not VP8 so
   // it doesn't need draining.  We don't expect a call to Flush on the codec
   // since it will be deferred until the first decode after the reset.
-  base::MockCallback<base::Closure> reset_cb;
+  base::MockCallback<base::OnceClosure> reset_cb;
   EXPECT_CALL(reset_cb, Run());
   mcvd_->Reset(reset_cb.Get());
   // The reset should complete before destroying the codec, since TearDown will
@@ -740,7 +741,7 @@ TEST_P(MediaCodecVideoDecoderH264Test, ResetDoesNotDrainNonVp8Codecs) {
   // The reset should complete immediately because the codec is not VP8 so
   // it doesn't need draining.  We don't expect a call to Flush on the codec
   // since it will be deferred until the first decode after the reset.
-  base::MockCallback<base::Closure> reset_cb;
+  base::MockCallback<base::OnceClosure> reset_cb;
   EXPECT_CALL(reset_cb, Run());
   mcvd_->Reset(reset_cb.Get());
   // The reset should complete before destroying the codec, since TearDown will
@@ -757,7 +758,7 @@ TEST_P(MediaCodecVideoDecoderVp8Test, TeardownCompletesPendingReset) {
   codec->AcceptOneInput();
   PumpCodec();
 
-  base::MockCallback<base::Closure> reset_cb;
+  base::MockCallback<base::OnceClosure> reset_cb;
   EXPECT_CALL(reset_cb, Run()).Times(0);
   mcvd_->Reset(reset_cb.Get());
   EXPECT_CALL(reset_cb, Run());

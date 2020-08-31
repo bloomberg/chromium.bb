@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 import {Destination, PrinterType} from 'chrome://print/print_preview.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {getPdfPrinter} from 'chrome://test/print_preview/print_preview_test_utils.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 
@@ -67,6 +70,12 @@ export class NativeLayerStub extends TestBrowserProxy {
      */
     this.shouldRejectPrinterSetup_ = false;
 
+    /** @private {?PromiseResolver} */
+    this.multipleCapabilitiesPromise_ = null;
+
+    /** @private {number} */
+    this.multipleCapabilitiesCount_ = 0;
+
     /**
      * @private {string} The ID of a printer with a bad driver.
      */
@@ -101,14 +110,14 @@ export class NativeLayerStub extends TestBrowserProxy {
   /** @override */
   getPrinters(type) {
     this.methodCalled('getPrinters', type);
-    if (type == PrinterType.LOCAL_PRINTER &&
+    if (type === PrinterType.LOCAL_PRINTER &&
         this.localDestinationInfos_.length > 0) {
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'printers-added', type, this.localDestinationInfos_);
     } else if (
-        type == PrinterType.EXTENSION_PRINTER &&
+        type === PrinterType.EXTENSION_PRINTER &&
         this.extensionDestinationInfos_.length > 0) {
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'printers-added', type, this.extensionDestinationInfos_);
     }
     return Promise.resolve();
@@ -118,20 +127,19 @@ export class NativeLayerStub extends TestBrowserProxy {
   getPreview(printTicket) {
     this.methodCalled('getPreview', {printTicket: printTicket});
     const printTicketParsed = JSON.parse(printTicket);
-    if (printTicketParsed.deviceName == this.badPrinterId_) {
+    if (printTicketParsed.deviceName === this.badPrinterId_) {
       return Promise.reject('SETTINGS_INVALID');
     }
     const pageRanges = printTicketParsed.pageRange;
     const requestId = printTicketParsed.requestID;
     if (this.pageLayoutInfo_) {
-      cr.webUIListenerCallback(
-          'page-layout-ready', this.pageLayoutInfo_, false);
+      webUIListenerCallback('page-layout-ready', this.pageLayoutInfo_, false);
     }
-    if (pageRanges.length == 0) {  // assume full length document, 1 page.
-      cr.webUIListenerCallback(
+    if (pageRanges.length === 0) {  // assume full length document, 1 page.
+      webUIListenerCallback(
           'page-count-ready', this.pageCount_, requestId, 100);
       for (let i = 0; i < this.pageCount_; i++) {
-        cr.webUIListenerCallback('page-preview-ready', i, 0, requestId);
+        webUIListenerCallback('page-preview-ready', i, 0, requestId);
       }
     } else {
       const pages = pageRanges.reduce(function(soFar, range) {
@@ -140,10 +148,10 @@ export class NativeLayerStub extends TestBrowserProxy {
         }
         return soFar;
       }, []);
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'page-count-ready', this.pageCount_, requestId, 100);
       pages.forEach(function(page) {
-        cr.webUIListenerCallback('page-preview-ready', page - 1, 0, requestId);
+        webUIListenerCallback('page-preview-ready', page - 1, 0, requestId);
       });
     }
     return Promise.resolve(requestId);
@@ -160,13 +168,20 @@ export class NativeLayerStub extends TestBrowserProxy {
     this.methodCalled(
         'getPrinterCapabilities',
         {destinationId: printerId, printerType: type});
-    if (printerId == Destination.GooglePromotedId.SAVE_AS_PDF) {
+    if (this.multipleCapabilitiesPromise_) {
+      this.multipleCapabilitiesCount_--;
+      if (this.multipleCapabilitiesCount_ === 0) {
+        this.multipleCapabilitiesPromise_.resolve();
+        this.multipleCapabilitiesPromise_ = null;
+      }
+    }
+    if (printerId === Destination.GooglePromotedId.SAVE_AS_PDF) {
       return Promise.resolve({
         deviceName: 'Save as PDF',
         capabilities: getPdfPrinter(),
       });
     }
-    if (type != PrinterType.LOCAL_PRINTER) {
+    if (type !== PrinterType.LOCAL_PRINTER) {
       return Promise.reject();
     }
     return this.localDestinationCapabilities_.get(printerId) ||
@@ -183,7 +198,7 @@ export class NativeLayerStub extends TestBrowserProxy {
   /** @override */
   print(printTicket) {
     this.methodCalled('print', printTicket);
-    if (JSON.parse(printTicket).printerType == PrinterType.CLOUD_PRINTER) {
+    if (JSON.parse(printTicket).printerType === PrinterType.CLOUD_PRINTER) {
       return Promise.resolve('sample data');
     }
     return Promise.resolve();
@@ -226,7 +241,7 @@ export class NativeLayerStub extends TestBrowserProxy {
       accounts.push('bar@chromium.org');
     }
     if (accounts.length > 0) {
-      cr.webUIListenerCallback('user-accounts-updated', accounts);
+      webUIListenerCallback('user-accounts-updated', accounts);
     }
   }
 
@@ -299,6 +314,17 @@ export class NativeLayerStub extends TestBrowserProxy {
   /** @param {!PageLayoutInfo} pageLayoutInfo */
   setPageLayoutInfo(pageLayoutInfo) {
     this.pageLayoutInfo_ = pageLayoutInfo;
+  }
+
+  /**
+   * @param {number} count The number of capability requests to wait for.
+   * @return {!Promise} Promise that resolves after |count| requests.
+   */
+  waitForMultipleCapabilities(count) {
+    assert(this.multipleCapabilitiesPromise_ === null);
+    this.multipleCapabilitiesCount_ = count;
+    this.multipleCapabilitiesPromise_ = new PromiseResolver();
+    return this.multipleCapabilitiesPromise_.promise;
   }
 
   /** @param {string} eulaUrl The eulaUrl of the PPD. */

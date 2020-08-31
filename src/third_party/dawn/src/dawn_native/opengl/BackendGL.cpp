@@ -14,13 +14,13 @@
 
 #include "dawn_native/opengl/BackendGL.h"
 
-#include "common/Constants.h"
+#include "common/GPUInfo.h"
+#include "common/Log.h"
 #include "dawn_native/Instance.h"
 #include "dawn_native/OpenGLBackend.h"
 #include "dawn_native/opengl/DeviceGL.h"
 
 #include <cstring>
-#include <iostream>
 
 namespace dawn_native { namespace opengl {
 
@@ -31,12 +31,12 @@ namespace dawn_native { namespace opengl {
             uint32_t vendorId;
         };
 
-        const Vendor kVendors[] = {{"ATI", kVendorID_AMD},
-                                   {"ARM", kVendorID_ARM},
-                                   {"Imagination", kVendorID_ImgTec},
-                                   {"Intel", kVendorID_Intel},
-                                   {"NVIDIA", kVendorID_Nvidia},
-                                   {"Qualcomm", kVendorID_Qualcomm}};
+        const Vendor kVendors[] = {{"ATI", gpu_info::kVendorID_AMD},
+                                   {"ARM", gpu_info::kVendorID_ARM},
+                                   {"Imagination", gpu_info::kVendorID_ImgTec},
+                                   {"Intel", gpu_info::kVendorID_Intel},
+                                   {"NVIDIA", gpu_info::kVendorID_Nvidia},
+                                   {"Qualcomm", gpu_info::kVendorID_Qualcomm}};
 
         uint32_t GetVendorIdFromVendors(const char* vendor) {
             uint32_t vendorId = 0;
@@ -102,11 +102,11 @@ namespace dawn_native { namespace opengl {
             }
 
             if (type == GL_DEBUG_TYPE_ERROR) {
-                std::cout << "OpenGL error:" << std::endl;
-                std::cout << "    Source: " << sourceText << std::endl;
-                std::cout << "    ID: " << id << std::endl;
-                std::cout << "    Severity: " << severityText << std::endl;
-                std::cout << "    Message: " << message << std::endl;
+                dawn::WarningLog() << "OpenGL error:"
+                                   << "\n    Source: " << sourceText      //
+                                   << "\n    ID: " << id                  //
+                                   << "\n    Severity: " << severityText  //
+                                   << "\n    Message: " << message;
 
                 // Abort on an error when in Debug mode.
                 UNREACHABLE();
@@ -119,7 +119,7 @@ namespace dawn_native { namespace opengl {
 
     class Adapter : public AdapterBase {
       public:
-        Adapter(InstanceBase* instance) : AdapterBase(instance, BackendType::OpenGL) {
+        Adapter(InstanceBase* instance) : AdapterBase(instance, wgpu::BackendType::OpenGL) {
         }
 
         MaybeError Initialize(const AdapterDiscoveryOptions* options) {
@@ -182,7 +182,7 @@ namespace dawn_native { namespace opengl {
         ResultOrError<DeviceBase*> CreateDeviceImpl(const DeviceDescriptor* descriptor) override {
             // There is no limit on the number of devices created from this adapter because they can
             // all share the same backing OpenGL context.
-            return {new Device(this, descriptor, mFunctions)};
+            return Device::Create(this, descriptor, mFunctions);
         }
 
         void InitializeSupportedExtensions() {
@@ -225,7 +225,8 @@ namespace dawn_native { namespace opengl {
 
     // Implementation of the OpenGL backend's BackendConnection
 
-    Backend::Backend(InstanceBase* instance) : BackendConnection(instance, BackendType::OpenGL) {
+    Backend::Backend(InstanceBase* instance)
+        : BackendConnection(instance, wgpu::BackendType::OpenGL) {
     }
 
     std::vector<std::unique_ptr<AdapterBase>> Backend::DiscoverDefaultAdapters() {
@@ -241,7 +242,7 @@ namespace dawn_native { namespace opengl {
             return DAWN_VALIDATION_ERROR("The OpenGL backend can only create a single adapter");
         }
 
-        ASSERT(optionsBase->backendType == BackendType::OpenGL);
+        ASSERT(optionsBase->backendType == WGPUBackendType_OpenGL);
         const AdapterDiscoveryOptions* options =
             static_cast<const AdapterDiscoveryOptions*>(optionsBase);
 

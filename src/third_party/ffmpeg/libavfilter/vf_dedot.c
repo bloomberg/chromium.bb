@@ -71,6 +71,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_YUV420P16, AV_PIX_FMT_YUV422P16, AV_PIX_FMT_YUV444P16,
         AV_PIX_FMT_YUVA420P9, AV_PIX_FMT_YUVA422P9, AV_PIX_FMT_YUVA444P9,
         AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA444P10,
+        AV_PIX_FMT_YUVA422P12, AV_PIX_FMT_YUVA444P12,
         AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
         AV_PIX_FMT_NONE
     };
@@ -312,7 +313,8 @@ static int activate(AVFilterContext *ctx)
                                                FFMIN(s->planeheight[2],
                                                ff_filter_get_nb_threads(ctx)));
                     }
-                }
+                } else
+                    av_frame_free(&out);
             } else if (!out) {
                 ret = AVERROR(ENOMEM);
             }

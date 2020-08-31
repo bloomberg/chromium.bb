@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
+import collections
 import logging
 import os
 import re
@@ -30,6 +31,7 @@ from dashboard.common import stored_object
 SHERIFF_DOMAINS_KEY = 'sheriff_domains_key'
 IP_WHITELIST_KEY = 'ip_whitelist'
 SERVICE_ACCOUNT_KEY = 'service_account'
+PINPOINT_REPO_EXCLUSION_KEY = 'pinpoint_repo_exclusions'
 EMAIL_SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 _PROJECT_ID_KEY = 'project_id'
 _DEFAULT_CUSTOM_METRIC_VAL = 1
@@ -43,6 +45,17 @@ _AUTOROLL_DOMAINS = (
     'skia-corp.google.com.iam.gserviceaccount.com',
     'skia-public.iam.gserviceaccount.com',
 )
+
+
+class _SimpleCache(
+    collections.namedtuple('_SimpleCache', ('timestamp', 'value'))):
+
+  def IsStale(self, ttl):
+    return time.time() - self.timestamp > ttl
+
+
+_PINPOINT_REPO_EXCLUSION_TTL = 60  # seconds
+_PINPOINT_REPO_EXCLUSION_CACHED = _SimpleCache(0, None)
 
 
 def IsDevAppserver():
@@ -585,6 +598,22 @@ def GetIpWhitelist():
   return stored_object.Get(IP_WHITELIST_KEY)
 
 
+def GetRepositoryExclusions():
+  # TODO(abennetts): determine if this caching hack is useful.
+  global _PINPOINT_REPO_EXCLUSION_CACHED
+  if _PINPOINT_REPO_EXCLUSION_CACHED.IsStale(_PINPOINT_REPO_EXCLUSION_TTL):
+    _PINPOINT_REPO_EXCLUSION_CACHED = _SimpleCache(
+        time.time(), _GetRepositoryExclusions())
+  return _PINPOINT_REPO_EXCLUSION_CACHED.value
+
+
+@ndb.transactional(propagation=ndb.TransactionOptions.INDEPENDENT, xg=True)
+def _GetRepositoryExclusions():
+  """Returns a list of repositories to exclude from bisection."""
+  # TODO(dberris): Move this to git-hosted configurations later.
+  return stored_object.Get(PINPOINT_REPO_EXCLUSION_KEY) or []
+
+
 def GetRequestId():
   """Returns the request log ID which can be used to find a specific log."""
   return os.environ.get('REQUEST_LOG_ID')
@@ -731,7 +760,7 @@ def GetSheriffForAutorollCommit(author, message):
     # Not an autoroll.
     return None
   # This is an autoroll. The sheriff should be the first person on TBR list.
-  m = re.search(r'TBR=([^,^\s]*)', message)
+  m = re.search(r'TBR[=:]\s*([^,^\s]*)', message, flags=re.IGNORECASE)
   if not m:
     return None
   return m.group(1)

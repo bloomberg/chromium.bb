@@ -5,6 +5,9 @@
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
 import android.view.View;
@@ -14,11 +17,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
@@ -27,8 +32,6 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class BaseSuggestionViewTest {
-    // Used as a (fixed) margin between screen edge and refine icon.
-    private int mSuggestionPaddingEndPx;
     // Used as a (fixed) width of a refine icon.
     private int mActionIconWidthPx;
 
@@ -37,6 +40,9 @@ public class BaseSuggestionViewTest {
     private View mRefineView;
     private View mDecoratedView;
     private View mContentView;
+
+    @Mock
+    SuggestionViewDelegate mMockDelegate;
 
     // IMPORTANT: We need to extend the tested class here to support functionality currently
     // omitted by Robolectric, that is relevant to the tests below (layout direction change).
@@ -74,7 +80,7 @@ public class BaseSuggestionViewTest {
         }
 
         View getDecoratedView() {
-            return mContentView;
+            return mDecoratedView;
         }
 
         View getRefineView() {
@@ -89,11 +95,10 @@ public class BaseSuggestionViewTest {
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
         mContentView = new View(mActivity);
         mView = new BaseSuggestionViewForTest(mContentView);
+        mView.setDelegate(mMockDelegate);
 
-        mSuggestionPaddingEndPx = mActivity.getResources().getDimensionPixelSize(
-                R.dimen.omnibox_suggestion_refine_view_modern_end_padding);
         mActionIconWidthPx = mActivity.getResources().getDimensionPixelSize(
-                R.dimen.omnibox_suggestion_refine_width);
+                R.dimen.omnibox_suggestion_action_icon_width);
 
         mRefineView = mView.getRefineView();
         mDecoratedView = mView.getDecoratedView();
@@ -132,6 +137,8 @@ public class BaseSuggestionViewTest {
     @Test
     public void layout_LtrRefineVisible() {
         final int useContentWidth = 120;
+        final int paddingStart = 12;
+        final int paddingEnd = 34;
 
         // Expectations (edge to edge):
         //
@@ -144,14 +151,15 @@ public class BaseSuggestionViewTest {
         // where ACT is action button and # is final padding.
 
         final int giveSuggestionWidth =
-                useContentWidth + mActionIconWidthPx + mSuggestionPaddingEndPx;
+                useContentWidth + mActionIconWidthPx + paddingStart + paddingEnd;
         final int giveContentHeight = 15;
 
-        final int expectedContentLeft = 0;
-        final int expectedContentRight = useContentWidth;
+        final int expectedContentLeft = paddingStart;
+        final int expectedContentRight = expectedContentLeft + useContentWidth;
         final int expectedRefineLeft = expectedContentRight;
-        final int expectedRefineRight = useContentWidth + mActionIconWidthPx;
+        final int expectedRefineRight = giveSuggestionWidth - paddingEnd;
 
+        mView.setPaddingRelative(paddingStart, 0, paddingEnd, 0);
         executeLayoutTest(giveSuggestionWidth, giveContentHeight, View.LAYOUT_DIRECTION_LTR);
 
         verifyViewLayout(
@@ -163,6 +171,8 @@ public class BaseSuggestionViewTest {
     @Test
     public void layout_RtlRefineVisible() {
         final int useContentWidth = 120;
+        final int paddingStart = 13;
+        final int paddingEnd = 57;
 
         // Expectations (edge to edge):
         //
@@ -175,14 +185,16 @@ public class BaseSuggestionViewTest {
         // where ACT is action button and # is final padding.
 
         final int giveSuggestionWidth =
-                useContentWidth + mActionIconWidthPx + mSuggestionPaddingEndPx;
+                useContentWidth + mActionIconWidthPx + paddingStart + paddingEnd;
         final int giveContentHeight = 25;
 
-        final int expectedRefineLeft = mSuggestionPaddingEndPx;
+        final int expectedRefineLeft = paddingEnd;
         final int expectedRefineRight = expectedRefineLeft + mActionIconWidthPx;
         final int expectedContentLeft = expectedRefineRight;
-        final int expectedContentRight = giveSuggestionWidth;
+        final int expectedContentRight = giveSuggestionWidth - paddingStart;
 
+        mView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        mView.setPaddingRelative(paddingStart, 0, paddingEnd, 0);
         executeLayoutTest(giveSuggestionWidth, giveContentHeight, View.LAYOUT_DIRECTION_RTL);
 
         verifyViewLayout(
@@ -206,12 +218,15 @@ public class BaseSuggestionViewTest {
 
         final int giveSuggestionWidth = 250;
         final int giveContentHeight = 15;
+        final int paddingStart = 11;
+        final int paddingEnd = 22;
 
-        final int expectedContentLeft = 0;
-        final int expectedContentRight = giveSuggestionWidth - mSuggestionPaddingEndPx;
+        final int expectedContentLeft = paddingStart;
+        final int expectedContentRight = giveSuggestionWidth - paddingEnd;
 
         mRefineView.setVisibility(View.GONE);
 
+        mView.setPaddingRelative(paddingStart, 0, paddingEnd, 0);
         executeLayoutTest(giveSuggestionWidth, giveContentHeight, View.LAYOUT_DIRECTION_LTR);
         verifyViewLayout(
                 mDecoratedView, expectedContentLeft, 0, expectedContentRight, giveContentHeight);
@@ -232,14 +247,30 @@ public class BaseSuggestionViewTest {
 
         final int giveSuggestionWidth = 250;
         final int giveContentHeight = 15;
+        final int paddingStart = 57;
+        final int paddingEnd = 31;
 
-        final int expectedContentLeft = mSuggestionPaddingEndPx;
-        final int expectedContentRight = giveSuggestionWidth;
+        final int expectedContentLeft = paddingEnd;
+        final int expectedContentRight = giveSuggestionWidth - paddingStart;
 
         mRefineView.setVisibility(View.GONE);
 
+        mView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        mView.setPaddingRelative(paddingStart, 0, paddingEnd, 0);
         executeLayoutTest(giveSuggestionWidth, giveContentHeight, View.LAYOUT_DIRECTION_RTL);
         verifyViewLayout(
                 mDecoratedView, expectedContentLeft, 0, expectedContentRight, giveContentHeight);
+    }
+
+    @Test
+    public void setSelected_emitsOmniboxUpdateWhenSelected() {
+        mView.setSelected(true);
+        verify(mMockDelegate, times(1)).onSetUrlToSuggestion();
+    }
+
+    @Test
+    public void setSelected_noOmniboxUpdateWhenDeselected() {
+        mView.setSelected(false);
+        verify(mMockDelegate, never()).onSetUrlToSuggestion();
     }
 }

@@ -7,11 +7,10 @@
 
 #include "include/gpu/GrContext.h"
 
+#include "include/core/SkDeferredDisplayList.h"
 #include "include/core/SkTraceMemoryDump.h"
 #include "include/gpu/GrBackendSemaphore.h"
-#include "include/private/SkDeferredDisplayList.h"
 #include "include/private/SkImageInfoPriv.h"
-#include "src/core/SkMakeUnique.h"
 #include "src/core/SkMipMap.h"
 #include "src/core/SkTaskGroup.h"
 #include "src/gpu/GrClientMappedBufferManager.h"
@@ -31,6 +30,7 @@
 #include "src/gpu/SkGr.h"
 #include "src/gpu/ccpr/GrCoverageCountingPathRenderer.h"
 #include "src/gpu/effects/GrSkSLFP.h"
+#include "src/gpu/text/GrStrikeCache.h"
 #include "src/gpu/text/GrTextBlobCache.h"
 #include "src/gpu/text/GrTextContext.h"
 #include "src/image/SkImage_GpuBase.h"
@@ -65,23 +65,23 @@ GrContext::~GrContext() {
     delete fResourceCache;
 }
 
-bool GrContext::init(sk_sp<const GrCaps> caps, sk_sp<GrSkSLFPFactoryCache> FPFactoryCache) {
+bool GrContext::init(sk_sp<const GrCaps> caps) {
     ASSERT_SINGLE_OWNER
     SkASSERT(fThreadSafeProxy); // needs to have been initialized by derived classes
     SkASSERT(this->proxyProvider());
 
-    if (!INHERITED::init(std::move(caps), std::move(FPFactoryCache))) {
+    if (!INHERITED::init(std::move(caps))) {
         return false;
     }
 
     SkASSERT(this->caps());
-    SkASSERT(this->getGrStrikeCache());
     SkASSERT(this->getTextBlobCache());
 
     if (fGpu) {
+        fStrikeCache.reset(new GrStrikeCache{});
         fResourceCache = new GrResourceCache(this->caps(), this->singleOwner(), this->contextID());
         fResourceProvider = new GrResourceProvider(fGpu.get(), fResourceCache, this->singleOwner());
-        fMappedBufferManager = skstd::make_unique<GrClientMappedBufferManager>(this->contextID());
+        fMappedBufferManager = std::make_unique<GrClientMappedBufferManager>(this->contextID());
     }
 
     if (fResourceCache) {
@@ -93,7 +93,7 @@ bool GrContext::init(sk_sp<const GrCaps> caps, sk_sp<GrSkSLFPFactoryCache> FPFac
     // DDL TODO: we need to think through how the task group & persistent cache
     // get passed on to/shared between all the DDLRecorders created with this context.
     if (this->options().fExecutor) {
-        fTaskGroup = skstd::make_unique<SkTaskGroup>(*this->options().fExecutor);
+        fTaskGroup = std::make_unique<SkTaskGroup>(*this->options().fExecutor);
     }
 
     fPersistentCache = this->options().fPersistentCache;
@@ -112,11 +112,13 @@ sk_sp<GrContextThreadSafeProxy> GrContext::threadSafeProxy() {
 //////////////////////////////////////////////////////////////////////////////
 
 void GrContext::abandonContext() {
-    if (this->abandoned()) {
+    if (INHERITED::abandoned()) {
         return;
     }
 
     INHERITED::abandonContext();
+
+    fStrikeCache->freeAll();
 
     fMappedBufferManager->abandon();
 
@@ -136,7 +138,7 @@ void GrContext::abandonContext() {
 }
 
 void GrContext::releaseResourcesAndAbandonContext() {
-    if (this->abandoned()) {
+    if (INHERITED::abandoned()) {
         return;
     }
 
@@ -156,6 +158,18 @@ void GrContext::releaseResourcesAndAbandonContext() {
     fGpu->disconnect(GrGpu::DisconnectType::kCleanup);
 }
 
+bool GrContext::abandoned() {
+    if (INHERITED::abandoned()) {
+        return true;
+    }
+
+    if (fGpu && fGpu->isDeviceLost()) {
+        this->abandonContext();
+        return true;
+    }
+    return false;
+}
+
 void GrContext::resetGLTextureBindings() {
     if (this->abandoned() || this->backend() != GrBackendApi::kOpenGL) {
         return;
@@ -173,7 +187,7 @@ void GrContext::freeGpuResources() {
 
     // TODO: the glyph cache doesn't hold any GpuResources so this call should not be needed here.
     // Some slack in the GrTextBlob's implementation requires it though. That could be fixed.
-    this->getGrStrikeCache()->freeAll();
+    fStrikeCache->freeAll();
 
     this->drawingManager()->freeGpuResources();
 
@@ -305,8 +319,21 @@ GrSemaphoresSubmitted GrContext::flush(const GrFlushInfo& info,
         return GrSemaphoresSubmitted::kNo;
     }
 
-    return this->drawingManager()->flush(nullptr, 0, SkSurface::BackendSurfaceAccess::kNoAccess,
-                                         info, externalRequests);
+    bool submitted = false;
+    if (this->drawingManager()->flush(nullptr, 0, SkSurface::BackendSurfaceAccess::kNoAccess,
+                                      info, externalRequests)) {
+        bool forceSync = SkToBool(info.fFlags & kSyncCpu_GrFlushFlag);
+        submitted = this->drawingManager()->submitToGpu(forceSync);
+    }
+
+    if (!submitted || (!this->priv().caps()->semaphoreSupport() && info.fNumSemaphores)) {
+        return GrSemaphoresSubmitted::kNo;
+    }
+    return GrSemaphoresSubmitted::kYes;
+}
+
+bool GrContext::submit(bool syncToCpu) {
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -381,13 +408,8 @@ GrBackendTexture GrContext::createBackendTexture(int width, int height,
         return GrBackendTexture();
     }
 
-    int numMipLevels = 1;
-    if (mipMapped == GrMipMapped::kYes) {
-        numMipLevels = SkMipMap::ComputeLevelCount(width, height) + 1;
-    }
-
-    return fGpu->createBackendTexture({width, height}, backendFormat, renderable, nullptr,
-                                      numMipLevels, isProtected);
+    return fGpu->createBackendTexture({width, height}, backendFormat, renderable,
+                                      mipMapped, isProtected);
 }
 
 GrBackendTexture GrContext::createBackendTexture(int width, int height,
@@ -440,35 +462,68 @@ GrBackendTexture GrContext::createBackendTexture(const SkSurfaceCharacterization
 }
 
 GrBackendTexture GrContext::createBackendTexture(const SkSurfaceCharacterization& c,
-                                                 const SkColor4f& color) {
+                                                 const SkColor4f& color,
+                                                 GrGpuFinishedProc finishedProc,
+                                                 GrGpuFinishedContext finishedContext) {
     if (!this->asDirectContext() || !c.isValid()) {
-        return GrBackendTexture();
+        finishedProc(finishedContext);
+        return {};
     }
 
     if (this->abandoned()) {
-        return GrBackendTexture();
+        finishedProc(finishedContext);
+        return {};
     }
 
     if (c.usesGLFBO0()) {
+        finishedProc(finishedContext);
         // If we are making the surface we will never use FBO0.
-        return GrBackendTexture();
+        return {};
     }
 
     if (c.vulkanSecondaryCBCompatible()) {
+        finishedProc(finishedContext);
         return {};
     }
 
     const GrBackendFormat format = this->defaultBackendFormat(c.colorType(), GrRenderable::kYes);
     if (!format.isValid()) {
-        return GrBackendTexture();
+        finishedProc(finishedContext);
+        return {};
     }
 
     GrBackendTexture result = this->createBackendTexture(c.width(), c.height(), format, color,
                                                          GrMipMapped(c.isMipMapped()),
                                                          GrRenderable::kYes,
-                                                         c.isProtected());
+                                                         c.isProtected(), finishedProc,
+                                                         finishedContext);
     SkASSERT(c.isCompatible(result));
     return result;
+}
+
+static GrBackendTexture create_and_update_backend_texture(GrContext* context,
+                                                          SkISize dimensions,
+                                                          const GrBackendFormat& backendFormat,
+                                                          GrMipMapped mipMapped,
+                                                          GrRenderable renderable,
+                                                          GrProtected isProtected,
+                                                          GrGpuFinishedProc finishedProc,
+                                                          GrGpuFinishedContext finishedContext,
+                                                          const GrGpu::BackendTextureData* data) {
+    GrGpu* gpu = context->priv().getGpu();
+
+    GrBackendTexture beTex = gpu->createBackendTexture(dimensions, backendFormat, renderable,
+                                                       mipMapped, isProtected);
+    if (!beTex.isValid()) {
+        return {};
+    }
+
+    if (!context->priv().getGpu()->updateBackendTexture(beTex, finishedProc, finishedContext,
+                                                        data)) {
+        context->deleteBackendTexture(beTex);
+        return {};
+    }
+    return beTex;
 }
 
 GrBackendTexture GrContext::createBackendTexture(int width, int height,
@@ -476,23 +531,24 @@ GrBackendTexture GrContext::createBackendTexture(int width, int height,
                                                  const SkColor4f& color,
                                                  GrMipMapped mipMapped,
                                                  GrRenderable renderable,
-                                                 GrProtected isProtected) {
+                                                 GrProtected isProtected,
+                                                 GrGpuFinishedProc finishedProc,
+                                                 GrGpuFinishedContext finishedContext) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     if (!this->asDirectContext()) {
-        return GrBackendTexture();
+        finishedProc(finishedContext);
+        return {};
     }
 
     if (this->abandoned()) {
-        return GrBackendTexture();
+        finishedProc(finishedContext);
+        return {};
     }
 
-    int numMipLevels = 1;
-    if (mipMapped == GrMipMapped::kYes) {
-        numMipLevels = SkMipMap::ComputeLevelCount(width, height) + 1;
-    }
     GrGpu::BackendTextureData data(color);
-    return fGpu->createBackendTexture({width, height}, backendFormat, renderable, &data,
-                                      numMipLevels, isProtected);
+    return create_and_update_backend_texture(this, {width, height}, backendFormat, mipMapped,
+                                             renderable, isProtected, finishedProc, finishedContext,
+                                             &data);
 }
 
 GrBackendTexture GrContext::createBackendTexture(int width, int height,
@@ -500,40 +556,50 @@ GrBackendTexture GrContext::createBackendTexture(int width, int height,
                                                  const SkColor4f& color,
                                                  GrMipMapped mipMapped,
                                                  GrRenderable renderable,
-                                                 GrProtected isProtected) {
+                                                 GrProtected isProtected,
+                                                 GrGpuFinishedProc finishedProc,
+                                                 GrGpuFinishedContext finishedContext) {
     if (!this->asDirectContext()) {
-        return GrBackendTexture();
+        finishedProc(finishedContext);
+        return {};
     }
 
     if (this->abandoned()) {
-        return GrBackendTexture();
+        finishedProc(finishedContext);
+        return {};
     }
 
     GrBackendFormat format = this->defaultBackendFormat(skColorType, renderable);
     if (!format.isValid()) {
-        return GrBackendTexture();
+        finishedProc(finishedContext);
+        return {};
     }
 
     GrColorType grColorType = SkColorTypeToGrColorType(skColorType);
-    SkColor4f swizzledColor = this->caps()->getOutputSwizzle(format, grColorType).applyTo(color);
+    SkColor4f swizzledColor = this->caps()->getWriteSwizzle(format, grColorType).applyTo(color);
 
     return this->createBackendTexture(width, height, format, swizzledColor, mipMapped, renderable,
-                                      isProtected);
+                                      isProtected, finishedProc, finishedContext);
 }
 
-GrBackendTexture GrContext::createBackendTexture(const SkPixmap srcData[], int numLevels,
-                                                 GrRenderable renderable, GrProtected isProtected) {
+GrBackendTexture GrContext::createBackendTexture(const SkPixmap srcData[], int numProvidedLevels,
+                                                 GrRenderable renderable, GrProtected isProtected,
+                                                 GrGpuFinishedProc finishedProc,
+                                                 GrGpuFinishedContext finishedContext) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
 
     if (!this->asDirectContext()) {
+        finishedProc(finishedContext);
         return {};
     }
 
     if (this->abandoned()) {
+        finishedProc(finishedContext);
         return {};
     }
 
-    if (!srcData || !numLevels) {
+    if (!srcData || numProvidedLevels <= 0) {
+        finishedProc(finishedContext);
         return {};
     }
 
@@ -541,16 +607,182 @@ GrBackendTexture GrContext::createBackendTexture(const SkPixmap srcData[], int n
     int baseHeight = srcData[0].height();
     SkColorType colorType = srcData[0].colorType();
 
+    GrMipMapped mipMapped = GrMipMapped::kNo;
+    int numExpectedLevels = 1;
+    if (numProvidedLevels > 1) {
+        numExpectedLevels = SkMipMap::ComputeLevelCount(baseWidth, baseHeight) + 1;
+        mipMapped = GrMipMapped::kYes;
+    }
+
+    if (numProvidedLevels != numExpectedLevels) {
+        finishedProc(finishedContext);
+        return {};
+    }
+
     GrBackendFormat backendFormat = this->defaultBackendFormat(colorType, renderable);
 
     GrGpu::BackendTextureData data(srcData);
-    return fGpu->createBackendTexture({baseWidth, baseHeight}, backendFormat, renderable, &data,
-                                      numLevels, isProtected);
+    return create_and_update_backend_texture(this, {baseWidth, baseHeight}, backendFormat,
+                                             mipMapped, renderable, isProtected, finishedProc,
+                                             finishedContext, &data);
+}
+
+bool GrContext::updateBackendTexture(const GrBackendTexture& backendTexture,
+                                     const SkColor4f& color,
+                                     GrGpuFinishedProc finishedProc,
+                                     GrGpuFinishedContext finishedContext) {
+    if (!this->asDirectContext()) {
+        finishedProc(finishedContext);
+        return false;
+    }
+
+    if (this->abandoned()) {
+        finishedProc(finishedContext);
+        return false;
+    }
+
+    GrGpu::BackendTextureData data(color);
+    return fGpu->updateBackendTexture(backendTexture, finishedProc, finishedContext, &data);
+}
+
+bool GrContext::updateBackendTexture(const GrBackendTexture& backendTexture,
+                                     const SkPixmap srcData[],
+                                     int numLevels,
+                                     GrGpuFinishedProc finishedProc,
+                                     GrGpuFinishedContext finishedContext) {
+    if (!this->asDirectContext()) {
+        finishedProc(finishedContext);
+        return false;
+    }
+
+    if (this->abandoned()) {
+        finishedProc(finishedContext);
+        return false;
+    }
+
+    if (!srcData || numLevels <= 0) {
+        finishedProc(finishedContext);
+        return false;
+    }
+
+    int numExpectedLevels = 1;
+    if (backendTexture.hasMipMaps()) {
+        numExpectedLevels = SkMipMap::ComputeLevelCount(backendTexture.width(),
+                                                        backendTexture.height()) + 1;
+    }
+    if (numLevels != numExpectedLevels) {
+        finishedProc(finishedContext);
+        return false;
+    }
+
+    GrGpu::BackendTextureData data(srcData);
+    return fGpu->updateBackendTexture(backendTexture, finishedProc, finishedContext, &data);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+GrBackendTexture GrContext::createCompressedBackendTexture(int width, int height,
+                                                           const GrBackendFormat& backendFormat,
+                                                           const SkColor4f& color,
+                                                           GrMipMapped mipMapped,
+                                                           GrProtected isProtected,
+                                                           GrGpuFinishedProc finishedProc,
+                                                           GrGpuFinishedContext finishedContext) {
+    TRACE_EVENT0("skia.gpu", TRACE_FUNC);
+    if (!this->asDirectContext()) {
+        finishedProc(finishedContext);
+        return {};
+    }
+
+    if (this->abandoned()) {
+        finishedProc(finishedContext);
+        return {};
+    }
+
+    GrGpu::BackendTextureData data(color);
+    return fGpu->createCompressedBackendTexture({width, height}, backendFormat,
+                                                mipMapped, isProtected, finishedProc,
+                                                finishedContext, &data);
+}
+
+GrBackendTexture GrContext::createCompressedBackendTexture(int width, int height,
+                                                           SkImage::CompressionType compression,
+                                                           const SkColor4f& color,
+                                                           GrMipMapped mipMapped,
+                                                           GrProtected isProtected,
+                                                           GrGpuFinishedProc finishedProc,
+                                                           GrGpuFinishedContext finishedContext) {
+    TRACE_EVENT0("skia.gpu", TRACE_FUNC);
+    if (!this->asDirectContext()) {
+        finishedProc(finishedContext);
+        return {};
+    }
+
+    if (this->abandoned()) {
+        finishedProc(finishedContext);
+        return {};
+    }
+
+    GrBackendFormat format = this->compressedBackendFormat(compression);
+    return this->createCompressedBackendTexture(width, height, format, color,
+                                                mipMapped, isProtected, finishedProc,
+                                                finishedContext);
+}
+
+GrBackendTexture GrContext::createCompressedBackendTexture(int width, int height,
+                                                           const GrBackendFormat& backendFormat,
+                                                           const void* compressedData,
+                                                           size_t dataSize,
+                                                           GrMipMapped mipMapped,
+                                                           GrProtected isProtected,
+                                                           GrGpuFinishedProc finishedProc,
+                                                           GrGpuFinishedContext finishedContext) {
+    TRACE_EVENT0("skia.gpu", TRACE_FUNC);
+    if (!this->asDirectContext()) {
+        finishedProc(finishedContext);
+        return {};
+    }
+
+    if (this->abandoned()) {
+        finishedProc(finishedContext);
+        return {};
+    }
+
+    GrGpu::BackendTextureData data(compressedData, dataSize);
+    return fGpu->createCompressedBackendTexture({width, height}, backendFormat,
+                                                mipMapped, isProtected, finishedProc,
+                                                finishedContext, &data);
+}
+
+GrBackendTexture GrContext::createCompressedBackendTexture(int width, int height,
+                                                           SkImage::CompressionType compression,
+                                                           const void* data, size_t dataSize,
+                                                           GrMipMapped mipMapped,
+                                                           GrProtected isProtected,
+                                                           GrGpuFinishedProc finishedProc,
+                                                           GrGpuFinishedContext finishedContext) {
+    TRACE_EVENT0("skia.gpu", TRACE_FUNC);
+    if (!this->asDirectContext()) {
+        finishedProc(finishedContext);
+        return {};
+    }
+
+    if (this->abandoned()) {
+        finishedProc(finishedContext);
+        return {};
+    }
+
+    GrBackendFormat format = this->compressedBackendFormat(compression);
+    return this->createCompressedBackendTexture(width, height, format, data, dataSize,
+                                                mipMapped, isProtected, finishedProc,
+                                                finishedContext);
 }
 
 void GrContext::deleteBackendTexture(GrBackendTexture backendTex) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
-    if (this->abandoned() || !backendTex.isValid()) {
+    // For the Vulkan backend we still must destroy the backend texture when the context is
+    // abandoned.
+    if ((this->abandoned() && this->backend() != GrBackendApi::kVulkan) || !backendTex.isValid()) {
         return;
     }
 
@@ -562,6 +794,7 @@ bool GrContext::precompileShader(const SkData& key, const SkData& data) {
 }
 
 #ifdef SK_ENABLE_DUMP_GPU
+#include "include/core/SkString.h"
 #include "src/utils/SkJSONWriter.h"
 SkString GrContext::dump() const {
     SkDynamicMemoryWStream stream;
@@ -575,6 +808,9 @@ SkString GrContext::dump() const {
 
     writer.appendName("gpu");
     this->fGpu->dumpJSON(&writer);
+
+    writer.appendName("context");
+    this->dumpJSON(&writer);
 
     // Flush JSON to the memory stream
     writer.endObject();

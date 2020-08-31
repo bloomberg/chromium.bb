@@ -80,6 +80,7 @@ ModelTypeRegistry::~ModelTypeRegistry() {}
 void ModelTypeRegistry::ConnectNonBlockingType(
     ModelType type,
     std::unique_ptr<DataTypeActivationResponse> activation_response) {
+  DCHECK(!IsProxyType(type));
   DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
@@ -129,7 +130,16 @@ void ModelTypeRegistry::ConnectNonBlockingType(
       worker_ptr->AsWeakPtr(), base::SequencedTaskRunnerHandle::Get()));
 
   // Attempt migration if necessary.
-  if (do_migration) {
+  if (do_migration && type == BOOKMARKS) {
+    // Almost all bookmarks are known to have migrated so let's avoid the USS
+    // migrator for bookmarks, since it's known to be problematic and hard to
+    // maintain (diverges from the data fetched from the actual server).
+    //
+    // Instead, the local copy in the directory should be purged, and the
+    // initial data fetched from the server.
+    directory()->PurgeEntriesWithTypeIn(ModelTypeSet(BOOKMARKS), ModelTypeSet(),
+                                        ModelTypeSet());
+  } else if (do_migration) {
     // TODO(crbug.com/658002): Store a pref before attempting migration
     // indicating that it was attempted so we can avoid failure loops.
     int migrated_entity_count = 0;
@@ -163,6 +173,8 @@ void ModelTypeRegistry::ConnectNonBlockingType(
 
 void ModelTypeRegistry::DisconnectNonBlockingType(ModelType type) {
   DVLOG(1) << "Disabling an off-thread sync type: " << ModelTypeToString(type);
+
+  DCHECK(!IsProxyType(type));
   DCHECK(update_handler_map_.find(type) != update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) != commit_contributor_map_.end());
 
@@ -236,8 +248,19 @@ void ModelTypeRegistry::UnregisterDirectoryType(ModelType type) {
   data_type_debug_info_emitter_map_.erase(type);
 }
 
+void ModelTypeRegistry::ConnectProxyType(ModelType type) {
+  DCHECK(IsProxyType(type));
+  enabled_proxy_types_.Put(type);
+}
+
+void ModelTypeRegistry::DisconnectProxyType(ModelType type) {
+  DCHECK(IsProxyType(type));
+  enabled_proxy_types_.Remove(type);
+}
+
 ModelTypeSet ModelTypeRegistry::GetEnabledTypes() const {
-  return Union(GetEnabledDirectoryTypes(), GetEnabledNonBlockingTypes());
+  return Union(Union(GetEnabledDirectoryTypes(), GetEnabledNonBlockingTypes()),
+               enabled_proxy_types_);
 }
 
 ModelTypeSet ModelTypeRegistry::GetInitialSyncEndedTypes() const {

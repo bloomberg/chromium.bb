@@ -5,11 +5,14 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
-import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -36,9 +39,12 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
      */
     static class MockAutofillAssistantActionHandler extends AutofillAssistantActionHandlerImpl {
         public MockAutofillAssistantActionHandler(Context context,
-                BottomSheetController bottomSheetController, ScrimView scrimView,
-                GetCurrentTab getCurrentTab) {
-            super(context, bottomSheetController, scrimView, getCurrentTab);
+                BottomSheetController bottomSheetController,
+                ChromeFullscreenManager fullscreenManager,
+                CompositorViewHolder compositorViewHolder, ActivityTabProvider activityTabProvider,
+                ScrimView scrimView) {
+            super(context, bottomSheetController, fullscreenManager, compositorViewHolder,
+                    activityTabProvider, scrimView);
         }
 
         @Override
@@ -57,16 +63,21 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
     /** Mock module entry. */
     static class MockAutofillAssistantModuleEntry implements AutofillAssistantModuleEntry {
         @Override
-        public void start(@NonNull Tab tab, @NonNull WebContents webContents,
-                boolean skipOnboarding, String initialUrl, Map<String, String> parameters,
-                String experimentIds, Bundle intentExtras) {}
+        public void start(BottomSheetController bottomSheetController,
+                ChromeFullscreenManager fullscreenManager,
+                CompositorViewHolder compositorViewHolder, ScrimView scrimView, Context context,
+                @NonNull WebContents webContents, boolean skipOnboarding, boolean isChromeCustomTab,
+                @NonNull String initialUrl, Map<String, String> parameters, String experimentIds,
+                @Nullable String callerAccount, @Nullable String userName) {}
 
         @Override
         public AutofillAssistantActionHandler createActionHandler(Context context,
-                BottomSheetController bottomSheetController, ScrimView scrimView,
-                GetCurrentTab getCurrentTab) {
-            return new MockAutofillAssistantActionHandler(
-                    context, bottomSheetController, scrimView, getCurrentTab);
+                BottomSheetController bottomSheetController,
+                ChromeFullscreenManager fullscreenManager,
+                CompositorViewHolder compositorViewHolder, ActivityTabProvider activityTabProvider,
+                ScrimView scrimView) {
+            return new MockAutofillAssistantActionHandler(context, bottomSheetController,
+                    fullscreenManager, compositorViewHolder, activityTabProvider, scrimView);
         }
     }
 

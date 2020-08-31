@@ -13,6 +13,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -22,8 +23,8 @@
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
 #import "ios/chrome/browser/ui/history/history_entry_item_delegate.h"
-#include "ios/chrome/browser/ui/history/history_local_commands.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
+#include "ios/chrome/browser/ui/history/history_ui_delegate.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
@@ -33,13 +34,13 @@
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
-#import "ios/chrome/common/favicon/favicon_view.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#include "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/favicon/favicon_view.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/referrer.h"
@@ -122,8 +123,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 #pragma mark - ViewController Lifecycle.
 
 - (instancetype)init {
-  return [super initWithTableViewStyle:UITableViewStylePlain
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  return [super initWithStyle:UITableViewStylePlain];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -163,10 +163,10 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.clearsSelectionOnViewWillAppear = NO;
   self.tableView.allowsMultipleSelection = YES;
-  // Add a tableFooterView in order to disable separators at the bottom of the
-  // tableView.
-  self.tableView.tableFooterView = [[UIView alloc] init];
   self.tableView.accessibilityIdentifier = kHistoryTableViewIdentifier;
+  // Add a tableFooterView in order to hide the separator lines where there's no
+  // history content.
+  self.tableView.tableFooterView = [[UIView alloc] init];
 
   // ContextMenu gesture recognizer.
   UILongPressGestureRecognizer* longPressRecognizer = [
@@ -257,7 +257,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // If history sync is enabled and there hasn't been a response from synced
   // history, try fetching again.
   SyncSetupService* syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(_browserState);
+      SyncSetupServiceFactory::GetForBrowserState(_browser->GetBrowserState());
   if (syncSetupService->IsSyncEnabled() &&
       syncSetupService->IsDataTypeActive(syncer::HISTORY_DELETE_DIRECTIVES) &&
       queryResultsInfo.sync_timed_out) {
@@ -488,9 +488,10 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
-  // Call the localDispatcher dismissHistoryWithCompletion to clean up state and
+  base::RecordAction(base::UserMetricsAction("IOSHistoryCloseWithSwipe"));
+  // Call the delegate dismissHistoryWithCompletion to clean up state and
   // stop the Coordinator.
-  [self.localDispatcher dismissHistoryWithCompletion:nil];
+  [self.delegate dismissHistoryWithCompletion:nil];
 }
 
 #pragma mark - History Data Updates
@@ -627,7 +628,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  [super scrollViewDidScroll:scrollView];
 
   if (self.hasFinishedLoading)
     return;
@@ -1003,6 +1003,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
       base::SysUTF16ToNSString(url_formatter::FormatUrl(entry.URL));
   self.contextMenuCoordinator = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:self.navigationController
+                         browser:_browser
                            title:menuTitle
                           inView:self.tableView
                       atLocation:touchLocation];
@@ -1041,8 +1042,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   base::RecordAction(
       base::UserMetricsAction("MobileHistoryPage_EntryLinkOpenNewTab"));
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
-  [self.localDispatcher dismissHistoryWithCompletion:^{
-    UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
+  [self.delegate dismissHistoryWithCompletion:^{
+    UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
 }
@@ -1053,8 +1054,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
       "MobileHistoryPage_EntryLinkOpenNewIncognitoTab"));
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   params.in_incognito = YES;
-  [self.localDispatcher dismissHistoryWithCompletion:^{
-    UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
+  [self.delegate dismissHistoryWithCompletion:^{
+    UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
     [self.presentationDelegate showActiveIncognitoTabFromHistory];
   }];
 }
@@ -1063,32 +1064,35 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Opens URL in the current tab and dismisses the history view.
 - (void)openURL:(const GURL&)URL {
-  new_tab_page_uma::RecordAction(_browserState,
-                                 new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
+  new_tab_page_uma::RecordAction(
+      _browser->GetBrowserState(),
+      _browser->GetWebStateList()->GetActiveWebState(),
+      new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
   UrlLoadParams params = UrlLoadParams::InCurrentTab(URL);
   params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   params.load_strategy = self.loadStrategy;
-  [self.localDispatcher dismissHistoryWithCompletion:^{
-    UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
+  [self.delegate dismissHistoryWithCompletion:^{
+    UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
 }
 
 // Dismisses this ViewController.
 - (void)dismissHistory {
-  [self.localDispatcher dismissHistoryWithCompletion:nil];
+  base::RecordAction(base::UserMetricsAction("MobileHistoryClose"));
+  [self.delegate dismissHistoryWithCompletion:nil];
 }
 
 - (void)openPrivacySettings {
   base::RecordAction(
       base::UserMetricsAction("HistoryPage_InitClearBrowsingData"));
-  [self.localDispatcher displayPrivacySettings];
+  [self.delegate displayPrivacySettings];
 }
 
 #pragma mark - Accessibility
 
 - (BOOL)accessibilityPerformEscape {
-  [self.localDispatcher dismissHistoryWithCompletion:nil];
+  [self.delegate dismissHistoryWithCompletion:nil];
   return YES;
 }
 

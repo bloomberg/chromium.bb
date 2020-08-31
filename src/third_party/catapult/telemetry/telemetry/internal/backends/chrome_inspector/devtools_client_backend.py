@@ -8,6 +8,7 @@ import socket
 import sys
 
 from py_utils import exc_util
+from py_utils import retry_util
 from telemetry.core import exceptions
 from telemetry import decorators
 from telemetry.internal.backends import browser_backend
@@ -59,6 +60,9 @@ def GetDevToolsBackEndIfReady(devtools_port, app_backend, browser_target=None):
   return client
 
 
+class FuchsiaBrowserTargetNotFoundException(Exception):
+  pass
+
 class _DevToolsClientBackend(object):
   """An object that communicates with Chrome's devtools.
 
@@ -103,6 +107,14 @@ class _DevToolsClientBackend(object):
 
   @property
   def browser_target_url(self):
+    # For Fuchsia browsers, we get the browser_target through a JSON request
+    if self.platform_backend.GetOSName() == 'fuchsia':
+      resp = self.GetVersion()
+      if 'webSocketDebuggerUrl' in resp:
+        return resp['webSocketDebuggerUrl']
+      else:
+        raise FuchsiaBrowserTargetNotFoundException(
+            'Could not get the browser target.')
     return 'ws://127.0.0.1:%i%s' % (self._local_port, self._browser_target)
 
   @property
@@ -130,6 +142,23 @@ class _DevToolsClientBackend(object):
       self.Close()  # Close any connections made if failed to connect to all.
       raise
 
+  @retry_util.RetryOnException(devtools_http.DevToolsClientUrlError, retries=3)
+  def _WaitForConnection(self, retries=None):
+    del retries
+    self._devtools_http.Request('')
+
+  def _SetUpPortForwarding(self, devtools_port):
+    self._forwarder = self.platform_backend.forwarder_factory.Create(
+        local_port=None,  # Forwarder will choose an available port.
+        remote_port=devtools_port, reverse=True)
+    self._local_port = self._forwarder._local_port
+    self._remote_port = self._forwarder._remote_port
+    self._devtools_http = devtools_http.DevToolsHttp(self.local_port)
+
+    # For Fuchsia, wait until port forwarding has started working.
+    if self.platform_backend.GetOSName() == 'fuchsia':
+      self._WaitForConnection()
+
   def _Connect(self, devtools_port, browser_target):
     """Attempt to connect to the DevTools client.
 
@@ -142,13 +171,8 @@ class _DevToolsClientBackend(object):
       Any of _DEVTOOLS_CONNECTION_ERRORS if failed to establish the connection.
     """
     self._browser_target = browser_target or '/devtools/browser'
-    self._forwarder = self.platform_backend.forwarder_factory.Create(
-        local_port=None,  # Forwarder will choose an available port.
-        remote_port=devtools_port, reverse=True)
-    self._local_port = self._forwarder._local_port
-    self._remote_port = self._forwarder._remote_port
+    self._SetUpPortForwarding(devtools_port)
 
-    self._devtools_http = devtools_http.DevToolsHttp(self.local_port)
     # If the agent is not alive and ready, trying to get the branch number will
     # raise a devtools_http.DevToolsClientConnectionError.
     branch_number = self.GetChromeBranchNumber()
@@ -378,9 +402,7 @@ class _DevToolsClientBackend(object):
     """Obtain the inspector backend for the firstly created tab."""
     return next(self._IterInspectorBackends(['page']), None)
 
-  # TODO(crbug.com/1027667): Reduce the timeout once we collect traces from
-  # Chrome in proto instead of JSON format (see also crbug.com/1026822).
-  def CollectChromeTracingData(self, trace_data_builder, timeout=600):
+  def CollectChromeTracingData(self, trace_data_builder, timeout=120):
     self._tracing_backend.CollectTraceData(trace_data_builder, timeout)
 
   # This call may be made early during browser bringup and may cause the

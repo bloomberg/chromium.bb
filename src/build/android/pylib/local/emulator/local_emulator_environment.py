@@ -4,7 +4,12 @@
 
 import logging
 
+from devil import base_error
+from devil.android import device_errors
+from devil.android import device_utils
 from devil.utils import parallelizer
+from devil.utils import reraiser_thread
+from devil.utils import timeout_retry
 from pylib.local.device import local_device_environment
 from pylib.local.emulator import avd
 
@@ -24,6 +29,11 @@ class LocalEmulatorEnvironment(local_device_environment.LocalDeviceEnvironment):
       logging.warning('--emulator-count capped at 16.')
     self._emulator_count = min(_MAX_ANDROID_EMULATORS, args.emulator_count)
     self._emulator_window = args.emulator_window
+    self._writable_system = ((hasattr(args, 'use_webview_provider')
+                              and args.use_webview_provider)
+                             or (hasattr(args, 'replace_system_package')
+                                 and args.replace_system_package))
+
     self._emulator_instances = []
     self._device_serials = []
 
@@ -36,12 +46,32 @@ class LocalEmulatorEnvironment(local_device_environment.LocalDeviceEnvironment):
     ]
 
     def start_emulator_instance(e):
-      try:
-        e.Start(window=self._emulator_window)
+
+      def impl(e):
+        try:
+          e.Start(
+              window=self._emulator_window,
+              writable_system=self._writable_system)
+        except avd.AvdException:
+          logging.exception('Failed to start emulator instance.')
+          return None
+        try:
+          device_utils.DeviceUtils(e.serial).WaitUntilFullyBooted()
+        except base_error.BaseError:
+          e.Stop()
+          raise
         return e
-      except avd.AvdException:
-        logging.exception('Failed to start emulator instance.')
-        return None
+
+      def retry_on_timeout(exc):
+        return (isinstance(exc, device_errors.CommandTimeoutError)
+                or isinstance(exc, reraiser_thread.TimeoutError))
+
+      return timeout_retry.Run(
+          impl,
+          timeout=120 if self._writable_system else 30,
+          retries=2,
+          args=[e],
+          retry_if_func=retry_on_timeout)
 
     parallel_emulators = parallelizer.SyncParallelizer(emulator_instances)
     self._emulator_instances = [

@@ -9,7 +9,6 @@ from __future__ import absolute_import
 import collections
 import itertools
 import logging
-import math
 
 from dashboard.common import math_utils
 from dashboard.pinpoint.models import change as change_module
@@ -158,9 +157,10 @@ class PrepareCommits(collections.namedtuple('PrepareCommits', ('job', 'task'))):
 
   @task_module.LogStateTransitionFailures
   def __call__(self, _):
-    start_change = change_module.Change.FromDict(
+    start_change = change_module.ReconstituteChange(
         self.task.payload['start_change'])
-    end_change = change_module.Change.FromDict(self.task.payload['end_change'])
+    end_change = change_module.ReconstituteChange(
+        self.task.payload['end_change'])
     try:
       # We're storing this once, so that we don't need to always get this when
       # working with the individual commits. This reduces our reliance on
@@ -229,13 +229,13 @@ class PrepareCommits(collections.namedtuple('PrepareCommits', ('job', 'task'))):
 
 class RefineExplorationAction(
     collections.namedtuple('RefineExplorationAction',
-                           ('job', 'task', 'change', 'additional_attempts'))):
+                           ('job', 'task', 'change', 'new_size'))):
   __slots__ = ()
 
   def __str__(self):
     return ('RefineExplorationAction(job = %s, task = %s, change = %s, +%s '
             'attempts)') % (self.job.job_id, self.task.id,
-                            self.change.id_string, self.additional_attempts)
+                            self.change.id_string, self.new_size)
 
   def __call__(self, accumulator):
     # Outline:
@@ -263,11 +263,9 @@ class RefineExplorationAction(
         mode=read_option_template_map.get('mode'))
 
     analysis_options_dict = self.task.payload.get('analysis_options')
-    if self.additional_attempts:
+    if self.new_size:
       analysis_options_dict['min_attempts'] = min(
-          analysis_options_dict.get('min_attempts', 0) +
-          self.additional_attempts,
-          analysis_options_dict.get('max_attempts', 100))
+          self.new_size, analysis_options_dict.get('max_attempts', 100))
     analysis_options = AnalysisOptions(**analysis_options_dict)
 
     new_subgraph = read_value.CreateGraph(
@@ -276,20 +274,45 @@ class RefineExplorationAction(
                                self.change,
                                self.task.payload.get('arguments', {})))
     try:
+      # Add all of the new vertices we do not have in the graph yet.
+      additional_vertices = [
+          v for v in new_subgraph.vertices if v.id not in accumulator
+      ]
+
+      # All all of the new edges that aren't in the graph yet, and the
+      # dependencies from the find_culprit task to the new read_value tasks if
+      # there are any.
+      additional_dependencies = [
+          new_edge for new_edge in new_subgraph.edges
+          if new_edge.from_ not in accumulator
+      ] + [
+          task_module.Dependency(from_=self.task.id, to=v.id)
+          for v in new_subgraph.vertices
+          if v.id not in accumulator and v.vertex_type == 'read_value'
+      ]
+
+      logging.debug(
+          'Extending the graph with %s new vertices and %s new edges.',
+          len(additional_vertices), len(additional_dependencies))
       task_module.ExtendTaskGraph(
           self.job,
-          vertices=[
-              # Add all of the new vertices we do not have in the graph yet.
-              v for v in new_subgraph.vertices if v.id not in accumulator
-          ],
-          dependencies=[
-              # Only add dependencies to the new 'read_value' tasks.
-              task_module.Dependency(from_=self.task.id, to=v.id)
-              for v in new_subgraph.vertices
-              if v.id not in accumulator and v.vertex_type == 'read_value'
-          ])
+          vertices=additional_vertices,
+          dependencies=additional_dependencies)
     except task_module.InvalidAmendment as e:
       logging.error('Failed to amend graph: %s', e)
+
+
+class UpdateTaskPayloadAction(
+    collections.namedtuple('UpdateTaskPayloadAction', ('job', 'task'))):
+  __slots__ = ()
+
+  def __str__(self):
+    return 'UpdateTaskPayloadAction(job = %s, task = %s)' % (self.job.job_id,
+                                                             self.task.id)
+
+  @task_module.LogStateTransitionFailures
+  def __call__(self, _):
+    task_module.UpdateTask(self.job, self.task.id, payload=self.task.payload)
 
 
 class CompleteExplorationAction(
@@ -338,6 +361,31 @@ class FindCulprit(collections.namedtuple('FindCulprit', ('job'))):
     if task.status == 'pending':
       return [PrepareCommits(self.job, task)]
 
+    all_changes = None
+    actions = []
+    if 'changes' not in task.payload:
+      all_changes = [
+          change_module.Change(
+              commits=[
+                  change_module.Commit(
+                      repository=commit.get('repository'),
+                      git_hash=commit.get('git_hash'))
+              ],
+              patch=task.payload.get('pinned_change'))
+          for commit in task.payload.get('commits', [])
+      ]
+      task.payload.update({
+          'changes': [change.AsDict() for change in all_changes],
+      })
+      actions.append(UpdateTaskPayloadAction(self.job, task))
+    else:
+      # We need to reconstitute the Change instances from the dicts we've stored
+      # in the payload.
+      all_changes = [
+          change_module.ReconstituteChange(change)
+          for change in task.payload.get('changes')
+      ]
+
     if task.status == 'ongoing':
       # TODO(dberris): Validate and fail gracefully instead of asserting?
       assert 'commits' in task.payload, ('Programming error, need commits to '
@@ -353,10 +401,7 @@ class FindCulprit(collections.namedtuple('FindCulprit', ('job'))):
       changes_with_data = set()
       changes_by_status = collections.defaultdict(set)
 
-      # TODO(dberris): Determine a better way of creating these Change objects
-      # which doesn't involve these .FromDict(...) calls which might force calls
-      # to back-end services.
-      associated_results = [(change_module.Change.FromDict(t.get('change')),
+      associated_results = [(change_module.ReconstituteChange(t.get('change')),
                              t.get('status'), t.get('result_values'))
                             for dep, t in accumulator.items()
                             if dep in deps]
@@ -369,8 +414,7 @@ class FindCulprit(collections.namedtuple('FindCulprit', ('job'))):
             status: status_by_change[change].get(status, 0) + 1,
         })
         changes_by_status[status].add(change)
-        if status not in {'ongoing', 'pending'}:
-          changes_with_data.add(change)
+        changes_with_data.add(change)
 
       # If the dependencies have converged into a single status, we can make
       # decisions on the terminal state of the bisection.
@@ -378,10 +422,10 @@ class FindCulprit(collections.namedtuple('FindCulprit', ('job'))):
 
         # Check whether all dependencies are completed and if we do
         # not have data in any of the dependencies.
-        if changes_by_status['completed'] == changes_with_data:
+        if changes_by_status.get('completed') == changes_with_data:
           changes_with_empty_results = [
               change for change in changes_with_data
-              if not results_by_change[change]
+              if not results_by_change.get(change)
           ]
           if changes_with_empty_results:
             task.payload.update({
@@ -394,9 +438,8 @@ class FindCulprit(collections.namedtuple('FindCulprit', ('job'))):
                     }]
             })
             return [CompleteExplorationAction(self.job, task, 'failed')]
-
         # Check whether all the dependencies had the tests fail consistently.
-        if changes_by_status['failed'] == changes_with_data:
+        elif changes_by_status.get('failed') == changes_with_data:
           task.payload.update({
               'errors':
                   task.payload.get('errors', []) + [{
@@ -405,26 +448,14 @@ class FindCulprit(collections.namedtuple('FindCulprit', ('job'))):
                   }]
           })
           return [CompleteExplorationAction(self.job, task, 'failed')]
+        # If they're all pending or ongoing, then we don't do anything yet.
+        else:
+          return actions
 
       # We want to reduce the list of ordered changes to only the ones that have
       # data available.
-      all_changes = [
-          change_module.Change(
-              commits=[
-                  change_module.Commit(
-                      repository=commit.get('repository'),
-                      git_hash=commit.get('git_hash'))
-              ],
-              patch=task.payload.get('pinned_change'))
-          for commit in task.payload.get('commits', [])
-      ]
       change_index = {change: index for index, change in enumerate(all_changes)}
       ordered_changes = [c for c in all_changes if c in changes_with_data]
-
-      if len(ordered_changes) < 2:
-        # We do not have enough data yet to determine whether we should do
-        # anything.
-        return None
 
       # From here we can then do the analysis on a pairwise basis, as we're
       # going through the list of Change instances we have data for.
@@ -433,6 +464,9 @@ class FindCulprit(collections.namedtuple('FindCulprit', ('job'))):
       def Compare(a, b):
         # This is the comparison function which determines whether the samples
         # we have from the two changes (a and b) are statistically significant.
+        if a is None or b is None:
+          return None
+
         if 'pending' in status_by_change[a] or 'pending' in status_by_change[b]:
           return compare.PENDING
 
@@ -445,13 +479,20 @@ class FindCulprit(collections.namedtuple('FindCulprit', ('job'))):
         # statistically significant.
         values_for_a = tuple(itertools.chain(*results_by_change[a]))
         values_for_b = tuple(itertools.chain(*results_by_change[b]))
+
+        if not values_for_a:
+          return None
+        if not values_for_b:
+          return None
+
         max_iqr = max(
             math_utils.Iqr(values_for_a), math_utils.Iqr(values_for_b), 0.001)
         comparison_magnitude = task.payload.get('comparison_magnitude',
                                                 1.0) / max_iqr
         attempts = (len(values_for_a) + len(values_for_b)) // 2
-        return compare.Compare(values_for_a, values_for_b, attempts,
-                               'performance', comparison_magnitude)
+        result = compare.Compare(values_for_a, values_for_b, attempts,
+                                 'performance', comparison_magnitude)
+        return result.result
 
       def DetectChange(change_a, change_b):
         # We return None if the comparison determines that the result is
@@ -468,18 +509,22 @@ class FindCulprit(collections.namedtuple('FindCulprit', ('job'))):
         # two changes when compared yield the "unknown" result.
         attempts_for_a = sum(status_by_change[a].values())
         attempts_for_b = sum(status_by_change[b].values())
-        if min(attempts_for_a, attempts_for_b) == task.payload.get(
-            'analysis_options').get('max_attempts'):
-          return None
 
-        # Grow the attempts by 50% every time when increasing attempt counts.
-        # This number is arbitrary, and we should probably use something like a
-        # Fibonacci sequence when scaling attempt counts.
-        additional_attempts = int(
-            math.floor(min(attempts_for_a, attempts_for_b) * 0.5))
-        changes_to_refine.append(
-            (a if attempts_for_a <= attempts_for_b else b, additional_attempts))
-        return None
+        # Grow the attempts of both changes by 50% every time when increasing
+        # attempt counts. This number is arbitrary, and we should probably use
+        # something like a Fibonacci sequence when scaling attempt counts.
+        new_attempts_size_a = min(
+            attempts_for_a + (attempts_for_a // 2),
+            task.payload.get('analysis_options', {}).get('max_attempts', 100))
+        new_attempts_size_b = min(
+            attempts_for_b + (attempts_for_b // 2),
+            task.payload.get('analysis_options', {}).get('max_attempts', 100))
+
+        # Only refine if the new attempt sizes are not large enough.
+        if new_attempts_size_a > attempts_for_a:
+          changes_to_refine.append((a, new_attempts_size_a))
+        if new_attempts_size_b > attempts_for_b:
+          changes_to_refine.append((b, new_attempts_size_b))
 
       def FindMidpoint(a, b):
         # Here we use the (very simple) midpoint finding algorithm given that we
@@ -489,6 +534,40 @@ class FindCulprit(collections.namedtuple('FindCulprit', ('job'))):
         subrange = all_changes[a_index:b_index + 1]
         return None if len(subrange) <= 2 else subrange[len(subrange) // 2]
 
+      # We have a striding iterable, which will give us the before, current, and
+      # after for a given index in the iterable.
+      def SlidingTriple(iterable):
+        """s -> (None, s0, s1), (s0, s1, s2), (s1, s2, s3), ..."""
+        p, c, n = itertools.tee(iterable, 3)
+        p = itertools.chain([None], p)
+        n = itertools.chain(itertools.islice(n, 1, None), [None])
+        return itertools.izip(p, c, n)
+
+      # This is a comparison between values at a change and the values at
+      # the previous change and the next change.
+      comparisons = [{
+          'prev': Compare(p, c),
+          'next': Compare(c, n),
+      } for (p, c, n) in SlidingTriple(ordered_changes)]
+
+      # Collect the result values for each change with values.
+      result_values = [
+          list(itertools.chain(*results_by_change.get(change, [])))
+          for change in ordered_changes
+      ]
+      if task.payload.get('comparisons') != comparisons or task.payload.get(
+          'result_values') != result_values:
+        task.payload.update({
+            'comparisons': comparisons,
+            'result_values': result_values,
+        })
+        actions.append(UpdateTaskPayloadAction(self.job, task))
+
+      if len(ordered_changes) < 2:
+        # We do not have enough data yet to determine whether we should do
+        # anything.
+        return actions
+
       additional_changes = exploration.Speculate(
           ordered_changes,
           change_detected=DetectChange,
@@ -497,13 +576,17 @@ class FindCulprit(collections.namedtuple('FindCulprit', ('job'))):
           levels=_DEFAULT_SPECULATION_LEVELS)
 
       # At this point we can collect the actions to extend the task graph based
-      # on the results of the speculation.
-      actions = [
-          RefineExplorationAction(self.job, task, change, more_attempts)
-          for change, more_attempts in itertools.chain(
-              [(c, 0) for _, c in additional_changes],
+      # on the results of the speculation, only if the changes don't have any
+      # more associated pending/ongoing work.
+      min_attempts = task.payload.get('analysis_options',
+                                      {}).get('min_attempts', 10)
+      actions += [
+          RefineExplorationAction(self.job, task, change, new_size)
+          for change, new_size in itertools.chain(
+              [(c, min_attempts) for _, c in additional_changes],
               [(c, a) for c, a in changes_to_refine],
           )
+          if not bool({'pending', 'ongoing'} & set(status_by_change[change]))
       ]
 
       # Here we collect the points where we've found the changes.
@@ -513,14 +596,13 @@ class FindCulprit(collections.namedtuple('FindCulprit', ('job'))):
         next(b, None)
         return itertools.izip(a, b)
 
-      logging.debug('Updating with changes and culprits: %s', ordered_changes)
       task.payload.update({
-          'changes': [change.AsDict() for change in ordered_changes],
           'culprits': [(a.AsDict(), b.AsDict())
                        for a, b in Pairwise(ordered_changes)
-                       if DetectChange(a, b)]
+                       if DetectChange(a, b)],
       })
-      if not actions:
+      can_complete = not bool(set(changes_by_status) - {'failed', 'completed'})
+      if not actions and can_complete:
         # Mark this operation complete, storing the differences we can compute.
         actions = [CompleteExplorationAction(self.job, task, 'completed')]
       return actions
@@ -546,14 +628,15 @@ def AnalysisSerializer(task, _, accumulator):
   if read_option_template.get('mode') == 'graph_json':
     metric = graph_json_options.get('chart')
   analysis_results.update({
-      'comparison_mode':
-          task.payload.get('comparison_mode'),
-      'metric':
-          metric,
       'changes': [
-          change_module.Change.FromDict(change)
-          for change in task.payload.get('changes')
-      ]
+          change_module.ReconstituteChange(change)
+          for change in task.payload.get('changes', [])
+      ],
+      'comparison_mode': task.payload.get('comparison_mode'),
+      'comparisons': task.payload.get('comparisons', []),
+      'culprits': task.payload.get('culprits', []),
+      'metric': metric,
+      'result_values': task.payload.get('result_values', [])
   })
 
 

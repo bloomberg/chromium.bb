@@ -8,10 +8,9 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/favicon_url.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -24,6 +23,7 @@ WebAppIconDownloader::WebAppIconDownloader(
     WebAppIconDownloaderCallback callback)
     : content::WebContentsObserver(web_contents),
       need_favicon_urls_(true),
+      fail_all_if_any_fail_(false),
       extra_favicon_urls_(extra_favicon_urls),
       callback_(std::move(callback)),
       histogram_(histogram) {}
@@ -32,6 +32,10 @@ WebAppIconDownloader::~WebAppIconDownloader() {}
 
 void WebAppIconDownloader::SkipPageFavicons() {
   need_favicon_urls_ = false;
+}
+
+void WebAppIconDownloader::FailAllIfAnyFail() {
+  fail_all_if_any_fail_ = true;
 }
 
 void WebAppIconDownloader::Start() {
@@ -44,11 +48,12 @@ void WebAppIconDownloader::Start() {
   FetchIcons(extra_favicon_urls_);
 
   if (need_favicon_urls_) {
-    std::vector<content::FaviconURL> favicon_tab_helper_urls =
-        GetFaviconURLsFromWebContents();
-    if (!favicon_tab_helper_urls.empty()) {
+    // The call to `GetFaviconURLsFromWebContents()` is to allow this method to
+    // be mocked by unit tests.
+    const auto& favicon_urls = GetFaviconURLsFromWebContents();
+    if (!favicon_urls.empty()) {
       need_favicon_urls_ = false;
-      FetchIcons(favicon_tab_helper_urls);
+      FetchIcons(favicon_urls);
     }
   }
 }
@@ -64,24 +69,17 @@ int WebAppIconDownloader::DownloadImage(const GURL& url) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-std::vector<content::FaviconURL>
+const std::vector<blink::mojom::FaviconURLPtr>&
 WebAppIconDownloader::GetFaviconURLsFromWebContents() {
-  favicon::ContentFaviconDriver* content_favicon_driver =
-      web_contents()
-          ? favicon::ContentFaviconDriver::FromWebContents(web_contents())
-          : nullptr;
-  // If favicon_urls() is empty, we are guaranteed that DidUpdateFaviconURLs has
-  // not yet been called for the current page's navigation.
-  return content_favicon_driver ? content_favicon_driver->favicon_urls()
-                                : std::vector<content::FaviconURL>();
+  return web_contents()->GetFaviconURLs();
 }
 
 void WebAppIconDownloader::FetchIcons(
-    const std::vector<content::FaviconURL>& favicon_urls) {
+    const std::vector<blink::mojom::FaviconURLPtr>& favicon_urls) {
   std::vector<GURL> urls;
-  for (auto it = favicon_urls.begin(); it != favicon_urls.end(); ++it) {
-    if (it->icon_type != content::FaviconURL::IconType::kInvalid)
-      urls.push_back(it->icon_url);
+  for (const auto& favicon_url : favicon_urls) {
+    if (favicon_url->icon_type != blink::mojom::FaviconIconType::kInvalid)
+      urls.push_back(favicon_url->icon_url);
   }
   FetchIcons(urls);
 }
@@ -131,11 +129,16 @@ void WebAppIconDownloader::DidDownloadFavicon(
     base::UmaHistogramExactLinear(histogram_name, http_status_code / 100, 5);
   }
 
+  if (fail_all_if_any_fail_ && bitmaps.empty()) {
+    CancelDownloads();
+    return;
+  }
+
   icons_map_[image_url] = bitmaps;
 
   // Once all requests have been resolved, perform post-download tasks.
   if (in_progress_requests_.empty() && !need_favicon_urls_) {
-    std::move(callback_).Run(true, std::move(icons_map_));
+    std::move(callback_).Run(/*success=*/true, std::move(icons_map_));
   }
 }
 
@@ -146,14 +149,11 @@ void WebAppIconDownloader::DidFinishNavigation(
       !navigation_handle->HasCommitted() || navigation_handle->IsSameDocument())
     return;
 
-  // Clear all pending requests.
-  in_progress_requests_.clear();
-  icons_map_.clear();
-  std::move(callback_).Run(false, icons_map_);
+  CancelDownloads();
 }
 
 void WebAppIconDownloader::DidUpdateFaviconURL(
-    const std::vector<content::FaviconURL>& candidates) {
+    const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   // Only consider the first candidates we are given. This prevents pages that
   // change their favicon from spamming us.
   if (!need_favicon_urls_)
@@ -161,6 +161,13 @@ void WebAppIconDownloader::DidUpdateFaviconURL(
 
   need_favicon_urls_ = false;
   FetchIcons(candidates);
+}
+
+void WebAppIconDownloader::CancelDownloads() {
+  in_progress_requests_.clear();
+  icons_map_.clear();
+  if (callback_)
+    std::move(callback_).Run(/*success=*/false, icons_map_);
 }
 
 }  // namespace web_app

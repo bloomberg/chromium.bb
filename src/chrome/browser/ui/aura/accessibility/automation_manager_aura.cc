@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "components/crash/core/common/crash_key.h"
+#include "ui/accessibility/aura/aura_window_properties.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -17,7 +18,6 @@
 #include "ui/accessibility/ax_event_bundle_sink.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/accessibility/ax_tree_source_checker.h"
-#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -94,7 +94,7 @@ void AutomationManagerAura::HandleEvent(ax::mojom::Event event_type) {
   if (!obj)
     return;
 
-  AutomationManagerAura::PostEvent(obj->GetUniqueId(), event_type);
+  PostEvent(obj->GetUniqueId(), event_type);
 }
 
 void AutomationManagerAura::HandleAlert(const std::string& text) {
@@ -141,9 +141,10 @@ AutomationManagerAura::~AutomationManagerAura() = default;
 
 void AutomationManagerAura::Reset(bool reset_serializer) {
   if (!current_tree_) {
-    desktop_root_ = std::make_unique<AXRootObjWrapper>(this, cache_.get());
+    auto desktop_root = std::make_unique<AXRootObjWrapper>(this, cache_.get());
     current_tree_ = std::make_unique<views::AXTreeSourceViews>(
-        desktop_root_.get(), ax_tree_id(), cache_.get());
+        desktop_root.get(), ax_tree_id(), cache_.get());
+    cache_->CreateOrReplace(std::move(desktop_root));
   }
   if (reset_serializer) {
     current_tree_serializer_.reset();

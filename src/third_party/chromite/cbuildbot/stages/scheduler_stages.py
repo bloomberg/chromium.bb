@@ -13,7 +13,6 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import buildbucket_lib
 from chromite.lib import build_requests
 from chromite.lib import constants
-from chromite.lib import config_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import request_build
@@ -139,7 +138,7 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
       logging.info('No buildbucket_client. Skip scheduling slaves.')
       return
 
-    build_identifier, db = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id
     if build_id is None:
       logging.info('No build id. Skip scheduling slaves.')
@@ -191,9 +190,6 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
           logging.warning('Failed to schedule %s current timestamp %s: %s',
                           slave_config_name, current_ts, e)
 
-    if config_lib.IsMasterCQ(self._run.config) and db and scheduled_build_reqs:
-      db.InsertBuildRequests(scheduled_build_reqs)
-
     self._run.attrs.metadata.ExtendKeyListWithList(
         constants.METADATA_SCHEDULED_IMPORTANT_SLAVES,
         scheduled_important_slave_builds)
@@ -205,11 +201,5 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
-    if (config_lib.IsMasterCQ(self._run.config) and
-        not self.sync_stage.pool.HasPickedUpCLs()):
-      logging.info('No new CLs or chumpped CLs found to verify in this CQ run,'
-                   'do not schedule CQ slaves.')
-      return
-
     self.ScheduleSlaveBuildsViaBuildbucket(
         important_only=False, dryrun=self._run.options.debug)

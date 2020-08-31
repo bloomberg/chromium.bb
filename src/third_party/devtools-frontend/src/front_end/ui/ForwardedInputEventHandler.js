@@ -1,17 +1,27 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as Host from '../host/host.js';
+
+import {KeyboardShortcut} from './KeyboardShortcut.js';
+import {ForwardedShortcut} from './ShortcutRegistry.js';
+
 /**
  * @unrestricted
  */
-export default class ForwardedInputEventHandler {
+export class ForwardedInputEventHandler {
   constructor() {
-    Host.InspectorFrontendHost.events.addEventListener(
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.KeyEventUnhandled, this._onKeyEventUnhandled, this);
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onKeyEventUnhandled(event) {
     const data = event.data;
@@ -24,17 +34,10 @@ export default class ForwardedInputEventHandler {
       return;
     }
 
-    UI.context.setFlavor(UI.ShortcutRegistry.ForwardedShortcut, UI.ShortcutRegistry.ForwardedShortcut.instance);
-    UI.shortcutRegistry.handleKey(UI.KeyboardShortcut.makeKey(keyCode, modifiers), key);
-    UI.context.setFlavor(UI.ShortcutRegistry.ForwardedShortcut, null);
+    self.UI.context.setFlavor(ForwardedShortcut, ForwardedShortcut.instance);
+    self.UI.shortcutRegistry.handleKey(KeyboardShortcut.makeKey(keyCode, modifiers), key);
+    self.UI.context.setFlavor(ForwardedShortcut, null);
   }
 }
 
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.ForwardedInputEventHandler = ForwardedInputEventHandler;
+new ForwardedInputEventHandler();

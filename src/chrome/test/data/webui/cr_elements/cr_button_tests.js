@@ -18,8 +18,8 @@ suite('cr-button', function() {
 
   /** @param {string} key */
   function press(key) {
-    button.dispatchEvent(new KeyboardEvent('keydown', {key: key}));
-    button.dispatchEvent(new KeyboardEvent('keyup', {key: key}));
+    button.dispatchEvent(new KeyboardEvent('keydown', {key}));
+    button.dispatchEvent(new KeyboardEvent('keyup', {key}));
   }
 
   test('label is displayed', async () => {
@@ -66,9 +66,21 @@ suite('cr-button', function() {
   });
 
   test('when tabindex is -1, it stays -1', async () => {
-    document.body.innerHTML = '<cr-button tabindex="-1"></cr-button>';
+    document.body.innerHTML = '<cr-button custom-tab-index="-1"></cr-button>';
     button = document.body.querySelector('cr-button');
     assertEquals('-1', button.getAttribute('tabindex'));
+    button.disabled = true;
+    assertEquals('-1', button.getAttribute('tabindex'));
+    button.disabled = false;
+    assertEquals('-1', button.getAttribute('tabindex'));
+  });
+
+  test('tabindex update', async () => {
+    document.body.innerHTML = '<cr-button></cr-button>';
+    button = document.body.querySelector('cr-button');
+    assertEquals('0', button.getAttribute('tabindex'));
+    button.customTabIndex = 1;
+    assertEquals('1', button.getAttribute('tabindex'));
   });
 
   test('hidden', () => {
@@ -87,5 +99,29 @@ suite('cr-button', function() {
     const wait = test_util.eventToPromise('tap', button);
     button.click();
     await wait;
+  });
+
+  test('space up does not click without space down', () => {
+    let clicked = false;
+    button.addEventListener('click', () => {
+      clicked = true;
+    }, {once: true});
+    button.dispatchEvent(new KeyboardEvent('keyup', {key: ' '}));
+    assertFalse(clicked);
+    press(' ');
+    assertTrue(clicked);
+  });
+
+  test('space up events will not result in one click if loses focus', () => {
+    let clicked = false;
+    button.addEventListener('click', () => {
+      clicked = true;
+    }, {once: true});
+    button.dispatchEvent(new KeyboardEvent('keydown', {key: ' '}));
+    button.dispatchEvent(new Event('blur'));
+    button.dispatchEvent(new KeyboardEvent('keyup', {key: ' '}));
+    assertFalse(clicked);
+    press(' ');
+    assertTrue(clicked);
   });
 });

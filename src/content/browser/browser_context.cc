@@ -16,24 +16,25 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/guid.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
-#include "base/rand_util.h"
+#include "base/notreached.h"
 #include "base/supports_user_data.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "content/browser/background_sync/background_sync_scheduler.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browsing_data/browsing_data_remover_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -42,35 +43,28 @@
 #include "content/browser/media/browser_feature_provider.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/push_messaging/push_messaging_router.h"
+#include "content/browser/speech/tts_controller_impl.h"
 #include "content/browser/storage_partition_impl_map.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
 #include "media/base/media_switches.h"
 #include "media/capabilities/in_memory_video_decode_stats_db_impl.h"
 #include "media/capabilities/video_decode_stats_db_impl.h"
 #include "media/learning/common/media_learning_tasks.h"
 #include "media/learning/impl/learning_session_impl.h"
 #include "media/mojo/services/video_decode_perf_history.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "services/content/service.h"
 #include "services/network/public/cpp/features.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/file_system/external_mount_points.h"
@@ -80,26 +74,6 @@ using base::UserDataAdapter;
 namespace content {
 
 namespace {
-
-using TokenToContextMap = std::map<base::Token, BrowserContext*>;
-TokenToContextMap& GetTokenToContextMap() {
-  static base::NoDestructor<TokenToContextMap> map;
-  return *map;
-}
-
-class ServiceInstanceGroupHolder : public base::SupportsUserData::Data {
- public:
-  explicit ServiceInstanceGroupHolder(const base::Token& instance_group)
-      : instance_group_(instance_group) {}
-  ~ServiceInstanceGroupHolder() override {}
-
-  const base::Token& instance_group() const { return instance_group_; }
-
- private:
-  base::Token instance_group_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceInstanceGroupHolder);
-};
 
 class ContentServiceHolder : public base::SupportsUserData::Data {
  public:
@@ -124,8 +98,6 @@ const char kBrowsingDataRemoverKey[] = "browsing-data-remover";
 const char kContentServiceKey[] = "content-service";
 const char kDownloadManagerKeyName[] = "download_manager";
 const char kPermissionControllerKey[] = "permission-controller";
-const char kServiceManagerConnection[] = "service-manager-connection";
-const char kServiceInstanceGroup[] = "service-instance-group";
 const char kStoragePartitionMapKeyName[] = "content_storage_partition_map";
 const char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
 const char kLearningSession[] = "learning-session";
@@ -133,16 +105,6 @@ const char kLearningSession[] = "learning-session";
 #if defined(OS_CHROMEOS)
 const char kMountPointsKey[] = "mount_points";
 #endif  // defined(OS_CHROMEOS)
-
-void RemoveBrowserContextFromInstanceGroupMap(BrowserContext* browser_context) {
-  ServiceInstanceGroupHolder* holder = static_cast<ServiceInstanceGroupHolder*>(
-      browser_context->GetUserData(kServiceInstanceGroup));
-  if (holder) {
-    auto it = GetTokenToContextMap().find(holder->instance_group());
-    if (it != GetTokenToContextMap().end())
-      GetTokenToContextMap().erase(it);
-  }
-}
 
 StoragePartitionImplMap* GetStoragePartitionMap(
     BrowserContext* browser_context) {
@@ -179,11 +141,6 @@ void SaveSessionStateOnIOThread(AppCacheServiceImpl* appcache_service) {
   appcache_service->set_force_keep_session_state();
 }
 
-void SaveSessionStateOnIndexedDBThread(
-    scoped_refptr<IndexedDBContext> indexed_db_context) {
-  indexed_db_context->SetForceKeepSessionState();
-}
-
 void ShutdownServiceWorkerContext(StoragePartition* partition) {
   ServiceWorkerContextWrapper* wrapper =
       static_cast<ServiceWorkerContextWrapper*>(
@@ -199,26 +156,6 @@ void SetDownloadManager(
   context->SetUserData(kDownloadManagerKeyName, std::move(download_manager));
 }
 
-class BrowserContextServiceManagerConnectionHolder
-    : public base::SupportsUserData::Data {
- public:
-  explicit BrowserContextServiceManagerConnectionHolder(
-      service_manager::mojom::ServiceRequest request)
-      : service_manager_connection_(ServiceManagerConnection::Create(
-            std::move(request),
-            base::CreateSingleThreadTaskRunner({BrowserThread::IO}))) {}
-  ~BrowserContextServiceManagerConnectionHolder() override {}
-
-  ServiceManagerConnection* service_manager_connection() {
-    return service_manager_connection_.get();
-  }
-
- private:
-  std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserContextServiceManagerConnectionHolder);
-};
-
 base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetterForBrowser(
     scoped_refptr<ChromeBlobStorageContext> blob_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -231,18 +168,18 @@ base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetterForBrowser(
 void BrowserContext::AsyncObliterateStoragePartition(
     BrowserContext* browser_context,
     const std::string& partition_domain,
-    const base::Closure& on_gc_required) {
+    base::OnceClosure on_gc_required) {
   GetStoragePartitionMap(browser_context)
-      ->AsyncObliterate(partition_domain, on_gc_required);
+      ->AsyncObliterate(partition_domain, std::move(on_gc_required));
 }
 
 // static
 void BrowserContext::GarbageCollectStoragePartitions(
     BrowserContext* browser_context,
     std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   GetStoragePartitionMap(browser_context)
-      ->GarbageCollect(std::move(active_paths), done);
+      ->GarbageCollect(std::move(active_paths), std::move(done));
 }
 
 DownloadManager* BrowserContext::GetDownloadManager(BrowserContext* context) {
@@ -349,14 +286,22 @@ StoragePartition* BrowserContext::GetStoragePartitionForSite(
 
 void BrowserContext::ForEachStoragePartition(
     BrowserContext* browser_context,
-    const StoragePartitionCallback& callback) {
+    StoragePartitionCallback callback) {
   StoragePartitionImplMap* partition_map =
       static_cast<StoragePartitionImplMap*>(
           browser_context->GetUserData(kStoragePartitionMapKeyName));
   if (!partition_map)
     return;
 
-  partition_map->ForEach(callback);
+  partition_map->ForEach(std::move(callback));
+}
+
+size_t BrowserContext::GetStoragePartitionCount(
+    BrowserContext* browser_context) {
+  StoragePartitionImplMap* partition_map =
+      static_cast<StoragePartitionImplMap*>(
+          browser_context->GetUserData(kStoragePartitionMapKeyName));
+  return partition_map ? partition_map->size() : 0;
 }
 
 StoragePartition* BrowserContext::GetDefaultStoragePartition(
@@ -414,20 +359,17 @@ void BrowserContext::DeliverPushMessage(
 
 // static
 void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
+  TRACE_EVENT1("shutdown", "BrowserContext::NotifyWillBeDestroyed",
+               "browser_context", browser_context);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+      "shutdown", "BrowserContext::NotifyWillBeDestroyed() called.",
+      browser_context, "browser_context", browser_context);
   // Make sure NotifyWillBeDestroyed is idempotent.  This helps facilitate the
   // pattern where NotifyWillBeDestroyed is called from *both*
   // ShellBrowserContext and its derived classes (e.g. WebTestBrowserContext).
   if (browser_context->was_notify_will_be_destroyed_called_)
     return;
   browser_context->was_notify_will_be_destroyed_called_ = true;
-
-  // Stop the ServiceManagerConnection from handling any new incoming requests
-  // before we tear anything down. This prevents races at shutdown.
-  BrowserContextServiceManagerConnectionHolder* connection_holder =
-      static_cast<BrowserContextServiceManagerConnectionHolder*>(
-          browser_context->GetUserData(kServiceManagerConnection));
-  if (connection_holder)
-    connection_holder->service_manager_connection()->Stop();
 
   // Subclasses of BrowserContext may expect there to be no more
   // RenderProcessHosts using them by the time this function returns. We
@@ -439,7 +381,7 @@ void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
   // since they keep render process hosts alive and the codebase assumes that
   // render process hosts die before their profile (browser context) dies.
   ForEachStoragePartition(browser_context,
-                          base::Bind(ShutdownServiceWorkerContext));
+                          base::BindRepeating(ShutdownServiceWorkerContext));
 
   // Shared workers also keep render process hosts alive, and are expected to
   // return ref counts to 0 after documents close. However, to ensure that
@@ -453,14 +395,6 @@ void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
       host->DisableKeepAliveRefCount();
     }
   }
-
-  // Clean up any isolated origins and other security state associated with this
-  // BrowserContext.  This should be safe now that all RenderProcessHosts are
-  // destroyed, since future navigations or security decisions shouldn't ever
-  // need to consult these isolated origins and other security state.
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  policy->RemoveStateForBrowserContext(*browser_context);
 }
 
 void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {
@@ -502,14 +436,11 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
           storage_partition->GetDOMStorageContext());
   dom_storage_context_proxy->SetForceKeepSessionState();
 
-  scoped_refptr<IndexedDBContext> indexed_db_context =
-      storage_partition->GetIndexedDBContext();
-  IndexedDBContext* const indexed_db_context_ptr = indexed_db_context.get();
-  indexed_db_context_ptr->TaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&SaveSessionStateOnIndexedDBThread,
-                                std::move(indexed_db_context)));
+  auto& indexed_db_control = storage_partition->GetIndexedDBControl();
+  indexed_db_control.SetForceKeepSessionState();
 }
 
+// static
 void BrowserContext::SetDownloadManagerForTesting(
     BrowserContext* browser_context,
     std::unique_ptr<content::DownloadManager> download_manager) {
@@ -526,99 +457,49 @@ void BrowserContext::SetPermissionControllerForTesting(
                                std::move(permission_controller));
 }
 
-// static
-void BrowserContext::Initialize(BrowserContext* browser_context,
-                                const base::FilePath& path) {
-  const base::Token new_group = base::Token::CreateRandom();
-  RemoveBrowserContextFromInstanceGroupMap(browser_context);
-  GetTokenToContextMap()[new_group] = browser_context;
-  browser_context->SetUserData(
-      kServiceInstanceGroup,
-      std::make_unique<ServiceInstanceGroupHolder>(new_group));
-
-  auto* system_connector = GetSystemConnector();
-  if (system_connector && base::ThreadTaskRunnerHandle::IsSet()) {
-    // NOTE: Many unit tests create a TestBrowserContext without initializing
-    // Mojo or the global service manager connection.
-
-    mojo::PendingRemote<service_manager::mojom::Service> service;
-    auto service_receiver = service.InitWithNewPipeAndPassReceiver();
-
-    mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
-    service_manager::Identity identity(mojom::kBrowserServiceName, new_group,
-                                       base::Token{},
-                                       base::Token::CreateRandom());
-    system_connector->RegisterServiceInstance(
-        identity, std::move(service), metadata.BindNewPipeAndPassReceiver());
-    metadata->SetPID(base::GetCurrentProcId());
-
-    BrowserContextServiceManagerConnectionHolder* connection_holder =
-        new BrowserContextServiceManagerConnectionHolder(
-            std::move(service_receiver));
-    browser_context->SetUserData(kServiceManagerConnection,
-                                 base::WrapUnique(connection_holder));
-    ServiceManagerConnection* connection =
-        connection_holder->service_manager_connection();
-
-    connection->Start();
-  }
-}
-
-// static
-const base::Token& BrowserContext::GetServiceInstanceGroupFor(
-    BrowserContext* browser_context) {
-  ServiceInstanceGroupHolder* holder = static_cast<ServiceInstanceGroupHolder*>(
-      browser_context->GetUserData(kServiceInstanceGroup));
-  CHECK(holder) << "Attempting to get the instance group for a BrowserContext "
-                << "that was never Initialized().";
-  return holder->instance_group();
-}
-
-// static
-BrowserContext* BrowserContext::GetBrowserContextForServiceInstanceGroup(
-    const base::Token& instance_group) {
-  auto it = GetTokenToContextMap().find(instance_group);
-  return it != GetTokenToContextMap().end() ? it->second : nullptr;
-}
-
-// static
-service_manager::Connector* BrowserContext::GetConnectorFor(
-    BrowserContext* browser_context) {
-  ServiceManagerConnection* connection =
-      GetServiceManagerConnectionFor(browser_context);
-  return connection ? connection->GetConnector() : nullptr;
-}
-
-// static
-ServiceManagerConnection* BrowserContext::GetServiceManagerConnectionFor(
-    BrowserContext* browser_context) {
-  BrowserContextServiceManagerConnectionHolder* connection_holder =
-      static_cast<BrowserContextServiceManagerConnectionHolder*>(
-          browser_context->GetUserData(kServiceManagerConnection));
-  return connection_holder ? connection_holder->service_manager_connection()
-                           : nullptr;
-}
-
 BrowserContext::BrowserContext()
-    : unique_id_(base::UnguessableToken::Create().ToString()) {}
+    : unique_id_(base::UnguessableToken::Create().ToString()) {
+  TRACE_EVENT1("shutdown", "BrowserContext::BrowserContext", "browser_context",
+               this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("shutdown", "Browser.BrowserContext", this,
+                                    "browser_context", this);
+}
 
 BrowserContext::~BrowserContext() {
-  CHECK(GetUserData(kServiceInstanceGroup))
-      << "Attempting to destroy a BrowserContext that never called "
-      << "Initialize()";
-
+  TRACE_EVENT1("shutdown", "BrowserContext::~BrowserContext", "browser_context",
+               this);
   DCHECK(!GetUserData(kStoragePartitionMapKeyName))
       << "StoragePartitionMap is not shut down properly";
 
-  DCHECK(was_notify_will_be_destroyed_called_);
+  if (!was_notify_will_be_destroyed_called_) {
+    NOTREACHED();
+    base::debug::DumpWithoutCrashing();
+  }
 
-  RemoveBrowserContextFromInstanceGroupMap(this);
+  // Clean up any isolated origins and other security state associated with this
+  // BrowserContext.
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  policy->RemoveStateForBrowserContext(*this);
 
   if (GetUserData(kDownloadManagerKeyName))
     GetDownloadManager(this)->Shutdown();
+
+  TtsControllerImpl::GetInstance()->OnBrowserContextDestroyed(this);
+
+  TRACE_EVENT_NESTABLE_ASYNC_END1(
+      "shutdown", "BrowserContext::NotifyWillBeDestroyed() called.", this,
+      "browser_context", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END1("shutdown", "Browser.BrowserContext", this,
+                                  "browser_context", this);
 }
 
 void BrowserContext::ShutdownStoragePartitions() {
+  // The BackgroundSyncScheduler keeps raw pointers to partitions; clear it
+  // first.
+  if (GetUserData(kBackgroundSyncSchedulerKey))
+    RemoveUserData(kBackgroundSyncSchedulerKey);
+
   if (GetUserData(kStoragePartitionMapKeyName))
     RemoveUserData(kStoragePartitionMapKeyName);
 }
@@ -749,6 +630,10 @@ ContentIndexProvider* BrowserContext::GetContentIndexProvider() {
 
 bool BrowserContext::CanUseDiskWhenOffTheRecord() {
   return false;
+}
+
+variations::VariationsClient* BrowserContext::GetVariationsClient() {
+  return nullptr;
 }
 
 }  // namespace content

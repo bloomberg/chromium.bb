@@ -46,7 +46,7 @@ class LayoutView;
 class Font;
 
 class CORE_EXPORT CSSToLengthConversionData {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
   class CORE_EXPORT FontSizes {
@@ -97,7 +97,7 @@ class CORE_EXPORT CSSToLengthConversionData {
 
   float Zoom() const { return zoom_; }
 
-  float EmFontSize() const { return font_sizes_.Em(); }
+  float EmFontSize() const;
   float RemFontSize() const;
   float ExFontSize() const;
   float ChFontSize() const;

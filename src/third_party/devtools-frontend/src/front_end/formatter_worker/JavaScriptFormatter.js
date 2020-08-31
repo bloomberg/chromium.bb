@@ -28,12 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import {AcornTokenizer} from './AcornTokenizer.js';
+import {ESTreeWalker} from './ESTreeWalker.js';
+import {FormattedContentBuilder} from './FormattedContentBuilder.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
 export class JavaScriptFormatter {
   /**
-   * @param {!FormatterWorker.FormattedContentBuilder} builder
+   * @param {!FormattedContentBuilder} builder
    */
   constructor(builder) {
     this._builder = builder;
@@ -50,10 +57,10 @@ export class JavaScriptFormatter {
     this._toOffset = toOffset;
     this._content = text.substring(this._fromOffset, this._toOffset);
     this._lastLineNumber = 0;
-    this._tokenizer = new FormatterWorker.AcornTokenizer(this._content);
+    this._tokenizer = new AcornTokenizer(this._content);
     const options = {ranges: false, preserveParens: true, allowImportExportEverywhere: true, ecmaVersion: 2020};
     const ast = acorn.parse(this._content, options);
-    const walker = new FormatterWorker.ESTreeWalker(this._beforeVisit.bind(this), this._afterVisit.bind(this));
+    const walker = new ESTreeWalker(this._beforeVisit.bind(this), this._afterVisit.bind(this));
     walker.walk(ast);
   }
 
@@ -133,7 +140,7 @@ export class JavaScriptFormatter {
    * @return {string}
    */
   _formatToken(node, token) {
-    const AT = FormatterWorker.AcornTokenizer;
+    const AT = AcornTokenizer;
     if (AT.lineComment(token)) {
       return 'tn';
     }
@@ -142,24 +149,35 @@ export class JavaScriptFormatter {
     }
     if (node.type === 'ContinueStatement' || node.type === 'BreakStatement') {
       return node.label && AT.keyword(token) ? 'ts' : 't';
-    } else if (node.type === 'Identifier') {
+    }
+    if (node.type === 'Identifier') {
       return 't';
-    } else if (node.type === 'ReturnStatement') {
+    }
+    if (node.type === 'ReturnStatement') {
       if (AT.punctuator(token, ';')) {
         return 't';
       }
       return node.argument ? 'ts' : 't';
-    } else if (node.type === 'Property') {
+    }
+    if (node.type === 'AwaitExpression') {
+      if (AT.punctuator(token, ';')) {
+        return 't';
+      }
+      return node.argument ? 'ts' : 't';
+    }
+    if (node.type === 'Property') {
       if (AT.punctuator(token, ':')) {
         return 'ts';
       }
       return 't';
-    } else if (node.type === 'ArrayExpression') {
+    }
+    if (node.type === 'ArrayExpression') {
       if (AT.punctuator(token, ',')) {
         return 'ts';
       }
       return 't';
-    } else if (node.type === 'LabeledStatement') {
+    }
+    if (node.type === 'LabeledStatement') {
       if (AT.punctuator(token, ':')) {
         return 'ts';
       }
@@ -400,12 +418,3 @@ export class JavaScriptFormatter {
     return '';
   }
 }
-
-/* Legacy exported object */
-self.FormatterWorker = self.FormatterWorker || {};
-
-/* Legacy exported object */
-FormatterWorker = FormatterWorker || {};
-
-/** @constructor */
-FormatterWorker.JavaScriptFormatter = JavaScriptFormatter;

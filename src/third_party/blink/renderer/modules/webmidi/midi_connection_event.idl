@@ -31,8 +31,9 @@
 // https://webaudio.github.io/web-midi-api/#MIDIConnectionEvent
 
 [
-    SecureContext,
-    Constructor(DOMString type, optional MIDIConnectionEventInit eventInitDict)
+    Exposed=Window,
+    SecureContext
 ] interface MIDIConnectionEvent : Event {
+    constructor(DOMString type, optional MIDIConnectionEventInit eventInitDict = {});
     readonly attribute MIDIPort port;
 };

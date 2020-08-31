@@ -16,15 +16,6 @@ class TaskAttributionTiming final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TaskAttributionTiming* Create(const AtomicString& type,
-                                       const AtomicString& container_type,
-                                       const String& container_src,
-                                       const String& container_id,
-                                       const String& container_name) {
-    return MakeGarbageCollected<TaskAttributionTiming>(
-        type, container_type, container_src, container_id, container_name);
-  }
-
   AtomicString entryType() const override;
   PerformanceEntryType EntryTypeEnum() const override;
 
@@ -33,7 +24,7 @@ class TaskAttributionTiming final : public PerformanceEntry {
   String containerId() const;
   String containerName() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   TaskAttributionTiming(const AtomicString& type,
                         const AtomicString& container_type,

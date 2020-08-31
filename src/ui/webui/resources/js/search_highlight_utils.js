@@ -17,6 +17,9 @@ cr.define('cr.search_highlight_utils', function() {
   /** @type {string} */
   const SEARCH_BUBBLE_CSS_CLASS = 'search-bubble';
 
+  /** @typedef {{start: number, length: number}} */
+  /* #export */ let Range;
+
   /**
    * Replaces the the highlight wrappers given in |wrappers| with the original
    * search nodes.
@@ -44,7 +47,7 @@ cr.define('cr.search_highlight_utils', function() {
    */
   /* #export */ function findAndRemoveHighlights(node) {
     const wrappers = Array.from(node.querySelectorAll(`.${WRAPPER_CSS_CLASS}`));
-    assert(wrappers.length == 1);
+    assert(wrappers.length === 1);
     removeHighlights(wrappers);
   }
 
@@ -52,14 +55,12 @@ cr.define('cr.search_highlight_utils', function() {
    * Applies the highlight UI (yellow rectangle) around all matches in |node|.
    * @param {!Node} node The text node to be highlighted. |node| ends up
    *     being hidden.
-   * @param {!Array<string>} tokens The string tokens after splitting on the
-   *     relevant regExp. Even indices hold text that doesn't need highlighting,
-   *     odd indices hold the text to be highlighted. For example:
-   *     const r = new RegExp('(foo)', 'i');
-   *     'barfoobar foo bar'.split(r) => ['bar', 'foo', 'bar ', 'foo', ' bar']
+   * @param {!Array<!cr.search_highlight_utils.Range>} ranges
    * @return {!Node} The new highlight wrapper.
    */
-  /* #export */ function highlight(node, tokens) {
+  /* #export */ function highlight(node, ranges) {
+    assert(ranges.length > 0);
+
     const wrapper = document.createElement('span');
     wrapper.classList.add(WRAPPER_CSS_CLASS);
     // Use existing node as placeholder to determine where to insert the
@@ -75,8 +76,21 @@ cr.define('cr.search_highlight_utils', function() {
     span.appendChild(node);
     wrapper.appendChild(span);
 
+    const text = node.textContent;
+    /** @type {!Array<string>} */ const tokens = [];
+    for (let i = 0; i < ranges.length; ++i) {
+      const range = ranges[i];
+      const prev = ranges[i - 1] || {start: 0, length: 0};
+      const start = prev.start + prev.length;
+      const length = range.start - start;
+      tokens.push(text.substr(start, length));
+      tokens.push(text.substr(range.start, range.length));
+    }
+    const last = ranges.slice(-1)[0];
+    tokens.push(text.substr(last.start + last.length));
+
     for (let i = 0; i < tokens.length; ++i) {
-      if (i % 2 == 0) {
+      if (i % 2 === 0) {
         wrapper.appendChild(document.createTextNode(tokens[i]));
       } else {
         const hitSpan = document.createElement('span');
@@ -91,34 +105,48 @@ cr.define('cr.search_highlight_utils', function() {
   }
 
   /**
-   * Highlights an HTML element by displaying a search bubble. The element
-   * should already be visible or the bubble will render incorrectly.
-   * @param {!HTMLElement} element The element to be highlighted.
-   * @param {string} rawQuery The search query.
-   * @return {?Node} The search bubble that was added, or null if no new bubble
+   * Creates an empty search bubble (styled HTML element without text).
+   * |node| should already be visible or the bubble will render incorrectly.
+   * @param {!Node} node The node to be highlighted.
+   * @param {boolean=} horizontallyCenter Whether or not to horizontally center
+   *     the shown search bubble (if any) based on |node|'s left and width.
+   * @return {!Node} The search bubble that was added, or null if no new bubble
    *     was added.
    */
-  /* #export */ function highlightControlWithBubble(element, rawQuery) {
-    let searchBubble = element.querySelector(`.${SEARCH_BUBBLE_CSS_CLASS}`);
-    // If the element has already been highlighted, there is no need to do
+  /* #export */ function createEmptySearchBubble(node, horizontallyCenter) {
+    let anchor = node;
+    if (node.nodeName === 'SELECT') {
+      anchor = node.parentNode;
+    }
+    if (anchor instanceof ShadowRoot) {
+      anchor = anchor.host.parentNode;
+    }
+
+    let searchBubble = anchor.querySelector(`.${SEARCH_BUBBLE_CSS_CLASS}`);
+    // If the node has already been highlighted, there is no need to do
     // anything.
     if (searchBubble) {
-      return null;
+      return searchBubble;
     }
 
     searchBubble = document.createElement('div');
     searchBubble.classList.add(SEARCH_BUBBLE_CSS_CLASS);
     const innards = document.createElement('div');
     innards.classList.add('search-bubble-innards');
-    innards.textContent = rawQuery;
+    innards.textContent = '\u00a0';  // Non-breaking space for offsetHeight.
     searchBubble.appendChild(innards);
-    element.appendChild(searchBubble);
+    anchor.appendChild(searchBubble);
 
     const updatePosition = function() {
-      searchBubble.style.top = element.offsetTop +
+      assert(typeof node.offsetTop === 'number');
+      searchBubble.style.top = node.offsetTop +
           (innards.classList.contains('above') ? -searchBubble.offsetHeight :
-                                                 element.offsetHeight) +
+                                                 node.offsetHeight) +
           'px';
+      if (horizontallyCenter) {
+        const width = node.offsetWidth - searchBubble.offsetWidth;
+        searchBubble.style.left = node.offsetLeft + width / 2 + 'px';
+      }
     };
     updatePosition();
 
@@ -126,14 +154,27 @@ cr.define('cr.search_highlight_utils', function() {
       innards.classList.toggle('above');
       updatePosition();
     });
+    // TODO(crbug.com/355446): create a way to programmatically update these
+    // bubbles (i.e. call updatePosition()) when outer scope knows they need to
+    // be repositioned.
     return searchBubble;
+  }
+
+  /**
+   * @param {string} text
+   * @return {string}
+   */
+  /* #export */ function stripDiacritics(text) {
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
 
   // #cr_define_end
   return {
-    removeHighlights: removeHighlights,
-    findAndRemoveHighlights: findAndRemoveHighlights,
-    highlight: highlight,
-    highlightControlWithBubble: highlightControlWithBubble,
+    Range,
+    createEmptySearchBubble,
+    findAndRemoveHighlights,
+    highlight,
+    removeHighlights,
+    stripDiacritics,
   };
 });

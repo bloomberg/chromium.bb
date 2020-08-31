@@ -6,19 +6,21 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_uploader.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
@@ -66,9 +68,8 @@ AppInstallEventLogManager::LogTaskRunnerWrapper::~LogTaskRunnerWrapper() =
 scoped_refptr<base::SequencedTaskRunner>
 AppInstallEventLogManager::LogTaskRunnerWrapper::GetTaskRunner() {
   if (!task_runner_) {
-    task_runner_ = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
-         base::MayBlock()});
+    task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()});
   }
 
   return task_runner_;
@@ -120,6 +121,11 @@ void AppInstallEventLogManager::Add(const std::set<std::string>& packages,
       base::BindOnce(&Log::Add, base::Unretained(log_.get()), packages, event),
       base::BindOnce(&AppInstallEventLogManager::OnLogChange,
                      log_weak_factory_.GetWeakPtr()));
+}
+
+void AppInstallEventLogManager::GetAndroidId(
+    AppInstallEventLogger::Delegate::AndroidIdCallback callback) const {
+  arc::GetAndroidId(std::move(callback));
 }
 
 void AppInstallEventLogManager::SerializeForUpload(

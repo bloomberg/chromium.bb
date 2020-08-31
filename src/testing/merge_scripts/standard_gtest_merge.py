@@ -42,7 +42,7 @@ def merge_shard_results(summary_json, jsons_to_merge):
   Returns dict with merged test output on success or None on failure. Emits
   annotations.
   """
-  # summary.json is produced by swarming.py itself. We are mostly interested
+  # summary.json is produced by swarming client itself. We are mostly interested
   # in the number of shards.
   try:
     with open(summary_json) as f:
@@ -50,7 +50,7 @@ def merge_shard_results(summary_json, jsons_to_merge):
   except (IOError, ValueError):
     emit_warning(
         'summary.json is missing or can not be read',
-        'Something is seriously wrong with swarming_client/ or the bot.')
+        'Something is seriously wrong with swarming client or the bot.')
     return None
 
   # Merge all JSON files together. Keep track of missing shards.

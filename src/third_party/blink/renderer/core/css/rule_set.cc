@@ -112,6 +112,7 @@ static void ExtractSelectorValues(const CSSSelector* selector,
                                   AtomicString& class_name,
                                   AtomicString& custom_pseudo_element_name,
                                   AtomicString& tag_name,
+                                  AtomicString& part_name,
                                   CSSSelector::PseudoType& pseudo_type) {
   switch (selector->Match()) {
     case CSSSelector::kId:
@@ -137,7 +138,6 @@ static void ExtractSelectorValues(const CSSSelector* selector,
         case CSSSelector::kPseudoAnyLink:
         case CSSSelector::kPseudoFocus:
         case CSSSelector::kPseudoPlaceholder:
-        case CSSSelector::kPseudoPart:
         case CSSSelector::kPseudoHost:
         case CSSSelector::kPseudoHostContext:
         case CSSSelector::kPseudoSpatialNavigationInterest:
@@ -146,6 +146,9 @@ static void ExtractSelectorValues(const CSSSelector* selector,
         case CSSSelector::kPseudoWebKitCustomElement:
         case CSSSelector::kPseudoBlinkInternalElement:
           custom_pseudo_element_name = selector->Value();
+          break;
+        case CSSSelector::kPseudoPart:
+          part_name = selector->Value();
           break;
         default:
           break;
@@ -162,6 +165,7 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
   AtomicString class_name;
   AtomicString custom_pseudo_element_name;
   AtomicString tag_name;
+  AtomicString part_name;
   CSSSelector::PseudoType pseudo_type = CSSSelector::kPseudoUnknown;
 
 #ifndef NDEBUG
@@ -172,11 +176,11 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
   for (; it && it->Relation() == CSSSelector::kSubSelector;
        it = it->TagHistory()) {
     ExtractSelectorValues(it, id, class_name, custom_pseudo_element_name,
-                          tag_name, pseudo_type);
+                          tag_name, part_name, pseudo_type);
   }
   if (it) {
     ExtractSelectorValues(it, id, class_name, custom_pseudo_element_name,
-                          tag_name, pseudo_type);
+                          tag_name, part_name, pseudo_type);
   }
 
   // Prefer rule sets in order of most likely to apply infrequently.
@@ -199,6 +203,11 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
     DCHECK(class_name.IsEmpty());
     AddToRuleSet(custom_pseudo_element_name,
                  EnsurePendingRules()->shadow_pseudo_element_rules, rule_data);
+    return true;
+  }
+
+  if (!part_name.IsEmpty()) {
+    part_pseudo_rules_.push_back(rule_data);
     return true;
   }
 
@@ -230,9 +239,6 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
     case CSSSelector::kPseudoHost:
     case CSSSelector::kPseudoHostContext:
       shadow_host_rules_.push_back(rule_data);
-      return true;
-    case CSSSelector::kPseudoPart:
-      part_pseudo_rules_.push_back(rule_data);
       return true;
     default:
       break;
@@ -314,10 +320,7 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
     } else if (auto* page_rule = DynamicTo<StyleRulePage>(rule)) {
       AddPageRule(page_rule);
     } else if (auto* media_rule = DynamicTo<StyleRuleMedia>(rule)) {
-      if (!media_rule->MediaQueries() ||
-          medium.Eval(*media_rule->MediaQueries(),
-                      &features_.ViewportDependentMediaQueryResults(),
-                      &features_.DeviceDependentMediaQueryResults()))
+      if (MatchMediaForAddRules(medium, media_rule->MediaQueries()))
         AddChildRules(media_rule->ChildRules(), medium, add_rule_flags);
     } else if (auto* font_face_rule = DynamicTo<StyleRuleFontFace>(rule)) {
       AddFontFaceRule(font_face_rule);
@@ -332,6 +335,18 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
   }
 }
 
+bool RuleSet::MatchMediaForAddRules(const MediaQueryEvaluator& evaluator,
+                                    const MediaQuerySet* media_queries) {
+  if (!media_queries)
+    return true;
+  bool match_media = evaluator.Eval(
+      *media_queries, &features_.ViewportDependentMediaQueryResults(),
+      &features_.DeviceDependentMediaQueryResults());
+  media_query_set_results_.push_back(
+      MediaQuerySetResult(*media_queries, match_media));
+  return match_media;
+}
+
 void RuleSet::AddRulesFromSheet(StyleSheetContents* sheet,
                                 const MediaQueryEvaluator& medium,
                                 AddRuleFlags add_rule_flags) {
@@ -344,11 +359,9 @@ void RuleSet::AddRulesFromSheet(StyleSheetContents* sheet,
   for (unsigned i = 0; i < import_rules.size(); ++i) {
     StyleRuleImport* import_rule = import_rules[i].Get();
     if (import_rule->GetStyleSheet() &&
-        (!import_rule->MediaQueries() ||
-         medium.Eval(*import_rule->MediaQueries(),
-                     &features_.ViewportDependentMediaQueryResults(),
-                     &features_.DeviceDependentMediaQueryResults())))
+        MatchMediaForAddRules(medium, import_rule->MediaQueries())) {
       AddRulesFromSheet(import_rule->GetStyleSheet(), medium, add_rule_flags);
+    }
   }
 
   AddChildRules(sheet->ChildRules(), medium, add_rule_flags);
@@ -407,22 +420,31 @@ void RuleSet::CompactRules() {
   slotted_pseudo_element_rules_.ShrinkToFit();
 }
 
-void MinimalRuleData::Trace(blink::Visitor* visitor) {
+bool RuleSet::DidMediaQueryResultsChange(
+    const MediaQueryEvaluator& evaluator) const {
+  for (const auto& result : media_query_set_results_) {
+    if (result.Result() != evaluator.Eval(result.MediaQueries()))
+      return true;
+  }
+  return false;
+}
+
+void MinimalRuleData::Trace(Visitor* visitor) {
   visitor->Trace(rule_);
 }
 
-void RuleData::Trace(blink::Visitor* visitor) {
+void RuleData::Trace(Visitor* visitor) {
   visitor->Trace(rule_);
 }
 
-void RuleSet::PendingRuleMaps::Trace(blink::Visitor* visitor) {
+void RuleSet::PendingRuleMaps::Trace(Visitor* visitor) {
   visitor->Trace(id_rules);
   visitor->Trace(class_rules);
   visitor->Trace(tag_rules);
   visitor->Trace(shadow_pseudo_element_rules);
 }
 
-void RuleSet::Trace(blink::Visitor* visitor) {
+void RuleSet::Trace(Visitor* visitor) {
   visitor->Trace(id_rules_);
   visitor->Trace(class_rules_);
   visitor->Trace(tag_rules_);

@@ -27,13 +27,13 @@
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/audio/volume_state.h"
 #include "media/base/video_facing.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "services/media_session/public/mojom/media_controller.mojom.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
-}
-
-namespace service_manager {
-class Connector;
 }
 
 namespace chromeos {
@@ -50,7 +50,8 @@ using VoidCrasAudioHandlerCallback = base::OnceCallback<void(bool result)>;
 class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
     : public CrasAudioClient::Observer,
       public AudioPrefObserver,
-      public media::VideoCaptureObserver {
+      public media::VideoCaptureObserver,
+      public media_session::mojom::MediaControllerObserver {
  public:
   typedef std::
       priority_queue<AudioDevice, std::vector<AudioDevice>, AudioDeviceCompare>
@@ -87,6 +88,15 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
     // Called when hotword is detected.
     virtual void OnHotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec);
 
+    // Called when the battery level change is reported over the Hands-Free
+    // Profile for a Bluetooth headset.
+    // The address is a Bluetooth address as 6 bytes written in hexadecimal and
+    // separated by colons. Example: 00:11:22:33:44:FF
+    // The level ranges from 0 to 100. Erroneous value reported by the headset
+    // will be ignored and won't trigger this callback.
+    virtual void OnBluetoothBatteryChanged(const std::string& address,
+                                           uint32_t level);
+
     // Called when an initial output stream is opened.
     virtual void OnOutputStarted();
 
@@ -108,7 +118,8 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
 
   // Sets the global instance. Must be called before any calls to Get().
   static void Initialize(
-      service_manager::Connector* connector,
+      mojo::PendingRemote<media_session::mojom::MediaControllerManager>
+          media_controller_manager,
       scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler);
 
   // Sets the global instance for testing.
@@ -123,6 +134,19 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   // Overrides media::VideoCaptureObserver.
   void OnVideoCaptureStarted(media::VideoFacingMode facing) override;
   void OnVideoCaptureStopped(media::VideoFacingMode facing) override;
+
+  // Overrides media_session::mojom::MediaControllerObserver.
+  void MediaSessionInfoChanged(
+      media_session::mojom::MediaSessionInfoPtr session_info) override;
+  void MediaSessionMetadataChanged(
+      const base::Optional<media_session::MediaMetadata>& metadata) override;
+  void MediaSessionActionsChanged(
+      const std::vector<media_session::mojom::MediaSessionAction>& actions)
+      override {}
+  void MediaSessionChanged(
+      const base::Optional<base::UnguessableToken>& request_id) override {}
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override;
 
   // Adds an audio observer.
   void AddAudioObserver(AudioObserver* observer);
@@ -300,8 +324,9 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   int32_t system_aec_group_id() const;
 
  protected:
-  explicit CrasAudioHandler(
-      service_manager::Connector* connector,
+  CrasAudioHandler(
+      mojo::PendingRemote<media_session::mojom::MediaControllerManager>
+          media_controller_manager,
       scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler);
   ~CrasAudioHandler() override;
 
@@ -315,6 +340,8 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   void ActiveInputNodeChanged(uint64_t node_id) override;
   void OutputNodeVolumeChanged(uint64_t node_id, int volume) override;
   void HotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec) override;
+  void BluetoothBatteryChanged(const std::string& address,
+                               uint32_t level) override;
   void NumberOfActiveStreamsChanged() override;
 
   // AudioPrefObserver overrides.
@@ -527,7 +554,19 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   void OnVideoCaptureStartedOnMainThread(media::VideoFacingMode facing);
   void OnVideoCaptureStoppedOnMainThread(media::VideoFacingMode facing);
 
-  service_manager::Connector* const connector_;
+  void BindMediaControllerObserver();
+
+  // Handle null Metadata from MediaSession.
+  void HandleMediaSessionMetadataReset();
+
+  mojo::Remote<media_session::mojom::MediaControllerManager>
+      media_controller_manager_;
+
+  mojo::Remote<media_session::mojom::MediaController>
+      media_session_controller_remote_;
+
+  mojo::Receiver<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_receiver_{this};
 
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   base::ObserverList<AudioObserver>::Unchecked observers_;
@@ -575,6 +614,8 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
   int32_t system_aec_group_id_ = kSystemAecGroupIdNotAvailable;
 
   int num_active_output_streams_ = 0;
+
+  bool fetch_media_session_duration_ = false;
 
   // Task runner of browser main thread. All member variables should be accessed
   // on this thread.

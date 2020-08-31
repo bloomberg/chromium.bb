@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/shell/browser/web_test/mock_client_hints_controller_delegate.h"
+#include "base/feature_list.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -28,8 +30,8 @@ bool MockClientHintsControllerDelegate::IsJavaScriptAllowed(const GURL& url) {
   return true;
 }
 
-std::string MockClientHintsControllerDelegate::GetAcceptLanguageString() {
-  return content::GetShellLanguage();
+bool MockClientHintsControllerDelegate::UserAgentClientHintEnabled() {
+  return base::FeatureList::IsEnabled(features::kUserAgentClientHint);
 }
 
 blink::UserAgentMetadata
@@ -39,7 +41,7 @@ MockClientHintsControllerDelegate::GetUserAgentMetadata() {
 
 void MockClientHintsControllerDelegate::PersistClientHints(
     const url::Origin& primary_origin,
-    const std::vector<::blink::mojom::WebClientHintsType>& client_hints,
+    const std::vector<::network::mojom::WebClientHintsType>& client_hints,
     base::TimeDelta expiration_duration) {
   blink::WebEnabledClientHints web_client_hints;
   for (const auto& type : client_hints) {

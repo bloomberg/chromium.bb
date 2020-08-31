@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -18,6 +19,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -204,9 +206,8 @@ ModellerImpl::ModellerImpl(const Profile* profile,
                    model_config_loader,
                    user_activity_detector,
                    std::move(trainer),
-                   base::CreateSequencedTaskRunner(
-                       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-                        base::MayBlock(),
+                   base::ThreadPool::CreateSequencedTaskRunner(
+                       {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
                    base::DefaultTickClock::GetInstance()) {}
 

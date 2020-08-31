@@ -10,6 +10,7 @@ const ALLOWED_HOSTS = [
   'google.com',
   'gstatic.com',
   'googleapis.com',
+  'google-analytics.com',
   // FIFE avatar images (lh3-lh6). See http://go/fife-domains
   'lh3.googleusercontent.com',
   'lh4.googleusercontent.com',
@@ -40,12 +41,12 @@ Polymer({
   is: 'add-supervision-ui',
 
   /** Attempts to close the dialog */
-  closeDialog_: function() {
+  closeDialog_() {
     this.server.requestClose();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     // Initialize and listen for online/offline state.
     this.webviewDiv = this.$.webviewDiv;
     this.webviewDiv.hidden = !navigator.onLine;

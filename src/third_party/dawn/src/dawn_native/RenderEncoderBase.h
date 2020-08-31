@@ -39,12 +39,16 @@ namespace dawn_native {
 
         void SetPipeline(RenderPipelineBase* pipeline);
 
-        void SetVertexBuffer(uint32_t slot, BufferBase* buffer, uint64_t offset);
-        void SetIndexBuffer(BufferBase* buffer, uint64_t offset);
+        void SetVertexBuffer(uint32_t slot, BufferBase* buffer, uint64_t offset, uint64_t size);
+        void SetIndexBuffer(BufferBase* buffer, uint64_t offset, uint64_t size);
 
       protected:
         // Construct an "error" render encoder base.
         RenderEncoderBase(DeviceBase* device, EncodingContext* encodingContext, ErrorTag errorTag);
+
+      private:
+        const bool mDisableBaseVertex;
+        const bool mDisableBaseInstance;
     };
 
 }  // namespace dawn_native

@@ -7,6 +7,7 @@
 #include "xfa/fxfa/cxfa_fwltheme.h"
 
 #include "core/fxcrt/fx_codepage.h"
+#include "core/fxcrt/fx_memory.h"
 #include "third_party/base/ptr_util.h"
 #include "xfa/fde/cfde_textout.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
@@ -39,7 +40,8 @@ const float kLineHeight = 12.0f;
 
 CXFA_FFWidget* XFA_ThemeGetOuterWidget(CFWL_Widget* pWidget) {
   CFWL_Widget* pOuter = pWidget ? pWidget->GetOutmost() : nullptr;
-  return pOuter ? static_cast<CXFA_FFWidget*>(pOuter->GetFFWidget()) : nullptr;
+  return pOuter ? static_cast<CXFA_FFWidget*>(pOuter->GetAdapterIface())
+                : nullptr;
 }
 
 }  // namespace
@@ -119,7 +121,7 @@ void CXFA_FWLTheme::DrawText(const CFWL_ThemeText& pParams) {
 
     m_pTextOut->SetMatrix(mtPart);
     m_pTextOut->DrawLogicText(pRenderDevice, pParams.m_wsText.AsStringView(),
-                              pParams.m_rtPart);
+                              pParams.m_PartRect);
     return;
   }
   CXFA_FFWidget* pWidget = XFA_ThemeGetOuterWidget(pParams.m_pWidget);
@@ -141,7 +143,7 @@ void CXFA_FWLTheme::DrawText(const CFWL_ThemeText& pParams) {
 
   m_pTextOut->SetMatrix(mtPart);
   m_pTextOut->DrawLogicText(pRenderDevice, pParams.m_wsText.AsStringView(),
-                            pParams.m_rtPart);
+                            pParams.m_PartRect);
 }
 
 CFX_RectF CXFA_FWLTheme::GetUIMargin(const CFWL_ThemePart& pThemePart) const {

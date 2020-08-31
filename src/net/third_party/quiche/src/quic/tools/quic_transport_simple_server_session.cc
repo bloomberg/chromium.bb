@@ -8,12 +8,11 @@
 
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "net/third_party/quiche/src/quic/core/quic_buffer_allocator.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_protocol.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_stream.h"
 
@@ -133,7 +132,6 @@ QuicTransportSimpleServerSession::QuicTransportSimpleServerSession(
     const ParsedQuicVersionVector& supported_versions,
     const QuicCryptoServerConfig* crypto_config,
     QuicCompressedCertsCache* compressed_certs_cache,
-    Mode mode,
     std::vector<url::Origin> accepted_origins)
     : QuicTransportServerSession(connection,
                                  owner,
@@ -142,14 +140,13 @@ QuicTransportSimpleServerSession::QuicTransportSimpleServerSession(
                                  crypto_config,
                                  compressed_certs_cache,
                                  this),
-      connection_(connection),
       owns_connection_(owns_connection),
-      mode_(mode),
+      mode_(DISCARD),
       accepted_origins_(accepted_origins) {}
 
 QuicTransportSimpleServerSession::~QuicTransportSimpleServerSession() {
   if (owns_connection_) {
-    delete connection_;
+    DeleteConnection();
   }
 }
 
@@ -200,6 +197,32 @@ bool QuicTransportSimpleServerSession::CheckOrigin(url::Origin origin) {
     }
   }
   return false;
+}
+
+bool QuicTransportSimpleServerSession::ProcessPath(const GURL& url) {
+  if (url.path() == "/discard") {
+    mode_ = DISCARD;
+    return true;
+  }
+  if (url.path() == "/echo") {
+    mode_ = ECHO;
+    return true;
+  }
+
+  QUIC_DLOG(WARNING) << "Unknown path requested: " << url.path();
+  return false;
+}
+
+void QuicTransportSimpleServerSession::OnMessageReceived(
+    quiche::QuicheStringPiece message) {
+  if (mode_ != ECHO) {
+    return;
+  }
+  QuicUniqueBufferPtr buffer = MakeUniqueBuffer(
+      connection()->helper()->GetStreamSendBufferAllocator(), message.size());
+  memcpy(buffer.get(), message.data(), message.size());
+  datagram_queue()->SendOrQueueDatagram(
+      QuicMemSlice(std::move(buffer), message.size()));
 }
 
 void QuicTransportSimpleServerSession::MaybeEchoStreamsBack() {

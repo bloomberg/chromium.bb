@@ -4,7 +4,8 @@
 
 #include "components/sync/base/syncer_error.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
@@ -38,6 +39,7 @@ std::string GetSyncerErrorString(SyncerError::Value value) {
     ENUM_CASE(SERVER_RETURN_USER_ROLLBACK);
     ENUM_CASE(SERVER_RETURN_PARTIAL_FAILURE);
     ENUM_CASE(SERVER_RETURN_CLIENT_DATA_OBSOLETE);
+    ENUM_CASE(SERVER_RETURN_ENCRYPTION_OBSOLETE);
     ENUM_CASE(SERVER_MORE_TO_DOWNLOAD);
     ENUM_CASE(DATATYPE_TRIGGERED_RETRY);
     ENUM_CASE(SYNCER_OK);

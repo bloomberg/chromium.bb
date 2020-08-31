@@ -18,7 +18,7 @@
 #include "remoting/protocol/transport_context.h"
 #include "third_party/webrtc/p2p/base/p2p_constants.h"
 #include "third_party/webrtc/p2p/base/p2p_transport_channel.h"
-#include "third_party/webrtc/p2p/base/packet_transport_interface.h"
+#include "third_party/webrtc/p2p/base/packet_transport_internal.h"
 #include "third_party/webrtc/p2p/base/port.h"
 #include "third_party/webrtc/rtc_base/network.h"
 
@@ -84,7 +84,7 @@ void IceTransportChannel::Connect(const std::string& name,
 
   port_allocator_ =
       transport_context_->port_allocator_factory()->CreatePortAllocator(
-          transport_context_);
+          transport_context_, nullptr);
 
   // Create P2PTransportChannel, attach signal handlers and connect it.
   // TODO(sergeyu): Specify correct component ID for the channel.
@@ -137,7 +137,7 @@ void IceTransportChannel::NotifyConnected() {
   // Create P2PDatagramSocket adapter for the P2PTransportChannel.
   std::unique_ptr<TransportChannelSocketAdapter> socket(
       new TransportChannelSocketAdapter(channel_.get()));
-  socket->SetOnDestroyedCallback(base::Bind(
+  socket->SetOnDestroyedCallback(base::BindOnce(
       &IceTransportChannel::OnChannelDestroyed, base::Unretained(this)));
   std::move(callback_).Run(std::move(socket));
 }
@@ -197,9 +197,9 @@ void IceTransportChannel::OnRouteChange(
 }
 
 void IceTransportChannel::OnWritableState(
-    rtc::PacketTransportInterface* transport) {
+    rtc::PacketTransportInternal* transport) {
   DCHECK_EQ(transport,
-            static_cast<rtc::PacketTransportInterface*>(channel_.get()));
+            static_cast<rtc::PacketTransportInternal*>(channel_.get()));
 
   if (transport->writable()) {
     connect_attempts_left_ =

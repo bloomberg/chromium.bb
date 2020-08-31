@@ -13,7 +13,7 @@
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/display/output_surface.h"
-#include "components/viz/service/display/overlay_processor.h"
+#include "components/viz/service/display/overlay_processor_interface.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 #if defined(OS_WIN)
@@ -83,7 +83,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   virtual void MakePromiseSkImage(
       ExternalUseClient::ImageContext* image_context) = 0;
 
-  // Make a promise SkImage from the given |contexts| and the |yuv_color_space|.
+  // Make a promise SkImage from the given |contexts| and |image_color_space|.
   // For YUV format, at least three resource contexts should be provided.
   // contexts[0] contains pixels from y panel, contexts[1] contains pixels
   // from u panel, contexts[2] contains pixels from v panel. For NV12 format,
@@ -92,17 +92,17 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   // has_alpha is true, the last item in contexts contains alpha panel.
   virtual sk_sp<SkImage> MakePromiseSkImageFromYUV(
       const std::vector<ExternalUseClient::ImageContext*>& contexts,
-      SkYUVColorSpace yuv_color_space,
-      sk_sp<SkColorSpace> dst_color_space,
+      sk_sp<SkColorSpace> image_color_space,
       bool has_alpha) = 0;
 
-  // Swaps the current backbuffer to the screen.
-  virtual void SkiaSwapBuffers(OutputSurfaceFrame frame) = 0;
+  // Called if SwapBuffers() will be skipped.
+  virtual void SwapBuffersSkipped() = 0;
 
   // TODO(weiliangc): This API should move to OverlayProcessor.
   // Schedule |output_surface_plane| as an overlay plane to be displayed.
   virtual void ScheduleOutputSurfaceAsOverlay(
-      OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane) = 0;
+      OverlayProcessorInterface::OutputSurfaceOverlayPlane
+          output_surface_plane) = 0;
 
   // Begin painting a render pass. This method will create a
   // SkDeferredDisplayListRecorder and return a SkCanvas of it. The SkiaRenderer
@@ -148,7 +148,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
                           const gfx::ColorSpace& color_space,
                           std::unique_ptr<CopyOutputRequest> request) = 0;
 
-  // Schedule drawing overlays at next SkiaSwapBuffers() call. Waits on
+  // Schedule drawing overlays at next SwapBuffers() call. Waits on
   // |sync_tokens| for the overlay textures to be ready before scheduling.
   virtual void ScheduleOverlays(OverlayList overlays,
                                 std::vector<gpu::SyncToken> sync_tokens) = 0;
@@ -169,13 +169,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   virtual void ScheduleGpuTaskForTesting(
       base::OnceClosure callback,
       std::vector<gpu::SyncToken> sync_tokens) = 0;
-
-  // Only used for the Android pre-SurfaceControl overlay code path to pass all
-  // promotion hints.
-  virtual void SendOverlayPromotionNotification(
-      std::vector<gpu::SyncToken> sync_tokens,
-      base::flat_set<gpu::Mailbox> promotion_denied,
-      base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurface);

@@ -8,17 +8,18 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_dedicated_worker.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_worker_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/workers/abstract_worker.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
-#include "third_party/blink/renderer/core/workers/worker_options.h"
 #include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -75,8 +76,8 @@ class CORE_EXPORT DedicatedWorker final
   void terminate();
   BeginFrameProviderParams CreateBeginFrameProviderParams();
 
-  // Implements ContextLifecycleObserver (via AbstractWorker).
-  void ContextDestroyed(ExecutionContext*) override;
+  // Implements ExecutionContextLifecycleObserver (via AbstractWorker).
+  void ContextDestroyed() override;
 
   // Implements ScriptWrappable
   // (via AbstractWorker -> EventTargetWithInlineData -> EventTarget).
@@ -94,25 +95,29 @@ class CORE_EXPORT DedicatedWorker final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
 
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState state) override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Starts the worker.
   void Start();
   void ContinueStart(
       const KURL& script_url,
-      OffMainThreadWorkerScriptFetchOption,
       network::mojom::ReferrerPolicy,
       base::Optional<network::mojom::IPAddressSpace> response_address_space,
-      const String& source_code);
+      const String& source_code,
+      RejectCoepUnsafeNone reject_coep_unsafe_none);
   std::unique_ptr<GlobalScopeCreationParams> CreateGlobalScopeCreationParams(
       const KURL& script_url,
-      OffMainThreadWorkerScriptFetchOption,
       network::mojom::ReferrerPolicy,
       base::Optional<network::mojom::IPAddressSpace> response_address_space);
   scoped_refptr<WebWorkerFetchContext> CreateWebWorkerFetchContext();
   // May return nullptr.
   std::unique_ptr<WebContentSettingsClient> CreateWebContentSettingsClient();
+
+  void OnHostCreated(
+      mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+          blob_url_loader_factory,
+      const network::CrossOriginEmbedderPolicy& parent_coep);
 
   // Callbacks for |classic_script_loader_|.
   void OnResponse();

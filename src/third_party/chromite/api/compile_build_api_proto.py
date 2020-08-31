@@ -11,12 +11,17 @@ Install proto using CIPD to ensure a consistent protoc version.
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import commandline
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 _API_DIR = os.path.join(constants.CHROMITE_DIR, 'api')
 _CIPD_ROOT = os.path.join(constants.CHROMITE_DIR, '.cipd_bin')
@@ -94,7 +99,8 @@ def _GenerateFiles(source, output):
       os.path.join(source, 'chromite'),
       os.path.join(source, 'chromiumos'),
       os.path.join(source, 'config'),
-      os.path.join(source, 'test_platform')
+      os.path.join(source, 'test_platform'),
+      os.path.join(source, 'device')
   ]
   for basedir in subdirs:
     for dirpath, _dirnames, filenames in os.walk(basedir):
@@ -105,7 +111,7 @@ def _GenerateFiles(source, output):
 
   cmd = [_PROTOC, '--python_out', output, '--proto_path', source] + targets
   result = cros_build_lib.run(
-      cmd, cwd=source, print_cmd=False, error_code_ok=True)
+      cmd, cwd=source, print_cmd=False, check=False)
 
   if result.returncode:
     raise GenerationError('Error compiling the proto. See the output for a '

@@ -4,13 +4,11 @@
 
 #include "ash/assistant/assistant_web_ui_controller.h"
 
-#include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/ui/assistant_web_container_view.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "chromeos/services/assistant/public/features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/events/event_observer.h"
 #include "ui/views/event_monitor.h"
@@ -67,15 +65,11 @@ class AssistantWebContainerEventObserver : public ui::EventObserver {
 // -----------------------------------------------------------------------------
 // AssistantWebUiController:
 
-AssistantWebUiController::AssistantWebUiController(
-    AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller) {
-  DCHECK(chromeos::assistant::features::IsAssistantWebContainerEnabled());
-  assistant_controller_->AddObserver(this);
+AssistantWebUiController::AssistantWebUiController() {
+  assistant_controller_observer_.Add(AssistantController::Get());
 }
 
 AssistantWebUiController::~AssistantWebUiController() {
-  assistant_controller_->RemoveObserver(this);
   CloseUi();
 }
 
@@ -84,11 +78,11 @@ void AssistantWebUiController::OnWidgetDestroying(views::Widget* widget) {
 }
 
 void AssistantWebUiController::OnAssistantControllerConstructed() {
-  assistant_controller_->state_controller()->AddObserver(this);
+  AssistantState::Get()->AddObserver(this);
 }
 
 void AssistantWebUiController::OnAssistantControllerDestroying() {
-  assistant_controller_->state_controller()->RemoveObserver(this);
+  AssistantState::Get()->RemoveObserver(this);
 }
 
 void AssistantWebUiController::OnDeepLinkReceived(
@@ -121,7 +115,7 @@ void AssistantWebUiController::CloseUi() {
 
 void AssistantWebUiController::OnBackButtonPressed() {
   DCHECK(web_container_view_);
-  web_container_view_->OnBackButtonPressed();
+  web_container_view_->GoBack();
 }
 
 AssistantWebContainerView* AssistantWebUiController::GetViewForTest() {
@@ -131,8 +125,7 @@ AssistantWebContainerView* AssistantWebUiController::GetViewForTest() {
 void AssistantWebUiController::CreateWebContainerView() {
   DCHECK(!web_container_view_);
 
-  web_container_view_ = new AssistantWebContainerView(
-      assistant_controller_->view_delegate(), &view_delegate_);
+  web_container_view_ = new AssistantWebContainerView(&view_delegate_);
   auto* widget = web_container_view_->GetWidget();
   widget->AddObserver(this);
   event_observer_ =

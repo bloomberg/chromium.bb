@@ -25,6 +25,10 @@ namespace torque_internal {
     const object: HeapObject;
     const offset: intptr;
   }
+  type ConstReference<T : type> extends Reference<T>;
+  type MutableReference<T : type> extends ConstReference<T>;
+
+  type UninitializedHeapObject extends HeapObject;
 }
 
 type Tagged generates 'TNode<MaybeObject>' constexpr 'MaybeObject';
@@ -41,6 +45,7 @@ extern class HeapObject extends StrongTagged {
 }
 type Map extends HeapObject generates 'TNode<Map>';
 type Object = Smi | HeapObject;
+type Number = Smi|HeapNumber;
 type JSReceiver extends HeapObject generates 'TNode<JSReceiver>';
 type JSObject extends JSReceiver generates 'TNode<JSObject>';
 type int32 generates 'TNode<Int32T>' constexpr 'int32_t';
@@ -65,12 +70,59 @@ type bool generates 'TNode<BoolT>' constexpr 'bool';
 type bint generates 'TNode<BInt>' constexpr 'BInt';
 type string constexpr 'const char*';
 type RawPtr generates 'TNode<RawPtrT>' constexpr 'void*';
+type ExternalPointer
+    generates 'TNode<ExternalPointerT>' constexpr 'ExternalPointer_t';
 type Code extends HeapObject generates 'TNode<Code>';
 type BuiltinPtr extends Smi generates 'TNode<BuiltinPtr>';
 type Context extends HeapObject generates 'TNode<Context>';
 type NativeContext extends Context;
+type SmiTagged<T : type extends uint31> extends Smi;
+type String extends HeapObject;
+type HeapNumber extends HeapObject;
+type FixedArrayBase extends HeapObject;
+
+struct float64_or_hole {
+  is_hole: bool;
+  value: float64;
+}
+
+extern operator '+' macro IntPtrAdd(intptr, intptr): intptr;
+
+intrinsic %FromConstexpr<To: type, From: type>(b: From): To;
+intrinsic %RawDownCast<To: type, From: type>(x: From): To;
+intrinsic %RawConstexprCast<To: type, From: type>(f: From): To;
+extern macro SmiConstant(constexpr Smi): Smi;
+extern macro TaggedToSmi(Object): Smi
+    labels CastError;
+extern macro TaggedToHeapObject(Object): HeapObject
+    labels CastError;
+extern macro Float64SilenceNaN(float64): float64;
+
+extern macro IntPtrConstant(constexpr int31): intptr;
 
 macro FromConstexpr<To: type, From: type>(o: From): To;
+FromConstexpr<Smi, constexpr Smi>(s: constexpr Smi): Smi {
+  return SmiConstant(s);
+}
+FromConstexpr<Smi, constexpr int31>(s: constexpr int31): Smi {
+  return %FromConstexpr<Smi>(s);
+}
+FromConstexpr<intptr, constexpr int31>(i: constexpr int31): intptr {
+  return IntPtrConstant(i);
+}
+FromConstexpr<intptr, constexpr intptr>(i: constexpr intptr): intptr {
+  return %FromConstexpr<intptr>(i);
+}
+
+macro Cast<A : type extends Object>(implicit context: Context)(o: Object): A
+    labels CastError {
+  return Cast<A>(TaggedToHeapObject(o) otherwise CastError)
+      otherwise CastError;
+}
+Cast<Smi>(o: Object): Smi
+    labels CastError {
+  return TaggedToSmi(o) otherwise CastError;
+}
 )";
 
 TorqueCompilerResult TestCompileTorque(std::string source) {
@@ -124,6 +176,10 @@ void ExpectFailingCompilation(
       source, MatcherVector<T>{{message_pattern, LineAndColumn::Invalid()}});
 }
 
+// TODO(almuthanna): the definition of this function is skipped on Fuchsia
+// because it causes an 'unused function' exception upon buidling gn
+// Ticket: https://crbug.com/1028617
+#if !defined(V8_TARGET_OS_FUCHSIA)
 int CountPreludeLines() {
   static int result = -1;
   if (result == -1) {
@@ -132,17 +188,23 @@ int CountPreludeLines() {
   }
   return result;
 }
+#endif
 
 using SubstrWithPosition =
     std::pair<::testing::PolymorphicMatcher<
                   ::testing::internal::HasSubstrMatcher<std::string>>,
               LineAndColumn>;
 
+// TODO(almuthanna): the definition of this function is skipped on Fuchsia
+// because it causes an 'unused function' exception upon buidling gn
+// Ticket: https://crbug.com/1028617
+#if !defined(V8_TARGET_OS_FUCHSIA)
 SubstrWithPosition SubstrTester(const std::string& message, int line, int col) {
   // Change line and column from 1-based to 0-based.
   return {::testing::HasSubstr(message),
           LineAndColumn{line + CountPreludeLines() - 1, col - 1}};
 }
+#endif
 
 using SubstrVector = std::vector<SubstrWithPosition>;
 
@@ -234,6 +296,10 @@ TEST(Torque, TypeDeclarationOrder) {
   )");
 }
 
+// TODO(almuthanna): These tests were skipped because they cause a crash when
+// they are ran on Fuchsia. This issue should be solved later on
+// Ticket: https://crbug.com/1028617
+#if !defined(V8_TARGET_OS_FUCHSIA)
 TEST(Torque, ConditionalFields) {
   // This class should throw alignment errors if @if decorators aren't
   // working.
@@ -270,6 +336,22 @@ TEST(Torque, ConstexprLetBindingDoesNotCrash) {
       HasSubstr("Use 'const' instead of 'let' for variable 'foo'"));
 }
 
+TEST(Torque, FailedImplicitCastFromConstexprDoesNotCrash) {
+  ExpectFailingCompilation(
+      R"(
+    extern enum SomeEnum {
+      kValue,
+      ...
+    }
+    macro Foo() {
+      Bar(SomeEnum::kValue);
+    }
+    macro Bar<T: type>(value: T) {}
+  )",
+      HasSubstr(
+          "Cannot find non-constexpr type corresponding to constexpr kValue"));
+}
+
 TEST(Torque, DoubleUnderScorePrefixIllegalForIdentifiers) {
   ExpectFailingCompilation(R"(
     @export macro Foo() {
@@ -278,6 +360,7 @@ TEST(Torque, DoubleUnderScorePrefixIllegalForIdentifiers) {
   )",
                            HasSubstr("Lexer Error"));
 }
+#endif
 
 TEST(Torque, UnusedLetBindingLintError) {
   ExpectFailingCompilation(R"(
@@ -296,6 +379,10 @@ TEST(Torque, UnderscorePrefixSilencesUnusedWarning) {
   )");
 }
 
+// TODO(almuthanna): This test was skipped because it causes a crash when it is
+// ran on Fuchsia. This issue should be solved later on
+// Ticket: https://crbug.com/1028617
+#if !defined(V8_TARGET_OS_FUCHSIA)
 TEST(Torque, UsingUnderscorePrefixedIdentifierError) {
   ExpectFailingCompilation(R"(
     @export macro Foo(y: Smi) {
@@ -305,6 +392,7 @@ TEST(Torque, UsingUnderscorePrefixedIdentifierError) {
   )",
                            HasSubstr("Trying to reference '_x'"));
 }
+#endif
 
 TEST(Torque, UnusedArgumentLintError) {
   ExpectFailingCompilation(R"(
@@ -346,10 +434,15 @@ TEST(Torque, NoUnusedWarningForVariablesOnlyUsedInAsserts) {
   )");
 }
 
+// TODO(almuthanna): This test was skipped because it causes a crash when it is
+// ran on Fuchsia. This issue should be solved later on
+// Ticket: https://crbug.com/1028617
+#if !defined(V8_TARGET_OS_FUCHSIA)
 TEST(Torque, ImportNonExistentFile) {
   ExpectFailingCompilation(R"(import "foo/bar.tq")",
                            HasSubstr("File 'foo/bar.tq' not found."));
 }
+#endif
 
 TEST(Torque, LetShouldBeConstLintError) {
   ExpectFailingCompilation(R"(
@@ -370,6 +463,10 @@ TEST(Torque, LetShouldBeConstIsSkippedForStructs) {
   )");
 }
 
+// TODO(almuthanna): These tests were skipped because they cause a crash when
+// they are ran on Fuchsia. This issue should be solved later on
+// Ticket: https://crbug.com/1028617
+#if !defined(V8_TARGET_OS_FUCHSIA)
 TEST(Torque, GenericAbstractType) {
   ExpectSuccessfulCompilation(R"(
     type Foo<T: type> extends HeapObject;
@@ -471,7 +568,7 @@ TEST(Torque, SpecializationRequesters) {
       A<T>();
     }
     struct C<T: type> {
-      Method() {
+      macro Method() {
         B<T>();
       }
     }
@@ -482,6 +579,226 @@ TEST(Torque, SpecializationRequesters) {
           SubstrTester("Note: in specialization B<Smi> requested here", 8, 9),
           SubstrTester("Note: in specialization C<Smi> requested here", 11,
                        5)});
+}
+#endif
+
+TEST(Torque, Enums) {
+  ExpectSuccessfulCompilation(R"(
+    extern enum MyEnum {
+      kValue0,
+      kValue1,
+      kValue2,
+      kValue3
+    }
+  )");
+
+  ExpectFailingCompilation(R"(
+    extern enum MyEmptyEnum {
+    }
+  )",
+                           HasSubstr("unexpected token \"}\""));
+}
+
+TEST(Torque, EnumInTypeswitch) {
+  ExpectSuccessfulCompilation(R"(
+    extern enum MyEnum extends Smi {
+      kA,
+      kB,
+      kC
+    }
+
+    @export
+    macro Test(implicit context: Context)(v : MyEnum): Smi {
+      typeswitch(v) {
+        case (MyEnum::kA | MyEnum::kB): {
+          return 1;
+        }
+        case (MyEnum::kC): {
+          return 2;
+        }
+      }
+    }
+  )");
+
+  ExpectSuccessfulCompilation(R"(
+    extern enum MyEnum extends Smi {
+      kA,
+      kB,
+      kC,
+      ...
+    }
+
+    @export
+    macro Test(implicit context: Context)(v : MyEnum): Smi {
+      typeswitch(v) {
+         case (MyEnum::kC): {
+          return 2;
+        }
+        case (MyEnum::kA | MyEnum::kB): {
+          return 1;
+        }
+       case (MyEnum): {
+          return 0;
+        }
+      }
+    }
+  )");
+
+  ExpectSuccessfulCompilation(R"(
+  extern enum MyEnum extends Smi {
+    kA,
+    kB,
+    kC,
+    ...
+  }
+
+  @export
+  macro Test(implicit context: Context)(b: bool): Smi {
+    return b ? MyEnum::kB : MyEnum::kA;
+  }
+)");
+}
+
+TEST(Torque, ConstClassFields) {
+  ExpectSuccessfulCompilation(R"(
+    class Foo extends HeapObject {
+      const x: int32;
+      y: int32;
+    }
+
+    @export
+    macro Test(implicit context: Context)(o: Foo, n: int32) {
+      const _x: int32 = o.x;
+      o.y = n;
+    }
+  )");
+
+  ExpectFailingCompilation(R"(
+    class Foo extends HeapObject {
+      const x: int32;
+    }
+
+    @export
+    macro Test(implicit context: Context)(o: Foo, n: int32) {
+      o.x = n;
+    }
+  )",
+                           HasSubstr("cannot assign to const value"));
+
+  ExpectSuccessfulCompilation(R"(
+    class Foo extends HeapObject {
+      s: Bar;
+    }
+    struct Bar {
+      const x: int32;
+      y: int32;
+    }
+
+    @export
+    macro Test(implicit context: Context)(o: Foo, n: int32) {
+      const _x: int32 = o.s.x;
+      // Assigning a struct as a value is OK, even when the struct contains
+      // const fields.
+      o.s = Bar{x: n, y: n};
+      o.s.y = n;
+    }
+  )");
+
+  ExpectFailingCompilation(R"(
+    class Foo extends HeapObject {
+      const s: Bar;
+    }
+    struct Bar {
+      const x: int32;
+      y: int32;
+    }
+
+    @export
+    macro Test(implicit context: Context)(o: Foo, n: int32) {
+      o.s.y = n;
+    }
+  )",
+                           HasSubstr("cannot assign to const value"));
+
+  ExpectFailingCompilation(R"(
+    class Foo extends HeapObject {
+      s: Bar;
+    }
+    struct Bar {
+      const x: int32;
+      y: int32;
+    }
+
+    @export
+    macro Test(implicit context: Context)(o: Foo, n: int32) {
+      o.s.x = n;
+    }
+  )",
+                           HasSubstr("cannot assign to const value"));
+}
+
+TEST(Torque, References) {
+  ExpectSuccessfulCompilation(R"(
+    class Foo extends HeapObject {
+      const x: int32;
+      y: int32;
+    }
+
+    @export
+    macro Test(implicit context: Context)(o: Foo, n: int32) {
+      const constRefX: const &int32 = &o.x;
+      const refY: &int32 = &o.y;
+      const constRefY: const &int32 = refY;
+      const _x: int32 = *constRefX;
+      const _y1: int32 = *refY;
+      const _y2: int32 = *constRefY;
+      *refY = n;
+      let r: const &int32 = constRefX;
+      r = constRefY;
+    }
+  )");
+
+  ExpectFailingCompilation(R"(
+    class Foo extends HeapObject {
+      const x: int32;
+      y: int32;
+    }
+
+    @export
+    macro Test(implicit context: Context)(o: Foo) {
+      const _refX: &int32 = &o.x;
+    }
+  )",
+                           HasSubstr("cannot use expression of type const "
+                                     "&int32 as a value of type &int32"));
+
+  ExpectFailingCompilation(R"(
+    class Foo extends HeapObject {
+      const x: int32;
+      y: int32;
+    }
+
+    @export
+    macro Test(implicit context: Context)(o: Foo, n: int32) {
+      const constRefX: const &int32 = &o.x;
+      *constRefX = n;
+    }
+  )",
+                           HasSubstr("cannot assign to const value"));
+}
+
+TEST(Torque, CatchFirstHandler) {
+  ExpectFailingCompilation(
+      R"(
+    @export
+    macro Test() {
+      try {
+      } label Foo {
+      } catch (e) {}
+    }
+  )",
+      HasSubstr(
+          "catch handler always has to be first, before any label handler"));
 }
 
 }  // namespace torque

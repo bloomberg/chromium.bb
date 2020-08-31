@@ -53,7 +53,7 @@ bool is8BitStorageFeaturesSupported (const Context& context, Extension8BitStorag
 	VkPhysicalDevice8BitStorageFeaturesKHR extensionFeatures = context.get8BitStorageFeatures();
 
 	if ((toCheck & EXT8BITSTORAGEFEATURES_STORAGE_BUFFER) != 0 && extensionFeatures.storageBuffer8BitAccess == VK_FALSE)
-		TCU_FAIL("storageBuffer8BitAccess has to be supported");
+		return false;
 
 	if ((toCheck & EXT8BITSTORAGEFEATURES_UNIFORM_STORAGE_BUFFER) != 0 && extensionFeatures.uniformAndStorageBuffer8BitAccess == VK_FALSE)
 		return false;
@@ -166,12 +166,28 @@ bool isVariablePointersFeaturesSupported (const Context& context, ExtensionVaria
 
 bool isFloat16Int8FeaturesSupported (const Context& context, ExtensionFloat16Int8Features toCheck)
 {
-	const VkPhysicalDeviceFloat16Int8FeaturesKHR& extensionFeatures = context.getShaderFloat16Int8Features();
+	const VkPhysicalDeviceShaderFloat16Int8Features& extensionFeatures = context.getShaderFloat16Int8Features();
 
 	if ((toCheck & EXTFLOAT16INT8FEATURES_FLOAT16) != 0 && extensionFeatures.shaderFloat16 == VK_FALSE)
 		return false;
 
 	if ((toCheck & EXTFLOAT16INT8FEATURES_INT8) != 0 && extensionFeatures.shaderInt8 == VK_FALSE)
+		return false;
+
+	return true;
+}
+
+bool isVulkanMemoryModelFeaturesSupported (const Context& context, ExtensionVulkanMemoryModelFeatures toCheck)
+{
+	const VkPhysicalDeviceVulkanMemoryModelFeaturesKHR& extensionFeatures = context.getVulkanMemoryModelFeatures();
+
+	if ((toCheck & EXTVULKANMEMORYMODELFEATURES_ENABLE) != 0 && extensionFeatures.vulkanMemoryModel == VK_FALSE)
+		return false;
+
+	if ((toCheck & EXTVULKANMEMORYMODELFEATURES_DEVICESCOPE) != 0 && extensionFeatures.vulkanMemoryModelDeviceScope == VK_FALSE)
+		return false;
+
+	if ((toCheck & EXTVULKANMEMORYMODELFEATURES_AVAILABILITYVISIBILITYCHAINS) != 0 && extensionFeatures.vulkanMemoryModelAvailabilityVisibilityChains == VK_FALSE)
 		return false;
 
 	return true;
@@ -198,8 +214,7 @@ bool isFloatControlsFeaturesSupported (const Context& context, const ExtensionFl
 		return true;
 
 	// return false when float control features are requested and proper extension is not supported
-	const std::vector<std::string>& deviceExtensions = context.getDeviceExtensions();
-	if (!isDeviceExtensionSupported(context.getUsedApiVersion(), deviceExtensions, "VK_KHR_shader_float_controls"))
+	if (!context.isDeviceFunctionalitySupported("VK_KHR_shader_float_controls"))
 		return false;
 
 	// perform query to get supported float control properties
@@ -218,7 +233,7 @@ bool isFloatControlsFeaturesSupported (const Context& context, const ExtensionFl
 		instanceInterface.getPhysicalDeviceProperties2(physicalDevice, &deviceProperties);
 	}
 
-	using FCIndependence = VkShaderFloatControlsIndependenceKHR;
+	using FCIndependence = VkShaderFloatControlsIndependence;
 	FCIndependence fcInd32		= VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY_KHR;
 	FCIndependence fcIndAll		= VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_ALL_KHR;
 	FCIndependence fcIndNone	= VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_NONE_KHR;
@@ -267,6 +282,8 @@ deUint32 getMinRequiredVulkanVersion (const SpirvVersion version)
 	case SPIRV_VERSION_1_3:
 	case SPIRV_VERSION_1_4:
 		return VK_API_VERSION_1_1;
+	case SPIRV_VERSION_1_5:
+		return VK_API_VERSION_1_2;
 	default:
 		DE_ASSERT(0);
 	}

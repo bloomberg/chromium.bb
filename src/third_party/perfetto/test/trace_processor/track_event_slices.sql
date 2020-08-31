@@ -13,4 +13,21 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-select ts, dur, category, name, arg_set_id from slice order by ts asc;
+select
+  track.name as track,
+  process.name as process,
+  thread.name as thread,
+  thread_process.name as thread_process,
+  slice.ts,
+  slice.dur,
+  slice.category,
+  slice.name,
+  slice.arg_set_id
+from slice
+left join track on slice.track_id = track.id
+left join process_track on slice.track_id = process_track.id
+left join process on process_track.upid = process.upid
+left join thread_track on slice.track_id = thread_track.id
+left join thread on thread_track.utid = thread.utid
+left join process thread_process on thread.upid = thread_process.upid
+order by ts asc;

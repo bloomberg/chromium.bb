@@ -3,12 +3,12 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
-<!-- TODO(crbug.com/986596): Don't use browser icons here. Fork them. -->
-<link rel="import" href="../../icons.html">
-<link rel="import" href="../../route.html">
+<link rel="import" href="../../i18n_setup.html">
+<link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../os_icons.html">
 
@@ -16,7 +16,7 @@
   <template>
     <style include="settings-shared">
       :host {
-        --menu-link-color: var(--cros-default-button-color);
+        --menu-link-color: var(--cros-default-icon-color-prominent);
         --menu-text-color: var(--cros-default-text-color-secondary);
         --menu-icon-color: var(--cros-default-text-color-secondary);
         /* The tap target extends slightly above each visible menu item. */
@@ -33,7 +33,7 @@
         -webkit-tap-highlight-color: transparent;
       }
 
-      /* Override --cr-selectable-focus mixin. */
+      /* Override focus CSS for selectable items. */
       [selectable]:focus,
       [selectable] > :focus {
         background-color: transparent;
@@ -128,8 +128,9 @@
       }
 
       #advancedButton > iron-icon {
-        @apply --cr-icon-height-width;
+        height: var(--cr-icon-size);
         margin-inline-end: 14px;  /* 16px - 2px from margin for outline. */
+        width: var(--cr-icon-size);
       }
 
       #menuSeparator {
@@ -176,10 +177,10 @@
           $i18n{multidevicePageTitle}
         </div>
       </a>
-      <a id="people" href="/people" hidden="[[isGuestMode_]]">
+      <a id="osPeople" href="/osPeople" hidden="[[isGuestMode_]]">
         <div class="item">
           <iron-icon icon="cr:person"></iron-icon>
-          $i18n{peoplePageTitle}
+          $i18n{osPeoplePageTitle}
         </div>
       </a>
       <a href="/device">
@@ -195,13 +196,13 @@
           $i18n{personalizationPageTitle}
         </div>
       </a>
-      <a href="/search">
+      <a href="/osSearch">
         <div class="item">
           <iron-icon icon="cr:search"></iron-icon>
           $i18n{osSearchPageTitle}
         </div>
       </a>
-      <a href="/apps" hidden="[[!showApps]]">
+      <a href="/apps">
         <div class="item">
           <iron-icon icon="os-settings:apps"></iron-icon>
           $i18n{appsPageTitle}
@@ -211,12 +212,6 @@
         <div class="item">
           <iron-icon icon="os-settings:crostini-mascot"></iron-icon>
           $i18n{crostiniPageTitle}
-        </div>
-      </a>
-      <a href="/pluginVm" hidden="[[!showPluginVm]]">
-        <div class="item">
-          <iron-icon icon="os-settings:plugin-vm"></iron-icon>
-          $i18n{pluginVmPageTitle}
         </div>
       </a>
       <cr-button id="advancedButton"
@@ -235,15 +230,15 @@
               $i18n{dateTimePageTitle}
             </div>
           </a>
-          <a href="/privacy">
+          <a href="/osPrivacy">
             <div class="item">
               <iron-icon icon="cr:security"></iron-icon>
               $i18n{privacyPageTitle}
             </div>
           </a>
-          <a href="/languages">
+          <a href="/osLanguages">
             <div class="item">
-              <iron-icon icon="settings:language"></iron-icon>
+              <iron-icon icon="os-settings:language"></iron-icon>
               $i18n{osLanguagesPageTitle}
             </div>
           </a>
@@ -253,21 +248,21 @@
               $i18n{filesPageTitle}
             </div>
           </a>
-          <a href="/printing">
+          <a href="/osPrinting">
             <div class="item">
-              <iron-icon icon="cr:print"></iron-icon>
+              <iron-icon icon="os-settings:print"></iron-icon>
               $i18n{printingPageTitle}
             </div>
           </a>
-          <a href="/accessibility">
+          <a href="/osAccessibility">
             <div class="item">
-              <iron-icon icon="settings:accessibility"></iron-icon>
+              <iron-icon icon="os-settings:accessibility"></iron-icon>
               $i18n{a11yPageTitle}
             </div>
           </a>
-          <a id="reset" href="/reset" hidden="[[!showReset]]">
+          <a id="osReset" href="/osReset" hidden="[[!showReset]]">
             <div class="item">
-              <iron-icon icon="settings:restore"></iron-icon>
+              <iron-icon icon="os-settings:restore"></iron-icon>
               $i18n{resetPageTitle}
             </div>
           </a>

@@ -24,7 +24,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -43,10 +45,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/web_application_info.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/sync/model/string_ordinal.h"
 #include "components/version_info/version_info.h"
@@ -111,8 +111,7 @@ void ExtensionProtocolTestResourcesHandler(const base::FilePath& test_dir_root,
 }  // namespace
 
 ExtensionBrowserTest::ExtensionBrowserTest()
-    : loaded_(false),
-      installed_(false),
+    :
 #if defined(OS_CHROMEOS)
       set_chromeos_user_(true),
 #endif
@@ -257,14 +256,22 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithInstallParam(
     const base::FilePath& path,
     int flags,
     const std::string& install_param) {
+  // Make sure there aren't any stray bits in "flags." This could happen
+  // if someone inadvertently used any of the ExtensionApiTest flag values.
+  CHECK_LT(flags, kFlagNextValue);
   ChromeTestExtensionLoader loader(profile());
   loader.set_require_modern_manifest_version(
       (flags & kFlagAllowOldManifestVersions) == 0);
-  loader.set_ignore_manifest_warnings(
-      (flags & kFlagIgnoreManifestWarnings) != 0);
-  loader.set_allow_incognito_access((flags & kFlagEnableIncognito) != 0);
-  loader.set_allow_file_access((flags & kFlagEnableFileAccess) != 0);
+  loader.set_ignore_manifest_warnings(flags & kFlagIgnoreManifestWarnings);
+  loader.set_allow_incognito_access(flags & kFlagEnableIncognito);
+  loader.set_allow_file_access(flags & kFlagEnableFileAccess);
   loader.set_install_param(install_param);
+
+  // Note: Rely on the default value to wait for renderers unless otherwise
+  // specified.
+  if (flags & kFlagDontWaitForExtensionRenderers)
+    loader.set_wait_for_renderers(false);
+
   if ((flags & kFlagLoadForLoginScreen) != 0) {
     loader.add_creation_flag(Extension::FOR_LOGIN_SCREEN);
     loader.set_location(Manifest::EXTERNAL_POLICY);
@@ -339,7 +346,7 @@ bool ExtensionBrowserTest::CreateServiceWorkerBasedExtension(
   }
 
   // Number of JS scripts must be > 1.
-  base::Value::ListStorage& scripts_list = background_scripts_list->GetList();
+  base::Value::ConstListView scripts_list = background_scripts_list->GetList();
   if (scripts_list.size() < 1) {
     ADD_FAILURE() << path.value()
                   << ": Only event pages with JS script(s) can be loaded "
@@ -429,7 +436,9 @@ const Extension* ExtensionBrowserTest::LoadAndLaunchApp(
                                WindowOpenDisposition::NEW_WINDOW,
                                AppLaunchSource::kSourceTest);
   params.command_line = *base::CommandLine::ForCurrentProcess();
-  apps::LaunchService::Get(profile())->OpenApplication(params);
+  apps::AppServiceProxyFactory::GetForProfile(profile())
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(params);
   app_loaded_observer.Wait();
 
   return app;
@@ -437,11 +446,6 @@ const Extension* ExtensionBrowserTest::LoadAndLaunchApp(
 
 Browser* ExtensionBrowserTest::LaunchAppBrowser(const Extension* extension) {
   return browsertest_util::LaunchAppBrowser(profile(), extension);
-}
-
-Browser* ExtensionBrowserTest::LaunchBrowserForAppInTab(
-    const Extension* extension) {
-  return browsertest_util::LaunchBrowserForAppInTab(profile(), extension);
 }
 
 base::FilePath ExtensionBrowserTest::PackExtension(
@@ -511,11 +515,6 @@ const Extension* ExtensionBrowserTest::UpdateExtensionWaitForIdle(
   return InstallOrUpdateExtension(id, path, INSTALL_UI_TYPE_NONE,
                                   expected_change, Manifest::INTERNAL,
                                   browser(), Extension::NO_FLAGS, false, false);
-}
-
-const Extension* ExtensionBrowserTest::InstallBookmarkApp(
-    WebApplicationInfo info) {
-  return browsertest_util::InstallBookmarkApp(profile(), std::move(info));
 }
 
 const Extension* ExtensionBrowserTest::InstallExtensionFromWebstore(

@@ -59,6 +59,7 @@
 #include "libavutil/mips/asmdefs.h"
 
 #if HAVE_INLINE_ASM
+#if HAVE_MIPSFPU
 static av_always_inline void float_copy(float *dst, const float *src, int count)
 {
     // Copy 'count' floats from src to dst
@@ -430,16 +431,19 @@ static void update_ltp_mips(AACContext *ac, SingleChannelElement *sce)
     float_copy(sce->ltp_state + 1024, sce->ret, 1024);
     float_copy(sce->ltp_state + 2048, saved_ltp, 1024);
 }
+#endif /* 0 */
 #endif /* HAVE_MIPSFPU */
 #endif /* HAVE_INLINE_ASM */
 
 void ff_aacdec_init_mips(AACContext *c)
 {
 #if HAVE_INLINE_ASM
+#if HAVE_MIPSFPU
     c->imdct_and_windowing         = imdct_and_windowing_mips;
     c->apply_ltp                   = apply_ltp_mips;
 #if 0 // Does not compile.
     c->update_ltp                  = update_ltp_mips;
+#endif /* 0 */
 #endif /* HAVE_MIPSFPU */
 #endif /* HAVE_INLINE_ASM */
 }

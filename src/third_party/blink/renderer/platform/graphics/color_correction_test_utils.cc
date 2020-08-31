@@ -194,7 +194,7 @@ void ColorCorrectionTestUtils::CompareColorCorrectedPixels(
 
 bool ColorCorrectionTestUtils::ConvertPixelsToColorSpaceAndPixelFormatForTest(
     void* src_data,
-    int num_elements,
+    size_t num_elements,
     CanvasColorSpace src_color_space,
     ImageDataStorageFormat src_storage_format,
     CanvasColorSpace dst_color_space,
@@ -221,14 +221,13 @@ bool ColorCorrectionTestUtils::ConvertPixelsToColorSpaceAndPixelFormatForTest(
                         (src_storage_format == kUint8ClampedArrayStorageFormat)
                             ? CanvasPixelFormat::kRGBA8
                             : CanvasPixelFormat::kF16,
-                        kNonOpaque, CanvasForceRGBA::kNotForced)
+                        kNonOpaque)
           .GetSkColorSpaceForSkSurfaces();
   if (!src_sk_color_space.get())
     src_sk_color_space = SkColorSpace::MakeSRGB();
 
   sk_sp<SkColorSpace> dst_sk_color_space =
-      CanvasColorParams(dst_color_space, dst_canvas_pixel_format, kNonOpaque,
-                        CanvasForceRGBA::kNotForced)
+      CanvasColorParams(dst_color_space, dst_canvas_pixel_format, kNonOpaque)
           .GetSkColorSpaceForSkSurfaces();
   if (!dst_sk_color_space.get())
     dst_sk_color_space = SkColorSpace::MakeSRGB();

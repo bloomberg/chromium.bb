@@ -11,6 +11,7 @@ import logging
 import os
 import pipes
 import re
+import shutil
 import signal
 import socket
 import sys
@@ -31,10 +32,7 @@ sys.path.insert(0, os.path.join(CHROMIUM_SRC_PATH, 'build', 'android'))
 from pylib.base import base_test_result  # pylint: disable=import-error
 from pylib.results import json_results  # pylint: disable=import-error
 
-# Use luci-py's subprocess42.py
-sys.path.insert(
-    0, os.path.join(CHROMIUM_SRC_PATH, 'tools', 'swarming_client', 'utils'))
-import subprocess42  # pylint: disable=import-error
+import subprocess32 as subprocess  # pylint: disable=import-error
 
 DEFAULT_CROS_CACHE = os.path.abspath(
     os.path.join(CHROMIUM_SRC_PATH, 'build', 'cros_cache'))
@@ -52,7 +50,12 @@ LAB_DUT_HOSTNAME = 'variable_chromeos_device_hostname'
 
 SYSTEM_LOG_LOCATIONS = [
     '/var/log/chrome/',
+    # Note that journal/ will contain journald's serialized logs, which aren't
+    # human-readable. To inspect them, download the logs locally and run
+    # `journalctl -D ...`.
+    '/var/log/journal/',
     '/var/log/messages',
+    '/var/log/power_manager/',
     '/var/log/ui/',
 ]
 
@@ -106,8 +109,6 @@ class RemoteTest(object):
           '--start',
           # Don't persist any filesystem changes after the VM shutsdown.
           '--copy-on-write',
-          '--device',
-          'localhost'
       ]
     else:
       self._test_cmd += [
@@ -182,20 +183,20 @@ class RemoteTest(object):
       logging.info('########################################')
       logging.info('Test attempt #%d', i)
       logging.info('########################################')
-      test_proc = subprocess42.Popen(
+      test_proc = subprocess.Popen(
           self._test_cmd,
           stdout=sys.stdout,
           stderr=sys.stderr,
           env=self._test_env)
       try:
         test_proc.wait(timeout=self._timeout)
-      except subprocess42.TimeoutExpired:
+      except subprocess.TimeoutExpired:
         logging.error('Test timed out. Sending SIGTERM.')
         # SIGTERM the proc and wait 10s for it to close.
         test_proc.terminate()
         try:
           test_proc.wait(timeout=10)
-        except subprocess42.TimeoutExpired:
+        except subprocess.TimeoutExpired:
           # If it hasn't closed in 10s, SIGKILL it.
           logging.error('Test did not exit in time. Sending SIGKILL.')
           test_proc.kill()
@@ -236,6 +237,7 @@ class TastTest(RemoteTest):
     self._suite_name = args.suite_name
     self._tests = args.tests
     self._conditional = args.conditional
+    self._should_strip = args.strip_chrome
 
     if not self._llvm_profile_var and not self._logs_dir:
       # The host-side Tast bin returns 0 when tests fail, so we need to capture
@@ -308,7 +310,8 @@ class TastTest(RemoteTest):
     else:
       # Mounting the browser gives it enough disk space to not need stripping,
       # but only for browsers not instrumented with code coverage.
-      self._test_cmd.append('--nostrip')
+      if not self._should_strip:
+        self._test_cmd.append('--nostrip')
       # Capture tast's results in the logs dir as well.
       if self._logs_dir:
         self._test_cmd += [
@@ -369,6 +372,7 @@ class TastTest(RemoteTest):
       base_result = base_test_result.BaseTestResult(
           test['name'], result, duration=duration_ms, log=error_log)
       suite_results.AddResult(base_result)
+      self._maybe_handle_perf_results(test['name'])
 
     if self._test_launcher_summary_output:
       with open(self._test_launcher_summary_output, 'w') as f:
@@ -382,6 +386,38 @@ class TastTest(RemoteTest):
           'cros_run_test.', return_code)
       return return_code
     return 0
+
+  def _maybe_handle_perf_results(self, test_name):
+    """Prepares any perf results from |test_name| for process_perf_results.
+
+    - process_perf_results looks for top level directories containing a
+      perf_results.json file and a test_results.json file. The directory names
+      are used as the benchmark names.
+    - If a perf_results.json or results-chart.json file exists in the
+      |test_name| results directory, a top level directory is created and the
+      perf results file is copied to perf_results.json.
+    - A trivial test_results.json file is also created to indicate that the test
+      succeeded (this function would not be called otherwise).
+    - When process_perf_results is run, it will find the expected files in the
+      named directory and upload the benchmark results.
+    """
+
+    perf_results = os.path.join(self._logs_dir, 'tests', test_name,
+                                'perf_results.json')
+    # TODO(stevenjb): Remove check for crosbolt results-chart.json file.
+    if not os.path.exists(perf_results):
+      perf_results = os.path.join(self._logs_dir, 'tests', test_name,
+                                  'results-chart.json')
+    if os.path.exists(perf_results):
+      benchmark_dir = os.path.join(self._logs_dir, test_name)
+      if not os.path.isdir(benchmark_dir):
+        os.makedirs(benchmark_dir)
+      shutil.copyfile(perf_results,
+                      os.path.join(benchmark_dir, 'perf_results.json'))
+      # process_perf_results.py expects a test_results.json file.
+      test_results = {'valid': True, 'failures': []}
+      with open(os.path.join(benchmark_dir, 'test_results.json'), 'w') as out:
+        json.dump(test_results, out)
 
 
 class GTestTest(RemoteTest):
@@ -397,7 +433,6 @@ class GTestTest(RemoteTest):
       # //testing/buildbot/filters/.
       re.compile(r'.*testing/(?!buildbot/filters).*'),
       re.compile(r'.*third_party/chromite.*'),
-      re.compile(r'.*tools/swarming_client.*'),
   ]
 
   def __init__(self, args, unknown_args):
@@ -411,7 +446,9 @@ class GTestTest(RemoteTest):
     self._test_launcher_total_shards = args.test_launcher_total_shards
 
     self._on_device_script = None
+    self._env_vars = args.env_var
     self._stop_ui = args.stop_ui
+    self._trace_dir = args.trace_dir
 
   @property
   def suite_name(self):
@@ -443,12 +480,32 @@ class GTestTest(RemoteTest):
           result_dir,
       ]
 
+    if self._trace_dir and self._logs_dir:
+      trace_path = os.path.dirname(self._trace_dir) or '.'
+      if os.path.abspath(trace_path) != os.path.abspath(self._logs_dir):
+        raise TestFormatError(
+            '--trace-dir and --logs-dir must point to the same directory.')
+
+    if self._trace_dir:
+      trace_path, trace_dirname = os.path.split(self._trace_dir)
+      device_trace_dir = '/tmp/%s' % trace_dirname
+      self._test_cmd += [
+          '--results-src',
+          device_trace_dir,
+          '--results-dest-dir',
+          trace_path,
+      ]
+
     # Build the shell script that will be used on the device to invoke the test.
+    # Stored here as a list of lines.
     device_test_script_contents = self.BASIC_SHELL_SCRIPT[:]
     if self._llvm_profile_var:
       device_test_script_contents += [
           'export LLVM_PROFILE_FILE=%s' % self._llvm_profile_var,
       ]
+
+    for var_name, var_val in self._env_vars:
+      device_test_script_contents += ['export %s=%s' % (var_name, var_val)]
 
     if self._vpython_dir:
       vpython_spec_path = os.path.relpath(
@@ -468,6 +525,14 @@ class GTestTest(RemoteTest):
     if self._test_launcher_summary_output:
       test_invocation += ' --test-launcher-summary-output=%s' % (
           device_result_file)
+
+    if self._trace_dir:
+      device_test_script_contents.extend([
+          'rm -rf %s' % device_trace_dir,
+          'su chronos -c -- "mkdir -p %s"' % device_trace_dir,
+      ])
+      test_invocation += ' --trace-dir=%s' % device_trace_dir
+
     if self._additional_args:
       test_invocation += ' %s' % ' '.join(self._additional_args)
 
@@ -646,8 +711,6 @@ def host_cmd(args, unknown_args):
         '--start',
         # Don't persist any filesystem changes after the VM shutsdown.
         '--copy-on-write',
-        '--device',
-        'localhost',
     ]
   else:
     cros_run_test_cmd += [
@@ -680,7 +743,7 @@ def host_cmd(args, unknown_args):
   logging.info('Running the following command:')
   logging.info(' '.join(cros_run_test_cmd))
 
-  return subprocess42.call(
+  return subprocess.call(
       cros_run_test_cmd, stdout=sys.stdout, stderr=sys.stderr, env=test_env)
 
 
@@ -805,6 +868,19 @@ def main():
       '--stop-ui',
       action='store_true',
       help='Will stop the UI service in the device before running the test.')
+  gtest_parser.add_argument(
+      '--trace-dir',
+      type=str,
+      help='When set, will pass down to the test to generate the trace and '
+      'retrieve the trace files to the specified location.')
+  gtest_parser.add_argument(
+      '--env-var',
+      nargs=2,
+      action='append',
+      default=[],
+      help='Env var to set on the device for the duration of the test. '
+      'Expected format is "--env-var SOME_VAR_NAME some_var_value". Specify '
+      'multiple times for more than one var.')
 
   # Tast test args.
   # pylint: disable=line-too-long
@@ -833,6 +909,10 @@ def main():
       dest='conditional',
       help='A boolean expression whose matching tests will run '
       '(eg: ("dep:chrome")).')
+  tast_test_parser.add_argument(
+      '--strip-chrome',
+      action='store_true',
+      help='Strips symbols from the browser before deploying to the device.')
   tast_test_parser.add_argument(
       '--test',
       '-t',

@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MOCK_CONSTRAINT_FACTORY_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -18,17 +18,17 @@ class MockConstraintFactory {
   MockConstraintFactory();
   ~MockConstraintFactory();
 
-  WebMediaConstraints CreateWebMediaConstraints() const;
-  WebMediaTrackConstraintSet& basic() { return basic_; }
-  WebMediaTrackConstraintSet& AddAdvanced();
+  MediaConstraints CreateMediaConstraints() const;
+  MediaTrackConstraintSetPlatform& basic() { return basic_; }
+  MediaTrackConstraintSetPlatform& AddAdvanced();
 
   void DisableDefaultAudioConstraints();
   void DisableAecAudioConstraints();
   void Reset();
 
  private:
-  WebMediaTrackConstraintSet basic_;
-  Vector<WebMediaTrackConstraintSet> advanced_;
+  MediaTrackConstraintSetPlatform basic_;
+  Vector<MediaTrackConstraintSetPlatform> advanced_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConstraintFactory);
 };

@@ -64,13 +64,9 @@ template("generate_runner_script") {
     }
     script = "//build/chromeos/create_test_runner_script.py"
 
-    outputs = [
-      generated_script,
-    ]
+    outputs = [ generated_script ]
 
-    deps = [
-      "//testing/buildbot/filters:chromeos_filters",
-    ]
+    deps = [ "//testing/buildbot/filters:chromeos_filters" ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
@@ -87,9 +83,6 @@ template("generate_runner_script") {
       # Needed for various SDK components used below.
       "//build/cros_cache/chrome-sdk/misc/",
       "//build/cros_cache/chrome-sdk/symlinks/",
-
-      # We use luci-py's subprocess42 to launch test processes.
-      "//tools/swarming_client/utils/",
 
       # The LKGM file controls what version of the VM image to download. Add it
       # as data here so that changes to it will trigger analyze.

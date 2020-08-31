@@ -5,18 +5,20 @@
 #include "third_party/blink/renderer/modules/mediasession/media_session.h"
 
 #include <memory>
+
 #include "base/optional.h"
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_position_state.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_action_details.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_action_handler.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_seek_to_action_details.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata_sanitizer.h"
-#include "third_party/blink/renderer/modules/mediasession/media_position_state.h"
-#include "third_party/blink/renderer/modules/mediasession/media_session_action_details.h"
-#include "third_party/blink/renderer/modules/mediasession/media_session_seek_to_action_details.h"
 #include "third_party/blink/renderer/modules/mediasession/type_converters.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -124,17 +126,15 @@ mojom::blink::MediaSessionPlaybackState StringToMediaSessionPlaybackState(
 }  // anonymous namespace
 
 MediaSession::MediaSession(ExecutionContext* execution_context)
-    : ContextClient(execution_context),
-      playback_state_(mojom::blink::MediaSessionPlaybackState::NONE) {}
-
-void MediaSession::Dispose() {
-  client_receiver_.reset();
-}
+    : ExecutionContextClient(execution_context),
+      clock_(base::DefaultTickClock::GetInstance()),
+      playback_state_(mojom::blink::MediaSessionPlaybackState::NONE),
+      client_receiver_(this, execution_context) {}
 
 void MediaSession::setPlaybackState(const String& playback_state) {
   playback_state_ = StringToMediaSessionPlaybackState(playback_state);
 
-  RecalculatePositionState(false /* notify */);
+  RecalculatePositionState(/*was_set=*/false);
 
   mojom::blink::MediaSessionService* service = GetService();
   if (service)
@@ -263,7 +263,7 @@ void MediaSession::setPositionState(MediaPositionState* position_state,
 
   declared_playback_rate_ = position_state_->playback_rate;
 
-  RecalculatePositionState(true /* notify */);
+  RecalculatePositionState(/*was_set=*/true);
 }
 
 void MediaSession::NotifyActionChange(const String& action,
@@ -285,7 +285,25 @@ void MediaSession::NotifyActionChange(const String& action,
   }
 }
 
-void MediaSession::RecalculatePositionState(bool notify) {
+base::TimeDelta MediaSession::GetPositionNow() const {
+  const base::TimeTicks now = clock_->NowTicks();
+
+  const base::TimeDelta elapsed_time =
+      position_state_->playback_rate *
+      (now - position_state_->last_updated_time);
+  const base::TimeDelta updated_position =
+      position_state_->position + elapsed_time;
+  const base::TimeDelta start = base::TimeDelta::FromSeconds(0);
+
+  if (updated_position <= start)
+    return start;
+  else if (updated_position >= position_state_->duration)
+    return position_state_->duration;
+  else
+    return updated_position;
+}
+
+void MediaSession::RecalculatePositionState(bool was_set) {
   if (!position_state_)
     return;
 
@@ -294,11 +312,17 @@ void MediaSession::RecalculatePositionState(bool notify) {
           ? 0.0
           : declared_playback_rate_;
 
-  notify = notify || new_playback_rate != position_state_->playback_rate;
-  position_state_->playback_rate = new_playback_rate;
-
-  if (!notify)
+  if (!was_set && new_playback_rate == position_state_->playback_rate)
     return;
+
+  // If we updated the position state because of the playback rate then we
+  // should update the time.
+  if (!was_set) {
+    position_state_->position = GetPositionNow();
+  }
+
+  position_state_->playback_rate = new_playback_rate;
+  position_state_->last_updated_time = clock_->NowTicks();
 
   if (auto* service = GetService())
     service->SetPositionState(position_state_.Clone());
@@ -310,15 +334,10 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
   if (!GetExecutionContext())
     return nullptr;
 
-  Document* document = To<Document>(GetExecutionContext());
-  LocalFrame* frame = document->GetFrame();
-  if (!frame)
-    return nullptr;
-
   // See https://bit.ly/2S0zRAS for task types.
   auto task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  frame->GetBrowserInterfaceBroker().GetInterface(
+  GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
       service_.BindNewPipeAndPassReceiver());
   if (service_.get())
     service_->SetClient(client_receiver_.BindNewPipeAndPassRemote(task_runner));
@@ -329,8 +348,10 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
 void MediaSession::DidReceiveAction(
     media_session::mojom::blink::MediaSessionAction action,
     mojom::blink::MediaSessionActionDetailsPtr details) {
-  Document* document = To<Document>(GetExecutionContext());
-  LocalFrame::NotifyUserActivation(document ? document->GetFrame() : nullptr);
+  if (!GetExecutionContext())
+    return;
+  LocalFrame::NotifyUserActivation(
+      To<LocalDOMWindow>(GetExecutionContext())->GetFrame());
 
   auto& name = MojomActionToActionName(action);
 
@@ -346,11 +367,12 @@ void MediaSession::DidReceiveAction(
   iter->value->InvokeAndReportException(this, blink_details);
 }
 
-void MediaSession::Trace(blink::Visitor* visitor) {
+void MediaSession::Trace(Visitor* visitor) {
+  visitor->Trace(client_receiver_);
   visitor->Trace(metadata_);
   visitor->Trace(action_handlers_);
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

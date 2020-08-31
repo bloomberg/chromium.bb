@@ -27,6 +27,7 @@
 #include "core/fxge/renderdevicedriver_iface.h"
 #include "core/fxge/text_char_pos.h"
 #include "core/fxge/text_glyph_pos.h"
+#include "third_party/base/span.h"
 
 #if defined _SKIA_SUPPORT_ || defined _SKIA_SUPPORT_PATHS_
 #include "third_party/skia/include/core/SkTypes.h"
@@ -44,12 +45,13 @@ void AdjustGlyphSpace(std::vector<TextGlyphPos>* pGlyphAndPos) {
   for (size_t i = glyphs.size() - 1; i > 1; --i) {
     const TextGlyphPos& next = glyphs[i];
     int next_origin = bVertical ? next.m_Origin.y : next.m_Origin.x;
-    float next_origin_f = bVertical ? next.m_fOrigin.y : next.m_fOrigin.x;
+    float next_origin_f =
+        bVertical ? next.m_fDeviceOrigin.y : next.m_fDeviceOrigin.x;
 
     TextGlyphPos& current = glyphs[i - 1];
     int& current_origin = bVertical ? current.m_Origin.y : current.m_Origin.x;
     float current_origin_f =
-        bVertical ? current.m_fOrigin.y : current.m_fOrigin.x;
+        bVertical ? current.m_fDeviceOrigin.y : current.m_fDeviceOrigin.x;
 
     FX_SAFE_INT32 safe_space = next_origin;
     safe_space -= current_origin;
@@ -513,10 +515,10 @@ bool CFX_RenderDevice::DrawPathWithBlend(const CFX_PathData* pPathData,
                                          BlendMode blend_type) {
   uint8_t stroke_alpha = pGraphState ? FXARGB_A(stroke_color) : 0;
   uint8_t fill_alpha = (fill_mode & 3) ? FXARGB_A(fill_color) : 0;
-  const std::vector<FX_PATHPOINT>& pPoints = pPathData->GetPoints();
-  if (stroke_alpha == 0 && pPoints.size() == 2) {
-    CFX_PointF pos1 = pPoints[0].m_Point;
-    CFX_PointF pos2 = pPoints[1].m_Point;
+  pdfium::span<const FX_PATHPOINT> points = pPathData->GetPoints();
+  if (stroke_alpha == 0 && points.size() == 2) {
+    CFX_PointF pos1 = points[0].m_Point;
+    CFX_PointF pos2 = points[1].m_Point;
     if (pObject2Device) {
       pos1 = pObject2Device->Transform(pos1);
       pos2 = pObject2Device->Transform(pos2);
@@ -525,10 +527,11 @@ bool CFX_RenderDevice::DrawPathWithBlend(const CFX_PathData* pPathData,
     return true;
   }
 
-  if ((pPoints.size() == 5 || pPoints.size() == 4) && stroke_alpha == 0) {
-    CFX_FloatRect rect_f;
-    if (!(fill_mode & FXFILL_RECT_AA) &&
-        pPathData->IsRect(pObject2Device, &rect_f)) {
+  if ((points.size() == 5 || points.size() == 4) && stroke_alpha == 0 &&
+      !(fill_mode & FXFILL_RECT_AA)) {
+    Optional<CFX_FloatRect> maybe_rect_f = pPathData->GetRect(pObject2Device);
+    if (maybe_rect_f.has_value()) {
+      const CFX_FloatRect& rect_f = maybe_rect_f.value();
       FX_RECT rect_i = rect_f.GetOuterRect();
 
       // Depending on the top/bottom, left/right values of the rect it's
@@ -705,8 +708,8 @@ bool CFX_RenderDevice::DrawCosmeticLine(const CFX_PointF& ptMoveTo,
   }
   CFX_GraphStateData graph_state;
   CFX_PathData path;
-  path.AppendPoint(ptMoveTo, FXPT_TYPE::MoveTo, false);
-  path.AppendPoint(ptLineTo, FXPT_TYPE::LineTo, false);
+  path.AppendPoint(ptMoveTo, FXPT_TYPE::MoveTo);
+  path.AppendPoint(ptLineTo, FXPT_TYPE::LineTo);
   return m_pDeviceDriver->DrawPath(&path, nullptr, &graph_state, 0, color,
                                    fill_mode, blend_type);
 }
@@ -920,12 +923,12 @@ bool CFX_RenderDevice::DrawNormalText(int nChars,
     TextGlyphPos& glyph = glyphs[i];
     const TextCharPos& charpos = pCharPos[i];
 
-    glyph.m_fOrigin = text2Device.Transform(charpos.m_Origin);
+    glyph.m_fDeviceOrigin = text2Device.Transform(charpos.m_Origin);
     if (anti_alias < FT_RENDER_MODE_LCD)
-      glyph.m_Origin.x = FXSYS_roundf(glyph.m_fOrigin.x);
+      glyph.m_Origin.x = FXSYS_roundf(glyph.m_fDeviceOrigin.x);
     else
-      glyph.m_Origin.x = static_cast<int>(floor(glyph.m_fOrigin.x));
-    glyph.m_Origin.y = FXSYS_roundf(glyph.m_fOrigin.y);
+      glyph.m_Origin.x = static_cast<int>(floor(glyph.m_fDeviceOrigin.x));
+    glyph.m_Origin.y = FXSYS_roundf(glyph.m_fDeviceOrigin.y);
 
     if (charpos.m_bGlyphAdjust) {
       CFX_Matrix new_matrix(
@@ -1019,7 +1022,7 @@ bool CFX_RenderDevice::DrawNormalText(int nChars,
     }
     bool bBGRStripe = !!(text_flags & FXTEXT_BGR_STRIPE);
     ncols /= 3;
-    int x_subpixel = static_cast<int>(glyph.m_fOrigin.x * 3) % 3;
+    int x_subpixel = static_cast<int>(glyph.m_fDeviceOrigin.x * 3) % 3;
     int start_col = std::max(point->x, 0);
     FX_SAFE_INT32 end_col_safe = point->x;
     end_col_safe += ncols;
@@ -1100,9 +1103,9 @@ void CFX_RenderDevice::DrawFillArea(const CFX_Matrix& mtUser2Device,
                                     const FX_COLORREF& color) {
   ASSERT(!points.empty());
   CFX_PathData path;
-  path.AppendPoint(points[0], FXPT_TYPE::MoveTo, false);
+  path.AppendPoint(points[0], FXPT_TYPE::MoveTo);
   for (size_t i = 1; i < points.size(); ++i)
-    path.AppendPoint(points[i], FXPT_TYPE::LineTo, false);
+    path.AppendPoint(points[i], FXPT_TYPE::LineTo);
 
   DrawPath(&path, &mtUser2Device, nullptr, color, 0, FXFILL_ALTERNATE);
 }
@@ -1125,8 +1128,8 @@ void CFX_RenderDevice::DrawStrokeLine(const CFX_Matrix* pUser2Device,
                                       const FX_COLORREF& color,
                                       float fWidth) {
   CFX_PathData path;
-  path.AppendPoint(ptMoveTo, FXPT_TYPE::MoveTo, false);
-  path.AppendPoint(ptLineTo, FXPT_TYPE::LineTo, false);
+  path.AppendPoint(ptMoveTo, FXPT_TYPE::MoveTo);
+  path.AppendPoint(ptLineTo, FXPT_TYPE::LineTo);
 
   CFX_GraphStateData gsd;
   gsd.m_LineWidth = fWidth;
@@ -1148,27 +1151,37 @@ void CFX_RenderDevice::DrawShadow(const CFX_Matrix& mtUser2Device,
                                   int32_t nTransparency,
                                   int32_t nStartGray,
                                   int32_t nEndGray) {
-  float fStepGray = 1.0f;
+  constexpr float kBorder = 0.5f;
+  constexpr float kSegmentWidth = 1.0f;
+  constexpr float kLineWidth = 1.5f;
 
   if (bVertical) {
-    fStepGray = (nEndGray - nStartGray) / rect.Height();
+    float fStepGray = (nEndGray - nStartGray) / rect.Height();
+    CFX_PointF start(rect.left, 0);
+    CFX_PointF end(rect.right, 0);
 
-    for (float fy = rect.bottom + 0.5f; fy <= rect.top - 0.5f; fy += 1.0f) {
-      int32_t nGray = nStartGray + (int32_t)(fStepGray * (fy - rect.bottom));
-      DrawStrokeLine(&mtUser2Device, CFX_PointF(rect.left, fy),
-                     CFX_PointF(rect.right, fy),
-                     ArgbEncode(nTransparency, nGray, nGray, nGray), 1.5f);
+    for (float fy = rect.bottom + kBorder; fy <= rect.top - kBorder;
+         fy += kSegmentWidth) {
+      start.y = fy;
+      end.y = fy;
+      int nGray = nStartGray + static_cast<int>(fStepGray * (fy - rect.bottom));
+      FX_ARGB color = ArgbEncode(nTransparency, nGray, nGray, nGray);
+      DrawStrokeLine(&mtUser2Device, start, end, color, kLineWidth);
     }
   }
 
   if (bHorizontal) {
-    fStepGray = (nEndGray - nStartGray) / rect.Width();
+    float fStepGray = (nEndGray - nStartGray) / rect.Width();
+    CFX_PointF start(0, rect.bottom);
+    CFX_PointF end(0, rect.top);
 
-    for (float fx = rect.left + 0.5f; fx <= rect.right - 0.5f; fx += 1.0f) {
-      int32_t nGray = nStartGray + (int32_t)(fStepGray * (fx - rect.left));
-      DrawStrokeLine(&mtUser2Device, CFX_PointF(fx, rect.bottom),
-                     CFX_PointF(fx, rect.top),
-                     ArgbEncode(nTransparency, nGray, nGray, nGray), 1.5f);
+    for (float fx = rect.left + kBorder; fx <= rect.right - kBorder;
+         fx += kSegmentWidth) {
+      start.x = fx;
+      end.x = fx;
+      int nGray = nStartGray + static_cast<int>(fStepGray * (fx - rect.left));
+      FX_ARGB color = ArgbEncode(nTransparency, nGray, nGray, nGray);
+      DrawStrokeLine(&mtUser2Device, start, end, color, kLineWidth);
     }
   }
 }
@@ -1181,126 +1194,115 @@ void CFX_RenderDevice::DrawBorder(const CFX_Matrix* pUser2Device,
                                   const CFX_Color& crRightBottom,
                                   BorderStyle nStyle,
                                   int32_t nTransparency) {
-  float fLeft = rect.left;
-  float fRight = rect.right;
-  float fTop = rect.top;
-  float fBottom = rect.bottom;
+  if (fWidth <= 0.0f)
+    return;
 
-  if (fWidth > 0.0f) {
-    float fHalfWidth = fWidth / 2.0f;
+  const float fLeft = rect.left;
+  const float fRight = rect.right;
+  const float fTop = rect.top;
+  const float fBottom = rect.bottom;
+  const float fHalfWidth = fWidth / 2.0f;
 
-    switch (nStyle) {
-      default:
-      case BorderStyle::SOLID: {
-        CFX_PathData path;
-        path.AppendRect(fLeft, fBottom, fRight, fTop);
-        path.AppendRect(fLeft + fWidth, fBottom + fWidth, fRight - fWidth,
-                        fTop - fWidth);
-        DrawPath(&path, pUser2Device, nullptr, color.ToFXColor(nTransparency),
-                 0, FXFILL_ALTERNATE);
-        break;
-      }
-      case BorderStyle::DASH: {
-        CFX_PathData path;
-        path.AppendPoint(
-            CFX_PointF(fLeft + fWidth / 2.0f, fBottom + fWidth / 2.0f),
-            FXPT_TYPE::MoveTo, false);
-        path.AppendPoint(
-            CFX_PointF(fLeft + fWidth / 2.0f, fTop - fWidth / 2.0f),
-            FXPT_TYPE::LineTo, false);
-        path.AppendPoint(
-            CFX_PointF(fRight - fWidth / 2.0f, fTop - fWidth / 2.0f),
-            FXPT_TYPE::LineTo, false);
-        path.AppendPoint(
-            CFX_PointF(fRight - fWidth / 2.0f, fBottom + fWidth / 2.0f),
-            FXPT_TYPE::LineTo, false);
-        path.AppendPoint(
-            CFX_PointF(fLeft + fWidth / 2.0f, fBottom + fWidth / 2.0f),
-            FXPT_TYPE::LineTo, false);
+  switch (nStyle) {
+    default:
+    case BorderStyle::SOLID: {
+      CFX_PathData path;
+      path.AppendRect(fLeft, fBottom, fRight, fTop);
+      path.AppendRect(fLeft + fWidth, fBottom + fWidth, fRight - fWidth,
+                      fTop - fWidth);
+      DrawPath(&path, pUser2Device, nullptr, color.ToFXColor(nTransparency), 0,
+               FXFILL_ALTERNATE);
+      break;
+    }
+    case BorderStyle::DASH: {
+      CFX_GraphStateData gsd;
+      gsd.m_DashArray = {3.0f, 3.0f};
+      gsd.m_DashPhase = 0;
+      gsd.m_LineWidth = fWidth;
 
-        CFX_GraphStateData gsd;
-        gsd.m_DashArray = {3.0f, 3.0f};
-        gsd.m_DashPhase = 0;
-        gsd.m_LineWidth = fWidth;
-        DrawPath(&path, pUser2Device, &gsd, 0, color.ToFXColor(nTransparency),
-                 FXFILL_WINDING);
-        break;
-      }
-      case BorderStyle::BEVELED:
-      case BorderStyle::INSET: {
-        CFX_GraphStateData gsd;
-        gsd.m_LineWidth = fHalfWidth;
+      CFX_PathData path;
+      path.AppendPoint(CFX_PointF(fLeft + fHalfWidth, fBottom + fHalfWidth),
+                       FXPT_TYPE::MoveTo);
+      path.AppendPoint(CFX_PointF(fLeft + fHalfWidth, fTop - fHalfWidth),
+                       FXPT_TYPE::LineTo);
+      path.AppendPoint(CFX_PointF(fRight - fHalfWidth, fTop - fHalfWidth),
+                       FXPT_TYPE::LineTo);
+      path.AppendPoint(CFX_PointF(fRight - fHalfWidth, fBottom + fHalfWidth),
+                       FXPT_TYPE::LineTo);
+      path.AppendPoint(CFX_PointF(fLeft + fHalfWidth, fBottom + fHalfWidth),
+                       FXPT_TYPE::LineTo);
+      DrawPath(&path, pUser2Device, &gsd, 0, color.ToFXColor(nTransparency),
+               FXFILL_WINDING);
+      break;
+    }
+    case BorderStyle::BEVELED:
+    case BorderStyle::INSET: {
+      CFX_GraphStateData gsd;
+      gsd.m_LineWidth = fHalfWidth;
 
-        CFX_PathData pathLT;
+      CFX_PathData path_left_top;
+      path_left_top.AppendPoint(
+          CFX_PointF(fLeft + fHalfWidth, fBottom + fHalfWidth),
+          FXPT_TYPE::MoveTo);
+      path_left_top.AppendPoint(
+          CFX_PointF(fLeft + fHalfWidth, fTop - fHalfWidth), FXPT_TYPE::LineTo);
+      path_left_top.AppendPoint(
+          CFX_PointF(fRight - fHalfWidth, fTop - fHalfWidth),
+          FXPT_TYPE::LineTo);
+      path_left_top.AppendPoint(CFX_PointF(fRight - fWidth, fTop - fWidth),
+                                FXPT_TYPE::LineTo);
+      path_left_top.AppendPoint(CFX_PointF(fLeft + fWidth, fTop - fWidth),
+                                FXPT_TYPE::LineTo);
+      path_left_top.AppendPoint(CFX_PointF(fLeft + fWidth, fBottom + fWidth),
+                                FXPT_TYPE::LineTo);
+      path_left_top.AppendPoint(
+          CFX_PointF(fLeft + fHalfWidth, fBottom + fHalfWidth),
+          FXPT_TYPE::LineTo);
+      DrawPath(&path_left_top, pUser2Device, &gsd,
+               crLeftTop.ToFXColor(nTransparency), 0, FXFILL_ALTERNATE);
 
-        pathLT.AppendPoint(CFX_PointF(fLeft + fHalfWidth, fBottom + fHalfWidth),
-                           FXPT_TYPE::MoveTo, false);
-        pathLT.AppendPoint(CFX_PointF(fLeft + fHalfWidth, fTop - fHalfWidth),
-                           FXPT_TYPE::LineTo, false);
-        pathLT.AppendPoint(CFX_PointF(fRight - fHalfWidth, fTop - fHalfWidth),
-                           FXPT_TYPE::LineTo, false);
-        pathLT.AppendPoint(
-            CFX_PointF(fRight - fHalfWidth * 2, fTop - fHalfWidth * 2),
-            FXPT_TYPE::LineTo, false);
-        pathLT.AppendPoint(
-            CFX_PointF(fLeft + fHalfWidth * 2, fTop - fHalfWidth * 2),
-            FXPT_TYPE::LineTo, false);
-        pathLT.AppendPoint(
-            CFX_PointF(fLeft + fHalfWidth * 2, fBottom + fHalfWidth * 2),
-            FXPT_TYPE::LineTo, false);
-        pathLT.AppendPoint(CFX_PointF(fLeft + fHalfWidth, fBottom + fHalfWidth),
-                           FXPT_TYPE::LineTo, false);
+      CFX_PathData path_right_bottom;
+      path_right_bottom.AppendPoint(
+          CFX_PointF(fRight - fHalfWidth, fTop - fHalfWidth),
+          FXPT_TYPE::MoveTo);
+      path_right_bottom.AppendPoint(
+          CFX_PointF(fRight - fHalfWidth, fBottom + fHalfWidth),
+          FXPT_TYPE::LineTo);
+      path_right_bottom.AppendPoint(
+          CFX_PointF(fLeft + fHalfWidth, fBottom + fHalfWidth),
+          FXPT_TYPE::LineTo);
+      path_right_bottom.AppendPoint(
+          CFX_PointF(fLeft + fWidth, fBottom + fWidth), FXPT_TYPE::LineTo);
+      path_right_bottom.AppendPoint(
+          CFX_PointF(fRight - fWidth, fBottom + fWidth), FXPT_TYPE::LineTo);
+      path_right_bottom.AppendPoint(CFX_PointF(fRight - fWidth, fTop - fWidth),
+                                    FXPT_TYPE::LineTo);
+      path_right_bottom.AppendPoint(
+          CFX_PointF(fRight - fHalfWidth, fTop - fHalfWidth),
+          FXPT_TYPE::LineTo);
+      DrawPath(&path_right_bottom, pUser2Device, &gsd,
+               crRightBottom.ToFXColor(nTransparency), 0, FXFILL_ALTERNATE);
 
-        DrawPath(&pathLT, pUser2Device, &gsd,
-                 crLeftTop.ToFXColor(nTransparency), 0, FXFILL_ALTERNATE);
+      CFX_PathData path;
+      path.AppendRect(fLeft, fBottom, fRight, fTop);
+      path.AppendRect(fLeft + fHalfWidth, fBottom + fHalfWidth,
+                      fRight - fHalfWidth, fTop - fHalfWidth);
+      DrawPath(&path, pUser2Device, &gsd, color.ToFXColor(nTransparency), 0,
+               FXFILL_ALTERNATE);
+      break;
+    }
+    case BorderStyle::UNDERLINE: {
+      CFX_GraphStateData gsd;
+      gsd.m_LineWidth = fWidth;
 
-        CFX_PathData pathRB;
-        pathRB.AppendPoint(CFX_PointF(fRight - fHalfWidth, fTop - fHalfWidth),
-                           FXPT_TYPE::MoveTo, false);
-        pathRB.AppendPoint(
-            CFX_PointF(fRight - fHalfWidth, fBottom + fHalfWidth),
-            FXPT_TYPE::LineTo, false);
-        pathRB.AppendPoint(CFX_PointF(fLeft + fHalfWidth, fBottom + fHalfWidth),
-                           FXPT_TYPE::LineTo, false);
-        pathRB.AppendPoint(
-            CFX_PointF(fLeft + fHalfWidth * 2, fBottom + fHalfWidth * 2),
-            FXPT_TYPE::LineTo, false);
-        pathRB.AppendPoint(
-            CFX_PointF(fRight - fHalfWidth * 2, fBottom + fHalfWidth * 2),
-            FXPT_TYPE::LineTo, false);
-        pathRB.AppendPoint(
-            CFX_PointF(fRight - fHalfWidth * 2, fTop - fHalfWidth * 2),
-            FXPT_TYPE::LineTo, false);
-        pathRB.AppendPoint(CFX_PointF(fRight - fHalfWidth, fTop - fHalfWidth),
-                           FXPT_TYPE::LineTo, false);
-
-        DrawPath(&pathRB, pUser2Device, &gsd,
-                 crRightBottom.ToFXColor(nTransparency), 0, FXFILL_ALTERNATE);
-
-        CFX_PathData path;
-
-        path.AppendRect(fLeft, fBottom, fRight, fTop);
-        path.AppendRect(fLeft + fHalfWidth, fBottom + fHalfWidth,
-                        fRight - fHalfWidth, fTop - fHalfWidth);
-
-        DrawPath(&path, pUser2Device, &gsd, color.ToFXColor(nTransparency), 0,
-                 FXFILL_ALTERNATE);
-        break;
-      }
-      case BorderStyle::UNDERLINE: {
-        CFX_PathData path;
-        path.AppendPoint(CFX_PointF(fLeft, fBottom + fWidth / 2),
-                         FXPT_TYPE::MoveTo, false);
-        path.AppendPoint(CFX_PointF(fRight, fBottom + fWidth / 2),
-                         FXPT_TYPE::LineTo, false);
-
-        CFX_GraphStateData gsd;
-        gsd.m_LineWidth = fWidth;
-
-        DrawPath(&path, pUser2Device, &gsd, 0, color.ToFXColor(nTransparency),
-                 FXFILL_ALTERNATE);
-        break;
-      }
+      CFX_PathData path;
+      path.AppendPoint(CFX_PointF(fLeft, fBottom + fHalfWidth),
+                       FXPT_TYPE::MoveTo);
+      path.AppendPoint(CFX_PointF(fRight, fBottom + fHalfWidth),
+                       FXPT_TYPE::LineTo);
+      DrawPath(&path, pUser2Device, &gsd, 0, color.ToFXColor(nTransparency),
+               FXFILL_ALTERNATE);
+      break;
     }
   }
 }

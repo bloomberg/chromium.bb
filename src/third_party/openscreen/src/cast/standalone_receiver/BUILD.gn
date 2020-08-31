@@ -2,19 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/external_libraries.gni")
 import("//build_overrides/build.gni")
-
-declare_args() {
-  # These are only relevant for building the demo apps, which require external
-  # headers/libraries be installed. Set them to true if your local system has
-  # SDL2/FFMPEG installed. On Debian-like systems, the following should install
-  # all the required headers and libraries:
-  #
-  #   sudo apt-get install libsdl2-2.0 libsdl2-dev libavcodec libavcodec-dev \
-  #                        libavformat libavformat-dev libavutil libavutil-dev
-  have_sdl_for_demo_apps = false
-  have_ffmpeg_for_demo_apps = false
-}
 
 # Define the executable target only when the build is configured to use the
 # standalone platform implementation; since this is itself a standalone
@@ -22,19 +11,29 @@ declare_args() {
 if (!build_with_chromium) {
   executable("cast_receiver") {
     sources = [
+      "cast_agent.cc",
+      "cast_agent.h",
+      "cast_socket_message_port.cc",
+      "cast_socket_message_port.h",
       "main.cc",
-      "memory_util.h",
+      "streaming_playback_controller.cc",
+      "streaming_playback_controller.h",
     ]
     deps = [
       "../../platform",
+      "../../third_party/jsoncpp",
+      "../common:public",
+      "../common/channel/proto:channel_proto",
+      "../receiver:channel",
       "../streaming:receiver",
     ]
 
     defines = []
     include_dirs = []
+    lib_dirs = []
     libs = []
-    if (have_sdl_for_demo_apps && have_ffmpeg_for_demo_apps) {
-      defines += [ "CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS" ]
+    if (have_ffmpeg && have_libsdl2) {
+      defines += [ "CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS" ]
       sources += [
         "avcodec_glue.h",
         "decoder.cc",
@@ -48,11 +47,9 @@ if (!build_with_chromium) {
         "sdl_video_player.cc",
         "sdl_video_player.h",
       ]
-      libs += [
-        "-lSDL2",
-        "-lavcodec",
-        "-lavutil",
-      ]
+      include_dirs += ffmpeg_include_dirs + libsdl2_include_dirs
+      lib_dirs += ffmpeg_lib_dirs + libsdl2_lib_dirs
+      libs += ffmpeg_libs + libsdl2_libs
     } else {
       sources += [
         "dummy_player.cc",

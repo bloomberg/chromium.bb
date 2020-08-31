@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_factory.mojom.h"
 
 namespace blink {
@@ -28,7 +28,9 @@ class SharedWorkerFactoryImpl : public blink::mojom::SharedWorkerFactory {
   // mojom::SharedWorkerFactory methods:
   void CreateSharedWorker(
       blink::mojom::SharedWorkerInfoPtr info,
+      const url::Origin& constructor_origin,
       const std::string& user_agent,
+      const blink::UserAgentMetadata& ua_metadata,
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,
       blink::mojom::RendererPreferencesPtr renderer_preferences,

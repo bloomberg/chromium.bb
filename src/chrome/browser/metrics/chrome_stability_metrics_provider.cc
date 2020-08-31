@@ -6,7 +6,8 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/child_process_data.h"
@@ -97,7 +98,7 @@ void ChromeStabilityMetricsProvider::Observe(
       }
 #endif
       helper_.LogRendererCrash(was_extension_process, process_info->status,
-                               process_info->exit_code, process_info->uptime);
+                               process_info->exit_code);
       break;
     }
 

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/mac/mac_startup_profiler.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 
@@ -31,7 +31,8 @@ void MacStartupProfiler::RecordMetrics() {
 
   recorded_metrics_ = true;
 
-  for (const std::pair<Location, base::TimeTicks>& entry : profiled_ticks_)
+  for (const std::pair<const Location, base::TimeTicks>& entry :
+       profiled_ticks_)
     RecordHistogram(entry.first, entry.second - main_entry_ticks);
 }
 

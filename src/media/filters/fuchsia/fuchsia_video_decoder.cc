@@ -51,13 +51,10 @@ namespace media {
 
 namespace {
 
-// Value passed to the codec as packet_count_for_client. It's number of output
-// buffers that we expect to hold on to in the renderer.
-//
-// TODO(sergeyu): Figure out the right number of buffers to request. Currently
-// the codec doesn't allow to reserve more than 2 client buffers, but it still
-// works properly when the client holds to more than that.
-const uint32_t kMaxUsedOutputFrames = 8;
+// Maximum number of frames we expect to keep while playing video. Higher values
+// require more memory for output buffers. Lower values make it more likely that
+// renderer will stall because decoded frames are not available on time.
+const uint32_t kMaxUsedOutputFrames = 6;
 
 // Helper used to hold mailboxes for the output textures. OutputMailbox may
 // outlive FuchsiaVideoDecoder if is referenced by a VideoFrame.
@@ -359,30 +356,11 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   waiting_cb_ = waiting_cb;
   container_pixel_aspect_ratio_ = config.GetPixelAspectRatio();
 
-  // If we already have |decoder_| that was initialized for the same codec then
-  // keep using it.
-  if (decoder_ && current_codec_ == config.codec()) {
-    bool have_decryptor = decryptor_ != nullptr;
-    if (have_decryptor != config.is_encrypted()) {
-      // If decryption mode has changed then we need to re-initialize input
-      // buffers.
-      ReleaseInputBuffers();
-      decryptor_.reset();
-
-      // Initialize decryptor for encrypted streams.
-      if (config.is_encrypted() && !InitializeDecryptor(cdm_context)) {
-        std::move(done_callback).Run(false);
-        return;
-      }
-
-      // If we haven't received input constraints yet then input buffers will be
-      // initialized later when OnInputConstraints() is received.
-      if (decoder_input_constraints_.has_value()) {
-        OnInputConstraints(std::move(decoder_input_constraints_).value());
-      }
-    }
-
-    std::move(done_callback).Run(true);
+  // Keep decoder and decryptor if the configuration hasn't changed.
+  bool have_decryptor = decryptor_ != nullptr;
+  if (decoder_ && current_codec_ == config.codec() &&
+      have_decryptor == config.is_encrypted()) {
+    std::move(done_callback).Run(OkStatus());
     return;
   }
 
@@ -391,7 +369,8 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Initialize decryptor for encrypted streams.
   if (config.is_encrypted() && !InitializeDecryptor(cdm_context)) {
-    std::move(done_callback).Run(false);
+    std::move(done_callback)
+        .Run(StatusCode::kDecoderMissingCdmForEncryptedContent);
     return;
   }
 
@@ -420,7 +399,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
       break;
 
     default:
-      std::move(done_callback).Run(false);
+      std::move(done_callback).Run(StatusCode::kDecoderUnsupportedCodec);
       return;
   }
 
@@ -471,7 +450,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   current_codec_ = config.codec();
 
-  std::move(done_callback).Run(true);
+  std::move(done_callback).Run(OkStatus());
 }
 
 void FuchsiaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -880,14 +859,9 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
   }
 
   size_t buffer_index = output_packet.buffer_index();
-  if (buffer_index >= output_mailboxes_.size()) {
-    DLOG(ERROR)
-        << "mediacodec generated output packet with an invalid buffer_index="
-        << buffer_index << " for output buffer collection with only "
-        << output_mailboxes_.size() << " packets.";
-    OnError();
-    return;
-  }
+
+  if (buffer_index >= output_mailboxes_.size())
+    output_mailboxes_.resize(buffer_index + 1, nullptr);
 
   auto coded_size = gfx::Size(output_format_.primary_width_pixels,
                               output_format_.primary_height_pixels);
@@ -923,10 +897,17 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
     pixel_aspect_ratio = container_pixel_aspect_ratio_;
   }
 
-  base::TimeDelta timestamp;
-  if (output_packet.has_timestamp_ish()) {
-    timestamp = base::TimeDelta::FromNanoseconds(output_packet.timestamp_ish());
+  // SendInputPacket() sets timestamp for all packets sent to the decoder, so we
+  // expect to receive timestamp for all decoded frames. Missing timestamp
+  // indicates a bug in the decoder implementation.
+  if (!output_packet.has_timestamp_ish()) {
+    LOG(ERROR) << "Received frame without timestamp.";
+    OnError();
+    return;
   }
+
+  base::TimeDelta timestamp =
+      base::TimeDelta::FromNanoseconds(output_packet.timestamp_ish());
 
   num_used_output_buffers_++;
 
@@ -1050,11 +1031,9 @@ void FuchsiaVideoDecoder::InitializeOutputBufferCollection(
   decoder_->CompleteOutputBufferPartialSettings(
       output_buffer_lifetime_ordinal_);
 
+  // Exact number of buffers sysmem will allocate is unknown here.
+  // |output_mailboxes_| is resized when we start receiving output frames.
   DCHECK(output_mailboxes_.empty());
-  output_mailboxes_.resize(
-      max_used_output_buffers_ +
-          constraints.packet_count_for_server_recommended(),
-      nullptr);
 }
 
 void FuchsiaVideoDecoder::ReleaseInputBuffers() {

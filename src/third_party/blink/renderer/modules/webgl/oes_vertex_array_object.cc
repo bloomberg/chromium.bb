@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object_oes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -42,17 +43,12 @@ WebGLExtensionName OESVertexArrayObject::GetName() const {
   return kOESVertexArrayObjectName;
 }
 
-OESVertexArrayObject* OESVertexArrayObject::Create(
-    WebGLRenderingContextBase* context) {
-  return MakeGarbageCollected<OESVertexArrayObject>(context);
-}
-
 WebGLVertexArrayObjectOES* OESVertexArrayObject::createVertexArrayOES() {
   WebGLExtensionScopedContext scoped(this);
   if (scoped.IsLost())
     return nullptr;
 
-  return WebGLVertexArrayObjectOES::Create(
+  return MakeGarbageCollected<WebGLVertexArrayObjectOES>(
       scoped.Context(), WebGLVertexArrayObjectOES::kVaoTypeUser);
 }
 

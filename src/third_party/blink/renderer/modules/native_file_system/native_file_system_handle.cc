@@ -7,9 +7,9 @@
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_file_system_handle_permission_descriptor.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
-#include "third_party/blink/renderer/modules/native_file_system/file_system_handle_permission_descriptor.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
@@ -22,7 +22,7 @@ using mojom::blink::NativeFileSystemErrorPtr;
 NativeFileSystemHandle::NativeFileSystemHandle(
     ExecutionContext* execution_context,
     const String& name)
-    : ContextLifecycleObserver(execution_context), name_(name) {}
+    : ExecutionContextClient(execution_context), name_(name) {}
 
 // static
 NativeFileSystemHandle* NativeFileSystemHandle::CreateFromMojoEntry(
@@ -91,9 +91,30 @@ ScriptPromise NativeFileSystemHandle::requestPermission(
   return result;
 }
 
+ScriptPromise NativeFileSystemHandle::isSameEntry(
+    ScriptState* script_state,
+    NativeFileSystemHandle* other) {
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise result = resolver->Promise();
+
+  IsSameEntryImpl(
+      other->Transfer(),
+      WTF::Bind(
+          [](ScriptPromiseResolver* resolver, NativeFileSystemErrorPtr result,
+             bool same) {
+            if (result->status != mojom::blink::NativeFileSystemStatus::kOk) {
+              native_file_system_error::Reject(resolver, *result);
+              return;
+            }
+            resolver->Resolve(same);
+          },
+          WrapPersistent(resolver)));
+  return result;
+}
+
 void NativeFileSystemHandle::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 
 #include "third_party/blink/public/common/blob/blob_utils.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
@@ -36,19 +36,17 @@ static void SetReferrerForRequest(Document* origin_document,
   Referrer referrer = SecurityPolicy::GenerateReferrer(
       referrer_policy_to_use, request.Url(), referrer_to_use);
 
-  // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
-  // header and instead use a separate member. See https://crbug.com/850813.
-  request.SetHttpReferrer(referrer);
+  request.SetReferrerString(referrer.referrer);
+  request.SetReferrerPolicy(referrer.referrer_policy);
   request.SetHTTPOriginToMatchReferrerIfNeeded();
 }
 
 FrameLoadRequest::FrameLoadRequest(Document* origin_document,
                                    const ResourceRequest& resource_request)
-
     : origin_document_(origin_document),
-      resource_request_(resource_request),
       should_send_referrer_(kMaybeSendReferrer) {
-  // These flags are passed to a service worker which controls the page.
+  resource_request_.CopyHeadFrom(resource_request);
+  resource_request_.SetHttpBody(resource_request.HttpBody());
   resource_request_.SetMode(network::mojom::RequestMode::kNavigate);
   resource_request_.SetCredentialsMode(
       network::mojom::CredentialsMode::kInclude);
@@ -58,10 +56,10 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
     SetInputStartTime(input_event->TimeStamp());
 
   should_check_main_world_content_security_policy_ =
-      origin_document &&
-              ContentSecurityPolicy::ShouldBypassMainWorld(origin_document)
-          ? kDoNotCheckContentSecurityPolicy
-          : kCheckContentSecurityPolicy;
+      origin_document && ContentSecurityPolicy::ShouldBypassMainWorld(
+                             origin_document->GetExecutionContext())
+          ? network::mojom::CSPDisposition::DO_NOT_CHECK
+          : network::mojom::CSPDisposition::CHECK;
 
   if (origin_document) {
     DCHECK(!resource_request_.RequestorOrigin());
@@ -79,13 +77,22 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
   }
 }
 
+FrameLoadRequest::FrameLoadRequest(
+    Document* origin_document,
+    const ResourceRequestHead& resource_request_head)
+    : FrameLoadRequest(origin_document,
+                       ResourceRequest(resource_request_head)) {}
+
 ClientRedirectPolicy FrameLoadRequest::ClientRedirect() const {
-  // Form submissions have not historically been reported to the extensions API
-  // as client redirects.
+  // Form submissions and anchor clicks have not historically been reported
+  // to the extensions API as client redirects.
   if (client_navigation_reason_ == ClientNavigationReason::kNone ||
       client_navigation_reason_ == ClientNavigationReason::kFormSubmissionGet ||
-      client_navigation_reason_ == ClientNavigationReason::kFormSubmissionPost)
+      client_navigation_reason_ ==
+          ClientNavigationReason::kFormSubmissionPost ||
+      client_navigation_reason_ == ClientNavigationReason::kAnchorClick) {
     return ClientRedirectPolicy::kNotClientRedirect;
+  }
   return ClientRedirectPolicy::kClientRedirect;
 }
 

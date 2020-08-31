@@ -11,6 +11,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/machine_learning/user_settings_event_logger.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/system_menu_button.h"
@@ -79,6 +80,13 @@ bool NetworkTypeIsConfigurable(NetworkType type) {
   return false;
 }
 
+void LogUserNetworkEvent(const NetworkStateProperties& network) {
+  auto* const logger = ml::UserSettingsEventLogger::Get();
+  if (logger) {
+    logger->LogNetworkUkmEvent(network);
+  }
+}
+
 }  // namespace
 
 bool CanNetworkConnect(
@@ -102,6 +110,7 @@ class NetworkStateListDetailedView::InfoBubble
              NetworkStateListDetailedView* detailed_view)
       : views::BubbleDialogDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
         detailed_view_(detailed_view) {
+    SetButtons(ui::DIALOG_BUTTON_NONE);
     set_margins(gfx::Insets(kBubbleMargin));
     SetArrow(views::BubbleBorder::NONE);
     set_shadow(views::BubbleBorder::NO_ASSETS);
@@ -137,9 +146,6 @@ class NetworkStateListDetailedView::InfoBubble
     if (detailed_view_)
       detailed_view_->ResetInfoBubble();
   }
-
-  // BubbleDialogDelegateView:
-  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
 
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override {
@@ -289,6 +295,7 @@ void NetworkStateListDetailedView::HandleViewClickedImpl(
         list_type_ == LIST_TYPE_VPN
             ? UMA_STATUS_AREA_CONNECT_TO_VPN
             : UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
+    LogUserNetworkEvent(*network.get());
     chromeos::NetworkConnect::Get()->ConnectToNetworkId(network->guid);
     return;
   }

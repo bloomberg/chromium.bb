@@ -6,6 +6,7 @@
 #define QUICHE_QUIC_TOOLS_FAKE_PROOF_VERIFIER_H_
 
 #include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -18,7 +19,7 @@ class FakeProofVerifier : public ProofVerifier {
       const uint16_t /*port*/,
       const std::string& /*server_config*/,
       QuicTransportVersion /*quic_version*/,
-      QuicStringPiece /*chlo_hash*/,
+      quiche::QuicheStringPiece /*chlo_hash*/,
       const std::vector<std::string>& /*certs*/,
       const std::string& /*cert_sct*/,
       const std::string& /*signature*/,
@@ -30,6 +31,7 @@ class FakeProofVerifier : public ProofVerifier {
   }
   QuicAsyncStatus VerifyCertChain(
       const std::string& /*hostname*/,
+      const uint16_t /*port*/,
       const std::vector<std::string>& /*certs*/,
       const std::string& /*ocsp_response*/,
       const std::string& /*cert_sct*/,

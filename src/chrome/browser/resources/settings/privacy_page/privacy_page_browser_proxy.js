@@ -4,37 +4,52 @@
 
 /** @fileoverview Handles interprocess communication for the privacy page. */
 
-/**
- * Contains all possible recorded interactions across privacy settings pages.
- *
- * These values are persisted to logs. Entries should not be renumbered and
- * numeric values should never be reused.
- *
- * Must be kept in sync with enum of the same name in
- * histograms/enums.xml
- */
-settings.SettingsPageInteractions = {
-  PRIVACY_SYNC_AND_GOOGLE_SERVICES: 0,
-  PRIVACY_CHROME_SIGN_IN: 1,
-  PRIVACY_DO_NOT_TRACK: 2,
-  PRIVACY_PAYMENT_METHOD: 3,
-  PRIVACY_NETWORK_PREDICTION: 4,
-  PRIVACY_MANAGE_CERTIFICATES: 5,
-  PRIVACY_SECURITY_KEYS: 6,
-  PRIVACY_SITE_SETTINGS: 7,
-  PRIVACY_CLEAR_BROWSING_DATA: 8,
-  // Leave this at the end.
-  SETTINGS_MAX_VALUE: 8,
-};
-
-/** @typedef {{enabled: boolean, managed: boolean}} */
-let MetricsReporting;
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
 
 cr.define('settings', function() {
+  /** @typedef {{enabled: boolean, managed: boolean}} */
+  /* #export */ let MetricsReporting;
+
+  /** @typedef {{name: string, value: string, policy: string}} */
+  /* #export */ let ResolverOption;
+
+  /**
+   * Contains the possible string values for the secure DNS mode. This must be
+   * kept in sync with the mode names in chrome/browser/net/secure_dns_config.h.
+   * @enum {string}
+   */
+  /* #export */ const SecureDnsMode = {
+    OFF: 'off',
+    AUTOMATIC: 'automatic',
+    SECURE: 'secure',
+  };
+
+  /**
+   * Contains the possible management modes. This should be kept in sync with
+   * the management modes in chrome/browser/net/secure_dns_config.h.
+   * @enum {number}
+   */
+  /* #export */ const SecureDnsUiManagementMode = {
+    NO_OVERRIDE: 0,
+    DISABLED_MANAGED: 1,
+    DISABLED_PARENTAL_CONTROLS: 2,
+  };
+
+  /**
+   * @typedef {{
+   *   mode: settings.SecureDnsMode,
+   *   templates: !Array<string>,
+   *   managementMode: settings.SecureDnsUiManagementMode
+   * }}
+   */
+  /* #export */ let SecureDnsSetting;
+
   /** @interface */
-  class PrivacyPageBrowserProxy {
+  /* #export */ class PrivacyPageBrowserProxy {
     // <if expr="_google_chrome and not chromeos">
-    /** @return {!Promise<!MetricsReporting>} */
+    /** @return {!Promise<!settings.MetricsReporting>} */
     getMetricsReporting() {}
 
     /** @param {boolean} enabled */
@@ -48,20 +63,42 @@ cr.define('settings', function() {
 
     // </if>
 
-    /**
-     * Helper function that calls recordHistogram for the
-     * SettingsPage.SettingsPageInteractions histogram
-     */
-    recordSettingsPageHistogram(value) {}
-
     /** @param {boolean} enabled */
     setBlockAutoplayEnabled(enabled) {}
+
+    /** @return {!Promise<!Array<!settings.ResolverOption>>} */
+    getSecureDnsResolverList() {}
+
+    /** @return {!Promise<!settings.SecureDnsSetting>} */
+    getSecureDnsSetting() {}
+
+    /**
+     * Returns the URL templates, if they are all valid.
+     * @param {string} entry
+     * @return {!Promise<!Array<string>>}
+     */
+    parseCustomDnsEntry(entry) {}
+
+    /**
+     * Returns True if a test query to the secure DNS template succeeded
+     * or was cancelled.
+     * @param {string} template
+     * @return {!Promise<boolean>}
+     */
+    probeCustomDnsTemplate(template) {}
+
+    /**
+     * Records metrics on the user's interaction with the dropdown menu.
+     * @param {string} oldSelection value of previously selected dropdown option
+     * @param {string} newSelection value of newly selected dropdown option
+     */
+    recordUserDropdownInteraction(oldSelection, newSelection) {}
   }
 
   /**
    * @implements {settings.PrivacyPageBrowserProxy}
    */
-  class PrivacyPageBrowserProxyImpl {
+  /* #export */ class PrivacyPageBrowserProxyImpl {
     // <if expr="_google_chrome and not chromeos">
     /** @override */
     getMetricsReporting() {
@@ -75,14 +112,6 @@ cr.define('settings', function() {
 
     // </if>
 
-    /** @override*/
-    recordSettingsPageHistogram(value) {
-      chrome.send('metricsHandler:recordInHistogram', [
-        'SettingsPage.SettingsPageInteractions', value,
-        settings.SettingsPageInteractions.SETTINGS_MAX_VALUE
-      ]);
-    }
-
     /** @override */
     setBlockAutoplayEnabled(enabled) {
       chrome.send('setBlockAutoplayEnabled', [enabled]);
@@ -94,12 +123,44 @@ cr.define('settings', function() {
       chrome.send('showManageSSLCertificates');
     }
     // </if>
+
+    /** @override */
+    getSecureDnsResolverList() {
+      return cr.sendWithPromise('getSecureDnsResolverList');
+    }
+
+    /** @override */
+    getSecureDnsSetting() {
+      return cr.sendWithPromise('getSecureDnsSetting');
+    }
+
+    /** @override */
+    parseCustomDnsEntry(entry) {
+      return cr.sendWithPromise('parseCustomDnsEntry', entry);
+    }
+
+    /** @override */
+    probeCustomDnsTemplate(template) {
+      return cr.sendWithPromise('probeCustomDnsTemplate', template);
+    }
+
+    /** override */
+    recordUserDropdownInteraction(oldSelection, newSelection) {
+      chrome.send(
+          'recordUserDropdownInteraction', [oldSelection, newSelection]);
+    }
   }
 
   cr.addSingletonGetter(PrivacyPageBrowserProxyImpl);
 
+  // #cr_define_end
   return {
-    PrivacyPageBrowserProxy: PrivacyPageBrowserProxy,
-    PrivacyPageBrowserProxyImpl: PrivacyPageBrowserProxyImpl,
+    MetricsReporting,
+    PrivacyPageBrowserProxy,
+    PrivacyPageBrowserProxyImpl,
+    ResolverOption,
+    SecureDnsMode,
+    SecureDnsUiManagementMode,
+    SecureDnsSetting,
   };
 });

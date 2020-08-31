@@ -36,6 +36,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_webgl_context_attributes.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
@@ -43,7 +44,6 @@
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/core/typed_arrays/typed_flexible_array_buffer_view.h"
-#include "third_party/blink/renderer/modules/webgl/webgl_context_attributes.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_extension_name.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_texture.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object_base.h"
@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/webgl_image_conversion.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -122,7 +123,7 @@ class ScopedRGBEmulationColorMask {
   ~ScopedRGBEmulationColorMask();
 
  private:
-  Member<WebGLRenderingContextBase> context_;
+  WebGLRenderingContextBase* context_;
   GLboolean color_mask_[4];
   const bool requires_emulation_;
 };
@@ -452,36 +453,36 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                      ExceptionState&);
 
   void uniform1f(const WebGLUniformLocation*, GLfloat x);
-  void uniform1fv(const WebGLUniformLocation*, const FlexibleFloat32ArrayView&);
+  void uniform1fv(const WebGLUniformLocation*, const FlexibleFloat32Array&);
   void uniform1fv(const WebGLUniformLocation*, Vector<GLfloat>&);
   void uniform1i(const WebGLUniformLocation*, GLint x);
-  void uniform1iv(const WebGLUniformLocation*, const FlexibleInt32ArrayView&);
+  void uniform1iv(const WebGLUniformLocation*, const FlexibleInt32Array&);
   void uniform1iv(const WebGLUniformLocation*, Vector<GLint>&);
   void uniform2f(const WebGLUniformLocation*, GLfloat x, GLfloat y);
-  void uniform2fv(const WebGLUniformLocation*, const FlexibleFloat32ArrayView&);
+  void uniform2fv(const WebGLUniformLocation*, const FlexibleFloat32Array&);
   void uniform2fv(const WebGLUniformLocation*, Vector<GLfloat>&);
   void uniform2i(const WebGLUniformLocation*, GLint x, GLint y);
-  void uniform2iv(const WebGLUniformLocation*, const FlexibleInt32ArrayView&);
+  void uniform2iv(const WebGLUniformLocation*, const FlexibleInt32Array&);
   void uniform2iv(const WebGLUniformLocation*, Vector<GLint>&);
   void uniform3f(const WebGLUniformLocation*, GLfloat x, GLfloat y, GLfloat z);
-  void uniform3fv(const WebGLUniformLocation*, const FlexibleFloat32ArrayView&);
+  void uniform3fv(const WebGLUniformLocation*, const FlexibleFloat32Array&);
   void uniform3fv(const WebGLUniformLocation*, Vector<GLfloat>&);
   void uniform3i(const WebGLUniformLocation*, GLint x, GLint y, GLint z);
-  void uniform3iv(const WebGLUniformLocation*, const FlexibleInt32ArrayView&);
+  void uniform3iv(const WebGLUniformLocation*, const FlexibleInt32Array&);
   void uniform3iv(const WebGLUniformLocation*, Vector<GLint>&);
   void uniform4f(const WebGLUniformLocation*,
                  GLfloat x,
                  GLfloat y,
                  GLfloat z,
                  GLfloat w);
-  void uniform4fv(const WebGLUniformLocation*, const FlexibleFloat32ArrayView&);
+  void uniform4fv(const WebGLUniformLocation*, const FlexibleFloat32Array&);
   void uniform4fv(const WebGLUniformLocation*, Vector<GLfloat>&);
   void uniform4i(const WebGLUniformLocation*,
                  GLint x,
                  GLint y,
                  GLint z,
                  GLint w);
-  void uniform4iv(const WebGLUniformLocation*, const FlexibleInt32ArrayView&);
+  void uniform4iv(const WebGLUniformLocation*, const FlexibleInt32Array&);
   void uniform4iv(const WebGLUniformLocation*, Vector<GLint>&);
   void uniformMatrix2fv(const WebGLUniformLocation*,
                         GLboolean transpose,
@@ -571,7 +572,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   unsigned MaxVertexAttribs() const { return max_vertex_attribs_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Returns approximate gpu memory allocated per pixel.
   int ExternallyAllocatedBufferCountPerPixel() override;
@@ -591,7 +592,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     Member<WebGLTexture> texture2d_array_binding_;
     Member<WebGLTexture> texture_video_image_binding_;
 
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
   };
 
   scoped_refptr<StaticBitmapImage> GetImage(
@@ -606,38 +607,47 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   void commit();
 
-  ScriptPromise makeXRCompatible(ScriptState*);
+  ScriptPromise makeXRCompatible(ScriptState*, ExceptionState&);
   bool IsXRCompatible();
 
   void UpdateNumberOfUserAllocatedMultisampledRenderbuffers(int delta);
 
  protected:
+  // WebGL object types.
+  friend class WebGLContextObject;
+  friend class WebGLObject;
+  friend class WebGLQuery;
+  friend class WebGLTimerQueryEXT;
+  friend class WebGLVertexArrayObjectBase;
+
+  // Implementation helpers.
+  friend class ScopedDrawingBufferBinder;
+  friend class ScopedFramebufferRestorer;
+  friend class ScopedTexture2DRestorer;
+  friend class ScopedUnpackParametersResetRestore;
+  friend class WebGLRenderingContextErrorMessageCallback;
+
+  // WebGL extensions.
   friend class EXTDisjointTimerQuery;
   friend class EXTDisjointTimerQueryWebGL2;
-  friend class WebGLDrawBuffers;
-  friend class WebGLFramebuffer;
-  friend class WebGLObject;
-  friend class WebGLContextObject;
+  friend class EXTTextureCompressionBPTC;
+  friend class EXTTextureCompressionRGTC;
   friend class OESVertexArrayObject;
   friend class OVRMultiview2;
-  friend class WebGLDebugShaders;
   friend class WebGLCompressedTextureASTC;
   friend class WebGLCompressedTextureETC;
   friend class WebGLCompressedTextureETC1;
   friend class WebGLCompressedTexturePVRTC;
   friend class WebGLCompressedTextureS3TC;
   friend class WebGLCompressedTextureS3TCsRGB;
+  friend class WebGLDebugShaders;
+  friend class WebGLDrawBuffers;
+  friend class WebGLDrawInstancedBaseVertexBaseInstance;
+  friend class WebGLFramebuffer;
   friend class WebGLMultiDraw;
   friend class WebGLMultiDrawCommon;
-  friend class WebGLDrawInstancedBaseVertexBaseInstance;
   friend class WebGLMultiDrawInstancedBaseVertexBaseInstance;
-  friend class WebGLRenderingContextErrorMessageCallback;
-  friend class WebGLVertexArrayObjectBase;
   friend class WebGLVideoTexture;
-  friend class ScopedDrawingBufferBinder;
-  friend class ScopedTexture2DRestorer;
-  friend class ScopedFramebufferRestorer;
-  friend class ScopedUnpackParametersResetRestore;
 
   WebGLRenderingContextBase(CanvasRenderingContextHost*,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
@@ -682,6 +692,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void MarkContextChanged(ContentChangeType);
 
   void OnErrorMessage(const char*, int32_t id);
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetContextTaskRunner();
 
   // Query if depth_stencil buffer is supported.
   bool IsDepthStencilSupported() { return is_depth_stencil_supported_; }
@@ -874,7 +886,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     // This is only used for keeping the JS wrappers of extensions alive.
     virtual WebGLExtension* GetExtensionObjectIfAlreadyEnabled() = 0;
 
-    virtual void Trace(blink::Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) {}
     const char* NameInHeapSnapshot() const override {
       return "ExtensionTracker";
     }
@@ -887,13 +899,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   template <typename T>
   class TypedExtensionTracker final : public ExtensionTracker {
    public:
-    static TypedExtensionTracker<T>* Create(Member<T>& extension_field,
-                                            ExtensionFlags flags,
-                                            const char* const* prefixes) {
-      return MakeGarbageCollected<TypedExtensionTracker<T>>(extension_field,
-                                                            flags, prefixes);
-    }
-
     TypedExtensionTracker(Member<T>& extension_field,
                           ExtensionFlags flags,
                           const char* const* prefixes)
@@ -902,7 +907,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
     WebGLExtension* GetExtension(WebGLRenderingContextBase* context) override {
       if (!extension_) {
-        extension_ = T::Create(context);
+        extension_ = MakeGarbageCollected<T>(context);
         extension_field_ = extension_;
       }
 
@@ -927,7 +932,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       return extension_;
     }
 
-    void Trace(blink::Visitor* visitor) override {
+    void Trace(Visitor* visitor) override {
       visitor->Trace(extension_);
       ExtensionTracker::Trace(visitor);
     }
@@ -948,8 +953,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void RegisterExtension(Member<T>& extension_ptr,
                          ExtensionFlags flags = kApprovedExtension,
                          const char* const* prefixes = nullptr) {
-    extensions_.push_back(
-        TypedExtensionTracker<T>::Create(extension_ptr, flags, prefixes));
+    extensions_.push_back(MakeGarbageCollected<TypedExtensionTracker<T>>(
+        extension_ptr, flags, prefixes));
   }
 
   bool ExtensionSupportedAndAllowed(const ExtensionTracker*);
@@ -984,7 +989,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
    private:
     DrawingBuffer* drawing_buffer_;
-    Member<WebGLFramebuffer> read_framebuffer_binding_;
+    WebGLFramebuffer* read_framebuffer_binding_;
   };
 
   // Errors raised by synthesizeGLError() while the context is lost.
@@ -1000,6 +1005,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool is_web_gl_depth_texture_formats_types_added_ = false;
   bool is_ext_srgb_formats_types_added_ = false;
   bool is_ext_color_buffer_float_formats_added_ = false;
+  bool is_ext_texture_norm16_added_ = false;
 
   GLenumHashSet supported_internal_formats_;
   GLenumHashSet supported_tex_image_source_internal_formats_;
@@ -1224,6 +1230,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                          GLenum target);
 
   void AddExtensionSupportedFormatsTypes();
+  void AddExtensionSupportedFormatsTypesWebGL2();
 
   // Helper function to check input internalformat/format/type for functions
   // Tex{Sub}Image taking TexImageSource source data.  Generates GL error and
@@ -1426,12 +1433,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                        DOMFloat32Array*,
                                        GLsizei mod,
                                        GLuint src_offset,
-                                       GLuint src_length);
+                                       size_t src_length);
   bool ValidateUniformMatrixParameters(const char* function_name,
                                        const WebGLUniformLocation*,
                                        GLboolean transpose,
                                        void*,
-                                       GLsizei,
+                                       size_t size,
                                        GLsizei mod,
                                        GLuint src_offset,
                                        GLuint src_length);
@@ -1443,14 +1450,26 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       const TypedFlexibleArrayBufferView<WTFTypedArray>& v,
       GLsizei required_min_size,
       GLuint src_offset,
-      GLuint src_length) {
+      size_t src_length) {
+    GLuint length;
+    if (!base::CheckedNumeric<GLuint>(src_length).AssignIfValid(&length)) {
+      SynthesizeGLError(GL_INVALID_VALUE, function_name,
+                        "src_length is too big");
+      return false;
+    }
+    GLuint array_length;
+    if (!base::CheckedNumeric<GLuint>(v.lengthAsSizeT())
+             .AssignIfValid(&array_length)) {
+      SynthesizeGLError(GL_INVALID_VALUE, function_name, "array is too big");
+      return false;
+    }
     if (!v.DataMaybeOnStack()) {
       SynthesizeGLError(GL_INVALID_VALUE, function_name, "no array");
       return false;
     }
     return ValidateUniformMatrixParameters(
-        function_name, location, false, v.DataMaybeOnStack(), v.length(),
-        required_min_size, src_offset, src_length);
+        function_name, location, false, v.DataMaybeOnStack(), array_length,
+        required_min_size, src_offset, length);
   }
 
   // Helper function to validate the target for bufferData and
@@ -1505,6 +1524,21 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool ValidateDrawElements(const char* function_name,
                             GLenum type,
                             int64_t offset);
+
+  // Helper function to check if the byte length of {data} fits into an integer
+  // of type {T.} If so, the byte length is stored in {data_length}.
+  template <typename T>
+  bool ExtractDataLengthIfValid(const char* function_name,
+                                MaybeShared<DOMArrayBufferView> data,
+                                T* data_length) {
+    if (base::CheckedNumeric<T>(data.View()->byteLengthAsSizeT())
+            .AssignIfValid(data_length)) {
+      return true;
+    }
+    SynthesizeGLError(GL_INVALID_VALUE, function_name,
+                      "provided data exceeds the maximum supported length");
+    return false;
+  }
 
   // State updates and operations necessary before or at draw call time.
   virtual void OnBeforeDrawCall();
@@ -1762,12 +1796,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   DISALLOW_COPY_AND_ASSIGN(WebGLRenderingContextBase);
 };
 
-// TODO(fserb): remove this.
-DEFINE_TYPE_CASTS(WebGLRenderingContextBase,
-                  CanvasRenderingContext,
-                  context,
-                  context->Is3d(),
-                  context.Is3d());
+template <>
+struct DowncastTraits<WebGLRenderingContextBase> {
+  static bool AllowFrom(const CanvasRenderingContext& context) {
+    return context.Is3d();
+  }
+};
 
 }  // namespace blink
 

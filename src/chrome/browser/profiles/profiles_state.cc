@@ -4,12 +4,11 @@
 
 #include "chrome/browser/profiles/profiles_state.h"
 
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -37,7 +37,6 @@
 #include <algorithm>
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/gaia_info_update_service_factory.h"
-#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #endif
 
@@ -140,12 +139,7 @@ void UpdateProfileName(Profile* profile,
     return;
   }
 
-  base::string16 current_profile_name =
-      ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName()
-          ? entry->GetLocalProfileName()
-          : entry->GetName();
-
-  if (new_profile_name == current_profile_name)
+  if (new_profile_name == entry->GetLocalProfileName())
     return;
 
   // This is only called when updating the profile name through the UI,
@@ -192,11 +186,7 @@ void UpdateGaiaProfileInfoIfNeeded(Profile* profile) {
       GAIAInfoUpdateServiceFactory::GetInstance()->GetForProfile(profile);
   // The service may be null, for example during unit tests.
   if (service)
-    service->Update();
-}
-
-SigninErrorController* GetSigninErrorController(Profile* profile) {
-  return SigninErrorControllerFactory::GetForProfile(profile);
+    service->UpdatePrimaryAccount();
 }
 
 bool SetActiveProfileToGuestIfLocked() {

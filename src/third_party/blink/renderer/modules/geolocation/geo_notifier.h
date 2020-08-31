@@ -8,7 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_error_callback.h"
-#include "third_party/blink/renderer/modules/geolocation/position_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_position_options.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -27,7 +27,7 @@ class GeoNotifier final : public GarbageCollected<GeoNotifier>,
               V8PositionErrorCallback*,
               const PositionOptions*);
   ~GeoNotifier() = default;
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   const char* NameInHeapSnapshot() const override { return "GeoNotifier"; }
 
   const PositionOptions* Options() const { return options_; }
@@ -61,7 +61,7 @@ class GeoNotifier final : public GarbageCollected<GeoNotifier>,
                    void (GeoNotifier::*member_func)(TimerBase*))
         : timer_(web_task_runner, notifier, member_func), notifier_(notifier) {}
 
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
     // TimerBase-compatible API
     void StartOneShot(base::TimeDelta interval, const base::Location& caller);

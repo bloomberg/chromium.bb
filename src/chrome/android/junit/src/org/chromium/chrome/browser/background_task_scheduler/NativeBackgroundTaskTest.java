@@ -32,6 +32,7 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -43,6 +44,8 @@ import org.chromium.chrome.browser.metrics.BackgroundTaskMemoryMetricsEmitter;
 import org.chromium.chrome.browser.metrics.BackgroundTaskMemoryMetricsEmitterJni;
 import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerExternalUma;
+import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
+import org.chromium.components.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.content_public.browser.BrowserStartupController;
@@ -73,11 +76,13 @@ public class NativeBackgroundTaskTest {
         private int mCallCount;
 
         @Override
-        public void startBrowserProcessesAsync(boolean startGpuProcess,
-                boolean startServiceManagerOnly, final StartupCallback callback) {}
+        public void startBrowserProcessesAsync(@LibraryProcessType int libraryProcessType,
+                boolean startGpuProcess, boolean startServiceManagerOnly,
+                final StartupCallback callback) {}
 
         @Override
-        public void startBrowserProcessesSync(boolean singleProcess) {}
+        public void startBrowserProcessesSync(
+                @LibraryProcessType int libraryProcessType, boolean singleProcess) {}
 
         @Override
         public boolean isFullBrowserStarted() {
@@ -170,9 +175,9 @@ public class NativeBackgroundTaskTest {
         private boolean mWasOnStopTaskBeforeNativeLoadedCalled;
         private BrowserStartupController mBrowserStartupController;
 
-        public TestNativeBackgroundTask(BrowserStartupController controller,
-                BackgroundTaskSchedulerExternalUma externalUma) {
-            super(externalUma);
+        public TestNativeBackgroundTask(BrowserStartupController controller) {
+            super();
+            setDelegate(new ChromeNativeBackgroundTaskDelegate());
             mBrowserStartupController = controller;
             mWasOnStartTaskWithNativeCalled = false;
             mStartBeforeNativeResult = StartBeforeNativeResult.LOAD_NATIVE;
@@ -247,7 +252,8 @@ public class NativeBackgroundTaskTest {
         mocker.mock(BackgroundTaskMemoryMetricsEmitterJni.TEST_HOOKS, mEmitterNativeMock);
         mBrowserStartupController = new TestBrowserStartupController();
         mCallback = new TaskFinishedCallback();
-        mTask = new TestNativeBackgroundTask(mBrowserStartupController, mExternalUmaMock);
+        mTask = new TestNativeBackgroundTask(mBrowserStartupController);
+        BackgroundTaskSchedulerFactory.setUmaReporterForTesting(mExternalUmaMock);
         ChromeBrowserInitializer.setForTesting(mChromeBrowserInitializer);
         ChromeBrowserInitializer.setBrowserStartupControllerForTesting(mBrowserStartupController);
     }
@@ -275,7 +281,7 @@ public class NativeBackgroundTaskTest {
                 doAnswer(new Answer<Void>() {
                     @Override
                     public Void answer(InvocationOnMock invocation) {
-                        mBrowserParts.getValue().onStartupFailure();
+                        mBrowserParts.getValue().onStartupFailure(null);
                         return null;
                     }
                 })

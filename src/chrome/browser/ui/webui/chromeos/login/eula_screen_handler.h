@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "components/login/secure_module_util_chromeos.h"
-#include "content/public/browser/web_ui.h"
 
 namespace base {
 class DictionaryValue;
@@ -62,10 +61,6 @@ class EulaScreenHandler : public EulaView, public BaseScreenHandler {
   void GetAdditionalParameters(base::DictionaryValue* dict) override;
   void Initialize() override;
 
-  static void set_eula_url_for_testing(const char* eula_test_url) {
-    eula_url_for_testing_ = eula_test_url;
-  }
-
  private:
   // JS messages handlers.
   void HandleOnLearnMore();
@@ -74,7 +69,7 @@ class EulaScreenHandler : public EulaView, public BaseScreenHandler {
 
   // Determines the online URL to use.
   std::string GetEulaOnlineUrl();
-  static const char* eula_url_for_testing_;
+  std::string GetAdditionalToSUrl();
 
   void UpdateLocalizedValues(::login::SecureModuleUsed secure_module_used);
 

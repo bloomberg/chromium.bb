@@ -4,7 +4,7 @@
 
 #include "chrome/browser/performance_monitor/metric_evaluator_helper_posix.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace performance_monitor {
 
@@ -12,17 +12,6 @@ MetricEvaluatorsHelperPosix::MetricEvaluatorsHelperPosix() = default;
 MetricEvaluatorsHelperPosix::~MetricEvaluatorsHelperPosix() = default;
 
 base::Optional<int> MetricEvaluatorsHelperPosix::GetFreePhysicalMemoryMb() {
-  NOTREACHED();
-  return base::nullopt;
-}
-
-base::Optional<float> MetricEvaluatorsHelperPosix::GetDiskIdleTimePercent() {
-  NOTREACHED();
-  return base::nullopt;
-}
-
-base::Optional<int>
-MetricEvaluatorsHelperPosix::GetChromeTotalResidentSetEstimateMb() {
   NOTREACHED();
   return base::nullopt;
 }

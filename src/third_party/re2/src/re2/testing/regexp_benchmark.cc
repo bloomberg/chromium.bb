@@ -792,40 +792,6 @@ BENCHMARK_RANGE(SearchPhone_CachedRE2, 8, 16<<20)->ThreadRange(1, NumCPUs());
 
 /*
 TODO(rsc): Make this work again.
-
-// Generates and returns a string over binary alphabet {0,1} that contains
-// all possible binary sequences of length n as subsequences.  The obvious
-// brute force method would generate a string of length n * 2^n, but this
-// generates a string of length n + 2^n - 1 called a De Bruijn cycle.
-// See Knuth, The Art of Computer Programming, Vol 2, Exercise 3.2.2 #17.
-static std::string DeBruijnString(int n) {
-  CHECK_LT(n, 8*sizeof(int));
-  CHECK_GT(n, 0);
-
-  std::vector<bool> did(1<<n);
-  for (int i = 0; i < 1<<n; i++)
-    did[i] = false;
-
-  std::string s;
-  for (int i = 0; i < n-1; i++)
-    s.append("0");
-  int bits = 0;
-  int mask = (1<<n) - 1;
-  for (int i = 0; i < (1<<n); i++) {
-    bits <<= 1;
-    bits &= mask;
-    if (!did[bits|1]) {
-      bits |= 1;
-      s.append("1");
-    } else {
-      s.append("0");
-    }
-    CHECK(!did[bits]);
-    did[bits] = true;
-  }
-  return s;
-}
-
 void CacheFill(int iters, int n, SearchImpl *srch) {
   std::string s = DeBruijnString(n+1);
   std::string t;
@@ -978,7 +944,7 @@ void SearchCachedDFA(benchmark::State& state, const char* regexp,
                      bool expect_match) {
   Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
   CHECK(re);
-  Prog* prog = re->CompileToProg(1LL<<31);
+  Prog* prog = re->CompileToProg(int64_t{1}<<31);
   CHECK(prog);
   for (auto _ : state) {
     bool failed = false;

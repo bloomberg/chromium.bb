@@ -41,7 +41,8 @@ https://testbed.example.com/job/1""")
 
 
 _COMMENT_COMPLETED_WITH_COMMIT = (
-    u"""<b>\U0001f4cd Found a significant difference after 1 commit.</b>
+    u"""<b>\U0001f4cd Found a significant difference at 1 commit.</b>
+10 revisions compared.
 https://testbed.example.com/job/1
 
 <b>Subject.</b> by author@chromium.org
@@ -52,7 +53,8 @@ Understanding performance regressions:
   http://g.co/ChromePerformanceRegressions""")
 
 _COMMENT_COMPLETED_WITH_COMMIT_AND_DOCS = (
-    u"""<b>\U0001f4cd Found a significant difference after 1 commit.</b>
+    u"""<b>\U0001f4cd Found a significant difference at 1 commit.</b>
+10 revisions compared.
 https://testbed.example.com/job/1
 
 <b>Subject.</b> by author@chromium.org
@@ -66,7 +68,8 @@ Benchmark doc link:
   http://docs""")
 
 _COMMENT_COMPLETED_WITH_AUTOROLL_COMMIT = (
-    u"""<b>\U0001f4cd Found a significant difference after 1 commit.</b>
+    u"""<b>\U0001f4cd Found a significant difference at 1 commit.</b>
+10 revisions compared.
 https://testbed.example.com/job/1
 
 <b>Subject.</b> by chromium-autoroll@skia-public.iam.gserviceaccount.com
@@ -80,7 +83,8 @@ Understanding performance regressions:
 
 
 _COMMENT_COMPLETED_WITH_PATCH = (
-    u"""<b>\U0001f4cd Found a significant difference after 1 commit.</b>
+    u"""<b>\U0001f4cd Found a significant difference at 1 commit.</b>
+10 revisions compared.
 https://testbed.example.com/job/1
 
 <b>Subject.</b> by author@chromium.org
@@ -92,18 +96,21 @@ Understanding performance regressions:
 
 
 _COMMENT_COMPLETED_THREE_DIFFERENCES = (
-    u"""<b>\U0001f4cd Found significant differences after each of 3 commits.</b>
+    u"""<b>\U0001f4cd Found significant differences at 3 commits.</b>
+10 revisions compared.
 https://testbed.example.com/job/1
 
-<b>Subject.</b> by author1@chromium.org
+The top 3 are:
+
+<b>1. Subject.</b> by author1@chromium.org
 https://example.com/repository/+/git_hash_1
 50 \u2192 0 (-50) (-100%)
 
-<b>Subject.</b> by author2@chromium.org
+<b>2. Subject.</b> by author2@chromium.org
 https://example.com/repository/+/git_hash_2
 0 \u2192 40 (+40) (+\u221e%)
 
-<b>Subject.</b> by author3@chromium.org
+<b>3. Subject.</b> by author3@chromium.org
 https://example.com/repository/+/git_hash_3
 0 \u2192 No values
 
@@ -111,20 +118,23 @@ Understanding performance regressions:
   http://g.co/ChromePerformanceRegressions""")
 
 _COMMENT_COMPLETED_THREE_DIFFERENCES_ABSOLUTE = (
-    u"""<b>\U0001f4cd Found significant differences after each of 3 commits.</b>
+    u"""<b>\U0001f4cd Found significant differences at 3 commits.</b>
+10 revisions compared.
 https://testbed.example.com/job/1
 
-<b>Subject.</b> by author1@chromium.org
+The top 3 are:
+
+<b>1. Subject.</b> by author1@chromium.org
 https://example.com/repository/+/git_hash_1
+No values \u2192 10
+
+<b>2. Subject.</b> by author2@chromium.org
+https://example.com/repository/+/git_hash_2
 10 \u2192 0 (-10) (-100%)
 
-<b>Subject.</b> by author2@chromium.org
-https://example.com/repository/+/git_hash_2
-0 \u2192 -100 (-100) (+\u221e%)
-
-<b>Subject.</b> by author3@chromium.org
+<b>3. Subject.</b> by author3@chromium.org
 https://example.com/repository/+/git_hash_3
-0 \u2192 No values
+0 \u2192 -100 (-100) (+\u221e%)
 
 Understanding performance regressions:
   http://g.co/ChromePerformanceRegressions"""
@@ -235,6 +245,8 @@ class RetryTest(test.TestCase):
     self.assertEqual(0, j.retry_count)
 
 
+@mock.patch('dashboard.pinpoint.models.job_state.JobState.ChangesExamined',
+            lambda _: 10)
 @mock.patch('dashboard.common.utils.ServiceAccountHttp', mock.MagicMock())
 class BugCommentTest(test.TestCase):
 
@@ -277,7 +289,10 @@ class BugCommentTest(test.TestCase):
 
     self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
-        123456, _COMMENT_COMPLETED_NO_COMPARISON)
+        123456,
+        _COMMENT_COMPLETED_NO_COMPARISON,
+        labels=['Pinpoint-Tryjob-Completed'],
+    )
 
   def testCompletedNoDifference(self):
     j = job.Job.New((), (), bug_id=123456, comparison_mode='performance')
@@ -287,7 +302,11 @@ class BugCommentTest(test.TestCase):
 
     self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
-        123456, _COMMENT_COMPLETED_NO_DIFFERENCES)
+        123456,
+        _COMMENT_COMPLETED_NO_DIFFERENCES,
+        labels=['Pinpoint-No-Repro'],
+        status='WontFix',
+    )
 
   @mock.patch('dashboard.pinpoint.models.change.commit.Commit.AsDict')
   @mock.patch.object(job.job_state.JobState, 'ResultValues')
@@ -316,6 +335,7 @@ class BugCommentTest(test.TestCase):
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_COMPLETED_WITH_COMMIT,
         status='Assigned', owner='author@chromium.org',
+        labels=['Pinpoint-Culprit-Found'],
         cc_list=['author@chromium.org'], merge_issue=None)
 
   @mock.patch('dashboard.pinpoint.models.change.commit.Commit.AsDict')
@@ -345,9 +365,13 @@ class BugCommentTest(test.TestCase):
 
     self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
-        123456, _COMMENT_COMPLETED_WITH_COMMIT,
-        status='Assigned', owner='author@chromium.org',
-        cc_list=[], merge_issue='111222')
+        123456,
+        _COMMENT_COMPLETED_WITH_COMMIT,
+        status='Assigned',
+        owner='author@chromium.org',
+        cc_list=[],
+        labels=['Pinpoint-Culprit-Found'],
+        merge_issue='111222')
 
   @mock.patch('dashboard.pinpoint.models.change.commit.Commit.AsDict')
   @mock.patch.object(job.job_state.JobState, 'ResultValues')
@@ -385,6 +409,7 @@ class BugCommentTest(test.TestCase):
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_COMPLETED_WITH_COMMIT,
         status='Assigned', owner='author@chromium.org',
+        labels=['Pinpoint-Culprit-Found'],
         cc_list=['author@chromium.org'], merge_issue=None)
 
   @mock.patch('dashboard.pinpoint.models.change.commit.Commit.AsDict')
@@ -450,9 +475,13 @@ class BugCommentTest(test.TestCase):
 
     self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
-        123456, _COMMENT_COMPLETED_WITH_COMMIT_AND_DOCS,
-        status='Assigned', owner='author@chromium.org',
-        cc_list=['author@chromium.org'], merge_issue=None)
+        123456,
+        _COMMENT_COMPLETED_WITH_COMMIT_AND_DOCS,
+        status='Assigned',
+        owner='author@chromium.org',
+        labels=['Pinpoint-Culprit-Found'],
+        cc_list=['author@chromium.org'],
+        merge_issue=None)
 
   @mock.patch('dashboard.pinpoint.models.change.patch.GerritPatch.AsDict')
   @mock.patch.object(job.job_state.JobState, 'ResultValues')
@@ -468,7 +497,6 @@ class BugCommentTest(test.TestCase):
         'author': 'author@chromium.org',
         'subject': 'Subject.',
         'message': 'Subject.\n\nCommit message.',
-        'git_hash': 'abc123'
     }
 
     self.get_issue.return_value = {'status': 'Untriaged'}
@@ -480,9 +508,13 @@ class BugCommentTest(test.TestCase):
 
     self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
-        123456, _COMMENT_COMPLETED_WITH_PATCH,
-        status='Assigned', owner='author@chromium.org',
-        cc_list=['author@chromium.org'], merge_issue=None)
+        123456,
+        _COMMENT_COMPLETED_WITH_PATCH,
+        status='Assigned',
+        owner='author@chromium.org',
+        labels=['Pinpoint-Culprit-Found'],
+        cc_list=['author@chromium.org'],
+        merge_issue=None)
 
   @mock.patch('dashboard.pinpoint.models.change.patch.GerritPatch.AsDict')
   @mock.patch.object(job.job_state.JobState, 'ResultValues')
@@ -500,7 +532,6 @@ class BugCommentTest(test.TestCase):
         'author': 'author@chromium.org',
         'subject': 'Subject.',
         'message': 'Subject.\n\nCommit message.',
-        'git_hash': 'abc123'
     }
 
     self.get_issue.return_value = {'status': 'Assigned'}
@@ -512,8 +543,13 @@ class BugCommentTest(test.TestCase):
 
     self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
-        123456, _COMMENT_COMPLETED_WITH_PATCH, owner=None, status=None,
-        cc_list=['author@chromium.org'], merge_issue=None)
+        123456,
+        _COMMENT_COMPLETED_WITH_PATCH,
+        owner=None,
+        status=None,
+        cc_list=['author@chromium.org'],
+        labels=['Pinpoint-Culprit-Found'],
+        merge_issue=None)
 
   @mock.patch('dashboard.pinpoint.models.change.patch.GerritPatch.AsDict')
   @mock.patch.object(job.job_state.JobState, 'ResultValues')
@@ -530,7 +566,6 @@ class BugCommentTest(test.TestCase):
         'author': 'author@chromium.org',
         'subject': 'Subject.',
         'message': 'Subject.\n\nCommit message.',
-        'git_hash': 'abc123'
     }
 
     self.get_issue.return_value = {'status': 'Fixed'}
@@ -542,19 +577,27 @@ class BugCommentTest(test.TestCase):
 
     self.assertFalse(j.failed)
     self.add_bug_comment.assert_called_once_with(
-        123456, _COMMENT_COMPLETED_WITH_PATCH, owner=None, status=None,
-        cc_list=['author@chromium.org'], merge_issue=None)
+        123456,
+        _COMMENT_COMPLETED_WITH_PATCH,
+        owner=None,
+        status=None,
+        cc_list=['author@chromium.org'],
+        labels=['Pinpoint-Culprit-Found'],
+        merge_issue=None)
 
   @mock.patch('dashboard.pinpoint.models.change.commit.Commit.AsDict')
   @mock.patch.object(job.job_state.JobState, 'ResultValues')
   @mock.patch.object(job.job_state.JobState, 'Differences')
-  def testCompletedMultipleDifferences(
-      self, differences, result_values, commit_as_dict):
+  def testCompletedMultipleDifferences(self, differences, result_values,
+                                       commit_as_dict):
+    c0 = change.Change((change.Commit('chromium', 'git_hash_0'),))
     c1 = change.Change((change.Commit('chromium', 'git_hash_1'),))
     c2 = change.Change((change.Commit('chromium', 'git_hash_2'),))
+    c2_5 = change.Change((change.Commit('chromium', 'git_hash_2_5')))
     c3 = change.Change((change.Commit('chromium', 'git_hash_3'),))
-    differences.return_value = [(None, c1), (None, c2), (None, c3)]
-    result_values.side_effect = [50], [0], [0], [40], [0], []
+    change_map = {c0: [50], c1: [0], c2: [40], c2_5: [0], c3: []}
+    differences.return_value = [(c0, c1), (c1, c2), (c2_5, c3)]
+    result_values.side_effect = lambda c: change_map.get(c, [])
     commit_as_dict.side_effect = (
         {
             'repository': 'chromium',
@@ -591,11 +634,12 @@ class BugCommentTest(test.TestCase):
 
     self.assertFalse(j.failed)
 
-    # We now only CC folks from the top two commits.
+    # We now only CC folks from the top commit.
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_COMPLETED_THREE_DIFFERENCES,
         status='Assigned', owner='author1@chromium.org',
-        cc_list=['author1@chromium.org', 'author2@chromium.org'],
+        cc_list=['author1@chromium.org'],
+        labels=['Pinpoint-Multiple-Culprits'],
         merge_issue=None)
 
   @mock.patch('dashboard.pinpoint.models.change.commit.Commit.AsDict')
@@ -606,8 +650,9 @@ class BugCommentTest(test.TestCase):
     c1 = change.Change((change.Commit('chromium', 'git_hash_1'),))
     c2 = change.Change((change.Commit('chromium', 'git_hash_2'),))
     c3 = change.Change((change.Commit('chromium', 'git_hash_3'),))
-    differences.return_value = [(None, c1), (None, c2), (None, c3)]
-    result_values.side_effect = [10], [0], [0], [-100], [0], []
+    change_map = {c1: [10], c2: [0], c3: [-100]}
+    differences.return_value = [(None, c1), (c1, c2), (c2, c3)]
+    result_values.side_effect = lambda c: change_map.get(c, [])
     commit_as_dict.side_effect = (
         {
             'repository': 'chromium',
@@ -644,12 +689,136 @@ class BugCommentTest(test.TestCase):
 
     self.assertFalse(j.failed)
 
-    # We now only CC folks from the top two commits, in absolute descending
-    # order.
+    # We now only CC folks from the top commit.
     self.add_bug_comment.assert_called_once_with(
         123456, _COMMENT_COMPLETED_THREE_DIFFERENCES_ABSOLUTE,
-        status='Assigned', owner='author2@chromium.org',
-        cc_list=['author1@chromium.org', 'author2@chromium.org'],
+        status='Assigned', owner='author3@chromium.org',
+        cc_list=['author3@chromium.org'],
+        labels=['Pinpoint-Multiple-Culprits'],
+        merge_issue=None)
+
+  @mock.patch('dashboard.pinpoint.models.change.commit.Commit.AsDict')
+  @mock.patch.object(job.job_state.JobState, 'ResultValues')
+  @mock.patch.object(job.job_state.JobState, 'Differences')
+  def testCompletedMultipleDifferences_TenCulpritsCcTopTwo(
+      self, differences, result_values, commit_as_dict):
+    self.Parameterized_TestCompletedMultipleDifferences(
+        10, 2, differences, result_values, commit_as_dict)
+
+  @mock.patch('dashboard.pinpoint.models.change.commit.Commit.AsDict')
+  @mock.patch.object(job.job_state.JobState, 'ResultValues')
+  @mock.patch.object(job.job_state.JobState, 'Differences')
+  def testCompletedMultipleDifferences_HundredCulpritsCcTopThree(
+      self, differences, result_values, commit_as_dict):
+    self.Parameterized_TestCompletedMultipleDifferences(
+        100, 3, differences, result_values, commit_as_dict)
+
+  def Parameterized_TestCompletedMultipleDifferences(
+      self, number_culprits, expected_num_ccs, differences, result_values,
+      commit_as_dict):
+    changes = [
+        change.Change((change.Commit('chromium', 'git_hash_%d' % (i,)),))
+        for i in range(1, number_culprits+1)]
+    # Return [(None,c1), (c1,c2), (c2,c3), ...]
+    differences.return_value = zip([None] + changes, changes)
+    # Ensure culprits are ordered by deriving change results values from commit
+    # names.  E.g.:
+    #   Change(git_hash_1) -> result_value=[1],
+    #   Change(git_hash_2) -> result_value=[4],
+    # etc.
+    def ResultValuesFromFakeGitHash(change_obj):
+      if change_obj is None:
+        return [0]
+      v = int(change_obj.commits[0].git_hash[len('git_hash_'):])
+      return [v*v]  # Square the value to ensure increasing deltas.
+    result_values.side_effect = ResultValuesFromFakeGitHash
+
+    commit_as_dict.side_effect = [
+        {
+            'repository': 'chromium',
+            'git_hash': 'git_hash_%d' % (i,),
+            'url': 'https://example.com/repository/+/git_hash_%d' % (i,),
+            'author': 'author%d@chromium.org' % (i,),
+            'subject': 'Subject.',
+            'message': 'Subject.\n\nCommit message.',
+        }
+        for i in range(1, number_culprits+1)]
+
+    self.get_issue.return_value = {'status': 'Untriaged'}
+
+    j = job.Job.New((), (), bug_id=123456, comparison_mode='performance')
+    j.Run()
+
+    self.ExecuteDeferredTasks('default')
+
+    self.assertFalse(j.failed)
+
+    expected_ccs = [
+        'author%d@chromium.org' % (i,)
+        for i in range(number_culprits, number_culprits - expected_num_ccs, -1)
+    ]
+
+    # We only CC folks from the top commits.
+    self.add_bug_comment.assert_called_once_with(
+        123456, mock.ANY,
+        status='Assigned', owner=expected_ccs[0],
+        cc_list=sorted(expected_ccs),
+        labels=['Pinpoint-Multiple-Culprits'],
+        merge_issue=None)
+
+
+  @mock.patch('dashboard.pinpoint.models.change.commit.Commit.AsDict')
+  @mock.patch.object(job.job_state.JobState, 'ResultValues')
+  @mock.patch.object(job.job_state.JobState, 'Differences')
+  def testCompletedMultipleDifferences_NoDeltas(self, differences,
+                                                result_values, commit_as_dict):
+    """Regression test for http://crbug.com/1078680.
+
+    Picks people to notify even when none of the differences have deltas (they
+    are all transitions to/from "No values").
+    """
+    # Two differences, neither has deltas (50 -> No Values, No Values -> 50).
+    c0 = change.Change((change.Commit('chromium', 'git_hash_0'),))
+    c1 = change.Change((change.Commit('chromium', 'git_hash_1'),))
+    c2 = change.Change((change.Commit('chromium', 'git_hash_2'),))
+    change_map = {c0: [50], c1: [], c2: [50]}
+    differences.return_value = [(c0, c1), (c1, c2)]
+    result_values.side_effect = lambda c: change_map.get(c, [])
+    commit_as_dict.side_effect = (
+        {
+            'repository': 'chromium',
+            'git_hash': 'git_hash_1',
+            'url': 'https://example.com/repository/+/git_hash_1',
+            'author': 'author1@chromium.org',
+            'subject': 'Subject.',
+            'message': 'Subject.\n\nCommit message.',
+        },
+        {
+            'repository': 'chromium',
+            'git_hash': 'git_hash_2',
+            'url': 'https://example.com/repository/+/git_hash_2',
+            'author': 'author2@chromium.org',
+            'subject': 'Subject.',
+            'message': 'Subject.\n\nCommit message.',
+        },
+    )
+
+    self.get_issue.return_value = {'status': 'Untriaged'}
+
+    j = job.Job.New((), (), bug_id=123456, comparison_mode='performance')
+    j.Run()
+
+    self.ExecuteDeferredTasks('default')
+
+    self.assertFalse(j.failed)
+
+    # Notifies the owner of the first change in the list of differences, seeing
+    # as they are all equally small.
+    self.add_bug_comment.assert_called_once_with(
+        123456, mock.ANY,
+        status='Assigned', owner='author1@chromium.org',
+        cc_list=['author1@chromium.org'],
+        labels=['Pinpoint-Multiple-Culprits'],
         merge_issue=None)
 
   @mock.patch('dashboard.pinpoint.models.change.commit.Commit.AsDict')
@@ -682,6 +851,58 @@ class BugCommentTest(test.TestCase):
         123456, _COMMENT_COMPLETED_WITH_AUTOROLL_COMMIT,
         status='Assigned', owner='sheriff@bar.com',
         cc_list=['chromium-autoroll@skia-public.iam.gserviceaccount.com'],
+        labels=['Pinpoint-Culprit-Found'],
+        merge_issue=None)
+
+  @mock.patch('dashboard.pinpoint.models.change.commit.Commit.AsDict')
+  @mock.patch.object(job.job_state.JobState, 'ResultValues')
+  @mock.patch.object(job.job_state.JobState, 'Differences')
+  def testCompletedWithAutorollCulpritButNotMostRecent(
+      self, differences, result_values, commit_as_dict):
+    """Regression test for http://crbug.com/1076756.
+
+    When an autoroll has the biggest delta, assigns to its sheriff even when it
+    is not the latest change.
+    """
+    c0 = change.Change((change.Commit('chromium', 'git_hash_0'),))
+    c1 = change.Change((change.Commit('chromium', 'git_hash_1'),))
+    c2 = change.Change((change.Commit('chromium', 'git_hash_2'),))
+    change_map = {c0: [0], c1: [10], c2: [10]}
+    differences.return_value = [(c0, c1), (c1, c2)]
+    result_values.side_effect = lambda c: change_map.get(c, [])
+    commit_as_dict.side_effect = (
+        {
+            'repository': 'chromium',
+            'git_hash': 'git_hash_1',
+            'url': 'https://example.com/repository/+/git_hash_1',
+            'author': 'chromium-autoroll@skia-public.iam.gserviceaccount.com',
+            'subject': 'Subject.',
+            'message': 'Subject.\n\nCommit message.\n\nTBR=sheriff@bar.com',
+        },
+        {
+            'repository': 'chromium',
+            'git_hash': 'git_hash_2',
+            'url': 'https://example.com/repository/+/git_hash_2',
+            'author': 'author2@chromium.org',
+            'subject': 'Subject.',
+            'message': 'Subject.\n\nCommit message.',
+        },
+    )
+
+    self.get_issue.return_value = {'status': 'Untriaged'}
+
+    j = job.Job.New((), (), bug_id=123456, comparison_mode='performance')
+    j.put()
+    j.Run()
+
+    self.ExecuteDeferredTasks('default')
+
+    self.assertFalse(j.failed)
+    self.add_bug_comment.assert_called_once_with(
+        mock.ANY, mock.ANY,
+        status='Assigned', owner='sheriff@bar.com',
+        cc_list=['chromium-autoroll@skia-public.iam.gserviceaccount.com'],
+        labels=mock.ANY,
         merge_issue=None)
 
   @mock.patch.object(job.job_state.JobState, 'ScheduleWork',
@@ -694,7 +915,11 @@ class BugCommentTest(test.TestCase):
     self.ExecuteDeferredTasks('default')
 
     self.assertTrue(j.failed)
-    self.add_bug_comment.assert_called_once_with(123456, _COMMENT_FAILED)
+    self.add_bug_comment.assert_called_once_with(
+        123456,
+        _COMMENT_FAILED,
+        send_email=True,
+        labels=['Pinpoint-Job-Failed'])
 
   @mock.patch.object(job.job_state.JobState, 'ScheduleWork',
                      mock.MagicMock(side_effect=AssertionError('Error string')))

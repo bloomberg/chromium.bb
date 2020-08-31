@@ -2,6 +2,7 @@ include Makefile.sources
 
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
+	-fvisibility=hidden \
 	-I$(top_srcdir) \
 	$(PTHREADSTUBS_CFLAGS) \
 	-I$(top_srcdir)/include/drm \
@@ -29,5 +30,6 @@ libdrm_nouveaunvifinclude_HEADERS = nvif/class.h \
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_nouveau.pc
 
+AM_TESTS_ENVIRONMENT = NM='$(NM)'
 TESTS = nouveau-symbol-check
 EXTRA_DIST = $(TESTS)

@@ -24,10 +24,12 @@
 #include "include/effects/SkGradientShader.h"
 #include "include/gpu/GrContext.h"
 #include "include/private/GrTypesPriv.h"
+#include "src/core/SkMatrixProvider.h"
 #include "src/gpu/GrClip.h"
 #include "src/gpu/GrPaint.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/SkGr.h"
+#include "tools/ToolUtils.h"
 
 #include <utility>
 
@@ -38,7 +40,8 @@ static constexpr int kRowCount = 4;
 static constexpr int kColCount = 3;
 
 static void draw_text(SkCanvas* canvas, const char* text) {
-    canvas->drawString(text, 0, 0, SkFont(nullptr, 12), SkPaint());
+    SkFont font(ToolUtils::create_portable_typeface(), 12);
+    canvas->drawString(text, 0, 0, font, SkPaint());
 }
 
 static void draw_gradient_tiles(SkCanvas* canvas, bool alignGradients) {
@@ -81,8 +84,9 @@ static void draw_gradient_tiles(SkCanvas* canvas, bool alignGradients) {
             if (rtc) {
                 // Use non-public API to leverage general GrPaint capabilities
                 SkMatrix view = canvas->getTotalMatrix();
+                SkSimpleMatrixProvider matrixProvider(view);
                 GrPaint grPaint;
-                SkPaintToGrPaint(context, rtc->colorInfo(), paint, view, &grPaint);
+                SkPaintToGrPaint(context, rtc->colorInfo(), paint, matrixProvider, &grPaint);
                 rtc->fillRectWithEdgeAA(GrNoClip(), std::move(grPaint), GrAA::kYes,
                                         static_cast<GrQuadAAFlags>(aa), view, tile);
             } else {

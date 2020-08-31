@@ -7,27 +7,43 @@
 
 #include "src/gpu/ccpr/GrCCClipProcessor.h"
 
-#include "include/gpu/GrTexture.h"
-#include "src/core/SkMakeUnique.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/ccpr/GrCCClipPath.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 
-GrCCClipProcessor::GrCCClipProcessor(const GrCCClipPath* clipPath, IsCoverageCount isCoverageCount,
+static GrSurfaceProxyView make_view(const GrCaps& caps, GrSurfaceProxy* proxy,
+                                    bool isCoverageCount) {
+    GrColorType ct = isCoverageCount ? GrColorType::kAlpha_F16 : GrColorType::kAlpha_8;
+    GrSwizzle swizzle = caps.getReadSwizzle(proxy->backendFormat(), ct);
+    return { sk_ref_sp(proxy), GrCCAtlas::kTextureOrigin, swizzle };
+}
+
+GrCCClipProcessor::GrCCClipProcessor(GrSurfaceProxyView view, const GrCCClipPath* clipPath,
+                                     IsCoverageCount isCoverageCount,
                                      MustCheckBounds mustCheckBounds)
         : INHERITED(kGrCCClipProcessor_ClassID, kCompatibleWithCoverageAsAlpha_OptimizationFlag)
         , fClipPath(clipPath)
         , fIsCoverageCount(IsCoverageCount::kYes == isCoverageCount)
         , fMustCheckBounds(MustCheckBounds::kYes == mustCheckBounds)
-        , fAtlasAccess(sk_ref_sp(fClipPath->atlasLazyProxy())) {
-    SkASSERT(fAtlasAccess.proxy());
+        , fAtlasAccess(std::move(view)) {
+    SkASSERT(fAtlasAccess.view());
     this->setTextureSamplerCnt(1);
 }
 
+GrCCClipProcessor::GrCCClipProcessor(const GrCaps& caps, const GrCCClipPath* clipPath,
+                                     IsCoverageCount isCoverageCount,
+                                     MustCheckBounds mustCheckBounds)
+        : GrCCClipProcessor(make_view(caps, clipPath->atlasLazyProxy(),
+                                      IsCoverageCount::kYes == isCoverageCount),
+                            clipPath, isCoverageCount, mustCheckBounds) {
+}
+
 std::unique_ptr<GrFragmentProcessor> GrCCClipProcessor::clone() const {
-    return skstd::make_unique<GrCCClipProcessor>(
-            fClipPath, IsCoverageCount(fIsCoverageCount), MustCheckBounds(fMustCheckBounds));
+    return std::make_unique<GrCCClipProcessor>(
+            fAtlasAccess.view(), fClipPath, IsCoverageCount(fIsCoverageCount),
+            MustCheckBounds(fMustCheckBounds));
 }
 
 void GrCCClipProcessor::onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const {
@@ -60,21 +76,23 @@ public:
 
         if (proc.fMustCheckBounds) {
             const char* pathIBounds;
-            fPathIBoundsUniform = uniHandler->addUniform(kFragment_GrShaderFlag, kFloat4_GrSLType,
-                                                         "path_ibounds", &pathIBounds);
+            fPathIBoundsUniform = uniHandler->addUniform(&proc, kFragment_GrShaderFlag,
+                                                         kFloat4_GrSLType, "path_ibounds",
+                                                         &pathIBounds);
             f->codeAppendf("if (all(greaterThan(float4(sk_FragCoord.xy, %s.zw), "
                                                "float4(%s.xy, sk_FragCoord.xy)))) {",
                                                pathIBounds, pathIBounds);
         }
 
         const char* atlasTransform;
-        fAtlasTransformUniform = uniHandler->addUniform(kFragment_GrShaderFlag, kFloat4_GrSLType,
-                                                        "atlas_transform", &atlasTransform);
+        fAtlasTransformUniform = uniHandler->addUniform(&proc, kFragment_GrShaderFlag,
+                                                        kFloat4_GrSLType, "atlas_transform",
+                                                        &atlasTransform);
         f->codeAppendf("float2 texcoord = sk_FragCoord.xy * %s.xy + %s.zw;",
                        atlasTransform, atlasTransform);
 
         f->codeAppend ("coverage = ");
-        f->appendTextureLookup(args.fTexSamplers[0], "texcoord", kHalf2_GrSLType);
+        f->appendTextureLookup(args.fTexSamplers[0], "texcoord");
         f->codeAppend (".a;");
 
         if (proc.fIsCoverageCount) {

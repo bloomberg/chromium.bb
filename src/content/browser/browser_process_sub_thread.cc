@@ -5,10 +5,11 @@
 #include "content/browser/browser_process_sub_thread.h"
 
 #include "base/bind.h"
-#include "base/clang_coverage_buildflags.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/hang_watcher.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "content/browser/browser_child_process_host_impl.h"
@@ -124,14 +125,26 @@ void BrowserProcessSubThread::CompleteInitializationOnBrowserThread() {
 // them together.
 
 NOINLINE void BrowserProcessSubThread::UIThreadRun(base::RunLoop* run_loop) {
-  const int line_number = __LINE__;
   Thread::Run(run_loop);
+
+  // Inhibit tail calls of Run and inhibit code folding.
+  const int line_number = __LINE__;
   base::debug::Alias(&line_number);
 }
 
 NOINLINE void BrowserProcessSubThread::IOThreadRun(base::RunLoop* run_loop) {
-  const int line_number = __LINE__;
+  // Register the IO thread for hang watching before it starts running and set
+  // up a closure to automatically unregister it when Run() returns.
+  base::ScopedClosureRunner unregister_thread_closure;
+  if (base::FeatureList::IsEnabled(base::HangWatcher::kEnableHangWatcher)) {
+    unregister_thread_closure =
+        base::HangWatcher::GetInstance()->RegisterThread();
+  }
+
   Thread::Run(run_loop);
+
+  // Inhibit tail calls of Run and inhibit code folding.
+  const int line_number = __LINE__;
   base::debug::Alias(&line_number);
 }
 
@@ -149,11 +162,11 @@ void BrowserProcessSubThread::IOThreadCleanUp() {
     UtilityProcessHost* utility_process =
         static_cast<UtilityProcessHost*>(it.GetDelegate());
     if (utility_process->sandbox_type() ==
-        service_manager::SANDBOX_TYPE_NETWORK) {
+        service_manager::SandboxType::kNetwork) {
       // This ensures that cookies and cache are flushed to disk on shutdown.
       // https://crbug.com/841001
-#if BUILDFLAG(CLANG_COVERAGE)
-      // On coverage build, browser_tests runs 10x slower.
+#if BUILDFLAG(CLANG_PROFILING)
+      // On profiling build, browser_tests runs 10x slower.
       const int kMaxSecondsToWaitForNetworkProcess = 100;
 #elif defined(OS_CHROMEOS)
       // ChromeOS will kill the browser process if it doesn't shut down within

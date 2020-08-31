@@ -21,7 +21,6 @@
 #include "rtc_base/async_socket.h"
 #include "rtc_base/buffer.h"
 #include "rtc_base/message_handler.h"
-#include "rtc_base/message_queue.h"
 #include "rtc_base/openssl_identity.h"
 #include "rtc_base/openssl_session_cache.h"
 #include "rtc_base/socket.h"
@@ -54,10 +53,10 @@ class OpenSSLAdapter final : public SSLAdapter, public MessageHandler {
   void SetEllipticCurves(const std::vector<std::string>& curves) override;
   void SetMode(SSLMode mode) override;
   void SetCertVerifier(SSLCertificateVerifier* ssl_cert_verifier) override;
-  void SetIdentity(SSLIdentity* identity) override;
+  void SetIdentity(std::unique_ptr<SSLIdentity> identity) override;
   void SetRole(SSLRole role) override;
   AsyncSocket* Accept(SocketAddress* paddr) override;
-  int StartSSL(const char* hostname, bool restartable) override;
+  int StartSSL(const char* hostname) override;
   int Send(const void* pv, size_t cb) override;
   int SendTo(const void* pv, size_t cb, const SocketAddress& addr) override;
   int Recv(void* pv, size_t cb, int64_t* timestamp) override;
@@ -128,9 +127,6 @@ class OpenSSLAdapter final : public SSLAdapter, public MessageHandler {
   SSLRole role_;
   bool ssl_read_needs_write_;
   bool ssl_write_needs_read_;
-  // If true, socket will retain SSL configuration after Close.
-  // TODO(juberti): Remove this unused flag.
-  bool restartable_;
   // This buffer is used if SSL_write fails with SSL_ERROR_WANT_WRITE, which
   // means we need to keep retrying with *the same exact data* until it
   // succeeds. Afterwards it will be cleared.

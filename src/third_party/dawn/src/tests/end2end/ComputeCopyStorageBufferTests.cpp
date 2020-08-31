@@ -74,7 +74,7 @@ void ComputeCopyStorageBufferTests::BasicTest(const char* shader) {
         wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup);
-        pass.Dispatch(kInstances, 1, 1);
+        pass.Dispatch(kInstances);
         pass.EndPass();
 
         commands = encoder.Finish();
@@ -101,10 +101,6 @@ TEST_P(ComputeCopyStorageBufferTests, SizedArrayOfBasic) {
 
 // Test that a slightly-less-trivial compute-shader memcpy implementation works.
 TEST_P(ComputeCopyStorageBufferTests, SizedArrayOfStruct) {
-    // TODO(kainino@chromium.org): Fails on D3D12 due to SPIRV-Cross not supporting
-    // reading structs from ByteAddressBuffer.
-    DAWN_SKIP_TEST_IF(IsD3D12());
-
     BasicTest(R"(
         #version 450
         #define kInstances 4
@@ -177,7 +173,7 @@ TEST_P(ComputeCopyStorageBufferTests, DISABLED_UnsizedDescriptorArray) {
 }
 
 DAWN_INSTANTIATE_TEST(ComputeCopyStorageBufferTests,
-                     D3D12Backend,
-                     MetalBackend,
-                     OpenGLBackend,
-                     VulkanBackend);
+                     D3D12Backend(),
+                     MetalBackend(),
+                     OpenGLBackend(),
+                     VulkanBackend());

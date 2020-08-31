@@ -33,7 +33,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/chromeos/fourcc.h"
-#include "media/gpu/linux/platform_video_frame_utils.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_image_decoder.h"
@@ -350,12 +350,21 @@ bool VaapiMjpegDecodeAccelerator::OutputPictureVppOnTaskRunner(
     scoped_refptr<VideoFrame> video_frame) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   DCHECK(surface);
+  DCHECK(video_frame);
 
   TRACE_EVENT1("jpeg", __func__, "input_buffer_id", input_buffer_id);
 
+  scoped_refptr<gfx::NativePixmap> pixmap =
+      CreateNativePixmapDmaBuf(video_frame.get());
+  if (!pixmap) {
+    VLOGF(1) << "Failed to create NativePixmap from VideoFrame";
+    return false;
+  }
+
   // Bind a VA surface to |video_frame|.
   scoped_refptr<VASurface> output_surface =
-      vpp_vaapi_wrapper_->CreateVASurfaceForVideoFrame(video_frame.get());
+      vpp_vaapi_wrapper_->CreateVASurfaceForPixmap(std::move(pixmap));
+
   if (!output_surface) {
     VLOGF(1) << "Cannot create VA surface for output buffer";
     return false;
@@ -384,7 +393,7 @@ bool VaapiMjpegDecodeAccelerator::OutputPictureVppOnTaskRunner(
     VLOGF(1) << "Cannot sync VPP input surface";
     return false;
   }
-  if (!vpp_vaapi_wrapper_->BlitSurface(src_surface, dst_surface)) {
+  if (!vpp_vaapi_wrapper_->BlitSurface(*src_surface, *dst_surface)) {
     VLOGF(1) << "Cannot convert decoded image into output buffer";
     return false;
   }
@@ -465,9 +474,16 @@ void VaapiMjpegDecodeAccelerator::DecodeImpl(
   // For DMA-buf backed |dst_frame|, we will import it as a VA surface and use
   // VPP to convert the decoded |surface| into it, if the formats and sizes are
   // supported.
-  const uint32_t video_frame_va_fourcc =
-      Fourcc::FromVideoPixelFormat(dst_frame->format()).ToVAFourCC();
-  if (video_frame_va_fourcc == kInvalidVaFourcc) {
+  const auto video_frame_fourcc =
+      Fourcc::FromVideoPixelFormat(dst_frame->format());
+  if (!video_frame_fourcc) {
+    VLOGF(1) << "Unsupported video frame format: " << dst_frame->format();
+    NotifyError(task_id, PLATFORM_FAILURE);
+    return;
+  }
+
+  const auto video_frame_va_fourcc = video_frame_fourcc->ToVAFourCC();
+  if (!video_frame_va_fourcc) {
     VLOGF(1) << "Unsupported video frame format: " << dst_frame->format();
     NotifyError(task_id, PLATFORM_FAILURE);
     return;
@@ -477,7 +493,7 @@ void VaapiMjpegDecodeAccelerator::DecodeImpl(
   if (dst_frame->HasDmaBufs() &&
       VaapiWrapper::IsVppResolutionAllowed(surface->size()) &&
       VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
-          surface->format(), video_frame_va_fourcc)) {
+          surface->format(), *video_frame_va_fourcc)) {
     if (!OutputPictureVppOnTaskRunner(surface, task_id, std::move(dst_frame))) {
       VLOGF(1) << "Output picture using VPP failed";
       NotifyError(task_id, PLATFORM_FAILURE);
@@ -490,7 +506,7 @@ void VaapiMjpegDecodeAccelerator::DecodeImpl(
   // 2. VPP doesn't support the format conversion. This is intended for AMD
   //    VAAPI driver whose VPP only supports converting decoded 4:2:0 JPEGs.
   std::unique_ptr<ScopedVAImage> image =
-      decoder_.GetImage(video_frame_va_fourcc, &status);
+      decoder_.GetImage(*video_frame_va_fourcc, &status);
   if (status != VaapiImageDecodeStatus::kSuccess) {
     NotifyError(task_id, VaapiJpegDecodeStatusToError(status));
     return;

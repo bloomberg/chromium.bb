@@ -10,9 +10,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "chromecast/media/cma/base/decoder_buffer_base.h"
+#include "chromecast/media/api/decoder_buffer_base.h"
 
 namespace media {
 class DecoderBuffer;
@@ -41,8 +39,6 @@ class DecoderBufferAdapter : public DecoderBufferBase {
   size_t data_size() const override;
   const CastDecryptConfig* decrypt_config() const override;
   bool end_of_stream() const override;
-
-  scoped_refptr<::media::DecoderBuffer> ToMediaBuffer() const override;
 
  private:
   ~DecoderBufferAdapter() override;

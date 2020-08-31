@@ -131,9 +131,9 @@ If the bug is Mac-specific and in scope for the Mac team, try to:
     * `Mac-Enterprise`: avi@
     * `Mac-Graphics`: ccameron@
     * `Mac-Infra`: ellyjones@
-    * `Mac-Performance`: lgrey@ or sdy@
-    * `Mac-PlatformIntegration`: sdy@
-    * `Mac-Polish`: sdy@
+    * `Mac-Performance`: lgrey@
+    * `Mac-PlatformIntegration`: ellyjones@
+    * `Mac-Polish`: ellyjones@
     * `Mac-TechDebt`: ellyjones@
     * `Mac-UI`: anyone
 
@@ -153,8 +153,8 @@ triage processes:
 * Test>Telemetry
 * UI>Browser>WebUI
 
-[unconfirmed]: https://bugs.chromium.org/p/chromium/issues/list?q=OS%3DMac%20status%3AUnconfirmed%20-component%3ABlink%2CEnterprise%2CInternals%3ENetwork%2CPlatform%3EDevtools%2CServices%3ESync&can=2
+[unconfirmed]: https://bugs.chromium.org/p/chromium/issues/list?q=OS%3DMac%20status%3AUnconfirmed%20-component%3ABlink%2CEnterprise%2CInternals%3ENetwork%2CPlatform%3EDevtools%2CServices%3ESyncs%2CUI%3EBrowser%3EPasswords&can=2
 [untriaged-m]: https://bugs.chromium.org/p/chromium/issues/list?q=has%3AMac%20status%3AUntriaged&can=2
-[untriaged-c]: https://bugs.chromium.org/p/chromium/issues/list?q=OS%3DMac%20-OS%3DWindows%2CLinux%2CChrome%2CAndroid%2CiOS%20status%3AUntriaged%20-component%3AAdmin%2CBlink%2CInfra%2CInternals%3EHeadless%2CInternals%3ENetwork%2CInternals%3EPlugins%3EPDF%2CInternals%3EPrinting%2CInternals%3ESkia%2CInternals%3EViews%2CIO%3EBluetooth%2CIO%3EUSB%2CPlatform%2CServices%3EChromoting%2CTest%3ETelemetry%2CUI%3EBrowser%3EWebUI&can=2
+[untriaged-c]: https://bugs.chromium.org/p/chromium/issues/list?q=OS%3DMac%20-OS%3DWindows%2CLinux%2CChrome%2CAndroid%2CiOS%20status%3AUntriaged%20-component%3AAdmin%2CBlink%2CInfra%2CInternals%3EHeadless%2CInternals%3ENetwork%2CInternals%3EPlugins%3EPDF%2CInternals%3EPrinting%2CInternals%3ESkia%2CInternals%3EUpdater%2CInternals%3EViews%2CIO%3EBluetooth%2CIO%3EUSB%2CPlatform%2CServices%3EChromoting%2CTest%3ETelemetry%2CUI%3EBrowser%3EWebUI&can=2
 [available]: https://bugs.chromium.org/p/chromium/issues/list?q=has%3AMac%20status%3AAvailable&can=2
 [assigned]: https://bugs.chromium.org/p/chromium/issues/list?q=has%3AMac%20status%3AAssigned&can=2

@@ -3,15 +3,37 @@
 // found in the LICENSE file.
 
 import {ObjectWrapper} from './Object.js';
+import {reveal} from './Revealer.js';
+
+/**
+ * @type {!Console}
+ */
+let consoleInstance;
 
 /**
  * @unrestricted
  */
 export class Console extends ObjectWrapper {
+  /**
+   * Instantiable via the instance() factory below.
+   *
+   * @private
+   */
   constructor() {
     super();
     /** @type {!Array.<!Message>} */
     this._messages = [];
+  }
+
+  /**
+   * @param {{forceNew: boolean}} opts
+   */
+  static instance({forceNew} = {forceNew: false}) {
+    if (!consoleInstance || forceNew) {
+      consoleInstance = new Console();
+    }
+
+    return consoleInstance;
   }
 
   /**
@@ -61,7 +83,7 @@ export class Console extends ObjectWrapper {
    * @return {!Promise.<undefined>}
    */
   showPromise() {
-    return Common.Revealer.reveal(this);
+    return reveal(this);
   }
 }
 
@@ -96,27 +118,3 @@ export class Message {
     this.show = show;
   }
 }
-
-/* Legacy exported object */
-self.Common = self.Common || {};
-Common = Common || {};
-
-Common.console = new Console();
-
-/**
- * @constructor
- */
-Common.Console = Console;
-
-/** @enum {symbol} */
-Common.Console.Events = Events;
-
-/**
- * @enum {string}
- */
-Common.Console.MessageLevel = MessageLevel;
-
-/**
- * @constructor
- */
-Common.Console.Message = Message;

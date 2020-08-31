@@ -32,8 +32,8 @@ class CORE_EXPORT InspectedFrames final
    private:
     friend class InspectedFrames;
     Iterator(LocalFrame* root, LocalFrame* current);
-    Member<LocalFrame> root_;
-    Member<LocalFrame> current_;
+    LocalFrame* root_;
+    LocalFrame* current_;
   };
 
   explicit InspectedFrames(LocalFrame*);
@@ -44,7 +44,7 @@ class CORE_EXPORT InspectedFrames final
   Iterator begin();
   Iterator end();
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
  private:
   Member<LocalFrame> root_;

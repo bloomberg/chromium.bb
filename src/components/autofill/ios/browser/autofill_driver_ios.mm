@@ -8,7 +8,6 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_webframe.h"
-#import "ios/web/common/origin_util.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/web_state.h"
@@ -154,20 +153,22 @@ gfx::RectF AutofillDriverIOS::TransformBoundingBoxToViewportCoordinates(
   return bounding_box;
 }
 
-net::NetworkIsolationKey AutofillDriverIOS::NetworkIsolationKey() {
+net::IsolationInfo AutofillDriverIOS::IsolationInfo() {
   std::string main_web_frame_id = web::GetMainWebFrameId(web_state_);
   web::WebFrame* main_web_frame =
       web::GetWebFrameWithId(web_state_, main_web_frame_id);
   if (!main_web_frame)
-    return net::NetworkIsolationKey();
+    return net::IsolationInfo();
 
   web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
   if (!web_frame)
-    return net::NetworkIsolationKey();
+    return net::IsolationInfo();
 
-  return net::NetworkIsolationKey(
+  return net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateNothing,
       url::Origin::Create(main_web_frame->GetSecurityOrigin()),
-      url::Origin::Create(web_frame->GetSecurityOrigin()));
+      url::Origin::Create(web_frame->GetSecurityOrigin()),
+      net::SiteForCookies());
 }
 
 }  // namespace autofill

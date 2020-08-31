@@ -14,28 +14,35 @@
 
 #include "VkShaderModule.hpp"
 
+#include "spirv-tools/libspirv.hpp"
+
 #include <cstring>
 
-namespace vk
-{
+namespace vk {
 
-std::atomic<uint32_t> ShaderModule::serialCounter(1);    // Start at 1, 0 is invalid shader.
+std::atomic<uint32_t> ShaderModule::serialCounter(1);  // Start at 1, 0 is invalid shader.
 
-ShaderModule::ShaderModule(const VkShaderModuleCreateInfo* pCreateInfo, void* mem)
-	: serialID(nextSerialID()), code(reinterpret_cast<uint32_t*>(mem))
+ShaderModule::ShaderModule(const VkShaderModuleCreateInfo *pCreateInfo, void *mem)
+    : serialID(nextSerialID())
+    , code(reinterpret_cast<uint32_t *>(mem))
 {
 	memcpy(code, pCreateInfo->pCode, pCreateInfo->codeSize);
 	wordCount = static_cast<uint32_t>(pCreateInfo->codeSize / sizeof(uint32_t));
+
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+	spvtools::SpirvTools spirvTools(SPV_ENV_VULKAN_1_1);
+	ASSERT(spirvTools.Validate(getCode()));  // The SPIR-V code passed to vkCreateShaderModule must be valid (b/158228522)
+#endif
 }
 
-void ShaderModule::destroy(const VkAllocationCallbacks* pAllocator)
+void ShaderModule::destroy(const VkAllocationCallbacks *pAllocator)
 {
 	vk::deallocate(code, pAllocator);
 }
 
-size_t ShaderModule::ComputeRequiredAllocationSize(const VkShaderModuleCreateInfo* pCreateInfo)
+size_t ShaderModule::ComputeRequiredAllocationSize(const VkShaderModuleCreateInfo *pCreateInfo)
 {
 	return pCreateInfo->codeSize;
 }
 
-} // namespace vk
+}  // namespace vk

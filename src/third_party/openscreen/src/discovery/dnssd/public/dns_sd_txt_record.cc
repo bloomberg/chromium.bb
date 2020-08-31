@@ -4,20 +4,51 @@
 
 #include "discovery/dnssd/public/dns_sd_txt_record.h"
 
-#include "absl/strings/ascii.h"
+#include <cctype>
 
 namespace openscreen {
 namespace discovery {
 
+// static
+bool DnsSdTxtRecord::IsValidTxtValue(const std::string& key,
+                                     const std::vector<uint8_t>& value) {
+  // The max length of any individual TXT record is 255 bytes.
+  if (key.size() + value.size() + 1 /* for equals */ > 255) {
+    return false;
+  }
+
+  return IsKeyValid(key);
+}
+
+// static
+bool DnsSdTxtRecord::IsValidTxtValue(const std::string& key, uint8_t value) {
+  return IsValidTxtValue(key, std::vector<uint8_t>{value});
+}
+
+// static
+bool DnsSdTxtRecord::IsValidTxtValue(const std::string& key,
+                                     const std::string& value) {
+  return IsValidTxtValue(key, std::vector<uint8_t>(value.begin(), value.end()));
+}
+
 Error DnsSdTxtRecord::SetValue(const std::string& key,
-                               const absl::Span<const uint8_t>& value) {
-  if (!IsKeyValuePairValid(key, value)) {
+                               std::vector<uint8_t> value) {
+  if (!IsValidTxtValue(key, value)) {
     return Error::Code::kParameterInvalid;
   }
 
-  key_value_txt_[key] = std::vector<uint8_t>(value.begin(), value.end());
+  key_value_txt_[key] = std::move(value);
   ClearFlag(key);
   return Error::None();
+}
+
+Error DnsSdTxtRecord::SetValue(const std::string& key, uint8_t value) {
+  return SetValue(key, std::vector<uint8_t>{value});
+}
+
+Error DnsSdTxtRecord::SetValue(const std::string& key,
+                               const std::string& value) {
+  return SetValue(key, std::vector<uint8_t>(value.begin(), value.end()));
 }
 
 Error DnsSdTxtRecord::SetFlag(const std::string& key, bool value) {
@@ -34,7 +65,7 @@ Error DnsSdTxtRecord::SetFlag(const std::string& key, bool value) {
   return Error::None();
 }
 
-ErrorOr<absl::Span<const uint8_t>> DnsSdTxtRecord::GetValue(
+ErrorOr<DnsSdTxtRecord::ValueRef> DnsSdTxtRecord::GetValue(
     const std::string& key) const {
   if (!IsKeyValid(key)) {
     return Error::Code::kParameterInvalid;
@@ -42,7 +73,7 @@ ErrorOr<absl::Span<const uint8_t>> DnsSdTxtRecord::GetValue(
 
   auto it = key_value_txt_.find(key);
   if (it != key_value_txt_.end()) {
-    return absl::Span<const uint8_t>(it->second.data(), it->second.size());
+    return std::cref(it->second);
   }
 
   return Error::Code::kItemNotFound;
@@ -74,7 +105,8 @@ Error DnsSdTxtRecord::ClearFlag(const std::string& key) {
   return Error::None();
 }
 
-bool DnsSdTxtRecord::IsKeyValid(const std::string& key) const {
+// static
+bool DnsSdTxtRecord::IsKeyValid(const std::string& key) {
   // The max length of any individual TXT record is 255 bytes.
   if (key.size() > 255) {
     return false;
@@ -115,22 +147,23 @@ std::vector<std::vector<uint8_t>> DnsSdTxtRecord::GetData() const {
   return data;
 }
 
-bool DnsSdTxtRecord::IsKeyValuePairValid(
-    const std::string& key,
-    const absl::Span<const uint8_t>& value) const {
-  // The max length of any individual TXT record is 255 bytes.
-  if (key.size() + value.size() + 1 /* for equals */ > 255) {
-    return false;
-  }
-
-  return IsKeyValid(key);
-}
-
 bool DnsSdTxtRecord::CaseInsensitiveComparison::operator()(
     const std::string& lhs,
     const std::string& rhs) const {
-  return std::less<std::string>()(absl::AsciiStrToLower(lhs),
-                                  absl::AsciiStrToLower(rhs));
+  if (lhs.size() != rhs.size()) {
+    return lhs < rhs;
+  }
+
+  for (size_t i = 0; i < lhs.size(); i++) {
+    int lhs_char = tolower(lhs[i]);
+    int rhs_char = tolower(rhs[i]);
+
+    if (lhs_char != rhs_char) {
+      return lhs_char < rhs_char;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace discovery

@@ -5,18 +5,16 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='moveMe'",
-          "rect": [150, 150, 100, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='moveMe'",
-          "rect": [8, 102, 100, 100],
-          "reason": "geometry"
-        }
+      "invalidations": [
+        [150, 150, 100, 100],
+        [8, 102, 100, 100]
       ]
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV id='fixedTransformed'",
+      "position": [8, 102],
+      "contentsOpaque": true,
+      "drawsContent": false
     }
   ]
 }

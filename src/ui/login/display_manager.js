@@ -27,7 +27,6 @@
 /** @const */ var SCREEN_TPM_ERROR = 'tpm-error-message';
 /** @const */ var SCREEN_PASSWORD_CHANGED = 'password-changed';
 /** @const */ var SCREEN_APP_LAUNCH_SPLASH = 'app-launch-splash';
-/** @const */ var SCREEN_ARC_KIOSK_SPLASH = 'arc-kiosk-splash';
 /** @const */ var SCREEN_CONFIRM_PASSWORD = 'confirm-password';
 /** @const */ var SCREEN_FATAL_ERROR = 'fatal-error';
 /** @const */ var SCREEN_KIOSK_ENABLE = 'kiosk-enable';
@@ -60,21 +59,6 @@
     'app_launch_network_config';
 /** @const */ var ACCELERATOR_DEMO_MODE = "demo_mode";
 /** @const */ var ACCELERATOR_SEND_FEEDBACK = "send_feedback";
-
-/* Signin UI state constants. Used to control header bar UI. */
-/* TODO(https://crbug.com/981544): Sync with login_types.h */
-/** @const */ var SIGNIN_UI_STATE = {
-  HIDDEN: 0,
-  GAIA_SIGNIN: 1,
-  ACCOUNT_PICKER: 2,
-  WRONG_HWID_WARNING: 3,
-  DEPRECATED_SUPERVISED_USER_CREATION_FLOW: 4,
-  SAML_PASSWORD_CONFIRM: 5,
-  PASSWORD_CHANGED: 6,
-  ENROLLMENT: 7,
-  ERROR: 8,
-  SYNC_CONSENT: 9,
-};
 
 /* Possible UI states of the error screen. */
 /** @const */ var ERROR_SCREEN_UI_STATE = {
@@ -141,7 +125,6 @@ cr.define('cr.ui.login', function() {
    * @const
    */
   var ENABLE_DEBUGGING_AVAILABLE_SCREEN_GROUP = [
-    SCREEN_OOBE_HID_DETECTION,
     SCREEN_OOBE_NETWORK,
     SCREEN_OOBE_EULA,
     SCREEN_OOBE_UPDATE
@@ -228,12 +211,6 @@ cr.define('cr.ui.login', function() {
     userCount_: 0,
 
     /**
-     * Number of reloadContent() calls since start for testing.
-     * @type {number}
-     */
-    reloadContentNumEvents_: 0,
-
-    /**
      * Stored OOBE configuration for newly registered screens.
      * @type {!OobeTypes.OobeConfiguration}
      */
@@ -282,9 +259,7 @@ cr.define('cr.ui.login', function() {
      * @return {boolean}
      */
     get showingViewsLogin() {
-      return loadTimeData.valueExists('showViewsLogin') &&
-          loadTimeData.getString('showViewsLogin') == 'on' &&
-          (this.displayType_ == DISPLAY_TYPE.GAIA_SIGNIN);
+      return this.displayType_ == DISPLAY_TYPE.GAIA_SIGNIN;
     },
 
     /**
@@ -434,8 +409,7 @@ cr.define('cr.ui.login', function() {
           $('version-labels').hidden = !$('version-labels').hidden;
       } else if (name == ACCELERATOR_RESET) {
         if (currentStepId == SCREEN_OOBE_RESET) {
-          $('reset').send(
-              login.Screen.CALLBACK_USER_ACTED, USER_ACTION_ROLLBACK_TOGGLED);
+          $('reset').userActed(USER_ACTION_ROLLBACK_TOGGLED);
         } else if (attributes.resetAllowed ||
             RESET_AVAILABLE_SCREEN_GROUP.indexOf(currentStepId) != -1) {
           chrome.send('toggleResetScreen');
@@ -444,14 +418,12 @@ cr.define('cr.ui.login', function() {
         if (this.isOobeUI())
           this.showDeviceRequisitionPrompt_();
       } else if (name == ACCELERATOR_DEVICE_REQUISITION_REMORA) {
-        if (this.isOobeUI())
+        if (this.isOobeUI() && !attributes.changeRequisitonProhibited)
           this.showDeviceRequisitionRemoraPrompt_(
               'deviceRequisitionRemoraPromptText', 'remora');
       } else if (name == ACCELERATOR_APP_LAUNCH_BAILOUT) {
         if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
           chrome.send('cancelAppLaunch');
-        if (currentStepId == SCREEN_ARC_KIOSK_SPLASH)
-          chrome.send('cancelArcKioskLaunch');
       } else if (name == ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG) {
         if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
           chrome.send('networkConfigRequest');
@@ -546,6 +518,12 @@ cr.define('cr.ui.login', function() {
       // Need to do this before calling newStep.onBeforeShow() so that new step
       // is back in DOM tree and has correct offsetHeight / offsetWidth.
       newStep.hidden = false;
+
+      if (newStep.getOobeUIInitialState) {
+        this.setOobeUIState(newStep.getOobeUIInitialState());
+      } else {
+        this.setOobeUIState(OOBE_UI_STATE.HIDDEN);
+      }
 
       if (newStep.onBeforeShow)
         newStep.onBeforeShow(screenData);
@@ -689,8 +667,7 @@ cr.define('cr.ui.login', function() {
       // screen.
       // TODO: remove this special case when a better fix is found for the race
       // condition. This if statement was introduced to fix http://b/113786350.
-      if ((this.currentScreen.id == SCREEN_APP_LAUNCH_SPLASH ||
-           this.currentScreen.id == SCREEN_ARC_KIOSK_SPLASH) &&
+      if (this.currentScreen.id == SCREEN_APP_LAUNCH_SPLASH &&
           screen.id == SCREEN_GAIA_SIGNIN) {
         console.log(
             this.currentScreen.id +
@@ -742,6 +719,7 @@ cr.define('cr.ui.login', function() {
     registerScreen: function(el, attributes) {
       var screenId = el.id;
       assert(screenId);
+      assert(!this.screens_.includes(screenId), "Duplicate screen ID.");
 
       this.screens_.push(screenId);
       this.screensAttributes_.push(attributes);
@@ -814,13 +792,18 @@ cr.define('cr.ui.login', function() {
         if (screen.updateLocalizedContent)
           screen.updateLocalizedContent();
       }
+      var dynamicElements = document.getElementsByClassName('i18n-dynamic');
+      for (var child of dynamicElements) {
+        if (typeof(child.i18nUpdateLocale) === 'function') {
+          child.i18nUpdateLocale();
+        }
+      }
       var isInTabletMode = loadTimeData.getBoolean('isInTabletMode');
       this.setTabletModeState_(isInTabletMode);
 
       var currentScreenId = this.screens_[this.currentStep_];
       var currentScreen = $(currentScreenId);
       this.updateScreenSize(currentScreen);
-      ++this.reloadContentNumEvents_;
     },
 
     /**
@@ -1005,11 +988,10 @@ cr.define('cr.ui.login', function() {
      * Notifies the C++ handler in views login that the OOBE signin state has
      * been updated. This information is primarily used by the login shelf to
      * update button visibility state.
-     * @param {number} state The state (see SIGNIN_UI_STATE) of the OOBE UI.
+     * @param {number} state The state (see OOBE_UI_STATE) of the OOBE UI.
      */
-    setSigninUIState: function(state) {
-      if (Oobe.getInstance().showingViewsLogin)
-        chrome.send('updateSigninUIState', [state]);
+    setOobeUIState: function(state) {
+      chrome.send('updateOobeUIState', [state]);
     },
 
   };
@@ -1089,7 +1071,7 @@ cr.define('cr.ui.login', function() {
   DisplayManager.showSigninUI = function(opt_email) {
     var currentScreenId = Oobe.getInstance().currentScreen.id;
     if (currentScreenId == SCREEN_GAIA_SIGNIN)
-      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.GAIA_SIGNIN);
+      Oobe.getInstance().setOobeUIState(OOBE_UI_STATE.GAIA_SIGNIN);
     chrome.send('showAddUser', [opt_email]);
   };
 

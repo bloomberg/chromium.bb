@@ -19,6 +19,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -106,18 +107,18 @@ class PrioritizedTaskRunnerTest : public testing::Test {
 };
 
 TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyThreadCheck) {
-  auto task_runner =
-      base::CreateSequencedTaskRunner(base::TaskTraits(base::ThreadPool()));
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
   auto prioritized_task_runner =
       base::MakeRefCounted<PrioritizedTaskRunner>(task_runner);
 
   base::RunLoop run_loop;
 
-  auto thread_check = [](scoped_refptr<base::TaskRunner> expected_task_runner,
-                         base::OnceClosure callback) {
-    EXPECT_TRUE(expected_task_runner->RunsTasksInCurrentSequence());
-    std::move(callback).Run();
-  };
+  auto thread_check =
+      [](scoped_refptr<base::SequencedTaskRunner> expected_task_runner,
+         base::OnceClosure callback) {
+        EXPECT_TRUE(expected_task_runner->RunsTasksInCurrentSequence());
+        std::move(callback).Run();
+      };
 
   prioritized_task_runner->PostTaskAndReply(
       FROM_HERE,
@@ -130,8 +131,7 @@ TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyThreadCheck) {
 }
 
 TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyRunsBothTasks) {
-  auto task_runner =
-      base::CreateSequencedTaskRunner(base::TaskTraits(base::ThreadPool()));
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
   auto prioritized_task_runner =
       base::MakeRefCounted<PrioritizedTaskRunner>(task_runner);
 
@@ -149,8 +149,7 @@ TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyRunsBothTasks) {
 }
 
 TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyTestPriority) {
-  auto task_runner =
-      base::CreateSequencedTaskRunner(base::TaskTraits(base::ThreadPool()));
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
   auto prioritized_task_runner =
       base::MakeRefCounted<PrioritizedTaskRunner>(task_runner);
 
@@ -190,8 +189,7 @@ TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyTestPriority) {
 
 // Ensure that replies are run in priority order.
 TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyTestReplyPriority) {
-  auto task_runner =
-      base::CreateSequencedTaskRunner(base::TaskTraits(base::ThreadPool()));
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
   auto prioritized_task_runner =
       base::MakeRefCounted<PrioritizedTaskRunner>(task_runner);
 
@@ -237,8 +235,7 @@ TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyTestReplyPriority) {
 }
 
 TEST_F(PrioritizedTaskRunnerTest, PriorityOverflow) {
-  auto task_runner =
-      base::CreateSequencedTaskRunner(base::TaskTraits(base::ThreadPool()));
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
   auto prioritized_task_runner =
       base::MakeRefCounted<PrioritizedTaskRunner>(task_runner);
 
@@ -281,8 +278,7 @@ TEST_F(PrioritizedTaskRunnerTest, PriorityOverflow) {
 }
 
 TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyWithResultRunsBothTasks) {
-  auto task_runner =
-      base::CreateSequencedTaskRunner(base::TaskTraits(base::ThreadPool()));
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
   auto prioritized_task_runner =
       base::MakeRefCounted<PrioritizedTaskRunner>(task_runner);
 
@@ -300,8 +296,7 @@ TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyWithResultRunsBothTasks) {
 }
 
 TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyWithResultTestPriority) {
-  auto task_runner =
-      base::CreateSequencedTaskRunner(base::TaskTraits(base::ThreadPool()));
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
   auto prioritized_task_runner =
       base::MakeRefCounted<PrioritizedTaskRunner>(task_runner);
 
@@ -339,8 +334,7 @@ TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyWithResultTestPriority) {
 }
 
 TEST_F(PrioritizedTaskRunnerTest, OrderSamePriorityByPostOrder) {
-  auto task_runner =
-      base::CreateSequencedTaskRunner(base::TaskTraits(base::ThreadPool()));
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner({});
   auto prioritized_task_runner =
       base::MakeRefCounted<PrioritizedTaskRunner>(task_runner);
 

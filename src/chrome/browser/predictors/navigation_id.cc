@@ -11,8 +11,8 @@
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "components/prefs/pref_service.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
@@ -22,18 +22,25 @@ NavigationID::NavigationID() : tab_id(SessionID::InvalidValue()) {}
 
 NavigationID::NavigationID(const NavigationID& other)
     : tab_id(other.tab_id),
+      ukm_source_id(other.ukm_source_id),
       main_frame_url(other.main_frame_url),
       creation_time(other.creation_time) {}
 
+// TODO(crbug.com/1061899): The code assumes that it was called on behalf of
+// the active frame, which might not be true. Pass RenderFrameHost reference
+// hereto avoid confusion.
 NavigationID::NavigationID(content::WebContents* web_contents)
-    : tab_id(SessionTabHelper::IdForTab(web_contents)),
+    : tab_id(sessions::SessionTabHelper::IdForTab(web_contents)),
+      ukm_source_id(web_contents->GetMainFrame()->GetPageUkmSourceId()),
       main_frame_url(web_contents->GetLastCommittedURL()),
       creation_time(base::TimeTicks::Now()) {}
 
 NavigationID::NavigationID(content::WebContents* web_contents,
+                           ukm::SourceId ukm_source_id,
                            const GURL& main_frame_url,
                            const base::TimeTicks& creation_time)
-    : tab_id(SessionTabHelper::IdForTab(web_contents)),
+    : tab_id(sessions::SessionTabHelper::IdForTab(web_contents)),
+      ukm_source_id(ukm_source_id),
       main_frame_url(main_frame_url),
       creation_time(creation_time) {}
 
@@ -49,7 +56,12 @@ bool NavigationID::operator<(const NavigationID& rhs) const {
 
 bool NavigationID::operator==(const NavigationID& rhs) const {
   DCHECK(is_valid() && rhs.is_valid());
-  return tab_id == rhs.tab_id && main_frame_url == rhs.main_frame_url;
+  return tab_id == rhs.tab_id && ukm_source_id == rhs.ukm_source_id &&
+         main_frame_url == rhs.main_frame_url;
+}
+
+bool NavigationID::operator!=(const NavigationID& rhs) const {
+  return !(*this == rhs);
 }
 
 }  // namespace predictors

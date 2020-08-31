@@ -5,9 +5,10 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/blink/public/common/features.h"
@@ -26,6 +27,8 @@ namespace blink {
 namespace scheduler {
 
 namespace {
+
+using blink::FrameScheduler;
 
 constexpr double kDefaultBackgroundBudgetAsCPUFraction = .01;
 constexpr double kDefaultMaxBackgroundBudgetLevelInSeconds = 3;
@@ -480,6 +483,24 @@ void PageSchedulerImpl::OnTraceLogEnabled() {
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     frame_scheduler->OnTraceLogEnabled();
   }
+}
+
+bool PageSchedulerImpl::IsWaitingForMainFrameContentfulPaint() const {
+  return std::any_of(frame_schedulers_.begin(), frame_schedulers_.end(),
+                     [](const FrameSchedulerImpl* fs) {
+                       return fs->IsWaitingForContentfulPaint() &&
+                              fs->GetFrameType() ==
+                                  FrameScheduler::FrameType::kMainFrame;
+                     });
+}
+
+bool PageSchedulerImpl::IsWaitingForMainFrameMeaningfulPaint() const {
+  return std::any_of(frame_schedulers_.begin(), frame_schedulers_.end(),
+                     [](const FrameSchedulerImpl* fs) {
+                       return fs->IsWaitingForMeaningfulPaint() &&
+                              fs->GetFrameType() ==
+                                  FrameScheduler::FrameType::kMainFrame;
+                     });
 }
 
 void PageSchedulerImpl::AsValueInto(

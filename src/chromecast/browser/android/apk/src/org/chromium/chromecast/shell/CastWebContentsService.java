@@ -13,13 +13,14 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
+import androidx.core.app.NotificationCompat;
+
+import org.chromium.base.Function;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.chromecast.base.Controller;
-import org.chromium.chromecast.base.Function;
 import org.chromium.chromecast.base.Observable;
 import org.chromium.chromecast.base.Observers;
 import org.chromium.content.browser.MediaSessionImpl;

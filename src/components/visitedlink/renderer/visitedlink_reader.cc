@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "third_party/blink/public/web/web_view.h"
 
 using blink::WebView;
@@ -21,9 +21,11 @@ VisitedLinkReader::~VisitedLinkReader() {
   FreeTable();
 }
 
-base::Callback<void(mojo::PendingReceiver<mojom::VisitedLinkNotificationSink>)>
+base::RepeatingCallback<
+    void(mojo::PendingReceiver<mojom::VisitedLinkNotificationSink>)>
 VisitedLinkReader::GetBindCallback() {
-  return base::Bind(&VisitedLinkReader::Bind, weak_factory_.GetWeakPtr());
+  return base::BindRepeating(&VisitedLinkReader::Bind,
+                             weak_factory_.GetWeakPtr());
 }
 
 // Initializes the table with the given shared memory handle. This memory is

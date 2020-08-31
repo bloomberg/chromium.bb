@@ -12,10 +12,13 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
 class InfoBarService;
-class PermissionPromptAndroid;
 
 namespace content {
 class WebContents;
+}
+
+namespace permissions {
+class PermissionPromptAndroid;
 }
 
 // An InfoBar that displays a permission request.
@@ -28,7 +31,8 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~GroupedPermissionInfoBarDelegate() override;
 
   static infobars::InfoBar* Create(
-      const base::WeakPtr<PermissionPromptAndroid>& permission_prompt,
+      const base::WeakPtr<permissions::PermissionPromptAndroid>&
+          permission_prompt,
       InfoBarService* infobar_service);
 
   size_t PermissionCount() const;
@@ -44,15 +48,18 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Returns the secondary string to show in the infobar in the expanded state.
   base::string16 GetDescriptionText() const;
 
-  // InfoBarDelegate:
-  int GetIconId() const override;
+  // Whether the secondary button should open site settings.
+  bool ShouldSecondaryButtonOpenSettings() const;
 
   // ConfirmInfoBarDelegate:
+  int GetIconId() const override;
+  base::string16 GetLinkText() const override;
+  GURL GetLinkURL() const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
+  void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;
   bool Accept() override;
   bool Cancel() override;
-  void InfoBarDismissed() override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
 
   // Returns true if we should show the permission request as a mini-infobar.
   static bool ShouldShowMiniInfobar(content::WebContents* web_contents,
@@ -60,7 +67,8 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   GroupedPermissionInfoBarDelegate(
-      const base::WeakPtr<PermissionPromptAndroid>& permission_prompt,
+      const base::WeakPtr<permissions::PermissionPromptAndroid>&
+          permission_prompt,
       InfoBarService* infobar_service);
 
   // ConfirmInfoBarDelegate:
@@ -71,7 +79,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   // InfoBarDelegate:
   bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
 
-  base::WeakPtr<PermissionPromptAndroid> permission_prompt_;
+  base::WeakPtr<permissions::PermissionPromptAndroid> permission_prompt_;
   InfoBarService* infobar_service_;
   bool details_expanded_;
 

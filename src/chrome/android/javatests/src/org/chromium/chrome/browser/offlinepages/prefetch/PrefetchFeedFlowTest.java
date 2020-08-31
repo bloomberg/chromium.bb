@@ -25,23 +25,24 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.background_task_scheduler.ChromeNativeBackgroundTaskDelegate;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.feed.TestNetworkClient;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
 import org.chromium.chrome.browser.profiles.ProfileKey;
-import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ReducedModeNativeTestRule;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.components.download.NetworkStatusListenerAndroid;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.gcm_driver.instance_id.FakeInstanceIDWithSubtype;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
@@ -246,7 +247,7 @@ public class PrefetchFeedFlowTest {
 
         // Register Offline Page observer and enable limitless prefetching.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            OfflinePageBridge.getForProfileKey(ProfileKey.getLastUsedProfileKey())
+            OfflinePageBridge.getForProfileKey(ProfileKey.getLastUsedRegularProfileKey())
                     .addObserver(new OfflinePageBridge.OfflinePageModelObserver() {
                         @Override
                         public void offlinePageAdded(OfflinePageItem addedPage) {
@@ -308,6 +309,7 @@ public class PrefetchFeedFlowTest {
     private void runAndWaitForBackgroundTask() throws Throwable {
         final CallbackHelper finished = new CallbackHelper();
         PrefetchBackgroundTask task = new PrefetchBackgroundTask();
+        task.setDelegate(new ChromeNativeBackgroundTaskDelegate());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TaskParameters.Builder builder =
                     TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
@@ -476,6 +478,7 @@ public class PrefetchFeedFlowTest {
     @Test
     @MediumTest
     @Feature({"OfflinePrefetchFeed"})
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1060685
     public void testPrefetchPageReadyLater_FullBrowser() throws Throwable {
         doSetUp(/*isReducedMode=*/false);
         doTestPrefetchPageReadyLater();

@@ -7,8 +7,39 @@
  * 'site-list' shows a list of Allowed and Blocked sites for a given
  * category.
  */
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
+import '../settings_shared_css.m.js';
+import './add_site_dialog.js';
+import './edit_exception_dialog.js';
+import './site_list_entry.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.js';
+
+// <if expr="chromeos">
+import {AndroidInfoBrowserProxyImpl, AndroidSmsInfo} from './android_info_browser_proxy.js';
+// </if>
+import {ContentSetting, ContentSettingsTypes, INVALID_CATEGORY_SUBTYPE} from './constants.js';
+import {SiteSettingsBehavior} from './site_settings_behavior.js';
+import {RawSiteException, SiteException, SiteSettingsPrefsBrowserProxyImpl} from './site_settings_prefs_browser_proxy.js';
+
+
 Polymer({
   is: 'site-list',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [
     SiteSettingsBehavior,
@@ -20,7 +51,6 @@ Polymer({
     /**
      * Some content types (like Location) do not allow the user to manually
      * edit the exception list from within Settings.
-     * @private
      */
     readOnlyList: {
       type: Boolean,
@@ -47,7 +77,7 @@ Polymer({
      */
     sites: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -59,7 +89,7 @@ Polymer({
      */
     categorySubtype: {
       type: String,
-      value: settings.INVALID_CATEGORY_SUBTYPE,
+      value: INVALID_CATEGORY_SUBTYPE,
     },
 
     /** @private */
@@ -128,7 +158,7 @@ Polymer({
   /**
    * Android messages info object containing messages feature state and
    * exception origin.
-   * @private {?settings.AndroidSmsInfo}
+   * @private {?AndroidSmsInfo}
    */
   androidSmsInfo_: null,
   // </if>
@@ -142,7 +172,7 @@ Polymer({
   observers: ['configureWidget_(category, categorySubtype)'],
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener(
         'contentSettingSitePermissionChanged',
         this.siteWithinCategoryChanged_.bind(this));
@@ -163,7 +193,7 @@ Polymer({
    * @param {string} site The site that changed.
    * @private
    */
-  siteWithinCategoryChanged_: function(category, site) {
+  siteWithinCategoryChanged_(category, site) {
     if (category == this.category) {
       this.configureWidget_();
     }
@@ -175,12 +205,12 @@ Polymer({
    * Another message is sent when the *last* incognito window closes.
    * @private
    */
-  onIncognitoStatusChanged_: function(hasIncognito) {
+  onIncognitoStatusChanged_(hasIncognito) {
     this.hasIncognito_ = hasIncognito;
 
     // The SESSION_ONLY list won't have any incognito exceptions. (Minor
     // optimization, not required).
-    if (this.categorySubtype == settings.ContentSetting.SESSION_ONLY) {
+    if (this.categorySubtype == ContentSetting.SESSION_ONLY) {
       return;
     }
 
@@ -193,7 +223,7 @@ Polymer({
    * Configures the action menu, visibility of the widget and shows the list.
    * @private
    */
-  configureWidget_: function() {
+  configureWidget_() {
     if (this.category == undefined) {
       return;
     }
@@ -201,8 +231,7 @@ Polymer({
     // The observer for All Sites fires before the attached/ready event, so
     // initialize this here.
     if (this.browserProxy_ === undefined) {
-      this.browserProxy_ =
-          settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
+      this.browserProxy_ = SiteSettingsPrefsBrowserProxyImpl.getInstance();
     }
 
     this.setUpActionMenu_();
@@ -216,9 +245,8 @@ Polymer({
     // </if>
 
     // The Session permissions are only for cookies.
-    if (this.categorySubtype == settings.ContentSetting.SESSION_ONLY) {
-      this.$.category.hidden =
-          this.category != settings.ContentSettingsTypes.COOKIES;
+    if (this.categorySubtype == ContentSetting.SESSION_ONLY) {
+      this.$.category.hidden = this.category != ContentSettingsTypes.COOKIES;
     }
   },
 
@@ -227,7 +255,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasSites_: function() {
+  hasSites_() {
     return this.sites.length > 0;
   },
 
@@ -237,19 +265,18 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeShowAddSiteButton_: function() {
+  computeShowAddSiteButton_() {
     return !(
         this.readOnlyList ||
-        (this.category ==
-             settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE &&
-         this.categorySubtype == settings.ContentSetting.ALLOW));
+        (this.category == ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE &&
+         this.categorySubtype == ContentSetting.ALLOW));
   },
 
   /**
    * @return {boolean}
    * @private
    */
-  showNoSearchResults_: function() {
+  showNoSearchResults_() {
     return this.sites.length > 0 && this.getFilteredSites_().length == 0;
   },
 
@@ -257,15 +284,15 @@ Polymer({
    * A handler for the Add Site button.
    * @private
    */
-  onAddSiteTap_: function() {
+  onAddSiteTap_() {
     assert(!this.readOnlyList);
     this.showAddSiteDialog_ = true;
   },
 
   /** @private */
-  onAddSiteDialogClosed_: function() {
+  onAddSiteDialogClosed_() {
     this.showAddSiteDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.$.addSite));
+    focusWithoutInk(assert(this.$.addSite));
   },
 
   /**
@@ -274,7 +301,7 @@ Polymer({
    * @param {!CustomEvent<!{target: HTMLElement, text: string}>} e
    * @private
    */
-  onShowTooltip_: function(e) {
+  onShowTooltip_(e) {
     this.tooltipText_ = e.detail.text;
     const target = e.detail.target;
     // paper-tooltip normally determines the target from the |for| property,
@@ -303,16 +330,15 @@ Polymer({
    * property. Returns a promise that resolves when load is complete.
    * @private
    */
-  updateAndroidSmsInfo_: function() {
+  updateAndroidSmsInfo_() {
     // |androidSmsInfo_| is only relevant for NOTIFICATIONS category. Don't
     // bother fetching it for other categories.
-    if (this.category === settings.ContentSettingsTypes.NOTIFICATIONS &&
+    if (this.category === ContentSettingsTypes.NOTIFICATIONS &&
         loadTimeData.valueExists('multideviceAllowedByPolicy') &&
         loadTimeData.getBoolean('multideviceAllowedByPolicy') &&
         !this.androidSmsInfo_) {
-      const multideviceSetupProxy =
-          settings.MultiDeviceBrowserProxyImpl.getInstance();
-      return multideviceSetupProxy.getAndroidSmsInfo().then((info) => {
+      const androidInfoBrowserProxy = AndroidInfoBrowserProxyImpl.getInstance();
+      return androidInfoBrowserProxy.getAndroidSmsInfo().then((info) => {
         this.androidSmsInfo_ = info;
       });
     }
@@ -325,7 +351,7 @@ Polymer({
    * the required exception item.
    * @private
    */
-  processExceptionsForAndroidSmsInfo_: function(sites) {
+  processExceptionsForAndroidSmsInfo_(sites) {
     if (!this.androidSmsInfo_ || !this.androidSmsInfo_.enabled) {
       return sites;
     }
@@ -343,7 +369,7 @@ Polymer({
    * Populate the sites list for display.
    * @private
    */
-  populateList_: function() {
+  populateList_() {
     this.browserProxy_.getExceptionList(this.category).then(exceptionList => {
       this.processExceptions_(exceptionList);
       this.closeActionMenu_();
@@ -355,13 +381,12 @@ Polymer({
    * @param {!Array<RawSiteException>} exceptionList
    * @private
    */
-  processExceptions_: function(exceptionList) {
-    let sites =
-        exceptionList
-            .filter(
-                site => site.setting != settings.ContentSetting.DEFAULT &&
-                    site.setting == this.categorySubtype)
-            .map(site => this.expandSiteException(site));
+  processExceptions_(exceptionList) {
+    let sites = exceptionList
+                    .filter(
+                        site => site.setting != ContentSetting.DEFAULT &&
+                            site.setting == this.categorySubtype)
+                    .map(site => this.expandSiteException(site));
 
     // <if expr="chromeos">
     sites = this.processExceptionsForAndroidSmsInfo_(sites);
@@ -373,14 +398,12 @@ Polymer({
    * Set up the values to use for the action menu.
    * @private
    */
-  setUpActionMenu_: function() {
-    this.showAllowAction_ =
-        this.categorySubtype != settings.ContentSetting.ALLOW;
-    this.showBlockAction_ =
-        this.categorySubtype != settings.ContentSetting.BLOCK;
+  setUpActionMenu_() {
+    this.showAllowAction_ = this.categorySubtype != ContentSetting.ALLOW;
+    this.showBlockAction_ = this.categorySubtype != ContentSetting.BLOCK;
     this.showSessionOnlyAction_ =
-        this.categorySubtype != settings.ContentSetting.SESSION_ONLY &&
-        this.category == settings.ContentSettingsTypes.COOKIES;
+        this.categorySubtype != ContentSetting.SESSION_ONLY &&
+        this.category == ContentSettingsTypes.COOKIES;
   },
 
   /**
@@ -388,7 +411,7 @@ Polymer({
    *     currently active site.
    * @private
    */
-  showSessionOnlyActionForSite_: function() {
+  showSessionOnlyActionForSite_() {
     // It makes no sense to show "clear on exit" for exceptions that only apply
     // to incognito. It gives the impression that they might under some
     // circumstances not be cleared on exit, which isn't true.
@@ -400,10 +423,10 @@ Polymer({
   },
 
   /**
-   * @param {!settings.ContentSetting} contentSetting
+   * @param {!ContentSetting} contentSetting
    * @private
    */
-  setContentSettingForActionMenuSite_: function(contentSetting) {
+  setContentSettingForActionMenuSite_(contentSetting) {
     assert(this.actionMenuSite_);
     this.browserProxy.setCategoryPermissionForPattern(
         this.actionMenuSite_.origin, this.actionMenuSite_.embeddingOrigin,
@@ -411,26 +434,25 @@ Polymer({
   },
 
   /** @private */
-  onAllowTap_: function() {
-    this.setContentSettingForActionMenuSite_(settings.ContentSetting.ALLOW);
+  onAllowTap_() {
+    this.setContentSettingForActionMenuSite_(ContentSetting.ALLOW);
     this.closeActionMenu_();
   },
 
   /** @private */
-  onBlockTap_: function() {
-    this.setContentSettingForActionMenuSite_(settings.ContentSetting.BLOCK);
+  onBlockTap_() {
+    this.setContentSettingForActionMenuSite_(ContentSetting.BLOCK);
     this.closeActionMenu_();
   },
 
   /** @private */
-  onSessionOnlyTap_: function() {
-    this.setContentSettingForActionMenuSite_(
-        settings.ContentSetting.SESSION_ONLY);
+  onSessionOnlyTap_() {
+    this.setContentSettingForActionMenuSite_(ContentSetting.SESSION_ONLY);
     this.closeActionMenu_();
   },
 
   /** @private */
-  onEditTap_: function() {
+  onEditTap_() {
     // Close action menu without resetting |this.actionMenuSite_| since it is
     // bound to the dialog.
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu')).close();
@@ -438,7 +460,7 @@ Polymer({
   },
 
   /** @private */
-  onEditExceptionDialogClosed_: function() {
+  onEditExceptionDialogClosed_() {
     this.showEditExceptionDialog_ = false;
     this.actionMenuSite_ = null;
     if (this.activeDialogAnchor_) {
@@ -448,7 +470,7 @@ Polymer({
   },
 
   /** @private */
-  onResetTap_: function() {
+  onResetTap_() {
     const site = this.actionMenuSite_;
     assert(site);
     this.browserProxy.resetCategoryPermissionForPattern(
@@ -460,7 +482,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onShowActionMenu_: function(e) {
+  onShowActionMenu_(e) {
     this.activeDialogAnchor_ = /** @type {!HTMLElement} */ (e.detail.anchor);
     this.actionMenuSite_ = e.detail.model;
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
@@ -468,7 +490,7 @@ Polymer({
   },
 
   /** @private */
-  closeActionMenu_: function() {
+  closeActionMenu_() {
     this.actionMenuSite_ = null;
     this.activeDialogAnchor_ = null;
     const actionMenu =
@@ -482,7 +504,7 @@ Polymer({
    * @return {!Array<!SiteException>}
    * @private
    */
-  getFilteredSites_: function() {
+  getFilteredSites_() {
     if (!this.searchFilter) {
       return this.sites.slice();
     }

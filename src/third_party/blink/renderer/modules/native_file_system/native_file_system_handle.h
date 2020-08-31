@@ -11,7 +11,7 @@
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -22,7 +22,7 @@ class ExecutionContext;
 class FileSystemHandlePermissionDescriptor;
 
 class NativeFileSystemHandle : public ScriptWrappable,
-                               public ContextLifecycleObserver {
+                               public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(NativeFileSystemHandle);
 
@@ -42,6 +42,8 @@ class NativeFileSystemHandle : public ScriptWrappable,
   ScriptPromise requestPermission(ScriptState*,
                                   const FileSystemHandlePermissionDescriptor*);
 
+  ScriptPromise isSameEntry(ScriptState*, NativeFileSystemHandle* other);
+
   // Grab a handle to a transfer token. This may return an invalid PendingRemote
   // if the context is already destroyed.
   virtual mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>
@@ -57,6 +59,10 @@ class NativeFileSystemHandle : public ScriptWrappable,
       bool writable,
       base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr,
                               mojom::blink::PermissionStatus)>) = 0;
+  virtual void IsSameEntryImpl(
+      mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> other,
+      base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr,
+                              bool)>) = 0;
 
   String name_;
 };

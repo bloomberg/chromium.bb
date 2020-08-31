@@ -16,8 +16,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabUtils;
 
 /**
  * Provides ARCore classes access to java-related app functionality.
@@ -79,7 +80,7 @@ public class ArCoreJavaUtils {
         if (DEBUG_LOGS) Log.i(TAG, "startSession");
         mArImmersiveOverlay = new ArImmersiveOverlay();
         sActiveSessionInstance = this;
-        mArImmersiveOverlay.show(((TabImpl) tab).getActivity(), this, useOverlay);
+        mArImmersiveOverlay.show((ChromeActivity) TabUtils.getActivity(tab), this, useOverlay);
     }
 
     @CalledByNative
@@ -111,11 +112,12 @@ public class ArCoreJavaUtils {
                 mNativeArCoreJavaUtils, ArCoreJavaUtils.this, surface, rotation, width, height);
     }
 
-    public void onDrawingSurfaceTouch(boolean isTouching, float x, float y) {
+    public void onDrawingSurfaceTouch(
+            boolean isPrimary, boolean isTouching, int pointerId, float x, float y) {
         if (DEBUG_LOGS) Log.i(TAG, "onDrawingSurfaceTouch");
         if (mNativeArCoreJavaUtils == 0) return;
-        ArCoreJavaUtilsJni.get().onDrawingSurfaceTouch(
-                mNativeArCoreJavaUtils, ArCoreJavaUtils.this, isTouching, x, y);
+        ArCoreJavaUtilsJni.get().onDrawingSurfaceTouch(mNativeArCoreJavaUtils, ArCoreJavaUtils.this,
+                isPrimary, isTouching, pointerId, x, y);
     }
 
     public void onDrawingSurfaceDestroyed() {
@@ -139,7 +141,7 @@ public class ArCoreJavaUtils {
         void onDrawingSurfaceReady(long nativeArCoreJavaUtils, ArCoreJavaUtils caller,
                 Surface surface, int rotation, int width, int height);
         void onDrawingSurfaceTouch(long nativeArCoreJavaUtils, ArCoreJavaUtils caller,
-                boolean touching, float x, float y);
+                boolean primary, boolean touching, int pointerId, float x, float y);
         void onDrawingSurfaceDestroyed(long nativeArCoreJavaUtils, ArCoreJavaUtils caller);
     }
 }

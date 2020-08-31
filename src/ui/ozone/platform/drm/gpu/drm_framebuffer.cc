@@ -6,8 +6,9 @@
 
 #include <utility>
 
-#include "ui/ozone/common/linux/drm_util_linux.h"
-#include "ui/ozone/common/linux/gbm_buffer.h"
+#include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/linux/drm_util_linux.h"
+#include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 
@@ -28,8 +29,18 @@ scoped_refptr<DrmFramebuffer> DrmFramebuffer::AddFramebuffer(
       modifiers[i] = params.modifier;
   }
 
+  const auto fourcc_format = GetBufferFormatFromFourCCFormat(params.format);
+  const uint32_t opaque_format =
+      GetFourCCFormatForOpaqueFramebuffer(fourcc_format);
+  // Intel Display Controller won't support AR/B30 framebuffers, only XR/B30,
+  // but that doesn't matter because anyway those two bits of alpha are useless;
+  // use the opaque directly in this case.
+  const bool force_opaque = AlphaBitsForBufferFormat(fourcc_format) == 2;
+
+  const auto drm_format = force_opaque ? opaque_format : params.format;
+
   uint32_t framebuffer_id = 0;
-  if (!drm_device->AddFramebuffer2(params.width, params.height, params.format,
+  if (!drm_device->AddFramebuffer2(params.width, params.height, drm_format,
                                    params.handles, params.strides,
                                    params.offsets, modifiers, &framebuffer_id,
                                    params.flags)) {
@@ -37,10 +48,8 @@ scoped_refptr<DrmFramebuffer> DrmFramebuffer::AddFramebuffer(
     return nullptr;
   }
 
-  uint32_t opaque_format = GetFourCCFormatForOpaqueFramebuffer(
-      GetBufferFormatFromFourCCFormat(params.format));
   uint32_t opaque_framebuffer_id = 0;
-  if (opaque_format != params.format &&
+  if (opaque_format != drm_format &&
       !drm_device->AddFramebuffer2(params.width, params.height, opaque_format,
                                    params.handles, params.strides,
                                    params.offsets, modifiers,
@@ -51,22 +60,23 @@ scoped_refptr<DrmFramebuffer> DrmFramebuffer::AddFramebuffer(
   }
 
   return base::MakeRefCounted<DrmFramebuffer>(
-      std::move(drm_device), framebuffer_id, params.format,
-      opaque_framebuffer_id, opaque_format, params.modifier,
-      params.preferred_modifiers, gfx::Size(params.width, params.height));
+      std::move(drm_device), framebuffer_id, drm_format, opaque_framebuffer_id,
+      opaque_format, params.modifier, params.preferred_modifiers,
+      gfx::Size(params.width, params.height));
 }
 
 // static
 scoped_refptr<DrmFramebuffer> DrmFramebuffer::AddFramebuffer(
     scoped_refptr<DrmDevice> drm,
     const GbmBuffer* buffer,
+    const gfx::Size& framebuffer_size,
     std::vector<uint64_t> preferred_modifiers) {
-  gfx::Size size = buffer->GetSize();
+  DCHECK(gfx::Rect(buffer->GetSize()).Contains(gfx::Rect(framebuffer_size)));
   AddFramebufferParams params;
   params.format = buffer->GetFormat();
   params.modifier = buffer->GetFormatModifier();
-  params.width = size.width();
-  params.height = size.height();
+  params.width = framebuffer_size.width();
+  params.height = framebuffer_size.height();
   params.num_planes = buffer->GetNumPlanes();
   params.preferred_modifiers = preferred_modifiers;
   for (size_t i = 0; i < params.num_planes; ++i) {

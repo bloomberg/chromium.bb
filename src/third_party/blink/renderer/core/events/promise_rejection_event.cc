@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/events/promise_rejection_event.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_promise_rejection_event_init.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 
@@ -54,7 +55,7 @@ bool PromiseRejectionEvent::CanBeDispatchedInWorld(
   return world_->GetWorldId() == world.GetWorldId();
 }
 
-void PromiseRejectionEvent::Trace(blink::Visitor* visitor) {
+void PromiseRejectionEvent::Trace(Visitor* visitor) {
   visitor->Trace(promise_);
   visitor->Trace(reason_);
   Event::Trace(visitor);

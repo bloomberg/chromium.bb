@@ -4,6 +4,9 @@
 
 #include "ui/views/controls/button/button_controller.h"
 
+#include <memory>
+#include <utility>
+
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/button/button_controller_delegate.h"
@@ -113,6 +116,9 @@ bool ButtonController::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void ButtonController::OnGestureEvent(ui::GestureEvent* event) {
+  if (button_->state() == Button::STATE_DISABLED)
+    return;
+
   if (event->type() == ui::ET_GESTURE_TAP &&
       button_controller_delegate_->IsTriggerableEvent(*event)) {
     // A GESTURE_END event is issued immediately after ET_GESTURE_TAP and will

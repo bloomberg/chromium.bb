@@ -48,9 +48,9 @@ static inline V4L2m2mContext *ctx_to_m2mctx(V4L2Context *ctx)
         container_of(ctx, V4L2m2mContext, capture);
 }
 
-static inline AVClass *logger(V4L2Context *ctx)
+static inline AVCodecContext *logger(V4L2Context *ctx)
 {
-    return ctx_to_m2mctx(ctx)->priv;
+    return ctx_to_m2mctx(ctx)->avctx;
 }
 
 static inline unsigned int v4l2_get_width(struct v4l2_format *fmt)
@@ -154,6 +154,7 @@ static inline void v4l2_save_to_context(V4L2Context* ctx, struct v4l2_format_upd
 }
 
 /**
+ * handle resolution change event and end of stream event
  * returns 1 if reinit was successful, negative if it failed
  * returns 0 if reinit was not executed
  */
@@ -168,6 +169,11 @@ static int v4l2_handle_event(V4L2Context *ctx)
     ret = ioctl(s->fd, VIDIOC_DQEVENT, &evt);
     if (ret < 0) {
         av_log(logger(ctx), AV_LOG_ERROR, "%s VIDIOC_DQEVENT\n", ctx->name);
+        return 0;
+    }
+
+    if (evt.type == V4L2_EVENT_EOS) {
+        ctx->done = 1;
         return 0;
     }
 
@@ -207,7 +213,7 @@ static int v4l2_handle_event(V4L2Context *ctx)
         ret = ff_v4l2_m2m_codec_full_reinit(s);
         if (ret) {
             av_log(logger(ctx), AV_LOG_ERROR, "v4l2_m2m_codec_full_reinit\n");
-            return -EINVAL;
+            return AVERROR(EINVAL);
         }
         goto reinit_run;
     }
@@ -221,7 +227,7 @@ static int v4l2_handle_event(V4L2Context *ctx)
         ret = ff_v4l2_m2m_codec_reinit(s);
         if (ret) {
             av_log(logger(ctx), AV_LOG_ERROR, "v4l2_m2m_codec_reinit\n");
-            return -EINVAL;
+            return AVERROR(EINVAL);
         }
         goto reinit_run;
     }
@@ -278,7 +284,7 @@ static V4L2Buffer* v4l2_dequeue_v4l2buf(V4L2Context *ctx, int timeout)
 {
     struct v4l2_plane planes[VIDEO_MAX_PLANES];
     struct v4l2_buffer buf = { 0 };
-    V4L2Buffer* avbuf = NULL;
+    V4L2Buffer *avbuf;
     struct pollfd pfd = {
         .events =  POLLIN | POLLRDNORM | POLLPRI | POLLOUT | POLLWRNORM, /* default blocking capture */
         .fd = ctx_to_m2mctx(ctx)->fd,
@@ -604,7 +610,7 @@ int ff_v4l2_context_enqueue_packet(V4L2Context* ctx, const AVPacket* pkt)
 
 int ff_v4l2_context_dequeue_frame(V4L2Context* ctx, AVFrame* frame, int timeout)
 {
-    V4L2Buffer* avbuf = NULL;
+    V4L2Buffer *avbuf;
 
     /*
      * timeout=-1 blocks until:
@@ -624,7 +630,7 @@ int ff_v4l2_context_dequeue_frame(V4L2Context* ctx, AVFrame* frame, int timeout)
 
 int ff_v4l2_context_dequeue_packet(V4L2Context* ctx, AVPacket* pkt)
 {
-    V4L2Buffer* avbuf = NULL;
+    V4L2Buffer *avbuf;
 
     /*
      * blocks until:
@@ -685,8 +691,7 @@ void ff_v4l2_context_release(V4L2Context* ctx)
     if (ret)
         av_log(logger(ctx), AV_LOG_WARNING, "V4L2 failed to unmap the %s buffers\n", ctx->name);
 
-    av_free(ctx->buffers);
-    ctx->buffers = NULL;
+    av_freep(&ctx->buffers);
 }
 
 int ff_v4l2_context_init(V4L2Context* ctx)
@@ -717,8 +722,8 @@ int ff_v4l2_context_init(V4L2Context* ctx)
     ctx->num_buffers = req.count;
     ctx->buffers = av_mallocz(ctx->num_buffers * sizeof(V4L2Buffer));
     if (!ctx->buffers) {
-            av_log(logger(ctx), AV_LOG_ERROR, "%s malloc enomem\n", ctx->name);
-            return AVERROR(ENOMEM);
+        av_log(logger(ctx), AV_LOG_ERROR, "%s malloc enomem\n", ctx->name);
+        return AVERROR(ENOMEM);
     }
 
     for (i = 0; i < req.count; i++) {
@@ -743,8 +748,7 @@ int ff_v4l2_context_init(V4L2Context* ctx)
 error:
     v4l2_release_buffers(ctx);
 
-    av_free(ctx->buffers);
-    ctx->buffers = NULL;
+    av_freep(&ctx->buffers);
 
     return ret;
 }

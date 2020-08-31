@@ -6,13 +6,17 @@
 
 #include "base/time/tick_clock.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
+#include "third_party/blink/renderer/core/events/touch_event.h"
+#include "third_party/blink/renderer/core/events/wheel_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
+namespace blink {
 namespace {
 const base::TickClock* g_clock_for_testing = nullptr;
 
@@ -20,9 +24,6 @@ static base::TimeTicks Now() {
   return g_clock_for_testing ? g_clock_for_testing->NowTicks()
                              : base::TimeTicks::Now();
 }
-}  // namespace
-
-namespace blink {
 
 bool ShouldLogEvent(const Event& event) {
   return event.type() == event_type_names::kPointerdown ||
@@ -33,11 +34,22 @@ bool ShouldLogEvent(const Event& event) {
 }
 
 bool IsEventTypeForEventTiming(const Event& event) {
-  return (event.IsMouseEvent() || event.IsPointerEvent() ||
-          event.IsTouchEvent() || event.IsKeyboardEvent() ||
-          event.IsWheelEvent() || event.IsInputEvent() ||
-          event.IsCompositionEvent()) &&
-         event.isTrusted();
+  // Include only trusted events of certain kinds. Explicitly excluding input
+  // events that are considered continuous: event types for which the user agent
+  // may have timer-based dispatch under certain conditions. These are excluded
+  // since EventCounts cannot be used to properly computed percentiles on those.
+  // See spec: https://wicg.github.io/event-timing/#sec-events-exposed
+  return event.isTrusted() &&
+         (IsA<MouseEvent>(event) || IsA<PointerEvent>(event) ||
+          IsA<TouchEvent>(event) || IsA<KeyboardEvent>(event) ||
+          IsA<WheelEvent>(event) || event.IsInputEvent() ||
+          event.IsCompositionEvent() || event.IsDragEvent()) &&
+         event.type() != event_type_names::kMousemove &&
+         event.type() != event_type_names::kPointermove &&
+         event.type() != event_type_names::kPointerrawupdate &&
+         event.type() != event_type_names::kTouchmove &&
+         event.type() != event_type_names::kWheel &&
+         event.type() != event_type_names::kDrag;
 }
 
 bool ShouldReportForEventTiming(WindowPerformance* performance) {
@@ -51,6 +63,8 @@ bool ShouldReportForEventTiming(WindowPerformance* performance) {
   return (!performance->IsEventTimingBufferFull() ||
           performance->HasObserverFor(PerformanceEntry::kEvent));
 }
+
+}  // namespace
 
 EventTiming::EventTiming(base::TimeTicks processing_start,
                          base::TimeTicks event_timestamp,
@@ -72,16 +86,15 @@ std::unique_ptr<EventTiming> EventTiming::Create(LocalDOMWindow* window,
   if (!should_report_for_event_timing && !should_log_event)
     return nullptr;
 
+  auto* pointer_event = DynamicTo<PointerEvent>(&event);
   base::TimeTicks event_timestamp =
-      event.IsPointerEvent() ? ToPointerEvent(&event)->OldestPlatformTimeStamp()
-                             : event.PlatformTimeStamp();
+      pointer_event ? pointer_event->OldestPlatformTimeStamp()
+                    : event.PlatformTimeStamp();
 
   base::TimeTicks processing_start = Now();
   if (should_log_event) {
-    Document* document =
-        DynamicTo<Document>(performance->GetExecutionContext());
     InteractiveDetector* interactive_detector =
-        InteractiveDetector::From(*document);
+        InteractiveDetector::From(*window->document());
     if (interactive_detector) {
       interactive_detector->HandleForInputDelay(event, event_timestamp,
                                                 processing_start);
@@ -95,9 +108,10 @@ std::unique_ptr<EventTiming> EventTiming::Create(LocalDOMWindow* window,
 }
 
 void EventTiming::DidDispatchEvent(const Event& event) {
+  Node* target = event.target() ? event.target()->ToNode() : nullptr;
   performance_->RegisterEventTiming(event.type(), event_timestamp_,
                                     processing_start_, Now(),
-                                    event.cancelable());
+                                    event.cancelable(), target);
 }
 
 // static

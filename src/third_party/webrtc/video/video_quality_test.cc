@@ -11,6 +11,10 @@
 
 #include <stdio.h>
 
+#if defined(WEBRTC_WIN)
+#include <conio.h>
+#endif
+
 #include <algorithm>
 #include <deque>
 #include <map>
@@ -22,10 +26,12 @@
 #include "api/rtc_event_log_output_file.h"
 #include "api/task_queue/default_task_queue_factory.h"
 #include "api/task_queue/task_queue_base.h"
+#include "api/test/create_frame_generator.h"
 #include "api/video/builtin_video_bitrate_allocator_factory.h"
 #include "api/video_codecs/video_encoder.h"
 #include "call/fake_network_pipe.h"
 #include "call/simulated_network.h"
+#include "media/base/media_constants.h"
 #include "media/engine/adm_helpers.h"
 #include "media/engine/encoder_simulcast_proxy.h"
 #include "media/engine/fake_video_codec_factory.h"
@@ -42,7 +48,6 @@
 #include "rtc_base/strings/string_builder.h"
 #include "rtc_base/task_queue_for_test.h"
 #include "test/platform_video_capturer.h"
-#include "test/run_loop.h"
 #include "test/testsupport/file_utils.h"
 #include "test/video_renderer.h"
 #include "video/frame_dumping_decoder.h"
@@ -268,6 +273,29 @@ class QualityTestVideoEncoder : public VideoEncoder,
   EncodedImageCallback* callback_ = nullptr;
   VideoCodec codec_settings_;
 };
+
+#if defined(WEBRTC_WIN) && !defined(WINUWP)
+void PressEnterToContinue(TaskQueueBase* task_queue) {
+  puts(">> Press ENTER to continue...");
+
+  while (!_kbhit() || _getch() != '\r') {
+    // Drive the message loop for the thread running the task_queue
+    SendTask(RTC_FROM_HERE, task_queue, [&]() {
+      MSG msg;
+      if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+      }
+    });
+  }
+}
+#else
+void PressEnterToContinue(TaskQueueBase* /*task_queue*/) {
+  puts(">> Press ENTER to continue...");
+  while (getc(stdin) != '\n' && !feof(stdin))
+    ;  // NOLINT
+}
+#endif
 
 }  // namespace
 
@@ -525,10 +553,14 @@ void VideoQualityTest::CheckParamsAndInjectionComponents() {
     RTC_CHECK_GE(params_.video[video_idx].target_bitrate_bps,
                  params_.video[video_idx].min_bitrate_bps);
     int selected_stream = params_.ss[video_idx].selected_stream;
-    int stream_tl = params_.ss[video_idx]
-                        .streams[selected_stream]
-                        .num_temporal_layers.value_or(1);
-    RTC_CHECK_LT(params_.video[video_idx].selected_tl, stream_tl);
+    if (params_.video[video_idx].selected_tl > -1) {
+      RTC_CHECK_LT(selected_stream, params_.ss[video_idx].streams.size())
+          << "Can not use --selected_tl when --selected_stream is all streams";
+      int stream_tl = params_.ss[video_idx]
+                          .streams[selected_stream]
+                          .num_temporal_layers.value_or(1);
+      RTC_CHECK_LT(params_.video[video_idx].selected_tl, stream_tl);
+    }
     RTC_CHECK_LE(params_.ss[video_idx].selected_stream,
                  params_.ss[video_idx].streams.size());
     for (const VideoStream& stream : params_.ss[video_idx].streams) {
@@ -791,9 +823,6 @@ void VideoQualityTest::SetupVideo(Transport* send_transport,
       video_send_configs_[video_idx].rtp.extensions.emplace_back(
           RtpExtension::kGenericFrameDescriptorUri00,
           kGenericFrameDescriptorExtensionId00);
-      video_send_configs_[video_idx].rtp.extensions.emplace_back(
-          RtpExtension::kGenericFrameDescriptorUri01,
-          kGenericFrameDescriptorExtensionId01);
     }
 
     video_send_configs_[video_idx].rtp.extensions.emplace_back(
@@ -865,6 +894,7 @@ void VideoQualityTest::SetupVideo(Transport* send_transport,
         VideoCodecVP9 vp9_settings = VideoEncoder::GetDefaultVp9Settings();
         vp9_settings.denoisingOn = false;
         vp9_settings.frameDroppingOn = false;
+        vp9_settings.automaticResizeOn = false;
         vp9_settings.numberOfTemporalLayers = static_cast<unsigned char>(
             params_.video[video_idx].num_temporal_layers);
         vp9_settings.numberOfSpatialLayers = static_cast<unsigned char>(
@@ -887,6 +917,7 @@ void VideoQualityTest::SetupVideo(Transport* send_transport,
       vp9_settings.numberOfSpatialLayers =
           static_cast<unsigned char>(params_.ss[video_idx].num_spatial_layers);
       vp9_settings.interLayerPred = params_.ss[video_idx].inter_layer_pred;
+      vp9_settings.automaticResizeOn = false;
       video_encoder_configs_[video_idx].encoder_specific_settings =
           new rtc::RefCountedObject<
               VideoEncoderConfig::Vp9EncoderSpecificSettings>(vp9_settings);
@@ -899,12 +930,18 @@ void VideoQualityTest::SetupVideo(Transport* send_transport,
                 VideoEncoderConfig::Vp8EncoderSpecificSettings>(vp8_settings);
       } else if (params_.video[video_idx].codec == "VP9") {
         VideoCodecVP9 vp9_settings = VideoEncoder::GetDefaultVp9Settings();
-        vp9_settings.automaticResizeOn = true;
+        // Only enable quality scaler for single spatial layer.
+        vp9_settings.automaticResizeOn =
+            params_.ss[video_idx].num_spatial_layers == 1;
         video_encoder_configs_[video_idx].encoder_specific_settings =
             new rtc::RefCountedObject<
                 VideoEncoderConfig::Vp9EncoderSpecificSettings>(vp9_settings);
       } else if (params_.video[video_idx].codec == "H264") {
         // Quality scaling is always on for H.264.
+      } else if (params_.video[video_idx].codec == cricket::kAv1CodecName) {
+        // TODO(bugs.webrtc.org/11404): Propagate the flag to
+        // aom_codec_enc_cfg_t::rc_resize_mode in Av1 encoder wrapper.
+        // Until then do nothing, specially do not crash.
       } else {
         RTC_NOTREACHED() << "Automatic scaling not supported for codec "
                          << params_.video[video_idx].codec << ", stream "
@@ -1049,24 +1086,23 @@ void VideoQualityTest::SetupThumbnailCapturers(size_t num_thumbnail_streams) {
     auto frame_generator_capturer =
         std::make_unique<test::FrameGeneratorCapturer>(
             clock_,
-            test::FrameGenerator::CreateSquareGenerator(
-                static_cast<int>(thumbnail.width),
-                static_cast<int>(thumbnail.height), absl::nullopt,
-                absl::nullopt),
+            test::CreateSquareFrameGenerator(static_cast<int>(thumbnail.width),
+                                             static_cast<int>(thumbnail.height),
+                                             absl::nullopt, absl::nullopt),
             thumbnail.max_framerate, *task_queue_factory_);
     EXPECT_TRUE(frame_generator_capturer->Init());
     thumbnail_capturers_.push_back(std::move(frame_generator_capturer));
   }
 }
 
-std::unique_ptr<test::FrameGenerator> VideoQualityTest::CreateFrameGenerator(
-    size_t video_idx) {
+std::unique_ptr<test::FrameGeneratorInterface>
+VideoQualityTest::CreateFrameGenerator(size_t video_idx) {
   // Setup frame generator.
   const size_t kWidth = 1850;
   const size_t kHeight = 1110;
-  std::unique_ptr<test::FrameGenerator> frame_generator;
+  std::unique_ptr<test::FrameGeneratorInterface> frame_generator;
   if (params_.screenshare[video_idx].generate_slides) {
-    frame_generator = test::FrameGenerator::CreateSlideGenerator(
+    frame_generator = test::CreateSlideFrameGenerator(
         kWidth, kHeight,
         params_.screenshare[video_idx].slide_change_interval *
             params_.video[video_idx].fps);
@@ -1080,7 +1116,7 @@ std::unique_ptr<test::FrameGenerator> VideoQualityTest::CreateFrameGenerator(
     }
     if (params_.screenshare[video_idx].scroll_duration == 0) {
       // Cycle image every slide_change_interval seconds.
-      frame_generator = test::FrameGenerator::CreateFromYuvFile(
+      frame_generator = test::CreateFromYuvFileFrameGenerator(
           slides, kWidth, kHeight,
           params_.screenshare[video_idx].slide_change_interval *
               params_.video[video_idx].fps);
@@ -1095,7 +1131,7 @@ std::unique_ptr<test::FrameGenerator> VideoQualityTest::CreateFrameGenerator(
       RTC_CHECK_LE(params_.screenshare[video_idx].scroll_duration,
                    params_.screenshare[video_idx].slide_change_interval);
 
-      frame_generator = test::FrameGenerator::CreateScrollingInputFromYuvFiles(
+      frame_generator = test::CreateScrollingInputFromYuvFilesFrameGenerator(
           clock_, slides, kWidth, kHeight, params_.video[video_idx].width,
           params_.video[video_idx].height,
           params_.screenshare[video_idx].scroll_duration * 1000,
@@ -1109,24 +1145,24 @@ void VideoQualityTest::CreateCapturers() {
   RTC_DCHECK(video_sources_.empty());
   video_sources_.resize(num_video_streams_);
   for (size_t video_idx = 0; video_idx < num_video_streams_; ++video_idx) {
-    std::unique_ptr<test::FrameGenerator> frame_generator;
+    std::unique_ptr<test::FrameGeneratorInterface> frame_generator;
     if (params_.screenshare[video_idx].enabled) {
       frame_generator = CreateFrameGenerator(video_idx);
     } else if (params_.video[video_idx].clip_path == "Generator") {
-      frame_generator = test::FrameGenerator::CreateSquareGenerator(
+      frame_generator = test::CreateSquareFrameGenerator(
           static_cast<int>(params_.video[video_idx].width),
           static_cast<int>(params_.video[video_idx].height), absl::nullopt,
           absl::nullopt);
     } else if (params_.video[video_idx].clip_path == "GeneratorI420A") {
-      frame_generator = test::FrameGenerator::CreateSquareGenerator(
+      frame_generator = test::CreateSquareFrameGenerator(
           static_cast<int>(params_.video[video_idx].width),
           static_cast<int>(params_.video[video_idx].height),
-          test::FrameGenerator::OutputType::kI420A, absl::nullopt);
+          test::FrameGeneratorInterface::OutputType::kI420A, absl::nullopt);
     } else if (params_.video[video_idx].clip_path == "GeneratorI010") {
-      frame_generator = test::FrameGenerator::CreateSquareGenerator(
+      frame_generator = test::CreateSquareFrameGenerator(
           static_cast<int>(params_.video[video_idx].width),
           static_cast<int>(params_.video[video_idx].height),
-          test::FrameGenerator::OutputType::kI010, absl::nullopt);
+          test::FrameGeneratorInterface::OutputType::kI010, absl::nullopt);
     } else if (params_.video[video_idx].clip_path.empty()) {
       video_sources_[video_idx] = test::CreateVideoCapturer(
           params_.video[video_idx].width, params_.video[video_idx].height,
@@ -1136,13 +1172,13 @@ void VideoQualityTest::CreateCapturers() {
         continue;
       } else {
         // Failed to get actual camera, use chroma generator as backup.
-        frame_generator = test::FrameGenerator::CreateSquareGenerator(
+        frame_generator = test::CreateSquareFrameGenerator(
             static_cast<int>(params_.video[video_idx].width),
             static_cast<int>(params_.video[video_idx].height), absl::nullopt,
             absl::nullopt);
       }
     } else {
-      frame_generator = test::FrameGenerator::CreateFromYuvFile(
+      frame_generator = test::CreateFromYuvFileFrameGenerator(
           {params_.video[video_idx].clip_path}, params_.video[video_idx].width,
           params_.video[video_idx].height, 1);
       ASSERT_TRUE(frame_generator) << "Could not create capturer for "
@@ -1279,6 +1315,9 @@ void VideoQualityTest::RunWithAnalyzer(const Params& params) {
       is_quick_test_enabled
           ? kFramesSentInQuickTest
           : params_.analyzer.test_durations_secs * params_.video[0].fps,
+      is_quick_test_enabled
+          ? TimeDelta::Millis(1)
+          : TimeDelta::Seconds(params_.analyzer.test_durations_secs),
       graph_data_output_file, graph_title,
       kVideoSendSsrcs[params_.ss[0].selected_stream],
       kSendRtxSsrcs[params_.ss[0].selected_stream],
@@ -1562,7 +1601,7 @@ void VideoQualityTest::RunWithRenderers(const Params& params) {
     Start();
   });
 
-  test::PressEnterToContinue(task_queue());
+  PressEnterToContinue(task_queue());
 
   SendTask(RTC_FROM_HERE, task_queue(), [&]() {
     Stop();

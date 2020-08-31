@@ -19,8 +19,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/paint_vector_icon.h"
+#include "ui/base/models/image_model.h"
 #include "ui/native_theme/native_theme.h"
 
 RecoveryInstallGlobalError::RecoveryInstallGlobalError(Profile* profile)
@@ -68,11 +67,9 @@ base::string16 RecoveryInstallGlobalError::MenuItemLabel() {
   return l10n_util::GetStringUTF16(IDS_UPDATE_NOW);
 }
 
-gfx::Image RecoveryInstallGlobalError::MenuItemIcon() {
-  return gfx::Image(gfx::CreateVectorIcon(
-      kBrowserToolsUpdateIcon,
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          ui::NativeTheme::kColorId_AlertSeverityHigh)));
+ui::ImageModel RecoveryInstallGlobalError::MenuItemIcon() {
+  return ui::ImageModel::FromVectorIcon(
+      kBrowserToolsUpdateIcon, ui::NativeTheme::kColorId_AlertSeverityHigh);
 }
 
 void RecoveryInstallGlobalError::ExecuteMenuItem(Browser* browser) {
@@ -94,12 +91,6 @@ void RecoveryInstallGlobalError::ShowBubbleView(Browser* browser) {
 
 bool RecoveryInstallGlobalError::ShouldCloseOnDeactivate() const {
   return false;
-}
-
-gfx::Image RecoveryInstallGlobalError::GetBubbleViewIcon() {
-  // TODO(estade): there shouldn't be an icon in the bubble, but
-  // GlobalErrorBubbleView currently requires it. See crbug.com/673995
-  return MenuItemIcon();
 }
 
 base::string16 RecoveryInstallGlobalError::GetBubbleViewTitle() {

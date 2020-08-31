@@ -1034,7 +1034,8 @@
         "-/Types",
         "-/Types%short",
         "-/characterLabelPattern",
-        "-/Variants"
+        "-/Variants",
+        "+/Variants/OXENDICT"
       ]
     },
 // Based on abridge_locale_data_for_non_ui_languages

@@ -26,12 +26,9 @@
  *    Rob Clark <robclark@freedesktop.org>
  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #include <assert.h>
 
+#include "xf86atomic.h"
 #include "freedreno_ringbuffer.h"
 #include "kgsl_priv.h"
 
@@ -178,13 +175,12 @@ static void kgsl_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
 }
 
 static uint32_t kgsl_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
-		struct fd_ringbuffer *target, uint32_t cmd_idx,
-		uint32_t submit_offset, uint32_t size)
+		struct fd_ringbuffer *target, uint32_t cmd_idx)
 {
 	struct kgsl_ringbuffer *target_ring = to_kgsl_ringbuffer(target);
 	assert(cmd_idx == 0);
-	(*ring->cur++) = target_ring->bo->gpuaddr + submit_offset;
-	return size;
+	(*ring->cur++) = target_ring->bo->gpuaddr;
+	return 	offset_bytes(target->cur, target->start);
 }
 
 static void kgsl_ringbuffer_destroy(struct fd_ringbuffer *ring)
@@ -206,10 +202,12 @@ static const struct fd_ringbuffer_funcs funcs = {
 };
 
 drm_private struct fd_ringbuffer * kgsl_ringbuffer_new(struct fd_pipe *pipe,
-		uint32_t size)
+		uint32_t size, enum fd_ringbuffer_flags flags)
 {
 	struct kgsl_ringbuffer *kgsl_ring;
 	struct fd_ringbuffer *ring = NULL;
+
+	assert(!flags);
 
 	kgsl_ring = calloc(1, sizeof(*kgsl_ring));
 	if (!kgsl_ring) {
@@ -218,6 +216,8 @@ drm_private struct fd_ringbuffer * kgsl_ringbuffer_new(struct fd_pipe *pipe,
 	}
 
 	ring = &kgsl_ring->base;
+	atomic_set(&ring->refcnt, 1);
+
 	ring->funcs = &funcs;
 	ring->size = size;
 

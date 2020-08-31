@@ -27,6 +27,9 @@ from chromite.lib import process_util
 from chromite.lib import proctitle
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 CLONE_FS = 0x00000200
 CLONE_FILES = 0x00000400
 CLONE_NEWNS = 0x00020000

@@ -10,13 +10,21 @@ import os
 import sys
 import unittest
 
+if sys.version_info.major == 2:
+  import mock
+else:
+  from unittest import mock
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from third_party import mock
 from testing_support import fake_repos
 
 import scm
 import subprocess2
+
+
+def callError(code=1, cmd='', cwd='', stdout=b'', stderr=b''):
+  return subprocess2.CalledProcessError(code, cmd, cwd, stdout, stderr)
 
 
 class GitWrapperTestCase(unittest.TestCase):
@@ -29,6 +37,23 @@ class GitWrapperTestCase(unittest.TestCase):
     mockCapture.return_value = 'mini@me.com'
     self.assertEqual(scm.GIT.GetEmail(self.root_dir), 'mini@me.com')
     mockCapture.assert_called_with(['config', 'user.email'], cwd=self.root_dir)
+
+  @mock.patch('scm.GIT.Capture')
+  def testAssertVersion(self, mockCapture):
+    cases = [
+        ('1.7', True),
+        ('1.7.9', True),
+        ('1.7.9.foo-bar-baz', True),
+        ('1.8', True),
+        ('1.6.9', False),
+    ]
+    for expected_version, expected_ok in cases:
+      class GIT(scm.GIT):
+        pass
+      mockCapture.return_value = 'git version ' + expected_version
+      ok, version = GIT.AssertVersion('1.7')
+      self.assertEqual(expected_ok, ok)
+      self.assertEqual(expected_version, version)
 
   def testRefToRemoteRef(self):
     remote = 'origin'
@@ -80,28 +105,137 @@ class RealGitTest(fake_repos.FakeReposTestBase):
     super(RealGitTest, self).setUp()
     self.enabled = self.FAKE_REPOS.set_up_git()
     if self.enabled:
-      self.clone_dir = scm.os.path.join(self.FAKE_REPOS.git_base, 'repo_1')
+      self.cwd = scm.os.path.join(self.FAKE_REPOS.git_base, 'repo_1')
+    else:
+      self.skipTest('git fake repos not available')
+
+  def testResolveCommit(self):
+    self.assertIsNone(scm.GIT.ResolveCommit(self.cwd, 'zebra'))
+    self.assertIsNone(scm.GIT.ResolveCommit(self.cwd, 'r123456'))
+    first_rev = self.githash('repo_1', 1)
+    self.assertEqual(first_rev, scm.GIT.ResolveCommit(self.cwd, first_rev))
+    self.assertEqual(
+        self.githash('repo_1', 2), scm.GIT.ResolveCommit(self.cwd, 'HEAD'))
 
   def testIsValidRevision(self):
-    if not self.enabled:
-      return
     # Sha1's are [0-9a-z]{32}, so starting with a 'z' or 'r' should always fail.
-    self.assertFalse(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev='zebra'))
-    self.assertFalse(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev='r123456'))
+    self.assertFalse(scm.GIT.IsValidRevision(cwd=self.cwd, rev='zebra'))
+    self.assertFalse(scm.GIT.IsValidRevision(cwd=self.cwd, rev='r123456'))
     # Valid cases
     first_rev = self.githash('repo_1', 1)
-    self.assertTrue(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev=first_rev))
-    self.assertTrue(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev='HEAD'))
+    self.assertTrue(scm.GIT.IsValidRevision(cwd=self.cwd, rev=first_rev))
+    self.assertTrue(scm.GIT.IsValidRevision(cwd=self.cwd, rev='HEAD'))
 
   def testIsAncestor(self):
-    if not self.enabled:
-      return
     self.assertTrue(scm.GIT.IsAncestor(
-        self.clone_dir, self.githash('repo_1', 1), self.githash('repo_1', 2)))
+        self.cwd, self.githash('repo_1', 1), self.githash('repo_1', 2)))
     self.assertFalse(scm.GIT.IsAncestor(
-        self.clone_dir, self.githash('repo_1', 2), self.githash('repo_1', 1)))
+        self.cwd, self.githash('repo_1', 2), self.githash('repo_1', 1)))
     self.assertFalse(scm.GIT.IsAncestor(
-        self.clone_dir, self.githash('repo_1', 1), 'zebra'))
+        self.cwd, self.githash('repo_1', 1), 'zebra'))
+
+  def testGetAllFiles(self):
+    self.assertEqual(['DEPS','origin'], scm.GIT.GetAllFiles(self.cwd))
+
+  def testGetSetConfig(self):
+    key = 'scm.test-key'
+
+    self.assertIsNone(scm.GIT.GetConfig(self.cwd, key))
+    self.assertEqual(
+        'default-value', scm.GIT.GetConfig(self.cwd, key, 'default-value'))
+
+    scm.GIT.SetConfig(self.cwd, key, 'set-value')
+    self.assertEqual('set-value', scm.GIT.GetConfig(self.cwd, key))
+    self.assertEqual(
+        'set-value', scm.GIT.GetConfig(self.cwd, key, 'default-value'))
+
+    scm.GIT.SetConfig(self.cwd, key)
+    self.assertIsNone(scm.GIT.GetConfig(self.cwd, key))
+    self.assertEqual(
+        'default-value', scm.GIT.GetConfig(self.cwd, key, 'default-value'))
+
+  def testGetSetBranchConfig(self):
+    branch = scm.GIT.GetBranch(self.cwd)
+    key = 'scm.test-key'
+
+    self.assertIsNone(scm.GIT.GetBranchConfig(self.cwd, branch, key))
+    self.assertEqual(
+        'default-value',
+        scm.GIT.GetBranchConfig(self.cwd, branch, key, 'default-value'))
+
+    scm.GIT.SetBranchConfig(self.cwd, branch, key, 'set-value')
+    self.assertEqual(
+        'set-value', scm.GIT.GetBranchConfig(self.cwd, branch, key))
+    self.assertEqual(
+        'set-value',
+        scm.GIT.GetBranchConfig(self.cwd, branch, key, 'default-value'))
+    self.assertEqual(
+        'set-value',
+        scm.GIT.GetConfig(self.cwd, 'branch.%s.%s' % (branch, key)))
+
+    scm.GIT.SetBranchConfig(self.cwd, branch, key)
+    self.assertIsNone(scm.GIT.GetBranchConfig(self.cwd, branch, key))
+
+  def testFetchUpstreamTuple_NoUpstreamFound(self):
+    self.assertEqual(
+        (None, None), scm.GIT.FetchUpstreamTuple(self.cwd))
+
+  @mock.patch('scm.GIT.GetRemoteBranches', return_value=['origin/master'])
+  def testFetchUpstreamTuple_GuessOriginMaster(self, _mockGetRemoteBranches):
+    self.assertEqual(
+        ('origin', 'refs/heads/master'), scm.GIT.FetchUpstreamTuple(self.cwd))
+
+  def testFetchUpstreamTuple_RietveldUpstreamConfig(self):
+    scm.GIT.SetConfig(self.cwd, 'rietveld.upstream-branch', 'rietveld-upstream')
+    scm.GIT.SetConfig(self.cwd, 'rietveld.upstream-remote', 'rietveld-remote')
+    self.assertEqual(
+        ('rietveld-remote', 'rietveld-upstream'),
+        scm.GIT.FetchUpstreamTuple(self.cwd))
+    scm.GIT.SetConfig(self.cwd, 'rietveld.upstream-branch')
+    scm.GIT.SetConfig(self.cwd, 'rietveld.upstream-remote')
+
+  @mock.patch('scm.GIT.GetBranch', side_effect=callError())
+  def testFetchUpstreamTuple_NotOnBranch(self, _mockGetBranch):
+    scm.GIT.SetConfig(self.cwd, 'rietveld.upstream-branch', 'rietveld-upstream')
+    scm.GIT.SetConfig(self.cwd, 'rietveld.upstream-remote', 'rietveld-remote')
+    self.assertEqual(
+        ('rietveld-remote', 'rietveld-upstream'),
+        scm.GIT.FetchUpstreamTuple(self.cwd))
+    scm.GIT.SetConfig(self.cwd, 'rietveld.upstream-branch')
+    scm.GIT.SetConfig(self.cwd, 'rietveld.upstream-remote')
+
+  def testFetchUpstreamTuple_BranchConfig(self):
+    branch = scm.GIT.GetBranch(self.cwd)
+    scm.GIT.SetBranchConfig(self.cwd, branch, 'merge', 'branch-merge')
+    scm.GIT.SetBranchConfig(self.cwd, branch, 'remote', 'branch-remote')
+    self.assertEqual(
+        ('branch-remote', 'branch-merge'), scm.GIT.FetchUpstreamTuple(self.cwd))
+    scm.GIT.SetBranchConfig(self.cwd, branch, 'merge')
+    scm.GIT.SetBranchConfig(self.cwd, branch, 'remote')
+
+  def testFetchUpstreamTuple_AnotherBranchConfig(self):
+    branch = 'scm-test-branch'
+    scm.GIT.SetBranchConfig(self.cwd, branch, 'merge', 'other-merge')
+    scm.GIT.SetBranchConfig(self.cwd, branch, 'remote', 'other-remote')
+    self.assertEqual(
+        ('other-remote', 'other-merge'),
+        scm.GIT.FetchUpstreamTuple(self.cwd, branch))
+    scm.GIT.SetBranchConfig(self.cwd, branch, 'merge')
+    scm.GIT.SetBranchConfig(self.cwd, branch, 'remote')
+
+  def testGetBranchRef(self):
+    self.assertEqual('refs/heads/master', scm.GIT.GetBranchRef(self.cwd))
+    HEAD = scm.GIT.Capture(['rev-parse', 'HEAD'], cwd=self.cwd)
+    scm.GIT.Capture(['checkout', HEAD], cwd=self.cwd)
+    self.assertIsNone(scm.GIT.GetBranchRef(self.cwd))
+    scm.GIT.Capture(['checkout', 'master'], cwd=self.cwd)
+
+  def testGetBranch(self):
+    self.assertEqual('master', scm.GIT.GetBranch(self.cwd))
+    HEAD = scm.GIT.Capture(['rev-parse', 'HEAD'], cwd=self.cwd)
+    scm.GIT.Capture(['checkout', HEAD], cwd=self.cwd)
+    self.assertIsNone(scm.GIT.GetBranchRef(self.cwd))
+    scm.GIT.Capture(['checkout', 'master'], cwd=self.cwd)
 
 
 if __name__ == '__main__':

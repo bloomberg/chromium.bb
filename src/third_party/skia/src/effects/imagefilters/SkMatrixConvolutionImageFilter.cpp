@@ -16,9 +16,11 @@
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkSpecialImage.h"
 #include "src/core/SkWriteBuffer.h"
+#include "src/gpu/SkGr.h"
 
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrContext.h"
+#include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/effects/GrMatrixConvolutionEffect.h"
 #endif
@@ -291,11 +293,11 @@ void SkMatrixConvolutionImageFilterImpl::filterPixels(const SkBitmap& src,
                 }
             }
             int a = convolveAlpha
-                  ? SkClampMax(SkScalarFloorToInt(sumA * fGain + fBias), 255)
+                  ? SkTPin(SkScalarFloorToInt(sumA * fGain + fBias), 0, 255)
                   : 255;
-            int r = SkClampMax(SkScalarFloorToInt(sumR * fGain + fBias), a);
-            int g = SkClampMax(SkScalarFloorToInt(sumG * fGain + fBias), a);
-            int b = SkClampMax(SkScalarFloorToInt(sumB * fGain + fBias), a);
+            int r = SkTPin(SkScalarFloorToInt(sumR * fGain + fBias), 0, a);
+            int g = SkTPin(SkScalarFloorToInt(sumG * fGain + fBias), 0, a);
+            int b = SkTPin(SkScalarFloorToInt(sumB * fGain + fBias), 0, a);
             if (!convolveAlpha) {
                 a = SkGetPackedA32(PixelFetcher::fetch(src, x, y, bounds));
                 *dptr++ = SkPreMultiplyARGB(a, r, g, b);
@@ -359,48 +361,6 @@ void SkMatrixConvolutionImageFilterImpl::filterBorderPixels(const SkBitmap& src,
     }
 }
 
-// FIXME:  This should be refactored to SkImageFilterUtils for
-// use by other filters.  For now, we assume the input is always
-// premultiplied and unpremultiply it
-static SkBitmap unpremultiply_bitmap(const SkBitmap& src) {
-    if (!src.getPixels()) {
-        return SkBitmap();
-    }
-
-    const SkImageInfo info = SkImageInfo::MakeN32(src.width(), src.height(), src.alphaType());
-    SkBitmap result;
-    if (!result.tryAllocPixels(info)) {
-        return SkBitmap();
-    }
-    for (int y = 0; y < src.height(); ++y) {
-        const uint32_t* srcRow = src.getAddr32(0, y);
-        uint32_t* dstRow = result.getAddr32(0, y);
-        for (int x = 0; x < src.width(); ++x) {
-            dstRow[x] = SkUnPreMultiply::PMColorToColor(srcRow[x]);
-        }
-    }
-    return result;
-}
-
-#if SK_SUPPORT_GPU
-
-static GrTextureDomain::Mode convert_tilemodes(SkTileMode tileMode) {
-    switch (tileMode) {
-    case SkTileMode::kClamp:
-        return GrTextureDomain::kClamp_Mode;
-    case SkTileMode::kMirror:
-        // TODO (michaelludwig) - Implement mirror tiling, treat as repeat for now.
-    case SkTileMode::kRepeat:
-        return GrTextureDomain::kRepeat_Mode;
-    case SkTileMode::kDecal:
-        return GrTextureDomain::kDecal_Mode;
-    default:
-        SkASSERT(false);
-    }
-    return GrTextureDomain::kIgnore_Mode;
-}
-#endif
-
 sk_sp<SkSpecialImage> SkMatrixConvolutionImageFilterImpl::onFilterImage(const Context& ctx,
                                                                         SkIPoint* offset) const {
     SkIPoint inputOffset = SkIPoint::Make(0, 0);
@@ -431,9 +391,7 @@ sk_sp<SkSpecialImage> SkMatrixConvolutionImageFilterImpl::onFilterImage(const Co
     }
 
 #if SK_SUPPORT_GPU
-    // Note: if the kernel is too big, the GPU path falls back to SW
-    if (ctx.gpuBacked() &&
-        fKernelSize.width() * fKernelSize.height() <= MAX_KERNEL_SIZE) {
+    if (ctx.gpuBacked()) {
         auto context = ctx.getContext();
 
         // Ensure the input is in the destination color space. Typically applyCropRect will have
@@ -442,10 +400,10 @@ sk_sp<SkSpecialImage> SkMatrixConvolutionImageFilterImpl::onFilterImage(const Co
         // fall-back, which saves us from having to do the xform during the filter itself.
         input = ImageToColorSpace(input.get(), ctx.colorType(), ctx.colorSpace());
 
-        sk_sp<GrTextureProxy> inputProxy(input->asTextureProxyRef(context));
-        SkASSERT(inputProxy);
+        GrSurfaceProxyView inputView = input->view(context);
+        SkASSERT(inputView.asTextureProxy());
 
-        const auto isProtected = inputProxy->isProtected();
+        const auto isProtected = inputView.proxy()->isProtected();
 
         offset->fX = dstBounds.left();
         offset->fY = dstBounds.top();
@@ -454,15 +412,17 @@ sk_sp<SkSpecialImage> SkMatrixConvolutionImageFilterImpl::onFilterImage(const Co
         // Map srcBounds from input's logical image domain to that of the proxy
         srcBounds.offset(input->subset().x(), input->subset().y());
 
-        auto fp = GrMatrixConvolutionEffect::Make(std::move(inputProxy),
+        auto fp = GrMatrixConvolutionEffect::Make(context,
+                                                  std::move(inputView),
                                                   srcBounds,
                                                   fKernelSize,
                                                   fKernel,
                                                   fGain,
                                                   fBias,
                                                   fKernelOffset,
-                                                  convert_tilemodes(fTileMode),
-                                                  fConvolveAlpha);
+                                                  SkTileModeToWrapMode(fTileMode),
+                                                  fConvolveAlpha,
+                                                  *ctx.getContext()->priv().caps());
         if (!fp) {
             return nullptr;
         }
@@ -475,7 +435,7 @@ sk_sp<SkSpecialImage> SkMatrixConvolutionImageFilterImpl::onFilterImage(const Co
         // evaluating the FP, and the dst rect just uses the size of dstBounds.
         dstBounds.offset(input->subset().x(), input->subset().y());
         return DrawWithFP(context, std::move(fp), dstBounds, ctx.colorType(), ctx.colorSpace(),
-                          isProtected ? GrProtected::kYes : GrProtected::kNo);
+                          isProtected);
     }
 #endif
 
@@ -489,7 +449,10 @@ sk_sp<SkSpecialImage> SkMatrixConvolutionImageFilterImpl::onFilterImage(const Co
     }
 
     if (!fConvolveAlpha && !inputBM.isOpaque()) {
-        inputBM = unpremultiply_bitmap(inputBM);
+        // This leaves the bitmap tagged as premul, which seems weird to me,
+        // but is consistent with old behavior.
+        inputBM.readPixels(inputBM.info().makeAlphaType(kUnpremul_SkAlphaType),
+                           inputBM.getPixels(), inputBM.rowBytes(), 0,0);
     }
 
     if (!inputBM.getPixels()) {

@@ -5,14 +5,10 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CONNECTION_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CONNECTION_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "base/files/file.h"
-#include "base/message_loop/message_pump_for_ui.h"
-#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
@@ -23,35 +19,37 @@
 #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
-#include "ui/ozone/platform/wayland/host/wayland_keyboard.h"
-#include "ui/ozone/platform/wayland/host/wayland_output.h"
-#include "ui/ozone/platform/wayland/host/wayland_pointer.h"
-#include "ui/ozone/platform/wayland/host/wayland_touch.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
 namespace ui {
 
 class WaylandBufferManagerHost;
-class WaylandOutputManager;
-class WaylandWindow;
+class WaylandCursor;
 class WaylandDrm;
-class WaylandZwpLinuxDmabuf;
+class WaylandEventSource;
+class WaylandKeyboard;
+class WaylandOutputManager;
+class WaylandPointer;
 class WaylandShm;
+class WaylandTouch;
+class WaylandWindow;
+class WaylandZwpLinuxDmabuf;
 
-class WaylandConnection : public PlatformEventSource,
-                          public base::MessagePumpForUI::FdWatcher {
+class WaylandConnection {
  public:
   WaylandConnection();
-  ~WaylandConnection() override;
+  WaylandConnection(const WaylandConnection&) = delete;
+  WaylandConnection& operator=(const WaylandConnection&) = delete;
+  ~WaylandConnection();
 
   bool Initialize();
-  bool StartProcessingEvents();
 
   // Schedules a flush of the Wayland connection.
   void ScheduleFlush();
 
   wl_display* display() const { return display_.get(); }
   wl_compositor* compositor() const { return compositor_.get(); }
+  uint32_t compositor_version() const { return compositor_version_; }
   wl_subcompositor* subcompositor() const { return subcompositor_.get(); }
   xdg_wm_base* shell() const { return shell_.get(); }
   zxdg_shell_v6* shell_v6() const { return shell_v6_.get(); }
@@ -71,13 +69,16 @@ class WaylandConnection : public PlatformEventSource,
   void SetCursorBitmap(const std::vector<SkBitmap>& bitmaps,
                        const gfx::Point& location);
 
-  int GetKeyboardModifiers() const;
+  WaylandEventSource* event_source() const { return event_source_.get(); }
+
+  // Returns the current touch, which may be null.
+  WaylandTouch* touch() const { return touch_.get(); }
 
   // Returns the current pointer, which may be null.
   WaylandPointer* pointer() const { return pointer_.get(); }
 
-  // Returns the current touch, which may be null.
-  WaylandTouch* touch() const { return touch_.get(); }
+  // Returns the current keyboard, which may be null.
+  WaylandKeyboard* keyboard() const { return keyboard_.get(); }
 
   WaylandClipboard* clipboard() const { return clipboard_.get(); }
 
@@ -108,6 +109,8 @@ class WaylandConnection : public PlatformEventSource,
     return &wayland_window_manager_;
   }
 
+  WaylandDataDevice* wayland_data_device() const { return data_device_.get(); }
+
   // Starts drag with |data| to be delivered, |operation| supported by the
   // source side initiated the dragging.
   void StartDrag(const ui::OSExchangeData& data, int operation);
@@ -129,32 +132,12 @@ class WaylandConnection : public PlatformEventSource,
   // Returns true when dragging is entered or started.
   bool IsDragInProgress();
 
-  // Resets flags and keyboard modifiers.
-  //
-  // This method is specially handy for cases when the WaylandPointer state is
-  // modified by a POINTER_DOWN event, but the respective POINTER_UP event is
-  // not delivered.
-  void ResetPointerFlags();
-
  private:
-  // WaylandInputMethodContextFactory needs access to DispatchUiEvent
-  friend class WaylandInputMethodContextFactory;
-
   void Flush();
-  void DispatchUiEvent(Event* event);
-
-  // PlatformEventSource
-  void OnDispatcherListChanged() override;
-
-  // base::MessagePumpForUI::FdWatcher
-  void OnFileCanReadWithoutBlocking(int fd) override;
-  void OnFileCanWriteWithoutBlocking(int fd) override;
+  void UpdateInputDevices(wl_seat* seat, uint32_t capabilities);
 
   // Make sure data device is properly initialized
   void EnsureDataDevice();
-
-  bool BeginWatchingFd(base::WatchableIOMessagePumpPosix::Mode mode);
-  void MaybePrepareReadQueue();
 
   // wl_registry_listener
   static void Global(void* data,
@@ -174,6 +157,7 @@ class WaylandConnection : public PlatformEventSource,
   // xdg_wm_base_listener
   static void Ping(void* data, xdg_wm_base* shell, uint32_t serial);
 
+  uint32_t compositor_version_ = 0;
   wl::Object<wl_display> display_;
   wl::Object<wl_registry> registry_;
   wl::Object<wl_compositor> compositor_;
@@ -184,14 +168,21 @@ class WaylandConnection : public PlatformEventSource,
   wl::Object<wp_presentation> presentation_;
   wl::Object<zwp_text_input_manager_v1> text_input_manager_v1_;
 
+  // Event source instance. Must be declared before input objects so it outlives
+  // them so thus being able to properly handle their destruction.
+  std::unique_ptr<WaylandEventSource> event_source_;
+
+  // Input device objects.
+  std::unique_ptr<WaylandKeyboard> keyboard_;
+  std::unique_ptr<WaylandPointer> pointer_;
+  std::unique_ptr<WaylandTouch> touch_;
+
+  std::unique_ptr<WaylandCursor> cursor_;
   std::unique_ptr<WaylandDataDeviceManager> data_device_manager_;
   std::unique_ptr<WaylandDataDevice> data_device_;
   std::unique_ptr<WaylandClipboard> clipboard_;
   std::unique_ptr<WaylandDataSource> dragdrop_data_source_;
-  std::unique_ptr<WaylandKeyboard> keyboard_;
   std::unique_ptr<WaylandOutputManager> wayland_output_manager_;
-  std::unique_ptr<WaylandPointer> pointer_;
-  std::unique_ptr<WaylandTouch> touch_;
   std::unique_ptr<WaylandCursorPosition> wayland_cursor_position_;
   std::unique_ptr<WaylandZwpLinuxDmabuf> zwp_dmabuf_;
   std::unique_ptr<WaylandDrm> drm_;
@@ -206,13 +197,8 @@ class WaylandConnection : public PlatformEventSource,
   WaylandWindowManager wayland_window_manager_;
 
   bool scheduled_flush_ = false;
-  bool watching_ = false;
-  bool prepared_ = false;
-  base::MessagePumpForUI::FdWatchController controller_;
 
   uint32_t serial_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandConnection);
 };
 
 }  // namespace ui

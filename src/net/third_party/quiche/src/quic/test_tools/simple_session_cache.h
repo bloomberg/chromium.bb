@@ -5,7 +5,9 @@
 #ifndef QUICHE_QUIC_TEST_TOOLS_SIMPLE_SESSION_CACHE_H_
 #define QUICHE_QUIC_TEST_TOOLS_SIMPLE_SESSION_CACHE_H_
 
+#include <memory>
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
+#include "net/third_party/quiche/src/quic/core/crypto/transport_parameters.h"
 
 namespace quic {
 namespace test {
@@ -21,12 +23,19 @@ class SimpleSessionCache : public SessionCache {
   ~SimpleSessionCache() override = default;
 
   void Insert(const QuicServerId& server_id,
-              std::unique_ptr<QuicResumptionState> state) override;
+              bssl::UniquePtr<SSL_SESSION> session,
+              const TransportParameters& params,
+              const ApplicationState* application_state) override;
   std::unique_ptr<QuicResumptionState> Lookup(const QuicServerId& server_id,
                                               const SSL_CTX* ctx) override;
 
  private:
-  std::map<QuicServerId, std::unique_ptr<QuicResumptionState>> cache_entries_;
+  struct Entry {
+    bssl::UniquePtr<SSL_SESSION> session;
+    std::unique_ptr<TransportParameters> params;
+    std::unique_ptr<ApplicationState> application_state;
+  };
+  std::map<QuicServerId, Entry> cache_entries_;
 };
 
 }  // namespace test

@@ -28,10 +28,11 @@ namespace service_manager {
 
 // Handles interprocess communication with the Linux zygote process. The zygote
 // does not use standard Chrome IPC or mojo, see:
-// https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
+// https://chromium.googlesource.com/chromium/src/+/master/docs/linux/sandbox_ipc.md
 class COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE) ZygoteCommunication {
  public:
-  ZygoteCommunication();
+  enum class ZygoteType { kSandboxed, kUnsandboxed };
+  explicit ZygoteCommunication(ZygoteType type);
   ~ZygoteCommunication();
 
   void Init(
@@ -80,6 +81,9 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE) ZygoteCommunication {
 
   // Get the sandbox status from the zygote.
   ssize_t ReadSandboxStatus();
+
+  // Indicates whether the Zygote starts unsandboxed or not.
+  const ZygoteType type_;
 
   base::ScopedFD control_fd_;  // the socket to the zygote.
   // A lock protecting all communication with the zygote. This lock must be

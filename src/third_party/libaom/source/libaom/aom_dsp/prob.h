@@ -26,7 +26,6 @@
 extern "C" {
 #endif
 
-// TODO(negge): Rename this aom_prob once we remove vpxbool.
 typedef uint16_t aom_cdf_prob;
 
 #define CDF_SIZE(x) ((x) + 1)

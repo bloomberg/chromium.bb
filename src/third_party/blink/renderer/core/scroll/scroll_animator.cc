@@ -211,7 +211,7 @@ bool ScrollAnimator::WillAnimateToOffset(const ScrollOffset& target_offset) {
 
 void ScrollAnimator::AdjustAnimationAndSetScrollOffset(
     const ScrollOffset& offset,
-    ScrollType scroll_type) {
+    mojom::blink::ScrollType scroll_type) {
   IntSize adjustment = RoundedIntSize(offset) -
                        RoundedIntSize(scrollable_area_->GetScrollOffset());
   ScrollOffsetChanged(offset, scroll_type);
@@ -407,7 +407,7 @@ bool ScrollAnimator::RegisterAndScheduleAnimation() {
   return true;
 }
 
-void ScrollAnimator::Trace(blink::Visitor* visitor) {
+void ScrollAnimator::Trace(Visitor* visitor) {
   ScrollAnimatorBase::Trace(visitor);
 }
 

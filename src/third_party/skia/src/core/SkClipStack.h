@@ -9,11 +9,11 @@
 #define SkClipStack_DEFINED
 
 #include "include/core/SkCanvas.h"
-#include "include/core/SkDeque.h"
 #include "include/core/SkPath.h"
 #include "include/core/SkRRect.h"
 #include "include/core/SkRect.h"
 #include "include/core/SkRegion.h"
+#include "include/private/SkDeque.h"
 #include "src/core/SkClipOpPriv.h"
 #include "src/core/SkMessageBus.h"
 #include "src/core/SkTLazy.h"
@@ -336,12 +336,6 @@ public:
     bool quickContains(const SkRRect& devRRect) const {
         return this->isWideOpen() || this->internalQuickContains(devRRect);
     }
-
-    /**
-     * Flattens the clip stack into a single SkPath. Returns true if any of
-     * the clip stack components requires anti-aliasing.
-     */
-    bool asPath(SkPath* path) const;
 
     void clipDevRect(const SkIRect& ir, SkClipOp op) {
         SkRect r;

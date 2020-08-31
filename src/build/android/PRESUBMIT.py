@@ -48,6 +48,9 @@ def CommonChecks(input_api, output_api):
           input_api,
           output_api,
           white_list=build_pys,
+          black_list=[
+              r'.*_pb2\.py',
+          ],
           extra_paths_list=[J('gyp'), J('gn')]))
 
   # Disabled due to http://crbug.com/410936
@@ -86,6 +89,7 @@ def CommonChecks(input_api, output_api):
               J('pylib', 'utils', 'decorators_test.py'),
               J('pylib', 'utils', 'device_dependencies_test.py'),
               J('pylib', 'utils', 'dexdump_test.py'),
+              J('pylib', 'utils', 'gold_utils_test.py'),
               J('pylib', 'utils', 'proguard_test.py'),
               J('pylib', 'utils', 'test_filter_test.py'),
               J('.', 'convert_dex_profile_tests.py'),

@@ -6,53 +6,42 @@
 #define DEVICE_VR_OPENXR_OPENXR_CONTROLLER_H_
 
 #include <stdint.h>
+#include <string.h>
 #include <map>
 #include <unordered_map>
 #include <vector>
 
 #include "base/optional.h"
+#include "device/vr/openxr/openxr_interaction_profiles.h"
+#include "device/vr/openxr/openxr_path_helper.h"
+#include "device/vr/openxr/openxr_util.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
 #include "ui/gfx/transform.h"
 
 namespace device {
 
-constexpr uint32_t kAxisDimensions = 2;
-
-enum class OpenXrHandednessType {
-  kLeft = 0,
-  kRight = 1,
-  kCount = 2,
-};
-
-enum class OpenXrButtonType {
-  kTrigger = 0,
-  kSqueeze = 1,
-  kTrackpad = 2,
-  kThumbstick = 3,
-  kMaxValue = 3,
-};
-
-enum class OpenXrAxisType {
-  kTrackpad = 0,
-  kThumbstick = 1,
-  kMaxValue = 1,
-};
-
 class OpenXrController {
  public:
   OpenXrController();
   ~OpenXrController();
 
+  // The lifetime of OpenXRInputHelper is a superset of OpenXRController. Thus
+  // we may safely pass the OpenXRPathHelper of the parent class to
+  // OpenXRController as a dependency.
   XrResult Initialize(
       OpenXrHandednessType type,
       XrInstance instance,
       XrSession session,
+      const OpenXRPathHelper* path_helper,
       std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings);
 
-  XrActionSet GetActionSet() const;
+  XrActionSet action_set() const { return action_set_; }
   uint32_t GetId() const;
   device::mojom::XRHandedness GetHandness() const;
+  OpenXrInteractionProfileType interaction_profile() const {
+    return interaction_profile_;
+  }
 
   mojom::XRInputSourceDescriptionPtr GetDescription(
       XrTime predicted_display_time);
@@ -68,34 +57,24 @@ class OpenXrController {
   XrResult UpdateInteractionProfile();
 
  private:
-  // ActionButton struct is used to store all XrAction that is related to the
-  // button. For example, we may need to query the analog value for button press
-  // which require a seperate XrAction than the current boolean XrAction.
-  struct ActionButton {
-    XrAction press_action;
-    XrAction touch_action;
-    XrAction value_action;
-    ActionButton()
-        : press_action(XR_NULL_HANDLE),
-          touch_action(XR_NULL_HANDLE),
-          value_action(XR_NULL_HANDLE) {}
-  };
+  XrResult InitializeControllerActions();
+  XrResult InitializeControllerSpaces();
 
-  XrResult InitializeMicrosoftMotionControllerActions(
-      const std::string& type_string,
-      std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings);
+  XrResult SuggestBindings(
+      std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings) const;
 
-  XrResult InitializeMicrosoftMotionControllerSpaces();
-
-  XrResult CreateAction(
-      XrActionType type,
-      const char* interaction_profile_name,
-      const std::string& binding_string,
-      const std::string& action_name,
-      XrAction* action,
-      std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings);
+  XrResult CreateActionsForButton(OpenXrButtonType button_type);
+  XrResult CreateAction(XrActionType type,
+                        const std::string& action_name,
+                        XrAction* action);
 
   XrResult CreateActionSpace(XrAction action, XrSpace* space);
+
+  XrResult SuggestActionBinding(
+      std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings,
+      XrPath interaction_profile_path,
+      XrAction action,
+      std::string binding_string) const;
 
   base::Optional<gfx::Transform> GetPointerFromGripTransform(
       XrTime predicted_display_time) const;
@@ -105,8 +84,6 @@ class OpenXrController {
       XrSpace target,
       XrSpace origin,
       bool* emulated_position) const;
-
-  std::vector<std::string> GetProfiles() const;
 
   template <typename T>
   XrResult QueryState(XrAction action, T* action_state) const {
@@ -167,11 +144,14 @@ class OpenXrController {
   XrAction pointer_pose_action_;
   XrSpace pointer_pose_space_;
 
-  std::string interaction_profile_;
-  std::string top_level_user_path_string_;
+  OpenXrInteractionProfileType interaction_profile_;
 
-  std::unordered_map<OpenXrButtonType, ActionButton> button_action_map_;
+  std::unordered_map<OpenXrButtonType,
+                     std::unordered_map<OpenXrButtonActionType, XrAction>>
+      button_action_map_;
   std::unordered_map<OpenXrAxisType, XrAction> axis_action_map_;
+
+  const OpenXRPathHelper* path_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenXrController);
 };

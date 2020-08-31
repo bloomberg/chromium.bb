@@ -2,9 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export default class Automapping {
+import * as Bindings from '../bindings/bindings.js';
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+import * as SDK from '../sdk/sdk.js';
+import * as Workspace from '../workspace/workspace.js';
+
+import {FileSystem, FileSystemWorkspaceBinding} from './FileSystemWorkspaceBinding.js';  // eslint-disable-line no-unused-vars
+import {PathEncoder, PersistenceImpl} from './PersistenceImpl.js';
+
+export class Automapping {
   /**
-   * @param {!Workspace.Workspace} workspace
+   * @param {!Workspace.Workspace.WorkspaceImpl} workspace
    * @param {function(!AutomappingStatus)} onStatusAdded
    * @param {function(!AutomappingStatus)} onStatusRemoved
    */
@@ -20,31 +29,31 @@ export default class Automapping {
     this._metadataSymbol = Symbol('Automapping.Metadata');
 
 
-    /** @type {!Map<string, !Workspace.UISourceCode>} */
+    /** @type {!Map<string, !Workspace.UISourceCode.UISourceCode>} */
     this._fileSystemUISourceCodes = new Map();
-    this._sweepThrottler = new Common.Throttler(100);
+    this._sweepThrottler = new Common.Throttler.Throttler(100);
 
-    const pathEncoder = new Persistence.PathEncoder();
+    const pathEncoder = new PathEncoder();
     this._filesIndex = new FilePathIndex(pathEncoder);
     this._projectFoldersIndex = new FolderIndex(pathEncoder);
     this._activeFoldersIndex = new FolderIndex(pathEncoder);
 
-    /** @type {!Array<function(!Workspace.UISourceCode):boolean>} */
+    /** @type {!Array<function(!Workspace.UISourceCode.UISourceCode):boolean>} */
     this._interceptors = [];
 
     this._workspace.addEventListener(
         Workspace.Workspace.Events.UISourceCodeAdded,
-        event => this._onUISourceCodeAdded(/** @type {!Workspace.UISourceCode} */ (event.data)));
+        event => this._onUISourceCodeAdded(/** @type {!Workspace.UISourceCode.UISourceCode} */ (event.data)));
     this._workspace.addEventListener(
         Workspace.Workspace.Events.UISourceCodeRemoved,
-        event => this._onUISourceCodeRemoved(/** @type {!Workspace.UISourceCode} */ (event.data)));
+        event => this._onUISourceCodeRemoved(/** @type {!Workspace.UISourceCode.UISourceCode} */ (event.data)));
     this._workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRenamed, this._onUISourceCodeRenamed, this);
     this._workspace.addEventListener(
         Workspace.Workspace.Events.ProjectAdded,
-        event => this._onProjectAdded(/** @type {!Workspace.Project} */ (event.data)), this);
+        event => this._onProjectAdded(/** @type {!Workspace.Workspace.Project} */ (event.data)), this);
     this._workspace.addEventListener(
         Workspace.Workspace.Events.ProjectRemoved,
-        event => this._onProjectRemoved(/** @type {!Workspace.Project} */ (event.data)), this);
+        event => this._onProjectRemoved(/** @type {!Workspace.Workspace.Project} */ (event.data)), this);
 
     for (const fileSystem of workspace.projects()) {
       this._onProjectAdded(fileSystem);
@@ -55,7 +64,7 @@ export default class Automapping {
   }
 
   /**
-   * @param {function(!Workspace.UISourceCode):boolean} interceptor
+   * @param {function(!Workspace.UISourceCode.UISourceCode):boolean} interceptor
    */
   addNetworkInterceptor(interceptor) {
     this._interceptors.push(interceptor);
@@ -63,7 +72,7 @@ export default class Automapping {
   }
 
   scheduleRemap() {
-    for (const status of this._statuses.valuesArray()) {
+    for (const status of this._statuses.values()) {
       this._clearNetworkStatus(status.network);
     }
     this._scheduleSweep();
@@ -77,7 +86,7 @@ export default class Automapping {
      * @return {!Promise}
      */
     function sweepUnmapped() {
-      const networkProjects = this._workspace.projectsForType(Workspace.projectTypes.Network);
+      const networkProjects = this._workspace.projectsForType(Workspace.Workspace.projectTypes.Network);
       for (const networkProject of networkProjects) {
         for (const uiSourceCode of networkProject.uiSourceCodes()) {
           this._computeNetworkStatus(uiSourceCode);
@@ -92,16 +101,16 @@ export default class Automapping {
   }
 
   /**
-   * @param {!Workspace.Project} project
+   * @param {!Workspace.Workspace.Project} project
    */
   _onProjectRemoved(project) {
     for (const uiSourceCode of project.uiSourceCodes()) {
       this._onUISourceCodeRemoved(uiSourceCode);
     }
-    if (project.type() !== Workspace.projectTypes.FileSystem) {
+    if (project.type() !== Workspace.Workspace.projectTypes.FileSystem) {
       return;
     }
-    const fileSystem = /** @type {!Persistence.FileSystemWorkspaceBinding.FileSystem} */ (project);
+    const fileSystem = /** @type {!FileSystem} */ (project);
     for (const gitFolder of fileSystem.initialGitFolders()) {
       this._projectFoldersIndex.removeFolder(gitFolder);
     }
@@ -110,13 +119,13 @@ export default class Automapping {
   }
 
   /**
-   * @param {!Workspace.Project} project
+   * @param {!Workspace.Workspace.Project} project
    */
   _onProjectAdded(project) {
-    if (project.type() !== Workspace.projectTypes.FileSystem) {
+    if (project.type() !== Workspace.Workspace.projectTypes.FileSystem) {
       return;
     }
-    const fileSystem = /** @type {!Persistence.FileSystemWorkspaceBinding.FileSystem} */ (project);
+    const fileSystem = /** @type {!FileSystem} */ (project);
     for (const gitFolder of fileSystem.initialGitFolders()) {
       this._projectFoldersIndex.addFolder(gitFolder);
     }
@@ -126,45 +135,45 @@ export default class Automapping {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
   _onUISourceCodeAdded(uiSourceCode) {
     const project = uiSourceCode.project();
-    if (project.type() === Workspace.projectTypes.FileSystem) {
-      if (!Persistence.FileSystemWorkspaceBinding.fileSystemSupportsAutomapping(project)) {
+    if (project.type() === Workspace.Workspace.projectTypes.FileSystem) {
+      if (!FileSystemWorkspaceBinding.fileSystemSupportsAutomapping(project)) {
         return;
       }
       this._filesIndex.addPath(uiSourceCode.url());
       this._fileSystemUISourceCodes.set(uiSourceCode.url(), uiSourceCode);
       this._scheduleSweep();
-    } else if (project.type() === Workspace.projectTypes.Network) {
+    } else if (project.type() === Workspace.Workspace.projectTypes.Network) {
       this._computeNetworkStatus(uiSourceCode);
     }
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
   _onUISourceCodeRemoved(uiSourceCode) {
-    if (uiSourceCode.project().type() === Workspace.projectTypes.FileSystem) {
+    if (uiSourceCode.project().type() === Workspace.Workspace.projectTypes.FileSystem) {
       this._filesIndex.removePath(uiSourceCode.url());
       this._fileSystemUISourceCodes.delete(uiSourceCode.url());
       const status = uiSourceCode[this._statusSymbol];
       if (status) {
         this._clearNetworkStatus(status.network);
       }
-    } else if (uiSourceCode.project().type() === Workspace.projectTypes.Network) {
+    } else if (uiSourceCode.project().type() === Workspace.Workspace.projectTypes.Network) {
       this._clearNetworkStatus(uiSourceCode);
     }
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onUISourceCodeRenamed(event) {
-    const uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data.uiSourceCode);
+    const uiSourceCode = /** @type {!Workspace.UISourceCode.UISourceCode} */ (event.data.uiSourceCode);
     const oldURL = /** @type {string} */ (event.data.oldURL);
-    if (uiSourceCode.project().type() !== Workspace.projectTypes.FileSystem) {
+    if (uiSourceCode.project().type() !== Workspace.Workspace.projectTypes.FileSystem) {
       return;
     }
 
@@ -181,7 +190,7 @@ export default class Automapping {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} networkSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} networkSourceCode
    */
   _computeNetworkStatus(networkSourceCode) {
     if (networkSourceCode[this._processingPromiseSymbol] || networkSourceCode[this._statusSymbol]) {
@@ -244,12 +253,12 @@ export default class Automapping {
         return null;
       }
 
-      const target = Bindings.NetworkProject.targetForUISourceCode(status.network);
+      const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(status.network);
       let isValid = false;
       const fileContent = fileSystemContent.content;
-      if (target && target.type() === SDK.Target.Type.Node) {
+      if (target && target.type() === SDK.SDKModel.Type.Node) {
         const rewrappedNetworkContent =
-            Persistence.Persistence.rewrapNodeJSContent(status.fileSystem, fileContent, networkContent.content);
+            PersistenceImpl.rewrapNodeJSContent(status.fileSystem, fileContent, networkContent.content);
         isValid = fileContent === rewrappedNetworkContent;
       } else {
         // Trim trailing whitespaces because V8 adds trailing newline.
@@ -304,7 +313,7 @@ export default class Automapping {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} networkSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} networkSourceCode
    */
   _clearNetworkStatus(networkSourceCode) {
     if (networkSourceCode[this._processingPromiseSymbol]) {
@@ -329,7 +338,7 @@ export default class Automapping {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} networkSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} networkSourceCode
    * @return {!Promise<?AutomappingStatus>}
    */
   _createBinding(networkSourceCode) {
@@ -340,7 +349,7 @@ export default class Automapping {
       return Promise.resolve(status);
     }
 
-    let networkPath = Common.ParsedURL.extractPath(networkSourceCode.url());
+    let networkPath = Common.ParsedURL.ParsedURL.extractPath(networkSourceCode.url());
     if (networkPath === null) {
       return Promise.resolve(/** @type {?AutomappingStatus} */ (null));
     }
@@ -384,7 +393,7 @@ export default class Automapping {
   }
 
   /**
-   * @param {!Array<!Workspace.UISourceCode>} uiSourceCodes
+   * @param {!Array<!Workspace.UISourceCode.UISourceCode>} uiSourceCodes
    * @return {!Promise}
    */
   _pullMetadatas(uiSourceCodes) {
@@ -394,9 +403,9 @@ export default class Automapping {
   }
 
   /**
-   * @param {!Array<!Workspace.UISourceCode>} files
-   * @param {!Workspace.UISourceCodeMetadata} networkMetadata
-   * @return {!Array<!Workspace.UISourceCode>}
+   * @param {!Array<!Workspace.UISourceCode.UISourceCode>} files
+   * @param {!Workspace.UISourceCode.UISourceCodeMetadata} networkMetadata
+   * @return {!Array<!Workspace.UISourceCode.UISourceCode>}
    */
   _filterWithMetadata(files, networkMetadata) {
     return files.filter(file => {
@@ -418,11 +427,11 @@ export default class Automapping {
  */
 class FilePathIndex {
   /**
-   * @param {!Persistence.PathEncoder} encoder
+   * @param {!PathEncoder} encoder
    */
   constructor(encoder) {
     this._encoder = encoder;
-    this._reversedIndex = new Common.Trie();
+    this._reversedIndex = new Common.Trie.Trie();
   }
 
   /**
@@ -430,7 +439,7 @@ class FilePathIndex {
    */
   addPath(path) {
     const encodedPath = this._encoder.encode(path);
-    this._reversedIndex.add(encodedPath.reverse());
+    this._reversedIndex.add(Platform.StringUtilities.reverse(encodedPath));
   }
 
   /**
@@ -438,7 +447,7 @@ class FilePathIndex {
    */
   removePath(path) {
     const encodedPath = this._encoder.encode(path);
-    this._reversedIndex.remove(encodedPath.reverse());
+    this._reversedIndex.remove(Platform.StringUtilities.reverse(encodedPath));
   }
 
   /**
@@ -447,12 +456,13 @@ class FilePathIndex {
    */
   similarFiles(networkPath) {
     const encodedPath = this._encoder.encode(networkPath);
-    const longestCommonPrefix = this._reversedIndex.longestPrefix(encodedPath.reverse(), false);
+    const reversedEncodedPath = Platform.StringUtilities.reverse(encodedPath);
+    const longestCommonPrefix = this._reversedIndex.longestPrefix(reversedEncodedPath, false);
     if (!longestCommonPrefix) {
       return [];
     }
     return this._reversedIndex.words(longestCommonPrefix)
-        .map(encodedPath => this._encoder.decode(encodedPath.reverse()));
+        .map(encodedPath => this._encoder.decode(Platform.StringUtilities.reverse(encodedPath)));
   }
 }
 
@@ -461,11 +471,11 @@ class FilePathIndex {
  */
 class FolderIndex {
   /**
-   * @param {!Persistence.PathEncoder} encoder
+   * @param {!PathEncoder} encoder
    */
   constructor(encoder) {
     this._encoder = encoder;
-    this._index = new Common.Trie();
+    this._index = new Common.Trie.Trie();
     /** @type {!Map<string, number>} */
     this._folderCount = new Map();
   }
@@ -523,8 +533,8 @@ class FolderIndex {
  */
 export class AutomappingStatus {
   /**
-   * @param {!Workspace.UISourceCode} network
-   * @param {!Workspace.UISourceCode} fileSystem
+   * @param {!Workspace.UISourceCode.UISourceCode} network
+   * @param {!Workspace.UISourceCode.UISourceCode} fileSystem
    * @param {boolean} exactMatch
    */
   constructor(network, fileSystem, exactMatch) {
@@ -533,15 +543,3 @@ export class AutomappingStatus {
     this.exactMatch = exactMatch;
   }
 }
-
-/* Legacy exported object */
-self.Persistence = self.Persistence || {};
-
-/* Legacy exported object */
-Persistence = Persistence || {};
-
-/** @constructor */
-Persistence.Automapping = Automapping;
-
-/** @constructor */
-Persistence.AutomappingStatus = AutomappingStatus;

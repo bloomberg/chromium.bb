@@ -1,13 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2013 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
-import BaseHTTPServer
 import re
-import SocketServer
 import threading
 import time
+import unittest
+import platform
+
+from six.moves import BaseHTTPServer
+from six.moves import socketserver
 
 # Mutates sys.path.
 import test_env
@@ -19,7 +22,7 @@ from utils import authenticators
 from utils import net
 
 
-class SleepingServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+class SleepingServer(socketserver.ThreadingMixIn, BaseHTTPServer.HTTPServer):
   """Multithreaded server that serves requests that block at various stages."""
 
   # Lingering keep-alive HTTP connections keep (not very smart) HTTPServer
@@ -157,16 +160,19 @@ class UrlOpenTimeoutTest(auto_stub.TestCase):
     self.assertTrue(stream)
     gen = stream.iter_content(len(SleepingHandler.first_line))
     with self.assertRaises(net.TimeoutError):
-      gen.next()
+      next(gen)
 
+  @unittest.skipIf(platform.system() == 'Darwin',
+                   'TODO(crbug.com/1017545):'
+                   'AssertionError: TimeoutError not raised')
   def test_urlopen_timeout_mid_stream(self):
     # Timeouts while reading from the stream.
     stream = self.call('sleep_during_response', 0.25, read_timeout=0.1)
     self.assertTrue(stream)
     gen = stream.iter_content(len(SleepingHandler.first_line))
-    gen.next()
+    next(gen)
     with self.assertRaises(net.TimeoutError):
-      gen.next()
+      next(gen)
 
 
 if __name__ == '__main__':

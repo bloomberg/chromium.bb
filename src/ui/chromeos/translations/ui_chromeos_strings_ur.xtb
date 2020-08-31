@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">اپ لوڈ کریں</translation>
 <translation id="1249250836236328755">نوع</translation>
 <translation id="1278813325885878377">‏ہنگریائی QWERTY کی بورڈ</translation>
+<translation id="1293556467332435079">فائلیں</translation>
 <translation id="1297922636971898492">‏Google Drive ابھی دستیاب نہیں ہے۔ Google Drive واپس آ جانے پر اپ لوڈنگ خود بخود دوبارہ شروع ہو جائے گی۔</translation>
 <translation id="1307931752636661898">‏Linux فائلز دیکھنے سے قاصر</translation>
 <translation id="1310751437842832374">‏نقل حرفی (mausam → ନମସ୍ତେ)</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">محفوظ ہو گئی</translation>
 <translation id="1864756863218646478">فائل تلاش نہیں کی جا سکی۔</translation>
 <translation id="1921986354447415460">‏ترکی F کی بورڈ</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> کو فارمیٹ کر دیا گیا</translation>
 <translation id="1931134289871235022">سلاواکی</translation>
 <translation id="1933345018156373194">منتقلی ناکام ہو گئی، غیر متوقع خرابی: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">فنّنِش</translation>
@@ -88,6 +90,7 @@
 <translation id="1947424002851288782">جرمن کی بورڈ</translation>
 <translation id="1972984168337863910">فائلز کے تاثرات کے پینلز کو پھیلائیں</translation>
 <translation id="1984603991036629094">آرمینیائی فونیٹک کی بورڈ</translation>
+<translation id="1995337122023280937">فائل کے مقام پر جائیں</translation>
 <translation id="2001796770603320721">‏Drive میں نظم کریں</translation>
 <translation id="2009067268969781306">ڈرائیو کو فارمیٹ کرنے سے اس پر اسٹور کردہ تمام ڈیٹا حذف ہو جائے گا۔ اس کارروائی کو کالعدم نہیں کیا جا سکتا۔</translation>
 <translation id="2028997212275086731">‏RAR آرکائیو</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">‏Google Drive تک رسائی حاصل نہیں ہو سکی۔ براہ کرم <ph name="BEGIN_LINK" />لاگ آؤٹ کریں<ph name="END_LINK" /> اور دوبارہ لاگ ان کریں۔</translation>
 <translation id="2649120831653069427">رینبو فش</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">فائل کا مقام</translation>
 <translation id="2672394958563893062">ایک خرابی پیش آگئی۔ ابتدا سے دوبارہ شروع کرنے کیلئے کلک کریں۔</translation>
 <translation id="2676946222714718093">اس پر چل رہا ہے</translation>
 <translation id="2735698359135166290">رومانیائی معیاری کی بورڈ</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">جرمن نیو 2 کی بورڈ</translation>
 <translation id="2943400156390503548">Slides</translation>
 <translation id="2943503720238418293">اس سے چھوٹا نام استعمال کریں</translation>
+<translation id="2949781154072577687"><ph name="DRIVE_NAME" /> کو فارمیٹ کیا جا رہا ہے...</translation>
 <translation id="2951236788251446349">جیلی فش</translation>
 <translation id="2963783323012015985">ترکی کی بورڈ</translation>
 <translation id="2966459079597787514">سویڈش کی بورڈ</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> خرابیاں۔</translation>
 <translation id="3519867315646775981">‏نقل حرفی (shalom ← שלום)</translation>
 <translation id="3522708245912499433">پُرتگالی</translation>
+<translation id="3524311639100184459">احتیاط: یہ فائلز عارضی ہیں اور ڈسک میں جگہ خالی کرنے کیلئے انہیں خودکار طور پر حذف کیا جا سکتا ہے۔  <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">فولڈر</translation>
 <translation id="3549797760399244642">‏drive.google.com پر جائیں…</translation>
 <translation id="357479282490346887">لتھُواینین</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">کیوی</translation>
 <translation id="3966388904776714213">آڈیو پلیئر</translation>
 <translation id="4002066346123236978">عنوان</translation>
+<translation id="4065397611279318371"><ph name="APP_NAME" /> ایپس کے ساتھ فائلز کھولنے کے لیے، پہلے انہیں <ph name="SHARED_DIRECTORY_LABEL" /> کے فولڈر میں منتقل کریں۔</translation>
 <translation id="4070370845051020638">کینٹونیز کا اندراج کا طریقہ</translation>
 <translation id="4072248638558688893">تامل کی بورڈ (فونیٹک)</translation>
 <translation id="4124935795427217608">یونیکارن</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">کاپی آپریشن ناکام ہو گیا۔ <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">خربوزہ</translation>
 <translation id="4372884569765913867">1x1</translation>
+<translation id="4394214039309501350">خارجی لنک</translation>
 <translation id="4425149324548788773">میری ڈرائیو</translation>
 <translation id="4465830120256509958">برازیلیائی کی بورڈ</translation>
 <translation id="4470564870223067757">‏Hangul 2 سیٹ</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">خودکار اصلاح</translation>
 <translation id="4881695831933465202">کھولیں</translation>
 <translation id="4886021172213954916">تمل کی بورڈ (ٹائپ رائٹر)</translation>
+<translation id="4892969127351273348"><ph name="APP_NAME" /> کے ساتھ کھولنے سے قاصر</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> بیک اپ لینے کیلئے تیار</translation>
 <translation id="4924638091161556692">مقررہ</translation>
 <translation id="4935975195727477204">گزانیہ پھول</translation>
@@ -495,6 +504,7 @@
 <translation id="6806699711453372963">‏Linux کے اشتراک کا نظم کریں</translation>
 <translation id="6808193438228982088">لومڑی</translation>
 <translation id="6820687829547641339">‏Gzip کمپریس کردہ tar آرکائیو</translation>
+<translation id="6823166707458800069">اس فولڈر میں محفوظ کردہ سبھی فائلوں کا خودکار طور پر آن لائن بیک اپ لیا جاتا ہے۔</translation>
 <translation id="6825883775269213504">روسی</translation>
 <translation id="6827236167376090743">یہ ویڈیو بہت دیر تک چلتی رہے گی۔</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> کو انتخاب سے ہٹا دیا گیا۔</translation>
@@ -504,6 +514,7 @@
 <translation id="6878261347041253038">دیوناگری کی بورڈ (فونیٹک)</translation>
 <translation id="6885780034956018177">گھونگھا</translation>
 <translation id="6896758677409633944">کاپی کریں</translation>
+<translation id="6898028766943174120">مزید ذیلی فولڈرز...</translation>
 <translation id="691516599546977041"><ph name="FOLDER_NAME" /> میں محفوظ نہیں کیا جا سکتا۔ ترمیم شدہ تصاویر ڈاؤن لوڈز فولڈر میں محفوظ کی جائیں گی۔</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">US Workman</translation>
@@ -516,6 +527,7 @@
 <translation id="696203921837389374">موبائل ڈیٹا پر مطابقت پذیری کو فعال کریں</translation>
 <translation id="6965382102122355670">ٹھیک ہے</translation>
 <translation id="6970230597523682626">بلغاری</translation>
+<translation id="6973630695168034713">فولڈرز</translation>
 <translation id="6978611942794658017">‏یہ فائل Windows سافٹ ویئر استعمال کر رہے PC کیلئے بنائی گئی ہے۔ یہ آپ کے اس آلہ کے ساتھ مطابقت پذیر نہیں ہے جو Chrome OS چلاتا ہے۔ براہ کرم ایک مناسب متبادل ایپ کیلئے Chrome ویب اسٹور تلاش کریں۔</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6990081529015358884">آپ کے پاس جگہ ختم ہو گئی ہے</translation>
@@ -549,6 +561,7 @@
 <translation id="7417705661718309329">‏Google نقشہ</translation>
 <translation id="7419631653042041064">کیٹلان کی بورڈ</translation>
 <translation id="7434823369735508263">‏UK ڈوراک کی بورڈ</translation>
+<translation id="7447678886297481665">اس فولڈر میں موجود فائلز صرف پڑھنے کے لیے ہیں۔ کچھ سرگرمیاں تعاون یافتہ نہیں ہیں۔</translation>
 <translation id="7460898608667578234">يُوکرينی</translation>
 <translation id="7474889694310679759">کینیڈین انگریزی کی بورڈ</translation>
 <translation id="7489215562877293245">‏<ph name="FILE_COUNT" /> ملیں
@@ -567,6 +580,7 @@
 <translation id="7649070708921625228">مدد</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" /> آئٹمز منتقل کئے جا رہے ہیں...</translation>
 <translation id="7658239707568436148">منسوخ کریں</translation>
+<translation id="7695430100978772476"><ph name="DRIVE_NAME" /> کو فارمیٹ نہیں کیا جا سکا</translation>
 <translation id="770015031906360009">يونانی</translation>
 <translation id="7706319470528945664">پرتگالی کی بورڈ</translation>
 <translation id="7711920809702896782">تصویر کی معلومات</translation>

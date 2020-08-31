@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/autofill/save_card_message_with_links.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_save_card_modal_delegate.h"
@@ -37,6 +38,16 @@
     autofill::AutofillSaveCardInfoBarDelegateMobile* saveCardInfoBarDelegate;
 // YES if the Infobar has been Accepted.
 @property(nonatomic, assign) BOOL infobarAccepted;
+
+// TODO(crbug.com/1014652): Move these to future Mediator since these properties
+// don't belong in the Coordinator. Cardholder Name to be saved by
+// |saveCardInfoBarDelegate|.
+@property(nonatomic, copy) NSString* cardholderName;
+// Card Expiration month to be saved by |saveCardInfoBarDelegate|.
+@property(nonatomic, copy) NSString* expirationMonth;
+// Card Expiration year to be saved by |saveCardInfoBarDelegate|.
+@property(nonatomic, copy) NSString* expirationYear;
+
 @end
 
 @implementation InfobarSaveCardCoordinator
@@ -66,20 +77,29 @@
         initWithDelegate:self
            presentsModal:self.hasBadge
                     type:InfobarType::kInfobarTypeSaveCard];
-    if (self.saveCardInfoBarDelegate->upload()) {
-      self.bannerViewController.buttonText =
-          l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_ELLIPSIS);
-    } else {
-      self.bannerViewController.buttonText =
-          base::SysUTF16ToNSString(self.saveCardInfoBarDelegate->GetButtonLabel(
-              ConfirmInfoBarDelegate::BUTTON_OK));
-    }
-    self.bannerViewController.titleText = base::SysUTF16ToNSString(
-        self.saveCardInfoBarDelegate->GetMessageText());
-    self.bannerViewController.subTitleText =
-        base::SysUTF16ToNSString(self.saveCardInfoBarDelegate->card_label());
+
+    [self.bannerViewController
+        setButtonText:self.saveCardInfoBarDelegate->upload()
+                          ? l10n_util::GetNSString(
+                                IDS_IOS_AUTOFILL_SAVE_ELLIPSIS)
+                          : base::SysUTF16ToNSString(
+                                self.saveCardInfoBarDelegate->GetButtonLabel(
+                                    ConfirmInfoBarDelegate::BUTTON_OK))];
+    [self.bannerViewController
+        setTitleText:base::SysUTF16ToNSString(
+                         self.saveCardInfoBarDelegate->GetMessageText())];
+    [self.bannerViewController
+        setSubtitleText:base::SysUTF16ToNSString(
+                            self.saveCardInfoBarDelegate->card_label())];
     self.bannerViewController.iconImage =
         [UIImage imageNamed:@"infobar_save_card_icon"];
+
+    self.cardholderName = base::SysUTF16ToNSString(
+        self.saveCardInfoBarDelegate->cardholder_name());
+    self.expirationMonth = base::SysUTF16ToNSString(
+        self.saveCardInfoBarDelegate->expiration_date_month());
+    self.expirationYear = base::SysUTF16ToNSString(
+        self.saveCardInfoBarDelegate->expiration_date_year());
   }
 }
 
@@ -89,7 +109,9 @@
     self.started = NO;
     // RemoveInfoBar() will delete the InfobarIOS that owns this Coordinator
     // from memory.
-    self.delegate->RemoveInfoBar();
+    if (self.delegate) {
+      self.delegate->RemoveInfoBar();
+    }
     _saveCardInfoBarDelegate = nil;
     [self.infobarContainer childCoordinatorStopped:self];
   }
@@ -113,7 +135,13 @@
     return;
   }
   // Ignore the Accept() return value since it always returns YES.
-  self.saveCardInfoBarDelegate->Accept();
+  DCHECK(self.cardholderName);
+  DCHECK(self.expirationMonth);
+  DCHECK(self.expirationYear);
+  self.saveCardInfoBarDelegate->UpdateAndAccept(
+      base::SysNSStringToUTF16(self.cardholderName),
+      base::SysNSStringToUTF16(self.expirationMonth),
+      base::SysNSStringToUTF16(self.expirationYear));
   self.infobarAccepted = YES;
 }
 
@@ -162,18 +190,17 @@
       stringWithFormat:@"•••• %@",
                        base::SysUTF16ToNSString(self.saveCardInfoBarDelegate
                                                     ->card_last_four_digits())];
-  self.modalViewController.cardholderName =
-      base::SysUTF16ToNSString(self.saveCardInfoBarDelegate->cardholder_name());
-  self.modalViewController.expirationMonth = base::SysUTF16ToNSString(
-      self.saveCardInfoBarDelegate->expiration_date_month());
-  self.modalViewController.expirationYear = base::SysUTF16ToNSString(
-      self.saveCardInfoBarDelegate->expiration_date_year());
+  self.modalViewController.cardholderName = self.cardholderName;
+  self.modalViewController.expirationMonth = self.expirationMonth;
+  self.modalViewController.expirationYear = self.expirationYear;
   self.modalViewController.currentCardSaved = !self.infobarAccepted;
   self.modalViewController.legalMessages = [self legalMessagesForModal];
   if ((base::FeatureList::IsEnabled(
           autofill::features::kAutofillSaveCardInfobarEditSupport))) {
+    // Only allow editing if the card will be uploaded and it hasn't been
+    // previously saved.
     self.modalViewController.supportsEditing =
-        self.saveCardInfoBarDelegate->upload();
+        self.saveCardInfoBarDelegate->upload() && !self.infobarAccepted;
   } else {
     self.modalViewController.supportsEditing = NO;
   }
@@ -208,8 +235,9 @@
 - (void)saveCardWithCardholderName:(NSString*)cardholderName
                    expirationMonth:(NSString*)month
                     expirationYear:(NSString*)year {
-  // TODO(crbug.com/1014652): Once editing is supported send these parameters to
-  // the Delegate for saving.
+  self.cardholderName = cardholderName;
+  self.expirationMonth = month;
+  self.expirationYear = year;
   [self modalInfobarButtonWasAccepted:self];
 }
 
@@ -217,11 +245,11 @@
   // Before passing the URL to the block, make sure the block has a copy of
   // the URL and not just a reference.
   const GURL URL(linkURL);
-  [self dismissInfobarModal:self
-                   animated:YES
-                 completion:^{
-                   self.saveCardInfoBarDelegate->OnLegalMessageLinkClicked(URL);
-                 }];
+  [self dismissInfobarModalAnimated:YES
+                         completion:^{
+                           self.saveCardInfoBarDelegate
+                               ->OnLegalMessageLinkClicked(URL);
+                         }];
 }
 
 #pragma mark - Private

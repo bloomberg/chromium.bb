@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -21,6 +22,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/important_file_writer_cleaner.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -31,14 +33,17 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "base/win/pe_image.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "build/branding_buildflags.h"
+#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -48,13 +53,18 @@
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_util_win.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
+#include "chrome/browser/web_applications/chrome_pwa_launcher/last_browser_file_util.h"
+#include "chrome/browser/web_applications/chrome_pwa_launcher/launcher_log_reporter.h"
+#include "chrome/browser/web_applications/chrome_pwa_launcher/launcher_update.h"
+#include "chrome/browser/web_applications/components/web_app_file_handler_registration_win.h"
+#include "chrome/browser/web_applications/components/web_app_shortcut.h"
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_elf_init.h"
 #include "chrome/browser/win/conflicts/enumerate_input_method_editors.h"
 #include "chrome/browser/win/conflicts/enumerate_shell_extensions.h"
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/module_event_sink_impl.h"
-#include "chrome/chrome_watcher/chrome_watcher_main_api.h"
+#include "chrome/browser/win/util_win_service.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -72,8 +82,8 @@
 #include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/shell_util.h"
-#include "components/crash/content/app/crash_export_thunks.h"
-#include "components/crash/content/app/dump_hung_process_with_ptype.h"
+#include "components/crash/core/app/crash_export_thunks.h"
+#include "components/crash/core/app/dump_hung_process_with_ptype.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/version_info/channel.h"
@@ -82,6 +92,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "extensions/browser/extension_registry.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -192,6 +203,14 @@ void DetectFaultTolerantHeap() {
     detected = static_cast<FTHFlags>(detected | FTH_ACXTRNAL_LOADED);
 
   UMA_HISTOGRAM_ENUMERATION("FaultTolerantHeap", detected, FTH_FLAGS_COUNT);
+}
+
+void DelayedRecordProcessorMetrics() {
+  mojo::Remote<chrome::mojom::UtilWin> remote_util_win =
+      LaunchUtilWinServiceInstance();
+  auto* remote_util_win_ptr = remote_util_win.get();
+  remote_util_win_ptr->RecordProcessorMetrics(base::BindOnce(
+      [](mojo::Remote<chrome::mojom::UtilWin>) {}, std::move(remote_util_win)));
 }
 
 // Initializes the ModuleDatabase on its owning sequence. Also starts the
@@ -381,10 +400,9 @@ void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
         // Failed to get the TimeDateStamp directly from memory. The next step
         // to try is to read the file on disk. This must be done in a blocking
         // task.
-        base::PostTask(
+        base::ThreadPool::PostTask(
             FROM_HERE,
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::BEST_EFFORT,
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
             base::BindOnce(&HandleModuleLoadEventWithoutTimeDateStamp,
                            event.module_path, event.module_size));
@@ -431,8 +449,42 @@ void MaybePostSettingsResetPrompt() {
     base::PostTask(
         FROM_HERE,
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        base::Bind(safe_browsing::MaybeShowSettingsResetPromptWithDelay));
+        base::BindOnce(safe_browsing::MaybeShowSettingsResetPromptWithDelay));
   }
+}
+
+// Updates all Progressive Web App launchers in |profile_dir| to the latest
+// version.
+void UpdatePwaLaunchersForProfile(const base::FilePath& profile_dir) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  Profile* profile =
+      g_browser_process->profile_manager()->GetProfileByPath(profile_dir);
+  if (!profile) {
+    // The profile was unloaded.
+    return;
+  }
+
+  // Create a vector of all PWA-launcher paths in |profile_dir|.
+  std::vector<base::FilePath> pwa_launcher_paths;
+  for (const auto& extension :
+       extensions::ExtensionRegistry::Get(profile)->enabled_extensions()) {
+    if (extension->from_bookmark()) {
+      base::FilePath web_app_path =
+          web_app::GetOsIntegrationResourcesDirectoryForApp(
+              profile_dir, extension->id(), GURL());
+      web_app_path =
+          web_app_path.Append(web_app::GetAppSpecificLauncherFilename(
+              base::UTF8ToUTF16(extension->name())));
+      pwa_launcher_paths.push_back(std::move(web_app_path));
+    }
+  }
+
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
+      base::BindOnce(&web_app::UpdatePwaLaunchers,
+                     std::move(pwa_launcher_paths)));
 }
 
 // This error message is not localized because we failed to load the
@@ -550,6 +602,12 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
   return ChromeBrowserMainParts::PreCreateThreads();
 }
 
+void ChromeBrowserMainPartsWin::PostMainMessageLoopRun() {
+  base::ImportantFileWriterCleaner::GetInstance().Stop();
+
+  ChromeBrowserMainParts::PostMainMessageLoopRun();
+}
+
 void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
   ui::MessageBox(NULL, base::ASCIIToUTF16(kMissingLocaleDataMessage),
                  base::ASCIIToUTF16(kMissingLocaleDataTitle),
@@ -572,8 +630,8 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
   if (!ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() ||
       !ModuleBlacklistCacheUpdater::IsBlockingEnabled())
     ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(
-        base::CreateTaskRunner(
-            {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+        base::ThreadPool::CreateTaskRunner(
+            {base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
              base::MayBlock()})
             .get());
@@ -609,12 +667,48 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   } else {
     MaybePostSettingsResetPrompt();
   }
-
   // Record UMA data about whether the fault-tolerant heap is enabled.
   // Use a delayed task to minimize the impact on startup time.
   base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
                         base::BindOnce(&DetectFaultTolerantHeap),
                         base::TimeDelta::FromMinutes(1));
+
+  // Record Processor Metrics. This is a very low priority, hence posting to
+  // start after Chrome startup has completed. This metric is only available
+  // starting Windows 10.
+  if (base::win::OSInfo::GetInstance()->version() >=
+      base::win::Version::WIN10) {
+    AfterStartupTaskUtils::PostTask(
+        FROM_HERE, base::ThreadPool::CreateSequencedTaskRunner({}),
+        base::BindOnce(&DelayedRecordProcessorMetrics));
+  }
+
+  // Write current executable path to the User Data directory to inform
+  // Progressive Web App launchers, which run from within the User Data
+  // directory, which chrome.exe to launch from.
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+      base::BindOnce(&web_app::WriteChromePathToLastBrowserFile,
+                     user_data_dir()));
+
+  // If Chrome was launched by a Progressive Web App launcher that needs to be
+  // updated, update all launchers for this profile.
+  if (parsed_command_line().HasSwitch(switches::kAppId) &&
+      parsed_command_line().GetSwitchValueASCII(
+          switches::kPwaLauncherVersion) != chrome::kChromeVersion) {
+    content::BrowserThread::PostBestEffortTask(
+        FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
+        base::BindOnce(&UpdatePwaLaunchersForProfile, profile()->GetPath()));
+  }
+
+  // Record the result of the latest Progressive Web App launcher launch.
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+      base::BindOnce(&web_app::RecordPwaLauncherResult));
+
+  base::ImportantFileWriterCleaner::GetInstance().Start();
 }
 
 // static

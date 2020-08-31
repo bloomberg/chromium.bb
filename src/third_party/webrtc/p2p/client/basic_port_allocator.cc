@@ -95,15 +95,16 @@ int ComparePort(const cricket::Port* a, const cricket::Port* b) {
 struct NetworkFilter {
   using Predicate = std::function<bool(rtc::Network*)>;
   NetworkFilter(Predicate pred, const std::string& description)
-      : pred(pred), description(description) {}
-  Predicate pred;
+      : predRemain([pred](rtc::Network* network) { return !pred(network); }),
+        description(description) {}
+  Predicate predRemain;
   const std::string description;
 };
 
 using NetworkList = rtc::NetworkManager::NetworkList;
 void FilterNetworks(NetworkList* networks, NetworkFilter filter) {
   auto start_to_remove =
-      std::remove_if(networks->begin(), networks->end(), filter.pred);
+      std::partition(networks->begin(), networks->end(), filter.predRemain);
   if (start_to_remove == networks->end()) {
     return;
   }
@@ -162,7 +163,6 @@ BasicPortAllocator::BasicPortAllocator(
   RTC_DCHECK(socket_factory_ != nullptr);
   SetConfiguration(ServerAddresses(), std::vector<RelayServerConfig>(), 0,
                    webrtc::NO_PRUNE, customizer);
-  Construct();
 }
 
 BasicPortAllocator::BasicPortAllocator(rtc::NetworkManager* network_manager)
@@ -170,7 +170,6 @@ BasicPortAllocator::BasicPortAllocator(rtc::NetworkManager* network_manager)
   InitRelayPortFactory(nullptr);
   RTC_DCHECK(relay_port_factory_ != nullptr);
   RTC_DCHECK(network_manager_ != nullptr);
-  Construct();
 }
 
 BasicPortAllocator::BasicPortAllocator(rtc::NetworkManager* network_manager,
@@ -187,11 +186,6 @@ BasicPortAllocator::BasicPortAllocator(rtc::NetworkManager* network_manager,
   RTC_DCHECK(relay_port_factory_ != nullptr);
   SetConfiguration(stun_servers, std::vector<RelayServerConfig>(), 0,
                    webrtc::NO_PRUNE, nullptr);
-  Construct();
-}
-
-void BasicPortAllocator::Construct() {
-  allow_tcp_listen_ = true;
 }
 
 void BasicPortAllocator::OnIceRegathering(PortAllocatorSession* session,
@@ -467,23 +461,6 @@ void BasicPortAllocatorSession::RegatherOnFailedNetworks() {
   bool disable_equivalent_phases = true;
   Regather(failed_networks, disable_equivalent_phases,
            IceRegatheringReason::NETWORK_FAILURE);
-}
-
-void BasicPortAllocatorSession::RegatherOnAllNetworks() {
-  RTC_DCHECK_RUN_ON(network_thread_);
-
-  std::vector<rtc::Network*> networks = GetNetworks();
-  if (networks.empty()) {
-    return;
-  }
-
-  RTC_LOG(LS_INFO) << "Regather candidates on all networks";
-
-  // We expect to generate candidates that are equivalent to what we have now.
-  // Force DoAllocate to generate them instead of skipping.
-  bool disable_equivalent_phases = false;
-  Regather(networks, disable_equivalent_phases,
-           IceRegatheringReason::OCCASIONAL_REFRESH);
 }
 
 void BasicPortAllocatorSession::Regather(

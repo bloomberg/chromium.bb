@@ -4,6 +4,7 @@
 
 import json
 
+from tracing.proto import histogram_proto
 from tracing.value.diagnostics import diagnostic
 
 
@@ -35,6 +36,9 @@ class GenericSet(diagnostic.Diagnostic):
 
   def __eq__(self, other):
     return self._GetComparableSet() == other._GetComparableSet()
+
+  def __repr__(self):
+    return str(self._GetComparableSet())
 
   def __hash__(self):
     return id(self)
@@ -81,6 +85,11 @@ class GenericSet(diagnostic.Diagnostic):
   def _AsDictInto(self, dct):
     dct['values'] = list(self)
 
+  def _AsProto(self):
+    proto = histogram_proto.Pb2().Diagnostic()
+    proto.generic_set.values.extend([json.dumps(v) for v in list(self)])
+    return proto
+
   @staticmethod
   def Deserialize(data, deserializer):
     if not isinstance(data, list):
@@ -90,6 +99,21 @@ class GenericSet(diagnostic.Diagnostic):
   @staticmethod
   def FromDict(dct):
     return GenericSet(dct['values'])
+
+  @staticmethod
+  def FromProto(d):
+    values = []
+    for value_json in d.values:
+      try:
+        values.append(json.loads(value_json))
+      except (TypeError, ValueError):
+        raise TypeError('The value %s is not valid JSON. You cannot pass naked '
+                        'strings as a GenericSet value, for instance; they '
+                        'have to be quoted. Therefore, 1234 is a valid value '
+                        '(int), "abcd" is a valid value (string), but abcd is '
+                        'not valid.' % value_json)
+
+    return GenericSet(values)
 
   def GetOnlyElement(self):
     assert len(self) == 1

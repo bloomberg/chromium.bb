@@ -47,10 +47,19 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
 
   StyleValueType GetType() const override { return kUnparsedType; }
 
+  void AnonymousIndexedGetter(uint32_t index,
+                              CSSUnparsedSegment& return_value,
+                              ExceptionState& exception_state) const {
+    return_value = AnonymousIndexedGetter(index, exception_state);
+  }
+  // TODO(crbug.com/1050474): Remove the following 2-arguments version once the
+  // migration to the new bindings generator is done.  The current policy is
+  // that return value of IDL union type is returned by argument.  This policy
+  // may change when we implement IDL union types with GarbageCollected classes.
   CSSUnparsedSegment AnonymousIndexedGetter(unsigned, ExceptionState&) const;
-  bool AnonymousIndexedSetter(unsigned,
-                              const CSSUnparsedSegment&,
-                              ExceptionState&);
+  IndexedPropertySetterResult AnonymousIndexedSetter(unsigned,
+                                                     const CSSUnparsedSegment&,
+                                                     ExceptionState&);
 
   wtf_size_t length() const { return tokens_.size(); }
 

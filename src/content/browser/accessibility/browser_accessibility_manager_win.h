@@ -31,10 +31,8 @@ static const wchar_t kUiaTestCompleteSentinel[] = L"kUiaTestCompleteSentinel";
 class CONTENT_EXPORT BrowserAccessibilityManagerWin
     : public BrowserAccessibilityManager {
  public:
-  BrowserAccessibilityManagerWin(
-      const ui::AXTreeUpdate& initial_tree,
-      BrowserAccessibilityDelegate* delegate,
-      BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
+  BrowserAccessibilityManagerWin(const ui::AXTreeUpdate& initial_tree,
+                                 BrowserAccessibilityDelegate* delegate);
 
   ~BrowserAccessibilityManagerWin() override;
 
@@ -47,7 +45,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void UserIsReloading() override;
   BrowserAccessibility* GetFocus() const override;
   bool CanFireEvents() const override;
-  gfx::Rect GetViewBounds() override;
+  gfx::Rect GetViewBoundsInScreenCoordinates() const override;
 
   void FireFocusEvent(BrowserAccessibility* node) override;
   void FireBlinkEvent(ax::mojom::Event event_type,
@@ -80,12 +78,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
  protected:
   // AXTreeObserver methods.
   void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
+  void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
       bool root_changed,
       const std::vector<ui::AXTreeObserver::Change>& changes) override;
-
-  bool ShouldFireEventForNode(BrowserAccessibility* node) const;
 
  private:
   void HandleSelectedStateChanged(BrowserAccessibility* node);
@@ -104,6 +101,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // unordered set here to keep track of the unique nodes that had aria property
   // changes, so we only fire the event once for every node.
   std::unordered_set<BrowserAccessibility*> aria_properties_events_;
+
+  // Since there could be duplicate text selection changed events on a node
+  // raised from both FireBlinkEvent and FireGeneratedEvent, we use an unordered
+  // set here to keep track of the unique nodes that had
+  // UIA_Text_TextSelectionChangedEventId, so we only fire the event once for
+  // every node.
+  std::unordered_set<BrowserAccessibility*> text_selection_changed_events_;
 
   // When the ignored state changes for a node, we only want to fire the
   // events relevant to the ignored state change (e.g. show / hide).

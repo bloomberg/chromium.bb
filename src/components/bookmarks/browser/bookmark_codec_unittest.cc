@@ -184,8 +184,6 @@ class BookmarkCodecTest : public testing::Test {
                                 sync_metadata_str);
     model->set_next_node_id(max_id);
     AsMutable(model->root_node())->SetMetaInfoMap(codec->model_meta_info_map());
-    AsMutable(model->root_node())
-        ->set_sync_transaction_version(codec->model_sync_transaction_version());
 
     return result;
   }
@@ -452,28 +450,6 @@ TEST_F(BookmarkCodecTest, EncodeAndDecodeMetaInfo) {
   EXPECT_FALSE(child->GetMetaInfo("other_key", &meta_value));
 }
 
-TEST_F(BookmarkCodecTest, EncodeAndDecodeSyncTransactionVersion) {
-  // Add sync transaction version and encode.
-  std::unique_ptr<BookmarkModel> model(CreateTestModel2());
-  model->SetNodeSyncTransactionVersion(model->root_node(), 1);
-  const BookmarkNode* bbn = model->bookmark_bar_node();
-  model->SetNodeSyncTransactionVersion(bbn->children()[1].get(), 42);
-
-  std::string checksum;
-  std::unique_ptr<base::Value> value =
-      EncodeHelper(model.get(), /*sync_metadata_str=*/std::string(), &checksum);
-  ASSERT_TRUE(value.get() != nullptr);
-
-  // Decode and verify.
-  model = DecodeHelper(*value, checksum, &checksum, false,
-                       /*sync_metadata_str=*/nullptr);
-  EXPECT_EQ(1, model->root_node()->sync_transaction_version());
-  bbn = model->bookmark_bar_node();
-  EXPECT_EQ(42, bbn->children()[1]->sync_transaction_version());
-  EXPECT_EQ(BookmarkNode::kInvalidSyncTransactionVersion,
-            bbn->children()[0]->sync_transaction_version());
-}
-
 // Verifies that we can still decode the old codec format after changing the
 // way meta info is stored.
 TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
@@ -490,20 +466,11 @@ TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
   ASSERT_TRUE(Decode(&decoder, *root.get(), model.get(),
                      /*sync_metadata_str=*/nullptr));
 
-  EXPECT_EQ(1, model->root_node()->sync_transaction_version());
   const BookmarkNode* bbn = model->bookmark_bar_node();
-  EXPECT_EQ(BookmarkNode::kInvalidSyncTransactionVersion,
-            bbn->children()[0]->sync_transaction_version());
-  EXPECT_EQ(42, bbn->children()[1]->sync_transaction_version());
 
-  const char kSyncTransactionVersionKey[] = "sync.transaction_version";
   const char kNormalKey[] = "key";
   const char kNestedKey[] = "nested.key";
   std::string meta_value;
-  EXPECT_FALSE(
-      model->root_node()->GetMetaInfo(kSyncTransactionVersionKey, &meta_value));
-  EXPECT_FALSE(
-      bbn->children()[1]->GetMetaInfo(kSyncTransactionVersionKey, &meta_value));
   EXPECT_TRUE(bbn->children()[0]->GetMetaInfo(kNormalKey, &meta_value));
   EXPECT_EQ("value", meta_value);
   EXPECT_TRUE(bbn->children()[1]->GetMetaInfo(kNormalKey, &meta_value));
@@ -651,7 +618,7 @@ TEST_F(BookmarkCodecTest, ReassignInvalidGUID) {
   ASSERT_TRUE(Decode(&decoder, *value.get(), decoded_model.get(),
                      /*sync_metadata_str=*/nullptr));
 
-  EXPECT_TRUE(base::IsValidGUID(
+  EXPECT_TRUE(base::IsValidGUIDOutputString(
       decoded_model->bookmark_bar_node()->children()[0]->guid()));
 }
 
@@ -717,6 +684,33 @@ TEST_F(BookmarkCodecTest, ReassignPermanentNodeDuplicateGUID) {
 
   EXPECT_NE(BookmarkNode::kRootNodeGuid,
             decoded_model->bookmark_bar_node()->children()[0]->guid());
+}
+
+TEST_F(BookmarkCodecTest, CanonicalizeGUID) {
+  const std::string kLowerCaseGuid = base::GenerateGUID();
+  ASSERT_EQ(kLowerCaseGuid, base::ToLowerASCII(kLowerCaseGuid));
+
+  const std::string kUpperCaseGuid = base::ToUpperASCII(kLowerCaseGuid);
+
+  std::unique_ptr<BookmarkModel> model_to_encode(CreateTestModel1());
+  BookmarkCodec encoder;
+  std::unique_ptr<base::Value> value(
+      encoder.Encode(model_to_encode.get(), std::string()));
+
+  // Change a GUID to a capitalized form, which could have been produced by an
+  // older version of the browser, before canonicalization was enforced.
+  base::DictionaryValue* child_value;
+  GetBookmarksBarChildValue(value.get(), 0, &child_value);
+  child_value->SetString(BookmarkCodec::kGuidKey, kUpperCaseGuid);
+
+  std::unique_ptr<BookmarkModel> decoded_model2(
+      TestBookmarkClient::CreateModel());
+  BookmarkCodec decoder2;
+  ASSERT_TRUE(Decode(&decoder2, *value.get(), decoded_model2.get(),
+                     /*sync_metadata_str=*/nullptr));
+
+  EXPECT_EQ(kLowerCaseGuid,
+            decoded_model2->bookmark_bar_node()->children()[0]->guid());
 }
 
 }  // namespace bookmarks

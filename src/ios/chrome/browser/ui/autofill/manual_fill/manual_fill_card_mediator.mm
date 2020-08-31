@@ -50,19 +50,19 @@ NSString* const kAddCreditCardsAccessibilityIdentifier =
 // All available credit cards.
 @property(nonatomic, assign) std::vector<autofill::CreditCard*> cards;
 
-// The dispatcher used by this Mediator.
-@property(nonatomic, weak) id<BrowserCoordinatorCommands> dispatcher;
+// The command handler used by this Mediator.
+@property(nonatomic, weak) id<BrowserCoordinatorCommands> handler;
 
 @end
 
 @implementation ManualFillCardMediator
 
 - (instancetype)initWithCards:(std::vector<autofill::CreditCard*>)cards
-                   dispatcher:(id<BrowserCoordinatorCommands>)dispatcher {
+                      handler:(id<BrowserCoordinatorCommands>)handler {
   self = [super init];
   if (self) {
     _cards = cards;
-    _dispatcher = dispatcher;
+    _handler = handler;
   }
   return self;
 }
@@ -134,25 +134,19 @@ NSString* const kAddCreditCardsAccessibilityIdentifier =
   manageCreditCardsItem.accessibilityIdentifier =
       manual_fill::ManageCardsAccessibilityIdentifier;
 
-  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
-    NSString* addCreditCardsTitle =
-        l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_ADD_PAYMENT_METHOD);
+  NSString* addCreditCardsTitle =
+      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_ADD_PAYMENT_METHOD);
 
-    __weak __typeof(self) weakSelf = self;
-    auto addCreditCardsItem = [[ManualFillActionItem alloc]
-        initWithTitle:addCreditCardsTitle
-               action:^{
-                 base::RecordAction(base::UserMetricsAction(
-                     "ManualFallback_CreditCard_OpenAddCreditCard"));
-                 [weakSelf.dispatcher showAddCreditCard];
-               }];
-    addCreditCardsItem.accessibilityIdentifier =
-        manual_fill::kAddCreditCardsAccessibilityIdentifier;
-    [self.consumer
-        presentActions:@[ addCreditCardsItem, manageCreditCardsItem ]];
-  } else {
-    [self.consumer presentActions:@[ manageCreditCardsItem ]];
-  }
+  auto addCreditCardsItem = [[ManualFillActionItem alloc]
+      initWithTitle:addCreditCardsTitle
+             action:^{
+               base::RecordAction(base::UserMetricsAction(
+                   "ManualFallback_CreditCard_OpenAddCreditCard"));
+               [weakSelf.handler showAddCreditCard];
+             }];
+  addCreditCardsItem.accessibilityIdentifier =
+      manual_fill::kAddCreditCardsAccessibilityIdentifier;
+  [self.consumer presentActions:@[ addCreditCardsItem, manageCreditCardsItem ]];
 }
 
 #pragma mark - FullCardRequestResultDelegateObserving

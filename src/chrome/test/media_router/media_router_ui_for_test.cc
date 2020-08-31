@@ -17,6 +17,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace media_router {
@@ -108,7 +109,8 @@ void MediaRouterUiForTest::TearDown() {
 }
 
 void MediaRouterUiForTest::ShowDialog() {
-  dialog_controller_->ShowMediaRouterDialog();
+  dialog_controller_->ShowMediaRouterDialog(
+      MediaRouterDialogOpenOrigin::TOOLBAR);
   base::RunLoop().RunUntilIdle();
 }
 

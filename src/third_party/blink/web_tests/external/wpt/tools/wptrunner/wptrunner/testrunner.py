@@ -125,7 +125,7 @@ class TestRunner(object):
         try:
             return self.executor.run_test(test)
         except Exception:
-            self.logger.critical(traceback.format_exc())
+            self.logger.error(traceback.format_exc())
             raise
 
     def wait(self):
@@ -158,7 +158,7 @@ def start_runner(runner_command_queue, runner_result_queue,
     with capture.CaptureIO(logger, capture_stdio):
         try:
             browser = executor_browser_cls(**executor_browser_kwargs)
-            executor = executor_cls(browser, **executor_kwargs)
+            executor = executor_cls(logger, browser, **executor_kwargs)
             with TestRunner(logger, runner_command_queue, runner_result_queue, executor) as runner:
                 try:
                     runner.run()
@@ -280,7 +280,7 @@ class TestRunnerManager(threading.Thread):
     def __init__(self, suite_name, test_queue, test_source_cls, browser_cls, browser_kwargs,
                  executor_cls, executor_kwargs, stop_flag, rerun=1, pause_after_test=False,
                  pause_on_unexpected=False, restart_on_unexpected=True, debug_info=None,
-                 capture_stdio=True):
+                 capture_stdio=True, recording=None):
         """Thread that owns a single TestRunner process and any processes required
         by the TestRunner (e.g. the Firefox binary).
 
@@ -318,6 +318,8 @@ class TestRunnerManager(threading.Thread):
         self.debug_info = debug_info
 
         self.manager_number = next_manager_number()
+        assert recording is not None
+        self.recording = recording
 
         self.command_queue = Queue()
         self.remote_queue = Queue()
@@ -350,6 +352,7 @@ class TestRunnerManager(threading.Thread):
         may also have a stop flag set by the main thread indicating
         that the manager should shut down the next time the event loop
         spins."""
+        self.recording.set(["testrunner", "startup"])
         self.logger = structuredlog.StructuredLogger(self.suite_name)
         with self.browser_cls(self.logger, **self.browser_kwargs) as browser:
             self.browser = BrowserManager(self.logger,
@@ -390,8 +393,8 @@ class TestRunnerManager(threading.Thread):
                             return
                     self.state = new_state
                     self.logger.debug("new state: %s" % self.state.__class__.__name__)
-            except Exception as e:
-                self.logger.error(traceback.format_exc(e))
+            except Exception:
+                self.logger.error(traceback.format_exc())
                 raise
             finally:
                 self.logger.debug("TestRunnerManager main loop terminating, starting cleanup")
@@ -467,6 +470,7 @@ class TestRunnerManager(threading.Thread):
 
     def start_init(self):
         test, test_group, group_metadata = self.get_next_test()
+        self.recording.set(["testrunner", "init"])
         if test is None:
             return RunnerManagerState.stop()
         else:
@@ -556,27 +560,35 @@ class TestRunnerManager(threading.Thread):
                                                  self.state.test_group,
                                                  self.state.group_metadata)
 
+        self.recording.set(["testrunner", "test"] + self.state.test.id.split("/")[1:])
         self.logger.test_start(self.state.test.id)
         if self.rerun > 1:
             self.logger.info("Run %d/%d" % (self.run_count, self.rerun))
             self.send_message("reset")
         self.run_count += 1
-        # Factor of 3 on the extra timeout here is based on allowing the executor
-        # at least test.timeout + 2 * extra_timeout to complete,
-        # which in turn is based on having several layers of timeout inside the executor
-        wait_timeout = (self.state.test.timeout * self.executor_kwargs['timeout_multiplier'] +
-                        3 * self.executor_cls.extra_timeout)
-        self.timer = threading.Timer(wait_timeout, self._timeout)
+        if self.debug_info is None:
+            # Factor of 3 on the extra timeout here is based on allowing the executor
+            # at least test.timeout + 2 * extra_timeout to complete,
+            # which in turn is based on having several layers of timeout inside the executor
+            wait_timeout = (self.state.test.timeout * self.executor_kwargs['timeout_multiplier'] +
+                            3 * self.executor_cls.extra_timeout)
+            self.timer = threading.Timer(wait_timeout, self._timeout)
+
         self.send_message("run_test", self.state.test)
-        self.timer.start()
+        if self.timer:
+            self.timer.start()
 
     def _timeout(self):
+        # This is executed in a different thread (threading.Timer).
         self.logger.info("Got timeout in harness")
         test = self.state.test
-        self.test_ended(test,
-                        (test.result_cls("EXTERNAL-TIMEOUT",
-                                         "TestRunner hit external timeout "
-                                         "(this may indicate a hang)"), []))
+        self.inject_message(
+            "test_ended",
+            test,
+            (test.result_cls("EXTERNAL-TIMEOUT",
+                             "TestRunner hit external timeout "
+                             "(this may indicate a hang)"), []),
+        )
 
     def test_ended(self, test, results):
         """Handle the end of a test.
@@ -584,9 +596,15 @@ class TestRunnerManager(threading.Thread):
         Output the result of each subtest, and the result of the overall
         harness to the logs.
         """
-        assert isinstance(self.state, RunnerManagerState.running)
-        assert test == self.state.test
-        self.timer.cancel()
+        if ((not isinstance(self.state, RunnerManagerState.running)) or
+            (test != self.state.test)):
+            # Due to inherent race conditions in EXTERNAL-TIMEOUT, we might
+            # receive multiple test_ended for a test (e.g. from both Executor
+            # and TestRunner), in which case we ignore the duplicate message.
+            self.logger.error("Received unexpected test_ended for %s" % test)
+            return
+        if self.timer is not None:
+            self.timer.cancel()
         # Write the result of each subtest
         file_result, test_results = results
         subtest_unexpected = False
@@ -659,6 +677,7 @@ class TestRunnerManager(threading.Thread):
                                ((subtest_unexpected or is_unexpected) and
                                 self.restart_on_unexpected))
 
+        self.recording.set(["testrunner", "after-test"])
         if (not file_result.status == "CRASH" and
             self.pause_after_test or
             (self.pause_on_unexpected and (subtest_unexpected or is_unexpected))):
@@ -707,6 +726,7 @@ class TestRunnerManager(threading.Thread):
 
     def stop_runner(self, force=False):
         """Stop the TestRunner and the browser binary."""
+        self.recording.set(["testrunner", "stop_runner"])
         if self.test_runner_proc is None:
             return
 
@@ -725,6 +745,7 @@ class TestRunnerManager(threading.Thread):
         self.remote_queue.close()
         self.command_queue = None
         self.remote_queue = None
+        self.recording.pause()
 
     def ensure_runner_stopped(self):
         self.logger.debug("ensure_runner_stopped")
@@ -757,7 +778,12 @@ class TestRunnerManager(threading.Thread):
         return RunnerManagerState.stop()
 
     def send_message(self, command, *args):
+        """Send a message to the remote queue (to Executor)."""
         self.remote_queue.put((command, args))
+
+    def inject_message(self, command, *args):
+        """Inject a message to the command queue (from Executor)."""
+        self.command_queue.put((command, args))
 
     def cleanup(self):
         self.logger.debug("TestRunnerManager cleanup")
@@ -807,7 +833,8 @@ class ManagerGroup(object):
                  pause_on_unexpected=False,
                  restart_on_unexpected=True,
                  debug_info=None,
-                 capture_stdio=True):
+                 capture_stdio=True,
+                 recording=None):
         self.suite_name = suite_name
         self.size = size
         self.test_source_cls = test_source_cls
@@ -822,6 +849,8 @@ class ManagerGroup(object):
         self.debug_info = debug_info
         self.rerun = rerun
         self.capture_stdio = capture_stdio
+        self.recording = recording
+        assert recording is not None
 
         self.pool = set()
         # Event that is polled by threads so that they can gracefully exit in the face
@@ -859,7 +888,8 @@ class ManagerGroup(object):
                                         self.pause_on_unexpected,
                                         self.restart_on_unexpected,
                                         self.debug_info,
-                                        self.capture_stdio)
+                                        self.capture_stdio,
+                                        recording=self.recording)
             manager.start()
             self.pool.add(manager)
         self.wait()

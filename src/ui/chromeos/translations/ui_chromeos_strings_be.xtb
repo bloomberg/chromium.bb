@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">Запампаваць</translation>
 <translation id="1249250836236328755">Жанр</translation>
 <translation id="1278813325885878377">Венгерская клавіятура (QWERTY)</translation>
+<translation id="1293556467332435079">Файлы</translation>
 <translation id="1297922636971898492">Google Дыск зараз недаступны. Як толькі доступ адновіцца, запампоўванне пачнецца аўтаматычна.</translation>
 <translation id="1307931752636661898">Не ўдалося праглядзець файлы Linux</translation>
 <translation id="1310751437842832374">Транслітарацыя (mausam → ନମସ୍ତେ)</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">Захавана</translation>
 <translation id="1864756863218646478">Не ўдалося знайсці файл.</translation>
 <translation id="1921986354447415460">Турэцкая раскладка (Turkish-F)</translation>
+<translation id="1924372192547904021">Дыск "<ph name="DRIVE_NAME" />" адфармаціраваны</translation>
 <translation id="1931134289871235022">Славацкая</translation>
 <translation id="1933345018156373194">Перамяшчэнне не ўдалося, нечаканая памылка: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Фінская</translation>
@@ -88,12 +90,13 @@
 <translation id="1947424002851288782">Нямецкая раскладка</translation>
 <translation id="1972984168337863910">Разгарнуць панэлі водгукаў для файлаў</translation>
 <translation id="1984603991036629094">Армянская фанетычная клавіятура</translation>
+<translation id="1995337122023280937">Адкрыць месцазнаходжанне файла</translation>
 <translation id="2001796770603320721">Кіраваць на Дыску</translation>
 <translation id="2009067268969781306">Фармаціраванне дыска прывядзе да выдалення ўсіх захаваных на ім даных. Гэта дзеянне нельга адрабіць.</translation>
 <translation id="2028997212275086731">Архіў RAR</translation>
 <translation id="2046702855113914483">Рамен</translation>
 <translation id="2070909990982335904">Назвы, якія пачынаюцца з кропкі, зарэзерваваны сістэмай. Укажыце іншую назву.</translation>
-<translation id="2079545284768500474">Адмяніць</translation>
+<translation id="2079545284768500474">Адрабіць</translation>
 <translation id="2080010875307505892">Сербская раскладка</translation>
 <translation id="2084108471225856927">Налады прылады</translation>
 <translation id="2085470240340828803">Файл пад назвай "<ph name="FILENAME" />" ужо існуе. Што трэба зрабіць?</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">Не ўдалося атрымаць доступ да Google Дыска. <ph name="BEGIN_LINK" />Выйдзіце<ph name="END_LINK" /> і зноў увайдзіце ва ўліковы запіс.</translation>
 <translation id="2649120831653069427">Радужная рыбка</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Месцазнаходжанне файла</translation>
 <translation id="2672394958563893062">Адбылася памылка. Націсніце, каб перазапусціць і пачаць спачатку.</translation>
 <translation id="2676946222714718093">Прайграецца на прыладзе</translation>
 <translation id="2735698359135166290">Румынская стандартная клавіятура</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">Нямецкая клавіятура NEO 2</translation>
 <translation id="2943400156390503548">Прэзентацыі</translation>
 <translation id="2943503720238418293">Выкарыстайце карацейшую назву</translation>
+<translation id="2949781154072577687">Фармаціруецца дыск "<ph name="DRIVE_NAME" />"...</translation>
 <translation id="2951236788251446349">Медуза</translation>
 <translation id="2963783323012015985">Турэцкая раскладка</translation>
 <translation id="2966459079597787514">Шведская клавіятура</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826">Памылак: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Транслітарацыя (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Партугальская</translation>
+<translation id="3524311639100184459">Увага! Гэта часовыя файлы, і яны могуць быць аўтаматычна выдалены для вызвалення месца на дыску.  <ph name="BEGIN_LINK" />Даведацца больш<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3549797760399244642">Перайсці на drive.google.com...</translation>
 <translation id="357479282490346887">Літоўская</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">Ківі</translation>
 <translation id="3966388904776714213">Аўдыяпрайгравальнік</translation>
 <translation id="4002066346123236978">Назва</translation>
+<translation id="4065397611279318371">Каб адкрываць файлы ў праграмах <ph name="APP_NAME" />, спачатку перамясціце іх у папку <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
 <translation id="4070370845051020638">Кантонскі метад уводу</translation>
 <translation id="4072248638558688893">Тамільская клавіятура (фанетычная)</translation>
 <translation id="4124935795427217608">Аднарог</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">Збой аперацыі капіравання. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">Дыня</translation>
 <translation id="4372884569765913867">1x1</translation>
+<translation id="4394214039309501350">Знешняя спасылка</translation>
 <translation id="4425149324548788773">Мой Дыск</translation>
 <translation id="4465830120256509958">Бразільская раскладка</translation>
 <translation id="4470564870223067757">Карэйскі алфавіт (хангыль), рэжым 2 Set</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">Аўтавыпраўленне</translation>
 <translation id="4881695831933465202">Адкрыць</translation>
 <translation id="4886021172213954916">Тамільская клавіятура (пішучая машынка)</translation>
+<translation id="4892969127351273348">Не ўдалося адкрыць у праграме "<ph name="APP_NAME" />"</translation>
 <translation id="4905417359854579806">Файлы (<ph name="FILE_COUNT" />) гатовыя да рэзервовага капіравання</translation>
 <translation id="4924638091161556692">Выпраўлена</translation>
 <translation id="4935975195727477204">Кветка гацаніі</translation>
@@ -495,6 +504,7 @@
 <translation id="6806699711453372963">Кіраваць абагульваннем з Linux</translation>
 <translation id="6808193438228982088">Ліса</translation>
 <translation id="6820687829547641339">Архіў TAR, сціснуты праграмай Gzip</translation>
+<translation id="6823166707458800069">Для ўсіх файлаў, захаваных у гэтай папцы, аўтаматычна ствараюцца рэзервовыя копіі ў інтэрнэце.</translation>
 <translation id="6825883775269213504">Руская</translation>
 <translation id="6827236167376090743">Гэта відэа будзе прайгравацца да другога прышэсця.</translation>
 <translation id="6847101934483209767">Выдалена з выбранага: <ph name="ENTRY_NAME" />.</translation>
@@ -504,6 +514,7 @@
 <translation id="6878261347041253038">Клавіятура дэванагары (фанетычная)</translation>
 <translation id="6885780034956018177">Слімак</translation>
 <translation id="6896758677409633944">Капіраваць</translation>
+<translation id="6898028766943174120">Іншыя ўкладзеныя папкі...</translation>
 <translation id="691516599546977041">Не ўдалося захаваць файлы ў папку "<ph name="FOLDER_NAME" />". Адрэдагаваныя відарысы будуць захаваны ў папку "Спампоўкі".</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">ЗША (Workman)</translation>
@@ -516,6 +527,7 @@
 <translation id="696203921837389374">Уключыць сінхранізацыю пры мабільнай перадачы даных</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="6970230597523682626">Балгарская</translation>
+<translation id="6973630695168034713">Папкі</translation>
 <translation id="6978611942794658017">Гэты файл створаны для ПК з праграмным забеспячэннем Windows. Ён несумяшчальны з вашай прыладай на Chrome OS. Пашукайце ў Вэб-краме Chrome адпаведную праграму на замену.</translation>
 <translation id="6979158407327259162">Google Дыск</translation>
 <translation id="6990081529015358884">У вас скончылася месца</translation>
@@ -549,6 +561,7 @@
 <translation id="7417705661718309329">Карта Google</translation>
 <translation id="7419631653042041064">Каталанская клавіятура</translation>
 <translation id="7434823369735508263">Клавіятура Дворака для Вялікабрытаніі</translation>
+<translation id="7447678886297481665">Файлы ў гэтай папцы – толькі для чытання. Некаторыя дзеянні не падтрымліваюцца.</translation>
 <translation id="7460898608667578234">Украінская</translation>
 <translation id="7474889694310679759">Англійская (канадская) клавіятура</translation>
 <translation id="7489215562877293245">Знойдзена: <ph name="FILE_COUNT" />
@@ -566,7 +579,8 @@
 <translation id="7628656427739290098"><ph name="PERCENT" />% выканана.</translation>
 <translation id="7649070708921625228">Даведка</translation>
 <translation id="7654209398114106148">Ідзе перамяшчэнне элементаў (<ph name="NUMBER_OF_ITEMS" />)...</translation>
-<translation id="7658239707568436148">Адмяніць</translation>
+<translation id="7658239707568436148">Скасаваць</translation>
+<translation id="7695430100978772476">Не ўдалося адфармаціраваць дыск "<ph name="DRIVE_NAME" />"</translation>
 <translation id="770015031906360009">Грэчаская</translation>
 <translation id="7706319470528945664">Партугальская клавіятура</translation>
 <translation id="7711920809702896782">Звесткі пра відарыс</translation>

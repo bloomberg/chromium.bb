@@ -91,19 +91,17 @@ std::unique_ptr<GCMStoreImpl> GCMStoreImplTest::BuildGCMStore() {
   // and contains a CURRENT file to determine the store existence.
   store_path_ =
       temp_directory_.GetPath().Append(FILE_PATH_LITERAL("GCM Store"));
-  return std::unique_ptr<GCMStoreImpl>(
-      new GCMStoreImpl(store_path_, task_runner_,
-                       base::WrapUnique<Encryptor>(new FakeEncryptor)));
+  return std::unique_ptr<GCMStoreImpl>(new GCMStoreImpl(
+      store_path_, /*remove_account_mappings_with_email_key=*/true,
+      task_runner_, base::WrapUnique<Encryptor>(new FakeEncryptor)));
 }
 
 void GCMStoreImplTest::LoadGCMStore(
     GCMStoreImpl* gcm_store,
     std::unique_ptr<GCMStore::LoadResult>* result_dst) {
-  gcm_store->Load(
-      GCMStore::CREATE_IF_MISSING,
-      base::Bind(&GCMStoreImplTest::LoadCallback,
-                 base::Unretained(this),
-                 result_dst));
+  gcm_store->Load(GCMStore::CREATE_IF_MISSING,
+                  base::BindOnce(&GCMStoreImplTest::LoadCallback,
+                                 base::Unretained(this), result_dst));
   PumpLoop();
 }
 
@@ -149,8 +147,8 @@ TEST_F(GCMStoreImplTest, LoadWithoutCreatingNewStore) {
   std::unique_ptr<GCMStoreImpl> gcm_store(BuildGCMStore());
   std::unique_ptr<GCMStore::LoadResult> load_result;
   gcm_store->Load(GCMStore::DO_NOT_CREATE,
-                  base::Bind(&GCMStoreImplTest::LoadWithoutCheckCallback,
-                             base::Unretained(this), &load_result));
+                  base::BindOnce(&GCMStoreImplTest::LoadWithoutCheckCallback,
+                                 base::Unretained(this), &load_result));
   PumpLoop();
 
   EXPECT_FALSE(load_result->success);
@@ -168,8 +166,8 @@ TEST_F(GCMStoreImplTest, LoadWithEmptyDirectory) {
 
   std::unique_ptr<GCMStore::LoadResult> load_result;
   gcm_store->Load(GCMStore::DO_NOT_CREATE,
-                  base::Bind(&GCMStoreImplTest::LoadWithoutCheckCallback,
-                             base::Unretained(this), &load_result));
+                  base::BindOnce(&GCMStoreImplTest::LoadWithoutCheckCallback,
+                                 base::Unretained(this), &load_result));
   PumpLoop();
 
   EXPECT_FALSE(load_result->success);
@@ -182,9 +180,9 @@ TEST_F(GCMStoreImplTest, DeviceCredentials) {
   LoadGCMStore(gcm_store.get(), &load_result);
 
   gcm_store->SetDeviceCredentials(
-      kDeviceId,
-      kDeviceToken,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      kDeviceId, kDeviceToken,
+      base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                     base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -205,9 +203,9 @@ TEST_F(GCMStoreImplTest, LastCheckinInfo) {
   accounts.insert("test_user2@gmail.com");
 
   gcm_store->SetLastCheckinInfo(
-      last_checkin_time,
-      accounts,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      last_checkin_time, accounts,
+      base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                     base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -217,9 +215,9 @@ TEST_F(GCMStoreImplTest, LastCheckinInfo) {
 
   // Negative cases, where the value read is gibberish.
   gcm_store->SetValueForTesting(
-      "last_checkin_time",
-      "gibberish",
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      "last_checkin_time", "gibberish",
+      base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                     base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -239,9 +237,9 @@ TEST_F(GCMStoreImplTest, GServicesSettings_ProtocolV2) {
   std::string digest = "digest1";
 
   gcm_store->SetGServicesSettings(
-      settings,
-      digest,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      settings, digest,
+      base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                     base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -257,9 +255,9 @@ TEST_F(GCMStoreImplTest, GServicesSettings_ProtocolV2) {
   digest = "digest2";
 
   gcm_store->SetGServicesSettings(
-      settings,
-      digest,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      settings, digest,
+      base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                     base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -276,18 +274,16 @@ TEST_F(GCMStoreImplTest, Registrations) {
 
   // Add one registration with one sender.
   std::string registration = "sender1=registration1";
-  gcm_store->AddRegistration(
-      kAppName,
-      registration,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  gcm_store->AddRegistration(kAppName, registration,
+                             base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                            base::Unretained(this)));
   PumpLoop();
 
   // Add one registration with multiple senders.
   std::string registration2 = "sender1,sender2=registration2";
-  gcm_store->AddRegistration(
-      kAppName2,
-      registration2,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  gcm_store->AddRegistration(kAppName2, registration2,
+                             base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                            base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -302,8 +298,8 @@ TEST_F(GCMStoreImplTest, Registrations) {
   EXPECT_EQ(registration2, load_result->registrations[kAppName2]);
 
   gcm_store->RemoveRegistration(
-      kAppName2,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      kAppName2, base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -326,8 +322,8 @@ TEST_F(GCMStoreImplTest, IncomingMessages) {
   for (int i = 0; i < kNumPersistentIds; ++i) {
     persistent_ids.push_back(GetNextPersistentId());
     gcm_store->AddIncomingMessage(
-        persistent_ids.back(),
-        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+        persistent_ids.back(), base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                              base::Unretained(this)));
     PumpLoop();
   }
 
@@ -338,8 +334,8 @@ TEST_F(GCMStoreImplTest, IncomingMessages) {
   ASSERT_TRUE(load_result->outgoing_messages.empty());
 
   gcm_store->RemoveIncomingMessages(
-      persistent_ids,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      persistent_ids, base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                     base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -365,9 +361,9 @@ TEST_F(GCMStoreImplTest, OutgoingMessages) {
     message.set_from(kAppName + persistent_ids.back());
     message.set_category(kCategoryName + persistent_ids.back());
     gcm_store->AddOutgoingMessage(
-        persistent_ids.back(),
-        MCSMessage(message),
-        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+        persistent_ids.back(), MCSMessage(message),
+        base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                       base::Unretained(this)));
     PumpLoop();
   }
 
@@ -387,8 +383,8 @@ TEST_F(GCMStoreImplTest, OutgoingMessages) {
   }
 
   gcm_store->RemoveOutgoingMessages(
-      persistent_ids,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      persistent_ids, base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                     base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -410,17 +406,17 @@ TEST_F(GCMStoreImplTest, IncomingAndOutgoingMessages) {
   for (int i = 0; i < kNumPersistentIds; ++i) {
     persistent_ids.push_back(GetNextPersistentId());
     gcm_store->AddIncomingMessage(
-        persistent_ids.back(),
-        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+        persistent_ids.back(), base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                              base::Unretained(this)));
     PumpLoop();
 
     mcs_proto::DataMessageStanza message;
     message.set_from(kAppName + persistent_ids.back());
     message.set_category(kCategoryName + persistent_ids.back());
     gcm_store->AddOutgoingMessage(
-        persistent_ids.back(),
-        MCSMessage(message),
-        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+        persistent_ids.back(), MCSMessage(message),
+        base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                       base::Unretained(this)));
     PumpLoop();
   }
 
@@ -440,12 +436,12 @@ TEST_F(GCMStoreImplTest, IncomingAndOutgoingMessages) {
   }
 
   gcm_store->RemoveIncomingMessages(
-      persistent_ids,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      persistent_ids, base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                     base::Unretained(this)));
   PumpLoop();
   gcm_store->RemoveOutgoingMessages(
-      persistent_ids,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      persistent_ids, base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                     base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -471,7 +467,8 @@ TEST_F(GCMStoreImplTest, PerAppMessageLimits) {
     message.set_category(kCategoryName);
     EXPECT_TRUE(gcm_store->AddOutgoingMessage(
         base::NumberToString(i), MCSMessage(message),
-        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this))));
+        base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                       base::Unretained(this))));
     PumpLoop();
   }
 
@@ -482,7 +479,8 @@ TEST_F(GCMStoreImplTest, PerAppMessageLimits) {
     message.set_category(kCategoryName);
     EXPECT_FALSE(gcm_store->AddOutgoingMessage(
         base::NumberToString(i + kNumMessagesPerApp), MCSMessage(message),
-        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this))));
+        base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                       base::Unretained(this))));
     PumpLoop();
   }
 
@@ -497,7 +495,8 @@ TEST_F(GCMStoreImplTest, PerAppMessageLimits) {
     message.set_category(kCategoryName);
     EXPECT_FALSE(gcm_store->AddOutgoingMessage(
         base::NumberToString(i + kNumMessagesPerApp), MCSMessage(message),
-        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this))));
+        base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                       base::Unretained(this))));
     PumpLoop();
   }
 
@@ -505,7 +504,8 @@ TEST_F(GCMStoreImplTest, PerAppMessageLimits) {
   for (int i = 0; i < kNumMessagesPerApp; ++i) {
     gcm_store->RemoveOutgoingMessage(
         base::NumberToString(i),
-        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+        base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                       base::Unretained(this)));
     PumpLoop();
   }
 
@@ -516,7 +516,8 @@ TEST_F(GCMStoreImplTest, PerAppMessageLimits) {
     message.set_category(kCategoryName);
     EXPECT_TRUE(gcm_store->AddOutgoingMessage(
         base::NumberToString(i + kNumMessagesPerApp), MCSMessage(message),
-        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this))));
+        base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                       base::Unretained(this))));
     PumpLoop();
   }
 }
@@ -544,13 +545,13 @@ TEST_F(GCMStoreImplTest, AccountMapping) {
       base::Time::FromInternalValue(1305734521259935LL);
   account_mapping2.last_message_id = "message_2";
 
-  gcm_store->AddAccountMapping(
-      account_mapping1,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  gcm_store->AddAccountMapping(account_mapping1,
+                               base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                              base::Unretained(this)));
   PumpLoop();
-  gcm_store->AddAccountMapping(
-      account_mapping2,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  gcm_store->AddAccountMapping(account_mapping2,
+                               base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                              base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -577,7 +578,8 @@ TEST_F(GCMStoreImplTest, AccountMapping) {
 
   gcm_store->RemoveAccountMapping(
       account_mapping1.account_id,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                     base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -605,14 +607,14 @@ TEST_F(GCMStoreImplTest, HeartbeatInterval) {
   int heartbeat2 = 360 * 1000;
 
   gcm_store->AddHeartbeatInterval(
-      scope1,
-      heartbeat1,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      scope1, heartbeat1,
+      base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                     base::Unretained(this)));
   PumpLoop();
   gcm_store->AddHeartbeatInterval(
-      scope2,
-      heartbeat2,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      scope2, heartbeat2,
+      base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                     base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -627,8 +629,8 @@ TEST_F(GCMStoreImplTest, HeartbeatInterval) {
   EXPECT_EQ(heartbeat2, load_result->heartbeat_intervals[scope2]);
 
   gcm_store->RemoveHeartbeatInterval(
-      scope2,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      scope2, base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                             base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -647,8 +649,8 @@ TEST_F(GCMStoreImplTest, AddMessageAfterDestroy) {
   std::unique_ptr<GCMStoreImpl> gcm_store(BuildGCMStore());
   std::unique_ptr<GCMStore::LoadResult> load_result;
   LoadGCMStore(gcm_store.get(), &load_result);
-  gcm_store->Destroy(base::Bind(&GCMStoreImplTest::UpdateCallback,
-                               base::Unretained(this)));
+  gcm_store->Destroy(base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                    base::Unretained(this)));
   PumpLoop();
 
   expected_success_ = false;
@@ -659,7 +661,8 @@ TEST_F(GCMStoreImplTest, AddMessageAfterDestroy) {
     // Because all adds are failing, none should hit the per-app message limits.
     EXPECT_TRUE(gcm_store->AddOutgoingMessage(
         base::NumberToString(i), MCSMessage(message),
-        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this))));
+        base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                       base::Unretained(this))));
     PumpLoop();
   }
 }
@@ -683,8 +686,8 @@ TEST_F(GCMStoreImplTest, LastTokenFetchTime) {
 
   base::Time last_token_fetch_time = base::Time::Now();
   gcm_store->SetLastTokenFetchTime(
-      last_token_fetch_time,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      last_token_fetch_time, base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                            base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -693,9 +696,9 @@ TEST_F(GCMStoreImplTest, LastTokenFetchTime) {
 
   // Negative cases, where the value read is gibberish.
   gcm_store->SetValueForTesting(
-      "last_token_fetch_time",
-      "gibberish",
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      "last_token_fetch_time", "gibberish",
+      base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                     base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -709,17 +712,15 @@ TEST_F(GCMStoreImplTest, InstanceIDData) {
   LoadGCMStore(gcm_store.get(), &load_result);
 
   std::string instance_id_data("Foo");
-  gcm_store->AddInstanceIDData(
-      kAppName,
-      instance_id_data,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  gcm_store->AddInstanceIDData(kAppName, instance_id_data,
+                               base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                              base::Unretained(this)));
   PumpLoop();
 
   std::string instance_id_data2("Hello Instance ID");
-  gcm_store->AddInstanceIDData(
-      kAppName2,
-      instance_id_data2,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  gcm_store->AddInstanceIDData(kAppName2, instance_id_data2,
+                               base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                                              base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();
@@ -734,8 +735,8 @@ TEST_F(GCMStoreImplTest, InstanceIDData) {
   EXPECT_EQ(instance_id_data2, load_result->instance_id_data[kAppName2]);
 
   gcm_store->RemoveInstanceIDData(
-      kAppName,
-      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+      kAppName, base::BindOnce(&GCMStoreImplTest::UpdateCallback,
+                               base::Unretained(this)));
   PumpLoop();
 
   gcm_store = BuildGCMStore();

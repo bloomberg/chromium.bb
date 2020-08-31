@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
@@ -15,7 +16,7 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/signatures.h"
 
 namespace gfx {
 class RectF;
@@ -141,6 +142,16 @@ class AutofillHandler {
   // Returns the present form structures seen by Autofill handler.
   const FormStructureMap& form_structures() const { return form_structures_; }
 
+  AutofillDriver* driver() { return driver_; }
+
+#if defined(UNIT_TEST)
+  // A public wrapper that calls |mutable_form_structures| for testing purposes
+  // only.
+  FormStructureMap* mutable_form_structures_for_test() {
+    return mutable_form_structures();
+  }
+#endif
+
  protected:
   AutofillHandler(AutofillDriver* driver, LogManager* log_manager);
 
@@ -203,8 +214,6 @@ class AutofillHandler {
                  FormStructure** parsed_form_structure);
 
   bool value_from_dynamic_change_form_ = false;
-
-  AutofillDriver* driver() { return driver_; }
 
   FormStructureMap* mutable_form_structures() { return &form_structures_; }
 

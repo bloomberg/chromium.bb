@@ -31,6 +31,7 @@
 <translation id="3810838688059735925">Video</translation>
 <translation id="4279490309300973883">Zrcaljenje</translation>
 <translation id="4329152592498422850">Prijeđi na snimanje kvadratne fotografije</translation>
+<translation id="4383571725254449280">Ispis zapisnika o izvedbi</translation>
 <translation id="4445542136948522167">Zaustavi snimanje fotografije</translation>
 <translation id="4497569853498380347">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" />) <ph name="MEGAPIXEL" /> megapiksel</translation>
 <translation id="4570032796877367747">Prednji fotoaparat</translation>
@@ -72,5 +73,5 @@
 <translation id="8815966864175525708">Prijeđi na snimanje portretne fotografije</translation>
 <translation id="8870695351537079478">Pokretanje snimanja nije uspjelo</translation>
 <translation id="9045155556724273246">Deset sekundi</translation>
-<translation id="945522503751344254">Slanje povratnih informacija</translation>
+<translation id="945522503751344254">Pošaljite povratne informacije</translation>
 </translationbundle>

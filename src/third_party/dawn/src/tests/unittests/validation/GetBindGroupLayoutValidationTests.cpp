@@ -22,14 +22,14 @@ class GetBindGroupLayoutTests : public ValidationTest {
     static constexpr wgpu::ShaderStage kVisibilityAll =
         wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Vertex;
 
-    wgpu::RenderPipeline RenderPipelineFromVertexShader(const char* shader) {
+    wgpu::RenderPipeline RenderPipelineFromFragmentShader(const char* shader) {
         wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, shader);
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
         #version 450
         void main() {
         })");
+        wgpu::ShaderModule fsModule =
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, shader);
 
         utils::ComboRenderPipelineDescriptor descriptor(device);
         descriptor.layout = nullptr;
@@ -93,7 +93,7 @@ TEST_F(GetBindGroupLayoutTests, SameObject) {
 // - shader stage visibility is All
 // - dynamic offsets is false
 TEST_F(GetBindGroupLayoutTests, DefaultShaderStageAndDynamicOffsets) {
-    wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+    wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) uniform UniformBuffer {
             vec4 pos;
@@ -102,14 +102,14 @@ TEST_F(GetBindGroupLayoutTests, DefaultShaderStageAndDynamicOffsets) {
         void main() {
         })");
 
-    wgpu::BindGroupLayoutBinding binding = {};
+    wgpu::BindGroupLayoutEntry binding = {};
     binding.binding = 0;
     binding.type = wgpu::BindingType::UniformBuffer;
     binding.multisampled = false;
 
     wgpu::BindGroupLayoutDescriptor desc = {};
-    desc.bindingCount = 1;
-    desc.bindings = &binding;
+    desc.entryCount = 1;
+    desc.entries = &binding;
 
     // Check that visibility and dynamic offsets match
     binding.hasDynamicOffset = false;
@@ -150,34 +150,48 @@ TEST_F(GetBindGroupLayoutTests, ComputePipeline) {
 
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&descriptor);
 
-    wgpu::BindGroupLayoutBinding binding = {};
+    wgpu::BindGroupLayoutEntry binding = {};
     binding.binding = 0;
     binding.type = wgpu::BindingType::UniformBuffer;
     binding.visibility = kVisibilityAll;
     binding.hasDynamicOffset = false;
 
     wgpu::BindGroupLayoutDescriptor desc = {};
-    desc.bindingCount = 1;
-    desc.bindings = &binding;
+    desc.entryCount = 1;
+    desc.entries = &binding;
 
     EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
 }
 
 // Test that the binding type matches the shader.
 TEST_F(GetBindGroupLayoutTests, BindingType) {
-    wgpu::BindGroupLayoutBinding binding = {};
+    wgpu::BindGroupLayoutEntry binding = {};
     binding.binding = 0;
-    binding.visibility = kVisibilityAll;
     binding.hasDynamicOffset = false;
     binding.multisampled = false;
 
     wgpu::BindGroupLayoutDescriptor desc = {};
-    desc.bindingCount = 1;
-    desc.bindings = &binding;
+    desc.entryCount = 1;
+    desc.entries = &binding;
 
     {
+        // Storage buffer binding is not supported in vertex shader.
+        binding.visibility = wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment;
+        binding.type = wgpu::BindingType::StorageBuffer;
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
+        #version 450
+        layout(set = 0, binding = 0) buffer Storage {
+            vec4 pos;
+        };
+
+        void main() {})");
+        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+    }
+
+    binding.visibility = kVisibilityAll;
+    {
         binding.type = wgpu::BindingType::UniformBuffer;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) uniform Buffer {
             vec4 pos;
@@ -188,20 +202,8 @@ TEST_F(GetBindGroupLayoutTests, BindingType) {
     }
 
     {
-        binding.type = wgpu::BindingType::StorageBuffer;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
-        #version 450
-        layout(set = 0, binding = 0) buffer Storage {
-            vec4 pos;
-        };
-
-        void main() {})");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
-    }
-
-    {
         binding.type = wgpu::BindingType::ReadonlyStorageBuffer;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) readonly buffer Storage {
             vec4 pos;
@@ -213,7 +215,7 @@ TEST_F(GetBindGroupLayoutTests, BindingType) {
 
     {
         binding.type = wgpu::BindingType::SampledTexture;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) uniform texture2D tex;
 
@@ -223,7 +225,7 @@ TEST_F(GetBindGroupLayoutTests, BindingType) {
 
     {
         binding.type = wgpu::BindingType::Sampler;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) uniform sampler samp;
 
@@ -234,19 +236,19 @@ TEST_F(GetBindGroupLayoutTests, BindingType) {
 
 // Test that multisampling matches the shader.
 TEST_F(GetBindGroupLayoutTests, Multisampled) {
-    wgpu::BindGroupLayoutBinding binding = {};
+    wgpu::BindGroupLayoutEntry binding = {};
     binding.binding = 0;
     binding.type = wgpu::BindingType::SampledTexture;
     binding.visibility = kVisibilityAll;
     binding.hasDynamicOffset = false;
 
     wgpu::BindGroupLayoutDescriptor desc = {};
-    desc.bindingCount = 1;
-    desc.bindings = &binding;
+    desc.entryCount = 1;
+    desc.entries = &binding;
 
     {
         binding.multisampled = false;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) uniform texture2D tex;
 
@@ -256,20 +258,22 @@ TEST_F(GetBindGroupLayoutTests, Multisampled) {
 
     // TODO: Support multisampling
     GTEST_SKIP() << "Multisampling unimplemented";
+#if 0
     {
         binding.multisampled = true;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) uniform texture2DMS tex;
 
         void main() {})");
         EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
     }
+#endif
 }
 
 // Test that texture view dimension matches the shader.
-TEST_F(GetBindGroupLayoutTests, TextureDimension) {
-    wgpu::BindGroupLayoutBinding binding = {};
+TEST_F(GetBindGroupLayoutTests, ViewDimension) {
+    wgpu::BindGroupLayoutEntry binding = {};
     binding.binding = 0;
     binding.type = wgpu::BindingType::SampledTexture;
     binding.visibility = kVisibilityAll;
@@ -277,12 +281,12 @@ TEST_F(GetBindGroupLayoutTests, TextureDimension) {
     binding.multisampled = false;
 
     wgpu::BindGroupLayoutDescriptor desc = {};
-    desc.bindingCount = 1;
-    desc.bindings = &binding;
+    desc.entryCount = 1;
+    desc.entries = &binding;
 
     {
-        binding.textureDimension = wgpu::TextureViewDimension::e1D;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        binding.viewDimension = wgpu::TextureViewDimension::e1D;
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) uniform texture1D tex;
 
@@ -291,8 +295,8 @@ TEST_F(GetBindGroupLayoutTests, TextureDimension) {
     }
 
     {
-        binding.textureDimension = wgpu::TextureViewDimension::e2D;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        binding.viewDimension = wgpu::TextureViewDimension::e2D;
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) uniform texture2D tex;
 
@@ -301,8 +305,8 @@ TEST_F(GetBindGroupLayoutTests, TextureDimension) {
     }
 
     {
-        binding.textureDimension = wgpu::TextureViewDimension::e2DArray;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        binding.viewDimension = wgpu::TextureViewDimension::e2DArray;
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) uniform texture2DArray tex;
 
@@ -311,8 +315,8 @@ TEST_F(GetBindGroupLayoutTests, TextureDimension) {
     }
 
     {
-        binding.textureDimension = wgpu::TextureViewDimension::e3D;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        binding.viewDimension = wgpu::TextureViewDimension::e3D;
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) uniform texture3D tex;
 
@@ -321,8 +325,8 @@ TEST_F(GetBindGroupLayoutTests, TextureDimension) {
     }
 
     {
-        binding.textureDimension = wgpu::TextureViewDimension::Cube;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        binding.viewDimension = wgpu::TextureViewDimension::Cube;
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) uniform textureCube tex;
 
@@ -331,8 +335,8 @@ TEST_F(GetBindGroupLayoutTests, TextureDimension) {
     }
 
     {
-        binding.textureDimension = wgpu::TextureViewDimension::CubeArray;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        binding.viewDimension = wgpu::TextureViewDimension::CubeArray;
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
                 #version 450
                 layout(set = 0, binding = 0) uniform textureCubeArray tex;
 
@@ -343,7 +347,7 @@ TEST_F(GetBindGroupLayoutTests, TextureDimension) {
 
 // Test that texture component type matches the shader.
 TEST_F(GetBindGroupLayoutTests, TextureComponentType) {
-    wgpu::BindGroupLayoutBinding binding = {};
+    wgpu::BindGroupLayoutEntry binding = {};
     binding.binding = 0;
     binding.type = wgpu::BindingType::SampledTexture;
     binding.visibility = kVisibilityAll;
@@ -351,12 +355,12 @@ TEST_F(GetBindGroupLayoutTests, TextureComponentType) {
     binding.multisampled = false;
 
     wgpu::BindGroupLayoutDescriptor desc = {};
-    desc.bindingCount = 1;
-    desc.bindings = &binding;
+    desc.entryCount = 1;
+    desc.entries = &binding;
 
     {
         binding.textureComponentType = wgpu::TextureComponentType::Float;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
                 #version 450
                 layout(set = 0, binding = 0) uniform texture2D tex;
 
@@ -366,7 +370,7 @@ TEST_F(GetBindGroupLayoutTests, TextureComponentType) {
 
     {
         binding.textureComponentType = wgpu::TextureComponentType::Sint;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
                 #version 450
                 layout(set = 0, binding = 0) uniform itexture2D tex;
 
@@ -376,7 +380,7 @@ TEST_F(GetBindGroupLayoutTests, TextureComponentType) {
 
     {
         binding.textureComponentType = wgpu::TextureComponentType::Uint;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
                 #version 450
                 layout(set = 0, binding = 0) uniform utexture2D tex;
 
@@ -387,19 +391,19 @@ TEST_F(GetBindGroupLayoutTests, TextureComponentType) {
 
 // Test that binding= indices match.
 TEST_F(GetBindGroupLayoutTests, BindingIndices) {
-    wgpu::BindGroupLayoutBinding binding = {};
+    wgpu::BindGroupLayoutEntry binding = {};
     binding.type = wgpu::BindingType::UniformBuffer;
     binding.visibility = kVisibilityAll;
     binding.hasDynamicOffset = false;
     binding.multisampled = false;
 
     wgpu::BindGroupLayoutDescriptor desc = {};
-    desc.bindingCount = 1;
-    desc.bindings = &binding;
+    desc.entryCount = 1;
+    desc.entries = &binding;
 
     {
         binding.binding = 0;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
                 #version 450
                 layout(set = 0, binding = 0) uniform Buffer {
                     vec4 pos;
@@ -411,7 +415,7 @@ TEST_F(GetBindGroupLayoutTests, BindingIndices) {
 
     {
         binding.binding = 1;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
                 #version 450
                 layout(set = 0, binding = 1) uniform Buffer {
                     vec4 pos;
@@ -423,7 +427,7 @@ TEST_F(GetBindGroupLayoutTests, BindingIndices) {
 
     {
         binding.binding = 2;
-        wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+        wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
                 #version 450
                 layout(set = 0, binding = 1) uniform Buffer {
                     vec4 pos;
@@ -495,10 +499,8 @@ TEST_F(GetBindGroupLayoutTests, ConflictingBindingType) {
 }
 
 // Test it is invalid to have conflicting binding texture multisampling in the shaders.
-TEST_F(GetBindGroupLayoutTests, ConflictingBindingTextureMultisampling) {
-    // TODO: Support multisampling
-    GTEST_SKIP() << "Multisampling unimplemented";
-
+// TODO: Support multisampling
+TEST_F(GetBindGroupLayoutTests, DISABLED_ConflictingBindingTextureMultisampling) {
     wgpu::ShaderModule vsModule =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
         #version 450
@@ -522,7 +524,7 @@ TEST_F(GetBindGroupLayoutTests, ConflictingBindingTextureMultisampling) {
 }
 
 // Test it is invalid to have conflicting binding texture dimension in the shaders.
-TEST_F(GetBindGroupLayoutTests, ConflictingBindingTextureDimension) {
+TEST_F(GetBindGroupLayoutTests, ConflictingBindingViewDimension) {
     wgpu::ShaderModule vsModule =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
         #version 450
@@ -571,7 +573,7 @@ TEST_F(GetBindGroupLayoutTests, ConflictingBindingTextureComponentType) {
 
 // Test it is an error to query an out of range bind group layout.
 TEST_F(GetBindGroupLayoutTests, OutOfRangeIndex) {
-    ASSERT_DEVICE_ERROR(RenderPipelineFromVertexShader(R"(
+    ASSERT_DEVICE_ERROR(RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) uniform Buffer1 {
             vec4 pos1;
@@ -579,7 +581,7 @@ TEST_F(GetBindGroupLayoutTests, OutOfRangeIndex) {
         void main() {})")
                             .GetBindGroupLayout(kMaxBindGroups));
 
-    ASSERT_DEVICE_ERROR(RenderPipelineFromVertexShader(R"(
+    ASSERT_DEVICE_ERROR(RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) uniform Buffer1 {
             vec4 pos1;
@@ -590,7 +592,7 @@ TEST_F(GetBindGroupLayoutTests, OutOfRangeIndex) {
 
 // Test that unused indices return the empty bind group layout.
 TEST_F(GetBindGroupLayoutTests, UnusedIndex) {
-    wgpu::RenderPipeline pipeline = RenderPipelineFromVertexShader(R"(
+    wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
         #version 450
         layout(set = 0, binding = 0) uniform Buffer1 {
             vec4 pos1;
@@ -603,8 +605,8 @@ TEST_F(GetBindGroupLayoutTests, UnusedIndex) {
         void main() {})");
 
     wgpu::BindGroupLayoutDescriptor desc = {};
-    desc.bindingCount = 0;
-    desc.bindings = nullptr;
+    desc.entryCount = 0;
+    desc.entries = nullptr;
 
     wgpu::BindGroupLayout emptyBindGroupLayout = device.CreateBindGroupLayout(&desc);
 
@@ -617,14 +619,14 @@ TEST_F(GetBindGroupLayoutTests, UnusedIndex) {
 // Test that after explicitly creating a pipeline with a pipeline layout, calling
 // GetBindGroupLayout reflects the same bind group layouts.
 TEST_F(GetBindGroupLayoutTests, Reflection) {
-    wgpu::BindGroupLayoutBinding binding = {};
+    wgpu::BindGroupLayoutEntry binding = {};
     binding.binding = 0;
     binding.type = wgpu::BindingType::UniformBuffer;
     binding.visibility = wgpu::ShaderStage::Vertex;
 
     wgpu::BindGroupLayoutDescriptor bglDesc = {};
-    bglDesc.bindingCount = 1;
-    bglDesc.bindings = &binding;
+    bglDesc.entryCount = 1;
+    bglDesc.entries = &binding;
 
     wgpu::BindGroupLayout bindGroupLayout = device.CreateBindGroupLayout(&bglDesc);
 
@@ -661,8 +663,8 @@ TEST_F(GetBindGroupLayoutTests, Reflection) {
 
     {
         wgpu::BindGroupLayoutDescriptor emptyDesc = {};
-        emptyDesc.bindingCount = 0;
-        emptyDesc.bindings = nullptr;
+        emptyDesc.entryCount = 0;
+        emptyDesc.entries = nullptr;
 
         wgpu::BindGroupLayout emptyBindGroupLayout = device.CreateBindGroupLayout(&emptyDesc);
 

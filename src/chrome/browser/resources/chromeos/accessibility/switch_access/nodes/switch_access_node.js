@@ -14,11 +14,14 @@
  */
 class SAChildNode {
   constructor() {
-    /** @private {?SAChildNode} */
-    this.previous_ = null;
+    /** @private {boolean} */
+    this.isFocused_ = false;
 
     /** @private {?SAChildNode} */
     this.next_ = null;
+
+    /** @private {?SAChildNode} */
+    this.previous_ = null;
   }
 
   // ================= Getters and setters =================
@@ -111,11 +114,19 @@ class SAChildNode {
   }
 
   /**
-   * @param {!chrome.automation.AutomationNode} node
+   * @param {?chrome.automation.AutomationNode|!SAChildNode|!SARootNode} node
    * @return {boolean}
    * @abstract
    */
   isEquivalentTo(node) {}
+
+  /**
+   * Returns whether the node is currently focused by Switch Access
+   * @return {boolean}
+   */
+  isFocused() {
+    return this.isFocused_;
+  }
 
   /**
    * Returns whether this node should be displayed as a group.
@@ -125,20 +136,32 @@ class SAChildNode {
   isGroup() {}
 
   /**
+   * Returns whether this node is still both valid and visible onscreen (e.g.
+   *    not hidden, not offscreen, not invisible)
+   * @return {boolean}
+   * @abstract
+   */
+  isValidAndVisible() {}
+
+  /**
    * Called when this node becomes the primary highlighted node.
    */
-  onFocus() {}
+  onFocus() {
+    this.isFocused_ = true;
+  }
 
   /**
    * Called when this node stops being the primary highlighted node.
    */
-  onUnfocus() {}
+  onUnfocus() {
+    this.isFocused_ = false;
+  }
 
   /**
    * Performs the specified action on the node, if it is available.
    * @param {SAConstants.MenuAction} action
-   * @return {boolean} Whether to close the menu. True if the menu should close,
-   *     false otherwise.
+   * @return {SAConstants.ActionResponse} What action the menu should perform in
+   *      response.
    * @abstract
    */
   performAction(action) {}
@@ -227,8 +250,9 @@ class SARootNode {
 
   /** @return {!chrome.accessibilityPrivate.ScreenRect} */
   get location() {
-    let children = this.children_.filter((c) => !(c instanceof BackButtonNode));
-    let childLocations = children.map((c) => c.location);
+    const children =
+        this.children_.filter((c) => !(c instanceof BackButtonNode));
+    const childLocations = children.map((c) => c.location);
     return RectHelper.unionAll(childLocations);
   }
 
@@ -259,20 +283,51 @@ class SARootNode {
   }
 
   /**
-   * @param {chrome.automation.AutomationNode} automationNode
+   * Looks for and returns the specified node within this node's children.
+   * If no equivalent node is found, returns null.
+   * @param {?AutomationNode|!SAChildNode|!SARootNode} node
+   * @return {?SAChildNode}
+   */
+  findChild(node) {
+    for (const child of this.children_) {
+      if (child.isEquivalentTo(node)) {
+        return child;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * @param {?chrome.automation.AutomationNode|!SARootNode|!SAChildNode} node
    * @return {boolean}
    */
-  isEquivalentTo(automationNode) {
+  isEquivalentTo(node) {
+    if (node instanceof SARootNode) {
+      return this.equals(node);
+    }
+    if (node instanceof SAChildNode) {
+      return node.isEquivalentTo(this);
+    }
     return false;
   }
 
   /** @return {boolean} */
-  isValid() {
-    return true;
+  isValidGroup() {
+    return this.children_.filter((child) => child.isValidAndVisible()).length >=
+        1;
   }
 
-  /** Called when a group is exiting. */
+  /** Called when a group is set as the current group. */
+  onFocus() {}
+
+  /** Called when a group is no longer the current group. */
+  onUnfocus() {}
+
+  /** Called when a group is explicitly exited. */
   onExit() {}
+
+  /** Called when the group's children may have changed. */
+  refresh() {}
 
   // ================= Debug methods =================
 
@@ -323,7 +378,7 @@ class SARootNode {
     let previous = this.children_[this.children_.length - 1];
 
     for (let i = 0; i < this.children_.length; i++) {
-      let current = this.children_[i];
+      const current = this.children_[i];
       previous.next = current;
       current.previous = previous;
 

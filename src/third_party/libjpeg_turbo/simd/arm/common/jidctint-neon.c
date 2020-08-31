@@ -644,15 +644,16 @@ static inline void jsimd_idct_islow_pass2_regular(int16_t *workspace,
                                     vreinterpret_u16_u8(cols_45_67.val[0]),
                                     vreinterpret_u16_u8(cols_45_67.val[1])
                                   };
+
+  JSAMPROW outptr0 = output_buf[buf_offset + 0] + output_col;
+  JSAMPROW outptr1 = output_buf[buf_offset + 1] + output_col;
+  JSAMPROW outptr2 = output_buf[buf_offset + 2] + output_col;
+  JSAMPROW outptr3 = output_buf[buf_offset + 3] + output_col;
   /* VST4 of 16-bit elements completes the transpose. */
-  vst4_lane_u16((uint16_t *)(output_buf[buf_offset + 0] + output_col),
-                cols_01_23_45_67, 0);
-  vst4_lane_u16((uint16_t *)(output_buf[buf_offset + 1] + output_col),
-                cols_01_23_45_67, 1);
-  vst4_lane_u16((uint16_t *)(output_buf[buf_offset + 2] + output_col),
-                cols_01_23_45_67, 2);
-  vst4_lane_u16((uint16_t *)(output_buf[buf_offset + 3] + output_col),
-                cols_01_23_45_67, 3);
+  vst4_lane_u16((uint16_t *)outptr0, cols_01_23_45_67, 0);
+  vst4_lane_u16((uint16_t *)outptr1, cols_01_23_45_67, 1);
+  vst4_lane_u16((uint16_t *)outptr2, cols_01_23_45_67, 2);
+  vst4_lane_u16((uint16_t *)outptr3, cols_01_23_45_67, 3);
 }
 
 
@@ -735,13 +736,14 @@ static inline void jsimd_idct_islow_pass2_sparse(int16_t *workspace,
                                     vreinterpret_u16_u8(cols_45_67.val[0]),
                                     vreinterpret_u16_u8(cols_45_67.val[1])
                                   };
+
+  JSAMPROW outptr0 = output_buf[buf_offset + 0] + output_col;
+  JSAMPROW outptr1 = output_buf[buf_offset + 1] + output_col;
+  JSAMPROW outptr2 = output_buf[buf_offset + 2] + output_col;
+  JSAMPROW outptr3 = output_buf[buf_offset + 3] + output_col;
   /* VST4 of 16-bit elements completes the transpose. */
-  vst4_lane_u16((uint16_t *)(output_buf[buf_offset + 0] + output_col),
-                cols_01_23_45_67, 0);
-  vst4_lane_u16((uint16_t *)(output_buf[buf_offset + 1] + output_col),
-                cols_01_23_45_67, 1);
-  vst4_lane_u16((uint16_t *)(output_buf[buf_offset + 2] + output_col),
-                cols_01_23_45_67, 2);
-  vst4_lane_u16((uint16_t *)(output_buf[buf_offset + 3] + output_col),
-                cols_01_23_45_67, 3);
+  vst4_lane_u16((uint16_t *)outptr0, cols_01_23_45_67, 0);
+  vst4_lane_u16((uint16_t *)outptr1, cols_01_23_45_67, 1);
+  vst4_lane_u16((uint16_t *)outptr2, cols_01_23_45_67, 2);
+  vst4_lane_u16((uint16_t *)outptr3, cols_01_23_45_67, 3);
 }

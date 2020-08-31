@@ -4,7 +4,7 @@
 
 syntax = "proto2";
 
-import "web_app_specifics.proto";
+import "components/sync/protocol/web_app_specifics.proto";
 
 option optimize_for = LITE_RUNTIME;
 
@@ -18,6 +18,22 @@ message WebAppIconInfoProto {
   optional string url = 2;
 }
 
+// A mapping between a MIME type and a set of file extensions for a file handler
+// "accept" entry. See chrome/browser/web_applications/web_app.h for details.
+message WebAppFileHandlerAcceptProto {
+  required string mimetype = 1;
+  repeated string file_extensions = 2;
+}
+
+// A file handler "action" associated with a set of "accept" entries, each of
+// which specifies a MIME type and corresponding set of file extensions that the
+// handler can handle. See chrome/browser/web_applications/web_app.h for
+// details.
+message WebAppFileHandlerProto {
+  required string action = 1;
+  repeated WebAppFileHandlerAcceptProto accept = 2;
+}
+
 // A set to track simultaneous installs and uninstalls from multiple install
 // sources.
 message SourcesProto {
@@ -26,6 +42,14 @@ message SourcesProto {
   required bool web_app_store = 3;
   required bool sync = 4;
   required bool default = 5;
+}
+
+// Properties for integrating with Chrome OS UI surfaces.
+message ChromeOSDataProto {
+  required bool show_in_launcher = 1;
+  required bool show_in_search = 2;
+  required bool show_in_management = 3;
+  required bool is_disabled = 4;
 }
 
 // Full WebApp object data. See detailed comments in
@@ -64,4 +88,12 @@ message WebAppProto {
   repeated WebAppIconInfoProto icon_infos = 10;
   // A list of icon sizes we successfully downloaded to store on disk.
   repeated int32 downloaded_icon_sizes = 11;
+  // A list of file handlers.
+  repeated WebAppFileHandlerProto file_handlers = 12;
+  // A list of additional search terms to use when searching for the app.
+  repeated string additional_search_terms = 13;
+
+  // Even though |chromeos_data| is optional, it should always exist on
+  // ChromeOS.
+  optional ChromeOSDataProto chromeos_data = 14;
 }

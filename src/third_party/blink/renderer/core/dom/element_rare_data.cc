@@ -47,9 +47,7 @@ struct SameSizeAsElementRareData : NodeRareData {
 };
 
 ElementRareData::ElementRareData(NodeRenderingData* node_layout_data)
-    : NodeRareData(node_layout_data), class_list_(nullptr) {
-  is_element_rare_data_ = true;
-}
+    : NodeRareData(node_layout_data, true), class_list_(nullptr) {}
 
 ElementRareData::~ElementRareData() {
   DCHECK(!pseudo_element_data_);
@@ -95,7 +93,7 @@ ElementInternals& ElementRareData::EnsureElementInternals(HTMLElement& target) {
   return *element_internals_;
 }
 
-void ElementRareData::TraceAfterDispatch(blink::Visitor* visitor) {
+void ElementRareData::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(dataset_);
   visitor->Trace(class_list_);
   visitor->Trace(part_);

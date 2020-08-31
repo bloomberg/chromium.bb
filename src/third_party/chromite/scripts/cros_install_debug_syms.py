@@ -20,6 +20,7 @@ import functools
 import multiprocessing
 import os
 import pickle
+import sys
 import tempfile
 
 from six.moves import urllib
@@ -38,6 +39,10 @@ from chromite.utils import outcap
 if cros_build_lib.IsInsideChroot():
   # pylint: disable=import-error
   from portage import create_trees
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 DEBUG_SYMS_EXT = '.debug.tbz2'
 
@@ -158,7 +163,7 @@ def GetPackageIndex(binhost, binhost_cache=None):
   key = key.rstrip('/').split('/')
 
   if binhost_cache and binhost_cache.Lookup(key).Exists():
-    with open(binhost_cache.Lookup(key).path) as f:
+    with open(binhost_cache.Lookup(key).path, 'rb') as f:
       return pickle.load(f)
 
   pkgindex = binpkg.GrabRemotePackageIndex(binhost, quiet=True)
@@ -293,8 +298,10 @@ def ListInstallArgs(options, sysroot):
 
 def GetInstallArgsList(argv):
   """Get the install args from the --list reexec of the command."""
-  cmd = argv + ['--list']
-  result = cros_build_lib.RunCommand(cmd, capture_output=True)
+  # Insert the --list as the first argument to prevent parsing --list as a
+  # package when a package is given.
+  cmd = [argv[0]] + ['--list'] + argv[1:]
+  result = cros_build_lib.run(cmd, capture_output=True, encoding='utf-8')
   lines = result.output.splitlines()
   return [line.split() for line in lines if line]
 

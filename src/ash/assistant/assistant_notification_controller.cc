@@ -7,9 +7,10 @@
 #include <memory>
 #include <utility>
 
-#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_notification_expiry_monitor.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
@@ -65,9 +66,8 @@ message_center::NotifierId GetNotifierId() {
 
 bool IsSystemNotification(
     const chromeos::assistant::mojom::AssistantNotification* notification) {
-  using chromeos::assistant::mojom::AssistantNotificationType;
-  return notification->type == AssistantNotificationType::kPreferInAssistant ||
-         notification->type == AssistantNotificationType::kSystem;
+  return notification->type ==
+         chromeos::assistant::mojom::AssistantNotificationType::kSystem;
 }
 
 bool IsValidActionUrl(const GURL& action_url) {
@@ -79,19 +79,14 @@ bool IsValidActionUrl(const GURL& action_url) {
 
 // AssistantNotificationController ---------------------------------------------
 
-AssistantNotificationController::AssistantNotificationController(
-    AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller),
-      expiry_monitor_(this),
-      notifier_id_(GetNotifierId()) {
+AssistantNotificationController::AssistantNotificationController()
+    : expiry_monitor_(this), notifier_id_(GetNotifierId()) {
   AddModelObserver(this);
-  assistant_controller_->AddObserver(this);
   message_center::MessageCenter::Get()->AddObserver(this);
 }
 
 AssistantNotificationController::~AssistantNotificationController() {
   message_center::MessageCenter::Get()->RemoveObserver(this);
-  assistant_controller_->RemoveObserver(this);
   RemoveModelObserver(this);
 }
 
@@ -115,69 +110,10 @@ void AssistantNotificationController::SetAssistant(
   assistant_ = assistant;
 }
 
-// AssistantControllerObserver -------------------------------------------------
-
-void AssistantNotificationController::OnAssistantControllerConstructed() {
-  assistant_controller_->ui_controller()->AddModelObserver(this);
-}
-
-void AssistantNotificationController::OnAssistantControllerDestroying() {
-  assistant_controller_->ui_controller()->RemoveModelObserver(this);
-}
-
-// AssistantUiModelObserver ----------------------------------------------------
-
-void AssistantNotificationController::OnUiVisibilityChanged(
-    AssistantVisibility new_visibility,
-    AssistantVisibility old_visibility,
-    base::Optional<AssistantEntryPoint> entry_point,
-    base::Optional<AssistantExitPoint> exit_point) {
-  switch (new_visibility) {
-    case AssistantVisibility::kVisible:
-      // When the Assistant UI becomes visible we convert any notifications of
-      // type |kPreferInAssistant| to type |kInAssistant|. This will cause them
-      // to be removed from the Message Center (if they had previously been
-      // added) and to finish out their lifetimes as in-Assistant notifications.
-      for (const auto* notification : model_.GetNotificationsByType(
-               AssistantNotificationType::kPreferInAssistant)) {
-        auto update = notification->Clone();
-        update->type = AssistantNotificationType::kInAssistant;
-        model_.AddOrUpdateNotification(std::move(update));
-      }
-      break;
-    case AssistantVisibility::kHidden:
-    case AssistantVisibility::kClosed:
-      // When the Assistant UI is no longer visible to the user we remove any
-      // notifications of type |kInAssistant| as this type of notification does
-      // not outlive the Assistant view hierarchy.
-      if (old_visibility == AssistantVisibility::kVisible) {
-        for (const auto* notification : model_.GetNotificationsByType(
-                 AssistantNotificationType::kInAssistant)) {
-          model_.RemoveNotificationById(notification->client_id,
-                                        /*from_server=*/false);
-        }
-      }
-      break;
-  }
-}
-
 // mojom::AssistantNotificationController --------------------------------------
 
 void AssistantNotificationController::AddOrUpdateNotification(
     AssistantNotificationPtr notification) {
-  const AssistantVisibility visibility =
-      assistant_controller_->ui_controller()->model()->visibility();
-
-  // If Assistant UI is visible and |notification| is of type
-  // |kPreferInAssistant|, we convert it to a notification of type
-  // |kInAssistant|. This will cause the notification to be removed from the
-  // Message Center (if it had previously been added) and it will finish out its
-  // lifetime as an in-Assistant notification.
-  if (visibility == AssistantVisibility::kVisible &&
-      notification->type == AssistantNotificationType::kPreferInAssistant) {
-    notification->type = AssistantNotificationType::kInAssistant;
-  }
-
   model_.AddOrUpdateNotification(std::move(notification));
 }
 
@@ -272,10 +208,9 @@ void AssistantNotificationController::OnNotificationClicked(
 
   // Open the action url if it is valid.
   if (IsValidActionUrl(action_url)) {
-    // Note that we copy construct a new GURL as our |notification| may be
-    // destroyed during the |OpenUrl| sequence leaving |action_url| in a bad
-    // state.
-    assistant_controller_->OpenUrl(GURL(action_url));
+    // NOTE: We copy construct a new GURL as our |notification| may be destroyed
+    // during the OpenUrl() sequence leaving |action_url| in a bad state.
+    AssistantController::Get()->OpenUrl(GURL(action_url));
     model_.RemoveNotificationById(id, /*from_server=*/false);
     return;
   }

@@ -14,7 +14,6 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/public/browser/guest_mode.h"
 
 namespace content {
 
@@ -23,12 +22,8 @@ namespace {
 // The following functions allow traversal over all frames, including those
 // across WebContentses.
 //
-// Note that there are currently two different ways in which an inner
-// WebContents may be embedded in an outer WebContents:
-//
-// 1) As a guest of the outer WebContents's BrowserPluginEmbedder.
-// 2) Within an inner WebContentsTreeNode of the outer WebContents's
-//    WebContentsTreeNode.
+// An inner WebContents may be embedded in an outer WebContents via an inner
+// WebContentsTreeNode of the outer WebContents's WebContentsTreeNode.
 
 // Returns all child frames of |node|.
 std::vector<FrameTreeNode*> GetChildren(FrameTreeNode* node) {
@@ -37,24 +32,18 @@ std::vector<FrameTreeNode*> GetChildren(FrameTreeNode* node) {
   for (size_t i = 0; i != node->child_count(); ++i) {
     if (auto* contents = static_cast<WebContentsImpl*>(
             WebContentsImpl::FromOuterFrameTreeNode(node->child_at(i)))) {
-      // If the child is used for an inner WebContents then add the inner
-      // WebContents.
-      children.push_back(contents->GetFrameTree()->root());
+      // Portals can't receive keyboard events or be focused, so we don't return
+      // find results inside a portal.
+      if (!contents->IsPortal()) {
+        // If the child is used for an inner WebContents then add the inner
+        // WebContents.
+        children.push_back(contents->GetFrameTree()->root());
+      }
     } else {
       children.push_back(node->child_at(i));
     }
   }
 
-  for (auto* contents :
-       WebContentsImpl::FromFrameTreeNode(node)->GetInnerWebContents()) {
-    auto* contents_impl = static_cast<WebContentsImpl*>(contents);
-    auto* guest = contents_impl->GetBrowserPluginGuest();
-    if (!GuestMode::IsCrossProcessFrameGuest(contents) && guest &&
-        guest->GetEmbedderFrame() &&
-        guest->GetEmbedderFrame()->frame_tree_node() == node) {
-      children.push_back(contents_impl->GetFrameTree()->root());
-    }
-  }
   return children;
 }
 
@@ -94,17 +83,12 @@ FrameTreeNode* GetParent(FrameTreeNode* node) {
   if (!node)
     return nullptr;
   if (node->parent())
-    return node->parent();
+    return node->parent()->frame_tree_node();
 
   auto* contents = WebContentsImpl::FromFrameTreeNode(node);
   if (!node->IsMainFrame() || !contents->GetOuterWebContents())
     return nullptr;
 
-  if (!GuestMode::IsCrossProcessFrameGuest(contents)) {
-    auto* guest = contents->GetBrowserPluginGuest();
-    if (guest && guest->GetEmbedderFrame())
-      return guest->GetEmbedderFrame()->frame_tree_node();
-  }
   return GetParent(FrameTreeNode::GloballyFindByID(
       contents->GetOuterDelegateFrameTreeNodeId()));
 }
@@ -308,6 +292,9 @@ void FindRequestManager::StopFinding(StopFindAction action) {
       RenderFrameHostImpl* rfh = node->current_frame_host();
       if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
         continue;
+      DCHECK(
+          !static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(rfh))
+               ->IsPortal());
       rfh->GetFindInPage()->StopFinding(
           static_cast<blink::mojom::StopFindAction>(action));
     }
@@ -422,6 +409,14 @@ void FindRequestManager::RemoveFrame(RenderFrameHost* rfh) {
     find_in_page_clients_.erase(it);
   }
 
+  // If this is a main frame, then clear the search queue as well, since we
+  // shouldn't be dispatching any more requests. Note that if any other frame is
+  // removed, we can target any queued requests to the focused frame or main
+  // frame. However, if the main frame is removed we will not have a valid
+  // RenderFrameHost to target for the request queue.
+  if (!rfh->GetParent())
+    find_request_queue_ = base::queue<FindRequest>();
+
   // Update the active match ordinal, since it may have changed.
   if (active_frame_ == rfh) {
     active_frame_ = nullptr;
@@ -490,6 +485,9 @@ void FindRequestManager::ActivateNearestFindResult(float x, float y) {
       if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
         continue;
 
+      DCHECK(
+          !static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(rfh))
+               ->IsPortal());
       activate_.pending_replies.insert(rfh);
       // Lifetime of FindRequestManager > RenderFrameHost > Mojo connection,
       // so it's safe to bind |this| and |rfh|.
@@ -525,19 +523,22 @@ void FindRequestManager::RequestFindMatchRects(int current_version) {
 
   // Request the latest find match rects from each frame.
   for (WebContentsImpl* contents : contents_->GetWebContentsAndAllInner()) {
-    for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
-      RenderFrameHostImpl* rfh = node->current_frame_host();
+    if (!contents->IsPortal()) {
+      for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
+        RenderFrameHostImpl* rfh = node->current_frame_host();
 
-      if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
-        continue;
+        if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
+          continue;
 
-      match_rects_.pending_replies.insert(rfh);
-      auto it = match_rects_.frame_rects.find(rfh);
-      int version = (it != match_rects_.frame_rects.end()) ? it->second.version
-                                                           : kInvalidId;
-      rfh->GetFindInPage()->FindMatchRects(
-          version, base::BindOnce(&FindRequestManager::OnFindMatchRectsReply,
-                                  base::Unretained(this), rfh));
+        match_rects_.pending_replies.insert(rfh);
+        auto it = match_rects_.frame_rects.find(rfh);
+        int version = (it != match_rects_.frame_rects.end())
+                          ? it->second.version
+                          : kInvalidId;
+        rfh->GetFindInPage()->FindMatchRects(
+            version, base::BindOnce(&FindRequestManager::OnFindMatchRectsReply,
+                                    base::Unretained(this), rfh));
+      }
     }
   }
 }
@@ -607,9 +608,14 @@ void FindRequestManager::FindInternal(const FindRequest& request) {
   // This is an initial find operation.
   Reset(request);
   for (WebContentsImpl* contents : contents_->GetWebContentsAndAllInner()) {
-    frame_observers_.push_back(std::make_unique<FrameObserver>(contents, this));
-    for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
-      AddFrame(node->current_frame_host(), false /* force */);
+    // Portals can't receive keyboard events or be focused, so we don't return
+    // find results inside a portal.
+    if (!contents->IsPortal()) {
+      frame_observers_.push_back(
+          std::make_unique<FrameObserver>(contents, this));
+      for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
+        AddFrame(node->current_frame_host(), false /* force */);
+      }
     }
   }
 }

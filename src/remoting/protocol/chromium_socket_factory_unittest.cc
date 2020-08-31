@@ -42,7 +42,7 @@ class ChromiumSocketFactoryTest : public testing::Test,
                                   public sigslot::has_slots<> {
  public:
   void SetUp() override {
-    socket_factory_.reset(new ChromiumPacketSocketFactory());
+    socket_factory_ = std::make_unique<ChromiumPacketSocketFactory>(nullptr);
 
     socket_.reset(socket_factory_->CreateUdpSocket(
         rtc::SocketAddress("127.0.0.1", 0), 0, 0));

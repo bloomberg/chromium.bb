@@ -1,7 +1,9 @@
 {
   "-- Template --": {
+    "intro": "This file is interpreted by chrome/browser/policy/policy_prefs_browsertest.cc",
     "intro": "Tests that policies map to prefs properly and whether the corresponding Chrome settings UI behaves properly, e.g. if a policy is managed, the UI should be readonly and an icon with a properly worded tooltip should show up.",
     "intro": "Top-level entries map a policy name to its test parameters, described below. The name of the top level entry should be of the form <policy name>[.suffix]. The optional suffix is used for defining multiple test cases for a single policy.",
+    "intro": "To run tests from this file use 'browser_tests --gtest_filter=*PolicyPrefsTest*' command.",
     "os": [
       "List of operating systems that support this policy. Valid values:",
       "win",
@@ -17,6 +19,10 @@
     "policy_pref_mapping_tests": [
       {
         "policies": "A policy dictionary that should affect |prefs| when set as mandatory or recommended policy.",
+        "required_preprocessor_macros": [
+          "List of preprocessor macros that must be defined for the test to make sense. Macros are mapped into strings by PreprocessorMacroChecker in policy_prefs_browsertest.cc. If a test depends on a new macro, please add it there and to this list. Currently supported macros:",
+          "USE_CUPS"
+        ],
         "prefs": {
             "${pref}": {
               "value": "The value that |pref| should take on.",
@@ -36,17 +42,6 @@
             "readonly": "Whether setting the policy dictionary as recommended should cause |pref| to become read-only in the settings UI. This will be the case when the dictionary sets another policy that makes |pref| not applicable (e.g. setting 'homepage is NTP' makes the 'homepage URL' pref not applicable and read-only)."
           }
         ]
-      }
-    ]
-  },
-
-  "TabFreezingEnabled": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "official_only": true,
-    "policy_pref_mapping_test": [
-      {
-        "policies": { "TabFreezingEnabled": false },
-        "prefs": { "tab_freezing_enabled": { "local_state": true } }
       }
     ]
   },
@@ -83,7 +78,7 @@
   },
 
   "HomepageLocation": {
-    "os": ["win", "linux", "mac", "chromeos"],
+    "os": ["win", "linux", "mac", "chromeos", "android"],
     "can_be_recommended": true,
     "policy_pref_mapping_test": [
       {
@@ -336,11 +331,24 @@
     ]
   },
 
+  "PrintRasterizationMode": {
+    "os": ["win"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "PrintRasterizationMode": 1 },
+        "prefs": { "printing.rasterization_mode": {} }
+      }
+    ]
+  },
+
   "PrinterTypeDenyList": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "PrinterTypeDenyList": ["privet", "extension"] },
-    "pref_mappings": [
-      { "pref": "printing.printer_type_deny_list" }
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "PrinterTypeDenyList": [ "value1" ]},
+        "prefs": { "printing.printer_type_deny_list": {} }
+      }
     ]
   },
 
@@ -394,16 +402,6 @@
     ]
   },
 
-  "PrintingAllowedPageSizes": {
-    "os": ["chromeos"],
-    "policy_pref_mapping_test": [
-      {
-        "policies": { "PrintingAllowedPageSizes": [{ "WidthUm": 210000, "HeightUm": 297000 }] },
-        "prefs": { "printing.allowed_page_sizes": {} }
-      }
-    ]
-  },
-
   "PrintingColorDefault": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
@@ -444,12 +442,20 @@
     ]
   },
 
-  "PrintingSizeDefault": {
+  "PrintingPaperSizeDefault": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
-        "policies": { "PrintingSizeDefault": { "WidthUm": 210000, "HeightUm": 297000 } },
-        "prefs": { "printing.size_default": {} }
+        "policies": {
+          "PrintingPaperSizeDefault": {
+            "name": "custom",
+            "custom_size": {
+              "width": 210000,
+              "height": 297000
+            }
+          }
+        },
+        "prefs": { "printing.paper_size_default": {} }
       }
     ]
   },
@@ -464,12 +470,33 @@
     ]
   },
 
+  "PrintingMaxSheetsAllowed": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"PrintingMaxSheetsAllowed": 10},
+        "prefs": { "printing.max_sheets_allowed": {} }
+      }
+    ]
+  },
+
   "PrintJobHistoryExpirationPeriod": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {"PrintJobHistoryExpirationPeriod": 90},
         "prefs": { "printing.print_job_history_expiration_period": {} }
+      }
+    ]
+  },
+
+  "PrintingAPIExtensionsWhitelist": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "required_preprocessor_macros": [ "USE_CUPS" ],
+        "policies": { "PrintingAPIExtensionsWhitelist": [ "value1" ]},
+        "prefs": { "printing.printing_api_extensions_whitelist": {} }
       }
     ]
   },
@@ -505,6 +532,16 @@
       {
         "policies": { "ExternalPrintServersWhitelist": ["id4", "id7", "id10"]},
         "prefs": { "native_printing.external_print_servers_whitelist": {} }
+      }
+    ]
+  },
+
+  "AllowNativeNotifications" : {
+    "os": ["linux"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AllowNativeNotifications": true },
+        "prefs": { "native_notifications.allowed": {} }
       }
     ]
   },
@@ -588,6 +625,17 @@
     ]
   },
 
+  "LocalDiscoveryEnabled" : {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "LocalDiscoveryEnabled": false },
+        "prefs": { "local_discovery.enabled": {} }
+      }
+    ]
+  },
+
   "SafeBrowsingEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
@@ -595,6 +643,20 @@
       {
         "policies": { "SafeBrowsingEnabled": false },
         "prefs": { "safebrowsing.enabled": {} }
+      }
+    ]
+  },
+
+  "SafeBrowsingProtectionLevel": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "SafeBrowsingProtectionLevel": 2 },
+        "prefs": {
+          "safebrowsing.enabled": { "value": true },
+          "safebrowsing.enhanced": { "value": true }
+        }
       }
     ]
   },
@@ -898,6 +960,30 @@
     ]
   },
 
+  "AutoOpenFileTypes" : {
+    "os": ["win", "mac", "linux", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AutoOpenFileTypes": ["exe", ".txt", "pdf"] },
+        "prefs": {
+          "download.extensions_to_open_by_policy": {"value" : ["exe", "pdf"] }
+        }
+      }
+    ]
+  },
+
+  "AutoOpenAllowedForURLs": {
+    "os": ["win", "mac", "linux", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AutoOpenAllowedForURLs": ["google.com"] },
+        "prefs": {
+          "download.allowed_urls_for_open_by_policy": {"value" : ["google.com"] }
+        }
+      }
+    ]
+  },
+
   "ClearSiteDataOnExit": {
     "note": "This policy is retired, see http://crbug.com/133291."
   },
@@ -1013,7 +1099,7 @@
   },
 
   "BuiltinCertificateVerifierEnabled": {
-    "os": ["chromeos", "linux" ],
+    "os": ["mac" ],
     "policy_pref_mapping_test": [
       {
         "policies": { "BuiltinCertificateVerifierEnabled": true },
@@ -1382,6 +1468,16 @@
     "note": "This policy has no pref as it is only directly read by the policy system."
   },
 
+  "BlockUnsupportedFiletypes": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "BlockUnsupportedFiletypes": 0 },
+        "prefs": { "safebrowsing.block_unsupported_filetypes": { "local_state": true } }
+      }
+    ]
+  },
+
   "BlockExternalExtensions": {
     "os": ["win", "linux", "mac"],
     "policy_pref_mapping_test": [
@@ -1464,7 +1560,7 @@
   },
 
   "BlockThirdPartyCookies": {
-    "os": ["win", "linux", "mac", "chromeos"],
+    "os": ["win", "linux", "mac", "chromeos", "android"],
     "can_be_recommended": true,
     "policy_pref_mapping_test": [
       {
@@ -1477,10 +1573,6 @@
   "DefaultSearchProviderEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
-      {
-        "policies": { "DefaultSearchProviderEnabled": false },
-        "prefs": { "default_search_provider_data.template_url_data": {} }
-      },
       {
         "policies": { "DefaultSearchProviderEnabled": false },
         "prefs": { "default_search_provider_data.template_url_data": {} }
@@ -2038,6 +2130,16 @@
         "policies": { "VideoCaptureAllowedUrls": ["[*.]google.com"] },
         "prefs": { "hardware.video_capture_allowed_urls": {}},
         "indicator_tests": [{ "pref": "hardware.video_capture_allowed_urls", "selector": "[content-exception=media-stream-camera]" }]
+      }
+    ]
+  },
+
+  "ScreenCaptureAllowed": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "ScreenCaptureAllowed": false },
+        "prefs": { "hardware.screen_capture_enabled": {} }
       }
     ]
   },
@@ -2839,6 +2941,18 @@
     ]
   },
 
+  "ChromeVariations": {
+    "os": ["win", "linux", "mac"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "ChromeVariations": 1
+        },
+        "prefs": { "variations_restrictions_by_policy": { "local_state": true } }
+      }
+    ]
+  },
+
   "DataCompressionProxyEnabled": {
     "os": [
       "android"
@@ -2996,13 +3110,7 @@
   },
 
   "MachineLevelUserCloudPolicyEnrollmentToken": {
-    "os": ["win", "linux", "mac"],
-    "policy_pref_mapping_test": [
-      {
-        "policies": { "MachineLevelUserCloudPolicyEnrollmentToken": "" },
-        "prefs": { "policy.machine_level_user_cloud_policy_enrollment_token": { "local_state": true } }
-      }
-    ]
+    "note": "This policy was replaced with CloudManagementEnrollmentToken in Chrome 72 and has been removed altogether in Chrome 81"
   },
 
   "CloudManagementEnrollmentToken": {},
@@ -3359,6 +3467,18 @@
     "policy_pref_mapping_tests": { "web_components_v0_enabled": {} }
   },
 
+  "UseLegacyFormControls": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "UseLegacyFormControls": true },
+    "policy_pref_mapping_tests": { "use_legacy_form_controls": {} }
+  },
+
+  "ScrollToTextFragmentEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "ScrollToTextFragmentEnabled": true },
+    "policy_pref_mapping_tests": { "scroll_to_text_fragment_enabled": {} }
+  },
+
   "GloballyScopeHTTPAuthCacheEnabled": {
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "GloballyScopeHTTPAuthCacheEnabled": true },
@@ -3560,9 +3680,46 @@
     ]
   },
 
+  "ManagedGuestSessionAutoLaunchNotificationReduced": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "ManagedGuestSessionAutoLaunchNotificationReduced": true
+        },
+        "prefs": { "managed_session.reduce_auto_launch_notification": { "local_state": true } }
+      }
+    ]
+  },
+
+  "FloatingAccessibilityMenuEnabled": {
+    "os": ["chromeos"],
+    "pref_mappings": [
+      {
+        "pref": "settings.a11y.floating_menu",
+        "indicator_tests": [
+          { "policy": {"FloatingAccessibilityMenuEnabled": true}}
+        ]
+      }
+    ]
+  },
+
   "UserDisplayName": {
     "os": [
       "chromeos"
+    ]
+  },
+
+  "SystemFeaturesDisableList": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "SystemFeaturesDisableList": ["os_settings"]
+        },
+        "prefs": { "policy.system_features_disable_list": { "local_state": true },
+                   "os_settings_enabled": { "local_state": true } }
+      }
     ]
   },
 
@@ -3931,6 +4088,19 @@
     ]
   },
 
+  "PrimaryMouseButtonSwitch": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "PrimaryMouseButtonSwitch": true },
+        "prefs": { "settings.mouse.primary_right": {} },
+        "indicator_tests": [
+          { "pref": "settings" }
+        ]
+      }
+    ]
+  },
+
   "KeyboardFocusHighlightEnabled": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
@@ -3987,6 +4157,16 @@
       {
         "policies": { "HighContrastEnabled": true },
         "prefs": { "settings.a11y.high_contrast_enabled": {} }
+      }
+    ]
+  },
+
+  "AccessibilityShortcutsEnabled": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AccessibilityShortcutsEnabled": true },
+        "prefs": { "settings.a11y.shortcuts_enabled": {} }
       }
     ]
   },
@@ -4095,7 +4275,7 @@
     "policy_pref_mapping_test": [
       {
         "policies": { "SecondaryGoogleAccountSigninAllowed": false },
-        "prefs": { "account_consistency_mirror.required": {} }
+        "prefs": { "account_manager.secondary_google_account_signin_allowed": {} }
       }
     ]
   },
@@ -4611,6 +4791,18 @@
     ]
   },
 
+  "UserPluginVmAllowed": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "UserPluginVmAllowed": true
+        },
+        "prefs": { "plugin_vm.allowed": {} }
+      }
+    ]
+  },
+
   "PluginVmImage": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
@@ -4625,6 +4817,19 @@
       }
     ]
   },
+
+  "PluginVmUserId": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "PluginVmUserId": "USER_ID"
+        },
+        "prefs": { "plugin_vm.user_id": {"value": "USER_ID"} }
+      }
+    ]
+  },
+
 
   "VoiceInteractionHotwordEnabled": {
     "os": ["chromeos"],
@@ -4708,6 +4913,18 @@
     "note": "This policy is used directly through the policy service instead of through a pref."
   },
 
+  "LoginDisplayPasswordButtonEnabled": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "LoginDisplayPasswordButtonEnabled": false
+        },
+        "prefs": { "login_display_password_button_enabled": {} }
+      }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {
@@ -4780,11 +4997,25 @@
 
   "ReportDeviceSessionStatus": {},
 
+  "ReportDeviceGraphicsStatus": {},
+
+  "ReportDeviceCrashReportInfo": {},
+
   "ReportDevicePowerStatus": {},
 
   "ReportDeviceStorageStatus": {},
 
   "ReportDeviceBoardStatus": {},
+
+  "ReportDeviceCpuInfo": {},
+
+  "ReportDeviceTimezoneInfo": {},
+
+  "ReportDeviceMemoryInfo": {},
+
+  "ReportDeviceBacklightInfo": {},
+
+  "ReportDeviceAppInfo": {},
 
   "ReportUploadFrequency": {},
 
@@ -4892,11 +5123,15 @@
 
   "DeviceLoginScreenDefaultSpokenFeedbackEnabled" : {},
 
+  "DeviceLoginScreenPrimaryMouseButtonSwitch" : {},
+
   "DeviceLoginScreenSpokenFeedbackEnabled": {},
 
   "DeviceLoginScreenDefaultHighContrastEnabled": {},
 
   "DeviceLoginScreenHighContrastEnabled": {},
+
+  "DeviceLoginScreenAccessibilityShortcutsEnabled": {},
 
   "DeviceLoginScreenDefaultScreenMagnifierType": {},
 
@@ -4927,6 +5162,8 @@
   "DeviceLoginScreenInputMethods": {},
 
   "DeviceLoginScreenSystemInfoEnforced": {},
+
+  "DeviceChromeVariations": {},
 
   "DeviceShowNumericKeyboardForPassword": {},
 
@@ -5214,16 +5451,10 @@
   },
 
   "MinimumRequiredChromeVersion": {
-    "os": ["chromeos"],
-    "policy_pref_mapping_test": [
-      {
-        "policies": {
-          "MinimumRequiredChromeVersion": "61.0.3163.120"
-        },
-        "prefs": { "cros.min_version.chrome": {} }
-      }
-    ]
+    "note": "This policy is deprecated in M82 and doesn't map to a pref value anymore."
   },
+
+  "MinimumChromeVersionEnforced": {},
 
   "DeviceLoginScreenAutoSelectCertificateForUrls": {},
 
@@ -5451,6 +5682,26 @@
         }
       }
     }
+  },
+
+  "CrostiniArcAdbSideloadingAllowed": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "CrostiniArcAdbSideloadingAllowed": 0 },
+        "prefs": { "crostini.arc_adb_sideloading.user_pref": {} }
+      },
+      {
+        "policies": { "CrostiniArcAdbSideloadingAllowed": 1 },
+        "prefs": { "crostini.arc_adb_sideloading.user_pref": {} }
+      }
+    ]
+  },
+
+  "DeviceCrostiniArcAdbSideloadingAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceCrostiniArcAdbSideloadingAllowed": 2 },
+    "policy_pref_mapping_test": []
   },
 
   "DeviceSamlLoginAuthenticationType": {},
@@ -5786,6 +6037,22 @@
     ]
   },
 
+  "VoiceInteractionQuickAnswersEnabled": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "VoiceInteractionQuickAnswersEnabled": true
+        },
+        "prefs": {
+          "settings.voice_interaction.quick_answers.enabled": {
+            "value": true
+          }
+        }
+      }
+    ]
+  },
+
   "DeviceRebootOnUserSignout": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
@@ -5799,7 +6066,7 @@
   },
 
   "ForceNetworkInProcess": {
-    "note": "This policy is used directly through the policy service instead of through a pref."
+    "note": "This policy is deprecated."
   },
 
   "DeviceWilcoDtcAllowed": {
@@ -6082,10 +6349,118 @@
             "reset_at": {
               "hour": 6,
               "minute": 0
-            }
+            },
+            "activity_reporting_enabled": true
           }
         },
         "prefs": { "child_user.per_app_time_limits.policy": {} }
+      }
+    ]
+  },
+
+  "PerAppTimeLimitsWhitelist" : {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "PerAppTimeLimitsWhitelist": {
+            "scheme_list": [
+              "chrome",
+              "files"
+            ],
+            "domain_list": [
+              "support.google.com",
+              "policies.google.com"
+            ],
+            "app_list": [
+             {
+              "app_id": "pjkljhegncpnkpknbcohdijeoejaedia",
+              "app_type": "EXTENSION"
+             },
+             {
+               "app_id": "iniodglblcgmngkgdipeiclkdjjpnlbn",
+               "app_type": "BUILT-IN"
+             }
+            ]
+          }
+        },
+        "prefs": { "child_user.per_app_time_limits.whitelist": {} }
+      }
+    ]
+  },
+
+  "DeviceLoginScreenPrivacyScreenEnabled": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": { "DeviceLoginScreenPrivacyScreenEnabled": true },
+        "prefs": { "settings.display.privacy_screen_enabled": { "local_state": true } }
+      }
+    ]
+  },
+
+  "PrivacyScreenEnabled": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": { "PrivacyScreenEnabled": true },
+        "prefs": { "settings.display.privacy_screen_enabled": {} }
+      }
+    ]
+  },
+  "RequiredClientCertificateForUser": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "RequiredClientCertificateForUser": [{
+            "name": "Certificate Profile 1",
+            "cert_profile_id":"cert_profile_id_1",
+            "key_algorithm":"rsa",
+            "renewal_period_seconds": 2592000,
+            "policy_version": "some_hash"
+          }]
+        },
+        "prefs": {
+          "required_client_certificate_for_user": {
+            "value": [{
+              "name": "Certificate Profile 1",
+              "cert_profile_id":"cert_profile_id_1",
+              "key_algorithm":"rsa",
+              "renewal_period_seconds": 2592000,
+              "policy_version": "some_hash"
+            }]
+          }
+        }
+      }
+    ]
+  },
+  "RequiredClientCertificateForDevice": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "RequiredClientCertificateForDevice": [{
+            "name": "Certificate Profile 1",
+            "cert_profile_id":"cert_profile_id_1",
+            "key_algorithm":"rsa",
+            "renewal_period_seconds": 2592000,
+            "policy_version": "some_hash"
+          }]
+        },
+        "prefs": {
+          "required_client_certificate_for_device": {
+            "value": [{
+              "name": "Certificate Profile 1",
+              "cert_profile_id":"cert_profile_id_1",
+              "key_algorithm":"rsa",
+              "renewal_period_seconds": 2592000,
+              "policy_version": "some_hash"
+            }],
+            "local_state": true
+          }
+        }
       }
     ]
   },
@@ -6221,24 +6596,92 @@
 
   "CloudExtensionRequestEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
+    "note": "Policy uses default value if CloudReportingEnabled is false or unset.",
     "policy_pref_mapping_test": [
+      {
+        "policies": {
+        },
+        "prefs": {
+          "enterprise_reporting.extension_request.enabled": {
+            "expect_default": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "CloudExtensionRequestEnabled": true
+        },
+        "prefs": {
+          "enterprise_reporting.extension_request.enabled": {
+            "expect_default": true
+          }
+        }
+      },
       {
         "policies": {
           "CloudExtensionRequestEnabled": false
         },
-        "prefs": { "enterprise_reporting.extension_request.enabled": {} }
+        "prefs": {
+          "enterprise_reporting.extension_request.enabled": {
+            "expect_default": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "CloudExtensionRequestEnabled": true,
+          "CloudReportingEnabled": false
+        },
+        "prefs": {
+          "enterprise_reporting.extension_request.enabled": {
+            "expect_default": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "CloudExtensionRequestEnabled": false,
+          "CloudReportingEnabled": false
+        },
+        "prefs": {
+          "enterprise_reporting.extension_request.enabled": {
+            "expect_default": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "CloudExtensionRequestEnabled": true,
+          "CloudReportingEnabled": true
+        },
+        "prefs": {
+          "enterprise_reporting.extension_request.enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "CloudExtensionRequestEnabled": false,
+          "CloudReportingEnabled": true
+        },
+        "prefs": {
+          "enterprise_reporting.extension_request.enabled": {
+            "value": false
+          }
+        }
       }
     ]
   },
 
   "CloudReportingEnabled": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
           "CloudReportingEnabled": true
         },
-        "prefs": { "enterprise_reporting.chrome_cloud_reporting": {} }
+        "prefs": { "enterprise_reporting.chrome_cloud_reporting": { "local_state": true } }
       }
     ]
   },
@@ -6448,7 +6891,7 @@
   },
 
   "UnsafeEventsReportingEnabled": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
@@ -6460,7 +6903,7 @@
   },
 
   "BlockLargeFileTransfer": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
@@ -6472,7 +6915,7 @@
   },
 
   "DelayDeliveryUntilVerdict": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
@@ -6484,7 +6927,7 @@
   },
 
   "AllowPasswordProtectedFiles": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
@@ -6496,7 +6939,7 @@
   },
 
   "CheckContentCompliance": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": { "CheckContentCompliance": 0 },
@@ -6505,11 +6948,164 @@
     ]
   },
 
-  "URLsToCheckComplianceOfDownloadedContent": {},
+  "URLsToCheckComplianceOfDownloadedContent": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "URLsToCheckComplianceOfDownloadedContent": ["[*.]google.com"] },
+        "prefs": { "safebrowsing.urls_to_check_compliance_of_downloaded_content": { "local_state": true } }
+      }
+    ]
+  },
 
-  "URLsToNotCheckComplianceOfUploadedContent": {},
+  "URLsToCheckForMalwareOfUploadedContent": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "URLsToCheckForMalwareOfUploadedContent": ["[*.]google.com"] },
+        "prefs": { "safebrowsing.urls_to_check_for_malware_of_uploaded_content": { "local_state": true } }
+      }
+    ]
+  },
 
-  "URLsToCheckForMalwareOfUploadedContent": {},
+  "URLsToNotCheckForMalwareOfDownloadedContent": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "URLsToNotCheckForMalwareOfDownloadedContent": ["[*.]google.com"] },
+        "prefs": { "safebrowsing.urls_to_not_check_for_malware_of_downloaded_content": { "local_state": true } }
+      }
+    ]
+  },
+
+  "URLsToNotCheckComplianceOfUploadedContent": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "URLsToNotCheckComplianceOfUploadedContent": ["[*.]google.com"] },
+        "prefs": { "policy.urls_to_not_check_compliance_of_uploaded_content": { "local_state": true } }
+      }
+    ]
+  },
+
+  "OnFileAttachedEnterpriseConnector": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "OnFileAttachedEnterpriseConnector": [
+            {
+              "service_provider": "Google",
+              "enable": [
+                {
+                  "url_list": ["*"],
+                  "tags": ["malware"]
+                },
+                {
+                  "url_list": ["*.them.com", "*.others.com"],
+                  "tags": ["dlp"]
+                }
+              ],
+              "disable": [
+                {
+                  "url_list": ["*.us.com"],
+                  "tags": ["malware"]
+                }
+              ],
+              "block_until_verdict": 0,
+              "block_password_protected": true,
+              "block_large_files": false
+            }
+          ]
+        },
+        "prefs": { "enterprise_connectors.on_file_attached": { "local_state": true } }
+      }
+    ]
+  },
+
+  "OnFileDownloadedEnterpriseConnector": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "OnFileDownloadedEnterpriseConnector": [
+            {
+              "service_provider": "Google",
+              "enable": [
+                {
+                  "url_list": ["*"],
+                  "tags": ["malware"]
+                },
+                {
+                  "url_list": ["*.them.com", "*.others.com"],
+                  "tags": ["dlp"]
+                }
+              ],
+              "disable": [
+                {
+                  "url_list": ["*.us.com"],
+                  "tags": ["malware"]
+                }
+              ],
+              "block_until_verdict": 1,
+              "block_password_protected": false,
+              "block_large_files": true
+            }
+          ]
+        },
+        "prefs": { "enterprise_connectors.on_file_downloaded": { "local_state": true } }
+      }
+    ]
+  },
+
+  "OnBulkDataEntryEnterpriseConnector": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "OnBulkDataEntryEnterpriseConnector": [
+            {
+              "service_provider": "Google",
+              "enable": [
+                {
+                  "url_list": ["*"],
+                  "tags": ["malware"]
+                },
+                {
+                  "url_list": ["*.them.com", "*.others.com"],
+                  "tags": ["dlp"]
+                }
+              ],
+              "disable": [
+                {
+                  "url_list": ["*.us.com"],
+                  "tags": ["malware"]
+                }
+              ],
+              "block_until_verdict": 0
+            }
+          ]
+        },
+        "prefs": { "enterprise_connectors.on_bulk_data_entry": { "local_state": true } }
+      }
+    ]
+  },
+
+  "OnSecurityEventEnterpriseConnector": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "OnSecurityEventEnterpriseConnector": [
+            {
+              "service_provider": "Google"
+            }
+          ]
+        },
+        "prefs": { "enterprise_connectors.on_security_event": { "local_state": true } }
+      }
+    ]
+  },
 
   "RendererCodeIntegrityEnabled": {
     "os": ["win"],
@@ -6584,8 +7180,130 @@
       {
         "policies": { "StricterMixedContentTreatmentEnabled": false },
         "prefs": {
-	  "security_state.stricter_mixed_content_treatment_enabled": {}
-	}
+          "security_state.stricter_mixed_content_treatment_enabled": {}
+        }
+      }
+    ]
+  },
+  "UserDataSnapshotRetentionLimit" : {
+    "os": ["win", "linux", "mac"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "UserDataSnapshotRetentionLimit": 2 },
+        "prefs": {
+          "downgrade.snapshot_retention_limit": { "value": 2, "local_state": true }
+        }
+      }
+    ]
+  },
+  "ForceLogoutUnauthenticatedUserEnabled": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "ForceLogoutUnauthenticatedUserEnabled": false },
+        "prefs": {
+          "profile.force_logout_unauthenticated_user_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": { "ForceLogoutUnauthenticatedUserEnabled": true },
+        "prefs": {
+          "profile.force_logout_unauthenticated_user_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "profile.force_logout_unauthenticated_user_enabled": {
+            "value": false,
+            "expect_default": true
+          }
+        }
+      }
+    ]
+  },
+  "AdvancedProtectionDeepScanningEnabled": {
+    "note": "This policy was replaced with AdvancedProtectionAllowed in M82"
+  },
+  "AdvancedProtectionAllowed": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AdvancedProtectionAllowed": true },
+        "prefs": {
+          "safebrowsing.advanced_protection_allowed": {}
+        }
+      }
+    ]
+  },
+  "SystemProxySettings": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+     {
+      "policies": {
+       "SystemProxySettings": {
+        "system_proxy_enabled": "true",
+        "system_services_username": "test_user",
+        "system_services_password": "0000"
+       }
+      },
+      "prefs": {
+       "cros.system_proxy_settings": { "local_state": true }
+      }
+     }
+    ]
+  },
+  "NativeWindowOcclusionEnabled":  {
+    "os":  ["win"],
+    "policy_pref_mapping_test":  [
+      {
+        "policies":  {
+          "NativeWindowOcclusionEnabled":  true
+        },
+        "prefs": { "policy.native_window_occlusion_enabled":  {"local_state":  true} }
+      }
+    ]
+  },
+  "TabFreezingEnabled":  {},
+  "AccessibilityImageLabelsEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AccessibilityImageLabelsEnabled": true },
+        "prefs": {
+          "settings.a11y.enable_accessibility_image_labels": {}
+        }
+      }
+    ]
+  },
+  "AppCacheForceEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AppCacheForceEnabled": true },
+        "prefs": {
+          "app_cache_force_enabled": {
+            "value": true
+          }
+        }
+      }
+    ]
+  },
+  "UserAgentClientHintsEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "UserAgentClientHintsEnabled": true },
+        "prefs": {
+          "policy.user_agent_client_hints_enabled": {
+            "local_state":  true,
+            "value": true
+          }
+        }
       }
     ]
   }

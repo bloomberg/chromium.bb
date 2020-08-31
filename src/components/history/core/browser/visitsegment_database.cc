@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -202,7 +202,7 @@ std::vector<std::unique_ptr<PageUsageData>>
 VisitSegmentDatabase::QuerySegmentUsage(
     base::Time from_time,
     int max_result_count,
-    const base::Callback<bool(const GURL&)>& url_filter) {
+    const base::RepeatingCallback<bool(const GURL&)>& url_filter) {
   // This function gathers the highest-ranked segments in two queries.
   // The first gathers scores for all segments.
   // The second gathers segment data (url, title, etc.) for the highest-ranked

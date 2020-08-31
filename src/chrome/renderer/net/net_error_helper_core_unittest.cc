@@ -14,9 +14,9 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -40,6 +40,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/net_errors.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -143,11 +144,13 @@ error_page::Error ProbeErrorForURL(error_page::DnsProbeStatus status,
 }
 
 error_page::Error NetErrorForURL(net::Error net_error, const GURL& url) {
-  return error_page::Error::NetError(url, net_error, false);
+  return error_page::Error::NetError(url, net_error,
+                                     net::ResolveErrorInfo(net::OK), false);
 }
 
 error_page::Error NetError(net::Error net_error) {
-  return error_page::Error::NetError(GURL(kFailedUrl), net_error, false);
+  return error_page::Error::NetError(GURL(kFailedUrl), net_error,
+                                     net::ResolveErrorInfo(net::OK), false);
 }
 
 // Convenience functions that create an error string for a non-POST request.
@@ -399,9 +402,8 @@ class NetErrorHelperCoreTest : public testing::Test,
 
     // Check the body of the request.
 
-    base::JSONReader reader;
-    std::unique_ptr<base::Value> parsed_body(
-        reader.ReadDeprecated(navigation_correction_request_body));
+    base::Optional<base::Value> parsed_body =
+        base::JSONReader::Read(navigation_correction_request_body);
     ASSERT_TRUE(parsed_body);
     base::DictionaryValue* dict = NULL;
     ASSERT_TRUE(parsed_body->GetAsDictionary(&dict));
@@ -450,9 +452,8 @@ class NetErrorHelperCoreTest : public testing::Test,
 
     // Check the body of the request.
 
-    base::JSONReader reader;
-    std::unique_ptr<base::Value> parsed_body(
-        reader.ReadDeprecated(tracking_request_body));
+    base::Optional<base::Value> parsed_body =
+        base::JSONReader::Read(tracking_request_body);
     ASSERT_TRUE(parsed_body);
     base::DictionaryValue* dict = NULL;
     ASSERT_TRUE(parsed_body->GetAsDictionary(&dict));
@@ -2311,12 +2312,21 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, OnlinePartialErrorReplacement) {
 
 TEST_F(NetErrorHelperCoreAutoReloadTest, ShouldSuppressNonReloadableErrorPage) {
   DoErrorLoad(net::ERR_ABORTED);
-  EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                               GURL(kFailedUrl)));
+  EXPECT_FALSE(core()->ShouldSuppressErrorPage(
+      NetErrorHelperCore::MAIN_FRAME, GURL(kFailedUrl), net::ERR_ABORTED));
 
   DoErrorLoad(net::ERR_UNKNOWN_URL_SCHEME);
   EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                               GURL(kFailedUrl)));
+                                               GURL(kFailedUrl),
+                                               net::ERR_UNKNOWN_URL_SCHEME));
+}
+
+TEST_F(NetErrorHelperCoreAutoReloadTest,
+       ShouldSuppressErrorPageForDifferentError) {
+  DoErrorLoad(net::ERR_CERT_AUTHORITY_INVALID);
+  EXPECT_FALSE(core()->ShouldSuppressErrorPage(
+      NetErrorHelperCore::MAIN_FRAME, GURL(kFailedUrl),
+      net::ERR_INVALID_AUTH_CREDENTIALS));
 }
 
 TEST_F(NetErrorHelperCoreAutoReloadTest, DoesNotReload) {
@@ -2350,12 +2360,15 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, ShouldSuppressErrorPage) {
 
   // Sub-frame load.
   EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::SUB_FRAME,
-                                               GURL(kFailedUrl)));
+                                               GURL(kFailedUrl),
+                                               net::ERR_CONNECTION_RESET));
   EXPECT_TRUE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                              GURL(kFailedUrl)));
+                                              GURL(kFailedUrl),
+                                              net::ERR_CONNECTION_RESET));
   // No auto-reload attempt in flight.
   EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                               GURL(kFailedUrl)));
+                                               GURL(kFailedUrl),
+                                               net::ERR_CONNECTION_RESET));
 }
 
 TEST_F(NetErrorHelperCoreAutoReloadTest, HiddenAndShown) {
@@ -2404,7 +2417,8 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, ManualReloadShowsError) {
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::ERROR_PAGE);
   EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                               GURL(kFailedUrl)));
+                                               GURL(kFailedUrl),
+                                               net::ERR_CONNECTION_RESET));
 }
 
 TEST_F(NetErrorHelperCoreTest, ExplicitReloadSucceeds) {

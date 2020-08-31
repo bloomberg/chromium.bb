@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Defines all the "web_test" command-line switches.
-
 #ifndef CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_SWITCHES_H_
 #define CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_SWITCHES_H_
 
@@ -22,9 +20,17 @@ extern const char kEnableFontAntialiasing[];
 extern const char kAlwaysUseComplexText[];
 extern const char kEnableLeakDetection[];
 extern const char kEncodeBinary[];
-extern const char kRunWebTests[];
 extern const char kStableReleaseMode[];
 extern const char kDisableHeadlessMode[];
+extern const char kDisableAutoWPTOriginIsolation[];
+
+#if defined(OS_WIN)
+extern const char kRegisterFontFiles[];
+
+// Returns list of extra font files to be made accessible to the renderer, that
+// are specified via kRegisterFontFiles.
+std::vector<std::string> GetSideloadFontFiles();
+#endif
 
 }  // namespace switches
 

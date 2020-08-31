@@ -66,10 +66,6 @@ struct Impression {
   // Custom data associated with a notification. Send back to the client when
   // the user interacts with the notification.
   CustomData custom_data;
-
-  // Custom suppresion duration in days. It will override |suppression_duration|
-  // in config.
-  base::Optional<base::TimeDelta> custom_suppression_duration;
 };
 
 // Contains details about supression and recovery after suppression expired.
@@ -117,6 +113,17 @@ struct ClientState {
 
   // Suppression details, no value if there is currently no suppression.
   base::Optional<SuppressionInfo> suppression_info;
+
+  // The number of negative events caused by concecutive dismiss or not helpful
+  // button clicking in all time. Persisted in protodb.
+  size_t negative_events_count;
+
+  // Timestamp of last negative event occurred. Persisted in protodb.
+  base::Optional<base::Time> last_negative_event_ts;
+
+  // Timestamp of last shown notification.
+  // Persisted in protodb.
+  base::Optional<base::Time> last_shown_ts;
 };
 
 }  // namespace notifications

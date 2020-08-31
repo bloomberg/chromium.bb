@@ -27,6 +27,7 @@ class WebUIClient : public NotificationSchedulerClient {
   void OnSchedulerInitialized(bool success,
                               std::set<std::string> guids) override;
   void OnUserAction(const UserActionData& action_data) override;
+  void GetThrottleConfig(ThrottleConfigCallback callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIClient);
 };

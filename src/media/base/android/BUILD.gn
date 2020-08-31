@@ -47,9 +47,6 @@ if (is_android) {
       "media_drm_bridge_delegate.h",
       "media_drm_bridge_factory.cc",
       "media_drm_bridge_factory.h",
-      "media_drm_key_type.h",
-      "media_drm_storage.cc",
-      "media_drm_storage.h",
       "media_drm_storage_bridge.cc",
       "media_drm_storage_bridge.h",
       "media_player_bridge.cc",
@@ -66,9 +63,7 @@ if (is_android) {
       "stream_texture_wrapper.h",
     ]
     configs += [ "//media:subcomponent_config" ]
-    public_deps = [
-      ":media_jni_headers",
-    ]
+    public_deps = [ ":media_jni_headers" ]
     deps = [
       "//media/audio",
       "//media/base",
@@ -154,19 +149,18 @@ if (is_android) {
   }
 
   java_cpp_strings("java_switches") {
-    sources = [
-      "//media/base/media_switches.cc",
-    ]
+    sources = [ "//media/base/media_switches.cc" ]
     template = "//media/base/android/java_templates/MediaSwitches.java.tmpl"
   }
 
   android_resources("media_java_resources") {
     custom_package = "org.chromium.media"
-    resource_dirs = [ "java/res" ]
+    sources = [ "java/res/raw/empty.wav" ]
   }
 
   android_library("media_java") {
     deps = [
+      ":display_java",
       ":media_java_resources",
       "//base:base_java",
       "//base:jni_java",
@@ -178,16 +172,17 @@ if (is_android) {
       ":java_switches",
       "//media/base:java_enums",
     ]
-    java_files = [
+    sources = [
       "java/src/org/chromium/media/AudioManagerAndroid.java",
       "java/src/org/chromium/media/AudioTrackOutputStream.java",
       "java/src/org/chromium/media/BitrateAdjuster.java",
       "java/src/org/chromium/media/CodecProfileLevelList.java",
       "java/src/org/chromium/media/HdrMetadata.java",
+      "java/src/org/chromium/media/MaxAnticipatedResolutionEstimator.java",
       "java/src/org/chromium/media/MediaCodecBridge.java",
       "java/src/org/chromium/media/MediaCodecBridgeBuilder.java",
-      "java/src/org/chromium/media/MediaCodecUtil.java",
       "java/src/org/chromium/media/MediaCodecEncoder.java",
+      "java/src/org/chromium/media/MediaCodecUtil.java",
       "java/src/org/chromium/media/MediaDrmBridge.java",
       "java/src/org/chromium/media/MediaDrmSessionManager.java",
       "java/src/org/chromium/media/MediaDrmStorageBridge.java",
@@ -195,11 +190,19 @@ if (is_android) {
       "java/src/org/chromium/media/MediaPlayerBridge.java",
       "java/src/org/chromium/media/MediaPlayerListener.java",
       "java/src/org/chromium/media/MediaServerCrashListener.java",
+      "java/src/org/chromium/media/ScreenResolutionUtil.java",
     ]
   }
 
+  # TODO (b/146418831): Replace with androidx version
+  android_library("display_java") {
+    sources = [ "java/src/org/chromium/media/DisplayCompat.java" ]
+
+    deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
+  }
+
   junit_binary("media_base_junit_tests") {
-    java_files = [
+    sources = [
       "java/src/test/org/chromium/media/AudioTrackOutputStreamTest.java",
       "java/src/test/org/chromium/media/BitrateAdjusterTest.java",
       "java/src/test/org/chromium/media/MediaFormatBuilderTest.java",

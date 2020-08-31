@@ -72,6 +72,8 @@ public:
 
     bool sampleMaskSupport() const { return fSampleMaskSupport; }
 
+    bool tessellationSupport() const { return fTessellationSupport; }
+
     bool externalTextureSupport() const { return fExternalTextureSupport; }
 
     bool vertexIDSupport() const { return fVertexIDSupport; }
@@ -126,6 +128,8 @@ public:
     // required by the spec. SKSL will always emit full ints.
     bool incompleteShortIntPrecision() const { return fIncompleteShortIntPrecision; }
 
+    bool colorSpaceMathNeedsFloat() const { return fColorSpaceMathNeedsFloat; }
+
     // If true, then conditions in for loops need "&& true" to work around driver bugs.
     bool addAndTrueToLoopCondition() const { return fAddAndTrueToLoopCondition; }
 
@@ -147,6 +151,13 @@ public:
     // constructs. See detailed comments in GrGLCaps.cpp.
     bool mustGuardDivisionEvenAfterExplicitZeroCheck() const {
         return fMustGuardDivisionEvenAfterExplicitZeroCheck;
+    }
+
+    // On Pixel 3, 3a, and 4 devices we've noticed that the simple function:
+    // half4 blend(half4 a, half4 b) { return a.a * b; }
+    // may return (0, 0, 0, 1) when b is (0, 0, 0, 0).
+    bool inBlendModesFailRandomlyForAllZeroVec() const {
+        return fInBlendModesFailRandomlyForAllZeroVec;
     }
 
     // On Nexus 6, the GL context can get lost if a shader does not write a value to gl_FragColor.
@@ -226,6 +237,11 @@ public:
         return fSampleVariablesExtensionString;
     }
 
+    const char* tessellationExtensionString() const {
+        SkASSERT(this->tessellationSupport());
+        return fTessellationExtensionString;
+    }
+
     int maxFragmentSamplers() const { return fMaxFragmentSamplers; }
 
     bool textureSwizzleAppliedInShader() const { return fTextureSwizzleAppliedInShader; }
@@ -251,6 +267,7 @@ private:
     bool fPreferFlatInterpolation           : 1;
     bool fNoPerspectiveInterpolationSupport : 1;
     bool fSampleMaskSupport                 : 1;
+    bool fTessellationSupport               : 1;
     bool fExternalTextureSupport            : 1;
     bool fVertexIDSupport                   : 1;
     bool fFPManipulationSupport             : 1;
@@ -272,6 +289,7 @@ private:
     bool fRequiresLocalOutputColorForFBFetch          : 1;
     bool fMustObfuscateUniformColor                   : 1;
     bool fMustGuardDivisionEvenAfterExplicitZeroCheck : 1;
+    bool fInBlendModesFailRandomlyForAllZeroVec       : 1;
     bool fCanUseFragCoord                             : 1;
     bool fIncompleteShortIntPrecision                 : 1;
     bool fAddAndTrueToLoopCondition                   : 1;
@@ -282,6 +300,7 @@ private:
     bool fMustWriteToFragColor                        : 1;
     bool fNoDefaultPrecisionForExternalSamplers       : 1;
     bool fCanOnlyUseSampleMaskWithStencil             : 1;
+    bool fColorSpaceMathNeedsFloat                    : 1;
 
     const char* fVersionDeclString;
 
@@ -294,6 +313,7 @@ private:
     const char* fSecondExternalTextureExtensionString;
     const char* fNoPerspectiveInterpolationExtensionString;
     const char* fSampleVariablesExtensionString;
+    const char* fTessellationExtensionString;
 
     const char* fFBFetchColorName;
     const char* fFBFetchExtensionString;
@@ -304,6 +324,7 @@ private:
 
     friend class GrCaps;  // For initialization.
     friend class GrDawnCaps;
+    friend class GrD3DCaps;
     friend class GrGLCaps;
     friend class GrMockCaps;
     friend class GrMtlCaps;

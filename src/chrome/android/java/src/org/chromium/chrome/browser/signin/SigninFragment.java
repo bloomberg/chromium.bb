@@ -14,12 +14,16 @@ import androidx.annotation.Nullable;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
-import org.chromium.chrome.browser.settings.PreferencesLauncher;
-import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
+import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 import java.lang.annotation.Retention;
@@ -105,9 +109,8 @@ public class SigninFragment extends SigninFragmentBase {
                 || accessPoint == SigninAccessPoint.NTP_CONTENT_SUGGESTIONS
                 || accessPoint == SigninAccessPoint.RECENT_TABS
                 || accessPoint == SigninAccessPoint.SETTINGS
-                || accessPoint == SigninAccessPoint.SIGNIN_PROMO
                 || accessPoint
-                        == SigninAccessPoint.START_PAGE : "invalid access point: " + accessPoint;
+                        == SigninAccessPoint.SIGNIN_PROMO : "invalid access point: " + accessPoint;
         mSigninAccessPoint = accessPoint;
         mPromoAction =
                 getSigninArguments().getInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PromoAction.NONE);
@@ -131,23 +134,31 @@ public class SigninFragment extends SigninFragmentBase {
     protected void onSigninAccepted(String accountName, boolean isDefaultAccount,
             boolean settingsClicked, Runnable callback) {
         // TODO(https://crbug.com/1002056): Change onSigninAccepted to get CoreAccountInfo.
-        Account account = AccountManagerFacade.get().getAccountFromName(accountName);
+        Account account = AccountUtils.findAccountByName(
+                AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(), accountName);
         if (account == null) {
             callback.run();
             return;
         }
-        IdentityServicesProvider.getSigninManager().signIn(
+        IdentityServicesProvider.get().getSigninManager().signIn(
                 mSigninAccessPoint, account, new SigninManager.SignInCallback() {
                     @Override
                     public void onSignInComplete() {
                         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
-                                true);
+                                Profile.getLastUsedRegularProfile(), true);
+                        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
                         if (settingsClicked) {
-                            PreferencesLauncher.launchSettingsPage(getActivity(),
-                                    SyncAndServicesPreferences.class,
-                                    SyncAndServicesPreferences.createArguments(true));
-                        } else if (ChromeFeatureList.isEnabled(
-                                           ChromeFeatureList.SYNC_MANUAL_START_ANDROID)) {
+                            if (ChromeFeatureList.isEnabled(
+                                        ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
+                                settingsLauncher.launchSettingsActivity(getActivity(),
+                                        ManageSyncSettings.class,
+                                        ManageSyncSettings.createArguments(true));
+                            } else {
+                                settingsLauncher.launchSettingsActivity(getActivity(),
+                                        SyncAndServicesSettings.class,
+                                        SyncAndServicesSettings.createArguments(true));
+                            }
+                        } else {
                             ProfileSyncService.get().setFirstSetupComplete(
                                     SyncFirstSetupCompleteSource.BASIC_FLOW);
                         }

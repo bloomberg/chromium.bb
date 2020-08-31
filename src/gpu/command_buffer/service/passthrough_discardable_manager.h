@@ -11,6 +11,7 @@
 #include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
+struct GpuPreferences;
 namespace gles2 {
 class TexturePassthrough;
 class ContextGroup;
@@ -18,7 +19,7 @@ class ContextGroup;
 
 class GPU_GLES2_EXPORT PassthroughDiscardableManager {
  public:
-  PassthroughDiscardableManager();
+  explicit PassthroughDiscardableManager(const GpuPreferences& preferences);
   ~PassthroughDiscardableManager();
 
   void InitializeTexture(uint32_t client_id,
@@ -32,8 +33,12 @@ class GPU_GLES2_EXPORT PassthroughDiscardableManager {
                    const gles2::ContextGroup* context_group);
 
   // Called when a context group is deleted, clean up all textures from this
-  // group
-  void DeleteContextGroup(const gles2::ContextGroup* context_group);
+  // group.
+  void DeleteContextGroup(const gles2::ContextGroup* context_group,
+                          bool has_context);
+
+  // Called when all contexts with cached textures in this manager are lost.
+  void OnContextLost();
 
   // Called when a texture is deleted, to clean up state.
   void DeleteTexture(uint32_t client_id,
@@ -78,6 +83,11 @@ class GPU_GLES2_EXPORT PassthroughDiscardableManager {
     scoped_refptr<gles2::TexturePassthrough> unlocked_texture;
     size_t size = 0;
   };
+
+  // Delete textures belonging to |context_group|. If |context_group| is null
+  // then all textures are deleted.
+  void DeleteTextures(const gles2::ContextGroup* context_group,
+                      bool has_context);
 
   using DiscardableCache =
       base::MRUCache<DiscardableCacheKey, DiscardableCacheValue>;

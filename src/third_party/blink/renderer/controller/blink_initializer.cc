@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/disk_data_allocator.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -62,8 +63,16 @@
 
 #if defined(OS_ANDROID)
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
-#include "third_party/blink/renderer/controller/highest_pmf_reporter.h"
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "third_party/blink/renderer/controller/memory_usage_monitor_posix.h"
+#endif
+
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_MACOSX) || \
+    defined(OS_WIN)
+#include "third_party/blink/renderer/controller/highest_pmf_reporter.h"
 #include "third_party/blink/renderer/controller/user_level_memory_pressure_signal_generator.h"
 #endif
 
@@ -133,12 +142,16 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
     MemoryAblationExperiment::MaybeStartForRenderer(task_runner);
 
 #if defined(OS_ANDROID)
-  // Initialize UserLevelMemoryPressureSignalGenerator so it starts monitoring.
-  UserLevelMemoryPressureSignalGenerator::Instance();
-
   // Initialize CrashMemoryMetricsReporterImpl in order to assure that memory
   // allocation does not happen in OnOOMCallback.
   CrashMemoryMetricsReporterImpl::Instance();
+#endif
+
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_MACOSX) || \
+    defined(OS_WIN)
+  // Initialize UserLevelMemoryPressureSignalGenerator so it starts monitoring.
+  if (UserLevelMemoryPressureSignalGenerator::Enabled())
+    UserLevelMemoryPressureSignalGenerator::Instance();
 
   // Start reporting the highest private memory footprint after the first
   // navigation.
@@ -148,14 +161,16 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
 
 }  // namespace
 
+// Function defined in third_party/blink/public/web/blink.h.
 void Initialize(Platform* platform,
                 mojo::BinderMap* binders,
                 scheduler::WebThreadScheduler* main_thread_scheduler) {
   DCHECK(binders);
-  Platform::Initialize(platform, main_thread_scheduler);
+  Platform::InitializeMainThread(platform, main_thread_scheduler);
   InitializeCommon(platform, binders);
 }
 
+// Function defined in third_party/blink/public/web/blink.h.
 void CreateMainThreadAndInitialize(Platform* platform,
                                    mojo::BinderMap* binders) {
   DCHECK(binders);
@@ -180,9 +195,18 @@ void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
                   &CrashMemoryMetricsReporterImpl::Bind)),
               main_thread->GetTaskRunner());
 #endif
+#if defined(OS_LINUX)
+  binders.Add(ConvertToBaseRepeatingCallback(
+                  CrossThreadBindRepeating(&MemoryUsageMonitorPosix::Bind)),
+              main_thread->GetTaskRunner());
+#endif
 
   binders.Add(ConvertToBaseRepeatingCallback(
                   CrossThreadBindRepeating(&BlinkLeakDetector::Create)),
+              main_thread->GetTaskRunner());
+
+  binders.Add(ConvertToBaseRepeatingCallback(
+                  CrossThreadBindRepeating(&DiskDataAllocator::Bind)),
               main_thread->GetTaskRunner());
 }
 

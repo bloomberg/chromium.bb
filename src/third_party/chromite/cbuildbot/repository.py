@@ -12,11 +12,11 @@ import multiprocessing
 import os
 import re
 import shutil
+import sys
 import time
 
 from six.moves import urllib
 
-from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -29,6 +29,9 @@ from chromite.lib import path_util
 from chromite.lib import repo_util
 from chromite.lib import retry_util
 from chromite.lib import rewrite_git_alternates
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Default sleep time(second) between retries
@@ -49,16 +52,6 @@ class SrcCheckOutException(Exception):
 def IsARepoRoot(directory):
   """Returns True if directory is the root of a repo checkout."""
   return os.path.exists(os.path.join(directory, '.repo'))
-
-
-def IsInternalRepoCheckout(root):
-  """Returns whether root houses an internal 'repo' checkout."""
-  manifest_dir = os.path.join(root, '.repo', 'manifests')
-  manifest_url = git.RunGit(
-      manifest_dir, ['config', 'remote.origin.url']).output.strip()
-  return (os.path.splitext(os.path.basename(manifest_url))[0] ==
-          os.path.splitext(os.path.basename(
-              config_lib.GetSiteParams().MANIFEST_INT_URL))[0])
 
 
 def _IsLocalPath(url):
@@ -322,7 +315,7 @@ class RepoRepository(object):
         if os.path.isdir(repo_git_store):
           cmd = ['branch', '-D'] + list(constants.CREATED_BRANCHES)
           # Ignore errors, since we delete branches without checking existence.
-          git.RunGit(repo_git_store, cmd, error_code_ok=True)
+          git.RunGit(repo_git_store, cmd, check=False)
 
         if os.path.isdir(path):
           # Above we deleted refs/heads/<branch> for each created branch, now
@@ -330,7 +323,7 @@ class RepoRepository(object):
           for ref in constants.CREATED_BRANCHES:
             # Ignore errors, since we delete branches without checking
             # existence.
-            git.RunGit(path, ['update-ref', '-d', ref], error_code_ok=True)
+            git.RunGit(path, ['update-ref', '-d', ref], check=False)
 
     # Cleanup all of the directories.
     dirs = [[attrs['name'], os.path.join(self.directory, attrs['path'])]
@@ -636,7 +629,7 @@ class RepoRepository(object):
     if detach:
       cmd.append('--detach')
 
-    cros_build_lib.run(cmd, cwd=self.directory, error_code_ok=True)
+    cros_build_lib.run(cmd, cwd=self.directory, check=False)
 
   def GetRelativePath(self, path):
     """Returns full path including source directory of path in repo."""

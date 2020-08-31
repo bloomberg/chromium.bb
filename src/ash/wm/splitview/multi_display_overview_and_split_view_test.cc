@@ -17,7 +17,10 @@ MultiDisplayOverviewAndSplitViewTest::~MultiDisplayOverviewAndSplitViewTest() =
 void MultiDisplayOverviewAndSplitViewTest::SetUp() {
   if (GetParam()) {
     scoped_feature_list_.InitAndEnableFeature(
-        ash::features::kMultiDisplayOverviewAndSplitView);
+        features::kMultiDisplayOverviewAndSplitView);
+  } else {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kMultiDisplayOverviewAndSplitView);
   }
   AshTestBase::SetUp();
 }

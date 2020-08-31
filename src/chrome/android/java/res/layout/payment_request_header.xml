@@ -51,7 +51,7 @@
                 android:ellipsize="start"
                 android:maxLines="1"
                 android:singleLine="true"
-                android:textAppearance="@style/TextAppearance.BlackBody" />
+                android:textAppearance="@style/TextAppearance.TextMedium.Secondary" />
         </LinearLayout>
         <ImageView
             android:id="@+id/close_button"
@@ -62,6 +62,6 @@
             android:contentDescription="@string/close"
             android:background="?attr/selectableItemBackground"
             android:scaleType="center"
-            app:tint="@color/standard_mode_tint" />
+            app:tint="@color/default_icon_color_tint_list" />
     </org.chromium.chrome.browser.payments.ui.PaymentRequestHeader>
 </merge>

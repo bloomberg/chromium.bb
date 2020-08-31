@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import multiprocessing
 import os
+import sys
 
 from chromite.lib import commandline
 from chromite.lib import constants
@@ -19,6 +20,10 @@ from chromite.lib import osutils
 from chromite.lib import workon_helper
 from chromite.lib import portage_util
 from chromite.scripts import cros_extract_deps
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 BOARD_VIRTUAL_PACKAGES = (constants.TARGET_OS_PKG,
                           constants.TARGET_OS_DEV_PKG,
@@ -60,6 +65,12 @@ def ParseArgs(argv):
                            'packages that could be installed on target board '
                            'without assuming that any packages have actually '
                            'been merged yet.')
+  parser.add_argument(
+      '-j',
+      '--jobs',
+      type=int,
+      default=multiprocessing.cpu_count(),
+      help='The limit for the number of possible concurrent jobs.')
 
   options = parser.parse_args(argv)
   options.Freeze()
@@ -80,7 +91,7 @@ def main(argv):
   cros_build_lib.AssertInsideChroot()
 
   sysroot = opts.sysroot or cros_build_lib.GetSysroot(opts.board)
-  package_blacklist = portage_util.UNITTEST_PACKAGE_BLACKLIST
+  package_blacklist = set()
   if opts.package_blacklist:
     package_blacklist |= set(opts.package_blacklist.split())
 
@@ -141,8 +152,8 @@ def main(argv):
       return 1
 
   try:
-    chroot_util.RunUnittests(sysroot, pkg_with_test, extra_env=env,
-                             jobs=min(10, multiprocessing.cpu_count()))
+    chroot_util.RunUnittests(
+        sysroot, pkg_with_test, extra_env=env, jobs=opts.jobs)
   except cros_build_lib.RunCommandError:
     logging.error('Unittests failed.')
     return 1

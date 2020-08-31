@@ -3,29 +3,56 @@
         "background:media:imgur": {
             "DEFAULT": "system_health_mobile_047.wprgo"
         },
+        "background:media:imgur:2019": {
+            "DEFAULT": "system_health_mobile_1e1539cbc7.wprgo"
+        },
         "background:news:nytimes": {
             "DEFAULT": "system_health_mobile_052.wprgo"
+        },
+        "background:news:nytimes:2019": {
+            "DEFAULT": "system_health_mobile_648270feb3.wprgo"
         },
         "background:search:google": {
             "DEFAULT": "system_health_mobile_044.wprgo"
         },
+        "background:search:google:2019": {
+            "DEFAULT": "system_health_mobile_91dc7db4c7.wprgo"
+        },
         "background:social:facebook": {
             "DEFAULT": "system_health_mobile_045.wprgo"
+        },
+        "background:social:facebook:2019": {
+            "DEFAULT": "system_health_mobile_6a3429e9e4.wprgo"
         },
         "background:tools:gmail": {
             "DEFAULT": "system_health_mobile_043.wprgo"
         },
+        "background:tools:gmail:2019": {
+            "DEFAULT": "system_health_mobile_8da411a0f4.wprgo"
+        },
         "browse:chrome:newtab": {
             "DEFAULT": "system_health_mobile_056.wprgo"
+        },
+        "browse:chrome:newtab:2019": {
+            "DEFAULT": "system_health_mobile_1bc8137e59.wprgo"
         },
         "browse:chrome:omnibox": {
             "DEFAULT": "system_health_mobile_056.wprgo"
         },
+        "browse:chrome:omnibox:2019": {
+            "DEFAULT": "system_health_mobile_8de13d6bda.wprgo"
+        },
         "browse:media:facebook_photos": {
             "DEFAULT": "system_health_mobile_040.wprgo"
         },
+        "browse:media:facebook_photos:2019": {
+            "DEFAULT": "system_health_mobile_c257dc16d3.wprgo"
+        },
         "browse:media:flickr_infinite_scroll": {
             "DEFAULT": "system_health_mobile_062.wprgo"
+        },
+        "browse:media:flickr_infinite_scroll:2019": {
+            "DEFAULT": "system_health_mobile_02f1f2624a.wprgo"
         },
         "browse:media:googleplaystore:2019": {
             "DEFAULT": "system_health_mobile_4413a28712.wprgo"
@@ -33,11 +60,14 @@
         "browse:media:imgur": {
             "DEFAULT": "system_health_mobile_035.wprgo"
         },
+        "browse:media:imgur:2019": {
+            "DEFAULT": "system_health_mobile_96a8c80910.wprgo"
+        },
         "browse:media:youtube": {
             "DEFAULT": "system_health_mobile_037.wprgo"
         },
         "browse:media:youtube:2019": {
-            "DEFAULT": "system_health_mobile_d70a6c0a79.wprgo"
+            "DEFAULT": "system_health_mobile_e3bcdb3230.wprgo"
         },
         "browse:news:cnn": {
             "DEFAULT": "system_health_mobile_014.wprgo"
@@ -72,6 +102,9 @@
         "browse:news:qq": {
             "DEFAULT": "system_health_mobile_018.wprgo"
         },
+        "browse:news:qq:2019": {
+            "DEFAULT": "system_health_mobile_26502a7a19.wprgo"
+        },
         "browse:news:reddit": {
             "DEFAULT": "system_health_mobile_027.wprgo"
         },
@@ -80,6 +113,9 @@
         },
         "browse:news:toi": {
             "DEFAULT": "system_health_mobile_064.wprgo"
+        },
+        "browse:news:toi:2019": {
+            "DEFAULT": "system_health_mobile_1a97b96d14.wprgo"
         },
         "browse:news:washingtonpost": {
             "DEFAULT": "system_health_mobile_021.wprgo"
@@ -102,14 +138,26 @@
         "browse:shopping:avito": {
             "DEFAULT": "system_health_mobile_053.wprgo"
         },
+        "browse:shopping:avito:2019": {
+            "DEFAULT": "system_health_mobile_e3a51d0666.wprgo"
+        },
         "browse:shopping:flipkart": {
             "DEFAULT": "system_health_mobile_061.wprgo"
+        },
+        "browse:shopping:flipkart:2019": {
+            "DEFAULT": "system_health_mobile_605f2323f8.wprgo"
         },
         "browse:shopping:lazada": {
             "DEFAULT": "system_health_mobile_053.wprgo"
         },
+        "browse:shopping:lazada:2019": {
+            "DEFAULT": "system_health_mobile_8df98214f9.wprgo"
+        },
         "browse:social:facebook": {
             "DEFAULT": "system_health_mobile_028.wprgo"
+        },
+        "browse:social:facebook:2019": {
+            "DEFAULT": "system_health_mobile_77b7808065.wprgo"
         },
         "browse:social:facebook_infinite_scroll": {
             "DEFAULT": "system_health_mobile_062.wprgo"
@@ -125,6 +173,9 @@
         },
         "browse:social:pinterest_infinite_scroll": {
             "DEFAULT": "system_health_mobile_063.wprgo"
+        },
+        "browse:social:pinterest_infinite_scroll:2019": {
+            "DEFAULT": "system_health_mobile_d8fcf4e2bf.wprgo"
         },
         "browse:social:tumblr_infinite_scroll": {
             "DEFAULT": "system_health_mobile_062.wprgo"
@@ -171,6 +222,9 @@
         "load:media:dailymotion": {
             "DEFAULT": "system_health_mobile_003.wprgo"
         },
+        "load:media:dailymotion:2019": {
+            "DEFAULT": "system_health_mobile_eb4a1d8292.wprgo"
+        },
         "load:media:facebook_photos": {
             "DEFAULT": "system_health_mobile_040.wprgo"
         },
@@ -210,6 +264,9 @@
         "load:news:bbc": {
             "DEFAULT": "system_health_mobile_002.wprgo"
         },
+        "load:news:bbc:2019": {
+            "DEFAULT": "system_health_mobile_ca7928bddd.wprgo"
+        },
         "load:news:cnn": {
             "DEFAULT": "system_health_mobile_006.wprgo"
         },
@@ -224,6 +281,9 @@
         },
         "load:news:irctc": {
             "DEFAULT": "system_health_mobile_058.wprgo"
+        },
+        "load:news:irctc:2019": {
+            "DEFAULT": "system_health_mobile_941a515134.wprgo"
         },
         "load:news:nytimes": {
             "DEFAULT": "system_health_mobile_009.wprgo"
@@ -261,6 +321,9 @@
         "load:search:amazon": {
             "DEFAULT": "system_health_mobile_000.wprgo"
         },
+        "load:search:amazon:2019": {
+            "DEFAULT": "system_health_mobile_c1802fd8f4.wprgo"
+        },
         "load:search:baidu": {
             "DEFAULT": "system_health_mobile_000.wprgo"
         },
@@ -281,6 +344,9 @@
         },
         "load:search:taobao": {
             "DEFAULT": "system_health_mobile_000.wprgo"
+        },
+        "load:search:taobao:2019": {
+            "DEFAULT": "system_health_mobile_193439b464.wprgo"
         },
         "load:search:yahoo": {
             "DEFAULT": "system_health_mobile_000.wprgo"
@@ -306,6 +372,9 @@
         "load:social:pinterest": {
             "DEFAULT": "system_health_mobile_001.wprgo"
         },
+        "load:social:pinterest:2019": {
+            "DEFAULT": "system_health_mobile_25e2cdbc77.wprgo"
+        },
         "load:social:tumblr": {
             "DEFAULT": "system_health_mobile_001.wprgo"
         },
@@ -318,14 +387,26 @@
         "load:tools:docs": {
             "DEFAULT": "system_health_mobile_004.wprgo"
         },
+        "load:tools:docs:2019": {
+            "DEFAULT": "system_health_mobile_3004d67e94.wprgo"
+        },
         "load:tools:drive": {
             "DEFAULT": "system_health_mobile_004.wprgo"
+        },
+        "load:tools:drive:2019": {
+            "DEFAULT": "system_health_mobile_62b0ee6433.wprgo"
         },
         "load:tools:dropbox": {
             "DEFAULT": "system_health_mobile_004.wprgo"
         },
+        "load:tools:dropbox:2019": {
+            "DEFAULT": "system_health_mobile_c19ba48444.wprgo"
+        },
         "load:tools:gmail": {
             "DEFAULT": "system_health_mobile_048.wprgo"
+        },
+        "load:tools:gmail:2019": {
+            "DEFAULT": "system_health_mobile_b8a3bd8e6d.wprgo"
         },
         "load:tools:maps": {
             "DEFAULT": "system_health_mobile_004.wprgo"
@@ -338,6 +419,9 @@
         },
         "load:tools:weather": {
             "DEFAULT": "system_health_mobile_004.wprgo"
+        },
+        "load:tools:weather:2019": {
+            "DEFAULT": "system_health_mobile_6045a1ffb8.wprgo"
         },
         "long_running:tools:gmail-background": {
             "DEFAULT": "system_health_mobile_042.wprgo"

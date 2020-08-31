@@ -23,7 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {EventTarget} from './EventTarget.js';  // eslint-disable-line no-unused-vars
+import {EventDescriptor, EventTarget, EventTargetEvent} from './EventTarget.js';  // eslint-disable-line no-unused-vars
+
+/**
+ * @typedef {!{thisObject: (!Object|undefined), listener: function(!EventTargetEvent):void, disposed: (boolean|undefined)}}
+ */
+let _listenerCallbackTuple;  // eslint-disable-line no-unused-vars
 
 /**
  * @implements {EventTarget}
@@ -31,16 +36,16 @@ import {EventTarget} from './EventTarget.js';  // eslint-disable-line no-unused-
  */
 export class ObjectWrapper {
   constructor() {
-    /** @type {(!Map<string|symbol, !Array<!Common.Object._listenerCallbackTuple>>|undefined)} */
+    /** @type {(!Map<string|symbol, !Array<!_listenerCallbackTuple>>|undefined)} */
     this._listeners;
   }
 
   /**
    * @override
    * @param {string|symbol} eventType
-   * @param {function(!Common.Event)} listener
+   * @param {function(!EventTargetEvent):void} listener
    * @param {!Object=} thisObject
-   * @return {!Common.EventTarget.EventDescriptor}
+   * @return {!EventDescriptor}
    */
   addEventListener(eventType, listener, thisObject) {
     if (!listener) {
@@ -54,13 +59,16 @@ export class ObjectWrapper {
     if (!this._listeners.has(eventType)) {
       this._listeners.set(eventType, []);
     }
-    this._listeners.get(eventType).push({thisObject: thisObject, listener: listener});
+    const listenerForEventType = this._listeners.get(eventType);
+    if (listenerForEventType) {
+      listenerForEventType.push({thisObject: thisObject, listener: listener, disposed: undefined});
+    }
     return {eventTarget: this, eventType: eventType, thisObject: thisObject, listener: listener};
   }
 
   /**
    * @override
-   * @param {symbol} eventType
+   * @param {string|symbol} eventType
    * @return {!Promise<*>}
    */
   once(eventType) {
@@ -75,16 +83,16 @@ export class ObjectWrapper {
   /**
    * @override
    * @param {string|symbol} eventType
-   * @param {function(!Common.Event)} listener
+   * @param {function(!EventTargetEvent):void} listener
    * @param {!Object=} thisObject
    */
   removeEventListener(eventType, listener, thisObject) {
-    console.assert(listener);
+    console.assert(!!listener);
 
     if (!this._listeners || !this._listeners.has(eventType)) {
       return;
     }
-    const listeners = this._listeners.get(eventType);
+    const listeners = this._listeners.get(eventType) || [];
     for (let i = 0; i < listeners.length; ++i) {
       if (listeners[i].listener === listener && listeners[i].thisObject === thisObject) {
         listeners[i].disposed = true;
@@ -116,8 +124,9 @@ export class ObjectWrapper {
       return;
     }
 
-    const event = /** @type {!Common.Event} */ ({data: eventData});
-    const listeners = this._listeners.get(eventType).slice(0);
+    const event = /** @type {!EventTargetEvent} */ ({data: eventData});
+    // @ts-ignore we do the check for undefined above
+    const listeners = this._listeners.get(eventType).slice(0) || [];
     for (let i = 0; i < listeners.length; ++i) {
       if (!listeners[i].disposed) {
         listeners[i].listener.call(listeners[i].thisObject, event);
@@ -125,17 +134,3 @@ export class ObjectWrapper {
     }
   }
 }
-
-/* Legacy exported object */
-self.Common = self.Common || {};
-Common = Common || {};
-
-/**
- * @constructor
- */
-Common.Object = ObjectWrapper;
-
-/**
- * @typedef {!{thisObject: (!Object|undefined), listener: function(!Common.Event), disposed: (boolean|undefined)}}
- */
-Common.Object._listenerCallbackTuple;

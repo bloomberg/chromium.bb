@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_UPDATER_EXTENSIONS_INSTALLER_H_
-#define EXTENSIONS_BROWSER_UPDATER_EXTENSIONS_INSTALLER_H_
+#ifndef EXTENSIONS_BROWSER_UPDATER_EXTENSION_INSTALLER_H_
+#define EXTENSIONS_BROWSER_UPDATER_EXTENSION_INSTALLER_H_
 
 #include <memory>
 #include <string>
@@ -26,12 +26,12 @@ class ExtensionInstaller : public update_client::CrxInstaller {
   using UpdateClientCallback = update_client::CrxInstaller::Callback;
   // A callback to implement the install of a new version of the extension.
   // Takes ownership of the directory at |unpacked_dir|.
-  using ExtensionInstallerCallback =
-      base::OnceCallback<void(const std::string& extension_id,
-                              const std::string& public_key,
-                              const base::FilePath& unpacked_dir,
-                              bool install_immediately,
-                              UpdateClientCallback update_client_callback)>;
+  using ExtensionInstallerCallback = base::RepeatingCallback<void(
+      const std::string& extension_id,
+      const std::string& public_key,
+      const base::FilePath& unpacked_dir,
+      bool install_immediately,
+      UpdateClientCallback update_client_callback)>;
 
   // This method takes the id and root directory for an extension we're doing
   // an update check for, as well as a callback to call if we get a new version
@@ -49,6 +49,8 @@ class ExtensionInstaller : public update_client::CrxInstaller {
   // |update_client_callback| is expected to be called on a UI thread.
   void Install(const base::FilePath& unpack_path,
                const std::string& public_key,
+               std::unique_ptr<InstallParams> install_params,
+               ProgressCallback progress_callback,
                UpdateClientCallback update_client_callback) override;
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
@@ -71,4 +73,4 @@ class ExtensionInstaller : public update_client::CrxInstaller {
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_UPDATER_EXTENSIONS_INSTALLER_H_
+#endif  // EXTENSIONS_BROWSER_UPDATER_EXTENSION_INSTALLER_H_

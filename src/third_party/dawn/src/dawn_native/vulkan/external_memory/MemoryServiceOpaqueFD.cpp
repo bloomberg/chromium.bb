@@ -66,8 +66,8 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
         formatProperties.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2_KHR;
         formatProperties.pNext = &externalFormatProperties;
 
-        VkResult result = mDevice->fn.GetPhysicalDeviceImageFormatProperties2KHR(
-            ToBackend(mDevice->GetAdapter())->GetPhysicalDevice(), &formatInfo, &formatProperties);
+        VkResult result = VkResult::WrapUnsafe(mDevice->fn.GetPhysicalDeviceImageFormatProperties2(
+            ToBackend(mDevice->GetAdapter())->GetPhysicalDevice(), &formatInfo, &formatProperties));
 
         // If handle not supported, result == VK_ERROR_FORMAT_NOT_SUPPORTED
         if (result != VK_SUCCESS) {
@@ -128,7 +128,7 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
 
         VkDeviceMemory allocatedMemory = VK_NULL_HANDLE;
         DAWN_TRY(CheckVkSuccess(mDevice->fn.AllocateMemory(mDevice->GetVkDevice(), &allocateInfo,
-                                                           nullptr, &allocatedMemory),
+                                                           nullptr, &*allocatedMemory),
                                 "vkAllocateMemory"));
         return allocatedMemory;
     }
@@ -144,7 +144,7 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
 
         VkImage image;
         DAWN_TRY(CheckVkSuccess(
-            mDevice->fn.CreateImage(mDevice->GetVkDevice(), &createInfo, nullptr, &image),
+            mDevice->fn.CreateImage(mDevice->GetVkDevice(), &createInfo, nullptr, &*image),
             "CreateImage"));
         return image;
     }

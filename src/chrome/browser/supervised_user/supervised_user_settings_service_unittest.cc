@@ -69,15 +69,14 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
         new syncer::SyncChangeProcessorWrapperForTest(sync_processor_.get()));
   }
 
-  syncer::SyncMergeResult StartSyncing(
-      const syncer::SyncDataList& initial_sync_data) {
+  void StartSyncing(const syncer::SyncDataList& initial_sync_data) {
     std::unique_ptr<syncer::SyncErrorFactory> error_handler(
         new MockSyncErrorFactory(syncer::SUPERVISED_USER_SETTINGS));
-    syncer::SyncMergeResult result = settings_service_.MergeDataAndStartSyncing(
-        syncer::SUPERVISED_USER_SETTINGS, initial_sync_data,
-        CreateSyncProcessor(), std::move(error_handler));
-    EXPECT_FALSE(result.error().IsSet());
-    return result;
+    base::Optional<syncer::ModelError> error =
+        settings_service_.MergeDataAndStartSyncing(
+            syncer::SUPERVISED_USER_SETTINGS, initial_sync_data,
+            CreateSyncProcessor(), std::move(error_handler));
+    EXPECT_FALSE(error.has_value());
   }
 
   void UploadSplitItem(const std::string& key, const std::string& value) {
@@ -160,9 +159,9 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessAtomicSetting) {
   syncer::SyncChangeList change_list;
   change_list.push_back(
       syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_ADD, data));
-  syncer::SyncError error =
+  base::Optional<syncer::ModelError> error =
       settings_service_.ProcessSyncChanges(FROM_HERE, change_list);
-  EXPECT_FALSE(error.IsSet()) << error.ToString();
+  EXPECT_FALSE(error.has_value()) << error.value().ToString();
   ASSERT_TRUE(settings_);
   ASSERT_TRUE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
   std::string string_value;
@@ -192,9 +191,9 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessSplitSetting) {
     change_list.push_back(
         syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_ADD, data));
   }
-  syncer::SyncError error =
+  base::Optional<syncer::ModelError> error =
       settings_service_.ProcessSyncChanges(FROM_HERE, change_list);
-  EXPECT_FALSE(error.IsSet()) << error.ToString();
+  EXPECT_FALSE(error.has_value()) << error.value().ToString();
   ASSERT_TRUE(settings_);
   ASSERT_TRUE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
   const base::DictionaryValue* dict_value = nullptr;
@@ -203,12 +202,10 @@ TEST_F(SupervisedUserSettingsServiceTest, ProcessSplitSetting) {
 }
 
 TEST_F(SupervisedUserSettingsServiceTest, Merge) {
-  syncer::SyncMergeResult result = StartSyncing(syncer::SyncDataList());
-  EXPECT_EQ(0, result.num_items_before_association());
-  EXPECT_EQ(0, result.num_items_added());
-  EXPECT_EQ(0, result.num_items_modified());
-  EXPECT_EQ(0, result.num_items_deleted());
-  EXPECT_EQ(0, result.num_items_after_association());
+  StartSyncing(syncer::SyncDataList());
+  EXPECT_TRUE(settings_service_
+                  .GetAllSyncDataForTesting(syncer::SUPERVISED_USER_SETTINGS)
+                  .empty());
 
   ASSERT_TRUE(settings_);
   const base::Value* value = nullptr;
@@ -233,12 +230,11 @@ TEST_F(SupervisedUserSettingsServiceTest, Merge) {
                                                                  it.key()),
               it.value()));
     }
-    result = StartSyncing(sync_data);
-    EXPECT_EQ(0, result.num_items_before_association());
-    EXPECT_EQ(3, result.num_items_added());
-    EXPECT_EQ(0, result.num_items_modified());
-    EXPECT_EQ(0, result.num_items_deleted());
-    EXPECT_EQ(3, result.num_items_after_association());
+    StartSyncing(sync_data);
+    EXPECT_EQ(3u,
+              settings_service_
+                  .GetAllSyncDataForTesting(syncer::SUPERVISED_USER_SETTINGS)
+                  .size());
     settings_service_.StopSyncing(syncer::SUPERVISED_USER_SETTINGS);
   }
 
@@ -263,12 +259,11 @@ TEST_F(SupervisedUserSettingsServiceTest, Merge) {
                                                                  it.key()),
               it.value()));
     }
-    result = StartSyncing(sync_data);
-    EXPECT_EQ(6, result.num_items_before_association());
-    EXPECT_EQ(0, result.num_items_added());
-    EXPECT_EQ(1, result.num_items_modified());
-    EXPECT_EQ(2, result.num_items_deleted());
-    EXPECT_EQ(4, result.num_items_after_association());
+    StartSyncing(sync_data);
+    EXPECT_EQ(4u,
+              settings_service_
+                  .GetAllSyncDataForTesting(syncer::SUPERVISED_USER_SETTINGS)
+                  .size());
   }
 }
 
@@ -302,8 +297,8 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   }
 
   // It should also show up in local Sync data.
-  syncer::SyncDataList sync_data =
-      settings_service_.GetAllSyncData(syncer::SUPERVISED_USER_SETTINGS);
+  syncer::SyncDataList sync_data = settings_service_.GetAllSyncDataForTesting(
+      syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(3u, sync_data.size());
   for (const syncer::SyncData& sync_data_item : sync_data)
     VerifySyncDataItem(sync_data_item);
@@ -317,7 +312,7 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   EXPECT_EQ(syncer::SyncChange::ACTION_ADD, change.change_type());
   VerifySyncDataItem(change.sync_data());
 
-  sync_data = settings_service_.GetAllSyncData(
+  sync_data = settings_service_.GetAllSyncDataForTesting(
       syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(4u, sync_data.size());
   for (const syncer::SyncData& sync_data_item : sync_data)
@@ -333,7 +328,7 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, change.change_type());
   VerifySyncDataItem(change.sync_data());
 
-  sync_data = settings_service_.GetAllSyncData(
+  sync_data = settings_service_.GetAllSyncDataForTesting(
       syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(4u, sync_data.size());
   for (const syncer::SyncData& sync_data_item : sync_data)
@@ -347,7 +342,7 @@ TEST_F(SupervisedUserSettingsServiceTest, UploadItem) {
   EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, change.change_type());
   VerifySyncDataItem(change.sync_data());
 
-  sync_data = settings_service_.GetAllSyncData(
+  sync_data = settings_service_.GetAllSyncDataForTesting(
       syncer::SUPERVISED_USER_SETTINGS);
   EXPECT_EQ(4u, sync_data.size());
   for (const syncer::SyncData& sync_data_item : sync_data)

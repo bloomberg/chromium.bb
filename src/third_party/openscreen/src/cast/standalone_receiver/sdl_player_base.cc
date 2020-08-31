@@ -11,29 +11,26 @@
 #include "cast/standalone_receiver/avcodec_glue.h"
 #include "cast/streaming/encoded_frame.h"
 #include "util/big_endian.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
+#include "util/trace_logging.h"
 
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
 
-using openscreen::Error;
-using openscreen::ErrorOr;
-using openscreen::platform::Clock;
-using openscreen::platform::ClockNowFunctionPtr;
-using openscreen::platform::TaskRunner;
-
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 SDLPlayerBase::SDLPlayerBase(ClockNowFunctionPtr now_function,
                              TaskRunner* task_runner,
                              Receiver* receiver,
+                             const std::string& codec_name,
                              std::function<void()> error_callback,
                              const char* media_type)
     : now_(now_function),
       receiver_(receiver),
       error_callback_(std::move(error_callback)),
       media_type_(media_type),
+      decoder_(codec_name),
       decode_alarm_(now_, task_runner),
       render_alarm_(now_, task_runner),
       presentation_alarm_(now_, task_runner) {
@@ -69,7 +66,34 @@ void SDLPlayerBase::OnFatalError(std::string message) {
   }
 }
 
+Clock::time_point SDLPlayerBase::ResyncAndDeterminePresentationTime(
+    const EncodedFrame& frame) {
+  constexpr auto kMaxPlayoutDrift = milliseconds(100);
+  const auto media_time_since_last_sync =
+      (frame.rtp_timestamp - last_sync_rtp_timestamp_)
+          .ToDuration<Clock::duration>(receiver_->rtp_timebase());
+  Clock::time_point presentation_time =
+      last_sync_reference_time_ + media_time_since_last_sync;
+  const auto drift =
+      duration_cast<milliseconds>(frame.reference_time - presentation_time);
+  if (drift > kMaxPlayoutDrift || drift < -kMaxPlayoutDrift) {
+    // Only log if not the very first frame.
+    OSP_LOG_IF(INFO, frame.frame_id != FrameId::first())
+        << "Playout drift (" << drift.count() << " ms) exceeded threshold ("
+        << kMaxPlayoutDrift.count() << " ms) for " << media_type_
+        << ". Re-synchronizing...";
+    // This is the "big-stick" way to re-synchronize. If the amount of drift
+    // is small, a production-worthy player should "nudge" things gradually
+    // back into sync over several frames.
+    last_sync_rtp_timestamp_ = frame.rtp_timestamp;
+    last_sync_reference_time_ = frame.reference_time;
+    presentation_time = frame.reference_time;
+  }
+  return presentation_time;
+}
+
 void SDLPlayerBase::OnFramesReady(int buffer_size) {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kStandaloneReceiver);
   // Do not consume anything if there are too many frames in the pipeline
   // already.
   if (static_cast<int>(frames_to_render_.size()) > kMaxFramesInPipeline) {
@@ -86,31 +110,7 @@ void SDLPlayerBase::OnFramesReady(int buffer_size) {
   PendingFrame& pending_frame = frames_to_render_[frame.frame_id];
   pending_frame.start_time = start_time;
 
-  // Determine the presentation time of the frame. Ideally, this will occur
-  // based on the time progression of the media, given by the RTP timestamps.
-  // However, if this falls too far out-of-sync with the system reference clock,
-  // re-syrchronize, possibly causing user-visible "jank."
-  constexpr auto kMaxPlayoutDrift = milliseconds(100);
-  const auto media_time_since_last_sync =
-      (frame.rtp_timestamp - last_sync_rtp_timestamp_)
-          .ToDuration<Clock::duration>(receiver_->rtp_timebase());
-  pending_frame.presentation_time =
-      last_sync_reference_time_ + media_time_since_last_sync;
-  const auto drift = duration_cast<milliseconds>(
-      frame.reference_time - pending_frame.presentation_time);
-  if (drift > kMaxPlayoutDrift || drift < -kMaxPlayoutDrift) {
-    // Only log if not the very first frame.
-    OSP_LOG_IF(INFO, frame.frame_id != FrameId::first())
-        << "Playout drift (" << drift.count() << " ms) exceeded threshold ("
-        << kMaxPlayoutDrift.count() << " ms) for " << media_type_
-        << ". Re-synchronizing...";
-    // This is the "big-stick" way to re-synchronize. If the amount of drift
-    // is small, a production-worthy player should "nudge" things gradually
-    // back into sync over several frames.
-    last_sync_rtp_timestamp_ = frame.rtp_timestamp;
-    last_sync_reference_time_ = frame.reference_time;
-    pending_frame.presentation_time = frame.reference_time;
-  }
+  pending_frame.presentation_time = ResyncAndDeterminePresentationTime(frame);
 
   // Start decoding the frame. This call may synchronously call back into the
   // AVCodecDecoder::Client methods in this class.
@@ -118,6 +118,7 @@ void SDLPlayerBase::OnFramesReady(int buffer_size) {
 }
 
 void SDLPlayerBase::OnFrameDecoded(FrameId frame_id, const AVFrame& frame) {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kStandaloneReceiver);
   const auto it = frames_to_render_.find(frame_id);
   if (it == frames_to_render_.end()) {
     return;
@@ -142,6 +143,7 @@ void SDLPlayerBase::OnDecodeError(FrameId frame_id, std::string message) {
 }
 
 void SDLPlayerBase::RenderAndSchedulePresentation() {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kStandaloneReceiver);
   // If something has already been scheduled to present at an exact time point,
   // don't render anything new yet.
   if (state_ == kScheduledToPresent) {
@@ -159,12 +161,12 @@ void SDLPlayerBase::RenderAndSchedulePresentation() {
       // The interval here, is "lengthy" from the program's perspective, but
       // reasonably "snappy" from the user's perspective.
       constexpr auto kIdlePresentInterval = milliseconds(250);
-      presentation_alarm_.Schedule(
+      presentation_alarm_.ScheduleFromNow(
           [this] {
             Present();
             ResumeRendering();
           },
-          now_() + kIdlePresentInterval);
+          kIdlePresentInterval);
     }
     return;
   }
@@ -227,11 +229,12 @@ void SDLPlayerBase::ResumeDecoding() {
           OnFramesReady(buffer_size);
         }
       },
-      {});
+      Alarm::kImmediately);
 }
 
 void SDLPlayerBase::ResumeRendering() {
-  render_alarm_.Schedule([this] { RenderAndSchedulePresentation(); }, {});
+  render_alarm_.Schedule([this] { RenderAndSchedulePresentation(); },
+                         Alarm::kImmediately);
 }
 
 // static
@@ -250,5 +253,5 @@ SDLPlayerBase::PendingFrame::PendingFrame(PendingFrame&&) noexcept = default;
 SDLPlayerBase::PendingFrame& SDLPlayerBase::PendingFrame::operator=(
     PendingFrame&&) noexcept = default;
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

@@ -37,8 +37,6 @@ public:
         return fProxyShader;
     }
 
-    SkPicture* isAPicture(SkMatrix*, SkTileMode[2], SkRect* tile) const override;
-
 protected:
     void flatten(SkWriteBuffer&) const override;
 
@@ -49,6 +47,11 @@ protected:
     SkImage* onIsAImage(SkMatrix* matrix, SkTileMode* mode) const override;
 
     bool onAppendStages(const SkStageRec&) const override;
+
+    skvm::Color onProgram(skvm::Builder*, skvm::F32 x, skvm::F32 y, skvm::Color paint,
+                          const SkMatrix& ctm, const SkMatrix* localM,
+                          SkFilterQuality quality, const SkColorInfo& dst,
+                          skvm::Uniforms* uniforms, SkArenaAlloc*) const override;
 
 private:
     SK_FLATTENABLE_HOOKS(SkLocalMatrixShader)

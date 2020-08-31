@@ -46,8 +46,6 @@ class FakeImageDecoder;
 
 namespace {
 
-const GURL kImageUrl = GURL("http://gstatic.img.com/foo.jpg");
-
 constexpr char kUmaClientName[] = "TestUma";
 constexpr char kImageData[] = "data";
 constexpr char kImageDataOther[] = "other";
@@ -56,6 +54,12 @@ const char kImageFetcherEventHistogramName[] = "ImageFetcher.Events";
 const char kCacheLoadHistogramName[] = "ImageFetcher.ImageLoadFromCacheTime";
 const char kNetworkLoadHistogramName[] =
     "ImageFetcher.ImageLoadFromNetworkTime";
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL ImageUrl() {
+  return GURL("http://gstatic.img.com/foo.jpg");
+}
 
 }  // namespace
 
@@ -91,11 +95,12 @@ class CachedImageFetcherTest : public testing::Test {
         base::SequencedTaskRunnerHandle::Get());
 
     // Use an initial request to start the cache up.
-    image_cache_->SaveImage(kImageUrl.spec(), kImageData,
-                            /* needs_transcoding */ false);
+    image_cache_->SaveImage(ImageUrl().spec(), kImageData,
+                            /* needs_transcoding */ false,
+                            /* expiration_interval */ base::nullopt);
     RunUntilIdle();
     db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
-    image_cache_->DeleteImage(kImageUrl.spec());
+    image_cache_->DeleteImage(ImageUrl().spec());
     RunUntilIdle();
 
     shared_factory_ =
@@ -164,8 +169,9 @@ MATCHER(NonEmptyString, "") {
 // that they both can use what's inside.
 TEST_F(CachedImageFetcherTest, FetchImageFromCache) {
   // Save the image in the database.
-  image_cache()->SaveImage(kImageUrl.spec(), kImageData,
-                           /* needs_transcoding */ false);
+  image_cache()->SaveImage(ImageUrl().spec(), kImageData,
+                           /* needs_transcoding */ false,
+                           /* expiration_interval */ base::nullopt);
   RunUntilIdle();
 
   base::MockCallback<ImageDataFetcherCallback> data_callback;
@@ -174,7 +180,7 @@ TEST_F(CachedImageFetcherTest, FetchImageFromCache) {
   EXPECT_CALL(data_callback, Run(kImageData, _));
   EXPECT_CALL(image_callback, Run(NonEmptyImage(), _));
   cached_image_fetcher()->FetchImageAndData(
-      kImageUrl, data_callback.Get(), image_callback.Get(),
+      ImageUrl(), data_callback.Get(), image_callback.Get(),
       ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
   db()->LoadCallback(true);
   RunUntilIdle();
@@ -188,8 +194,9 @@ TEST_F(CachedImageFetcherTest, FetchImageFromCache) {
 
 TEST_F(CachedImageFetcherTest, FetchImageFromCacheNeedsTranscoding) {
   // Save the image in the database.
-  image_cache()->SaveImage(kImageUrl.spec(), kImageData,
-                           /* needs_transcoding */ true);
+  image_cache()->SaveImage(ImageUrl().spec(), kImageData,
+                           /* needs_transcoding */ true,
+                           /* expiration_interval */ base::nullopt);
   RunUntilIdle();
 
   base::MockCallback<ImageDataFetcherCallback> data_callback;
@@ -198,7 +205,7 @@ TEST_F(CachedImageFetcherTest, FetchImageFromCacheNeedsTranscoding) {
   EXPECT_CALL(data_callback, Run(kImageData, _));
   EXPECT_CALL(image_callback, Run(NonEmptyImage(), _));
   cached_image_fetcher()->FetchImageAndData(
-      kImageUrl, data_callback.Get(), image_callback.Get(),
+      ImageUrl(), data_callback.Get(), image_callback.Get(),
       ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
   db()->LoadCallback(true);
   RunUntilIdle();
@@ -214,9 +221,10 @@ TEST_F(CachedImageFetcherTest, FetchImageFromCacheNeedsTranscoding) {
 TEST_F(CachedImageFetcherTest, FetchImageFromCacheReadOnly) {
   CreateCachedImageFetcher(/* read_only */ true);
   // Save the image in the database.
-  image_cache()->SaveImage(kImageUrl.spec(), kImageData,
-                           /* needs_transcoding */ false);
-  test_url_loader_factory()->AddResponse(kImageUrl.spec(), kImageData);
+  image_cache()->SaveImage(ImageUrl().spec(), kImageData,
+                           /* needs_transcoding */ false,
+                           /* expiration_interval */ base::nullopt);
+  test_url_loader_factory()->AddResponse(ImageUrl().spec(), kImageData);
   RunUntilIdle();
   {
     // Even if there's a decoding error, read_only cache shouldn't alter the
@@ -226,7 +234,7 @@ TEST_F(CachedImageFetcherTest, FetchImageFromCacheReadOnly) {
     base::MockCallback<ImageFetcherCallback> image_callback;
     EXPECT_CALL(image_callback, Run(EmptyImage(), _));
     cached_image_fetcher()->FetchImageAndData(
-        kImageUrl, data_callback.Get(), image_callback.Get(),
+        ImageUrl(), data_callback.Get(), image_callback.Get(),
         ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
     db()->LoadCallback(true);
     RunUntilIdle();
@@ -246,7 +254,7 @@ TEST_F(CachedImageFetcherTest, FetchImageFromCacheReadOnly) {
     base::MockCallback<ImageFetcherCallback> image_callback;
     EXPECT_CALL(image_callback, Run(NonEmptyImage(), _));
     cached_image_fetcher()->FetchImageAndData(
-        kImageUrl, data_callback.Get(), image_callback.Get(),
+        ImageUrl(), data_callback.Get(), image_callback.Get(),
         ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
     db()->LoadCallback(true);
     RunUntilIdle();
@@ -256,7 +264,7 @@ TEST_F(CachedImageFetcherTest, FetchImageFromCacheReadOnly) {
 TEST_F(CachedImageFetcherTest, FetchImagePopulatesCache) {
   // Expect the image to be fetched by URL.
   {
-    test_url_loader_factory()->AddResponse(kImageUrl.spec(), kImageData);
+    test_url_loader_factory()->AddResponse(ImageUrl().spec(), kImageData);
 
     base::MockCallback<ImageDataFetcherCallback> data_callback;
     base::MockCallback<ImageFetcherCallback> image_callback;
@@ -264,7 +272,7 @@ TEST_F(CachedImageFetcherTest, FetchImagePopulatesCache) {
     EXPECT_CALL(data_callback, Run(NonEmptyString(), _));
     EXPECT_CALL(image_callback, Run(NonEmptyImage(), _));
     cached_image_fetcher()->FetchImageAndData(
-        kImageUrl, data_callback.Get(), image_callback.Get(),
+        ImageUrl(), data_callback.Get(), image_callback.Get(),
         ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
     db()->LoadCallback(true);
     RunUntilIdle();
@@ -279,7 +287,7 @@ TEST_F(CachedImageFetcherTest, FetchImagePopulatesCache) {
   {
     EXPECT_CALL(*this, OnImageLoaded(false, NonEmptyString()));
     image_cache()->LoadImage(
-        /* read_only */ false, kImageUrl.spec(),
+        /* read_only */ false, ImageUrl().spec(),
         base::BindOnce(&CachedImageFetcherTest::OnImageLoaded,
                        base::Unretained(this)));
     db()->LoadCallback(true);
@@ -295,7 +303,7 @@ TEST_F(CachedImageFetcherTest, FetchImagePopulatesCache) {
     EXPECT_CALL(data_callback, Run(NonEmptyString(), _));
     EXPECT_CALL(image_callback, Run(NonEmptyImage(), _));
     cached_image_fetcher()->FetchImageAndData(
-        kImageUrl, data_callback.Get(), image_callback.Get(),
+        ImageUrl(), data_callback.Get(), image_callback.Get(),
         ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
     db()->LoadCallback(true);
     RunUntilIdle();
@@ -306,7 +314,7 @@ TEST_F(CachedImageFetcherTest, FetchImagePopulatesCacheReadOnly) {
   CreateCachedImageFetcher(/* read_only */ true);
   // Expect the image to be fetched by URL.
   {
-    test_url_loader_factory()->AddResponse(kImageUrl.spec(), kImageData);
+    test_url_loader_factory()->AddResponse(ImageUrl().spec(), kImageData);
 
     base::MockCallback<ImageDataFetcherCallback> data_callback;
     base::MockCallback<ImageFetcherCallback> image_callback;
@@ -314,7 +322,7 @@ TEST_F(CachedImageFetcherTest, FetchImagePopulatesCacheReadOnly) {
     EXPECT_CALL(data_callback, Run(NonEmptyString(), _));
     EXPECT_CALL(image_callback, Run(NonEmptyImage(), _));
     cached_image_fetcher()->FetchImageAndData(
-        kImageUrl, data_callback.Get(), image_callback.Get(),
+        ImageUrl(), data_callback.Get(), image_callback.Get(),
         ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
     db()->LoadCallback(true);
     RunUntilIdle();
@@ -329,7 +337,7 @@ TEST_F(CachedImageFetcherTest, FetchImagePopulatesCacheReadOnly) {
   {
     EXPECT_CALL(*this, OnImageLoaded(false, std::string()));
     image_cache()->LoadImage(
-        /* read_only */ false, kImageUrl.spec(),
+        /* read_only */ false, ImageUrl().spec(),
         base::BindOnce(&CachedImageFetcherTest::OnImageLoaded,
                        base::Unretained(this)));
     db()->LoadCallback(true);
@@ -339,7 +347,7 @@ TEST_F(CachedImageFetcherTest, FetchImagePopulatesCacheReadOnly) {
 
 TEST_F(CachedImageFetcherTest, FetchImageWithoutTranscodingDoesNotDecode) {
   {
-    test_url_loader_factory()->AddResponse(kImageUrl.spec(), kImageData);
+    test_url_loader_factory()->AddResponse(ImageUrl().spec(), kImageData);
     image_decoder()->SetDecodingValid(false);
 
     base::MockCallback<ImageDataFetcherCallback> data_callback;
@@ -347,7 +355,7 @@ TEST_F(CachedImageFetcherTest, FetchImageWithoutTranscodingDoesNotDecode) {
     EXPECT_CALL(data_callback, Run(kImageData, _));
     ImageFetcherParams params(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName);
     params.set_skip_transcoding_for_testing(true);
-    cached_image_fetcher()->FetchImageAndData(kImageUrl, data_callback.Get(),
+    cached_image_fetcher()->FetchImageAndData(ImageUrl(), data_callback.Get(),
                                               ImageFetcherCallback(), params);
     db()->LoadCallback(true);
     RunUntilIdle();
@@ -357,7 +365,7 @@ TEST_F(CachedImageFetcherTest, FetchImageWithoutTranscodingDoesNotDecode) {
     base::MockCallback<ImageDataFetcherCallback> data_callback;
     EXPECT_CALL(data_callback, Run(kImageData, _));
     cached_image_fetcher()->FetchImageAndData(
-        kImageUrl, data_callback.Get(), ImageFetcherCallback(),
+        ImageUrl(), data_callback.Get(), ImageFetcherCallback(),
         ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
     db()->LoadCallback(true);
     RunUntilIdle();
@@ -366,10 +374,11 @@ TEST_F(CachedImageFetcherTest, FetchImageWithoutTranscodingDoesNotDecode) {
 
 TEST_F(CachedImageFetcherTest, FetchImageWithSkipDiskCache) {
   // Save the image in the database.
-  image_cache()->SaveImage(kImageUrl.spec(), kImageDataOther,
-                           /* needs_transcoding */ false);
+  image_cache()->SaveImage(ImageUrl().spec(), kImageDataOther,
+                           /* needs_transcoding */ false,
+                           /* expiration_interval */ base::nullopt);
   RunUntilIdle();
-  test_url_loader_factory()->AddResponse(kImageUrl.spec(), kImageData);
+  test_url_loader_factory()->AddResponse(ImageUrl().spec(), kImageData);
 
   base::MockCallback<ImageDataFetcherCallback> data_callback;
   base::MockCallback<ImageFetcherCallback> image_callback;
@@ -379,7 +388,7 @@ TEST_F(CachedImageFetcherTest, FetchImageWithSkipDiskCache) {
 
   EXPECT_CALL(data_callback, Run(kImageData, _));
   EXPECT_CALL(image_callback, Run(NonEmptyImage(), _));
-  cached_image_fetcher()->FetchImageAndData(kImageUrl, data_callback.Get(),
+  cached_image_fetcher()->FetchImageAndData(ImageUrl(), data_callback.Get(),
                                             image_callback.Get(), params);
 
   RunUntilIdle();

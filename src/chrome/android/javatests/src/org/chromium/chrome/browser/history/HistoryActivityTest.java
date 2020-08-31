@@ -20,11 +20,12 @@ import android.content.Intent;
 import android.provider.Browser;
 import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.filters.SmallTest;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
+
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -34,12 +35,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.task.PostTask;
+import org.chromium.base.test.util.CloseableOnMainThread;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryTestUtils.TestObserver;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -48,12 +50,12 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
-import org.chromium.chrome.browser.widget.selection.SelectableItemView;
-import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemViewHolder;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -64,6 +66,7 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -92,7 +95,7 @@ public class HistoryActivityTest {
         // Account not signed in by default. The clear browsing data header, one date view, and two
         // history item views should be shown, but the info header should not. We enforce a default
         // state because the number of headers shown depends on the signed-in state.
-        SigninTestUtil.setUpAuthForTest();
+        SigninTestUtil.setUpAuthForTesting();
 
         mHistoryProvider = new StubbedHistoryProvider();
 
@@ -113,7 +116,7 @@ public class HistoryActivityTest {
 
     @After
     public void tearDown() {
-        SigninTestUtil.tearDownAuthForTest();
+        SigninTestUtil.tearDownAuthForTesting();
     }
 
     private void launchHistoryActivity() {
@@ -130,10 +133,10 @@ public class HistoryActivityTest {
     @SmallTest
     public void testRemove_SingleItem() throws Exception {
         int callCount = mTestObserver.onChangedCallback.getCallCount();
-        final SelectableItemView<HistoryItem> itemView = getItemView(2);
+        final HistoryItemView itemView = (HistoryItemView) getItemView(2);
 
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> itemView.findViewById(R.id.remove).performClick());
+                () -> itemView.getRemoveButtonForTests().performClick());
 
         // Check that one item was removed.
         mTestObserver.onChangedCallback.waitForCallback(callCount, 1);
@@ -172,48 +175,38 @@ public class HistoryActivityTest {
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedOut() {
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName(null);
+        // The user is signed out by default.
         Assert.assertEquals(1, mAdapter.getFirstGroupForTests().size());
     }
 
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedIn() {
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName("test@gmail.com");
+        SigninTestUtil.addAndSignInTestAccount();
 
         setHasOtherFormsOfBrowsingData(false);
 
         Assert.assertEquals(1, mAdapter.getFirstGroupForTests().size());
-
-        signinController.setSignedInAccountName(null);
     }
 
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedInSynced() {
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName("test@gmail.com");
+        SigninTestUtil.addAndSignInTestAccount();
 
         setHasOtherFormsOfBrowsingData(false);
 
         Assert.assertEquals(1, mAdapter.getFirstGroupForTests().size());
-
-        signinController.setSignedInAccountName(null);
     }
 
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedInSyncedAndOtherForms() {
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName("test@gmail.com");
+        SigninTestUtil.addAndSignInTestAccount();
 
         setHasOtherFormsOfBrowsingData(true);
 
         Assert.assertEquals(2, mAdapter.getFirstGroupForTests().size());
-
-        signinController.setSignedInAccountName(null);
     }
 
     @Test
@@ -290,8 +283,8 @@ public class HistoryActivityTest {
     @SmallTest
     public void testSupervisedUser() throws Exception {
         final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
-        final SelectableItemView<HistoryItem> item = getItemView(2);
-        View itemRemoveButton = item.findViewById(R.id.remove);
+        final HistoryItemView item = (HistoryItemView) getItemView(2);
+        View itemRemoveButton = item.getRemoveButtonForTests();
 
         // The item's remove button is visible for non-supervised users when there is no selection.
         Assert.assertEquals(View.VISIBLE, itemRemoveButton.getVisibility());
@@ -302,31 +295,31 @@ public class HistoryActivityTest {
         Assert.assertTrue(toolbar.getItemById(R.id.selection_mode_delete_menu_id).isVisible());
         Assert.assertTrue(toolbar.getItemById(R.id.selection_mode_delete_menu_id).isEnabled());
         // The item's remove button is invisible for non-supervised users when there is a selection.
-        Assert.assertEquals(View.INVISIBLE, item.findViewById(R.id.remove).getVisibility());
+        Assert.assertEquals(View.INVISIBLE, item.getRemoveButtonForTests().getVisibility());
 
         // Turn selection off and check if remove button is visible.
         toggleItemSelection(2);
         Assert.assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
-        Assert.assertEquals(View.VISIBLE, item.findViewById(R.id.remove).getVisibility());
+        Assert.assertEquals(View.VISIBLE, item.getRemoveButtonForTests().getVisibility());
 
         signInToSupervisedAccount();
 
-        Assert.assertEquals(View.GONE, item.findViewById(R.id.remove).getVisibility());
+        Assert.assertEquals(View.GONE, item.getRemoveButtonForTests().getVisibility());
         toggleItemSelection(2);
         Assert.assertNull(toolbar.getItemById(R.id.selection_mode_open_in_incognito));
         Assert.assertNull(toolbar.getItemById(R.id.selection_mode_delete_menu_id));
         Assert.assertTrue(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
-        Assert.assertEquals(View.GONE, item.findViewById(R.id.remove).getVisibility());
+        Assert.assertEquals(View.GONE, item.getRemoveButtonForTests().getVisibility());
 
         // Make sure selection is no longer enabled.
         toggleItemSelection(2);
         Assert.assertFalse(mHistoryManager.getSelectionDelegateForTests().isSelectionEnabled());
-        Assert.assertEquals(View.GONE, item.findViewById(R.id.remove).getVisibility());
+        Assert.assertEquals(View.GONE, item.getRemoveButtonForTests().getVisibility());
 
         signOut();
 
         // Check that the item's remove button visibility is set correctly after signing out.
-        Assert.assertEquals(View.VISIBLE, item.findViewById(R.id.remove).getVisibility());
+        Assert.assertEquals(View.VISIBLE, item.getRemoveButtonForTests().getVisibility());
     }
 
     @Test
@@ -391,15 +384,13 @@ public class HistoryActivityTest {
         final MenuItem infoMenuItem = toolbar.getItemById(R.id.info_menu_id);
 
         // Not signed in
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName(null);
         Assert.assertFalse(infoMenuItem.isVisible());
         DateDividedAdapter.ItemGroup headerGroup = mAdapter.getFirstGroupForTests();
         Assert.assertTrue(mAdapter.hasListHeader());
         Assert.assertEquals(1, headerGroup.size());
 
         // Signed in but not synced and history has items. The info button should be hidden.
-        signinController.setSignedInAccountName("test@gmail.com");
+        SigninTestUtil.addAndSignInTestAccount();
         setHasOtherFormsOfBrowsingData(false);
         TestThreadUtils.runOnUiThreadBlocking(() -> toolbar.onSignInStateChange());
         Assert.assertFalse(infoMenuItem.isVisible());
@@ -423,8 +414,29 @@ public class HistoryActivityTest {
         headerGroup = mAdapter.getFirstGroupForTests();
         Assert.assertTrue(mAdapter.hasListHeader());
         Assert.assertEquals(2, headerGroup.size());
+    }
 
-        signinController.setSignedInAccountName(null);
+    @Test
+    @SmallTest
+    public void testInfoIcon_OtherFormsOfBrowsingData() throws ExecutionException {
+        final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
+        final MenuItem infoMenuItem = toolbar.getItemById(R.id.info_menu_id);
+        setHasOtherFormsOfBrowsingData(true);
+        Assert.assertTrue("Info icon should be visible.", infoMenuItem.isVisible());
+
+        // Hide disclaimers to simulate setup for https://crbug.com/1071468.
+        TestThreadUtils.runOnUiThreadBlocking(() -> mHistoryManager.onMenuItemClick(infoMenuItem));
+        Assert.assertFalse("Privacy disclaimers should be hidden.",
+                mHistoryManager.shouldShowInfoHeaderIfAvailable());
+
+        // Simulate call indicating there are not other forms of browsing data.
+        setHasOtherFormsOfBrowsingData(false);
+        RecyclerViewTestUtils.waitForStableRecyclerView(mRecyclerView);
+        Assert.assertFalse("Info menu item should be hidden.", infoMenuItem.isVisible());
+
+        // Simulate call indicating there are other forms of browsing data.
+        setHasOtherFormsOfBrowsingData(true);
+        Assert.assertTrue("Info menu item should bre visible.", infoMenuItem.isVisible());
     }
 
     @Test
@@ -435,8 +447,7 @@ public class HistoryActivityTest {
 
         // Sign in and set has other forms of browsing data to true.
         int callCount = mTestObserver.onSelectionCallback.getCallCount();
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName("test@gmail.com");
+        SigninTestUtil.addAndSignInTestAccount();
         setHasOtherFormsOfBrowsingData(true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             toolbar.onSignInStateChange();
@@ -459,8 +470,6 @@ public class HistoryActivityTest {
         // The first group should be the history item group from SetUp()
         Assert.assertFalse(mAdapter.hasListHeader());
         Assert.assertEquals(3, firstGroup.size());
-
-        signinController.setSignedInAccountName(null);
     }
 
     @Test
@@ -469,8 +478,6 @@ public class HistoryActivityTest {
         Assert.assertTrue(mAdapter.hasListHeader());
 
         // Not sign in and set clear browsing data button to invisible
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName(null);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mAdapter.setClearBrowsingDataButtonVisibilityForTest(false);
             mAdapter.setPrivacyDisclaimer();
@@ -484,39 +491,45 @@ public class HistoryActivityTest {
     @Test
     @SmallTest
     public void testCopyLink() throws Exception {
-        final ClipboardManager clipboardManager = TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ClipboardManager manager =
-                    (ClipboardManager) mActivityTestRule.getActivity().getSystemService(
-                            Context.CLIPBOARD_SERVICE);
-            Assert.assertNotNull(manager);
-            manager.setPrimaryClip(ClipData.newPlainText(null, ""));
-            return manager;
-        });
-        // Clear the clipboard to make sure we start with a clean state.
+        // Allow DiskWrites temporarily in main thread to avoid
+        // violation during copying under emulator environment.
+        try (CloseableOnMainThread ignored = CloseableOnMainThread.StrictMode.allowDiskWrites()) {
+            final ClipboardManager clipboardManager = TestThreadUtils.runOnUiThreadBlocking(() -> {
+                ClipboardManager manager =
+                        (ClipboardManager) mActivityTestRule.getActivity().getSystemService(
+                                Context.CLIPBOARD_SERVICE);
+                Assert.assertNotNull(manager);
+                manager.setPrimaryClip(ClipData.newPlainText(null, ""));
+                return manager;
+            });
+            // Clear the clipboard to make sure we start with a clean state.
 
-        final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
+            final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
 
-        // Check that the copy link item is visible when one item is selected.
-        toggleItemSelection(2);
-        Assert.assertTrue(toolbar.getItemById(R.id.selection_mode_copy_link).isVisible());
+            // Check that the copy link item is visible when one item is selected.
+            toggleItemSelection(2);
+            Assert.assertTrue(toolbar.getItemById(R.id.selection_mode_copy_link).isVisible());
 
-        // Check that link is copied to the clipboard.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertTrue(mHistoryManager.getToolbarForTests()
-                                                     .getMenu()
-                                                     .performIdentifierAction(
-                                                             R.id.selection_mode_copy_link, 0)));
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return TextUtils.equals(mItem1.getUrl(), clipboardManager.getText());
-            }
-        });
+            // Check that link is copied to the clipboard.
+            TestThreadUtils.runOnUiThreadBlocking(
+                    ()
+                            -> Assert.assertTrue(
+                                    mHistoryManager.getToolbarForTests()
+                                            .getMenu()
+                                            .performIdentifierAction(
+                                                    R.id.selection_mode_copy_link, 0)));
+            CriteriaHelper.pollUiThread(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return TextUtils.equals(mItem1.getUrl(), clipboardManager.getText());
+                }
+            });
 
-        // Check that the copy link item is not visible when more than one item is selected.
-        toggleItemSelection(2);
-        toggleItemSelection(3);
-        Assert.assertFalse(toolbar.getItemById(R.id.selection_mode_copy_link).isVisible());
+            // Check that the copy link item is not visible when more than one item is selected.
+            toggleItemSelection(2);
+            toggleItemSelection(3);
+            Assert.assertFalse(toolbar.getItemById(R.id.selection_mode_copy_link).isVisible());
+        }
     }
 
     // TODO(yolandyan): rewrite this with espresso
@@ -557,9 +570,9 @@ public class HistoryActivityTest {
         // user setting will be reset.
         final Account account = SigninTestUtil.addTestAccount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            IdentityServicesProvider.getSigninManager().onFirstRunCheckDone();
-            IdentityServicesProvider.getSigninManager().addSignInStateObserver(mTestObserver);
-            IdentityServicesProvider.getSigninManager().signIn(
+            IdentityServicesProvider.get().getSigninManager().onFirstRunCheckDone();
+            IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(mTestObserver);
+            IdentityServicesProvider.get().getSigninManager().signIn(
                     SigninAccessPoint.UNKNOWN, account, null);
         });
 
@@ -579,7 +592,7 @@ public class HistoryActivityTest {
         int onPreferenceChangeCallCount = mTestObserver.onPreferenceChangeCallback.getCallCount();
         Assert.assertTrue(TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setString(Pref.SUPERVISED_USER_ID, "ChildAccountSUID");
-            return Profile.getLastUsedProfile().isChild()
+            return Profile.getLastUsedRegularProfile().isChild()
                     && !PrefServiceBridge.getInstance().getBoolean(
                             Pref.ALLOW_DELETING_BROWSER_HISTORY)
                     && !IncognitoUtils.isIncognitoModeEnabled();
@@ -615,7 +628,7 @@ public class HistoryActivityTest {
         int currentCallCount = mTestObserver.onSigninStateChangedCallback.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> IdentityServicesProvider.getSigninManager().signOut(
+                        -> IdentityServicesProvider.get().getSigninManager().signOut(
                                 SignoutReason.SIGNOUT_TEST));
         mTestObserver.onSigninStateChangedCallback.waitForCallback(currentCallCount, 1);
         Assert.assertNull(SigninTestUtil.getCurrentAccount());
@@ -623,7 +636,8 @@ public class HistoryActivityTest {
         // Remove observer
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> IdentityServicesProvider.getSigninManager().removeSignInStateObserver(
-                                mTestObserver));
+                        -> IdentityServicesProvider.get()
+                                   .getSigninManager()
+                                   .removeSignInStateObserver(mTestObserver));
     }
 }

@@ -14,6 +14,8 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 
 namespace autofill {
@@ -33,7 +35,7 @@ using VoteTypeMap =
 
 // Contains information for sending a SINGLE_USERNAME vote.
 struct SingleUsernameVoteData {
-  SingleUsernameVoteData(uint32_t renderer_id,
+  SingleUsernameVoteData(autofill::FieldRendererId renderer_id,
                          const FormPredictions& form_predictions);
   SingleUsernameVoteData(const SingleUsernameVoteData&);
   SingleUsernameVoteData& operator=(const SingleUsernameVoteData&);
@@ -42,7 +44,7 @@ struct SingleUsernameVoteData {
 
   // Renderer id of an input element, for which the SINGLE_USERNAME vote will be
   // sent.
-  uint32_t renderer_id;
+  autofill::FieldRendererId renderer_id;
 
   // Predictions for the form which contains a field with |renderer_id|.
   FormPredictions form_predictions;
@@ -105,10 +107,10 @@ class VotesUploader {
   void StoreInitialFieldValues(const autofill::FormData& observed_form);
 
   // Sets the low-entropy hash value of the values stored in |initial_values_|
-  // for the detected |username| field to the corresponding field in
-  // |form_structure|.
+  // for the detected |username_element_renderer_id| field to the corresponding
+  // field in |form_structure|.
   void SetInitialHashValueOfUsernameField(
-      uint32_t username_element_renderer_id,
+      autofill::FieldRendererId username_element_renderer_id,
       autofill::FormStructure* form_structure);
 
   // Sends single a username vote if |single_username_vote_data_| is set.
@@ -162,7 +164,7 @@ class VotesUploader {
 
   void clear_single_username_vote_data() { single_username_vote_data_.reset(); }
 
-  void set_single_username_vote_data(int renderer_id,
+  void set_single_username_vote_data(autofill::FieldRendererId renderer_id,
                                      const FormPredictions& form_predictions) {
     single_username_vote_data_.emplace(renderer_id, form_predictions);
   }
@@ -197,8 +199,8 @@ class VotesUploader {
 
   // Save a vote |field_type| for a field with |field_signature| from a form
   // with |form_signature| to FieldInfoManager.
-  void SaveFieldVote(uint64_t form_signature,
-                     uint32_t field_signature,
+  void SaveFieldVote(autofill::FormSignature form_signature,
+                     autofill::FieldSignature field_signature,
                      autofill::ServerFieldType field_type);
 
   // The client which implements embedder-specific PasswordManager operations.
@@ -211,6 +213,7 @@ class VotesUploader {
   bool is_manual_generation_ = false;
 
   // A password field name that is used for generation.
+  // TODO(crbug.com/1075444): Use unique renderer id of a field instead.
   base::string16 generation_element_;
 
   // True iff a user edited the username value in a prompt and new username is
@@ -241,9 +244,9 @@ class VotesUploader {
   // Whether this form has a generated password changed by user.
   bool generated_password_changed_ = false;
 
-  // Maps an |unique_renderer_id| to the initial value of the fields of an
+  // Maps a unique renderer ID to the initial value of the fields of an
   // observed form.
-  std::map<uint32_t, base::string16> initial_values_;
+  std::map<autofill::FieldRendererId, base::string16> initial_values_;
 
   base::Optional<SingleUsernameVoteData> single_username_vote_data_;
 };

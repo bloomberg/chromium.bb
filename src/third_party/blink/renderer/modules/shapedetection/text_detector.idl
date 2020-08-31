@@ -5,12 +5,10 @@
 // https://wicg.github.io/shape-detection-api/text.html#text-detection-api
 
 [
-    Constructor,
-    ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
     SecureContext,
-    MeasureAs=ShapeDetection_TextDetectorConstructor,
-    RuntimeEnabled=ShapeDetection
+    RuntimeEnabled=TextDetector
 ] interface TextDetector {
+    [CallWith=ExecutionContext, MeasureAs=ShapeDetection_TextDetectorConstructor] constructor();
     [CallWith=ScriptState, MeasureAs=ShapeDetectionAPI] Promise<sequence<DetectedText>> detect(ImageBitmapSource image);
 };

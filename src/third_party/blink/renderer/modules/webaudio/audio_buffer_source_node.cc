@@ -26,14 +26,15 @@
 #include <algorithm>
 
 #include "base/numerics/safe_conversions.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_buffer_source_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_node.h"
-#include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -86,6 +87,9 @@ AudioBufferSourceHandler::~AudioBufferSourceHandler() {
 }
 
 void AudioBufferSourceHandler::Process(uint32_t frames_to_process) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("webaudio.audionode"),
+               "AudioBufferSourceHandler::Process");
+
   AudioBus* output_bus = Output(0).Bus();
 
   if (!IsInitialized()) {
@@ -711,7 +715,7 @@ AudioBufferSourceNode* AudioBufferSourceNode::Create(
   return node;
 }
 
-void AudioBufferSourceNode::Trace(blink::Visitor* visitor) {
+void AudioBufferSourceNode::Trace(Visitor* visitor) {
   visitor->Trace(playback_rate_);
   visitor->Trace(detune_);
   visitor->Trace(buffer_);

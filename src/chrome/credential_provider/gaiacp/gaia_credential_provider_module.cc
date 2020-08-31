@@ -20,7 +20,9 @@
 #include "chrome/credential_provider/gaiacp/gcp_crash_reporting.h"
 #include "chrome/credential_provider/gaiacp/grit/gaia_static_resources.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
-#include "components/crash/content/app/crash_switches.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
+#include "chrome/credential_provider/gaiacp/reg_utils.h"
+#include "components/crash/core/app/crash_switches.h"
 #include "content/public/common/content_switches.h"
 
 namespace credential_provider {
@@ -83,6 +85,25 @@ void CGaiaCredentialProviderModule::RefreshTokenHandleValidity() {
   }
 }
 
+void CGaiaCredentialProviderModule::InitializeCrashReporting() {
+  // Perform a thread unsafe check to see whether crash reporting is
+  // initialized. Thread safe check is performed right before initializing crash
+  // reporting.
+  if (GetGlobalFlagOrDefault(kRegInitializeCrashReporting, 1) &&
+      !crashpad_initialized_) {
+    base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+
+    if (!base::EndsWith(cmd_line->GetProgram().value(), L"gcp_unittests.exe",
+                        base::CompareCase::INSENSITIVE_ASCII) &&
+        cmd_line->GetSwitchValueASCII(switches::kProcessType) !=
+            crash_reporter::switches::kCrashpadHandler &&
+        ::InterlockedCompareExchange(&crashpad_initialized_, 1, 0) == 0) {
+      ConfigureGcpCrashReporting(*cmd_line);
+      LOGFN(VERBOSE) << "Crash reporting was initialized.";
+    }
+  }
+}
+
 BOOL CGaiaCredentialProviderModule::DllMain(HINSTANCE /*hinstance*/,
                                             DWORD reason,
                                             LPVOID reserved) {
@@ -104,26 +125,21 @@ BOOL CGaiaCredentialProviderModule::DllMain(HINSTANCE /*hinstance*/,
                            true,    // Enable timestamp.
                            false);  // Enable tickcount.
       logging::SetEventSource("GCPW", GCPW_CATEGORY, MSG_LOG_MESSAGE);
+      if (GetGlobalFlagOrDefault(kRegEnableVerboseLogging, 0))
+        logging::SetMinLogLevel(logging::LOG_VERBOSE);
 
-      base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+      wchar_t process_name[MAX_PATH] = {0};
+      GetModuleFileName(nullptr, process_name, MAX_PATH);
 
-      // Don't start the crash handler if the DLL is being loaded in unit
-      // tests. It is possible that the DLL will be loaded by other executables
-      // including gcp_setup.exe, LogonUI.exe, rundll32.exe.
-      if (!base::EndsWith(cmd_line->GetProgram().value(), L"gcp_unittests.exe",
-                          base::CompareCase::INSENSITIVE_ASCII) &&
-          cmd_line->GetSwitchValueASCII(switches::kProcessType) !=
-              crash_reporter::switches::kCrashpadHandler) {
-        credential_provider::ConfigureGcpCrashReporting(*cmd_line);
-      }
-
-      LOGFN(INFO) << "DllMain(DLL_PROCESS_ATTACH) Build: "
+      LOGFN(INFO) << "GCPW Initialized in " << process_name
+                  << " GCPW Version: " << (CHROME_VERSION_STRING)
+                  << " Windows Build: "
                   << base::win::OSInfo::GetInstance()->Kernel32BaseVersion()
                   << " Version:" << GetWindowsVersion();
       break;
     }
     case DLL_PROCESS_DETACH:
-      LOGFN(INFO) << "DllMain(DLL_PROCESS_DETACH)";
+      LOGFN(VERBOSE) << "DllMain(DLL_PROCESS_DETACH)";
 
       // When this DLL is loaded for testing, don't reset the command line
       // since it causes tests to crash.

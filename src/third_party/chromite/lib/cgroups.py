@@ -7,10 +7,13 @@
 
 from __future__ import print_function
 
+import contextlib
 import errno
 import numbers
 import os
 import signal
+import subprocess
+import sys
 import time
 
 from chromite.lib import cros_build_lib
@@ -19,6 +22,9 @@ from chromite.lib import osutils
 from chromite.lib import signals
 from chromite.lib import sudo
 from chromite.utils import memoize
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Rough hierarchy sketch:
@@ -468,7 +474,7 @@ class Cgroup(object):
 
     result = cros_build_lib.sudo_run(
         ['find', path, '-depth', '-type', 'd', '-exec', 'rmdir', '{}', '+'],
-        redirect_stderr=True, error_code_ok=not strict,
+        stderr=True, check=strict,
         print_cmd=False, strict=sudo_strict)
     if result.returncode == 0:
       return True
@@ -546,8 +552,8 @@ class Cgroup(object):
     def _SignalPids(pids, signum):
       cros_build_lib.sudo_run(
           ['kill', '-%i' % signum] + sorted(pids),
-          print_cmd=False, error_code_ok=True, redirect_stdout=True,
-          combine_stdout_stderr=True)
+          print_cmd=False, check=False, stdout=True,
+          stderr=subprocess.STDOUT)
 
     # First sigterm what we can, exiting after 2 runs w/out seeing pids.
     # Let this phase run for a max of 10 seconds; afterwards, switch to
@@ -754,6 +760,11 @@ class ContainChildren(cros_build_lib.MasterPidContextManager):
         self.child.RemoveThisGroup(strict=False)
 
 
+@contextlib.contextmanager
+def _NoOpContextManager():
+  yield
+
+
 def SimpleContainChildren(process_name, nesting=True, pid=None, **kwargs):
   """Convenience context manager to create a cgroup for children containment
 
@@ -762,7 +773,7 @@ def SimpleContainChildren(process_name, nesting=True, pid=None, **kwargs):
   """
   node = Cgroup.FindStartingGroup(process_name, nesting=nesting)
   if node is None:
-    return cros_build_lib.NoOpContextManager()
+    return _NoOpContextManager()
   if pid is None:
     pid = os.getpid()
   name = '%s:%i' % (process_name, pid)

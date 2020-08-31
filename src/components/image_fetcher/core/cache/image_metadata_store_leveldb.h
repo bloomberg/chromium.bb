@@ -53,7 +53,8 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
                          ImageMetadataCallback callback) override;
   void SaveImageMetadata(const std::string& key,
                          const size_t data_size,
-                         bool needs_transcoding) override;
+                         bool needs_transcoding,
+                         ExpirationInterval expiration_interval) override;
   void DeleteImageMetadata(const std::string& key) override;
   void UpdateImageMetadata(const std::string& key) override;
   void GetAllKeys(KeysCallback callback) override;
@@ -63,7 +64,7 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
   // which means it hasn't been calculated yet, or it's an over-estimate. In
   // the case of an over estimate, it will be recified if you call into an
   // eviction routine.
-  int GetEstimatedSize() override;
+  int64_t GetEstimatedSize(CacheOption cache_option) override;
   void EvictImageMetadata(base::Time expiration_time,
                           const size_t bytes_left,
                           KeysCallback callback) override;
@@ -88,11 +89,16 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
       KeysCallback callback,
       bool success,
       std::unique_ptr<std::vector<CachedImageMetadataProto>> entries);
+  void GetMetadataToRemove(CacheOption cache_option,
+                           std::vector<const CachedImageMetadataProto*> entries,
+                           base::Time expiration_time,
+                           const size_t bytes_left,
+                           std::vector<std::string>* keys_to_remove);
   void OnEvictImageMetadataDone(KeysCallback callback,
                                 std::vector<std::string> deleted_keys,
                                 bool success);
 
-  int estimated_size_;
+  std::map<CacheOption, int64_t> estimated_size_;
   InitializationStatus initialization_status_;
   std::unique_ptr<leveldb_proto::ProtoDatabase<CachedImageMetadataProto>>
       database_;

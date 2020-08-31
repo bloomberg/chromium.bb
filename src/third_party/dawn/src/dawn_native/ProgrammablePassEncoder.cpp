@@ -29,34 +29,50 @@ namespace dawn_native {
     namespace {
         void TrackBindGroupResourceUsage(PassResourceUsageTracker* usageTracker,
                                          BindGroupBase* group) {
-            const auto& layoutInfo = group->GetLayout()->GetBindingInfo();
-
-            for (uint32_t i : IterateBitSet(layoutInfo.mask)) {
-                wgpu::BindingType type = layoutInfo.types[i];
+            for (BindingIndex bindingIndex = 0;
+                 bindingIndex < group->GetLayout()->GetBindingCount(); ++bindingIndex) {
+                wgpu::BindingType type = group->GetLayout()->GetBindingInfo(bindingIndex).type;
 
                 switch (type) {
                     case wgpu::BindingType::UniformBuffer: {
-                        BufferBase* buffer = group->GetBindingAsBufferBinding(i).buffer;
+                        BufferBase* buffer = group->GetBindingAsBufferBinding(bindingIndex).buffer;
                         usageTracker->BufferUsedAs(buffer, wgpu::BufferUsage::Uniform);
-                    } break;
+                        break;
+                    }
 
                     case wgpu::BindingType::StorageBuffer: {
-                        BufferBase* buffer = group->GetBindingAsBufferBinding(i).buffer;
+                        BufferBase* buffer = group->GetBindingAsBufferBinding(bindingIndex).buffer;
                         usageTracker->BufferUsedAs(buffer, wgpu::BufferUsage::Storage);
-                    } break;
+                        break;
+                    }
 
                     case wgpu::BindingType::SampledTexture: {
-                        TextureBase* texture = group->GetBindingAsTextureView(i)->GetTexture();
-                        usageTracker->TextureUsedAs(texture, wgpu::TextureUsage::Sampled);
-                    } break;
+                        TextureViewBase* view = group->GetBindingAsTextureView(bindingIndex);
+                        usageTracker->TextureViewUsedAs(view, wgpu::TextureUsage::Sampled);
+                        break;
+                    }
 
                     case wgpu::BindingType::ReadonlyStorageBuffer: {
-                        BufferBase* buffer = group->GetBindingAsBufferBinding(i).buffer;
-                        usageTracker->BufferUsedAs(buffer, kReadOnlyStorage);
-                    } break;
+                        BufferBase* buffer = group->GetBindingAsBufferBinding(bindingIndex).buffer;
+                        usageTracker->BufferUsedAs(buffer, kReadOnlyStorageBuffer);
+                        break;
+                    }
 
                     case wgpu::BindingType::Sampler:
+                    case wgpu::BindingType::ComparisonSampler:
                         break;
+
+                    case wgpu::BindingType::ReadonlyStorageTexture: {
+                        TextureViewBase* view = group->GetBindingAsTextureView(bindingIndex);
+                        usageTracker->TextureViewUsedAs(view, kReadonlyStorageTexture);
+                        break;
+                    }
+
+                    case wgpu::BindingType::WriteonlyStorageTexture: {
+                        TextureViewBase* view = group->GetBindingAsTextureView(bindingIndex);
+                        usageTracker->TextureViewUsedAs(view, wgpu::TextureUsage::Storage);
+                        break;
+                    }
 
                     case wgpu::BindingType::StorageTexture:
                         UNREACHABLE();
@@ -67,14 +83,16 @@ namespace dawn_native {
     }  // namespace
 
     ProgrammablePassEncoder::ProgrammablePassEncoder(DeviceBase* device,
-                                                     EncodingContext* encodingContext)
-        : ObjectBase(device), mEncodingContext(encodingContext) {
+                                                     EncodingContext* encodingContext,
+                                                     PassType passType)
+        : ObjectBase(device), mEncodingContext(encodingContext), mUsageTracker(passType) {
     }
 
     ProgrammablePassEncoder::ProgrammablePassEncoder(DeviceBase* device,
                                                      EncodingContext* encodingContext,
-                                                     ErrorTag errorTag)
-        : ObjectBase(device, errorTag), mEncodingContext(encodingContext) {
+                                                     ErrorTag errorTag,
+                                                     PassType passType)
+        : ObjectBase(device, errorTag), mEncodingContext(encodingContext), mUsageTracker(passType) {
     }
 
     void ProgrammablePassEncoder::InsertDebugMarker(const char* groupLabel) {
@@ -129,7 +147,22 @@ namespace dawn_native {
                     return DAWN_VALIDATION_ERROR("dynamicOffset count mismatch");
                 }
 
-                for (uint32_t i = 0; i < dynamicOffsetCount; ++i) {
+                for (BindingIndex i = 0; i < dynamicOffsetCount; ++i) {
+                    const BindingInfo& bindingInfo = layout->GetBindingInfo(i);
+
+                    // BGL creation sorts bindings such that the dynamic buffer bindings are first.
+                    // ASSERT that this true.
+                    ASSERT(bindingInfo.hasDynamicOffset);
+                    switch (bindingInfo.type) {
+                        case wgpu::BindingType::UniformBuffer:
+                        case wgpu::BindingType::StorageBuffer:
+                        case wgpu::BindingType::ReadonlyStorageBuffer:
+                            break;
+                        default:
+                            UNREACHABLE();
+                            break;
+                    }
+
                     if (dynamicOffsets[i] % kMinDynamicBufferOffsetAlignment != 0) {
                         return DAWN_VALIDATION_ERROR("Dynamic Buffer Offset need to be aligned");
                     }
@@ -138,9 +171,9 @@ namespace dawn_native {
 
                     // During BindGroup creation, validation ensures binding offset + binding size
                     // <= buffer size.
-                    DAWN_ASSERT(bufferBinding.buffer->GetSize() >= bufferBinding.size);
-                    DAWN_ASSERT(bufferBinding.buffer->GetSize() - bufferBinding.size >=
-                                bufferBinding.offset);
+                    ASSERT(bufferBinding.buffer->GetSize() >= bufferBinding.size);
+                    ASSERT(bufferBinding.buffer->GetSize() - bufferBinding.size >=
+                           bufferBinding.offset);
 
                     if ((dynamicOffsets[i] > bufferBinding.buffer->GetSize() -
                                                  bufferBinding.offset - bufferBinding.size)) {

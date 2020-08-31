@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
@@ -25,9 +26,9 @@ class CONTENT_EXPORT CacheStorageQuotaClient : public storage::QuotaClient {
   CacheStorageQuotaClient(scoped_refptr<CacheStorageManager> cache_manager,
                           CacheStorageOwner owner);
 
-  // QuotaClient overrides
-  ID id() const override;
-  void OnQuotaManagerDestroyed() override {}
+  // QuotaClient.
+  storage::QuotaClientType type() const override;
+  void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,
                       GetUsageCallback callback) override;
@@ -39,15 +40,18 @@ class CONTENT_EXPORT CacheStorageQuotaClient : public storage::QuotaClient {
   void DeleteOriginData(const url::Origin& origin,
                         blink::mojom::StorageType type,
                         DeletionCallback callback) override;
+  void PerformStorageCleanup(blink::mojom::StorageType type,
+                             base::OnceClosure callback) override;
   bool DoesSupport(blink::mojom::StorageType type) const override;
 
-  static ID GetIDFromOwner(CacheStorageOwner owner);
+  static storage::QuotaClientType GetClientTypeFromOwner(
+      CacheStorageOwner owner);
 
  private:
   ~CacheStorageQuotaClient() override;
 
-  scoped_refptr<CacheStorageManager> cache_manager_;
-  CacheStorageOwner owner_;
+  const scoped_refptr<CacheStorageManager> cache_manager_;
+  const CacheStorageOwner owner_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorageQuotaClient);
 };

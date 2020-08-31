@@ -87,19 +87,24 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const State &state)
     mResources.MaxTextureImageUnits         = caps.maxShaderTextureImageUnits[ShaderType::Fragment];
     mResources.MaxFragmentUniformVectors    = caps.maxFragmentUniformVectors;
     mResources.MaxDrawBuffers               = caps.maxDrawBuffers;
-    mResources.OES_standard_derivatives     = extensions.standardDerivatives;
+    mResources.OES_standard_derivatives     = extensions.standardDerivativesOES;
     mResources.EXT_draw_buffers             = extensions.drawBuffers;
     mResources.EXT_shader_texture_lod       = extensions.shaderTextureLOD;
-    mResources.OES_EGL_image_external       = extensions.eglImageExternal;
-    mResources.OES_EGL_image_external_essl3 = extensions.eglImageExternalEssl3;
-    mResources.NV_EGL_stream_consumer_external = extensions.eglStreamConsumerExternal;
-    mResources.ARB_texture_rectangle           = extensions.textureRectangle;
+    mResources.EXT_shader_non_constant_global_initializers =
+        extensions.shaderNonConstGlobalInitializersEXT;
+    mResources.OES_EGL_image_external                = extensions.eglImageExternalOES;
+    mResources.OES_EGL_image_external_essl3          = extensions.eglImageExternalEssl3OES;
+    mResources.NV_EGL_stream_consumer_external       = extensions.eglStreamConsumerExternalNV;
+    mResources.NV_shader_noperspective_interpolation = extensions.noperspectiveInterpolationNV;
+    mResources.ARB_texture_rectangle                 = extensions.textureRectangle;
+    mResources.EXT_gpu_shader5                       = extensions.gpuShader5EXT;
     mResources.OES_texture_storage_multisample_2d_array =
-        extensions.textureStorageMultisample2DArray;
+        extensions.textureStorageMultisample2DArrayOES;
     mResources.OES_texture_3D                  = extensions.texture3DOES;
     mResources.ANGLE_texture_multisample       = extensions.textureMultisample;
     mResources.ANGLE_multi_draw                = extensions.multiDraw;
     mResources.ANGLE_base_vertex_base_instance = extensions.baseVertexBaseInstance;
+    mResources.APPLE_clip_distance             = extensions.clipDistanceAPPLE;
 
     // TODO: use shader precision caps to determine if high precision is supported?
     mResources.FragmentPrecisionHigh = 1;
@@ -115,6 +120,9 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const State &state)
     // EXT_multisampled_render_to_texture
     mResources.EXT_multisampled_render_to_texture = extensions.multisampledRenderToTexture;
 
+    // WEBGL_video_texture
+    mResources.WEBGL_video_texture = extensions.webglVideoTexture;
+
     // GLSL ES 3.0 constants
     mResources.MaxVertexOutputVectors  = caps.maxVertexOutputComponents / 4;
     mResources.MaxFragmentInputVectors = caps.maxFragmentInputComponents / 4;
@@ -124,6 +132,9 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const State &state)
     // EXT_blend_func_extended
     mResources.EXT_blend_func_extended  = extensions.blendFuncExtended;
     mResources.MaxDualSourceDrawBuffers = extensions.maxDualSourceDrawBuffers;
+
+    // APPLE_clip_distance/EXT_clip_cull_distance
+    mResources.MaxClipDistances = caps.maxClipDistances;
 
     // GLSL ES 3.1 constants
     mResources.MaxProgramTextureGatherOffset    = caps.maxProgramTextureGatherOffset;

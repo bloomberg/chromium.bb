@@ -10,8 +10,9 @@ import android.app.NotificationManager;
 import android.os.Build;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
+import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 
 /**
@@ -92,11 +93,12 @@ public class NotificationSettingsBridge {
 
         public NotificationChannel toChannel() {
             NotificationChannel channel = new NotificationChannel(mId,
-                    UrlFormatter.formatUrlForSecurityDisplayOmitScheme(mOrigin),
+                    UrlFormatter.formatUrlForSecurityDisplay(
+                            mOrigin, SchemeDisplay.OMIT_HTTP_AND_HTTPS),
                     mStatus == NotificationChannelStatus.BLOCKED
                             ? NotificationManager.IMPORTANCE_NONE
                             : NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setGroup(ChannelDefinitions.ChannelGroupId.SITES);
+            channel.setGroup(ChromeChannelDefinitions.ChannelGroupId.SITES);
             return channel;
         }
     }

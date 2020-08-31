@@ -17,7 +17,6 @@
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/message_loop/message_pump_type.h"
@@ -30,6 +29,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequence_manager/real_time_domain.h"
 #include "base/task/sequence_manager/sequence_manager.h"
+#include "base/task/sequence_manager/task_queue.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/task_queue_selector.h"
 #include "base/task/sequence_manager/tasks.h"
@@ -45,6 +45,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/null_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/trace_event_analyzer.h"
@@ -76,13 +77,7 @@ namespace sequence_manager_impl_unittest {
 
 enum class TestType {
   kMockTaskRunner,
-  kMessageLoop,
   kMessagePump,
-};
-
-enum class AntiStarvationLogic {
-  kEnabled,
-  kDisabled,
 };
 
 std::string ToString(TestType type) {
@@ -91,26 +86,11 @@ std::string ToString(TestType type) {
       return "kMockTaskRunner";
     case TestType::kMessagePump:
       return "kMessagePump";
-    case TestType::kMessageLoop:
-      return "kMessageLoop";
   }
 }
 
-std::string ToString(AntiStarvationLogic type) {
-  switch (type) {
-    case AntiStarvationLogic::kEnabled:
-      return "AntiStarvationLogicEnabled";
-    case AntiStarvationLogic::kDisabled:
-      return "AntiStarvationLogicDisabled";
-  }
-}
-
-using SequenceManagerTestParams = std::pair<TestType, AntiStarvationLogic>;
-
-std::string GetTestNameSuffix(
-    const testing::TestParamInfo<SequenceManagerTestParams>& info) {
-  return StrCat({"With", ToString(info.param.first).substr(1), "And",
-                 ToString(info.param.second)});
+std::string GetTestNameSuffix(const testing::TestParamInfo<TestType>& info) {
+  return StrCat({"With", ToString(info.param).substr(1)});
 }
 
 void PrintTo(const TestType type, std::ostream* os) {
@@ -167,9 +147,6 @@ class CallCountingTickClock : public TickClock {
 class FixtureWithMockTaskRunner final : public Fixture {
  public:
   FixtureWithMockTaskRunner()
-      : FixtureWithMockTaskRunner(AntiStarvationLogic::kEnabled) {}
-
-  explicit FixtureWithMockTaskRunner(AntiStarvationLogic anti_starvation_logic)
       : test_task_runner_(MakeRefCounted<TestMockTimeTaskRunner>(
             TestMockTimeTaskRunner::Type::kBoundToThread)),
         call_counting_clock_(BindRepeating(&TestMockTimeTaskRunner::NowTicks,
@@ -182,8 +159,6 @@ class FixtureWithMockTaskRunner final : public Fixture {
                 .SetMessagePumpType(MessagePumpType::DEFAULT)
                 .SetRandomisedSamplingEnabled(false)
                 .SetTickClock(mock_tick_clock())
-                .SetAntiStarvationLogicForPrioritiesDisabled(
-                    anti_starvation_logic == AntiStarvationLogic::kDisabled)
                 .Build())) {
     // A null clock triggers some assertions.
     AdvanceMockTickClock(TimeDelta::FromMilliseconds(1));
@@ -245,21 +220,17 @@ class FixtureWithMockTaskRunner final : public Fixture {
 
 class FixtureWithMockMessagePump : public Fixture {
  public:
-  explicit FixtureWithMockMessagePump(AntiStarvationLogic anti_starvation_logic)
-      : call_counting_clock_(&mock_clock_) {
+  explicit FixtureWithMockMessagePump() : call_counting_clock_(&mock_clock_) {
     // A null clock triggers some assertions.
     mock_clock_.Advance(TimeDelta::FromMilliseconds(1));
 
     auto pump = std::make_unique<MockTimeMessagePump>(&mock_clock_);
     pump_ = pump.get();
-    auto settings =
-        SequenceManager::Settings::Builder()
-            .SetMessagePumpType(MessagePumpType::DEFAULT)
-            .SetRandomisedSamplingEnabled(false)
-            .SetTickClock(mock_tick_clock())
-            .SetAntiStarvationLogicForPrioritiesDisabled(
-                anti_starvation_logic == AntiStarvationLogic::kDisabled)
-            .Build();
+    auto settings = SequenceManager::Settings::Builder()
+                        .SetMessagePumpType(MessagePumpType::DEFAULT)
+                        .SetRandomisedSamplingEnabled(false)
+                        .SetTickClock(mock_tick_clock())
+                        .Build();
     sequence_manager_ = SequenceManagerForTest::Create(
         std::make_unique<ThreadControllerWithMessagePumpImpl>(std::move(pump),
                                                               settings),
@@ -301,9 +272,9 @@ class FixtureWithMockMessagePump : public Fixture {
   }
 
   void RunDoWorkOnce() override {
-    pump_->SetQuitAfterDoSomeWork(true);
+    pump_->SetQuitAfterDoWork(true);
     RunLoop().Run();
-    pump_->SetQuitAfterDoSomeWork(false);
+    pump_->SetQuitAfterDoWork(false);
   }
 
   SequenceManagerForTest* sequence_manager() const override {
@@ -325,121 +296,20 @@ class FixtureWithMockMessagePump : public Fixture {
   CallCountingTickClock call_counting_clock_;
   std::unique_ptr<SequenceManagerForTest> sequence_manager_;
 };
-
-class FixtureWithMessageLoop : public Fixture {
- public:
-  explicit FixtureWithMessageLoop(AntiStarvationLogic anti_starvation_logic)
-      : call_counting_clock_(&mock_clock_),
-        auto_reset_global_clock_(&global_clock_, &call_counting_clock_) {
-    // A null clock triggers some assertions.
-    mock_clock_.Advance(TimeDelta::FromMilliseconds(1));
-    scoped_clock_override_ =
-        std::make_unique<base::subtle::ScopedTimeClockOverrides>(
-            nullptr, TicksNowOverride, nullptr);
-
-    auto pump = std::make_unique<MockTimeMessagePump>(&mock_clock_);
-    pump_ = pump.get();
-    message_loop_ = std::make_unique<MessageLoop>(std::move(pump));
-
-    sequence_manager_ = SequenceManagerForTest::CreateOnCurrentThread(
-        SequenceManager::Settings::Builder()
-            .SetMessagePumpType(MessagePumpType::DEFAULT)
-            .SetRandomisedSamplingEnabled(false)
-            .SetTickClock(mock_tick_clock())
-            .SetAntiStarvationLogicForPrioritiesDisabled(
-                anti_starvation_logic == AntiStarvationLogic::kDisabled)
-            .Build());
-
-    // The SequenceManager constructor calls Now() once for setting up
-    // housekeeping. The MessageLoop also contains a SequenceManager so two
-    // calls are expected.
-    EXPECT_EQ(2, GetNowTicksCallCount());
-    call_counting_clock_.Reset();
-  }
-
-  void AdvanceMockTickClock(TimeDelta delta) override {
-    mock_clock_.Advance(delta);
-  }
-
-  const TickClock* mock_tick_clock() const override {
-    return &call_counting_clock_;
-  }
-
-  TimeDelta NextPendingTaskDelay() const override {
-    return pump_->next_wake_up_time() - mock_tick_clock()->NowTicks();
-  }
-
-  void FastForwardBy(TimeDelta delta) override {
-    pump_->SetAllowTimeToAutoAdvanceUntil(mock_tick_clock()->NowTicks() +
-                                          delta);
-    pump_->SetStopWhenMessagePumpIsIdle(true);
-    RunLoop().Run();
-    pump_->SetStopWhenMessagePumpIsIdle(false);
-  }
-
-  void FastForwardUntilNoTasksRemain() override {
-    pump_->SetAllowTimeToAutoAdvanceUntil(TimeTicks::Max());
-    pump_->SetStopWhenMessagePumpIsIdle(true);
-    RunLoop().Run();
-    pump_->SetStopWhenMessagePumpIsIdle(false);
-    pump_->SetAllowTimeToAutoAdvanceUntil(mock_tick_clock()->NowTicks());
-  }
-
-  void RunDoWorkOnce() override {
-    pump_->SetQuitAfterDoSomeWork(true);
-    RunLoop().Run();
-    pump_->SetQuitAfterDoSomeWork(false);
-  }
-
-  SequenceManagerForTest* sequence_manager() const override {
-    return sequence_manager_.get();
-  }
-
-  void DestroySequenceManager() override {
-    pump_ = nullptr;
-    sequence_manager_.reset();
-  }
-
-  int GetNowTicksCallCount() override {
-    return call_counting_clock_.now_call_count();
-  }
-
- private:
-  static TickClock* global_clock_;
-  static TimeTicks TicksNowOverride() { return global_clock_->NowTicks(); }
-  SimpleTestTickClock mock_clock_;
-  CallCountingTickClock call_counting_clock_;
-  AutoReset<TickClock*> auto_reset_global_clock_;
-  std::unique_ptr<base::subtle::ScopedTimeClockOverrides>
-      scoped_clock_override_;
-  std::unique_ptr<MessageLoop> message_loop_;
-  MockTimeMessagePump* pump_ = nullptr;
-  std::unique_ptr<SequenceManagerForTest> sequence_manager_;
-};
-
-TickClock* FixtureWithMessageLoop::global_clock_;
 
 // Convenience wrapper around the fixtures so that we can use parametrized tests
 // instead of templated ones. The latter would be more verbose as all method
 // calls to the fixture would need to be like this->method()
-class SequenceManagerTest
-    : public testing::TestWithParam<SequenceManagerTestParams>,
-      public Fixture {
+class SequenceManagerTest : public testing::TestWithParam<TestType>,
+                            public Fixture {
  public:
   SequenceManagerTest() {
-    AntiStarvationLogic anti_starvation_logic = GetAntiStarvationLogicType();
     switch (GetUnderlyingRunnerType()) {
       case TestType::kMockTaskRunner:
-        fixture_ =
-            std::make_unique<FixtureWithMockTaskRunner>(anti_starvation_logic);
+        fixture_ = std::make_unique<FixtureWithMockTaskRunner>();
         break;
       case TestType::kMessagePump:
-        fixture_ =
-            std::make_unique<FixtureWithMockMessagePump>(anti_starvation_logic);
-        break;
-      case TestType::kMessageLoop:
-        fixture_ =
-            std::make_unique<FixtureWithMessageLoop>(anti_starvation_logic);
+        fixture_ = std::make_unique<FixtureWithMockMessagePump>();
         break;
       default:
         NOTREACHED();
@@ -510,27 +380,17 @@ class SequenceManagerTest
     return fixture_->GetNowTicksCallCount();
   }
 
-  TestType GetUnderlyingRunnerType() { return GetParam().first; }
-
-  AntiStarvationLogic GetAntiStarvationLogicType() { return GetParam().second; }
+  TestType GetUnderlyingRunnerType() { return GetParam(); }
 
  private:
   std::unique_ptr<Fixture> fixture_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    SequenceManagerTest,
-    testing::Values(
-        std::make_pair(TestType::kMockTaskRunner,
-                       AntiStarvationLogic::kEnabled),
-        std::make_pair(TestType::kMockTaskRunner,
-                       AntiStarvationLogic::kDisabled),
-        std::make_pair(TestType::kMessageLoop, AntiStarvationLogic::kEnabled),
-        std::make_pair(TestType::kMessageLoop, AntiStarvationLogic::kDisabled),
-        std::make_pair(TestType::kMessagePump, AntiStarvationLogic::kEnabled),
-        std::make_pair(TestType::kMessagePump, AntiStarvationLogic::kDisabled)),
-    GetTestNameSuffix);
+INSTANTIATE_TEST_SUITE_P(All,
+                         SequenceManagerTest,
+                         testing::Values(TestType::kMockTaskRunner,
+                                         TestType::kMessagePump),
+                         GetTestNameSuffix);
 
 void PostFromNestedRunloop(scoped_refptr<TestTaskQueue> runner,
                            std::vector<std::pair<OnceClosure, bool>>* tasks) {
@@ -2352,7 +2212,6 @@ class MockTaskQueueObserver : public TaskQueue::Observer {
  public:
   ~MockTaskQueueObserver() override = default;
 
-  MOCK_METHOD2(OnPostTask, void(Location, TimeDelta));
   MOCK_METHOD1(OnQueueNextWakeUpChanged, void(TimeTicks));
 };
 
@@ -2366,14 +2225,12 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_ImmediateTask) {
 
   // We should get a OnQueueNextWakeUpChanged notification when a task is posted
   // on an empty queue.
-  EXPECT_CALL(observer, OnPostTask(_, TimeDelta()));
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_));
   queue->task_runner()->PostTask(FROM_HERE, BindOnce(&NopTask));
   sequence_manager()->ReloadEmptyWorkQueues();
   Mock::VerifyAndClearExpectations(&observer);
 
   // But not subsequently.
-  EXPECT_CALL(observer, OnPostTask(_, TimeDelta()));
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_)).Times(0);
   queue->task_runner()->PostTask(FROM_HERE, BindOnce(&NopTask));
   sequence_manager()->ReloadEmptyWorkQueues();
@@ -2384,7 +2241,6 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_ImmediateTask) {
   sequence_manager()->DidRunTask();
   sequence_manager()->SelectNextTask();
   sequence_manager()->DidRunTask();
-  EXPECT_CALL(observer, OnPostTask(_, TimeDelta()));
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_));
   queue->task_runner()->PostTask(FROM_HERE, BindOnce(&NopTask));
   sequence_manager()->ReloadEmptyWorkQueues();
@@ -2407,7 +2263,6 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_DelayedTask) {
 
   // We should get OnQueueNextWakeUpChanged notification when a delayed task is
   // is posted on an empty queue.
-  EXPECT_CALL(observer, OnPostTask(_, delay10s));
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(start_time + delay10s));
   queue->task_runner()->PostDelayedTask(FROM_HERE, BindOnce(&NopTask),
                                         delay10s);
@@ -2415,14 +2270,12 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_DelayedTask) {
 
   // We should not get an OnQueueNextWakeUpChanged notification for a longer
   // delay.
-  EXPECT_CALL(observer, OnPostTask(_, delay100s));
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_)).Times(0);
   queue->task_runner()->PostDelayedTask(FROM_HERE, BindOnce(&NopTask),
                                         delay100s);
   Mock::VerifyAndClearExpectations(&observer);
 
   // We should get an OnQueueNextWakeUpChanged notification for a shorter delay.
-  EXPECT_CALL(observer, OnPostTask(_, delay1s));
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(start_time + delay1s));
   queue->task_runner()->PostDelayedTask(FROM_HERE, BindOnce(&NopTask), delay1s);
   Mock::VerifyAndClearExpectations(&observer);
@@ -2434,7 +2287,6 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_DelayedTask) {
 
   // When a queue has been enabled, we may get a notification if the
   // TimeDomain's next scheduled wake-up has changed.
-  EXPECT_CALL(observer, OnPostTask(_, _)).Times(0);
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(start_time + delay1s));
   voter->SetVoteToEnable(true);
   Mock::VerifyAndClearExpectations(&observer);
@@ -2455,10 +2307,8 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_DelayedTaskMultipleQueues) {
   TimeDelta delay1s(TimeDelta::FromSeconds(1));
   TimeDelta delay10s(TimeDelta::FromSeconds(10));
 
-  EXPECT_CALL(observer0, OnPostTask(_, delay1s));
   EXPECT_CALL(observer0, OnQueueNextWakeUpChanged(start_time + delay1s))
       .Times(1);
-  EXPECT_CALL(observer1, OnPostTask(_, delay10s));
   EXPECT_CALL(observer1, OnQueueNextWakeUpChanged(start_time + delay10s))
       .Times(1);
   queues[0]->task_runner()->PostDelayedTask(FROM_HERE, BindOnce(&NopTask),
@@ -2474,26 +2324,22 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_DelayedTaskMultipleQueues) {
       queues[1]->CreateQueueEnabledVoter();
 
   // Disabling a queue should not trigger a notification.
-  EXPECT_CALL(observer0, OnPostTask(_, _)).Times(0);
   EXPECT_CALL(observer0, OnQueueNextWakeUpChanged(_)).Times(0);
   voter0->SetVoteToEnable(false);
   Mock::VerifyAndClearExpectations(&observer0);
 
   // But re-enabling it should should trigger an OnQueueNextWakeUpChanged
   // notification.
-  EXPECT_CALL(observer0, OnPostTask(_, _)).Times(0);
   EXPECT_CALL(observer0, OnQueueNextWakeUpChanged(start_time + delay1s));
   voter0->SetVoteToEnable(true);
   Mock::VerifyAndClearExpectations(&observer0);
 
   // Disabling a queue should not trigger a notification.
-  EXPECT_CALL(observer1, OnPostTask(_, _)).Times(0);
   EXPECT_CALL(observer1, OnQueueNextWakeUpChanged(_)).Times(0);
   voter1->SetVoteToEnable(false);
   Mock::VerifyAndClearExpectations(&observer0);
 
   // But re-enabling it should should trigger a notification.
-  EXPECT_CALL(observer1, OnPostTask(_, _)).Times(0);
   EXPECT_CALL(observer1, OnQueueNextWakeUpChanged(start_time + delay10s));
   voter1->SetVoteToEnable(true);
   Mock::VerifyAndClearExpectations(&observer1);
@@ -2523,7 +2369,6 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_DelayedWorkWhichCanRunNow) {
 
   // We should get a notification when a delayed task is posted on an empty
   // queue.
-  EXPECT_CALL(observer, OnPostTask(_, _));
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_));
   queue->task_runner()->PostDelayedTask(FROM_HERE, BindOnce(&NopTask), delay1s);
   Mock::VerifyAndClearExpectations(&observer);
@@ -2534,7 +2379,6 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_DelayedWorkWhichCanRunNow) {
 
   AdvanceMockTickClock(delay10s);
 
-  EXPECT_CALL(observer, OnPostTask(_, _)).Times(0);
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_));
   queue->SetTimeDomain(mock_time_domain.get());
   Mock::VerifyAndClearExpectations(&observer);
@@ -2565,7 +2409,6 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_SweepCanceledDelayedTasks) {
   TimeDelta delay1(TimeDelta::FromSeconds(5));
   TimeDelta delay2(TimeDelta::FromSeconds(10));
 
-  EXPECT_CALL(observer, OnPostTask(_, _)).Times(AnyNumber());
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(start_time + delay1)).Times(1);
 
   CancelableTask task1(mock_tick_clock());
@@ -3333,10 +3176,6 @@ TEST_P(SequenceManagerTest, DelayedDoWorkNotPostedForDisabledQueue) {
       EXPECT_EQ(TimeDelta::FromDays(1), NextPendingTaskDelay());
       break;
 
-    case TestType::kMessageLoop:
-      EXPECT_EQ(TimeDelta::FromMilliseconds(1), NextPendingTaskDelay());
-      break;
-
     case TestType::kMockTaskRunner:
       EXPECT_EQ(TimeDelta::Max(), NextPendingTaskDelay());
       break;
@@ -3368,27 +3207,15 @@ TEST_P(SequenceManagerTest, DisablingQueuesChangesDelayTillNextDoWork) {
   EXPECT_EQ(TimeDelta::FromMilliseconds(1), NextPendingTaskDelay());
 
   voter0->SetVoteToEnable(false);
-  if (GetUnderlyingRunnerType() == TestType::kMessageLoop) {
-    EXPECT_EQ(TimeDelta::FromMilliseconds(1), NextPendingTaskDelay());
-  } else {
-    EXPECT_EQ(TimeDelta::FromMilliseconds(10), NextPendingTaskDelay());
-  }
+  EXPECT_EQ(TimeDelta::FromMilliseconds(10), NextPendingTaskDelay());
 
   voter1->SetVoteToEnable(false);
-  if (GetUnderlyingRunnerType() == TestType::kMessageLoop) {
-    EXPECT_EQ(TimeDelta::FromMilliseconds(1), NextPendingTaskDelay());
-  } else {
-    EXPECT_EQ(TimeDelta::FromMilliseconds(100), NextPendingTaskDelay());
-  }
+  EXPECT_EQ(TimeDelta::FromMilliseconds(100), NextPendingTaskDelay());
 
   voter2->SetVoteToEnable(false);
   switch (GetUnderlyingRunnerType()) {
     case TestType::kMessagePump:
       EXPECT_EQ(TimeDelta::FromDays(1), NextPendingTaskDelay());
-      break;
-
-    case TestType::kMessageLoop:
-      EXPECT_EQ(TimeDelta::FromMilliseconds(1), NextPendingTaskDelay());
       break;
 
     case TestType::kMockTaskRunner:
@@ -3566,7 +3393,6 @@ TEST_P(SequenceManagerTest, ObserverNotFiredAfterTaskQueueDestructed) {
   main_tq->SetObserver(&observer);
 
   // We don't expect the observer to fire if the TaskQueue gets destructed.
-  EXPECT_CALL(observer, OnPostTask(_, _)).Times(0);
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_)).Times(0);
   auto task_runner = main_tq->task_runner();
   main_tq = nullptr;
@@ -3586,8 +3412,6 @@ TEST_P(SequenceManagerTest,
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       main_tq->CreateQueueEnabledVoter();
   voter->SetVoteToEnable(false);
-
-  EXPECT_CALL(observer, OnPostTask(_, _));
 
   // We don't expect the OnQueueNextWakeUpChanged to fire if the TaskQueue gets
   // disabled.
@@ -3613,8 +3437,6 @@ TEST_P(SequenceManagerTest,
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       main_tq->CreateQueueEnabledVoter();
   voter->SetVoteToEnable(false);
-
-  EXPECT_CALL(observer, OnPostTask(_, _));
 
   // We don't expect the observer to fire if the TaskQueue gets blocked.
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_)).Times(0);
@@ -3717,8 +3539,7 @@ TEST_P(SequenceManagerTest, GracefulShutdown_ManagerDeletedInFlight) {
   // thread.
   DestroySequenceManager();
 
-  if (GetUnderlyingRunnerType() != TestType::kMessagePump &&
-      GetUnderlyingRunnerType() != TestType::kMessageLoop) {
+  if (GetUnderlyingRunnerType() != TestType::kMessagePump) {
     FastForwardUntilNoTasksRemain();
   }
 
@@ -3761,8 +3582,7 @@ TEST_P(SequenceManagerTest,
   // Ensure that all queues-to-gracefully-shutdown are properly unregistered.
   DestroySequenceManager();
 
-  if (GetUnderlyingRunnerType() != TestType::kMessagePump &&
-      GetUnderlyingRunnerType() != TestType::kMessageLoop) {
+  if (GetUnderlyingRunnerType() != TestType::kMessagePump) {
     FastForwardUntilNoTasksRemain();
   }
 
@@ -3773,9 +3593,15 @@ TEST_P(SequenceManagerTest,
 }
 
 TEST(SequenceManagerBasicTest, DefaultTaskRunnerSupport) {
-  MessageLoop message_loop;
+  auto base_sequence_manager =
+      sequence_manager::CreateSequenceManagerOnCurrentThreadWithPump(
+          MessagePump::Create(MessagePumpType::DEFAULT));
+  auto queue = base_sequence_manager->CreateTaskQueue(
+      sequence_manager::TaskQueue::Spec("default_tq"));
+  base_sequence_manager->SetDefaultTaskRunner(queue->task_runner());
+
   scoped_refptr<SingleThreadTaskRunner> original_task_runner =
-      message_loop.task_runner();
+      ThreadTaskRunnerHandle::Get();
   scoped_refptr<SingleThreadTaskRunner> custom_task_runner =
       MakeRefCounted<TestSimpleTaskRunner>();
   {
@@ -3783,9 +3609,9 @@ TEST(SequenceManagerBasicTest, DefaultTaskRunnerSupport) {
         CreateSequenceManagerOnCurrentThread(SequenceManager::Settings());
 
     manager->SetDefaultTaskRunner(custom_task_runner);
-    DCHECK_EQ(custom_task_runner, message_loop.task_runner());
+    DCHECK_EQ(custom_task_runner, ThreadTaskRunnerHandle::Get());
   }
-  DCHECK_EQ(original_task_runner, message_loop.task_runner());
+  DCHECK_EQ(original_task_runner, ThreadTaskRunnerHandle::Get());
 }
 
 TEST_P(SequenceManagerTest, CanceledTasksInQueueCantMakeOtherTasksSkipAhead) {
@@ -4509,28 +4335,14 @@ TEST_P(SequenceManagerTest, TaskPriortyInterleaving) {
 
   RunLoop().RunUntilIdle();
 
-  switch (GetAntiStarvationLogicType()) {
-    case AntiStarvationLogic::kDisabled:
-      EXPECT_EQ(order,
-                "000000000000000000000000000000000000000000000000000000000000"
-                "111111111111111111111111111111111111111111111111111111111111"
-                "222222222222222222222222222222222222222222222222222222222222"
-                "333333333333333333333333333333333333333333333333333333333333"
-                "444444444444444444444444444444444444444444444444444444444444"
-                "555555555555555555555555555555555555555555555555555555555555"
-                "666666666666666666666666666666666666666666666666666666666666");
-      break;
-    case AntiStarvationLogic::kEnabled:
-      EXPECT_EQ(order,
-                "000000000000000000000000000000000000000000000000000000000000"
-                "111121311214131215112314121131211151234112113121114123511211"
-                "312411123115121341211131211145123111211314211352232423222322"
-                "452322232423222352423222322423252322423222322452322232433353"
-                "343333334353333433333345333334333354444445444444544444454444"
-                "445444444544444454445555555555555555555555555555555555555555"
-                "666666666666666666666666666666666666666666666666666666666666");
-      break;
-  }
+  EXPECT_EQ(order,
+            "000000000000000000000000000000000000000000000000000000000000"
+            "111111111111111111111111111111111111111111111111111111111111"
+            "222222222222222222222222222222222222222222222222222222222222"
+            "333333333333333333333333333333333333333333333333333333333333"
+            "444444444444444444444444444444444444444444444444444444444444"
+            "555555555555555555555555555555555555555555555555555555555555"
+            "666666666666666666666666666666666666666666666666666666666666");
 }
 
 class CancelableTaskWithDestructionObserver {

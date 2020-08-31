@@ -142,19 +142,20 @@ void CFX_CSSStyleSelector::AppendInlineStyle(CFX_CSSDeclaration* pDecl,
   ASSERT(pDecl);
   ASSERT(!style.IsEmpty());
 
-  auto pSyntax = pdfium::MakeUnique<CFX_CSSSyntaxParser>(
-      style.c_str(), style.GetLength(), 32, true);
+  auto pSyntax = pdfium::MakeUnique<CFX_CSSSyntaxParser>(style.AsStringView());
+  pSyntax->SetParseOnlyDeclarations();
+
   int32_t iLen2 = 0;
   const CFX_CSSData::Property* property = nullptr;
   WideString wsName;
   while (1) {
     CFX_CSSSyntaxStatus eStatus = pSyntax->DoSyntaxParse();
-    if (eStatus == CFX_CSSSyntaxStatus::PropertyName) {
+    if (eStatus == CFX_CSSSyntaxStatus::kPropertyName) {
       WideStringView strValue = pSyntax->GetCurrentString();
       property = CFX_CSSData::GetPropertyByName(strValue);
       if (!property)
         wsName = WideString(strValue);
-    } else if (eStatus == CFX_CSSSyntaxStatus::PropertyValue) {
+    } else if (eStatus == CFX_CSSSyntaxStatus::kPropertyValue) {
       if (property || iLen2 > 0) {
         WideStringView strValue = pSyntax->GetCurrentString();
         if (!strValue.IsEmpty()) {
@@ -324,10 +325,10 @@ void CFX_CSSStyleSelector::ApplyProperty(CFX_CSSProperty eProperty,
         break;
       case CFX_CSSProperty::VerticalAlign:
         if (eType == CFX_CSSPrimitiveType::Enum) {
-          pComputedStyle->m_NonInheritedData.m_eVerticalAlign =
+          pComputedStyle->m_NonInheritedData.m_eVerticalAlignType =
               ToVerticalAlign(pValue.As<CFX_CSSEnumValue>()->Value());
         } else if (eType == CFX_CSSPrimitiveType::Number) {
-          pComputedStyle->m_NonInheritedData.m_eVerticalAlign =
+          pComputedStyle->m_NonInheritedData.m_eVerticalAlignType =
               CFX_CSSVerticalAlign::Number;
           pComputedStyle->m_NonInheritedData.m_fVerticalAlign =
               pValue.As<CFX_CSSNumberValue>()->Apply(

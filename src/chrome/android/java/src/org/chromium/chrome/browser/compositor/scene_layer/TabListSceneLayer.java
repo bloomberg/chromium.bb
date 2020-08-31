@@ -13,17 +13,17 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.ui.styles.ChromeColors;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.resources.ResourceManager;
+import org.chromium.ui.util.ColorUtils;
 
 /**
  * A SceneLayer to render a tab stack.
@@ -138,7 +138,7 @@ public class TabListSceneLayer extends SceneLayer {
                     t.getBrightness(), t.showToolbar(), defaultThemeColor,
                     t.getToolbarBackgroundColor(), closeButtonColor, t.anonymizeToolbar(),
                     t.isTitleNeeded(), urlBarBackgroundId, t.getTextBoxBackgroundColor(),
-                    textBoxAlpha, t.getToolbarAlpha(), t.getToolbarYOffset() * dpToPx,
+                    textBoxAlpha, t.getToolbarAlpha(), fullscreenManager.getContentOffset(),
                     t.getSideBorderScale(), t.insetBorderVertical());
         }
         TabListSceneLayerJni.get().finishBuildingFrame(mNativePtr, TabListSceneLayer.this);
@@ -148,14 +148,14 @@ public class TabListSceneLayer extends SceneLayer {
      * @return The background color of the scene layer.
      */
     protected int getTabListBackgroundColor(Context context) {
-        int colorId = R.color.modern_primary_color;
+        int colorId = R.color.default_bg_color;
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
-                || FeatureUtilities.isGridTabSwitcherEnabled()) {
+                || TabUiFeatureUtilities.isGridTabSwitcherEnabled()) {
             if (mTabModelSelector != null && mTabModelSelector.isIncognitoSelected()) {
-                colorId = R.color.dark_primary_color;
+                colorId = R.color.default_bg_color_dark;
             } else {
-                colorId = R.color.modern_primary_color;
+                colorId = R.color.default_bg_color;
             }
         }
 
@@ -212,7 +212,7 @@ public class TabListSceneLayer extends SceneLayer {
                 boolean showToolbar, int defaultThemeColor, int toolbarBackgroundColor,
                 int closeButtonColor, boolean anonymizeToolbar, boolean showTabTitle,
                 int toolbarTextBoxResource, int toolbarTextBoxBackgroundColor,
-                float toolbarTextBoxAlpha, float toolbarAlpha, float toolbarYOffset,
+                float toolbarTextBoxAlpha, float toolbarAlpha, float contentOffset,
                 float sideBorderScale, boolean insetVerticalBorder);
 
         void putBackgroundLayer(long nativeTabListSceneLayer, TabListSceneLayer caller,

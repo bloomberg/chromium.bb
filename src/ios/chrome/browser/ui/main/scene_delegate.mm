@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
+#import "ios/chrome/app/main_application_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -15,8 +16,12 @@
 
 - (SceneState*)sceneState {
   if (!_sceneState) {
-    _sceneState = [[SceneState alloc] init];
+    MainApplicationDelegate* appDelegate =
+        base::mac::ObjCCastStrict<MainApplicationDelegate>(
+            UIApplication.sharedApplication.delegate);
+    _sceneState = [[SceneState alloc] initWithAppState:appDelegate.appState];
     _sceneController = [[SceneController alloc] initWithSceneState:_sceneState];
+    _sceneState.controller = _sceneController;
   }
   return _sceneState;
 }
@@ -42,6 +47,7 @@
     API_AVAILABLE(ios(13)) {
   self.sceneState.scene = base::mac::ObjCCastStrict<UIWindowScene>(scene);
   self.sceneState.activationLevel = SceneActivationLevelBackground;
+  self.sceneState.connectionOptions = connectionOptions;
 }
 
 - (void)sceneDidDisconnect:(UIScene*)scene API_AVAILABLE(ios(13)) {

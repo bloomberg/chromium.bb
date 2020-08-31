@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
@@ -23,10 +22,7 @@
 #include "storage/browser/file_system/file_stream_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using storage::FileStreamWriter;
-using storage::LocalFileStreamWriter;
-
-namespace content {
+namespace storage {
 
 class LocalFileStreamWriterTest : public testing::Test {
  public:
@@ -58,7 +54,7 @@ class LocalFileStreamWriterTest : public testing::Test {
   base::FilePath CreateFileWithContent(const std::string& name,
                                        const std::string& data) {
     base::FilePath path = Path(name);
-    base::WriteFile(path, data.c_str(), data.size());
+    base::WriteFile(path, data);
     return path;
   }
 
@@ -164,4 +160,4 @@ TEST_F(LocalFileStreamWriterTest, CancelWrite) {
   EXPECT_EQ(net::OK, cancel_result);
 }
 
-}  // namespace content
+}  // namespace storage

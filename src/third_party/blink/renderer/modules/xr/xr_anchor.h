@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class XRSession;
 class XRSpace;
 
@@ -21,46 +22,34 @@ class XRAnchor : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRAnchor(uint64_t id, XRSession* session);
-
   XRAnchor(uint64_t id,
            XRSession* session,
-           const device::mojom::blink::XRAnchorDataPtr& anchor_data,
-           double timestamp);
+           const device::mojom::blink::XRAnchorData& anchor_data);
 
   uint64_t id() const;
 
-  XRSpace* anchorSpace() const;
+  XRSpace* anchorSpace(ExceptionState& exception_state) const;
 
-  TransformationMatrix poseMatrix() const;
+  base::Optional<TransformationMatrix> MojoFromObject() const;
 
-  double lastChangedTime(bool& is_null) const;
+  void Delete();
 
-  void detach();
+  void Update(const device::mojom::blink::XRAnchorData& anchor_data);
 
-  void Update(const device::mojom::blink::XRAnchorDataPtr& anchor_data,
-              double timestamp);
-
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
-  // AnchorData will only be present in an XRAnchor after the anchor was updated
-  // for the first time (CreateAnchor returns a promise that will resolve to an
-  // XRAnchor prior to first update of the anchor).
-  struct AnchorData {
-    // Anchor's pose in device (mojo) space.
-    std::unique_ptr<TransformationMatrix> pose_matrix_;
-    double last_changed_time_;
-
-    AnchorData(const device::mojom::blink::XRAnchorDataPtr& anchor_data,
-               double timestamp);
-  };
+  void SetMojoFromAnchor(const TransformationMatrix& mojo_from_anchor);
 
   const uint64_t id_;
 
+  bool is_deleted_;
+
   Member<XRSession> session_;
 
-  base::Optional<AnchorData> anchor_data_;
+  // Anchor's pose in device (mojo) space. Nullptr if the pose of the anchor is
+  // unknown in the current frame.
+  std::unique_ptr<TransformationMatrix> mojo_from_anchor_;
 
   // Cached anchor space - it will be created by `anchorSpace()` if it's not
   // set.

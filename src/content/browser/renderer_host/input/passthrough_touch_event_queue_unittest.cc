@@ -9,9 +9,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -23,7 +23,7 @@
 #include "content/common/input/web_touch_event_traits.h"
 #include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/events/base_event_utils.h"
 
 using blink::WebGestureEvent;
@@ -50,7 +50,7 @@ class PassthroughTouchEventQueueTest : public testing::Test,
       : task_environment_(
             base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         acked_event_count_(0),
-        last_acked_event_state_(INPUT_EVENT_ACK_STATE_UNKNOWN),
+        last_acked_event_state_(blink::mojom::InputEventResultState::kUnknown),
         slop_length_dips_(0) {}
 
   ~PassthroughTouchEventQueueTest() override {}
@@ -75,9 +75,10 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     }
   }
 
-  void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
-                       InputEventAckSource ack_source,
-                       InputEventAckState ack_result) override {
+  void OnTouchEventAck(
+      const TouchEventWithLatencyInfo& event,
+      blink::mojom::InputEventResultSource ack_source,
+      blink::mojom::InputEventResultState ack_result) override {
     ++acked_event_count_;
     if (followup_touch_event_) {
       std::unique_ptr<WebTouchEvent> followup_touch_event =
@@ -121,8 +122,8 @@ class PassthroughTouchEventQueueTest : public testing::Test,
   void SetUpForSkipFilterTesting(const std::string& events_to_always_forward) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeatureWithParameters(
-        features::kSkipTouchEventFilter,
-        {{features::kSkipTouchEventFilterTypeParamName,
+        blink::features::kSkipTouchEventFilter,
+        {{blink::features::kSkipTouchEventFilterTypeParamName,
           events_to_always_forward}});
     ResetQueueWithConfig(PassthroughTouchEventQueue::Config());
   }
@@ -132,14 +133,14 @@ class PassthroughTouchEventQueueTest : public testing::Test,
       event.moved_beyond_slop_region = false;
       if (WebTouchEventTraits::IsTouchSequenceStart(event))
         anchor_ = event.touches[0].PositionInWidget();
-      if (event.GetType() == WebInputEvent::kTouchMove) {
+      if (event.GetType() == WebInputEvent::Type::kTouchMove) {
         gfx::Vector2dF delta = anchor_ - event.touches[0].PositionInWidget();
         if (delta.LengthSquared() > slop_length_dips_ * slop_length_dips_)
           event.moved_beyond_slop_region = true;
       }
     } else {
       event.moved_beyond_slop_region =
-          event.GetType() == WebInputEvent::kTouchMove;
+          event.GetType() == WebInputEvent::Type::kTouchMove;
     }
     queue_->QueueEvent(TouchEventWithLatencyInfo(event, ui::LatencyInfo()));
   }
@@ -151,29 +152,32 @@ class PassthroughTouchEventQueueTest : public testing::Test,
         GestureEventWithLatencyInfo(event, ui::LatencyInfo()));
   }
 
-  void SendTouchEventAck(InputEventAckState ack_result) {
+  void SendTouchEventAck(blink::mojom::InputEventResultState ack_result) {
     DCHECK(!sent_events_ids_.empty());
-    queue_->ProcessTouchAck(InputEventAckSource::COMPOSITOR_THREAD, ack_result,
-                            ui::LatencyInfo(), sent_events_ids_.front(), true);
+    queue_->ProcessTouchAck(
+        blink::mojom::InputEventResultSource::kCompositorThread, ack_result,
+        ui::LatencyInfo(), sent_events_ids_.front(), true);
     sent_events_ids_.pop_front();
   }
 
-  void SendTouchEventAckLast(InputEventAckState ack_result) {
+  void SendTouchEventAckLast(blink::mojom::InputEventResultState ack_result) {
     DCHECK(!sent_events_ids_.empty());
-    queue_->ProcessTouchAck(InputEventAckSource::COMPOSITOR_THREAD, ack_result,
-                            ui::LatencyInfo(), sent_events_ids_.back(), true);
+    queue_->ProcessTouchAck(
+        blink::mojom::InputEventResultSource::kCompositorThread, ack_result,
+        ui::LatencyInfo(), sent_events_ids_.back(), true);
     sent_events_ids_.pop_back();
   }
 
-  void SendTouchEventAckWithID(InputEventAckState ack_result,
+  void SendTouchEventAckWithID(blink::mojom::InputEventResultState ack_result,
                                int unique_event_id) {
-    queue_->ProcessTouchAck(InputEventAckSource::COMPOSITOR_THREAD, ack_result,
-                            ui::LatencyInfo(), unique_event_id, true);
+    queue_->ProcessTouchAck(
+        blink::mojom::InputEventResultSource::kCompositorThread, ack_result,
+        ui::LatencyInfo(), unique_event_id, true);
     base::Erase(sent_events_ids_, unique_event_id);
   }
 
   void SendGestureEventAck(WebInputEvent::Type type,
-                           InputEventAckState ack_result) {
+                           blink::mojom::InputEventResultState ack_result) {
     GestureEventWithLatencyInfo event(type, blink::WebInputEvent::kNoModifiers,
                                       ui::EventTimeForNow(), ui::LatencyInfo());
     queue_->OnGestureEventAck(event, ack_result);
@@ -187,8 +191,9 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     followup_gesture_event_.reset(new WebGestureEvent(event));
   }
 
-  void SetSyncAckResult(InputEventAckState sync_ack_result) {
-    sync_ack_result_.reset(new InputEventAckState(sync_ack_result));
+  void SetSyncAckResult(blink::mojom::InputEventResultState sync_ack_result) {
+    sync_ack_result_.reset(
+        new blink::mojom::InputEventResultState(sync_ack_result));
   }
 
   void PressTouchPoint(float x, float y) {
@@ -218,9 +223,9 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     WebTouchPoint& point = touch_event_.touches[index];
     point.radius_x = radius_x;
     point.radius_y = radius_y;
-    touch_event_.touches[index].state = WebTouchPoint::kStateMoved;
+    touch_event_.touches[index].state = WebTouchPoint::State::kStateMoved;
     touch_event_.moved_beyond_slop_region = true;
-    WebTouchEventTraits::ResetType(WebInputEvent::kTouchMove,
+    WebTouchEventTraits::ResetType(WebInputEvent::Type::kTouchMove,
                                    touch_event_.TimeStamp(), &touch_event_);
     SendTouchEvent();
   }
@@ -230,9 +235,9 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     CHECK_LT(index, touch_event_.kTouchesLengthCap);
     WebTouchPoint& point = touch_event_.touches[index];
     point.rotation_angle = rotation_angle;
-    touch_event_.touches[index].state = WebTouchPoint::kStateMoved;
+    touch_event_.touches[index].state = WebTouchPoint::State::kStateMoved;
     touch_event_.moved_beyond_slop_region = true;
-    WebTouchEventTraits::ResetType(WebInputEvent::kTouchMove,
+    WebTouchEventTraits::ResetType(WebInputEvent::Type::kTouchMove,
                                    touch_event_.TimeStamp(), &touch_event_);
     SendTouchEvent();
   }
@@ -242,9 +247,9 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     CHECK_LT(index, touch_event_.kTouchesLengthCap);
     WebTouchPoint& point = touch_event_.touches[index];
     point.force = force;
-    touch_event_.touches[index].state = WebTouchPoint::kStateMoved;
+    touch_event_.touches[index].state = WebTouchPoint::State::kStateMoved;
     touch_event_.moved_beyond_slop_region = true;
-    WebTouchEventTraits::ResetType(WebInputEvent::kTouchMove,
+    WebTouchEventTraits::ResetType(WebInputEvent::Type::kTouchMove,
                                    touch_event_.TimeStamp(), &touch_event_);
     SendTouchEvent();
   }
@@ -309,7 +314,7 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     return sent_events_;
   }
 
-  InputEventAckState acked_event_state() const {
+  blink::mojom::InputEventResultState acked_event_state() const {
     return last_acked_event_state_;
   }
 
@@ -346,11 +351,11 @@ class PassthroughTouchEventQueueTest : public testing::Test,
   size_t acked_event_count_;
   WebTouchEvent last_acked_event_;
   std::vector<WebTouchEvent> sent_events_;
-  InputEventAckState last_acked_event_state_;
+  blink::mojom::InputEventResultState last_acked_event_state_;
   SyntheticWebTouchEvent touch_event_;
   std::unique_ptr<WebTouchEvent> followup_touch_event_;
   std::unique_ptr<WebGestureEvent> followup_gesture_event_;
-  std::unique_ptr<InputEventAckState> sync_ack_result_;
+  std::unique_ptr<blink::mojom::InputEventResultState> sync_ack_result_;
   double slop_length_dips_;
   gfx::PointF anchor_;
   base::circular_deque<int> sent_events_ids_;
@@ -369,20 +374,22 @@ TEST_F(PassthroughTouchEventQueueTest, Basic) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // Receive an ACK for the first touch-event.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(WebInputEvent::kTouchStart, acked_event().GetType());
-  EXPECT_EQ(WebInputEvent::kBlocking, acked_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart, acked_event().GetType());
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking,
+            acked_event().dispatch_type);
 
   // Receive an ACK for the second touch-event.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(WebInputEvent::kTouchMove, acked_event().GetType());
-  EXPECT_EQ(WebInputEvent::kBlocking, acked_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, acked_event().GetType());
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking,
+            acked_event().dispatch_type);
 }
 
 // Tests that touch-events with multiple points are queued properly.
@@ -412,20 +419,20 @@ TEST_F(PassthroughTouchEventQueueTest, BasicMultiTouch) {
 
   // Ack all presses.
   for (size_t i = 0; i < kPointerCount; ++i)
-    SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+    SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
 
   EXPECT_EQ(kPointerCount, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
 
   // Ack the touch moves.
   for (size_t i = 0; i < kPointerCount; ++i)
-    SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+    SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(kPointerCount, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
 
   // Ack all releases.
   for (size_t i = 0; i < kPointerCount; ++i)
-    SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+    SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
 
   EXPECT_EQ(kPointerCount, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -451,15 +458,16 @@ TEST_F(PassthroughTouchEventQueueTest,
 
   // Process the ack for the sent touch, ensuring that it is honored (despite
   // the touch handler having been removed).
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, acked_event_state());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
+            acked_event_state());
 
   // Try forwarding a new pointer. It should be forwarded as usual.
   PressTouchPoint(2, 2);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNoConsumerExists);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, queued_event_count());
 
@@ -469,10 +477,10 @@ TEST_F(PassthroughTouchEventQueueTest,
   ReleaseTouchPoint(1);
   EXPECT_EQ(2U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNoConsumerExists);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNoConsumerExists);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
@@ -482,17 +490,19 @@ TEST_F(PassthroughTouchEventQueueTest,
   EXPECT_EQ(2U, GetAndResetSentEventCount());
   EXPECT_EQ(2U, queued_event_count());
 
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, queued_event_count());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, acked_event_state());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
+            acked_event_state());
 
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, acked_event_state());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
+            acked_event_state());
 }
 
 // Tests that addition of a touch handler during a touch sequence will continue
@@ -552,8 +562,8 @@ TEST_F(PassthroughTouchEventQueueTest,
   EXPECT_EQ(2U, queued_event_count());
 
   // Clear the queue.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNoConsumerExists);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNoConsumerExists);
   EXPECT_EQ(2U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, queued_event_count());
 
@@ -600,7 +610,7 @@ TEST_F(PassthroughTouchEventQueueTest,
 
   // The ack should trigger forwarding of the touchmove, as if no touch
   // handler registration changes have occurred.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, queued_event_count());
@@ -609,19 +619,19 @@ TEST_F(PassthroughTouchEventQueueTest,
 // Tests that the touch-event queue is robust to redundant acks.
 TEST_F(PassthroughTouchEventQueueTest, SpuriousAcksIgnored) {
   // Trigger a spurious ack.
-  SendTouchEventAckWithID(INPUT_EVENT_ACK_STATE_CONSUMED, 0);
+  SendTouchEventAckWithID(blink::mojom::InputEventResultState::kConsumed, 0);
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Send and ack a touch press.
   PressTouchPoint(1, 1);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, queued_event_count());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, queued_event_count());
 
   // Trigger a spurious ack.
-  SendTouchEventAckWithID(INPUT_EVENT_ACK_STATE_CONSUMED, 3);
+  SendTouchEventAckWithID(blink::mojom::InputEventResultState::kConsumed, 3);
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
 
@@ -638,8 +648,8 @@ TEST_F(PassthroughTouchEventQueueTest, NoConsumer) {
   EXPECT_EQ(2U, queued_event_count());
 
   // Receive an ACK for the first touch-event and the first touch-move
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNoConsumerExists);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNoConsumerExists);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(2U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -647,14 +657,14 @@ TEST_F(PassthroughTouchEventQueueTest, NoConsumer) {
   // Send a release event. This should reach the renderer.
   ReleaseTouchPoint(0);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(WebInputEvent::kTouchMove, acked_event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, acked_event().GetType());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Send a press-event, followed by a move should be sent.
   PressTouchPoint(10, 10);
   MoveTouchPoint(0, 5, 5);
 
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNoConsumerExists);
   EXPECT_EQ(2U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
@@ -662,7 +672,7 @@ TEST_F(PassthroughTouchEventQueueTest, NoConsumer) {
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(3U, queued_event_count());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
 
@@ -675,21 +685,21 @@ TEST_F(PassthroughTouchEventQueueTest, AckTouchEventInReverse) {
   EXPECT_EQ(4U, GetAndResetSentEventCount());
   EXPECT_EQ(4U, queued_event_count());
 
-  SendTouchEventAckLast(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAckLast(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(4U, queued_event_count());
 
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kTouchStart, acked_event().GetType());
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart, acked_event().GetType());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(3U, queued_event_count());
 
-  SendTouchEventAckLast(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAckLast(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(3U, queued_event_count());
 
-  SendTouchEventAckLast(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kTouchEnd, acked_event().GetType());
+  SendTouchEventAckLast(blink::mojom::InputEventResultState::kConsumed);
+  EXPECT_EQ(WebInputEvent::Type::kTouchEnd, acked_event().GetType());
   EXPECT_EQ(3U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, queued_event_count());
 }
@@ -704,22 +714,23 @@ TEST_F(PassthroughTouchEventQueueTest, AckWithFollowupEvents) {
 
   // Create a touch event that will be queued synchronously by a touch ack.
   // Note, this will be triggered by all subsequent touch acks.
-  WebTouchEvent followup_event(WebInputEvent::kTouchMove,
+  WebTouchEvent followup_event(WebInputEvent::Type::kTouchMove,
                                WebInputEvent::kNoModifiers,
                                ui::EventTimeForNow());
   followup_event.touches_length = 1;
   followup_event.touches[0].id = 0;
-  followup_event.touches[0].state = WebTouchPoint::kStateMoved;
+  followup_event.touches[0].state = WebTouchPoint::State::kStateMoved;
   SetFollowupEvent(followup_event);
 
   // Receive an ACK for the press. This should cause the followup touch-move to
   // be sent to the renderer.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, acked_event_state());
-  EXPECT_EQ(WebInputEvent::kTouchStart, acked_event().GetType());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
+            acked_event_state());
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart, acked_event().GetType());
 
   // Queue another event.
   MoveTouchPoint(0, 2, 2);
@@ -727,7 +738,7 @@ TEST_F(PassthroughTouchEventQueueTest, AckWithFollowupEvents) {
 
   // Receive an ACK for the touch-move followup event. This should cause the
   // subsequent touch move event be sent to the renderer.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -736,21 +747,21 @@ TEST_F(PassthroughTouchEventQueueTest, AckWithFollowupEvents) {
 // Tests that touch-events can be synchronously ack'ed.
 TEST_F(PassthroughTouchEventQueueTest, SynchronousAcks) {
   // TouchStart
-  SetSyncAckResult(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SetSyncAckResult(blink::mojom::InputEventResultState::kConsumed);
   PressTouchPoint(1, 1);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // TouchMove
-  SetSyncAckResult(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SetSyncAckResult(blink::mojom::InputEventResultState::kConsumed);
   MoveTouchPoint(0, 2, 2);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // TouchEnd
-  SetSyncAckResult(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SetSyncAckResult(blink::mojom::InputEventResultState::kConsumed);
   ReleaseTouchPoint(0);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -758,12 +769,12 @@ TEST_F(PassthroughTouchEventQueueTest, SynchronousAcks) {
 
   // TouchCancel (first inserting a TouchStart so the TouchCancel will be sent)
   PressTouchPoint(1, 1);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
-  SetSyncAckResult(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SetSyncAckResult(blink::mojom::InputEventResultState::kConsumed);
   CancelTouchPoint(0);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -785,24 +796,24 @@ TEST_F(PassthroughTouchEventQueueTest, SynchronousAcksInOrder) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Ack the TouchMove
-  SendTouchEventAckLast(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAckLast(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(2U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Create a touch event that will be queued synchronously by a touch ack.
-  WebTouchEvent followup_event(WebInputEvent::kTouchMove,
+  WebTouchEvent followup_event(WebInputEvent::Type::kTouchMove,
                                WebInputEvent::kNoModifiers,
                                ui::EventTimeForNow());
   followup_event.touches_length = 1;
   followup_event.touches[0].id = 0;
   followup_event.unique_touch_event_id = 100;
-  followup_event.touches[0].state = WebTouchPoint::kStateMoved;
+  followup_event.touches[0].state = WebTouchPoint::State::kStateMoved;
   SetFollowupEvent(followup_event);
-  SetSyncAckResult(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SetSyncAckResult(blink::mojom::InputEventResultState::kConsumed);
 
   // Ack the touch start, should release the |follow_up| event (and its ack).
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
 
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -814,30 +825,31 @@ TEST_F(PassthroughTouchEventQueueTest, SynchronousAcksInOrder) {
 // TouchEventQueue::QueueEvent() are properly handled.
 TEST_F(PassthroughTouchEventQueueTest, ImmediateAckWithFollowupEvents) {
   // Create a touch event that will be queued synchronously by a touch ack.
-  WebTouchEvent followup_event(WebInputEvent::kTouchStart,
+  WebTouchEvent followup_event(WebInputEvent::Type::kTouchStart,
                                WebInputEvent::kNoModifiers,
                                ui::EventTimeForNow());
   followup_event.touches_length = 1;
   followup_event.touches[0].id = 1;
-  followup_event.touches[0].state = WebTouchPoint::kStatePressed;
+  followup_event.touches[0].state = WebTouchPoint::State::kStatePressed;
   SetFollowupEvent(followup_event);
 
   // Now, enqueue a stationary touch that will not be forwarded.  This should be
   // immediately ack'ed with "NO_CONSUMER_EXISTS".  The followup event should
   // then be enqueued and immediately sent to the renderer.
-  WebTouchEvent stationary_event(WebInputEvent::kTouchMove,
+  WebTouchEvent stationary_event(WebInputEvent::Type::kTouchMove,
                                  WebInputEvent::kNoModifiers,
                                  ui::EventTimeForNow());
   stationary_event.touches_length = 1;
   stationary_event.touches[0].id = 1;
-  stationary_event.touches[0].state = WebTouchPoint::kStateStationary;
+  stationary_event.touches[0].state = WebTouchPoint::State::kStateStationary;
   SendTouchEvent(stationary_event);
 
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
-  EXPECT_EQ(WebInputEvent::kTouchMove, acked_event().GetType());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kNoConsumerExists,
+            acked_event_state());
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, acked_event().GetType());
 }
 
 // Tests that basic TouchEvent forwarding suppression has been disabled.
@@ -864,17 +876,17 @@ TEST_F(PassthroughTouchEventQueueTest, NoTouchBasic) {
 
   PressTouchPoint(80, 10);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(2U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, 80, 20);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   ReleaseTouchPoint(0);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
 
@@ -893,7 +905,7 @@ TEST_F(PassthroughTouchEventQueueTest, PendingStart) {
   EXPECT_TRUE(IsPendingAckTouchStart());
 
   // Ack the touchstart (#1).
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_FALSE(IsPendingAckTouchStart());
 
@@ -903,7 +915,7 @@ TEST_F(PassthroughTouchEventQueueTest, PendingStart) {
   EXPECT_TRUE(IsPendingAckTouchStart());
 
   // Ack the touchmove (#2).
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_TRUE(IsPendingAckTouchStart());
 
@@ -913,12 +925,12 @@ TEST_F(PassthroughTouchEventQueueTest, PendingStart) {
   EXPECT_TRUE(IsPendingAckTouchStart());
 
   // Ack the touchstart for the second point (#3).
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_TRUE(IsPendingAckTouchStart());
 
   // Ack the touchstart for the third point (#4).
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_FALSE(IsPendingAckTouchStart());
 }
@@ -930,28 +942,28 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutTypes) {
   // Sending a TouchStart will start the timeout.
   PressTouchPoint(0, 1);
   EXPECT_TRUE(IsTimeoutRunning());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_FALSE(IsTimeoutRunning());
 
   // A TouchMove should start the timeout.
   MoveTouchPoint(0, 5, 5);
   EXPECT_TRUE(IsTimeoutRunning());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_FALSE(IsTimeoutRunning());
 
   // A TouchEnd should not start the timeout.
   ReleaseTouchPoint(0);
   EXPECT_FALSE(IsTimeoutRunning());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_FALSE(IsTimeoutRunning());
 
   // A TouchCancel should not start the timeout.
   PressTouchPoint(0, 1);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   ASSERT_FALSE(IsTimeoutRunning());
   CancelTouchPoint(0);
   EXPECT_FALSE(IsTimeoutRunning());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_FALSE(IsTimeoutRunning());
 }
 
@@ -980,10 +992,10 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutBasic) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Ack'ing the original event should trigger a cancel event.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_FALSE(IsTimeoutRunning());
-  EXPECT_EQ(WebInputEvent::kTouchCancel, sent_event().GetType());
-  EXPECT_NE(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::Type::kTouchCancel, sent_event().GetType());
+  EXPECT_NE(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
@@ -998,14 +1010,14 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutBasic) {
 
   // The synthetic TouchCancel ack should not reach the client, but should
   // resume touch forwarding.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Subsequent events should be handled normally.
   PressTouchPoint(0, 1);
-  EXPECT_EQ(WebInputEvent::kTouchStart, sent_event().GetType());
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart, sent_event().GetType());
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
@@ -1022,23 +1034,23 @@ TEST_F(PassthroughTouchEventQueueTest,
 
   // Mark the event as consumed. This should prevent the timeout from
   // being activated on subsequent TouchEvents in this gesture.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_FALSE(IsTimeoutRunning());
 
   // A TouchMove should not start the timeout.
   MoveTouchPoint(0, 5, 5);
   EXPECT_FALSE(IsTimeoutRunning());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
 
   // A secondary TouchStart should not start the timeout.
   PressTouchPoint(1, 0);
   EXPECT_FALSE(IsTimeoutRunning());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
 
   // A TouchEnd should not start the timeout.
   ReleaseTouchPoint(1);
   EXPECT_FALSE(IsTimeoutRunning());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
 
   // A TouchCancel should not start the timeout.
   CancelTouchPoint(0);
@@ -1056,7 +1068,7 @@ TEST_F(PassthroughTouchEventQueueTest,
   ASSERT_TRUE(IsTimeoutRunning());
 
   // Send the ack immediately. The timeout should not have fired.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_FALSE(IsTimeoutRunning());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -1078,7 +1090,7 @@ TEST_F(PassthroughTouchEventQueueTest, NoTouchTimeoutIfAckIsSynchronous) {
   SetUpForTimeoutTesting();
 
   // Queue a TouchStart.
-  SetSyncAckResult(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SetSyncAckResult(blink::mojom::InputEventResultState::kConsumed);
   ASSERT_FALSE(IsTimeoutRunning());
   PressTouchPoint(0, 1);
   EXPECT_FALSE(IsTimeoutRunning());
@@ -1123,9 +1135,9 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutConfiguredForMobile) {
 
   PressTouchPoint(0, 1);
   ASSERT_TRUE(IsTimeoutRunning());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   ReleaseTouchPoint(0);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(2U, GetAndResetAckedEventCount());
   ASSERT_FALSE(IsTimeoutRunning());
 
@@ -1149,7 +1161,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutWithFollowupGesture) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // The cancelled sequence may turn into a scroll gesture.
-  WebGestureEvent followup_scroll(WebInputEvent::kGestureScrollBegin,
+  WebGestureEvent followup_scroll(WebInputEvent::Type::kGestureScrollBegin,
                                   WebInputEvent::kNoModifiers,
                                   ui::EventTimeForNow());
   SetFollowupEvent(followup_scroll);
@@ -1164,14 +1176,14 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutWithFollowupGesture) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Ack the original event, triggering a TouchCancel.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_FALSE(IsTimeoutRunning());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Ack the cancel event. Normally, this would resume touch forwarding,
   // but we're still within a scroll gesture so it remains disabled.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_FALSE(IsTimeoutRunning());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
@@ -1186,7 +1198,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutWithFollowupGesture) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Now end the scroll sequence.
-  SendGestureEvent(blink::WebInputEvent::kGestureScrollEnd);
+  SendGestureEvent(blink::WebInputEvent::Type::kGestureScrollEnd);
   PressTouchPoint(0, 1);
   EXPECT_TRUE(IsTimeoutRunning());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -1206,7 +1218,7 @@ TEST_F(PassthroughTouchEventQueueTest,
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // The cancelled sequence may turn into a scroll gesture.
-  WebGestureEvent followup_scroll(WebInputEvent::kGestureScrollBegin,
+  WebGestureEvent followup_scroll(WebInputEvent::Type::kGestureScrollBegin,
                                   WebInputEvent::kNoModifiers,
                                   ui::EventTimeForNow());
   SetFollowupEvent(followup_scroll);
@@ -1230,7 +1242,7 @@ TEST_F(PassthroughTouchEventQueueTest,
 
   // Now end the scroll sequence.  Events will not be forwarded until the two
   // outstanding touch acks are received.
-  SendGestureEvent(blink::WebInputEvent::kGestureScrollEnd);
+  SendGestureEvent(blink::WebInputEvent::Type::kGestureScrollEnd);
   MoveTouchPoint(0, 2, 2);
   ReleaseTouchPoint(0);
   EXPECT_FALSE(IsTimeoutRunning());
@@ -1238,12 +1250,12 @@ TEST_F(PassthroughTouchEventQueueTest,
   EXPECT_EQ(2U, GetAndResetAckedEventCount());
 
   // Ack the original event, triggering a cancel.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Ack the cancel event, resuming touch forwarding.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
@@ -1280,7 +1292,7 @@ TEST_F(PassthroughTouchEventQueueTest, NoCancelOnTouchTimeoutWithoutConsumer) {
 
   // Ack'ing the original event should not trigger a cancel event, as the
   // TouchStart had no consumer.  However, it should re-enable touch forwarding.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNoConsumerExists);
   EXPECT_FALSE(IsTimeoutRunning());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -1298,42 +1310,42 @@ TEST_F(PassthroughTouchEventQueueTest, TouchMovedBeyondSlopRegionCheck) {
 
   // Queue a TouchStart.
   PressTouchPoint(0, 0);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
 
   // TouchMove's movedBeyondSlopRegion within the slop region is set to false.
   MoveTouchPoint(0, 0, kHalfSlopLengthDips);
   EXPECT_EQ(1U, queued_event_count());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_FALSE(acked_event().moved_beyond_slop_region);
 
   MoveTouchPoint(0, kHalfSlopLengthDips, 0);
   EXPECT_EQ(1U, queued_event_count());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_FALSE(acked_event().moved_beyond_slop_region);
 
   MoveTouchPoint(0, -kHalfSlopLengthDips, 0);
   EXPECT_EQ(1U, queued_event_count());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_FALSE(acked_event().moved_beyond_slop_region);
 
   MoveTouchPoint(0, -kSlopLengthDips, 0);
   EXPECT_EQ(1U, queued_event_count());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_FALSE(acked_event().moved_beyond_slop_region);
 
   MoveTouchPoint(0, 0, kSlopLengthDips);
   EXPECT_EQ(1U, queued_event_count());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_FALSE(acked_event().moved_beyond_slop_region);
@@ -1347,7 +1359,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchMovedBeyondSlopRegionCheck) {
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_TRUE(acked_event().moved_beyond_slop_region);
 }
@@ -1358,7 +1370,7 @@ TEST_F(PassthroughTouchEventQueueTest,
        MovedBeyondSlopRegionAlwaysTrueIfDimensionZero) {
   // Queue a TouchStart.
   PressTouchPoint(0, 0);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
 
@@ -1367,7 +1379,7 @@ TEST_F(PassthroughTouchEventQueueTest,
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_TRUE(acked_event().moved_beyond_slop_region);
 }
@@ -1378,7 +1390,7 @@ TEST_F(PassthroughTouchEventQueueTest,
        SecondaryTouchForwardedAfterPrimaryHadNoConsumer) {
   // Queue a TouchStart.
   PressTouchPoint(0, 0);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNoConsumerExists);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
 
@@ -1390,7 +1402,7 @@ TEST_F(PassthroughTouchEventQueueTest,
 
   // Simulate a secondary pointer press.
   PressTouchPoint(20, 0);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
@@ -1398,7 +1410,7 @@ TEST_F(PassthroughTouchEventQueueTest,
   MoveTouchPoint(1, 25, 0);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
 
@@ -1408,22 +1420,23 @@ TEST_F(PassthroughTouchEventQueueTest,
        NoForwardingAfterScrollWithNoTouchConsumers) {
   // Queue a TouchStart.
   PressTouchPoint(0, 0);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNoConsumerExists);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
 
-  WebGestureEvent followup_scroll(WebInputEvent::kGestureScrollBegin,
+  WebGestureEvent followup_scroll(WebInputEvent::Type::kGestureScrollBegin,
                                   WebInputEvent::kNoModifiers,
                                   WebInputEvent::GetStaticTimeStampForTests());
   SetFollowupEvent(followup_scroll);
   MoveTouchPoint(0, 20, 5);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kNoConsumerExists,
+            acked_event_state());
 
   // The secondary pointer press should be forwarded.
   PressTouchPoint(20, 0);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
@@ -1431,41 +1444,41 @@ TEST_F(PassthroughTouchEventQueueTest,
   MoveTouchPoint(1, 25, 0);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
 
 TEST_F(PassthroughTouchEventQueueTest, TouchAbsorptionWithConsumedFirstMove) {
   // Queue a TouchStart.
   PressTouchPoint(0, 1);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, 20, 5);
-  SendGestureEvent(blink::WebInputEvent::kGestureScrollBegin);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendGestureEvent(blink::WebInputEvent::Type::kGestureScrollBegin);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(2U, GetAndResetSentEventCount());
 
   // Even if the first touchmove event was consumed, subsequent unconsumed
   // touchmove events should trigger scrolling.
   MoveTouchPoint(0, 60, 5);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   MoveTouchPoint(0, 20, 5);
-  WebGestureEvent followup_scroll(WebInputEvent::kGestureScrollUpdate,
+  WebGestureEvent followup_scroll(WebInputEvent::Type::kGestureScrollUpdate,
                                   WebInputEvent::kNoModifiers,
                                   WebInputEvent::GetStaticTimeStampForTests());
   SetFollowupEvent(followup_scroll);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  SendGestureEventAck(WebInputEvent::kGestureScrollUpdate,
-                      INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
+  SendGestureEventAck(WebInputEvent::Type::kGestureScrollUpdate,
+                      blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, queued_event_count());
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // Touch moves are sent right away.
@@ -1478,58 +1491,58 @@ TEST_F(PassthroughTouchEventQueueTest, TouchStartCancelableDuringScroll) {
   // Queue a touchstart and touchmove that go unconsumed, transitioning to an
   // active scroll sequence.
   PressTouchPoint(0, 1);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   MoveTouchPoint(0, 20, 5);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
-  SendGestureEvent(blink::WebInputEvent::kGestureScrollBegin);
-  SendGestureEvent(blink::WebInputEvent::kGestureScrollUpdate);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
+  SendGestureEvent(blink::WebInputEvent::Type::kGestureScrollBegin);
+  SendGestureEvent(blink::WebInputEvent::Type::kGestureScrollUpdate);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // Even though scrolling has begun, touchstart events should be cancelable,
   // allowing, for example, customized pinch processing.
   PressTouchPoint(10, 11);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // As the touch start was consumed, touchmoves should no longer be throttled.
   MoveTouchPoint(1, 11, 11);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // With throttling disabled, touchend and touchmove events should also be
   // cancelable.
   MoveTouchPoint(1, 12, 12);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ReleaseTouchPoint(1);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // If subsequent touchmoves aren't consumed, the generated scroll events
   // will restore async touch dispatch.
   MoveTouchPoint(0, 25, 5);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  SendGestureEvent(blink::WebInputEvent::kGestureScrollUpdate);
-  EXPECT_EQ(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
+  SendGestureEvent(blink::WebInputEvent::Type::kGestureScrollUpdate);
+  EXPECT_EQ(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   AdvanceTouchTime(kMinSecondsBetweenThrottledTouchmoves + 0.1);
   MoveTouchPoint(0, 30, 5);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_NE(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNotConsumed);
+  EXPECT_NE(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
 
   // The touchend will be uncancelable during an active scroll sequence.
   ReleaseTouchPoint(0);
-  EXPECT_NE(WebInputEvent::kBlocking, sent_event().dispatch_type);
+  EXPECT_NE(WebInputEvent::DispatchType::kBlocking, sent_event().dispatch_type);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
 }
 
@@ -1538,7 +1551,7 @@ TEST_F(PassthroughTouchEventQueueTest, UnseenTouchPointerIdsNotForwarded) {
   event.PressPoint(0, 0);
   SendTouchEvent(event);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Give the touchmove a previously unseen pointer id; it should not be sent.
@@ -1553,7 +1566,7 @@ TEST_F(PassthroughTouchEventQueueTest, UnseenTouchPointerIdsNotForwarded) {
   event.touches[0].id = press_id;
   SendTouchEvent(event);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Do the same for release.
@@ -1580,18 +1593,18 @@ TEST_F(PassthroughTouchEventQueueTest, PointerStatesInTouchMove) {
   PressTouchPoint(4, 4);
 
   // Receive ACK for the first three touch-events.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, queued_event_count());
 
   // Test current touches state before sending TouchMoves.
   const WebTouchEvent& event1 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchStart, event1.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event1.touches[0].state);
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event1.touches[1].state);
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event1.touches[2].state);
-  EXPECT_EQ(WebTouchPoint::kStatePressed, event1.touches[3].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart, event1.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event1.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event1.touches[1].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event1.touches[2].state);
+  EXPECT_EQ(WebTouchPoint::State::kStatePressed, event1.touches[3].state);
 
   // Move x-position for 1st touch, y-position for 2nd touch
   // and do not move other touches.
@@ -1600,30 +1613,30 @@ TEST_F(PassthroughTouchEventQueueTest, PointerStatesInTouchMove) {
   EXPECT_EQ(3U, queued_event_count());
 
   // Receive an ACK for the last TouchPress event.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
 
   // 1st TouchMove is sent. Test for touches state.
   const WebTouchEvent& event2 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchMove, event2.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event2.touches[0].state);
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event2.touches[1].state);
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event2.touches[2].state);
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event2.touches[3].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, event2.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event2.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event2.touches[1].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event2.touches[2].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event2.touches[3].state);
 
   // Move only 4th touch but not others.
   MoveTouchPoints(0, 1.1f, 1.f, 1, 2.f, 20.001f);
   MoveTouchPoints(2, 3.f, 3.f, 3, 4.1f, 4.1f);
 
   // Receive an ACK for previous (1st) TouchMove.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
 
   // 2nd TouchMove is sent. Test for touches state.
   const WebTouchEvent& event3 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchMove, event3.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event3.touches[0].state);
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event3.touches[1].state);
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event3.touches[2].state);
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event3.touches[3].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, event3.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event3.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event3.touches[1].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event3.touches[2].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event3.touches[3].state);
 }
 
 // Tests that touch point state is correct in TouchMove events
@@ -1631,7 +1644,7 @@ TEST_F(PassthroughTouchEventQueueTest, PointerStatesInTouchMove) {
 TEST_F(PassthroughTouchEventQueueTest,
        PointerStatesWhenOtherThanPositionChanged) {
   PressTouchPoint(1, 1);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
 
   // Default initial radiusX/Y is (20.f, 20.f).
   // Default initial rotationAngle is 0.f.
@@ -1639,30 +1652,30 @@ TEST_F(PassthroughTouchEventQueueTest,
 
   // Change touch point radius only.
   ChangeTouchPointRadius(0, 1.5f, 1.f);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
 
   // TouchMove is sent. Test for pointer state.
   const WebTouchEvent& event1 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchMove, event1.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event1.touches[0].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, event1.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event1.touches[0].state);
 
   // Change touch point force.
   ChangeTouchPointForce(0, 0.9f);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
 
   // TouchMove is sent. Test for pointer state.
   const WebTouchEvent& event2 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchMove, event2.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event2.touches[0].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, event2.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event2.touches[0].state);
 
   // Change touch point rotationAngle.
   ChangeTouchPointRotationAngle(0, 1.1f);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
 
   // TouchMove is sent. Test for pointer state.
   const WebTouchEvent& event3 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchMove, event3.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event3.touches[0].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, event3.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event3.touches[0].state);
 
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(4U, GetAndResetSentEventCount());
@@ -1673,8 +1686,8 @@ TEST_F(PassthroughTouchEventQueueTest,
 TEST_F(PassthroughTouchEventQueueTest, FilterTouchMovesWhenNoPointerChanged) {
   PressTouchPoint(1, 1);
   PressTouchPoint(2, 2);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(2U, GetAndResetSentEventCount());
   EXPECT_EQ(2U, GetAndResetAckedEventCount());
@@ -1685,9 +1698,9 @@ TEST_F(PassthroughTouchEventQueueTest, FilterTouchMovesWhenNoPointerChanged) {
 
   // TouchMove should be allowed and test for touches state.
   const WebTouchEvent& event1 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchMove, event1.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event1.touches[0].state);
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event1.touches[1].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, event1.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event1.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event1.touches[1].state);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
@@ -1702,23 +1715,24 @@ TEST_F(PassthroughTouchEventQueueTest, FilterTouchMovesWhenNoPointerChanged) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Receive an ACK for 1st TouchMove.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
 
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(4U, GetAndResetAckedEventCount());
-  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
+  EXPECT_EQ(blink::mojom::InputEventResultState::kNoConsumerExists,
+            acked_event_state());
 
   // Move 2nd touch point.
   MoveTouchPoint(1, 3, 3);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(0U, queued_event_count());
 
   // TouchMove should be allowed and test for touches state.
   const WebTouchEvent& event2 = sent_event();
-  EXPECT_EQ(WebInputEvent::kTouchMove, event2.GetType());
-  EXPECT_EQ(WebTouchPoint::kStateStationary, event2.touches[0].state);
-  EXPECT_EQ(WebTouchPoint::kStateMoved, event2.touches[1].state);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, event2.GetType());
+  EXPECT_EQ(WebTouchPoint::State::kStateStationary, event2.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::State::kStateMoved, event2.touches[1].state);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
@@ -1749,15 +1763,16 @@ TEST_F(PassthroughTouchEventQueueTest,
   EXPECT_EQ(2U, queued_event_count());
 
   // Send ACKs.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_IGNORED);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kIgnored);
 
   // Touch-scroll-start Ack is not reported to client.
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, queued_event_count());
 
-  EXPECT_EQ(WebInputEvent::kTouchStart, all_sent_events()[0].GetType());
-  EXPECT_EQ(WebInputEvent::kTouchScrollStarted, all_sent_events()[1].GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart, all_sent_events()[0].GetType());
+  EXPECT_EQ(WebInputEvent::Type::kTouchScrollStarted,
+            all_sent_events()[1].GetType());
   EXPECT_EQ(2U, GetAndResetSentEventCount());
 }
 
@@ -1765,29 +1780,29 @@ TEST_F(PassthroughTouchEventQueueTest,
 // events.
 TEST_F(PassthroughTouchEventQueueTest, TouchStartOrFirstTouchMove) {
   PressTouchPoint(1, 1);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kTouchStart, sent_event().GetType());
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart, sent_event().GetType());
   EXPECT_TRUE(sent_event().touch_start_or_first_touch_move);
 
   MoveTouchPoint(0, 5, 5);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kTouchMove, sent_event().GetType());
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, sent_event().GetType());
   EXPECT_TRUE(sent_event().touch_start_or_first_touch_move);
 
   MoveTouchPoint(0, 15, 15);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kTouchMove, sent_event().GetType());
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove, sent_event().GetType());
   EXPECT_FALSE(sent_event().touch_start_or_first_touch_move);
 
   ReleaseTouchPoint(0);
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(WebInputEvent::kTouchEnd, sent_event().GetType());
+  SendTouchEventAck(blink::mojom::InputEventResultState::kConsumed);
+  EXPECT_EQ(WebInputEvent::Type::kTouchEnd, sent_event().GetType());
   EXPECT_FALSE(sent_event().touch_start_or_first_touch_move);
 }
 
 TEST_F(PassthroughTouchEventQueueTest, TouchScrollStartedUnfiltered) {
   SyntheticWebTouchEvent event;
-  event.SetType(WebInputEvent::kTouchScrollStarted);
+  event.SetType(WebInputEvent::Type::kTouchScrollStarted);
   EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kUnfiltered,
             FilterBeforeForwarding(event));
 }
@@ -1915,7 +1930,7 @@ TEST_F(PassthroughTouchEventQueueTest,
   PressTouchPoint(1, 1);
 
   // Send an ack indicating that there's no handler for the current sequence.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  SendTouchEventAck(blink::mojom::InputEventResultState::kNoConsumerExists);
 
   // Any subsequent touches in the sequence should be unfiltered.
   SyntheticWebTouchEvent event;
@@ -1930,7 +1945,7 @@ TEST_F(PassthroughTouchEventQueueTest,
 TEST_F(PassthroughTouchEventQueueTest,
        TouchStartUnfilteredWithForwardDiscrete) {
   SetUpForSkipFilterTesting(
-      features::kSkipTouchEventFilterTypeParamValueDiscrete);
+      blink::features::kSkipTouchEventFilterTypeParamValueDiscrete);
 
   OnHasTouchEventHandlers(false);
   SyntheticWebTouchEvent event;
@@ -1942,7 +1957,7 @@ TEST_F(PassthroughTouchEventQueueTest,
 
 TEST_F(PassthroughTouchEventQueueTest, TouchMoveFilteredWithForwardDiscrete) {
   SetUpForSkipFilterTesting(
-      features::kSkipTouchEventFilterTypeParamValueDiscrete);
+      blink::features::kSkipTouchEventFilterTypeParamValueDiscrete);
 
   OnHasTouchEventHandlers(false);
   // Start the touch sequence.
@@ -1958,7 +1973,8 @@ TEST_F(PassthroughTouchEventQueueTest, TouchMoveFilteredWithForwardDiscrete) {
 }
 
 TEST_F(PassthroughTouchEventQueueTest, TouchStartUnfilteredWithForwardAll) {
-  SetUpForSkipFilterTesting(features::kSkipTouchEventFilterTypeParamValueAll);
+  SetUpForSkipFilterTesting(
+      blink::features::kSkipTouchEventFilterTypeParamValueAll);
 
   OnHasTouchEventHandlers(false);
   SyntheticWebTouchEvent event;
@@ -1969,7 +1985,8 @@ TEST_F(PassthroughTouchEventQueueTest, TouchStartUnfilteredWithForwardAll) {
 }
 
 TEST_F(PassthroughTouchEventQueueTest, TouchMoveUnfilteredWithForwardAll) {
-  SetUpForSkipFilterTesting(features::kSkipTouchEventFilterTypeParamValueAll);
+  SetUpForSkipFilterTesting(
+      blink::features::kSkipTouchEventFilterTypeParamValueAll);
 
   OnHasTouchEventHandlers(false);
   // Start the touch sequence.

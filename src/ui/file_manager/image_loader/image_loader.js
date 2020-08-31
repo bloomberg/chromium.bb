@@ -38,8 +38,8 @@ function ImageLoader() {
                 {volumeId: event.volumeMetadata.volumeId}, function() {});
           }
         });
-    var initPromises = volumeMetadataList.map(function(volumeMetadata) {
-      var requestPromise = new Promise(function(callback) {
+    const initPromises = volumeMetadataList.map(function(volumeMetadata) {
+      const requestPromise = new Promise(function(callback) {
         chrome.fileSystem.requestFileSystem(
             {volumeId: volumeMetadata.volumeId},
             /** @type {function(FileSystem=)} */(callback));
@@ -65,10 +65,10 @@ function ImageLoader() {
  * @const
  * @type {Array<string>}
  */
-ImageLoader.ALLOWED_CLIENTS = [
-  'hhaomjibdihmijegdhdafkllkbggdgoj',  // File Manager's extension id.
-  'nlkncpkkdoccmpiclbokaimcnedabhhm',  // Gallery's extension id.
-  'jcgeabjmjgoblfofpppfkcoakmfobdko',  // Video Player's extension id.
+ImageLoader.ALLOWED_CLIENT_ORIGINS = [
+  'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj',  // File Manager
+  'chrome-extension://nlkncpkkdoccmpiclbokaimcnedabhhm',  // Gallery
+  'chrome-extension://jcgeabjmjgoblfofpppfkcoakmfobdko',  // Video Player
 ];
 
 /**
@@ -80,18 +80,18 @@ ImageLoader.ALLOWED_CLIENTS = [
  */
 ImageLoader.prototype.onIncomingRequest_ = function(
     request_data, sender, sendResponse) {
-  if (!sender.id || !request_data) {
+  if (!sender.origin || !request_data) {
     return;
   }
-  if (ImageLoader.ALLOWED_CLIENTS.indexOf(sender.id) === -1) {
+  if (ImageLoader.ALLOWED_CLIENT_ORIGINS.indexOf(sender.origin) === -1) {
     return;
   }
 
-  var request = /** @type {!LoadImageRequest} */ (request_data);
+  const request = /** @type {!LoadImageRequest} */ (request_data);
 
   // Sending a response may fail if the receiver already went offline.
   // This is not an error, but a normal and quite common situation.
-  let failSafeSendResponse = function(response) {
+  const failSafeSendResponse = function(response) {
     try {
       sendResponse(response);
     } catch (e) {
@@ -108,14 +108,14 @@ ImageLoader.prototype.onIncomingRequest_ = function(
   } else {
     request.orientation = new ImageOrientation(1, 0, 0, 1);
   }
-  return this.onMessage_(sender.id, request, failSafeSendResponse);
+  return this.onMessage_(sender.origin, request, failSafeSendResponse);
 };
 
 /**
  * Handles a request. Depending on type of the request, starts or stops
  * an image task.
  *
- * @param {string} senderId Sender's extension id.
+ * @param {string} senderOrigin Sender's extension origin.
  * @param {!LoadImageRequest} request Pre-processed request.
  * @param {function(!LoadImageResponse)} callback Callback to be called to
  *     return response.
@@ -123,15 +123,15 @@ ImageLoader.prototype.onIncomingRequest_ = function(
  *     callback is called.
  * @private
  */
-ImageLoader.prototype.onMessage_ = function(senderId, request, callback) {
-  var requestId = senderId + ':' + request.taskId;
+ImageLoader.prototype.onMessage_ = function(senderOrigin, request, callback) {
+  const requestId = senderOrigin + ':' + request.taskId;
   if (request.cancel) {
     // Cancel a task.
     this.scheduler_.remove(requestId);
     return false;  // No callback calls.
   } else {
     // Create a request task and add it to the scheduler (queue).
-    var requestTask = new ImageRequest(
+    const requestTask = new ImageRequest(
         requestId, this.cache_, this.piexLoader_, request, callback);
     this.scheduler_.add(requestTask);
     return true;  // Request will call the callback.

@@ -38,10 +38,12 @@ class RemoteDeviceV2LoaderImpl : public RemoteDeviceV2Loader {
  public:
   class Factory {
    public:
-    static Factory* Get();
+    static std::unique_ptr<RemoteDeviceV2Loader> Create();
     static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
     virtual ~Factory();
-    virtual std::unique_ptr<RemoteDeviceV2Loader> BuildInstance();
+    virtual std::unique_ptr<RemoteDeviceV2Loader> CreateInstance() = 0;
 
    private:
     static Factory* test_factory_;
@@ -53,21 +55,21 @@ class RemoteDeviceV2LoaderImpl : public RemoteDeviceV2Loader {
   RemoteDeviceV2LoaderImpl();
 
   // Disallow copy and assign.
-  RemoteDeviceV2LoaderImpl(const RemoteDeviceV2Loader&) = delete;
+  explicit RemoteDeviceV2LoaderImpl(const RemoteDeviceV2Loader&) = delete;
   RemoteDeviceV2LoaderImpl& operator=(const RemoteDeviceV2LoaderImpl&) = delete;
 
   // RemoteDeviceV2Loader:
   void Load(
       const CryptAuthDeviceRegistry::InstanceIdToDeviceMap& id_to_device_map,
-      const std::string& user_id,
+      const std::string& user_email,
       const std::string& user_private_key,
       LoadCallback callback) override;
 
   void OnPskDerived(const CryptAuthDevice& device,
-                    const std::string& user_id,
+                    const std::string& user_email,
                     const std::string& psk);
   void AddRemoteDevice(const CryptAuthDevice& device,
-                       const std::string& user_id,
+                       const std::string& user_email,
                        const std::string& psk);
 
   LoadCallback callback_;

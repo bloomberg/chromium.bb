@@ -11,8 +11,9 @@
 namespace v8 {
 namespace internal {
 
-const bool Deoptimizer::kSupportsFixedDeoptExitSize = false;
-const int Deoptimizer::kDeoptExitSize = 0;
+const bool Deoptimizer::kSupportsFixedDeoptExitSizes = false;
+const int Deoptimizer::kNonLazyDeoptExitSize = 0;
+const int Deoptimizer::kLazyDeoptExitSize = 0;
 
 #define __ masm->
 
@@ -44,10 +45,10 @@ void Deoptimizer::GenerateDeoptimizationEntries(MacroAssembler* masm,
 
   // Push saved_regs (needed to populate FrameDescription::registers_).
   // Leave gaps for other registers.
-  __ subi(sp, sp, Operand(kNumberOfRegisters * kPointerSize));
+  __ subi(sp, sp, Operand(kNumberOfRegisters * kSystemPointerSize));
   for (int16_t i = kNumberOfRegisters - 1; i >= 0; i--) {
     if ((saved_regs & (1 << i)) != 0) {
-      __ StoreP(ToRegister(i), MemOperand(sp, kPointerSize * i));
+      __ StoreP(ToRegister(i), MemOperand(sp, kSystemPointerSize * i));
     }
   }
   {
@@ -58,7 +59,7 @@ void Deoptimizer::GenerateDeoptimizationEntries(MacroAssembler* masm,
     __ StoreP(fp, MemOperand(scratch));
   }
   const int kSavedRegistersAreaSize =
-      (kNumberOfRegisters * kPointerSize) + kDoubleRegsSize;
+      (kNumberOfRegisters * kSystemPointerSize) + kDoubleRegsSize;
 
   // Get the bailout id is passed as r29 by the caller.
   __ mr(r5, r29);
@@ -97,8 +98,9 @@ void Deoptimizer::GenerateDeoptimizationEntries(MacroAssembler* masm,
   // Copy core registers into FrameDescription::registers_[kNumRegisters].
   DCHECK_EQ(Register::kNumRegisters, kNumberOfRegisters);
   for (int i = 0; i < kNumberOfRegisters; i++) {
-    int offset = (i * kPointerSize) + FrameDescription::registers_offset();
-    __ LoadP(r5, MemOperand(sp, i * kPointerSize));
+    int offset =
+        (i * kSystemPointerSize) + FrameDescription::registers_offset();
+    __ LoadP(r5, MemOperand(sp, i * kSystemPointerSize));
     __ StoreP(r5, MemOperand(r4, offset));
   }
 
@@ -108,7 +110,8 @@ void Deoptimizer::GenerateDeoptimizationEntries(MacroAssembler* masm,
   for (int i = 0; i < config->num_allocatable_double_registers(); ++i) {
     int code = config->GetAllocatableDoubleCode(i);
     int dst_offset = code * kDoubleSize + double_regs_offset;
-    int src_offset = code * kDoubleSize + kNumberOfRegisters * kPointerSize;
+    int src_offset =
+        code * kDoubleSize + kNumberOfRegisters * kSystemPointerSize;
     __ lfd(d0, MemOperand(sp, src_offset));
     __ stfd(d0, MemOperand(r4, dst_offset));
   }
@@ -142,7 +145,7 @@ void Deoptimizer::GenerateDeoptimizationEntries(MacroAssembler* masm,
   __ bind(&pop_loop);
   __ pop(r7);
   __ StoreP(r7, MemOperand(r6, 0));
-  __ addi(r6, r6, Operand(kPointerSize));
+  __ addi(r6, r6, Operand(kSystemPointerSize));
   __ bind(&pop_loop_header);
   __ cmp(r5, sp);
   __ bne(&pop_loop);
@@ -166,7 +169,7 @@ void Deoptimizer::GenerateDeoptimizationEntries(MacroAssembler* masm,
   // r4 = one past the last FrameDescription**.
   __ lwz(r4, MemOperand(r3, Deoptimizer::output_count_offset()));
   __ LoadP(r7, MemOperand(r3, Deoptimizer::output_offset()));  // r7 is output_.
-  __ ShiftLeftImm(r4, r4, Operand(kPointerSizeLog2));
+  __ ShiftLeftImm(r4, r4, Operand(kSystemPointerSizeLog2));
   __ add(r4, r7, r4);
   __ b(&outer_loop_header);
 
@@ -186,7 +189,7 @@ void Deoptimizer::GenerateDeoptimizationEntries(MacroAssembler* masm,
   __ cmpi(r6, Operand::Zero());
   __ bne(&inner_push_loop);  // test for gt?
 
-  __ addi(r7, r7, Operand(kPointerSize));
+  __ addi(r7, r7, Operand(kSystemPointerSize));
   __ bind(&outer_loop_header);
   __ cmp(r7, r4);
   __ blt(&outer_push_loop);
@@ -212,7 +215,8 @@ void Deoptimizer::GenerateDeoptimizationEntries(MacroAssembler* masm,
     DCHECK(!(scratch.bit() & restored_regs));
     __ mr(scratch, r5);
     for (int i = kNumberOfRegisters - 1; i >= 0; i--) {
-      int offset = (i * kPointerSize) + FrameDescription::registers_offset();
+      int offset =
+          (i * kSystemPointerSize) + FrameDescription::registers_offset();
       if ((restored_regs & (1 << i)) != 0) {
         __ LoadP(ToRegister(i), MemOperand(scratch, offset));
       }
@@ -257,6 +261,8 @@ void FrameDescription::SetCallerConstantPool(unsigned offset, intptr_t value) {
   DCHECK(FLAG_enable_embedded_constant_pool);
   SetFrameSlot(offset, value);
 }
+
+void FrameDescription::SetPc(intptr_t pc) { pc_ = pc; }
 
 #undef __
 }  // namespace internal

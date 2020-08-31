@@ -35,16 +35,12 @@ if (is_ios) {
   bundle_data("scenario_resources_bundle_data") {
     testonly = true
     sources = scenario_resources
-    outputs = [
-      "{{bundle_resources_dir}}/{{source_file_part}}",
-    ]
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
   }
   bundle_data("scenario_unittest_resources_bundle_data") {
     testonly = true
     sources = scenario_unittest_resources
-    outputs = [
-      "{{bundle_resources_dir}}/{{source_file_part}}",
-    ]
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
   }
 }
 if (rtc_include_tests) {
@@ -80,7 +76,9 @@ if (rtc_include_tests) {
       "../:test_common",
       "../:test_support",
       "../:video_test_common",
+      "../../api:create_frame_generator",
       "../../api:fec_controller_api",
+      "../../api:frame_generator_api",
       "../../api:libjingle_peerconnection_api",
       "../../api:rtc_event_log_output_file",
       "../../api:rtp_parameters",
@@ -146,6 +144,7 @@ if (rtc_include_tests) {
       "//third_party/abseil-cpp/absl/flags:flag",
       "//third_party/abseil-cpp/absl/flags:parse",
       "//third_party/abseil-cpp/absl/memory",
+      "//third_party/abseil-cpp/absl/strings",
       "//third_party/abseil-cpp/absl/types:optional",
     ]
     if (is_android) {

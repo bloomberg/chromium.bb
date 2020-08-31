@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_window_info_data_wrapper.h"
 
+#include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
 #include "components/exo/wm_helper.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -43,6 +44,10 @@ bool AccessibilityWindowInfoDataWrapper::IsVisibleToUser() const {
   return true;
 }
 
+bool AccessibilityWindowInfoDataWrapper::IsVirtualNode() const {
+  return false;
+}
+
 bool AccessibilityWindowInfoDataWrapper::CanBeAccessibilityFocused() const {
   // Windows are too generic to be Accessibility focused in Chrome, although
   // they can be Accessibility focused in Android by virtue of having
@@ -77,14 +82,12 @@ void AccessibilityWindowInfoDataWrapper::PopulateAXState(
     ui::AXNodeData* out_data) const {
   // ARC++ window states are not reflected in ax::mojom::State, and for the
   // most part aren't needed.
-  // Focusable in Android simply means a node within the window is focusable.
-  // Since the window itself is not focusable in Android, it doesn't make sense
-  // to include Focusable as an AXState.
 }
 
 void AccessibilityWindowInfoDataWrapper::Serialize(
     ui::AXNodeData* out_data) const {
-  if (!tree_source_->GetRoot())
+  AccessibilityInfoDataWrapper* root = tree_source_->GetRoot();
+  if (!root)
     return;
 
   AccessibilityInfoDataWrapper::Serialize(out_data);
@@ -94,6 +97,16 @@ void AccessibilityWindowInfoDataWrapper::Serialize(
   if (GetProperty(mojom::AccessibilityWindowStringProperty::TITLE, &title)) {
     out_data->SetName(title);
     out_data->SetNameFrom(ax::mojom::NameFrom::kTitle);
+  }
+
+  if (root->GetId() == GetId()) {
+    // Make the root window of each ARC task modal
+    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
+
+    // Focusable in Android simply means a node within the window is focusable.
+    // The window itself is not focusable in Android, but ChromeVox sets the
+    // focus to the entire window, explicitly specify this.
+    out_data->AddState(ax::mojom::State::kFocusable);
   }
 
   // Not all properties are currently used in Chrome Accessibility.
@@ -128,62 +141,30 @@ void AccessibilityWindowInfoDataWrapper::GetChildren(
 
 bool AccessibilityWindowInfoDataWrapper::GetProperty(
     mojom::AccessibilityWindowBooleanProperty prop) const {
-  if (!window_ptr_->boolean_properties)
-    return false;
-
-  auto it = window_ptr_->boolean_properties->find(prop);
-  if (it == window_ptr_->boolean_properties->end())
-    return false;
-
-  return it->second;
+  return arc::GetBooleanProperty(window_ptr_, prop);
 }
 
 bool AccessibilityWindowInfoDataWrapper::GetProperty(
     mojom::AccessibilityWindowIntProperty prop,
     int32_t* out_value) const {
-  if (!window_ptr_->int_properties)
-    return false;
-
-  auto it = window_ptr_->int_properties->find(prop);
-  if (it == window_ptr_->int_properties->end())
-    return false;
-
-  *out_value = it->second;
-  return true;
+  return arc::GetProperty(window_ptr_->int_properties, prop, out_value);
 }
 
 bool AccessibilityWindowInfoDataWrapper::HasProperty(
     mojom::AccessibilityWindowStringProperty prop) const {
-  if (!window_ptr_->string_properties)
-    return false;
-
-  auto it = window_ptr_->string_properties->find(prop);
-  return it != window_ptr_->string_properties->end();
+  return arc::HasProperty(window_ptr_->string_properties, prop);
 }
 
 bool AccessibilityWindowInfoDataWrapper::GetProperty(
     mojom::AccessibilityWindowStringProperty prop,
     std::string* out_value) const {
-  if (!HasProperty(prop))
-    return false;
-
-  auto it = window_ptr_->string_properties->find(prop);
-  *out_value = it->second;
-  return true;
+  return arc::GetProperty(window_ptr_->string_properties, prop, out_value);
 }
 
 bool AccessibilityWindowInfoDataWrapper::GetProperty(
     mojom::AccessibilityWindowIntListProperty prop,
     std::vector<int32_t>* out_value) const {
-  if (!window_ptr_->int_list_properties)
-    return false;
-
-  auto it = window_ptr_->int_list_properties->find(prop);
-  if (it == window_ptr_->int_list_properties->end())
-    return false;
-
-  *out_value = it->second;
-  return true;
+  return arc::GetProperty(window_ptr_->int_list_properties, prop, out_value);
 }
 
 }  // namespace arc

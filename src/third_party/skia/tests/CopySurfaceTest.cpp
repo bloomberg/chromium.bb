@@ -105,18 +105,24 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(CopySurface, reporter, ctxInfo) {
                                 }
 
                                 GrColorType grColorType = SkColorTypeToGrColorType(ii.colorType());
-                                auto dstContext = context->priv().makeWrappedSurfaceContext(
-                                        std::move(dst),
-                                        grColorType,
-                                        ii.alphaType());
+                                GrSwizzle dstSwizzle = context->priv().caps()->getReadSwizzle(
+                                        dst->backendFormat(), grColorType);
+                                GrSurfaceProxyView dstView(std::move(dst), dOrigin, dstSwizzle);
+                                auto dstContext = GrSurfaceContext::Make(context,
+                                                                         std::move(dstView),
+                                                                         grColorType,
+                                                                         ii.alphaType(), nullptr);
 
                                 bool result = false;
                                 if (sOrigin == dOrigin) {
                                     result = dstContext->testCopy(src.get(), srcRect, dstPoint);
                                 } else if (dRenderable == GrRenderable::kYes) {
                                     SkASSERT(dstContext->asRenderTargetContext());
+                                    GrSwizzle srcSwizzle = context->priv().caps()->getReadSwizzle(
+                                        src->backendFormat(), grColorType);
+                                    GrSurfaceProxyView view(std::move(src), sOrigin, srcSwizzle);
                                     result = dstContext->asRenderTargetContext()->blitTexture(
-                                            src.get(), srcRect, dstPoint);
+                                            std::move(view), srcRect, dstPoint);
                                 }
 
                                 bool expectedResult = true;

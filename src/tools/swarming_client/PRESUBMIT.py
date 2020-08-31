@@ -37,7 +37,6 @@ def CommonChecks(input_api, output_api):
   blacklist = [
     r'.*isolateserver_smoke_test\.py$',
     r'.*isolateserver_load_test\.py$',
-    r'.*swarming_smoke_test\.py$',
   ]
   unit_tests = input_api.canned_checks.GetUnitTestsRecursively(
       input_api, output_api,

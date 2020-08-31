@@ -15,7 +15,7 @@
         android:layout_marginStart="@dimen/autofill_assistant_bottombar_horizontal_spacing"
         android:layout_marginEnd="@dimen/autofill_assistant_bottombar_horizontal_spacing"
         android:layout_marginBottom="4dp"
-        android:textAppearance="@style/TextAppearance.BlackButtonText"/>
+        android:textAppearance="@style/TextAppearance.TextAccentMediumThick.Secondary"/>
 
     <!-- Default Checkbox is 32dp big but only has a 24dp big box. This leaves a 4dp
          padding that needs to be subtracted from the end. -->
@@ -38,7 +38,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="@dimen/autofill_assistant_bottombar_horizontal_spacing"
-        app:can_add_items="false"
         app:row_spacing="0dp"
         app:column_spacing="8dp"
         android:visibility="gone">

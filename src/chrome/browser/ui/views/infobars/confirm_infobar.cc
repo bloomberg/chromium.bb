@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -54,7 +53,7 @@ ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate)
       cancel_button_->SetProminent(true);
   }
 
-  link_ = CreateLink(delegate_ptr->GetLinkText(), this);
+  link_ = CreateLink(delegate_ptr->GetLinkText());
   AddChildView(link_);
 }
 
@@ -107,14 +106,6 @@ void ConfirmInfoBar::ButtonPressed(views::Button* sender,
   } else {
     InfoBarView::ButtonPressed(sender, event);
   }
-}
-
-void ConfirmInfoBar::LinkClicked(views::Link* source, int event_flags) {
-  if (!owner())
-    return;  // We're closing; don't call anything, it might access the owner.
-  DCHECK_EQ(link_, source);
-  if (GetDelegate()->LinkClicked(ui::DispositionFromEventFlags(event_flags)))
-    RemoveSelf();
 }
 
 int ConfirmInfoBar::ContentMinimumWidth() const {

@@ -14,6 +14,7 @@
 #include "src/gpu/GrAppliedClip.h"
 #include "src/gpu/GrBufferAllocPool.h"
 #include "src/gpu/GrDeferredUpload.h"
+#include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrRenderTargetProxy.h"
 #include "src/gpu/GrSurfaceProxyView.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
@@ -44,10 +45,8 @@ public:
     void doUpload(GrDeferredTextureUploadFn&, bool shouldPrepareSurfaceForSampling = false);
 
     /** Called as ops are executed. Must be called in the same order as the ops were prepared. */
-    void executeDrawsAndUploadsForMeshDrawOp(
-            const GrOp* op, const SkRect& chainBounds, GrProcessorSet&&,
-            GrPipeline::InputFlags = GrPipeline::InputFlags::kNone,
-            const GrUserStencilSettings* = &GrUserStencilSettings::kUnused);
+    void executeDrawsAndUploadsForMeshDrawOp(const GrOp* op, const SkRect& chainBounds,
+                                             const GrPipeline*);
 
     GrOpsRenderPass* opsRenderPass() { return fOpsRenderPass; }
     void setOpsRenderPass(GrOpsRenderPass* renderPass) { fOpsRenderPass = renderPass; }
@@ -70,10 +69,10 @@ public:
         }
 
         GrSurfaceOrigin origin() const { return fSurfaceView->origin(); }
-        GrSwizzle outputSwizzle() const { return fSurfaceView->swizzle(); }
+        GrSwizzle writeSwizzle() const { return fSurfaceView->swizzle(); }
 
         GrOp* op() { return fOp; }
-        const GrSurfaceProxyView* view() const { return fSurfaceView; }
+        const GrSurfaceProxyView* writeView() const { return fSurfaceView; }
         GrRenderTargetProxy* proxy() const { return fRenderTargetProxy; }
         GrAppliedClip* appliedClip() { return fAppliedClip; }
         const GrAppliedClip* appliedClip() const { return fAppliedClip; }
@@ -117,9 +116,11 @@ public:
     GrDeferredUploadToken addASAPUpload(GrDeferredTextureUploadFn&&) final;
 
     /** Overrides of GrMeshDrawOp::Target. */
-    void recordDraw(const GrGeometryProcessor*, const GrMesh[], int meshCnt,
-                    const GrPipeline::FixedDynamicState*,
-                    const GrPipeline::DynamicStateArrays*, GrPrimitiveType) final;
+    void recordDraw(const GrGeometryProcessor*,
+                    const GrSimpleMesh[],
+                    int meshCnt,
+                    const GrSurfaceProxy* const primProcProxies[],
+                    GrPrimitiveType) final;
     void* makeVertexSpace(size_t vertexSize, int vertexCount, sk_sp<const GrBuffer>*,
                           int* startVertex) final;
     uint16_t* makeIndexSpace(int indexCount, sk_sp<const GrBuffer>*, int* startIndex) final;
@@ -129,11 +130,23 @@ public:
     uint16_t* makeIndexSpaceAtLeast(int minIndexCount, int fallbackIndexCount,
                                     sk_sp<const GrBuffer>*, int* startIndex,
                                     int* actualIndexCount) final;
+    GrDrawIndirectCommand* makeDrawIndirectSpace(int drawCount, sk_sp<const GrBuffer>* buffer,
+                                                 size_t* offset) override {
+        return fDrawIndirectPool.makeSpace(drawCount, buffer, offset);
+    }
+    GrDrawIndexedIndirectCommand* makeDrawIndexedIndirectSpace(
+            int drawCount, sk_sp<const GrBuffer>* buffer, size_t* offset) override {
+        return fDrawIndirectPool.makeIndexedSpace(drawCount, buffer, offset);
+    }
     void putBackIndices(int indexCount) final;
     void putBackVertices(int vertices, size_t vertexStride) final;
-    const GrSurfaceProxyView* view() const { return this->drawOpArgs().view(); }
+    const GrSurfaceProxyView* writeView() const final { return this->drawOpArgs().writeView(); }
     GrRenderTargetProxy* proxy() const final { return this->drawOpArgs().proxy(); }
     const GrAppliedClip* appliedClip() const final { return this->drawOpArgs().appliedClip(); }
+    const GrAppliedHardClip& appliedHardClip() const {
+        return (fOpArgs->appliedClip()) ?
+                fOpArgs->appliedClip()->hardClip() : GrAppliedHardClip::Disabled();
+    }
     GrAppliedClip detachAppliedClip() final;
     const GrXferProcessor::DstProxyView& dstProxyView() const final {
         return this->drawOpArgs().dstProxyView();
@@ -142,7 +155,7 @@ public:
     const GrCaps& caps() const final;
     GrResourceProvider* resourceProvider() const final { return fResourceProvider; }
 
-    GrStrikeCache* glyphCache() const final;
+    GrStrikeCache* strikeCache() const final;
 
     // At this point we know we're flushing so full access to the GrAtlasManager is required (and
     // permissible).
@@ -150,6 +163,75 @@ public:
 
     /** GrMeshDrawOp::Target override. */
     SkArenaAlloc* allocator() override { return &fArena; }
+
+    // This is a convenience method that binds the given pipeline, and then, if our applied clip has
+    // a scissor, sets the scissor rect from the applied clip.
+    void bindPipelineAndScissorClip(const GrProgramInfo& programInfo, const SkRect& drawBounds) {
+        SkASSERT((programInfo.pipeline().isScissorTestEnabled()) ==
+                 (this->appliedClip() && this->appliedClip()->scissorState().enabled()));
+        this->bindPipeline(programInfo, drawBounds);
+        if (programInfo.pipeline().isScissorTestEnabled()) {
+            this->setScissorRect(this->appliedClip()->scissorState().rect());
+        }
+    }
+
+    // This is a convenience method for when the primitive processor has exactly one texture. It
+    // binds one texture for the primitive processor, and any others for FPs on the pipeline.
+    void bindTextures(const GrPrimitiveProcessor& primProc,
+                      const GrSurfaceProxy& singlePrimProcTexture, const GrPipeline& pipeline) {
+        SkASSERT(primProc.numTextureSamplers() == 1);
+        const GrSurfaceProxy* ptr = &singlePrimProcTexture;
+        this->bindTextures(primProc, &ptr, pipeline);
+    }
+
+    // Makes the appropriate bindBuffers() and draw*() calls for the provided mesh.
+    void drawMesh(const GrSimpleMesh& mesh);
+
+    // Pass-through methods to GrOpsRenderPass.
+    void bindPipeline(const GrProgramInfo& programInfo, const SkRect& drawBounds) {
+        fOpsRenderPass->bindPipeline(programInfo, drawBounds);
+    }
+    void setScissorRect(const SkIRect& scissorRect) {
+        fOpsRenderPass->setScissorRect(scissorRect);
+    }
+    void bindTextures(const GrPrimitiveProcessor& primProc,
+                      const GrSurfaceProxy* const primProcTextures[], const GrPipeline& pipeline) {
+        fOpsRenderPass->bindTextures(primProc, primProcTextures, pipeline);
+    }
+    void bindBuffers(const GrBuffer* indexBuffer, const GrBuffer* instanceBuffer,
+                     const GrBuffer* vertexBuffer,
+                     GrPrimitiveRestart primitiveRestart = GrPrimitiveRestart::kNo) {
+        fOpsRenderPass->bindBuffers(indexBuffer, instanceBuffer, vertexBuffer, primitiveRestart);
+    }
+    void draw(int vertexCount, int baseVertex) {
+        fOpsRenderPass->draw(vertexCount, baseVertex);
+    }
+    void drawIndexed(int indexCount, int baseIndex, uint16_t minIndexValue, uint16_t maxIndexValue,
+                     int baseVertex) {
+        fOpsRenderPass->drawIndexed(indexCount, baseIndex, minIndexValue, maxIndexValue,
+                                    baseVertex);
+    }
+    void drawInstanced(int instanceCount, int baseInstance, int vertexCount, int baseVertex) {
+        fOpsRenderPass->drawInstanced(instanceCount, baseInstance, vertexCount, baseVertex);
+    }
+    void drawIndexedInstanced(int indexCount, int baseIndex, int instanceCount, int baseInstance,
+                              int baseVertex) {
+        fOpsRenderPass->drawIndexedInstanced(indexCount, baseIndex, instanceCount, baseInstance,
+                                             baseVertex);
+    }
+    void drawIndirect(const GrBuffer* drawIndirectBuffer, size_t offset, int drawCount) {
+        fOpsRenderPass->drawIndirect(drawIndirectBuffer, offset, drawCount);
+    }
+    void drawIndexedIndirect(const GrBuffer* drawIndirectBuffer, size_t offset, int drawCount) {
+        fOpsRenderPass->drawIndexedIndirect(drawIndirectBuffer, offset, drawCount);
+    }
+    void drawIndexPattern(int patternIndexCount, int patternRepeatCount,
+                          int maxPatternRepetitionsInIndexBuffer, int patternVertexCount,
+                          int baseVertex) {
+        fOpsRenderPass->drawIndexPattern(patternIndexCount, patternRepeatCount,
+                                         maxPatternRepetitionsInIndexBuffer, patternVertexCount,
+                                         baseVertex);
+    }
 
 private:
     struct InlineUpload {
@@ -169,9 +251,9 @@ private:
         // the stack (for CCPR). In either case this object does not need to manage its
         // lifetime.
         const GrGeometryProcessor* fGeometryProcessor = nullptr;
-        const GrPipeline::FixedDynamicState* fFixedDynamicState = nullptr;
-        const GrPipeline::DynamicStateArrays* fDynamicStateArrays = nullptr;
-        const GrMesh* fMeshes = nullptr;
+        // Must have GrPrimitiveProcessor::numTextureSamplers() entries. Can be null if no samplers.
+        const GrSurfaceProxy* const* fPrimProcProxies = nullptr;
+        const GrSimpleMesh* fMeshes = nullptr;
         const GrOp* fOp = nullptr;
         int fMeshCnt = 0;
         GrPrimitiveType fPrimitiveType;
@@ -183,6 +265,7 @@ private:
     // Store vertex and index data on behalf of ops that are flushed.
     GrVertexBufferAllocPool fVertexPool;
     GrIndexBufferAllocPool fIndexPool;
+    GrDrawIndirectBufferAllocPool fDrawIndirectPool;
 
     // Data stored on behalf of the ops being flushed.
     SkArenaAllocList<GrDeferredTextureUploadFn> fASAPUploads;

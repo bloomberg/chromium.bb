@@ -12,85 +12,20 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
-#include "media/gpu/buildflags.h"
-#include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
+#include "media/gpu/macros.h"
+#include "media/gpu/test/image_quality_metrics.h"
+#include "media/gpu/test/video_test_helpers.h"
 #include "media/gpu/video_frame_mapper.h"
 #include "media/gpu/video_frame_mapper_factory.h"
+#include "media/media_buildflags.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 namespace test {
 
-VideoFrameValidator::MismatchedFrameInfo::MismatchedFrameInfo(
-    size_t frame_index,
-    std::string computed_md5,
-    std::string expected_md5)
-    : validate_mode(ValidateMode::MD5),
-      frame_index(frame_index),
-      computed_md5(std::move(computed_md5)),
-      expected_md5(std::move(expected_md5)) {}
-
-VideoFrameValidator::MismatchedFrameInfo::MismatchedFrameInfo(
-    size_t frame_index,
-    size_t diff_cnt)
-    : validate_mode(ValidateMode::RAW),
-      frame_index(frame_index),
-      diff_cnt(diff_cnt) {}
-
-VideoFrameValidator::MismatchedFrameInfo::~MismatchedFrameInfo() = default;
-
-// static
-std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
-    const std::vector<std::string>& expected_frame_checksums,
-    const VideoPixelFormat validation_format,
-    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor) {
-  auto video_frame_validator = base::WrapUnique(
-      new VideoFrameValidator(expected_frame_checksums, validation_format,
-                              std::move(corrupt_frame_processor)));
-  if (!video_frame_validator->Initialize()) {
-    LOG(ERROR) << "Failed to initialize VideoFrameValidator.";
-    return nullptr;
-  }
-
-  return video_frame_validator;
-}
-
-std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
-    const std::vector<scoped_refptr<const VideoFrame>> model_frames,
-    const uint8_t tolerance,
-    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor) {
-  auto video_frame_validator = base::WrapUnique(new VideoFrameValidator(
-      std::move(model_frames), tolerance, std::move(corrupt_frame_processor)));
-  if (!video_frame_validator->Initialize()) {
-    LOG(ERROR) << "Failed to initialize VideoFrameValidator.";
-    return nullptr;
-  }
-
-  return video_frame_validator;
-}
-
 VideoFrameValidator::VideoFrameValidator(
-    std::vector<std::string> expected_frame_checksums,
-    VideoPixelFormat validation_format,
     std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor)
-    : validate_mode_(ValidateMode::MD5),
-      expected_frame_checksums_(std::move(expected_frame_checksums)),
-      validation_format_(validation_format),
-      corrupt_frame_processor_(std::move(corrupt_frame_processor)),
-      num_frames_validating_(0),
-      frame_validator_thread_("FrameValidatorThread"),
-      frame_validator_cv_(&frame_validator_lock_) {
-  DETACH_FROM_SEQUENCE(validator_sequence_checker_);
-  DETACH_FROM_SEQUENCE(validator_thread_sequence_checker_);
-}
-
-VideoFrameValidator::VideoFrameValidator(
-    const std::vector<scoped_refptr<const VideoFrame>> model_frames,
-    const uint8_t tolerance,
-    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor)
-    : validate_mode_(ValidateMode::RAW),
-      model_frames_(std::move(model_frames)),
-      tolerance_(tolerance),
-      corrupt_frame_processor_(std::move(corrupt_frame_processor)),
+    : corrupt_frame_processor_(std::move(corrupt_frame_processor)),
       num_frames_validating_(0),
       frame_validator_thread_("FrameValidatorThread"),
       frame_validator_cv_(&frame_validator_lock_) {
@@ -116,12 +51,6 @@ void VideoFrameValidator::Destroy() {
   DCHECK_EQ(0u, num_frames_validating_);
 }
 
-std::vector<VideoFrameValidator::MismatchedFrameInfo>
-VideoFrameValidator::GetMismatchedFramesInfo() const {
-  base::AutoLock auto_lock(frame_validator_lock_);
-  return mismatched_frames_;
-}
-
 size_t VideoFrameValidator::GetMismatchedFramesCount() const {
   base::AutoLock auto_lock(frame_validator_lock_);
   return mismatched_frames_.size();
@@ -134,6 +63,13 @@ void VideoFrameValidator::ProcessVideoFrame(
 
   if (!video_frame) {
     LOG(ERROR) << "Video frame is nullptr";
+    return;
+  }
+
+  if (video_frame->visible_rect().IsEmpty()) {
+    // This occurs in bitstream buffer in webrtc scenario.
+    DLOG(WARNING) << "Skipping validation, frame_index=" << frame_index
+                  << " because visible_rect is empty";
     return;
   }
 
@@ -169,12 +105,11 @@ void VideoFrameValidator::ProcessVideoFrameTask(
     size_t frame_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
 
-  scoped_refptr<const VideoFrame> validated_frame = video_frame;
+  scoped_refptr<const VideoFrame> frame = video_frame;
   // If this is a DMABuf-backed memory frame we need to map it before accessing.
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-  if (validated_frame->storage_type() == VideoFrame::STORAGE_DMABUFS ||
-      validated_frame->storage_type() ==
-          VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+  if (frame->storage_type() == VideoFrame::STORAGE_DMABUFS ||
+      frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
     // Create VideoFrameMapper if not yet created. The decoder's output pixel
     // format is not known yet when creating the VideoFrameValidator. We can
     // only create the VideoFrameMapper upon receiving the first video frame.
@@ -184,46 +119,97 @@ void VideoFrameValidator::ProcessVideoFrameTask(
       ASSERT_TRUE(video_frame_mapper_) << "Failed to create VideoFrameMapper";
     }
 
-    validated_frame = video_frame_mapper_->Map(std::move(validated_frame));
-    if (!validated_frame) {
+    frame = video_frame_mapper_->Map(std::move(frame));
+    if (!frame) {
       LOG(ERROR) << "Failed to map video frame";
       return;
     }
   }
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
-  ASSERT_TRUE(validated_frame->IsMappable());
+  ASSERT_TRUE(frame->IsMappable());
 
-  base::Optional<MismatchedFrameInfo> mismatched_info;
-  switch (validate_mode_) {
-    case ValidateMode::MD5: {
-      if (validated_frame->format() != validation_format_) {
-        validated_frame =
-            ConvertVideoFrame(validated_frame.get(), validation_format_);
-      }
-      ASSERT_TRUE(validated_frame);
-      mismatched_info = ValidateMD5(*validated_frame, frame_index);
-      break;
-    }
-    case ValidateMode::RAW:
-      mismatched_info = ValidateRaw(*validated_frame, frame_index);
-      break;
-  }
+  auto mismatched_info = Validate(frame, frame_index);
 
   base::AutoLock auto_lock(frame_validator_lock_);
-
   if (mismatched_info) {
-    mismatched_frames_.push_back(std::move(mismatched_info).value());
+    mismatched_frames_.push_back(std::move(mismatched_info));
     // Perform additional processing on the corrupt video frame if requested.
     if (corrupt_frame_processor_)
-      corrupt_frame_processor_->ProcessVideoFrame(validated_frame, frame_index);
+      corrupt_frame_processor_->ProcessVideoFrame(frame, frame_index);
   }
 
   num_frames_validating_--;
   frame_validator_cv_.Signal();
 }
 
-std::string VideoFrameValidator::ComputeMD5FromVideoFrame(
+struct MD5VideoFrameValidator::MD5MismatchedFrameInfo
+    : public VideoFrameValidator::MismatchedFrameInfo {
+  MD5MismatchedFrameInfo(size_t frame_index,
+                         const std::string& computed_md5,
+                         const std::string& expected_md5)
+      : MismatchedFrameInfo(frame_index),
+        computed_md5(computed_md5),
+        expected_md5(expected_md5) {}
+  ~MD5MismatchedFrameInfo() override = default;
+  void Print() const override {
+    LOG(ERROR) << "frame_index: " << frame_index
+               << ", computed_md5: " << computed_md5
+               << ", expected_md5: " << expected_md5;
+  }
+
+  const std::string computed_md5;
+  const std::string expected_md5;
+};
+
+// static
+std::unique_ptr<MD5VideoFrameValidator> MD5VideoFrameValidator::Create(
+    const std::vector<std::string>& expected_frame_checksums,
+    VideoPixelFormat validation_format,
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor) {
+  auto video_frame_validator = base::WrapUnique(
+      new MD5VideoFrameValidator(expected_frame_checksums, validation_format,
+                                 std::move(corrupt_frame_processor)));
+  if (!video_frame_validator->Initialize()) {
+    LOG(ERROR) << "Failed to initialize MD5VideoFrameValidator.";
+    return nullptr;
+  }
+
+  return video_frame_validator;
+}
+
+MD5VideoFrameValidator::MD5VideoFrameValidator(
+    const std::vector<std::string>& expected_frame_checksums,
+    VideoPixelFormat validation_format,
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor)
+    : VideoFrameValidator(std::move(corrupt_frame_processor)),
+      expected_frame_checksums_(expected_frame_checksums),
+      validation_format_(validation_format) {}
+
+MD5VideoFrameValidator::~MD5VideoFrameValidator() = default;
+
+std::unique_ptr<VideoFrameValidator::MismatchedFrameInfo>
+MD5VideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
+                                 size_t frame_index) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
+  if (frame->format() != validation_format_) {
+    frame = ConvertVideoFrame(frame.get(), validation_format_);
+  }
+  CHECK(frame);
+
+  std::string computed_md5 = ComputeMD5FromVideoFrame(*frame);
+  if (expected_frame_checksums_.size() > 0) {
+    LOG_IF(FATAL, frame_index >= expected_frame_checksums_.size())
+        << "Frame number is over than the number of read md5 values in file.";
+    const auto& expected_md5 = expected_frame_checksums_[frame_index];
+    if (computed_md5 != expected_md5)
+      return std::make_unique<MD5MismatchedFrameInfo>(frame_index, computed_md5,
+                                                      expected_md5);
+  }
+  return nullptr;
+}
+
+std::string MD5VideoFrameValidator::ComputeMD5FromVideoFrame(
     const VideoFrame& video_frame) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
   base::MD5Context context;
@@ -234,34 +220,154 @@ std::string VideoFrameValidator::ComputeMD5FromVideoFrame(
   return MD5DigestToBase16(digest);
 }
 
-base::Optional<VideoFrameValidator::MismatchedFrameInfo>
-VideoFrameValidator::ValidateMD5(const VideoFrame& validated_frame,
-                                 size_t frame_index) {
-  std::string computed_md5 = ComputeMD5FromVideoFrame(validated_frame);
-
-  if (expected_frame_checksums_.size() > 0) {
-    LOG_IF(FATAL, frame_index >= expected_frame_checksums_.size())
-        << "Frame number is over than the number of read md5 values in file.";
-    const auto& expected_md5 = expected_frame_checksums_[frame_index];
-    if (computed_md5 != expected_md5) {
-      return MismatchedFrameInfo{frame_index, computed_md5, expected_md5};
-    }
+struct RawVideoFrameValidator::RawMismatchedFrameInfo
+    : public VideoFrameValidator::MismatchedFrameInfo {
+  RawMismatchedFrameInfo(size_t frame_index, size_t diff_cnt)
+      : MismatchedFrameInfo(frame_index), diff_cnt(diff_cnt) {}
+  ~RawMismatchedFrameInfo() override = default;
+  void Print() const override {
+    LOG(ERROR) << "frame_index: " << frame_index << ", diff_cnt: " << diff_cnt;
   }
-  return base::nullopt;
+
+  size_t diff_cnt;
+};
+
+// static
+std::unique_ptr<RawVideoFrameValidator> RawVideoFrameValidator::Create(
+    const GetModelFrameCB& get_model_frame_cb,
+    uint8_t tolerance,
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor) {
+  auto video_frame_validator = base::WrapUnique(new RawVideoFrameValidator(
+      get_model_frame_cb, tolerance, std::move(corrupt_frame_processor)));
+  if (!video_frame_validator->Initialize()) {
+    LOG(ERROR) << "Failed to initialize RawVideoFrameValidator.";
+    return nullptr;
+  }
+
+  return video_frame_validator;
 }
 
-base::Optional<VideoFrameValidator::MismatchedFrameInfo>
-VideoFrameValidator::ValidateRaw(const VideoFrame& validated_frame,
+RawVideoFrameValidator::RawVideoFrameValidator(
+    const GetModelFrameCB& get_model_frame_cb,
+    uint8_t tolerance,
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor)
+    : VideoFrameValidator(std::move(corrupt_frame_processor)),
+      get_model_frame_cb_(get_model_frame_cb),
+      tolerance_(tolerance) {}
+
+RawVideoFrameValidator::~RawVideoFrameValidator() = default;
+
+std::unique_ptr<VideoFrameValidator::MismatchedFrameInfo>
+RawVideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
                                  size_t frame_index) {
-  if (model_frames_.size() > 0) {
-    LOG_IF(FATAL, frame_index >= model_frames_.size())
-        << "Frame number is over than the number of given frames.";
-    size_t diff_cnt = CompareFramesWithErrorDiff(
-        validated_frame, *model_frames_[frame_index], tolerance_);
-    if (diff_cnt > 0)
-      return MismatchedFrameInfo{frame_index, diff_cnt};
+  SEQUENCE_CHECKER(validator_thread_sequence_checker_);
+  auto model_frame = get_model_frame_cb_.Run(frame_index);
+  CHECK(model_frame);
+  size_t diff_cnt =
+      CompareFramesWithErrorDiff(*frame, *model_frame, tolerance_);
+  if (diff_cnt > 0)
+    return std::make_unique<RawMismatchedFrameInfo>(frame_index, diff_cnt);
+  return nullptr;
+}
+
+struct PSNRVideoFrameValidator::PSNRMismatchedFrameInfo
+    : public VideoFrameValidator::MismatchedFrameInfo {
+  PSNRMismatchedFrameInfo(size_t frame_index, double psnr)
+      : MismatchedFrameInfo(frame_index), psnr(psnr) {}
+  ~PSNRMismatchedFrameInfo() override = default;
+  void Print() const override {
+    LOG(ERROR) << "frame_index: " << frame_index << ", psnr: " << psnr;
   }
-  return base::nullopt;
+
+  double psnr;
+};
+
+// static
+std::unique_ptr<PSNRVideoFrameValidator> PSNRVideoFrameValidator::Create(
+    const GetModelFrameCB& get_model_frame_cb,
+    double tolerance,
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor) {
+  auto video_frame_validator = base::WrapUnique(new PSNRVideoFrameValidator(
+      get_model_frame_cb, tolerance, std::move(corrupt_frame_processor)));
+  if (!video_frame_validator->Initialize()) {
+    LOG(ERROR) << "Failed to initialize PSNRVideoFrameValidator.";
+    return nullptr;
+  }
+
+  return video_frame_validator;
+}
+
+PSNRVideoFrameValidator::PSNRVideoFrameValidator(
+    const GetModelFrameCB& get_model_frame_cb,
+    double tolerance,
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor)
+    : VideoFrameValidator(std::move(corrupt_frame_processor)),
+      get_model_frame_cb_(get_model_frame_cb),
+      tolerance_(tolerance) {}
+
+PSNRVideoFrameValidator::~PSNRVideoFrameValidator() = default;
+
+std::unique_ptr<VideoFrameValidator::MismatchedFrameInfo>
+PSNRVideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
+                                  size_t frame_index) {
+  SEQUENCE_CHECKER(validator_thread_sequence_checker_);
+  auto model_frame = get_model_frame_cb_.Run(frame_index);
+  CHECK(model_frame);
+  double psnr = ComputePSNR(*frame, *model_frame);
+  DVLOGF(4) << "frame_index: " << frame_index << ", psnr: " << psnr;
+  if (psnr < tolerance_)
+    return std::make_unique<PSNRMismatchedFrameInfo>(frame_index, psnr);
+  return nullptr;
+}
+
+struct SSIMVideoFrameValidator::SSIMMismatchedFrameInfo
+    : public VideoFrameValidator::MismatchedFrameInfo {
+  SSIMMismatchedFrameInfo(size_t frame_index, double ssim)
+      : MismatchedFrameInfo(frame_index), ssim(ssim) {}
+  ~SSIMMismatchedFrameInfo() override = default;
+  void Print() const override {
+    LOG(ERROR) << "frame_index: " << frame_index << ", ssim: " << ssim;
+  }
+
+  double ssim;
+};
+
+// static
+std::unique_ptr<SSIMVideoFrameValidator> SSIMVideoFrameValidator::Create(
+    const GetModelFrameCB& get_model_frame_cb,
+    double tolerance,
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor) {
+  auto video_frame_validator = base::WrapUnique(new SSIMVideoFrameValidator(
+      get_model_frame_cb, tolerance, std::move(corrupt_frame_processor)));
+  if (!video_frame_validator->Initialize()) {
+    LOG(ERROR) << "Failed to initialize SSIMVideoFrameValidator.";
+    return nullptr;
+  }
+
+  return video_frame_validator;
+}
+
+SSIMVideoFrameValidator::SSIMVideoFrameValidator(
+    const GetModelFrameCB& get_model_frame_cb,
+    double tolerance,
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor)
+    : VideoFrameValidator(std::move(corrupt_frame_processor)),
+      get_model_frame_cb_(get_model_frame_cb),
+      tolerance_(tolerance) {}
+
+SSIMVideoFrameValidator::~SSIMVideoFrameValidator() = default;
+
+std::unique_ptr<VideoFrameValidator::MismatchedFrameInfo>
+SSIMVideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
+                                  size_t frame_index) {
+  SEQUENCE_CHECKER(validator_thread_sequence_checker_);
+  auto model_frame = get_model_frame_cb_.Run(frame_index);
+  CHECK(model_frame);
+  double ssim = ComputeSSIM(*frame, *model_frame);
+  DVLOGF(4) << "frame_index: " << frame_index << ", ssim: " << ssim;
+  if (ssim < tolerance_)
+    return std::make_unique<SSIMMismatchedFrameInfo>(frame_index, ssim);
+  return nullptr;
 }
 }  // namespace test
 }  // namespace media

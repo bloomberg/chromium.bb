@@ -133,12 +133,6 @@ class AppBannerManagerAndroid
   void RecordEventForAppBanner(AddToHomescreenInstaller::Event event,
                                const AddToHomescreenParams& a2hs_params);
 
-  // The URL of the badge icon.
-  GURL badge_icon_url_;
-
-  // The badge icon object.
-  SkBitmap badge_icon_;
-
   // The Java-side AppBannerManager.
   base::android::ScopedJavaGlobalRef<jobject> java_banner_manager_;
 

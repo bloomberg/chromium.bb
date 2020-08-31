@@ -5,13 +5,14 @@
 package org.chromium.chrome.browser.share.qrcode;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareActivity;
 
 /**
  * A simple activity that shows sharing QR code option in share menu.
  */
 public class QrCodeShareActivity extends ShareActivity {
+
     @Override
     protected void handleShareAction(ChromeActivity triggeringActivity) {
         QrCodeCoordinator qrCodeCoordinator = new QrCodeCoordinator(triggeringActivity);

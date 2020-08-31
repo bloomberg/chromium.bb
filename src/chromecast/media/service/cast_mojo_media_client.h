@@ -24,7 +24,7 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
  public:
   using CreateCdmFactoryCB =
       base::RepeatingCallback<std::unique_ptr<::media::CdmFactory>(
-          service_manager::mojom::InterfaceProvider*)>;
+          ::media::mojom::FrameInterfaceFactory*)>;
 
   CastMojoMediaClient(CmaBackendFactory* backend_factory,
                       const CreateCdmFactoryCB& create_cdm_factory_cb,
@@ -38,24 +38,22 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
 #endif
 
   // MojoMediaClient implementation:
-  void Initialize(service_manager::Connector* connector) override;
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
   std::unique_ptr<::media::Renderer> CreateCastRenderer(
-      service_manager::mojom::InterfaceProvider* host_interfaces,
+      ::media::mojom::FrameInterfaceFactory* frame_interfaces,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       ::media::MediaLog* media_log,
       const base::UnguessableToken& overlay_plane_id) override;
 #endif
   std::unique_ptr<::media::Renderer> CreateRenderer(
-      service_manager::mojom::InterfaceProvider* host_interfaces,
+      ::media::mojom::FrameInterfaceFactory* frame_interfaces,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       ::media::MediaLog* media_log,
       const std::string& audio_device_id) override;
   std::unique_ptr<::media::CdmFactory> CreateCdmFactory(
-      service_manager::mojom::InterfaceProvider* host_interfaces) override;
+      ::media::mojom::FrameInterfaceFactory* frame_interfaces) override;
 
  private:
-  service_manager::Connector* connector_;
   CmaBackendFactory* const backend_factory_;
   const CreateCdmFactoryCB create_cdm_factory_cb_;
   VideoModeSwitcher* video_mode_switcher_;

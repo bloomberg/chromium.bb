@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/password_feature_manager_impl.h"
 #import "components/password_manager/core/browser/password_manager_client.h"
@@ -17,9 +18,7 @@
 #include "components/prefs/pref_member.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
-namespace ios {
 class ChromeBrowserState;
-}
 
 namespace autofill {
 class LogManager;
@@ -40,11 +39,19 @@ using password_manager::CredentialLeakType;
 
 // Shows UI to prompt the user to save the password.
 - (void)showSavePasswordInfoBar:
-    (std::unique_ptr<password_manager::PasswordFormManagerForUI>)formToSave;
+            (std::unique_ptr<password_manager::PasswordFormManagerForUI>)
+                formToSave
+                         manual:(BOOL)manual;
 
 // Shows UI to prompt the user to update the password.
 - (void)showUpdatePasswordInfoBar:
-    (std::unique_ptr<password_manager::PasswordFormManagerForUI>)formToUpdate;
+            (std::unique_ptr<password_manager::PasswordFormManagerForUI>)
+                formToUpdate
+                           manual:(BOOL)manual;
+
+// Removes the saving/updating password Infobar from the InfobarManager.
+// This also causes the UI to be dismissed.
+- (void)removePasswordInfoBarManualFallback:(BOOL)manual;
 
 // Shows UI to notify the user about auto sign in.
 - (void)showAutosigninNotification:
@@ -56,7 +63,7 @@ using password_manager::CredentialLeakType;
 
 @property(readonly, nonatomic) web::WebState* webState;
 
-@property(readonly, nonatomic) ios::ChromeBrowserState* browserState;
+@property(readonly, nonatomic) ChromeBrowserState* browserState;
 
 @property(readonly) password_manager::PasswordManager* passwordManager;
 
@@ -81,6 +88,9 @@ class IOSChromePasswordManagerClient
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool update_password) override;
+  void PromptUserToMovePasswordToAccount(
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move)
+      override;
   bool ShowOnboarding(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save)
       override;
@@ -114,11 +124,13 @@ class IOSChromePasswordManagerClient
   void NotifyUserCouldBeAutoSignedIn(
       std::unique_ptr<autofill::PasswordForm> form) override;
   void NotifySuccessfulLoginWithExistingPassword(
-      const autofill::PasswordForm& form) override;
+      std::unique_ptr<password_manager::PasswordFormManagerForUI>
+          submitted_manager) override;
   void NotifyStorePasswordCalled() override;
   void NotifyUserCredentialsWereLeaked(
       password_manager::CredentialLeakType leak_type,
-      const GURL& origin) override;
+      const GURL& origin,
+      const base::string16& username) override;
   bool IsSavingAndFillingEnabled(const GURL& url) const override;
   bool IsFillingEnabled(const GURL& url) const override;
   const GURL& GetLastCommittedEntryURL() const override;
@@ -140,7 +152,7 @@ class IOSChromePasswordManagerClient
  private:
   __weak id<PasswordManagerClientDelegate> delegate_;
 
-  const password_manager::PasswordFeatureManagerImpl password_feature_manager_;
+  password_manager::PasswordFeatureManagerImpl password_feature_manager_;
 
   // The preference associated with
   // password_manager::prefs::kCredentialsEnableService.

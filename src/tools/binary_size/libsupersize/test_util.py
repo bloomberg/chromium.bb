@@ -8,7 +8,7 @@ import logging
 import describe
 
 
-class Golden:
+class Golden(object):
   """Utility to use or manage "Golden" test files."""
 
   # Global state on whether to update Golden files in CheckOrUpdate().

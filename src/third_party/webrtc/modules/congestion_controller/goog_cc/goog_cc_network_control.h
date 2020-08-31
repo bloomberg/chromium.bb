@@ -87,7 +87,9 @@ class GoogCcNetworkController : public NetworkControllerInterface {
   FieldTrialFlag safe_reset_acknowledged_rate_;
   const bool use_min_allocatable_as_lower_bound_;
   const bool ignore_probes_lower_than_network_estimate_;
+  const bool limit_probes_lower_than_throughput_estimate_;
   const RateControlSettings rate_control_settings_;
+  const bool loss_based_stable_rate_;
 
   const std::unique_ptr<ProbeController> probe_controller_;
   const std::unique_ptr<CongestionWindowPushbackController>
@@ -121,6 +123,7 @@ class GoogCcNetworkController : public NetworkControllerInterface {
 
   DataRate last_loss_based_target_rate_;
   DataRate last_pushback_target_rate_;
+  DataRate last_stable_target_rate_;
 
   absl::optional<uint8_t> last_estimated_fraction_loss_ = 0;
   TimeDelta last_estimated_round_trip_time_ = TimeDelta::PlusInfinity();

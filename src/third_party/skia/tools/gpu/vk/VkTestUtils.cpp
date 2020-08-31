@@ -17,6 +17,9 @@
     #endif
 #endif
 
+#if defined(SK_BUILD_FOR_UNIX)
+#include <execinfo.h>
+#endif
 #include "include/gpu/vk/GrVkBackendContext.h"
 #include "include/gpu/vk/GrVkExtensions.h"
 #include "src/core/SkAutoMalloc.h"
@@ -30,12 +33,6 @@ namespace sk_gpu_test {
 
 bool LoadVkLibraryAndGetProcAddrFuncs(PFN_vkGetInstanceProcAddr* instProc,
                                       PFN_vkGetDeviceProcAddr* devProc) {
-#ifdef SK_MOLTENVK
-    // MoltenVK is a statically linked framework, so there is no Vulkan library to load.
-    *instProc = &vkGetInstanceProcAddr;
-    *devProc = &vkGetDeviceProcAddr;
-    return true;
-#else
     static void* vkLib = nullptr;
     static PFN_vkGetInstanceProcAddr localInstProc = nullptr;
     static PFN_vkGetDeviceProcAddr localDevProc = nullptr;
@@ -55,7 +52,6 @@ bool LoadVkLibraryAndGetProcAddrFuncs(PFN_vkGetInstanceProcAddr* instProc,
     *instProc = localInstProc;
     *devProc = localDevProc;
     return true;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -63,12 +59,8 @@ bool LoadVkLibraryAndGetProcAddrFuncs(PFN_vkGetInstanceProcAddr* instProc,
 
 #ifdef SK_ENABLE_VK_LAYERS
 const char* kDebugLayerNames[] = {
-    // elements of VK_LAYER_LUNARG_standard_validation
-    "VK_LAYER_GOOGLE_threading",
-    "VK_LAYER_LUNARG_parameter_validation",
-    "VK_LAYER_LUNARG_object_tracker",
-    "VK_LAYER_LUNARG_core_validation",
-    "VK_LAYER_GOOGLE_unique_objects",
+    // single merged layer
+    "VK_LAYER_KHRONOS_validation",
     // not included in standard_validation
     //"VK_LAYER_LUNARG_api_dump",
     //"VK_LAYER_LUNARG_vktrace",
@@ -98,6 +90,16 @@ static int should_include_debug_layer(const char* layerName,
     return -1;
 }
 
+static void print_backtrace() {
+#if defined(SK_BUILD_FOR_UNIX)
+    void* stack[64];
+    int count = backtrace(stack, SK_ARRAY_COUNT(stack));
+    backtrace_symbols_fd(stack, count, 2);
+#else
+    // Please add implementations for other platforms.
+#endif
+}
+
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(
     VkDebugReportFlagsEXT       flags,
     VkDebugReportObjectTypeEXT  objectType,
@@ -109,18 +111,15 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(
     void*                       pUserData) {
     if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
         SkDebugf("Vulkan error [%s]: code: %d: %s\n", pLayerPrefix, messageCode, pMessage);
+        print_backtrace();
+        SkDEBUGFAIL("Vulkan debug layer error");
         return VK_TRUE; // skip further layers
     } else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
-        // There is currently a bug in the spec which doesn't have
-        // VK_STRUCTURE_TYPE_BLEND_OPERATION_ADVANCED_FEATURES_EXT as an allowable pNext struct in
-        // VkDeviceCreateInfo. So we ignore that warning since it is wrong.
-        if (!strstr(pMessage,
-                    "pCreateInfo->pNext chain includes a structure with unexpected VkStructureType "
-                    "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT")) {
-            SkDebugf("Vulkan warning [%s]: code: %d: %s\n", pLayerPrefix, messageCode, pMessage);
-        }
+        SkDebugf("Vulkan warning [%s]: code: %d: %s\n", pLayerPrefix, messageCode, pMessage);
+        print_backtrace();
     } else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
         SkDebugf("Vulkan perf warning [%s]: code: %d: %s\n", pLayerPrefix, messageCode, pMessage);
+        print_backtrace();
     } else {
         SkDebugf("Vulkan info/debug [%s]: code: %d: %s\n", pLayerPrefix, messageCode, pMessage);
     }
@@ -441,7 +440,7 @@ bool CreateVkBackendContext(GrVkGetProc getProc,
         apiVersion = VK_MAKE_VERSION(1, 1, 0);
     }
 
-    instanceVersion = SkTMin(instanceVersion, apiVersion);
+    instanceVersion = std::min(instanceVersion, apiVersion);
 
     VkPhysicalDevice physDev;
     VkDevice device;
@@ -557,7 +556,7 @@ bool CreateVkBackendContext(GrVkGetProc getProc,
 
     VkPhysicalDeviceProperties physDeviceProperties;
     grVkGetPhysicalDeviceProperties(physDev, &physDeviceProperties);
-    int physDeviceVersion = SkTMin(physDeviceProperties.apiVersion, apiVersion);
+    int physDeviceVersion = std::min(physDeviceProperties.apiVersion, apiVersion);
 
     if (isProtected && physDeviceVersion < VK_MAKE_VERSION(1, 1, 0)) {
         SkDebugf("protected requires vk physical device version 1.1\n");

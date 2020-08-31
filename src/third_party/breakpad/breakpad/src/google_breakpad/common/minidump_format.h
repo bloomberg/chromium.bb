@@ -529,7 +529,7 @@ static const size_t MDRawMemoryList_minsize = offsetof(MDRawMemoryList,
                                                        memory_ranges[0]);
 
 
-#define MD_EXCEPTION_MAXIMUM_PARAMETERS 15
+#define MD_EXCEPTION_MAXIMUM_PARAMETERS 15u
 
 typedef struct {
   uint32_t  exception_code;     /* Windows: MDExceptionCodeWin,

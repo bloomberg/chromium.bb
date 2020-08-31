@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "components/leveldb_proto/internal/proto_leveldb_wrapper.h"

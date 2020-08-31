@@ -4,17 +4,20 @@
 
 #include "chrome/installer/util/lzma_util.h"
 
+#include <ntstatus.h>
 #include <windows.h>
 
 #include <stddef.h>
 
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/installer/util/lzma_file_allocator.h"
 
 extern "C" {
 #include "third_party/lzma_sdk/7z.h"
@@ -24,6 +27,9 @@ extern "C" {
 }
 
 namespace {
+
+// define NTSTATUS to avoid including winternl.h
+using NTSTATUS = LONG;
 
 SRes LzmaReadFile(HANDLE file, void* data, size_t* size) {
   if (*size == 0)
@@ -84,7 +90,7 @@ SRes SzFileReadImp(void* object, void* buffer, size_t* size) {
 // Returns EXCEPTION_EXECUTE_HANDLER and populates |status| with the underlying
 // NTSTATUS code for paging errors encountered while accessing file-backed
 // mapped memory. Otherwise, return EXCEPTION_CONTINUE_SEARCH.
-DWORD FilterPageError(const LzmaFileAllocator& file_allocator,
+DWORD FilterPageError(const base::MemoryMappedFile& mapped_file,
                       DWORD exception_code,
                       const EXCEPTION_POINTERS* info,
                       int32_t* status) {
@@ -92,10 +98,13 @@ DWORD FilterPageError(const LzmaFileAllocator& file_allocator,
     return EXCEPTION_CONTINUE_SEARCH;
 
   const EXCEPTION_RECORD* exception_record = info->ExceptionRecord;
-  if (!file_allocator.IsAddressMapped(
-          exception_record->ExceptionInformation[1])) {
+  const uint8_t* address = reinterpret_cast<const uint8_t*>(
+      exception_record->ExceptionInformation[1]);
+  if (address < mapped_file.data() ||
+      address >= mapped_file.data() + mapped_file.length()) {
     return EXCEPTION_CONTINUE_SEARCH;
   }
+
   // Cast NTSTATUS to int32_t to avoid including winternl.h
   *status = exception_record->ExceptionInformation[2];
 
@@ -106,9 +115,7 @@ DWORD FilterPageError(const LzmaFileAllocator& file_allocator,
 
 UnPackStatus UnPackArchive(const base::FilePath& archive,
                            const base::FilePath& output_dir,
-                           base::FilePath* output_file,
-                           base::Optional<DWORD>* error_code,
-                           base::Optional<int32_t>* ntstatus) {
+                           base::FilePath* output_file) {
   VLOG(1) << "Opening archive " << archive.value();
   LzmaUtilImpl lzma_util;
   UnPackStatus status;
@@ -119,10 +126,15 @@ UnPackStatus UnPackArchive(const base::FilePath& archive,
     if ((status = lzma_util.UnPack(output_dir, output_file)) != UNPACK_NO_ERROR)
       PLOG(ERROR) << "Unable to uncompress archive: " << archive.value();
   }
-  if (error_code)
-    *error_code = lzma_util.GetErrorCode();
-  if (ntstatus)
-    *ntstatus = lzma_util.GetNTSTATUSCode();
+
+  if (status != UNPACK_NO_ERROR) {
+    base::Optional<DWORD> error_code = lzma_util.GetErrorCode();
+    if (error_code.value_or(ERROR_SUCCESS) == ERROR_DISK_FULL)
+      return UNPACK_DISK_FULL;
+    if (error_code.value_or(ERROR_SUCCESS) == ERROR_IO_DEVICE)
+      return UNPACK_IO_DEVICE_ERROR;
+  }
+
   return status;
 }
 
@@ -153,161 +165,243 @@ UnPackStatus LzmaUtilImpl::UnPack(const base::FilePath& location,
   DCHECK(archive_file_.IsValid());
 
   CFileInStream archiveStream;
-  CLookToRead lookStream;
-  CSzArEx db;
-  ISzAlloc allocImp;
-  ISzAlloc allocTempImp;
-  SRes sz_res = SZ_OK;
-
   archiveStream.file.handle = archive_file_.GetPlatformFile();
   archiveStream.s.Read = SzFileReadImp;
   archiveStream.s.Seek = SzFileSeekImp;
+
+  CLookToRead lookStream;
   LookToRead_CreateVTable(&lookStream, false);
+  LookToRead_Init(&lookStream);
   lookStream.realStream = &archiveStream.s;
 
-  allocImp.Alloc = SzAlloc;
-  allocImp.Free = SzFree;
-  allocTempImp.Alloc = SzAllocTemp;
-  allocTempImp.Free = SzFreeTemp;
-
   CrcGenerateTable();
+
+  CSzArEx db;
   SzArEx_Init(&db);
-  ::SetLastError(ERROR_SUCCESS);
-  if ((sz_res = SzArEx_Open(&db, &lookStream.s, &allocImp, &allocTempImp)) !=
-      SZ_OK) {
-    LOG(ERROR) << L"Error returned by SzArchiveOpen: " << sz_res;
+
+  ISzAlloc allocImp = {SzAlloc, SzFree};
+  ISzAlloc allocTempImp = {SzAllocTemp, SzFreeTemp};
+  SRes sz_res = SzArEx_Open(&db, &lookStream.s, &allocImp, &allocTempImp);
+  if (sz_res != SZ_OK) {
+    LOG(ERROR) << "Error returned by SzArchiveOpen: " << sz_res;
     auto error_code = ::GetLastError();
     if (error_code != ERROR_SUCCESS)
       error_code_ = error_code;
     return UNPACK_SZAREX_OPEN_ERROR;
   }
+  base::ScopedClosureRunner db_closer(
+      base::BindOnce(&SzArEx_Free, &db, &allocImp));
 
-  Byte* outBuffer = 0;  // it must be 0 before first call for each new archive
-  UInt32 blockIndex = 0xFFFFFFFF;  // can have any value if outBuffer = 0
-  size_t outBufferSize = 0;        // can have any value if outBuffer = 0
-
-  LzmaFileAllocator fileAllocator(location);
-
-  UnPackStatus status = UNPACK_NO_ERROR;
-  for (unsigned int i = 0; i < db.NumFiles; i++) {
-    DWORD written;
-    size_t offset = 0;
-    size_t outSizeProcessed = 0;
-
-    int32_t ntstatus = 0;  // STATUS_SUCCESS
-    ::SetLastError(ERROR_SUCCESS);
-    __try {
-      if ((sz_res =
-               SzArEx_Extract(&db, &lookStream.s, i, &blockIndex, &outBuffer,
-                              &outBufferSize, &offset, &outSizeProcessed,
-                              &fileAllocator, &allocTempImp)) != SZ_OK) {
-        LOG(ERROR) << L"Error returned by SzExtract: " << sz_res;
-        auto error_code = ::GetLastError();
-        if (error_code != ERROR_SUCCESS)
-          error_code_ = error_code;
-        status = UNPACK_EXTRACT_ERROR;
-      }
-    } __except(FilterPageError(fileAllocator, GetExceptionCode(),
-                                GetExceptionInformation(), &ntstatus)) {
-      ntstatus_ = ntstatus;
-      status = UNPACK_EXTRACT_EXCEPTION;
-      LOG(ERROR) << L"EXCEPTION_IN_PAGE_ERROR while accessing mapped memory; "
-                    L"NTSTATUS = "
-                 << ntstatus;
-    }
-    if (status != UNPACK_NO_ERROR)
-      break;
-
-    size_t file_name_length = SzArEx_GetFileNameUtf16(&db, i, NULL);
+  // Tracks the last folder that was uncompressed. The result is reused when
+  // multiple subsequent files in the archive share the same folder.
+  size_t last_folder_index = -1;
+  // A mapping of either the target file (if the file exactly fits within a
+  // folder) or a temporary file into which a folder is decompressed.
+  base::Optional<base::MemoryMappedFile> mapped_file;
+  for (size_t file_index = 0; file_index < db.NumFiles; ++file_index) {
+    size_t file_name_length = SzArEx_GetFileNameUtf16(&db, file_index, nullptr);
     if (file_name_length < 1) {
-      LOG(ERROR) << L"Couldn't get file name";
-      status = UNPACK_NO_FILENAME_ERROR;
-      break;
+      LOG(ERROR) << "Couldn't get file name";
+      return UNPACK_NO_FILENAME_ERROR;
     }
 
     std::vector<UInt16> file_name(file_name_length);
-    SzArEx_GetFileNameUtf16(&db, i, &file_name[0]);
+    file_name_length =
+        SzArEx_GetFileNameUtf16(&db, file_index, file_name.data());
+    DCHECK_EQ(file_name_length, file_name.size());
+
     // |file_name| is NULL-terminated.
     base::FilePath file_path = location.Append(
-        base::FilePath::StringType(file_name.begin(), file_name.end() - 1));
+        base::FilePath::StringType(file_name.begin(), --file_name.end()));
 
     if (output_file)
       *output_file = file_path;
 
     // If archive entry is directory create it and move on to the next entry.
-    if (SzArEx_IsDir(&db, i)) {
+    if (SzArEx_IsDir(&db, file_index)) {
       if (!CreateDirectory(file_path)) {
         error_code_ = ::GetLastError();
-        status = UNPACK_CREATE_FILE_ERROR;
-        break;
+        return UNPACK_CREATE_FILE_ERROR;
       }
       continue;
     }
 
     CreateDirectory(file_path.DirName());
 
-    HANDLE hFile;
-    hFile = CreateFile(file_path.value().c_str(), GENERIC_WRITE, 0, NULL,
-                       CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    if (hFile == INVALID_HANDLE_VALUE) {
+    base::File target_file(file_path, base::File::FLAG_CREATE_ALWAYS |
+                                          base::File::FLAG_READ |
+                                          base::File::FLAG_WRITE |
+                                          base::File::FLAG_EXCLUSIVE_READ |
+                                          base::File::FLAG_EXCLUSIVE_WRITE |
+                                          base::File::FLAG_CAN_DELETE_ON_CLOSE |
+                                          base::File::FLAG_SHARE_DELETE);
+    if (!target_file.IsValid()) {
+      PLOG(ERROR) << "Invalid file.";
       error_code_ = ::GetLastError();
-      status = UNPACK_CREATE_FILE_ERROR;
-      PLOG(ERROR) << L"CreateFile failed";
-      break;
+      return UNPACK_CREATE_FILE_ERROR;
     }
+    // The target file is deleted by default unless extracting succeeds.
+    target_file.DeleteOnClose(true);
 
-    // Don't write all of the data at once because this can lead to kernel
-    // address-space exhaustion on 32-bit Windows (see https://crbug.com/1001022
-    // for details).
-    constexpr size_t kMaxWriteAmount = 8 * 1024 * 1024;
-    for (size_t total_written = 0; total_written < outSizeProcessed; /**/) {
-      const size_t write_amount =
-          std::min(kMaxWriteAmount, outSizeProcessed - total_written);
-      if ((!WriteFile(hFile, outBuffer + offset + total_written,
-                      static_cast<DWORD>(write_amount), &written, nullptr)) ||
-          (written != write_amount)) {
-        error_code_ = ::GetLastError();
-        status = UNPACK_WRITE_FILE_ERROR;
-        PLOG(ERROR) << L"Error returned by WriteFile";
-        CloseHandle(hFile);
-        break;
+    uint32_t folder_index = db.FileToFolder[file_index];
+
+    // If |file_index| has no associated data to uncompress. The resulting file
+    // is still written on disk and will be empty.
+    if (folder_index != uint32_t(-1)) {
+      uint64_t file_offset = db.UnpackPositions[file_index];
+
+      uint64_t folder_offset =
+          db.UnpackPositions[db.FolderToFile[folder_index]];
+      CHECK_LE(folder_offset, file_offset);
+      size_t file_offset_in_folder = (size_t)(file_offset - folder_offset);
+
+      // |UnpackPositions| has NumFiles + 1 entries, with an extra entry
+      // for the sentinel.
+      size_t file_unpack_size =
+          (size_t)(db.UnpackPositions[file_index + 1] - file_offset);
+      uint64_t folder_unpack_size =
+          SzAr_GetFolderUnpackSize(&db.db, folder_index);
+      CHECK_LE(file_offset_in_folder + file_unpack_size, folder_unpack_size);
+
+      // A buffer is used iff the folder doesn't match exactly the target file.
+      // Otherwise, the target is written directly as a memory mapped file.
+      // In practice, all folders are single file.
+      bool use_temp_buffer = folder_unpack_size != file_unpack_size;
+      if (last_folder_index != folder_index) {
+        last_folder_index = folder_index;
+        mapped_file.emplace();
+        bool mapped_file_ok = false;
+        if (use_temp_buffer) {
+          base::FilePath temp_file_path;
+          if (!base::CreateTemporaryFileInDir(location, &temp_file_path)) {
+            error_code_ = ::GetLastError();
+            return UNPACK_ALLOCATE_ERROR;
+          }
+
+          base::File temp_file(
+              temp_file_path,
+              base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_READ |
+                  base::File::FLAG_WRITE | base::File::FLAG_EXCLUSIVE_READ |
+                  base::File::FLAG_EXCLUSIVE_WRITE |
+                  base::File::FLAG_TEMPORARY |
+                  base::File::FLAG_DELETE_ON_CLOSE |
+                  base::File::FLAG_SHARE_DELETE);
+          mapped_file_ok = mapped_file->Initialize(
+              std::move(temp_file), {0, folder_unpack_size},
+              base::MemoryMappedFile::READ_WRITE_EXTEND);
+        } else {
+          mapped_file_ok = mapped_file->Initialize(
+              target_file.Duplicate(), {0, folder_unpack_size},
+              base::MemoryMappedFile::READ_WRITE_EXTEND);
+        }
+        if (!mapped_file_ok) {
+          PLOG(ERROR) << "Can't map file to memory.";
+          error_code_ = ::GetLastError();
+          return UNPACK_ALLOCATE_ERROR;
+        }
+        int32_t ntstatus = 0;  // STATUS_SUCCESS
+        ::SetLastError(ERROR_SUCCESS);
+        __try {
+          SRes sz_res = SzAr_DecodeFolder(&db.db, folder_index, &lookStream.s,
+                                          db.dataPos, mapped_file->data(),
+                                          folder_unpack_size, &allocTempImp);
+          if (sz_res != SZ_OK) {
+            LOG(ERROR) << "Error returned by SzExtract: " << sz_res;
+            auto error_code = ::GetLastError();
+            if (error_code != ERROR_SUCCESS)
+              error_code_ = error_code;
+            return UNPACK_EXTRACT_ERROR;
+          }
+        } __except(FilterPageError(*mapped_file, GetExceptionCode(),
+                                    GetExceptionInformation(), &ntstatus)) {
+          LOG(ERROR)
+              << "EXCEPTION_IN_PAGE_ERROR while accessing mapped memory; "
+                 "NTSTATUS = "
+              << ntstatus;
+          // Return IO_DEVICE_ERROR for all known error except DISK_FULL,
+          // IN_PAGE_ERROR and ACCESS_DENIED.
+          switch (ntstatus) {
+            case STATUS_DEVICE_DATA_ERROR:
+            case STATUS_DEVICE_HARDWARE_ERROR:
+            case STATUS_DEVICE_NOT_CONNECTED:
+            case STATUS_INVALID_DEVICE_REQUEST:
+            case STATUS_INVALID_LEVEL:
+            case STATUS_IO_DEVICE_ERROR:
+            case STATUS_IO_TIMEOUT:
+            case STATUS_NO_SUCH_DEVICE:
+              return UNPACK_IO_DEVICE_ERROR;
+            case STATUS_DISK_FULL:
+              return UNPACK_DISK_FULL;
+            default:
+              // This error indicates an unexpected error. Spikes in this are
+              // worth investigation.
+              return UNPACK_EXTRACT_EXCEPTION;
+          }
+        }
       }
-      total_written += write_amount;
-    }
 
-    // Break out of the file loop if the write loop failed.
-    if (status != UNPACK_NO_ERROR)
-      break;
+      if (SzBitWithVals_Check(&db.CRCs, file_index)) {
+        if (CrcCalc(mapped_file->data() + file_offset_in_folder,
+                    file_unpack_size) != db.CRCs.Vals[file_index])
+          return UNPACK_CRC_ERROR;
+      }
 
-    if (SzBitWithVals_Check(&db.MTime, i)) {
-      if (!SetFileTime(hFile, NULL, NULL,
-                       (const FILETIME*)(&db.MTime.Vals[i]))) {
-        error_code_ = ::GetLastError();
-        status = UNPACK_SET_FILE_TIME_ERROR;
-        PLOG(ERROR) << L"Error returned by SetFileTime";
-        CloseHandle(hFile);
-        break;
+      if (use_temp_buffer) {
+        // Don't write all of the data at once because this can lead to kernel
+        // address-space exhaustion on 32-bit Windows (see
+        // https://crbug.com/1001022 for details).
+        constexpr size_t kMaxWriteAmount = 8 * 1024 * 1024;
+        for (size_t total_written = 0; total_written < file_unpack_size; /**/) {
+          const size_t write_amount =
+              std::min(kMaxWriteAmount, file_unpack_size - total_written);
+          int written = target_file.WriteAtCurrentPos(
+              reinterpret_cast<char*>(mapped_file->data() +
+                                      file_offset_in_folder + total_written),
+              write_amount);
+          if (static_cast<size_t>(written) != write_amount) {
+            PLOG(ERROR) << "Error returned by WriteFile";
+            error_code_ = ::GetLastError();
+            return UNPACK_WRITE_FILE_ERROR;
+          }
+          total_written += written;
+        }
+      } else {
+        // Modified pages are not written to disk until they're evicted from the
+        // working set. Explicitly kick off the write to disk now
+        // (asynchronously) to improve the odds that the file's contents are
+        // on-disk when another process (such as chrome.exe) would like to use
+        // them.
+        ::FlushViewOfFile(mapped_file->data(), 0);
+        // Unmap the target file from the process's address space.
+        mapped_file.reset();
+        last_folder_index = -1;
+        // Flush to avoid odd behavior, such as the bug in Windows 7 through
+        // Windows 10 1809 for PE files described in
+        // https://randomascii.wordpress.com/2018/02/25/compiler-bug-linker-bug-windows-kernel-bug/.
+        // We've also observed oddly empty files on other Windows versions, so
+        // this is unconditional.
+        target_file.Flush();
       }
     }
-    if (!CloseHandle(hFile)) {
-      error_code_ = ::GetLastError();
-      status = UNPACK_CLOSE_FILE_ERROR;
-      PLOG(ERROR) << L"Error returned by CloseHandle";
-      break;
-    }
-  }  // for loop
-  IAlloc_Free(&fileAllocator, outBuffer);
-  SzArEx_Free(&db, &allocImp);
-  DCHECK(status != UNPACK_NO_ERROR || !error_code_.has_value());
-  DCHECK(status != UNPACK_NO_ERROR || !ntstatus_.has_value());
 
-  return status;
+    // On success, |target_file| is kept.
+    target_file.DeleteOnClose(false);
+
+    if (SzBitWithVals_Check(&db.MTime, file_index)) {
+      if (!SetFileTime(target_file.GetPlatformFile(), nullptr, nullptr,
+                       (const FILETIME*)(&db.MTime.Vals[file_index]))) {
+        PLOG(ERROR) << "Error returned by SetFileTime";
+        error_code_ = ::GetLastError();
+        return UNPACK_SET_FILE_TIME_ERROR;
+      }
+    }
+  }
+  return UNPACK_NO_ERROR;
 }
 
 void LzmaUtilImpl::CloseArchive() {
   archive_file_.Close();
   error_code_ = base::nullopt;
-  ntstatus_ = base::nullopt;
 }
 
 bool LzmaUtilImpl::CreateDirectory(const base::FilePath& dir) {

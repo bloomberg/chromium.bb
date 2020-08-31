@@ -1,24 +1,36 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as Components from '../components/components.js';
+import * as Host from '../host/host.js';
+import * as UI from '../ui/ui.js';
+
+import {DeviceModeWrapper} from './DeviceModeWrapper.js';
+import {Events, instance} from './InspectedPagePlaceholder.js';
+
+/** @type {!AdvancedApp} */
+let _appInstance;
+
 /**
- * @implements {Common.App}
+ * @implements {Common.App.App}
  * @unrestricted
  */
-Emulation.AdvancedApp = class {
+export class AdvancedApp {
   constructor() {
-    Components.dockController.addEventListener(
+    self.Components.dockController.addEventListener(
         Components.DockController.Events.BeforeDockSideChanged, this._openToolboxWindow, this);
   }
 
   /**
-   * @return {!Emulation.AdvancedApp}
+   * @return {!AdvancedApp}
    */
   static _instance() {
-    if (!Emulation.AdvancedApp._appInstance) {
-      Emulation.AdvancedApp._appInstance = new Emulation.AdvancedApp();
+    if (!_appInstance) {
+      _appInstance = new AdvancedApp();
     }
-    return Emulation.AdvancedApp._appInstance;
+    return _appInstance;
   }
 
   /**
@@ -26,24 +38,23 @@ Emulation.AdvancedApp = class {
    * @param {!Document} document
    */
   presentUI(document) {
-    const rootView = new UI.RootView();
+    const rootView = new UI.RootView.RootView();
 
-    this._rootSplitWidget = new UI.SplitWidget(false, true, 'InspectorView.splitViewState', 555, 300, true);
+    this._rootSplitWidget = new UI.SplitWidget.SplitWidget(false, true, 'InspectorView.splitViewState', 555, 300, true);
     this._rootSplitWidget.show(rootView.element);
-    this._rootSplitWidget.setSidebarWidget(UI.inspectorView);
-    this._rootSplitWidget.setDefaultFocusedChild(UI.inspectorView);
-    UI.inspectorView.setOwnerSplit(this._rootSplitWidget);
+    this._rootSplitWidget.setSidebarWidget(self.UI.inspectorView);
+    this._rootSplitWidget.setDefaultFocusedChild(self.UI.inspectorView);
+    self.UI.inspectorView.setOwnerSplit(this._rootSplitWidget);
 
-    this._inspectedPagePlaceholder = Emulation.InspectedPagePlaceholder.instance();
-    this._inspectedPagePlaceholder.addEventListener(
-        Emulation.InspectedPagePlaceholder.Events.Update, this._onSetInspectedPageBounds.bind(this), this);
-    this._deviceModeView = new Emulation.DeviceModeWrapper(this._inspectedPagePlaceholder);
+    this._inspectedPagePlaceholder = instance();
+    this._inspectedPagePlaceholder.addEventListener(Events.Update, this._onSetInspectedPageBounds.bind(this), this);
+    this._deviceModeView = new DeviceModeWrapper(this._inspectedPagePlaceholder);
 
-    Components.dockController.addEventListener(
+    self.Components.dockController.addEventListener(
         Components.DockController.Events.BeforeDockSideChanged, this._onBeforeDockSideChange, this);
-    Components.dockController.addEventListener(
+    self.Components.dockController.addEventListener(
         Components.DockController.Events.DockSideChanged, this._onDockSideChange, this);
-    Components.dockController.addEventListener(
+    self.Components.dockController.addEventListener(
         Components.DockController.Events.AfterDockSideChanged, this._onAfterDockSideChange, this);
     this._onDockSideChange();
 
@@ -54,7 +65,7 @@ Emulation.AdvancedApp = class {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _openToolboxWindow(event) {
     if (/** @type {string} */ (event.data.to) !== Components.DockController.State.Undocked) {
@@ -73,12 +84,13 @@ Emulation.AdvancedApp = class {
    * @param {!Document} toolboxDocument
    */
   toolboxLoaded(toolboxDocument) {
-    UI.initializeUIUtils(toolboxDocument, Common.settings.createSetting('uiTheme', 'default'));
-    UI.installComponentRootStyles(/** @type {!Element} */ (toolboxDocument.body));
-    UI.ContextMenu.installHandler(toolboxDocument);
-    UI.Tooltip.installHandler(toolboxDocument);
+    UI.UIUtils.initializeUIUtils(
+        toolboxDocument, Common.Settings.Settings.instance().createSetting('uiTheme', 'default'));
+    UI.UIUtils.installComponentRootStyles(/** @type {!Element} */ (toolboxDocument.body));
+    UI.ContextMenu.ContextMenu.installHandler(toolboxDocument);
+    UI.Tooltip.Tooltip.installHandler(toolboxDocument);
 
-    this._toolboxRootView = new UI.RootView();
+    this._toolboxRootView = new UI.RootView.RootView();
     this._toolboxRootView.attachToDocument(toolboxDocument);
 
     this._updateDeviceModeView();
@@ -93,7 +105,7 @@ Emulation.AdvancedApp = class {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onBeforeDockSideChange(event) {
     if (/** @type {string} */ (event.data.to) === Components.DockController.State.Undocked && this._toolboxRootView) {
@@ -106,12 +118,12 @@ Emulation.AdvancedApp = class {
   }
 
   /**
-   * @param {!Common.Event=} event
+   * @param {!Common.EventTarget.EventTargetEvent=} event
    */
   _onDockSideChange(event) {
     this._updateDeviceModeView();
 
-    const toDockSide = event ? /** @type {string} */ (event.data.to) : Components.dockController.dockSide();
+    const toDockSide = event ? /** @type {string} */ (event.data.to) : self.Components.dockController.dockSide();
     if (toDockSide === Components.DockController.State.Undocked) {
       this._updateForUndocked();
     } else if (
@@ -125,7 +137,7 @@ Emulation.AdvancedApp = class {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onAfterDockSideChange(event) {
     // We may get here on the first dock side change while loading without BeforeDockSideChange.
@@ -156,22 +168,22 @@ Emulation.AdvancedApp = class {
         dockSide === Components.DockController.State.DockedToBottom);
     this._rootSplitWidget.toggleResizer(this._rootSplitWidget.resizerElement(), true);
     this._rootSplitWidget.toggleResizer(
-        UI.inspectorView.topResizerElement(), dockSide === Components.DockController.State.DockedToBottom);
+        self.UI.inspectorView.topResizerElement(), dockSide === Components.DockController.State.DockedToBottom);
     this._rootSplitWidget.showBoth();
   }
 
   _updateForUndocked() {
     this._rootSplitWidget.toggleResizer(this._rootSplitWidget.resizerElement(), false);
-    this._rootSplitWidget.toggleResizer(UI.inspectorView.topResizerElement(), false);
+    this._rootSplitWidget.toggleResizer(self.UI.inspectorView.topResizerElement(), false);
     this._rootSplitWidget.hideMain();
   }
 
   _isDocked() {
-    return Components.dockController.dockSide() !== Components.DockController.State.Undocked;
+    return self.Components.dockController.dockSide() !== Components.DockController.State.Undocked;
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onSetInspectedPageBounds(event) {
     if (this._changingDockSide) {
@@ -186,24 +198,21 @@ Emulation.AdvancedApp = class {
     }
     const bounds = /** @type {{x: number, y: number, width: number, height: number}} */ (event.data);
     console.timeStamp('AdvancedApp.setInspectedPageBounds');
-    Host.InspectorFrontendHost.setInspectedPageBounds(bounds);
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.setInspectedPageBounds(bounds);
   }
-};
-
-/** @type {!Emulation.AdvancedApp} */
-Emulation.AdvancedApp._appInstance;
+}
 
 
 /**
- * @implements {Common.AppProvider}
+ * @implements {Common.AppProvider.AppProvider}
  * @unrestricted
  */
-Emulation.AdvancedAppProvider = class {
+export class AdvancedAppProvider {
   /**
    * @override
-   * @return {!Common.App}
+   * @return {!Common.App.App}
    */
   createApp() {
-    return Emulation.AdvancedApp._instance();
+    return AdvancedApp._instance();
   }
-};
+}

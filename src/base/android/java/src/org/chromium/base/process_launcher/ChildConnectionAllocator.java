@@ -13,12 +13,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.UserManager;
-import android.support.v4.util.ArraySet;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.collection.ArraySet;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.SysUtils;
 import org.chromium.base.compat.ApiHelperForM;
 
 import java.util.ArrayDeque;
@@ -33,6 +35,8 @@ import java.util.Queue;
  */
 public abstract class ChildConnectionAllocator {
     private static final String TAG = "ChildConnAllocator";
+    private static final String ZYGOTE_SUFFIX = "0";
+    private static final String NON_ZYGOTE_SUFFIX = "1";
 
     /** Factory interface. Used by tests to specialize created connections. */
     @VisibleForTesting
@@ -56,6 +60,15 @@ public abstract class ChildConnectionAllocator {
     // Delay between the call to freeConnection and the connection actually beeing freed.
     private static final long FREE_CONNECTION_DELAY_MILLIS = 1;
 
+    // Max number of connections allocated for variable allocator.
+    private static final int MAX_VARIABLE_ALLOCATED = 100;
+
+    // Runnable which will be called when allocator wants to allocate a new connection, but does
+    // not have any more free slots. May be null.
+    private final Runnable mFreeSlotCallback;
+
+    private final Queue<Runnable> mPendingAllocations = new ArrayDeque<>();
+
     // The handler of the thread on which all interations should happen.
     private final Handler mLauncherHandler;
 
@@ -63,7 +76,7 @@ public abstract class ChildConnectionAllocator {
     /* package */ final String mServiceClassName;
     /* package */ final boolean mBindToCaller;
     /* package */ final boolean mBindAsExternalService;
-    private final boolean mUseStrongBinding;
+    /* package */ final boolean mUseStrongBinding;
 
     /* package */ ConnectionFactory mConnectionFactory = new ConnectionFactoryImpl();
 
@@ -112,11 +125,35 @@ public abstract class ChildConnectionAllocator {
     }
 
     public static ChildConnectionAllocator createVariableSize(Context context,
-            Handler launcherHandler, String packageName, String serviceClassName,
-            boolean bindToCaller, boolean bindAsExternalService, boolean useStrongBinding) {
+            Handler launcherHandler, Runnable freeSlotCallback, String packageName,
+            String serviceClassName, boolean bindToCaller, boolean bindAsExternalService,
+            boolean useStrongBinding) {
         checkServiceExists(context, packageName, serviceClassName);
-        return new VariableSizeAllocatorImpl(launcherHandler, packageName, serviceClassName,
-                bindToCaller, bindAsExternalService, useStrongBinding);
+
+        // OnePlus devices are having trouble with app zygote in combination with dynamic
+        // feature modules. See crbug.com/1064314 for details.
+        BuildInfo buildInfo = BuildInfo.getInstance();
+        boolean disableZygote = Build.VERSION.SDK_INT == 29
+                && buildInfo.androidBuildFingerprint.startsWith("OnePlus/");
+
+        if (Build.VERSION.SDK_INT == 29 && !disableZygote) {
+            UserManager userManager =
+                    (UserManager) ContextUtils.getApplicationContext().getSystemService(
+                            Context.USER_SERVICE);
+            if (!ApiHelperForM.isSystemUser(userManager)) {
+                return new Android10WorkaroundAllocatorImpl(launcherHandler, freeSlotCallback,
+                        packageName, serviceClassName, bindToCaller, bindAsExternalService,
+                        useStrongBinding, MAX_VARIABLE_ALLOCATED);
+            }
+        }
+        // On low end devices, we do not expect to have many renderers. As a consequence, the fixed
+        // costs of the app zygote are not recovered. See https://crbug.com/1044579 for context and
+        // experimental results.
+        String suffix =
+                (SysUtils.isLowEndDevice() || disableZygote) ? NON_ZYGOTE_SUFFIX : ZYGOTE_SUFFIX;
+        return new VariableSizeAllocatorImpl(launcherHandler, freeSlotCallback, packageName,
+                serviceClassName + suffix, bindToCaller, bindAsExternalService, useStrongBinding,
+                MAX_VARIABLE_ALLOCATED);
     }
 
     /**
@@ -134,17 +171,30 @@ public abstract class ChildConnectionAllocator {
 
     @VisibleForTesting
     public static VariableSizeAllocatorImpl createVariableSizeForTesting(Handler launcherHandler,
-            String packageName, String serviceClassName, boolean bindToCaller,
-            boolean bindAsExternalService, boolean useStrongBinding) {
-        return new VariableSizeAllocatorImpl(launcherHandler, packageName, serviceClassName + "0",
-                bindToCaller, bindAsExternalService, useStrongBinding);
+            String packageName, Runnable freeSlotCallback, String serviceClassName,
+            boolean bindToCaller, boolean bindAsExternalService, boolean useStrongBinding,
+            int maxAllocated) {
+        return new VariableSizeAllocatorImpl(launcherHandler, freeSlotCallback, packageName,
+                serviceClassName + ZYGOTE_SUFFIX, bindToCaller, bindAsExternalService,
+                useStrongBinding, maxAllocated);
     }
 
-    private ChildConnectionAllocator(Handler launcherHandler, String packageName,
+    @VisibleForTesting
+    public static Android10WorkaroundAllocatorImpl createWorkaroundForTesting(
+            Handler launcherHandler, String packageName, Runnable freeSlotCallback,
             String serviceClassName, boolean bindToCaller, boolean bindAsExternalService,
-            boolean useStrongBinding) {
+            boolean useStrongBinding, int maxAllocated) {
+        return new Android10WorkaroundAllocatorImpl(launcherHandler, freeSlotCallback, packageName,
+                serviceClassName, bindToCaller, bindAsExternalService, useStrongBinding,
+                maxAllocated);
+    }
+
+    private ChildConnectionAllocator(Handler launcherHandler, Runnable freeSlotCallback,
+            String packageName, String serviceClassName, boolean bindToCaller,
+            boolean bindAsExternalService, boolean useStrongBinding) {
         mLauncherHandler = launcherHandler;
         assert isRunningOnLauncherThread();
+        mFreeSlotCallback = freeSlotCallback;
         mPackageName = packageName;
         mServiceClassName = serviceClassName;
         mBindToCaller = bindToCaller;
@@ -156,9 +206,6 @@ public abstract class ChildConnectionAllocator {
     public ChildProcessConnection allocate(Context context, Bundle serviceBundle,
             final ChildProcessConnection.ServiceCallback serviceCallback) {
         assert isRunningOnLauncherThread();
-
-        ChildProcessConnection connection = doAllocate(context, serviceBundle);
-        if (connection == null) return null;
 
         // Wrap the service callbacks so that:
         // - we can intercept onChildProcessDied and clean-up connections
@@ -224,23 +271,26 @@ public abstract class ChildConnectionAllocator {
                     }
                 };
 
-        connection.start(mUseStrongBinding, serviceCallbackWrapper);
-        return connection;
+        return doAllocate(context, serviceBundle, serviceCallbackWrapper);
     }
 
     /** Free connection allocated by this allocator. */
     private void free(ChildProcessConnection connection) {
         assert isRunningOnLauncherThread();
         doFree(connection);
+
+        if (mPendingAllocations.isEmpty()) return;
+        mPendingAllocations.remove().run();
+        if (!mPendingAllocations.isEmpty() && mFreeSlotCallback != null) {
+            mFreeSlotCallback.run();
+        }
     }
 
-    // Can only be called once all slots are full, ie when allocate returns null. Note
-    // this should not be called in if created with createVariableSize.
-    // The callback will be called when a slot becomes free, and should synchronous call
-    // allocate to take the slot.
-    public void queueAllocation(Runnable runnable) {
+    public final void queueAllocation(Runnable runnable) {
         assert isRunningOnLauncherThread();
-        doQueueAllocation(runnable);
+        boolean wasEmpty = mPendingAllocations.isEmpty();
+        mPendingAllocations.add(runnable);
+        if (wasEmpty && mFreeSlotCallback != null) mFreeSlotCallback.run();
     }
 
     /** May return -1 if size is not fixed. */
@@ -262,32 +312,25 @@ public abstract class ChildConnectionAllocator {
         return mLauncherHandler.getLooper() == Looper.myLooper();
     }
 
-    /* package */ abstract ChildProcessConnection doAllocate(Context context, Bundle serviceBundle);
+    /* package */ abstract ChildProcessConnection doAllocate(Context context, Bundle serviceBundle,
+            ChildProcessConnection.ServiceCallback serviceCallback);
     /* package */ abstract void doFree(ChildProcessConnection connection);
-    /* package */ abstract void doQueueAllocation(Runnable runnable);
 
     /** Implementation class accessed directly by tests. */
     @VisibleForTesting
     public static class FixedSizeAllocatorImpl extends ChildConnectionAllocator {
-        // Runnable which will be called when allocator wants to allocate a new connection, but does
-        // not have any more free slots. May be null.
-        private final Runnable mFreeSlotCallback;
-
         // Connections to services. Indices of the array correspond to the service numbers.
         private final ChildProcessConnection[] mChildProcessConnections;
 
         // The list of free (not bound) service indices.
         private final ArrayList<Integer> mFreeConnectionIndices;
 
-        private final Queue<Runnable> mPendingAllocations = new ArrayDeque<>();
-
         private FixedSizeAllocatorImpl(Handler launcherHandler, Runnable freeSlotCallback,
                 String packageName, String serviceClassName, boolean bindToCaller,
                 boolean bindAsExternalService, boolean useStrongBinding, int numChildServices) {
-            super(launcherHandler, packageName, serviceClassName, bindToCaller,
+            super(launcherHandler, freeSlotCallback, packageName, serviceClassName, bindToCaller,
                     bindAsExternalService, useStrongBinding);
 
-            mFreeSlotCallback = freeSlotCallback;
             mChildProcessConnections = new ChildProcessConnection[numChildServices];
 
             mFreeConnectionIndices = new ArrayList<Integer>(numChildServices);
@@ -297,7 +340,8 @@ public abstract class ChildConnectionAllocator {
         }
 
         @Override
-        /* package */ ChildProcessConnection doAllocate(Context context, Bundle serviceBundle) {
+        /* package */ ChildProcessConnection doAllocate(Context context, Bundle serviceBundle,
+                ChildProcessConnection.ServiceCallback serviceCallback) {
             if (mFreeConnectionIndices.isEmpty()) {
                 Log.d(TAG, "Ran out of services to allocate.");
                 return null;
@@ -312,6 +356,7 @@ public abstract class ChildConnectionAllocator {
             mChildProcessConnections[slot] = connection;
             Log.d(TAG, "Allocator allocated and bound a connection, name: %s, slot: %d",
                     mServiceClassName, slot);
+            connection.start(mUseStrongBinding, serviceCallback);
             return connection;
         }
 
@@ -330,21 +375,11 @@ public abstract class ChildConnectionAllocator {
                 Log.d(TAG, "Allocator freed a connection, name: %s, slot: %d", mServiceClassName,
                         slot);
             }
-
-            if (mPendingAllocations.isEmpty()) return;
-            mPendingAllocations.remove().run();
-            assert mFreeConnectionIndices.isEmpty();
-            if (!mPendingAllocations.isEmpty() && mFreeSlotCallback != null) {
-                mFreeSlotCallback.run();
-            }
         }
 
-        @Override
-        /* package */ void doQueueAllocation(Runnable runnable) {
-            assert mFreeConnectionIndices.isEmpty();
-            boolean wasEmpty = mPendingAllocations.isEmpty();
-            mPendingAllocations.add(runnable);
-            if (wasEmpty && mFreeSlotCallback != null) mFreeSlotCallback.run();
+        @VisibleForTesting
+        public boolean isFreeConnectionAvailable() {
+            return !mFreeConnectionIndices.isEmpty();
         }
 
         @Override
@@ -362,11 +397,6 @@ public abstract class ChildConnectionAllocator {
             return mChildProcessConnections[slotNumber];
         }
 
-        @VisibleForTesting
-        public boolean isFreeConnectionAvailable() {
-            return !mFreeConnectionIndices.isEmpty();
-        }
-
         @Override
         public boolean anyConnectionAllocated() {
             return mFreeConnectionIndices.size() < mChildProcessConnections.length;
@@ -375,34 +405,45 @@ public abstract class ChildConnectionAllocator {
 
     @VisibleForTesting
     /* package */ static class VariableSizeAllocatorImpl extends ChildConnectionAllocator {
+        private final int mMaxAllocated;
         private final ArraySet<ChildProcessConnection> mAllocatedConnections = new ArraySet<>();
         private int mNextInstance;
 
-        private static String getServiceSuffix() {
-            // Android Q has a bug in its app zygote implementation under secondary user (eg in a
-            // work profile). See crbug.com/1035432 for details. Disable using the app zygote in
-            // that case by using a non '0' suffix which is the only service entry that enables
-            // app zygote.
-            if (Build.VERSION.SDK_INT == 29) {
-                UserManager userManager =
-                        (UserManager) ContextUtils.getApplicationContext().getSystemService(
-                                Context.USER_SERVICE);
-                if (!ApiHelperForM.isSystemUser(userManager)) {
-                    return "1";
-                }
-            }
-            return "0";
-        }
-
-        private VariableSizeAllocatorImpl(Handler launcherHandler, String packageName,
-                String serviceClassName, boolean bindToCaller, boolean bindAsExternalService,
-                boolean useStrongBinding) {
-            super(launcherHandler, packageName, serviceClassName + getServiceSuffix(), bindToCaller,
+        // Note |serviceClassName| includes the service suffix.
+        private VariableSizeAllocatorImpl(Handler launcherHandler, Runnable freeSlotCallback,
+                String packageName, String serviceClassName, boolean bindToCaller,
+                boolean bindAsExternalService, boolean useStrongBinding, int maxAllocated) {
+            super(launcherHandler, freeSlotCallback, packageName, serviceClassName, bindToCaller,
                     bindAsExternalService, useStrongBinding);
+            assert maxAllocated > 0;
+            mMaxAllocated = maxAllocated;
         }
 
         @Override
-        /* package */ ChildProcessConnection doAllocate(Context context, Bundle serviceBundle) {
+        /* package */ ChildProcessConnection doAllocate(Context context, Bundle serviceBundle,
+                ChildProcessConnection.ServiceCallback serviceCallback) {
+            ChildProcessConnection connection = allocate(context, serviceBundle);
+            if (connection == null) return null;
+            mAllocatedConnections.add(connection);
+            connection.start(mUseStrongBinding, serviceCallback);
+            return connection;
+        }
+
+        /* package */ ChildProcessConnection tryAllocate(Context context, Bundle serviceBundle,
+                ChildProcessConnection.ServiceCallback serviceCallback) {
+            ChildProcessConnection connection = allocate(context, serviceBundle);
+            if (connection == null) return null;
+            boolean startResult = connection.tryStart(mUseStrongBinding, serviceCallback);
+            if (!startResult) return null;
+            mAllocatedConnections.add(connection);
+            return connection;
+        }
+
+        private ChildProcessConnection allocate(Context context, Bundle serviceBundle) {
+            if (mAllocatedConnections.size() >= mMaxAllocated) {
+                Log.d(TAG, "Ran out of UIDs to allocate.");
+                return null;
+            }
             ComponentName serviceName = new ComponentName(mPackageName, mServiceClassName);
             String instanceName = Integer.toString(mNextInstance);
             mNextInstance++;
@@ -410,18 +451,17 @@ public abstract class ChildConnectionAllocator {
                     mConnectionFactory.createConnection(context, serviceName, mBindToCaller,
                             mBindAsExternalService, serviceBundle, instanceName);
             assert connection != null;
-            mAllocatedConnections.add(connection);
             return connection;
         }
 
         @Override
         /* package */ void doFree(ChildProcessConnection connection) {
-            mAllocatedConnections.remove(connection);
+            boolean result = mAllocatedConnections.remove(connection);
+            assert result;
         }
 
-        @Override
-        /* package */ void doQueueAllocation(Runnable runnable) {
-            assert false;
+        /* package */ boolean wasConnectionAllocated(ChildProcessConnection connection) {
+            return mAllocatedConnections.contains(connection);
         }
 
         @Override
@@ -437,6 +477,78 @@ public abstract class ChildConnectionAllocator {
         @Override
         public boolean anyConnectionAllocated() {
             return mAllocatedConnections.size() > 0;
+        }
+    }
+
+    /**
+     * Workaround allocator for Android 10 bug.
+     * Android 10 has a bug that UID used for non-primary user cannot be freed correctly,
+     * eventually exhausting the pool of UIDs for isolated services. There is a global pool of
+     * 1000 UIDs, and each app zygote has a smaller pool of 100; the bug appplies to both cases.
+     * The leaked UID in the app zygote pool are released when the zygote is killed; leaked UIDs in
+     * the global pool are released when the device is rebooted. So way to slightly delay until the
+     * device needs to be rebooted is to use up the app zygote pool first before using the
+     * non-zygote global pool.
+     */
+    private static class Android10WorkaroundAllocatorImpl extends ChildConnectionAllocator {
+        private final VariableSizeAllocatorImpl mZygoteAllocator;
+        private final VariableSizeAllocatorImpl mNonZygoteAllocator;
+
+        private Android10WorkaroundAllocatorImpl(Handler launcherHandler, Runnable freeSlotCallback,
+                String packageName, String serviceClassName, boolean bindToCaller,
+                boolean bindAsExternalService, boolean useStrongBinding, int maxAllocated) {
+            super(launcherHandler, freeSlotCallback, packageName, serviceClassName, bindToCaller,
+                    bindAsExternalService, useStrongBinding);
+            mZygoteAllocator = new VariableSizeAllocatorImpl(launcherHandler, freeSlotCallback,
+                    packageName, serviceClassName + ZYGOTE_SUFFIX, bindToCaller,
+                    bindAsExternalService, useStrongBinding, maxAllocated);
+            mNonZygoteAllocator = new VariableSizeAllocatorImpl(launcherHandler, freeSlotCallback,
+                    packageName, serviceClassName + NON_ZYGOTE_SUFFIX, bindToCaller,
+                    bindAsExternalService, useStrongBinding, maxAllocated);
+        }
+
+        @Override
+        /* package */ ChildProcessConnection doAllocate(Context context, Bundle serviceBundle,
+                ChildProcessConnection.ServiceCallback serviceCallback) {
+            ChildProcessConnection connection =
+                    mZygoteAllocator.tryAllocate(context, serviceBundle, serviceCallback);
+            if (connection != null) return connection;
+            return mNonZygoteAllocator.doAllocate(context, serviceBundle, serviceCallback);
+        }
+
+        @Override
+        /* package */ void doFree(ChildProcessConnection connection) {
+            if (mZygoteAllocator.wasConnectionAllocated(connection)) {
+                mZygoteAllocator.doFree(connection);
+            } else if (mNonZygoteAllocator.wasConnectionAllocated(connection)) {
+                mNonZygoteAllocator.doFree(connection);
+            } else {
+                assert false;
+            }
+        }
+
+        @Override
+        public int getNumberOfServices() {
+            return -1;
+        }
+
+        @Override
+        public int allocatedConnectionsCountForTesting() {
+            return mZygoteAllocator.allocatedConnectionsCountForTesting()
+                    + mNonZygoteAllocator.allocatedConnectionsCountForTesting();
+        }
+
+        @Override
+        public boolean anyConnectionAllocated() {
+            return mZygoteAllocator.anyConnectionAllocated()
+                    || mNonZygoteAllocator.anyConnectionAllocated();
+        }
+
+        @Override
+        public void setConnectionFactoryForTesting(ConnectionFactory connectionFactory) {
+            super.setConnectionFactoryForTesting(connectionFactory);
+            mZygoteAllocator.setConnectionFactoryForTesting(connectionFactory);
+            mNonZygoteAllocator.setConnectionFactoryForTesting(connectionFactory);
         }
     }
 }

@@ -12,17 +12,20 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/extensions/system_web_app_manager_browsertest.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_app_manager_browsertest.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/theme_change_waiter.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/base/theme_provider.h"
 
@@ -89,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
       browser_view->frame()->GetFrameView();
   const ui::ThemeProvider* theme_provider = frame_view->GetThemeProvider();
   const SkColor expected_active_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_FRAME);
+      theme_provider->GetColor(ThemeProperties::COLOR_FRAME_ACTIVE);
   const SkColor expected_inactive_color =
       theme_provider->GetColor(ThemeProperties::COLOR_FRAME_INACTIVE);
 
@@ -120,9 +123,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   app_theme_color_.reset();
   InstallAndLaunchBookmarkApp();
   // Bookmark apps are not affected by browser themes.
-  EXPECT_EQ(
-      ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_FRAME, false),
-      app_frame_view_->GetFrameColor(BrowserFrameActiveState::kActive));
+  EXPECT_EQ(ThemeProperties::GetDefaultColor(
+                ThemeProperties::COLOR_FRAME_ACTIVE, false,
+                app_frame_view_->GetNativeTheme()->ShouldUseDarkColors()),
+            app_frame_view_->GetFrameColor(BrowserFrameActiveState::kActive));
 }
 
 // Tests the frame color for a bookmark app when the system theme is applied.
@@ -143,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   // (https://crbug.com/878636)
   const ui::ThemeProvider* theme_provider = app_frame_view_->GetThemeProvider();
   const SkColor frame_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_FRAME);
+      theme_provider->GetColor(ThemeProperties::COLOR_FRAME_ACTIVE);
   EXPECT_EQ(frame_color,
             app_frame_view_->GetFrameColor(BrowserFrameActiveState::kActive));
 #else
@@ -155,15 +159,16 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
 using SystemWebAppNonClientFrameViewBrowserTest =
     web_app::SystemWebAppManagerBrowserTest;
 
-// System Web Apps don't get the hosted app buttons.
-IN_PROC_BROWSER_TEST_F(SystemWebAppNonClientFrameViewBrowserTest,
-                       HideHostedAppButtonContainer) {
+// System Web Apps don't get the web app menu button.
+IN_PROC_BROWSER_TEST_P(SystemWebAppNonClientFrameViewBrowserTest,
+                       HideWebAppMenuButton) {
   Browser* app_browser =
       WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::SETTINGS);
   EXPECT_EQ(nullptr, BrowserView::GetBrowserViewForBrowser(app_browser)
                          ->frame()
                          ->GetFrameView()
-                         ->web_app_frame_toolbar_for_testing());
+                         ->web_app_frame_toolbar_for_testing()
+                         ->GetAppMenuButton());
 }
 
 // Checks that the title bar for hosted app windows is hidden when in fullscreen
@@ -204,12 +209,20 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   InstallAndLaunchBookmarkApp();
   EXPECT_EQ(app_frame_view_->GetFrameColor(), *app_theme_color_);
 
+  content::ThemeChangeWaiter waiter(web_contents_);
   EXPECT_TRUE(content::ExecJs(web_contents_, R"(
       document.documentElement.innerHTML =
           '<meta name="theme-color" content="yellow">';
   )"));
-  EXPECT_EQ(app_frame_view_->GetFrameColor(), SK_ColorYELLOW);
-  DCHECK_NE(*app_theme_color_, SK_ColorYELLOW);
+  waiter.Wait();
+
+  // Frame view may get reset after theme change.
+  // TODO(crbug.com/1020050): Make it not do this and only refresh the Widget.
+  BrowserNonClientFrameView* frame_view =
+      app_browser_view_->frame()->GetFrameView();
+
+  EXPECT_EQ(frame_view->GetFrameColor(), SK_ColorYELLOW);
+  ASSERT_NE(*app_theme_color_, SK_ColorYELLOW);
 }
 
 class SaveCardOfferObserver
@@ -257,3 +270,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest, SaveCardIcon) {
   EXPECT_TRUE(app_frame_view_->Contains(icon));
   EXPECT_TRUE(icon->GetVisible());
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppNonClientFrameViewBrowserTest,
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);

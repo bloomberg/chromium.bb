@@ -19,6 +19,7 @@
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/controls/link.h"
@@ -147,7 +148,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, PayWithVisa) {
   WaitForObservedEvent();
 
   // The actual structure of the card response is unit-tested.
-  ExpectBodyContains({"4111111111111111", "Test User", "11", "2022"});
+  ExpectBodyContains(
+      {"4111111111111111", "Test User",
+       base::UTF16ToUTF8(card.Expiration2DigitMonthAsString()).c_str(),
+       base::UTF16ToUTF8(card.Expiration4DigitYearAsString()).c_str()});
   ExpectBodyContains({"John", "H.", "Doe", "Underworld", "666 Erebus St.",
                       "Apt 8", "Elysium", "CA", "91111", "US", "16502111111"});
 }
@@ -429,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestSettingsLinkTest, ClickSettingsLink) {
   EXPECT_TRUE(styled_label);
   // The Link is the only child of the StyledLabel.
   content::WebContentsAddedObserver web_contents_added_observer;
-  styled_label->LinkClicked(nullptr, 0);
+  styled_label->LinkClicked(nullptr, ui::EF_NONE);
   content::WebContents* new_tab_contents =
       web_contents_added_observer.GetWebContents();
 

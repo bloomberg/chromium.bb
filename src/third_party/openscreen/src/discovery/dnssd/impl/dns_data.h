@@ -8,7 +8,7 @@
 #include "absl/types/optional.h"
 #include "discovery/dnssd/impl/constants.h"
 #include "discovery/dnssd/impl/instance_key.h"
-#include "discovery/dnssd/public/dns_sd_instance_record.h"
+#include "discovery/dnssd/public/dns_sd_instance_endpoint.h"
 #include "discovery/mdns/mdns_record_changed_callback.h"
 #include "discovery/mdns/mdns_records.h"
 
@@ -18,13 +18,14 @@ namespace discovery {
 // This is the set of DNS data that can be associated with a single PTR record.
 class DnsData {
  public:
-  explicit DnsData(const InstanceKey& instance_id);
+  explicit DnsData(const InstanceKey& instance_id,
+                   NetworkInterfaceIndex network_interface);
 
-  // Converts this DnsData to an InstanceRecord if enough data has been
-  // populated to create a valid InstanceRecord. Specifically, this means that
-  // the srv, txt, and either a or aaaa fields have been populated. In all other
+  // Converts this DnsData to an InstanceEndpoint if enough data has been
+  // populated to create a valid InstanceEndpoint. Specifically, this means that
+  // the SRV, TXT, and either A or AAAA fields have been populated. In all other
   // cases, returns an error.
-  ErrorOr<DnsSdInstanceRecord> CreateRecord();
+  ErrorOr<DnsSdInstanceEndpoint> CreateEndpoint();
 
   // Modifies this entity with the provided DnsRecord. If called with a valid
   // record type, the provided change will always be applied. The returned
@@ -41,6 +42,8 @@ class DnsData {
   absl::optional<AAAARecordRdata> aaaa_;
 
   InstanceKey instance_id_;
+
+  NetworkInterfaceIndex network_interface_;
 
   // Used in dns_data_unittest.cc.
   friend class DnsDataTesting;

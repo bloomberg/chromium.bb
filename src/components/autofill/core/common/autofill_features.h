@@ -22,6 +22,7 @@ namespace features {
 
 // All features in alphabetical order.
 extern const base::Feature kAutofillAddressNormalizer;
+extern const base::Feature kAutofillAllowHtmlTypeCountryCodesWithFullNames;
 extern const base::Feature kAutofillAllowNonHttpActivation;
 extern const base::Feature kAutofillAlwaysFillAddresses;
 extern const base::Feature kAutofillCacheQueryResponses;
@@ -33,7 +34,7 @@ extern const base::Feature kAutofillEnableHideSuggestionsUI;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;
-extern const base::Feature kAutofillGetPaymentsIdentityFromSync;
+extern const base::Feature kAutofillFixFillableFieldTypes;
 extern const base::Feature kAutofillKeyboardAccessory;
 extern const base::Feature kAutofillPruneSuggestions;
 extern const base::Feature kAutofillMetadataUploads;
@@ -58,7 +59,11 @@ extern const base::Feature kAutofillTouchToFill;
 extern const base::Feature kAutofillUploadThrottling;
 extern const base::Feature kAutofillUseApi;
 extern const base::Feature kAutofillUseImprovedLabelDisambiguation;
-extern const base::Feature kAutofillUseServerCVCPrediction;
+extern const base::Feature kAutofillUseNewSectioningMethod;
+extern const base::Feature kAutofillUsePageLanguageToTranslateCountryNames;
+extern const base::Feature kAutofillUseParseCityStateCountryZipCodeInHeuristic;
+extern const base::Feature kAutofillUseVariationCountryCode;
+
 #if defined(OS_ANDROID)
 extern const base::Feature kAutofillManualFallbackAndroid;
 extern const base::Feature kAutofillRefreshStyleAndroid;

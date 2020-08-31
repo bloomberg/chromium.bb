@@ -15,9 +15,9 @@
 #import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
+#include "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -95,44 +95,33 @@ void PerfTestWithBVC::SetUp() {
   ios::AutocompleteClassifierFactory::GetForBrowserState(
       chrome_browser_state_.get());
 
-  // Use the session to create a window which will contain the tab models.
+  // Use the session to create a window which will contain the tabs.
   NSString* state_path = base::SysUTF8ToNSString(
       chrome_browser_state_->GetStatePath().AsUTF8Unsafe());
   SessionIOS* session =
       [[SessionServiceIOS sharedService] loadSessionFromDirectory:state_path];
   DCHECK_EQ(session.sessionWindows.count, 1u);
 
-  // Tab models. The off-the-record (OTR) tab model is required for the stack
-  // view controller, which is created in OpenStackView().
-  tab_model_ =
-      [[TabModel alloc] initWithSessionService:[SessionServiceIOS sharedService]
-                                  browserState:chrome_browser_state_.get()
-                                  webStateList:&web_state_list_];
-  [tab_model_ restoreSessionWindow:session.sessionWindows[0]
-                 forInitialRestore:YES];
-  otr_tab_model_ = [[TabModel alloc]
-      initWithSessionService:[SessionServiceIOS sharedService]
-                browserState:chrome_browser_state_
-                                 ->GetOffTheRecordChromeBrowserState()
-                webStateList:&otr_web_state_list_];
-  [otr_tab_model_ restoreSessionWindow:session.sessionWindows[0]
-                     forInitialRestore:YES];
-
-  browser_ =
-      std::make_unique<TestBrowser>(chrome_browser_state_.get(), tab_model_);
+  browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get(),
+                                           &web_state_list_);
   otr_browser_ = std::make_unique<TestBrowser>(
-      incognito_chrome_browser_state_.get(), otr_tab_model_);
+      chrome_browser_state_->GetOffTheRecordChromeBrowserState(),
+      &otr_web_state_list_);
+  SessionRestorationBrowserAgent::CreateForBrowser(
+      browser_.get(), [SessionServiceIOS sharedService]);
+  SessionRestorationBrowserAgent::CreateForBrowser(
+      otr_browser_.get(), [SessionServiceIOS sharedService]);
+  SessionRestorationBrowserAgent::FromBrowser(browser_.get())
+      ->RestoreSessionWindow(session.sessionWindows[0]);
+  SessionRestorationBrowserAgent::FromBrowser(otr_browser_.get())
+      ->RestoreSessionWindow(session.sessionWindows[0]);
 
-  command_dispatcher_ = [[CommandDispatcher alloc] init];
   // Create the browser view controller with its testing factory.
   bvc_factory_ = [[BrowserViewControllerDependencyFactory alloc]
-      initWithBrowserState:chrome_browser_state_.get()
-              webStateList:[tab_model_ webStateList]];
+      initWithBrowser:browser_.get()];
   bvc_ = [[BrowserViewController alloc]
                      initWithBrowser:browser_.get()
                    dependencyFactory:bvc_factory_
-          applicationCommandEndpoint:nil
-                   commandDispatcher:command_dispatcher_
       browserContainerViewController:[[BrowserContainerViewController alloc]
                                          init]];
   [bvc_ setActive:YES];
@@ -145,7 +134,8 @@ void PerfTestWithBVC::SetUp() {
 }
 
 void PerfTestWithBVC::TearDown() {
-  [[bvc_ tabModel] closeAllTabs];
+  browser_.get()->GetWebStateList()->CloseAllWebStates(
+      WebStateList::CLOSE_NO_FLAGS);
   [[bvc_ view] removeFromSuperview];
 
   // Documented example of how to clear out the browser view controller
@@ -154,9 +144,6 @@ void PerfTestWithBVC::TearDown() {
   [bvc_ shutdown];
   bvc_ = nil;
   bvc_factory_ = nil;
-  tab_model_ = nil;
-  [otr_tab_model_ disconnect];
-  otr_tab_model_ = nil;
 
   // The base class |TearDown| method calls the run loop so the
   // NSAutoreleasePool can drain. This needs to be done before
@@ -165,6 +152,10 @@ void PerfTestWithBVC::TearDown() {
   if (slow_teardown_)
     SpinRunLoop(.5);
   PerfTest::TearDown();
+
+  // Before destroying chrome_browser_state_ we need to make sure that no tasks
+  // are left on the ThreadPool since they might depend on it.
+  task_environment_.RunUntilIdle();
 
   // The profiles can be deallocated only after the BVC has been deallocated.
   chrome_browser_state_.reset();

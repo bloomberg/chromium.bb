@@ -8,7 +8,11 @@
 
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "components/tab_groups/tab_group_color.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 
 FakeBaseTabStripController::FakeBaseTabStripController() {}
 
@@ -35,7 +39,7 @@ void FakeBaseTabStripController::AddPinnedTab(int index, bool is_active) {
 }
 
 void FakeBaseTabStripController::MoveTab(int from_index, int to_index) {
-  base::Optional<TabGroupId> prev_group;
+  base::Optional<tab_groups::TabGroupId> prev_group;
   if (from_index < int{tab_groups_.size()}) {
     prev_group = tab_groups_[from_index];
     tab_groups_.erase(tab_groups_.begin() + from_index);
@@ -45,6 +49,8 @@ void FakeBaseTabStripController::MoveTab(int from_index, int to_index) {
   tab_groups_.insert(tab_groups_.begin() + to_index, prev_group);
   tab_strip_->MoveTab(from_index, to_index, TabRendererData());
 }
+void FakeBaseTabStripController::MoveGroup(const tab_groups::TabGroupId& group,
+                                           int to_index) {}
 
 void FakeBaseTabStripController::RemoveTab(int index) {
   num_tabs_--;
@@ -61,11 +67,42 @@ void FakeBaseTabStripController::RemoveTab(int index) {
     tab_strip_->SetSelection(selection_model_);
 }
 
+base::string16 FakeBaseTabStripController::GetGroupTitle(
+    const tab_groups::TabGroupId& group_id) const {
+  return fake_group_data_.title();
+}
+
+base::string16 FakeBaseTabStripController::GetGroupContentString(
+    const tab_groups::TabGroupId& group_id) const {
+  return base::string16();
+}
+
+tab_groups::TabGroupColorId FakeBaseTabStripController::GetGroupColorId(
+    const tab_groups::TabGroupId& group_id) const {
+  return fake_group_data_.color();
+}
+
+void FakeBaseTabStripController::SetVisualDataForGroup(
+    const tab_groups::TabGroupId& group,
+    const tab_groups::TabGroupVisualData& visual_data) {
+  fake_group_data_ = visual_data;
+}
+
+void FakeBaseTabStripController::AddTabToGroup(
+    int model_index,
+    const tab_groups::TabGroupId& group) {
+  MoveTabIntoGroup(model_index, group);
+}
+
+void FakeBaseTabStripController::RemoveTabFromGroup(int model_index) {
+  MoveTabIntoGroup(model_index, base::nullopt);
+}
+
 void FakeBaseTabStripController::MoveTabIntoGroup(
     int index,
-    base::Optional<TabGroupId> new_group) {
+    base::Optional<tab_groups::TabGroupId> new_group) {
   bool group_exists = base::Contains(tab_groups_, new_group);
-  base::Optional<TabGroupId> old_group;
+  base::Optional<tab_groups::TabGroupId> old_group;
   if (index >= int{tab_groups_.size()})
     tab_groups_.resize(index + 1);
   else
@@ -88,23 +125,8 @@ void FakeBaseTabStripController::MoveTabIntoGroup(
   }
 }
 
-const TabGroupVisualData* FakeBaseTabStripController::GetVisualDataForGroup(
-    TabGroupId group) const {
-  return &fake_group_data_;
-}
-
-void FakeBaseTabStripController::SetVisualDataForGroup(
-    TabGroupId group,
-    TabGroupVisualData visual_data) {
-  fake_group_data_ = visual_data;
-}
-
-void FakeBaseTabStripController::UngroupAllTabsInGroup(TabGroupId group) {}
-
-void FakeBaseTabStripController::AddNewTabInGroup(TabGroupId group) {}
-
 std::vector<int> FakeBaseTabStripController::ListTabsInGroup(
-    TabGroupId group) const {
+    const tab_groups::TabGroupId& group) const {
   std::vector<int> result;
   for (size_t i = 0; i < tab_groups_.size(); i++) {
     if (tab_groups_[i] == group)
@@ -165,7 +187,7 @@ bool FakeBaseTabStripController::BeforeCloseTab(int index,
   return true;
 }
 
-void FakeBaseTabStripController::CloseTab(int index, CloseTabSource source) {
+void FakeBaseTabStripController::CloseTab(int index) {
   RemoveTab(index);
 }
 
@@ -194,7 +216,7 @@ void FakeBaseTabStripController::CreateNewTabWithLocation(
 void FakeBaseTabStripController::StackedLayoutMaybeChanged() {
 }
 
-void FakeBaseTabStripController::OnStartedDragging() {}
+void FakeBaseTabStripController::OnStartedDragging(bool dragging_window) {}
 
 void FakeBaseTabStripController::OnStoppedDragging() {}
 

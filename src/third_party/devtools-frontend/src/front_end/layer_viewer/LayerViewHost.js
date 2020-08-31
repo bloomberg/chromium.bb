@@ -1,26 +1,29 @@
-/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @interface
  */
 export class LayerView {
   /**
-   * @param {?LayerViewer.LayerView.Selection} selection
+   * @param {?Selection} selection
    */
   hoverObject(selection) {
   }
 
   /**
-   * @param {?LayerViewer.LayerView.Selection} selection
+   * @param {?Selection} selection
    */
   selectObject(selection) {
   }
 
   /**
-   * @param {?SDK.LayerTreeBase} layerTree
+   * @param {?SDK.LayerTreeBase.LayerTreeBase} layerTree
    */
   setLayerTree(layerTree) {}
 }
@@ -30,8 +33,8 @@ export class LayerView {
  */
 export class Selection {
   /**
-   * @param {!LayerViewer.LayerView.Selection.Type} type
-   * @param {!SDK.Layer} layer
+   * @param {!Type} type
+   * @param {!SDK.LayerTreeBase.Layer} layer
    */
   constructor(type, layer) {
     this._type = type;
@@ -39,7 +42,7 @@ export class Selection {
   }
 
   /**
-   * @param {?LayerViewer.LayerView.Selection} a
+   * @param {?Selection} a
    * @param {?LayerViewer.LayerView.Selection} b
    * @return {boolean}
    */
@@ -48,21 +51,21 @@ export class Selection {
   }
 
   /**
-   * @return {!LayerViewer.LayerView.Selection.Type}
+   * @return {!Type}
    */
   type() {
     return this._type;
   }
 
   /**
-   * @return {!SDK.Layer}
+   * @return {!SDK.LayerTreeBase.Layer}
    */
   layer() {
     return this._layer;
   }
 
   /**
-   * @param {!LayerViewer.LayerView.Selection} other
+   * @param {!Selection} other
    * @return {boolean}
    */
   _isEqual(other) {
@@ -84,7 +87,7 @@ export const Type = {
  */
 export class LayerSelection extends Selection {
   /**
-   * @param {!SDK.Layer} layer
+   * @param {!SDK.LayerTreeBase.Layer} layer
    */
   constructor(layer) {
     console.assert(layer, 'LayerSelection with empty layer');
@@ -93,7 +96,7 @@ export class LayerSelection extends Selection {
 
   /**
    * @override
-   * @param {!LayerViewer.LayerView.Selection} other
+   * @param {!Selection} other
    * @return {boolean}
    */
   _isEqual(other) {
@@ -106,7 +109,7 @@ export class LayerSelection extends Selection {
  */
 export class ScrollRectSelection extends Selection {
   /**
-   * @param {!SDK.Layer} layer
+   * @param {!SDK.LayerTreeBase.Layer} layer
    * @param {number} scrollRectIndex
    */
   constructor(layer, scrollRectIndex) {
@@ -116,7 +119,7 @@ export class ScrollRectSelection extends Selection {
 
   /**
    * @override
-   * @param {!LayerViewer.LayerView.Selection} other
+   * @param {!Selection} other
    * @return {boolean}
    */
   _isEqual(other) {
@@ -130,8 +133,8 @@ export class ScrollRectSelection extends Selection {
  */
 export class SnapshotSelection extends Selection {
   /**
-   * @param {!SDK.Layer} layer
-   * @param {!SDK.SnapshotWithRect} snapshot
+   * @param {!SDK.LayerTreeBase.Layer} layer
+   * @param {!SDK.PaintProfiler.SnapshotWithRect} snapshot
    */
   constructor(layer, snapshot) {
     super(Type.Snapshot, layer);
@@ -140,7 +143,7 @@ export class SnapshotSelection extends Selection {
 
   /**
    * @override
-   * @param {!LayerViewer.LayerView.Selection} other
+   * @param {!Selection} other
    * @return {boolean}
    */
   _isEqual(other) {
@@ -149,7 +152,7 @@ export class SnapshotSelection extends Selection {
   }
 
   /**
-   * @return {!SDK.SnapshotWithRect}
+   * @return {!SDK.PaintProfiler.SnapshotWithRect}
    */
   snapshot() {
     return this._snapshot;
@@ -161,36 +164,37 @@ export class SnapshotSelection extends Selection {
  */
 export class LayerViewHost {
   constructor() {
-    /** @type {!Array.<!LayerViewer.LayerView>} */
+    /** @type {!Array.<!LayerView>} */
     this._views = [];
     this._selectedObject = null;
     this._hoveredObject = null;
-    this._showInternalLayersSetting = Common.settings.createSetting('layersShowInternalLayers', false);
+    this._showInternalLayersSetting =
+        Common.Settings.Settings.instance().createSetting('layersShowInternalLayers', false);
   }
 
   /**
-   * @param {!LayerViewer.LayerView} layerView
+   * @param {!LayerView} layerView
    */
   registerView(layerView) {
     this._views.push(layerView);
   }
 
   /**
-   * @param {!Map<!SDK.Layer, !LayerViewer.LayerView.SnapshotSelection>} snapshotLayers
+   * @param {!Map<!SDK.LayerTreeBase.Layer, !SnapshotSelection>} snapshotLayers
    */
   setLayerSnapshotMap(snapshotLayers) {
     this._snapshotLayers = snapshotLayers;
   }
 
   /**
-   * @return {!Map<!SDK.Layer, !LayerViewer.LayerView.SnapshotSelection>}
+   * @return {!Map<!SDK.LayerTreeBase.Layer, !SnapshotSelection>}
    */
   getLayerSnapshotMap() {
     return this._snapshotLayers;
   }
 
   /**
-   * @param {?SDK.LayerTreeBase} layerTree
+   * @param {?SDK.LayerTreeBase.LayerTreeBase} layerTree
    */
   setLayerTree(layerTree) {
     this._target = layerTree.target();
@@ -208,7 +212,7 @@ export class LayerViewHost {
   }
 
   /**
-   * @param {?LayerViewer.LayerView.Selection} selection
+   * @param {?Selection} selection
    */
   hoverObject(selection) {
     if (Selection.isEqual(this._hoveredObject, selection)) {
@@ -223,7 +227,7 @@ export class LayerViewHost {
   }
 
   /**
-   * @param {?LayerViewer.LayerView.Selection} selection
+   * @param {?Selection} selection
    */
   selectObject(selection) {
     if (Selection.isEqual(this._selectedObject, selection)) {
@@ -236,19 +240,19 @@ export class LayerViewHost {
   }
 
   /**
-   * @return {?LayerViewer.LayerView.Selection}
+   * @return {?Selection}
    */
   selection() {
     return this._selectedObject;
   }
 
   /**
-   * @param {!UI.ContextMenu} contextMenu
-   * @param {?LayerViewer.LayerView.Selection} selection
+   * @param {!UI.ContextMenu.ContextMenu} contextMenu
+   * @param {?Selection} selection
    */
   showContextMenu(contextMenu, selection) {
     contextMenu.defaultSection().appendCheckboxItem(
-        Common.UIString('Show internal layers'), this._toggleShowInternalLayers.bind(this),
+        Common.UIString.UIString('Show internal layers'), this._toggleShowInternalLayers.bind(this),
         this._showInternalLayersSetting.get());
     const node = selection && selection.layer() && selection.layer().nodeForSelfOrAncestor();
     if (node) {
@@ -258,7 +262,7 @@ export class LayerViewHost {
   }
 
   /**
-   * @return {!Common.Setting}
+   * @return {!Common.Settings.Setting}
    */
   showInternalLayersSetting() {
     return this._showInternalLayersSetting;
@@ -269,54 +273,13 @@ export class LayerViewHost {
   }
 
   /**
-   * @param {?SDK.DOMNode} node
+   * @param {?SDK.DOMModel.DOMNode} node
    */
   _toggleNodeHighlight(node) {
     if (node) {
       node.highlightForTwoSeconds();
       return;
     }
-    SDK.OverlayModel.hideDOMNodeHighlight();
+    SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
   }
 }
-
-/* Legacy exported object */
-self.LayerViewer = self.LayerViewer || {};
-
-/* Legacy exported object */
-LayerViewer = LayerViewer || {};
-
-/**
- * @interface
- */
-LayerViewer.LayerView = LayerView;
-
-/**
- * @constructor
- */
-LayerViewer.LayerView.Selection = Selection;
-
-/**
- * @enum {symbol}
- */
-LayerViewer.LayerView.Selection.Type = Type;
-
-/**
- * @constructor
- */
-LayerViewer.LayerView.LayerSelection = LayerSelection;
-
-/**
- * @constructor
- */
-LayerViewer.LayerView.ScrollRectSelection = ScrollRectSelection;
-
-/**
- * @constructor
- */
-LayerViewer.LayerView.SnapshotSelection = SnapshotSelection;
-
-/**
- * @constructor
- */
-LayerViewer.LayerViewHost = LayerViewHost;

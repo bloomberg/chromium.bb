@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "gpu/config/gpu_preferences.h"
@@ -54,6 +55,7 @@ class MockMojoVideoEncodeAcceleratorClient
   MOCK_METHOD2(BitstreamBufferReady,
                void(int32_t, const media::BitstreamBufferMetadata&));
   MOCK_METHOD1(NotifyError, void(VideoEncodeAccelerator::Error));
+  MOCK_METHOD1(NotifyEncoderInfoChange, void(const VideoEncoderInfo& info));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMojoVideoEncodeAcceleratorClient);
@@ -82,8 +84,8 @@ class MojoVideoEncodeAcceleratorServiceTest : public ::testing::Test {
   void CreateMojoVideoEncodeAccelerator(
       bool will_fake_vea_initialization_succeed = true) {
     mojo_vea_service_ = std::make_unique<MojoVideoEncodeAcceleratorService>(
-        base::Bind(&CreateAndInitializeFakeVEA,
-                   will_fake_vea_initialization_succeed),
+        base::BindRepeating(&CreateAndInitializeFakeVEA,
+                            will_fake_vea_initialization_succeed),
         gpu::GpuPreferences());
   }
 
@@ -102,7 +104,7 @@ class MojoVideoEncodeAcceleratorServiceTest : public ::testing::Test {
         PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate);
     mojo_vea_service()->Initialize(
         config, std::move(mojo_vea_client),
-        base::Bind([](bool success) { ASSERT_TRUE(success); }));
+        base::BindOnce([](bool success) { ASSERT_TRUE(success); }));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -231,7 +233,7 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest,
       PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate);
   mojo_vea_service()->Initialize(
       config, std::move(invalid_mojo_vea_client),
-      base::Bind([](bool success) { ASSERT_FALSE(success); }));
+      base::BindOnce([](bool success) { ASSERT_FALSE(success); }));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -251,7 +253,7 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest, InitializeFailure) {
       PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate);
   mojo_vea_service()->Initialize(
       config, std::move(mojo_vea_client),
-      base::Bind([](bool success) { ASSERT_FALSE(success); }));
+      base::BindOnce([](bool success) { ASSERT_FALSE(success); }));
   base::RunLoop().RunUntilIdle();
 
   mojo_vea_receiver->Close();

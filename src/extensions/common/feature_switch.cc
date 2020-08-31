@@ -33,9 +33,6 @@ class CommonSwitches {
 #else
                                        FeatureSwitch::DEFAULT_DISABLED),
 #endif
-        error_console(switches::kErrorConsole, FeatureSwitch::DEFAULT_ENABLED),
-        enable_override_bookmarks_ui(switches::kEnableOverrideBookmarksUI,
-                                     FeatureSwitch::DEFAULT_DISABLED),
         embedded_extension_options(switches::kEmbeddedExtensionOptions,
                                    FeatureSwitch::DEFAULT_DISABLED),
         trace_app_source(switches::kTraceAppSource,
@@ -56,8 +53,6 @@ class CommonSwitches {
   // Default is yes.
   FeatureSwitch prompt_for_external_extensions;
 
-  FeatureSwitch error_console;
-  FeatureSwitch enable_override_bookmarks_ui;
   FeatureSwitch embedded_extension_options;
   FeatureSwitch trace_app_source;
   FeatureSwitch load_media_router_component_extension;
@@ -73,12 +68,6 @@ FeatureSwitch* FeatureSwitch::force_dev_mode_highlighting() {
 }
 FeatureSwitch* FeatureSwitch::prompt_for_external_extensions() {
   return &g_common_switches.Get().prompt_for_external_extensions;
-}
-FeatureSwitch* FeatureSwitch::error_console() {
-  return &g_common_switches.Get().error_console;
-}
-FeatureSwitch* FeatureSwitch::enable_override_bookmarks_ui() {
-  return &g_common_switches.Get().enable_override_bookmarks_ui;
 }
 FeatureSwitch* FeatureSwitch::embedded_extension_options() {
   return &g_common_switches.Get().embedded_extension_options;

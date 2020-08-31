@@ -19,6 +19,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -547,49 +548,6 @@ INSTANTIATE_TEST_SUITE_P(Real,
 INSTANTIATE_TEST_SUITE_P(Mock,
                          RunLoopTest,
                          testing::Values(RunLoopTestType::kTestDelegate));
-
-TEST(ScopedRunTimeoutForTestTest, TimesOut) {
-  test::TaskEnvironment task_environment;
-  RunLoop run_loop;
-
-  static constexpr auto kArbitraryTimeout =
-      base::TimeDelta::FromMilliseconds(10);
-  RunLoop::ScopedRunTimeoutForTest run_timeout(
-      kArbitraryTimeout, MakeExpectedRunAtLeastOnceClosure(FROM_HERE));
-
-  // Since the delayed task will be posted only after the message pump starts
-  // running, the ScopedRunTimeoutForTest will already have started to elapse,
-  // so if Run() exits at the correct time then our delayed task will not run.
-  SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&SequencedTaskRunner::PostDelayedTask),
-                     SequencedTaskRunnerHandle::Get(), FROM_HERE,
-                     MakeExpectedNotRunClosure(FROM_HERE), kArbitraryTimeout));
-
-  // This task should get to run before Run() times-out.
-  SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, MakeExpectedRunClosure(FROM_HERE), kArbitraryTimeout);
-
-  run_loop.Run();
-}
-
-TEST(ScopedRunTimeoutForTestTest, RunTasksUntilTimeout) {
-  test::TaskEnvironment task_environment;
-  RunLoop run_loop;
-
-  static constexpr auto kArbitraryTimeout =
-      base::TimeDelta::FromMilliseconds(10);
-  RunLoop::ScopedRunTimeoutForTest run_timeout(
-      kArbitraryTimeout, MakeExpectedRunAtLeastOnceClosure(FROM_HERE));
-
-  // Posting a task with the same delay as our timeout, immediately before
-  // calling Run(), means it should get to run. Since this uses QuitWhenIdle(),
-  // the Run() timeout callback should also get to run.
-  SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, MakeExpectedRunClosure(FROM_HERE), kArbitraryTimeout);
-
-  run_loop.Run();
-}
 
 TEST(RunLoopDeathTest, MustRegisterBeforeInstantiating) {
   TestBoundDelegate unbound_test_delegate_;

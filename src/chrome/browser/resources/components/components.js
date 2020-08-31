@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import './strings.m.js';
+
+import {addWebUIListener, isChromeOS, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {$} from 'chrome://resources/js/util.m.js';
 
 /**
  * An array of the latest component data including ID, name, status and
@@ -31,10 +35,9 @@ function renderTemplate(componentsData) {
 /**
  * Asks the C++ ComponentsDOMHandler to get details about the installed
  * components.
- * The ComponentsDOMHandler should reply to returnComponentsData() (below).
  */
 function requestComponentsData() {
-  chrome.send('requestComponentsData');
+  sendWithPromise('requestComponentsData').then(returnComponentsData);
 }
 
 /**
@@ -82,7 +85,7 @@ function returnComponentsData(componentsData) {
   }
 
   // Disable some controls for Guest mode in ChromeOS.
-  if (cr.isChromeOS && loadTimeData.getBoolean('isGuest')) {
+  if (isChromeOS && loadTimeData.getBoolean('isGuest')) {
     document.querySelectorAll('[guest-disabled]').forEach(function(element) {
       element.disabled = true;
     });
@@ -93,8 +96,7 @@ function returnComponentsData(componentsData) {
 }
 
 /**
- * This event function is called from component UI indicating changed state
- * of component updater service.
+ * Listener called when state of component updater service changes.
  * @param {Object} eventArgs Contains event and component ID. Component ID is
  * optional.
  */
@@ -108,6 +110,13 @@ function onComponentEvent(eventArgs) {
   const filteredComponents = currentComponentsData.filter(function(entry) {
     return entry.id === id;
   });
+
+  // A component may be added from another page so the status and version
+  // should only be updated if the component is listed on this page.
+  if (filteredComponents.length === 0) {
+    return;
+  }
+
   const component = filteredComponents[0];
 
   const status = eventArgs['event'];
@@ -135,4 +144,7 @@ function handleCheckUpdate(node) {
 }
 
 // Get data and have it displayed upon loading.
-document.addEventListener('DOMContentLoaded', requestComponentsData);
+document.addEventListener('DOMContentLoaded', function() {
+  addWebUIListener('component-event', onComponentEvent);
+  requestComponentsData();
+});

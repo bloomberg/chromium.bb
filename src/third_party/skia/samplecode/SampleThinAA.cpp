@@ -133,7 +133,7 @@ public:
 
         // Adding round caps forces Ganesh to use the path renderer for lines instead of converting
         // them to rectangles (which are already explicitly tested). However, when not curved, the
-        // GrShape will still find a way to turn it into a rrect draw so it doesn't hit the
+        // GrStyledShape will still find a way to turn it into a rrect draw so it doesn't hit the
         // path renderer in that condition.
         paint->setStrokeCap(SkPaint::kRound_Cap);
         paint->setStrokeJoin(SkPaint::kMiter_Join);
@@ -403,8 +403,8 @@ protected:
                 case 'u': fAngle = 0.f; return true;
                 case 'y': fAngle = 90.f; return true;
                 case ' ': fAngle = SkScalarMod(fAngle + 15.f, 360.f); return true;
-                case '-': fStrokeWidth = SkMaxScalar(0.1f, fStrokeWidth - 0.05f); return true;
-                case '=': fStrokeWidth = SkMinScalar(1.f, fStrokeWidth + 0.05f); return true;
+                case '-': fStrokeWidth = std::max(0.1f, fStrokeWidth - 0.05f); return true;
+                case '=': fStrokeWidth = std::min(1.f, fStrokeWidth + 0.05f); return true;
             }
             return false;
     }

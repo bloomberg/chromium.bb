@@ -22,8 +22,6 @@
 #include <X11/Xutil.h>
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
 #include <linux/input.h>
-#include "xdg-shell-client-header.h"
-#include "xdg-decoration-client-header.h"
 #endif
 
 #include <cassert>
@@ -36,7 +34,6 @@
 #include <sstream>
 #include <memory>
 
-#define VULKAN_HPP_NO_SMART_HANDLE
 #define VULKAN_HPP_NO_EXCEPTIONS
 #define VULKAN_HPP_TYPESAFE_CONVERSION
 #include <vulkan/vulkan.hpp>
@@ -208,6 +205,7 @@ typedef struct {
     vk::ImageView view;
     vk::Buffer uniform_buffer;
     vk::DeviceMemory uniform_memory;
+    void *uniform_memory_ptr;
     vk::Framebuffer framebuffer;
     vk::DescriptorSet descriptor_set;
 } SwapchainImageResources;
@@ -291,12 +289,8 @@ struct Demo {
     wl_registry *registry;
     wl_compositor *compositor;
     wl_surface *window;
-    xdg_wm_base *wm_base;
-    zxdg_decoration_manager_v1 *xdg_decoration_mgr;
-    zxdg_toplevel_decoration_v1 *toplevel_decoration;
-    xdg_surface *window_surface;
-    bool xdg_surface_has_been_configured;
-    xdg_toplevel *window_toplevel;
+    wl_shell *shell;
+    wl_shell_surface *shell_surface;
     wl_seat *seat;
     wl_pointer *pointer;
     wl_keyboard *keyboard;
@@ -424,7 +418,7 @@ static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer, uin
                                   uint32_t state) {
     Demo *demo = (Demo *)data;
     if (button == BTN_LEFT && state == WL_POINTER_BUTTON_STATE_PRESSED) {
-        xdg_toplevel_move(demo->window_toplevel, demo->seat, serial);
+        wl_shell_surface_move(demo->shell_surface, demo->seat, serial);
     }
 }
 
@@ -492,24 +486,16 @@ static const wl_seat_listener seat_listener = {
     seat_handle_capabilities,
 };
 
-static void wm_base_ping(void *data, xdg_wm_base *xdg_wm_base, uint32_t serial) { xdg_wm_base_pong(xdg_wm_base, serial); }
-
-static const struct xdg_wm_base_listener wm_base_listener = {wm_base_ping};
-
 static void registry_handle_global(void *data, wl_registry *registry, uint32_t id, const char *interface, uint32_t version) {
     Demo *demo = (Demo *)data;
     // pickup wayland objects when they appear
-    if (strcmp(interface, wl_compositor_interface.name) == 0) {
+    if (strcmp(interface, "wl_compositor") == 0) {
         demo->compositor = (wl_compositor *)wl_registry_bind(registry, id, &wl_compositor_interface, 1);
-    } else if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-        demo->wm_base = (xdg_wm_base *)wl_registry_bind(registry, id, &xdg_wm_base_interface, 1);
-        xdg_wm_base_add_listener(demo->wm_base, &wm_base_listener, nullptr);
-    } else if (strcmp(interface, wl_seat_interface.name) == 0) {
+    } else if (strcmp(interface, "wl_shell") == 0) {
+        demo->shell = (wl_shell *)wl_registry_bind(registry, id, &wl_shell_interface, 1);
+    } else if (strcmp(interface, "wl_seat") == 0) {
         demo->seat = (wl_seat *)wl_registry_bind(registry, id, &wl_seat_interface, 1);
         wl_seat_add_listener(demo->seat, &seat_listener, demo);
-    } else if (strcmp(interface, zxdg_decoration_manager_v1_interface.name) == 0) {
-        demo->xdg_decoration_mgr =
-            (zxdg_decoration_manager_v1 *)wl_registry_bind(registry, id, &zxdg_decoration_manager_v1_interface, 1);
     }
 }
 
@@ -539,12 +525,8 @@ Demo::Demo()
       registry{nullptr},
       compositor{nullptr},
       window{nullptr},
-      wm_base{nullptr},
-      xdg_decoration_mgr{nullptr},
-      toplevel_decoration{nullptr},
-      window_surface{nullptr},
-      xdg_surface_has_been_configured{false},
-      window_toplevel{nullptr},
+      shell{nullptr},
+      shell_surface{nullptr},
       seat{nullptr},
       pointer{nullptr},
       keyboard{nullptr},
@@ -662,8 +644,9 @@ void Demo::cleanup() {
 
     for (uint32_t i = 0; i < swapchainImageCount; i++) {
         device.destroyImageView(swapchain_image_resources[i].view, nullptr);
-        device.freeCommandBuffers(cmd_pool, 1, &swapchain_image_resources[i].cmd);
+        device.freeCommandBuffers(cmd_pool, {swapchain_image_resources[i].cmd});
         device.destroyBuffer(swapchain_image_resources[i].uniform_buffer, nullptr);
+        device.unmapMemory(swapchain_image_resources[i].uniform_memory);
         device.freeMemory(swapchain_image_resources[i].uniform_memory, nullptr);
     }
 
@@ -687,14 +670,9 @@ void Demo::cleanup() {
     wl_keyboard_destroy(keyboard);
     wl_pointer_destroy(pointer);
     wl_seat_destroy(seat);
-    xdg_toplevel_destroy(window_toplevel);
-    xdg_surface_destroy(window_surface);
+    wl_shell_surface_destroy(shell_surface);
     wl_surface_destroy(window);
-    xdg_wm_base_destroy(wm_base);
-    if (xdg_decoration_mgr) {
-        zxdg_toplevel_decoration_v1_destroy(toplevel_decoration);
-        zxdg_decoration_manager_v1_destroy(xdg_decoration_mgr);
-    }
+    wl_shell_destroy(shell);
     wl_compositor_destroy(compositor);
     wl_registry_destroy(registry);
     wl_display_disconnect(display);
@@ -741,7 +719,7 @@ void Demo::destroy_texture(texture_object *tex_objs) {
 void Demo::draw() {
     // Ensure no more than FRAME_LAG renderings are outstanding
     device.waitForFences(1, &fences[frame_index], VK_TRUE, UINT64_MAX);
-    device.resetFences(1, &fences[frame_index]);
+    device.resetFences({fences[frame_index]});
 
     vk::Result result;
     do {
@@ -1730,12 +1708,11 @@ void Demo::prepare_cube_data_buffers() {
         result = device.allocateMemory(&mem_alloc, nullptr, &swapchain_image_resources[i].uniform_memory);
         VERIFY(result == vk::Result::eSuccess);
 
-        auto pData = device.mapMemory(swapchain_image_resources[i].uniform_memory, 0, VK_WHOLE_SIZE, vk::MemoryMapFlags());
-        VERIFY(pData.result == vk::Result::eSuccess);
+        result = device.mapMemory(swapchain_image_resources[i].uniform_memory, 0, VK_WHOLE_SIZE, vk::MemoryMapFlags(),
+                                  &swapchain_image_resources[i].uniform_memory_ptr);
+        VERIFY(result == vk::Result::eSuccess);
 
-        memcpy(pData.value, &data, sizeof data);
-
-        device.unmapMemory(swapchain_image_resources[i].uniform_memory);
+        memcpy(swapchain_image_resources[i].uniform_memory_ptr, &data, sizeof data);
 
         result =
             device.bindBufferMemory(swapchain_image_resources[i].uniform_buffer, swapchain_image_resources[i].uniform_memory, 0);
@@ -2086,7 +2063,6 @@ void Demo::prepare_texture_buffer(const char *filename, texture_object *tex_obj)
     VERIFY(result == vk::Result::eSuccess);
 
     vk::SubresourceLayout layout;
-    memset(&layout, 0, sizeof(layout));
     layout.rowPitch = tex_width * 4;
     auto data = device.mapMemory(tex_obj->mem, 0, tex_obj->mem_alloc.allocationSize);
     VERIFY(data.result == vk::Result::eSuccess);
@@ -2295,8 +2271,9 @@ void Demo::resize() {
 
     for (i = 0; i < swapchainImageCount; i++) {
         device.destroyImageView(swapchain_image_resources[i].view, nullptr);
-        device.freeCommandBuffers(cmd_pool, 1, &swapchain_image_resources[i].cmd);
+        device.freeCommandBuffers(cmd_pool, {swapchain_image_resources[i].cmd});
         device.destroyBuffer(swapchain_image_resources[i].uniform_buffer, nullptr);
+        device.unmapMemory(swapchain_image_resources[i].uniform_memory);
         device.freeMemory(swapchain_image_resources[i].uniform_memory, nullptr);
     }
 
@@ -2371,12 +2348,7 @@ void Demo::update_data_buffer() {
     mat4x4 MVP;
     mat4x4_mul(MVP, VP, model_matrix);
 
-    auto data = device.mapMemory(swapchain_image_resources[current_buffer].uniform_memory, 0, VK_WHOLE_SIZE, vk::MemoryMapFlags());
-    VERIFY(data.result == vk::Result::eSuccess);
-
-    memcpy(data.value, (const void *)&MVP[0][0], sizeof(MVP));
-
-    device.unmapMemory(swapchain_image_resources[current_buffer].uniform_memory);
+    memcpy(swapchain_image_resources[current_buffer].uniform_memory_ptr, (const void *)&MVP[0][0], sizeof(MVP));
 }
 
 /* Convert ppm image data from header file into RGBA texture image */
@@ -2708,39 +2680,7 @@ void Demo::run() {
     }
 }
 
-static void handle_surface_configure(void *data, xdg_surface *xdg_surface, uint32_t serial) {
-    Demo *demo = (Demo *)data;
-    xdg_surface_ack_configure(xdg_surface, serial);
-    if (demo->xdg_surface_has_been_configured) {
-        demo->resize();
-    }
-    demo->xdg_surface_has_been_configured = true;
-}
-
-static const xdg_surface_listener surface_listener = {handle_surface_configure};
-
-static void handle_toplevel_configure(void *data, xdg_toplevel *xdg_toplevel, int32_t width, int32_t height,
-                                      struct wl_array *states) {
-    Demo *demo = (Demo *)data;
-    demo->width = width;
-    demo->height = height;
-    // This will be followed by a surface configure
-}
-
-static void handle_toplevel_close(void *data, xdg_toplevel *xdg_toplevel) {
-    Demo *demo = (Demo *)data;
-    demo->quit = true;
-}
-
-static const xdg_toplevel_listener toplevel_listener = {handle_toplevel_configure, handle_toplevel_close};
-
 void Demo::create_window() {
-    if (!wm_base) {
-        printf("Compositor did not provide the standard protocol xdg-wm-base\n");
-        fflush(stdout);
-        exit(1);
-    }
-
     window = wl_compositor_create_surface(compositor);
     if (!window) {
         printf("Can not create wayland_surface from compositor!\n");
@@ -2748,28 +2688,16 @@ void Demo::create_window() {
         exit(1);
     }
 
-    window_surface = xdg_wm_base_get_xdg_surface(wm_base, window);
-    if (!window_surface) {
-        printf("Can not get xdg_surface from wayland_surface!\n");
+    shell_surface = wl_shell_get_shell_surface(shell, window);
+    if (!shell_surface) {
+        printf("Can not get shell_surface from wayland_surface!\n");
         fflush(stdout);
         exit(1);
-    }
-    window_toplevel = xdg_surface_get_toplevel(window_surface);
-    if (!window_toplevel) {
-        printf("Can not allocate xdg_toplevel for xdg_surface!\n");
-        fflush(stdout);
-        exit(1);
-    }
-    xdg_surface_add_listener(window_surface, &surface_listener, this);
-    xdg_toplevel_add_listener(window_toplevel, &toplevel_listener, this);
-    xdg_toplevel_set_title(window_toplevel, APP_SHORT_NAME);
-    if (xdg_decoration_mgr) {
-        // if supported, let the compositor render titlebars for us
-        toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(xdg_decoration_mgr, window_toplevel);
-        zxdg_toplevel_decoration_v1_set_mode(toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
     }
 
-    wl_surface_commit(window);
+    wl_shell_surface_add_listener(shell_surface, &shell_surface_listener, this);
+    wl_shell_surface_set_toplevel(shell_surface);
+    wl_shell_surface_set_title(shell_surface, APP_SHORT_NAME);
 }
 #elif defined(VK_USE_PLATFORM_METAL_EXT)
 void Demo::run() {

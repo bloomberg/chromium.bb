@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -57,7 +58,7 @@ const char kDefaultAudioDeviceID[] = "fake_audio_input_2";
 
 const auto kIgnoreLogMessageCB = base::BindRepeating([](const std::string&) {});
 
-void PhysicalDevicesEnumerated(base::Closure quit_closure,
+void PhysicalDevicesEnumerated(base::OnceClosure quit_closure,
                                MediaDeviceEnumeration* out,
                                const MediaDeviceEnumeration& enumeration) {
   *out = enumeration;
@@ -85,11 +86,12 @@ class MockMediaDevicesListener : public blink::mojom::MediaDevicesListener {
 
 }  // namespace
 
-class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
+class MediaDevicesDispatcherHostTest
+    : public testing::TestWithParam<std::string> {
  public:
   MediaDevicesDispatcherHostTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
-        origin_(url::Origin::Create(GetParam())) {
+        origin_(url::Origin::Create(GURL(GetParam()))) {
     // Make sure we use fake devices to avoid long delays.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kUseFakeDeviceForMediaStream,
@@ -243,14 +245,14 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
 
  protected:
   void DevicesEnumerated(
-      const base::Closure& closure,
+      base::OnceClosure closure_after,
       const std::vector<std::vector<blink::WebMediaDeviceInfo>>& devices,
       std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
           video_input_capabilities,
       std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>
           audio_input_capabilities) {
     enumerated_devices_ = devices;
-    closure.Run();
+    std::move(closure_after).Run();
   }
 
   void EnumerateDevicesAndWaitForResult(bool enumerate_audio_input,
@@ -280,7 +282,12 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
           enumerated_devices_[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].empty());
 
     EXPECT_FALSE(DoesContainRawIds(enumerated_devices_));
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     EXPECT_TRUE(DoesEveryDeviceMapToRawId(enumerated_devices_, origin_));
+#else
+    EXPECT_EQ(DoesEveryDeviceMapToRawId(enumerated_devices_, origin_),
+              permission_override_value);
+#endif
   }
 
   bool DoesContainRawIds(
@@ -517,5 +524,5 @@ TEST_P(MediaDevicesDispatcherHostTest, GetAvailableVideoInputDeviceFormats) {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          MediaDevicesDispatcherHostTest,
-                         testing::Values(GURL(), GURL("https://test.com")));
+                         testing::Values(std::string(), "https://test.com"));
 }  // namespace content

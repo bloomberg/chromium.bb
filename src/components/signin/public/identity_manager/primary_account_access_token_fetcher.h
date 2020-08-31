@@ -11,8 +11,10 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "services/identity/public/cpp/scope_set.h"
+#include "components/signin/public/identity_manager/scope_set.h"
+#include "google_apis/gaia/core_account_id.h"
 
 class GoogleServiceAuthError;
 
@@ -67,7 +69,7 @@ struct AccessTokenInfo;
 //     // introducing wrapper API surfaces.
 //     MyClass::StartAccessTokenRequestForPrimaryAccount() {
 //       // Choose scopes to obtain for the access token.
-//       identity::ScopeSet scopes;
+//       ScopeSet scopes;
 //       scopes.insert(GaiaConstants::kMyFirstScope);
 //       scopes.insert(GaiaConstants::kMySecondScope);
 
@@ -149,11 +151,14 @@ class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
   // the request completes (successful or not). If the
   // PrimaryAccountAccessTokenFetcher is destroyed before the process completes,
   // the callback is not called.
+  // |consent| defaults to kSync because historically having an "authenticated"
+  // account was tied to browser sync. See ./README.md.
   PrimaryAccountAccessTokenFetcher(const std::string& oauth_consumer_name,
                                    IdentityManager* identity_manager,
-                                   const identity::ScopeSet& scopes,
+                                   const ScopeSet& scopes,
                                    AccessTokenFetcher::TokenCallback callback,
-                                   Mode mode);
+                                   Mode mode,
+                                   ConsentLevel consent = ConsentLevel::kSync);
 
   ~PrimaryAccountAccessTokenFetcher() override;
 
@@ -161,6 +166,10 @@ class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
   bool access_token_request_retried() { return access_token_retried_; }
 
  private:
+  // Returns the primary account ID. If consent is |kNotRequired| this may be
+  // the "unconsented" primary account ID.
+  CoreAccountId GetAccountId() const;
+
   // Returns true iff there is a primary account with a refresh token. Should
   // only be called in mode |kWaitUntilAvailable|.
   bool AreCredentialsAvailable() const;
@@ -169,6 +178,8 @@ class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
 
   // IdentityManager::Observer implementation.
   void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
+  void OnUnconsentedPrimaryAccountChanged(
       const CoreAccountInfo& primary_account_info) override;
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
@@ -183,7 +194,7 @@ class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
 
   std::string oauth_consumer_name_;
   IdentityManager* identity_manager_;
-  identity::ScopeSet scopes_;
+  ScopeSet scopes_;
 
   // Per the contract of this class, it is allowed for clients to delete this
   // object as part of the invocation of |callback_|. Hence, this object must
@@ -201,6 +212,8 @@ class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
   bool access_token_retried_;
 
   Mode mode_;
+
+  const ConsentLevel consent_;
 
   DISALLOW_COPY_AND_ASSIGN(PrimaryAccountAccessTokenFetcher);
 };

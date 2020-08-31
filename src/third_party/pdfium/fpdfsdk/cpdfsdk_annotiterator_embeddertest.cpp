@@ -44,7 +44,7 @@ TEST_F(CPDFSDK_AnnotIteratorTest, CPDFSDK_AnnotIterator) {
 
   {
     // Page 0 specifies "row order".
-    CPDFSDK_AnnotIterator iter(pFormFillEnv->GetPageView(0),
+    CPDFSDK_AnnotIterator iter(pFormFillEnv->GetPageViewAtIndex(0),
                                CPDF_Annot::Subtype::WIDGET);
     CPDFSDK_Annot* pAnnot = iter.GetFirstAnnot();
     CheckRect(pAnnot->GetRect(), RightTop);
@@ -55,7 +55,7 @@ TEST_F(CPDFSDK_AnnotIteratorTest, CPDFSDK_AnnotIterator) {
     pAnnot = iter.GetNextAnnot(pAnnot);
     CheckRect(pAnnot->GetRect(), LeftBottom);
     pAnnot = iter.GetNextAnnot(pAnnot);
-    EXPECT_EQ(iter.GetFirstAnnot(), pAnnot);
+    EXPECT_EQ(nullptr, pAnnot);
 
     pAnnot = iter.GetLastAnnot();
     CheckRect(pAnnot->GetRect(), LeftBottom);
@@ -66,11 +66,11 @@ TEST_F(CPDFSDK_AnnotIteratorTest, CPDFSDK_AnnotIterator) {
     pAnnot = iter.GetPrevAnnot(pAnnot);
     CheckRect(pAnnot->GetRect(), RightTop);
     pAnnot = iter.GetPrevAnnot(pAnnot);
-    EXPECT_EQ(iter.GetLastAnnot(), pAnnot);
+    EXPECT_EQ(nullptr, pAnnot);
   }
   {
     // Page 1 specifies "column order"
-    CPDFSDK_AnnotIterator iter(pFormFillEnv->GetPageView(1),
+    CPDFSDK_AnnotIterator iter(pFormFillEnv->GetPageViewAtIndex(1),
                                CPDF_Annot::Subtype::WIDGET);
     CPDFSDK_Annot* pAnnot = iter.GetFirstAnnot();
     CheckRect(pAnnot->GetRect(), RightTop);
@@ -81,7 +81,7 @@ TEST_F(CPDFSDK_AnnotIteratorTest, CPDFSDK_AnnotIterator) {
     pAnnot = iter.GetNextAnnot(pAnnot);
     CheckRect(pAnnot->GetRect(), LeftBottom);
     pAnnot = iter.GetNextAnnot(pAnnot);
-    EXPECT_EQ(iter.GetFirstAnnot(), pAnnot);
+    EXPECT_EQ(nullptr, pAnnot);
 
     pAnnot = iter.GetLastAnnot();
     CheckRect(pAnnot->GetRect(), LeftBottom);
@@ -92,11 +92,11 @@ TEST_F(CPDFSDK_AnnotIteratorTest, CPDFSDK_AnnotIterator) {
     pAnnot = iter.GetPrevAnnot(pAnnot);
     CheckRect(pAnnot->GetRect(), RightTop);
     pAnnot = iter.GetPrevAnnot(pAnnot);
-    EXPECT_EQ(iter.GetLastAnnot(), pAnnot);
+    EXPECT_EQ(nullptr, pAnnot);
   }
   {
     // Page 2 specifies "struct order"
-    CPDFSDK_AnnotIterator iter(pFormFillEnv->GetPageView(2),
+    CPDFSDK_AnnotIterator iter(pFormFillEnv->GetPageViewAtIndex(2),
                                CPDF_Annot::Subtype::WIDGET);
     CPDFSDK_Annot* pAnnot = iter.GetFirstAnnot();
     CheckRect(pAnnot->GetRect(), LeftBottom);
@@ -107,7 +107,7 @@ TEST_F(CPDFSDK_AnnotIteratorTest, CPDFSDK_AnnotIterator) {
     pAnnot = iter.GetNextAnnot(pAnnot);
     CheckRect(pAnnot->GetRect(), RightBottom);
     pAnnot = iter.GetNextAnnot(pAnnot);
-    EXPECT_EQ(iter.GetFirstAnnot(), pAnnot);
+    EXPECT_EQ(nullptr, pAnnot);
 
     pAnnot = iter.GetLastAnnot();
     CheckRect(pAnnot->GetRect(), RightBottom);
@@ -118,7 +118,7 @@ TEST_F(CPDFSDK_AnnotIteratorTest, CPDFSDK_AnnotIterator) {
     pAnnot = iter.GetPrevAnnot(pAnnot);
     CheckRect(pAnnot->GetRect(), LeftBottom);
     pAnnot = iter.GetPrevAnnot(pAnnot);
-    EXPECT_EQ(iter.GetLastAnnot(), pAnnot);
+    EXPECT_EQ(nullptr, pAnnot);
   }
   UnloadPage(page2);
   UnloadPage(page1);

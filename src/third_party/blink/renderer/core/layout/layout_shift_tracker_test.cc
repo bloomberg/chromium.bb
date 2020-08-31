@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -30,14 +30,13 @@ class LayoutShiftTrackerTest : public RenderingTest {
 
   void SimulateInput() {
     GetLayoutShiftTracker().NotifyInput(WebMouseEvent(
-        WebInputEvent::kMouseDown, WebFloatPoint(), WebFloatPoint(),
+        WebInputEvent::Type::kMouseDown, gfx::PointF(), gfx::PointF(),
         WebPointerProperties::Button::kLeft, 0,
         WebInputEvent::Modifiers::kLeftButtonDown, base::TimeTicks::Now()));
   }
 
   void UpdateAllLifecyclePhases() {
-    GetFrameView().UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetFrameView().UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   }
 };
 
@@ -81,7 +80,8 @@ TEST_F(LayoutShiftTrackerTest, CompositedShiftBeforeFirstPaint) {
 
   GetDocument().getElementById("B")->setAttribute(html_names::kClassAttr,
                                                   AtomicString("tr"));
-  GetFrameView().UpdateLifecycleToCompositingCleanPlusScrolling();
+  GetFrameView().UpdateLifecycleToCompositingCleanPlusScrolling(
+      DocumentUpdateReason::kTest);
   GetDocument().getElementById("A")->setAttribute(html_names::kClassAttr,
                                                   AtomicString("hide"));
   UpdateAllLifecyclePhases();
@@ -232,14 +232,16 @@ void LayoutShiftTrackerPointerdownTest::RunTest(
       1 /* PointerId */, WebPointerProperties::PointerType::kTouch,
       WebPointerProperties::Button::kLeft);
 
-  WebPointerEvent event1(WebInputEvent::kPointerDown, pointer_properties, 5, 5);
+  WebPointerEvent event1(WebInputEvent::Type::kPointerDown, pointer_properties,
+                         5, 5);
   WebPointerEvent event2(completion_type, pointer_properties, 5, 5);
 
   // Coordinates inside #box.
   event1.SetPositionInWidget(50, 150);
   event2.SetPositionInWidget(50, 160);
 
-  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event1));
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(event1, ui::LatencyInfo()));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -250,7 +252,8 @@ void LayoutShiftTrackerPointerdownTest::RunTest(
   EXPECT_EQ(0u, perf.getBufferedEntriesByType("layout-shift").size());
   EXPECT_FLOAT_EQ(0.0, tracker.Score());
 
-  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event2));
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(event2, ui::LatencyInfo()));
 
   // region fraction 50%, distance fraction 1/8
   const double expected_shift = 0.5 * 0.125;
@@ -265,15 +268,16 @@ void LayoutShiftTrackerPointerdownTest::RunTest(
 }
 
 TEST_F(LayoutShiftTrackerPointerdownTest, PointerdownBecomesTap) {
-  RunTest(WebInputEvent::kPointerUp, true /* expect_exclusion */);
+  RunTest(WebInputEvent::Type::kPointerUp, true /* expect_exclusion */);
 }
 
 TEST_F(LayoutShiftTrackerPointerdownTest, PointerdownCancelled) {
-  RunTest(WebInputEvent::kPointerCancel, false /* expect_exclusion */);
+  RunTest(WebInputEvent::Type::kPointerCancel, false /* expect_exclusion */);
 }
 
 TEST_F(LayoutShiftTrackerPointerdownTest, PointerdownBecomesScroll) {
-  RunTest(WebInputEvent::kPointerCausedUaAction, false /* expect_exclusion */);
+  RunTest(WebInputEvent::Type::kPointerCausedUaAction,
+          false /* expect_exclusion */);
 }
 
 TEST_F(LayoutShiftTrackerTest, StableCompositingChanges) {

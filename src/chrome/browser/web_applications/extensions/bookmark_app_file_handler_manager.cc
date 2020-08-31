@@ -7,9 +7,10 @@
 #include <vector>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/manifest_handlers/file_handler_info.h"
+#include "extensions/common/manifest_handlers/web_app_file_handler.h"
 
 namespace extensions {
 
@@ -18,11 +19,13 @@ BookmarkAppFileHandlerManager::BookmarkAppFileHandlerManager(Profile* profile)
 
 BookmarkAppFileHandlerManager::~BookmarkAppFileHandlerManager() = default;
 
-const std::vector<apps::FileHandlerInfo>*
-BookmarkAppFileHandlerManager::GetFileHandlers(const web_app::AppId& app_id) {
-  const Extension* extension =
-      ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(app_id);
-  return FileHandlers::GetFileHandlers(extension);
+const apps::FileHandlers* BookmarkAppFileHandlerManager::GetAllFileHandlers(
+    const web_app::AppId& app_id) {
+  auto* bookmark_app_registrar = registrar()->AsBookmarkAppRegistrar();
+  DCHECK(bookmark_app_registrar);
+
+  return WebAppFileHandlers::GetWebAppFileHandlers(
+      bookmark_app_registrar->FindExtension(app_id));
 }
 
 }  // namespace extensions

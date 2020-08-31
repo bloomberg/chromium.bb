@@ -27,7 +27,30 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-const Utils = {
+
+import {SearchMatch} from './ContentProvider.js';
+import {Text} from './Text.js';
+
+export const Utils = {
+  get _keyValueFilterRegex() {
+    return /(?:^|\s)(\-)?([\w\-]+):([^\s]+)/;
+  },
+  get _regexFilterRegex() {
+    return /(?:^|\s)(\-)?\/([^\s]+)\//;
+  },
+  get _textFilterRegex() {
+    return /(?:^|\s)(\-)?([^\s]+)/;
+  },
+  get _SpaceCharRegex() {
+    return /\s/;
+  },
+  /**
+   * @enum {string}
+   */
+  get Indent() {
+    return {TwoSpaces: '  ', FourSpaces: '    ', EightSpaces: '        ', TabCharacter: '\t'};
+  },
+
   /**
    * @param {string} char
    * @return {boolean}
@@ -42,7 +65,7 @@ const Utils = {
    * @return {boolean}
    */
   isWordChar: function(char) {
-    return !TextUtils.TextUtils.isStopChar(char) && !TextUtils.TextUtils.isSpaceChar(char);
+    return !Utils.isStopChar(char) && !Utils.isSpaceChar(char);
   },
 
   /**
@@ -50,7 +73,7 @@ const Utils = {
    * @return {boolean}
    */
   isSpaceChar: function(char) {
-    return TextUtils.TextUtils._SpaceCharRegex.test(char);
+    return Utils._SpaceCharRegex.test(char);
   },
 
   /**
@@ -59,7 +82,7 @@ const Utils = {
    */
   isWord: function(word) {
     for (let i = 0; i < word.length; ++i) {
-      if (!TextUtils.TextUtils.isWordChar(word.charAt(i))) {
+      if (!Utils.isWordChar(word.charAt(i))) {
         return false;
       }
     }
@@ -87,7 +110,7 @@ const Utils = {
    * @return {boolean}
    */
   isBraceChar: function(char) {
-    return TextUtils.TextUtils.isOpeningBraceChar(char) || TextUtils.TextUtils.isClosingBraceChar(char);
+    return Utils.isOpeningBraceChar(char) || Utils.isClosingBraceChar(char);
   },
 
   /**
@@ -118,7 +141,7 @@ const Utils = {
    */
   lineIndent: function(line) {
     let indentation = 0;
-    while (indentation < line.length && TextUtils.TextUtils.isSpaceChar(line.charAt(indentation))) {
+    while (indentation < line.length && Utils.isSpaceChar(line.charAt(indentation))) {
       ++indentation;
     }
     return line.substr(0, indentation);
@@ -146,7 +169,9 @@ const Utils = {
    * @return {!Array<{value: string, position: number, regexIndex: number, captureGroups: !Array<string|undefined>}>}
    */
   splitStringByRegexes(text, regexes) {
+    /** @type {!Array<{value: string, position: number, regexIndex: number, captureGroups: !Array<string|undefined>}>} */
     const matches = [];
+    /** @type {!Array<!RegExp>} */
     const globalRegexes = [];
     for (let i = 0; i < regexes.length; i++) {
       const regex = regexes[i];
@@ -196,8 +221,6 @@ const Utils = {
   }
 };
 
-export default Utils;
-
 export class FilterParser {
   /**
    * @param {!Array<string>} keys
@@ -207,8 +230,8 @@ export class FilterParser {
   }
 
   /**
-   * @param {!TextUtils.FilterParser.ParsedFilter} filter
-   * @return {!TextUtils.FilterParser.ParsedFilter}
+   * @param {!ParsedFilter} filter
+   * @return {!ParsedFilter}
    */
   static cloneFilter(filter) {
     return {key: filter.key, text: filter.text, regex: filter.regex, negative: filter.negative};
@@ -216,13 +239,12 @@ export class FilterParser {
 
   /**
    * @param {string} query
-   * @return {!Array<!TextUtils.FilterParser.ParsedFilter>}
+   * @return {!Array<!ParsedFilter>}
    */
   parse(query) {
-    const splitResult = TextUtils.TextUtils.splitStringByRegexes(query, [
-      TextUtils.TextUtils._keyValueFilterRegex, TextUtils.TextUtils._regexFilterRegex,
-      TextUtils.TextUtils._textFilterRegex
-    ]);
+    const splitResult = Utils.splitStringByRegexes(
+        query, [Utils._keyValueFilterRegex, Utils._regexFilterRegex, Utils._textFilterRegex]);
+    /** @type {!Array<!ParsedFilter>} */
     const filters = [];
     for (let i = 0; i < splitResult.length; i++) {
       const regexIndex = splitResult[i].regexIndex;
@@ -232,51 +254,43 @@ export class FilterParser {
       const result = splitResult[i].captureGroups;
       if (regexIndex === 0) {
         if (this._keys.indexOf(/** @type {string} */ (result[1])) !== -1) {
-          filters.push({key: result[1], text: result[2], negative: !!result[0]});
+          filters.push({key: result[1], regex: undefined, text: result[2], negative: !!result[0]});
         } else {
-          filters.push({text: result[1] + ':' + result[2], negative: !!result[0]});
+          filters.push({key: undefined, regex: undefined, text: result[1] + ':' + result[2], negative: !!result[0]});
         }
       } else if (regexIndex === 1) {
         try {
-          filters.push({regex: new RegExp(result[1], 'i'), negative: !!result[0]});
+          filters.push({
+            key: undefined,
+            regex: new RegExp(/** @type {string} */ (result[1]), 'i'),
+            text: undefined,
+            negative: !!result[0]
+          });
         } catch (e) {
-          filters.push({text: '/' + result[1] + '/', negative: !!result[0]});
+          filters.push({key: undefined, regex: undefined, text: '/' + result[1] + '/', negative: !!result[0]});
         }
       } else if (regexIndex === 2) {
-        filters.push({text: result[1], negative: !!result[0]});
+        filters.push({key: undefined, regex: undefined, text: result[1], negative: !!result[0]});
       }
     }
     return filters;
   }
 }
 
-Utils._keyValueFilterRegex = /(?:^|\s)(\-)?([\w\-]+):([^\s]+)/;
-Utils._regexFilterRegex = /(?:^|\s)(\-)?\/([^\s]+)\//;
-Utils._textFilterRegex = /(?:^|\s)(\-)?([^\s]+)/;
-Utils._SpaceCharRegex = /\s/;
-
-/**
- * @enum {string}
- */
-Utils.Indent = {
-  TwoSpaces: '  ',
-  FourSpaces: '    ',
-  EightSpaces: '        ',
-  TabCharacter: '\t'
-};
-
 /**
  * @unrestricted
  */
 export class BalancedJSONTokenizer {
   /**
-   * @param {function(string)} callback
+   * @param {function(string):void} callback
    * @param {boolean=} findMultiple
    */
   constructor(callback, findMultiple) {
     this._callback = callback;
+    /** @type {number} */
     this._index = 0;
     this._balance = 0;
+    /** @type {string} */
     this._buffer = '';
     this._findMultiple = findMultiple || false;
     this._closingDoubleQuoteRegex = /[^\\](?:\\\\)*"/g;
@@ -347,9 +361,11 @@ export class BalancedJSONTokenizer {
 export class TokenizerFactory {
   /**
    * @param {string} mimeType
-   * @return {function(string, function(string, ?string, number, number))}
+   * @return {function(string, function(string, ?string, number, number):void):void}
    */
-  createTokenizer(mimeType) {}
+  createTokenizer(mimeType) {
+    throw new Error('not implemented');
+  }
 }
 
 /**
@@ -387,24 +403,29 @@ export function isMinified(text) {
   return false;
 }
 
-/* Legacy exported object */
-self.TextUtils = self.TextUtils || {};
+/**
+ * @param {string} content
+ * @param {string} query
+ * @param {boolean} caseSensitive
+ * @param {boolean} isRegex
+ * @return {!Array.<!SearchMatch>}
+ */
+export const performSearchInContent = function(content, query, caseSensitive, isRegex) {
+  // @ts-ignore global function
+  const regex = createSearchRegex(query, caseSensitive, isRegex);
 
-/* Legacy exported object */
-TextUtils = TextUtils || {};
-
-TextUtils.TextUtils = Utils;
-
-/** @constructor */
-TextUtils.FilterParser = FilterParser;
-
-/** @constructor */
-TextUtils.BalancedJSONTokenizer = BalancedJSONTokenizer;
-
-/** @interface */
-TextUtils.TokenizerFactory = TokenizerFactory;
-
-TextUtils.isMinified = isMinified;
+  const text = new Text(content);
+  const result = [];
+  for (let i = 0; i < text.lineCount(); ++i) {
+    const lineContent = text.lineAt(i);
+    regex.lastIndex = 0;
+    if (regex.exec(lineContent)) {
+      result.push(new SearchMatch(i, lineContent));
+    }
+  }
+  return result;
+};
 
 /** @typedef {{key:(string|undefined), text:(?string|undefined), regex:(!RegExp|undefined), negative:boolean}} */
-TextUtils.FilterParser.ParsedFilter;
+// @ts-ignore typedef
+export let ParsedFilter;

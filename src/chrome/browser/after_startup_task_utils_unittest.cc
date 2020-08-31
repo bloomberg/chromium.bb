@@ -11,7 +11,9 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,9 +22,9 @@
 
 namespace {
 
-class WrappedTaskRunner : public base::TaskRunner {
+class WrappedTaskRunner : public base::SequencedTaskRunner {
  public:
-  explicit WrappedTaskRunner(scoped_refptr<TaskRunner> real_runner)
+  explicit WrappedTaskRunner(scoped_refptr<SequencedTaskRunner> real_runner)
       : real_task_runner_(std::move(real_runner)) {}
 
   bool PostDelayedTask(const base::Location& from_here,
@@ -36,11 +38,21 @@ class WrappedTaskRunner : public base::TaskRunner {
         base::TimeDelta());  // Squash all delays so our tests complete asap.
   }
 
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
+                                  base::OnceClosure task,
+                                  base::TimeDelta delay) override {
+    // Not implemented.
+    NOTREACHED();
+    return false;
+  }
+
   bool RunsTasksInCurrentSequence() const override {
     return real_task_runner_->RunsTasksInCurrentSequence();
   }
 
-  base::TaskRunner* real_runner() const { return real_task_runner_.get(); }
+  base::SequencedTaskRunner* real_runner() const {
+    return real_task_runner_.get();
+  }
 
   int total_task_count() const { return posted_task_count_ + ran_task_count_; }
   int posted_task_count() const { return posted_task_count_; }
@@ -59,7 +71,7 @@ class WrappedTaskRunner : public base::TaskRunner {
     std::move(task).Run();
   }
 
-  scoped_refptr<TaskRunner> real_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> real_task_runner_;
   int posted_task_count_ = 0;
   int ran_task_count_ = 0;
 };
@@ -70,9 +82,9 @@ class AfterStartupTaskTest : public testing::Test {
  public:
   AfterStartupTaskTest() {
     ui_thread_ = base::MakeRefCounted<WrappedTaskRunner>(
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
+        content::GetUIThreadTaskRunner({}));
     background_sequence_ = base::MakeRefCounted<WrappedTaskRunner>(
-        base::CreateSequencedTaskRunner(base::TaskTraits(base::ThreadPool())));
+        base::ThreadPool::CreateSequencedTaskRunner({}));
     AfterStartupTaskUtils::UnsafeResetForTesting();
   }
 
@@ -82,9 +94,9 @@ class AfterStartupTaskTest : public testing::Test {
     bool is_complete;
     base::PostTaskAndReplyWithResult(
         background_sequence_->real_runner(), FROM_HERE,
-        base::Bind(&AfterStartupTaskUtils::IsBrowserStartupComplete),
-        base::Bind(&AfterStartupTaskTest::GotIsOnBrowserStartupComplete,
-                   &run_loop, &is_complete));
+        base::BindOnce(&AfterStartupTaskUtils::IsBrowserStartupComplete),
+        base::BindOnce(&AfterStartupTaskTest::GotIsOnBrowserStartupComplete,
+                       &run_loop, &is_complete));
     run_loop.Run();
     return is_complete;
   }
@@ -92,7 +104,7 @@ class AfterStartupTaskTest : public testing::Test {
   // Hop to the background sequence and call PostAfterStartupTask.
   void PostAfterStartupTaskFromBackgroundSequence(
       const base::Location& from_here,
-      scoped_refptr<base::TaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       base::OnceClosure task) {
     base::RunLoop run_loop;
     background_sequence_->real_runner()->PostTaskAndReply(
@@ -112,7 +124,7 @@ class AfterStartupTaskTest : public testing::Test {
     run_loop.Run();
   }
 
-  static void VerifyExpectedSequence(base::TaskRunner* task_runner) {
+  static void VerifyExpectedSequence(base::SequencedTaskRunner* task_runner) {
     EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
   }
 
@@ -196,30 +208,4 @@ TEST_F(AfterStartupTaskTest, PostTask) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, background_sequence_->ran_task_count());
   EXPECT_EQ(2, ui_thread_->ran_task_count());
-}
-
-// Verify that posting to an AfterStartupTaskUtils::Runner bound to
-// |background_sequence_| results in the same behavior as posting via
-// AfterStartupTaskUtils::PostTask(..., background_sequence_, ...).
-TEST_F(AfterStartupTaskTest, AfterStartupTaskUtilsRunner) {
-  scoped_refptr<base::TaskRunner> after_startup_runner =
-      base::MakeRefCounted<AfterStartupTaskUtils::Runner>(background_sequence_);
-
-  EXPECT_FALSE(AfterStartupTaskUtils::IsBrowserStartupComplete());
-  after_startup_runner->PostTask(
-      FROM_HERE, base::BindOnce(&AfterStartupTaskTest::VerifyExpectedSequence,
-                                base::RetainedRef(background_sequence_)));
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(AfterStartupTaskUtils::IsBrowserStartupComplete());
-  EXPECT_EQ(0, background_sequence_->total_task_count());
-
-  AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
-  EXPECT_EQ(1, background_sequence_->posted_task_count());
-
-  FlushBackgroundSequence();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, background_sequence_->ran_task_count());
-
-  EXPECT_EQ(0, ui_thread_->total_task_count());
 }

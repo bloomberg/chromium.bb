@@ -11,6 +11,7 @@
 #include "base/one_shot_event.h"
 #include "build/build_config.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/unloaded_extension_reason.h"
 
 class Profile;
 
@@ -30,6 +31,7 @@ class UninstallPingSender;
 class InstallGate;
 class ValueStoreFactory;
 class ValueStoreFactoryImpl;
+class ExtensionsPermissionsTracker;
 
 // The ExtensionSystem for ProfileImpl and OffTheRecordProfileImpl.
 // Implementation details: non-shared services are owned by
@@ -62,7 +64,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
   void RegisterExtensionWithRequestContexts(
       const Extension* extension,
-      const base::Closure& callback) override;
+      base::OnceClosure callback) override;
 
   void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,
@@ -77,6 +79,9 @@ class ExtensionSystemImpl : public ExtensionSystem {
                      const base::FilePath& unpacked_dir,
                      bool install_immediately,
                      InstallUpdateCallback install_update_callback) override;
+  void PerformActionBasedOnOmahaAttributes(
+      const std::string& extension_id,
+      const base::Value& attributes) override;
   bool FinishDelayedInstallationIfReady(const std::string& extension_id,
                                         bool install_immediately) override;
 
@@ -150,6 +155,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
     std::unique_ptr<chromeos::SigninScreenPolicyProvider>
         signin_screen_policy_provider_;
     std::unique_ptr<InstallGate> kiosk_app_update_install_gate_;
+    std::unique_ptr<ExtensionsPermissionsTracker>
+        extensions_permissions_tracker_;
 #endif
 
     base::OneShotEvent ready_;

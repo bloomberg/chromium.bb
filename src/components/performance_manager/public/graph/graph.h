@@ -20,8 +20,10 @@ namespace performance_manager {
 
 class GraphObserver;
 class GraphOwned;
+class GraphRegistered;
 class FrameNode;
 class FrameNodeObserver;
+class NodeDataDescriberRegistry;
 class PageNode;
 class PageNodeObserver;
 class ProcessNode;
@@ -30,6 +32,9 @@ class SystemNode;
 class SystemNodeObserver;
 class WorkerNode;
 class WorkerNodeObserver;
+
+template <typename DerivedType>
+class GraphRegisteredImpl;
 
 // Represents a graph of the nodes representing a single browser. Maintains a
 // set of nodes that can be retrieved in different ways, some indexed. Keeps
@@ -73,6 +78,27 @@ class Graph {
         static_cast<DerivedType*>(TakeFromGraph(graph_owned).release()));
   }
 
+  // Registers an object with this graph. It is expected that no more than one
+  // object of a given type is registered at a given moment, and that all
+  // registered objects are unregistered before graph tear-down.
+  virtual void RegisterObject(GraphRegistered* object) = 0;
+
+  // Unregisters the provided |object|, which must previously have been
+  // registered with "RegisterObject". It is expected that all registered
+  // objects are unregistered before graph tear-down.
+  virtual void UnregisterObject(GraphRegistered* object) = 0;
+
+  // Returns the registered object of the given type, nullptr if none has been
+  // registered.
+  template <typename DerivedType>
+  DerivedType* GetRegisteredObjectAs() {
+    // Be sure to access the TypeId provided GraphRegisteredImpl, in case this
+    // class has other TypeId implementations.
+    GraphRegistered* object =
+        GetRegisteredObject(GraphRegisteredImpl<DerivedType>::TypeId());
+    return static_cast<DerivedType*>(object);
+  }
+
   // Returns a collection of all known nodes of the given type.
   virtual const SystemNode* FindOrCreateSystemNode() = 0;
   virtual std::vector<const ProcessNode*> GetAllProcessNodes() const = 0;
@@ -86,6 +112,9 @@ class Graph {
   // Returns the associated UKM recorder if it is defined.
   virtual ukm::UkmRecorder* GetUkmRecorder() const = 0;
 
+  // Returns the data describer registry.
+  virtual NodeDataDescriberRegistry* GetNodeDataDescriberRegistry() const = 0;
+
   // The following functions are implementation detail and should not need to be
   // used by external clients. They provide the ability to safely downcast to
   // the underlying implementation.
@@ -93,6 +122,10 @@ class Graph {
   virtual const void* GetImpl() const = 0;
 
  private:
+  // Retrieves the object with the given |type_id|, returning nullptr if none
+  // exists. Clients must use the GetRegisteredObjectAs wrapper instead.
+  virtual GraphRegistered* GetRegisteredObject(uintptr_t type_id) = 0;
+
   DISALLOW_COPY_AND_ASSIGN(Graph);
 };
 

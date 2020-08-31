@@ -297,11 +297,6 @@ ko{
         ZW{"짐바브웨"}
         ZZ{"알려지지 않은 지역"}
     }
-    Countries%short{
-        GB{"영국"}
-        UN{"유엔"}
-        US{"미국"}
-    }
     Countries%variant{
         CD{"콩고민주공화국"}
         CG{"콩고 공화국"}
@@ -310,5 +305,5 @@ ko{
         SZ{"스와질란드"}
         TL{"티모르레스테"}
     }
-    Version{"36"}
+    Version{"37"}
 }

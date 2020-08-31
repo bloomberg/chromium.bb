@@ -14,8 +14,6 @@ namespace blink {
 SVGTreeScopeResources::SVGTreeScopeResources(TreeScope* tree_scope)
     : tree_scope_(tree_scope) {}
 
-SVGTreeScopeResources::~SVGTreeScopeResources() = default;
-
 LocalSVGResource* SVGTreeScopeResources::ResourceForId(const AtomicString& id) {
   if (id.IsEmpty())
     return nullptr;
@@ -32,8 +30,7 @@ LocalSVGResource* SVGTreeScopeResources::ExistingResourceForId(
   return resources_.at(id);
 }
 
-void SVGTreeScopeResources::ProcessCustomWeakness(
-    const WeakCallbackInfo& info) {
+void SVGTreeScopeResources::ProcessCustomWeakness(const LivenessBroker& info) {
   // Unregister and remove any resources that are no longer alive.
   Vector<AtomicString> to_remove;
   for (auto& resource_entry : resources_) {

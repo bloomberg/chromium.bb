@@ -11,6 +11,7 @@
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
+#include "ui/ozone/platform/wayland/gpu/gl_surface_egl_readback_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/gl_surface_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_canvas_surface.h"
@@ -22,6 +23,10 @@
 #include "ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
 #include "ui/ozone/public/ozone_platform.h"
+#endif
+
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "ui/ozone/platform/wayland/gpu/vulkan_implementation_wayland.h"
 #endif
 
 namespace ui {
@@ -45,7 +50,7 @@ class GLOzoneEGLWayland : public GLOzoneEGL {
       const gfx::Size& size) override;
 
  protected:
-  intptr_t GetNativeDisplay() override;
+  gl::EGLDisplayPlatform GetNativeDisplay() override;
   bool LoadGLES2Bindings(gl::GLImplementation impl) override;
 
  private:
@@ -77,10 +82,11 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateViewGLSurface(
 
 scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
     gfx::AcceleratedWidget window) {
-  // Only EGLGLES2 is supported with surfaceless view gl.
-  if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2)
-    return nullptr;
-
+  if (gl::GetGLImplementation() == gl::kGLImplementationSwiftShaderGL) {
+    return gl::InitializeGLSurface(
+        base::MakeRefCounted<GLSurfaceEglReadbackWayland>(window,
+                                                          buffer_manager_));
+  } else {
 #if defined(WAYLAND_GBM)
   // If there is a gbm device available, use surfaceless gl surface.
   if (!buffer_manager_->gbm_device())
@@ -90,6 +96,7 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
 #else
   return nullptr;
 #endif
+  }
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateOffscreenGLSurface(
@@ -102,10 +109,11 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateOffscreenGLSurface(
   }
 }
 
-intptr_t GLOzoneEGLWayland::GetNativeDisplay() {
+gl::EGLDisplayPlatform GLOzoneEGLWayland::GetNativeDisplay() {
   if (connection_)
-    return reinterpret_cast<intptr_t>(connection_->display());
-  return EGL_DEFAULT_DISPLAY;
+    return gl::EGLDisplayPlatform(
+        reinterpret_cast<EGLNativeDisplayType>(connection_->display()));
+  return gl::EGLDisplayPlatform(EGL_DEFAULT_DISPLAY);
 }
 
 bool GLOzoneEGLWayland::LoadGLES2Bindings(gl::GLImplementation impl) {
@@ -128,8 +136,9 @@ WaylandSurfaceFactory::WaylandSurfaceFactory(
 WaylandSurfaceFactory::~WaylandSurfaceFactory() = default;
 
 std::unique_ptr<SurfaceOzoneCanvas>
-WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget,
-                                             base::TaskRunner* task_runner) {
+WaylandSurfaceFactory::CreateCanvasForWidget(
+    gfx::AcceleratedWidget widget,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   return std::make_unique<WaylandCanvasSurface>(buffer_manager_, widget);
 }
 
@@ -154,12 +163,23 @@ GLOzone* WaylandSurfaceFactory::GetGLOzone(
   }
 }
 
+#if BUILDFLAG(ENABLE_VULKAN)
+std::unique_ptr<gpu::VulkanImplementation>
+WaylandSurfaceFactory::CreateVulkanImplementation(
+    bool allow_protected_memory,
+    bool enforce_protected_memory) {
+  return std::make_unique<VulkanImplementationWayland>();
+}
+#endif
+
 scoped_refptr<gfx::NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
     VkDevice vk_device,
     gfx::Size size,
     gfx::BufferFormat format,
-    gfx::BufferUsage usage) {
+    gfx::BufferUsage usage,
+    base::Optional<gfx::Size> framebuffer_size) {
+  DCHECK(!framebuffer_size || framebuffer_size == size);
 #if defined(WAYLAND_GBM)
   scoped_refptr<GbmPixmapWayland> pixmap =
       base::MakeRefCounted<GbmPixmapWayland>(buffer_manager_);

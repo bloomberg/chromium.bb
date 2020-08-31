@@ -20,11 +20,11 @@
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
-#include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/display_types.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/public/mojom/device_cursor.mojom.h"
 #include "ui/ozone/public/mojom/drm_device.mojom.h"
+#include "ui/ozone/public/overlay_surface_candidate.h"
 #include "ui/ozone/public/swap_completion_callback.h"
 
 namespace base {
@@ -62,22 +62,27 @@ class DrmThread : public base::Thread,
                   public ozone::mojom::DeviceCursor,
                   public ozone::mojom::DrmDevice {
  public:
+  using OverlayCapabilitiesCallback =
+      base::OnceCallback<void(gfx::AcceleratedWidget,
+                              const std::vector<OverlaySurfaceCandidate>&,
+                              const std::vector<OverlayStatus>&)>;
+
   DrmThread();
   ~DrmThread() override;
 
   void Start(base::OnceClosure receiver_completer,
              std::unique_ptr<DrmDeviceGenerator> device_generator);
 
-  // Runs |task| once a DrmDevice is registered and |window| was created via
-  // CreateWindow(). |done| will be signaled if it's not null.
-  void RunTaskAfterWindowReady(gfx::AcceleratedWidget window,
-                               base::OnceClosure task,
+  // Runs |task| once a DrmDevice is registered. |done|
+  // will be signaled if it's not null.
+  void RunTaskAfterDeviceReady(base::OnceClosure task,
                                base::WaitableEvent* done);
 
   // Must be called on the DRM thread. All methods for use from the GPU thread.
   // DrmThreadProxy (on GPU)thread) is the client for these methods.
   void CreateBuffer(gfx::AcceleratedWidget widget,
                     const gfx::Size& size,
+                    const gfx::Size& framebuffer_size,
                     gfx::BufferFormat format,
                     gfx::BufferUsage usage,
                     uint32_t flags,
@@ -101,6 +106,21 @@ class DrmThread : public base::Thread,
   void SetClearOverlayCacheCallback(base::RepeatingClosure callback);
   void AddDrmDeviceReceiver(
       mojo::PendingReceiver<ozone::mojom::DrmDevice> receiver);
+
+  // Verifies if the display controller can successfully scanout the given set
+  // of OverlaySurfaceCandidates and return the status associated with each
+  // candidate.
+  void CheckOverlayCapabilities(
+      gfx::AcceleratedWidget widget,
+      const std::vector<OverlaySurfaceCandidate>& candidates,
+      OverlayCapabilitiesCallback callback);
+
+  // Similar to CheckOverlayCapabilities() but stores the result in |result|
+  // instead of running a callback.
+  void CheckOverlayCapabilitiesSync(
+      gfx::AcceleratedWidget widget,
+      const std::vector<OverlaySurfaceCandidate>& candidates,
+      std::vector<OverlayStatus>* result);
 
   // DrmWindowProxy (on GPU thread) is the client for these methods.
   void SchedulePageFlip(gfx::AcceleratedWidget widget,
@@ -143,12 +163,7 @@ class DrmThread : public base::Thread,
       int64_t display_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut) override;
-  void CheckOverlayCapabilities(
-      gfx::AcceleratedWidget widget,
-      const OverlaySurfaceCandidateList& overlays,
-      base::OnceCallback<void(gfx::AcceleratedWidget,
-                              const OverlaySurfaceCandidateList&,
-                              const OverlayStatusList&)> callback) override;
+  void SetPrivacyScreen(int64_t display_id, bool enabled) override;
   void GetDeviceCursor(
       mojo::PendingAssociatedReceiver<ozone::mojom::DeviceCursor> receiver)
       override;
@@ -201,9 +216,8 @@ class DrmThread : public base::Thread,
   // The AcceleratedWidget from the last call to CreateWindow.
   gfx::AcceleratedWidget last_created_window_ = gfx::kNullAcceleratedWidget;
 
-  // The tasks that are blocked on a DrmDevice and a certain AcceleratedWidget
-  // becoming available.
-  base::flat_map<gfx::AcceleratedWidget, std::vector<TaskInfo>> pending_tasks_;
+  // The tasks that are blocked on a DrmDevice becoming available.
+  std::vector<TaskInfo> pending_tasks_;
 
   // Holds the DrmDeviceGenerator that DrmDeviceManager will use. Will be passed
   // on to DrmDeviceManager after the thread starts.

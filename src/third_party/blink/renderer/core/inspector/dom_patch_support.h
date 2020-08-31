@@ -58,7 +58,7 @@ class DOMPatchSupport final {
   class Digest final : public GarbageCollected<Digest> {
    public:
     explicit Digest(Node* node) : node_(node) {}
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
     String sha1_;
     String attrs_sha1_;
@@ -86,8 +86,8 @@ class DOMPatchSupport final {
   void MarkNodeAsUsed(Digest*);
   Document& GetDocument() const { return *document_; }
 
-  Member<DOMEditor> dom_editor_;
-  Member<Document> document_;
+  DOMEditor* dom_editor_;
+  Document* document_;
 
   UnusedNodesMap unused_nodes_map_;
 

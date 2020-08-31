@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/bluetooth/device.h"
@@ -93,9 +94,8 @@ void Device::GetServices(GetServicesCallback callback) {
 
   // pending_services_requests_ is owned by Device, so base::Unretained is
   // safe.
-  pending_services_requests_.push_back(base::BindOnce(&Device::GetServicesImpl,
-                                                      base::Unretained(this),
-                                                      base::Passed(&callback)));
+  pending_services_requests_.push_back(base::BindOnce(
+      &Device::GetServicesImpl, base::Unretained(this), std::move(callback)));
 }
 
 void Device::GetCharacteristics(const std::string& service_id,

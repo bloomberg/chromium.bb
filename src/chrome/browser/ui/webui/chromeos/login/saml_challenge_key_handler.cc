@@ -93,10 +93,9 @@ void SamlChallengeKeyHandler::SetTpmResponseTimeoutForTesting(
 
 void SamlChallengeKeyHandler::BuildResponseForWhitelistedUrl(const GURL& url) {
   CrosSettings* settings = CrosSettings::Get();
-  CrosSettingsProvider::TrustedStatus status =
-      settings->PrepareTrustedValues(base::BindRepeating(
-          &SamlChallengeKeyHandler::BuildResponseForWhitelistedUrl,
-          weak_factory_.GetWeakPtr(), url));
+  CrosSettingsProvider::TrustedStatus status = settings->PrepareTrustedValues(
+      base::BindOnce(&SamlChallengeKeyHandler::BuildResponseForWhitelistedUrl,
+                     weak_factory_.GetWeakPtr(), url));
 
   const base::ListValue* patterns = nullptr;
   switch (status) {
@@ -152,7 +151,7 @@ void SamlChallengeKeyHandler::ReturnResult(
   }
 
   std::string encoded_result_data;
-  base::Base64Encode(result.data, &encoded_result_data);
+  base::Base64Encode(result.challenge_response, &encoded_result_data);
 
   js_result.SetKey(kSuccessField, base::Value(result.IsSuccess()));
   js_result.SetKey(kResponseField, base::Value(encoded_result_data));

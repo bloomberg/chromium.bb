@@ -6,7 +6,9 @@
 #define V8_HEAP_MARKING_VISITOR_H_
 
 #include "src/common/globals.h"
+#include "src/heap/marking-worklist.h"
 #include "src/heap/marking.h"
+#include "src/heap/memory-chunk.h"
 #include "src/heap/objects-visiting.h"
 #include "src/heap/spaces.h"
 #include "src/heap/worklist.h"
@@ -15,12 +17,6 @@
 
 namespace v8 {
 namespace internal {
-
-using MarkingWorklist = Worklist<HeapObject, 64 /* segment size */>;
-// Worklist for objects that potentially require embedder tracing, i.e.,
-// these objects need to be handed over to the embedder to find the full
-// transitive closure.
-using EmbedderTracingWorklist = Worklist<HeapObject, 16 /* segment size */>;
 
 struct Ephemeron {
   HeapObject key;
@@ -150,14 +146,12 @@ class MarkingStateBase {
 template <typename ConcreteVisitor, typename MarkingState>
 class MarkingVisitorBase : public HeapVisitor<int, ConcreteVisitor> {
  public:
-  MarkingVisitorBase(int task_id, MarkingWorklist* marking_worklist,
-                     EmbedderTracingWorklist* embedder_worklist,
+  MarkingVisitorBase(int task_id, MarkingWorklists* marking_worklists,
                      WeakObjects* weak_objects, Heap* heap,
                      unsigned mark_compact_epoch,
                      BytecodeFlushMode bytecode_flush_mode,
                      bool is_embedder_tracing_enabled, bool is_forced_gc)
-      : marking_worklist_(marking_worklist),
-        embedder_worklist_(embedder_worklist),
+      : marking_worklists_(marking_worklists),
         weak_objects_(weak_objects),
         heap_(heap),
         task_id_(task_id),
@@ -229,14 +223,14 @@ class MarkingVisitorBase : public HeapVisitor<int, ConcreteVisitor> {
   V8_INLINE int VisitFixedArrayWithProgressBar(Map map, FixedArray object,
                                                MemoryChunk* chunk);
   // Marks the descriptor array black without pushing it on the marking work
-  // list and visits its header.
-  V8_INLINE void MarkDescriptorArrayBlack(HeapObject host,
-                                          DescriptorArray descriptors);
+  // list and visits its header. Returns the size of the descriptor array
+  // if it was successully marked as black.
+  V8_INLINE size_t MarkDescriptorArrayBlack(HeapObject host,
+                                            DescriptorArray descriptors);
   // Marks the object grey and pushes it on the marking work list.
   V8_INLINE void MarkObject(HeapObject host, HeapObject obj);
 
-  MarkingWorklist* const marking_worklist_;
-  EmbedderTracingWorklist* const embedder_worklist_;
+  MarkingWorklists* const marking_worklists_;
   WeakObjects* const weak_objects_;
   Heap* const heap_;
   const int task_id_;

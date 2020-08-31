@@ -48,7 +48,7 @@ namespace blink {
 // a v8::Object and toScriptWrappable() converts a v8::Object back to
 // a ScriptWrappable.  v8::Object as platform object is called "wrapper object".
 // The wrapper object for the main world is stored in ScriptWrappable.  Wrapper
-// objects for other worlds are stored in DOMWrapperMap.
+// objects for other worlds are stored in DOMDataStore.
 class PLATFORM_EXPORT ScriptWrappable
     : public GarbageCollected<ScriptWrappable>,
       public NameClient {
@@ -68,7 +68,7 @@ class PLATFORM_EXPORT ScriptWrappable
 
   const char* NameInHeapSnapshot() const override;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
   template <typename T>
   T* ToImpl() {
@@ -78,16 +78,14 @@ class PLATFORM_EXPORT ScriptWrappable
         sizeof(T) && WTF::IsGarbageCollectedType<T>::value,
         "Classes implementing ScriptWrappable must be garbage collected.");
 
-// Check if T* is castable to ScriptWrappable*, which means T doesn't
-// have two or more ScriptWrappable as superclasses. If T has two
-// ScriptWrappable as superclasses, conversions from T* to
-// ScriptWrappable* are ambiguous.
-#if !defined(COMPILER_MSVC)
-    // MSVC 2013 doesn't support static_assert + constexpr well.
+    // Check if T* is castable to ScriptWrappable*, which means T doesn't
+    // have two or more ScriptWrappable as superclasses. If T has two
+    // ScriptWrappable as superclasses, conversions from T* to
+    // ScriptWrappable* are ambiguous.
     static_assert(!static_cast<ScriptWrappable*>(static_cast<T*>(nullptr)),
                   "Class T must not have two or more ScriptWrappable as its "
                   "superclasses.");
-#endif
+
     return static_cast<T*>(this);
   }
 
@@ -97,8 +95,8 @@ class PLATFORM_EXPORT ScriptWrappable
   virtual const WrapperTypeInfo* GetWrapperTypeInfo() const = 0;
 
   // Creates and returns a new wrapper object.
-  virtual v8::Local<v8::Object> Wrap(v8::Isolate*,
-                                     v8::Local<v8::Object> creation_context);
+  virtual v8::Local<v8::Value> Wrap(v8::Isolate*,
+                                    v8::Local<v8::Object> creation_context);
 
   // Associates the instance with the given |wrapper| if this instance is not
   // yet associated with any wrapper.  Returns the wrapper already associated
@@ -188,6 +186,9 @@ inline bool ScriptWrappable::UnsetMainWorldWrapperIfSet(
 #define DEFINE_WRAPPERTYPEINFO()                               \
  public:                                                       \
   const WrapperTypeInfo* GetWrapperTypeInfo() const override { \
+    return &wrapper_type_info_;                                \
+  }                                                            \
+  static const WrapperTypeInfo* GetStaticWrapperTypeInfo() {   \
     return &wrapper_type_info_;                                \
   }                                                            \
                                                                \

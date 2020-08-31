@@ -32,6 +32,8 @@
 #include "osfiber_asm_arm.h"
 #elif defined(__powerpc64__)
 #include "osfiber_asm_ppc64.h"
+#elif defined(__mips__) && _MIPS_SIM == _ABI64
+#include "osfiber_asm_mips64.h"
 #else
 #error "Unsupported target"
 #endif
@@ -117,9 +119,9 @@ Allocator::unique_ptr<OSFiber> OSFiber::createFiber(
   out->context = {};
   out->target = func;
   out->stack = allocator->allocate(request);
-  marl_fiber_set_target(&out->context, out->stack.ptr, stackSize,
-                        reinterpret_cast<void (*)(void*)>(&OSFiber::run),
-                        out.get());
+  marl_fiber_set_target(
+      &out->context, out->stack.ptr, static_cast<uint32_t>(stackSize),
+      reinterpret_cast<void (*)(void*)>(&OSFiber::run), out.get());
   return out;
 }
 

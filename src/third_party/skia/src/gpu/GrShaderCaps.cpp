@@ -34,6 +34,7 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
     fRequiresLocalOutputColorForFBFetch = false;
     fMustObfuscateUniformColor = false;
     fMustGuardDivisionEvenAfterExplicitZeroCheck = false;
+    fInBlendModesFailRandomlyForAllZeroVec = false;
     fCanUseFragCoord = true;
     fIncompleteShortIntPrecision = false;
     fAddAndTrueToLoopCondition = false;
@@ -48,12 +49,14 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
     fPreferFlatInterpolation = false;
     fNoPerspectiveInterpolationSupport = false;
     fSampleMaskSupport = false;
+    fTessellationSupport = false;
     fExternalTextureSupport = false;
     fVertexIDSupport = false;
     fFPManipulationSupport = false;
     fFloatIs32Bits = true;
     fHalfIs32Bits = false;
     fHasLowFragmentPrecision = false;
+    fColorSpaceMathNeedsFloat = false;
     // Backed API support is required to be able to make swizzle-neutral shaders (e.g.
     // GL_ARB_texture_swizzle).
     fTextureSwizzleAppliedInShader = true;
@@ -69,6 +72,7 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
     fSecondExternalTextureExtensionString = nullptr;
     fNoPerspectiveInterpolationExtensionString = nullptr;
     fSampleVariablesExtensionString = nullptr;
+    fTessellationExtensionString = nullptr;
     fFBFetchColorName = nullptr;
     fFBFetchExtensionString = nullptr;
     fMaxFragmentSamplers = 0;
@@ -93,11 +97,11 @@ void GrShaderCaps::dumpJSON(SkJSONWriter* writer) const {
         "General Enable",
         "Specific Enables",
     };
-    GR_STATIC_ASSERT(0 == kNotSupported_AdvBlendEqInteraction);
-    GR_STATIC_ASSERT(1 == kAutomatic_AdvBlendEqInteraction);
-    GR_STATIC_ASSERT(2 == kGeneralEnable_AdvBlendEqInteraction);
-    GR_STATIC_ASSERT(3 == kSpecificEnables_AdvBlendEqInteraction);
-    GR_STATIC_ASSERT(SK_ARRAY_COUNT(kAdvBlendEqInteractionStr) == kLast_AdvBlendEqInteraction + 1);
+    static_assert(0 == kNotSupported_AdvBlendEqInteraction);
+    static_assert(1 == kAutomatic_AdvBlendEqInteraction);
+    static_assert(2 == kGeneralEnable_AdvBlendEqInteraction);
+    static_assert(3 == kSpecificEnables_AdvBlendEqInteraction);
+    static_assert(SK_ARRAY_COUNT(kAdvBlendEqInteractionStr) == kLast_AdvBlendEqInteraction + 1);
 
     writer->appendBool("FB Fetch Support", fFBFetchSupport);
     writer->appendBool("Uses precision modifiers", fUsesPrecisionModifiers);
@@ -110,6 +114,9 @@ void GrShaderCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Must obfuscate uniform color", fMustObfuscateUniformColor);
     writer->appendBool("Must guard division even after explicit zero check",
                        fMustGuardDivisionEvenAfterExplicitZeroCheck);
+    writer->appendBool(
+            "src-in and dst-in blend modes may return (0,0,0,1) when dst/src is all zeros",
+            fInBlendModesFailRandomlyForAllZeroVec);
     writer->appendBool("Can use gl_FragCoord", fCanUseFragCoord);
     writer->appendBool("Incomplete short int precision", fIncompleteShortIntPrecision);
     writer->appendBool("Add and true to loops workaround", fAddAndTrueToLoopCondition);
@@ -125,12 +132,14 @@ void GrShaderCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Prefer flat interpolation", fPreferFlatInterpolation);
     writer->appendBool("No perspective interpolation support", fNoPerspectiveInterpolationSupport);
     writer->appendBool("Sample mask support", fSampleMaskSupport);
+    writer->appendBool("Tessellation Support", fTessellationSupport);
     writer->appendBool("External texture support", fExternalTextureSupport);
     writer->appendBool("sk_VertexID support", fVertexIDSupport);
     writer->appendBool("Floating point manipulation support", fFPManipulationSupport);
     writer->appendBool("float == fp32", fFloatIs32Bits);
     writer->appendBool("half == fp32", fHalfIs32Bits);
     writer->appendBool("Has poor fragment precision", fHasLowFragmentPrecision);
+    writer->appendBool("Color space math needs float", fColorSpaceMathNeedsFloat);
     writer->appendBool("Texture swizzle applied in shader", fTextureSwizzleAppliedInShader);
     writer->appendBool("Builtin fma() support", fBuiltinFMASupport);
 
@@ -155,6 +164,7 @@ void GrShaderCaps::applyOptionsOverrides(const GrContextOptions& options) {
         SkASSERT(!fRequiresLocalOutputColorForFBFetch);
         SkASSERT(!fMustObfuscateUniformColor);
         SkASSERT(!fMustGuardDivisionEvenAfterExplicitZeroCheck);
+        SkASSERT(!fInBlendModesFailRandomlyForAllZeroVec);
         SkASSERT(fCanUseFragCoord);
         SkASSERT(!fIncompleteShortIntPrecision);
         SkASSERT(!fAddAndTrueToLoopCondition);
@@ -171,6 +181,9 @@ void GrShaderCaps::applyOptionsOverrides(const GrContextOptions& options) {
     }
     if (options.fSuppressGeometryShaders) {
         fGeometryShaderSupport = false;
+    }
+    if (options.fSuppressTessellationShaders) {
+        fTessellationSupport = false;
     }
 #endif
 }

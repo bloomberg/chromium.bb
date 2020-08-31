@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.storage;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import java.util.Arrays;
 
@@ -57,7 +58,7 @@ public abstract class ContentOperation {
         }
 
         @Override
-        public boolean equals(/*@Nullable*/ Object o) {
+        public boolean equals(@Nullable Object o) {
             if (!super.equals(o)) {
                 return false;
             }
@@ -94,7 +95,7 @@ public abstract class ContentOperation {
         }
 
         @Override
-        public boolean equals(/*@Nullable*/ Object o) {
+        public boolean equals(@Nullable Object o) {
             if (!super.equals(o)) {
                 return false;
             }
@@ -130,7 +131,7 @@ public abstract class ContentOperation {
         }
 
         @Override
-        public boolean equals(/*@Nullable*/ Object o) {
+        public boolean equals(@Nullable Object o) {
             if (!super.equals(o)) {
                 return false;
             }
@@ -158,7 +159,7 @@ public abstract class ContentOperation {
     }
 
     @Override
-    public boolean equals(/*@Nullable*/ Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) {
             return true;
         }

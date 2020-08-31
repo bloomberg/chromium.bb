@@ -63,41 +63,42 @@ using dwarf2reader::RootDIEHandler;
 class MockDIEHandler: public DIEHandler {
  public:
   MOCK_METHOD3(ProcessAttributeUnsigned,
-               void(DwarfAttribute, DwarfForm, uint64));
+               void(DwarfAttribute, DwarfForm, uint64_t));
   MOCK_METHOD3(ProcessAttributeSigned,
-               void(DwarfAttribute, DwarfForm, int64));
+               void(DwarfAttribute, DwarfForm, int64_t));
   MOCK_METHOD3(ProcessAttributeReference,
-               void(DwarfAttribute, DwarfForm, uint64));
+               void(DwarfAttribute, DwarfForm, uint64_t));
   MOCK_METHOD4(ProcessAttributeBuffer,
-               void(DwarfAttribute, DwarfForm, const uint8_t *, uint64));
+               void(DwarfAttribute, DwarfForm, const uint8_t *, uint64_t));
   MOCK_METHOD3(ProcessAttributeString,
                void(DwarfAttribute, DwarfForm, const string &));
   MOCK_METHOD3(ProcessAttributeSignature,
-               void(DwarfAttribute, DwarfForm, uint64));
+               void(DwarfAttribute, DwarfForm, uint64_t));
   MOCK_METHOD0(EndAttributes, bool());
-  MOCK_METHOD2(FindChildHandler, DIEHandler *(uint64, DwarfTag));
+  MOCK_METHOD2(FindChildHandler, DIEHandler *(uint64_t, DwarfTag));
   MOCK_METHOD0(Finish, void());
 };
 
 class MockRootDIEHandler: public RootDIEHandler {
  public:
   MOCK_METHOD3(ProcessAttributeUnsigned,
-               void(DwarfAttribute, DwarfForm, uint64));
+               void(DwarfAttribute, DwarfForm, uint64_t));
   MOCK_METHOD3(ProcessAttributeSigned,
-               void(DwarfAttribute, DwarfForm, int64));
+               void(DwarfAttribute, DwarfForm, int64_t));
   MOCK_METHOD3(ProcessAttributeReference,
-               void(DwarfAttribute, DwarfForm, uint64));
+               void(DwarfAttribute, DwarfForm, uint64_t));
   MOCK_METHOD4(ProcessAttributeBuffer,
-               void(DwarfAttribute, DwarfForm, const uint8_t *, uint64));
+               void(DwarfAttribute, DwarfForm, const uint8_t *, uint64_t));
   MOCK_METHOD3(ProcessAttributeString,
                void(DwarfAttribute, DwarfForm, const string &));
   MOCK_METHOD3(ProcessAttributeSignature,
-               void(DwarfAttribute, DwarfForm, uint64));
+               void(DwarfAttribute, DwarfForm, uint64_t));
   MOCK_METHOD0(EndAttributes, bool());
-  MOCK_METHOD2(FindChildHandler, DIEHandler *(uint64, DwarfTag));
+  MOCK_METHOD2(FindChildHandler, DIEHandler *(uint64_t, DwarfTag));
   MOCK_METHOD0(Finish, void());
-  MOCK_METHOD5(StartCompilationUnit, bool(uint64, uint8, uint8, uint64, uint8));
-  MOCK_METHOD2(StartRootDIE, bool(uint64, DwarfTag));
+  MOCK_METHOD5(StartCompilationUnit, bool(uint64_t, uint8_t, uint8_t, uint64_t,
+                                          uint8_t));
+  MOCK_METHOD2(StartRootDIE, bool(uint64_t, DwarfTag));
 };
 
 // If the handler elects to skip the compilation unit, the dispatcher

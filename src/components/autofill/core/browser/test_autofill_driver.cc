@@ -48,8 +48,10 @@ bool TestAutofillDriver::RendererIsAvailable() {
 }
 
 #if !defined(OS_IOS)
-void TestAutofillDriver::ConnectToAuthenticator(
-    mojo::PendingReceiver<blink::mojom::InternalAuthenticator> receiver) {}
+InternalAuthenticator*
+TestAutofillDriver::GetOrCreateCreditCardInternalAuthenticator() {
+  return test_authenticator_.get();
+}
 #endif
 
 void TestAutofillDriver::SendFormDataToRenderer(int query_id,
@@ -96,8 +98,8 @@ gfx::RectF TestAutofillDriver::TransformBoundingBoxToViewportCoordinates(
   return bounding_box;
 }
 
-net::NetworkIsolationKey TestAutofillDriver::NetworkIsolationKey() {
-  return network_isolation_key_;
+net::IsolationInfo TestAutofillDriver::IsolationInfo() {
+  return isolation_info_;
 }
 
 void TestAutofillDriver::SetIsIncognito(bool is_incognito) {
@@ -108,14 +110,21 @@ void TestAutofillDriver::SetIsInMainFrame(bool is_in_main_frame) {
   is_in_main_frame_ = is_in_main_frame;
 }
 
-void TestAutofillDriver::SetNetworkIsolationKey(
-    const net::NetworkIsolationKey& network_isolation_key) {
-  network_isolation_key_ = network_isolation_key;
+void TestAutofillDriver::SetIsolationInfo(
+    const net::IsolationInfo& isolation_info) {
+  isolation_info_ = isolation_info;
 }
 
 void TestAutofillDriver::SetSharedURLLoaderFactory(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   test_shared_loader_factory_ = url_loader_factory;
 }
+
+#if !defined(OS_IOS)
+void TestAutofillDriver::SetAuthenticator(
+    InternalAuthenticator* authenticator_) {
+  test_authenticator_.reset(authenticator_);
+}
+#endif
 
 }  // namespace autofill

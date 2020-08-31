@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_PERSONAL_DATA_MANAGER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_PERSONAL_DATA_MANAGER_H_
 
+#include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/optional.h"
@@ -34,7 +37,7 @@ class TestPersonalDataManager : public PersonalDataManager {
       const AutofillProfile& imported_profile) override;
   std::string SaveImportedCreditCard(
       const CreditCard& imported_credit_card) override;
-  void AddVPA(const std::string& vpa) override;
+  void AddUpiId(const std::string& upi_id) override;
   void AddProfile(const AutofillProfile& profile) override;
   void UpdateProfile(const AutofillProfile& profile) override;
   void RemoveByGUID(const std::string& guid) override;
@@ -47,6 +50,8 @@ class TestPersonalDataManager : public PersonalDataManager {
   void SetProfiles(std::vector<AutofillProfile>* profiles) override;
   void LoadProfiles() override;
   void LoadCreditCards() override;
+  void LoadCreditCardCloudTokenData() override;
+  void LoadUpiIds() override;
   bool IsAutofillEnabled() const override;
   bool IsAutofillProfileEnabled() const override;
   bool IsAutofillCreditCardEnabled() const override;
@@ -67,6 +72,9 @@ class TestPersonalDataManager : public PersonalDataManager {
   // Clears |local_credit_cards_| and |server_credit_cards_|.
   void ClearCreditCards();
 
+  // Clears |server_credit_card_cloud_token_data_|.
+  void ClearCloudTokenData();
+
   // Gets a profile based on the provided |guid|.
   AutofillProfile* GetProfileWithGUID(const char* guid);
 
@@ -76,6 +84,13 @@ class TestPersonalDataManager : public PersonalDataManager {
   // Adds a card to |server_credit_cards_|.  Functionally identical to
   // AddFullServerCreditCard().
   void AddServerCreditCard(const CreditCard& credit_card);
+
+  // Adds a cloud token data to |server_credit_card_cloud_token_data_|.
+  void AddCloudTokenData(const CreditCardCloudTokenData& cloud_token_data);
+
+  // Sets a local/server card's nickname based on the provided |guid|.
+  void SetNicknameForCardWithGUID(const char* guid,
+                                  const std::string& nickname);
 
   void set_timezone_country_code(const std::string& timezone_country_code) {
     timezone_country_code_ = timezone_country_code;
@@ -92,7 +107,9 @@ class TestPersonalDataManager : public PersonalDataManager {
     return num_times_save_imported_credit_card_called_;
   }
 
-  int num_times_save_vpa_called() const { return num_times_save_vpa_called_; }
+  int num_times_save_upi_id_called() const {
+    return num_times_save_upi_id_called_;
+  }
 
   bool sync_service_initialized() const { return sync_service_initialized_; }
 
@@ -128,7 +145,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   std::string default_country_code_;
   int num_times_save_imported_profile_called_ = 0;
   int num_times_save_imported_credit_card_called_ = 0;
-  int num_times_save_vpa_called_ = 0;
+  int num_times_save_upi_id_called_ = 0;
   base::Optional<bool> autofill_profile_enabled_;
   base::Optional<bool> autofill_credit_card_enabled_;
   base::Optional<bool> autofill_wallet_import_enabled_;

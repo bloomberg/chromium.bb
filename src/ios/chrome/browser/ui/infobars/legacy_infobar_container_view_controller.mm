@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/infobars/legacy_infobar_container_view_controller.h"
 
+#include "base/check.h"
 #include "base/ios/block_types.h"
-#include "base/logging.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
@@ -78,7 +78,9 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
 
 #pragma mark - InfobarConsumer
 
-- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate {
+// |skipBanner| is used in inforbar reboot UI only.
+- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
+                    skipBanner:(BOOL)skipBanner {
   UIView* infoBarView = infoBarDelegate.view;
   [self.view addSubview:infoBarView];
   infoBarView.translatesAutoresizingMaskIntoConstraints = NO;

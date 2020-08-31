@@ -64,7 +64,7 @@ class StyleRuleKeyframes final : public StyleRuleBase {
     return MakeGarbageCollected<StyleRuleKeyframes>(*this);
   }
 
-  void TraceAfterDispatch(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) const;
 
   void StyleChanged() { version_++; }
   unsigned Version() const { return version_; }
@@ -114,7 +114,7 @@ class CSSKeyframesRule final : public CSSRule {
 
   void StyleChanged() { keyframes_rule_->StyleChanged(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   CSSRule::Type type() const override { return kKeyframesRule; }

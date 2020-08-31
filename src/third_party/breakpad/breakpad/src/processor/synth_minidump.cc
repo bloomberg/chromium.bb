@@ -332,7 +332,7 @@ Exception::Exception(const Dump &dump,
   D64(exception_address);
   D32(0);  // number_parameters
   D32(0);  // __align
-  for (int i = 0; i < MD_EXCEPTION_MAXIMUM_PARAMETERS; ++i)
+  for (size_t i = 0; i < MD_EXCEPTION_MAXIMUM_PARAMETERS; ++i)
     D64(0);  // exception_information
   context.CiteLocationIn(this);
   assert(Size() == sizeof(MDRawExceptionStream));

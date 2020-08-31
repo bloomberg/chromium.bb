@@ -27,20 +27,14 @@
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
-using content::AsyncFileTestHelper;
-using storage::AsyncFileUtilAdapter;
-using storage::FileSystemContext;
-using storage::FileSystemOperationContext;
-using storage::FileSystemURL;
-using storage::LocalFileUtil;
-
-namespace content {
+namespace storage {
 
 namespace {
 
-const GURL kOrigin("http://foo/");
-const storage::FileSystemType kFileSystemType = storage::kFileSystemTypeTest;
+const FileSystemType kFileSystemType = kFileSystemTypeTest;
 
 }  // namespace
 
@@ -76,7 +70,8 @@ class LocalFileUtilTest : public testing::Test {
 
   FileSystemURL CreateURL(const std::string& file_name) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        kOrigin, kFileSystemType, base::FilePath().FromUTF8Unsafe(file_name));
+        url::Origin::Create(GURL("http://foo/")), kFileSystemType,
+        base::FilePath().FromUTF8Unsafe(file_name));
   }
 
   base::FilePath LocalPath(const char* file_name) {
@@ -375,4 +370,4 @@ TEST_F(LocalFileUtilTest, MoveDirectory) {
   EXPECT_EQ(1020, GetSize(to_file));
 }
 
-}  // namespace content
+}  // namespace storage

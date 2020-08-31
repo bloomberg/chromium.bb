@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.download;
 import android.content.Context;
 import android.os.Handler;
 
-import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.components.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 
 /**
@@ -45,7 +46,7 @@ public class DownloadResumptionBackgroundTask extends NativeBackgroundTask {
 
     @Override
     protected boolean supportsServiceManagerOnly() {
-        return FeatureUtilities.isServiceManagerForDownloadResumptionEnabled();
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD);
     }
 
     @Override

@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/primary_account_manager.h"
@@ -52,12 +52,17 @@ bool PrimaryAccountMutatorImpl::SetPrimaryAccount(
 }
 
 #if defined(OS_CHROMEOS)
-bool PrimaryAccountMutatorImpl::DeprecatedSetPrimaryAccountAndUpdateAccountInfo(
-    const std::string& gaia_id,
-    const std::string& email) {
-  CoreAccountId account_id = account_tracker_->SeedAccountInfo(gaia_id, email);
-  SetPrimaryAccount(account_id);
-  return true;
+void PrimaryAccountMutatorImpl::RevokeSyncConsent() {
+  primary_account_manager_->RevokeSyncConsent();
+}
+
+void PrimaryAccountMutatorImpl::SetUnconsentedPrimaryAccount(
+    const CoreAccountId& account_id) {
+  // On Chrome OS the UPA can only be set once and never removed or changed.
+  DCHECK(!account_id.empty());
+  DCHECK(!primary_account_manager_->HasUnconsentedPrimaryAccount());
+  AccountInfo account_info = account_tracker_->GetAccountInfo(account_id);
+  primary_account_manager_->SetUnconsentedPrimaryAccountInfo(account_info);
 }
 #endif
 

@@ -15,6 +15,7 @@
 #include "net/third_party/quiche/src/quic/quartc/quartc_connection_helper.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_crypto_helpers.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_session.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -24,7 +25,7 @@ std::unique_ptr<QuartcSession> CreateQuartcClientSession(
     QuicAlarmFactory* alarm_factory,
     QuicConnectionHelperInterface* connection_helper,
     const ParsedQuicVersionVector& supported_versions,
-    QuicStringPiece server_crypto_config,
+    quiche::QuicheStringPiece server_crypto_config,
     QuartcPacketTransport* packet_transport) {
   DCHECK(packet_transport);
 
@@ -60,12 +61,6 @@ std::unique_ptr<QuartcSession> CreateQuartcClientSession(
 }
 
 void ConfigureGlobalQuicSettings() {
-  // Fixes behavior of StopReading() with level-triggered stream sequencers.
-  SetQuicReloadableFlag(quic_stop_reading_when_level_triggered, true);
-
-  // Enable version 50 to be compatible with the latest version of Chrome.
-  SetQuicReloadableFlag(quic_enable_version_50, true);
-
   // Ensure that we don't drop data because QUIC streams refuse to buffer it.
   // TODO(b/120099046):  Replace this with correct handling of WriteMemSlices().
   SetQuicFlag(FLAGS_quic_buffered_data_threshold,
@@ -80,7 +75,6 @@ void ConfigureGlobalQuicSettings() {
 
   // Note: flag settings have no effect for Exoblaze builds since
   // SetQuicReloadableFlag() gets stubbed out.
-  SetQuicReloadableFlag(quic_bbr_less_probe_rtt, true);  // Enable BBR6,7,8.
   SetQuicReloadableFlag(quic_unified_iw_options, true);  // Enable IWXX opts.
   SetQuicReloadableFlag(quic_bbr_flexible_app_limited, true);  // Enable BBR9.
 }
@@ -92,12 +86,6 @@ QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config) {
   // options requested by configs, so simply splitting the config and flag
   // settings doesn't seem preferable.
   ConfigureGlobalQuicSettings();
-
-  // In exoblaze this may return false. DCHECK to avoid problems caused by
-  // incorrect flags configuration.
-  DCHECK(GetQuicReloadableFlag(quic_enable_version_50))
-      << "Your build does not support quic reloadable flags and shouldn't "
-         "place Quartc calls";
 
   QuicTagVector copt;
   copt.push_back(kNSTP);
@@ -117,8 +105,6 @@ QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config) {
 
   copt.push_back(kBBR3);  // Stay in low-gain until in-flight < BDP.
   copt.push_back(kBBR5);  // 40 RTT ack aggregation.
-  copt.push_back(kBBR6);  // Use a 0.75 * BDP cwnd during PROBE_RTT.
-  copt.push_back(kBBR8);  // Skip PROBE_RTT if app-limited.
   copt.push_back(kBBR9);  // Ignore app-limited if enough data is in flight.
   copt.push_back(kBBQ1);  // 2.773 pacing gain in STARTUP.
   copt.push_back(kBBQ2);  // 2.0 CWND gain in STARTUP.
@@ -162,7 +148,6 @@ QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config) {
   }
   if (quartc_session_config.idle_network_timeout > QuicTime::Delta::Zero()) {
     quic_config.SetIdleNetworkTimeout(
-        quartc_session_config.idle_network_timeout,
         quartc_session_config.idle_network_timeout);
   }
 
@@ -179,7 +164,7 @@ QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config) {
   // incomplete streams, but targets 1 second for recovery. Increasing the
   // number of open streams gives sufficient headroom to recover before QUIC
   // refuses new streams.
-  quic_config.SetMaxIncomingBidirectionalStreamsToSend(1000);
+  quic_config.SetMaxBidirectionalStreamsToSend(1000);
 
   return quic_config;
 }

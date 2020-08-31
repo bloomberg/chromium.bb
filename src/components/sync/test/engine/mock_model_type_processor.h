@@ -35,7 +35,7 @@ namespace syncer {
 // on their value.
 class MockModelTypeProcessor : public ModelTypeProcessor {
  public:
-  using DisconnectCallback = base::Callback<void()>;
+  using DisconnectCallback = base::OnceCallback<void()>;
 
   MockModelTypeProcessor();
   ~MockModelTypeProcessor() override;
@@ -45,8 +45,11 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   void DisconnectSync() override;
   void GetLocalChanges(size_t max_entries,
                        GetLocalChangesCallback callback) override;
-  void OnCommitCompleted(const sync_pb::ModelTypeState& type_state,
-                         const CommitResponseDataList& response_list) override;
+  void OnCommitCompleted(
+      const sync_pb::ModelTypeState& type_state,
+      const CommitResponseDataList& committed_response_list,
+      const FailedCommitResponseDataList& error_response_list) override;
+  void OnCommitFailed(SyncCommitError commit_error) override;
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
                         UpdateResponseDataList response_list) override;
 
@@ -74,6 +77,9 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   std::unique_ptr<CommitRequestData> DeleteRequest(
       const ClientTagHash& tag_hash);
 
+  // Getters to access the log of commit failures.
+  size_t GetNumCommitFailures() const;
+
   // Getters to access the log of received update responses.
   //
   // Does not includes responses that are in pending tasks.
@@ -97,7 +103,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   bool HasCommitResponse(const ClientTagHash& tag_hash) const;
   CommitResponseData GetCommitResponse(const ClientTagHash& tag_hash) const;
 
-  void SetDisconnectCallback(const DisconnectCallback& callback);
+  void SetDisconnectCallback(DisconnectCallback callback);
 
   // Sets commit request that will be returned by GetLocalChanges().
   void SetCommitRequest(CommitRequestDataList commit_request);
@@ -108,8 +114,10 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // Process a received commit response.
   //
   // Implemented as an Impl method so we can defer its execution in some cases.
-  void OnCommitCompletedImpl(const sync_pb::ModelTypeState& type_state,
-                             const CommitResponseDataList& response_list);
+  void OnCommitCompletedImpl(
+      const sync_pb::ModelTypeState& type_state,
+      const CommitResponseDataList& committed_response_list,
+      const FailedCommitResponseDataList& error_response_list);
 
   // Process a received update response.
   //
@@ -142,6 +150,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   std::vector<UpdateResponseDataList> received_update_responses_;
   std::vector<sync_pb::ModelTypeState> type_states_received_on_update_;
   std::vector<sync_pb::ModelTypeState> type_states_received_on_commit_;
+  size_t commit_failures_count_ = 0;
 
   // Latest responses received, indexed by tag_hash.
   std::map<ClientTagHash, CommitResponseData> commit_response_items_;

@@ -7,9 +7,9 @@
 #include <memory>
 #include <string>
 
+#include "base/check.h"
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
@@ -181,7 +181,7 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
   if (!root.value().is_list())
     return YES;
 
-  base::Value::ListStorage& listValues = root.value().GetList();
+  base::Value::ConstListView listValues = root.value().GetList();
   if (listValues.size() == 2) {
     if (listValues[0].is_int()) {
       int numHighlighted = listValues[0].GetInt();

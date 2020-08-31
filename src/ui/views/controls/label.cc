@@ -57,8 +57,7 @@ bool IsOpaque(SkColor color) {
 
 namespace views {
 
-Label::Label() : Label(base::string16()) {
-}
+Label::Label() : Label(base::string16()) {}
 
 Label::Label(const base::string16& text)
     : Label(text, style::CONTEXT_LABEL, style::STYLE_PRIMARY) {}
@@ -67,17 +66,17 @@ Label::Label(const base::string16& text,
              int text_context,
              int text_style,
              gfx::DirectionalityMode directionality_mode)
-    : text_context_(text_context), context_menu_contents_(this) {
+    : text_context_(text_context),
+      text_style_(text_style),
+      context_menu_contents_(this) {
   Init(text, style::GetFont(text_context, text_style), directionality_mode);
   SetLineHeight(style::GetLineHeight(text_context, text_style));
-
-  // If an explicit style is given, ignore color changes due to the NativeTheme.
-  if (text_style != style::STYLE_PRIMARY)
-    SetEnabledColor(style::GetColor(*this, text_context, text_style));
 }
 
 Label::Label(const base::string16& text, const CustomFont& font)
-    : text_context_(style::CONTEXT_LABEL), context_menu_contents_(this) {
+    : text_context_(style::CONTEXT_LABEL),
+      text_style_(style::STYLE_PRIMARY),
+      context_menu_contents_(this) {
   Init(text, font.font_list, gfx::DirectionalityMode::DIRECTIONALITY_FROM_TEXT);
 }
 
@@ -345,7 +344,7 @@ void Label::SetMaximumWidth(int max_width) {
   if (max_width_ == max_width)
     return;
   max_width_ = max_width;
-  OnPropertyChanged(&max_width_, kPropertyEffectsPreferredSizeChanged);
+  OnPropertyChanged(&max_width_, kPropertyEffectsLayout);
 }
 
 bool Label::GetCollapseWhenHidden() const {
@@ -375,7 +374,7 @@ base::i18n::TextDirection Label::GetTextDirectionForTesting() {
 }
 
 bool Label::IsSelectionSupported() const {
-  return !GetObscured() && full_text_->IsSelectionSupported();
+  return !GetObscured();
 }
 
 bool Label::GetSelectable() const {
@@ -599,10 +598,6 @@ std::unique_ptr<gfx::RenderText> Label::CreateRenderText() const {
   return render_text;
 }
 
-void Label::PaintFocusRing(gfx::Canvas* canvas) const {
-  // No focus ring by default.
-}
-
 gfx::Rect Label::GetTextBounds() const {
   MaybeBuildDisplayText();
 
@@ -646,11 +641,10 @@ void Label::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 void Label::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
   PaintText(canvas);
-  if (HasFocus())
-    PaintFocusRing(canvas);
 }
 
 void Label::OnThemeChanged() {
+  View::OnThemeChanged();
   UpdateColorsFromTheme();
 }
 
@@ -701,8 +695,9 @@ bool Label::OnMousePressed(const ui::MouseEvent& event) {
 #endif
 
   return selection_controller_->OnMousePressed(
-      event, false, had_focus ? SelectionController::FOCUSED
-                              : SelectionController::UNFOCUSED);
+      event, false,
+      had_focus ? SelectionController::FOCUSED
+                : SelectionController::UNFOCUSED);
 }
 
 bool Label::OnMouseDragged(const ui::MouseEvent& event) {
@@ -894,9 +889,9 @@ bool Label::IsCommandIdChecked(int command_id) const {
 
 bool Label::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
-    case IDS_APP_COPY:
+    case MenuCommands::kCopy:
       return HasSelection() && !GetObscured();
-    case IDS_APP_SELECT_ALL:
+    case MenuCommands::kSelectAll:
       return GetRenderTextForSelectionController() && !GetText().empty();
   }
   return false;
@@ -904,10 +899,10 @@ bool Label::IsCommandIdEnabled(int command_id) const {
 
 void Label::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
-    case IDS_APP_COPY:
+    case MenuCommands::kCopy:
       CopyToClipboard();
       break;
-    case IDS_APP_SELECT_ALL:
+    case MenuCommands::kSelectAll:
       SelectAll();
       DCHECK(HasSelection());
       UpdateSelectionClipboard();
@@ -920,11 +915,11 @@ void Label::ExecuteCommand(int command_id, int event_flags) {
 bool Label::GetAcceleratorForCommandId(int command_id,
                                        ui::Accelerator* accelerator) const {
   switch (command_id) {
-    case IDS_APP_COPY:
+    case MenuCommands::kCopy:
       *accelerator = ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN);
       return true;
 
-    case IDS_APP_SELECT_ALL:
+    case MenuCommands::kSelectAll:
       *accelerator = ui::Accelerator(ui::VKEY_A, ui::EF_CONTROL_DOWN);
       return true;
 
@@ -955,19 +950,7 @@ void Label::Init(const base::string16& text,
   full_text_->SetCursorEnabled(false);
   full_text_->SetWordWrapBehavior(gfx::TRUNCATE_LONG_WORDS);
 
-  elide_behavior_ = gfx::ELIDE_TAIL;
-  stored_selection_range_ = gfx::Range::InvalidRange();
-  enabled_color_set_ = background_color_set_ = false;
-  selection_text_color_set_ = selection_background_color_set_ = false;
-  subpixel_rendering_enabled_ = true;
-  auto_color_readability_enabled_ = true;
-  multi_line_ = false;
-  max_lines_ = 0;
   UpdateColorsFromTheme();
-  handles_tooltips_ = true;
-  collapse_when_hidden_ = false;
-  fixed_width_ = 0;
-  max_width_ = 0;
   SetText(text);
 
   // Only selectable labels will get requests to show the context menu, due to
@@ -1059,7 +1042,7 @@ void Label::UpdateColorsFromTheme() {
   ui::NativeTheme* theme = GetNativeTheme();
   if (!enabled_color_set_) {
     requested_enabled_color_ =
-        style::GetColor(*this, text_context_, style::STYLE_PRIMARY);
+        style::GetColor(*this, text_context_, text_style_);
   }
   if (!background_color_set_) {
     background_color_ =
@@ -1112,8 +1095,8 @@ void Label::CopyToClipboard() {
 }
 
 void Label::BuildContextMenuContents() {
-  context_menu_contents_.AddItemWithStringId(IDS_APP_COPY, IDS_APP_COPY);
-  context_menu_contents_.AddItemWithStringId(IDS_APP_SELECT_ALL,
+  context_menu_contents_.AddItemWithStringId(MenuCommands::kCopy, IDS_APP_COPY);
+  context_menu_contents_.AddItemWithStringId(MenuCommands::kSelectAll,
                                              IDS_APP_SELECT_ALL);
 }
 

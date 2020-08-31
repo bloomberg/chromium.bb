@@ -26,6 +26,8 @@ static_library("cast_channel") {
     "enum_table.h",
     "keep_alive_delegate.cc",
     "keep_alive_delegate.h",
+    "keep_alive_handler.cc",
+    "keep_alive_handler.h",
     "logger.cc",
     "logger.h",
     "mojo_data_pump.cc",
@@ -45,9 +47,7 @@ static_library("cast_channel") {
     "//services/data_decoder/public/cpp",
     "//third_party/openscreen/src/cast/common/channel/proto:channel_proto",
   ]
-  public_deps = [
-    "//services/network/public/mojom",
-  ]
+  public_deps = [ "//services/network/public/mojom" ]
 }
 
 static_library("test_support") {
@@ -102,9 +102,7 @@ source_set("unit_tests") {
 }
 
 fuzzer_test("cast_message_fuzzer") {
-  sources = [
-    "cast_message_fuzzer.cc",
-  ]
+  sources = [ "cast_message_fuzzer.cc" ]
   deps = [
     ":test_support",
     "//base",

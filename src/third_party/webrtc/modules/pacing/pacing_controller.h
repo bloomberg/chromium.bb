@@ -29,6 +29,7 @@
 #include "modules/pacing/round_robin_packet_queue.h"
 #include "modules/pacing/rtp_packet_pacer.h"
 #include "modules/rtp_rtcp/include/rtp_packet_sender.h"
+#include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
 #include "rtc_base/critical_section.h"
 #include "rtc_base/experiments/field_trial_parser.h"
@@ -36,7 +37,7 @@
 
 namespace webrtc {
 
-// This class implements a leaky-buck packet pacing algorithm. It handles the
+// This class implements a leaky-bucket packet pacing algorithm. It handles the
 // logic of determining which packets to send when, but the actual timing of
 // the processing is done externally (e.g. PacedSender). Furthermore, the
 // forwarding of packets when they are ready to be sent is also handled
@@ -107,6 +108,9 @@ class PacingController {
   // the pacer budget calculation. The audio traffic still will be injected
   // at high priority.
   void SetAccountForAudioPackets(bool account_for_audio);
+  void SetIncludeOverhead();
+
+  void SetTransportOverhead(DataSize overhead_per_packet);
 
   // Returns the time since the oldest queued packet was enqueued.
   TimeDelta OldestPacketWaitTime() const;
@@ -159,7 +163,7 @@ class PacingController {
       const PacedPacketInfo& pacing_info,
       Timestamp target_send_time,
       Timestamp now);
-  void OnPacketSent(RtpPacketToSend::Type packet_type,
+  void OnPacketSent(RtpPacketMediaType packet_type,
                     DataSize packet_size,
                     Timestamp send_time);
   void OnPaddingSent(DataSize padding_sent);
@@ -176,9 +180,14 @@ class PacingController {
   const bool send_padding_if_silent_;
   const bool pace_audio_;
   const bool small_first_probe_packet_;
-  const bool send_side_bwe_with_overhead_;
+  const bool ignore_transport_overhead_;
+  // In dynamic mode, indicates the target size when requesting padding,
+  // expressed as a duration in order to adjust for varying padding rate.
+  const TimeDelta padding_target_duration_;
 
   TimeDelta min_packet_limit_;
+
+  DataSize transport_overhead_per_packet_;
 
   // TODO(webrtc:9716): Remove this when we are certain clocks are monotonic.
   // The last millisecond timestamp returned by |clock_|.
@@ -219,6 +228,7 @@ class PacingController {
 
   TimeDelta queue_time_limit;
   bool account_for_audio_;
+  bool include_overhead_;
 };
 }  // namespace webrtc
 

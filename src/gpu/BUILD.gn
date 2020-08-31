@@ -70,15 +70,11 @@ component("gles2") {
 }
 
 component("raster") {
-  public_deps = [
-    "//gpu/command_buffer/client:raster_sources",
-  ]
+  public_deps = [ "//gpu/command_buffer/client:raster_sources" ]
 }
 
 component("webgpu") {
-  public_deps = [
-    "//gpu/command_buffer/client:webgpu_sources",
-  ]
+  public_deps = [ "//gpu/command_buffer/client:webgpu_sources" ]
 }
 
 if (!use_static_angle) {
@@ -185,6 +181,8 @@ jumbo_static_library("test_support") {
     "command_buffer/service/mocks.h",
     "command_buffer/service/test_helper.cc",
     "command_buffer/service/test_helper.h",
+    "command_buffer/service/test_shared_image_backing.cc",
+    "command_buffer/service/test_shared_image_backing.h",
     "ipc/raster_in_process_context.cc",
     "ipc/raster_in_process_context.h",
     "ipc/service/gpu_memory_buffer_factory_test_template.h",
@@ -219,14 +217,10 @@ jumbo_static_library("test_support") {
 
 if (!is_android && !is_fuchsia && !is_chromeos) {
   proto_library("gl_lpm_fuzzer_proto") {
-    sources = [
-      "command_buffer/tests/lpm/gl_lpm_fuzzer.proto",
-    ]
+    sources = [ "command_buffer/tests/lpm/gl_lpm_fuzzer.proto" ]
 
     use_protobuf_full = true
-    deps = [
-      "//third_party/protobuf:protobuf_full",
-    ]
+    deps = [ "//third_party/protobuf:protobuf_full" ]
   }
 
   static_library("gl_lpm_shader_to_string") {
@@ -242,9 +236,7 @@ if (!is_android && !is_fuchsia && !is_chromeos) {
   }
 
   test("gl_lpm_shader_to_string_unittest") {
-    sources = [
-      "command_buffer/tests/lpm/gl_lpm_shader_to_string_unittest.cc",
-    ]
+    sources = [ "command_buffer/tests/lpm/gl_lpm_shader_to_string_unittest.cc" ]
 
     deps = [
       ":gl_lpm_shader_to_string",
@@ -293,13 +285,15 @@ test("gl_tests") {
     "command_buffer/service/shared_image_backing_factory_gl_texture_unittest.cc",
     "command_buffer/service/shared_image_factory_unittest.cc",
     "command_buffer/service/shared_image_manager_unittest.cc",
+    "command_buffer/service/shared_image_representation_unittest.cc",
+    "command_buffer/service/shared_image_test_utils.cc",
+    "command_buffer/service/shared_image_test_utils.h",
     "command_buffer/tests/compressed_texture_test.cc",
     "command_buffer/tests/es3_misc_functions_unittest.cc",
     "command_buffer/tests/gl_bgra_mipmap_unittest.cc",
     "command_buffer/tests/gl_bind_uniform_location_unittest.cc",
     "command_buffer/tests/gl_chromium_framebuffer_mixed_samples_unittest.cc",
     "command_buffer/tests/gl_chromium_framebuffer_multisample_unittest.cc",
-    "command_buffer/tests/gl_chromium_path_rendering_unittest.cc",
     "command_buffer/tests/gl_clear_framebuffer_unittest.cc",
     "command_buffer/tests/gl_copy_tex_image_2d_workaround_unittest.cc",
     "command_buffer/tests/gl_copy_texture_CHROMIUM_unittest.cc",
@@ -313,6 +307,7 @@ test("gl_tests") {
     "command_buffer/tests/gl_ext_srgb_unittest.cc",
     "command_buffer/tests/gl_ext_window_rectangles_unittest.cc",
     "command_buffer/tests/gl_gpu_memory_buffer_unittest.cc",
+    "command_buffer/tests/gl_helper_unittest.cc",
     "command_buffer/tests/gl_iosurface_readback_workaround_unittest.cc",
     "command_buffer/tests/gl_lose_context_chromium_unittest.cc",
     "command_buffer/tests/gl_manager.cc",
@@ -353,6 +348,7 @@ test("gl_tests") {
   if (use_dawn) {
     sources += [
       "command_buffer/service/webgpu_decoder_unittest.cc",
+      "command_buffer/tests/shared_image_gl_backing_produce_dawn_unittest.cc",
       "command_buffer/tests/webgpu_fence_unittest.cc",
       "command_buffer/tests/webgpu_mailbox_unittest.cc",
       "command_buffer/tests/webgpu_test.cc",
@@ -419,11 +415,13 @@ test("gl_tests") {
 
   if (use_dawn) {
     deps += [
-      "//third_party/dawn:libdawn_native",
+      "//third_party/dawn/src/dawn:dawn_proc",
       "//third_party/dawn/src/dawn:dawncpp",
-      "//third_party/dawn/src/dawn:libdawn_proc",
+      "//third_party/dawn/src/dawn_native",
     ]
   }
+
+  data_deps = [ "//testing/buildbot/filters:gl_tests_filters" ]
 }
 
 test("gpu_unittests") {
@@ -515,7 +513,6 @@ test("gpu_unittests") {
     "command_buffer/service/memory_program_cache_unittest.cc",
     "command_buffer/service/multi_draw_manager_unittest.cc",
     "command_buffer/service/passthrough_program_cache_unittest.cc",
-    "command_buffer/service/path_manager_unittest.cc",
     "command_buffer/service/program_cache_unittest.cc",
     "command_buffer/service/program_manager_unittest.cc",
     "command_buffer/service/query_manager_unittest.cc",
@@ -743,9 +740,7 @@ test("command_buffer_perftests") {
 }
 
 fuzzer_test("gpu_fuzzer") {
-  sources = [
-    "command_buffer/tests/fuzzer_main.cc",
-  ]
+  sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
   deps = [
     ":gles2",
@@ -763,9 +758,7 @@ fuzzer_test("gpu_fuzzer") {
 
 if (is_linux) {
   fuzzer_test("gpu_angle_fuzzer") {
-    sources = [
-      "command_buffer/tests/fuzzer_main.cc",
-    ]
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
     defines = [ "GPU_FUZZER_USE_ANGLE" ]
 
@@ -783,9 +776,7 @@ if (is_linux) {
   }
 
   fuzzer_test("gpu_angle_passthrough_fuzzer") {
-    sources = [
-      "command_buffer/tests/fuzzer_main.cc",
-    ]
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
     defines = [
       "GPU_FUZZER_USE_ANGLE",
@@ -806,9 +797,7 @@ if (is_linux) {
   }
 
   fuzzer_test("gpu_swiftshader_fuzzer") {
-    sources = [
-      "command_buffer/tests/fuzzer_main.cc",
-    ]
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
     defines = [ "GPU_FUZZER_USE_SWIFTSHADER" ]
 
@@ -825,10 +814,30 @@ if (is_linux) {
     libfuzzer_options = [ "max_len=16384" ]
   }
 
-  fuzzer_test("gpu_raster_fuzzer") {
-    sources = [
-      "command_buffer/tests/fuzzer_main.cc",
+  fuzzer_test("gpu_swangle_passthrough_fuzzer") {
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
+
+    defines = [
+      "GPU_FUZZER_USE_ANGLE",
+      "GPU_FUZZER_USE_SWANGLE",
+      "GPU_FUZZER_USE_PASSTHROUGH_CMD_DECODER",
     ]
+
+    deps = [
+      ":gles2",
+      ":gpu",
+      "//base",
+      "//base/third_party/dynamic_annotations",
+      "//ui/gfx/geometry",
+      "//ui/gl",
+      "//ui/gl:test_support",
+    ]
+
+    libfuzzer_options = [ "max_len=16384" ]
+  }
+
+  fuzzer_test("gpu_raster_fuzzer") {
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
     defines = [ "GPU_FUZZER_USE_RASTER_DECODER" ]
 
@@ -846,9 +855,7 @@ if (is_linux) {
   }
 
   fuzzer_test("gpu_raster_passthrough_fuzzer") {
-    sources = [
-      "command_buffer/tests/fuzzer_main.cc",
-    ]
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
     defines = [
       "GPU_FUZZER_USE_ANGLE",
@@ -870,9 +877,7 @@ if (is_linux) {
   }
 
   fuzzer_test("gpu_raster_swiftshader_fuzzer") {
-    sources = [
-      "command_buffer/tests/fuzzer_main.cc",
-    ]
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
     defines = [
       "GPU_FUZZER_USE_RASTER_DECODER",
@@ -893,9 +898,7 @@ if (is_linux) {
   }
 
   fuzzer_test("gpu_raster_angle_fuzzer") {
-    sources = [
-      "command_buffer/tests/fuzzer_main.cc",
-    ]
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
 
     defines = [
       "GPU_FUZZER_USE_RASTER_DECODER",
@@ -914,4 +917,62 @@ if (is_linux) {
 
     libfuzzer_options = [ "max_len=16384" ]
   }
+
+  fuzzer_test("gpu_raster_swangle_passthrough_fuzzer") {
+    sources = [ "command_buffer/tests/fuzzer_main.cc" ]
+
+    defines = [
+      "GPU_FUZZER_USE_ANGLE",
+      "GPU_FUZZER_USE_SWANGLE",
+      "GPU_FUZZER_USE_PASSTHROUGH_CMD_DECODER",
+      "GPU_FUZZER_USE_RASTER_DECODER",
+    ]
+
+    deps = [
+      ":gles2",
+      ":gpu",
+      "//base",
+      "//base/third_party/dynamic_annotations",
+      "//ui/gfx/geometry",
+      "//ui/gl",
+      "//ui/gl:test_support",
+    ]
+
+    libfuzzer_options = [ "max_len=16384" ]
+  }
+}
+
+# Microbenchmark to measure performance of GLHelper code, for use in
+# debugging, profiling, and optimizing.
+test("gpu_benchmark") {
+  sources = [ "command_buffer/tests/gl_helper_benchmark.cc" ]
+
+  configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//build/config:precompiled_headers",
+    "//third_party/khronos:khronos_headers",
+  ]
+
+  if (!is_debug && (is_win || is_android)) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//components/test:run_all_unittests",
+    "//components/viz/common",
+    "//components/viz/test:test_support",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/ipc:gl_in_process_context",
+    "//gpu/ipc:gpu_thread_holder",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gfx",
+  ]
+
+  data_deps = [ "//third_party/mesa_headers" ]
 }

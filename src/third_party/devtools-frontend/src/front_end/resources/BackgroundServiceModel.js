@@ -1,13 +1,16 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as SDK from '../sdk/sdk.js';
+
 /**
  * @implements {Protocol.BackgroundServiceDispatcher}
  * @unrestricted
  */
-Resources.BackgroundServiceModel = class extends SDK.SDKModel {
+export class BackgroundServiceModel extends SDK.SDKModel.SDKModel {
   /**
-   * @param {!SDK.Target} target
+   * @param {!SDK.SDKModel.Target} target
    */
   constructor(target) {
     super(target);
@@ -56,8 +59,7 @@ Resources.BackgroundServiceModel = class extends SDK.SDKModel {
    * @param {!Protocol.BackgroundService.ServiceName} serviceName
    */
   recordingStateChanged(isRecording, serviceName) {
-    this.dispatchEventToListeners(
-        Resources.BackgroundServiceModel.Events.RecordingStateChanged, {isRecording, serviceName});
+    this.dispatchEventToListeners(Events.RecordingStateChanged, {isRecording, serviceName});
   }
 
   /**
@@ -66,20 +68,14 @@ Resources.BackgroundServiceModel = class extends SDK.SDKModel {
    */
   backgroundServiceEventReceived(backgroundServiceEvent) {
     this._events.get(backgroundServiceEvent.service).push(backgroundServiceEvent);
-    this.dispatchEventToListeners(
-        Resources.BackgroundServiceModel.Events.BackgroundServiceEventReceived, backgroundServiceEvent);
+    this.dispatchEventToListeners(Events.BackgroundServiceEventReceived, backgroundServiceEvent);
   }
-};
+}
 
-SDK.SDKModel.register(Resources.BackgroundServiceModel, SDK.Target.Capability.Browser, false);
+SDK.SDKModel.SDKModel.register(BackgroundServiceModel, SDK.SDKModel.Capability.Browser, false);
 
 /** @enum {symbol} */
-Resources.BackgroundServiceModel.Events = {
+export const Events = {
   RecordingStateChanged: Symbol('RecordingStateChanged'),
   BackgroundServiceEventReceived: Symbol('BackgroundServiceEventReceived'),
 };
-
-/**
- * @typedef {!{isRecording: boolean, serviceName: !Protocol.BackgroundService.ServiceName}}
- */
-Resources.BackgroundServiceModel.RecordingState;

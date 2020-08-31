@@ -15,10 +15,11 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/common/buildflags.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(ENABLE_DOWNGRADE_PROCESSING)
 #include "chrome/browser/downgrade/downgrade_manager.h"
 #endif
 
@@ -28,7 +29,6 @@ class StartupData;
 class PrefService;
 class Profile;
 class StartupBrowserCreator;
-class StartupTimeBomb;
 class ShutdownWatcherHelper;
 class WebUsbDetector;
 
@@ -143,9 +143,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   int result_code_;
 
 #if !defined(OS_ANDROID)
-  // Create StartupTimeBomb object for watching jank during startup.
-  std::unique_ptr<StartupTimeBomb> startup_watcher_;
-
   // Create ShutdownWatcherHelper object for watching jank during shutdown.
   // Please keep |shutdown_watcher| as the first object constructed, and hence
   // it is destroyed last.
@@ -191,14 +188,14 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   bool restart_last_session_ = false;
 #endif  // !defined(OS_ANDROID)
 
+#if BUILDFLAG(ENABLE_DOWNGRADE_PROCESSING)
+  downgrade::DowngradeManager downgrade_manager_;
+#endif
+
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // Android's first run is done in Java instead of native. Chrome OS does not
   // use master preferences.
   std::unique_ptr<first_run::MasterPrefs> master_prefs_;
-#endif
-
-#if defined(OS_WIN)
-  downgrade::DowngradeManager downgrade_manager_;
 #endif
 
   Profile* profile_;

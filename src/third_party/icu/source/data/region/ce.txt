@@ -294,7 +294,6 @@ ce{
         ZZ{"Йоьвзуш йоцу регион"}
     }
     Countries%short{
-        GB{"Йоккха Британи"}
         US{"АЦШ"}
     }
     Countries%variant{
@@ -303,5 +302,5 @@ ce{
         CI{"Кот-д’Ивуар"}
         TL{"Тимор-Лесте"}
     }
-    Version{"36"}
+    Version{"37"}
 }

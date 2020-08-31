@@ -42,6 +42,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/base/ui_base_features.h"
 
 namespace content {
 
@@ -106,24 +107,38 @@ void DumpAccessibilityTestBase::SetUpOnMainThread() {
 void DumpAccessibilityTestBase::SetUp() {
   std::vector<base::Feature> enabled_features;
   std::vector<base::Feature> disabled_features;
+  ChooseFeatures(&enabled_features, &disabled_features);
+
+  scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+
+  // The <input type="color"> popup tested in
+  // AccessibilityInputColorWithPopupOpen requires the ability to read pixels
+  // from a Canvas, so we need to be able to produce pixel output.
+  EnablePixelOutput();
+
+  ContentBrowserTest::SetUp();
+}
+
+void DumpAccessibilityTestBase::ChooseFeatures(
+    std::vector<base::Feature>* enabled_features,
+    std::vector<base::Feature>* disabled_features) {
+  // Enable exposing ARIA Annotation roles.
+  // TODO(aleventhal) Remove when we completely remove runtime flag around m83.
+  // enabled_features.emplace_back(
+  //     features::kEnableAccessibilityExposeARIAAnnotations);
 
   // Enable exposing "display: none" nodes to the browser process for testing.
-  enabled_features.emplace_back(
-      features::kEnableAccessibilityExposeARIAAnnotations);
-
-  // Enable exposing ARIA Annotation roles.
-  enabled_features.emplace_back(
+  enabled_features->emplace_back(
       features::kEnableAccessibilityExposeDisplayNone);
+
+  enabled_features->emplace_back(blink::features::kPortals);
 
   // TODO(dmazzoni): DumpAccessibilityTree expectations are based on the
   // assumption that the accessibility labels feature is off. (There are
   // also several tests that explicitly enable the feature.) It'd be better
   // if DumpAccessibilityTree tests assumed that the feature is on by
   // default instead.  http://crbug.com/940330
-  disabled_features.emplace_back(features::kExperimentalAccessibilityLabels);
-
-  scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
-  ContentBrowserTest::SetUp();
+  disabled_features->emplace_back(features::kExperimentalAccessibilityLabels);
 }
 
 base::string16
@@ -233,10 +248,6 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   // flaky.
   BrowserAccessibilityManager::NeverSuppressOrDelayEventsForTesting();
 
-  // Extra mac nodes are disabled temporarily for stability purposes, but keep
-  // them on for tests.
-  BrowserAccessibilityManager::AllowExtraMacNodesForTesting();
-
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // Exit without running the test if we can't find an expectation file.
@@ -332,6 +343,51 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     waiter.WaitForNotification();
   }
 
+  WaitForAXTreeLoaded(web_contents, wait_for);
+
+  // Call the subclass to dump the output.
+  std::vector<std::string> actual_lines = Dump(run_until);
+
+  // Execute and wait for specified string
+  for (const auto& function_name : execute) {
+    DLOG(INFO) << "executing: " << function_name;
+    base::Value result =
+        ExecuteScriptAndGetValue(web_contents->GetMainFrame(), function_name);
+    const std::string& str = result.is_string() ? result.GetString() : "";
+    // If no string is specified, do not wait.
+    bool wait_for_string = str != "";
+    while (wait_for_string) {
+      // Loop until specified string is found.
+      base::string16 tree_dump = DumpUnfilteredAccessibilityTreeAsString();
+      if (base::UTF16ToUTF8(tree_dump).find(str) != std::string::npos) {
+        wait_for_string = false;
+        // Append an additional dump if the specified string was found.
+        std::vector<std::string> additional_dump = Dump(run_until);
+        actual_lines.emplace_back("=== Start Continuation ===");
+        actual_lines.insert(actual_lines.end(), additional_dump.begin(),
+                            additional_dump.end());
+        break;
+      }
+      // Block until the next accessibility notification in any frame.
+      VLOG(1) << "Still waiting on this text to be found: " << str;
+      VLOG(1) << "Waiting until the next accessibility event";
+      AccessibilityNotificationWaiter accessibility_waiter(
+          web_contents, ui::AXMode(), ax::mojom::Event::kNone);
+      accessibility_waiter.WaitForNotification();
+    }
+  }
+
+  // Validate against the expectation file.
+  bool matches_expectation = test_helper.ValidateAgainstExpectation(
+      file_path, expected_file, actual_lines, *expected_lines);
+  EXPECT_TRUE(matches_expectation);
+  if (!matches_expectation)
+    OnDiffFailed();
+}
+
+void DumpAccessibilityTestBase::WaitForAXTreeLoaded(
+    WebContentsImpl* web_contents,
+    const std::vector<std::string>& wait_for) {
   // Get the url of every frame in the frame tree.
   FrameTree* frame_tree = web_contents->GetFrameTree();
   std::vector<std::string> all_frame_urls;
@@ -342,9 +398,15 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     //
     // In this scenario, B's contentWindow.location.href matches A's url,
     // but B's url in the browser frame tree is still "about:blank".
+    //
+    // We also ignore frame tree nodes created for portals in the outer
+    // WebContents as the node doesn't have a url set.
     std::string url = node->current_url().spec();
-    if (url != url::kAboutBlankURL)
+    if (url != url::kAboutBlankURL && !url.empty() &&
+        node->frame_owner_element_type() !=
+            blink::mojom::FrameOwnerElementType::kPortal) {
       all_frame_urls.push_back(url);
+    }
   }
 
   // Wait for the accessibility tree to fully load for all frames,
@@ -398,48 +460,14 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     // Block until the next accessibility notification in any frame.
     VLOG(1) << "Waiting until the next accessibility event";
     AccessibilityNotificationWaiter accessibility_waiter(
-        web_contents, ui::AXMode(), ax::mojom::Event::kNone);
+        web_contents, ui::kAXModeComplete, ax::mojom::Event::kNone);
     accessibility_waiter.WaitForNotification();
   }
 
-  // Call the subclass to dump the output.
-  std::vector<std::string> actual_lines = Dump(run_until);
-
-  // Execute and wait for specified string
-  for (const auto& function_name : execute) {
-    DLOG(INFO) << "executing: " << function_name;
-    base::Value result =
-        ExecuteScriptAndGetValue(web_contents->GetMainFrame(), function_name);
-    const std::string& str = result.is_string() ? result.GetString() : "";
-    // If no string is specified, do not wait.
-    bool wait_for_string = str != "";
-    while (wait_for_string) {
-      // Loop until specified string is found.
-      base::string16 tree_dump = DumpUnfilteredAccessibilityTreeAsString();
-      if (base::UTF16ToUTF8(tree_dump).find(str) != std::string::npos) {
-        wait_for_string = false;
-        // Append an additional dump if the specified string was found.
-        std::vector<std::string> additional_dump = Dump(run_until);
-        actual_lines.emplace_back("=== Start Continuation ===");
-        actual_lines.insert(actual_lines.end(), additional_dump.begin(),
-                            additional_dump.end());
-        break;
-      }
-      // Block until the next accessibility notification in any frame.
-      VLOG(1) << "Still waiting on this text to be found: " << str;
-      VLOG(1) << "Waiting until the next accessibility event";
-      AccessibilityNotificationWaiter accessibility_waiter(
-          web_contents, ui::AXMode(), ax::mojom::Event::kNone);
-      accessibility_waiter.WaitForNotification();
-    }
+  for (WebContents* inner_contents : web_contents->GetInnerWebContents()) {
+    WaitForAXTreeLoaded(static_cast<WebContentsImpl*>(inner_contents),
+                        std::vector<std::string>());
   }
-
-  // Validate against the expectation file.
-  bool matches_expectation = test_helper.ValidateAgainstExpectation(
-      file_path, expected_file, actual_lines, *expected_lines);
-  EXPECT_TRUE(matches_expectation);
-  if (!matches_expectation)
-    OnDiffFailed();
 }
 
 BrowserAccessibility* DumpAccessibilityTestBase::FindNode(

@@ -9,6 +9,7 @@
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/events/gesture_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
@@ -38,8 +39,8 @@ const int kThumbRadius = 6;
 
 // Only respond to main button of primary pointer(s).
 bool IsValidPointerEvent(const blink::Event& event) {
-  DCHECK(event.IsPointerEvent());
-  const blink::PointerEvent& pointer_event = ToPointerEvent(event);
+  DCHECK(blink::IsA<blink::PointerEvent>(event));
+  const auto& pointer_event = blink::To<blink::PointerEvent>(event);
   return pointer_event.isPrimary() &&
          pointer_event.button() ==
              static_cast<int16_t>(blink::WebPointerProperties::Button::kLeft);
@@ -64,8 +65,7 @@ bool MediaControlTimelineElement::WillRespondToMouseClickEvents() {
   return isConnected() && GetDocument().IsActive();
 }
 
-void MediaControlTimelineElement::SetPosition(double current_time) {
-  setValue(String::Number(current_time));
+void MediaControlTimelineElement::UpdateAria() {
   String aria_label =
       GetLocale().QueryString(IsA<HTMLVideoElement>(MediaElement())
                                   ? IDS_AX_MEDIA_VIDEO_SLIDER_HELP
@@ -78,6 +78,15 @@ void MediaControlTimelineElement::SetPosition(double current_time) {
                AtomicString(GetLocale().QueryString(
                    IDS_AX_MEDIA_CURRENT_TIME_DISPLAY,
                    GetMediaControls().CurrentTimeDisplay().textContent(true))));
+}
+
+void MediaControlTimelineElement::SetPosition(double current_time,
+                                              bool suppress_aria) {
+  setValue(String::Number(current_time));
+
+  if (!suppress_aria)
+    UpdateAria();
+
   RenderBarSegments();
 }
 
@@ -112,23 +121,26 @@ void MediaControlTimelineElement::DefaultEventHandler(Event& event) {
     metrics_.RecordEndGesture(TrackWidth(), MediaElement().duration());
   }
 
-  if (event.type() == event_type_names::kKeydown) {
+  if (event.type() == event_type_names::kFocus)
+    UpdateAria();
+
+  if (event.type() == event_type_names::kKeydown)
     metrics_.StartKey();
-  }
-  if (event.type() == event_type_names::kKeyup && event.IsKeyboardEvent()) {
-    metrics_.RecordEndKey(TrackWidth(), ToKeyboardEvent(event).keyCode());
-  }
+
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+  if (event.type() == event_type_names::kKeyup && keyboard_event)
+    metrics_.RecordEndKey(TrackWidth(), keyboard_event->keyCode());
 
   MediaControlInputElement::DefaultEventHandler(event);
 
-  if (event.IsMouseEvent() || event.IsKeyboardEvent() ||
-      event.IsGestureEvent() || event.IsPointerEvent()) {
+  if (IsA<MouseEvent>(event) || keyboard_event || IsA<GestureEvent>(event) ||
+      IsA<PointerEvent>(event)) {
     MaybeRecordInteracted();
   }
 
   // Update the value based on the touchmove event.
   if (is_touching_ && event.type() == event_type_names::kTouchmove) {
-    auto& touch_event = ToTouchEvent(event);
+    auto& touch_event = To<TouchEvent>(event);
     if (touch_event.touches()->length() != 1)
       return;
 
@@ -224,7 +236,7 @@ void MediaControlTimelineElement::RenderBarSegments() {
   SetAfterSegmentPosition(after_segment);
 }
 
-void MediaControlTimelineElement::Trace(blink::Visitor* visitor) {
+void MediaControlTimelineElement::Trace(Visitor* visitor) {
   MediaControlSliderElement::Trace(visitor);
 }
 

@@ -52,6 +52,22 @@ CSSSelectorList CSSSelectorParser::ConsumeSelector(
   return result;
 }
 
+// static
+bool CSSSelectorParser::SupportsComplexSelector(
+    CSSParserTokenRange range,
+    const CSSParserContext* context) {
+  range.ConsumeWhitespace();
+  CSSSelectorParser parser(context, nullptr);
+  auto parser_selector = parser.ConsumeComplexSelector(range);
+  if (parser.failed_parsing_ || !range.AtEnd() || !parser_selector)
+    return false;
+  auto complex_selector = parser_selector->ReleaseSelector();
+  DCHECK(complex_selector);
+  if (ContainsUnknownWebkitPseudoElements(*complex_selector.get()))
+    return false;
+  return true;
+}
+
 CSSSelectorParser::CSSSelectorParser(const CSSParserContext* context,
                                      StyleSheetContents* style_sheet)
     : context_(context), style_sheet_(style_sheet) {}
@@ -148,10 +164,10 @@ unsigned ExtractCompoundFlags(const CSSParserSelector& simple_selector,
     return kHasContentPseudoElement;
   if (simple_selector.GetPseudoType() == CSSSelector::kPseudoShadow)
     return 0;
-  // TODO(futhark@chromium.org): crbug.com/578131
-  // The UASheetMode check is a work-around to allow this selector in
-  // mediaControls(New).css:
-  // input[type="range" i]::-webkit-media-slider-container > div {
+  // We don't restrict what follows custom ::-webkit-* pseudo elements in UA
+  // sheets. We currently use selectors in mediaControls.css like this:
+  //
+  // video::-webkit-media-text-track-region-container.scrolling
   if (parser_mode == kUASheetMode &&
       simple_selector.GetPseudoType() ==
           CSSSelector::kPseudoWebKitCustomElement)
@@ -405,15 +421,16 @@ bool CSSSelectorParser::ConsumeName(CSSParserTokenRange& range,
   if (range.Peek().GetType() != kDelimiterToken ||
       range.Peek().Delimiter() != '|')
     return true;
-  range.Consume();
 
   namespace_prefix =
       name == CSSSelector::UniversalSelectorAtom() ? g_star_atom : name;
-  const CSSParserToken& name_token = range.Consume();
-  if (name_token.GetType() == kIdentToken) {
-    name = name_token.Value().ToAtomicString();
-  } else if (name_token.GetType() == kDelimiterToken &&
-             name_token.Delimiter() == '*') {
+  if (range.Peek(1).GetType() == kIdentToken) {
+    range.Consume();
+    name = range.Consume().Value().ToAtomicString();
+  } else if (range.Peek(1).GetType() == kDelimiterToken &&
+             range.Peek(1).Delimiter() == '*') {
+    range.Consume();
+    range.Consume();
     name = CSSSelector::UniversalSelectorAtom();
   } else {
     name = g_null_atom;
@@ -615,12 +632,22 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
       selector->AdoptSelectorVector(selector_vector);
       return selector;
     }
-    case CSSSelector::kPseudoState:
-    case CSSSelector::kPseudoPart: {
+    case CSSSelector::kPseudoState: {
       const CSSParserToken& ident = block.ConsumeIncludingWhitespace();
       if (ident.GetType() != kIdentToken || !block.AtEnd())
         return nullptr;
       selector->SetArgument(ident.Value().ToAtomicString());
+      return selector;
+    }
+    case CSSSelector::kPseudoPart: {
+      Vector<AtomicString> parts;
+      do {
+        const CSSParserToken& ident = block.ConsumeIncludingWhitespace();
+        if (ident.GetType() != kIdentToken)
+          return nullptr;
+        parts.push_back(ident.Value().ToAtomicString());
+      } while (!block.AtEnd());
+      selector->SetPartNames(std::make_unique<Vector<AtomicString>>(parts));
       return selector;
     }
     case CSSSelector::kPseudoSlotted: {
@@ -1185,6 +1212,19 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
         RecordUsageAndDeprecations(*current->SelectorList());
     }
   }
+}
+
+bool CSSSelectorParser::ContainsUnknownWebkitPseudoElements(
+    const CSSSelector& complex_selector) {
+  for (const CSSSelector* current = &complex_selector; current;
+       current = current->TagHistory()) {
+    if (current->GetPseudoType() != CSSSelector::kPseudoWebKitCustomElement)
+      continue;
+    WebFeature feature = FeatureForWebKitCustomPseudoElement(current->Value());
+    if (feature == WebFeature::kCSSSelectorWebkitUnknownPseudo)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace blink

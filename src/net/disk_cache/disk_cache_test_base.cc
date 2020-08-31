@@ -234,22 +234,28 @@ DiskCacheTestWithCache::CreateIterator() {
 }
 
 void DiskCacheTestWithCache::FlushQueueForTest() {
-  if (memory_only_ || !cache_impl_)
+  if (memory_only_)
     return;
 
+  if (simple_cache_impl_) {
+    simple_cache_impl_->FlushWorkerPoolForTesting();
+    return;
+  }
+
+  DCHECK(cache_impl_);
   net::TestCompletionCallback cb;
   int rv = cache_impl_->FlushQueueForTest(cb.callback());
   EXPECT_THAT(cb.GetResult(rv), IsOk());
 }
 
-void DiskCacheTestWithCache::RunTaskForTest(const base::Closure& closure) {
+void DiskCacheTestWithCache::RunTaskForTest(base::OnceClosure closure) {
   if (memory_only_ || !cache_impl_) {
-    closure.Run();
+    std::move(closure).Run();
     return;
   }
 
   net::TestCompletionCallback cb;
-  int rv = cache_impl_->RunTaskForTest(closure, cb.callback());
+  int rv = cache_impl_->RunTaskForTest(std::move(closure), cb.callback());
   EXPECT_THAT(cb.GetResult(rv), IsOk());
 }
 
@@ -305,16 +311,17 @@ void DiskCacheTestWithCache::TrimForTest(bool empty) {
   if (memory_only_ || !cache_impl_)
     return;
 
-  RunTaskForTest(base::Bind(&disk_cache::BackendImpl::TrimForTest,
-                            base::Unretained(cache_impl_), empty));
+  RunTaskForTest(base::BindOnce(&disk_cache::BackendImpl::TrimForTest,
+                                base::Unretained(cache_impl_), empty));
 }
 
 void DiskCacheTestWithCache::TrimDeletedListForTest(bool empty) {
   if (memory_only_ || !cache_impl_)
     return;
 
-  RunTaskForTest(base::Bind(&disk_cache::BackendImpl::TrimDeletedListForTest,
-                            base::Unretained(cache_impl_), empty));
+  RunTaskForTest(
+      base::BindOnce(&disk_cache::BackendImpl::TrimDeletedListForTest,
+                     base::Unretained(cache_impl_), empty));
 }
 
 void DiskCacheTestWithCache::AddDelay() {

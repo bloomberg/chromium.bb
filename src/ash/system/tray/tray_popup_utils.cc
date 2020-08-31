@@ -19,6 +19,7 @@
 #include "ash/system/tray/size_range_layout.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/unfocusable_label.h"
+#include "ash/system/unified/unified_system_tray_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -26,7 +27,6 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -117,48 +117,36 @@ gfx::Insets GetInkDropInsets(TrayPopupInkDropStyle ink_drop_style) {
   return gfx::Insets();
 }
 
-gfx::Rect GetInkDropBounds(TrayPopupInkDropStyle ink_drop_style,
-                           const views::View* host) {
-  gfx::Rect bounds = host->GetLocalBounds();
-  bounds.Inset(GetInkDropInsets(ink_drop_style));
-  return bounds;
-}
-
 class HighlightPathGenerator : public views::HighlightPathGenerator {
  public:
-  HighlightPathGenerator(TrayPopupInkDropStyle ink_drop_style)
+  explicit HighlightPathGenerator(TrayPopupInkDropStyle ink_drop_style)
       : ink_drop_style_(ink_drop_style) {}
 
-  // HighlightPathGenerator:
-  SkPath GetHighlightPath(const views::View* view) override {
-    SkPath path;
+  HighlightPathGenerator(const HighlightPathGenerator&) = delete;
+  HighlightPathGenerator& operator=(const HighlightPathGenerator&) = delete;
 
-    const gfx::Rect mask_bounds =
-        GetInkDropBounds(TrayPopupInkDropStyle::HOST_CENTERED, view);
+  // views::HighlightPathGenerator:
+  base::Optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
+    gfx::RectF bounds = rect;
+    bounds.Inset(GetInkDropInsets(ink_drop_style_));
+    float corner_radius = 0.f;
     switch (ink_drop_style_) {
-      case TrayPopupInkDropStyle::HOST_CENTERED: {
-        gfx::Point center_point = mask_bounds.CenterPoint();
-        const int radius =
-            std::min(mask_bounds.width(), mask_bounds.height()) / 2;
-        path.addCircle(center_point.x(), center_point.y(), radius);
+      case TrayPopupInkDropStyle::HOST_CENTERED:
+        corner_radius = std::min(bounds.width(), bounds.height()) / 2.f;
+        bounds.ClampToCenteredSize(gfx::SizeF(corner_radius, corner_radius));
         break;
-      }
       case TrayPopupInkDropStyle::INSET_BOUNDS:
-        path.addRoundRect(RectToSkRect(mask_bounds),
-                          kTrayPopupInkDropCornerRadius,
-                          kTrayPopupInkDropCornerRadius);
+        corner_radius = kTrayPopupInkDropCornerRadius;
         break;
       case TrayPopupInkDropStyle::FILL_BOUNDS:
-        path.addRect(RectToSkRect(mask_bounds));
         break;
     }
-    return path;
+
+    return gfx::RRectF(bounds, corner_radius);
   }
 
  private:
   const TrayPopupInkDropStyle ink_drop_style_;
-
-  DISALLOW_COPY_AND_ASSIGN(HighlightPathGenerator);
 };
 
 }  // namespace
@@ -240,6 +228,16 @@ views::Slider* TrayPopupUtils::CreateSlider(views::SliderListener* listener) {
 views::ToggleButton* TrayPopupUtils::CreateToggleButton(
     views::ButtonListener* listener,
     int accessible_name_id) {
+  constexpr SkColor kTrackAlpha = 0x66;
+  auto GetColor = [](bool is_on, SkAlpha alpha = SK_AlphaOPAQUE) {
+    AshColorProvider::ContentLayerType type =
+        is_on ? AshColorProvider::ContentLayerType::kProminentIconButton
+              : AshColorProvider::ContentLayerType::kTextPrimary;
+
+    return SkColorSetA(AshColorProvider::Get()->GetContentLayerColor(
+                           type, AshColorProvider::AshColorMode::kDark),
+                       alpha);
+  };
   views::ToggleButton* toggle = new views::ToggleButton(listener);
   const gfx::Size toggle_size(toggle->GetPreferredSize());
   const int vertical_padding = (kMenuButtonSize - toggle_size.height()) / 2;
@@ -248,12 +246,17 @@ views::ToggleButton* TrayPopupUtils::CreateToggleButton(
   toggle->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(vertical_padding, horizontal_padding)));
   toggle->SetAccessibleName(l10n_util::GetStringUTF16(accessible_name_id));
+  toggle->SetThumbOnColor(GetColor(true));
+  toggle->SetThumbOffColor(GetColor(false));
+  toggle->SetTrackOnColor(GetColor(true, kTrackAlpha));
+  toggle->SetTrackOffColor(GetColor(false, kTrackAlpha));
   return toggle;
 }
 
 std::unique_ptr<views::Painter> TrayPopupUtils::CreateFocusPainter() {
   return views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF());
+      UnifiedSystemTrayView::GetFocusRingColor(), kFocusBorderThickness,
+      gfx::InsetsF());
 }
 
 void TrayPopupUtils::ConfigureTrayPopupButton(views::Button* button) {
@@ -300,7 +303,6 @@ std::unique_ptr<views::InkDrop> TrayPopupUtils::CreateInkDrop(
   ink_drop->SetAutoHighlightMode(
       views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
   ink_drop->SetShowHighlightOnHover(false);
-
   return std::move(ink_drop);
 }
 
@@ -322,11 +324,8 @@ std::unique_ptr<views::InkDropHighlight> TrayPopupUtils::CreateInkDropHighlight(
     SkColor background_color) {
   const AshColorProvider::RippleAttributes ripple_attributes =
       AshColorProvider::Get()->GetRippleAttributes(background_color);
-  const gfx::Rect bounds = GetInkDropBounds(ink_drop_style, host);
-  std::unique_ptr<views::InkDropHighlight> highlight(
-      new views::InkDropHighlight(bounds.size(), 0,
-                                  gfx::PointF(bounds.CenterPoint()),
-                                  ripple_attributes.base_color));
+  auto highlight = std::make_unique<views::InkDropHighlight>(
+      gfx::SizeF(host->size()), ripple_attributes.base_color);
   highlight->set_visible_opacity(ripple_attributes.highlight_opacity);
   return highlight;
 }
@@ -362,7 +361,7 @@ void TrayPopupUtils::InitializeAsCheckableRow(HoverHighlightView* container,
                                               bool enterprise_managed) {
   const int dip_size = GetDefaultSizeOfVectorIcon(kCheckCircleIcon);
   gfx::ImageSkia check_mark =
-      CreateVectorIcon(kCheckCircleIcon, dip_size, gfx::kGoogleGreenDark600);
+      CreateVectorIcon(kHollowCheckCircleIcon, dip_size, gfx::kGoogleGreen300);
   if (enterprise_managed) {
     gfx::ImageSkia enterprise_managed_icon = CreateVectorIcon(
         kLoginScreenEnterpriseIcon, dip_size, gfx::kGoogleGrey100);

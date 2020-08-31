@@ -13,6 +13,8 @@
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/common/referrer.h"
+#include "net/base/isolation_info.h"
+#include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -25,8 +27,7 @@ namespace content {
 struct CONTENT_EXPORT NavigationRequestInfo {
   NavigationRequestInfo(mojom::CommonNavigationParamsPtr common_params,
                         mojom::BeginNavigationParamsPtr begin_params,
-                        const GURL& site_for_cookies,
-                        const net::NetworkIsolationKey& network_isolation_key,
+                        const net::IsolationInfo& isolation_info,
                         bool is_main_frame,
                         bool parent_is_main_frame,
                         bool are_ancestors_secure,
@@ -39,20 +40,21 @@ struct CONTENT_EXPORT NavigationRequestInfo {
                             blob_url_loader_factory,
                         const base::UnguessableToken& devtools_navigation_token,
                         const base::UnguessableToken& devtools_frame_token,
-                        bool obey_origin_policy);
+                        bool obey_origin_policy,
+                        net::HttpRequestHeaders cors_exempt_headers);
   NavigationRequestInfo(const NavigationRequestInfo& other) = delete;
   ~NavigationRequestInfo();
 
   mojom::CommonNavigationParamsPtr common_params;
   mojom::BeginNavigationParamsPtr begin_params;
 
-  // Usually the URL of the document in the top-level window, which may be
-  // checked by the third-party cookie blocking policy.
-  const GURL site_for_cookies;
-
-  // Navigation resource requests will be keyed using |network_isolation_key|
-  // for accessing shared network resources like the http cache.
-  const net::NetworkIsolationKey network_isolation_key;
+  // Contains information used to prevent sharing information from a navigation
+  // request across first party contexts. In particular, tracks the
+  // SiteForCookies, which controls what site's SameSite cookies may be set,
+  // NetworkIsolationKey, which is used to restrict sharing of network
+  // resources, and how to update them across redirects, which is different for
+  // main frames and subresources.
+  const net::IsolationInfo isolation_info;
 
   const bool is_main_frame;
   const bool parent_is_main_frame;
@@ -85,6 +87,8 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   // policy, if necessary, and attach it to the ResourceResponseHead.
   // Spec: https://wicg.github.io/origin-policy/
   const bool obey_origin_policy;
+
+  const net::HttpRequestHeaders cors_exempt_headers;
 };
 
 }  // namespace content

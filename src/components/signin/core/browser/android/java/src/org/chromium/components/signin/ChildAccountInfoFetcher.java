@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -40,7 +42,7 @@ public final class ChildAccountInfoFetcher {
             long nativeAccountFetcherService, String accountId, String accountName) {
         mNativeAccountFetcherService = nativeAccountFetcherService;
         mAccountId = accountId;
-        mAccount = AccountManagerFacade.createAccountFromName(accountName);
+        mAccount = AccountUtils.createAccountFromName(accountName);
 
         // Register for notifications about flag changes in the future.
         mAccountFlagsChangedReceiver = new BroadcastReceiver() {
@@ -70,7 +72,7 @@ public final class ChildAccountInfoFetcher {
 
     private void fetch() {
         Log.d(TAG, "Checking child account status for %s", mAccount.name);
-        AccountManagerFacade.get().checkChildAccountStatus(
+        AccountManagerFacadeProvider.getInstance().checkChildAccountStatus(
                 mAccount, status -> setIsChildAccount(ChildAccountStatus.isChild(status)));
     }
 
@@ -86,10 +88,11 @@ public final class ChildAccountInfoFetcher {
                 mNativeAccountFetcherService, mAccountId, isChildAccount);
     }
 
+    @VisibleForTesting
     @CalledByNative
     private static void initializeForTests() {
         AccountManagerDelegate delegate = new SystemAccountManagerDelegate();
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(delegate);
+        AccountManagerFacadeProvider.setInstanceForTests(new AccountManagerFacadeImpl(delegate));
     }
 
     @NativeMethods

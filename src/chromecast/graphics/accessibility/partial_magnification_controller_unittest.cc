@@ -9,7 +9,6 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/default_screen_position_client.h"
 
 namespace chromecast {
 
@@ -63,9 +62,6 @@ class PartialMagnificationControllerTest : public views::ViewsTestBase {
   void SetUp() override {
     views::ViewsTestBase::SetUp();
 
-    screen_position_client_.reset(new wm::DefaultScreenPositionClient());
-    aura::client::SetScreenPositionClient(root_window(),
-                                          screen_position_client_.get());
     controller_ =
         std::make_unique<PartialMagnificationController>(root_window());
   }
@@ -97,7 +93,6 @@ class PartialMagnificationControllerTest : public views::ViewsTestBase {
 
  private:
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
-  std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 
   CastTestWindowDelegate test_window_delegate_;
   std::unique_ptr<PartialMagnificationController> controller_;

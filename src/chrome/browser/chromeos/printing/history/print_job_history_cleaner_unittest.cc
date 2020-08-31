@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/printing/history/print_job_history_cleaner.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/time/clock.h"
@@ -79,12 +80,11 @@ class PrintJobHistoryCleanerTest : public ::testing::Test {
     return entries_;
   }
 
-  void OnPrintJobsRetrieved(
-      base::RepeatingClosure run_loop_closure,
-      bool success,
-      std::unique_ptr<std::vector<PrintJobInfo>> entries) {
+  void OnPrintJobsRetrieved(base::RepeatingClosure run_loop_closure,
+                            bool success,
+                            std::vector<PrintJobInfo> entries) {
     EXPECT_TRUE(success);
-    entries_ = *entries;
+    entries_ = std::move(entries);
     run_loop_closure.Run();
   }
 
@@ -120,7 +120,7 @@ TEST_F(PrintJobHistoryCleanerTest, CleanExpiredPrintJobs) {
 
   std::vector<PrintJobInfo> entries = GetPrintJobs();
   // CleanUp() call should clear the first entry which is expected to expire.
-  EXPECT_EQ(1u, entries.size());
+  ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(kId2, entries[0].id());
 
   task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
@@ -149,7 +149,7 @@ TEST_F(PrintJobHistoryCleanerTest, CleanExpiredPrintJobsAfterPrefChanged) {
 
   std::vector<PrintJobInfo> entries = GetPrintJobs();
   // CleanUp() shouldn't clear anything.
-  EXPECT_EQ(1u, entries.size());
+  ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(kId1, entries[0].id());
 
   test_prefs_.SetInteger(prefs::kPrintJobHistoryExpirationPeriod, 1);
@@ -180,7 +180,7 @@ TEST_F(PrintJobHistoryCleanerTest, StorePrintJobHistoryIndefinite) {
   std::vector<PrintJobInfo> entries = GetPrintJobs();
   // CleanUp() call shouldn't clear anything as according to pref we store
   // history indefinitely.
-  EXPECT_EQ(1u, entries.size());
+  ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(kId1, entries[0].id());
 }
 

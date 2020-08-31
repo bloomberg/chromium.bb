@@ -36,9 +36,6 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   std::unique_ptr<OverlayMediaNotification> PopOut(const std::string& id,
                                                    gfx::Rect bounds) override;
 
-  // views::DialogDelegate implementation.
-  bool Close() override;
-
   // views::View implementation.
   void AddedToWidget() override;
   gfx::Size CalculatePreferredSize() const override;
@@ -46,6 +43,7 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   // MediaNotificationContainerObserver implementation.
   void OnContainerExpanded(bool expanded) override;
   void OnContainerMetadataChanged() override;
+  void OnContainerActionsChanged() override;
   void OnContainerClicked(const std::string& id) override {}
   void OnContainerDismissed(const std::string& id) override {}
   void OnContainerDestroyed(const std::string& id) override;
@@ -57,6 +55,8 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
 
   const std::map<const std::string, MediaNotificationContainerImplView*>&
   GetNotificationsForTesting() const;
+
+  const MediaNotificationListView* GetListViewForTesting() const;
 
  private:
   explicit MediaDialogView(views::View* anchor_view,

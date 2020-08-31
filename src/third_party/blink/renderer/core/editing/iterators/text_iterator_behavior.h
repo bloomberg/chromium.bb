@@ -19,14 +19,10 @@ class CORE_EXPORT TextIteratorBehavior final {
 
   TextIteratorBehavior(const TextIteratorBehavior& other);
   TextIteratorBehavior();
-  ~TextIteratorBehavior();
 
   bool operator==(const TextIteratorBehavior& other) const;
   bool operator!=(const TextIteratorBehavior& other) const;
 
-  bool CollapseTrailingSpace() const {
-    return values_.bits.collapse_trailing_space;
-  }
   bool DoesNotBreakAtReplacedElement() const {
     return values_.bits.does_not_break_at_replaced_element;
   }
@@ -72,6 +68,8 @@ class CORE_EXPORT TextIteratorBehavior final {
   bool SuppressesExtraNewlineEmission() const {
     return values_.bits.suppresses_newline_emission;
   }
+
+  bool IgnoresDisplayLock() const { return values_.bits.ignores_display_lock; }
   static TextIteratorBehavior EmitsObjectReplacementCharacterBehavior();
   static TextIteratorBehavior IgnoresStyleVisibilityBehavior();
   static TextIteratorBehavior DefaultRangeLengthBehavior();
@@ -82,7 +80,6 @@ class CORE_EXPORT TextIteratorBehavior final {
   union {
     unsigned all;
     struct {
-      bool collapse_trailing_space : 1;
       bool does_not_break_at_replaced_element : 1;
       bool emits_characters_between_all_visible_positions : 1;
       bool emits_image_alt_text : 1;
@@ -101,6 +98,7 @@ class CORE_EXPORT TextIteratorBehavior final {
       bool does_not_emit_space_beyond_range_end : 1;
       bool skips_unselectable_content : 1;
       bool suppresses_newline_emission : 1;
+      bool ignores_display_lock : 1;
     } bits;
   } values_;
 };
@@ -115,7 +113,6 @@ class CORE_EXPORT TextIteratorBehavior::Builder final {
 
   TextIteratorBehavior Build();
 
-  Builder& SetCollapseTrailingSpace(bool);
   Builder& SetDoesNotBreakAtReplacedElement(bool);
   Builder& SetEmitsCharactersBetweenAllVisiblePositions(bool);
   Builder& SetEmitsImageAltText(bool);
@@ -134,6 +131,7 @@ class CORE_EXPORT TextIteratorBehavior::Builder final {
   Builder& SetDoesNotEmitSpaceBeyondRangeEnd(bool);
   Builder& SetSkipsUnselectableContent(bool);
   Builder& SetSuppressesExtraNewlineEmission(bool);
+  Builder& SetIgnoresDisplayLock(bool);
 
  private:
   TextIteratorBehavior behavior_;

@@ -75,8 +75,8 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
   } else {
     window = event_target.ToLocalDOMWindow();
     DCHECK(window);
+    DCHECK_EQ(window, execution_context_of_event_target);
     document = window->document();
-    DCHECK_EQ(document, To<Document>(execution_context_of_event_target));
   }
   DCHECK(document);
 
@@ -99,6 +99,16 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
   HTMLFormElement* form_owner = nullptr;
   if (auto* html_element = DynamicTo<HTMLElement>(element)) {
     form_owner = html_element->formOwner();
+
+    // https://html.spec.whatwg.org/C/#window-reflecting-body-element-event-handler-set
+    // The Event handlers on HTMLBodyElement and HTMLFrameSetElement which are
+    // listed in the Window-reflecting body element event handler set should be
+    // treated as if they are the corresponding event handlers of the window
+    // object.
+    if (html_element->IsHTMLBodyElement() ||
+        html_element->IsHTMLFrameSetElement()) {
+      window = To<LocalDOMWindow>(execution_context_of_event_target);
+    }
   }
 
   // Step 10. Let function be the result of calling FunctionCreate, with

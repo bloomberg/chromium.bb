@@ -7,8 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/logging.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/message_port.h"
 
@@ -42,8 +42,8 @@ void BindingsManagerFuchsia::GetAll(GetAllCallback callback) {
 void BindingsManagerFuchsia::Connect(
     std::string port_name,
     fidl::InterfaceHandle<::fuchsia::web::MessagePort> message_port) {
-  OnPortConnected(port_name,
-                  cr_fuchsia::MessagePortFromFidl(std::move(message_port)));
+  OnPortConnected(
+      port_name, cr_fuchsia::BlinkMessagePortFromFidl(std::move(message_port)));
 }
 
 }  // namespace bindings

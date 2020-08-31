@@ -24,7 +24,7 @@ namespace blink {
 
 ContentLayerClientImpl::ContentLayerClientImpl()
     : cc_picture_layer_(cc::PictureLayer::Create(this)),
-      raster_invalidator_(
+      raster_invalidation_function_(
           base::BindRepeating(&ContentLayerClientImpl::InvalidateRect,
                               base::Unretained(this))),
       layer_state_(PropertyTreeState::Uninitialized()) {}
@@ -42,9 +42,12 @@ void ContentLayerClientImpl::AppendAdditionalInfoAsJSON(
     json.SetValue("paintChunkContents", paint_chunk_debug_data_->Clone());
 #endif
 
-  if ((flags & kLayerTreeIncludesPaintInvalidations) &&
-      raster_invalidator_.GetTracking())
-    raster_invalidator_.GetTracking()->AsJSON(&json);
+  if ((flags & (kLayerTreeIncludesInvalidations |
+                kLayerTreeIncludesDetailedInvalidations)) &&
+      raster_invalidator_.GetTracking()) {
+    raster_invalidator_.GetTracking()->AsJSON(
+        &json, flags & kLayerTreeIncludesDetailedInvalidations);
+  }
 
 #if DCHECK_IS_ON()
   if (flags & kLayerTreeIncludesPaintRecords) {
@@ -73,7 +76,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
     auto json = std::make_unique<JSONObject>();
     json->SetString("data", chunk.ToString());
     json->SetArray("displayItems",
-                   paint_artifact->GetDisplayItemList().SubsequenceAsJSON(
+                   paint_artifact->GetDisplayItemList().DisplayItemsAsJSON(
                        chunk.begin_index, chunk.end_index,
                        DisplayItemList::kShowOnlyDisplayItemTypes));
     paint_chunk_debug_data_->PushObject(std::move(json));
@@ -85,8 +88,8 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   if (layer_state != layer_state_)
     cc_picture_layer_->SetSubtreePropertyChanged();
 
-  raster_invalidator_.Generate(paint_artifact, paint_chunks, layer_bounds,
-                               layer_state);
+  raster_invalidator_.Generate(raster_invalidation_function_, paint_artifact,
+                               paint_chunks, layer_bounds, layer_state);
   layer_state_ = layer_state;
 
   // Note: cc::Layer API assumes the layer bounds start at (0, 0), but the
@@ -97,7 +100,6 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   cc_picture_layer_->SetOffsetToTransformParent(
       layer_bounds.OffsetFromOrigin());
   cc_picture_layer_->SetBounds(layer_bounds.size());
-  cc_picture_layer_->SetIsDrawable(true);
   cc_picture_layer_->SetHitTestable(true);
 
   base::Optional<RasterUnderInvalidationCheckingParams> params;
@@ -111,14 +113,20 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
       display_item_list, cc::DisplayItemList::kTopLevelDisplayItemList,
       base::OptionalOrNullptr(params));
 
-  cc_picture_layer_->SetSafeOpaqueBackgroundColor(
-      paint_chunks[0].safe_opaque_background_color);
+  cc_picture_layer_->SetIsDrawable(
+      (!layer_bounds.IsEmpty() && cc_display_item_list_->TotalOpCount()) ||
+      // Backdrop filters require the layer to be drawable even if the layer
+      // draws nothing.
+      !layer_state.Effect().BackdropFilter().IsEmpty());
+
+  auto safe_opaque_background_color =
+      paint_artifact->SafeOpaqueBackgroundColor(paint_chunks);
+  cc_picture_layer_->SetSafeOpaqueBackgroundColor(safe_opaque_background_color);
   // TODO(masonfreed): We don't need to set the background color here; only the
   // safe opaque background color matters. But making that change would require
   // rebaselining 787 tests to remove the "background_color" property from the
   // layer dumps.
-  cc_picture_layer_->SetBackgroundColor(
-      paint_chunks[0].safe_opaque_background_color);
+  cc_picture_layer_->SetBackgroundColor(safe_opaque_background_color);
   return cc_picture_layer_;
 }
 

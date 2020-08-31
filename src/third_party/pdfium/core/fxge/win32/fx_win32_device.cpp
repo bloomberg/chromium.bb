@@ -101,24 +101,24 @@ HPEN CreateExtPen(const CFX_GraphStateData* pGraphState,
     PenStyle |= PS_SOLID;
 
   switch (pGraphState->m_LineCap) {
-    case 0:
+    case CFX_GraphStateData::LineCapButt:
       PenStyle |= PS_ENDCAP_FLAT;
       break;
-    case 1:
+    case CFX_GraphStateData::LineCapRound:
       PenStyle |= PS_ENDCAP_ROUND;
       break;
-    case 2:
+    case CFX_GraphStateData::LineCapSquare:
       PenStyle |= PS_ENDCAP_SQUARE;
       break;
   }
   switch (pGraphState->m_LineJoin) {
-    case 0:
+    case CFX_GraphStateData::LineJoinMiter:
       PenStyle |= PS_JOIN_MITER;
       break;
-    case 1:
+    case CFX_GraphStateData::LineJoinRound:
       PenStyle |= PS_JOIN_ROUND;
       break;
-    case 2:
+    case CFX_GraphStateData::LineJoinBevel:
       PenStyle |= PS_JOIN_BEVEL;
       break;
   }
@@ -152,18 +152,18 @@ void SetPathToDC(HDC hDC,
                  const CFX_Matrix* pMatrix) {
   BeginPath(hDC);
 
-  const std::vector<FX_PATHPOINT>& pPoints = pPathData->GetPoints();
-  for (size_t i = 0; i < pPoints.size(); i++) {
-    CFX_PointF pos = pPoints[i].m_Point;
+  pdfium::span<const FX_PATHPOINT> points = pPathData->GetPoints();
+  for (size_t i = 0; i < points.size(); ++i) {
+    CFX_PointF pos = points[i].m_Point;
     if (pMatrix)
       pos = pMatrix->Transform(pos);
 
     CFX_Point screen(FXSYS_roundf(pos.x), FXSYS_roundf(pos.y));
-    FXPT_TYPE point_type = pPoints[i].m_Type;
+    FXPT_TYPE point_type = points[i].m_Type;
     if (point_type == FXPT_TYPE::MoveTo) {
       MoveToEx(hDC, screen.x, screen.y, nullptr);
     } else if (point_type == FXPT_TYPE::LineTo) {
-      if (pPoints[i].m_Point == pPoints[i - 1].m_Point)
+      if (points[i].m_Point == points[i - 1].m_Point)
         screen.x++;
 
       LineTo(hDC, screen.x, screen.y);
@@ -172,14 +172,14 @@ void SetPathToDC(HDC hDC,
       lppt[0].x = screen.x;
       lppt[0].y = screen.y;
 
-      pos = pPoints[i + 1].m_Point;
+      pos = points[i + 1].m_Point;
       if (pMatrix)
         pos = pMatrix->Transform(pos);
 
       lppt[1].x = FXSYS_roundf(pos.x);
       lppt[1].y = FXSYS_roundf(pos.y);
 
-      pos = pPoints[i + 2].m_Point;
+      pos = points[i + 2].m_Point;
       if (pMatrix)
         pos = pMatrix->Transform(pos);
 
@@ -188,7 +188,7 @@ void SetPathToDC(HDC hDC,
       PolyBezierTo(hDC, lppt, 3);
       i += 2;
     }
-    if (pPoints[i].m_CloseFigure)
+    if (points[i].m_CloseFigure)
       CloseFigure(hDC);
   }
   EndPath(hDC);
@@ -339,10 +339,11 @@ class CFX_Win32FontInfo final : public SystemFontInfoIface {
   void GetJapanesePreference(ByteString& face, int weight, int picth_family);
   ByteString FindFont(const ByteString& name);
 
-  HDC m_hDC;
+  const HDC m_hDC;
   UnownedPtr<CFX_FontMapper> m_pMapper;
   ByteString m_LastFamily;
-  ByteString m_KaiTi, m_FangSong;
+  ByteString m_KaiTi;
+  ByteString m_FangSong;
 };
 
 int CALLBACK FontEnumProc(const LOGFONTA* plf,
@@ -430,7 +431,7 @@ bool CFX_Win32FontInfo::EnumFontList(CFX_FontMapper* pMapper) {
   lf.lfCharSet = FX_CHARSET_Default;
   lf.lfFaceName[0] = 0;
   lf.lfPitchAndFamily = 0;
-  EnumFontFamiliesExA(m_hDC, &lf, (FONTENUMPROCA)FontEnumProc, (uintptr_t) this,
+  EnumFontFamiliesExA(m_hDC, &lf, (FONTENUMPROCA)FontEnumProc, (uintptr_t)this,
                       0);
   return true;
 }
@@ -441,12 +442,12 @@ ByteString CFX_Win32FontInfo::FindFont(const ByteString& name) {
 
   for (size_t i = 0; i < m_pMapper->m_InstalledTTFonts.size(); ++i) {
     ByteString thisname = m_pMapper->m_InstalledTTFonts[i];
-    if (thisname.Left(name.GetLength()) == name)
+    if (thisname.First(name.GetLength()) == name)
       return m_pMapper->m_InstalledTTFonts[i];
   }
   for (size_t i = 0; i < m_pMapper->m_LocalizedTTFonts.size(); ++i) {
     ByteString thisname = m_pMapper->m_LocalizedTTFonts[i].first;
-    if (thisname.Left(name.GetLength()) == name)
+    if (thisname.First(name.GetLength()) == name)
       return m_pMapper->m_LocalizedTTFonts[i].second;
   }
   return ByteString();
@@ -707,7 +708,7 @@ CGdiDeviceDriver::CGdiDeviceDriver(HDC hDC, DeviceType device_type)
     : m_hDC(hDC), m_DeviceType(device_type) {
   auto* pPlatform =
       static_cast<CWin32Platform*>(CFX_GEModule::Get()->GetPlatform());
-  SetStretchBltMode(hDC, pPlatform->m_bHalfTone ? HALFTONE : COLORONCOLOR);
+  SetStretchBltMode(m_hDC, pPlatform->m_bHalfTone ? HALFTONE : COLORONCOLOR);
   DWORD obj_type = GetObjectType(m_hDC);
   m_bMetafileDCType = obj_type == OBJ_ENHMETADC || obj_type == OBJ_ENHMETAFILE;
   if (obj_type == OBJ_MEMDC) {
@@ -1086,9 +1087,9 @@ bool CGdiDeviceDriver::SetClip_PathFill(const CFX_PathData* pPathData,
                                         const CFX_Matrix* pMatrix,
                                         int fill_mode) {
   if (pPathData->GetPoints().size() == 5) {
-    CFX_FloatRect rectf;
-    if (pPathData->IsRect(pMatrix, &rectf)) {
-      FX_RECT rect = rectf.GetOuterRect();
+    Optional<CFX_FloatRect> maybe_rectf = pPathData->GetRect(pMatrix);
+    if (maybe_rectf.has_value()) {
+      FX_RECT rect = maybe_rectf.value().GetOuterRect();
       // Can easily apply base clip to protect against wildly large rectangular
       // clips. crbug.com/1019026
       if (m_BaseClipBox.has_value())
@@ -1374,8 +1375,10 @@ RenderDeviceDriverIface* CFX_WindowsRenderDevice::CreateDriver(
   if (!use_printer)
     return new CGdiDisplayDriver(hDC);
 
-  if (g_pdfium_print_mode == WindowsPrintMode::kModeEmf)
+  if (g_pdfium_print_mode == WindowsPrintMode::kModeEmf ||
+      g_pdfium_print_mode == WindowsPrintMode::kModeEmfImageMasks) {
     return new CGdiPrinterDriver(hDC);
+  }
 
   if (g_pdfium_print_mode == WindowsPrintMode::kModeTextOnly)
     return new CTextOnlyPrinterDriver(hDC);

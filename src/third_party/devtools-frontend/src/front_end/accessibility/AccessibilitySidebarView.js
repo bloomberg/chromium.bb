@@ -1,43 +1,53 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
+import {AccessibilityModel, AccessibilityNode} from './AccessibilityModel.js';  // eslint-disable-line no-unused-vars
+import {AXNodeSubPane} from './AccessibilityNodeView.js';
+import {ARIAAttributesPane} from './ARIAAttributesView.js';
+import {AXBreadcrumbsPane} from './AXBreadcrumbsPane.js';
+
 /**
  * @unrestricted
  */
-export default class AccessibilitySidebarView extends UI.ThrottledWidget {
+export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget {
   constructor() {
     super();
     this._node = null;
     this._axNode = null;
     this._skipNextPullNode = false;
-    this._sidebarPaneStack = UI.viewManager.createStackLocation();
-    this._breadcrumbsSubPane = new Accessibility.AXBreadcrumbsPane(this);
+    this._sidebarPaneStack = UI.ViewManager.ViewManager.instance().createStackLocation();
+    this._breadcrumbsSubPane = new AXBreadcrumbsPane(this);
     this._sidebarPaneStack.showView(this._breadcrumbsSubPane);
-    this._ariaSubPane = new Accessibility.ARIAAttributesPane();
+    this._ariaSubPane = new ARIAAttributesPane();
     this._sidebarPaneStack.showView(this._ariaSubPane);
-    this._axNodeSubPane = new Accessibility.AXNodeSubPane();
+    this._axNodeSubPane = new AXNodeSubPane();
     this._sidebarPaneStack.showView(this._axNodeSubPane);
     this._sidebarPaneStack.widget().show(this.element);
-    UI.context.addFlavorChangeListener(SDK.DOMNode, this._pullNode, this);
+    self.UI.context.addFlavorChangeListener(SDK.DOMModel.DOMNode, this._pullNode, this);
     this._pullNode();
   }
 
   /**
-   * @return {?SDK.DOMNode}
+   * @return {?SDK.DOMModel.DOMNode}
    */
   node() {
     return this._node;
   }
 
   /**
-   * @return {?Accessibility.AccessibilityNode}
+   * @return {?AccessibilityNode}
    */
   axNode() {
     return this._axNode;
   }
 
   /**
-   * @param {?SDK.DOMNode} node
+   * @param {?SDK.DOMModel.DOMNode} node
    * @param {boolean=} fromAXTree
    */
   setNode(node, fromAXTree) {
@@ -47,7 +57,7 @@ export default class AccessibilitySidebarView extends UI.ThrottledWidget {
   }
 
   /**
-   * @param {?Accessibility.AccessibilityNode} axNode
+   * @param {?AccessibilityNode} axNode
    */
   accessibilityNodeCallback(axNode) {
     if (!axNode) {
@@ -83,7 +93,7 @@ export default class AccessibilitySidebarView extends UI.ThrottledWidget {
     if (!node) {
       return Promise.resolve();
     }
-    const accessibilityModel = node.domModel().target().model(Accessibility.AccessibilityModel);
+    const accessibilityModel = node.domModel().target().model(AccessibilityModel);
     accessibilityModel.clear();
     return accessibilityModel.requestPartialAXTree(node).then(() => {
       this.accessibilityNodeCallback(accessibilityModel.axNodeForDOMNode(node));
@@ -99,24 +109,28 @@ export default class AccessibilitySidebarView extends UI.ThrottledWidget {
     // Pull down the latest date for this node.
     this.doUpdate();
 
-    SDK.targetManager.addModelListener(SDK.DOMModel, SDK.DOMModel.Events.AttrModified, this._onAttrChange, this);
-    SDK.targetManager.addModelListener(SDK.DOMModel, SDK.DOMModel.Events.AttrRemoved, this._onAttrChange, this);
-    SDK.targetManager.addModelListener(
-        SDK.DOMModel, SDK.DOMModel.Events.CharacterDataModified, this._onNodeChange, this);
-    SDK.targetManager.addModelListener(
-        SDK.DOMModel, SDK.DOMModel.Events.ChildNodeCountUpdated, this._onNodeChange, this);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this._onAttrChange, this);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this._onAttrChange, this);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.CharacterDataModified, this._onNodeChange, this);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.ChildNodeCountUpdated, this._onNodeChange, this);
   }
 
   /**
    * @override
    */
   willHide() {
-    SDK.targetManager.removeModelListener(SDK.DOMModel, SDK.DOMModel.Events.AttrModified, this._onAttrChange, this);
-    SDK.targetManager.removeModelListener(SDK.DOMModel, SDK.DOMModel.Events.AttrRemoved, this._onAttrChange, this);
-    SDK.targetManager.removeModelListener(
-        SDK.DOMModel, SDK.DOMModel.Events.CharacterDataModified, this._onNodeChange, this);
-    SDK.targetManager.removeModelListener(
-        SDK.DOMModel, SDK.DOMModel.Events.ChildNodeCountUpdated, this._onNodeChange, this);
+    SDK.SDKModel.TargetManager.instance().removeModelListener(
+        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this._onAttrChange, this);
+    SDK.SDKModel.TargetManager.instance().removeModelListener(
+        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this._onAttrChange, this);
+    SDK.SDKModel.TargetManager.instance().removeModelListener(
+        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.CharacterDataModified, this._onNodeChange, this);
+    SDK.SDKModel.TargetManager.instance().removeModelListener(
+        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.ChildNodeCountUpdated, this._onNodeChange, this);
   }
 
   _pullNode() {
@@ -124,11 +138,11 @@ export default class AccessibilitySidebarView extends UI.ThrottledWidget {
       this._skipNextPullNode = false;
       return;
     }
-    this.setNode(UI.context.flavor(SDK.DOMNode));
+    this.setNode(self.UI.context.flavor(SDK.DOMModel.DOMNode));
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onAttrChange(event) {
     if (!this.node()) {
@@ -142,7 +156,7 @@ export default class AccessibilitySidebarView extends UI.ThrottledWidget {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onNodeChange(event) {
     if (!this.node()) {
@@ -155,82 +169,3 @@ export default class AccessibilitySidebarView extends UI.ThrottledWidget {
     this.update();
   }
 }
-
-/**
- * @unrestricted
- */
-export class AccessibilitySubPane extends UI.SimpleView {
-  /**
-   * @param {string} name
-   */
-  constructor(name) {
-    super(name);
-
-    this._axNode = null;
-    this.registerRequiredCSS('accessibility/accessibilityProperties.css');
-  }
-
-  /**
-   * @param {?Accessibility.AccessibilityNode} axNode
-   * @protected
-   */
-  setAXNode(axNode) {
-  }
-
-  /**
-   * @return {?SDK.DOMNode}
-   */
-  node() {
-    return this._node;
-  }
-
-  /**
-   * @param {?SDK.DOMNode} node
-   */
-  setNode(node) {
-    this._node = node;
-  }
-
-  /**
-   * @param {string} textContent
-   * @param {string=} className
-   * @return {!Element}
-   */
-  createInfo(textContent, className) {
-    const classNameOrDefault = className || 'gray-info-message';
-    const info = this.element.createChild('div', classNameOrDefault);
-    info.textContent = textContent;
-    return info;
-  }
-
-  /**
-   * @return {!UI.TreeOutline}
-   */
-  createTreeOutline() {
-    const treeOutline = new UI.TreeOutlineInShadow();
-    treeOutline.registerRequiredCSS('accessibility/accessibilityNode.css');
-    treeOutline.registerRequiredCSS('accessibility/accessibilityProperties.css');
-    treeOutline.registerRequiredCSS('object_ui/objectValue.css');
-
-    treeOutline.element.classList.add('hidden');
-    treeOutline.hideOverflow();
-    this.element.appendChild(treeOutline.element);
-    return treeOutline;
-  }
-}
-
-/* Legacy exported object */
-self.Accessibility = self.Accessibility || {};
-
-/* Legacy exported object */
-Accessibility = Accessibility || {};
-
-/**
- * @constructor
- */
-Accessibility.AccessibilitySidebarView = AccessibilitySidebarView;
-
-/**
- * @constructor
- */
-Accessibility.AccessibilitySubPane = AccessibilitySubPane;

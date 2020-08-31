@@ -73,15 +73,15 @@ test("device_unittests") {
     "bluetooth/uribeacon/uri_encoder_unittest.cc",
     "fido/attestation_statement_formats_unittest.cc",
     "fido/bio/enrollment_handler_unittest.cc",
-    "fido/ble/fido_ble_connection_unittest.cc",
-    "fido/ble/fido_ble_device_unittest.cc",
-    "fido/ble/fido_ble_frames_unittest.cc",
-    "fido/ble/fido_ble_pairing_delegate_unittest.cc",
-    "fido/ble/fido_ble_transaction_unittest.cc",
     "fido/ble_adapter_manager_unittest.cc",
+    "fido/cable/fido_ble_connection_unittest.cc",
+    "fido/cable/fido_ble_frames_unittest.cc",
+    "fido/cable/fido_ble_transaction_unittest.cc",
     "fido/cable/fido_cable_device_unittest.cc",
     "fido/cable/fido_cable_discovery_unittest.cc",
     "fido/cable/fido_cable_handshake_handler_unittest.cc",
+    "fido/cable/v2_handshake_unittest.cc",
+    "fido/cbor_extract_unittest.cc",
     "fido/credential_management_handler_unittest.cc",
     "fido/ctap_request_unittest.cc",
     "fido/ctap_response_unittest.cc",
@@ -103,6 +103,8 @@ test("device_unittests") {
     "fido/u2f_command_constructor_unittest.cc",
     "fido/u2f_register_operation_unittest.cc",
     "fido/u2f_sign_operation_unittest.cc",
+    "fido/virtual_ctap2_device_unittest.cc",
+    "fido/virtual_u2f_device_unittest.cc",
     "fido/win/type_conversions_unittest.cc",
     "gamepad/abstract_haptic_gamepad_unittest.cc",
     "gamepad/dualshock4_controller_unittest.cc",
@@ -171,14 +173,18 @@ test("device_unittests") {
       "//device/fido:test_support",
       "//services/device/public/cpp/hid",
       "//services/device/public/mojom",
-      "//services/service_manager/public/cpp",
-      "//services/service_manager/public/mojom",
     ]
   }
 
   if (use_udev) {
-    sources += [ "udev_linux/udev_unittest.cc" ]
-    deps += [ "//device/udev_linux" ]
+    sources += [
+      "udev_linux/udev_unittest.cc",
+      "udev_linux/udev_watcher_unittest.cc",
+    ]
+    deps += [
+      "//device/udev_linux",
+      "//device/udev_linux:test_support",
+    ]
   }
 
   if (is_android) {
@@ -238,9 +244,6 @@ test("device_unittests") {
         "//chromecast/device/bluetooth/le:test_support",
         "//chromecast/device/bluetooth/shlib:mock_shlib",
       ]
-    } else {
-      # BLE discovery: works on Linux.
-      sources += [ "fido/ble/fido_ble_discovery_unittest.cc" ]
     }
   }
 
@@ -248,20 +251,10 @@ test("device_unittests") {
     deps += [ "//third_party/ocmock" ]
     ldflags = [ "-ObjC" ]
     libs = [
+      "CoreBluetooth.framework",
       "IOBluetooth.framework",
       "IOKit.framework",
     ]
-
-    # In the OSX 10.10 SDK, CoreBluetooth became a top level framework.
-    # Previously, it was nested in IOBluetooth. In order for Chrome to run on
-    # OSes older than OSX 10.10, the top level CoreBluetooth framework must be
-    # weakly linked.
-    if (mac_sdk_version == "10.10") {
-      ldflags += [
-        "-weak_framework",
-        "CoreBluetooth",
-      ]
-    }
   }
 
   if (is_win) {
@@ -341,7 +334,8 @@ test("device_unittests") {
 
     deps += [
       "//device/vr",
-      "//device/vr:fakes",
+      "//device/vr:vr_fakes",
+      "//device/vr/orientation",
       "//device/vr/public/mojom",
       "//services/device/public/cpp/generic_sensor",
       "//ui/display",
@@ -375,7 +369,7 @@ if (is_android) {
 
   android_library("bluetooth_test_java") {
     testonly = true
-    java_files = bluetooth_java_sources_needing_jni
+    sources = bluetooth_java_sources_needing_jni
     deps = [
       "//base:base_java",
       "//components/location/android:location_java",
@@ -388,7 +382,7 @@ if (is_android) {
   }
 
   junit_binary("device_junit_tests") {
-    java_files = [ "gamepad/android/junit/src/org/chromium/device/gamepad/GamepadMappingsTest.java" ]
+    sources = [ "gamepad/android/junit/src/org/chromium/device/gamepad/GamepadMappingsTest.java" ]
     deps = [
       "$google_play_services_package:google_play_services_base_java",
       "$google_play_services_package:google_play_services_basement_java",
@@ -404,8 +398,6 @@ if (is_android) {
   }
 
   java_cpp_enum("bluetooth_test_javagen") {
-    sources = [
-      "bluetooth/test/bluetooth_test.h",
-    ]
+    sources = [ "bluetooth/test/bluetooth_test.h" ]
   }
 }

@@ -65,13 +65,8 @@ QualifiedName GetCorrespondingARIAAttribute(AOMRelationProperty property) {
   switch (property) {
     case AOMRelationProperty::kActiveDescendant:
       return html_names::kAriaActivedescendantAttr;
-      break;
-    case AOMRelationProperty::kDetails:
-      return html_names::kAriaDetailsAttr;
-      break;
     case AOMRelationProperty::kErrorMessage:
       return html_names::kAriaErrormessageAttr;
-      break;
   }
 
   NOTREACHED();
@@ -82,21 +77,18 @@ QualifiedName GetCorrespondingARIAAttribute(AOMRelationListProperty property) {
   switch (property) {
     case AOMRelationListProperty::kDescribedBy:
       return html_names::kAriaDescribedbyAttr;
-      break;
+    case AOMRelationListProperty::kDetails:
+      return html_names::kAriaDetailsAttr;
     case AOMRelationListProperty::kControls:
       return html_names::kAriaControlsAttr;
-      break;
     case AOMRelationListProperty::kFlowTo:
       return html_names::kAriaFlowtoAttr;
-      break;
     case AOMRelationListProperty::kLabeledBy:
       // Note that there are two allowed spellings of this attribute.
       // Callers should check both.
       return html_names::kAriaLabelledbyAttr;
-      break;
     case AOMRelationListProperty::kOwns:
       return html_names::kAriaOwnsAttr;
-      break;
   }
 
   NOTREACHED();
@@ -107,37 +99,26 @@ QualifiedName GetCorrespondingARIAAttribute(AOMBooleanProperty property) {
   switch (property) {
     case AOMBooleanProperty::kAtomic:
       return html_names::kAriaAtomicAttr;
-      break;
     case AOMBooleanProperty::kBusy:
       return html_names::kAriaBusyAttr;
-      break;
     case AOMBooleanProperty::kDisabled:
       return html_names::kAriaDisabledAttr;
-      break;
     case AOMBooleanProperty::kExpanded:
       return html_names::kAriaExpandedAttr;
-      break;
     case AOMBooleanProperty::kHidden:
       return html_names::kAriaHiddenAttr;
-      break;
     case AOMBooleanProperty::kModal:
       return html_names::kAriaModalAttr;
-      break;
     case AOMBooleanProperty::kMultiline:
       return html_names::kAriaMultilineAttr;
-      break;
     case AOMBooleanProperty::kMultiselectable:
       return html_names::kAriaMultiselectableAttr;
-      break;
     case AOMBooleanProperty::kReadOnly:
       return html_names::kAriaReadonlyAttr;
-      break;
     case AOMBooleanProperty::kRequired:
       return html_names::kAriaRequiredAttr;
-      break;
     case AOMBooleanProperty::kSelected:
       return html_names::kAriaSelectedAttr;
-      break;
   }
 
   NOTREACHED();
@@ -149,13 +130,10 @@ QualifiedName GetCorrespondingARIAAttribute(AOMFloatProperty property) {
   switch (property) {
     case AOMFloatProperty::kValueMax:
       return html_names::kAriaValuemaxAttr;
-      break;
     case AOMFloatProperty::kValueMin:
       return html_names::kAriaValueminAttr;
-      break;
     case AOMFloatProperty::kValueNow:
       return html_names::kAriaValuenowAttr;
-      break;
   }
 
   NOTREACHED();
@@ -166,22 +144,16 @@ QualifiedName GetCorrespondingARIAAttribute(AOMUIntProperty property) {
   switch (property) {
     case AOMUIntProperty::kColIndex:
       return html_names::kAriaColindexAttr;
-      break;
     case AOMUIntProperty::kColSpan:
       return html_names::kAriaColspanAttr;
-      break;
     case AOMUIntProperty::kLevel:
       return html_names::kAriaLevelAttr;
-      break;
     case AOMUIntProperty::kPosInSet:
       return html_names::kAriaPosinsetAttr;
-      break;
     case AOMUIntProperty::kRowIndex:
       return html_names::kAriaRowindexAttr;
-      break;
     case AOMUIntProperty::kRowSpan:
       return html_names::kAriaRowspanAttr;
-      break;
   }
 
   NOTREACHED();
@@ -192,13 +164,10 @@ QualifiedName GetCorrespondingARIAAttribute(AOMIntProperty property) {
   switch (property) {
     case AOMIntProperty::kColCount:
       return html_names::kAriaColcountAttr;
-      break;
     case AOMIntProperty::kRowCount:
       return html_names::kAriaRowcountAttr;
-      break;
     case AOMIntProperty::kSetSize:
       return html_names::kAriaSetsizeAttr;
-      break;
   }
 
   NOTREACHED();
@@ -297,69 +266,46 @@ bool AccessibleNode::GetProperty(Element* element,
 }
 
 template <typename P, typename T>
-static T FindPropertyValue(P property,
-                           bool& is_null,
-                           const Vector<std::pair<P, T>>& properties,
-                           T default_value) {
+static base::Optional<T> FindPropertyValue(
+    P property,
+    const Vector<std::pair<P, T>>& properties) {
   for (const auto& item : properties) {
-    if (item.first == property) {
-      is_null = false;
+    if (item.first == property)
       return item.second;
-    }
   }
-
-  return default_value;
+  return base::nullopt;
 }
 
-bool AccessibleNode::GetProperty(AOMBooleanProperty property,
-                                 bool& is_null) const {
-  is_null = true;
-  return FindPropertyValue(property, is_null, boolean_properties_, false);
-}
-
-// static
-float AccessibleNode::GetProperty(Element* element,
-                                  AOMFloatProperty property,
-                                  bool& is_null) {
-  is_null = true;
-
-  float default_value = 0.0;
-  if (!element || !element->ExistingAccessibleNode())
-    return default_value;
-
-  return FindPropertyValue(property, is_null,
-                           element->ExistingAccessibleNode()->float_properties_,
-                           default_value);
+base::Optional<bool> AccessibleNode::GetProperty(
+    AOMBooleanProperty property) const {
+  return FindPropertyValue(property, boolean_properties_);
 }
 
 // static
-int32_t AccessibleNode::GetProperty(Element* element,
-                                    AOMIntProperty property,
-                                    bool& is_null) {
-  is_null = true;
-
-  int32_t default_value = 0;
+base::Optional<int32_t> AccessibleNode::GetProperty(Element* element,
+                                                    AOMIntProperty property) {
   if (!element || !element->ExistingAccessibleNode())
-    return default_value;
-
-  return FindPropertyValue(property, is_null,
-                           element->ExistingAccessibleNode()->int_properties_,
-                           default_value);
+    return base::nullopt;
+  return FindPropertyValue(property,
+                           element->ExistingAccessibleNode()->int_properties_);
 }
 
 // static
-uint32_t AccessibleNode::GetProperty(Element* element,
-                                     AOMUIntProperty property,
-                                     bool& is_null) {
-  is_null = true;
-
-  uint32_t default_value = 0;
+base::Optional<uint32_t> AccessibleNode::GetProperty(Element* element,
+                                                     AOMUIntProperty property) {
   if (!element || !element->ExistingAccessibleNode())
-    return default_value;
+    return base::nullopt;
+  return FindPropertyValue(property,
+                           element->ExistingAccessibleNode()->uint_properties_);
+}
 
-  return FindPropertyValue(property, is_null,
-                           element->ExistingAccessibleNode()->uint_properties_,
-                           default_value);
+// static
+base::Optional<float> AccessibleNode::GetProperty(Element* element,
+                                                  AOMFloatProperty property) {
+  if (!element || !element->ExistingAccessibleNode())
+    return base::nullopt;
+  return FindPropertyValue(
+      property, element->ExistingAccessibleNode()->float_properties_);
 }
 
 bool AccessibleNode::IsUndefinedAttrValue(const AtomicString& value) {
@@ -556,12 +502,12 @@ void AccessibleNode::setActiveDescendant(AccessibleNode* active_descendant) {
   NotifyAttributeChanged(html_names::kAriaActivedescendantAttr);
 }
 
-bool AccessibleNode::atomic(bool& is_null) const {
-  return GetProperty(AOMBooleanProperty::kAtomic, is_null);
+base::Optional<bool> AccessibleNode::atomic() const {
+  return GetProperty(AOMBooleanProperty::kAtomic);
 }
 
-void AccessibleNode::setAtomic(bool atomic, bool is_null) {
-  SetBooleanProperty(AOMBooleanProperty::kAtomic, atomic, is_null);
+void AccessibleNode::setAtomic(base::Optional<bool> value) {
+  SetBooleanProperty(AOMBooleanProperty::kAtomic, value);
   NotifyAttributeChanged(html_names::kAriaAtomicAttr);
 }
 
@@ -574,12 +520,12 @@ void AccessibleNode::setAutocomplete(const AtomicString& autocomplete) {
   NotifyAttributeChanged(html_names::kAriaAutocompleteAttr);
 }
 
-bool AccessibleNode::busy(bool& is_null) const {
-  return GetProperty(AOMBooleanProperty::kBusy, is_null);
+base::Optional<bool> AccessibleNode::busy() const {
+  return GetProperty(AOMBooleanProperty::kBusy);
 }
 
-void AccessibleNode::setBusy(bool busy, bool is_null) {
-  SetBooleanProperty(AOMBooleanProperty::kBusy, busy, is_null);
+void AccessibleNode::setBusy(base::Optional<bool> value) {
+  SetBooleanProperty(AOMBooleanProperty::kBusy, value);
   NotifyAttributeChanged(html_names::kAriaBusyAttr);
 }
 
@@ -592,30 +538,30 @@ void AccessibleNode::setChecked(const AtomicString& checked) {
   NotifyAttributeChanged(html_names::kAriaCheckedAttr);
 }
 
-int32_t AccessibleNode::colCount(bool& is_null) const {
-  return GetProperty(element_, AOMIntProperty::kColCount, is_null);
+base::Optional<int32_t> AccessibleNode::colCount() const {
+  return GetProperty(element_, AOMIntProperty::kColCount);
 }
 
-void AccessibleNode::setColCount(int32_t col_count, bool is_null) {
-  SetIntProperty(AOMIntProperty::kColCount, col_count, is_null);
+void AccessibleNode::setColCount(base::Optional<int32_t> value) {
+  SetIntProperty(AOMIntProperty::kColCount, value);
   NotifyAttributeChanged(html_names::kAriaColcountAttr);
 }
 
-uint32_t AccessibleNode::colIndex(bool& is_null) const {
-  return GetProperty(element_, AOMUIntProperty::kColIndex, is_null);
+base::Optional<uint32_t> AccessibleNode::colIndex() const {
+  return GetProperty(element_, AOMUIntProperty::kColIndex);
 }
 
-void AccessibleNode::setColIndex(uint32_t col_index, bool is_null) {
-  SetUIntProperty(AOMUIntProperty::kColIndex, col_index, is_null);
+void AccessibleNode::setColIndex(base::Optional<uint32_t> value) {
+  SetUIntProperty(AOMUIntProperty::kColIndex, value);
   NotifyAttributeChanged(html_names::kAriaColindexAttr);
 }
 
-uint32_t AccessibleNode::colSpan(bool& is_null) const {
-  return GetProperty(element_, AOMUIntProperty::kColSpan, is_null);
+base::Optional<uint32_t> AccessibleNode::colSpan() const {
+  return GetProperty(element_, AOMUIntProperty::kColSpan);
 }
 
-void AccessibleNode::setColSpan(uint32_t col_span, bool is_null) {
-  SetUIntProperty(AOMUIntProperty::kColSpan, col_span, is_null);
+void AccessibleNode::setColSpan(base::Optional<uint32_t> value) {
+  SetUIntProperty(AOMUIntProperty::kColSpan, value);
   NotifyAttributeChanged(html_names::kAriaColspanAttr);
 }
 
@@ -655,21 +601,21 @@ void AccessibleNode::setDescription(const AtomicString& description) {
   NotifyAttributeChanged(html_names::kAriaDescriptionAttr);
 }
 
-AccessibleNode* AccessibleNode::details() const {
-  return GetProperty(element_, AOMRelationProperty::kDetails);
+AccessibleNodeList* AccessibleNode::details() const {
+  return GetProperty(element_, AOMRelationListProperty::kDetails);
 }
 
-void AccessibleNode::setDetails(AccessibleNode* details) {
-  SetRelationProperty(AOMRelationProperty::kDetails, details);
+void AccessibleNode::setDetails(AccessibleNodeList* details) {
+  SetRelationListProperty(AOMRelationListProperty::kDetails, details);
   NotifyAttributeChanged(html_names::kAriaDetailsAttr);
 }
 
-bool AccessibleNode::disabled(bool& is_null) const {
-  return GetProperty(AOMBooleanProperty::kDisabled, is_null);
+base::Optional<bool> AccessibleNode::disabled() const {
+  return GetProperty(AOMBooleanProperty::kDisabled);
 }
 
-void AccessibleNode::setDisabled(bool disabled, bool is_null) {
-  SetBooleanProperty(AOMBooleanProperty::kDisabled, disabled, is_null);
+void AccessibleNode::setDisabled(base::Optional<bool> value) {
+  SetBooleanProperty(AOMBooleanProperty::kDisabled, value);
   NotifyAttributeChanged(html_names::kAriaDisabledAttr);
 }
 
@@ -682,12 +628,12 @@ void AccessibleNode::setErrorMessage(AccessibleNode* error_message) {
   NotifyAttributeChanged(html_names::kAriaErrormessageAttr);
 }
 
-bool AccessibleNode::expanded(bool& is_null) const {
-  return GetProperty(AOMBooleanProperty::kExpanded, is_null);
+base::Optional<bool> AccessibleNode::expanded() const {
+  return GetProperty(AOMBooleanProperty::kExpanded);
 }
 
-void AccessibleNode::setExpanded(bool expanded, bool is_null) {
-  SetBooleanProperty(AOMBooleanProperty::kExpanded, expanded, is_null);
+void AccessibleNode::setExpanded(base::Optional<bool> value) {
+  SetBooleanProperty(AOMBooleanProperty::kExpanded, value);
   NotifyAttributeChanged(html_names::kAriaExpandedAttr);
 }
 
@@ -709,12 +655,12 @@ void AccessibleNode::setHasPopUp(const AtomicString& has_popup) {
   NotifyAttributeChanged(html_names::kAriaHaspopupAttr);
 }
 
-bool AccessibleNode::hidden(bool& is_null) const {
-  return GetProperty(AOMBooleanProperty::kHidden, is_null);
+base::Optional<bool> AccessibleNode::hidden() const {
+  return GetProperty(AOMBooleanProperty::kHidden);
 }
 
-void AccessibleNode::setHidden(bool hidden, bool is_null) {
-  SetBooleanProperty(AOMBooleanProperty::kHidden, hidden, is_null);
+void AccessibleNode::setHidden(base::Optional<bool> value) {
+  SetBooleanProperty(AOMBooleanProperty::kHidden, value);
   NotifyAttributeChanged(html_names::kAriaHiddenAttr);
 }
 
@@ -754,12 +700,12 @@ void AccessibleNode::setLabeledBy(AccessibleNodeList* labeled_by) {
   NotifyAttributeChanged(html_names::kAriaLabelledbyAttr);
 }
 
-uint32_t AccessibleNode::level(bool& is_null) const {
-  return GetProperty(element_, AOMUIntProperty::kLevel, is_null);
+base::Optional<uint32_t> AccessibleNode::level() const {
+  return GetProperty(element_, AOMUIntProperty::kLevel);
 }
 
-void AccessibleNode::setLevel(uint32_t level, bool is_null) {
-  SetUIntProperty(AOMUIntProperty::kLevel, level, is_null);
+void AccessibleNode::setLevel(base::Optional<uint32_t> value) {
+  SetUIntProperty(AOMUIntProperty::kLevel, value);
   NotifyAttributeChanged(html_names::kAriaLevelAttr);
 }
 
@@ -772,31 +718,30 @@ void AccessibleNode::setLive(const AtomicString& live) {
   NotifyAttributeChanged(html_names::kAriaLiveAttr);
 }
 
-bool AccessibleNode::modal(bool& is_null) const {
-  return GetProperty(AOMBooleanProperty::kModal, is_null);
+base::Optional<bool> AccessibleNode::modal() const {
+  return GetProperty(AOMBooleanProperty::kModal);
 }
 
-void AccessibleNode::setModal(bool modal, bool is_null) {
-  SetBooleanProperty(AOMBooleanProperty::kModal, modal, is_null);
+void AccessibleNode::setModal(base::Optional<bool> value) {
+  SetBooleanProperty(AOMBooleanProperty::kModal, value);
   NotifyAttributeChanged(html_names::kAriaModalAttr);
 }
 
-bool AccessibleNode::multiline(bool& is_null) const {
-  return GetProperty(AOMBooleanProperty::kMultiline, is_null);
+base::Optional<bool> AccessibleNode::multiline() const {
+  return GetProperty(AOMBooleanProperty::kMultiline);
 }
 
-void AccessibleNode::setMultiline(bool multiline, bool is_null) {
-  SetBooleanProperty(AOMBooleanProperty::kMultiline, multiline, is_null);
+void AccessibleNode::setMultiline(base::Optional<bool> value) {
+  SetBooleanProperty(AOMBooleanProperty::kMultiline, value);
   NotifyAttributeChanged(html_names::kAriaMultilineAttr);
 }
 
-bool AccessibleNode::multiselectable(bool& is_null) const {
-  return GetProperty(AOMBooleanProperty::kMultiselectable, is_null);
+base::Optional<bool> AccessibleNode::multiselectable() const {
+  return GetProperty(AOMBooleanProperty::kMultiselectable);
 }
 
-void AccessibleNode::setMultiselectable(bool multiselectable, bool is_null) {
-  SetBooleanProperty(AOMBooleanProperty::kMultiselectable, multiselectable,
-                     is_null);
+void AccessibleNode::setMultiselectable(base::Optional<bool> value) {
+  SetBooleanProperty(AOMBooleanProperty::kMultiselectable, value);
   NotifyAttributeChanged(html_names::kAriaMultiselectableAttr);
 }
 
@@ -827,12 +772,12 @@ void AccessibleNode::setPlaceholder(const AtomicString& placeholder) {
   NotifyAttributeChanged(html_names::kAriaPlaceholderAttr);
 }
 
-uint32_t AccessibleNode::posInSet(bool& is_null) const {
-  return GetProperty(element_, AOMUIntProperty::kPosInSet, is_null);
+base::Optional<uint32_t> AccessibleNode::posInSet() const {
+  return GetProperty(element_, AOMUIntProperty::kPosInSet);
 }
 
-void AccessibleNode::setPosInSet(uint32_t pos_in_set, bool is_null) {
-  SetUIntProperty(AOMUIntProperty::kPosInSet, pos_in_set, is_null);
+void AccessibleNode::setPosInSet(base::Optional<uint32_t> value) {
+  SetUIntProperty(AOMUIntProperty::kPosInSet, value);
   NotifyAttributeChanged(html_names::kAriaPosinsetAttr);
 }
 
@@ -845,12 +790,12 @@ void AccessibleNode::setPressed(const AtomicString& pressed) {
   NotifyAttributeChanged(html_names::kAriaPressedAttr);
 }
 
-bool AccessibleNode::readOnly(bool& is_null) const {
-  return GetProperty(AOMBooleanProperty::kReadOnly, is_null);
+base::Optional<bool> AccessibleNode::readOnly() const {
+  return GetProperty(AOMBooleanProperty::kReadOnly);
 }
 
-void AccessibleNode::setReadOnly(bool read_only, bool is_null) {
-  SetBooleanProperty(AOMBooleanProperty::kReadOnly, read_only, is_null);
+void AccessibleNode::setReadOnly(base::Optional<bool> value) {
+  SetBooleanProperty(AOMBooleanProperty::kReadOnly, value);
   NotifyAttributeChanged(html_names::kAriaReadonlyAttr);
 }
 
@@ -863,12 +808,12 @@ void AccessibleNode::setRelevant(const AtomicString& relevant) {
   NotifyAttributeChanged(html_names::kAriaRelevantAttr);
 }
 
-bool AccessibleNode::required(bool& is_null) const {
-  return GetProperty(AOMBooleanProperty::kRequired, is_null);
+base::Optional<bool> AccessibleNode::required() const {
+  return GetProperty(AOMBooleanProperty::kRequired);
 }
 
-void AccessibleNode::setRequired(bool required, bool is_null) {
-  SetBooleanProperty(AOMBooleanProperty::kRequired, required, is_null);
+void AccessibleNode::setRequired(base::Optional<bool> value) {
+  SetBooleanProperty(AOMBooleanProperty::kRequired, value);
   NotifyAttributeChanged(html_names::kAriaRequiredAttr);
 }
 
@@ -890,48 +835,48 @@ void AccessibleNode::setRoleDescription(const AtomicString& role_description) {
   NotifyAttributeChanged(html_names::kAriaRoledescriptionAttr);
 }
 
-int32_t AccessibleNode::rowCount(bool& is_null) const {
-  return GetProperty(element_, AOMIntProperty::kRowCount, is_null);
+base::Optional<int32_t> AccessibleNode::rowCount() const {
+  return GetProperty(element_, AOMIntProperty::kRowCount);
 }
 
-void AccessibleNode::setRowCount(int32_t row_count, bool is_null) {
-  SetIntProperty(AOMIntProperty::kRowCount, row_count, is_null);
+void AccessibleNode::setRowCount(base::Optional<int32_t> value) {
+  SetIntProperty(AOMIntProperty::kRowCount, value);
   NotifyAttributeChanged(html_names::kAriaRowcountAttr);
 }
 
-uint32_t AccessibleNode::rowIndex(bool& is_null) const {
-  return GetProperty(element_, AOMUIntProperty::kRowIndex, is_null);
+base::Optional<uint32_t> AccessibleNode::rowIndex() const {
+  return GetProperty(element_, AOMUIntProperty::kRowIndex);
 }
 
-void AccessibleNode::setRowIndex(uint32_t row_index, bool is_null) {
-  SetUIntProperty(AOMUIntProperty::kRowIndex, row_index, is_null);
+void AccessibleNode::setRowIndex(base::Optional<uint32_t> value) {
+  SetUIntProperty(AOMUIntProperty::kRowIndex, value);
   NotifyAttributeChanged(html_names::kAriaRowindexAttr);
 }
 
-uint32_t AccessibleNode::rowSpan(bool& is_null) const {
-  return GetProperty(element_, AOMUIntProperty::kRowSpan, is_null);
+base::Optional<uint32_t> AccessibleNode::rowSpan() const {
+  return GetProperty(element_, AOMUIntProperty::kRowSpan);
 }
 
-void AccessibleNode::setRowSpan(uint32_t row_span, bool is_null) {
-  SetUIntProperty(AOMUIntProperty::kRowSpan, row_span, is_null);
+void AccessibleNode::setRowSpan(base::Optional<uint32_t> value) {
+  SetUIntProperty(AOMUIntProperty::kRowSpan, value);
   NotifyAttributeChanged(html_names::kAriaRowspanAttr);
 }
 
-bool AccessibleNode::selected(bool& is_null) const {
-  return GetProperty(AOMBooleanProperty::kSelected, is_null);
+base::Optional<bool> AccessibleNode::selected() const {
+  return GetProperty(AOMBooleanProperty::kSelected);
 }
 
-void AccessibleNode::setSelected(bool selected, bool is_null) {
-  SetBooleanProperty(AOMBooleanProperty::kSelected, selected, is_null);
+void AccessibleNode::setSelected(base::Optional<bool> value) {
+  SetBooleanProperty(AOMBooleanProperty::kSelected, value);
   NotifyAttributeChanged(html_names::kAriaSelectedAttr);
 }
 
-int32_t AccessibleNode::setSize(bool& is_null) const {
-  return GetProperty(element_, AOMIntProperty::kSetSize, is_null);
+base::Optional<int32_t> AccessibleNode::setSize() const {
+  return GetProperty(element_, AOMIntProperty::kSetSize);
 }
 
-void AccessibleNode::setSetSize(int32_t set_size, bool is_null) {
-  SetIntProperty(AOMIntProperty::kSetSize, set_size, is_null);
+void AccessibleNode::setSetSize(base::Optional<int32_t> value) {
+  SetIntProperty(AOMIntProperty::kSetSize, value);
   NotifyAttributeChanged(html_names::kAriaSetsizeAttr);
 }
 
@@ -944,30 +889,30 @@ void AccessibleNode::setSort(const AtomicString& sort) {
   NotifyAttributeChanged(html_names::kAriaSortAttr);
 }
 
-float AccessibleNode::valueMax(bool& is_null) const {
-  return GetProperty(element_, AOMFloatProperty::kValueMax, is_null);
+base::Optional<float> AccessibleNode::valueMax() const {
+  return GetProperty(element_, AOMFloatProperty::kValueMax);
 }
 
-void AccessibleNode::setValueMax(float value_max, bool is_null) {
-  SetFloatProperty(AOMFloatProperty::kValueMax, value_max, is_null);
+void AccessibleNode::setValueMax(base::Optional<float> value) {
+  SetFloatProperty(AOMFloatProperty::kValueMax, value);
   NotifyAttributeChanged(html_names::kAriaValuemaxAttr);
 }
 
-float AccessibleNode::valueMin(bool& is_null) const {
-  return GetProperty(element_, AOMFloatProperty::kValueMin, is_null);
+base::Optional<float> AccessibleNode::valueMin() const {
+  return GetProperty(element_, AOMFloatProperty::kValueMin);
 }
 
-void AccessibleNode::setValueMin(float value_min, bool is_null) {
-  SetFloatProperty(AOMFloatProperty::kValueMin, value_min, is_null);
+void AccessibleNode::setValueMin(base::Optional<float> value) {
+  SetFloatProperty(AOMFloatProperty::kValueMin, value);
   NotifyAttributeChanged(html_names::kAriaValueminAttr);
 }
 
-float AccessibleNode::valueNow(bool& is_null) const {
-  return GetProperty(element_, AOMFloatProperty::kValueNow, is_null);
+base::Optional<float> AccessibleNode::valueNow() const {
+  return GetProperty(element_, AOMFloatProperty::kValueNow);
 }
 
-void AccessibleNode::setValueNow(float value_now, bool is_null) {
-  SetFloatProperty(AOMFloatProperty::kValueNow, value_now, is_null);
+void AccessibleNode::setValueNow(base::Optional<float> value) {
+  SetFloatProperty(AOMFloatProperty::kValueNow, value);
   NotifyAttributeChanged(html_names::kAriaValuenowAttr);
 }
 
@@ -1122,45 +1067,41 @@ void AccessibleNode::SetRelationListProperty(AOMRelationListProperty property,
 
 template <typename P, typename T>
 static void SetProperty(P property,
-                        T value,
-                        bool is_null,
+                        base::Optional<T> value,
                         Vector<std::pair<P, T>>& properties) {
   for (wtf_size_t i = 0; i < properties.size(); i++) {
     auto& item = properties[i];
     if (item.first == property) {
-      if (is_null)
-        properties.EraseAt(i);
+      if (value.has_value())
+        item.second = value.value();
       else
-        item.second = value;
+        properties.EraseAt(i);
       return;
     }
   }
 
-  properties.push_back(std::make_pair(property, value));
+  if (value.has_value())
+    properties.push_back(std::make_pair(property, value.value()));
 }
 
 void AccessibleNode::SetBooleanProperty(AOMBooleanProperty property,
-                                        bool value,
-                                        bool is_null) {
-  SetProperty(property, value, is_null, boolean_properties_);
+                                        base::Optional<bool> value) {
+  SetProperty(property, value, boolean_properties_);
 }
 
 void AccessibleNode::SetIntProperty(AOMIntProperty property,
-                                    int32_t value,
-                                    bool is_null) {
-  SetProperty(property, value, is_null, int_properties_);
+                                    base::Optional<int32_t> value) {
+  SetProperty(property, value, int_properties_);
 }
 
 void AccessibleNode::SetUIntProperty(AOMUIntProperty property,
-                                     uint32_t value,
-                                     bool is_null) {
-  SetProperty(property, value, is_null, uint_properties_);
+                                     base::Optional<uint32_t> value) {
+  SetProperty(property, value, uint_properties_);
 }
 
 void AccessibleNode::SetFloatProperty(AOMFloatProperty property,
-                                      float value,
-                                      bool is_null) {
-  SetProperty(property, value, is_null, float_properties_);
+                                      base::Optional<float> value) {
+  SetProperty(property, value, float_properties_);
 }
 
 void AccessibleNode::OnRelationListChanged(AOMRelationListProperty property) {
@@ -1189,7 +1130,7 @@ AXObjectCache* AccessibleNode::GetAXObjectCache() {
   return GetDocument()->ExistingAXObjectCache();
 }
 
-void AccessibleNode::Trace(blink::Visitor* visitor) {
+void AccessibleNode::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(document_);
   visitor->Trace(relation_properties_);

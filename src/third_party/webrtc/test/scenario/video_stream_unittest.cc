@@ -22,7 +22,7 @@ using CodecImpl = VideoStreamConfig::Encoder::Implementation;
 }  // namespace
 
 TEST(VideoStreamTest, ReceivesFramesFromFileBasedStreams) {
-  TimeDelta kRunTime = TimeDelta::ms(500);
+  TimeDelta kRunTime = TimeDelta::Millis(500);
   std::vector<int> kFrameRates = {15, 30};
   std::deque<std::atomic<int>> frame_counts(2);
   frame_counts[0] = 0;
@@ -68,7 +68,7 @@ TEST(VideoStreamTest, ReceivesFramesFromFileBasedStreams) {
 }
 
 TEST(VideoStreamTest, RecievesVp8SimulcastFrames) {
-  TimeDelta kRunTime = TimeDelta::ms(500);
+  TimeDelta kRunTime = TimeDelta::Millis(500);
   int kFrameRate = 30;
 
   std::deque<std::atomic<int>> frame_counts(3);
@@ -125,9 +125,12 @@ TEST(VideoStreamTest, SendsNacksOnLoss) {
                      {s.CreateSimulationNode(NetworkSimulationConfig())});
   // NACK retransmissions are enabled by default.
   auto video = s.CreateVideoStream(route->forward(), VideoStreamConfig());
-  s.RunFor(TimeDelta::seconds(1));
-  auto stream_stats = video->send()->GetStats().substreams.begin()->second;
-  EXPECT_GT(stream_stats.rtp_stats.retransmitted.packets, 0u);
+  s.RunFor(TimeDelta::Seconds(1));
+  int retransmit_packets = 0;
+  for (const auto& substream : video->send()->GetStats().substreams) {
+    retransmit_packets += substream.second.rtp_stats.retransmitted.packets;
+  }
+  EXPECT_GT(retransmit_packets, 0);
 }
 
 TEST(VideoStreamTest, SendsFecWithUlpFec) {
@@ -136,6 +139,7 @@ TEST(VideoStreamTest, SendsFecWithUlpFec) {
       s.CreateRoutes(s.CreateClient("caller", CallClientConfig()),
                      {s.CreateSimulationNode([](NetworkSimulationConfig* c) {
                        c->loss_rate = 0.1;
+                       c->delay = TimeDelta::Millis(100);
                      })},
                      s.CreateClient("callee", CallClientConfig()),
                      {s.CreateSimulationNode(NetworkSimulationConfig())});
@@ -144,7 +148,7 @@ TEST(VideoStreamTest, SendsFecWithUlpFec) {
     c->encoder.codec = VideoStreamConfig::Encoder::Codec::kVideoCodecVP8;
     c->stream.use_ulpfec = true;
   });
-  s.RunFor(TimeDelta::seconds(5));
+  s.RunFor(TimeDelta::Seconds(5));
   VideoSendStream::Stats video_stats = video->send()->GetStats();
   EXPECT_GT(video_stats.substreams.begin()->second.rtp_stats.fec.packets, 0u);
 }
@@ -154,15 +158,90 @@ TEST(VideoStreamTest, SendsFecWithFlexFec) {
       s.CreateRoutes(s.CreateClient("caller", CallClientConfig()),
                      {s.CreateSimulationNode([](NetworkSimulationConfig* c) {
                        c->loss_rate = 0.1;
+                       c->delay = TimeDelta::Millis(100);
                      })},
                      s.CreateClient("callee", CallClientConfig()),
                      {s.CreateSimulationNode(NetworkSimulationConfig())});
   auto video = s.CreateVideoStream(route->forward(), [&](VideoStreamConfig* c) {
     c->stream.use_flexfec = true;
   });
-  s.RunFor(TimeDelta::seconds(5));
+  s.RunFor(TimeDelta::Seconds(5));
   VideoSendStream::Stats video_stats = video->send()->GetStats();
   EXPECT_GT(video_stats.substreams.begin()->second.rtp_stats.fec.packets, 0u);
 }
+
+TEST(VideoStreamTest, ResolutionAdaptsToAvailableBandwidth) {
+  // Declared before scenario to avoid use after free.
+  std::atomic<size_t> num_qvga_frames_(0);
+  std::atomic<size_t> num_vga_frames_(0);
+
+  Scenario s;
+  // Link has enough capacity for VGA.
+  NetworkSimulationConfig net_conf;
+  net_conf.bandwidth = DataRate::KilobitsPerSec(800);
+  net_conf.delay = TimeDelta::Millis(50);
+  auto* client = s.CreateClient("send", [&](CallClientConfig* c) {
+    c->transport.rates.start_rate = DataRate::KilobitsPerSec(800);
+  });
+  auto send_net = {s.CreateSimulationNode(net_conf)};
+  auto ret_net = {s.CreateSimulationNode(net_conf)};
+  auto* route = s.CreateRoutes(
+      client, send_net, s.CreateClient("return", CallClientConfig()), ret_net);
+
+  s.CreateVideoStream(route->forward(), [&](VideoStreamConfig* c) {
+    c->hooks.frame_pair_handlers = {[&](const VideoFramePair& info) {
+      if (info.decoded->width() == 640) {
+        ++num_vga_frames_;
+      } else if (info.decoded->width() == 320) {
+        ++num_qvga_frames_;
+      } else {
+        ADD_FAILURE() << "Unexpected resolution: " << info.decoded->width();
+      }
+    }};
+    c->source.framerate = 30;
+    // The resolution must be high enough to allow smaller layers to be
+    // created.
+    c->source.generator.width = 640;
+    c->source.generator.height = 480;
+    c->encoder.implementation = CodecImpl::kSoftware;
+    c->encoder.codec = Codec::kVideoCodecVP9;
+    // Enable SVC.
+    c->encoder.layers.spatial = 2;
+  });
+
+  // Run for a few seconds, until streams have stabilized,
+  // check that we are sending VGA.
+  s.RunFor(TimeDelta::Seconds(5));
+  EXPECT_GT(num_vga_frames_, 0u);
+
+  // Trigger cross traffic, run until we have seen 3 consecutive
+  // seconds with no VGA frames due to reduced available bandwidth.
+  auto cross_traffic =
+      s.net()->StartFakeTcpCrossTraffic(send_net, ret_net, FakeTcpConfig());
+
+  int num_seconds_without_vga = 0;
+  int num_iterations = 0;
+  do {
+    ASSERT_LE(++num_iterations, 100);
+    num_qvga_frames_ = 0;
+    num_vga_frames_ = 0;
+    s.RunFor(TimeDelta::Seconds(1));
+    if (num_qvga_frames_ > 0 && num_vga_frames_ == 0) {
+      ++num_seconds_without_vga;
+    } else {
+      num_seconds_without_vga = 0;
+    }
+  } while (num_seconds_without_vga < 3);
+
+  // Stop cross traffic, make sure we recover and get VGA frames agian.
+  s.net()->StopCrossTraffic(cross_traffic);
+  num_qvga_frames_ = 0;
+  num_vga_frames_ = 0;
+
+  s.RunFor(TimeDelta::Seconds(40));
+  EXPECT_GT(num_qvga_frames_, 0u);
+  EXPECT_GT(num_vga_frames_, 0u);
+}
+
 }  // namespace test
 }  // namespace webrtc

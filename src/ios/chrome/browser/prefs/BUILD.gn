@@ -13,12 +13,14 @@ source_set("prefs") {
   deps = [
     "//base",
     "//components/content_settings/core/browser",
+    "//components/policy/core/browser",
     "//components/prefs",
     "//components/prefs/ios",
     "//components/proxy_config",
     "//components/search_engines",
     "//components/sync_preferences",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/policy:feature_flags",
   ]
 }
 
@@ -33,6 +35,7 @@ source_set("browser_prefs") {
     "//components/browsing_data/core",
     "//components/content_settings/core/browser",
     "//components/dom_distiller/core",
+    "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/flags_ui",
     "//components/gcm_driver",
     "//components/handoff",
@@ -46,10 +49,13 @@ source_set("browser_prefs") {
     "//components/omnibox/browser",
     "//components/password_manager/core/browser",
     "//components/payments/core",
+    "//components/policy/core/browser",
+    "//components/policy/core/common",
     "//components/pref_registry",
     "//components/prefs",
     "//components/proxy_config",
     "//components/rappor",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/search_engines",
     "//components/sessions",
     "//components/signin/public/identity_manager",
@@ -74,7 +80,9 @@ source_set("browser_prefs") {
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/bookmarks",
     "//ios/chrome/browser/voice:prefs",
+    "//ios/chrome/browser/web",
     "//ios/public/provider/chrome/browser",
+    "//ios/web/common:features",
     "//ui/base",
   ]
 }

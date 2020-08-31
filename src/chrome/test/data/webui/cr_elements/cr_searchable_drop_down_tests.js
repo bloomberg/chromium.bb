@@ -2,8 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.m.js';
+// #import {Polymer, html, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// clang-format on
+
 suite('cr-searchable-drop-down', function() {
+  /** @type {CrSearchableDropDownElement} */
   let dropDown;
+
+  /** @type {HTMLElement} */
+  let outsideElement;
+
+  /** @type {CrInputElement} */
+  let searchInput;
 
   /**
    * @param {!Array<string>} items The list of items to be populated in the
@@ -95,17 +108,20 @@ suite('cr-searchable-drop-down', function() {
     search('c');
     assertEquals(1, getList().length);
     assertEquals('cat', getList()[0].textContent.trim());
+    assertTrue(dropDown.invalid);
 
     search('at');
     assertEquals(3, getList().length);
     assertEquals('cat', getList()[0].textContent.trim());
     assertEquals('hat', getList()[1].textContent.trim());
     assertEquals('rat', getList()[2].textContent.trim());
+    assertTrue(dropDown.invalid);
 
     search('ra');
     assertEquals(2, getList().length);
     assertEquals('rat', getList()[0].textContent.trim());
     assertEquals('rake', getList()[1].textContent.trim());
+    assertTrue(dropDown.invalid);
   });
 
   test('value is set on click', function() {
@@ -120,6 +136,7 @@ suite('cr-searchable-drop-down', function() {
     // Make sure final value does not change while searching.
     search('ta');
     assertEquals('dog', dropDown.value);
+    assertTrue(dropDown.invalid);
   });
 
   // If the update-value-on-input flag is passed, final value should be whatever
@@ -137,6 +154,7 @@ suite('cr-searchable-drop-down', function() {
     // Make sure final value does change while searching.
     search('ta');
     assertEquals('ta', dropDown.value);
+    assertFalse(dropDown.invalid);
   });
 
   test('click closes dropdown', function() {
@@ -340,11 +358,14 @@ suite('cr-searchable-drop-down', function() {
 
     getList()[0].click();
     assertEquals('dog', searchInput.value);
+    assertFalse(dropDown.invalid);
 
     // Make sure the search box value changes back to dog
     search('ta');
+    assertTrue(dropDown.invalid);
     blur();
     assertEquals('dog', searchInput.value);
+    assertFalse(dropDown.invalid);
   });
 
   // When a user types in the dropdown but does not choose a valid option, the
@@ -356,10 +377,29 @@ suite('cr-searchable-drop-down', function() {
 
     getList()[0].click();
     assertEquals('dog', searchInput.value);
+    assertFalse(dropDown.invalid);
 
     // Make sure the search box value keeps the same text
     search('ta');
+    assertFalse(dropDown.invalid);
     blur();
     assertEquals('ta', searchInput.value);
+    assertFalse(dropDown.invalid);
+  });
+
+  // In certain cases when a user clicks their desired option from the dropdown,
+  // the on-blur event is fired before the on-click event. This test is to
+  // guarantee expected behavior given a proceeding blur event.
+  test('blur event when option is clicked', function() {
+    setItems(['cat', 'hat', 'rat', 'rake']);
+
+    search('rat');
+    assertEquals(1, getList().length);
+    assertEquals('rat', getList()[0].textContent.trim());
+
+    blur();
+    getList()[0].click();
+
+    assertEquals('rat', dropDown.value);
   });
 });

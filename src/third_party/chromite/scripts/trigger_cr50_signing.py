@@ -13,12 +13,17 @@ from __future__ import print_function
 import argparse
 import json
 import re
+import sys
 
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.api.gen.chromiumos import sign_image_pb2
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 CR50_PRODUCTION_JOB = 'chromeos/packaging/sign-image'
 CR50_STAGING_JOB = 'chromeos/staging/staging-sign-image'

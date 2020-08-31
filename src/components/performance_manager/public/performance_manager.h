@@ -5,37 +5,56 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_PERFORMANCE_MANAGER_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_PERFORMANCE_MANAGER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }
 
 namespace performance_manager {
 
+class FrameNode;
 class Graph;
 class GraphOwned;
 class PageNode;
+class PerformanceManagerMainThreadMechanism;
+class PerformanceManagerMainThreadObserver;
 
 // The performance manager is a rendezvous point for communicating with the
 // performance manager graph on its dedicated sequence.
 class PerformanceManager {
  public:
+  virtual ~PerformanceManager();
+
   // Returns true if the performance manager is initialized. Valid to call from
   // the main thread only.
   static bool IsAvailable();
 
-  // Posts a callback that will run on the PM sequence, and be provided a
-  // pointer to the Graph. Valid to call from any sequence, but |graph_callback|
-  // won't run if "IsAvailable" returns false.
+  // Posts a callback that will run on the PM sequence. Valid to call from any
+  // sequence.
+  //
+  // Note: If called from the main thread, the |callback| is guaranteed to run
+  //       if and only if "IsAvailable()" returns true.
+  //
+  //       If called from any other sequence, there is no guarantee that the
+  //       callback will run. It will depend on if the PerformanceManager was
+  //       destroyed before the the task is scheduled.
+  static void CallOnGraph(const base::Location& from_here,
+                          base::OnceClosure callback);
+
+  // Same as the above, but the callback is provided a pointer to the graph.
   using GraphCallback = base::OnceCallback<void(Graph*)>;
   static void CallOnGraph(const base::Location& from_here,
-                          GraphCallback graph_callback);
+                          GraphCallback callback);
 
-  // Passes a GraphOwned object into the Graph on the PM sequence. Should only
-  // be called from the main thread and only if "IsAvailable" returns true.
+  // Passes a GraphOwned object into the Graph on the PM sequence. Must only be
+  // called if "IsAvailable()" returns true. Valid to call from the main thread
+  // only.
   static void PassToGraph(const base::Location& from_here,
                           std::unique_ptr<GraphOwned> graph_owned);
 
@@ -47,9 +66,26 @@ class PerformanceManager {
   static base::WeakPtr<PageNode> GetPageNodeForWebContents(
       content::WebContents* wc);
 
+  // Returns a WeakPtr to the FrameNode associated with a given RenderFrameHost,
+  // or a null WeakPtr if there's no FrameNode for this RFH. Valid to call from
+  // the main thread only, the returned WeakPtr should only be dereferenced on
+  // the PM sequence (e.g. it can be used in a CallOnGraph callback).
+  static base::WeakPtr<FrameNode> GetFrameNodeForRenderFrameHost(
+      content::RenderFrameHost* rfh);
+
+  // Adds / removes an observer that is notified of PerformanceManager events
+  // that happen on the main thread. Can only be called on the main thread.
+  static void AddObserver(PerformanceManagerMainThreadObserver* observer);
+  static void RemoveObserver(PerformanceManagerMainThreadObserver* observer);
+
+  // Adds / removes a mechanism that need to be called synchronously on the main
+  // thread (ie, to apply NavigationThrottles).
+  static void AddMechanism(PerformanceManagerMainThreadMechanism* mechanism);
+  static void RemoveMechanism(PerformanceManagerMainThreadMechanism* mechanism);
+  static bool HasMechanism(PerformanceManagerMainThreadMechanism* mechanism);
+
  protected:
   PerformanceManager();
-  virtual ~PerformanceManager();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PerformanceManager);

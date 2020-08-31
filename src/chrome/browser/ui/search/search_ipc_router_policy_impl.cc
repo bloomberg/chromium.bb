@@ -137,6 +137,11 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessAutocompleteResultChanged(
   return is_active_tab && !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldProcessAutocompleteMatchImageAvailable(
+    bool is_active_tab) {
+  return is_active_tab && !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldProcessQueryAutocomplete(
     bool is_active_tab) {
   return is_active_tab && !is_incognito_ && search::IsInstantNTP(web_contents_);
@@ -146,7 +151,15 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessStopAutocomplete() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldProcessLogCharTypedToRepaintLatency() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldProcessBlocklistPromo() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessOpenExtensionsPage() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
@@ -156,5 +169,10 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessOpenAutocompleteMatch(
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldProcessDeleteAutocompleteMatch() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
+bool SearchIPCRouterPolicyImpl::
+    ShouldProcessToggleSuggestionGroupIdVisibility() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }

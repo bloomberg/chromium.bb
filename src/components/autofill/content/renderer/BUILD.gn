@@ -8,6 +8,8 @@ jumbo_static_library("renderer") {
   sources = [
     "autofill_agent.cc",
     "autofill_agent.h",
+    "autofill_assistant_agent.cc",
+    "autofill_assistant_agent.h",
     "field_data_manager.cc",
     "field_data_manager.h",
     "form_autofill_util.cc",
@@ -41,6 +43,7 @@ jumbo_static_library("renderer") {
     "//base:i18n",
     "//components/autofill/content/common/mojom",
     "//components/autofill/core/common",
+    "//components/password_manager/core/common:common",
     "//components/safe_browsing:buildflags",
     "//components/strings",
     "//content/public/common",
@@ -63,6 +66,8 @@ jumbo_static_library("renderer") {
 jumbo_static_library("test_support") {
   testonly = true
   sources = [
+    "focus_test_utils.cc",
+    "focus_test_utils.h",
     "test_password_autofill_agent.cc",
     "test_password_autofill_agent.h",
   ]
@@ -75,6 +80,7 @@ jumbo_static_library("test_support") {
     "//components/autofill/content/renderer",
     "//services/service_manager/public/cpp",
     "//skia",
+    "//testing/gtest",
     "//third_party/blink/public:blink",
   ]
 }

@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/common/search.mojom.h"
+#include "chrome/common/search/omnibox.mojom.h"
 #include "ui/gfx/color_palette.h"
 
 namespace blink {
@@ -39,7 +39,12 @@ class SearchBoxExtension {
                                              bool success);
   static void DispatchAutocompleteResultChanged(
       blink::WebLocalFrame* frame,
-      chrome::mojom::AutocompleteResultPtr result);
+      search::mojom::AutocompleteResultPtr result);
+  static void DispatchAutocompleteMatchImageAvailable(
+      blink::WebLocalFrame* frame,
+      uint32_t match_index,
+      const std::string& image_url,
+      const std::string& data_url);
   static void DispatchInputCancel(blink::WebLocalFrame* frame);
   static void DispatchInputStart(blink::WebLocalFrame* frame);
   static void DispatchKeyCaptureChange(blink::WebLocalFrame* frame);

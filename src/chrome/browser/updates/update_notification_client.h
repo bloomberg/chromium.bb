@@ -9,9 +9,12 @@
 #include <set>
 #include <string>
 
+#include "base/bind.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_client.h"
 
 namespace updates {
+
+class UpdateNotificationService;
 
 // Client side code for Chrome Update notification, integrated with
 // notificaiton scheduler system.
@@ -20,8 +23,11 @@ class UpdateNotificationClient
  public:
   using NotificationData = notifications::NotificationData;
   using UserActionData = notifications::UserActionData;
+  using ThrottleConfig = notifications::ThrottleConfig;
+  using GetServiceCallback =
+      base::RepeatingCallback<UpdateNotificationService*()>;
 
-  UpdateNotificationClient();
+  explicit UpdateNotificationClient(GetServiceCallback callback);
   ~UpdateNotificationClient() override;
 
  private:
@@ -32,6 +38,9 @@ class UpdateNotificationClient
   void OnSchedulerInitialized(bool success,
                               std::set<std::string> guids) override;
   void OnUserAction(const UserActionData& action_data) override;
+  void GetThrottleConfig(ThrottleConfigCallback callback) override;
+
+  GetServiceCallback get_service_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateNotificationClient);
 };

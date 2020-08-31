@@ -29,7 +29,9 @@ class SharingDeviceSourceSync : public SharingDeviceSource,
   bool IsReady() override;
   std::unique_ptr<syncer::DeviceInfo> GetDeviceByGuid(
       const std::string& guid) override;
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> GetAllDevices() override;
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> GetDeviceCandidates(
+      sync_pb::SharingSpecificFields::EnabledFeatures required_feature)
+      override;
 
   // syncer::DeviceInfoTracker::Observer:
   void OnDeviceInfoChange() override;
@@ -51,6 +53,10 @@ class SharingDeviceSourceSync : public SharingDeviceSource,
   // order by last_updated_timestamp.
   std::vector<std::unique_ptr<syncer::DeviceInfo>> RenameAndDeduplicateDevices(
       std::vector<std::unique_ptr<syncer::DeviceInfo>> devices) const;
+
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> FilterDeviceCandidates(
+      std::vector<std::unique_ptr<syncer::DeviceInfo>> devices,
+      sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const;
 
   syncer::SyncService* sync_service_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;

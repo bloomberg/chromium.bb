@@ -307,8 +307,7 @@ fil{
         CG{"Congo (Republika)"}
         CI{"Ivory Coast"}
         CZ{"Czech Republic"}
-        SZ{"Swaziland"}
         TL{"East Timor"}
     }
-    Version{"36"}
+    Version{"37"}
 }

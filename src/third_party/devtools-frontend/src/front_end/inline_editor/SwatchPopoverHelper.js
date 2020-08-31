@@ -1,13 +1,17 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Common from '../common/common.js';
+import * as UI from '../ui/ui.js';
+
 /**
  * @unrestricted
  */
-export class SwatchPopoverHelper extends Common.Object {
+export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
-    this._popover = new UI.GlassPane();
+    this._popover = new UI.GlassPane.GlassPane();
     this._popover.registerRequiredCSS('inline_editor/swatchPopover.css');
     this._popover.setSizeBehavior(UI.GlassPane.SizeBehavior.MeasureContent);
     this._popover.setMarginBehavior(UI.GlassPane.MarginBehavior.Arrow);
@@ -23,7 +27,7 @@ export class SwatchPopoverHelper extends Common.Object {
    * @param {!Event} event
    */
   _onFocusOut(event) {
-    if (!event.relatedTarget || event.relatedTarget.isSelfOrDescendant(this._view.contentElement)) {
+    if (this._isHidden || !event.relatedTarget || event.relatedTarget.isSelfOrDescendant(this._view.contentElement)) {
       return;
     }
     this._hideProxy();
@@ -37,7 +41,7 @@ export class SwatchPopoverHelper extends Common.Object {
   }
 
   /**
-   * @param {!UI.Widget} view
+   * @param {!UI.Widget.Widget} view
    * @param {!Element} anchorElement
    * @param {function(boolean)=} hiddenCallback
    */
@@ -65,6 +69,10 @@ export class SwatchPopoverHelper extends Common.Object {
   }
 
   reposition() {
+    // This protects against trying to reposition the popover after it has been hidden.
+    if (this._isHidden) {
+      return;
+    }
     // Unbind "blur" listener to avoid reenterability: |popover.show()| will hide the popover and trigger it synchronously.
     this._view.contentElement.removeEventListener('focusout', this._boundFocusOut, false);
     this._view.show(this._popover.contentElement);
@@ -72,7 +80,7 @@ export class SwatchPopoverHelper extends Common.Object {
     this._popover.show(this._anchorElement.ownerDocument);
     this._view.contentElement.addEventListener('focusout', this._boundFocusOut, false);
     if (!this._focusRestorer) {
-      this._focusRestorer = new UI.WidgetFocusRestorer(this._view);
+      this._focusRestorer = new UI.Widget.WidgetFocusRestorer(this._view);
     }
   }
 
@@ -119,12 +127,3 @@ export class SwatchPopoverHelper extends Common.Object {
     }
   }
 }
-
-/* Legacy exported object */
-self.InlineEditor = self.InlineEditor || {};
-
-/* Legacy exported object */
-InlineEditor = InlineEditor || {};
-
-/** @constructor */
-InlineEditor.SwatchPopoverHelper = SwatchPopoverHelper;

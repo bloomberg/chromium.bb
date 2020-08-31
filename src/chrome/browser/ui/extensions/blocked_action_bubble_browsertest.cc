@@ -2,18 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/browser_action_test_util.h"
+#include "chrome/browser/ui/extensions/extension_action_test_helper.h"
+#include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
@@ -28,6 +33,7 @@ class ExtensionBlockedActionsBubbleTest
   void ShowUi(const std::string& name) override;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::AutoReset<bool> disable_toolbar_animations_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionBlockedActionsBubbleTest);
@@ -36,7 +42,11 @@ class ExtensionBlockedActionsBubbleTest
 ExtensionBlockedActionsBubbleTest::ExtensionBlockedActionsBubbleTest()
     : disable_toolbar_animations_(
           &ToolbarActionsBar::disable_animations_for_testing_,
-          true) {}
+          true) {
+  // This code path only works for the old toolbar. The new toolbar is
+  // exercised in extensions_menu_view_browsertest.cc.
+  scoped_feature_list_.InitAndDisableFeature(features::kExtensionsToolbarMenu);
+}
 ExtensionBlockedActionsBubbleTest::~ExtensionBlockedActionsBubbleTest() =
     default;
 
@@ -80,12 +90,14 @@ void ExtensionBlockedActionsBubbleTest::ShowUi(const std::string& name) {
     EXPECT_TRUE(observer.last_navigation_succeeded());
   }
 
-  ToolbarActionsBar* toolbar_actions_bar =
-      browser()->window()->GetToolbarActionsBar();
+  ToolbarActionsBar* const toolbar_actions_bar =
+      ToolbarActionsBar::FromBrowserWindow(browser()->window());
   ASSERT_EQ(1u, toolbar_actions_bar->GetActions().size());
-  EXPECT_TRUE(toolbar_actions_bar->GetActions()[0]->WantsToRun(tab));
+  auto* view_controller = static_cast<ExtensionActionViewController*>(
+      toolbar_actions_bar->GetActions()[0]);
+  EXPECT_TRUE(view_controller->HasBeenBlockedForTesting(tab));
 
-  BrowserActionTestUtil::Create(browser())->Press(0);
+  ExtensionActionTestHelper::Create(browser())->Press(0);
 
   EXPECT_TRUE(toolbar_actions_bar->is_showing_bubble());
 }

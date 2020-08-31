@@ -20,6 +20,7 @@
 #include "services/device/generic_sensor/linux/sensor_data_linux.h"
 #include "services/device/generic_sensor/linux/sensor_device_manager.h"
 #include "services/device/generic_sensor/platform_sensor_provider_linux.h"
+#include "services/device/generic_sensor/platform_sensor_util.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,7 +57,7 @@ constexpr double kMagnetometerOffsetValue = 3.0;
 constexpr double kMagnetometerScalingValue = 0.000001;
 
 void DeleteFile(const base::FilePath& file) {
-  EXPECT_TRUE(base::DeleteFile(file, true));
+  EXPECT_TRUE(base::DeleteFileRecursively(file));
 }
 
 void WriteValueToFile(const base::FilePath& path, double value) {
@@ -72,6 +73,14 @@ std::string ReadValueFromFile(const base::FilePath& path,
   if (!base::ReadFileToString(file_path, &new_read_value))
     return std::string();
   return new_read_value;
+}
+
+double RoundAccelerometerValue(double value) {
+  return RoundToMultiple(value, kAccelerometerRoundingMultiple);
+}
+
+double RoundGyroscopeValue(double value) {
+  return RoundToMultiple(value, kGyroscopeRoundingMultiple);
 }
 
 }  // namespace
@@ -216,11 +225,16 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
 
       uint32_t i = 0;
       for (const auto& file_names : data.sensor_file_names) {
+        // TODO(thakis): Figure out if it's intentional that the lop below
+        // runs just once.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunreachable-code"
         for (const auto& name : file_names) {
           base::FilePath sensor_file = base::FilePath(sensor_dir).Append(name);
           WriteValueToFile(sensor_file, values[i++]);
           break;
         }
+#pragma GCC diagnostic pop
       }
     }
   }
@@ -570,17 +584,23 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
 #if defined(OS_CHROMEOS)
   double scaling = base::kMeanGravityDouble / kAccelerometerScalingValue;
-  EXPECT_THAT(buffer->reading.accel.x, scaling * sensor_values[0]);
-  EXPECT_THAT(buffer->reading.accel.y, scaling * sensor_values[1]);
-  EXPECT_THAT(buffer->reading.accel.z, scaling * sensor_values[2]);
+  EXPECT_THAT(buffer->reading.accel.x,
+              RoundAccelerometerValue(scaling * sensor_values[0]));
+  EXPECT_THAT(buffer->reading.accel.y,
+              RoundAccelerometerValue(scaling * sensor_values[1]));
+  EXPECT_THAT(buffer->reading.accel.z,
+              RoundAccelerometerValue(scaling * sensor_values[2]));
 #else
   double scaling = kAccelerometerScalingValue;
   EXPECT_THAT(buffer->reading.accel.x,
-              -scaling * (sensor_values[0] + kAccelerometerOffsetValue));
+              RoundAccelerometerValue(
+                  -scaling * (sensor_values[0] + kAccelerometerOffsetValue)));
   EXPECT_THAT(buffer->reading.accel.y,
-              -scaling * (sensor_values[1] + kAccelerometerOffsetValue));
+              RoundAccelerometerValue(
+                  -scaling * (sensor_values[1] + kAccelerometerOffsetValue)));
   EXPECT_THAT(buffer->reading.accel.z,
-              -scaling * (sensor_values[2] + kAccelerometerOffsetValue));
+              RoundAccelerometerValue(
+                  -scaling * (sensor_values[2] + kAccelerometerOffsetValue)));
 #endif
 
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
@@ -678,17 +698,23 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckGyroscopeReadingConversion) {
 #if defined(OS_CHROMEOS)
   double scaling =
       gfx::DegToRad(base::kMeanGravityDouble) / kGyroscopeScalingValue;
-  EXPECT_THAT(buffer->reading.gyro.x, -scaling * sensor_values[0]);
-  EXPECT_THAT(buffer->reading.gyro.y, -scaling * sensor_values[1]);
-  EXPECT_THAT(buffer->reading.gyro.z, -scaling * sensor_values[2]);
+  EXPECT_THAT(buffer->reading.gyro.x,
+              RoundGyroscopeValue(-scaling * sensor_values[0]));
+  EXPECT_THAT(buffer->reading.gyro.y,
+              RoundGyroscopeValue(-scaling * sensor_values[1]));
+  EXPECT_THAT(buffer->reading.gyro.z,
+              RoundGyroscopeValue(-scaling * sensor_values[2]));
 #else
   double scaling = kGyroscopeScalingValue;
   EXPECT_THAT(buffer->reading.gyro.x,
-              scaling * (sensor_values[0] + kGyroscopeOffsetValue));
+              RoundGyroscopeValue(scaling *
+                                  (sensor_values[0] + kGyroscopeOffsetValue)));
   EXPECT_THAT(buffer->reading.gyro.y,
-              scaling * (sensor_values[1] + kGyroscopeOffsetValue));
+              RoundGyroscopeValue(scaling *
+                                  (sensor_values[1] + kGyroscopeOffsetValue)));
   EXPECT_THAT(buffer->reading.gyro.z,
-              scaling * (sensor_values[2] + kGyroscopeOffsetValue));
+              RoundGyroscopeValue(scaling *
+                                  (sensor_values[2] + kGyroscopeOffsetValue)));
 #endif
 
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));

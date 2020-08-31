@@ -44,9 +44,12 @@ class CSSDefaultStyleSheets final
   CSSDefaultStyleSheets();
 
   bool EnsureDefaultStyleSheetsForElement(const Element&);
+  bool EnsureDefaultStyleSheetForXrOverlay();
   void EnsureDefaultStyleSheetForFullscreen();
 
   RuleSet* DefaultStyle() { return default_style_.Get(); }
+  RuleSet* DefaultMathMLStyle() { return default_mathml_style_.Get(); }
+  RuleSet* DefaultSVGStyle() { return default_svg_style_.Get(); }
   RuleSet* DefaultQuirksStyle() { return default_quirks_style_.Get(); }
   RuleSet* DefaultPrintStyle() { return default_print_style_.Get(); }
   RuleSet* DefaultViewSourceStyle();
@@ -87,12 +90,14 @@ class CSSDefaultStyleSheets final
     return media_controls_style_sheet_loader_.get();
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void InitializeDefaultStyles();
 
   Member<RuleSet> default_style_;
+  Member<RuleSet> default_mathml_style_;
+  Member<RuleSet> default_svg_style_;
   Member<RuleSet> default_quirks_style_;
   Member<RuleSet> default_print_style_;
   Member<RuleSet> default_view_source_style_;
@@ -108,6 +113,7 @@ class CSSDefaultStyleSheets final
   Member<StyleSheetContents> media_controls_style_sheet_;
   Member<StyleSheetContents> text_track_style_sheet_;
   Member<StyleSheetContents> fullscreen_style_sheet_;
+  Member<StyleSheetContents> webxr_overlay_style_sheet_;
 
   std::unique_ptr<UAStyleSheetLoader> media_controls_style_sheet_loader_;
   DISALLOW_COPY_AND_ASSIGN(CSSDefaultStyleSheets);

@@ -47,7 +47,8 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
                        GetLocalChangesCallback callback) override;
   void OnCommitCompleted(
       const sync_pb::ModelTypeState& type_state,
-      const syncer::CommitResponseDataList& response_list) override;
+      const syncer::CommitResponseDataList& committed_response_list,
+      const syncer::FailedCommitResponseDataList& error_response_list) override;
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
                         syncer::UpdateResponseDataList updates) override;
 
@@ -108,9 +109,7 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
 
   // Instantiates the required objects to track metadata and starts observing
   // changes from the bookmark model.
-  void StartTrackingMetadata(
-      std::vector<NodeMetadataPair> nodes_metadata,
-      std::unique_ptr<sync_pb::ModelTypeState> model_type_state);
+  void StartTrackingMetadata();
   void StopTrackingMetadata();
 
   // Creates a DictionaryValue for local and remote debugging information about

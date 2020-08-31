@@ -29,8 +29,8 @@ const patternRegExp = new RegExp(
     '((http|https|\\*)://)?' +
     // Include subdomains specifier; optional.
     '(\\*\\.)?' +
-    // Hostname, required.
-    '([a-z0-9\\.-]+\\.[a-z0-9]+)' +
+    // Hostname or localhost, required.
+    '([a-z0-9\\.-]+\\.[a-z0-9]+|localhost)' +
     // Port, optional.
     '(:[0-9]+)?' +
     // Path, optional but if present must be '/' or '/*'.
@@ -95,7 +95,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     if (this.currentSite !== null && this.currentSite !== undefined) {
       this.site_ = this.currentSite;
       this.validate_();
@@ -104,7 +104,7 @@ Polymer({
   },
 
   /** @return {boolean} */
-  isOpen: function() {
+  isOpen() {
     return this.$.dialog.open;
   },
 
@@ -112,10 +112,10 @@ Polymer({
    * Validates that the pattern entered is valid.
    * @private
    */
-  validate_: function() {
+  validate_() {
     // If input is empty, disable the action button, but don't show the red
     // invalid message.
-    if (this.site_.trim().length == 0) {
+    if (this.site_.trim().length === 0) {
       this.inputInvalid_ = false;
       return;
     }
@@ -128,7 +128,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeDialogTitle_: function() {
+  computeDialogTitle_() {
     const stringId = this.currentSite === null ? 'runtimeHostsDialogTitle' :
                                                  'hostPermissionsEdit';
     return loadTimeData.getString(stringId);
@@ -138,22 +138,22 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeSubmitButtonDisabled_: function() {
+  computeSubmitButtonDisabled_() {
     return this.inputInvalid_ || this.site_ === undefined ||
-        this.site_.trim().length == 0;
+        this.site_.trim().length === 0;
   },
 
   /**
    * @return {string}
    * @private
    */
-  computeSubmitButtonLabel_: function() {
+  computeSubmitButtonLabel_() {
     const stringId = this.currentSite === null ? 'add' : 'save';
     return loadTimeData.getString(stringId);
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.$.dialog.cancel();
   },
 
@@ -162,7 +162,7 @@ Polymer({
    * the dialog).
    * @private
    */
-  onSubmitTap_: function() {
+  onSubmitTap_() {
     if (this.currentSite !== null) {
       this.handleEdit_();
     } else {
@@ -174,7 +174,7 @@ Polymer({
    * Handles adding a new site entry.
    * @private
    */
-  handleAdd_: function() {
+  handleAdd_() {
     assert(!this.currentSite);
 
     if (this.updateHostAccess) {
@@ -189,14 +189,14 @@ Polymer({
    * Handles editing an existing site entry.
    * @private
    */
-  handleEdit_: function() {
+  handleEdit_() {
     assert(this.currentSite);
     assert(
         !this.updateHostAccess,
         'Editing host permissions should only be possible if the host ' +
             'access is already set to specific sites.');
 
-    if (this.currentSite == this.site_) {
+    if (this.currentSite === this.site_) {
       // No change in values, so no need to update anything.
       this.$.dialog.close();
       return;
@@ -215,7 +215,7 @@ Polymer({
    * closes the dialog; otherwise displays the invalid input message.
    * @private
    */
-  addPermission_: function() {
+  addPermission_() {
     const pattern = getPatternFromSite(this.site_);
     this.delegate.addRuntimeHostPermission(this.itemId, pattern)
         .then(

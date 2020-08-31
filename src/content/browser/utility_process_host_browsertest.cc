@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_termination_info.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_service.mojom.h"
@@ -68,8 +69,8 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     host->SetMetricsName(kTestProcessName);
 #if defined(OS_WIN)
     if (elevated)
-      host->SetSandboxType(service_manager::SandboxType::
-                               SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES);
+      host->SetSandboxType(
+          service_manager::SandboxType::kNoSandboxAndElevatedPrivileges);
 #endif
     EXPECT_TRUE(host->Start());
 

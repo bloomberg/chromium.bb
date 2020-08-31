@@ -8,10 +8,11 @@
 #include <list>
 #include <unordered_map>
 
-#include "content/renderer/input/scoped_web_input_event_with_latency_info.h"
+#include "content/common/content_export.h"
+#include "third_party/blink/public/common/input/web_coalesced_input_event.h"
+#include "third_party/blink/public/platform/input/input_predictor.h"
+#include "third_party/blink/public/platform/input/predictor_factory.h"
 #include "ui/events/blink/blink_features.h"
-#include "ui/events/blink/prediction/input_predictor.h"
-#include "ui/events/blink/prediction/predictor_factory.h"
 #include "ui/events/event.h"
 
 using blink::WebInputEvent;
@@ -38,7 +39,7 @@ class CONTENT_EXPORT InputEventPrediction {
                     base::TimeTicks frame_time);
 
   // Initialize predictor for different pointer.
-  std::unique_ptr<ui::InputPredictor> CreatePredictor() const;
+  std::unique_ptr<blink::InputPredictor> CreatePredictor() const;
 
  private:
   friend class InputEventPredictionTest;
@@ -53,7 +54,7 @@ class CONTENT_EXPORT InputEventPrediction {
   // UpdateSinglePointer for each pointer.
   void UpdatePrediction(const WebInputEvent& event);
   // Cast events from WebInputEvent to WebPointerProperties. Call
-  // ResamplingSinglePointer for each poitner.
+  // ResamplingSinglePointer for each pointer.
   void ApplyResampling(base::TimeTicks frame_time, WebInputEvent* event);
   // Reset predictor for each pointer in WebInputEvent by  ResetSinglePredictor.
   void ResetPredictor(const WebInputEvent& event);
@@ -67,7 +68,7 @@ class CONTENT_EXPORT InputEventPrediction {
       const WebPointerProperties& event) const;
 
   // Returns a pointer to the predictor for given WebPointerProperties.
-  ui::InputPredictor* GetPredictor(const WebPointerProperties& event) const;
+  blink::InputPredictor* GetPredictor(const WebPointerProperties& event) const;
 
   // Get single predictor based on event id and type, and update the predictor
   // with new events coords.
@@ -84,13 +85,13 @@ class CONTENT_EXPORT InputEventPrediction {
   // predictor, for other pointer type, remove it from mapping.
   void ResetSinglePredictor(const WebPointerProperties& event);
 
-  std::unordered_map<ui::PointerId, std::unique_ptr<ui::InputPredictor>>
+  std::unordered_map<ui::PointerId, std::unique_ptr<blink::InputPredictor>>
       pointer_id_predictor_map_;
-  std::unique_ptr<ui::InputPredictor> mouse_predictor_;
+  std::unique_ptr<blink::InputPredictor> mouse_predictor_;
 
   // Store the field trial parameter used for choosing different types of
   // predictor.
-  ui::input_prediction::PredictorType selected_predictor_type_;
+  blink::input_prediction::PredictorType selected_predictor_type_;
 
   bool enable_resampling_ = false;
 

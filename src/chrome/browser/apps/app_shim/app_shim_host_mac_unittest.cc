@@ -110,7 +110,12 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
 
 const char kTestAppId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kTestProfileDir[] = "Profile 1";
-const GURL kTestUrl("https://example.com");
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL TestUrl() {
+  return GURL("https://example.com");
+}
 
 class AppShimHostTest : public testing::Test,
                         public AppShimHostBootstrap::Client,
@@ -130,7 +135,7 @@ class AppShimHostTest : public testing::Test,
     auto app_shim_info = chrome::mojom::AppShimInfo::New();
     app_shim_info->profile_path = base::FilePath(kTestProfileDir);
     app_shim_info->app_id = kTestAppId;
-    app_shim_info->app_url = kTestUrl;
+    app_shim_info->app_url = TestUrl();
     app_shim_info->launch_type = launch_type;
     // Ownership of TestingAppShimHostBootstrap will be transferred to its host.
     (new TestingAppShimHostBootstrap(shim_->GetHostBootstrapReceiver()))
@@ -172,11 +177,9 @@ class AppShimHostTest : public testing::Test,
     host_ = nullptr;
     ++close_count_;
   }
-  void OnShimFocus(AppShimHost* host,
-                   chrome::mojom::AppShimFocusType focus_type,
-                   const std::vector<base::FilePath>& file) override {
-    ++focus_count_;
-  }
+  void OnShimFocus(AppShimHost* host) override { ++focus_count_; }
+  void OnShimOpenedFiles(AppShimHost* host,
+                         const std::vector<base::FilePath>& files) override {}
   void OnShimSelectedProfile(AppShimHost* host,
                              const base::FilePath& profile_path) override {}
 
@@ -220,8 +223,7 @@ TEST_F(AppShimHostTest, TestOnShimConnectedWithHandler) {
   EXPECT_EQ(0, focus_count_);
   EXPECT_EQ(0, close_count_);
 
-  GetMojoHost()->FocusApp(chrome::mojom::AppShimFocusType::kNormal,
-                          std::vector<base::FilePath>());
+  GetMojoHost()->FocusApp();
   RunUntilIdle();
   EXPECT_EQ(1, focus_count_);
 

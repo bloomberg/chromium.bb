@@ -6,7 +6,9 @@
 
 #include <vector>
 
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -62,22 +64,6 @@ int RegisterCustomEventType() {
   return ++g_custom_event_types;
 }
 
-bool IsValidTimebase(base::TimeTicks now, base::TimeTicks timestamp) {
-  int64_t delta = (now - timestamp).InMilliseconds();
-  return delta >= 0 && delta <= 60 * 1000;
-}
-
-void ValidateEventTimeClock(base::TimeTicks* timestamp) {
-  // Some fraction of devices, across all platforms provide bogus event
-  // timestamps. See https://crbug.com/650338#c1. Correct timestamps which are
-  // clearly bogus.
-  // TODO(861855): Replace this with an approach that doesn't require an extra
-  // read of the current time per event.
-  base::TimeTicks now = EventTimeForNow();
-  if (!IsValidTimebase(now, *timestamp))
-    *timestamp = now;
-}
-
 bool ShouldDefaultToNaturalScroll() {
   return GetInternalDisplayTouchSupport() ==
          display::Display::TouchSupport::AVAILABLE;
@@ -127,6 +113,21 @@ void ComputeEventLatencyOS(const PlatformEvent& native_event) {
           "Event.Latency.OS.TOUCH_RELEASED",
           base::saturated_cast<int>(delta.InMicroseconds()), 1, 1000000, 50);
       return;
+    case ET_TOUCH_CANCELLED:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Latency.OS.TOUCH_CANCELLED",
+          base::saturated_cast<int>(delta.InMicroseconds()), 1, 1000000, 50);
+      return;
+    case ET_KEY_PRESSED:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Latency.OS.KEY_PRESSED",
+          base::saturated_cast<int>(delta.InMicroseconds()), 1, 1000000, 50);
+      return;
+    case ET_MOUSE_PRESSED:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Latency.OS.MOUSE_PRESSED",
+          base::saturated_cast<int>(delta.InMicroseconds()), 1, 1000000, 50);
+      return;
     default:
       return;
   }
@@ -144,7 +145,6 @@ void ConvertEventLocationToTargetWindowLocation(
   gfx::PointF location_in_pixel_in_host =
       located_event->location_f() + gfx::Vector2dF(offset);
   located_event->set_location_f(location_in_pixel_in_host);
-  located_event->set_root_location_f(location_in_pixel_in_host);
 }
 
 const char* EventTypeName(EventType type) {

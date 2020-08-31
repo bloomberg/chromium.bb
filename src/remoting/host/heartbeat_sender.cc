@@ -13,6 +13,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/grpc_support/grpc_async_unary_request.h"
@@ -25,8 +26,6 @@
 #include "remoting/host/server_log_entry_host.h"
 #include "remoting/proto/remoting/v1/directory_service.grpc.pb.h"
 #include "remoting/signaling/ftl_signal_strategy.h"
-#include "remoting/signaling/log_to_server.h"
-#include "remoting/signaling/server_log_entry.h"
 #include "remoting/signaling/signaling_address.h"
 
 namespace remoting {
@@ -127,25 +126,18 @@ void HeartbeatSender::HeartbeatClientImpl::CancelPendingRequests() {
 
 // end of HeartbeatSender::HeartbeatClientImpl
 
-HeartbeatSender::HeartbeatSender(
-    base::OnceClosure on_heartbeat_successful_callback,
-    base::OnceClosure on_unknown_host_id_error,
-    base::OnceClosure on_auth_error,
-    const std::string& host_id,
-    SignalStrategy* signal_strategy,
-    OAuthTokenGetter* oauth_token_getter,
-    LogToServer* log_to_server)
-    : on_heartbeat_successful_callback_(
-          std::move(on_heartbeat_successful_callback)),
-      on_unknown_host_id_error_(std::move(on_unknown_host_id_error)),
-      on_auth_error_(std::move(on_auth_error)),
+HeartbeatSender::HeartbeatSender(Delegate* delegate,
+                                 const std::string& host_id,
+                                 SignalStrategy* signal_strategy,
+                                 OAuthTokenGetter* oauth_token_getter)
+    : delegate_(delegate),
       host_id_(host_id),
       signal_strategy_(signal_strategy),
       client_(std::make_unique<HeartbeatClientImpl>(oauth_token_getter)),
-      log_to_server_(log_to_server),
       oauth_token_getter_(oauth_token_getter),
       backoff_(&kBackoffPolicy) {
-  DCHECK(log_to_server_);
+  DCHECK(delegate_);
+  DCHECK(signal_strategy_);
 
   signal_strategy_->AddListener(this);
   OnSignalStrategyStateChange(signal_strategy_->GetState());
@@ -222,6 +214,21 @@ void HeartbeatSender::SendHeartbeat() {
     return;
   }
 
+  base::TimeDelta last_reported_active_duration =
+      signal_strategy_->signaling_tracker()
+          .GetLastReportedChannelActiveDuration();
+  if (!signal_strategy_->signaling_tracker().IsChannelActive()) {
+    LOG(ERROR) << "Signaling channel appears to be inactive but it claims it's "
+                  "connected. Last reported active "
+               << last_reported_active_duration << " ago.";
+    signal_strategy_->Disconnect();
+    return;
+  } else {
+    VLOG(1)
+        << "About to send heartbeat. Signaling channel last reported active "
+        << last_reported_active_duration << " ago.";
+  }
+
   // Drop previous heartbeat and timer so that it doesn't interfere with the
   // current one.
   client_->CancelPendingRequests();
@@ -230,11 +237,6 @@ void HeartbeatSender::SendHeartbeat() {
   client_->Heartbeat(
       CreateHeartbeatRequest(),
       base::BindOnce(&HeartbeatSender::OnResponse, base::Unretained(this)));
-
-  // Send a heartbeat log
-  std::unique_ptr<ServerLogEntry> log_entry = MakeLogEntryForHeartbeat();
-  AddHostFieldsToLogEntry(log_entry.get());
-  log_to_server_->Log(*log_entry);
 }
 
 void HeartbeatSender::OnResponse(const grpc::Status& status,
@@ -242,12 +244,12 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (status.ok()) {
-    heartbeat_succeeded_ = true;
     backoff_.Reset();
 
     // Notify listener of the first successful heartbeat.
-    if (on_heartbeat_successful_callback_) {
-      std::move(on_heartbeat_successful_callback_).Run();
+    if (!initial_heartbeat_sent_) {
+      delegate_->OnFirstHeartbeatSuccessful();
+      initial_heartbeat_sent_ = true;
     }
 
     // Notify caller of SetHostOfflineReason that we got an ack and don't
@@ -255,6 +257,10 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
     if (!host_offline_reason_.empty()) {
       OnHostOfflineReasonAck();
       return;
+    }
+
+    if (response.has_remote_command()) {
+      OnRemoteCommand(response.remote_command());
     }
   } else {
     backoff_.InformOfRequest(false);
@@ -270,20 +276,16 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
   // get a "host ID not found" error, that's not a good enough reason to
   // exit.
   if (status.error_code() == grpc::StatusCode::NOT_FOUND &&
-      (heartbeat_succeeded_ ||
+      (initial_heartbeat_sent_ ||
        (backoff_.failure_count() > kMaxResendOnHostNotFoundCount))) {
-    if (on_unknown_host_id_error_) {
-      std::move(on_unknown_host_id_error_).Run();
-    }
+    delegate_->OnHostNotFound();
     return;
   }
 
   if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
     oauth_token_getter_->InvalidateCache();
     if (backoff_.failure_count() > kMaxResendOnUnauthenticatedCount) {
-      if (on_auth_error_) {
-        std::move(on_auth_error_).Run();
-      }
+      delegate_->OnAuthFailed();
       return;
     }
   }
@@ -319,25 +321,36 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
                          &HeartbeatSender::SendHeartbeat);
 }
 
+void HeartbeatSender::OnRemoteCommand(
+    apis::v1::HeartbeatResponse::RemoteCommand remote_command) {
+  HOST_LOG << "Received remote command: "
+           << apis::v1::HeartbeatResponse::RemoteCommand_Name(remote_command)
+           << "(" << remote_command << ")";
+  switch (remote_command) {
+    case apis::v1::HeartbeatResponse::RESTART_HOST:
+      delegate_->OnRemoteRestartHost();
+      break;
+    default:
+      LOG(WARNING) << "Unknown remote command: " << remote_command;
+      break;
+  }
+}
+
 apis::v1::HeartbeatRequest HeartbeatSender::CreateHeartbeatRequest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   apis::v1::HeartbeatRequest heartbeat;
-  std::string signaling_id;
   heartbeat.set_tachyon_id(signal_strategy_->GetLocalAddress().id());
   heartbeat.set_host_id(host_id_);
   if (!host_offline_reason_.empty()) {
     heartbeat.set_host_offline_reason(host_offline_reason_);
   }
-  // Append host version.
   heartbeat.set_host_version(STRINGIZE(VERSION));
-  // If we have not recorded a heartbeat success, continue sending host OS info.
-  if (!heartbeat_succeeded_) {
-    // Append host OS name.
-    heartbeat.set_host_os_name(GetHostOperatingSystemName());
-    // Append host OS version.
-    heartbeat.set_host_os_version(GetHostOperatingSystemVersion());
-  }
+  heartbeat.set_host_os_name(GetHostOperatingSystemName());
+  heartbeat.set_host_os_version(GetHostOperatingSystemVersion());
+  heartbeat.set_host_cpu_type(base::SysInfo::OperatingSystemArchitecture());
+  heartbeat.set_is_initial_heartbeat(!initial_heartbeat_sent_);
+
   return heartbeat;
 }
 

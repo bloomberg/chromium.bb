@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_app_interface.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_constants.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -29,12 +30,11 @@
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/reload_type.h"
+#include "net/base/network_change_notifier.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
-
-#include "net/base/network_change_notifier.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -62,7 +62,6 @@ const CFTimeInterval kSnackbarAppearanceTimeout = 5;
 // kSnackbarDisappearanceTimeout = MDCSnackbarMessageDurationMax + 1
 const CFTimeInterval kSnackbarDisappearanceTimeout = 10 + 1;
 const CFTimeInterval kDelayForSlowWebServer = 4;
-const CFTimeInterval kLoadOfflineTimeout = kDelayForSlowWebServer + 1;
 const CFTimeInterval kLongPressDuration = 1.0;
 const CFTimeInterval kDistillationTimeout = 5;
 const CFTimeInterval kServerOperationDelay = 1;
@@ -241,9 +240,8 @@ void AddLotOfEntriesAndEnterEdit() {
   TapToolbarButtonWithID(kReadingListToolbarEditButtonID);
 }
 
-// Adds a read and an unread entry to the model, opens the reading list menu and
-// enter edit mode.
-void AddEntriesAndEnterEdit() {
+// Adds 2 read and 2 unread entries to the model, opens the reading list menu.
+void AddEntriesAndOpenReadingList() {
   GREYAssertNil(
       [ReadingListAppInterface addEntryWithURL:[NSURL URLWithString:kReadURL]
                                          title:kReadTitle
@@ -266,7 +264,10 @@ void AddEntriesAndEnterEdit() {
       @"Unable to add Reading List item");
 
   OpenReadingList();
+}
 
+void AddEntriesAndEnterEdit() {
+  AddEntriesAndOpenReadingList();
   TapToolbarButtonWithID(kReadingListToolbarEditButtonID);
 }
 
@@ -317,9 +318,11 @@ void WaitForDistillation() {
   ConditionBlock wait_for_distillation_date = ^{
     NSError* error = nil;
     [[EarlGrey
-        selectElementWithMatcher:grey_accessibilityID(
-                                     kTableViewURLCellFaviconBadgeViewID)]
-        assertWithMatcher:grey_sufficientlyVisible()
+        selectElementWithMatcher:grey_allOf(
+                                     grey_accessibilityID(
+                                         kTableViewURLCellFaviconBadgeViewID),
+                                     grey_sufficientlyVisible(), nil)]
+        assertWithMatcher:grey_notNil()
                     error:&error];
     return error == nil;
   };
@@ -368,37 +371,8 @@ void OpenPageSecurityInfoBubble() {
       tapToolsMenuButton:grey_accessibilityID(kToolsMenuSiteInformation)];
 }
 
-// Waits for a static html view containing |text|. If the condition is not met
-// within a timeout, a GREYAssert is induced.
-void WaitForStaticHtmlViewContainingText(NSString* text) {
-  bool has_static_view =
-      base::test::ios::WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-        return [ReadingListAppInterface staticHTMLViewContainingText:text];
-      });
-
-  NSString* error_description = [NSString
-      stringWithFormat:@"Failed to find static html view containing %@", text];
-  GREYAssert(has_static_view, error_description);
-}
-
-// Waits for there to be no static html view, or a static html view that does
-// not contain |text|. If the condition is not met within a timeout, a
-// GREYAssert is induced.
-void WaitForStaticHtmlViewNotContainingText(NSString* text) {
-  bool no_static_view =
-      base::test::ios::WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-        return ![ReadingListAppInterface staticHTMLViewContainingText:text];
-      });
-
-  NSString* error_description = [NSString
-      stringWithFormat:@"Failed, there was a static html view containing %@",
-                       text];
-  GREYAssert(no_static_view, error_description);
-}
-
-void AssertIsShowingDistillablePageNoNativeContent(
-    bool online,
-    const GURL& distillable_url) {
+// Tests that the correct version of kDistillableURL is displayed.
+void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   [ChromeEarlGrey waitForWebStateContainingText:kContentToKeep];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
@@ -418,60 +392,9 @@ void AssertIsShowingDistillablePageNoNativeContent(
   [[EarlGrey selectElementWithMatcher:
                  grey_allOf(chrome_test_util::PageSecurityInfoIndicator(),
                             chrome_test_util::ImageViewWithImageNamed(
-                                @"location_bar_offline"),
+                                @"location_bar_connection_offline"),
                             nil)]
       assertWithMatcher:online ? grey_nil() : grey_notNil()];
-}
-
-void AssertIsShowingDistillablePageNativeContent(bool online,
-                                                 const GURL& distillable_url) {
-  NSString* contentToKeep = base::SysUTF8ToNSString(kContentToKeep);
-  // There will be multiple reloads, wait for the page to be displayed.
-  if (online) {
-    // Due to the reloads, a timeout longer than what is provided in
-    // [ChromeEarlGrey waitForWebStateContainingText] is required, so call
-    // WebViewContainingText directly.
-    GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                   kLoadOfflineTimeout,
-                   ^bool {
-                     return [ChromeEarlGreyAppInterface
-                         webStateContainsText:@(kContentToKeep)];
-                   }),
-               @"Waiting for online page.");
-  } else {
-    WaitForStaticHtmlViewContainingText(contentToKeep);
-  }
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          distillable_url.GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  // Test that the offline and online pages are properly displayed.
-  if (online) {
-    [ChromeEarlGrey
-        waitForWebStateContainingText:base::SysNSStringToUTF8(contentToKeep)];
-    WaitForStaticHtmlViewNotContainingText(contentToKeep);
-  } else {
-    [ChromeEarlGrey waitForWebStateNotContainingText:kContentToKeep];
-    WaitForStaticHtmlViewContainingText(contentToKeep);
-  }
-
-  // Test the presence of the omnibox offline chip.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(chrome_test_util::PageSecurityInfoIndicator(),
-                            chrome_test_util::ImageViewWithImageNamed(
-                                @"location_bar_offline"),
-                            nil)]
-      assertWithMatcher:online ? grey_nil() : grey_notNil()];
-}
-
-// Tests that the correct version of kDistillableURL is displayed.
-void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
-  if ([ReadingListAppInterface isOfflinePageWithoutNativeContentEnabled]) {
-    return AssertIsShowingDistillablePageNoNativeContent(online,
-                                                         distillable_url);
-  }
-  return AssertIsShowingDistillablePageNativeContent(online, distillable_url);
 }
 
 }  // namespace
@@ -634,12 +557,9 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   [ChromeEarlGreyAppInterface startReloading];
   AssertIsShowingDistillablePage(false, distillableURL);
 
-  // TODO(crbug.com/954248) This DCHECK's (but works) with slimnav disabled.
-  if ([ChromeEarlGrey isSlimNavigationManagerEnabled]) {
-    [ChromeEarlGrey goBack];
-    [ChromeEarlGrey goForward];
-    AssertIsShowingDistillablePage(false, distillableURL);
-  }
+  [ChromeEarlGrey goBack];
+  [ChromeEarlGrey goForward];
+  AssertIsShowingDistillablePage(false, distillableURL);
 
   // Start server to reload online error.
   self.serverRespondsWithContent = YES;
@@ -719,7 +639,15 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
 // Tests that only the "Cancel", "Delete" and "Mark Unread" buttons are showing
 // when not editing.
-- (void)testVisibleButtonsOnlyReadEntrySelected {
+// TODO(crbug.com/1036071): EG1 Test flaky on device.
+#if defined(CHROME_EARL_GREY_1) && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testVisibleButtonsOnlyReadEntrySelected \
+  DISABLED_testVisibleButtonsOnlyReadEntrySelected
+#else
+#define MAYBE_testVisibleButtonsOnlyReadEntrySelected \
+  testVisibleButtonsOnlyReadEntrySelected
+#endif
+- (void)MAYBE_testVisibleButtonsOnlyReadEntrySelected {
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
 
@@ -728,6 +656,52 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   AssertToolbarButtonVisibleWithID(kReadingListToolbarDeleteButtonID);
   AssertToolbarButtonVisibleWithID(kReadingListToolbarCancelButtonID);
   AssertToolbarMarkButtonText(IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON);
+}
+
+// Tests that the "Cancel", "Edit" and "Mark Unread" buttons are not visible
+// after delete (using swipe).
+// TODO(crbug.com/1036071): EG1 Test flaky on device.
+#if defined(CHROME_EARL_GREY_1) && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testVisibleButtonsAfterSwipeDeletion \
+  DISABLED_testVisibleButtonsAfterSwipeDeletion
+#else
+#define MAYBE_testVisibleButtonsAfterSwipeDeletion \
+  testVisibleButtonsAfterSwipeDeletion
+#endif
+- (void)MAYBE_testVisibleButtonsAfterSwipeDeletion {
+  // Reading list's view width is narrower on Ipad Air (iOS 12) than on other
+  // devices. The grey_swipeSlowInDirection action deletes the element instead
+  // of displaying the 'Delete' button.
+  if (@available(iOS 13, *)) {
+  } else {
+    if (IsIPadIdiom())
+      EARL_GREY_TEST_SKIPPED(@"Test skipped on Ipad Air 2, iOS12.");
+  }
+
+  // TODO(crbug.com/1046978): Test fails on iOS 13.3 iPad
+  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnOrLater(13, 3, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 13.3 iPad and later.");
+  }
+
+  AddEntriesAndOpenReadingList();
+
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              chrome_test_util::StaticTextWithAccessibilityLabel(kReadTitle),
+              grey_ancestor(grey_kindOfClassName(@"TableViewURLCell")),
+              grey_sufficientlyVisible(), nil)]
+      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_text(@"Delete"),
+                                          grey_ancestor(grey_kindOfClassName(
+                                              @"UISwipeActionPullView")),
+                                          nil)] performAction:grey_tap()];
+
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarMarkButtonID);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarCancelButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarEditButtonID);
 }
 
 // Tests that only the "Cancel", "Delete" and "Mark Read" buttons are showing
@@ -744,7 +718,15 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
 // Tests that only the "Cancel", "Delete" and "Mark…" buttons are showing when
 // not editing.
-- (void)testVisibleButtonsMixedEntriesSelected {
+// TODO(crbug.com/1036071): EG1 Test flaky on device.
+#if defined(CHROME_EARL_GREY_1) && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testVisibleButtonsMixedEntriesSelected \
+  DISABLED_testVisibleButtonsMixedEntriesSelected
+#else
+#define MAYBE_testVisibleButtonsMixedEntriesSelected \
+  testVisibleButtonsMixedEntriesSelected
+#endif
+- (void)MAYBE_testVisibleButtonsMixedEntriesSelected {
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
   TapEntry(kUnreadTitle);
@@ -759,10 +741,18 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // Tests the deletion of selected entries.
 - (void)testDeleteEntries {
   AddEntriesAndEnterEdit();
-
   TapEntry(kReadTitle2);
 
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarDeleteButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarCancelButtonID);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarEditButtonID);
+
   TapToolbarButtonWithID(kReadingListToolbarDeleteButtonID);
+
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarMarkButtonID);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarDeleteButtonID);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarCancelButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarEditButtonID);
 
   AssertEntryVisible(kReadTitle);
   AssertEntryNotVisible(kReadTitle2);
@@ -772,6 +762,27 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
                  static_cast<long>(kNumberReadEntries - 1));
   XCTAssertEqual([ReadingListAppInterface unreadEntriesCount],
                  kNumberUnreadEntries);
+
+  TapToolbarButtonWithID(kReadingListToolbarEditButtonID);
+  TapEntry(kReadTitle);
+  TapToolbarButtonWithID(kReadingListToolbarDeleteButtonID);
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_text(@"Read"),
+                                   grey_ancestor(grey_kindOfClassName(
+                                       @"_UITableViewHeaderFooterContentView")),
+                                   nil)] assertWithMatcher:grey_nil()];
+
+  TapToolbarButtonWithID(kReadingListToolbarEditButtonID);
+  TapEntry(kUnreadTitle);
+  TapEntry(kUnreadTitle2);
+  TapToolbarButtonWithID(kReadingListToolbarDeleteButtonID);
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_text(@"Unread"),
+                                   grey_ancestor(grey_kindOfClassName(
+                                       @"_UITableViewHeaderFooterContentView")),
+                                   nil)] assertWithMatcher:grey_nil()];
 }
 
 // Tests the deletion of all read entries.
@@ -857,7 +868,13 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 }
 
 // Selects an read entry and mark it as unread.
-- (void)testMarkEntriesUnread {
+// TODO(crbug.com/1036071): EG1 Test flaky on device.
+#if defined(CHROME_EARL_GREY_1) && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testMarkEntriesUnread DISABLED_testMarkEntriesUnread
+#else
+#define MAYBE_testMarkEntriesUnread testMarkEntriesUnread
+#endif
+- (void)MAYBE_testMarkEntriesUnread {
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
 
@@ -872,7 +889,13 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 }
 
 // Selects read and unread entries and mark them as unread.
-- (void)testMarkMixedEntriesUnread {
+// TODO(crbug.com/1036071): EG1 Test flaky on device.
+#if defined(CHROME_EARL_GREY_1) && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testMarkMixedEntriesUnread DISABLED_testMarkMixedEntriesUnread
+#else
+#define MAYBE_testMarkMixedEntriesUnread testMarkMixedEntriesUnread
+#endif
+- (void)MAYBE_testMarkMixedEntriesUnread {
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
   TapEntry(kUnreadTitle);

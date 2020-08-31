@@ -6,13 +6,15 @@
 
 #include <memory>
 
+#include "base/check.h"
 #include "base/debug/leak_annotations.h"
 #include "base/file_version_info.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/user_data_dir.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/version_info/channel.h"
 
 NotificationHelperCrashReporterClient::NotificationHelperCrashReporterClient() =
@@ -88,11 +90,6 @@ bool NotificationHelperCrashReporterClient::ShouldShowRestartDialog(
 
 bool NotificationHelperCrashReporterClient::AboutToRestart() {
   // The notification_helper should never be restarted after a crash.
-  return false;
-}
-
-bool NotificationHelperCrashReporterClient::GetDeferredUploadsSupported(
-    bool is_per_user_install) {
   return false;
 }
 

@@ -12,6 +12,7 @@
 #include <tuple>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +21,7 @@
 #include "components/password_manager/core/browser/android_affiliation/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
+#include "components/password_manager/core/browser/leak_detection/mock_leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -27,7 +29,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,20 +55,10 @@ class MockLeakDetectionCheck : public LeakDetectionCheck {
   MOCK_METHOD3(Start, void(const GURL&, base::string16, base::string16));
 };
 
-class MockLeakDetectionCheckFactory : public LeakDetectionCheckFactory {
- public:
-  MOCK_CONST_METHOD3(TryCreateLeakCheck,
-                     std::unique_ptr<LeakDetectionCheck>(
-                         LeakDetectionDelegateInterface*,
-                         signin::IdentityManager*,
-                         scoped_refptr<network::SharedURLLoaderFactory>));
-};
-
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MOCK_CONST_METHOD1(IsSavingAndFillingEnabled, bool(const GURL&));
   MOCK_CONST_METHOD1(IsFillingEnabled, bool(const GURL&));
-  MOCK_METHOD0(OnCredentialManagerUsed, bool());
   MOCK_CONST_METHOD0(IsIncognito, bool());
   MOCK_METHOD0(NotifyUserAutoSigninPtr, bool());
   MOCK_METHOD1(NotifyUserCouldBeAutoSignedInPtr,
@@ -91,12 +83,12 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
         prefs::kWasAutoSignInFirstRunExperienceShown, true);
     prefs_->registry()->RegisterBooleanPref(
         prefs::kPasswordLeakDetectionEnabled, true);
-#if !defined(OS_IOS)
     prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnabled,
                                             true);
-#endif
+    prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnhanced,
+                                            false);
   }
-  ~MockPasswordManagerClient() override {}
+  ~MockPasswordManagerClient() override = default;
 
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<PasswordFormManagerForUI> manager,
@@ -203,15 +195,13 @@ class CredentialManagerImplTest : public testing::Test {
 
   void SetUp() override {
     store_ = new TestPasswordStore;
-    store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+    store_->Init(nullptr);
     client_.reset(
         new testing::NiceMock<MockPasswordManagerClient>(store_.get()));
     cm_service_impl_.reset(new CredentialManagerImpl(client_.get()));
     ON_CALL(*client_, IsSavingAndFillingEnabled(_))
         .WillByDefault(testing::Return(true));
     ON_CALL(*client_, IsFillingEnabled(_)).WillByDefault(testing::Return(true));
-    ON_CALL(*client_, OnCredentialManagerUsed())
-        .WillByDefault(testing::Return(true));
     ON_CALL(*client_, IsIncognito()).WillByDefault(testing::Return(false));
 
     form_.username_value = base::ASCIIToUTF16("Username");
@@ -456,7 +446,6 @@ TEST_F(CredentialManagerImplTest, StoreFederatedAfterPassword) {
   autofill::PasswordForm federated = form_;
   federated.password_value.clear();
   federated.type = autofill::PasswordForm::Type::kApi;
-  federated.preferred = true;
   federated.federation_origin =
       url::Origin::Create(GURL("https://google.com/"));
   federated.signon_realm = "federation://example.com/google.com";
@@ -476,21 +465,20 @@ TEST_F(CredentialManagerImplTest, StoreFederatedAfterPassword) {
 
   RunAllPendingTasks();
   TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
-  EXPECT_THAT(passwords["https://example.com/"], ElementsAre(form_));
+  EXPECT_THAT(passwords["https://example.com/"],
+              ElementsAre(MatchesFormExceptStore(form_)));
   federated.date_created =
       passwords["federation://example.com/google.com"][0].date_created;
   federated.date_last_used =
       passwords["federation://example.com/google.com"][0].date_last_used;
   EXPECT_THAT(passwords["federation://example.com/google.com"],
-              ElementsAre(federated));
+              ElementsAre(MatchesFormExceptStore(federated)));
 }
 
 TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwrite) {
   // Add an unrelated form to complicate the task.
-  origin_path_form_.preferred = true;
   store_->AddLogin(origin_path_form_);
   // Populate the PasswordStore with a form.
-  form_.preferred = false;
   form_.display_name = base::ASCIIToUTF16("Old Name");
   form_.icon_url = GURL();
   store_->AddLogin(form_);
@@ -516,8 +504,8 @@ TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwrite) {
   TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
   EXPECT_EQ(1U, passwords.size());
   EXPECT_EQ(2U, passwords[form_.signon_realm].size());
-  origin_path_form_.preferred = false;
-  EXPECT_EQ(origin_path_form_, passwords[form_.signon_realm][0]);
+  EXPECT_THAT(origin_path_form_,
+              MatchesFormExceptStore(passwords[form_.signon_realm][0]));
   EXPECT_EQ(base::ASCIIToUTF16("Totally new password."),
             passwords[form_.signon_realm][1].password_value);
   EXPECT_EQ(base::ASCIIToUTF16("New Name"),
@@ -770,6 +758,32 @@ TEST_F(CredentialManagerImplTest,
 }
 
 TEST_F(CredentialManagerImplTest,
+       CredentialManagerOnPreventMediatedAccessIncognito) {
+  EXPECT_CALL(*client_, IsIncognito()).WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr).Times(0);
+  store_->AddLogin(form_);
+  RunAllPendingTasks();
+
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  ASSERT_EQ(1U, passwords.size());
+  ASSERT_EQ(1U, passwords[form_.signon_realm].size());
+  EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
+
+  bool called = false;
+  CredentialManagerError error;
+  std::vector<GURL> federations;
+  base::Optional<CredentialInfo> credential;
+  CallGet(CredentialMediationRequirement::kOptional, true, federations,
+          base::BindOnce(&GetCredentialCallback, &called, &error, &credential));
+  RunAllPendingTasks();
+
+  EXPECT_TRUE(called);
+  ASSERT_TRUE(credential);
+  EXPECT_FALSE(credential->password);
+  EXPECT_EQ(CredentialManagerError::SUCCESS, error);
+}
+
+TEST_F(CredentialManagerImplTest,
        CredentialManagerOnPreventSilentAccessWithAffiliation) {
   store_->AddLogin(form_);
   store_->AddLogin(cross_origin_form_);
@@ -836,9 +850,10 @@ TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialWithPSLCredential) {
   store_->AddLogin(subdomain_form_);
   subdomain_form_.is_public_suffix_match = true;
-  EXPECT_CALL(*client_,
-              PromptUserToChooseCredentialsPtr(
-                  UnorderedElementsAre(Pointee(subdomain_form_)), _, _));
+  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(
+                            UnorderedElementsAre(Pointee(
+                                MatchesFormExceptStore(subdomain_form_))),
+                            _, _));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr()).Times(0);
 
   ExpectCredentialType(CredentialMediationRequirement::kOptional, true,
@@ -852,10 +867,12 @@ TEST_F(CredentialManagerImplTest,
   store_->AddLogin(origin_path_form_);
   store_->AddLogin(subdomain_form_);
 
-  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(
-                            UnorderedElementsAre(Pointee(origin_path_form_),
-                                                 Pointee(form_)),
-                            _, _));
+  EXPECT_CALL(*client_,
+              PromptUserToChooseCredentialsPtr(
+                  UnorderedElementsAre(
+                      Pointee(MatchesFormExceptStore(origin_path_form_)),
+                      Pointee(MatchesFormExceptStore(form_))),
+                  _, _));
 
   ExpectCredentialType(CredentialMediationRequirement::kOptional, true,
                        std::vector<GURL>(),
@@ -882,7 +899,6 @@ TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialWithDuplicates) {
   // Add 6 credentials. Two buckets of duplicates, one empty username and one
   // federated one. There should be just 3 in the account chooser.
-  form_.preferred = true;
   form_.username_element = base::ASCIIToUTF16("username_element");
   store_->AddLogin(form_);
   autofill::PasswordForm empty = form_;
@@ -890,14 +906,11 @@ TEST_F(CredentialManagerImplTest,
   store_->AddLogin(empty);
   autofill::PasswordForm duplicate = form_;
   duplicate.username_element = base::ASCIIToUTF16("username_element2");
-  duplicate.preferred = false;
   store_->AddLogin(duplicate);
 
-  origin_path_form_.preferred = true;
   store_->AddLogin(origin_path_form_);
   duplicate = origin_path_form_;
   duplicate.username_element = base::ASCIIToUTF16("username_element4");
-  duplicate.preferred = false;
   store_->AddLogin(duplicate);
   autofill::PasswordForm federated = origin_path_form_;
   federated.password_value.clear();
@@ -907,11 +920,13 @@ TEST_F(CredentialManagerImplTest,
       "federation://" + federated.origin.host() + "/google.com";
   store_->AddLogin(federated);
 
-  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(
-                            UnorderedElementsAre(Pointee(form_),
-                                                 Pointee(origin_path_form_),
-                                                 Pointee(federated)),
-                            _, _));
+  EXPECT_CALL(*client_,
+              PromptUserToChooseCredentialsPtr(
+                  UnorderedElementsAre(
+                      Pointee(MatchesFormExceptStore(form_)),
+                      Pointee(MatchesFormExceptStore(origin_path_form_)),
+                      Pointee(MatchesFormExceptStore(federated))),
+                  _, _));
 
   bool called = false;
   CredentialManagerError error;
@@ -1126,8 +1141,8 @@ TEST_F(CredentialManagerImplTest, RequestCredentialWithoutFirstRun) {
   store_->AddLogin(form_);
 
   std::vector<GURL> federations;
-  EXPECT_CALL(*client_,
-              NotifyUserCouldBeAutoSignedInPtr(testing::Pointee(form_)))
+  EXPECT_CALL(*client_, NotifyUserCouldBeAutoSignedInPtr(
+                            Pointee(MatchesFormExceptStore(form_))))
       .Times(1);
 
   ExpectZeroClickSignInFailure(CredentialMediationRequirement::kSilent, true,
@@ -1141,8 +1156,8 @@ TEST_F(CredentialManagerImplTest, RequestCredentialWithFirstRunAndSkip) {
   store_->AddLogin(form_);
 
   std::vector<GURL> federations;
-  EXPECT_CALL(*client_,
-              NotifyUserCouldBeAutoSignedInPtr(testing::Pointee(form_)))
+  EXPECT_CALL(*client_, NotifyUserCouldBeAutoSignedInPtr(
+                            Pointee(MatchesFormExceptStore(form_))))
       .Times(1);
 
   ExpectZeroClickSignInFailure(CredentialMediationRequirement::kSilent, true,
@@ -1152,19 +1167,6 @@ TEST_F(CredentialManagerImplTest, RequestCredentialWithFirstRunAndSkip) {
 TEST_F(CredentialManagerImplTest, RequestCredentialWithTLSErrors) {
   // If we encounter TLS errors, we won't return credentials.
   EXPECT_CALL(*client_, IsFillingEnabled(_))
-      .WillRepeatedly(testing::Return(false));
-
-  store_->AddLogin(form_);
-
-  std::vector<GURL> federations;
-
-  ExpectZeroClickSignInFailure(CredentialMediationRequirement::kSilent, true,
-                               federations);
-}
-
-TEST_F(CredentialManagerImplTest, RequestCredentialWhilePrerendering) {
-  // The client disallows the credential manager for the current page.
-  EXPECT_CALL(*client_, OnCredentialManagerUsed())
       .WillRepeatedly(testing::Return(false));
 
   store_->AddLogin(form_);
@@ -1315,41 +1317,6 @@ TEST_F(CredentialManagerImplTest, ResetSkipZeroClickAfterPrompt) {
   EXPECT_EQ(1U, passwords[cross_origin_form_.signon_realm].size());
   EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
   EXPECT_TRUE(passwords[cross_origin_form_.signon_realm][0].skip_zero_click);
-}
-
-TEST_F(CredentialManagerImplTest, NoResetSkipZeroClickAfterPromptInIncognito) {
-  EXPECT_CALL(*client_, IsIncognito()).WillRepeatedly(testing::Return(true));
-  // Turn on the global zero-click flag which should be overriden by Incognito.
-  client_->set_zero_click_enabled(true);
-  form_.skip_zero_click = true;
-  store_->AddLogin(form_);
-  RunAllPendingTasks();
-
-  // Sanity check.
-  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
-  ASSERT_EQ(1U, passwords.size());
-  ASSERT_EQ(1U, passwords[form_.signon_realm].size());
-  EXPECT_TRUE(passwords[form_.signon_realm][0].skip_zero_click);
-
-  // Trigger a request which should return the credential found in |form_|, and
-  // wait for it to process.
-  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _))
-      .Times(testing::Exactly(1));
-  EXPECT_CALL(*client_, NotifyUserAutoSigninPtr()).Times(testing::Exactly(0));
-
-  bool called = false;
-  CredentialManagerError error;
-  base::Optional<CredentialInfo> credential;
-  CallGet(CredentialMediationRequirement::kOptional, true, std::vector<GURL>(),
-          base::BindOnce(&GetCredentialCallback, &called, &error, &credential));
-
-  RunAllPendingTasks();
-
-  // The form shouldn't become a zero-click one.
-  passwords = store_->stored_passwords();
-  ASSERT_EQ(1U, passwords.size());
-  ASSERT_EQ(1U, passwords[form_.signon_realm].size());
-  EXPECT_TRUE(passwords[form_.signon_realm][0].skip_zero_click);
 }
 
 TEST_F(CredentialManagerImplTest, IncognitoZeroClickRequestCredential) {
@@ -1573,7 +1540,8 @@ TEST_F(CredentialManagerImplTest, BlacklistPasswordCredential) {
   blacklisted.origin = form_.origin;
   blacklisted.signon_realm = form_.signon_realm;
   blacklisted.date_created = passwords[form_.signon_realm][0].date_created;
-  EXPECT_THAT(passwords[form_.signon_realm], testing::ElementsAre(blacklisted));
+  EXPECT_THAT(passwords[form_.signon_realm],
+              ElementsAre(MatchesFormExceptStore(blacklisted)));
 }
 
 TEST_F(CredentialManagerImplTest, BlacklistFederatedCredential) {
@@ -1603,7 +1571,7 @@ TEST_F(CredentialManagerImplTest, BlacklistFederatedCredential) {
   blacklisted.date_created =
       passwords[blacklisted.signon_realm][0].date_created;
   EXPECT_THAT(passwords[blacklisted.signon_realm],
-              testing::ElementsAre(blacklisted));
+              ElementsAre(MatchesFormExceptStore(blacklisted)));
 }
 
 TEST_F(CredentialManagerImplTest, RespectBlacklistingPasswordCredential) {
@@ -1657,9 +1625,11 @@ TEST_F(CredentialManagerImplTest,
   form_.username_value = base::ASCIIToUTF16("username_value");
   store_->AddLogin(form_);
 
-  EXPECT_CALL(*client_,
-              PasswordWasAutofilled(ElementsAre(Pointee(form_)), _,
-                                    Pointee(ElementsAre(Pointee(federated)))));
+  EXPECT_CALL(
+      *client_,
+      PasswordWasAutofilled(
+          ElementsAre(Pointee(MatchesFormExceptStore(form_))), _,
+          Pointee(ElementsAre(Pointee(MatchesFormExceptStore(federated))))));
 
   bool called = false;
   CredentialManagerError error;
@@ -1673,7 +1643,6 @@ TEST_F(CredentialManagerImplTest,
   RunAllPendingTasks();
 }
 
-#if !defined(OS_IOS)
 // Check that following a call to store() a federated credential is not checked
 // for leaks.
 TEST_F(CredentialManagerImplTest,
@@ -1710,6 +1679,5 @@ TEST_F(CredentialManagerImplTest, StorePasswordCredentialStartsLeakDetection) {
 
   RunAllPendingTasks();
 }
-#endif  // !defined(OS_IOS)
 
 }  // namespace password_manager

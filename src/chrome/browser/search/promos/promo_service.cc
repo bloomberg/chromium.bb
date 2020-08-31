@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -172,26 +173,31 @@ void PromoService::Refresh() {
 }
 
 void PromoService::ServeExtensionCheckupPromo() {
-  const int checkup_message = base::GetFieldTrialParamByFeatureAsInt(
-      extensions_features::kExtensionsCheckup,
-      extensions_features::kExtensionsCheckupBannerMessageParameter, 2);
+  const extensions::CheckupMessage checkup_message =
+      static_cast<extensions::CheckupMessage>(
+          base::GetFieldTrialParamByFeatureAsInt(
+              extensions_features::kExtensionsCheckup,
+              extensions_features::kExtensionsCheckupBannerMessageParameter,
+              static_cast<int>(extensions::CheckupMessage::NEUTRAL)));
+  UMA_HISTOGRAM_ENUMERATION("Extensions.Checkup.NtpPromoShown",
+                            checkup_message);
   PromoData checkup_promo;
   int promo_idr = -1;
-  switch (static_cast<extensions::CheckupMessage>(checkup_message)) {
+  switch (checkup_message) {
     case extensions::CheckupMessage::PERFORMANCE:
       promo_idr = IDS_EXTENSIONS_PROMO_PERFORMANCE;
       break;
     case extensions::CheckupMessage::PRIVACY:
       promo_idr = IDS_EXTENSIONS_PROMO_PRIVACY;
       break;
-    default:
+    case extensions::CheckupMessage::NEUTRAL:
       promo_idr = IDS_EXTENSIONS_PROMO_NEUTRAL;
       break;
   }
   std::string promo_message = l10n_util::GetStringUTF8(promo_idr);
   std::string promo_html = base::StrCat({"<div>", promo_message, "</div>"});
   checkup_promo.promo_html = promo_html;
-  checkup_promo.can_open_privileged_links = true;
+  checkup_promo.can_open_extensions_page = true;
   PromoDataLoaded(Status::OK_WITH_PROMO, checkup_promo);
 }
 

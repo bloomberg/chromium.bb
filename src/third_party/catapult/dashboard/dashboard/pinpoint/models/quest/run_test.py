@@ -14,7 +14,6 @@ from __future__ import absolute_import
 import collections
 import json
 import logging
-import re
 import shlex
 
 from dashboard.pinpoint.models import errors
@@ -23,59 +22,8 @@ from dashboard.pinpoint.models.quest import quest
 from dashboard.services import swarming
 
 
-# TODO(dberris): Move these into configuration instead of being in code.
-_CIPD_VERSION = 'git_revision:66410e06ff82b4e79e849977e4e58c0a261d9953'
-_CPYTHON_VERSION = 'version:2.7.14.chromium14'
-_LOGDOG_BUTLER_VERSION = 'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c'
-_VPYTHON_VERSION = 'git_revision:00e2d8b49a4e7505d1c71f19d15c9e7c5b9245a5'
-VPYTHON_PARAMS = {
-    'caches': [
-        {
-            'name': 'swarming_module_cache_vpython',
-            'path': '.swarming_module_cache/vpython',
-        },
-    ],
-    'cipd_input': {
-        'client_package': {
-            'version': _CIPD_VERSION,
-            'package_name': 'infra/tools/cipd/${platform}',
-        },
-        'packages': [
-            {
-                'package_name': 'infra/python/cpython/${platform}',
-                'path': '.swarming_module',
-                'version': _CPYTHON_VERSION,
-            },
-            {
-                'package_name': 'infra/tools/luci/logdog/butler/${platform}',
-                'path': '.swarming_module',
-                'version': _LOGDOG_BUTLER_VERSION,
-            },
-            {
-                'package_name': 'infra/tools/luci/vpython/${platform}',
-                'path': '.swarming_module',
-                'version': _VPYTHON_VERSION,
-            },
-            {
-                'package_name': 'infra/tools/luci/vpython-native/${platform}',
-                'path': '.swarming_module',
-                'version': _VPYTHON_VERSION,
-            },
-        ],
-        'server': 'https://chrome-infra-packages.appspot.com',
-    },
-    'env_prefixes': [
-        {
-            'key': 'PATH',
-            'value': ['.swarming_module', '.swarming_module/bin'],
-        },
-        {
-            'key': 'VPYTHON_VIRTUALENV_ROOT',
-            'value': ['.swarming_module_cache/vpython'],
-        },
-    ],
-}
-
+_TESTER_SERVICE_ACCOUNT = (
+    'chrome-tester@chops-service-accounts.iam.gserviceaccount.com')
 
 def SwarmingTagsFromJob(job):
   return {
@@ -260,16 +208,21 @@ class _RunTestExecution(execution_module.Execution):
       raise errors.SwarmingTaskError(result['state'])
 
     if result['failure']:
-      exception_string = ParseException(swarming_task.Stdout()['output'])
-      if exception_string:
-        raise errors.SwarmingTaskFailed(exception_string)
+      if 'outputs_ref' not in result:
+        task_url = '%s/task?id=%s' % (self._swarming_server, self._task_id)
+        raise errors.SwarmingTaskFailed('%s' % (task_url,))
       else:
-        raise errors.SwarmingTaskFailedNoException()
+        isolate_output_url = '%s/browse?digest=%s' % (
+            result['outputs_ref']['isolatedserver'],
+            result['outputs_ref']['isolated'])
+        raise errors.SwarmingTaskFailed(
+            '%s' % (isolate_output_url,))
 
     result_arguments = {
         'isolate_server': result['outputs_ref']['isolatedserver'],
         'isolate_hash': result['outputs_ref']['isolated'],
     }
+
     self._Complete(result_arguments=result_arguments)
 
 
@@ -277,10 +230,6 @@ class _RunTestExecution(execution_module.Execution):
     """Kick off a Swarming task to run a test."""
     if (self._previous_execution and not self._previous_execution.bot_id
         and self._previous_execution.failed):
-      # If the previous Execution fails before it gets a bot ID, it's likely
-      # it couldn't find any device to run on. Subsequent Executions probably
-      # wouldn't have any better luck, and failing fast is less complex than
-      # handling retries.
       raise errors.SwarmingNoBots()
 
     properties = {
@@ -290,14 +239,15 @@ class _RunTestExecution(execution_module.Execution):
         },
         'extra_args': self._extra_args,
         'dimensions': self._dimensions,
-        'execution_timeout_secs': '21600',  # 6 hours, for rendering.mobile.
-        'io_timeout_secs': '14400',  # 4 hours, to match the perf bots.
+        # TODO(dberris): Make this configuration dependent.
+        'execution_timeout_secs': '2700',  # 45 minutes for all tasks.
+        'io_timeout_secs': '2700',  # Also set 45 minutes for all tasks.
     }
-    properties.update(VPYTHON_PARAMS)
     body = {
         'name': 'Pinpoint job',
         'user': 'Pinpoint',
         'priority': '100',
+        'service_account': _TESTER_SERVICE_ACCOUNT,
         'task_slices': [{
             'properties': properties,
             'expiration_secs': '86400',  # 1 day.
@@ -330,44 +280,3 @@ class _RunTestExecution(execution_module.Execution):
     logging.debug('Response: %s', response)
 
     self._task_id = response['task_id']
-
-
-def ParseException(log):
-  """Searches a log for a stack trace and returns the exception string.
-
-  This function supports both default Python-style stacks and Telemetry-style
-  stacks. It returns the first stack trace found in the log - sometimes a bug
-  leads to a cascade of failures, so the first one is usually the root cause.
-
-  Args:
-    log: A string. The stderr log containing the stack trace(s).
-
-  Returns:
-    The exception string, or None if no traceback is found.
-  """
-  log_iterator = iter(log.splitlines())
-
-  # Look for the start of the traceback and stop there.
-  for line in log_iterator:
-    if line == 'Traceback (most recent call last):':
-      break
-  else:
-    return None
-
-  # The traceback alternates between "location of stack frame" and
-  # "code at that location", then ends with the exception string.
-  for line in log_iterator:
-    # Look for the line containing the location of the stack frame.
-    match1 = re.match(r'\s*File "(?P<file>.+)", line (?P<line>[0-9]+), '
-                      'in (?P<function>.+)', line)
-    match2 = re.match(r'\s*(?P<function>.+) at '
-                      '(?P<file>.+):(?P<line>[0-9]+)', line)
-
-    if not (match1 or match2):
-      # No more stack frames. Return the exception string!
-      return line
-
-    # Skip the line containing the code at the stack frame location.
-    next(log_iterator)
-
-

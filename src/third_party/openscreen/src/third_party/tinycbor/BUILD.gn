@@ -4,6 +4,11 @@
 
 import("//build_overrides/build.gni")
 
+config("tinycbor_internal_config") {
+  defines = [ "WITHOUT_OPEN_MEMSTREAM" ]
+  cflags = [ "-w" ]  # Disable all warnings.
+}
+
 source_set("tinycbor") {
   sources = [
     "src/src/cbor.h",
@@ -16,5 +21,5 @@ source_set("tinycbor") {
     "src/src/utf8_p.h",
   ]
 
-  defines = [ "WITHOUT_OPEN_MEMSTREAM" ]
+  configs += [ ":tinycbor_internal_config" ]
 }

@@ -9,8 +9,6 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/prefs/pref_member.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_registry_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -18,13 +16,12 @@ class Browser;
 class CommandUpdater;
 
 // The star icon to show a bookmark bubble.
-class StarView : public PageActionIconView,
-                 public views::WidgetObserver,
-                 public extensions::ExtensionRegistryObserver {
+class StarView : public PageActionIconView, public views::WidgetObserver {
  public:
   StarView(CommandUpdater* command_updater,
            Browser* browser,
-           PageActionIconView::Delegate* delegate);
+           IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+           PageActionIconView::Delegate* page_action_icon_delegate);
   ~StarView() override;
 
   // Shows the BookmarkPromoBubbleView when the BookmarkTracker calls for it.
@@ -39,16 +36,10 @@ class StarView : public PageActionIconView,
   SkColor GetInkDropBaseColor() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
+  const char* GetClassName() const override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
-
-  // extensions::ExtensionRegistryObserver:
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const extensions::Extension* extension) override;
-  void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                           const extensions::Extension* extension,
-                           extensions::UnloadedExtensionReason reason) override;
 
  private:
   void EditBookmarksPrefUpdated();
@@ -62,11 +53,6 @@ class StarView : public PageActionIconView,
   // promo is open and gets called back when it closes.
   ScopedObserver<views::Widget, views::WidgetObserver> bookmark_promo_observer_{
       this};
-
-  // Observes Extensions for changes to their |extensions::UIOverrides|.
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      extension_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StarView);
 };

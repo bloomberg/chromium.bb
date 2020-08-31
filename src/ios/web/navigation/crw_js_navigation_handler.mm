@@ -43,9 +43,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 @property(nonatomic, weak) id<CRWJSNavigationHandlerDelegate> delegate;
 
-// Sets to YES when |close| is called.
-@property(nonatomic, assign) BOOL beingDestroyed;
-
 // Returns WebStateImpl from self.delegate.
 @property(nonatomic, readonly, assign) web::WebStateImpl* webStateImpl;
 // Returns NavigationManagerImpl from self.webStateImpl.
@@ -88,8 +85,6 @@ GURL URLEscapedForHistory(const GURL& url) {
       } else if (*command == "navigation.didReplaceState") {
         [weakSelf handleNavigationDidReplaceStateMessage:message
                                                  inFrame:senderFrame];
-      } else if (*command == "navigation.goDelta") {
-        [weakSelf handleNavigationGoDeltaMessage:message inFrame:senderFrame];
       }
     };
 
@@ -99,23 +94,10 @@ GURL URLEscapedForHistory(const GURL& url) {
   return self;
 }
 
-- (void)close {
-  self.beingDestroyed = YES;
-}
-
-- (NSString*)javaScriptToReplaceWebViewURL:(const GURL&)URL
-                           stateObjectJSON:(NSString*)stateObject {
-  std::string outURL;
-  base::EscapeJSONString(URL.spec(), true, &outURL);
-  return
-      [NSString stringWithFormat:@"__gCrWeb.replaceWebViewURL(%@, %@);",
-                                 base::SysUTF8ToNSString(outURL), stateObject];
-}
-
 #pragma mark - Private
 
 - (web::WebStateImpl*)webStateImpl {
-  return [self.delegate webStateImplForJSNavigationHandler:self];
+  return [self.delegate webStateImplForWebViewHandler:self];
 }
 
 - (web::NavigationManagerImpl*)navigationManagerImpl {
@@ -123,11 +105,11 @@ GURL URLEscapedForHistory(const GURL& url) {
 }
 
 - (web::UserInteractionState*)userInteractionState {
-  return [self.delegate userInteractionStateForJSNavigationHandler:self];
+  return [self.delegate userInteractionStateForWebViewHandler:self];
 }
 
 - (WKWebView*)webView {
-  return [self.delegate webViewForJSNavigationHandler:self];
+  return [self.delegate webViewForWebViewHandler:self];
 }
 
 - (GURL)currentURL {
@@ -136,15 +118,8 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 // Handles the navigation.hashchange event emitted from |senderFrame|.
 - (void)handleNavigationHashChangeInFrame:(web::WebFrame*)senderFrame {
-  // Record that the current NavigationItem was created by a hash change, but
-  // ignore hashchange events that are manually dispatched for same-document
-  // navigations.
-  if (self.dispatchingSameDocumentHashChangeEvent) {
-    self.dispatchingSameDocumentHashChangeEvent = NO;
-  } else {
-    self.navigationManagerImpl->GetCurrentItemImpl()
-        ->SetIsCreatedFromHashChange(true);
-  }
+  self.navigationManagerImpl->GetCurrentItemImpl()->SetIsCreatedFromHashChange(
+      true);
 }
 
 // Handles the navigation.willChangeState message sent from |senderFrame|.
@@ -202,6 +177,15 @@ GURL URLEscapedForHistory(const GURL& url) {
   }
   NSString* stateObject = base::SysUTF8ToNSString(*stateObjectJSON);
 
+  int currentIndex = self.navigationManagerImpl->GetIndexOfItem(navItem);
+  if (currentIndex > 0) {
+    web::NavigationItem* previousItem =
+        self.navigationManagerImpl->GetItemAtIndex(currentIndex - 1);
+    web::UserAgentType userAgent = previousItem->GetUserAgentForInheritance();
+    if (userAgent != web::UserAgentType::NONE) {
+      navItem->SetUserAgentType(userAgent);
+    }
+  }
   // If the user interacted with the page, categorize it as a link navigation.
   // If not, categorize it is a client redirect as it occurred without user
   // input and should not be added to the history stack.
@@ -215,8 +199,7 @@ GURL URLEscapedForHistory(const GURL& url) {
                   transition:transition
               hasUserGesture:self.userInteractionState->IsUserInteracting(
                                  self.webView)];
-  [self.delegate
-      JSNavigationHandlerUpdateSSLStatusForCurrentNavigationItem:self];
+  [self.delegate webViewHandlerUpdateSSLStatusForCurrentNavigationItem:self];
 }
 
 // Handles the navigation.didReplaceState message sent from |senderFrame|.
@@ -267,17 +250,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   return;
 }
 
-// Handles 'navigation.goDelta' message sent from |senderFrame|.
-- (void)handleNavigationGoDeltaMessage:(const base::DictionaryValue&)message
-                               inFrame:(web::WebFrame*)senderFrame {
-  const base::Value* value = message.FindKey("value");
-  if (value && value->is_double()) {
-    [self rendererInitiatedGoDelta:static_cast<int>(value->GetDouble())
-                    hasUserGesture:self.userInteractionState->IsUserInteracting(
-                                       self.webView)];
-  }
-}
-
 // Adds a new NavigationItem with the given URL and state object to the
 // history stack. A state object is a serialized generic JavaScript object
 // that contains details of the UI's state for a given NavigationItem/URL.
@@ -315,28 +287,6 @@ GURL URLEscapedForHistory(const GURL& url) {
                                                                stateObject);
   context->SetHasCommitted(true);
   self.webStateImpl->OnNavigationFinished(context.get());
-}
-
-// Navigates forwards or backwards by |delta| pages. No-op if delta is out of
-// bounds. Reloads if delta is 0.
-// TODO(crbug.com/661316): Move this method to NavigationManager.
-- (void)rendererInitiatedGoDelta:(int)delta
-                  hasUserGesture:(BOOL)hasUserGesture {
-  if (self.beingDestroyed)
-    return;
-
-  if (delta == 0) {
-    [self.delegate
-        JSNavigationHandlerReloadWithRendererInitiatedNavigation:self];
-    return;
-  }
-
-  if (self.navigationManagerImpl->CanGoToOffset(delta)) {
-    int index = self.navigationManagerImpl->GetIndexForOffset(delta);
-    self.navigationManagerImpl->GoToIndex(
-        index, web::NavigationInitiationType::RENDERER_INITIATED,
-        /*has_user_gesture=*/hasUserGesture);
-  }
 }
 
 @end

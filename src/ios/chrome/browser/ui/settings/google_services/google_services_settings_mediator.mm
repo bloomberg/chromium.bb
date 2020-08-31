@@ -10,6 +10,8 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/features.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/ukm/ios/features.h"
@@ -26,13 +28,15 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_command_handler.h"
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -43,9 +47,7 @@
 #endif
 
 using l10n_util::GetNSString;
-
-NSString* const kManageSyncCellAccessibilityIdentifier =
-    @"ManageSyncCellAccessibilityIdentifier";
+using safe_browsing::kSafeBrowsingAvailableOnIOS;
 
 typedef NSArray<TableViewItem*>* ItemArray;
 
@@ -82,6 +84,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ManageSyncItemType,
   // NonPersonalizedSectionIdentifier section.
   AutocompleteSearchesAndURLsItemType,
+  SafeBrowsingItemType,
   ImproveChromeItemType,
   BetterSearchAndBrowsingItemType,
   ItemTypePasswordLeakCheckSwitch,
@@ -137,6 +140,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // Preference value for the "Autocomplete searches and URLs" feature.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* autocompleteSearchPreference;
+// Preference value for the "Safe Browsing" feature.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* safeBrowsingPreference;
 // Preference value for the "Help improve Chromium's features" feature.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* sendDataUsagePreference;
@@ -181,6 +187,10 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         initWithPrefService:userPrefService
                    prefName:prefs::kSearchSuggestEnabled];
     _autocompleteSearchPreference.observer = self;
+    _safeBrowsingPreference = [[PrefBackedBoolean alloc]
+        initWithPrefService:userPrefService
+                   prefName:prefs::kSafeBrowsingEnabled];
+    _safeBrowsingPreference.observer = self;
     _sendDataUsagePreference = [[PrefBackedBoolean alloc]
         initWithPrefService:localPrefService
                    prefName:metrics::prefs::kMetricsReportingEnabled];
@@ -192,14 +202,11 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
           initWithPrefService:localPrefService
                      prefName:prefs::kMetricsReportingWifiOnly];
     }
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kLeakDetection)) {
-      _passwordLeakCheckEnabled = [[PrefBackedBoolean alloc]
-          initWithPrefService:userPrefService
-                     prefName:password_manager::prefs::
-                                  kPasswordLeakDetectionEnabled];
-      _passwordLeakCheckEnabled.observer = self;
-    }
+    _passwordLeakCheckEnabled = [[PrefBackedBoolean alloc]
+        initWithPrefService:userPrefService
+                   prefName:password_manager::prefs::
+                                kPasswordLeakDetectionEnabled];
+    _passwordLeakCheckEnabled.observer = self;
     _anonymizedDataCollectionPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:unified_consent::prefs::
@@ -228,6 +235,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   DCHECK(!self.accountItem);
   self.accountItem =
       [[TableViewAccountItem alloc] initWithType:IdentityItemType];
+  self.accountItem.accessibilityIdentifier =
+      kAccountListItemAccessibilityIdentifier;
   if (self.mode == GoogleServicesSettingsModeAdvancedSigninSettings) {
     self.accountItem.mode = TableViewAccountModeNonTappable;
   } else {
@@ -515,6 +524,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       case AutocompleteSearchesAndURLsItemType:
         switchItem.on = self.autocompleteSearchPreference.value;
         break;
+      case SafeBrowsingItemType:
+        switchItem.on = self.safeBrowsingPreference.value;
+        break;
       case ImproveChromeItemType:
         switchItem.on = self.sendDataUsagePreference.value;
         break;
@@ -522,8 +534,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         switchItem.on = self.anonymizedDataCollectionPreference.value;
         break;
       case ItemTypePasswordLeakCheckSwitch:
-        DCHECK(base::FeatureList::IsEnabled(
-            password_manager::features::kLeakDetection));
         [self updateLeakCheckItem];
         break;
       case IdentityItemType:
@@ -546,7 +556,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 #pragma mark - Properties
 
 - (BOOL)isAuthenticated {
-  return self.authService->IsAuthenticated();
+  return self.authService->IsAuthenticated() &&
+         self.authService->GetAuthenticatedIdentity();
 }
 
 - (BOOL)isSyncSettingsConfirmed {
@@ -555,13 +566,12 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 }
 
 - (BOOL)isSyncDisabledByAdministrator {
-  return (self.syncService->GetDisableReasons() &
-          syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) != 0;
+  return self.syncService->GetDisableReasons().Has(
+      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
 }
 
 - (BOOL)isSyncDisabled {
-  return self.syncService->GetDisableReasons() !=
-         syncer::SyncService::DISABLE_REASON_NONE;
+  return !self.syncService->GetDisableReasons().Empty();
 }
 
 - (BOOL)isSyncCanBeAvailable {
@@ -570,13 +580,28 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 - (ItemArray)nonPersonalizedItems {
   if (!_nonPersonalizedItems) {
-    SyncSwitchItem* autocompleteSearchesAndURLsItem = [self
+    NSMutableArray* items = [NSMutableArray array];
+    SyncSwitchItem* autocompleteItem = [self
         switchItemWithItemType:AutocompleteSearchesAndURLsItemType
                   textStringID:
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT
                 detailStringID:
                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL
                       dataType:0];
+    [items addObject:autocompleteItem];
+    if (base::FeatureList::IsEnabled(kSafeBrowsingAvailableOnIOS)) {
+      SyncSwitchItem* safeBrowsingItem = [self
+          switchItemWithItemType:SafeBrowsingItemType
+                    textStringID:
+                        IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_TEXT
+                  detailStringID:
+                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_DETAIL
+                        dataType:0];
+      safeBrowsingItem.accessibilityIdentifier =
+          kSafeBrowsingItemAccessibilityIdentifier;
+      [items addObject:safeBrowsingItem];
+    }
+    [items addObject:self.passwordLeakCheckItem];
     SyncSwitchItem* improveChromeItem =
         [self switchItemWithItemType:ImproveChromeItemType
                         textStringID:
@@ -584,6 +609,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
                       detailStringID:
                           IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL
                             dataType:0];
+    [items addObject:improveChromeItem];
     SyncSwitchItem* betterSearchAndBrowsingItemType = [self
         switchItemWithItemType:BetterSearchAndBrowsingItemType
                   textStringID:
@@ -593,25 +619,13 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
                       dataType:0];
     betterSearchAndBrowsingItemType.accessibilityIdentifier =
         kBetterSearchAndBrowsingItemAccessibilityID;
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kLeakDetection)) {
-      _nonPersonalizedItems = @[
-        autocompleteSearchesAndURLsItem, self.passwordLeakCheckItem,
-        improveChromeItem, betterSearchAndBrowsingItemType
-      ];
-    } else {
-      _nonPersonalizedItems = @[
-        autocompleteSearchesAndURLsItem, improveChromeItem,
-        betterSearchAndBrowsingItemType
-      ];
-    }
+    [items addObject:betterSearchAndBrowsingItemType];
+    _nonPersonalizedItems = items;
   }
   return _nonPersonalizedItems;
 }
 
 - (SettingsSwitchItem*)passwordLeakCheckItem {
-  DCHECK(
-      base::FeatureList::IsEnabled(password_manager::features::kLeakDetection));
   if (!_passwordLeakCheckItem) {
     SettingsSwitchItem* passwordLeakCheckItem = [[SettingsSwitchItem alloc]
         initWithType:ItemTypePasswordLeakCheckSwitch];
@@ -619,7 +633,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SWITCH);
     passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
     passwordLeakCheckItem.accessibilityIdentifier =
-        @"passwordLeakCheckItem_switch";
+        kPasswordLeakCheckItemAccessibilityIdentifier;
     passwordLeakCheckItem.enabled = self.isAuthenticated;
     _passwordLeakCheckItem = passwordLeakCheckItem;
   }
@@ -699,18 +713,15 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // Returns a boolean indicating if the switch should appear as "On" or "Off"
 // based on the sync preference and the sign in status.
 - (BOOL)passwordLeakCheckItemOnState {
-  return [self.passwordLeakCheckEnabled value] && self.isAuthenticated;
+  return self.safeBrowsingPreference.value &&
+         self.passwordLeakCheckEnabled.value && self.isAuthenticated;
 }
 
 // Updates the detail text and on state of the leak check item based on the
 // state.
 - (void)updateLeakCheckItem {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kLeakDetection)) {
-    return;
-  }
-
-  self.passwordLeakCheckItem.enabled = self.isAuthenticated;
+  self.passwordLeakCheckItem.enabled =
+      self.isAuthenticated && self.safeBrowsingPreference.value;
   self.passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
 
   if (!self.isAuthenticated && self.passwordLeakCheckEnabled.value) {
@@ -725,11 +736,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 // Updates leak item and asks the consumer to reload it.
 - (void)updateLeakCheckItemAndReload {
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kLeakDetection)) {
-    [self updateLeakCheckItem];
-    [self.consumer reloadItem:self.passwordLeakCheckItem];
-  }
+  [self updateLeakCheckItem];
+  [self.consumer reloadItem:self.passwordLeakCheckItem];
 }
 
 #pragma mark - GoogleServicesSettingsViewControllerModelDelegate
@@ -756,6 +764,10 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   switch (type) {
     case AutocompleteSearchesAndURLsItemType:
       self.autocompleteSearchPreference.value = value;
+      break;
+    case SafeBrowsingItemType:
+      self.safeBrowsingPreference.value = value;
+      [self updateLeakCheckItemAndReload];
       break;
     case ImproveChromeItemType:
       self.sendDataUsagePreference.value = value;
@@ -812,7 +824,11 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       [self.commandHandler openAccountSettings];
       break;
     case ManageGoogleAccountItemType:
-      [self.commandHandler openManageGoogleAccountWebPage];
+      if (base::FeatureList::IsEnabled(kEnableMyGoogle)) {
+        [self.commandHandler openManageGoogleAccount];
+      } else {
+        [self.commandHandler openManageGoogleAccountWebPage];
+      }
       break;
     case SignInItemType:
       [self.commandHandler showSignIn];
@@ -827,7 +843,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       [self.commandHandler openPassphraseDialog];
       break;
     case SyncNeedsTrustedVaultKeyErrorItemType:
-      // TODO(crbug.com/1019685): Open key retrieval dialog.
+      [self.commandHandler openTrustedVaultReauth];
       break;
     case ManageSyncItemType:
       [self.commandHandler openManageSyncSettings];
@@ -835,6 +851,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     case SyncDisabledByAdministratorErrorItemType:
     case SyncSettingsNotCofirmedErrorItemType:
     case AutocompleteSearchesAndURLsItemType:
+    case SafeBrowsingItemType:
     case ItemTypePasswordLeakCheckSwitch:
     case ImproveChromeItemType:
     case BetterSearchAndBrowsingItemType:
@@ -847,7 +864,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 - (void)onSyncStateChanged {
   [self updateSyncSection:YES];
-  if (self.accountItem) {
+  // It is possible for |onSyncStateChanged| to be called before
+  // |onPrimaryAccountCleared|, when the primary account is removed.
+  if (self.isAuthenticated && self.accountItem) {
     [self configureIdentityAccountItem];
     [self.consumer reloadItem:self.accountItem];
   }

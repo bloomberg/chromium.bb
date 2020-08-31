@@ -28,18 +28,14 @@ NavigationPresence GetNavigationPresence(
   switch (event_case) {
     case UserEventSpecifics::kTestEvent:
       return kEitherOkay;
-    case UserEventSpecifics::kFieldTrialEvent:
-      return kCannotHave;
-    case UserEventSpecifics::kLanguageDetectionEvent:
-      return kMustHave;
-    case UserEventSpecifics::kTranslationEvent:
-      return kMustHave;
-    case UserEventSpecifics::kUserConsent:
-      return kCannotHave;
     case UserEventSpecifics::kGaiaPasswordReuseEvent:
       return kMustHave;
     case UserEventSpecifics::kGaiaPasswordCapturedEvent:
       return kCannotHave;
+    case UserEventSpecifics::kLanguageDetectionEvent:
+    case UserEventSpecifics::kTranslationEvent:
+    case UserEventSpecifics::kUserConsent:
+    case UserEventSpecifics::kFlocIdComputedEvent:
     case UserEventSpecifics::EVENT_NOT_SET:
       break;
   }

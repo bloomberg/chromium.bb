@@ -7,12 +7,19 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.cli import command_unittest
 from chromite.cli import flash
 from chromite.cli.cros import cros_flash
 from chromite.lib import commandline
 from chromite.lib import cros_test_lib
 from chromite.lib import remote_access
+
+pytestmark = cros_test_lib.pytestmark_inside_only
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class MockFlashCommand(command_unittest.MockCommand):
@@ -71,6 +78,7 @@ class CrosFlashTest(cros_test_lib.MockTempDirTestCase,
     # `cros flash` default options. Must match the configuration in AddParser().
     expected_kwargs = {
         'board': None,
+        'version': 'latest',
         'install': False,
         'src_image_to_delta': None,
         'rootfs_update': True,

@@ -252,6 +252,12 @@ struct StructTraits<viz::mojom::RenderPassQuadStateDataView, viz::DrawQuad> {
     return quad->backdrop_filter_quality;
   }
 
+  static bool can_use_backdrop_filter_cache(const viz::DrawQuad& input) {
+    const viz::RenderPassDrawQuad* quad =
+        viz::RenderPassDrawQuad::MaterialCast(&input);
+    return quad->can_use_backdrop_filter_cache;
+  }
+
   static bool Read(viz::mojom::RenderPassQuadStateDataView data,
                    viz::DrawQuad* out);
 };
@@ -285,8 +291,7 @@ struct StructTraits<viz::mojom::StreamVideoQuadStateDataView, viz::DrawQuad> {
   static const gfx::Size& resource_size_in_pixels(const viz::DrawQuad& input) {
     const viz::StreamVideoDrawQuad* quad =
         viz::StreamVideoDrawQuad::MaterialCast(&input);
-    return quad->overlay_resources
-        .size_in_pixels[viz::StreamVideoDrawQuad::kResourceIdIndex];
+    return quad->overlay_resources.size_in_pixels;
   }
 
   static const gfx::PointF& uv_top_left(const viz::DrawQuad& input) {

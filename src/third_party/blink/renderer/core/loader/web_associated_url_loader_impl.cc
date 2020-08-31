@@ -37,6 +37,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -47,8 +48,8 @@
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
-#include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
@@ -61,6 +62,7 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -214,9 +216,9 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
     return;
   }
 
-  WebHTTPHeaderSet exposed_headers =
+  HTTPHeaderSet exposed_headers =
       cors::ExtractCorsExposedHeaderNamesList(credentials_mode_, response);
-  WebHTTPHeaderSet blocked_headers;
+  HTTPHeaderSet blocked_headers;
   for (const auto& header : response.HttpHeaderFields()) {
     if (FetchUtils::IsForbiddenResponseHeaderName(header.key) ||
         (!cors::IsCorsSafelistedResponseHeader(header.key) &&
@@ -290,7 +292,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidFail(
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidFailRedirectCheck() {
-  DidFail(ResourceError::Failure(NullURL()));
+  DidFail(WebURLError(ResourceError::Failure(NullURL())));
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::EnableErrorNotifications() {
@@ -314,36 +316,42 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::NotifyError(TimerBase* timer) {
 
 class WebAssociatedURLLoaderImpl::Observer final
     : public GarbageCollected<Observer>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(Observer);
 
  public:
-  Observer(WebAssociatedURLLoaderImpl* parent, Document* document)
-      : ContextLifecycleObserver(document), parent_(parent) {}
+  Observer(WebAssociatedURLLoaderImpl* parent, ExecutionContext* context)
+      : ExecutionContextLifecycleObserver(context), parent_(parent) {}
 
   void Dispose() {
     parent_ = nullptr;
-    ClearContext();
+    // TODO(keishi): Remove IsIteratingOverObservers() check when
+    // HeapObserverList() supports removal while iterating.
+    if (!GetExecutionContext()
+             ->ContextLifecycleObserverList()
+             .IsIteratingOverObservers()) {
+      SetExecutionContext(nullptr);
+    }
   }
 
-  void ContextDestroyed(ExecutionContext*) override {
+  void ContextDestroyed() override {
     if (parent_)
-      parent_->DocumentDestroyed();
+      parent_->ContextDestroyed();
   }
 
-  void Trace(blink::Visitor* visitor) override {
-    ContextLifecycleObserver::Trace(visitor);
+  void Trace(Visitor* visitor) override {
+    ExecutionContextLifecycleObserver::Trace(visitor);
   }
 
   WebAssociatedURLLoaderImpl* parent_;
 };
 
 WebAssociatedURLLoaderImpl::WebAssociatedURLLoaderImpl(
-    Document* document,
+    ExecutionContext* context,
     const WebAssociatedURLLoaderOptions& options)
     : client_(nullptr),
       options_(options),
-      observer_(MakeGarbageCollected<Observer>(this, document)) {}
+      observer_(MakeGarbageCollected<Observer>(this, context)) {}
 
 WebAssociatedURLLoaderImpl::~WebAssociatedURLLoaderImpl() {
   Cancel();
@@ -359,7 +367,8 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
   DCHECK(client);
 
   bool allow_load = true;
-  WebURLRequest new_request(request);
+  WebURLRequest new_request;
+  new_request.CopyFrom(request);
   if (options_.untrusted_http) {
     WebString method = new_request.HttpMethod();
     allow_load = observer_ && IsValidHTTPToken(method) &&
@@ -368,19 +377,30 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       new_request.SetHttpMethod(FetchUtils::NormalizeMethod(method));
       HTTPRequestHeaderValidator validator;
       new_request.VisitHttpHeaderFields(&validator);
-      allow_load = validator.IsSafe();
+
+      // The request's referrer string is not stored as a header, so we must
+      // consult it separately, if set.
+      if (request.ReferrerString() !=
+          blink::WebString(Referrer::ClientReferrerString())) {
+        DCHECK(cors::IsForbiddenHeaderName("Referer"));
+        // `Referer` is a forbidden header name, so we must disallow this to
+        // load.
+        allow_load = false;
+      }
+
+      allow_load = allow_load && validator.IsSafe();
     }
   }
   new_request.ToMutableResourceRequest().SetCorsPreflightPolicy(
       options_.preflight_policy);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-  // |observer_| can be null if Cancel, DocumentDestroyed or
+  // |observer_| can be null if Cancel, ContextDestroyed or
   // ClientAdapterDone gets called between creating the loader and
   // calling LoadAsynchronously.
   if (observer_) {
-    task_runner = To<Document>(observer_->LifecycleContext())
-                      ->GetTaskRunner(TaskType::kInternalLoading);
+    task_runner = observer_->GetExecutionContext()->GetTaskRunner(
+        TaskType::kInternalLoading);
   } else {
     task_runner = Thread::Current()->GetTaskRunner();
   }
@@ -396,7 +416,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     if (options_.grant_universal_access) {
       const auto request_mode = new_request.GetMode();
       DCHECK(request_mode == network::mojom::RequestMode::kNoCors ||
-             network::IsNavigationRequestMode(request_mode));
+             request_mode == network::mojom::RequestMode::kNavigate);
       // Some callers, notablly flash, with |grant_universal_access| want to
       // have an origin matching with referrer.
       KURL referrer(request.ToResourceRequest().ReferrerString());
@@ -405,7 +425,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       new_request.ToMutableResourceRequest().SetRequestorOrigin(origin);
     }
 
-    const ResourceRequest& webcore_request = new_request.ToResourceRequest();
+    ResourceRequest& webcore_request = new_request.ToMutableResourceRequest();
     mojom::RequestContextType context = webcore_request.GetRequestContext();
     if (context == mojom::RequestContextType::UNSPECIFIED) {
       // TODO(yoav): We load URLs without setting a TargetType (and therefore a
@@ -413,6 +433,8 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       // (P2PPortAllocatorSession::AllocateLegacyRelaySession, for example).
       // Remove this once those places are patched up.
       new_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
+      new_request.SetRequestDestination(
+          network::mojom::RequestDestination::kEmpty);
     } else if (context == mojom::RequestContextType::VIDEO) {
       resource_loader_options.initiator_info.name =
           fetch_initiator_type_names::kVideo;
@@ -422,16 +444,17 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     }
 
     if (observer_) {
-      Document& document = To<Document>(*observer_->LifecycleContext());
       loader_ = MakeGarbageCollected<ThreadableLoader>(
-          document, client_adapter_, resource_loader_options);
-      loader_->Start(webcore_request);
+          *observer_->GetExecutionContext(), client_adapter_,
+          resource_loader_options);
+      loader_->Start(std::move(webcore_request));
     }
   }
 
   if (!loader_) {
-    client_adapter_->DidFail(ResourceError::CancelledDueToAccessCheckError(
-        request.Url(), ResourceRequestBlockedReason::kOther));
+    client_adapter_->DidFail(
+        WebURLError(ResourceError::CancelledDueToAccessCheckError(
+            request.Url(), ResourceRequestBlockedReason::kOther)));
   }
   client_adapter_->EnableErrorNotifications();
 }
@@ -471,14 +494,14 @@ void WebAssociatedURLLoaderImpl::SetLoadingTaskRunner(
   // TODO(alexclarke): Maybe support this one day if it proves worthwhile.
 }
 
-void WebAssociatedURLLoaderImpl::DocumentDestroyed() {
+void WebAssociatedURLLoaderImpl::ContextDestroyed() {
   DisposeObserver();
   CancelLoader();
 
   if (!client_)
     return;
 
-  ReleaseClient()->DidFail(ResourceError::CancelledError(KURL()));
+  ReleaseClient()->DidFail(WebURLError(ResourceError::CancelledError(KURL())));
   // |this| may be dead here.
 }
 

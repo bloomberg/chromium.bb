@@ -6,12 +6,18 @@
  * @fileoverview Fake implementation of chrome.languageSettingsPrivate
  * for testing.
  */
+
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+// #import {FakeChromeEvent} from 'chrome://test/fake_chrome_event.m.js';
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
 cr.define('settings', function() {
   /**
    * Fake of the chrome.languageSettingsPrivate API.
    * @implements {LanguageSettingsPrivate}
    */
-  class FakeLanguageSettingsPrivate extends TestBrowserProxy {
+  /* #export */ class FakeLanguageSettingsPrivate extends TestBrowserProxy {
     constructor() {
       // List of method names expected to be tested with whenCalled()
       super([
@@ -114,7 +120,15 @@ cr.define('settings', function() {
           // ui/base/ime/chromeos/extension_ime_util.cc.
           code: '_arc_ime_language_',
           displayName: 'Keyboard apps',
-        }
+        },
+        {
+          // Hebrew. This is used to test that the old language code "iw"
+          // still works.
+          code: 'he',
+          displayName: 'Hebrew',
+          nativeDisplayName: 'Hebrew',
+          supportsUI: true,
+        },
       ];
 
       /** @type {!Array<!chrome.languageSettingsPrivate.InputMethod>} */
@@ -172,7 +186,7 @@ cr.define('settings', function() {
     enableLanguage(languageCode) {
       let languageCodes = this.settingsPrefs_.prefs.intl.accept_languages.value;
       const languages = languageCodes.split(',');
-      if (languages.indexOf(languageCode) != -1) {
+      if (languages.indexOf(languageCode) !== -1) {
         return;
       }
       languages.push(languageCode);
@@ -193,7 +207,7 @@ cr.define('settings', function() {
       let languageCodes = this.settingsPrefs_.prefs.intl.accept_languages.value;
       const languages = languageCodes.split(',');
       const index = languages.indexOf(languageCode);
-      if (index == -1) {
+      if (index === -1) {
         return;
       }
       languages.splice(index, 1);
@@ -218,13 +232,13 @@ cr.define('settings', function() {
           this.settingsPrefs_.prefs.translate_blocked_languages.value.indexOf(
               languageCode);
       if (enable) {
-        if (index == -1) {
+        if (index === -1) {
           return;
         }
         this.settingsPrefs_.splice(
             'prefs.translate_blocked_languages.value', index, 1);
       } else {
-        if (index != -1) {
+        if (index !== -1) {
           return;
         }
         this.settingsPrefs_.push(
@@ -243,14 +257,14 @@ cr.define('settings', function() {
       const languages = languageCodes.split(',');
       const index = languages.indexOf(languageCode);
 
-      if (moveType == chrome.languageSettingsPrivate.MoveType.TOP) {
+      if (moveType === chrome.languageSettingsPrivate.MoveType.TOP) {
         if (index < 1) {
           return;
         }
 
         languages.splice(index, 1);
         languages.unshift(languageCode);
-      } else if (moveType == chrome.languageSettingsPrivate.MoveType.UP) {
+      } else if (moveType === chrome.languageSettingsPrivate.MoveType.UP) {
         if (index < 1) {
           return;
         }
@@ -258,8 +272,8 @@ cr.define('settings', function() {
         const temp = languages[index - 1];
         languages[index - 1] = languageCode;
         languages[index] = temp;
-      } else if (moveType == chrome.languageSettingsPrivate.MoveType.DOWN) {
-        if (index == -1 || index == languages.length - 1) {
+      } else if (moveType === chrome.languageSettingsPrivate.MoveType.DOWN) {
+        if (index === -1 || index === languages.length - 1) {
           return;
         }
 
@@ -345,9 +359,9 @@ cr.define('settings', function() {
     addInputMethod(inputMethodId) {
       assert(cr.isChromeOS);
       const inputMethod = this.componentExtensionImes.find(function(ime) {
-        return ime.id == inputMethodId;
+        return ime.id === inputMethodId;
       });
-      assertTrue(!!inputMethod);
+      assert(!!inputMethod);
       inputMethod.enabled = true;
       const prefPath = 'prefs.settings.language.preload_engines.value';
       const enabledInputMethods = this.settingsPrefs_.get(prefPath).split(',');
@@ -363,9 +377,9 @@ cr.define('settings', function() {
     removeInputMethod(inputMethodId) {
       assert(cr.isChromeOS);
       const inputMethod = this.componentExtensionImes.find(function(ime) {
-        return ime.id == inputMethodId;
+        return ime.id === inputMethodId;
       });
-      assertTrue(!!inputMethod);
+      assert(!!inputMethod);
       inputMethod.enabled = false;
       this.settingsPrefs_.set(
           'prefs.settings.language.preload_engines.value',
@@ -388,7 +402,7 @@ cr.define('settings', function() {
   }
 
   // List of language-related preferences suitable for testing.
-  function getFakeLanguagePrefs() {
+  /* #export */ function getFakeLanguagePrefs() {
     const fakePrefs = [
       {
         key: 'browser.enable_spellchecking',
@@ -461,6 +475,7 @@ cr.define('settings', function() {
     }
     return fakePrefs;
   }
+  // #cr_define_end
   return {
     FakeLanguageSettingsPrivate: FakeLanguageSettingsPrivate,
     getFakeLanguagePrefs: getFakeLanguagePrefs,

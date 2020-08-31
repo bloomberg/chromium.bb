@@ -10,17 +10,14 @@ GEN_INCLUDE([
 
 /**
  * Test fixture for recovery strategy tests.
- * @constructor
- * @extends {ChromeVoxNextE2ETest}
  */
-function ChromeVoxRecoveryStrategyTest() {
-  ChromeVoxNextE2ETest.call(this);
-  window.RoleType = chrome.automation.RoleType;
-}
-
-ChromeVoxRecoveryStrategyTest.prototype = {
-  __proto__: ChromeVoxNextE2ETest.prototype,
+ChromeVoxRecoveryStrategyTest = class extends ChromeVoxNextE2ETest {
+  constructor() {
+    super();
+    window.RoleType = chrome.automation.RoleType;
+  }
 };
+
 
 TEST_F('ChromeVoxRecoveryStrategyTest', 'ReparentedRecovery', function() {
   this.runWithLoadedTree(
@@ -30,22 +27,22 @@ TEST_F('ChromeVoxRecoveryStrategyTest', 'ReparentedRecovery', function() {
     <button id="go"</button>
     <script>
       document.getElementById('go').addEventListener('click', function() {
-        var p = document.getElementById('p');
+        let p = document.getElementById('p');
         p.remove();
         document.body.appendChild(p);
       });
     </script>
   `,
       function(root) {
-        var p = root.find({role: RoleType.PARAGRAPH});
-        var s = root.find({role: RoleType.STATIC_TEXT});
-        var b = root.find({role: RoleType.BUTTON});
-        var bAncestryRecovery = new AncestryRecoveryStrategy(b);
-        var pAncestryRecovery = new AncestryRecoveryStrategy(p);
-        var sAncestryRecovery = new AncestryRecoveryStrategy(s);
-        var bTreePathRecovery = new TreePathRecoveryStrategy(b);
-        var pTreePathRecovery = new TreePathRecoveryStrategy(p);
-        var sTreePathRecovery = new TreePathRecoveryStrategy(s);
+        const p = root.find({role: RoleType.PARAGRAPH});
+        const s = root.find({role: RoleType.STATIC_TEXT});
+        const b = root.find({role: RoleType.BUTTON});
+        const bAncestryRecovery = new AncestryRecoveryStrategy(b);
+        const pAncestryRecovery = new AncestryRecoveryStrategy(p);
+        const sAncestryRecovery = new AncestryRecoveryStrategy(s);
+        const bTreePathRecovery = new TreePathRecoveryStrategy(b);
+        const pTreePathRecovery = new TreePathRecoveryStrategy(p);
+        const sTreePathRecovery = new TreePathRecoveryStrategy(s);
         this.listenOnce(b, 'clicked', function() {
           assertFalse(
               bAncestryRecovery.requiresRecovery(),

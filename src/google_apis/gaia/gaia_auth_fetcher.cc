@@ -30,12 +30,10 @@
 #include "google_apis/gaia/oauth2_id_token_decoder.h"
 #include "google_apis/gaia/oauth_multilogin_result.h"
 #include "net/base/escape.h"
+#include "net/base/isolation_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/http/http_util.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
@@ -304,13 +302,14 @@ void GaiaAuthFetcher::CreateAndStartGaiaFetcher(
   if (credentials_mode != network::mojom::CredentialsMode::kOmit) {
     DCHECK_EQ(GaiaUrls::GetInstance()->gaia_url(), gaia_gurl.GetOrigin())
         << gaia_gurl;
-    resource_request->site_for_cookies = GaiaUrls::GetInstance()->gaia_url();
     url::Origin origin =
         url::Origin::Create(GaiaUrls::GetInstance()->gaia_url());
+    resource_request->site_for_cookies =
+        net::SiteForCookies::FromOrigin(origin);
     resource_request->trusted_params =
         network::ResourceRequest::TrustedParams();
-    resource_request->trusted_params->network_isolation_key =
-        net::NetworkIsolationKey(origin, origin);
+    resource_request->trusted_params->isolation_info =
+        net::IsolationInfo::CreateForInternalRequest(origin);
   }
 
   if (!body.empty())

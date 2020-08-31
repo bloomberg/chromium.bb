@@ -4,28 +4,21 @@
 
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 
-#include "base/logging.h"
 
 namespace blink {
 
 const char* BlinkGC::ToString(BlinkGC::GCReason reason) {
   switch (reason) {
-    case BlinkGC::GCReason::kPreciseGC:
-      return "PreciseGC";
-    case BlinkGC::GCReason::kConservativeGC:
-      return "ConservativeGC";
     case BlinkGC::GCReason::kForcedGCForTesting:
       return "ForcedGCForTesting";
-    case BlinkGC::GCReason::kMemoryPressureGC:
-      return "MemoryPressureGC";
     case BlinkGC::GCReason::kThreadTerminationGC:
       return "ThreadTerminationGC";
-    case BlinkGC::GCReason::kIncrementalV8FollowupGC:
-      return "IncrementalV8FollowupGC";
     case BlinkGC::GCReason::kUnifiedHeapGC:
       return "UnifiedHeapGC";
     case BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC:
       return "UnifiedHeapForMemoryReductionGC";
+    case BlinkGC::GCReason::kUnifiedHeapForcedForTestingGC:
+      return "UnifiedHeapForcedForTestingGC";
   }
   IMMEDIATE_CRASH();
 }

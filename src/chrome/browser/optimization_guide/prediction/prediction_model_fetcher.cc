@@ -15,6 +15,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/models.pb.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -50,8 +51,6 @@ bool PredictionModelFetcher::FetchOptimizationGuideServiceModels(
     ModelsFetchedCallback models_fetched_callback) {
   SEQUENCE_CHECKER(sequence_checker_);
 
-  // TODO(crbug/1030358): Make the fetcher a network quality tracker observer
-  // or move this logic to the prediction manager.
   if (content::GetNetworkConnectionTracker()->IsOffline()) {
     std::move(models_fetched_callback).Run(base::nullopt);
     return false;
@@ -125,8 +124,12 @@ bool PredictionModelFetcher::FetchOptimizationGuideServiceModels(
   resource_request->method = "POST";
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
-  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
-                                                 traffic_annotation);
+  url_loader_ = variations::CreateSimpleURLLoaderWithVariationsHeader(
+      std::move(resource_request),
+      // This is always InIncognito::kNo as the OptimizationGuideKeyedService is
+      // not enabled on incognito sessions and is rechecked before each fetch.
+      variations::InIncognito::kNo, variations::SignedIn::kNo,
+      traffic_annotation);
 
   url_loader_->AttachStringForUpload(serialized_request,
                                      "application/x-protobuf");

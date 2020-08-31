@@ -30,6 +30,7 @@ from six.moves import http_client as httplib
 from six.moves import http_cookiejar as cookielib
 from six.moves import urllib
 
+from chromite.lib import auth
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -191,11 +192,19 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     except httplib2.ServerNotFoundError as e:
       pass
 
-  if 'Cookie' not in headers:
-    cookies = GetCookies(host, path)
+  cookies = GetCookies(host, path)
+  if 'Cookie' not in headers and cookies:
     headers['Cookie'] = '; '.join('%s=%s' % (n, v) for n, v in cookies.items())
   elif 'Authorization' not in headers:
-    logging.debug('No gitcookies file or Appengine credentials found.')
+    try:
+      git_creds = auth.GitCreds()
+    except auth.AccessTokenError:
+      git_creds = None
+    if git_creds:
+      headers.setdefault('Authorization', 'Bearer %s' % git_creds)
+    else:
+      logging.debug(
+          'No gitcookies file, Appengine credentials, or LUCI git creds found.')
 
   if 'User-Agent' not in headers:
     # We may not be in a git repository.
@@ -493,6 +502,30 @@ def GetChangeReviewers(host, change):
   GetReviewers(host, change)
 
 
+def ReviewedChange(host, change):
+  """Mark a gerrit change as reviewed."""
+  path = '%s/reviewed' % _GetChangePath(change)
+  return FetchUrlJson(host, path, reqtype='PUT', ignore_404=False)
+
+
+def UnreviewedChange(host, change):
+  """Mark a gerrit change as unreviewed."""
+  path = '%s/unreviewed' % _GetChangePath(change)
+  return FetchUrlJson(host, path, reqtype='PUT', ignore_404=False)
+
+
+def IgnoreChange(host, change):
+  """Ignore a gerrit change."""
+  path = '%s/ignore' % _GetChangePath(change)
+  return FetchUrlJson(host, path, reqtype='PUT', ignore_404=False)
+
+
+def UnignoreChange(host, change):
+  """Unignore a gerrit change."""
+  path = '%s/unignore' % _GetChangePath(change)
+  return FetchUrlJson(host, path, reqtype='PUT', ignore_404=False)
+
+
 def AbandonChange(host, change, msg=''):
   """Abandon a gerrit change."""
   path = '%s/abandon' % _GetChangePath(change)
@@ -635,38 +668,39 @@ def GetReviewers(host, change):
   return FetchUrlJson(host, path)
 
 
-def AddReviewers(host, change, add=None):
+def AddReviewers(host, change, add=None, notify=None):
   """Add reviewers to a change."""
   if not add:
     return
   if isinstance(add, six.string_types):
     add = (add,)
+  body = {}
+  if notify:
+    body['notify'] = notify
   path = '%s/reviewers' % _GetChangePath(change)
   for r in add:
-    body = {'reviewer': r}
+    body['reviewer'] = r
     jmsg = FetchUrlJson(host, path, reqtype='POST', body=body, ignore_404=False)
   return jmsg
 
 
-def RemoveReviewers(host, change, remove=None):
+def RemoveReviewers(host, change, remove=None, notify=None):
   """Remove reveiewers from a change."""
   if not remove:
     return
   if isinstance(remove, six.string_types):
     remove = (remove,)
+  body = {}
+  if notify:
+    body['notify'] = notify
   for r in remove:
-    path = '%s/reviewers/%s' % (_GetChangePath(change), r)
+    path = '%s/reviewers/%s/delete' % (_GetChangePath(change), r)
     try:
-      FetchUrl(host, path, reqtype='DELETE', ignore_404=False)
+      FetchUrl(host, path, reqtype='POST', body=body, ignore_204=True)
     except GOBError as e:
       # On success, gerrit returns status 204; anything else is an error.
       if e.http_status != 204:
         raise
-    else:
-      raise GOBError(
-          http_status=200,
-          reason='Unexpectedly received a 200 http status while deleting'
-                 ' reviewer "%s" from change %s' % (r, change))
 
 
 def SetReview(host, change, revision=None, msg=None, labels=None, notify=None):

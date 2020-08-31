@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">option de menu</translation>
 <translation id="10623998915015855">bouton à bascule</translation>
 <translation id="1088086359088493902">Secondes</translation>
+<translation id="1142001580032786438">Afficher le sélecteur de semaine</translation>
 <translation id="1171774979989969504">Veuillez entrer une adresse de courriel.</translation>
 <translation id="1178581264944972037">Interrompre</translation>
 <translation id="1188858454923323853">complémentaire</translation>
@@ -11,6 +12,7 @@
 <translation id="1206693055195146388">curseur</translation>
 <translation id="1211441953136645838">note de fin</translation>
 <translation id="1281252709823657822">boîte de dialogue</translation>
+<translation id="1306460908038601864">Désactivé</translation>
 <translation id="1335095011850992622">crédits</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">bannière</translation>
@@ -21,6 +23,7 @@
 <translation id="1727886345390570319">masquer le menu des sous-titres</translation>
 <translation id="1729654308190250600">Veuillez entrer une adresse de courriel.</translation>
 <translation id="1758486001363313524">Autres...</translation>
+<translation id="1787192514241997742">durée totale : <ph name="REMAINING_TIME" /></translation>
 <translation id="1806710327868736751">boîte de dialogue d'alerte</translation>
 <translation id="1821985195704844674">arborescence</translation>
 <translation id="1822429046913737220">AM/PM</translation>
@@ -32,6 +35,7 @@
 <translation id="1938124657309484470">La valeur doit être <ph name="MAXIMUM_DATE_OR_TIME" /> ou plus tôt.</translation>
 <translation id="1946271899482435442">Afficher le sélecteur de date</translation>
 <translation id="1993104285338243655">Passage à la duplication d'écran</translation>
+<translation id="2031987842108996681">Canal rouge</translation>
 <translation id="2060505056492490888">Le symbole « <ph name="DOT" /> » est utilisé à une position incorrecte dans « <ph name="INVALIDDOMAIN" /> ».</translation>
 <translation id="2148716181193084225">Aujourd'hui</translation>
 <translation id="2158401438286456825">liste des pages</translation>
@@ -42,6 +46,7 @@
 <translation id="2291999235780842123">case à cocher</translation>
 <translation id="2311842470354187719">saut de page</translation>
 <translation id="2335594187091864976">sélecteur de date et d'heure</translation>
+<translation id="2393030564806080191">Valeur hexadécimale de la couleur</translation>
 <translation id="245932805758469625">nombre de secondes de vidéo restantes</translation>
 <translation id="248395913932153421">Jour</translation>
 <translation id="2507943997699731163">Veuillez remplir ce champ.</translation>
@@ -49,6 +54,7 @@
 <translation id="2561842179657104141">afficher plus de commandes multimédias</translation>
 <translation id="2572483411312390101">jouer</translation>
 <translation id="2613802280814924224">Veuillez entrer une valeur valide. La valeur valide la plus proche est <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Canal vert</translation>
 <translation id="2653659639078652383">Envoyer</translation>
 <translation id="2657045182931379222">objet graphique</translation>
 <translation id="2674318244760992338">bas de page</translation>
@@ -69,6 +75,7 @@
 <translation id="310520048233152454">Veuillez entrer une adresse URL.</translation>
 <translation id="3175736971608411871">minuteur</translation>
 <translation id="3199563858620722075">zone de liste déroulante</translation>
+<translation id="3329013043687509092">Saturation</translation>
 <translation id="3450233048674729344">La valeur doit être inférieure ou égale à <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">définition</translation>
 <translation id="3557673793733683882">titre <ph name="HEADING_LEVEL" /></translation>
@@ -82,7 +89,6 @@
 <translation id="3822383571486410024">Veuillez allonger ce texte de manière à ce qu'il comporte au moins <ph name="MIN_CHARACTERS" /> caractères (votre texte compte actuellement <ph name="CURRENT_LENGTH" /> caractères).</translation>
 <translation id="383465348367842624">Le texte précédant « <ph name="ATSIGN" /> » ne doit pas contenir le symbole « <ph name="INVALIDCHARACTER" /> ».</translation>
 <translation id="3846214748874656680">Quitter le mode Plein écran</translation>
-<translation id="3889183436948184105">révision</translation>
 <translation id="3920932319529768807">conclusion</translation>
 <translation id="3924558731517983934">application</translation>
 <translation id="3944740393230681990">prologue</translation>
@@ -100,7 +106,6 @@
 <translation id="4444765639179266822">La photo semble contenir le texte suivant : <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">référence du glossaire</translation>
 <translation id="4522570452068850558">Détails</translation>
-<translation id="4542388879936266156">temps restant : <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">formulaire</translation>
 <translation id="4661075872484491155">arbre</translation>
 <translation id="4664250907885839816">La partie suivant « <ph name="ATSIGN" /> » ne doit pas contenir le symbole « <ph name="INVALIDCHARACTER" /> ».</translation>
@@ -114,7 +119,10 @@
 <translation id="479989351350248267">chercher</translation>
 <translation id="4812940957355064477">Veuillez entrer un nombre.</translation>
 <translation id="4912536737030637138">entrée de bibliographie</translation>
+<translation id="4915360478455618802">Afficher le sélecteur d'heure</translation>
 <translation id="492244087561876220">commentaire</translation>
+<translation id="4950364064308314478">Afficher le sélecteur de date et d'heure locales</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> est sélectionné</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> élément(s) sélectionné(s)</translation>
 <translation id="4992066212339426712">Réactiver le son</translation>
 <translation id="49969490063480558">Veuillez entrer la partie manquante après « <ph name="ATSIGN" /> ». « <ph name="INVALIDADDRESS" /> » est incomplète.</translation>
@@ -122,6 +130,7 @@
 <translation id="5034860022980953847">indicateur de progression</translation>
 <translation id="5090250355906949916">barre de défilement pour la durée de la vidéo</translation>
 <translation id="5093189678851173835">épigraphe</translation>
+<translation id="509897012892853729">Canal bleu</translation>
 <translation id="5117590920725113268">Afficher le mois suivant</translation>
 <translation id="512758898067543763">en-tête de ligne</translation>
 <translation id="5143125788380636750">épilogue</translation>
@@ -129,6 +138,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> Po</translation>
 <translation id="5307600278924710095">Veuillez entrer la partie manquante avant le caractère « <ph name="ATSIGN" /> ». L'adresse « <ph name="INVALIDADDRESS" /> » est incomplète.</translation>
 <translation id="5334352251556557839">Impossible de faire jouer le média.</translation>
+<translation id="537648784377940524">La date minimale (<ph name="MIN_DATE_OR_TIME" />) doit être antérieure à la date maximale (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">figure</translation>
 <translation id="5453733299334684579">élément d'arborescence</translation>
 <translation id="5466621249238537318">Veuillez sélectionner un ou plusieurs fichiers.</translation>
@@ -144,7 +154,6 @@
 <translation id="5677946354068040947">autres options</translation>
 <translation id="576709008726043716">introduction</translation>
 <translation id="57838592816432529">Désactiver le son</translation>
-<translation id="5860033963881614850">Désactivé</translation>
 <translation id="588258955323874662">Plein écran</translation>
 <translation id="5888666972993069672">Diffusion sur <ph name="DEVICE_FRIENDLY_NAME" /> en cours…</translation>
 <translation id="591047860372322273">champ de recherche</translation>
@@ -159,6 +168,7 @@
 <translation id="6166809985690652833">postface</translation>
 <translation id="6209276755895393898">L'image semble être : <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossaire</translation>
+<translation id="6281588256137006900">Luminosité</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Quitter le mode d'incrustation d'image</translation>
 <translation id="6398862346408813489">Afficher le panneau de sélection du mois</translation>
@@ -179,6 +189,7 @@
 <translation id="6790428901817661496">Jouer</translation>
 <translation id="6820355525329141109">Échec du chargement du plugiciel.</translation>
 <translation id="6820615603175220800">référence bibliographique</translation>
+<translation id="6831465880655513317">Cercle chromatique avec un curseur en deux dimensions pour sélectionner la saturation et la luminosité</translation>
 <translation id="6843725295806269523">Désactivation du son</translation>
 <translation id="6885760532393684712">répertoire</translation>
 <translation id="689129560213475294">colophon</translation>
@@ -196,6 +207,7 @@
 <translation id="7263440858009898357">Veuillez sélectionner un élément dans la liste.</translation>
 <translation id="727747134524199931">en-tête de colonne</translation>
 <translation id="7320576522385648310">mise en tampon</translation>
+<translation id="7341556277900466204">Cercle chromatique</translation>
 <translation id="7353453495576941748">crédit</translation>
 <translation id="7364796246159120393">Sélectionner un fichier</translation>
 <translation id="739024184232394898">Autre...</translation>
@@ -216,9 +228,11 @@
 <translation id="775297008183122718">Entrée non valide</translation>
 <translation id="7789962463072032349">pause</translation>
 <translation id="7802800022689234070">triangle d'affichage</translation>
+<translation id="7852167693871241274">Curseur des nuances de couleurs</translation>
 <translation id="7888071071722539607">Veuillez ajouter « <ph name="ATSIGN" /> » dans l'adresse de courriel. Il manque un symbole « <ph name="ATSIGN" /> » dans « <ph name="INVALIDADDRESS" /> ».</translation>
 <translation id="7891486169920085145">séparateur</translation>
 <translation id="795667975304826397">Aucun fichier sélectionné</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> n'est pas sélectionné</translation>
 <translation id="8034303206267677282">important</translation>
 <translation id="8053789581856978548">champ de recherche textuelle</translation>
 <translation id="8057695513531652401">avis</translation>
@@ -231,6 +245,7 @@
 <translation id="8284326494547611709">Sous-titres</translation>
 <translation id="8346634859695247203">section</translation>
 <translation id="835897206747267392">Valeur non valide.</translation>
+<translation id="839593075537728968">La valeur doit être comprise entre <ph name="MINIMUM_TIME" /> et <ph name="MAXIMUM_TIME" />.</translation>
 <translation id="8403857369060869934">temps écoulé : <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">partie</translation>
 <translation id="8433900881053900389">barre d'outils</translation>
@@ -247,17 +262,19 @@
 <translation id="860475260694818407">table des matières</translation>
 <translation id="8613126697340063924">contrôler la lecture à distance</translation>
 <translation id="862370744433916922">sous-titre</translation>
+<translation id="8634971699417195529">Afficher le sélecteur de mois</translation>
 <translation id="8711688047404765493">sortie</translation>
 <translation id="8750798805984357768">Veuillez sélectionner l'une de ces options.</translation>
 <translation id="8808573423886751634">chapitre</translation>
 <translation id="8845239796550121995">Diffusion sur votre téléviseur en cours…</translation>
 <translation id="8851136666856101339">principal</translation>
 <translation id="8875657656876809964">Erreur de lecture de la vidéo</translation>
+<translation id="8889402386540077796">Teinte</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> ko</translation>
+<translation id="894736920926684893">Commutateur de format</translation>
 <translation id="8987927404178983737">Mois</translation>
 <translation id="901493112792887934">Durée actuelle en secondes</translation>
 <translation id="901834265349196618">courriel</translation>
-<translation id="9023835124071926463">section des commentaires</translation>
 <translation id="9048119486235211610">navigation</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9093215626363556771">quitter le mode d'incrustation d'image</translation>

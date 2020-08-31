@@ -3,17 +3,18 @@
 // found in the LICENSE file.
 
 #include "ui/accessibility/platform/ax_platform_node_unittest.h"
+
 #include "ui/accessibility/ax_constants.mojom.h"
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
 
 namespace ui {
 
-AXPlatformNodeTest::AXPlatformNodeTest() {}
+AXPlatformNodeTest::AXPlatformNodeTest() = default;
 
-AXPlatformNodeTest::~AXPlatformNodeTest() {}
+AXPlatformNodeTest::~AXPlatformNodeTest() = default;
 
 void AXPlatformNodeTest::Init(const AXTreeUpdate& initial_state) {
-  tree_ = std::make_unique<AXTree>(initial_state);
+  SetTree(std::make_unique<AXTree>(initial_state));
 }
 
 void AXPlatformNodeTest::Init(
@@ -57,30 +58,6 @@ void AXPlatformNodeTest::Init(
   if (node12.id != no_id)
     update.nodes.push_back(node12);
   Init(update);
-}
-
-AXNode* AXPlatformNodeTest::GetNodeFromTree(const ui::AXTreeID tree_id,
-                                            const int32_t node_id) const {
-  if (GetTreeID() == tree_id)
-    return tree_->GetFromId(node_id);
-
-  return nullptr;
-}
-
-AXTreeID AXPlatformNodeTest::GetTreeID() const {
-  return tree_->data().tree_id;
-}
-
-AXTreeID AXPlatformNodeTest::GetParentTreeID() const {
-  return GetTreeID();
-}
-
-ui::AXNode* AXPlatformNodeTest::GetRootAsAXNode() const {
-  return GetRootNode();
-}
-
-ui::AXNode* AXPlatformNodeTest::GetParentNodeFromParentTreeAsAXNode() const {
-  return nullptr;
 }
 
 AXTreeUpdate AXPlatformNodeTest::BuildTextField() {
@@ -379,13 +356,13 @@ AXTreeUpdate AXPlatformNodeTest::BuildListBox(
     bool option_1_is_selected,
     bool option_2_is_selected,
     bool option_3_is_selected,
-    ax::mojom::State additional_state /* ax::mojom::State::kNone */) {
+    const std::vector<ax::mojom::State>& additional_state) {
   AXNodeData listbox;
   listbox.id = 1;
   listbox.SetName("ListBox");
   listbox.role = ax::mojom::Role::kListBox;
-  if (additional_state != ax::mojom::State::kNone)
-    listbox.AddState(additional_state);
+  for (auto state : additional_state)
+    listbox.AddState(state);
 
   AXNodeData option_1;
   option_1.id = 2;

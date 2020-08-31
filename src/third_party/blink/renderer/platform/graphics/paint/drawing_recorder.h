@@ -21,7 +21,7 @@ namespace blink {
 class GraphicsContext;
 
 class PLATFORM_EXPORT DrawingRecorder final {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
   static bool UseCachedDrawingIfPossible(GraphicsContext& context,
@@ -50,22 +50,15 @@ class PLATFORM_EXPORT DrawingRecorder final {
 
   ~DrawingRecorder();
 
-  void SetKnownToBeOpaque() {
-    DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-    known_to_be_opaque_ = true;
-  }
-
  private:
   GraphicsContext& context_;
   const DisplayItemClient& client_;
   const DisplayItem::Type type_;
-
-  // True if there are no transparent areas. Only used for CompositeAfterPaint.
-  bool known_to_be_opaque_;
+  base::Optional<DOMNodeId> dom_node_id_to_restore_;
 
 #if DCHECK_IS_ON()
   // Ensures the list size does not change during the recorder's scope.
-  size_t initial_display_item_list_size_;
+  wtf_size_t initial_display_item_list_size_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DrawingRecorder);

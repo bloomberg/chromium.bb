@@ -15,12 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 
 class SkBitmap;
-
-namespace content {
-struct FaviconURL;
-}
 
 namespace gfx {
 class Size;
@@ -56,6 +53,8 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   // |extra_favicon_urls| argument).
   void SkipPageFavicons();
 
+  void FailAllIfAnyFail();
+
   void Start();
 
  private:
@@ -65,13 +64,14 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   // This is overridden in testing.
   virtual int DownloadImage(const GURL& url);
 
-  // Queries FaviconDriver for the page's current favicon URLs.
+  // Queries WebContents for the page's current favicon URLs.
   // This is overridden in testing.
-  virtual std::vector<content::FaviconURL> GetFaviconURLsFromWebContents();
+  virtual const std::vector<blink::mojom::FaviconURLPtr>&
+  GetFaviconURLsFromWebContents();
 
   // Fetches icons for the given urls.
   // |callback_| is run when all downloads complete.
-  void FetchIcons(const std::vector<content::FaviconURL>& favicon_urls);
+  void FetchIcons(const std::vector<blink::mojom::FaviconURLPtr>& favicon_urls);
   void FetchIcons(const std::vector<GURL>& urls);
 
   // Icon download callback.
@@ -85,10 +85,16 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidUpdateFaviconURL(
-      const std::vector<content::FaviconURL>& candidates) override;
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
+
+  void CancelDownloads();
 
   // Whether we need to fetch favicons from the renderer.
   bool need_favicon_urls_;
+
+  // Whether we consider all requests to have failed if any individual URL fails
+  // to load.
+  bool fail_all_if_any_fail_;
 
   // URLs that aren't given by WebContentsObserver::DidUpdateFaviconURL() that
   // should be used for this favicon. This is necessary in order to get touch

@@ -36,7 +36,7 @@ struct Setting : public Expression {
         return fName;
     }
 
-    bool hasSideEffects() const override {
+    bool hasProperty(Property property) const override {
         return false;
     }
 

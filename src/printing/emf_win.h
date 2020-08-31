@@ -52,7 +52,7 @@ class PRINTING_EXPORT Emf : public Metafile {
 
   // Metafile methods.
   bool Init() override;
-  bool InitFromData(const void* src_buffer, size_t src_buffer_size) override;
+  bool InitFromData(base::span<const uint8_t> data) override;
 
   // Inserts a custom GDICOMMENT records indicating StartPage/EndPage calls
   // (since StartPage and EndPage do not work in a metafile DC). Only valid
@@ -60,7 +60,7 @@ class PRINTING_EXPORT Emf : public Metafile {
   // ignored.
   void StartPage(const gfx::Size& page_size,
                  const gfx::Rect& content_area,
-                 const float& scale_factor) override;
+                 float scale_factor) override;
   bool FinishPage() override;
   bool FinishDocument() override;
 

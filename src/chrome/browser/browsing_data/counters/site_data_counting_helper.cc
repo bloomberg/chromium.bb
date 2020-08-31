@@ -8,9 +8,9 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,6 +26,7 @@
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -118,9 +119,9 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
       BrowsingDataMediaLicenseHelper::Create(file_system_context);
   if (media_license_helper_) {
     tasks_ += 1;
-    media_license_helper_->StartFetching(base::BindRepeating(
-        &SiteDataCountingHelper::SitesWithMediaLicensesCallback,
-        base::Unretained(this)));
+    media_license_helper_->StartFetching(
+        base::BindOnce(&SiteDataCountingHelper::SitesWithMediaLicensesCallback,
+                       base::Unretained(this)));
   }
 #endif
 
@@ -195,19 +196,6 @@ void SiteDataCountingHelper::GetLocalStorageUsageInfoCallback(
   Done(origins);
 }
 
-void SiteDataCountingHelper::GetSessionStorageUsageInfoCallback(
-    const scoped_refptr<storage::SpecialStoragePolicy>& policy,
-    const std::vector<content::SessionStorageUsageInfo>& infos) {
-  std::vector<GURL> origins;
-  for (const auto& info : infos) {
-    // Session storage doesn't know about creation time.
-    if (!policy || !policy->IsStorageProtected(info.origin)) {
-      origins.push_back(info.origin);
-    }
-  }
-  Done(origins);
-}
-
 void SiteDataCountingHelper::SitesWithFlashDataCallback(
     const std::vector<std::string>& sites) {
   std::vector<GURL> origins;
@@ -232,7 +220,7 @@ void SiteDataCountingHelper::Done(const std::vector<GURL>& origins) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(tasks_ > 0);
   for (const GURL& origin : origins) {
-    if (BrowsingDataHelper::HasWebScheme(origin))
+    if (browsing_data::HasWebScheme(origin))
       unique_hosts_.insert(origin.host());
   }
   if (--tasks_ > 0)

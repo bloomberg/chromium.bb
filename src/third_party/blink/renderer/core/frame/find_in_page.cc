@@ -37,6 +37,7 @@
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_document.h"
 #include "third_party/blink/public/web/web_widget_client.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -62,6 +63,10 @@ void FindInPage::Find(int request_id,
                       const String& search_text,
                       mojom::blink::FindOptionsPtr options) {
   DCHECK(!search_text.IsEmpty());
+
+  // Record the fact that we have a find-in-page request.
+  frame_->GetFrame()->GetDocument()->MarkHasFindInPageRequest();
+
   blink::WebPlugin* plugin = GetWebPluginForFind();
   // Check if the plugin still exists in the document.
   if (plugin) {
@@ -89,6 +94,12 @@ void FindInPage::Find(int request_id,
   WebRange current_selection = frame_->SelectionRange();
   bool result = false;
   bool active_now = false;
+
+  if (!options->find_next) {
+    // If this is an initial find request, cancel any pending scoping effort
+    // done by the previous find request.
+    EnsureTextFinder().CancelPendingScopingEffort();
+  }
 
   // Search for an active match only if this frame is focused or if this is a
   // find next
@@ -166,9 +177,15 @@ bool FindInPage::FindInternal(int identifier,
   // Unlikely, but just in case we try to find-in-page on a detached frame.
   DCHECK(frame_->GetFrame()->GetPage());
 
+  auto forced_activatable_locks = frame_->GetFrame()
+                                      ->GetDocument()
+                                      ->GetDisplayLockDocumentState()
+                                      .GetScopedForceActivatableLocks();
+
   // Up-to-date, clean tree is required for finding text in page, since it
   // relies on TextIterator to look over the text.
-  frame_->GetFrame()->GetDocument()->UpdateStyleAndLayout();
+  frame_->GetFrame()->GetDocument()->UpdateStyleAndLayout(
+      DocumentUpdateReason::kFindInPage);
 
   return EnsureTextFinder().Find(identifier, search_text, options,
                                  wrap_within_frame, active_now);
@@ -209,15 +226,15 @@ int FindInPage::FindMatchMarkersVersion() const {
   return 0;
 }
 
-WebFloatRect FindInPage::ActiveFindMatchRect() {
+gfx::RectF FindInPage::ActiveFindMatchRect() {
   if (GetTextFinder())
     return GetTextFinder()->ActiveFindMatchRect();
-  return WebFloatRect();
+  return gfx::RectF();
 }
 
 void FindInPage::ActivateNearestFindResult(int request_id,
-                                           const WebFloatPoint& point) {
-  WebRect active_match_rect;
+                                           const gfx::PointF& point) {
+  gfx::Rect active_match_rect;
   const int ordinal =
       EnsureTextFinder().SelectNearestFindMatch(point, &active_match_rect);
   if (ordinal == -1) {
@@ -239,17 +256,17 @@ void FindInPage::SetClient(
   client_.Bind(std::move(remote));
 }
 
-void FindInPage::GetNearestFindResult(const WebFloatPoint& point,
+void FindInPage::GetNearestFindResult(const gfx::PointF& point,
                                       GetNearestFindResultCallback callback) {
   float distance;
-  EnsureTextFinder().NearestFindMatch(point, &distance);
+  EnsureTextFinder().NearestFindMatch(FloatPoint(point), &distance);
   std::move(callback).Run(distance);
 }
 
 void FindInPage::FindMatchRects(int current_version,
                                 FindMatchRectsCallback callback) {
   int rects_version = FindMatchMarkersVersion();
-  Vector<WebFloatRect> rects;
+  Vector<gfx::RectF> rects;
   if (current_version != rects_version)
     rects = EnsureTextFinder().FindMatchRects();
   std::move(callback).Run(rects_version, rects, ActiveFindMatchRect());
@@ -333,7 +350,7 @@ void FindInPage::ReportFindInPageMatchCount(int request_id,
 
 void FindInPage::ReportFindInPageSelection(int request_id,
                                            int active_match_ordinal,
-                                           const blink::WebRect& selection_rect,
+                                           const gfx::Rect& selection_rect,
                                            bool final_update) {
   // In tests, |client_| might not be set.
   if (!client_)

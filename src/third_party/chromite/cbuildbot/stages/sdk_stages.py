@@ -386,5 +386,9 @@ class SDKUprevStage(generic_stages.BuilderStage):
             'version': self._version
         },
     }
-    upload_prebuilts.RevGitFile(
-        sdk_conf, sdk_settings, dryrun=self._run.options.debug)
+    if self._run.options.publish:
+      upload_prebuilts.RevGitFile(
+          sdk_conf, sdk_settings, dryrun=self._run.options.debug)
+    else:
+      logging.info(
+          'Not updating sdk_version.conf because publishing was disabled.')

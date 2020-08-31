@@ -15,6 +15,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -152,6 +153,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Initializes the window. This creates the window's layer.
   void Init(ui::LayerType layer_type);
 
+  bool is_destroying() const { return is_destroying_; }
   void set_owned_by_parent(bool owned_by_parent) {
     owned_by_parent_ = owned_by_parent;
   }
@@ -399,9 +401,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Overridden from ui::LayerOwner:
   std::unique_ptr<ui::Layer> RecreateLayer() override;
 
-#if !defined(NDEBUG)
+#if DCHECK_IS_ON()
   // These methods are useful when debugging.
   std::string GetDebugInfo() const;
+  std::string GetWindowHierarchy(int depth) const;
   void PrintWindowHierarchy(int depth) const;
 #endif
 
@@ -600,7 +603,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                           ui::PropertyChangeReason reason) override;
   void OnLayerOpacityChanged(ui::PropertyChangeReason reason) override;
   void OnLayerAlphaShapeChanged() override;
-  void OnLayerFillsBoundsOpaquelyChanged() override;
+  void OnLayerFillsBoundsOpaquelyChanged(
+      ui::PropertyChangeReason reason) override;
 
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override;
@@ -634,6 +638,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   WindowTreeHost* host_ = nullptr;
 
   client::WindowType type_;
+
+  // True if this window is being destroyed.
+  bool is_destroying_ = false;
 
   // True if the Window is owned by its parent - i.e. it will be deleted by its
   // parent during its parents destruction.

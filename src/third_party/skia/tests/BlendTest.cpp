@@ -19,11 +19,12 @@
 #include "include/core/SkTypes.h"
 #include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrContext.h"
-#include "include/gpu/GrTexture.h"
 #include "include/gpu/GrTypes.h"
 #include "include/private/GrTypesPriv.h"
+#include "src/gpu/GrCaps.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrResourceProvider.h"
+#include "src/gpu/GrTexture.h"
 #include "tests/Test.h"
 #include "tools/gpu/GrContextFactory.h"
 
@@ -88,19 +89,15 @@ DEF_TEST(Blend_byte_multiply, r) {
 
 namespace {
 static sk_sp<SkSurface> create_gpu_surface_backend_texture_as_render_target(
-        GrContext* context, int sampleCnt, int width, int height, SkColorType colorType,
+        GrContext* context, int sampleCnt, SkISize dimensions, SkColorType colorType,
         GrSurfaceOrigin origin, sk_sp<GrTexture>* backingSurface) {
-    GrSurfaceDesc backingDesc;
-    backingDesc.fWidth = width;
-    backingDesc.fHeight = height;
     auto ct = SkColorTypeToGrColorType(colorType);
-    backingDesc.fConfig = GrColorTypeToPixelConfig(ct);
     auto format = context->priv().caps()->getDefaultBackendFormat(ct, GrRenderable::kYes);
 
     auto resourceProvider = context->priv().resourceProvider();
 
     *backingSurface =
-            resourceProvider->createTexture(backingDesc, format, GrRenderable::kYes, sampleCnt,
+            resourceProvider->createTexture(dimensions, format, GrRenderable::kYes, sampleCnt,
                                             GrMipMapped::kNo, SkBudgeted::kNo, GrProtected::kNo);
     if (!(*backingSurface)) {
         return nullptr;
@@ -119,8 +116,7 @@ static sk_sp<SkSurface> create_gpu_surface_backend_texture_as_render_target(
 // Tests blending to a surface with no texture available.
 DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(ES2BlendWithNoTexture, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    const int kWidth = 10;
-    const int kHeight = 10;
+    static constexpr SkISize kDimensions{10, 10};
     const SkColorType kColorType = kRGBA_8888_SkColorType;
 
     // Build our test cases:
@@ -163,7 +159,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(ES2BlendWithNoTexture, reporter, ctxInfo) 
         sk_sp<GrTexture> backingSurface;
         // BGRA forces a framebuffer blit on ES2.
         sk_sp<SkSurface> surface = create_gpu_surface_backend_texture_as_render_target(
-                context, sampleCnt, kWidth, kHeight, kColorType, origin, &backingSurface);
+                context, sampleCnt, kDimensions, kColorType, origin, &backingSurface);
 
         if (!surface && sampleCnt > 1) {
             // Some platforms don't support MSAA.
@@ -176,7 +172,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(ES2BlendWithNoTexture, reporter, ctxInfo) 
         canvas->clipRect(testCase.fClip, false);
         SkPaint black_paint;
         black_paint.setColor(SkColorSetRGB(0xFF, 0xFF, 0x80));
-        canvas->drawRect(SkRect::MakeXYWH(0, 0, kWidth, kHeight), black_paint);
+        canvas->drawRect(SkRect::Make(kDimensions), black_paint);
 
         // Blend 2x2 pixels at 5,5 with 0x80FFFF. Use multiply blend mode as this will trigger
         // a copy of the destination.
@@ -187,8 +183,8 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(ES2BlendWithNoTexture, reporter, ctxInfo) 
 
         // Read the result into a bitmap.
         SkBitmap bitmap;
-        REPORTER_ASSERT(reporter, bitmap.tryAllocPixels(SkImageInfo::Make(
-                                          kWidth, kHeight, kColorType, kPremul_SkAlphaType)));
+        REPORTER_ASSERT(reporter, bitmap.tryAllocPixels(SkImageInfo::Make(kDimensions, kColorType,
+                                                                          kPremul_SkAlphaType)));
         REPORTER_ASSERT(
                 reporter,
                 surface->readPixels(bitmap.info(), bitmap.getPixels(), bitmap.rowBytes(), 0, 0));

@@ -6,15 +6,13 @@
 
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
-#include "components/viz/service/display/overlay_candidate_list.h"
-#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace viz {
 
 OverlayStrategyFullscreen::OverlayStrategyFullscreen(
-    OverlayCandidateValidatorStrategy* capability_checker)
+    OverlayProcessorUsingStrategy* capability_checker)
     : capability_checker_(capability_checker) {
   DCHECK(capability_checker);
 }
@@ -23,7 +21,8 @@ OverlayStrategyFullscreen::~OverlayStrategyFullscreen() {}
 
 bool OverlayStrategyFullscreen::Attempt(
     const SkMatrix44& output_color_matrix,
-    const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
+    const OverlayProcessorInterface::FilterOperationsMap&
+        render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
     RenderPassList* render_pass_list,
     const PrimaryPlane* primary_plane,

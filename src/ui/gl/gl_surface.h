@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -19,6 +20,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/gfx/surface_origin.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"
@@ -26,14 +28,15 @@
 #include "ui/gl/gl_surface_format.h"
 
 namespace gfx {
+class ColorSpace;
 class GpuFence;
 class VSyncProvider;
-}
+}  // namespace gfx
 
 namespace ui {
 struct CARendererLayerParams;
 struct DCRendererLayerParams;
-}
+}  // namespace ui
 
 namespace gl {
 
@@ -42,7 +45,8 @@ class EGLTimestampClient;
 
 // Encapsulates a surface that can be rendered to with GL, hiding platform
 // specific management.
-class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
+class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
+                            public base::SupportsWeakPtr<GLSurface> {
  public:
   GLSurface();
 
@@ -67,20 +71,11 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // opportunity for this cleanup.
   virtual void PrepareToDestroy(bool have_context);
 
-  // Color spaces that can be dynamically specified to the surface when resized.
-  enum class ColorSpace {
-    UNSPECIFIED,
-    SRGB,
-    DISPLAY_P3,
-    SCRGB_LINEAR,
-    HDR10,
-  };
-
   // Resizes the surface, returning success. If failed, it is possible that the
   // context is no longer current.
   virtual bool Resize(const gfx::Size& size,
                       float scale_factor,
-                      ColorSpace color_space,
+                      const gfx::ColorSpace& color_space,
                       bool has_alpha);
 
   // Recreate the surface without changing the size, returning success. If
@@ -205,10 +200,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Get the platfrom specific configuration for this surface, if available.
   virtual void* GetConfig();
 
-  // Get the key corresponding to the set of GLSurfaces that can be made current
-  // with this GLSurface.
-  virtual unsigned long GetCompatibilityKey();
-
   // Get the GL pixel format of the surface. Must be implemented in a
   // subclass, though it's ok to just "return GLSurfaceFormat()" if
   // the default is appropriate.
@@ -265,15 +256,13 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   virtual bool IsSurfaceless() const;
 
-  virtual bool FlipsVertically() const;
+  virtual gfx::SurfaceOrigin GetOrigin() const;
 
   // Returns true if SwapBuffers or PostSubBuffers causes a flip, such that
   // the next buffer may be 2 frames old.
   virtual bool BuffersFlipped() const;
 
   virtual bool SupportsDCLayers() const;
-
-  virtual bool UseOverlaysForVideo() const;
 
   virtual bool SupportsProtectedVideo() const;
 
@@ -310,17 +299,21 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   virtual void SetGpuVSyncEnabled(bool enabled);
 
   virtual void SetDisplayTransform(gfx::OverlayTransform transform) {}
+  virtual void SetFrameRate(float frame_rate) {}
 
   static GLSurface* GetCurrent();
+
+  virtual void SetCurrent();
+  virtual bool IsCurrent();
+
+  static bool ExtensionsContain(const char* extensions, const char* name);
 
  protected:
   virtual ~GLSurface();
 
-  static void SetCurrent(GLSurface* surface);
-
-  static bool ExtensionsContain(const char* extensions, const char* name);
-
  private:
+  static void ClearCurrent();
+
   friend class base::RefCounted<GLSurface>;
   friend class GLContext;
 
@@ -338,7 +331,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
-              ColorSpace color_space,
+              const gfx::ColorSpace& color_space,
               bool has_alpha) override;
   bool Recreate() override;
   bool DeferDraws() override;
@@ -376,7 +369,6 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   void* GetShareHandle() override;
   void* GetDisplay() override;
   void* GetConfig() override;
-  unsigned long GetCompatibilityKey() override;
   GLSurfaceFormat GetFormat() override;
   gfx::VSyncProvider* GetVSyncProvider() override;
   void SetVSyncEnabled(bool enabled) override;
@@ -390,10 +382,9 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool ScheduleDCLayer(const ui::DCRendererLayerParams& params) override;
   bool SetEnableDCLayers(bool enable) override;
   bool IsSurfaceless() const override;
-  bool FlipsVertically() const override;
+  gfx::SurfaceOrigin GetOrigin() const override;
   bool BuffersFlipped() const override;
   bool SupportsDCLayers() const override;
-  bool UseOverlaysForVideo() const override;
   bool SupportsProtectedVideo() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
@@ -406,6 +397,9 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool SupportsGpuVSync() const override;
   void SetGpuVSyncEnabled(bool enabled) override;
   void SetDisplayTransform(gfx::OverlayTransform transform) override;
+  void SetFrameRate(float frame_rate) override;
+  void SetCurrent() override;
+  bool IsCurrent() override;
 
   GLSurface* surface() const { return surface_.get(); }
 

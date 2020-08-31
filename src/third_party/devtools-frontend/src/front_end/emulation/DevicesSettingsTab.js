@@ -1,11 +1,18 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Common from '../common/common.js';
+import * as UI from '../ui/ui.js';
+
+import {DeviceModeModel, MaxDeviceNameLength, UA} from './DeviceModeModel.js';
+import {Capability, EmulatedDevice, EmulatedDevicesList, Events, Horizontal, Vertical,} from './EmulatedDevices.js';
+
 /**
  * @implements {UI.ListWidget.Delegate}
  * @unrestricted
  */
-Emulation.DevicesSettingsTab = class extends UI.VBox {
+export class DevicesSettingsTab extends UI.Widget.VBox {
   constructor() {
     super();
     this.element.classList.add('settings-tab-container');
@@ -19,20 +26,18 @@ Emulation.DevicesSettingsTab = class extends UI.VBox {
 
     const buttonsRow = this.containerElement.createChild('div', 'devices-button-row');
     this._addCustomButton =
-        UI.createTextButton(Common.UIString('Add custom device...'), this._addCustomDevice.bind(this));
+        UI.UIUtils.createTextButton(Common.UIString.UIString('Add custom device...'), this._addCustomDevice.bind(this));
     buttonsRow.appendChild(this._addCustomButton);
 
-    this._list = new UI.ListWidget(this);
+    this._list = new UI.ListWidget.ListWidget(this, false /* delegatesFocus */);
     this._list.registerRequiredCSS('emulation/devicesSettingsTab.css');
     this._list.element.classList.add('devices-list');
     this._list.show(this.containerElement);
 
     this._muteUpdate = false;
-    this._emulatedDevicesList = Emulation.EmulatedDevicesList.instance();
-    this._emulatedDevicesList.addEventListener(
-        Emulation.EmulatedDevicesList.Events.CustomDevicesUpdated, this._devicesUpdated, this);
-    this._emulatedDevicesList.addEventListener(
-        Emulation.EmulatedDevicesList.Events.StandardDevicesUpdated, this._devicesUpdated, this);
+    this._emulatedDevicesList = EmulatedDevicesList.instance();
+    this._emulatedDevicesList.addEventListener(Events.CustomDevicesUpdated, this._devicesUpdated, this);
+    this._emulatedDevicesList.addEventListener(Events.StandardDevicesUpdated, this._devicesUpdated, this);
 
     this.setDefaultFocusedElement(this._addCustomButton);
   }
@@ -60,7 +65,7 @@ Emulation.DevicesSettingsTab = class extends UI.VBox {
     this._list.appendSeparator();
 
     devices = this._emulatedDevicesList.standard().slice();
-    devices.sort(Emulation.EmulatedDevice.deviceComparator);
+    devices.sort(EmulatedDevice.deviceComparator);
     for (let i = 0; i < devices.length; ++i) {
       this._list.appendItem(devices[i], false);
     }
@@ -80,7 +85,7 @@ Emulation.DevicesSettingsTab = class extends UI.VBox {
   }
 
   _addCustomDevice() {
-    const device = new Emulation.EmulatedDevice();
+    const device = new EmulatedDevice();
     device.deviceScaleFactor = 0;
     device.horizontal.width = 700;
     device.horizontal.height = 400;
@@ -104,25 +109,24 @@ Emulation.DevicesSettingsTab = class extends UI.VBox {
    * @return {!Element}
    */
   renderItem(item, editable) {
-    const device = /** @type {!Emulation.EmulatedDevice} */ (item);
-    const element = createElementWithClass('div', 'devices-list-item');
-    const checkbox = element.createChild('input', 'devices-list-checkbox');
+    const device = /** @type {!EmulatedDevice} */ (item);
+    const label = document.createElement('label');
+    label.classList.add('devices-list-item');
+    const checkbox = label.createChild('input', 'devices-list-checkbox');
     checkbox.type = 'checkbox';
     checkbox.checked = device.show();
-    checkbox.addEventListener('click', event => event.consume(), false);
-    element.createChild('div', 'devices-list-title').textContent = device.title;
-    element.addEventListener('click', onItemClicked.bind(this), false);
-    return element;
+    checkbox.addEventListener('click', onItemClicked.bind(this), false);
+    label.appendChild(document.createTextNode(device.title));
+    return label;
 
     /**
      * @param {!Event} event
-     * @this {Emulation.DevicesSettingsTab}
+     * @this {DevicesSettingsTab}
      */
     function onItemClicked(event) {
-      const show = !checkbox.checked;
+      const show = checkbox.checked;
       device.setShow(show);
       this._muteAndSaveDeviceList(editable);
-      checkbox.checked = show;
       event.consume();
     }
   }
@@ -133,7 +137,7 @@ Emulation.DevicesSettingsTab = class extends UI.VBox {
    * @param {number} index
    */
   removeItemRequested(item, index) {
-    this._emulatedDevicesList.removeCustomDevice(/** @type {!Emulation.EmulatedDevice} */ (item));
+    this._emulatedDevicesList.removeCustomDevice(/** @type {!EmulatedDevice} */ (item));
   }
 
   /**
@@ -143,7 +147,7 @@ Emulation.DevicesSettingsTab = class extends UI.VBox {
    * @param {boolean} isNew
    */
   commitEdit(item, editor, isNew) {
-    const device = /** @type {!Emulation.EmulatedDevice} */ (item);
+    const device = /** @type {!EmulatedDevice} */ (item);
     device.title = editor.control('title').value.trim();
     device.vertical.width = editor.control('width').value ? parseInt(editor.control('width').value, 10) : 0;
     device.vertical.height = editor.control('height').value ? parseInt(editor.control('height').value, 10) : 0;
@@ -152,17 +156,15 @@ Emulation.DevicesSettingsTab = class extends UI.VBox {
     device.deviceScaleFactor = editor.control('scale').value ? parseFloat(editor.control('scale').value) : 0;
     device.userAgent = editor.control('user-agent').value;
     device.modes = [];
-    device.modes.push(
-        {title: '', orientation: Emulation.EmulatedDevice.Vertical, insets: new UI.Insets(0, 0, 0, 0), image: null});
-    device.modes.push(
-        {title: '', orientation: Emulation.EmulatedDevice.Horizontal, insets: new UI.Insets(0, 0, 0, 0), image: null});
+    device.modes.push({title: '', orientation: Vertical, insets: new UI.Geometry.Insets(0, 0, 0, 0), image: null});
+    device.modes.push({title: '', orientation: Horizontal, insets: new UI.Geometry.Insets(0, 0, 0, 0), image: null});
     device.capabilities = [];
     const uaType = editor.control('ua-type').value;
-    if (uaType === Emulation.DeviceModeModel.UA.Mobile || uaType === Emulation.DeviceModeModel.UA.MobileNoTouch) {
-      device.capabilities.push(Emulation.EmulatedDevice.Capability.Mobile);
+    if (uaType === UA.Mobile || uaType === UA.MobileNoTouch) {
+      device.capabilities.push(Capability.Mobile);
     }
-    if (uaType === Emulation.DeviceModeModel.UA.Mobile || uaType === Emulation.DeviceModeModel.UA.DesktopTouch) {
-      device.capabilities.push(Emulation.EmulatedDevice.Capability.Touch);
+    if (uaType === UA.Mobile || uaType === UA.DesktopTouch) {
+      device.capabilities.push(Capability.Touch);
     }
     if (isNew) {
       this._emulatedDevicesList.addCustomDevice(device);
@@ -179,7 +181,7 @@ Emulation.DevicesSettingsTab = class extends UI.VBox {
    * @return {!UI.ListWidget.Editor}
    */
   beginEdit(item) {
-    const device = /** @type {!Emulation.EmulatedDevice} */ (item);
+    const device = /** @type {!EmulatedDevice} */ (item);
     const editor = this._createEditor();
     editor.control('title').value = device.title;
     editor.control('width').value = this._toNumericInputValue(device.vertical.width);
@@ -188,9 +190,9 @@ Emulation.DevicesSettingsTab = class extends UI.VBox {
     editor.control('user-agent').value = device.userAgent;
     let uaType;
     if (device.mobile()) {
-      uaType = device.touch() ? Emulation.DeviceModeModel.UA.Mobile : Emulation.DeviceModeModel.UA.MobileNoTouch;
+      uaType = device.touch() ? UA.Mobile : UA.MobileNoTouch;
     } else {
-      uaType = device.touch() ? Emulation.DeviceModeModel.UA.DesktopTouch : Emulation.DeviceModeModel.UA.Desktop;
+      uaType = device.touch() ? UA.DesktopTouch : UA.Desktop;
     }
     editor.control('ua-type').value = uaType;
     return editor;
@@ -220,10 +222,7 @@ Emulation.DevicesSettingsTab = class extends UI.VBox {
     ua.appendChild(editor.createInput('user-agent', 'text', ls`User agent string`, () => {
       return {valid: true};
     }));
-    const uaTypeOptions = [
-      Emulation.DeviceModeModel.UA.Mobile, Emulation.DeviceModeModel.UA.MobileNoTouch,
-      Emulation.DeviceModeModel.UA.Desktop, Emulation.DeviceModeModel.UA.DesktopTouch
-    ];
+    const uaTypeOptions = [UA.Mobile, UA.MobileNoTouch, UA.Desktop, UA.DesktopTouch];
     const uaType = editor.createSelect('ua-type', uaTypeOptions, () => {
       return {valid: true};
     }, ls`User agent type`);
@@ -243,8 +242,8 @@ Emulation.DevicesSettingsTab = class extends UI.VBox {
       let errorMessage;
 
       const value = input.value.trim();
-      if (value.length >= Emulation.DeviceModeModel.MaxDeviceNameLength) {
-        errorMessage = ls`Device name must be less than ${Emulation.DeviceModeModel.MaxDeviceNameLength} characters.`;
+      if (value.length >= MaxDeviceNameLength) {
+        errorMessage = ls`Device name must be less than ${MaxDeviceNameLength} characters.`;
       } else if (value.length === 0) {
         errorMessage = ls`Device name cannot be empty.`;
       } else {
@@ -261,7 +260,7 @@ Emulation.DevicesSettingsTab = class extends UI.VBox {
      * @return {!UI.ListWidget.ValidatorResult}
      */
     function widthValidator(item, index, input) {
-      return Emulation.DeviceModeModel.widthValidator(input.value);
+      return DeviceModeModel.widthValidator(input.value);
     }
 
     /**
@@ -271,7 +270,7 @@ Emulation.DevicesSettingsTab = class extends UI.VBox {
      * @return {!UI.ListWidget.ValidatorResult}
      */
     function heightValidator(item, index, input) {
-      return Emulation.DeviceModeModel.heightValidator(input.value);
+      return DeviceModeModel.heightValidator(input.value);
     }
 
     /**
@@ -281,7 +280,7 @@ Emulation.DevicesSettingsTab = class extends UI.VBox {
      * @return {!UI.ListWidget.ValidatorResult}
      */
     function scaleValidator(item, index, input) {
-      return Emulation.DeviceModeModel.scaleValidator(input.value);
+      return DeviceModeModel.scaleValidator(input.value);
     }
   }
-};
+}

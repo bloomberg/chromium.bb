@@ -57,23 +57,24 @@
 namespace blink {
 
 DOMPatchSupport::DOMPatchSupport(DOMEditor* dom_editor, Document& document)
-    : dom_editor_(dom_editor), document_(document) {}
+    : dom_editor_(dom_editor), document_(&document) {}
 
 void DOMPatchSupport::PatchDocument(const String& markup) {
   Document* new_document = nullptr;
-  DocumentInit init = DocumentInit::Create();
-  if (GetDocument().IsHTMLDocument())
+  DocumentInit init =
+      DocumentInit::Create().WithContextDocument(&GetDocument());
+  if (IsA<HTMLDocument>(GetDocument()))
     new_document = MakeGarbageCollected<HTMLDocument>(init);
   else if (GetDocument().IsSVGDocument())
     new_document = XMLDocument::CreateSVG(init);
   else if (GetDocument().IsXHTMLDocument())
     new_document = XMLDocument::CreateXHTML(init);
-  else if (GetDocument().IsXMLDocument())
+  else if (IsA<XMLDocument>(GetDocument()))
     new_document = MakeGarbageCollected<XMLDocument>(init);
 
   DCHECK(new_document);
   new_document->SetContextFeatures(GetDocument().GetContextFeatures());
-  if (!GetDocument().IsHTMLDocument()) {
+  if (!IsA<HTMLDocument>(GetDocument())) {
     DocumentParser* parser =
         MakeGarbageCollected<XMLDocumentParser>(*new_document, nullptr);
     parser->Append(markup);
@@ -119,7 +120,7 @@ Node* DOMPatchSupport::PatchNode(Node* node,
   auto* target_element = To<Element>(target_node);
 
   // FIXME: This code should use one of createFragment* in Serialization.h
-  if (GetDocument().IsHTMLDocument())
+  if (IsA<HTMLDocument>(GetDocument()))
     fragment->ParseHTML(markup, target_element);
   else
     fragment->ParseXML(markup, target_element);
@@ -132,7 +133,7 @@ Node* DOMPatchSupport::PatchNode(Node* node,
     old_list.push_back(CreateDigest(child, nullptr));
 
   // Compose the new list.
-  String markup_copy = markup.DeprecatedLower();
+  String markup_copy = markup.LowerASCII();
   HeapVector<Member<Digest>> new_list;
   for (Node* child = parent_node->firstChild(); child != node;
        child = child->nextSibling())
@@ -532,7 +533,7 @@ void DOMPatchSupport::MarkNodeAsUsed(Digest* digest) {
   }
 }
 
-void DOMPatchSupport::Digest::Trace(blink::Visitor* visitor) {
+void DOMPatchSupport::Digest::Trace(Visitor* visitor) {
   visitor->Trace(node_);
   visitor->Trace(children_);
 }

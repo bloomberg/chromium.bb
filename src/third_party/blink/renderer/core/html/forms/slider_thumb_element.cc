@@ -47,12 +47,9 @@
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_slider_container.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
-
-inline static bool HasVerticalAppearance(HTMLInputElement* input) {
-  return input->ComputedStyleRef().EffectiveAppearance() == kSliderVerticalPart;
-}
 
 SliderThumbElement::SliderThumbElement(Document& document)
     : HTMLDivElement(document), in_drag_mode_(false) {
@@ -67,7 +64,7 @@ void SliderThumbElement::SetPositionFromValue() {
   if (GetLayoutObject()) {
     GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
         layout_invalidation_reason::kSliderValueChanged);
-    if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+    if (features::IsFormControlsRefreshEnabled()) {
       HTMLInputElement* input(HostInput());
       if (input && input->GetLayoutObject()) {
         // the slider track selected value needs to be updated.
@@ -116,7 +113,7 @@ void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
 
   PhysicalOffset point_in_track =
       track_box->AbsoluteToLocalPoint(PhysicalOffsetToBeNoop(point));
-  bool is_vertical = HasVerticalAppearance(input);
+  const bool is_vertical = !thumb_box->StyleRef().IsHorizontalWritingMode();
   bool is_left_to_right_direction =
       thumb_box->StyleRef().IsLeftToRightDirection();
   LayoutUnit track_size;
@@ -199,13 +196,13 @@ void SliderThumbElement::StopDragging() {
 }
 
 void SliderThumbElement::DefaultEventHandler(Event& event) {
-  if (event.IsPointerEvent() &&
+  if (IsA<PointerEvent>(event) &&
       event.type() == event_type_names::kLostpointercapture) {
     StopDragging();
     return;
   }
 
-  if (!event.IsMouseEvent()) {
+  if (!IsA<MouseEvent>(event)) {
     HTMLDivElement::DefaultEventHandler(event);
     return;
   }
@@ -220,7 +217,7 @@ void SliderThumbElement::DefaultEventHandler(Event& event) {
     return;
   }
 
-  auto& mouse_event = ToMouseEvent(event);
+  auto& mouse_event = To<MouseEvent>(event);
   bool is_left_button =
       mouse_event.button() ==
       static_cast<int16_t>(WebPointerProperties::Button::kLeft);
@@ -348,8 +345,8 @@ LayoutObject* SliderContainerElement::CreateLayoutObject(const ComputedStyle&,
 }
 
 void SliderContainerElement::DefaultEventHandler(Event& event) {
-  if (event.IsTouchEvent()) {
-    HandleTouchEvent(ToTouchEvent(&event));
+  if (auto* touch_event = DynamicTo<TouchEvent>(event)) {
+    HandleTouchEvent(touch_event);
     return;
   }
 }
@@ -430,10 +427,9 @@ bool SliderContainerElement::CanSlide() {
       }
     }
   }
-  if ((sliding_direction_ == kVertical &&
-       slider_style->EffectiveAppearance() == kSliderHorizontalPart) ||
-      (sliding_direction_ == kHorizontal &&
-       slider_style->EffectiveAppearance() == kSliderVerticalPart)) {
+  bool is_horizontal = GetComputedStyle()->IsHorizontalWritingMode();
+  if ((sliding_direction_ == kVertical && is_horizontal) ||
+      (sliding_direction_ == kHorizontal && !is_horizontal)) {
     return false;
   }
   return true;
@@ -484,16 +480,6 @@ void SliderContainerElement::DidMoveToNewDocument(Document& old_document) {
 void SliderContainerElement::RemoveAllEventListeners() {
   Node::RemoveAllEventListeners();
   has_touch_event_handler_ = false;
-}
-
-scoped_refptr<ComputedStyle>
-SliderContainerElement::CustomStyleForLayoutObject() {
-  HTMLInputElement* input = HostInput();
-  DCHECK(input);
-  scoped_refptr<ComputedStyle> style = OriginalStyleForLayoutObject();
-  style->SetFlexDirection(HasVerticalAppearance(input) ? EFlexDirection::kColumn
-                                                       : EFlexDirection::kRow);
-  return style;
 }
 
 }  // namespace blink

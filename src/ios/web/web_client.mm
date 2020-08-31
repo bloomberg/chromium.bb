@@ -96,10 +96,6 @@ void WebClient::AllowCertificateError(
   callback.Run(false);
 }
 
-bool WebClient::IsSlimNavigationManagerEnabled() const {
-  return base::FeatureList::IsEnabled(web::features::kSlimNavigationManager);
-}
-
 void WebClient::PrepareErrorPage(WebState* web_state,
                                  const GURL& url,
                                  NSError* error,
@@ -116,7 +112,20 @@ UIView* WebClient::GetWindowedContainer() {
   return nullptr;
 }
 
+bool WebClient::EnableLongPressAndForceTouchHandling() const {
+  return true;
+}
+
 bool WebClient::ForceMobileVersionByDefault(const GURL&) {
+  return false;
+}
+
+UserAgentType WebClient::GetDefaultUserAgent(id<UITraitEnvironment> web_view,
+                                             const GURL& url) {
+  return UserAgentType::MOBILE;
+}
+
+bool WebClient::IsEmbedderBlockRestoreUrlEnabled() {
   return false;
 }
 

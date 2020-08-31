@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export default class JavaScriptREPL {
+import * as SDK from '../sdk/sdk.js';
+
+import {RemoteObjectPreviewFormatter} from './RemoteObjectPreviewFormatter.js';
+
+export class JavaScriptREPL {
   /**
    * @param {string} code
    * @return {string}
@@ -30,17 +34,10 @@ export default class JavaScriptREPL {
 
   /**
    * @param {string} text
-   * @return {!Promise<!{text: string, preprocessed: boolean}>}
+   * @return {string}
    */
-  static async preprocessExpression(text) {
-    text = JavaScriptREPL.wrapObjectLiteral(text);
-    let preprocessed = false;
-    if (text.indexOf('await') !== -1) {
-      const preprocessedText = await Formatter.formatterWorkerPool().preprocessTopLevelAwaitExpressions(text);
-      preprocessed = !!preprocessedText;
-      text = preprocessedText || text;
-    }
-    return {text, preprocessed};
+  static preprocessExpression(text) {
+    return JavaScriptREPL.wrapObjectLiteral(text);
   }
 
   /**
@@ -52,24 +49,27 @@ export default class JavaScriptREPL {
    * @return {!Promise<!{preview: !DocumentFragment, result: ?SDK.RuntimeModel.EvaluationResult}>}
    */
   static async evaluateAndBuildPreview(text, throwOnSideEffect, timeout, allowErrors, objectGroup) {
-    const executionContext = UI.context.flavor(SDK.ExecutionContext);
-    const isTextLong = text.length > ObjectUI.JavaScriptREPL._MaxLengthForEvaluation;
+    const executionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
+    const maxLength = typeof self.ObjectUI.JavaScriptREPL._MaxLengthForEvaluation !== 'undefined' ?
+        self.ObjectUI.JavaScriptREPL._MaxLengthForEvaluation :
+        MaxLengthForEvaluation;
+    const isTextLong = text.length > maxLength;
     if (!text || !executionContext || (throwOnSideEffect && isTextLong)) {
       return {preview: createDocumentFragment(), result: null};
     }
 
-    const wrappedResult = await JavaScriptREPL.preprocessExpression(text);
+    const expression = JavaScriptREPL.preprocessExpression(text);
     const options = {
-      expression: wrappedResult.text,
+      expression: expression,
       generatePreview: true,
       includeCommandLineAPI: true,
       throwOnSideEffect: throwOnSideEffect,
       timeout: timeout,
       objectGroup: objectGroup,
-      disableBreaks: true
+      disableBreaks: true,
+      replMode: true
     };
-    const result = await executionContext.evaluate(
-        options, false /* userGesture */, wrappedResult.preprocessed /* awaitPromise */);
+    const result = await executionContext.evaluate(options, false /* userGesture */, false /* awaitPromise */);
     const preview = JavaScriptREPL._buildEvaluationPreview(result, allowErrors);
     return {preview, result};
   }
@@ -93,7 +93,7 @@ export default class JavaScriptREPL {
       return fragment;
     }
 
-    const formatter = new ObjectUI.RemoteObjectPreviewFormatter();
+    const formatter = new RemoteObjectPreviewFormatter();
     const {preview, type, subtype, description} = result.object;
     if (preview && type === 'object' && subtype !== 'node') {
       formatter.appendObjectPreview(fragment, preview, false /* isEntry */);
@@ -109,15 +109,4 @@ export default class JavaScriptREPL {
  * @const
  * @type {number}
  */
-export const _MaxLengthForEvaluation = 2000;
-
-/* Legacy exported object */
-self.ObjectUI = self.ObjectUI || {};
-
-/* Legacy exported object */
-ObjectUI = ObjectUI || {};
-
-/** @constructor */
-ObjectUI.JavaScriptREPL = JavaScriptREPL;
-
-ObjectUI.JavaScriptREPL._MaxLengthForEvaluation = _MaxLengthForEvaluation;
+export const MaxLengthForEvaluation = 2000;

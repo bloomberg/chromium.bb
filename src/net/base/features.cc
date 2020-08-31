@@ -3,12 +3,28 @@
 // found in the LICENSE file.
 
 #include "net/base/features.h"
+#include "build/build_config.h"
 
 namespace net {
 namespace features {
 
 const base::Feature kAcceptLanguageHeader{"AcceptLanguageHeader",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kDnsHttpssvc{"DnsHttpssvc",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<bool> kDnsHttpssvcUseHttpssvc{
+    &kDnsHttpssvc, "DnsHttpssvcUseHttpssvc", false};
+
+const base::FeatureParam<bool> kDnsHttpssvcUseIntegrity{
+    &kDnsHttpssvc, "DnsHttpssvcUseIntegrity", false};
+
+const base::FeatureParam<int> kDnsHttpssvcExtraTimeMs{
+    &kDnsHttpssvc, "DnsHttpssvcExtraTimeMs", 10};
+
+const base::FeatureParam<int> kDnsHttpssvcExtraTimePercent{
+    &kDnsHttpssvc, "DnsHttpssvcExtraTimePercent", 5};
 
 const base::Feature kEnableTLS13EarlyData{"EnableTLS13EarlyData",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -84,20 +100,17 @@ const base::FeatureParam<int>
         &kRecentCreationTimeGrantsLegacyCookieSemantics,
         "RecentCreationTimeGrantsLegacyCookieSemanticsMilliseconds", 0};
 
+const base::Feature kBlockExternalRequestsFromNonSecureInitiators{
+    "BlockExternalRequestsFromNonSecureInitiators",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-const base::Feature kCertVerifierBuiltinFeature {
-  "CertVerifierBuiltin",
-#if defined(OS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kCertVerifierBuiltinFeature{
+    "CertVerifierBuiltin", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 const base::Feature kAppendFrameOriginToNetworkIsolationKey{
-    "AppendFrameOriginToNetworkIsolationKey",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "AppendFrameOriginToNetworkIsolationKey", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUseRegistrableDomainInNetworkIsolationKey{
     "UseRegistrableDomainInNetworkIsolationKey",
@@ -105,6 +118,15 @@ const base::Feature kUseRegistrableDomainInNetworkIsolationKey{
 
 const base::Feature kTurnOffStreamingMediaCaching{
     "TurnOffStreamingMediaCaching", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kLegacyTLSEnforced{"LegacyTLSEnforced",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSchemefulSameSite{"SchemefulSameSite",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kTLSLegacyCryptoFallbackForMetrics{
+    "TLSLegacyCryptoFallbackForMetrics", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace net

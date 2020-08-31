@@ -159,8 +159,7 @@ check_targets = [
   "//chrome/browser/permissions/*",
   "//chrome/browser/picture_in_picture/*",
   "//chrome/browser/plugins/*",
-
-  # "//chrome/browser/policy/*",  # 1 error on Windows
+  "//chrome/browser/policy/*",
   "//chrome/browser/predictors/*",
   "//chrome/browser/prefetch/*",
   "//chrome/browser/prefs/*",
@@ -219,10 +218,10 @@ check_targets = [
   "//chrome/chrome_elf/*",
   "//chrome/chrome_cleaner/*",
 
-  #"//chrome/chrome_watcher/*",  # 3 errors on Windows
   "//chrome/common/*",
 
-  #"//chrome/elevation_service/*",  # 1 error on Windows
+  "//chrome/elevation_service/*",
+
   #"//chrome/gpu/*",  # 7 errors
   "//chrome/installer/*",
 
@@ -237,6 +236,7 @@ check_targets = [
   "//chrome/test/chromedriver",
   "//chrome/third_party/*",
   "//chrome/tools/*",
+  "//chrome/updater/*",
   "//chrome/utility/*",
 
   "//chromecast/*",
@@ -340,7 +340,6 @@ check_targets = [
   "//third_party/ashmem/*",
   "//third_party/axe-core/*",
   "//third_party/bazel/*",
-  "//third_party/binutils/*",
   "//third_party/blanketjs/*",
 
   # "//third_party/blink/*",  # Errors: https://crbug.com/800764
@@ -354,7 +353,6 @@ check_targets = [
   "//third_party/byte_buddy/*",
   "//third_party/cacheinvalidation/*",
   "//third_party/catapult/*",
-  "//third_party/cct_dynamic_module/*",
 
   # "//third_party/ced/*",  # 6 errors
   "//third_party/chaijs/*",
@@ -390,7 +388,6 @@ check_targets = [
   "//third_party/freetype2/*",
   "//third_party/freetype-android/*",
   "//third_party/fuchsia-sdk/*",
-  "//third_party/gestures/*",
   "//third_party/gif_player/*",
   "//third_party/glfw/*",
   "//third_party/glslang/*",
@@ -400,7 +397,6 @@ check_targets = [
   "//third_party/google_toolbox_for_mac/*",
   "//third_party/google-truth/*",
   "//third_party/gradle_wrapper/*",
-  "//third_party/gson/*",
   "//third_party/guava/*",
   "//third_party/gvr-android-keyboard/*",
   "//third_party/gvr-android-sdk/*",
@@ -418,12 +414,10 @@ check_targets = [
   "//third_party/ink/*",
   "//third_party/inspector_protocol/*",
   "//third_party/instrumented_libraries/*",
-  "//third_party/intellij/*",
   "//third_party/isimpledom/*",
   "//third_party/javax_inject/*",
   "//third_party/jinja2/*",
   "//third_party/jsoncpp/*",
-  "//third_party/jsr-305/*",
   "//third_party/jstemplate/*",
   "//third_party/junit/*",
   "//third_party/khronos/*",
@@ -437,10 +431,8 @@ check_targets = [
   # "//third_party/libaom/*",  # https://crbug.com/899771
   "//third_party/libc++/*",
   "//third_party/libc++abi/*",
-  "//third_party/libcxx-pretty-printers/*",
   "//third_party/libdrm/*",
-  "//third_party/libevdev/*",
-  "//third_party/libexif/*",
+  "//third_party/libgav1/*",
   "//third_party/libjingle/*",
 
   # "//third_party/libjingle_xmpp/*",  # 30ish errors
@@ -496,7 +488,6 @@ check_targets = [
   "//third_party/openvr/*",
   "//third_party/opus/*",
   "//third_party/ots/*",
-  "//third_party/ow2_asm/*",
 
   # "//third_party/pdfium/*",  # 3 errors
   "//third_party/perfetto/*",
@@ -512,7 +503,7 @@ check_targets = [
   "//third_party/pymock/*",
   "//third_party/pystache/*",
   "//third_party/py_trace_event/*",
-  "//third_party/pywebsocket/*",
+  "//third_party/pywebsocket3/*",
   "//third_party/qcms/*",
   "//third_party/quic_trace/*",
   "//third_party/qunit/*",
@@ -525,8 +516,6 @@ check_targets = [
   "//third_party/s2cellid/*",
   "//third_party/safe_browsing/*",
   "//third_party/scan-build/*",
-
-  # "//third_party/sfntly/*",  # 20ish errors
   "//third_party/shaderc/*",
   "//third_party/simplejson/*",
   "//third_party/sinonjs/*",
@@ -662,4 +651,5 @@ exec_script_whitelist =
       "//remoting/host/installer/win/generate_clsids.gni",
 
       "//tools/grit/grit_rule.gni",
+      "//tools/gritsettings/BUILD.gn",
     ]

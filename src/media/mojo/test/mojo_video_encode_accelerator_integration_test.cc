@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
@@ -54,6 +55,8 @@ class MockVideoEncodeAcceleratorClient : public VideoEncodeAccelerator::Client {
   MOCK_METHOD2(BitstreamBufferReady,
                void(int32_t, const media::BitstreamBufferMetadata&));
   MOCK_METHOD1(NotifyError, void(VideoEncodeAccelerator::Error));
+  MOCK_METHOD1(NotifyEncoderInfoChange,
+               void(const media::VideoEncoderInfo& info));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoEncodeAcceleratorClient);
@@ -67,11 +70,13 @@ class MojoVideoEncodeAcceleratorIntegrationTest : public ::testing::Test {
     mojo::PendingRemote<mojom::VideoEncodeAccelerator> mojo_vea;
     mojo_vea_receiver_ = mojo::MakeSelfOwnedReceiver(
         std::make_unique<MojoVideoEncodeAcceleratorService>(
-            base::Bind(&CreateAndInitializeFakeVEA), gpu::GpuPreferences()),
+            base::BindRepeating(&CreateAndInitializeFakeVEA),
+            gpu::GpuPreferences()),
         mojo_vea.InitWithNewPipeAndPassReceiver());
 
     mojo_vea_.reset(new MojoVideoEncodeAccelerator(
-        std::move(mojo_vea), gpu::VideoEncodeAcceleratorSupportedProfiles()));
+        std::move(mojo_vea),
+        media::VideoEncodeAccelerator::SupportedProfiles()));
   }
 
   void TearDown() override {

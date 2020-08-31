@@ -24,8 +24,7 @@ class QuicSpdyClientStream;
 // to authority constraints).  Clients should use this map to enforce
 // session affinity for requests corresponding to cross-origin push
 // promised streams.
-using QuicPromisedByUrlMap =
-    QuicUnorderedMap<std::string, QuicClientPromisedInfo*>;
+using QuicPromisedByUrlMap = QuicHashMap<std::string, QuicClientPromisedInfo*>;
 
 // The maximum time a promises stream can be reserved without being
 // claimed by a client request.
@@ -103,7 +102,10 @@ class QUIC_EXPORT_PRIVATE QuicSpdyClientSessionBase
   void ResetPromised(QuicStreamId id, QuicRstStreamErrorCode error_code);
 
   // Release headers stream's sequencer buffer if it's empty.
-  void CloseStreamInner(QuicStreamId stream_id, bool locally_reset) override;
+  void CloseStreamInner(QuicStreamId stream_id, bool rst_sent) override;
+
+  // Release headers stream's sequencer buffer if it's empty.
+  void OnStreamClosed(QuicStreamId stream_id) override;
 
   // Returns true if there are no active requests and no promised streams.
   bool ShouldReleaseHeadersStreamSequencerBuffer() override;
@@ -117,11 +119,14 @@ class QUIC_EXPORT_PRIVATE QuicSpdyClientSessionBase
     return push_promise_index_;
   }
 
+  // Override to serialize the settings and pass it down to the handshaker.
+  void OnSettingsFrame(const SettingsFrame& frame) override;
+
  private:
   // For QuicSpdyClientStream to detect that a response corresponds to a
   // promise.
   using QuicPromisedByIdMap =
-      QuicUnorderedMap<QuicStreamId, std::unique_ptr<QuicClientPromisedInfo>>;
+      QuicHashMap<QuicStreamId, std::unique_ptr<QuicClientPromisedInfo>>;
 
   // As per rfc7540, section 10.5: track promise streams in "reserved
   // (remote)".  The primary key is URL from the promise request

@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/send_tab_to_self/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -20,8 +21,12 @@ namespace send_tab_to_self {
 
 SendTabToSelfIconView::SendTabToSelfIconView(
     CommandUpdater* command_updater,
-    PageActionIconView::Delegate* delegate)
-    : PageActionIconView(command_updater, IDC_SEND_TAB_TO_SELF, delegate) {
+    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+    PageActionIconView::Delegate* page_action_icon_delegate)
+    : PageActionIconView(command_updater,
+                         IDC_SEND_TAB_TO_SELF,
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate) {
   SetVisible(false);
   SetLabel(l10n_util::GetStringUTF16(IDS_OMNIBOX_ICON_SEND_TAB_TO_SELF));
   SetUpForInOutAnimation();
@@ -50,9 +55,16 @@ void SendTabToSelfIconView::UpdateImpl() {
     return;
   }
 
-  if (GetVisible()) {
+  if (!is_animating_label() && !omnibox_view->model()->has_focus()) {
+    sending_animation_state_ = AnimationState::kNotShown;
+  }
+  if (GetVisible() ||
+      base::FeatureList::IsEnabled(kSendTabToSelfOmniboxSendingAnimation)) {
     SendTabToSelfBubbleController* controller = GetController();
     if (controller && controller->show_message()) {
+      if (!GetVisible()) {
+        SetVisible(true);
+      }
       controller->set_show_message(false);
       if (initial_animation_state_ == AnimationState::kShowing &&
           label()->GetVisible()) {
@@ -62,15 +74,26 @@ void SendTabToSelfIconView::UpdateImpl() {
       } else {
         AnimateIn(IDS_BROWSER_SHARING_OMNIBOX_SENDING_LABEL);
       }
+      sending_animation_state_ = AnimationState::kShowing;
     }
-  } else if (omnibox_view->model()->has_focus() &&
-             !omnibox_view->model()->user_input_in_progress()) {
-    // Shows the "Send" animation one time per window.
-    if (initial_animation_state_ == AnimationState::kNotShown) {
-      AnimateIn(IDS_OMNIBOX_ICON_SEND_TAB_TO_SELF);
+  }
+  if (!GetVisible() && omnibox_view->model()->has_focus() &&
+      !omnibox_view->model()->user_input_in_progress()) {
+    SendTabToSelfBubbleController* controller = GetController();
+    // Shows the "Send" animation once per profile.
+    if (controller && !controller->InitialSendAnimationShown() &&
+        initial_animation_state_ == AnimationState::kNotShown) {
+      // Set label ahead of time to avoid announcing a useless alert (i.e.
+      // "alert Send") to screenreaders.
+      SetLabel(l10n_util::GetStringUTF16(IDS_OMNIBOX_ICON_SEND_TAB_TO_SELF));
+      AnimateIn(base::nullopt);
       initial_animation_state_ = AnimationState::kShowing;
+      controller->SetInitialSendAnimationShown(true);
     }
-    SetVisible(true);
+    if (!base::FeatureList::IsEnabled(kSendTabToSelfOmniboxSendingAnimation) ||
+        sending_animation_state_ == AnimationState::kNotShown) {
+      SetVisible(true);
+    }
   }
 }
 
@@ -81,9 +104,8 @@ const gfx::VectorIcon& SendTabToSelfIconView::GetVectorIcon() const {
   return kSendTabToSelfIcon;
 }
 
-SkColor SendTabToSelfIconView::GetTextColor() const {
-  return GetOmniboxColor(GetThemeProvider(),
-                         OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
+const char* SendTabToSelfIconView::GetClassName() const {
+  return "SendTabToSelfIconView";
 }
 
 base::string16 SendTabToSelfIconView::GetTextForTooltipAndAccessibleName()
@@ -100,9 +122,47 @@ SendTabToSelfBubbleController* SendTabToSelfIconView::GetController() const {
       web_contents);
 }
 
+void SendTabToSelfIconView::AnimationProgressed(
+    const gfx::Animation* animation) {
+  if (base::FeatureList::IsEnabled(kSendTabToSelfOmniboxSendingAnimation) &&
+      sending_animation_state_ == AnimationState::kShowing) {
+    UpdateOpacity();
+  }
+  return PageActionIconView::AnimationProgressed(animation);
+}
+
 void SendTabToSelfIconView::AnimationEnded(const gfx::Animation* animation) {
   PageActionIconView::AnimationEnded(animation);
   initial_animation_state_ = AnimationState::kShown;
+  if (base::FeatureList::IsEnabled(kSendTabToSelfOmniboxSendingAnimation) &&
+      sending_animation_state_ == AnimationState::kShowing) {
+    UpdateOpacity();
+    SetVisible(false);
+    sending_animation_state_ = AnimationState::kShown;
+  }
+}
+
+void SendTabToSelfIconView::UpdateOpacity() {
+  if (!GetVisible()) {
+    ResetSlideAnimation(false);
+  }
+  if (!IsShrinking()) {
+    DestroyLayer();
+    SetTextSubpixelRenderingEnabled(true);
+    return;
+  }
+
+  if (!layer()) {
+    SetPaintToLayer();
+    SetTextSubpixelRenderingEnabled(false);
+    layer()->SetFillsBoundsOpaquely(false);
+  }
+
+  // Large enough number so that there is enough granularity (1/kLargeNumber) in
+  // the opacity as the animation shrinks.
+  int kLargeNumber = 100;
+  layer()->SetOpacity(GetWidthBetween(0, kLargeNumber) /
+                      static_cast<float>(kLargeNumber));
 }
 
 }  // namespace send_tab_to_self

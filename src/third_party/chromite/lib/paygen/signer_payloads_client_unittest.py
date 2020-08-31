@@ -25,6 +25,8 @@ from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import signer_payloads_client
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 # pylint: disable=protected-access
 
@@ -257,7 +259,7 @@ class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest,
 
         cmd = ['tar', '-xjf', archive_file.name]
         cros_build_lib.run(
-            cmd, redirect_stdout=True, redirect_stderr=True, cwd=tmp_dir)
+            cmd, stdout=True, stderr=True, cwd=tmp_dir)
 
         # Check that the expected (and only the expected) contents are present
         extracted_file_names = os.listdir(tmp_dir)

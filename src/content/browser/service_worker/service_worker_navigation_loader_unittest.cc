@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -29,8 +30,9 @@
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -82,6 +84,15 @@ blink::mojom::FetchAPIResponsePtr RedirectResponse(
   return response;
 }
 
+blink::mojom::FetchAPIResponsePtr HeadersResponse(
+    const base::flat_map<std::string, std::string>& headers) {
+  auto response = blink::mojom::FetchAPIResponse::New();
+  response->status_code = 200;
+  response->status_text = "OK";
+  response->headers.insert(headers.begin(), headers.end());
+  return response;
+}
+
 // Simulates a service worker handling fetch events. The response can be
 // customized via RespondWith* functions.
 class FetchEventServiceWorker : public FakeServiceWorker {
@@ -118,6 +129,14 @@ class FetchEventServiceWorker : public FakeServiceWorker {
 
   // Tells this worker to respond to fetch events with an error response.
   void RespondWithError() { response_mode_ = ResponseMode::kErrorResponse; }
+
+  // Tells this worker to respond to fetch events with a response containing
+  // specific headers.
+  void RespondWithHeaders(
+      const base::flat_map<std::string, std::string>& headers) {
+    response_mode_ = ResponseMode::kHeaders;
+    headers_ = headers;
+  }
 
   // Tells this worker to respond to fetch events with the redirect response.
   void RespondWithRedirectResponse(const GURL& new_url) {
@@ -260,6 +279,13 @@ class FetchEventServiceWorker : public FakeServiceWorker {
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
+      case ResponseMode::kHeaders:
+        response_callback->OnResponse(
+            HeadersResponse(headers_),
+            blink::mojom::ServiceWorkerFetchEventTiming::New());
+        std::move(finish_callback)
+            .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
+        break;
     }
 
     if (quit_closure_for_fetch_event_)
@@ -276,7 +302,8 @@ class FetchEventServiceWorker : public FakeServiceWorker {
     kFailFetchEventDispatch,
     kDeferredResponse,
     kEarlyResponse,
-    kRedirect
+    kRedirect,
+    kHeaders
   };
 
   ResponseMode response_mode_ = ResponseMode::kDefault;
@@ -296,6 +323,9 @@ class FetchEventServiceWorker : public FakeServiceWorker {
 
   // For ResponseMode::kRedirect.
   GURL redirected_url_;
+
+  // For ResponseMode::kHeaders
+  base::flat_map<std::string, std::string> headers_;
 
   bool has_received_fetch_event_ = false;
   base::OnceClosure quit_closure_for_fetch_event_;
@@ -341,17 +371,16 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
     storage()->LazyInitializeForTest();
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = GURL("https://example.com/");
-    registration_ =
-        new ServiceWorkerRegistration(options, storage()->NewRegistrationId(),
-                                      helper_->context()->AsWeakPtr());
-    version_ = new ServiceWorkerVersion(
-        registration_.get(), GURL("https://example.com/service_worker.js"),
-        blink::mojom::ScriptType::kClassic, storage()->NewVersionId(),
-        helper_->context()->AsWeakPtr());
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
-    records.push_back(WriteToDiskCacheSync(
-        storage(), version_->script_url(), storage()->NewResourceId(),
-        {} /* headers */, "I'm the body", "I'm the meta data"));
+    registration_ = CreateNewServiceWorkerRegistration(
+        helper_->context()->registry(), options);
+    version_ = CreateNewServiceWorkerVersion(
+        helper_->context()->registry(), registration_.get(),
+        GURL("https://example.com/service_worker.js"),
+        blink::mojom::ScriptType::kClassic);
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
+    records.push_back(WriteToDiskCacheSync(storage(), version_->script_url(),
+                                           {} /* headers */, "I'm the body",
+                                           "I'm the meta data"));
     version_->script_cache_map()->SetResources(records);
     version_->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -362,7 +391,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
     registration_->set_last_update_check(base::Time::Now());
     base::Optional<blink::ServiceWorkerStatusCode> status;
     base::RunLoop run_loop;
-    storage()->StoreRegistration(
+    registry()->StoreRegistration(
         registration_.get(), version_.get(),
         ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
     run_loop.Run();
@@ -378,23 +407,22 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
             helper_.get(), client);
   }
 
+  ServiceWorkerRegistry* registry() { return helper_->context()->registry(); }
   ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
 
   // Starts a request. After calling this, the request is ongoing and the
   // caller can use functions like client_.RunUntilComplete() to wait for
   // completion.
   void StartRequest(std::unique_ptr<network::ResourceRequest> request) {
-    // Create a ServiceWorkerProviderHost and simulate what
+    // Create a ServiceWorkerContainerHost and simulate what
     // ServiceWorkerControlleeRequestHandler does to assign it a controller.
     if (!container_host_) {
-      container_host_ =
-          CreateProviderHostForWindow(helper_->mock_render_process_id(),
-                                      /*is_parent_frame_secure=*/true,
-                                      helper_->context()->AsWeakPtr(),
-                                      &provider_endpoints_)
-              ->container_host()
-              ->GetWeakPtr();
-      container_host_->UpdateUrls(request->url, request->url,
+      container_host_ = CreateContainerHostForWindow(
+          helper_->mock_render_process_id(),
+          /*is_parent_frame_secure=*/true, helper_->context()->AsWeakPtr(),
+          &provider_endpoints_);
+      container_host_->UpdateUrls(request->url,
+                                  net::SiteForCookies::FromUrl(request->url),
                                   url::Origin::Create(request->url));
       container_host_->AddMatchingRegistration(registration_.get());
       container_host_->SetControllerRegistration(
@@ -444,9 +472,10 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
     EXPECT_EQ(expected_info.url_list_via_service_worker,
               info.url_list_via_service_worker);
     EXPECT_EQ(expected_info.response_type, info.response_type);
-    EXPECT_FALSE(info.service_worker_start_time.is_null());
-    EXPECT_FALSE(info.service_worker_ready_time.is_null());
-    EXPECT_LT(info.service_worker_start_time, info.service_worker_ready_time);
+    EXPECT_FALSE(info.load_timing.service_worker_start_time.is_null());
+    EXPECT_FALSE(info.load_timing.service_worker_ready_time.is_null());
+    EXPECT_LT(info.load_timing.service_worker_start_time,
+              info.load_timing.service_worker_ready_time);
     EXPECT_EQ(expected_info.is_in_cache_storage, info.is_in_cache_storage);
     EXPECT_EQ(expected_info.cache_storage_cache_name,
               info.cache_storage_cache_name);
@@ -514,15 +543,13 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {
 TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
   base::HistogramTester histogram_tester;
 
-  // Make a provider host without a controller.
-  container_host_ =
-      CreateProviderHostForWindow(
-          helper_->mock_render_process_id(), /*is_parent_frame_secure=*/true,
-          helper_->context()->AsWeakPtr(), &provider_endpoints_)
-          ->container_host()
-          ->GetWeakPtr();
+  // Make a container host without a controller.
+  container_host_ = CreateContainerHostForWindow(
+      helper_->mock_render_process_id(), /*is_parent_frame_secure=*/true,
+      helper_->context()->AsWeakPtr(), &provider_endpoints_);
   container_host_->UpdateUrls(
-      GURL("https://example.com/"), GURL("https://example.com/"),
+      GURL("https://example.com/"),
+      net::SiteForCookies::FromUrl(GURL("https://example.com/")),
       url::Origin::Create(GURL("https://example.com/")));
 
   // Perform the request.
@@ -952,7 +979,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, ConnectionErrorDuringFetchEvent) {
 TEST_F(ServiceWorkerNavigationLoaderTest, CancelNavigationDuringFetchEvent) {
   StartRequest(CreateRequest());
 
-  // Delete the provider host during the request. The load should abort without
+  // Delete the container host during the request. The load should abort without
   // crashing.
   provider_endpoints_.host_remote()->reset();
   base::RunLoop().RunUntilIdle();

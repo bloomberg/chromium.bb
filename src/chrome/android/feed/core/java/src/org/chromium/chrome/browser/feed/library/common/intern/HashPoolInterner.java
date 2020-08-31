@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.common.intern;
 
-import android.support.v4.util.SparseArrayCompat;
+import androidx.annotation.Nullable;
+import androidx.collection.SparseArrayCompat;
 
 import java.lang.ref.WeakReference;
 
@@ -26,7 +27,7 @@ public class HashPoolInterner<T> extends PoolInternerBase<T> {
         private final SparseArrayCompat<WeakReference<T>> mPool = new SparseArrayCompat<>();
 
         @Override
-        /*@Nullable*/
+        @Nullable
         public T get(T input) {
             WeakReference<T> weakRef = (input != null) ? mPool.get(input.hashCode()) : null;
             return weakRef != null ? weakRef.get() : null;

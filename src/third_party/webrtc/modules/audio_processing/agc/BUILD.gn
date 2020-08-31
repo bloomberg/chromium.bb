@@ -9,9 +9,7 @@
 import("../../../webrtc.gni")
 
 rtc_source_set("gain_control_interface") {
-  sources = [
-    "gain_control.h",
-  ]
+  sources = [ "gain_control.h" ]
 }
 
 rtc_library("agc") {
@@ -58,7 +56,7 @@ rtc_library("level_estimation") {
   ]
 }
 
-rtc_library("agc_legacy_c") {
+rtc_library("legacy_agc") {
   visibility = [
     ":*",
     "..:*",
@@ -67,9 +65,9 @@ rtc_library("agc_legacy_c") {
      # this.
 
   sources = [
-    "legacy/analog_agc.c",
+    "legacy/analog_agc.cc",
     "legacy/analog_agc.h",
-    "legacy/digital_agc.c",
+    "legacy/digital_agc.cc",
     "legacy/digital_agc.h",
     "legacy/gain_control.h",
   ]
@@ -77,7 +75,7 @@ rtc_library("agc_legacy_c") {
   deps = [
     "../../../common_audio",
     "../../../common_audio:common_audio_c",
-    "../../../common_audio/third_party/fft4g",
+    "../../../common_audio/third_party/ooura:fft_size_256",
     "../../../rtc_base:checks",
     "../../../rtc_base:rtc_base_approved",
     "../../../system_wrappers:cpu_features_api",
@@ -93,9 +91,7 @@ rtc_library("agc_legacy_c") {
 }
 
 rtc_source_set("gain_map") {
-  sources = [
-    "gain_map_internal.h",
-  ]
+  sources = [ "gain_map_internal.h" ]
 }
 
 if (rtc_include_tests) {

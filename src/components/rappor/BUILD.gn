@@ -44,24 +44,6 @@ jumbo_static_library("rappor") {
     "//crypto",
     "//net",
     "//services/network/public/cpp:cpp",
-    "//third_party/smhasher:cityhash",
-  ]
-}
-
-jumbo_static_library("rappor_recorder") {
-  sources = [
-    "rappor_recorder_impl.cc",
-    "rappor_recorder_impl.h",
-  ]
-
-  public_deps = [
-    "//base",
-    "//components/rappor/public/mojom",
-  ]
-
-  deps = [
-    ":rappor",
-    "//mojo/public/cpp/bindings",
   ]
 }
 
@@ -74,9 +56,7 @@ jumbo_static_library("test_support") {
     "test_rappor_service.h",
   ]
 
-  public_deps = [
-    ":rappor",
-  ]
+  public_deps = [ ":rappor" ]
   deps = [
     "//base",
     "//components/prefs:test_support",
@@ -114,9 +94,7 @@ jumbo_source_set("unit_tests") {
 
 # Convenience testing target
 test("rappor_unittests") {
-  sources = [
-    "//components/test/run_all_unittests.cc",
-  ]
+  sources = [ "//components/test/run_all_unittests.cc" ]
   deps = [
     ":unit_tests",
     "//components/test:test_support",

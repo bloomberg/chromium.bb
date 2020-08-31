@@ -267,6 +267,14 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
             thread_num, file_url, output_filename))
         ret_codes.put((1, 'File %s for %s does not exist.' % (
             file_url, output_filename)))
+      elif code == 401:
+        out_q.put(
+            """%d> Failed to fetch file %s for %s due to unauthorized access,
+            skipping. Try running `gsutil.py config` and pass 0 if you don't
+            know your project id.""" % (thread_num, file_url, output_filename))
+        ret_codes.put(
+            (1, 'Failed to fetch file %s for %s due to unauthorized access.' %
+             (file_url, output_filename)))
       else:
         # Other error, probably auth related (bad ~/.boto, etc).
         out_q.put('%d> Failed to fetch file %s for %s, skipping. [Err: %s]' %
@@ -276,7 +284,8 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
       continue
     # Fetch the file.
     if verbose:
-      out_q.put('%d> Downloading %s...' % (thread_num, output_filename))
+      out_q.put('%d> Downloading %s@%s...' %
+                (thread_num, output_filename, input_sha1_sum))
     try:
       if delete:
         os.remove(output_filename)  # Delete the file if it exists already.
@@ -374,7 +383,7 @@ def _data_exists(input_sha1_sum, output_filename, extract):
     input_sha1_sum: Expected sha1 stored on disk.
     output_filename: The file to potentially download later. Its sha1 will be
         compared to input_sha1_sum.
-    extract: Wheather or not a downloaded file should be extracted. If the file
+    extract: Whether or not a downloaded file should be extracted. If the file
         is not extracted, this just compares the sha1 of the file. If the file
         is to be extracted, this only compares the sha1 of the target archive if
         the target directory already exists. The content of the target directory

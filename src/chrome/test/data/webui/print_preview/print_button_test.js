@@ -53,10 +53,10 @@ suite(print_button_test.suiteName, function() {
     page = document.createElement('print-preview-app');
     document.body.appendChild(page);
     pluginProxy.setPreloadCallback(() => {
-      // Print before calling previewArea.onPluginLoad_. This simulates the
-      // user clicking the print button while the preview is still loading,
-      // since previewArea.onPluginLoad_() indicates to the UI that the
-      // preview is ready.
+      // Print before calling previewArea.onPluginLoadComplete_(). This
+      // simulates the user clicking the print button while the preview is still
+      // loading, since previewArea.onPluginLoadComplete_() indicates to the UI
+      // that the preview is ready.
       if (printBeforePreviewReady) {
         const sidebar = page.$$('print-preview-sidebar');
         const parentElement = sidebar.$$('print-preview-button-strip');
@@ -118,7 +118,7 @@ suite(print_button_test.suiteName, function() {
                   .$$('print-preview-destination-settings');
           const pdfDestination =
               destinationSettings.destinationStore_.destinations().find(
-                  d => d.id == 'Save as PDF');
+                  d => d.id === 'Save as PDF');
           assertTrue(!!pdfDestination);
           destinationSettings.destinationStore_.selectDestination(
               pdfDestination);

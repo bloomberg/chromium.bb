@@ -130,7 +130,7 @@ Vector<CharacterRange> ShapeResultBuffer::IndividualCharacterRanges(
     float total_width) const {
   Vector<CharacterRange> ranges;
   float current_x = direction == TextDirection::kRtl ? total_width : 0;
-  for (const scoped_refptr<const ShapeResult> result : results_)
+  for (const scoped_refptr<const ShapeResult>& result : results_)
     current_x = result->IndividualCharacterRanges(&ranges, current_x);
   return ranges;
 }
@@ -192,7 +192,7 @@ Vector<double> ShapeResultBuffer::IndividualCharacterAdvances(
   Vector<double> advances;
   double current_x = direction == TextDirection::kRtl ? total_width : 0;
 
-  for (const scoped_refptr<const ShapeResult> result : results_) {
+  for (const scoped_refptr<const ShapeResult>& result : results_) {
     unsigned run_count = result->runs_.size();
 
     result->EnsureGraphemes(

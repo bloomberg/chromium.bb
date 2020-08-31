@@ -51,6 +51,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes_util.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/pref_names.h"
@@ -62,6 +63,7 @@
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/zoom/page_zoom.h"
@@ -149,7 +151,7 @@ bool ConvertURLsToProvidedInfo(
   }
 
   *file_system = nullptr;
-  for (const auto url : urls) {
+  for (const auto& url : urls) {
     const storage::FileSystemURL file_system_url(
         file_system_context->CrackURL(GURL(url)));
 
@@ -315,8 +317,8 @@ FileManagerPrivateInternalZipSelectionFunction::Run() {
   }
 
   (new ZipFileCreator(
-       base::Bind(&FileManagerPrivateInternalZipSelectionFunction::OnZipDone,
-                  this),
+       base::BindOnce(
+           &FileManagerPrivateInternalZipSelectionFunction::OnZipDone, this),
        src_dir, src_relative_paths, dest_file))
       ->Start(LaunchFileUtilService());
   return RespondLater();
@@ -376,15 +378,17 @@ FileManagerPrivateRequestWebStoreAccessTokenFunction::Run() {
     return RespondNow(Error("Unable to fetch token."));
   }
 
+  // "Unconsented" because this class doesn't care about browser sync consent.
   auth_service_ = std::make_unique<google_apis::AuthService>(
-      identity_manager, identity_manager->GetPrimaryAccountId(),
+      identity_manager,
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired),
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       scopes);
-  auth_service_->StartAuthentication(base::Bind(
-      &FileManagerPrivateRequestWebStoreAccessTokenFunction::
-          OnAccessTokenFetched,
-      this));
+  auth_service_->StartAuthentication(
+      base::BindOnce(&FileManagerPrivateRequestWebStoreAccessTokenFunction::
+                         OnAccessTokenFetched,
+                     this));
 
   return RespondLater();
 }
@@ -474,7 +478,7 @@ FileManagerPrivateOpenSettingsSubpageFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (chrome::IsOSSettingsSubPage(params->sub_page)) {
+  if (chromeos::settings::IsOSSettingsSubPage(params->sub_page)) {
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
         profile, params->sub_page);
   } else {
@@ -506,8 +510,8 @@ FileManagerPrivateInternalGetMimeTypeFunction::Run() {
 
   app_file_handler_util::GetMimeTypeForLocalPath(
       chrome_details.GetProfile(), file_system_url.path(),
-      base::Bind(&FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType,
-                 this));
+      base::BindOnce(
+          &FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType, this));
 
   return RespondLater();
 }
@@ -1019,9 +1023,28 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
   chromeos::RecentModel* model =
       chromeos::RecentModel::GetForProfile(chrome_details_.GetProfile());
 
+  chromeos::RecentModel::FileType file_type;
+  switch (params->file_type) {
+    case api::file_manager_private::RECENT_FILE_TYPE_ALL:
+      file_type = chromeos::RecentModel::FileType::kAll;
+      break;
+    case api::file_manager_private::RECENT_FILE_TYPE_AUDIO:
+      file_type = chromeos::RecentModel::FileType::kAudio;
+      break;
+    case api::file_manager_private::RECENT_FILE_TYPE_IMAGE:
+      file_type = chromeos::RecentModel::FileType::kImage;
+      break;
+    case api::file_manager_private::RECENT_FILE_TYPE_VIDEO:
+      file_type = chromeos::RecentModel::FileType::kVideo;
+      break;
+    default:
+      NOTREACHED();
+      return RespondNow(Error("Unknown recent file type is specified."));
+  }
+
   model->GetRecentFiles(
       file_system_context.get(),
-      Extension::GetBaseURLFromExtensionId(extension_id()),
+      Extension::GetBaseURLFromExtensionId(extension_id()), file_type,
       base::BindOnce(
           &FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles,
           this, params->restriction));

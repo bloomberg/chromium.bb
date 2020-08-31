@@ -5,12 +5,12 @@
 package org.chromium.weblayer;
 
 import android.os.RemoteException;
-import android.support.v4.app.Fragment;
 import android.view.View;
 import android.webkit.ValueCallback;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IBrowser;
@@ -19,7 +19,7 @@ import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * Browser contains any number of Tabs, with one active Tab. The active Tab is visible to the user,
@@ -27,27 +27,47 @@ import java.util.List;
  *
  * By default Browser has a single active Tab.
  */
-public final class Browser {
+public class Browser {
     private final IBrowser mImpl;
     private final ObserverList<TabListCallback> mTabListCallbacks;
+    private final UrlBarController mUrlBarController;
+
+    // Constructor for test mocking.
+    protected Browser() {
+        mImpl = null;
+        mTabListCallbacks = null;
+        mUrlBarController = null;
+    }
 
     Browser(IBrowser impl) {
         mImpl = impl;
         mTabListCallbacks = new ObserverList<TabListCallback>();
+
         try {
             mImpl.setClient(new BrowserClientImpl());
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-        try {
-            for (Object tab : impl.getTabs()) {
-                // getTabs() returns List<TabImpl>, which isn't accessible from the client library.
-                ITab iTab = ITab.Stub.asInterface((android.os.IBinder) tab);
-                // Tab's constructor calls registerTab().
-                new Tab(iTab, this);
+            if (WebLayer.getSupportedMajorVersionInternal() >= 82) {
+                mUrlBarController = new UrlBarController(mImpl.getUrlBarController());
+            } else {
+                mUrlBarController = null;
             }
         } catch (RemoteException e) {
             throw new APICallException(e);
+        }
+        if (WebLayer.getSupportedMajorVersionInternal() < 82) {
+            // On WebLayer versions < 82 the tabs are internally created before the client is set,
+            // so it doesn't receive the onTabAdded() callbacks; hence the client-side Tab
+            // objects need to be manually created to mirror the implementation-side objects.
+            try {
+                for (Object tab : impl.getTabs()) {
+                    // getTabs() returns List<TabImpl>, which isn't accessible from the client
+                    // library.
+                    ITab iTab = ITab.Stub.asInterface((android.os.IBinder) tab);
+                    // Tab's constructor calls registerTab().
+                    new Tab(iTab, this);
+                }
+            } catch (RemoteException e) {
+                throw new APICallException(e);
+            }
         }
     }
 
@@ -133,7 +153,7 @@ public final class Browser {
      * @return The Tabs
      */
     @NonNull
-    public List<Tab> getTabs() {
+    public Set<Tab> getTabs() {
         ThreadCheck.ensureOnUiThread();
         return Tab.getTabsInBrowser(this);
     }
@@ -141,6 +161,9 @@ public final class Browser {
     /**
      * Disposes a Tab. If {@link tab} is the active Tab, no Tab is made active. After this call
      *  {@link tab} should not be used.
+     *
+     * Note this will skip any beforeunload handlers. To run those first, use
+     * {@link Tab#dispatchBeforeUnloadAndClose} instead.
      *
      * @param tab The Tab to dispose.
      *
@@ -194,6 +217,25 @@ public final class Browser {
     }
 
     /**
+     * Sets the View shown at the bottom of the browser. A value of null removes the view.
+     *
+     * @param view The new bottom-view.
+     *
+     * @since 84
+     */
+    public void setBottomView(@Nullable View view) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 84) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mImpl.setBottomView(ObjectWrapper.wrap(view));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
      * Control support for embedding use cases such as animations. This should be enabled when the
      * container view of the fragment is animated in any way, needs to be rotated or blended, or
      * need to control z-order with other views or other BrowserFragmentImpls. Note embedder should
@@ -227,6 +269,19 @@ public final class Browser {
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
+    }
+
+    /**
+     * Returns the UrlBarController.
+     * @since 82
+     */
+    @NonNull
+    public UrlBarController getUrlBarController() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 82) {
+            throw new UnsupportedOperationException();
+        }
+        return mUrlBarController;
     }
 
     private final class BrowserClientImpl extends IBrowserClient.Stub {

@@ -26,6 +26,7 @@ include Makefile.sources
 
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
+	-fvisibility=hidden \
 	-I$(top_srcdir) \
 	$(PTHREADSTUBS_CFLAGS) \
 	-I$(top_srcdir)/include/drm
@@ -43,5 +44,6 @@ libdrm_radeoninclude_HEADERS = $(LIBDRM_RADEON_H_FILES)
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_radeon.pc
 
+AM_TESTS_ENVIRONMENT = NM='$(NM)'
 TESTS = radeon-symbol-check
 EXTRA_DIST = $(LIBDRM_RADEON_BOF_FILES) $(TESTS)

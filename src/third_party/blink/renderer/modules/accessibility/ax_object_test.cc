@@ -19,7 +19,9 @@ class AccessibilityLayoutTest : public testing::WithParamInterface<bool>,
   AccessibilityLayoutTest() : ScopedLayoutNGForTest(GetParam()) {}
 
  protected:
-  bool LayoutNGEnabled() const { return GetParam(); }
+  bool LayoutNGEnabled() const {
+    return RuntimeEnabledFeatures::LayoutNGEnabled();
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(AccessibilityTest,
@@ -431,10 +433,10 @@ TEST_F(AccessibilityTest, InitRelationCache) {
   const AXObject* input_b = GetAXObjectByElementId("b");
   ASSERT_NE(nullptr, input_b);
 
-  EXPECT_TRUE(
-      GetAXObjectCache().MayHaveHTMLLabel(ToHTMLElement(*input_a->GetNode())));
-  EXPECT_FALSE(
-      GetAXObjectCache().MayHaveHTMLLabel(ToHTMLElement(*input_b->GetNode())));
+  EXPECT_TRUE(GetAXObjectCache().MayHaveHTMLLabel(
+      To<HTMLElement>(*input_a->GetNode())));
+  EXPECT_FALSE(GetAXObjectCache().MayHaveHTMLLabel(
+      To<HTMLElement>(*input_b->GetNode())));
 
   // Note: retrieve the LI first and check that its parent is not
   // the paragraph element. If we were to retrieve the UL element,

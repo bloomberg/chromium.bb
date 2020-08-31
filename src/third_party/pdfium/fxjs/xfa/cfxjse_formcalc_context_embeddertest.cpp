@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/fxcrt/fx_memory.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "fxjs/xfa/cfxjse_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -611,7 +612,7 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, TimeFmt) {
   }
 }
 
-TEST_F(CFXJSE_FormCalcContextEmbedderTest, DISABLED_Apr) {
+TEST_F(CFXJSE_FormCalcContextEmbedderTest, Apr) {
   ASSERT_TRUE(OpenDocument("simple_xfa.pdf"));
 
   struct {
@@ -625,7 +626,7 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, DISABLED_Apr) {
 
     CFXJSE_Value* value = GetValue();
     EXPECT_TRUE(value->IsNumber());
-    EXPECT_FLOAT_EQ(tests[i].result, value->ToFloat())
+    EXPECT_NEAR(tests[i].result, value->ToFloat(), 0.000001)
         << "Program: " << tests[i].program;
   }
 }
@@ -691,7 +692,7 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, IPmt) {
   }
 }
 
-TEST_F(CFXJSE_FormCalcContextEmbedderTest, DISABLED_NPV) {
+TEST_F(CFXJSE_FormCalcContextEmbedderTest, NPV) {
   ASSERT_TRUE(OpenDocument("simple_xfa.pdf"));
 
   struct {
@@ -773,7 +774,7 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, PV) {
   }
 }
 
-TEST_F(CFXJSE_FormCalcContextEmbedderTest, DISABLED_Rate) {
+TEST_F(CFXJSE_FormCalcContextEmbedderTest, Rate) {
   ASSERT_TRUE(OpenDocument("simple_xfa.pdf"));
 
   struct {
@@ -787,7 +788,7 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, DISABLED_Rate) {
 
     CFXJSE_Value* value = GetValue();
     EXPECT_TRUE(value->IsNumber());
-    EXPECT_FLOAT_EQ(tests[i].result, value->ToFloat())
+    EXPECT_NEAR(tests[i].result, value->ToFloat(), 0.000001)
         << "Program: " << tests[i].program;
   }
 }
@@ -906,7 +907,7 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, Within) {
   }
 }
 
-TEST_F(CFXJSE_FormCalcContextEmbedderTest, DISABLED_Eval) {
+TEST_F(CFXJSE_FormCalcContextEmbedderTest, Eval) {
   ASSERT_TRUE(OpenDocument("simple_xfa.pdf"));
 
   struct {
@@ -1072,6 +1073,7 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, Decode) {
       {R"(Decode("abc&NoneSuchButVeryLongIndeed;", "html"))", "abc"},
       {R"(Decode("&#x0041;&AElig;&Aacute;", "html"))", "A\xC3\x86\xC3\x81"},
       {R"(Decode("xyz&#", "html"))", "xyz"},
+      {R"(Decode("|&zzzzzz;|", "html"))", "||"},
 
       // XML
       {R"(Decode("", "xml"))", ""},
@@ -1079,6 +1081,7 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, Decode) {
       {R"(Decode("abc&nonesuchbutverylongindeed;", "xml"))", "abc"},
       {R"(Decode("&quot;&#x45;&lt;&gt;[].&apos;", "xml"))", "\"E<>[].'"},
       {R"(Decode("xyz&#", "xml"))", "xyz"},
+      {R"(Decode("|&zzzzzz;|", "xml"))", "||"},
 
       // URL
       {R"(Decode("", "url"))", ""},
@@ -1515,7 +1518,10 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, InvalidFunctions) {
   ASSERT_TRUE(OpenDocument("simple_xfa.pdf"));
 
   const char* const tests[] = {
-      "F()", "()", "()()()", "Round(2.0)()",
+      "F()",
+      "()",
+      "()()()",
+      "Round(2.0)()",
   };
 
   for (size_t i = 0; i < FX_ArraySize(tests); ++i) {

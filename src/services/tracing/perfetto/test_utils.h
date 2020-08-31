@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
@@ -62,13 +63,28 @@ class TestDataSource : public PerfettoTracedProcess::DataSourceBase {
   base::OnceClosure start_tracing_callback_ = base::OnceClosure();
 };
 
+// This class is owned by PerfettoTracedProcess, and its lifetime is indirectly
+// controlled by the handle returned from Create().
 class MockProducerClient : public ProducerClient {
  public:
-  MockProducerClient(
+  class Handle {
+   public:
+    explicit Handle(MockProducerClient* client) : client_(client) {}
+    ~Handle();
+
+    MockProducerClient* operator->() { return client_; }
+    MockProducerClient* operator*() { return client_; }
+
+   private:
+    MockProducerClient* const client_;
+  };
+
+  ~MockProducerClient() override;
+
+  static std::unique_ptr<Handle> Create(
       uint32_t num_data_sources = 0,
       base::OnceClosure client_enabled_callback = base::OnceClosure(),
       base::OnceClosure client_disabled_callback = base::OnceClosure());
-  ~MockProducerClient() override;
 
   void SetupDataSource(const std::string& data_source_name);
 
@@ -90,6 +106,10 @@ class MockProducerClient : public ProducerClient {
   }
 
  private:
+  MockProducerClient(uint32_t num_data_sources,
+                     base::OnceClosure client_enabled_callback,
+                     base::OnceClosure client_disabled_callback);
+
   uint32_t num_data_sources_active_ = 0;
   uint32_t num_data_sources_expected_;
   base::OnceClosure client_enabled_callback_;
@@ -161,7 +181,7 @@ class MockProducerHost : public ProducerHost {
   MockProducerHost(
       const std::string& producer_name,
       const std::string& data_source_name,
-      perfetto::TracingService* service,
+      PerfettoService* service,
       MockProducerClient* producer_client,
       base::OnceClosure datasource_registered_callback = base::OnceClosure());
   ~MockProducerHost() override;
@@ -188,7 +208,7 @@ class MockProducer {
  public:
   MockProducer(const std::string& producer_name,
                const std::string& data_source_name,
-               perfetto::TracingService* service,
+               PerfettoService* service,
                base::OnceClosure on_datasource_registered,
                base::OnceClosure on_tracing_started,
                size_t num_packets = 10);
@@ -196,13 +216,13 @@ class MockProducer {
 
   void WritePacketBigly(base::OnceClosure on_write_complete);
 
-  MockProducerClient* producer_client() { return producer_client_.get(); }
+  MockProducerClient* producer_client() { return **producer_client_; }
 
   TestDataSource* data_source() { return data_source_.get(); }
 
  private:
   std::unique_ptr<TestDataSource> data_source_;
-  std::unique_ptr<MockProducerClient> producer_client_;
+  std::unique_ptr<MockProducerClient::Handle> producer_client_;
   std::unique_ptr<MockProducerHost> producer_host_;
 };
 

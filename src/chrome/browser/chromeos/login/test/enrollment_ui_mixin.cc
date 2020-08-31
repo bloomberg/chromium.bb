@@ -18,7 +18,6 @@ namespace ui {
 const char kEnrollmentStepSignin[] = "signin";
 const char kEnrollmentStepWorking[] = "working";
 const char kEnrollmentStepSuccess[] = "success";
-const char kEnrollmentStepLicenses[] = "license";
 const char kEnrollmentStepDeviceAttributes[] = "attribute-prompt";
 const char kEnrollmentStepADJoin[] = "ad-join";
 const char kEnrollmentStepError[] = "error";
@@ -29,10 +28,6 @@ const char kEnrollmentStepADJoinError[] = "active-directory-join-error";
 
 namespace values {
 
-const char kLicenseTypePerpetual[] = "perpetual";
-const char kLicenseTypeAnnual[] = "annual";
-const char kLicenseTypeKiosk[] = "kiosk";
-
 const char kAssetId[] = "asset_id";
 const char kLocation[] = "location";
 
@@ -41,22 +36,26 @@ const char kLocation[] = "location";
 namespace {
 
 const char kEnrollmentUI[] = "enterprise-enrollment";
+const char kEnrollmentErrorMsg[] = "enrollment-error-msg";
 
 const char* const kAllSteps[] = {
-    ui::kEnrollmentStepSignin,   ui::kEnrollmentStepWorking,
-    ui::kEnrollmentStepLicenses, ui::kEnrollmentStepDeviceAttributes,
-    ui::kEnrollmentStepSuccess,  ui::kEnrollmentStepADJoin,
-    ui::kEnrollmentStepError};
+    ui::kEnrollmentStepSignin,           ui::kEnrollmentStepWorking,
+    ui::kEnrollmentStepDeviceAttributes, ui::kEnrollmentStepSuccess,
+    ui::kEnrollmentStepADJoin,           ui::kEnrollmentStepError};
 
 std::string StepElementID(const std::string& step) {
   return "step-" + step;
 }
 
 const std::initializer_list<base::StringPiece> kEnrollmentErrorButtonPath = {
-    kEnrollmentUI, "oauth-enroll-error-card", "submitButton"};
+    kEnrollmentUI, "error-retry-button"};
 
 const std::initializer_list<base::StringPiece> kEnrollmentSuccessButtonPath = {
     kEnrollmentUI, "success-done-button"};
+
+const std::initializer_list<base::StringPiece>
+    kEnrollmentAttributeErrorButtonPath = {kEnrollmentUI,
+                                           "attribute-error-button"};
 
 }  // namespace
 
@@ -86,20 +85,10 @@ void EnrollmentUIMixin::ExpectStepVisibility(bool visibility,
   }
 }
 
-void EnrollmentUIMixin::SelectEnrollmentLicense(
-    const std::string& license_type) {
-  OobeJS().SelectRadioPath({kEnrollmentUI, "oauth-enroll-license-ui",
-                            "license-option-" + license_type});
-}
-
-void EnrollmentUIMixin::UseSelectedLicense() {
-  OobeJS().TapOnPath({kEnrollmentUI, "oauth-enroll-license-ui", "next"});
-}
-
 void EnrollmentUIMixin::ExpectErrorMessage(int error_message_id,
                                            bool can_retry) {
   const std::string element_path =
-      GetOobeElementPath({kEnrollmentUI, "oauth-enroll-error-card"});
+      GetOobeElementPath({kEnrollmentUI, kEnrollmentErrorMsg});
   const std::string message = OobeJS().GetString(element_path + ".textContent");
   ASSERT_TRUE(std::string::npos !=
               message.find(l10n_util::GetStringUTF8(error_message_id)));
@@ -116,7 +105,7 @@ void EnrollmentUIMixin::RetryAfterError() {
 }
 
 void EnrollmentUIMixin::LeaveDeviceAttributeErrorScreen() {
-  OobeJS().ClickOnPath(kEnrollmentErrorButtonPath);
+  OobeJS().ClickOnPath(kEnrollmentAttributeErrorButtonPath);
 }
 
 void EnrollmentUIMixin::LeaveSuccessScreen() {

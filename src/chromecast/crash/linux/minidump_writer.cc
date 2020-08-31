@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "chromecast/base/path_utils.h"
 #include "chromecast/base/process_utils.h"
+#include "chromecast/crash/linux/crash_util.h"
 #include "chromecast/crash/linux/dump_info.h"
 #include "chromecast/crash/linux/minidump_generator.h"
 
@@ -20,18 +21,9 @@ const char kDumpStateSuffix[] = ".txt.gz";
 
 // Fork and run dumpstate, saving results to minidump_name + ".txt.gz".
 int DumpState(const std::string& minidump_name) {
-  std::vector<std::string> argv;
-  argv.push_back(GetBinPathASCII("dumpstate").value());
-  argv.push_back("-w");
-  argv.push_back("crash-request");
-  argv.push_back("-z");
-  argv.push_back("-o");
-  argv.push_back(
-      minidump_name);  // dumpstate appends ".txt.gz" to the filename.
-
-  std::string log;
-  if (!chromecast::GetAppOutput(argv, &log)) {
-    LOG(ERROR) << "failed to execute dumpstate";
+  base::FilePath dumpstate_path;
+  if (!CrashUtil::CollectDumpstate(base::FilePath(minidump_name),
+                                   &dumpstate_path)) {
     return -1;
   }
   return 0;
@@ -42,12 +34,11 @@ int DumpState(const std::string& minidump_name) {
 MinidumpWriter::MinidumpWriter(MinidumpGenerator* minidump_generator,
                                const std::string& minidump_filename,
                                const MinidumpParams& params,
-                               const DumpStateCallback& dump_state_cb)
+                               DumpStateCallback dump_state_cb)
     : minidump_generator_(minidump_generator),
       minidump_path_(minidump_filename),
       params_(params),
-      dump_state_cb_(dump_state_cb) {
-}
+      dump_state_cb_(std::move(dump_state_cb)) {}
 
 MinidumpWriter::MinidumpWriter(MinidumpGenerator* minidump_generator,
                                const std::string& minidump_filename,
@@ -55,8 +46,7 @@ MinidumpWriter::MinidumpWriter(MinidumpGenerator* minidump_generator,
     : MinidumpWriter(minidump_generator,
                      minidump_filename,
                      params,
-                     base::Bind(&DumpState)) {
-}
+                     base::BindOnce(&DumpState)) {}
 
 MinidumpWriter::~MinidumpWriter() {
 }
@@ -80,8 +70,8 @@ bool MinidumpWriter::DoWork() {
   }
 
   // Run the dumpstate callback.
-  DCHECK(!dump_state_cb_.is_null());
-  if (dump_state_cb_.Run(minidump_path_.value()) < 0) {
+  DCHECK(dump_state_cb_);
+  if (std::move(dump_state_cb_).Run(minidump_path_.value()) < 0) {
     LOG(ERROR) << "DumpState callback failed.";
     return false;
   }
@@ -98,4 +88,4 @@ bool MinidumpWriter::DoWork() {
   return true;
 }
 
-}  // namespace crash_manager
+}  // namespace chromecast

@@ -255,15 +255,6 @@ void WiredDisplayMediaRouteProvider::UpdateMediaSinks(
     media_router_->OnSinksReceived(kProviderId, media_source, GetSinks(), {});
 }
 
-void WiredDisplayMediaRouteProvider::SearchSinks(
-    const std::string& sink_id,
-    const std::string& media_source,
-    mojom::SinkSearchCriteriaPtr search_criteria,
-    SearchSinksCallback callback) {
-  // The use of this method is not required by this MRP.
-  std::move(callback).Run("");
-}
-
 void WiredDisplayMediaRouteProvider::ProvideSinks(
     const std::string& provider_name,
     const std::vector<media_router::MediaSinkInternal>& sinks) {
@@ -284,6 +275,11 @@ void WiredDisplayMediaRouteProvider::CreateMediaRouteController(
   it->second.SetMojoConnections(std::move(media_controller),
                                 std::move(observer));
   std::move(callback).Run(true);
+}
+
+void WiredDisplayMediaRouteProvider::GetState(GetStateCallback callback) {
+  NOTIMPLEMENTED();
+  std::move(callback).Run(mojom::ProviderStatePtr());
 }
 
 void WiredDisplayMediaRouteProvider::OnDidProcessDisplayChanges() {

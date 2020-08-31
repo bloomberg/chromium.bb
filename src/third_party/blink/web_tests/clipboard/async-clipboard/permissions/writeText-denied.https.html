@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <meta charset="utf-8">
 <title>navigator.clipboard.writeText() fails when permission denied</title>
 <link rel="help" href="https://w3c.github.io/clipboard-apis/#async-clipboard-api">
@@ -7,7 +7,7 @@
 <script src="../../../http/tests/resources/permissions-helper.js"></script>
 <script>
 promise_test(async t => {
-  await PermissionsHelper.setPermission('clipboard-write', 'denied');
-  await promise_rejects(t, 'NotAllowedError', navigator.clipboard.writeText('xyz'));
+  await PermissionsHelper.setPermission('clipboard-sanitized-write', 'denied');
+  await promise_rejects_dom(t, 'NotAllowedError', navigator.clipboard.writeText('xyz'));
 }, 'navigator.clipboard.writeText() fails when permission denied');
 </script>

@@ -12,8 +12,10 @@ import android.content.res.Resources;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.text.Editable;
+import android.text.Selection;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.InputMethodManager;
@@ -24,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
@@ -36,15 +39,15 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.KeyUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.DummyUiActivityTestCase;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -197,6 +200,46 @@ public class UrlBarTest extends DummyUiActivityTestCase {
 
     private AutocompleteState setSelection(final int selectionStart, final int selectionEnd) {
         return getAutocompleteState(() -> mUrlBar.setSelection(selectionStart, selectionEnd));
+    }
+
+    private void assertAutocompleteSelectionRange(
+            int expectedSelectionStart, int expectedSelectionEnd) {
+        int[] selection = getSelectionRange();
+        Assert.assertEquals("Selection start did not match", expectedSelectionStart, selection[0]);
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE)) {
+            Assert.assertEquals("Selection end did not match", expectedSelectionEnd, selection[1]);
+        }
+    }
+
+    private int[] getSelectionRange() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            int[] selection = new int[2];
+            CharSequence text = mUrlBar.getText();
+            selection[0] = Selection.getSelectionStart(text);
+            selection[1] = Selection.getSelectionEnd(text);
+            return selection;
+        });
+    }
+
+    private void setTextAndVerifyTextDirection(String text, int expectedDirection)
+            throws TimeoutException {
+        CallbackHelper directionCallback = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mUrlBar.setUrlDirectionListener((direction) -> {
+                if (direction == expectedDirection) directionCallback.notifyCalled();
+            });
+        });
+        setTextAndVerifyNoAutocomplete(text);
+        directionCallback.waitForFirst(
+                "Direction never reached expected direction: " + expectedDirection);
+        assertUrlDirection(expectedDirection);
+        TestThreadUtils.runOnUiThreadBlocking(() -> mUrlBar.setUrlDirectionListener(null));
+    }
+
+    private void assertUrlDirection(int expectedDirection) {
+        int actualDirection =
+                TestThreadUtils.runOnUiThreadBlockingNoException(() -> mUrlBar.getUrlDirection());
+        Assert.assertEquals(expectedDirection, actualDirection);
     }
 
     @Test
@@ -836,5 +879,78 @@ public class UrlBarTest extends DummyUiActivityTestCase {
         Assert.assertEquals("chrome://fblahblahblah", urlText.toString());
         Assert.assertEquals(BaseInputConnection.getComposingSpanStart(urlText), 10);
         Assert.assertEquals(BaseInputConnection.getComposingSpanEnd(urlText), 22);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omnibox"})
+    @RetryOnFailure
+    public void testUrlTextChangeListener() {
+        toggleFocusAndIgnoreImeOperations(mUrlBar, true);
+
+        UrlBar.UrlTextChangeListener listener = Mockito.mock(UrlBar.UrlTextChangeListener.class);
+        mUrlBar.setUrlTextChangeListener(listener);
+
+        setTextAndVerifyNoAutocomplete("onomatop");
+        Mockito.verify(listener).onTextChanged("onomatop", "onomatop");
+
+        // Setting autocomplete does not send a change update.
+        setAutocomplete("onomatop", "oeia");
+
+        setTextAndVerifyNoAutocomplete("");
+        Mockito.verify(listener).onTextChanged("", "");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omnibox"})
+    @RetryOnFailure
+    public void testSetAutocompleteText_ShrinkingText() {
+        toggleFocusAndIgnoreImeOperations(mUrlBar, true);
+        setTextAndVerifyNoAutocomplete("test");
+        setAutocomplete("test", "ing is awesome");
+        setAutocomplete("test", "ing is hard");
+        setAutocomplete("test", "ingz");
+        assertAutocompleteSelectionRange(4, 8);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omnibox"})
+    @RetryOnFailure
+    public void testSetAutocompleteText_GrowingText() {
+        toggleFocusAndIgnoreImeOperations(mUrlBar, true);
+        setTextAndVerifyNoAutocomplete("test");
+        setAutocomplete("test", "ingz");
+        setAutocomplete("test", "ing is hard");
+        setAutocomplete("test", "ing is awesome");
+        assertAutocompleteSelectionRange(4, 18);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omnibox"})
+    @RetryOnFailure
+    public void testSetAutocompleteText_DuplicateText() {
+        toggleFocusAndIgnoreImeOperations(mUrlBar, true);
+        setTextAndVerifyNoAutocomplete("test");
+        setAutocomplete("test", "ingz");
+        setAutocomplete("test", "ingz");
+        setAutocomplete("test", "ingz");
+        assertAutocompleteSelectionRange(4, 8);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omnibox"})
+    @RetryOnFailure
+    public void testUrlDirection() throws TimeoutException {
+        toggleFocusAndIgnoreImeOperations(mUrlBar, true);
+        assertUrlDirection(View.LAYOUT_DIRECTION_LOCALE);
+        setTextAndVerifyTextDirection("ل", View.LAYOUT_DIRECTION_RTL);
+        setTextAndVerifyTextDirection("a", View.LAYOUT_DIRECTION_LTR);
+        setTextAndVerifyTextDirection("للك", View.LAYOUT_DIRECTION_RTL);
+        setTextAndVerifyTextDirection("f", View.LAYOUT_DIRECTION_LTR);
+        setTextAndVerifyTextDirection("", View.LAYOUT_DIRECTION_LOCALE);
     }
 }

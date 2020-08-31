@@ -5,8 +5,11 @@
 #include "base/util/memory_pressure/multi_source_memory_pressure_monitor.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/util/memory_pressure/system_memory_pressure_evaluator.h"
 
 namespace util {
@@ -64,7 +67,7 @@ MultiSourceMemoryPressureMonitor::GetCurrentPressureLevel() const {
 std::unique_ptr<MemoryPressureVoter>
 MultiSourceMemoryPressureMonitor::CreateVoter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return std::make_unique<MemoryPressureVoter>(&aggregator_);
+  return aggregator_.CreateVoter();
 }
 
 void MultiSourceMemoryPressureMonitor::SetDispatchCallback(
@@ -76,6 +79,58 @@ void MultiSourceMemoryPressureMonitor::SetDispatchCallback(
 void MultiSourceMemoryPressureMonitor::OnMemoryPressureLevelChanged(
     base::MemoryPressureListener::MemoryPressureLevel level) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(current_pressure_level_, level);
+
+  TRACE_EVENT_INSTANT1(
+      "base", "MultiSourceMemoryPressureMonitor::OnMemoryPressureLevelChanged",
+      TRACE_EVENT_SCOPE_THREAD, "level", level);
+
+  // Records the duration of the latest pressure session, there are 4
+  // transitions of interest:
+  //   - Moderate -> None
+  //   - Moderate -> Critical
+  //   - Critical -> Moderate
+  //   - Critical -> None
+
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  if (current_pressure_level_ !=
+      MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_NONE) {
+    DCHECK(!last_pressure_change_timestamp_.is_null());
+    std::string histogram_name = "Memory.PressureWindowDuration.";
+    switch (current_pressure_level_) {
+      // From:
+      case MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_MODERATE: {
+        // To:
+        if (level == MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_NONE) {
+          histogram_name += "ModerateToNone";
+        } else {  // MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL
+          histogram_name += "ModerateToCritical";
+        }
+        break;
+      }
+      // From:
+      case MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL: {
+        // To:
+        if (level == MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_NONE) {
+          histogram_name += "CriticalToNone";
+        } else {  // MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_MODERATE
+          histogram_name += "CriticalToModerate";
+        }
+        break;
+      }
+      case MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_NONE:
+      default:
+        break;
+    }
+
+    base::UmaHistogramCustomTimes(
+        histogram_name, now - last_pressure_change_timestamp_,
+        base::TimeDelta::FromSeconds(1), base::TimeDelta::FromMinutes(10), 50);
+  }
+
+  last_pressure_change_timestamp_ = now;
+
   current_pressure_level_ = level;
 }
 

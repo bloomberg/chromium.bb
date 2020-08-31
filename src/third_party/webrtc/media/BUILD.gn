@@ -42,9 +42,7 @@ rtc_library("rtc_h264_profile_id") {
 
 rtc_source_set("rtc_media_config") {
   visibility = [ "*" ]
-  sources = [
-    "base/media_config.h",
-  ]
+  sources = [ "base/media_config.h" ]
 }
 
 rtc_library("rtc_vp9_profile") {
@@ -63,6 +61,20 @@ rtc_library("rtc_vp9_profile") {
   ]
 }
 
+rtc_library("rtc_sdp_fmtp_utils") {
+  visibility = [ "*" ]
+  sources = [
+    "base/sdp_fmtp_utils.cc",
+    "base/sdp_fmtp_utils.h",
+  ]
+
+  deps = [
+    "../api/video_codecs:video_codecs_api",
+    "../rtc_base:stringutils",
+    "//third_party/abseil-cpp/absl/types:optional",
+  ]
+}
+
 rtc_library("rtc_media_base") {
   visibility = [ "*" ]
   defines = []
@@ -74,6 +86,7 @@ rtc_library("rtc_media_base") {
     "..:webrtc_common",
     "../api:array_view",
     "../api:audio_options_api",
+    "../api:frame_transformer_interface",
     "../api:media_stream_interface",
     "../api:rtc_error",
     "../api:rtp_parameters",
@@ -165,6 +178,7 @@ rtc_library("rtc_simulcast_encoder_adapter") {
     "engine/simulcast_encoder_adapter.h",
   ]
   deps = [
+    ":rtc_media_base",
     "../api:fec_controller_api",
     "../api:scoped_refptr",
     "../api/video:video_codec_constants",
@@ -184,7 +198,6 @@ rtc_library("rtc_simulcast_encoder_adapter") {
     "../system_wrappers",
     "../system_wrappers:field_trial",
     "//third_party/abseil-cpp/absl/types:optional",
-    "//third_party/libyuv",
   ]
 }
 
@@ -233,6 +246,8 @@ rtc_library("rtc_internal_video_codecs") {
     "../modules/video_coding:webrtc_multiplex",
     "../modules/video_coding:webrtc_vp8",
     "../modules/video_coding:webrtc_vp9",
+    "../modules/video_coding/codecs/av1:libaom_av1_decoder",
+    "../modules/video_coding/codecs/av1:libaom_av1_encoder",
     "../rtc_base:checks",
     "../rtc_base:deprecation",
     "../rtc_base:rtc_base_approved",
@@ -267,6 +282,7 @@ rtc_library("rtc_audio_video") {
     "..:webrtc_common",
     "../api:call_api",
     "../api:libjingle_peerconnection_api",
+    "../api:media_stream_interface",
     "../api:rtp_parameters",
     "../api:scoped_refptr",
     "../api:transport_api",
@@ -304,7 +320,6 @@ rtc_library("rtc_audio_video") {
     "../rtc_base:checks",
     "../rtc_base:rtc_task_queue",
     "../rtc_base:stringutils",
-    "../rtc_base/experiments:experimental_screenshare_settings",
     "../rtc_base/experiments:field_trial_parser",
     "../rtc_base/experiments:min_video_bitrate_experiment",
     "../rtc_base/experiments:normalize_simulcast_size_experiment",
@@ -403,9 +418,7 @@ rtc_library("rtc_data") {
     ]
   } else {
     # libtool on mac does not like empty targets.
-    sources = [
-      "sctp/noop.cc",
-    ]
+    sources = [ "sctp/noop.cc" ]
   }
 
   if (rtc_enable_sctp && rtc_build_usrsctp) {
@@ -491,20 +504,18 @@ if (rtc_include_tests) {
   rtc_media_unittests_resources = [
     "../resources/media/captured-320x240-2s-48.frames",
     "../resources/media/faces.1280x720_P420.yuv",
+    "../resources/media/faces_I400.jpg",
+    "../resources/media/faces_I411.jpg",
     "../resources/media/faces_I420.jpg",
     "../resources/media/faces_I422.jpg",
     "../resources/media/faces_I444.jpg",
-    "../resources/media/faces_I411.jpg",
-    "../resources/media/faces_I400.jpg",
   ]
 
   if (is_ios) {
     bundle_data("rtc_media_unittests_bundle_data") {
       testonly = true
       sources = rtc_media_unittests_resources
-      outputs = [
-        "{{bundle_resources_dir}}/{{source_file_part}}",
-      ]
+      outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
     }
   }
 
@@ -522,6 +533,7 @@ if (rtc_include_tests) {
       ":rtc_media_base",
       ":rtc_media_engine_defaults",
       ":rtc_media_tests_utils",
+      ":rtc_sdp_fmtp_utils",
       ":rtc_simulcast_encoder_adapter",
       ":rtc_vp9_profile",
       "../:webrtc_common",
@@ -554,6 +566,7 @@ if (rtc_include_tests) {
       "../audio",
       "../call:call_interfaces",
       "../common_video",
+      "../media:rtc_h264_profile_id",
       "../modules/audio_device:mock_audio_device",
       "../modules/audio_processing",
       "../modules/audio_processing:api",
@@ -561,7 +574,9 @@ if (rtc_include_tests) {
       "../modules/rtp_rtcp",
       "../modules/video_coding:simulcast_test_fixture_impl",
       "../modules/video_coding:video_codec_interface",
+      "../modules/video_coding:webrtc_h264",
       "../modules/video_coding:webrtc_vp8",
+      "../modules/video_coding/codecs/av1:libaom_av1_decoder",
       "../p2p:p2p_test_utils",
       "../rtc_base",
       "../rtc_base:checks",
@@ -586,8 +601,10 @@ if (rtc_include_tests) {
     ]
     sources = [
       "base/codec_unittest.cc",
+      "base/media_engine_unittest.cc",
       "base/rtp_data_engine_unittest.cc",
       "base/rtp_utils_unittest.cc",
+      "base/sdp_fmtp_utils_unittest.cc",
       "base/stream_params_unittest.cc",
       "base/turn_utils_unittest.cc",
       "base/video_adapter_unittest.cc",

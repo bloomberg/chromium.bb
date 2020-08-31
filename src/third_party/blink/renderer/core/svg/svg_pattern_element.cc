@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_pattern.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/svg/pattern_attributes.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
@@ -82,7 +83,7 @@ SVGPatternElement::SVGPatternElement(Document& document)
   AddToPropertyMap(pattern_content_units_);
 }
 
-void SVGPatternElement::Trace(blink::Visitor* visitor) {
+void SVGPatternElement::Trace(Visitor* visitor) {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);
@@ -185,10 +186,8 @@ void SVGPatternElement::RemovedFrom(ContainerNode& root_parent) {
 void SVGPatternElement::ChildrenChanged(const ChildrenChange& change) {
   SVGElement::ChildrenChanged(change);
 
-  if (change.by_parser)
-    return;
-
-  InvalidatePattern(layout_invalidation_reason::kChildChanged);
+  if (!change.ByParser())
+    InvalidatePattern(layout_invalidation_reason::kChildChanged);
 }
 
 void SVGPatternElement::InvalidatePattern(
@@ -204,8 +203,6 @@ LayoutObject* SVGPatternElement::CreateLayoutObject(const ComputedStyle&,
 
 static void SetPatternAttributes(const SVGPatternElement& element,
                                  PatternAttributes& attributes) {
-  element.SynchronizeAnimatedSVGAttribute(AnyQName());
-
   if (!attributes.HasX() && element.x()->IsSpecified())
     attributes.SetX(element.x()->CurrentValue());
 
@@ -267,10 +264,10 @@ void SVGPatternElement::CollectPatternAttributes(
     // from that element to override values this pattern didn't set.
     current = current->ReferencedElement();
 
-    // Only consider attached SVG pattern elements.
+    // Ignore the referenced pattern element if it is not attached.
     if (!current || !current->GetLayoutObject())
       break;
-    // Cycle detection
+    // Cycle detection.
     if (processed_patterns.Contains(current))
       break;
   }

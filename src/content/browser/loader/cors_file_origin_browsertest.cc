@@ -19,6 +19,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -99,12 +100,15 @@ class CorsFileOriginBrowserTest : public ContentBrowserTest {
   }
 
  private:
-  bool AllowFileAccessFromFiles() override { return false; }
+  virtual bool AllowFileAccessFromFiles() const { return false; }
   virtual bool IsWebSecurityEnabled() const { return true; }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     if (!IsWebSecurityEnabled()) {
       command_line->AppendSwitch(switches::kDisableWebSecurity);
+    }
+    if (AllowFileAccessFromFiles()) {
+      command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
     }
 
     ContentBrowserTest::SetUpCommandLine(command_line);
@@ -179,7 +183,7 @@ class CorsFileOriginBrowserTest : public ContentBrowserTest {
 class CorsFileOriginBrowserTestWithAllowFileAccessFromFiles
     : public CorsFileOriginBrowserTest {
  private:
-  bool AllowFileAccessFromFiles() override { return true; }
+  bool AllowFileAccessFromFiles() const override { return true; }
 };
 
 // Tests end to end Origin header and CORS check behaviors with
@@ -187,7 +191,6 @@ class CorsFileOriginBrowserTestWithAllowFileAccessFromFiles
 class CorsFileOriginBrowserTestWithDisableWebSecurity
     : public CorsFileOriginBrowserTest {
  private:
-  bool AllowFileAccessFromFiles() override { return false; }
   bool IsWebSecurityEnabled() const override { return false; }
 };
 
@@ -401,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTestWithAllowFileAccessFromFiles,
       shell(),
       CreateTestDataURL("image-taint.html?test=no_cors_with_file_access")));
   EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
-}  // namespace
+}
 
 IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTestWithAllowFileAccessFromFiles,
                        CorsImagefileTaint) {
@@ -410,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTestWithAllowFileAccessFromFiles,
       shell(),
       CreateTestDataURL("image-taint.html?test=cors_with_file_access")));
   EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
-}  // namespace content
+}
 
 IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTestWithDisableWebSecurity,
                        NoCorsImagefileTaint) {

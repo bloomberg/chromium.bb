@@ -4,6 +4,11 @@
 
 #include "discovery/mdns/mdns_receiver.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "discovery/common/config.h"
 #include "discovery/mdns/mdns_records.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -13,13 +18,10 @@
 namespace openscreen {
 namespace discovery {
 
-using openscreen::platform::FakeUdpSocket;
-using openscreen::platform::TaskRunner;
-using openscreen::platform::UdpPacket;
 using testing::_;
 using testing::Return;
 
-class MockMdnsReceiverDelegate {
+class MockMdnsReceiverDelegate : public MdnsReceiver::ResponseClient {
  public:
   MOCK_METHOD(void, OnMessageReceived, (const MdnsMessage&));
 };
@@ -42,10 +44,10 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
   };
   // clang-format on
 
-  std::unique_ptr<FakeUdpSocket> socket_info =
-      FakeUdpSocket::CreateDefault(IPAddress::Version::kV4);
+  Config config;
+  FakeUdpSocket socket;
   MockMdnsReceiverDelegate delegate;
-  MdnsReceiver receiver(socket_info.get());
+  MdnsReceiver receiver(config);
   receiver.SetQueryCallback(
       [&delegate](const MdnsMessage& message, const IPEndpoint& endpoint) {
         delegate.OnMessageReceived(message);
@@ -66,7 +68,7 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
 
   // Imitate a call to OnRead from NetworkRunner by calling it manually here
   EXPECT_CALL(delegate, OnMessageReceived(message)).Times(1);
-  receiver.OnRead(socket_info.get(), std::move(packet));
+  receiver.OnRead(&socket, std::move(packet));
 
   receiver.Stop();
 }
@@ -91,19 +93,17 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
       0xac, 0x00, 0x00, 0x01,  // 172.0.0.1
   };
 
-  constexpr uint8_t kIPv6AddressBytes[] = {
-      0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x02, 0x02, 0xb3, 0xff, 0xfe, 0x1e, 0x83, 0x29,
+  constexpr uint16_t kIPv6AddressHextets[] = {
+      0xfe80, 0x0000, 0x0000, 0x0000,
+      0x0202, 0xb3ff, 0xfe1e, 0x8329,
   };
   // clang-format on
 
-  std::unique_ptr<FakeUdpSocket> socket_info =
-      FakeUdpSocket::CreateDefault(IPAddress::Version::kV6);
+  Config config;
+  FakeUdpSocket socket;
   MockMdnsReceiverDelegate delegate;
-  MdnsReceiver receiver(socket_info.get());
-  receiver.SetResponseCallback([&delegate](const MdnsMessage& message) {
-    delegate.OnMessageReceived(message);
-  });
+  MdnsReceiver receiver(config);
+  receiver.AddResponseCallback(&delegate);
   receiver.Start();
 
   MdnsRecord record(DomainName{"testing", "local"}, DnsType::kA, DnsClass::kIN,
@@ -116,16 +116,17 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
   packet.assign(kResponseBytes.data(),
                 kResponseBytes.data() + kResponseBytes.size());
   packet.set_source(
-      IPEndpoint{.address = IPAddress(kIPv6AddressBytes), .port = 31337});
+      IPEndpoint{.address = IPAddress(kIPv6AddressHextets), .port = 31337});
   packet.set_destination(
       IPEndpoint{.address = IPAddress(kDefaultMulticastGroupIPv6),
                  .port = kDefaultMulticastPort});
 
   // Imitate a call to OnRead from NetworkRunner by calling it manually here
   EXPECT_CALL(delegate, OnMessageReceived(message)).Times(1);
-  receiver.OnRead(socket_info.get(), std::move(packet));
+  receiver.OnRead(&socket, std::move(packet));
 
   receiver.Stop();
+  receiver.RemoveResponseCallback(&delegate);
 }
 
 }  // namespace discovery

@@ -10,8 +10,11 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -35,23 +38,42 @@ class ExtensionDialog : public views::DialogDelegate,
                         public content::NotificationObserver,
                         public base::RefCounted<ExtensionDialog> {
  public:
+  struct InitParams {
+    // |size| Size in DIP (Device Independent Pixel) for the dialog window.
+    explicit InitParams(gfx::Size size);
+    InitParams(const InitParams& other);
+    ~InitParams();
+
+    // |is_modal| determines whether the dialog is modal to |parent_window|.
+    bool is_modal = false;
+
+    // Size in DIP (Device Independent Pixel) for the dialog window.
+    gfx::Size size;
+
+    // Minimum size in DIP (Device Independent Pixel) for the dialog window.
+    gfx::Size min_size;
+
+    // Text for the dialog title, it should be already localized.
+    base::string16 title;
+
+#if defined(OS_CHROMEOS)
+    // |title_color| customizes the color of the window title.
+    base::Optional<SkColor> title_color;
+    // |title_inactive_color| customizes the color of the window title when
+    // window is inactive.
+    base::Optional<SkColor> title_inactive_color;
+#endif
+  };
   // Create and show a dialog with |url| centered over the provided window.
   // |parent_window| is the parent window to which the pop-up will be attached.
   // |profile| is the profile that the extension is registered with.
   // |web_contents| is the tab that spawned the dialog.
-  // |is_modal| determines whether the dialog is modal to |parent_window|.
-  // |width| and |height| are the size of the dialog in pixels.
   static ExtensionDialog* Show(const GURL& url,
                                gfx::NativeWindow parent_window,
                                Profile* profile,
                                content::WebContents* web_contents,
-                               bool is_modal,
-                               int width,
-                               int height,
-                               int min_width,
-                               int min_height,
-                               const base::string16& title,
-                               ExtensionDialogObserver* observer);
+                               ExtensionDialogObserver* observer,
+                               const InitParams& init_params);
 
   // Notifies the dialog that the observer has been destroyed and should not
   // be sent notifications.
@@ -68,7 +90,7 @@ class ExtensionDialog : public views::DialogDelegate,
 
   extensions::ExtensionViewHost* host() const { return host_.get(); }
 
-  // views::DialogDelegate override.
+  // views::DialogDelegate:
   bool CanResize() const override;
   ui::ModalType GetModalType() const override;
   bool ShouldShowWindowTitle() const override;
@@ -79,7 +101,7 @@ class ExtensionDialog : public views::DialogDelegate,
   const views::Widget* GetWidget() const override;
   views::View* GetContentsView() override;
 
-  // content::NotificationObserver overrides.
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
@@ -95,11 +117,7 @@ class ExtensionDialog : public views::DialogDelegate,
                   ExtensionDialogObserver* observer);
 
   void InitWindow(gfx::NativeWindow parent_window,
-                  bool is_modal,
-                  int width,
-                  int height,
-                  int min_width,
-                  int min_height);
+                  const InitParams& init_params);
 
   ExtensionViewViews* GetExtensionView() const;
   static ExtensionViewViews* GetExtensionView(

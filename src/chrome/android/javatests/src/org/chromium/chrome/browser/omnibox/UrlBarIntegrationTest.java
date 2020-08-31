@@ -20,13 +20,14 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.params.ParameterizedCommandLineFlags;
 import org.chromium.base.test.params.ParameterizedCommandLineFlags.Switches;
+import org.chromium.base.test.util.CloseableOnMainThread;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
@@ -113,20 +114,32 @@ public class UrlBarIntegrationTest {
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    public void testCopyHuge() {
+    public void testCopyHuge() throws Throwable {
         mActivityTestRule.startMainActivityWithURL(HUGE_URL);
         OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
-        Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.copy));
+        // Allow all thread policies temporarily in main thread to avoid
+        // DiskWrite and UnBufferedIo violations during copying under
+        // emulator environment.
+        try (CloseableOnMainThread ignored =
+                        CloseableOnMainThread.StrictMode.allowAllThreadPolicies()) {
+            Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.copy));
+        }
     }
 
     @Test
     @SmallTest
     @Feature({"Omnibox"})
     @RetryOnFailure
-    public void testCutHuge() {
+    public void testCutHuge() throws Throwable {
         mActivityTestRule.startMainActivityWithURL(HUGE_URL);
         OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
-        Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.cut));
+        // Allow all thread policies temporarily in main thread to avoid
+        // DiskWrite and UnBufferedIo violations during copying under
+        // emulator environment.
+        try (CloseableOnMainThread ignored =
+                        CloseableOnMainThread.StrictMode.allowAllThreadPolicies()) {
+            Assert.assertEquals(HUGE_URL, copyUrlToClipboard(android.R.id.cut));
+        }
     }
 
     /**
@@ -157,7 +170,7 @@ public class UrlBarIntegrationTest {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    // TODO(crbug.com/1048469): Investigate and enable this test for the search engine logo feature.
+    // TODO(crbug.com/1028469): Investigate and enable this test for the search engine logo feature.
     @DisableFeatures("OmniboxSearchEngineLogo")
     @RetryOnFailure
     public void testLongPress() {

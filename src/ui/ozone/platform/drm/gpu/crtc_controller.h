@@ -40,9 +40,12 @@ class CrtcController {
   const scoped_refptr<DrmDevice>& drm() const { return drm_; }
   bool is_disabled() const { return is_disabled_; }
 
-  // Perform the initial modesetting operation using |plane| as the buffer for
-  // the primary plane. The CRTC configuration is specified by |mode|.
-  bool Modeset(const DrmOverlayPlane& plane, drmModeModeInfo mode);
+  // Calls the appropriate Plane Manager to perform the initial modesetting
+  // operation using |plane| as the buffer for the primary plane. The CRTC
+  // configuration is specified by |mode|.
+  bool Modeset(const DrmOverlayPlane& plane,
+               const drmModeModeInfo& mode,
+               const ui::HardwareDisplayPlaneList& plane_list);
 
   // Disables the controller.
   bool Disable();
@@ -74,8 +77,6 @@ class CrtcController {
 
   // TODO(dnicoara) Add support for hardware mirroring (multiple connectors).
   const uint32_t connector_;
-
-  const std::vector<uint64_t> internal_diplay_only_modifiers_;
 
   drmModeModeInfo mode_ = {};
 

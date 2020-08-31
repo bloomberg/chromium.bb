@@ -48,12 +48,6 @@ Example:
   ],
   "current_key_index": 0,
   "robot_api_auth_code": "",
-  "invalidation_source": 1025,
-  "invalidation_name": "UENUPOL",
-  "available_licenses" : {
-      "annual": 10,
-      "perpetual": 20
-   },
    "token_enrollment": {
       "token": "abcd-ef01-123123123",
       "username": "admin@example.com"
@@ -199,12 +193,6 @@ SIGNING_KEYS = [
        },
     },
 ]
-
-LICENSE_TYPES = {
-  'perpetual': dm.LicenseType.CDM_PERPETUAL,
-  'annual': dm.LicenseType.CDM_ANNUAL,
-  'kiosk': dm.LicenseType.KIOSK,
-}
 
 INVALID_ENROLLMENT_TOKEN = 'invalid_enrollment_token'
 
@@ -357,8 +345,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       response = self.ProcessDeviceAttributeUpdatePermissionRequest()
     elif request_type == 'device_attribute_update':
       response = self.ProcessDeviceAttributeUpdateRequest()
-    elif request_type == 'check_device_license':
-      response = self.ProcessCheckDeviceLicenseRequest()
     elif request_type == 'remote_commands':
       response = self.ProcessRemoteCommandsRequest()
     elif request_type == 'check_android_management':
@@ -805,27 +791,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     return (200, response)
 
-  def ProcessCheckDeviceLicenseRequest(self):
-    """Handles a device license check request.
-
-    Returns:
-      A tuple of HTTP status code and response data to send to the client.
-    """
-    response = dm.DeviceManagementResponse()
-    license_response = response.check_device_license_response
-    policy = self.server.GetPolicies()
-    selection_mode = dm.CheckDeviceLicenseResponse.ADMIN_SELECTION
-    if ('available_licenses' in policy):
-      available_licenses = policy['available_licenses']
-      selection_mode = dm.CheckDeviceLicenseResponse.USER_SELECTION
-      for license_type in available_licenses:
-        license = license_response.license_availabilities.add()
-        license.license_type.license_type = LICENSE_TYPES[license_type]
-        license.available_licenses = available_licenses[license_type]
-    license_response.license_selection_mode = (selection_mode)
-
-    return (200, response)
-
   def ProcessRemoteCommandsRequest(self):
     """Handles a remote command request.
 
@@ -1192,14 +1157,11 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     policy_data.service_account_identity = policy.get(
         'service_account_identity',
         'policy_testserver.py-service_account_identity@gmail.com')
-    invalidation_source = policy.get('invalidation_source')
-    if invalidation_source is not None:
-      policy_data.invalidation_source = invalidation_source
-    # Since invalidation_name is type bytes in the proto, the Unicode name
-    # provided needs to be encoded as ASCII to set the correct byte pattern.
-    invalidation_name = policy.get('invalidation_name')
-    if invalidation_name is not None:
-      policy_data.invalidation_name = invalidation_name.encode('ascii')
+
+    policy_invalidation_topic = policy.get('policy_invalidation_topic')
+    if policy_invalidation_topic is not None:
+      policy_data.policy_invalidation_topic = \
+          policy_invalidation_topic.encode('ascii')
 
     if msg.signature_type != dm.PolicyFetchRequest.NONE:
       policy_data.public_key_version = signing_key_version

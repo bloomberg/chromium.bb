@@ -55,7 +55,6 @@ BrowserIOThreadDelegate::BrowserIOThreadDelegate()
     : owned_sequence_manager_(CreateUnboundSequenceManager(
           SequenceManager::Settings::Builder()
               .SetMessagePumpType(base::MessagePumpType::IO)
-              .SetAntiStarvationLogicForPrioritiesDisabled(true)
               .Build())),
       sequence_manager_(owned_sequence_manager_.get()) {
   Init();
@@ -111,12 +110,6 @@ void BrowserIOThreadDelegate::BindToCurrentThread(
   if (task_executor_) {
     base::SetTaskExecutorForCurrentThread(task_executor_);
   }
-}
-
-const scoped_refptr<base::SequencedTaskRunner>&
-BrowserIOThreadDelegate::GetTaskRunnerForCurrentTask() const {
-  DCHECK(sequence_manager_);
-  return sequence_manager_->GetTaskRunnerForCurrentTask();
 }
 
 }  // namespace content

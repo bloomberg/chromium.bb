@@ -23,7 +23,6 @@
 #include "core/fxcodec/scanlinedecoder.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_safe_types.h"
-#include "third_party/base/numerics/safe_math.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -42,7 +41,7 @@ bool CheckFlateDecodeParams(int Colors, int BitsPerComponent, int Columns) {
   if (Colors < 0 || BitsPerComponent < 0 || Columns < 0)
     return false;
 
-  pdfium::base::CheckedNumeric<int> check = Columns;
+  FX_SAFE_INT32 check = Columns;
   check *= Colors;
   check *= BitsPerComponent;
   if (!check.IsValid())
@@ -365,19 +364,21 @@ uint32_t FlateOrLZWDecode(bool bLZW,
                                        estimated_size, dest_buf, dest_size);
 }
 
-Optional<std::vector<std::pair<ByteString, const CPDF_Object*>>>
-GetDecoderArray(const CPDF_Dictionary* pDict) {
-  const CPDF_Object* pDecoder = pDict->GetDirectObjectFor("Filter");
-  if (!pDecoder || (!pDecoder->IsArray() && !pDecoder->IsName()))
-    return {};
+Optional<DecoderArray> GetDecoderArray(const CPDF_Dictionary* pDict) {
+  const CPDF_Object* pFilter = pDict->GetDirectObjectFor("Filter");
+  if (!pFilter)
+    return DecoderArray();
+
+  if (!pFilter->IsArray() && !pFilter->IsName())
+    return pdfium::nullopt;
 
   const CPDF_Object* pParams =
       pDict->GetDirectObjectFor(pdfium::stream::kDecodeParms);
 
-  std::vector<std::pair<ByteString, const CPDF_Object*>> decoder_array;
-  if (const CPDF_Array* pDecoders = pDecoder->AsArray()) {
+  DecoderArray decoder_array;
+  if (const CPDF_Array* pDecoders = pFilter->AsArray()) {
     if (!ValidateDecoderPipeline(pDecoders))
-      return {};
+      return pdfium::nullopt;
 
     const CPDF_Array* pParamsArray = ToArray(pParams);
     for (size_t i = 0; i < pDecoders->size(); ++i) {
@@ -386,8 +387,9 @@ GetDecoderArray(const CPDF_Dictionary* pDict) {
            pParamsArray ? pParamsArray->GetDictAt(i) : nullptr});
     }
   } else {
+    ASSERT(pFilter->IsName());
     decoder_array.push_back(
-        {pDecoder->GetString(), pParams ? pParams->GetDict() : nullptr});
+        {pFilter->GetString(), pParams ? pParams->GetDict() : nullptr});
   }
 
   return decoder_array;

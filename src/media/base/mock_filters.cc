@@ -4,7 +4,7 @@
 
 #include "media/base/mock_filters.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 using ::testing::_;
 using ::testing::NiceMock;
@@ -220,10 +220,10 @@ void MockCdmFactory::Create(
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
-    const CdmCreatedCB& cdm_created_cb) {
+    CdmCreatedCB cdm_created_cb) {
   // If no key system specified, notify that Create() failed.
   if (key_system.empty()) {
-    cdm_created_cb.Run(nullptr, "CDM creation failed");
+    std::move(cdm_created_cb).Run(nullptr, "CDM creation failed");
     return;
   }
 
@@ -239,7 +239,7 @@ void MockCdmFactory::Create(
       key_system, security_origin, session_message_cb, session_closed_cb,
       session_keys_change_cb, session_expiration_update_cb);
   created_cdm_ = cdm.get();
-  cdm_created_cb.Run(std::move(cdm), "");
+  std::move(cdm_created_cb).Run(std::move(cdm), "");
 }
 
 MockCdm* MockCdmFactory::GetCreatedCdm() {
@@ -247,8 +247,8 @@ MockCdm* MockCdmFactory::GetCreatedCdm() {
 }
 
 void MockCdmFactory::SetBeforeCreationCB(
-    const base::Closure& before_creation_cb) {
-  before_creation_cb_ = before_creation_cb;
+    base::RepeatingClosure before_creation_cb) {
+  before_creation_cb_ = std::move(before_creation_cb);
 }
 
 MockStreamParser::MockStreamParser() = default;

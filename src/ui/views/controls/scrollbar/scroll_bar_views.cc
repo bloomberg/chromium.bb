@@ -4,7 +4,12 @@
 
 #include "ui/views/controls/scrollbar/scroll_bar_views.h"
 
-#include "base/logging.h"
+#include <algorithm>
+#include <memory>
+#include <utility>
+
+#include "base/check.h"
+#include "base/notreached.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/button.h"
@@ -227,10 +232,10 @@ ScrollBarViews::ScrollBarViews(bool horizontal) : ScrollBar(horizontal) {
   // Allow the thumb to take up the whole size of the scrollbar, save for the
   // prev/next buttons.  Layout need only set the thumb cross-axis coordinate;
   // ScrollBar::Update() will set the thumb size/offset.
-  GetThumb()->SetProperty(views::kFlexBehaviorKey,
-                          views::FlexSpecification::ForSizeRule(
-                              views::MinimumFlexSizeRule::kPreferred,
-                              views::MaximumFlexSizeRule::kUnbounded));
+  GetThumb()->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                               views::MaximumFlexSizeRule::kUnbounded));
   next_button_ = AddChildView(std::move(next_button));
 }
 

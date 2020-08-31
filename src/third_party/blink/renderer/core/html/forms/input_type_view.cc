@@ -74,17 +74,21 @@ void InputTypeView::DispatchSimulatedClickIfActive(KeyboardEvent& event) const {
 
 void InputTypeView::AccessKeyAction(bool) {
   GetElement().focus(FocusParams(SelectionBehaviorOnFocus::kReset,
-                                 kWebFocusTypeNone, nullptr));
+                                 mojom::blink::FocusType::kNone, nullptr));
 }
 
 bool InputTypeView::ShouldSubmitImplicitly(const Event& event) {
-  return event.IsKeyboardEvent() &&
-         event.type() == event_type_names::kKeypress &&
-         ToKeyboardEvent(event).charCode() == '\r';
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+  return keyboard_event && event.type() == event_type_names::kKeypress &&
+         keyboard_event->charCode() == '\r';
 }
 
 HTMLFormElement* InputTypeView::FormForSubmission() const {
   return GetElement().Form();
+}
+
+bool InputTypeView::TypeShouldForceLegacyLayout() const {
+  return false;
 }
 
 LayoutObject* InputTypeView::CreateLayoutObject(const ComputedStyle& style,
@@ -92,10 +96,7 @@ LayoutObject* InputTypeView::CreateLayoutObject(const ComputedStyle& style,
   return LayoutObject::CreateObject(&GetElement(), style, legacy);
 }
 
-scoped_refptr<ComputedStyle> InputTypeView::CustomStyleForLayoutObject(
-    scoped_refptr<ComputedStyle> original_style) {
-  return original_style;
-}
+void InputTypeView::CustomStyleForLayoutObject(ComputedStyle&) {}
 
 TextDirection InputTypeView::ComputedTextDirection() {
   return GetElement().ComputedStyleRef().Direction();
@@ -111,11 +112,15 @@ bool InputTypeView::HasCustomFocusLogic() const {
 
 void InputTypeView::HandleBlurEvent() {}
 
-void InputTypeView::HandleFocusInEvent(Element*, WebFocusType) {}
+void InputTypeView::HandleFocusInEvent(Element*, mojom::blink::FocusType) {}
 
 void InputTypeView::StartResourceLoading() {}
 
 void InputTypeView::ClosePopupView() {}
+
+bool InputTypeView::HasOpenedPopup() const {
+  return false;
+}
 
 bool InputTypeView::NeedsShadowSubtree() const {
   return true;
@@ -126,6 +131,14 @@ void InputTypeView::CreateShadowSubtree() {}
 void InputTypeView::DestroyShadowSubtree() {
   if (ShadowRoot* root = GetElement().UserAgentShadowRoot())
     root->RemoveChildren();
+}
+
+HTMLInputElement* InputTypeView::UploadButton() const {
+  return nullptr;
+}
+
+String InputTypeView::FileStatusText() const {
+  return String();
 }
 
 void InputTypeView::AltAttributeChanged() {}
@@ -181,6 +194,10 @@ void InputTypeView::RestoreFormControlState(const FormControlState& state) {
   GetElement().setValue(state[0]);
 }
 
+bool InputTypeView::IsDraggedSlider() const {
+  return false;
+}
+
 bool InputTypeView::HasBadInput() const {
   return false;
 }
@@ -188,6 +205,10 @@ bool InputTypeView::HasBadInput() const {
 void ClickHandlingState::Trace(Visitor* visitor) {
   visitor->Trace(checked_radio_button);
   EventDispatchHandlingState::Trace(visitor);
+}
+
+String InputTypeView::RawValue() const {
+  return g_empty_string;
 }
 
 }  // namespace blink

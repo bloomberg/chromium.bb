@@ -7,9 +7,16 @@
 #include "base/android/jni_android.h"
 #include "cc/layers/layer.h"
 #include "chrome/browser/android/thin_webview/internal/jni_headers/ThinWebViewImpl_jni.h"
+#include "chrome/browser/ui/android/view_android_helper.h"
+#include "chrome/browser/ui/tab_helpers.h"
+#include "components/embedder_support/android/delegate/web_contents_delegate_android.h"
+#include "components/permissions/permission_request_manager.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_controls_state.h"
 
 using base::android::JavaParamRef;
+using web_contents_delegate_android::WebContentsDelegateAndroid;
 
 namespace thin_webview {
 namespace android {
@@ -42,15 +49,22 @@ void ThinWebView::Destroy(JNIEnv* env, const JavaParamRef<jobject>& object) {
   delete this;
 }
 
-void ThinWebView::SetWebContents(JNIEnv* env,
-                                 const JavaParamRef<jobject>& obj,
-                                 const JavaParamRef<jobject>& jweb_contents) {
+void ThinWebView::SetWebContents(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jweb_contents,
+    const JavaParamRef<jobject>& jweb_contents_delegate) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
-  SetWebContents(web_contents);
+  WebContentsDelegateAndroid* delegate =
+      jweb_contents_delegate.is_null()
+          ? nullptr
+          : new WebContentsDelegateAndroid(env, jweb_contents_delegate);
+  SetWebContents(web_contents, delegate);
 }
 
-void ThinWebView::SetWebContents(content::WebContents* web_contents) {
+void ThinWebView::SetWebContents(content::WebContents* web_contents,
+                                 WebContentsDelegateAndroid* delegate) {
   DCHECK(web_contents);
   web_contents_ = web_contents;
   ui::ViewAndroid* view_android = web_contents_->GetNativeView();
@@ -60,6 +74,20 @@ void ThinWebView::SetWebContents(content::WebContents* web_contents) {
 
   compositor_view_->SetRootLayer(web_contents_->GetNativeView()->GetLayer());
   ResizeWebContents(view_size_);
+  web_contents_delegate_.reset(delegate);
+  if (delegate)
+    web_contents->SetDelegate(delegate);
+
+  TabHelpers::AttachTabHelpers(web_contents);
+  permissions::PermissionRequestManager::FromWebContents(web_contents)
+      ->set_web_contents_supports_permission_requests(false);
+  ViewAndroidHelper::FromWebContents(web_contents)
+      ->SetViewAndroid(web_contents->GetNativeView());
+
+  // Disable browser controls when used for thin webview.
+  web_contents->GetMainFrame()->UpdateBrowserControlsState(
+      content::BROWSER_CONTROLS_STATE_HIDDEN,
+      content::BROWSER_CONTROLS_STATE_HIDDEN, false);
 }
 
 void ThinWebView::SizeChanged(JNIEnv* env,

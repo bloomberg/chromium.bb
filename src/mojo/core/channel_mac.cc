@@ -47,7 +47,7 @@ class ChannelMac : public Channel,
   ChannelMac(Delegate* delegate,
              ConnectionParams connection_params,
              HandlePolicy handle_policy,
-             scoped_refptr<base::TaskRunner> io_task_runner)
+             scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
       : Channel(delegate, handle_policy, DispatchBufferPolicy::kUnmanaged),
         self_(this),
         io_task_runner_(io_task_runner),
@@ -446,12 +446,19 @@ class ChannelMac : public Channel,
         io_task_runner_->PostTask(
             FROM_HERE, base::BindOnce(&ChannelMac::SendPendingMessages, this));
       } else {
-        // If the message failed to send for other reasons, destroy it and
-        // close the channel.
-        MACH_LOG_IF(ERROR, kr != MACH_SEND_INVALID_DEST, kr) << "mach_msg send";
+        // If the message failed to send for other reasons, destroy it.
         send_buffer_contains_message_ = false;
         mach_msg_destroy(header);
-        OnWriteErrorLocked(Error::kDisconnected);
+        if (kr != MACH_SEND_INVALID_DEST) {
+          // If the message failed to send because the receiver is a dead-name,
+          // wait for the Channel to process the dead-name notification.
+          // Otherwise, the notification message will never be received and the
+          // dead-name right contained within it will be leaked
+          // (https://crbug.com/1041682). If the message failed to send for any
+          // other reason, report an error and shut down.
+          MACH_LOG(ERROR, kr) << "mach_msg send";
+          OnWriteErrorLocked(Error::kDisconnected);
+        }
       }
       return false;
     }
@@ -654,7 +661,7 @@ class ChannelMac : public Channel,
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.
   scoped_refptr<ChannelMac> self_;
 
-  scoped_refptr<base::TaskRunner> io_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   base::mac::ScopedMachReceiveRight receive_port_;
   base::mac::ScopedMachSendRight send_port_;
@@ -709,7 +716,7 @@ scoped_refptr<Channel> Channel::Create(
     Channel::Delegate* delegate,
     ConnectionParams connection_params,
     Channel::HandlePolicy handle_policy,
-    scoped_refptr<base::TaskRunner> io_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   return new ChannelMac(delegate, std::move(connection_params), handle_policy,
                         io_task_runner);
 }

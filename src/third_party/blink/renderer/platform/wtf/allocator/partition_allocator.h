@@ -76,14 +76,16 @@ class WTF_EXPORT PartitionAllocator {
     Free(ptr);  // Not the system free, the one from this class.
   }
 
-  static void TraceMarkedBackingStore(void*) {}
-  static void BackingWriteBarrier(void*) {}
-  template <typename>
-  static void BackingWriteBarrierForHashTable(void*) {}
+  static void TraceBackingStoreIfMarked(const void*) {}
+  template <typename T>
+  static void BackingWriteBarrier(T**) {}
+  template <typename, typename T>
+  static void BackingWriteBarrierForHashTable(T**) {}
 
   static bool IsAllocationAllowed() { return true; }
   static bool IsObjectResurrectionForbidden() { return false; }
   static bool IsSweepForbidden() { return false; }
+  static bool IsIncrementalMarking() { return false; }
 
   static void EnterGCForbiddenScope() {}
   static void LeaveGCForbiddenScope() {}

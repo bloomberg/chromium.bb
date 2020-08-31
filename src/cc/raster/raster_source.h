@@ -106,13 +106,9 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // Valid rectangle in which everything is recorded and can be rastered from.
   gfx::Rect RecordedViewport() const;
 
-  // Returns true if this raster source may try and draw text.
-  bool HasText() const;
-
   // Tracing functionality.
   void DidBeginTracing();
   void AsValueInto(base::trace_event::TracedValue* array) const;
-  sk_sp<SkPicture> GetFlattenedPicture();
   size_t GetMemoryUsage() const;
 
   const scoped_refptr<DisplayItemList>& GetDisplayItemList() const {

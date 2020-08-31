@@ -11,19 +11,18 @@ goog.provide('RecoveryStrategy');
 goog.provide('TreePathRecoveryStrategy');
 
 goog.scope(function() {
-var AutomationNode = chrome.automation.AutomationNode;
-var RoleType = chrome.automation.RoleType;
+const AutomationNode = chrome.automation.AutomationNode;
+const RoleType = chrome.automation.RoleType;
 
-/**
- * @param {!AutomationNode} node
- * @constructor
- */
-RecoveryStrategy = function(node) {
-  /** @private {!AutomationNode} */
-  this.node_ = node;
-};
+RecoveryStrategy = class {
+  /**
+   * @param {!AutomationNode} node
+   */
+  constructor(node) {
+    /** @private {!AutomationNode} */
+    this.node_ = node;
+  }
 
-RecoveryStrategy.prototype = {
   /** @return {!AutomationNode} */
   get node() {
     if (this.requiresRecovery()) {
@@ -31,61 +30,58 @@ RecoveryStrategy.prototype = {
     }
 
     return this.node_;
-  },
+  }
 
   /** @return {boolean} */
-  requiresRecovery: function() {
+  requiresRecovery() {
     return !this.node_ || !this.node_.role;
-  },
+  }
 
   /**
    * @return {AutomationNode}
    * @protected
    */
-  recover: function() {
+  recover() {
     return null;
-  },
+  }
 
-  equalsWithoutRecovery: function(rhs) {
+  equalsWithoutRecovery(rhs) {
     return this.node_ === rhs.node_;
   }
 };
 
+
 /**
  * A recovery strategy that uses the node's ancestors.
- * @constructor
- * @extends {RecoveryStrategy}
  */
-AncestryRecoveryStrategy = function(node) {
-  RecoveryStrategy.call(this, node);
+AncestryRecoveryStrategy = class extends RecoveryStrategy {
+  constructor(node) {
+    super(node);
 
-  /** @type {!Array<AutomationNode>} @private */
-  this.ancestry_ = [];
-  var nodeWalker = node;
-  while (nodeWalker) {
-    this.ancestry_.push(nodeWalker);
-    nodeWalker = nodeWalker.parent;
-    if (nodeWalker && nodeWalker.role == RoleType.WINDOW) {
-      break;
+    /** @type {!Array<AutomationNode>} @private */
+    this.ancestry_ = [];
+    let nodeWalker = node;
+    while (nodeWalker) {
+      this.ancestry_.push(nodeWalker);
+      nodeWalker = nodeWalker.parent;
+      if (nodeWalker && nodeWalker.role == RoleType.WINDOW) {
+        break;
+      }
     }
   }
-};
-
-AncestryRecoveryStrategy.prototype = {
-  __proto__: RecoveryStrategy.prototype,
 
   /** @override */
-  recover: function() {
+  recover() {
     return this.ancestry_[this.getFirstValidNodeIndex_()];
-  },
+  }
 
   /**
    * @return {number}
    * @protected
    */
-  getFirstValidNodeIndex_: function() {
-    for (var i = 0; i < this.ancestry_.length; i++) {
-      var firstValidNode = this.ancestry_[i];
+  getFirstValidNodeIndex_() {
+    for (let i = 0; i < this.ancestry_.length; i++) {
+      const firstValidNode = this.ancestry_[i];
       if (firstValidNode != null && firstValidNode.role !== undefined &&
           firstValidNode.root != undefined) {
         return i;
@@ -95,41 +91,38 @@ AncestryRecoveryStrategy.prototype = {
   }
 };
 
+
 /**
  * A recovery strategy that uses the node's tree path.
- * @constructor
- * @extends {AncestryRecoveryStrategy}
  */
-TreePathRecoveryStrategy = function(node) {
-  AncestryRecoveryStrategy.call(this, node);
+TreePathRecoveryStrategy = class extends AncestryRecoveryStrategy {
+  constructor(node) {
+    super(node);
 
-  /** @type {!Array<number>} @private */
-  this.recoveryChildIndex_ = [];
-  var nodeWalker = node;
-  while (nodeWalker) {
-    this.recoveryChildIndex_.push(nodeWalker.indexInParent);
-    nodeWalker = nodeWalker.parent;
-    if (nodeWalker && nodeWalker.role == RoleType.WINDOW) {
-      break;
+    /** @type {!Array<number>} @private */
+    this.recoveryChildIndex_ = [];
+    let nodeWalker = node;
+    while (nodeWalker) {
+      this.recoveryChildIndex_.push(nodeWalker.indexInParent);
+      nodeWalker = nodeWalker.parent;
+      if (nodeWalker && nodeWalker.role == RoleType.WINDOW) {
+        break;
+      }
     }
   }
-};
-
-TreePathRecoveryStrategy.prototype = {
-  __proto__: AncestryRecoveryStrategy.prototype,
 
   /** @override */
-  recover: function() {
-    var index = this.getFirstValidNodeIndex_();
+  recover() {
+    const index = this.getFirstValidNodeIndex_();
     if (index == 0) {
       return this.ancestry_[index];
     }
 
     // Otherwise, attempt to recover.
-    var node = this.ancestry_[index];
-    for (var j = index - 1; j >= 0; j--) {
-      var childIndex = this.recoveryChildIndex_[j];
-      var children = node.children;
+    let node = this.ancestry_[index];
+    for (let j = index - 1; j >= 0; j--) {
+      const childIndex = this.recoveryChildIndex_[j];
+      const children = node.children;
       if (!children[childIndex]) {
         return node;
       }

@@ -23,7 +23,7 @@ InterpolationValue CSSDefaultInterpolationType::MaybeConvertSingle(
     const InterpolationEnvironment& environment,
     const InterpolationValue&,
     ConversionCheckers&) const {
-  const CSSValue* css_value = ToCSSPropertySpecificKeyframe(keyframe).Value();
+  const CSSValue* css_value = To<CSSPropertySpecificKeyframe>(keyframe).Value();
 
   if (!css_value) {
     DCHECK(keyframe.IsNeutral());
@@ -31,7 +31,7 @@ InterpolationValue CSSDefaultInterpolationType::MaybeConvertSingle(
   }
 
   if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-    css_value = ToCSSInterpolationEnvironment(environment)
+    css_value = To<CSSInterpolationEnvironment>(environment)
                     .Resolve(GetProperty(), css_value);
     if (!css_value)
       return nullptr;
@@ -45,11 +45,12 @@ void CSSDefaultInterpolationType::Apply(
     const InterpolableValue&,
     const NonInterpolableValue* non_interpolable_value,
     InterpolationEnvironment& environment) const {
-  DCHECK(ToCSSDefaultNonInterpolableValue(non_interpolable_value)->CssValue());
+  DCHECK(
+      To<CSSDefaultNonInterpolableValue>(non_interpolable_value)->CssValue());
   StyleBuilder::ApplyProperty(
       GetProperty().GetCSSPropertyName(),
-      ToCSSInterpolationEnvironment(environment).GetState(),
-      *ToCSSDefaultNonInterpolableValue(non_interpolable_value)->CssValue());
+      To<CSSInterpolationEnvironment>(environment).GetState(),
+      *To<CSSDefaultNonInterpolableValue>(non_interpolable_value)->CssValue());
 }
 
 }  // namespace blink

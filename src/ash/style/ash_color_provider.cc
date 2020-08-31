@@ -8,14 +8,17 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/webui/resources/css/cros_colors.h"
 
 namespace ash {
+
+using ColorName = cros_colors::ColorName;
 
 namespace {
 
@@ -33,7 +36,7 @@ constexpr float kSecondToneOpacity = 0.3f;
 constexpr int kAlpha20 = 51;   // 20%
 constexpr int kAlpha40 = 102;  // 40%
 constexpr int kAlpha60 = 153;  // 60%
-constexpr int kAlpha74 = 188;  // 74%
+constexpr int kAlpha80 = 204;  // 80%
 constexpr int kAlpha90 = 230;  // 90%
 
 // Gets the color mode value from feature flag "--ash-color-mode".
@@ -163,7 +166,7 @@ AshColorProvider::RippleAttributes AshColorProvider::GetRippleAttributes(
 SkColor AshColorProvider::GetShieldLayerColorImpl(
     ShieldLayerType type,
     AshColorMode color_mode) const {
-  const int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha74, kAlpha90};
+  const int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha80, kAlpha90};
   DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
   return SkColorSetA(
       color_mode == AshColorMode::kLight ? SK_ColorWHITE : gfx::kGoogleGrey900,
@@ -173,7 +176,7 @@ SkColor AshColorProvider::GetShieldLayerColorImpl(
 SkColor AshColorProvider::GetBaseLayerColorImpl(BaseLayerType type,
                                                 AshColorMode color_mode) const {
   SkColor light_color, dark_color;
-  const int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha74,
+  const int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha80,
                          kAlpha90, 0xFF,     0xFF};
   DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
   const int transparent_alpha = kAlphas[static_cast<int>(type)];
@@ -182,7 +185,7 @@ SkColor AshColorProvider::GetBaseLayerColorImpl(BaseLayerType type,
     case BaseLayerType::kTransparent20:
     case BaseLayerType::kTransparent40:
     case BaseLayerType::kTransparent60:
-    case BaseLayerType::kTransparent74:
+    case BaseLayerType::kTransparent80:
     case BaseLayerType::kTransparent90:
       light_color = SkColorSetA(SK_ColorWHITE, transparent_alpha);
       dark_color = SkColorSetA(gfx::kGoogleGrey900, transparent_alpha);
@@ -231,17 +234,14 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       dark_color = SkColorSetA(SK_ColorWHITE, 0x24);
       break;
     case ContentLayerType::kTextPrimary:
-      light_color = gfx::kGoogleGrey900;
-      dark_color = gfx::kGoogleGrey200;
-      break;
+      return cros_colors::ResolveColor(ColorName::kCrosDefaultTextColor,
+                                       color_mode);
     case ContentLayerType::kTextSecondary:
-      light_color = gfx::kGoogleGrey700;
-      dark_color = gfx::kGoogleGrey500;
-      break;
+      return cros_colors::ResolveColor(
+          ColorName::kCrosDefaultTextColorSecondary, color_mode);
     case ContentLayerType::kIconPrimary:
-      light_color = gfx::kGoogleGrey700;
-      dark_color = gfx::kGoogleGrey200;
-      break;
+      return cros_colors::ResolveColor(ColorName::kCrosDefaultIconColorPrimary,
+                                       color_mode);
     case ContentLayerType::kIconSecondary:
       light_color = dark_color = gfx::kGoogleGrey500;
       break;
@@ -250,8 +250,20 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       dark_color = gfx::kGoogleRed300;
       break;
     case ContentLayerType::kProminentIconButton:
-      light_color = gfx::kGoogleBlue600;
-      dark_color = gfx::kGoogleBlue300;
+    case ContentLayerType::kSliderThumbEnabled:
+      return cros_colors::ResolveColor(
+          ColorName::kCrosDefaultIconColorProminent, color_mode);
+    case ContentLayerType::kSliderThumbDisabled:
+      light_color = gfx::kGoogleGrey600;
+      dark_color = gfx::kGoogleGrey600;
+      break;
+    case ContentLayerType::kIconSystemMenu:
+      light_color = gfx::kGoogleGrey700;
+      dark_color = gfx::kGoogleGrey200;
+      break;
+    case ContentLayerType::kIconSystemMenuToggled:
+      light_color = gfx::kGoogleGrey200;
+      dark_color = gfx::kGoogleGrey900;
       break;
   }
   return color_mode == AshColorMode::kLight ? light_color : dark_color;

@@ -8,9 +8,7 @@
 #include <utility>
 
 #include "base/unguessable_token.h"
-#include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/html/media/html_media_element.h"
-#include "third_party/blink/renderer/core/inspector/inspected_frames.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 
 namespace blink {
@@ -18,40 +16,37 @@ namespace blink {
 const char MediaInspectorContextImpl::kSupplementName[] =
     "MediaInspectorContextImpl";
 
-// static
-void MediaInspectorContextImpl::ProvideToLocalFrame(LocalFrame& frame) {
-  frame.ProvideSupplement(
-      MakeGarbageCollected<MediaInspectorContextImpl>(frame));
-}
 
 // static
-MediaInspectorContextImpl* MediaInspectorContextImpl::FromLocalFrame(
-    LocalFrame* frame) {
-  return Supplement<LocalFrame>::From<MediaInspectorContextImpl>(frame);
+MediaInspectorContextImpl* MediaInspectorContextImpl::From(
+    LocalDOMWindow& window) {
+  auto* context =
+      Supplement<LocalDOMWindow>::From<MediaInspectorContextImpl>(window);
+  if (!context) {
+    context = MakeGarbageCollected<MediaInspectorContextImpl>(window);
+    Supplement<LocalDOMWindow>::ProvideTo(window, context);
+  }
+  return context;
 }
 
-// static
-MediaInspectorContextImpl* MediaInspectorContextImpl::FromDocument(
-    const Document& document) {
-  return MediaInspectorContextImpl::FromLocalFrame(document.GetFrame());
-}
+MediaInspectorContextImpl::MediaInspectorContextImpl(LocalDOMWindow& frame)
+    : Supplement<LocalDOMWindow>(frame) {}
 
-// static
-MediaInspectorContextImpl* MediaInspectorContextImpl::FromHtmlMediaElement(
-    const HTMLMediaElement& element) {
-  return MediaInspectorContextImpl::FromDocument(element.GetDocument());
+// Local to cc file for converting
+template <typename T, typename Iterable>
+static Vector<T> Iter2Vector(const Iterable& iterable) {
+  Vector<T> result;
+  result.AppendRange(iterable.begin(), iterable.end());
+  return result;
 }
-
-MediaInspectorContextImpl::MediaInspectorContextImpl(LocalFrame& frame)
-    : Supplement<LocalFrame>(frame) {}
 
 // Garbage collection method.
-void MediaInspectorContextImpl::Trace(blink::Visitor* visitor) {
-  Supplement<LocalFrame>::Trace(visitor);
+void MediaInspectorContextImpl::Trace(Visitor* visitor) {
+  Supplement<LocalDOMWindow>::Trace(visitor);
   visitor->Trace(players_);
 }
 
-Vector<WebString> MediaInspectorContextImpl::GetAllPlayerIds() {
+Vector<WebString> MediaInspectorContextImpl::AllPlayerIds() {
   Vector<WebString> existing_players;
   existing_players.ReserveCapacity(players_.size());
   for (const auto& player_id : players_.Keys())
@@ -59,22 +54,11 @@ Vector<WebString> MediaInspectorContextImpl::GetAllPlayerIds() {
   return existing_players;
 }
 
-std::pair<Vector<InspectorPlayerProperty>, Vector<InspectorPlayerEvent>>
-MediaInspectorContextImpl::GetPropertiesAndEvents(const WebString& player_id) {
-  Vector<InspectorPlayerProperty> to_send_properties;
-  Vector<InspectorPlayerEvent> to_send_events;
-
-  const auto& player_search = players_.find(player_id);
-  if (player_search != players_.end()) {
-    to_send_properties.ReserveCapacity(player_search->value->properties.size());
-    for (const auto& prop : player_search->value->properties.Values())
-      to_send_properties.push_back(prop);
-    to_send_events.ReserveCapacity(player_search->value->events.size());
-    for (const auto& event : player_search->value->events)
-      to_send_events.insert(to_send_events.size(), event);
-  }
-
-  return {std::move(to_send_properties), std::move(to_send_events)};
+const MediaPlayer& MediaInspectorContextImpl::MediaPlayerFromId(
+    const WebString& player_id) {
+  const auto& player = players_.find(player_id);
+  DCHECK_NE(player, players_.end());
+  return *player->value;
 }
 
 WebString MediaInspectorContextImpl::CreatePlayer() {
@@ -86,34 +70,53 @@ WebString MediaInspectorContextImpl::CreatePlayer() {
 }
 
 // Convert public version of event to protocol version, and send it.
+void MediaInspectorContextImpl::NotifyPlayerErrors(
+    WebString playerId,
+    const InspectorPlayerErrors& errors) {
+  const auto& player = players_.find(playerId);
+  DCHECK_NE(player, players_.end());
+  player->value->errors.AppendRange(errors.begin(), errors.end());
+
+  Vector<InspectorPlayerError> vector =
+      Iter2Vector<InspectorPlayerError>(errors);
+  probe::PlayerErrorsRaised(GetSupplementable(), playerId, vector);
+}
+
 void MediaInspectorContextImpl::NotifyPlayerEvents(
     WebString playerId,
-    InspectorPlayerEvents events) {
-  const auto& player_search = players_.find(playerId);
-  if (player_search == players_.end())
-    DCHECK(false);
-  Vector<InspectorPlayerEvent> to_send;
-  to_send.ReserveCapacity(events.size());
-  for (const auto& event : events) {
-    player_search->value->events.emplace_back(event);
-    to_send.push_back(event);
-  }
-  probe::PlayerEventsAdded(GetSupplementable(), playerId, to_send);
+    const InspectorPlayerEvents& events) {
+  const auto& player = players_.find(playerId);
+  DCHECK_NE(player, players_.end());
+  player->value->events.AppendRange(events.begin(), events.end());
+
+  Vector<InspectorPlayerEvent> vector =
+      Iter2Vector<InspectorPlayerEvent>(events);
+  probe::PlayerEventsAdded(GetSupplementable(), playerId, vector);
 }
 
 void MediaInspectorContextImpl::SetPlayerProperties(
     WebString playerId,
-    InspectorPlayerProperties props) {
-  const auto& player_search = players_.find(playerId);
-  if (player_search == players_.end())
-    DCHECK(false);
-  Vector<InspectorPlayerProperty> to_send;
-  to_send.ReserveCapacity(props.size());
-  for (const auto& property : props) {
-    to_send.push_back(property);
-    player_search->value->properties.insert(property.name, property);
-  }
-  probe::PlayerPropertiesChanged(GetSupplementable(), playerId, to_send);
+    const InspectorPlayerProperties& props) {
+  const auto& player = players_.find(playerId);
+  DCHECK_NE(player, players_.end());
+  for (const auto& property : props)
+    player->value->properties.insert(property.name, property);
+
+  Vector<InspectorPlayerProperty> vector =
+      Iter2Vector<InspectorPlayerProperty>(props);
+  probe::PlayerPropertiesChanged(GetSupplementable(), playerId, vector);
+}
+
+void MediaInspectorContextImpl::NotifyPlayerMessages(
+    WebString playerId,
+    const InspectorPlayerMessages& messages) {
+  const auto& player = players_.find(playerId);
+  DCHECK_NE(player, players_.end());
+  player->value->messages.AppendRange(messages.begin(), messages.end());
+
+  Vector<InspectorPlayerMessage> vector =
+      Iter2Vector<InspectorPlayerMessage>(messages);
+  probe::PlayerMessagesLogged(GetSupplementable(), playerId, vector);
 }
 
 }  // namespace blink

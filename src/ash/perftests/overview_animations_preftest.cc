@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/test/ui_controls.h"
 
 // Test overview enter/exit animations with following conditions
@@ -46,8 +46,9 @@ class OverviewAnimationsTest
     int wait_seconds = (base::SysInfo::IsRunningOnChromeOS() ? 5 : 0) +
                        n_browsers * cost_per_browser;
     base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                          base::TimeDelta::FromSeconds(wait_seconds));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromSeconds(wait_seconds));
     run_loop.Run();
   }
 
@@ -70,7 +71,7 @@ class OverviewAnimationsTest
 };
 
 ASH_CONTENT_TEST_P(OverviewAnimationsTest, EnterExit) {
-  TRACE_EVENT_ASYNC_BEGIN0("ui", "Interaction.ui_Overview", this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ui", "Interaction.ui_Overview", this);
   // Browser window is used just to identify display.
   ui_controls::SendKeyPress(window(), ui::VKEY_MEDIA_LAUNCH_APP1,
                             /*control=*/false,
@@ -87,7 +88,7 @@ ASH_CONTENT_TEST_P(OverviewAnimationsTest, EnterExit) {
                             /*command=*/false);
   ash::ShellTestApi().WaitForOverviewAnimationState(
       ash::OverviewAnimationState::kExitAnimationComplete);
-  TRACE_EVENT_ASYNC_END0("ui", "Interaction.ui_Overview", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("ui", "Interaction.ui_Overview", this);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

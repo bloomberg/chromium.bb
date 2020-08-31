@@ -5,13 +5,14 @@
 #include "ash/wm/desks/desk_preview_view.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wallpaper/wallpaper_base_view.h"
 #include "ash/wm/desks/desk_mini_view.h"
-#include "ash/wm/desks/desks_bar_item_border.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_highlight_item_border.h"
 #include "base/containers/flat_map.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -28,9 +29,14 @@ namespace ash {
 
 namespace {
 
-// The height of the preview view in dips.
-constexpr int kDeskPreviewHeight = 64;
+// The height of the preview view in dips when using a compact layout.
 constexpr int kDeskPreviewHeightInCompactLayout = 48;
+
+// In non-compact layouts, the height of the preview is a percentage of the
+// total display height (divided by |kRootHeightDivider|), with a max of
+// |kDeskPreviewMaxHeight| dips.
+constexpr int kRootHeightDivider = 12;
+constexpr int kDeskPreviewMaxHeight = 140;
 
 // The corner radius of the border in dips.
 constexpr int kBorderCornerRadius = 6;
@@ -200,7 +206,8 @@ class DeskPreviewView::ShadowRenderer : public ui::LayerDelegate {
 // DeskPreviewView
 
 DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
-    : mini_view_(mini_view),
+    : views::Button(mini_view),
+      mini_view_(mini_view),
       wallpaper_preview_(new DeskWallpaperPreview),
       desk_mirrored_contents_view_(new views::View),
       force_occlusion_tracker_visible_(
@@ -208,6 +215,9 @@ DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
               mini_view->GetDeskContainer())),
       shadow_delegate_(std::make_unique<ShadowRenderer>()) {
   DCHECK(mini_view_);
+
+  SetFocusPainter(nullptr);
+  SetInkDropMode(InkDropMode::OFF);
 
   SetPaintToLayer(ui::LAYER_TEXTURED);
   layer()->SetFillsBoundsOpaquely(false);
@@ -227,12 +237,12 @@ DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
   desk_mirrored_contents_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   ui::Layer* contents_view_layer = desk_mirrored_contents_view_->layer();
   contents_view_layer->SetMasksToBounds(true);
-  contents_view_layer->set_name("Desk mirrored contents view");
+  contents_view_layer->SetName("Desk mirrored contents view");
   contents_view_layer->SetRoundedCornerRadius(kCornerRadii);
   contents_view_layer->SetIsFastRoundedCorner(true);
   AddChildView(desk_mirrored_contents_view_);
 
-  auto border = std::make_unique<DesksBarItemBorder>(kBorderCornerRadius);
+  auto border = std::make_unique<WmHighlightItemBorder>(kBorderCornerRadius);
   border_ptr_ = border.get();
   SetBorder(std::move(border));
 
@@ -242,13 +252,26 @@ DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
 DeskPreviewView::~DeskPreviewView() = default;
 
 // static
-int DeskPreviewView::GetHeight(bool compact) {
-  return compact ? kDeskPreviewHeightInCompactLayout : kDeskPreviewHeight;
+int DeskPreviewView::GetHeight(aura::Window* root, bool compact) {
+  if (compact)
+    return kDeskPreviewHeightInCompactLayout;
+
+  DCHECK(root);
+  DCHECK(root->IsRootWindow());
+  return std::min(kDeskPreviewMaxHeight,
+                  root->bounds().height() / kRootHeightDivider);
 }
 
 void DeskPreviewView::SetBorderColor(SkColor color) {
   border_ptr_->set_color(color);
   SchedulePaint();
+}
+
+void DeskPreviewView::OnRemovingDesk() {
+  // Since the mini view has a remove animation, we don't want this desk preview
+  // to be pressed while it's animating. The desk will have already be removed
+  // after this.
+  listener_ = nullptr;
 }
 
 void DeskPreviewView::RecreateDeskContentsMirrorLayers() {
@@ -259,7 +282,7 @@ void DeskPreviewView::RecreateDeskContentsMirrorLayers() {
   // Mirror the layer tree of the desk container.
   auto mirrored_content_root_layer =
       std::make_unique<ui::Layer>(ui::LAYER_NOT_DRAWN);
-  mirrored_content_root_layer->set_name("mirrored contents root layer");
+  mirrored_content_root_layer->SetName("mirrored contents root layer");
   base::flat_map<ui::Layer*, LayerData> layers_data;
   GetLayersData(desk_container, &layers_data);
   auto* desk_container_layer = desk_container->layer();
@@ -303,6 +326,8 @@ void DeskPreviewView::Layout() {
       desk_mirrored_contents_layer_tree_owner_->root();
   DCHECK(desk_mirrored_contents_layer);
   desk_mirrored_contents_layer->SetTransform(transform);
+
+  Button::Layout();
 }
 
 }  // namespace ash

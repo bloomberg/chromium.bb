@@ -44,10 +44,12 @@ else:
   from io import StringIO
 
 LOGGER = logging.getLogger()
-# With a starting sleep time of 1.5 seconds, 2^n exponential backoff, and seven
-# total tries, the sleep time between the first and last tries will be 94.5 sec.
-TRY_LIMIT = 3
-
+# With a starting sleep time of 10.0 seconds, x <= [1.8-2.2]x backoff, and five
+# total tries, the sleep time between the first and last tries will be ~7 min.
+TRY_LIMIT = 5
+SLEEP_TIME = 10.0
+MAX_BACKOFF = 2.2
+MIN_BACKOFF = 1.8
 
 # Controls the transport protocol used to communicate with Gerrit.
 # This is parameterized primarily to enable GerritTestCase.
@@ -58,6 +60,12 @@ def time_sleep(seconds):
   # Use this so that it can be mocked in tests without interfering with python
   # system machinery.
   return time.sleep(seconds)
+
+
+def time_time():
+  # Use this so that it can be mocked in tests without interfering with python
+  # system machinery.
+  return time.time()
 
 
 class GerritError(Exception):
@@ -95,6 +103,8 @@ class Authenticator(object):
     # which then must use it.
     if LuciContextAuthenticator.is_luci():
       return LuciContextAuthenticator()
+    # TODO(crbug.com/1059384): Automatically detect when running on cloudtop,
+    # and use CookiesAuthenticator instead.
     if GceAuthenticator.is_gce():
       return GceAuthenticator()
     return CookiesAuthenticator()
@@ -195,10 +205,11 @@ class CookiesAuthenticator(Authenticator):
     if os.getenv('GIT_COOKIES_PATH'):
       return os.getenv('GIT_COOKIES_PATH')
     try:
-      return subprocess2.check_output(
-          ['git', 'config', '--path', 'http.cookiefile']).strip()
+      path = subprocess2.check_output(
+          ['git', 'config', '--path', 'http.cookiefile'])
+      return path.decode('utf-8', 'ignore').strip()
     except subprocess2.CalledProcessError:
-      return os.path.join(os.environ['HOME'], '.gitcookies')
+      return os.path.expanduser(os.path.join('~', '.gitcookies'))
 
   @classmethod
   def _get_gitcookies(cls):
@@ -286,23 +297,24 @@ class GceAuthenticator(Authenticator):
   @classmethod
   def _test_is_gce(cls):
     # Based on https://cloud.google.com/compute/docs/metadata#runninggce
-    try:
-      resp, _ = cls._get(cls._INFO_URL)
-    except (socket.error, httplib2.ServerNotFoundError,
-            httplib2.socks.HTTPError):
-      # Could not resolve URL.
+    resp, _ = cls._get(cls._INFO_URL)
+    if resp is None:
       return False
     return resp.get('metadata-flavor') == 'Google'
 
   @staticmethod
   def _get(url, **kwargs):
-    next_delay_sec = 1
-    for i in xrange(TRY_LIMIT):
+    next_delay_sec = 1.0
+    for i in range(TRY_LIMIT):
       p = urllib.parse.urlparse(url)
       if p.scheme not in ('http', 'https'):
         raise RuntimeError(
             "Don't know how to work with protocol '%s'" % protocol)
-      resp, contents = httplib2.Http().request(url, 'GET', **kwargs)
+      try:
+        resp, contents = httplib2.Http().request(url, 'GET', **kwargs)
+      except (socket.error, httplib2.HttpLib2Error) as e:
+        LOGGER.debug('GET [%s] raised %s', url, e)
+        return None, None
       LOGGER.debug('GET [%s] #%d/%d (%d)', url, i+1, TRY_LIMIT, resp.status)
       if resp.status < 500:
         return (resp, contents)
@@ -313,20 +325,20 @@ class GceAuthenticator(Authenticator):
         LOGGER.info('Will retry in %d seconds (%d more times)...',
                     next_delay_sec, TRY_LIMIT - i - 1)
         time_sleep(next_delay_sec)
-        next_delay_sec *= 2
+        next_delay_sec *= random.uniform(MIN_BACKOFF, MAX_BACKOFF)
+    return None, None
 
   @classmethod
   def _get_token_dict(cls):
-    if cls._token_cache:
-      # If it expires within 25 seconds, refresh.
-      if cls._token_expiration < time.time() - 25:
-        return cls._token_cache
+    # If cached token is valid for at least 25 seconds, return it.
+    if cls._token_cache and time_time() + 25 < cls._token_expiration:
+      return cls._token_cache
 
     resp, contents = cls._get(cls._ACQUIRE_URL, headers=cls._ACQUIRE_HEADERS)
-    if resp.status != 200:
+    if resp is None or resp.status != 200:
       return None
     cls._token_cache = json.loads(contents)
-    cls._token_expiration = cls._token_cache['expires_in'] + time.time()
+    cls._token_expiration = cls._token_cache['expires_in'] + time_time()
     return cls._token_cache
 
   def get_auth_header(self, _host):
@@ -357,7 +369,13 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   headers = headers or {}
   bare_host = host.partition(':')[0]
 
-  a = Authenticator.get().get_auth_header(bare_host)
+  a = Authenticator.get()
+  # TODO(crbug.com/1059384): Automatically detect when running on cloudtop.
+  if isinstance(a, GceAuthenticator):
+    print('If you\'re on a cloudtop instance, export '
+          'SKIP_GCE_AUTH_FOR_GIT=1 in your env.')
+
+  a = a.get_auth_header(bare_host)
   if a:
     headers.setdefault('Authorization', a)
   else:
@@ -402,7 +420,7 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
                      Common additions include 204, 400, and 404.
   Returns: A string buffer containing the connection's reply.
   """
-  sleep_time = 1.5
+  sleep_time = SLEEP_TIME
   for idx in range(TRY_LIMIT):
     before_response = time.time()
     response, contents = conn.request(**conn.req_params)
@@ -418,9 +436,10 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
     # If response.status is an accepted status,
     # or response.status < 500 then the result is final; break retry loop.
     # If the response is 404/409 it might be because of replication lag,
-    # so keep trying anyway.
+    # so keep trying anyway. If it is 429, it is generally ok to retry after
+    # a backoff.
     if (response.status in accept_statuses
-        or response.status < 500 and response.status not in [404, 409]):
+        or response.status < 500 and response.status not in [404, 409, 429]):
       LOGGER.debug('got response %d for %s %s', response.status,
                    conn.req_params['method'], conn.req_params['uri'])
       # If 404 was in accept_statuses, then it's expected that the file might
@@ -443,7 +462,7 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
       LOGGER.info('Will retry in %d seconds (%d more times)...',
                   sleep_time, TRY_LIMIT - idx - 1)
       time_sleep(sleep_time)
-      sleep_time = sleep_time * 2
+      sleep_time *= random.uniform(MIN_BACKOFF, MAX_BACKOFF)
   # end of retries loop
 
   if response.status in accept_statuses:
@@ -547,7 +566,7 @@ def GenerateAllChanges(host, params, first_param=None, limit=500,
     # (say user posting comment), subsequent calls may overalp like this:
     #   > initial order ABCDEFGH
     #   query[0..3]  => ABC
-    #   > E get's updated. New order: EABCDFGH
+    #   > E gets updated. New order: EABCDFGH
     #   query[3..6] => CDF   # C is a dup
     #   query[6..9] => GH    # E is missed.
     page = QueryChanges(host, params, first_param, limit, o_params,
@@ -834,7 +853,7 @@ def ResetReviewLabels(host, change, label, value='0', message=None,
       '%s label set to %s programmatically.' % (label, value))
   jmsg = GetReview(host, change, revision)
   if not jmsg:
-    raise GerritError(200, 'Could not get review information for revison %s '
+    raise GerritError(200, 'Could not get review information for revision %s '
                    'of change %s' % (revision, change))
   for review in jmsg.get('labels', {}).get(label, {}).get('all', []):
     if str(review.get('value', value)) != value:

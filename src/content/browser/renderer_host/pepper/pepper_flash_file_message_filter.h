@@ -43,13 +43,13 @@ class PepperFlashFileMessageFilter : public ppapi::host::ResourceMessageFilter {
   static base::FilePath GetDataDirName(const base::FilePath& profile_path);
 
  private:
-  typedef base::Callback<bool(int, const base::FilePath&)>
-      CheckPermissionsCallback;
+  using CheckPermissionsCallback =
+      base::OnceCallback<bool(int, const base::FilePath&)>;
 
   ~PepperFlashFileMessageFilter() override;
 
   // ppapi::host::ResourceMessageFilter overrides.
-  scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+  scoped_refptr<base::SequencedTaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& msg) override;
   int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
@@ -74,7 +74,7 @@ class PepperFlashFileMessageFilter : public ppapi::host::ResourceMessageFilter {
 
   base::FilePath ValidateAndConvertPepperFilePath(
       const ppapi::PepperFilePath& pepper_path,
-      const CheckPermissionsCallback& check_permissions_callback) const;
+      CheckPermissionsCallback check_permissions_callback) const;
 
   base::FilePath plugin_data_directory_;
   int render_process_id_;

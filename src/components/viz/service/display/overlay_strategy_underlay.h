@@ -6,12 +6,10 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_STRATEGY_UNDERLAY_H_
 
 #include "base/macros.h"
-#include "components/viz/service/display/overlay_processor.h"
+#include "components/viz/service/display/overlay_processor_using_strategy.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
-
-class OverlayCandidateValidatorStrategy;
 
 // The underlay strategy looks for a video quad without regard to quads above
 // it. The video is "underlaid" through a black transparent quad substituted
@@ -19,7 +17,7 @@ class OverlayCandidateValidatorStrategy;
 // hardware under the the scene. This is only valid for overlay contents that
 // are fully opaque.
 class VIZ_SERVICE_EXPORT OverlayStrategyUnderlay
-    : public OverlayProcessor::Strategy {
+    : public OverlayProcessorUsingStrategy::Strategy {
  public:
   enum class OpaqueMode {
     // Require candidates to be |is_opaque|.
@@ -32,26 +30,27 @@ class VIZ_SERVICE_EXPORT OverlayStrategyUnderlay
   // If |allow_nonopaque_overlays| is true, then we don't require that the
   // the candidate is_opaque.
   OverlayStrategyUnderlay(
-      OverlayCandidateValidatorStrategy* capability_checker,
+      OverlayProcessorUsingStrategy* capability_checker,
       OpaqueMode opaque_mode = OpaqueMode::RequireOpaqueCandidates);
   ~OverlayStrategyUnderlay() override;
 
-  bool Attempt(
-      const SkMatrix44& output_color_matrix,
-      const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
-      DisplayResourceProvider* resource_provider,
-      RenderPassList* render_pass,
-      const PrimaryPlane* primary_plane,
-      OverlayCandidateList* candidate_list,
-      std::vector<gfx::Rect>* content_bounds) override;
+  bool Attempt(const SkMatrix44& output_color_matrix,
+               const OverlayProcessorInterface::FilterOperationsMap&
+                   render_pass_backdrop_filters,
+               DisplayResourceProvider* resource_provider,
+               RenderPassList* render_pass,
+               const PrimaryPlane* primary_plane,
+               OverlayCandidateList* candidate_list,
+               std::vector<gfx::Rect>* content_bounds) override;
 
-  void AdjustOutputSurfaceOverlay(OverlayProcessor::OutputSurfaceOverlayPlane*
-                                      output_surface_plane) override;
+  void AdjustOutputSurfaceOverlay(
+      OverlayProcessorInterface::OutputSurfaceOverlayPlane*
+          output_surface_plane) override;
 
   OverlayStrategy GetUMAEnum() const override;
 
  private:
-  OverlayCandidateValidatorStrategy* capability_checker_;  // Weak.
+  OverlayProcessorUsingStrategy* capability_checker_;  // Weak.
   OpaqueMode opaque_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategyUnderlay);

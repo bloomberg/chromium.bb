@@ -14,7 +14,7 @@ import {CustomElement} from './custom_element.js';
 import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
 import {tabStripOptions} from './tab_strip_options.js';
 import {TabSwiper} from './tab_swiper.js';
-import {TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
+import {CloseTabAction, TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
 
 const DEFAULT_ANIMATION_DURATION = 125;
 
@@ -53,34 +53,32 @@ export class TabElement extends CustomElement {
     super();
 
     this.alertIndicatorsEl_ = /** @type {!AlertIndicatorsElement} */
-        (this.shadowRoot.querySelector('tabstrip-alert-indicators'));
+        (this.$('tabstrip-alert-indicators'));
     // Normally, custom elements will get upgraded automatically once added to
     // the DOM, but TabElement may need to update properties on
     // AlertIndicatorElement before this happens, so upgrade it manually.
     customElements.upgrade(this.alertIndicatorsEl_);
 
     /** @private {!HTMLElement} */
-    this.closeButtonEl_ =
-        /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#close'));
+    this.closeButtonEl_ = /** @type {!HTMLElement} */ (this.$('#close'));
     this.closeButtonEl_.setAttribute(
         'aria-label', loadTimeData.getString('closeTab'));
 
     /** @private {!HTMLElement} */
-    this.tabEl_ =
-        /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#tab'));
+    this.dragImageEl_ = /** @type {!HTMLElement} */ (this.$('#dragImage'));
 
     /** @private {!HTMLElement} */
-    this.faviconEl_ =
-        /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#favicon'));
+    this.tabEl_ = /** @type {!HTMLElement} */ (this.$('#tab'));
+
+    /** @private {!HTMLElement} */
+    this.faviconEl_ = /** @type {!HTMLElement} */ (this.$('#favicon'));
 
     /** @private {!HTMLElement} */
     this.thumbnailContainer_ =
-        /** @type {!HTMLElement} */ (
-            this.shadowRoot.querySelector('#thumbnail'));
+        /** @type {!HTMLElement} */ (this.$('#thumbnail'));
 
     /** @private {!Image} */
-    this.thumbnail_ =
-        /** @type {!Image} */ (this.shadowRoot.querySelector('#thumbnailImg'));
+    this.thumbnail_ = /** @type {!Image} */ (this.$('#thumbnailImg'));
 
     /** @private {!TabData} */
     this.tab_;
@@ -92,8 +90,7 @@ export class TabElement extends CustomElement {
     this.embedderApi_ = TabStripEmbedderProxy.getInstance();
 
     /** @private {!HTMLElement} */
-    this.titleTextEl_ = /** @type {!HTMLElement} */ (
-        this.shadowRoot.querySelector('#titleText'));
+    this.titleTextEl_ = /** @type {!HTMLElement} */ (this.$('#titleText'));
 
     this.tabEl_.addEventListener('click', () => this.onClick_());
     this.tabEl_.addEventListener('contextmenu', e => this.onContextMenu_(e));
@@ -183,7 +180,7 @@ export class TabElement extends CustomElement {
 
   /** @return {!HTMLElement} */
   getDragImage() {
-    return this.tabEl_;
+    return this.dragImageEl_;
   }
 
   /**
@@ -229,19 +226,15 @@ export class TabElement extends CustomElement {
    * @private
    */
   onClose_(event) {
-    if (!this.tab_) {
-      return;
-    }
-
+    assert(this.tab_);
     event.stopPropagation();
-    this.tabsApi_.closeTab(this.tab_.id);
+    this.tabsApi_.closeTab(this.tab_.id, CloseTabAction.CLOSE_BUTTON);
   }
 
   /** @private */
   onSwipe_() {
-    // Prevent slideOut animation from playing.
-    this.remove();
-    this.tabsApi_.closeTab(this.tab_.id);
+    assert(this.tab_);
+    this.tabsApi_.closeTab(this.tab_.id, CloseTabAction.SWIPED_TO_CLOSE);
   }
 
   /**
@@ -254,11 +247,15 @@ export class TabElement extends CustomElement {
     }
   }
 
+  resetSwipe() {
+    this.tabSwiper_.reset();
+  }
+
   /**
-   * @param {boolean} dragging
+   * @param {boolean} isDragging
    */
-  setDragging(dragging) {
-    this.toggleAttribute('dragging_', dragging);
+  setDragging(isDragging) {
+    this.toggleAttribute('dragging_', isDragging);
   }
 
   /**
@@ -293,6 +290,18 @@ export class TabElement extends CustomElement {
       animation.onfinish = () => {
         resolve();
       };
+
+      // TODO(crbug.com/1035678) By the next animation frame, the animation
+      // should start playing. By the time another animation frame happens,
+      // force play the animation if the animation has not yet begun. Remove
+      // if/when the Blink issue has been fixed.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (animation.pending) {
+            animation.play();
+          }
+        });
+      });
     });
   }
 
@@ -300,8 +309,8 @@ export class TabElement extends CustomElement {
    * @return {!Promise}
    */
   slideOut() {
-    if (!this.embedderApi_.isVisible() || this.tab_.pinned) {
-      // There is no point in animating if the tab strip is hidden.
+    if (!this.embedderApi_.isVisible() || this.tab_.pinned ||
+        this.tabSwiper_.wasSwiping()) {
       this.remove();
       return Promise.resolve();
     }
@@ -370,3 +379,11 @@ export class TabElement extends CustomElement {
 }
 
 customElements.define('tabstrip-tab', TabElement);
+
+/**
+ * @param {!Element} element
+ * @return {boolean}
+ */
+export function isTabElement(element) {
+  return element.tagName === 'TABSTRIP-TAB';
+}

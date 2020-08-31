@@ -63,6 +63,7 @@ struct Configuration {
     // otherwise satisfied. A greater value indicates higher priority.
     int priority = 0;
 
+    void AddToValue(base::trace_event::TracedValue*) const;
     std::unique_ptr<base::trace_event::TracedValue> ToTracedValue() const;
   };
 
@@ -103,6 +104,7 @@ struct Configuration {
   bool operator==(const Configuration& rhs) const;
   bool operator!=(const Configuration& rhs) const;
 
+  void AddToValue(base::trace_event::TracedValue*) const;
   std::unique_ptr<base::trace_event::TracedValue> ToTracedValue() const;
 
   // Returns the mojom::ActivationState that page loads that match this
@@ -180,9 +182,6 @@ scoped_refptr<ConfigurationList> GetAndSetActivateConfigurations(
 
 // The master toggle to enable/disable the Safe Browsing Subresource Filter.
 extern const base::Feature kSafeBrowsingSubresourceFilter;
-
-// Safe Browsing Activation Throttle considers all checks in a redirect chain.
-extern const base::Feature kSafeBrowsingSubresourceFilterConsiderRedirects;
 
 // Enables the blocking of ads on sites that are abusive.
 extern const base::Feature kFilterAdsOnAbusiveSites;

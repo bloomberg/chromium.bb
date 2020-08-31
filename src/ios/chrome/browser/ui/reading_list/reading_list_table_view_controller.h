@@ -12,6 +12,7 @@
 @protocol ReadingListDataSource;
 @protocol ReadingListListViewControllerAudience;
 @protocol ReadingListListViewControllerDelegate;
+class Browser;
 
 // View controller that displays reading list items in a table view.
 @interface ReadingListTableViewController
@@ -24,13 +25,12 @@
 @property(nonatomic, weak) id<ReadingListListViewControllerAudience> audience;
 // The table's data source.
 @property(nonatomic, weak) id<ReadingListDataSource> dataSource;
+// The browser.
+@property(nonatomic, assign) Browser* browser;
 
 // Initializers.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:
-                               (ChromeTableViewControllerStyle)appBarStyle
-    NS_UNAVAILABLE;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 // Prepares this view controller to be dismissed.
 - (void)willBeDismissed;

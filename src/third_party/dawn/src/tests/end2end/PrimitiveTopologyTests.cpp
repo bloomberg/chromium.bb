@@ -200,7 +200,7 @@ class PrimitiveTopologyTest : public DawnTest {
                 wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
                 pass.SetPipeline(pipeline);
                 pass.SetVertexBuffer(0, vertexBuffer);
-                pass.Draw(6, 1, 0, 0);
+                pass.Draw(6);
                 pass.EndPass();
             }
 
@@ -286,4 +286,4 @@ TEST_P(PrimitiveTopologyTest, TriangleStrip) {
            });
 }
 
-DAWN_INSTANTIATE_TEST(PrimitiveTopologyTest, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend);
+DAWN_INSTANTIATE_TEST(PrimitiveTopologyTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());

@@ -21,6 +21,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/debug/leak_annotations.h"
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -48,15 +49,22 @@
 #include "components/download/public/common/download_task_runner.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/app/service_manager_environment.h"
+#include "content/browser/browser_main.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/gpu/gpu_main_thread_factory.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/browser/startup_helper.h"
 #include "content/browser/tracing/memory_instrumentation_util.h"
+#include "content/browser/utility_process_host.h"
+#include "content/child/field_trial.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/url_schemes.h"
+#include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/app/content_main_delegate.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_descriptor_keys.h"
@@ -66,6 +74,11 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/sandbox_init.h"
+#include "content/public/gpu/content_gpu_client.h"
+#include "content/public/renderer/content_renderer_client.h"
+#include "content/public/utility/content_utility_client.h"
+#include "content/renderer/in_process_renderer_thread.h"
+#include "content/utility/in_process_utility_thread.h"
 #include "gin/v8_initializer.h"
 #include "media/base/media.h"
 #include "media/media_buildflags.h"
@@ -134,27 +147,6 @@
 
 #endif  // OS_LINUX
 
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-#include "content/child/field_trial.h"
-#include "content/public/gpu/content_gpu_client.h"
-#include "content/public/renderer/content_renderer_client.h"
-#include "content/public/utility/content_utility_client.h"
-#endif
-
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
-#include "content/browser/browser_main.h"
-#include "content/public/browser/content_browser_client.h"
-#endif
-
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER) && !defined(CHROME_MULTIPLE_DLL_CHILD)
-#include "content/browser/gpu/gpu_main_thread_factory.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/utility_process_host.h"
-#include "content/gpu/in_process_gpu_thread.h"
-#include "content/renderer/in_process_renderer_thread.h"
-#include "content/utility/in_process_utility_thread.h"
-#endif
-
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "content/browser/sandbox_host_linux.h"
 #include "media/base/media_switches.h"
@@ -219,9 +211,7 @@ void LoadV8SnapshotFile() {
   }
 #endif  // OS_POSIX && !OS_MACOSX
 
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
-#endif  // !CHROME_MULTIPLE_DLL_BROWSER
 }
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
@@ -287,6 +277,7 @@ void InitializeZygoteSandboxForBrowserProcess(
 
   // Tickle the zygote host so it forks now.
   service_manager::ZygoteHostImpl::GetInstance()->Init(parsed_command_line);
+  service_manager::CreateUnsandboxedZygote(base::BindOnce(LaunchZygoteHelper));
   service_manager::ZygoteHandle generic_zygote =
       service_manager::CreateGenericZygote(base::BindOnce(LaunchZygoteHelper));
 
@@ -399,17 +390,23 @@ void PreSandboxInit() {
 
 }  // namespace
 
+class ContentClientCreator {
+ public:
+  static void Create(ContentMainDelegate* delegate) {
+    ContentClient* client = delegate->CreateContentClient();
+    DCHECK(client);
+    SetContentClient(client);
+  }
+};
+
 class ContentClientInitializer {
  public:
   static void Set(const std::string& process_type,
                   ContentMainDelegate* delegate) {
     ContentClient* content_client = GetContentClient();
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
     if (process_type.empty())
       content_client->browser_ = delegate->CreateContentBrowserClient();
-#endif  // !CHROME_MULTIPLE_DLL_CHILD
 
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
     base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
     if (process_type == switches::kGpuProcess ||
         cmd->HasSwitch(switches::kSingleProcess) ||
@@ -423,7 +420,6 @@ class ContentClientInitializer {
     if (process_type == switches::kUtilityProcess ||
         cmd->HasSwitch(switches::kSingleProcess))
       content_client->utility_ = delegate->CreateContentUtilityClient();
-#endif  // !CHROME_MULTIPLE_DLL_BROWSER
   }
 };
 
@@ -441,6 +437,7 @@ struct MainFunction {
 // Returns the exit code of the subprocess.
 int RunZygote(ContentMainDelegate* delegate) {
   static const MainFunction kMainFunctions[] = {
+    {switches::kGpuProcess, GpuMain},
     {switches::kRendererProcess, RendererMain},
     {switches::kUtilityProcess, UtilityMain},
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -472,20 +469,11 @@ int RunZygote(ContentMainDelegate* delegate) {
       command_line.GetSwitchValueASCII(switches::kProcessType);
   ContentClientInitializer::Set(process_type, delegate);
 
-#if !defined(OS_ANDROID)
-  tracing::EnableStartupTracingIfNeeded();
-#endif  // !OS_ANDROID
-
   MainFunctionParams main_params(command_line);
   main_params.zygote_child = true;
 
   InitializeFieldTrialAndFeatureList();
   delegate->PostFieldTrialInitialization();
-
-  service_manager::SandboxType sandbox_type =
-      service_manager::SandboxTypeFromCommandLine(command_line);
-  if (sandbox_type == service_manager::SANDBOX_TYPE_PROFILING)
-    sandbox::SetUseLocaltimeOverride(false);
 
   for (size_t i = 0; i < base::size(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name)
@@ -497,26 +485,13 @@ int RunZygote(ContentMainDelegate* delegate) {
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
 static void RegisterMainThreadFactories() {
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   UtilityProcessHost::RegisterUtilityMainThreadFactory(
       CreateInProcessUtilityThread);
   RenderProcessHostImpl::RegisterRendererMainThreadFactory(
       CreateInProcessRendererThread);
   content::RegisterGpuMainThreadFactory(CreateInProcessGpuThread);
-#else
-  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kSingleProcess)) {
-    LOG(FATAL)
-        << "--single-process is not supported in chrome multiple dll browser.";
-  }
-  if (command_line.HasSwitch(switches::kInProcessGPU)) {
-    LOG(FATAL)
-        << "--in-process-gpu is not supported in chrome multiple dll browser.";
-  }
-#endif  // !CHROME_MULTIPLE_DLL_BROWSER && !CHROME_MULTIPLE_DLL_CHILD
 }
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
 // Run the main function for browser process.
 // Returns the exit code for this process.
 int RunBrowserProcessMain(const MainFunctionParams& main_function_params,
@@ -526,14 +501,12 @@ int RunBrowserProcessMain(const MainFunctionParams& main_function_params,
     return exit_code;
   return BrowserMain(main_function_params);
 }
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 // Run the FooMain() for a given process type.
 // Returns the exit code for this process.
 int RunOtherNamedProcessTypeMain(const std::string& process_type,
                                  const MainFunctionParams& main_function_params,
                                  ContentMainDelegate* delegate) {
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
   static const MainFunction kMainFunctions[] = {
 #if BUILDFLAG(ENABLE_PLUGINS)
     {switches::kPpapiPluginProcess, PpapiPluginMain},
@@ -552,7 +525,6 @@ int RunOtherNamedProcessTypeMain(const std::string& process_type,
       return kMainFunctions[i].function(main_function_params);
     }
   }
-#endif  // !CHROME_MULTIPLE_DLL_BROWSER
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
   // Zygote startup is special -- see RunZygote comments above
@@ -598,9 +570,13 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
-  // See note at the initialization of ExitManager, below; basically,
-  // only Android builds have the ctor/dtor handlers set up to use
-  // TRACE_EVENT right away.
+  // Now that mojo's core is initialized (by service manager's Main()), we can
+  // enable tracing. Note that only Android builds have the ctor/dtor handlers
+  // set up to use trace events at this point (because AtExitManager is already
+  // set up when the library is loaded). Other platforms enable tracing below,
+  // after the initialization of AtExitManager.
+  tracing::EnableStartupTracingIfNeeded();
+
   TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
 #endif  // OS_ANDROID
 
@@ -643,6 +619,8 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
 #endif  // !OS_ANDROID
 
   int exit_code = 0;
+  if (!GetContentClient())
+    ContentClientCreator::Create(delegate_);
   if (delegate_->BasicStartupComplete(&exit_code))
     return exit_code;
   completed_basic_startup_ = true;
@@ -662,42 +640,37 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
   }
 #endif
 
-  if (!GetContentClient())
-    SetContentClient(&empty_content_client_);
+  RegisterContentSchemes();
   ContentClientInitializer::Set(process_type, delegate_);
 
 #if !defined(OS_ANDROID)
-    // Enable startup tracing asap to avoid early TRACE_EVENT calls being
-    // ignored. For Android, startup tracing is enabled in an even earlier place
-    // content/app/android/library_loader_hooks.cc.
-    //
-    // Startup tracing flags are not (and should not) passed to Zygote
-    // processes. We will enable tracing when forked, if needed.
-    if (process_type != service_manager::switches::kZygoteProcess)
-      tracing::EnableStartupTracingIfNeeded();
-#endif  // !OS_ANDROID
+  // Enable startup tracing asap to avoid early TRACE_EVENT calls being
+  // ignored. For Android, startup tracing is enabled in an even earlier place
+  // above.
+  //
+  // Startup tracing flags are not (and should not be) passed to Zygote
+  // processes. We will enable tracing when forked, if needed.
+  bool enable_startup_tracing =
+      process_type != service_manager::switches::kZygoteProcess;
+#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+  // In the browser process, we have to enable startup tracing after
+  // InitializeZygoteSandboxForBrowserProcess() is run below, because that
+  // function forks and may call trace macros in the forked process.
+  if (process_type.empty())
+    enable_startup_tracing = false;
+#endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
+  if (enable_startup_tracing)
+    tracing::EnableStartupTracingIfNeeded();
 
 #if defined(OS_WIN)
-    base::trace_event::TraceEventETWExport::EnableETWExport();
+  base::trace_event::TraceEventETWExport::EnableETWExport();
 #endif  // OS_WIN
 
-#if !defined(OS_ANDROID)
-    // Android tracing started at the beginning of the method.
-    // Other OSes have to wait till we get here in order for all the memory
-    // management setup to be completed.
-    TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
+  // Android tracing started at the beginning of the method.
+  // Other OSes have to wait till we get here in order for all the memory
+  // management setup to be completed.
+  TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
 #endif  // !OS_ANDROID
-
-#if defined(OS_MACOSX)
-    // We need to allocate the IO Ports before the Sandbox is initialized or
-    // the first instance of PowerMonitor is created.
-    // It's important not to allocate the ports for processes which don't
-    // register with the power monitor - see https://crbug.com/88867.
-    if (process_type.empty() ||
-        delegate_->ProcessRegistersWithSystemProcess(process_type)) {
-      base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
-    }
-#endif
 
     // If we are on a platform where the default allocator is overridden (shim
     // layer on windows, tcmalloc on Linux Desktop) smoke-tests that the
@@ -724,7 +697,6 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
 #endif
 
     RegisterPathProvider();
-    RegisterContentSchemes(delegate_->ShouldLockSchemeRegistry());
 
 #if defined(OS_ANDROID) && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
     // On Android, we have two ICU data files. A main one with most languages
@@ -733,6 +705,7 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
     // file is available we have to apply it _before_ the main ICU data file.
     // Otherwise, the languages of the extra ICU file will be overridden.
     if (process_type.empty()) {
+      TRACE_EVENT0("startup", "InitializeICU");
       // In browser process load ICU data files from disk.
       if (GetContentClient()->browser()->ShouldLoadExtraIcuDataFile()) {
         if (!base::i18n::InitializeExtraICU()) {
@@ -827,6 +800,13 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
       // SandboxInitialized().
       InitializeZygoteSandboxForBrowserProcess(
           *base::CommandLine::ForCurrentProcess());
+
+      // We can only enable startup tracing after
+      // InitializeZygoteSandboxForBrowserProcess(), because the latter may fork
+      // and run code that calls trace event macros in the forked process (which
+      // could cause all sorts of issues, like writing to the same tracing SMB
+      // from two processes).
+      tracing::EnableStartupTracingIfNeeded();
     }
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
@@ -842,7 +822,6 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
   // Run this logic on all child processes. Zygotes will run this at a later
   // point in time when the command line has been updated.
   if (!process_type.empty() &&
@@ -850,7 +829,6 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
     InitializeFieldTrialAndFeatureList();
     delegate_->PostFieldTrialInitialization();
   }
-#endif
 
   MainFunctionParams main_params(command_line);
   main_params.ui_task = ui_task_;
@@ -863,17 +841,15 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
 
   RegisterMainThreadFactories();
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   if (process_type.empty())
     return RunServiceManager(main_params, start_service_manager_only);
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
   return RunOtherNamedProcessTypeMain(process_type, main_params, delegate_);
 }
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
 int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
                                              bool start_service_manager_only) {
+  TRACE_EVENT0("startup", "ContentMainRunnerImpl::RunServiceManager");
   if (is_browser_main_loop_started_)
     return -1;
 
@@ -913,6 +889,13 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 
     delegate_->PostEarlyInitialization(main_params.ui_task != nullptr);
 
+    // The hang watcher needs to be started once the feature list is available
+    // but before the IO thread is started.
+    if (base::FeatureList::IsEnabled(base::HangWatcher::kEnableHangWatcher)) {
+      hang_watcher_ = new base::HangWatcher();
+      ANNOTATE_LEAKING_OBJECT_PTR(hang_watcher_);
+    }
+
     if (GetContentClient()->browser()->ShouldCreateThreadPool()) {
       // The FeatureList needs to create before starting the ThreadPool.
       StartBrowserThreadPool();
@@ -936,7 +919,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     service_manager_environment_ = std::make_unique<ServiceManagerEnvironment>(
         BrowserTaskExecutor::CreateIOThread());
     download::SetIOTaskRunner(
-        service_manager_environment_->ipc_thread()->task_runner());
+        service_manager_environment_->io_thread()->task_runner());
 
     InitializeBrowserMemoryInstrumentationClient();
 
@@ -959,15 +942,12 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
   main_params.startup_data = startup_data_.get();
   return RunBrowserProcessMain(main_params, delegate_);
 }
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 void ContentMainRunnerImpl::Shutdown() {
   DCHECK(is_initialized_);
   DCHECK(!is_shutdown_);
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   service_manager_environment_.reset();
-#endif
 
   if (completed_basic_startup_) {
     const base::CommandLine& command_line =
@@ -978,11 +958,9 @@ void ContentMainRunnerImpl::Shutdown() {
     delegate_->ProcessExiting(process_type);
   }
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   service_manager_environment_.reset();
   // The BrowserTaskExecutor needs to be destroyed before |exit_manager_|.
   BrowserTaskExecutor::Shutdown();
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 #if defined(OS_WIN)
 #ifdef _CRTDBG_MAP_ALLOC

@@ -18,15 +18,16 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
-#include "components/app_modal/native_app_modal_dialog.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -151,6 +152,25 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest {
   TestGuestViewManagerFactory factory_;
   base::test::ScopedFeatureList scoped_feature_list_;
   int basic_count_ = 0;
+};
+
+class UserActivationUpdateWaiter {
+ public:
+  explicit UserActivationUpdateWaiter(content::WebContents* web_contents) {
+    user_activation_interceptor_.Init(web_contents->GetMainFrame());
+  }
+  ~UserActivationUpdateWaiter() = default;
+
+  void Wait() {
+    if (user_activation_interceptor_.update_user_activation_state())
+      return;
+    base::RunLoop run_loop;
+    user_activation_interceptor_.set_quit_handler(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+ private:
+  content::UpdateUserActivationStateInterceptor user_activation_interceptor_;
 };
 
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Embedded) {
@@ -348,10 +368,10 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest,
   ASSERT_TRUE(content::ExecuteScript(main_frame,
                                      "object.data = './testEmbedded.csv';"
                                      "object.type = 'text/csv';"));
-  app_modal::JavaScriptAppModalDialog* alert =
+  javascript_dialogs::AppModalDialogController* alert =
       ui_test_utils::WaitForAppModalDialog();
   ASSERT_TRUE(alert->is_before_unload_dialog());
-  alert->native_dialog()->AcceptAppModalDialog();
+  alert->view()->AcceptAppModalDialog();
 
   EXPECT_TRUE(GetGuestViewManager()->WaitForSingleGuestCreated());
 }
@@ -455,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BeforeUnload_ShowDialog) {
   web_contents->GetController().LoadURL(GURL(url::kAboutBlankURL), {},
                                         ui::PAGE_TRANSITION_TYPED, "");
 
-  app_modal::JavaScriptAppModalDialog* before_unload_dialog =
+  javascript_dialogs::AppModalDialogController* before_unload_dialog =
       ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(before_unload_dialog->is_before_unload_dialog());
   EXPECT_FALSE(before_unload_dialog->is_reload());
@@ -485,16 +505,12 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest,
 
   // Make sure we have a guestviewmanager.
   auto* guest_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
-
-  // Add a filter for FrameHostMsg_UpdateUserActivationState IPC.
-  auto filter =
-      base::MakeRefCounted<content::UpdateUserActivationStateMsgWaiter>();
-  guest_contents->GetMainFrame()->GetProcess()->AddFilter(filter.get());
+  UserActivationUpdateWaiter activation_waiter(guest_contents);
 
   // Activate |guest_contents| through a click, then wait until the activation
   // IPC reaches the browser process.
   SimulateMouseClick(guest_contents, 0, blink::WebMouseEvent::Button::kLeft);
-  filter->Wait();
+  activation_waiter.Wait();
 
   // Wait for a round trip to the outer renderer to ensure any beforeunload
   // toggle IPC has had time to reach the browser.
@@ -504,7 +520,7 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest,
   web_contents->GetController().LoadURL(GURL(url::kAboutBlankURL), {},
                                         ui::PAGE_TRANSITION_TYPED, "");
 
-  app_modal::JavaScriptAppModalDialog* before_unload_dialog =
+  javascript_dialogs::AppModalDialogController* before_unload_dialog =
       ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(before_unload_dialog->is_before_unload_dialog());
   EXPECT_FALSE(before_unload_dialog->is_reload());

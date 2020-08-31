@@ -24,7 +24,7 @@ void AddTabAt(Browser* browser,
               const GURL& url,
               int idx,
               bool foreground,
-              base::Optional<TabGroupId> group) {
+              base::Optional<tab_groups::TabGroupId> group) {
   // Time new tab page creation time.  We keep track of the timing data in
   // WebContents, but we want to include the time it takes to create the
   // WebContents object too.
@@ -53,6 +53,7 @@ content::WebContents* AddSelectedTabWithURL(Browser* browser,
 void AddWebContents(Browser* browser,
                     content::WebContents* source_contents,
                     std::unique_ptr<content::WebContents> new_contents,
+                    const GURL& target_url,
                     WindowOpenDisposition disposition,
                     const gfx::Rect& initial_rect) {
   // No code for this yet.
@@ -62,6 +63,7 @@ void AddWebContents(Browser* browser,
 
   NavigateParams params(browser, std::move(new_contents));
   params.source_contents = source_contents;
+  params.url = target_url;
   params.disposition = disposition;
   params.window_bounds = initial_rect;
   params.window_action = NavigateParams::SHOW_WINDOW;

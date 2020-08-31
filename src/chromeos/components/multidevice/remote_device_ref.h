@@ -49,7 +49,7 @@ class RemoteDeviceRef {
   RemoteDeviceRef(const RemoteDeviceRef& other);
   ~RemoteDeviceRef();
 
-  const std::string& user_id() const { return remote_device_->user_id; }
+  const std::string& user_email() const { return remote_device_->user_email; }
   const std::string& instance_id() const { return remote_device_->instance_id; }
   const std::string& name() const { return remote_device_->name; }
   const std::string& pii_free_name() const {
@@ -74,6 +74,12 @@ class RemoteDeviceRef {
   // IDs are often so long that logs are difficult to read). Note that this
   // ID is not guaranteed to be unique, so it should only be used for log.
   std::string GetTruncatedDeviceIdForLogs() const;
+
+  // Returns the pair of IDs used with RemoteDevices: Instance ID and device ID.
+  // If either ID is missing, this string will make note of that. If a device ID
+  // exists, the truncated version will be presented. This function should only
+  // be used for logging.
+  std::string GetInstanceIdDeviceIdForLogs() const;
 
   bool operator==(const RemoteDeviceRef& other) const;
   bool operator!=(const RemoteDeviceRef& other) const;

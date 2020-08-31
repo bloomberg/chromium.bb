@@ -9,6 +9,10 @@ RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(), RuntimeCallStats::CounterId::{{count
 RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "{{counter}}");
 {% endmacro %}
 
+{% macro trace_event(name) %}
+BLINK_BINDINGS_TRACE_EVENT("{{name}}");
+{% endmacro %}
+
 {% macro generate_method(method, world_suffix) %}
 static void {{method.camel_case_name}}{{method.overload_index}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {% filter format_remove_duplicates([
@@ -201,20 +205,6 @@ if (!info[{{argument.index}}]->IsNullOrUndefined() && !info[{{argument.index}}]-
 if (!info[{{argument.index}}]->IsNullOrUndefined()) {
   {{v8_value_to_local_cpp_value(argument) | trim | indent(2)}}
 }
-{% elif argument.idl_type == 'object' %}
-if (info[{{argument.index}}]->IsObject()) {
-  {{v8_value_to_local_cpp_value(argument)}}
-{% if argument.is_nullable %}
-} else if (info[{{argument.index}}]->IsNullOrUndefined()) {
-  {{argument.local_cpp_variable}} = ScriptValue(info.GetIsolate(), v8::Null(info.GetIsolate()));
-{% elif argument.is_optional %}
-} else if (info[{{argument.index}}]->IsUndefined()) {
-  {{argument.local_cpp_variable}} = ScriptValue(info.GetIsolate(), v8::Undefined(info.GetIsolate()));
-{% endif %}
-} else {
-  {{throw_argument_error(method, argument, "parameter %(index)d ('%(name)s') is not an object.")}}
-  return;
-}
 {% else %}{# argument is something else #}
 {{v8_value_to_local_cpp_value(argument)}}
 {% endif %}{# end of the dispatch by the argument type #}
@@ -249,9 +239,6 @@ if (!{{argument.local_cpp_variable}}.IsUndefinedOrNull() && !{{argument.local_cp
 
 {######################################}
 {% macro cpp_method_call(method, v8_set_return_value, cpp_value) %}
-{% if method.is_custom_call_prologue %}
-{{v8_class}}::{{method.camel_case_name}}MethodPrologueCustom(info, impl);
-{% endif %}
 {# Local variables #}
 {% if method.is_call_with_execution_context %}
 {# [ConstructorCallWith=ExecutionContext] or [CallWith=ExecutionContext] #}
@@ -266,8 +253,8 @@ ExecutionContext* execution_context = ExecutionContext::ForRelevantRealm(info);
 {% endif %}
 {% if method.is_call_with_document %}
 {# [ConstructorCallWith=Document] #}
-Document& document = *To<Document>(ToExecutionContext(
-    info.NewTarget().As<v8::Object>()->CreationContext()));
+Document& document = *ToLocalDOMWindow(
+    info.NewTarget().As<v8::Object>()->CreationContext())->document();
 {% endif %}
 {# Call #}
 {% if method.idl_type == 'void' %}
@@ -309,9 +296,6 @@ else
 {{v8_set_return_value}};
 {% endif %}
 {%- endif %}{# None for void #}
-{% if method.is_custom_call_epilogue %}
-{{v8_class}}::{{method.camel_case_name}}MethodEpilogueCustom(info, impl);
-{% endif %}
 {% endmacro %}
 
 
@@ -467,6 +451,7 @@ if ({{test}}) {
 {##############################################################################}
 {% macro method_callback(method, world_suffix) %}
 void {{v8_class_or_partial}}::{{method.camel_case_name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  {{ trace_event(method.runtime_call_stats.trace_event_name) | trim | indent(2) }}
   {% if method.runtime_call_stats.extended_attribute_defined %}
   {{ runtime_timer_scope(method.runtime_call_stats.method_counter) | trim | indent(2) }}
   {% else %}

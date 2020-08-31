@@ -6,17 +6,26 @@
  * @fileoverview
  * 'settings-downloads-page' is the settings page containing downloads
  * settings.
- *
- * Example:
- *
- *    <iron-animated-pages>
- *      <settings-downloads-page prefs="{{prefs}}">
- *      </settings-downloads-page>
- *      ... other pages ...
- *    </iron-animated-pages>
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '../controls/controlled_button.m.js';
+import '../controls/settings_toggle_button.m.js';
+import '../settings_shared_css.m.js';
+
+import {listenOnce} from 'chrome://resources/js/util.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+
+import {DownloadsBrowserProxy, DownloadsBrowserProxyImpl} from './downloads_browser_proxy.js';
+
 Polymer({
   is: 'settings-downloads-page',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [WebUIListenerBehavior, PrefsBehavior],
 
@@ -28,12 +37,6 @@ Polymer({
       type: Object,
       notify: true,
     },
-
-    /**
-     * Dictionary defining page visibility.
-     * @type {!DownloadsPageVisibility}
-     */
-    pageVisibility: Object,
 
     /** @private */
     autoOpenDownloads_: {
@@ -47,21 +50,6 @@ Polymer({
      */
     downloadLocation_: String,
     // </if>
-
-    /** @private {!Map<string, string>} */
-    focusConfig_: {
-      type: Object,
-      value: function() {
-        const map = new Map();
-        // <if expr="chromeos">
-        if (settings.routes.SMB_SHARES) {
-          map.set(settings.routes.SMB_SHARES.path, '#smbShares');
-        }
-        // </if>
-        return map;
-      },
-    },
-
   },
 
   // <if expr="chromeos">
@@ -70,16 +58,16 @@ Polymer({
   ],
   // </if>
 
-  /** @private {?settings.DownloadsBrowserProxy} */
+  /** @private {?DownloadsBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
-  created: function() {
-    this.browserProxy_ = settings.DownloadsBrowserProxyImpl.getInstance();
+  created() {
+    this.browserProxy_ = DownloadsBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener('auto-open-downloads-changed', autoOpen => {
       this.autoOpenDownloads_ = autoOpen;
     });
@@ -88,22 +76,17 @@ Polymer({
   },
 
   /** @private */
-  selectDownloadLocation_: function() {
+  selectDownloadLocation_() {
     listenOnce(this, 'transitionend', () => {
       this.browserProxy_.selectDownloadLocation();
     });
   },
 
   // <if expr="chromeos">
-  /** @private */
-  onTapSmbShares_: function() {
-    settings.navigateTo(settings.routes.SMB_SHARES);
-  },
-
   /**
    * @private
    */
-  handleDownloadLocationChanged_: function() {
+  handleDownloadLocationChanged_() {
     this.browserProxy_
         .getDownloadLocationText(/** @type {string} */ (
             this.getPref('download.default_directory').value))
@@ -114,7 +97,7 @@ Polymer({
   // </if>
 
   /** @private */
-  onClearAutoOpenFileTypesTap_: function() {
+  onClearAutoOpenFileTypesTap_() {
     this.browserProxy_.resetAutoOpenFileTypes();
   },
 });

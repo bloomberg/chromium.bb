@@ -13,22 +13,21 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/cpp/power_monitor/power_monitor_broadcast_source.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/power_monitor.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
 
 class MockClient : public PowerMonitorBroadcastSource::Client {
  public:
-  MockClient(base::Closure service_connected)
-      : service_connected_(service_connected) {}
+  MockClient(base::OnceClosure service_connected)
+      : service_connected_(std::move(service_connected)) {}
   ~MockClient() override = default;
 
   // Implement device::mojom::PowerMonitorClient
   void PowerStateChange(bool on_battery_power) override {
     power_state_changes_++;
-    service_connected_.Run();
+    if (service_connected_)
+      std::move(service_connected_).Run();
   }
   void Suspend() override { suspends_++; }
   void Resume() override { resumes_++; }
@@ -42,7 +41,7 @@ class MockClient : public PowerMonitorBroadcastSource::Client {
   int power_state_changes_ = 0;  // Count of OnPowerStateChange notifications.
   int suspends_ = 0;             // Count of OnSuspend notifications.
   int resumes_ = 0;              // Count of OnResume notifications.
-  base::Closure service_connected_;
+  base::OnceClosure service_connected_;
 };
 
 class PowerMonitorMessageBroadcasterTest : public DeviceServiceTestBase {
@@ -81,8 +80,8 @@ TEST_F(PowerMonitorMessageBroadcasterTest, PowerMessageBroadcast) {
           std::make_unique<MockClient>(run_loop.QuitClosure()),
           base::SequencedTaskRunnerHandle::Get()));
   mojo::PendingRemote<mojom::PowerMonitor> remote_monitor;
-  connector()->Connect(mojom::kServiceName,
-                       remote_monitor.InitWithNewPipeAndPassReceiver());
+  device_service()->BindPowerMonitor(
+      remote_monitor.InitWithNewPipeAndPassReceiver());
   broadcast_source->Init(std::move(remote_monitor));
   run_loop.Run();
 

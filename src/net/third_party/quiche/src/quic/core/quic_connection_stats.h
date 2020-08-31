@@ -15,6 +15,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 
 namespace quic {
+
 // Structure to hold stats for a QuicConnection.
 struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
   QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(
@@ -44,6 +45,11 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
   QuicPacketCount packets_spuriously_retransmitted = 0;
   // Number of packets abandoned as lost by the loss detection algorithm.
   QuicPacketCount packets_lost = 0;
+  QuicPacketCount packet_spuriously_detected_lost = 0;
+
+  // The sum of the detection time of all lost packets. The detection time of a
+  // lost packet is defined as: T(detection) - T(send).
+  QuicTime::Delta total_loss_detection_time = QuicTime::Delta::Zero();
 
   // Number of times this connection went through the slow start phase.
   uint32_t slowstart_count = 0;
@@ -59,6 +65,14 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
   QuicByteCount slowstart_bytes_lost = 0;
   // Time spent in slow start. Populated for BBRv1 and BBRv2.
   QuicTimeAccumulator slowstart_duration;
+
+  // Number of PROBE_BW cycles. Populated for BBRv1 and BBRv2.
+  uint32_t bbr_num_cycles = 0;
+  // Number of PROBE_BW cycles shortened for reno coexistence. BBRv2 only.
+  uint32_t bbr_num_short_cycles_for_reno_coexistence = 0;
+  // Whether BBR exited STARTUP due to excessive loss. Populated for BBRv1 and
+  // BBRv2.
+  bool bbr_exit_startup_due_to_loss = false;
 
   QuicPacketCount packets_dropped = 0;  // Duplicate or less than least unacked.
 
@@ -88,6 +102,9 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
   // Maximum reordering observed in microseconds
   int64_t max_time_reordering_us = 0;
 
+  // Maximum sequence reordering observed from acked packets.
+  QuicPacketCount sent_packets_max_sequence_reordering = 0;
+
   // The following stats are used only in TcpCubicSender.
   // The number of loss events from TCP's perspective.  Each loss event includes
   // one or more lost packets.
@@ -112,6 +129,13 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
   // Number of ack aggregation epochs. For the same number of bytes acked, the
   // smaller this value, the more ack aggregation is going on.
   uint64_t num_ack_aggregation_epochs = 0;
+
+  // Whether overshooting is detected (and pacing rate decreases) during start
+  // up with network parameters adjusted.
+  bool overshooting_detected_with_network_parameters_adjusted = false;
+
+  // Whether there is any non app-limited bandwidth sample.
+  bool has_non_app_limited_sample = false;
 };
 
 }  // namespace quic

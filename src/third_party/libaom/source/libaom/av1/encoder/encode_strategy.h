@@ -29,12 +29,33 @@ extern "C" {
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags,
                         int64_t *const time_stamp, int64_t *const time_end,
-                        const aom_rational_t *const timebase, int flush);
+                        const aom_rational64_t *const timestamp_ratio,
+                        int flush);
 
-// Set individual buffer update flags based on frame reference type
-void av1_configure_buffer_updates(AV1_COMP *const cpi,
-                                  const FRAME_UPDATE_TYPE type);
+// Set individual buffer update flags based on frame reference type.
+// force_refresh_all is used when we have a KEY_FRAME or S_FRAME.  It forces all
+// refresh_*_frame flags to be set, because we refresh all buffers in this case.
+void av1_configure_buffer_updates(
+    AV1_COMP *const cpi, RefreshFrameFlagsInfo *const refresh_frame_flags,
+    const FRAME_UPDATE_TYPE type, int force_refresh_all);
 
+int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
+                                const EncodeFrameParams *const frame_params,
+                                FRAME_UPDATE_TYPE frame_update_type,
+                                const RefBufferStack *const ref_buffer_stack);
+
+int av1_get_refresh_ref_frame_map(int refresh_frame_flags);
+
+void av1_update_ref_frame_map(AV1_COMP *cpi,
+                              FRAME_UPDATE_TYPE frame_update_type,
+                              int show_existing_frame, int ref_map_index,
+                              RefBufferStack *ref_buffer_stack);
+
+void av1_get_ref_frames(AV1_COMP *const cpi, RefBufferStack *ref_buffer_stack);
+
+int is_forced_keyframe_pending(struct lookahead_ctx *lookahead,
+                               const int up_to_index,
+                               const COMPRESSOR_STAGE compressor_stage);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

@@ -79,6 +79,21 @@ static_library("dawn_spirv_cross_fuzzer_common") {
   ]
 }
 
+static_library("dawn_wire_server_fuzzer_common") {
+  sources = [
+    "DawnWireServerFuzzer.cpp",
+    "DawnWireServerFuzzer.h",
+  ]
+  public_deps = [
+    "${dawn_root}/src/common",
+    "${dawn_root}/src/dawn:dawn_proc",
+    "${dawn_root}/src/dawn:dawncpp",
+    "${dawn_root}/src/dawn_native:dawn_native_static",
+    "${dawn_root}/src/dawn_wire:dawn_wire_static",
+    "${dawn_root}/src/utils:dawn_utils",
+  ]
+}
+
 # TODO(rharrison): Remove asan_options once signal trap is no longer
 #                  needed.
 # Uses Dawn specific options and varies input data
@@ -118,18 +133,67 @@ dawn_fuzzer_test("dawn_spirv_cross_msl_fast_fuzzer") {
   asan_options = [ "allow_user_segv_handler=1" ]
 }
 
+dawn_fuzzer_test("dawn_spvc_glsl_fast_fuzzer") {
+  sources = [
+    "DawnSPVCglslFastFuzzer.cpp",
+  ]
+  deps = [
+    "${dawn_shaderc_dir}:libshaderc_spvc",
+  ]
+}
+
+dawn_fuzzer_test("dawn_spvc_hlsl_fast_fuzzer") {
+  sources = [
+    "DawnSPVChlslFastFuzzer.cpp",
+  ]
+  deps = [
+    "${dawn_shaderc_dir}:libshaderc_spvc",
+  ]
+}
+
+dawn_fuzzer_test("dawn_spvc_msl_fast_fuzzer") {
+  sources = [
+    "DawnSPVCmslFastFuzzer.cpp",
+  ]
+  deps = [
+    "${dawn_shaderc_dir}:libshaderc_spvc",
+  ]
+}
+
 dawn_fuzzer_test("dawn_wire_server_and_frontend_fuzzer") {
   sources = [
     "DawnWireServerAndFrontendFuzzer.cpp",
   ]
 
   deps = [
-    "${dawn_root}/:libdawn_native_static",
-    "${dawn_root}/:libdawn_wire_static",
-    "${dawn_root}/src/common",
-    "${dawn_root}/src/dawn:dawncpp",
-    "${dawn_root}/src/dawn:libdawn_proc",
+    ":dawn_wire_server_fuzzer_common",
   ]
 
   additional_configs = [ "${dawn_root}/src/common:dawn_internal" ]
+}
+
+dawn_fuzzer_test("dawn_wire_server_and_vulkan_backend_fuzzer") {
+  sources = [
+    "DawnWireServerAndVulkanBackendFuzzer.cpp",
+  ]
+
+  deps = [
+    ":dawn_wire_server_fuzzer_common",
+  ]
+
+  additional_configs = [ "${dawn_root}/src/common:dawn_internal" ]
+}
+
+# A group target to build all the fuzzers
+group("dawn_fuzzers") {
+  testonly = true
+  deps = [
+    ":dawn_spirv_cross_glsl_fast_fuzzer",
+    ":dawn_spirv_cross_hlsl_fast_fuzzer",
+    ":dawn_spirv_cross_msl_fast_fuzzer",
+    ":dawn_spvc_glsl_fast_fuzzer",
+    ":dawn_spvc_hlsl_fast_fuzzer",
+    ":dawn_spvc_msl_fast_fuzzer",
+    ":dawn_wire_server_and_frontend_fuzzer",
+  ]
 }

@@ -28,19 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';
+
 /**
  * @unrestricted
  */
-export default class FileManager extends Common.Object {
+export class FileManager extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
-    /** @type {!Map<string, function(?{fileSystemPath: (string|undefined)})>} */
+    /** @type {!Map<string, function(?{fileSystemPath: (string|undefined)}):void>} */
     this._saveCallbacks = new Map();
-    Host.InspectorFrontendHost.events.addEventListener(
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.SavedURL, this._savedURL, this);
-    Host.InspectorFrontendHost.events.addEventListener(
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.CanceledSaveURL, this._canceledSavedURL, this);
-    Host.InspectorFrontendHost.events.addEventListener(
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.AppendedToURL, this._appendedToURL, this);
   }
 
@@ -53,12 +56,12 @@ export default class FileManager extends Common.Object {
   save(url, content, forceSaveAs) {
     // Remove this url from the saved URLs while it is being saved.
     const result = new Promise(resolve => this._saveCallbacks.set(url, resolve));
-    Host.InspectorFrontendHost.save(url, content, forceSaveAs);
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.save(url, content, forceSaveAs);
     return result;
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _savedURL(event) {
     const url = /** @type {string} */ (event.data.url);
@@ -70,7 +73,7 @@ export default class FileManager extends Common.Object {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _canceledSavedURL(event) {
     const url = /** @type {string} */ (event.data);
@@ -86,18 +89,18 @@ export default class FileManager extends Common.Object {
    * @param {string} content
    */
   append(url, content) {
-    Host.InspectorFrontendHost.append(url, content);
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.append(url, content);
   }
 
   /**
    * @param {string} url
    */
   close(url) {
-    Host.InspectorFrontendHost.close(url);
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.close(url);
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _appendedToURL(event) {
     const url = /** @type {string} */ (event.data);
@@ -109,20 +112,3 @@ export default class FileManager extends Common.Object {
 export const Events = {
   AppendedToURL: Symbol('AppendedToURL')
 };
-
-/* Legacy exported object */
-self.Workspace = self.Workspace || {};
-
-/* Legacy exported object */
-Workspace = Workspace || {};
-
-/** @constructor */
-Workspace.FileManager = FileManager;
-
-/** @enum {symbol} */
-Workspace.FileManager.Events = Events;
-
-/**
- * @type {?FileManager}
- */
-Workspace.fileManager;

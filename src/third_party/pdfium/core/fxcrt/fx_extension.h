@@ -14,8 +14,6 @@
 #include <cwctype>
 #include <memory>
 
-#include "core/fxcrt/fx_string.h"
-
 #if defined(USE_SYSTEM_ICUUC)
 #include <unicode/uchar.h>
 #else
@@ -48,8 +46,16 @@ inline int32_t FXSYS_towupper(wchar_t c) {
   return u_toupper(c);
 }
 
+inline bool FXSYS_IsLowerASCII(int32_t c) {
+  return c >= 'a' && c <= 'z';
+}
+
+inline bool FXSYS_IsUpperASCII(int32_t c) {
+  return c >= 'A' && c <= 'Z';
+}
+
 inline char FXSYS_ToUpperASCII(char c) {
-  return (c >= 'a' && c <= 'z') ? (c + ('A' - 'a')) : c;
+  return FXSYS_IsLowerASCII(c) ? (c + ('A' - 'a')) : c;
 }
 
 inline bool FXSYS_iswalpha(wchar_t c) {
@@ -112,6 +118,7 @@ void FXSYS_IntToFourHexChars(uint16_t n, char* buf);
 size_t FXSYS_ToUTF16BE(uint32_t unicode, char* buf);
 
 // Strict order over floating types where NaNs may be present.
+// All NaNs are treated as equal to each other and greater than infinity.
 template <typename T>
 bool FXSYS_SafeEQ(const T& lhs, const T& rhs) {
   return (std::isnan(lhs) && std::isnan(rhs)) ||

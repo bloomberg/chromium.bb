@@ -64,7 +64,8 @@ DummyPageHolder::DummyPageHolder(
     Page::PageClients* page_clients_argument,
     LocalFrameClient* local_frame_client,
     base::OnceCallback<void(Settings&)> setting_overrider,
-    const base::TickClock* clock) {
+    const base::TickClock* clock)
+    : enable_mock_scrollbars_(true) {
   Page::PageClients page_clients;
   if (!page_clients_argument)
     FillWithEmptyClients(page_clients);
@@ -80,11 +81,11 @@ DummyPageHolder::DummyPageHolder(
     local_frame_client_ = MakeGarbageCollected<DummyLocalFrameClient>();
 
   // Create new WindowAgentFactory as this page will be isolated from others.
-  frame_ =
-      MakeGarbageCollected<LocalFrame>(local_frame_client_.Get(), *page_,
-                                       /* FrameOwner* */ nullptr,
-                                       /* WindowAgentFactory* */ nullptr,
-                                       /* InterfaceRegistry* */ nullptr, clock);
+  frame_ = MakeGarbageCollected<LocalFrame>(
+      local_frame_client_.Get(), *page_,
+      /* FrameOwner* */ nullptr, base::UnguessableToken::Create(),
+      /* WindowAgentFactory* */ nullptr,
+      /* InterfaceRegistry* */ nullptr, clock);
   frame_->SetView(
       MakeGarbageCollected<LocalFrameView>(*frame_, initial_view_size));
   frame_->View()->GetPage()->GetVisualViewport().SetSize(initial_view_size);

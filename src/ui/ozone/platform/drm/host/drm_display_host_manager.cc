@@ -15,12 +15,12 @@
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
-#include "ui/ozone/platform/drm/common/drm_overlay_manager.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/host/drm_device_handle.h"
 #include "ui/ozone/platform/drm/host/drm_display_host.h"
@@ -112,11 +112,9 @@ DrmDisplayHostManager::DrmDisplayHostManager(
     GpuThreadAdapter* proxy,
     DeviceManager* device_manager,
     OzonePlatform::InitializedHostProperties* host_properties,
-    DrmOverlayManager* overlay_manager,
     InputControllerEvdev* input_controller)
     : proxy_(proxy),
       device_manager_(device_manager),
-      overlay_manager_(overlay_manager),
       input_controller_(input_controller),
       primary_graphics_card_path_(GetPrimaryDisplayCardPath()) {
   {
@@ -251,9 +249,9 @@ void DrmDisplayHostManager::ProcessEvent() {
     switch (event.action_type) {
       case DeviceEvent::ADD:
         if (drm_devices_.find(event.path) == drm_devices_.end()) {
-          base::PostTask(
+          base::ThreadPool::PostTask(
               FROM_HERE,
-              {base::ThreadPool(), base::MayBlock(),
+              {base::MayBlock(),
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
               base::BindOnce(
                   &OpenDeviceAsync, event.path,
@@ -367,19 +365,19 @@ void DrmDisplayHostManager::OnGpuThreadReady() {
 void DrmDisplayHostManager::OnGpuThreadRetired() {}
 
 void DrmDisplayHostManager::GpuHasUpdatedNativeDisplays(
-    const std::vector<DisplaySnapshot_Params>& params_vector) {
+    MovableDisplaySnapshots displays) {
   if (delegate_)
     delegate_->OnDisplaySnapshotsInvalidated();
   std::vector<std::unique_ptr<DrmDisplayHost>> old_displays;
   displays_.swap(old_displays);
-  for (const auto& params : params_vector) {
+  for (auto& display : displays) {
     auto it = std::find_if(old_displays.begin(), old_displays.end(),
-                           FindDrmDisplayHostById(params.display_id));
+                           FindDrmDisplayHostById(display->display_id()));
     if (it == old_displays.end()) {
       displays_.push_back(std::make_unique<DrmDisplayHost>(
-          proxy_, CreateDisplaySnapshot(params), false /* is_dummy */));
+          proxy_, std::move(display), false /* is_dummy */));
     } else {
-      (*it)->UpdateDisplaySnapshot(CreateDisplaySnapshot(params));
+      (*it)->UpdateDisplaySnapshot(std::move(display));
       displays_.push_back(std::move(*it));
       old_displays.erase(it);
     }
@@ -400,9 +398,6 @@ void DrmDisplayHostManager::GpuConfiguredDisplay(int64_t display_id,
   DrmDisplayHost* display = GetDisplay(display_id);
   if (display) {
     display->OnDisplayConfigured(status);
-
-    if (overlay_manager_)
-      overlay_manager_->ResetCache();
   } else {
     LOG(ERROR) << "Couldn't find display with id=" << display_id;
   }

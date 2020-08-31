@@ -81,9 +81,26 @@ class PasswordManagerMetricsRecorder {
     kObsoleteShowAllPasswordsWhileNoneAreSuggested = 2,
   };
 
+  // This purpose of this interface is to allow browser to record metrics
+  // about the current navigation.
+  class NavigationMetricRecorderDelegate {
+   public:
+    // Called the first time the user focuses on a password field.
+    virtual void OnUserFocusedPasswordFieldFirstTime(
+        const GURL& main_frame_url) = 0;
+    // Called the first time the user types into a password field.
+    virtual void OnUserModifiedPasswordFieldFirstTime(
+        const GURL& main_frame_url) = 0;
+
+    virtual ~NavigationMetricRecorderDelegate() = default;
+  };
+
   // Records UKM metrics and reports them on destruction.
-  PasswordManagerMetricsRecorder(ukm::SourceId source_id,
-                                 const GURL& main_frame_url);
+  PasswordManagerMetricsRecorder(
+      ukm::SourceId source_id,
+      const GURL& main_frame_url,
+      std::unique_ptr<NavigationMetricRecorderDelegate>
+          navigation_metric_recorder);
 
   PasswordManagerMetricsRecorder(
       PasswordManagerMetricsRecorder&& that) noexcept;
@@ -95,6 +112,9 @@ class PasswordManagerMetricsRecorder {
   // Records that the user has modified a password field on a page. This may be
   // called multiple times but a single metric will be reported.
   void RecordUserModifiedPasswordField();
+  // Records that the user has focused a password field on a page. This may be
+  // called multiple times but a single metric will be reported.
+  void RecordUserFocusedPasswordField();
 
   // Log failure to provisionally save a password to in the PasswordManager to
   // UMA and the |logger|.
@@ -117,10 +137,13 @@ class PasswordManagerMetricsRecorder {
   std::unique_ptr<ukm::builders::PageWithPassword> ukm_entry_builder_;
 
   bool user_modified_password_field_ = false;
+  bool user_focused_password_field_ = false;
 
   // Stores the value most recently reported via RecordFormManagerAvailable.
   FormManagerAvailable form_manager_availability_ =
       FormManagerAvailable::kNotSet;
+
+  std::unique_ptr<NavigationMetricRecorderDelegate> navigation_metric_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerMetricsRecorder);
 };

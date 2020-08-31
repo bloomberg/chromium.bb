@@ -12,8 +12,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
@@ -310,7 +310,8 @@ void BufferFeeder::OnPushBufferComplete(BufferStatus status) {
 
 }  // namespace
 
-MultizoneBackendTest::MultizoneBackendTest() {}
+MultizoneBackendTest::MultizoneBackendTest()
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
 MultizoneBackendTest::~MultizoneBackendTest() {}
 

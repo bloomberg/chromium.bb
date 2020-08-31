@@ -119,7 +119,7 @@ void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
   // code is the consumer of inputBuffer and the producer for outputBuffer.
 
   // Get input and output busses.
-  AudioBus* input_bus = Input(0).Bus();
+  scoped_refptr<AudioBus> input_bus = Input(0).Bus();
   AudioBus* output_bus = Output(0).Bus();
 
   // Get input and output buffers. We double-buffer both the input and output
@@ -204,7 +204,7 @@ void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
         PostCrossThreadTask(
             *task_runner_, FROM_HERE,
             CrossThreadBindOnce(&ScriptProcessorHandler::FireProcessEvent,
-                                WrapRefCounted(this), double_buffer_index_));
+                                AsWeakPtr(), double_buffer_index_));
       } else {
         // If this node is in the offline audio context, use the
         // waitable event to synchronize to the offline rendering thread.
@@ -215,7 +215,7 @@ void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
             *task_runner_, FROM_HERE,
             CrossThreadBindOnce(
                 &ScriptProcessorHandler::FireProcessEventForOfflineAudioContext,
-                WrapRefCounted(this), double_buffer_index_,
+                AsWeakPtr(), double_buffer_index_,
                 CrossThreadUnretained(waitable_event.get())));
 
         // Okay to block the offline audio rendering thread since it is

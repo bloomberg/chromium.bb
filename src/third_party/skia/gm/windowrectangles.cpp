@@ -33,13 +33,14 @@
 #include "src/gpu/GrFixedClip.h"
 #include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrPaint.h"
+#include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrReducedClip.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/GrStencilClip.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/GrUserStencilSettings.h"
-#include "src/gpu/effects/GrTextureDomain.h"
+#include "src/gpu/effects/generated/GrDeviceSpaceEffect.h"
 #include "tools/ToolUtils.h"
 
 #include <utility>
@@ -161,12 +162,6 @@ class MaskOnlyClipBase : public GrClip {
 private:
     bool quickContains(const SkRect&) const final { return false; }
     bool isRRect(const SkRect& rtBounds, SkRRect* rr, GrAA*) const final { return false; }
-    void getConservativeBounds(int width, int height, SkIRect* rect, bool* iior) const final {
-        rect->setWH(width, height);
-        if (iior) {
-            *iior = false;
-        }
-    }
 };
 
 /**
@@ -174,16 +169,23 @@ private:
  */
 class AlphaOnlyClip final : public MaskOnlyClipBase {
 public:
-    AlphaOnlyClip(sk_sp<GrTextureProxy> mask, int x, int y) : fMask(mask), fX(x), fY(y) {}
+    AlphaOnlyClip(GrSurfaceProxyView mask, int x, int y) : fMask(std::move(mask)), fX(x), fY(y) {}
 
 private:
-    bool apply(GrRecordingContext*, GrRenderTargetContext*, bool, bool, GrAppliedClip* out,
+    bool apply(GrRecordingContext* ctx, GrRenderTargetContext*, bool, bool, GrAppliedClip* out,
                SkRect* bounds) const override {
-        out->addCoverageFP(GrDeviceSpaceTextureDecalFragmentProcessor::Make(
-                fMask, SkIRect::MakeSize(fMask->dimensions()), {fX, fY}));
+        GrSamplerState samplerState(GrSamplerState::WrapMode::kClampToBorder,
+                                    GrSamplerState::Filter::kNearest);
+        auto m = SkMatrix::MakeTrans(-fX, -fY);
+        auto subset = SkRect::Make(fMask.dimensions());
+        auto domain = bounds->makeOffset(-fX, -fY).makeInset(0.5, 0.5);
+        auto fp = GrTextureEffect::MakeSubset(fMask, kPremul_SkAlphaType, m, samplerState, subset,
+                                              domain, *ctx->priv().caps());
+        fp = GrDeviceSpaceEffect::Make(std::move(fp));
+        out->addCoverageFP(std::move(fp));
         return true;
     }
-    sk_sp<GrTextureProxy> fMask;
+    GrSurfaceProxyView fMask;
     int fX;
     int fY;
 };
@@ -226,9 +228,9 @@ void WindowRectanglesMaskGM::visualizeAlphaMask(GrContext* ctx, GrRenderTargetCo
                                                 const GrReducedClip& reducedClip, GrPaint&& paint) {
     const int padRight = (kDeviceRect.right() - kCoverRect.right()) / 2;
     const int padBottom = (kDeviceRect.bottom() - kCoverRect.bottom()) / 2;
-    auto maskRTC(ctx->priv().makeDeferredRenderTargetContextWithFallback(
-            SkBackingFit::kExact, kCoverRect.width() + padRight, kCoverRect.height() + padBottom,
-            GrColorType::kAlpha_8, nullptr));
+    auto maskRTC = GrRenderTargetContext::MakeWithFallback(
+            ctx, GrColorType::kAlpha_8, nullptr, SkBackingFit::kExact,
+            {kCoverRect.width() + padRight, kCoverRect.height() + padBottom});
     if (!maskRTC) {
         return;
     }
@@ -250,7 +252,7 @@ void WindowRectanglesMaskGM::visualizeAlphaMask(GrContext* ctx, GrRenderTargetCo
     // Now visualize the alpha mask by drawing a rect over the area where it is defined. The regions
     // inside window rectangles or outside the scissor should still have the initial checkerboard
     // intact. (This verifies we didn't spend any time modifying those pixels in the mask.)
-    AlphaOnlyClip clip(maskRTC->asTextureProxyRef(), x, y);
+    AlphaOnlyClip clip(maskRTC->readSurfaceView(), x, y);
     rtc->drawRect(clip, std::move(paint), GrAA::kYes, SkMatrix::I(),
                   SkRect::Make(SkIRect::MakeXYWH(x, y, maskRTC->width(), maskRTC->height())));
 }
@@ -258,6 +260,12 @@ void WindowRectanglesMaskGM::visualizeAlphaMask(GrContext* ctx, GrRenderTargetCo
 void WindowRectanglesMaskGM::visualizeStencilMask(GrContext* ctx, GrRenderTargetContext* rtc,
                                                   const GrReducedClip& reducedClip,
                                                   GrPaint&& paint) {
+    if (ctx->abandoned()) {
+        // GrReducedClip assumes the context hasn't been abandoned, which is reasonable since it is
+        // only ever used if a draw op is made. Since this GM calls it directly, it has to be taken
+        // into account.
+        return;
+    }
     // Draw a checker pattern into the stencil buffer so we can visualize the regions left untouched
     // by the clip mask generation.
     this->stencilCheckerboard(rtc, false);

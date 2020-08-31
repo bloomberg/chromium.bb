@@ -2,27 +2,86 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {assertNotReached} from '../chrome_util.js';
+import {
+  Facing,
+  FpsRangeList,  // eslint-disable-line no-unused-vars
+  Resolution,
+  ResolutionList,  // eslint-disable-line no-unused-vars
+  VideoConfig,     // eslint-disable-line no-unused-vars
+} from '../type.js';
 
 /**
- * Namespace for the Camera app.
+ * Parse the entry data according to its type.
+ * @param {!cros.mojom.CameraMetadataEntry} entry Camera metadata entry
+ *     from which to parse the data according to its type.
+ * @return {!Array<number>} An array containing elements whose types correspond
+ *     to the format of input |tag|.
+ * @throws {Error} if entry type is not supported.
  */
-var cca = cca || {};
+export function parseMetadata(entry) {
+  const {buffer} = Uint8Array.from(entry.data);
+  switch (entry.type) {
+    case cros.mojom.EntryType.TYPE_BYTE:
+      return Array.from(new Uint8Array(buffer));
+    case cros.mojom.EntryType.TYPE_INT32:
+      return Array.from(new Int32Array(buffer));
+    case cros.mojom.EntryType.TYPE_FLOAT:
+      return Array.from(new Float32Array(buffer));
+    case cros.mojom.EntryType.TYPE_DOUBLE:
+      return Array.from(new Float64Array(buffer));
+    case cros.mojom.EntryType.TYPE_INT64:
+      return Array.from(new BigInt64Array(buffer), (bigIntVal) => {
+        const numVal = Number(bigIntVal);
+        if (!Number.isSafeInteger(numVal)) {
+          console.warn('The int64 value is not a safe integer');
+        }
+        return numVal;
+      });
+    case cros.mojom.EntryType.TYPE_RATIONAL: {
+      const arr = new Int32Array(buffer);
+      const values = [];
+      for (let i = 0; i < arr.length; i += 2) {
+        values.push(arr[i] / arr[i + 1]);
+      }
+      return values;
+    }
+    default:
+      throw new Error('Unsupported type: ' + entry.type);
+  }
+}
 
 /**
- * Namespace for mojo.
+ * Gets the data from Camera metadata by its tag.
+ * @param {!cros.mojom.CameraMetadata} metadata Camera metadata from which to
+ *     query the data.
+ * @param {!cros.mojom.CameraMetadataTag} tag Camera metadata tag to query for.
+ * @return {!Array<number>} An array containing elements whose types correspond
+ *     to the format of input |tag|. If nothing is found, returns an empty
+ *     array.
+ * @private
  */
-cca.mojo = cca.mojo || {};
+function getMetadataData(metadata, tag) {
+  for (let i = 0; i < metadata.entryCount; i++) {
+    const entry = metadata.entries[i];
+    if (entry.tag === tag) {
+      return parseMetadata(entry);
+    }
+  }
+  return [];
+}
 
 /**
- * import {Resolution} from '../type.js';
+ * The singleton instance of DeviceOperator. Initialized by the first
+ * invocation of getInstance().
+ * @type {?DeviceOperator}
  */
-var Resolution = Resolution || {};
+let instance = null;
 
 /**
  * Operates video capture device through CrOS Camera App Mojo interface.
  */
-cca.mojo.DeviceOperator = class {
+export class DeviceOperator {
   /**
    * @public
    */
@@ -57,7 +116,7 @@ cca.mojo.DeviceOperator = class {
     const {device, status} =
         await this.deviceProvider_.getCameraAppDevice(deviceId);
     if (status === cros.mojom.GetCameraAppDeviceStatus.ERROR_INVALID_ID) {
-      throw new Error('Invalid device id: ', deviceId);
+      throw new Error(`Invalid device id: ${deviceId}`);
     }
     if (device === null) {
       throw new Error('Unknown error');
@@ -81,7 +140,7 @@ cca.mojo.DeviceOperator = class {
     const device = await this.getDevice_(deviceId);
     const {cameraInfo} = await device.getCameraInfo();
     const staticMetadata = cameraInfo.staticCameraCharacteristics;
-    const streamConfigs = cca.mojo.getMetadataData_(
+    const streamConfigs = getMetadataData(
         staticMetadata,
         cros.mojom.CameraMetadataTag
             .ANDROID_SCALER_AVAILABLE_STREAM_CONFIGURATIONS);
@@ -121,7 +180,7 @@ cca.mojo.DeviceOperator = class {
     const device = await this.getDevice_(deviceId);
     const {cameraInfo} = await device.getCameraInfo();
     const staticMetadata = cameraInfo.staticCameraCharacteristics;
-    const minFrameDurationConfigs = cca.mojo.getMetadataData_(
+    const minFrameDurationConfigs = getMetadataData(
         staticMetadata,
         cros.mojom.CameraMetadataTag
             .ANDROID_SCALER_AVAILABLE_MIN_FRAME_DURATIONS);
@@ -150,13 +209,22 @@ cca.mojo.DeviceOperator = class {
    * Gets camera facing for given device.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
-   * @return {!Promise<!cros.mojom.CameraFacing>} Promise of device facing.
+   * @return {!Promise<!Facing>} Promise of device facing.
    * @throws {Error} Thrown when the device operation is not supported.
    */
   async getCameraFacing(deviceId) {
     const device = await this.getDevice_(deviceId);
-    const {cameraInfo} = await device.getCameraInfo();
-    return cameraInfo.facing;
+    const {cameraInfo: {facing}} = await device.getCameraInfo();
+    switch (facing) {
+      case cros.mojom.CameraFacing.CAMERA_FACING_BACK:
+        return Facing.ENVIRONMENT;
+      case cros.mojom.CameraFacing.CAMERA_FACING_FRONT:
+        return Facing.USER;
+      case cros.mojom.CameraFacing.CAMERA_FACING_EXTERNAL:
+        return Facing.EXTERNAL;
+      default:
+        assertNotReached(`Unexpected facing value: ${facing}`);
+    }
   }
 
   /**
@@ -174,7 +242,7 @@ cca.mojo.DeviceOperator = class {
     const device = await this.getDevice_(deviceId);
     const {cameraInfo} = await device.getCameraInfo();
     const staticMetadata = cameraInfo.staticCameraCharacteristics;
-    const availableFpsRanges = cca.mojo.getMetadataData_(
+    const availableFpsRanges = getMetadataData(
         staticMetadata,
         cros.mojom.CameraMetadataTag
             .ANDROID_CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
@@ -195,47 +263,46 @@ cca.mojo.DeviceOperator = class {
   }
 
   /**
-   * Sets the fps range for target device.
+   * Sets the stream configurations for target device.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
    * @param {MediaStreamConstraints} constraints The constraints including fps
    *     range and the resolution. If frame rate range negotiation is needed,
    *     the caller should either set exact field or set both min and max fields
    *     for frame rate property.
+   * @param {{stillCaptureResolution: (!Resolution|undefined)}=} optConfig
+   *     Optional configurations for streams.
    * @throws {Error} Thrown when the input contains invalid values or the device
    *     operation is not supported.
    */
-  async setFpsRange(deviceId, constraints) {
-    let /** number */ streamWidth = 0;
-    let /** number */ streamHeight = 0;
+  async setStreamConfig(deviceId, constraints, optConfig = {}) {
     let /** number */ minFrameRate = 0;
     let /** number */ maxFrameRate = 0;
 
-    if (constraints && constraints.video && constraints.video.frameRate) {
-      const frameRate = constraints.video.frameRate;
-      if (frameRate.exact) {
-        minFrameRate = frameRate.exact;
-        maxFrameRate = frameRate.exact;
-      } else if (frameRate.min && frameRate.max) {
-        minFrameRate = frameRate.min;
-        maxFrameRate = frameRate.max;
-      }
-      // TODO(wtlee): To set the fps range to the default value, we should
-      // remove the frameRate from constraints instead of using incomplete
-      // range.
-
+    if (constraints && constraints.video) {
       // We only support number type for width and height. If width or height
       // is other than a number (e.g. ConstrainLong, undefined, etc.), we should
       // throw an error.
       if (typeof constraints.video.width !== 'number') {
         throw new Error('width in constraints is expected to be a number');
       }
-      streamWidth = constraints.video.width;
-
       if (typeof constraints.video.height !== 'number') {
         throw new Error('height in constraints is expected to be a number');
       }
-      streamHeight = constraints.video.height;
+
+      if (constraints.video.frameRate) {
+        const frameRate = constraints.video.frameRate;
+        if (frameRate.exact) {
+          minFrameRate = frameRate.exact;
+          maxFrameRate = frameRate.exact;
+        } else if (frameRate.min && frameRate.max) {
+          minFrameRate = frameRate.min;
+          maxFrameRate = frameRate.max;
+        }
+        // TODO(wtlee): To set the fps range to the default value, we should
+        // remove the frameRate from constraints instead of using incomplete
+        // range.
+      }
     }
 
     const hasSpecifiedFrameRateRange = minFrameRate > 0 && maxFrameRate > 0;
@@ -248,12 +315,17 @@ cca.mojo.DeviceOperator = class {
     // We set the frame rate range to an invalid range (e.g. 0 fps) so that it
     // will fallback to use the default one.
     const device = await this.getDevice_(deviceId);
-    const {isSuccess} = await device.setFpsRange(
-        {'width': streamWidth, 'height': streamHeight},
-        {'start': minFrameRate, 'end': maxFrameRate});
 
+    const {isSuccess} =
+        await device.setFpsRange({start: minFrameRate, end: maxFrameRate});
     if (!isSuccess && hasSpecifiedFrameRateRange) {
       console.error('Failed to negotiate the frame rate range.');
+    }
+    if (optConfig.stillCaptureResolution !== undefined) {
+      await device.setStillCaptureResolution({
+        width: optConfig.stillCaptureResolution.width,
+        height: optConfig.stillCaptureResolution.height,
+      });
     }
   }
 
@@ -286,9 +358,8 @@ cca.mojo.DeviceOperator = class {
 
     const device = await this.getDevice_(deviceId);
     const {cameraInfo} = await device.getCameraInfo();
-    return cca.mojo
-               .getMetadataData_(
-                   cameraInfo.staticCameraCharacteristics, portraitModeTag)
+    return getMetadataData(
+               cameraInfo.staticCameraCharacteristics, portraitModeTag)
                .length > 0;
   }
 
@@ -380,7 +451,7 @@ cca.mojo.DeviceOperator = class {
   async setReprocessOption(deviceId, effect) {
     const device = await this.getDevice_(deviceId);
     const {status, blob} = await device.setReprocessOption(effect);
-    if (blob === null) {
+    if (blob === null || status !== 0) {
       throw new Error('Set reprocess failed: ' + status);
     }
     return blob;
@@ -389,16 +460,16 @@ cca.mojo.DeviceOperator = class {
   /**
    * Creates a new instance of DeviceOperator if it is not set. Returns the
    *     exist instance.
-   * @return {!Promise<?cca.mojo.DeviceOperator>} The singleton instance.
+   * @return {!Promise<?DeviceOperator>} The singleton instance.
    */
   static async getInstance() {
-    if (this.instance_ === null) {
-      this.instance_ = new cca.mojo.DeviceOperator();
+    if (instance === null) {
+      instance = new DeviceOperator();
     }
-    if (!await this.instance_.isSupported_) {
+    if (!await instance.isSupported_) {
       return null;
     }
-    return this.instance_;
+    return instance;
   }
 
   /**
@@ -408,71 +479,4 @@ cca.mojo.DeviceOperator = class {
   static async isSupported() {
     return await this.getInstance() !== null;
   }
-};
-
-/**
- * The singleton instance of DeviceOperator. Initialized by the first
- * invocation of getInstance().
- * @type {?cca.mojo.DeviceOperator}
- */
-cca.mojo.DeviceOperator.instance_ = null;
-
-/**
- * Gets the data from Camera metadata by its tag.
- * @param {!cros.mojom.CameraMetadata} metadata Camera metadata from which to
- *     query the data.
- * @param {!cros.mojom.CameraMetadataTag} tag Camera metadata tag to query for.
- * @return {!Array<number>} An array containing elements whose types correspond
- *     to the format of input |tag|. If nothing is found, returns an empty
- *     array.
- * @private
- */
-cca.mojo.getMetadataData_ = function(metadata, tag) {
-  for (let i = 0; i < metadata.entryCount; i++) {
-    const entry = metadata.entries[i];
-    if (entry.tag === tag) {
-      return cca.mojo.parseMetadataData(entry);
-    }
-  }
-  return [];
-};
-
-/**
- * Parse the entry data according to its type.
- * @param {!cros.mojom.CameraMetadataEntry} entry Camera metadata entry
- *     from which to parse the data according to its type.
- * @return {!Array<number>} An array containing elements whose types correspond
- *     to the format of input |tag|.
- * @throws {Error} if entry type is not supported.
- */
-cca.mojo.parseMetadataData = function(entry) {
-  const {buffer} = Uint8Array.from(entry.data);
-  switch (entry.type) {
-    case cros.mojom.EntryType.TYPE_BYTE:
-      return Array.from(new Uint8Array(buffer));
-    case cros.mojom.EntryType.TYPE_INT32:
-      return Array.from(new Int32Array(buffer));
-    case cros.mojom.EntryType.TYPE_FLOAT:
-      return Array.from(new Float32Array(buffer));
-    case cros.mojom.EntryType.TYPE_DOUBLE:
-      return Array.from(new Float64Array(buffer));
-    case cros.mojom.EntryType.TYPE_INT64:
-      return Array.from(new BigInt64Array(buffer), (bigIntVal) => {
-        const numVal = Number(bigIntVal);
-        if (!Number.isSafeInteger(numVal)) {
-          console.warn('The int64 value is not a safe integer');
-        }
-        return numVal;
-      });
-    case cros.mojom.EntryType.TYPE_RATIONAL: {
-      const arr = new Int32Array(buffer);
-      const values = [];
-      for (let i = 0; i < arr.length; i += 2) {
-        values.push(arr[i] / arr[i + 1]);
-      }
-      return values;
-    }
-    default:
-      throw new Error('Unsupported type: ' + entry.type);
-  }
-};
+}

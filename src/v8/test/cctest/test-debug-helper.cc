@@ -4,6 +4,7 @@
 
 #include "src/api/api-inl.h"
 #include "src/flags/flags.h"
+#include "src/heap/read-only-spaces.h"
 #include "src/heap/spaces.h"
 #include "test/cctest/cctest.h"
 #include "tools/debug_helper/debug-helper.h"
@@ -67,15 +68,22 @@ void CheckProp(const d::ObjectProperty& property, const char* expected_type,
   CHECK(*reinterpret_cast<TValue*>(property.address) == expected_value);
 }
 
-bool StartsWith(std::string full_string, std::string prefix) {
+bool StartsWith(const std::string& full_string, const std::string& prefix) {
   return full_string.substr(0, prefix.size()) == prefix;
+}
+
+bool Contains(const std::string& full_string, const std::string& substr) {
+  return full_string.find(substr) != std::string::npos;
 }
 
 void CheckStructProp(const d::StructProperty& property,
                      const char* expected_type, const char* expected_name,
-                     size_t expected_offset) {
+                     size_t expected_offset, uint8_t expected_num_bits = 0,
+                     uint8_t expected_shift_bits = 0) {
   CheckPropBase(property, expected_type, expected_name);
   CHECK_EQ(property.offset, expected_offset);
+  CHECK_EQ(property.num_bits, expected_num_bits);
+  CHECK_EQ(property.shift_bits, expected_shift_bits);
 }
 
 const d::ObjectProperty& FindProp(const d::ObjectPropertiesResult& props,
@@ -95,11 +103,27 @@ TValue ReadProp(const d::ObjectPropertiesResult& props, std::string name) {
   return *reinterpret_cast<TValue*>(prop.address);
 }
 
+// A simple implementation of ExternalStringResource that lets us control the
+// result of IsCacheable().
+class StringResource : public v8::String::ExternalStringResource {
+ public:
+  explicit StringResource(bool cacheable) : cacheable_(cacheable) {}
+  const uint16_t* data() const override {
+    return reinterpret_cast<const uint16_t*>(u"abcde");
+  }
+  size_t length() const override { return 5; }
+  bool IsCacheable() const override { return cacheable_; }
+
+ private:
+  bool cacheable_;
+};
+
 }  // namespace
 
 TEST(GetObjectProperties) {
   CcTest::InitializeVM();
   v8::Isolate* isolate = CcTest::isolate();
+  i::Isolate* i_isolate = reinterpret_cast<i::Isolate*>(isolate);
   v8::HandleScope scope(isolate);
   LocalContext context;
   // Claim we don't know anything about the heap layout.
@@ -155,14 +179,11 @@ TEST(GetObjectProperties) {
     // deterministic locations within the heap reservation.
     CHECK(COMPRESS_POINTERS_BOOL
               ? StartsWith(props->brief, "EmptyFixedArray")
-              : StartsWith(props->brief, "maybe EmptyFixedArray"));
+              : Contains(props->brief, "maybe EmptyFixedArray"));
 
     // Provide a heap first page so the API can be more sure.
-    heap_addresses.read_only_space_first_page =
-        reinterpret_cast<uintptr_t>(reinterpret_cast<i::Isolate*>(isolate)
-                                        ->heap()
-                                        ->read_only_space()
-                                        ->first_page());
+    heap_addresses.read_only_space_first_page = reinterpret_cast<uintptr_t>(
+        i_isolate->heap()->read_only_space()->first_page());
     props =
         d::GetObjectProperties(properties_or_hash, &ReadMemory, heap_addresses);
     CHECK(props->type_check_result ==
@@ -265,7 +286,7 @@ TEST(GetObjectProperties) {
     alphabet.substr(3,20) + alphabet.toUpperCase().substr(5,15) + "7")");
   o = v8::Utils::OpenHandle(*v);
   props = d::GetObjectProperties(o->ptr(), &ReadMemory, heap_addresses);
-  CHECK(StartsWith(props->brief, "\"defghijklmnopqrstuvwFGHIJKLMNOPQRST7\""));
+  CHECK(Contains(props->brief, "\"defghijklmnopqrstuvwFGHIJKLMNOPQRST7\""));
 
   // Cause a failure when reading the "second" pointer within the top-level
   // ConsString.
@@ -274,15 +295,27 @@ TEST(GetObjectProperties) {
     uintptr_t second_address = props->properties[4]->address;
     MemoryFailureRegion failure(second_address, second_address + 4);
     props = d::GetObjectProperties(o->ptr(), &ReadMemory, heap_addresses);
-    CHECK(
-        StartsWith(props->brief, "\"defghijklmnopqrstuvwFGHIJKLMNOPQRST...\""));
+    CHECK(Contains(props->brief, "\"defghijklmnopqrstuvwFGHIJKLMNOPQRST...\""));
   }
 
   // Build a very long string.
   v = CompileRun("'a'.repeat(1000)");
   o = v8::Utils::OpenHandle(*v);
   props = d::GetObjectProperties(o->ptr(), &ReadMemory, heap_addresses);
-  CHECK(std::string(props->brief).substr(79, 7) == std::string("aa...\" "));
+  CHECK(Contains(props->brief, "\"" + std::string(80, 'a') + "...\""));
+
+  // GetObjectProperties can read cacheable external strings.
+  auto external_string =
+      v8::String::NewExternalTwoByte(isolate, new StringResource(true));
+  o = v8::Utils::OpenHandle(*external_string.ToLocalChecked());
+  props = d::GetObjectProperties(o->ptr(), &ReadMemory, heap_addresses);
+  CHECK(Contains(props->brief, "\"abcde\""));
+  // GetObjectProperties cannot read uncacheable external strings.
+  external_string =
+      v8::String::NewExternalTwoByte(isolate, new StringResource(false));
+  o = v8::Utils::OpenHandle(*external_string.ToLocalChecked());
+  props = d::GetObjectProperties(o->ptr(), &ReadMemory, heap_addresses);
+  CHECK_EQ(std::string(props->brief).find("\""), std::string::npos);
 
   // Build a basic JS object and get its properties.
   v = CompileRun("({a: 1, b: 2})");
@@ -329,6 +362,35 @@ TEST(GetObjectProperties) {
                   "details", 1 * i::kTaggedSize);
   CheckStructProp(*descriptors.struct_fields[2], "v8::internal::Object",
                   "value", 2 * i::kTaggedSize);
+
+  // Build a basic JS function and get its properties. This will allow us to
+  // exercise bitfield functionality.
+  v = CompileRun("(function () {})");
+  o = v8::Utils::OpenHandle(*v);
+  props = d::GetObjectProperties(o->ptr(), &ReadMemory, heap_addresses);
+  props = d::GetObjectProperties(
+      ReadProp<i::Tagged_t>(*props, "shared_function_info"), &ReadMemory,
+      heap_addresses);
+  const d::ObjectProperty& flags = FindProp(*props, "flags");
+  CHECK_GE(flags.num_struct_fields, 3);
+  CheckStructProp(*flags.struct_fields[0], "FunctionKind", "function_kind", 0,
+                  5, 0);
+  CheckStructProp(*flags.struct_fields[1], "bool", "is_native", 0, 1, 5);
+  CheckStructProp(*flags.struct_fields[2], "bool", "is_strict", 0, 1, 6);
+
+  // Get data about a different bitfield struct which is contained within a smi.
+  Handle<i::JSFunction> function = Handle<i::JSFunction>::cast(o);
+  Handle<i::SharedFunctionInfo> shared(function->shared(), i_isolate);
+  Handle<i::DebugInfo> debug_info =
+      i_isolate->debug()->GetOrCreateDebugInfo(shared);
+  props =
+      d::GetObjectProperties(debug_info->ptr(), &ReadMemory, heap_addresses);
+  const d::ObjectProperty& debug_flags = FindProp(*props, "flags");
+  CHECK_GE(debug_flags.num_struct_fields, 5);
+  CheckStructProp(*debug_flags.struct_fields[0], "bool", "has_break_info", 0, 1,
+                  i::kSmiTagSize + i::kSmiShiftSize);
+  CheckStructProp(*debug_flags.struct_fields[4], "bool", "can_break_at_entry",
+                  0, 1, i::kSmiTagSize + i::kSmiShiftSize + 4);
 }
 
 TEST(ListObjectClasses) {

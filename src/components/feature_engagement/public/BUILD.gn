@@ -40,9 +40,7 @@ jumbo_source_set("unit_tests") {
 
   # IMPORTANT NOTE: When adding new tests, also remember to update the list of
   # tests in //components/feature_engagement/components_unittests.filter
-  sources = [
-    "configuration_unittest.cc",
-  ]
+  sources = [ "configuration_unittest.cc" ]
 
   deps = [
     ":public",
@@ -52,7 +50,7 @@ jumbo_source_set("unit_tests") {
 
 if (is_android) {
   android_library("public_java") {
-    java_files = [
+    sources = [
       "android/java/src/org/chromium/components/feature_engagement/EventConstants.java",
       "android/java/src/org/chromium/components/feature_engagement/FeatureConstants.java",
       "android/java/src/org/chromium/components/feature_engagement/Tracker.java",
@@ -69,8 +67,6 @@ if (is_android) {
   java_cpp_enum("public_java_enums_srcjar") {
     visibility = [ ":*" ]
 
-    sources = [
-      "tracker.h",
-    ]
+    sources = [ "tracker.h" ]
   }
 }

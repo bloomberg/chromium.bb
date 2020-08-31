@@ -29,6 +29,7 @@
 <translation id="1243314992276662751">Prześlij</translation>
 <translation id="1249250836236328755">Gatunek</translation>
 <translation id="1278813325885878377">Klawiatura węgierska QWERTY</translation>
+<translation id="1293556467332435079">Pliki</translation>
 <translation id="1297922636971898492">Dysk Google nie jest teraz dostępny. Gdy znów będzie można z niego korzystać, przesyłanie zostanie automatycznie wznowione.</translation>
 <translation id="1307931752636661898">Nie można wyświetlić plików Linuksa</translation>
 <translation id="1310751437842832374">Transliteracja (mausam → ନମସ୍ତେ)</translation>
@@ -80,6 +81,7 @@
 <translation id="1847880352285315359">Zapisano</translation>
 <translation id="1864756863218646478">Nie można znaleźć pliku.</translation>
 <translation id="1921986354447415460">Klawiatura turecka (wersja F)</translation>
+<translation id="1924372192547904021">Sformatowano: <ph name="DRIVE_NAME" /></translation>
 <translation id="1931134289871235022">Słowacki</translation>
 <translation id="1933345018156373194">Przenoszenie nie powiodło się z powodu nieoczekiwanego błędu: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Fiński</translation>
@@ -88,6 +90,7 @@
 <translation id="1947424002851288782">Klawiatura niemiecka</translation>
 <translation id="1972984168337863910">Rozwiń panele informacji zwrotnej o plikach</translation>
 <translation id="1984603991036629094">Armeńska klawiatura fonetyczna</translation>
+<translation id="1995337122023280937">Otwórz lokalizację pliku</translation>
 <translation id="2001796770603320721">Zarządzaj na Dysku</translation>
 <translation id="2009067268969781306">Sformatowanie dysku spowoduje usunięcie wszystkich zapisanych na nim danych. Nie można tego cofnąć.</translation>
 <translation id="2028997212275086731">Archiwum RAR</translation>
@@ -139,6 +142,7 @@
 <translation id="2638942478653899953">Nie można uzyskać dostępu do Dysku Google. <ph name="BEGIN_LINK" />Wyloguj się<ph name="END_LINK" /> i ponownie zaloguj.</translation>
 <translation id="2649120831653069427">Tęczanka</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Lokalizacja pliku</translation>
 <translation id="2672394958563893062">Wystąpił błąd. Kliknij, by odtworzyć od początku.</translation>
 <translation id="2676946222714718093">Odtwarzane na</translation>
 <translation id="2735698359135166290">Standardowa klawiatura rumuńska</translation>
@@ -163,6 +167,7 @@
 <translation id="2942290791863759244">Klawiatura niemiecka NEO 2</translation>
 <translation id="2943400156390503548">Prezentacje</translation>
 <translation id="2943503720238418293">Użyj krótszej nazwy</translation>
+<translation id="2949781154072577687">Formatuję: <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">Meduza</translation>
 <translation id="2963783323012015985">Klawiatura turecka</translation>
 <translation id="2966459079597787514">Klawiatura szwedzka</translation>
@@ -208,6 +213,7 @@
 <translation id="3495304270784461826">Błędy: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Transliteracja (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugalski</translation>
+<translation id="3524311639100184459">Uwaga: te pliki mają charakter tymczasowy i mogą zostać automatycznie usunięte w celu zwolnienia miejsca na dysku.  <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3549797760399244642">Wejdź na drive.google.com...</translation>
 <translation id="357479282490346887">Litewski</translation>
@@ -254,6 +260,7 @@
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">Odtwarzacze dźwięku</translation>
 <translation id="4002066346123236978">Tytuł</translation>
+<translation id="4065397611279318371">Aby otwierać pliki w aplikacji <ph name="APP_NAME" />, najpierw przenieś je do folderu <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
 <translation id="4070370845051020638">Metoda wprowadzania – kantoński</translation>
 <translation id="4072248638558688893">Klawiatura tamilska (fonetyczna)</translation>
 <translation id="4124935795427217608">Jednorożec</translation>
@@ -275,6 +282,7 @@
 <translation id="4336032328163998280">Kopiowanie nie powiodło się: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4372884569765913867">1 x 1</translation>
+<translation id="4394214039309501350">Link zewnętrzny</translation>
 <translation id="4425149324548788773">Mój dysk</translation>
 <translation id="4465830120256509958">Klawiatura brazylijska</translation>
 <translation id="4470564870223067757">Zestaw Hangul 2</translation>
@@ -322,6 +330,7 @@
 <translation id="4880520557730313061">Autokorekta</translation>
 <translation id="4881695831933465202">Otwórz</translation>
 <translation id="4886021172213954916">Klawiatura tamilska (maszyna do pisania)</translation>
+<translation id="4892969127351273348">Nie można otworzyć za pomocą aplikacji <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Wszystko gotowe do utworzenia kopii zapasowych: <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Poprawione</translation>
 <translation id="4935975195727477204">Kwiat gazanii</translation>
@@ -496,6 +505,7 @@
 <translation id="6806699711453372963">Zarządzaj udostępnianiem Linuksowi</translation>
 <translation id="6808193438228982088">Lis</translation>
 <translation id="6820687829547641339">Archiwum Tar po kompresji Gzip</translation>
+<translation id="6823166707458800069">Wszystkie pliki przechowywane w tym folderze są automatycznie zapisywane online.</translation>
 <translation id="6825883775269213504">Rosyjski</translation>
 <translation id="6827236167376090743">Ten film będzie odtwarzany bez końca.</translation>
 <translation id="6847101934483209767">Usunięto z zaznaczenia element <ph name="ENTRY_NAME" />.</translation>
@@ -505,6 +515,7 @@
 <translation id="6878261347041253038">Klawiatura dewanagari (fonetyczna)</translation>
 <translation id="6885780034956018177">Ślimak</translation>
 <translation id="6896758677409633944">Kopiuj</translation>
+<translation id="6898028766943174120">Więcej podfolderów…</translation>
 <translation id="691516599546977041">Nie można zapisać w folderze <ph name="FOLDER_NAME" />. Edytowane obrazy będą zapisywane w folderze Pobrane pliki.</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6918340160281024199">Workman (USA)</translation>
@@ -517,6 +528,7 @@
 <translation id="696203921837389374">Włącz synchronizację przy użyciu komórkowej transmisji danych.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6970230597523682626">Bułgarski</translation>
+<translation id="6973630695168034713">Foldery</translation>
 <translation id="6978611942794658017">To jest plik na komputery z Windows. Jest niezgodny z Twoim urządzeniem z Chrome OS. Poszukaj odpowiedniej aplikacji zastępczej w Chrome Web Store.</translation>
 <translation id="6979158407327259162">Dysk Google</translation>
 <translation id="6990081529015358884">Nie masz już miejsca</translation>
@@ -550,6 +562,7 @@
 <translation id="7417705661718309329">Mapa Google</translation>
 <translation id="7419631653042041064">Klawiatura katalońska</translation>
 <translation id="7434823369735508263">Klawiatura brytyjska (Dvorak)</translation>
+<translation id="7447678886297481665">Pliki w tym folderze są tylko do odczytu. Niektóre działania nie są obsługiwane.</translation>
 <translation id="7460898608667578234">Ukraiński</translation>
 <translation id="7474889694310679759">Klawiatura kanadyjska (angielski)</translation>
 <translation id="7489215562877293245">Znaleziono <ph name="FILE_COUNT" />
@@ -568,6 +581,7 @@
 <translation id="7649070708921625228">Pomoc</translation>
 <translation id="7654209398114106148">Przenoszę elementy (<ph name="NUMBER_OF_ITEMS" />)...</translation>
 <translation id="7658239707568436148">Anuluj</translation>
+<translation id="7695430100978772476">Nie udało się sformatować: <ph name="DRIVE_NAME" /></translation>
 <translation id="770015031906360009">Grecki</translation>
 <translation id="7706319470528945664">Klawiatura portugalska</translation>
 <translation id="7711920809702896782">Informacje o pliku graficznym</translation>
@@ -710,7 +724,7 @@
 <translation id="939736085109172342">Nowy folder</translation>
 <translation id="942954117721265519">Brak zdjęć w tym katalogu.</translation>
 <translation id="943972244133411984">Zmodyfikowany przez:</translation>
-<translation id="945522503751344254">Wyślij zgłoszenie</translation>
+<translation id="945522503751344254">Prześlij opinię</translation>
 <translation id="947144732524271678">Wybrano zakres <ph name="ENTRY_COUNT" /> elementów. Od: <ph name="FROM_ENTRY_NAME" /> do: <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">Istnieje już plik „<ph name="FILE_NAME" />”. Czy chcesz go zastąpić?</translation>

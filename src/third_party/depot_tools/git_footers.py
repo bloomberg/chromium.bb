@@ -76,7 +76,7 @@ def split_footers(message):
       maybe_footer_lines = []
       footer_lines.append(line)
     else:
-      # We only want to include malformed lines if they are preceeded by
+      # We only want to include malformed lines if they are preceded by
       # well-formed lines. So keep them in holding until we see a well-formed
       # line (case above).
       maybe_footer_lines.append(line)
@@ -130,6 +130,8 @@ def add_footer(message, key, value, after_keys=None, before_keys=None):
   """
   assert key == normalize_name(key), 'Use normalized key'
   new_footer = '%s: %s' % (key, value)
+  if not FOOTER_PATTERN.match(new_footer):
+    raise ValueError('Invalid footer %r' % new_footer)
 
   top_lines, footer_lines, _ = split_footers(message)
   if not footer_lines:

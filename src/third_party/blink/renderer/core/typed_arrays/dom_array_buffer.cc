@@ -44,11 +44,21 @@ bool DOMArrayBuffer::Transfer(v8::Isolate* isolate,
   DOMArrayBuffer* to_transfer = this;
   if (!IsDetachable(isolate)) {
     to_transfer =
-        DOMArrayBuffer::Create(Buffer()->Data(), Buffer()->ByteLengthAsSizeT());
+        DOMArrayBuffer::Create(Content()->Data(), ByteLengthAsSizeT());
   }
 
-  if (!to_transfer->Buffer()->Transfer(result))
+  if (IsDetached()) {
+    result.Detach();
     return false;
+  }
+
+  if (!Content()->Data()) {
+    // We transfer an empty ArrayBuffer, we can just allocate an empty content.
+    result = ArrayBufferContents(Content()->BackingStore());
+  } else {
+    Content()->Transfer(result);
+    Detach();
+  }
 
   Vector<v8::Local<v8::ArrayBuffer>, 4> buffer_handles;
   v8::HandleScope handle_scope(isolate);
@@ -60,17 +70,30 @@ bool DOMArrayBuffer::Transfer(v8::Isolate* isolate,
   return true;
 }
 
+DOMArrayBuffer* DOMArrayBuffer::CreateOrNull(size_t num_elements,
+                                             size_t element_byte_size) {
+  ArrayBufferContents contents(num_elements, element_byte_size,
+                               ArrayBufferContents::kNotShared,
+                               ArrayBufferContents::kZeroInitialize);
+  if (!contents.Data()) {
+    return nullptr;
+  }
+  return Create(std::move(contents));
+}
+
 DOMArrayBuffer* DOMArrayBuffer::CreateUninitializedOrNull(
     size_t num_elements,
     size_t element_byte_size) {
-  scoped_refptr<ArrayBuffer> buffer =
-      ArrayBuffer::CreateUninitializedOrNull(num_elements, element_byte_size);
-  if (!buffer)
+  ArrayBufferContents contents(num_elements, element_byte_size,
+                               ArrayBufferContents::kNotShared,
+                               ArrayBufferContents::kDontInitialize);
+  if (!contents.Data()) {
     return nullptr;
-  return Create(std::move(buffer));
+  }
+  return Create(std::move(contents));
 }
 
-v8::Local<v8::Object> DOMArrayBuffer::Wrap(
+v8::Local<v8::Value> DOMArrayBuffer::Wrap(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context) {
   DCHECK(!DOMDataStore::ContainsWrapper(this, isolate));
@@ -80,10 +103,9 @@ v8::Local<v8::Object> DOMArrayBuffer::Wrap(
   v8::Local<v8::ArrayBuffer> wrapper;
   {
     v8::Context::Scope context_scope(creation_context->CreationContext());
-    wrapper =
-        v8::ArrayBuffer::New(isolate, Buffer()->Content()->BackingStore());
+    wrapper = v8::ArrayBuffer::New(isolate, Content()->BackingStore());
 
-    wrapper->Externalize(Buffer()->Content()->BackingStore());
+    wrapper->Externalize(Content()->BackingStore());
   }
 
   return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);
@@ -96,14 +118,14 @@ DOMArrayBuffer* DOMArrayBuffer::Create(
                                ArrayBufferContents::kDontInitialize);
   uint8_t* data = static_cast<uint8_t*>(contents.Data());
   if (UNLIKELY(!data))
-    OOM_CRASH();
+    OOM_CRASH(shared_buffer->size());
 
   for (const auto& span : *shared_buffer) {
     memcpy(data, span.data(), span.size());
     data += span.size();
   }
 
-  return Create(ArrayBuffer::Create(contents));
+  return Create(std::move(contents));
 }
 
 DOMArrayBuffer* DOMArrayBuffer::Create(
@@ -116,14 +138,14 @@ DOMArrayBuffer* DOMArrayBuffer::Create(
                                ArrayBufferContents::kDontInitialize);
   uint8_t* ptr = static_cast<uint8_t*>(contents.Data());
   if (UNLIKELY(!ptr))
-    OOM_CRASH();
+    OOM_CRASH(size);
 
   for (const auto& span : data) {
     memcpy(ptr, span.data(), span.size());
     ptr += span.size();
   }
 
-  return Create(ArrayBuffer::Create(contents));
+  return Create(std::move(contents));
 }
 
 DOMArrayBuffer* DOMArrayBuffer::Slice(size_t begin, size_t end) const {

@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -49,6 +50,8 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   gfx::Size GetPreferredSize(const View* host) const override;
   gfx::Size GetMinimumSize(const View* host) const override;
   int GetPreferredHeightForWidth(const View* host, int width) const override;
+  SizeBounds GetAvailableSize(const View* host,
+                              const View* view) const override;
   void Layout(View* host) final;
 
  protected:
@@ -92,11 +95,20 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
     cached_layout_ = layout;
   }
 
+  // Returns the size available to the host view from its parent.
+  SizeBounds GetAvailableHostSize() const;
+
   // Returns true if the specified view is a child of the host view and is not
   // ignored. Views hidden by external code are only included if
   // |include_hidden| is set.
   bool IsChildIncludedInLayout(const View* child,
                                bool include_hidden = false) const;
+
+  // Returns whether the specified child view can be visible. To be able to be
+  // visible, |child| must be a child of the host view, and must have been
+  // visible when it was added or most recently had GetVisible(true) called on
+  // it by non-layout code.
+  bool CanBeVisible(const View* child) const;
 
   // Creates a proposed layout for the host view, including bounds and
   // visibility for all children currently included in the layout.
@@ -157,6 +169,8 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   }
 
  private:
+  friend class LayoutManagerBaseAvailableSizeTest;
+
   // Holds bookkeeping data used to determine inclusion of children in the
   // layout.
   struct ChildInfo {
@@ -196,6 +210,11 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   // Used to suspend invalidation while processing signals from the host view,
   // or while invalidating the host view without invalidating the layout.
   bool suppress_invalidate_ = false;
+
+  // Used during layout to determine if available size has changed for children;
+  // when it changes, children are always laid out regardless of visibility or
+  // whether their bounds have changed.
+  SizeBounds cached_available_size_;
 
   // Do some really simple caching because layout generation can cost as much
   // as 1ms or more for complex views.

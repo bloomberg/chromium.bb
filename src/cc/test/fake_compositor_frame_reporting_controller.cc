@@ -3,52 +3,74 @@
 // found in the LICENSE file.
 
 #include "cc/test/fake_compositor_frame_reporting_controller.h"
+
+#include <utility>
+#include <vector>
+
 #include "components/viz/common/frame_timing_details.h"
 
 namespace cc {
-FakeCompositorFrameReportingController::FakeCompositorFrameReportingController(
-    bool is_single_threaded)
-    : CompositorFrameReportingController(is_single_threaded) {}
+base::TimeDelta INTERVAL = base::TimeDelta::FromMilliseconds(16);
 
-void FakeCompositorFrameReportingController::WillBeginMainFrame() {
-  if (!reporters_[PipelineStage::kBeginImplFrame])
-    CompositorFrameReportingController::WillBeginImplFrame();
-  CompositorFrameReportingController::WillBeginMainFrame();
+FakeCompositorFrameReportingController::FakeCompositorFrameReportingController()
+    : CompositorFrameReportingController(/*should_report_metrics=*/true) {}
+
+void FakeCompositorFrameReportingController::WillBeginMainFrame(
+    const viz::BeginFrameArgs& args) {
+  if (!HasReporterAt(PipelineStage::kBeginImplFrame))
+    CompositorFrameReportingController::WillBeginImplFrame(args);
+  CompositorFrameReportingController::WillBeginMainFrame(args);
 }
 
-void FakeCompositorFrameReportingController::BeginMainFrameAborted() {
-  if (!reporters_[PipelineStage::kBeginMainFrame])
-    WillBeginMainFrame();
-  CompositorFrameReportingController::BeginMainFrameAborted();
+void FakeCompositorFrameReportingController::BeginMainFrameAborted(
+    const viz::BeginFrameId& id) {
+  if (!HasReporterAt(PipelineStage::kBeginMainFrame)) {
+    viz::BeginFrameArgs args = viz::BeginFrameArgs();
+    args.frame_id = id;
+    args.frame_time = Now();
+    args.interval = INTERVAL;
+    WillBeginMainFrame(args);
+  }
+  CompositorFrameReportingController::BeginMainFrameAborted(id);
 }
 
 void FakeCompositorFrameReportingController::WillCommit() {
-  if (!reporters_[PipelineStage::kBeginMainFrame])
-    WillBeginMainFrame();
+  if (!HasReporterAt(PipelineStage::kBeginMainFrame)) {
+    viz::BeginFrameArgs args = viz::BeginFrameArgs();
+    args.frame_id = viz::BeginFrameId();
+    args.frame_time = Now();
+    args.interval = INTERVAL;
+    WillBeginMainFrame(args);
+  }
   CompositorFrameReportingController::WillCommit();
 }
 
 void FakeCompositorFrameReportingController::DidCommit() {
-  if (!reporters_[PipelineStage::kBeginMainFrame])
+  if (!HasReporterAt(PipelineStage::kBeginMainFrame))
     WillCommit();
   CompositorFrameReportingController::DidCommit();
 }
 
 void FakeCompositorFrameReportingController::WillActivate() {
-  if (!reporters_[PipelineStage::kCommit])
+  if (!HasReporterAt(PipelineStage::kCommit))
     DidCommit();
   CompositorFrameReportingController::WillActivate();
 }
 
 void FakeCompositorFrameReportingController::DidActivate() {
-  if (!reporters_[PipelineStage::kCommit])
+  if (!HasReporterAt(PipelineStage::kCommit))
     WillActivate();
   CompositorFrameReportingController::DidActivate();
 }
 
 void FakeCompositorFrameReportingController::DidSubmitCompositorFrame(
-    uint32_t frame_token) {
-  CompositorFrameReportingController::DidSubmitCompositorFrame(frame_token);
+    uint32_t frame_token,
+    const viz::BeginFrameId& current_frame_id,
+    const viz::BeginFrameId& last_activated_frame_id,
+    EventMetricsSet events_metrics) {
+  CompositorFrameReportingController::DidSubmitCompositorFrame(
+      frame_token, current_frame_id, last_activated_frame_id,
+      std::move(events_metrics));
 
   viz::FrameTimingDetails details;
   details.presentation_feedback.timestamp = base::TimeTicks::Now();

@@ -71,14 +71,9 @@ class DeviceSyncImpl : public DeviceSyncBase,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetInstanceForTesting(Factory* test_factory);
-
-    virtual ~Factory();
-
     // Note: |timer| should be a newly-created base::OneShotTimer object; this
     // parameter only exists for testing via dependency injection.
-    virtual std::unique_ptr<DeviceSyncBase> BuildInstance(
+    static std::unique_ptr<DeviceSyncBase> Create(
         signin::IdentityManager* identity_manager,
         gcm::GCMDriver* gcm_driver,
         PrefService* profile_prefs,
@@ -86,6 +81,18 @@ class DeviceSyncImpl : public DeviceSyncBase,
         ClientAppMetadataProvider* client_app_metadata_provider,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         std::unique_ptr<base::OneShotTimer> timer);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<DeviceSyncBase> CreateInstance(
+        signin::IdentityManager* identity_manager,
+        gcm::GCMDriver* gcm_driver,
+        PrefService* profile_prefs,
+        const GcmDeviceInfoProvider* gcm_device_info_provider,
+        ClientAppMetadataProvider* client_app_metadata_provider,
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+        std::unique_ptr<base::OneShotTimer> timer) = 0;
 
    private:
     static Factory* test_factory_instance_;
@@ -200,7 +207,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
   void Shutdown() override;
 
   // signin::IdentityManager::Observer:
-  void OnPrimaryAccountSet(
+  void OnUnconsentedPrimaryAccountChanged(
       const CoreAccountInfo& primary_account_info) override;
 
   void ProcessPrimaryAccountInfo(const CoreAccountInfo& primary_account_info);
@@ -275,13 +282,13 @@ class DeviceSyncImpl : public DeviceSyncBase,
   // Only created and used if v2 DeviceSync is enabled; null otherwise.
   std::unique_ptr<CryptAuthDeviceRegistry> cryptauth_device_registry_;
   std::unique_ptr<CryptAuthV2DeviceManager> cryptauth_v2_device_manager_;
+  std::unique_ptr<CryptAuthDeviceNotifier> device_notifier_;
+  std::unique_ptr<CryptAuthFeatureStatusSetter> feature_status_setter_;
 
   std::unique_ptr<CryptAuthEnrollmentManager> cryptauth_enrollment_manager_;
   std::unique_ptr<CryptAuthDeviceManager> cryptauth_device_manager_;
   std::unique_ptr<RemoteDeviceProvider> remote_device_provider_;
   std::unique_ptr<SoftwareFeatureManager> software_feature_manager_;
-  std::unique_ptr<CryptAuthFeatureStatusSetter> feature_status_setter_;
-  std::unique_ptr<CryptAuthDeviceNotifier> device_notifier_;
   std::unique_ptr<CryptAuthDeviceActivityGetter>
       cryptauth_device_activity_getter_;
 

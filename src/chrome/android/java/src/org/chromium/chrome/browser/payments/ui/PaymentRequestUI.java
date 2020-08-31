@@ -14,10 +14,8 @@ import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Handler;
-import android.support.v4.view.ViewCompat;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
@@ -33,24 +31,29 @@ import android.widget.TextView;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
+import org.chromium.chrome.browser.autofill.prefeditor.EditorObserverForTest;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentUisShowStateReconciler;
 import org.chromium.chrome.browser.payments.ShippingStrings;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSeparator;
-import org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView;
-import org.chromium.chrome.browser.ui.widget.animation.FocusAnimator;
-import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
-import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
-import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
-import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.components.autofill.EditableOption;
+import org.chromium.components.browser_ui.widget.FadingEdgeScrollView;
+import org.chromium.components.browser_ui.widget.animation.FocusAnimator;
+import org.chromium.components.browser_ui.widget.animation.Interpolators;
+import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -64,8 +67,9 @@ import java.util.List;
 /**
  * The PaymentRequest UI.
  */
-public class PaymentRequestUI implements DialogInterface.OnDismissListener, View.OnClickListener,
-        PaymentRequestSection.SectionDelegate {
+public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.OnClickListener,
+                                         PaymentRequestSection.SectionDelegate,
+                                         PauseResumeWithNativeObserver {
     @IntDef({DataType.SHIPPING_ADDRESSES, DataType.SHIPPING_OPTIONS, DataType.CONTACT_DETAILS,
             DataType.PAYMENT_METHODS})
     @Retention(RetentionPolicy.SOURCE)
@@ -285,14 +289,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     /**
      * The top level container of this UI. When needing to call show() or hide(), use {@link
-     * PaymentUisShowStateReconciler}'s showPaymentRequestDialogWhenNoPaymentHandlerUi() and
+     * PaymentUisShowStateReconciler}'s showPaymentRequestDialogWhenNoBottomSheet() and
      * hidePaymentRequestDialog() instead.
      */
     private final DimmingDialog mDialog;
     private final EditorDialog mEditorDialog;
     private final EditorDialog mCardEditorDialog;
     private final ViewGroup mRequestView;
-    private final PaymentRequestUiErrorView mErrorView;
     private final Callback<PaymentInformation> mUpdateSectionsCallback;
     private final ShippingStrings mShippingStrings;
 
@@ -360,10 +363,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mAnimatorTranslation = mContext.getResources().getDimensionPixelSize(
                 R.dimen.payments_ui_translation);
 
-        mErrorView = (PaymentRequestUiErrorView) LayoutInflater.from(mContext).inflate(
-                R.layout.payment_request_error, null);
-        mErrorView.initialize(title, origin, securityLevel);
-
         mReadyToPayNotifierForTest = new NotifierForTest(new Runnable() {
             @Override
             public void run() {
@@ -406,12 +405,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
         prepareRequestView(mContext, title, origin, securityLevel, canAddCards);
 
-        mEditorDialog = new EditorDialog(activity, sEditorObserverForTest,
-                /*deleteRunnable =*/null);
+        mEditorDialog = new EditorDialog(activity, /*deleteRunnable =*/null);
         DimmingDialog.setVisibleStatusBarIconColor(mEditorDialog.getWindow());
 
-        mCardEditorDialog = new EditorDialog(activity, sEditorObserverForTest,
-                /*deleteRunnable =*/null);
+        mCardEditorDialog = new EditorDialog(activity, /*deleteRunnable =*/null);
         DimmingDialog.setVisibleStatusBarIconColor(mCardEditorDialog.getWindow());
 
         // Allow screenshots of the credit card number in Canary, Dev, and developer builds.
@@ -428,7 +425,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     public void show() {
         mDialog.addBottomSheetView(mRequestView);
-        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoPaymentHandlerUi();
+        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoBottomSheet();
         mClient.getDefaultPaymentInformation(new Callback<PaymentInformation>() {
             @Override
             public void onResult(PaymentInformation result) {
@@ -465,7 +462,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     public void dimBackground() {
         // Intentionally do not add the bottom sheet view to mDialog so that only the scrim part of
         // the dialog will be shown.
-        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoPaymentHandlerUi();
+        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoBottomSheet();
     }
 
     /**
@@ -596,32 +593,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * Does not call Client.onDismissed().
      *
      * Should not be called multiple times.
-     *
-     * @param shouldCloseImmediately If true, this function will immediately dismiss the dialog
-     *        without describing the error.
-     * @param callback The callback to notify of finished animations.
      */
-    public void close(boolean shouldCloseImmediately, final Runnable callback) {
+    public void close() {
         mIsClientClosing = true;
 
-        Runnable dismissRunnable = new Runnable() {
-            @Override
-            public void run() {
-                dismissDialog(false);
-                if (callback != null) callback.run();
-            }
-        };
-
-        if (shouldCloseImmediately) {
-            // The shouldCloseImmediately boolean is true when the merchant calls
-            // instrumentResponse.complete("success") or instrumentResponse.complete("")
-            // in JavaScript.
-            dismissRunnable.run();
-        } else {
-            // Show the error dialog.
-            mDialog.showOverlay(mErrorView);
-            mErrorView.setDismissRunnable(dismissRunnable);
-        }
+        dismissDialog(false);
 
         if (sPaymentRequestObserverForTest != null) {
             sPaymentRequestObserverForTest.onPaymentRequestResultReady(this);
@@ -646,7 +622,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     public void setTitleBitmap(Bitmap bitmap) {
         ((PaymentRequestHeader) mRequestView.findViewById(R.id.header)).setTitleBitmap(bitmap);
-        mErrorView.setBitmap(bitmap);
     }
 
     /**
@@ -905,6 +880,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     /**
      * Called when user clicks anything in the dialog.
      */
+    // View.OnClickListener implementation.
     @Override
     public void onClick(View v) {
         if (!isAcceptingCloseButton()) return;
@@ -982,13 +958,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         assert mIsProcessingPayClicked;
         mIsProcessingPayClicked = false;
         changeSpinnerVisibility(false);
-        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoPaymentHandlerUi();
+        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoBottomSheet();
         updatePayButtonEnabled();
     }
 
     /**
-     *  Called to show the processing message after instrument details have been loaded
-     *  in the case the payment request UI has been skipped.
+     *  Called to show the processing message after payment details have been loaded in the case the
+     *  payment request UI has been skipped.
      */
     public void showProcessingMessageAfterUiSkip() {
         // Button was clicked before but not marked as clicked because we skipped the UI.
@@ -1004,7 +980,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         assert mIsProcessingPayClicked;
 
         changeSpinnerVisibility(true);
-        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoPaymentHandlerUi();
+        mPaymentUisShowStateReconciler.showPaymentRequestDialogWhenNoBottomSheet();
     }
 
     private void changeSpinnerVisibility(boolean showSpinner) {
@@ -1050,6 +1026,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 && mPaymentMethodSectionInformation != null
                 && mPaymentMethodSectionInformation.getSelectedItem() != null
                 && !mIsClientCheckingSelection && !mIsEditingPaymentItem && !mIsClosing);
+
+        PaymentApp selectedApp = mPaymentMethodSectionInformation == null
+                ? null
+                : (PaymentApp) mPaymentMethodSectionInformation.getSelectedItem();
+        mPayButton.setText(selectedApp != null && !selectedApp.isAutofillInstrument()
+                        ? R.string.payments_continue_button
+                        : R.string.payments_pay_button);
         mReadyToPayNotifierForTest.run();
     }
 
@@ -1135,11 +1118,17 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         String message;
         if (!mShowDataSource) {
             message = mContext.getString(R.string.payments_card_and_address_settings);
-        } else if (ChromeSigninController.get().isSignedIn()) {
-            message = mContext.getString(R.string.payments_card_and_address_settings_signed_in,
-                    ChromeSigninController.get().getSignedInAccountName());
         } else {
-            message = mContext.getString(R.string.payments_card_and_address_settings_signed_out);
+            CoreAccountInfo coreAccountInfo =
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                            ConsentLevel.SYNC);
+            if (coreAccountInfo != null) {
+                message = mContext.getString(R.string.payments_card_and_address_settings_signed_in,
+                        coreAccountInfo.getEmail());
+            } else {
+                message =
+                        mContext.getString(R.string.payments_card_and_address_settings_signed_out);
+            }
         }
 
         NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan(
@@ -1150,7 +1139,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         TextView view = new TextViewWithClickableSpans(mContext);
         view.setText(spannableMessage);
         view.setMovementMethod(LinkMovementMethod.getInstance());
-        ApiCompatibilityUtils.setTextAppearance(view, R.style.TextAppearance_BlackBody);
+        ApiCompatibilityUtils.setTextAppearance(view, R.style.TextAppearance_TextMedium_Secondary);
 
         // Add paddings instead of margin to let getMeasuredHeight return correct value for section
         // resize animation.
@@ -1218,8 +1207,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      *      window.</li>
      * </ul>
      */
+    // DimmingDialog.OnDismissListener implementation.
     @Override
-    public void onDismiss(DialogInterface dialog) {
+    public void onDismiss() {
         mIsClosing = true;
         if (mEditorDialog.isShowing()) mEditorDialog.dismiss();
         if (mCardEditorDialog.isShowing()) mCardEditorDialog.dismiss();
@@ -1385,6 +1375,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     @VisibleForTesting
     public static void setEditorObserverForTest(EditorObserverForTest editorObserverForTest) {
         sEditorObserverForTest = editorObserverForTest;
+        EditorDialog.setEditorObserverForTest(sEditorObserverForTest);
     }
 
     @VisibleForTesting
@@ -1442,8 +1433,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     /**
      * Set the visibility state of the dialog. Use {@link PaymentUisShowStateReconciler}'s
-     * showPaymentRequestDialogWhenNoPaymentHandlerUi() and hidePaymentRequestDialog() instead of
-     * calling this method directly.
+     * showPaymentRequestDialogWhenNoBottomSheet() and hidePaymentRequestDialog() instead of calling
+     * this method directly.
      * @param visible True to show the dialog, false to hide the dialog.
      */
     public void setVisible(boolean visible) {
@@ -1453,4 +1444,18 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mDialog.hide();
         }
     }
+
+    // Implement PauseResumeWithNativeObserver:
+    @Override
+    public void onResumeWithNative() {
+        // When users come back from an external activity (e.g., app-picker/webauthn), the PR UI
+        // somehow shows up even though it's set to GONE (crbug.com/1030416 and
+        // crbug.com/1051786). Here we use a workaround to fix it - refresh the dialog window
+        // from time to time to force the visual state to respect its visibility attribute.
+        mDialog.refresh();
+    }
+
+    // Implement PauseResumeWithNativeObserver:
+    @Override
+    public void onPauseWithNative() {}
 }

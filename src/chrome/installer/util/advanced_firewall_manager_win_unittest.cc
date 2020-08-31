@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/process_info.h"
@@ -46,8 +47,8 @@ class AdvancedFirewallManagerTest : public ::testing::Test {
     for (size_t i = 0; i < rules.size(); ++i) {
       base::win::ScopedBstr name;
       EXPECT_TRUE(SUCCEEDED(rules[i]->get_Name(name.Receive())));
-      EXPECT_TRUE(name);
-      rule_names->push_back(base::string16(name));
+      EXPECT_TRUE(name.Get());
+      rule_names->push_back(base::string16(name.Get()));
     }
   }
 

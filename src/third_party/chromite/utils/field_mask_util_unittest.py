@@ -7,10 +7,15 @@
 
 from __future__ import print_function
 
+import sys
+
 from google.protobuf import field_mask_pb2
 
 from chromite.lib import cros_test_lib
 from chromite.utils import field_mask_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class CreateFilteredDictTest(cros_test_lib.TestCase):

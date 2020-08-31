@@ -115,8 +115,7 @@ PaintImage BitmapImage::PaintImageForTesting() {
 
 PaintImage BitmapImage::CreatePaintImage() {
   sk_sp<PaintImageGenerator> generator =
-      decoder_ ? decoder_->CreateGenerator(PaintImage::kDefaultFrameIndex)
-               : nullptr;
+      decoder_ ? decoder_->CreateGenerator() : nullptr;
   if (!generator)
     return PaintImage();
 
@@ -155,6 +154,11 @@ IntSize BitmapImage::Size() const {
 IntSize BitmapImage::SizeRespectingOrientation() const {
   UpdateSize();
   return size_respecting_orientation_;
+}
+
+bool BitmapImage::HasDefaultOrientation() const {
+  ImageOrientation orientation = CurrentFrameOrientation();
+  return orientation == kDefaultImageOrientation;
 }
 
 bool BitmapImage::GetHotSpot(IntPoint& hot_spot) const {
@@ -332,6 +336,10 @@ bool BitmapImage::IsSizeAvailable() {
     if (decoder_->FilenameExtension() == "jpg") {
       BitmapImageMetrics::CountImageOrientation(
           decoder_->OrientationAtIndex(0).Orientation());
+
+      IntSize correctedSize = decoder_->DensityCorrectedSizeAtIndex(0);
+      BitmapImageMetrics::CountImageDensityCorrection(
+        !correctedSize.IsEmpty() && correctedSize != decoder_->Size());
     }
   }
 
@@ -339,7 +347,8 @@ bool BitmapImage::IsSizeAvailable() {
 }
 
 PaintImage BitmapImage::PaintImageForCurrentFrame() {
-  if (cached_frame_)
+  auto alpha_type = decoder_ ? decoder_->AlphaType() : kUnknown_SkAlphaType;
+  if (cached_frame_ && cached_frame_.GetAlphaType() == alpha_type)
     return cached_frame_;
 
   cached_frame_ = CreatePaintImage();
@@ -376,20 +385,7 @@ scoped_refptr<Image> BitmapImage::ImageForDefaultFrame() {
 }
 
 bool BitmapImage::CurrentFrameKnownToBeOpaque() {
-  // If the image is animated, it is being animated by the compositor and we
-  // don't know what the current frame is.
-  // TODO(khushalsagar): We could say the image is opaque if none of the frames
-  // have alpha.
-  if (MaybeAnimated())
-    return false;
-
-  // We ask the decoder whether the image has alpha because in some cases the
-  // the correct value is known after decoding. The DeferredImageDecoder caches
-  // the accurate value from the decoded result.
-  const bool frame_has_alpha =
-      decoder_ ? decoder_->FrameHasAlphaAtIndex(PaintImage::kDefaultFrameIndex)
-               : true;
-  return !frame_has_alpha;
+  return decoder_ ? decoder_->AlphaType() == kOpaque_SkAlphaType : false;
 }
 
 bool BitmapImage::CurrentFrameIsComplete() {

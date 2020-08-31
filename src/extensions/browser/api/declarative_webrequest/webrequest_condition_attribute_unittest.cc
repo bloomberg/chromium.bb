@@ -72,7 +72,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   std::string error;
   base::ListValue resource_types;
   // The 'sub_frame' value is chosen arbitrarily, so as the corresponding
-  // content::ResourceType is not 0, the default value.
+  // blink::mojom::ResourceType is not 0, the default value.
   resource_types.AppendString("sub_frame");
 
   scoped_refptr<const WebRequestConditionAttribute> attribute =
@@ -83,14 +83,14 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   EXPECT_EQ(std::string(keys::kResourceTypeKey), attribute->GetName());
 
   WebRequestInfoInitParams ok_params;
-  ok_params.type = content::ResourceType::kSubFrame;
+  ok_params.type = blink::mojom::ResourceType::kSubFrame;
   ok_params.web_request_type = WebRequestResourceType::SUB_FRAME;
   WebRequestInfo request_ok_info(std::move(ok_params));
   EXPECT_TRUE(attribute->IsFulfilled(
       WebRequestData(&request_ok_info, ON_BEFORE_REQUEST)));
 
   WebRequestInfoInitParams fail_params;
-  ok_params.type = content::ResourceType::kMainFrame;
+  ok_params.type = blink::mojom::ResourceType::kMainFrame;
   ok_params.web_request_type = WebRequestResourceType::MAIN_FRAME;
   WebRequestInfo request_fail_info(std::move(fail_params));
   EXPECT_FALSE(attribute->IsFulfilled(
@@ -172,7 +172,6 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
   EXPECT_EQ(std::string(keys::kThirdPartyKey),
             first_party_attribute->GetName());
 
-  const GURL url_empty;
   const GURL url_a("http://a.com");
   const GURL url_b("http://b.com");
 
@@ -182,7 +181,7 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
     const RequestStage stage = static_cast<RequestStage>(i);
     WebRequestInfoInitParams empty_params;
     empty_params.url = url_a;
-    empty_params.site_for_cookies = url_empty;
+    empty_params.site_for_cookies = net::SiteForCookies();
     WebRequestInfo request_info1(std::move(empty_params));
     EXPECT_TRUE(third_party_attribute->IsFulfilled(
         WebRequestData(&request_info1, stage)));
@@ -191,7 +190,7 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
 
     WebRequestInfoInitParams b_params;
     b_params.url = url_a;
-    b_params.site_for_cookies = url_b;
+    b_params.site_for_cookies = net::SiteForCookies::FromUrl(url_b);
     WebRequestInfo request_info2(std::move(b_params));
     EXPECT_TRUE(third_party_attribute->IsFulfilled(
         WebRequestData(&request_info2, stage)));
@@ -200,7 +199,7 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
 
     WebRequestInfoInitParams a_params;
     a_params.url = url_a;
-    a_params.site_for_cookies = url_a;
+    a_params.site_for_cookies = net::SiteForCookies::FromUrl(url_a);
     WebRequestInfo request_info3(std::move(a_params));
     EXPECT_FALSE(third_party_attribute->IsFulfilled(
         WebRequestData(&request_info3, stage)));

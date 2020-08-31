@@ -24,7 +24,7 @@ const char UpdaterState::kIsEnterpriseManaged[] = "domainjoined";
 
 UpdaterState::UpdaterState(bool is_machine) : is_machine_(is_machine) {}
 
-UpdaterState::~UpdaterState() {}
+UpdaterState::~UpdaterState() = default;
 
 std::unique_ptr<UpdaterState::Attributes> UpdaterState::GetState(
     bool is_machine) {
@@ -84,13 +84,13 @@ UpdaterState::Attributes UpdaterState::BuildAttributes() const {
 
 std::string UpdaterState::NormalizeTimeDelta(const base::TimeDelta& delta) {
   const base::TimeDelta two_weeks = base::TimeDelta::FromDays(14);
-  const base::TimeDelta two_months = base::TimeDelta::FromDays(60);
+  const base::TimeDelta two_months = base::TimeDelta::FromDays(56);
 
   std::string val;  // Contains the value to return in hours.
   if (delta <= two_weeks) {
     val = "0";
   } else if (two_weeks < delta && delta <= two_months) {
-    val = "408";  // 2 weeks in hours.
+    val = "336";  // 2 weeks in hours.
   } else {
     val = "1344";  // 2*28 days in hours.
   }

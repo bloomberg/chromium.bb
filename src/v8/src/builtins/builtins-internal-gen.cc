@@ -7,7 +7,8 @@
 #include "src/builtins/builtins.h"
 #include "src/codegen/code-stub-assembler.h"
 #include "src/codegen/macro-assembler.h"
-#include "src/heap/heap-inl.h"  // crbug.com/v8/8499
+#include "src/execution/frame-constants.h"
+#include "src/heap/memory-chunk.h"
 #include "src/ic/accessor-assembler.h"
 #include "src/ic/keyed-store-generic.h"
 #include "src/logging/counters.h"
@@ -42,7 +43,7 @@ TF_BUILTIN(CopyFastSmiOrObjectElements, CodeStubAssembler) {
 
 TF_BUILTIN(GrowFastDoubleElements, CodeStubAssembler) {
   TNode<JSObject> object = CAST(Parameter(Descriptor::kObject));
-  TNode<Number> key = CAST(Parameter(Descriptor::kKey));
+  TNode<Smi> key = CAST(Parameter(Descriptor::kKey));
 
   Label runtime(this, Label::kDeferred);
   TNode<FixedArrayBase> elements = LoadElements(object);
@@ -57,7 +58,7 @@ TF_BUILTIN(GrowFastDoubleElements, CodeStubAssembler) {
 
 TF_BUILTIN(GrowFastSmiOrObjectElements, CodeStubAssembler) {
   TNode<JSObject> object = CAST(Parameter(Descriptor::kObject));
-  TNode<Number> key = CAST(Parameter(Descriptor::kKey));
+  TNode<Smi> key = CAST(Parameter(Descriptor::kKey));
 
   Label runtime(this, Label::kDeferred);
   TNode<FixedArrayBase> elements = LoadElements(object);
@@ -266,11 +267,11 @@ class RecordWriteCodeStubAssembler : public CodeStubAssembler {
     }
   }
 
-  TNode<BoolT> ShouldSkipFPRegs(SloppyTNode<Smi> mode) {
+  TNode<BoolT> ShouldSkipFPRegs(TNode<Smi> mode) {
     return TaggedEqual(mode, SmiConstant(kDontSaveFPRegs));
   }
 
-  TNode<BoolT> ShouldEmitRememberSet(SloppyTNode<Smi> remembered_set) {
+  TNode<BoolT> ShouldEmitRememberSet(TNode<Smi> remembered_set) {
     return TaggedEqual(remembered_set, SmiConstant(EMIT_REMEMBERED_SET));
   }
 
@@ -540,8 +541,7 @@ class DeletePropertyBaseAssembler : public AccessorAssembler {
 
     BIND(&dictionary_found);
     TNode<IntPtrT> key_index = var_name_index.value();
-    TNode<Uint32T> details =
-        LoadDetailsByKeyIndex<NameDictionary>(properties, key_index);
+    TNode<Uint32T> details = LoadDetailsByKeyIndex(properties, key_index);
     GotoIf(IsSetWord32(details, PropertyDetails::kAttributesDontDeleteMask),
            dont_delete);
     // Overwrite the entry itself (see NameDictionary::SetEntry).
@@ -767,7 +767,7 @@ TF_BUILTIN(SetDataProperties, SetOrCopyDataPropertiesAssembler) {
 }
 
 TF_BUILTIN(ForInEnumerate, CodeStubAssembler) {
-  TNode<HeapObject> receiver = CAST(Parameter(Descriptor::kReceiver));
+  TNode<JSReceiver> receiver = CAST(Parameter(Descriptor::kReceiver));
   TNode<Context> context = CAST(Parameter(Descriptor::kContext));
 
   Label if_empty(this), if_runtime(this, Label::kDeferred);
@@ -1002,7 +1002,7 @@ TF_BUILTIN(GetProperty, CodeStubAssembler) {
           TNode<Name> unique_name, Label* next_holder, Label* if_bailout) {
         TVARIABLE(Object, var_value);
         Label if_found(this);
-        TryGetOwnProperty(context, receiver, holder, holder_map,
+        TryGetOwnProperty(context, receiver, CAST(holder), holder_map,
                           holder_instance_type, unique_name, &if_found,
                           &var_value, next_holder, if_bailout);
         BIND(&if_found);
@@ -1057,7 +1057,7 @@ TF_BUILTIN(GetPropertyWithReceiver, CodeStubAssembler) {
           TNode<Name> unique_name, Label* next_holder, Label* if_bailout) {
         TVARIABLE(Object, var_value);
         Label if_found(this);
-        TryGetOwnProperty(context, receiver, holder, holder_map,
+        TryGetOwnProperty(context, receiver, CAST(holder), holder_map,
                           holder_instance_type, unique_name, &if_found,
                           &var_value, next_holder, if_bailout);
         BIND(&if_found);

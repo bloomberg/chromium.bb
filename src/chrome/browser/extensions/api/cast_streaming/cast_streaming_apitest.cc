@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/common/switches.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
@@ -131,11 +132,11 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
   void WaitForExpectedTonesAndColors() {
     base::RunLoop run_loop;
     cast_env()->PostTask(
-        media::cast::CastEnvironment::MAIN,
-        FROM_HERE,
-        base::Bind(&TestPatternReceiver::NotifyOnceObservedAllTonesAndColors,
-                   base::Unretained(this),
-                   media::BindToCurrentLoop(run_loop.QuitClosure())));
+        media::cast::CastEnvironment::MAIN, FROM_HERE,
+        base::BindOnce(
+            &TestPatternReceiver::NotifyOnceObservedAllTonesAndColors,
+            base::Unretained(this),
+            media::BindToCurrentLoop(run_loop.QuitClosure())));
     run_loop.Run();
   }
 

@@ -47,7 +47,7 @@ void HTMLBRElement::CollectStyleForPresentationAttribute(
     // <br clear> and <br clear=""> are just treated like <br> by Gecko, Mac IE,
     // etc. -dwh
     if (!value.IsEmpty()) {
-      if (DeprecatedEqualIgnoringCase(value, "all")) {
+      if (EqualIgnoringASCIICase(value, "all")) {
         AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kClear,
                                                 CSSValueID::kBoth);
       } else {
@@ -62,9 +62,9 @@ void HTMLBRElement::CollectStyleForPresentationAttribute(
 
 LayoutObject* HTMLBRElement::CreateLayoutObject(const ComputedStyle& style,
                                                 LegacyLayout legacy) {
-  if (style.HasContent())
-    return LayoutObject::CreateObject(this, style, legacy);
-  return new LayoutBR(this);
+  if (style.ContentBehavesAsNormal())
+    return new LayoutBR(this);
+  return LayoutObject::CreateObject(this, style, legacy);
 }
 
 }  // namespace blink

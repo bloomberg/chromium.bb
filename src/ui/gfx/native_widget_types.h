@@ -46,8 +46,10 @@ class Window;
 }
 namespace ui {
 class Cursor;
-enum class CursorType;
 class Event;
+namespace mojom {
+enum class CursorType;
+}
 }  // namespace ui
 
 #endif  // defined(USE_AURA)
@@ -102,7 +104,7 @@ class ViewAndroid;
 #endif
 class SkBitmap;
 
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 extern "C" {
 struct _AtkObject;
 typedef struct _AtkObject AtkObject;
@@ -203,20 +205,20 @@ typedef id NativeViewAccessible;
 #elif defined(OS_MACOSX)
 typedef NSFont* NativeFont;
 typedef id NativeViewAccessible;
-#else  // Android, Linux, Chrome OS, etc.
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Linux doesn't have a native font type.
-#if defined(USE_X11)
 typedef AtkObject* NativeViewAccessible;
 #else
+// Android, Chrome OS, etc.
 typedef struct _UnimplementedNativeViewAccessible
     UnimplementedNativeViewAccessible;
 typedef UnimplementedNativeViewAccessible* NativeViewAccessible;
 #endif
-#endif
 
 // A constant value to indicate that gfx::NativeCursor refers to no cursor.
 #if defined(USE_AURA)
-const ui::CursorType kNullCursor = static_cast<ui::CursorType>(-1);
+const ui::mojom::CursorType kNullCursor =
+    static_cast<ui::mojom::CursorType>(-1);
 #else
 const gfx::NativeCursor kNullCursor = static_cast<gfx::NativeCursor>(NULL);
 #endif

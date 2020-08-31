@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/nacl/common/nacl_process_type.h"
@@ -155,7 +156,7 @@ void MemoryDetails::StartFetch() {
 
 MemoryDetails::~MemoryDetails() {}
 
-std::string MemoryDetails::ToLogString() {
+std::string MemoryDetails::ToLogString(bool include_tab_title) {
   std::string log;
   log.reserve(4096);
   ProcessMemoryInformationList processes = ChromeBrowser()->processes;
@@ -165,7 +166,10 @@ std::string MemoryDetails::ToLogString() {
   for (auto iter1 = processes.rbegin(); iter1 != processes.rend(); ++iter1) {
     log += ProcessMemoryInformation::GetFullTypeNameInEnglish(
             iter1->process_type, iter1->renderer_type);
-    if (!iter1->titles.empty()) {
+    // The title of a renderer may contain PII.
+    if ((iter1->process_type != content::PROCESS_TYPE_RENDERER ||
+         include_tab_title) &&
+        !iter1->titles.empty()) {
       log += " [";
       for (std::vector<base::string16>::const_iterator iter2 =
                iter1->titles.begin();
@@ -209,9 +213,9 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
   }
 
   // Now go do expensive memory lookups in a thread pool.
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&MemoryDetails::CollectProcessData, this, child_info));
 }
@@ -356,8 +360,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestPrivateMemoryFootprint(
           base::kNullProcessId,
-          base::AdaptCallbackForRepeating(
-              base::BindOnce(&MemoryDetails::DidReceiveMemoryDump, this)));
+          base::BindOnce(&MemoryDetails::DidReceiveMemoryDump, this));
 }
 
 void MemoryDetails::DidReceiveMemoryDump(

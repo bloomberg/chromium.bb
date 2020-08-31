@@ -10,8 +10,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/base_jni_headers/BundleUtils_jni.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 
 // These symbols are added by the lld linker when creating a partitioned shared
 // library. The symbols live in the base library, and are used to properly load
@@ -63,7 +64,8 @@ std::string BundleUtils::ResolveLibraryPath(const std::string& library_name) {
 
 // static
 bool BundleUtils::IsBundle() {
-  return Java_BundleUtils_isBundle(base::android::AttachCurrentThread());
+  return Java_BundleUtils_isBundleForNative(
+      base::android::AttachCurrentThread());
 }
 
 // static

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Flags: --harmony-intl-displaynames
-
 let displayNames = new Intl.DisplayNames();
 // The default style is 'long'
 assertEquals('long', displayNames.resolvedOptions().style);
@@ -15,8 +13,7 @@ assertEquals('language', displayNames.resolvedOptions().type);
 assertEquals('code', displayNames.resolvedOptions().fallback);
 
 const styles = ["long", "short", "narrow"];
-const types = ["language", "region", "script", "currency", "weekday", "month",
-      "quarter", "dayPeriod", "dateTimeField"];
+const types = ["language", "region", "script", "currency"];
 const fallbacks = ["code", "none"];
 
 styles.forEach(function(style) {

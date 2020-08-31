@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -10,23 +11,23 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "ui/base/test/material_design_controller_test_api.h"
-#include "ui/base/ui_base_switches.h"
+#include "content/public/test/browser_test.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/views/controls/webview/webview.h"
 
 class WebUITabStripInteractiveTest : public InProcessBrowserTest {
  public:
   WebUITabStripInteractiveTest() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kTopChromeTouchUi, switches::kTopChromeTouchUiEnabled);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kWebUITabStrip);
+    feature_override_.InitAndEnableFeature(features::kWebUITabStrip);
   }
 
   ~WebUITabStripInteractiveTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_override_;
+  ui::TouchUiController::TouchUiScoperForTesting touch_ui_scoper_{true};
 };
 
 // Regression test for crbug.com/1027375.

@@ -20,6 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
@@ -42,7 +43,7 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
@@ -114,9 +115,9 @@ void OnChromeCleanerFetched(
     ChromeCleanerControllerDelegate::FetchedCallback fetched_callback,
     base::FilePath downloaded_path,
     ChromeCleanerFetchStatus fetch_status) {
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(VerifyAndRenameDownloadedCleaner, downloaded_path,
                      fetch_status),
@@ -189,7 +190,7 @@ ChromeCleanerControllerDelegate::~ChromeCleanerControllerDelegate() = default;
 void ChromeCleanerControllerDelegate::FetchAndVerifyChromeCleaner(
     FetchedCallback fetched_callback) {
   FetchChromeCleaner(
-      base::BindOnce(&OnChromeCleanerFetched, base::Passed(&fetched_callback)),
+      base::BindOnce(&OnChromeCleanerFetched, std::move(fetched_callback)),
       g_browser_process->system_network_context_manager()
           ->GetURLLoaderFactory());
 }
@@ -409,7 +410,7 @@ void ChromeCleanerControllerImpl::RequestUserInitiatedScan(Profile* profile) {
             &safe_browsing::MaybeStartSwReporter, invocation_type,
             // The invocations will be modified by the |ReporterRunner|.
             // Give it a copy to keep the cached invocations pristine.
-            base::Passed(&copied_sequence)));
+            std::move(copied_sequence)));
 
     RecordOnDemandUpdateRequiredHistogram(false);
   } else {
@@ -612,12 +613,12 @@ void ChromeCleanerControllerImpl::OnChromeCleanerFetchedAndVerified(
   ChromeCleanerRunner::RunChromeCleanerAndReplyWithExitCode(
       extension_service_, extension_registry_, executable_path,
       *reporter_invocation_, metrics_status,
-      base::Bind(&ChromeCleanerControllerImpl::WeakOnPromptUser,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&ChromeCleanerControllerImpl::OnConnectionClosed,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&ChromeCleanerControllerImpl::OnCleanerProcessDone,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ChromeCleanerControllerImpl::WeakOnPromptUser,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ChromeCleanerControllerImpl::OnConnectionClosed,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ChromeCleanerControllerImpl::OnCleanerProcessDone,
+                     weak_factory_.GetWeakPtr()),
       // Our callbacks should be dispatched to the UI thread only.
       base::ThreadTaskRunnerHandle::Get());
 

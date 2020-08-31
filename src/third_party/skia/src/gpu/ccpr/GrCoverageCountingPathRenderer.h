@@ -29,6 +29,8 @@ class GrCoverageCountingPathRenderer : public GrPathRenderer, public GrOnFlushCa
 public:
     using CoverageType = GrCCAtlas::CoverageType;
 
+    const char* name() const final { return "CCPR"; }
+
     static bool IsSupported(const GrCaps&, CoverageType* = nullptr);
 
     enum class AllowCaching : bool {
@@ -88,7 +90,7 @@ private:
     GrCoverageCountingPathRenderer(CoverageType, AllowCaching, uint32_t contextUniqueID);
 
     // GrPathRenderer overrides.
-    StencilSupport onGetStencilSupport(const GrShape&) const override {
+    StencilSupport onGetStencilSupport(const GrStyledShape&) const override {
         return GrPathRenderer::kNoSupport_StencilSupport;
     }
     CanDrawPath onCanDrawPath(const CanDrawPathArgs&) const override;

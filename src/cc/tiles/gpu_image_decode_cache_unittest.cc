@@ -252,8 +252,9 @@ class FakeGPUImageDecodeTestGLES2Interface : public viz::TestGLES2Interface,
 
 class MockRasterImplementation : public gpu::raster::RasterImplementationGLES {
  public:
-  explicit MockRasterImplementation(gpu::gles2::GLES2Interface* gl)
-      : RasterImplementationGLES(gl) {}
+  explicit MockRasterImplementation(gpu::gles2::GLES2Interface* gl,
+                                    gpu::ContextSupport* support)
+      : RasterImplementationGLES(gl, support) {}
   ~MockRasterImplementation() override = default;
 
   gpu::SyncToken ScheduleImageDecode(base::span<const uint8_t> encoded_data,
@@ -296,8 +297,8 @@ class GPUImageDecodeTestMockContextProvider : public viz::TestContextProvider {
     auto gl = std::make_unique<FakeGPUImageDecodeTestGLES2Interface>(
         discardable_manager, transfer_cache_helper,
         false /* advertise_accelerated_decoding */);
-    auto raster =
-        std::make_unique<StrictMock<MockRasterImplementation>>(gl.get());
+    auto raster = std::make_unique<StrictMock<MockRasterImplementation>>(
+        gl.get(), support.get());
     return new GPUImageDecodeTestMockContextProvider(
         std::move(support), std::move(gl), std::move(raster));
   }
@@ -311,6 +312,7 @@ class GPUImageDecodeTestMockContextProvider : public viz::TestContextProvider {
       : TestContextProvider(std::move(support),
                             std::move(gl),
                             std::move(raster),
+                            nullptr /* sii */,
                             true) {}
 };
 
@@ -2957,11 +2959,13 @@ class GpuImageDecodeCacheWithAcceleratedDecodesTest
     : public GpuImageDecodeCacheTest {
  public:
   PaintImage CreatePaintImageForDecodeAcceleration(
-      ImageType image_type = ImageType::kJPEG) {
+      ImageType image_type = ImageType::kJPEG,
+      YUVSubsampling yuv_subsampling = YUVSubsampling::k420) {
     // Create a valid image metadata for hardware acceleration.
     ImageHeaderMetadata image_data{};
-    image_data.image_size = GetNormalImageSize();
+    image_data.image_size = gfx::Size(123, 45);
     image_data.image_type = image_type;
+    image_data.yuv_subsampling = yuv_subsampling;
     image_data.all_data_received_prior_to_decode = true;
     image_data.has_embedded_color_profile = false;
     image_data.jpeg_is_progressive = false;
@@ -2993,37 +2997,48 @@ class GpuImageDecodeCacheWithAcceleratedDecodesTest
 
 TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,
        RequestAcceleratedDecodeSuccessfully) {
-  auto cache = CreateCache();
-  const gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
-  ASSERT_TRUE(target_color_space.IsValid());
-  const PaintImage image = CreatePaintImageForDecodeAcceleration();
-  const SkFilterQuality quality = kHigh_SkFilterQuality;
-  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
-                       quality, CreateMatrix(SkSize::Make(0.75f, 0.75f)),
-                       PaintImage::kDefaultFrameIndex, target_color_space);
-  ImageDecodeCache::TaskResult result =
-      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result.need_unref);
-  ASSERT_TRUE(result.task);
-  EXPECT_TRUE(result.can_do_hardware_accelerated_decode);
+  std::vector<std::pair<YUVSubsampling, size_t>>
+      subsamplings_and_expected_data_sizes{{YUVSubsampling::k420, 8387u},
+                                           {YUVSubsampling::k422, 11115u},
+                                           {YUVSubsampling::k444, 16605u}};
+  for (const auto& subsampling_and_expected_data_size :
+       subsamplings_and_expected_data_sizes) {
+    auto cache = CreateCache();
+    const gfx::ColorSpace target_color_space = gfx::ColorSpace::CreateSRGB();
+    ASSERT_TRUE(target_color_space.IsValid());
+    const PaintImage image = CreatePaintImageForDecodeAcceleration(
+        ImageType::kJPEG, subsampling_and_expected_data_size.first);
+    const SkFilterQuality quality = kHigh_SkFilterQuality;
+    DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                         quality, CreateMatrix(SkSize::Make(0.75f, 0.75f)),
+                         PaintImage::kDefaultFrameIndex, target_color_space);
+    ImageDecodeCache::TaskResult result = cache->GetTaskForImageAndRef(
+        draw_image, ImageDecodeCache::TracingInfo());
+    EXPECT_TRUE(result.need_unref);
+    ASSERT_TRUE(result.task);
+    EXPECT_TRUE(result.can_do_hardware_accelerated_decode);
+    EXPECT_EQ(cache->GetWorkingSetBytesForTesting(),
+              subsampling_and_expected_data_size.second);
 
-  // Accelerated decodes should not produce decode tasks.
-  ASSERT_TRUE(result.task->dependencies().empty());
-  ASSERT_TRUE(image.GetImageHeaderMetadata());
-  EXPECT_CALL(*raster_implementation(),
-              DoScheduleImageDecode(image.GetImageHeaderMetadata()->image_size,
-                                    _, gfx::ColorSpace(), _))
-      .Times(1);
-  TestTileTaskRunner::ProcessTask(result.task.get());
+    // Accelerated decodes should not produce decode tasks.
+    ASSERT_TRUE(result.task->dependencies().empty());
+    ASSERT_TRUE(image.GetImageHeaderMetadata());
+    EXPECT_CALL(
+        *raster_implementation(),
+        DoScheduleImageDecode(image.GetImageHeaderMetadata()->image_size, _,
+                              gfx::ColorSpace(), _))
+        .Times(1);
+    TestTileTaskRunner::ProcessTask(result.task.get());
 
-  // Must hold context lock before calling GetDecodedImageForDraw /
-  // DrawWithImageFinished.
-  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
-  const DecodedDrawImage decoded_draw_image =
-      cache->GetDecodedImageForDraw(draw_image);
-  EXPECT_TRUE(decoded_draw_image.transfer_cache_entry_id().has_value());
-  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
-  cache->UnrefImage(draw_image);
+    // Must hold context lock before calling GetDecodedImageForDraw /
+    // DrawWithImageFinished.
+    viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+    const DecodedDrawImage decoded_draw_image =
+        cache->GetDecodedImageForDraw(draw_image);
+    EXPECT_TRUE(decoded_draw_image.transfer_cache_entry_id().has_value());
+    cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+    cache->UnrefImage(draw_image);
+  }
 }
 
 TEST_P(GpuImageDecodeCacheWithAcceleratedDecodesTest,

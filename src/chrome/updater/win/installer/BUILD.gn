@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/timestamp.gni")
 import("//chrome/process_version_rc_template.gni")
 import("//testing/test.gni")
 
@@ -38,12 +39,10 @@ process_version_rc_template("version") {
 # This target creats a list of runtime dependencies for the component
 # builds. This list is parsed by the |create_installer_archive| script, the
 # DLL paths extracted out from the list, and included in the archive.
-updater_runtime_deps = "$root_gen_dir/updater.runtime_deps"
+updater_runtime_deps = "$target_gen_dir/updater.runtime_deps"
 group("updater_runtime_deps") {
   write_runtime_deps = updater_runtime_deps
-  data_deps = [
-    "//chrome/updater/win:updater",
-  ]
+  data_deps = [ "//chrome/updater/win:updater" ]
 }
 
 template("generate_installer") {
@@ -57,9 +56,7 @@ template("generate_installer") {
 
     release_file = "updater.release"
 
-    inputs = [
-      release_file,
-    ]
+    inputs = [ release_file ]
 
     outputs = [
       "$output_dir/updater.packed.7z",
@@ -80,6 +77,8 @@ template("generate_installer") {
       "--setup_runtime_deps",
       rebase_path(updater_runtime_deps, root_build_dir),
       "--output_name=updater",
+      "--timestamp",
+      build_timestamp,
 
       # Optional argument for verbose archiving output.
       #"--verbose",
@@ -87,8 +86,8 @@ template("generate_installer") {
 
     deps = [
       ":updater_runtime_deps",
-      "//chrome/updater/win:uninstall.cmd",
       "//chrome/updater/win:updater",
+      "//third_party/icu:icudata",
     ]
 
     if (is_component_build) {
@@ -134,9 +133,7 @@ test("installer_unittest") {
     "string_unittest.cc",
   ]
 
-  public_deps = [
-    ":lib",
-  ]
+  public_deps = [ ":lib" ]
   deps = [
     "//base",
     "//base/test:test_support",

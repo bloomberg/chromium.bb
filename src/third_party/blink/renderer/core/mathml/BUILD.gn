@@ -8,5 +8,15 @@ blink_core_sources("mathml") {
   sources = [
     "mathml_element.cc",
     "mathml_element.h",
+    "mathml_fraction_element.cc",
+    "mathml_fraction_element.h",
+    "mathml_row_element.cc",
+    "mathml_row_element.h",
+    "mathml_scripts_element.cc",
+    "mathml_scripts_element.h",
+    "mathml_space_element.cc",
+    "mathml_space_element.h",
+    "mathml_under_over_element.cc",
+    "mathml_under_over_element.h",
   ]
 }

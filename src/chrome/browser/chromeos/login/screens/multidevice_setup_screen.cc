@@ -27,7 +27,8 @@ constexpr const char kDeclinedSetupUserAction[] = "setup-declined";
 MultiDeviceSetupScreen::MultiDeviceSetupScreen(
     MultiDeviceSetupScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(MultiDeviceSetupScreenView::kScreenId),
+    : BaseScreen(MultiDeviceSetupScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);
@@ -38,7 +39,7 @@ MultiDeviceSetupScreen::~MultiDeviceSetupScreen() {
   view_->Bind(nullptr);
 }
 
-void MultiDeviceSetupScreen::Show() {
+void MultiDeviceSetupScreen::ShowImpl() {
   // Only attempt the setup flow for non-guest users.
   if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
     ExitScreen();
@@ -75,7 +76,7 @@ void MultiDeviceSetupScreen::Show() {
   oobe_completion_tracker->MarkOobeShown();
 }
 
-void MultiDeviceSetupScreen::Hide() {
+void MultiDeviceSetupScreen::HideImpl() {
   view_->Hide();
 }
 

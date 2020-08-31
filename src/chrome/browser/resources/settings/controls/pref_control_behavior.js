@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {CrSettingsPrefs} from '../prefs/prefs_types.m.js';
+
 /**
  * @polymerBehavior Tracks the initialization of a specified preference and
  * logs an error if the pref is not defined after prefs have been fetched.
  */
-const PrefControlBehavior = {
+/* #export */ const PrefControlBehavior = {
   properties: {
     /**
      * The Preference object being tracked.
@@ -20,7 +22,7 @@ const PrefControlBehavior = {
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.validatePref_();
   },
 
@@ -28,14 +30,14 @@ const PrefControlBehavior = {
    * Logs an error once prefs are initialized if the tracked pref is not found.
    * @private
    */
-  validatePref_: function() {
+  validatePref_() {
     CrSettingsPrefs.initialized.then(() => {
       if (this.pref === undefined) {
         let error = 'Pref not found for element ' + this.tagName;
         if (this.id) {
           error += '#' + this.id;
         }
-        error += ' in ' + this.domHost.tagName;
+        error += ' in ' + this.getRootNode().host.tagName;
         console.error(error);
       } else if (
           this.pref.enforcement ==

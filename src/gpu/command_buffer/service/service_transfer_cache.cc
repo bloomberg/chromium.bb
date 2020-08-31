@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -74,20 +75,26 @@ void DumpMemoryForYUVImageTransferCacheEntry(
   DCHECK(entry->is_yuv());
 
   std::vector<size_t> plane_sizes = entry->GetPlaneCachedSizes();
+  if (plane_sizes.empty()) {
+    // This entry corresponds to an unmipped hardware decoded image.
+    MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
+        dump_base_name + base::StringPrintf("/dma_buf"));
+    dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                    MemoryAllocatorDump::kUnitsBytes, entry->CachedSize());
+    // We don't need to establish shared ownership of the dump with Skia: the
+    // reason is that Skia doesn't own the textures for hardware decoded images,
+    // so it won't count them in its memory dump (because
+    // SkiaGpuTraceMemoryDump::shouldDumpWrappedObjects() returns false).
+    return;
+  }
+
   for (size_t i = 0u; i < entry->num_planes(); ++i) {
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
         dump_base_name +
         base::StringPrintf("/plane_%0u", base::checked_cast<uint32_t>(i)));
-    if (plane_sizes.empty()) {
-      // Hardware-decoded image case.
-      dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                      MemoryAllocatorDump::kUnitsBytes,
-                      (i == SkYUVAIndex::kY_Index) ? entry->CachedSize() : 0u);
-    } else {
-      DCHECK_EQ(plane_sizes.size(), entry->num_planes());
-      dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                      MemoryAllocatorDump::kUnitsBytes, plane_sizes.at(i));
-    }
+    DCHECK_EQ(plane_sizes.size(), entry->num_planes());
+    dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                    MemoryAllocatorDump::kUnitsBytes, plane_sizes.at(i));
 
     // If entry->image() is backed by multiple textures,
     // getBackendTexture() would end up flattening them to RGB, which is
@@ -123,9 +130,11 @@ ServiceTransferCache::CacheEntryInternal&
 ServiceTransferCache::CacheEntryInternal::operator=(
     CacheEntryInternal&& other) = default;
 
-ServiceTransferCache::ServiceTransferCache()
+ServiceTransferCache::ServiceTransferCache(const GpuPreferences& preferences)
     : entries_(EntryCache::NO_AUTO_EVICT),
-      cache_size_limit_(DiscardableCacheSizeLimit()),
+      cache_size_limit_(preferences.force_gpu_mem_discardable_limit_bytes
+                            ? preferences.force_gpu_mem_discardable_limit_bytes
+                            : DiscardableCacheSizeLimit()),
       max_cache_entries_(kMaxCacheEntries) {
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
@@ -249,21 +258,10 @@ void ServiceTransferCache::EnforceLimits() {
 
 void ServiceTransferCache::PurgeMemory(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  switch (memory_pressure_level) {
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
-      // This function is only called with moderate or critical pressure.
-      NOTREACHED();
-      return;
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
-      cache_size_limit_ = cache_size_limit_ / 4;
-      break;
-    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      cache_size_limit_ = 0u;
-      break;
-  }
-
+  base::AutoReset<size_t> reset_limit(
+      &cache_size_limit_, DiscardableCacheSizeLimitForPressure(
+                              cache_size_limit_, memory_pressure_level));
   EnforceLimits();
-  cache_size_limit_ = DiscardableCacheSizeLimit();
 }
 
 void ServiceTransferCache::DeleteAllEntriesForDecoder(int decoder_id) {

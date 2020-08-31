@@ -140,8 +140,6 @@
 
 ##############################################################################
 ['arch == arm64', {
-  'test-api/Bug618': [PASS],
-
   # BUG(v8:3385).
   'test-serialize/StartupSerializerOnceRunScript': [PASS, FAIL],
   'test-serialize/StartupSerializerTwiceRunScript': [PASS, FAIL],
@@ -178,6 +176,12 @@
 }],  # variant == nooptimization and (arch == arm or arch == arm64) and simulator_run
 
 ##############################################################################
+['variant == no_lfa', {
+  # https://crbug.com/v8/10219
+  'test-compiler/DecideToPretenureDuringCompilation': [SKIP],
+}],  # variant == no_lfa
+
+##############################################################################
 ['asan == True', {
   # Skip tests not suitable for ASAN.
   'test-assembler-x64/AssemblerX64XchglOperations': [SKIP],
@@ -190,6 +194,10 @@
 ['msan == True', {
   # ICU upstream issues.
   'test-strings/CountBreakIterator': [SKIP],
+
+  # BUG(v8:10244): MSAN finding uninitialized bytes during memcmp
+  'test-code-stub-assembler/SmallOrderedHashSetAllocate': [SKIP],
+  'test-code-stub-assembler/SmallOrderedHashMapAllocate': [SKIP],
 }],  # 'msan == True'
 
 ##############################################################################
@@ -202,14 +210,13 @@
 ['is_full_debug', {
   # Tests too slow in non-optimized debug mode.
   'test-api/InternalFieldsSubclassing': [SKIP],
-  'test-cpu-profiler/Inlining2': [SKIP],
   'test-heap/TestInternalWeakLists': [SKIP],
 }],  # 'is_full_debug'
 
 ##############################################################################
 ['byteorder == big', {
-  # Skip WASM atomic tests on big-endian machines.
-  # There is no support to emulate atomic WASM operations on big-endian
+  # Skip Wasm atomic tests on big-endian machines.
+  # There is no support to emulate atomic Wasm operations on big-endian
   # platforms, since this would require bit swapping as a part of atomic
   # operations.
   'test-run-wasm-atomics/*': [SKIP],
@@ -229,17 +236,18 @@
   'test-cpu-profiler/FunctionCallSample': [SKIP],
 
   # BUG(5920): Flaky crash.
-  'test-serialize/PartialSerializerContext': [PASS, ['arch == x64 and mode == debug', SKIP]],
+  'test-serialize/ContextSerializerContext': [PASS, ['arch == x64 and mode == debug', SKIP]],
 
-  # Test is just big and quite slow.
-  'test-cpu-profiler/Inlining2': [PASS, SLOW],
+  # BUG(10107): Failing flakily
+  'test-cpu-profiler/Inlining2': ['arch == ia32 and mode == debug', SKIP],
+  'test-cpu-profiler/CrossScriptInliningCallerLineNumbers2': ['arch == ia32 and mode == debug', SKIP],
 }],  # 'system == windows'
 
 ##############################################################################
 ['system == windows and arch == x64 and mode == debug', {
   # BUG(v8:6328).
-  'test-serialize/PartialSerializerCustomContext': [SKIP],
-  'test-serialize/PartialSerializerObject': [SKIP],
+  'test-serialize/ContextSerializerCustomContext': [SKIP],
+  'test-serialize/ContextSerializerObject': [SKIP],
   'test-serialize/StartupSerializerOnce': [SKIP],
   'test-serialize/StartupSerializerOnceRunScript': [SKIP],
   'test-serialize/StartupSerializerTwiceRunScript': [SKIP],
@@ -321,6 +329,7 @@
   'test-run-wasm-simd/RunWasm_ReductionTest4_compiled': [SKIP],
   'test-run-wasm-simd/RunWasm_ReductionTest8_compiled': [SKIP],
   'test-run-wasm-simd/RunWasm_ReductionTest16_compiled': [SKIP],
+  'test-run-wasm-simd-liftoff/*': [SKIP],
 }],  # '(arch == mipsel or arch == mips64el or arch == mips or arch == mips64) and not simd_mips'
 
 ##############################################################################
@@ -328,12 +337,6 @@
   # TODO(mips-team): Implement I64Atomic operations on MIPS
   'test-run-wasm-atomics64/*': [SKIP],
 }],  # 'arch == mipsel or arch == mips64el or arch == mips or arch == mips64'
-
-##############################################################################
-['arch == mips64el or arch == mipsel', {
-  # TODO(mips-team): support concurrent patching of jump table.
-  'test-jump-table-assembler/*': [SKIP],
-}],  # 'arch == mips64el or arch == mipsel'
 
 ##############################################################################
 ['mips_arch_variant == r6', {
@@ -367,7 +370,6 @@
   'test-run-wasm-module/Run_WasmModule_CallAdd' : [SKIP],
   'test-run-wasm-module/Run_WasmModule_CallMain_recursive' : [SKIP],
   # TODO(ppc): Implement load/store reverse byte instructions
-  'test-run-wasm-simd/RunWasmCompiled_SimdLoadStoreLoad': [SKIP],
   'test-run-wasm-simd/RunWasm_SimdLoadStoreLoad': [SKIP],
   'test-run-wasm-simd/RunWasm_SimdLoadStoreLoad_turbofan': [SKIP],
 
@@ -390,6 +392,11 @@
 
   # Liftoff is not currently supported on ppc and s390
   'test-liftoff-*': [SKIP],
+  'test-wasm-breakpoints/*' : [SKIP],
+  'test-wasm-debug-evaluate/*': [SKIP],
+
+  # SIMD not fully implemented yet
+  'test-run-wasm-simd-liftoff/*': [SKIP],
 
 }],  # 'arch == ppc or arch == ppc64 or arch == s390 or arch == s390x'
 
@@ -404,9 +411,12 @@
 }],  # variant == stress_incremental_marking
 
 ##############################################################################
-# The test relies on deterministic compilation.
 ['variant == stress_js_bg_compile_wasm_code_gc', {
+  # The test relies on deterministic compilation.
   'test-compiler/DecideToPretenureDuringCompilation': [SKIP],
+
+  # The test relies on deterministic allocation during compilation.
+  'test-compiler/DeepEagerCompilationPeakMemory': [SKIP],
 }],  # variant == stress_js_bg_compile_wasm_code_gc
 
 ##############################################################################
@@ -436,9 +446,13 @@
 }],  # variant == no_wasm_traps
 
 ##############################################################################
-# The stack unwinder API is only supported on x64 and arm64.
+# The stack unwinder API is only supported on x64, arm64 and arm.
 ['arch != x64 and arch != arm64', {
   'test-unwinder/*': [SKIP]
+}],
+
+['arch != x64 and arch != arm64 and arch != arm', {
+  'test-unwinder-code-pages/*': [SKIP]
 }],
 
 ##############################################################################
@@ -453,7 +467,9 @@
   'test-api-wasm/WasmStreaming*': [SKIP],
   'test-backing-store/Run_WasmModule_Buffer_Externalized_Regression_UseAfterFree': [SKIP],
   'test-c-wasm-entry/*': [SKIP],
+  'test-compilation-cache/*': [SKIP],
   'test-jump-table-assembler/*': [SKIP],
+  'test-gc/*': [SKIP],
   'test-grow-memory/*': [SKIP],
   'test-run-wasm-64/*': [SKIP],
   'test-run-wasm-asmjs/*': [SKIP],
@@ -466,12 +482,14 @@
   'test-run-wasm-js/*': [SKIP],
   'test-run-wasm-module/*': [SKIP],
   'test-run-wasm-sign-extension/*': [SKIP],
+  'test-run-wasm-simd-liftoff/*': [SKIP],
+  'test-run-wasm-simd-scalar-lowering/*': [SKIP],
   'test-run-wasm-simd/*': [SKIP],
   'test-streaming-compilation/*': [SKIP],
   'test-wasm-breakpoints/*': [SKIP],
   'test-wasm-codegen/*': [SKIP],
+  'test-wasm-debug-evaluate/*': [SKIP],
   'test-wasm-import-wrapper-cache/*': [SKIP],
-  'test-wasm-interpreter-entry/*': [SKIP],
   'test-wasm-serialization/*': [SKIP],
   'test-wasm-shared-engine/*': [SKIP],
   'test-wasm-stack/*': [SKIP],
@@ -480,14 +498,19 @@
 
   # Tests that generate code at runtime.
   'codegen-tester/*': [SKIP],
+  'serializer-tester/*': [SKIP],
   'test-accessor-assembler/*': [SKIP],
   'test-assembler-*': [SKIP],
   'test-basic-block-profiler/*': [SKIP],
   'test-branch-combine/*': [SKIP],
   'test-code-assembler/*': [SKIP],
   'test-code-generator/*': [SKIP],
+  'test-code-pages/*': [SKIP],
   'test-code-stub-assembler/*': [SKIP],
+  'test-debug-helper/GetObjectProperties': [SKIP],
+  'test-disasm-x64/DisasmX64': [SKIP],
   'test-js-context-specialization/*': [SKIP],
+  'test-macro-assembler-x64/EmbeddedObj': [SKIP],
   'test-multiple-return/*': [SKIP],
   'test-regexp/MacroAssemblernativeAtStart': [SKIP],
   'test-regexp/MacroAssemblerNativeBackReferenceLATIN1': [SKIP],
@@ -518,8 +541,11 @@
   'test-run-tail-calls/*': [SKIP],
   'test-run-unwinding-info/*': [SKIP],
   'test-run-variables/*': [SKIP],
+  'test-serialize/*': [SKIP],
   'test-torque/*': [SKIP],
-  'test-macro-assembler-x64/EmbeddedObj': [SKIP],
+  'test-unwinder/PCIsInV8_InCodeOrEmbeddedRange': [SKIP],
+  'test-unwinder/PCIsInV8_LargeCodeObject': [SKIP],
+  'test-unwinder-code-pages/PCIsInV8_LargeCodeObject_CodePagesAPI': [SKIP],
 
   # Field representation tracking is disabled in jitless mode.
   'test-field-type-tracking/*': [SKIP],
@@ -580,6 +606,7 @@
   'test-log/LogInterpretedFramesNativeStack': [SKIP],
   'test-log/LogInterpretedFramesNativeStackWithSerialization': [SKIP],
   'test-serialize/CodeSerializerOnePlusOneWithInterpretedFramesNativeStack': [SKIP],
+  'test-interpreter/InterpreterWithNativeStack': [SKIP],
 
   # Crashes on native arm.
   'test-macro-assembler-arm/ExtractLane': [PASS, ['arch == arm and not simulator_run', SKIP]],
@@ -593,6 +620,21 @@
   'test-cpu-profiler/DeoptAtFirstLevelInlinedSource': [SKIP],
   'test-cpu-profiler/DeoptAtSecondLevelInlinedSource': [SKIP],
   'test-cpu-profiler/DeoptUntrackedFunction': [SKIP],
+  # Turboprop doesn't use call feedback and hence doesn't inline even if
+  # the inlining flag is explicitly set.
+  'test-cpu-profiler/DetailedSourcePositionAPI_Inlining': [SKIP],
+  'serializer-tester/BoundFunctionArguments': [SKIP],
+  'serializer-tester/BoundFunctionTarget': [SKIP],
 }],  # variant == turboprop
+
+##############################################################################
+['no_i18n == True', {
+  'test-regexp/UnicodePropertyEscapeCodeSize': [SKIP],
+}],  # no_i18n == True
+
+################################################################################
+['variant == stress_snapshot', {
+  '*': [SKIP],  # only relevant for mjsunit tests.
+}],
 
 ]

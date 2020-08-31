@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_tab_helper.h"
 #include "chrome/browser/ui/search/instant_test_base.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
-#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -24,6 +24,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -66,13 +67,13 @@ class InstantExtendedTest : public InProcessBrowserTest,
   }
 
   void FocusOmnibox() {
-    // If the omnibox already has focus, just notify SearchTabHelper.
+    // If the omnibox already has focus, just notify OmniboxTabHelper.
     if (omnibox()->model()->has_focus()) {
       content::WebContents* active_tab =
           instant_browser()->tab_strip_model()->GetActiveWebContents();
-      SearchTabHelper::FromWebContents(active_tab)
-          ->OmniboxFocusChanged(OMNIBOX_FOCUS_VISIBLE,
-                                OMNIBOX_FOCUS_CHANGE_EXPLICIT);
+      OmniboxTabHelper::FromWebContents(active_tab)
+          ->OnFocusChanged(OMNIBOX_FOCUS_VISIBLE,
+                           OMNIBOX_FOCUS_CHANGE_EXPLICIT);
     } else {
       instant_browser()->window()->GetLocationBar()->FocusLocation(false);
     }
@@ -121,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoMostVisitedChangedOnTabSwitch) {
       browser(), GURL(chrome::kChromeUINewTabURL),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   // Make sure new tab received the onmostvisitedchanged event once.
@@ -151,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateBackToNTP) {
       browser(), GURL(chrome::kChromeUINewTabURL),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   SetOmniboxText("flowers");
@@ -183,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
       browser(), GURL(chrome::kChromeUINewTabURL),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();

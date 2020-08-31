@@ -35,8 +35,7 @@ static_assert(sizeof(NGConstraintSpace) == sizeof(SameSizeAsNGConstraintSpace),
 }  // namespace
 
 NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
-    const LayoutBlock& block,
-    bool is_layout_root) {
+    const LayoutBlock& block) {
   // We should only ever create a constraint space from legacy layout if the
   // object is a new formatting context.
   DCHECK(block.CreatesNewFormattingContext());
@@ -77,28 +76,14 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
                                    /* is_new_fc */ true,
                                    !parallel_containing_block);
 
-  auto* previous_result = block.GetCachedLayoutResult();
-  if (is_layout_root && previous_result) {
-    // Due to layout-roots (starting layout at an arbirary node, instead of the
-    // |LayoutView|), we can end up with a situation where we'll miss our cache
-    // due to baseline-requests not matching.
-    //
-    // For the case where we start at a layout-root, the baselines don't
-    // particularly matter, so we just request exactly the same as the previous
-    // layout.
-    builder.AddBaselineRequests(
-        previous_result->GetConstraintSpaceForCaching().BaselineRequests());
-  } else if (!block.IsWritingModeRoot() || block.IsGridItem()) {
-    // Add all types because we don't know which baselines will be requested.
-    FontBaseline baseline_type = style.GetFontBaseline();
-    bool synthesize_inline_block_baseline =
-        block.UseLogicalBottomMarginEdgeForInlineBlockBaseline();
-    if (!synthesize_inline_block_baseline) {
-      builder.AddBaselineRequest(
-          {NGBaselineAlgorithmType::kAtomicInline, baseline_type});
-    }
-    builder.AddBaselineRequest(
-        {NGBaselineAlgorithmType::kFirstLine, baseline_type});
+  if (!block.IsWritingModeRoot() || block.IsGridItem()) {
+    // We don't know if the parent layout will require our baseline, so always
+    // request it.
+    builder.SetNeedsBaseline(true);
+    builder.SetBaselineAlgorithmType(block.IsInline() &&
+                                             block.IsAtomicInlineLevel()
+                                         ? NGBaselineAlgorithmType::kInlineBlock
+                                         : NGBaselineAlgorithmType::kFirstLine);
   }
 
   if (block.IsTableCell()) {
@@ -122,6 +107,10 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
         cell_style.EmptyCells() == EEmptyCells::kHide &&
         table_style.BorderCollapse() == EBorderCollapse::kSeparate);
   }
+
+  if (block.IsAtomicInlineLevel() || block.IsFlexItem() || block.IsGridItem() ||
+      block.IsFloating())
+    builder.SetIsPaintedAtomically(true);
 
   builder.SetAvailableSize(available_size);
   builder.SetPercentageResolutionSize(percentage_size);

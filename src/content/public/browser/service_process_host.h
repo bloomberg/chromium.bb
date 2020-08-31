@@ -26,6 +26,15 @@
 
 namespace content {
 
+// Sandbox type for ServiceProcessHost::Launch<remote>() is found by
+// template matching on |remote|. This provides a safe default. For
+// services that use other sandbox types, consult
+// security-dev@chromium.org and add to an appropriate |service_sandbox_type.h|.
+template <typename Interface>
+inline content::SandboxType GetServiceSandboxType() {
+  return SandboxType::kUtility;
+}
+
 // ServiceProcessHost is used to launch new service processes given basic
 // parameters like sandbox type, as well as a primordial Mojo interface to drive
 // the service's behavior. See |Launch()| methods below for more details.
@@ -35,14 +44,13 @@ namespace content {
 //   constexpr auto kFooServiceIdleTimeout = base::TimeDelta::FromSeconds(5);
 //   auto foo_service = ServiceProcessHost::Launch<foo::mojom::FooService>(
 //       ServiceProcessHost::Options()
-//           .WithSandboxType(SANDBOX_TYPE_UTILITY)
 //           .WithDisplayName(IDS_FOO_SERVICE_DISPLAY_NAME)
 //           .Pass());
 //   foo_service.set_idle_handler(
 //       kFooServiceIdleTimeout,
 //       base::BindRepeating(
 //           /* Something to reset |foo_service|,  killing the process. */));
-//   foo_service->DoSomeWork();
+//   foo_service->DoWork();
 //
 class CONTENT_EXPORT ServiceProcessHost {
  public:
@@ -54,6 +62,7 @@ class CONTENT_EXPORT ServiceProcessHost {
 
     // Specifies the sandbox type with which to launch the service process.
     // Defaults to a generic, restrictive utility process sandbox.
+    // TODO(1065087) Deprecate.
     Options& WithSandboxType(SandboxType type);
 
     // Specifies the display name of the service process. This should generally
@@ -75,7 +84,7 @@ class CONTENT_EXPORT ServiceProcessHost {
     // to |Launch()|.
     Options Pass();
 
-    SandboxType sandbox_type = service_manager::SANDBOX_TYPE_UTILITY;
+    SandboxType sandbox_type = SandboxType::kUtility;
     base::string16 display_name;
     base::Optional<int> child_flags;
     std::vector<std::string> extra_switches;
@@ -106,6 +115,10 @@ class CONTENT_EXPORT ServiceProcessHost {
   // explicitly reset its corresponding Remote in order to induce service
   // process termination.
   //
+  // The launched process will be sandboxed using the default utility process
+  // sandbox unless a specialized GetServiceSandboxType<Interface> is available.
+  // To add a new specialization, consult with security-dev@chromium.org.
+  //
   // NOTE: The |Interface| type can be inferred from from the |receiver|
   // argument's type.
   //
@@ -113,6 +126,9 @@ class CONTENT_EXPORT ServiceProcessHost {
   template <typename Interface>
   static void Launch(mojo::PendingReceiver<Interface> receiver,
                      Options options = {}) {
+    // TODO(1065087) remove this test once all services are migrated.
+    if (options.sandbox_type == SandboxType::kUtility)
+      options.sandbox_type = content::GetServiceSandboxType<Interface>();
     Launch(mojo::GenericPendingReceiver(std::move(receiver)),
            std::move(options));
   }
@@ -123,6 +139,9 @@ class CONTENT_EXPORT ServiceProcessHost {
   // May be called from any thread.
   template <typename Interface>
   static mojo::Remote<Interface> Launch(Options options = {}) {
+    // TODO(1065087) remove this test once all services are migrated.
+    if (options.sandbox_type == SandboxType::kUtility)
+      options.sandbox_type = content::GetServiceSandboxType<Interface>();
     mojo::Remote<Interface> remote;
     Launch(remote.BindNewPipeAndPassReceiver(), std::move(options));
     return remote;

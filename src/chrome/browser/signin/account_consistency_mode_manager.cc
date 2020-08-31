@@ -33,34 +33,7 @@ namespace {
 // Preference indicating that the Dice migraton has happened.
 const char kDiceMigrationCompletePref[] = "signin.DiceMigrationComplete";
 
-const char kDiceMigrationStatusHistogram[] = "Signin.DiceMigrationStatus";
-
 const char kAllowBrowserSigninArgument[] = "allow-browser-signin";
-
-// Used for UMA histogram kDiceMigrationStatusHistogram.
-// Do not remove or re-order values.
-enum class DiceMigrationStatus {
-  kEnabled,
-  kDisabledReadyForMigration,
-  kDisabledNotReadyForMigration,
-  kDisabled,
-
-  // This is the last value. New values should be inserted above.
-  kDiceMigrationStatusCount
-};
-
-DiceMigrationStatus GetDiceMigrationStatus(
-    AccountConsistencyMethod account_consistency) {
-  switch (account_consistency) {
-    case AccountConsistencyMethod::kDice:
-      return DiceMigrationStatus::kEnabled;
-    case AccountConsistencyMethod::kDisabled:
-      return DiceMigrationStatus::kDisabled;
-    case AccountConsistencyMethod::kMirror:
-      NOTREACHED();
-      return DiceMigrationStatus::kDisabled;
-  }
-}
 
 bool IsBrowserSigninAllowedByCommandLine() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -69,10 +42,8 @@ bool IsBrowserSigninAllowedByCommandLine() {
         command_line->GetSwitchValueASCII(kAllowBrowserSigninArgument);
     return base::ToLowerASCII(allowBrowserSignin) == "true";
   }
-
-  // TODO(crbug.com/1053961): Remove disallow-signin argument now that it was
-  // replaced by kAllowBrowserSigninArgument.
-  return !command_line->HasSwitch("disallow-signin");
+  // If the commandline flag is not provided, the default is true.
+  return true;
 }
 #endif
 
@@ -112,10 +83,6 @@ AccountConsistencyModeManager::AccountConsistencyModeManager(Profile* profile)
   // were created before Dice.
   if (profile_->IsNewProfile())
     SetDiceMigrationCompleted();
-
-  UMA_HISTOGRAM_ENUMERATION(kDiceMigrationStatusHistogram,
-                            GetDiceMigrationStatus(account_consistency_),
-                            DiceMigrationStatus::kDiceMigrationStatusCount);
 #endif
 
   DCHECK_EQ(account_consistency_, ComputeAccountConsistencyMethod(profile_));
@@ -129,10 +96,6 @@ void AccountConsistencyModeManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   registry->RegisterBooleanPref(kDiceMigrationCompletePref, false);
-#endif
-#if defined(OS_CHROMEOS)
-  registry->RegisterBooleanPref(prefs::kAccountConsistencyMirrorRequired,
-                                false);
 #endif
   registry->RegisterBooleanPref(prefs::kSigninAllowedOnNextStartup, true);
 }
@@ -213,9 +176,7 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
 #endif
 
 #if defined(OS_CHROMEOS)
-  return (chromeos::IsAccountManagerAvailable(profile) ||
-          profile->GetPrefs()->GetBoolean(
-              prefs::kAccountConsistencyMirrorRequired))
+  return chromeos::IsAccountManagerAvailable(profile)
              ? AccountConsistencyMethod::kMirror
              : AccountConsistencyMethod::kDisabled;
 #endif
@@ -230,8 +191,14 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
   bool can_enable_dice_for_build = ignore_missing_oauth_client_for_testing_ ||
                                    google_apis::HasOAuthClientConfigured();
   if (!can_enable_dice_for_build) {
-    LOG(WARNING) << "Desktop Identity Consistency cannot be enabled as no "
-                    "OAuth client ID and client secret have been configured.";
+    // Only log this once.
+    static bool logged_warning = []() {
+      LOG(WARNING) << "Desktop Identity Consistency cannot be enabled as no "
+                      "OAuth client ID and client secret have been configured.";
+      return true;
+    }();
+    ALLOW_UNUSED_LOCAL(logged_warning);
+
     return AccountConsistencyMethod::kDisabled;
   }
 

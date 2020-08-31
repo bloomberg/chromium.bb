@@ -26,7 +26,7 @@ ChromeVoxStateObserver.prototype = {
   /**
    * @param {cursors.Range} range The new range.
    */
-  onCurrentRangeChanged: function(range) {}
+  onCurrentRangeChanged(range) {}
 };
 
 /**
@@ -37,7 +37,20 @@ ChromeVoxState = function() {
   if (ChromeVoxState.instance) {
     throw 'Trying to create two instances of singleton ChromeVoxState.';
   }
-  ChromeVoxState.instance = this;
+  const backgroundWindow = chrome.extension.getBackgroundPage();
+  // Only install the singleton instance if we are within the background page
+  // context. Otherwise, take the instance from the background page (e.g. for
+  // the panel page).
+  if (backgroundWindow == window) {
+    ChromeVoxState.instance = this;
+  } else {
+    Object.defineProperty(ChromeVoxState, 'instance', {
+      get: () => {
+        return backgroundWindow.ChromeVoxState.instance;
+      }
+    });
+    return;
+  }
 
   /** @private {!Array<!chrome.accessibilityPrivate.ScreenRect>} */
   this.focusBounds_ = [];
@@ -69,7 +82,7 @@ ChromeVoxState.prototype = {
    * @return {cursors.Range} The current range.
    * @protected
    */
-  getCurrentRange: function() {
+  getCurrentRange() {
     return null;
   },
 
@@ -110,7 +123,7 @@ ChromeVoxState.prototype = {
    * Gets the bounds of the focus ring.
    * @return {Array<chrome.accessibilityPrivate.ScreenRect>}
    */
-  getFocusBounds: function() {
+  getFocusBounds() {
     return this.focusBounds_;
   },
 
@@ -118,7 +131,7 @@ ChromeVoxState.prototype = {
    * Sets the bounds of the focus ring.
    * @param {!Array<!chrome.accessibilityPrivate.ScreenRect>} bounds
    */
-  setFocusBounds: function(bounds) {
+  setFocusBounds(bounds) {
     this.focusBounds_ = bounds;
     chrome.accessibilityPrivate.setFocusRings([{
       rects: bounds,
@@ -136,4 +149,14 @@ ChromeVoxState.observers = [];
  */
 ChromeVoxState.addObserver = function(observer) {
   ChromeVoxState.observers.push(observer);
+};
+
+/**
+ * @param {ChromeVoxStateObserver} observer
+ */
+ChromeVoxState.removeObserver = function(observer) {
+  const index = ChromeVoxState.observers.indexOf(observer);
+  if (index > -1) {
+    ChromeVoxState.observers.splice(index, 1);
+  }
 };

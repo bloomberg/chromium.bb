@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -153,24 +154,6 @@ static void RecordVideoCodecStats(container_names::MediaContainerName container,
     UMA_HISTOGRAM_ENUMERATION("Media.SRC.VideoCodec.WebM", video_config.codec(),
                               kVideoCodecMax + 1);
   }
-
-  // Drop UNKNOWN because U_H_E() uses one bucket for all values less than 1.
-  if (video_config.profile() >= 0) {
-    UMA_HISTOGRAM_ENUMERATION("Media.VideoCodecProfile", video_config.profile(),
-                              VIDEO_CODEC_PROFILE_MAX + 1);
-  }
-  UMA_HISTOGRAM_COUNTS_10000("Media.VideoVisibleWidth",
-                             video_config.visible_rect().width());
-  UmaHistogramAspectRatio("Media.VideoVisibleAspectRatio",
-                          video_config.visible_rect());
-
-  // TODO(hubbe): make better color space statistics
-
-  // Note the PRESUBMIT_IGNORE_UMA_MAX below, this silences the PRESUBMIT.py
-  // check for uma enum max usage, since we're abusing
-  // UMA_HISTOGRAM_ENUMERATION to report a discrete value.
-  UMA_HISTOGRAM_ENUMERATION("Media.VideoColorRange", color_range,
-                            AVCOL_RANGE_NB);  // PRESUBMIT_IGNORE_UMA_MAX
 }
 
 static const char kCodecNone[] = "none";
@@ -658,6 +641,15 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   if (packet->flags & AV_PKT_FLAG_KEY)
     buffer->set_is_key_frame(true);
 
+  // One last sanity check on the packet timestamps in case any of the above
+  // calculations have pushed the values to the limits.
+  if (buffer->timestamp() == kNoTimestamp ||
+      buffer->timestamp() == kInfiniteDuration) {
+    MEDIA_LOG(ERROR, media_log_) << "FFmpegDemuxer: PTS is not defined";
+    demuxer_->NotifyDemuxerError(DEMUXER_ERROR_COULD_NOT_PARSE);
+    return;
+  }
+
   last_packet_timestamp_ = buffer->timestamp();
   last_packet_duration_ = buffer->duration();
 
@@ -799,8 +791,13 @@ void FFmpegDemuxerStream::InitBitstreamConverter() {
       break;
 #endif
     case AV_CODEC_ID_AAC:
-      bitstream_converter_.reset(
-          new FFmpegAACBitstreamConverter(stream_->codecpar));
+      // FFmpeg doesn't understand xHE-AAC profiles yet, which can't be put in
+      // ADTS anyways, so skip bitstream conversion when the profile is
+      // unknown.
+      if (audio_config_->profile() != AudioCodecProfile::kXHE_AAC) {
+        bitstream_converter_.reset(
+            new FFmpegAACBitstreamConverter(stream_->codecpar));
+      }
       break;
     default:
       break;
@@ -909,20 +906,19 @@ FFmpegDemuxer::FFmpegDemuxer(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     DataSource* data_source,
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
-    const MediaTracksUpdatedCB& media_tracks_updated_cb,
+    MediaTracksUpdatedCB media_tracks_updated_cb,
     MediaLog* media_log,
     bool is_local_file)
     : task_runner_(task_runner),
       // FFmpeg has no asynchronous API, so we use base::WaitableEvents inside
       // the BlockingUrlProtocol to handle hops to the render thread for network
       // reads and seeks.
-      blocking_task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::USER_BLOCKING})),
+      blocking_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING})),
       data_source_(data_source),
       media_log_(media_log),
       encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
-      media_tracks_updated_cb_(media_tracks_updated_cb),
+      media_tracks_updated_cb_(std::move(media_tracks_updated_cb)),
       is_local_file_(is_local_file) {
   DCHECK(task_runner_.get());
   DCHECK(data_source_);
@@ -1163,6 +1159,11 @@ int64_t FFmpegDemuxer::GetMemoryUsage() const {
   return allocation_size;
 }
 
+base::Optional<container_names::MediaContainerName>
+FFmpegDemuxer::GetContainerForMetrics() const {
+  return container();
+}
+
 void FFmpegDemuxer::OnEncryptedMediaInitData(
     EmeInitDataType init_data_type,
     const std::string& encryption_key_id) {
@@ -1253,10 +1254,10 @@ void FFmpegDemuxer::OnOpenContextDone(bool result) {
   // Fully initialize AVFormatContext by parsing the stream a little.
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&avformat_find_stream_info, glue_->format_context(),
-                 static_cast<AVDictionary**>(nullptr)),
-      base::Bind(&FFmpegDemuxer::OnFindStreamInfoDone,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&avformat_find_stream_info, glue_->format_context(),
+                     static_cast<AVDictionary**>(nullptr)),
+      base::BindOnce(&FFmpegDemuxer::OnFindStreamInfoDone,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void FFmpegDemuxer::OnFindStreamInfoDone(int result) {

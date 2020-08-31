@@ -26,7 +26,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/background/background_mode_optimizer.h"
 #include "chrome/browser/browser_process.h"
@@ -34,6 +36,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -66,6 +69,7 @@
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_family.h"
 
@@ -100,13 +104,28 @@ void RecordMenuItemClick(MenuItem item) {
 bool BackgroundModeManager::should_restart_in_background_ = false;
 
 BackgroundModeManager::BackgroundModeData::BackgroundModeData(
+    BackgroundModeManager* manager,
     Profile* profile,
     CommandIdHandlerVector* command_id_handler_vector)
-    : applications_(std::make_unique<BackgroundApplicationListModel>(profile)),
+    : manager_(manager),
+      applications_(std::make_unique<BackgroundApplicationListModel>(profile)),
       profile_(profile),
-      command_id_handler_vector_(command_id_handler_vector) {}
+      command_id_handler_vector_(command_id_handler_vector) {
+  profile_observer_.Add(profile_);
+}
 
-BackgroundModeManager::BackgroundModeData::~BackgroundModeData() {
+BackgroundModeManager::BackgroundModeData::~BackgroundModeData() = default;
+
+void BackgroundModeManager::BackgroundModeData::SetTracker(
+    extensions::InstallationTracker* tracker) {
+  installation_tracker_observer_.Add(tracker);
+}
+
+void BackgroundModeManager::BackgroundModeData::OnProfileWillBeDestroyed(
+    Profile* profile) {
+  DCHECK_EQ(profile_, profile);
+  profile_observer_.RemoveAll();
+  installation_tracker_observer_.RemoveAll();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -124,6 +143,11 @@ void BackgroundModeManager::BackgroundModeData::ExecuteCommand(
       command_id_handler_vector_->at(command_id).Run();
       break;
   }
+}
+
+void BackgroundModeManager::BackgroundModeData::
+    OnForceInstalledExtensionsReady() {
+  manager_->ReleaseForceInstalledExtensionsKeepAlive();
 }
 
 Browser* BackgroundModeManager::BackgroundModeData::GetBrowserWindow() {
@@ -155,7 +179,8 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
           base::RetainedRef(application)));
       menu->AddItem(command_id, base::UTF8ToUTF16(name));
       if (!icon.isNull())
-        menu->SetIcon(menu->GetItemCount() - 1, gfx::Image(icon));
+        menu->SetIcon(menu->GetItemCount() - 1,
+                      ui::ImageModel::FromImageSkia(icon));
 
       // Component extensions with background that do not have an options page
       // will cause this menu item to go to the extensions page with an
@@ -267,6 +292,10 @@ BackgroundModeManager::BackgroundModeManager(
     keep_alive_for_startup_.reset(
         new ScopedKeepAlive(KeepAliveOrigin::BACKGROUND_MODE_MANAGER_STARTUP,
                             KeepAliveRestartOption::DISABLED));
+    // Wait for force-installed extensions to install, as well.
+    keep_alive_for_force_installed_extensions_.reset(new ScopedKeepAlive(
+        KeepAliveOrigin::BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS,
+        KeepAliveRestartOption::DISABLED));
   } else {
     // Otherwise, start with background mode suspended in case we're launching
     // in a mode that doesn't open a browser window. It will be resumed when the
@@ -316,7 +345,7 @@ void BackgroundModeManager::RegisterPrefs(PrefRegistrySimple* registry) {
 void BackgroundModeManager::RegisterProfile(Profile* profile) {
   // We don't want to register multiple times for one profile.
   DCHECK(!base::Contains(background_mode_data_, profile));
-  auto bmd = std::make_unique<BackgroundModeData>(profile,
+  auto bmd = std::make_unique<BackgroundModeData>(this, profile,
                                                   &command_id_handler_vector_);
   BackgroundModeData* bmd_ptr = bmd.get();
   background_mode_data_[profile] = std::move(bmd);
@@ -349,8 +378,9 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
 void BackgroundModeManager::LaunchBackgroundApplication(
     Profile* profile,
     const Extension* extension) {
-  apps::LaunchService::Get(profile)->OpenApplication(
-      CreateAppLaunchParamsUserContainer(
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(CreateAppLaunchParamsUserContainer(
           profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
           apps::mojom::AppLaunchSource::kSourceBackground));
 }
@@ -408,7 +438,7 @@ void BackgroundModeManager::Observe(
     it.second->applications()->RemoveObserver(this);
 }
 
-void BackgroundModeManager::OnExtensionsReady(const Profile* profile) {
+void BackgroundModeManager::OnExtensionsReady(Profile* profile) {
   BackgroundModeManager::BackgroundModeData* bmd =
       GetBackgroundModeData(profile);
   if (bmd) {
@@ -418,6 +448,14 @@ void BackgroundModeManager::OnExtensionsReady(const Profile* profile) {
   // Extensions are loaded, so we don't need to manually keep the browser
   // process alive any more when running in no-startup-window mode.
   ReleaseStartupKeepAlive();
+
+  auto* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  auto* tracker = extension_service->forced_extensions_tracker();
+  if (tracker->IsReady() || !bmd)
+    ReleaseForceInstalledExtensionsKeepAlive();
+  else
+    bmd->SetTracker(tracker);
 }
 
 void BackgroundModeManager::OnBackgroundModeEnabledPrefChanged() {
@@ -592,7 +630,6 @@ void BackgroundModeManager::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //  BackgroundModeManager, private
 void BackgroundModeManager::ReleaseStartupKeepAliveCallback() {
@@ -610,6 +647,21 @@ void BackgroundModeManager::ReleaseStartupKeepAlive() {
         FROM_HERE,
         base::BindOnce(&BackgroundModeManager::ReleaseStartupKeepAliveCallback,
                        base::Unretained(this)));
+  }
+}
+
+void BackgroundModeManager::ReleaseForceInstalledExtensionsKeepAlive() {
+  if (keep_alive_for_force_installed_extensions_) {
+    // We call this via the message queue to make sure we don't try to end
+    // keep-alive (which can shutdown Chrome) before the message loop has
+    // started. This object reference is safe because it's going to be kept
+    // alive by the browser process until after the callback is called.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](std::unique_ptr<ScopedKeepAlive> keep_alive) {
+                         // Cleans up unique_ptr when it goes out of scope.
+                       },
+                       std::move(keep_alive_for_force_installed_extensions_)));
   }
 }
 

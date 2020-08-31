@@ -37,9 +37,9 @@ ThrottledOfflineContentProvider::~ThrottledOfflineContentProvider() {
   wrapped_provider_->RemoveObserver(this);
 }
 
-void ThrottledOfflineContentProvider::OpenItem(LaunchLocation location,
+void ThrottledOfflineContentProvider::OpenItem(const OpenParams& open_params,
                                                const ContentId& id) {
-  wrapped_provider_->OpenItem(location, id);
+  wrapped_provider_->OpenItem(open_params, id);
   FlushUpdates();
 }
 
@@ -81,7 +81,7 @@ void ThrottledOfflineContentProvider::GetAllItems(
 void ThrottledOfflineContentProvider::OnGetAllItemsDone(
     MultipleItemCallback callback,
     const OfflineItemList& items) {
-  for (const auto item : items)
+  for (const auto& item : items)
     UpdateItemIfPresent(item);
   std::move(callback).Run(items);
 }

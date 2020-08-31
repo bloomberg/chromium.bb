@@ -41,16 +41,16 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
     options.scope = scope_;
     registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
         options, 1L /* registration_id */, context->AsWeakPtr());
-    version_ = base::MakeRefCounted<ServiceWorkerVersion>(
-        registration_.get(), script_url_, blink::mojom::ScriptType::kClassic,
-        context->storage()->NewVersionId(), context->AsWeakPtr());
+    version_ = CreateNewServiceWorkerVersion(
+        context->registry(), registration_.get(), script_url_,
+        blink::mojom::ScriptType::kClassic);
 
     provider_host_ = CreateProviderHostForServiceWorkerContext(
         helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
         version_.get(), context->AsWeakPtr(), &remote_endpoint_);
 
     factory_ = std::make_unique<ServiceWorkerScriptLoaderFactory>(
-        helper_->context()->AsWeakPtr(), provider_host_,
+        helper_->context()->AsWeakPtr(), provider_host_->GetWeakPtr(),
         helper_->url_loader_factory_getter()->GetNetworkFactory());
   }
 
@@ -60,8 +60,8 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
     mojo::PendingRemote<network::mojom::URLLoader> loader;
     network::ResourceRequest resource_request;
     resource_request.url = script_url_;
-    resource_request.resource_type =
-        static_cast<int>(ResourceType::kServiceWorker);
+    resource_request.destination =
+        network::mojom::RequestDestination::kServiceWorker;
     factory_->CreateLoaderAndStart(
         loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
         0 /* request_id */, network::mojom::kURLLoadOptionNone,
@@ -79,7 +79,7 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
   GURL script_url_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  std::unique_ptr<ServiceWorkerProviderHost> provider_host_;
   ServiceWorkerRemoteProviderEndpoint remote_endpoint_;
   std::unique_ptr<ServiceWorkerScriptLoaderFactory> factory_;
 };
@@ -103,7 +103,7 @@ TEST_F(ServiceWorkerScriptLoaderFactoryTest, Redundant) {
 }
 
 TEST_F(ServiceWorkerScriptLoaderFactoryTest, NoProviderHost) {
-  helper_->context()->RemoveProviderHost(provider_host_->provider_id());
+  provider_host_.reset();
 
   network::TestURLLoaderClient client;
   mojo::PendingRemote<network::mojom::URLLoader> loader =
@@ -129,16 +129,13 @@ TEST_F(ServiceWorkerScriptLoaderFactoryTest, ContextDestroyed) {
 class ServiceWorkerScriptLoaderFactoryCopyResumeTest
     : public ServiceWorkerScriptLoaderFactoryTest {
  public:
-  ServiceWorkerScriptLoaderFactoryCopyResumeTest() {
-    feature_list_.InitAndEnableFeature(
-        blink::features::kServiceWorkerImportedScriptUpdateCheck);
-  }
   ~ServiceWorkerScriptLoaderFactoryCopyResumeTest() override = default;
 
   void SetUp() override {
     ServiceWorkerScriptLoaderFactoryTest::SetUp();
-    WriteToDiskCacheSync(helper_->context()->storage(), script_url_,
-                         kOldResourceId, kOldHeaders, kOldData, std::string());
+    WriteToDiskCacheWithIdSync(helper_->context()->storage(), script_url_,
+                               kOldResourceId, kOldHeaders, kOldData,
+                               std::string());
   }
 
   void CheckResponse(const std::string& expected_body) {
@@ -157,7 +154,6 @@ class ServiceWorkerScriptLoaderFactoryCopyResumeTest
   }
 
  protected:
-  base::test::ScopedFeatureList feature_list_;
   network::TestURLLoaderClient client_;
   const std::vector<std::pair<std::string, std::string>> kOldHeaders = {
       {"Content-Type", "text/javascript"},
@@ -191,7 +187,7 @@ TEST_F(ServiceWorkerScriptLoaderFactoryCopyResumeTest,
        CreateResumeTypeScriptLoader) {
   const std::string kNewHeaders =
       "HTTP/1.0 200 OK\0Content-Type: text/javascript\0Content-Length: 0\0\0";
-  const std::string kNewData = "";
+  const std::string kNewData;
 
   ServiceWorkerUpdateCheckTestUtils::CreateAndSetComparedScriptInfoForVersion(
       script_url_, 0, kNewHeaders, kNewData, kOldResourceId, kNewResourceId,

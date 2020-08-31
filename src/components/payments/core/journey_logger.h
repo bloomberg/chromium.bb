@@ -140,7 +140,19 @@ class JourneyLogger {
     NOT_SHOWN_REASON_MAX = 4,
   };
 
-  JourneyLogger(bool is_incognito, ukm::SourceId source_id);
+  // Transactions fall in one of the following categories after converting to
+  // USD.
+  enum class TransactionSize {
+    // 0$ transactions.
+    kZeroTransaction = 0,
+    // Transaction value <= 1$.
+    kMicroTransaction = 1,
+    // Transaction value > 1$.
+    kRegularTransaction = 2,
+    kMaxValue = kRegularTransaction,
+  };
+
+  JourneyLogger(bool is_incognito, ukm::SourceId payment_request_source_id);
   ~JourneyLogger();
 
   // Increments the number of selection adds for the specified section.
@@ -202,6 +214,9 @@ class JourneyLogger {
 
   // Records when Payment Request .show is called.
   void SetTriggerTime();
+
+  // Sets the ukm source id of the selected app when it gets invoked.
+  void SetPaymentAppUkmSourceId(ukm::SourceId payment_app_source_id);
 
  private:
   static const int NUMBER_OF_SECTIONS = 3;
@@ -273,7 +288,8 @@ class JourneyLogger {
   // checkout duration.
   base::TimeTicks trigger_time_;
 
-  ukm::SourceId source_id_;
+  ukm::SourceId payment_request_source_id_;
+  ukm::SourceId payment_app_source_id_ = ukm::kInvalidSourceId;
 
   DISALLOW_COPY_AND_ASSIGN(JourneyLogger);
 };

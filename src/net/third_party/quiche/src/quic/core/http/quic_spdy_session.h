@@ -24,7 +24,8 @@
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_optional.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/spdy/core/http2_frame_decoder_adapter.h"
 
 namespace quic {
@@ -60,20 +61,73 @@ class QUIC_EXPORT_PRIVATE Http3DebugVisitor {
 
   virtual ~Http3DebugVisitor();
 
+  // TODO(https://crbug.com/1062700): Remove default implementation of all
+  // methods after Chrome's QuicHttp3Logger has overrides.  This is to make sure
+  // QUICHE merge is not blocked on having to add those overrides, they can
+  // happen asynchronously.
+
+  // Creation of unidirectional streams.
+
+  // Called when locally-initiated control stream is created.
+  virtual void OnControlStreamCreated(QuicStreamId /*stream_id*/) {}
+  // Called when locally-initiated QPACK encoder stream is created.
+  virtual void OnQpackEncoderStreamCreated(QuicStreamId /*stream_id*/) {}
+  // Called when locally-initiated QPACK decoder stream is created.
+  virtual void OnQpackDecoderStreamCreated(QuicStreamId /*stream_id*/) {}
   // Called when peer's control stream type is received.
   virtual void OnPeerControlStreamCreated(QuicStreamId /*stream_id*/) = 0;
-
   // Called when peer's QPACK encoder stream type is received.
   virtual void OnPeerQpackEncoderStreamCreated(QuicStreamId /*stream_id*/) = 0;
-
   // Called when peer's QPACK decoder stream type is received.
   virtual void OnPeerQpackDecoderStreamCreated(QuicStreamId /*stream_id*/) = 0;
 
-  // Called when SETTINGS frame is received.
+  // Incoming HTTP/3 frames on the control stream.
+  virtual void OnCancelPushFrameReceived(const CancelPushFrame& /*frame*/) {}
   virtual void OnSettingsFrameReceived(const SettingsFrame& /*frame*/) = 0;
+  virtual void OnGoAwayFrameReceived(const GoAwayFrame& /*frame*/) {}
+  virtual void OnMaxPushIdFrameReceived(const MaxPushIdFrame& /*frame*/) {}
+  virtual void OnPriorityUpdateFrameReceived(
+      const PriorityUpdateFrame& /*frame*/) {}
 
-  // Called when SETTINGS frame is sent.
+  // Incoming HTTP/3 frames on request or push streams.
+  virtual void OnDataFrameReceived(QuicStreamId /*stream_id*/,
+                                   QuicByteCount /*payload_length*/) {}
+  virtual void OnHeadersFrameReceived(
+      QuicStreamId /*stream_id*/,
+      QuicByteCount /*compressed_headers_length*/) {}
+  virtual void OnHeadersDecoded(QuicStreamId /*stream_id*/,
+                                QuicHeaderList /*headers*/) {}
+  virtual void OnPushPromiseFrameReceived(QuicStreamId /*stream_id*/,
+                                          QuicStreamId /*push_id*/,
+                                          QuicByteCount
+                                          /*compressed_headers_length*/) {}
+  virtual void OnPushPromiseDecoded(QuicStreamId /*stream_id*/,
+                                    QuicStreamId /*push_id*/,
+                                    QuicHeaderList /*headers*/) {}
+
+  // Incoming HTTP/3 frames of unknown type on any stream.
+  virtual void OnUnknownFrameReceived(QuicStreamId /*stream_id*/,
+                                      uint64_t /*frame_type*/,
+                                      QuicByteCount /*payload_length*/) {}
+
+  // Outgoing HTTP/3 frames on the control stream.
   virtual void OnSettingsFrameSent(const SettingsFrame& /*frame*/) = 0;
+  virtual void OnGoAwayFrameSent(QuicStreamId /*stream_id*/) {}
+  virtual void OnMaxPushIdFrameSent(const MaxPushIdFrame& /*frame*/) {}
+  virtual void OnPriorityUpdateFrameSent(const PriorityUpdateFrame& /*frame*/) {
+  }
+
+  // Outgoing HTTP/3 frames on request or push streams.
+  virtual void OnDataFrameSent(QuicStreamId /*stream_id*/,
+                               QuicByteCount /*payload_length*/) {}
+  virtual void OnHeadersFrameSent(
+      QuicStreamId /*stream_id*/,
+      const spdy::SpdyHeaderBlock& /*header_block*/) {}
+  virtual void OnPushPromiseFrameSent(
+      QuicStreamId /*stream_id*/,
+      QuicStreamId
+      /*push_id*/,
+      const spdy::SpdyHeaderBlock& /*header_block*/) {}
 };
 
 // A QUIC session for HTTP.
@@ -95,10 +149,10 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   void Initialize() override;
 
   // QpackEncoder::DecoderStreamErrorDelegate implementation.
-  void OnDecoderStreamError(QuicStringPiece error_message) override;
+  void OnDecoderStreamError(quiche::QuicheStringPiece error_message) override;
 
   // QpackDecoder::EncoderStreamErrorDelegate implementation.
-  void OnEncoderStreamError(QuicStringPiece error_message) override;
+  void OnEncoderStreamError(quiche::QuicheStringPiece error_message) override;
 
   // Called by |headers_stream_| when headers with a priority have been
   // received for a stream.  This method will only be called for server streams.
@@ -127,6 +181,14 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   virtual void OnPriorityFrame(QuicStreamId stream_id,
                                const spdy::SpdyStreamPrecedence& precedence);
 
+  // Called when an HTTP/3 PRIORITY_UPDATE frame has been received for a request
+  // stream.  Returns false and closes connection if |stream_id| is invalid.
+  bool OnPriorityUpdateForRequestStream(QuicStreamId stream_id, int urgency);
+
+  // Called when an HTTP/3 PRIORITY_UPDATE frame has been received for a push
+  // stream.  Returns false and closes connection if |push_id| is invalid.
+  bool OnPriorityUpdateForPushStream(QuicStreamId push_id, int urgency);
+
   // Sends contents of |iov| to h2_deframer_, returns number of bytes processed.
   size_t ProcessHeaderData(const struct iovec& iov);
 
@@ -141,20 +203,23 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
       const spdy::SpdyStreamPrecedence& precedence,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
-  // Writes a PRIORITY frame the to peer. Returns the size in bytes of the
-  // resulting PRIORITY frame for QUIC_VERSION_43 and above. Otherwise, does
+  // Writes an HTTP/2 PRIORITY frame the to peer. Returns the size in bytes of
+  // the resulting PRIORITY frame for QUIC_VERSION_43 and above. Otherwise, does
   // nothing and returns 0.
   size_t WritePriority(QuicStreamId id,
                        QuicStreamId parent_stream_id,
                        int weight,
                        bool exclusive);
 
-  // Writes a HTTP/3 PRIORITY frame to the peer.
-  void WriteH3Priority(const PriorityFrame& priority);
+  // Writes an HTTP/3 PRIORITY_UPDATE frame to the peer.
+  void WriteHttp3PriorityUpdate(const PriorityUpdateFrame& priority_update);
 
   // Process received HTTP/3 GOAWAY frame. This method should only be called on
   // the client side.
   virtual void OnHttp3GoAway(QuicStreamId stream_id);
+
+  // Send GOAWAY if the peer is blocked on the implementation max.
+  bool OnStreamsBlockedFrame(const QuicStreamsBlockedFrame& frame) override;
 
   // Write the GOAWAY |frame| on control stream.
   void SendHttp3GoAway();
@@ -171,7 +236,18 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
 
   const QuicHeadersStream* headers_stream() const { return headers_stream_; }
 
-  bool server_push_enabled() const { return server_push_enabled_; }
+  // Returns whether server push is enabled.
+  // For a Google QUIC client this always returns false.
+  // For a Google QUIC server this is set by incoming SETTINGS_ENABLE_PUSH.
+  // For an IETF QUIC client this returns true if SetMaxPushId() has ever been
+  // called.
+  // For an IETF QUIC server this returns true if EnableServerPush() has been
+  // called and the server has received at least one MAX_PUSH_ID frame from the
+  // client.
+  bool server_push_enabled() const;
+
+  // Called when the control stream receives HTTP/3 SETTINGS.
+  virtual void OnSettingsFrame(const SettingsFrame& frame);
 
   // Called when a setting is parsed from an incoming SETTINGS frame.
   void OnSetting(uint64_t id, uint64_t value);
@@ -231,9 +307,35 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // those streams are not initialized yet.
   void OnCanCreateNewOutgoingStream(bool unidirectional) override;
 
-  void SetMaxAllowedPushId(QuicStreamId max_allowed_push_id);
+  // Sets |max_push_id_| and sends a MAX_PUSH_ID frame.
+  // This method must only be called if protocol is IETF QUIC and perspective is
+  // client.  |max_push_id| must be greater than or equal to current
+  // |max_push_id_|.
+  void SetMaxPushId(PushId max_push_id);
 
-  QuicStreamId max_allowed_push_id() { return max_allowed_push_id_; }
+  // Sets |max_push_id_|.
+  // This method must only be called if protocol is IETF QUIC and perspective is
+  // server.  It must only be called if a MAX_PUSH_ID frame is received.
+  // Returns whether |max_push_id| is greater than or equal to current
+  // |max_push_id_|.
+  bool OnMaxPushIdFrame(PushId max_push_id);
+
+  // Enables server push.
+  // Must only be called when using IETF QUIC, for which server push is disabled
+  // by default.  Server push defaults to enabled and cannot be disabled for
+  // Google QUIC.
+  // Must only be called for a server.  A client can effectively disable push by
+  // never calling SetMaxPushId().
+  void EnableServerPush();
+
+  // Returns true if push is enabled and a push with |push_id| can be created.
+  // For a server this means that EnableServerPush() has been called, at least
+  // one MAX_PUSH_ID frame has been received, and the largest received
+  // MAX_PUSH_ID value is greater than or equal to |push_id|.
+  // For a client this means that SetMaxPushId() has been called with
+  // |max_push_id| greater than or equal to |push_id|.
+  // Must only be called when using IETF QUIC.
+  bool CanCreatePushStreamWithId(PushId push_id);
 
   int32_t destruction_indicator() const { return destruction_indicator_; }
 
@@ -273,6 +375,11 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
            (qpack_decoder_ && qpack_decoder_->dynamic_table_entry_referenced());
   }
 
+  void OnStreamCreated(QuicSpdyStream* stream);
+
+  // Decode SETTINGS from |cached_state| and apply it to the session.
+  bool SetApplicationState(ApplicationState* cached_state) override;
+
  protected:
   // Override CreateIncomingStream(), CreateOutgoingBidirectionalStream() and
   // CreateOutgoingUnidirectionalStream() with QuicSpdyStream return type to
@@ -282,7 +389,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   virtual QuicSpdyStream* CreateOutgoingBidirectionalStream() = 0;
   virtual QuicSpdyStream* CreateOutgoingUnidirectionalStream() = 0;
 
-  QuicSpdyStream* GetSpdyDataStream(const QuicStreamId stream_id);
+  QuicSpdyStream* GetOrCreateSpdyDataStream(const QuicStreamId stream_id);
 
   // If an incoming stream can be created, return true.
   virtual bool ShouldCreateIncomingStream(QuicStreamId id) = 0;
@@ -312,10 +419,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
       bool exclusive,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
-  void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
-  void SetDefaultEncryptionLevel(quic::EncryptionLevel level) override;
-
-  bool supports_push_promise() { return supports_push_promise_; }
+  void OnNewEncryptionKeyAvailable(
+      EncryptionLevel level,
+      std::unique_ptr<QuicEncrypter> encrypter) override;
 
   // Optional, enables instrumentation related to go/quic-hpack.
   void SetHpackEncoderDebugVisitor(
@@ -340,9 +446,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // Initializes HTTP/3 unidirectional streams if not yet initialzed.
   virtual void MaybeInitializeHttp3UnidirectionalStreams();
 
-  void set_max_uncompressed_header_bytes(
-      size_t set_max_uncompressed_header_bytes);
-
   void SendMaxPushId();
 
  private:
@@ -363,7 +466,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
                   const spdy::SpdyStreamPrecedence& precedence);
 
   void CloseConnectionOnDuplicateHttp3UnidirectionalStreams(
-      QuicStringPiece type);
+      quiche::QuicheStringPiece type);
 
   // Sends any data which should be sent at the start of a connection,
   // including the initial SETTINGS frame, etc.
@@ -408,12 +511,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
 
   // The maximum size of a header block that can be sent to the peer. This field
   // is informed and set by the peer via SETTINGS frame.
-  // TODO(renjietang): Honor this field when sending headers.
+  // TODO(b/148616439): Honor this field when sending headers.
   size_t max_outbound_header_list_size_;
-
-  // Set during handshake. If true, resources in x-associated-content and link
-  // headers will be pushed.
-  bool server_push_enabled_;
 
   // Data about the stream whose headers are being processed.
   QuicStreamId stream_id_;
@@ -421,12 +520,26 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   bool fin_;
   size_t frame_len_;
 
-  bool supports_push_promise_;
-
   spdy::SpdyFramer spdy_framer_;
   http2::Http2DecoderAdapter h2_deframer_;
   std::unique_ptr<SpdyFramerVisitor> spdy_framer_visitor_;
-  QuicStreamId max_allowed_push_id_;
+
+  // Used in Google QUIC only.  Set every time SETTINGS_ENABLE_PUSH is received.
+  // Defaults to true.
+  bool server_push_enabled_;
+
+  // Used in IETF QUIC only.  Defaults to false.
+  // Server push is enabled for a server by calling EnableServerPush().
+  // Server push is enabled for a client by calling SetMaxPushId().
+  bool ietf_server_push_enabled_;
+
+  // Used in IETF QUIC only.  Unset until a MAX_PUSH_ID frame is received/sent.
+  // For a server, the push ID in the most recently received MAX_PUSH_ID frame.
+  // For a client before 1-RTT keys are available, the push ID to be sent in the
+  // initial MAX_PUSH_ID frame.
+  // For a client after 1-RTT keys are available, the push ID in the most
+  // recently sent MAX_PUSH_ID frame.
+  quiche::QuicheOptional<PushId> max_push_id_;
 
   // An integer used for live check. The indicator is assigned a value in
   // constructor. As long as it is not the assigned value, that would indicate
@@ -441,8 +554,14 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // If the endpoint has sent HTTP/3 GOAWAY frame.
   bool http3_goaway_sent_;
 
-  // If the sendpoint has sent the initial HTTP/3 MAX_PUSH_ID frame.
+  // If SendMaxPushId() has been called from SendInitialData().  Note that a
+  // MAX_PUSH_ID frame is only sent if SetMaxPushId() had been called
+  // beforehand.
   bool http3_max_push_id_sent_;
+
+  // Priority values received in PRIORITY_UPDATE frames for streams that are not
+  // open yet.
+  QuicUnorderedMap<QuicStreamId, int> buffered_stream_priorities_;
 };
 
 }  // namespace quic

@@ -29,20 +29,14 @@ class XRPlane : public ScriptWrappable {
 
   XRPlane(uint64_t id,
           XRSession* session,
-          const device::mojom::blink::XRPlaneDataPtr& plane_data,
-          double timestamp);
-  XRPlane(uint64_t id,
-          XRSession* session,
-          const base::Optional<Orientation>& orientation,
-          const TransformationMatrix& pose_matrix,
-          const HeapVector<Member<DOMPointReadOnly>>& polygon,
+          const device::mojom::blink::XRPlaneData& plane_data,
           double timestamp);
 
   uint64_t id() const;
 
   XRSpace* planeSpace() const;
 
-  TransformationMatrix poseMatrix() const;
+  base::Optional<TransformationMatrix> MojoFromObject() const;
 
   String orientation() const;
   HeapVector<Member<DOMPointReadOnly>> polygon() const;
@@ -50,24 +44,32 @@ class XRPlane : public ScriptWrappable {
 
   ScriptPromise createAnchor(ScriptState* script_state,
                              XRRigidTransform* initial_pose,
-                             XRSpace* space,
                              ExceptionState& exception_state);
 
   // Updates plane data from passed in |plane_data|. The resulting instance
   // should be equivalent to the instance that would be create by calling
   // XRPlane(plane_data).
-  void Update(const device::mojom::blink::XRPlaneDataPtr& plane_data,
+  void Update(const device::mojom::blink::XRPlaneData& plane_data,
               double timestamp);
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
+  XRPlane(uint64_t id,
+          XRSession* session,
+          const base::Optional<Orientation>& orientation,
+          const HeapVector<Member<DOMPointReadOnly>>& polygon,
+          double timestamp);
+
+  void SetMojoFromPlane(const TransformationMatrix& mojo_from_plane);
+
   const uint64_t id_;
   HeapVector<Member<DOMPointReadOnly>> polygon_;
   base::Optional<Orientation> orientation_;
 
-  // Plane center's pose in device (mojo) space.
-  std::unique_ptr<TransformationMatrix> pose_matrix_;
+  // Plane center's pose in device (mojo) space.  Nullptr if the pose of the
+  // anchor is unknown in the current frame.
+  std::unique_ptr<TransformationMatrix> mojo_from_plane_;
 
   Member<XRSession> session_;
 

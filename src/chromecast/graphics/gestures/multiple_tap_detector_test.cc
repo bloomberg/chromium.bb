@@ -7,14 +7,12 @@
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
-#include "ui/wm/core/default_screen_position_client.h"
 
 using testing::_;
 using testing::Eq;
@@ -39,10 +37,6 @@ class MultipleTapDetectorTest : public aura::test::AuraTestBase {
 
   void SetUp() override {
     aura::test::AuraTestBase::SetUp();
-
-    screen_position_client_.reset(new wm::DefaultScreenPositionClient());
-    aura::client::SetScreenPositionClient(root_window(),
-                                          screen_position_client_.get());
 
     triple_tap_delegate_ = std::make_unique<MockMultipleTapDetectorDelegate>();
     triple_tap_detector_ = std::make_unique<MultipleTapDetector>(
@@ -77,16 +71,16 @@ class MultipleTapDetectorTest : public aura::test::AuraTestBase {
 
   // Simulate a tap event.
   void Tap(const gfx::Point& tap_point) {
-    ui::TouchEvent press(
-        ui::ET_TOUCH_PRESSED, tap_point, simulated_clock_.NowTicks(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                           ui::kPointerIdUnknown));
+    ui::TouchEvent press(ui::ET_TOUCH_PRESSED, tap_point,
+                         simulated_clock_.NowTicks(),
+                         ui::PointerDetails(ui::EventPointerType::kTouch,
+                                            ui::kPointerIdUnknown));
     generator_->Dispatch(&press);
     simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(kTapLengthMs));
-    ui::TouchEvent release(
-        ui::ET_TOUCH_RELEASED, tap_point, simulated_clock_.NowTicks(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                           ui::kPointerIdUnknown));
+    ui::TouchEvent release(ui::ET_TOUCH_RELEASED, tap_point,
+                           simulated_clock_.NowTicks(),
+                           ui::PointerDetails(ui::EventPointerType::kTouch,
+                                              ui::kPointerIdUnknown));
     generator_->Dispatch(&release);
   }
 
@@ -98,8 +92,6 @@ class MultipleTapDetectorTest : public aura::test::AuraTestBase {
  private:
   ui::GestureDetector::Config gesture_detector_config_;
 
-  std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
-
   std::unique_ptr<MultipleTapDetector> triple_tap_detector_;
   std::unique_ptr<MockMultipleTapDetectorDelegate> triple_tap_delegate_;
   base::SimpleTestTickClock simulated_clock_;
@@ -109,7 +101,6 @@ class MultipleTapDetectorTest : public aura::test::AuraTestBase {
 // Verify that a simple correct triple tap triggers the delegate.
 TEST_F(MultipleTapDetectorTest, TripleTap) {
   EXPECT_CALL(delegate(), OnTripleTap(Eq(kTestTapLocation))).Times(1);
-  ;
   EXPECT_CALL(delegate(), OnDoubleTap(Eq(kTestTapLocation))).Times(0);
 
   detector().set_enabled(true);

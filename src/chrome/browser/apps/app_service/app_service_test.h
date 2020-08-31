@@ -38,6 +38,8 @@ class AppServiceTest {
  private:
   AppServiceProxy* app_service_proxy_ = nullptr;
 
+  Profile* profile_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(AppServiceTest);
 };
 

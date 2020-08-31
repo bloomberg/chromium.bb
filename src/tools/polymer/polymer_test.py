@@ -16,6 +16,7 @@ _HERE_DIR = os.path.dirname(__file__)
 class PolymerModulizerTest(unittest.TestCase):
   def setUp(self):
     self._out_folder = None
+    self._additional_flags = []
 
   def tearDown(self):
     if self._out_folder:
@@ -40,7 +41,7 @@ class PolymerModulizerTest(unittest.TestCase):
       '--auto_imports',
       'ui/webui/resources/html/polymer.html|Polymer,html',
       'third_party/polymer/v1_0/components-chromium/paper-behaviors/paper-ripple-behavior.html|PaperRippleBehavior',
-    ])
+    ] + self._additional_flags)
 
     actual_js = self._read_out_file(js_out_file)
     expected_js = open(os.path.join(
@@ -73,6 +74,41 @@ class PolymerModulizerTest(unittest.TestCase):
     self._run_test(
         'dom-module', 'dom_module.html', 'dom_module_with_define.js',
         'dom_module_with_define.m.js', 'dom_module_with_define_expected.js')
+
+  # Test case where HTML is extracted from a Polymer2 <dom-module> that has
+  # ignore annotations.
+  def testDomModuleWithIgnore(self):
+    self._run_test('dom-module', 'dom_module.html', 'dom_module_with_ignore.js',
+                   'dom_module_with_ignore.m.js',
+                   'dom_module_with_ignore_expected.js')
+
+  # Test case where some HTML imports should be ignored.
+  def testDomModuleWithIgnoreImports(self):
+    self._additional_flags = [
+      '--ignore_imports',
+      'ui/webui/resources/html/ignore_me.html',
+    ]
+    self._run_test('dom-module', 'dom_module.html', 'dom_module.js',
+                   'dom_module.m.js',
+                   'dom_module_with_ignore_imports_expected.js')
+
+  # Test case where some HTML imports have already been fully migrated to
+  # Polymer3.
+  def testDomModuleWithMigratedImports(self):
+    self._additional_flags = [
+      '--migrated_imports',
+      'tools/polymer/tests/foo.html',
+    ]
+    self._run_test('dom-module', 'dom_module.html', 'dom_module.js',
+                   'dom_module.m.js',
+                   'dom_module_with_migrated_imports_expected.js')
+
+  # Test case where HTML is extracted from a Polymer2 <dom-module> that also
+  # uses <if expr> for imports.
+  def testDomModuleWithConditionalImport(self):
+    self._run_test('dom-module', 'dom_module_with_if_expr.html',
+                   'dom_module.js', 'dom_module.m.js',
+                   'dom_module_with_if_expr_expected.js')
 
   # Test case where HTML is extracted from a Polymer2 style module.
   def testStyleModule(self):

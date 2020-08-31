@@ -15,10 +15,11 @@ import static org.chromium.chrome.browser.ui.appmenu.AppMenuAdapterTest.buildTit
 
 import android.graphics.drawable.Drawable;
 import android.support.test.filters.MediumTest;
-import android.support.v7.content.res.AppCompatResources;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,9 +33,9 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ui.appmenu.test.R;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
-import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.DummyUiActivityTestCase;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,8 +66,7 @@ public class AppMenuAdapterRenderTest extends DummyUiActivityTestCase {
     }
 
     @Rule
-    public RenderTestRule mRenderTestRule =
-            new RenderTestRule("chrome/test/data/android/render_tests");
+    public ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
 
     @Override
     public void setUpTest() throws Exception {

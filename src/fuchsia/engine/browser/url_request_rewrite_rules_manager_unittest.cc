@@ -50,11 +50,11 @@ TEST_F(UrlRequestRewriteRulesManagerTest, ConvertAddHeader) {
   ASSERT_EQ(cached_rules->data.size(), 1u);
   ASSERT_FALSE(cached_rules->data[0]->hosts_filter);
   ASSERT_FALSE(cached_rules->data[0]->schemes_filter);
-  ASSERT_EQ(cached_rules->data[0]->rewrites.size(), 1u);
-  ASSERT_TRUE(cached_rules->data[0]->rewrites[0]->is_add_headers());
+  ASSERT_EQ(cached_rules->data[0]->actions.size(), 1u);
+  ASSERT_TRUE(cached_rules->data[0]->actions[0]->is_add_headers());
 
   const net::HttpRequestHeaders& headers =
-      cached_rules->data[0]->rewrites[0]->get_add_headers()->headers;
+      cached_rules->data[0]->actions[0]->get_add_headers()->headers;
   ASSERT_EQ(headers.GetHeaderVector().size(), 1u);
 
   std::string value;
@@ -72,11 +72,11 @@ TEST_F(UrlRequestRewriteRulesManagerTest, ConvertRemoveHeader) {
   ASSERT_EQ(cached_rules->data.size(), 1u);
   ASSERT_FALSE(cached_rules->data[0]->hosts_filter);
   ASSERT_FALSE(cached_rules->data[0]->schemes_filter);
-  ASSERT_EQ(cached_rules->data[0]->rewrites.size(), 1u);
-  ASSERT_TRUE(cached_rules->data[0]->rewrites[0]->is_remove_header());
+  ASSERT_EQ(cached_rules->data[0]->actions.size(), 1u);
+  ASSERT_TRUE(cached_rules->data[0]->actions[0]->is_remove_header());
 
   const mojom::UrlRequestRewriteRemoveHeaderPtr& remove_header1 =
-      cached_rules->data[0]->rewrites[0]->get_remove_header();
+      cached_rules->data[0]->actions[0]->get_remove_header();
   ASSERT_TRUE(remove_header1->query_pattern);
   ASSERT_EQ(remove_header1->query_pattern.value().compare("Test"), 0);
   ASSERT_EQ(remove_header1->header_name.compare("Header"), 0);
@@ -89,11 +89,11 @@ TEST_F(UrlRequestRewriteRulesManagerTest, ConvertRemoveHeader) {
   ASSERT_EQ(cached_rules->data.size(), 1u);
   ASSERT_FALSE(cached_rules->data[0]->hosts_filter);
   ASSERT_FALSE(cached_rules->data[0]->schemes_filter);
-  ASSERT_EQ(cached_rules->data[0]->rewrites.size(), 1u);
-  ASSERT_TRUE(cached_rules->data[0]->rewrites[0]->is_remove_header());
+  ASSERT_EQ(cached_rules->data[0]->actions.size(), 1u);
+  ASSERT_TRUE(cached_rules->data[0]->actions[0]->is_remove_header());
 
   const mojom::UrlRequestRewriteRemoveHeaderPtr& remove_header2 =
-      cached_rules->data[0]->rewrites[0]->get_remove_header();
+      cached_rules->data[0]->actions[0]->get_remove_header();
   ASSERT_FALSE(remove_header2->query_pattern);
   ASSERT_EQ(remove_header2->header_name.compare("Header"), 0);
 }
@@ -110,13 +110,12 @@ TEST_F(UrlRequestRewriteRulesManagerTest, ConvertSubstituteQueryPattern) {
   ASSERT_EQ(cached_rules->data.size(), 1u);
   ASSERT_FALSE(cached_rules->data[0]->hosts_filter);
   ASSERT_FALSE(cached_rules->data[0]->schemes_filter);
-  ASSERT_EQ(cached_rules->data[0]->rewrites.size(), 1u);
-  ASSERT_TRUE(
-      cached_rules->data[0]->rewrites[0]->is_substitute_query_pattern());
+  ASSERT_EQ(cached_rules->data[0]->actions.size(), 1u);
+  ASSERT_TRUE(cached_rules->data[0]->actions[0]->is_substitute_query_pattern());
 
   const mojom::UrlRequestRewriteSubstituteQueryPatternPtr&
       substitute_query_pattern =
-          cached_rules->data[0]->rewrites[0]->get_substitute_query_pattern();
+          cached_rules->data[0]->actions[0]->get_substitute_query_pattern();
   ASSERT_EQ(substitute_query_pattern->pattern.compare("Pattern"), 0);
   ASSERT_EQ(substitute_query_pattern->substitution.compare("Substitution"), 0);
 }
@@ -132,13 +131,31 @@ TEST_F(UrlRequestRewriteRulesManagerTest, ConvertReplaceUrl) {
   ASSERT_EQ(cached_rules->data.size(), 1u);
   ASSERT_FALSE(cached_rules->data[0]->hosts_filter);
   ASSERT_FALSE(cached_rules->data[0]->schemes_filter);
-  ASSERT_EQ(cached_rules->data[0]->rewrites.size(), 1u);
-  ASSERT_TRUE(cached_rules->data[0]->rewrites[0]->is_replace_url());
+  ASSERT_EQ(cached_rules->data[0]->actions.size(), 1u);
+  ASSERT_TRUE(cached_rules->data[0]->actions[0]->is_replace_url());
 
   const mojom::UrlRequestRewriteReplaceUrlPtr& replace_url =
-      cached_rules->data[0]->rewrites[0]->get_replace_url();
+      cached_rules->data[0]->actions[0]->get_replace_url();
   ASSERT_EQ(replace_url->url_ends_with.compare("/something"), 0);
   ASSERT_EQ(replace_url->new_url.spec().compare(url.spec()), 0);
+}
+
+// Tests AppendToQuery rewrites are properly converted to their Mojo equivalent.
+TEST_F(UrlRequestRewriteRulesManagerTest, ConvertAppendToQuery) {
+  EXPECT_EQ(UpdateRulesFromRewrite(
+                cr_fuchsia::CreateRewriteAppendToQuery("foo=bar&foo")),
+            ZX_OK);
+  scoped_refptr<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>
+      cached_rules = url_request_rewrite_rules_manager_->GetCachedRules();
+  ASSERT_EQ(cached_rules->data.size(), 1u);
+  ASSERT_FALSE(cached_rules->data[0]->hosts_filter);
+  ASSERT_FALSE(cached_rules->data[0]->schemes_filter);
+  ASSERT_EQ(cached_rules->data[0]->actions.size(), 1u);
+  ASSERT_TRUE(cached_rules->data[0]->actions[0]->is_append_to_query());
+
+  const mojom::UrlRequestRewriteAppendToQueryPtr& append_to_query =
+      cached_rules->data[0]->actions[0]->get_append_to_query();
+  ASSERT_EQ(append_to_query->query.compare("foo=bar&foo"), 0);
 }
 
 // Tests validation is working as expected.
@@ -200,6 +217,13 @@ TEST_F(UrlRequestRewriteRulesManagerTest, Validation) {
     rewrite.set_replace_url(fuchsia::web::UrlRequestRewriteReplaceUrl());
     EXPECT_EQ(UpdateRulesFromRewrite(std::move(rewrite)), ZX_ERR_INVALID_ARGS);
   }
+
+  // Empty AppendToQuery.
+  {
+    fuchsia::web::UrlRequestRewrite rewrite;
+    rewrite.set_append_to_query(fuchsia::web::UrlRequestRewriteAppendToQuery());
+    EXPECT_EQ(UpdateRulesFromRewrite(std::move(rewrite)), ZX_ERR_INVALID_ARGS);
+  }
 }
 
 // Tests rules are properly renewed after new rules are sent.
@@ -210,10 +234,10 @@ TEST_F(UrlRequestRewriteRulesManagerTest, RuleRenewal) {
   scoped_refptr<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>
       cached_rules = url_request_rewrite_rules_manager_->GetCachedRules();
   ASSERT_EQ(cached_rules->data.size(), 1u);
-  ASSERT_EQ(cached_rules->data[0]->rewrites.size(), 1u);
-  ASSERT_TRUE(cached_rules->data[0]->rewrites[0]->is_add_headers());
+  ASSERT_EQ(cached_rules->data[0]->actions.size(), 1u);
+  ASSERT_TRUE(cached_rules->data[0]->actions[0]->is_add_headers());
   ASSERT_TRUE(
-      cached_rules->data[0]->rewrites[0]->get_add_headers()->headers.HasHeader(
+      cached_rules->data[0]->actions[0]->get_add_headers()->headers.HasHeader(
           "Test1"));
 
   EXPECT_EQ(UpdateRulesFromRewrite(
@@ -223,10 +247,10 @@ TEST_F(UrlRequestRewriteRulesManagerTest, RuleRenewal) {
   // We should have the new rules.
   cached_rules = url_request_rewrite_rules_manager_->GetCachedRules();
   ASSERT_EQ(cached_rules->data.size(), 1u);
-  ASSERT_EQ(cached_rules->data[0]->rewrites.size(), 1u);
-  ASSERT_TRUE(cached_rules->data[0]->rewrites[0]->is_add_headers());
+  ASSERT_EQ(cached_rules->data[0]->actions.size(), 1u);
+  ASSERT_TRUE(cached_rules->data[0]->actions[0]->is_add_headers());
   ASSERT_TRUE(
-      cached_rules->data[0]->rewrites[0]->get_add_headers()->headers.HasHeader(
+      cached_rules->data[0]->actions[0]->get_add_headers()->headers.HasHeader(
           "Test2"));
 }
 

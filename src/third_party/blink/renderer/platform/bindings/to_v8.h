@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/union_base.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -44,7 +45,7 @@ inline v8::Local<v8::Value> ToV8(ScriptWrappable* impl,
 
 // Dictionary
 
-inline v8::Local<v8::Value> ToV8(bindings::DictionaryBase* dictionary,
+inline v8::Local<v8::Value> ToV8(const bindings::DictionaryBase* dictionary,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   if (UNLIKELY(!dictionary))
@@ -83,6 +84,17 @@ inline v8::Local<v8::Value> ToV8(CallbackInterfaceBase* callback,
           &ScriptState::From(creation_context->CreationContext())->World()));
   return callback ? callback->CallbackObject().As<v8::Value>()
                   : v8::Null(isolate).As<v8::Value>();
+}
+
+// Union type
+
+inline v8::Local<v8::Value> ToV8(const bindings::UnionBase& value,
+                                 v8::Local<v8::Object> creation_context,
+                                 v8::Isolate* isolate) {
+  v8::Local<v8::Value> v8_value =
+      value.CreateV8Object(isolate, creation_context);
+  DCHECK(!v8_value.IsEmpty());
+  return v8_value;
 }
 
 // Primitives
@@ -208,27 +220,27 @@ inline v8::Local<v8::Value> ToV8(const base::Optional<InnerType>& value,
 // Declare the function here but define it later so it can call the ToV8()
 // overloads below.
 template <typename Sequence>
-inline v8::Local<v8::Value> ToV8SequenceInternal(
+inline v8::Local<v8::Array> ToV8SequenceInternal(
     const Sequence&,
     v8::Local<v8::Object> creation_context,
     v8::Isolate*);
 
 template <typename T, size_t Extent>
-inline v8::Local<v8::Value> ToV8(base::span<T, Extent> value,
+inline v8::Local<v8::Array> ToV8(base::span<T, Extent> value,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   return ToV8SequenceInternal(value, creation_context, isolate);
 }
 
 template <typename T, wtf_size_t inlineCapacity>
-inline v8::Local<v8::Value> ToV8(const Vector<T, inlineCapacity>& value,
+inline v8::Local<v8::Array> ToV8(const Vector<T, inlineCapacity>& value,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   return ToV8SequenceInternal(value, creation_context, isolate);
 }
 
 template <typename T, wtf_size_t inlineCapacity>
-inline v8::Local<v8::Value> ToV8(const HeapVector<T, inlineCapacity>& value,
+inline v8::Local<v8::Array> ToV8(const HeapVector<T, inlineCapacity>& value,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   return ToV8SequenceInternal(value, creation_context, isolate);
@@ -289,7 +301,7 @@ inline v8::Local<v8::Value> ToV8(const HeapVector<std::pair<String, T>>& value,
 }
 
 template <typename Sequence>
-inline v8::Local<v8::Value> ToV8SequenceInternal(
+inline v8::Local<v8::Array> ToV8SequenceInternal(
     const Sequence& sequence,
     v8::Local<v8::Object> creation_context,
     v8::Isolate* isolate) {
@@ -312,7 +324,7 @@ inline v8::Local<v8::Value> ToV8SequenceInternal(
     if (!array->CreateDataProperty(context, index++, value)
              .To(&created_property) ||
         !created_property) {
-      return v8::Local<v8::Value>();
+      return v8::Local<v8::Array>();
     }
   }
   return array;

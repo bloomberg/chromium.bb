@@ -14,8 +14,8 @@
 namespace openscreen {
 namespace osp {
 
-FakeQuicBridge::FakeQuicBridge(platform::FakeTaskRunner* task_runner,
-                               platform::ClockNowFunctionPtr now_function)
+FakeQuicBridge::FakeQuicBridge(FakeTaskRunner* task_runner,
+                               ClockNowFunctionPtr now_function)
     : task_runner_(task_runner) {
   fake_bridge =
       std::make_unique<FakeQuicConnectionFactoryBridge>(kControllerEndpoint);
@@ -27,8 +27,8 @@ FakeQuicBridge::FakeQuicBridge(platform::FakeTaskRunner* task_runner,
 
   auto fake_client_factory =
       std::make_unique<FakeClientQuicConnectionFactory>(fake_bridge.get());
-  client_socket_ = std::make_unique<platform::FakeUdpSocket>(
-      task_runner_, fake_client_factory.get());
+  client_socket_ =
+      std::make_unique<FakeUdpSocket>(task_runner_, fake_client_factory.get());
 
   quic_client = std::make_unique<QuicClient>(
       controller_demuxer.get(), std::move(fake_client_factory),
@@ -36,8 +36,8 @@ FakeQuicBridge::FakeQuicBridge(platform::FakeTaskRunner* task_runner,
 
   auto fake_server_factory =
       std::make_unique<FakeServerQuicConnectionFactory>(fake_bridge.get());
-  server_socket_ = std::make_unique<platform::FakeUdpSocket>(
-      task_runner_, fake_server_factory.get());
+  server_socket_ =
+      std::make_unique<FakeUdpSocket>(task_runner_, fake_server_factory.get());
   ServerConfig config;
   config.connection_endpoints.push_back(kReceiverEndpoint);
   quic_server = std::make_unique<QuicServer>(
@@ -51,13 +51,13 @@ FakeQuicBridge::FakeQuicBridge(platform::FakeTaskRunner* task_runner,
 FakeQuicBridge::~FakeQuicBridge() = default;
 
 void FakeQuicBridge::PostClientPacket() {
-  platform::UdpPacket packet;
+  UdpPacket packet;
   packet.set_socket(client_socket_.get());
   client_socket_->MockReceivePacket(std::move(packet));
 }
 
 void FakeQuicBridge::PostServerPacket() {
-  platform::UdpPacket packet;
+  UdpPacket packet;
   packet.set_socket(server_socket_.get());
   server_socket_->MockReceivePacket(std::move(packet));
 }

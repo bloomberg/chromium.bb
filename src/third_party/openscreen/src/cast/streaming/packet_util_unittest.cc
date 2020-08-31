@@ -7,8 +7,8 @@
 #include "absl/types/span.h"
 #include "gtest/gtest.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 namespace {
 
 // Tests that a simple RTCP packet containing only a Sender Report can be
@@ -181,5 +181,5 @@ TEST(PacketUtilTest, InspectsGarbagePacket) {
 }
 
 }  // namespace
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

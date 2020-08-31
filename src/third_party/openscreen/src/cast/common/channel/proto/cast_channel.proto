@@ -6,12 +6,21 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
+// TODO(crbug.com/openscreen/90): Rename to openscreen.cast, to update to the
+// current namespacing of the library. Also, this file should probably be moved
+// to the public directory. And, all of this will have to be coordinated with a
+// DEPS roll in Chromium (since Chromium code depends on this).
 package cast.channel;
 
 message CastMessage {
   // Always pass a version of the protocol for future compatibility
   // requirements.
-  enum ProtocolVersion { CASTV2_1_0 = 0; }
+  enum ProtocolVersion {
+    CASTV2_1_0 = 0;
+    CASTV2_1_1 = 1;  // message chunking support (deprecated).
+    CASTV2_1_2 = 2;  // reworked message chunking.
+    CASTV2_1_3 = 3;  // binary payload over utf8.
+  }
   required ProtocolVersion protocol_version = 1;
 
   // source and destination ids identify the origin and destination of the
@@ -49,6 +58,20 @@ message CastMessage {
   // will always be set.
   optional string payload_utf8 = 6;
   optional bytes payload_binary = 7;
+
+  // --- Begin new 1.1 fields.
+
+  // Flag indicating whether there are more chunks to follow for this message.
+  // If the flag is false or is not present, then this is the last (or only)
+  // chunk of the message.
+  optional bool continued = 8;
+
+  // If this is a chunk of a larger message, and the remaining length of the
+  // message payload (the sum of the lengths of the payloads of the remaining
+  // chunks) is known, this field will indicate that length. For a given
+  // chunked message, this field should either be present in all of the chunks,
+  // or in none of them.
+  optional uint32 remaining_length = 9;
 }
 
 enum SignatureAlgorithm {

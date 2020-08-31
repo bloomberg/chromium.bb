@@ -21,14 +21,19 @@
 
 namespace blink {
 
-CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name)
+CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name,
+                             bool threaded_compositing_enabled)
     : CSSImageGeneratorValue(kPaintClass),
       name_(name),
       paint_image_generator_observer_(MakeGarbageCollected<Observer>(this)),
       off_thread_paint_state_(
-          RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()
-              ? OffThreadPaintState::kUnknown
-              : OffThreadPaintState::kMainThread) {}
+          (!threaded_compositing_enabled ||
+           !RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled())
+              ? OffThreadPaintState::kMainThread
+              : OffThreadPaintState::kUnknown) {}
+
+CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name)
+    : CSSPaintValue(name, Thread::CompositorThread()) {}
 
 CSSPaintValue::CSSPaintValue(
     CSSCustomIdentValue* name,
@@ -57,34 +62,38 @@ String CSSPaintValue::GetName() const {
 
 const Vector<CSSPropertyID>* CSSPaintValue::NativeInvalidationProperties(
     const Document& document) const {
-  if (!generators_.Contains(&document))
+  const CSSPaintImageGenerator* generator = generators_.at(&document);
+  if (!generator)
     return nullptr;
-  return &(generators_.at(&document)->NativeInvalidationProperties());
+  return &generator->NativeInvalidationProperties();
 }
 
 const Vector<AtomicString>* CSSPaintValue::CustomInvalidationProperties(
     const Document& document) const {
-  if (!generators_.Contains(&document))
+  const CSSPaintImageGenerator* generator = generators_.at(&document);
+  if (!generator)
     return nullptr;
-  return &(generators_.at(&document)->CustomInvalidationProperties());
+  return &generator->CustomInvalidationProperties();
 }
 
 bool CSSPaintValue::IsUsingCustomProperty(
     const AtomicString& custom_property_name,
     const Document& document) const {
-  if (!generators_.Contains(&document) ||
-      !generators_.at(&document)->IsImageGeneratorReady())
+  const CSSPaintImageGenerator* generator = generators_.at(&document);
+  if (!generator || !generator->IsImageGeneratorReady())
     return false;
-  return generators_.at(&document)->CustomInvalidationProperties().Contains(
+  return generator->CustomInvalidationProperties().Contains(
       custom_property_name);
 }
 
-void CSSPaintValue::CreateGeneratorForTesting(const Document& document) {
-  if (!generators_.Contains(&document)) {
-    generators_.insert(
-        &document, CSSPaintImageGenerator::Create(
-                       GetName(), document, paint_image_generator_observer_));
+CSSPaintImageGenerator& CSSPaintValue::EnsureGenerator(
+    const Document& document) {
+  auto& generator = generators_.insert(&document, nullptr).stored_value->value;
+  if (!generator) {
+    generator = CSSPaintImageGenerator::Create(GetName(), document,
+                                               paint_image_generator_observer_);
   }
+  return *generator;
 }
 
 scoped_refptr<Image> CSSPaintValue::GetImage(
@@ -97,16 +106,12 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
   if (style.InsideLink() != EInsideLink::kNotInsideLink)
     return nullptr;
 
-  if (!generators_.Contains(&document)) {
-    generators_.insert(
-        &document, CSSPaintImageGenerator::Create(
-                       GetName(), document, paint_image_generator_observer_));
-  }
+  CSSPaintImageGenerator& generator = EnsureGenerator(document);
 
   // If the generator isn't ready yet, we have nothing to paint. Our
   // |paint_image_generator_observer_| will cause us to be called again once the
   // generator is ready.
-  if (!generators_.at(&document)->IsImageGeneratorReady())
+  if (!generator.IsImageGeneratorReady())
     return nullptr;
 
   if (!ParseInputArguments(document))
@@ -138,10 +143,10 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
     // ElementId, then create one for it.
     layout_object.GetMutableForPainting().EnsureId();
 
-    Vector<CSSPropertyID> native_properties =
-        generators_.at(&document)->NativeInvalidationProperties();
-    Vector<AtomicString> custom_properties =
-        generators_.at(&document)->CustomInvalidationProperties();
+    const Vector<CSSPropertyID>& native_properties =
+        generator.NativeInvalidationProperties();
+    const Vector<AtomicString>& custom_properties =
+        generator.CustomInvalidationProperties();
     float zoom = layout_object.StyleRef().EffectiveZoom();
     CompositorPaintWorkletInput::PropertyKeys input_property_keys;
     auto style_data = PaintWorkletStylePropertyMap::BuildCrossThreadData(
@@ -161,16 +166,15 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
       scoped_refptr<PaintWorkletInput> input =
           base::MakeRefCounted<PaintWorkletInput>(
               GetName(), target_size, zoom, device_scale_factor,
-              generators_.at(&document)->WorkletId(),
-              std::move(style_data.value()),
+              generator.WorkletId(), std::move(style_data.value()),
               std::move(cross_thread_input_arguments),
               std::move(input_property_keys));
       return PaintWorkletDeferredImage::Create(std::move(input), target_size);
     }
   }
 
-  return generators_.at(&document)->Paint(
-      client, target_size, parsed_input_arguments_, device_scale_factor);
+  return generator.Paint(client, target_size, parsed_input_arguments_,
+                         device_scale_factor);
 }
 
 void CSSPaintValue::BuildInputArgumentValues(
@@ -236,7 +240,8 @@ void CSSPaintValue::PaintImageGeneratorReady() {
 
 bool CSSPaintValue::KnownToBeOpaque(const Document& document,
                                     const ComputedStyle&) const {
-  return generators_.at(&document) && !generators_.at(&document)->HasAlpha();
+  const CSSPaintImageGenerator* generator = generators_.at(&document);
+  return generator && !generator->HasAlpha();
 }
 
 bool CSSPaintValue::Equals(const CSSPaintValue& other) const {
@@ -244,7 +249,7 @@ bool CSSPaintValue::Equals(const CSSPaintValue& other) const {
          CustomCSSText() == other.CustomCSSText();
 }
 
-void CSSPaintValue::TraceAfterDispatch(blink::Visitor* visitor) {
+void CSSPaintValue::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(name_);
   visitor->Trace(generators_);
   visitor->Trace(paint_image_generator_observer_);

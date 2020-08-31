@@ -92,12 +92,6 @@ class BASE_EXPORT SequenceManager {
     // If true, add the timestamp the task got queued to the task.
     bool add_queue_time_to_tasks = false;
 
-    // If true, the scheduler will bypass the priority-based anti-starvation
-    // logic that prevents indefinite starvation of lower priority tasks in the
-    // presence of higher priority tasks by occasionally selecting lower
-    // priority task queues over higher priority task queues.
-    bool anti_starvation_logic_for_priorities_disabled = false;
-
 #if DCHECK_IS_ON()
     // TODO(alexclarke): Consider adding command line flags to control these.
     enum class TaskLogging {
@@ -150,8 +144,7 @@ class BASE_EXPORT SequenceManager {
 
   // Returns the task runner the current task was posted on. Returns null if no
   // task is currently running. Must be called on the bound thread.
-  virtual const scoped_refptr<SequencedTaskRunner>&
-  GetTaskRunnerForCurrentTask() = 0;
+  virtual scoped_refptr<SequencedTaskRunner> GetTaskRunnerForCurrentTask() = 0;
 
   // Finishes the initialization for a SequenceManager created via
   // CreateUnboundSequenceManager(). Must not be called in any other
@@ -279,18 +272,6 @@ class BASE_EXPORT SequenceManager::Settings::Builder {
   // Whether or not queueing timestamp will be added to tasks.
   Builder& SetAddQueueTimeToTasks(bool add_queue_time_to_tasks);
 
-  // Sets whether priority-based anti-starvation logic is disabled. By default,
-  // the scheduler uses priority-based anti-starvation logic that prevents
-  // indefinite starvation of lower priority tasks in the presence of higher
-  // priority tasks by occasionally selecting lower priority task queues over
-  // higher priority task queues.
-  //
-  // Note: this does not affect the anti-starvation logic that is in place for
-  // preventing delayed tasks from starving immediate tasks, which is always
-  // enabled.
-  Builder& SetAntiStarvationLogicForPrioritiesDisabled(
-      bool anti_starvation_logic_for_priorities_disabled);
-
 #if DCHECK_IS_ON()
   // Controls task execution logging.
   Builder& SetTaskLogging(TaskLogging task_execution_logging);
@@ -350,12 +331,6 @@ CreateSequenceManagerOnCurrentThreadWithPump(
 // initialized on the current thread and then needs to be bound and initialized
 // on the target thread by calling one of the Bind*() methods.
 BASE_EXPORT std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
-    SequenceManager::Settings settings = SequenceManager::Settings());
-
-// Create a SequenceManager that runs on top of |task_runner|.
-// TODO(alexclarke): Change |task_runner| to a SequencedTaskRunner.
-BASE_EXPORT std::unique_ptr<SequenceManager> CreateFunneledSequenceManager(
-    scoped_refptr<SingleThreadTaskRunner> task_runner,
     SequenceManager::Settings settings = SequenceManager::Settings());
 
 }  // namespace sequence_manager

@@ -43,20 +43,21 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
                                 bool use_legacy_parsing) {
   switch (property) {
     case CSSPropertyID::kAnimationDelay:
-      return css_property_parser_helpers::ConsumeTime(range, kValueRangeAll);
+      return css_property_parser_helpers::ConsumeTime(range, context,
+                                                      kValueRangeAll);
     case CSSPropertyID::kAnimationDirection:
       return css_property_parser_helpers::ConsumeIdent<
           CSSValueID::kNormal, CSSValueID::kAlternate, CSSValueID::kReverse,
           CSSValueID::kAlternateReverse>(range);
     case CSSPropertyID::kAnimationDuration:
-      return css_property_parser_helpers::ConsumeTime(range,
+      return css_property_parser_helpers::ConsumeTime(range, context,
                                                       kValueRangeNonNegative);
     case CSSPropertyID::kAnimationFillMode:
       return css_property_parser_helpers::ConsumeIdent<
           CSSValueID::kNone, CSSValueID::kForwards, CSSValueID::kBackwards,
           CSSValueID::kBoth>(range);
     case CSSPropertyID::kAnimationIterationCount:
-      return css_parsing_utils::ConsumeAnimationIterationCount(range);
+      return css_parsing_utils::ConsumeAnimationIterationCount(range, context);
     case CSSPropertyID::kAnimationName:
       return css_parsing_utils::ConsumeAnimationName(range, context,
                                                      use_legacy_parsing);
@@ -65,7 +66,7 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
                                                        CSSValueID::kPaused>(
           range);
     case CSSPropertyID::kAnimationTimingFunction:
-      return css_parsing_utils::ConsumeAnimationTimingFunction(range);
+      return css_parsing_utils::ConsumeAnimationTimingFunction(range, context);
     default:
       NOTREACHED();
       return nullptr;
@@ -670,7 +671,7 @@ bool BorderRadius::ParseShorthand(
   CSSValue* vertical_radii[4] = {nullptr};
 
   if (!css_parsing_utils::ConsumeRadii(horizontal_radii, vertical_radii, range,
-                                       context.Mode(),
+                                       context,
                                        local_context.UseAliasParsing()))
     return false;
 
@@ -739,14 +740,14 @@ bool BorderSpacing::ParseShorthand(
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValue* horizontal_spacing =
-      ConsumeLength(range, context.Mode(), kValueRangeNonNegative,
+      ConsumeLength(range, context, kValueRangeNonNegative,
                     css_property_parser_helpers::UnitlessQuirk::kAllow);
   if (!horizontal_spacing)
     return false;
   CSSValue* vertical_spacing = horizontal_spacing;
   if (!range.AtEnd()) {
     vertical_spacing =
-        ConsumeLength(range, context.Mode(), kValueRangeNonNegative,
+        ConsumeLength(range, context, kValueRangeNonNegative,
                       css_property_parser_helpers::UnitlessQuirk::kAllow);
   }
   if (!vertical_spacing || !range.AtEnd())
@@ -854,15 +855,15 @@ const CSSValue* ColumnRule::CSSValueFromComputedStyleInternal(
 bool Columns::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
-    const CSSParserContext&,
+    const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValue* column_width = nullptr;
   CSSValue* column_count = nullptr;
-  if (!css_parsing_utils::ConsumeColumnWidthOrCount(range, column_width,
-                                                    column_count))
+  if (!css_parsing_utils::ConsumeColumnWidthOrCount(range, context,
+                                                    column_width, column_count))
     return false;
-  css_parsing_utils::ConsumeColumnWidthOrCount(range, column_width,
+  css_parsing_utils::ConsumeColumnWidthOrCount(range, context, column_width,
                                                column_count);
   if (!range.AtEnd())
     return false;
@@ -909,7 +910,7 @@ bool Flex::ParseShorthand(bool important,
     unsigned index = 0;
     while (!range.AtEnd() && index++ < 3) {
       double num;
-      if (css_property_parser_helpers::ConsumeNumberRaw(range, num)) {
+      if (css_property_parser_helpers::ConsumeNumberRaw(range, context, num)) {
         if (num < 0)
           return false;
         if (flex_grow == kUnsetValue) {
@@ -930,7 +931,7 @@ bool Flex::ParseShorthand(bool important,
           flex_basis = css_property_parser_helpers::ConsumeIdent(range);
         if (!flex_basis) {
           flex_basis = css_property_parser_helpers::ConsumeLengthOrPercent(
-              range, context.Mode(), kValueRangeNonNegative);
+              range, context, kValueRangeNonNegative);
         }
         if (index == 2 && !range.AtEnd())
           return false;
@@ -1095,7 +1096,7 @@ bool ConsumeFont(bool important,
     }
     if (!font_style &&
         (id == CSSValueID::kItalic || id == CSSValueID::kOblique)) {
-      font_style = css_parsing_utils::ConsumeFontStyle(range, context.Mode());
+      font_style = css_parsing_utils::ConsumeFontStyle(range, context);
       if (!font_style)
         return false;
       continue;
@@ -1109,7 +1110,7 @@ bool ConsumeFont(bool important,
         continue;
     }
     if (!font_weight) {
-      font_weight = css_parsing_utils::ConsumeFontWeight(range, context.Mode());
+      font_weight = css_parsing_utils::ConsumeFontWeight(range, context);
       if (font_weight)
         continue;
     }
@@ -1182,7 +1183,7 @@ bool ConsumeFont(bool important,
 
   if (css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
     CSSValue* line_height =
-        css_parsing_utils::ConsumeLineHeight(range, context.Mode());
+        css_parsing_utils::ConsumeLineHeight(range, context);
     if (!line_height)
       return false;
     css_property_parser_helpers::AddProperty(
@@ -1628,23 +1629,22 @@ bool Grid::ParseShorthand(bool important,
       auto_rows_value = CSSInitialValue::Create();
     } else {
       auto_rows_value = css_parsing_utils::ConsumeGridTrackList(
-          range, context, context.Mode(),
-          css_parsing_utils::TrackListType::kGridAuto);
+          range, context, css_parsing_utils::TrackListType::kGridAuto);
       if (!auto_rows_value)
         return false;
       if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
         return false;
     }
     if (!(template_columns =
-              css_parsing_utils::ConsumeGridTemplatesRowsOrColumns(
-                  range, context, context.Mode())))
+              css_parsing_utils::ConsumeGridTemplatesRowsOrColumns(range,
+                                                                   context)))
       return false;
     template_rows = CSSInitialValue::Create();
     auto_columns_value = CSSInitialValue::Create();
   } else {
     // 3- <grid-template-rows> / [ auto-flow && dense? ] <grid-auto-columns>?
-    template_rows = css_parsing_utils::ConsumeGridTemplatesRowsOrColumns(
-        range, context, context.Mode());
+    template_rows =
+        css_parsing_utils::ConsumeGridTemplatesRowsOrColumns(range, context);
     if (!template_rows)
       return false;
     if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
@@ -1657,8 +1657,7 @@ bool Grid::ParseShorthand(bool important,
       auto_columns_value = CSSInitialValue::Create();
     } else {
       auto_columns_value = css_parsing_utils::ConsumeGridTrackList(
-          range, context, context.Mode(),
-          css_parsing_utils::TrackListType::kGridAuto);
+          range, context, css_parsing_utils::TrackListType::kGridAuto);
       if (!auto_columns_value)
         return false;
     }
@@ -1923,25 +1922,6 @@ const CSSValue* InsetInline::CSSValueFromComputedStyleInternal(
       insetInlineShorthand(), style, layout_object, allow_visited_style);
 }
 
-bool IntrinsicSize::ParseShorthand(
-    bool important,
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext&,
-    HeapVector<CSSPropertyValue, 256>& properties) const {
-  return css_property_parser_helpers::ConsumeShorthandVia2Longhands(
-      intrinsicSizeShorthand(), important, context, range, properties);
-}
-
-const CSSValue* IntrinsicSize::CSSValueFromComputedStyleInternal(
-    const ComputedStyle& style,
-    const SVGComputedStyle&,
-    const LayoutObject* layout_object,
-    bool allow_visited_style) const {
-  return ComputedStyleUtils::ValuesForIntrinsicSizeShorthand(
-      intrinsicSizeShorthand(), style, layout_object, allow_visited_style);
-}
-
 bool ListStyle::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
@@ -2165,11 +2145,11 @@ bool Offset::ParseShorthand(
   const CSSValue* offset_rotate = nullptr;
   if (offset_path) {
     offset_distance = css_property_parser_helpers::ConsumeLengthOrPercent(
-        range, context.Mode(), kValueRangeAll);
+        range, context, kValueRangeAll);
     offset_rotate = css_parsing_utils::ConsumeOffsetRotate(range, context);
     if (offset_rotate && !offset_distance) {
       offset_distance = css_property_parser_helpers::ConsumeLengthOrPercent(
-          range, context.Mode(), kValueRangeAll);
+          range, context, kValueRangeAll);
     }
   }
   const CSSValue* offset_anchor = nullptr;
@@ -2784,14 +2764,15 @@ CSSValue* ConsumeTransitionValue(CSSPropertyID property,
                                  bool use_legacy_parsing) {
   switch (property) {
     case CSSPropertyID::kTransitionDelay:
-      return css_property_parser_helpers::ConsumeTime(range, kValueRangeAll);
+      return css_property_parser_helpers::ConsumeTime(range, context,
+                                                      kValueRangeAll);
     case CSSPropertyID::kTransitionDuration:
-      return css_property_parser_helpers::ConsumeTime(range,
+      return css_property_parser_helpers::ConsumeTime(range, context,
                                                       kValueRangeNonNegative);
     case CSSPropertyID::kTransitionProperty:
       return css_parsing_utils::ConsumeTransitionProperty(range, context);
     case CSSPropertyID::kTransitionTimingFunction:
-      return css_parsing_utils::ConsumeAnimationTimingFunction(range);
+      return css_parsing_utils::ConsumeAnimationTimingFunction(range, context);
     default:
       NOTREACHED();
       return nullptr;
@@ -2957,45 +2938,6 @@ const CSSValue* WebkitColumnBreakInside::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForWebkitColumnBreakInside(
       style.BreakInside());
-}
-
-bool WebkitMarginCollapse::ParseShorthand(
-    bool important,
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext&,
-    HeapVector<CSSPropertyValue, 256>& properties) const {
-  CSSValueID id = range.ConsumeIncludingWhitespace().Id();
-  if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-          CSSPropertyID::kWebkitMarginBeforeCollapse, id, context.Mode()))
-    return false;
-
-  CSSValue* before_collapse = CSSIdentifierValue::Create(id);
-  css_property_parser_helpers::AddProperty(
-      CSSPropertyID::kWebkitMarginBeforeCollapse,
-      CSSPropertyID::kWebkitMarginCollapse, *before_collapse, important,
-      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
-      properties);
-
-  if (range.AtEnd()) {
-    css_property_parser_helpers::AddProperty(
-        CSSPropertyID::kWebkitMarginAfterCollapse,
-        CSSPropertyID::kWebkitMarginCollapse, *before_collapse, important,
-        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
-        properties);
-    return true;
-  }
-
-  id = range.ConsumeIncludingWhitespace().Id();
-  if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-          CSSPropertyID::kWebkitMarginAfterCollapse, id, context.Mode()))
-    return false;
-  css_property_parser_helpers::AddProperty(
-      CSSPropertyID::kWebkitMarginAfterCollapse,
-      CSSPropertyID::kWebkitMarginCollapse, *CSSIdentifierValue::Create(id),
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
-      properties);
-  return true;
 }
 
 bool WebkitMaskBoxImage::ParseShorthand(

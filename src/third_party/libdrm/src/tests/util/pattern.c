@@ -23,10 +23,6 @@
  * IN THE SOFTWARE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,11 +30,12 @@
 
 #include <drm_fourcc.h>
 
-#ifdef HAVE_CAIRO
+#if HAVE_CAIRO
 #include <cairo.h>
 #include <math.h>
 #endif
 
+#include "common.h"
 #include "format.h"
 #include "pattern.h"
 
@@ -64,14 +61,100 @@ struct color_yuv {
 	  .u = MAKE_YUV_601_U(r, g, b), \
 	  .v = MAKE_YUV_601_V(r, g, b) }
 
+/* This function takes 8-bit color values */
+static inline uint32_t shiftcolor8(const struct util_color_component *comp,
+				  uint32_t value)
+{
+	value &= 0xff;
+	/* Fill the low bits with the high bits. */
+	value = (value << 8) | value;
+	/* Shift down to remove unwanted low bits */
+	value = value >> (16 - comp->length);
+	/* Shift back up to where the value should be */
+	return value << comp->offset;
+}
+
+/* This function takes 10-bit color values */
+static inline uint32_t shiftcolor10(const struct util_color_component *comp,
+				    uint32_t value)
+{
+	value &= 0x3ff;
+	/* Fill the low bits with the high bits. */
+	value = (value << 6) | (value >> 4);
+	/* Shift down to remove unwanted low bits */
+	value = value >> (16 - comp->length);
+	/* Shift back up to where the value should be */
+	return value << comp->offset;
+}
+
+/* This function takes 16-bit color values */
+static inline uint64_t shiftcolor16(const struct util_color_component *comp,
+				    uint64_t value)
+{
+	value &= 0xffff;
+	/* Shift down to remove unwanted low bits */
+	value = value >> (16 - comp->length);
+	/* Shift back up to where the value should be */
+	return value << comp->offset;
+}
+
+#define MAKE_RGBA10(rgb, r, g, b, a) \
+	(shiftcolor10(&(rgb)->red, (r)) | \
+	 shiftcolor10(&(rgb)->green, (g)) | \
+	 shiftcolor10(&(rgb)->blue, (b)) | \
+	 shiftcolor10(&(rgb)->alpha, (a)))
+
 #define MAKE_RGBA(rgb, r, g, b, a) \
-	((((r) >> (8 - (rgb)->red.length)) << (rgb)->red.offset) | \
-	 (((g) >> (8 - (rgb)->green.length)) << (rgb)->green.offset) | \
-	 (((b) >> (8 - (rgb)->blue.length)) << (rgb)->blue.offset) | \
-	 (((a) >> (8 - (rgb)->alpha.length)) << (rgb)->alpha.offset))
+	(shiftcolor8(&(rgb)->red, (r)) | \
+	 shiftcolor8(&(rgb)->green, (g)) | \
+	 shiftcolor8(&(rgb)->blue, (b)) | \
+	 shiftcolor8(&(rgb)->alpha, (a)))
 
 #define MAKE_RGB24(rgb, r, g, b) \
 	{ .value = MAKE_RGBA(rgb, r, g, b, 0) }
+
+
+/**
+  * Takes a uint16_t, divides by 65536, converts the infinite-precision
+  * result to fp16 with round-to-zero.
+  *
+  * Copied from mesa:src/util/half_float.c
+  */
+static uint16_t uint16_div_64k_to_half(uint16_t v)
+{
+	/* Zero or subnormal. Set the mantissa to (v << 8) and return. */
+	if (v < 4)
+		return v << 8;
+
+	/* Count the leading 0s in the uint16_t */
+	int n = __builtin_clz(v) - 16;
+
+	/* Shift the mantissa up so bit 16 is the hidden 1 bit,
+	 * mask it off, then shift back down to 10 bits
+	 */
+	int m = ( ((uint32_t)v << (n + 1)) & 0xffff ) >> 6;
+
+	/*  (0{n} 1 X{15-n}) * 2^-16
+	 * = 1.X * 2^(15-n-16)
+	 * = 1.X * 2^(14-n - 15)
+	 * which is the FP16 form with e = 14 - n
+	 */
+	int e = 14 - n;
+
+	return (e << 10) | m;
+}
+
+#define MAKE_RGBA8FP16(rgb, r, g, b, a) \
+	(shiftcolor16(&(rgb)->red, uint16_div_64k_to_half((r) << 8)) | \
+	 shiftcolor16(&(rgb)->green, uint16_div_64k_to_half((g) << 8)) | \
+	 shiftcolor16(&(rgb)->blue, uint16_div_64k_to_half((b) << 8)) | \
+	 shiftcolor16(&(rgb)->alpha, uint16_div_64k_to_half((a) << 8)))
+
+#define MAKE_RGBA10FP16(rgb, r, g, b, a) \
+	(shiftcolor16(&(rgb)->red, uint16_div_64k_to_half((r) << 6)) | \
+	 shiftcolor16(&(rgb)->green, uint16_div_64k_to_half((g) << 6)) | \
+	 shiftcolor16(&(rgb)->blue, uint16_div_64k_to_half((b) << 6)) | \
+	 shiftcolor16(&(rgb)->alpha, uint16_div_64k_to_half((a) << 6)))
 
 static void fill_smpte_yuv_planar(const struct util_yuv_info *yuv,
 				  unsigned char *y_mem, unsigned char *u_mem,
@@ -461,6 +544,140 @@ static void fill_smpte_rgb32(const struct util_rgb_info *rgb, void *mem,
 	}
 }
 
+static void fill_smpte_rgb16fp(const struct util_rgb_info *rgb, void *mem,
+			       unsigned int width, unsigned int height,
+			       unsigned int stride)
+{
+	const uint64_t colors_top[] = {
+		MAKE_RGBA8FP16(rgb, 192, 192, 192, 255),/* grey */
+		MAKE_RGBA8FP16(rgb, 192, 192, 0, 255),	/* yellow */
+		MAKE_RGBA8FP16(rgb, 0, 192, 192, 255),	/* cyan */
+		MAKE_RGBA8FP16(rgb, 0, 192, 0, 255),	/* green */
+		MAKE_RGBA8FP16(rgb, 192, 0, 192, 255),	/* magenta */
+		MAKE_RGBA8FP16(rgb, 192, 0, 0, 255),	/* red */
+		MAKE_RGBA8FP16(rgb, 0, 0, 192, 255),	/* blue */
+	};
+	const uint64_t colors_middle[] = {
+		MAKE_RGBA8FP16(rgb, 0, 0, 192, 127),	/* blue */
+		MAKE_RGBA8FP16(rgb, 19, 19, 19, 127),	/* black */
+		MAKE_RGBA8FP16(rgb, 192, 0, 192, 127),	/* magenta */
+		MAKE_RGBA8FP16(rgb, 19, 19, 19, 127),	/* black */
+		MAKE_RGBA8FP16(rgb, 0, 192, 192, 127),	/* cyan */
+		MAKE_RGBA8FP16(rgb, 19, 19, 19, 127),	/* black */
+		MAKE_RGBA8FP16(rgb, 192, 192, 192, 127),/* grey */
+	};
+	const uint64_t colors_bottom[] = {
+		MAKE_RGBA8FP16(rgb, 0, 33, 76, 255),	/* in-phase */
+		MAKE_RGBA8FP16(rgb, 255, 255, 255, 255),/* super white */
+		MAKE_RGBA8FP16(rgb, 50, 0, 106, 255),	/* quadrature */
+		MAKE_RGBA8FP16(rgb, 19, 19, 19, 255),	/* black */
+		MAKE_RGBA8FP16(rgb, 9, 9, 9, 255),	/* 3.5% */
+		MAKE_RGBA8FP16(rgb, 19, 19, 19, 255),	/* 7.5% */
+		MAKE_RGBA8FP16(rgb, 29, 29, 29, 255),	/* 11.5% */
+		MAKE_RGBA8FP16(rgb, 19, 19, 19, 255),	/* black */
+	};
+	unsigned int x;
+	unsigned int y;
+
+	for (y = 0; y < height * 6 / 9; ++y) {
+		for (x = 0; x < width; ++x)
+			((uint64_t *)mem)[x] = colors_top[x * 7 / width];
+		mem += stride;
+	}
+
+	for (; y < height * 7 / 9; ++y) {
+		for (x = 0; x < width; ++x)
+			((uint64_t *)mem)[x] = colors_middle[x * 7 / width];
+		mem += stride;
+	}
+
+	for (; y < height; ++y) {
+		for (x = 0; x < width * 5 / 7; ++x)
+			((uint64_t *)mem)[x] =
+				colors_bottom[x * 4 / (width * 5 / 7)];
+		for (; x < width * 6 / 7; ++x)
+			((uint64_t *)mem)[x] =
+				colors_bottom[(x - width * 5 / 7) * 3
+					      / (width / 7) + 4];
+		for (; x < width; ++x)
+			((uint64_t *)mem)[x] = colors_bottom[7];
+		mem += stride;
+	}
+}
+
+static void fill_smpte_c8(void *mem, unsigned int width, unsigned int height,
+			  unsigned int stride)
+{
+	unsigned int x;
+	unsigned int y;
+
+	for (y = 0; y < height * 6 / 9; ++y) {
+		for (x = 0; x < width; ++x)
+			((uint8_t *)mem)[x] = x * 7 / width;
+		mem += stride;
+	}
+
+	for (; y < height * 7 / 9; ++y) {
+		for (x = 0; x < width; ++x)
+			((uint8_t *)mem)[x] = 7 + (x * 7 / width);
+		mem += stride;
+	}
+
+	for (; y < height; ++y) {
+		for (x = 0; x < width * 5 / 7; ++x)
+			((uint8_t *)mem)[x] =
+				14 + (x * 4 / (width * 5 / 7));
+		for (; x < width * 6 / 7; ++x)
+			((uint8_t *)mem)[x] =
+				14 + ((x - width * 5 / 7) * 3
+					      / (width / 7) + 4);
+		for (; x < width; ++x)
+			((uint8_t *)mem)[x] = 14 + 7;
+		mem += stride;
+	}
+}
+
+void util_smpte_c8_gamma(unsigned size, struct drm_color_lut *lut)
+{
+	if (size < 7 + 7 + 8) {
+		printf("Error: gamma too small: %d < %d\n", size, 7 + 7 + 8);
+		return;
+	}
+	memset(lut, 0, size * sizeof(struct drm_color_lut));
+
+#define FILL_COLOR(idx, r, g, b) \
+	lut[idx].red = (r) << 8; \
+	lut[idx].green = (g) << 8; \
+	lut[idx].blue = (b) << 8
+
+	FILL_COLOR( 0, 192, 192, 192);	/* grey */
+	FILL_COLOR( 1, 192, 192, 0  );	/* yellow */
+	FILL_COLOR( 2, 0,   192, 192);	/* cyan */
+	FILL_COLOR( 3, 0,   192, 0  );	/* green */
+	FILL_COLOR( 4, 192, 0,   192);	/* magenta */
+	FILL_COLOR( 5, 192, 0,   0  );	/* red */
+	FILL_COLOR( 6, 0,   0,   192);	/* blue */
+
+	FILL_COLOR( 7, 0,   0,   192);	/* blue */
+	FILL_COLOR( 8, 19,  19,  19 );	/* black */
+	FILL_COLOR( 9, 192, 0,   192);	/* magenta */
+	FILL_COLOR(10, 19,  19,  19 );	/* black */
+	FILL_COLOR(11, 0,   192, 192);	/* cyan */
+	FILL_COLOR(12, 19,  19,  19 );	/* black */
+	FILL_COLOR(13, 192, 192, 192);	/* grey */
+
+	FILL_COLOR(14, 0,   33,  76);	/* in-phase */
+	FILL_COLOR(15, 255, 255, 255);	/* super white */
+	FILL_COLOR(16, 50,  0,   106);	/* quadrature */
+	FILL_COLOR(17, 19,  19,  19);	/* black */
+	FILL_COLOR(18, 9,   9,   9);	/* 3.5% */
+	FILL_COLOR(19, 19,  19,  19);	/* 7.5% */
+	FILL_COLOR(20, 29,  29,  29);	/* 11.5% */
+	FILL_COLOR(21, 19,  19,  19);	/* black */
+
+#undef FILL_COLOR
+}
+
 static void fill_smpte(const struct util_format_info *info, void *planes[3],
 		       unsigned int width, unsigned int height,
 		       unsigned int stride)
@@ -468,6 +685,8 @@ static void fill_smpte(const struct util_format_info *info, void *planes[3],
 	unsigned char *u, *v;
 
 	switch (info->format) {
+	case DRM_FORMAT_C8:
+		return fill_smpte_c8(planes[0], width, height, stride);
 	case DRM_FORMAT_UYVY:
 	case DRM_FORMAT_VYUY:
 	case DRM_FORMAT_YUYV:
@@ -535,6 +754,13 @@ static void fill_smpte(const struct util_format_info *info, void *planes[3],
 	case DRM_FORMAT_BGRX1010102:
 		return fill_smpte_rgb32(&info->rgb, planes[0],
 					width, height, stride);
+
+	case DRM_FORMAT_XRGB16161616F:
+	case DRM_FORMAT_XBGR16161616F:
+	case DRM_FORMAT_ARGB16161616F:
+	case DRM_FORMAT_ABGR16161616F:
+		return fill_smpte_rgb16fp(&info->rgb, planes[0],
+					  width, height, stride);
 	}
 }
 
@@ -546,10 +772,9 @@ static void fill_smpte(const struct util_format_info *info, void *planes[3],
 static void make_pwetty(void *data, unsigned int width, unsigned int height,
 			unsigned int stride, uint32_t format)
 {
-#ifdef HAVE_CAIRO
+#if HAVE_CAIRO
 	cairo_surface_t *surface;
 	cairo_t *cr;
-	int x, y;
 	cairo_format_t cairo_format;
 
 	/* we can ignore the order of R,G,B channels */
@@ -564,6 +789,14 @@ static void make_pwetty(void *data, unsigned int width, unsigned int height,
 	case DRM_FORMAT_BGR565:
 		cairo_format = CAIRO_FORMAT_RGB16_565;
 		break;
+#if CAIRO_VERSION_MAJOR > 1 || (CAIRO_VERSION_MAJOR == 1 && CAIRO_VERSION_MINOR >= 12)
+	case DRM_FORMAT_ARGB2101010:
+	case DRM_FORMAT_XRGB2101010:
+	case DRM_FORMAT_ABGR2101010:
+	case DRM_FORMAT_XBGR2101010:
+		cairo_format = CAIRO_FORMAT_RGB30;
+		break;
+#endif
 	default:
 		return;
 	}
@@ -576,8 +809,8 @@ static void make_pwetty(void *data, unsigned int width, unsigned int height,
 	cairo_surface_destroy(surface);
 
 	cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
-	for (x = 0; x < width; x += 250)
-		for (y = 0; y < height; y += 250) {
+	for (unsigned x = 0; x < width; x += 250)
+		for (unsigned y = 0; y < height; y += 250) {
 			char buf[64];
 
 			cairo_move_to(cr, x, y - 20);
@@ -747,6 +980,32 @@ static void fill_tiles_rgb32(const struct util_format_info *info, void *mem,
 	make_pwetty(mem_base, width, height, stride, info->format);
 }
 
+static void fill_tiles_rgb16fp(const struct util_format_info *info, void *mem,
+			       unsigned int width, unsigned int height,
+			       unsigned int stride)
+{
+	const struct util_rgb_info *rgb = &info->rgb;
+	void *mem_base = mem;
+	unsigned int x, y;
+
+	/* TODO: Give this actual fp16 precision */
+	for (y = 0; y < height; ++y) {
+		for (x = 0; x < width; ++x) {
+			div_t d = div(x+y, width);
+			uint32_t rgb32 = 0x00130502 * (d.quot >> 6)
+				       + 0x000a1120 * (d.rem >> 6);
+			uint32_t alpha = ((y < height/2) && (x < width/2)) ? 127 : 255;
+			uint64_t color =
+				MAKE_RGBA8FP16(rgb, (rgb32 >> 16) & 0xff,
+					       (rgb32 >> 8) & 0xff, rgb32 & 0xff,
+					       alpha);
+
+			((uint64_t *)mem)[x] = color;
+		}
+		mem += stride;
+	}
+}
+
 static void fill_tiles(const struct util_format_info *info, void *planes[3],
 		       unsigned int width, unsigned int height,
 		       unsigned int stride)
@@ -821,14 +1080,146 @@ static void fill_tiles(const struct util_format_info *info, void *planes[3],
 	case DRM_FORMAT_BGRX1010102:
 		return fill_tiles_rgb32(info, planes[0],
 					width, height, stride);
+
+	case DRM_FORMAT_XRGB16161616F:
+	case DRM_FORMAT_XBGR16161616F:
+	case DRM_FORMAT_ARGB16161616F:
+	case DRM_FORMAT_ABGR16161616F:
+		return fill_tiles_rgb16fp(info, planes[0],
+					  width, height, stride);
 	}
 }
 
 static void fill_plain(const struct util_format_info *info, void *planes[3],
-		       unsigned int width, unsigned int height,
+		       unsigned int height,
 		       unsigned int stride)
 {
-	memset(planes[0], 0x77, stride * height);
+	switch (info->format) {
+	case DRM_FORMAT_XRGB16161616F:
+	case DRM_FORMAT_XBGR16161616F:
+	case DRM_FORMAT_ARGB16161616F:
+	case DRM_FORMAT_ABGR16161616F:
+		/* 0x3838 = 0.5273 */
+		memset(planes[0], 0x38, stride * height);
+		break;
+	default:
+		memset(planes[0], 0x77, stride * height);
+		break;
+	}
+}
+
+static void fill_gradient_rgb32(const struct util_rgb_info *rgb,
+				void *mem,
+				unsigned int width, unsigned int height,
+				unsigned int stride)
+{
+	int i, j;
+
+	for (i = 0; i < height / 2; i++) {
+		uint32_t *row = mem;
+
+		for (j = 0; j < width / 2; j++) {
+			uint32_t value = MAKE_RGBA10(rgb, j & 0x3ff, j & 0x3ff, j & 0x3ff, 0);
+			row[2*j] = row[2*j+1] = value;
+		}
+		mem += stride;
+	}
+
+	for (; i < height; i++) {
+		uint32_t *row = mem;
+
+		for (j = 0; j < width / 2; j++) {
+			uint32_t value = MAKE_RGBA10(rgb, j & 0x3fc, j & 0x3fc, j & 0x3fc, 0);
+			row[2*j] = row[2*j+1] = value;
+		}
+		mem += stride;
+	}
+}
+
+static void fill_gradient_rgb16fp(const struct util_rgb_info *rgb,
+				  void *mem,
+				  unsigned int width, unsigned int height,
+				  unsigned int stride)
+{
+	int i, j;
+
+	for (i = 0; i < height / 2; i++) {
+		uint64_t *row = mem;
+
+		for (j = 0; j < width / 2; j++) {
+			uint64_t value = MAKE_RGBA10FP16(rgb, j & 0x3ff, j & 0x3ff, j & 0x3ff, 0);
+			row[2*j] = row[2*j+1] = value;
+		}
+		mem += stride;
+	}
+
+	for (; i < height; i++) {
+		uint64_t *row = mem;
+
+		for (j = 0; j < width / 2; j++) {
+			uint64_t value = MAKE_RGBA10FP16(rgb, j & 0x3fc, j & 0x3fc, j & 0x3fc, 0);
+			row[2*j] = row[2*j+1] = value;
+		}
+		mem += stride;
+	}
+}
+
+/* The gradient pattern creates two horizontal gray gradients, split
+ * into two halves. The top half has 10bpc precision, the bottom half
+ * has 8bpc precision. When using with a 10bpc fb format, there are 3
+ * possible outcomes:
+ *
+ *  - Pixel data is encoded as 8bpc to the display, no dithering. This
+ *    would lead to the top and bottom halves looking identical.
+ *
+ *  - Pixel data is encoded as 8bpc to the display, with dithering. This
+ *    would lead to there being a visible difference between the two halves,
+ *    but the top half would look a little speck-y due to the dithering.
+ *
+ *  - Pixel data is encoded at 10bpc+ to the display (which implies
+ *    the display is able to show this level of depth). This should
+ *    lead to the top half being a very clean gradient, and visibly different
+ *    from the bottom half.
+ *
+ * Once we support additional fb formats, this approach could be extended
+ * to distinguish even higher bpc precisions.
+ *
+ * Note that due to practical size considerations, for the screens
+ * where this matters, the pattern actually emits stripes 2-pixels
+ * wide for each gradient color. Otherwise the difference may be a bit
+ * hard to notice.
+ */
+static void fill_gradient(const struct util_format_info *info, void *planes[3],
+			  unsigned int width, unsigned int height,
+			  unsigned int stride)
+{
+	switch (info->format) {
+	case DRM_FORMAT_ARGB8888:
+	case DRM_FORMAT_XRGB8888:
+	case DRM_FORMAT_ABGR8888:
+	case DRM_FORMAT_XBGR8888:
+	case DRM_FORMAT_RGBA8888:
+	case DRM_FORMAT_RGBX8888:
+	case DRM_FORMAT_BGRA8888:
+	case DRM_FORMAT_BGRX8888:
+	case DRM_FORMAT_ARGB2101010:
+	case DRM_FORMAT_XRGB2101010:
+	case DRM_FORMAT_ABGR2101010:
+	case DRM_FORMAT_XBGR2101010:
+	case DRM_FORMAT_RGBA1010102:
+	case DRM_FORMAT_RGBX1010102:
+	case DRM_FORMAT_BGRA1010102:
+	case DRM_FORMAT_BGRX1010102:
+		return fill_gradient_rgb32(&info->rgb, planes[0],
+					   width, height, stride);
+
+	case DRM_FORMAT_XRGB16161616F:
+	case DRM_FORMAT_XBGR16161616F:
+	case DRM_FORMAT_ARGB16161616F:
+	case DRM_FORMAT_ABGR16161616F:
+		return fill_gradient_rgb16fp(&info->rgb, planes[0],
+					     width, height, stride);
+	}
 }
 
 /*
@@ -861,10 +1252,32 @@ void util_fill_pattern(uint32_t format, enum util_fill_pattern pattern,
 		return fill_smpte(info, planes, width, height, stride);
 
 	case UTIL_PATTERN_PLAIN:
-		return fill_plain(info, planes, width, height, stride);
+		return fill_plain(info, planes, height, stride);
+
+	case UTIL_PATTERN_GRADIENT:
+		return fill_gradient(info, planes, width, height, stride);
 
 	default:
 		printf("Error: unsupported test pattern %u.\n", pattern);
 		break;
 	}
+}
+
+static const char *pattern_names[] = {
+	[UTIL_PATTERN_TILES] = "tiles",
+	[UTIL_PATTERN_SMPTE] = "smpte",
+	[UTIL_PATTERN_PLAIN] = "plain",
+	[UTIL_PATTERN_GRADIENT] = "gradient",
+};
+
+enum util_fill_pattern util_pattern_enum(const char *name)
+{
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_SIZE(pattern_names); i++)
+		if (!strcmp(pattern_names[i], name))
+			return (enum util_fill_pattern)i;
+
+	printf("Error: unsupported test pattern %s.\n", name);
+	return UTIL_PATTERN_SMPTE;
 }

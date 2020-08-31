@@ -11,8 +11,10 @@
 #include "device/fido/attestation_statement_formats.h"
 #include "device/fido/attested_credential_data.h"
 #include "device/fido/authenticator_data.h"
-#include "device/fido/ec_public_key.h"
+#include "device/fido/client_data.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "device/fido/p256_public_key.h"
+#include "device/fido/public_key.h"
 
 namespace device {
 
@@ -22,8 +24,8 @@ AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
     base::Optional<FidoTransportProtocol> transport_used,
     base::span<const uint8_t, kRpIdHashLength> relying_party_id_hash,
     base::span<const uint8_t> u2f_data) {
-  auto public_key = ECPublicKey::ExtractFromU2fRegistrationResponse(
-      fido_parsing_utils::kEs256, u2f_data);
+  auto public_key = P256PublicKey::ExtractFromU2fRegistrationResponse(
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256), u2f_data);
   if (!public_key)
     return base::nullopt;
 
@@ -107,6 +109,10 @@ std::vector<uint8_t> AsCTAPStyleCBORBytes(
   map.emplace(1, object.attestation_statement().format_name());
   map.emplace(2, object.authenticator_data().SerializeToByteArray());
   map.emplace(3, AsCBOR(object.attestation_statement()));
+  if (response.android_client_data_ext()) {
+    map.emplace(kAndroidClientDataExtOutputKey,
+                cbor::Value(*response.android_client_data_ext()));
+  }
   auto encoded_bytes = cbor::Writer::Write(cbor::Value(std::move(map)));
   DCHECK(encoded_bytes);
   return std::move(*encoded_bytes);

@@ -27,7 +27,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-forward.h"
 
 namespace base {
 class FilePath;
@@ -67,8 +67,6 @@ class CONTENT_EXPORT AppCacheStorageReference
 // on disk.
 class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
  public:
-  using OnceCompletionCallback = base::OnceCallback<void(int)>;
-
   class CONTENT_EXPORT Observer {
    public:
     Observer(const Observer&) = delete;
@@ -112,7 +110,7 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
 
   // AppCacheService
   void GetAllAppCacheInfo(AppCacheInfoCollection* collection,
-                          OnceCompletionCallback callback) override;
+                          net::CompletionOnceCallback callback) override;
   void DeleteAppCachesForOrigin(const url::Origin& origin,
                                 net::CompletionOnceCallback callback) override;
 

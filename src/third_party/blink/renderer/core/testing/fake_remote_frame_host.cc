@@ -16,10 +16,22 @@ void FakeRemoteFrameHost::Init(blink::AssociatedInterfaceProvider* provider) {
 void FakeRemoteFrameHost::SetInheritedEffectiveTouchAction(
     cc::TouchAction touch_action) {}
 
+void FakeRemoteFrameHost::UpdateRenderThrottlingStatus(bool is_throttled,
+                                                       bool subtree_throttled) {
+}
+
 void FakeRemoteFrameHost::VisibilityChanged(
     mojom::blink::FrameVisibility visibility) {}
 
 void FakeRemoteFrameHost::DidFocusFrame() {}
+
+void FakeRemoteFrameHost::CheckCompleted() {}
+
+void FakeRemoteFrameHost::CapturePaintPreviewOfCrossProcessSubframe(
+    const gfx::Rect& clip_rect,
+    const base::UnguessableToken& guid) {}
+
+void FakeRemoteFrameHost::SetIsInert(bool inert) {}
 
 void FakeRemoteFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

@@ -38,8 +38,10 @@
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
@@ -212,9 +214,12 @@ PersonalDataManagerAndroid::CreateJavaCreditCardFromNative(
                                card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR)),
       ConvertUTF8ToJavaString(env,
                               payment_request_data.basic_card_issuer_network),
-      ResourceMapper::MapFromChromiumId(payment_request_data.icon_resource_id),
-      card.card_type(), ConvertUTF8ToJavaString(env, card.billing_address_id()),
-      ConvertUTF8ToJavaString(env, card.server_id()));
+      ResourceMapper::MapToJavaDrawableId(
+          payment_request_data.icon_resource_id),
+      ConvertUTF8ToJavaString(env, card.billing_address_id()),
+      ConvertUTF8ToJavaString(env, card.server_id()),
+      ConvertUTF16ToJavaString(env,
+                               card.CardIdentifierStringForAutofillDisplay()));
 }
 
 // static
@@ -240,11 +245,6 @@ void PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
       ConvertJavaStringToUTF8(Java_CreditCard_getBillingAddressId(env, jcard)));
   card->set_server_id(
       ConvertJavaStringToUTF8(Java_CreditCard_getServerId(env, jcard)));
-
-  jint card_type = Java_CreditCard_getCardType(env, jcard);
-  DCHECK_GE(CreditCard::CARD_TYPE_PREPAID, card_type);
-  DCHECK_LE(CreditCard::CARD_TYPE_UNKNOWN, card_type);
-  card->set_card_type(static_cast<CreditCard::CardType>(card_type));
 
   // Only set the guid if it is an existing card (java guid not empty).
   // Otherwise, keep the generated one.
@@ -579,6 +579,21 @@ void PersonalDataManagerAndroid::AddServerCreditCardForTest(
   personal_data_manager_->NotifyPersonalDataObserver();
 }
 
+void PersonalDataManagerAndroid::AddServerCreditCardForTestWithAdditionalFields(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj,
+    const base::android::JavaParamRef<jobject>& jcard,
+    const base::android::JavaParamRef<jstring>& jnickname,
+    jint jcard_issuer) {
+  std::unique_ptr<CreditCard> card = std::make_unique<CreditCard>();
+  PopulateNativeCreditCardFromJava(jcard, env, card.get());
+  card->set_record_type(CreditCard::MASKED_SERVER_CARD);
+  card->SetNickname(ConvertJavaStringToUTF16(jnickname));
+  card->set_card_issuer(static_cast<CreditCard::Issuer>(jcard_issuer));
+  personal_data_manager_->AddServerCreditCardForTest(std::move(card));
+  personal_data_manager_->NotifyPersonalDataObserver();
+}
+
 void PersonalDataManagerAndroid::RemoveByGUID(
     JNIEnv* env,
     const JavaParamRef<jobject>& unused_obj,
@@ -750,6 +765,21 @@ jboolean PersonalDataManagerAndroid::HasProfiles(JNIEnv* env) {
 
 jboolean PersonalDataManagerAndroid::HasCreditCards(JNIEnv* env) {
   return !personal_data_manager_->GetCreditCards().empty();
+}
+
+jboolean PersonalDataManagerAndroid::IsFidoAuthenticationAvailable(
+    JNIEnv* env) {
+  // Don't show toggle switch if user is unable to downstream cards.
+  if (personal_data_manager_->GetSyncSigninState() !=
+          autofill::AutofillSyncSigninState::
+              kSignedInAndWalletSyncTransportEnabled &&
+      personal_data_manager_->GetSyncSigninState() !=
+          autofill::AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled) {
+    return false;
+  }
+  // Show the toggle switch only if the authentication flag is enabled.
+  return base::FeatureList::IsEnabled(
+      autofill::features::kAutofillCreditCardAuthentication);
 }
 
 void PersonalDataManagerAndroid::StartRegionSubKeysRequest(

@@ -14,15 +14,10 @@
 
 // This file contains code used to aid debugging.
 
-#include <spirv/unified1/spirv.h>
 #include "SpirvShader.hpp"
 
-// Prototypes for SPIRV-Tools functions that do not have public headers.
-// This is a C++ function, so the name is mangled, and signature changes will
-// result in a linker error instead of runtime signature mismatches.
-
-// Gets the name of an instruction, without the "Op" prefix.
-extern const char* spvOpcodeString(const SpvOp opcode);
+#include "spirv-tools/libspirv.h"
+#include "spirv/unified1/spirv.h"
 
 namespace sw {
 
@@ -31,4 +26,4 @@ std::string SpirvShader::OpcodeName(spv::Op op)
 	return spvOpcodeString(static_cast<SpvOp>(op));
 }
 
-} // namespace sw
+}  // namespace sw

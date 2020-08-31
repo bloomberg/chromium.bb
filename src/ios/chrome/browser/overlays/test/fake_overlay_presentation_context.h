@@ -47,14 +47,13 @@ class FakeOverlayPresentationContext : public OverlayPresentationContext {
       OverlayRequest* request,
       UIPresentationCapabilities capabilities) const override;
   bool CanShowUIForRequest(OverlayRequest* request) const override;
-  void ShowOverlayUI(OverlayPresenter* presenter,
-                     OverlayRequest* request,
+  bool IsShowingOverlayUI() const override;
+  void PrepareToShowOverlayUI(OverlayRequest* request) override;
+  void ShowOverlayUI(OverlayRequest* request,
                      OverlayPresentationCallback presentation_callback,
                      OverlayDismissalCallback dismissal_callback) override;
-  void HideOverlayUI(OverlayPresenter* presenter,
-                     OverlayRequest* request) override;
-  void CancelOverlayUI(OverlayPresenter* presenter,
-                       OverlayRequest* request) override;
+  void HideOverlayUI(OverlayRequest* request) override;
+  void CancelOverlayUI(OverlayRequest* request) override;
 
  private:
   // Struct used to store state for the fake presentation context.
@@ -63,7 +62,6 @@ class FakeOverlayPresentationContext : public OverlayPresentationContext {
     ~FakeUIState();
 
     PresentationState presentation_state = PresentationState::kNotPresented;
-    OverlayPresentationCallback presentation_callback;
     OverlayDismissalCallback dismissal_callback;
   };
 

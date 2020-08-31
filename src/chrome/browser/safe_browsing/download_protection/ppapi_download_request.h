@@ -134,7 +134,7 @@ class PPAPIDownloadRequest {
   const GURL initiating_main_frame_url_;
 
   // Tab id that associated with the PPAPI plugin, computed by
-  // SessionTabHelper::IdForTab().
+  // sessions::SessionTabHelper::IdForTab().
   SessionID tab_id_;
 
   // If the user interacted with this PPAPI plugin to trigger the download.
@@ -164,6 +164,9 @@ class PPAPIDownloadRequest {
   const base::FilePath supported_path_;
 
   bool is_extended_reporting_;
+  bool is_enhanced_protection_;
+
+  Profile* profile_;
 
   base::WeakPtrFactory<PPAPIDownloadRequest> weakptr_factory_{this};
 

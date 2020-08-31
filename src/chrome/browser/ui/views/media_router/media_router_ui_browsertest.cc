@@ -10,12 +10,12 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
@@ -27,9 +27,10 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/context_menu_params.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "ui/base/ui_base_features.h"
@@ -141,31 +142,32 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, OpenDialogFromAppMenu) {
 #if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_EphemeralToolbarIconForDialog EphemeralToolbarIconForDialog
 #else
-#define MAYBE_EphemeralToolbarIconForDialog DISABLED_EphemeralToolbarIconForDialog
+#define MAYBE_EphemeralToolbarIconForDialog \
+  DISABLED_EphemeralToolbarIconForDialog
 #endif
 IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
                        MAYBE_EphemeralToolbarIconForDialog) {
   MediaRouterDialogController* dialog_controller = GetDialogController();
 
   EXPECT_FALSE(ToolbarIconExists());
-  dialog_controller->ShowMediaRouterDialog();
+  dialog_controller->ShowMediaRouterDialog(MediaRouterDialogOpenOrigin::PAGE);
   EXPECT_TRUE(ToolbarIconExists());
   dialog_controller->HideMediaRouterDialog();
   EXPECT_FALSE(ToolbarIconExists());
 
-  dialog_controller->ShowMediaRouterDialog();
+  dialog_controller->ShowMediaRouterDialog(MediaRouterDialogOpenOrigin::PAGE);
   EXPECT_TRUE(ToolbarIconExists());
   // Clicking on the toolbar icon should hide both the dialog and the icon.
   PressToolbarIcon();
   EXPECT_FALSE(dialog_controller->IsShowingMediaRouterDialog());
   EXPECT_FALSE(ToolbarIconExists());
 
-  dialog_controller->ShowMediaRouterDialog();
+  dialog_controller->ShowMediaRouterDialog(MediaRouterDialogOpenOrigin::PAGE);
   SetAlwaysShowActionPref(true);
   // When the pref is set to true, hiding the dialog shouldn't hide the icon.
   dialog_controller->HideMediaRouterDialog();
   EXPECT_TRUE(ToolbarIconExists());
-  dialog_controller->ShowMediaRouterDialog();
+  dialog_controller->ShowMediaRouterDialog(MediaRouterDialogOpenOrigin::PAGE);
   // While the dialog is showing, setting the pref to false shouldn't hide the
   // icon.
   SetAlwaysShowActionPref(false);
@@ -175,7 +177,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, PinAndUnpinToolbarIcon) {
-  GetDialogController()->ShowMediaRouterDialog();
+  GetDialogController()->ShowMediaRouterDialog(
+      MediaRouterDialogOpenOrigin::PAGE);
   EXPECT_TRUE(ToolbarIconExists());
   // Pin the icon via its context menu.
   ui::SimpleMenuModel* context_menu = GetIconContextMenu();

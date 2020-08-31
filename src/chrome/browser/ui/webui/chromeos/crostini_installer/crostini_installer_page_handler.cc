@@ -4,11 +4,23 @@
 
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_page_handler.h"
 
+#include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/optional.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
+#include "chrome/browser/chromeos/crostini/crostini_disk.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_ui_delegate.h"
+#include "chrome/browser/chromeos/crostini/crostini_types.mojom.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "ui/base/text/bytes_formatting.h"
 
 namespace chromeos {
 
@@ -25,11 +37,17 @@ CrostiniInstallerPageHandler::CrostiniInstallerPageHandler(
 
 CrostiniInstallerPageHandler::~CrostiniInstallerPageHandler() = default;
 
-void CrostiniInstallerPageHandler::Install() {
-  // TODO(crbug.com/1016195): Web page should allow input container username,
-  // and here we will pass that to Install().
+void CrostiniInstallerPageHandler::Install(int64_t disk_size_bytes,
+                                           const std::string& username) {
+  crostini::CrostiniManager::RestartOptions options{};
+  if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniDiskResizing)) {
+    options.disk_size_bytes = disk_size_bytes;
+  }
+  if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsername)) {
+    options.container_username = username;
+  }
   installer_ui_delegate_->Install(
-      crostini::CrostiniManager::RestartOptions{},
+      std::move(options),
       base::BindRepeating(&CrostiniInstallerPageHandler::OnProgressUpdate,
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&CrostiniInstallerPageHandler::OnInstallFinished,
@@ -47,7 +65,9 @@ void CrostiniInstallerPageHandler::CancelBeforeStart() {
 }
 
 void CrostiniInstallerPageHandler::Close() {
-  std::move(close_dialog_callback_).Run();
+  if (close_dialog_callback_) {
+    std::move(close_dialog_callback_).Run();
+  }
 }
 
 void CrostiniInstallerPageHandler::OnProgressUpdate(
@@ -63,6 +83,38 @@ void CrostiniInstallerPageHandler::OnInstallFinished(
 
 void CrostiniInstallerPageHandler::OnCanceled() {
   page_->OnCanceled();
+}
+
+void CrostiniInstallerPageHandler::RequestAmountOfFreeDiskSpace() {
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
+                     base::FilePath(crostini::kHomeDirectory)),
+      base::BindOnce(&CrostiniInstallerPageHandler::OnAmountOfFreeDiskSpace,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniInstallerPageHandler::OnAmountOfFreeDiskSpace(int64_t free_bytes) {
+  int64_t max_bytes = free_bytes - crostini::disk::kDiskHeadroomBytes;
+
+  if (max_bytes < crostini::disk::kMinimumDiskSizeBytes) {
+    page_->OnAmountOfFreeDiskSpace({}, 0, false);
+    return;
+  }
+
+  int64_t default_size = crostini::disk::kRecommendedDiskSizeBytes;
+  if (default_size > max_bytes) {
+    // Let's adjust to the mid-point.
+    default_size = (max_bytes + crostini::disk::kMinimumDiskSizeBytes) / 2;
+  }
+
+  int default_index = 0;
+  std::vector<crostini::mojom::DiskSliderTickPtr> ticks =
+      crostini::disk::GetTicks(crostini::disk::kMinimumDiskSizeBytes,
+                               default_size, max_bytes, &default_index);
+  page_->OnAmountOfFreeDiskSpace(
+      std::move(ticks), default_index,
+      max_bytes < crostini::disk::kRecommendedDiskSizeBytes);
 }
 
 }  // namespace chromeos

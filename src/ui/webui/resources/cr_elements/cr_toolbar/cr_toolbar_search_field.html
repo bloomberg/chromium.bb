@@ -28,14 +28,14 @@
         --cr-icon-button-fill-color-focus: var(
             --cr-toolbar-search-field-input-bg-color,
             var(--cr-toolbar-background-color));
-        --cr-icon-button-size: 32px;
-        margin: 6px;
+        --cr-icon-button-size: var(--cr-toolbar-icon-container-size, 32px);
+        margin: var(--cr-toolbar-icon-margin, 6px);
       }
 
       @media (prefers-color-scheme: light) {
         cr-icon-button {
           --cr-icon-button-fill-color: var(
-              --cr-toolbar-search-field-input-color,
+              --cr-toolbar-search-field-input-icon-color,
               white);
         }
       }
@@ -43,7 +43,7 @@
       @media (prefers-color-scheme: dark) {
         cr-icon-button {
           --cr-icon-button-fill-color: var(
-              --cr-toolbar-search-field-input-color,
+              --cr-toolbar-search-field-input-icon-color,
               var(--google-grey-refresh-500));
         }
       }
@@ -64,13 +64,14 @@
       }
 
       paper-spinner-lite {
-        @apply --cr-icon-height-width;
         --paper-spinner-color:
-            var(--cr-toolbar-search-field-input-color, white);
-        margin: 0 6px;
+            var(--cr-toolbar-search-field-input-icon-color, white);
+        height: var(--cr-icon-size);
+        margin: var(--cr-toolbar-search-field-paper-spinner-margin, 0 6px);
         opacity: 0;
         padding: 6px;
         position: absolute;
+        width: var(--cr-icon-size);
       }
 
       paper-spinner-lite[active] {
@@ -87,8 +88,7 @@
         -webkit-font-smoothing: antialiased;
         flex: 1;
         line-height: 185%;
-        margin-inline-end: 2px;
-        margin-inline-start: 2px;
+        margin: var(--cr-toolbar-search-field-term-margin, 0 2px);
         position: relative;
       }
 
@@ -111,7 +111,7 @@
         -webkit-appearance: none;
         background: transparent;
         border: none;
-        color: var(--cr-toolbar-search-field-input-color, white);
+        color: var(--cr-toolbar-search-field-input-text-color, white);
         font: inherit;
         outline: none;
         padding: 0;
@@ -122,6 +122,11 @@
       input[type='search']::-webkit-search-cancel-button {
         -webkit-appearance: none;
         margin: 0;
+      }
+
+      :host([narrow]) {
+        border-radius:
+            var(--cr-toolbar-search-field-border-radius, 0);
       }
 
       /** Wide layout. */
@@ -140,6 +145,8 @@
       }
 
       :host(:not([narrow])) #prompt {
+        margin-inline-start:
+            var(--cr-toolbar-search-field-prompt-margin-inline-start);
         opacity: var(--cr-toolbar-search-field-prompt-opacity);
       }
 
@@ -165,7 +172,7 @@
       <paper-spinner-lite active="[[isSpinnerShown_]]">
       </paper-spinner-lite>
     </template>
-    <cr-icon-button id="icon" iron-icon="cr:search" title="[[label]]"
+    <cr-icon-button id="icon" iron-icon="cr:search" title="[[label]]" dir="ltr"
         tabindex$="[[computeIconTabIndex_(narrow, hasSearchText)]]"
         aria-hidden$="[[computeIconAriaHidden_(narrow, hasSearchText)]]">
     </cr-icon-button>

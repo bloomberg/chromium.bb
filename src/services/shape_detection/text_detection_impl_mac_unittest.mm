@@ -4,24 +4,24 @@
 
 #include "services/shape_detection/text_detection_impl_mac.h"
 
+#import <AppKit/AppKit.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 #include "ui/gl/gl_switches.h"
 
-namespace shape_detection {
+using base::test::RunOnceClosure;
 
-ACTION_P(RunClosure, closure) {
-  closure.Run();
-}
+namespace shape_detection {
 
 class TextDetectionImplMacTest : public ::testing::Test {
  public:
@@ -92,7 +92,7 @@ TEST_F(TextDetectionImplMacTest, ScanOnce) {
     base::RunLoop run_loop;
     // Send the image to Detect() and expect the response in callback.
     EXPECT_CALL(*this, Detection(1))
-        .WillOnce(RunClosure(run_loop.QuitClosure()));
+        .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
     impl_->Detect(bitmap,
                   base::BindOnce(&TextDetectionImplMacTest::DetectCallback,
                                  base::Unretained(this)));

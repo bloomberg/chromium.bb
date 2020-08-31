@@ -26,7 +26,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -120,7 +120,7 @@ bool FakeSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {
 }
 
 bool FakeSafeBrowsingDatabaseManager::CanCheckResourceType(
-    content::ResourceType /* resource_type */) const {
+    blink::mojom::ResourceType /* resource_type */) const {
   return true;
 }
 
@@ -605,13 +605,28 @@ GURL PrerenderInProcessBrowserTest::ServeLoaderURL(
     const std::string& loader_path,
     const std::string& replacement_variable,
     const GURL& url_to_prerender,
-    const std::string& loader_query) {
+    const std::string& loader_query,
+    const std::string& hostname_alternative) {
   base::StringPairs replacement_text;
   replacement_text.push_back(
       make_pair(replacement_variable, url_to_prerender.spec()));
   std::string replacement_path = net::test_server::GetFilePathWithReplacements(
       loader_path, replacement_text);
   return src_server()->GetURL(replacement_path + loader_query);
+}
+
+GURL PrerenderInProcessBrowserTest::ServeLoaderURLWithHostname(
+    const std::string& loader_path,
+    const std::string& replacement_variable,
+    const GURL& url_to_prerender,
+    const std::string& loader_query,
+    const std::string& hostname) {
+  base::StringPairs replacement_text;
+  replacement_text.push_back(
+      make_pair(replacement_variable, url_to_prerender.spec()));
+  std::string replacement_path = net::test_server::GetFilePathWithReplacements(
+      loader_path, replacement_text);
+  return src_server()->GetURL(hostname, replacement_path + loader_query);
 }
 
 void PrerenderInProcessBrowserTest::MonitorResourceRequest(

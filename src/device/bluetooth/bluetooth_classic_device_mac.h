@@ -13,6 +13,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
 
@@ -21,6 +22,7 @@
 namespace device {
 
 class BluetoothAdapterMac;
+class BluetoothUUID;
 
 class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
  public:
@@ -72,8 +74,6 @@ class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
       const BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) override;
-  void CreateGattConnection(GattConnectionCallback callback,
-                            ConnectErrorCallback error_callback) override;
 
   base::Time GetLastUpdateTime() const override;
 
@@ -83,7 +83,8 @@ class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
 
  protected:
   // BluetoothDevice override
-  void CreateGattConnectionImpl() override;
+  void CreateGattConnectionImpl(
+      base::Optional<BluetoothUUID> service_uuid) override;
   void DisconnectGatt() override;
 
  private:

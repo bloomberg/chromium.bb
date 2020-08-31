@@ -11,14 +11,14 @@
 #include "cast/streaming/ssrc.h"
 #include "util/big_endian.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Reads a field from the start of the given span and advances the span to point
 // just after the field.
 template <typename Integer>
 inline Integer ConsumeField(absl::Span<const uint8_t>* in) {
-  const Integer result = openscreen::ReadBigEndian<Integer>(in->data());
+  const Integer result = ReadBigEndian<Integer>(in->data());
   in->remove_prefix(sizeof(Integer));
   return result;
 }
@@ -27,7 +27,7 @@ inline Integer ConsumeField(absl::Span<const uint8_t>* in) {
 // just after the field.
 template <typename Integer>
 inline void AppendField(Integer value, absl::Span<uint8_t>* out) {
-  openscreen::WriteBigEndian<Integer>(value, out->data());
+  WriteBigEndian<Integer>(value, out->data());
   out->remove_prefix(sizeof(Integer));
 }
 
@@ -56,7 +56,7 @@ enum class ApparentPacketType { UNKNOWN, RTP, RTCP };
 std::pair<ApparentPacketType, Ssrc> InspectPacketForRouting(
     absl::Span<const uint8_t> packet);
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_PACKET_UTIL_H_

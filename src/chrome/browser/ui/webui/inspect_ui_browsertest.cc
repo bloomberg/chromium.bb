@@ -13,6 +13,7 @@
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -52,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, SharedWorker) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUIInspectURL),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
       "testTargetListed", base::Value("#workers"),

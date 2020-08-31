@@ -12,6 +12,7 @@ export const BottomPaddingWithoutParam = 6;
 export const BottomPaddingWithParam = 8;
 export const ArrowHeadSize = 12;
 
+// GraphPadding is used to add extra space for the graph layout.
 export const GraphPadding = 20;
 export const GraphMargin = 20;
 
@@ -22,36 +23,114 @@ export const TotalParamPortHeight = AudioParamRadius * 2 + PortPadding;
 export const NodeLabelFontStyle = '14px Segoe UI, Arial';
 export const ParamLabelFontStyle = '12px Segoe UI, Arial';
 
-export const GraphStyles = {
-  PortPadding,
-  InputPortRadius,
-  AudioParamRadius,
-  LeftMarginOfText,
-  RightMarginOfText,
-  LeftSideTopPadding,
-  BottomPaddingWithoutParam,
-  BottomPaddingWithParam,
-  ArrowHeadSize,
-
-  // GraphPadding is used to add extra space for the layouted graph.
-  GraphPadding,
-  GraphMargin,
-
-  TotalInputPortHeight,
-  TotalOutputPortHeight,
-  TotalParamPortHeight,
-
-  NodeLabelFontStyle,
-  ParamLabelFontStyle
+/**
+ * Supported port types.
+ * @enum {symbol}
+ */
+export const PortTypes = {
+  In: Symbol('In'),
+  Out: Symbol('Out'),
+  Param: Symbol('Param'),
 };
 
-/* Legacy exported object */
-self.WebAudio = self.WebAudio || {};
+/**
+ * @typedef {{width: number, height: number}}
+ */
+export let Size;
 
-/* Legacy exported object */
-WebAudio = WebAudio || {};
+/**
+ * @typedef {{x: number, y: number}}
+ */
+export let Point;
 
-/* Legacy exported object */
-WebAudio.GraphVisualizer = WebAudio.GraphVisualizer || {};
+/**
+ * @typedef {{
+ *   inputPortSectionHeight: number,
+ *   outputPortSectionHeight: number,
+ *   maxTextLength: number,
+ *   totalHeight: number
+ * }}
+ */
+export let NodeLayout;
 
-WebAudio.GraphVisualizer.GraphStyles = GraphStyles;
+/**
+ * y: The Y value relative to the top of node.
+ * edgeCounter: The number of edges connected to the port, default 0.
+ * @typedef {{
+ *   id: string,
+ *   type: !PortTypes,
+ *   label: (string|undefined),
+ *   x: number,
+ *   y: number,
+ * }}
+ */
+export let Port;
+
+/**
+ * @typedef {{
+ *   nodeId: string,
+ *   nodeType: string,
+ *   numberOfInputs: number,
+ *   numberOfOutputs: number,
+ * }}
+ */
+export let NodeCreationData;
+
+/**
+ * @typedef {{
+ *   paramId: string,
+ *   paramType: string,
+ *   nodeId: string,
+ * }}
+ */
+export let ParamCreationData;
+
+/**
+ * @typedef {{
+ *   sourceId: string,
+ *   destinationId: string,
+ *   sourceOutputIndex: (number|undefined),
+ *   destinationInputIndex: (number|undefined),
+ * }}
+ */
+export let NodesConnectionData;
+
+/**
+ * @typedef {{
+ *   sourceId: string,
+ *   destinationId: (?string|undefined),
+ *   sourceOutputIndex: (number|undefined),
+ *   destinationInputIndex: (number|undefined),
+ * }}
+ */
+export let NodesDisconnectionData;
+
+/**
+ * @typedef {{
+ *   sourceId: string,
+ *   destinationId: string,
+ *   sourceOutputIndex: (number|undefined),
+ *   destinationInputIndex: (number|undefined),
+ * }}
+ */
+export let NodesDisconnectionDataWithDestination;
+
+/**
+ * @typedef {{
+ *   sourceId: string,
+ *   destinationId: string,
+ *   sourceOutputIndex: (number|undefined),
+ *   destinationParamId: string,
+ * }}
+ */
+export let NodeParamConnectionData;
+
+/**
+ * @typedef {{
+ *   sourceId: string,
+ *   destinationId: string,
+ *   sourceOutputIndex: (number|undefined),
+ *   destinationParamId: string,
+ * }}
+ */
+export let NodeParamDisconnectionData;

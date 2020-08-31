@@ -38,10 +38,6 @@
  *       the mode has been programmed, along with possible test patterns.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <assert.h>
 #include <ctype.h>
 #include <stdbool.h>
@@ -70,6 +66,9 @@
 
 #include "buffers.h"
 #include "cursor.h"
+
+static enum util_fill_pattern primary_fill = UTIL_PATTERN_SMPTE;
+static enum util_fill_pattern secondary_fill = UTIL_PATTERN_TILES;
 
 struct crtc {
 	drmModeCrtc *crtc;
@@ -123,6 +122,9 @@ struct device {
 		struct bo *bo;
 		struct bo *cursor_bo;
 	} mode;
+
+	int use_atomic;
+	drmModeAtomicReq *req;
 };
 
 static inline int64_t U642I64(uint64_t val)
@@ -278,24 +280,24 @@ static const char *modifier_to_string(uint64_t modifier)
 		return "VIVANTE_SPLIT_TILED";
 	case DRM_FORMAT_MOD_VIVANTE_SPLIT_SUPER_TILED:
 		return "VIVANTE_SPLIT_SUPER_TILED";
-	case NV_FORMAT_MOD_TEGRA_TILED:
-		return "MOD_TEGRA_TILED";
-	case NV_FORMAT_MOD_TEGRA_16BX2_BLOCK(0):
-		return "MOD_TEGRA_16BX2_BLOCK(0)";
-	case NV_FORMAT_MOD_TEGRA_16BX2_BLOCK(1):
-		return "MOD_TEGRA_16BX2_BLOCK(1)";
-	case NV_FORMAT_MOD_TEGRA_16BX2_BLOCK(2):
-		return "MOD_TEGRA_16BX2_BLOCK(2)";
-	case NV_FORMAT_MOD_TEGRA_16BX2_BLOCK(3):
-		return "MOD_TEGRA_16BX2_BLOCK(3)";
-	case NV_FORMAT_MOD_TEGRA_16BX2_BLOCK(4):
-		return "MOD_TEGRA_16BX2_BLOCK(4)";
-	case NV_FORMAT_MOD_TEGRA_16BX2_BLOCK(5):
-		return "MOD_TEGRA_16BX2_BLOCK(5)";
+	case DRM_FORMAT_MOD_NVIDIA_TEGRA_TILED:
+		return "NVIDIA_TEGRA_TILED";
+	case DRM_FORMAT_MOD_NVIDIA_16BX2_BLOCK(0):
+		return "NVIDIA_16BX2_BLOCK(0)";
+	case DRM_FORMAT_MOD_NVIDIA_16BX2_BLOCK(1):
+		return "NVIDIA_16BX2_BLOCK(1)";
+	case DRM_FORMAT_MOD_NVIDIA_16BX2_BLOCK(2):
+		return "NVIDIA_16BX2_BLOCK(2)";
+	case DRM_FORMAT_MOD_NVIDIA_16BX2_BLOCK(3):
+		return "NVIDIA_16BX2_BLOCK(3)";
+	case DRM_FORMAT_MOD_NVIDIA_16BX2_BLOCK(4):
+		return "NVIDIA_16BX2_BLOCK(4)";
+	case DRM_FORMAT_MOD_NVIDIA_16BX2_BLOCK(5):
+		return "NVIDIA_16BX2_BLOCK(5)";
 	case DRM_FORMAT_MOD_BROADCOM_VC4_T_TILED:
 		return "MOD_BROADCOM_VC4_T_TILED";
-	case DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC:
-		return "MOD_CHROMEOS_ROCKCHIP_AFBC";
+	case DRM_FORMAT_MOD_QCOM_COMPRESSED:
+		return "QCOM_COMPRESSED";
 	default:
 		return "(UNKNOWN MODIFIER)";
 	}
@@ -658,10 +660,13 @@ static struct resources *get_resources(struct device *dev)
 	for (i = 0; i < res->res->count_connectors; i++) {
 		struct connector *connector = &res->connectors[i];
 		drmModeConnector *conn = connector->connector;
+		int num;
 
-		asprintf(&connector->name, "%s-%u",
+		num = asprintf(&connector->name, "%s-%u",
 			 util_lookup_connector_type_name(conn->connector_type),
 			 conn->connector_type_id);
+		if (num < 0)
+			goto error;
 	}
 
 #define get_properties(_res, __res, type, Type)					\
@@ -808,7 +813,9 @@ struct plane_arg {
 	uint32_t w, h;
 	double scale;
 	unsigned int fb_id;
+	unsigned int old_fb_id;
 	struct bo *bo;
+	struct bo *old_bo;
 	char format_str[5]; /* need to leave room for terminating \0 */
 	unsigned int fourcc;
 };
@@ -944,9 +951,10 @@ struct property_arg {
 	char name[DRM_PROP_NAME_LEN+1];
 	uint32_t prop_id;
 	uint64_t value;
+	bool optional;
 };
 
-static void set_property(struct device *dev, struct property_arg *p)
+static bool set_property(struct device *dev, struct property_arg *p)
 {
 	drmModeObjectProperties *props = NULL;
 	drmModePropertyRes **props_info = NULL;
@@ -978,13 +986,13 @@ static void set_property(struct device *dev, struct property_arg *p)
 	if (p->obj_type == 0) {
 		fprintf(stderr, "Object %i not found, can't set property\n",
 			p->obj_id);
-			return;
+		return false;
 	}
 
 	if (!props) {
 		fprintf(stderr, "%s %i has no properties\n",
 			obj_type, p->obj_id);
-		return;
+		return false;
 	}
 
 	for (i = 0; i < (int)props->count_props; ++i) {
@@ -995,18 +1003,25 @@ static void set_property(struct device *dev, struct property_arg *p)
 	}
 
 	if (i == (int)props->count_props) {
-		fprintf(stderr, "%s %i has no %s property\n",
-			obj_type, p->obj_id, p->name);
-		return;
+		if (!p->optional)
+			fprintf(stderr, "%s %i has no %s property\n",
+				obj_type, p->obj_id, p->name);
+		return false;
 	}
 
 	p->prop_id = props->props[i];
 
-	ret = drmModeObjectSetProperty(dev->fd, p->obj_id, p->obj_type,
-				       p->prop_id, p->value);
+	if (!dev->use_atomic)
+		ret = drmModeObjectSetProperty(dev->fd, p->obj_id, p->obj_type,
+									   p->prop_id, p->value);
+	else
+		ret = drmModeAtomicAddProperty(dev->req, p->obj_id, p->prop_id, p->value);
+
 	if (ret < 0)
 		fprintf(stderr, "failed to set %s %i property %s to %" PRIu64 ": %s\n",
 			obj_type, p->obj_id, p->name, p->value, strerror(errno));
+
+	return true;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1050,6 +1065,143 @@ static bool format_support(const drmModePlanePtr ovr, uint32_t fmt)
 	}
 
 	return false;
+}
+
+static void add_property(struct device *dev, uint32_t obj_id,
+			       const char *name, uint64_t value)
+{
+	struct property_arg p;
+
+	p.obj_id = obj_id;
+	strcpy(p.name, name);
+	p.value = value;
+
+	set_property(dev, &p);
+}
+
+static bool add_property_optional(struct device *dev, uint32_t obj_id,
+				  const char *name, uint64_t value)
+{
+	struct property_arg p;
+
+	p.obj_id = obj_id;
+	strcpy(p.name, name);
+	p.value = value;
+	p.optional = true;
+
+	return set_property(dev, &p);
+}
+
+static void set_gamma(struct device *dev, unsigned crtc_id, unsigned fourcc)
+{
+	unsigned blob_id = 0;
+	/* TODO: support 1024-sized LUTs, when the use-case arises */
+	struct drm_color_lut gamma_lut[256];
+	int i, ret;
+
+	if (fourcc == DRM_FORMAT_C8) {
+		/* TODO: Add C8 support for more patterns */
+		util_smpte_c8_gamma(256, gamma_lut);
+		drmModeCreatePropertyBlob(dev->fd, gamma_lut, sizeof(gamma_lut), &blob_id);
+	} else {
+		for (i = 0; i < 256; i++) {
+			gamma_lut[i].red =
+			gamma_lut[i].green =
+			gamma_lut[i].blue = i << 8;
+		}
+	}
+
+	add_property_optional(dev, crtc_id, "DEGAMMA_LUT", 0);
+	add_property_optional(dev, crtc_id, "CTM", 0);
+	if (!add_property_optional(dev, crtc_id, "GAMMA_LUT", blob_id)) {
+		uint16_t r[256], g[256], b[256];
+
+		for (i = 0; i < 256; i++) {
+			r[i] = gamma_lut[i].red;
+			g[i] = gamma_lut[i].green;
+			b[i] = gamma_lut[i].blue;
+		}
+
+		ret = drmModeCrtcSetGamma(dev->fd, crtc_id, 256, r, g, b);
+		if (ret)
+			fprintf(stderr, "failed to set gamma: %s\n", strerror(errno));
+	}
+}
+
+static int atomic_set_plane(struct device *dev, struct plane_arg *p,
+							int pattern, bool update)
+{
+	uint32_t handles[4] = {0}, pitches[4] = {0}, offsets[4] = {0};
+	struct bo *plane_bo;
+	int crtc_x, crtc_y, crtc_w, crtc_h;
+	struct crtc *crtc = NULL;
+	unsigned int i;
+	unsigned int old_fb_id;
+
+	/* Find an unused plane which can be connected to our CRTC. Find the
+	 * CRTC index first, then iterate over available planes.
+	 */
+	for (i = 0; i < (unsigned int)dev->resources->res->count_crtcs; i++) {
+		if (p->crtc_id == dev->resources->res->crtcs[i]) {
+			crtc = &dev->resources->crtcs[i];
+			break;
+		}
+	}
+
+	if (!crtc) {
+		fprintf(stderr, "CRTC %u not found\n", p->crtc_id);
+		return -1;
+	}
+
+	if (!update)
+		fprintf(stderr, "testing %dx%d@%s on plane %u, crtc %u\n",
+			p->w, p->h, p->format_str, p->plane_id, p->crtc_id);
+
+	plane_bo = p->old_bo;
+	p->old_bo = p->bo;
+
+	if (!plane_bo) {
+		plane_bo = bo_create(dev->fd, p->fourcc, p->w, p->h,
+				     handles, pitches, offsets, pattern);
+
+		if (plane_bo == NULL)
+			return -1;
+
+		if (drmModeAddFB2(dev->fd, p->w, p->h, p->fourcc,
+			handles, pitches, offsets, &p->fb_id, 0)) {
+			fprintf(stderr, "failed to add fb: %s\n", strerror(errno));
+			return -1;
+		}
+	}
+
+	p->bo = plane_bo;
+
+	old_fb_id = p->fb_id;
+	p->old_fb_id = old_fb_id;
+
+	crtc_w = p->w * p->scale;
+	crtc_h = p->h * p->scale;
+	if (!p->has_position) {
+		/* Default to the middle of the screen */
+		crtc_x = (crtc->mode->hdisplay - crtc_w) / 2;
+		crtc_y = (crtc->mode->vdisplay - crtc_h) / 2;
+	} else {
+		crtc_x = p->x;
+		crtc_y = p->y;
+	}
+
+	add_property(dev, p->plane_id, "FB_ID", p->fb_id);
+	add_property(dev, p->plane_id, "CRTC_ID", p->crtc_id);
+	add_property(dev, p->plane_id, "SRC_X", 0);
+	add_property(dev, p->plane_id, "SRC_Y", 0);
+	add_property(dev, p->plane_id, "SRC_W", p->w << 16);
+	add_property(dev, p->plane_id, "SRC_H", p->h << 16);
+	add_property(dev, p->plane_id, "CRTC_X", crtc_x);
+	add_property(dev, p->plane_id, "CRTC_Y", crtc_y);
+	add_property(dev, p->plane_id, "CRTC_W", crtc_w);
+	add_property(dev, p->plane_id, "CRTC_H", crtc_h);
+
+	return 0;
 }
 
 static int set_plane(struct device *dev, struct plane_arg *p)
@@ -1110,7 +1262,7 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 		p->w, p->h, p->format_str, plane_id);
 
 	plane_bo = bo_create(dev->fd, p->fourcc, p->w, p->h, handles,
-			     pitches, offsets, UTIL_PATTERN_TILES);
+			     pitches, offsets, secondary_fill);
 	if (plane_bo == NULL)
 		return -1;
 
@@ -1148,6 +1300,66 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 	return 0;
 }
 
+static void atomic_set_planes(struct device *dev, struct plane_arg *p,
+			      unsigned int count, bool update)
+{
+	unsigned int i, pattern = primary_fill;
+
+	/* set up planes */
+	for (i = 0; i < count; i++) {
+		if (i > 0)
+			pattern = secondary_fill;
+		else
+			set_gamma(dev, p[i].crtc_id, p[i].fourcc);
+
+		if (atomic_set_plane(dev, &p[i], pattern, update))
+			return;
+	}
+}
+
+static void atomic_clear_planes(struct device *dev, struct plane_arg *p, unsigned int count)
+{
+	unsigned int i;
+
+	for (i = 0; i < count; i++) {
+		add_property(dev, p[i].plane_id, "FB_ID", 0);
+		add_property(dev, p[i].plane_id, "CRTC_ID", 0);
+		add_property(dev, p[i].plane_id, "SRC_X", 0);
+		add_property(dev, p[i].plane_id, "SRC_Y", 0);
+		add_property(dev, p[i].plane_id, "SRC_W", 0);
+		add_property(dev, p[i].plane_id, "SRC_H", 0);
+		add_property(dev, p[i].plane_id, "CRTC_X", 0);
+		add_property(dev, p[i].plane_id, "CRTC_Y", 0);
+		add_property(dev, p[i].plane_id, "CRTC_W", 0);
+		add_property(dev, p[i].plane_id, "CRTC_H", 0);
+	}
+}
+
+static void atomic_clear_FB(struct device *dev, struct plane_arg *p, unsigned int count)
+{
+	unsigned int i;
+
+	for (i = 0; i < count; i++) {
+		if (p[i].fb_id) {
+			drmModeRmFB(dev->fd, p[i].fb_id);
+			p[i].fb_id = 0;
+		}
+		if (p[i].old_fb_id) {
+			drmModeRmFB(dev->fd, p[i].old_fb_id);
+			p[i].old_fb_id = 0;
+		}
+		if (p[i].bo) {
+			bo_destroy(p[i].bo);
+			p[i].bo = NULL;
+		}
+		if (p[i].old_bo) {
+			bo_destroy(p[i].old_bo);
+			p[i].old_bo = NULL;
+		}
+
+	}
+}
+
 static void clear_planes(struct device *dev, struct plane_arg *p, unsigned int count)
 {
 	unsigned int i;
@@ -1160,6 +1372,59 @@ static void clear_planes(struct device *dev, struct plane_arg *p, unsigned int c
 	}
 }
 
+static void atomic_set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int count)
+{
+	unsigned int i;
+	unsigned int j;
+	int ret;
+
+	for (i = 0; i < count; i++) {
+		struct pipe_arg *pipe = &pipes[i];
+
+		ret = pipe_find_crtc_and_mode(dev, pipe);
+		if (ret < 0)
+			continue;
+	}
+
+	for (i = 0; i < count; i++) {
+		struct pipe_arg *pipe = &pipes[i];
+		uint32_t blob_id;
+
+		if (pipe->mode == NULL)
+			continue;
+
+		printf("setting mode %s-%dHz on connectors ",
+		       pipe->mode_str, pipe->mode->vrefresh);
+		for (j = 0; j < pipe->num_cons; ++j) {
+			printf("%s, ", pipe->cons[j]);
+			add_property(dev, pipe->con_ids[j], "CRTC_ID", pipe->crtc->crtc->crtc_id);
+		}
+		printf("crtc %d\n", pipe->crtc->crtc->crtc_id);
+
+		drmModeCreatePropertyBlob(dev->fd, pipe->mode, sizeof(*pipe->mode), &blob_id);
+		add_property(dev, pipe->crtc->crtc->crtc_id, "MODE_ID", blob_id);
+		add_property(dev, pipe->crtc->crtc->crtc_id, "ACTIVE", 1);
+	}
+}
+
+static void atomic_clear_mode(struct device *dev, struct pipe_arg *pipes, unsigned int count)
+{
+	unsigned int i;
+	unsigned int j;
+
+	for (i = 0; i < count; i++) {
+		struct pipe_arg *pipe = &pipes[i];
+
+		if (pipe->mode == NULL)
+			continue;
+
+		for (j = 0; j < pipe->num_cons; ++j)
+			add_property(dev, pipe->con_ids[j], "CRTC_ID",0);
+
+		add_property(dev, pipe->crtc->crtc->crtc_id, "MODE_ID", 0);
+		add_property(dev, pipe->crtc->crtc->crtc_id, "ACTIVE", 0);
+	}
+}
 
 static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int count)
 {
@@ -1188,7 +1453,7 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 
 	bo = bo_create(dev->fd, pipes[0].fourcc, dev->mode.width,
 		       dev->mode.height, handles, pitches, offsets,
-		       UTIL_PATTERN_SMPTE);
+		       primary_fill);
 	if (bo == NULL)
 		return;
 
@@ -1230,6 +1495,8 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 			fprintf(stderr, "failed to set mode: %s\n", strerror(errno));
 			return;
 		}
+
+		set_gamma(dev, pipe->crtc->crtc->crtc_id, pipe->fourcc);
 	}
 }
 
@@ -1504,11 +1771,8 @@ static int parse_plane(struct plane_arg *plane, const char *p)
 	}
 
 	if (*end == '@') {
-		p = end + 1;
-		if (strlen(p) != 4)
-			return -EINVAL;
-
-		strcpy(plane->format_str, p);
+		strncpy(plane->format_str, end + 1, 4);
+		plane->format_str[4] = '\0';
 	} else {
 		strcpy(plane->format_str, "XR24");
 	}
@@ -1533,9 +1797,21 @@ static int parse_property(struct property_arg *p, const char *arg)
 	return 0;
 }
 
+static void parse_fill_patterns(char *arg)
+{
+	char *fill = strtok(arg, ",");
+	if (!fill)
+		return;
+	primary_fill = util_pattern_enum(fill);
+	fill = strtok(NULL, ",");
+	if (!fill)
+		return;
+	secondary_fill = util_pattern_enum(fill);
+}
+
 static void usage(char *name)
 {
-	fprintf(stderr, "usage: %s [-cDdefMPpsCvw]\n", name);
+	fprintf(stderr, "usage: %s [-acDdefMPpsCvw]\n", name);
 
 	fprintf(stderr, "\n Query options:\n\n");
 	fprintf(stderr, "\t-c\tlist connectors\n");
@@ -1549,6 +1825,8 @@ static void usage(char *name)
 	fprintf(stderr, "\t-C\ttest hw cursor\n");
 	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
 	fprintf(stderr, "\t-w <obj_id>:<prop_name>:<value>\tset property\n");
+	fprintf(stderr, "\t-a \tuse atomic API\n");
+	fprintf(stderr, "\t-F pattern1,pattern2\tspecify fill patterns\n");
 
 	fprintf(stderr, "\n Generic options:\n\n");
 	fprintf(stderr, "\t-d\tdrop master after mode set\n");
@@ -1612,7 +1890,7 @@ static int pipe_resolve_connectors(struct device *dev, struct pipe_arg *pipe)
 	return 0;
 }
 
-static char optstr[] = "cdD:efM:P:ps:Cvw:";
+static char optstr[] = "acdD:efF:M:P:ps:Cvw:";
 
 int main(int argc, char **argv)
 {
@@ -1623,6 +1901,7 @@ int main(int argc, char **argv)
 	int drop_master = 0;
 	int test_vsync = 0;
 	int test_cursor = 0;
+	int use_atomic = 0;
 	char *device = NULL;
 	char *module = NULL;
 	unsigned int i;
@@ -1641,6 +1920,9 @@ int main(int argc, char **argv)
 		args++;
 
 		switch (c) {
+		case 'a':
+			use_atomic = 1;
+			break;
 		case 'c':
 			connectors = 1;
 			break;
@@ -1656,6 +1938,9 @@ int main(int argc, char **argv)
 			break;
 		case 'f':
 			framebuffers = 1;
+			break;
+		case 'F':
+			parse_fill_patterns(optarg);
 			break;
 		case 'M':
 			module = optarg;
@@ -1720,12 +2005,21 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (!args)
+	if (!args || (args == 1 && use_atomic))
 		encoders = connectors = crtcs = planes = framebuffers = 1;
 
 	dev.fd = util_open(device, module);
 	if (dev.fd < 0)
 		return -1;
+
+	ret = drmSetClientCap(dev.fd, DRM_CLIENT_CAP_ATOMIC, 1);
+	if (ret && use_atomic) {
+		fprintf(stderr, "no atomic modesetting support: %s\n", strerror(errno));
+		drmClose(dev.fd);
+		return -1;
+	}
+
+	dev.use_atomic = use_atomic;
 
 	if (test_vsync && !page_flipping_supported()) {
 		fprintf(stderr, "page flipping not supported by drm.\n");
@@ -1767,40 +2061,111 @@ int main(int argc, char **argv)
 	for (i = 0; i < prop_count; ++i)
 		set_property(&dev, &prop_args[i]);
 
-	if (count || plane_count) {
-		uint64_t cap = 0;
+	if (dev.use_atomic) {
+		dev.req = drmModeAtomicAlloc();
 
-		ret = drmGetCap(dev.fd, DRM_CAP_DUMB_BUFFER, &cap);
-		if (ret || cap == 0) {
-			fprintf(stderr, "driver doesn't support the dumb buffer API\n");
-			return 1;
+		if (count && plane_count) {
+			uint64_t cap = 0;
+
+			ret = drmGetCap(dev.fd, DRM_CAP_DUMB_BUFFER, &cap);
+			if (ret || cap == 0) {
+				fprintf(stderr, "driver doesn't support the dumb buffer API\n");
+				return 1;
+			}
+
+			atomic_set_mode(&dev, pipe_args, count);
+			atomic_set_planes(&dev, plane_args, plane_count, false);
+
+			ret = drmModeAtomicCommit(dev.fd, dev.req, DRM_MODE_ATOMIC_ALLOW_MODESET, NULL);
+			if (ret) {
+				fprintf(stderr, "Atomic Commit failed [1]\n");
+				return 1;
+			}
+
+			gettimeofday(&pipe_args->start, NULL);
+			pipe_args->swap_count = 0;
+
+			while (test_vsync) {
+				drmModeAtomicFree(dev.req);
+				dev.req = drmModeAtomicAlloc();
+				atomic_set_planes(&dev, plane_args, plane_count, true);
+
+				ret = drmModeAtomicCommit(dev.fd, dev.req, DRM_MODE_ATOMIC_ALLOW_MODESET, NULL);
+				if (ret) {
+					fprintf(stderr, "Atomic Commit failed [2]\n");
+					return 1;
+				}
+
+				pipe_args->swap_count++;
+				if (pipe_args->swap_count == 60) {
+					struct timeval end;
+					double t;
+
+					gettimeofday(&end, NULL);
+					t = end.tv_sec + end.tv_usec * 1e-6 -
+				    (pipe_args->start.tv_sec + pipe_args->start.tv_usec * 1e-6);
+					fprintf(stderr, "freq: %.02fHz\n", pipe_args->swap_count / t);
+					pipe_args->swap_count = 0;
+					pipe_args->start = end;
+				}
+			}
+
+			if (drop_master)
+				drmDropMaster(dev.fd);
+
+			getchar();
+
+			drmModeAtomicFree(dev.req);
+			dev.req = drmModeAtomicAlloc();
+
+			atomic_clear_mode(&dev, pipe_args, count);
+			atomic_clear_planes(&dev, plane_args, plane_count);
+			ret = drmModeAtomicCommit(dev.fd, dev.req, DRM_MODE_ATOMIC_ALLOW_MODESET, NULL);
+			if (ret) {
+				fprintf(stderr, "Atomic Commit failed\n");
+				return 1;
+			}
+
+			atomic_clear_FB(&dev, plane_args, plane_count);
 		}
 
-		if (count)
-			set_mode(&dev, pipe_args, count);
+		drmModeAtomicFree(dev.req);
+	} else {
+		if (count || plane_count) {
+			uint64_t cap = 0;
 
-		if (plane_count)
-			set_planes(&dev, plane_args, plane_count);
+			ret = drmGetCap(dev.fd, DRM_CAP_DUMB_BUFFER, &cap);
+			if (ret || cap == 0) {
+				fprintf(stderr, "driver doesn't support the dumb buffer API\n");
+				return 1;
+			}
 
-		if (test_cursor)
-			set_cursors(&dev, pipe_args, count);
+			if (count)
+				set_mode(&dev, pipe_args, count);
 
-		if (test_vsync)
-			test_page_flip(&dev, pipe_args, count);
+			if (plane_count)
+				set_planes(&dev, plane_args, plane_count);
 
-		if (drop_master)
-			drmDropMaster(dev.fd);
+			if (test_cursor)
+				set_cursors(&dev, pipe_args, count);
 
-		getchar();
+			if (test_vsync)
+				test_page_flip(&dev, pipe_args, count);
 
-		if (test_cursor)
-			clear_cursors(&dev);
+			if (drop_master)
+				drmDropMaster(dev.fd);
 
-		if (plane_count)
-			clear_planes(&dev, plane_args, plane_count);
+			getchar();
 
-		if (count)
-			clear_mode(&dev);
+			if (test_cursor)
+				clear_cursors(&dev);
+
+			if (plane_count)
+				clear_planes(&dev, plane_args, plane_count);
+
+			if (count)
+				clear_mode(&dev);
+		}
 	}
 
 	free_resources(dev.resources);

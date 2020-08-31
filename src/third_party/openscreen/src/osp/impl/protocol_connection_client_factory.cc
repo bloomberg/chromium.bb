@@ -20,10 +20,10 @@ std::unique_ptr<ProtocolConnectionClient>
 ProtocolConnectionClientFactory::Create(
     MessageDemuxer* demuxer,
     ProtocolConnectionServiceObserver* observer,
-    platform::TaskRunner* task_runner) {
+    TaskRunner* task_runner) {
   return std::make_unique<QuicClient>(
       demuxer, std::make_unique<QuicConnectionFactoryImpl>(task_runner),
-      observer, &platform::Clock::now, task_runner);
+      observer, &Clock::now, task_runner);
 }
 
 }  // namespace osp

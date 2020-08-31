@@ -20,8 +20,8 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.share.ShareImageFileUtils;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
@@ -197,11 +197,6 @@ public class ShareServiceImpl implements ShareService {
         }
 
         for (SharedFile file : files) {
-            RecordHistogram.recordSparseHistogram(
-                    "WebShare.Unverified", SafeBrowsingBridge.umaValueForFile(file.name));
-        }
-
-        for (SharedFile file : files) {
             if (isDangerousFilename(file.name) || isDangerousMimeType(file.blob.contentType)) {
                 Log.i(TAG,
                         "Cannot share potentially dangerous \"" + file.blob.contentType
@@ -224,7 +219,7 @@ public class ShareServiceImpl implements ShareService {
                 ArrayList<Uri> fileUris = new ArrayList<>(files.length);
                 ArrayList<BlobReceiver> blobReceivers = new ArrayList<>(files.length);
                 try {
-                    File sharePath = ShareHelper.getSharedFilesDirectory();
+                    File sharePath = ShareImageFileUtils.getSharedFilesDirectory();
 
                     if (!sharePath.exists() && !sharePath.mkdir()) {
                         throw new IOException("Failed to create directory for shared file.");

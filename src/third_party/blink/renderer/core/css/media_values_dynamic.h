@@ -52,11 +52,12 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
   bool PrefersReducedMotion() const override;
   ForcedColors GetForcedColors() const override;
   NavigationControls GetNavigationControls() const override;
+  ScreenSpanning GetScreenSpanning() const override;
   Document* GetDocument() const override;
   bool HasValues() const override;
   void OverrideViewportDimensions(double width, double height) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   Member<LocalFrame> frame_;

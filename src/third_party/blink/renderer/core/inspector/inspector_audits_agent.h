@@ -12,15 +12,25 @@
 
 namespace blink {
 
+class InspectorIssue;
+class InspectorIssueStorage;
+
 class CORE_EXPORT InspectorAuditsAgent final
     : public InspectorBaseAgent<protocol::Audits::Metainfo> {
  public:
-  explicit InspectorAuditsAgent(InspectorNetworkAgent*);
+  explicit InspectorAuditsAgent(InspectorNetworkAgent*, InspectorIssueStorage*);
   ~InspectorAuditsAgent() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
+
+  void InspectorIssueAdded(InspectorIssue*);
 
   // Protocol methods.
+  protocol::Response enable() override;
+  protocol::Response disable() override;
+
+  void Restore() override;
+
   protocol::Response getEncodedResponse(
       const String& request_id,
       const String& encoding,
@@ -31,6 +41,9 @@ class CORE_EXPORT InspectorAuditsAgent final
       int* out_encoded_size) override;
 
  private:
+  void InnerEnable();
+  Member<InspectorIssueStorage> inspector_issue_storage_;
+  InspectorAgentState::Boolean enabled_;
   Member<InspectorNetworkAgent> network_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorAuditsAgent);

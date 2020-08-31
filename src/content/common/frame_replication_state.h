@@ -9,16 +9,18 @@
 #include <vector>
 
 #include "content/common/content_export.h"
-#include "content/common/content_security_policy_header.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
-#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
 #include "url/origin.h"
 
 namespace blink {
-enum class WebTreeScopeType;
-enum class WebSandboxFlags;
+namespace mojom {
+enum class TreeScopeType;
+}
 }
 
 namespace content {
@@ -27,15 +29,16 @@ namespace content {
 // RenderFrame and any of its associated RenderFrameProxies.
 struct CONTENT_EXPORT FrameReplicationState {
   FrameReplicationState();
-  FrameReplicationState(blink::WebTreeScopeType scope,
-                        const std::string& name,
-                        const std::string& unique_name,
-                        blink::WebInsecureRequestPolicy insecure_request_policy,
-                        const std::vector<uint32_t>& insecure_navigations_set,
-                        bool has_potentially_trustworthy_unique_origin,
-                        bool has_received_user_gesture,
-                        bool has_received_user_gesture_before_nav,
-                        blink::FrameOwnerElementType owner_type);
+  FrameReplicationState(
+      blink::mojom::TreeScopeType scope,
+      const std::string& name,
+      const std::string& unique_name,
+      blink::mojom::InsecureRequestPolicy insecure_request_policy,
+      const std::vector<uint32_t>& insecure_navigations_set,
+      bool has_potentially_trustworthy_unique_origin,
+      bool has_received_user_gesture,
+      bool has_received_user_gesture_before_nav,
+      blink::mojom::FrameOwnerElementType owner_type);
   FrameReplicationState(const FrameReplicationState& other);
   ~FrameReplicationState();
 
@@ -84,7 +87,7 @@ struct CONTENT_EXPORT FrameReplicationState {
   // inherited from parent frames, the currently active flags from the <iframe>
   // element hosting this frame, as well as any flags set from a
   // Content-Security-Policy HTTP header.
-  blink::WebSandboxFlags active_sandbox_flags;
+  network::mojom::WebSandboxFlags active_sandbox_flags;
 
   // Iframe sandbox flags and container policy currently in effect for the
   // frame. Container policy may be empty if this is the top-level frame.
@@ -108,7 +111,8 @@ struct CONTENT_EXPORT FrameReplicationState {
 
   // Accumulated CSP headers - gathered from http headers, <meta> elements,
   // parent frames (in case of about:blank frames).
-  std::vector<ContentSecurityPolicyHeader> accumulated_csp_headers;
+  std::vector<network::mojom::ContentSecurityPolicyHeader>
+      accumulated_csp_headers;
 
   // Whether the frame is in a document tree or a shadow tree, per the Shadow
   // DOM spec: https://w3c.github.io/webcomponents/spec/shadow/
@@ -116,12 +120,12 @@ struct CONTENT_EXPORT FrameReplicationState {
   // created. However, making it const makes it a pain to embed into IPC message
   // params: having a const member implicitly deletes the copy assignment
   // operator.
-  blink::WebTreeScopeType scope;
+  blink::mojom::TreeScopeType scope;
 
   // The insecure request policy that a frame's current document is enforcing.
   // Updates are immediately sent to all frame proxies when frames live in
   // different processes.
-  blink::WebInsecureRequestPolicy insecure_request_policy;
+  blink::mojom::InsecureRequestPolicy insecure_request_policy;
 
   // The upgrade insecure navigations set that a frame's current document is
   // enforcing. Updates are immediately sent to all frame proxies when frames
@@ -145,8 +149,13 @@ struct CONTENT_EXPORT FrameReplicationState {
   // created. However, making it const makes it a pain to embed into IPC message
   // params: having a const member implicitly deletes the copy assignment
   // operator.
-  blink::FrameOwnerElementType frame_owner_element_type =
-      blink::FrameOwnerElementType::kNone;
+  blink::mojom::FrameOwnerElementType frame_owner_element_type =
+      blink::mojom::FrameOwnerElementType::kNone;
+
+  // Whether this frame is an ad frame. Once a frame becomes an ad, it stays as
+  // an ad throughout its lifetime, even if it later navigates to a non-ad
+  // document.
+  blink::mojom::AdFrameType ad_frame_type = blink::mojom::AdFrameType::kNonAd;
 
   // IMPORTANT NOTE: When adding a new member to this struct, don't forget to
   // also add a corresponding entry to the struct traits in frame_messages.h!

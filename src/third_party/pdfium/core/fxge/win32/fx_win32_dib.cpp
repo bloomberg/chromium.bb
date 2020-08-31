@@ -6,6 +6,9 @@
 
 #include <windows.h>
 
+#include <vector>
+
+#include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxge/cfx_gemodule.h"
 #include "core/fxge/win32/cfx_windowsdib.h"
@@ -76,18 +79,18 @@ RetainPtr<CFX_DIBitmap> FX_WindowsDIB_LoadFromBuf(BITMAPINFO* pbmi,
 
   memcpy(pBitmap->GetBuffer(), pData, pitch * height);
   if (bBottomUp) {
-    uint8_t* temp_buf = FX_Alloc(uint8_t, pitch);
-    int top = 0, bottom = height - 1;
+    std::vector<uint8_t, FxAllocAllocator<uint8_t>> temp_buf(pitch);
+    int top = 0;
+    int bottom = height - 1;
     while (top < bottom) {
-      memcpy(temp_buf, pBitmap->GetBuffer() + top * pitch, pitch);
-      memcpy(pBitmap->GetBuffer() + top * pitch,
-             pBitmap->GetBuffer() + bottom * pitch, pitch);
-      memcpy(pBitmap->GetBuffer() + bottom * pitch, temp_buf, pitch);
+      uint8_t* top_ptr = pBitmap->GetBuffer() + top * pitch;
+      uint8_t* bottom_ptr = pBitmap->GetBuffer() + bottom * pitch;
+      memcpy(temp_buf.data(), top_ptr, pitch);
+      memcpy(top_ptr, bottom_ptr, pitch);
+      memcpy(bottom_ptr, temp_buf.data(), pitch);
       top++;
       bottom--;
     }
-    FX_Free(temp_buf);
-    temp_buf = nullptr;
   }
   if (pbmi->bmiHeader.biBitCount == 1) {
     for (int i = 0; i < 2; i++)

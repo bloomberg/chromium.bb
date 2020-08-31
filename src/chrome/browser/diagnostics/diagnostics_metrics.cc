@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 

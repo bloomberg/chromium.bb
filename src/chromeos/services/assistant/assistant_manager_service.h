@@ -10,9 +10,8 @@
 
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/component_export.h"
-#include "chromeos/services/assistant/assistant_settings_manager.h"
+#include "chromeos/services/assistant/public/cpp/assistant_settings.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 
 namespace chromeos {
 namespace assistant {
@@ -23,6 +22,14 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
  public:
   class StateObserver;
   class CommunicationErrorObserver;
+
+  struct UserInfo {
+    UserInfo(const std::string& gaia_id, const std::string& access_token)
+        : gaia_id(gaia_id), access_token(access_token) {}
+
+    std::string gaia_id;
+    std::string access_token;
+  };
 
   enum State {
     // Initial state, the service is created but not started yet.
@@ -44,22 +51,26 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
 
   ~AssistantManagerService() override = default;
 
-  // Start the assistant in the background with |access_token|, where the
-  // token can be nullopt when the service is being started under the signed
-  // out mode.
+  // Start the Assistant in the background with the given |user|.
+  // If the user is nullopt, the service will be started in signed-out mode.
   // If you want to know when the service is started, use
   // |AddAndFireStateObserver| to add an observer.
-  virtual void Start(const base::Optional<std::string>& access_token,
+  virtual void Start(const base::Optional<UserInfo>& user,
                      bool enable_hotword) = 0;
 
-  // Stop the assistant.
+  // Stop the Assistant.
   virtual void Stop() = 0;
 
   // Return the current state.
   virtual State GetState() const = 0;
 
-  // Set access token for assistant.
-  virtual void SetAccessToken(const std::string& access_token) = 0;
+  // Set user information for Assistant. Passing a nullopt will reconfigure
+  // Libassistant to run in signed-out mode, and passing a valid non-empty value
+  // will switch the mode back to normal.
+  virtual void SetUser(const base::Optional<UserInfo>& user) = 0;
+
+  // Enable/disable ambient mode for Assistant.
+  virtual void EnableAmbientMode(bool enabled) = 0;
 
   // Turn on / off all listening, including hotword and voice query.
   virtual void EnableListening(bool enable) = 0;
@@ -70,8 +81,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
   // Enable/disable ARC play store.
   virtual void SetArcPlayStoreEnabled(bool enabled) = 0;
 
-  // Return a pointer of AssistantSettingsManager.
-  virtual AssistantSettingsManager* GetAssistantSettingsManager() = 0;
+  // Enable/disable Assistant Context.
+  virtual void SetAssistantContextEnabled(bool enable) = 0;
+
+  // Return a pointer of AssistantSettings.
+  virtual AssistantSettings* GetAssistantSettings() = 0;
 
   // Add/Remove an observer that is invoked when there is a communication
   // error with the Assistant service.
@@ -89,6 +103,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
 
   // Sync the device apps user consent status.
   virtual void SyncDeviceAppsStatus() = 0;
+
+  // Update and sync the internal media player status to Libassistant.
+  virtual void UpdateInternalMediaPlayerStatus(
+      media_session::mojom::MediaSessionAction action) = 0;
 };
 
 // Observes all state changes made to the |AssistantManagerService::State|.

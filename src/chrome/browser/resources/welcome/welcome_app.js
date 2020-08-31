@@ -81,7 +81,7 @@ Polymer({
   },
 
   /** @private */
-  onDefaultBrowserChange_: function() {
+  onDefaultBrowserChange_() {
     this.$$('cr-toast').show();
   },
 
@@ -90,7 +90,7 @@ Polymer({
    * @param {number} step
    * @private
    */
-  onRouteChange: function(route, step) {
+  onRouteChange(route, step) {
     const setStep = () => {
       // If the specified step doesn't exist, that means there are no more
       // steps. In that case, replace this page with NTP.
@@ -106,7 +106,7 @@ Polymer({
     };
 
     // If the route changed, initialize the steps of modules for that route.
-    if (this.currentRoute_ != route) {
+    if (this.currentRoute_ !== route) {
       this.initializeModules(route).then(setStep);
     } else {
       setStep();
@@ -116,14 +116,14 @@ Polymer({
   },
 
   /** @param {Routes} route */
-  initializeModules: function(route) {
+  initializeModules(route) {
     // Remove all views except landing.
     this.$.viewManager
         .querySelectorAll('[slot="view"]:not([id="step-landing"])')
         .forEach(element => element.remove());
 
     // If it is on landing route, end here.
-    if (route == Routes.LANDING) {
+    if (route === Routes.LANDING) {
       return Promise.resolve();
     }
 
@@ -153,7 +153,7 @@ Polymer({
         ])
         .then(([canSetDefault]) => {
           modules = modules.filter(module => {
-            if (module == 'nux-set-as-default') {
+            if (module === 'nux-set-as-default') {
               return canSetDefault;
             }
 

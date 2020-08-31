@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_info.h"
 #include "ui/gl/gl_context.h"
@@ -55,8 +54,10 @@ bool SwitchableGPUsSupported(const GPUInfo& gpu_info,
                              const base::CommandLine& command_line) {
 #if defined(OS_MACOSX)
   if (command_line.HasSwitch(switches::kUseGL) &&
-      command_line.GetSwitchValueASCII(switches::kUseGL) !=
-          gl::kGLImplementationDesktopName) {
+      (command_line.GetSwitchValueASCII(switches::kUseGL) !=
+           gl::kGLImplementationDesktopName &&
+       command_line.GetSwitchValueASCII(switches::kUseGL) !=
+           gl::kGLImplementationANGLEName)) {
     return false;
   }
   if (gpu_info.secondary_gpus.size() != 1) {

@@ -79,7 +79,7 @@ SVGMarkerElement::SVGMarkerElement(Document& document)
   AddToPropertyMap(marker_units_);
 }
 
-void SVGMarkerElement::Trace(blink::Visitor* visitor) {
+void SVGMarkerElement::Trace(Visitor* visitor) {
   visitor->Trace(ref_x_);
   visitor->Trace(ref_y_);
   visitor->Trace(marker_width_);
@@ -129,7 +129,7 @@ void SVGMarkerElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 void SVGMarkerElement::ChildrenChanged(const ChildrenChange& change) {
   SVGElement::ChildrenChanged(change);
 
-  if (change.by_parser)
+  if (change.ByParser())
     return;
 
   if (LayoutObject* object = GetLayoutObject()) {

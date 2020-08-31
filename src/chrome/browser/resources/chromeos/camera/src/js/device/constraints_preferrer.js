@@ -2,24 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for device.
- */
-cca.device = cca.device || {};
-
-/**
- * import {Mode, Resolution} from '../type.js';
- */
-var {Mode, Resolution} = {Mode, Resolution};
-
-/* eslint-disable no-unused-vars */
+import {browserProxy} from '../browser_proxy/browser_proxy.js';
+import * as state from '../state.js';
+import {
+  Facing,
+  Mode,
+  Resolution,
+  ResolutionList,  // eslint-disable-line no-unused-vars
+} from '../type.js';
+// eslint-disable-next-line no-unused-vars
+import {Camera3DeviceInfo} from './camera3_device_info.js';
 
 /**
  * Candidate of capturing with specified photo or video resolution and
@@ -31,16 +23,14 @@ var {Mode, Resolution} = {Mode, Resolution};
  *   previewCandidates: !Array<!MediaStreamConstraints>
  * }}
  */
-var CaptureCandidate;
-
-/* eslint-enable no-unused-vars */
+export let CaptureCandidate;
 
 /**
  * Controller for managing preference of capture settings and generating a list
  * of stream constraints-candidates sorted by user preference.
  * @abstract
  */
-cca.device.ConstraintsPreferrer = class {
+export class ConstraintsPreferrer {
   /**
    * @param {!function()} doReconfigureStream Trigger stream reconfiguration to
    *     reflect changes in user preferred settings.
@@ -93,7 +83,7 @@ cca.device.ConstraintsPreferrer = class {
   restoreResolutionPreference_(key) {
     // TODO(inker): Return promise and await it to assure preferences are loaded
     // before any access.
-    cca.proxy.browserProxy.localStorageGet({[key]: {}}, (values) => {
+    browserProxy.localStorageGet({[key]: {}}).then((values) => {
       this.prefResolution_ = {};
       for (const [deviceId, {width, height}] of Object.entries(values[key])) {
         this.prefResolution_[deviceId] = new Resolution(width, height);
@@ -107,7 +97,7 @@ cca.device.ConstraintsPreferrer = class {
    * @protected
    */
   saveResolutionPreference_(key) {
-    cca.proxy.browserProxy.localStorageSet({[key]: this.prefResolution_});
+    browserProxy.localStorageSet({[key]: this.prefResolution_});
   }
 
   /**
@@ -122,7 +112,7 @@ cca.device.ConstraintsPreferrer = class {
 
   /**
    * Updates with new video device information.
-   * @param {!Array<!cca.device.Camera3DeviceInfo>} devices
+   * @param {!Array<!Camera3DeviceInfo>} devices
    * @abstract
    */
   updateDevicesInfo(devices) {}
@@ -132,10 +122,11 @@ cca.device.ConstraintsPreferrer = class {
    * settings.
    * @param {string} deviceId Device id of video device to be updated.
    * @param {!MediaStream} stream Currently active preview stream.
+   * @param {!Facing} facing Camera facing of video device to be updated.
    * @param {!Resolution} resolution Resolution to be updated to.
    * @abstract
    */
-  updateValues(deviceId, stream, resolution) {}
+  updateValues(deviceId, stream, facing, resolution) {}
 
   /**
    * Gets all available candidates for capturing under this controller and its
@@ -167,20 +158,18 @@ cca.device.ConstraintsPreferrer = class {
   setPreferredResolutionChangeListener(listener) {
     this.preferredResolutionChangeListener_ = listener;
   }
-};
+}
 
 /**
  * All supported constant fps options of video recording.
  * @type {!Array<number>}
- * @const
  */
-cca.device.SUPPORTED_CONSTANT_FPS = [30, 60];
+const SUPPORTED_CONSTANT_FPS = [30, 60];
 
 /**
  * Controller for handling video resolution preference.
  */
-cca.device.VideoConstraintsPreferrer =
-    class extends cca.device.ConstraintsPreferrer {
+export class VideoConstraintsPreferrer extends ConstraintsPreferrer {
   /**
    * @param {!function()} doReconfigureStream
    * @public
@@ -224,7 +213,7 @@ cca.device.VideoConstraintsPreferrer =
     this.restoreFpsPreference_();
 
     this.toggleFps_.addEventListener('click', (event) => {
-      if (!cca.state.get('streaming') || cca.state.get('taking')) {
+      if (!state.get(state.State.STREAMING) || state.get(state.State.TAKING)) {
         event.preventDefault();
       }
     });
@@ -232,9 +221,15 @@ cca.device.VideoConstraintsPreferrer =
       this.setPreferredConstFps_(
           /** @type {string} */ (this.deviceId_), this.resolution_,
           this.toggleFps_.checked ? 60 : 30);
-      cca.state.set('mode-switching', true);
-      this.doReconfigureStream_().finally(
-          () => cca.state.set('mode-switching', false));
+      state.set(state.State.MODE_SWITCHING, true);
+      let hasError = false;
+      this.doReconfigureStream_()
+          .catch((error) => {
+            hasError = true;
+            throw error;
+          })
+          .finally(
+              () => state.set(state.State.MODE_SWITCHING, false, {hasError}));
     });
   }
 
@@ -243,9 +238,8 @@ cca.device.VideoConstraintsPreferrer =
    * @private
    */
   restoreFpsPreference_() {
-    cca.proxy.browserProxy.localStorageGet(
-        {deviceVideoFps: {}},
-        (values) => this.prefFpses_ = values.deviceVideoFps);
+    browserProxy.localStorageGet({deviceVideoFps: {}})
+        .then((values) => this.prefFpses_ = values.deviceVideoFps);
   }
 
   /**
@@ -253,7 +247,7 @@ cca.device.VideoConstraintsPreferrer =
    * @private
    */
   saveFpsPreference_() {
-    cca.proxy.browserProxy.localStorageSet({deviceVideoFps: this.prefFpses_});
+    browserProxy.localStorageSet({deviceVideoFps: this.prefFpses_});
   }
 
   /**
@@ -262,7 +256,7 @@ cca.device.VideoConstraintsPreferrer =
   changePreferredResolution(deviceId, resolution) {
     this.prefResolution_[deviceId] = resolution;
     this.saveResolutionPreference_('deviceVideoResolution');
-    if (cca.state.get(Mode.VIDEO) && deviceId === this.deviceId_) {
+    if (state.get(Mode.VIDEO) && deviceId === this.deviceId_) {
       this.doReconfigureStream_();
     } else {
       this.preferredResolutionChangeListener_(deviceId, resolution);
@@ -278,12 +272,12 @@ cca.device.VideoConstraintsPreferrer =
    * @private
    */
   setPreferredConstFps_(deviceId, resolution, prefFps) {
-    if (!cca.device.SUPPORTED_CONSTANT_FPS.includes(prefFps)) {
+    if (!SUPPORTED_CONSTANT_FPS.includes(prefFps)) {
       return;
     }
     this.toggleFps_.checked = prefFps === 60;
-    cca.device.SUPPORTED_CONSTANT_FPS.forEach(
-        (fps) => cca.state.set(`_${fps}fps`, fps === prefFps));
+    SUPPORTED_CONSTANT_FPS.forEach(
+        (fps) => state.set(state.assertState(`_${fps}fps`), fps === prefFps));
     this.prefFpses_[deviceId] = this.prefFpses_[deviceId] || {};
     this.prefFpses_[deviceId][resolution] = prefFps;
     this.saveFpsPreference_();
@@ -331,7 +325,7 @@ cca.device.VideoConstraintsPreferrer =
   /**
    * @override
    */
-  updateValues(deviceId, stream, resolution) {
+  updateValues(deviceId, stream, facing, resolution) {
     this.deviceId_ = deviceId;
     this.resolution_ = resolution;
     this.prefResolution_[deviceId] = this.resolution_;
@@ -342,8 +336,12 @@ cca.device.VideoConstraintsPreferrer =
     this.setPreferredConstFps_(deviceId, this.resolution_, fps);
     const supportedConstFpses =
         this.constFpsInfo_[deviceId][this.resolution_].filter(
-            (fps) => cca.device.SUPPORTED_CONSTANT_FPS.includes(fps));
-    cca.state.set('multi-fps', supportedConstFpses.length > 1);
+            (fps) => SUPPORTED_CONSTANT_FPS.includes(fps));
+    // Only enable multi fps UI on external camera.
+    // See https://crbug.com/1059191 for details.
+    state.set(
+        state.State.MULTI_FPS,
+        facing === Facing.EXTERNAL && supportedConstFpses.length > 1);
   }
 
   /**
@@ -418,7 +416,7 @@ cca.device.VideoConstraintsPreferrer =
       audio: {echoCancellation: false},
       video: {
         deviceId: {exact: deviceId},
-        frameRate: fps ? {exact: fps} : {min: 24},
+        frameRate: fps ? {exact: fps} : {min: 20, ideal: 30},
         width,
         height,
       },
@@ -432,14 +430,12 @@ cca.device.VideoConstraintsPreferrer =
                previewCandidates: [toConstraints(r, fps)],
              }));
   }
-};
-
+}
 
 /**
  * Controller for handling photo resolution preference.
  */
-cca.device.PhotoConstraintsPreferrer =
-    class extends cca.device.ConstraintsPreferrer {
+export class PhotoConstraintsPreferrer extends ConstraintsPreferrer {
   /**
    * @param {!function()} doReconfigureStream
    * @public
@@ -456,7 +452,7 @@ cca.device.PhotoConstraintsPreferrer =
   changePreferredResolution(deviceId, resolution) {
     this.prefResolution_[deviceId] = resolution;
     this.saveResolutionPreference_('devicePhotoResolution');
-    if (!cca.state.get(Mode.VIDEO) && deviceId === this.deviceId_) {
+    if (!state.get(Mode.VIDEO) && deviceId === this.deviceId_) {
       this.doReconfigureStream_();
     } else {
       this.preferredResolutionChangeListener_(deviceId, resolution);
@@ -486,7 +482,7 @@ cca.device.PhotoConstraintsPreferrer =
   /**
    * @override
    */
-  updateValues(deviceId, stream, resolution) {
+  updateValues(deviceId, stream, facing, resolution) {
     this.deviceId_ = deviceId;
     this.prefResolution_[deviceId] = resolution;
     this.saveResolutionPreference_('devicePhotoResolution');
@@ -505,17 +501,26 @@ cca.device.PhotoConstraintsPreferrer =
    * @private
    */
   pairCapturePreviewResolutions_(captureResolutions, previewResolutions) {
+    const toSupportedPreviewRatio = (r) => {
+      // Special aspect ratio mapping rule, see http://b/147986763.
+      if (r.width === 848 && r.height === 480) {
+        return (new Resolution(16, 9)).aspectRatio;
+      }
+      return r.aspectRatio;
+    };
     /** @type {!Object<string, !ResolutionList>} */
     const previewRatios = previewResolutions.reduce((rs, r) => {
-      rs[r.aspectRatio] = rs[r.aspectRatio] || [];
-      rs[r.aspectRatio].push(r);
+      const ratio = toSupportedPreviewRatio(r);
+      rs[ratio] = rs[ratio] || [];
+      rs[ratio].push(r);
       return rs;
     }, {});
     /** @type {!Object<string, !ResolutionList>} */
     const captureRatios = captureResolutions.reduce((rs, r) => {
-      if (r.aspectRatio in previewRatios) {
-        rs[r.aspectRatio] = rs[r.aspectRatio] || [];
-        rs[r.aspectRatio].push(r);
+      const ratio = toSupportedPreviewRatio(r);
+      if (ratio in previewRatios) {
+        rs[ratio] = rs[ratio] || [];
+        rs[ratio].push(r);
       }
       return rs;
     }, {});
@@ -567,31 +572,47 @@ cca.device.PhotoConstraintsPreferrer =
       }
 
       /**
-       * @param {!ResolutionList} rs
+       * @param {!ResolutionList} resolutions
        * @return {!ResolutionList}
        */
-      const sortPreview = (rs) => {
-        if (rs.length === 0) {
+      const sortPreview = (resolutions) => {
+        if (resolutions.length === 0) {
           return [];
         }
-        rs = [...rs].sort((r1, r2) => r2.width - r1.width);
 
-        // Promote resolution slightly larger than screen size to the first.
-        const /** number */ screenW =
-            Math.floor(window.screen.width * window.devicePixelRatio);
-        const /** number */ screenH =
-            Math.floor(window.screen.height * window.devicePixelRatio);
-        let /** ?number */ minIdx = null;
-        rs.forEach(({width, height}, idx) => {
-          if (width >= screenW && height >= screenH) {
-            minIdx = idx;
-          }
-        });
-        if (minIdx !== null) {
-          rs.unshift(...rs.splice(minIdx, 1));
+        // Sorts the preview resolution (Rp) according to the capture resolution
+        // (Rc) and the screen size (Rs) with the following orders:
+        // If |Rc| <= |Rs|:
+        //   1. All |Rp| <= |Rc|, and the larger, the better.
+        //   2. All |Rp| > |Rc|, and the smaller, the better.
+        //
+        // If |Rc| > |Rs|:
+        //   1. All |Rp| where |Rs| <= |Rp| <= |Rc|, and the smaller, the
+        //   better.
+        //   2. All |Rp| < |Rs|, and the larger, the better.
+        //   3. All |Rp| > |Rc|, and the smaller, the better.
+        //
+        const Rs = Math.floor(window.screen.width * window.devicePixelRatio);
+        const Rc = captureR.width;
+        const cmpDescending = (r1, r2) => r2.width - r1.width;
+        const cmpAscending = (r1, r2) => r1.width - r2.width;
+
+        if (Rc <= Rs) {
+          const notLargerThanRc =
+              resolutions.filter((r) => r.width <= Rc).sort(cmpDescending);
+          const largerThanRc =
+              resolutions.filter((r) => r.width > Rc).sort(cmpAscending);
+          return notLargerThanRc.concat(largerThanRc);
+        } else {
+          const betweenRsRc =
+              resolutions.filter((r) => Rs <= r.width && r.width <= Rc)
+                  .sort(cmpAscending);
+          const smallerThanRs =
+              resolutions.filter((r) => r.width < Rs).sort(cmpDescending);
+          const largerThanRc =
+              resolutions.filter((r) => r.width > Rc).sort(cmpAscending);
+          return betweenRsRc.concat(smallerThanRs).concat(largerThanRc);
         }
-
-        return rs;
       };
 
       const /** !Array<!MediaStreamConstraints> */ previewCandidates =
@@ -611,4 +632,4 @@ cca.device.PhotoConstraintsPreferrer =
         .map(toCaptureCandidate)
         .sort(sortPrefResol);
   }
-};
+}

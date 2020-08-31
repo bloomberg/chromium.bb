@@ -24,7 +24,7 @@ const base::Feature kPreviews {
 
 // Enables the Offline previews on android slow connections.
 const base::Feature kOfflinePreviews{"OfflinePreviews",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Support for enabling NoScript previews which includes a base feature
 // and a UserConsistent-specific experiment feature.
@@ -47,36 +47,16 @@ const base::Feature kStalePreviewsTimestamp{"StalePreviewsTimestamp",
 // loading resources which includes a base feature and a UserConsistent-specific
 // experiment feature.
 const base::FeatureState kResourceLoadingHintsDefaultFeatureState =
-#if defined(OS_ANDROID)
-    base::FEATURE_ENABLED_BY_DEFAULT;
-#else   // !defined(OS_ANDROID)
     base::FEATURE_DISABLED_BY_DEFAULT;
-#endif  // defined(OS_ANDROID)
 const base::Feature kResourceLoadingHints{
     "ResourceLoadingHints", kResourceLoadingHintsDefaultFeatureState};
 const base::Feature kResourceLoadingHintsUserConsistentStudy{
     "ResourceLoadingHintsUserConsistentStudy",
     kResourceLoadingHintsDefaultFeatureState};
 
-// Support for enabling client redirects to a server-rendered lite page preview
-// which includes a base feature and a UserConsistent-specific experiment
-// feature.
-const base::FeatureState kLitePageServerPreviewsDefaultFeatureState =
-    base::FEATURE_DISABLED_BY_DEFAULT;
-const base::Feature kLitePageServerPreviews{
-    "LitePageServerPreviews", kLitePageServerPreviewsDefaultFeatureState};
-const base::Feature kLitePageServerPreviewsUserConsistentStudy{
-    "LitePageServerPreviewsUserConsistentStudy",
-    kLitePageServerPreviewsDefaultFeatureState};
-
 // Provides slow page triggering parameters.
 const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the use of a pref to only trigger Offline Previews when there is a
-// high chance that there is one to serve.
-const base::Feature kOfflinePreviewsFalsePositivePrevention{
-    "OfflinePreviewsFalsePositivePrevention", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables a per-page load holdback experiment using a random coin flip.
 const base::Feature kCoinFlipHoldback{"PreviewsCoinFlipHoldback_UKMOnly",

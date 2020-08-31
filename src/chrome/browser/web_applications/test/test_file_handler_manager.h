@@ -9,29 +9,39 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "components/services/app_service/public/cpp/file_handler_info.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "url/gurl.h"
+
+class Profile;
 
 namespace web_app {
 
 // A testing implementation of a file handler manager.
 class TestFileHandlerManager : public FileHandlerManager {
  public:
-  TestFileHandlerManager();
+  explicit TestFileHandlerManager(Profile* profile);
   ~TestFileHandlerManager() override;
 
-  const std::vector<apps::FileHandlerInfo>* GetFileHandlers(
-      const AppId& app_id) override;
+  const apps::FileHandlers* GetAllFileHandlers(const AppId& app_id) override;
 
+  using AcceptMap = std::map<std::string, base::flat_set<std::string>>;
+  // Installs a file handler for |app_id| with the action url |handler|,
+  // accepting all mimetypes and extensions in |accepts|.
+  // Note: If an item in accepts starts with a '.' it is considered an
+  // extension, otherwise it is a mime.
+  // Note: |enable| indicates whether file handlers for |app_id| should be
+  // enabled, not whether this specific file handler should be enabled. If any
+  // file handler is enabled, all of them will be.
   void InstallFileHandler(const AppId& app_id,
                           const GURL& handler,
-                          std::vector<std::string> accepts);
+                          const AcceptMap& accept,
+                          bool enable = true);
 
  private:
-  std::map<AppId, std::vector<apps::FileHandlerInfo>> file_handlers_;
+  std::map<AppId, apps::FileHandlers> file_handlers_;
   DISALLOW_COPY_AND_ASSIGN(TestFileHandlerManager);
 };
 

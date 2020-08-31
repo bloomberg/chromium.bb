@@ -10,7 +10,7 @@
 Polymer({
   is: 'oobe-eula-md',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**
@@ -18,7 +18,7 @@ Polymer({
      */
     eulaLoadingScreenShown: {
       type: Boolean,
-      value: false,
+      value: true,
     },
 
     /**
@@ -48,7 +48,7 @@ Polymer({
     /**
      * Reference to OOBE screen object.
      * @type {!{
-     *     loadEulaToWebview_: function(Element),
+     *     loadEulaToWebview_: function(Element, string, boolean),
      *     onUsageStatsClicked_: function(boolean),
      * }}
      */
@@ -63,7 +63,7 @@ Polymer({
    */
   initialized_: false,
 
-  focus: function() {
+  focus() {
     if (this.eulaLoadingScreenShown) {
       this.$.eulaLoadingDialog.show();
     } else {
@@ -72,7 +72,7 @@ Polymer({
   },
 
   /** Called when dialog is shown */
-  onBeforeShow: function() {
+  onBeforeShow() {
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
@@ -84,7 +84,7 @@ Polymer({
    * Set up dialog before shown it for the first time.
    * @private
    */
-  initializeScreen_: function() {
+  initializeScreen_() {
     if (this.initialized_)
       return;
     this.$.eulaDialog.scrollToBottom();
@@ -96,7 +96,7 @@ Polymer({
    * Called when dialog is shown for the first time.
    * @private
    */
-  applyOobeConfiguration_: function() {
+  applyOobeConfiguration_() {
     var configuration = Oobe.getInstance().getOobeConfiguration();
     if (!configuration)
       return;
@@ -111,16 +111,27 @@ Polymer({
   /**
    * Event handler that is invoked when 'chrome://terms' is loaded.
    */
-  onFrameLoad_: function() {
+  onFrameLoad_() {
     this.acceptButtonDisabled = false;
+    this.eulaLoadingScreenShown = false;
+    this.$.eulaDialog.scrollToBottom();
   },
 
   /**
    * This is called when strings are updated.
    */
-  updateLocalizedContent: function(event) {
+  updateLocalizedContent(event) {
     // This forces frame to reload.
-    this.screen.loadEulaToWebview_(this.$.crosEulaFrame);
+    const onlineEulaUrl = loadTimeData.getString('eulaOnlineUrl');
+
+    this.screen.loadEulaToWebview_(
+        this.$.crosEulaFrame, onlineEulaUrl, false /* clear_anchors */);
+
+    const additionalToSUrl =
+        loadTimeData.getString('eulaAdditionalToSOnlineUrl');
+    this.screen.loadEulaToWebview_(
+        this.$.additionalChromeToSFrame, additionalToSUrl,
+        true /* clear_anchors */);
     this.i18nUpdateLocale();
   },
 
@@ -129,7 +140,7 @@ Polymer({
    *
    * @private
    */
-  eulaAccepted_: function() {
+  eulaAccepted_() {
     chrome.send('login.EulaScreen.userActed', ['accept-button']);
   },
 
@@ -138,8 +149,37 @@ Polymer({
    *
    * @private
    */
-  onUsageChanged_: function() {
+  onUsageChanged_() {
+    if (this.$.usageStats.checked) {
+      chrome.send('login.EulaScreen.userActed', ['select-stats-usage']);
+    } else {
+      chrome.send('login.EulaScreen.userActed', ['unselect-stats-usage']);
+    }
     this.screen.onUsageStatsClicked_(this.$.usageStats.checked);
+  },
+
+  /**
+   * @private
+   */
+  onAdditionalTermsClicked_() {
+    chrome.send('login.EulaScreen.userActed', ['show-additional-tos']);
+    this.$['additional-tos'].showModal();
+  },
+
+  /**
+   * On-click event handler for close button of the additional ToS dialog.
+   *
+   * @private
+   */
+  hideToSDialog_() {
+    this.$['additional-tos'].close();
+  },
+
+  /**
+   * @private
+   */
+  focusAdditionalTermsLink_() {
+    this.$.additionalTerms.focus();
   },
 
   /**
@@ -147,11 +187,12 @@ Polymer({
    *
    * @private
    */
-  onInstallationSettingsClicked_: function() {
+  onInstallationSettingsClicked_() {
+    chrome.send('login.EulaScreen.userActed', ['show-security-settings']);
     chrome.send('eulaOnInstallationSettingsPopupOpened');
     this.$.eulaDialog.hidden = true;
     this.$.installationSettingsDialog.hidden = false;
-    this.$['settings-close-button'].focus();
+    this.$.installationSettingsDialog.show();
   },
 
   /**
@@ -159,9 +200,10 @@ Polymer({
    *
    * @private
    */
-  onInstallationSettingsCloseClicked_: function() {
+  onInstallationSettingsCloseClicked_() {
     this.$.installationSettingsDialog.hidden = true;
     this.$.eulaDialog.hidden = false;
+    this.$.eulaDialog.show();
   },
 
   /**
@@ -169,7 +211,9 @@ Polymer({
    *
    * @private
    */
-  onUsageStatsHelpLinkClicked_: function(e) {
+  onUsageStatsHelpLinkClicked_(e) {
+    chrome.send('login.EulaScreen.userActed', ['show-stats-usage-learn-more']);
+    this.$['learn-more'].focus();
     chrome.send('eulaOnLearnMore');
     e.stopPropagation();
   },
@@ -179,7 +223,7 @@ Polymer({
    *
    * @private
    */
-  onEulaBackButtonPressed_: function() {
+  onEulaBackButtonPressed_() {
     chrome.send('login.EulaScreen.userActed', ['back-button']);
   },
 
@@ -188,7 +232,7 @@ Polymer({
    *
    * @private
    */
-  isWaitingForPassword_: function(password) {
+  isWaitingForPassword_(password) {
     return password == null;
   },
 
@@ -197,7 +241,7 @@ Polymer({
    *
    * @private
    */
-  isPasswordEmpty_: function(password) {
+  isPasswordEmpty_(password) {
     return password != null && password.length == 0;
   },
 
@@ -206,7 +250,7 @@ Polymer({
    *
    * @private
    */
-  usageStatsLabelClicked_: function() {
+  usageStatsLabelClicked_() {
     this.usageStatsChecked = !this.usageStatsChecked;
   },
 });

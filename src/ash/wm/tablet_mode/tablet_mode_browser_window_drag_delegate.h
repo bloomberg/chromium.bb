@@ -11,6 +11,8 @@
 
 namespace ash {
 
+class TabletModeBrowserWindowDragSessionWindowsHider;
+
 // The drag delegate for browser windows. It not only includes the logic in
 // TabletModeWindowDragDelegate, but also has special logic for browser windows,
 // e.g., scales the source window, shows/hides the other windows below the
@@ -22,14 +24,12 @@ class ASH_EXPORT TabletModeBrowserWindowDragDelegate
   ~TabletModeBrowserWindowDragDelegate() override;
 
  private:
-  class WindowsHider;
-
   // TabletModeWindowDragDelegate:
-  void PrepareWindowDrag(const gfx::Point& location_in_screen) override;
-  void UpdateWindowDrag(const gfx::Point& location_in_screen) override;
+  void PrepareWindowDrag(const gfx::PointF& location_in_screen) override;
+  void UpdateWindowDrag(const gfx::PointF& location_in_screen) override;
   void EndingWindowDrag(ToplevelWindowEventHandler::DragResult result,
-                        const gfx::Point& location_in_screen) override;
-  void EndedWindowDrag(const gfx::Point& location_in_screen) override;
+                        const gfx::PointF& location_in_screen) override;
+  void EndedWindowDrag(const gfx::PointF& location_in_screen) override;
   void StartFling(const ui::GestureEvent* event) override;
   bool ShouldOpenOverviewWhenDragStarts() override;
 
@@ -37,7 +37,7 @@ class ASH_EXPORT TabletModeBrowserWindowDragDelegate
   // |kIndicatorThresholdRatio| threshold and restores it if the dragged window
   // is dragged back toward the top of the screen. |location_in_screen| is the
   // current drag location for the dragged window.
-  void UpdateSourceWindow(const gfx::Point& location_in_screen);
+  void UpdateSourceWindow(const gfx::PointF& location_in_screen);
 
   // After drag ends, the dragged window might need to merge back into the
   // source window if 1) the dragged window or the source window is not added to
@@ -45,14 +45,15 @@ class ASH_EXPORT TabletModeBrowserWindowDragDelegate
   // screen height and 3) the dragged window is not in snap preview area and 4)
   // the dragged window is not dragged to the other side of the split screen.
   void MergeBackToSourceWindowIfApplicable(
-      const gfx::Point& location_in_screen);
+      const gfx::PointF& location_in_screen);
 
   // It's used to hide all visible windows if the source window needs to be
   // scaled up/down during dragging a tab out of the source window. It also
   // hides the home launcher if home launcher is enabled, blurs and darkens the
   // background upon its creation. All of these will be restored upon its
   // destruction.
-  std::unique_ptr<WindowsHider> windows_hider_;
+  std::unique_ptr<TabletModeBrowserWindowDragSessionWindowsHider>
+      windows_hider_;
 
   // The observer to observe the source window's bounds change animation during
   // dragging. It's used to prevent the dragged window to merge back into the

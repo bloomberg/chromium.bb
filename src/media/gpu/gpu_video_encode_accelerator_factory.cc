@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
+#include "media/gpu/macros.h"
 
 #if BUILDFLAG(USE_V4L2_CODEC)
 #include "media/gpu/v4l2/v4l2_video_encode_accelerator.h"
@@ -21,6 +22,7 @@
 #endif
 #if defined(OS_WIN)
 #include "base/feature_list.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "media/base/media_switches.h"
 #include "media/gpu/windows/media_foundation_video_encode_accelerator_win.h"
 #endif
@@ -66,9 +68,11 @@ std::unique_ptr<VideoEncodeAccelerator> CreateVTVEA() {
 // Creates a MediaFoundationVEA for Win 7 or later. If |compatible_with_win7| is
 // true, VEA is limited to a subset of features that is compatible with Win 7.
 std::unique_ptr<VideoEncodeAccelerator> CreateMediaFoundationVEA(
-    bool compatible_with_win7) {
+    bool compatible_with_win7,
+    bool enable_async_mft) {
   return base::WrapUnique<VideoEncodeAccelerator>(
-      new MediaFoundationVideoEncodeAccelerator(compatible_with_win7));
+      new MediaFoundationVideoEncodeAccelerator(compatible_with_win7,
+                                                enable_async_mft));
 }
 #endif
 
@@ -99,13 +103,30 @@ std::vector<VEAFactoryFunction> GetVEAFactoryFunctions(
   vea_factory_functions.push_back(base::BindRepeating(&CreateVTVEA));
 #endif
 #if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(kMediaFoundationH264Encoding)) {
-    vea_factory_functions.push_back(base::BindRepeating(
-        &CreateMediaFoundationVEA,
-        gpu_preferences.enable_media_foundation_vea_on_windows7));
-  }
+  vea_factory_functions.push_back(base::BindRepeating(
+      &CreateMediaFoundationVEA,
+      gpu_preferences.enable_media_foundation_vea_on_windows7,
+      base::FeatureList::IsEnabled(kMediaFoundationAsyncH264Encoding) &&
+          !gpu::GpuDriverBugWorkarounds()
+               .disable_mediafoundation_async_h264_encoding));
 #endif
   return vea_factory_functions;
+}
+
+VideoEncodeAccelerator::SupportedProfiles GetSupportedProfilesInternal(
+    const gpu::GpuPreferences& gpu_preferences) {
+  if (gpu_preferences.disable_accelerated_video_encode)
+    return VideoEncodeAccelerator::SupportedProfiles();
+
+  VideoEncodeAccelerator::SupportedProfiles profiles;
+  for (const auto& create_vea : GetVEAFactoryFunctions(gpu_preferences)) {
+    auto vea = std::move(create_vea).Run();
+    if (!vea)
+      continue;
+    GpuVideoAcceleratorUtil::InsertUniqueEncodeProfiles(
+        vea->GetSupportedProfiles(), &profiles);
+  }
+  return profiles;
 }
 
 }  // anonymous namespace
@@ -117,7 +138,7 @@ GpuVideoEncodeAcceleratorFactory::CreateVEA(
     VideoEncodeAccelerator::Client* client,
     const gpu::GpuPreferences& gpu_preferences) {
   for (const auto& create_vea : GetVEAFactoryFunctions(gpu_preferences)) {
-    auto vea = create_vea.Run();
+    std::unique_ptr<VideoEncodeAccelerator> vea = create_vea.Run();
     if (!vea)
       continue;
     if (!vea->Initialize(config, client)) {
@@ -134,14 +155,23 @@ GpuVideoEncodeAcceleratorFactory::CreateVEA(
 MEDIA_GPU_EXPORT VideoEncodeAccelerator::SupportedProfiles
 GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
     const gpu::GpuPreferences& gpu_preferences) {
-  VideoEncodeAccelerator::SupportedProfiles profiles;
-  for (const auto& create_vea : GetVEAFactoryFunctions(gpu_preferences)) {
-    auto vea = std::move(create_vea).Run();
-    if (!vea)
-      continue;
-    GpuVideoAcceleratorUtil::InsertUniqueEncodeProfiles(
-        vea->GetSupportedProfiles(), &profiles);
+  // Cache the supported profiles so that they will not be computed more than
+  // once per GPU process. It is assumed that |gpu_preferences| do not change
+  // between calls.
+  static VideoEncodeAccelerator::SupportedProfiles profiles =
+      GetSupportedProfilesInternal(gpu_preferences);
+
+#if BUILDFLAG(USE_V4L2_CODEC)
+  // V4L2-only: the encoder devices may not be visible at the time the GPU
+  // process is starting. If the capabilities vector is empty, try to query the
+  // devices again in the hope that they will have appeared in the meantime.
+  // TODO(crbug.com/948147): trigger query when an device add/remove event
+  // (e.g. via udev) has happened instead.
+  if (profiles.empty()) {
+    VLOGF(1) << "Supported profiles empty, querying again...";
+    profiles = GetSupportedProfilesInternal(gpu_preferences);
   }
+#endif
   return profiles;
 }
 

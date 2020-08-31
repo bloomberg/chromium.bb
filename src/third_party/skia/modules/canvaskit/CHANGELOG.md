@@ -7,9 +7,156 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+ - Support for DOMMatrix on all APIs that take SkMatrix (i.e. arrays or Float32Arrays of length 6/9/16).
+ - `CanvasKit.MakeWebGLCanvasSurface` takes an option for WebGL version to make it easier to specify
+   v1 or v2.
+ - setEdging and setEmbeddedBitmaps to SkFont. You can disable the ability to draw aliased fonts (and save some code
+   size) with the compile.sh argument `no_alias_font`.
+
+### Removed
+ - Previously deprecated functions `MakeSkDashPathEffect`, `MakeLinearGradientShader`,
+   `MakeRadialGradientShader`, `MakeTwoPointConicalGradientShader`, `MakeSkCornerPathEffect`,
+   `MakeSkDiscretePathEffect`
+
+### Changed
+ - CanvasKit colors are now represented with a TypedArray of four floats.
+ - Safari now defaults to using WebGL1 instead of WebGL2 (skbug.com/10171)
+
+### Removed
+ - SkPaint.setColorf is obsolete and removed. setColor accepts a CanvasKit color which is
+   always composed of floats.
+ - localmatrix option for `SkShader.Lerp` and `SkShader.Blend`.
+
+### Deprecated
+ - `SkCanvas.concat44` has been folded into concat (which now takes 3x2, 3x3, or 4x4 matrices). It will
+   be removed soon.
+
+## [0.14.0] - 2020-03-18
+
+### Added
+ - `SkShader.MakeSweepGradient`
+ - `SkCanvas.saveLayer` can now be called with 1 argument (the paint). In this case the current
+   effective clip will be used, as the current rect is assumed to be null.
+ - `SkPaint.setAlphaf`
+ - Clients can supply `no_codecs` to compile.sh to remove all codec encoding and decoded code.
+   This can save over 100 kb compressed if codecs are not needed.
+
+### Deprecated
+ - `MakeSkDashPathEffect` will be removed soon. Calls can be replaced with
+   `SkPathEffect.MakeDash`.
+ - `MakeLinearGradientShader` will be removed soon. Calls can be replaced with
+   `SkShader.MakeLinearGradient`.
+ - `MakeRadialGradientShader` will be removed soon. Calls can be replaced with
+   `SkShader.MakeRadialGradient`.
+ - `MakeTwoPointConicalGradientShader` will be removed soon. Calls can be replaced with
+   `SkShader.MakeTwoPointConicalGradient`.
+
+### Fixed
+ - Shadows are properly draw on fillRect and strokeRect in the canvas2d emulation layer.
+ - Shadow offsets properly ignore the CTM in the canvas2d emulation layer.
+
+### Changed
+ - Stop compiling jpeg and webp encoders by default. This results in a 100kb binary size reduction.
+   Clients that need these encoders can supply `force_encode_webp` or `force_encode_jpeg` to
+   compile.sh.
+
+### Removed
+ - Removed inverse filltypes.
+ - Removed StrokeAndFill paint style.
+ - Removed TextEncoding enum (it was only used internally). All functions assume UTF-8.
+
+## [0.13.0] - 2020-02-28
+
+### Deprecated
+ - `MakeSkCornerPathEffect` will be removed soon. Calls can be replaced with
+   `SkPathEffect.MakeCorner`.
+ - `MakeSkDiscretePathEffect` will be removed soon. Calls can be replaced with
+   `SkPathEffect.MakeDiscrete`.
+
+### Added
+ - `SkSurface.drawOnce` for drawing a single frame (in addition to already existing
+   `SkSurface.requestAnimationFrame` for animation logic).
+ - `CanvasKit.parseColorString` which processes color strings like "#2288FF"
+ - Particles module now exposes effect uniforms, which can be modified for live-updating.
+ - Experimental 4x4 matrices added in `SkM44`.
+ - Vector math functions added in `SkVector`.
+ - `SkRuntimeEffect.makeShaderWithChildren`, which can take in other shaders as fragmentProcessors.
+ - `GrContext.releaseResourcesAndAbandonContext` to free up WebGL contexts.
+ - A few methods on `SkFont`: `setHinting`, `setLinearMetrics`, `setSubpixel`.
+
+### Changed
+ - We now compile/ship with Emscripten v1.39.6.
+ - `SkMatrix.multiply` can now accept any number of matrix arguments, multiplying them
+    left-to-right.
+ - SkMatrix.invert now returns null when the matrix is not invertible. Previously it would return an
+   identity matrix. Callers must determine what behavior would be appropriate in this situation.
+ - In Canvas2D compatibility layer, the underlying SkFont will have setSubpixel(true).
+ - Bones are removed from Vertices builder
+
+### Fixed
+ - Support for .otf fonts (.woff and .woff2 still not supported).
+
+## [0.12.0] - 2020-01-22
+
+### Added
+ - `SkFontMgr.countFamilies` and `SkFontMgr.getFamilyName` to expose the parsed font names.
+
+### Changed
+ - SKP serialization/deserialization now available (can be disabled with the 'no_skp').
+   `SkPicture.DEBUGONLY_saveAsFile` renamed to `SkPicture.saveAsFile` and
+   `CanvasKit.MakeSkPicture` is now exposed. SKP support is not shipped to npm builds.
+   `force_serialize_skp` has been removed since it opt-out, not opt-in.
+
+### Fixed
+ - Bug that sometimes resulted in 'Cannot perform Construct on a neutered ArrayBuffer'
+ - Bug with SkImage.readPixels (skbug.com/9788)
+ - Bug with transparent colors in Canvas2d mode (skbug.com/9800)
+
+## [0.11.0] - 2020-01-10
+
+### Added
+ - A "Core" build that removes Fonts, the Skottie animation player, the Particles demo,
+   and PathOps is available in `bin/core/`. It is about half the size of the "CoreWithFonts"
+   build.
+ - Experimental Runtime shader available for custom builds.
+ - WebP support.
+ - `SkAnimatedImage.getCurrentFrame` which returns an SkImage.
+
+### Fixed
+ - `CanvasKit.SaveLayerInitWithPrevious` and `CanvasKit.SaveLayerF16ColorType` constants.
+ - Some compilation configurations, for example, those with no fonts or just one of particles/skottie.
+
+### Changed
+ - Small tweaks to compilation settings to reduce code size and linkage time.
+ - JS functions are no longer provided when the underlying c++ calls have been compiled out.
+
+### Removed
+ - `SkShader.Empty`
+ - Support for Type 1 Fonts. These are ancient and removing them saves about 135k
+   of code size.
+
+### Breaking
+ - In an effort to reduce code size for most clients, npm now contains two CanvasKit builds.
+   In `bin/` there is the "CoreWithFonts" build that contains most functionality from 0.10.0.
+   However, we no longer ship the Skottie animation player, nor the Particles demo. Further,
+   PathOps are removed from this build `MakePathFromOp`, `SkPath.op` and `SkPath.simplify`.
+   Clients who need any of those features are encouraged to create a custom build using
+   `compile.sh`.
+ - `SkPicture.DEBUGONLY_saveAsFile` was accidentally included in release builds. It has been
+   removed. Clients who need this in a release build (e.g. to file a bug report that only
+   reproduces in release) should do a custom build with the `force_serialize_skp` flag given.
+
+### Deprecated
+ - `SkCanvas.drawAnimatedImage` will be renamed soon. Calls can be replaced with `SkCanvas.drawImage`
+   and `SkAnimatedImage.getCurrentFrame`.
+
+## [0.10.0] - 2019-12-09
+
+### Added
  - `SkContourMeasureIter` and `SkContourMeasure` as an alternative to `SkPathMeasure`.
  - CanvasKit image decode cache helpers: getDecodeCacheLimitBytes(), setDecodeCacheLimitBytes(),
    and getDecodeCacheUsedBytes().
+ - `SkShader.Blend`, `SkShader.Color`, `SkShader.Empty`, `SkShader.Lerp`.
 
 ### Changed
  - The returned values from `SkParagraph.getRectsForRange` now have direction with value

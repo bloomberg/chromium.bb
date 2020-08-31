@@ -17,7 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
-#include "ui/base/dragdrop/file_info.h"
+#include "ui/base/dragdrop/file_info/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "url/gurl.h"
 
@@ -100,11 +100,10 @@ TEST_F(OSExchangeDataWinTest, StringDataWritingViaCOM) {
   // Construct a new object with the old object so that we can use our access
   // APIs.
   OSExchangeData data2(data.provider().Clone());
-  EXPECT_TRUE(data2.HasURL(OSExchangeData::CONVERT_FILENAMES));
+  EXPECT_TRUE(data2.HasURL(CONVERT_FILENAMES));
   GURL url_from_data;
   std::wstring title;
-  EXPECT_TRUE(data2.GetURLAndTitle(
-      OSExchangeData::CONVERT_FILENAMES, &url_from_data, &title));
+  EXPECT_TRUE(data2.GetURLAndTitle(CONVERT_FILENAMES, &url_from_data, &title));
   GURL reference_url(input);
   EXPECT_EQ(reference_url.spec(), url_from_data.spec());
 }
@@ -148,11 +147,10 @@ TEST_F(OSExchangeDataWinTest, RemoveData) {
   // Construct a new object with the old object so that we can use our access
   // APIs.
   OSExchangeData data2(data.provider().Clone());
-  EXPECT_TRUE(data2.HasURL(OSExchangeData::CONVERT_FILENAMES));
+  EXPECT_TRUE(data2.HasURL(CONVERT_FILENAMES));
   GURL url_from_data;
   std::wstring title;
-  EXPECT_TRUE(data2.GetURLAndTitle(
-      OSExchangeData::CONVERT_FILENAMES, &url_from_data, &title));
+  EXPECT_TRUE(data2.GetURLAndTitle(CONVERT_FILENAMES, &url_from_data, &title));
   EXPECT_EQ(GURL(input2).spec(), url_from_data.spec());
 }
 
@@ -406,8 +404,8 @@ TEST_F(OSExchangeDataWinTest, VirtualFiles) {
       } else {
         // IStorage uses compound files, so temp files won't be flat text files.
         // Just make sure the original contents appears in the compound files.
-        EXPECT_TRUE(read_contents.find(kTestFilenamesAndContents[i].second) !=
-                    std::string::npos);
+        EXPECT_TRUE(
+            base::Contains(read_contents, kTestFilenamesAndContents[i].second));
       }
     }
   }
@@ -542,8 +540,8 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNames) {
       } else {
         // IStorage uses compound files, so temp files won't be flat text files.
         // Just make sure the original contents appears in the compound files.
-        EXPECT_TRUE(read_contents.find(kTestFilenamesAndContents[i].second) !=
-                    std::string::npos);
+        EXPECT_TRUE(
+            base::Contains(read_contents, kTestFilenamesAndContents[i].second));
       }
     }
   }
@@ -625,8 +623,8 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNamesCaseInsensitivity) {
       } else {
         // IStorage uses compound files, so temp files won't be flat text files.
         // Just make sure the original contents appears in the compound files.
-        EXPECT_TRUE(read_contents.find(kTestFilenamesAndContents[i].second) !=
-                    std::string::npos);
+        EXPECT_TRUE(
+            base::Contains(read_contents, kTestFilenamesAndContents[i].second));
       }
     }
   }
@@ -747,8 +745,8 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesInvalidAndDuplicateNames) {
       } else {
         // IStorage uses compound files, so temp files won't be flat text files.
         // Just make sure the original contents appears in the compound files.
-        EXPECT_TRUE(read_contents.find(kTestFilenamesAndContents[i].second) !=
-                    std::string::npos);
+        EXPECT_TRUE(
+            base::Contains(read_contents, kTestFilenamesAndContents[i].second));
       }
     }
   }
@@ -855,15 +853,14 @@ TEST_F(OSExchangeDataWinTest, ProvideURLForPlainTextURL) {
   data.SetString(L"http://google.com");
 
   OSExchangeData data2(data.provider().Clone());
-  ASSERT_TRUE(data2.HasURL(OSExchangeData::CONVERT_FILENAMES));
+  ASSERT_TRUE(data2.HasURL(CONVERT_FILENAMES));
   GURL read_url;
   std::wstring title;
-  EXPECT_TRUE(data2.GetURLAndTitle(
-      OSExchangeData::CONVERT_FILENAMES, &read_url, &title));
+  EXPECT_TRUE(data2.GetURLAndTitle(CONVERT_FILENAMES, &read_url, &title));
   EXPECT_EQ(GURL("http://google.com"), read_url);
 }
 
-class MockDownloadFileProvider : public ui::DownloadFileProvider {
+class MockDownloadFileProvider : public DownloadFileProvider {
  public:
   MockDownloadFileProvider() = default;
   ~MockDownloadFileProvider() override = default;
@@ -890,7 +887,7 @@ TEST_F(OSExchangeDataWinTest, OnDownloadCompleted) {
 
   auto download_file_provider = std::make_unique<MockDownloadFileProvider>();
   auto weak_ptr = download_file_provider->GetWeakPtr();
-  OSExchangeData::DownloadFileInfo file_info(
+  DownloadFileInfo file_info(
       base::FilePath(FILE_PATH_LITERAL("file_with_no_contents.txt")),
       std::move(download_file_provider));
   provider.SetDownloadFileInfo(&file_info);

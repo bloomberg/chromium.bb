@@ -6,9 +6,9 @@
 
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -39,6 +39,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/app_isolation_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -92,6 +93,12 @@ bool SiteHasIsolatedStorage(const GURL& extension_site_url,
 #endif
 
   return extension && AppIsolationInfo::HasIsolatedStorage(extension);
+}
+
+bool HasIsolatedStorage(const std::string& extension_id,
+                        content::BrowserContext* context) {
+  const GURL extension_site_url = GetSiteForExtensionId(extension_id, context);
+  return SiteHasIsolatedStorage(extension_site_url, context);
 }
 
 void SetIsIncognitoEnabled(const std::string& extension_id,
@@ -267,25 +274,25 @@ const gfx::ImageSkia& GetDefaultExtensionIcon() {
       IDR_EXTENSION_DEFAULT_ICON);
 }
 
-const Extension* GetInstalledPwaForUrl(
-    content::BrowserContext* context,
-    const GURL& url,
-    base::Optional<LaunchContainer> launch_container_filter) {
-  const ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
-  for (scoped_refptr<const Extension> app :
-       ExtensionRegistry::Get(context)->enabled_extensions()) {
-    if (!app->from_bookmark())
-      continue;
-    if (!BookmarkAppIsLocallyInstalled(prefs, app.get()))
-      continue;
-    if (launch_container_filter &&
-        GetLaunchContainer(prefs, app.get()) != *launch_container_filter) {
-      continue;
-    }
-    if (UrlHandlers::CanBookmarkAppHandleUrl(app.get(), url))
-      return app.get();
+std::unique_ptr<const PermissionSet> GetInstallPromptPermissionSetForExtension(
+    const Extension* extension,
+    Profile* profile,
+    bool include_optional_permissions) {
+  // Initialize permissions if they have not already been set so that
+  // any transformations are correctly reflected in the install prompt.
+  PermissionsUpdater(profile, PermissionsUpdater::INIT_FLAG_TRANSIENT)
+      .InitializePermissions(extension);
+
+  std::unique_ptr<const PermissionSet> permissions_to_display =
+      extension->permissions_data()->active_permissions().Clone();
+
+  if (include_optional_permissions) {
+    const PermissionSet& optional_permissions =
+        PermissionsParser::GetOptionalPermissions(extension);
+    permissions_to_display = PermissionSet::CreateUnion(*permissions_to_display,
+                                                        optional_permissions);
   }
-  return nullptr;
+  return permissions_to_display;
 }
 
 }  // namespace util

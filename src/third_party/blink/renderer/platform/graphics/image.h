@@ -30,6 +30,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
@@ -57,7 +58,6 @@ class ImageDecodeCache;
 namespace blink {
 
 class DarkModeImageClassifier;
-class FloatPoint;
 class FloatRect;
 class GraphicsContext;
 class Image;
@@ -109,9 +109,16 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   virtual bool HasIntrinsicSize() const { return true; }
 
   virtual IntSize Size() const = 0;
+  IntSize Size(RespectImageOrientationEnum) const;
+  virtual IntSize SizeRespectingOrientation() const { return Size(); }
+  virtual FloatSize SizeAsFloat(
+      RespectImageOrientationEnum respect_orientation) const {
+    return FloatSize(Size(respect_orientation));
+  }
   IntRect Rect() const { return IntRect(IntPoint(), Size()); }
   int width() const { return Size().Width(); }
   int height() const { return Size().Height(); }
+
   virtual bool GetHotSpot(IntPoint&) const { return false; }
 
   enum SizeAvailability {
@@ -201,6 +208,22 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   virtual PaintImage PaintImageForCurrentFrame() = 0;
 
+  virtual bool HasDefaultOrientation() const { return true; }
+
+  // Most image types have the default orientation. Only bitmap derived image
+  // types need to override this method.
+  virtual ImageOrientation CurrentFrameOrientation() const {
+    return kDefaultImageOrientation;
+  }
+
+  // Correct the src rect (rotate and maybe translate it) to account for a
+  // non-default image orientation. The image must have non-default orientation
+  // to call this method. The image_size is the oriented size of the image (i.e.
+  // after orientation has been applied). src_rect may be a subset of the image,
+  // also oriented.
+  FloatRect CorrectSrcRectForImageOrientation(FloatSize image_size,
+                                              FloatRect src_rect) const;
+
   enum ImageClampingMode {
     kClampImageToSourceRect,
     kDoNotClampImageToSourceRect
@@ -276,7 +299,8 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
                            const FloatPoint& phase,
                            SkBlendMode,
                            const FloatRect&,
-                           const FloatSize& repeat_spacing);
+                           const FloatSize& repeat_spacing,
+                           RespectImageOrientationEnum);
 
   // Creates and initializes a PaintImageBuilder with the metadata flags for the
   // PaintImage.
@@ -285,7 +309,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   // Whether or not size is available yet.
   virtual bool IsSizeAvailable() { return true; }
 
-  typedef FloatSize ClassificationKey;
+  typedef FloatPoint ClassificationKey;
   HashMap<ClassificationKey, DarkModeClassification> dark_mode_classifications_;
 
  private:
@@ -303,10 +327,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   const bool is_multipart_;
   DISALLOW_COPY_AND_ASSIGN(Image);
 };
-
-#define DEFINE_IMAGE_TYPE_CASTS(typeName)                          \
-  DEFINE_TYPE_CASTS(typeName, Image, image, image->Is##typeName(), \
-                    image.Is##typeName())
 
 }  // namespace blink
 

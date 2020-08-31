@@ -20,10 +20,6 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
-namespace network {
-class SharedURLLoaderFactory;
-}
-
 namespace gcm {
 
 // GCMDriver implementation for Android, using Android GCM APIs.
@@ -32,8 +28,7 @@ class GCMDriverAndroid : public GCMDriver,
  public:
   GCMDriverAndroid(
       const base::FilePath& store_path,
-      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
   ~GCMDriverAndroid() override;
 
   // Methods called from Java via JNI:
@@ -64,16 +59,14 @@ class GCMDriverAndroid : public GCMDriver,
                             ValidateRegistrationCallback callback) override;
   void OnSignedIn() override;
   void OnSignedOut() override;
-  void Enable() override;
   void AddConnectionObserver(GCMConnectionObserver* observer) override;
   void RemoveConnectionObserver(GCMConnectionObserver* observer) override;
-  void Disable() override;
   GCMClient* GetGCMClientForTesting() const override;
   bool IsStarted() const override;
   bool IsConnected() const override;
-  void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
+  void GetGCMStatistics(GetGCMStatisticsCallback callback,
                         ClearActivityLogs clear_logs) override;
-  void SetGCMRecording(const GetGCMStatisticsCallback& callback,
+  void SetGCMRecording(const GCMStatisticsRecordingCallback& callback,
                        bool recording) override;
   void SetAccountTokens(
       const std::vector<GCMClient::AccountTokenInfo>& account_tokens) override;
@@ -108,8 +101,8 @@ class GCMDriverAndroid : public GCMDriver,
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
-  // Callback for GetGCMStatistics.
-  GetGCMStatisticsCallback get_gcm_statistics_callback_;
+  // Callback for SetGCMRecording.
+  GCMStatisticsRecordingCallback gcm_statistics_recording_callback_;
 
   // Recorder that logs GCM activities.
   GCMStatsRecorderAndroid recorder_;

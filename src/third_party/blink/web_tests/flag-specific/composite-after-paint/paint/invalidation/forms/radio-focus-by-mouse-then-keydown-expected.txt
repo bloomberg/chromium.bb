@@ -5,12 +5,8 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow INPUT",
-          "rect": [12, 10, 15, 15],
-          "reason": "subtree"
-        }
+      "invalidations": [
+        [9, 7, 21, 21]
       ]
     }
   ]

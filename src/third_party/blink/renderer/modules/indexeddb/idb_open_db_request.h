@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -40,15 +41,17 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  IDBOpenDBRequest(ScriptState*,
-                   IDBDatabaseCallbacks*,
-                   std::unique_ptr<WebIDBTransaction> transaction_backend,
-                   int64_t transaction_id,
-                   int64_t version,
-                   IDBRequest::AsyncTraceState metrics);
+  IDBOpenDBRequest(
+      ScriptState*,
+      IDBDatabaseCallbacks*,
+      std::unique_ptr<WebIDBTransaction> transaction_backend,
+      int64_t transaction_id,
+      int64_t version,
+      IDBRequest::AsyncTraceState metrics,
+      mojo::PendingRemote<mojom::blink::ObservedFeature> connection_lifetime);
   ~IDBOpenDBRequest() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void EnqueueBlocked(int64_t existing_version) override;
   void EnqueueUpgradeNeeded(int64_t old_version,
@@ -59,8 +62,8 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   void EnqueueResponse(std::unique_ptr<WebIDBDatabase>,
                        const IDBDatabaseMetadata&) override;
 
-  // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) final;
+  // ExecutionContextLifecycleObserver
+  void ContextDestroyed() final;
 
   // EventTarget
   const AtomicString& InterfaceName() const override;
@@ -81,6 +84,9 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   std::unique_ptr<WebIDBTransaction> transaction_backend_;
   const int64_t transaction_id_;
   int64_t version_;
+
+  // Passed to the IDBDatabase when created.
+  mojo::PendingRemote<mojom::blink::ObservedFeature> connection_lifetime_;
 
   base::Time start_time_;
   bool open_time_recorded_ = false;

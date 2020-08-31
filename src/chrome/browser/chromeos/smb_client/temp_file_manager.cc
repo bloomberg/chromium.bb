@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/files/file_util.h"
+#include "base/logging.h"
 
 namespace chromeos {
 namespace smb_client {
@@ -73,22 +74,6 @@ base::ScopedFD TempFileManager::CreateTempFile() {
   }
 
   return temp_fd;
-}
-
-base::ScopedFD TempFileManager::WritePasswordToFile(
-    const std::string& password) {
-  const size_t password_size = password.size();
-  std::vector<uint8_t> password_data(sizeof(password_size) + password.size());
-
-  // Write the password length in the first sizeof(password_size) bytes of the
-  // buffer.
-  std::memcpy(password_data.data(), &password_size, sizeof(password_size));
-
-  // Append |password| starting at the end of password_size.
-  std::memcpy(password_data.data() + sizeof(password_size), password.c_str(),
-              password.size());
-
-  return CreateTempFile(password_data);
 }
 
 }  // namespace smb_client

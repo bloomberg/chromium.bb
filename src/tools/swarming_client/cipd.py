@@ -14,7 +14,9 @@ import platform
 import sys
 import tempfile
 import time
-import urllib
+
+import six
+from six.moves import urllib
 
 from utils import file_path
 from utils import fs
@@ -173,7 +175,7 @@ class CipdClient(object):
 
     try:
       try:
-        for subdir, pkgs in sorted(packages.iteritems()):
+        for subdir, pkgs in sorted(packages.items()):
           if '\n' in subdir:
             raise Error(
               'Could not install packages; subdir %r contains newline' % subdir)
@@ -223,7 +225,7 @@ class CipdClient(object):
         result_json = json.load(jfile)
       return {
         subdir: [(x['package'], x['instance_id']) for x in pins]
-        for subdir, pins in result_json['result'].iteritems()
+        for subdir, pins in result_json['result'].items()
       }
     finally:
       fs.remove(ensure_file_path)
@@ -238,9 +240,10 @@ def get_platform():
   """
   # linux, mac or windows.
   os_name = {
-    'darwin': 'mac',
-    'linux2': 'linux',
-    'win32': 'windows',
+      'darwin': 'mac',
+      'linux2': 'linux',
+      'linux': 'linux',
+      'win32': 'windows',
   }.get(sys.platform)
   if not os_name:
     raise Error('Unknown OS: %s' % sys.platform)
@@ -282,9 +285,9 @@ def resolve_version(cipd_server, package_name, version, timeout=None):
   """Resolves a package instance version (e.g. a tag) to an instance id."""
   url = '%s/_ah/api/repo/v1/instance/resolve?%s' % (
       cipd_server,
-      urllib.urlencode({
-        'package_name': package_name,
-        'version': version,
+      urllib.parse.urlencode({
+          'package_name': package_name,
+          'version': version,
       }))
   res = net.url_read_json(url, timeout=timeout)
   _check_response(res, 'Could not resolve version %s:%s', package_name, version)
@@ -301,10 +304,11 @@ def get_client_fetch_url(service_url, package_name, instance_id, timeout=None):
     Error if cannot retrieve fetch URL.
   """
   # Fetch the URL of the binary from CIPD backend.
-  url = '%s/_ah/api/repo/v1/client?%s' % (service_url, urllib.urlencode({
-    'package_name': package_name,
-    'instance_id': instance_id,
-  }))
+  url = '%s/_ah/api/repo/v1/client?%s' % (service_url,
+                                          urllib.parse.urlencode({
+                                              'package_name': package_name,
+                                              'instance_id': instance_id,
+                                          }))
   res = net.url_read_json(url, timeout=timeout)
   _check_response(
       res, 'Could not fetch CIPD client %s:%s',package_name, instance_id)
@@ -323,7 +327,7 @@ def _fetch_cipd_client(disk_cache, instance_id, fetch_url, timeoutfn):
     Error if could not fetch content.
   """
   sleep_time = 1
-  for attempt in xrange(5):
+  for attempt in range(5):
     if attempt > 0:
       if timeoutfn() is not None and timeoutfn() < sleep_time:
         raise Error('Could not fetch CIPD client: timeout')
@@ -380,14 +384,14 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
     # version_cache is {hash(package_name, tag) -> instance id} mapping.
     # It does not take a lot of disk space.
     version_cache = local_caching.DiskContentAddressedCache(
-        unicode(os.path.join(cache_dir, 'versions')),
+        six.text_type(os.path.join(cache_dir, 'versions')),
         local_caching.CachePolicies(
             # 1GiB.
-            max_cache_size=1024*1024*1024,
+            max_cache_size=1024 * 1024 * 1024,
             min_free_space=0,
             max_items=300,
             # 3 weeks.
-            max_age_secs=21*24*60*60),
+            max_age_secs=21 * 24 * 60 * 60),
         trim=True)
     # Convert (package_name, version) to a string that may be used as a
     # filename in disk cache by hashing it.
@@ -408,14 +412,14 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
   # instance_cache is {instance_id -> client binary} mapping.
   # It is bounded by 5 client versions.
   instance_cache = local_caching.DiskContentAddressedCache(
-      unicode(os.path.join(cache_dir, 'clients')),
-        local_caching.CachePolicies(
-            # 1GiB.
-            max_cache_size=1024*1024*1024,
-            min_free_space=0,
-            max_items=10,
-            # 3 weeks.
-            max_age_secs=21*24*60*60),
+      six.text_type(os.path.join(cache_dir, 'clients')),
+      local_caching.CachePolicies(
+          # 1GiB.
+          max_cache_size=1024 * 1024 * 1024,
+          min_free_space=0,
+          max_items=10,
+          # 3 weeks.
+          max_age_secs=21 * 24 * 60 * 60),
       trim=True)
   if instance_id not in instance_cache:
     logging.info('Fetching CIPD client %s:%s', package_name, instance_id)
@@ -425,11 +429,18 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
 
   # A single host can run multiple swarming bots, but they cannot share same
   # root bot directory. Thus, it is safe to use the same name for the binary.
-  cipd_bin_dir = unicode(os.path.join(cache_dir, 'bin'))
+  cipd_bin_dir = six.text_type(os.path.join(cache_dir, 'bin'))
   binary_path = os.path.join(cipd_bin_dir, 'cipd' + EXECUTABLE_SUFFIX)
   if fs.isfile(binary_path):
     # TODO(maruel): Do not unconditionally remove the binary.
-    file_path.remove(binary_path)
+    try:
+      file_path.remove(binary_path)
+    except WindowsError:  # pylint: disable=undefined-variable
+      # See whether cipd.exe is running for crbug.com/1028781
+      ret = subprocess42.call(['tasklist.exe'])
+      if ret:
+        logging.error('tasklist returns non-zero: %d', ret)
+      raise
   else:
     file_path.ensure_tree(cipd_bin_dir)
 

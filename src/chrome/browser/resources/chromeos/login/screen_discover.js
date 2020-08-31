@@ -15,11 +15,16 @@ login.createScreen('DiscoverScreen', 'discover', function() {
       return $('discover-impl');
     },
 
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.ONBOARDING;
+    },
+
     /**
      * Event handler that is invoked just before the screen is shown.
      * @param {object} data Screen init payload.
      */
-    onBeforeShow: function(data) {
+    onBeforeShow(data) {
       $('discover-impl').addEventListener('discover-done', function() {
         chrome.send('login.DiscoverScreen.userActed', ['finished']);
       });
@@ -28,7 +33,7 @@ login.createScreen('DiscoverScreen', 'discover', function() {
     /**
      * This is called after resources are updated.
      */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       $('discover-impl').updateLocalizedContent();
     },
   };

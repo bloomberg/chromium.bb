@@ -1,15 +1,21 @@
 // Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import {createShadowRootWithCoreStyles} from './utils/create-shadow-root-with-core-styles.js';
+
 /**
  * @unrestricted
  */
-export default class DropTarget {
+export class DropTarget {
   /**
    * @param {!Element} element
    * @param {!Array<{kind: string, type: !RegExp}>} transferTypes
    * @param {string} messageText
-   * @param {function(!DataTransfer)} handleDrop
+   * @param {function(!DataTransfer):*} handleDrop
    */
   constructor(element, transferTypes, messageText, handleDrop) {
     element.addEventListener('dragenter', this._onDragEnter.bind(this), true);
@@ -66,7 +72,7 @@ export default class DropTarget {
       return;
     }
     this._dragMaskElement = this._element.createChild('div', '');
-    const shadowRoot = UI.createShadowRootWithCoreStyles(this._dragMaskElement, 'ui/dropTarget.css');
+    const shadowRoot = createShadowRootWithCoreStyles(this._dragMaskElement, 'ui/dropTarget.css');
     shadowRoot.createChild('div', 'drop-target-message').textContent = this._messageText;
     this._dragMaskElement.addEventListener('drop', this._onDrop.bind(this), true);
     this._dragMaskElement.addEventListener('dragleave', this._onDragLeave.bind(this), true);
@@ -104,14 +110,3 @@ export const Type = {
   WebFile: {kind: 'file', type: /[\w]+/},
   ImageFile: {kind: 'file', type: /image\/.*/},
 };
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.DropTarget = DropTarget;
-
-UI.DropTarget.Type = Type;

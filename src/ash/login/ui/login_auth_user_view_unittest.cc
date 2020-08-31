@@ -12,6 +12,8 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
@@ -144,8 +146,7 @@ TEST_F(LoginAuthUserViewUnittest, OnlineSignInMessage) {
   // Clicking the message triggers |ShowGaiaSignin|.
   EXPECT_CALL(
       *client,
-      ShowGaiaSignin(true /*can_close*/,
-                     user_view->current_user().basic_user_info.account_id));
+      ShowGaiaSignin(user_view->current_user().basic_user_info.account_id));
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), 0, 0);
   view_->ButtonPressed(online_sign_in_message, event);
@@ -229,6 +230,47 @@ TEST_F(LoginAuthUserViewUnittest, PasswordFieldChangeOnUpdateUser) {
   auto another_user = CreateUser("user2@domain.com");
   view_->UpdateForUser(another_user);
   EXPECT_TRUE(password_test.textfield()->GetText().empty());
+}
+
+// LoginAuthUserViewUnittest with display password button feature enabled.
+class LoginAuthUserViewUnittestFeatureEnabled
+    : public LoginAuthUserViewUnittest {
+ protected:
+  LoginAuthUserViewUnittestFeatureEnabled() {
+    feature_list_.InitWithFeatures(
+        {chromeos::features::kLoginDisplayPasswordButton}, {});
+  }
+  LoginAuthUserViewUnittestFeatureEnabled(
+      const LoginAuthUserViewUnittestFeatureEnabled&) = delete;
+  LoginAuthUserViewUnittestFeatureEnabled& operator=(
+      const LoginAuthUserViewUnittestFeatureEnabled&) = delete;
+  ~LoginAuthUserViewUnittestFeatureEnabled() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(LoginAuthUserViewUnittestFeatureEnabled,
+       PasswordFieldChangeOnUpdateUser) {
+  LoginAuthUserView::TestApi test_auth_user_view(view_);
+  LoginPasswordView::TestApi password_test(test_auth_user_view.password_view());
+
+  const auto password = base::ASCIIToUTF16("abc1");
+  password_test.textfield()->SetText(password);
+  view_->UpdateForUser(user_);
+  EXPECT_EQ(password_test.textfield()->GetText(), password);
+
+  auto another_user = CreateUser("user2@domain.com");
+  view_->UpdateForUser(another_user);
+  EXPECT_TRUE(password_test.textfield()->GetText().empty());
+  password_test.textfield()->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(password_test.textfield()->GetTextInputType(),
+            ui::TEXT_INPUT_TYPE_TEXT);
+
+  // Updating user should make the textfield as a password again.
+  view_->UpdateForUser(user_);
+  EXPECT_EQ(password_test.textfield()->GetTextInputType(),
+            ui::TEXT_INPUT_TYPE_PASSWORD);
 }
 
 }  // namespace ash

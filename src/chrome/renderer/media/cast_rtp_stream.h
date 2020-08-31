@@ -33,7 +33,7 @@ class CastVideoSink;
 // stream.
 class CastRtpStream {
  public:
-  typedef base::Callback<void(const std::string&)> ErrorCallback;
+  using ErrorCallback = base::RepeatingCallback<void(const std::string&)>;
 
   static bool IsHardwareVP8EncodingSupported();
 
@@ -55,9 +55,9 @@ class CastRtpStream {
   // When there is an error |error_callback| is called with a message.
   void Start(int32_t stream_id,
              const media::cast::FrameSenderConfig& config,
-             const base::Closure& start_callback,
-             const base::Closure& stop_callback,
-             const ErrorCallback& error_callback);
+             base::OnceClosure start_callback,
+             base::OnceClosure stop_callback,
+             ErrorCallback error_callback);
 
   // Stop encoding.
   void Stop();
@@ -83,7 +83,7 @@ class CastRtpStream {
   const scoped_refptr<CastSession> cast_session_;
   std::unique_ptr<CastAudioSink> audio_sink_;
   std::unique_ptr<CastVideoSink> video_sink_;
-  base::Closure stop_callback_;
+  base::OnceClosure stop_callback_;
   ErrorCallback error_callback_;
   bool is_audio_;
 

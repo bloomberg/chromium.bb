@@ -44,7 +44,7 @@ AUTHOR_NAME = 'git-number'
 AUTHOR_EMAIL = 'chrome-infrastructure-team@google.com'
 
 # Number of bytes to use for the prefix on our internal number structure.
-# 0 is slow to deserialize. 2 creates way too much bookeeping overhead (would
+# 0 is slow to deserialize. 2 creates way too much bookkeeping overhead (would
 # need to reimplement cache data structures to be a bit more sophisticated than
 # dicts. 1 seems to be just right.
 PREFIX_LEN = 1
@@ -142,7 +142,7 @@ def finalize(targets):
 
   idx = os.path.join(git.run('rev-parse', '--git-dir'), 'number.idx')
   env = os.environ.copy()
-  env['GIT_INDEX_FILE'] = idx
+  env['GIT_INDEX_FILE'] = str(idx)
 
   progress_message = 'Finalizing: (%%(count)d/%d)' % len(DIRTY_TREES)
   with git.ProgressPrinter(progress_message) as inc:
@@ -164,7 +164,7 @@ def finalize(targets):
     tree_id = git.run('write-tree', env=env)
     commit_cmd = [
         # Git user.name and/or user.email may not be configured, so specifying
-        # them explicitly. They are not used, but requried by Git.
+        # them explicitly. They are not used, but required by Git.
         '-c', 'user.name=%s' % AUTHOR_NAME,
         '-c', 'user.email=%s' % AUTHOR_EMAIL,
         'commit-tree',
@@ -217,7 +217,7 @@ def load_generation_numbers(targets):
     empty = git.mktree({})
     commit_hash = git.run(
         # Git user.name and/or user.email may not be configured, so specifying
-        # them explicitly. They are not used, but requried by Git.
+        # them explicitly. They are not used, but required by Git.
         '-c', 'user.name=%s' % AUTHOR_NAME,
         '-c', 'user.email=%s' % AUTHOR_EMAIL,
         'commit-tree',

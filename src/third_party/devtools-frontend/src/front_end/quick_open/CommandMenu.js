@@ -1,6 +1,15 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Common from '../common/common.js';
+import * as Diff from '../diff/diff.js';
+import * as Host from '../host/host.js';
+import * as UI from '../ui/ui.js';
+
+import {FilteredListWidget, Provider} from './FilteredListWidget.js';
+import {QuickOpenImpl} from './QuickOpen.js';
+
 /**
  * @unrestricted
  */
@@ -11,15 +20,12 @@ export class CommandMenu {
   }
 
   /**
-   * @param {string} category
-   * @param {string} keys
-   * @param {string} title
-   * @param {string} shortcut
-   * @param {function()} executeHandler
-   * @param {function()=} availableHandler
-   * @return {!QuickOpen.CommandMenu.Command}
+   * @param {!CreateCommandOptions} options
+   * @return {!Command}
    */
-  static createCommand(category, keys, title, shortcut, executeHandler, availableHandler) {
+  static createCommand(options) {
+    const {category, keys, title, shortcut, executeHandler, availableHandler, userActionCode} = options;
+
     // Get localized keys and separate by null character to prevent fuzzy matching from matching across them.
     const keyList = keys.split(',');
     let key = '';
@@ -27,22 +33,37 @@ export class CommandMenu {
       key += (ls(k.trim()) + '\0');
     });
 
-    return new Command(category, title, key, shortcut, executeHandler, availableHandler);
+    let handler = executeHandler;
+    if (userActionCode) {
+      const actionCode = userActionCode;
+      handler = () => {
+        Host.userMetrics.actionTaken(actionCode);
+        executeHandler();
+      };
+    }
+
+    return new Command(category, title, key, shortcut, handler, availableHandler);
   }
 
   /**
    * @param {!Root.Runtime.Extension} extension
    * @param {string} title
    * @param {V} value
-   * @return {!QuickOpen.CommandMenu.Command}
+   * @return {!Command}
    * @template V
    */
   static createSettingCommand(extension, title, value) {
     const category = extension.descriptor()['category'] || '';
     const tags = extension.descriptor()['tags'] || '';
-    const setting = Common.settings.moduleSetting(extension.descriptor()['settingName']);
-    return QuickOpen.CommandMenu.createCommand(
-        ls(category), tags, title, '', setting.set.bind(setting, value), availableHandler);
+    const setting = Common.Settings.Settings.instance().moduleSetting(extension.descriptor()['settingName']);
+    return CommandMenu.createCommand({
+      category: ls(category),
+      keys: tags,
+      title,
+      shortcut: '',
+      executeHandler: setting.set.bind(setting, value),
+      availableHandler,
+    });
 
     /**
      * @return {boolean}
@@ -53,31 +74,45 @@ export class CommandMenu {
   }
 
   /**
-   * @param {!UI.Action} action
-   * @return {!QuickOpen.CommandMenu.Command}
+   * @param {!ActionCommandOptions} options
+   * @return {!Command}
    */
-  static createActionCommand(action) {
-    const shortcut = UI.shortcutRegistry.shortcutTitleForAction(action.id()) || '';
-    return QuickOpen.CommandMenu.createCommand(
-        action.category(), action.tags(), action.title(), shortcut, action.execute.bind(action));
+  static createActionCommand(options) {
+    const {action, userActionCode} = options;
+    const shortcut = self.UI.shortcutRegistry.shortcutTitleForAction(action.id()) || '';
+
+    return CommandMenu.createCommand({
+      category: action.category(),
+      keys: action.tags(),
+      title: action.title(),
+      shortcut,
+      executeHandler: action.execute.bind(action),
+      userActionCode,
+    });
   }
 
   /**
-   * @param {!Root.Runtime.Extension} extension
-   * @param {string} category
-   * @return {!QuickOpen.CommandMenu.Command}
+   * @param {!RevealViewCommandOptions} options
+   * @return {!Command}
    */
-  static createRevealViewCommand(extension, category) {
+  static createRevealViewCommand(options) {
+    const {extension, category, userActionCode} = options;
     const viewId = extension.descriptor()['id'];
-    const executeHandler = UI.viewManager.showView.bind(UI.viewManager, viewId);
-    const tags = extension.descriptor()['tags'] || '';
-    return QuickOpen.CommandMenu.createCommand(
-        category, tags, Common.UIString('Show %s', extension.title()), '', executeHandler);
+
+    return CommandMenu.createCommand({
+      category,
+      keys: extension.descriptor()['tags'] || '',
+      title: Common.UIString.UIString('Show %s', extension.title()),
+      shortcut: '',
+      executeHandler: UI.ViewManager.ViewManager.instance().showView.bind(
+          UI.ViewManager.ViewManager.instance(), viewId, /* userGesture */ true),
+      userActionCode,
+    });
   }
 
   _loadCommands() {
     const locations = new Map();
-    self.runtime.extensions(UI.ViewLocationResolver).forEach(extension => {
+    self.runtime.extensions(UI.View.ViewLocationResolver).forEach(extension => {
       const category = extension.descriptor()['category'];
       const name = extension.descriptor()['name'];
       if (category && name) {
@@ -87,9 +122,18 @@ export class CommandMenu {
     const viewExtensions = self.runtime.extensions('view');
     for (const extension of viewExtensions) {
       const category = locations.get(extension.descriptor()['location']);
-      if (category) {
-        this._commands.push(QuickOpen.CommandMenu.createRevealViewCommand(extension, ls(category)));
+      if (!category) {
+        continue;
       }
+
+      /** @type {!RevealViewCommandOptions} */
+      const options = {extension, category: ls(category), userActionCode: undefined};
+
+      if (category === 'Settings') {
+        options.userActionCode = Host.UserMetrics.Action.SettingsOpenedFromCommandMenu;
+      }
+
+      this._commands.push(CommandMenu.createRevealViewCommand(options));
     }
 
     // Populate whitelisted settings.
@@ -100,20 +144,50 @@ export class CommandMenu {
         continue;
       }
       for (const pair of options) {
-        this._commands.push(QuickOpen.CommandMenu.createSettingCommand(extension, ls(pair['title']), pair['value']));
+        this._commands.push(CommandMenu.createSettingCommand(extension, ls(pair['title']), pair['value']));
       }
     }
   }
 
   /**
-   * @return {!Array.<!QuickOpen.CommandMenu.Command>}
+   * @return {!Array.<!Command>}
    */
   commands() {
     return this._commands;
   }
 }
 
-export class CommandMenuProvider extends QuickOpen.FilteredListWidget.Provider {
+/**
+ * @typedef {{
+ *   action: !UI.Action.Action,
+ *   userActionCode: (!Host.UserMetrics.Action|undefined),
+ * }}
+ */
+export let ActionCommandOptions;
+
+/**
+ * @typedef {{
+ *   extension: !Root.Runtime.Extension,
+ *   category: string,
+ *   userActionCode: (!Host.UserMetrics.Action|undefined)
+ * }}
+ */
+export let RevealViewCommandOptions;
+
+/**
+ * @typedef {{
+ *   category: string,
+ *   keys: string,
+ *   title: string,
+ *   shortcut: string,
+ *   executeHandler: !function(),
+ *   availableHandler: (!function()|undefined),
+ *   userActionCode: (!Host.UserMetrics.Action|undefined)
+ * }}
+ */
+export let CreateCommandOptions;
+
+export class CommandMenuProvider extends Provider {
   constructor() {
     super();
     this._commands = [];
@@ -126,11 +200,20 @@ export class CommandMenuProvider extends QuickOpen.FilteredListWidget.Provider {
     const allCommands = commandMenu.commands();
 
     // Populate whitelisted actions.
-    const actions = UI.actionRegistry.availableActions();
+    const actions = self.UI.actionRegistry.availableActions();
     for (const action of actions) {
-      if (action.category()) {
-        this._commands.push(QuickOpen.CommandMenu.createActionCommand(action));
+      const category = action.category();
+      if (!category) {
+        continue;
       }
+
+      /** @type {!ActionCommandOptions} */
+      const options = {action};
+      if (category === 'Settings') {
+        options.userActionCode = Host.UserMetrics.Action.SettingsOpenedFromCommandMenu;
+      }
+
+      this._commands.push(CommandMenu.createActionCommand(options));
     }
 
     for (const command of allCommands) {
@@ -142,7 +225,7 @@ export class CommandMenuProvider extends QuickOpen.FilteredListWidget.Provider {
     this._commands = this._commands.sort(commandComparator);
 
     /**
-     * @param {!QuickOpen.CommandMenu.Command} left
+     * @param {!Command} left
      * @param {!QuickOpen.CommandMenu.Command} right
      * @return {number}
      */
@@ -184,7 +267,7 @@ export class CommandMenuProvider extends QuickOpen.FilteredListWidget.Provider {
    */
   itemScoreAt(itemIndex, query) {
     const command = this._commands[itemIndex];
-    const opcodes = Diff.Diff.charDiff(query.toLowerCase(), command.title().toLowerCase());
+    const opcodes = Diff.Diff.DiffWrapper.charDiff(query.toLowerCase(), command.title().toLowerCase());
     let score = 0;
     // Score longer sequences higher.
     for (let i = 0; i < opcodes.length; ++i) {
@@ -218,7 +301,7 @@ export class CommandMenuProvider extends QuickOpen.FilteredListWidget.Provider {
     tagElement.style.backgroundColor = MaterialPaletteColors[index];
     tagElement.textContent = command.category();
     titleElement.createTextChild(command.title());
-    QuickOpen.FilteredListWidget.highlightRanges(titleElement, query, true);
+    FilteredListWidget.highlightRanges(titleElement, query, true);
     subtitleElement.textContent = command.shortcut();
   }
 
@@ -310,52 +393,23 @@ export class Command {
   }
 }
 
-
 /**
- * @implements {UI.ActionDelegate}
+ * @implements {UI.ActionDelegate.ActionDelegate}
  * @unrestricted
  */
 export class ShowActionDelegate {
   /**
    * @override
-   * @param {!UI.Context} context
+   * @param {!UI.Context.Context} context
    * @param {string} actionId
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    Host.InspectorFrontendHost.bringToFront();
-    QuickOpen.QuickOpen.show('>');
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
+    QuickOpenImpl.show('>');
     return true;
   }
 }
 
-/* Legacy exported object */
-self.QuickOpen = self.QuickOpen || {};
-
-/* Legacy exported object */
-QuickOpen = QuickOpen || {};
-
-/**
- * @constructor
- */
-QuickOpen.CommandMenu = CommandMenu;
-
-/**
- * @constructor
- */
-QuickOpen.CommandMenu.Command = Command;
-
-/**
- * @constructor
- */
-QuickOpen.CommandMenu.ShowActionDelegate = ShowActionDelegate;
-
-/**
- * @constructor
- */
-QuickOpen.CommandMenuProvider = CommandMenuProvider;
-QuickOpen.CommandMenuProvider.MaterialPaletteColors = MaterialPaletteColors;
-
-/** @type {!QuickOpen.CommandMenu} */
-const commandMenu = new CommandMenu();
-QuickOpen.commandMenu = commandMenu;
+/** @type {!CommandMenu} */
+export const commandMenu = new CommandMenu();

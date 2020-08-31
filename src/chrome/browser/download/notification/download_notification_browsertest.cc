@@ -43,6 +43,7 @@
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/common/network_service_util.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -209,7 +210,8 @@ class SlowDownloadInterceptor {
         "Cache-Control: max-age=0\n";
     headers += base::StringPrintf("Content-type: %s\n", mime_type.c_str());
     if (content_length >= 0) {
-      headers += base::StringPrintf("Content-Length: %ld\n", content_length);
+      headers +=
+          base::StringPrintf("Content-Length: %" PRId64 "\n", content_length);
       head->content_length = content_length;
     }
     head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(

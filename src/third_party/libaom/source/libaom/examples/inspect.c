@@ -29,7 +29,7 @@
 
 #include "aom/aom_decoder.h"
 #include "aom/aomdx.h"
-#include "av1/common/onyxc_int.h"
+#include "av1/common/av1_common_int.h"
 
 #if CONFIG_ACCOUNTING
 #include "av1/decoder/accounting.h"
@@ -42,7 +42,7 @@
 #include "common/video_reader.h"
 
 // Max JSON buffer size.
-const int MAX_BUFFER = 1024 * 1024 * 32;
+const int MAX_BUFFER = 1024 * 1024 * 256;
 
 typedef enum {
   ACCOUNTING_LAYER = 1,
@@ -62,7 +62,10 @@ typedef enum {
   SEGMENT_ID_LAYER = 1 << 14,
   MOTION_MODE_LAYER = 1 << 15,
   COMPOUND_TYPE_LAYER = 1 << 16,
-  ALL_LAYERS = (1 << 17) - 1
+  INTRABC_LAYER = 1 << 17,
+  PALETTE_LAYER = 1 << 18,
+  UV_PALETTE_LAYER = 1 << 19,
+  ALL_LAYERS = (1 << 20) - 1
 } LayerType;
 
 static LayerType layers = 0;
@@ -106,13 +109,19 @@ static const arg_def_t dump_delta_q_arg =
     ARG_DEF("dq", "delta_q", 0, "Dump QIndex");
 static const arg_def_t dump_seg_id_arg =
     ARG_DEF("si", "seg_id", 0, "Dump Segment ID");
+static const arg_def_t dump_intrabc_arg =
+    ARG_DEF("ibc", "intrabc", 0, "Dump If IntraBC Is Used");
+static const arg_def_t dump_palette_arg =
+    ARG_DEF("plt", "palette", 0, "Dump Palette Size");
+static const arg_def_t dump_uv_palette_arg =
+    ARG_DEF("uvp", "uv_palette", 0, "Dump UV Palette Size");
 static const arg_def_t usage_arg = ARG_DEF("h", "help", 0, "Help");
 static const arg_def_t skip_non_transform_arg = ARG_DEF(
     "snt", "skip_non_transform", 1, "Skip is counted as a non transform.");
 static const arg_def_t combined_arg =
     ARG_DEF("comb", "combined", 1, "combinining parameters into one output.");
 
-int combined_parm_list[5];
+int combined_parm_list[15];
 int combined_parm_count = 0;
 
 static const arg_def_t *main_args[] = { &limit_arg,
@@ -137,6 +146,9 @@ static const arg_def_t *main_args[] = { &limit_arg,
                                         &dump_motion_vectors_arg,
                                         &dump_delta_q_arg,
                                         &dump_seg_id_arg,
+                                        &dump_intrabc_arg,
+                                        &dump_palette_arg,
+                                        &dump_uv_palette_arg,
                                         &usage_arg,
                                         &skip_non_transform_arg,
                                         &combined_arg,
@@ -235,6 +247,16 @@ const map_entry uv_prediction_mode_map[] = {
 #define SKIP 1
 
 const map_entry skip_map[] = { ENUM(SKIP), ENUM(NO_SKIP), LAST_ENUM };
+
+const map_entry intrabc_map[] = { { "INTRABC", 1 },
+                                  { "NO_INTRABC", 0 },
+                                  LAST_ENUM };
+
+const map_entry palette_map[] = {
+  { "ZERO_COLORS", 0 },  { "TWO_COLORS", 2 },   { "THREE_COLORS", 3 },
+  { "FOUR_COLORS", 4 },  { "FIVE_COLORS", 5 },  { "SIX_COLORS", 6 },
+  { "SEVEN_COLORS", 7 }, { "EIGHT_COLORS", 8 }, LAST_ENUM
+};
 
 const map_entry config_map[] = { ENUM(MI_SIZE), LAST_ENUM };
 
@@ -666,6 +688,18 @@ void inspect(void *pbi, void *data) {
   if (layers & MOTION_VECTORS_LAYER) {
     buf += put_motion_vectors(buf);
   }
+  if (layers & INTRABC_LAYER) {
+    buf += put_block_info(buf, intrabc_map, "intrabc",
+                          offsetof(insp_mi_data, intrabc), 0);
+  }
+  if (layers & PALETTE_LAYER) {
+    buf += put_block_info(buf, palette_map, "palette",
+                          offsetof(insp_mi_data, palette), 0);
+  }
+  if (layers & UV_PALETTE_LAYER) {
+    buf += put_block_info(buf, palette_map, "uv_palette",
+                          offsetof(insp_mi_data, uv_palette), 0);
+  }
   if (combined_parm_count > 0) buf += put_combined(buf);
   if (layers & REFERENCE_FRAME_LAYER) {
     buf += put_block_info(buf, refs_map, "referenceFrame",
@@ -721,11 +755,10 @@ int open_file(char *file) {
   reader = aom_video_reader_open(file);
   if (!reader) die("Failed to open %s for reading.", file);
   info = aom_video_reader_get_info(reader);
-  const AvxInterface *decoder = get_aom_decoder_by_fourcc(info->codec_fourcc);
+  aom_codec_iface_t *decoder = get_aom_decoder_by_fourcc(info->codec_fourcc);
   if (!decoder) die("Unknown input codec.");
-  fprintf(stderr, "Using %s\n",
-          aom_codec_iface_name(decoder->codec_interface()));
-  if (aom_codec_dec_init(&codec, decoder->codec_interface(), NULL, 0))
+  fprintf(stderr, "Using %s\n", aom_codec_iface_name(decoder));
+  if (aom_codec_dec_init(&codec, decoder, NULL, 0))
     die_codec(&codec, "Failed to initialize decoder.");
   ifd_init(&frame_data, info->frame_width, info->frame_height);
   ifd_init_cb();
@@ -858,6 +891,12 @@ static void parse_args(char **argv) {
       layers |= Q_INDEX_LAYER;
     else if (arg_match(&arg, &dump_seg_id_arg, argi))
       layers |= SEGMENT_ID_LAYER;
+    else if (arg_match(&arg, &dump_intrabc_arg, argi))
+      layers |= INTRABC_LAYER;
+    else if (arg_match(&arg, &dump_palette_arg, argi))
+      layers |= PALETTE_LAYER;
+    else if (arg_match(&arg, &dump_uv_palette_arg, argi))
+      layers |= UV_PALETTE_LAYER;
     else if (arg_match(&arg, &dump_all_arg, argi))
       layers |= ALL_LAYERS;
     else if (arg_match(&arg, &compress_arg, argi))

@@ -5,7 +5,10 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_SUBMENU_VIEW_H_
 #define UI_VIEWS_CONTROLS_MENU_SUBMENU_VIEW_H_
 
+#include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -23,7 +26,7 @@ class MenuScrollViewContainer;
 
 namespace test {
 class MenuControllerTest;
-}  // test
+}  // namespace test
 
 // SubmenuView is the parent of all menu items.
 //
@@ -135,8 +138,7 @@ class VIEWS_EXPORT SubmenuView : public View,
   MenuItemView* GetMenuItem();
 
   // Set the drop item and position.
-  void SetDropMenuItem(MenuItemView* item,
-                       MenuDelegate::DropPosition position);
+  void SetDropMenuItem(MenuItemView* item, MenuDelegate::DropPosition position);
 
   // Returns whether the selection should be shown for the specified item.
   // The selection is NOT shown during drag and drop when the drop is over
@@ -169,9 +171,9 @@ class VIEWS_EXPORT SubmenuView : public View,
   void set_resize_open_menu(bool resize_open_menu) {
     resize_open_menu_ = resize_open_menu;
   }
+  MenuHost* host() { return host_; }
 
  protected:
-
   // View method. Overridden to schedule a paint. We do this so that when
   // scrolling occurs, everything is repainted correctly.
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;

@@ -13,14 +13,15 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/waitable_event_watcher.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/test/gtest_util.h"
+#include "base/test/task_environment.h"
 #include "base/third_party/libevent/event.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
@@ -33,7 +34,8 @@ namespace base {
 class MessagePumpLibeventTest : public testing::Test {
  protected:
   MessagePumpLibeventTest()
-      : ui_loop_(new MessageLoop(MessagePumpType::UI)),
+      : task_environment_(std::make_unique<test::SingleThreadTaskEnvironment>(
+            test::SingleThreadTaskEnvironment::MainThreadType::UI)),
         io_thread_("MessagePumpLibeventTestIOThread") {}
   ~MessagePumpLibeventTest() override = default;
 
@@ -45,14 +47,15 @@ class MessagePumpLibeventTest : public testing::Test {
   }
 
   void TearDown() override {
+    // Some tests watch |pipefds_| from the |io_thread_|. The |io_thread_| must
+    // thus be joined to ensure those watches are complete before closing the
+    // pipe.
+    io_thread_.Stop();
+
     if (IGNORE_EINTR(close(pipefds_[0])) < 0)
       PLOG(ERROR) << "close";
     if (IGNORE_EINTR(close(pipefds_[1])) < 0)
       PLOG(ERROR) << "close";
-  }
-
-  void WaitUntilIoThreadStarted() {
-    ASSERT_TRUE(io_thread_.WaitUntilThreadStarted());
   }
 
   scoped_refptr<SingleThreadTaskRunner> io_runner() const {
@@ -66,7 +69,7 @@ class MessagePumpLibeventTest : public testing::Test {
   }
 
   int pipefds_[2];
-  std::unique_ptr<MessageLoop> ui_loop_;
+  std::unique_ptr<test::SingleThreadTaskEnvironment> task_environment_;
 
  private:
   Thread io_thread_;
@@ -126,8 +129,9 @@ TEST_F(MessagePumpLibeventTest, DeleteWatcher) {
   MessagePumpLibevent::FdWatchController* watcher =
       new MessagePumpLibevent::FdWatchController(FROM_HERE);
   DeleteWatcher delegate(watcher);
-  pump->WatchFileDescriptor(pipefds_[1],
-      false, MessagePumpLibevent::WATCH_READ_WRITE, watcher, &delegate);
+  pump->WatchFileDescriptor(pipefds_[1], false,
+                            MessagePumpLibevent::WATCH_READ_WRITE, watcher,
+                            &delegate);
 
   // Spoof a libevent notification.
   OnLibeventNotification(pump.get(), watcher);
@@ -149,8 +153,9 @@ TEST_F(MessagePumpLibeventTest, StopWatcher) {
   std::unique_ptr<MessagePumpLibevent> pump(new MessagePumpLibevent);
   MessagePumpLibevent::FdWatchController watcher(FROM_HERE);
   StopWatcher delegate(&watcher);
-  pump->WatchFileDescriptor(pipefds_[1],
-      false, MessagePumpLibevent::WATCH_READ_WRITE, &watcher, &delegate);
+  pump->WatchFileDescriptor(pipefds_[1], false,
+                            MessagePumpLibevent::WATCH_READ_WRITE, &watcher,
+                            &delegate);
 
   // Spoof a libevent notification.
   OnLibeventNotification(pump.get(), &watcher);
@@ -183,8 +188,8 @@ TEST_F(MessagePumpLibeventTest, NestedPumpWatcher) {
   std::unique_ptr<MessagePumpLibevent> pump(new MessagePumpLibevent);
   MessagePumpLibevent::FdWatchController watcher(FROM_HERE);
   NestedPumpWatcher delegate;
-  pump->WatchFileDescriptor(pipefds_[1],
-      false, MessagePumpLibevent::WATCH_READ, &watcher, &delegate);
+  pump->WatchFileDescriptor(pipefds_[1], false, MessagePumpLibevent::WATCH_READ,
+                            &watcher, &delegate);
 
   // Spoof a libevent notification.
   OnLibeventNotification(pump.get(), &watcher);
@@ -222,11 +227,11 @@ void WriteFDWrapper(const int fd,
 // Tests that MessagePumpLibevent quits immediately when it is quit from
 // libevent's event_base_loop().
 TEST_F(MessagePumpLibeventTest, QuitWatcher) {
-  // Delete the old MessageLoop so that we can manage our own one here.
-  ui_loop_.reset();
+  // Delete the old TaskEnvironment so that we can manage our own one here.
+  task_environment_.reset();
 
-  MessagePumpLibevent* pump = new MessagePumpLibevent;  // owned by |loop|.
-  MessageLoop loop(WrapUnique(pump));
+  MessagePumpLibevent* pump = new MessagePumpLibevent;  // owned by |executor|.
+  SingleThreadTaskExecutor executor(WrapUnique(pump));
   RunLoop run_loop;
   MessagePumpLibevent::FdWatchController controller(FROM_HERE);
   QuitWatcher delegate(&controller, run_loop.QuitClosure());
@@ -247,8 +252,8 @@ TEST_F(MessagePumpLibeventTest, QuitWatcher) {
                           Unretained(watcher.get()), &event,
                           std::move(write_fd_task), io_runner()));
 
-  // Queue |event| to signal on |loop|.
-  loop.task_runner()->PostTask(
+  // Queue |event| to signal on |sequence_manager|.
+  ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&event)));
 
   // Now run the MessageLoop.

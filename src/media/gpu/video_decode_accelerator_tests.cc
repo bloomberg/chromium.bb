@@ -8,11 +8,11 @@
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/test_data_util.h"
+#include "media/gpu/test/video.h"
 #include "media/gpu/test/video_frame_file_writer.h"
 #include "media/gpu/test/video_frame_validator.h"
 #include "media/gpu/test/video_player/frame_renderer_dummy.h"
 #include "media/gpu/test/video_player/frame_renderer_thumbnail.h"
-#include "media/gpu/test/video_player/video.h"
 #include "media/gpu/test/video_player/video_decoder_client.h"
 #include "media/gpu/test/video_player/video_player.h"
 #include "media/gpu/test/video_player/video_player_test_environment.h"
@@ -30,7 +30,7 @@ constexpr const char* usage_msg =
     "           [-v=<level>] [--vmodule=<config>] [--disable_validator]\n"
     "           [--output_frames=(all|corrupt)] [--output_format=(png|yuv)]\n"
     "           [--output_limit=<number>] [--output_folder=<folder>]\n"
-    "           [--use_vd] [--gtest_help] [--help]\n"
+    "           ([--use_vd]|[--use_vd_vda]) [--gtest_help] [--help]\n"
     "           [<video path>] [<video metadata path>]\n";
 
 // Video decoder tests help message.
@@ -48,6 +48,10 @@ constexpr const char* help_msg =
     "  --disable_validator  disable frame validation.\n"
     "  --use_vd             use the new VD-based video decoders, instead of\n"
     "                       the default VDA-based video decoders.\n\n"
+    "  --use_vd_vda         use the new VD-based video decoders with a wrapper"
+    "                       that translates to the VDA interface, used to test"
+    "                       interaction with older components expecting the VDA"
+    "                       interface.\n"
     "  --output_frames      write the selected video frames to disk, possible\n"
     "                       values are \"all|corrupt\".\n"
     "  --output_format      set the format of frames saved to disk, supported\n"
@@ -100,12 +104,12 @@ class VideoDecoderTest : public ::testing::Test {
             output_folder, g_env->GetFrameOutputFormat(),
             g_env->GetFrameOutputLimit());
       }
-      frame_processors.push_back(media::test::VideoFrameValidator::Create(
+
+      frame_processors.push_back(media::test::MD5VideoFrameValidator::Create(
           video->FrameChecksums(), PIXEL_FORMAT_I420, std::move(frame_writer)));
     }
 
-    // Use the new VD-based video decoders if requested.
-    config.use_vd = g_env->UseVD();
+    config.implementation = g_env->GetDecoderImplementation();
 
     auto video_player = VideoPlayer::Create(
         config, g_env->GetGpuMemoryBufferFactory(), std::move(frame_renderer),
@@ -324,8 +328,10 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
 // specified as the new video decoders only support import mode.
 // TODO(dstaessens): Deprecate after switching to new VD-based video decoders.
 TEST_F(VideoDecoderTest, FlushAtEndOfStream_Allocate) {
-  if (!g_env->ImportSupported() || g_env->UseVD())
+  if (!g_env->ImportSupported() ||
+      g_env->GetDecoderImplementation() != DecoderImplementation::kVDA) {
     GTEST_SKIP();
+  }
 
   VideoDecoderClientConfig config;
   config.allocation_mode = AllocationMode::kAllocate;
@@ -352,7 +358,7 @@ TEST_F(VideoDecoderTest, Initialize) {
 // the media::VideoDecoder interface, so the test will be skipped if --use_vd
 // is not specified.
 TEST_F(VideoDecoderTest, Reinitialize) {
-  if (!g_env->UseVD())
+  if (g_env->GetDecoderImplementation() != DecoderImplementation::kVD)
     GTEST_SKIP();
 
   // Create and initialize the video decoder.
@@ -381,7 +387,7 @@ TEST_F(VideoDecoderTest, Reinitialize) {
 // are triggered upon destroying.
 TEST_F(VideoDecoderTest, DestroyBeforeInitialize) {
   VideoDecoderClientConfig config = VideoDecoderClientConfig();
-  config.use_vd = g_env->UseVD();
+  config.implementation = g_env->GetDecoderImplementation();
   auto tvp = VideoPlayer::Create(config, g_env->GetGpuMemoryBufferFactory(),
                                  FrameRendererDummy::Create());
   EXPECT_NE(tvp, nullptr);
@@ -416,6 +422,9 @@ int main(int argc, char** argv) {
   media::test::FrameOutputConfig frame_output_config;
   base::FilePath::StringType output_folder = base::FilePath::kCurrentDirectory;
   bool use_vd = false;
+  bool use_vd_vda = false;
+  media::test::DecoderImplementation implementation =
+      media::test::DecoderImplementation::kVDA;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
@@ -459,6 +468,10 @@ int main(int argc, char** argv) {
       output_folder = it->second;
     } else if (it->first == "use_vd") {
       use_vd = true;
+      implementation = media::test::DecoderImplementation::kVD;
+    } else if (it->first == "use_vd_vda") {
+      use_vd_vda = true;
+      implementation = media::test::DecoderImplementation::kVDVDA;
     } else {
       std::cout << "unknown option: --" << it->first << "\n"
                 << media::test::usage_msg;
@@ -466,12 +479,18 @@ int main(int argc, char** argv) {
     }
   }
 
+  if (use_vd && use_vd_vda) {
+    std::cout << "--use_vd and --use_vd_vda cannot be enabled together.\n"
+              << media::test::usage_msg;
+    return EXIT_FAILURE;
+  }
+
   testing::InitGoogleTest(&argc, argv);
 
   // Set up our test environment.
   media::test::VideoPlayerTestEnvironment* test_environment =
       media::test::VideoPlayerTestEnvironment::Create(
-          video_path, video_metadata_path, enable_validator, use_vd,
+          video_path, video_metadata_path, enable_validator, implementation,
           base::FilePath(output_folder), frame_output_config);
   if (!test_environment)
     return EXIT_FAILURE;

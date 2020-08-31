@@ -6,11 +6,11 @@
 #include "base/strings/string_piece.h"
 
 #include <limits.h>
+#include <string.h>
 
 #include <algorithm>
 #include <ostream>
 
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace base {
@@ -51,36 +51,6 @@ std::ostream& operator<<(std::ostream& o, const StringPiece16& piece) {
 }
 
 namespace internal {
-
-template<typename STR>
-void CopyToStringT(const BasicStringPiece<STR>& self, STR* target) {
-  if (self.empty())
-    target->clear();
-  else
-    target->assign(self.data(), self.size());
-}
-
-void CopyToString(const StringPiece& self, std::string* target) {
-  CopyToStringT(self, target);
-}
-
-void CopyToString(const StringPiece16& self, string16* target) {
-  CopyToStringT(self, target);
-}
-
-template<typename STR>
-void AppendToStringT(const BasicStringPiece<STR>& self, STR* target) {
-  if (!self.empty())
-    target->append(self.data(), self.size());
-}
-
-void AppendToString(const StringPiece& self, std::string* target) {
-  AppendToStringT(self, target);
-}
-
-void AppendToString(const StringPiece16& self, string16* target) {
-  AppendToStringT(self, target);
-}
 
 template<typename STR>
 size_t copyT(const BasicStringPiece<STR>& self,
@@ -437,17 +407,6 @@ StringPiece16 substr(const StringPiece16& self,
                      size_t n) {
   return substrT(self, pos, n);
 }
-
-#if DCHECK_IS_ON()
-void AssertIteratorsInOrder(std::string::const_iterator begin,
-                            std::string::const_iterator end) {
-  DCHECK(begin <= end) << "StringPiece iterators swapped or invalid.";
-}
-void AssertIteratorsInOrder(string16::const_iterator begin,
-                            string16::const_iterator end) {
-  DCHECK(begin <= end) << "StringPiece iterators swapped or invalid.";
-}
-#endif
 
 }  // namespace internal
 }  // namespace base

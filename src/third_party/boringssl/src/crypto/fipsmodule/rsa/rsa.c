@@ -167,6 +167,22 @@ int RSA_up_ref(RSA *rsa) {
 
 unsigned RSA_bits(const RSA *rsa) { return BN_num_bits(rsa->n); }
 
+const BIGNUM *RSA_get0_n(const RSA *rsa) { return rsa->n; }
+
+const BIGNUM *RSA_get0_e(const RSA *rsa) { return rsa->e; }
+
+const BIGNUM *RSA_get0_d(const RSA *rsa) { return rsa->d; }
+
+const BIGNUM *RSA_get0_p(const RSA *rsa) { return rsa->p; }
+
+const BIGNUM *RSA_get0_q(const RSA *rsa) { return rsa->q; }
+
+const BIGNUM *RSA_get0_dmp1(const RSA *rsa) { return rsa->dmp1; }
+
+const BIGNUM *RSA_get0_dmq1(const RSA *rsa) { return rsa->dmq1; }
+
+const BIGNUM *RSA_get0_iqmp(const RSA *rsa) { return rsa->iqmp; }
+
 void RSA_get0_key(const RSA *rsa, const BIGNUM **out_n, const BIGNUM **out_e,
                   const BIGNUM **out_d) {
   if (out_n != NULL) {
@@ -639,7 +655,12 @@ err:
 }
 
 static int check_mod_inverse(int *out_ok, const BIGNUM *a, const BIGNUM *ainv,
-                             const BIGNUM *m, int check_reduced, BN_CTX *ctx) {
+                             const BIGNUM *m, BN_CTX *ctx) {
+  if (BN_is_negative(ainv) || BN_cmp(ainv, m) >= 0) {
+    *out_ok = 0;
+    return 1;
+  }
+
   BN_CTX_start(ctx);
   BIGNUM *tmp = BN_CTX_get(ctx);
   int ret = tmp != NULL &&
@@ -647,19 +668,12 @@ static int check_mod_inverse(int *out_ok, const BIGNUM *a, const BIGNUM *ainv,
             bn_div_consttime(NULL, tmp, tmp, m, ctx);
   if (ret) {
     *out_ok = BN_is_one(tmp);
-    if (check_reduced && (BN_is_negative(ainv) || BN_cmp(ainv, m) >= 0)) {
-      *out_ok = 0;
-    }
   }
   BN_CTX_end(ctx);
   return ret;
 }
 
 int RSA_check_key(const RSA *key) {
-  BIGNUM n, pm1, qm1, lcm, dmp1, dmq1, iqmp_times_q;
-  BN_CTX *ctx;
-  int ok = 0, has_crt_values;
-
   if (RSA_is_opaque(key)) {
     // Opaque keys can't be checked.
     return 1;
@@ -681,41 +695,27 @@ int RSA_check_key(const RSA *key) {
     return 1;
   }
 
-  ctx = BN_CTX_new();
+  BN_CTX *ctx = BN_CTX_new();
   if (ctx == NULL) {
     OPENSSL_PUT_ERROR(RSA, ERR_R_MALLOC_FAILURE);
     return 0;
   }
 
-  BN_init(&n);
+  BIGNUM tmp, de, pm1, qm1, dmp1, dmq1;
+  int ok = 0;
+  BN_init(&tmp);
+  BN_init(&de);
   BN_init(&pm1);
   BN_init(&qm1);
-  BN_init(&lcm);
   BN_init(&dmp1);
   BN_init(&dmq1);
-  BN_init(&iqmp_times_q);
-
-  int d_ok;
-  if (!bn_mul_consttime(&n, key->p, key->q, ctx) ||
-      // lcm = lcm(p, q)
-      !bn_usub_consttime(&pm1, key->p, BN_value_one()) ||
-      !bn_usub_consttime(&qm1, key->q, BN_value_one()) ||
-      !bn_lcm_consttime(&lcm, &pm1, &qm1, ctx) ||
-      // Other implementations use the Euler totient rather than the Carmichael
-      // totient, so allow unreduced |key->d|.
-      !check_mod_inverse(&d_ok, key->e, key->d, &lcm,
-                         0 /* don't require reduced */, ctx)) {
+  if (!bn_mul_consttime(&tmp, key->p, key->q, ctx)) {
     OPENSSL_PUT_ERROR(RSA, ERR_LIB_BN);
     goto out;
   }
 
-  if (BN_cmp(&n, key->n) != 0) {
+  if (BN_cmp(&tmp, key->n) != 0) {
     OPENSSL_PUT_ERROR(RSA, RSA_R_N_NOT_EQUAL_P_Q);
-    goto out;
-  }
-
-  if (!d_ok) {
-    OPENSSL_PUT_ERROR(RSA, RSA_R_D_E_NOT_CONGRUENT_TO_1);
     goto out;
   }
 
@@ -724,7 +724,24 @@ int RSA_check_key(const RSA *key) {
     goto out;
   }
 
-  has_crt_values = key->dmp1 != NULL;
+  // d must be an inverse of e mod the Carmichael totient, lcm(p-1, q-1), but it
+  // may be unreduced because other implementations use the Euler totient. We
+  // simply check that d * e is one mod p-1 and mod q-1.
+  if (!bn_usub_consttime(&pm1, key->p, BN_value_one()) ||
+      !bn_usub_consttime(&qm1, key->q, BN_value_one()) ||
+      !bn_mul_consttime(&de, key->d, key->e, ctx) ||
+      !bn_div_consttime(NULL, &tmp, &de, &pm1, ctx) ||
+      !bn_div_consttime(NULL, &de, &de, &qm1, ctx)) {
+    OPENSSL_PUT_ERROR(RSA, ERR_LIB_BN);
+    goto out;
+  }
+
+  if (!BN_is_one(&tmp) || !BN_is_one(&de)) {
+    OPENSSL_PUT_ERROR(RSA, RSA_R_D_E_NOT_CONGRUENT_TO_1);
+    goto out;
+  }
+
+  int has_crt_values = key->dmp1 != NULL;
   if (has_crt_values != (key->dmq1 != NULL) ||
       has_crt_values != (key->iqmp != NULL)) {
     OPENSSL_PUT_ERROR(RSA, RSA_R_INCONSISTENT_SET_OF_CRT_VALUES);
@@ -733,12 +750,9 @@ int RSA_check_key(const RSA *key) {
 
   if (has_crt_values) {
     int dmp1_ok, dmq1_ok, iqmp_ok;
-    if (!check_mod_inverse(&dmp1_ok, key->e, key->dmp1, &pm1,
-                           1 /* check reduced */, ctx) ||
-        !check_mod_inverse(&dmq1_ok, key->e, key->dmq1, &qm1,
-                           1 /* check reduced */, ctx) ||
-        !check_mod_inverse(&iqmp_ok, key->q, key->iqmp, key->p,
-                           1 /* check reduced */, ctx)) {
+    if (!check_mod_inverse(&dmp1_ok, key->e, key->dmp1, &pm1, ctx) ||
+        !check_mod_inverse(&dmq1_ok, key->e, key->dmq1, &qm1, ctx) ||
+        !check_mod_inverse(&iqmp_ok, key->q, key->iqmp, key->p, ctx)) {
       OPENSSL_PUT_ERROR(RSA, ERR_LIB_BN);
       goto out;
     }
@@ -752,13 +766,12 @@ int RSA_check_key(const RSA *key) {
   ok = 1;
 
 out:
-  BN_free(&n);
+  BN_free(&tmp);
+  BN_free(&de);
   BN_free(&pm1);
   BN_free(&qm1);
-  BN_free(&lcm);
   BN_free(&dmp1);
   BN_free(&dmq1);
-  BN_free(&iqmp_times_q);
   BN_CTX_free(ctx);
 
   return ok;
@@ -809,6 +822,11 @@ int RSA_check_fips(RSA *key) {
   int ret = 1;
 
   // Perform partial public key validation of RSA keys (SP 800-89 5.3.3).
+  // Although this is not for primality testing, SP 800-89 cites an RSA
+  // primality testing algorithm, so we use |BN_prime_checks_for_generation| to
+  // match. This is only a plausibility test and we expect the value to be
+  // composite, so too few iterations will cause us to reject the key, not use
+  // an implausible one.
   enum bn_primality_result_t primality_result;
   if (BN_num_bits(key->e) <= 16 ||
       BN_num_bits(key->e) > 256 ||
@@ -817,7 +835,8 @@ int RSA_check_fips(RSA *key) {
       !BN_gcd(&small_gcd, key->n, g_small_factors(), ctx) ||
       !BN_is_one(&small_gcd) ||
       !BN_enhanced_miller_rabin_primality_test(&primality_result, key->n,
-                                               BN_prime_checks, ctx, NULL) ||
+                                               BN_prime_checks_for_generation,
+                                               ctx, NULL) ||
       primality_result != bn_non_prime_power_composite) {
     OPENSSL_PUT_ERROR(RSA, RSA_R_PUBLIC_KEY_VALIDATION_FAILED);
     ret = 0;

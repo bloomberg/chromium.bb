@@ -6,8 +6,28 @@
 
 #include "base/metrics/metrics_hashes.h"
 #include "base/no_destructor.h"
+#include "base/profiler/stack_sampling_profiler.h"
 
 namespace base {
+
+SampleMetadata::SampleMetadata(StringPiece name)
+    : name_hash_(HashMetricName(name)) {}
+
+void SampleMetadata::Set(int64_t value) {
+  GetSampleMetadataRecorder()->Set(name_hash_, nullopt, value);
+}
+
+void SampleMetadata::Set(int64_t key, int64_t value) {
+  GetSampleMetadataRecorder()->Set(name_hash_, key, value);
+}
+
+void SampleMetadata::Remove() {
+  GetSampleMetadataRecorder()->Remove(name_hash_, nullopt);
+}
+
+void SampleMetadata::Remove(int64_t key) {
+  GetSampleMetadataRecorder()->Remove(name_hash_, key);
+}
 
 ScopedSampleMetadata::ScopedSampleMetadata(StringPiece name, int64_t value)
     : name_hash_(HashMetricName(name)) {
@@ -25,20 +45,32 @@ ScopedSampleMetadata::~ScopedSampleMetadata() {
   GetSampleMetadataRecorder()->Remove(name_hash_, key_);
 }
 
-void SetSampleMetadata(StringPiece name, int64_t value) {
-  GetSampleMetadataRecorder()->Set(HashMetricName(name), nullopt, value);
+// This function is friended by StackSamplingProfiler so must live directly in
+// the base namespace.
+void ApplyMetadataToPastSamplesImpl(TimeTicks period_start,
+                                    TimeTicks period_end,
+                                    int64_t name_hash,
+                                    Optional<int64_t> key,
+                                    int64_t value) {
+  StackSamplingProfiler::ApplyMetadataToPastSamples(period_start, period_end,
+                                                    name_hash, key, value);
 }
 
-void SetSampleMetadata(StringPiece name, int64_t key, int64_t value) {
-  GetSampleMetadataRecorder()->Set(HashMetricName(name), key, value);
+void ApplyMetadataToPastSamples(TimeTicks period_start,
+                                TimeTicks period_end,
+                                StringPiece name,
+                                int64_t value) {
+  return ApplyMetadataToPastSamplesImpl(period_start, period_end,
+                                        HashMetricName(name), nullopt, value);
 }
 
-void RemoveSampleMetadata(StringPiece name) {
-  GetSampleMetadataRecorder()->Remove(HashMetricName(name), nullopt);
-}
-
-void RemoveSampleMetadata(StringPiece name, int64_t key) {
-  GetSampleMetadataRecorder()->Remove(HashMetricName(name), key);
+void ApplyMetadataToPastSamples(TimeTicks period_start,
+                                TimeTicks period_end,
+                                StringPiece name,
+                                int64_t key,
+                                int64_t value) {
+  return ApplyMetadataToPastSamplesImpl(period_start, period_end,
+                                        HashMetricName(name), key, value);
 }
 
 MetadataRecorder* GetSampleMetadataRecorder() {

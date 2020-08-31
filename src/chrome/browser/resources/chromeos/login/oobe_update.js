@@ -9,7 +9,7 @@
 Polymer({
   is: 'oobe-update-md',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**
@@ -38,10 +38,11 @@ Polymer({
     },
 
     /**
-     * Message "3 minutes left".
+     * Estimated time left in seconds.
      */
     estimatedTimeLeft: {
-      type: String,
+      type: Number,
+      value: 0,
     },
 
     /**
@@ -56,13 +57,6 @@ Polymer({
      */
     progressMessage: {
       type: String,
-    },
-
-    /**
-     * Shows progressMessage.
-     */
-    progressMessageShown: {
-      type: Boolean,
     },
 
     /**
@@ -81,48 +75,29 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * ID of the localized string for update cancellation message.
+     */
+    cancelHint: {
+      type: String,
+      value: 'cancelUpdateHint',
+    },
   },
 
-  onBeforeShow: function() {
+  onBeforeShow() {
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
     });
-    // 'indeterminate' paper-progress will recalculate styles on every frame
-    // wnen OOBE is loaded (even when another screen is open).
-    // So we make it 'indeterminate' only right before screen is shown, and
-    // make it hidden when its container dialog is hidden.
-    this.$['checking-progress'].indeterminate = true;
+    this.$['checking-downloading-update'].onBeforeShow();
   },
 
-  /**
-   * This updates "Cancel Update" message.
-   */
-  setCancelHint: function(message) {
-    this.$.checkingForUpdateCancelHint.textContent = message;
-    this.$.updatingCancelHint.textContent = message;
-  },
-
-  /**
-   * Calculates visibility of UI element. Returns true if element is hidden.
-   * @param {Boolean} isAllowed Element flag that marks it visible.
-   * @param {Boolean} updateCompleted If update is completed and all
-   * intermediate status elements are hidden.
-   */
-  isNotAllowedOrUpdateCompleted_: function(isAllowed, updateCompleted) {
-    return !isAllowed || updateCompleted;
-  },
-
-  hideUpdatingScreen_: function(
-      checkingForUpdate, requiresPermissionForCellular) {
-    return checkingForUpdate || requiresPermissionForCellular;
-  },
-
-  onBackClicked_: function() {
+  onBackClicked_() {
     chrome.send('login.UpdateScreen.userActed', ['update-reject-cellular']);
   },
 
-  onNextClicked_: function() {
+  onNextClicked_() {
     chrome.send('login.UpdateScreen.userActed', ['update-accept-cellular']);
   },
 });

@@ -202,6 +202,10 @@ DEF_TEST(SkMakeSpan, reporter) {
         REPORTER_ASSERT(reporter, s[3] == 4);
         s[3] = 100;
         REPORTER_ASSERT(reporter, s[3] == 100);
+        auto s1 = s.subspan(1,3);
+        REPORTER_ASSERT(reporter, s1.size() == 3);
+        REPORTER_ASSERT(reporter, s1.front() == 2);
+        REPORTER_ASSERT(reporter, s1.back() == 100);
     }
 
     {
@@ -257,6 +261,30 @@ DEF_TEST(SkEnumerate, reporter) {
         REPORTER_ASSERT(reporter, i == check);
         REPORTER_ASSERT(reporter, v == (int)check+1);
         check++;
+    }
+
+    {
+        auto e = SkMakeEnumerate(SkMakeSpan(vec)).first(2);
+        for (auto[i, v] : e) {
+            REPORTER_ASSERT(reporter, v == (int) i + 1);
+        }
+        REPORTER_ASSERT(reporter, e.size() == 2);
+    }
+
+    {
+        auto e = SkMakeEnumerate(SkMakeSpan(vec)).last(2);
+        for (auto[i, v] : e) {
+            REPORTER_ASSERT(reporter, v == (int) i + 1);
+        }
+        REPORTER_ASSERT(reporter, e.size() == 2);
+    }
+
+    {
+        auto e = SkMakeEnumerate(SkMakeSpan(vec)).subspan(1, 2);
+        for (auto[i, v] : e) {
+            REPORTER_ASSERT(reporter, v == (int) i + 1);
+        }
+        REPORTER_ASSERT(reporter, e.size() == 2);
     }
 }
 

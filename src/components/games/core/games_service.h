@@ -10,11 +10,15 @@
 
 namespace games {
 
+// Keyed service to be used by user-facing surfaces to retrieve metadata about
+// Web games to be displayed to the user.
 class GamesService : public KeyedService {
  public:
   ~GamesService() override = default;
 
-  virtual void GetHighlightedGame(HighlightedGameCallback callback) = 0;
+  virtual void SetHighlightedGameCallback(HighlightedGameCallback callback) = 0;
+
+  virtual void GenerateHub() = 0;
 };
 
 }  // namespace games

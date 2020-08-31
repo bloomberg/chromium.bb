@@ -9,9 +9,14 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/url_pattern_index/url_pattern_index.h"
+#include "content/public/browser/global_routing_id.h"
 #include "extensions/browser/api/declarative_net_request/regex_rules_matcher.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+namespace content {
+class RenderFrameHost;
+}  // namespace content
 
 namespace extensions {
 struct WebRequestInfo;
@@ -23,6 +28,9 @@ class RulesetMatcher;
 struct RequestParams {
   // |info| must outlive this instance.
   explicit RequestParams(const WebRequestInfo& info);
+  // |host| must not undergo a navigation or get deleted for the duration of
+  // this instance.
+  explicit RequestParams(content::RenderFrameHost* host);
   RequestParams();
   ~RequestParams();
 
@@ -33,8 +41,12 @@ struct RequestParams {
       url_pattern_index::flat::ElementType_OTHER;
   bool is_third_party = false;
 
-  // A map from RulesetMatchers to whether it has a matching allow rule. Used as
-  // a cache to prevent additional calls to GetAllowAction.
+  // ID of the parent RenderFrameHost.
+  content::GlobalFrameRoutingId parent_routing_id;
+
+  // A map from RulesetMatchers to whether it has a matching allow or
+  // allowAllRequests rule. Used as a cache to prevent additional calls to
+  // GetBeforeRequestAction.
   mutable base::flat_map<const RulesetMatcher*, bool> allow_rule_cache;
 
   // Lower cased url, used for regex matching. Cached for performance.
@@ -44,10 +56,6 @@ struct RequestParams {
   // request. Cached for performance.
   mutable base::flat_map<const RegexRulesMatcher*, std::vector<RegexRuleInfo>>
       potential_regex_matches;
-
-  // Pointer to the corresponding WebRequestInfo object. Outlives this struct.
-  // Can be null for some unit tests.
-  const WebRequestInfo* request_info = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RequestParams);
 };

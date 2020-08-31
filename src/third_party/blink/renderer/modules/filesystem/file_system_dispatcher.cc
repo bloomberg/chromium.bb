@@ -8,7 +8,6 @@
 
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -74,7 +73,10 @@ class FileSystemDispatcher::ReadDirectoryListener
 };
 
 FileSystemDispatcher::FileSystemDispatcher(ExecutionContext& context)
-    : Supplement<ExecutionContext>(context), next_operation_id_(1) {}
+    : Supplement<ExecutionContext>(context),
+      file_system_manager_(&context),
+      next_operation_id_(1),
+      op_listeners_(&context) {}
 
 // static
 const char FileSystemDispatcher::kSupplementName[] = "FileSystemDispatcher";
@@ -94,7 +96,7 @@ FileSystemDispatcher& FileSystemDispatcher::From(ExecutionContext* context) {
 FileSystemDispatcher::~FileSystemDispatcher() = default;
 
 mojom::blink::FileSystemManager& FileSystemDispatcher::GetFileSystemManager() {
-  if (!file_system_manager_) {
+  if (!file_system_manager_.is_bound()) {
     // See https://bit.ly/2S0zRAS for task types
     mojo::PendingReceiver<mojom::blink::FileSystemManager> receiver =
         file_system_manager_.BindNewPipeAndPassReceiver(
@@ -104,7 +106,7 @@ mojom::blink::FileSystemManager& FileSystemDispatcher::GetFileSystemManager() {
     GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
         std::move(receiver));
   }
-  DCHECK(file_system_manager_);
+  DCHECK(file_system_manager_.is_bound());
   return *file_system_manager_.get();
 }
 
@@ -444,6 +446,12 @@ void FileSystemDispatcher::CreateSnapshotFileSync(
                         std::move(listener));
 }
 
+void FileSystemDispatcher::Trace(Visitor* visitor) {
+  visitor->Trace(file_system_manager_);
+  visitor->Trace(op_listeners_);
+  Supplement<ExecutionContext>::Trace(visitor);
+}
+
 void FileSystemDispatcher::DidOpenFileSystem(
     std::unique_ptr<FileSystemCallbacks> callbacks,
     const String& name,
@@ -573,13 +581,7 @@ void FileSystemDispatcher::DidCreateSnapshotFile(
     FileMetadata file_metadata = FileMetadata::From(file_info);
     file_metadata.platform_path = FilePathToWebString(platform_path);
 
-    auto blob_data = std::make_unique<BlobData>();
-    blob_data->AppendFile(file_metadata.platform_path, 0, file_metadata.length,
-                          base::nullopt);
-    scoped_refptr<BlobDataHandle> snapshot_blob =
-        BlobDataHandle::Create(std::move(blob_data), file_metadata.length);
-
-    callbacks->DidCreateSnapshotFile(file_metadata, snapshot_blob);
+    callbacks->DidCreateSnapshotFile(file_metadata);
 
     if (listener) {
       mojo::Remote<mojom::blink::ReceivedSnapshotListener>(std::move(listener))

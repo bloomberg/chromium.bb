@@ -97,6 +97,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void AttachTextBox(InlineTextBox*);
   void RemoveTextBox(InlineTextBox*);
 
+  bool HasInlineFragments() const final;
   NGPaintFragment* FirstInlineFragment() const final;
   void SetFirstInlineFragment(NGPaintFragment*) final;
   wtf_size_t FirstInlineFragmentItemIndex() const final;
@@ -218,10 +219,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   InlineTextBox* FirstTextBox() const { return TextBoxes().First(); }
   InlineTextBox* LastTextBox() const { return TextBoxes().Last(); }
 
-  // True if we have inline text box children which implies rendered text (or
-  // whitespace) output.
-  bool HasTextBoxes() const;
-
   // TODO(layoutng) Legacy-only implementation of HasTextBoxes.
   // All callers should call HasTextBoxes instead, and take NG into account.
   bool HasLegacyTextBoxes() const { return FirstTextBox(); }
@@ -331,6 +328,10 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   }
   virtual base::span<NGInlineItem>* GetNGInlineItems() { return nullptr; }
 
+  void InvalidateSubtreeLayoutForFontUpdates() override;
+
+  void DetachAbstractInlineTextBoxesIfNeeded();
+
  protected:
   void WillBeDestroyed() override;
 
@@ -439,6 +440,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
  private:
   ContentCaptureManager* GetContentCaptureManager();
+  void DetachAbstractInlineTextBoxes();
 
   // Used for LayoutNG with accessibility. True if inline fragments are
   // associated to |NGAbstractInlineTextBox|.
@@ -474,11 +476,10 @@ inline InlineTextBoxList& LayoutText::MutableTextBoxes() {
 inline NGPaintFragment* LayoutText::FirstInlineFragment() const {
   if (!IsInLayoutNGInlineFormattingContext())
     return nullptr;
-  // TODO(yosin): Once we replace all usage of |FirstInlineFragment()| to
-  // |NGInlineCursor|, we should change this to |DCHECK()|.
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-    return nullptr;
-  return first_paint_fragment_;
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return first_paint_fragment_;
+  NOTREACHED();
+  return nullptr;
 }
 
 inline wtf_size_t LayoutText::FirstInlineFragmentItemIndex() const {
@@ -515,6 +516,11 @@ inline float LayoutText::HyphenWidth(const Font& font,
   const ComputedStyle& style = StyleRef();
   return font.Width(ConstructTextRun(font, style.HyphenString().GetString(),
                                      style, direction));
+}
+
+inline void LayoutText::DetachAbstractInlineTextBoxesIfNeeded() {
+  if (UNLIKELY(has_abstract_inline_text_box_))
+    DetachAbstractInlineTextBoxes();
 }
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutText, IsText());

@@ -20,6 +20,7 @@ class Gamepad;
 
 namespace blink {
 
+class Element;
 class XRGripSpace;
 class XRInputSourceEvent;
 class XRSession;
@@ -85,11 +86,25 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   void OnSelectStart();
   void OnSelectEnd();
   void OnSelect();
-  void UpdateSelectState(
+
+  void OnSqueezeStart();
+  void OnSqueezeEnd();
+  void OnSqueeze();
+
+  void UpdateButtonStates(
       const device::mojom::blink::XRInputSourceStatePtr& state);
   void OnRemoved();
 
-  void Trace(blink::Visitor*) override;
+  // Check which element within the DOM overlay is hit by the input source's
+  // pointer ray, and update primary input state based on that, including
+  // suppressing event data for cross-origin iframes. For background, see
+  // https://immersive-web.github.io/dom-overlays/#cross-origin-content-events
+  void ProcessOverlayHitTest(
+      Element* overlay_element,
+      const device::mojom::blink::XRInputSourceStatePtr& state);
+  bool IsVisible() const { return state_.is_visible; }
+
+  void Trace(Visitor*) override;
 
  private:
   // In order to ease copying, any new member variables that can be trivially
@@ -98,6 +113,21 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
     int16_t active_frame_id = -1;
     bool primary_input_pressed = false;
     bool selection_cancelled = false;
+    bool primary_squeeze_pressed = false;
+    bool squeezing_cancelled = false;
+    // Input sources have two separate states, visible/invisible and select
+    // events active/suppressed. All input sources, including auxiliary, should
+    // use DOM overlay hit test (the ProcessOverlayHitTest() method) to check if
+    // they intersect cross-origin content. If that's the case, the input source
+    // is set as invisible, and must not return poses or hit test results. This
+    // also automatically suppresses select events (this matches the "poses are
+    // limited" conditional in the main WebXR spec). If the hit test doesn't
+    // intersect cross-origin content, and if this is the first touch, it fires
+    // a beforexrselect event and suppresses select events if that's been
+    // preventDefault()ed. For auxiliary input sources, the event does not need
+    // to be fired - per spec, their select events need to be suppressed anyway.
+    bool xr_select_events_suppressed = false;
+    bool is_visible = true;
     const uint32_t source_id;
     device::mojom::XRHandedness handedness = device::mojom::XRHandedness::NONE;
     device::mojom::XRTargetRayMode target_ray_mode;

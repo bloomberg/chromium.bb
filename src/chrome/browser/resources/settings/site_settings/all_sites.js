@@ -7,17 +7,52 @@
  * 'all-sites' is the polymer element for showing the list of all sites under
  * Site Settings.
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import '../settings_shared_css.m.js';
+import './all_sites_icons.js';
+import './clear_storage_dialog_css.js';
+import './site_entry.js';
+
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {GlobalScrollTargetBehavior, GlobalScrollTargetBehaviorImpl} from '../global_scroll_target_behavior.m.js';
+import {loadTimeData} from '../i18n_setup.js';
+import {routes} from '../route.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+
+import {ALL_SITES_DIALOG, AllSitesAction2, ContentSetting, ContentSettingsTypes, SortMethod} from './constants.js';
+import {LocalDataBrowserProxy, LocalDataBrowserProxyImpl} from './local_data_browser_proxy.js';
+import {SiteSettingsBehavior} from './site_settings_behavior.js';
+import {SiteGroup} from './site_settings_prefs_browser_proxy.js';
+
 Polymer({
   is: 'all-sites',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [
+    I18nBehavior,
     SiteSettingsBehavior,
     WebUIListenerBehavior,
-    settings.RouteObserverBehavior,
-    settings.GlobalScrollTargetBehavior,
+    RouteObserverBehavior,
+    GlobalScrollTargetBehavior,
   ],
 
   properties: {
+    // TODO(https://crbug.com/1037809): Refactor siteGroupMap to use an Object
+    // instead of a Map so that it's observable by Polymore more naturally. As
+    // it stands, one cannot use computed properties based off the value of
+    // siteGroupMap nor can one use observable functions to listen to changes
+    // to siteGroupMap.
     /**
      * Map containing sites to display in the widget, grouped into their
      * eTLD+1 names.
@@ -25,7 +60,7 @@ Polymer({
      */
     siteGroupMap: {
       type: Object,
-      value: function() {
+      value() {
         return new Map();
       },
     },
@@ -45,7 +80,7 @@ Polymer({
      */
     subpageRoute: {
       type: Object,
-      value: settings.routes.SITE_SETTINGS_ALL,
+      value: routes.SITE_SETTINGS_ALL,
       readOnly: true,
     },
 
@@ -67,7 +102,7 @@ Polymer({
      */
     sortMethods_: {
       type: Object,
-      value: settings.SortMethod,
+      value: SortMethod,
       readOnly: true,
     },
 
@@ -94,8 +129,10 @@ Polymer({
 
     /**
      * @private {?{
+     *   actionScope: string,
      *   index: number,
      *   item: !SiteGroup,
+     *   origin: string,
      *   path: string,
      *   target: !HTMLElement
      * }}
@@ -103,26 +140,45 @@ Polymer({
     actionMenuModel_: Object,
 
     /**
+     * @private
+     * Used to determine if user is attempting to clear all site data
+     * rather than a single site or origin's data.
+     */
+    clearAllData_: Boolean,
+
+    /**
      * The selected sort method.
-     * @type {!settings.SortMethod|undefined}
+     * @type {!SortMethod|undefined}
      * @private
      */
     sortMethod_: String,
 
-    /** @private */
+    /**
+     * Used to determine if clear all data UI should be displayed.
+     * @private
+     */
     storagePressureFlagEnabled_: {
       type: Boolean,
       value: () => loadTimeData.getBoolean('enableStoragePressureUI'),
     },
+
+    /**
+     * The total usage of all sites for this profile.
+     * @type {string}
+     * @private
+     */
+    totalUsage_: {
+      type: String,
+      value: '0 B',
+    },
   },
 
-  /** @private {?settings.LocalDataBrowserProxy} */
+  /** @private {?LocalDataBrowserProxy} */
   localDataBrowserProxy_: null,
 
   /** @override */
-  created: function() {
-    this.localDataBrowserProxy_ =
-        settings.LocalDataBrowserProxyImpl.getInstance();
+  created() {
+    this.localDataBrowserProxy_ = LocalDataBrowserProxyImpl.getInstance();
   },
 
   listeners: {
@@ -130,7 +186,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener(
         'onStorageListFetched', this.onStorageListFetched.bind(this));
     this.addEventListener('site-entry-selected', e => {
@@ -140,7 +196,7 @@ Polymer({
     });
 
     if (this.storagePressureFlagEnabled_) {
-      const sortParam = settings.getQueryParameters().get('sort');
+      const sortParam = Router.getInstance().getQueryParameters().get('sort');
       if (Object.values(this.sortMethods_).includes(sortParam)) {
         this.$.sortMethod.value = sortParam;
       }
@@ -149,10 +205,10 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     // Set scrollOffset so the iron-list scrolling accounts for the space the
     // title takes.
-    Polymer.RenderStatus.afterNextRender(this, () => {
+    afterNextRender(this, () => {
       this.$.allSitesList.scrollOffset = this.$.allSitesList.offsetTop;
     });
   },
@@ -160,14 +216,13 @@ Polymer({
   /**
    * Reload the site list when the all sites page is visited.
    *
-   * settings.RouteObserverBehavior
-   * @param {!settings.Route} currentRoute
+   * RouteObserverBehavior
+   * @param {!Route} currentRoute
    * @protected
    */
-  currentRouteChanged: function(currentRoute) {
-    settings.GlobalScrollTargetBehaviorImpl.currentRouteChanged.call(
-        this, currentRoute);
-    if (currentRoute == settings.routes.SITE_SETTINGS_ALL) {
+  currentRouteChanged(currentRoute) {
+    GlobalScrollTargetBehaviorImpl.currentRouteChanged.call(this, currentRoute);
+    if (currentRoute == routes.SITE_SETTINGS_ALL) {
       this.populateList_();
     }
   },
@@ -176,23 +231,24 @@ Polymer({
    * Retrieves a list of all known sites with site details.
    * @private
    */
-  populateList_: function() {
-    /** @type {!Array<settings.ContentSettingsTypes>} */
+  populateList_() {
+    /** @type {!Array<ContentSettingsTypes>} */
     const contentTypes = this.getCategoryList();
     // Make sure to include cookies, because All Sites handles data storage +
-    // cookies as well as regular settings.ContentSettingsTypes.
-    if (!contentTypes.includes(settings.ContentSettingsTypes.COOKIES)) {
-      contentTypes.push(settings.ContentSettingsTypes.COOKIES);
+    // cookies as well as regular ContentSettingsTypes.
+    if (!contentTypes.includes(ContentSettingsTypes.COOKIES)) {
+      contentTypes.push(ContentSettingsTypes.COOKIES);
     }
 
     this.browserProxy.getAllSites(contentTypes).then((response) => {
       // Create a new map to make an observable change.
       const newMap = /** @type {!Map<string, !SiteGroup>} */
-                      (new Map(this.siteGroupMap));
+          (new Map(this.siteGroupMap));
       response.forEach(siteGroup => {
         newMap.set(siteGroup.etldPlus1, siteGroup);
       });
       this.siteGroupMap = newMap;
+      this.updateTotalUsage_();
       this.forceListUpdate_();
     });
   },
@@ -202,16 +258,34 @@ Polymer({
    * may be overlap between the existing sites.
    * @param {!Array<!SiteGroup>} list The list of sites using storage.
    */
-  onStorageListFetched: function(list) {
+  onStorageListFetched(list) {
     // Create a new map to make an observable change.
     const newMap = /** @type {!Map<string, !SiteGroup>} */
-                    (new Map(this.siteGroupMap));
+        (new Map(this.siteGroupMap));
     list.forEach(storageSiteGroup => {
       newMap.set(storageSiteGroup.etldPlus1, storageSiteGroup);
     });
     this.siteGroupMap = newMap;
+    this.updateTotalUsage_();
     this.forceListUpdate_();
     this.focusOnLastSelectedEntry_();
+  },
+
+  /**
+   * Update the total usage by all sites for this profile after updates
+   * to the list
+   * @private
+   */
+  updateTotalUsage_() {
+    let usageSum = 0;
+    for (const [etldPlus1, siteGroup] of this.siteGroupMap) {
+      siteGroup.origins.forEach(origin => {
+        usageSum += origin.usage;
+      });
+    }
+    this.browserProxy.getFormattedBytes(usageSum).then(totalUsage => {
+      this.totalUsage_ = totalUsage;
+    });
   },
 
   /**
@@ -221,7 +295,7 @@ Polymer({
    * @return {!Array<!SiteGroup>}
    * @private
    */
-  filterPopulatedList_: function(siteGroupMap, searchQuery) {
+  filterPopulatedList_(siteGroupMap, searchQuery) {
     const result = [];
     for (const [etldPlus1, siteGroup] of siteGroupMap) {
       if (siteGroup.origins.find(
@@ -238,17 +312,17 @@ Polymer({
    * @return {!Array<!SiteGroup>}
    * @private
    */
-  sortSiteGroupList_: function(siteGroupList) {
+  sortSiteGroupList_(siteGroupList) {
     const sortMethod = this.$.sortMethod.value;
     if (!this.sortMethods_) {
       return siteGroupList;
     }
 
-    if (sortMethod == settings.SortMethod.MOST_VISITED) {
+    if (sortMethod == SortMethod.MOST_VISITED) {
       siteGroupList.sort(this.mostVisitedComparator_);
-    } else if (sortMethod == settings.SortMethod.STORAGE) {
+    } else if (sortMethod == SortMethod.STORAGE) {
       siteGroupList.sort(this.storageComparator_);
-    } else if (sortMethod == settings.SortMethod.NAME) {
+    } else if (sortMethod == SortMethod.NAME) {
       siteGroupList.sort(this.nameComparator_);
     }
     return siteGroupList;
@@ -263,7 +337,7 @@ Polymer({
    * @param {!SiteGroup} siteGroup2
    * @private
    */
-  mostVisitedComparator_: function(siteGroup1, siteGroup2) {
+  mostVisitedComparator_(siteGroup1, siteGroup2) {
     const getMaxEngagement = (max, originInfo) => {
       return (max > originInfo.engagement) ? max : originInfo.engagement;
     };
@@ -279,7 +353,7 @@ Polymer({
    * @param {!SiteGroup} siteGroup2
    * @private
    */
-  storageComparator_: function(siteGroup1, siteGroup2) {
+  storageComparator_(siteGroup1, siteGroup2) {
     const getOverallUsage = siteGroup => {
       let usage = 0;
       siteGroup.origins.forEach(originInfo => {
@@ -301,7 +375,7 @@ Polymer({
    * @param {!SiteGroup} siteGroup2
    * @private
    */
-  nameComparator_: function(siteGroup1, siteGroup2) {
+  nameComparator_(siteGroup1, siteGroup2) {
     return siteGroup1.etldPlus1.localeCompare(siteGroup2.etldPlus1);
   },
 
@@ -309,10 +383,9 @@ Polymer({
    * Called when the user chooses a different sort method to the default.
    * @private
    */
-  onSortMethodChanged_: function() {
+  onSortMethodChanged_() {
     this.sortMethod_ = this.$.sortMethod.value;
-    this.filteredList_ =
-        this.sortSiteGroupList_(this.filteredList_);
+    this.filteredList_ = this.sortSiteGroupList_(this.filteredList_);
     // Force the iron-list to rerender its items, as the order has changed.
     this.$.allSitesList.fire('iron-resize');
   },
@@ -322,7 +395,7 @@ Polymer({
    * the search query and the sort method, then re-renders it.
    * @private
    */
-  forceListUpdate_: function() {
+  forceListUpdate_() {
     this.filteredList_ =
         this.filterPopulatedList_(this.siteGroupMap, this.filter);
     this.$.allSitesList.fire('iron-resize');
@@ -333,7 +406,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  siteGroupMapEmpty_: function() {
+  siteGroupMapEmpty_() {
     return !this.siteGroupMap.size;
   },
 
@@ -342,7 +415,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  noSearchResultFound_: function() {
+  noSearchResultFound_() {
     return !this.filteredList_.length && !this.siteGroupMapEmpty_();
   },
 
@@ -350,7 +423,7 @@ Polymer({
    * Focus on previously selected entry.
    * @private
    */
-  focusOnLastSelectedEntry_: function() {
+  focusOnLastSelectedEntry_() {
     if (this.selectedItem_ == null || this.siteGroupMap.size == 0) {
       return;
     }
@@ -368,12 +441,12 @@ Polymer({
    * pane when its menu is opened (it is possible to open off-screen items using
    * keyboard shortcuts).
    * @param {!CustomEvent<{
-   *    index: number, item: !SiteGroup,
+   *    actionScope: string, index: number, item: !SiteGroup, origin: string,
    *    path: string, target: !HTMLElement
    *    }>} e
    * @private
    */
-  onOpenMenu_: function(e) {
+  onOpenMenu_(e) {
     const index = e.detail.index;
     const list = /** @type {IronListElement} */ (this.$['allSitesList']);
     if (index < list.firstVisibleIndex || index > list.lastVisibleIndex) {
@@ -390,8 +463,12 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onConfirmResetSettings_: function(e) {
+  onConfirmResetSettings_(e) {
     e.preventDefault();
+    const scope =
+        this.actionMenuModel_.actionScope === 'origin' ? 'Origin' : 'SiteGroup';
+    const scopes = [ALL_SITES_DIALOG.RESET_PERMISSIONS, scope, 'DialogOpened'];
+    this.recordUserAction_(scopes);
     this.$.confirmResetSettings.get().showModal();
   },
 
@@ -400,80 +477,239 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onConfirmClearData_: function(e) {
+  onConfirmClearData_(e) {
     e.preventDefault();
     if (this.storagePressureFlagEnabled_) {
+      const {actionScope, index, origin} = this.actionMenuModel_;
+      const {origins, hasInstalledPWA} = this.filteredList_[index];
+
+      const scope = actionScope === 'origin' ? 'Origin' : 'SiteGroup';
+      const appInstalled = actionScope === 'origin' ?
+          (origins.find(o => o.origin === origin) || {}).isInstalled :
+          hasInstalledPWA;
+      const installed = appInstalled ? 'Installed' : '';
+
+      const scopes =
+          [ALL_SITES_DIALOG.CLEAR_DATA, scope, installed, 'DialogOpened'];
+      this.recordUserAction_(scopes);
       this.$.confirmClearDataNew.get().showModal();
     } else {
       this.$.confirmClearData.get().showModal();
     }
   },
 
+  /**
+   * Confirms the clearing of all storage data for all sites.
+   * @param {!Event} e
+   * @private
+   */
+  onConfirmClearAllData_(e) {
+    e.preventDefault();
+    this.clearAllData_ = true;
+    const anyAppsInstalled = this.filteredList_.some(g => g.hasInstalledPWA);
+    const scopes = [ALL_SITES_DIALOG.CLEAR_DATA, 'All'];
+    const installed = anyAppsInstalled ? 'Installed' : '';
+    this.recordUserAction_([...scopes, installed, 'DialogOpened']);
+    this.$.confirmClearAllData.get().showModal();
+  },
+
   /** @private */
-  onCloseDialog_: function(e) {
+  onCloseDialog_(e) {
+    chrome.metricsPrivate.recordUserAction('AllSites_DialogClosed');
     e.target.closest('cr-dialog').close();
     this.actionMenuModel_ = null;
     this.$.menu.get().close();
   },
 
   /**
-   * Formats the |label| string with |name|, using $<num> as markers.
-   * @param {string} label
-   * @param {string} name
+   * Get the appropriate label string for the clear data dialog based on whether
+   * user is clearing data for an origin or siteGroup, and whether or not the
+   * origin/siteGroup has an associated installed app.
    * @return {string}
    * @private
    */
-  getFormatString_: function(label, name) {
-    return loadTimeData.substituteString(label, name);
+  getClearDataLabel_: function() {
+    // actionMenuModel_ will be null when dialog closes
+    if (this.actionMenuModel_ === null) {
+      return '';
+    }
+
+    if (this.storagePressureFlagEnabled_) {
+      const {index, origin} = this.actionMenuModel_;
+
+      const {origins, hasInstalledPWA} = this.filteredList_[index];
+
+      if (origin) {
+        const {isInstalled = false} =
+            origins.find(o => o.origin === origin) || {};
+        const messageId = isInstalled ?
+            'siteSettingsOriginDeleteConfirmationInstalled' :
+            'siteSettingsOriginDeleteConfirmation';
+        return loadTimeData.substituteString(
+            this.i18n(messageId), this.originRepresentation(origin));
+      } else {
+        // Clear SiteGroup
+        let messageId;
+        if (hasInstalledPWA) {
+          const multipleAppsInstalled =
+              (this.filteredList_[index].origins || [])
+                  .filter(o => o.isInstalled)
+                  .length > 1;
+
+          messageId = multipleAppsInstalled ?
+              'siteSettingsSiteGroupDeleteConfirmationInstalledPlural' :
+              'siteSettingsSiteGroupDeleteConfirmationInstalled';
+        } else {
+          messageId = 'siteSettingsSiteGroupDeleteConfirmationNew';
+        }
+        const displayName = this.actionMenuModel_.item.etldPlus1 ||
+            this.originRepresentation(
+                this.actionMenuModel_.item.origins[0].origin);
+        return loadTimeData.substituteString(this.i18n(messageId), displayName);
+      }
+    } else {
+      // Storage Pressure UI disabled
+      return loadTimeData.substituteString(
+          this.i18n('siteSettingsSiteGroupDeleteConfirmation'),
+          this.actionMenuModel_.item.etldPlus1);
+    }
   },
 
   /**
-   * Resets all permissions for all origins listed in |siteGroup.origins|.
+   * Get the appropriate label for the reset permissions confirmation
+   * dialog, dependent on whether user is resetting permissions for an
+   * origin or an entire SiteGroup.
+   * @return {string}
+   * @private
+   */
+  getResetPermissionsLabel_: function() {
+    if (this.actionMenuModel_ === null) {
+      return '';
+    }
+
+    if (this.actionMenuModel_.actionScope === 'origin') {
+      return loadTimeData.substituteString(
+          this.i18n('siteSettingsSiteResetConfirmation'),
+          this.originRepresentation(this.actionMenuModel_.origin));
+    }
+    return loadTimeData.substituteString(
+        this.i18n('siteSettingsSiteGroupResetConfirmation'),
+        this.actionMenuModel_.item.etldPlus1 ||
+            this.originRepresentation(
+                this.actionMenuModel_.item.origins[0].origin));
+  },
+  /**
+   * Get the appropriate label for the clear all data confirmation
+   * dialog, depending on whether or not any apps are installed.
+   * @return {string}
+   * @private
+   */
+  getClearAllDataLabel_: function() {
+    const anyAppsInstalled = this.filteredList_.some(g => g.hasInstalledPWA);
+    const messageId = anyAppsInstalled ?
+        'siteSettingsClearAllStorageConfirmationInstalled' :
+        'siteSettingsClearAllStorageConfirmation';
+    return loadTimeData.substituteString(
+        this.i18n(messageId), this.totalUsage_);
+  },
+
+  /**
+   * Get the appropriate label for the clear data confirmation
+   * dialog, depending on whether the user is clearing data for a
+   * single origin or an entire site group.
+   * @return {string}
+   * @private
+   */
+  getLogoutLabel_: function() {
+    return this.actionMenuModel_.actionScope === 'origin' ?
+        this.i18n('siteSettingsSiteClearStorageSignOut') :
+        this.i18n('siteSettingsSiteGroupDeleteSignOut');
+  },
+
+  /**
+   * @param {!Array<string>} scopes
+   * @private
+   */
+  recordUserAction_: function(scopes) {
+    chrome.metricsPrivate.recordUserAction(
+        ['AllSites', ...scopes].filter(Boolean).join('_'));
+  },
+
+  /**
+   * Resets permission settings for a single origin.
+   * @param {string} origin
+   * @private
+   */
+  resetPermissionsForOrigin_: function(origin) {
+    const contentSettingsTypes = this.getCategoryList();
+    this.browserProxy.setOriginPermissions(
+        origin, contentSettingsTypes, ContentSetting.DEFAULT);
+    if (contentSettingsTypes.includes(ContentSettingsTypes.PLUGINS)) {
+      this.browserProxy.clearFlashPref(origin);
+    }
+  },
+
+  /**
+   * Resets all permissions for a single origin or all origins listed in
+   * |siteGroup.origins|.
    * @param {!Event} e
    * @private
    */
   onResetSettings_: function(e) {
-    const contentSettingsTypes = this.getCategoryList();
-    const index = this.actionMenuModel_.index;
-    this.browserProxy.recordAction(settings.AllSitesAction.RESET_PERMISSIONS);
-    if (this.actionMenuModel_.item.etldPlus1 !=
-        this.filteredList_[index].etldPlus1) {
-      return;
-    }
-    for (let i = 0; i < this.filteredList_[index].origins.length; ++i) {
-      const origin = this.filteredList_[index].origins[i].origin;
-      this.browserProxy.setOriginPermissions(
-          origin, contentSettingsTypes, settings.ContentSetting.DEFAULT);
-      if (contentSettingsTypes.includes(
-              settings.ContentSettingsTypes.PLUGINS)) {
-        this.browserProxy.clearFlashPref(origin);
-      }
-      this.filteredList_[index].origins[i].hasPermissionSettings = false;
-    }
+    const {actionScope, index, origin} = this.actionMenuModel_;
+    const siteGroupToUpdate = this.filteredList_[index];
+
     const updatedSiteGroup = {
-      etldPlus1: this.filteredList_[index].etldPlus1,
-      numCookies: this.filteredList_[index].numCookies,
+      etldPlus1: siteGroupToUpdate.etldPlus1,
+      numCookies: siteGroupToUpdate.numCookies,
       origins: []
     };
-    for (let i = 0; i < this.filteredList_[index].origins.length; ++i) {
+
+    if (actionScope === 'origin') {
+      this.browserProxy.recordAction(AllSitesAction2.RESET_ORIGIN_PERMISSIONS);
+      this.recordUserAction_(
+          [ALL_SITES_DIALOG.RESET_PERMISSIONS, 'Origin', 'Confirm']);
+
+      this.resetPermissionsForOrigin_(origin);
+      updatedSiteGroup.origins = siteGroupToUpdate.origins;
       const updatedOrigin =
-          Object.assign({}, this.filteredList_[index].origins[i]);
-      if (updatedOrigin.numCookies > 0 || updatedOrigin.usage > 0) {
-        updatedOrigin.hasPermissionSettings = false;
-        updatedSiteGroup.origins.push(updatedOrigin);
+          updatedSiteGroup.origins.find(o => o.origin === origin);
+      updatedOrigin.hasPermissionSettings = false;
+      if (updatedOrigin.numCookies <= 0 || updatedOrigin.usage <= 0) {
+        updatedSiteGroup.origins =
+            updatedSiteGroup.origins.filter(o => o.origin !== origin);
       }
+    } else {
+      // Reset permissions for entire site group
+      this.browserProxy.recordAction(
+          AllSitesAction2.RESET_SITE_GROUP_PERMISSIONS);
+      this.recordUserAction_(
+          [ALL_SITES_DIALOG.RESET_PERMISSIONS, 'SiteGroup', 'Confirm']);
+
+      if (this.actionMenuModel_.item.etldPlus1 !==
+          siteGroupToUpdate.etldPlus1) {
+        return;
+      }
+      siteGroupToUpdate.origins.forEach(originEntry => {
+        this.resetPermissionsForOrigin_(originEntry.origin);
+        if (originEntry.numCookies > 0 || originEntry.usage > 0) {
+          originEntry.hasPermissionSettings = false;
+          updatedSiteGroup.origins.push(originEntry);
+        }
+      });
     }
+
     if (updatedSiteGroup.origins.length > 0) {
       this.set('filteredList_.' + index, updatedSiteGroup);
-    } else if (this.filteredList_[index].numCookies > 0) {
+    } else if (siteGroupToUpdate.numCookies > 0) {
       // If there is no origin for this site group that has any data,
       // but the ETLD+1 has cookies in use, create a origin placeholder
       // for display purposes.
       const originPlaceHolder = {
-        origin: 'http://' + this.filteredList_[index].etldPlus1 + '/',
+        origin: `http://${siteGroupToUpdate.etldPlus1}/`,
         engagement: 0,
         usage: 0,
-        numCookies: this.filteredList_[index].numCookies,
+        numCookies: siteGroupToUpdate.numCookies,
         hasPermissionSettings: false
       };
       updatedSiteGroup.origins.push(originPlaceHolder);
@@ -481,8 +717,88 @@ Polymer({
     } else {
       this.splice('filteredList_', index, 1);
     }
+
     this.$.allSitesList.fire('iron-resize');
     this.onCloseDialog_(e);
+  },
+
+  /**
+   * Helper to remove data and cookies for an etldPlus1.
+   * @param {!number} index The index of the target siteGroup in filteredList_
+   *                        that should be cleared.
+   * @private
+   */
+  clearDataForSiteGroupIndex_: function(index) {
+    const siteGroupToUpdate = this.filteredList_[index];
+    const updatedSiteGroup = {
+      etldPlus1: siteGroupToUpdate.etldPlus1,
+      hasInstalledPWA: siteGroupToUpdate.hasInstalledPWA,
+      numCookies: 0,
+      origins: []
+    };
+
+    this.browserProxy.clearEtldPlus1DataAndCookies(siteGroupToUpdate.etldPlus1);
+
+    for (let i = 0; i < siteGroupToUpdate.origins.length; ++i) {
+      const updatedOrigin = Object.assign({}, siteGroupToUpdate.origins[i]);
+      if (updatedOrigin.hasPermissionSettings) {
+        updatedOrigin.numCookies = 0;
+        updatedOrigin.usage = 0;
+        updatedSiteGroup.origins.push(updatedOrigin);
+      }
+    }
+    this.updateSiteGroup_(index, updatedSiteGroup);
+  },
+
+  /**
+   * Helper to remove data and cookies for an origin.
+   * @param {number} index The index of the target siteGroup in filteredList_
+   *                        that should be cleared.
+   * @param {string} origin The origin of the target origin
+   *                         that should be cleared.
+   * @private
+   */
+  clearDataForOrigin_: function(index, origin) {
+    this.browserProxy.clearOriginDataAndCookies(this.toUrl(origin).href);
+
+    const siteGroupToUpdate = this.filteredList_[index];
+    const updatedSiteGroup = {
+      etldPlus1: siteGroupToUpdate.etldPlus1,
+      numCookies: 0,
+      origins: []
+    };
+
+    const updatedOrigin =
+        siteGroupToUpdate.origins.find(o => o.origin === origin);
+    if (updatedOrigin.hasPermissionSettings) {
+      updatedOrigin.numCookies = 0;
+      updatedOrigin.usage = 0;
+      updatedSiteGroup.origins = siteGroupToUpdate.origins;
+    } else {
+      updatedSiteGroup.origins =
+          siteGroupToUpdate.origins.filter(o => o.origin !== origin);
+    }
+
+    updatedSiteGroup.hasInstalledPWA =
+        updatedSiteGroup.origins.some(o => o.isInstalled);
+    this.updateSiteGroup_(index, updatedSiteGroup);
+  },
+
+  /**
+   * Updates the UI after permissions have been reset or data/cookies
+   * have been cleared
+   * @param {number} index The index of the target siteGroup in filteredList_
+   *                        that should be updated.
+   * @param {!SiteGroup} updatedSiteGroup The SiteGroup object that represents
+   *                                      the new state.
+   */
+  updateSiteGroup_: function(index, updatedSiteGroup) {
+    if (updatedSiteGroup.origins.length > 0) {
+      this.set('filteredList_.' + index, updatedSiteGroup);
+    } else {
+      this.splice('filteredList_', index, 1);
+    }
+    this.siteGroupMap.delete(updatedSiteGroup.etldPlus1);
   },
 
   /**
@@ -491,30 +807,56 @@ Polymer({
    * @private
    */
   onClearData_: function(e) {
-    const index = this.actionMenuModel_.index;
-    // Clean up the SiteGroup.
-    this.browserProxy.clearEtldPlus1DataAndCookies(
-        this.filteredList_[index].etldPlus1);
-    const updatedSiteGroup = {
-      etldPlus1: this.filteredList_[index].etldPlus1,
-      numCookies: 0,
-      origins: []
-    };
-    for (let i = 0; i < this.filteredList_[index].origins.length; ++i) {
-      const updatedOrigin =
-          Object.assign({}, this.filteredList_[index].origins[i]);
-      if (updatedOrigin.hasPermissionSettings) {
-        updatedOrigin.numCookies = 0;
-        updatedOrigin.usage = 0;
-        updatedSiteGroup.origins.push(updatedOrigin);
-      }
-    }
-    if (updatedSiteGroup.origins.length > 0) {
-      this.set('filteredList_.' + index, updatedSiteGroup);
+    const {index, actionScope, origin} = this.actionMenuModel_;
+    const scopes = [ALL_SITES_DIALOG.CLEAR_DATA];
+
+    if (actionScope === 'origin') {
+      this.browserProxy.recordAction(AllSitesAction2.CLEAR_ORIGIN_DATA);
+
+      const {origins} = this.filteredList_[index];
+
+      scopes.push('Origin');
+      const installed =
+          (origins.find(o => o.origin === origin) || {}).isInstalled ?
+          'Installed' :
+          '';
+      this.recordUserAction_([...scopes, installed, 'Confirm']);
+
+      this.clearDataForOrigin_(index, origin);
     } else {
-      this.splice('filteredList_', index, 1);
+      this.browserProxy.recordAction(AllSitesAction2.CLEAR_SITE_GROUP_DATA);
+
+      scopes.push('SiteGroup');
+      const {hasInstalledPWA} = this.filteredList_[index];
+      const installed = hasInstalledPWA ? 'Installed' : '';
+      this.recordUserAction_([...scopes, installed, 'Confirm']);
+
+      this.clearDataForSiteGroupIndex_(index);
+    }
+
+    this.$.allSitesList.fire('iron-resize');
+    this.updateTotalUsage_();
+    this.onCloseDialog_(e);
+  },
+
+  /**
+   * Clear data and cookies for all sites.
+   * @param {!Event} e
+   * @private
+   */
+  onClearAllData_(e) {
+    this.browserProxy.recordAction(AllSitesAction2.CLEAR_ALL_DATA);
+
+    const scopes = [ALL_SITES_DIALOG.CLEAR_DATA, 'All'];
+    const anyAppsInstalled = this.filteredList_.some(g => g.hasInstalledPWA);
+    const installed = anyAppsInstalled ? 'Installed' : '';
+    this.recordUserAction_([...scopes, installed, 'Confirm']);
+
+    for (let index = this.filteredList_.length - 1; index >= 0; index--) {
+      this.clearDataForSiteGroupIndex_(index);
     }
     this.$.allSitesList.fire('iron-resize');
+    this.totalUsage_ = '0 B';
     this.onCloseDialog_(e);
   },
 });

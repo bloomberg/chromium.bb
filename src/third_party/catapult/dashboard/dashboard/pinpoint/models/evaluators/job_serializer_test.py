@@ -24,7 +24,41 @@ class EvaluatorTest(bisection_test_util.BisectionTestBase):
   def setUp(self):
     super(EvaluatorTest, self).setUp()
     self.maxDiff = None
-    self.job = job_module.Job.New((), (), use_execution_engine=True)
+    self.job = job_module.Job.New(
+        (), (),
+        arguments={
+            'configuration': 'some_configuration',
+            'target': 'performance_telemetry_test',
+            'browser': 'some_browser',
+            'bucket': 'some_bucket',
+            'builder': 'some_builder',
+        },
+        comparison_mode=job_module.job_state.PERFORMANCE,
+        use_execution_engine=True)
+
+  def testSerializeEmptyJob(self):
+    self.PopulateSimpleBisectionGraph(self.job)
+    self.assertEqual(
+        {
+            'arguments': mock.ANY,
+            'bug_id': None,
+            'cancel_reason': None,
+            'comparison_mode': 'performance',
+            'configuration': mock.ANY,
+            'created': mock.ANY,
+            'difference_count': None,
+            'exception': None,
+            'job_id': self.job.job_id,
+            'name': mock.ANY,
+            'quests': ['Build', 'Test'],
+            'results_url': mock.ANY,
+            'state': [mock.ANY, mock.ANY],
+            'status': 'Queued',
+            'updated': mock.ANY,
+            'user': None,
+        },
+        self.job.AsDict(
+            options=[job_module.OPTION_STATE, job_module.OPTION_ESTIMATE]))
 
   def testSerializeJob(self):
     self.PopulateSimpleBisectionGraph(self.job)
@@ -49,7 +83,8 @@ class EvaluatorTest(bisection_test_util.BisectionTestBase):
     self.assertTrue(self.job.use_execution_engine)
     self.assertEqual(
         {
-            'arguments': {},
+            'arguments':
+                mock.ANY,
             'bug_id':
                 None,
             'cancel_reason':
@@ -57,11 +92,11 @@ class EvaluatorTest(bisection_test_util.BisectionTestBase):
             'comparison_mode':
                 'performance',
             'configuration':
-                None,
+                'some_configuration',
             'created':
                 mock.ANY,
             'difference_count':
-                None,
+                0,
             'exception':
                 None,
             'job_id':
@@ -86,13 +121,29 @@ class EvaluatorTest(bisection_test_util.BisectionTestBase):
             'state': [{
                 'attempts': [{
                     'executions': [mock.ANY] * 3
-                }] * 10,
-                'change': self.start_change.AsDict(),
+                }] + [{
+                    'executions': [None, mock.ANY, mock.ANY]
+                }] * 9,
+                'change':
+                    self.start_change.AsDict(),
+                'comparisons': {
+                    'prev': None,
+                    'next': 'same',
+                },
+                'result_values': [mock.ANY] * 10,
             }, {
                 'attempts': [{
                     'executions': [mock.ANY] * 3
-                }] * 10,
-                'change': self.end_change.AsDict(),
+                }] + [{
+                    'executions': [None, mock.ANY, mock.ANY]
+                }] * 9,
+                'change':
+                    self.end_change.AsDict(),
+                'comparisons': {
+                    'prev': 'same',
+                    'next': None,
+                },
+                'result_values': [mock.ANY] * 10,
             }]
         },
         job_dict)

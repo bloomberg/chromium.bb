@@ -15,12 +15,17 @@ import collections
 import contextlib
 import functools
 import os
+import sys
 import tempfile
 import time
 import uuid
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import locking
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 UTILS_METRICS_LOG_ENVVAR = 'BUILD_API_METRICS_LOG'
 

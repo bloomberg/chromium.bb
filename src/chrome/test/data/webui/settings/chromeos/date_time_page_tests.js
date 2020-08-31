@@ -111,13 +111,13 @@ function updatePrefsWithPolicy(prefs, managed, valueFromPolicy) {
 function initializeDateTime(prefs, hasPolicy, opt_autoDetectPolicyValue) {
   // Find the desired initial time zone by ID.
   const timeZone = assert(fakeTimeZones.find(function(timeZonePair) {
-    return timeZonePair[0] == prefs.cros.system.timezone.value;
+    return timeZonePair[0] === prefs.cros.system.timezone.value;
   }));
 
   const data = {
     timeZoneID: timeZone[0],
     timeZoneName: timeZone[1],
-    controlledSettingPolicy: 'This setting is enforced by your administrator',
+    controlledSettingPolicy: 'This setting is managed by your administrator',
     setTimeZoneAutomaticallyDisabled: 'Automatic time zone detection disabled.',
     setTimeZoneAutomaticallyIpOnlyDefault:
         'Automatic time zone detection IP-only.',

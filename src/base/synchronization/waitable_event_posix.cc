@@ -8,8 +8,8 @@
 #include <limits>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/debug/activity_tracker.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -170,7 +170,7 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
       scoped_blocking_call;
   if (waiting_is_blocking_) {
     event_activity.emplace(this);
-    scoped_blocking_call.emplace(BlockingType::MAY_BLOCK);
+    scoped_blocking_call.emplace(FROM_HERE, BlockingType::MAY_BLOCK);
   }
 
   kernel_->lock_.Acquire();
@@ -246,11 +246,12 @@ cmp_fst_addr(const std::pair<WaitableEvent*, unsigned> &a,
 }
 
 // static
+// NO_THREAD_SAFETY_ANALYSIS: Complex control flow.
 size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables,
-                               size_t count) {
+                               size_t count) NO_THREAD_SAFETY_ANALYSIS {
   DCHECK(count) << "Cannot wait on no events";
   internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
-      BlockingType::MAY_BLOCK);
+      FROM_HERE, BlockingType::MAY_BLOCK);
   // Record an event (the first) that this thread is blocking upon.
   debug::ScopedEventWaitActivity event_activity(raw_waitables[0]);
 
@@ -337,9 +338,10 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables,
 //   was signaled with the lowest input index from the original WaitMany call.
 // -----------------------------------------------------------------------------
 // static
+// NO_THREAD_SAFETY_ANALYSIS: Complex control flow.
 size_t WaitableEvent::EnqueueMany(std::pair<WaitableEvent*, size_t>* waitables,
                                   size_t count,
-                                  Waiter* waiter) {
+                                  Waiter* waiter) NO_THREAD_SAFETY_ANALYSIS {
   size_t winner = count;
   size_t winner_index = count;
   for (size_t i = 0; i < count; ++i) {

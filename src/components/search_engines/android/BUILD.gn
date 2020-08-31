@@ -9,10 +9,11 @@ android_library("java") {
     "//base:base_java",
     "//base:jni_java",
     "//content/public/android:content_java",
+    "//url:gurl_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
-  java_files = [
+  sources = [
     "java/src/org/chromium/components/search_engines/TemplateUrl.java",
     "java/src/org/chromium/components/search_engines/TemplateUrlService.java",
   ]

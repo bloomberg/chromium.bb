@@ -37,6 +37,8 @@ extern "C" {
 
 #define MAX_DIFFWTD_MASK_BITS 1
 
+#define INTERINTRA_WEDGE_SIGN 0
+
 // DIFFWTD_MASK_TYPES should not surpass 1 << MAX_DIFFWTD_MASK_BITS
 enum {
   DIFFWTD_38 = 0,
@@ -73,24 +75,24 @@ static INLINE int is_inter_compound_mode(PREDICTION_MODE mode) {
 }
 
 static INLINE PREDICTION_MODE compound_ref0_mode(PREDICTION_MODE mode) {
-  static PREDICTION_MODE lut[] = {
-    MB_MODE_COUNT,  // DC_PRED
-    MB_MODE_COUNT,  // V_PRED
-    MB_MODE_COUNT,  // H_PRED
-    MB_MODE_COUNT,  // D45_PRED
-    MB_MODE_COUNT,  // D135_PRED
-    MB_MODE_COUNT,  // D113_PRED
-    MB_MODE_COUNT,  // D157_PRED
-    MB_MODE_COUNT,  // D203_PRED
-    MB_MODE_COUNT,  // D67_PRED
-    MB_MODE_COUNT,  // SMOOTH_PRED
-    MB_MODE_COUNT,  // SMOOTH_V_PRED
-    MB_MODE_COUNT,  // SMOOTH_H_PRED
-    MB_MODE_COUNT,  // PAETH_PRED
-    MB_MODE_COUNT,  // NEARESTMV
-    MB_MODE_COUNT,  // NEARMV
-    MB_MODE_COUNT,  // GLOBALMV
-    MB_MODE_COUNT,  // NEWMV
+  static const PREDICTION_MODE lut[] = {
+    DC_PRED,        // DC_PRED
+    V_PRED,         // V_PRED
+    H_PRED,         // H_PRED
+    D45_PRED,       // D45_PRED
+    D135_PRED,      // D135_PRED
+    D113_PRED,      // D113_PRED
+    D157_PRED,      // D157_PRED
+    D203_PRED,      // D203_PRED
+    D67_PRED,       // D67_PRED
+    SMOOTH_PRED,    // SMOOTH_PRED
+    SMOOTH_V_PRED,  // SMOOTH_V_PRED
+    SMOOTH_H_PRED,  // SMOOTH_H_PRED
+    PAETH_PRED,     // PAETH_PRED
+    NEARESTMV,      // NEARESTMV
+    NEARMV,         // NEARMV
+    GLOBALMV,       // GLOBALMV
+    NEWMV,          // NEWMV
     NEARESTMV,      // NEAREST_NEARESTMV
     NEARMV,         // NEAR_NEARMV
     NEARESTMV,      // NEAREST_NEWMV
@@ -101,12 +103,12 @@ static INLINE PREDICTION_MODE compound_ref0_mode(PREDICTION_MODE mode) {
     NEWMV,          // NEW_NEWMV
   };
   assert(NELEMENTS(lut) == MB_MODE_COUNT);
-  assert(is_inter_compound_mode(mode));
+  assert(is_inter_compound_mode(mode) || is_inter_singleref_mode(mode));
   return lut[mode];
 }
 
 static INLINE PREDICTION_MODE compound_ref1_mode(PREDICTION_MODE mode) {
-  static PREDICTION_MODE lut[] = {
+  static const PREDICTION_MODE lut[] = {
     MB_MODE_COUNT,  // DC_PRED
     MB_MODE_COUNT,  // V_PRED
     MB_MODE_COUNT,  // H_PRED
@@ -186,19 +188,15 @@ typedef struct RD_STATS {
   // rate/dist.
   int64_t rdcost;
   int64_t sse;
-  int skip;  // sse should equal to dist when skip == 1
-  int64_t ref_rdcost;
+  int skip_txfm;  // sse should equal to dist when skip_txfm == 1
   int zero_rate;
-  uint8_t invalid_rate;
-#if CONFIG_ONE_PASS_SVM
-  int eob, eob_0, eob_1, eob_2, eob_3;
-  int64_t rd, rd_0, rd_1, rd_2, rd_3;
-  int64_t y_sse, sse_0, sse_1, sse_2, sse_3;
-#endif
 #if CONFIG_RD_DEBUG
   int txb_coeff_cost[MAX_MB_PLANE];
-  int txb_coeff_cost_map[MAX_MB_PLANE][TXB_COEFF_COST_MAP_SIZE]
-                        [TXB_COEFF_COST_MAP_SIZE];
+  // TODO(jingning): Temporary solution to silence stack over-size warning
+  // in handle_inter_mode. This should be fixed after rate-distortion
+  // optimization refactoring.
+  int16_t txb_coeff_cost_map[MAX_MB_PLANE][TXB_COEFF_COST_MAP_SIZE]
+                            [TXB_COEFF_COST_MAP_SIZE];
 #endif  // CONFIG_RD_DEBUG
 } RD_STATS;
 
@@ -206,8 +204,8 @@ typedef struct RD_STATS {
 // sent together in functions related to interinter compound modes
 typedef struct {
   uint8_t *seg_mask;
-  int wedge_index;
-  int wedge_sign;
+  int8_t wedge_index;
+  int8_t wedge_sign;
   DIFFWTD_MASK_TYPE mask_type;
   COMPOUND_TYPE type;
 } INTERINTER_COMPOUND_DATA;
@@ -216,40 +214,24 @@ typedef struct {
 #define TXK_TYPE_BUF_LEN 64
 // This structure now relates to 4x4 block regions.
 typedef struct MB_MODE_INFO {
-  PALETTE_MODE_INFO palette_mode_info;
-  WarpedMotionParams wm_params;
   // interinter members
   INTERINTER_COMPOUND_DATA interinter_comp;
-  FILTER_INTRA_MODE_INFO filter_intra_mode_info;
+  WarpedMotionParams wm_params;
   int_mv mv[2];
-  // Only for INTER blocks
-  InterpFilters interp_filters;
-  // TODO(debargha): Consolidate these flags
-  int interintra_wedge_index;
-  int interintra_wedge_sign;
-  int overlappable_neighbors[2];
+  // q index for the current coding block.
   int current_qindex;
-  int delta_lf_from_base;
-  int delta_lf[FRAME_LF_COUNT];
+  // Only for INTER blocks
+  int_interpfilters interp_filters;
+  // TODO(debargha): Consolidate these flags
 #if CONFIG_RD_DEBUG
   RD_STATS rd_stats;
   int mi_row;
   int mi_col;
 #endif
-  int num_proj_ref;
-
-  // Index of the alpha Cb and alpha Cr combination
-  int cfl_alpha_idx;
-  // Joint sign of alpha Cb and alpha Cr
-  int cfl_alpha_signs;
-
-  // Indicate if masked compound is used(1) or not(0).
-  int comp_group_idx;
-  // If comp_group_idx=0, indicate if dist_wtd_comp(0) or avg_comp(1) is used.
-  int compound_idx;
 #if CONFIG_INSPECTION
   int16_t tx_skip[TXK_TYPE_BUF_LEN];
 #endif
+  PALETTE_MODE_INFO palette_mode_info;
   // Common for both INTER and INTRA blocks
   BLOCK_SIZE sb_type;
   PREDICTION_MODE mode;
@@ -259,21 +241,34 @@ typedef struct MB_MODE_INFO {
   INTERINTRA_MODE interintra_mode;
   MOTION_MODE motion_mode;
   PARTITION_TYPE partition;
-  TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
   MV_REFERENCE_FRAME ref_frame[2];
-  int8_t use_wedge_interintra;
-  int8_t skip;
-  int8_t skip_mode;
+  FILTER_INTRA_MODE_INFO filter_intra_mode_info;
+  int8_t skip_txfm;
   uint8_t inter_tx_size[INTER_TX_SIZE_BUF_LEN];
   TX_SIZE tx_size;
-  int8_t segment_id;
-  int8_t seg_id_predicted;  // valid only when temporal_update is enabled
-  uint8_t use_intrabc;
+  int8_t delta_lf_from_base;
+  int8_t delta_lf[FRAME_LF_COUNT];
+  int8_t interintra_wedge_index;
   // The actual prediction angle is the base angle + (angle_delta * step).
   int8_t angle_delta[PLANE_TYPES];
   /* deringing gain *per-superblock* */
-  int8_t cdef_strength;
-  uint8_t ref_mv_idx;
+  // Joint sign of alpha Cb and alpha Cr
+  int8_t cfl_alpha_signs;
+  // Index of the alpha Cb and alpha Cr combination
+  uint8_t cfl_alpha_idx;
+  uint8_t num_proj_ref;
+  uint8_t overlappable_neighbors[2];
+  // If comp_group_idx=0, indicate if dist_wtd_comp(0) or avg_comp(1) is used.
+  uint8_t compound_idx;
+  uint8_t use_wedge_interintra : 1;
+  uint8_t segment_id : 3;
+  uint8_t seg_id_predicted : 1;  // valid only when temporal_update is enabled
+  uint8_t skip_mode : 1;
+  uint8_t use_intrabc : 1;
+  uint8_t ref_mv_idx : 2;
+  // Indicate if masked compound is used(1) or not(0).
+  uint8_t comp_group_idx : 1;
+  int8_t cdef_strength : 4;
 } MB_MODE_INFO;
 
 static INLINE int is_intrabc_block(const MB_MODE_INFO *mbmi) {
@@ -367,9 +362,9 @@ static INLINE void mi_to_pixel_loc(int *pixel_c, int *pixel_r, int mi_col,
                                    int mi_row, int tx_blk_col, int tx_blk_row,
                                    int subsampling_x, int subsampling_y) {
   *pixel_c = ((mi_col >> subsampling_x) << MI_SIZE_LOG2) +
-             (tx_blk_col << tx_size_wide_log2[0]);
+             (tx_blk_col << MI_SIZE_LOG2);
   *pixel_r = ((mi_row >> subsampling_y) << MI_SIZE_LOG2) +
-             (tx_blk_row << tx_size_high_log2[0]);
+             (tx_blk_row << MI_SIZE_LOG2);
 }
 #endif
 
@@ -396,21 +391,21 @@ typedef struct {
 } CB_BUFFER;
 
 typedef struct macroblockd_plane {
-  tran_low_t *dqcoeff;
-  tran_low_t *dqcoeff_block;
-  eob_info *eob_data;
   PLANE_TYPE plane_type;
   int subsampling_x;
   int subsampling_y;
   struct buf_2d dst;
   struct buf_2d pre[2];
-  ENTROPY_CONTEXT *above_context;
-  ENTROPY_CONTEXT *left_context;
+  ENTROPY_CONTEXT *above_entropy_context;
+  ENTROPY_CONTEXT *left_entropy_context;
 
   // The dequantizers below are true dequantizers used only in the
   // dequantization process.  They have the same coefficient
   // shift/scale as TX.
   int16_t seg_dequant_QTX[MAX_SEGMENTS][2];
+  // Pointer to color index map of:
+  // - Current coding block, on encoder side.
+  // - Current superblock, on decoder side.
   uint8_t *color_index_map;
 
   // block size in pixels
@@ -418,16 +413,9 @@ typedef struct macroblockd_plane {
 
   qm_val_t *seg_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
   qm_val_t *seg_qmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
-
-  // the 'dequantizers' below are not literal dequantizer values.
-  // They're used by encoder RDO to generate ad-hoc lambda values.
-  // They use a hardwired Q3 coeff shift and do not necessarily match
-  // the TX scale in use.
-  const int16_t *dequant_Q3;
 } MACROBLOCKD_PLANE;
 
-#define BLOCK_OFFSET(x, i) \
-  ((x) + (i) * (1 << (tx_size_wide_log2[0] + tx_size_high_log2[0])))
+#define BLOCK_OFFSET(i) ((i) << 4)
 
 typedef struct {
   DECLARE_ALIGNED(16, InterpKernel, vfilter);
@@ -472,16 +460,12 @@ typedef struct cfl_ctx {
   // Chroma subsampling
   int subsampling_x, subsampling_y;
 
-  int mi_row, mi_col;
-
   // Whether the reconstructed luma pixels need to be stored
   int store_y;
 
 #if CONFIG_DEBUG
   int rate;
 #endif  // CONFIG_DEBUG
-
-  int is_chroma_reference;
 } CFL_CTX;
 
 typedef struct dist_wtd_comp_params {
@@ -495,79 +479,195 @@ struct scale_factors;
 // Most/all of the pointers are mere pointers to actual arrays are allocated
 // elsewhere. This is mostly for coding convenience.
 typedef struct macroblockd {
-  struct macroblockd_plane plane[MAX_MB_PLANE];
-
-  TileInfo tile;
-
+  // Row and column position of current macroblock in mi units.
+  int mi_row;
+  int mi_col;
+  // Same as cm->mi_params.mi_stride, copied here for convenience.
   int mi_stride;
 
+  // True if current block transmits chroma information.
+  // More detail:
+  // Smallest supported block size for both luma and chroma plane is 4x4. Hence,
+  // in case of subsampled chroma plane (YUV 4:2:0 or YUV 4:2:2), multiple luma
+  // blocks smaller than 8x8 maybe combined into one chroma block.
+  // For example, for YUV 4:2:0, let's say an 8x8 area is split into four 4x4
+  // luma blocks. Then, a single chroma block of size 4x4 will cover the area of
+  // these four luma blocks. This is implemented in bitstream as follows:
+  // - There are four MB_MODE_INFO structs for the four luma blocks.
+  // - First 3 MB_MODE_INFO have is_chroma_ref = false, and so do not transmit
+  // any information for chroma planes.
+  // - Last block will have is_chroma_ref = true and transmits chroma
+  // information for the 4x4 chroma block that covers whole 8x8 area covered by
+  // four luma blocks.
+  // Similar logic applies for chroma blocks that cover 2 or 3 luma blocks.
+  bool is_chroma_ref;
+
+  // Info specific to each plane.
+  struct macroblockd_plane plane[MAX_MB_PLANE];
+
+  // Tile related info.
+  TileInfo tile;
+
+  // Appropriate offset inside cm->mi_params.mi_grid_base based on current
+  // mi_row and mi_col.
   MB_MODE_INFO **mi;
+
+  // True if 4x4 block above the current block is available.
+  bool up_available;
+  // True if 4x4 block to the left of the current block is available.
+  bool left_available;
+  // True if the above chrome reference block is available.
+  bool chroma_up_available;
+  // True if the left chrome reference block is available.
+  bool chroma_left_available;
+
+  // MB_MODE_INFO for 4x4 block to the left of the current block, if
+  // left_available == true; otherwise NULL.
   MB_MODE_INFO *left_mbmi;
+  // MB_MODE_INFO for 4x4 block above the current block, if
+  // up_available == true; otherwise NULL.
   MB_MODE_INFO *above_mbmi;
+  // Above chroma reference block if is_chroma_ref == true for the current block
+  // and chroma_up_available == true; otherwise NULL.
+  // See also: the special case logic when current chroma block covers more than
+  // one luma blocks in set_mi_row_col().
   MB_MODE_INFO *chroma_left_mbmi;
+  // Left chroma reference block if is_chroma_ref == true for the current block
+  // and chroma_left_available == true; otherwise NULL.
+  // See also: the special case logic when current chroma block covers more than
+  // one luma blocks in set_mi_row_col().
   MB_MODE_INFO *chroma_above_mbmi;
 
-  int up_available;
-  int left_available;
-  int chroma_up_available;
-  int chroma_left_available;
+  // Appropriate offset based on current 'mi_row' and 'mi_col', inside
+  // 'tx_type_map' in one of 'CommonModeInfoParams', 'PICK_MODE_CONTEXT' or
+  // 'MACROBLOCK' structs.
+  uint8_t *tx_type_map;
+  // Stride for 'tx_type_map'. Note that this may / may not be same as
+  // 'mi_stride', depending on which actual array 'tx_type_map' points to.
+  int tx_type_map_stride;
 
-  /* Distance of MB away from frame edges in subpixels (1/8th pixel)  */
+  // Distance of this macroblock from frame edges in 1/8th pixel units.
   int mb_to_left_edge;
   int mb_to_right_edge;
   int mb_to_top_edge;
   int mb_to_bottom_edge;
 
-  /* pointers to reference frame scale factors */
+  // Scale factors for reference frames of the current block.
+  // These are pointers into 'cm->ref_scale_factors'.
   const struct scale_factors *block_ref_scale_factors[2];
 
-  /* pointer to current frame */
+  // On encoder side: points to cpi->source, which is the buffer containing
+  // the current *source* frame (maybe filtered).
+  // On decoder side: points to cm->cur_frame->buf, which is the buffer into
+  // which current frame is being *decoded*.
   const YV12_BUFFER_CONFIG *cur_buf;
 
-  ENTROPY_CONTEXT *above_context[MAX_MB_PLANE];
-  ENTROPY_CONTEXT left_context[MAX_MB_PLANE][MAX_MIB_SIZE];
+  // Entropy contexts for the above blocks.
+  // above_entropy_context[i][j] corresponds to above entropy context for ith
+  // plane and jth mi column of this *frame*, wrt current 'mi_row'.
+  // These are pointers into 'cm->above_contexts.entropy'.
+  ENTROPY_CONTEXT *above_entropy_context[MAX_MB_PLANE];
+  // Entropy contexts for the left blocks.
+  // left_entropy_context[i][j] corresponds to left entropy context for ith
+  // plane and jth mi row of this *superblock*, wrt current 'mi_col'.
+  // Note: These contain actual data, NOT pointers.
+  ENTROPY_CONTEXT left_entropy_context[MAX_MB_PLANE][MAX_MIB_SIZE];
 
-  PARTITION_CONTEXT *above_seg_context;
-  PARTITION_CONTEXT left_seg_context[MAX_MIB_SIZE];
+  // Partition contexts for the above blocks.
+  // above_partition_context[i] corresponds to above partition context for ith
+  // mi column of this *frame*, wrt current 'mi_row'.
+  // This is a pointer into 'cm->above_contexts.partition'.
+  PARTITION_CONTEXT *above_partition_context;
+  // Partition contexts for the left blocks.
+  // left_partition_context[i] corresponds to left partition context for ith
+  // mi row of this *superblock*, wrt current 'mi_col'.
+  // Note: These contain actual data, NOT pointers.
+  PARTITION_CONTEXT left_partition_context[MAX_MIB_SIZE];
 
+  // Transform contexts for the above blocks.
+  // above_txfm_context[i] corresponds to above transform context for ith mi col
+  // from the current position (mi row and mi column) for this *frame*.
+  // This is a pointer into 'cm->above_contexts.txfm'.
   TXFM_CONTEXT *above_txfm_context;
+  // Transform contexts for the left blocks.
+  // left_txfm_context[i] corresponds to left transform context for ith mi row
+  // from the current position (mi_row and mi_col) for this *superblock*.
+  // This is a pointer into 'left_txfm_context_buffer'.
   TXFM_CONTEXT *left_txfm_context;
+  // left_txfm_context_buffer[i] is the left transform context for ith mi_row
+  // in this *superblock*.
+  // Behaves like an internal actual buffer which 'left_txt_context' points to,
+  // and never accessed directly except to fill in initial default values.
   TXFM_CONTEXT left_txfm_context_buffer[MAX_MIB_SIZE];
 
+  // Default values for the two restoration filters for each plane.
+  // These values are used as reference values when writing the bitstream. That
+  // is, we transmit the delta between the actual values in
+  // cm->rst_info[plane].unit_info[unit_idx] and these reference values.
   WienerInfo wiener_info[MAX_MB_PLANE];
   SgrprojInfo sgrproj_info[MAX_MB_PLANE];
 
-  // block dimension in the unit of mode_info.
-  uint8_t n4_w, n4_h;
+  // Block dimensions in MB_MODE_INFO units.
+  uint8_t width;
+  uint8_t height;
 
-  uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
+  // Contains the motion vector candidates found during motion vector prediction
+  // process. ref_mv_stack[i] contains the candidates for ith type of
+  // reference frame (single/compound). The actual number of candidates found in
+  // ref_mv_stack[i] is stored in either dcb->ref_mv_count[i] (decoder side)
+  // or mbmi_ext->ref_mv_count[i] (encoder side).
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
-  uint8_t is_sec_rect;
+  // weight[i][j] is the weight for ref_mv_stack[i][j] and used to compute the
+  // DRL (dynamic reference list) mode contexts.
+  uint16_t weight[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
+
+  // True if this is the last vertical rectangular block in a VERTICAL or
+  // VERTICAL_4 partition.
+  bool is_last_vertical_rect;
+  // True if this is the 1st horizontal rectangular block in a HORIZONTAL or
+  // HORIZONTAL_4 partition.
+  bool is_first_horizontal_rect;
 
   // Counts of each reference frame in the above and left neighboring blocks.
   // NOTE: Take into account both single and comp references.
   uint8_t neighbors_ref_counts[REF_FRAMES];
 
+  // Current CDFs of all the symbols for the current tile.
   FRAME_CONTEXT *tile_ctx;
-  /* Bit depth: 8, 10, 12 */
+
+  // Bit depth: copied from cm->seq_params.bit_depth for convenience.
   int bd;
 
+  // Quantizer index for each segment (base qindex + delta for each segment).
   int qindex[MAX_SEGMENTS];
+  // lossless[s] is true if segment 's' is coded losslessly.
   int lossless[MAX_SEGMENTS];
-  int corrupted;
+  // Q index for the coding blocks in this superblock will be stored in
+  // mbmi->current_qindex. Now, when cm->delta_q_info.delta_q_present_flag is
+  // true, mbmi->current_qindex is computed by taking 'current_base_qindex' as
+  // the base, and adding any transmitted delta qindex on top of it.
+  // Precisely, this is the latest qindex used by the first coding block of a
+  // non-skip superblock in the current tile; OR
+  // same as cm->quant_params.base_qindex (if not explicitly set yet).
+  // Note: This is 'CurrentQIndex' in the AV1 spec.
+  int current_base_qindex;
+
+  // Same as cm->features.cur_frame_force_integer_mv.
   int cur_frame_force_integer_mv;
-  // same with that in AV1_COMMON
+
+  // Pointer to cm->error.
   struct aom_internal_error_info *error_info;
+
+  // Same as cm->global_motion.
   const WarpedMotionParams *global_motion;
-  int delta_qindex;
-  int current_qindex;
+
   // Since actual frame level loop filtering level value is not available
   // at the beginning of the tile (only available during actual filtering)
   // at encoder side.we record the delta_lf (against the frame level loop
   // filtering level) and code the delta between previous superblock's delta
   // lf and current delta lf. It is equivalent to the delta between previous
   // superblock's actual lf and current lf.
-  int delta_lf_from_base;
+  int8_t delta_lf_from_base;
   // For this experiment, we have four frame filter levels for different plane
   // and direction. So, to support the per superblock update, we need to add
   // a few more params as below.
@@ -581,20 +681,49 @@ typedef struct macroblockd {
   // SEG_LVL_ALT_LF_Y_H = 2;
   // SEG_LVL_ALT_LF_U   = 3;
   // SEG_LVL_ALT_LF_V   = 4;
-  int delta_lf[FRAME_LF_COUNT];
-  int cdef_preset[4];
+  int8_t delta_lf[FRAME_LF_COUNT];
+  // cdef_transmitted[i] is true if CDEF strength for ith CDEF unit in the
+  // current superblock has already been read from (decoder) / written to
+  // (encoder) the bitstream; and false otherwise.
+  // More detail:
+  // (1) CDEF strength is transmitted only once per CDEF unit, in the 1st
+  // non-skip coding block. So, we need this array to keep track of whether CDEF
+  // strengths for the given CDEF units have been transmitted yet or not.
+  // (2) Superblock size can be either 128x128 or 64x64, but CDEF unit size is
+  // fixed to be 64x64. So, there may be 4 CDEF units within a superblock (if
+  // superblock size is 128x128). Hence the array size is 4.
+  // (3) In the current implementation, CDEF strength for this CDEF unit is
+  // stored in the MB_MODE_INFO of the 1st block in this CDEF unit (inside
+  // cm->mi_params.mi_grid_base).
+  bool cdef_transmitted[4];
 
+  // Mask for this block used for compound prediction.
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
-  uint8_t *mc_buf[2];
+
+  // CFL (chroma from luma) related parameters.
   CFL_CTX cfl;
 
-  DIST_WTD_COMP_PARAMS jcp_param;
-
-  uint16_t cb_offset[MAX_MB_PLANE];
-  uint16_t txb_offset[MAX_MB_PLANE];
+  // Offset to plane[p].color_index_map.
+  // Currently:
+  // - On encoder side, this is always 0 as 'color_index_map' is allocated per
+  // *coding block* there.
+  // - On decoder side, this may be non-zero, as 'color_index_map' is a (static)
+  // memory pointing to the base of a *superblock* there, and we need an offset
+  // to it to get the color index map for current coding block.
   uint16_t color_index_map_offset[2];
 
+  // Temporary buffer used for convolution in case of compound reference only
+  // for (weighted or uniform) averaging operation.
+  // There are pointers to actual buffers allocated elsewhere: e.g. In dec,
+  // 'pbi->td.tmp_conv_dst' or 'pbi->thread_data[t].td->xd.tmp_conv_dst' and in
+  // enc, 'x->tmp_conv_dst' or 'cpi->tile_thr_data[t].td->mb.tmp_conv_dst'.
   CONV_BUF_TYPE *tmp_conv_dst;
+  // Temporary buffers used to build OBMC prediction by above (index 0) and left
+  // (index 1) predictors respectively.
+  // tmp_obmc_bufs[i][p * MAX_SB_SQUARE] is the buffer used for plane 'p'.
+  // There are pointers to actual buffers allocated elsewhere: e.g. In dec,
+  // 'pbi->td.tmp_obmc_bufs' or 'pbi->thread_data[t].td->xd.tmp_conv_dst' and in
+  // enc, 'x->tmp_pred_bufs' or 'cpi->tile_thr_data[t].td->mb.tmp_pred_bufs'.
   uint8_t *tmp_obmc_bufs[2];
 } MACROBLOCKD;
 
@@ -682,6 +811,22 @@ static const int av1_ext_tx_used[EXT_TX_SET_TYPES][TX_TYPES] = {
   { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
 };
 
+static const uint16_t av1_reduced_intra_tx_used_flag[INTRA_MODES] = {
+  0x080F,  // DC_PRED:       0000 1000 0000 1111
+  0x040F,  // V_PRED:        0000 0100 0000 1111
+  0x080F,  // H_PRED:        0000 1000 0000 1111
+  0x020F,  // D45_PRED:      0000 0010 0000 1111
+  0x080F,  // D135_PRED:     0000 1000 0000 1111
+  0x040F,  // D113_PRED:     0000 0100 0000 1111
+  0x080F,  // D157_PRED:     0000 1000 0000 1111
+  0x080F,  // D203_PRED:     0000 1000 0000 1111
+  0x040F,  // D67_PRED:      0000 0100 0000 1111
+  0x080F,  // SMOOTH_PRED:   0000 1000 0000 1111
+  0x040F,  // SMOOTH_V_PRED: 0000 0100 0000 1111
+  0x080F,  // SMOOTH_H_PRED: 0000 1000 0000 1111
+  0x0C0E,  // PAETH_PRED:    0000 1100 0000 1110
+};
+
 static const uint16_t av1_ext_tx_used_flag[EXT_TX_SET_TYPES] = {
   0x0001,  // 0000 0000 0000 0001
   0x0201,  // 0000 0010 0000 0001
@@ -689,6 +834,11 @@ static const uint16_t av1_ext_tx_used_flag[EXT_TX_SET_TYPES] = {
   0x0E0F,  // 0000 1110 0000 1111
   0x0FFF,  // 0000 1111 1111 1111
   0xFFFF,  // 1111 1111 1111 1111
+};
+
+static const TxSetType av1_ext_tx_set_lookup[2][2] = {
+  { EXT_TX_SET_DTT4_IDTX_1DDCT, EXT_TX_SET_DTT4_IDTX },
+  { EXT_TX_SET_ALL16, EXT_TX_SET_DTT9_IDTX_1DDCT },
 };
 
 static INLINE TxSetType av1_get_ext_tx_set_type(TX_SIZE tx_size, int is_inter,
@@ -700,13 +850,7 @@ static INLINE TxSetType av1_get_ext_tx_set_type(TX_SIZE tx_size, int is_inter,
   if (use_reduced_set)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
   const TX_SIZE tx_size_sqr = txsize_sqr_map[tx_size];
-  if (is_inter) {
-    return (tx_size_sqr == TX_16X16 ? EXT_TX_SET_DTT9_IDTX_1DDCT
-                                    : EXT_TX_SET_ALL16);
-  } else {
-    return (tx_size_sqr == TX_16X16 ? EXT_TX_SET_DTT4_IDTX
-                                    : EXT_TX_SET_DTT4_IDTX_1DDCT);
-  }
+  return av1_ext_tx_set_lookup[is_inter][tx_size_sqr == TX_16X16];
 }
 
 // Maps tx set types to the indices.
@@ -745,7 +889,6 @@ static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode) {
     return largest_tx_size;
 }
 
-extern const int16_t dr_intra_derivative[90];
 static const uint8_t mode_to_angle_map[] = {
   0, 90, 180, 45, 135, 113, 157, 203, 67, 0, 0, 0, 0,
 };
@@ -790,45 +933,77 @@ static INLINE TX_TYPE get_default_tx_type(PLANE_TYPE plane_type,
 static INLINE BLOCK_SIZE get_plane_block_size(BLOCK_SIZE bsize,
                                               int subsampling_x,
                                               int subsampling_y) {
-  if (bsize == BLOCK_INVALID) return BLOCK_INVALID;
+  assert(bsize < BLOCK_SIZES_ALL);
+  assert(subsampling_x >= 0 && subsampling_x < 2);
+  assert(subsampling_y >= 0 && subsampling_y < 2);
   return ss_size_lookup[bsize][subsampling_x][subsampling_y];
 }
 
+/*
+ * Logic to generate the lookup tables:
+ *
+ * TX_SIZE txs = max_txsize_rect_lookup[bsize];
+ * for (int level = 0; level < MAX_VARTX_DEPTH - 1; ++level)
+ *   txs = sub_tx_size_map[txs];
+ * const int tx_w_log2 = tx_size_wide_log2[txs] - MI_SIZE_LOG2;
+ * const int tx_h_log2 = tx_size_high_log2[txs] - MI_SIZE_LOG2;
+ * const int bw_uint_log2 = mi_size_wide_log2[bsize];
+ * const int stride_log2 = bw_uint_log2 - tx_w_log2;
+ */
 static INLINE int av1_get_txb_size_index(BLOCK_SIZE bsize, int blk_row,
                                          int blk_col) {
-  TX_SIZE txs = max_txsize_rect_lookup[bsize];
-  for (int level = 0; level < MAX_VARTX_DEPTH - 1; ++level)
-    txs = sub_tx_size_map[txs];
-  const int tx_w_log2 = tx_size_wide_log2[txs] - MI_SIZE_LOG2;
-  const int tx_h_log2 = tx_size_high_log2[txs] - MI_SIZE_LOG2;
-  const int bw_log2 = mi_size_wide_log2[bsize];
-  const int stride_log2 = bw_log2 - tx_w_log2;
+  static const uint8_t tw_w_log2_table[BLOCK_SIZES_ALL] = {
+    0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 0, 1, 1, 2, 2, 3,
+  };
+  static const uint8_t tw_h_log2_table[BLOCK_SIZES_ALL] = {
+    0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 1, 0, 2, 1, 3, 2,
+  };
+  static const uint8_t stride_log2_table[BLOCK_SIZES_ALL] = {
+    0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 2, 2, 0, 1, 0, 1, 0, 1,
+  };
   const int index =
-      ((blk_row >> tx_h_log2) << stride_log2) + (blk_col >> tx_w_log2);
+      ((blk_row >> tw_h_log2_table[bsize]) << stride_log2_table[bsize]) +
+      (blk_col >> tw_w_log2_table[bsize]);
   assert(index < INTER_TX_SIZE_BUF_LEN);
   return index;
 }
 
+#if CONFIG_INSPECTION
+/*
+ * Here is the logic to generate the lookup tables:
+ *
+ * TX_SIZE txs = max_txsize_rect_lookup[bsize];
+ * for (int level = 0; level < MAX_VARTX_DEPTH; ++level)
+ *   txs = sub_tx_size_map[txs];
+ * const int tx_w_log2 = tx_size_wide_log2[txs] - MI_SIZE_LOG2;
+ * const int tx_h_log2 = tx_size_high_log2[txs] - MI_SIZE_LOG2;
+ * const int bw_uint_log2 = mi_size_wide_log2[bsize];
+ * const int stride_log2 = bw_uint_log2 - tx_w_log2;
+ */
 static INLINE int av1_get_txk_type_index(BLOCK_SIZE bsize, int blk_row,
                                          int blk_col) {
-  TX_SIZE txs = max_txsize_rect_lookup[bsize];
-  for (int level = 0; level < MAX_VARTX_DEPTH; ++level)
-    txs = sub_tx_size_map[txs];
-  const int tx_w_log2 = tx_size_wide_log2[txs] - MI_SIZE_LOG2;
-  const int tx_h_log2 = tx_size_high_log2[txs] - MI_SIZE_LOG2;
-  const int bw_uint_log2 = mi_size_wide_log2[bsize];
-  const int stride_log2 = bw_uint_log2 - tx_w_log2;
+  static const uint8_t tw_w_log2_table[BLOCK_SIZES_ALL] = {
+    0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 0, 1, 1, 2, 2,
+  };
+  static const uint8_t tw_h_log2_table[BLOCK_SIZES_ALL] = {
+    0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0, 0, 1, 1, 2, 2,
+  };
+  static const uint8_t stride_log2_table[BLOCK_SIZES_ALL] = {
+    0, 0, 1, 1, 1, 2, 2, 1, 2, 2, 1, 2, 2, 2, 3, 3, 0, 2, 0, 2, 0, 2,
+  };
   const int index =
-      ((blk_row >> tx_h_log2) << stride_log2) + (blk_col >> tx_w_log2);
+      ((blk_row >> tw_h_log2_table[bsize]) << stride_log2_table[bsize]) +
+      (blk_col >> tw_w_log2_table[bsize]);
   assert(index < TXK_TYPE_BUF_LEN);
   return index;
 }
+#endif  // CONFIG_INSPECTION
 
-static INLINE void update_txk_array(TX_TYPE *txk_type, BLOCK_SIZE bsize,
-                                    int blk_row, int blk_col, TX_SIZE tx_size,
+static INLINE void update_txk_array(MACROBLOCKD *const xd, int blk_row,
+                                    int blk_col, TX_SIZE tx_size,
                                     TX_TYPE tx_type) {
-  const int txk_type_idx = av1_get_txk_type_index(bsize, blk_row, blk_col);
-  txk_type[txk_type_idx] = tx_type;
+  const int stride = xd->tx_type_map_stride;
+  xd->tx_type_map[blk_row * stride + blk_col] = tx_type;
 
   const int txw = tx_size_wide_unit[tx_size];
   const int txh = tx_size_high_unit[tx_size];
@@ -841,71 +1016,84 @@ static INLINE void update_txk_array(TX_TYPE *txk_type, BLOCK_SIZE bsize,
     const int tx_unit = tx_size_wide_unit[TX_16X16];
     for (int idy = 0; idy < txh; idy += tx_unit) {
       for (int idx = 0; idx < txw; idx += tx_unit) {
-        const int this_index =
-            av1_get_txk_type_index(bsize, blk_row + idy, blk_col + idx);
-        txk_type[this_index] = tx_type;
+        xd->tx_type_map[(blk_row + idy) * stride + blk_col + idx] = tx_type;
       }
     }
   }
 }
 
-static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
-                                      const MACROBLOCKD *xd, int blk_row,
+static INLINE TX_TYPE av1_get_tx_type(const MACROBLOCKD *xd,
+                                      PLANE_TYPE plane_type, int blk_row,
                                       int blk_col, TX_SIZE tx_size,
                                       int reduced_tx_set) {
   const MB_MODE_INFO *const mbmi = xd->mi[0];
-  const struct macroblockd_plane *const pd = &xd->plane[plane_type];
-  const TxSetType tx_set_type =
-      av1_get_ext_tx_set_type(tx_size, is_inter_block(mbmi), reduced_tx_set);
+  if (xd->lossless[mbmi->segment_id] || txsize_sqr_up_map[tx_size] > TX_32X32) {
+    return DCT_DCT;
+  }
 
   TX_TYPE tx_type;
-  if (xd->lossless[mbmi->segment_id] || txsize_sqr_up_map[tx_size] > TX_32X32) {
-    tx_type = DCT_DCT;
+  if (plane_type == PLANE_TYPE_Y) {
+    tx_type = xd->tx_type_map[blk_row * xd->tx_type_map_stride + blk_col];
   } else {
-    if (plane_type == PLANE_TYPE_Y) {
-      const int txk_type_idx =
-          av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
-      tx_type = mbmi->txk_type[txk_type_idx];
-    } else if (is_inter_block(mbmi)) {
+    if (is_inter_block(mbmi)) {
       // scale back to y plane's coordinate
+      const struct macroblockd_plane *const pd = &xd->plane[plane_type];
       blk_row <<= pd->subsampling_y;
       blk_col <<= pd->subsampling_x;
-      const int txk_type_idx =
-          av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
-      tx_type = mbmi->txk_type[txk_type_idx];
+      tx_type = xd->tx_type_map[blk_row * xd->tx_type_map_stride + blk_col];
     } else {
       // In intra mode, uv planes don't share the same prediction mode as y
       // plane, so the tx_type should not be shared
       tx_type = intra_mode_to_tx_type(mbmi, PLANE_TYPE_UV);
     }
+    const TxSetType tx_set_type =
+        av1_get_ext_tx_set_type(tx_size, is_inter_block(mbmi), reduced_tx_set);
+    if (!av1_ext_tx_used[tx_set_type][tx_type]) tx_type = DCT_DCT;
   }
   assert(tx_type < TX_TYPES);
-  if (!av1_ext_tx_used[tx_set_type][tx_type]) return DCT_DCT;
+  assert(av1_ext_tx_used[av1_get_ext_tx_set_type(tx_size, is_inter_block(mbmi),
+                                                 reduced_tx_set)][tx_type]);
   return tx_type;
 }
 
 void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y,
                             const int num_planes);
 
+/*
+ * Logic to generate the lookup table:
+ *
+ * TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
+ * int depth = 0;
+ * while (depth < MAX_TX_DEPTH && tx_size != TX_4X4) {
+ *   depth++;
+ *   tx_size = sub_tx_size_map[tx_size];
+ * }
+ */
 static INLINE int bsize_to_max_depth(BLOCK_SIZE bsize) {
-  TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
-  int depth = 0;
-  while (depth < MAX_TX_DEPTH && tx_size != TX_4X4) {
-    depth++;
-    tx_size = sub_tx_size_map[tx_size];
-  }
-  return depth;
+  static const uint8_t bsize_to_max_depth_table[BLOCK_SIZES_ALL] = {
+    0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+  };
+  return bsize_to_max_depth_table[bsize];
 }
 
+/*
+ * Logic to generate the lookup table:
+ *
+ * TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
+ * assert(tx_size != TX_4X4);
+ * int depth = 0;
+ * while (tx_size != TX_4X4) {
+ *   depth++;
+ *   tx_size = sub_tx_size_map[tx_size];
+ * }
+ * assert(depth < 10);
+ */
 static INLINE int bsize_to_tx_size_cat(BLOCK_SIZE bsize) {
-  TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
-  assert(tx_size != TX_4X4);
-  int depth = 0;
-  while (tx_size != TX_4X4) {
-    depth++;
-    tx_size = sub_tx_size_map[tx_size];
-    assert(depth < 10);
-  }
+  assert(bsize < BLOCK_SIZES_ALL);
+  static const uint8_t bsize_to_tx_size_depth_table[BLOCK_SIZES_ALL] = {
+    0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 4, 4, 2, 2, 3, 3, 4, 4,
+  };
+  const int depth = bsize_to_tx_size_depth_table[bsize];
   assert(depth <= MAX_TX_CATS);
   return depth - 1;
 }
@@ -946,8 +1134,8 @@ static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
                                pd->subsampling_y);
 }
 
-void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
-                            BLOCK_SIZE bsize, const int num_planes);
+void av1_reset_entropy_context(MACROBLOCKD *xd, BLOCK_SIZE bsize,
+                               const int num_planes);
 
 void av1_reset_loop_filter_delta(MACROBLOCKD *xd, int num_planes);
 
@@ -958,9 +1146,10 @@ typedef void (*foreach_transformed_block_visitor)(int plane, int block,
                                                   BLOCK_SIZE plane_bsize,
                                                   TX_SIZE tx_size, void *arg);
 
-void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
-                      int plane, BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
-                      int has_eob, int aoff, int loff);
+void av1_set_entropy_contexts(const MACROBLOCKD *xd,
+                              struct macroblockd_plane *pd, int plane,
+                              BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
+                              int has_eob, int aoff, int loff);
 
 #define MAX_INTERINTRA_SB_SQUARE 32 * 32
 static INLINE int is_interintra_mode(const MB_MODE_INFO *mbmi) {
@@ -1011,15 +1200,13 @@ static INLINE int get_vartx_max_txsize(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
 }
 
 static INLINE int is_motion_variation_allowed_bsize(BLOCK_SIZE bsize) {
+  assert(bsize < BLOCK_SIZES_ALL);
   return AOMMIN(block_size_wide[bsize], block_size_high[bsize]) >= 8;
 }
 
 static INLINE int is_motion_variation_allowed_compound(
     const MB_MODE_INFO *mbmi) {
-  if (!has_second_ref(mbmi))
-    return 1;
-  else
-    return 0;
+  return !has_second_ref(mbmi);
 }
 
 // input: log2 of length, 0(4), 1(8), ...
@@ -1056,25 +1243,13 @@ motion_mode_allowed(const WarpedMotionParams *gm_params, const MACROBLOCKD *xd,
   }
 }
 
-static INLINE void assert_motion_mode_valid(MOTION_MODE mode,
-                                            const WarpedMotionParams *gm_params,
-                                            const MACROBLOCKD *xd,
-                                            const MB_MODE_INFO *mbmi,
-                                            int allow_warped_motion) {
-  const MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed(gm_params, xd, mbmi, allow_warped_motion);
-
-  // Check that the input mode is not illegal
-  if (last_motion_mode_allowed < mode)
-    assert(0 && "Illegal motion mode selected");
-}
-
 static INLINE int is_neighbor_overlappable(const MB_MODE_INFO *mbmi) {
   return (is_inter_block(mbmi));
 }
 
 static INLINE int av1_allow_palette(int allow_screen_content_tools,
                                     BLOCK_SIZE sb_type) {
+  assert(sb_type < BLOCK_SIZES_ALL);
   return allow_screen_content_tools && block_size_wide[sb_type] <= 64 &&
          block_size_high[sb_type] <= 64 && sb_type >= BLOCK_8X8;
 }

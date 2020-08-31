@@ -17,8 +17,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.sync.SyncTestRule.DataCriteria;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.ModelType;
@@ -73,16 +72,9 @@ public class AutofillTest {
         }
     }
 
-    private abstract class ClientAutofillCriteria extends DataCriteria<Autofill> {
-        @Override
-        public List<Autofill> getData() throws Exception {
-            return getClientAutofillProfiles();
-        }
-    }
-
     @Before
     public void setUp() throws Exception {
-        mSyncTestRule.setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
         // Make sure the initial state is clean.
         assertClientAutofillProfileCount(0);
         assertServerAutofillProfileCountWithName(0, STREET);
@@ -123,11 +115,12 @@ public class AutofillTest {
         mSyncTestRule.getFakeServerHelper().modifyEntitySpecifics(
                 autofill.id, getServerAutofillProfile(STREET, MODIFIED_CITY, STATE, ZIP));
         SyncTestUtil.triggerSync();
-        mSyncTestRule.pollInstrumentationThread(new ClientAutofillCriteria() {
-            @Override
-            public boolean isSatisfied(List<Autofill> autofills) {
-                Autofill modifiedAutofill = autofills.get(0);
-                return modifiedAutofill.city.equals(MODIFIED_CITY);
+        mSyncTestRule.pollInstrumentationThread(() -> {
+            try {
+                Autofill modifiedAutofill = getClientAutofillProfiles().get(0);
+                Assert.assertEquals(MODIFIED_CITY, modifiedAutofill.city);
+            } catch (JSONException ex) {
+                throw new RuntimeException(ex);
             }
         });
     }

@@ -42,6 +42,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/text_input_test_utils.h"
@@ -393,7 +394,8 @@ class WebViewInteractiveTest : public extensions::PlatformAppBrowserTest {
                              int x,
                              int y) {
     blink::WebMouseEvent mouse_event(
-        blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::Type::kMouseDown,
+        blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
     mouse_event.button = button;
     mouse_event.SetPositionInWidget(x, y);
@@ -401,7 +403,7 @@ class WebViewInteractiveTest : public extensions::PlatformAppBrowserTest {
     gfx::Rect rect = rwh->GetView()->GetViewBounds();
     mouse_event.SetPositionInScreen(x + rect.x(), y + rect.y());
     rwh->ForwardMouseEvent(mouse_event);
-    mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+    mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
     rwh->ForwardMouseEvent(mouse_event);
   }
 
@@ -1440,9 +1442,9 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_LongPressSelection) {
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
 
   blink::WebInputEvent::Type context_menu_gesture_event_type =
-      blink::WebInputEvent::kGestureLongPress;
+      blink::WebInputEvent::Type::kGestureLongPress;
 #if defined(OS_WIN)
-  context_menu_gesture_event_type = blink::WebInputEvent::kGestureLongTap;
+  context_menu_gesture_event_type = blink::WebInputEvent::Type::kGestureLongTap;
 #endif
   auto filter = std::make_unique<content::InputMsgWatcher>(
       guest_web_contents()->GetRenderWidgetHostView()->GetRenderWidgetHost(),
@@ -1467,7 +1469,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_LongPressSelection) {
                                 guest_rect.CenterPoint());
 
   content::SimulateLongTapAt(embedder_web_contents(), guest_rect.CenterPoint());
-  EXPECT_EQ(content::INPUT_EVENT_ACK_STATE_CONSUMED,
+  EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
             filter->GetAckStateWaitIfNecessary());
 
   // Give enough time for the quick menu to fire.

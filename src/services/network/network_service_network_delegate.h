@@ -38,10 +38,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
   int OnBeforeURLRequest(net::URLRequest* request,
                          net::CompletionOnceCallback callback,
                          GURL* new_url) override;
-  void OnBeforeSendHeaders(net::URLRequest* request,
-                           const net::ProxyInfo& proxy_info,
-                           const net::ProxyRetryInfoMap& proxy_retry_info,
-                           net::HttpRequestHeaders* headers) override;
   int OnBeforeStartTransaction(net::URLRequest* request,
                                net::CompletionOnceCallback callback,
                                net::HttpRequestHeaders* headers) override;
@@ -68,7 +64,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
                       bool allowed_from_caller) override;
   bool OnForcePrivacyMode(
       const GURL& url,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin) const override;
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const net::URLRequest& request,

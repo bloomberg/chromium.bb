@@ -15,18 +15,25 @@
 
 #include "absl/flags/internal/usage.h"
 
+#include <functional>
 #include <map>
+#include <ostream>
 #include <string>
+#include <utility>
+#include <vector>
 
+#include "absl/base/config.h"
 #include "absl/flags/flag.h"
+#include "absl/flags/internal/commandlineflag.h"
+#include "absl/flags/internal/flag.h"
 #include "absl/flags/internal/path_util.h"
+#include "absl/flags/internal/private_handle_accessor.h"
 #include "absl/flags/internal/program_name.h"
+#include "absl/flags/internal/registry.h"
 #include "absl/flags/usage_config.h"
-#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/mutex.h"
 
 ABSL_FLAG(bool, help, false,
           "show help on important flags for this binary [tip: all flags can "
@@ -44,6 +51,7 @@ ABSL_FLAG(std::string, helpmatch, "",
           "show help on modules whose name contains the specified substr");
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace flags_internal {
 namespace {
 
@@ -106,14 +114,14 @@ class FlagHelpPrettyPrinter {
         first_line_(true) {}
 
   void Write(absl::string_view str, bool wrap_line = false) {
-    // Empty std::string - do nothing.
+    // Empty string - do nothing.
     if (str.empty()) return;
 
     std::vector<absl::string_view> tokens;
     if (wrap_line) {
       for (auto line : absl::StrSplit(str, absl::ByAnyChar("\n\r"))) {
         if (!tokens.empty()) {
-          // Keep line separators in the input std::string.
+          // Keep line separators in the input string.
           tokens.push_back("\n");
         }
         for (auto token :
@@ -128,13 +136,13 @@ class FlagHelpPrettyPrinter {
     for (auto token : tokens) {
       bool new_line = (line_len_ == 0);
 
-      // Respect line separators in the input std::string.
+      // Respect line separators in the input string.
       if (token == "\n") {
         EndLine();
         continue;
       }
 
-      // Write the token, ending the std::string first if necessary/possible.
+      // Write the token, ending the string first if necessary/possible.
       if (!new_line && (line_len_ + token.size() >= max_line_len_)) {
         EndLine();
         new_line = true;
@@ -179,28 +187,25 @@ void FlagHelpHumanReadable(const flags_internal::CommandLineFlag& flag,
   FlagHelpPrettyPrinter printer(80, out);  // Max line length is 80.
 
   // Flag name.
-  printer.Write(absl::StrCat("-", flag.Name()));
+  printer.Write(absl::StrCat("--", flag.Name()));
 
   // Flag help.
   printer.Write(absl::StrCat("(", flag.Help(), ");"), /*wrap_line=*/true);
-
-  // Flag data type (for V1 flags only).
-  if (!flag.IsAbseilFlag() && !flag.IsRetired()) {
-    printer.Write(absl::StrCat("type: ", flag.Typename(), ";"));
-  }
 
   // The listed default value will be the actual default from the flag
   // definition in the originating source file, unless the value has
   // subsequently been modified using SetCommandLineOption() with mode
   // SET_FLAGS_DEFAULT.
   std::string dflt_val = flag.DefaultValue();
+  std::string curr_val = flag.CurrentValue();
+  bool is_modified = curr_val != dflt_val;
+
   if (flag.IsOfType<std::string>()) {
     dflt_val = absl::StrCat("\"", dflt_val, "\"");
   }
   printer.Write(absl::StrCat("default: ", dflt_val, ";"));
 
-  if (flag.IsModified()) {
-    std::string curr_val = flag.CurrentValue();
+  if (is_modified) {
     if (flag.IsOfType<std::string>()) {
       curr_val = absl::StrCat("\"", curr_val, "\"");
     }
@@ -223,6 +228,9 @@ void FlagsHelpImpl(std::ostream& out, flags_internal::FlagKindFilter filter_cb,
   } else {
     // XML schema is not a part of our public API for now.
     out << "<?xml version=\"1.0\"?>\n"
+        << "<!-- This output should be used with care. We do not report type "
+           "names for flags with user defined types -->\n"
+        << "<!-- Prefer flag only_check_args for validating flag inputs -->\n"
         // The document.
         << "<AllFlags>\n"
         // The program name and usage.
@@ -380,4 +388,5 @@ int HandleUsageFlags(std::ostream& out,
 }
 
 }  // namespace flags_internal
+ABSL_NAMESPACE_END
 }  // namespace absl

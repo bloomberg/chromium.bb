@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Zmadho</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, aplikacion i instaluar</translation>
 <translation id="1450753235335490080">Nuk mund të ndahet <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> u ndërrua me <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Ke kërkuar për këtë më parë. Fshirja e "<ph name="QUERY" />" nga historiku yt do ta heqë atë përgjithmonë nga llogaria jote në të gjitha pajisjet e tua.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutë dhe }other{# minuta dhe }}</translation>
 <translation id="1643823602425662293">Njoftimi</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Zgjidhi &amp;të gjitha</translation>
-<translation id="1938451708255335766">Për të rregulluar dendësinë e pamjes së dritares, rinis aplikacionin.</translation>
 <translation id="2006524834898217237">Sigurohu që kjo pajisje të jetë e lidhur me internetin.</translation>
 <translation id="208586643495776849">Provo sërish</translation>
 <translation id="2090963878406559571">Për të dërguar një numër nga <ph name="ORIGIN" /> te telefoni yt Android, <ph name="TROUBLESHOOT_LINK" /> për të dyja pajisjet te cilësimet.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Shigjeta poshtë</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ditë}other{# ditë}}</translation>
 <translation id="3295886253693811851">Bëj një telefonatë nga</translation>
+<translation id="3306688585798492231">Ekrani i integruar</translation>
 <translation id="335581015389089642">Ligjërimi</translation>
 <translation id="3389286852084373014">Teksti është tepër i madh</translation>
-<translation id="3479552764303398839">Jo tani</translation>
 <translation id="348799646910989694">Rafti i fshehur automatikisht</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> u gozhdua</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 ditë e mbetur}other{# ditë të mbetura}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">Vazhdo të lexosh nga pajisja jote celulare <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Prapa</translation>
 <translation id="3889424535448813030">Shigjeta djathtas</translation>
-<translation id="3892641579809465218">Pamja e brendshme</translation>
 <translation id="3897092660631435901">Menyja</translation>
 <translation id="3909791450649380159">Pri&amp;te</translation>
 <translation id="3990502903496589789">Cepi i djathtë</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min.}other{# min.}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktive sot}=1{Aktive 1 ditë më parë}other{Aktive # ditë më parë}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ditë e }other{# ditë e }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{në 1 vit}other{në # vite}}</translation>
-<translation id="5895138241574237353">Rinis</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 sekondë e mbetur}other{# sekonda të mbetura}}</translation>
 <translation id="5941711191222866238">Minimizo</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 orë}other{# orë}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Nga e djathta në të majtë</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">MË TË MUNDSHME</translation>
+<translation id="7170202025028120564">Cilësimet e ekranit të aplikacionit tënd do të hyjnë në fuqi kur të riniset Linux herën tjetër.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min. e mbetur}other{# min. të mbetura}}</translation>
 <translation id="7319740667687257810">Nisësi, pamje e pjesëshme</translation>

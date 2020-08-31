@@ -31,10 +31,14 @@
 #include "third_party/blink/renderer/core/exported/web_shared_worker_impl.h"
 
 #include <memory>
+#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -84,7 +88,7 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
   asked_to_terminate_ = true;
 
   if (!worker_thread_) {
-    client_->WorkerScriptLoadFailed();
+    client_->WorkerScriptLoadFailed(/*error_message=*/"");
     // The worker thread hasn't been started yet. Immediately notify the client
     // of worker termination.
     client_->WorkerContextDestroyed();
@@ -102,12 +106,24 @@ void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
 
 void WebSharedWorkerImpl::DidFailToFetchClassicScript() {
   DCHECK(IsMainThread());
-  client_->WorkerScriptLoadFailed();
+  client_->WorkerScriptLoadFailed("Failed to fetch a worker script.");
+  TerminateWorkerThread();
+  // DidTerminateWorkerThread() will be called asynchronously.
+}
+
+void WebSharedWorkerImpl::DidFailToFetchModuleScript() {
+  DCHECK(IsMainThread());
+  client_->WorkerScriptLoadFailed("Failed to fetch a worker script.");
   TerminateWorkerThread();
   // DidTerminateWorkerThread() will be called asynchronously.
 }
 
 void WebSharedWorkerImpl::DidEvaluateClassicScript(bool success) {
+  DCHECK(IsMainThread());
+  client_->WorkerScriptEvaluated(success);
+}
+
+void WebSharedWorkerImpl::DidEvaluateModuleScript(bool success) {
   DCHECK(IsMainThread());
   client_->WorkerScriptEvaluated(success);
 }
@@ -129,11 +145,8 @@ void WebSharedWorkerImpl::Connect(MessagePortChannel web_channel) {
   DCHECK(IsMainThread());
   if (asked_to_terminate_)
     return;
-  // The HTML spec requires to queue a connect event using the DOM manipulation
-  // task source.
-  // https://html.spec.whatwg.org/C/#shared-workers-and-the-sharedworker-interface
   PostCrossThreadTask(
-      *GetWorkerThread()->GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
+      *task_runner_for_connect_event_, FROM_HERE,
       CrossThreadBindOnce(&WebSharedWorkerImpl::ConnectTaskOnWorkerThread,
                           WTF::CrossThreadUnretained(this),
                           WTF::Passed(std::move(web_channel))));
@@ -150,51 +163,51 @@ void WebSharedWorkerImpl::ConnectTaskOnWorkerThread(
 
 void WebSharedWorkerImpl::StartWorkerContext(
     const WebURL& script_request_url,
+    mojom::ScriptType script_type,
+    network::mojom::CredentialsMode credentials_mode,
     const WebString& name,
+    WebSecurityOrigin constructor_origin,
     const WebString& user_agent,
+    const UserAgentMetadata& ua_metadata,
     const WebString& content_security_policy,
     network::mojom::ContentSecurityPolicyType policy_type,
     network::mojom::IPAddressSpace creation_address_space,
+    const WebFetchClientSettingsObject& outside_fetch_client_settings_object,
     const base::UnguessableToken& appcache_host_id,
     const base::UnguessableToken& devtools_worker_token,
     mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle browser_interface_broker,
     bool pause_worker_context_on_start) {
   DCHECK(IsMainThread());
+  CHECK(constructor_origin.Get()->CanAccessSharedWorkers());
 
   // Creates 'outside settings' used in the "Processing model" algorithm in the
   // HTML spec:
   // https://html.spec.whatwg.org/C/#worker-processing-model
-  //
-  // TODO(nhiroki): According to the spec, the 'outside settings' should
-  // correspond to the Document that called 'new SharedWorker()'. The browser
-  // process should pass it up to here.
-  scoped_refptr<const SecurityOrigin> starter_origin =
-      SecurityOrigin::Create(script_request_url);
   auto* outside_settings_object =
       MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
           /*global_object_url=*/script_request_url,
-          /*base_url=*/script_request_url, starter_origin,
-          network::mojom::ReferrerPolicy::kDefault,
-          /*outgoing_referrer=*/String(),
-          CalculateHttpsState(starter_origin.get()),
+          /*base_url=*/script_request_url, constructor_origin,
+          outside_fetch_client_settings_object.referrer_policy,
+          outside_fetch_client_settings_object.outgoing_referrer.GetString(),
+          CalculateHttpsState(constructor_origin.Get()),
           AllowedByNosniff::MimeTypeCheck::kLaxForWorker,
           creation_address_space,
-          /*insecure_request_policy=*/kBlockAllMixedContent,
+          outside_fetch_client_settings_object.insecure_requests_policy ==
+                  mojom::blink::InsecureRequestsPolicy::kUpgrade
+              ? mojom::blink::InsecureRequestPolicy::kUpgradeInsecureRequests |
+                    mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent
+              : mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent,
           FetchClientSettingsObject::InsecureNavigationsSet());
 
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
       client_->CreateWorkerFetchContext();
   DCHECK(web_worker_fetch_context);
 
-  // TODO(nhiroki); Set |script_type| to mojom::ScriptType::kModule for module
-  // fetch (https://crbug.com/824646).
-  mojom::ScriptType script_type = mojom::ScriptType::kClassic;
-
-  bool starter_secure_context =
-      starter_origin->IsPotentiallyTrustworthy() ||
+  bool constructor_secure_context =
+      constructor_origin.IsPotentiallyTrustworthy() ||
       SchemeRegistry::SchemeShouldBypassSecureContextCheck(
-          starter_origin->Protocol());
+          constructor_origin.Protocol());
 
   auto worker_settings = std::make_unique<WorkerSettings>(
       false /* disable_reading_from_canvas */,
@@ -203,15 +216,20 @@ void WebSharedWorkerImpl::StartWorkerContext(
       false /* strictly_block_blockable_mixed_content */,
       GenericFontFamilySettings());
 
-  // Some params (e.g., referrer policy, address space, CSP) passed to
-  // GlobalScopeCreationParams are dummy values. They will be updated after
-  // worker script fetch on the worker thread.
+  // CSP headers for parent Window's CSP.
+  Vector<CSPHeaderAndType> outside_csp_headers;
+  outside_csp_headers.ReserveInitialCapacity(1);
+  outside_csp_headers.UncheckedAppend(
+      CSPHeaderAndType(content_security_policy, policy_type));
+
+  // Some params (e.g. address space) passed to GlobalScopeCreationParams are
+  // dummy values. They will be updated after worker script fetch on the worker
+  // thread.
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-      script_request_url, script_type,
-      OffMainThreadWorkerScriptFetchOption::kEnabled, name, user_agent,
-      std::move(web_worker_fetch_context), Vector<CSPHeaderAndType>(),
+      script_request_url, script_type, name, user_agent, ua_metadata,
+      std::move(web_worker_fetch_context), outside_csp_headers,
       outside_settings_object->GetReferrerPolicy(),
-      outside_settings_object->GetSecurityOrigin(), starter_secure_context,
+      outside_settings_object->GetSecurityOrigin(), constructor_secure_context,
       outside_settings_object->GetHttpsState(),
       MakeGarbageCollected<WorkerClients>(),
       std::make_unique<SharedWorkerContentSettingsProxy>(
@@ -248,10 +266,31 @@ void WebSharedWorkerImpl::StartWorkerContext(
 
   GetWorkerThread()->Start(std::move(creation_params), thread_startup_data,
                            std::move(devtools_params));
-  GetWorkerThread()->FetchAndRunClassicScript(
-      script_request_url, outside_settings_object->CopyData(),
-      nullptr /* outside_resource_timing_notifier */,
-      v8_inspector::V8StackTraceId());
+
+  // Capture the task runner for dispatching connect events. This is necessary
+  // for avoiding race condition with WorkerScheduler termination induced by
+  // close() call on SharedWorkerGlobalScope. See https://crbug.com/1104046 for
+  // details.
+  //
+  // The HTML spec requires to queue a connect event using the DOM manipulation
+  // task source.
+  // https://html.spec.whatwg.org/C/#shared-workers-and-the-sharedworker-interface
+  task_runner_for_connect_event_ =
+      GetWorkerThread()->GetTaskRunner(TaskType::kDOMManipulation);
+
+  switch (script_type) {
+    case mojom::ScriptType::kClassic:
+      GetWorkerThread()->FetchAndRunClassicScript(
+          script_request_url, outside_settings_object->CopyData(),
+          nullptr /* outside_resource_timing_notifier */,
+          v8_inspector::V8StackTraceId());
+      break;
+    case mojom::ScriptType::kModule:
+      GetWorkerThread()->FetchAndRunModuleScript(
+          script_request_url, outside_settings_object->CopyData(),
+          nullptr /* outside_resource_timing_notifier */, credentials_mode);
+      break;
+  }
 
   // We are now ready to inspect worker thread.
   client_->WorkerReadyForInspection(devtools_agent_remote.PassPipe(),

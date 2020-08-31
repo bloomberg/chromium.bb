@@ -39,11 +39,23 @@ static_library("switches") {
   ]
 }
 
-source_set("unit_tests") {
+static_library("test_support") {
   testonly = true
   sources = [
-    "flags_state_unittest.cc",
+    "flags_test_helpers.cc",
+    "flags_test_helpers.h",
   ]
+
+  deps = [
+    ":flags_ui",
+    "//base",
+    "//testing/gtest",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "flags_state_unittest.cc" ]
 
   deps = [
     ":flags_ui",

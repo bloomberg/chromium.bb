@@ -97,25 +97,28 @@ std::string VPNCheckCredentials(
     provider_properties.GetBooleanWithoutPathExpansion(
         shill::kPassphraseRequiredProperty, &passphrase_required);
     if (passphrase_required) {
-      NET_LOG(ERROR) << "OpenVPN: Passphrase Required for: " << service_path;
+      NET_LOG(ERROR) << "OpenVPN: Passphrase Required for: "
+                     << NetworkPathId(service_path);
       return NetworkConnectionHandler::kErrorPassphraseRequired;
     }
-    NET_LOG_EVENT("OpenVPN Is Configured", service_path);
+    NET_LOG(EVENT) << "OpenVPN Is Configured: " << NetworkPathId(service_path);
   } else {
     bool passphrase_required = false;
     provider_properties.GetBooleanWithoutPathExpansion(
         shill::kL2tpIpsecPskRequiredProperty, &passphrase_required);
     if (passphrase_required) {
-      NET_LOG(ERROR) << "VPN: PSK Required for: " << service_path;
+      NET_LOG(ERROR) << "VPN: PSK Required for: "
+                     << NetworkPathId(service_path);
       return NetworkConnectionHandler::kErrorConfigurationRequired;
     }
     provider_properties.GetBooleanWithoutPathExpansion(
         shill::kPassphraseRequiredProperty, &passphrase_required);
     if (passphrase_required) {
-      NET_LOG(ERROR) << "VPN: Passphrase Required for: " << service_path;
+      NET_LOG(ERROR) << "VPN: Passphrase Required for: "
+                     << NetworkPathId(service_path);
       return NetworkConnectionHandler::kErrorPassphraseRequired;
     }
-    NET_LOG(EVENT) << "VPN Is Configured: " << service_path;
+    NET_LOG(EVENT) << "VPN Is Configured: " << NetworkPathId(service_path);
   }
   return std::string();
 }
@@ -140,19 +143,19 @@ NetworkConnectionHandlerImpl::ConnectRequest::ConnectRequest(
     ConnectCallbackMode mode,
     const std::string& service_path,
     const std::string& profile_path,
-    const base::Closure& success,
+    base::OnceClosure success_callback,
     const network_handler::ErrorCallback& error)
     : mode(mode),
       service_path(service_path),
       profile_path(profile_path),
       connect_state(CONNECT_REQUESTED),
-      success_callback(success),
+      success_callback(std::move(success_callback)),
       error_callback(error) {}
 
 NetworkConnectionHandlerImpl::ConnectRequest::~ConnectRequest() = default;
 
-NetworkConnectionHandlerImpl::ConnectRequest::ConnectRequest(
-    const ConnectRequest& other) = default;
+NetworkConnectionHandlerImpl::ConnectRequest::ConnectRequest(ConnectRequest&&) =
+    default;
 
 NetworkConnectionHandlerImpl::NetworkConnectionHandlerImpl()
     : network_cert_loader_(NULL),
@@ -181,12 +184,12 @@ void NetworkConnectionHandlerImpl::Init(
     network_cert_loader_ = NetworkCertLoader::Get();
     network_cert_loader_->AddObserver(this);
     if (network_cert_loader_->initial_load_finished()) {
-      NET_LOG_EVENT("Certificates Loaded", "");
+      NET_LOG(EVENT) << "Certificates Loaded";
       certificates_loaded_ = true;
     }
   } else {
     // TODO(tbarzic): Require a mock or stub |network_cert_loader| in tests.
-    NET_LOG_EVENT("Certificate Loader not initialized", "");
+    NET_LOG(DEBUG) << "Certificate Loader not initialized";
     certificates_loaded_ = true;
   }
 
@@ -215,18 +218,18 @@ void NetworkConnectionHandlerImpl::LoggedInStateChanged() {
 
 void NetworkConnectionHandlerImpl::OnCertificatesLoaded() {
   certificates_loaded_ = true;
-  NET_LOG_EVENT("Certificates Loaded", "");
+  NET_LOG(EVENT) << "Certificates Loaded";
   if (queued_connect_)
     ConnectToQueuedNetwork();
 }
 
 void NetworkConnectionHandlerImpl::ConnectToNetwork(
     const std::string& service_path,
-    const base::Closure& success_callback,
+    base::OnceClosure success_callback,
     const network_handler::ErrorCallback& error_callback,
     bool check_error_state,
     ConnectCallbackMode mode) {
-  NET_LOG_USER("ConnectToNetworkRequested", service_path);
+  NET_LOG(USER) << "ConnectToNetworkRequested: " << NetworkPathId(service_path);
   for (auto& observer : observers_)
     observer.ConnectToNetworkRequested(service_path);
 
@@ -238,7 +241,8 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   }
 
   if (HasConnectingNetwork(service_path)) {
-    NET_LOG(USER) << "Connect Request while pending: " << service_path;
+    NET_LOG(USER) << "Connect Request while pending: "
+                  << NetworkPathId(service_path);
     InvokeConnectErrorCallback(service_path, error_callback, kErrorConnecting);
     return;
   }
@@ -254,7 +258,8 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
     // For existing networks, perform some immediate consistency checks.
     const std::string connection_state = network->connection_state();
     if (NetworkState::StateIsConnected(connection_state)) {
-      NET_LOG(ERROR) << "Connect Request while connected: " << service_path;
+      NET_LOG(ERROR) << "Connect Request while connected: "
+                     << NetworkId(network);
       InvokeConnectErrorCallback(service_path, error_callback, kErrorConnected);
       return;
     }
@@ -282,8 +287,8 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
       if (tether_delegate_) {
         const std::string& tether_network_guid = network->guid();
         DCHECK(!tether_network_guid.empty());
-        InitiateTetherNetworkConnection(tether_network_guid, success_callback,
-                                        error_callback);
+        InitiateTetherNetworkConnection(
+            tether_network_guid, std::move(success_callback), error_callback);
       } else {
         InvokeConnectErrorCallback(service_path, error_callback,
                                    kErrorTetherAttemptWithNoDelegate);
@@ -314,9 +319,10 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   }
 
   // All synchronous checks passed, add |service_path| to connecting list.
-  pending_requests_.emplace(service_path,
-                            ConnectRequest(mode, service_path, profile_path,
-                                           success_callback, error_callback));
+  pending_requests_.emplace(
+      service_path,
+      ConnectRequest(mode, service_path, profile_path,
+                     std::move(success_callback), error_callback));
 
   // Indicate that a connect was requested. This will be updated by
   // NetworkStateHandler when the connection state changes, or cleared if
@@ -333,24 +339,25 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
   // are up to date after any recent configuration.
   configuration_handler_->GetShillProperties(
       service_path,
-      base::Bind(&NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect,
-                 AsWeakPtr(), check_error_state),
+      base::BindOnce(&NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect,
+                     AsWeakPtr(), check_error_state),
       base::Bind(&NetworkConnectionHandlerImpl::HandleConfigurationFailure,
                  AsWeakPtr(), service_path));
 }
 
 void NetworkConnectionHandlerImpl::DisconnectNetwork(
     const std::string& service_path,
-    const base::Closure& success_callback,
+    base::OnceClosure success_callback,
     const network_handler::ErrorCallback& error_callback) {
-  NET_LOG_USER("DisconnectNetwork", service_path);
+  NET_LOG(USER) << "DisconnectNetwork";
   for (auto& observer : observers_)
     observer.DisconnectRequested(service_path);
 
   const NetworkState* network =
       network_state_handler_->GetNetworkState(service_path);
   if (!network) {
-    NET_LOG_ERROR("Disconnect Error: Not Found", service_path);
+    NET_LOG(ERROR) << "Disconnect Error: Not Found: "
+                   << NetworkPathId(service_path);
     network_handler::RunErrorCallback(error_callback, service_path,
                                       kErrorNotFound, "");
     return;
@@ -358,7 +365,7 @@ void NetworkConnectionHandlerImpl::DisconnectNetwork(
   const std::string connection_state = network->connection_state();
   if (!NetworkState::StateIsConnected(connection_state) &&
       !NetworkState::StateIsConnecting(connection_state)) {
-    NET_LOG_ERROR("Disconnect Error: Not Connected", service_path);
+    NET_LOG(ERROR) << "Disconnect Error: Not Connected: " << NetworkId(network);
     network_handler::RunErrorCallback(error_callback, service_path,
                                       kErrorNotConnected, "");
     return;
@@ -367,8 +374,8 @@ void NetworkConnectionHandlerImpl::DisconnectNetwork(
     if (tether_delegate_) {
       const std::string& tether_network_guid = network->guid();
       DCHECK(!tether_network_guid.empty());
-      InitiateTetherNetworkDisconnection(tether_network_guid, success_callback,
-                                         error_callback);
+      InitiateTetherNetworkDisconnection(
+          tether_network_guid, std::move(success_callback), error_callback);
     } else {
       InvokeConnectErrorCallback(service_path, error_callback,
                                  kErrorTetherAttemptWithNoDelegate);
@@ -376,7 +383,8 @@ void NetworkConnectionHandlerImpl::DisconnectNetwork(
     return;
   }
   ClearPendingRequest(service_path);
-  CallShillDisconnect(service_path, success_callback, error_callback);
+  CallShillDisconnect(service_path, std::move(success_callback),
+                      error_callback);
 }
 
 void NetworkConnectionHandlerImpl::NetworkListChanged() {
@@ -408,7 +416,8 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     bool check_error_state,
     const std::string& service_path,
     const base::DictionaryValue& service_properties) {
-  NET_LOG(EVENT) << "VerifyConfiguredAndConnect: " << service_path
+  NET_LOG(EVENT) << "VerifyConfiguredAndConnect: "
+                 << NetworkPathId(service_path)
                  << " check_error_state: " << check_error_state;
 
   // If 'passphrase_required' is still true, then the 'Passphrase' property
@@ -454,7 +463,8 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
           shill::kL2tpIpsecClientCertIdProperty, &vpn_client_cert_id);
     }
     if (vpn_provider_type.empty() || vpn_provider_host.empty()) {
-      NET_LOG(ERROR) << "VPN Provider missing for: " << service_path;
+      NET_LOG(ERROR) << "VPN Provider missing for: "
+                     << NetworkPathId(service_path);
       ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
       return;
     }
@@ -523,18 +533,20 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     // Note: if we get here then a certificate *may* be required, so we want
     // to ensure that certificates have loaded successfully before attempting
     // to connect.
-    NET_LOG(DEBUG) << "Client cert type for: " << service_path << ": "
-                   << client_cert_type;
+    NET_LOG(DEBUG) << "Client cert type for: " << NetworkPathId(service_path)
+                   << ": " << client_cert_type;
 
     // User must be logged in to connect to a network requiring a certificate.
     if (!logged_in_ || !network_cert_loader_) {
-      NET_LOG(ERROR) << "User not logged in for: " << service_path;
+      NET_LOG(ERROR) << "User not logged in for: "
+                     << NetworkPathId(service_path);
       ErrorCallbackForPendingRequest(service_path, kErrorCertificateRequired);
       return;
     }
     // If certificates have not been loaded yet, queue the connect request.
     if (!certificates_loaded_) {
-      NET_LOG(EVENT) << "Certificates not loaded for: " << service_path;
+      NET_LOG(EVENT) << "Certificates not loaded for: "
+                     << NetworkPathId(service_path);
       QueueConnectRequest(service_path);
       return;
     }
@@ -544,14 +556,16 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
         ::onc::client_cert::kPattern) {
       if (!ClientCertResolver::ResolveClientCertificateSync(
               client_cert_type, cert_config_from_policy, &config_properties)) {
-        NET_LOG(ERROR) << "Non matching certificate for: " << service_path;
+        NET_LOG(ERROR) << "Non matching certificate for: "
+                       << NetworkPathId(service_path);
         ErrorCallbackForPendingRequest(service_path, kErrorCertificateRequired);
         return;
       }
     } else if (check_error_state &&
                !IsCertificateConfigured(client_cert_type, service_properties)) {
       // Network may not be configured.
-      NET_LOG(ERROR) << "Certificate not configured for: " << service_path;
+      NET_LOG(ERROR) << "Certificate not configured for: "
+                     << NetworkPathId(service_path);
       ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
       return;
     }
@@ -577,7 +591,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
   }
 
   if (!config_properties.empty()) {
-    NET_LOG(EVENT) << "Configuring Network: " << service_path;
+    NET_LOG(EVENT) << "Configuring Network: " << NetworkPathId(service_path);
     configuration_handler_->SetShillProperties(
         service_path, config_properties,
         base::Bind(&NetworkConnectionHandlerImpl::CallShillConnect, AsWeakPtr(),
@@ -590,7 +604,8 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
   if (type != shill::kTypeVPN && check_error_state) {
     // For non VPNs, 'Connectable' must be false here, so fail immediately if
     // |check_error_state| is true. (For VPNs 'Connectable' is not reliable).
-    NET_LOG(ERROR) << "Non VPN is unconfigured: " << service_path;
+    NET_LOG(ERROR) << "Non VPN is unconfigured: "
+                   << NetworkPathId(service_path);
     ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
     return;
   }
@@ -604,23 +619,25 @@ void NetworkConnectionHandlerImpl::QueueConnectRequest(
     const std::string& service_path) {
   ConnectRequest* request = GetPendingRequest(service_path);
   if (!request) {
-    NET_LOG_ERROR("No pending request to queue", service_path);
+    NET_LOG(ERROR) << "No pending request to queue: "
+                   << NetworkPathId(service_path);
     return;
   }
 
   const int kMaxCertLoadTimeSeconds = 15;
   base::TimeDelta dtime = base::TimeTicks::Now() - logged_in_time_;
   if (dtime > base::TimeDelta::FromSeconds(kMaxCertLoadTimeSeconds)) {
-    NET_LOG_ERROR("Certificate load timeout", service_path);
+    NET_LOG(ERROR) << "Certificate load timeout: "
+                   << NetworkPathId(service_path);
     InvokeConnectErrorCallback(service_path, request->error_callback,
                                kErrorCertLoadTimeout);
     return;
   }
 
-  NET_LOG_EVENT("Connect Request Queued", service_path);
-  queued_connect_.reset(
-      new ConnectRequest(request->mode, service_path, request->profile_path,
-                         request->success_callback, request->error_callback));
+  NET_LOG(EVENT) << "Connect Request Queued: " << NetworkPathId(service_path);
+  queued_connect_.reset(new ConnectRequest(
+      request->mode, service_path, request->profile_path,
+      std::move(request->success_callback), request->error_callback));
   pending_requests_.erase(service_path);
 
   // Post a delayed task to check to see if certificates have loaded. If they
@@ -648,7 +665,8 @@ void NetworkConnectionHandlerImpl::CheckCertificatesLoaded() {
 
   // Notify the user that the connect failed, clear the queued network, and
   // clear the connect_requested flag for the NetworkState.
-  NET_LOG_ERROR("Certificate load timeout", queued_connect_->service_path);
+  NET_LOG(ERROR) << "Certificate load timeout: "
+                 << NetworkPathId(queued_connect_->service_path);
   InvokeConnectErrorCallback(queued_connect_->service_path,
                              queued_connect_->error_callback,
                              kErrorCertLoadTimeout);
@@ -663,36 +681,41 @@ void NetworkConnectionHandlerImpl::ConnectToQueuedNetwork() {
   // Make a copy of |queued_connect_| parameters, because |queued_connect_|
   // will get reset at the beginning of |ConnectToNetwork|.
   std::string service_path = queued_connect_->service_path;
-  base::Closure success_callback = queued_connect_->success_callback;
+  base::OnceClosure success_callback =
+      std::move(queued_connect_->success_callback);
   network_handler::ErrorCallback error_callback =
       queued_connect_->error_callback;
 
-  NET_LOG_EVENT("Connecting to Queued Network", service_path);
-  ConnectToNetwork(service_path, success_callback, error_callback,
+  NET_LOG(EVENT) << "Connecting to Queued Network: "
+                 << NetworkPathId(service_path);
+  ConnectToNetwork(service_path, std::move(success_callback), error_callback,
                    false /* check_error_state */, queued_connect_->mode);
 }
 
 void NetworkConnectionHandlerImpl::CallShillConnect(
     const std::string& service_path) {
-  NET_LOG_EVENT("Sending Connect Request to Shill", service_path);
+  NET_LOG(EVENT) << "Sending Connect Request to Shill: "
+                 << NetworkPathId(service_path);
   network_state_handler_->ClearLastErrorForNetwork(service_path);
   ShillServiceClient::Get()->Connect(
       dbus::ObjectPath(service_path),
-      base::Bind(&NetworkConnectionHandlerImpl::HandleShillConnectSuccess,
-                 AsWeakPtr(), service_path),
-      base::Bind(&NetworkConnectionHandlerImpl::HandleShillConnectFailure,
-                 AsWeakPtr(), service_path));
+      base::BindOnce(&NetworkConnectionHandlerImpl::HandleShillConnectSuccess,
+                     AsWeakPtr(), service_path),
+      base::BindOnce(&NetworkConnectionHandlerImpl::HandleShillConnectFailure,
+                     AsWeakPtr(), service_path));
 }
 
 void NetworkConnectionHandlerImpl::HandleConfigurationFailure(
     const std::string& service_path,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
-  NET_LOG(ERROR) << "Connect configuration failure: " << error_name;
+  NET_LOG(ERROR) << "Connect configuration failure: " << error_name
+                 << " for: " << NetworkPathId(service_path);
   ConnectRequest* request = GetPendingRequest(service_path);
   if (!request) {
-    NET_LOG_ERROR("HandleConfigurationFailure called with no pending request.",
-                  service_path);
+    NET_LOG(ERROR)
+        << "HandleConfigurationFailure called with no pending request: "
+        << NetworkPathId(service_path);
     return;
   }
   network_handler::ErrorCallback error_callback = request->error_callback;
@@ -705,20 +728,22 @@ void NetworkConnectionHandlerImpl::HandleShillConnectSuccess(
     const std::string& service_path) {
   ConnectRequest* request = GetPendingRequest(service_path);
   if (!request) {
-    NET_LOG_ERROR("HandleShillConnectSuccess called with no pending request.",
-                  service_path);
+    NET_LOG(ERROR)
+        << "HandleShillConnectSuccess called with no pending request: "
+        << NetworkPathId(service_path);
     return;
   }
   if (request->mode == ConnectCallbackMode::ON_STARTED) {
     if (!request->success_callback.is_null())
-      request->success_callback.Run();
+      std::move(request->success_callback).Run();
     // Request started; do not invoke success or error callbacks on
     // completion.
-    request->success_callback = base::Closure();
+    request->success_callback.Reset();
     request->error_callback = network_handler::ErrorCallback();
   }
   request->connect_state = ConnectRequest::CONNECT_STARTED;
-  NET_LOG_EVENT("Connect Request Acknowledged", service_path);
+  NET_LOG(EVENT) << "Connect Request Acknowledged: "
+                 << NetworkPathId(service_path);
   // Do not call success_callback here, wait for one of the following
   // conditions:
   // * State transitions to a non connecting state indicating success or failure
@@ -732,8 +757,9 @@ void NetworkConnectionHandlerImpl::HandleShillConnectFailure(
     const std::string& dbus_error_message) {
   ConnectRequest* request = GetPendingRequest(service_path);
   if (!request) {
-    NET_LOG_ERROR("HandleShillConnectFailure called with no pending request.",
-                  service_path);
+    NET_LOG(ERROR)
+        << "HandleShillConnectFailure called with no pending request: "
+        << NetworkPathId(service_path);
     return;
   }
   network_handler::ErrorCallback error_callback = request->error_callback;
@@ -747,8 +773,8 @@ void NetworkConnectionHandlerImpl::HandleShillConnectFailure(
   } else {
     error = kErrorConnectFailed;
   }
-  NET_LOG(ERROR) << "Connect Failure: " << service_path << " Error: " << error
-                 << " Shill error: " << dbus_error_name;
+  NET_LOG(ERROR) << "Connect Failure: " << NetworkPathId(service_path)
+                 << " Error: " << error << " Shill error: " << dbus_error_name;
   InvokeConnectErrorCallback(service_path, error_callback, error);
 }
 
@@ -776,7 +802,7 @@ void NetworkConnectionHandlerImpl::CheckPendingRequest(
           chromeos::network_handler::ErrorCallback());
     }
     InvokeConnectSuccessCallback(request->service_path,
-                                 request->success_callback);
+                                 std::move(request->success_callback));
     ClearPendingRequest(service_path);
     return;
   }
@@ -794,7 +820,8 @@ void NetworkConnectionHandlerImpl::CheckPendingRequest(
   } else {
     error_name = kErrorConnectFailed;
     if (connection_state != shill::kStateFailure)
-      NET_LOG_ERROR("Unexpected State: " + connection_state, service_path);
+      NET_LOG(ERROR) << "Unexpected State: " << connection_state
+                     << " for: " << NetworkPathId(service_path);
   }
 
   network_handler::ErrorCallback error_callback = request->error_callback;
@@ -823,8 +850,8 @@ void NetworkConnectionHandlerImpl::ErrorCallbackForPendingRequest(
     const std::string& error_name) {
   ConnectRequest* request = GetPendingRequest(service_path);
   if (!request) {
-    NET_LOG_ERROR("ErrorCallbackForPendingRequest with no pending request.",
-                  service_path);
+    NET_LOG(ERROR) << "ErrorCallbackForPendingRequest with no pending request: "
+                   << NetworkPathId(service_path);
     return;
   }
   // Remove the entry before invoking the callback in case it triggers a retry.
@@ -838,23 +865,25 @@ void NetworkConnectionHandlerImpl::ErrorCallbackForPendingRequest(
 
 void NetworkConnectionHandlerImpl::CallShillDisconnect(
     const std::string& service_path,
-    const base::Closure& success_callback,
+    base::OnceClosure success_callback,
     const network_handler::ErrorCallback& error_callback) {
-  NET_LOG_USER("Disconnect Request", service_path);
+  NET_LOG(USER) << "Disconnect Request: " << NetworkPathId(service_path);
   ShillServiceClient::Get()->Disconnect(
       dbus::ObjectPath(service_path),
-      base::Bind(&NetworkConnectionHandlerImpl::HandleShillDisconnectSuccess,
-                 AsWeakPtr(), service_path, success_callback),
-      base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 kErrorDisconnectFailed, service_path, error_callback));
+      base::BindOnce(
+          &NetworkConnectionHandlerImpl::HandleShillDisconnectSuccess,
+          AsWeakPtr(), service_path, std::move(success_callback)),
+      base::BindOnce(&network_handler::ShillErrorCallbackFunction,
+                     kErrorDisconnectFailed, service_path, error_callback));
 }
 
 void NetworkConnectionHandlerImpl::HandleShillDisconnectSuccess(
     const std::string& service_path,
-    const base::Closure& success_callback) {
-  NET_LOG_EVENT("Disconnect Request Sent", service_path);
+    base::OnceClosure success_callback) {
+  NET_LOG(EVENT) << "Disconnect Request Sent for: "
+                 << NetworkPathId(service_path);
   if (!success_callback.is_null())
-    success_callback.Run();
+    std::move(success_callback).Run();
 }
 
 }  // namespace chromeos

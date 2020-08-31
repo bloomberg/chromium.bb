@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -21,6 +20,7 @@
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/test/chromeos_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, EnrollmentSpinner) {
   view->ShowEnrollmentSpinnerScreen();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepWorking);
 
-  view->ShowAttestationBasedEnrollmentSuccessScreen("fake domain");
+  view->ShowEnrollmentSuccessScreen();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
 }
 

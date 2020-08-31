@@ -7,9 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-namespace ios {
 class ChromeBrowserState;
-}  // namespace ios.
 
 // Class handling all startup tasks.
 @interface StartupTasks : NSObject
@@ -17,7 +15,7 @@ class ChromeBrowserState;
 // Asynchronously finishes the browser state initialization by starting the
 // deferred task runners.
 + (void)scheduleDeferredBrowserStateInitialization:
-    (ios::ChromeBrowserState*)browserState;
+    (ChromeBrowserState*)browserState;
 // Starts Omaha and, if first run, sets install time.  For official builds only.
 - (void)initializeOmaha;
 // Donate initial Intents.

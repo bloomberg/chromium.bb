@@ -39,7 +39,6 @@
 namespace webrtc {
 
 class FrameEncryptorInterface;
-class OverheadObserver;
 class RateLimiter;
 class RtcEventLog;
 class RtpPacketToSend;
@@ -109,6 +108,9 @@ class RTPSender {
   // Size info for header extensions used by video packets.
   static rtc::ArrayView<const RtpExtensionSize> VideoExtensionSizes();
 
+  // Size info for header extensions used by audio packets.
+  static rtc::ArrayView<const RtpExtensionSize> AudioExtensionSizes();
+
   // Create empty packet, fills ssrc, csrcs and reserve place for header
   // extensions RtpSender updates before sending.
   std::unique_ptr<RtpPacketToSend> AllocatePacket() const;
@@ -116,9 +118,10 @@ class RTPSender {
   // Save packet's fields to generate padding that doesn't break media stream.
   // Return false if sending was turned off.
   bool AssignSequenceNumber(RtpPacketToSend* packet);
-
-  // Used for padding and FEC packets only.
-  size_t RtpHeaderLength() const;
+  // Maximum header overhead per fec/padding packet.
+  size_t FecOrPaddingPacketMaxRtpHeaderLength() const;
+  // Expected header overhead per media packet.
+  size_t ExpectedPerPacketOverhead() const;
   uint16_t AllocateSequenceNumber(uint16_t packets_to_send);
   // Including RTP headers.
   size_t MaxRtpPacketSize() const;
@@ -148,6 +151,8 @@ class RTPSender {
 
   bool IsFecPacket(const RtpPacketToSend& packet) const;
 
+  void UpdateHeaderSizes() RTC_EXCLUSIVE_LOCKS_REQUIRED(send_critsect_);
+
   Clock* const clock_;
   Random random_ RTC_GUARDED_BY(send_critsect_);
 
@@ -156,6 +161,9 @@ class RTPSender {
   const uint32_t ssrc_;
   const absl::optional<uint32_t> rtx_ssrc_;
   const absl::optional<uint32_t> flexfec_ssrc_;
+  // Limits GeneratePadding() outcome to <=
+  //  |max_padding_size_factor_| * |target_size_bytes|
+  const double max_padding_size_factor_;
 
   RtpPacketHistory* const packet_history_;
   RtpPacketSender* const paced_sender_;
@@ -169,6 +177,8 @@ class RTPSender {
 
   RtpHeaderExtensionMap rtp_header_extension_map_
       RTC_GUARDED_BY(send_critsect_);
+  size_t max_media_packet_header_ RTC_GUARDED_BY(send_critsect_);
+  size_t max_padding_fec_packet_header_ RTC_GUARDED_BY(send_critsect_);
 
   // RTP variables
   uint32_t timestamp_offset_ RTC_GUARDED_BY(send_critsect_);
@@ -179,6 +189,8 @@ class RTPSender {
   std::string rid_ RTC_GUARDED_BY(send_critsect_);
   // MID value to send in the MID header extension.
   std::string mid_ RTC_GUARDED_BY(send_critsect_);
+  // Should we send MID/RID even when ACKed? (see below).
+  const bool always_send_mid_and_rid_;
   // Track if any ACK has been received on the SSRC and RTX SSRC to indicate
   // when to stop sending the MID and RID header extensions.
   bool ssrc_has_acked_ RTC_GUARDED_BY(send_critsect_);

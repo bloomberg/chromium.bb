@@ -5,9 +5,10 @@
 #include "ppapi/shared_impl/tracked_callback.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -256,17 +257,17 @@ void TrackedCallback::PostRunWithLock(int32_t result) {
     // directly.
     SignalBlockingCallback(result);
   } else {
-    base::Closure callback_closure(
-        RunWhileLocked(base::Bind(&TrackedCallback::Run, this, result)));
+    base::OnceClosure callback_closure(
+        RunWhileLocked(base::BindOnce(&TrackedCallback::Run, this, result)));
     if (target_loop_) {
-      target_loop_->PostClosure(FROM_HERE, callback_closure, 0);
+      target_loop_->PostClosure(FROM_HERE, std::move(callback_closure), 0);
     } else {
       // We must be running in-process and on the main thread (the Enter
       // classes protect against having a null target_loop_ otherwise).
       DCHECK(IsMainThread());
       DCHECK(PpapiGlobals::Get()->IsHostGlobals());
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                    callback_closure);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, std::move(callback_closure));
     }
   }
   is_scheduled_ = true;

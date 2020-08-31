@@ -28,11 +28,6 @@
 
 namespace blink {
 
-WebGLUniformLocation* WebGLUniformLocation::Create(WebGLProgram* program,
-                                                   GLint location) {
-  return MakeGarbageCollected<WebGLUniformLocation>(program, location);
-}
-
 WebGLUniformLocation::WebGLUniformLocation(WebGLProgram* program,
                                            GLint location)
     : program_(program), location_(location) {
@@ -55,7 +50,7 @@ GLint WebGLUniformLocation::Location() const {
   return location_;
 }
 
-void WebGLUniformLocation::Trace(blink::Visitor* visitor) {
+void WebGLUniformLocation::Trace(Visitor* visitor) {
   visitor->Trace(program_);
   ScriptWrappable::Trace(visitor);
 }

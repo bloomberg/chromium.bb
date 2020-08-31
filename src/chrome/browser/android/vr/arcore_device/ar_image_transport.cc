@@ -67,6 +67,8 @@ void ArImageTransport::Initialize(vr::WebXrPresentationState* webxr,
 
   glGenFramebuffersEXT(1, &camera_fbo_);
 
+  // When available (Android O and up), use AHardwareBuffer-based shared
+  // images for frame transport.
   shared_buffer_draw_ = base::AndroidHardwareBufferCompat::IsSupportAvailable();
 
   if (shared_buffer_draw_) {
@@ -232,6 +234,13 @@ void ArImageTransport::CopyCameraImageToFramebuffer(
     const gfx::Transform& uv_transform) {
   glDisable(GL_BLEND);
   CopyTextureToFramebuffer(camera_texture_id_arcore_, frame_size, uv_transform);
+}
+
+void ArImageTransport::ServerWaitForGpuFence(
+    std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  std::unique_ptr<gl::GLFence> local_fence =
+      gl::GLFence::CreateFromGpuFence(*gpu_fence);
+  local_fence->ServerWait();
 }
 
 void ArImageTransport::CopyDrawnImageToFramebuffer(

@@ -33,7 +33,6 @@ class RelaunchRecommendedBubbleView : public LocationBarBubbleDelegateView {
 
   // LocationBarBubbleDelegateView:
   bool Accept() override;
-  bool Close() override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   gfx::ImageSkia GetWindowIcon() override;
@@ -52,8 +51,6 @@ class RelaunchRecommendedBubbleView : public LocationBarBubbleDelegateView {
 
   // Invoked when the timer fires to refresh the title text.
   void UpdateWindowTitle();
-
-  static constexpr int kTitleIconSize = 20;
 
   // A callback run if the user accepts the prompt to relaunch the browser.
   base::RepeatingClosure on_accept_;

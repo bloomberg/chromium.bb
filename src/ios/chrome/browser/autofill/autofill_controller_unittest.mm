@@ -378,7 +378,7 @@ TEST_F(AutofillControllerTest, ReadFormName) {
 TEST_F(AutofillControllerTest, ProfileImport) {
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
-          ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
+          ChromeBrowserState::FromBrowserState(GetBrowserState()));
   // Check there are no registered profiles already.
   EXPECT_EQ(0U, personal_data_manager->GetProfiles().size());
   ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(kProfileFormHtml, 1));
@@ -413,7 +413,7 @@ void AutofillControllerTest::SetUpForSuggestions(
     size_t expected_number_of_forms) {
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
-          ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
+          ChromeBrowserState::FromBrowserState(GetBrowserState()));
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(NAME_FULL, base::UTF8ToUTF16("Homer Simpson"));
   profile.SetRawInfo(ADDRESS_HOME_LINE1, base::UTF8ToUTF16("123 Main Street"));
@@ -448,7 +448,7 @@ TEST_F(AutofillControllerTest, ProfileSuggestions) {
 TEST_F(AutofillControllerTest, ProfileSuggestionsTwoAnonymousForms) {
   SetUpForSuggestions(
       [NSString stringWithFormat:@"%@%@", kProfileFormHtml, kProfileFormHtml],
-      2);
+      1);
   ForceViewRendering(web_state()->GetView());
   ExecuteJavaScript(@"document.forms[0].name.focus()");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
@@ -478,7 +478,7 @@ TEST_F(AutofillControllerTest, ProfileSuggestionsFromSelectField) {
 TEST_F(AutofillControllerTest, MultipleProfileSuggestions) {
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
-          ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
+          ChromeBrowserState::FromBrowserState(GetBrowserState()));
   PersonalDataManagerFinishedProfileTasksWaiter waiter(personal_data_manager);
 
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
@@ -601,7 +601,7 @@ TEST_F(AutofillControllerTest, KeyValueFocusChange) {
   // Focus the dummy field and confirm no suggestions are presented.
   ExecuteJavaScript(@"document.forms[0].dummy.focus()");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
-  EXPECT_EQ(0U, [suggestion_controller() suggestions].count);
+  ASSERT_EQ(0U, [suggestion_controller() suggestions].count);
 
   // Enter 'B' in the dummy field and confirm no suggestions are presented.
   ExecuteJavaScript(@"event = document.createEvent('TextEvent');");
@@ -609,7 +609,7 @@ TEST_F(AutofillControllerTest, KeyValueFocusChange) {
       @"event.initTextEvent('textInput', true, true, window, 'B');");
   ExecuteJavaScript(@"document.forms[0].dummy.dispatchEvent(event);");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
-  EXPECT_EQ(0U, [suggestion_controller() suggestions].count);
+  ASSERT_EQ(0U, [suggestion_controller() suggestions].count);
 
   // Enter 'B' in the greeting field and confirm that one suggestion ("Bonjour")
   // is presented.
@@ -620,7 +620,7 @@ TEST_F(AutofillControllerTest, KeyValueFocusChange) {
       @"event.initTextEvent('textInput', true, true, window, 'B');");
   ExecuteJavaScript(@"document.forms[0].greeting.dispatchEvent(event);");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
-  EXPECT_EQ(1U, [suggestion_controller() suggestions].count);
+  ASSERT_EQ(1U, [suggestion_controller() suggestions].count);
   FormSuggestion* suggestion = [suggestion_controller() suggestions][0];
   EXPECT_NSEQ(@"Bonjour", suggestion.value);
 }
@@ -644,7 +644,7 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
   InfoBarManagerImpl::CreateForWebState(web_state());
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
-          ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
+          ChromeBrowserState::FromBrowserState(GetBrowserState()));
 
   // Check there are no registered profiles already.
   EXPECT_EQ(0U, personal_data_manager->GetCreditCards().size());

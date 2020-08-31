@@ -6,13 +6,15 @@
 
 #include <utility>
 
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "ui/views/metadata/type_conversion.h"
 
 namespace views {
 namespace metadata {
 
-ClassMetaData::ClassMetaData() {}
+ClassMetaData::ClassMetaData() = default;
 
 ClassMetaData::ClassMetaData(std::string file, int line) : line_(line) {
   base::TrimString(file, "./\\", &file_);

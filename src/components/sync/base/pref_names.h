@@ -18,11 +18,11 @@ extern const char kSyncFirstSetupComplete[];
 extern const char kSyncKeepEverythingSynced[];
 
 #if defined(OS_CHROMEOS)
+extern const char kOsSyncPrefsMigrated[];
 extern const char kOsSyncFeatureEnabled[];
 extern const char kSyncAllOsTypes[];
 extern const char kSyncOsApps[];
 extern const char kSyncOsPreferences[];
-extern const char kSyncOsPrinters[];
 #endif
 
 extern const char kSyncApps[];
@@ -43,6 +43,7 @@ extern const char kSyncRequested[];
 extern const char kSyncEncryptionBootstrapToken[];
 extern const char kSyncKeystoreEncryptionBootstrapToken[];
 
+extern const char kSyncGaiaId[];
 extern const char kSyncCacheGuid[];
 extern const char kSyncBirthday[];
 extern const char kSyncBagOfChips[];

@@ -28,7 +28,6 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
-#include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/paint/video_painter.h"
 
 namespace blink {
@@ -62,7 +61,7 @@ void LayoutVideo::UpdateIntrinsicSize(bool is_in_layout) {
     return;
 
   SetIntrinsicSize(size);
-  SetPreferredLogicalWidthsDirty();
+  SetIntrinsicLogicalWidthsDirty();
   if (!is_in_layout) {
     SetNeedsLayoutAndFullPaintInvalidation(
         layout_invalidation_reason::kSizeChanged);
@@ -73,9 +72,10 @@ LayoutSize LayoutVideo::CalculateIntrinsicSize() {
   HTMLVideoElement* video = VideoElement();
   DCHECK(video);
 
-  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !video->GetOverriddenIntrinsicSize().IsEmpty())
-    return LayoutSize(video->GetOverriddenIntrinsicSize());
+  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
+    if (video->IsDefaultIntrinsicSize())
+      return DefaultSize();
+  }
 
   // Spec text from 4.8.6
   //
@@ -91,7 +91,7 @@ LayoutSize LayoutVideo::CalculateIntrinsicSize() {
   WebMediaPlayer* web_media_player = MediaElement()->GetWebMediaPlayer();
   if (web_media_player &&
       video->getReadyState() >= HTMLVideoElement::kHaveMetadata) {
-    IntSize size = web_media_player->NaturalSize();
+    IntSize size(web_media_player->NaturalSize());
     if (!size.IsEmpty())
       return LayoutSize(size);
   }
@@ -189,7 +189,7 @@ bool LayoutVideo::SupportsAcceleratedRendering() const {
 }
 
 CompositingReasons LayoutVideo::AdditionalCompositingReasons() const {
-  HTMLMediaElement* element = ToHTMLMediaElement(GetNode());
+  auto* element = To<HTMLMediaElement>(GetNode());
   if (element->IsFullscreen() && element->UsesOverlayFullscreenVideo())
     return CompositingReason::kVideo;
 
@@ -197,15 +197,6 @@ CompositingReasons LayoutVideo::AdditionalCompositingReasons() const {
     return CompositingReason::kVideo;
 
   return CompositingReason::kNone;
-}
-
-void LayoutVideo::UpdateAfterLayout() {
-  LayoutBox::UpdateAfterLayout();
-  // Report violation of unsized-media policy.
-  if (auto* video_element = DynamicTo<HTMLVideoElement>(GetNode())) {
-    media_element_parser_helpers::ReportUnsizedMediaViolation(
-        this, video_element->IsDefaultIntrinsicSize());
-  }
 }
 
 }  // namespace blink

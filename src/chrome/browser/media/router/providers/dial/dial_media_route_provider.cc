@@ -201,9 +201,8 @@ void DialMediaRouteProvider::SendRouteMessage(const std::string& media_route_id,
                                               const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GetDataDecoder().ParseJson(
-      message,
-      base::BindRepeating(&DialMediaRouteProvider::HandleParsedRouteMessage,
-                          weak_ptr_factory_.GetWeakPtr(), media_route_id));
+      message, base::BindOnce(&DialMediaRouteProvider::HandleParsedRouteMessage,
+                              weak_ptr_factory_.GetWeakPtr(), media_route_id));
 }
 
 void DialMediaRouteProvider::HandleParsedRouteMessage(
@@ -494,14 +493,6 @@ void DialMediaRouteProvider::UpdateMediaSinks(const std::string& media_source) {
   media_sink_service_->OnUserGesture();
 }
 
-void DialMediaRouteProvider::SearchSinks(
-    const std::string& sink_id,
-    const std::string& media_source,
-    mojom::SinkSearchCriteriaPtr search_criteria,
-    SearchSinksCallback callback) {
-  std::move(callback).Run(std::string());
-}
-
 void DialMediaRouteProvider::ProvideSinks(
     const std::string& provider_name,
     const std::vector<media_router::MediaSinkInternal>& sinks) {
@@ -515,6 +506,11 @@ void DialMediaRouteProvider::CreateMediaRouteController(
     CreateMediaRouteControllerCallback callback) {
   NOTIMPLEMENTED();
   std::move(callback).Run(false);
+}
+
+void DialMediaRouteProvider::GetState(GetStateCallback callback) {
+  NOTIMPLEMENTED();
+  std::move(callback).Run(mojom::ProviderStatePtr());
 }
 
 void DialMediaRouteProvider::SetActivityManagerForTest(

@@ -264,9 +264,8 @@ TEST(InvalidationSetTest, Backing_GetHashSet) {
 TEST(InvalidationSetTest, ClassInvalidatesElement) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   auto& document = dummy_page_holder->GetDocument();
-  document.body()->SetInnerHTMLFromString("<div id=test class='a b'>");
-  document.View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  document.body()->setInnerHTML("<div id=test class='a b'>");
+  document.View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   Element* element = document.getElementById("test");
   ASSERT_TRUE(element);
 
@@ -290,9 +289,8 @@ TEST(InvalidationSetTest, ClassInvalidatesElement) {
 TEST(InvalidationSetTest, AttributeInvalidatesElement) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   auto& document = dummy_page_holder->GetDocument();
-  document.body()->SetInnerHTMLFromString("<div id=test a b>");
-  document.View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  document.body()->setInnerHTML("<div id=test a b>");
+  document.View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
   Element* element = document.getElementById("test");
   ASSERT_TRUE(element);
 

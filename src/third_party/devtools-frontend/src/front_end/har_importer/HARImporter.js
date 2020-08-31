@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+
+import {HAREntry, HARLog, HARPage, HARTimings} from './HARFormat.js';  // eslint-disable-line no-unused-vars
+
 export class Importer {
   /**
-   * @param {!HARImporter.HARLog} log
-   * @return {!Array<!SDK.NetworkRequest>}
+   * @param {!HARLog} log
+   * @return {!Array<!SDK.NetworkRequest.NetworkRequest>}
    */
   static requestsFromHARLog(log) {
-    /** @type {!Map<string, !HARImporter.HARPage>} */
+    /** @type {!Map<string, !HARPage>} */
     const pages = new Map();
     for (const page of log.pages) {
       pages.set(page.id, page);
@@ -18,7 +23,7 @@ export class Importer {
 
     /** @type {!Map<string, !SDK.NetworkLog.PageLoad>} */
     const pageLoads = new Map();
-    /** @type {!Array<!SDK.NetworkRequest>} */
+    /** @type {!Array<!SDK.NetworkRequest.NetworkRequest>} */
     const requests = [];
     for (const entry of log.entries) {
       let pageLoad = pageLoads.get(entry.pageref);
@@ -33,14 +38,14 @@ export class Importer {
         };
       }
 
-      const request = new SDK.NetworkRequest(
+      const request = new SDK.NetworkRequest.NetworkRequest(
           'har-' + requests.length, entry.request.url, documentURL, '', '', initiator);
       const page = pages.get(entry.pageref);
       if (!pageLoad && page) {
-        pageLoad = HARImporter.Importer._buildPageLoad(page, request);
+        pageLoad = Importer._buildPageLoad(page, request);
         pageLoads.set(entry.pageref, pageLoad);
       }
-      HARImporter.Importer._fillRequestFromHAREntry(request, entry, pageLoad);
+      Importer._fillRequestFromHAREntry(request, entry, pageLoad);
       if (pageLoad) {
         pageLoad.bindRequest(request);
       }
@@ -50,8 +55,8 @@ export class Importer {
   }
 
   /**
-   * @param {!HARImporter.HARPage} page
-   * @param {!SDK.NetworkRequest} mainRequest
+   * @param {!HARPage} page
+   * @param {!SDK.NetworkRequest.NetworkRequest} mainRequest
    * @return {!SDK.NetworkLog.PageLoad}
    */
   static _buildPageLoad(page, mainRequest) {
@@ -63,8 +68,8 @@ export class Importer {
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
-   * @param {!HARImporter.HAREntry} entry
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
+   * @param {!HAREntry} entry
    * @param {?SDK.NetworkLog.PageLoad} pageLoad
    */
   static _fillRequestFromHAREntry(request, entry, pageLoad) {
@@ -80,7 +85,7 @@ export class Importer {
 
     // Response data.
     if (entry.response.content.mimeType && entry.response.content.mimeType !== 'x-unknown') {
-      request.mimeType = entry.response.content.mimeType;
+      request.mimeType = /** @type {!SDK.NetworkRequest.MIME_TYPE} */ (entry.response.content.mimeType);
     }
     request.responseHeaders = entry.response.headers;
     request.statusCode = entry.response.status;
@@ -120,11 +125,11 @@ export class Importer {
     request.setContentDataProvider(async () => contentData);
 
     // Timing data.
-    HARImporter.Importer._setupTiming(request, issueTime, entry.time, entry.timings);
+    Importer._setupTiming(request, issueTime, entry.time, entry.timings);
 
     // Meta data.
     request.setRemoteAddress(entry.serverIPAddress || '', 80);  // Har does not support port numbers.
-    request.setResourceType(HARImporter.Importer._getResourceType(request, entry, pageLoad));
+    request.setResourceType(Importer._getResourceType(request, entry, pageLoad));
 
     const priority = entry.customAsString('priority');
     if (Protocol.Network.ResourcePriority.hasOwnProperty(priority)) {
@@ -157,42 +162,42 @@ export class Importer {
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
-   * @param {!HARImporter.HAREntry} entry
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
+   * @param {!HAREntry} entry
    * @param {?SDK.NetworkLog.PageLoad} pageLoad
-   * @return {!Common.ResourceType}
+   * @return {!Common.ResourceType.ResourceType}
    */
   static _getResourceType(request, entry, pageLoad) {
     const customResourceTypeName = entry.customAsString('resourceType');
     if (customResourceTypeName) {
-      const customResourceType = Common.ResourceType.fromName(customResourceTypeName);
+      const customResourceType = Common.ResourceType.ResourceType.fromName(customResourceTypeName);
       if (customResourceType) {
         return customResourceType;
       }
     }
 
     if (pageLoad && pageLoad.mainRequest === request) {
-      return Common.resourceTypes.Document;
+      return Common.ResourceType.resourceTypes.Document;
     }
 
-    const resourceTypeFromMime = Common.ResourceType.fromMimeType(entry.response.content.mimeType);
-    if (resourceTypeFromMime !== Common.resourceTypes.Other) {
+    const resourceTypeFromMime = Common.ResourceType.ResourceType.fromMimeType(entry.response.content.mimeType);
+    if (resourceTypeFromMime !== Common.ResourceType.resourceTypes.Other) {
       return resourceTypeFromMime;
     }
 
-    const resourceTypeFromUrl = Common.ResourceType.fromURL(entry.request.url);
+    const resourceTypeFromUrl = Common.ResourceType.ResourceType.fromURL(entry.request.url);
     if (resourceTypeFromUrl) {
       return resourceTypeFromUrl;
     }
 
-    return Common.resourceTypes.Other;
+    return Common.ResourceType.resourceTypes.Other;
   }
 
   /**
-   * @param {!SDK.NetworkRequest} request
+   * @param {!SDK.NetworkRequest.NetworkRequest} request
    * @param {number} issueTime
    * @param {number} entryTotalDuration
-   * @param {!HARImporter.HARTimings} timings
+   * @param {!HARTimings} timings
    */
   static _setupTiming(request, issueTime, entryTotalDuration, timings) {
     /**
@@ -245,14 +250,3 @@ export class Importer {
     request.endTime = issueTime + Math.max(entryTotalDuration, lastEntry) / 1000;
   }
 }
-
-/* Legacy exported object */
-self.HARImporter = self.HARImporter || {};
-
-/* Legacy exported object */
-HARImporter = HARImporter || {};
-
-/**
- * @constructor
- */
-HARImporter.Importer = Importer;

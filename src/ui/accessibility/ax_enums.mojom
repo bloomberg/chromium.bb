@@ -41,6 +41,7 @@ enum Event {
   kEndOfTest,        // Sentinel value indicating the end of a test
   kExpandedChanged,  // Web
   kFocus,
+  kFocusAfterMenuClose,
   kFocusContext,  // Contextual focus event that must delay the next focus event
   kHide,          // Remove: http://crbug.com/392502
   kHitTestResult,
@@ -67,9 +68,9 @@ enum Event {
   kMouseMoved,
   kMousePressed,
   kMouseReleased,
-  kRowCollapsed,             // Web / Mac
-  kRowCountChanged,          // Web / Mac
-  kRowExpanded,              // Web / Mac
+  kRowCollapsed,
+  kRowCountChanged,
+  kRowExpanded,
   kScrollPositionChanged,    // Web
   kScrolledToAnchor,         // Web
   kSelectedChildrenChanged,  // Web
@@ -129,7 +130,6 @@ enum Role {
   kComboBoxMenuButton,
   kComplementary,
   kComment,
-  kCommentSection,
   kContentDeletion,
   kContentInsertion,
   kContentInfo,
@@ -216,13 +216,13 @@ enum Role {
   kIgnored,
   kImage,
   kImageMap,
+  kImeCandidate,
   kInlineTextBox,
   kInputTime,
   kKeyboard,
   kLabelText,
   kLayoutTable,
   kLayoutTableCell,
-  kLayoutTableColumn,
   kLayoutTableRow,
   kLegend,
   kLineBreak,
@@ -243,7 +243,7 @@ enum Role {
   kMath,
   kMenu,
   kMenuBar,
-  kMenuButton,
+  kMenuButton, // TODO: kMenuButton is not used anywhere, consider removal.
   kMenuItem,
   kMenuItemCheckBox,
   kMenuItemRadio,
@@ -254,14 +254,16 @@ enum Role {
   kNote,
   kPane,
   kParagraph,
+  kPdfActionableHighlight, // PDF specific highlight role.
+  kPluginObject,
   kPopUpButton,
+  kPortal,
   kPre,
   kPresentational,
   kProgressIndicator,
   kRadioButton,
   kRadioGroup,
   kRegion,
-  kRevision,
   kRootWebArea,
   kRow,
   kRowGroup,
@@ -348,6 +350,9 @@ enum Action {
   // exposed to the open web. See kSetAccessibilityFocus, below.
   kClearAccessibilityFocus,
 
+  // Collapse the collapsible node.
+  kCollapse,
+
   kCustomAction,
 
   // Decrement a slider or range control by one step value.
@@ -355,6 +360,9 @@ enum Action {
 
   // Do the default action for an object, typically this means "click".
   kDoDefault,
+
+  // Expand the expandable node.
+  kExpand,
 
   kFocus,
 
@@ -582,7 +590,6 @@ enum IntAttribute {
 
   // Relationships between this element and other elements.
   kActivedescendantId,
-  kDetailsId,
   kErrormessageId,
   kInPageLinkTargetId,
   kMemberOfId,
@@ -653,6 +660,12 @@ enum IntAttribute {
   // is released on the drop target.
   // Note: aria-dropeffect is deprecated in WAI-ARIA 1.1.
   kDropeffect,
+
+  // The DOMNodeID from Blink. Currently only populated when using
+  // the accessibility tree for PDF exporting. Warning, this is totally
+  // unrelated to the accessibility node ID, or the ID attribute for an
+  // HTML element - it's an ID used to uniquely identify nodes in Blink.
+  kDOMNodeId,
 };
 
 enum FloatAttribute {
@@ -706,7 +719,9 @@ enum BoolAttribute {
   // Set on a canvas element if it has fallback content.
   kCanvasHasFallback,
 
-  // Indicates this node is scrollable (Android only).
+  // Indicates this node is user-scrollable, e.g. overflow:scroll|auto, as
+  // opposed to only programmatically scrollable, like overflow:hidden, or
+  // not scrollable at all, e.g. overflow:visible.
   kScrollable,
 
   // A hint to clients that the node is clickable.
@@ -732,6 +747,9 @@ enum BoolAttribute {
 
   // Indicates whether this node causes a page break
   kIsPageBreakingObject,
+
+  // True if the node has any ARIA attributes set.
+  kHasAriaAttribute,
 };
 
 enum IntListAttribute {
@@ -744,6 +762,7 @@ enum IntListAttribute {
 
   // Relationships between this element and other elements.
   kControlsIds,
+  kDetailsIds,
   kDescribedbyIds,
   kFlowtoIds,
   kLabelledbyIds,
@@ -789,6 +808,16 @@ enum StringListAttribute {
   kCustomActionDescriptions,
 };
 
+enum ListStyle {
+  kNone,
+  kCircle,
+  kDisc,
+  kImage,
+  kNumeric,
+  kSquare,
+  kOther, // Language specific ordering (alpha, roman, cjk-ideographic, etc...)
+};
+
 enum MarkerType {
   kNone = 0,
   kSpelling = 1,
@@ -800,14 +829,67 @@ enum MarkerType {
   kSuggestion = 32,
 };
 
-enum ListStyle {
-  kNone,
-  kCircle,
-  kDisc,
-  kImage,
-  kNumeric,
-  kSquare,
-  kOther, // Language specific ordering (alpha, roman, cjk-ideographic, etc...)
+// Describes a move direction in the accessibility tree that is independent of
+// the left-to-right or right-to-left direction of the text. For example, a
+// forward movement will always move to the next node in depth-first pre-order
+// traversal.
+enum MoveDirection {
+  kForward,
+  kBackward,
+  kNone = kForward
+};
+
+// Describes the edit or selection command that resulted in a selection or a
+// text changed event.
+enum Command {
+  kClearSelection,
+  kCut,
+  kDelete,
+  kDictate,
+  kExtendSelection,  // The existing selection has been extended or shrunk.
+  kFormat,  // The text attributes, such as font size, have changed.
+  kInsert,
+  kMarker,  // A document marker has been added or removed.
+  kMoveSelection,  // The selection has been moved by a specific granularity.
+  kPaste,
+  kReplace,
+  kSetSelection,  // A completely new selection has been set.
+  kType,
+  kNone = kType
+};
+
+// Defines a set of text boundaries in the accessibility tree.
+//
+// Most boundaries come in three flavors: A "WordStartOrEnd" boundary for
+// example differs from a "WordStart" or a "WordEnd" boundary in that the first
+// would consider both the start and the end of the word to be boundaries, while
+// the other two would consider only the start or the end respectively.
+//
+// An "Object" boundary is found at the start or end of a node's entire text,
+// e.g. at the start or end of a text field.
+//
+// TODO(nektar): Split TextBoundary into TextUnit and TextBoundary.
+enum TextBoundary {
+  kCharacter,
+  kFormat,
+  kLineEnd,
+  kLineStart,
+  kLineStartOrEnd,
+  kObject,
+  kPageEnd,
+  kPageStart,
+  kPageStartOrEnd,
+  kParagraphEnd,
+  kParagraphStart,
+  kParagraphStartOrEnd,
+  kSentenceEnd,
+  kSentenceStart,
+  kSentenceStartOrEnd,
+  kWebPage,
+  kWordEnd,
+  kWordStart,
+  kWordStartOrEnd,
+  kNone = kObject
 };
 
 enum TextDirection {
@@ -832,7 +914,7 @@ enum TextStyle {
   kUnderline,
   kLineThrough,
   kOverline,
-  kNone,
+  kNone
 };
 
 enum TextDecorationStyle {

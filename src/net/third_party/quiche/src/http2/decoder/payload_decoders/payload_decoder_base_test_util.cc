@@ -39,11 +39,11 @@ DecodeStatus PayloadDecoderBaseTest::StartDecoding(DecodeBuffer* db) {
 
   // Reconstruct the FrameDecoderState, prepare the listener, and add it to
   // the FrameDecoderState.
-  Http2DefaultReconstructObject(&frame_decoder_state_, RandomPtr());
-  frame_decoder_state_.set_listener(PrepareListener());
+  frame_decoder_state_ = std::make_unique<FrameDecoderState>();
+  frame_decoder_state_->set_listener(PrepareListener());
 
   // Make sure that a listener was provided.
-  if (frame_decoder_state_.listener() == nullptr) {
+  if (frame_decoder_state_->listener() == nullptr) {
     ADD_FAILURE() << "PrepareListener must return a listener.";
     return DecodeStatus::kDecodeError;
   }
@@ -52,7 +52,8 @@ DecodeStatus PayloadDecoderBaseTest::StartDecoding(DecodeBuffer* db) {
   // Http2FrameHeader whose payload we're about to decode. That header is the
   // only state that a payload decoder should expect is valid when its Start
   // method is called.
-  FrameDecoderStatePeer::set_frame_header(frame_header_, &frame_decoder_state_);
+  FrameDecoderStatePeer::set_frame_header(frame_header_,
+                                          frame_decoder_state_.get());
   DecodeStatus status = StartDecodingPayload(db);
   if (status != DecodeStatus::kDecodeInProgress) {
     // Keep track of this so that a concrete test can verify that both fast
@@ -75,7 +76,7 @@ DecodeStatus PayloadDecoderBaseTest::ResumeDecoding(DecodeBuffer* db) {
 
 ::testing::AssertionResult
 PayloadDecoderBaseTest::DecodePayloadAndValidateSeveralWays(
-    Http2StringPiece payload,
+    quiche::QuicheStringPiece payload,
     Validator validator) {
   VERIFY_TRUE(frame_header_is_set_);
   // Cap the payload to be decoded at the declared payload length. This is
@@ -85,7 +86,8 @@ PayloadDecoderBaseTest::DecodePayloadAndValidateSeveralWays(
   // Note that it is OK if the payload is too short; the validator may be
   // designed to check for that.
   if (payload.size() > frame_header_.payload_length) {
-    payload = Http2StringPiece(payload.data(), frame_header_.payload_length);
+    payload =
+        quiche::QuicheStringPiece(payload.data(), frame_header_.payload_length);
   }
   DecodeBuffer db(payload);
   ResetDecodeSpeedCounters();

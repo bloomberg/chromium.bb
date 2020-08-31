@@ -102,11 +102,10 @@ class FileStreamReader::OperationRunner
 
     // If the file system got unmounted, then abort the get length operation.
     if (!file_system_.get()) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(std::move(callback),
-                         base::Passed(base::WrapUnique<EntryMetadata>(NULL)),
-                         base::File::FILE_ERROR_ABORT));
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(std::move(callback),
+                                    base::WrapUnique<EntryMetadata>(NULL),
+                                    base::File::FILE_ERROR_ABORT));
       return;
     }
 
@@ -166,7 +165,7 @@ class FileStreamReader::OperationRunner
 
     base::PostTask(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(std::move(callback), base::Passed(&metadata), result));
+        base::BindOnce(std::move(callback), std::move(metadata), result));
   }
 
   // Forwards a response of reading from a file to the IO thread.
@@ -214,8 +213,8 @@ FileStreamReader::~FileStreamReader() {
       base::BindOnce(&OperationRunner::CloseRunnerOnUIThread, runner_));
 
   // If a read is in progress, mark it as completed.
-  TRACE_EVENT_ASYNC_END0("file_system_provider", "FileStreamReader::Read",
-                         this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("file_system_provider",
+                                  "FileStreamReader::Read", this);
 }
 
 void FileStreamReader::Initialize(
@@ -296,11 +295,9 @@ int FileStreamReader::Read(net::IOBuffer* buffer,
                            int buffer_length,
                            net::CompletionOnceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  TRACE_EVENT_ASYNC_BEGIN1("file_system_provider",
-                           "FileStreamReader::Read",
-                           this,
-                           "buffer_length",
-                           buffer_length);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("file_system_provider",
+                                    "FileStreamReader::Read", this,
+                                    "buffer_length", buffer_length);
 
   read_callback_ = std::move(callback);
   switch (state_) {
@@ -339,8 +336,8 @@ int FileStreamReader::Read(net::IOBuffer* buffer,
 void FileStreamReader::OnReadCompleted(int result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::move(read_callback_).Run(static_cast<int>(result));
-  TRACE_EVENT_ASYNC_END0(
-      "file_system_provider", "FileStreamReader::Read", this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("file_system_provider",
+                                  "FileStreamReader::Read", this);
 }
 
 int64_t FileStreamReader::GetLength(net::Int64CompletionOnceCallback callback) {

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.infobar.translate;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
-import android.support.v4.content.ContextCompat;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +18,8 @@ import android.widget.ImageView;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.TranslateOptions;
@@ -68,11 +69,14 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
         } else {
             for (int i = 0; i < mOptions.allLanguages().size(); ++i) {
                 String code = mOptions.allLanguages().get(i).mLanguageCode;
-                // Avoid source language in both the source and target language list.
-                // Avoid target language only in the target language list.
-                if (code.equals(mOptions.sourceLanguageCode())
-                        || (menuType == TranslateMenu.MENU_TARGET_LANGUAGE
-                                   && code.equals(mOptions.targetLanguageCode()))) {
+                // Avoid source language in the source language list.
+                if (menuType == TranslateMenu.MENU_SOURCE_LANGUAGE
+                        && code.equals(mOptions.sourceLanguageCode())) {
+                    continue;
+                }
+                // Avoid target language in the target language list.
+                if (menuType == TranslateMenu.MENU_TARGET_LANGUAGE
+                        && code.equals(mOptions.targetLanguageCode())) {
                     continue;
                 }
                 menuList.add(new TranslateMenu.MenuItem(TranslateMenu.ITEM_LANGUAGE, i, code));

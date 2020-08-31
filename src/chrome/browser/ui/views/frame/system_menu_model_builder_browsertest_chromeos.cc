@@ -4,7 +4,7 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/test/browser_test.h"
 #include "ui/base/models/menu_model.h"
 
 using chrome::SettingsWindowManager;
@@ -28,13 +29,11 @@ class SystemMenuModelBuilderMultiUserTest
     : public chromeos::LoginManagerTest,
       public SettingsWindowManagerObserver {
  public:
-  SystemMenuModelBuilderMultiUserTest()
-      : LoginManagerTest(/*should_launch_browser=*/false,
-                         /*should_initialize_webui=*/false),
-        account_id1_(
-            AccountId::FromUserEmailGaiaId("user1@gmail.com", "1111111111")),
-        account_id2_(
-            AccountId::FromUserEmailGaiaId("user2@gmail.com", "2222222222")) {}
+  SystemMenuModelBuilderMultiUserTest() : LoginManagerTest() {
+    login_mixin_.AppendRegularUsers(2);
+    account_id1_ = login_mixin_.users()[0].account_id;
+    account_id2_ = login_mixin_.users()[1].account_id;
+  }
   ~SystemMenuModelBuilderMultiUserTest() override = default;
 
   // SettingsWindowManagerObserver:
@@ -43,17 +42,11 @@ class SystemMenuModelBuilderMultiUserTest
   }
 
  protected:
-  const AccountId account_id1_;
-  const AccountId account_id2_;
+  AccountId account_id1_;
+  AccountId account_id2_;
+  chromeos::LoginManagerMixin login_mixin_{&mixin_host_};
   Browser* settings_browser_ = nullptr;
 };
-
-IN_PROC_BROWSER_TEST_F(SystemMenuModelBuilderMultiUserTest,
-                       PRE_MultiUserSettingsWindowFrameMenu) {
-  RegisterUser(account_id1_);
-  RegisterUser(account_id2_);
-  chromeos::StartupUtils::MarkOobeCompleted();
-}
 
 // Regression test for https://crbug.com/1023043
 IN_PROC_BROWSER_TEST_F(SystemMenuModelBuilderMultiUserTest,
@@ -95,6 +88,8 @@ IN_PROC_BROWSER_TEST_F(SystemMenuModelBuilderMultiUserTest,
   // Settings window cannot be teleported.
   EXPECT_FALSE(base::Contains(commands, IDC_VISIT_DESKTOP_OF_LRU_USER_2));
   EXPECT_FALSE(base::Contains(commands, IDC_VISIT_DESKTOP_OF_LRU_USER_3));
+  EXPECT_FALSE(base::Contains(commands, IDC_VISIT_DESKTOP_OF_LRU_USER_4));
+  EXPECT_FALSE(base::Contains(commands, IDC_VISIT_DESKTOP_OF_LRU_USER_5));
 }
 
 }  // namespace

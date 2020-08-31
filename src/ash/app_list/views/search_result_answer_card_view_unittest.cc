@@ -12,8 +12,6 @@
 #include "ash/app_list/views/search_result_view.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/content/public/cpp/test/fake_navigable_contents.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/background.h"
@@ -148,7 +146,7 @@ TEST_F(SearchResultAnswerCardViewTest, DeleteResult) {
   EXPECT_EQ(0UL, GetResults()->item_count());
   EXPECT_EQ(0, GetYSize());
   ASSERT_FALSE(search_card_view()->GetVisible());
-  EXPECT_EQ(0, GetContainerScore());
+  EXPECT_EQ(-1, GetContainerScore());
 }
 
 TEST_F(SearchResultAnswerCardViewTest, RemoveEquivalent) {

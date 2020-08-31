@@ -162,31 +162,18 @@ Status ChromeImpl::GetWindow(const std::string& target_id, Window* window) {
   return ParseWindow(std::move(result), window);
 }
 
-Status ChromeImpl::GetWindowPosition(const std::string& target_id,
-                                     int* x,
-                                     int* y) {
+Status ChromeImpl::GetWindowRect(const std::string& target_id,
+                                 WindowRect* rect) {
   Window window;
   Status status = GetWindow(target_id, &window);
   if (status.IsError())
     return status;
 
-  *x = window.left;
-  *y = window.top;
+  rect->x = window.left;
+  rect->y = window.top;
+  rect->width = window.width;
+  rect->height = window.height;
   return Status(kOk);
-}
-
-Status ChromeImpl::SetWindowPosition(const std::string& target_id,
-                                            int x,
-                                            int y) {
-  Window window;
-  Status status = GetWindow(target_id, &window);
-  if (status.IsError())
-    return status;
-
-  auto bounds = std::make_unique<base::DictionaryValue>();
-  bounds->SetInteger("left", x);
-  bounds->SetInteger("top", y);
-  return SetWindowBounds(&window, target_id, std::move(bounds));
 }
 
 Status ChromeImpl::MaximizeWindow(const std::string& target_id) {
@@ -259,19 +246,6 @@ Status ChromeImpl::SetWindowRect(const std::string& target_id,
   return SetWindowBounds(&window, target_id, std::move(bounds));
 }
 
-Status ChromeImpl::GetWindowSize(const std::string& target_id,
-                                 int* width,
-                                 int* height) {
-  Window window;
-  Status status = GetWindow(target_id, &window);
-  if (status.IsError())
-    return status;
-
-  *width = window.width;
-  *height = window.height;
-  return Status(kOk);
-}
-
 Status ChromeImpl::GetWindowBounds(int window_id, Window* window) {
   Status status = devtools_websocket_client_->ConnectIfNecessary();
   if (status.IsError())
@@ -307,21 +281,26 @@ Status ChromeImpl::SetWindowBounds(
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   }
 
-  params.Set("bounds", bounds->CreateDeepCopy());
-  status = devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
-                                                   params);
-  if (status.IsError())
-    return status;
-
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   std::string state;
-  if (!bounds->GetString("windowState", &state))
-    return Status(kOk);
+  bounds->GetString("windowState", &state);
 
-  if (state == "fullscreen") {
+  if (state != "fullscreen" || GetBrowserInfo()->is_headless) {
+    // crbug.com/946023. When setWindowBounds is run before requestFullscreen
+    // below, we sometimes see a devtools crash. Because the latter call will
+    // set fullscreen, do not call setWindowBounds with a fullscreen request
+    // unless running headless. see https://crbug.com/1049336
+    params.Set("bounds", bounds->CreateDeepCopy());
+    status = devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
+                                                     params);
+    if (status.IsError())
+      return status;
+
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  } else {
     // Work around crbug.com/982071. This block of code is necessary to ensure
     // that document.webkitIsFullScreen and document.fullscreenElement return
     // the correct values.
+    // But do not run when headless. see https://crbug.com/1049336
     WebView* web_view;
     status = GetWebViewById(target_id, &web_view);
     if (status.IsError())
@@ -340,7 +319,7 @@ Status ChromeImpl::SetWindowBounds(
   status = GetWindowBounds(window->id, window);
   if (status.IsError())
     return status;
-  if (window->state == state)
+  if (window->state == state || state == "")
     return Status(kOk);
 
   if (state == "maximized" && window->state == "normal") {
@@ -357,7 +336,8 @@ Status ChromeImpl::SetWindowBounds(
     std::unique_ptr<base::Value> result;
     status = web_view->EvaluateScript(
         std::string(),
-        "({width: screen.availWidth, height: screen.availHeight})", &result);
+        "({width: screen.availWidth, height: screen.availHeight})", false,
+        &result);
     if (status.IsError())
       return Status(kUnknownError, "JavaScript code failed", status);
     const base::Value* width =
@@ -378,21 +358,6 @@ Status ChromeImpl::SetWindowBounds(
     return Status(kUnknownError, "failed to change window state to " + state +
                                      ", current state is " + window->state);
   }
-}
-
-Status ChromeImpl::SetWindowSize(const std::string& target_id,
-                                        int width,
-                                        int height) {
-  Window window;
-
-  Status status = GetWindow(target_id, &window);
-  if (status.IsError())
-    return status;
-
-  auto bounds = std::make_unique<base::DictionaryValue>();
-  bounds->SetInteger("width", width);
-  bounds->SetInteger("height", height);
-  return SetWindowBounds(&window, target_id, std::move(bounds));
 }
 
 Status ChromeImpl::ParseWindow(std::unique_ptr<base::DictionaryValue> params,

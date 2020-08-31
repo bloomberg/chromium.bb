@@ -18,10 +18,10 @@
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "components/mirroring/browser/cast_remoting_sender.h"
 #include "components/prefs/pref_service.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -142,18 +142,18 @@ CastRemotingConnector* CastRemotingConnector::Get(
         media_router::MediaRouterFactory::GetApiForBrowserContext(
             contents->GetBrowserContext()),
         Profile::FromBrowserContext(contents->GetBrowserContext())->GetPrefs(),
-        SessionTabHelper::IdForTab(contents),
+        sessions::SessionTabHelper::IdForTab(contents),
 #if defined(TOOLKIT_VIEWS)
         base::BindRepeating(
             [](content::WebContents* contents,
                PermissionResultCallback result_callback) {
-                media_router::MediaRemotingDialogView::GetPermission(
-                    contents, std::move(result_callback));
-                return media_router::MediaRemotingDialogView::IsShowing()
-                           ? base::BindOnce(
-                                 &media_router::MediaRemotingDialogView::
-                                     HideDialog)
-                           : CancelPermissionRequestCallback();
+              media_router::MediaRemotingDialogView::GetPermission(
+                  contents, std::move(result_callback));
+              return media_router::MediaRemotingDialogView::IsShowing()
+                         ? base::BindOnce(
+                               &media_router::MediaRemotingDialogView::
+                                   HideDialog)
+                         : CancelPermissionRequestCallback();
             },
             contents)
 #else
@@ -194,15 +194,6 @@ CastRemotingConnector::CastRemotingConnector(
       active_bridge_(nullptr),
       pref_service_(pref_service) {
   DCHECK(permission_request_callback_);
-#if !defined(OS_ANDROID)
-  if (!media_router::ShouldUseMirroringService() && tab_id_.is_valid()) {
-    // Register this remoting source only when Mirroring Service is not used.
-    // Note: If mirroring service is not used, remoting is not supported for
-    // OffscreenTab mirroring as there is no valid tab_id associated with an
-    // OffscreenTab.
-    media_router_->RegisterRemotingSource(tab_id_, this);
-  }
-#endif  // !defined(OS_ANDROID)
   StartObservingPref();
 }
 
@@ -216,10 +207,6 @@ CastRemotingConnector::~CastRemotingConnector() {
     notifyee->OnSinkGone();
     notifyee->OnCastRemotingConnectorDestroyed();
   }
-#if !defined(OS_ANDROID)
-  if (!media_router::ShouldUseMirroringService() && tab_id_.is_valid())
-    media_router_->UnregisterRemotingSource(tab_id_);
-#endif  // !defined(OS_ANDROID)
 }
 
 void CastRemotingConnector::ConnectToService(
@@ -334,7 +321,7 @@ void CastRemotingConnector::StartRemoting(RemotingBridge* bridge) {
   if (remoting_allowed_.has_value()) {
     StartRemotingIfPermitted();
   } else {
-    base::OnceCallback<void(bool)> dialog_result_callback(base::BindOnce(
+    PermissionResultCallback dialog_result_callback(base::BindOnce(
         [](base::WeakPtr<CastRemotingConnector> connector, bool is_allowed) {
           DCHECK_CURRENTLY_ON(BrowserThread::UI);
           if (!connector)

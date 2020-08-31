@@ -239,6 +239,20 @@ TEST(ColorUtils, GetColorWithMaxContrast) {
   EXPECT_EQ(old_darkest_color, GetColorWithMaxContrast(SK_ColorWHITE));
 }
 
+TEST(ColorUtils, GetEndpointColorWithMinContrast) {
+  const SkColor old_darkest_color = SetDarkestColorForTesting(SK_ColorBLACK);
+  EXPECT_EQ(SK_ColorBLACK, GetEndpointColorWithMinContrast(SK_ColorBLACK));
+  EXPECT_EQ(SK_ColorBLACK,
+            GetEndpointColorWithMinContrast(SkColorSetRGB(0x75, 0x75, 0x75)));
+  EXPECT_EQ(SK_ColorWHITE, GetEndpointColorWithMinContrast(SK_ColorWHITE));
+  EXPECT_EQ(SK_ColorWHITE,
+            GetEndpointColorWithMinContrast(SkColorSetRGB(0x76, 0x76, 0x76)));
+
+  SetDarkestColorForTesting(old_darkest_color);
+  EXPECT_EQ(old_darkest_color,
+            GetEndpointColorWithMinContrast(old_darkest_color));
+}
+
 TEST(ColorUtils, BlendForMinContrast_ForegroundAlreadyMeetsMinimum) {
   const auto result = BlendForMinContrast(SK_ColorBLACK, SK_ColorWHITE);
   EXPECT_EQ(SK_AlphaTRANSPARENT, result.alpha);

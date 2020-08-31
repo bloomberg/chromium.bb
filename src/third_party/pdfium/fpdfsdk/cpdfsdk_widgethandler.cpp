@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "constants/access_permissions.h"
 #include "constants/form_flags.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
@@ -19,6 +20,8 @@
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
 #include "fpdfsdk/formfiller/cffl_formfiller.h"
+#include "third_party/base/ptr_util.h"
+#include "third_party/base/stl_util.h"
 
 CPDFSDK_WidgetHandler::CPDFSDK_WidgetHandler() = default;
 
@@ -47,20 +50,21 @@ bool CPDFSDK_WidgetHandler::CanAnswer(CPDFSDK_Annot* pAnnot) {
 
   CPDF_Page* pPage = pWidget->GetPDFPage();
   uint32_t dwPermissions = pPage->GetDocument()->GetUserPermissions();
-  return (dwPermissions & FPDFPERM_FILL_FORM) ||
-         (dwPermissions & FPDFPERM_ANNOT_FORM);
+  return (dwPermissions & pdfium::access_permissions::kFillForm) ||
+         (dwPermissions & pdfium::access_permissions::kModifyAnnotation);
 }
 
-CPDFSDK_Annot* CPDFSDK_WidgetHandler::NewAnnot(CPDF_Annot* pAnnot,
-                                               CPDFSDK_PageView* pPage) {
+std::unique_ptr<CPDFSDK_Annot> CPDFSDK_WidgetHandler::NewAnnot(
+    CPDF_Annot* pAnnot,
+    CPDFSDK_PageView* pPageView) {
   CPDFSDK_InteractiveForm* pForm = m_pFormFillEnv->GetInteractiveForm();
   CPDF_InteractiveForm* pPDFForm = pForm->GetInteractiveForm();
   CPDF_FormControl* pCtrl = pPDFForm->GetControlByDict(pAnnot->GetAnnotDict());
   if (!pCtrl)
     return nullptr;
 
-  CPDFSDK_Widget* pWidget = new CPDFSDK_Widget(pAnnot, pPage, pForm);
-  pForm->AddMap(pCtrl, pWidget);
+  auto pWidget = pdfium::MakeUnique<CPDFSDK_Widget>(pAnnot, pPageView, pForm);
+  pForm->AddMap(pCtrl, pWidget.get());
   if (pPDFForm->NeedConstructAP())
     pWidget->ResetAppearance(pdfium::nullopt, false);
   return pWidget;
@@ -139,10 +143,10 @@ bool CPDFSDK_WidgetHandler::OnMouseMove(CPDFSDK_PageView* pPageView,
 bool CPDFSDK_WidgetHandler::OnMouseWheel(CPDFSDK_PageView* pPageView,
                                          ObservedPtr<CPDFSDK_Annot>* pAnnot,
                                          uint32_t nFlags,
-                                         short zDelta,
-                                         const CFX_PointF& point) {
+                                         const CFX_PointF& point,
+                                         const CFX_Vector& delta) {
   return !(*pAnnot)->IsSignatureWidget() &&
-         m_pFormFiller->OnMouseWheel(pPageView, pAnnot, nFlags, zDelta, point);
+         m_pFormFiller->OnMouseWheel(pPageView, pAnnot, nFlags, point, delta);
 }
 
 bool CPDFSDK_WidgetHandler::OnRButtonDown(CPDFSDK_PageView* pPageView,
@@ -211,7 +215,7 @@ void CPDFSDK_WidgetHandler::OnLoad(CPDFSDK_Annot* pAnnot) {
 #ifdef PDF_ENABLE_XFA
   CPDFSDK_PageView* pPageView = pAnnot->GetPageView();
   auto* pContext = pPageView->GetFormFillEnv()->GetDocExtension();
-  if (pContext->ContainsExtensionForegroundForm()) {
+  if (pContext && pContext->ContainsExtensionForegroundForm()) {
     if (!pWidget->IsAppearanceValid() && !pWidget->GetValue().IsEmpty())
       pWidget->ResetXFAAppearance(false);
   }
@@ -220,12 +224,18 @@ void CPDFSDK_WidgetHandler::OnLoad(CPDFSDK_Annot* pAnnot) {
 
 bool CPDFSDK_WidgetHandler::OnSetFocus(ObservedPtr<CPDFSDK_Annot>* pAnnot,
                                        uint32_t nFlag) {
+  if (!IsFocusableAnnot((*pAnnot)->GetPDFAnnot()->GetSubtype()))
+    return false;
+
   return (*pAnnot)->IsSignatureWidget() ||
          m_pFormFiller->OnSetFocus(pAnnot, nFlag);
 }
 
 bool CPDFSDK_WidgetHandler::OnKillFocus(ObservedPtr<CPDFSDK_Annot>* pAnnot,
                                         uint32_t nFlag) {
+  if (!IsFocusableAnnot((*pAnnot)->GetPDFAnnot()->GetSubtype()))
+    return false;
+
   return (*pAnnot)->IsSignatureWidget() ||
          m_pFormFiller->OnKillFocus(pAnnot, nFlag);
 }
@@ -290,4 +300,12 @@ bool CPDFSDK_WidgetHandler::HitTest(CPDFSDK_PageView* pPageView,
   ASSERT(pPageView);
   ASSERT(pAnnot);
   return GetViewBBox(pPageView, pAnnot).Contains(point);
+}
+
+bool CPDFSDK_WidgetHandler::IsFocusableAnnot(
+    const CPDF_Annot::Subtype& annot_type) const {
+  ASSERT(annot_type == CPDF_Annot::Subtype::WIDGET);
+
+  return pdfium::ContainsValue(m_pFormFillEnv->GetFocusableAnnotSubtypes(),
+                               annot_type);
 }

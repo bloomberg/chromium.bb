@@ -15,7 +15,8 @@
 #include "dawn_native/vulkan/BindGroupLayoutVk.h"
 
 #include "common/BitSetIterator.h"
-#include "dawn_native/vulkan/DescriptorSetService.h"
+#include "dawn_native/vulkan/BindGroupVk.h"
+#include "dawn_native/vulkan/DescriptorSetAllocator.h"
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
 #include "dawn_native/vulkan/VulkanError.h"
@@ -52,14 +53,20 @@ namespace dawn_native { namespace vulkan {
                 }
                 return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             case wgpu::BindingType::Sampler:
+            case wgpu::BindingType::ComparisonSampler:
                 return VK_DESCRIPTOR_TYPE_SAMPLER;
             case wgpu::BindingType::SampledTexture:
                 return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
             case wgpu::BindingType::StorageBuffer:
+            case wgpu::BindingType::ReadonlyStorageBuffer:
                 if (isDynamic) {
                     return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
                 }
                 return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            case wgpu::BindingType::ReadonlyStorageTexture:
+            case wgpu::BindingType::WriteonlyStorageTexture:
+                return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            case wgpu::BindingType::StorageTexture:
             default:
                 UNREACHABLE();
         }
@@ -69,28 +76,29 @@ namespace dawn_native { namespace vulkan {
     ResultOrError<BindGroupLayout*> BindGroupLayout::Create(
         Device* device,
         const BindGroupLayoutDescriptor* descriptor) {
-        std::unique_ptr<BindGroupLayout> bgl =
-            std::make_unique<BindGroupLayout>(device, descriptor);
+        Ref<BindGroupLayout> bgl = AcquireRef(new BindGroupLayout(device, descriptor));
         DAWN_TRY(bgl->Initialize());
-        return bgl.release();
+        return bgl.Detach();
     }
 
     MaybeError BindGroupLayout::Initialize() {
-        const LayoutBindingInfo& info = GetBindingInfo();
-
         // Compute the bindings that will be chained in the DescriptorSetLayout create info. We add
         // one entry per binding set. This might be optimized by computing continuous ranges of
         // bindings of the same type.
         uint32_t numBindings = 0;
         std::array<VkDescriptorSetLayoutBinding, kMaxBindingsPerGroup> bindings;
-        for (uint32_t bindingIndex : IterateBitSet(info.mask)) {
-            VkDescriptorSetLayoutBinding* binding = &bindings[numBindings];
-            binding->binding = bindingIndex;
-            binding->descriptorType =
-                VulkanDescriptorType(info.types[bindingIndex], info.hasDynamicOffset[bindingIndex]);
-            binding->descriptorCount = 1;
-            binding->stageFlags = VulkanShaderStageFlags(info.visibilities[bindingIndex]);
-            binding->pImmutableSamplers = nullptr;
+        for (const auto& it : GetBindingMap()) {
+            BindingNumber bindingNumber = it.first;
+            BindingIndex bindingIndex = it.second;
+            const BindingInfo& bindingInfo = GetBindingInfo(bindingIndex);
+
+            VkDescriptorSetLayoutBinding* vkBinding = &bindings[numBindings];
+            vkBinding->binding = bindingNumber;
+            vkBinding->descriptorType =
+                VulkanDescriptorType(bindingInfo.type, bindingInfo.hasDynamicOffset);
+            vkBinding->descriptorCount = 1;
+            vkBinding->stageFlags = VulkanShaderStageFlags(bindingInfo.visibility);
+            vkBinding->pImmutableSamplers = nullptr;
 
             numBindings++;
         }
@@ -104,112 +112,70 @@ namespace dawn_native { namespace vulkan {
 
         Device* device = ToBackend(GetDevice());
         DAWN_TRY(CheckVkSuccess(device->fn.CreateDescriptorSetLayout(
-                                    device->GetVkDevice(), &createInfo, nullptr, &mHandle),
+                                    device->GetVkDevice(), &createInfo, nullptr, &*mHandle),
                                 "CreateDescriptorSetLayout"));
 
         // Compute the size of descriptor pools used for this layout.
         std::map<VkDescriptorType, uint32_t> descriptorCountPerType;
 
-        for (uint32_t bindingIndex : IterateBitSet(info.mask)) {
+        for (BindingIndex bindingIndex = 0; bindingIndex < GetBindingCount(); ++bindingIndex) {
+            const BindingInfo& bindingInfo = GetBindingInfo(bindingIndex);
             VkDescriptorType vulkanType =
-                VulkanDescriptorType(info.types[bindingIndex], info.hasDynamicOffset[bindingIndex]);
+                VulkanDescriptorType(bindingInfo.type, bindingInfo.hasDynamicOffset);
 
             // map::operator[] will return 0 if the key doesn't exist.
             descriptorCountPerType[vulkanType]++;
         }
 
-        mPoolSizes.reserve(descriptorCountPerType.size());
-        for (const auto& it : descriptorCountPerType) {
-            mPoolSizes.push_back(VkDescriptorPoolSize{it.first, it.second});
-        }
-
+        // TODO(enga): Consider deduping allocators for layouts with the same descriptor type
+        // counts.
+        mDescriptorSetAllocator =
+            std::make_unique<DescriptorSetAllocator>(this, std::move(descriptorCountPerType));
         return {};
+    }
+
+    BindGroupLayout::BindGroupLayout(DeviceBase* device,
+                                     const BindGroupLayoutDescriptor* descriptor)
+        : BindGroupLayoutBase(device, descriptor),
+          mBindGroupAllocator(MakeFrontendBindGroupAllocator<BindGroup>(4096)) {
     }
 
     BindGroupLayout::~BindGroupLayout() {
         Device* device = ToBackend(GetDevice());
 
         // DescriptorSetLayout aren't used by execution on the GPU and can be deleted at any time,
-        // so we destroy mHandle immediately instead of using the FencedDeleter
+        // so we can destroy mHandle immediately instead of using the FencedDeleter.
+        // (Swiftshader implements this wrong b/154522740).
+        // In practice, the GPU is done with all descriptor sets because bind group deallocation
+        // refs the bind group layout so that once the bind group is finished being used, we can
+        // recycle its descriptor set.
         if (mHandle != VK_NULL_HANDLE) {
             device->fn.DestroyDescriptorSetLayout(device->GetVkDevice(), mHandle, nullptr);
             mHandle = VK_NULL_HANDLE;
         }
-
-        FencedDeleter* deleter = device->GetFencedDeleter();
-        for (const SingleDescriptorSetAllocation& allocation : mAllocations) {
-            deleter->DeleteWhenUnused(allocation.pool);
-        }
-        mAllocations.clear();
     }
 
     VkDescriptorSetLayout BindGroupLayout::GetHandle() const {
         return mHandle;
     }
 
-    ResultOrError<DescriptorSetAllocation> BindGroupLayout::AllocateOneSet() {
-        Device* device = ToBackend(GetDevice());
+    ResultOrError<BindGroup*> BindGroupLayout::AllocateBindGroup(
+        Device* device,
+        const BindGroupDescriptor* descriptor) {
+        DescriptorSetAllocation descriptorSetAllocation;
+        DAWN_TRY_ASSIGN(descriptorSetAllocation, mDescriptorSetAllocator->Allocate());
 
-        // Reuse a previous allocation if available.
-        if (!mAvailableAllocations.empty()) {
-            size_t index = mAvailableAllocations.back();
-            mAvailableAllocations.pop_back();
-            return {{index, mAllocations[index].set}};
-        }
-
-        // Create a pool to hold our descriptor set.
-        // TODO(cwallez@chromium.org): This horribly inefficient, have more than one descriptor
-        // set per pool.
-        VkDescriptorPoolCreateInfo createInfo;
-        createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        createInfo.pNext = nullptr;
-        createInfo.flags = 0;
-        createInfo.maxSets = 1;
-        createInfo.poolSizeCount = static_cast<uint32_t>(mPoolSizes.size());
-        createInfo.pPoolSizes = mPoolSizes.data();
-
-        VkDescriptorPool descriptorPool;
-        DAWN_TRY(CheckVkSuccess(device->fn.CreateDescriptorPool(device->GetVkDevice(), &createInfo,
-                                                                nullptr, &descriptorPool),
-                                "CreateDescriptorPool"));
-
-        // Allocate our single set.
-        VkDescriptorSetAllocateInfo allocateInfo;
-        allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocateInfo.pNext = nullptr;
-        allocateInfo.descriptorPool = descriptorPool;
-        allocateInfo.descriptorSetCount = 1;
-        allocateInfo.pSetLayouts = &mHandle;
-
-        VkDescriptorSet descriptorSet;
-        MaybeError result = CheckVkSuccess(
-            device->fn.AllocateDescriptorSets(device->GetVkDevice(), &allocateInfo, &descriptorSet),
-            "AllocateDescriptorSets");
-
-        if (result.IsError()) {
-            // On an error we can destroy the pool immediately because no command references it.
-            device->fn.DestroyDescriptorPool(device->GetVkDevice(), descriptorPool, nullptr);
-            return result.AcquireError();
-        }
-
-        mAllocations.push_back({descriptorPool, descriptorSet});
-        return {{mAllocations.size() - 1, descriptorSet}};
+        return mBindGroupAllocator.Allocate(device, descriptor, descriptorSetAllocation);
     }
 
-    void BindGroupLayout::Deallocate(DescriptorSetAllocation* allocation) {
-        // We can't reuse the descriptor set right away because the Vulkan spec says in the
-        // documentation for vkCmdBindDescriptorSets that the set may be consumed any time between
-        // host execution of the command and the end of the draw/dispatch.
-        ToBackend(GetDevice())
-            ->GetDescriptorSetService()
-            ->AddDeferredDeallocation(this, allocation->index);
-
-        // Clear the content of allocation so that use after frees are more visible.
-        *allocation = {};
+    void BindGroupLayout::DeallocateBindGroup(BindGroup* bindGroup,
+                                              DescriptorSetAllocation* descriptorSetAllocation) {
+        mDescriptorSetAllocator->Deallocate(descriptorSetAllocation);
+        mBindGroupAllocator.Deallocate(bindGroup);
     }
 
-    void BindGroupLayout::FinishDeallocation(size_t index) {
-        mAvailableAllocations.push_back(index);
+    void BindGroupLayout::FinishDeallocation(Serial completedSerial) {
+        mDescriptorSetAllocator->FinishDeallocation(completedSerial);
     }
 
 }}  // namespace dawn_native::vulkan

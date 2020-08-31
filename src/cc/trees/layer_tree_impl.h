@@ -21,6 +21,7 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_list_iterator.h"
+#include "cc/metrics/event_metrics.h"
 #include "cc/paint/discardable_image_map.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/trees/browser_controls_params.h"
@@ -127,6 +128,7 @@ class CC_EXPORT LayerTreeImpl {
   ImageDecodeCache* image_decode_cache() const;
   ImageAnimationController* image_animation_controller() const;
   FrameRateCounter* frame_rate_counter() const;
+  base::Optional<int> current_universal_throughput();
   MemoryHistory* memory_history() const;
   DebugRectHistory* debug_rect_history() const;
   bool IsActiveTree() const;
@@ -136,7 +138,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* FindActiveTreeLayerById(int id);
   LayerImpl* FindPendingTreeLayerById(int id);
   bool PinchGestureActive() const;
-  viz::BeginFrameArgs CurrentBeginFrameArgs() const;
+  const viz::BeginFrameArgs& CurrentBeginFrameArgs() const;
   base::TimeDelta CurrentBeginFrameInterval() const;
   const gfx::Rect ViewportRectForTilePriority() const;
   std::unique_ptr<ScrollbarAnimationController>
@@ -153,7 +155,6 @@ class CC_EXPORT LayerTreeImpl {
   void UpdateImageDecodingHints(
       base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
           decoding_mode_map);
-  bool IsActivelyScrolling() const;
   int GetMSAASampleCountForRaster(
       const scoped_refptr<DisplayItemList>& display_list);
 
@@ -394,8 +395,7 @@ class CC_EXPORT LayerTreeImpl {
   // internal (i.e. not external) device viewport.
   gfx::Rect internal_device_viewport() { return device_viewport_rect_; }
 
-  void SetRasterColorSpace(int raster_color_space_id,
-                           const gfx::ColorSpace& raster_color_space);
+  void SetRasterColorSpace(const gfx::ColorSpace& raster_color_space);
   // OOPIFs need to know the page scale factor used in the main frame, but it
   // is distributed differently (via VisualPropertiesSync), and used only to
   // set raster-scale (page_scale_factor has geometry implications that are
@@ -417,7 +417,6 @@ class CC_EXPORT LayerTreeImpl {
   const gfx::ColorSpace& raster_color_space() const {
     return raster_color_space_;
   }
-  int raster_color_space_id() const { return raster_color_space_id_; }
 
   SyncedElasticOverscroll* elastic_overscroll() {
     return elastic_overscroll_.get();
@@ -492,14 +491,11 @@ class CC_EXPORT LayerTreeImpl {
 
   LayerImpl* LayerById(int id) const;
   LayerImpl* LayerByElementId(ElementId element_id) const;
-  LayerImpl* ScrollableLayerByElementId(ElementId element_id) const;
 
   bool IsElementInPropertyTree(ElementId element_id) const;
 
   void AddToElementLayerList(ElementId element_id, LayerImpl* layer);
   void RemoveFromElementLayerList(ElementId element_id);
-
-  void AddScrollableLayer(LayerImpl* layer);
 
   void SetSurfaceRanges(const base::flat_set<viz::SurfaceRange> surface_ranges);
   const base::flat_set<viz::SurfaceRange>& SurfaceRanges() const;
@@ -596,6 +592,12 @@ class CC_EXPORT LayerTreeImpl {
   std::vector<const LayerImpl*> FindLayersHitByPointInNonFastScrollableRegion(
       const gfx::PointF& screen_space_point);
 
+  // Returns the ElementId representing a frame's document at the given point.
+  // In cases where cc doesn't have enough information to perform accurate
+  // attribution (e.g. in the presence of a complex clip), kInvalidElementId is
+  // returned.
+  ElementId FindFrameElementIdAtPoint(const gfx::PointF& screen_space_point);
+
   void RegisterSelection(const LayerSelection& selection);
 
   bool HandleVisibilityChanged() const { return handle_visibility_changed_; }
@@ -639,6 +641,10 @@ class CC_EXPORT LayerTreeImpl {
   void SetPendingPageScaleAnimation(
       std::unique_ptr<PendingPageScaleAnimation> pending_animation);
   std::unique_ptr<PendingPageScaleAnimation> TakePendingPageScaleAnimation();
+
+  void AppendEventsMetricsFromMainThread(
+      std::vector<EventMetrics> events_metrics);
+  std::vector<EventMetrics> TakeEventsMetrics();
 
   // Requests that we force send RenderFrameMetadata with the next frame.
   void RequestForceSendMetadata() { force_send_metadata_request_ = true; }
@@ -749,7 +755,6 @@ class CC_EXPORT LayerTreeImpl {
 
   float device_scale_factor_;
   float painted_device_scale_factor_;
-  int raster_color_space_id_ = -1;
   gfx::ColorSpace raster_color_space_;
 
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
@@ -778,9 +783,6 @@ class CC_EXPORT LayerTreeImpl {
       element_id_to_filter_animations_;
   std::unordered_map<ElementId, FilterOperations, ElementIdHash>
       element_id_to_backdrop_filter_animations_;
-
-  std::unordered_map<ElementId, LayerImpl*, ElementIdHash>
-      element_id_to_scrollable_layer_;
 
   struct ScrollbarLayerIds {
     int horizontal = Layer::INVALID_ID;
@@ -856,6 +858,9 @@ class CC_EXPORT LayerTreeImpl {
   gfx::OverlayTransform display_transform_hint_ = gfx::OVERLAY_TRANSFORM_NONE;
 
   std::vector<LayerTreeHost::PresentationTimeCallback> presentation_callbacks_;
+
+  // Event metrics that are reported back from the main thread.
+  std::vector<EventMetrics> events_metrics_from_main_thread_;
 };
 
 }  // namespace cc

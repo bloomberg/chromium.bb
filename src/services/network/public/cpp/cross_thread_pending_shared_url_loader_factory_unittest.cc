@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -19,7 +20,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -55,8 +55,8 @@ class CrossThreadPendingSharedURLLoaderFactoryTest : public ::testing::Test {
  protected:
   void SetUp() override {
     main_thread_ = base::SequencedTaskRunnerHandle::Get();
-    loader_thread_ = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives()});
+    loader_thread_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::WithBaseSyncPrimitives()});
 
     test_url_loader_factory_ =
         std::make_unique<CloneCheckingURLLoaderFactory>(loader_thread_);
@@ -183,8 +183,8 @@ TEST_F(CrossThreadPendingSharedURLLoaderFactoryTest, FurtherClone) {
 TEST_F(CrossThreadPendingSharedURLLoaderFactoryTest, CloneThirdThread) {
   // Clone to a third thread.
   scoped_refptr<base::SequencedTaskRunner> third_thread =
-      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                       base::WithBaseSyncPrimitives()});
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::WithBaseSyncPrimitives()});
 
   scoped_refptr<SharedURLLoaderFactory> main_thread_factory =
       SharedURLLoaderFactory::Create(std::move(pending_factory_));

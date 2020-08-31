@@ -522,6 +522,44 @@ SpdyProtocolErrorDetails MapFramerErrorToProtocolError(
       return SPDY_ERROR_INVALID_CONTROL_FRAME_SIZE;
     case http2::Http2DecoderAdapter::SPDY_OVERSIZED_PAYLOAD:
       return SPDY_ERROR_OVERSIZED_PAYLOAD;
+    case http2::Http2DecoderAdapter::SPDY_HPACK_INDEX_VARINT_ERROR:
+      return SPDY_ERROR_HPACK_INDEX_VARINT_ERROR;
+    case http2::Http2DecoderAdapter::SPDY_HPACK_NAME_LENGTH_VARINT_ERROR:
+      return SPDY_ERROR_HPACK_NAME_LENGTH_VARINT_ERROR;
+    case http2::Http2DecoderAdapter::SPDY_HPACK_VALUE_LENGTH_VARINT_ERROR:
+      return SPDY_ERROR_HPACK_VALUE_LENGTH_VARINT_ERROR;
+    case http2::Http2DecoderAdapter::SPDY_HPACK_NAME_TOO_LONG:
+      return SPDY_ERROR_HPACK_NAME_TOO_LONG;
+    case http2::Http2DecoderAdapter::SPDY_HPACK_VALUE_TOO_LONG:
+      return SPDY_ERROR_HPACK_VALUE_TOO_LONG;
+    case http2::Http2DecoderAdapter::SPDY_HPACK_NAME_HUFFMAN_ERROR:
+      return SPDY_ERROR_HPACK_NAME_HUFFMAN_ERROR;
+    case http2::Http2DecoderAdapter::SPDY_HPACK_VALUE_HUFFMAN_ERROR:
+      return SPDY_ERROR_HPACK_VALUE_HUFFMAN_ERROR;
+    case http2::Http2DecoderAdapter::
+        SPDY_HPACK_MISSING_DYNAMIC_TABLE_SIZE_UPDATE:
+      return SPDY_ERROR_HPACK_MISSING_DYNAMIC_TABLE_SIZE_UPDATE;
+    case http2::Http2DecoderAdapter::SPDY_HPACK_INVALID_INDEX:
+      return SPDY_ERROR_HPACK_INVALID_INDEX;
+    case http2::Http2DecoderAdapter::SPDY_HPACK_INVALID_NAME_INDEX:
+      return SPDY_ERROR_HPACK_INVALID_NAME_INDEX;
+    case http2::Http2DecoderAdapter::
+        SPDY_HPACK_DYNAMIC_TABLE_SIZE_UPDATE_NOT_ALLOWED:
+      return SPDY_ERROR_HPACK_DYNAMIC_TABLE_SIZE_UPDATE_NOT_ALLOWED;
+    case http2::Http2DecoderAdapter::
+        SPDY_HPACK_INITIAL_DYNAMIC_TABLE_SIZE_UPDATE_IS_ABOVE_LOW_WATER_MARK:
+      return SPDY_ERROR_HPACK_INITIAL_DYNAMIC_TABLE_SIZE_UPDATE_IS_ABOVE_LOW_WATER_MARK;
+    case http2::Http2DecoderAdapter::
+        SPDY_HPACK_DYNAMIC_TABLE_SIZE_UPDATE_IS_ABOVE_ACKNOWLEDGED_SETTING:
+      return SPDY_ERROR_HPACK_DYNAMIC_TABLE_SIZE_UPDATE_IS_ABOVE_ACKNOWLEDGED_SETTING;
+    case http2::Http2DecoderAdapter::SPDY_HPACK_TRUNCATED_BLOCK:
+      return SPDY_ERROR_HPACK_TRUNCATED_BLOCK;
+    case http2::Http2DecoderAdapter::SPDY_HPACK_FRAGMENT_TOO_LONG:
+      return SPDY_ERROR_HPACK_FRAGMENT_TOO_LONG;
+    case http2::Http2DecoderAdapter::
+        SPDY_HPACK_COMPRESSED_HEADER_SIZE_EXCEEDS_LIMIT:
+      return SPDY_ERROR_HPACK_COMPRESSED_HEADER_SIZE_EXCEEDS_LIMIT;
+
     case http2::Http2DecoderAdapter::LAST_ERROR:
       NOTREACHED();
   }
@@ -543,6 +581,27 @@ Error MapFramerErrorToNetError(
     case http2::Http2DecoderAdapter::SPDY_UNSUPPORTED_VERSION:
       return ERR_HTTP2_PROTOCOL_ERROR;
     case http2::Http2DecoderAdapter::SPDY_DECOMPRESS_FAILURE:
+    case http2::Http2DecoderAdapter::SPDY_HPACK_INDEX_VARINT_ERROR:
+    case http2::Http2DecoderAdapter::SPDY_HPACK_NAME_LENGTH_VARINT_ERROR:
+    case http2::Http2DecoderAdapter::SPDY_HPACK_VALUE_LENGTH_VARINT_ERROR:
+    case http2::Http2DecoderAdapter::SPDY_HPACK_NAME_TOO_LONG:
+    case http2::Http2DecoderAdapter::SPDY_HPACK_VALUE_TOO_LONG:
+    case http2::Http2DecoderAdapter::SPDY_HPACK_NAME_HUFFMAN_ERROR:
+    case http2::Http2DecoderAdapter::SPDY_HPACK_VALUE_HUFFMAN_ERROR:
+    case http2::Http2DecoderAdapter::
+        SPDY_HPACK_MISSING_DYNAMIC_TABLE_SIZE_UPDATE:
+    case http2::Http2DecoderAdapter::SPDY_HPACK_INVALID_INDEX:
+    case http2::Http2DecoderAdapter::SPDY_HPACK_INVALID_NAME_INDEX:
+    case http2::Http2DecoderAdapter::
+        SPDY_HPACK_DYNAMIC_TABLE_SIZE_UPDATE_NOT_ALLOWED:
+    case http2::Http2DecoderAdapter::
+        SPDY_HPACK_INITIAL_DYNAMIC_TABLE_SIZE_UPDATE_IS_ABOVE_LOW_WATER_MARK:
+    case http2::Http2DecoderAdapter::
+        SPDY_HPACK_DYNAMIC_TABLE_SIZE_UPDATE_IS_ABOVE_ACKNOWLEDGED_SETTING:
+    case http2::Http2DecoderAdapter::SPDY_HPACK_TRUNCATED_BLOCK:
+    case http2::Http2DecoderAdapter::SPDY_HPACK_FRAGMENT_TOO_LONG:
+    case http2::Http2DecoderAdapter::
+        SPDY_HPACK_COMPRESSED_HEADER_SIZE_EXCEEDS_LIMIT:
       return ERR_HTTP2_COMPRESSION_ERROR;
     case http2::Http2DecoderAdapter::SPDY_COMPRESS_FAILURE:
       return ERR_HTTP2_COMPRESSION_ERROR;
@@ -1233,7 +1292,7 @@ std::unique_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(
   // just a FIN with no payload.
   if (effective_len != 0) {
     DecreaseSendWindowSize(static_cast<int32_t>(effective_len));
-    data_buffer->AddConsumeCallback(base::Bind(
+    data_buffer->AddConsumeCallback(base::BindRepeating(
         &SpdySession::OnWriteBufferConsumed, weak_factory_.GetWeakPtr(),
         static_cast<size_t>(effective_len)));
   }
@@ -1420,6 +1479,8 @@ base::Value SpdySession::GetInfoAsValue() const {
     dict.SetKey("aliases", std::move(alias_list));
   }
   dict.SetStringKey("proxy", host_port_proxy_pair().second.ToURI());
+  dict.SetStringKey("network_isolation_key",
+                    spdy_session_key_.network_isolation_key().ToDebugString());
 
   dict.SetIntKey("active_streams", active_streams_.size());
 
@@ -3131,8 +3192,8 @@ void SpdySession::OnStreamFrameData(spdy::SpdyStreamId stream_id,
     buffer = std::make_unique<SpdyBuffer>(data, len);
 
     DecreaseRecvWindowSize(static_cast<int32_t>(len));
-    buffer->AddConsumeCallback(base::Bind(&SpdySession::OnReadBufferConsumed,
-                                          weak_factory_.GetWeakPtr()));
+    buffer->AddConsumeCallback(base::BindRepeating(
+        &SpdySession::OnReadBufferConsumed, weak_factory_.GetWeakPtr()));
   } else {
     DCHECK_EQ(len, 0u);
   }

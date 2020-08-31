@@ -14,6 +14,7 @@
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/render/cpdf_docrenderdata.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/base/ptr_util.h"
 
 class CPDF_CIDFontTest : public testing::Test {
  protected:
@@ -32,7 +33,7 @@ TEST_F(CPDF_CIDFontTest, BUG_920636) {
     {
       auto descendant_font = pdfium::MakeRetain<CPDF_Dictionary>();
       descendant_font->SetNewFor<CPDF_Name>("BaseFont", "CourierStd");
-      descendant_fonts->Add(std::move(descendant_font));
+      descendant_fonts->Append(std::move(descendant_font));
     }
     font_dict->SetFor("DescendantFonts", std::move(descendant_fonts));
   }

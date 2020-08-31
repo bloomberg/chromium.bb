@@ -15,7 +15,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
-#include "components/safe_browsing/db/database_manager.h"
+#include "components/safe_browsing/core/db/database_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "url/origin.h"
 
@@ -71,7 +71,7 @@ class CrowdDenySafeBrowsingRequest::SafeBrowsingClient
       const safe_browsing::ThreatMetadata& metadata) {
     return metadata.api_permissions.count(
                kSafeBrowsingNotificationPermissionName)
-               ? Verdict::kKnownToShowUnsolicitedNotificationPermissionRequests
+               ? Verdict::kUnacceptable
                : Verdict::kAcceptable;
   }
 

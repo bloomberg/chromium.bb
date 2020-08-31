@@ -5,7 +5,7 @@
 #include "components/viz/common/resources/single_release_callback.h"
 
 #include "base/callback_helpers.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace viz {
 
@@ -15,9 +15,7 @@ SingleReleaseCallback::SingleReleaseCallback(ReleaseCallback callback)
       << "Use a NULL SingleReleaseCallback for an empty callback.";
 }
 
-SingleReleaseCallback::~SingleReleaseCallback() {
-  DCHECK(callback_.is_null()) << "SingleReleaseCallback was never run.";
-}
+SingleReleaseCallback::~SingleReleaseCallback() = default;
 
 void SingleReleaseCallback::Run(const gpu::SyncToken& sync_token,
                                 bool is_lost) {

@@ -14,7 +14,7 @@
 #include <smmintrin.h>  /* SSE4.1 */
 
 #include "aom/aom_integer.h"
-#include "av1/common/onyxc_int.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/common/txb_common.h"
 #include "aom_dsp/x86/synonyms.h"
 

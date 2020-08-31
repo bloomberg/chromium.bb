@@ -8,8 +8,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "components/captive_portal/captive_portal_detector.h"
-#include "components/captive_portal/captive_portal_metrics.h"
+#include "components/captive_portal/core/captive_portal_detector.h"
+#include "components/captive_portal/core/captive_portal_metrics.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
@@ -24,8 +24,11 @@ IOSCaptivePortalBlockingPage::IOSCaptivePortalBlockingPage(
     web::WebState* web_state,
     const GURL& request_url,
     const GURL& landing_url,
-    base::OnceCallback<void(bool)> callback)
-    : IOSSecurityInterstitialPage(web_state, request_url),
+    base::OnceCallback<void(bool)> callback,
+    security_interstitials::IOSBlockingPageControllerClient* client)
+    : security_interstitials::IOSSecurityInterstitialPage(web_state,
+                                                          request_url,
+                                                          client),
       landing_url_(landing_url),
       callback_(std::move(callback)) {
   captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
@@ -104,5 +107,26 @@ void IOSCaptivePortalBlockingPage::CommandReceived(const std::string& command) {
 
     CaptivePortalDetectorTabHelper::FromWebState(web_state())
         ->DisplayCaptivePortalLoginPage(landing_url_);
+  }
+}
+
+void IOSCaptivePortalBlockingPage::HandleScriptCommand(
+    const base::DictionaryValue& message,
+    const GURL& origin_url,
+    bool user_is_interacting,
+    web::WebFrame* sender_frame) {
+  std::string command;
+  if (!message.GetString("command", &command)) {
+    LOG(ERROR) << "JS message parameter not found: command";
+    return;
+  }
+  // Non-proceed commands are handled the same between committed and
+  // non-committed interstitials, so the CommandReceived method can be used.
+  // Remove the command prefix since it is ignored when converting the value
+  // to a SecurityInterstitialCommand.
+  std::size_t delimiter = command.find(".");
+  if (delimiter != std::string::npos) {
+    IOSCaptivePortalBlockingPage::CommandReceived(
+        command.substr(delimiter + 1));
   }
 }

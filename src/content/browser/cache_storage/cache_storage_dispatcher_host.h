@@ -18,6 +18,10 @@ namespace url {
 class Origin;
 }
 
+namespace network {
+struct CrossOriginEmbedderPolicy;
+}
+
 namespace content {
 
 class CacheStorageContextImpl;
@@ -40,8 +44,12 @@ class CacheStorageDispatcherHost {
   // BindingSet's context. This guarantees that the browser process uses the
   // origin of the client known at the binding time, instead of relying on the
   // client to provide its origin at every method call.
-  void AddReceiver(mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
-                   const url::Origin& origin);
+  void AddReceiver(
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+          coep_reporter,
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver);
 
  private:
   class CacheStorageImpl;

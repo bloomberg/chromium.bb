@@ -9,14 +9,15 @@
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace WTF {
 
@@ -26,23 +27,26 @@ class String;
 
 namespace blink {
 
-class ExecutionContext;
+class ExceptionState;
+class LocalDOMWindow;
 class ScriptState;
 class WakeLockManager;
 
 class MODULES_EXPORT WakeLock final : public ScriptWrappable,
-                                      public ContextLifecycleObserver,
+                                      public ExecutionContextLifecycleObserver,
                                       public PageVisibilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(WakeLock);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit WakeLock(Document&);
+  explicit WakeLock(LocalDOMWindow&);
   explicit WakeLock(DedicatedWorkerGlobalScope&);
 
-  ScriptPromise request(ScriptState*, const WTF::String& type);
+  ScriptPromise request(ScriptState*,
+                        const WTF::String& type,
+                        ExceptionState& exception_state);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // While this could be part of request() itself, having it as a separate
@@ -54,8 +58,8 @@ class MODULES_EXPORT WakeLock final : public ScriptWrappable,
                                     ScriptPromiseResolver*,
                                     mojom::blink::PermissionStatus);
 
-  // ContextLifecycleObserver implementation
-  void ContextDestroyed(ExecutionContext*) override;
+  // ExecutionContextLifecycleObserver implementation
+  void ContextDestroyed() override;
 
   // PageVisibilityObserver implementation
   void PageVisibilityChanged() override;
@@ -66,7 +70,9 @@ class MODULES_EXPORT WakeLock final : public ScriptWrappable,
       base::OnceCallback<void(mojom::blink::PermissionStatus)> callback);
   mojom::blink::PermissionService* GetPermissionService();
 
-  mojo::Remote<mojom::blink::PermissionService> permission_service_;
+  HeapMojoRemote<mojom::blink::PermissionService,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      permission_service_;
 
   // https://w3c.github.io/wake-lock/#concepts-and-state-record
   // Each platform wake lock (one per wake lock type) has an associated state

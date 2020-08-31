@@ -18,17 +18,18 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
-#include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_result.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
+#include "chrome/browser/push_messaging/push_messaging_features.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/buildflags.h"
@@ -42,6 +43,8 @@
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
+#include "components/permissions/permission_manager.h"
+#include "components/permissions/permission_result.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -86,6 +89,20 @@ const char kSilentPushUnsupportedMessage[] =
     "pushManager.subscribe({userVisibleOnly: true}) instead. See "
     "https://goo.gl/yqv4Q4 for more details.";
 
+// Message displayed in the console (as an error) when a GCM Sender ID is used
+// to create a subscription, which is unsupported. The subscription request will
+// have been blocked, and an exception will be thrown as well.
+const char kSenderIdRegistrationDisallowedMessage[] =
+    "The provided application server key is not a VAPID key. Only VAPID keys "
+    "are supported. For more information check https://crbug.com/979235.";
+
+// Message displayed in the console (as a warning) when a GCM Sender ID is used
+// to create a subscription, which will soon be unsupported.
+const char kSenderIdRegistrationDeprecatedMessage[] =
+    "The provided application server key is not a VAPID key. Only VAPID keys "
+    "will be supported in the future. For more information check "
+    "https://crbug.com/979235.";
+
 void RecordDeliveryStatus(blink::mojom::PushDeliveryStatus status) {
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus", status);
 }
@@ -95,13 +112,11 @@ void RecordUnsubscribeReason(blink::mojom::PushUnregistrationReason reason) {
 }
 
 void RecordUnsubscribeGCMResult(gcm::GCMClient::Result result) {
-  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UnregistrationGCMResult", result,
-                            gcm::GCMClient::LAST_RESULT + 1);
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UnregistrationGCMResult", result);
 }
 
 void RecordUnsubscribeIIDResult(InstanceID::Result result) {
-  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UnregistrationIIDResult", result,
-                            InstanceID::LAST_RESULT + 1);
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UnregistrationIIDResult", result);
 }
 
 blink::mojom::PermissionStatus ToPermissionStatus(
@@ -151,6 +166,21 @@ void LogMessageReceivedEventToDevTools(
       url::Origin::Create(app_identifier.origin()),
       content::DevToolsBackgroundService::kPushMessaging,
       "Push message received" /* event_name */, message_id, event_metadata);
+}
+
+content::RenderFrameHost* GetMainFrameForRenderFrameHost(
+    content::RenderFrameHost* render_frame_host) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+
+  return web_contents ? web_contents->GetMainFrame() : nullptr;
+}
+
+bool IsVapidKey(const std::string& application_server_key) {
+  // VAPID keys are NIST P-256 public keys in uncompressed format (64 bytes),
+  // verified through its length and the 0x04 prefix.
+  return application_server_key.size() == 65 &&
+         application_server_key[0] == 0x04;
 }
 
 }  // namespace
@@ -504,7 +534,7 @@ void PushMessagingServiceImpl::OnMessageDecryptionFailed(
 void PushMessagingServiceImpl::SubscribeFromDocument(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
-    int renderer_id,
+    int render_process_id,
     int render_frame_id,
     blink::mojom::PushSubscriptionOptionsPtr options,
     bool user_gesture,
@@ -528,16 +558,25 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
   }
 
   content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(renderer_id, render_frame_id);
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
-  if (!web_contents)
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+
+  if (!render_frame_host) {
+    // It is possible for `render_frame_host` to be nullptr here due to a race
+    // (crbug.com/1057981).
+    SubscribeEndWithError(
+        std::move(callback),
+        blink::mojom::PushRegistrationStatus::RENDERER_SHUTDOWN);
     return;
+  }
 
   if (!options->user_visible_only) {
-    web_contents->GetMainFrame()->AddMessageToConsole(
-        blink::mojom::ConsoleMessageLevel::kError,
-        kSilentPushUnsupportedMessage);
+    content::RenderFrameHost* main_frame =
+        GetMainFrameForRenderFrameHost(render_frame_host);
+
+    if (main_frame) {
+      main_frame->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kError,
+                                      kSilentPushUnsupportedMessage);
+    }
 
     SubscribeEndWithError(
         std::move(callback),
@@ -546,12 +585,13 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
   }
 
   // Push does not allow permission requests from iframes.
-  PermissionManager::Get(profile_)->RequestPermission(
+  PermissionManagerFactory::GetForProfile(profile_)->RequestPermission(
       ContentSettingsType::NOTIFICATIONS, render_frame_host, requesting_origin,
       user_gesture,
       base::BindOnce(&PushMessagingServiceImpl::DoSubscribe,
                      weak_factory_.GetWeakPtr(), app_identifier,
-                     std::move(options), std::move(callback)));
+                     std::move(options), std::move(callback), render_process_id,
+                     render_frame_id));
 }
 
 void PushMessagingServiceImpl::SubscribeFromWorker(
@@ -588,6 +628,7 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
   }
 
   DoSubscribe(app_identifier, std::move(options), std::move(register_callback),
+              /* render_process_id= */ -1, /* render_frame_id= */ -1,
               CONTENT_SETTING_ALLOW);
 }
 
@@ -601,7 +642,7 @@ blink::mojom::PermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
   // won't have an embedding origin at all. Only consider the requesting
   // |origin| when checking whether permission to use the API has been granted.
   return ToPermissionStatus(
-      PermissionManager::Get(profile_)
+      PermissionManagerFactory::GetForProfile(profile_)
           ->GetPermissionStatus(ContentSettingsType::NOTIFICATIONS, origin,
                                 origin)
           .content_setting);
@@ -615,6 +656,8 @@ void PushMessagingServiceImpl::DoSubscribe(
     const PushMessagingAppIdentifier& app_identifier,
     blink::mojom::PushSubscriptionOptionsPtr options,
     RegisterCallback register_callback,
+    int render_process_id,
+    int render_frame_id,
     ContentSetting content_setting) {
   if (content_setting != CONTENT_SETTING_ALLOW) {
     SubscribeEndWithError(
@@ -623,14 +666,42 @@ void PushMessagingServiceImpl::DoSubscribe(
     return;
   }
 
-  IncreasePushSubscriptionCount(1, true /* is_pending */);
-
   std::string application_server_key_string(
       options->application_server_key.begin(),
       options->application_server_key.end());
+
+  // TODO(peter): Move this check to the renderer process & Mojo message
+  // validation once the flag is always enabled, and remove the
+  // |render_process_id| and |render_frame_id| parameters from this method.
+  if (!IsVapidKey(application_server_key_string)) {
+    content::RenderFrameHost* render_frame_host =
+        content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+    content::RenderFrameHost* main_frame =
+        GetMainFrameForRenderFrameHost(render_frame_host);
+
+    if (base::FeatureList::IsEnabled(kPushMessagingDisallowSenderIDs)) {
+      if (main_frame) {
+        main_frame->AddMessageToConsole(
+            blink::mojom::ConsoleMessageLevel::kError,
+            kSenderIdRegistrationDisallowedMessage);
+      }
+      SubscribeEndWithError(
+          std::move(register_callback),
+          blink::mojom::PushRegistrationStatus::UNSUPPORTED_GCM_SENDER_ID);
+      return;
+    } else if (main_frame) {
+      main_frame->AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kWarning,
+          kSenderIdRegistrationDeprecatedMessage);
+    }
+  }
+
+  IncreasePushSubscriptionCount(1, true /* is_pending */);
+
   GetInstanceIDDriver()
       ->GetInstanceID(app_identifier.app_id())
       ->GetToken(NormalizeSenderInfo(application_server_key_string), kGCMScope,
+                 base::TimeDelta() /* time_to_live */,
                  std::map<std::string, std::string>() /* options */,
                  {} /* flags */,
                  base::BindOnce(&PushMessagingServiceImpl::DidSubscribe,
@@ -877,8 +948,8 @@ void PushMessagingServiceImpl::DidClearPushSubscriptionId(
 
   if (PushMessagingAppIdentifier::UseInstanceID(app_id)) {
     GetInstanceIDDriver()->GetInstanceID(app_id)->DeleteID(
-        base::Bind(&PushMessagingServiceImpl::DidDeleteID,
-                   weak_factory_.GetWeakPtr(), app_id, was_subscribed));
+        base::BindOnce(&PushMessagingServiceImpl::DidDeleteID,
+                       weak_factory_.GetWeakPtr(), app_id, was_subscribed));
 
   } else {
     auto unregister_callback =
@@ -959,10 +1030,10 @@ void PushMessagingServiceImpl::DidDeleteServiceWorkerRegistration(
       blink::mojom::PushUnregistrationReason::SERVICE_WORKER_UNREGISTERED,
       origin, service_worker_registration_id, app_identifier.app_id(),
       std::string() /* sender_id */,
-      base::Bind(&UnregisterCallbackToClosure,
-                 service_worker_unregistered_callback_for_testing_.is_null()
-                     ? base::DoNothing()
-                     : service_worker_unregistered_callback_for_testing_));
+      base::BindOnce(&UnregisterCallbackToClosure,
+                     service_worker_unregistered_callback_for_testing_.is_null()
+                         ? base::DoNothing()
+                         : service_worker_unregistered_callback_for_testing_));
 }
 
 void PushMessagingServiceImpl::SetServiceWorkerUnregisteredCallbackForTesting(
@@ -991,7 +1062,7 @@ void PushMessagingServiceImpl::DidDeleteServiceWorkerDatabase() {
         app_identifier.origin(),
         app_identifier.service_worker_registration_id(),
         app_identifier.app_id(), std::string() /* sender_id */,
-        base::Bind(&UnregisterCallbackToClosure, completed_closure));
+        base::BindOnce(&UnregisterCallbackToClosure, completed_closure));
   }
 }
 
@@ -1108,10 +1179,7 @@ void PushMessagingServiceImpl::Observe(
 
 std::string PushMessagingServiceImpl::NormalizeSenderInfo(
     const std::string& application_server_key) const {
-  // Only encode the |application_server_key| when it is a NIST P-256 public key
-  // in uncompressed format, verified through its length and the 0x04 prefix
-  // byte.
-  if (application_server_key.size() != 65 || application_server_key[0] != 0x04)
+  if (!IsVapidKey(application_server_key))
     return application_server_key;
 
   std::string encoded_application_server_key;

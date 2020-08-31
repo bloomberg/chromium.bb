@@ -5,6 +5,7 @@ __pycache__
 *.swp
 .project
 .pydevproject
+.mypy_cache
 
 # source cross-reference files.
 tags

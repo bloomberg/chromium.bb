@@ -11,6 +11,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "ui/aura/window.h"
 
@@ -38,12 +39,11 @@ class ASH_PUBLIC_EXPORT AppListController {
   virtual AppListClient* GetClient() = 0;
 
   // Adds an item to AppListModel.
-  virtual void AddItem(std::unique_ptr<ash::AppListItemMetadata> app_item) = 0;
+  virtual void AddItem(std::unique_ptr<AppListItemMetadata> app_item) = 0;
 
   // Adds an item into a certain folder in AppListModel.
-  virtual void AddItemToFolder(
-      std::unique_ptr<ash::AppListItemMetadata> app_item,
-      const std::string& folder_id) = 0;
+  virtual void AddItemToFolder(std::unique_ptr<AppListItemMetadata> app_item,
+                               const std::string& folder_id) = 0;
 
   // Removes an item by its id from AppListModel.
   virtual void RemoveItem(const std::string& id) = 0;
@@ -58,15 +58,7 @@ class ASH_PUBLIC_EXPORT AppListController {
 
   // Tells Ash what the current status of AppListModel should be,
   // e.g. the model is under synchronization or in normal status.
-  virtual void SetStatus(ash::AppListModelStatus status) = 0;
-
-  // Tells Ash what the current state of the app list should be,
-  // e.g. the user is searching for something, or showing apps, etc.
-  virtual void SetState(ash::AppListState state) = 0;
-
-  // Highlights the given item in the app list. If not present and it is later
-  // added, the item will be highlighted after being added.
-  virtual void HighlightItemInstalledFromUI(const std::string& id) = 0;
+  virtual void SetStatus(AppListModelStatus status) = 0;
 
   // Sets whether the search engine is Google or not.
   virtual void SetSearchEngineIsGoogle(bool is_google) = 0;
@@ -86,45 +78,25 @@ class ASH_PUBLIC_EXPORT AppListController {
 
   // Publishes search results to Ash to render them.
   virtual void PublishSearchResults(
-      std::vector<std::unique_ptr<ash::SearchResultMetadata>> results) = 0;
+      std::vector<std::unique_ptr<SearchResultMetadata>> results) = 0;
 
   // Updates an item's metadata (e.g. name, position, etc).
-  virtual void SetItemMetadata(
-      const std::string& id,
-      std::unique_ptr<ash::AppListItemMetadata> data) = 0;
+  virtual void SetItemMetadata(const std::string& id,
+                               std::unique_ptr<AppListItemMetadata> data) = 0;
 
   // Updates an item's icon.
   virtual void SetItemIcon(const std::string& id,
                            const gfx::ImageSkia& icon) = 0;
 
-  // Updates whether an item is installing.
-  virtual void SetItemIsInstalling(const std::string& id,
-                                   bool is_installing) = 0;
-
-  // Updates the downloaded percentage of an item.
-  virtual void SetItemPercentDownloaded(const std::string& id,
-                                        int32_t percent_downloaded) = 0;
-
   // Update the whole model, usually when profile changes happen in Chrome.
   virtual void SetModelData(
       int profile_id,
-      std::vector<std::unique_ptr<ash::AppListItemMetadata>> apps,
+      std::vector<std::unique_ptr<AppListItemMetadata>> apps,
       bool is_search_engine_google) = 0;
 
   // Updates a search rresult's metadata.
   virtual void SetSearchResultMetadata(
-      std::unique_ptr<ash::SearchResultMetadata> metadata) = 0;
-
-  // Updates whether a search result is being installed.
-  virtual void SetSearchResultIsInstalling(const std::string& id,
-                                           bool is_installing) = 0;
-
-  // Updates the download progress of a search result.
-  virtual void SetSearchResultPercentDownloaded(const std::string& id,
-                                                int32_t percent_downloaded) = 0;
-
-  // Called when the app represented by a search result is installed.
-  virtual void NotifySearchResultItemInstalled(const std::string& id) = 0;
+      std::unique_ptr<SearchResultMetadata> metadata) = 0;
 
   // Returns a map from each item's id to its shown index in the app list.
   using GetIdToAppListIndexMapCallback =
@@ -150,7 +122,7 @@ class ASH_PUBLIC_EXPORT AppListController {
   //                           Ash.
   // |oem_folder|: the meta data of the OEM folder, or null if it doesn't exist.
   using ResolveOemFolderPositionCallback =
-      base::OnceCallback<void(std::unique_ptr<ash::AppListItemMetadata>)>;
+      base::OnceCallback<void(std::unique_ptr<AppListItemMetadata>)>;
   virtual void ResolveOemFolderPosition(
       const syncer::StringOrdinal& preferred_oem_position,
       ResolveOemFolderPositionCallback callback) = 0;
@@ -170,8 +142,10 @@ class ASH_PUBLIC_EXPORT AppListController {
   // Returns the app list window or nullptr if it is not visible.
   virtual aura::Window* GetWindow() = 0;
 
-  // Returns whether the AppList is visible.
-  virtual bool IsVisible() = 0;
+  // Returns whether the AppList is visible on the provided display.
+  // If |display_id| is null, returns whether an app list is visible on any
+  // display.
+  virtual bool IsVisible(const base::Optional<int64_t>& display_id) = 0;
 
  protected:
   AppListController();

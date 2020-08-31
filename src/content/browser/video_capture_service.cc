@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -22,9 +23,10 @@
 #include "services/video_capture/video_capture_service_impl.h"
 
 #if defined(OS_WIN)
-#define CREATE_IN_PROCESS_TASK_RUNNER base::CreateCOMSTATaskRunner
+#define CREATE_IN_PROCESS_TASK_RUNNER base::ThreadPool::CreateCOMSTATaskRunner
 #else
-#define CREATE_IN_PROCESS_TASK_RUNNER base::CreateSingleThreadTaskRunner
+#define CREATE_IN_PROCESS_TASK_RUNNER \
+  base::ThreadPool::CreateSingleThreadTaskRunner
 #endif
 
 namespace content {
@@ -41,10 +43,13 @@ void BindInProcessInstance(
 }
 
 mojo::Remote<video_capture::mojom::VideoCaptureService>& GetUIThreadRemote() {
-  static base::NoDestructor<
-      mojo::Remote<video_capture::mojom::VideoCaptureService>>
-      remote;
-  return *remote;
+  // NOTE: This use of sequence-local storage is only to ensure that the Remote
+  // only lives as long as the UI-thread sequence, since the UI-thread sequence
+  // may be torn down and reinitialized e.g. between unit tests.
+  static base::NoDestructor<base::SequenceLocalStorageSlot<
+      mojo::Remote<video_capture::mojom::VideoCaptureService>>>
+      remote_slot;
+  return remote_slot->GetOrCreateValue();
 }
 
 // This is a custom traits type we use in conjunction with mojo::ReceiverSetBase
@@ -96,9 +101,8 @@ video_capture::mojom::VideoCaptureService& GetVideoCaptureService() {
     auto receiver = remote.BindNewPipeAndPassReceiver();
     if (features::IsVideoCaptureServiceEnabledForBrowserProcess()) {
       auto dedicated_task_runner = CREATE_IN_PROCESS_TASK_RUNNER(
-          base::TaskTraits{base::ThreadPool(), base::MayBlock(),
-                           base::WithBaseSyncPrimitives(),
-                           base::TaskPriority::BEST_EFFORT},
+          {base::MayBlock(), base::WithBaseSyncPrimitives(),
+           base::TaskPriority::BEST_EFFORT},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED);
       dedicated_task_runner->PostTask(
           FROM_HERE,
@@ -108,7 +112,7 @@ video_capture::mojom::VideoCaptureService& GetVideoCaptureService() {
           std::move(receiver),
           ServiceProcessHost::Options()
               .WithDisplayName("Video Capture")
-              .WithSandboxType(service_manager::SANDBOX_TYPE_NO_SANDBOX)
+              .WithSandboxType(service_manager::SandboxType::kVideoCapture)
 #if defined(OS_MACOSX)
               // On Mac, the service requires a CFRunLoop which is provided by a
               // UI message loop. See https://crbug.com/834581.

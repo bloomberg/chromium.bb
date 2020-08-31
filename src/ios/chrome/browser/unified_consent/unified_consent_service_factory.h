@@ -9,20 +9,19 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+class ChromeBrowserState;
+
 namespace unified_consent {
 class UnifiedConsentService;
-}
-namespace ios {
-class ChromeBrowserState;
 }
 
 class UnifiedConsentServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   static unified_consent::UnifiedConsentService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   static unified_consent::UnifiedConsentService* GetForBrowserStateIfExists(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   static UnifiedConsentServiceFactory* GetInstance();
 

@@ -1,9 +1,9 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2015-2019 The Khronos Group Inc.
-# Copyright (c) 2015-2019 Valve Corporation
-# Copyright (c) 2015-2019 LunarG, Inc.
-# Copyright (c) 2015-2019 Google Inc.
+# Copyright (c) 2015-2020 The Khronos Group Inc.
+# Copyright (c) 2015-2020 Valve Corporation
+# Copyright (c) 2015-2020 LunarG, Inc.
+# Copyright (c) 2015-2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -135,6 +135,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
         self.no_autogen_list = [
             'vkDestroyInstance',
             'vkCreateInstance',
+            'vkCreateDevice',
             'vkEnumeratePhysicalDevices',
             'vkGetPhysicalDeviceQueueFamilyProperties',
             'vkGetPhysicalDeviceQueueFamilyProperties2',
@@ -167,6 +168,9 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             'vkCreateFramebuffer',
             'vkSetDebugUtilsObjectNameEXT',
             'vkSetDebugUtilsObjectTagEXT',
+            'vkCreateDescriptorUpdateTemplate',
+            'vkCreateDescriptorUpdateTemplateKHR',
+
             ]
         # These VUIDS are not implicit, but are best handled in this layer. Codegen for vkDestroy calls will generate a key
         # which is translated here into a good VU.  Saves ~40 checks.
@@ -210,7 +214,8 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             "framebuffer-nullalloc": "\"VUID-vkDestroyFramebuffer-framebuffer-00894\"",
             "VkGraphicsPipelineCreateInfo-basePipelineHandle": "\"VUID-VkGraphicsPipelineCreateInfo-flags-00722\"",
             "VkComputePipelineCreateInfo-basePipelineHandle": "\"VUID-VkComputePipelineCreateInfo-flags-00697\"",
-            "VkRayTracingPipelineCreateInfoNV-basePipelineHandle": "\"VUID-VkRayTracingPipelineCreateInfoNV-flags-02404\"",
+            "VkRayTracingPipelineCreateInfoNV-basePipelineHandle": "\"VUID-VkRayTracingPipelineCreateInfoNV-flags-03421\"",
+			"VkRayTracingPipelineCreateInfoKHR-basePipelineHandle": "\"VUID-VkRayTracingPipelineCreateInfoKHR-flags-03421\"",
            }
 
         # Commands shadowed by interface functions and are not implemented
@@ -259,7 +264,10 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             # Matching logic in parameter validation and ValidityOutputGenerator.isHandleOptional
             optString = param.attrib.get('noautovalidity')
             if optString and optString == 'true':
-                isoptional = True;
+                if param.attrib.get('len'):
+                    isoptional = [True, True]
+                else:
+                    isoptional = True
         return isoptional
     #
     # Get VUID identifier from implicit VUID tag
@@ -310,7 +318,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             if objtype == 'device':
                 output_func += '    skip |= ReportLeaked%sObjects(%s, kVulkanObjectTypeCommandBuffer, error_code);\n' % (upper_objtype, objtype)
             for handle in self.object_types:
-                if self.handle_types.IsNonDispatchable(handle):
+                if self.handle_types.IsNonDispatchable(handle) and not self.is_aliased_type[handle]:
                     if (objtype == 'device' and self.handle_parents.IsParentDevice(handle)) or (objtype == 'instance' and not self.handle_parents.IsParentDevice(handle)):
                         output_func += '    skip |= ReportLeaked%sObjects(%s, %s, error_code);\n' % (upper_objtype, objtype, self.GetVulkanObjType(handle))
             output_func += '    return skip;\n'
@@ -327,7 +335,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             if objtype == 'device':
                 output_func += '    DestroyUndestroyedObjects(kVulkanObjectTypeCommandBuffer);\n'
             for handle in self.object_types:
-                if self.handle_types.IsNonDispatchable(handle):
+                if self.handle_types.IsNonDispatchable(handle) and not self.is_aliased_type[handle]:
                     if (objtype == 'device' and self.handle_parents.IsParentDevice(handle)) or (objtype == 'instance' and not self.handle_parents.IsParentDevice(handle)):
                         output_func += '    DestroyUndestroyedObjects(%s);\n' % self.GetVulkanObjType(handle)
             output_func += '}\n'
@@ -365,6 +373,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
         self.handle_types = GetHandleTypes(self.registry.tree)
         self.handle_parents = GetHandleParents(self.registry.tree)
         self.type_categories = GetTypeCategories(self.registry.tree)
+        self.is_aliased_type = GetHandleAliased(self.registry.tree)
 
         header_file = (genOpts.filename == 'object_tracker.h')
         source_file = (genOpts.filename == 'object_tracker.cpp')
@@ -376,7 +385,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
         self.valid_usage_path = genOpts.valid_usage_path
         vu_json_filename = os.path.join(self.valid_usage_path + os.sep, 'validusage.json')
         if os.path.isfile(vu_json_filename):
-            json_file = open(vu_json_filename, 'r')
+            json_file = open(vu_json_filename, 'r', encoding='utf-8')
             self.vuid_dict = json.load(json_file)
             json_file.close()
         if len(self.vuid_dict) == 0:
@@ -396,10 +405,10 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
         copyright += '\n'
         copyright += '/***************************************************************************\n'
         copyright += ' *\n'
-        copyright += ' * Copyright (c) 2015-2019 The Khronos Group Inc.\n'
-        copyright += ' * Copyright (c) 2015-2019 Valve Corporation\n'
-        copyright += ' * Copyright (c) 2015-2019 LunarG, Inc.\n'
-        copyright += ' * Copyright (c) 2015-2019 Google Inc.\n'
+        copyright += ' * Copyright (c) 2015-2020 The Khronos Group Inc.\n'
+        copyright += ' * Copyright (c) 2015-2020 Valve Corporation\n'
+        copyright += ' * Copyright (c) 2015-2020 LunarG, Inc.\n'
+        copyright += ' * Copyright (c) 2015-2020 Google Inc.\n'
         copyright += ' *\n'
         copyright += ' * Licensed under the Apache License, Version 2.0 (the "License");\n'
         copyright += ' * you may not use this file except in compliance with the License.\n'
@@ -475,7 +484,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
         self.headerVersion = None
         self.featureExtraProtect = GetFeatureProtect(interface)
 
-        if self.featureName != 'VK_VERSION_1_0' and self.featureName != 'VK_VERSION_1_1':
+        if interface.tag == 'extension':
             white_list_entry = []
             if (self.featureExtraProtect is not None):
                 white_list_entry += [ '#ifdef %s' % self.featureExtraProtect ]
@@ -785,10 +794,17 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             if member.iscreate and first_level_param and member == members[-1]:
                 continue
             if member.type in self.handle_types:
-                count_name = member.len
-                if (count_name is not None):
+                if member.len:
                     count_name = '%s%s' % (prefix, member.len)
-                null_allowed = member.isoptional
+                    # isoptional may be a list for array types: [the array, the array elements]
+                    if type(member.isoptional) == list:
+                        null_allowed = member.isoptional[1]
+                    else:
+                        # Default to false if a value is not provided for the array elements
+                        null_allowed = False
+                else:
+                    count_name = None
+                    null_allowed = member.isoptional
                 tmp_pre = self.outputObjects(member.type, member.name, count_name, prefix, index, indent, disp_name, parent_name, str(null_allowed).lower(), first_level_param)
                 pre_code += tmp_pre
             # Handle Structs that contain objects at some level
@@ -887,11 +903,15 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
         # Generate member info
         membersInfo = []
         allocator = 'nullptr'
+
         for member in members:
             # Get type and name of member
             info = self.getTypeNameTuple(member)
             type = info[0]
             name = info[1]
+            # Skip fake parameters
+            if type == '' or name == '':
+                continue
             cdecl = self.makeCParamDecl(member, 0)
             # Check for parameter name in lens set
             iscount = True if name in lens else False
@@ -933,7 +953,6 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             manual = False
             if cmdname in self.no_autogen_list:
                 manual = True
-
             # Generate object handling code
             (pre_call_validate, pre_call_record, post_call_record) = self.generate_wrapping_code(cmdinfo.elem)
 

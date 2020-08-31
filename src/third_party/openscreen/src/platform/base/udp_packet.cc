@@ -7,13 +7,8 @@
 #include <cassert>
 
 namespace openscreen {
-namespace platform {
 
 UdpPacket::UdpPacket() : std::vector<uint8_t>() {}
-
-UdpPacket::UdpPacket(size_type size) : std::vector<uint8_t>(size) {
-  assert(size <= kUdpMaxPacketSize);
-}
 
 UdpPacket::UdpPacket(size_type size, uint8_t fill_value)
     : std::vector<uint8_t>(size, fill_value) {
@@ -31,5 +26,4 @@ UdpPacket::~UdpPacket() = default;
 
 UdpPacket& UdpPacket::operator=(UdpPacket&& other) = default;
 
-}  // namespace platform
 }  // namespace openscreen

@@ -7,11 +7,13 @@
 
 #include "base/observer_list_types.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_controller.h"
+#include "components/content_settings/core/common/cookie_controls_status.h"
 
 // Interface for the CookieControls UI.
 class CookieControlsView : public base::CheckedObserver {
  public:
-  virtual void OnStatusChanged(CookieControlsController::Status status,
+  virtual void OnStatusChanged(CookieControlsStatus status,
+                               CookieControlsEnforcement enforcement,
                                int blocked_cookies) = 0;
   virtual void OnBlockedCookiesCountChanged(int blocked_cookies) = 0;
 };

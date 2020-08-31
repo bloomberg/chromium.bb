@@ -43,6 +43,10 @@ const char kChromeSyncOAuth2Scope[] =
 const char kChromeSyncSupervisedOAuth2Scope[] =
     "https://www.googleapis.com/auth/chromesync_playpen";
 
+// OAuth2 scope for parental consent logging for secondary account addition.
+const char kKidManagementPrivilegedOAuth2Scope[] =
+    "https://www.googleapis.com/auth/kid.management.privileged";
+
 // OAuth2 scope for access to Google Family Link Supervision Setup.
 const char kKidsSupervisionSetupChildOAuth2Scope[] =
     "https://www.googleapis.com/auth/kids.supervision.setup.child";
@@ -70,6 +74,10 @@ const char kAuditRecordingOAuth2Scope[] =
 
 // OAuth scope for access to clear cut logs.
 const char kClearCutOAuth2Scope[] = "https://www.googleapis.com/auth/cclog";
+
+// OAuth scope for FCM, the Firebase Cloud Messaging service.
+const char kFCMOAuthScope[] =
+    "https://www.googleapis.com/auth/firebase.messaging";
 
 // Used to mint uber auth tokens when needed.
 const char kGaiaSid[] = "sid";

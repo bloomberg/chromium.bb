@@ -10,7 +10,9 @@ import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.hasTypefaceSpan;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.openTextLink;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
@@ -28,8 +30,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /** Tests for {@code AssistantTextUtils}. */
@@ -40,6 +42,20 @@ public class AutofillAssistantTextUtilsTest {
 
     @Rule
     public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
+
+    /* Simple helper class that keeps track of the most recent callback result. */
+    class LinkCallback implements Callback<Integer> {
+        private int mLastCallback = -1;
+
+        private int getLastCallback() {
+            return mLastCallback;
+        }
+
+        @Override
+        public void onResult(Integer result) {
+            mLastCallback = result;
+        }
+    }
 
     @Before
     public void setUp() {
@@ -68,44 +84,54 @@ public class AutofillAssistantTextUtilsTest {
         TextView boldTextView = runOnUiThreadBlocking(() -> {
             TextView view = new TextView(mTestRule.getActivity());
             mTestLayout.addView(view);
-            AssistantTextUtils.applyVisualAppearanceTags(view, "<b>Bold text</b>", null);
-            StyleSpan[] spans =
-                    ((SpannedString) view.getText()).getSpans(0, view.length(), StyleSpan.class);
-            assertThat(spans.length, is(1));
-            assertThat(spans[0].getStyle(), is(Typeface.BOLD));
+            AssistantTextUtils.applyVisualAppearanceTags(
+                    view, "regular text, <b>bold text</b>", null);
             return view;
         });
-        onView(is(boldTextView)).check(matches(withText("Bold text")));
+        int boldStart = "regular text, ".length();
+        int boldEnd = "regular text, bold text".length() - 1;
+        onView(withText("regular text, bold text"))
+                .check(matches(hasTypefaceSpan(boldStart, boldEnd, Typeface.BOLD)));
+        onView(withText("regular text, bold text"))
+                .check(matches(not(hasTypefaceSpan(0, boldStart, Typeface.BOLD))));
 
         TextView italicTextView = runOnUiThreadBlocking(() -> {
             TextView view = new TextView(mTestRule.getActivity());
             mTestLayout.addView(view);
-            AssistantTextUtils.applyVisualAppearanceTags(view, "<i>Italic text</i>", null);
-            StyleSpan[] spans =
-                    ((SpannedString) view.getText()).getSpans(0, view.length(), StyleSpan.class);
-            assertThat(spans.length, is(1));
-            assertThat(spans[0].getStyle(), is(Typeface.ITALIC));
+            AssistantTextUtils.applyVisualAppearanceTags(
+                    view, "regular text, <i>italic text</i>", null);
             return view;
         });
-        onView(is(italicTextView)).check(matches(withText("Italic text")));
+        int italicStart = "italic text, ".length();
+        int italicEnd = "italic text, bold text".length() - 1;
+        onView(withText("regular text, italic text"))
+                .check(matches(hasTypefaceSpan(italicStart, italicEnd, Typeface.ITALIC)));
+        onView(withText("regular text, italic text"))
+                .check(matches(not(hasTypefaceSpan(0, italicStart, Typeface.ITALIC))));
+    }
+
+    @Test
+    @MediumTest
+    public void testMismatchingTextTags() throws Exception {
+        TextView textView = runOnUiThreadBlocking(() -> {
+            TextView view = new TextView(mTestRule.getActivity());
+            mTestLayout.addView(view);
+            AssistantTextUtils.applyVisualAppearanceTags(
+                    view, "<b>Fat</b>. <b>Not fat</br>. <i>Italic</i>. <i>Not italic</ii>.", null);
+            StyleSpan[] spans =
+                    ((SpannedString) view.getText()).getSpans(0, view.length(), StyleSpan.class);
+            assertThat(spans.length, is(2));
+            assertThat(spans[0].getStyle(), is(Typeface.BOLD));
+            assertThat(spans[1].getStyle(), is(Typeface.ITALIC));
+            return view;
+        });
+        onView(is(textView))
+                .check(matches(withText("Fat. <b>Not fat</br>. Italic. <i>Not italic</ii>.")));
     }
 
     @Test
     @MediumTest
     public void testTextLinks() throws Exception {
-        /* Simple helper class that keeps track of the most recent callback result. */
-        class LinkCallback implements Callback<Integer> {
-            private int mLastCallback = -1;
-
-            private int getLastCallback() {
-                return mLastCallback;
-            }
-            @Override
-            public void onResult(Integer result) {
-                mLastCallback = result;
-            }
-        }
-
         LinkCallback linkCallback = new LinkCallback();
         TextView multiLinkView = runOnUiThreadBlocking(() -> {
             TextView view = new TextView(mTestRule.getActivity());
@@ -124,5 +150,26 @@ public class AutofillAssistantTextUtilsTest {
         assertThat(linkCallback.getLastCallback(), is(3));
         onView(is(multiLinkView)).perform(openTextLink("there"));
         assertThat(linkCallback.getLastCallback(), is(2));
+    }
+
+    @Test
+    @MediumTest
+    public void testMismatchingTextLinks() throws Exception {
+        LinkCallback linkCallback = new LinkCallback();
+
+        TextView singleLinkView = runOnUiThreadBlocking(() -> {
+            TextView view = new TextView(mTestRule.getActivity());
+            mTestLayout.addView(view);
+            AssistantTextUtils.applyVisualAppearanceTags(view,
+                    "Don't click <link0>here</link1> or <link2>this</lin2>, "
+                            + "click <link3>me</link3>.",
+                    linkCallback);
+            return view;
+        });
+        onView(is(singleLinkView))
+                .check(matches(withText(
+                        "Don't click <link0>here</link1> or <link2>this</lin2>, click me.")));
+        onView(is(singleLinkView)).perform(openTextLink("me"));
+        assertThat(linkCallback.getLastCallback(), is(3));
     }
 }

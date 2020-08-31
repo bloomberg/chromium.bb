@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
@@ -17,7 +18,6 @@
 namespace blink {
 
 class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
-                             public SecurityContext,
                              public ExecutionContext {
   USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
 
@@ -40,20 +40,12 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
 
   EventTarget* ErrorEventTarget() override { return nullptr; }
 
-  bool TasksNeedPause() override { return tasks_need_pause_; }
-  void SetTasksNeedPause(bool flag) { tasks_need_pause_ = flag; }
-
-  SecurityContext& GetSecurityContext() final { return *this; }
-  const SecurityContext& GetSecurityContext() const final { return *this; }
-
   void AddConsoleMessageImpl(ConsoleMessage*,
                              bool discard_duplicates) override {}
+  void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) override {}
   void ExceptionThrown(ErrorEvent*) override {}
 
-  void SetIsSecureContext(bool);
-  bool IsSecureContext(String& error_message) const override;
-
-  void SetUpSecurityContext();
+  void SetUpSecurityContextForTesting();
 
   ResourceFetcher* Fetcher() const override { return nullptr; }
 
@@ -63,23 +55,19 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
   void CountUse(mojom::WebFeature) override {}
   void CountDeprecation(mojom::WebFeature) override {}
 
-  void SetSandboxFlags(WebSandboxFlags flags) { sandbox_flags_ = flags; }
-
-  using SecurityContext::GetSecurityOrigin;
-  using SecurityContext::GetContentSecurityPolicy;
-
-  void Trace(blink::Visitor* visitor) override {
-    SecurityContext::Trace(visitor);
-    ExecutionContext::Trace(visitor);
-  }
-
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
 
- private:
-  bool tasks_need_pause_;
-  bool is_secure_context_;
+  SecurityContext& GetSecurityContext() override { return security_context_; }
+  const SecurityContext& GetSecurityContext() const override {
+    return security_context_;
+  }
 
+  void Trace(Visitor*) override;
+
+ private:
   KURL url_;
+
+  SecurityContext security_context_;
 
   // A dummy scheduler to ensure that the callers of
   // ExecutionContext::GetScheduler don't have to check for whether it's null or

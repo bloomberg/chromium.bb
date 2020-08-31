@@ -10,6 +10,7 @@
     package="org.chromium.weblayer.client">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -52,5 +53,24 @@
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/weblayer_file_paths" />
         </provider>
+
+        <activity android:name="org.chromium.weblayer.SiteSettingsActivity"
+            android:theme="@style/Theme.WebLayer.SiteSettings"
+            android:exported="false">
+        </activity>
+
+        <receiver android:name="org.chromium.weblayer.BroadcastReceiver"
+            android:exported="false">
+            <intent-filter>
+                <!-- these need to be in sync with DownloadImpl.java-->
+                <action android:name="org.chromium.weblayer.downloads.OPEN"/>
+                <action android:name="org.chromium.weblayer.downloads.DELETE"/>
+                <action android:name="org.chromium.weblayer.downloads.PAUSE"/>
+                <action android:name="org.chromium.weblayer.downloads.RESUME"/>
+                <action android:name="org.chromium.weblayer.downloads.CANCEL"/>
+                <!-- this needs to be in sync with MediaStreamManager.java-->
+                <action android:name="org.chromium.weblayer.webrtc.ACTIVATE_TAB"/>
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

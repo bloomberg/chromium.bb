@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
  * @suppress {accessControls}
  */
 
+
 SourcesTestRunner.startDebuggerTest = function(callback, quiet) {
   console.assert(TestRunner.debuggerModel.debuggerEnabled(), 'Debugger has to be enabled');
 
@@ -14,7 +15,7 @@ SourcesTestRunner.startDebuggerTest = function(callback, quiet) {
     SourcesTestRunner._quiet = quiet;
   }
 
-  UI.viewManager.showView('sources');
+  self.UI.viewManager.showView('sources');
   TestRunner.addSniffer(SDK.DebuggerModel.prototype, '_pausedScript', SourcesTestRunner._pausedScript, true);
   TestRunner.addSniffer(SDK.DebuggerModel.prototype, '_resumedScript', SourcesTestRunner._resumedScript, true);
   TestRunner.safeWrap(callback)();
@@ -28,7 +29,7 @@ SourcesTestRunner.startDebuggerTestPromise = function(quiet) {
 };
 
 SourcesTestRunner.completeDebuggerTest = function() {
-  Common.moduleSetting('breakpointsActive').set(true);
+  self.Common.settings.moduleSetting('breakpointsActive').set(true);
   SourcesTestRunner.resumeExecution(TestRunner.completeTest.bind(TestRunner));
 };
 
@@ -102,9 +103,9 @@ SourcesTestRunner.runAsyncCallStacksTest = function(totalDebuggerStatements, max
   let step = 0;
   const callStacksOutput = [];
 
-  function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
+  async function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
     ++step;
-    callStacksOutput.push(SourcesTestRunner.captureStackTraceIntoString(callFrames, asyncStackTrace) + '\n');
+    callStacksOutput.push(await SourcesTestRunner.captureStackTraceIntoString(callFrames, asyncStackTrace) + '\n');
 
     if (step < totalDebuggerStatements) {
       SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(SourcesTestRunner, didPause));
@@ -193,17 +194,17 @@ SourcesTestRunner.waitUntilPausedAndDumpStackAndResume = function(callback, opti
     }
   }
 
-  function paused(frames, reason, breakpointIds, async) {
+  async function paused(frames, reason, breakpointIds, async) {
     callFrames = frames;
     asyncStackTrace = async;
 
     if (typeof caption === 'string') {
-      step1();
+      await step1();
     }
   }
 
-  function step1() {
-    SourcesTestRunner.captureStackTrace(callFrames, asyncStackTrace, options);
+  async function step1() {
+    await SourcesTestRunner.captureStackTrace(callFrames, asyncStackTrace, options);
     TestRunner.addResult(TestRunner.clearSpecificInfoFromStackFrames(caption));
     TestRunner.deprecatedRunAfterPendingDispatches(step2);
   }
@@ -247,11 +248,11 @@ SourcesTestRunner.waitUntilPausedAndPerformSteppingActions = function(actions, c
   callback = TestRunner.safeWrap(callback);
   SourcesTestRunner.waitUntilPaused(didPause);
 
-  function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
+  async function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
     let action = actions.shift();
 
     if (action === 'Print') {
-      SourcesTestRunner.captureStackTrace(callFrames, asyncStackTrace);
+      await SourcesTestRunner.captureStackTrace(callFrames, asyncStackTrace);
       TestRunner.addResult('');
 
       while (action === 'Print') {
@@ -290,24 +291,24 @@ SourcesTestRunner.waitUntilPausedAndPerformSteppingActions = function(actions, c
   }
 };
 
-SourcesTestRunner.captureStackTrace = function(callFrames, asyncStackTrace, options) {
-  TestRunner.addResult(SourcesTestRunner.captureStackTraceIntoString(callFrames, asyncStackTrace, options));
+SourcesTestRunner.captureStackTrace = async function(callFrames, asyncStackTrace, options) {
+  TestRunner.addResult(await SourcesTestRunner.captureStackTraceIntoString(callFrames, asyncStackTrace, options));
 };
 
-SourcesTestRunner.captureStackTraceIntoString = function(callFrames, asyncStackTrace, options) {
+SourcesTestRunner.captureStackTraceIntoString = async function(callFrames, asyncStackTrace, options) {
   const results = [];
   options = options || {};
 
-  function printCallFrames(callFrames, locationFunction, returnValueFunction) {
+  async function printCallFrames(callFrames, locationFunction, returnValueFunction) {
     let printed = 0;
 
     for (let i = 0; i < callFrames.length; i++) {
       const frame = callFrames[i];
       const location = locationFunction.call(frame);
       const script = location.script();
-      const uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location);
+      const uiLocation = await self.Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location);
       const isFramework =
-          uiLocation ? Bindings.blackboxManager.isBlackboxedUISourceCode(uiLocation.uiSourceCode) : false;
+          uiLocation ? self.Bindings.blackboxManager.isBlackboxedUISourceCode(uiLocation.uiSourceCode) : false;
 
       if (options.dropFrameworkCallFrames && isFramework) {
         continue;
@@ -352,12 +353,12 @@ SourcesTestRunner.captureStackTraceIntoString = function(callFrames, asyncStackT
   }
 
   results.push('Call stack:');
-  printCallFrames(
+  await printCallFrames(
       callFrames, SDK.DebuggerModel.CallFrame.prototype.location, SDK.DebuggerModel.CallFrame.prototype.returnValue);
 
   while (asyncStackTrace) {
     results.push('    [' + (asyncStackTrace.description || 'Async Call') + ']');
-    const printed = printCallFrames(asyncStackTrace.callFrames, runtimeCallFramePosition);
+    const printed = await printCallFrames(asyncStackTrace.callFrames, runtimeCallFramePosition);
 
     if (!printed) {
       results.pop();
@@ -471,10 +472,10 @@ SourcesTestRunner.objectForPopover = function(sourceFrame, lineNumber, columnNum
   return promise;
 };
 
-SourcesTestRunner.setBreakpoint = function(sourceFrame, lineNumber, condition, enabled) {
+SourcesTestRunner.setBreakpoint = async function(sourceFrame, lineNumber, condition, enabled) {
   const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
   if (!debuggerPlugin._muted) {
-    debuggerPlugin._setBreakpoint(lineNumber, 0, condition, enabled);
+    await debuggerPlugin._setBreakpoint(lineNumber, 0, condition, enabled);
   }
 };
 
@@ -487,18 +488,18 @@ SourcesTestRunner.removeBreakpoint = function(sourceFrame, lineNumber) {
   breakpointLocation.breakpoint.remove();
 };
 
-SourcesTestRunner.createNewBreakpoint = function(sourceFrame, lineNumber, condition, enabled) {
+SourcesTestRunner.createNewBreakpoint = async function(sourceFrame, lineNumber, condition, enabled) {
   const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
   const promise =
       new Promise(resolve => TestRunner.addSniffer(debuggerPlugin.__proto__, '_breakpointWasSetForTest', resolve));
-  debuggerPlugin._createNewBreakpoint(lineNumber, condition, enabled);
+  await debuggerPlugin._createNewBreakpoint(lineNumber, condition, enabled);
   return promise;
 };
 
-SourcesTestRunner.toggleBreakpoint = function(sourceFrame, lineNumber, disableOnly) {
+SourcesTestRunner.toggleBreakpoint = async function(sourceFrame, lineNumber, disableOnly) {
   const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
   if (!debuggerPlugin._muted) {
-    debuggerPlugin._toggleBreakpoint(lineNumber, disableOnly);
+    await debuggerPlugin._toggleBreakpoint(lineNumber, disableOnly);
   }
 };
 
@@ -513,7 +514,7 @@ SourcesTestRunner.waitBreakpointSidebarPane = function(waitUntilResolved) {
       return;
     }
 
-    for (const {breakpoint} of Bindings.breakpointManager.allBreakpointLocations()) {
+    for (const {breakpoint} of self.Bindings.breakpointManager.allBreakpointLocations()) {
       if (breakpoint._uiLocations.size === 0 && breakpoint.enabled()) {
         return SourcesTestRunner.waitBreakpointSidebarPane();
       }
@@ -522,14 +523,14 @@ SourcesTestRunner.waitBreakpointSidebarPane = function(waitUntilResolved) {
 };
 
 SourcesTestRunner.breakpointsSidebarPaneContent = function() {
-  const paneElement = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane).contentElement;
-  const empty = paneElement.querySelector('.gray-info-message');
+  const pane = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane);
+  const empty = pane._emptyElement;
 
-  if (empty) {
+  if (!empty.classList.contains('hidden')) {
     return TestRunner.textContentWithLineBreaks(empty);
   }
 
-  const entries = Array.from(paneElement.querySelectorAll('.breakpoint-entry'));
+  const entries = Array.from(pane.contentElement.querySelectorAll('.breakpoint-entry'));
   return entries.map(TestRunner.textContentWithLineBreaks).join('\n');
 };
 
@@ -639,13 +640,13 @@ SourcesTestRunner.queryScripts = function(filter) {
 
 SourcesTestRunner.createScriptMock = function(
     url, startLine, startColumn, isContentScript, source, target, preRegisterCallback) {
-  target = target || SDK.targetManager.mainTarget();
+  target = target || self.SDK.targetManager.mainTarget();
   const debuggerModel = target.model(SDK.DebuggerModel);
   const scriptId = ++SourcesTestRunner._lastScriptId + '';
-  const lineCount = source.computeLineEndings().length;
+  const sourceLineEndings = TestRunner.findLineEndingIndexes(source);
+  const lineCount = sourceLineEndings.length;
   const endLine = startLine + lineCount - 1;
-  const endColumn =
-      (lineCount === 1 ? startColumn + source.length : source.length - source.computeLineEndings()[lineCount - 2]);
+  const endColumn = (lineCount === 1 ? startColumn + source.length : source.length - sourceLineEndings[lineCount - 2]);
   const hasSourceURL =
       !!source.match(/\/\/#\ssourceURL=\s*(\S*?)\s*$/m) || !!source.match(/\/\/@\ssourceURL=\s*(\S*?)\s*$/m);
 
@@ -718,8 +719,7 @@ SourcesTestRunner.waitForExecutionContextInTarget = function(target, callback) {
 };
 
 SourcesTestRunner.selectThread = function(target) {
-  const threadsPane = self.runtime.sharedInstance(Sources.ThreadsSidebarPane);
-  threadsPane._list.selectItem(target.model(SDK.DebuggerModel));
+  self.UI.context.setFlavor(SDK.Target, target);
 };
 
 SourcesTestRunner.evaluateOnCurrentCallFrame = function(code) {
@@ -734,13 +734,80 @@ SourcesTestRunner.waitDebuggerPluginBreakpoints = function(sourceFrame) {
   return SourcesTestRunner.waitDebuggerPluginDecorations().then(checkIfReady);
 
   function checkIfReady() {
-    for (const {breakpoint} of Bindings.breakpointManager.allBreakpointLocations()) {
+    for (const {breakpoint} of self.Bindings.breakpointManager.allBreakpointLocations()) {
       if (breakpoint._uiLocations.size === 0 && breakpoint.enabled()) {
         return SourcesTestRunner.waitDebuggerPluginDecorations().then(checkIfReady);
       }
     }
 
     return Promise.resolve();
+  }
+};
+
+/**
+ * Useful for tests that want to run some breakpoint action like setting, toggling, adding a condition, etc.
+ * and dumping the set breakpoint decorations afterwards.
+ * See {SourcesTestRunner.waitForExactBreakpointDecorations} for the format of the {expectedDecorations} paramter.
+ */
+SourcesTestRunner.runActionAndWaitForExactBreakpointDecorations =
+    async function(sourceFrame, expectedDecorations, action, skipFirstWait = false) {
+  const waitPromise =
+      SourcesTestRunner.waitForExactBreakpointDecorations(sourceFrame, expectedDecorations, skipFirstWait);
+  await action();
+  await waitPromise;
+  SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
+};
+
+/**
+ * Waits for breakpoint decoration updates until specific decorations are met.
+ *
+ * @param expectedDecorations An array of key/value pairs where the key is a line number
+ *    and the value is the number of decorations in the given line, e.g.:
+ *
+ *      expectedDecorations = [[5, 1], [10, 2]]
+ *
+ *    waits until line 5 has one breakpoint decoration and line 10 has two decorations.
+ * @param skipFirstWait Check decorations immediately without waiting for the
+ *                      "decorations updated" event.
+ */
+SourcesTestRunner.waitForExactBreakpointDecorations = function(
+    sourceFrame, expectedDecorations, skipFirstWait = false) {
+  if (skipFirstWait) {
+    return checkIfDecorationsReady();
+  }
+  return SourcesTestRunner.waitDebuggerPluginDecorations().then(checkIfDecorationsReady);
+
+  function checkIfDecorationsReady() {
+    const currentDecorations = collectCurrentDecorationsFromDebuggerPlugin();
+    const expectedDecorationsMap = new Map(expectedDecorations);
+    if (decorationsAreEqual(currentDecorations, expectedDecorationsMap)) {
+      return Promise.resolve();
+    }
+    return SourcesTestRunner.waitForExactBreakpointDecorations(sourceFrame, expectedDecorations);
+  }
+
+  function collectCurrentDecorationsFromDebuggerPlugin() {
+    const currentDecorationCountPerLine = new Map();
+    for (const decoration of SourcesTestRunner.debuggerPlugin(sourceFrame)._breakpointDecorations.values()) {
+      const lineNumber = (decoration.handle.resolve() || {}).lineNumber;
+      if (lineNumber) {
+        const count = currentDecorationCountPerLine.get(lineNumber) || 0;
+        currentDecorationCountPerLine.set(lineNumber, count + 1);
+      }
+    }
+    return currentDecorationCountPerLine;
+  }
+
+  function decorationsAreEqual(map1, map2) {
+    if (map1.size !== map2.size) {
+      return false;
+    }
+    for (const [line1, count1] of map1) {
+      if (map2.get(line1) !== count1) {
+        return false;
+      }
+    }
+    return true;
   }
 };
 
@@ -757,7 +824,7 @@ SourcesTestRunner.dumpDebuggerPluginBreakpoints = function(sourceFrame) {
     TestRunner.addResult(
         'breakpoint at ' + lineNumber + ((disabled ? ' disabled' : '')) + ((conditional ? ' conditional' : '')));
     const range = new TextUtils.TextRange(lineNumber, 0, lineNumber, textEditor.line(lineNumber).length);
-    let bookmarks = textEditor.bookmarks(range, Sources.DebuggerPlugin.BreakpointDecoration._bookmarkSymbol);
+    let bookmarks = textEditor.bookmarks(range, Sources.DebuggerPlugin.BreakpointDecoration.bookmarkSymbol);
     bookmarks = bookmarks.filter(bookmark => !!bookmark.position());
     bookmarks.sort((bookmark1, bookmark2) => bookmark1.position().startColumn - bookmark2.position().startColumn);
 
@@ -778,7 +845,7 @@ SourcesTestRunner.clickDebuggerPluginBreakpoint = function(sourceFrame, lineNumb
   const textEditor = sourceFrame._textEditor;
   const lineLength = textEditor.line(lineNumber).length;
   const lineRange = new TextUtils.TextRange(lineNumber, 0, lineNumber, lineLength);
-  const bookmarks = textEditor.bookmarks(lineRange, Sources.DebuggerPlugin.BreakpointDecoration._bookmarkSymbol);
+  const bookmarks = textEditor.bookmarks(lineRange, Sources.DebuggerPlugin.BreakpointDecoration.bookmarkSymbol);
   bookmarks.sort((bookmark1, bookmark2) => bookmark1.position().startColumn - bookmark2.position().startColumn);
   const bookmark = bookmarks[index];
 
@@ -810,7 +877,7 @@ SourcesTestRunner.setEventListenerBreakpoint = function(id, enabled, targetName)
     auxData.targetName = targetName;
   }
 
-  const breakpoint = SDK.domDebuggerManager.resolveEventListenerBreakpoint(auxData);
+  const breakpoint = self.SDK.domDebuggerManager.resolveEventListenerBreakpoint(auxData);
 
   if (breakpoint.enabled() !== enabled) {
     pane._breakpoints.get(breakpoint).checkbox.checked = enabled;

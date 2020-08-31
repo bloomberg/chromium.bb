@@ -372,7 +372,9 @@ NTPUserDataLogger::~NTPUserDataLogger() {}
 // static
 NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
     content::WebContents* content) {
-  DCHECK(search::IsInstantNTP(content));
+  DCHECK(search::IsInstantNTP(content) ||
+         content->GetMainFrame()->GetSiteInstance()->GetSiteURL() ==
+             GURL(chrome::kChromeUINewTabPageURL));
 
   // Calling CreateForWebContents when an instance is already attached has no
   // effect, so we can do this.
@@ -397,6 +399,21 @@ NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
 
   logger->profile_ = Profile::FromBrowserContext(content->GetBrowserContext());
   return logger;
+}
+
+// static
+void NTPUserDataLogger::LogOneGoogleBarFetchDuration(
+    bool success,
+    const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.OneGoogleBar.RequestLatency",
+                             duration);
+  if (success) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.OneGoogleBar.RequestLatency.Success",
+                               duration);
+  } else {
+    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.OneGoogleBar.RequestLatency.Failure",
+                               duration);
+  }
 }
 
 void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
@@ -657,12 +674,12 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   // handling.
   bool is_google = DefaultSearchProviderIsGoogle();
 
-  // Split between Web and Local.
+  // Split between NTP variants.
   if (ntp_url_.SchemeIsHTTPOrHTTPS()) {
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Web", load_time);
     // Only third-party NTPs can be loaded from the web.
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Web.Other", load_time);
-  } else {
+  } else if (ntp_url_ == GURL(chrome::kChromeSearchLocalNtpUrl)) {
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.LocalNTP", load_time);
     // Further split between Google and non-Google.
     if (is_google) {
@@ -670,6 +687,8 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
     } else {
       UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.LocalNTP.Other", load_time);
     }
+  } else if (ntp_url_ == GURL(chrome::kChromeUINewTabPageURL)) {
+    UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.WebUINTP", load_time);
   }
 
   // Split between Startup and non-startup.

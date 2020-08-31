@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/ui/request_pin_view.h"
@@ -46,9 +46,9 @@ SecurityTokenPinDialogHostPopupImpl::~SecurityTokenPinDialogHostPopupImpl() =
 
 void SecurityTokenPinDialogHostPopupImpl::ShowSecurityTokenPinDialog(
     const std::string& caller_extension_name,
-    SecurityTokenPinCodeType code_type,
+    security_token_pin::CodeType code_type,
     bool enable_user_input,
-    SecurityTokenPinErrorLabel error_label,
+    security_token_pin::ErrorLabel error_label,
     int attempts_left,
     const base::Optional<AccountId>& /*authenticating_user_account_id*/,
     SecurityTokenPinEnteredCallback pin_entered_callback,

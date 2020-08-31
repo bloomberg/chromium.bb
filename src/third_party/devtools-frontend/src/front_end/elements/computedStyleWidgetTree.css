@@ -129,3 +129,25 @@
 .computed-narrow.tree-outline li::before {
     margin-top: -14px;
 }
+
+@media (forced-colors: active) {
+    .computed-style-property-inherited {
+        opacity: 1;
+    }
+    :host-context(.monospace.computed-properties) .tree-outline li:hover {
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+    :host-context(.monospace.computed-properties) .tree-outline:not(.hide-selection-when-blurred) li.parent:hover.selected::before,
+    :host-context(.monospace.computed-properties) .tree-outline-disclosure li.parent:hover::before,
+    :host-context(.monospace.computed-properties) .tree-outline li:hover .goto-source-icon {
+        background-color: HighlightText;
+    }
+    :host-context(.monospace.computed-properties) .tree-outline li:hover * {
+        color: HighlightText;
+    }
+    .property-trace-inactive .property-trace-value::before {
+        content: "";
+        border-bottom-color: HighlightText !important;
+    }
+}

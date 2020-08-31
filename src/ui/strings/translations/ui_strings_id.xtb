@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Perbesar</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, Aplikasi yang Diinstal</translation>
 <translation id="1450753235335490080">Tidak dapat membagikan <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> ditukar dengan <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Anda menelusuri ini sebelumnya. Menghapus "<ph name="QUERY" />" dari histori akan menghapusnya secara permanen dari akun Anda di semua perangkat.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 menit dan }other{# menit dan }}</translation>
 <translation id="1643823602425662293">Notifikasi</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Pilih semu&amp;a</translation>
-<translation id="1938451708255335766">Untuk menyesuaikan kepadatan tampilan jendela, mulai ulang aplikasi.</translation>
 <translation id="2006524834898217237">Pastikan perangkat ini tersambung ke internet.</translation>
 <translation id="208586643495776849">Coba lagi</translation>
 <translation id="2090963878406559571">Untuk mengirim nomor dari <ph name="ORIGIN" /> ke ponsel Android Anda, <ph name="TROUBLESHOOT_LINK" /> untuk kedua perangkat di setelan.</translation>
@@ -54,7 +54,7 @@
 <translation id="2289052229480071835">Ketuk target sentuh di layar.</translation>
 <translation id="2295140143284145483">Survei</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/dtk</translation>
-<translation id="2353636109065292463">Memeriksa sambungan internet Anda</translation>
+<translation id="2353636109065292463">Memeriksa koneksi internet Anda</translation>
 <translation id="2388990488038464401">Panggil nomor ini dari ponsel Anda?</translation>
 <translation id="24452542372838207">Luaskan notifikasi</translation>
 <translation id="2445449901874883781">Gunakan kepadatan tinggi</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Panah Bawah</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 hari}other{# hari}}</translation>
 <translation id="3295886253693811851">Buat panggilan dari</translation>
+<translation id="3306688585798492231">Tampilan built-in</translation>
 <translation id="335581015389089642">Ucapan</translation>
 <translation id="3389286852084373014">Teks terlalu besar</translation>
-<translation id="3479552764303398839">Jangan sekarang</translation>
 <translation id="348799646910989694">Rak otomatis disembunyikan</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> telah dipasangi pin</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 hari lagi}other{# hari lagi}}</translation>
@@ -100,9 +100,8 @@
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/dtk</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Lanjutkan membaca dari perangkat seluler <ph name="TITLE" /></translation>
-<translation id="385051799172605136">Mundur</translation>
+<translation id="385051799172605136">Kembali</translation>
 <translation id="3889424535448813030">Panah Kanan</translation>
-<translation id="3892641579809465218">Tampilan Internal</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Po&amp;tong</translation>
 <translation id="3990502903496589789">Tepi Kanan</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 mnt}other{# mnt}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktif hari ini}=1{Aktif 1 hari yang lalu}other{Aktif # hari yang lalu}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 hari dan }other{# hari dan }}</translation>
+<translation id="5789643057113097023">:</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{dalam 1 t}other{dalam # t}}</translation>
-<translation id="5895138241574237353">Mulai Ulang</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 detik lagi}other{# detik lagi}}</translation>
 <translation id="5941711191222866238">Perkecil</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 jam}other{# jam}}</translation>
@@ -156,7 +155,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/dtk</translation>
 <translation id="6156262341071374681">Tampilkan semua aplikasi</translation>
-<translation id="6165508094623778733">Pelajari lebih lanjut</translation>
+<translation id="6165508094623778733">Pelajari selengkapnya</translation>
 <translation id="6264365405983206840">Pilih Semu&amp;a</translation>
 <translation id="6351032674660237738">SARAN APLIKASI</translation>
 <translation id="6364916375976753737">Gulir ke Kiri</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Kanan ke Kiri</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">MUNGKIN DICARI</translation>
+<translation id="7170202025028120564">Setelan tampilan aplikasi Anda akan berlaku saat berikutnya aplikasi dimulai ulang.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 mnt lagi}other{# mnt lagi}}</translation>
 <translation id="7319740667687257810">Peluncur, tampilan sebagian</translation>

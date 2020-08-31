@@ -15,7 +15,7 @@
 
 #include "net/third_party/quiche/src/quic/core/crypto/quic_compressed_certs_cache.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream.h"
+#include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream_base.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 
@@ -38,7 +38,7 @@ class QUIC_EXPORT_PRIVATE QuicServerSessionBase : public QuicSpdySession {
                         const ParsedQuicVersionVector& supported_versions,
                         QuicConnection* connection,
                         QuicSession::Visitor* visitor,
-                        QuicCryptoServerStream::Helper* helper,
+                        QuicCryptoServerStreamBase::Helper* helper,
                         const QuicCryptoServerConfig* crypto_config,
                         QuicCompressedCertsCache* compressed_certs_cache);
   QuicServerSessionBase(const QuicServerSessionBase&) = delete;
@@ -86,13 +86,14 @@ class QUIC_EXPORT_PRIVATE QuicServerSessionBase : public QuicSpdySession {
   // possibly closing the connection, and returns false.
   bool ShouldCreateIncomingStream(QuicStreamId id) override;
 
-  virtual QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
+  virtual std::unique_ptr<QuicCryptoServerStreamBase>
+  CreateQuicCryptoServerStream(
       const QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache) = 0;
 
   const QuicCryptoServerConfig* crypto_config() { return crypto_config_; }
 
-  QuicCryptoServerStream::Helper* stream_helper() { return helper_; }
+  QuicCryptoServerStreamBase::Helper* stream_helper() { return helper_; }
 
  private:
   friend class test::QuicServerSessionBasePeer;
@@ -108,7 +109,7 @@ class QUIC_EXPORT_PRIVATE QuicServerSessionBase : public QuicSpdySession {
 
   // Pointer to the helper used to create crypto server streams. Must outlive
   // streams created via CreateQuicCryptoServerStream.
-  QuicCryptoServerStream::Helper* helper_;
+  QuicCryptoServerStreamBase::Helper* helper_;
 
   // Whether bandwidth resumption is enabled for this connection.
   bool bandwidth_resumption_enabled_;

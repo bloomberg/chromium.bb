@@ -14,6 +14,9 @@
 #include "dawn_native/d3d12/CommandRecordingContext.h"
 #include "dawn_native/d3d12/CommandAllocatorManager.h"
 #include "dawn_native/d3d12/D3D12Error.h"
+#include "dawn_native/d3d12/DeviceD3D12.h"
+#include "dawn_native/d3d12/HeapD3D12.h"
+#include "dawn_native/d3d12/ResidencyManagerD3D12.h"
 
 namespace dawn_native { namespace d3d12 {
 
@@ -51,14 +54,14 @@ namespace dawn_native { namespace d3d12 {
         return {};
     }
 
-    MaybeError CommandRecordingContext::ExecuteCommandList(ID3D12CommandQueue* d3d12CommandQueue) {
+    MaybeError CommandRecordingContext::ExecuteCommandList(Device* device) {
         if (IsOpen()) {
             // Shared textures must be transitioned to common state after the last usage in order
             // for them to be used by other APIs like D3D11. We ensure this by transitioning to the
             // common state right before command list submission. TransitionUsageNow itself ensures
             // no unnecessary transitions happen if the resources is already in the common state.
             for (Texture* texture : mSharedTextures) {
-                texture->TransitionUsageNow(this, D3D12_RESOURCE_STATE_COMMON);
+                texture->TrackUsageAndTransitionNow(this, D3D12_RESOURCE_STATE_COMMON);
             }
 
             MaybeError error =
@@ -67,14 +70,26 @@ namespace dawn_native { namespace d3d12 {
                 Release();
                 DAWN_TRY(std::move(error));
             }
+            DAWN_TRY(device->GetResidencyManager()->EnsureHeapsAreResident(
+                mHeapsPendingUsage.data(), mHeapsPendingUsage.size()));
 
             ID3D12CommandList* d3d12CommandList = GetCommandList();
-            d3d12CommandQueue->ExecuteCommandLists(1, &d3d12CommandList);
+            device->GetCommandQueue()->ExecuteCommandLists(1, &d3d12CommandList);
 
             mIsOpen = false;
             mSharedTextures.clear();
+            mHeapsPendingUsage.clear();
         }
         return {};
+    }
+
+    void CommandRecordingContext::TrackHeapUsage(Heap* heap, Serial serial) {
+        // Before tracking the heap, check the last serial it was recorded on to ensure we aren't
+        // tracking it more than once.
+        if (heap->GetLastUsage() < serial) {
+            heap->SetLastUsage(serial);
+            mHeapsPendingUsage.push_back(heap);
+        }
     }
 
     ID3D12GraphicsCommandList* CommandRecordingContext::GetCommandList() const {
@@ -96,6 +111,7 @@ namespace dawn_native { namespace d3d12 {
         mD3d12CommandList4.Reset();
         mIsOpen = false;
         mSharedTextures.clear();
+        mHeapsPendingUsage.clear();
     }
 
     bool CommandRecordingContext::IsOpen() const {

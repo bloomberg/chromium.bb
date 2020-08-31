@@ -131,8 +131,7 @@ TextPaintStyle TextPainterBase::TextPaintingStyle(const Document& document,
     text_style.shadow = style.TextShadow();
 
     // Adjust text color when printing with a white background.
-    DCHECK(document.Printing() == is_printing ||
-           RuntimeEnabledFeatures::PrintBrowserEnabled());
+    DCHECK_EQ(document.Printing(), is_printing);
     bool force_background_to_white =
         BoxPainterBase::ShouldForceWhiteBackgroundForPrintEconomy(document,
                                                                   style);
@@ -179,6 +178,9 @@ void TextPainterBase::DecorationsStripeIntercepts(
     // pixel makes sure we're always covering. This should only be done on the
     // clipping rectangle, not when computing the glyph intersects.
     clip_rect.InflateY(1.0);
+
+    if (!clip_rect.IsFinite())
+      continue;
     graphics_context_.ClipOut(clip_rect);
   }
 }
@@ -288,10 +290,11 @@ static ResolvedUnderlinePosition ResolveUnderlinePosition(
   // vertical text.
   switch (baseline_type) {
     case kAlphabeticBaseline:
-      if (!(style.TextUnderlinePosition() & kTextUnderlinePositionUnder)) {
-        return ResolvedUnderlinePosition::kRoman;
-      }
-      return ResolvedUnderlinePosition::kUnder;
+      if (style.TextUnderlinePosition() & kTextUnderlinePositionUnder)
+        return ResolvedUnderlinePosition::kUnder;
+      if (style.TextUnderlinePosition() & kTextUnderlinePositionFromFont)
+        return ResolvedUnderlinePosition::kNearAlphabeticBaselineFromFont;
+      return ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto;
     case kIdeographicBaseline:
       // Compute language-appropriate default underline position.
       // https://drafts.csswg.org/css-text-decor-3/#default-stylesheet
@@ -308,7 +311,7 @@ static ResolvedUnderlinePosition ResolveUnderlinePosition(
       return ResolvedUnderlinePosition::kUnder;
   }
   NOTREACHED();
-  return ResolvedUnderlinePosition::kRoman;
+  return ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto;
 }
 
 static bool ShouldSetDecorationAntialias(const ComputedStyle& style) {
@@ -323,24 +326,17 @@ static bool ShouldSetDecorationAntialias(const ComputedStyle& style) {
 
 float ComputeDecorationThickness(const ComputedStyle* style,
                                  const SimpleFontData* font_data) {
-  // Set the thick of the line to be 10% (or something else ?)of the computed
-  // font size and not less than 1px.  Using computedFontSize should take care
-  // of zoom as well.
+  // TODO(https://crbug.com/785230): Implement text-decoration-thickness setting
+  // and the from-font keyword here. We previously tried reading
+  // font_data->FontMetrics().UnderlineThickness() here but that never returned
+  // anything other than 0. Removed no-op implementation until we implement
+  // from-font behavior here. Keep font_data argument for now as this will be
+  // needed for the from-font implementation.
 
-  // Update Underline thickness, in case we have Faulty Font Metrics calculating
-  // underline thickness by old method.
-  float text_decoration_thickness = 0.0;
-  int font_height_int = 0;
-  if (font_data) {
-    text_decoration_thickness =
-        font_data->GetFontMetrics().UnderlineThickness();
-    font_height_int = font_data->GetFontMetrics().Height();
-  }
-  if ((text_decoration_thickness == 0.f) ||
-      (text_decoration_thickness >= (font_height_int >> 1))) {
-    text_decoration_thickness = std::max(1.f, style->ComputedFontSize() / 10.f);
-  }
-  return text_decoration_thickness;
+  // Set the thickness of the line to be 10% (or something else ?)of the
+  // computed font size and not less than 1px.  Using computedFontSize should
+  // take care of zoom as well.
+  return std::max(1.f, style->ComputedFontSize() / 10.f);
 }
 
 }  // anonymous namespace
@@ -368,7 +364,10 @@ void TextPainterBase::ComputeDecorationInfo(
           ? decoration_info.font_data->GetFontMetrics().FloatAscent()
           : 0;
 
-  if (decoration_info.underline_position == ResolvedUnderlinePosition::kRoman) {
+  if ((decoration_info.underline_position ==
+       ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto) ||
+      decoration_info.underline_position ==
+          ResolvedUnderlinePosition::kNearAlphabeticBaselineFromFont) {
     decoration_info.thickness = ComputeDecorationThickness(
         decoration_info.style, decoration_info.font_data);
   } else {

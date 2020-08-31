@@ -37,16 +37,17 @@
 
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
+#include "third_party/blink/public/web/web_origin_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
-#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_state_machine.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
@@ -92,7 +93,7 @@ class CORE_EXPORT FrameLoader final {
   // For reloads, an appropriate WebFrameLoadType should be given. Otherwise,
   // kStandard should be used (and the final WebFrameLoadType
   // will be computed).
-  void StartNavigation(const FrameLoadRequest&,
+  void StartNavigation(FrameLoadRequest&,
                        WebFrameLoadType = WebFrameLoadType::kStandard);
 
   // Called when the browser process has asked this renderer process to commit
@@ -102,9 +103,7 @@ class CORE_EXPORT FrameLoader final {
   void CommitNavigation(
       std::unique_ptr<WebNavigationParams> navigation_params,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
-      base::OnceClosure call_before_attaching_new_document =
-          base::DoNothing::Once(),
-      bool is_javascript_url = false);
+      CommitReason = CommitReason::kRegular);
 
   // Called before the browser process is asked to navigate this frame, to mark
   // the frame as loading and save some navigation information for later use.
@@ -134,7 +133,7 @@ class CORE_EXPORT FrameLoader final {
   void DidExplicitOpen();
 
   String UserAgent() const;
-  blink::UserAgentMetadata UserAgentMetadata() const;
+  base::Optional<blink::UserAgentMetadata> UserAgentMetadata() const;
 
   void DispatchDidClearWindowObjectInMainWorld();
   void DispatchDidClearDocumentOfWindowObject();
@@ -143,14 +142,24 @@ class CORE_EXPORT FrameLoader final {
 
   // The following sandbox flags will be forced, regardless of changes to the
   // sandbox attribute of any parent frames.
-  void ForceSandboxFlags(WebSandboxFlags flags) {
-    forced_sandbox_flags_ |= flags;
-  }
+  void ForceSandboxFlags(network::mojom::blink::WebSandboxFlags flags);
+
+  // Set frame_owner's effective sandbox flags, which are sandbox flags value
+  // at the beginning of navigation.
+  void SetFrameOwnerSandboxFlags(network::mojom::blink::WebSandboxFlags flags);
+
+  // Includes the collection of forced, inherited, and FrameOwner's sandbox
+  // flags, where the FrameOwner's flag is snapshotted from the last committed
+  // navigation. Note: with FeaturePolicyForSandbox the frame owner's sandbox
+  // flags only includes the flags which are *not* implemented as feature
+  // policies already present in the FrameOwner's ContainerPolicy.
+  network::mojom::blink::WebSandboxFlags EffectiveSandboxFlags() const;
+
   // Includes the collection of forced, inherited, and FrameOwner's sandbox
   // flags. Note: with FeaturePolicyForSandbox the frame owner's sandbox flags
   // only includes the flags which are *not* implemented as feature policies
   // already present in the FrameOwner's ContainerPolicy.
-  WebSandboxFlags EffectiveSandboxFlags() const;
+  network::mojom::blink::WebSandboxFlags PendingEffectiveSandboxFlags() const;
 
   // Modifying itself is done based on |fetch_client_settings_object|.
   // |document_for_logging| is used only for logging, use counters,
@@ -159,7 +168,7 @@ class CORE_EXPORT FrameLoader final {
       ResourceRequest&,
       const FetchClientSettingsObject* fetch_client_settings_object,
       Document* document_for_logging,
-      network::mojom::RequestContextFrameType) const;
+      mojom::RequestContextFrameType) const;
   void ReportLegacyTLSVersion(const KURL& url,
                               bool is_subresource,
                               bool is_ad_resource);
@@ -216,20 +225,20 @@ class CORE_EXPORT FrameLoader final {
   // Like ClearClientNavigation, but also notifies the client to actually cancel
   // the navigation.
   void CancelClientNavigation();
-  void DetachProvisionalDocumentLoader();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void DidDropNavigation();
   void MarkAsLoading();
 
-  ContentSecurityPolicy* GetLastOriginDocumentCSP() {
-    return last_origin_document_csp_.Get();
-  }
   bool ShouldReuseDefaultView(const scoped_refptr<const SecurityOrigin>&,
                               const ContentSecurityPolicy*);
 
   bool IsClientNavigationInitialHistoryLoad();
+
+  bool HasAccessedInitialDocument() { return has_accessed_initial_document_; }
+
+  static bool NeedsHistoryItemRestore(WebFrameLoadType type);
 
  private:
   bool AllowRequestForThisFrame(const FrameLoadRequest&);
@@ -252,7 +261,6 @@ class CORE_EXPORT FrameLoader final {
   void ClearClientNavigation();
 
   void RestoreScrollPositionAndViewState(WebFrameLoadType,
-                                         bool is_same_document,
                                          const HistoryItem::ViewState&,
                                          HistoryScrollRestorationType);
 
@@ -263,17 +271,27 @@ class CORE_EXPORT FrameLoader final {
   void TakeObjectSnapshot() const;
 
   // Commits the given |document_loader|.
-  void CommitDocumentLoader(
-      DocumentLoader* document_loader,
-      const base::Optional<Document::UnloadEventTiming>&,
-      bool dispatch_did_start,
-      base::OnceClosure call_before_attaching_new_document,
-      bool dispatch_did_commit);
+  void CommitDocumentLoader(DocumentLoader* document_loader,
+                            const base::Optional<Document::UnloadEventTiming>&,
+                            HistoryItem* previous_history_item,
+                            CommitReason);
+
+  // Creates CSP for the initial empty document. They are inherited from the
+  // owner document (parent or opener).
+  ContentSecurityPolicy* CreateCSPForInitialEmptyDocument() const;
+
+  // Creates CSP based on |response| and checks that they allow loading |url|.
+  // Returns nullptr if the check fails.
+  ContentSecurityPolicy* CreateCSP(
+      const KURL& url,
+      const ResourceResponse& response,
+      const base::Optional<WebOriginPolicy>& origin_policy,
+      ContentSecurityPolicy* initiator_csp,
+      CommitReason);
 
   LocalFrameClient* Client() const;
 
   Member<LocalFrame> frame_;
-  AtomicString required_csp_;
 
   // FIXME: These should be std::unique_ptr<T> to reduce build times and
   // simplify header dependencies unless performance testing proves otherwise.
@@ -282,13 +300,8 @@ class CORE_EXPORT FrameLoader final {
 
   Member<ProgressTracker> progress_tracker_;
 
-  // Document loaders for the three phases of frame loading. Note that while a
-  // new request is being loaded, the old document loader may still be
-  // referenced. E.g. while a new request is in the "policy" state, the old
-  // document loader may be consulted in particular as it makes sense to imply
-  // certain settings on the new loader.
+  // Document loader for frame loading.
   Member<DocumentLoader> document_loader_;
-  Member<DocumentLoader> provisional_document_loader_;
 
   // This struct holds information about a navigation, which is being
   // initiated by the client through the browser process, until the navigation
@@ -299,17 +312,29 @@ class CORE_EXPORT FrameLoader final {
   };
   std::unique_ptr<ClientNavigationState> client_navigation_;
 
-  bool in_restore_scroll_;
-
-  WebSandboxFlags forced_sandbox_flags_;
+  network::mojom::blink::WebSandboxFlags forced_sandbox_flags_;
+  // A snapshot value of frame_owner's sandbox flags states at the beginning of
+  // navigation. For main frame which does not have a frame owner, the value is
+  // base::nullopt.
+  // The snapshot value is needed because of potential racing conditions on
+  // sandbox attribute on iframe element.
+  // crbug.com/1026627
+  base::Optional<network::mojom::blink::WebSandboxFlags>
+      frame_owner_sandbox_flags_ = base::nullopt;
 
   bool dispatching_did_clear_window_object_in_main_world_;
   bool detached_;
   bool committing_navigation_ = false;
+  bool has_accessed_initial_document_ = false;
 
   WebScopedVirtualTimePauser virtual_time_pauser_;
 
+  // The CSP of the latest document that has initiated a navigation in this
+  // frame. TODO(arthursonzogni): This looks fragile. The FrameLoader might be
+  // confused by several navigations submitted in a row.
   Member<ContentSecurityPolicy> last_origin_document_csp_;
+
+  AtomicString required_csp_;
 
   // The origins for which a legacy TLS version warning has been printed. The
   // size of this set is capped, after which no more warnings are printed.

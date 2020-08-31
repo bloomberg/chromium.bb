@@ -18,6 +18,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_utils.h"
@@ -65,13 +66,7 @@ class ExtensionFunctionalTest : public ExtensionBrowserTest {
   }
 };
 
-// Failing on Linux: http://crbug.com/654945
-#if defined(OS_LINUX)
-#define MAYBE_TestSetExtensionsState DISABLED_TestSetExtensionsState
-#else
-#define MAYBE_TestSetExtensionsState TestSetExtensionsState
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, MAYBE_TestSetExtensionsState) {
+IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestSetExtensionsState) {
   InstallExtensionSilently(extension_service(), "google_talk.crx");
 
   // Disable the extension and verify.
@@ -109,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
   ui_test_utils::NavigateToURL(browser(), extension_url);
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), extension_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Sanity-check test setup: 2 frames share a renderer process, but are not in
   // a related browsing instance.

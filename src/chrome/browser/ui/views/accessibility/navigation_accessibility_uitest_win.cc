@@ -23,6 +23,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -140,7 +141,7 @@ void WinAccessibilityEventMonitor::WaitForNextEvent(
   base::win::ScopedBstr name_bstr;
   HRESULT hr = acc_obj->get_accName(child_variant, name_bstr.Receive());
   if (S_OK == hr)
-    *out_name = base::UTF16ToUTF8(base::string16(name_bstr));
+    *out_name = base::UTF16ToUTF8(base::string16(name_bstr.Get()));
   else
     *out_name = "";
 }

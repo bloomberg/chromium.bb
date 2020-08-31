@@ -30,10 +30,11 @@
 
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_computed_effect_timing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_optional_effect_timing.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
-#include "third_party/blink/renderer/core/animation/computed_effect_timing.h"
-#include "third_party/blink/renderer/core/animation/optional_effect_timing.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/timing_calculations.h"
 #include "third_party/blink/renderer/core/animation/timing_input.h"
 
@@ -44,24 +45,57 @@ AnimationEffect::AnimationEffect(const Timing& timing,
     : owner_(nullptr),
       timing_(timing),
       event_delegate_(event_delegate),
-      calculated_(),
-      needs_update_(true) {
+      needs_update_(true),
+      cancel_time_(0) {
   timing_.AssertValid();
 }
 
 void AnimationEffect::UpdateSpecifiedTiming(const Timing& timing) {
-  // FIXME: Test whether the timing is actually different?
-  timing_ = timing;
+  if (!timing_.HasTimingOverrides()) {
+    timing_ = timing;
+  } else {
+    // Style changes that are overridden due to an explicit call to
+    // AnimationEffect.updateTiming are not applied.
+    if (!timing_.HasTimingOverride(Timing::kOverrideStartDelay))
+      timing_.start_delay = timing.start_delay;
+
+    if (!timing_.HasTimingOverride(Timing::kOverrideDirection))
+      timing_.direction = timing.direction;
+
+    if (!timing_.HasTimingOverride(Timing::kOverrideDuration))
+      timing_.iteration_duration = timing.iteration_duration;
+
+    if (!timing_.HasTimingOverride(Timing::kOverrideEndDelay))
+      timing_.end_delay = timing.end_delay;
+
+    if (!timing_.HasTimingOverride(Timing::kOverideFillMode))
+      timing_.fill_mode = timing.fill_mode;
+
+    if (!timing_.HasTimingOverride(Timing::kOverrideIterationCount))
+      timing_.iteration_count = timing.iteration_count;
+
+    if (!timing_.HasTimingOverride(Timing::kOverrideIterationStart))
+      timing_.iteration_start = timing.iteration_start;
+
+    if (!timing_.HasTimingOverride(Timing::kOverrideTimingFunction))
+      timing_.timing_function = timing.timing_function;
+  }
   InvalidateAndNotifyOwner();
 }
 
+void AnimationEffect::SetIgnoreCssTimingProperties() {
+  timing_.SetTimingOverride(Timing::kOverrideAll);
+}
+
 EffectTiming* AnimationEffect::getTiming() const {
+  if (const Animation* animation = GetAnimation())
+    animation->FlushPendingUpdates();
   return SpecifiedTiming().ConvertToEffectTiming();
 }
 
 ComputedEffectTiming* AnimationEffect::getComputedTiming() const {
   return SpecifiedTiming().getComputedTiming(EnsureCalculated(),
-                                             IsKeyframeEffect());
+                                             IsA<KeyframeEffect>(this));
 }
 
 void AnimationEffect::updateTiming(OptionalEffectTiming* optional_timing,
@@ -91,7 +125,7 @@ void AnimationEffect::UpdateInheritedTime(base::Optional<double> inherited_time,
   const base::Optional<double> local_time = inherited_time;
   if (needs_update) {
     Timing::CalculatedTiming calculated = SpecifiedTiming().CalculateTimings(
-        local_time, direction, IsKeyframeEffect(), playback_rate);
+        local_time, direction, IsA<KeyframeEffect>(this), playback_rate);
 
     const bool was_canceled = calculated.phase != calculated_.phase &&
                               calculated.phase == Timing::kPhaseNone;
@@ -145,7 +179,7 @@ const Animation* AnimationEffect::GetAnimation() const {
   return owner_ ? owner_->GetAnimation() : nullptr;
 }
 
-void AnimationEffect::Trace(blink::Visitor* visitor) {
+void AnimationEffect::Trace(Visitor* visitor) {
   visitor->Trace(owner_);
   visitor->Trace(event_delegate_);
   ScriptWrappable::Trace(visitor);

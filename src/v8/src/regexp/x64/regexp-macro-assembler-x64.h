@@ -37,7 +37,6 @@ class V8_EXPORT_PRIVATE RegExpMacroAssemblerX64
   void CheckNotBackReference(int start_reg, bool read_backward,
                              Label* on_no_match) override;
   void CheckNotBackReferenceIgnoreCase(int start_reg, bool read_backward,
-                                       bool unicode,
                                        Label* on_no_match) override;
   void CheckNotCharacter(uint32_t c, Label* on_not_equal) override;
   void CheckNotCharacterAfterAnd(uint32_t c, uint32_t mask,
@@ -60,9 +59,8 @@ class V8_EXPORT_PRIVATE RegExpMacroAssemblerX64
   void IfRegisterLT(int reg, int comparand, Label* if_lt) override;
   void IfRegisterEqPos(int reg, Label* if_eq) override;
   IrregexpImplementation Implementation() override;
-  void LoadCurrentCharacterImpl(int cp_offset, Label* on_end_of_input,
-                                bool check_bounds, int characters,
-                                int eats_at_least) override;
+  void LoadCurrentCharacterUnchecked(int cp_offset,
+                                     int character_count) override;
   void PopCurrentPosition() override;
   void PopRegister(int register_index) override;
   void PushBacktrack(Label* label) override;
@@ -159,10 +157,6 @@ class V8_EXPORT_PRIVATE RegExpMacroAssemblerX64
 
   // Initial size of code buffer.
   static const int kRegExpCodeSize = 1024;
-
-  // Load a number of characters at the given offset from the
-  // current position, into the current-character register.
-  void LoadCurrentCharacterUnchecked(int cp_offset, int character_count);
 
   // Check whether preemption has been requested.
   void CheckPreemption();

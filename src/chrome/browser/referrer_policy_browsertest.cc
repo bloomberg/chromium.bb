@@ -8,6 +8,8 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -31,12 +33,13 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
-#include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -67,6 +70,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
   // currently, (See the comment on RequestCheck, below.)
   virtual void OnServerIncomingRequest(
       const net::test_server::HttpRequest& request) {
+    base::AutoLock lock(check_on_requests_lock_);
     if (!check_on_requests_)
       return;
 
@@ -217,8 +221,10 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
           base::UTF16ToASCII(expected_title)
               .substr(base::StringPiece("Referrer is ").size());
     }
+    base::ReleasableAutoLock releaseable_lock(&check_on_requests_lock_);
     check_on_requests_ = RequestCheck{
         expected_referrer_value, "/referrer_policy/referrer-policy-log.html"};
+    releaseable_lock.Release();
 
     // Watch for all possible outcomes to avoid timeouts if something breaks.
     AddAllPossibleTitles(start_url, &title_watcher);
@@ -234,13 +240,14 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
       ui_test_utils::NavigateToURL(&params);
     } else if (button != blink::WebMouseEvent::Button::kNoButton) {
       blink::WebMouseEvent mouse_event(
-          blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+          blink::WebInputEvent::Type::kMouseDown,
+          blink::WebInputEvent::kNoModifiers,
           blink::WebInputEvent::GetStaticTimeStampForTests());
       mouse_event.button = button;
       mouse_event.SetPositionInWidget(15, 15);
       mouse_event.click_count = 1;
       tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
-      mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+      mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
       tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
     }
 
@@ -260,6 +267,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_referrer_policy,
               tab->GetController().GetVisibleEntry()->GetReferrer().policy);
 
+    base::AutoLock lock(check_on_requests_lock_);
     check_on_requests_.reset();
 
     return start_url;
@@ -290,7 +298,10 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
     std::string expected_spec;
     std::string destination_url_to_match;
   };
-  base::Optional<RequestCheck> check_on_requests_;
+
+  base::Lock check_on_requests_lock_;
+  base::Optional<RequestCheck> check_on_requests_
+      GUARDED_BY(check_on_requests_lock_);
 };
 
 // The basic behavior of referrer policies is covered by layout tests in
@@ -782,8 +793,8 @@ struct ReferrerOverrideParams {
         .force_no_referrer_when_downgrade_default = false,
         .baseline_policy = network::mojom::ReferrerPolicy::kDefault,
         // kDefault gets resolved into a concrete policy when making requests
-        .expected_policy = network::mojom::ReferrerPolicy::
-            kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+        .expected_policy =
+            network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
         .same_origin_nav = ReferrerPolicyTest::EXPECT_FULL_REFERRER,
         .cross_origin_nav = ReferrerPolicyTest::EXPECT_ORIGIN_AS_REFERRER,
         .cross_origin_downgrade_nav = ReferrerPolicyTest::EXPECT_EMPTY_REFERRER,
@@ -872,6 +883,7 @@ class ReferrerOverrideTest
     content::WebContents* tab =
         browser()->tab_strip_model()->GetActiveWebContents();
 
+    base::ReleasableAutoLock lock(&check_on_requests_lock_);
     check_on_requests_ = RequestCheck{"", "/referrer_policy/logo.gif"};
     switch (expectation) {
       case ReferrerPolicyTest::EXPECT_EMPTY_REFERRER:
@@ -884,6 +896,7 @@ class ReferrerOverrideTest
         check_on_requests_->expected_spec = start_url.GetWithEmptyPath().spec();
         break;
     }
+    lock.Release();
 
     // set by referrer-policy-subresource.html JS after the embedded image loads
     base::string16 expected_title(base::ASCIIToUTF16("loaded"));

@@ -10,10 +10,12 @@
 #include <string>
 
 #include "net/third_party/quiche/src/quic/core/crypto/transport_parameters.h"
+#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_optional.h"
 
 namespace quic {
 
@@ -62,67 +64,6 @@ class QUIC_EXPORT_PRIVATE QuicConfigValue {
   const QuicConfigPresence presence_;
 };
 
-class QUIC_EXPORT_PRIVATE QuicNegotiableValue : public QuicConfigValue {
- public:
-  QuicNegotiableValue(QuicTag tag, QuicConfigPresence presence);
-  ~QuicNegotiableValue() override;
-
-  bool negotiated() const { return negotiated_; }
-
- protected:
-  void set_negotiated(bool negotiated) { negotiated_ = negotiated; }
-
- private:
-  bool negotiated_;
-};
-
-class QUIC_EXPORT_PRIVATE QuicNegotiableUint32 : public QuicNegotiableValue {
-  // TODO(fayang): some negotiated values use uint32 as bool (e.g., silent
-  // close). Consider adding a QuicNegotiableBool type.
- public:
-  // Default and max values default to 0.
-  QuicNegotiableUint32(QuicTag name, QuicConfigPresence presence);
-  ~QuicNegotiableUint32() override;
-
-  // Sets the maximum possible value that can be achieved after negotiation and
-  // also the default values to be assumed if PRESENCE_OPTIONAL and the *HLO msg
-  // doesn't contain a value corresponding to |name_|. |max| is serialised via
-  // ToHandshakeMessage call if |negotiated_| is false.
-  void set(uint32_t max, uint32_t default_value);
-
-  // Returns the value negotiated if |negotiated_| is true, otherwise returns
-  // default_value_ (used to set default values before negotiation finishes).
-  uint32_t GetUint32() const;
-
-  // Returns the maximum value negotiable.
-  uint32_t GetMax() const;
-
-  // Serialises |name_| and value to |out|. If |negotiated_| is true then
-  // |negotiated_value_| is serialised, otherwise |max_value_| is serialised.
-  void ToHandshakeMessage(CryptoHandshakeMessage* out) const override;
-
-  // Processes the corresponding value from |peer_hello| and if present calls
-  // ReceiveValue with it. If the corresponding value is missing and
-  // PRESENCE_OPTIONAL then |negotiated_value_| is set to |default_value_|.
-  QuicErrorCode ProcessPeerHello(const CryptoHandshakeMessage& peer_hello,
-                                 HelloType hello_type,
-                                 std::string* error_details) override;
-
-  // Takes a value |value| parsed from a handshake message (whether a TLS
-  // ClientHello/ServerHello or a CryptoHandshakeMessage) whose sender was
-  // |hello_type|, and sets |negotiated_value_| to the minimum of |value| and
-  // |max_value_|. On success this function returns QUIC_NO_ERROR; if there is
-  // an error, details are put in |*error_details|.
-  QuicErrorCode ReceiveValue(uint32_t value,
-                             HelloType hello_type,
-                             std::string* error_details);
-
- private:
-  uint32_t max_value_;
-  uint32_t default_value_;
-  uint32_t negotiated_value_;
-};
-
 // Stores uint32_t from CHLO or SHLO messages that are not negotiated.
 class QUIC_EXPORT_PRIVATE QuicFixedUint32 : public QuicConfigValue {
  public:
@@ -153,6 +94,43 @@ class QUIC_EXPORT_PRIVATE QuicFixedUint32 : public QuicConfigValue {
   uint32_t send_value_;
   bool has_send_value_;
   uint32_t receive_value_;
+  bool has_receive_value_;
+};
+
+// Stores 62bit numbers from handshake messages that unilaterally shared by each
+// endpoint. IMPORTANT: these are serialized as 32-bit unsigned integers when
+// using QUIC_CRYPTO versions and CryptoHandshakeMessage.
+class QUIC_EXPORT_PRIVATE QuicFixedUint62 : public QuicConfigValue {
+ public:
+  QuicFixedUint62(QuicTag name, QuicConfigPresence presence);
+  ~QuicFixedUint62() override;
+
+  bool HasSendValue() const;
+
+  uint64_t GetSendValue() const;
+
+  void SetSendValue(uint64_t value);
+
+  bool HasReceivedValue() const;
+
+  uint64_t GetReceivedValue() const;
+
+  void SetReceivedValue(uint64_t value);
+
+  // If has_send_value is true, serialises |tag_| and |send_value_| to |out|.
+  // IMPORTANT: this method serializes |send_value_| as an unsigned 32bit
+  // integer.
+  void ToHandshakeMessage(CryptoHandshakeMessage* out) const override;
+
+  // Sets |value_| to the corresponding value from |peer_hello_| if it exists.
+  QuicErrorCode ProcessPeerHello(const CryptoHandshakeMessage& peer_hello,
+                                 HelloType hello_type,
+                                 std::string* error_details) override;
+
+ private:
+  uint64_t send_value_;
+  bool has_send_value_;
+  uint64_t receive_value_;
   bool has_receive_value_;
 };
 
@@ -198,13 +176,13 @@ class QUIC_EXPORT_PRIVATE QuicFixedTagVector : public QuicConfigValue {
 
   bool HasSendValues() const;
 
-  QuicTagVector GetSendValues() const;
+  const QuicTagVector& GetSendValues() const;
 
   void SetSendValues(const QuicTagVector& values);
 
   bool HasReceivedValues() const;
 
-  QuicTagVector GetReceivedValues() const;
+  const QuicTagVector& GetReceivedValues() const;
 
   void SetReceivedValues(const QuicTagVector& values);
 
@@ -275,11 +253,11 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   // function does nothing and returns false.
   bool SetInitialReceivedConnectionOptions(const QuicTagVector& tags);
 
-  QuicTagVector ReceivedConnectionOptions() const;
+  const QuicTagVector& ReceivedConnectionOptions() const;
 
   bool HasSendConnectionOptions() const;
 
-  QuicTagVector SendConnectionOptions() const;
+  const QuicTagVector& SendConnectionOptions() const;
 
   // Returns true if the client is sending or the server has received a
   // connection option.
@@ -296,34 +274,28 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   bool HasClientRequestedIndependentOption(QuicTag tag,
                                            Perspective perspective) const;
 
-  void SetIdleNetworkTimeout(QuicTime::Delta max_idle_network_timeout,
-                             QuicTime::Delta default_idle_network_timeout);
+  const QuicTagVector& ClientRequestedIndependentOptions(
+      Perspective perspective) const;
+
+  void SetIdleNetworkTimeout(QuicTime::Delta idle_network_timeout);
 
   QuicTime::Delta IdleNetworkTimeout() const;
 
-  void SetSilentClose(bool silent_close);
+  // Sets the max bidirectional stream count that this endpoint supports.
+  void SetMaxBidirectionalStreamsToSend(uint32_t max_streams);
+  uint32_t GetMaxBidirectionalStreamsToSend() const;
 
-  bool SilentClose() const;
+  bool HasReceivedMaxBidirectionalStreams() const;
+  // Gets the max bidirectional stream limit imposed by the peer.
+  uint32_t ReceivedMaxBidirectionalStreams() const;
 
-  // Configuration for the Google QUIC and IETF QUIC stream ID managers. Note
-  // that the naming is a bit  weird; it is from the perspective of the node
-  // generating (sending) the configuration and, thus, The "incoming" counts are
-  // the number of streams that the node sending the configuration is willing to
-  // accept and therefore the number that the node receiving the confguration
-  // can create .. the number of outbound streams that may be intiated..
-  // There are two sets, one for unidirectional streams and one for
-  // bidirectional. The bidirectional set also covers Google-QUICs
-  // dynamic stream count (which are bidirectional streams).
-  // TODO(b/142351095) rename these to improve clarity.
-  void SetMaxIncomingBidirectionalStreamsToSend(uint32_t max_streams);
-  uint32_t GetMaxIncomingBidirectionalStreamsToSend() const;
-  bool HasReceivedMaxIncomingBidirectionalStreams() const;
-  uint32_t ReceivedMaxIncomingBidirectionalStreams() const;
+  // Sets the max unidirectional stream count that this endpoint supports.
+  void SetMaxUnidirectionalStreamsToSend(uint32_t max_streams);
+  uint32_t GetMaxUnidirectionalStreamsToSend() const;
 
-  void SetMaxIncomingUnidirectionalStreamsToSend(uint32_t max_streams);
-  uint32_t GetMaxIncomingUnidirectionalStreamsToSend() const;
-  bool HasReceivedMaxIncomingUnidirectionalStreams() const;
-  uint32_t ReceivedMaxIncomingUnidirectionalStreams() const;
+  bool HasReceivedMaxUnidirectionalStreams() const;
+  // Gets the max unidirectional stream limit imposed by the peer.
+  uint32_t ReceivedMaxUnidirectionalStreams() const;
 
   void set_max_time_before_crypto_handshake(
       QuicTime::Delta max_time_before_crypto_handshake) {
@@ -344,10 +316,6 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
     return max_idle_time_before_crypto_handshake_;
   }
 
-  QuicNegotiableUint32 idle_network_timeout_seconds() const {
-    return idle_network_timeout_seconds_;
-  }
-
   void set_max_undecryptable_packets(size_t max_undecryptable_packets) {
     max_undecryptable_packets_ = max_undecryptable_packets;
   }
@@ -356,89 +324,85 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
     return max_undecryptable_packets_;
   }
 
+  // Peer's connection id length, in bytes. Only used in Q043 and Q046.
   bool HasSetBytesForConnectionIdToSend() const;
-
-  // Sets the peer's connection id length, in bytes.
   void SetBytesForConnectionIdToSend(uint32_t bytes);
-
   bool HasReceivedBytesForConnectionId() const;
-
   uint32_t ReceivedBytesForConnectionId() const;
 
-  // Sets an estimated initial round trip time in us.
-  void SetInitialRoundTripTimeUsToSend(uint32_t rtt_us);
-
+  // Estimated initial round trip time in us.
+  void SetInitialRoundTripTimeUsToSend(uint64_t rtt_us);
   bool HasReceivedInitialRoundTripTimeUs() const;
-
-  uint32_t ReceivedInitialRoundTripTimeUs() const;
-
+  uint64_t ReceivedInitialRoundTripTimeUs() const;
   bool HasInitialRoundTripTimeUsToSend() const;
-
-  uint32_t GetInitialRoundTripTimeUsToSend() const;
+  uint64_t GetInitialRoundTripTimeUsToSend() const;
 
   // Sets an initial stream flow control window size to transmit to the peer.
-  void SetInitialStreamFlowControlWindowToSend(uint32_t window_bytes);
-  uint32_t GetInitialStreamFlowControlWindowToSend() const;
+  void SetInitialStreamFlowControlWindowToSend(uint64_t window_bytes);
+  uint64_t GetInitialStreamFlowControlWindowToSend() const;
   bool HasReceivedInitialStreamFlowControlWindowBytes() const;
-  uint32_t ReceivedInitialStreamFlowControlWindowBytes() const;
+  uint64_t ReceivedInitialStreamFlowControlWindowBytes() const;
 
   // Specifies the initial flow control window (max stream data) for
   // incoming bidirectional streams. Incoming means streams initiated by our
   // peer. If not set, GetInitialMaxStreamDataBytesIncomingBidirectionalToSend
   // returns the value passed to SetInitialStreamFlowControlWindowToSend.
   void SetInitialMaxStreamDataBytesIncomingBidirectionalToSend(
-      uint32_t window_bytes);
-  uint32_t GetInitialMaxStreamDataBytesIncomingBidirectionalToSend() const;
+      uint64_t window_bytes);
+  uint64_t GetInitialMaxStreamDataBytesIncomingBidirectionalToSend() const;
   bool HasReceivedInitialMaxStreamDataBytesIncomingBidirectional() const;
-  uint32_t ReceivedInitialMaxStreamDataBytesIncomingBidirectional() const;
+  uint64_t ReceivedInitialMaxStreamDataBytesIncomingBidirectional() const;
 
   // Specifies the initial flow control window (max stream data) for
   // outgoing bidirectional streams. Outgoing means streams initiated by us.
   // If not set, GetInitialMaxStreamDataBytesOutgoingBidirectionalToSend
   // returns the value passed to SetInitialStreamFlowControlWindowToSend.
   void SetInitialMaxStreamDataBytesOutgoingBidirectionalToSend(
-      uint32_t window_bytes);
-  uint32_t GetInitialMaxStreamDataBytesOutgoingBidirectionalToSend() const;
+      uint64_t window_bytes);
+  uint64_t GetInitialMaxStreamDataBytesOutgoingBidirectionalToSend() const;
   bool HasReceivedInitialMaxStreamDataBytesOutgoingBidirectional() const;
-  uint32_t ReceivedInitialMaxStreamDataBytesOutgoingBidirectional() const;
+  uint64_t ReceivedInitialMaxStreamDataBytesOutgoingBidirectional() const;
 
   // Specifies the initial flow control window (max stream data) for
   // unidirectional streams. If not set,
   // GetInitialMaxStreamDataBytesUnidirectionalToSend returns the value passed
   // to SetInitialStreamFlowControlWindowToSend.
-  void SetInitialMaxStreamDataBytesUnidirectionalToSend(uint32_t window_bytes);
-  uint32_t GetInitialMaxStreamDataBytesUnidirectionalToSend() const;
+  void SetInitialMaxStreamDataBytesUnidirectionalToSend(uint64_t window_bytes);
+  uint64_t GetInitialMaxStreamDataBytesUnidirectionalToSend() const;
   bool HasReceivedInitialMaxStreamDataBytesUnidirectional() const;
-  uint32_t ReceivedInitialMaxStreamDataBytesUnidirectional() const;
+  uint64_t ReceivedInitialMaxStreamDataBytesUnidirectional() const;
 
   // Sets an initial session flow control window size to transmit to the peer.
-  void SetInitialSessionFlowControlWindowToSend(uint32_t window_bytes);
-
-  uint32_t GetInitialSessionFlowControlWindowToSend() const;
-
+  void SetInitialSessionFlowControlWindowToSend(uint64_t window_bytes);
+  uint64_t GetInitialSessionFlowControlWindowToSend() const;
   bool HasReceivedInitialSessionFlowControlWindowBytes() const;
+  uint64_t ReceivedInitialSessionFlowControlWindowBytes() const;
 
-  uint32_t ReceivedInitialSessionFlowControlWindowBytes() const;
-
+  // Disable connection migration.
   void SetDisableConnectionMigration();
-
   bool DisableConnectionMigration() const;
 
-  void SetAlternateServerAddressToSend(
-      const QuicSocketAddress& alternate_server_address);
+  // IPv6 alternate server address.
+  void SetIPv6AlternateServerAddressToSend(
+      const QuicSocketAddress& alternate_server_address_ipv6);
+  bool HasReceivedIPv6AlternateServerAddress() const;
+  const QuicSocketAddress& ReceivedIPv6AlternateServerAddress() const;
 
-  bool HasReceivedAlternateServerAddress() const;
+  // IPv4 alternate server address.
+  void SetIPv4AlternateServerAddressToSend(
+      const QuicSocketAddress& alternate_server_address_ipv4);
+  bool HasReceivedIPv4AlternateServerAddress() const;
+  const QuicSocketAddress& ReceivedIPv4AlternateServerAddress() const;
 
-  const QuicSocketAddress& ReceivedAlternateServerAddress() const;
+  // Original connection ID.
+  void SetOriginalConnectionIdToSend(
+      const QuicConnectionId& original_connection_id);
+  bool HasReceivedOriginalConnectionId() const;
+  QuicConnectionId ReceivedOriginalConnectionId() const;
 
-  void SetSupportMaxHeaderListSize();
-
-  bool SupportMaxHeaderListSize() const;
-
+  // Stateless reset token.
   void SetStatelessResetTokenToSend(QuicUint128 stateless_reset_token);
-
   bool HasReceivedStatelessResetToken() const;
-
   QuicUint128 ReceivedStatelessResetToken() const;
 
   // Manage the IETF QUIC Max ACK Delay transport parameter.
@@ -457,16 +421,22 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   uint32_t ReceivedAckDelayExponent() const;
 
   // IETF QUIC max_packet_size transport parameter.
-  void SetMaxPacketSizeToSend(uint32_t max_packet_size);
-  uint32_t GetMaxPacketSizeToSend() const;
+  void SetMaxPacketSizeToSend(uint64_t max_packet_size);
+  uint64_t GetMaxPacketSizeToSend() const;
   bool HasReceivedMaxPacketSize() const;
-  uint32_t ReceivedMaxPacketSize() const;
+  uint64_t ReceivedMaxPacketSize() const;
 
   // IETF QUIC max_datagram_frame_size transport parameter.
-  void SetMaxDatagramFrameSizeToSend(uint32_t max_datagram_frame_size);
-  uint32_t GetMaxDatagramFrameSizeToSend() const;
+  void SetMaxDatagramFrameSizeToSend(uint64_t max_datagram_frame_size);
+  uint64_t GetMaxDatagramFrameSizeToSend() const;
   bool HasReceivedMaxDatagramFrameSize() const;
-  uint32_t ReceivedMaxDatagramFrameSize() const;
+  uint64_t ReceivedMaxDatagramFrameSize() const;
+
+  // IETF QUIC active_connection_id_limit transport parameter.
+  void SetActiveConnectionIdLimitToSend(uint64_t active_connection_id_limit);
+  uint64_t GetActiveConnectionIdLimitToSend() const;
+  bool HasReceivedActiveConnectionIdLimit() const;
+  uint64_t ReceivedActiveConnectionIdLimit() const;
 
   bool negotiated() const;
 
@@ -492,10 +462,13 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
 
   // ProcessTransportParameters reads from |params| which was received from a
   // peer operating as a |hello_type|. It processes values for ICSL, MIDS, CFCW,
-  // and SFCW and sets the corresponding members of this QuicConfig. On failure,
-  // it returns a QuicErrorCode and puts a detailed error in |*error_details|.
+  // and SFCW and sets the corresponding members of this QuicConfig.
+  // If |is_resumption|, some configs will not be processed.
+  // On failure, it returns a QuicErrorCode and puts a detailed error in
+  // |*error_details|.
   QuicErrorCode ProcessTransportParameters(const TransportParameters& params,
                                            HelloType hello_type,
+                                           bool is_resumption,
                                            std::string* error_details);
 
   TransportParameters::ParameterMap& custom_transport_parameters_to_send() {
@@ -512,6 +485,9 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   // SetDefaults sets the members to sensible, default values.
   void SetDefaults();
 
+  // Whether we've received the peer's config.
+  bool negotiated_;
+
   // Configurations options that are not negotiated.
   // Maximum time the session can be alive before crypto handshake is finished.
   QuicTime::Delta max_time_before_crypto_handshake_;
@@ -525,43 +501,67 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   QuicFixedTagVector connection_options_;
   // Connection options which only affect the client side.
   QuicFixedTagVector client_connection_options_;
-  // Idle network timeout in seconds.
-  QuicNegotiableUint32 idle_network_timeout_seconds_;
-  // Whether to use silent close.  Defaults to 0 (false) and is otherwise true.
-  QuicNegotiableUint32 silent_close_;
-  // Maximum number of incoming dynamic streams that a Google QUIC connection
-  // can support or the maximum number of incoming bidirectional streams that
+  // Idle network timeout.
+  // Uses the max_idle_timeout transport parameter in IETF QUIC.
+  // Note that received_idle_timeout_ is only populated if we receive the
+  // peer's value, which isn't guaranteed in IETF QUIC as sending is optional.
+  QuicTime::Delta idle_timeout_to_send_;
+  quiche::QuicheOptional<QuicTime::Delta> received_idle_timeout_;
+  // Maximum number of dynamic streams that a Google QUIC connection
+  // can support or the maximum number of bidirectional streams that
   // an IETF QUIC connection can support.
-  QuicFixedUint32 max_incoming_bidirectional_streams_;
-  // The number of bytes required for the connection ID.
+  // The SendValue is the limit on peer-created streams that this endpoint is
+  // advertising.
+  // The ReceivedValue is the limit on locally-created streams that
+  // the peer advertised.
+  // Uses the initial_max_streams_bidi transport parameter in IETF QUIC.
+  QuicFixedUint32 max_bidirectional_streams_;
+  // Maximum number of unidirectional streams that the connection can
+  // support.
+  // The SendValue is the limit on peer-created streams that this endpoint is
+  // advertising.
+  // The ReceivedValue is the limit on locally-created streams that the peer
+  // advertised.
+  // Uses the initial_max_streams_uni transport parameter in IETF QUIC.
+  QuicFixedUint32 max_unidirectional_streams_;
+  // The number of bytes required for the connection ID. This is only used in
+  // the legacy header format used only by Q043 at this point.
   QuicFixedUint32 bytes_for_connection_id_;
   // Initial round trip time estimate in microseconds.
-  QuicFixedUint32 initial_round_trip_time_us_;
+  QuicFixedUint62 initial_round_trip_time_us_;
 
   // Initial IETF QUIC stream flow control receive windows in bytes.
   // Incoming bidirectional streams.
-  QuicFixedUint32 initial_max_stream_data_bytes_incoming_bidirectional_;
+  // Uses the initial_max_stream_data_bidi_{local,remote} transport parameter
+  // in IETF QUIC, depending on whether we're sending or receiving.
+  QuicFixedUint62 initial_max_stream_data_bytes_incoming_bidirectional_;
   // Outgoing bidirectional streams.
-  QuicFixedUint32 initial_max_stream_data_bytes_outgoing_bidirectional_;
+  // Uses the initial_max_stream_data_bidi_{local,remote} transport parameter
+  // in IETF QUIC, depending on whether we're sending or receiving.
+  QuicFixedUint62 initial_max_stream_data_bytes_outgoing_bidirectional_;
   // Unidirectional streams.
-  QuicFixedUint32 initial_max_stream_data_bytes_unidirectional_;
+  // Uses the initial_max_stream_data_uni transport parameter in IETF QUIC.
+  QuicFixedUint62 initial_max_stream_data_bytes_unidirectional_;
 
   // Initial Google QUIC stream flow control receive window in bytes.
-  QuicFixedUint32 initial_stream_flow_control_window_bytes_;
+  QuicFixedUint62 initial_stream_flow_control_window_bytes_;
 
   // Initial session flow control receive window in bytes.
-  QuicFixedUint32 initial_session_flow_control_window_bytes_;
+  // Uses the initial_max_data transport parameter in IETF QUIC.
+  QuicFixedUint62 initial_session_flow_control_window_bytes_;
 
-  // Whether tell peer not to attempt connection migration.
+  // Whether active connection migration is allowed.
+  // Uses the disable_active_migration transport parameter in IETF QUIC.
   QuicFixedUint32 connection_migration_disabled_;
 
-  // An alternate server address the client could connect to.
-  QuicFixedSocketAddress alternate_server_address_;
-
-  // Whether support HTTP/2 SETTINGS_MAX_HEADER_LIST_SIZE SETTINGS frame.
-  QuicFixedUint32 support_max_header_list_size_;
+  // Alternate server addresses the client could connect to.
+  // Uses the preferred_address transport parameter in IETF QUIC.
+  // Note that when QUIC_CRYPTO is in use, only one of the addresses is sent.
+  QuicFixedSocketAddress alternate_server_address_ipv6_;
+  QuicFixedSocketAddress alternate_server_address_ipv4_;
 
   // Stateless reset token used in IETF public reset packet.
+  // Uses the stateless_reset_token transport parameter in IETF QUIC.
   QuicFixedUint128 stateless_reset_token_;
 
   // List of QuicTags whose presence immediately causes the session to
@@ -569,27 +569,35 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   // packet to be processed.
   QuicTagVector create_session_tag_indicators_;
 
-  // Maximum number of incoming unidirectional streams that the connection can
-  // support.
-  QuicFixedUint32 max_incoming_unidirectional_streams_;
-
   // Maximum ack delay. The sent value is the value used on this node.
   // The received value is the value received from the peer and used by
   // the peer.
+  // Uses the max_ack_delay transport parameter in IETF QUIC.
   QuicFixedUint32 max_ack_delay_ms_;
 
-  // ack_delay_exponent parameter negotiated in IETF QUIC transport
-  // parameter negotiation. The sent exponent is the exponent that this
-  // node uses when serializing an ACK frame (and the peer should use when
-  // deserializing the frame); the received exponent is the value the peer uses
-  // to serialize frames and this node uses to deserialize them.
+  // The sent exponent is the exponent that this node uses when serializing an
+  // ACK frame (and the peer should use when deserializing the frame);
+  // the received exponent is the value the peer uses to serialize frames and
+  // this node uses to deserialize them.
+  // Uses the ack_delay_exponent transport parameter in IETF QUIC.
   QuicFixedUint32 ack_delay_exponent_;
 
-  // max_packet_size IETF QUIC transport parameter.
-  QuicFixedUint32 max_packet_size_;
+  // Maximum packet size in bytes.
+  // Uses the max_packet_size transport parameter in IETF QUIC.
+  QuicFixedUint62 max_packet_size_;
 
-  // max_datagram_frame_size IETF QUIC transport parameter.
-  QuicFixedUint32 max_datagram_frame_size_;
+  // Maximum DATAGRAM/MESSAGE frame size in bytes.
+  // Uses the max_datagram_frame_size transport parameter in IETF QUIC.
+  QuicFixedUint62 max_datagram_frame_size_;
+
+  // Maximum number of connection IDs from the peer.
+  // Uses the active_connection_id_limit transport parameter in IETF QUIC.
+  QuicFixedUint62 active_connection_id_limit_;
+
+  // Sent by the server when it has previously sent a RETRY packet.
+  // Uses the original_connection_id transport parameter in IETF QUIC.
+  quiche::QuicheOptional<QuicConnectionId> original_connection_id_to_send_;
+  quiche::QuicheOptional<QuicConnectionId> received_original_connection_id_;
 
   // Custom transport parameters that can be sent and received in the TLS
   // handshake.

@@ -23,6 +23,7 @@
 #include "drivefs/dbus-constants.h"
 #include "hammerd/dbus-constants.h"
 #include "hermes/dbus-constants.h"
+#include "ip_peripheral/dbus-constants.h"
 #include "login_manager/dbus-constants.h"
 #include "lorgnette/dbus-constants.h"
 #include "oobe_config/dbus-constants.h"
@@ -193,6 +194,10 @@ const char kChromeFeaturesServiceIsFeatureEnabledMethod[] =
     "IsFeatureEnabled";
 const char kChromeFeaturesServiceIsCrostiniEnabledMethod[] =
     "IsCrostiniEnabled";
+const char kChromeFeaturesServiceIsCryptohomeDistributedModelEnabledMethod[] =
+    "IsCryptohomeDistributedModelEnabled";
+const char kChromeFeaturesServiceIsCryptohomeUserDataAuthEnabledMethod[] =
+    "IsCryptohomeUserDataAuthEnabled";
 const char kChromeFeaturesServiceIsPluginVmEnabledMethod[] =
     "IsPluginVmEnabled";
 const char kChromeFeaturesServiceIsUsbguardEnabledMethod[] =
@@ -216,6 +221,8 @@ const char kPluginVmServiceInterface[] =
     "org.chromium.PluginVmServiceInterface";
 const char kPluginVmServiceGetLicenseDataMethod[] = "GetLicenseData";
 const char kPluginVmServiceShowSettingsPage[] = "ShowSettingsPage";
+const char kPluginVmServiceGetPermissionsMethod[] = "GetPermissions";
+const char kPluginVmServiceGetAppLicenseUserId[] = "GetAppLicenseUserId";
 
 const char kGesturePropertiesServiceName[] =
     "org.chromium.GesturePropertiesService";
@@ -233,6 +240,12 @@ const char kPrintersServicePath[] = "/org/chromium/PrintersService";
 const char kPrintersServiceInterface[] =
     "org.chromium.PrintersServiceInterface";
 const char kPrintersServicePrintersChangedSignal[] = "PrintersChanged";
+
+constexpr char kMlDecisionServiceName[] = "org.chromium.MlDecisionService";
+constexpr char kMlDecisionServicePath[] = "/org/chromium/MlDecisionService";
+constexpr char kMlDecisionServiceInterface[] = "org.chromium.MlDecisionService";
+constexpr char kMlDecisionServiceShouldDeferScreenDimMethod[] =
+    "ShouldDeferScreenDim";
 
 }  // namespace chromeos
 
@@ -359,6 +372,12 @@ const char kIsAudioOutputActive[] = "IsAudioOutputActive";
 const char kSetGlobalOutputChannelRemix[] = "SetGlobalOutputChannelRemix";
 const char kGetSystemAecSupported[] = "GetSystemAecSupported";
 const char kGetSystemAecGroupId[] = "GetSystemAecGroupId";
+const char kSetPlayerPlaybackStatus[] = "SetPlayerPlaybackStatus";
+const char kSetPlayerIdentity[] = "SetPlayerIdentity";
+const char kSetPlayerPosition[] = "SetPlayerPosition";
+const char kSetPlayerMetadata[] = "SetPlayerMetadata";
+const char kSetNextHandsfreeProfile[] = "SetNextHandsfreeProfile";
+const char kSetFixA2dpPacketSize[] = "SetFixA2dpPacketSize";
 
 // Names of properties returned by GetNodes()
 const char kIsInputProperty[] = "IsInput";
@@ -371,6 +390,7 @@ const char kPluggedTimeProperty[] = "PluggedTime";
 const char kMicPositionsProperty[] = "MicPositions";
 const char kStableDeviceIdProperty[] = "StableDeviceId";
 const char kStableDeviceIdNewProperty[] = "StableDeviceIdNew";
+const char kMaxSupportedChannelsProperty[] = "MaxSupportedChannels";
 
 // Signals.
 const char kOutputVolumeChanged[] = "OutputVolumeChanged";
@@ -385,6 +405,7 @@ const char kActiveInputNodeChanged[] = "ActiveInputNodeChanged";
 const char kNumberOfActiveStreamsChanged[] = "NumberOfActiveStreamsChanged";
 const char kAudioOutputActiveStateChanged[] = "AudioOutputActiveStateChanged";
 const char kHotwordTriggered[] = "HotwordTriggered";
+const char kBluetoothBatteryChanged[] = "BluetoothBatteryChanged";
 }  // namespace cras
 
 namespace feedback {
@@ -545,12 +566,11 @@ constexpr char kArcCameraServiceInterface[] = "org.chromium.ArcCamera";
 constexpr char kStartServiceMethod[] = "StartService";
 }  // namespace arc_camera
 
+// DEPRECATED, DO NOT USE
 namespace machine_learning {
 constexpr char kMlDecisionServiceName[] = "org.chromium.MlDecisionService";
 constexpr char kMlDecisionServicePath[] = "/org/chromium/MlDecisionService";
 constexpr char kMlDecisionServiceInterface[] = "org.chromium.MlDecisionService";
-
-// Method names.
 constexpr char kShouldDeferScreenDimMethod[] = "ShouldDeferScreenDim";
 }  // namespace machine_learning
 

@@ -51,6 +51,7 @@ rtc_library("goog_cc") {
     "../../../rtc_base/experiments:rate_control_settings",
     "../../../system_wrappers",
     "../../remote_bitrate_estimator",
+    "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
@@ -78,6 +79,7 @@ rtc_library("pushback_controller") {
     "../../../api/units:data_size",
     "../../../rtc_base:checks",
     "../../../rtc_base/experiments:rate_control_settings",
+    "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
@@ -111,8 +113,6 @@ rtc_library("estimators") {
     "bitrate_estimator.cc",
     "bitrate_estimator.h",
     "delay_increase_detector_interface.h",
-    "median_slope_estimator.cc",
-    "median_slope_estimator.h",
     "probe_bitrate_estimator.cc",
     "probe_bitrate_estimator.h",
     "robust_throughput_estimator.cc",
@@ -137,6 +137,7 @@ rtc_library("estimators") {
     "../../../rtc_base:safe_minmax",
     "../../../rtc_base/experiments:field_trial_parser",
     "../../remote_bitrate_estimator",
+    "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
@@ -162,6 +163,7 @@ rtc_library("loss_based_controller") {
     "../../../system_wrappers:field_trial",
     "../../../system_wrappers:metrics",
     "../../remote_bitrate_estimator",
+    "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
@@ -187,6 +189,7 @@ rtc_library("delay_based_bwe") {
     "../../../system_wrappers:metrics",
     "../../pacing",
     "../../remote_bitrate_estimator",
+    "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
@@ -213,6 +216,7 @@ rtc_library("probe_controller") {
     "../../../rtc_base/experiments:field_trial_parser",
     "../../../rtc_base/system:unused",
     "../../../system_wrappers:metrics",
+    "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
@@ -250,7 +254,6 @@ if (rtc_include_tests) {
       "delay_based_bwe_unittest_helper.cc",
       "delay_based_bwe_unittest_helper.h",
       "goog_cc_network_control_unittest.cc",
-      "median_slope_estimator_unittest.cc",
       "probe_bitrate_estimator_unittest.cc",
       "probe_controller_unittest.cc",
       "robust_throughput_estimator_unittest.cc",

@@ -48,32 +48,62 @@ TEST_P(ObjectCachingTest, BindGroupLayoutDynamic) {
 // Test that two similar bind group layouts won't refer to the same one if they differ by
 // textureComponentType
 TEST_P(ObjectCachingTest, BindGroupLayoutTextureComponentType) {
-    wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-        device, {{1, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, false,
-                  wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::Float}});
-    wgpu::BindGroupLayout sameBgl = utils::MakeBindGroupLayout(
-        device, {{1, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, false,
-                  wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::Float}});
-    wgpu::BindGroupLayout otherBgl = utils::MakeBindGroupLayout(
-        device, {{1, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, false,
-                  wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::Uint}});
+    wgpu::BindGroupLayout bgl =
+        utils::MakeBindGroupLayout(device, {{1,
+                                             wgpu::ShaderStage::Fragment,
+                                             wgpu::BindingType::SampledTexture,
+                                             false,
+                                             false,
+                                             wgpu::TextureViewDimension::e2D,
+                                             wgpu::TextureComponentType::Float}});
+    wgpu::BindGroupLayout sameBgl =
+        utils::MakeBindGroupLayout(device, {{1,
+                                             wgpu::ShaderStage::Fragment,
+                                             wgpu::BindingType::SampledTexture,
+                                             false,
+                                             false,
+                                             wgpu::TextureViewDimension::e2D,
+                                             wgpu::TextureComponentType::Float}});
+    wgpu::BindGroupLayout otherBgl =
+        utils::MakeBindGroupLayout(device, {{1,
+                                             wgpu::ShaderStage::Fragment,
+                                             wgpu::BindingType::SampledTexture,
+                                             false,
+                                             false,
+                                             wgpu::TextureViewDimension::e2D,
+                                             wgpu::TextureComponentType::Uint}});
 
     EXPECT_NE(bgl.Get(), otherBgl.Get());
     EXPECT_EQ(bgl.Get() == sameBgl.Get(), !UsesWire());
 }
 
 // Test that two similar bind group layouts won't refer to the same one if they differ by
-// textureDimension
-TEST_P(ObjectCachingTest, BindGroupLayoutTextureDimension) {
-    wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-        device, {{1, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, false,
-                  wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::Float}});
-    wgpu::BindGroupLayout sameBgl = utils::MakeBindGroupLayout(
-        device, {{1, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, false,
-                  wgpu::TextureViewDimension::e2D, wgpu::TextureComponentType::Float}});
-    wgpu::BindGroupLayout otherBgl = utils::MakeBindGroupLayout(
-        device, {{1, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false, false,
-                  wgpu::TextureViewDimension::e2DArray, wgpu::TextureComponentType::Float}});
+// viewDimension
+TEST_P(ObjectCachingTest, BindGroupLayoutViewDimension) {
+    wgpu::BindGroupLayout bgl =
+        utils::MakeBindGroupLayout(device, {{1,
+                                             wgpu::ShaderStage::Fragment,
+                                             wgpu::BindingType::SampledTexture,
+                                             false,
+                                             false,
+                                             wgpu::TextureViewDimension::e2D,
+                                             wgpu::TextureComponentType::Float}});
+    wgpu::BindGroupLayout sameBgl =
+        utils::MakeBindGroupLayout(device, {{1,
+                                             wgpu::ShaderStage::Fragment,
+                                             wgpu::BindingType::SampledTexture,
+                                             false,
+                                             false,
+                                             wgpu::TextureViewDimension::e2D,
+                                             wgpu::TextureComponentType::Float}});
+    wgpu::BindGroupLayout otherBgl =
+        utils::MakeBindGroupLayout(device, {{1,
+                                             wgpu::ShaderStage::Fragment,
+                                             wgpu::BindingType::SampledTexture,
+                                             false,
+                                             false,
+                                             wgpu::TextureViewDimension::e2DArray,
+                                             wgpu::TextureComponentType::Float}});
 
     EXPECT_NE(bgl.Get(), otherBgl.Get());
     EXPECT_EQ(bgl.Get() == sameBgl.Get(), !UsesWire());
@@ -139,14 +169,16 @@ TEST_P(ObjectCachingTest, ComputePipelineDeduplicationOnShaderModule) {
     wgpu::ShaderModule module =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, R"(
             #version 450
+            shared uint i;
             void main() {
-                int i = 0;
+                i = 0;
             })");
     wgpu::ShaderModule sameModule =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, R"(
             #version 450
+            shared uint i;
             void main() {
-                int i = 0;
+                i = 0;
             })");
     wgpu::ShaderModule otherModule =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, R"(
@@ -195,8 +227,9 @@ TEST_P(ObjectCachingTest, ComputePipelineDeduplicationOnLayout) {
     desc.computeStage.module =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, R"(
             #version 450
+            shared uint i;
             void main() {
-                int i = 0;
+                i = 0;
             })");
 
     desc.layout = pl;
@@ -311,8 +344,9 @@ TEST_P(ObjectCachingTest, RenderPipelineDeduplicationOnFragmentModule) {
     wgpu::ShaderModule otherModule =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
             #version 450
+            layout (location = 0) out vec4 color;
             void main() {
-                int i = 0;
+                color = vec4(0.0);
             })");
 
     EXPECT_NE(module.Get(), otherModule.Get());
@@ -396,4 +430,4 @@ TEST_P(ObjectCachingTest, SamplerDeduplication) {
     EXPECT_EQ(sampler.Get() == sameSampler.Get(), !UsesWire());
 }
 
-DAWN_INSTANTIATE_TEST(ObjectCachingTest, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend);
+DAWN_INSTANTIATE_TEST(ObjectCachingTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());

@@ -6,8 +6,8 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
-#include "ios/chrome/browser/crash_report/crash_report_flags.h"
 #import "third_party/breakpad/breakpad/src/client/ios/Breakpad.h"
 #import "third_party/breakpad/breakpad/src/client/ios/BreakpadController.h"
 
@@ -19,9 +19,8 @@ namespace {
 // See description at |_lastSessionFreezeInfo|.
 const char kNsUserDefaultKeyLastSessionInfo[] =
     "MainThreadDetectionLastThreadWasFrozenInfo";
-// The delay after which a UTE report is generated. It is a cache of the
-// Variations value to use when variations is not available yet
-const char kNsUserDefaultKeyDelay[] = "MainThreadDetectionDelay";
+
+const NSTimeInterval kFreezeDetectionDelay = 9;
 
 void LogRecoveryTime(base::TimeDelta time) {
   UMA_HISTOGRAM_TIMES("IOS.MainThreadFreezeDetection.RecoveredAfter", time);
@@ -77,10 +76,10 @@ void LogRecoveryTime(base::TimeDelta time) {
   if (self) {
     _lastSessionFreezeInfo = [[NSUserDefaults standardUserDefaults]
         dictionaryForKey:@(kNsUserDefaultKeyLastSessionInfo)];
+    _lastSessionEndedFrozen = _lastSessionFreezeInfo != nil;
     [[NSUserDefaults standardUserDefaults]
         removeObjectForKey:@(kNsUserDefaultKeyLastSessionInfo)];
-    _delay = [[NSUserDefaults standardUserDefaults]
-        integerForKey:@(kNsUserDefaultKeyDelay)];
+    _delay = kFreezeDetectionDelay;
     _freezeDetectionQueue = dispatch_queue_create(
         "org.chromium.freeze_detection", DISPATCH_QUEUE_SERIAL);
     NSString* cacheDirectory = NSSearchPathForDirectoriesInDomains(
@@ -97,13 +96,6 @@ void LogRecoveryTime(base::TimeDelta time) {
 - (void)setEnabled:(BOOL)enabled {
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    // The first time |setEnabled| is called is the first occasion to update
-    // the config based on new finch experiment and settings.
-    int newDelay = crash_report::TimeoutForMainThreadFreezeDetection();
-    self.delay = newDelay;
-    [[NSUserDefaults standardUserDefaults]
-        setInteger:newDelay
-            forKey:@(kNsUserDefaultKeyDelay)];
     if (_lastSessionEndedFrozen) {
       LogRecoveryTime(base::TimeDelta::FromSeconds(0));
     }
@@ -119,7 +111,8 @@ void LogRecoveryTime(base::TimeDelta time) {
 }
 
 - (void)start {
-  if (self.delay == 0 || self.running || !_enabled) {
+  if (self.delay == 0 || self.running || !_enabled ||
+      tests_hook::DisableMainThreadFreezeDetection()) {
     return;
   }
   self.running = YES;
@@ -175,12 +168,12 @@ void LogRecoveryTime(base::TimeDelta time) {
   }
   if ([[NSDate date] timeIntervalSinceDate:self.lastSeenMainThread] >
       self.delay) {
+    breakpad_helper::SetHangReport(true);
     [[BreakpadController sharedInstance]
         withBreakpadRef:^(BreakpadRef breakpadRef) {
           if (!breakpadRef) {
             return;
           }
-          breakpad_helper::SetHangReport(true);
           NSDictionary* breakpadReportInfo =
               BreakpadGenerateReport(breakpadRef, nil);
           if (!breakpadReportInfo) {
@@ -216,6 +209,7 @@ void LogRecoveryTime(base::TimeDelta time) {
               }
                  forKey:@(kNsUserDefaultKeyLastSessionInfo)];
           self.reportGenerated = YES;
+          breakpad_helper::SetHangReport(false);
         }];
     return;
   }

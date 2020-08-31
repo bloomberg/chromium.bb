@@ -5,8 +5,10 @@
 package org.chromium.content_public.browser;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.blink.mojom.ViewportFit;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -90,11 +92,9 @@ public abstract class WebContentsObserver {
      * Called when an error occurs while loading a page and/or the page fails to load.
      * @param isMainFrame Whether the navigation occurred in main frame.
      * @param errorCode Error code for the occurring error.
-     * @param description The description for the error.
      * @param failingUrl The url that was loading when the error occurred.
      */
-    public void didFailLoad(
-            boolean isMainFrame, int errorCode, String description, String failingUrl) {}
+    public void didFailLoad(boolean isMainFrame, int errorCode, String failingUrl) {}
 
     /**
      * Called when the page had painted something non-empty.
@@ -163,9 +163,8 @@ public abstract class WebContentsObserver {
 
     /**
      * Called when the theme color was changed.
-     * @param color the new color in ARGB format
      */
-    public void didChangeThemeColor(int color) {}
+    public void didChangeThemeColor() {}
 
     /**
      * Called when the Web Contents leaves or enters fullscreen mode.
@@ -198,6 +197,9 @@ public abstract class WebContentsObserver {
      * RenderWidgetHosts within the same WebContents.
      */
     public void onWebContentsLostFocus() {}
+
+    /** Called when the top level WindowAndroid changes. */
+    public void onTopLevelNativeWindowChanged(@Nullable WindowAndroid windowAndroid) {}
 
     /**
      * Stop observing the web contents and clean up associated references.

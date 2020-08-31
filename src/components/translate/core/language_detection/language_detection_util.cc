@@ -66,6 +66,23 @@ void ApplyLanguageCodeCorrection(std::string* code) {
   language::ToTranslateLanguageSynonym(code);
 }
 
+// Checks if CLD can complement a sub code when the page language doesn't know
+// the sub code.
+bool CanCLDComplementSubCode(const std::string& page_language,
+                             const std::string& cld_language) {
+  // Translate server cannot treat general Chinese. If Content-Language and
+  // CLD agree that the language is Chinese and Content-Language doesn't know
+  // which dialect is used, CLD language has priority.
+  // TODO(hajimehoshi): How about the other dialects like zh-MO?
+  return page_language == "zh" &&
+         base::StartsWith(cld_language, "zh-",
+                          base::CompareCase::INSENSITIVE_ASCII);
+}
+
+}  // namespace
+
+namespace translate {
+
 // Returns the ISO 639 language code of the specified |text|, or 'unknown' if it
 // failed.
 // |is_cld_reliable| will be set as true if CLD says the detection is reliable.
@@ -129,29 +146,28 @@ std::string DetermineTextLanguage(const base::string16& text,
   return language;
 }
 
-// Checks if CLD can complement a sub code when the page language doesn't know
-// the sub code.
-bool CanCLDComplementSubCode(
-    const std::string& page_language, const std::string& cld_language) {
-  // Translate server cannot treat general Chinese. If Content-Language and
-  // CLD agree that the language is Chinese and Content-Language doesn't know
-  // which dialect is used, CLD language has priority.
-  // TODO(hajimehoshi): How about the other dialects like zh-MO?
-  return page_language == "zh" &&
-         base::StartsWith(cld_language, "zh-",
-                          base::CompareCase::INSENSITIVE_ASCII);
-}
-
-}  // namespace
-
-namespace translate {
-
 std::string DeterminePageLanguage(const std::string& code,
                                   const std::string& html_lang,
                                   const base::string16& contents,
                                   std::string* cld_language_p,
                                   bool* is_cld_reliable_p) {
+  // First determine the language for the test contents.
   bool is_cld_reliable;
+  std::string cld_language = DetermineTextLanguage(contents, &is_cld_reliable);
+  if (cld_language_p != nullptr)
+    *cld_language_p = cld_language;
+  if (is_cld_reliable_p != nullptr)
+    *is_cld_reliable_p = is_cld_reliable;
+  language::ToTranslateLanguageSynonym(&cld_language);
+
+  return DeterminePageLanguage(code, html_lang, cld_language, is_cld_reliable);
+}
+
+// Now consider the web page language details along with the contents language.
+std::string DeterminePageLanguage(const std::string& code,
+                                  const std::string& html_lang,
+                                  const std::string& cld_language,
+                                  bool is_cld_reliable) {
   // Check if html lang attribute is valid.
   std::string modified_html_lang;
   if (!html_lang.empty()) {
@@ -169,25 +185,10 @@ std::string DeterminePageLanguage(const std::string& code,
     translate::ReportContentLanguage(code, modified_code);
   }
 
-  std::string cld_language = DetermineTextLanguage(contents, &is_cld_reliable);
-
-  if (cld_language_p != nullptr)
-    *cld_language_p = cld_language;
-  if (is_cld_reliable_p != nullptr)
-    *is_cld_reliable_p = is_cld_reliable;
-  language::ToTranslateLanguageSynonym(&cld_language);
-
   // Adopt |modified_html_lang| if it is valid. Otherwise, adopt
   // |modified_code|.
   std::string language = modified_html_lang.empty() ? modified_code :
                                                       modified_html_lang;
-
-  // When the page language is English, log conflicting CLD results. We will use
-  // these metrics to decide when to favor CLD.
-  if (language.substr(0, 2) == "en" && cld_language.substr(0, 2) != "en" &&
-      cld_language != kUnknownLanguageCode) {
-    translate::ReportLanguageDetectionConflict(language, cld_language);
-  }
 
   // If |language| is empty, just use CLD result even though it might be
   // translate::kUnknownLanguageCode.

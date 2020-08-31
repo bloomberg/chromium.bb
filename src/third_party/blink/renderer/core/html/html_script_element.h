@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 
 namespace blink {
 
@@ -48,9 +49,11 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   void text(StringOrTrustedScript& result);
-  void setText(const StringOrTrustedScript&, ExceptionState&);
+  String text() { return TextFromChildren(); }
+  void setText(const String&);
   void setInnerText(const StringOrTrustedScript&, ExceptionState&) override;
   void setTextContent(const StringOrTrustedScript&, ExceptionState&) override;
+  void setTextContent(const String&) override;
 
   void setAsync(bool);
   bool async() const;
@@ -59,8 +62,11 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
 
   bool IsScriptElement() const override { return true; }
   Document& GetDocument() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   void Trace(Visitor*) override;
+
+  void FinishParsingChildren() override;
 
  private:
   void ParseAttribute(const AttributeModificationParams&) override;
@@ -85,7 +91,8 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   String IntegrityAttributeValue() const override;
   String ReferrerPolicyAttributeValue() const override;
   String ImportanceAttributeValue() const override;
-  String TextFromChildren() override;
+  String ChildTextContent() override;
+  String ScriptTextInternalSlot() const override;
   bool AsyncAttributeValue() const override;
   bool DeferAttributeValue() const override;
   bool HasSourceAttribute() const override;
@@ -103,7 +110,13 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   void SetScriptElementForBinding(
       HTMLScriptElementOrSVGScriptElement&) override;
 
+  Type GetScriptElementType() override;
+
   Element& CloneWithoutAttributesAndChildren(Document&) const override;
+
+  // https://w3c.github.io/webappsec-trusted-types/dist/spec/#script-scripttext
+  ParkableString script_text_internal_slot_;
+  bool children_changed_by_api_;
 
   Member<ScriptLoader> loader_;
 };

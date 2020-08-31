@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -55,8 +55,8 @@ SubresourceFilterAgent::SubresourceFilterAgent(
 
 SubresourceFilterAgent::~SubresourceFilterAgent() {
   // Filter may outlive us, so reset the ad tracker.
-  if (filter_for_last_committed_load_)
-    filter_for_last_committed_load_->set_ad_resource_tracker(nullptr);
+  if (filter_for_last_created_document_)
+    filter_for_last_created_document_->set_ad_resource_tracker(nullptr);
 }
 
 GURL SubresourceFilterAgent::GetDocumentURL() {
@@ -67,14 +67,19 @@ bool SubresourceFilterAgent::IsMainFrame() {
   return render_frame()->IsMainFrame();
 }
 
-void SubresourceFilterAgent::SetSubresourceFilterForCommittedLoad(
+bool SubresourceFilterAgent::HasDocumentLoader() {
+  return render_frame()->GetWebFrame()->GetDocumentLoader();
+}
+
+void SubresourceFilterAgent::SetSubresourceFilterForCurrentDocument(
     std::unique_ptr<blink::WebDocumentSubresourceFilter> filter) {
   blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
+  DCHECK(web_frame->GetDocumentLoader());
   web_frame->GetDocumentLoader()->SetSubresourceFilter(filter.release());
 }
 
 void SubresourceFilterAgent::
-    SignalFirstSubresourceDisallowedForCommittedLoad() {
+    SignalFirstSubresourceDisallowedForCurrentDocument() {
   GetSubresourceFilterHost()->DidDisallowFirstSubresource();
 }
 
@@ -96,7 +101,6 @@ void SubresourceFilterAgent::SetIsAdSubframe(
   render_frame()->GetWebFrame()->SetIsAdSubframe(ad_frame_type);
 }
 
-// static
 mojom::ActivationState SubresourceFilterAgent::GetParentActivationState(
     content::RenderFrame* render_frame) {
   blink::WebFrame* parent =
@@ -104,13 +108,13 @@ mojom::ActivationState SubresourceFilterAgent::GetParentActivationState(
   if (parent && parent->IsWebLocalFrame()) {
     auto* agent = SubresourceFilterAgent::Get(
         content::RenderFrame::FromWebFrame(parent->ToWebLocalFrame()));
-    if (agent && agent->filter_for_last_committed_load_)
-      return agent->filter_for_last_committed_load_->activation_state();
+    if (agent && agent->filter_for_last_created_document_)
+      return agent->filter_for_last_created_document_->activation_state();
   }
   return mojom::ActivationState();
 }
 
-void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted(
+void SubresourceFilterAgent::RecordHistogramsOnFilterCreation(
     const mojom::ActivationState& activation_state) {
   // Note: mojom::ActivationLevel used to be called mojom::ActivationState, the
   // legacy name is kept for the histogram.
@@ -129,8 +133,8 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted(
   }
 }
 
-void SubresourceFilterAgent::ResetInfoForNextCommit() {
-  activation_state_for_next_commit_ = mojom::ActivationState();
+void SubresourceFilterAgent::ResetInfoForNextDocument() {
+  activation_state_for_next_document_ = mojom::ActivationState();
 }
 
 mojom::SubresourceFilterHost*
@@ -150,7 +154,7 @@ void SubresourceFilterAgent::OnSubresourceFilterAgentRequest(
 void SubresourceFilterAgent::ActivateForNextCommittedLoad(
     mojom::ActivationStatePtr activation_state,
     blink::mojom::AdFrameType ad_frame_type) {
-  activation_state_for_next_commit_ = *activation_state;
+  activation_state_for_next_document_ = *activation_state;
   if (ad_frame_type != blink::mojom::AdFrameType::kNonAd) {
     SetIsAdSubframe(ad_frame_type);
   }
@@ -161,42 +165,49 @@ void SubresourceFilterAgent::OnDestruct() {
 }
 
 void SubresourceFilterAgent::DidCreateNewDocument() {
-  // Filter may outlive us, so reset the ad tracker.
-  if (filter_for_last_committed_load_)
-    filter_for_last_committed_load_->set_ad_resource_tracker(nullptr);
-  filter_for_last_committed_load_.reset();
-
   // TODO(csharrison): Use WebURL and WebSecurityOrigin for efficiency here,
-  // which require changes to the unit tests.
+  // which requires changes to the unit tests.
   const GURL& url = GetDocumentURL();
-
+  // Do not pollute the histograms with the empty main frame documents and
+  // initial empty documents, even though some will not have a second document.
+  const bool should_record_histograms =
+      !first_document_ &&
+      !(IsMainFrame() && !url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsFile());
   if (first_document_) {
     first_document_ = false;
+    DCHECK(!filter_for_last_created_document_);
 
-    // Local subframes will first navigate to kAboutBlankURL. Frames created by
-    // the browser initialize the LocalFrame before creating
-    // RenderFrameObservers, so the about:blank document isn't observed. We only
-    // care about local subframes.
+    // Local subframes will first create an initial empty document (with url
+    // kAboutBlankURL) no matter what the src is set to (or if it is not set).
+    // Then, if the src is set (including to kAboutBlankURL), there is a second
+    // document created with url equal to the set src. Due to a bug, currently
+    // a second document (with url kAboutBlankURL) is created even if the src is
+    // unset (see crbug.com/778318), but we should not rely on this erroneous
+    // behavior. Frames created by the browser initialize the LocalFrame before
+    // creating RenderFrameObservers, so the initial empty document isn't
+    // observed. We only care about local subframes.
     if (url == url::kAboutBlankURL) {
       if (IsAdSubframe())
         SendFrameIsAdSubframe();
-      return;
     }
   }
 
-  bool use_parent_activation = !IsMainFrame() && ShouldUseParentActivation(url);
+  // Filter may outlive us, so reset the ad tracker.
+  if (filter_for_last_created_document_)
+    filter_for_last_created_document_->set_ad_resource_tracker(nullptr);
+  filter_for_last_created_document_.reset();
 
   const mojom::ActivationState activation_state =
-      use_parent_activation ? GetParentActivationState(render_frame())
-                            : activation_state_for_next_commit_;
+      (!IsMainFrame() && ShouldUseParentActivation(url))
+          ? GetParentActivationState(render_frame())
+          : activation_state_for_next_document_;
 
-  ResetInfoForNextCommit();
+  ResetInfoForNextDocument();
 
-  // Do not pollute the histograms for empty main frame documents.
-  if (IsMainFrame() && !url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsFile())
-    return;
+  if (should_record_histograms) {
+    RecordHistogramsOnFilterCreation(activation_state);
+  }
 
-  RecordHistogramsOnLoadCommitted(activation_state);
   if (activation_state.activation_level == mojom::ActivationLevel::kDisabled ||
       !ruleset_dealer_->IsRulesetFileAvailable())
     return;
@@ -206,33 +217,34 @@ void SubresourceFilterAgent::DidCreateNewDocument() {
   if (!ruleset)
     return;
 
-  base::OnceClosure first_disallowed_load_callback(base::BindOnce(
-      &SubresourceFilterAgent::SignalFirstSubresourceDisallowedForCommittedLoad,
-      AsWeakPtr()));
+  base::OnceClosure first_disallowed_load_callback(
+      base::BindOnce(&SubresourceFilterAgent::
+                         SignalFirstSubresourceDisallowedForCurrentDocument,
+                     AsWeakPtr()));
   auto filter = std::make_unique<WebDocumentSubresourceFilterImpl>(
       url::Origin::Create(url), activation_state, std::move(ruleset),
       std::move(first_disallowed_load_callback));
   filter->set_ad_resource_tracker(ad_resource_tracker_.get());
-  filter_for_last_committed_load_ = filter->AsWeakPtr();
-  SetSubresourceFilterForCommittedLoad(std::move(filter));
+  filter_for_last_created_document_ = filter->AsWeakPtr();
+  SetSubresourceFilterForCurrentDocument(std::move(filter));
 }
 
 void SubresourceFilterAgent::DidFailProvisionalLoad() {
   // TODO(engedy): Add a test with `frame-ancestor` violation to exercise this.
-  ResetInfoForNextCommit();
+  ResetInfoForNextDocument();
 }
 
 void SubresourceFilterAgent::DidFinishLoad() {
-  if (!filter_for_last_committed_load_)
+  if (!filter_for_last_created_document_)
     return;
   const auto& statistics =
-      filter_for_last_committed_load_->filter().statistics();
+      filter_for_last_created_document_->filter().statistics();
   SendDocumentLoadStatistics(statistics);
 }
 
 void SubresourceFilterAgent::WillCreateWorkerFetchContext(
     blink::WebWorkerFetchContext* worker_fetch_context) {
-  if (!filter_for_last_committed_load_)
+  if (!filter_for_last_created_document_)
     return;
   if (!ruleset_dealer_->IsRulesetFileAvailable())
     return;
@@ -243,10 +255,10 @@ void SubresourceFilterAgent::WillCreateWorkerFetchContext(
   worker_fetch_context->SetSubresourceFilterBuilder(
       std::make_unique<WebDocumentSubresourceFilterImpl::BuilderImpl>(
           url::Origin::Create(GetDocumentURL()),
-          filter_for_last_committed_load_->filter().activation_state(),
+          filter_for_last_created_document_->filter().activation_state(),
           std::move(ruleset_file),
           base::BindOnce(&SubresourceFilterAgent::
-                             SignalFirstSubresourceDisallowedForCommittedLoad,
+                             SignalFirstSubresourceDisallowedForCurrentDocument,
                          AsWeakPtr())));
 }
 

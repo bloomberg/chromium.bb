@@ -9,9 +9,11 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -94,9 +96,8 @@ InMemoryURLIndex::InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
       private_data_(new URLIndexPrivateData),
       restore_cache_observer_(nullptr),
       save_cache_observer_(nullptr),
-      task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::BEST_EFFORT})),
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
       shutdown_(false),
       restored_(false),
       needs_to_be_cached_(false),
@@ -298,6 +299,15 @@ void InMemoryURLIndex::Shutdown() {
       base::BindOnce(base::IgnoreResult(
                          &URLIndexPrivateData::WritePrivateDataToCacheFileTask),
                      private_data_, path));
+#ifndef LEAK_SANITIZER
+  // Intentionally create and then leak a scoped_refptr to private_data_. This
+  // permanently raises the reference count so that the URLIndexPrivateData
+  // destructor won't run during browser shutdown. This saves having to walk the
+  // maps to free their memory, which saves time and avoids shutdown hangs,
+  // especially if some of the memory has been paged out.
+  base::NoDestructor<scoped_refptr<URLIndexPrivateData>> leak_reference(
+      private_data_);
+#endif
   needs_to_be_cached_ = false;
 }
 

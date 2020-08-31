@@ -13,9 +13,12 @@
 // limitations under the License.
 
 #include "marl/event.h"
+#include "marl/defer.h"
 #include "marl/waitgroup.h"
 
 #include "marl_test.h"
+
+#include <array>
 
 namespace std {
 namespace chrono {
@@ -27,9 +30,7 @@ std::ostream& operator<<(std::ostream& os, const duration<Rep, Period>& d) {
 }  // namespace std
 
 TEST_P(WithBoundScheduler, EventIsSignalled) {
-  std::vector<marl::Event::Mode> modes = {marl::Event::Mode::Manual,
-                                          marl::Event::Mode::Auto};
-  for (auto mode : modes) {
+  for (auto mode : {marl::Event::Mode::Manual, marl::Event::Mode::Auto}) {
     auto event = marl::Event(mode);
     ASSERT_EQ(event.isSignalled(), false);
     event.signal();
@@ -98,9 +99,7 @@ TEST_P(WithBoundScheduler, EventManualWait) {
 }
 
 TEST_P(WithBoundScheduler, EventSequence) {
-  std::vector<marl::Event::Mode> modes = {marl::Event::Mode::Manual,
-                                          marl::Event::Mode::Auto};
-  for (auto mode : modes) {
+  for (auto mode : {marl::Event::Mode::Manual, marl::Event::Mode::Auto}) {
     std::string sequence;
     auto eventA = marl::Event(mode);
     auto eventB = marl::Event(mode);
@@ -191,19 +190,20 @@ TEST_P(WithBoundScheduler, EventWaitUntilTimeTaken) {
   wg.wait();
 }
 
-// EventWaitStressTest spins up a whole lot of wait_fors(), unblocks them early,
-// and then let's all the workers go to idle before repeating.
+// EventWaitStressTest spins up a whole lot of wait_fors(), unblocking some
+// with timeouts and some with an event signal, and then let's all the workers
+// go to idle before repeating.
 // This is testing to ensure that the scheduler handles timeouts correctly when
 // they are early-unblocked. Specifically, this is to test that fibers are
 // not double-placed into the idle or working lists.
 TEST_P(WithBoundScheduler, EventWaitStressTest) {
   auto event = marl::Event(marl::Event::Mode::Manual);
   for (int i = 0; i < 10; i++) {
-    auto wg = marl::WaitGroup(1000);
-    for (int j = 0; j < 1000; j++) {
+    auto wg = marl::WaitGroup(100);
+    for (int j = 0; j < 100; j++) {
       marl::schedule([=] {
         defer(wg.done());
-        event.wait_for(std::chrono::milliseconds(100));
+        event.wait_for(std::chrono::milliseconds(j));
       });
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -214,7 +214,7 @@ TEST_P(WithBoundScheduler, EventWaitStressTest) {
 
 TEST_P(WithBoundScheduler, EventAny) {
   for (int i = 0; i < 3; i++) {
-    std::vector<marl::Event> events = {
+    std::array<marl::Event, 3> events = {
         marl::Event(marl::Event::Mode::Auto),
         marl::Event(marl::Event::Mode::Auto),
         marl::Event(marl::Event::Mode::Auto),

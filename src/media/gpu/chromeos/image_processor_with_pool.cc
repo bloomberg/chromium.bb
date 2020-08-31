@@ -18,9 +18,8 @@ std::unique_ptr<ImageProcessorWithPool> ImageProcessorWithPool::Create(
     size_t num_frames,
     const scoped_refptr<base::SequencedTaskRunner> task_runner) {
   const ImageProcessor::PortConfig& config = image_processor->output_config();
-  base::Optional<GpuBufferLayout> layout = frame_pool->RequestFrames(
-      config.fourcc, config.size, gfx::Rect(config.visible_size), config.size,
-      num_frames);
+  base::Optional<GpuBufferLayout> layout = frame_pool->Initialize(
+      config.fourcc, config.size, config.visible_rect, config.size, num_frames);
   if (!layout || layout->size() != config.size) {
     VLOGF(1) << "Failed to request frame with correct size. "
              << config.size.ToString() << " != "

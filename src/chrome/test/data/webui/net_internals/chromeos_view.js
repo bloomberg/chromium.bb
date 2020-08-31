@@ -5,6 +5,8 @@
 // Include test fixture.
 GEN_INCLUDE(['net_internals_test.js']);
 
+GEN('#include "content/public/test/browser_test.h"');
+
 // Anonymous namespace
 (function() {
 
@@ -22,11 +24,11 @@ DebugLogsStatusWatcher.prototype = {
   },
 
   onStoreDebugLogs: function(status) {
-    if (status.indexOf('Created') != -1) {
+    if (status.indexOf('Created') !== -1) {
       this.onTaskDone(true);
       return;
     }
-    if (status.indexOf('Failed') != -1) {
+    if (status.indexOf('Failed') !== -1) {
       this.onTaskDone(false);
       return;
     }

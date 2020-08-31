@@ -4,27 +4,19 @@
 
 import("//ui/base/ui_features.gni")
 
-assert(use_color_pipeline)
+source_set("color_headers") {
+  sources = [ "chrome_color_id.h" ]
 
-source_set("color") {
-  sources = [
-    "chrome_color_id.h",
-  ]
-
-  public_deps = [
-    "//ui/color:color",
-  ]
+  public_deps = [ "//ui/color:color_headers" ]
 }
 
 executable("dump_colors") {
   testonly = true
 
-  sources = [
-    "tools/dump_colors.cc",
-  ]
+  sources = [ "tools/dump_colors.cc" ]
 
   deps = [
-    ":color",
+    ":color_headers",
     ":mixers",
     "//ui/color:mixers",
   ]
@@ -39,7 +31,8 @@ source_set("mixers") {
   ]
 
   deps = [
-    ":color",
+    ":color_headers",
+    "//ui/color:color",
     "//ui/color:mixers",
   ]
 }

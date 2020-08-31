@@ -114,13 +114,14 @@ LayoutObject* TextTrackContainer::CreateLayoutObject(const ComputedStyle&,
 
 void TextTrackContainer::ObserveSizeChanges(Element& element) {
   video_size_observer_ = ResizeObserver::Create(
-      GetDocument(), MakeGarbageCollected<VideoElementResizeDelegate>(*this));
+      GetDocument().domWindow(),
+      MakeGarbageCollected<VideoElementResizeDelegate>(*this));
   video_size_observer_->observe(&element);
 }
 
 void TextTrackContainer::UpdateDefaultFontSize(
     LayoutObject* media_layout_object) {
-  if (!media_layout_object || !media_layout_object->IsVideo())
+  if (!media_layout_object || !IsA<LayoutVideo>(media_layout_object))
     return;
   // FIXME: The video size is used to calculate the font size (a workaround
   // for lack of per-spec vh/vw support) but the whole media element is used

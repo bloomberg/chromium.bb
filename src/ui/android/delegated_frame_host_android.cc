@@ -6,17 +6,16 @@
 
 #include "base/android/build_info.h"
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/swap_promise.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "components/viz/service/surfaces/surface.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
@@ -82,7 +81,6 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
       frame_evictor_(std::make_unique<viz::FrameEvictor>(this)) {
   DCHECK(view_);
   DCHECK(client_);
-  DCHECK(features::IsVizDisplayCompositorEnabled());
 
   constexpr bool is_transparent = false;
   content_layer_ = CreateSurfaceLayer(
@@ -112,15 +110,22 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
     base::OnceCallback<void(const SkBitmap&)> callback) {
   DCHECK(CanCopyFromCompositingSurface());
 
+  std::unique_ptr<ui::WindowAndroidCompositor::ReadbackRef> readback_ref;
+  if (view_->GetWindowAndroid() && view_->GetWindowAndroid()->GetCompositor()) {
+    readback_ref =
+        view_->GetWindowAndroid()->GetCompositor()->TakeReadbackRef();
+  }
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
           base::BindOnce(
               [](base::OnceCallback<void(const SkBitmap&)> callback,
+                 std::unique_ptr<ui::WindowAndroidCompositor::ReadbackRef>
+                     readback_ref,
                  std::unique_ptr<viz::CopyOutputResult> result) {
                 std::move(callback).Run(result->AsSkBitmap());
               },
-              std::move(callback)));
+              std::move(callback), std::move(readback_ref)));
 
   if (!src_subrect.IsEmpty())
     request->set_area(src_subrect);

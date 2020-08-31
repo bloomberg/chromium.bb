@@ -36,10 +36,12 @@ class MutableCSSPropertyValueSet;
 class PropertySetCSSStyleDeclaration
     : public AbstractPropertySetCSSStyleDeclaration {
  public:
-  PropertySetCSSStyleDeclaration(MutableCSSPropertyValueSet& property_set)
-      : property_set_(&property_set) {}
+  PropertySetCSSStyleDeclaration(ExecutionContext* execution_context,
+                                 MutableCSSPropertyValueSet& property_set)
+      : AbstractPropertySetCSSStyleDeclaration(execution_context),
+        property_set_(&property_set) {}
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   MutableCSSPropertyValueSet& PropertySet() const final {

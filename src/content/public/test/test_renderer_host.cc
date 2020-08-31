@@ -16,6 +16,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -24,11 +25,11 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/navigation_policy.h"
-#include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/content_browser_sanity_checker.h"
+#include "content/test/test_navigation_url_loader_factory.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_frame_host_factory.h"
 #include "content/test/test_render_view_host.h"
@@ -36,7 +37,6 @@
 #include "content/test/test_render_widget_host_factory.h"
 #include "content/test/test_web_contents.h"
 #include "net/base/mock_network_change_notifier.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 #if defined(OS_ANDROID)
 #include "ui/android/dummy_screen_android.h"
@@ -49,7 +49,6 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
-#include "ui/wm/core/default_activation_client.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -112,7 +111,8 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
     : rph_factory_(new MockRenderProcessHostFactory()),
       rvh_factory_(new TestRenderViewHostFactory(rph_factory_.get())),
       rfh_factory_(new TestRenderFrameHostFactory()),
-      rwhi_factory_(new TestRenderWidgetHostFactory()) {
+      rwhi_factory_(new TestRenderWidgetHostFactory()),
+      loader_factory_(new TestNavigationURLLoaderFactory()) {
   // A TaskEnvironment is needed on the main thread for Mojo bindings to
   // graphics services. Some tests have their own, so this only creates one
   // (single-threaded) when none exists. This means tests must ensure any
@@ -205,10 +205,10 @@ std::unique_ptr<WebContents>
 RenderViewHostTestHarness::CreateTestWebContents() {
 // Make sure we ran SetUp() already.
 #if defined(OS_WIN)
-  DCHECK(ole_initializer_ != NULL);
+  DCHECK(ole_initializer_);
 #endif
 #if defined(USE_AURA)
-  DCHECK(aura_test_helper_ != nullptr);
+  DCHECK(aura_test_helper_);
 #endif
 
   scoped_refptr<SiteInstance> instance =
@@ -232,27 +232,20 @@ void RenderViewHostTestHarness::NavigateAndCommit(
 }
 
 void RenderViewHostTestHarness::SetUp() {
-  ui::MaterialDesignController::Initialize();
-
-  rvh_test_enabler_.reset(new RenderViewHostTestEnabler);
+  rvh_test_enabler_ = std::make_unique<RenderViewHostTestEnabler>();
   if (factory_)
     rvh_test_enabler_->rvh_factory_->set_render_process_host_factory(factory_);
 
 #if defined(OS_WIN)
-  ole_initializer_.reset(new ui::ScopedOleInitializer());
+  ole_initializer_ = std::make_unique<ui::ScopedOleInitializer>();
 #endif
 #if defined(USE_AURA)
-  ui::ContextFactory* context_factory =
-      ImageTransportFactory::GetInstance()->GetContextFactory();
-  ui::ContextFactoryPrivate* context_factory_private =
-      ImageTransportFactory::GetInstance()->GetContextFactoryPrivate();
-
-  aura_test_helper_.reset(new aura::test::AuraTestHelper());
-  aura_test_helper_->SetUp(context_factory, context_factory_private);
-  new wm::DefaultActivationClient(aura_test_helper_->root_window());
+  aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>(
+      ImageTransportFactory::GetInstance()->GetContextFactory());
+  aura_test_helper_->SetUp();
 #endif
 
-  sanity_checker_.reset(new ContentBrowserSanityChecker());
+  sanity_checker_ = std::make_unique<ContentBrowserSanityChecker>();
 
 #if !defined(OS_ANDROID)
   network_change_notifier_ = net::test::MockNetworkChangeNotifier::Create();
@@ -262,11 +255,12 @@ void RenderViewHostTestHarness::SetUp() {
   browser_context_ = CreateBrowserContext();
 
   SetContents(CreateTestWebContents());
-  BrowserSideNavigationSetUp();
+
+  // Create GpuDataManagerImpl here so it always runs on the main thread.
+  GpuDataManagerImpl::GetInstance();
 }
 
 void RenderViewHostTestHarness::TearDown() {
-  BrowserSideNavigationTearDown();
   DeleteContents();
 #if defined(USE_AURA)
   aura_test_helper_->TearDown();

@@ -81,24 +81,23 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   bool IsCompleteForPayment() const override;
   uint32_t GetCompletenessScore() const override;
   bool CanPreselect() const override;
-  bool IsExactlyMatchingMerchantRequest() const override;
   base::string16 GetMissingInfoLabel() const override;
-  bool IsValidForCanMakePayment() const override;
+  bool HasEnrolledInstrument() const override;
   void RecordUse() override;
+  bool NeedsInstallation() const override;
   base::string16 GetLabel() const override;
   base::string16 GetSublabel() const override;
-  bool IsValidForModifier(const std::string& method,
-                          bool supported_networks_specified,
-                          const std::set<std::string>& supported_networks,
-                          bool supported_types_specified,
-                          const std::set<autofill::CreditCard::CardType>&
-                              supported_types) const override;
+  bool IsValidForModifier(
+      const std::string& method,
+      bool supported_networks_specified,
+      const std::set<std::string>& supported_networks) const override;
   base::WeakPtr<PaymentApp> AsWeakPtr() override;
   gfx::ImageSkia icon_image_skia() const override;
   bool HandlesShippingAddress() const override;
   bool HandlesPayerName() const override;
   bool HandlesPayerEmail() const override;
   bool HandlesPayerPhone() const override;
+  ukm::SourceId UkmSourceId() override;
 
   void set_payment_handler_host(
       mojo::PendingRemote<mojom::PaymentHandlerHost> payment_handler_host) {
@@ -113,8 +112,9 @@ class ServiceWorkerPaymentApp : public PaymentApp {
 
   mojom::CanMakePaymentEventDataPtr CreateCanMakePaymentEventData();
   void OnCanMakePaymentEventSkipped(ValidateCanMakePaymentCallback callback);
-  void OnCanMakePaymentEventResponded(ValidateCanMakePaymentCallback callback,
-                                      bool result);
+  void OnCanMakePaymentEventResponded(
+      ValidateCanMakePaymentCallback callback,
+      mojom::CanMakePaymentResponsePtr response);
 
   // Called from two places:
   // 1) From PaymentAppProvider after a just-in-time installable payment handler
@@ -153,6 +153,8 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   content::WebContents* web_contents_;
   std::unique_ptr<WebAppInstallationInfo> installable_web_app_info_;
   std::string installable_enabled_method_;
+
+  ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
   base::WeakPtrFactory<ServiceWorkerPaymentApp> weak_ptr_factory_{this};
 

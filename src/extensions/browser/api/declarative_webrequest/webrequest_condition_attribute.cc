@@ -9,10 +9,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -28,7 +30,7 @@
 #include "extensions/common/error_utils.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "net/base/static_cookie_policy.h"
+#include "net/cookies/static_cookie_policy.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 
@@ -120,8 +122,15 @@ WebRequestConditionAttribute::Create(
     std::string* error) {
   CHECK(value != nullptr && error != nullptr);
   bool bad_message = false;
-  return g_web_request_condition_attribute_factory.Get().factory.Instantiate(
-      name, value, error, &bad_message);
+  auto condition_attribute =
+      g_web_request_condition_attribute_factory.Get().factory.Instantiate(
+          name, value, error, &bad_message);
+  if (condition_attribute) {
+    base::UmaHistogramEnumeration(
+        "Extensions.DeclarativeWebRequest.ConditionAttributeType",
+        condition_attribute->GetType(), static_cast<Type>(CONDITION_MAX + 1));
+  }
+  return condition_attribute;
 }
 
 //

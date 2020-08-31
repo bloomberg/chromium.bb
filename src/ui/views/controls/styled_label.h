@@ -15,11 +15,11 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/class_property.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
@@ -34,7 +34,7 @@ class StyledLabelListener;
 // supported and will be trimmed on StyledLabel construction. Leading
 // whitespace is respected, provided not only whitespace fits in the first line.
 // In this case, leading whitespace is ignored.
-class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
+class VIEWS_EXPORT StyledLabel : public View {
  public:
   METADATA_HEADER(StyledLabel);
 
@@ -73,10 +73,9 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
     // The style::TextStyle for this range.
     base::Optional<int> text_style;
 
-    // Overrides the text color given by |text_style| for this range. Default is
-    // SK_ColorTRANSPARENT, indicating not to override.
+    // Overrides the text color given by |text_style| for this range.
     // DEPRECATED: Use TextStyle.
-    SkColor override_color = SK_ColorTRANSPARENT;
+    base::Optional<SkColor> override_color;
 
     // Tooltip for the range.
     base::string16 tooltip;
@@ -149,8 +148,8 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // Gets/Sets the color of the background on which the label is drawn. This
   // won't be explicitly drawn, but the label will force the text color to be
   // readable over it.
-  SkColor GetDisplayedOnBackgroundColor() const;
-  void SetDisplayedOnBackgroundColor(SkColor color);
+  base::Optional<SkColor> GetDisplayedOnBackgroundColor() const;
+  void SetDisplayedOnBackgroundColor(const base::Optional<SkColor>& color);
 
   bool GetAutoColorReadabilityEnabled() const;
   void SetAutoColorReadabilityEnabled(bool auto_color_readability);
@@ -175,9 +174,10 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   int GetHeightForWidth(int w) const override;
   void Layout() override;
   void PreferredSizeChanged() override;
+  void OnThemeChanged() override;
 
-  // LinkListener implementation:
-  void LinkClicked(Link* source, int event_flags) override;
+  // Called when any of the child links are clicked.
+  void LinkClicked(Link* source, int event_flags);
 
   // Sets the horizontal alignment; the argument value is mirrored in RTL UI.
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
@@ -187,11 +187,8 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
  private:
   struct StyleRange {
-    StyleRange(const gfx::Range& range,
-               const RangeStyleInfo& style_info)
-        : range(range),
-          style_info(style_info) {
-    }
+    StyleRange(const gfx::Range& range, const RangeStyleInfo& style_info)
+        : range(range), style_info(style_info) {}
     ~StyleRange() = default;
 
     bool operator<(const StyleRange& other) const;
@@ -228,6 +225,14 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
                                      const RangeStyleInfo& style_info,
                                      const gfx::Range& range) const;
 
+  // Update the label background color from the theme or
+  // |displayed_on_background_color_| if set.
+  void UpdateLabelBackgroundColor();
+
+  // Remove all child views. Place all custom views back into custom_views_ and
+  // delete the rest.
+  void RemoveOrDeleteAllChildViews();
+
   // The text to display.
   base::string16 text_;
 
@@ -247,8 +252,10 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // that correspond to ranges with is_link style set will be added to the map.
   LinkTargets link_targets_;
 
-  // Owns the custom views used to replace ranges of text with icons, etc.
-  std::set<std::unique_ptr<View>> custom_views_;
+  // Temporarily owns the custom views until they've been been placed into the
+  // StyledLabel's child list. This list also holds the custom views during
+  // layout.
+  std::list<std::unique_ptr<View>> custom_views_;
 
   // Saves the effects of the last CalculateLayout() call to avoid repeated
   // calculation.  |layout_size_info_| can then be cached until the next
@@ -257,8 +264,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   mutable std::unique_ptr<LayoutViews> layout_views_;
 
   // Background color on which the label is drawn, for auto color readability.
-  SkColor displayed_on_background_color_ = SK_ColorWHITE;
-  bool displayed_on_background_color_set_ = false;
+  base::Optional<SkColor> displayed_on_background_color_;
 
   // Controls whether the text is automatically re-colored to be readable on the
   // background.

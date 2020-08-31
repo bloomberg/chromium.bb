@@ -35,7 +35,7 @@ class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
 
   const char* GetName() const override { return "LayoutSVGResourceMarker"; }
 
-  void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
+  void RemoveAllClientsFromCache() override;
 
   // Calculates marker boundaries, mapped to the target element's coordinate
   // space.
@@ -65,7 +65,7 @@ class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
 
  private:
   void UpdateLayout() override;
-  SVGTransformChange CalculateLocalTransform() final;
+  SVGTransformChange CalculateLocalTransform(bool bounds_changed) final;
 
   AffineTransform local_to_parent_transform_;
   FloatSize viewport_size_;

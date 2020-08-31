@@ -18,16 +18,16 @@
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
-#include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
-#include "services/network/loader_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace content {
 
@@ -81,14 +81,15 @@ SignedExchangeCertFetcher::CreateAndStart(
     CertificateCallback callback,
     SignedExchangeDevToolsProxy* devtools_proxy,
     SignedExchangeReporter* reporter,
-    const base::Optional<base::UnguessableToken>& throttling_profile_id) {
+    const base::Optional<base::UnguessableToken>& throttling_profile_id,
+    net::IsolationInfo isolation_info) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::CreateAndStart");
   std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher(
-      new SignedExchangeCertFetcher(std::move(shared_url_loader_factory),
-                                    std::move(throttles), cert_url, force_fetch,
-                                    std::move(callback), devtools_proxy,
-                                    reporter, throttling_profile_id));
+      new SignedExchangeCertFetcher(
+          std::move(shared_url_loader_factory), std::move(throttles), cert_url,
+          force_fetch, std::move(callback), devtools_proxy, reporter,
+          throttling_profile_id, std::move(isolation_info)));
   cert_fetcher->Start();
   return cert_fetcher;
 }
@@ -102,7 +103,8 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
     CertificateCallback callback,
     SignedExchangeDevToolsProxy* devtools_proxy,
     SignedExchangeReporter* reporter,
-    const base::Optional<base::UnguessableToken>& throttling_profile_id)
+    const base::Optional<base::UnguessableToken>& throttling_profile_id,
+    net::IsolationInfo isolation_info)
     : shared_url_loader_factory_(std::move(shared_url_loader_factory)),
       throttles_(std::move(throttles)),
       resource_request_(std::make_unique<network::ResourceRequest>()),
@@ -115,11 +117,11 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
   // cookies. So just set an opaque Origin.
   resource_request_->request_initiator = url::Origin();
   resource_request_->resource_type =
-      static_cast<int>(ResourceType::kSubResource);
+      static_cast<int>(blink::mojom::ResourceType::kSubResource);
   // Cert requests should not send credential informartion, because the default
   // credentials mode of Fetch is "omit".
   resource_request_->credentials_mode = network::mojom::CredentialsMode::kOmit;
-  resource_request_->headers.SetHeader(network::kAcceptHeader,
+  resource_request_->headers.SetHeader(net::HttpRequestHeaders::kAccept,
                                        kCertChainMimeType);
   if (force_fetch) {
     resource_request_->load_flags |=
@@ -131,6 +133,11 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
     resource_request_->enable_load_timing = true;
   }
   resource_request_->throttling_profile_id = throttling_profile_id;
+  if (!isolation_info.IsEmpty()) {
+    resource_request_->trusted_params =
+        network::ResourceRequest::TrustedParams();
+    resource_request_->trusted_params->isolation_info = isolation_info;
+  }
 }
 
 SignedExchangeCertFetcher::~SignedExchangeCertFetcher() = default;

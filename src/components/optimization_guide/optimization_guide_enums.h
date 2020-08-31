@@ -72,25 +72,55 @@ enum class OptimizationTargetDecision {
   kMaxValue = kDeciderNotInitialized,
 };
 
-// The statuses for why the main frame of a navigation was covered by a hint or
-// fetch from the remote Optimization Guide Service.
+// The statuses for racing a hints fetch with the current navigation based
+// on the availability of hints for both the current host and URL.
 //
-// Keep in sync with OptimizationGuideNavigationHostCoveredStatus in enums.xml.
-enum class NavigationHostCoveredStatus {
+// Keep in sync with OptimizationGuideRaceNavigationFetchAttemptStatus in
+// enums.xml.
+enum class RaceNavigationFetchAttemptStatus {
   kUnknown,
-  // The main frame host of the navigation was covered by a hint or was
-  // attempted to be fetched from the remote Optimization Guide Service in the
-  // last 7 days.
-  kCovered,
-  // A fetch for information from the remote Optimization Guide Service about
-  // the main frame host of the navigation was not attempted.
-  kFetchNotAttempted,
-  // A fetch for information from the remote Optimization Guide Service about
-  // the main frame host of the navigation was attempted but not successful.
-  kFetchNotSuccessful,
+  // The race was not attempted because hint information for the host and URL
+  // of the current navigation was already available.
+  kRaceNavigationFetchNotAttempted,
+  // The race was attempted for the host of the current navigation but not the
+  // URL.
+  kRaceNavigationFetchHost,
+  // The race was attempted for the URL of the current navigation but not the
+  // host.
+  kRaceNavigationFetchURL,
+  // The race was attempted for the host and URL of the current navigation.
+  kRaceNavigationFetchHostAndURL,
+  // A race for the current navigation's URL is already in progress.
+  kRaceNavigationFetchAlreadyInProgress,
+  // DEPRECATED: A race for the current navigation's URL was not attempted
+  // because there were too many concurrent page navigation fetches in flight.
+  kDeprecatedRaceNavigationFetchNotAttemptedTooManyConcurrentFetches,
 
   // Add new values above this line.
-  kMaxValue = kFetchNotSuccessful,
+  kMaxValue =
+      kDeprecatedRaceNavigationFetchNotAttemptedTooManyConcurrentFetches,
+};
+
+// The statuses for a prediction model in the prediction manager when requested
+// to be evaluated.
+//
+// Keep in sync with OptimizationGuidePredictionManagerModelStatus in enums.xml.
+enum class PredictionManagerModelStatus {
+  kUnknown,
+  // The model is loaded and available for use.
+  kModelAvailable,
+  // The store is initialized but does not contain a model for the optimization
+  // target.
+  kStoreAvailableNoModelForTarget,
+  // The store is initialized and contains a model for the optimization target
+  // but it is not loaded in memory.
+  kStoreAvailableModelNotLoaded,
+  // The store is not initialized and it is unknown if it contains a model for
+  // the optimization target.
+  kStoreUnavailableModelUnknown,
+
+  // Add new values above this line.
+  kMaxValue = kStoreUnavailableModelUnknown,
 };
 
 }  // namespace optimization_guide

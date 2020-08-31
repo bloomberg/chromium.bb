@@ -4,36 +4,37 @@
 
 #include "ui/accessibility/ax_text_utils.h"
 
+#include <algorithm>
+
+#include "base/check_op.h"
 #include "base/i18n/break_iterator.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/strings/grit/ui_strings.h"
 
 namespace ui {
 
 namespace {
 
 base::i18n::BreakIterator::BreakType ICUBreakTypeForBoundaryType(
-    AXTextBoundary boundary) {
+    ax::mojom::TextBoundary boundary) {
   switch (boundary) {
-    case AXTextBoundary::kCharacter:
+    case ax::mojom::TextBoundary::kCharacter:
       return base::i18n::BreakIterator::BREAK_CHARACTER;
-    case AXTextBoundary::kSentenceStart:
+    case ax::mojom::TextBoundary::kSentenceStart:
       return base::i18n::BreakIterator::BREAK_SENTENCE;
-    case AXTextBoundary::kWordStart:
-    case AXTextBoundary::kWordStartOrEnd:
+    case ax::mojom::TextBoundary::kWordStart:
+    case ax::mojom::TextBoundary::kWordStartOrEnd:
       return base::i18n::BreakIterator::BREAK_WORD;
     // These are currently unused since line breaking is done via an array of
     // line break offsets, and object boundary by finding no boundary within the
     // current node.
-    case AXTextBoundary::kObject:
-    case AXTextBoundary::kLineStart:
-    case AXTextBoundary::kParagraphStart:
+    case ax::mojom::TextBoundary::kObject:
+    case ax::mojom::TextBoundary::kLineStart:
+    case ax::mojom::TextBoundary::kParagraphStart:
       return base::i18n::BreakIterator::BREAK_NEWLINE;
     default:
       NOTREACHED() << boundary;
@@ -48,9 +49,9 @@ base::i18n::BreakIterator::BreakType ICUBreakTypeForBoundaryType(
 // TODO(nektar): Rename line_breaks a11y attribute and variable references.
 size_t FindAccessibleTextBoundary(const base::string16& text,
                                   const std::vector<int>& line_breaks,
-                                  AXTextBoundary boundary,
+                                  ax::mojom::TextBoundary boundary,
                                   size_t start_offset,
-                                  AXTextBoundaryDirection direction,
+                                  ax::mojom::MoveDirection direction,
                                   ax::mojom::TextAffinity affinity) {
   size_t text_size = text.size();
   DCHECK_LE(start_offset, text_size);
@@ -58,23 +59,23 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
   base::i18n::BreakIterator::BreakType break_type =
       ICUBreakTypeForBoundaryType(boundary);
   base::i18n::BreakIterator break_iter(text, break_type);
-  if (boundary == AXTextBoundary::kCharacter ||
-      boundary == AXTextBoundary::kSentenceStart ||
-      boundary == AXTextBoundary::kWordStart ||
-      boundary == AXTextBoundary::kWordStartOrEnd) {
+  if (boundary == ax::mojom::TextBoundary::kCharacter ||
+      boundary == ax::mojom::TextBoundary::kSentenceStart ||
+      boundary == ax::mojom::TextBoundary::kWordStart ||
+      boundary == ax::mojom::TextBoundary::kWordStartOrEnd) {
     if (!break_iter.Init())
       return start_offset;
   }
 
-  if (boundary == AXTextBoundary::kLineStart) {
-    if (direction == AXTextBoundaryDirection::kForwards) {
-      for (size_t j = 0; j < line_breaks.size(); ++j) {
-          size_t line_break = line_breaks[j] >= 0 ? line_breaks[j] : 0;
-          if ((affinity == ax::mojom::TextAffinity::kDownstream &&
-               line_break > start_offset) ||
-              (affinity == ax::mojom::TextAffinity::kUpstream &&
-               line_break >= start_offset)) {
-            return line_break;
+  if (boundary == ax::mojom::TextBoundary::kLineStart) {
+    if (direction == ax::mojom::MoveDirection::kForward) {
+      for (int line_break : line_breaks) {
+        size_t clamped_line_break = size_t{std::max(0, line_break)};
+        if ((affinity == ax::mojom::TextAffinity::kDownstream &&
+             clamped_line_break > start_offset) ||
+            (affinity == ax::mojom::TextAffinity::kUpstream &&
+             clamped_line_break >= start_offset)) {
+          return clamped_line_break;
         }
       }
       return text_size;
@@ -95,7 +96,7 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
   size_t result = start_offset;
   for (;;) {
     size_t pos;
-    if (direction == AXTextBoundaryDirection::kForwards) {
+    if (direction == ax::mojom::MoveDirection::kForward) {
       if (result >= text_size)
         return text_size;
       pos = result;
@@ -106,47 +107,47 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
     }
 
     switch (boundary) {
-      case AXTextBoundary::kLineStart:
+      case ax::mojom::TextBoundary::kLineStart:
         NOTREACHED() << boundary;  // This is handled above.
         return result;
-      case AXTextBoundary::kCharacter:
+      case ax::mojom::TextBoundary::kCharacter:
         if (break_iter.IsGraphemeBoundary(result)) {
           // If we are searching forward and we are still at the start offset,
           // we need to find the next character.
-          if (direction == AXTextBoundaryDirection::kBackwards ||
+          if (direction == ax::mojom::MoveDirection::kBackward ||
               result != start_offset)
             return result;
         }
         break;
-      case AXTextBoundary::kWordStart:
+      case ax::mojom::TextBoundary::kWordStart:
         if (break_iter.IsStartOfWord(result)) {
           // If we are searching forward and we are still at the start offset,
           // we need to find the next word.
-          if (direction == AXTextBoundaryDirection::kBackwards ||
+          if (direction == ax::mojom::MoveDirection::kBackward ||
               result != start_offset)
             return result;
         }
         break;
-      case AXTextBoundary::kWordStartOrEnd:
+      case ax::mojom::TextBoundary::kWordStartOrEnd:
         if (break_iter.IsStartOfWord(result)) {
           // If we are searching forward and we are still at the start offset,
           // we need to find the next word.
-          if (direction == AXTextBoundaryDirection::kBackwards ||
+          if (direction == ax::mojom::MoveDirection::kBackward ||
               result != start_offset)
             return result;
         } else if (break_iter.IsEndOfWord(result)) {
           // If we are searching backward and we are still at the end offset, we
           // need to find the previous word.
-          if (direction == AXTextBoundaryDirection::kForwards ||
+          if (direction == ax::mojom::MoveDirection::kForward ||
               result != start_offset)
             return result;
         }
         break;
-      case AXTextBoundary::kSentenceStart:
+      case ax::mojom::TextBoundary::kSentenceStart:
         if (break_iter.IsSentenceBoundary(result)) {
           // If we are searching forward and we are still at the start offset,
           // we need to find the next sentence.
-          if (direction == AXTextBoundaryDirection::kBackwards ||
+          if (direction == ax::mojom::MoveDirection::kBackward ||
               result != start_offset) {
             // ICU sometimes returns sentence boundaries in the whitespace
             // between sentences. For the purposes of accessibility, we want to
@@ -160,7 +161,7 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
           }
         }
         break;
-      case AXTextBoundary::kParagraphStart:
+      case ax::mojom::TextBoundary::kParagraphStart:
         if (text[pos] == '\n')
           return result;
         break;
@@ -168,69 +169,12 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
         break;
     }
 
-    if (direction == AXTextBoundaryDirection::kForwards) {
+    if (direction == ax::mojom::MoveDirection::kForward) {
       result++;
     } else {
       result--;
     }
   }
-}
-
-base::string16 ActionVerbToLocalizedString(
-    const ax::mojom::DefaultActionVerb action_verb) {
-  switch (action_verb) {
-    case ax::mojom::DefaultActionVerb::kNone:
-      return base::string16();
-    case ax::mojom::DefaultActionVerb::kActivate:
-      return l10n_util::GetStringUTF16(IDS_AX_ACTIVATE_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kCheck:
-      return l10n_util::GetStringUTF16(IDS_AX_CHECK_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kClick:
-      return l10n_util::GetStringUTF16(IDS_AX_CLICK_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kClickAncestor:
-      return l10n_util::GetStringUTF16(IDS_AX_CLICK_ANCESTOR_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kJump:
-      return l10n_util::GetStringUTF16(IDS_AX_JUMP_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kOpen:
-      return l10n_util::GetStringUTF16(IDS_AX_OPEN_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kPress:
-      return l10n_util::GetStringUTF16(IDS_AX_PRESS_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kSelect:
-      return l10n_util::GetStringUTF16(IDS_AX_SELECT_ACTION_VERB);
-    case ax::mojom::DefaultActionVerb::kUncheck:
-      return l10n_util::GetStringUTF16(IDS_AX_UNCHECK_ACTION_VERB);
-  }
-  NOTREACHED();
-  return base::string16();
-}
-
-// Some APIs on Linux and Windows need to return non-localized action names.
-base::string16 ActionVerbToUnlocalizedString(
-    const ax::mojom::DefaultActionVerb action_verb) {
-  switch (action_verb) {
-    case ax::mojom::DefaultActionVerb::kNone:
-      return base::UTF8ToUTF16("none");
-    case ax::mojom::DefaultActionVerb::kActivate:
-      return base::UTF8ToUTF16("activate");
-    case ax::mojom::DefaultActionVerb::kCheck:
-      return base::UTF8ToUTF16("check");
-    case ax::mojom::DefaultActionVerb::kClick:
-      return base::UTF8ToUTF16("click");
-    case ax::mojom::DefaultActionVerb::kClickAncestor:
-      return base::UTF8ToUTF16("click-ancestor");
-    case ax::mojom::DefaultActionVerb::kJump:
-      return base::UTF8ToUTF16("jump");
-    case ax::mojom::DefaultActionVerb::kOpen:
-      return base::UTF8ToUTF16("open");
-    case ax::mojom::DefaultActionVerb::kPress:
-      return base::UTF8ToUTF16("press");
-    case ax::mojom::DefaultActionVerb::kSelect:
-      return base::UTF8ToUTF16("select");
-    case ax::mojom::DefaultActionVerb::kUncheck:
-      return base::UTF8ToUTF16("uncheck");
-  }
-  NOTREACHED();
-  return base::string16();
 }
 
 std::vector<int> GetWordStartOffsets(const base::string16& text) {

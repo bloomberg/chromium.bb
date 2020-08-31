@@ -116,7 +116,8 @@ body.hide-fakebox #fakebox {
   visibility: hidden;
 }
 
-#fakebox-container {
+#fakebox-container,
+#realbox-container {
   margin: 0 auto 0 auto;
   /* Increase min-width again to account for the search icon: 390px new
    * min-width + additional 20px */
@@ -150,24 +151,6 @@ body.hide-fakebox #fakebox {
 #realbox-input-wrapper {
   margin: 0 auto;
   max-width: 584px;
-}
-
-.google-g-icon {
-  background-image:
-      url(../../../../ui/webui/resources/images/200-logo_googleg.png);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 14px;
-  bottom: 0;
-  left: 16px;
-  position: absolute;
-  top: 0;
-  width: 24px;
-}
-
-[dir=rtl] .google-g-icon {
-  left: auto;
-  right: 16px;
 }
 
 #fakebox {
@@ -218,15 +201,42 @@ body.hide-fakebox #fakebox {
   display: none;
 }
 
-/* The realbox is a "loupe" (.search-icon) by default, but when the selection
- * ends up on match with a different icon, the realbox also gets that icon.
- * Example: typing the start of a URL with a favicon or the user pressing
- * up/down to select matches sets a background-image here and disables the
- * -webkit-mask applied by .search-icon. */
-#realbox-icon {
+/* The realbox has a "loupe" or "search" icon by default. When a match with a
+ * different icon ("clock" for historical searches or "page" for URLs) or a
+ * favicon is selected, the realbox also gets that icon/favicon. For both the
+ * realbox as well as the dropdown, icons are rendered via webkit-mask-image and
+ * background-color and favicons are rendered via background-
+ image set on the
+ * element's style property in JS. */
+#realbox-icon,
+.match-icon {
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 16px;
+  background-color: var(--search-box-icon, rgb(117, 117, 117));
   background-position: center center;
   background-repeat: no-repeat;
-  background-size: 24px;
+  background-size: 16px;
+  bottom: 0;
+  left: 16px;
+  margin: auto;
+  position: absolute;
+  top: 0;
+  width: 24px;
+}
+
+[dir=rtl] #realbox-icon,
+[dir=rtl] .match-icon {
+  left: auto;
+  right: 16px;
+}
+
+#realbox-icon[data-icon='google_g.png'] {
+  background-size: 12px;
+}
+
+#realbox-icon[data-icon='search.svg'] {
+  -webkit-mask-size: 20px;  /* Loupe in realbox is bigger than in matches. */
 }
 
 #realbox-matches {
@@ -236,6 +246,7 @@ body.hide-fakebox #fakebox {
   display: none;
   left: 0;
   overflow: hidden;
+  padding-bottom: 8px;
   padding-top: var(--searchbox-height);
   position: absolute;
   right: 0;
@@ -254,16 +265,14 @@ body.hide-fakebox #fakebox {
 }
 
 #realbox-matches a {
-  background-position: 16px center;
-  background-repeat: no-repeat;
-  background-size: 24px;
+  display: block;
   font-size: 16px;
   line-height: 1;
   outline: none;
   overflow: hidden;
   padding-bottom: 8px;
   padding-inline-end: 16px;
-  padding-inline-start: 48px;
+  padding-inline-start: 52px;
   padding-top: 8px;
   position: relative;
   text-decoration: none;
@@ -271,54 +280,103 @@ body.hide-fakebox #fakebox {
   white-space: nowrap;
 }
 
+#realbox-matches .header {
+  color: rgb(var(--GG700-rgb));
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+  margin-top: 8px;
+  padding-inline-start: 12px;
+  text-transform: uppercase;
+}
+
+#realbox-matches .header .remove-icon {
+  -webkit-mask-image: url(chevron.svg);
+  -webkit-transform: rotate(180deg);
+  background-color: var(--search-box-icon, rgb(var(--GG900-rgb)));
+}
+
+#realbox-matches .collapsed .header .remove-icon {
+  -webkit-transform: none;
+}
+
+#realbox-matches .collapsed a:not(.header) {
+  display: none;
+}
+
 [dir=rtl] #realbox-matches a {
   background-position-x: calc(100% - 16px);
+}
+
+#realbox-matches a.has-image {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 6px;
+  padding-top: 6px;
+}
+
+#realbox-matches a.has-image > span {
+  position: relative;
+}
+
+#realbox-matches a.has-image > span:first-of-type {
+  top: -1px; /* aligns the top of the text with the top of the image */
+}
+
+#realbox-matches a.has-image > span:last-of-type {
+  bottom: -1px; /* aligns the bottom of the text with the bottom of the image */
+}
+
+#realbox-matches a.has-image .description {
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+#realbox-matches a.has-image .remove-match {
+  top: 10px;
 }
 
 #realbox-matches.removable a {
   padding-inline-end: 48px;
 }
 
-#realbox-matches a:last-of-type {
-  margin-bottom: 8px;  /* Last result is tight with border-radius. */
+#realbox-matches a:-webkit-any(:focus-within, .selected) .match-icon {
+  background-color: var(--search-box-icon-selected, rgb(117, 117, 117));
 }
 
-.clock-icon,
-.search-icon {
-  -webkit-mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-size: 16px;
-  background-color: var(--search-box-icon, rgb(117, 117, 117));
+.image-container {
+  align-items: center;
+  border-radius: 8px;
   bottom: 0;
-  left: 16px;
+  display: flex;
+  height: 32px;
+  justify-content: center;
+  left: 12px;
+  margin: auto;
   position: absolute;
   top: 0;
-  width: 24px;
+  width: 32px;
 }
 
-.clock-icon {
-  -webkit-mask-image: url(icons/clock.svg);
+html[dir=rtl] .image-container {
+  left: auto;
+  right: 12px;
 }
 
-.search-icon {
-  -webkit-mask-image:
-      url(../../../../ui/webui/resources/images/icon_search.svg);
+.match-image {
+  border-radius: 8px;
+  max-height: 32px;
+  max-width: 32px;
 }
 
-#realbox-input-wrapper > .search-icon {
-  -webkit-mask-size: 20px;  /* Loupe in realbox is bigger than in matches. */
-}
-
-html[dir=rtl] :-webkit-any(.clock-icon, .search-icon) {
-  right: 16px;
-}
-
-#realbox-matches a:-webkit-any(:hover, .selected) {
+#realbox-matches a:hover {
   background-color: var(--search-box-results-bg-hovered, rgb(232, 232, 233));
 }
 
-#realbox-matches a:focus-within {
+#realbox-matches a:not(.header):-webkit-any(:focus-within, .selected),
+#realbox-matches a.header:focus-within:not(:focus) {
   background-color: var(--search-box-results-bg-selected, rgb(219, 219, 220));
+  color: var(--search-box-results-text-selected, rgb(var(--GG900-rgb)));
 }
 
 #realbox-matches .match {
@@ -329,13 +387,22 @@ html[dir=rtl] :-webkit-any(.clock-icon, .search-icon) {
   color: var(--search-box-results-dim, rgb(var(--GG600-rgb)));
 }
 
+#realbox-matches a:-webkit-any(:focus-within, .selected) .dim {
+  color: var(--search-box-results-dim-selected, rgb(var(--GG600-rgb)));
+}
+
 #realbox-matches .url {
   color: var(--search-box-results-url, rgb(var(--GB600-rgb)));
+}
+
+#realbox-matches  a:-webkit-any(:focus-within, .selected) .url {
+  color: var(--search-box-results-url-selected, rgb(var(--GB600-rgb)));
 }
 
 #realbox-matches .remove-match {
   border-radius: 50%;
   height: 24px;
+  outline: none;
   position: absolute;
   right: 16px;
   top: 4px;
@@ -348,11 +415,17 @@ html[dir=rtl] :-webkit-any(.clock-icon, .search-icon) {
 }
 
 #realbox-matches .remove-match:hover {
-  background-color: var(--remove-match-hovered, rgba(var(--GG900-rgb), .08));
+  background-color: var(--remove-match-hovered, rgba(var(--GG900-rgb), .16));
 }
 
-#realbox-matches .remove-match:focus-within {
-  background-color: var(--remove-match-focused, rgba(var(--GG900-rgb), .16));
+#realbox-matches a:-webkit-any(:focus-within, .selected) .remove-match:hover {
+  background-color:
+      var(--remove-match-selected-hovered, rgba(var(--GG900-rgb), .16));
+}
+
+#realbox-matches a:-webkit-any(:focus-within, .selected)
+    .remove-match:focus-within {
+  background-color: var(--remove-match-focused, rgba(var(--GG900-rgb), .32));
 }
 
 #realbox-matches .remove-icon {
@@ -360,12 +433,19 @@ html[dir=rtl] :-webkit-any(.clock-icon, .search-icon) {
   width: 100%;
 }
 
-#realbox-matches a:-webkit-any(:hover, :focus-within, .selected) .remove-icon {
+#realbox-matches .remove-icon {
   -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_clear.svg);
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 16px;
+}
+
+#realbox-matches a:-webkit-any(:hover) .remove-icon {
   background-color: var(--search-box-icon, rgb(var(--GG900-rgb)));
+}
+
+#realbox-matches a:-webkit-any(:focus-within, .selected) .remove-icon {
+  background-color: var(--search-box-icon-selected, rgb(var(--GG900-rgb)));
 }
 
 #fakebox > input {
@@ -385,7 +465,22 @@ html[dir=rtl] #fakebox > input {
 }
 
 #fakebox .search-icon {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_search.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 20px;
+  background-color: rgb(117, 117, 117);
+  bottom: 0;
+  left: 16px;
+  margin: auto;
+  position: absolute;
+  top: 0;
+  width: 24px;
+}
+
+html[dir=rtl] #fakebox .search-icon {
+  left: auto;
+  right: 16px;
 }
 
 #fakebox-text {
@@ -415,7 +510,7 @@ html[dir=rtl] #fakebox-text {
 
 #fakebox-text,
 #realbox {
-  padding-inline-start: 48px;
+  padding-inline-start: 52px;
 }
 
 #fakebox-cursor {
@@ -453,8 +548,7 @@ html[dir=rtl] .microphone-icon {
   right: auto;
 }
 
-#realbox-input-wrapper > :-webkit-any(.google-g-icon, .microphone-icon,
-                                      .search-icon) {
+#realbox-input-wrapper > :-webkit-any(#realbox-icon, .microphone-icon) {
   z-index: 3;
 }
 
@@ -2004,12 +2098,7 @@ html[dir=rtl] #colors-menu .bg-sel-tile .selected-check {
   margin-inline-end: 16px;
 }
 
-#color-picker-container.visible {
-  display: inline-block;
-}
-
 #color-picker-container {
-  display: none;
   vertical-align: top;
 }
 

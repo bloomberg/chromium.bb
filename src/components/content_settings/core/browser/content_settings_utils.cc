@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
@@ -161,6 +161,20 @@ bool IsMorePermissive(ContentSetting a, ContentSetting b) {
   }
   NOTREACHED();
   return true;
+}
+
+// Currently only SessionModel::Durable constraints need to be persistent
+// as they are only bounded by time and can persist through multiple browser
+// sessions.
+bool IsConstraintPersistent(const ContentSettingConstraints& constraints) {
+  return constraints.session_model == SessionModel::Durable;
+}
+
+// Convenience helper to calculate the expiration time of a constraint given a
+// desired |duration|
+base::Time GetConstraintExpiration(const base::TimeDelta duration) {
+  DCHECK(!duration.is_zero());
+  return base::Time::Now() + duration;
 }
 
 }  // namespace content_settings

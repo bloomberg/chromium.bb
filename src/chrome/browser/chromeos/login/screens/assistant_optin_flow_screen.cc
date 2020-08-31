@@ -4,11 +4,15 @@
 
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
 
+#include <memory>
+
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
+#include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/constants/chromeos_features.h"
 
 namespace chromeos {
@@ -16,12 +20,36 @@ namespace {
 
 constexpr const char kFlowFinished[] = "flow-finished";
 
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+bool g_libassistant_enabled = true;
+#else
+bool g_libassistant_enabled = false;
+#endif
+
 }  // namespace
+
+// static
+std::string AssistantOptInFlowScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::NEXT:
+      return "Next";
+    case Result::NOT_APPLICABLE:
+      return BaseScreen::kNotApplicable;
+  }
+}
+
+// static
+AssistantOptInFlowScreen* AssistantOptInFlowScreen::Get(
+    ScreenManager* manager) {
+  return static_cast<AssistantOptInFlowScreen*>(
+      manager->GetScreen(AssistantOptInFlowScreenView::kScreenId));
+}
 
 AssistantOptInFlowScreen::AssistantOptInFlowScreen(
     AssistantOptInFlowScreenView* view,
-    const base::RepeatingClosure& exit_callback)
-    : BaseScreen(AssistantOptInFlowScreenView::kScreenId),
+    const ScreenExitCallback& exit_callback)
+    : BaseScreen(AssistantOptInFlowScreenView::kScreenId,
+                 OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);
@@ -34,26 +62,29 @@ AssistantOptInFlowScreen::~AssistantOptInFlowScreen() {
     view_->Unbind();
 }
 
-void AssistantOptInFlowScreen::Show() {
-  if (!view_)
-    return;
-
-  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
-    exit_callback_.Run();
-    return;
+bool AssistantOptInFlowScreen::MaybeSkip() {
+  if (!g_libassistant_enabled ||
+      chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
   }
 
   if (::assistant::IsAssistantAllowedForProfile(
           ProfileManager::GetActiveUserProfile()) ==
-          ash::mojom::AssistantAllowedState::ALLOWED &&
-      !skip_for_testing_) {
-    view_->Show();
-    return;
+      chromeos::assistant::AssistantAllowedState::ALLOWED) {
+    return false;
   }
-  exit_callback_.Run();
+
+  exit_callback_.Run(Result::NOT_APPLICABLE);
+  return true;
 }
 
-void AssistantOptInFlowScreen::Hide() {
+void AssistantOptInFlowScreen::ShowImpl() {
+  if (view_)
+    view_->Show();
+}
+
+void AssistantOptInFlowScreen::HideImpl() {
   if (view_)
     view_->Hide();
 }
@@ -64,9 +95,16 @@ void AssistantOptInFlowScreen::OnViewDestroyed(
     view_ = nullptr;
 }
 
+// static
+std::unique_ptr<base::AutoReset<bool>>
+AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(bool enabled) {
+  return std::make_unique<base::AutoReset<bool>>(&g_libassistant_enabled,
+                                                 enabled);
+}
+
 void AssistantOptInFlowScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kFlowFinished)
-    exit_callback_.Run();
+    exit_callback_.Run(Result::NEXT);
   else
     BaseScreen::OnUserAction(action_id);
 }

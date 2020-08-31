@@ -19,6 +19,8 @@
 namespace content {
 namespace {
 
+bool g_registered_url_schemes = false;
+
 const char* const kDefaultSavableSchemes[] = {
   url::kHttpScheme,
   url::kHttpsScheme,
@@ -47,12 +49,17 @@ std::vector<std::string>& GetMutableServiceWorkerSchemes() {
 
 }  // namespace
 
-void RegisterContentSchemes(bool lock_schemes) {
+void RegisterContentSchemes() {
+  // On Android and in tests, schemes may have been registered already.
+  if (g_registered_url_schemes)
+    return;
+  g_registered_url_schemes = true;
   ContentClient::Schemes schemes;
   GetContentClient()->AddAdditionalSchemes(&schemes);
 
   url::AddStandardScheme(kChromeDevToolsScheme, url::SCHEME_WITH_HOST);
   url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITH_HOST);
+  url::AddStandardScheme(kChromeUIUntrustedScheme, url::SCHEME_WITH_HOST);
   url::AddStandardScheme(kGuestScheme, url::SCHEME_WITH_HOST);
   url::AddStandardScheme(kChromeErrorScheme, url::SCHEME_WITH_HOST);
 
@@ -62,7 +69,9 @@ void RegisterContentSchemes(bool lock_schemes) {
   for (auto& scheme : schemes.referrer_schemes)
     url::AddReferrerScheme(scheme.c_str(), url::SCHEME_WITH_HOST);
 
+  schemes.secure_schemes.push_back(kChromeDevToolsScheme);
   schemes.secure_schemes.push_back(kChromeUIScheme);
+  schemes.secure_schemes.push_back(kChromeUIUntrustedScheme);
   schemes.secure_schemes.push_back(kChromeErrorScheme);
   for (auto& scheme : schemes.secure_schemes)
     url::AddSecureScheme(scheme.c_str());
@@ -96,8 +105,7 @@ void RegisterContentSchemes(bool lock_schemes) {
   // threadsafe so must be called when GURL isn't used on any other thread. This
   // is really easy to mess up, so we say that all calls to Add*Scheme in Chrome
   // must be inside this function.
-  if (lock_schemes)
-    url::LockSchemeRegistries();
+  url::LockSchemeRegistries();
 
   // Combine the default savable schemes with the additional ones given.
   GetMutableSavableSchemes().assign(std::begin(kDefaultSavableSchemes),
@@ -107,6 +115,12 @@ void RegisterContentSchemes(bool lock_schemes) {
                                     schemes.savable_schemes.end());
 
   GetMutableServiceWorkerSchemes() = std::move(schemes.service_worker_schemes);
+}
+
+void ReRegisterContentSchemesForTests() {
+  url::ClearSchemesForTests();
+  g_registered_url_schemes = false;
+  RegisterContentSchemes();
 }
 
 const std::vector<std::string>& GetSavableSchemes() {

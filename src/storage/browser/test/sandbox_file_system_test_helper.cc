@@ -22,21 +22,16 @@
 #include "storage/common/file_system/file_system_util.h"
 #include "url/gurl.h"
 
-using storage::FileSystemContext;
-using storage::FileSystemOperationContext;
-using storage::FileSystemOperationRunner;
-using storage::FileSystemURL;
-
-namespace content {
+namespace storage {
 
 SandboxFileSystemTestHelper::SandboxFileSystemTestHelper(
-    const GURL& origin,
-    storage::FileSystemType type)
+    const url::Origin& origin,
+    FileSystemType type)
     : origin_(origin), type_(type), file_util_(nullptr) {}
 
 SandboxFileSystemTestHelper::SandboxFileSystemTestHelper()
-    : origin_(GURL("http://foo.com")),
-      type_(storage::kFileSystemTypeTemporary),
+    : origin_(url::Origin::Create(GURL("http://foo.com"))),
+      type_(kFileSystemTypeTemporary),
       file_util_(nullptr) {}
 
 SandboxFileSystemTestHelper::~SandboxFileSystemTestHelper() = default;
@@ -54,9 +49,9 @@ void SandboxFileSystemTestHelper::SetUp(
 
 void SandboxFileSystemTestHelper::SetUp(
     const base::FilePath& base_dir,
-    storage::QuotaManagerProxy* quota_manager_proxy) {
-  file_system_context_ = CreateFileSystemContextForTesting(
-      quota_manager_proxy, base_dir);
+    QuotaManagerProxy* quota_manager_proxy) {
+  file_system_context_ =
+      CreateFileSystemContextForTesting(quota_manager_proxy, base_dir);
 
   SetUpFileSystem();
 }
@@ -67,8 +62,8 @@ void SandboxFileSystemTestHelper::TearDown() {
 }
 
 base::FilePath SandboxFileSystemTestHelper::GetOriginRootPath() {
-  return file_system_context_->sandbox_delegate()->
-      GetBaseDirectoryForOriginAndType(origin_, type_, false);
+  return file_system_context_->sandbox_delegate()
+      ->GetBaseDirectoryForOriginAndType(origin_, type_, false);
 }
 
 base::FilePath SandboxFileSystemTestHelper::GetLocalPath(
@@ -86,8 +81,8 @@ base::FilePath SandboxFileSystemTestHelper::GetLocalPathFromASCII(
 }
 
 base::FilePath SandboxFileSystemTestHelper::GetUsageCachePath() const {
-  return file_system_context_->sandbox_delegate()->
-      GetUsageCachePathForOriginAndType(origin_, type_);
+  return file_system_context_->sandbox_delegate()
+      ->GetUsageCachePathForOriginAndType(origin_, type_);
 }
 
 FileSystemURL SandboxFileSystemTestHelper::CreateURL(
@@ -97,8 +92,8 @@ FileSystemURL SandboxFileSystemTestHelper::CreateURL(
 
 int64_t SandboxFileSystemTestHelper::GetCachedOriginUsage() const {
   return file_system_context_->GetQuotaUtil(type_)
-      ->GetOriginUsageOnFileTaskRunner(
-          file_system_context_.get(), origin_, type_);
+      ->GetOriginUsageOnFileTaskRunner(file_system_context_.get(), origin_,
+                                       type_);
 }
 
 int64_t SandboxFileSystemTestHelper::ComputeCurrentOriginUsage() {
@@ -107,7 +102,7 @@ int64_t SandboxFileSystemTestHelper::ComputeCurrentOriginUsage() {
   int64_t size =
       file_util_delegate()->ComputeDirectorySize(GetOriginRootPath());
   if (file_util_delegate()->PathExists(GetUsageCachePath()))
-    size -= storage::FileSystemUsageCache::kUsageFileSize;
+    size -= FileSystemUsageCache::kUsageFileSize;
 
   return size;
 }
@@ -121,34 +116,32 @@ FileSystemOperationRunner* SandboxFileSystemTestHelper::operation_runner() {
   return file_system_context_->operation_runner();
 }
 
-FileSystemOperationContext*
-SandboxFileSystemTestHelper::NewOperationContext() {
+FileSystemOperationContext* SandboxFileSystemTestHelper::NewOperationContext() {
   DCHECK(file_system_context_.get());
   FileSystemOperationContext* context =
-    new FileSystemOperationContext(file_system_context_.get());
+      new FileSystemOperationContext(file_system_context_.get());
   context->set_update_observers(
       *file_system_context_->GetUpdateObservers(type_));
   return context;
 }
 
 void SandboxFileSystemTestHelper::AddFileChangeObserver(
-    storage::FileChangeObserver* observer) {
+    FileChangeObserver* observer) {
   file_system_context_->sandbox_delegate()->AddFileChangeObserver(
       type_, observer, nullptr);
 }
 
 void SandboxFileSystemTestHelper::AddFileUpdateObserver(
-    storage::FileUpdateObserver* observer) {
+    FileUpdateObserver* observer) {
   file_system_context_->sandbox_delegate()->AddFileUpdateObserver(
       type_, observer, nullptr);
 }
 
-storage::FileSystemUsageCache* SandboxFileSystemTestHelper::usage_cache() {
+FileSystemUsageCache* SandboxFileSystemTestHelper::usage_cache() {
   return file_system_context()->sandbox_delegate()->usage_cache();
 }
 
-storage::ObfuscatedFileUtilDelegate*
-SandboxFileSystemTestHelper::file_util_delegate() {
+ObfuscatedFileUtilDelegate* SandboxFileSystemTestHelper::file_util_delegate() {
   return file_system_context_->sandbox_delegate()
       ->obfuscated_file_util()
       ->delegate();
@@ -162,12 +155,12 @@ void SandboxFileSystemTestHelper::SetUpFileSystem() {
   DCHECK(file_util_);
 
   // Prepare the origin's root directory.
-  file_system_context_->sandbox_delegate()->
-      GetBaseDirectoryForOriginAndType(origin_, type_, true /* create */);
+  file_system_context_->sandbox_delegate()->GetBaseDirectoryForOriginAndType(
+      origin_, type_, true /* create */);
 
   base::FilePath usage_cache_path = GetUsageCachePath();
   if (!usage_cache_path.empty())
     usage_cache()->UpdateUsage(usage_cache_path, 0);
 }
 
-}  // namespace content
+}  // namespace storage

@@ -5,7 +5,9 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_browsertest.h"
+#include "content/public/test/browser_test.h"
 #include "media/base/media_switches.h"
+#include "media/base/supported_types.h"
 #include "media/base/test_data_util.h"
 #include "media/media_buildflags.h"
 
@@ -24,7 +26,7 @@ class MediaSourceTest : public MediaBrowserTest {
     query_params.emplace_back("mediaFile", media_file);
     query_params.emplace_back("mediaType", media_type);
     RunMediaTestPage("media_source_player.html", query_params, expectation,
-                     false);
+                     true);
   }
 
   void TestSimplePlayback(const std::string& media_file,
@@ -105,6 +107,13 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_WEBM_Audio_MP4) {
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_FLAC_MP4) {
   TestSimplePlayback("bear-flac_frag.mp4", media::kEnded);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_XHE_AAC_MP4) {
+  if (media::IsSupportedAudioType(
+          {media::kCodecAAC, media::AudioCodecProfile::kXHE_AAC})) {
+    TestSimplePlayback("noise-xhe-aac.mp4", media::kEnded);
+  }
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)

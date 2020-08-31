@@ -7,10 +7,13 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 
 /**
  * Represents the data for a header of a group of snippets.
@@ -18,6 +21,13 @@ import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
 public class SectionHeader extends OptionalLeaf {
     /** The header text to be shown. */
     private String mHeaderText;
+
+    /** The model of the menu items to show in the overflow menu to manage the feed. */
+    @Nullable
+    private ModelList mMenuModelList;
+
+    @Nullable
+    private ListMenu.Delegate mListMenuDelegate;
 
     private Runnable mToggleCallback;
     private boolean mIsExpanded;
@@ -57,7 +67,23 @@ public class SectionHeader extends OptionalLeaf {
         if (TextUtils.equals(mHeaderText, headerText)) return;
 
         mHeaderText = headerText;
-        notifyItemChanged(0, SectionHeaderViewHolder::updateVisuals);
+        notifyItemChanged(0, null);
+    }
+
+    public ModelList getMenuModelList() {
+        return mMenuModelList;
+    }
+
+    public void setMenuModelList(ModelList modelList) {
+        mMenuModelList = modelList;
+    }
+
+    public ListMenu.Delegate getListMenuDelegate() {
+        return mListMenuDelegate;
+    }
+
+    public void setListMenuDelegate(ListMenu.Delegate delegate) {
+        mListMenuDelegate = delegate;
     }
 
     /**
@@ -79,13 +105,13 @@ public class SectionHeader extends OptionalLeaf {
      */
     public void toggleHeader() {
         mIsExpanded = !mIsExpanded;
-        notifyItemChanged(0, SectionHeaderViewHolder::updateVisuals);
+        notifyItemChanged(0, null);
         mToggleCallback.run();
     }
 
     @Override
     protected void onBindViewHolder(NewTabPageViewHolder holder) {
-        ((SectionHeaderViewHolder) holder).onBindViewHolder(this);
+        // TODO(https://crbug.com/1069183): Dead code, refactor to remove.
     }
 
     @Override

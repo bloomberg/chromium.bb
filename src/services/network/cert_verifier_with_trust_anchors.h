@@ -18,7 +18,6 @@
 #include "net/cert/cert_verifier.h"
 
 namespace net {
-class CertVerifyProc;
 class CertVerifyResult;
 class X509Certificate;
 typedef std::vector<scoped_refptr<X509Certificate>> CertificateList;
@@ -26,7 +25,7 @@ typedef std::vector<scoped_refptr<X509Certificate>> CertificateList;
 
 namespace network {
 
-// Wraps a MultiThreadedCertVerifier to make it use the additional trust anchors
+// Wraps a net::CertVerifier to make it use the additional trust anchors
 // configured by the ONC user policy.
 class COMPONENT_EXPORT(NETWORK_SERVICE) CertVerifierWithTrustAnchors
     : public net::CertVerifier {
@@ -36,13 +35,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CertVerifierWithTrustAnchors
   // certificate from the additional trust anchors (set with SetTrustAnchors) is
   // used.
   explicit CertVerifierWithTrustAnchors(
-      const base::Closure& anchor_used_callback);
+      const base::RepeatingClosure& anchor_used_callback);
   ~CertVerifierWithTrustAnchors() override;
 
   // TODO(jam): once the network service is the only path, rename or get rid of
   // this method.
-  void InitializeOnIOThread(
-      const scoped_refptr<net::CertVerifyProc>& verify_proc);
+  void InitializeOnIOThread(std::unique_ptr<net::CertVerifier> delegate);
 
   // Sets the additional trust anchors.
   void SetTrustAnchors(const net::CertificateList& trust_anchors);
@@ -58,7 +56,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CertVerifierWithTrustAnchors
  private:
   net::CertVerifier::Config orig_config_;
   net::CertificateList trust_anchors_;
-  base::Closure anchor_used_callback_;
+  base::RepeatingClosure anchor_used_callback_;
   std::unique_ptr<CertVerifier> delegate_;
   THREAD_CHECKER(thread_checker_);
 

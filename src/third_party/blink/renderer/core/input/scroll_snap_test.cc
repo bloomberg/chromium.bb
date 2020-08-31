@@ -90,11 +90,11 @@ void ScrollSnapTest::ScrollBegin(double x,
                                  double y,
                                  double hint_x,
                                  double hint_y) {
-  WebGestureEvent event(WebInputEvent::kGestureScrollBegin,
+  WebGestureEvent event(WebInputEvent::Type::kGestureScrollBegin,
                         WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
                         WebGestureDevice::kTouchscreen);
-  event.SetPositionInWidget(WebFloatPoint(x, y));
-  event.SetPositionInScreen(WebFloatPoint(x, y));
+  event.SetPositionInWidget(gfx::PointF(x, y));
+  event.SetPositionInScreen(gfx::PointF(x, y));
   event.data.scroll_begin.delta_x_hint = hint_x;
   event.data.scroll_begin.delta_y_hint = hint_y;
   event.data.scroll_begin.pointer_count = 1;
@@ -107,11 +107,11 @@ void ScrollSnapTest::ScrollUpdate(double x,
                                   double delta_x,
                                   double delta_y,
                                   bool is_in_inertial_phase) {
-  WebGestureEvent event(WebInputEvent::kGestureScrollUpdate,
+  WebGestureEvent event(WebInputEvent::Type::kGestureScrollUpdate,
                         WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
                         WebGestureDevice::kTouchscreen);
-  event.SetPositionInWidget(WebFloatPoint(x, y));
-  event.SetPositionInScreen(WebFloatPoint(x, y));
+  event.SetPositionInWidget(gfx::PointF(x, y));
+  event.SetPositionInScreen(gfx::PointF(x, y));
   event.data.scroll_update.delta_x = delta_x;
   event.data.scroll_update.delta_y = delta_y;
   if (is_in_inertial_phase) {
@@ -124,11 +124,11 @@ void ScrollSnapTest::ScrollUpdate(double x,
 }
 
 void ScrollSnapTest::ScrollEnd(double x, double y, bool is_in_inertial_phase) {
-  WebGestureEvent event(WebInputEvent::kGestureScrollEnd,
+  WebGestureEvent event(WebInputEvent::Type::kGestureScrollEnd,
                         WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
                         WebGestureDevice::kTouchscreen);
-  event.SetPositionInWidget(WebFloatPoint(x, y));
-  event.SetPositionInScreen(WebFloatPoint(x, y));
+  event.SetPositionInWidget(gfx::PointF(x, y));
+  event.SetPositionInScreen(gfx::PointF(x, y));
   event.data.scroll_end.inertial_phase =
       is_in_inertial_phase ? WebGestureEvent::InertialPhaseState::kMomentum
                            : WebGestureEvent::InertialPhaseState::kNonMomentum;
@@ -137,8 +137,8 @@ void ScrollSnapTest::ScrollEnd(double x, double y, bool is_in_inertial_phase) {
 
 void ScrollSnapTest::SetInitialScrollOffset(double x, double y) {
   Element* scroller = GetDocument().getElementById("scroller");
-  scroller->GetScrollableArea()->ScrollToAbsolutePosition(FloatPoint(x, y),
-                                                          kScrollBehaviorAuto);
+  scroller->GetScrollableArea()->ScrollToAbsolutePosition(
+      FloatPoint(x, y), mojom::blink::ScrollBehavior::kAuto);
   ASSERT_EQ(scroller->scrollLeft(), x);
   ASSERT_EQ(scroller->scrollTop(), y);
 }

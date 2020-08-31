@@ -51,7 +51,7 @@ void SVGFEImageElement::Dispose() {
   ClearImageResource();
 }
 
-void SVGFEImageElement::Trace(blink::Visitor* visitor) {
+void SVGFEImageElement::Trace(Visitor* visitor) {
   visitor->Trace(preserve_aspect_ratio_);
   visitor->Trace(cached_image_);
   visitor->Trace(target_id_observer_);
@@ -150,6 +150,13 @@ void SVGFEImageElement::ImageNotifyFinished(ImageResourceContent*) {
     MarkForLayoutAndParentResourceInvalidation(*layout_object);
 }
 
+const SVGElement* SVGFEImageElement::TargetElement() const {
+  if (cached_image_)
+    return nullptr;
+  return DynamicTo<SVGElement>(
+      TargetElementFromIRIString(HrefString(), GetTreeScope()));
+}
+
 FilterEffect* SVGFEImageElement::Build(SVGFilterBuilder*, Filter* filter) {
   if (cached_image_) {
     // Don't use the broken image icon on image loading errors.
@@ -158,8 +165,7 @@ FilterEffect* SVGFEImageElement::Build(SVGFilterBuilder*, Filter* filter) {
     return MakeGarbageCollected<FEImage>(
         filter, image, preserve_aspect_ratio_->CurrentValue());
   }
-
-  return MakeGarbageCollected<FEImage>(filter, GetTreeScope(), HrefString(),
+  return MakeGarbageCollected<FEImage>(filter, TargetElement(),
                                        preserve_aspect_ratio_->CurrentValue());
 }
 

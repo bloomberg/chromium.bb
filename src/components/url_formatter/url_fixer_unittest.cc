@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include <string>
+
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -258,18 +260,6 @@ static const SegmentCase segment_cases[] = {
         url::Component(43, 17),            // query
         url::Component(),                  // ref
     },
-    {
-        "chrome-devtools://bundled/devtools/inspector.html?ws=localhost:9221",
-        "devtools",
-        url::Component(),        // scheme
-        url::Component(),        // username
-        url::Component(),        // password
-        url::Component(18, 7),   // host
-        url::Component(),        // port
-        url::Component(25, 24),  // path
-        url::Component(50, 17),  // query
-        url::Component(),        // ref
-    },
 };
 
 typedef testing::Test URLFixerTest;
@@ -280,6 +270,8 @@ TEST(URLFixerTest, SegmentURL) {
 
   for (size_t i = 0; i < base::size(segment_cases); ++i) {
     SegmentCase value = segment_cases[i];
+    SCOPED_TRACE(testing::Message() << "test #" << i << ": " << value.input);
+
     result = url_formatter::SegmentURL(value.input, &parts);
     EXPECT_EQ(value.result, result);
     EXPECT_EQ(value.scheme, parts.scheme);
@@ -393,24 +385,45 @@ struct FixupCase {
     // Devtools scheme.
     {"devtools://bundled/devtools/node.html",
      "devtools://bundled/devtools/node.html"},
-    // Devtools fallback scheme.
-    {"chrome-devtools://bundled/devtools/toolbox.html",
-     "devtools://bundled/devtools/toolbox.html"},
     // Devtools scheme with websocket query.
     {"devtools://bundled/devtools/inspector.html?ws=ws://localhost:9222/guid",
      "devtools://bundled/devtools/inspector.html?ws=ws://localhost:9222/guid"},
-    // Devtools fallback scheme with websocket query.
-    {"chrome-devtools://bundled/devtools/inspector.html?ws=ws://localhost:9222/"
-     "guid",
-     "devtools://bundled/devtools/inspector.html?ws=ws://localhost:9222/guid"},
+    // host:123 should be rewritten to http://host:123/, but only if the port
+    // number is valid - in particular telephone numbers are not port numbers
+    // (see also SendTabToSelfUtilTest.ShouldNotOfferFeatureForTelephoneLink).
+    {"host:123", "http://host:123/"},
+    {"host:80", "http://host/"},  // default port is removed
+    {"host:9999", "http://host:9999/"},
+    {"host:00009999", "http://host:9999/"},  // leading zeros are removed
+    {"host:0", "http://host:0/"},            // min valid port
+    {"host:65535", "http://host:65535/"},    // max valid port
+    {"host:-1", "host:-1"},
+    {"host:65536", "host:65536"},
+    {"host:18446744073709551619", "host:18446744073709551619"},  // > uint64.max
+    {"host:", "host:"},
+    {"host: 123", "host: 123"},
+    {"host:+123", "host:+123"},
+    {"host:1.23", "host:1.23"},
+    {"host:x", "host:x"},
+    {"host:᠐", "host:%E1%A0%90"},     // non-ASCII digit (U+1810)
+    {"host:𝟨", "host:%F0%9D%9F%A8"},  // non-ASCII digit (U+1D7E8)
+    {"tel:12345678901", "tel:12345678901"},
+    {"tel:123-456-78901", "tel:123-456-78901"},
+    // Double colon after host should not convert to an empty port.
+    {"foo.com::/server-redirect?http%3A%2F%2Fbar.com%2Ftitle2.html",
+     "http://foo.com/server-redirect?http%3A%2F%2Fbar.com%2Ftitle2.html"},
 };
 
 TEST(URLFixerTest, FixupURL) {
   for (size_t i = 0; i < base::size(fixup_cases); ++i) {
     FixupCase value = fixup_cases[i];
-    EXPECT_EQ(value.output,
-              url_formatter::FixupURL(value.input, "").possibly_invalid_spec())
+    GURL actual_output = url_formatter::FixupURL(value.input, std::string());
+    EXPECT_EQ(value.output, actual_output.possibly_invalid_spec())
         << "input: " << value.input;
+
+    // Fixup URL should never translate a valid GURL into an invalid one.
+    if (GURL(value.input).is_valid())
+      EXPECT_TRUE(actual_output.is_valid());
   }
 
   // Check the TLD-appending functionality.
@@ -502,7 +515,7 @@ TEST(URLFixerTest, FixupFile) {
 
     // Much of the work here comes from GURL's canonicalization stage.
     {"file://C:/foo/bar", "file:///C:/foo/bar"},
-    {"file:c:", "file:///C:/"},
+    {"file:c:", "file:///C:"},
     {"file:c:WINDOWS", "file:///C:/WINDOWS"},
     {"file:c|Program Files", "file:///C:/Program%20Files"},
     {"file:/file", "file://file/"},

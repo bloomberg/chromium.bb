@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/arc/mojom/file_system.mojom.h"
+#include "components/arc/mojom/file_system.mojom-forward.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -28,19 +28,6 @@ class BrowserContext;
 namespace arc {
 
 class ArcBridgeService;
-
-// Returns true if the file path has a media extension supported by Android.
-bool HasAndroidSupportedMediaExtension(const base::FilePath& path);
-
-// Appends |cros_path|'s relative path from "/media/removable" to |android_path|
-// with the altered device label which is used in Android removable media paths.
-// Exposed only for testing.
-bool AppendRelativePathForRemovableMedia(const base::FilePath& cros_path,
-                                         base::FilePath* android_path);
-
-// Exposed only for testing.
-extern const char* kAndroidSupportedMediaExtensions[];
-extern const int kAndroidSupportedMediaExtensionsSize;
 
 // Watches file system directories and registers newly created media files to
 // Android MediaProvider.

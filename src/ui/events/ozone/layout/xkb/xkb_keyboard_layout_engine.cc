@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -633,7 +634,7 @@ void LoadKeymap(const std::string& layout_name,
         xkb_keymap_get_as_string(keymap.get(), XKB_KEYMAP_FORMAT_TEXT_V1));
     reply_runner->PostTask(
         FROM_HERE, base::BindOnce(std::move(reply_callback), layout_name,
-                                  base::Passed(&keymap_str)));
+                                  std::move(keymap_str)));
   } else {
     LOG(FATAL) << "Keymap file failed to load: " << layout_name;
   }
@@ -687,12 +688,12 @@ bool XkbKeyboardLayoutEngine::SetCurrentLayoutByName(
   }
   LoadKeymapCallback reply_callback = base::BindOnce(
       &XkbKeyboardLayoutEngine::OnKeymapLoaded, weak_ptr_factory_.GetWeakPtr());
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::MayBlock(),
-                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                 base::BindOnce(&LoadKeymap, layout_name,
-                                base::ThreadTaskRunnerHandle::Get(),
-                                std::move(reply_callback)));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&LoadKeymap, layout_name,
+                     base::ThreadTaskRunnerHandle::Get(),
+                     std::move(reply_callback)));
 #else
   NOTIMPLEMENTED();
 #endif  // defined(OS_CHROMEOS)
@@ -747,7 +748,13 @@ bool XkbKeyboardLayoutEngine::Lookup(DomCode dom_code,
     // If we do not have matching legacy Xkb keycode for the Dom code,
     // we could be dealing with a newer application launcher or similar
     // key. Let's see if we have a basic mapping for it.
-    return DomCodeToNonPrintableDomKey(dom_code, dom_key, key_code);
+    if (!DomCodeToNonPrintableDomKey(dom_code, dom_key, key_code)) {
+      // If no Dom Key was found see if there is a matching Dom Code to keycode
+      // mapping for it.
+      *dom_key = DomKey::UNIDENTIFIED;
+      *key_code = DomCodeToUsLayoutNonLocatedKeyboardCode(dom_code);
+    }
+    return true;
   }
 
   // Classify the keysym and convert to DOM and VKEY representations.

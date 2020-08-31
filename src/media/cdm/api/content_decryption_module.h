@@ -8,7 +8,6 @@
 #include <type_traits>
 
 #include "content_decryption_module_export.h"
-#include "content_decryption_module_proxy.h"
 
 #if defined(_MSC_VER)
 typedef unsigned char uint8_t;
@@ -1347,19 +1346,6 @@ class CDM_CLASS_API Host_11 {
   // returned, |client| must be valid until FileIO::Close() is called. The
   // CDM can call this method multiple times to operate on different files.
   virtual FileIO* CreateFileIO(FileIOClient* client) = 0;
-
-  // Requests a CdmProxy that proxies part of CDM functionalities to a different
-  // entity, e.g. a hardware CDM module. A CDM instance can have at most one
-  // CdmProxy throughout its lifetime, which must be requested and initialized
-  // during CDM instance initialization time, i.e. in or after CDM::Initialize()
-  // and before OnInitialized() is called, to ensure proper connection of the
-  // CdmProxy and the media player (e.g. hardware decoder). The CdmProxy is
-  // owned by the host and is guaranteed to be valid throughout the CDM
-  // instance's lifetime. The CDM must ensure that the |client| remain valid
-  // before the CDM instance is destroyed. Returns null if CdmProxy is not
-  // supported, called before CDM::Initialize(), RequestCdmProxy() is called
-  // more than once, or called after the CDM instance has been initialized.
-  virtual CdmProxy* RequestCdmProxy(CdmProxyClient* client) = 0;
 
   // Requests a specific version of the storage ID. A storage ID is a stable,
   // device specific ID used by the CDM to securely store persistent data. The

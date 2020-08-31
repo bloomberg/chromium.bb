@@ -37,49 +37,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
-#if defined(MOJO_RENDERER)
-#include "media/mojo/clients/mojo_renderer.h"
-#include "media/mojo/mojom/constants.mojom.h"  // nogncheck
-#include "media/mojo/mojom/interface_factory.mojom.h"
-#include "media/mojo/mojom/renderer.mojom.h"
-#include "media/mojo/services/media_manifest.h"                    // nogncheck
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/cpp/manifest_builder.h"  // nogncheck
-#include "services/service_manager/public/cpp/test/test_service.h"  // nogncheck
-#include "services/service_manager/public/cpp/test/test_service_manager.h"  // nogncheck
-
-// TODO(dalecurtis): The mojo renderer is in another process, so we have no way
-// currently to get hashes for video and audio samples.  This also means that
-// real audio plays out for each test.
-#define EXPECT_HASH_EQ(a, b)
-#define EXPECT_VIDEO_FORMAT_EQ(a, b)
-#define EXPECT_COLOR_SPACE_EQ(a, b)
-
-// TODO(xhwang): EME support is not complete for the mojo renderer, so all
-// encrypted tests are currently disabled.
-#define DISABLE_EME_TESTS 1
-
-// TODO(xhwang,dalecurtis): Text tracks are not currently supported by the mojo
-// renderer.
-#define DISABLE_TEXT_TRACK_TESTS 1
-
-#else
 #define EXPECT_HASH_EQ(a, b) EXPECT_EQ(a, b)
 #define EXPECT_VIDEO_FORMAT_EQ(a, b) EXPECT_EQ(a, b)
 #define EXPECT_COLOR_SPACE_EQ(a, b) EXPECT_EQ(a, b)
-#endif  // defined(MOJO_RENDERER)
-
-#if defined(DISABLE_EME_TESTS)
-#define MAYBE_EME(test) DISABLED_##test
-#else
-#define MAYBE_EME(test) test
-#endif
-
-#if defined(DISABLE_TEXT_TRACK_TESTS)
-#define MAYBE_TEXT(test) DISABLED_##test
-#else
-#define MAYBE_TEXT(test) test
-#endif
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -103,7 +63,6 @@ const int k640WebMFileDurationMs = 2762;
 const int kVP9WebMFileDurationMs = 2736;
 const int kVP8AWebMFileDurationMs = 2734;
 
-#if !defined(MOJO_RENDERER)
 static const char kSfxLosslessHash[] = "3.03,2.86,2.99,3.31,3.57,4.06,";
 
 #if defined(OPUS_FIXED_POINT)
@@ -111,11 +70,11 @@ static const char kSfxLosslessHash[] = "3.03,2.86,2.99,3.31,3.57,4.06,";
 // implementation. x86 uses floating-point Opus, so x86 hashes won't match
 #if defined(ARCH_CPU_ARM64)
 static const char kOpusEndTrimmingHash_1[] =
-    "-4.57,-5.66,-6.52,-6.29,-4.37,-3.60,";
+    "-4.58,-5.68,-6.53,-6.28,-4.35,-3.59,";
 static const char kOpusEndTrimmingHash_2[] =
-    "-11.90,-11.10,-8.26,-7.12,-7.85,-9.99,";
+    "-11.92,-11.11,-8.25,-7.10,-7.84,-10.00,";
 static const char kOpusEndTrimmingHash_3[] =
-    "-13.30,-14.37,-13.70,-11.69,-10.20,-10.48,";
+    "-13.33,-14.38,-13.68,-11.66,-10.18,-10.49,";
 static const char kOpusSmallCodecDelayHash_1[] =
     "-0.48,-0.09,1.27,1.06,1.54,-0.22,";
 static const char kOpusSmallCodecDelayHash_2[] =
@@ -138,13 +97,13 @@ static const char kOpusMonoOutputHash[] = "-2.41,-1.66,0.79,1.53,1.46,-0.91,";
 #else
 // Hash for a full playthrough of "opus-trimming-test.(webm|ogg)".
 static const char kOpusEndTrimmingHash_1[] =
-    "-4.56,-5.65,-6.51,-6.29,-4.36,-3.59,";
+    "-4.57,-5.67,-6.52,-6.28,-4.34,-3.58,";
 // The above hash, plus an additional playthrough starting from T=1s.
 static const char kOpusEndTrimmingHash_2[] =
-    "-11.89,-11.09,-8.25,-7.11,-7.84,-9.97,";
+    "-11.91,-11.10,-8.24,-7.08,-7.82,-9.99,";
 // The above hash, plus an additional playthrough starting from T=6.36s.
 static const char kOpusEndTrimmingHash_3[] =
-    "-13.28,-14.35,-13.67,-11.68,-10.18,-10.46,";
+    "-13.31,-14.36,-13.66,-11.65,-10.16,-10.47,";
 // Hash for a full playthrough of "bear-opus.webm".
 static const char kOpusSmallCodecDelayHash_1[] =
     "-0.47,-0.09,1.28,1.07,1.55,-0.22,";
@@ -154,7 +113,6 @@ static const char kOpusSmallCodecDelayHash_2[] =
 // For BasicPlaybackOpusWebmHashed_MonoOutput test case.
 static const char kOpusMonoOutputHash[] = "-2.36,-1.64,0.84,1.55,1.51,-0.90,";
 #endif  // defined(OPUS_FIXED_POINT)
-#endif  // !defined(MOJO_RENDERER)
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const int k640IsoCencFileDurationMs = 2769;
@@ -232,10 +190,10 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   std::unique_ptr<SimpleCdmPromise> CreatePromise(PromiseResult expected) {
     std::unique_ptr<media::SimpleCdmPromise> promise(
         new media::CdmCallbackPromise<>(
-            base::Bind(&KeyProvidingApp::OnResolve, base::Unretained(this),
-                       expected),
-            base::Bind(&KeyProvidingApp::OnReject, base::Unretained(this),
-                       expected)));
+            base::BindOnce(&KeyProvidingApp::OnResolve, base::Unretained(this),
+                           expected),
+            base::BindOnce(&KeyProvidingApp::OnReject, base::Unretained(this),
+                           expected)));
     return promise;
   }
 
@@ -243,10 +201,10 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
       PromiseResult expected) {
     std::unique_ptr<media::NewSessionCdmPromise> promise(
         new media::CdmCallbackPromise<std::string>(
-            base::Bind(&KeyProvidingApp::OnResolveWithSession,
-                       base::Unretained(this), expected),
-            base::Bind(&KeyProvidingApp::OnReject, base::Unretained(this),
-                       expected)));
+            base::BindOnce(&KeyProvidingApp::OnResolveWithSession,
+                           base::Unretained(this), expected),
+            base::BindOnce(&KeyProvidingApp::OnReject, base::Unretained(this),
+                           expected)));
     return promise;
   }
 
@@ -399,7 +357,7 @@ class FailingVideoDecoder : public VideoDecoder {
                   InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override {
-    std::move(init_cb).Run(true);
+    std::move(init_cb).Run(OkStatus());
   }
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               DecodeCB decode_cb) override {
@@ -1338,7 +1296,7 @@ TEST_F(PipelineIntegrationTest, F32PlaybackHashed) {
   EXPECT_HASH_EQ(kSfxLosslessHash, GetAudioHash());
 }
 
-TEST_F(PipelineIntegrationTest, MAYBE_EME(BasicPlaybackEncrypted)) {
+TEST_F(PipelineIntegrationTest, BasicPlaybackEncrypted) {
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   set_encrypted_media_init_data_cb(
       base::BindRepeating(&FakeEncryptedMedia::OnEncryptedMediaInitData,
@@ -1689,7 +1647,7 @@ TEST_F(PipelineIntegrationTest, MSE_GCWithDisabledVideoStream) {
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest, MAYBE_EME(MSE_ConfigChange_Encrypted_WebM)) {
+TEST_F(PipelineIntegrationTest, MSE_ConfigChange_Encrypted_WebM) {
   TestMediaSource source("bear-320x240-16x9-aspect-av_enc-av.webm",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
@@ -1720,8 +1678,7 @@ TEST_F(PipelineIntegrationTest, MAYBE_EME(MSE_ConfigChange_Encrypted_WebM)) {
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_ConfigChange_ClearThenEncrypted_WebM)) {
+TEST_F(PipelineIntegrationTest, MSE_ConfigChange_ClearThenEncrypted_WebM) {
   TestMediaSource source("bear-320x240-16x9-aspect.webm", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -1753,8 +1710,7 @@ TEST_F(PipelineIntegrationTest,
 
 // Config change from encrypted to clear is allowed by the demuxer, and is
 // supported by the Renderer.
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_ConfigChange_EncryptedThenClear_WebM)) {
+TEST_F(PipelineIntegrationTest, MSE_ConfigChange_EncryptedThenClear_WebM) {
   TestMediaSource source("bear-320x240-16x9-aspect-av_enc-av.webm",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
@@ -2128,7 +2084,8 @@ std::vector<std::unique_ptr<VideoDecoder>> CreateFailingVideoDecoder() {
 
 TEST_F(PipelineIntegrationTest, BasicFallback) {
   ASSERT_EQ(PIPELINE_OK,
-            Start("bear.mp4", kNormal, base::Bind(&CreateFailingVideoDecoder)));
+            Start("bear.mp4", kNormal,
+                  base::BindRepeating(&CreateFailingVideoDecoder)));
 
   Play();
 
@@ -2162,8 +2119,7 @@ TEST_F(PipelineIntegrationTest, MSE_ConfigChange_MP4) {
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_ConfigChange_Encrypted_MP4_CENC_VideoOnly)) {
+TEST_F(PipelineIntegrationTest, MSE_ConfigChange_Encrypted_MP4_CENC_VideoOnly) {
   TestMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2193,7 +2149,7 @@ TEST_F(PipelineIntegrationTest,
 }
 
 TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_ConfigChange_Encrypted_MP4_CENC_KeyRotation_VideoOnly)) {
+       MSE_ConfigChange_Encrypted_MP4_CENC_KeyRotation_VideoOnly) {
   TestMediaSource source("bear-640x360-v_frag-cenc-key_rotation.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new RotatingKeyProvidingApp());
@@ -2219,8 +2175,7 @@ TEST_F(PipelineIntegrationTest,
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_ConfigChange_ClearThenEncrypted_MP4_CENC)) {
+TEST_F(PipelineIntegrationTest, MSE_ConfigChange_ClearThenEncrypted_MP4_CENC) {
   TestMediaSource source("bear-640x360-v_frag.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2248,8 +2203,7 @@ TEST_F(PipelineIntegrationTest,
 }
 
 // Config changes from encrypted to clear are not currently supported.
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_ConfigChange_EncryptedThenClear_MP4_CENC)) {
+TEST_F(PipelineIntegrationTest, MSE_ConfigChange_EncryptedThenClear_MP4_CENC) {
   TestMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2292,7 +2246,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_16x9AspectRatio) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
-TEST_F(PipelineIntegrationTest, MAYBE_EME(MSE_EncryptedPlayback_WebM)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_WebM) {
   TestMediaSource source("bear-320x240-av_enc-av.webm", 219816);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2308,8 +2262,7 @@ TEST_F(PipelineIntegrationTest, MAYBE_EME(MSE_EncryptedPlayback_WebM)) {
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_ClearStart_WebM)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_ClearStart_WebM) {
   TestMediaSource source("bear-320x240-av_enc-av_clear-1s.webm",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
@@ -2326,8 +2279,7 @@ TEST_F(PipelineIntegrationTest,
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_NoEncryptedFrames_WebM)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_NoEncryptedFrames_WebM) {
   TestMediaSource source("bear-320x240-av_enc-av_clear-all.webm",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new NoResponseApp());
@@ -2344,8 +2296,7 @@ TEST_F(PipelineIntegrationTest,
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_VP9_CENC_VideoOnly)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_MP4_VP9_CENC_VideoOnly) {
   TestMediaSource source("bear-320x240-v_frag-vp9-cenc.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2374,8 +2325,7 @@ TEST_F(PipelineIntegrationTest, MSE_BasicPlayback_VideoOnly_MP4_VP9) {
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_CENC_VideoOnly)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_MP4_CENC_VideoOnly) {
   TestMediaSource source("bear-1280x720-v_frag-cenc.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2391,8 +2341,7 @@ TEST_F(PipelineIntegrationTest,
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_CENC_AudioOnly)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_MP4_CENC_AudioOnly) {
   TestMediaSource source("bear-1280x720-a_frag-cenc.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2409,7 +2358,7 @@ TEST_F(PipelineIntegrationTest,
 }
 
 TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_NoEncryptedFrames_MP4_CENC_VideoOnly)) {
+       MSE_EncryptedPlayback_NoEncryptedFrames_MP4_CENC_VideoOnly) {
   TestMediaSource source("bear-1280x720-v_frag-cenc_clear-all.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new NoResponseApp());
@@ -2473,7 +2422,7 @@ TEST_F(PipelineIntegrationTest, MSE_Mpeg2ts_MP3Audio_Mp4a_69) {
 }
 
 TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_NoEncryptedFrames_MP4_CENC_AudioOnly)) {
+       MSE_EncryptedPlayback_NoEncryptedFrames_MP4_CENC_AudioOnly) {
   TestMediaSource source("bear-1280x720-a_frag-cenc_clear-all.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new NoResponseApp());
@@ -2491,8 +2440,7 @@ TEST_F(PipelineIntegrationTest,
 
 // Older packagers saved sample encryption auxiliary information in the
 // beginning of mdat box.
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_CENC_MDAT_Video)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_MP4_CENC_MDAT_Video) {
   TestMediaSource source("bear-640x360-v_frag-cenc-mdat.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2507,8 +2455,7 @@ TEST_F(PipelineIntegrationTest,
   Stop();
 }
 
-TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_CENC_SENC_Video)) {
+TEST_F(PipelineIntegrationTest, MSE_EncryptedPlayback_MP4_CENC_SENC_Video) {
   TestMediaSource source("bear-640x360-v_frag-cenc-senc.mp4", kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   EXPECT_EQ(PIPELINE_OK,
@@ -2529,7 +2476,7 @@ TEST_F(PipelineIntegrationTest,
 // boxes if 'SENC' box is present, so the code should work even if the two
 // boxes are not present.
 TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_CENC_SENC_NO_SAIZ_SAIO_Video)) {
+       MSE_EncryptedPlayback_MP4_CENC_SENC_NO_SAIZ_SAIO_Video) {
   TestMediaSource source("bear-640x360-v_frag-cenc-senc-no-saiz-saio.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
@@ -2546,7 +2493,7 @@ TEST_F(PipelineIntegrationTest,
 }
 
 TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_CENC_KeyRotation_Video)) {
+       MSE_EncryptedPlayback_MP4_CENC_KeyRotation_Video) {
   TestMediaSource source("bear-1280x720-v_frag-cenc-key_rotation.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new RotatingKeyProvidingApp());
@@ -2563,7 +2510,7 @@ TEST_F(PipelineIntegrationTest,
 }
 
 TEST_F(PipelineIntegrationTest,
-       MAYBE_EME(MSE_EncryptedPlayback_MP4_CENC_KeyRotation_Audio)) {
+       MSE_EncryptedPlayback_MP4_CENC_KeyRotation_Audio) {
   TestMediaSource source("bear-1280x720-a_frag-cenc-key_rotation.mp4",
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media(new RotatingKeyProvidingApp());

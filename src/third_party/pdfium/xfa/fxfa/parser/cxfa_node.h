@@ -32,7 +32,6 @@ class CXFA_Event;
 class CXFA_EventParam;
 class CXFA_FFDoc;
 class CXFA_FFDocView;
-class CXFA_FFWidget;
 class CXFA_Font;
 class CXFA_Keep;
 class CXFA_Margin;
@@ -97,6 +96,10 @@ class CXFA_Node : public CXFA_Object, public TreeNode<CXFA_Node> {
   bool HasProperty(XFA_Element property) const;
   bool HasPropertyFlags(XFA_Element property, uint8_t flags) const;
   uint8_t PropertyOccuranceCount(XFA_Element property) const;
+
+  std::pair<CXFA_Node*, int32_t> GetProperty(int32_t index,
+                                             XFA_Element eProperty) const;
+  CXFA_Node* GetOrCreateProperty(int32_t index, XFA_Element eProperty);
 
   void SendAttributeChangeMessage(XFA_Attribute eAttribute, bool bScriptModify);
 
@@ -284,8 +287,6 @@ class CXFA_Node : public CXFA_Object, public TreeNode<CXFA_Node> {
                                               bool bIsFormReady);
 
   void ResetData();
-
-  CXFA_FFWidget* GetNextWidget(CXFA_FFWidget* pWidget);
   void StartWidgetLayout(CXFA_FFDoc* doc,
                          float* pCalcWidth,
                          float* pCalcHeight);
@@ -306,7 +307,6 @@ class CXFA_Node : public CXFA_Object, public TreeNode<CXFA_Node> {
   RetainPtr<CFX_DIBitmap> GetImageEditImage();
   void SetImageImage(const RetainPtr<CFX_DIBitmap>& newImage);
   void SetImageEditImage(const RetainPtr<CFX_DIBitmap>& newImage);
-  void UpdateUIDisplay(CXFA_FFDocView* pDocView, CXFA_FFWidget* pExcept);
 
   RetainPtr<CFGAS_GEFont> GetFDEFont(CXFA_FFDoc* doc);
 

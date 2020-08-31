@@ -10,8 +10,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/request_priority.h"
@@ -55,7 +55,7 @@ class RequeingBufferProducer : public SpdyBufferProducer {
   explicit RequeingBufferProducer(SpdyWriteQueue* queue) {
     buffer_ = std::make_unique<SpdyBuffer>(kOriginal, base::size(kOriginal));
     buffer_->AddConsumeCallback(
-        base::Bind(RequeingBufferProducer::ConsumeCallback, queue));
+        base::BindRepeating(RequeingBufferProducer::ConsumeCallback, queue));
   }
 
   std::unique_ptr<SpdyBuffer> ProduceBuffer() override {

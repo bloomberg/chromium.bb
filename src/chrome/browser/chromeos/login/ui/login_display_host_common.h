@@ -37,9 +37,10 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   // LoginDisplayHost:
   void BeforeSessionStart() final;
   void Finalize(base::OnceClosure completion_callback) final;
+  void FinalizeImmediately() final;
   AppLaunchController* GetAppLaunchController() final;
   void StartUserAdding(base::OnceClosure completion_callback) final;
-  void StartSignInScreen(const LoginScreenContext& context) final;
+  void StartSignInScreen() final;
   void PrewarmAuthentication() final;
   void StartAppLaunch(const std::string& app_id,
                       bool diagnostic_mode,
@@ -68,10 +69,8 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
                const content::NotificationDetails& details) override;
 
  protected:
-  virtual void OnStartSignInScreen(const LoginScreenContext& context) = 0;
+  virtual void OnStartSignInScreen() = 0;
   virtual void OnStartAppLaunch() = 0;
-  virtual void OnStartArcKiosk() = 0;
-  virtual void OnStartWebKiosk() = 0;
   virtual void OnBrowserCreated() = 0;
   virtual void OnStartUserAdding() = 0;
   virtual void OnFinalize() = 0;
@@ -107,6 +106,8 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   content::NotificationRegistrar registrar_;
 
  private:
+  void Cleanup();
+
   // True if session start is in progress.
   bool session_starting_ = false;
 

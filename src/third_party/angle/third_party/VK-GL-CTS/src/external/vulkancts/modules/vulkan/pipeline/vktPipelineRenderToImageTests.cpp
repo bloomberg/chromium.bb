@@ -41,6 +41,8 @@
 #include "tcuTextureUtil.hpp"
 #include "tcuImageCompare.hpp"
 #include "tcuTestLog.hpp"
+#include "tcuPlatform.hpp"
+#include "vkPlatform.hpp"
 
 #include "deUniquePtr.hpp"
 #include "deSharedPtr.hpp"
@@ -897,6 +899,10 @@ tcu::TestStatus testWithSizeReduction (Context& context, const CaseDef& caseDef)
 	VkDeviceSize					neededMemory		= static_cast<VkDeviceSize>(static_cast<float>(colorSize + depthStencilSize) * additionalMemory) + reserveForChecking;
 	VkDeviceSize					maxMemory			= getMaxDeviceHeapSize(context, caseDef) >> 2;
 
+	vk::PlatformMemoryLimits		memoryLimits;
+	context.getTestContext().getPlatform().getVulkanPlatform().getMemoryLimits(memoryLimits);
+	maxMemory = std::min(maxMemory, VkDeviceSize(memoryLimits.totalSystemMemory));
+
 	const VkDeviceSize				deviceMemoryBudget	= std::min(neededMemory, maxMemory);
 	bool							allocationPossible	= false;
 
@@ -1213,7 +1219,7 @@ tcu::TestStatus testWithSizeReduction (Context& context, const CaseDef& caseDef)
 void checkImageViewTypeRequirements (Context& context, const VkImageViewType viewType)
 {
 	if (viewType == VK_IMAGE_VIEW_TYPE_3D)
-		context.requireDeviceExtension("VK_KHR_maintenance1");
+		context.requireDeviceFunctionality("VK_KHR_maintenance1");
 
 	if (viewType == VK_IMAGE_VIEW_TYPE_CUBE_ARRAY)
 		context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_IMAGE_CUBE_ARRAY);
@@ -1224,7 +1230,7 @@ void checkSupportAttachmentSize (Context& context, const CaseDef caseDef)
 	checkImageViewTypeRequirements(context, caseDef.viewType);
 
 	if (caseDef.allocationKind == ALLOCATION_KIND_DEDICATED)
-		context.requireDeviceExtension("VK_KHR_dedicated_allocation");
+		context.requireDeviceFunctionality("VK_KHR_dedicated_allocation");
 
 	if (caseDef.depthStencilFormat != VK_FORMAT_UNDEFINED  && !isDepthStencilFormatSupported(context.getInstanceInterface(), context.getPhysicalDevice(), caseDef.depthStencilFormat))
 		TCU_THROW(NotSupportedError, "Unsupported depth/stencil format");
@@ -1367,7 +1373,7 @@ void checkSupportRenderToMipMaps (Context& context, const CaseDef caseDef)
 	checkImageViewTypeRequirements(context, caseDef.viewType);
 
 	if (caseDef.allocationKind == ALLOCATION_KIND_DEDICATED)
-		context.requireDeviceExtension("VK_KHR_dedicated_allocation");
+		context.requireDeviceFunctionality("VK_KHR_dedicated_allocation");
 
 	if (caseDef.depthStencilFormat != VK_FORMAT_UNDEFINED  && !isDepthStencilFormatSupported(context.getInstanceInterface(), context.getPhysicalDevice(), caseDef.depthStencilFormat))
 		TCU_THROW(NotSupportedError, "Unsupported depth/stencil format");
@@ -1729,6 +1735,10 @@ void addTestCasesWithFunctions (tcu::TestCaseGroup* group, AllocationKind alloca
 		VK_FORMAT_R32_UINT,
 		VK_FORMAT_R16G16_SINT,
 		VK_FORMAT_R32G32B32A32_SFLOAT,
+		VK_FORMAT_A1R5G5B5_UNORM_PACK16,
+		VK_FORMAT_R5G6B5_UNORM_PACK16,
+		VK_FORMAT_A2B10G10R10_UINT_PACK32,
+		VK_FORMAT_A2B10G10R10_UNORM_PACK32
 	};
 
 	const VkFormat depthStencilFormat[] =

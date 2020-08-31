@@ -27,9 +27,9 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/metrics_upload_scheduler.h"
-#include "components/metrics/test_enabled_state_provider.h"
-#include "components/metrics/test_metrics_provider.h"
-#include "components/metrics/test_metrics_service_client.h"
+#include "components/metrics/test/test_enabled_state_provider.h"
+#include "components/metrics/test/test_metrics_provider.h"
+#include "components/metrics/test/test_metrics_service_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -114,7 +114,8 @@ class MetricsServiceTest : public testing::Test {
     if (!metrics_state_manager_) {
       metrics_state_manager_ = MetricsStateManager::Create(
           GetLocalState(), enabled_state_provider_.get(), base::string16(),
-          base::Bind(&StoreNoClientInfoBackup), base::Bind(&ReturnNoBackup));
+          base::BindRepeating(&StoreNoClientInfoBackup),
+          base::BindRepeating(&ReturnNoBackup));
     }
     return metrics_state_manager_.get();
   }

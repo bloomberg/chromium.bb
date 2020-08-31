@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -192,9 +193,8 @@ LogoServiceImpl::LogoServiceImpl(
       image_decoder_(std::move(image_decoder)),
       is_idle_(true),
       is_cached_logo_valid_(false),
-      cache_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE,
+      cache_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       logo_cache_(new LogoCache(cache_directory_),
                   base::OnTaskRunnerDeleter(cache_task_runner_)) {
@@ -216,10 +216,10 @@ void LogoServiceImpl::GetLogo(search_provider_logos::LogoObserver* observer) {
       base::BindOnce(ObserverOnLogoAvailable, observer, true);
   callbacks.on_fresh_decoded_logo_available =
       base::BindOnce(ObserverOnLogoAvailable, observer, false);
-  GetLogo(std::move(callbacks));
+  GetLogo(std::move(callbacks), false);
 }
 
-void LogoServiceImpl::GetLogo(LogoCallbacks callbacks) {
+void LogoServiceImpl::GetLogo(LogoCallbacks callbacks, bool for_webui_ntp) {
   if (!template_url_service_) {
     RunCallbacksWithDisabled(std::move(callbacks));
     return;
@@ -285,11 +285,13 @@ void LogoServiceImpl::GetLogo(LogoCallbacks callbacks) {
     // We encode the type of doodle (regular or gray) in the URL so that the
     // logo cache gets cleared when that value changes.
     GURL prefilled_url = AppendPreliminaryParamsToDoodleURL(
-        want_gray_logo_getter_.Run(), doodle_url);
+        want_gray_logo_getter_.Run(), for_webui_ntp, doodle_url);
     SetServerAPI(
         prefilled_url,
-        base::Bind(&search_provider_logos::ParseDoodleLogoResponse, base_url),
-        base::Bind(&search_provider_logos::AppendFingerprintParamToDoodleURL));
+        base::BindRepeating(&search_provider_logos::ParseDoodleLogoResponse,
+                            base_url),
+        base::BindRepeating(
+            &search_provider_logos::AppendFingerprintParamToDoodleURL));
   }
 
   DCHECK(!logo_url_.is_empty());
@@ -320,11 +322,11 @@ void LogoServiceImpl::GetLogo(LogoCallbacks callbacks) {
 
     base::PostTaskAndReplyWithResult(
         cache_task_runner_.get(), FROM_HERE,
-        base::BindRepeating(&GetLogoFromCacheOnFileThread,
-                            base::Unretained(logo_cache_.get()), logo_url_,
-                            clock_->Now()),
-        base::BindRepeating(&LogoServiceImpl::OnCachedLogoRead,
-                            weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&GetLogoFromCacheOnFileThread,
+                       base::Unretained(logo_cache_.get()), logo_url_,
+                       clock_->Now()),
+        base::BindOnce(&LogoServiceImpl::OnCachedLogoRead,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else if (is_cached_logo_valid_) {
     NotifyAndClear(&on_cached_encoded_logo_, &on_cached_decoded_logo_,
                    LogoCallbackReason::DETERMINED, cached_encoded_logo_.get(),
@@ -720,9 +722,9 @@ void LogoServiceImpl::OnURLLoadComplete(const network::SimpleURLLoader* source,
   bool from_http_cache = !source->ResponseInfo()->network_accessed;
 
   bool* parsing_failed = new bool(false);
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(parse_logo_response_func_, std::move(response),
                      response_time, parsing_failed),

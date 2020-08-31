@@ -18,7 +18,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "extensions/browser/extension_system.h"
 
 namespace lock_screen_apps {
@@ -93,6 +93,7 @@ void LockScreenProfileCreatorImpl::OnProfileReady(
     // similar to http://crbug.com/461493).
     // TODO(tbarzic): Revisit this if webviews get enabled for lock screen apps.
     profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, false);
+    profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnhanced, false);
     return;
   }
 

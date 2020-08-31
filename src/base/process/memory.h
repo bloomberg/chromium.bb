@@ -40,6 +40,12 @@ const int kMaxOomScore = 1000;
 BASE_EXPORT bool AdjustOOMScore(ProcessId process, int score);
 #endif
 
+namespace internal {
+// Returns true if address-space was released. Some configurations reserve part
+// of the process address-space for special allocations (e.g. WASM).
+bool ReleaseAddressSpaceReservation();
+}  // namespace internal
+
 #if defined(OS_WIN)
 namespace win {
 
@@ -53,6 +59,14 @@ const DWORD kOomExceptionCode = 0xe0000008;
 
 }  // namespace win
 #endif
+
+namespace internal {
+
+// Handles out of memory, with the failed allocation |size|, or 0 when it is not
+// known.
+BASE_EXPORT NOINLINE void OnNoMemoryInternal(size_t size);
+
+}  // namespace internal
 
 // Special allocator functions for callers that want to check for OOM.
 // These will not abort if the allocation fails even if

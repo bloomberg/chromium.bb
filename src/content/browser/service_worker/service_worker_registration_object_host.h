@@ -52,8 +52,7 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   // ServiceWorkerRegistration::Listener overrides.
   void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
-      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
-      const ServiceWorkerRegistrationInfo& info) override;
+      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask) override;
   void OnUpdateViaCacheChanged(
       ServiceWorkerRegistration* registration) override;
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override;
@@ -83,7 +82,7 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   //
   // TODO(falken): See if tests can call |Update| directly, then this separate
   // function isn't needed.
-  static void DelayUpdate(blink::mojom::ServiceWorkerProviderType provider_type,
+  static void DelayUpdate(bool is_container_for_client,
                           ServiceWorkerRegistration* registration,
                           ServiceWorkerVersion* version,
                           StatusCallback update_function);
@@ -96,13 +95,13 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   // complete.
   void UnregistrationComplete(UnregisterCallback callback,
                               blink::ServiceWorkerStatusCode status);
-  // Called back from ServiceWorkerStorage when setting navigation preload is
+  // Called back from ServiceWorkerRegistry when setting navigation preload is
   // complete.
   void DidUpdateNavigationPreloadEnabled(
       bool enable,
       EnableNavigationPreloadCallback callback,
       blink::ServiceWorkerStatusCode status);
-  // Called back from ServiceWorkerStorage when setting navigation preload
+  // Called back from ServiceWorkerRegistry when setting navigation preload
   // header is complete.
   void DidUpdateNavigationPreloadHeader(
       const std::string& value,

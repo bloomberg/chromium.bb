@@ -10,7 +10,9 @@
 #include "base/process/process_iterator.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/providers/vm/crostini_process_task.h"
@@ -54,7 +56,7 @@ bool HasValidVmDiskExtension(const std::string& filename) {
   };
 
   for (auto* const ext : valid_extensions) {
-    if (base::EndsWith(filename, ext, base::CompareCase::SENSITIVE)) {
+    if (filename.find(ext) != std::string::npos) {
       return true;
     }
   }
@@ -102,22 +104,28 @@ bool CrostiniExtractVmNameAndOwnerId(const std::string& arg,
 }
 
 // We are looking for argument like this:
-// /run/pvm-images/<cryptohome id>/UHZtRGVmYXVsdA==.pvm/...
+// --params=/run/pvm-images/<cryptohome id>/UHZtRGVmYXVsdA==.pvm/...
 bool PluginVmExtractVmNameAndOwnerId(const std::string& arg,
                                      std::string* vm_name_out,
                                      std::string* owner_id_out) {
   DCHECK(vm_name_out);
   DCHECK(owner_id_out);
 
+  constexpr char kParamPrefix[] = "--params=";
+  if (!base::StartsWith(arg, kParamPrefix, base::CompareCase::SENSITIVE)) {
+    return false;
+  }
+  base::StringPiece param(arg.begin() + strlen(kParamPrefix), arg.end());
+
   // All VM disk images are mounted at this path.
   constexpr char kVmDiskRoot[] = "/run/pvm-images/";
 
   // Skip paths that don't start with the correct prefix.
-  if (!base::StartsWith(arg, kVmDiskRoot, base::CompareCase::SENSITIVE)) {
+  if (!base::StartsWith(param, kVmDiskRoot, base::CompareCase::SENSITIVE)) {
     return false;
   }
 
-  const base::FilePath vm_disk_path(arg);
+  const base::FilePath vm_disk_path(param);
 
   std::vector<std::string> components;
   vm_disk_path.GetComponents(&components);
@@ -154,7 +162,7 @@ bool ExtractVmNameAndOwnerIdFromCmdLine(const std::vector<std::string>& cmdline,
   DCHECK(is_plugin_vm_out);
 
   // Find the arg with the disk file path on it.
-  for (const auto arg : cmdline) {
+  for (const auto& arg : cmdline) {
     if (CrostiniExtractVmNameAndOwnerId(arg, vm_name_out, owner_id_out)) {
       *is_plugin_vm_out = false;
       return true;
@@ -186,9 +194,8 @@ struct VmProcessData {
 };
 
 VmProcessTaskProvider::VmProcessTaskProvider()
-    : task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+    : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
            base::TaskPriority::USER_VISIBLE})),
       refresh_timer_(
           FROM_HERE,
@@ -214,6 +221,7 @@ void VmProcessTaskProvider::StopUpdating() {
 }
 
 std::vector<VmProcessData> GetVmProcessList() {
+  TRACE_EVENT0("browser", "GetVmProcessList");
   std::vector<VmProcessData> ret_processes;
   const base::ProcessIterator::ProcessEntries& entry_list =
       base::ProcessIterator(nullptr).Snapshot();

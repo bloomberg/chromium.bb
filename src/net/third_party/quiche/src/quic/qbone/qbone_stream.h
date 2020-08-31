@@ -8,6 +8,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -20,12 +21,12 @@ class QUIC_EXPORT_PRIVATE QboneWriteOnlyStream : public QuicStream {
  public:
   QboneWriteOnlyStream(QuicStreamId id, QuicSession* session);
 
-  // QuicStream implementation. Qbone writers are ephemeral and don't
+  // QuicStream implementation. QBONE writers are ephemeral and don't
   // read any data.
   void OnDataAvailable() override {}
 
   // Write a network packet over the quic stream.
-  void WritePacketToQuicStream(QuicStringPiece packet);
+  void WritePacketToQuicStream(quiche::QuicheStringPiece packet);
 };
 
 // QboneReadOnlyStream will be used if we find an incoming stream that
@@ -37,7 +38,7 @@ class QUIC_EXPORT_PRIVATE QboneReadOnlyStream : public QuicStream {
  public:
   QboneReadOnlyStream(QuicStreamId id, QboneSessionBase* session);
 
-  ~QboneReadOnlyStream() override;
+  ~QboneReadOnlyStream() override = default;
 
   // QuicStream overrides.
   // OnDataAvailable is called when there is data in the quic stream buffer.
@@ -46,7 +47,7 @@ class QUIC_EXPORT_PRIVATE QboneReadOnlyStream : public QuicStream {
   void OnDataAvailable() override;
 
  private:
-  string buffer_;
+  std::string buffer_;
   QboneSessionBase* session_;
 };
 

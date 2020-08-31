@@ -31,6 +31,9 @@ const base::Feature kParallelDownloading {
 };
 
 #if defined(OS_ANDROID)
+const base::Feature kDownloadLater{"DownloadLater",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kRefreshExpirationDate{"RefreshExpirationDate",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
@@ -50,13 +53,13 @@ const base::Feature kAllowDownloadResumptionWithoutStrongValidators{
 
 const base::Feature kUseParallelRequestsForUnknwonRangeSupport{
     "UseParallelRequestForUnknownRangeSupport",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUseParallelRequestsForHTTP2{
-    "UseParallelRequestsForHTTP2", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseParallelRequestsForHTTP2", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUseParallelRequestsForQUIC{
-    "UseParallelRequestsForQUIC", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseParallelRequestsForQUIC", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDeleteExpiredDownloads{"DeleteExpiredDownloads",
                                             base::FEATURE_ENABLED_BY_DEFAULT};

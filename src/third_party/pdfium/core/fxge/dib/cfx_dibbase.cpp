@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/cfx_cliprgn.h"
 #include "core/fxge/dib/cfx_bitmapstorer.h"
 #include "core/fxge/dib/cfx_cmyk_to_srgb.h"
@@ -292,9 +293,9 @@ void ConvertBuffer_Plt2PltRgb8(uint8_t* dest_buf,
   ConvertBuffer_IndexCopy(dest_buf, dest_pitch, width, height, pSrcBitmap,
                           src_left, src_top);
   uint32_t* src_plt = pSrcBitmap->GetPalette();
-  int plt_size = pSrcBitmap->GetPaletteSize();
+  size_t plt_size = pSrcBitmap->GetPaletteSize();
   if (pSrcBitmap->IsCmykImage()) {
-    for (int i = 0; i < plt_size; ++i) {
+    for (size_t i = 0; i < plt_size; ++i) {
       uint8_t r;
       uint8_t g;
       uint8_t b;
@@ -807,6 +808,20 @@ bool CFX_DIBBase::BuildAlphaMask() {
   return true;
 }
 
+size_t CFX_DIBBase::GetPaletteSize() const {
+  if (IsAlphaMask())
+    return 0;
+
+  switch (m_bpp) {
+    case 1:
+      return 2;
+    case 8:
+      return 256;
+    default:
+      return 0;
+  }
+}
+
 uint32_t CFX_DIBBase::GetPaletteArgb(int index) const {
   ASSERT((GetBPP() == 1 || GetBPP() == 8) && !IsAlphaMask());
   if (m_pPalette)
@@ -888,13 +903,13 @@ bool CFX_DIBBase::GetOverlapRect(int& dest_left,
   dest_left = dest_rect.left;
   dest_top = dest_rect.top;
 
-  pdfium::base::CheckedNumeric<int> safe_src_left = dest_left;
+  FX_SAFE_INT32 safe_src_left = dest_left;
   safe_src_left -= x_offset;
   if (!safe_src_left.IsValid())
     return false;
   src_left = safe_src_left.ValueOrDie();
 
-  pdfium::base::CheckedNumeric<int> safe_src_top = dest_top;
+  FX_SAFE_INT32 safe_src_top = dest_top;
   safe_src_top -= y_offset;
   if (!safe_src_top.IsValid())
     return false;

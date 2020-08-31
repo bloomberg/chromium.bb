@@ -9,8 +9,12 @@ from __future__ import print_function
 
 import os
 import re
+import sys
 
 from six.moves import urllib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def _ExtractGobClAndSubpath(o):
@@ -324,18 +328,4 @@ def ConstructGoldenEyeBuildDetailsUri(build_id):
   """
   _link = ('http://go/goldeneye/'
            'chromeos/healthmonitoring/buildDetails?id=%(build_id)s')
-  return _link % {'build_id': build_id}
-
-
-def ConstructAnnotatorUri(build_id):
-  """Return the build annotator URL for this run.
-
-  Args:
-    build_id: CIDB id for the master build.
-
-  Returns:
-    The fully formed URI.
-  """
-  _link = ('https://chromiumos-build-annotator.googleplex.com/'
-           'build_annotations/edit_annotations/master-paladin/%(build_id)s/?')
   return _link % {'build_id': build_id}

@@ -9,7 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/events/android/key_event_utils.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -37,7 +37,7 @@ WebKeyboardEvent CreateFakeWebKeyboardEvent(JNIEnv* env,
       ui::events::android::CreateKeyEvent(env, 0, key_code);
 
   WebKeyboardEvent web_event = content::WebKeyboardEventBuilder::Build(
-      env, keydown_event, WebKeyboardEvent::kKeyDown, web_modifier,
+      env, keydown_event, WebKeyboardEvent::Type::kKeyDown, web_modifier,
       blink::WebInputEvent::GetStaticTimeStampForTests(), key_code, 0,
       unicode_character, false);
   return web_event;
@@ -162,7 +162,7 @@ TEST(WebInputEventBuilderAndroidTest, LastChannelKey) {
 // Synthetic key event should produce DomKey::UNIDENTIFIED.
 TEST(WebInputEventBuilderAndroidTest, DomKeySyntheticEvent) {
   WebKeyboardEvent web_event = content::WebKeyboardEventBuilder::Build(
-      nullptr, nullptr, WebKeyboardEvent::kKeyDown, 0,
+      nullptr, nullptr, WebKeyboardEvent::Type::kKeyDown, 0,
       blink::WebInputEvent::GetStaticTimeStampForTests(), kCompositionKeyCode,
       0, 0, false);
   EXPECT_EQ(kCompositionKeyCode, web_event.native_key_code);
@@ -219,13 +219,13 @@ TEST(WebInputEventBuilderAndroidTest, WebMouseEventCoordinates) {
       raw_offset_y, false, &p0, nullptr);
 
   WebMouseEvent web_event = content::WebMouseEventBuilder::Build(
-      motion_event, blink::WebInputEvent::kMouseDown, 1,
+      motion_event, blink::WebInputEvent::Type::kMouseDown, 1,
       ui::MotionEvent::BUTTON_PRIMARY);
-  EXPECT_EQ(web_event.PositionInWidget().x, p0.pos_x_pixels * kPixToDip);
-  EXPECT_EQ(web_event.PositionInWidget().y, p0.pos_y_pixels * kPixToDip);
-  EXPECT_EQ(web_event.PositionInScreen().x,
+  EXPECT_EQ(web_event.PositionInWidget().x(), p0.pos_x_pixels * kPixToDip);
+  EXPECT_EQ(web_event.PositionInWidget().y(), p0.pos_y_pixels * kPixToDip);
+  EXPECT_EQ(web_event.PositionInScreen().x(),
             (p0.pos_x_pixels + raw_offset_x) * kPixToDip);
-  EXPECT_EQ(web_event.PositionInScreen().y,
+  EXPECT_EQ(web_event.PositionInScreen().y(),
             (p0.pos_y_pixels + raw_offset_y) * kPixToDip);
   EXPECT_EQ(web_event.button, blink::WebPointerProperties::Button::kLeft);
   EXPECT_EQ(web_event.TimeStamp(), event_time);

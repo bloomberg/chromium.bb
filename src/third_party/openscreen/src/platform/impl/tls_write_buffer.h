@@ -12,31 +12,20 @@
 #include "platform/base/macros.h"
 
 namespace openscreen {
-namespace platform {
 
 // This class is responsible for buffering TLS Write data. The approach taken by
 // this class is to allow for a single thread to act as a publisher of data and
 // for a separate thread to act as the consumer of that data. The data in
-// question is written to a lockless FIFO queue. Whenever the capacity of the
-// underlying array changes, Observer::NotifyWriteBufferFill() will be called.
+// question is written to a lockless FIFO queue.
 class TlsWriteBuffer {
  public:
-  class Observer {
-   public:
-    virtual ~Observer() = default;
-
-    // Signals that the write buffer has reached some percentage of being
-    // filled. NOTE: This method may be called from multiple threads.
-    virtual void NotifyWriteBufferFill(double fraction) = 0;
-  };
-
-  explicit TlsWriteBuffer(Observer* observer);
-
+  TlsWriteBuffer();
   ~TlsWriteBuffer();
 
-  // Writes as much of the provided data as possible in the buffer, returning
-  // the number of bytes written.
-  size_t Write(const void* data, size_t len);
+  // Pushes the provided data into the buffer, returning true if successful.
+  // Returns false if there was insufficient space left. Either all or none of
+  // the data is pushed into the buffer.
+  bool Push(const void* data, size_t len);
 
   // Returns a subset of the readable region of data. At time of reading, more
   // data may be available for reading than what is represented in this Span.
@@ -46,13 +35,9 @@ class TlsWriteBuffer {
   void Consume(size_t byte_count);
 
   // The amount of space to allocate in the buffer.
-  static constexpr size_t kBufferSizeBytes = 1 << 20;  // 1 MB space.
+  static constexpr size_t kBufferSizeBytes = 1 << 19;  // 0.5 MB.
 
  private:
-  // Signals that the write buffer has reached some percentage of being filled,
-  // as calculated based on the provided write and read indices.
-  void NotifyWriteBufferFill(size_t write_index, size_t read_index);
-
   // Buffer where data to be written over the TLS connection is stored.
   uint8_t buffer_[kBufferSizeBytes];
 
@@ -63,12 +48,9 @@ class TlsWriteBuffer {
   std::atomic_size_t bytes_read_so_far_{0};
   std::atomic_size_t bytes_written_so_far_{0};
 
-  Observer* const observer_;
-
   OSP_DISALLOW_COPY_AND_ASSIGN(TlsWriteBuffer);
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_TLS_WRITE_BUFFER_H_

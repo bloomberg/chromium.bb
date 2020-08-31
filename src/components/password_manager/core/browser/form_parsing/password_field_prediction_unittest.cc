@@ -10,12 +10,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::ACCOUNT_CREATION_PASSWORD;
 using autofill::AutofillField;
 using autofill::CONFIRMATION_PASSWORD;
+using autofill::CREDIT_CARD_VERIFICATION_CODE;
 using autofill::EMAIL_ADDRESS;
 using autofill::FormData;
 using autofill::FormFieldData;
@@ -44,6 +46,7 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
     ServerFieldType input_type;
     ServerFieldType expected_type;
     bool may_use_prefilled_placeholder;
+    std::vector<ServerFieldType> additional_types;
   } test_fields[] = {
       {"full_name", "text", UNKNOWN_TYPE, UNKNOWN_TYPE, false},
       // Password Manager is interested only in credential related types.
@@ -51,12 +54,24 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
       {"username", "text", USERNAME, USERNAME, true},
       {"Password", "password", PASSWORD, PASSWORD, false},
       {"confirm_password", "password", CONFIRMATION_PASSWORD,
-       CONFIRMATION_PASSWORD, true}};
+       CONFIRMATION_PASSWORD, true},
+      // username in |additional_types| takes precedence.
+      {"email", "text", EMAIL_ADDRESS, USERNAME, false, {USERNAME}},
+      // cvc in |additional_types| takes precedence.
+      {"cvc",
+       "password",
+       PASSWORD,
+       CREDIT_CARD_VERIFICATION_CODE,
+       false,
+       {CREDIT_CARD_VERIFICATION_CODE}},
+      // non-password, non-cvc types in |additional_types| are ignored.
+      {"email", "text", UNKNOWN_TYPE, UNKNOWN_TYPE, false, {EMAIL_ADDRESS}},
+  };
 
   FormData form_data;
   for (size_t i = 0; i < base::size(test_fields); ++i) {
     FormFieldData field;
-    field.unique_renderer_id = i + 1000;
+    field.unique_renderer_id = autofill::FieldRendererId(i + 1000);
     field.name = ASCIIToUTF16(test_fields[i].name);
     field.form_control_type = test_fields[i].form_control_type;
     form_data.fields.push_back(field);
@@ -68,10 +83,16 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
     AutofillField* field = form_structure.field(i);
     field->set_server_type(test_fields[i].input_type);
 
-    FieldPrediction prediction;
-    prediction.set_may_use_prefilled_placeholder(
+    std::vector<FieldPrediction> predictions(1);
+    predictions[0].set_may_use_prefilled_placeholder(
         test_fields[i].may_use_prefilled_placeholder);
-    field->set_server_predictions({prediction});
+
+    for (ServerFieldType type : test_fields[i].additional_types) {
+      FieldPrediction additional_prediction;
+      additional_prediction.set_type(type);
+      predictions.push_back(additional_prediction);
+    }
+    field->set_server_predictions(predictions);
   }
 
   constexpr int driver_id = 1000;
@@ -129,7 +150,7 @@ TEST(FormPredictionsTest, ConvertToFormPredictions_SynthesiseConfirmation) {
     FormData form_data;
     for (size_t i = 0; i < test_form.size(); ++i) {
       FormFieldData field;
-      field.unique_renderer_id = i + 1000;
+      field.unique_renderer_id = autofill::FieldRendererId(i + 1000);
       field.name = ASCIIToUTF16(test_form[i].name);
       field.form_control_type = test_form[i].form_control_type;
       form_data.fields.push_back(field);

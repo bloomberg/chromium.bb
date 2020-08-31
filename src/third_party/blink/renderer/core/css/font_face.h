@@ -39,7 +39,7 @@
 #include "third_party/blink/renderer/core/css/font_display.h"
 #include "third_party/blink/renderer/core/css/parser/at_rule_descriptors.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -59,7 +59,7 @@ class StyleRuleFontFace;
 
 class CORE_EXPORT FontFace : public ScriptWrappable,
                              public ActiveScriptWrappable<FontFace>,
-                             public ContextClient {
+                             public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FontFace);
 
@@ -115,7 +115,7 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   size_t ApproximateBlankCharacterCount() const;
   FontDisplay GetFontDisplay() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool HadBlankText() const;
 
@@ -124,10 +124,12 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
     virtual ~LoadFontCallback() = default;
     virtual void NotifyLoaded(FontFace*) = 0;
     virtual void NotifyError(FontFace*) = 0;
-    void Trace(blink::Visitor* visitor) override {}
+    void Trace(Visitor* visitor) override {}
   };
   void LoadWithCallback(LoadFontCallback*);
   void AddCallback(LoadFontCallback*);
+
+  void DidBeginImperativeLoad();
 
   // ScriptWrappable:
   bool HasPendingActivity() const final;
@@ -159,7 +161,6 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   void RunCallbacks();
 
   using LoadedProperty = ScriptPromiseProperty<Member<FontFace>,
-                                               Member<FontFace>,
                                                Member<DOMException>>;
 
   AtomicString family_;

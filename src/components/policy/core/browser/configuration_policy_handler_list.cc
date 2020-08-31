@@ -37,15 +37,16 @@ void ConfigurationPolicyHandlerList::AddHandler(
 void ConfigurationPolicyHandlerList::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs,
-    PolicyErrorMap* errors) const {
+    PolicyErrorMap* errors,
+    DeprecatedPoliciesSet* deprecated_policies) const {
   // This function is used both to apply the policy settings, and to check them
   // and list errors. As such it must get all the errors even if it isn't
   // applying the policies.
   // TODO(aberent): split into two functions.
   std::unique_ptr<PolicyMap> filtered_policies = policies.DeepCopy();
-  filtered_policies->EraseMatching(
-      base::Bind(&ConfigurationPolicyHandlerList::IsPlatformDevicePolicy,
-                 base::Unretained(this)));
+  filtered_policies->EraseMatching(base::BindRepeating(
+      &ConfigurationPolicyHandlerList::IsPlatformDevicePolicy,
+      base::Unretained(this)));
 
   PolicyErrorMap scoped_errors;
   if (!errors)
@@ -61,12 +62,11 @@ void ConfigurationPolicyHandlerList::ApplyPolicySettings(
     }
   }
 
-  if (details_callback_) {
-    for (auto it = filtered_policies->begin(); it != filtered_policies->end();
-         ++it) {
-      const PolicyDetails* details = details_callback_.Run(it->first);
+  if (details_callback_ && deprecated_policies) {
+    for (const auto& key_value : *filtered_policies) {
+      const PolicyDetails* details = details_callback_.Run(key_value.first);
       if (details && details->is_deprecated)
-        errors->AddError(it->first, IDS_POLICY_DEPRECATED);
+        deprecated_policies->insert(key_value.first);
     }
   }
 }
@@ -87,7 +87,7 @@ bool ConfigurationPolicyHandlerList::IsPlatformDevicePolicy(
   if (!policy_details) {
     const std::string prefix(kPolicyCommentPrefix);
     if (iter->first.compare(0, prefix.length(), prefix) != 0) {
-      LOG(ERROR) << "Unknown policy: " << iter->first;
+      LOG(WARNING) << "Unknown policy: " << iter->first;
     }
     return false;
   }

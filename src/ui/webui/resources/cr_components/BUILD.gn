@@ -6,9 +6,10 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 group("closure_compile") {
   deps = [
-    "certificate_manager:closure_compile",
+    "certificate_manager:closure_compile_module",
     "managed_footnote:closure_compile",
     "managed_footnote:closure_compile_module",
+    "omnibox:closure_compile",
   ]
 
   if (is_chromeos) {
@@ -17,7 +18,12 @@ group("closure_compile") {
 }
 
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
+    "certificate_manager:web_components",
     "managed_footnote:managed_footnote_module",
+    "omnibox:web_components",
   ]
+  if (is_chromeos) {
+    public_deps += [ "chromeos:polymer3_elements" ]
+  }
 }

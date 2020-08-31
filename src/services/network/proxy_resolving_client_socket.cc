@@ -10,8 +10,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
@@ -21,9 +22,12 @@
 #include "net/base/privacy_mode.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/proxy_client_socket.h"
 #include "net/http/proxy_fallback.h"
 #include "net/log/net_log_source_type.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
+#include "net/proxy_resolution/proxy_resolution_request.h"
 #include "net/socket/socket_tag.h"
 #include "net/ssl/ssl_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -241,9 +245,10 @@ int ProxyResolvingClientSocket::DoProxyResolve() {
   //
   // TODO(https://crbug.com/1023439): Pass along a NetworkIsolationKey.
   return network_session_->proxy_resolution_service()->ResolveProxy(
-      url_, "POST", net::NetworkIsolationKey::Todo(), &proxy_info_,
-      base::BindRepeating(&ProxyResolvingClientSocket::OnIOComplete,
-                          base::Unretained(this)),
+      url_, net::HttpRequestHeaders::kPostMethod,
+      net::NetworkIsolationKey::Todo(), &proxy_info_,
+      base::BindOnce(&ProxyResolvingClientSocket::OnIOComplete,
+                     base::Unretained(this)),
       &proxy_resolve_request_, net_log_);
 }
 

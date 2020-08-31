@@ -12,7 +12,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
@@ -24,6 +23,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_rewriter.h"
+#include "ui/events/types/event_type.h"
 
 namespace ash {
 namespace {
@@ -62,7 +62,7 @@ class SpokenFeedbackEventRewriterTest
  public:
   SpokenFeedbackEventRewriterTest() {
     event_rewriter_chromeos_ =
-        std::make_unique<ui::EventRewriterChromeOS>(this, nullptr);
+        std::make_unique<ui::EventRewriterChromeOS>(this, nullptr, false);
     spoken_feedback_event_rewriter_ =
         std::make_unique<SpokenFeedbackEventRewriter>(
             event_rewriter_chromeos_.get());
@@ -72,16 +72,16 @@ class SpokenFeedbackEventRewriterTest
     ash::AshTestBase::SetUp();
     generator_ = AshTestBase::GetEventGenerator();
     spoken_feedback_event_rewriter_->set_delegate(&delegate_);
-    CurrentContext()->GetHost()->GetEventSource()->AddEventRewriter(
+    GetContext()->GetHost()->GetEventSource()->AddEventRewriter(
         spoken_feedback_event_rewriter_.get());
-    CurrentContext()->GetHost()->GetEventSource()->AddEventRewriter(
+    GetContext()->GetHost()->GetEventSource()->AddEventRewriter(
         &event_recorder_);
   }
 
   void TearDown() override {
-    CurrentContext()->GetHost()->GetEventSource()->RemoveEventRewriter(
+    GetContext()->GetHost()->GetEventSource()->RemoveEventRewriter(
         &event_recorder_);
-    CurrentContext()->GetHost()->GetEventSource()->RemoveEventRewriter(
+    GetContext()->GetHost()->GetEventSource()->RemoveEventRewriter(
         spoken_feedback_event_rewriter_.get());
     spoken_feedback_event_rewriter_->set_delegate(nullptr);
     generator_ = nullptr;

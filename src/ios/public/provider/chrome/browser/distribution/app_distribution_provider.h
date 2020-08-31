@@ -30,9 +30,10 @@ class AppDistributionProvider {
   // Cancels any pending distribution notifications.
   virtual void CancelDistributionNotifications();
 
-  // Returns whether user who installed Chrome on |install_date| predates
-  // integration with Firebase for installation attribution.
-  virtual bool IsPreFirebaseLegacyUser(int64_t install_date);
+  // Initializes Firebase for installation attribution purpose. |install_date|
+  // is used to detect "legacy" users that installed Chrome before Firebase
+  // was integrated and thus should not have Firebase enabled.
+  virtual void InitializeFirebase(int64_t install_date, bool is_first_run);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppDistributionProvider);

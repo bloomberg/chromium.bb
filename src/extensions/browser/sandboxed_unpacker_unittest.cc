@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -28,6 +29,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
@@ -106,10 +108,20 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
     deleted_tracker_ = deleted_tracker;
   }
 
+  void set_should_compute_hashes(bool should_compute_hashes) {
+    should_compute_hashes_ = should_compute_hashes;
+  }
+
  private:
   ~MockSandboxedUnpackerClient() override {
     if (deleted_tracker_)
       *deleted_tracker_ = true;
+  }
+
+  void ShouldComputeHashesForOffWebstoreExtension(
+      scoped_refptr<const Extension> extension,
+      base::OnceCallback<void(bool)> callback) override {
+    std::move(callback).Run(should_compute_hashes_);
   }
 
   void OnUnpackSuccess(
@@ -118,7 +130,7 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
       std::unique_ptr<base::DictionaryValue> original_manifest,
       const Extension* extension,
       const SkBitmap& install_icon,
-      const base::Optional<int>& dnr_ruleset_checksum) override {
+      declarative_net_request::RulesetChecksums ruleset_checksums) override {
     temp_dir_ = temp_dir;
     std::move(quit_closure_).Run();
   }
@@ -132,6 +144,7 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
   base::OnceClosure quit_closure_;
   base::FilePath temp_dir_;
   bool* deleted_tracker_ = nullptr;
+  bool should_compute_hashes_ = false;
 };
 
 class SandboxedUnpackerTest : public ExtensionsTest {
@@ -183,12 +196,11 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   void SetupUnpacker(const std::string& crx_name,
                      const std::string& package_hash) {
     base::FilePath crx_path = GetCrxFullPath(crx_name);
+    extensions::CRXFileInfo crx_info(crx_path, GetTestVerifierFormat());
+    crx_info.expected_hash = package_hash;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &SandboxedUnpacker::StartWithCrx, sandboxed_unpacker_,
-            extensions::CRXFileInfo(std::string(), crx_path, package_hash,
-                                    GetTestVerifierFormat())));
+        FROM_HERE, base::BindOnce(&SandboxedUnpacker::StartWithCrx,
+                                  sandboxed_unpacker_, crx_info));
     client_->WaitForUnpack();
   }
 
@@ -253,8 +265,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     sandboxed_unpacker_->extension_root_ = path;
   }
 
-  base::DictionaryValue* RewriteManifestFile(
-      const base::DictionaryValue& manifest) {
+  base::Optional<base::Value> RewriteManifestFile(const base::Value& manifest) {
     return sandboxed_unpacker_->RewriteManifestFile(manifest);
   }
 
@@ -433,7 +444,7 @@ TEST_F(SandboxedUnpackerTest, TestRewriteManifestInjections) {
                       FILE_PATH_LITERAL("manifest.fingerprint")),
                   fingerprint.c_str(),
                   base::checked_cast<int>(fingerprint.size()));
-  std::unique_ptr<base::DictionaryValue> manifest(RewriteManifestFile(
+  base::Optional<base::Value> manifest(RewriteManifestFile(
       *DictionaryBuilder().Set(kVersionStr, kTestVersion).Build()));
   auto* key = manifest->FindStringKey("key");
   auto* version = manifest->FindStringKey(kVersionStr);
@@ -454,7 +465,7 @@ TEST_F(SandboxedUnpackerTest, InvalidMessagesFile) {
   EXPECT_FALSE(base::PathExists(install_path));
   EXPECT_TRUE(base::MatchPattern(
       GetInstallErrorMessage(),
-      base::ASCIIToUTF16("*_locales?en_US?messages.json': Line: 2, column: 10,"
+      base::ASCIIToUTF16("*_locales?en_US?messages.json': Line: 4, column: 1,"
                          " Syntax error.'.")))
       << GetInstallErrorMessage();
   ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
@@ -525,6 +536,24 @@ TEST_F(SandboxedUnpackerTest, ImageDecoderFails) {
       static_cast<int>(SandboxedUnpackerFailureReason::
                            UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL),
       GetInstallErrorDetail());
+}
+
+TEST_F(SandboxedUnpackerTest, NoComputeHashes) {
+  client_->set_should_compute_hashes(false);
+  SetupUnpacker("good_package.crx", "");
+  EXPECT_TRUE(InstallSucceeded());
+  EXPECT_TRUE(GetInstallErrorMessage().empty());
+  EXPECT_FALSE(
+      base::PathExists(file_util::GetComputedHashesPath(GetInstallPath())));
+}
+
+TEST_F(SandboxedUnpackerTest, ComputeHashes) {
+  client_->set_should_compute_hashes(true);
+  SetupUnpacker("good_package.crx", "");
+  EXPECT_TRUE(InstallSucceeded());
+  EXPECT_TRUE(GetInstallErrorMessage().empty());
+  EXPECT_TRUE(
+      base::PathExists(file_util::GetComputedHashesPath(GetInstallPath())));
 }
 
 // SandboxedUnpacker is ref counted and is reference by callbacks and

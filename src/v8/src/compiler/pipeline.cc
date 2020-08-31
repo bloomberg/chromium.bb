@@ -132,7 +132,8 @@ class PipelineData {
   // For main entry point.
   PipelineData(ZoneStats* zone_stats, Isolate* isolate,
                OptimizedCompilationInfo* info,
-               PipelineStatistics* pipeline_statistics)
+               PipelineStatistics* pipeline_statistics,
+               bool is_concurrent_inlining)
       : isolate_(isolate),
         allocator_(isolate->allocator()),
         info_(info),
@@ -150,7 +151,8 @@ class PipelineData {
         codegen_zone_scope_(zone_stats_, kCodegenZoneName),
         codegen_zone_(codegen_zone_scope_.zone()),
         broker_(new JSHeapBroker(isolate_, info_->zone(),
-                                 info_->trace_heap_broker_enabled())),
+                                 info_->trace_heap_broker_enabled(),
+                                 is_concurrent_inlining)),
         register_allocation_zone_scope_(zone_stats_,
                                         kRegisterAllocationZoneName),
         register_allocation_zone_(register_allocation_zone_scope_.zone()),
@@ -209,10 +211,12 @@ class PipelineData {
   // For CodeStubAssembler and machine graph testing entry point.
   PipelineData(ZoneStats* zone_stats, OptimizedCompilationInfo* info,
                Isolate* isolate, AccountingAllocator* allocator, Graph* graph,
-               Schedule* schedule, SourcePositionTable* source_positions,
+               JSGraph* jsgraph, Schedule* schedule,
+               SourcePositionTable* source_positions,
                NodeOriginTable* node_origins, JumpOptimizationInfo* jump_opt,
                const AssemblerOptions& assembler_options)
       : isolate_(isolate),
+        wasm_engine_(isolate_->wasm_engine()),
         allocator_(allocator),
         info_(info),
         debug_name_(info_->GetDebugName()),
@@ -232,15 +236,23 @@ class PipelineData {
         register_allocation_zone_(register_allocation_zone_scope_.zone()),
         jump_optimization_info_(jump_opt),
         assembler_options_(assembler_options) {
-    simplified_ = new (graph_zone_) SimplifiedOperatorBuilder(graph_zone_);
-    machine_ = new (graph_zone_) MachineOperatorBuilder(
-        graph_zone_, MachineType::PointerRepresentation(),
-        InstructionSelector::SupportedMachineOperatorFlags(),
-        InstructionSelector::AlignmentRequirements());
-    common_ = new (graph_zone_) CommonOperatorBuilder(graph_zone_);
-    javascript_ = new (graph_zone_) JSOperatorBuilder(graph_zone_);
-    jsgraph_ = new (graph_zone_)
-        JSGraph(isolate_, graph_, common_, javascript_, simplified_, machine_);
+    if (jsgraph) {
+      jsgraph_ = jsgraph;
+      simplified_ = jsgraph->simplified();
+      machine_ = jsgraph->machine();
+      common_ = jsgraph->common();
+      javascript_ = jsgraph->javascript();
+    } else {
+      simplified_ = new (graph_zone_) SimplifiedOperatorBuilder(graph_zone_);
+      machine_ = new (graph_zone_) MachineOperatorBuilder(
+          graph_zone_, MachineType::PointerRepresentation(),
+          InstructionSelector::SupportedMachineOperatorFlags(),
+          InstructionSelector::AlignmentRequirements());
+      common_ = new (graph_zone_) CommonOperatorBuilder(graph_zone_);
+      javascript_ = new (graph_zone_) JSOperatorBuilder(graph_zone_);
+      jsgraph_ = new (graph_zone_) JSGraph(isolate_, graph_, common_,
+                                           javascript_, simplified_, machine_);
+    }
   }
 
   // For register allocation testing entry point.
@@ -377,6 +389,12 @@ class PipelineData {
   size_t max_unoptimized_frame_height() const {
     return max_unoptimized_frame_height_;
   }
+  size_t* address_of_max_pushed_argument_count() {
+    return &max_pushed_argument_count_;
+  }
+  size_t max_pushed_argument_count() const {
+    return max_pushed_argument_count_;
+  }
 
   CodeTracer* GetCodeTracer() const {
     return wasm_engine_ == nullptr ? isolate_->GetCodeTracer()
@@ -493,7 +511,7 @@ class PipelineData {
         osr_helper_, start_source_position_, jump_optimization_info_,
         info()->GetPoisoningMitigationLevel(), assembler_options_,
         info_->builtin_index(), max_unoptimized_frame_height(),
-        std::move(buffer));
+        max_pushed_argument_count(), std::move(buffer));
   }
 
   void BeginPhaseKind(const char* phase_kind_name) {
@@ -592,9 +610,11 @@ class PipelineData {
   Maybe<OuterContext> specialization_context_ = Nothing<OuterContext>();
 
   // The maximal combined height of all inlined frames in their unoptimized
-  // state. Calculated during instruction selection, applied during code
-  // generation.
+  // state, and the maximal number of arguments pushed during function calls.
+  // Calculated during instruction selection, applied during code generation.
   size_t max_unoptimized_frame_height_ = 0;
+  size_t max_pushed_argument_count_ = 0;
+
   RuntimeCallStats* runtime_call_stats_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PipelineData);
@@ -958,7 +978,8 @@ class PipelineCompilationJob final : public OptimizedCompilationJob {
  public:
   PipelineCompilationJob(Isolate* isolate,
                          Handle<SharedFunctionInfo> shared_info,
-                         Handle<JSFunction> function);
+                         Handle<JSFunction> function, BailoutId osr_offset,
+                         JavaScriptFrame* osr_frame);
   ~PipelineCompilationJob() final;
 
  protected:
@@ -967,7 +988,9 @@ class PipelineCompilationJob final : public OptimizedCompilationJob {
   Status FinalizeJobImpl(Isolate* isolate) final;
 
   // Registers weak object to optimized code dependencies.
-  void RegisterWeakObjectsInOptimizedCode(Handle<Code> code, Isolate* isolate);
+  void RegisterWeakObjectsInOptimizedCode(Isolate* isolate,
+                                          Handle<NativeContext> context,
+                                          Handle<Code> code);
 
  private:
   Zone zone_;
@@ -983,7 +1006,8 @@ class PipelineCompilationJob final : public OptimizedCompilationJob {
 
 PipelineCompilationJob::PipelineCompilationJob(
     Isolate* isolate, Handle<SharedFunctionInfo> shared_info,
-    Handle<JSFunction> function)
+    Handle<JSFunction> function, BailoutId osr_offset,
+    JavaScriptFrame* osr_frame)
     // Note that the OptimizedCompilationInfo is not initialized at the time
     // we pass it to the CompilationJob constructor, but it is not
     // dereferenced there.
@@ -996,16 +1020,39 @@ PipelineCompilationJob::PipelineCompilationJob(
           handle(Script::cast(shared_info->script()), isolate),
           compilation_info(), function->GetIsolate(), &zone_stats_)),
       data_(&zone_stats_, function->GetIsolate(), compilation_info(),
-            pipeline_statistics_.get()),
+            pipeline_statistics_.get(),
+            FLAG_concurrent_inlining && osr_offset.IsNone()),
       pipeline_(&data_),
       linkage_(nullptr) {
+  compilation_info_.SetOptimizingForOsr(osr_offset, osr_frame);
 }
 
-PipelineCompilationJob::~PipelineCompilationJob() {
-}
+PipelineCompilationJob::~PipelineCompilationJob() {}
+
+namespace {
+// Ensure that the RuntimeStats table is set on the PipelineData for
+// duration of the job phase and unset immediately afterwards. Each job
+// needs to set the correct RuntimeCallStats table depending on whether it
+// is running on a background or foreground thread.
+class PipelineJobScope {
+ public:
+  PipelineJobScope(PipelineData* data, RuntimeCallStats* stats) : data_(data) {
+    data_->set_runtime_call_stats(stats);
+  }
+
+  ~PipelineJobScope() { data_->set_runtime_call_stats(nullptr); }
+
+ private:
+  PipelineData* data_;
+};
+}  // namespace
 
 PipelineCompilationJob::Status PipelineCompilationJob::PrepareJobImpl(
     Isolate* isolate) {
+  // Ensure that the RuntimeCallStats table of main thread is available for
+  // phases happening during PrepareJob.
+  PipelineJobScope scope(&data_, isolate->counters()->runtime_call_stats());
+
   if (compilation_info()->bytecode_array()->length() >
       FLAG_max_optimized_bytecode_size) {
     return AbortOptimization(BailoutReason::kFunctionTooBig);
@@ -1068,7 +1115,7 @@ PipelineCompilationJob::Status PipelineCompilationJob::PrepareJobImpl(
 
   pipeline_.Serialize();
 
-  if (!FLAG_concurrent_inlining) {
+  if (!data_.broker()->is_concurrent_inlining()) {
     if (!pipeline_.CreateGraph()) {
       CHECK(!isolate->has_pending_exception());
       return AbortOptimization(BailoutReason::kGraphBuildingFailed);
@@ -1078,29 +1125,12 @@ PipelineCompilationJob::Status PipelineCompilationJob::PrepareJobImpl(
   return SUCCEEDED;
 }
 
-namespace {
-// Ensure that the RuntimeStats table is set on the PipelineData for duration of
-// the Execute phase and unset immediately afterwards.
-class PipelineExecuteJobScope {
- public:
-  PipelineExecuteJobScope(PipelineData* data, RuntimeCallStats* stats)
-      : data_(data) {
-    data_->set_runtime_call_stats(stats);
-  }
-
-  ~PipelineExecuteJobScope() { data_->set_runtime_call_stats(nullptr); }
-
- private:
-  PipelineData* data_;
-};
-}  // namespace
-
 PipelineCompilationJob::Status PipelineCompilationJob::ExecuteJobImpl(
     RuntimeCallStats* stats) {
   // Ensure that the RuntimeCallStats table is only available during execution
   // and not during finalization as that might be on a different thread.
-  PipelineExecuteJobScope scope(&data_, stats);
-  if (FLAG_concurrent_inlining) {
+  PipelineJobScope scope(&data_, stats);
+  if (data_.broker()->is_concurrent_inlining()) {
     if (!pipeline_.CreateGraph()) {
       return AbortOptimization(BailoutReason::kGraphBuildingFailed);
     }
@@ -1121,6 +1151,9 @@ PipelineCompilationJob::Status PipelineCompilationJob::ExecuteJobImpl(
 
 PipelineCompilationJob::Status PipelineCompilationJob::FinalizeJobImpl(
     Isolate* isolate) {
+  // Ensure that the RuntimeCallStats table of main thread is available for
+  // phases happening during PrepareJob.
+  PipelineJobScope scope(&data_, isolate->counters()->runtime_call_stats());
   RuntimeCallTimerScope runtimeTimer(
       isolate, RuntimeCallCounterId::kOptimizeFinalizePipelineJob);
   MaybeHandle<Code> maybe_code = pipeline_.FinalizeCode();
@@ -1136,13 +1169,14 @@ PipelineCompilationJob::Status PipelineCompilationJob::FinalizeJobImpl(
   }
 
   compilation_info()->SetCode(code);
-  compilation_info()->native_context().AddOptimizedCode(*code);
-  RegisterWeakObjectsInOptimizedCode(code, isolate);
+  Handle<NativeContext> context(compilation_info()->native_context(), isolate);
+  context->AddOptimizedCode(*code);
+  RegisterWeakObjectsInOptimizedCode(isolate, context, code);
   return SUCCEEDED;
 }
 
 void PipelineCompilationJob::RegisterWeakObjectsInOptimizedCode(
-    Handle<Code> code, Isolate* isolate) {
+    Isolate* isolate, Handle<NativeContext> context, Handle<Code> code) {
   std::vector<Handle<Map>> maps;
   DCHECK(code->is_optimized_code());
   {
@@ -1160,7 +1194,7 @@ void PipelineCompilationJob::RegisterWeakObjectsInOptimizedCode(
     }
   }
   for (Handle<Map> map : maps) {
-    isolate->heap()->AddRetainedMap(map);
+    isolate->heap()->AddRetainedMap(context, map);
   }
   code->set_can_have_weak_objects(true);
 }
@@ -1186,7 +1220,7 @@ class WasmHeapStubCompilationJob final : public OptimizedCompilationJob {
         zone_(std::move(zone)),
         graph_(graph),
         data_(&zone_stats_, &info_, isolate, wasm_engine->allocator(), graph_,
-              nullptr, source_positions,
+              nullptr, nullptr, source_positions,
               new (zone_.get()) NodeOriginTable(graph_), nullptr, options),
         pipeline_(&data_),
         wasm_engine_(wasm_engine) {}
@@ -1337,11 +1371,12 @@ struct InliningPhase {
     CommonOperatorReducer common_reducer(&graph_reducer, data->graph(),
                                          data->broker(), data->common(),
                                          data->machine(), temp_zone);
+    JSCallReducer::Flags call_reducer_flags = JSCallReducer::kNoFlags;
+    if (data->info()->is_bailout_on_uninitialized()) {
+      call_reducer_flags |= JSCallReducer::kBailoutOnUninitialized;
+    }
     JSCallReducer call_reducer(&graph_reducer, data->jsgraph(), data->broker(),
-                               temp_zone,
-                               data->info()->is_bailout_on_uninitialized()
-                                   ? JSCallReducer::kBailoutOnUninitialized
-                                   : JSCallReducer::kNoFlags,
+                               temp_zone, call_reducer_flags,
                                data->dependencies());
     JSContextSpecialization context_specialization(
         &graph_reducer, data->jsgraph(), data->broker(),
@@ -1363,6 +1398,7 @@ struct InliningPhase {
     JSInliningHeuristic inlining(&graph_reducer,
                                  temp_zone, data->info(), data->jsgraph(),
                                  data->broker(), data->source_positions());
+
     JSIntrinsicLowering intrinsic_lowering(&graph_reducer, data->jsgraph(),
                                            data->broker());
     AddReducer(data, &graph_reducer, &dead_code_elimination);
@@ -1376,6 +1412,7 @@ struct InliningPhase {
       AddReducer(data, &graph_reducer, &inlining);
     }
     graph_reducer.ReduceGraph();
+    info->set_inlined_bytecode_size(inlining.total_inlined_bytecode_size());
   }
 };
 
@@ -1792,7 +1829,7 @@ struct LateOptimizationPhase {
     CommonOperatorReducer common_reducer(&graph_reducer, data->graph(),
                                          data->broker(), data->common(),
                                          data->machine(), temp_zone);
-    GraphAssembler graph_assembler(data->jsgraph(), temp_zone);
+    JSGraphAssembler graph_assembler(data->jsgraph(), temp_zone);
     SelectLowering select_lowering(&graph_assembler, data->graph());
     AddReducer(data, &graph_reducer, &branch_condition_elimination);
     AddReducer(data, &graph_reducer, &dead_code_elimination);
@@ -1882,6 +1919,7 @@ struct CsaEarlyOptimizationPhase {
     GraphReducer graph_reducer(temp_zone, data->graph(),
                                &data->info()->tick_counter(),
                                data->jsgraph()->Dead());
+    MachineOperatorReducer machine_reducer(&graph_reducer, data->jsgraph());
     BranchElimination branch_condition_elimination(&graph_reducer,
                                                    data->jsgraph(), temp_zone);
     DeadCodeElimination dead_code_elimination(&graph_reducer, data->graph(),
@@ -1892,6 +1930,7 @@ struct CsaEarlyOptimizationPhase {
     ValueNumberingReducer value_numbering(temp_zone, data->graph()->zone());
     CsaLoadElimination load_elimination(&graph_reducer, data->jsgraph(),
                                         temp_zone);
+    AddReducer(data, &graph_reducer, &machine_reducer);
     AddReducer(data, &graph_reducer, &branch_condition_elimination);
     AddReducer(data, &graph_reducer, &dead_code_elimination);
     AddReducer(data, &graph_reducer, &common_reducer);
@@ -1916,10 +1955,12 @@ struct CsaOptimizationPhase {
     CommonOperatorReducer common_reducer(&graph_reducer, data->graph(),
                                          data->broker(), data->common(),
                                          data->machine(), temp_zone);
+    ValueNumberingReducer value_numbering(temp_zone, data->graph()->zone());
     AddReducer(data, &graph_reducer, &branch_condition_elimination);
     AddReducer(data, &graph_reducer, &dead_code_elimination);
     AddReducer(data, &graph_reducer, &machine_reducer);
     AddReducer(data, &graph_reducer, &common_reducer);
+    AddReducer(data, &graph_reducer, &value_numbering);
     graph_reducer.ReduceGraph();
   }
 };
@@ -2007,6 +2048,7 @@ struct InstructionSelectionPhase {
             : InstructionSelector::kDisableSwitchJumpTable,
         &data->info()->tick_counter(),
         data->address_of_max_unoptimized_frame_height(),
+        data->address_of_max_pushed_argument_count(),
         data->info()->is_source_positions_enabled()
             ? InstructionSelector::kAllSourcePositions
             : InstructionSelector::kCallSourcePositions,
@@ -2286,7 +2328,6 @@ struct VerifyGraphPhase {
       case Code::WASM_TO_CAPI_FUNCTION:
       case Code::WASM_TO_JS_FUNCTION:
       case Code::JS_TO_WASM_FUNCTION:
-      case Code::WASM_INTERPRETER_ENTRY:
       case Code::C_WASM_ENTRY:
         code_type = Verifier::kWasm;
         break;
@@ -2337,7 +2378,7 @@ void PipelineImpl::Serialize() {
   }
 
   data->broker()->SetTargetNativeContextRef(data->native_context());
-  if (FLAG_concurrent_inlining) {
+  if (data->broker()->is_concurrent_inlining()) {
     Run<HeapBrokerInitializationPhase>();
     Run<SerializationPhase>();
     data->broker()->StopSerializing();
@@ -2377,7 +2418,7 @@ bool PipelineImpl::CreateGraph() {
 
   // Run the type-sensitive lowerings and optimizations on the graph.
   {
-    if (!FLAG_concurrent_inlining) {
+    if (!data->broker()->is_concurrent_inlining()) {
       Run<HeapBrokerInitializationPhase>();
       Run<CopyMetadataForConcurrentCompilePhase>();
       data->broker()->StopSerializing();
@@ -2566,7 +2607,7 @@ bool PipelineImpl::OptimizeGraphForMidTier(Linkage* linkage) {
 
 MaybeHandle<Code> Pipeline::GenerateCodeForCodeStub(
     Isolate* isolate, CallDescriptor* call_descriptor, Graph* graph,
-    SourcePositionTable* source_positions, Code::Kind kind,
+    JSGraph* jsgraph, SourcePositionTable* source_positions, Code::Kind kind,
     const char* debug_name, int32_t builtin_index,
     PoisoningMitigationLevel poisoning_level, const AssemblerOptions& options) {
   OptimizedCompilationInfo info(CStrVector(debug_name), graph->zone(), kind);
@@ -2583,8 +2624,11 @@ MaybeHandle<Code> Pipeline::GenerateCodeForCodeStub(
   bool should_optimize_jumps =
       isolate->serializer_enabled() && FLAG_turbo_rewrite_far_jumps;
   PipelineData data(&zone_stats, &info, isolate, isolate->allocator(), graph,
-                    nullptr, source_positions, &node_origins,
+                    jsgraph, nullptr, source_positions, &node_origins,
                     should_optimize_jumps ? &jump_opt : nullptr, options);
+  PipelineJobScope scope(&data, isolate->counters()->runtime_call_stats());
+  RuntimeCallTimerScope timer_scope(isolate,
+                                    RuntimeCallCounterId::kOptimizeCode);
   data.set_verify_graph(FLAG_verify_csa);
   std::unique_ptr<PipelineStatistics> pipeline_statistics;
   if (FLAG_turbo_stats || FLAG_turbo_stats_nvp) {
@@ -2633,9 +2677,11 @@ MaybeHandle<Code> Pipeline::GenerateCodeForCodeStub(
   // repeat it for jump optimization. The first run has to happen on a temporary
   // pipeline to avoid deletion of zones on the main pipeline.
   PipelineData second_data(&zone_stats, &info, isolate, isolate->allocator(),
-                           data.graph(), data.schedule(),
+                           data.graph(), data.jsgraph(), data.schedule(),
                            data.source_positions(), data.node_origins(),
                            data.jump_optimization_info(), options);
+  PipelineJobScope second_scope(&second_data,
+                                isolate->counters()->runtime_call_stats());
   second_data.set_verify_graph(FLAG_verify_csa);
   PipelineImpl second_pipeline(&second_data);
   second_pipeline.SelectInstructionsAndAssemble(call_descriptor);
@@ -2729,7 +2775,8 @@ wasm::WasmCompilationResult Pipeline::GenerateCodeForWasmNativeStub(
       static_cast<int>(code_generator->GetHandlerTableOffset()));
   result.instr_buffer = instruction_buffer->ReleaseBuffer();
   result.source_positions = code_generator->GetSourcePositionTable();
-  result.protected_instructions = code_generator->GetProtectedInstructions();
+  result.protected_instructions_data =
+      code_generator->GetProtectedInstructionsData();
   result.frame_slot_count = code_generator->frame()->GetTotalFrameSlotCount();
   result.tagged_parameter_slots = call_descriptor->GetTaggedParameterSlots();
   result.result_tier = wasm::ExecutionTier::kTurbofan;
@@ -2774,7 +2821,9 @@ MaybeHandle<Code> Pipeline::GenerateCodeForTesting(
   std::unique_ptr<PipelineStatistics> pipeline_statistics(
       CreatePipelineStatistics(Handle<Script>::null(), info, isolate,
                                &zone_stats));
-  PipelineData data(&zone_stats, isolate, info, pipeline_statistics.get());
+
+  PipelineData data(&zone_stats, isolate, info, pipeline_statistics.get(),
+                    i::FLAG_concurrent_inlining);
   PipelineImpl pipeline(&data);
 
   Linkage linkage(Linkage::ComputeIncoming(data.instruction_zone(), info));
@@ -2802,7 +2851,8 @@ MaybeHandle<Code> Pipeline::GenerateCodeForTesting(
   ZoneStats zone_stats(isolate->allocator());
   NodeOriginTable* node_positions = new (info->zone()) NodeOriginTable(graph);
   PipelineData data(&zone_stats, info, isolate, isolate->allocator(), graph,
-                    schedule, nullptr, node_positions, nullptr, options);
+                    nullptr, schedule, nullptr, node_positions, nullptr,
+                    options);
   std::unique_ptr<PipelineStatistics> pipeline_statistics;
   if (FLAG_turbo_stats || FLAG_turbo_stats_nvp) {
     pipeline_statistics.reset(new PipelineStatistics(
@@ -2835,10 +2885,12 @@ MaybeHandle<Code> Pipeline::GenerateCodeForTesting(
 
 // static
 std::unique_ptr<OptimizedCompilationJob> Pipeline::NewCompilationJob(
-    Isolate* isolate, Handle<JSFunction> function, bool has_script) {
+    Isolate* isolate, Handle<JSFunction> function, bool has_script,
+    BailoutId osr_offset, JavaScriptFrame* osr_frame) {
   Handle<SharedFunctionInfo> shared =
       handle(function->shared(), function->GetIsolate());
-  return std::make_unique<PipelineCompilationJob>(isolate, shared, function);
+  return std::make_unique<PipelineCompilationJob>(isolate, shared, function,
+                                                  osr_offset, osr_frame);
 }
 
 // static
@@ -2931,7 +2983,8 @@ void Pipeline::GenerateCodeForWasmFunction(
   result->frame_slot_count = code_generator->frame()->GetTotalFrameSlotCount();
   result->tagged_parameter_slots = call_descriptor->GetTaggedParameterSlots();
   result->source_positions = code_generator->GetSourcePositionTable();
-  result->protected_instructions = code_generator->GetProtectedInstructions();
+  result->protected_instructions_data =
+      code_generator->GetProtectedInstructionsData();
   result->result_tier = wasm::ExecutionTier::kTurbofan;
 
   if (data.info()->trace_turbo_json_enabled()) {
@@ -3318,7 +3371,7 @@ void PipelineImpl::AllocateRegisters(const RegisterConfiguration* config,
     verifier_zone.reset(
         new Zone(data->allocator(), kRegisterAllocatorVerifierZoneName));
     verifier = new (verifier_zone.get()) RegisterAllocatorVerifier(
-        verifier_zone.get(), config, data->sequence());
+        verifier_zone.get(), config, data->sequence(), data->frame());
   }
 
 #ifdef DEBUG

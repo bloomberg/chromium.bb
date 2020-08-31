@@ -10,6 +10,7 @@
 
 #import "components/content_settings/core/common/content_settings.h"
 #import "components/sync/base/model_type.h"
+#include "third_party/metrics_proto/user_demographics.pb.h"
 
 @class ElementSelector;
 @class NamedGuide;
@@ -24,9 +25,16 @@
 // operation failed.
 + (NSError*)clearBrowsingHistory;
 
+// Returns the number of entries in the history database. Returns -1 if there
+// was an error.
++ (NSInteger)getBrowsingHistoryEntryCount;
+
 // Clears browsing cache. Returns nil on success, or else an NSError indicating
 // the operation failed.
 + (NSError*)removeBrowsingCache;
+
+// Opens |URL| using the application delegate.
++ (void)applicationOpenURL:(NSString*)spec;
 
 // Loads the URL |spec| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED and returns without waiting for the page to load.
@@ -46,6 +54,12 @@
 // Returns the NamedGuide with the given |name|, if one is attached to |view|
 // or one of |view|'s ancestors.  If no guide is found, returns nil.
 + (NamedGuide*)guideWithName:(NSString*)name view:(UIView*)view;
+
+// Loads |URL| as if it was opened from an external application.
++ (void)openURLFromExternalApp:(NSString*)URL;
+
+// Programmatically dismisses settings screen.
++ (void)dismissSettings;
 
 #pragma mark - Tab Utilities (EG2)
 
@@ -93,6 +107,13 @@
 // Opens a new tab, and does not wait for animations to complete.
 + (void)openNewTab;
 
+// Simulates opening http://www.example.com/ from another application.
+// Returns the opened URL.
++ (NSURL*)simulateExternalAppURLOpening;
+
+// Simulates opening the add account sign-in flow from the web.
++ (void)simulateAddAccountFromWeb;
+
 // Closes current tab.
 + (void)closeCurrentTab;
 
@@ -135,6 +156,9 @@
 // Returns a unique identifier for the next Tab.
 + (NSString*)nextTabID;
 
+// Returns the index of active tab in normal mode.
++ (NSUInteger)indexOfActiveNormalTab;
+
 #pragma mark - WebState Utilities (EG2)
 
 // Attempts to tap the element with |element_id| within window.frames[0] of the
@@ -152,6 +176,11 @@
 // If not succeed returns an NSError indicating  why the operation failed,
 // otherwise nil.
 + (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector;
+
+// Waits for the current web state's frames to contain |text|.
+// If not succeed returns an NSError indicating  why the operation failed,
+// otherwise nil.
++ (NSError*)waitForWebStateContainingTextInIFrame:(NSString*)text;
 
 // Attempts to submit form with |formID| in the current WebState.
 // Returns nil on success, or else an NSError indicating why the operation
@@ -176,10 +205,15 @@
 // Sets value for content setting.
 + (void)setContentSettings:(ContentSetting)setting;
 
-// Signs the user out, clears the known accounts entirely and checks whether
-// the accounts were correctly removed from the keychain. Returns nil on
-// success, or else an NSError indicating why the operation failed.
-+ (NSError*)signOutAndClearAccounts;
+// Signs the user out from Chrome and then starts clearing the identities.
+//
+// Note: This method does not wait for identities to be cleared from the
+// keychain. To wait for this operation to finish, please use an GREYCondition
+// and wait for +hasIdentities to return NO.
++ (void)signOutAndClearIdentities;
+
+// Returns YES if there is at at least identity in the ChromeIdentityService.
++ (BOOL)hasIdentities;
 
 // Returns the current WebState's VisibleURL.
 + (NSString*)webStateVisibleURL;
@@ -203,21 +237,6 @@
 
 // Returns the size of the current WebState's web view.
 + (CGSize)webStateWebViewSize;
-
-#pragma mark - Sync Utilities (EG2)
-
-// Clears the autofill profile for the given |GUID|.
-+ (void)clearAutofillProfileWithGUID:(NSString*)GUID;
-
-// Injects an autofill profile into the fake sync server with |GUID| and
-// |full_name|.
-+ (void)injectAutofillProfileOnFakeSyncServerWithGUID:(NSString*)GUID
-                                  autofillProfileName:(NSString*)fullName;
-
-// Returns YES if there is an autofilll profile with the corresponding |GUID|
-// and |full_name|.
-+ (BOOL)isAutofillProfilePresentWithGUID:(NSString*)GUID
-                     autofillProfileName:(NSString*)fullName;
 
 #pragma mark - Bookmarks Utilities (EG2)
 
@@ -270,6 +289,14 @@
 // Injects a bookmark into the fake sync server with |URL| and |title|.
 + (void)addFakeSyncServerBookmarkWithURL:(NSString*)URL title:(NSString*)title;
 
+// Injects a legacy bookmark into the fake sync server. The legacy bookmark
+// means 2015 and earlier, prior to the adoption of GUIDs for originator client
+// item ID.
++ (void)addFakeSyncServerLegacyBookmarkWithURL:(NSString*)URL
+                                         title:(NSString*)title
+                     originator_client_item_id:
+                         (NSString*)originator_client_item_id;
+
 // Injects typed URL to sync FakeServer.
 + (void)addFakeSyncServerTypedURL:(NSString*)URL;
 
@@ -287,9 +314,31 @@
 // Triggers a sync cycle for a |type|.
 + (void)triggerSyncCycleForType:(syncer::ModelType)type;
 
+// Injects user demographics into the fake sync server. |rawBirthYear| is the
+// true birth year, pre-noise, and the gender corresponds to the proto enum
+// UserDemographicsProto::Gender.
++ (void)
+    addUserDemographicsToSyncServerWithBirthYear:(int)rawBirthYear
+                                          gender:
+                                              (metrics::UserDemographicsProto::
+                                                   Gender)gender;
+
+// Clears the autofill profile for the given |GUID|.
++ (void)clearAutofillProfileWithGUID:(NSString*)GUID;
+
+// Injects an autofill profile into the fake sync server with |GUID| and
+// |full_name|.
++ (void)addAutofillProfileToFakeSyncServerWithGUID:(NSString*)GUID
+                               autofillProfileName:(NSString*)fullName;
+
+// Returns YES if there is an autofilll profile with the corresponding |GUID|
+// and |full_name|.
++ (BOOL)isAutofillProfilePresentWithGUID:(NSString*)GUID
+                     autofillProfileName:(NSString*)fullName;
+
 // Deletes an autofill profile from the fake sync server with |GUID|, if it
 // exists. If it doesn't exist, nothing is done.
-+ (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(NSString*)GUID;
++ (void)deleteAutofillProfileFromFakeSyncServerWithGUID:(NSString*)GUID;
 
 // Verifies the sessions hierarchy on the Sync FakeServer. |specs| is
 // the collection of URLs that are to be expected for a single window. On
@@ -304,6 +353,10 @@
                                           name:(NSString*)name
                                          count:(NSUInteger)count;
 
+// Adds a bookmark with a sync passphrase. The sync server will need the sync
+// passphrase to start.
++ (void)addBookmarkWithSyncPassphrase:(NSString*)syncPassphrase;
+
 #pragma mark - JavaScript Utilities (EG2)
 
 // Executes JavaScript on current WebState, and waits for either the completion
@@ -311,6 +364,9 @@
 // exception is thrown, returns an NSError indicating why the operation failed,
 // otherwise returns object representing execution result.
 + (id)executeJavaScript:(NSString*)javaScript error:(NSError**)error;
+
+// Returns the user agent that should be used for the mobile version.
++ (NSString*)mobileUserAgentString;
 
 #pragma mark - Accessibility Utilities (EG2)
 
@@ -324,14 +380,14 @@
 // invoked from test code, as the EG test code runs in a separate process and
 // must query Chrome for the state.
 
-// Returns YES if SlimNavigationManager feature is enabled.
-+ (BOOL)isSlimNavigationManagerEnabled WARN_UNUSED_RESULT;
-
 // Returns YES if BlockNewTabPagePendingLoad feature is enabled.
 + (BOOL)isBlockNewTabPagePendingLoadEnabled WARN_UNUSED_RESULT;
 
-// Returns YES if NewOmniboxPopupLayout feature is enabled.
-+ (BOOL)isNewOmniboxPopupLayoutEnabled WARN_UNUSED_RESULT;
+// Returns YES if |variationID| is enabled.
++ (BOOL)isVariationEnabled:(int)variationID;
+
+// Returns YES if a variation triggering server-side behavior is enabled.
++ (BOOL)isTriggerVariationEnabled:(int)variationID;
 
 // Returns YES if UmaCellular feature is enabled.
 + (BOOL)isUMACellularEnabled WARN_UNUSED_RESULT;
@@ -339,17 +395,20 @@
 // Returns YES if UKM feature is enabled.
 + (BOOL)isUKMEnabled WARN_UNUSED_RESULT;
 
-// Returns YES if WebPaymentsModifiers feature is enabled.
-+ (BOOL)isWebPaymentsModifiersEnabled WARN_UNUSED_RESULT;
-
-// Returns YES if SettingsAddPaymentMethod feature is enabled.
-+ (BOOL)isSettingsAddPaymentMethodEnabled WARN_UNUSED_RESULT;
+// Returns YES if kTestFeature is enabled.
++ (BOOL)isTestFeatureEnabled;
 
 // Returns YES if CreditCardScanner feature is enabled.
 + (BOOL)isCreditCardScannerEnabled WARN_UNUSED_RESULT;
 
 // Returns YES if AutofillEnableCompanyName feature is enabled.
 + (BOOL)isAutofillCompanyNameEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if DemographicMetricsReporting feature is enabled.
++ (BOOL)isDemographicMetricsReportingEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if the |launchSwitch| is found in host app launch switches.
++ (BOOL)appHasLaunchSwitch:(NSString*)launchSwitch;
 
 // Returns YES if custom WebKit frameworks were properly loaded, rather than
 // system frameworks. Always returns YES if the app was not requested to run
@@ -369,10 +428,37 @@
 // browser state.
 + (void)setPopupPrefValue:(ContentSetting)value;
 
+#pragma mark - Pref Utilities (EG2)
+
+// Gets the value of a local state pref. Returns a
+// base::Value encoded as a JSON string. If the pref was not registered,
+// returns a Value of type NONE.
++ (NSString*)localStatePrefValue:(NSString*)prefName;
+
+// Gets the value of a user pref in the original browser state. Returns a
+// base::Value encoded as a JSON string. If the pref was not registered,
+// returns a Value of type NONE.
++ (NSString*)userPrefValue:(NSString*)prefName;
+
+// Sets the value of a boolean user pref in the original browser state.
++ (void)setBoolValue:(BOOL)value forUserPref:(NSString*)prefName;
+
+// Resets the BrowsingDataPrefs, which defines if its selected or not when
+// clearing Browsing data.
++ (void)resetBrowsingDataPrefs;
+
 #pragma mark - Keyboard Command utilities
 
 // The count of key commands registered with the currently active BVC.
 + (NSInteger)registeredKeyCommandCount;
+
+// Simulates a physical keyboard event.
+// The input is similar to UIKeyCommand parameters, and is designed for testing
+// keyboard shortcuts.
+// Accepts any strings and also UIKeyInput{Up|Down|Left|Right}Arrow and
+// UIKeyInputEscape constants as |input|.
++ (void)simulatePhysicalKeyboardEvent:(NSString*)input
+                                flags:(UIKeyModifierFlags)flags;
 
 @end
 

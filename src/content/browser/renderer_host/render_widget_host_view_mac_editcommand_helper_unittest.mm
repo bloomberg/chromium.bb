@@ -40,7 +40,7 @@ using content::RenderWidgetHostViewMac;
 // Class that owns a RenderWidgetHostViewMac.
 @interface RenderWidgetHostNSViewHostOwner
     : NSObject <RenderWidgetHostNSViewHostOwner> {
-  RenderWidgetHostViewMac* rwhvm_;
+  RenderWidgetHostViewMac* _rwhvm;
 }
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)rwhvm;
@@ -50,13 +50,13 @@ using content::RenderWidgetHostViewMac;
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)rwhvm {
   if ((self = [super init])) {
-    rwhvm_ = rwhvm;
+    _rwhvm = rwhvm;
   }
   return self;
 }
 
 - (remote_cocoa::mojom::RenderWidgetHostNSViewHost*)renderWidgetHostNSViewHost {
-  return rwhvm_;
+  return _rwhvm;
 }
 
 @end
@@ -91,9 +91,12 @@ class RenderWidgetHostDelegateEditCommandCounter
       const base::Optional<base::string16>& value) override {
     edit_command_message_count_++;
   }
+  void Undo() override {}
+  void Redo() override {}
   void Cut() override {}
   void Copy() override {}
   void Paste() override {}
+  void PasteAndMatchStyle() override {}
   void SelectAll() override {}
 };
 

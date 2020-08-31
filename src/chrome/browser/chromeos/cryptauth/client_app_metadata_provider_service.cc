@@ -16,9 +16,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/network/network_state_handler.h"
@@ -27,6 +29,7 @@
 #include "chromeos/services/device_sync/public/cpp/gcm_constants.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -96,6 +99,13 @@ void LogInstanceIdTokenFetchRetries(int count) {
 }
 
 }  // namespace
+
+// static
+void ClientAppMetadataProviderService::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kCryptAuthInstanceId, std::string());
+  registry->RegisterStringPref(prefs::kCryptAuthInstanceIdToken, std::string());
+}
 
 // static
 int64_t ClientAppMetadataProviderService::ConvertVersionCodeToInt64(
@@ -173,9 +183,9 @@ void ClientAppMetadataProviderService::GetClientAppMetadata(
   if (was_already_in_progress)
     return;
 
-  device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&ClientAppMetadataProviderService::OnBluetoothAdapterFetched,
-                 weak_ptr_factory_.GetWeakPtr()));
+  device::BluetoothAdapterFactory::Get()->GetAdapter(base::BindOnce(
+      &ClientAppMetadataProviderService::OnBluetoothAdapterFetched,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ClientAppMetadataProviderService::Shutdown() {
@@ -195,14 +205,14 @@ void ClientAppMetadataProviderService::Shutdown() {
 void ClientAppMetadataProviderService::OnBluetoothAdapterFetched(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) {
   base::SysInfo::GetHardwareInfo(
-      base::Bind(&ClientAppMetadataProviderService::OnHardwareInfoFetched,
-                 weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter));
+      base::BindOnce(&ClientAppMetadataProviderService::OnHardwareInfoFetched,
+                     weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter));
 }
 
 void ClientAppMetadataProviderService::OnHardwareInfoFetched(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
     base::SysInfo::HardwareInfo hardware_info) {
-  GetInstanceId()->GetID(base::Bind(
+  GetInstanceId()->GetID(base::BindOnce(
       &ClientAppMetadataProviderService::OnInstanceIdFetched,
       weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter, hardware_info));
 }
@@ -212,14 +222,23 @@ void ClientAppMetadataProviderService::OnInstanceIdFetched(
     const base::SysInfo::HardwareInfo& hardware_info,
     const std::string& instance_id) {
   DCHECK(!instance_id.empty());
+  std::string previous_instance_id =
+      pref_service_->GetString(prefs::kCryptAuthInstanceId);
+  if (!previous_instance_id.empty()) {
+    base::UmaHistogramBoolean("CryptAuth.InstanceId.DidInstanceIdChange",
+                              previous_instance_id != instance_id);
+  }
+  pref_service_->SetString(prefs::kCryptAuthInstanceId, instance_id);
+
   GetInstanceId()->GetToken(
       device_sync::
           kCryptAuthV2EnrollmentAuthorizedEntity /* authorized_entity */,
-      kInstanceIdScope /* scope */,
+      kInstanceIdScope /* scope */, base::TimeDelta() /* time_to_live */,
       std::map<std::string, std::string>() /* options */, {} /* flags */,
-      base::Bind(&ClientAppMetadataProviderService::OnInstanceIdTokenFetched,
-                 weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter,
-                 hardware_info, instance_id));
+      base::BindOnce(
+          &ClientAppMetadataProviderService::OnInstanceIdTokenFetched,
+          weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter, hardware_info,
+          instance_id));
 }
 
 void ClientAppMetadataProviderService::OnInstanceIdTokenFetched(
@@ -245,8 +264,7 @@ void ClientAppMetadataProviderService::OnInstanceIdTokenFetched(
   instance_id_recreated_ = false;
 
   UMA_HISTOGRAM_ENUMERATION(
-      "CryptAuth.ClientAppMetadataInstanceIdTokenFetch.Result", result,
-      instance_id::InstanceID::Result::LAST_RESULT + 1);
+      "CryptAuth.ClientAppMetadataInstanceIdTokenFetch.Result", result);
 
   // If fetching the token failed, invoke the pending callbacks with a null
   // ClientAppMetadata.
@@ -259,6 +277,13 @@ void ClientAppMetadataProviderService::OnInstanceIdTokenFetched(
   }
 
   DCHECK(!token.empty());
+  std::string previous_instance_id_token =
+      pref_service_->GetString(prefs::kCryptAuthInstanceIdToken);
+  if (!previous_instance_id_token.empty()) {
+    base::UmaHistogramBoolean("CryptAuth.InstanceId.DidInstanceIdTokenChange",
+                              previous_instance_id_token != token);
+  }
+  pref_service_->SetString(prefs::kCryptAuthInstanceIdToken, token);
 
   cryptauthv2::ClientAppMetadata metadata;
 

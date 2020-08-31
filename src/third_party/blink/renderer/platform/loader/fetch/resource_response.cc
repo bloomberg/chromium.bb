@@ -31,6 +31,7 @@
 #include <memory>
 #include <string>
 
+#include "net/http/structured_headers.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -207,16 +208,16 @@ void ResourceResponse::UpdateHeaderParsedState(const AtomicString& name) {
   static const char kExpiresHeader[] = "expires";
   static const char kLastModifiedHeader[] = "last-modified";
 
-  if (DeprecatedEqualIgnoringCase(name, kAgeHeader))
+  if (EqualIgnoringASCIICase(name, kAgeHeader))
     have_parsed_age_header_ = false;
-  else if (DeprecatedEqualIgnoringCase(name, kCacheControlHeader) ||
-           DeprecatedEqualIgnoringCase(name, kPragmaHeader))
+  else if (EqualIgnoringASCIICase(name, kCacheControlHeader) ||
+           EqualIgnoringASCIICase(name, kPragmaHeader))
     cache_control_header_ = CacheControlHeader();
-  else if (DeprecatedEqualIgnoringCase(name, kDateHeader))
+  else if (EqualIgnoringASCIICase(name, kDateHeader))
     have_parsed_date_header_ = false;
-  else if (DeprecatedEqualIgnoringCase(name, kExpiresHeader))
+  else if (EqualIgnoringASCIICase(name, kExpiresHeader))
     have_parsed_expires_header_ = false;
-  else if (DeprecatedEqualIgnoringCase(name, kLastModifiedHeader))
+  else if (EqualIgnoringASCIICase(name, kLastModifiedHeader))
     have_parsed_last_modified_header_ = false;
 }
 
@@ -415,7 +416,7 @@ bool ResourceResponse::IsAttachment() const {
   if (loc != kNotFound)
     value = value.Left(loc);
   value = value.StripWhiteSpace();
-  return DeprecatedEqualIgnoringCase(value, kAttachmentString);
+  return EqualIgnoringASCIICase(value, kAttachmentString);
 }
 
 AtomicString ResourceResponse::HttpContentType() const {
@@ -487,6 +488,19 @@ void ResourceResponse::SetEncodedBodyLength(int64_t value) {
 
 void ResourceResponse::SetDecodedBodyLength(int64_t value) {
   decoded_body_length_ = value;
+}
+
+network::mojom::CrossOriginEmbedderPolicyValue
+ResourceResponse::GetCrossOriginEmbedderPolicy() const {
+  static constexpr char kHeaderName[] = "cross-origin-embedder-policy";
+  const std::string value = HttpHeaderField(kHeaderName).Utf8();
+  using Item = net::structured_headers::Item;
+  const auto item = net::structured_headers::ParseItem(value);
+  if (!item || item->item.Type() != Item::kTokenType ||
+      item->item.GetString() != "require-corp") {
+    return network::mojom::CrossOriginEmbedderPolicyValue::kNone;
+  }
+  return network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
 }
 
 STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersionUnknown,

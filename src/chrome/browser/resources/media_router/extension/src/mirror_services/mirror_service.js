@@ -143,6 +143,7 @@ mr.mirror.Service = class extends mr.Module {
             this.currentSession.setOnActivityUpdate(
                 this.mirrorServiceCallbacks.handleMirrorActivityUpdate.bind(
                     this.mirrorServiceCallbacks));
+            this.currentSession.onActivityUpdated();
             return this.currentSession.start(/** @type {!MediaStream} */ (
                 this.currentMediaStream_.getMediaStream()));
           })

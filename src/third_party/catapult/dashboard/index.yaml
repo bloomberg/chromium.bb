@@ -35,7 +35,7 @@ indexes:
     direction: desc
 - kind: Anomaly
   properties:
-  - name: sheriff
+  - name: subscription_names
   - name: timestamp
     direction: desc
 - kind: Anomaly
@@ -104,18 +104,18 @@ indexes:
 # the datastore only needs to merge 2 or 3 indexes, which is fast enough.
 - kind: Anomaly
   properties:
-  - name: sheriff
+  - name: subscription_names
   - name: is_improvement
   - name: bug_id
   - name: recovered
   - name: timestamp
     direction: desc
 
-# This composite index supports QueryAsync(sheriff=..., min_start_revision=...),
+# This composite index supports QueryAsync(subscription_names=..., min_start_revision=...),
 # which spa uses to load triaged alerts after loading untriaged alerts.
 - kind: Anomaly
   properties:
-  - name: sheriff
+  - name: subscription_names
   - name: start_revision
   - name: timestamp
     direction: desc
@@ -135,13 +135,14 @@ indexes:
     direction: desc
 
 # Used in find_anomalies.GetRowsToAnalyze when getting latest points,
-# with projection query for properties revision and value.
+# with projection query for properties revision, value, and timestamp.
 - kind: Row
   properties:
   - name: parent_test
   - name: revision
     direction: desc
   - name: value
+  - name: timestamp
 
 # Used in graph_revisions.py to do a projection query for timestamp, revision
 # and value for points from a particular test.

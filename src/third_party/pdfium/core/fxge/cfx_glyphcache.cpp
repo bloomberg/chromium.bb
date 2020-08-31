@@ -143,22 +143,25 @@ std::unique_ptr<CFX_GlyphBitmap> CFX_GlyphCache::RenderGlyph(
                             pFont->GetSubstFont()->m_Weight);
     }
   }
+
   ScopedFontTransform scoped_transform(GetFace(), &ft_matrix);
-  int load_flags = (GetFaceRec()->face_flags & FT_FACE_FLAG_SFNT)
-                       ? FT_LOAD_NO_BITMAP
-                       : (FT_LOAD_NO_BITMAP | FT_LOAD_NO_HINTING);
+  int load_flags = FT_LOAD_NO_BITMAP | FT_LOAD_PEDANTIC;
+  if (!(GetFaceRec()->face_flags & FT_FACE_FLAG_SFNT))
+    load_flags |= FT_LOAD_NO_HINTING;
   int error = FT_Load_Glyph(GetFaceRec(), glyph_index, load_flags);
   if (error) {
     // if an error is returned, try to reload glyphs without hinting.
-    if (load_flags & FT_LOAD_NO_HINTING || load_flags & FT_LOAD_NO_SCALE)
+    if (load_flags & FT_LOAD_NO_HINTING)
       return nullptr;
 
     load_flags |= FT_LOAD_NO_HINTING;
+    load_flags &= ~FT_LOAD_PEDANTIC;
     error = FT_Load_Glyph(GetFaceRec(), glyph_index, load_flags);
     if (error)
       return nullptr;
   }
-  int weight = 0;
+
+  int weight;
   if (bUseCJKSubFont)
     weight = pSubstFont->m_WeightCJK;
   else
@@ -232,7 +235,7 @@ const CFX_PathData* CFX_GlyphCache::LoadGlyphPath(const CFX_Font* pFont,
   const auto* pSubstFont = pFont->GetSubstFont();
   int weight = pSubstFont ? pSubstFont->m_Weight : 0;
   int angle = pSubstFont ? pSubstFont->m_ItalicAngle : 0;
-  bool vertical = pSubstFont ? pFont->IsVertical() : false;
+  bool vertical = pSubstFont && pFont->IsVertical();
   const PathMapKey key =
       std::make_tuple(glyph_index, dest_width, weight, angle, vertical);
   auto it = m_PathMap.find(key);

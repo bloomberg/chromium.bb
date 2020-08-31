@@ -7,23 +7,30 @@ import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
 
-buildflag_header("color_buildflags") {
-  header = "color_buildflags.h"
+source_set("color_headers") {
+  sources = [
+    "color_id.h",
+    "color_id_macros.inc",
+    "color_mixer.h",
+    "color_provider.h",
+    "color_set.h",
+  ]
 
-  flags = [ "USE_COLOR_PIPELINE=$use_color_pipeline" ]
+  public_deps = [
+    "//base:base",
+    "//skia:skia",
+  ]
 }
 
 jumbo_component("color") {
   sources = [
-    "color_id.h",
     "color_mixer.cc",
-    "color_mixer.h",
     "color_provider.cc",
-    "color_provider.h",
+    "color_provider_manager.cc",
+    "color_provider_manager.h",
     "color_recipe.cc",
     "color_recipe.h",
     "color_set.cc",
-    "color_set.h",
     "color_transform.cc",
     "color_transform.h",
   ]
@@ -31,9 +38,9 @@ jumbo_component("color") {
   defines = [ "IS_COLOR_IMPL" ]
 
   public_deps = [
-    ":color_buildflags",
-    "//base",
-    "//skia",
+    ":color_headers",
+    "//base:base",
+    "//skia:skia",
     "//ui/gfx:color_utils",
   ]
 }
@@ -43,6 +50,7 @@ test("color_unittests") {
 
   sources = [
     "color_mixer_unittest.cc",
+    "color_provider_manager_unittest.cc",
     "color_provider_unittest.cc",
     "color_recipe_unittest.cc",
     "color_test_ids.h",
@@ -68,21 +76,27 @@ jumbo_component("mixers") {
 
   deps = [
     ":color",
+    ":color_headers",
     "//skia",
     "//ui/gfx:color_utils",
   ]
 
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 
   if (is_chromeos) {
-    sources += [ "cros/native_color_mixer.cc" ]
+    sources += [ "cros/native_color_mixers.cc" ]
+  } else if (is_fuchsia) {
+    sources += [ "fuchsia/native_color_mixers.cc" ]
   } else if (is_linux) {
-    sources += [ "linux/native_color_mixer.cc" ]
+    sources += [ "linux/native_color_mixers.cc" ]
   } else if (is_mac) {
-    sources += [ "mac/native_color_mixer.cc" ]
+    libs = [ "AppKit.framework" ]
+    sources += [
+      "mac/native_color_mixers.mm",
+      "mac/scoped_current_nsappearance.h",
+      "mac/scoped_current_nsappearance.mm",
+    ]
   } else if (is_win) {
-    sources += [ "win/native_color_mixer.cc" ]
+    sources += [ "win/native_color_mixers.cc" ]
   }
 }

@@ -6,9 +6,8 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,11 +17,9 @@
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/command.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "extensions/browser/notification_types.h"
+#include "extensions/browser/extension_action.h"
+#include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "ui/views/view.h"
@@ -39,14 +36,8 @@ ExtensionActionPlatformDelegate::Create(
 ExtensionActionPlatformDelegateViews::ExtensionActionPlatformDelegateViews(
     ExtensionActionViewController* controller)
     : controller_(controller) {
-  content::NotificationSource notification_source = content::Source<Profile>(
-      controller_->browser()->profile()->GetOriginalProfile());
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED,
-                 notification_source);
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
-                 notification_source);
+  command_service_observer_.Add(
+      extensions::CommandService::Get(controller_->browser()->profile()));
 }
 
 ExtensionActionPlatformDelegateViews::~ExtensionActionPlatformDelegateViews() {
@@ -64,11 +55,8 @@ void ExtensionActionPlatformDelegateViews::RegisterCommand() {
   if (focus_manager && controller_->GetExtensionCommand(&extension_command)) {
     action_keybinding_.reset(
         new ui::Accelerator(extension_command.accelerator()));
-    focus_manager->RegisterAccelerator(
-        *action_keybinding_,
-        GetAcceleratorPriority(extension_command.accelerator(),
-                               controller_->extension()),
-        this);
+    focus_manager->RegisterAccelerator(*action_keybinding_,
+                                       kExtensionAcceleratorPriority, this);
   }
 }
 
@@ -94,55 +82,60 @@ void ExtensionActionPlatformDelegateViews::ShowContextMenu() {
       view, view->GetKeyboardContextMenuLocation(), ui::MENU_SOURCE_NONE);
 }
 
-void ExtensionActionPlatformDelegateViews::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED ||
-         type == extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED);
-  extensions::ExtensionCommandRemovedDetails* payload =
-      content::Details<extensions::ExtensionCommandRemovedDetails>(details)
-          .ptr();
-  if (controller_->extension()->id() == payload->extension_id &&
-      (payload->command_name ==
-           extensions::manifest_values::kBrowserActionCommandEvent ||
-       payload->command_name ==
-           extensions::manifest_values::kPageActionCommandEvent)) {
-    if (type == extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED)
-      RegisterCommand();
-    else
-      UnregisterCommand(true);
+void ExtensionActionPlatformDelegateViews::OnExtensionCommandAdded(
+    const std::string& extension_id,
+    const extensions::Command& command) {
+  if (extension_id != controller_->extension()->id())
+    return;  // Not this action's extension.
+
+  if (command.command_name() !=
+          extensions::manifest_values::kBrowserActionCommandEvent &&
+      command.command_name() !=
+          extensions::manifest_values::kPageActionCommandEvent) {
+    // Not an action-related command.
+    return;
   }
+
+  RegisterCommand();
+}
+
+void ExtensionActionPlatformDelegateViews::OnExtensionCommandRemoved(
+    const std::string& extension_id,
+    const extensions::Command& command) {
+  if (extension_id != controller_->extension()->id())
+    return;
+
+  if (command.command_name() !=
+          extensions::manifest_values::kBrowserActionCommandEvent &&
+      command.command_name() !=
+          extensions::manifest_values::kPageActionCommandEvent) {
+    // Not an action-related command.
+    return;
+  }
+
+  UnregisterCommand(/*only_if_removed=*/true);
+}
+
+void ExtensionActionPlatformDelegateViews::OnCommandServiceDestroying() {
+  command_service_observer_.RemoveAll();
 }
 
 bool ExtensionActionPlatformDelegateViews::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
-  // We shouldn't be handling any accelerators if the view is hidden, unless
-  // this is a browser action.
-  DCHECK(controller_->extension_action()->action_type() ==
-             ActionInfo::TYPE_BROWSER ||
-         GetDelegateViews()->GetAsView()->GetVisible());
+  DCHECK(controller_->CanHandleAccelerators());
 
-  // Normal priority shortcuts must be handled via standard browser commands to
-  // be processed at the proper time.
-  if (GetAcceleratorPriority(accelerator, controller_->extension()) ==
-      ui::AcceleratorManager::kNormalPriority)
-    return false;
-
-  if (controller_->IsShowingPopup())
+  if (controller_->IsShowingPopup()) {
     controller_->HidePopup();
-  else
-    controller_->ExecuteAction(true);
+  } else {
+    controller_->ExecuteAction(
+        true, ToolbarActionViewController::InvocationSource::kCommand);
+  }
+
   return true;
 }
 
 bool ExtensionActionPlatformDelegateViews::CanHandleAccelerators() const {
-  // Page actions can only handle accelerators when they are visible.
-  // Browser actions can handle accelerators even when not visible, since they
-  // might be hidden in an overflow menu.
-  return controller_->extension_action()->action_type() == ActionInfo::TYPE_PAGE
-             ? GetDelegateViews()->GetAsView()->GetVisible()
-             : true;
+  return controller_->CanHandleAccelerators();
 }
 
 void ExtensionActionPlatformDelegateViews::UnregisterCommand(

@@ -30,7 +30,6 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/text_granularity.h"
@@ -44,7 +43,7 @@ class LocalFrame;
 
 class CORE_EXPORT SelectionController final
     : public GarbageCollected<SelectionController>,
-      public DocumentShutdownObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(SelectionController);
 
  public:
@@ -62,15 +61,14 @@ class CORE_EXPORT SelectionController final
   bool HandlePasteGlobalSelection(const WebMouseEvent&);
   bool HandleGestureLongPress(const HitTestResult&);
   void HandleGestureTwoFingerTap(const GestureEventWithHitTestResults&);
-  void HandleGestureLongTap(const GestureEventWithHitTestResults&);
 
   void UpdateSelectionForMouseDrag(const PhysicalOffset&,
                                    const PhysicalOffset&);
   void UpdateSelectionForMouseDrag(const HitTestResult&,
                                    const PhysicalOffset&,
                                    const PhysicalOffset&);
-  void SendContextMenuEvent(const MouseEventWithHitTestResults&,
-                            const PhysicalOffset&);
+  void UpdateSelectionForContextMenuEvent(const MouseEventWithHitTestResults&,
+                                          const PhysicalOffset&);
   void PassMousePressEventToSubframe(const MouseEventWithHitTestResults&);
 
   void InitializeSelectionState();
@@ -117,10 +115,10 @@ class CORE_EXPORT SelectionController final
 
   FrameSelection& Selection() const;
 
-  // Implements |DocumentShutdownObserver|.
+  // Implements |ExecutionContextLifecycleObserver|.
   // TODO(yosin): We should relocate |original_base_in_flat_tree_| when DOM tree
   // changed.
-  void ContextDestroyed(Document*) final;
+  void ContextDestroyed() final;
 
   bool HandleSingleClick(const MouseEventWithHitTestResults&);
   bool HandleDoubleClick(const MouseEventWithHitTestResults&);

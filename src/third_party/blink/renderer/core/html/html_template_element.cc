@@ -45,7 +45,7 @@ HTMLTemplateElement::HTMLTemplateElement(Document& document)
 
 HTMLTemplateElement::~HTMLTemplateElement() = default;
 
-DocumentFragment* HTMLTemplateElement::content() const {
+DocumentFragment* HTMLTemplateElement::ContentInternal() const {
   if (!content_)
     content_ = MakeGarbageCollected<TemplateContentDocumentFragment>(
         GetDocument().EnsureTemplateDocument(),
@@ -54,16 +54,24 @@ DocumentFragment* HTMLTemplateElement::content() const {
   return content_.Get();
 }
 
+DocumentFragment* HTMLTemplateElement::content() const {
+  return IsDeclarativeShadowRoot() ? nullptr : ContentInternal();
+}
+
+DocumentFragment* HTMLTemplateElement::DeclarativeShadowContent() const {
+  return IsDeclarativeShadowRoot() ? ContentInternal() : nullptr;
+}
+
 // https://html.spec.whatwg.org/C/#the-template-element:concept-node-clone-ext
 void HTMLTemplateElement::CloneNonAttributePropertiesFrom(
     const Element& source,
     CloneChildrenFlag flag) {
   if (flag == CloneChildrenFlag::kSkip)
     return;
-
+  DCHECK_NE(flag, CloneChildrenFlag::kCloneWithShadows);
   auto& html_template_element = To<HTMLTemplateElement>(source);
-  if (html_template_element.content_)
-    content()->CloneChildNodesFrom(*html_template_element.content());
+  if (html_template_element.content())
+    content()->CloneChildNodesFrom(*html_template_element.content(), flag);
 }
 
 void HTMLTemplateElement::DidMoveToNewDocument(Document& old_document) {

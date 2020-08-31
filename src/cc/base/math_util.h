@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "cc/base/base_export.h"
 #include "ui/gfx/geometry/box_f.h"
@@ -41,7 +42,15 @@ class Vector3dF;
 namespace cc {
 
 struct HomogeneousCoordinate {
-  HomogeneousCoordinate(SkMScalar x, SkMScalar y, SkMScalar z, SkMScalar w) {
+  // This needs to be big enough that it does not incorrectly clip the projected
+  // coordinate. For local to device projection, this must be bigger than the
+  // expected size of a display. For inverse projection, this is hopefully
+  // larger than the required local layer size of page content. If it is made
+  // too big then bounding box calculations based on projected coordinates can
+  // lose precision and lead to incorrect page rendering.
+  static constexpr float kInfiniteCoordinate = 1000000.0f;
+
+  HomogeneousCoordinate(SkScalar x, SkScalar y, SkScalar z, SkScalar w) {
     vec[0] = x;
     vec[1] = y;
     vec[2] = z;
@@ -51,33 +60,45 @@ struct HomogeneousCoordinate {
   bool ShouldBeClipped() const { return w() <= 0.0; }
 
   gfx::PointF CartesianPoint2d() const {
-    if (w() == SK_MScalar1)
+    if (w() == SK_Scalar1)
       return gfx::PointF(x(), y());
 
     // For now, because this code is used privately only by MathUtil, it should
     // never be called when w == 0, and we do not yet need to handle that case.
     DCHECK(w());
-    SkMScalar inv_w = SK_MScalar1 / w();
-    return gfx::PointF(x() * inv_w, y() * inv_w);
+    SkScalar inv_w = SK_Scalar1 / w();
+    // However, w may be close to 0 and we lose precision on our geometry
+    // calculations if we allow scaling to extremely large values.
+    return gfx::PointF(base::ClampToRange(x() * inv_w, -kInfiniteCoordinate,
+                                          (float)kInfiniteCoordinate),
+                       base::ClampToRange(y() * inv_w, -kInfiniteCoordinate,
+                                          (float)kInfiniteCoordinate));
   }
 
   gfx::Point3F CartesianPoint3d() const {
-    if (w() == SK_MScalar1)
+    if (w() == SK_Scalar1)
       return gfx::Point3F(x(), y(), z());
 
     // For now, because this code is used privately only by MathUtil, it should
     // never be called when w == 0, and we do not yet need to handle that case.
     DCHECK(w());
-    SkMScalar inv_w = SK_MScalar1 / w();
-    return gfx::Point3F(x() * inv_w, y() * inv_w, z() * inv_w);
+    SkScalar inv_w = SK_Scalar1 / w();
+    // However, w may be close to 0 and we lose precision on our geometry
+    // calculations if we allow scaling to extremely large values.
+    return gfx::Point3F(base::ClampToRange(x() * inv_w, -kInfiniteCoordinate,
+                                           (float)kInfiniteCoordinate),
+                        base::ClampToRange(y() * inv_w, -kInfiniteCoordinate,
+                                           (float)kInfiniteCoordinate),
+                        base::ClampToRange(z() * inv_w, -kInfiniteCoordinate,
+                                           (float)kInfiniteCoordinate));
   }
 
-  SkMScalar x() const { return vec[0]; }
-  SkMScalar y() const { return vec[1]; }
-  SkMScalar z() const { return vec[2]; }
-  SkMScalar w() const { return vec[3]; }
+  SkScalar x() const { return vec[0]; }
+  SkScalar y() const { return vec[1]; }
+  SkScalar z() const { return vec[2]; }
+  SkScalar w() const { return vec[3]; }
 
-  SkMScalar vec[4];
+  SkScalar vec[4];
 };
 
 class CC_BASE_EXPORT MathUtil {
@@ -153,6 +174,10 @@ class CC_BASE_EXPORT MathUtil {
   // clipped, transformed polygon.
   static gfx::Rect MapEnclosingClippedRect(const gfx::Transform& transform,
                                            const gfx::Rect& rect);
+  static gfx::Rect MapEnclosingClippedRectIgnoringError(
+      const gfx::Transform& transform,
+      const gfx::Rect& rect,
+      float ignore_error);
   static gfx::RectF MapClippedRect(const gfx::Transform& transform,
                                    const gfx::RectF& rect);
   static gfx::Rect ProjectEnclosingClippedRect(const gfx::Transform& transform,
@@ -234,11 +259,7 @@ class CC_BASE_EXPORT MathUtil {
   static gfx::Vector2dF ProjectVector(const gfx::Vector2dF& source,
                                       const gfx::Vector2dF& destination);
 
-  // Conversion to value.
-  static std::unique_ptr<base::Value> AsValue(const gfx::Size& s);
-  static std::unique_ptr<base::Value> AsValue(const gfx::Rect& r);
   static bool FromValue(const base::Value*, gfx::Rect* out_rect);
-  static std::unique_ptr<base::Value> AsValue(const gfx::PointF& q);
 
   static void AddToTracedValue(const char* name,
                                const gfx::Size& s,

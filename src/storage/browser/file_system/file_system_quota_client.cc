@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
@@ -36,10 +36,10 @@ void GetOriginsForTypeOnFileTaskRunner(FileSystemContext* context,
   FileSystemQuotaUtil* quota_util = context->GetQuotaUtil(type);
   if (!quota_util)
     return;
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   quota_util->GetOriginsForTypeOnFileTaskRunner(type, &origins);
   for (auto origin : origins)
-    origins_ptr->insert(url::Origin::Create(origin));
+    origins_ptr->insert(origin);
 }
 
 void GetOriginsForHostOnFileTaskRunner(FileSystemContext* context,
@@ -52,14 +52,14 @@ void GetOriginsForHostOnFileTaskRunner(FileSystemContext* context,
   FileSystemQuotaUtil* quota_util = context->GetQuotaUtil(type);
   if (!quota_util)
     return;
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   quota_util->GetOriginsForHostOnFileTaskRunner(type, host, &origins);
   for (auto origin : origins)
-    origins_ptr->insert(url::Origin::Create(origin));
+    origins_ptr->insert(origin);
 }
 
 void DidGetFileSystemQuotaClientOrigins(
-    storage::QuotaClient::GetOriginsCallback callback,
+    QuotaClient::GetOriginsCallback callback,
     std::set<url::Origin>* origins_ptr) {
   std::move(callback).Run(*origins_ptr);
 }
@@ -73,7 +73,7 @@ blink::mojom::QuotaStatusCode DeleteOriginOnFileTaskRunner(
     return blink::mojom::QuotaStatusCode::kErrorNotSupported;
   base::File::Error result =
       provider->GetQuotaUtil()->DeleteOriginDataOnFileTaskRunner(
-          context, context->quota_manager_proxy(), origin.GetURL(), type);
+          context, context->quota_manager_proxy(), origin, type);
   if (result == base::File::FILE_OK)
     return blink::mojom::QuotaStatusCode::kOk;
   return blink::mojom::QuotaStatusCode::kErrorInvalidModification;
@@ -96,8 +96,8 @@ FileSystemQuotaClient::FileSystemQuotaClient(
 
 FileSystemQuotaClient::~FileSystemQuotaClient() = default;
 
-storage::QuotaClient::ID FileSystemQuotaClient::id() const {
-  return storage::QuotaClient::kFileSystem;
+QuotaClientType FileSystemQuotaClient::type() const {
+  return QuotaClientType::kFileSystem;
 }
 
 void FileSystemQuotaClient::GetOriginUsage(const url::Origin& origin,
@@ -119,8 +119,7 @@ void FileSystemQuotaClient::GetOriginUsage(const url::Origin& origin,
       // It is safe to pass Unretained(quota_util) since context owns it.
       base::BindOnce(&FileSystemQuotaUtil::GetOriginUsageOnFileTaskRunner,
                      base::Unretained(quota_util),
-                     base::RetainedRef(file_system_context_), origin.GetURL(),
-                     type),
+                     base::RetainedRef(file_system_context_), origin, type),
       std::move(callback));
 }
 

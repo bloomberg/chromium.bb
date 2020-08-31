@@ -10,6 +10,7 @@
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -22,19 +23,20 @@ namespace content {
 
 namespace {
 
-class MockWebContentsObserver : public WebContentsObserver {
+class NavigationWatchingWebContentsObserver : public WebContentsObserver {
  public:
-  explicit MockWebContentsObserver(WebContents* contents,
-                                   const base::Closure& closure_on_navigate)
+  explicit NavigationWatchingWebContentsObserver(
+      WebContents* contents,
+      base::OnceClosure closure_on_navigate)
       : WebContentsObserver(contents),
-        closure_on_navigate_(closure_on_navigate) {}
+        closure_on_navigate_(std::move(closure_on_navigate)) {}
 
   void DidFinishNavigation(NavigationHandle* navigation_handle) override {
-    closure_on_navigate_.Run();
+    std::move(closure_on_navigate_).Run();
   }
 
  private:
-  base::Closure closure_on_navigate_;
+  base::OnceClosure closure_on_navigate_;
 };
 
 class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
@@ -50,11 +52,19 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   void OnSeekBackward(int player_id, base::TimeDelta seek_time) override {}
   void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override {
   }
+  void OnEnterPictureInPicture(int player_id) override {}
+  void OnExitPictureInPicture(int player_id) override {}
 
   base::Optional<media_session::MediaPosition> GetPosition(
       int player_id) const override {
     return base::nullopt;
   }
+
+  bool IsPictureInPictureAvailable(int player_id) const override {
+    return false;
+  }
+
+  bool HasVideo(int player_id) const override { return false; }
 
   RenderFrameHost* render_frame_host() const override {
     return render_frame_host_;
@@ -66,8 +76,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
 
 void NavigateToURLAndWaitForFinish(Shell* window, const GURL& url) {
   base::RunLoop run_loop;
-  MockWebContentsObserver observer(window->web_contents(),
-                                   run_loop.QuitClosure());
+  NavigationWatchingWebContentsObserver observer(window->web_contents(),
+                                                 run_loop.QuitClosure());
 
   EXPECT_TRUE(NavigateToURL(window, url));
   run_loop.Run();

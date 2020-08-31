@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "dbus/message.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/display/manager/display_configurator.h"
@@ -85,32 +84,32 @@ void DisplayServiceProvider::Start(
       chromeos::kDisplayServiceSetPowerMethod,
       base::BindRepeating(&DisplayServiceProvider::SetDisplayPower,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&DisplayServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DisplayServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   exported_object->ExportMethod(
       chromeos::kDisplayServiceInterface,
       chromeos::kDisplayServiceSetSoftwareDimmingMethod,
       base::BindRepeating(&DisplayServiceProvider::SetDisplaySoftwareDimming,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&DisplayServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DisplayServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   exported_object->ExportMethod(
       chromeos::kDisplayServiceInterface,
       chromeos::kDisplayServiceTakeOwnershipMethod,
       base::BindRepeating(&DisplayServiceProvider::TakeDisplayOwnership,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&DisplayServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DisplayServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   exported_object->ExportMethod(
       chromeos::kDisplayServiceInterface,
       chromeos::kDisplayServiceReleaseOwnershipMethod,
       base::BindRepeating(&DisplayServiceProvider::ReleaseDisplayOwnership,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&DisplayServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DisplayServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DisplayServiceProvider::SetDisplayPower(

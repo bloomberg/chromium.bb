@@ -22,7 +22,6 @@
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
 #include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/net/timeout.h"
@@ -190,7 +189,7 @@ Status ChromeDesktopImpl::GetAutomationExtension(
     while (base::TimeTicks::Now() < deadline) {
       std::unique_ptr<base::Value> result;
       status = web_view->EvaluateScript(
-          std::string(), "typeof launchApp === 'function'", &result);
+          std::string(), "typeof launchApp === 'function'", false, &result);
       if (status.IsError())
         return Status(kUnknownError, "cannot get automation extension", status);
       if (result->is_bool() && result->GetBool())

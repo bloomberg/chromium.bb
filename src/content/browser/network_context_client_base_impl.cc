@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -22,7 +23,7 @@ namespace content {
 namespace {
 
 void HandleFileUploadRequest(
-    uint32_t process_id,
+    int32_t process_id,
     bool async,
     const std::vector<base::FilePath>& file_paths,
     network::mojom::NetworkContextClient::OnFileUploadRequestedCallback
@@ -65,14 +66,13 @@ void HandleFileUploadRequest(
 }  // namespace
 
 void NetworkContextOnFileUploadRequested(
-    uint32_t process_id,
+    int32_t process_id,
     bool async,
     const std::vector<base::FilePath>& file_paths,
     network::mojom::NetworkContextClient::OnFileUploadRequestedCallback
         callback) {
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&HandleFileUploadRequest, process_id, async, file_paths,
                      std::move(callback),
                      base::SequencedTaskRunnerHandle::Get()));
@@ -83,8 +83,8 @@ NetworkContextClientBase::~NetworkContextClientBase() = default;
 
 void NetworkContextClientBase::OnAuthRequired(
     const base::Optional<base::UnguessableToken>& window_id,
-    uint32_t process_id,
-    uint32_t routing_id,
+    int32_t process_id,
+    int32_t routing_id,
     uint32_t request_id,
     const GURL& url,
     bool first_auth_attempt,
@@ -99,8 +99,8 @@ void NetworkContextClientBase::OnAuthRequired(
 
 void NetworkContextClientBase::OnCertificateRequested(
     const base::Optional<base::UnguessableToken>& window_id,
-    uint32_t process_id,
-    uint32_t routing_id,
+    int32_t process_id,
+    int32_t routing_id,
     uint32_t request_id,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
     mojo::PendingRemote<network::mojom::ClientCertificateResponder>
@@ -111,8 +111,8 @@ void NetworkContextClientBase::OnCertificateRequested(
 }
 
 void NetworkContextClientBase::OnSSLCertificateError(
-    uint32_t process_id,
-    uint32_t routing_id,
+    int32_t process_id,
+    int32_t routing_id,
     const GURL& url,
     int net_error,
     const net::SSLInfo& ssl_info,
@@ -122,7 +122,7 @@ void NetworkContextClientBase::OnSSLCertificateError(
 }
 
 void NetworkContextClientBase::OnFileUploadRequested(
-    uint32_t process_id,
+    int32_t process_id,
     bool async,
     const std::vector<base::FilePath>& file_paths,
     OnFileUploadRequestedCallback callback) {
@@ -143,7 +143,7 @@ void NetworkContextClientBase::OnCanSendDomainReliabilityUpload(
 }
 
 void NetworkContextClientBase::OnClearSiteData(
-    uint32_t process_id,
+    int32_t process_id,
     int32_t routing_id,
     const GURL& url,
     const std::string& header_value,
@@ -151,22 +151,6 @@ void NetworkContextClientBase::OnClearSiteData(
     OnClearSiteDataCallback callback) {
   std::move(callback).Run();
 }
-
-void NetworkContextClientBase::OnCookiesChanged(
-    bool is_service_worker,
-    int32_t process_id,
-    int32_t routing_id,
-    const GURL& url,
-    const GURL& site_for_cookies,
-    const std::vector<net::CookieWithStatus>& cookie_list) {}
-
-void NetworkContextClientBase::OnCookiesRead(
-    bool is_service_worker,
-    int32_t process_id,
-    int32_t routing_id,
-    const GURL& url,
-    const GURL& site_for_cookies,
-    const std::vector<net::CookieWithStatus>& cookie_list) {}
 
 #if defined(OS_ANDROID)
 void NetworkContextClientBase::OnGenerateHttpNegotiateAuthToken(

@@ -30,12 +30,16 @@ jumbo_static_library("browser") {
     "address_rewriter.h",
     "autocomplete_history_manager.cc",
     "autocomplete_history_manager.h",
+    "autofill_address_policy_handler.cc",
+    "autofill_address_policy_handler.h",
     "autofill_address_util.cc",
     "autofill_address_util.h",
     "autofill_browser_util.cc",
     "autofill_browser_util.h",
     "autofill_client.cc",
     "autofill_client.h",
+    "autofill_credit_card_policy_handler.cc",
+    "autofill_credit_card_policy_handler.h",
     "autofill_data_util.cc",
     "autofill_data_util.h",
     "autofill_download_manager.cc",
@@ -88,6 +92,8 @@ jumbo_static_library("browser") {
     "data_model/contact_info.h",
     "data_model/credit_card.cc",
     "data_model/credit_card.h",
+    "data_model/credit_card_cloud_token_data.cc",
+    "data_model/credit_card_cloud_token_data.h",
     "data_model/data_model_utils.cc",
     "data_model/data_model_utils.h",
     "data_model/form_group.cc",
@@ -98,6 +104,7 @@ jumbo_static_library("browser") {
     "data_model/test_data_creator.h",
     "field_filler.cc",
     "field_filler.h",
+    "field_types.cc",
     "field_types.h",
     "form_data_importer.cc",
     "form_data_importer.h",
@@ -135,6 +142,8 @@ jumbo_static_library("browser") {
     "geo/country_data.h",
     "geo/country_names.cc",
     "geo/country_names.h",
+    "geo/country_names_for_locale.cc",
+    "geo/country_names_for_locale.h",
     "geo/phone_number_i18n.cc",
     "geo/phone_number_i18n.h",
     "geo/region_data_loader.h",
@@ -176,10 +185,6 @@ jumbo_static_library("browser") {
     "payments/full_card_request.h",
     "payments/legal_message_line.cc",
     "payments/legal_message_line.h",
-    "payments/local_card_migration_manager.cc",
-    "payments/local_card_migration_manager.h",
-    "payments/local_card_migration_strike_database.cc",
-    "payments/local_card_migration_strike_database.h",
     "payments/payments_client.cc",
     "payments/payments_client.h",
     "payments/payments_customer_data.h",
@@ -195,8 +200,6 @@ jumbo_static_library("browser") {
     "payments/strike_database_integrator_base.h",
     "payments/strike_database_integrator_test_strike_database.cc",
     "payments/strike_database_integrator_test_strike_database.h",
-    "payments/upi_vpa_save_manager.cc",
-    "payments/upi_vpa_save_manager.h",
     "payments/webauthn_callback_types.h",
     "personal_data_manager.cc",
     "personal_data_manager.h",
@@ -232,6 +235,7 @@ jumbo_static_library("browser") {
     "ui/payments/card_unmask_prompt_controller_impl.cc",
     "ui/payments/card_unmask_prompt_controller_impl.h",
     "ui/payments/card_unmask_prompt_view.h",
+    "ui/payments/payments_bubble_closed_reasons.h",
     "ui/popup_item_ids.h",
     "ui/popup_types.h",
     "ui/region_combobox_model.cc",
@@ -306,25 +310,15 @@ jumbo_static_library("browser") {
     ]
   }
 
-  if (!is_android) {
-    sources += [
-      "ui/payments/local_card_migration_bubble_controller.h",
-      "ui/payments/local_card_migration_dialog_controller.h",
-    ]
-  }
-
   if (!is_ios) {
     sources += [
-      "autofill_address_policy_handler.cc",
-      "autofill_address_policy_handler.h",
-      "autofill_credit_card_policy_handler.cc",
-      "autofill_credit_card_policy_handler.h",
       "autofill_policy_handler.cc",
       "autofill_policy_handler.h",
       "payments/credit_card_fido_authenticator.cc",
       "payments/credit_card_fido_authenticator.h",
       "payments/fido_authentication_strike_database.cc",
       "payments/fido_authentication_strike_database.h",
+      "payments/internal_authenticator.h",
     ]
   }
 
@@ -353,6 +347,8 @@ jumbo_static_library("browser") {
     "//components/keyed_service/core",
     "//components/leveldb_proto",
     "//components/os_crypt",
+    "//components/policy/core/browser",
+    "//components/policy/core/common",
     "//components/pref_registry",
     "//components/prefs",
     "//components/signin/public/base",
@@ -360,6 +356,7 @@ jumbo_static_library("browser") {
     "//components/strings",
     "//components/sync",
     "//components/variations/net",
+    "//components/variations/service:service",
     "//components/version_info",
     "//components/webdata/common",
     "//crypto",
@@ -383,14 +380,20 @@ jumbo_static_library("browser") {
   ]
 
   if (!is_ios) {
-    deps += [
-      "//components/policy/core/browser",
-      "//components/policy/core/common",
-      "//third_party/blink/public/common",
-    ]
+    deps += [ "//third_party/blink/public/common" ]
   }
 
   if (!is_android && !is_ios) {
+    sources += [
+      "payments/local_card_migration_manager.cc",
+      "payments/local_card_migration_manager.h",
+      "payments/local_card_migration_strike_database.cc",
+      "payments/local_card_migration_strike_database.h",
+      "payments/upi_vpa_save_manager.cc",
+      "payments/upi_vpa_save_manager.h",
+      "ui/payments/local_card_migration_bubble_controller.h",
+      "ui/payments/local_card_migration_dialog_controller.h",
+    ]
     deps += [
       "//ui/native_theme",
       "//ui/native_theme:native_theme_browser",
@@ -420,8 +423,6 @@ jumbo_static_library("test_support") {
     "payments/test_credit_card_save_strike_database.cc",
     "payments/test_credit_card_save_strike_database.h",
     "payments/test_legal_message_line.h",
-    "payments/test_local_card_migration_manager.cc",
-    "payments/test_local_card_migration_manager.h",
     "payments/test_payments_client.cc",
     "payments/test_payments_client.h",
     "payments/test_strike_database.cc",
@@ -462,11 +463,11 @@ jumbo_static_library("test_support") {
     "webdata/autofill_sync_bridge_test_util.h",
     "webdata/mock_autofill_webdata_backend.cc",
     "webdata/mock_autofill_webdata_backend.h",
+    "webdata/mock_autofill_webdata_service.cc",
+    "webdata/mock_autofill_webdata_service.h",
   ]
 
-  public_deps = [
-    ":browser",
-  ]
+  public_deps = [ ":browser" ]
 
   deps = [
     ":autofill_address_rewriter_resources",
@@ -500,9 +501,17 @@ jumbo_static_library("test_support") {
     sources += [
       "payments/test_credit_card_fido_authenticator.cc",
       "payments/test_credit_card_fido_authenticator.h",
+      "payments/test_internal_authenticator.h",
     ]
 
     deps += [ "//third_party/blink/public/common" ]
+  }
+
+  if (!is_ios && !is_android) {
+    sources += [
+      "payments/test_local_card_migration_manager.cc",
+      "payments/test_local_card_migration_manager.h",
+    ]
   }
 }
 
@@ -523,10 +532,8 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/autofill/merge/output/singlemerge.out",
     "//components/test/data/autofill/merge/output/validation.out",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 source_set("unit_tests") {
@@ -536,6 +543,8 @@ source_set("unit_tests") {
     "address_normalizer_impl_unittest.cc",
     "address_rewriter_unittest.cc",
     "autocomplete_history_manager_unittest.cc",
+    "autofill_address_policy_handler_unittest.cc",
+    "autofill_credit_card_policy_handler_unittest.cc",
     "autofill_data_util_unittest.cc",
     "autofill_download_manager_unittest.cc",
     "autofill_driver_factory_unittest.cc",
@@ -570,6 +579,7 @@ source_set("unit_tests") {
     "form_structure_unittest.cc",
     "geo/address_i18n_unittest.cc",
     "geo/autofill_country_unittest.cc",
+    "geo/country_names_for_locale_unittest.cc",
     "geo/country_names_unittest.cc",
     "geo/phone_number_i18n_unittest.cc",
     "geo/subkey_requester_unittest.cc",
@@ -581,7 +591,6 @@ source_set("unit_tests") {
     "payments/credit_card_save_manager_unittest.cc",
     "payments/full_card_request_unittest.cc",
     "payments/legal_message_line_unittest.cc",
-    "payments/local_card_migration_manager_unittest.cc",
     "payments/payments_client_unittest.cc",
     "payments/payments_service_url_unittest.cc",
     "payments/payments_util_unittest.cc",
@@ -618,8 +627,6 @@ source_set("unit_tests") {
 
   if (!is_ios) {
     sources += [
-      "autofill_address_policy_handler_unittest.cc",
-      "autofill_credit_card_policy_handler_unittest.cc",
       "autofill_policy_handler_unittest.cc",
       "payments/credit_card_fido_authenticator_unittest.cc",
     ]
@@ -627,6 +634,7 @@ source_set("unit_tests") {
 
   if (!is_ios && !is_android) {
     sources += [
+      "payments/local_card_migration_manager_unittest.cc",
       "ui/address_contact_form_label_formatter_unittest.cc",
       "ui/address_email_form_label_formatter_unittest.cc",
       "ui/address_form_label_formatter_unittest.cc",
@@ -648,9 +656,11 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/common",
+    "//components/infobars/core:feature_flags",
     "//components/leveldb_proto",
     "//components/os_crypt",
     "//components/os_crypt:test_support",
+    "//components/policy/core/common",
     "//components/prefs:test_support",
     "//components/resources",
     "//components/security_state/core",
@@ -661,6 +671,7 @@ source_set("unit_tests") {
     "//components/sync/driver:test_support",
     "//components/ukm",
     "//components/ukm:test_support",
+    "//components/unified_consent",
     "//components/variations",
     "//components/variations:test_support",
     "//components/variations/net",
@@ -684,17 +695,12 @@ source_set("unit_tests") {
   ]
 
   if (!is_ios) {
-    deps += [
-      "//components/policy/core/common",
-      "//third_party/blink/public/common",
-    ]
+    deps += [ "//third_party/blink/public/common" ]
   }
 }
 
 fuzzer_test("form_structure_fuzzer") {
-  sources = [
-    "form_structure_fuzzer.cc",
-  ]
+  sources = [ "form_structure_fuzzer.cc" ]
   deps = [
     # TODO(crbug.com/896313): Reduce the dependency on "browser".
     ":browser",
@@ -707,9 +713,7 @@ fuzzer_test("form_structure_fuzzer") {
 
 if (use_libfuzzer) {
   fuzzer_test("form_structure_process_query_response_fuzzer") {
-    sources = [
-      "form_structure_process_query_response_fuzzer.cc",
-    ]
+    sources = [ "form_structure_process_query_response_fuzzer.cc" ]
     deps = [
       # TODO(crbug.com/896313): Reduce the dependency on "browser".
       ":browser",
@@ -722,9 +726,7 @@ if (use_libfuzzer) {
 }
 
 fuzzer_test("autofill_phone_number_i18n_fuzzer") {
-  sources = [
-    "geo/phone_number_i18n_fuzzer.cc",
-  ]
+  sources = [ "geo/phone_number_i18n_fuzzer.cc" ]
 
   deps = [
     # TODO(crbug.com/896313): Reduce the dependency on "browser".

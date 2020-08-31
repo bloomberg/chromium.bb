@@ -16,6 +16,7 @@
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/proto/action.pb.h"
+#include "remoting/proto/control.pb.h"
 #include "remoting/proto/process_stats.pb.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/file_transfer_helpers.h"
@@ -124,11 +125,6 @@ IPC_MESSAGE_CONTROL(ChromotingNetworkDaemonMsg_HostStarted,
 
 IPC_MESSAGE_CONTROL(ChromotingNetworkDaemonMsg_HostShutdown)
 
-// Instructs the daemon process to update the config file, replacing the current
-// OAuth refresh token with the one provided.
-IPC_MESSAGE_CONTROL(ChromotingNetworkDaemonMsg_UpdateConfigRefreshToken,
-                    std::string /* token */)
-
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the desktop to the daemon process.
 
@@ -202,6 +198,10 @@ IPC_MESSAGE_CONTROL(ChromotingDesktopNetworkMsg_MouseCursor,
 // |serialized_event| is a serialized protocol::ClipboardEvent.
 IPC_MESSAGE_CONTROL(ChromotingDesktopNetworkMsg_InjectClipboardEvent,
                     std::string /* serialized_event */)
+
+// Notifies the network process that the active keyboard layout has changed.
+IPC_MESSAGE_CONTROL(ChromotingDesktopNetworkMsg_KeyboardChanged,
+                    remoting::protocol::KeyboardLayout /* layout */)
 
 IPC_ENUM_TRAITS_MAX_VALUE(remoting::protocol::ErrorCode,
                           remoting::protocol::ERROR_CODE_MAX)

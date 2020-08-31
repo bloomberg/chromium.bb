@@ -23,7 +23,6 @@ executable("vr_testapp") {
 
   deps = [
     ":assets_component_version_header",
-    ":vr_testapp_pak",
     ":vr_testapp_resources",
     "//chrome/browser/vr:vr_common",
     "//chrome/browser/vr:vr_test_support",
@@ -41,12 +40,11 @@ executable("vr_testapp") {
     "//ui/ozone",
     "//ui/platform_window",
   ]
+  data_deps = [ ":vr_testapp_pak" ]
 }
 
 process_version("assets_component_version_header") {
-  sources = [
-    "../../resources/vr/assets/VERSION",
-  ]
+  sources = [ "../../resources/vr/assets/VERSION" ]
   template_file = "assets_component_version.h.in"
   output = "$target_gen_dir/assets_component_version.h"
 }

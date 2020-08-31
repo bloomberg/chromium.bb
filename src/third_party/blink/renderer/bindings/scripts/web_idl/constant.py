@@ -50,7 +50,7 @@ class Constant(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
 
         ir = make_copy(ir)
         WithIdentifier.__init__(self, ir)
-        WithExtendedAttributes.__init__(self, ir)
+        WithExtendedAttributes.__init__(self, ir, readonly=True)
         WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
         WithExposure.__init__(self, ir, readonly=True)
         WithOwner.__init__(self, owner)
@@ -65,6 +65,14 @@ class Constant(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
     def idl_type(self):
         """Returns the type"""
         return self._idl_type
+
+    @property
+    def is_static(self):
+        return True
+
+    @property
+    def is_readonly(self):
+        return True
 
     @property
     def value(self):

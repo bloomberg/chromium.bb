@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/win/resource_util.h"
 
@@ -37,7 +37,7 @@ bool ResourceDataDLL::GetStringPiece(uint16_t resource_id,
                                            resource_id,
                                            &data_ptr,
                                            &data_size)) {
-    data->set(static_cast<const char*>(data_ptr), data_size);
+    *data = base::StringPiece(static_cast<const char*>(data_ptr), data_size);
     return true;
   }
   return false;

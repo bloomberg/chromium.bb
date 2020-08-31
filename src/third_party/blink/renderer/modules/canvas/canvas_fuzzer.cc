@@ -44,14 +44,13 @@ class PageHelper {
   void SetBodyContentFromFuzzer(const uint8_t* data, size_t size) {
     FuzzedDataProvider provider(data, size);
     std::string body_content = provider.ConsumeBytesAsString(size);
-    GetDocument().documentElement()->SetInnerHTMLFromString(
+    GetDocument().documentElement()->setInnerHTML(
         String::FromUTF8(body_content));
     UpdateAllLifecyclePhasesForTest();
   }
 
   void UpdateAllLifecyclePhasesForTest() {
-    GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
     GetDocument().View()->RunPostLifecycleSteps();
   }
 

@@ -49,7 +49,7 @@ declare_args() {
 
 # Configures media options for cast.  See media/media_options.gni
 cast_mojo_media_services = []
-cast_mojo_media_host = "none"
+cast_mojo_media_host = ""
 
 if (enable_cast_renderer) {
   # In this path, mojo media services are hosted in two processes:
@@ -66,14 +66,16 @@ if (enable_cast_renderer) {
   }
 
   cast_mojo_media_host = "gpu"
-} else if (is_android && !is_cast_audio_only) {
+} else if (is_android) {
   # On Android, all the enabled mojo media services run in the process specified
   # by "cast_mojo_media_host".
   cast_mojo_media_services = [
     "cdm",
     "audio_decoder",
-    "video_decoder",
   ]
+  if (!is_cast_audio_only) {
+    cast_mojo_media_services += [ "video_decoder" ]
+  }
 
   cast_mojo_media_host = "gpu"
 }

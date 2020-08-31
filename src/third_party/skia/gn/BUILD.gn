@@ -13,7 +13,6 @@ declare_args() {
   extra_cflags_c = []
   extra_cflags_cc = []
   extra_ldflags = []
-  use_PIC = true
 
   malloc = ""
   xcode_sysroot = ""
@@ -58,6 +57,15 @@ config("default") {
     } else {
       cflags += [ "-Werror" ]
     }
+  }
+
+  # Disable warnings about unknown attributes.
+  # (These unknown attribute warnings are on by default, so we don't make
+  # disabling them part of :warnings, as some targets remove :warnings.)
+  if (is_win && !is_clang) {
+    cflags += [ "/wd5030" ]
+  } else {
+    cflags += [ "-Wno-attributes" ]
   }
 
   if (is_fuchsia && using_fuchsia_sdk) {
@@ -124,10 +132,10 @@ config("default") {
       "$win_vc/Tools/MSVC/$win_toolchain_version/lib/$target_cpu",
     ]
   } else {
-    if (use_PIC) {
-      cflags += [ "-fPIC" ]
-    }
-    cflags += [ "-fstrict-aliasing" ]
+    cflags += [
+      "-fstrict-aliasing",
+      "-fPIC",
+    ]
     cflags_cc += [ "-std=c++17" ]
 
     # The main idea is to slim the exported API, but these flags also improve link time on Mac.
@@ -218,9 +226,6 @@ config("default") {
 
   if (is_linux) {
     libs += [ "pthread" ]
-    if (is_debug && sanitize == "") {
-      defines += [ "_GLIBCXX_DEBUG" ]
-    }
   }
 
   if (is_mac) {
@@ -254,12 +259,9 @@ config("default") {
     # or pass one of the couple common aliases used by the bots.
     sanitizers = sanitize
 
-    if (sanitize == "ASAN" || sanitize == "UBSAN") {
+    if (sanitize == "ASAN") {
       # ASAN implicitly runs all UBSAN checks also.
-      sanitizers = "undefined"
-      if (sanitize == "ASAN") {
-        sanitizers += ",address"
-      }
+      sanitizers = "undefined,address"
 
       if (is_android) {
         # TODO(mtklein): work out UBSAN link errors
@@ -278,15 +280,24 @@ config("default") {
       "-fno-sanitize-recover=$sanitizers",
       "-fsanitize-blacklist=$_blacklist",
     ]
-    ldflags += [ "-fsanitize=$sanitizers" ]
 
     if (is_win) {
-      cflags += [ "/FI$_blacklist" ]
+      cflags += [
+        "/FI$_blacklist",
+
+        # On Release builds, we get strange warnings about string literals.
+        "/GF-",
+      ]
+
+      assert(clang_win != "")
+      libs += [ "$clang_win/lib/clang/$clang_win_version/lib/windows/clang_rt.asan-x86_64.lib" ]
     } else {
       cflags += [
         "-include$_blacklist",
         "-fno-omit-frame-pointer",
       ]
+
+      ldflags += [ "-fsanitize=$sanitizers" ]
     }
 
     if (is_linux) {
@@ -301,6 +312,11 @@ config("default") {
       cflags_cc += [ "-fno-aligned-allocation" ]
     }
   }
+}
+
+# See skia:9731.
+config("recover_pointer_overflow") {
+  cflags = [ "-fsanitize-recover=pointer-overflow" ]
 }
 
 config("no_exceptions") {
@@ -322,18 +338,27 @@ config("warnings") {
       # Disable a bunch of warnings:
       "/wd4244",  # conversion from 'float' to 'int', possible loss of data
       "/wd4267",  # conversion from 'size_t' to 'int', possible loss of data
-      "/wd4800",  # forcing value to bool 'true' or 'false' (performance warning)
+      "/wd4800",  # forcing value to bool 'true' or 'false' (performance
+                  # warning)
 
       # Probably only triggers when /EHsc is enabled.
       "/wd4291",  # no matching operator delete found;
-                  # memory will not be freed if initialization throws an exception
+                  # memory will not be freed if initialization throws an
+                  # exception
 
       # These only show up in shared builds:
-      "/wd4251",  # class 'type' needs to have dll-interface to be used by clients of class 'type2'
-      "/wd4275",  # non dll-interface class 'base' used as base for dll-interface class 'derived'
+      "/wd4251",  # class 'type' needs to have dll-interface to be used by
+                  # clients of class 'type2'
+      "/wd4275",  # non dll-interface class 'base' used as base for
+                  # dll-interface class 'derived'
 
       # It'd be nice to fix these and turn this on:
-      "/wd5041",  # out-of-line definition for constexpr static data member is not needed and is deprecated in C++17
+      "/wd5041",  # out-of-line definition for constexpr static data member is
+                  # not needed and is deprecated in C++17
+
+      # warning C4996: 'std::result_of_t': warning STL4014: std::result_of and std::result_of_t are
+      # deprecated in C++17. They are superseded by std::invoke_result and std::invoke_result_t.
+      "/wd4996",
     ]
   } else {
     cflags += [
@@ -350,13 +375,7 @@ config("warnings") {
     cflags_cc += [
       "-Wnon-virtual-dtor",
       "-Wno-noexcept-type",
-
-      # GCC 8+ bundles a number of fundamentally different warnings under this same flag,
-      # ranging from false positive (only copying a prefix of SkRRect from serialized form)
-      # to possibly useful (memcpy() with non-trivial types).  Annoyingly you can't really
-      # break them up any finer.
-      # TODO(mtklein): suppress / fix each site as appropriate?
-      "-Wno-class-memaccess",
+      "-Wno-redundant-move",  #TODO: gcc conflict with return-std-move-in-c++11
     ]
   }
 
@@ -364,7 +383,8 @@ config("warnings") {
     cflags += [
       "-fcolor-diagnostics",
       "-Weverything",
-      "-Wno-unknown-warning-option",  # Let older Clangs ignore newer Clangs' warnings.
+      "-Wno-unknown-warning-option",  # Let older Clangs ignore newer Clangs'
+                                      # warnings.
     ]
 
     if (target_cpu == "arm" && is_ios) {
@@ -423,7 +443,6 @@ config("warnings") {
 
     # We are unlikely to want to fix these.
     cflags += [
-      "-Wno-bad-function-cast",
       "-Wno-covered-switch-default",
       "-Wno-deprecated",
       "-Wno-missing-noreturn",
@@ -435,7 +454,6 @@ config("warnings") {
       "-Wno-c++98-compat",
       "-Wno-c++98-compat-pedantic",
       "-Wno-undefined-func-template",
-      "-Wno-return-std-move-in-c++11",
     ]
     cflags_objc += [
       "-Wno-direct-ivar-access",
@@ -444,6 +462,30 @@ config("warnings") {
     cflags_objcc += [
       "-Wno-direct-ivar-access",
       "-Wno-objcc-interface-ivars",
+    ]
+
+    # Wno-deprecated turns off the whole group, but also has its own warnings like
+    # out-of-line definition of constexpr static data member is redundant in C++17 and is deprecated [-Werror,-Wdeprecated]
+    # but we would like others. Created from clang/include/clang/Basic/DiagnosticGroups.td
+    cflags += [
+      "-Wdeprecated-anon-enum-enum-conversion",
+      "-Wdeprecated-array-compare",
+      "-Wdeprecated-attributes",
+      "-Wdeprecated-comma-subscript",
+      "-Wdeprecated-copy",
+
+      #"-Wdeprecated-copy-dtor",
+      #"-Wdeprecated-declarations",
+      "-Wdeprecated-dynamic-exception-spec",
+      "-Wdeprecated-enum-compare",
+      "-Wdeprecated-enum-compare-conditional",
+      "-Wdeprecated-enum-enum-conversion",
+      "-Wdeprecated-enum-float-conversion",
+      "-Wdeprecated-increment-bool",
+      "-Wdeprecated-register",
+      "-Wdeprecated-this-capture",
+      "-Wdeprecated-volatile",
+      "-Wdeprecated-writable-str",
     ]
   }
   if (!is_win || is_clang) {
@@ -546,7 +588,8 @@ config("executable") {
   } else if (is_win) {
     ldflags = [
       "/SUBSYSTEM:CONSOLE",  # Quiet "no subsystem specified; CONSOLE assumed".
-      "/INCREMENTAL:NO",  # Quiet warnings about failing to incrementally link by never trying to.
+      "/INCREMENTAL:NO",  # Quiet warnings about failing to incrementally link
+                          # by never trying to.
     ]
   }
 }

@@ -19,11 +19,11 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/download/drag_download_util.h"
-#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
@@ -36,7 +36,6 @@
 #include "content/browser/web_contents/aura/gesture_nav_simple.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/guest_mode.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -54,7 +53,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "net/base/filename_util.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"
@@ -72,7 +71,6 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
 #include "ui/events/blink/web_input_event.h"
@@ -102,16 +100,13 @@ WebContentsViewAura::RenderWidgetHostViewCreateFunction
 
 RenderWidgetHostViewAura* ToRenderWidgetHostViewAura(
     RenderWidgetHostView* view) {
-  if (!view || (RenderViewHostFactory::has_factory() &&
-      !RenderViewHostFactory::is_real_render_view_host())) {
+  if (RenderViewHostFactory::has_factory() &&
+      !RenderViewHostFactory::is_real_render_view_host()) {
     return nullptr;  // Can't cast to RenderWidgetHostViewAura in unit tests.
   }
 
-  RenderViewHost* rvh = RenderViewHost::From(view->GetRenderWidgetHost());
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      rvh ? WebContents::FromRenderViewHost(rvh) : nullptr);
-  if (BrowserPluginGuest::IsGuest(web_contents))
-    return nullptr;
+  DCHECK(!view || !static_cast<RenderWidgetHostViewBase*>(view)
+                       ->IsRenderWidgetHostViewChildFrame());
   return static_cast<RenderWidgetHostViewAura*>(view);
 }
 
@@ -160,7 +155,7 @@ class WebDragSourceAura : public NotificationObserver {
 // Fill out the OSExchangeData with a file contents, synthesizing a name if
 // necessary.
 void PrepareDragForFileContents(const DropData& drop_data,
-                                ui::OSExchangeData::Provider* provider) {
+                                ui::OSExchangeDataProvider* provider) {
   base::Optional<base::FilePath> filename =
       drop_data.GetSafeFilenameForImageFileContents();
   if (filename)
@@ -169,10 +164,9 @@ void PrepareDragForFileContents(const DropData& drop_data,
 #endif
 
 #if defined(OS_WIN)
-void PrepareDragForDownload(
-    const DropData& drop_data,
-    ui::OSExchangeData::Provider* provider,
-    WebContentsImpl* web_contents) {
+void PrepareDragForDownload(const DropData& drop_data,
+                            ui::OSExchangeDataProvider* provider,
+                            WebContentsImpl* web_contents) {
   const GURL& page_url = web_contents->GetLastCommittedURL();
   const std::string& page_encoding = web_contents->GetEncoding();
 
@@ -219,8 +213,8 @@ void PrepareDragForDownload(
       download_path, base::File(), download_url,
       Referrer(page_url, drop_data.referrer_policy), page_encoding,
       web_contents);
-  ui::OSExchangeData::DownloadFileInfo file_download(base::FilePath(),
-                                                     std::move(download_file));
+  ui::DownloadFileInfo file_download(base::FilePath(),
+                                     std::move(download_file));
   provider->SetDownloadFileInfo(&file_download);
 }
 #endif  // defined(OS_WIN)
@@ -234,7 +228,7 @@ const ui::ClipboardFormatType& GetFileSystemFileFormatType() {
 
 // Utility to fill a ui::OSExchangeDataProvider object from DropData.
 void PrepareDragData(const DropData& drop_data,
-                     ui::OSExchangeData::Provider* provider,
+                     ui::OSExchangeDataProvider* provider,
                      WebContentsImpl* web_contents) {
   provider->MarkOriginatedFromRenderer();
 #if defined(OS_WIN)
@@ -319,8 +313,7 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
 
   GURL url;
   base::string16 url_title;
-  data.GetURLAndTitle(
-      ui::OSExchangeData::DO_NOT_CONVERT_FILENAMES, &url, &url_title);
+  data.GetURLAndTitle(ui::DO_NOT_CONVERT_FILENAMES, &url, &url_title);
   if (url.is_valid()) {
     drop_data->url = url;
     drop_data->url_title = url_title;
@@ -524,9 +517,9 @@ void WebContentsViewAura::AsyncDropTempFileDeleter::DeleteAllFilesAsync()
 
 void WebContentsViewAura::AsyncDropTempFileDeleter::DeleteFileAsync(
     const base::FilePath& path) const {
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(base::IgnoreResult(&base::DeleteFile), std::move(path),
                      false));
@@ -717,23 +710,18 @@ WebContentsViewAura::~WebContentsViewAura() {
   window_.reset();
 }
 
-void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
-  if (web_contents_->GetInterstitialPage())
-    web_contents_->GetInterstitialPage()->SetSize(size);
-  RenderWidgetHostView* rwhv =
-      web_contents_->GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->SetSize(size);
-}
-
-void WebContentsViewAura::EndDrag(RenderWidgetHost* source_rwh,
-                                  blink::WebDragOperationsMask ops) {
+void WebContentsViewAura::EndDrag(
+    base::WeakPtr<RenderWidgetHostImpl> source_rwh_weak_ptr,
+    blink::WebDragOperationsMask ops) {
   drag_start_process_id_ = ChildProcessHost::kInvalidUniqueID;
   drag_start_view_id_ = GlobalRoutingID(ChildProcessHost::kInvalidUniqueID,
                                         MSG_ROUTING_NONE);
 
   if (!web_contents_)
     return;
+
+  // It is OK for source_rwh to be null.
+  RenderWidgetHost* source_rwh = source_rwh_weak_ptr.get();
 
   aura::Window* window = GetContentNativeView();
   gfx::PointF screen_loc =
@@ -822,26 +810,9 @@ void WebContentsViewAura::GetContainerBounds(gfx::Rect* out) const {
   *out = GetNativeView()->GetBoundsInScreen();
 }
 
-void WebContentsViewAura::SizeContents(const gfx::Size& size) {
-  gfx::Rect bounds = window_->bounds();
-  if (bounds.size() != size) {
-    bounds.set_size(size);
-    window_->SetBounds(bounds);
-  } else {
-    // Our size matches what we want but the renderers size may not match.
-    // Pretend we were resized so that the renderers size is updated too.
-    SizeChangedCommon(size);
-  }
-}
-
 void WebContentsViewAura::Focus() {
   if (delegate_)
     delegate_->ResetStoredFocus();
-
-  if (web_contents_->GetInterstitialPage()) {
-    web_contents_->GetInterstitialPage()->Focus();
-    return;
-  }
 
   if (delegate_ && delegate_->Focus())
     return;
@@ -879,10 +850,6 @@ void WebContentsViewAura::FocusThroughTabTraversal(bool reverse) {
   if (delegate_)
     delegate_->ResetStoredFocus();
 
-  if (web_contents_->ShowingInterstitialPage()) {
-    web_contents_->GetInterstitialPage()->FocusThroughTabTraversal(reverse);
-    return;
-  }
   content::RenderWidgetHostView* fullscreen_view =
       web_contents_->GetFullscreenRenderWidgetHostView();
   if (fullscreen_view) {
@@ -1010,9 +977,6 @@ void WebContentsViewAura::SetPageTitle(const base::string16& title) {
     child_window->SetTitle(title);
 }
 
-void WebContentsViewAura::RenderViewCreated(RenderViewHost* host) {
-}
-
 void WebContentsViewAura::RenderViewReady() {}
 
 void WebContentsViewAura::RenderViewHostChanged(RenderViewHost* old_host,
@@ -1074,7 +1038,7 @@ void WebContentsViewAura::StartDragging(
   ui::TouchSelectionController* selection_controller = GetSelectionController();
   if (selection_controller)
     selection_controller->HideAndDisallowShowingAutomatically();
-  std::unique_ptr<ui::OSExchangeData::Provider> provider =
+  std::unique_ptr<ui::OSExchangeDataProvider> provider =
       ui::OSExchangeDataProviderFactory::CreateProvider();
   PrepareDragData(drop_data, provider.get(), web_contents_);
 
@@ -1114,11 +1078,11 @@ void WebContentsViewAura::StartDragging(
   // callback yet. So we have to make sure to delay calling EndDrag until drop
   // is done.
   if (!drag_in_progress_)
-    EndDrag(source_rwh_weak_ptr.get(), ConvertToWeb(result_op));
+    EndDrag(std::move(source_rwh_weak_ptr), ConvertToWeb(result_op));
   else
     end_drag_runner_ = base::ScopedClosureRunner(base::BindOnce(
         &WebContentsViewAura::EndDrag, weak_ptr_factory_.GetWeakPtr(),
-        source_rwh_weak_ptr.get(), ConvertToWeb(result_op)));
+        std::move(source_rwh_weak_ptr), ConvertToWeb(result_op)));
 }
 
 void WebContentsViewAura::UpdateDragCursor(blink::WebDragOperation operation) {
@@ -1154,7 +1118,9 @@ gfx::Size WebContentsViewAura::GetMaximumSize() const {
 
 void WebContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                           const gfx::Rect& new_bounds) {
-  SizeChangedCommon(new_bounds.size());
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetSize(new_bounds.size());
 
   // Constrained web dialogs, need to be kept centered over our content area.
   for (size_t i = 0; i < window_->children().size(); i++) {
@@ -1241,7 +1207,13 @@ void WebContentsViewAura::OnMouseEvent(ui::MouseEvent* event) {
     // raise-on-click manually, this may override user settings that prevent
     // focus-stealing.
 #if !defined(USE_X11)
+    // It is possible for the web-contents to be destroyed while it is being
+    // activated. Use a weak-ptr to track whether that happened or not.
+    // More in https://crbug.com/1040725
+    auto weak_this = weak_ptr_factory_.GetWeakPtr();
     web_contents_->GetDelegate()->ActivateContents(web_contents_);
+    if (!weak_this)
+      return;
 #endif
   }
 
@@ -1293,6 +1265,9 @@ void WebContentsViewAura::DragEnteredCallback(
 }
 
 void WebContentsViewAura::OnDragEntered(const ui::DropTargetEvent& event) {
+  if (web_contents_->ShouldIgnoreInputEvents())
+    return;
+
 #if defined(OS_WIN)
   async_drop_navigation_observer_.reset();
 #endif
@@ -1372,6 +1347,9 @@ void WebContentsViewAura::DragUpdatedCallback(
 }
 
 int WebContentsViewAura::OnDragUpdated(const ui::DropTargetEvent& event) {
+  if (web_contents_->ShouldIgnoreInputEvents())
+    return ui::DragDropTypes::DRAG_NONE;
+
   std::unique_ptr<DropData> drop_data = std::make_unique<DropData>();
   // Calling this here as event.data might become invalid inside the callback.
   PrepareDropData(drop_data.get(), event.data());
@@ -1387,6 +1365,12 @@ int WebContentsViewAura::OnDragUpdated(const ui::DropTargetEvent& event) {
 }
 
 void WebContentsViewAura::OnDragExited() {
+  if (web_contents_->ShouldIgnoreInputEvents())
+    return;
+  CompleteDragExit();
+}
+
+void WebContentsViewAura::CompleteDragExit() {
   drag_in_progress_ = false;
 
   if (current_rvh_for_drag_ !=
@@ -1469,6 +1453,10 @@ void WebContentsViewAura::FinishOnPerformDropCallback(
                context.transformed_pt.value(), context.screen_pt, key_modifiers,
                /*drop_allowed=*/false);
     }
+
+    // The drop not being continued requires this to cleanup the drag data.
+    CompleteDragExit();
+
     return;
   }
 
@@ -1511,6 +1499,9 @@ void WebContentsViewAura::FinishOnPerformDropCallback(
 int WebContentsViewAura::OnPerformDrop(
     const ui::DropTargetEvent& event,
     std::unique_ptr<ui::OSExchangeData> data) {
+  if (web_contents_->ShouldIgnoreInputEvents())
+    return ui::DragDropTypes::DRAG_NONE;
+
   web_contents_->GetInputEventRouter()
       ->GetRenderWidgetHostAtPointAsynchronously(
           web_contents_->GetRenderViewHost()->GetWidget()->GetView(),
@@ -1526,6 +1517,8 @@ void WebContentsViewAura::CompleteDrop(RenderWidgetHostImpl* target_rwh,
                                        const gfx::PointF& client_pt,
                                        const gfx::PointF& screen_pt,
                                        int key_modifiers) {
+  web_contents_->Focus();
+
   target_rwh->DragTargetDrop(drop_data, client_pt, screen_pt, key_modifiers);
   if (drag_dest_delegate_)
     drag_dest_delegate_->OnDrop();
@@ -1623,19 +1616,17 @@ bool WebContentsViewAura::DoBrowserControlsShrinkRendererSize() const {
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-void WebContentsViewAura::ShowPopupMenu(RenderFrameHost* render_frame_host,
-                                        const gfx::Rect& bounds,
-                                        int item_height,
-                                        double item_font_size,
-                                        int selected_item,
-                                        const std::vector<MenuItem>& items,
-                                        bool right_aligned,
-                                        bool allow_multiple_selection) {
-  NOTIMPLEMENTED() << " show " << items.size() << " menu items";
-}
-
-void WebContentsViewAura::HidePopupMenu() {
-  NOTIMPLEMENTED();
+void WebContentsViewAura::ShowPopupMenu(
+    RenderFrameHost* render_frame_host,
+    mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
+    const gfx::Rect& bounds,
+    int item_height,
+    double item_font_size,
+    int selected_item,
+    std::vector<blink::mojom::MenuItemPtr> menu_items,
+    bool right_aligned,
+    bool allow_multiple_selection) {
+  NOTIMPLEMENTED() << " show " << menu_items.size() << " menu items";
 }
 #endif
 

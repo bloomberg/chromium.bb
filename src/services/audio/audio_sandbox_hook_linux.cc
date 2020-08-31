@@ -129,13 +129,16 @@ void AddPulseAudioFilePermissions(
                                   /*recursive_only=*/false);
   }
 
-  const std::string run_user_path =
-      base::StringPrintf("/run/user/%d", getuid());
-  permissions->push_back(BrokerFilePermission::ReadWriteCreate(run_user_path));
-  permissions->push_back(
-      BrokerFilePermission::ReadWriteCreate(run_user_path + "/pulse"));
-  permissions->push_back(BrokerFilePermission::ReadWriteCreateRecursive(
-      run_user_path + "/pulse/"));
+  const char* run_user_paths[] = {"/run/user", "/var/run/user"};
+  for (const char* run_user_path : run_user_paths) {
+    const std::string path =
+        base::StringPrintf("%s/%d", run_user_path, getuid());
+    permissions->push_back(BrokerFilePermission::ReadWriteCreate(path));
+    permissions->push_back(
+        BrokerFilePermission::ReadWriteCreate(path + "/pulse"));
+    permissions->push_back(
+        BrokerFilePermission::ReadWriteCreateRecursive(path + "/pulse/"));
+  }
 }
 #endif
 
@@ -158,7 +161,7 @@ std::vector<BrokerFilePermission> GetAudioFilePermissions() {
 
 void LoadAudioLibraries() {
   const std::string libraries[]{"libasound.so.2", "libpulse.so.0",
-                                "libnss_files.so.2"};
+                                "libnss_files.so.2", "libnss_compat.so.2"};
   for (const auto& library_name : libraries) {
     if (nullptr ==
         dlopen(library_name.c_str(), RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE)) {

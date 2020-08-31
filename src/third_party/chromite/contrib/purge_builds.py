@@ -201,7 +201,7 @@ def SafeList(ctx, url):
     return ctx.List(url, details=True)
   except Exception as e:
     # We can fail for lots of repeated random reasons.
-    logging.warn('List of "%s" failed, ignoring: "%s"', url, e)
+    logging.warning('List of "%s" failed, ignoring: "%s"', url, e)
     return []
 
 
@@ -385,7 +385,7 @@ def Expire(ctx, dryrun, url):
       ctx.Move(url, target_url)
     except Exception as e:
       # We can fail for lots of repeated random reasons.
-      logging.warn('Move of "%s" failed, ignoring: "%s"', url, e)
+      logging.warning('Move of "%s" failed, ignoring: "%s"', url, e)
 
 
 def ExpandAndExpire(ctx, dryrun, expired_cutoff, candidate):

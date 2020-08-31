@@ -4,13 +4,32 @@
 
 #include "ash/public/cpp/ash_features.h"
 
+#include <vector>
+
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
+#include "base/strings/string_split.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "chromeos/constants/chromeos_switches.h"
 
 namespace ash {
 namespace features {
+
+namespace {
+
+bool ShouldHideShelfButtonsForBoard() {
+  std::vector<std::string> board =
+      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (board.empty())
+    return false;
+  return board[0] == "kukui" || board[0] == "eve" || board[0] == "nocturne" ||
+         board[0] == "hatch";
+}
+
+}  // namespace
 
 const base::Feature kAllowAmbientEQ{"AllowAmbientEQ",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -18,14 +37,35 @@ const base::Feature kAllowAmbientEQ{"AllowAmbientEQ",
 const base::Feature kAutoNightLight{"AutoNightLight",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCornerShortcuts{"CornerShortcuts",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContextualNudges{"ContextualNudges",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kDisplayAlignAssist{"DisplayAlignAssist",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDisplayChangeModal{"DisplayChangeModal",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kDisplayIdentification{"DisplayIdentification",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDockedMagnifier{"DockedMagnifier",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDragToSnapInClamshellMode{
-    "DragToSnapInClamshellMode", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DragToSnapInClamshellMode", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kMovablePartialScreenshot{
+    "MovablePartialScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableOverviewRoundedCorners{
     "EnableOverviewRoundedCorners", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kLimitAltTabToActiveDesk{"LimitAltTabToActiveDesk",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -50,21 +90,18 @@ const base::Feature kMediaSessionNotification{"MediaSessionNotification",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMultiDisplayOverviewAndSplitView{
-    "MultiDisplayOverviewAndSplitView", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNewOverviewLayout{"NewOverviewLayout",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
+    "MultiDisplayOverviewAndSplitView", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNotificationExpansionAnimation{
     "NotificationExpansionAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kNotificationExperimentalShortTimeouts{
+    "NotificationExperimentalShortTimeouts", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kNotificationScrollBar{"NotificationScrollBar",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kOverviewCrossFadeWallpaperBlur{
-    "OverviewCrossFadeWallpaperBlur", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kPipRoundedCorners{"PipRoundedCorners",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
@@ -81,11 +118,6 @@ const base::Feature kTrilinearFiltering{"TrilinearFiltering",
 const base::Feature kUnlockWithExternalBinary{
     "UnlockWithExternalBinary", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kViewsLogin{"ViewsLogin", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kVirtualDesks{"VirtualDesks",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -96,19 +128,35 @@ const base::Feature kSwapSideVolumeButtonsForOrientation{
     "SwapSideVolumeButtonsForOrientation", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUnifiedMessageCenterRefactor{
-    "UnifiedMessageCenterRefactor", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UnifiedMessageCenterRefactor", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSwipingFromLeftEdgeToGoBack{
-    "SwipingFromLeftEdgeToGoBack", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SwipingFromLeftEdgeToGoBack", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDragFromShelfToHomeOrOverview{
     "DragFromShelfToHomeOrOverview", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kHideShelfControlsInTabletMode{
+    "HideShelfControlsInTabletMode", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSystemTrayMicGainSetting{
+    "SystemTrayMicGainSetting", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kWebUITabStripTabDragIntegration{
+    "WebUITabStripTabDragIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kShelfAppScaling{"ShelfAppScaling",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
+}
+
+bool IsAltTabLimitedToActiveDesk() {
+  return base::FeatureList::IsEnabled(kLimitAltTabToActiveDesk);
 }
 
 bool IsAutoNightLightEnabled() {
@@ -145,6 +193,10 @@ bool IsNotificationScrollBarEnabled() {
   return base::FeatureList::IsEnabled(kNotificationScrollBar);
 }
 
+bool IsNotificationExperimentalShortTimeoutsEnabled() {
+  return base::FeatureList::IsEnabled(kNotificationExperimentalShortTimeouts);
+}
+
 bool IsPipRoundedCornersEnabled() {
   return base::FeatureList::IsEnabled(kPipRoundedCorners);
 }
@@ -157,19 +209,6 @@ bool IsTrilinearFilteringEnabled() {
   static bool use_trilinear_filtering =
       base::FeatureList::IsEnabled(kTrilinearFiltering);
   return use_trilinear_filtering;
-}
-
-bool IsVirtualDesksEnabled() {
-  return base::FeatureList::IsEnabled(kVirtualDesks);
-}
-
-bool IsViewsLoginEnabled() {
-  // Always show webui login if --show-webui-login is present, which is passed
-  // by session manager for automatic recovery. Otherwise, only show views
-  // login if the feature is enabled.
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             ash::switches::kShowWebUiLogin) &&
-         base::FeatureList::IsEnabled(kViewsLogin);
 }
 
 bool IsSupervisedUserDeprecationNoticeEnabled() {
@@ -200,11 +239,7 @@ bool IsBackgroundBlurEnabled() {
 }
 
 bool IsSwipingFromLeftEdgeToGoBackEnabled() {
-  // The kSwipingFromLeftEdgeToGoBack feature is only enabled on the devices
-  // that have hotseat enabled (i.e., on Krane and on Dogfood devices) in M80.
-  // See crbug.com/1030122 for details.
-  return base::FeatureList::IsEnabled(kSwipingFromLeftEdgeToGoBack) ||
-         chromeos::switches::ShouldShowShelfHotseat();
+  return base::FeatureList::IsEnabled(kSwipingFromLeftEdgeToGoBack);
 }
 
 bool IsDragFromShelfToHomeOrOverviewEnabled() {
@@ -217,6 +252,72 @@ bool IsDragFromShelfToHomeOrOverviewEnabled() {
 
 bool IsReduceDisplayNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kReduceDisplayNotifications);
+}
+
+bool IsHideShelfControlsInTabletModeEnabled() {
+  if (!IsDragFromShelfToHomeOrOverviewEnabled())
+    return false;
+
+  // Enable shelf navigation buttons by default on select number of boards.
+  static const bool hide_shelf_buttons = ShouldHideShelfButtonsForBoard();
+  if (hide_shelf_buttons)
+    return true;
+
+  return base::FeatureList::IsEnabled(kHideShelfControlsInTabletMode);
+}
+
+bool IsDisplayChangeModalEnabled() {
+  return base::FeatureList::IsEnabled(kDisplayChangeModal);
+}
+
+bool AreContextualNudgesEnabled() {
+  if (!IsHideShelfControlsInTabletModeEnabled())
+    return false;
+  return base::FeatureList::IsEnabled(kContextualNudges);
+}
+
+bool IsCornerShortcutsEnabled() {
+  return base::FeatureList::IsEnabled(kCornerShortcuts);
+}
+
+bool IsSystemTrayMicGainSettingEnabled() {
+  return base::FeatureList::IsEnabled(kSystemTrayMicGainSetting);
+}
+
+bool IsDisplayIdentificationEnabled() {
+  return base::FeatureList::IsEnabled(kDisplayIdentification);
+}
+
+bool IsWebUITabStripTabDragIntegrationEnabled() {
+  return base::FeatureList::IsEnabled(kWebUITabStripTabDragIntegration);
+}
+
+bool IsDisplayAlignmentAssistanceEnabled() {
+  return base::FeatureList::IsEnabled(kDisplayAlignAssist);
+}
+
+bool IsMovablePartialScreenshotEnabled() {
+  return base::FeatureList::IsEnabled(kMovablePartialScreenshot);
+}
+
+bool IsAppScalingEnabled() {
+  return base::FeatureList::IsEnabled(kShelfAppScaling) &&
+         chromeos::switches::ShouldShowShelfHotseat();
+}
+
+namespace {
+
+// The boolean flag indicating if "WebUITabStrip" feature is enabled in Chrome.
+bool g_webui_tab_strip_enabled = false;
+
+}  // namespace
+
+void SetWebUITabStripEnabled(bool enabled) {
+  g_webui_tab_strip_enabled = enabled;
+}
+
+bool IsWebUITabStripEnabled() {
+  return g_webui_tab_strip_enabled;
 }
 
 }  // namespace features

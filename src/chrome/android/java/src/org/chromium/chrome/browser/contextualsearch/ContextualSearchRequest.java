@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.util.UrlUtilitiesJni;
+import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -221,8 +221,12 @@ class ContextualSearchRequest {
      */
     protected Uri getUriTemplate(String query, @Nullable String alternateTerm, @Nullable String mid,
             boolean shouldPrefetch) {
-        Uri uri = Uri.parse(TemplateUrlServiceFactory.get().getUrlForContextualSearchQuery(
-                query, alternateTerm, shouldPrefetch, CTXS_TWO_REQUEST_PROTOCOL));
+        // TODO(https://crbug.com/783819): Avoid parsing the GURL as a Uri, and update
+        // makeKPTriggeringUri to operate on GURLs.
+        Uri uri = Uri.parse(TemplateUrlServiceFactory.get()
+                                    .getUrlForContextualSearchQuery(query, alternateTerm,
+                                            shouldPrefetch, CTXS_TWO_REQUEST_PROTOCOL)
+                                    .getSpec());
         if (!TextUtils.isEmpty(mid)) uri = makeKPTriggeringUri(uri, mid);
         return uri;
     }

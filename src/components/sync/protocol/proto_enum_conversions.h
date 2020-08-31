@@ -66,14 +66,6 @@ const char* ProtoEnumToString(sync_pb::TabNavigation::BlockedState state);
 
 const char* ProtoEnumToString(sync_pb::TabNavigation::PasswordState state);
 
-const char* ProtoEnumToString(sync_pb::UserConsentSpecifics::Feature feature);
-
-const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::Translation::Interaction interaction);
-
-const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::UserConsent::Feature feature);
-
 const char* ProtoEnumToString(sync_pb::UserConsentTypes::ConsentStatus status);
 
 const char* ProtoEnumToString(
@@ -99,13 +91,15 @@ const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::GaiaPasswordCaptured::EventTrigger trigger);
 
 const char* ProtoEnumToString(
-    sync_pb::WalletMaskedCreditCard::WalletCardClass wallet_card_class);
+    sync_pb::UserEventSpecifics::FlocIdComputed::EventTrigger trigger);
 
 const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardStatus wallet_card_status);
 
 const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardType wallet_card_type);
+
+const char* ProtoEnumToString(sync_pb::CardIssuer::Issuer issuer);
 
 const char* ProtoEnumToString(
     sync_pb::WalletMetadataSpecifics::Type wallet_metadata_type);
@@ -114,21 +108,20 @@ const char* ProtoEnumToString(
     sync_pb::WebAppSpecifics::UserDisplayMode user_display_mode);
 
 const char* ProtoEnumToString(
-    sync_pb::WifiConfigurationSpecificsData::SecurityType security_type);
+    sync_pb::WifiConfigurationSpecifics::SecurityType security_type);
 
 const char* ProtoEnumToString(
-    sync_pb::WifiConfigurationSpecificsData::AutomaticallyConnectOption
+    sync_pb::WifiConfigurationSpecifics::AutomaticallyConnectOption
         automatically_connect_option);
 
 const char* ProtoEnumToString(
-    sync_pb::WifiConfigurationSpecificsData::IsPreferredOption
-        is_preferred_option);
+    sync_pb::WifiConfigurationSpecifics::IsPreferredOption is_preferred_option);
 
 const char* ProtoEnumToString(
-    sync_pb::WifiConfigurationSpecificsData::MeteredOption metered_option);
+    sync_pb::WifiConfigurationSpecifics::MeteredOption metered_option);
 
 const char* ProtoEnumToString(
-    sync_pb::WifiConfigurationSpecificsData::ProxyConfiguration::ProxyOption
+    sync_pb::WifiConfigurationSpecifics::ProxyConfiguration::ProxyOption
         proxy_option);
 
 }  // namespace syncer

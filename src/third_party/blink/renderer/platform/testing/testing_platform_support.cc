@@ -39,8 +39,7 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -55,23 +54,24 @@
 
 namespace blink {
 
-class TestingPlatformSupport::TestingInterfaceProvider
-    : public blink::InterfaceProvider {
+class TestingPlatformSupport::TestingBrowserInterfaceBroker
+    : public ThreadSafeBrowserInterfaceBrokerProxy {
  public:
-  TestingInterfaceProvider() = default;
-  virtual ~TestingInterfaceProvider() = default;
+  TestingBrowserInterfaceBroker() = default;
+  ~TestingBrowserInterfaceBroker() override = default;
 
-  void GetInterface(const char* name,
-                    mojo::ScopedMessagePipeHandle handle) override {
+  void GetInterfaceImpl(mojo::GenericPendingReceiver receiver) override {
     auto& override_callback = GetOverrideCallback();
+    auto interface_name = receiver.interface_name().value_or("");
     if (!override_callback.is_null()) {
-      override_callback.Run(name, std::move(handle));
+      override_callback.Run(interface_name.c_str(), receiver.PassPipe());
       return;
     }
-    if (std::string(name) == mojom::blink::MimeRegistry::Name_) {
+    if (interface_name == mojom::blink::MimeRegistry::Name_) {
       mojo::MakeSelfOwnedReceiver(
           std::make_unique<MockMimeRegistry>(),
-          mojo::PendingReceiver<mojom::blink::MimeRegistry>(std::move(handle)));
+          mojo::PendingReceiver<mojom::blink::MimeRegistry>(
+              receiver.PassPipe()));
       return;
     }
   }
@@ -86,7 +86,7 @@ class TestingPlatformSupport::TestingInterfaceProvider
 
 TestingPlatformSupport::ScopedOverrideMojoInterface::
     ScopedOverrideMojoInterface(GetInterfaceCallback callback)
-    : auto_reset_(&TestingInterfaceProvider::GetOverrideCallback(),
+    : auto_reset_(&TestingBrowserInterfaceBroker::GetOverrideCallback(),
                   std::move(callback)) {}
 
 TestingPlatformSupport::ScopedOverrideMojoInterface::
@@ -94,7 +94,7 @@ TestingPlatformSupport::ScopedOverrideMojoInterface::
 
 TestingPlatformSupport::TestingPlatformSupport()
     : old_platform_(Platform::Current()),
-      interface_provider_(new TestingInterfaceProvider) {
+      interface_broker_(base::MakeRefCounted<TestingBrowserInterfaceBroker>()) {
   DCHECK(old_platform_);
   DCHECK(WTF::IsMainThread());
 }
@@ -129,11 +129,13 @@ WebData TestingPlatformSupport::UncompressDataResource(int resource_id) {
                        : WebData();
 }
 
-InterfaceProvider* TestingPlatformSupport::GetInterfaceProvider() {
-  return interface_provider_.get();
+ThreadSafeBrowserInterfaceBrokerProxy*
+TestingPlatformSupport::GetBrowserInterfaceBroker() {
+  return interface_broker_.get();
 }
 
 void TestingPlatformSupport::RunUntilIdle() {
+  ThreadState::HeapPointersOnStackScope scan_stack(ThreadState::Current());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -169,7 +171,7 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   Platform::SetCurrentPlatformForTesting(dummy_platform_.get());
 
   WTF::Partitions::Initialize();
-  WTF::Initialize(nullptr);
+  WTF::Initialize();
 
   // This must be called after WTF::Initialize(), because ThreadSpecific<>
   // used in this function depends on WTF::IsMainThread().

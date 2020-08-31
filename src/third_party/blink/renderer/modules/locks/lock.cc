@@ -39,7 +39,7 @@ class Lock::ThenFunction final : public ScriptFunction {
   ThenFunction(ScriptState* script_state, Lock* lock, ResolveType type)
       : ScriptFunction(script_state), lock_(lock), resolve_type_(type) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(lock_);
     ScriptFunction::Trace(visitor);
   }
@@ -61,36 +61,27 @@ class Lock::ThenFunction final : public ScriptFunction {
   ResolveType resolve_type_;
 };
 
-// static
-Lock* Lock::Create(
-    ScriptState* script_state,
-    const String& name,
-    mojom::blink::LockMode mode,
-    mojo::PendingAssociatedRemote<mojom::blink::LockHandle> handle,
-    LockManager* manager) {
-  return MakeGarbageCollected<Lock>(script_state, name, mode, std::move(handle),
-                                    manager);
-}
-
 Lock::Lock(ScriptState* script_state,
            const String& name,
            mojom::blink::LockMode mode,
            mojo::PendingAssociatedRemote<mojom::blink::LockHandle> handle,
+           mojo::PendingRemote<mojom::blink::ObservedFeature> lock_lifetime,
            LockManager* manager)
-    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
+    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
       name_(name),
       mode_(mode),
-      handle_(std::move(handle)),
+      handle_(ExecutionContext::From(script_state)),
+      lock_lifetime_(ExecutionContext::From(script_state)),
       manager_(manager) {
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      ExecutionContext::From(script_state)->GetTaskRunner(TaskType::kWebLocks);
+  handle_.Bind(std::move(handle), task_runner);
+  lock_lifetime_.Bind(std::move(lock_lifetime), task_runner);
   handle_.set_disconnect_handler(
       WTF::Bind(&Lock::OnConnectionError, WrapWeakPersistent(this)));
 }
 
 Lock::~Lock() = default;
-
-void Lock::Dispose() {
-  handle_.reset();
-}
 
 String Lock::mode() const {
   return ModeToString(mode_);
@@ -129,21 +120,25 @@ String Lock::ModeToString(mojom::blink::LockMode mode) {
   return g_empty_string;
 }
 
-void Lock::ContextDestroyed(ExecutionContext* context) {
+void Lock::ContextDestroyed() {
   ReleaseIfHeld();
 }
 
-void Lock::Trace(blink::Visitor* visitor) {
-  ContextLifecycleObserver::Trace(visitor);
+void Lock::Trace(Visitor* visitor) {
+  ExecutionContextLifecycleObserver::Trace(visitor);
   ScriptWrappable::Trace(visitor);
   visitor->Trace(resolver_);
+  visitor->Trace(handle_);
+  visitor->Trace(lock_lifetime_);
   visitor->Trace(manager_);
 }
 
 void Lock::ReleaseIfHeld() {
-  if (handle_) {
+  if (handle_.is_bound()) {
     // Drop the mojo pipe; this releases the lock on the back end.
     handle_.reset();
+
+    lock_lifetime_.reset();
 
     // Let the lock manager know that this instance can be collected.
     manager_->OnLockReleased(this);
@@ -151,6 +146,7 @@ void Lock::ReleaseIfHeld() {
 }
 
 void Lock::OnConnectionError() {
+  ReleaseIfHeld();
   resolver_->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kAbortError,
       "Lock broken by another request with the 'steal' option."));

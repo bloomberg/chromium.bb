@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -93,7 +94,8 @@ void PictureInPictureSession::OnConnectionError() {
 }
 
 WebContentsImpl* PictureInPictureSession::GetWebContentsImpl() {
-  return static_cast<WebContentsImpl*>(service_->web_contents());
+  return static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(service_->render_frame_host()));
 }
 
 PictureInPictureWindowControllerImpl& PictureInPictureSession::GetController() {

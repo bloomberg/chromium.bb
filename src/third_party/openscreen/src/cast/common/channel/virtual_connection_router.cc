@@ -5,14 +5,15 @@
 #include "cast/common/channel/virtual_connection_router.h"
 
 #include "cast/common/channel/cast_message_handler.h"
-#include "cast/common/channel/cast_socket.h"
 #include "cast/common/channel/message_util.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 #include "cast/common/channel/virtual_connection_manager.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
+
+using ::cast::channel::CastMessage;
 
 VirtualConnectionRouter::VirtualConnectionRouter(
     VirtualConnectionManager* vc_manager)
@@ -35,14 +36,16 @@ bool VirtualConnectionRouter::RemoveHandlerForLocalId(
 
 void VirtualConnectionRouter::TakeSocket(SocketErrorHandler* error_handler,
                                          std::unique_ptr<CastSocket> socket) {
-  uint32_t id = socket->socket_id();
+  int id = socket->socket_id();
   socket->SetClient(this);
   sockets_.emplace(id, SocketWithHandler{std::move(socket), error_handler});
 }
 
-void VirtualConnectionRouter::CloseSocket(uint32_t id) {
+void VirtualConnectionRouter::CloseSocket(int id) {
   auto it = sockets_.find(id);
   if (it != sockets_.end()) {
+    vc_manager_->RemoveConnectionsBySocketId(
+        id, VirtualConnection::kTransportClosed);
     std::unique_ptr<CastSocket> socket = std::move(it->second.socket);
     SocketErrorHandler* error_handler = it->second.error_handler;
     sockets_.erase(it);
@@ -50,26 +53,27 @@ void VirtualConnectionRouter::CloseSocket(uint32_t id) {
   }
 }
 
-Error VirtualConnectionRouter::SendMessage(VirtualConnection vconn,
-                                           CastMessage&& message) {
+Error VirtualConnectionRouter::Send(VirtualConnection virtual_conn,
+                                    CastMessage message) {
   // TODO(btolsch): Check for broadcast message.
   if (!IsTransportNamespace(message.namespace_()) &&
-      !vc_manager_->GetConnectionData(vconn)) {
-    return Error::Code::kUnknownError;
+      !vc_manager_->GetConnectionData(virtual_conn)) {
+    return Error::Code::kNoActiveConnection;
   }
-  auto it = sockets_.find(vconn.socket_id);
+  auto it = sockets_.find(virtual_conn.socket_id);
   if (it == sockets_.end()) {
-    return Error::Code::kUnknownError;
+    return Error::Code::kItemNotFound;
   }
-  message.set_source_id(std::move(vconn.local_id));
-  message.set_destination_id(std::move(vconn.peer_id));
-  return it->second.socket->SendMessage(message);
+  message.set_source_id(std::move(virtual_conn.local_id));
+  message.set_destination_id(std::move(virtual_conn.peer_id));
+  return it->second.socket->Send(message);
 }
 
 void VirtualConnectionRouter::OnError(CastSocket* socket, Error error) {
-  uint32_t id = socket->socket_id();
+  int id = socket->socket_id();
   auto it = sockets_.find(id);
   if (it != sockets_.end()) {
+    vc_manager_->RemoveConnectionsBySocketId(id, VirtualConnection::kUnknown);
     std::unique_ptr<CastSocket> socket_owned = std::move(it->second.socket);
     SocketErrorHandler* error_handler = it->second.error_handler;
     sockets_.erase(it);
@@ -80,10 +84,10 @@ void VirtualConnectionRouter::OnError(CastSocket* socket, Error error) {
 void VirtualConnectionRouter::OnMessage(CastSocket* socket,
                                         CastMessage message) {
   // TODO(btolsch): Check for broadcast message.
-  VirtualConnection vconn{message.destination_id(), message.source_id(),
-                          socket->socket_id()};
+  VirtualConnection virtual_conn{message.destination_id(), message.source_id(),
+                                 socket->socket_id()};
   if (!IsTransportNamespace(message.namespace_()) &&
-      !vc_manager_->GetConnectionData(vconn)) {
+      !vc_manager_->GetConnectionData(virtual_conn)) {
     return;
   }
   const std::string& local_id = message.destination_id();
@@ -93,5 +97,5 @@ void VirtualConnectionRouter::OnMessage(CastSocket* socket,
   }
 }
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen

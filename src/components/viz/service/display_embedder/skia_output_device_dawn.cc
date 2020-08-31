@@ -4,14 +4,18 @@
 
 #include "components/viz/service/display_embedder/skia_output_device_dawn.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/dawn_context_provider.h"
+#include "ui/gfx/presentation_feedback.h"
+#include "ui/gfx/vsync_provider.h"
 
 #if defined(OS_WIN)
-#include <dawn_native/D3D12Backend.h>
+#include "third_party/dawn/src/include/dawn_native/D3D12Backend.h"
+#include "ui/gl/vsync_provider_win.h"
 #elif defined(OS_LINUX)
-#include <dawn_native/VulkanBackend.h>
+#include "third_party/dawn/src/include/dawn_native/VulkanBackend.h"
 #endif
 
 namespace viz {
@@ -21,23 +25,35 @@ namespace {
 // Some Vulkan drivers do not support kRGB_888x_SkColorType. Always use
 // kRGBA_8888_SkColorType instead and initialize surface to opaque as necessary.
 constexpr SkColorType kSurfaceColorType = kRGBA_8888_SkColorType;
-constexpr dawn::TextureFormat kSwapChainFormat =
-    dawn::TextureFormat::RGBA8Unorm;
+constexpr wgpu::TextureFormat kSwapChainFormat =
+    wgpu::TextureFormat::RGBA8Unorm;
 
-constexpr dawn::TextureUsage kUsage =
-    dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
+constexpr wgpu::TextureUsage kUsage =
+    wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
 
 }  // namespace
 
 SkiaOutputDeviceDawn::SkiaOutputDeviceDawn(
     DawnContextProvider* context_provider,
     gfx::AcceleratedWidget widget,
+    gfx::SurfaceOrigin origin,
+    gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(/*need_swap_semaphore=*/false,
-                       did_swap_buffer_complete_callback),
+    : SkiaOutputDevice(memory_tracker, did_swap_buffer_complete_callback),
       context_provider_(context_provider),
       widget_(widget) {
+  capabilities_.output_surface_origin = origin;
+  capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.supports_post_sub_buffer = false;
+
+  capabilities_.sk_color_type = kSurfaceColorType;
+  capabilities_.gr_backend_format =
+      context_provider_->GetGrContext()->defaultBackendFormat(
+          kSurfaceColorType, GrRenderable::kYes);
+
+#if defined(OS_WIN)
+  vsync_provider_ = std::make_unique<gl::VSyncProviderWin>(widget_);
+#endif
 }
 
 SkiaOutputDeviceDawn::~SkiaOutputDeviceDawn() = default;
@@ -45,7 +61,7 @@ SkiaOutputDeviceDawn::~SkiaOutputDeviceDawn() = default;
 bool SkiaOutputDeviceDawn::Reshape(const gfx::Size& size,
                                    float device_scale_factor,
                                    const gfx::ColorSpace& color_space,
-                                   bool has_alpha,
+                                   gfx::BufferFormat format,
                                    gfx::OverlayTransform transform) {
   DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
 
@@ -53,9 +69,11 @@ bool SkiaOutputDeviceDawn::Reshape(const gfx::Size& size,
   sk_color_space_ = color_space.ToSkColorSpace();
 
   CreateSwapChainImplementation();
-  dawn::SwapChainDescriptor desc;
+  wgpu::SwapChainDescriptor desc;
   desc.implementation = reinterpret_cast<int64_t>(&swap_chain_implementation_);
-  swap_chain_ = context_provider_->GetDevice().CreateSwapChain(&desc);
+  // TODO(sgilhuly): Use a wgpu::Surface in this call once the Surface-based
+  // SwapChain API is ready.
+  swap_chain_ = context_provider_->GetDevice().CreateSwapChain(nullptr, &desc);
   if (!swap_chain_)
     return false;
   swap_chain_.Configure(kSwapChainFormat, kUsage, size_.width(),
@@ -66,14 +84,32 @@ bool SkiaOutputDeviceDawn::Reshape(const gfx::Size& size,
 void SkiaOutputDeviceDawn::SwapBuffers(
     BufferPresentedCallback feedback,
     std::vector<ui::LatencyInfo> latency_info) {
-  StartSwapBuffers(std::move(feedback));
+  StartSwapBuffers({});
   swap_chain_.Present();
   FinishSwapBuffers(gfx::SwapResult::SWAP_ACK,
                     gfx::Size(size_.width(), size_.height()),
                     std::move(latency_info));
+
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  base::TimeTicks vsync_timebase;
+  base::TimeDelta vsync_interval;
+  uint32_t flags = 0;
+  // TODO(sgilhuly): Add an async path for getting vsync parameters. The sync
+  // path is sufficient for VSyncProviderWin.
+  if (vsync_provider_ && vsync_provider_->GetVSyncParametersIfAvailable(
+                             &vsync_timebase, &vsync_interval)) {
+    // Assume the buffer will be presented at the next vblank.
+    timestamp = timestamp.SnappedToNextTick(vsync_timebase, vsync_interval);
+    // kHWClock allows future timestamps to be accepted.
+    flags =
+        gfx::PresentationFeedback::kVSync | gfx::PresentationFeedback::kHWClock;
+  }
+  std::move(feedback).Run(
+      gfx::PresentationFeedback(timestamp, vsync_interval, flags));
 }
 
-SkSurface* SkiaOutputDeviceDawn::BeginPaint() {
+SkSurface* SkiaOutputDeviceDawn::BeginPaint(
+    std::vector<GrBackendSemaphore>* end_semaphores) {
   GrDawnRenderTargetInfo info;
   info.fTextureView = swap_chain_.GetCurrentTextureView();
   info.fFormat = kSwapChainFormat;
@@ -81,15 +117,19 @@ SkSurface* SkiaOutputDeviceDawn::BeginPaint() {
   GrBackendRenderTarget backend_target(
       size_.width(), size_.height(), /*sampleCnt=*/0, /*stencilBits=*/0, info);
   DCHECK(backend_target.isValid());
+  // LegacyFontHost will get LCD text and skia figures out what type to use.
+  SkSurfaceProps surface_props(/*flags=*/0,
+                               SkSurfaceProps::kLegacyFontHost_InitType);
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       context_provider_->GetGrContext(), backend_target,
-      !capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
-                                            : kBottomLeft_GrSurfaceOrigin,
-      kSurfaceColorType, sk_color_space_, /*surfaceProps=*/nullptr);
+      capabilities_.output_surface_origin == gfx::SurfaceOrigin::kTopLeft
+          ? kTopLeft_GrSurfaceOrigin
+          : kBottomLeft_GrSurfaceOrigin,
+      kSurfaceColorType, sk_color_space_, &surface_props);
   return sk_surface_.get();
 }
 
-void SkiaOutputDeviceDawn::EndPaint(const GrBackendSemaphore& semaphore) {
+void SkiaOutputDeviceDawn::EndPaint() {
   GrFlushInfo flush_info;
   sk_surface_->flush(SkSurface::BackendSurfaceAccess::kPresent, flush_info);
   sk_surface_.reset();

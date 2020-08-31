@@ -8,12 +8,12 @@
 
 #include "absl/types/span.h"
 #include "cast/streaming/encoded_frame.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 using std::chrono::microseconds;
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 DummyPlayer::DummyPlayer(Receiver* receiver) : receiver_(receiver) {
   OSP_DCHECK(receiver_);
@@ -41,5 +41,5 @@ void DummyPlayer::OnFramesReady(int buffer_size) {
                << buffer_size << " bytes";
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

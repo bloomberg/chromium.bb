@@ -8,8 +8,13 @@ import mojom.generate.generator as generator
 import mojom.generate.module as mojom
 import mojom.generate.pack as pack
 import os
-import urllib
+import sys
 from mojom.generate.template_expander import UseJinja
+
+if sys.version_info.major == 2:
+  import urllib as urllib_request
+else:
+  import urllib.request as urllib_request
 
 _kind_to_javascript_default_value = {
   mojom.BOOL:                  "false",
@@ -25,11 +30,13 @@ _kind_to_javascript_default_value = {
   mojom.DPPIPE:                "null",
   mojom.MSGPIPE:               "null",
   mojom.SHAREDBUFFER:          "null",
+  mojom.PLATFORMHANDLE:          "null",
   mojom.NULLABLE_HANDLE:       "null",
   mojom.NULLABLE_DCPIPE:       "null",
   mojom.NULLABLE_DPPIPE:       "null",
   mojom.NULLABLE_MSGPIPE:      "null",
   mojom.NULLABLE_SHAREDBUFFER: "null",
+  mojom.NULLABLE_PLATFORMHANDLE: "null",
   mojom.INT64:                 "0",
   mojom.UINT64:                "0",
   mojom.DOUBLE:                "0",
@@ -51,11 +58,13 @@ _kind_to_codec_type = {
   mojom.DPPIPE:                "codec.Handle",
   mojom.MSGPIPE:               "codec.Handle",
   mojom.SHAREDBUFFER:          "codec.Handle",
+  mojom.PLATFORMHANDLE:        "codec.Handle",
   mojom.NULLABLE_HANDLE:       "codec.NullableHandle",
   mojom.NULLABLE_DCPIPE:       "codec.NullableHandle",
   mojom.NULLABLE_DPPIPE:       "codec.NullableHandle",
   mojom.NULLABLE_MSGPIPE:      "codec.NullableHandle",
   mojom.NULLABLE_SHAREDBUFFER: "codec.NullableHandle",
+  mojom.NULLABLE_PLATFORMHANDLE: "codec.NullableHandle",
   mojom.INT64:                 "codec.Int64",
   mojom.UINT64:                "codec.Uint64",
   mojom.DOUBLE:                "codec.Double",
@@ -82,11 +91,13 @@ _kind_to_closure_type = {
   mojom.DPPIPE:                "MojoHandle",
   mojom.MSGPIPE:               "MojoHandle",
   mojom.SHAREDBUFFER:          "MojoHandle",
+  mojom.PLATFORMHANDLE:        "MojoHandle",
   mojom.NULLABLE_HANDLE:       "MojoHandle",
   mojom.NULLABLE_DCPIPE:       "MojoHandle",
   mojom.NULLABLE_DPPIPE:       "MojoHandle",
   mojom.NULLABLE_MSGPIPE:      "MojoHandle",
   mojom.NULLABLE_SHAREDBUFFER: "MojoHandle",
+  mojom.NULLABLE_PLATFORMHANDLE: "MojoHandle",
 }
 
 _kind_to_lite_js_type = {
@@ -103,11 +114,13 @@ _kind_to_lite_js_type = {
   mojom.DPPIPE:                "mojo.internal.Handle",
   mojom.MSGPIPE:               "mojo.internal.Handle",
   mojom.SHAREDBUFFER:          "mojo.internal.Handle",
+  mojom.PLATFORMHANDLE:        "mojo.internal.Handle",
   mojom.NULLABLE_HANDLE:       "mojo.internal.Handle",
   mojom.NULLABLE_DCPIPE:       "mojo.internal.Handle",
   mojom.NULLABLE_DPPIPE:       "mojo.internal.Handle",
   mojom.NULLABLE_MSGPIPE:      "mojo.internal.Handle",
   mojom.NULLABLE_SHAREDBUFFER: "mojo.internal.Handle",
+  mojom.NULLABLE_PLATFORMHANDLE: "mojo.internal.Handle",
   mojom.INT64:                 "mojo.internal.Int64",
   mojom.UINT64:                "mojo.internal.Uint64",
   mojom.DOUBLE:                "mojo.internal.Double",
@@ -181,11 +194,13 @@ _primitive_kind_to_fuzz_type = {
   mojom.DPPIPE:                "DataPipeProducer",
   mojom.MSGPIPE:               "MessagePipe",
   mojom.SHAREDBUFFER:          "SharedBuffer",
+  mojom.PLATFORMHANDLE:        "PlatformHandle",
   mojom.NULLABLE_HANDLE:       "Handle",
   mojom.NULLABLE_DCPIPE:       "DataPipeConsumer",
   mojom.NULLABLE_DPPIPE:       "DataPipeProducer",
   mojom.NULLABLE_MSGPIPE:      "MessagePipe",
   mojom.NULLABLE_SHAREDBUFFER: "SharedBuffer",
+  mojom.NULLABLE_PLATFORMHANDLE: "PlatformHandle",
 }
 
 
@@ -215,13 +230,13 @@ def GetArrayExpectedDimensionSizes(kind):
 
 
 def GetRelativeUrl(module, base_module):
-  return urllib.pathname2url(
+  return urllib_request.pathname2url(
       os.path.relpath(module.path, os.path.dirname(base_module.path)))
 
 
 class JavaScriptStylizer(generator.Stylizer):
   def StylizeConstant(self, mojom_name):
-    return generator.ToConstantCase(mojom_name)
+    return generator.ToUpperSnakeCase(mojom_name)
 
   def StylizeField(self, mojom_name):
     return generator.ToCamel(mojom_name, lower_initial=True)
@@ -265,7 +280,7 @@ class Generator(generator.Generator):
       "generate_fuzzing": self.generate_fuzzing,
       "generate_closure_exports": for_compile,
       "generate_struct_deserializers": self.js_generate_struct_deserializers,
-   }
+    }
 
   @staticmethod
   def GetTemplatePrefix():
@@ -807,17 +822,26 @@ class Generator(generator.Generator):
 
   def _ExpressionToTextLite(self, token):
     if isinstance(token, (mojom.EnumValue, mojom.NamedValue)):
-      # Both variable and enum constants are constructed like:
-      # NamespaceUid.Struct[.Enum].CONSTANT_NAME
-      name = []
+      # Generate the following for:
+      #  - Enums: NamespaceUid.Enum.CONSTANT_NAME
+      #  - Struct: NamespaceUid.Struct_CONSTANT_NAME
+
+      name_prefix = []
       if token.module:
-        name.append(token.module.namespace)
+        name_prefix.append(token.module.namespace)
       if token.parent_kind:
-        name.append(token.parent_kind.name)
+        name_prefix.append(token.parent_kind.name)
+
+      name = []
       if isinstance(token, mojom.EnumValue):
         name.append(token.enum.name)
       name.append(token.name)
-      return ".".join(name)
+
+      separator = "."
+      if mojom.IsStructKind(token.parent_kind):
+        separator = "_"
+
+      return ".".join(name_prefix) + separator + ".".join(name)
 
     return self._ExpressionToText(token)
 

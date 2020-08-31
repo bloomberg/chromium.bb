@@ -50,14 +50,15 @@ WebDOMMessageEvent::WebDOMMessageEvent(
     const WebFrame* source_frame,
     const WebDocument& target_document,
     WebVector<MessagePortChannel> channels)
-    : WebDOMMessageEvent(MessageEvent::Create()) {
+    : WebDOMMessageEvent(MessageEvent::Create(), base::nullopt) {
   DOMWindow* window = nullptr;
   if (source_frame)
     window = WebFrame::ToCoreFrame(*source_frame)->DomWindow();
   MessagePortArray* ports = nullptr;
   if (!target_document.IsNull()) {
     Document* core_document = target_document;
-    ports = MessagePort::EntanglePorts(*core_document, std::move(channels));
+    ports = MessagePort::EntanglePorts(*core_document->GetExecutionContext(),
+                                       std::move(channels));
   }
   // TODO(esprehn): Chromium always passes empty string for lastEventId, is that
   // right?
@@ -70,16 +71,17 @@ WebDOMMessageEvent::WebDOMMessageEvent(TransferableMessage message,
                                        const WebString& origin,
                                        const WebFrame* source_frame,
                                        const WebDocument& target_document)
-    : WebDOMMessageEvent(MessageEvent::Create()) {
+    : WebDOMMessageEvent(MessageEvent::Create(),
+                         message.locked_agent_cluster_id) {
   DOMWindow* window = nullptr;
   if (source_frame)
     window = WebFrame::ToCoreFrame(*source_frame)->DomWindow();
-  locked_agent_cluster_id_ = message.locked_agent_cluster_id;
   BlinkTransferableMessage msg = ToBlinkTransferableMessage(std::move(message));
   MessagePortArray* ports = nullptr;
   if (!target_document.IsNull()) {
     Document* core_document = target_document;
-    ports = MessagePort::EntanglePorts(*core_document, std::move(msg.ports));
+    ports = MessagePort::EntanglePorts(*core_document->GetExecutionContext(),
+                                       std::move(msg.ports));
   }
 
   UserActivation* user_activation = nullptr;
@@ -94,6 +96,11 @@ WebDOMMessageEvent::WebDOMMessageEvent(TransferableMessage message,
       "message", false, false, std::move(msg.message), origin,
       "" /*lastEventId*/, window, ports, user_activation,
       msg.transfer_user_activation, msg.allow_autoplay);
+
+  // If the agent cluster id had a value it means this was locked when it
+  // was serialized.
+  if (locked_agent_cluster_id_.has_value())
+    Unwrap<MessageEvent>()->LockToAgentCluster();
 }
 
 WebString WebDOMMessageEvent::Origin() const {
@@ -107,6 +114,7 @@ TransferableMessage WebDOMMessageEvent::AsMessage() {
   msg.transfer_user_activation =
       Unwrap<MessageEvent>()->transferUserActivation();
   msg.allow_autoplay = Unwrap<MessageEvent>()->allowAutoplay();
+  msg.locked_agent_cluster_id = locked_agent_cluster_id_;
   UserActivation* user_activation = Unwrap<MessageEvent>()->userActivation();
   TransferableMessage transferable_msg = ToTransferableMessage(std::move(msg));
   if (user_activation) {

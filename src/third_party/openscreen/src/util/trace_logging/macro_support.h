@@ -13,7 +13,6 @@
 #error "BUG: This file should not have been reached."
 #endif
 
-#include "build/config/features.h"
 #include "platform/api/trace_logging_platform.h"
 #include "platform/base/trace_logging_activation.h"
 #include "platform/base/trace_logging_types.h"
@@ -42,8 +41,8 @@
 namespace openscreen {
 namespace internal {
 
-inline bool IsTraceLoggingEnabled(platform::TraceCategory::Value category) {
-  auto* const destination = platform::GetTracingDestination();
+inline bool IsTraceLoggingEnabled(TraceCategory::Value category) {
+  const CurrentTracingDestination destination;
   return destination && destination->IsTraceLoggingEnabled(category);
 }
 
@@ -59,7 +58,7 @@ inline bool IsTraceLoggingEnabled(platform::TraceCategory::Value category) {
       tracing_storage, line)[sizeof(openscreen::internal::TraceIdSetter)]; \
   TRACE_INTERNAL_IGNORE_UNUSED_VAR                                         \
   const auto TRACE_INTERNAL_UNIQUE_VAR_NAME(trace_ref_) =                  \
-      TRACE_IS_ENABLED(openscreen::platform::TraceCategory::Value::Any)    \
+      TRACE_IS_ENABLED(openscreen::TraceCategory::Value::kAny)             \
           ? openscreen::internal::TraceInstanceHelper<                     \
                 openscreen::internal::TraceIdSetter>::                     \
                 Create(TRACE_INTERNAL_CONCAT_CONST(tracing_storage, line), \

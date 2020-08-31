@@ -54,6 +54,16 @@ void GLContext::ScopedReleaseCurrent::Cancel() {
   canceled_ = true;
 }
 
+GLContextAttribs::GLContextAttribs() = default;
+GLContextAttribs::GLContextAttribs(const GLContextAttribs& other) = default;
+GLContextAttribs::GLContextAttribs(GLContextAttribs&& other) = default;
+GLContextAttribs::~GLContextAttribs() = default;
+
+GLContextAttribs& GLContextAttribs::operator=(const GLContextAttribs& other) =
+    default;
+GLContextAttribs& GLContextAttribs::operator=(GLContextAttribs&& other) =
+    default;
+
 GLContext::GLContext(GLShareGroup* share_group) : share_group_(share_group) {
   if (!share_group_.get())
     share_group_ = new gl::GLShareGroup();
@@ -133,17 +143,17 @@ void GLContext::SetUnbindFboOnMakeCurrent() {
 
 std::string GLContext::GetGLVersion() {
   DCHECK(IsCurrent(nullptr));
-  DCHECK(gl_api_ != nullptr);
-  const char* version =
-      reinterpret_cast<const char*>(gl_api_->glGetStringFn(GL_VERSION));
+  DCHECK(gl_api_wrapper_);
+  const char* version = reinterpret_cast<const char*>(
+      gl_api_wrapper_->api()->glGetStringFn(GL_VERSION));
   return std::string(version ? version : "");
 }
 
 std::string GLContext::GetGLRenderer() {
   DCHECK(IsCurrent(nullptr));
-  DCHECK(gl_api_ != nullptr);
-  const char* renderer =
-      reinterpret_cast<const char*>(gl_api_->glGetStringFn(GL_RENDERER));
+  DCHECK(gl_api_wrapper_);
+  const char* renderer = reinterpret_cast<const char*>(
+      gl_api_wrapper_->api()->glGetStringFn(GL_RENDERER));
   return std::string(renderer ? renderer : "");
 }
 
@@ -157,23 +167,13 @@ CurrentGL* GLContext::GetCurrentGL() {
     driver_gl_ = std::make_unique<DriverGL>();
     driver_gl_->InitializeStaticBindings();
 
-    gl_api_.reset(CreateGLApi(driver_gl_.get()));
-    GLApi* final_api = gl_api_.get();
-
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableGPUServiceTracing)) {
-      trace_gl_api_ = std::make_unique<TraceGLApi>(final_api);
-      final_api = trace_gl_api_.get();
-    }
-
-    if (GetDebugGLBindingsInitializedGL()) {
-      log_gl_api_ = std::make_unique<LogGLApi>(final_api);
-      final_api = log_gl_api_.get();
-    }
+    auto gl_api = base::WrapUnique<GLApi>(CreateGLApi(driver_gl_.get()));
+    gl_api_wrapper_ =
+        std::make_unique<GL_IMPL_WRAPPER_TYPE(GL)>(std::move(gl_api));
 
     current_gl_ = std::make_unique<CurrentGL>();
     current_gl_->Driver = driver_gl_.get();
-    current_gl_->Api = final_api;
+    current_gl_->Api = gl_api_wrapper_->api();
     current_gl_->Version = version_info_.get();
 
     static_bindings_initialized_ = true;
@@ -272,6 +272,7 @@ void GLContext::DestroyBackpressureFences() {
 void GLContext::FlushForDriverCrashWorkaround() {
   if (!IsCurrent(nullptr))
     return;
+  TRACE_EVENT0("gpu", "GLContext::FlushForDriverCrashWorkaround");
   glFlush();
 }
 #endif
@@ -330,7 +331,12 @@ std::unique_ptr<gl::GLVersionInfo> GLContext::GenerateGLVersionInfo() {
 
 void GLContext::SetCurrent(GLSurface* surface) {
   current_context_.Pointer()->Set(surface ? this : nullptr);
-  GLSurface::SetCurrent(surface);
+  if (surface) {
+    surface->SetCurrent();
+  } else {
+    GLSurface::ClearCurrent();
+  }
+
   // Leave the real GL api current so that unit tests work correctly.
   // TODO(sievers): Remove this, but needs all gpu_unittest classes
   // to create and make current a context.
@@ -387,8 +393,8 @@ bool GLContext::MakeVirtuallyCurrent(
   if (!ForceGpuSwitchIfNeeded())
     return false;
   bool switched_real_contexts = GLContext::GetRealCurrent() != this;
-  GLSurface* current_surface = GLSurface::GetCurrent();
-  if (switched_real_contexts || surface != current_surface) {
+  if (switched_real_contexts || !surface->IsCurrent()) {
+    GLSurface* current_surface = GLSurface::GetCurrent();
     // MakeCurrent 'lite' path that avoids potentially expensive MakeCurrent()
     // calls if the GLSurface uses the same underlying surface or renders to
     // an FBO.

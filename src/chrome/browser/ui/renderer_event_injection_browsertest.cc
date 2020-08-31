@@ -17,10 +17,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
-#include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_touch_event.h"
 #include "ui/display/display_switches.h"
 
 namespace {
@@ -83,13 +84,13 @@ class TouchEventObserver
     if (blink::WebInputEvent::IsTouchEventType(event.GetType())) {
       const blink::WebTouchEvent& web_touch =
           static_cast<const blink::WebTouchEvent&>(event);
-      if (event.GetType() == blink::WebInputEvent::kTouchStart) {
+      if (event.GetType() == blink::WebInputEvent::Type::kTouchStart) {
         for (unsigned i = 0; i < web_touch.touches_length; i++) {
           const blink::WebTouchPoint& touch_point = web_touch.touches[i];
           const gfx::Point location(
-              static_cast<int>(touch_point.PositionInWidget().x),
-              static_cast<int>(touch_point.PositionInWidget().y));
-          if (touch_point.state == blink::WebTouchPoint::kStatePressed &&
+              static_cast<int>(touch_point.PositionInWidget().x()),
+              static_cast<int>(touch_point.PositionInWidget().y()));
+          if (touch_point.state == blink::WebTouchPoint::State::kStatePressed &&
               location == expected_location_) {
             quit_closure_.Run();
           }

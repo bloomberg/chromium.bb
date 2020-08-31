@@ -8,10 +8,13 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "chrome/browser/permissions/crowd_deny_safe_browsing_request.h"
-#include "chrome/browser/permissions/notification_permission_ui_selector.h"
+#include "components/permissions/notification_permission_ui_selector.h"
 
 class Profile;
+
+namespace permissions {
 class PermissionRequest;
+}
 
 namespace url {
 class Origin;
@@ -29,14 +32,14 @@ class Origin;
 // Each instance of this class is long-lived and can support multiple requests,
 // but only one at a time.
 class ContextualNotificationPermissionUiSelector
-    : public NotificationPermissionUiSelector {
+    : public permissions::NotificationPermissionUiSelector {
  public:
   // Constructs an instance in the context of the given |profile|.
   explicit ContextualNotificationPermissionUiSelector(Profile* profile);
   ~ContextualNotificationPermissionUiSelector() override;
 
   // NotificationPermissionUiSelector:
-  void SelectUiToUse(PermissionRequest* request,
+  void SelectUiToUse(permissions::PermissionRequest* request,
                      DecisionMadeCallback callback) override;
 
   void Cancel() override;
@@ -47,12 +50,12 @@ class ContextualNotificationPermissionUiSelector
   ContextualNotificationPermissionUiSelector& operator=(
       const ContextualNotificationPermissionUiSelector&) = delete;
 
-  void EvaluateCrowdDenyTrigger(url::Origin origin);
+  void EvaluatePerSiteTriggers(const url::Origin& origin);
   void OnSafeBrowsingVerdictReceived(
+      Decision candidate_decision,
       CrowdDenySafeBrowsingRequest::Verdict verdict);
-  void OnCrowdDenyTriggerEvaluated(UiToUse ui_to_use);
-
-  void Notify(UiToUse ui_to_use, base::Optional<QuietUiReason> quiet_ui_reason);
+  void OnPerSiteTriggersEvaluated(Decision decision);
+  void Notify(const Decision& decision);
 
   Profile* profile_;
 

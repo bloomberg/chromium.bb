@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_view.h"
@@ -18,8 +19,8 @@
 #include "components/version_info/channel.h"
 #include "content/public/common/content_features.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/event_monitor.h"
 #include "ui/views/view.h"
@@ -70,8 +71,7 @@ bool IsExitUiEnabled() {
 #else
   // Kiosk mode is a fullscreen experience, which makes the exit UI
   // inappropriate.
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kKioskMode);
+  return !chrome::IsRunningInAppMode();
 #endif
 }
 
@@ -148,8 +148,8 @@ void FullscreenControlHost::OnKeyEvent(const ui::KeyEvent& event) {
           ->RequiresPressAndHoldEscToExit()) {
     key_press_delay_timer_.Start(
         FROM_HERE, kKeyPressPopupDelay,
-        base::Bind(&FullscreenControlHost::ShowForInputEntryMethod,
-                   base::Unretained(this), InputEntryMethod::KEYBOARD));
+        base::BindOnce(&FullscreenControlHost::ShowForInputEntryMethod,
+                       base::Unretained(this), InputEntryMethod::KEYBOARD));
   } else if (event.type() == ui::ET_KEY_RELEASED) {
     key_press_delay_timer_.Stop();
     if (IsVisible() && input_entry_method_ == InputEntryMethod::KEYBOARD)
@@ -175,7 +175,14 @@ void FullscreenControlHost::OnMouseEvent(const ui::MouseEvent& event) {
       DCHECK_EQ(InputEntryMethod::NOT_ACTIVE, input_entry_method_);
       if (!in_mouse_cooldown_mode_ &&
           event.y() <= kShowFullscreenExitControlHeight) {
-        ShowForInputEntryMethod(InputEntryMethod::MOUSE);
+        // If the exit fullscreen prompt is being shown (say user just pressed
+        // F11 with the cursor on the top of the screen) then we suppress the
+        // fullscreen control host and just put it in cooldown mode.
+        const auto* bubble = browser_view_->exclusive_access_bubble();
+        if (bubble && bubble->IsShowing())
+          in_mouse_cooldown_mode_ = true;
+        else
+          ShowForInputEntryMethod(InputEntryMethod::MOUSE);
       } else if (in_mouse_cooldown_mode_ &&
                  event.y() >= CalculateCursorBufferHeight()) {
         in_mouse_cooldown_mode_ = false;
@@ -267,8 +274,8 @@ void FullscreenControlHost::StartPopupTimeout(
     base::TimeDelta timeout) {
   popup_timeout_timer_.Start(
       FROM_HERE, timeout,
-      base::BindRepeating(&FullscreenControlHost::OnPopupTimeout,
-                          base::Unretained(this), expected_input_method));
+      base::BindOnce(&FullscreenControlHost::OnPopupTimeout,
+                     base::Unretained(this), expected_input_method));
 }
 
 void FullscreenControlHost::OnPopupTimeout(

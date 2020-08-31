@@ -21,7 +21,8 @@
 <translation id="1398853756734560583">Maximizatu</translation>
 <translation id="1414271762428216854">Instalatutako aplikazioa (<ph name="APP_NAME" />)</translation>
 <translation id="1450753235335490080">Ezin da partekatu <ph name="CONTENT_TYPE" /></translation>
-<translation id="1498028757988366001">Dagoeneko bilatu duzu hori. Kendu egiten baduzu "<ph name="QUERY" />" historiatik, behin betiko kenduko da kontutik, gailu guztietan.</translation>
+<translation id="1487931858675166540"><ph name="SECOND_ITEM_TITLE" /> elementuarekin trukatu da <ph name="FIRST_ITEM_TITLE" /></translation>
+<translation id="1498028757988366001">Dagoeneko bilatu duzu hori. Kendu egiten baduzu "<ph name="QUERY" />" historiatik, betiko kenduko da kontutik, gailu guztietan.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutu eta }other{# minutu eta }}</translation>
 <translation id="1643823602425662293">Jakinarazpena</translation>
 <translation id="169515659049020177">Maius</translation>
@@ -39,14 +40,13 @@
 <translation id="1871244248791675517">Txertatu</translation>
 <translation id="1884435127456172652">% <ph name="NUMBER" /></translation>
 <translation id="1901303067676059328">Hautatu &amp;guztiak</translation>
-<translation id="1938451708255335766">Leihoak bistaratzeko erabiltzen den dentsitatea doitzeko, berrabiarazi aplikazioa.</translation>
 <translation id="2006524834898217237">Ziurtatu gailua Internetera konektatuta dagoela.</translation>
 <translation id="208586643495776849">Saiatu berriro</translation>
 <translation id="2090963878406559571">Zenbaki bat <ph name="ORIGIN" /> helbidetik Android-eko telefonora bidaltzeko, joan ezarpenetara eta <ph name="TROUBLESHOOT_LINK" /> bi gailuetan.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 egun}other{# egun}}</translation>
 <translation id="2148716181193084225">Gaur</translation>
 <translation id="2161656808144014275">testua</translation>
-<translation id="2168039046890040389">Orria gora</translation>
+<translation id="2168039046890040389">Orrian gora</translation>
 <translation id="2190355936436201913">(hutsik)</translation>
 <translation id="2192232475740621500">Erabili dentsitate txikia</translation>
 <translation id="219905428774326614">Abiarazlea, aplikazio guztiak</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Behera gezia</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 egun}other{# egun}}</translation>
 <translation id="3295886253693811851">Deitu honen bidez:</translation>
+<translation id="3306688585798492231">Pantaila integratua</translation>
 <translation id="335581015389089642">Hizketa</translation>
 <translation id="3389286852084373014">Testua luzeegia da</translation>
-<translation id="3479552764303398839">Orain ez</translation>
 <translation id="348799646910989694">Biltegia automatikoki ezkutatuko da</translation>
 <translation id="3554637740840164787">Ainguratu da <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 egun gelditzen da}other{# egun gelditzen dira}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">Jarraitu irakurtzen gailu mugikorrean <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Atzera</translation>
 <translation id="3889424535448813030">Eskuin gezia</translation>
-<translation id="3892641579809465218">Barneko bistaratzea</translation>
 <translation id="3897092660631435901">Menua</translation>
 <translation id="3909791450649380159">&amp;Ebaki</translation>
 <translation id="3990502903496589789">Eskuineko ertza</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktibo gaur}=1{Aktibo duela 1 egun}other{Aktibo duela # egun}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 egun eta }other{# egun eta }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 urte barru}other{# urte barru}}</translation>
-<translation id="5895138241574237353">Berrabiarazi</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 segundo gelditzen da}other{# segundo gelditzen dira}}</translation>
 <translation id="5941711191222866238">Minimizatu</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ordu}other{# ordu}}</translation>
@@ -158,7 +157,7 @@
 <translation id="6156262341071374681">Erakutsi aplikazio guztiak</translation>
 <translation id="6165508094623778733">Lortu informazio gehiago</translation>
 <translation id="6264365405983206840">Hautatu &amp;guztiak</translation>
-<translation id="6351032674660237738">IRADOKITAKO APLIKAZIOAK</translation>
+<translation id="6351032674660237738">APLIKAZIOEN IRADOKIZUNAK</translation>
 <translation id="6364916375976753737">Joan ezkerrera</translation>
 <translation id="6394627529324717982">Koma</translation>
 <translation id="6397363302884558537">Utzi hitz egiteari</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Eskuinetik ezkerrera</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ZIURRENIK ERABILIKO DIREN APLIKAZIOAK</translation>
+<translation id="7170202025028120564">Aplikazioaren bistaratze-ezarpenek aplikazioa berrabiarazten denean izango dute eragina.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 minutu gelditzen da}other{# minutu gelditzen dira}}</translation>
 <translation id="7319740667687257810">Abiarazlea, ikuspegi partziala</translation>
@@ -217,7 +217,7 @@
 <translation id="8152264887680882389"><ph name="TEXT" />, automatikoki betea</translation>
 <translation id="815598010540052116">Egin behera</translation>
 <translation id="8179976553408161302">Sartu</translation>
-<translation id="8210608804940886430">Orri bat behera</translation>
+<translation id="8210608804940886430">Orrian behera</translation>
 <translation id="8245914219290430011">Tabuladorea</translation>
 <translation id="8247998213073982446">Aplikazioa (<ph name="APP_NAME" />)</translation>
 <translation id="8259556432390118667">Kolore hamaseitarraren balioa</translation>

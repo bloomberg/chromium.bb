@@ -8,7 +8,6 @@
 #include "platform/api/trace_logging_platform.h"
 
 namespace openscreen {
-namespace platform {
 
 class TextTraceLoggingPlatform : public TraceLoggingPlatform {
  public:
@@ -38,7 +37,6 @@ class TextTraceLoggingPlatform : public TraceLoggingPlatform {
                    Error::Code error) override;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_TEXT_TRACE_LOGGING_PLATFORM_H_

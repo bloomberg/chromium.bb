@@ -21,6 +21,8 @@ namespace chromeos {
 // Supported service names for printers.
 const char ZeroconfPrinterDetector::kIppServiceName[] = "_ipp._tcp.local";
 const char ZeroconfPrinterDetector::kIppsServiceName[] = "_ipps._tcp.local";
+const char ZeroconfPrinterDetector::kSocketServiceName[] =
+    "_pdl-datastream._tcp.local";
 
 // IppEverywhere printers are also required to advertise these services.
 const char ZeroconfPrinterDetector::kIppEverywhereServiceName[] =
@@ -30,11 +32,13 @@ const char ZeroconfPrinterDetector::kIppsEverywhereServiceName[] =
 
 // These service names are ordered in priority. In other words, earlier
 // service types in this list will be used preferentially over later ones.
-constexpr std::array<const char*, 4> kServiceNames = {
+constexpr std::array<const char*, 5> kServiceNames = {
     ZeroconfPrinterDetector::kIppsEverywhereServiceName,
     ZeroconfPrinterDetector::kIppEverywhereServiceName,
     ZeroconfPrinterDetector::kIppsServiceName,
-    ZeroconfPrinterDetector::kIppServiceName};
+    ZeroconfPrinterDetector::kIppServiceName,
+    ZeroconfPrinterDetector::kSocketServiceName,
+};
 
 namespace {
 
@@ -139,7 +143,7 @@ bool ConvertToPrinter(const std::string& service_type,
   // If we don't have the minimum information needed to attempt a setup, fail.
   // Also fail on a port of 0, as this is used to indicate that the service
   // doesn't *actually* exist, the device just wants to guard the name.
-  if (service_description.service_name.empty() || metadata.ty.empty() ||
+  if (service_description.service_name.empty() ||
       service_description.ip_address.empty() ||
       (service_description.address.port() == 0)) {
     return false;
@@ -148,10 +152,11 @@ bool ConvertToPrinter(const std::string& service_type,
   Printer& printer = detected_printer->printer;
   printer.set_id(ZeroconfPrinterId(service_description, metadata));
   printer.set_uuid(metadata.UUID);
-  printer.set_display_name(metadata.ty);
+  printer.set_display_name(service_description.instance_name());
   printer.set_description(metadata.note);
   printer.set_make_and_model(metadata.product);
   const char* uri_protocol;
+  std::string rp = metadata.rp;
   if (service_type == ZeroconfPrinterDetector::kIppServiceName ||
       service_type == ZeroconfPrinterDetector::kIppEverywhereServiceName) {
     uri_protocol = "ipp";
@@ -159,6 +164,12 @@ bool ConvertToPrinter(const std::string& service_type,
              service_type ==
                  ZeroconfPrinterDetector::kIppsEverywhereServiceName) {
     uri_protocol = "ipps";
+  } else if (service_type == ZeroconfPrinterDetector::kSocketServiceName) {
+    uri_protocol = "socket";
+    // Bonjour Printing Specification v1.2.1 section 9.2.2:
+    // If the "rp" key is present in a Socket TXT record, the key/value MUST
+    // be ignored.
+    rp.clear();
   } else {
     // Since we only register for these services, we should never get back
     // a service other than the ones above.
@@ -168,7 +179,7 @@ bool ConvertToPrinter(const std::string& service_type,
   }
   printer.set_uri(base::StringPrintf(
       "%s://%s/%s", uri_protocol,
-      service_description.address.ToString().c_str(), metadata.rp.c_str()));
+      service_description.address.ToString().c_str(), rp.c_str()));
 
   // Per the IPP Everywhere Standard 5100.14-2013, section 4.2.1, IPP
   // everywhere-capable printers advertise services prefixed with "_print"

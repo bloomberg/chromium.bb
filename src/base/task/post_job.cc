@@ -11,7 +11,6 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 
 namespace base {
-namespace experimental {
 
 JobDelegate::JobDelegate(
     internal::JobTaskSource* task_source,
@@ -41,7 +40,6 @@ bool JobDelegate::ShouldYield() {
 #if DCHECK_IS_ON()
   // ShouldYield() shouldn't be called again after returning true.
   DCHECK(!last_should_yield_);
-  AssertExpectedConcurrency(recorded_max_concurrency_);
 #endif  // DCHECK_IS_ON()
   const bool should_yield =
       task_source_->ShouldYield() ||
@@ -74,14 +72,14 @@ void JobDelegate::AssertExpectedConcurrency(size_t expected_max_concurrency) {
   //   a) NotifyConcurrencyIncrease() was already called and the recorded
   //      concurrency version is out of date, i.e. less than the actual version.
   //   b) NotifyConcurrencyIncrease() has not yet been called, in which case the
-  //      function waits for an imminent increase of the concurrency version.
+  //      function waits for an imminent increase of the concurrency version,
+  //      or for max concurrency to decrease below or equal the expected value.
   // This prevent ill-formed GetMaxConcurrency() implementations that:
   // - Don't decrease with the number of remaining work items.
   // - Don't return an up-to-date value.
 #if DCHECK_IS_ON()
   // Case 1:
-  const size_t max_concurrency = task_source_->GetMaxConcurrency();
-  if (max_concurrency <= expected_max_concurrency)
+  if (task_source_->GetMaxConcurrency() <= expected_max_concurrency)
     return;
 
   // Case 2a:
@@ -93,7 +91,8 @@ void JobDelegate::AssertExpectedConcurrency(size_t expected_max_concurrency) {
   // Case 2b:
   const bool updated = task_source_->WaitForConcurrencyIncreaseUpdate(
       recorded_increase_version_);
-  DCHECK(updated)
+  DCHECK(updated ||
+         task_source_->GetMaxConcurrency() <= expected_max_concurrency)
       << "Value returned by |max_concurrency_callback| is expected to "
          "decrease, unless NotifyConcurrencyIncrease() is called.";
 
@@ -135,7 +134,7 @@ void JobHandle::Join() {
   DCHECK_GE(internal::GetTaskPriorityForCurrentThread(),
             task_source_->priority_racy())
       << "Join may not be called on Job with higher priority than the current "
-         "one.";
+         "thread.";
   UpdatePriority(internal::GetTaskPriorityForCurrentThread());
   bool must_run = task_source_->WillJoin();
   while (must_run)
@@ -169,15 +168,13 @@ JobHandle PostJob(const Location& from_here,
       << "Ref. Prerequisite section of post_task.h.\n\n"
          "Hint: if this is in a unit test, you're likely merely missing a "
          "base::test::TaskEnvironment member in your fixture.\n";
-  DCHECK(traits.use_thread_pool())
-      << "The base::ThreadPool() trait is mandatory with PostJob().";
+  // ThreadPool is implicitly the destination for PostJob(). Extension traits
+  // cannot be used.
   DCHECK_EQ(traits.extension_id(),
-            TaskTraitsExtensionStorage::kInvalidExtensionId)
-      << "Extension traits cannot be used with PostJob().";
-  TaskTraits adjusted_traits = traits;
-  adjusted_traits.InheritPriority(internal::GetTaskPriorityForCurrentThread());
+            TaskTraitsExtensionStorage::kInvalidExtensionId);
+
   auto task_source = base::MakeRefCounted<internal::JobTaskSource>(
-      from_here, adjusted_traits, std::move(worker_task),
+      from_here, traits, std::move(worker_task),
       std::move(max_concurrency_callback),
       static_cast<internal::ThreadPoolImpl*>(ThreadPoolInstance::Get()));
   const bool queued =
@@ -188,5 +185,4 @@ JobHandle PostJob(const Location& from_here,
   return JobHandle();
 }
 
-}  // namespace experimental
 }  // namespace base

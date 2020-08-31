@@ -18,7 +18,6 @@
 
 class GURL;
 @class ReadingListAddCommand;
-@class SendTabToSelfCommand;
 
 // Protocol for commands that will generally be handled by the "current tab",
 // which in practice is the BrowserViewController instance displaying the tab.
@@ -68,22 +67,6 @@ class GURL;
 // Shows the translate infobar.
 - (void)showTranslate;
 
-// Shows the Find In Page bar.
-- (void)showFindInPage;
-
-// Close and disable Find In Page bar.
-- (void)closeFindInPage;
-
-// Search the current tab for the query string in the Find In Page bar.
-- (void)searchFindInPage;
-
-// Go to the next location of the Find In Page query string in the current tab.
-- (void)findNextStringInPage;
-
-// Go to the previous location of the Find In Page query string in the current
-// tab.
-- (void)findPreviousStringInPage;
-
 // Shows the online help page in a tab.
 - (void)showHelpPage;
 
@@ -108,9 +91,6 @@ class GURL;
 
 // Searches for an image in the current tab.
 - (void)searchByImage:(UIImage*)image;
-
-// Sends the tab to another of the user's devices using the data in |command|.
-- (void)sendTabToSelf:(SendTabToSelfCommand*)command;
 
 // Shows/Hides the activity indicator overlay that appears over the view to
 // prevent interaction with the web page.

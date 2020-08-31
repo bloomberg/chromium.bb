@@ -10,81 +10,99 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
-#include "base/task_runner_util.h"
 #include "components/games/core/games_prefs.h"
 #include "components/games/core/proto/game.pb.h"
 
 namespace games {
 
-GamesServiceImpl::GamesServiceImpl(PrefService* prefs)
-    : GamesServiceImpl(std::make_unique<DataFilesParser>(), prefs) {}
+namespace {
+
+// Used by the barrier closure to know when all of the feature stores are done
+// processing the catalog. Increment when implementing new feature stores.
+constexpr int kNumberOfFeatureStores = 1;
+
+}  // namespace
 
 GamesServiceImpl::GamesServiceImpl(
-    std::unique_ptr<DataFilesParser> files_parser,
+    std::unique_ptr<CatalogStore> catalog_store,
+    std::unique_ptr<HighlightedGamesStore> highlighted_games_store,
     PrefService* prefs)
-    : files_parser_(std::move(files_parser)),
-      prefs_(prefs),
-      task_runner_(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::USER_VISIBLE})) {
-}
+    : catalog_store_(std::move(catalog_store)),
+      highlighted_games_store_(std::move(highlighted_games_store)),
+      prefs_(prefs) {}
 
 GamesServiceImpl::~GamesServiceImpl() = default;
 
-void GamesServiceImpl::GetHighlightedGame(HighlightedGameCallback callback) {
-  if (cached_highlighted_game_) {
-    std::move(callback).Run(ResponseCode::kSuccess,
-                            cached_highlighted_game_.get());
-    return;
-  }
+void GamesServiceImpl::SetHighlightedGameCallback(
+    HighlightedGameCallback callback) {
+  highlighted_games_store_->SetPendingCallback(std::move(callback));
+}
 
-  // If the Games component wasn't downloaded, we cannot provide the surface
-  // with a highlighted game.
+void GamesServiceImpl::GenerateHub() {
   if (!IsComponentInstalled()) {
-    std::move(callback).Run(ResponseCode::kFileNotFound, nullptr);
+    HandleFailure(ResponseCode::kComponentNotInstalled);
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      task_runner_.get(), FROM_HERE,
-      base::BindOnce(&GamesServiceImpl::GetCatalog, base::Unretained(this)),
-      base::BindOnce(&GamesServiceImpl::GetHighlightedGameFromCatalog,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  // Try to respond from cache to have the highlighted game appear faster.
+  if (highlighted_games_store_->TryRespondFromCache()) {
+    // TODO(crbug.com/1018201): Remove return when we have other stores that
+    // don't have caching support; this is a temporary optimization.
+    return;
+  }
+
+  UpdateStores();
 }
 
-std::unique_ptr<GamesCatalog> GamesServiceImpl::GetCatalog() {
-  // File IO should always be run using the thread pool task runner.
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-
-  auto catalog = std::make_unique<GamesCatalog>();
-  if (!files_parser_->TryParseCatalog(*cached_data_files_dir_, catalog.get())) {
-    return nullptr;
+void GamesServiceImpl::UpdateStores() {
+  if (is_updating()) {
+    // Ignore subsequent calls while already updating.
+    return;
   }
 
-  return catalog;
+  is_updating_ = true;
+
+  catalog_store_->UpdateCatalogAsync(
+      *cached_data_files_dir_,
+      base::BindOnce(&GamesServiceImpl::OnCatalogReceived,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GamesServiceImpl::GetHighlightedGameFromCatalog(
-    HighlightedGameCallback callback,
-    std::unique_ptr<GamesCatalog> catalog) {
-  if (!catalog) {
-    std::move(callback).Run(ResponseCode::kFileNotFound, nullptr);
+void GamesServiceImpl::OnCatalogReceived(ResponseCode code) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (code == ResponseCode::kSuccess && !catalog_store_->cached_catalog()) {
+    code = ResponseCode::kMissingCatalog;
+  }
+
+  if (code != ResponseCode::kSuccess) {
+    // Make sure all feature stores handle the failure such that pending
+    // callbacks are invoked (letting the UI know something failed).
+    HandleFailure(code);
     return;
   }
 
-  if (catalog->games().empty()) {
-    std::move(callback).Run(ResponseCode::kInvalidData, nullptr);
-    return;
-  }
+  barrier_closure_ = base::BarrierClosure(
+      kNumberOfFeatureStores, base::BindOnce(&GamesServiceImpl::DoneUpdating,
+                                             weak_ptr_factory_.GetWeakPtr()));
 
-  // Let's use the first game in the catalog as our highlighted game.
-  cached_highlighted_game_ = std::make_unique<const Game>(catalog->games(0));
-  std::move(callback).Run(ResponseCode::kSuccess,
-                          cached_highlighted_game_.get());
+  // Invoke all feature stores to process the parsed catalog and update their
+  // caches. When adding a new store, we must increment kNumberOfFeatureStores.
+  highlighted_games_store_->ProcessAsync(*cached_data_files_dir_,
+                                         *catalog_store_->cached_catalog(),
+                                         barrier_closure_);
+}
+
+void GamesServiceImpl::DoneUpdating() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Reset state.
+  catalog_store_->ClearCache();
+  is_updating_ = false;
 }
 
 bool GamesServiceImpl::IsComponentInstalled() {
-  if (cached_highlighted_game_ && !cached_data_files_dir_->empty()) {
+  if (cached_data_files_dir_ && !cached_data_files_dir_->empty()) {
     return true;
   }
 
@@ -96,6 +114,14 @@ bool GamesServiceImpl::IsComponentInstalled() {
   cached_data_files_dir_ =
       std::make_unique<base::FilePath>(std::move(install_dir));
   return true;
+}
+
+void GamesServiceImpl::HandleFailure(ResponseCode code) {
+  highlighted_games_store_->HandleCatalogFailure(code);
+
+  if (is_updating()) {
+    DoneUpdating();
+  }
 }
 
 }  // namespace games

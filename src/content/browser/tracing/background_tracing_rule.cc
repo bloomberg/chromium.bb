@@ -17,10 +17,12 @@
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
-#include "components/tracing/common/background_tracing_agent.mojom.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/tracing/public/cpp/perfetto/macros.h"
+#include "services/tracing/public/mojom/background_tracing_agent.mojom.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_histogram_sample.pbzero.h"
 
 namespace {
 
@@ -324,6 +326,15 @@ class HistogramRule : public BackgroundTracingRule,
                          "BackgroundTracingRule::OnHistogramTrigger",
                          TRACE_EVENT_SCOPE_THREAD, "histogram_name",
                          histogram_name, "value", actual_value);
+
+    TRACE_EVENT(
+        "toplevel",
+        "HistogramSampleTrigger", [&](perfetto::EventContext ctx) {
+          perfetto::protos::pbzero::ChromeHistogramSample* new_sample =
+              ctx.event()->set_chrome_histogram_sample();
+          new_sample->set_name_hash(base::HashMetricName(histogram_name));
+          new_sample->set_sample(actual_value);
+        });
 
     OnHistogramTrigger(histogram_name);
   }

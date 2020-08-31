@@ -157,6 +157,12 @@ void ClientFrameSinkVideoCapturer::OnFrameCaptured(
                              std::move(callbacks));
 }
 
+void ClientFrameSinkVideoCapturer::OnLog(const std::string& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  consumer_->OnLog(message);
+}
+
 void ClientFrameSinkVideoCapturer::OnStopped() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -267,6 +273,7 @@ void ClientFrameSinkVideoCapturer::Overlay::EstablishConnection(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(client_capturer_);
 
+  overlay_.reset();
   capturer->CreateOverlay(stacking_index_,
                           overlay_.BindNewPipeAndPassReceiver());
   // Note: There's no need to add a connection error handler on the remote. If

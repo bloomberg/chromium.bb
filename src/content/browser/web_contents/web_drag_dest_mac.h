@@ -32,6 +32,26 @@ class DraggingInfo;
 }  // namespace remote_cocoa
 
 namespace content {
+class WebContentsViewDelegate;
+
+// A structure used to keep drop context for asynchronously finishing a drop
+// operation. This is required because some drop event data can change before
+// completeDropAsync is called.
+struct DropContext {
+  DropContext(const content::DropData drop_data,
+              const gfx::PointF client_pt,
+              const gfx::PointF screen_pt,
+              int modifier_flags,
+              base::WeakPtr<content::RenderWidgetHostImpl> target_rwh);
+  DropContext(const DropContext& other);
+  ~DropContext();
+
+  const content::DropData drop_data;
+  const gfx::PointF client_pt;
+  const gfx::PointF screen_pt;
+  const int modifier_flags;
+  base::WeakPtr<content::RenderWidgetHostImpl> target_rwh;
+};
 
 // Given |data|, which should not be nil, fill it in using the contents of the
 // given pasteboard. The types handled by this method should be kept in sync
@@ -48,21 +68,21 @@ CONTENT_EXPORT
 @interface WebDragDest : NSObject {
  @private
   // Our associated WebContentsImpl. Weak reference.
-  content::WebContentsImpl* webContents_;
+  content::WebContentsImpl* _webContents;
 
   // Delegate; weak.
-  content::WebDragDestDelegate* delegate_;
+  content::WebDragDestDelegate* _delegate;
 
   // Updated asynchronously during a drag to tell us whether or not we should
   // allow the drop.
-  NSDragOperation currentOperation_;
+  NSDragOperation _currentOperation;
 
   // Tracks the current RenderWidgetHost we're dragging over.
-  base::WeakPtr<content::RenderWidgetHostImpl> currentRWHForDrag_;
+  base::WeakPtr<content::RenderWidgetHostImpl> _currentRWHForDrag;
 
   // Keep track of the render view host we're dragging over.  If it changes
   // during a drag, we need to re-send the DragEnter message.
-  RenderViewHostIdentifier currentRVH_;
+  RenderViewHostIdentifier _currentRVH;
 
   // Tracks the IDs of the source RenderProcessHost and RenderViewHost from
   // which the current drag originated. These are set in
@@ -70,18 +90,18 @@ CONTENT_EXPORT
   // do not fire over a cross-site frame (with respect to the source frame) in
   // the same page (see crbug.com/666858). See
   // WebContentsViewAura::drag_start_process_id_ for additional information.
-  int dragStartProcessID_;
-  content::GlobalRoutingID dragStartViewID_;
+  int _dragStartProcessID;
+  content::GlobalRoutingID _dragStartViewID;
 
   // The unfiltered data for the current drag, or nullptr if none is in
   // progress.
-  std::unique_ptr<content::DropData> dropDataUnfiltered_;
+  std::unique_ptr<content::DropData> _dropDataUnfiltered;
 
   // The data for the current drag, filtered by |currentRWHForDrag_|.
-  std::unique_ptr<content::DropData> dropDataFiltered_;
+  std::unique_ptr<content::DropData> _dropDataFiltered;
 
   // True if the drag has been canceled.
-  bool canceled_;
+  bool _canceled;
 }
 
 // |contents| is the WebContentsImpl representing this tab, used to communicate
@@ -106,7 +126,11 @@ CONTENT_EXPORT
 - (void)draggingExited;
 - (NSDragOperation)draggingUpdated:
     (const remote_cocoa::mojom::DraggingInfo*)info;
-- (BOOL)performDragOperation:(const remote_cocoa::mojom::DraggingInfo*)info;
+- (BOOL)performDragOperation:(const remote_cocoa::mojom::DraggingInfo*)info
+    withWebContentsViewDelegate:
+        (content::WebContentsViewDelegate*)webContentsViewDelegate;
+- (void)completeDropAsync:(BOOL)success
+              withContext:(const content::DropContext)context;
 
 // Helper to call WebWidgetHostInputEventRouter::GetRenderWidgetHostAtPoint().
 - (content::RenderWidgetHostImpl*)

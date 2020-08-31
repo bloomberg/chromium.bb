@@ -16,7 +16,7 @@ namespace syncer {
 
 MockModelTypeProcessor::MockModelTypeProcessor() : is_synchronous_(true) {}
 
-MockModelTypeProcessor::~MockModelTypeProcessor() {}
+MockModelTypeProcessor::~MockModelTypeProcessor() = default;
 
 void MockModelTypeProcessor::ConnectSync(
     std::unique_ptr<CommitQueue> commit_queue) {
@@ -25,7 +25,7 @@ void MockModelTypeProcessor::ConnectSync(
 
 void MockModelTypeProcessor::DisconnectSync() {
   if (!disconnect_callback_.is_null()) {
-    disconnect_callback_.Run();
+    std::move(disconnect_callback_).Run();
   }
 }
 
@@ -39,12 +39,17 @@ void MockModelTypeProcessor::GetLocalChanges(size_t max_entries,
 
 void MockModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,
-    const CommitResponseDataList& response_list) {
-  pending_tasks_.push_back(
-      base::BindOnce(&MockModelTypeProcessor::OnCommitCompletedImpl,
-                     base::Unretained(this), type_state, response_list));
+    const CommitResponseDataList& committed_response_list,
+    const FailedCommitResponseDataList& error_response_list) {
+  pending_tasks_.push_back(base::BindOnce(
+      &MockModelTypeProcessor::OnCommitCompletedImpl, base::Unretained(this),
+      type_state, committed_response_list, error_response_list));
   if (is_synchronous_)
     RunQueuedTasks();
+}
+
+void MockModelTypeProcessor::OnCommitFailed(SyncCommitError commit_error) {
+  ++commit_failures_count_;
 }
 
 void MockModelTypeProcessor::OnUpdateReceived(
@@ -129,6 +134,10 @@ std::unique_ptr<CommitRequestData> MockModelTypeProcessor::DeleteRequest(
   return request_data;
 }
 
+size_t MockModelTypeProcessor::GetNumCommitFailures() const {
+  return commit_failures_count_;
+}
+
 size_t MockModelTypeProcessor::GetNumUpdateResponses() const {
   return received_update_responses_.size();
 }
@@ -137,9 +146,8 @@ std::vector<const UpdateResponseData*>
 MockModelTypeProcessor::GetNthUpdateResponse(size_t n) const {
   DCHECK_LT(n, GetNumUpdateResponses());
   std::vector<const UpdateResponseData*> nth_update_responses;
-  for (const std::unique_ptr<UpdateResponseData>& response :
-       received_update_responses_[n]) {
-    nth_update_responses.push_back(response.get());
+  for (const UpdateResponseData& response : received_update_responses_[n]) {
+    nth_update_responses.push_back(&response);
   }
   return nth_update_responses;
 }
@@ -193,8 +201,8 @@ CommitResponseData MockModelTypeProcessor::GetCommitResponse(
 }
 
 void MockModelTypeProcessor::SetDisconnectCallback(
-    const DisconnectCallback& callback) {
-  disconnect_callback_ = callback;
+    DisconnectCallback callback) {
+  disconnect_callback_ = std::move(callback);
 }
 
 void MockModelTypeProcessor::SetCommitRequest(
@@ -208,10 +216,12 @@ int MockModelTypeProcessor::GetLocalChangesCallCount() const {
 
 void MockModelTypeProcessor::OnCommitCompletedImpl(
     const sync_pb::ModelTypeState& type_state,
-    const CommitResponseDataList& response_list) {
-  received_commit_responses_.push_back(response_list);
+    const CommitResponseDataList& committed_response_list,
+    const FailedCommitResponseDataList& error_response_list) {
+  received_commit_responses_.push_back(committed_response_list);
   type_states_received_on_commit_.push_back(type_state);
-  for (auto it = response_list.begin(); it != response_list.end(); ++it) {
+  for (auto it = committed_response_list.begin();
+       it != committed_response_list.end(); ++it) {
     const ClientTagHash& tag_hash = it->client_tag_hash;
     commit_response_items_.insert(std::make_pair(tag_hash, *it));
 
@@ -236,12 +246,12 @@ void MockModelTypeProcessor::OnUpdateReceivedImpl(
     UpdateResponseDataList response_list) {
   type_states_received_on_update_.push_back(type_state);
   for (auto it = response_list.begin(); it != response_list.end(); ++it) {
-    const ClientTagHash& client_tag_hash = (*it)->entity->client_tag_hash;
+    const ClientTagHash& client_tag_hash = it->entity.client_tag_hash;
     // Server wins.  Set the model's base version.
-    SetBaseVersion(client_tag_hash, (*it)->response_version);
-    SetServerAssignedId(client_tag_hash, (*it)->entity->id);
+    SetBaseVersion(client_tag_hash, it->response_version);
+    SetServerAssignedId(client_tag_hash, it->entity.id);
 
-    update_response_items_.insert(std::make_pair(client_tag_hash, it->get()));
+    update_response_items_.insert(std::make_pair(client_tag_hash, &(*it)));
   }
   received_update_responses_.push_back(std::move(response_list));
 }

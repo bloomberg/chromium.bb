@@ -15,14 +15,14 @@
         <div class="left">
             <p>
                 <a href="http://webgl.org/">
-                    <img alt="WebGL" width="240" height="100" src="../../resources/WebGL-Logo.png"/>
+                    <img alt=WebGL width=240 height=100 src="../../resources/WebGL-Logo.png"/>
                 </a>
             </p>
         </div>
         <div class="right">
             <p>
                 <a href="http://khronos.org/">
-                    <img alt=Khronos height=60 src="../../resources/KhronosGroup-3D.png" width=220>
+                    <img alt=Khronos width=336 height=80 src="../../resources/Khronos_100px_June18.png"/>
                 </a>
             </p>
         </div>
@@ -1131,8 +1131,7 @@ for (var i = 0; i < numVertices; i++) {
     See <a href="#CONTEXT_LOST">the context lost event</a> for further details.
     </p>
     <pre class="idl">
-[NoInterfaceObject]
-interface <dfn id="WebGLRenderingContextBase">WebGLRenderingContextBase</dfn>
+interface mixin <dfn id="WebGLRenderingContextBase">WebGLRenderingContextBase</dfn>
 {
 
     /* ClearBufferMask */
@@ -1786,7 +1785,7 @@ interface <dfn id="WebGLRenderingContextBase">WebGLRenderingContextBase</dfn>
 interface <dfn id="WebGLRenderingContext">WebGLRenderingContext</dfn>
 {
 };
-WebGLRenderingContext implements WebGLRenderingContextBase;
+WebGLRenderingContext includes WebGLRenderingContextBase;
 </pre>
 
 <!-- ======================================================================================================= -->

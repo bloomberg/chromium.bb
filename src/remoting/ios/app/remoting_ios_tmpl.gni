@@ -58,16 +58,17 @@ template("ios_remoting_app_tmpl") {
   _credits_bundle_target_name = "${target_name}_credits_bundle"
   bundle_data(_credits_bundle_target_name) {
     sources = get_target_outputs(":$_credits_resources_target_name")
-    public_deps = [
-      ":$_credits_resources_target_name",
-    ]
-    outputs = [
-      "{{bundle_resources_dir}}/{{source_file_part}}",
-    ]
+    public_deps = [ ":$_credits_resources_target_name" ]
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
   }
 
   ios_app_bundle(target_name) {
-    output_name = invoker.output_name
+    forward_variables_from(invoker,
+                           [
+                             "bundle_deps",
+                             "deps",
+                             "output_name",
+                           ])
 
     entitlements_path = invoker.entitlements_path
     info_plist_target = ":$_info_plist_target_name"
@@ -96,16 +97,17 @@ template("ios_remoting_app_tmpl") {
       "CoreVideo.framework",
       "GLKit.framework",
       "OpenGLES.framework",
-      "Webkit.framework",
+      "WebKit.framework",
       "SafariServices.framework",
       "SystemConfiguration.framework",
     ]
 
-    deps = invoker.deps
-
-    bundle_deps = [
-      ":$_launchscreen_storyboard_target_name",
+    if (!defined(bundle_deps)) {
+      bundle_deps = []
+    }
+    bundle_deps += [
       ":$_credits_bundle_target_name",
+      ":$_launchscreen_storyboard_target_name",
     ]
 
     assert_no_deps = [ "//third_party/ffmpeg:*" ]

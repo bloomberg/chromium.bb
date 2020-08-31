@@ -6,12 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_INSTRUMENTS_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -28,17 +29,27 @@ class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
 
  public:
   explicit PaymentInstruments(
-      const mojo::Remote<payments::mojom::blink::PaymentManager>&);
+      const HeapMojoRemote<payments::mojom::blink::PaymentManager,
+                           HeapMojoWrapperMode::kWithoutContextObserver>&,
+      ExecutionContext*);
 
-  ScriptPromise deleteInstrument(ScriptState*, const String& instrument_key);
-  ScriptPromise get(ScriptState*, const String& instrument_key);
-  ScriptPromise keys(ScriptState*);
-  ScriptPromise has(ScriptState*, const String& instrument_key);
+  ScriptPromise deleteInstrument(ScriptState*,
+                                 const String& instrument_key,
+                                 ExceptionState&);
+  ScriptPromise get(ScriptState*,
+                    const String& instrument_key,
+                    ExceptionState&);
+  ScriptPromise keys(ScriptState*, ExceptionState&);
+  ScriptPromise has(ScriptState*,
+                    const String& instrument_key,
+                    ExceptionState&);
   ScriptPromise set(ScriptState*,
                     const String& instrument_key,
                     const PaymentInstrument* details,
                     ExceptionState&);
-  ScriptPromise clear(ScriptState*);
+  ScriptPromise clear(ScriptState*, ExceptionState&);
+
+  void Trace(Visitor*) override;
 
  private:
   mojom::blink::PermissionService* GetPermissionService(ScriptState*);
@@ -62,9 +73,12 @@ class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
   void onClearPaymentInstruments(ScriptPromiseResolver*,
                                  payments::mojom::blink::PaymentHandlerStatus);
 
-  const mojo::Remote<payments::mojom::blink::PaymentManager>& manager_;
+  const HeapMojoRemote<payments::mojom::blink::PaymentManager,
+                       HeapMojoWrapperMode::kWithoutContextObserver>& manager_;
 
-  mojo::Remote<mojom::blink::PermissionService> permission_service_;
+  HeapMojoRemote<mojom::blink::PermissionService,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      permission_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentInstruments);
 };

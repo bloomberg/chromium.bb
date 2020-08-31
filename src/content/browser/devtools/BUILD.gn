@@ -8,15 +8,15 @@ import("//tools/grit/grit_rule.gni")
 
 group("resources") {
   if (!is_android) {
-    public_deps = [
-      ":devtools_resources",
-    ]
+    public_deps = [ ":devtools_resources" ]
   }
 }
 
 grit("devtools_resources") {
   source = "$root_gen_dir/devtools/devtools_resources.grd"
-  source_is_generated = true
+
+  # Required because the .grd is generated.
+  enable_input_discovery_for_gn_analyze = false
   use_brotli = true
 
   outputs = [
@@ -46,9 +46,7 @@ grit("devtools_resources") {
 
 inspector_protocol_generate("protocol_sources") {
   visibility = [ "//content/browser" ]
-  deps = [
-    "//third_party/blink/public/devtools_protocol:protocol_version",
-  ]
+  deps = [ "//third_party/blink/public/devtools_protocol:protocol_version" ]
   _blink_protocol_path = rebase_path(
           "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
           root_build_dir)
@@ -65,6 +63,8 @@ inspector_protocol_generate("protocol_sources") {
 
   # These are relative to $target_gen_dir.
   outputs = [
+    "protocol/audits.cc",
+    "protocol/audits.h",
     "protocol/background_service.cc",
     "protocol/background_service.h",
     "protocol/base_string_adapter.cc",
@@ -84,6 +84,8 @@ inspector_protocol_generate("protocol_sources") {
     "protocol/inspector.h",
     "protocol/io.cc",
     "protocol/io.h",
+    "protocol/log.cc",
+    "protocol/log.h",
     "protocol/memory.cc",
     "protocol/memory.h",
     "protocol/network.cc",
@@ -118,7 +120,5 @@ inspector_protocol_generate("protocol_sources") {
 }
 
 proto_library("devtools_background_services_proto") {
-  sources = [
-    "devtools_background_services.proto",
-  ]
+  sources = [ "devtools_background_services.proto" ]
 }

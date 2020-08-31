@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
@@ -24,22 +25,6 @@ namespace password_manager {
 namespace {
 
 using ::signin::AccessTokenFetcher;
-
-constexpr char kAPIScope[] =
-    "https://www.googleapis.com/auth/identity.passwords.leak.check";
-
-// Returns a Google account that can be used for getting a token.
-CoreAccountId GetAccountForRequest(
-    const signin::IdentityManager* identity_manager) {
-  CoreAccountInfo result = identity_manager->GetUnconsentedPrimaryAccountInfo();
-  if (result.IsEmpty()) {
-    std::vector<CoreAccountInfo> all_accounts =
-        identity_manager->GetAccountsWithRefreshTokens();
-    if (!all_accounts.empty())
-      result = all_accounts.front();
-  }
-  return result.account_id;
-}
 
 // Wraps |callback| into another callback that measures the elapsed time between
 // construction and actual execution of the callback. Records the result to
@@ -126,10 +111,8 @@ AuthenticatedLeakCheck::RequestPayloadHelper::RequestPayloadHelper(
 
 void AuthenticatedLeakCheck::RequestPayloadHelper::RequestAccessToken(
     AccessTokenFetcher::TokenCallback callback) {
-  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
-      GetAccountForRequest(identity_manager_),
-      /*consumer_name=*/"leak_detection_service", {kAPIScope},
-      std::move(callback), signin::AccessTokenFetcher::Mode::kImmediate);
+  token_fetcher_ = password_manager::RequestAccessToken(identity_manager_,
+                                                        std::move(callback));
 }
 
 void AuthenticatedLeakCheck::RequestPayloadHelper::PreparePayload(
@@ -181,12 +164,13 @@ AuthenticatedLeakCheck::~AuthenticatedLeakCheck() = default;
 // static
 bool AuthenticatedLeakCheck::HasAccountForRequest(
     const signin::IdentityManager* identity_manager) {
-  // On desktop HasUnconsentedPrimaryAccount() will always return something if
-  // the user is signed in.
+  // On desktop HasPrimaryAccount(signin::ConsentLevel::kNotRequired) will
+  // always return something if the user is signed in.
   // On Android it will be empty if the user isn't syncing. Thus,
   // GetAccountsWithRefreshTokens() check is necessary.
   return identity_manager &&
-         (identity_manager->HasUnconsentedPrimaryAccount() ||
+         (identity_manager->HasPrimaryAccount(
+              signin::ConsentLevel::kNotRequired) ||
           !identity_manager->GetAccountsWithRefreshTokens().empty());
 }
 
@@ -249,8 +233,7 @@ void AuthenticatedLeakCheck::DoLeakRequest(
   encryption_key_ = std::move(data.encryption_key);
   request_ = network_request_factory_->CreateNetworkRequest();
   request_->LookupSingleLeak(
-      url_loader_factory.get(), access_token,
-      std::move(data.username_hash_prefix), std::move(data.encrypted_payload),
+      url_loader_factory.get(), access_token, std::move(data.payload),
       TimeCallback(
           base::BindOnce(&AuthenticatedLeakCheck::OnLookupSingleLeakResponse,
                          weak_ptr_factory_.GetWeakPtr()),
@@ -258,10 +241,11 @@ void AuthenticatedLeakCheck::DoLeakRequest(
 }
 
 void AuthenticatedLeakCheck::OnLookupSingleLeakResponse(
-    std::unique_ptr<SingleLookupResponse> response) {
+    std::unique_ptr<SingleLookupResponse> response,
+    base::Optional<LeakDetectionError> error) {
   request_.reset();
   if (!response) {
-    delegate_->OnError(LeakDetectionError::kInvalidServerResponse);
+    delegate_->OnError(*error);
     return;
   }
 

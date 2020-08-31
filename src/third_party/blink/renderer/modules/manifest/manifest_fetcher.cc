@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/manifest/manifest_fetcher.h"
 
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 
@@ -16,7 +16,7 @@ ManifestFetcher::ManifestFetcher(const KURL& url)
 
 ManifestFetcher::~ManifestFetcher() = default;
 
-void ManifestFetcher::Start(Document& document,
+void ManifestFetcher::Start(LocalDOMWindow& window,
                             bool use_credentials,
                             ManifestFetcher::Callback callback) {
   callback_ = std::move(callback);
@@ -33,9 +33,9 @@ void ManifestFetcher::Start(Document& document,
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
-  loader_ = MakeGarbageCollected<ThreadableLoader>(document, this,
+  loader_ = MakeGarbageCollected<ThreadableLoader>(window, this,
                                                    resource_loader_options);
-  loader_->Start(request);
+  loader_->Start(std::move(request));
 }
 
 void ManifestFetcher::Cancel() {
@@ -88,7 +88,7 @@ void ManifestFetcher::DidFailRedirectCheck() {
   DidFail(ResourceError::Failure(NullURL()));
 }
 
-void ManifestFetcher::Trace(blink::Visitor* visitor) {
+void ManifestFetcher::Trace(Visitor* visitor) {
   visitor->Trace(loader_);
   ThreadableLoaderClient::Trace(visitor);
 }

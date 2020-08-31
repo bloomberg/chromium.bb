@@ -17,6 +17,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "content/public/test/browser_test.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -61,9 +62,11 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root) {
   generator.PressRightButton();
 
   // Move the cursor up to the "New window" menu option - assumes menu content.
+  ash::ShelfView* shelf_view =
+      ash::Shelf::ForWindow(root)->GetShelfViewForTesting();
   const int offset =
       // Top half of the button we just clicked on.
-      ash::ShelfConfig::Get()->button_size() / 2 +
+      shelf_view->GetButtonSize() / 2 +
       // Space between shelf top and menu bottom. Here we get this menu with
       // a right-click but long-pressing yields the same result. All menus
       // here use a touchable layout.
@@ -89,7 +92,8 @@ class WindowSizerTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WindowSizerTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WindowSizerTest, OpenBrowserUsingShelfItem) {
+// TODO(crbug.com/1038342): Test is flaky.
+IN_PROC_BROWSER_TEST_F(WindowSizerTest, DISABLED_OpenBrowserUsingShelfItem) {
   // Don't shutdown when closing the last browser window.
   ScopedKeepAlive test_keep_alive(KeepAliveOrigin::BROWSER_PROCESS_CHROMEOS,
                                   KeepAliveRestartOption::DISABLED);
@@ -133,7 +137,8 @@ IN_PROC_BROWSER_TEST_F(WindowSizerTest, OpenBrowserUsingShelfItem) {
   EXPECT_EQ(root_windows[0], ash::Shell::GetRootWindowForNewWindows());
 }
 
-IN_PROC_BROWSER_TEST_F(WindowSizerTest, OpenBrowserUsingContextMenu) {
+// TODO(crbug.com/1038342): Test is flaky.
+IN_PROC_BROWSER_TEST_F(WindowSizerTest, DISABLED_OpenBrowserUsingContextMenu) {
   // Don't shutdown when closing the last browser window.
   ScopedKeepAlive test_keep_alive(KeepAliveOrigin::BROWSER_PROCESS_CHROMEOS,
                                   KeepAliveRestartOption::DISABLED);

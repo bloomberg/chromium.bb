@@ -1004,10 +1004,6 @@ int32_t x() const;
 SkIPoint
 int32_t y() const;
 
-[IRect_EmptyIRect]
-SkIRect
-static const SkIRect& EmptyIRect();
-
 [IRect_Intersects]
 SkIRect
 static bool Intersects(const SkIRect& a, const SkIRect& b);
@@ -2532,7 +2528,6 @@ SkPath
 SkPath& conicTo(const SkPoint& p1, const SkPoint& p2, SkScalar w);
 
 [Path_Iter_conicWeight]
-[Path_RawIter_conicWeight]
 SkPath
 SkScalar conicWeight() const;
 
@@ -2725,10 +2720,6 @@ SkPath& moveTo(SkScalar x, SkScalar y);
 SkPath
 SkPath& moveTo(const SkPoint& p);
 
-[Path_RawIter_next]
-SkPath
-Verb next(SkPoint pts[4]);
-
 [Path_Iter_next]
 SkPath
 Verb next(SkPoint pts[4], bool doConsumeDegenerates = true, bool exact = false);
@@ -2752,10 +2743,6 @@ SkPath& operator=(const SkPath& path);
 [Path_equal_operator]
 SkPath
 bool operator==(const SkPath& a, const SkPath& b);
-
-[Path_RawIter_peek]
-SkPath
-Verb peek() const;
 
 [Path_quadTo]
 SkPath

@@ -21,13 +21,18 @@ namespace chromeos {
 
 class RecommendAppsFetcher;
 class RecommendAppsScreenView;
+class ScreenManager;
 
 // This is Recommend Apps screen that is displayed as a part of user first
 // sign-in flow.
 class RecommendAppsScreen : public BaseScreen,
                             public RecommendAppsFetcherDelegate {
  public:
-  enum class Result { SELECTED, SKIPPED };
+  enum class Result { SELECTED, SKIPPED, NOT_APPLICABLE, LOAD_ERROR };
+
+  static std::string GetResultString(Result result);
+
+  static RecommendAppsScreen* Get(ScreenManager* manager);
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   RecommendAppsScreen(RecommendAppsScreenView* view,
@@ -46,20 +51,32 @@ class RecommendAppsScreen : public BaseScreen,
   // Called when the view is destroyed so there is no dead reference to it.
   void OnViewDestroyed(RecommendAppsScreenView* view);
 
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
+  void SetSkipForTesting() { skip_for_testing_ = true; }
 
   // RecommendAppsFetcherDelegate:
   void OnLoadSuccess(const base::Value& app_list) override;
   void OnLoadError() override;
   void OnParseResponseError() override;
 
+  // BaseScreen:
+  bool MaybeSkip() override;
+
+  void set_exit_callback_for_testing(ScreenExitCallback exit_callback) {
+    exit_callback_ = exit_callback;
+  }
+
  private:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+
   RecommendAppsScreenView* view_;
   ScreenExitCallback exit_callback_;
 
   std::unique_ptr<RecommendAppsFetcher> recommend_apps_fetcher_;
+
+  // Skip the screen for testing if set to true.
+  bool skip_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(RecommendAppsScreen);
 };

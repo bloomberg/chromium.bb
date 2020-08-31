@@ -129,6 +129,16 @@
       custom_copy: true,
       custom_compare: true,
     },
+    // Style has applied a non-inherited -internal-light-dark() value from a UA
+    // stylesheet. Since such values have a dependency on the used color-scheme,
+    // we cannot use the MatchedPropertyCache when this flag is set.
+    {
+      name: "HasNonInheritedLightDarkValue",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_copy: true,
+      custom_compare: true,
+    },
     // Whether this style is affected by these pseudo-classes.
     {
       name: "AffectedByFocusWithin",
@@ -166,6 +176,20 @@
       custom_copy: true,
       custom_compare: true,
     },
+    // A property references a variable that needs to be resolved
+    {
+      name: "HasVariableReference",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_compare: true,
+    },
+    // A property which value consists of a custom property declaration.
+    {
+      name: "HasVariableDeclaration",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_compare: true,
+    },
     // Explicitly inherits a non-inherited property
     {
       name: "HasExplicitlyInheritedProperties",
@@ -186,6 +210,12 @@
     },
     {
       name: "HasRemUnits",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_compare: true,
+    },
+    {
+      name: "HasEmUnits",
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,
@@ -311,6 +341,15 @@
       wrapper_pointer_name: "Persistent",
       field_group: "*",
       computed_style_custom_functions: ["getter", "setter"],
+    },
+    {
+      name: "EffectiveZoom",
+      inherited: true,
+      field_template: "primitive",
+      type_name: "float",
+      default_value: "1.0f",
+      field_group: "*",
+      computed_style_custom_functions: ["setter"],
     },
     {
       name: "TextStrokeColorIsCurrentColor",
@@ -501,7 +540,7 @@
       include_paths: ["third_party/blink/renderer/platform/graphics/touch_action.h"],
       type_name: "TouchAction",
       field_size: 6,
-      default_value: "TouchAction::kTouchActionAuto",
+      default_value: "TouchAction::kAuto",
       field_group: "*",
       computed_style_custom_functions: ["getter", "setter"],
     },
@@ -536,12 +575,13 @@
     {
       name: "InheritedVariables",
       inherited: true,
+      semi_independent_variable: true,
       field_template: "external",
       type_name: "StyleInheritedVariables",
       include_paths: ["third_party/blink/renderer/core/style/style_inherited_variables.h"],
       default_value: "nullptr",
       wrapper_pointer_name: "scoped_refptr",
-      field_group: "*",
+      field_group: "InheritedVariables",
       computed_style_custom_functions: ["getter", "setter"],
     },
     {
@@ -632,7 +672,7 @@
       default_value: "Vector<String>()",
       include_paths: ["third_party/blink/renderer/platform/wtf/vector.h",
                       "third_party/blink/renderer/platform/wtf/text/wtf_string.h"],
-      computed_style_custom_functions: ["getter", "setter"],
+      computed_style_custom_functions: ["setter"],
     },
     {
       name: "PaintImages",
@@ -657,10 +697,12 @@
     },
     {
       name: "PageSizeType",
-      field_template: "keyword",
-      keywords: ["auto", "landscape", "portrait", "resolved"],
+      field_template: "primitive",
       field_group: "*",
-      default_value: "auto",
+      type_name: "PageSizeType",
+      field_size: 2,
+      default_value: "PageSizeType::kAuto",
+      include_paths: ["third_party/blink/public/common/css/page_size_type.h"],
     },
     {
       name: "HasCurrentOpacityAnimation",
@@ -879,6 +921,22 @@
       include_paths: ["third_party/blink/renderer/core/style/ordered_named_grid_lines.h"],
     },
     {
+      name: "ImplicitNamedGridColumnLines",
+      field_template: "external",
+      type_name: "NamedGridLinesMap",
+      field_group: "*->grid",
+      default_value: "NamedGridLinesMap()",
+      include_paths: ["third_party/blink/renderer/core/style/named_grid_lines_map.h"],
+    },
+    {
+      name: "ImplicitNamedGridRowLines",
+      field_template: "external",
+      type_name: "NamedGridLinesMap",
+      field_group: "*->grid",
+      default_value: "NamedGridLinesMap()",
+      include_paths: ["third_party/blink/renderer/core/style/named_grid_lines_map.h"],
+    },
+    {
       name: "NamedGridArea",
       field_template: "external",
       type_name: "NamedGridAreaMap",
@@ -978,14 +1036,6 @@
       inherited: true,
     },
     {
-      name: "IsColorInternalText",
-      inherited: true,
-      field_template: "primitive",
-      type_name: "bool",
-      field_group: "inherited",
-      default_value: "false",
-    },
-    {
       name: "IsInBlockifyingDisplay",
       field_template: "monotonic_flag",
       default_value: "false",
@@ -1035,6 +1085,42 @@
       default_value: "false",
       custom_compare: true,
       inherited: true,
+    },
+    {
+      name: "IsInsideListElement",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_compare: true,
+      inherited: true,
+    },
+
+    // This field disables the 'overflow' check in |LayoutBlock::
+    // InlineBlockBaseline()|. For 'inline-block', CSS says that the baseline
+    // is the bottom margin edge if 'overflow' is not visible. But some
+    // elements want to ignore this condition.
+    {
+      name: "ShouldIgnoreOverflowPropertyForInlineBlockBaseline",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      inherited: false,
+    },
+    {
+      name: "MathBaseline",
+      field_template: "external",
+      default_value: "Length()",
+      include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
+      type_name: "Length",
+      field_group: "*",
+      getter: "GetMathBaseline",
+    },
+    {
+      name: "MathFractionBarThickness",
+      field_template: "external",
+      default_value: "Length()",
+      include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
+      type_name: "Length",
+      field_group: "*",
+      getter: "GetMathFractionBarThickness",
     },
   ],
 }

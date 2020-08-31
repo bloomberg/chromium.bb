@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_FRAME_REQUEST_CALLBACK_COLLECTION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_FRAME_REQUEST_CALLBACK_COLLECTION_H_
 
-#include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -15,6 +14,10 @@ class ExecutionContext;
 class V8XRFrameRequestCallback;
 class XRFrame;
 class XRSession;
+
+namespace probe {
+class AsyncTaskId;
+}
 
 class XRFrameRequestCallbackCollection final
     : public GarbageCollected<XRFrameRequestCallbackCollection>,
@@ -29,7 +32,7 @@ class XRFrameRequestCallbackCollection final
 
   bool IsEmpty() const { return !callbacks_.size(); }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   const char* NameInHeapSnapshot() const override {
     return "XRFrameRequestCallbackCollection";
   }
@@ -41,8 +44,8 @@ class XRFrameRequestCallbackCollection final
            !WTF::IsHashTraitsEmptyValue<Traits, CallbackId>(id);
   }
 
-  using CallbackAndAsyncTask =
-      std::pair<Member<V8XRFrameRequestCallback>, probe::AsyncTaskId>;
+  using CallbackAndAsyncTask = std::pair<Member<V8XRFrameRequestCallback>,
+                                         std::unique_ptr<probe::AsyncTaskId>>;
   using CallbackMap = HeapHashMap<CallbackId, CallbackAndAsyncTask>;
 
   CallbackMap callbacks_;

@@ -11,10 +11,16 @@ graphs mapping from portage packages to the dependency source.
 
 from __future__ import print_function
 
+import sys
+
 from chromite.api import faux
 from chromite.api import validate
+from chromite.api.controller import controller_util
 from chromite.lib import portage_util
 from chromite.service import dependency
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def AugmentDepGraphProtoFromJsonMap(json_map, graph):
@@ -42,8 +48,8 @@ def AugmentDepGraphProtoFromJsonMap(json_map, graph):
       if cpv.version:
         dep_package.version = cpv.version
 
-    package_CPV = '%s/%s-%s' % (
-        package_info.category, package_info.package_name, package_info.version)
+    package_CPV = '%s/%s-%s' % (package_info.category,
+                                package_info.package_name, package_info.version)
     for path in json_map['source_path_mapping'][package_CPV]:
       source_path = package_dep_info.dependency_source_paths.add()
       source_path.path = path
@@ -67,7 +73,25 @@ def GetBuildDependencyGraph(input_proto, output_proto, _config):
     _config (api_config.ApiConfig): The API call config.
   """
   board = input_proto.build_target.name
+  packages = [controller_util.PackageInfoToCPV(x) for x in input_proto.packages]
 
-  json_map, sdk_json_map = dependency.GetBuildDependency(board)
+  json_map, sdk_json_map = dependency.GetBuildDependency(board, packages)
   AugmentDepGraphProtoFromJsonMap(json_map, output_proto.dep_graph)
   AugmentDepGraphProtoFromJsonMap(sdk_json_map, output_proto.sdk_dep_graph)
+
+
+def _DummyGetToolchainPathsResponse(_input_proto, output_proto, _config):
+  """Create a fake successful response for GetToolchainPaths."""
+  dummy_entry = output_proto.paths.add()
+  dummy_entry.path = 'src/third_party/dummy-package'
+
+
+@faux.success(_DummyGetToolchainPathsResponse)
+@faux.empty_error
+@validate.validation_complete
+def GetToolchainPaths(_input_proto, output_proto, _config):
+  """Get a list of paths that affect the toolchain."""
+  toolchain_paths = dependency.DetermineToolchainSourcePaths()
+  for p in toolchain_paths:
+    source_path = output_proto.paths.add()
+    source_path.path = p

@@ -82,6 +82,10 @@ static void GetNativeThemeExtraParams(
           extra_params->text_field.is_listbox;
       native_theme_extra_params->text_field.background_color =
           extra_params->text_field.background_color;
+      native_theme_extra_params->text_field.has_border =
+          extra_params->text_field.has_border;
+      native_theme_extra_params->text_field.auto_complete_active =
+          extra_params->text_field.auto_complete_active;
       break;
     case WebThemeEngine::kPartMenuList:
       native_theme_extra_params->menu_list.has_border =
@@ -244,19 +248,6 @@ void WebThemeEngineDefault::SetForcedColors(
     const blink::ForcedColors forced_colors) {
   ui::NativeTheme::GetInstanceForWeb()->set_high_contrast(
       forced_colors == blink::ForcedColors::kActive);
-}
-
-blink::PreferredColorScheme WebThemeEngineDefault::PreferredColorScheme()
-    const {
-  ui::NativeTheme::PreferredColorScheme preferred_color_scheme =
-      ui::NativeTheme::GetInstanceForWeb()->GetPreferredColorScheme();
-  return WebPreferredColorScheme(preferred_color_scheme);
-}
-
-void WebThemeEngineDefault::SetPreferredColorScheme(
-    const blink::PreferredColorScheme preferred_color_scheme) {
-  ui::NativeTheme::GetInstanceForWeb()->set_preferred_color_scheme(
-      NativePreferredColorScheme(preferred_color_scheme));
 }
 
 }  // namespace content

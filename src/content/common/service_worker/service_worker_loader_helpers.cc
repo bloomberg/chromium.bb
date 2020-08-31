@@ -11,17 +11,14 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "content/public/common/content_features.h"
-#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
-#include "services/network/loader_util.h"
-#include "services/network/public/cpp/content_security_policy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -109,8 +106,7 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
     out_head->cache_storage_cache_name.clear();
   out_head->cors_exposed_header_names = response.cors_exposed_header_names;
   out_head->did_service_worker_navigation_preload = false;
-  out_head->content_security_policy =
-      network::ContentSecurityPolicy(response.content_security_policy.Clone());
+  out_head->parsed_headers = mojo::Clone(response.parsed_headers);
 }
 
 // static
@@ -126,7 +122,7 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
   // updated on redirects.
   const net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
       original_request.resource_type ==
-              static_cast<int>(ResourceType::kMainFrame)
+              static_cast<int>(blink::mojom::ResourceType::kMainFrame)
           ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
           : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
   return net::RedirectInfo::ComputeRedirectInfo(

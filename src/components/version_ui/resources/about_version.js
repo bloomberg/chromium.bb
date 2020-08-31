@@ -12,8 +12,10 @@
  */
 function handleVariationInfo({variationsList, variationsCmd}) {
   $('variations-section').hidden = !variationsList.length;
-  $('variations-list').appendChild(
-      parseHtmlSubset(variationsList.join('<br>'), ['BR']));
+  for (const item of variationsList) {
+    $('variations-list').appendChild(document.createTextNode(item));
+    $('variations-list').appendChild(document.createElement('br'));
+  }
 
   if (variationsCmd) {
     $('variations-cmd-section').hidden = !variationsCmd;
@@ -89,7 +91,7 @@ function onLoadWork() {
     $('arc_holder').hidden = true;
     chrome.chromeosInfoPrivate.get(['customizationId'], returnCustomizationId);
   }
-  if ($('sanitizer').textContent != '') {
+  if ($('sanitizer').textContent !== '') {
     $('sanitizer-section').hidden = false;
   }
 }

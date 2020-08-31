@@ -240,8 +240,6 @@ void WebContentsEntry::DidFinishNavigation(
   if (!main_frame_task)
     return;
 
-  main_frame_task->UpdateRapporSampleName();
-
   ForEachTask(base::Bind([](RendererTask* task) {
     // Listening to WebContentsObserver::TitleWasSet() only is not enough in
     // some cases when the the web page doesn't have a title. That's why we
@@ -296,7 +294,7 @@ void WebContentsEntry::CreateTaskForFrame(RenderFrameHost* render_frame_host) {
     if (is_main_frame) {
       const WebContentsTag* tag =
           WebContentsTag::FromWebContents(web_contents());
-      new_task = tag->CreateTask();
+      new_task = tag->CreateTask(provider_);
       main_frame_site_instance_ = site_instance;
     } else {
       new_task =
@@ -335,10 +333,11 @@ void WebContentsEntry::CreateTaskForFrame(RenderFrameHost* render_frame_host) {
     // If we don't know the OS process handle yet (e.g., because this task is
     // still launching), update the task when it becomes available.
     if (new_task->process_id() == base::kNullProcessId) {
-      render_frame_host->GetProcess()->PostTaskWhenProcessIsReady(base::Bind(
-          &WebContentsEntry::RenderFrameReady, weak_factory_.GetWeakPtr(),
-          render_frame_host->GetProcess()->GetID(),
-          render_frame_host->GetRoutingID()));
+      render_frame_host->GetProcess()->PostTaskWhenProcessIsReady(
+          base::BindOnce(&WebContentsEntry::RenderFrameReady,
+                         weak_factory_.GetWeakPtr(),
+                         render_frame_host->GetProcess()->GetID(),
+                         render_frame_host->GetRoutingID()));
     }
   }
 }
@@ -440,6 +439,15 @@ void WebContentsTaskProvider::OnWebContentsTagRemoved(
 Task* WebContentsTaskProvider::GetTaskOfUrlRequest(int child_id, int route_id) {
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(child_id, route_id);
+  return GetTaskOfFrame(rfh);
+}
+
+bool WebContentsTaskProvider::HasWebContents(
+    content::WebContents* web_contents) const {
+  return entries_map_.count(web_contents) != 0;
+}
+
+Task* WebContentsTaskProvider::GetTaskOfFrame(content::RenderFrameHost* rfh) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
 
@@ -454,11 +462,6 @@ Task* WebContentsTaskProvider::GetTaskOfUrlRequest(int child_id, int route_id) {
   }
 
   return itr->second->GetTaskForFrame(rfh);
-}
-
-bool WebContentsTaskProvider::HasWebContents(
-    content::WebContents* web_contents) const {
-  return entries_map_.count(web_contents) != 0;
 }
 
 void WebContentsTaskProvider::StartUpdating() {

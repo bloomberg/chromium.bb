@@ -77,6 +77,7 @@ export class CompositeProgress {
    */
   constructor(parent) {
     this._parent = parent;
+    /** @type {!Array.<!SubProgress>} */
     this._children = [];
     this._childrenDone = 0;
     this._parent.setTotalWork(1);
@@ -128,6 +129,9 @@ export class SubProgress {
     this._composite = composite;
     this._weight = weight || 1;
     this._worked = 0;
+
+    /** @type {number} */
+    this._totalWork = 0;
   }
 
   /**
@@ -191,8 +195,8 @@ export class SubProgress {
  */
 export class ProgressProxy {
   /**
-   * @param {?Progress} delegate
-   * @param {function()=} doneCallback
+   * @param {?Progress=} delegate
+   * @param {function():void=} doneCallback
    */
   constructor(delegate, doneCallback) {
     this._delegate = delegate;
@@ -260,27 +264,3 @@ export class ProgressProxy {
     }
   }
 }
-
-/* Legacy exported object */
-self.Common = self.Common || {};
-Common = Common || {};
-
-/**
- * @interface
- */
-Common.Progress = Progress;
-
-/**
- * @constructor
- */
-Common.CompositeProgress = CompositeProgress;
-
-/**
- * @constructor
- */
-Common.SubProgress = SubProgress;
-
-/**
- * @constructor
- */
-Common.ProgressProxy = ProgressProxy;

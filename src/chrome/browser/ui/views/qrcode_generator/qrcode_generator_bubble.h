@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
+#include "chrome/services/qrcode_generator/public/cpp/qrcode_generator_service.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "url/gurl.h"
@@ -49,6 +50,10 @@ class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
   // QRCodeGeneratorBubbleView:
   void Hide() override;
 
+  // Returns a suggested download filename for a given URL.
+  // e.g.: www.foo.com may suggest qrcode_foo.png.
+  static const base::string16 GetQRCodeFilenameForURL(const GURL& url);
+
  private:
   ~QRCodeGeneratorBubble() override;
 
@@ -58,12 +63,14 @@ class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
   // Updates the central QR code image with |qr_image|.
   void UpdateQRImage(gfx::ImageSkia qr_image);
 
+  // Updates the central QR code image with a placeholder.
+  void DisplayPlaceholderImage();
+
   // LocationBarBubbleDelegateView:
   View* GetInitiallyFocusedView() override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void WindowClosing() override;
-  bool Close() override;
   const char* GetClassName() const override;
 
   // views::BubbleDialogDelegateView:
@@ -80,6 +87,12 @@ class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
   // ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // Callback for the request to the OOP service to generate a new image.
+  void OnCodeGeneratorResponse(const mojom::GenerateQRCodeResponsePtr response);
+
+  // Remote to service instance to generate QR code images.
+  mojo::Remote<mojom::QRCodeGeneratorService> qr_code_service_remote_;
+
   // URL for which the QR code is being generated.
   // Used for validation.
   GURL url_;
@@ -91,8 +104,7 @@ class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
   views::TooltipIcon* tooltip_icon_ = nullptr;
 
   QRCodeGeneratorBubbleController* controller_;  // weak.
-
-  base::WeakPtrFactory<QRCodeGeneratorBubble> weak_factory_{this};
+  content::WebContents* web_contents_;           // weak.
 
   DISALLOW_COPY_AND_ASSIGN(QRCodeGeneratorBubble);
 };

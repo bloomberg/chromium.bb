@@ -70,6 +70,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
@@ -253,6 +254,8 @@ void InputType::SetValueAsDecimal(const Decimal& new_value,
 
 void InputType::ReadingChecked() const {}
 
+void InputType::WillUpdateCheckedness(bool) {}
+
 bool InputType::SupportsValidation() const {
   return true;
 }
@@ -296,7 +299,15 @@ bool InputType::RangeUnderflow(const String& value) const {
   if (!numeric_value.IsFinite())
     return false;
 
-  return numeric_value < CreateStepRange(kRejectAny).Minimum();
+  StepRange step_range = CreateStepRange(kRejectAny);
+  if (step_range.HasReversedRange()) {
+    // With a reversed range, any value outside of the midnight-crossing valid
+    // range is considered underflow and overflow.
+    return numeric_value > step_range.Maximum() &&
+           numeric_value < step_range.Minimum();
+  } else {
+    return numeric_value < step_range.Minimum();
+  }
 }
 
 bool InputType::RangeOverflow(const String& value) const {
@@ -307,7 +318,15 @@ bool InputType::RangeOverflow(const String& value) const {
   if (!numeric_value.IsFinite())
     return false;
 
-  return numeric_value > CreateStepRange(kRejectAny).Maximum();
+  StepRange step_range = CreateStepRange(kRejectAny);
+  if (step_range.HasReversedRange()) {
+    // With a reversed range, any value outside of the midnight-crossing valid
+    // range is considered underflow and overflow.
+    return numeric_value > step_range.Maximum() &&
+           numeric_value < step_range.Minimum();
+  } else {
+    return numeric_value > step_range.Maximum();
+  }
 }
 
 Decimal InputType::DefaultValueForStepUp() const {
@@ -389,6 +408,17 @@ String InputType::RangeUnderflowText(const Decimal&) const {
   return String();
 }
 
+String InputType::ReversedRangeOutOfRangeText(const Decimal&,
+                                              const Decimal&) const {
+  NOTREACHED();
+  return String();
+}
+
+String InputType::RangeInvalidText(const Decimal&, const Decimal&) const {
+  NOTREACHED();
+  return String();
+}
+
 String InputType::TypeMismatchText() const {
   return GetLocale().QueryString(IDS_FORM_VALIDATION_TYPE_MISMATCH);
 }
@@ -443,6 +473,20 @@ std::pair<String, String> InputType::ValidationMessage(
     return std::make_pair(g_empty_string, g_empty_string);
 
   StepRange step_range(CreateStepRange(kRejectAny));
+
+  if (step_range.Minimum() > step_range.Maximum() &&
+      !step_range.HasReversedRange()) {
+    return std::make_pair(
+        RangeInvalidText(step_range.Minimum(), step_range.Maximum()),
+        g_empty_string);
+  }
+
+  if (step_range.HasReversedRange() && numeric_value < step_range.Minimum() &&
+      numeric_value > step_range.Maximum()) {
+    return std::make_pair(
+        ReversedRangeOutOfRangeText(step_range.Minimum(), step_range.Maximum()),
+        g_empty_string);
+  }
 
   if (numeric_value < step_range.Minimum())
     return std::make_pair(RangeUnderflowText(step_range.Minimum()),
@@ -588,6 +632,9 @@ void InputType::SetValue(const String& sanitized_value,
   switch (event_behavior) {
     case TextFieldEventBehavior::kDispatchChangeEvent:
       GetElement().DispatchFormControlChangeEvent();
+      break;
+    case TextFieldEventBehavior::kDispatchInputEvent:
+      GetElement().DispatchInputEvent();
       break;
     case TextFieldEventBehavior::kDispatchInputAndChangeEvent:
       GetElement().DispatchInputEvent();
@@ -765,7 +812,7 @@ void InputType::ApplyStep(const Decimal& current,
   Decimal new_value = current;
   const AtomicString& step_string =
       GetElement().FastGetAttribute(html_names::kStepAttr);
-  if (!DeprecatedEqualIgnoringCase(step_string, "any") &&
+  if (!EqualIgnoringASCIICase(step_string, "any") &&
       step_range.StepMismatch(current)) {
     // Snap-to-step / clamping steps
     // If the current value is not matched to step value:
@@ -786,10 +833,10 @@ void InputType::ApplyStep(const Decimal& current,
   }
   new_value = new_value + step_range.Step() * Decimal::FromDouble(count);
 
-  if (!DeprecatedEqualIgnoringCase(step_string, "any"))
+  if (!EqualIgnoringASCIICase(step_string, "any"))
     new_value = step_range.AlignValueForStep(current, new_value);
 
-  // 7. If the element has a minimum, and value is less than that minimum,
+  // 8. If the element has a minimum, and value is less than that minimum,
   // then set value to the smallest value that, when subtracted from the step
   // base, is an integral multiple of the allowed value step, and that is more
   // than or equal to minimum.
@@ -800,17 +847,23 @@ void InputType::ApplyStep(const Decimal& current,
     new_value = aligned_minimum;
   }
 
-  // 8. If the element has a maximum, and value is greater than that maximum,
+  // 9. If the element has a maximum, and value is greater than that maximum,
   // then set value to the largest value that, when subtracted from the step
   // base, is an integral multiple of the allowed value step, and that is less
   // than or equal to maximum.
   if (new_value > step_range.Maximum())
     new_value = aligned_maximum;
 
-  // 9. Let value as string be the result of running the algorithm to convert
+  // 10. If either the method invoked was the stepDown() method and value is
+  // greater than valueBeforeStepping, or the method invoked was the stepUp()
+  // method and value is less than valueBeforeStepping, then return.
+  if ((count < 0 && current < new_value) || (count > 0 && current > new_value))
+    return;
+
+  // 11. Let value as string be the result of running the algorithm to convert
   // a number to a string, as defined for the input element's type attribute's
   // current state, on value.
-  // 10. Set the value of the element to value as string.
+  // 12. Set the value of the element to value as string.
   SetValueAsDecimal(new_value, event_behavior, exception_state);
 
   if (AXObjectCache* cache = GetElement().GetDocument().ExistingAXObjectCache())
@@ -856,7 +909,7 @@ void InputType::StepUpFromLayoutObject(int n) {
   //   * If 0 is in-range, but not matched to step value
   //     - The value should be the larger matched value nearest to 0 if n > 0
   //       e.g. <input type=number min=-100 step=3> -> 2
-  //     - The value should be the smaler matched value nearest to 0 if n < 0
+  //     - The value should be the smaller matched value nearest to 0 if n < 0
   //       e.g. <input type=number min=-100 step=3> -> -1
   //   As for date/datetime-local/month/time/week types, the current value is
   //   assumed as "the current local date/time".
@@ -941,12 +994,35 @@ Decimal InputType::FindStepBase(const Decimal& default_value) const {
   return step_base;
 }
 
+StepRange InputType::CreateReversibleStepRange(
+    AnyStepHandling any_step_handling,
+    const Decimal& step_base_default,
+    const Decimal& minimum_default,
+    const Decimal& maximum_default,
+    const StepRange::StepDescription& step_description) const {
+  return CreateStepRange(any_step_handling, step_base_default, minimum_default,
+                         maximum_default, step_description,
+                         /*supports_reversed_range=*/true);
+}
+
 StepRange InputType::CreateStepRange(
     AnyStepHandling any_step_handling,
     const Decimal& step_base_default,
     const Decimal& minimum_default,
     const Decimal& maximum_default,
     const StepRange::StepDescription& step_description) const {
+  return CreateStepRange(any_step_handling, step_base_default, minimum_default,
+                         maximum_default, step_description,
+                         /*supports_reversed_range=*/false);
+}
+
+StepRange InputType::CreateStepRange(
+    AnyStepHandling any_step_handling,
+    const Decimal& step_base_default,
+    const Decimal& minimum_default,
+    const Decimal& maximum_default,
+    const StepRange::StepDescription& step_description,
+    bool supports_reversed_range) const {
   bool has_range_limitations = false;
   const Decimal step_base = FindStepBase(step_base_default);
   Decimal minimum =
@@ -964,17 +1040,20 @@ StepRange InputType::CreateStepRange(
   const Decimal step = StepRange::ParseStep(
       any_step_handling, step_description,
       GetElement().FastGetAttribute(html_names::kStepAttr));
-  return StepRange(step_base, minimum, maximum, has_range_limitations, step,
-                   step_description);
+  bool has_reversed_range =
+      has_range_limitations && supports_reversed_range && maximum < minimum;
+  return StepRange(step_base, minimum, maximum, has_range_limitations,
+                   has_reversed_range, step, step_description);
 }
 
 void InputType::AddWarningToConsole(const char* message_format,
                                     const String& value) const {
-  GetElement().GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-      mojom::ConsoleMessageSource::kRendering,
-      mojom::ConsoleMessageLevel::kWarning,
-      String::Format(message_format,
-                     JSONValue::QuoteString(value).Utf8().c_str())));
+  GetElement().GetDocument().AddConsoleMessage(
+      MakeGarbageCollected<ConsoleMessage>(
+          mojom::ConsoleMessageSource::kRendering,
+          mojom::ConsoleMessageLevel::kWarning,
+          String::Format(message_format,
+                         JSONValue::QuoteString(value).Utf8().c_str())));
 }
 
 }  // namespace blink

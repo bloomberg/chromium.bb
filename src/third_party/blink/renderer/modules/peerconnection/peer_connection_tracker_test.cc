@@ -9,11 +9,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/renderer/modules/peerconnection/fake_rtc_rtp_transceiver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
-#include "third_party/blink/renderer/modules/peerconnection/mock_web_rtc_peer_connection_handler_client.h"
+#include "third_party/blink/renderer/modules/peerconnection/mock_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
@@ -123,13 +123,17 @@ class MockPeerConnectionHandler : public RTCPeerConnectionHandler {
       : RTCPeerConnectionHandler(
             &client_,
             &dependency_factory_,
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {}
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+            /*force_encoded_audio_insertable_streams=*/false,
+            /*force_encoded_video_insertable_streams=*/false) {}
   MOCK_METHOD0(CloseClientPeerConnection, void());
 
  private:
   blink::MockPeerConnectionDependencyFactory dependency_factory_;
-  blink::MockWebRTCPeerConnectionHandlerClient client_;
+  MockRTCPeerConnectionHandlerClient client_;
 };
+
+}  // namespace
 
 class PeerConnectionTrackerTest : public ::testing::Test {
  public:
@@ -145,8 +149,8 @@ class PeerConnectionTrackerTest : public ::testing::Test {
     EXPECT_CALL(*mock_host_, AddPeerConnection(_));
     tracker_->RegisterPeerConnection(
         mock_handler_.get(),
-        webrtc::PeerConnectionInterface::RTCConfiguration(),
-        blink::WebMediaConstraints(), nullptr);
+        webrtc::PeerConnectionInterface::RTCConfiguration(), MediaConstraints(),
+        nullptr);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -155,8 +159,6 @@ class PeerConnectionTrackerTest : public ::testing::Test {
   std::unique_ptr<PeerConnectionTracker> tracker_;
   std::unique_ptr<MockPeerConnectionHandler> mock_handler_;
 };
-
-}  // namespace
 
 TEST_F(PeerConnectionTrackerTest, CreatingObject) {
   PeerConnectionTracker tracker(
@@ -432,6 +434,28 @@ TEST_F(PeerConnectionTrackerTest, RemoveReceiver) {
       "Caused by: setRemoteDescription\n"
       "\n" +
       String(kDefaultReceiverString));
+  EXPECT_EQ(expected_value, update_value);
+}
+
+TEST_F(PeerConnectionTrackerTest, IceCandidateError) {
+  CreateTrackerWithMocks();
+  CreateAndRegisterPeerConnectionHandler();
+  auto receiver_only = CreateDefaultTransceiver(
+      RTCRtpTransceiverPlatformImplementationType::kPlanBReceiverOnly);
+  String update_value;
+  EXPECT_CALL(*mock_host_,
+              UpdatePeerConnection(_, String("icecandidateerror"), _))
+      .WillOnce(testing::SaveArg<2>(&update_value));
+  tracker_->TrackIceCandidateError(mock_handler_.get(), "1.1.1.1", 15, "[::1]",
+                                   "test url", 404, "test error");
+  base::RunLoop().RunUntilIdle();
+  String expected_value(
+      "url: test url\n"
+      "address: 1.1.1.1\n"
+      "port: 15\n"
+      "host_candidate: [::1]\n"
+      "error_text: test error\n"
+      "error_code: 404");
   EXPECT_EQ(expected_value, update_value);
 }
 

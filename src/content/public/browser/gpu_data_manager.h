@@ -25,7 +25,7 @@ struct VideoMemoryUsageStats;
 
 namespace content {
 enum GpuProcessKind {
-  GPU_PROCESS_KIND_UNSANDBOXED_NO_GL,  // Unsandboxed, no init GL bindings.
+  GPU_PROCESS_KIND_INFO_COLLECTION,  // Unsandboxed, no init GL bindings.
   GPU_PROCESS_KIND_SANDBOXED,
   GPU_PROCESS_KIND_COUNT
 };
@@ -46,6 +46,8 @@ class GpuDataManager {
 
   // Getter for the singleton.
   CONTENT_EXPORT static GpuDataManager* GetInstance();
+
+  CONTENT_EXPORT static bool Initialized();
 
   // This is only called by extensions testing.
   virtual void BlacklistWebGLForTesting() = 0;

@@ -1,3 +1,8 @@
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Release Debug ]
+# results: [ Timeout Crash Pass Failure Slow Skip ]
+
 # This is the main failure suppression file for WPT WebDriver Tests.
 # WPT WebDriver tests are a part of layout tests, but are run by a
 # separate runner, run_webdriver_tests.py. Thus this is a separate
@@ -73,9 +78,9 @@ crbug.com/1020018 [ Linux ] external/wpt/webdriver/tests/get_active_element/get.
 crbug.com/1020018 [ Linux ] external/wpt/webdriver/tests/get_active_element/get.py>>test_sucess_input_non_interactable [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/interface.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/webdriver/tests/interface.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/webdriver/tests/interface.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/idlharness.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/webdriver/tests/idlharness.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/webdriver/tests/idlharness.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/iframe.py>>test_source_origin[cross_origin] [ Failure ]
 crbug.com/1023255 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/iframe.py>>test_source_origin[same_origin] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_screenshot/iframe.py>>test_source_origin[cross_origin] [ Failure ]
@@ -156,3 +161,8 @@ crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/perform_actions/key_spec
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/new_session/default_values.py>>test_desired [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_screenshot/user_prompts.py>>test_dismiss_and_notify[capabilities0-alert] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/user_prompts.py>>test_ignore[capabilities0-alert] [ Failure ]
+crbug.com/1023255 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/iframe.py>>test_frame_element [ Failure Pass ]
+crbug.com/1065297 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer.py>>test_drag_and_drop_with_draggable_element[800] [ Failure ]
+crbug.com/1065297 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer.py>>test_drag_and_drop_with_draggable_element[0] [ Failure ]
+crbug.com/1065297 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer.py>>test_drag_and_drop_with_draggable_element[300] [ Failure ]
+crbug.com/1065297 [ Linux ] external/wpt/webdriver/tests/perform_actions/key_shortcuts.py>>test_mod_a_mod_c_right_mod_v_pastes_text [ Failure ]

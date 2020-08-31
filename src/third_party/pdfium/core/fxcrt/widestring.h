@@ -23,9 +23,6 @@
 namespace fxcrt {
 
 class ByteString;
-class StringPool_WideString_Test;
-class WideString_Assign_Test;
-class WideString_ConcatInPlace_Test;
 
 // A mutable string with shared buffers using copy-on-write semantics that
 // avoids the cost of std::string's iterator stability guarantees.
@@ -41,6 +38,8 @@ class WideString {
 
   WideString();
   WideString(const WideString& other);
+
+  // Move-construct a WideString. After construction, |other| is empty.
   WideString(WideString&& other) noexcept;
 
   // Deliberately implicit to avoid calling on every string literal.
@@ -67,6 +66,8 @@ class WideString {
   static WideString FromUTF8(ByteStringView str) WARN_UNUSED_RESULT;
   static WideString FromUTF16LE(const unsigned short* str,
                                 size_t len) WARN_UNUSED_RESULT;
+  static WideString FromUTF16BE(const unsigned short* wstr,
+                                size_t wlen) WARN_UNUSED_RESULT;
 
   static size_t WStringLength(const unsigned short* str) WARN_UNUSED_RESULT;
 
@@ -114,6 +115,8 @@ class WideString {
   WideString& operator=(const wchar_t* str);
   WideString& operator=(WideStringView str);
   WideString& operator=(const WideString& that);
+
+  // Move-assign a WideString. After assignment, |that| is empty.
   WideString& operator=(WideString&& that);
 
   WideString& operator+=(const wchar_t* str);
@@ -138,8 +141,8 @@ class WideString {
     return m_pData->m_String[index];
   }
 
-  CharType First() const { return GetLength() ? (*this)[0] : 0; }
-  CharType Last() const { return GetLength() ? (*this)[GetLength() - 1] : 0; }
+  CharType Front() const { return GetLength() ? (*this)[0] : 0; }
+  CharType Back() const { return GetLength() ? (*this)[GetLength() - 1] : 0; }
 
   void SetAt(size_t index, wchar_t c);
 
@@ -147,9 +150,9 @@ class WideString {
   int Compare(const WideString& str) const;
   int CompareNoCase(const wchar_t* str) const;
 
-  WideString Mid(size_t first, size_t count) const;
-  WideString Left(size_t count) const;
-  WideString Right(size_t count) const;
+  WideString Substr(size_t first, size_t count) const;
+  WideString First(size_t count) const;
+  WideString Last(size_t count) const;
 
   size_t Insert(size_t index, wchar_t ch);
   size_t InsertAtFront(wchar_t ch) { return Insert(0, ch); }
@@ -225,9 +228,10 @@ class WideString {
 
   RetainPtr<StringData> m_pData;
 
-  friend WideString_ConcatInPlace_Test;
-  friend WideString_Assign_Test;
-  friend StringPool_WideString_Test;
+  friend class WideString_Assign_Test;
+  friend class WideString_ConcatInPlace_Test;
+  friend class WideString_Construct_Test;
+  friend class StringPool_WideString_Test;
 };
 
 inline WideString operator+(WideStringView str1, WideStringView str2) {

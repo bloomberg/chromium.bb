@@ -46,14 +46,25 @@ class CPDF_SecurityHandler : public Retainable {
     return m_pCryptoHandler.get();
   }
 
+  // Take |password| and encode it, if necessary, based on the password encoding
+  // conversion.
+  ByteString GetEncodedPassword(ByteStringView password) const;
+
  private:
+  enum PasswordEncodingConversion {
+    kUnknown,
+    kNone,
+    kLatin1ToUtf8,
+    kUtf8toLatin1,
+  };
+
   CPDF_SecurityHandler();
   ~CPDF_SecurityHandler() override;
 
   bool LoadDict(const CPDF_Dictionary* pEncryptDict);
   bool LoadDict(const CPDF_Dictionary* pEncryptDict,
-                int& cipher,
-                int& key_len);
+                int* cipher,
+                size_t* key_len);
 
   ByteString GetUserPassword(const ByteString& owner_password) const;
   bool CheckPassword(const ByteString& user_password, bool bOwner);
@@ -63,12 +74,8 @@ class CPDF_SecurityHandler : public Retainable {
   bool AES256_CheckPassword(const ByteString& password, bool bOwner);
   void AES256_SetPassword(CPDF_Dictionary* pEncryptDict,
                           const ByteString& password,
-                          bool bOwner,
-                          const uint8_t* key);
-  void AES256_SetPerms(CPDF_Dictionary* pEncryptDict,
-                       uint32_t permission,
-                       bool bEncryptMetadata,
-                       const uint8_t* key);
+                          bool bOwner);
+  void AES256_SetPerms(CPDF_Dictionary* pEncryptDict);
   void OnCreateInternal(CPDF_Dictionary* pEncryptDict,
                         const CPDF_Array* pIdArray,
                         const ByteString& user_password,
@@ -78,13 +85,14 @@ class CPDF_SecurityHandler : public Retainable {
 
   void InitCryptoHandler();
 
-  int m_Version;
-  int m_Revision;
+  bool m_bOwnerUnlocked = false;
+  int m_Version = 0;
+  int m_Revision = 0;
+  uint32_t m_Permissions = 0;
+  int m_Cipher = FXCIPHER_NONE;
+  size_t m_KeyLen = 0;
+  PasswordEncodingConversion m_PasswordEncodingConversion = kUnknown;
   ByteString m_FileId;
-  uint32_t m_Permissions;
-  int m_Cipher;
-  int m_KeyLen;
-  bool m_bOwnerUnlocked;
   RetainPtr<const CPDF_Dictionary> m_pEncryptDict;
   std::unique_ptr<CPDF_CryptoHandler> m_pCryptoHandler;
   uint8_t m_EncryptKey[32];

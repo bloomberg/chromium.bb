@@ -228,9 +228,7 @@ component("bluetooth") {
     "//ui/base",
   ]
 
-  public_deps = [
-    "//device/bluetooth/public/cpp",
-  ]
+  public_deps = [ "//device/bluetooth/public/cpp" ]
 
   if (is_android) {
     deps += [ ":jni_headers" ]
@@ -525,7 +523,7 @@ if (is_android) {
   }
 
   android_library("java") {
-    java_files = java_sources_needing_jni
+    sources = java_sources_needing_jni
     deps = [
       "//base:base_java",
       "//base:jni_java",

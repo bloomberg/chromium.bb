@@ -1571,9 +1571,11 @@ CXFA_ContentLayoutProcessor::DoLayoutFlowedContainer(
         if (!pLayoutNext->GetNextSibling() && m_pCurChildPreprocessor &&
             m_pCurChildPreprocessor->GetFormNode() ==
                 pLayoutNext->GetFormNode()) {
-          if (m_pCurChildPreprocessor->m_pLayoutItem)
+          if (m_pCurChildPreprocessor->m_pLayoutItem &&
+              m_pCurChildPreprocessor->m_pLayoutItem != pLayoutNext) {
             pLayoutNext->InsertAfter(
                 m_pCurChildPreprocessor->m_pLayoutItem.Get());
+          }
           m_pCurChildPreprocessor->m_pLayoutItem.Reset(pLayoutNext);
           break;
         }
@@ -2352,7 +2354,7 @@ CXFA_ContentLayoutProcessor::InsertFlowedItem(
   Result eRetValue = Result::kDone;
   if (!bNewRow || pProcessor->m_ePreProcessRs == Result::kDone) {
     eRetValue = pProcessor->DoLayoutInternal(
-        bTakeSpace ? bUseBreakControl : false,
+        bTakeSpace && bUseBreakControl,
         bUseRealHeight ? fRealHeight - *fContentCurRowY : FLT_MAX,
         bIsTransHeight ? fRealHeight - *fContentCurRowY : FLT_MAX,
         pLayoutContext);
@@ -2361,7 +2363,7 @@ CXFA_ContentLayoutProcessor::InsertFlowedItem(
     eRetValue = pProcessor->m_ePreProcessRs;
     pProcessor->m_ePreProcessRs = Result::kDone;
   }
-  if (pProcessor->HasLayoutItem() == false)
+  if (!pProcessor->HasLayoutItem())
     return eRetValue;
 
   CFX_SizeF childSize = pProcessor->GetCurrentComponentSize();

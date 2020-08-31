@@ -4,12 +4,12 @@
 
 #include "ash/app_list/views/assistant/assistant_dialog_plate.h"
 
+#include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/base/assistant_button.h"
-#include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/assistant/ui/dialog_plate/mic_view.h"
 #include "ash/assistant/ui/logo_view/logo_view.h"
 #include "ash/assistant/util/animation_util.h"
@@ -52,6 +52,8 @@ constexpr base::TimeDelta kAnimationTransformInDuration =
     base::TimeDelta::FromMilliseconds(333);
 constexpr int kAnimationTranslationDip = 30;
 
+using keyboard::KeyboardUIController;
+
 // Textfield used for inputting text based Assistant queries.
 class AssistantTextfield : public views::Textfield {
  public:
@@ -63,11 +65,25 @@ class AssistantTextfield : public views::Textfield {
   const char* GetClassName() const override { return "AssistantTextfield"; }
 };
 
+void ShowKeyboardIfEnabled() {
+  auto* keyboard_controller = KeyboardUIController::Get();
+
+  if (keyboard_controller->IsEnabled())
+    keyboard_controller->ShowKeyboard(/*lock=*/false);
+}
+
+void HideKeyboardIfEnabled() {
+  auto* keyboard_controller = KeyboardUIController::Get();
+
+  if (keyboard_controller->IsEnabled())
+    keyboard_controller->HideKeyboardImplicitlyByUser();
+}
+
 }  // namespace
 
 // AssistantDialogPlate --------------------------------------------------------
 
-AssistantDialogPlate::AssistantDialogPlate(ash::AssistantViewDelegate* delegate)
+AssistantDialogPlate::AssistantDialogPlate(AssistantViewDelegate* delegate)
     : delegate_(delegate),
       animation_observer_(std::make_unique<ui::CallbackLayerAnimationObserver>(
           /*start_animation_callback=*/base::BindRepeating(
@@ -76,20 +92,20 @@ AssistantDialogPlate::AssistantDialogPlate(ash::AssistantViewDelegate* delegate)
           /*end_animation_callback=*/base::BindRepeating(
               &AssistantDialogPlate::OnAnimationEnded,
               base::Unretained(this)))),
-      query_history_iterator_(
-          delegate_->GetInteractionModel()->query_history().GetIterator()) {
+      query_history_iterator_(AssistantInteractionController::Get()
+                                  ->GetModel()
+                                  ->query_history()
+                                  .GetIterator()) {
   SetID(AssistantViewID::kDialogPlate);
   InitLayout();
 
-  // The AssistantViewDelegate should outlive AssistantDialogPlate.
-  delegate_->AddInteractionModelObserver(this);
-  delegate_->AddUiModelObserver(this);
+  assistant_controller_observer_.Add(AssistantController::Get());
+  assistant_interaction_model_observer_.Add(
+      AssistantInteractionController::Get());
+  assistant_ui_model_observer_.Add(AssistantUiController::Get());
 }
 
-AssistantDialogPlate::~AssistantDialogPlate() {
-  delegate_->RemoveUiModelObserver(this);
-  delegate_->RemoveInteractionModelObserver(this);
-}
+AssistantDialogPlate::~AssistantDialogPlate() = default;
 
 const char* AssistantDialogPlate::GetClassName() const {
   return "AssistantDialogPlate";
@@ -114,7 +130,7 @@ bool AssistantDialogPlate::HandleKeyEvent(views::Textfield* textfield,
       // In tablet mode the virtual keyboard should not be sticky, so we hide it
       // when committing a query.
       if (delegate_->IsTabletMode())
-        keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyBySystem();
+        HideKeyboardIfEnabled();
 
       const base::StringPiece16& trimmed_text = base::TrimWhitespace(
           textfield_->GetText(), base::TrimPositions::TRIM_ALL);
@@ -145,18 +161,25 @@ bool AssistantDialogPlate::HandleKeyEvent(views::Textfield* textfield,
   }
 }
 
+void AssistantDialogPlate::OnAssistantControllerDestroying() {
+  assistant_ui_model_observer_.Remove(AssistantUiController::Get());
+  assistant_interaction_model_observer_.Remove(
+      AssistantInteractionController::Get());
+  assistant_controller_observer_.Remove(AssistantController::Get());
+}
+
 void AssistantDialogPlate::OnInputModalityChanged(
-    ash::InputModality input_modality) {
-  using ash::assistant::util::CreateLayerAnimationSequence;
-  using ash::assistant::util::CreateOpacityElement;
-  using ash::assistant::util::CreateTransformElement;
-  using ash::assistant::util::StartLayerAnimationSequencesTogether;
+    InputModality input_modality) {
+  using assistant::util::CreateLayerAnimationSequence;
+  using assistant::util::CreateOpacityElement;
+  using assistant::util::CreateTransformElement;
+  using assistant::util::StartLayerAnimationSequencesTogether;
 
   keyboard_layout_container_->SetVisible(true);
   voice_layout_container_->SetVisible(true);
 
   switch (input_modality) {
-    case ash::InputModality::kKeyboard: {
+    case InputModality::kKeyboard: {
       // Animate voice layout container opacity to 0%.
       voice_layout_container_->layer()->GetAnimator()->StartAnimation(
           CreateLayerAnimationSequence(
@@ -190,7 +213,7 @@ void AssistantDialogPlate::OnInputModalityChanged(
       animation_observer_->SetActive();
       break;
     }
-    case ash::InputModality::kVoice: {
+    case InputModality::kVoice: {
       // Animate keyboard layout container opacity to 0%.
       keyboard_layout_container_->layer()->GetAnimator()->StartAnimation(
           CreateLayerAnimationSequence(
@@ -224,46 +247,48 @@ void AssistantDialogPlate::OnInputModalityChanged(
       animation_observer_->SetActive();
       break;
     }
-    case ash::InputModality::kStylus:
-      // No action necessary.
-      break;
   }
 }
 
 void AssistantDialogPlate::OnCommittedQueryChanged(
-    const ash::AssistantQuery& committed_query) {
+    const AssistantQuery& committed_query) {
+  // Whenever a query is submitted we return the focus to the dialog plate.
+  RequestFocus();
+
   DCHECK(query_history_iterator_);
   query_history_iterator_->ResetToLast();
 }
 
 void AssistantDialogPlate::OnUiVisibilityChanged(
-    ash::AssistantVisibility new_visibility,
-    ash::AssistantVisibility old_visibility,
-    base::Optional<ash::AssistantEntryPoint> entry_point,
-    base::Optional<ash::AssistantExitPoint> exit_point) {
-  // When the Assistant UI is no longer visible we need to clear the dialog
-  // plate so that text does not persist across Assistant launches.
-  if (old_visibility == ash::AssistantVisibility::kVisible)
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
+  if (new_visibility == AssistantVisibility::kVisible) {
+    UpdateModalityVisibility();
+    UpdateKeyboardVisibility();
+  } else {
+    // When the Assistant UI is no longer visible we need to clear the dialog
+    // plate so that text does not persist across Assistant launches.
     textfield_->SetText(base::string16());
+
+    HideKeyboardIfEnabled();
+  }
 }
 
 void AssistantDialogPlate::RequestFocus() {
-  SetFocus(delegate_->GetInteractionModel()->input_modality());
+  views::View* view = FindFirstFocusableView();
+  if (view)
+    view->RequestFocus();
 }
 
 views::View* AssistantDialogPlate::FindFirstFocusableView() {
-  ash::InputModality input_modality =
-      delegate_->GetInteractionModel()->input_modality();
-
   // The first focusable view depends entirely on current input modality.
-  switch (input_modality) {
-    case ash::InputModality::kKeyboard:
+  switch (input_modality()) {
+    case InputModality::kKeyboard:
       return textfield_;
-    case ash::InputModality::kVoice:
+    case InputModality::kVoice:
       return animated_voice_input_toggle_;
-    case ash::InputModality::kStylus:
-      // Default views::FocusSearch behavior is acceptable.
-      return nullptr;
   }
 }
 
@@ -278,40 +303,39 @@ void AssistantDialogPlate::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Molecule icon.
-  molecule_icon_ = ash::LogoView::Create();
+  molecule_icon_ = AddChildView(LogoView::Create());
   molecule_icon_->SetID(AssistantViewID::kModuleIcon);
   molecule_icon_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  molecule_icon_->SetState(ash::LogoView::State::kMoleculeWavy,
+  molecule_icon_->SetState(LogoView::State::kMoleculeWavy,
                            /*animate=*/false);
-  AddChildView(molecule_icon_);
 
   // Input modality layout container.
-  input_modality_layout_container_ = new views::View();
+  input_modality_layout_container_ =
+      AddChildView(std::make_unique<views::View>());
   input_modality_layout_container_->SetLayoutManager(
       std::make_unique<views::FillLayout>());
   input_modality_layout_container_->SetPaintToLayer();
   input_modality_layout_container_->layer()->SetFillsBoundsOpaquely(false);
   input_modality_layout_container_->layer()->SetMasksToBounds(true);
-  AddChildView(input_modality_layout_container_);
 
   layout_manager->SetFlexForView(input_modality_layout_container_, 1);
 
   InitKeyboardLayoutContainer();
   InitVoiceLayoutContainer();
 
-  // Artificially trigger event to set initial state.
-  OnInputModalityChanged(delegate_->GetInteractionModel()->input_modality());
+  // Set initial state.
+  UpdateModalityVisibility();
 }
 
 void AssistantDialogPlate::InitKeyboardLayoutContainer() {
-  keyboard_layout_container_ = new views::View();
-  keyboard_layout_container_->SetPaintToLayer();
-  keyboard_layout_container_->layer()->SetFillsBoundsOpaquely(false);
-  keyboard_layout_container_->layer()->SetOpacity(0.f);
+  auto keyboard_layout_container = std::make_unique<views::View>();
+  keyboard_layout_container->SetPaintToLayer();
+  keyboard_layout_container->layer()->SetFillsBoundsOpaquely(false);
+  keyboard_layout_container->layer()->SetOpacity(0.f);
 
   constexpr int kLeftPaddingDip = 16;
   views::BoxLayout* layout_manager =
-      keyboard_layout_container_->SetLayoutManager(
+      keyboard_layout_container->SetLayoutManager(
           std::make_unique<views::BoxLayout>(
               views::BoxLayout::Orientation::kHorizontal,
               gfx::Insets(0, kLeftPaddingDip, 0, 0)));
@@ -320,45 +344,47 @@ void AssistantDialogPlate::InitKeyboardLayoutContainer() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   gfx::FontList font_list =
-      ash::assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(2);
+      assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(2);
 
   // Textfield.
-  textfield_ = new AssistantTextfield();
-  textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  textfield_->SetBorder(views::NullBorder());
-  textfield_->set_controller(this);
-  textfield_->SetFontList(font_list);
-  textfield_->set_placeholder_font_list(font_list);
+  auto textfield = std::make_unique<AssistantTextfield>();
+  textfield->SetBackgroundColor(SK_ColorTRANSPARENT);
+  textfield->SetBorder(views::NullBorder());
+  textfield->set_controller(this);
+  textfield->SetFontList(font_list);
+  textfield->set_placeholder_font_list(font_list);
 
   auto textfield_hint =
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_HINT);
-  textfield_->SetPlaceholderText(textfield_hint);
-  textfield_->SetAccessibleName(textfield_hint);
-  textfield_->set_placeholder_text_color(ash::kTextColorSecondary);
-  textfield_->SetTextColor(ash::kTextColorPrimary);
-  keyboard_layout_container_->AddChildView(textfield_);
+  textfield->SetPlaceholderText(textfield_hint);
+  textfield->SetAccessibleName(textfield_hint);
+  textfield->set_placeholder_text_color(kTextColorSecondary);
+  textfield->SetTextColor(kTextColorPrimary);
+  textfield_ = keyboard_layout_container->AddChildView(std::move(textfield));
 
   layout_manager->SetFlexForView(textfield_, 1);
 
   // Voice input toggle.
-  voice_input_toggle_ =
+  std::unique_ptr<AssistantButton> voice_input_toggle =
       AssistantButton::Create(this, kMicIcon, kButtonSizeDip, kIconSizeDip,
                               IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME,
                               AssistantButtonId::kVoiceInputToggle,
                               IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_TOOLTIP);
-  voice_input_toggle_->SetID(AssistantViewID::kVoiceInputToggle);
-  keyboard_layout_container_->AddChildView(voice_input_toggle_);
+  voice_input_toggle->SetID(AssistantViewID::kVoiceInputToggle);
+  voice_input_toggle_ =
+      keyboard_layout_container->AddChildView(std::move(voice_input_toggle));
 
-  input_modality_layout_container_->AddChildView(keyboard_layout_container_);
+  keyboard_layout_container_ = input_modality_layout_container_->AddChildView(
+      std::move(keyboard_layout_container));
 }
 
 void AssistantDialogPlate::InitVoiceLayoutContainer() {
-  voice_layout_container_ = new views::View();
-  voice_layout_container_->SetPaintToLayer();
-  voice_layout_container_->layer()->SetFillsBoundsOpaquely(false);
-  voice_layout_container_->layer()->SetOpacity(0.f);
+  auto voice_layout_container = std::make_unique<views::View>();
+  voice_layout_container->SetPaintToLayer();
+  voice_layout_container->layer()->SetFillsBoundsOpaquely(false);
+  voice_layout_container->layer()->SetOpacity(0.f);
 
-  views::BoxLayout* layout_manager = voice_layout_container_->SetLayoutManager(
+  views::BoxLayout* layout_manager = voice_layout_container->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal));
 
@@ -372,38 +398,68 @@ void AssistantDialogPlate::InitVoiceLayoutContainer() {
   constexpr int difference =
       /*keyboard_input_toggle_width=*/kButtonSizeDip -
       /*molecule_icon_width=*/kIconSizeDip;
-  views::View* offset = new views::View();
+  auto offset = std::make_unique<views::View>();
   offset->SetPreferredSize(gfx::Size(difference, 1));
-  voice_layout_container_->AddChildView(offset);
+  voice_layout_container->AddChildView(std::move(offset));
 
   // Spacer.
-  views::View* spacer = new views::View();
-  voice_layout_container_->AddChildView(spacer);
-  layout_manager->SetFlexForView(spacer, 1);
+  auto spacer = std::make_unique<views::View>();
+  layout_manager->SetFlexForView(
+      voice_layout_container->AddChildView(std::move(spacer)), 1);
 
   // Animated voice input toggle.
-  animated_voice_input_toggle_ = new ash::MicView(
-      this, delegate_, ash::AssistantButtonId::kVoiceInputToggle);
-  animated_voice_input_toggle_->SetID(AssistantViewID::kMicView);
-  animated_voice_input_toggle_->SetAccessibleName(
+  auto animated_voice_input_toggle =
+      std::make_unique<MicView>(this, AssistantButtonId::kVoiceInputToggle);
+  animated_voice_input_toggle->SetID(AssistantViewID::kMicView);
+  animated_voice_input_toggle->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME));
-  voice_layout_container_->AddChildView(animated_voice_input_toggle_);
+  animated_voice_input_toggle_ = voice_layout_container->AddChildView(
+      std::move(animated_voice_input_toggle));
 
   // Spacer.
-  spacer = new views::View();
-  voice_layout_container_->AddChildView(spacer);
-  layout_manager->SetFlexForView(spacer, 1);
+  layout_manager->SetFlexForView(
+      voice_layout_container->AddChildView(std::make_unique<views::View>()), 1);
 
   // Keyboard input toggle.
-  keyboard_input_toggle_ = ash::AssistantButton::Create(
-      this, ash::kKeyboardIcon, kButtonSizeDip, kIconSizeDip,
-      IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_ACCNAME,
-      ash::AssistantButtonId::kKeyboardInputToggle,
-      IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_TOOLTIP);
+  keyboard_input_toggle_ = voice_layout_container->AddChildView(
+      AssistantButton::Create(this, kKeyboardIcon, kButtonSizeDip, kIconSizeDip,
+                              IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_ACCNAME,
+                              AssistantButtonId::kKeyboardInputToggle,
+                              IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_TOOLTIP));
   keyboard_input_toggle_->SetID(AssistantViewID::kKeyboardInputToggle);
-  voice_layout_container_->AddChildView(keyboard_input_toggle_);
 
-  input_modality_layout_container_->AddChildView(voice_layout_container_);
+  voice_layout_container_ = input_modality_layout_container_->AddChildView(
+      std::move(voice_layout_container));
+}
+
+void AssistantDialogPlate::UpdateModalityVisibility() {
+  // Hide everything.
+  keyboard_layout_container_->SetVisible(false);
+  voice_layout_container_->SetVisible(false);
+  // Reset opacity.
+  keyboard_layout_container_->layer()->SetOpacity(1);
+  voice_layout_container_->layer()->SetOpacity(1);
+  // Show currently selected content.
+  switch (input_modality()) {
+    case InputModality::kKeyboard:
+      keyboard_layout_container_->SetVisible(true);
+      break;
+    case InputModality::kVoice:
+      voice_layout_container_->SetVisible(true);
+      break;
+  }
+}
+
+void AssistantDialogPlate::UpdateKeyboardVisibility() {
+  if (!delegate_->IsTabletMode())
+    return;
+
+  bool should_show_keyboard = (input_modality() == InputModality::kKeyboard);
+
+  if (should_show_keyboard)
+    ShowKeyboardIfEnabled();
+  else
+    HideKeyboardIfEnabled();
 }
 
 void AssistantDialogPlate::OnAnimationStarted(
@@ -414,40 +470,19 @@ void AssistantDialogPlate::OnAnimationStarted(
 
 bool AssistantDialogPlate::OnAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
-  ash::InputModality input_modality =
-      delegate_->GetInteractionModel()->input_modality();
+  keyboard_layout_container_->set_can_process_events_within_subtree(true);
+  voice_layout_container_->set_can_process_events_within_subtree(true);
 
-  switch (input_modality) {
-    case ash::InputModality::kKeyboard:
-      keyboard_layout_container_->set_can_process_events_within_subtree(true);
-      voice_layout_container_->SetVisible(false);
-      break;
-    case ash::InputModality::kVoice:
-      voice_layout_container_->set_can_process_events_within_subtree(true);
-      keyboard_layout_container_->SetVisible(false);
-      break;
-    case ash::InputModality::kStylus:
-      // No action necessary.
-      break;
-  }
-
-  SetFocus(input_modality);
+  UpdateModalityVisibility();
+  RequestFocus();
+  UpdateKeyboardVisibility();
 
   // We return false so that the animation observer will not destroy itself.
   return false;
 }
 
-void AssistantDialogPlate::SetFocus(ash::InputModality input_modality) {
-  switch (input_modality) {
-    case ash::InputModality::kKeyboard:
-      textfield_->RequestFocus();
-      break;
-    case ash::InputModality::kVoice:
-      animated_voice_input_toggle_->RequestFocus();
-      break;
-    case ash::InputModality::kStylus:
-      break;
-  }
+InputModality AssistantDialogPlate::input_modality() const {
+  return AssistantInteractionController::Get()->GetModel()->input_modality();
 }
 
 }  // namespace ash

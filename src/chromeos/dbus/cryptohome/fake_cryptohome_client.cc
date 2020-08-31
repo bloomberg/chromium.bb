@@ -60,6 +60,9 @@ FakeCryptohomeClient::FakeCryptohomeClient() {
             base::PathExists(cache_path);
   if (locked_)
     LoadInstallAttributes();
+
+  set_tpm_attestation_public_key(
+      TpmAttestationDataResult{true, "fake_public_key_for_test"});
 }
 
 FakeCryptohomeClient::~FakeCryptohomeClient() {
@@ -453,7 +456,7 @@ void FakeCryptohomeClient::TpmAttestationGetPublicKey(
     DBusMethodCallback<TpmAttestationDataResult> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback), TpmAttestationDataResult{}));
+      base::BindOnce(std::move(callback), tpm_attestation_public_key_));
 }
 
 void FakeCryptohomeClient::TpmAttestationRegisterKey(
@@ -461,7 +464,7 @@ void FakeCryptohomeClient::TpmAttestationRegisterKey(
     const cryptohome::AccountIdentifier& cryptohome_id,
     const std::string& key_name,
     AsyncMethodCallback callback) {
-  ReturnAsyncMethodData(std::move(callback), std::string());
+  ReturnAsyncMethodResult(std::move(callback));
 }
 
 void FakeCryptohomeClient::TpmAttestationSignEnterpriseChallenge(
@@ -524,10 +527,19 @@ void FakeCryptohomeClient::TpmAttestationSetKeyPayload(
       FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
-void FakeCryptohomeClient::TpmAttestationDeleteKeys(
+void FakeCryptohomeClient::TpmAttestationDeleteKeysByPrefix(
     attestation::AttestationKeyType key_type,
     const cryptohome::AccountIdentifier& cryptohome_id,
     const std::string& key_prefix,
+    DBusMethodCallback<bool> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeCryptohomeClient::TpmAttestationDeleteKey(
+    attestation::AttestationKeyType key_type,
+    const cryptohome::AccountIdentifier& cryptohome_id,
+    const std::string& key_name,
     DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
@@ -763,6 +775,19 @@ void FakeCryptohomeClient::GetCurrentSpaceForUid(
 void FakeCryptohomeClient::GetCurrentSpaceForGid(
     gid_t android_gid,
     DBusMethodCallback<int64_t> callback) {}
+
+void FakeCryptohomeClient::CheckHealth(
+    const cryptohome::CheckHealthRequest& request,
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  cryptohome::BaseReply reply;
+  if (cryptohome_error_ == cryptohome::CRYPTOHOME_ERROR_NOT_SET) {
+    cryptohome::CheckHealthReply* state_reply =
+        reply.MutableExtension(cryptohome::CheckHealthReply::reply);
+    state_reply->set_requires_powerwash(requires_powerwash_);
+  }
+
+  ReturnProtobufMethodCallback(reply, std::move(callback));
+}
 
 void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {
   service_is_available_ = is_available;

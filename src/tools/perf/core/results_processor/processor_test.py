@@ -40,13 +40,6 @@ import mock
 SAMPLE_HISTOGRAM_NAME = 'foo'
 SAMPLE_HISTOGRAM_UNIT = 'sizeInBytes_smallerIsBetter'
 
-# For testing the TBMv3 workflow we use dummy_metric defined in
-# tools/perf/core/tbmv3/metrics/dummy_metric_*.
-# This metric ignores the trace data and outputs a histogram with
-# the following name and unit:
-DUMMY_HISTOGRAM_NAME = 'dummy::foo'
-DUMMY_HISTOGRAM_UNIT = 'count_biggerIsBetter'
-
 
 class ResultsProcessorIntegrationTests(unittest.TestCase):
   def setUp(self):
@@ -127,8 +120,12 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
     self.assertEqual(test_result['actual'], 'PASS')
     self.assertEqual(test_result['expected'], 'PASS')
-    self.assertEqual(test_result['times'], [1.1, 1.2])
-    self.assertEqual(test_result['time'], 1.1)
+    # Amortization of processing time across test durations prevents us from
+    # being exact here.
+    self.assertGreaterEqual(test_result['times'][0], 1.1)
+    self.assertGreaterEqual(test_result['times'][1], 1.2)
+    self.assertEqual(len(test_result['times']), 2)
+    self.assertGreaterEqual(test_result['time'], 1.1)
     self.assertEqual(test_result['shard'], 7)
 
   def testJson3OutputWithArtifacts(self):
@@ -136,7 +133,8 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         testing.TestResult(
             'benchmark/story',
             output_artifacts={
-                'logs': testing.Artifact('/logs.txt', 'gs://logs.txt'),
+                'logs': testing.Artifact('/logs.txt',
+                                         fetch_url='gs://logs.txt'),
                 'screenshot': testing.Artifact(
                     os.path.join(self.output_dir, 'screenshot.png')),
             }
@@ -209,8 +207,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         ),
     )
 
-    with mock.patch('py_utils.cloud_storage.Insert') as cloud_patch:
-      cloud_patch.return_value = 'gs://trace.html'
+    with mock.patch('py_utils.cloud_storage.Upload') as cloud_patch:
+      cloud_patch.return_value = processor.cloud_storage.CloudFilepath(
+          bucket='bucket', remote_path='trace.html')
       processor.main([
           '--output-format', 'histograms',
           '--output-dir', self.output_dir,
@@ -240,7 +239,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.assertEqual(hist.diagnostics['benchmarkStart'],
                      date_range.DateRange(1234567890987))
     self.assertEqual(hist.diagnostics['traceUrls'],
-                     generic_set.GenericSet(['gs://trace.html']))
+                     generic_set.GenericSet([
+                         'https://console.developers.google.com'
+                         '/m/cloudstorage/b/bucket/o/trace.html']))
 
   def testHistogramsOutputResetResults(self):
     self.SerializeIntermediateResults(
@@ -668,10 +669,6 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
     self.assertEqual(exit_code, 0)
 
-
-  # TODO(crbug.com/990304): Enable this test when the long-term solution for
-  # building the trace_processor_shell on all platforms is found.
-  @unittest.skip('crbug.com/990304')
   def testHistogramsOutput_TBMv3(self):
     self.SerializeIntermediateResults(
         testing.TestResult(
@@ -693,6 +690,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         '--output-dir', self.output_dir,
         '--intermediate-dir', self.intermediate_dir,
         '--results-label', 'label',
+        '--experimental-tbmv3-metrics',
     ])
 
     with open(os.path.join(
@@ -702,8 +700,10 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     out_histograms = histogram_set.HistogramSet()
     out_histograms.ImportDicts(results)
 
-    hist = out_histograms.GetHistogramNamed(DUMMY_HISTOGRAM_NAME)
-    self.assertEqual(hist.unit, DUMMY_HISTOGRAM_UNIT)
+    # For testing the TBMv3 workflow we use dummy_metric defined in
+    # tools/perf/core/tbmv3/metrics/dummy_metric_*.
+    hist = out_histograms.GetHistogramNamed('dummy::simple_field')
+    self.assertEqual(hist.unit, 'count_smallerIsBetter')
 
     self.assertEqual(hist.diagnostics['benchmarks'],
                      generic_set.GenericSet(['benchmark']))
@@ -715,3 +715,66 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
                      generic_set.GenericSet(['label']))
     self.assertEqual(hist.diagnostics['benchmarkStart'],
                      date_range.DateRange(1234567890987))
+
+  def testComplexMetricOutput_TBMv3(self):
+    self.SerializeIntermediateResults(
+        testing.TestResult(
+            'benchmark/story',
+            output_artifacts=[
+                self.CreateProtoTraceArtifact(),
+                self.CreateDiagnosticsArtifact(
+                    benchmarks=['benchmark'],
+                    osNames=['linux'],
+                    documentationUrls=[['documentation', 'url']])
+            ],
+            tags=['tbmv3:dummy_metric'],
+            start_time='2009-02-13T23:31:30.987000Z',
+        ),
+    )
+
+    processor.main([
+        '--output-format', 'histograms',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--results-label', 'label',
+        '--experimental-tbmv3-metrics',
+    ])
+
+    with open(os.path.join(
+        self.output_dir, histograms_output.OUTPUT_FILENAME)) as f:
+      results = json.load(f)
+
+    # For testing the TBMv3 workflow we use dummy_metric defined in
+    # tools/perf/core/tbmv3/metrics/dummy_metric_*.
+    out_histograms = histogram_set.HistogramSet()
+    out_histograms.ImportDicts(results)
+
+    simple_field = out_histograms.GetHistogramNamed(
+        "dummy::simple_field")
+    self.assertEqual(simple_field.unit, "count_smallerIsBetter")
+    self.assertEqual((simple_field.num_values, simple_field.average), (1, 42))
+
+    repeated_field = out_histograms.GetHistogramNamed(
+        "dummy::repeated_field")
+    self.assertEqual(repeated_field.unit, "ms_biggerIsBetter")
+    self.assertEqual(repeated_field.num_values, 3)
+    self.assertEqual(repeated_field.sample_values, [1, 2, 3])
+
+    # Unannotated fields should not be included in final histogram output.
+    simple_nested_unannotated = out_histograms.GetHistogramsNamed(
+        "dummy::simple_nested:unannotated_field")
+    self.assertEqual(len(simple_nested_unannotated), 0)
+    repeated_nested_unannotated = out_histograms.GetHistogramsNamed(
+        "dummy::repeated_nested:unannotated_field")
+    self.assertEqual(len(repeated_nested_unannotated), 0)
+
+    simple_nested_annotated = out_histograms.GetHistogramNamed(
+        "dummy::simple_nested:annotated_field")
+    self.assertEqual(simple_nested_annotated.unit, "ms_smallerIsBetter")
+    self.assertEqual(simple_nested_annotated.num_values, 1)
+    self.assertEqual(simple_nested_annotated.average, 44)
+    repeated_nested_annotated = out_histograms.GetHistogramNamed(
+        "dummy::repeated_nested:annotated_field")
+    self.assertEqual(repeated_nested_annotated.unit, "ms_smallerIsBetter")
+    self.assertEqual(repeated_nested_annotated.num_values, 2)
+    self.assertEqual(repeated_nested_annotated.sample_values, [2, 4])

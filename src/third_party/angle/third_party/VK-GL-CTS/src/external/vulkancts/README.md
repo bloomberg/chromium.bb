@@ -140,6 +140,11 @@ platform requires a different path, it can be specified with:
 
 	--deqp-log-filename=<path>
 
+By default, the CTS will expect to find its test resource files in the current
+working directory. This can be overridden with:
+
+	--deqp-archive-dir=<path>
+
 By default, the shader cache will be written into the path "shadercache.bin". If the
 platform requires a different path, it can be specified with:
 
@@ -160,6 +165,11 @@ and a list of mandatory information tests for each fraction must be supplied:
 
 	--deqp-fraction-mandatory-caselist-file=<vulkancts>external/vulkancts/mustpass/master/vk-fraction-mandatory-tests.txt
 
+To specify file containing waived tests that are omitted only by specified vendor and renderer/device
+the following command line option may be used:
+
+	--deqp-waiver-file=<path>
+
 No other command line options are allowed.
 
 ### Win32
@@ -172,7 +182,7 @@ Test log will be written into TestResults.qpa
 ### Linux
 
 	cd <builddir>/external/vulkancts/modules/vulkan
-	./deqp-vk --deqp-vk-caselist-file=...
+	./deqp-vk --deqp-caselist-file=...
 
 ### Android
 
@@ -248,7 +258,7 @@ if `vk::Platform::describePlatform()` is implemented.
 If the submission package covers multiple products, you can list them by appending
 additional `PRODUCT:` lines to the conformance statement. For example:
 
-	CONFORM_VERSION:         vulkan-cts-1.1.6.0
+	CONFORM_VERSION:         vulkan-cts-1.2.2.0
 	PRODUCT:                 Product A
 	PRODUCT:                 Product B
 	...
@@ -310,6 +320,7 @@ codes are allowed:
 	NotSupported
 	QualityWarning
 	CompatibilityWarning
+	Waiver
 
 Submission package can be verified using `external/vulkancts/scripts/verify_submission.py`
 script. The script takes two arguments: path to extracted submission package

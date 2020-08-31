@@ -8,10 +8,12 @@
 #define BASE_WIN_EVENT_TRACE_PROVIDER_H_
 
 #include <windows.h>
-#include <wmistr.h>
+
+#include <cguid.h>
 #include <evntrace.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <wmistr.h>
 
 #include <limits>
 
@@ -21,33 +23,34 @@
 namespace base {
 namespace win {
 
-typedef GUID EtwEventClass;
-typedef UCHAR EtwEventType;
-typedef UCHAR EtwEventLevel;
-typedef USHORT EtwEventVersion;
-typedef ULONG EtwEventFlags;
+using EtwEventClass = GUID;
+using EtwEventType = UCHAR;
+using EtwEventLevel = UCHAR;
+using EtwEventVersion = USHORT;
+using EtwEventFlags = ULONG;
 
 // Base class is a POD for correctness.
-template <size_t N> struct EtwMofEventBase {
+template <size_t N>
+struct EtwMofEventBase {
   EVENT_TRACE_HEADER header;
   MOF_FIELD fields[N];
 };
 
 // Utility class to auto-initialize event trace header structures.
-template <size_t N> class EtwMofEvent: public EtwMofEventBase<N> {
+template <size_t N>
+class EtwMofEvent : public EtwMofEventBase<N> {
  public:
-  typedef EtwMofEventBase<N> Super;
+  using Super = EtwMofEventBase<N>;
 
   // Clang and the C++ standard don't allow unqualified lookup into dependent
   // bases, hence these using decls to explicitly pull the names out.
   using EtwMofEventBase<N>::header;
   using EtwMofEventBase<N>::fields;
 
-  EtwMofEvent() {
-    memset(static_cast<Super*>(this), 0, sizeof(Super));
-  }
+  EtwMofEvent() { memset(static_cast<Super*>(this), 0, sizeof(Super)); }
 
-  EtwMofEvent(const EtwEventClass& event_class, EtwEventType type,
+  EtwMofEvent(const EtwEventClass& event_class,
+              EtwEventType type,
               EtwEventLevel level) {
     memset(static_cast<Super*>(this), 0, sizeof(Super));
     header.Size = sizeof(Super);
@@ -57,8 +60,10 @@ template <size_t N> class EtwMofEvent: public EtwMofEventBase<N> {
     header.Flags = WNODE_FLAG_TRACED_GUID | WNODE_FLAG_USE_MOF_PTR;
   }
 
-  EtwMofEvent(const EtwEventClass& event_class, EtwEventType type,
-              EtwEventVersion version, EtwEventLevel level) {
+  EtwMofEvent(const EtwEventClass& event_class,
+              EtwEventType type,
+              EtwEventVersion version,
+              EtwEventLevel level) {
     memset(static_cast<Super*>(this), 0, sizeof(Super));
     header.Size = sizeof(Super);
     header.Guid = event_class;
@@ -76,7 +81,7 @@ template <size_t N> class EtwMofEvent: public EtwMofEventBase<N> {
     }
   }
 
-  EVENT_TRACE_HEADER* get() { return& header; }
+  EVENT_TRACE_HEADER* get() { return &header; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EtwMofEvent);
@@ -125,15 +130,19 @@ class BASE_EXPORT EtwTraceProvider {
   //      bit set, to test whether to log for a particular sub "facility".
   bool ShouldLog(EtwEventLevel level, EtwEventFlags flags) {
     return NULL != session_handle_ && level >= enable_level_ &&
-        (0 != (flags & enable_flags_));
+           (0 != (flags & enable_flags_));
   }
 
   // Simple wrappers to log Unicode and ANSI strings.
   // Do nothing if !ShouldLog(level, 0xFFFFFFFF).
-  ULONG Log(const EtwEventClass& event_class, EtwEventType type,
-            EtwEventLevel level, const char *message);
-  ULONG Log(const EtwEventClass& event_class, EtwEventType type,
-            EtwEventLevel level, const wchar_t *message);
+  ULONG Log(const EtwEventClass& event_class,
+            EtwEventType type,
+            EtwEventLevel level,
+            const char* message);
+  ULONG Log(const EtwEventClass& event_class,
+            EtwEventType type,
+            EtwEventLevel level,
+            const wchar_t* message);
 
   // Log the provided event.
   ULONG Log(EVENT_TRACE_HEADER* event);
@@ -162,14 +171,16 @@ class BASE_EXPORT EtwTraceProvider {
   ULONG EnableEvents(PVOID buffer);
   ULONG DisableEvents();
   ULONG Callback(WMIDPREQUESTCODE request, PVOID buffer);
-  static ULONG WINAPI ControlCallback(WMIDPREQUESTCODE request, PVOID context,
-                                      ULONG *reserved, PVOID buffer);
+  static ULONG WINAPI ControlCallback(WMIDPREQUESTCODE request,
+                                      PVOID context,
+                                      ULONG* reserved,
+                                      PVOID buffer);
 
-  GUID provider_name_;
-  TRACEHANDLE registration_handle_;
-  TRACEHANDLE session_handle_;
-  EtwEventFlags enable_flags_;
-  EtwEventLevel enable_level_;
+  GUID provider_name_ = GUID_NULL;
+  TRACEHANDLE registration_handle_ = NULL;
+  TRACEHANDLE session_handle_ = NULL;
+  EtwEventFlags enable_flags_ = 0;
+  EtwEventLevel enable_level_ = 0;
 
   // We don't use this, but on XP we're obliged to pass one in to
   // RegisterTraceGuids. Non-const, because that's how the API needs it.

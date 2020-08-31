@@ -19,8 +19,8 @@ The change log is available at
 Please read the [License & Rights][webrtc-license] and [FAQ][webrtc-faq]
 before downloading the source code.
 
-[webrtc-license]: https://webrtc.org/license/
-[webrtc-faq]: https://webrtc.org/faq/
+[webrtc-license]: https://webrtc.org/support/license
+[webrtc-faq]: https://webrtc.googlesource.com/src/+/refs/heads/master/docs/faq.md
 
 The WebRTC [issue tracker][webrtc-issue-tracker] can be used for submitting
 bugs found in native code.
@@ -33,8 +33,10 @@ bugs found in native code.
 * [Development][webrtc-development]
 * [Android][webtc-android-development]
 * [iOS][webrtc-ios-development]
+* [Experimental RTP header extensions][rtp-hdrext]
 
 [webrtc-prerequitite-sw]: https://webrtc.googlesource.com/src/+/refs/heads/master/docs/native-code/development/prerequisite-sw/index.md
 [webrtc-development]: https://webrtc.googlesource.com/src/+/refs/heads/master/docs/native-code/development/index.md
 [webtc-android-development]: https://webrtc.googlesource.com/src/+/refs/heads/master/docs/native-code/android/index.md
 [webrtc-ios-development]: https://webrtc.googlesource.com/src/+/refs/heads/master/docs/native-code/ios/index.md
+[rtp-hdrext]: https://webrtc.googlesource.com/src/+/refs/heads/master/docs/native-code/rtp-hdrext/index.md

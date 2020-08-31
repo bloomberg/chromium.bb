@@ -2,32 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for views.
- */
-cca.views = cca.views || {};
-
-/**
- * Namespace for Camera view.
- */
-cca.views.camera = cca.views.camera || {};
-
-/**
- * import {assert, assertInstanceof} from '../chrome_util.js';
- */
-var {assert, assertInstanceof} = {assert, assertInstanceof};
+import {assertInstanceof} from '../../chrome_util.js';
+import {DeviceOperator, parseMetadata} from '../../mojo/device_operator.js';
+import * as nav from '../../nav.js';
+import * as state from '../../state.js';
+import * as util from '../../util.js';
 
 /**
  * Creates a controller for the video preview of Camera view.
  */
-cca.views.camera.Preview = class {
+export class Preview {
   /**
    * @param {!function()} onNewStreamNeeded Callback to request new stream.
    */
@@ -89,19 +73,10 @@ cca.views.camera.Preview = class {
      */
     this.resizeWindowTimeout_ = null;
 
-    /**
-     * Aspect ratio for the window.
-     * @type {number}
-     * @private
-     */
-    this.aspectRatio_ = 1;
-
-    var inner = chrome.app.window.current().innerBounds;
-    this.aspectRatio_ = inner.width / inner.height;
     window.addEventListener('resize', () => this.onWindowResize_());
 
-    ['expert', 'show-metadata'].forEach((state) => {
-      cca.state.addObserver(state, this.updateShowMetadata_.bind(this));
+    [state.State.EXPERT, state.State.SHOW_METADATA].forEach((s) => {
+      state.addObserver(s, this.updateShowMetadata_.bind(this));
     });
 
     this.video_.cleanup = () => {};
@@ -143,7 +118,7 @@ cca.views.camera.Preview = class {
     video.classList = this.video_.classList;
     video.muted = true;  // Mute to avoid echo from the captured audio.
     return new Promise((resolve) => {
-             var handler = () => {
+             const handler = () => {
                video.removeEventListener('canplay', handler);
                resolve();
              };
@@ -187,7 +162,7 @@ cca.views.camera.Preview = class {
       }, 100);
       this.stream_ = stream;
       this.updateShowMetadata_();
-      cca.state.set('streaming', true);
+      state.set(state.State.STREAMING, true);
     });
   }
 
@@ -205,7 +180,7 @@ cca.views.camera.Preview = class {
       this.stream_.getVideoTracks()[0].stop();
       this.stream_ = null;
     }
-    cca.state.set('streaming', false);
+    state.set(state.State.STREAMING, false);
   }
 
   /**
@@ -213,7 +188,7 @@ cca.views.camera.Preview = class {
    * @private
    */
   updateShowMetadata_() {
-    if (cca.state.get('expert') && cca.state.get('show-metadata')) {
+    if (state.get(state.State.EXPERT) && state.get(state.State.SHOW_METADATA)) {
       this.enableShowMetadata_();
     } else {
       this.disableShowMetadata_();
@@ -360,11 +335,11 @@ cca.views.camera.Preview = class {
         if (handler === undefined) {
           continue;
         }
-        handler(cca.mojo.parseMetadataData(entry));
+        handler(parseMetadata(entry));
       }
     };
 
-    const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+    const deviceOperator = await DeviceOperator.getInstance();
     if (!deviceOperator) {
       return;
     }
@@ -384,7 +359,7 @@ cca.views.camera.Preview = class {
       return;
     }
 
-    const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+    const deviceOperator = await DeviceOperator.getInstance();
     if (!deviceOperator) {
       return;
     }
@@ -400,32 +375,6 @@ cca.views.camera.Preview = class {
   }
 
   /**
-   * Sets CCA window inner bound to specified size.
-   * @param {number} width Width and min width of new window inner bound.
-   * @param {number} height Height and min height of new window inner bound.
-   * @return {!Promise} Promise which is resolved when size change actually
-   *     happen.
-   * @private
-   */
-  setWindowSize_(width, height) {
-    return new Promise((resolve) => {
-      const listener = () => {
-        chrome.app.window.current().onBoundsChanged.removeListener(listener);
-        resolve();
-      };
-      chrome.app.window.current().onBoundsChanged.addListener(listener);
-      const inner = chrome.app.window.current().innerBounds;
-      const prevW = inner.width;
-      const prevH = inner.height;
-      inner.minWidth = inner.width = width;
-      inner.minHeight = inner.height = height;
-      if (prevW === width && prevH === height) {
-        listener();
-      }
-    });
-  }
-
-  /**
    * Handles resizing the window for preview's aspect ratio changes.
    * @param {number=} aspectRatio Aspect ratio changed.
    * @return {!Promise}
@@ -436,13 +385,12 @@ cca.views.camera.Preview = class {
       clearTimeout(this.resizeWindowTimeout_);
       this.resizeWindowTimeout_ = null;
     }
-    cca.nav.onWindowResized();
+    nav.onWindowResized();
 
     // Resize window for changed preview's aspect ratio or restore window size
     // by the last known window's aspect ratio.
     return new Promise((resolve) => {
              if (aspectRatio) {
-               this.aspectRatio_ = aspectRatio;
                resolve();
              } else {
                this.resizeWindowTimeout_ = setTimeout(() => {
@@ -454,13 +402,10 @@ cca.views.camera.Preview = class {
         .then(() => {
           // Resize window by aspect ratio only if it's not maximized or
           // fullscreen.
-          if (cca.util.isWindowFullSize()) {
+          if (util.isWindowFullSize()) {
             return;
           }
-          const width = chrome.app.window.current().innerBounds.minWidth;
-          assert(width !== undefined);
-          const height = Math.round(width * 9 / 16);
-          return this.setWindowSize_(width, height);
+          return util.fitWindow();
         });
   }
 
@@ -515,4 +460,4 @@ cca.views.camera.Preview = class {
     this.focus_ = null;
     document.querySelector('#preview-focus-aim').hidden = true;
   }
-};
+}

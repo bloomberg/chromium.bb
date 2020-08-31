@@ -180,7 +180,7 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual void drawPicture(sk_sp<const PaintRecord> record) = 0;
 
   virtual bool isClipEmpty() const = 0;
-  virtual const SkMatrix& getTotalMatrix() const = 0;
+  virtual SkMatrix getTotalMatrix() const = 0;
 
   // Used for printing
   enum class AnnotationType {
@@ -204,6 +204,9 @@ class CC_PAINT_EXPORT PaintCanvas {
 
   // Subclasses can override to handle custom data.
   virtual void recordCustomData(uint32_t id) {}
+
+  // Used for marked content in PDF files.
+  virtual void setNodeId(int) = 0;
 
  private:
   printing::MetafileSkia* metafile_ = nullptr;

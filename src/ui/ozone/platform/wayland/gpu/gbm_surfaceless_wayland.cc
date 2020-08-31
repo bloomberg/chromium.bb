@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/common/egl_util.h"
@@ -38,8 +39,9 @@ GbmSurfacelessWayland::GbmSurfacelessWayland(
   unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
 }
 
-void GbmSurfacelessWayland::QueueOverlayPlane(OverlayPlane plane) {
-  planes_.push_back(std::move(plane));
+void GbmSurfacelessWayland::QueueOverlayPlane(OverlayPlane plane,
+                                              uint32_t buffer_id) {
+  planes_.push_back({std::move(plane), buffer_id});
 }
 
 bool GbmSurfacelessWayland::ScheduleOverlayPlane(
@@ -93,7 +95,8 @@ void GbmSurfacelessWayland::SwapBuffersAsync(
 
   // TODO(dcastagna): remove glFlush since eglImageFlushExternalEXT called on
   // the image should be enough (https://crbug.com/720045).
-  glFlush();
+  if (!no_gl_flush_for_tests_)
+    glFlush();
   unsubmitted_frames_.back()->Flush();
 
   PendingFrame* frame = unsubmitted_frames_.back().get();
@@ -118,11 +121,10 @@ void GbmSurfacelessWayland::SwapBuffersAsync(
   base::OnceClosure fence_retired_callback = base::BindOnce(
       &GbmSurfacelessWayland::FenceRetired, weak_factory_.GetWeakPtr(), frame);
 
-  base::PostTaskAndReply(FROM_HERE,
-                         {base::ThreadPool(), base::MayBlock(),
-                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                         std::move(fence_wait_task),
-                         std::move(fence_retired_callback));
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      std::move(fence_wait_task), std::move(fence_retired_callback));
 }
 
 void GbmSurfacelessWayland::PostSubBufferAsync(
@@ -163,6 +165,12 @@ EGLConfig GbmSurfacelessWayland::GetConfig() {
 
 void GbmSurfacelessWayland::SetRelyOnImplicitSync() {
   use_egl_fence_sync_ = false;
+}
+
+gfx::SurfaceOrigin GbmSurfacelessWayland::GetOrigin() const {
+  // GbmSurfacelessWayland's y-axis is flipped compare to GL - (0,0) is at top
+  // left corner.
+  return gfx::SurfaceOrigin::kTopLeft;
 }
 
 GbmSurfacelessWayland::~GbmSurfacelessWayland() {
@@ -209,7 +217,7 @@ void GbmSurfacelessWayland::SubmitFrame() {
       return;
     }
 
-    submitted_frame_->buffer_id = planes_.back().pixmap->GetUniqueId();
+    submitted_frame_->buffer_id = planes_.back().buffer_id;
     buffer_manager_->CommitBuffer(widget_, submitted_frame_->buffer_id,
                                   submitted_frame_->damage_region_);
 
@@ -228,6 +236,10 @@ EGLSyncKHR GbmSurfacelessWayland::InsertFence(bool implicit) {
 void GbmSurfacelessWayland::FenceRetired(PendingFrame* frame) {
   frame->ready = true;
   SubmitFrame();
+}
+
+void GbmSurfacelessWayland::SetNoGLFlushForTests() {
+  no_gl_flush_for_tests_ = true;
 }
 
 void GbmSurfacelessWayland::OnSubmission(uint32_t buffer_id,

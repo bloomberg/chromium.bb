@@ -156,6 +156,8 @@ void ArcNotificationView::OnSettingsButtonPressed(const ui::Event& event) {
 }
 
 void ArcNotificationView::OnSnoozeButtonPressed(const ui::Event& event) {
+  MessageView::OnSnoozeButtonPressed(event);
+
   if (item_)
     return item_->OpenSnooze();
 }
@@ -243,6 +245,10 @@ void ArcNotificationView::OnItemDestroying() {
   DCHECK(item_);
   item_->RemoveObserver(this);
   item_ = nullptr;
+}
+
+aura::Window* ArcNotificationView::GetNativeContainerWindowForTest() const {
+  return content_view_->GetNativeViewContainer();
 }
 
 }  // namespace ash

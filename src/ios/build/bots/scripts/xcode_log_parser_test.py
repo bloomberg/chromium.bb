@@ -7,6 +7,7 @@
 import json
 import mock
 import os
+import unittest
 
 import test_runner
 import test_runner_test
@@ -166,9 +167,9 @@ class XCode11LogParserTest(test_runner_test.TestCase):
   def testXcresulttoolListPassedTests(self, mock_xcresult):
     mock_xcresult.return_value = PASSED_TESTS
     expected = ['TestCase1/testMethod1', 'TestCase2/testMethod1']
-    self.assertEqual(expected,
-                     xcode_log_parser.Xcode11LogParser()._list_of_passed_tests(
-                         _XTEST_RESULT))
+    self.assertEqual(
+        expected,
+        xcode_log_parser.Xcode11LogParser()._get_test_statuses(_XTEST_RESULT))
 
   @mock.patch('os.path.exists', autospec=True)
   @mock.patch('xcode_log_parser.Xcode11LogParser._xcresulttool_get')
@@ -269,3 +270,7 @@ class XCode11LogParserTest(test_runner_test.TestCase):
                      res['failed']['BUILD_INTERRUPTED'])
     self.assertEqual(['TestCase1/method1', 'TestCase2/method1'],
                      res['passed'])
+
+
+if __name__ == '__main__':
+  unittest.main()

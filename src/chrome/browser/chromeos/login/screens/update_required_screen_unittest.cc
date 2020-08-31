@@ -20,8 +20,10 @@
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/portal_detector/mock_network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,6 +55,7 @@ class UpdateRequiredScreenUnitTest : public testing::Test {
     fake_update_engine_client_ = new FakeUpdateEngineClient();
     DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         std::unique_ptr<UpdateEngineClient>(fake_update_engine_client_));
+
     NetworkHandler::Initialize();
     mock_network_portal_detector_ = new MockNetworkPortalDetector();
     network_portal_detector::SetNetworkPortalDetector(
@@ -69,6 +72,10 @@ class UpdateRequiredScreenUnitTest : public testing::Test {
 
     update_required_screen_->GetVersionUpdaterForTesting()
         ->set_wait_for_reboot_time_for_testing(base::TimeDelta::FromSeconds(0));
+
+    network_state_test_helper_ =
+        std::make_unique<chromeos::NetworkStateTestHelper>(
+            true /*use_default_devices_and_services*/);
   }
 
   void TearDown() override {
@@ -77,6 +84,7 @@ class UpdateRequiredScreenUnitTest : public testing::Test {
     update_required_screen_.reset();
     mock_error_view_.reset();
     mock_error_screen_.reset();
+    network_state_test_helper_.reset();
 
     network_portal_detector::Shutdown();
     NetworkHandler::Shutdown();
@@ -96,11 +104,15 @@ class UpdateRequiredScreenUnitTest : public testing::Test {
   MockNetworkPortalDetector* mock_network_portal_detector_;
   // Will be deleted in |DBusThreadManager::Shutdown()|.
   FakeUpdateEngineClient* fake_update_engine_client_;
+  // Initializes NetworkStateHandler
+  std::unique_ptr<chromeos::NetworkStateTestHelper> network_state_test_helper_;
 
  private:
   // Test versions of core browser infrastructure.
   content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state_;
+  // This is used for |GetEnterpriseDisplayDomain|.
+  ScopedStubInstallAttributes test_install_attributes_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateRequiredScreenUnitTest);
 };
@@ -115,7 +127,7 @@ TEST_F(UpdateRequiredScreenUnitTest, HandlesNoUpdate) {
   update_required_screen_->Show();
   EXPECT_EQ(fake_view_->ui_state(),
             UpdateRequiredView::UPDATE_REQUIRED_MESSAGE);
-  update_required_screen_->OnUserAction(kUserActionUpdateButtonClicked);
+  update_required_screen_->HandleUserAction(kUserActionUpdateButtonClicked);
 
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
@@ -132,7 +144,7 @@ TEST_F(UpdateRequiredScreenUnitTest, HandlesUpdateExists) {
   update_required_screen_->Show();
   EXPECT_EQ(fake_view_->ui_state(),
             UpdateRequiredView::UPDATE_REQUIRED_MESSAGE);
-  update_required_screen_->OnUserAction(kUserActionUpdateButtonClicked);
+  update_required_screen_->HandleUserAction(kUserActionUpdateButtonClicked);
 
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
@@ -160,7 +172,7 @@ TEST_F(UpdateRequiredScreenUnitTest, HandlesCellularPermissionNeeded) {
   update_required_screen_->Show();
   EXPECT_EQ(fake_view_->ui_state(),
             UpdateRequiredView::UPDATE_REQUIRED_MESSAGE);
-  update_required_screen_->OnUserAction(kUserActionUpdateButtonClicked);
+  update_required_screen_->HandleUserAction(kUserActionUpdateButtonClicked);
 
   // Verify that the DUT checks for an update.
   EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
@@ -171,7 +183,8 @@ TEST_F(UpdateRequiredScreenUnitTest, HandlesCellularPermissionNeeded) {
 
   SetUpdateEngineStatus(update_engine::Operation::NEED_PERMISSION_TO_UPDATE);
 
-  update_required_screen_->OnUserAction(kUserActionAcceptUpdateOverCellular);
+  update_required_screen_->HandleUserAction(
+      kUserActionAcceptUpdateOverCellular);
 
   EXPECT_GE(
       fake_update_engine_client_->update_over_cellular_permission_count() +

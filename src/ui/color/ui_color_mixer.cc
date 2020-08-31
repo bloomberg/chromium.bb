@@ -1,7 +1,7 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+#include "build/build_config.h"
 #include "ui/color/color_mixers.h"
 
 #include "ui/color/color_mixer.h"
@@ -12,7 +12,7 @@
 
 namespace ui {
 
-void AddUiColorMixers(ColorProvider* provider) {
+void AddUiColorMixer(ColorProvider* provider) {
   ColorMixer& mixer = provider->AddMixer();
 
   mixer[kColorBubbleBackground] = {kColorPrimaryBackground};
@@ -35,6 +35,7 @@ void AddUiColorMixers(ColorProvider* provider) {
   mixer[kColorFocusableBorderFocused] = SetAlpha(kColorAccent, 0x4D);
   mixer[kColorFocusableBorderUnfocused] = {kColorBorderAndSeparatorForeground};
   mixer[kColorIcon] = {kColorSecondaryForeground};
+  mixer[kColorMenuIcon] = {kColorIcon};
   mixer[kColorLabelDisabledForeground] = {kColorDisabledForeground};
   mixer[kColorLabelForeground] = {kColorPrimaryForeground};
   mixer[kColorLabelSecondaryForeground] = {kColorSecondaryForeground};
@@ -45,7 +46,8 @@ void AddUiColorMixers(ColorProvider* provider) {
   mixer[kColorLinkForeground] = {kColorAccent};
   mixer[kColorMenuBackground] = {kColorPrimaryBackground};
   mixer[kColorMenuBorder] = {kColorBorderAndSeparatorForeground};
-  mixer[kColorMenuItemAlertedBackground] = {kColorAccent};
+  mixer[kColorMenuItemBackgroundAlertedInitial] = SetAlpha(kColorAccent, 0x4D);
+  mixer[kColorMenuItemBackgroundAlertedTarget] = SetAlpha(kColorAccent, 0x1A);
   mixer[kColorMenuItemDisabledForeground] = {kColorDisabledForeground};
   mixer[kColorMenuItemForeground] = {kColorPrimaryForeground};
   mixer[kColorMenuItemHighlightedBackground] = {kColorSubtleEmphasisBackground};
@@ -73,6 +75,8 @@ void AddUiColorMixers(ColorProvider* provider) {
       GetColorWithMaxContrast(kColorTextfieldForeground);
   mixer[kColorTextfieldDisabledBackground] = {kColorPrimaryBackground};
   mixer[kColorTextfieldDisabledForeground] = {kColorDisabledForeground};
+  mixer[kColorTextfieldPlaceholderForeground] = {
+      kColorTextfieldDisabledForeground};
   mixer[kColorTextfieldForeground] = {kColorPrimaryForeground};
   mixer[kColorTextfieldSelectionBackground] = {kColorTextSelectionBackground};
   mixer[kColorTextfieldSelectionForeground] = {kColorTextfieldForeground};

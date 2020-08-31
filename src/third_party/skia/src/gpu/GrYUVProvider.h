@@ -16,9 +16,7 @@
 
 class GrBackendFormat;
 class GrRecordingContext;
-struct GrSurfaceDesc;
-class GrTexture;
-class GrTextureProxy;
+class GrSurfaceProxyView;
 class SkCachedData;
 
 /**
@@ -42,11 +40,12 @@ public:
      *
      *  On failure (e.g. the provider had no data), this returns NULL.
      */
-    sk_sp<GrTextureProxy> refAsTextureProxy(GrRecordingContext*,
-                                            const GrSurfaceDesc&,
-                                            GrColorType colorType,
-                                            SkColorSpace* srcColorSpace,
-                                            SkColorSpace* dstColorSpace);
+    GrSurfaceProxyView refAsTextureProxyView(GrRecordingContext*,
+                                             SkISize,
+                                             GrColorType colorType,
+                                             SkColorSpace* srcColorSpace,
+                                             SkColorSpace* dstColorSpace,
+                                             SkBudgeted budgeted);
 
     sk_sp<SkCachedData> getPlanes(SkYUVASizeInfo*, SkYUVAIndex[SkYUVAIndex::kIndexCount],
                                   SkYUVColorSpace*, const void* planes[SkYUVASizeInfo::kMaxCount]);
@@ -87,7 +86,7 @@ private:
     // This is used as release callback for the YUV data that we capture in an SkImage when
     // uploading to a gpu. When the upload is complete and we release the SkImage this callback will
     // release the underlying data.
-    static void YUVGen_DataReleaseProc(const void*, void* data);
+    static void YUVGen_DataReleaseProc(void*, void* data);
 };
 
 #endif

@@ -36,6 +36,7 @@
 #include <atomic>
 
 #include "absl/base/attributes.h"
+#include "absl/base/const_init.h"
 #include "absl/base/dynamic_annotations.h"
 #include "absl/base/internal/low_level_scheduling.h"
 #include "absl/base/internal/raw_logging.h"
@@ -46,6 +47,7 @@
 #include "absl/base/thread_annotations.h"
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace base_internal {
 
 class ABSL_LOCKABLE SpinLock {
@@ -75,6 +77,10 @@ class ABSL_LOCKABLE SpinLock {
   explicit SpinLock(base_internal::SchedulingMode mode);
   SpinLock(base_internal::LinkerInitialized,
            base_internal::SchedulingMode mode);
+
+  // Constructor for global SpinLock instances.  See absl/base/const_init.h.
+  constexpr SpinLock(absl::ConstInitType, base_internal::SchedulingMode mode)
+      : lockword_(IsCooperative(mode) ? kSpinLockCooperative : 0) {}
 
   ~SpinLock() { ABSL_TSAN_MUTEX_DESTROY(this, __tsan_mutex_not_static); }
 
@@ -147,12 +153,13 @@ class ABSL_LOCKABLE SpinLock {
   // bit[1] encodes whether a lock uses cooperative scheduling.
   // bit[2] encodes whether a lock disables scheduling.
   // bit[3:31] encodes time a lock spent on waiting as a 29-bit unsigned int.
-  enum { kSpinLockHeld = 1 };
-  enum { kSpinLockCooperative = 2 };
-  enum { kSpinLockDisabledScheduling = 4 };
-  enum { kSpinLockSleeper = 8 };
-  enum { kWaitTimeMask =                      // Includes kSpinLockSleeper.
-    ~(kSpinLockHeld | kSpinLockCooperative | kSpinLockDisabledScheduling) };
+  static constexpr uint32_t kSpinLockHeld = 1;
+  static constexpr uint32_t kSpinLockCooperative = 2;
+  static constexpr uint32_t kSpinLockDisabledScheduling = 4;
+  static constexpr uint32_t kSpinLockSleeper = 8;
+  // Includes kSpinLockSleeper.
+  static constexpr uint32_t kWaitTimeMask =
+      ~(kSpinLockHeld | kSpinLockCooperative | kSpinLockDisabledScheduling);
 
   // Returns true if the provided scheduling mode is cooperative.
   static constexpr bool IsCooperative(
@@ -225,11 +232,10 @@ inline uint32_t SpinLock::TryLockInternal(uint32_t lock_value,
     }
   }
 
-  if (lockword_.compare_exchange_strong(
+  if (!lockword_.compare_exchange_strong(
           lock_value,
           kSpinLockHeld | lock_value | wait_cycles | sched_disabled_bit,
           std::memory_order_acquire, std::memory_order_relaxed)) {
-  } else {
     base_internal::SchedulingGuard::EnableRescheduling(sched_disabled_bit != 0);
   }
 
@@ -237,6 +243,7 @@ inline uint32_t SpinLock::TryLockInternal(uint32_t lock_value,
 }
 
 }  // namespace base_internal
+ABSL_NAMESPACE_END
 }  // namespace absl
 
 #endif  // ABSL_BASE_INTERNAL_SPINLOCK_H_

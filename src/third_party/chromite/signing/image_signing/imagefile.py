@@ -335,7 +335,7 @@ def UpdateRootfsHash(image, loop_kern, keyset, keyA_prefix):
   cros_build_lib.sudo_run(
       ['dd', 'if=%s' % rootfs_hash.hashtree_filename, 'of=%s' % loop_rootfs,
        'bs=512', 'seek=%d' % rootfs_sectors, 'conv=notrunc'],
-      redirect_stderr=True)
+      stderr=True)
 
   # Update kernel command lines.
   for kern in ('KERN-A', 'KERN-B'):
@@ -416,7 +416,7 @@ def UpdateRecoveryKernelHash(image, keyset):
   if old_kernB_hash:
     cmd = 'sha256sum' if len(old_kernB_hash.value) >= 64 else 'sha1sum'
     new_kernB_hash = cros_build_lib.sudo_run(
-        [cmd, loop_kernB], redirect_stdout=True,
+        [cmd, loop_kernB], stdout=True,
         encoding='utf-8').stdout.split()[0]
     kernA_cmd.SetKernelParameter('kern_b_hash', new_kernB_hash)
   logging.info('New cmdline for kernel A is %s', str(kernA_cmd))
@@ -461,7 +461,7 @@ def UpdateLegacyBootloader(image, loop_kern):
     ret = cros_build_lib.sudo_run(
         ['sed', '-iE',
          r's/\broot_hexdigest=[a-z0-9]+/root_hexdigest=%s/g' % root_digest] +
-        files, error_code_ok=True)
+        files, check=False)
     if ret.returncode:
       logging.error('Updating bootloader configs failed: %s', ' '.join(files))
       raise SignImageError('Updating bootloader configs failed')

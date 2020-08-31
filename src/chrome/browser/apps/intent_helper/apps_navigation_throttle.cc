@@ -8,11 +8,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +23,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/chrome_features.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/browser_context.h"
@@ -77,10 +82,10 @@ bool ShouldOverrideUrlLoading(const GURL& previous_url,
 
 GURL GetStartingGURL(content::NavigationHandle* navigation_handle) {
   // This helps us determine a reference GURL for the current NavigationHandle.
-  // This is the order or preferrence: Referrer > LastCommittedURL > SiteURL,
-  // GetSiteURL *should* only be used on very rare cases, e.g. when the
-  // navigation goes from https: to http: on a new tab, thus losing the other
-  // potential referrers.
+  // This is the order or preference: Referrer > LastCommittedURL >
+  // InitiatorOrigin. InitiatorOrigin *should* only be used on very rare cases,
+  // e.g. when the navigation goes from https: to http: on a new tab, thus
+  // losing the other potential referrers.
   const GURL referrer_url = navigation_handle->GetReferrer().url;
   if (referrer_url.is_valid() && !referrer_url.is_empty())
     return referrer_url;
@@ -90,12 +95,16 @@ GURL GetStartingGURL(content::NavigationHandle* navigation_handle) {
   if (last_committed_url.is_valid() && !last_committed_url.is_empty())
     return last_committed_url;
 
-  return navigation_handle->GetStartingSiteInstance()->GetSiteURL();
+  const auto& initiator_origin = navigation_handle->GetInitiatorOrigin();
+  return initiator_origin.has_value() ? initiator_origin->GetURL() : GURL();
 }
 
 }  // namespace
 
 namespace apps {
+
+// static
+const char AppsNavigationThrottle::kUseBrowserForLink[] = "use_browser";
 
 // static
 std::unique_ptr<content::NavigationThrottle>
@@ -156,11 +165,6 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
     case PickerEntryType::kMacNative:
       NOTREACHED();
   }
-  PickerAction action =
-      GetPickerAction(entry_type, close_reason, should_persist);
-  Platform platform = GetDestinationPlatform(launch_name, action);
-  RecordUma(launch_name, entry_type, close_reason, Source::kHttpOrHttps,
-            should_persist, action, platform);
 }
 
 // static
@@ -191,6 +195,8 @@ void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;
+
+  IntentPickerTabHelper::SetShouldShowIcon(web_contents, true);
   browser->window()->ShowIntentPickerBubble(
       std::move(apps), show_stay_in_chrome, show_remember_selection,
       PageActionIconType::kIntentPicker, base::nullopt, std::move(callback));
@@ -257,26 +263,6 @@ bool AppsNavigationThrottle::CanCreate(content::WebContents* web_contents) {
     return false;
 
   return true;
-}
-
-// static
-void AppsNavigationThrottle::RecordUma(const std::string& selected_app_package,
-                                       PickerEntryType entry_type,
-                                       IntentPickerCloseReason close_reason,
-                                       Source source,
-                                       bool should_persist,
-                                       PickerAction action,
-                                       Platform platform) {
-  // TODO(crbug.com/985233) For now External Protocol Dialog is only querying
-  // ARC apps.
-  if (source == Source::kExternalProtocol) {
-    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.ExternalProtocolDialog", action);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerAction", action);
-
-    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerDestinationPlatform",
-                              platform);
-  }
 }
 
 // static
@@ -361,21 +347,27 @@ std::vector<IntentPickerAppInfo> AppsNavigationThrottle::FindPwaForUrl(
     std::vector<IntentPickerAppInfo> apps) {
   // Check if the current URL has an installed desktop PWA, and add that to
   // the list of apps if it exists.
-  const extensions::Extension* extension =
-      extensions::util::GetInstalledPwaForUrl(
-          web_contents->GetBrowserContext(), url,
-          extensions::LaunchContainer::kLaunchContainerWindow);
+  Profile* const profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
-  if (extension) {
-    auto* menu_manager =
-        extensions::MenuManager::Get(web_contents->GetBrowserContext());
+  base::Optional<web_app::AppId> app_id =
+      web_app::FindInstalledAppWithUrlInScope(profile, url,
+                                              /*window_only=*/true);
+  if (!app_id)
+    return apps;
 
-    // Prefer the web and place apps of type PWA before apps of type ARC.
-    // TODO(crbug.com/824598): deterministically sort this list.
-    apps.emplace(apps.begin(), PickerEntryType::kWeb,
-                 menu_manager->GetIconForExtension(extension->id()),
-                 extension->id(), extension->name());
-  }
+  // TODO(crbug.com/1052707): Use AppIconManager to read PWA icons.
+  auto* menu_manager =
+      extensions::MenuManager::Get(web_contents->GetBrowserContext());
+
+  // Prefer the web and place apps of type PWA before apps of type ARC.
+  // TODO(crbug.com/824598): deterministically sort this list.
+  apps.emplace(apps.begin(), PickerEntryType::kWeb,
+               menu_manager->GetIconForExtension(*app_id), *app_id,
+               web_app::WebAppProviderBase::GetProviderBase(profile)
+                   ->registrar()
+                   .GetAppShortName(*app_id));
+
   return apps;
 }
 
@@ -469,7 +461,7 @@ IntentPickerResponse AppsNavigationThrottle::GetOnPickerClosedCallback(
                         ui_auto_display_service, url);
 }
 
-bool AppsNavigationThrottle::navigate_from_link() {
+bool AppsNavigationThrottle::navigate_from_link() const {
   return navigate_from_link_;
 }
 
@@ -521,6 +513,9 @@ AppsNavigationThrottle::HandleRequest() {
     return content::NavigationThrottle::DEFER;
   }
 
+  if (CaptureExperimentalTabStripWebAppScopeNavigations(web_contents, handle))
+    return content::NavigationThrottle::CANCEL_AND_IGNORE;
+
   // We didn't query ARC, so proceed with the navigation and query if we have an
   // installed desktop PWA to handle the URL.
   std::vector<IntentPickerAppInfo> apps = FindAppsForUrl(web_contents, url, {});
@@ -533,6 +528,51 @@ AppsNavigationThrottle::HandleRequest() {
       GetOnPickerClosedCallback(web_contents, ui_auto_display_service_, url));
 
   return content::NavigationThrottle::PROCEED;
+}
+
+bool AppsNavigationThrottle::CaptureExperimentalTabStripWebAppScopeNavigations(
+    content::WebContents* web_contents,
+    content::NavigationHandle* handle) const {
+  if (!navigate_from_link())
+    return false;
+
+  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) ||
+      !base::FeatureList::IsEnabled(
+          features::kDesktopPWAsTabStripLinkCapturing)) {
+    return false;
+  }
+
+  Profile* const profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  web_app::WebAppProviderBase* provider =
+      web_app::WebAppProviderBase::GetProviderBase(profile);
+  if (!provider)
+    return false;
+
+  base::Optional<web_app::AppId> app_id =
+      provider->registrar().FindInstalledAppWithUrlInScope(
+          handle->GetURL(), /*window_only=*/true);
+  if (!app_id)
+    return false;
+
+  if (!provider->registrar().IsInExperimentalTabbedWindowMode(*app_id))
+    return false;
+
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (web_app::AppBrowserController::IsForWebAppBrowser(browser, *app_id)) {
+    // Already in the app window; navigation already captured.
+    return false;
+  }
+
+  apps::AppLaunchParams launch_params(
+      *app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::CURRENT_TAB,
+      apps::mojom::AppLaunchSource::kSourceUrlHandler);
+  launch_params.override_url = handle->GetURL();
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(launch_params);
+  return true;
 }
 
 }  // namespace apps

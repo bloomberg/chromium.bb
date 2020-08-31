@@ -9,10 +9,12 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -84,11 +86,10 @@ OnDeviceHeadProvider::OnDeviceHeadProvider(
     : AutocompleteProvider(AutocompleteProvider::TYPE_ON_DEVICE_HEAD),
       client_(client),
       listener_(listener),
-      worker_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+      worker_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock()})),
-      on_device_search_request_id_(0) {
-}
+      on_device_search_request_id_(0) {}
 
 OnDeviceHeadProvider::~OnDeviceHeadProvider() {}
 
@@ -107,9 +108,13 @@ void OnDeviceHeadProvider::AddModelUpdateCallback() {
 }
 
 bool OnDeviceHeadProvider::IsOnDeviceHeadProviderAllowed(
-    const AutocompleteInput& input,
-    const std::string& incognito_serve_mode) {
+    const AutocompleteInput& input) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
+
+  // Check whether "new" features are enabled.
+  if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
+    return false;
+
   // Only accept asynchronous request.
   if (!input.want_asynchronous_matches() ||
       input.type() == metrics::OmniboxInputType::EMPTY)
@@ -119,18 +124,13 @@ bool OnDeviceHeadProvider::IsOnDeviceHeadProviderAllowed(
   if (!client()->SearchSuggestEnabled())
     return false;
 
-  // This flag specifies whether we should serve incognito or non incognito
-  // request, value can be:
-  // 1. incognito-not-allowed (or empty string): only serve non incognito
-  //    request; this is the default behavior;
-  // 2. incognito-only: only serve incognito request;
-  // 3. always-serve: always serve regardless of incognito.
-  if (incognito_serve_mode != "always-serve") {
-    if (client()->IsOffTheRecord() && incognito_serve_mode != "incognito-only")
-      return false;
-    if (!client()->IsOffTheRecord() && incognito_serve_mode == "incognito-only")
-      return false;
-  }
+  // Check if provider is allowed in incognito / non-incognito.
+  if (client()->IsOffTheRecord() &&
+      !OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForIncognito())
+    return false;
+  if (!client()->IsOffTheRecord() &&
+      !OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForNonIncognito())
+    return false;
 
   // Reject on focus request.
   if (input.from_omnibox_focus())
@@ -147,9 +147,7 @@ void OnDeviceHeadProvider::Start(const AutocompleteInput& input,
   // Cancel any in-progress request.
   Stop(!minimal_changes, false);
 
-  const std::string mode = base::GetFieldTrialParamValueByFeature(
-      omnibox::kOnDeviceHeadProvider, "IncognitoServeMode");
-  if (!IsOnDeviceHeadProviderAllowed(input, mode)) {
+  if (!IsOnDeviceHeadProviderAllowed(input)) {
     matches_.clear();
     return;
   }
@@ -175,12 +173,8 @@ void OnDeviceHeadProvider::Start(const AutocompleteInput& input,
   // Therefore, we might want to delay the On Device suggest requests (and also
   // apply a timeout to search default loader) to mitigate this issue. Note this
   // delay is not needed for incognito where server suggestion is not served.
-  int delay = 0;
-  if (!client()->IsOffTheRecord()) {
-    delay = base::GetFieldTrialParamByFeatureAsInt(
-        omnibox::kOnDeviceHeadProvider, "DelayOnDeviceHeadSuggestRequestMs",
-        0);
-  }
+  int delay = OmniboxFieldTrial::OnDeviceHeadSuggestDelaySuggestRequestMs(
+      client()->IsOffTheRecord());
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&OnDeviceHeadProvider::DoSearch,
@@ -283,12 +277,13 @@ void OnDeviceHeadProvider::SearchDone(
     UMA_HISTOGRAM_CUSTOM_COUNTS("Omnibox.OnDeviceHeadSuggest.ResultCount",
                                 params->suggestions.size(), 1, 5, 6);
     matches_.clear();
+
     int relevance =
-        (params->input.type() != metrics::OmniboxInputType::URL)
-            ? base::GetFieldTrialParamByFeatureAsInt(
-                  omnibox::kOnDeviceHeadProvider,
-                  "OnDeviceSuggestMaxScoreForNonUrlInput", kBaseRelevance)
-            : kBaseRelevance;
+        params->input.type() == metrics::OmniboxInputType::URL
+            ? kBaseRelevance
+            : OmniboxFieldTrial::OnDeviceHeadSuggestMaxScoreForNonUrlInput(
+                  client()->IsOffTheRecord(), kBaseRelevance);
+
     for (const auto& item : params->suggestions) {
       matches_.push_back(BaseSearchProvider::CreateOnDeviceSearchSuggestion(
           /*autocomplete_provider=*/this, /*input=*/params->input,

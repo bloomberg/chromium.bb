@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/explore_sites_service_factory.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals.mojom.h"
 #include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals_page_handler.h"
@@ -35,17 +35,13 @@ ExploreSitesInternalsUI::ExploreSitesInternalsUI(content::WebUI* web_ui)
   explore_sites_service_ =
       ExploreSitesServiceFactory::GetForBrowserContext(profile);
   content::WebUIDataSource::Add(profile, source);
-  // "BindExploreSitesInternalsPageHandler" will be invoked by
-  // explore_sites_internals.js, which is only possible while this object is
-  // alive, so this base::Unretained is safe.
-  AddHandlerToRegistry(base::BindRepeating(
-      &ExploreSitesInternalsUI::BindExploreSitesInternalsPageHandler,
-      base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(ExploreSitesInternalsUI)
 
 ExploreSitesInternalsUI::~ExploreSitesInternalsUI() {}
 
-void ExploreSitesInternalsUI::BindExploreSitesInternalsPageHandler(
+void ExploreSitesInternalsUI::BindInterface(
     mojo::PendingReceiver<explore_sites_internals::mojom::PageHandler>
         receiver) {
   page_handler_ = std::make_unique<ExploreSitesInternalsPageHandler>(

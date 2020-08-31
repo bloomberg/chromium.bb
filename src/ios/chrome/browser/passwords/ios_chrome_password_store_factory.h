@@ -10,23 +10,20 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/refcounted_browser_state_keyed_service_factory.h"
 
-enum class ServiceAccessType;
-
-namespace ios {
 class ChromeBrowserState;
-}
+enum class ServiceAccessType;
 
 namespace password_manager {
 class PasswordStore;
 }
 
 // Singleton that owns all PasswordStores and associates them with
-// ios::ChromeBrowserState.
+// ChromeBrowserState.
 class IOSChromePasswordStoreFactory
     : public RefcountedBrowserStateKeyedServiceFactory {
  public:
   static scoped_refptr<password_manager::PasswordStore> GetForBrowserState(
-      ios::ChromeBrowserState* browser_state,
+      ChromeBrowserState* browser_state,
       ServiceAccessType access_type);
 
   static IOSChromePasswordStoreFactory* GetInstance();
@@ -34,7 +31,7 @@ class IOSChromePasswordStoreFactory
   // Called by the PasswordDataTypeController whenever there is a possibility
   // that syncing passwords has just started or ended for |browser_state|.
   static void OnPasswordsSyncedStatePotentiallyChanged(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
  private:
   friend class base::NoDestructor<IOSChromePasswordStoreFactory>;

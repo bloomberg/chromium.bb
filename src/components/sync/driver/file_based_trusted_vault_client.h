@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_FILE_BASED_TRUSTED_VAULT_CLIENT_H_
 #define COMPONENTS_SYNC_DRIVER_FILE_BASED_TRUSTED_VAULT_CLIENT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -28,11 +29,18 @@ class FileBasedTrustedVaultClient : public TrustedVaultClient {
   ~FileBasedTrustedVaultClient() override;
 
   // TrustedVaultClient implementation.
+  std::unique_ptr<Subscription> AddKeysChangedObserver(
+      const base::RepeatingClosure& cb) override;
   void FetchKeys(
-      const std::string& gaia_id,
-      base::OnceCallback<void(const std::vector<std::string>&)> cb) override;
+      const CoreAccountInfo& account_info,
+      base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb)
+      override;
   void StoreKeys(const std::string& gaia_id,
-                 const std::vector<std::string>& keys) override;
+                 const std::vector<std::vector<uint8_t>>& keys,
+                 int last_key_version) override;
+  void RemoveAllStoredKeys() override;
+  void MarkKeysAsStale(const CoreAccountInfo& account_info,
+                       base::OnceCallback<void(bool)> cb) override;
 
   // Runs |cb| when all requests have completed.
   void WaitForFlushForTesting(base::OnceClosure cb) const;
@@ -43,6 +51,8 @@ class FileBasedTrustedVaultClient : public TrustedVaultClient {
 
   const base::FilePath file_path_;
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
+
+  CallbackList observer_list_;
 
   // Backend constructed lazily in the UI thread, used in |backend_task_runner_|
   // and destroyed (refcounted) on any thread.

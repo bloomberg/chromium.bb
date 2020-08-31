@@ -118,9 +118,7 @@ class RTC_EXPORT RTCCodecStats final : public RTCStats {
   RTCStatsMember<uint32_t> payload_type;
   RTCStatsMember<std::string> mime_type;
   RTCStatsMember<uint32_t> clock_rate;
-  // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7061
   RTCStatsMember<uint32_t> channels;
-  // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7061
   RTCStatsMember<std::string> sdp_fmtp_line;
 };
 
@@ -294,9 +292,6 @@ class RTC_EXPORT RTCMediaStreamTrackStats final : public RTCStats {
   RTCStatsMember<bool> detached;
   // See |RTCMediaStreamTrackKind| for valid values.
   RTCStatsMember<std::string> kind;
-  // TODO(gustaf): Implement jitter_buffer_delay for video (currently
-  // implemented for audio only).
-  // https://crbug.com/webrtc/8318
   RTCStatsMember<double> jitter_buffer_delay;
   RTCStatsMember<uint64_t> jitter_buffer_emitted_count;
   // Video-only members
@@ -332,6 +327,14 @@ class RTC_EXPORT RTCMediaStreamTrackStats final : public RTCStats {
   RTCNonStandardStatsMember<uint64_t> jitter_buffer_flushes;
   RTCNonStandardStatsMember<uint64_t> delayed_packet_outage_samples;
   RTCNonStandardStatsMember<double> relative_packet_arrival_delay;
+  // Non-standard metric showing target delay of jitter buffer.
+  // This value is increased by the target jitter buffer delay every time a
+  // sample is emitted by the jitter buffer. The added target is the target
+  // delay, in seconds, at the time that the sample was emitted from the jitter
+  // buffer. (https://github.com/w3c/webrtc-provisional-stats/pull/20)
+  // Currently it is implemented only for audio.
+  // TODO(titovartem) implement for video streams when will be requested.
+  RTCNonStandardStatsMember<double> jitter_buffer_target_delay;
   // TODO(henrik.lundin): Add description of the interruption metrics at
   // https://github.com/henbos/webrtc-provisional-stats/issues/17
   RTCNonStandardStatsMember<uint32_t> interruption_count;
@@ -370,9 +373,6 @@ class RTC_EXPORT RTCRTPStreamStats : public RTCStats {
   ~RTCRTPStreamStats() override;
 
   RTCStatsMember<uint32_t> ssrc;
-  // TODO(hbos): When the remote case is supported |RTCStatsCollector| needs to
-  // set this. crbug.com/657855, 657856
-  RTCStatsMember<std::string> associate_stats_id;
   // TODO(hbos): Remote case not supported by |RTCStatsCollector|.
   // crbug.com/657855, 657856
   RTCStatsMember<bool> is_remote;          // = false
@@ -468,6 +468,8 @@ class RTC_EXPORT RTCOutboundRTPStreamStats final : public RTCRTPStreamStats {
   ~RTCOutboundRTPStreamStats() override;
 
   RTCStatsMember<std::string> media_source_id;
+  RTCStatsMember<std::string> remote_id;
+  RTCStatsMember<std::string> rid;
   RTCStatsMember<uint32_t> packets_sent;
   RTCStatsMember<uint64_t> retransmitted_packets_sent;
   RTCStatsMember<uint64_t> bytes_sent;
@@ -479,6 +481,11 @@ class RTC_EXPORT RTCOutboundRTPStreamStats final : public RTCRTPStreamStats {
   RTCStatsMember<uint32_t> key_frames_encoded;
   RTCStatsMember<double> total_encode_time;
   RTCStatsMember<uint64_t> total_encoded_bytes_target;
+  RTCStatsMember<uint32_t> frame_width;
+  RTCStatsMember<uint32_t> frame_height;
+  RTCStatsMember<double> frames_per_second;
+  RTCStatsMember<uint32_t> frames_sent;
+  RTCStatsMember<uint32_t> huge_frames_sent;
   // TODO(https://crbug.com/webrtc/10635): This is only implemented for video;
   // implement it for audio as well.
   RTCStatsMember<double> total_packet_send_delay;

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
+#include "ash/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
 
 #include <set>
 #include <string>
 #include <tuple>
 #include <vector>
 
-#include "ash/components/shortcut_viewer/keyboard_shortcut_item.h"
-#include "ash/components/strings/grit/ash_components_strings.h"
 #include "ash/public/cpp/accelerators.h"
+#include "ash/shortcut_viewer/keyboard_shortcut_item.h"
+#include "ash/shortcut_viewer/strings/grit/ash_components_strings.h"
 #include "base/hash/md5.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -23,20 +23,20 @@
 namespace {
 
 // The total number of Ash accelerators.
-constexpr int kAshAcceleratorsTotalNum = 110;
+constexpr int kAshAcceleratorsTotalNum = 117;
 // The hash of Ash accelerators.
-constexpr char kAshAcceleratorsHash[] = "1287cacd678f63ab151fbf25383ac19c";
+constexpr char kAshAcceleratorsHash[] = "d373edc491b25723d45223b590b288bd";
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Internal builds add an extra accelerator for the Feedback app.
 // The total number of Chrome accelerators (available on Chrome OS).
-constexpr int kChromeAcceleratorsTotalNum = 93;
+constexpr int kChromeAcceleratorsTotalNum = 95;
 // The hash of Chrome accelerators (available on Chrome OS).
-constexpr char kChromeAcceleratorsHash[] = "73c842a72d77e7b9e69e92a6ee7900d3";
+constexpr char kChromeAcceleratorsHash[] = "ef0b7eb1a1dabd26e964c6593e4698a4";
 #else
 // The total number of Chrome accelerators (available on Chrome OS).
-constexpr int kChromeAcceleratorsTotalNum = 92;
+constexpr int kChromeAcceleratorsTotalNum = 94;
 // The hash of Chrome accelerators (available on Chrome OS).
-constexpr char kChromeAcceleratorsHash[] = "7c45362e298cf77aae142dec7154adcf";
+constexpr char kChromeAcceleratorsHash[] = "f22167989af00d94f8de75cbc89b977e";
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 const char* BooleanToString(bool value) {

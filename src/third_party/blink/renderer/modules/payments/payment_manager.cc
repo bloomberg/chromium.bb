@@ -10,19 +10,17 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/payments/payment_instruments.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
-PaymentManager* PaymentManager::Create(
-    ServiceWorkerRegistration* registration) {
-  return MakeGarbageCollected<PaymentManager>(registration);
-}
-
 PaymentInstruments* PaymentManager::instruments() {
-  if (!instruments_)
-    instruments_ = MakeGarbageCollected<PaymentInstruments>(manager_);
+  if (!instruments_) {
+    instruments_ = MakeGarbageCollected<PaymentInstruments>(
+        manager_, registration_->GetExecutionContext());
+  }
   return instruments_;
 }
 
@@ -37,20 +35,20 @@ void PaymentManager::setUserHint(const String& user_hint) {
 
 ScriptPromise PaymentManager::enableDelegations(
     ScriptState* script_state,
-    const Vector<String>& stringified_delegations) {
+    const Vector<String>& stringified_delegations,
+    ExceptionState& exception_state) {
   if (!script_state->ContextIsValid()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Cannot enable payment delegations"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Cannot enable payment delegations");
+    return ScriptPromise();
   }
 
   if (enable_delegations_resolver_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Cannot call enableDelegations() again until "
-                          "the previous enableDelegations() is finished"));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot call enableDelegations() again until the previous "
+        "enableDelegations() is finished");
+    return ScriptPromise();
   }
 
   Vector<payments::mojom::blink::PaymentDelegation> delegations;
@@ -80,15 +78,18 @@ ScriptPromise PaymentManager::enableDelegations(
   return enable_delegations_resolver_->Promise();
 }
 
-void PaymentManager::Trace(blink::Visitor* visitor) {
+void PaymentManager::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
+  visitor->Trace(manager_);
   visitor->Trace(instruments_);
   visitor->Trace(enable_delegations_resolver_);
   ScriptWrappable::Trace(visitor);
 }
 
 PaymentManager::PaymentManager(ServiceWorkerRegistration* registration)
-    : registration_(registration), instruments_(nullptr) {
+    : registration_(registration),
+      manager_(registration->GetExecutionContext()),
+      instruments_(nullptr) {
   DCHECK(registration);
 
   if (ExecutionContext* context = registration->GetExecutionContext()) {

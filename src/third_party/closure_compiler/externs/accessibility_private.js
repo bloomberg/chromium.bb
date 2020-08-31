@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,6 +73,44 @@ chrome.accessibilityPrivate.SwitchAccessCommand = {
 /**
  * @enum {string}
  */
+chrome.accessibilityPrivate.SwitchAccessBubble = {
+  BACK_BUTTON: 'backButton',
+  MENU: 'menu',
+};
+
+/**
+ * @enum {string}
+ */
+chrome.accessibilityPrivate.SwitchAccessMenuAction = {
+  COPY: 'copy',
+  CUT: 'cut',
+  DECREMENT: 'decrement',
+  DICTATION: 'dictation',
+  END_TEXT_SELECTION: 'endTextSelection',
+  INCREMENT: 'increment',
+  JUMP_TO_BEGINNING_OF_TEXT: 'jumpToBeginningOfText',
+  JUMP_TO_END_OF_TEXT: 'jumpToEndOfText',
+  KEYBOARD: 'keyboard',
+  MOVE_BACKWARD_ONE_CHAR_OF_TEXT: 'moveBackwardOneCharOfText',
+  MOVE_BACKWARD_ONE_WORD_OF_TEXT: 'moveBackwardOneWordOfText',
+  MOVE_CURSOR: 'moveCursor',
+  MOVE_DOWN_ONE_LINE_OF_TEXT: 'moveDownOneLineOfText',
+  MOVE_FORWARD_ONE_CHAR_OF_TEXT: 'moveForwardOneCharOfText',
+  MOVE_FORWARD_ONE_WORD_OF_TEXT: 'moveForwardOneWordOfText',
+  MOVE_UP_ONE_LINE_OF_TEXT: 'moveUpOneLineOfText',
+  PASTE: 'paste',
+  SCROLL_DOWN: 'scrollDown',
+  SCROLL_LEFT: 'scrollLeft',
+  SCROLL_RIGHT: 'scrollRight',
+  SCROLL_UP: 'scrollUp',
+  SELECT: 'select',
+  SETTINGS: 'settings',
+  START_TEXT_SELECTION: 'startTextSelection',
+};
+
+/**
+ * @enum {string}
+ */
 chrome.accessibilityPrivate.SyntheticKeyboardEventType = {
   KEYUP: 'keyup',
   KEYDOWN: 'keydown',
@@ -142,19 +180,20 @@ chrome.accessibilityPrivate.FocusType = {
  *   type: !chrome.accessibilityPrivate.FocusType,
  *   color: string,
  *   secondaryColor: (string|undefined),
+ *   backgroundColor: (string|undefined),
  *   id: (string|undefined)
  * }}
  */
 chrome.accessibilityPrivate.FocusRingInfo;
 
 /**
- * Called to translate languageCodeToTranslate into human-readable string in the
- * language specified by targetLanguageCode
- * @param {string} languageCodeToTranslate
- * @param {string} targetLanguageCode
- * @return {string} The human-readable language string in the provided language.
+ * Called to translate localeCodeToTranslate into human-readable string in the
+ * locale specified by displayLocaleCode
+ * @param {string} localeCodeToTranslate
+ * @param {string} displayLocaleCode
+ * @return {string} The human-readable locale string in the provided locale.
  */
-chrome.accessibilityPrivate.getDisplayLanguage = function(languageCodeToTranslate, targetLanguageCode) {};
+chrome.accessibilityPrivate.getDisplayNameForLocale = function(localeCodeToTranslate, displayLocaleCode) {};
 
 /**
  * Called to request battery status from Chrome OS system.
@@ -209,6 +248,8 @@ chrome.accessibilityPrivate.darkenScreen = function(enabled) {};
 /**
  * Shows or hides the Switch Access menu. If shown, it is at the indicated
  * location.
+TODO(anastasi): Remove this function once the menu refactor is
+ * complete.
  * @param {boolean} show If true, show the menu. If false, hide the menu.
  * @param {!chrome.accessibilityPrivate.ScreenRect} element_bounds Position of
  *     an element, in global screen coordinates, to place the menu next to.
@@ -222,6 +263,19 @@ chrome.accessibilityPrivate.setSwitchAccessMenuState = function(show, element_bo
  * @param {boolean} shouldForward
  */
 chrome.accessibilityPrivate.forwardKeyEventsToSwitchAccess = function(shouldForward) {};
+
+/**
+ * Shows the Switch Access menu next to the specified rectangle and with the
+ * given actions
+ * @param {!chrome.accessibilityPrivate.SwitchAccessBubble} bubble Which bubble
+ *     to show/hide
+ * @param {boolean} show True if the bubble should be shown, false otherwise
+ * @param {!chrome.accessibilityPrivate.ScreenRect=} anchor A rectangle
+ *     indicating the bounds of the object the menu should be displayed next to.
+ * @param {!Array<!chrome.accessibilityPrivate.SwitchAccessMenuAction>=} actions
+ *     The actions to be shown in the menu.
+ */
+chrome.accessibilityPrivate.updateSwitchAccessBubble = function(bubble, show, anchor, actions) {};
 
 /**
  * Sets current ARC app to use native ARC support.
@@ -312,21 +366,21 @@ chrome.accessibilityPrivate.onTwoFingerTouchStart;
 chrome.accessibilityPrivate.onTwoFingerTouchStop;
 
 /**
- * Called when Chrome OS wants to change the Select-to-Speak state, between
+ * Fired when Chrome OS wants to change the Select-to-Speak state, between
  * selecting with the mouse, speaking, and inactive.
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.onSelectToSpeakStateChangeRequested;
 
 /**
- * Called when Chrome OS has received a key event corresponding to a Switch
+ * Fired when Chrome OS has received a key event corresponding to a Switch
  * Access command.
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.onSwitchAccessCommand;
 
 /**
- * Called when an internal component within accessibility wants to force speech
+ * Fired when an internal component within accessibility wants to force speech
  * output for an accessibility extension. Do not use without approval from
  * accessibility owners.
  * @type {!ChromeEvent}
@@ -334,9 +388,16 @@ chrome.accessibilityPrivate.onSwitchAccessCommand;
 chrome.accessibilityPrivate.onAnnounceForAccessibility;
 
 /**
- * Called when an internal component within accessibility wants to find the
+ * Fired when an internal component within accessibility wants to find the
  * nearest scrolling container at a given screen coordinate. Used in Automatic
  * Clicks.
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.findScrollableBoundsForPoint;
+
+/**
+ * Fired when a custom spoken feedback on the active window gets enabled or
+ * disabled. Called from ARC++ accessibility.
+ * @type {!ChromeEvent}
+ */
+chrome.accessibilityPrivate.onCustomSpokenFeedbackToggled;

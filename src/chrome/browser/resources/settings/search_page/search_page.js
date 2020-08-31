@@ -6,10 +6,29 @@
  * @fileoverview
  * 'settings-search-page' is the settings page containing search settings.
  */
+import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '../controls/extension_controlled_indicator.m.js';
+import '../i18n_setup.js';
+import '../settings_page/settings_animated_pages.m.js';
+import '../settings_page/settings_subpage.m.js';
+import '../settings_shared_css.m.js';
+import '../settings_vars_css.m.js';
+
+import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {routes} from '../route.js';
+import {Router} from '../router.m.js';
+import {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl} from '../search_engines_page/search_engines_browser_proxy.m.js';
+
 Polymer({
   is: 'settings-search-page',
 
-  behaviors: [I18nBehavior],
+  _template: html`{__html_template__}`,
 
   properties: {
     prefs: Object,
@@ -20,7 +39,7 @@ Polymer({
      */
     searchEngines_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       }
     },
@@ -30,93 +49,47 @@ Polymer({
 
     /** @type {?Map<string, string>} */
     focusConfig_: Object,
-
-    // <if expr="chromeos">
-    /** @private Can be disallowed due to flag, policy, locale, etc. */
-    isAssistantAllowed_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('isAssistantAllowed') &&
-            loadTimeData.getBoolean('showOSSettings');
-      },
-    },
-    // </if>
   },
 
-  /** @private {?settings.SearchEnginesBrowserProxy} */
+  /** @private {?SearchEnginesBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
-  created: function() {
-    this.browserProxy_ = settings.SearchEnginesBrowserProxyImpl.getInstance();
+  created() {
+    this.browserProxy_ = SearchEnginesBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     // Omnibox search engine
     const updateSearchEngines = searchEngines => {
       this.set('searchEngines_', searchEngines.defaults);
     };
     this.browserProxy_.getSearchEnginesList().then(updateSearchEngines);
-    cr.addWebUIListener('search-engines-changed', updateSearchEngines);
+    addWebUIListener('search-engines-changed', updateSearchEngines);
 
     this.focusConfig_ = new Map();
-    if (settings.routes.SEARCH_ENGINES) {
+    if (routes.SEARCH_ENGINES) {
       this.focusConfig_.set(
-          settings.routes.SEARCH_ENGINES.path, '#enginesSubpageTrigger');
+          routes.SEARCH_ENGINES.path, '#enginesSubpageTrigger');
     }
-    // <if expr="chromeos">
-    if (settings.routes.GOOGLE_ASSISTANT) {
-      this.focusConfig_.set(
-          settings.routes.GOOGLE_ASSISTANT.path, '#assistantSubpageTrigger');
-    }
-    // </if>
   },
 
   /** @private */
-  onChange_: function() {
+  onChange_() {
     const select = /** @type {!HTMLSelectElement} */ (this.$$('select'));
     const searchEngine = this.searchEngines_[select.selectedIndex];
     this.browserProxy_.setDefaultSearchEngine(searchEngine.modelIndex);
   },
 
   /** @private */
-  onDisableExtension_: function() {
+  onDisableExtension_() {
     this.fire('refresh-pref', 'default_search_provider.enabled');
   },
 
   /** @private */
-  onManageSearchEnginesTap_: function() {
-    settings.navigateTo(settings.routes.SEARCH_ENGINES);
-  },
-
-  // <if expr="chromeos">
-  /** @private */
-  onGoogleAssistantTap_: function() {
-    assert(this.isAssistantAllowed_);
-    settings.navigateTo(settings.routes.GOOGLE_ASSISTANT);
-  },
-  // </if>
-
-  // <if expr="chromeos">
-  /**
-   * @param {boolean} toggleValue
-   * @return {string}
-   * @private
-   */
-  getAssistantEnabledDisabledLabel_: function(toggleValue) {
-    return this.i18n(
-        toggleValue ? 'searchGoogleAssistantEnabled' :
-                      'searchGoogleAssistantDisabled');
-  },
-  // </if>
-
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  doNothing_: function(event) {
-    event.stopPropagation();
+  onManageSearchEnginesTap_() {
+    Router.getInstance().navigateTo(routes.SEARCH_ENGINES);
   },
 
   /**
@@ -124,7 +97,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isDefaultSearchControlledByPolicy_: function(pref) {
+  isDefaultSearchControlledByPolicy_(pref) {
     return pref.controlledBy == chrome.settingsPrivate.ControlledBy.USER_POLICY;
   },
 
@@ -133,7 +106,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isDefaultSearchEngineEnforced_: function(pref) {
+  isDefaultSearchEngineEnforced_(pref) {
     return pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 });

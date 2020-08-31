@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace blink {
 
@@ -89,7 +90,7 @@ class HTTPHeaderNameListParser {
   // in |output| when successful. Otherwise, returns with |output| kept empty.
   //
   // |output| must be empty.
-  void Parse(WebHTTPHeaderSet& output) {
+  void Parse(HTTPHeaderSet& output) {
     DCHECK(output.empty());
 
     while (true) {
@@ -160,12 +161,11 @@ namespace cors {
 
 base::Optional<network::CorsErrorStatus> CheckAccess(
     const KURL& response_url,
-    const int response_status_code,
     const HTTPHeaderMap& response_header,
     network::mojom::CredentialsMode credentials_mode,
     const SecurityOrigin& origin) {
   return network::cors::CheckAccess(
-      response_url, response_status_code,
+      response_url,
       GetHeaderValue(response_header, http_names::kAccessControlAllowOrigin),
       GetHeaderValue(response_header,
                      http_names::kAccessControlAllowCredentials),
@@ -199,11 +199,6 @@ base::Optional<network::CorsErrorStatus> CheckRedirectLocation(
   // tainted flag.
   return network::cors::CheckRedirectLocation(
       url, request_mode, origin_to_pass, cors_flag == CorsFlag::Set, false);
-}
-
-base::Optional<network::mojom::CorsError> CheckPreflight(
-    const int preflight_response_status_code) {
-  return network::cors::CheckPreflight(preflight_response_status_code);
 }
 
 base::Optional<network::CorsErrorStatus> CheckExternalPreflight(
@@ -253,8 +248,9 @@ base::Optional<network::CorsErrorStatus> EnsurePreflightResultAndCacheOnSuccess(
   if (status)
     return status;
 
-  GetPerThreadPreflightCache().AppendEntry(origin.Ascii(), request_url,
-                                           std::move(result));
+  GetPerThreadPreflightCache().AppendEntry(
+      url::Origin::Create(GURL(origin.Ascii())), request_url,
+      net::NetworkIsolationKey(), std::move(result));
   return base::nullopt;
 }
 
@@ -270,7 +266,8 @@ bool CheckIfRequestCanSkipPreflight(
   // |is_revalidating| is not needed for blink-side CORS.
   constexpr bool is_revalidating = false;
   return GetPerThreadPreflightCache().CheckIfRequestCanSkipPreflight(
-      origin.Ascii(), url, credentials_mode, method.Ascii(),
+      url::Origin::Create(GURL(origin.Ascii())), url,
+      net::NetworkIsolationKey(), credentials_mode, method.Ascii(),
       *CreateNetHttpRequestHeaders(request_header_map), is_revalidating);
 }
 
@@ -392,7 +389,7 @@ bool CalculateCorsFlag(const KURL& url,
                        const SecurityOrigin* initiator_origin,
                        const SecurityOrigin* isolated_world_origin,
                        network::mojom::RequestMode request_mode) {
-  if (network::IsNavigationRequestMode(request_mode) ||
+  if (request_mode == network::mojom::RequestMode::kNavigate ||
       request_mode == network::mojom::RequestMode::kNoCors) {
     return false;
   }
@@ -410,7 +407,7 @@ bool CalculateCorsFlag(const KURL& url,
   return true;
 }
 
-WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
+HTTPHeaderSet ExtractCorsExposedHeaderNamesList(
     network::mojom::CredentialsMode credentials_mode,
     const ResourceResponse& response) {
   // If a response was fetched via a service worker, it will always have
@@ -418,13 +415,13 @@ WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
   // For requests that didn't come from a service worker, just parse the CORS
   // header.
   if (response.WasFetchedViaServiceWorker()) {
-    WebHTTPHeaderSet header_set;
+    HTTPHeaderSet header_set;
     for (const auto& header : response.CorsExposedHeaderNames())
       header_set.insert(header.Ascii());
     return header_set;
   }
 
-  WebHTTPHeaderSet header_set;
+  HTTPHeaderSet header_set;
   HTTPHeaderNameListParser parser(
       response.HttpHeaderField(http_names::kAccessControlExposeHeaders));
   parser.Parse(header_set);
@@ -441,7 +438,7 @@ WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
 bool IsCorsSafelistedResponseHeader(const String& name) {
   // https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name
   // TODO(dcheng): Consider using a flat_set here with a transparent comparator.
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(WebHTTPHeaderSet,
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(HTTPHeaderSet,
                                   allowed_cross_origin_response_headers,
                                   ({
                                       "cache-control",

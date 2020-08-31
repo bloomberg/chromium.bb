@@ -4,32 +4,41 @@
 
 #include "third_party/blink/renderer/core/css/parser/media_query_parser.h"
 
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
 
 namespace blink {
 
 scoped_refptr<MediaQuerySet> MediaQueryParser::ParseMediaQuerySet(
-    const String& query_string) {
+    const String& query_string,
+    const ExecutionContext* execution_context) {
   return ParseMediaQuerySet(
-      CSSParserTokenRange(CSSTokenizer(query_string).TokenizeToEOF()));
+      CSSParserTokenRange(CSSTokenizer(query_string).TokenizeToEOF()),
+      execution_context);
 }
 
 scoped_refptr<MediaQuerySet> MediaQueryParser::ParseMediaQuerySet(
-    CSSParserTokenRange range) {
-  return MediaQueryParser(kMediaQuerySetParser, kHTMLStandardMode)
+    CSSParserTokenRange range,
+    const ExecutionContext* execution_context) {
+  return MediaQueryParser(kMediaQuerySetParser, kHTMLStandardMode,
+                          execution_context)
       .ParseImpl(range);
 }
 
 scoped_refptr<MediaQuerySet> MediaQueryParser::ParseMediaQuerySetInMode(
     CSSParserTokenRange range,
-    CSSParserMode mode) {
-  return MediaQueryParser(kMediaQuerySetParser, mode).ParseImpl(range);
+    CSSParserMode mode,
+    const ExecutionContext* execution_context) {
+  return MediaQueryParser(kMediaQuerySetParser, mode, execution_context)
+      .ParseImpl(range);
 }
 
 scoped_refptr<MediaQuerySet> MediaQueryParser::ParseMediaCondition(
-    CSSParserTokenRange range) {
-  return MediaQueryParser(kMediaConditionParser, kHTMLStandardMode)
+    CSSParserTokenRange range,
+    const ExecutionContext* execution_context) {
+  return MediaQueryParser(kMediaConditionParser, kHTMLStandardMode,
+                          execution_context)
       .ParseImpl(range);
 }
 
@@ -57,10 +66,13 @@ const MediaQueryParser::State MediaQueryParser::kSkipUntilBlockEnd =
     &MediaQueryParser::SkipUntilBlockEnd;
 const MediaQueryParser::State MediaQueryParser::kDone = &MediaQueryParser::Done;
 
-MediaQueryParser::MediaQueryParser(ParserType parser_type, CSSParserMode mode)
+MediaQueryParser::MediaQueryParser(ParserType parser_type,
+                                   CSSParserMode mode,
+                                   const ExecutionContext* execution_context)
     : parser_type_(parser_type),
       query_set_(MediaQuerySet::Create()),
-      mode_(mode) {
+      mode_(mode),
+      execution_context_(execution_context) {
   if (parser_type == kMediaQuerySetParser)
     state_ = &MediaQueryParser::ReadRestrictor;
   else  // MediaConditionParser
@@ -183,7 +195,7 @@ void MediaQueryParser::ReadFeatureColon(CSSParserTokenType type,
     else
       state_ = kReadFeatureValue;
   } else if (type == kRightParenthesisToken || type == kEOFToken) {
-    media_query_data_.AddExpression(range);
+    media_query_data_.AddExpression(range, execution_context_);
     ReadFeatureEnd(type, token, range);
   } else {
     state_ = kSkipUntilBlockEnd;
@@ -198,7 +210,7 @@ void MediaQueryParser::ReadFeatureValue(CSSParserTokenType type,
     range.Consume();
     state_ = kSkipUntilComma;
   } else {
-    media_query_data_.AddExpression(range);
+    media_query_data_.AddExpression(range, execution_context_);
     state_ = kReadFeatureEnd;
   }
 }
@@ -289,7 +301,10 @@ bool MediaQueryParser::IsMediaFeatureAllowedInMode(
 MediaQueryData::MediaQueryData()
     : restrictor_(MediaQuery::kNone),
       media_type_(media_type_names::kAll),
-      media_type_set_(false) {}
+      media_type_set_(false),
+      fake_context_(*MakeGarbageCollected<CSSParserContext>(
+          kHTMLStandardMode,
+          SecureContextMode::kInsecureContext)) {}
 
 void MediaQueryData::Clear() {
   restrictor_ = MediaQuery::kNone;
@@ -306,8 +321,10 @@ std::unique_ptr<MediaQuery> MediaQueryData::TakeMediaQuery() {
   return media_query;
 }
 
-void MediaQueryData::AddExpression(CSSParserTokenRange& range) {
-  expressions_.push_back(MediaQueryExp::Create(media_feature_, range));
+void MediaQueryData::AddExpression(CSSParserTokenRange& range,
+                                   const ExecutionContext* execution_context) {
+  expressions_.push_back(MediaQueryExp::Create(
+      media_feature_, range, fake_context_, execution_context));
 }
 
 bool MediaQueryData::LastExpressionValid() {

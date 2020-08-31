@@ -23,6 +23,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -56,7 +57,7 @@ const UkmMetricMap kBasicMetricValues({
 
 // These parameters don't affect logging.
 const bool kCheckNavigationSuccess = true;
-const int64_t kIdShift = 1 << 13;
+const int64_t kIdShift = 1 << 16;
 
 }  // namespace
 
@@ -442,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherTestWithBackgroundLogEnabled,
       browser()->tab_strip_model()->GetWebContentsAt(0);
   resource_coordinator::GetTabLifecycleUnitSource()
       ->GetTabLifecycleUnitExternal(first_contents)
-      ->DiscardTab();
+      ->DiscardTab(LifecycleUnitDiscardReason::URGENT);
 
   // Logs tab@0.
   LogTabFeaturesAt(0);
@@ -493,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherTestWithBackgroundLogEnabled,
       browser()->tab_strip_model()->GetWebContentsAt(1);
   resource_coordinator::GetTabLifecycleUnitSource()
       ->GetTabLifecycleUnitExternal(second_content)
-      ->DiscardTab();
+      ->DiscardTab(LifecycleUnitDiscardReason::URGENT);
 
   CloseBrowserSynchronously(browser());
   {
@@ -666,7 +667,7 @@ IN_PROC_BROWSER_TEST_F(
       browser()->tab_strip_model()->GetWebContentsAt(0);
   resource_coordinator::GetTabLifecycleUnitSource()
       ->GetTabLifecycleUnitExternal(first_contents)
-      ->DiscardTab();
+      ->DiscardTab(LifecycleUnitDiscardReason::URGENT);
 
   // Switching to first tab logs a forgrounded event for test_urls_[0].
   browser()->tab_strip_model()->ActivateTabAt(
@@ -700,7 +701,7 @@ IN_PROC_BROWSER_TEST_F(
       browser()->tab_strip_model()->GetWebContentsAt(1);
   resource_coordinator::GetTabLifecycleUnitSource()
       ->GetTabLifecycleUnitExternal(second_content)
-      ->DiscardTab();
+      ->DiscardTab(LifecycleUnitDiscardReason::URGENT);
 
   CloseBrowserSynchronously(browser());
   {

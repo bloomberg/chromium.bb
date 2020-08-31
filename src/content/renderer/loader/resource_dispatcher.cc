@@ -18,12 +18,12 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/resource_type.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"
@@ -40,11 +40,13 @@
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
+#include "third_party/blink/public/common/client_hints/client_hints.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace content {
 
@@ -161,8 +163,7 @@ void ResourceDispatcher::OnReceivedResponse(
     request_info->peer = std::move(new_peer);
   }
 
-  request_info->peer->OnReceivedResponse(
-      network::ResourceResponseHead(response_head));
+  request_info->peer->OnReceivedResponse(response_head.Clone());
   if (!GetPendingRequestInfo(request_id))
     return;
 
@@ -221,13 +222,18 @@ void ResourceDispatcher::OnReceivedRedirect(
                                     redirect_info.new_url);
 
   ToLocalURLResponseHead(*request_info, *response_head);
+  std::vector<std::string> removed_headers;
   if (request_info->peer->OnReceivedRedirect(
-          redirect_info, network::ResourceResponseHead(response_head))) {
+          redirect_info, response_head.Clone(), &removed_headers)) {
     // Double-check if the request is still around. The call above could
     // potentially remove it.
     request_info = GetPendingRequestInfo(request_id);
     if (!request_info)
       return;
+    // TODO(yoav): If request_info doesn't change above, we could avoid this
+    // copy.
+    request_info->removed_headers = removed_headers;
+
     request_info->response_url = redirect_info.new_url;
     request_info->has_pending_redirect = true;
     NotifyResourceRedirectReceived(request_info->render_frame_id,
@@ -252,8 +258,9 @@ void ResourceDispatcher::FollowPendingRedirect(
     if (request_info->redirect_requires_loader_restart) {
       request_info->url_loader->FollowRedirectForcingRestart();
     } else {
-      request_info->url_loader->FollowRedirect({} /* removed_headers */,
-                                               {} /* modified_headers */);
+      request_info->url_loader->FollowRedirect(
+          request_info->removed_headers, {} /* modified_headers */,
+          {} /* modified_cors_exempt_headers */);
     }
   }
 }
@@ -402,13 +409,13 @@ void ResourceDispatcher::OnTransferSizeUpdated(int request_id,
 
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     std::unique_ptr<RequestPeer> peer,
-    ResourceType resource_type,
+    network::mojom::RequestDestination request_destination,
     int render_frame_id,
     const GURL& request_url,
     std::unique_ptr<NavigationResponseOverrideParameters>
         navigation_response_override_params)
     : peer(std::move(peer)),
-      resource_type(resource_type),
+      request_destination(request_destination),
       render_frame_id(render_frame_id),
       url(request_url),
       response_url(request_url),
@@ -423,6 +430,7 @@ void ResourceDispatcher::StartSync(
     std::unique_ptr<network::ResourceRequest> request,
     int routing_id,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    uint32_t loader_options,
     SyncLoadResponse* response,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
@@ -430,6 +438,9 @@ void ResourceDispatcher::StartSync(
     mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry,
     std::unique_ptr<RequestPeer> peer) {
   CheckSchemeForReferrerPolicy(*request);
+
+  DCHECK(loader_options & network::mojom::kURLLoadOptionSynchronous);
+  DCHECK(request->load_flags & net::LOAD_IGNORE_LIMITS);
 
   std::unique_ptr<network::PendingSharedURLLoaderFactory> pending_factory =
       url_loader_factory->Clone();
@@ -446,13 +457,14 @@ void ResourceDispatcher::StartSync(
   // pointers to |sync_load_response| and |event| as this stack frame will
   // survive until the request is complete.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::CreateSingleThreadTaskRunner({base::ThreadPool()});
+      base::ThreadPool::CreateSingleThreadTaskRunner({});
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
                      std::move(request), routing_id, task_runner,
-                     traffic_annotation, std::move(pending_factory),
-                     std::move(throttles), base::Unretained(response),
+                     traffic_annotation, loader_options,
+                     std::move(pending_factory), std::move(throttles),
+                     base::Unretained(response),
                      base::Unretained(&redirect_or_response_event),
                      base::Unretained(terminate_sync_load_event_), timeout,
                      std::move(download_to_blob_registry)));
@@ -463,8 +475,9 @@ void ResourceDispatcher::StartSync(
 
   while (response->context_for_redirect) {
     DCHECK(response->redirect_info);
-    bool follow_redirect = peer->OnReceivedRedirect(*response->redirect_info,
-                                                    response->head.Clone());
+    bool follow_redirect = peer->OnReceivedRedirect(
+        *response->redirect_info, response->head.Clone(),
+        nullptr /* removed_headers */);
     redirect_or_response_event.Reset();
     if (follow_redirect) {
       task_runner->PostTask(
@@ -486,7 +499,7 @@ int ResourceDispatcher::StartAsync(
     int routing_id,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    bool is_sync,
+    uint32_t loader_options,
     std::unique_ptr<RequestPeer> peer,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
@@ -495,8 +508,10 @@ int ResourceDispatcher::StartAsync(
   CheckSchemeForReferrerPolicy(*request);
 
 #if defined(OS_ANDROID)
-  if (request->resource_type != static_cast<int>(ResourceType::kMainFrame) &&
-      request->has_user_gesture) {
+  // Main frame shouldn't come here.
+  DCHECK(!(request->is_main_frame &&
+           blink::IsRequestDestinationFrame(request->destination)));
+  if (request->has_user_gesture) {
     NotifyUpdateUserGestureCarryoverInfo(request->render_frame_id);
   }
 #endif
@@ -508,22 +523,23 @@ int ResourceDispatcher::StartAsync(
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
   pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
-      std::move(peer), static_cast<ResourceType>(request->resource_type),
-      request->render_frame_id, request->url,
-      std::move(response_override_params));
+      std::move(peer), request->destination, request->render_frame_id,
+      request->url, std::move(response_override_params));
   PendingRequestInfo* pending_request = pending_requests_[request_id].get();
 
   pending_request->resource_load_info = NotifyResourceLoadInitiated(
       request->render_frame_id, request_id, request->url, request->method,
-      request->referrer, pending_request->resource_type, request->priority);
+      request->referrer, pending_request->request_destination,
+      request->priority);
 
   pending_request->previews_state = request->previews_state;
 
   if (override_url_loader) {
-    DCHECK(request->resource_type == static_cast<int>(ResourceType::kWorker) ||
-           request->resource_type ==
-               static_cast<int>(ResourceType::kSharedWorker))
-        << request->resource_type;
+    DCHECK(request->destination ==
+               network::mojom::RequestDestination::kWorker ||
+           request->destination ==
+               network::mojom::RequestDestination::kSharedWorker)
+        << request->destination;
 
     // Redirect checks are handled by NavigationURLLoaderImpl, so it's safe to
     // pass true for |bypass_redirect_checks|.
@@ -541,26 +557,11 @@ int ResourceDispatcher::StartAsync(
       request_id, this, loading_task_runner,
       url_loader_factory->BypassRedirectChecks(), request->url));
 
-  uint32_t options = network::mojom::kURLLoadOptionNone;
-  // TODO(jam): use this flag for ResourceDispatcherHost code path once
-  // MojoLoading is the only IPC code path.
-  if (request->fetch_request_context_type !=
-      static_cast<int>(blink::mojom::RequestContextType::FETCH)) {
-    // MIME sniffing should be disabled for a request initiated by fetch().
-    options |= network::mojom::kURLLoadOptionSniffMimeType;
-    throttles.push_back(
-        std::make_unique<blink::MimeSniffingThrottle>(loading_task_runner));
-  }
-  if (is_sync) {
-    options |= network::mojom::kURLLoadOptionSynchronous;
-    request->load_flags |= net::LOAD_IGNORE_LIMITS;
-  }
-
   std::unique_ptr<blink::ThrottlingURLLoader> url_loader =
       blink::ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(url_loader_factory), std::move(throttles), routing_id,
-          request_id, options, request.get(), client.get(), traffic_annotation,
-          std::move(loading_task_runner));
+          request_id, loader_options, request.get(), client.get(),
+          traffic_annotation, std::move(loading_task_runner));
   pending_request->url_loader = std::move(url_loader);
   pending_request->url_loader_client = std::move(client);
 
@@ -600,8 +601,8 @@ void ResourceDispatcher::ToLocalURLResponseHead(
   RemoteToLocalTimeTicks(converter, &load_timing->receive_headers_end);
   RemoteToLocalTimeTicks(converter, &load_timing->push_start);
   RemoteToLocalTimeTicks(converter, &load_timing->push_end);
-  RemoteToLocalTimeTicks(converter, &response_head.service_worker_start_time);
-  RemoteToLocalTimeTicks(converter, &response_head.service_worker_ready_time);
+  RemoteToLocalTimeTicks(converter, &load_timing->service_worker_start_time);
+  RemoteToLocalTimeTicks(converter, &load_timing->service_worker_ready_time);
 }
 
 // TODO(dgozman): this is not used for navigation anymore, only for worker

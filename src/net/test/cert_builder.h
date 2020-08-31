@@ -6,6 +6,7 @@
 #define NET_TEST_CERT_BUILDER_H_
 
 #include "base/rand_util.h"
+#include "net/base/ip_address.h"
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
@@ -31,11 +32,17 @@ class Input;
 // dependent on ordering.
 class CertBuilder {
  public:
-  // Initializes the CertBuilder using |orig_cert|. If |issuer| is null
-  // then the generated certificate will be self-signed. Otherwise, it
-  // will be signed using |issuer|.
+  // Initializes the CertBuilder, if |orig_cert| is non-null it will be used as
+  // a template. If |issuer| is null then the generated certificate will be
+  // self-signed. Otherwise, it will be signed using |issuer|.
   CertBuilder(CRYPTO_BUFFER* orig_cert, CertBuilder* issuer);
   ~CertBuilder();
+
+  // Creates a CertBuilder that will return a static |cert| and |key|.
+  // This may be passed as the |issuer| param of another CertBuilder to create
+  // a cert chain that ends in a pre-defined certificate.
+  static std::unique_ptr<CertBuilder> FromStaticCert(CRYPTO_BUFFER* cert,
+                                                     EVP_PKEY* key);
 
   // Creates a simple leaf->intermediate->root chain of CertBuilders with no AIA
   // or CrlDistributionPoint extensions, and leaf having a subjectAltName of
@@ -51,6 +58,10 @@ class CertBuilder {
 
   // Removes an extension (if present).
   void EraseExtension(const der::Input& oid);
+
+  // Sets the basicConstraints extension. |path_len| may be negative to
+  // indicate the pathLenConstraint should be omitted.
+  void SetBasicConstraints(bool is_ca, int path_len);
 
   // Sets an AIA extension with a single caIssuers access method.
   void SetCaIssuersUrl(const GURL& url);
@@ -74,6 +85,14 @@ class CertBuilder {
   // Sets the SAN for the certificate to a single dNSName.
   void SetSubjectAltName(const std::string& dns_name);
 
+  // Sets the SAN for the certificate to the given dns names and ip addresses.
+  void SetSubjectAltNames(const std::vector<std::string>& dns_names,
+                          const std::vector<IPAddress>& ip_addresses);
+
+  // Sets the extendedKeyUsage extension. |usages| should contain the DER OIDs
+  // of the usage purposes to set, and must not be empty.
+  void SetExtendedKeyUsages(const std::vector<der::Input>& purpose_oids);
+
   // Sets the certificatePolicies extension with the specified policyIdentifier
   // OIDs, which must be specified in dotted string notation (e.g. "1.2.3.4").
   void SetCertificatePolicies(const std::vector<std::string>& policy_oids);
@@ -88,6 +107,10 @@ class CertBuilder {
 
   void SetRandomSerialNumber();
 
+  // Returns the CertBuilder that issues this certificate. (Will be |this| if
+  // certificate is self-signed.)
+  CertBuilder* issuer() { return issuer_; }
+
   // Returns a CRYPTO_BUFFER to the generated certificate.
   CRYPTO_BUFFER* GetCertBuffer();
 
@@ -98,6 +121,10 @@ class CertBuilder {
 
   // Returns the serial number for the generated certificate.
   uint64_t GetSerialNumber();
+
+  // Parses and returns validity period for the generated certificate in
+  // |not_before| and |not_after|, returning true on success.
+  bool GetValidity(base::Time* not_before, base::Time* not_after) const;
 
   // Returns the (RSA) key for the generated certificate.
   EVP_PKEY* GetKey();
@@ -111,13 +138,6 @@ class CertBuilder {
 
   // Returns a copy of the certificate's DER.
   std::string GetDER();
-
-  // Creates a CRL issued and signed by |crl_issuer|, marking |revoked_serials|
-  // as revoked.
-  // Returns the DER-encoded CRL.
-  static std::string CreateCrl(CertBuilder* crl_issuer,
-                               const std::vector<uint64_t>& revoked_serials,
-                               DigestAlgorithm digest);
 
  private:
   // Marks the generated certificate DER as invalid, so it will need to

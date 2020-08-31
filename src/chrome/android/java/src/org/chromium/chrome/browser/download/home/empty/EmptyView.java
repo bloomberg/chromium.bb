@@ -12,9 +12,9 @@ import android.widget.TextView;
 
 import androidx.annotation.StringRes;
 
+import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.download.home.empty.EmptyProperties.State;
-import org.chromium.chrome.browser.ui.widget.LoadingView;
-import org.chromium.chrome.download.R;
+import org.chromium.components.browser_ui.widget.LoadingView;
 
 /** A view that represents the visuals required for the empty state of the download home list. */
 class EmptyView {

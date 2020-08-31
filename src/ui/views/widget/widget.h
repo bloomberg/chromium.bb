@@ -34,12 +34,11 @@ class TimeDelta;
 namespace gfx {
 class Point;
 class Rect;
-}
+}  // namespace gfx
 
 namespace ui {
 class Accelerator;
 class Compositor;
-class DefaultThemeProvider;
 class GestureRecognizer;
 class InputMethod;
 class Layer;
@@ -61,7 +60,7 @@ class WidgetRemovalsObserver;
 namespace internal {
 class NativeWidgetPrivate;
 class RootView;
-}
+}  // namespace internal
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget class
@@ -112,9 +111,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   };
 
   // Source that initiated the move loop.
-  enum MoveLoopSource {
-    MOVE_LOOP_SOURCE_MOUSE,
-    MOVE_LOOP_SOURCE_TOUCH,
+  enum class MoveLoopSource {
+    kMouse,
+    kTouch,
   };
 
   // Behavior when escape is pressed during a move loop.
@@ -153,18 +152,17 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   struct VIEWS_EXPORT InitParams {
     enum Type {
-      TYPE_WINDOW,      // A decorated Window, like a frame window.
-                        // Widgets of TYPE_WINDOW will have a NonClientView.
-      TYPE_WINDOW_FRAMELESS,
-                        // An undecorated Window.
-      TYPE_CONTROL,     // A control, like a button.
-      TYPE_POPUP,       // An undecorated Window, with transient properties.
-      TYPE_MENU,        // An undecorated Window, with transient properties
-                        // specialized to menus.
+      TYPE_WINDOW,  // A decorated Window, like a frame window.
+                    // Widgets of TYPE_WINDOW will have a NonClientView.
+      TYPE_WINDOW_FRAMELESS,  // An undecorated Window.
+      TYPE_CONTROL,           // A control, like a button.
+      TYPE_POPUP,  // An undecorated Window, with transient properties.
+      TYPE_MENU,   // An undecorated Window, with transient properties
+                   // specialized to menus.
       TYPE_TOOLTIP,
       TYPE_BUBBLE,
-      TYPE_DRAG,        // An undecorated Window, used during a drag-and-drop to
-                        // show the drag image.
+      TYPE_DRAG,  // An undecorated Window, used during a drag-and-drop to
+                  // show the drag image.
     };
 
     enum class WindowOpacity {
@@ -236,6 +234,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // Internal name. Propagated to the NativeWidget. Useful for debugging.
     std::string name;
 
+    // False if this widget behaves like a top-level widget, true otherwise. A
+    // top-level widget has its own focus and IME state, independent of any
+    // other widget. A widget for which child is true should have a parent; if
+    // it doesn't, it will not handle keyboard events or IME input at all.
+    // TODO(https://crbug.com/1057758): DCHECK(parent || !child)
     bool child = false;
 
     // If kTranslucent, the widget may be fully or partially transparent.
@@ -281,6 +284,31 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // Whether the widget should be maximized or minimized.
     ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;
 
+    // The native *view* (not native *window*) to which this widget should be
+    // parented. If this widget has a parent, then:
+    // * If that parent closes, this widget is closed too
+    // * If that parent is hidden, this widget is hidden too
+    // * This widget is stacked above the parent widget (always on Mac, usually
+    //   elsewhere)
+    // * This widget's initial bounds are constrained to the parent widget's
+    //   bounds, which prevents window restoration from placing windows
+    //   offscreen
+    // Note: on some platforms (Mac) this directly implies a parent-child
+    // relationship in the backing native windows, but on Aura platforms it does
+    // not necessarily.
+    //
+    // Windows with no parent window are permitted, although in Aura these
+    // windows instead need a "context". On Aura systems, if a widget has no
+    // parent set, its backing aura::Window is parented to the Aura root window.
+    //
+    // TODO(https://crbug.com/1057758): It makes no sense that this is a
+    // NativeView instead of a NativeWindow. On Aura, NativeView and
+    // NativeWindow are synonyms, and NativeWidgetAura immediately treats the
+    // provided NativeView as an aura::Window; on Mac, the NativeView is
+    // immediately converted to an NSWindow (ie a gfx::NativeWindow) and used
+    // that way throughout. This should simply be a NativeWindow - windows are
+    // parented to other windows, not to views, and it being a view confuses
+    // the concept with bubble anchoring a la BubbleDialogDelegateView.
     gfx::NativeView parent = nullptr;
 
     // Specifies the initial bounds of the Widget. Default is empty, which means
@@ -356,25 +384,22 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   };
 
   Widget();
+  explicit Widget(InitParams params);
   ~Widget() override;
 
   // Creates a decorated window Widget with the specified properties. The
   // returned Widget is owned by its NativeWidget; see Widget class comment for
   // details.
   static Widget* CreateWindowWithParent(WidgetDelegate* delegate,
-                                        gfx::NativeView parent);
-  static Widget* CreateWindowWithParentAndBounds(WidgetDelegate* delegate,
-                                                 gfx::NativeView parent,
-                                                 const gfx::Rect& bounds);
+                                        gfx::NativeView parent,
+                                        const gfx::Rect& bounds = gfx::Rect());
 
   // Creates a decorated window Widget in the same desktop context as |context|.
   // The returned Widget is owned by its NativeWidget; see Widget class comment
   // for details.
   static Widget* CreateWindowWithContext(WidgetDelegate* delegate,
-                                         gfx::NativeWindow context);
-  static Widget* CreateWindowWithContextAndBounds(WidgetDelegate* delegate,
-                                                  gfx::NativeWindow context,
-                                                  const gfx::Rect& bounds);
+                                         gfx::NativeWindow context,
+                                         const gfx::Rect& bounds = gfx::Rect());
 
   // Closes all Widgets that aren't identified as "secondary widgets". Called
   // during application shutdown when the last non-secondary widget is closed.
@@ -400,8 +425,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns all Widgets owned by |native_view| (including child widgets, but
   // not including itself).
-  static void GetAllOwnedWidgets(gfx::NativeView native_view,
-                                 Widgets* owned);
+  static void GetAllOwnedWidgets(gfx::NativeView native_view, Widgets* owned);
 
   // Re-parent a NativeView and notify all Widgets in |native_view|'s hierarchy
   // of the change.
@@ -473,7 +497,18 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Sets the specified view as the contents of this Widget. There can only
   // be one contents view child of this Widget's RootView. This view is sized to
   // fit the entire size of the RootView. The RootView takes ownership of this
-  // View, unless it is set as not being parent-owned.
+  // View, unless it is passed in as a raw pointer and set as not being
+  // parent-owned. Prefer using SetContentsView(std::unique_ptr) over passing a
+  // raw pointer for new code.
+  template <typename T>
+  T* SetContentsView(std::unique_ptr<T> view) {
+    DCHECK(!view->owned_by_client())
+        << "This should only be called if the client is passing over the "
+           "ownership of |view|.";
+    T* raw_pointer = view.get();
+    SetContentsView(view.release());
+    return raw_pointer;
+  }
   void SetContentsView(View* view);
 
   // NOTE: This may not be the same view as WidgetDelegate::GetContentsView().
@@ -763,9 +798,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     return const_cast<NonClientView*>(
         const_cast<const Widget*>(this)->non_client_view());
   }
-  const NonClientView* non_client_view() const {
-    return non_client_view_;
-  }
+  const NonClientView* non_client_view() const { return non_client_view_; }
 
   ClientView* client_view() {
     return const_cast<ClientView*>(
@@ -786,8 +819,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns the widget's layer, if any.
   ui::Layer* GetLayer() {
-    return const_cast<ui::Layer*>(
-        const_cast<const Widget*>(this)->GetLayer());
+    return const_cast<ui::Layer*>(const_cast<const Widget*>(this)->GetLayer());
   }
   const ui::Layer* GetLayer() const;
 
@@ -878,6 +910,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // the returned lock. Multiple locks can exist with disjoint lifetimes. The
   // returned lock can safely outlive the associated widget.
   std::unique_ptr<PaintAsActiveLock> LockPaintAsActive();
+
+  base::WeakPtr<Widget> GetWeakPtr();
 
   // Overridden from NativeWidgetDelegate:
   bool IsModal() const override;
@@ -994,6 +1028,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Notifies the window frame that the active rendering state has changed.
   void UpdatePaintAsActiveState(bool paint_as_active);
 
+  // If a descendent of |root_view_| is focused, then clear the focus.
+  void ClearFocusFromWidget();
+
   static bool g_disable_activation_change_handling_;
 
   internal::NativeWidgetPrivate* native_widget_ = nullptr;
@@ -1022,9 +1059,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // WARNING: RootView's destructor calls into the FocusManager. As such, this
   // must be destroyed AFTER root_view_. This is enforced in DestroyRootView().
   std::unique_ptr<FocusManager> focus_manager_;
-
-  // A theme provider to use when no other theme provider is specified.
-  std::unique_ptr<ui::DefaultThemeProvider> default_theme_provider_;
 
   // Valid for the lifetime of RunShellDrag(), indicates the view the drag
   // started from.

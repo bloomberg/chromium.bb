@@ -10,13 +10,14 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/ime_controller.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "chrome/browser/chromeos/input_method/mock_assistive_window_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_engine.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -134,8 +135,8 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
   InputMethodManagerImplTest()
       : delegate_(nullptr),
         candidate_window_controller_(nullptr),
-        keyboard_(nullptr) {
-  }
+        assistive_window_controller_(nullptr),
+        keyboard_(nullptr) {}
 
   ~InputMethodManagerImplTest() override = default;
 
@@ -146,6 +147,9 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     manager_.reset(new InputMethodManagerImpl(
         std::unique_ptr<InputMethodDelegate>(delegate_), false));
     manager_->GetInputMethodUtil()->UpdateHardwareLayoutCache();
+    assistive_window_controller_ = new MockAssistiveWindowController;
+    manager_->SetAssistiveWindowControllerForTesting(
+        assistive_window_controller_);
     candidate_window_controller_ = new MockCandidateWindowController;
     manager_->SetCandidateWindowControllerForTesting(
         candidate_window_controller_);
@@ -176,6 +180,7 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
 
     delegate_ = nullptr;
     candidate_window_controller_ = nullptr;
+    assistive_window_controller_ = nullptr;
     keyboard_ = nullptr;
     manager_.reset();
   }
@@ -366,6 +371,7 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
   std::unique_ptr<InputMethodManagerImpl> manager_;
   FakeInputMethodDelegate* delegate_;
   MockCandidateWindowController* candidate_window_controller_;
+  MockAssistiveWindowController* assistive_window_controller_;
   std::unique_ptr<MockInputMethodEngine> mock_engine_handler_;
   FakeImeKeyboard* keyboard_;
   MockComponentExtIMEManagerDelegate* mock_delegate_;
@@ -426,7 +432,7 @@ TEST_F(InputMethodManagerImplTest, TestObserver) {
 
   // The observer is always notified even when the same input method ID is
   // passed to ChangeInputMethod() more than twice.
-  // TODO(komatsu): Revisit if this is neccessary.
+  // TODO(komatsu): Revisit if this is necessary.
   EXPECT_EQ(3, observer.input_method_changed_count_);
 
   // If the same input method ID is passed, PropertyChanged() is not
@@ -1306,49 +1312,120 @@ TEST_F(InputMethodManagerImplTest, MigrateInputMethodTest) {
 
 TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithKeyset) {
   InitComponentExtension();
+
+  // Create an input method with a input view URL for testing.
   const GURL inputview_url(
       "chrome-extension://"
       "inputview.html#id=us.compact.qwerty&language=en-US&passwordLayout=us."
       "compact.qwerty&name=keyboard_us");
-  GetActiveIMEState()->input_view_url = inputview_url;
-  EXPECT_EQ(inputview_url, GetActiveIMEState()->GetInputViewUrl());
+
+  const auto ime_id =
+      extension_ime_util::GetInputMethodID(kExtensionId1, "test_engine_id");
+  InputMethodDescriptors descriptors;
+  descriptors.push_back(InputMethodDescriptor(ime_id, "test", "TE", {}, {},
+                                              /*is_login_keyboard=*/false,
+                                              GURL(), inputview_url));
+
+  MockInputMethodEngine engine;
+  std::vector<std::string> enabled_imes = {ime_id};
+  GetActiveIMEState()->SetEnabledExtensionImes(&enabled_imes);
+  GetActiveIMEState()->AddInputMethodExtension(kExtensionId1, descriptors,
+                                               &engine);
+  GetActiveIMEState()->ChangeInputMethod(ime_id, false);
+
+  GetActiveIMEState()->EnableInputView();
+  EXPECT_THAT(GetActiveIMEState()->GetInputViewUrl().spec(),
+              ::testing::StartsWith(inputview_url.spec()));
 
   // Override the keyboard url ref with 'emoji'.
   const GURL overridden_url_emoji(
       "chrome-extension://"
       "inputview.html#id=us.compact.qwerty.emoji&language=en-US&passwordLayout="
       "us.compact.qwerty&name=keyboard_us");
-  manager_->OverrideKeyboardKeyset(mojom::ImeKeyset::kEmoji);
-  EXPECT_EQ(overridden_url_emoji, GetActiveIMEState()->GetInputViewUrl());
+  manager_->OverrideKeyboardKeyset(chromeos::input_method::ImeKeyset::kEmoji);
+  EXPECT_THAT(GetActiveIMEState()->GetInputViewUrl().spec(),
+              ::testing::StartsWith(overridden_url_emoji.spec()));
 
   // Override the keyboard url ref with 'hwt'.
-  GetActiveIMEState()->input_view_url = inputview_url;
   const GURL overridden_url_hwt(
       "chrome-extension://"
       "inputview.html#id=us.compact.qwerty.hwt&language=en-US&passwordLayout="
       "us.compact.qwerty&name=keyboard_us");
-  manager_->OverrideKeyboardKeyset(mojom::ImeKeyset::kHandwriting);
-  EXPECT_EQ(overridden_url_hwt, GetActiveIMEState()->GetInputViewUrl());
+  manager_->OverrideKeyboardKeyset(
+      chromeos::input_method::ImeKeyset::kHandwriting);
+  EXPECT_THAT(GetActiveIMEState()->GetInputViewUrl().spec(),
+              ::testing::StartsWith(overridden_url_hwt.spec()));
 
   // Override the keyboard url ref with 'voice'.
-  GetActiveIMEState()->input_view_url = inputview_url;
   const GURL overridden_url_voice(
       "chrome-extension://"
       "inputview.html#id=us.compact.qwerty.voice&language=en-US"
       "&passwordLayout=us.compact.qwerty&name=keyboard_us");
-  manager_->OverrideKeyboardKeyset(mojom::ImeKeyset::kVoice);
-  EXPECT_EQ(overridden_url_voice, GetActiveIMEState()->GetInputViewUrl());
+  manager_->OverrideKeyboardKeyset(chromeos::input_method::ImeKeyset::kVoice);
+  EXPECT_THAT(GetActiveIMEState()->GetInputViewUrl().spec(),
+              ::testing::StartsWith(overridden_url_voice.spec()));
 }
 
 TEST_F(InputMethodManagerImplTest, OverrideDefaultKeyboardUrlRef) {
   InitComponentExtension();
+
   const GURL default_url("chrome://inputview.html");
-  GetActiveIMEState()->input_view_url = default_url;
 
-  EXPECT_EQ(default_url, GetActiveIMEState()->GetInputViewUrl());
+  const auto ime_id =
+      extension_ime_util::GetInputMethodID(kExtensionId1, "test_engine_id");
+  InputMethodDescriptors descriptors;
+  descriptors.push_back(InputMethodDescriptor(ime_id, "test", "TE", {}, {},
+                                              /*is_login_keyboard=*/false,
+                                              GURL(), default_url));
 
-  manager_->OverrideKeyboardKeyset(mojom::ImeKeyset::kEmoji);
+  MockInputMethodEngine engine;
+  std::vector<std::string> enabled_imes = {ime_id};
+  GetActiveIMEState()->SetEnabledExtensionImes(&enabled_imes);
+  GetActiveIMEState()->AddInputMethodExtension(kExtensionId1, descriptors,
+                                               &engine);
+  GetActiveIMEState()->ChangeInputMethod(ime_id, false);
+  GetActiveIMEState()->EnableInputView();
+
+  manager_->OverrideKeyboardKeyset(chromeos::input_method::ImeKeyset::kEmoji);
   EXPECT_EQ(default_url, GetActiveIMEState()->GetInputViewUrl());
+}
+
+TEST_F(InputMethodManagerImplTest, DoesNotResetInputViewUrlWhenOverridden) {
+  InitComponentExtension();
+
+  // Create an input method with a input view URL for testing.
+  const GURL inputview_url(
+      "chrome-extension://"
+      "inputview.html#id=us.compact.qwerty&language=en-US&passwordLayout=us."
+      "compact.qwerty&name=keyboard_us");
+
+  const auto ime_id =
+      extension_ime_util::GetInputMethodID(kExtensionId1, "test_engine_id");
+  InputMethodDescriptors descriptors;
+  descriptors.push_back(InputMethodDescriptor(ime_id, "test", "TE", {}, {},
+                                              /*is_login_keyboard=*/false,
+                                              GURL(), inputview_url));
+
+  MockInputMethodEngine engine;
+  std::vector<std::string> enabled_imes = {ime_id};
+  GetActiveIMEState()->SetEnabledExtensionImes(&enabled_imes);
+  GetActiveIMEState()->AddInputMethodExtension(kExtensionId1, descriptors,
+                                               &engine);
+  GetActiveIMEState()->ChangeInputMethod(ime_id, false);
+  GetActiveIMEState()->EnableInputView();
+
+  const GURL overridden_url_emoji(
+      "chrome-extension://"
+      "inputview.html#id=us.compact.qwerty.emoji&language=en-US&passwordLayout="
+      "us.compact.qwerty&name=keyboard_us");
+
+  manager_->OverrideKeyboardKeyset(chromeos::input_method::ImeKeyset::kEmoji);
+  EXPECT_THAT(GetActiveIMEState()->GetInputViewUrl().spec(),
+              ::testing::StartsWith(overridden_url_emoji.spec()));
+
+  GetActiveIMEState()->EnableInputView();
+  EXPECT_THAT(GetActiveIMEState()->GetInputViewUrl().spec(),
+              ::testing::StartsWith(overridden_url_emoji.spec()));
 }
 
 TEST_F(InputMethodManagerImplTest, AllowedKeyboardLayoutsValid) {
@@ -1463,9 +1540,9 @@ TEST_F(InputMethodManagerImplTest, SetLoginDefaultWithAllowedKeyboardLayouts) {
 // Verifies that the combination of InputMethodManagerImpl and
 // ImeControllerClient sends the correct data to ash.
 TEST_F(InputMethodManagerImplTest, IntegrationWithAsh) {
-  TestImeController ime_controller;  // Mojo interface to ash.
+  TestImeController ime_controller;
   ImeControllerClient ime_controller_client(manager_.get());
-  ime_controller_client.InitForTesting(ime_controller.CreateRemote());
+  ime_controller_client.Init();
 
   // Setup 3 IMEs.
   InitComponentExtension();
@@ -1475,7 +1552,6 @@ TEST_F(InputMethodManagerImplTest, IntegrationWithAsh) {
   ids.push_back(ImeIdFromEngineId(kExt2Engine2Id));
   ids.push_back(ImeIdFromEngineId(kExt2Engine1Id));
   manager_->GetActiveIMEState()->ReplaceEnabledInputMethods(ids);
-  ime_controller_client.FlushMojoForTesting();
 
   // Ash received the IMEs.
   ASSERT_EQ(3u, ime_controller.available_imes_.size());
@@ -1483,7 +1559,6 @@ TEST_F(InputMethodManagerImplTest, IntegrationWithAsh) {
 
   // Switch to Mozc.
   manager_->GetActiveIMEState()->SwitchToNextInputMethod();
-  ime_controller_client.FlushMojoForTesting();
   EXPECT_EQ(ImeIdFromEngineId(ids[1]), ime_controller.current_ime_id_);
 
   // Lock the screen.
@@ -1492,20 +1567,17 @@ TEST_F(InputMethodManagerImplTest, IntegrationWithAsh) {
   manager_->SetState(saved_ime_state->Clone());
   manager_->GetActiveIMEState()->EnableLockScreenLayouts();
   manager_->SetUISessionState(InputMethodManager::STATE_LOCK_SCREEN);
-  ime_controller_client.FlushMojoForTesting();
   EXPECT_EQ(2u, ime_controller.available_imes_.size());  // Qwerty+Dvorak.
   EXPECT_EQ(ImeIdFromEngineId("xkb:us:dvorak:eng"),
             ime_controller.current_ime_id_);
 
   manager_->GetActiveIMEState()->SwitchToNextInputMethod();
-  ime_controller_client.FlushMojoForTesting();
   EXPECT_EQ(ImeIdFromEngineId("xkb:us::eng"),  // The hardware keyboard layout.
             ime_controller.current_ime_id_);
 
   // Unlock screen. The original state, pinyin-dv, is restored.
   manager_->SetState(saved_ime_state);
   manager_->SetUISessionState(InputMethodManager::STATE_BROWSER_SCREEN);
-  ime_controller_client.FlushMojoForTesting();
   ASSERT_EQ(3u, ime_controller.available_imes_.size());  // Dvorak and 2 IMEs.
   EXPECT_EQ(ImeIdFromEngineId(ids[1]), ime_controller.current_ime_id_);
 }

@@ -12,8 +12,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
@@ -36,6 +36,10 @@
 #include "url/gurl.h"
 
 namespace update_client {
+
+CrxInstaller::InstallParams::InstallParams(const std::string& run,
+                                           const std::string& arguments)
+    : run(run), arguments(arguments) {}
 
 CrxUpdateItem::CrxUpdateItem() : state(ComponentState::kNew) {}
 CrxUpdateItem::~CrxUpdateItem() = default;
@@ -69,8 +73,8 @@ UpdateClientImpl::UpdateClientImpl(
           update_checker_factory,
           crx_downloader_factory,
           ping_manager_.get(),
-          base::Bind(&UpdateClientImpl::NotifyObservers,
-                     base::Unretained(this)))) {}
+          base::BindRepeating(&UpdateClientImpl::NotifyObservers,
+                              base::Unretained(this)))) {}
 
 UpdateClientImpl::~UpdateClientImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -83,6 +87,7 @@ UpdateClientImpl::~UpdateClientImpl() {
 
 void UpdateClientImpl::Install(const std::string& id,
                                CrxDataCallback crx_data_callback,
+                               CrxStateChangeCallback crx_state_change_callback,
                                Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -98,18 +103,21 @@ void UpdateClientImpl::Install(const std::string& id,
   constexpr bool kIsForeground = true;
   RunTask(base::MakeRefCounted<TaskUpdate>(
       update_engine_.get(), kIsForeground, ids, std::move(crx_data_callback),
+      crx_state_change_callback,
       base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback))));
 }
 
 void UpdateClientImpl::Update(const std::vector<std::string>& ids,
                               CrxDataCallback crx_data_callback,
+                              CrxStateChangeCallback crx_state_change_callback,
                               bool is_foreground,
                               Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto task = base::MakeRefCounted<TaskUpdate>(
       update_engine_.get(), is_foreground, ids, std::move(crx_data_callback),
+      crx_state_change_callback,
       base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback)));
 
@@ -140,6 +148,7 @@ void UpdateClientImpl::OnTaskComplete(Callback callback,
 
   // Remove the task from the set of the running tasks. Only tasks handled by
   // the update engine can be in this data structure.
+  DCHECK_EQ(1u, tasks_.count(task));
   tasks_.erase(task);
 
   if (is_stopped_)
@@ -179,14 +188,14 @@ bool UpdateClientImpl::GetCrxUpdateState(const std::string& id,
 bool UpdateClientImpl::IsUpdating(const std::string& id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  for (const auto task : tasks_) {
+  for (const auto& task : tasks_) {
     const auto ids = task->GetIds();
     if (base::Contains(ids, id)) {
       return true;
     }
   }
 
-  for (const auto task : task_queue_) {
+  for (const auto& task : task_queue_) {
     const auto ids = task->GetIds();
     if (base::Contains(ids, id)) {
       return true;

@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/win/pe_image.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/target_services.h"
@@ -58,7 +59,8 @@ void* AllocateNearTo(void* source, size_t size) {
   const char* top_address = base + kMaxSize;
 
   while (base < top_address) {
-    MEMORY_BASIC_INFORMATION mem_info;
+    // Avoid memset inserted by -ftrivial-auto-var-init=pattern.
+    STACK_UNINITIALIZED MEMORY_BASIC_INFORMATION mem_info;
     NTSTATUS status =
         g_nt.QueryVirtualMemory(NtCurrentProcess, base, MemoryBasicInformation,
                                 &mem_info, sizeof(mem_info), nullptr);

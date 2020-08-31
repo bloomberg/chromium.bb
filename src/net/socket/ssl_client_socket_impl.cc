@@ -24,6 +24,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -105,6 +106,8 @@ base::Value NetLogSSLInfoParams(SSLClientSocketImpl* socket) {
                   ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME);
   dict.SetIntKey("cipher_suite",
                  SSLConnectionStatusToCipherSuite(ssl_info.connection_status));
+  dict.SetIntKey("key_exchange_group", ssl_info.key_exchange_group);
+  dict.SetIntKey("peer_signature_algorithm", ssl_info.peer_signature_algorithm);
 
   dict.SetStringKey("next_proto",
                     NextProtoToString(socket->GetNegotiatedProtocol()));
@@ -846,6 +849,8 @@ int SSLClientSocketImpl::Init() {
 
   if (ssl_config_.require_ecdhe)
     command.append(":!kRSA");
+  if (ssl_config_.disable_legacy_crypto)
+    command.append(":!3DES");
 
   // Remove any disabled ciphers.
   for (uint16_t id : context_->config().disabled_cipher_suites) {
@@ -859,6 +864,19 @@ int SSLClientSocketImpl::Init() {
   if (!SSL_set_strict_cipher_list(ssl_.get(), command.c_str())) {
     LOG(ERROR) << "SSL_set_cipher_list('" << command << "') failed";
     return ERR_UNEXPECTED;
+  }
+
+  if (ssl_config_.disable_legacy_crypto) {
+    static const uint16_t kVerifyPrefs[] = {
+        SSL_SIGN_ECDSA_SECP256R1_SHA256, SSL_SIGN_RSA_PSS_RSAE_SHA256,
+        SSL_SIGN_RSA_PKCS1_SHA256,       SSL_SIGN_ECDSA_SECP384R1_SHA384,
+        SSL_SIGN_RSA_PSS_RSAE_SHA384,    SSL_SIGN_RSA_PKCS1_SHA384,
+        SSL_SIGN_RSA_PSS_RSAE_SHA512,    SSL_SIGN_RSA_PKCS1_SHA512,
+    };
+    if (!SSL_set_verify_algorithm_prefs(ssl_.get(), kVerifyPrefs,
+                                        base::size(kVerifyPrefs))) {
+      return ERR_UNEXPECTED;
+    }
   }
 
   if (!ssl_config_.alpn_protos.empty()) {
@@ -1152,7 +1170,9 @@ ssl_verify_result_t SSLClientSocketImpl::VerifyCert() {
   }
 
   net_log_.AddEvent(NetLogEventType::SSL_CERTIFICATES_RECEIVED, [&] {
-    return NetLogX509CertificateParams(server_cert_.get());
+    base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetKey("certificates", NetLogX509CertificateList(server_cert_.get()));
+    return dict;
   });
 
   // If the certificate is bad and has been previously accepted, use
@@ -1260,9 +1280,24 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
       result = ct_result;
   }
 
+  // If no other errors occurred, check whether the connection used a legacy TLS
+  // version.
+  if (result == OK &&
+      SSL_version(ssl_.get()) < context_->config().version_min_warn &&
+      base::FeatureList::IsEnabled(features::kLegacyTLSEnforced) &&
+      !context_->ssl_config_service()->ShouldSuppressLegacyTLSWarning(
+          host_and_port_.host())) {
+    server_cert_verify_result_.cert_status |= CERT_STATUS_LEGACY_TLS;
+
+    // Only set the resulting net error if it hasn't been previously bypassed.
+    if (!ssl_config_.IsAllowedBadCert(server_cert_.get(), nullptr))
+      result = ERR_SSL_OBSOLETE_VERSION;
+  }
+
   is_fatal_cert_error_ =
       IsCertStatusError(server_cert_verify_result_.cert_status) &&
       result != ERR_CERT_KNOWN_INTERCEPTION_BLOCKED &&
+      result != ERR_SSL_OBSOLETE_VERSION &&
       context_->transport_security_state()->ShouldSSLErrorsBeFatal(
           host_and_port_.host());
 
@@ -1455,19 +1490,19 @@ int SSLClientSocketImpl::DoPayloadWrite() {
 }
 
 void SSLClientSocketImpl::DoPeek() {
-  if (ssl_config_.disable_post_handshake_peek_for_testing ||
-      !completed_connect_ || peek_complete_) {
+  if (!completed_connect_) {
     return;
   }
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  if (ssl_config_.early_data_enabled && !recorded_early_data_result_) {
+  if (ssl_config_.early_data_enabled && !handled_early_data_result_) {
     // |SSL_peek| will implicitly run |SSL_do_handshake| if needed, but run it
     // manually to pick up the reject reason.
     int rv = SSL_do_handshake(ssl_.get());
     int ssl_err = SSL_get_error(ssl_.get(), rv);
-    if (ssl_err == SSL_ERROR_WANT_READ || ssl_err == SSL_ERROR_WANT_WRITE) {
+    int err = rv > 0 ? OK : MapOpenSSLError(ssl_err, err_tracer);
+    if (err == ERR_IO_PENDING) {
       return;
     }
 
@@ -1478,11 +1513,26 @@ void SSLClientSocketImpl::DoPeek() {
     UMA_HISTOGRAM_ENUMERATION("Net.SSLHandshakeEarlyDataReason",
                               SSL_get_early_data_reason(ssl_.get()),
                               ssl_early_data_reason_max_value + 1);
-    recorded_early_data_result_ = true;
-    if (ssl_err != SSL_ERROR_NONE) {
+
+    // On early data reject, clear early data on any other sessions in the
+    // cache, so retries do not get stuck attempting 0-RTT. See
+    // https://crbug.com/1066623.
+    if (err == ERR_EARLY_DATA_REJECTED ||
+        err == ERR_WRONG_VERSION_ON_EARLY_DATA) {
+      context_->ssl_client_session_cache()->ClearEarlyData(
+          GetSessionCacheKey(base::nullopt));
+    }
+
+    handled_early_data_result_ = true;
+
+    if (err != OK) {
       peek_complete_ = true;
       return;
     }
+  }
+
+  if (ssl_config_.disable_post_handshake_peek_for_testing || peek_complete_) {
+    return;
   }
 
   char byte;
@@ -1722,6 +1772,7 @@ SSLClientSessionCache::Key SSLClientSocketImpl::GetSessionCacheKey(
     key.network_isolation_key = ssl_config_.network_isolation_key;
   }
   key.privacy_mode = ssl_config_.privacy_mode;
+  key.disable_legacy_crypto = ssl_config_.disable_legacy_crypto;
   return key;
 }
 

@@ -19,7 +19,6 @@
 
 namespace autofill {
 
-class AutofillPopupLayoutModel;
 struct Suggestion;
 
 // This interface provides data to an AutofillPopupView.
@@ -35,10 +34,17 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   // Returns the number of lines of data that there are.
   virtual int GetLineCount() const = 0;
 
-  // Returns the suggestion or pre-elided string at the given row index.
-  virtual const autofill::Suggestion& GetSuggestionAt(int row) const = 0;
-  virtual const base::string16& GetElidedValueAt(int row) const = 0;
-  virtual const base::string16& GetElidedLabelAt(int row) const = 0;
+  // Returns the full set of autofill suggestions, if applicable.
+  virtual std::vector<Suggestion> GetSuggestions() const = 0;
+
+  // Returns the suggestion at the given |row| index.
+  virtual const Suggestion& GetSuggestionAt(int row) const = 0;
+
+  // Returns the suggestion value string at the given |row| index.
+  virtual const base::string16& GetSuggestionValueAt(int row) const = 0;
+
+  // Returns the suggestion label string at the given |row| index.
+  virtual const base::string16& GetSuggestionLabelAt(int row) const = 0;
 
   // Returns whether the item at |list_index| can be removed. If so, fills
   // out |title| and |body| (when non-null) with relevant user-facing text.
@@ -56,10 +62,11 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   // hovered or has keyboard focus.
   virtual base::Optional<int> selected_line() const = 0;
 
-  virtual const AutofillPopupLayoutModel& layout_model() const = 0;
+  // Returns the popup type corresponding to the controller.
+  virtual PopupType GetPopupType() const = 0;
 
  protected:
-  ~AutofillPopupController() override {}
+  ~AutofillPopupController() override = default;
 };
 
 }  // namespace autofill

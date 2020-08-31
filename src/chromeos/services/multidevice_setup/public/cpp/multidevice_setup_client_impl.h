@@ -31,11 +31,14 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetInstanceForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<MultiDeviceSetupClient> BuildInstance(
+    static std::unique_ptr<MultiDeviceSetupClient> Create(
         mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup);
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<MultiDeviceSetupClient> CreateInstance(
+        mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup) = 0;
 
    private:
     static Factory* test_factory_;
@@ -46,7 +49,7 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
   // MultiDeviceSetupClient:
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
   void SetHostDevice(
-      const std::string& host_device_id,
+      const std::string& host_instance_id_or_legacy_device_id,
       const std::string& auth_token,
       mojom::MultiDeviceSetup::SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;

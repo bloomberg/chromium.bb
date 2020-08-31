@@ -15,11 +15,11 @@ from dashboard import add_histograms_queue
 from dashboard import add_point
 from dashboard import add_point_queue
 from dashboard import alerts
+from dashboard import alert_groups
 from dashboard import associate_alerts
 from dashboard import bug_details
 from dashboard import buildbucket_job_status
 from dashboard import create_health_report
-from dashboard import cron_update_sheriff
 from dashboard import debug_alert
 from dashboard import delete_test_data
 from dashboard import deprecate_tests
@@ -27,9 +27,7 @@ from dashboard import dump_graph_json
 from dashboard import edit_anomalies
 from dashboard import edit_anomaly_configs
 from dashboard import edit_bug_labels
-from dashboard import edit_sheriffs
 from dashboard import edit_site_config
-from dashboard import email_summary
 from dashboard import file_bug
 from dashboard import get_diagnostics
 from dashboard import get_histogram
@@ -39,7 +37,6 @@ from dashboard import graph_revisions
 from dashboard import group_report
 from dashboard import jstsmon
 from dashboard import layered_cache_delete_expired
-from dashboard import list_monitored_tests
 from dashboard import list_tests
 from dashboard import load_from_prod
 from dashboard import main
@@ -69,7 +66,6 @@ from dashboard.api import nudge_alert
 from dashboard.api import report_generate
 from dashboard.api import report_names
 from dashboard.api import report_template
-from dashboard.api import sheriffs
 from dashboard.api import test_suites
 from dashboard.api import timeseries
 from dashboard.api import timeseries2
@@ -95,17 +91,16 @@ _URL_MAPPING = [
     (r'/api/report/generate', report_generate.ReportGenerateHandler),
     (r'/api/report/names', report_names.ReportNamesHandler),
     (r'/api/report/template', report_template.ReportTemplateHandler),
-    (r'/api/sheriffs', sheriffs.SheriffsHandler),
     (r'/api/test_suites', test_suites.TestSuitesHandler),
     (r'/api/timeseries/(.*)', timeseries.TimeseriesHandler),
     (r'/api/timeseries2', timeseries2.Timeseries2Handler),
     ('/associate_alerts', associate_alerts.AssociateAlertsHandler),
+    ('/alert_groups_update', alert_groups.AlertGroupsHandler),
     ('/bug_details', bug_details.BugDetailsHandler),
     (r'/buildbucket_job_status/(\d+)',
      buildbucket_job_status.BuildbucketJobStatusHandler),
     ('/create_health_report', create_health_report.CreateHealthReportHandler),
     ('/configs/update', sheriff_config_poller.ConfigsUpdateHandler),
-    ('/cron/update_sheriff', cron_update_sheriff.CronUpdateSheriffHandler),
     ('/debug_alert', debug_alert.DebugAlertHandler),
     ('/delete_expired_entities',
      layered_cache_delete_expired.LayeredCacheDeleteExpiredHandler),
@@ -114,9 +109,7 @@ _URL_MAPPING = [
     ('/edit_anomalies', edit_anomalies.EditAnomaliesHandler),
     ('/edit_anomaly_configs', edit_anomaly_configs.EditAnomalyConfigsHandler),
     ('/edit_bug_labels', edit_bug_labels.EditBugLabelsHandler),
-    ('/edit_sheriffs', edit_sheriffs.EditSheriffsHandler),
     ('/edit_site_config', edit_site_config.EditSiteConfigHandler),
-    ('/email_summary', email_summary.EmailSummaryHandler),
     ('/file_bug', file_bug.FileBugHandler),
     ('/get_diagnostics', get_diagnostics.GetDiagnosticsHandler),
     ('/get_histogram', get_histogram.GetHistogramHandler),
@@ -124,7 +117,6 @@ _URL_MAPPING = [
     ('/graph_json', graph_json.GraphJsonHandler),
     ('/graph_revisions', graph_revisions.GraphRevisionsHandler),
     ('/group_report', group_report.GroupReportHandler),
-    ('/list_monitored_tests', list_monitored_tests.ListMonitoredTestsHandler),
     ('/list_tests', list_tests.ListTestsHandler),
     ('/load_from_prod', load_from_prod.LoadFromProdHandler),
     ('/', main.MainHandler),

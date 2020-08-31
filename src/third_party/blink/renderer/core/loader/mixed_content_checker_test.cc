@@ -7,7 +7,7 @@
 #include <base/macros.h>
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "testing/gmock/include/gmock/gmock-generated-function-mockers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_mixed_content.h"
@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -40,15 +41,15 @@ TEST(MixedContentCheckerTest, IsMixedContent) {
       {"https://example.com/foo", "https://example.com/foo", false},
       {"https://example.com/foo", "wss://example.com/foo", false},
       {"https://example.com/foo", "data:text/html,<p>Hi!</p>", false},
-      {"https://example.com/foo", "http://127.0.0.1/", false},
-      {"https://example.com/foo", "http://[::1]/", false},
       {"https://example.com/foo", "blob:https://example.com/foo", false},
       {"https://example.com/foo", "blob:http://example.com/foo", false},
       {"https://example.com/foo", "blob:null/foo", false},
       {"https://example.com/foo", "filesystem:https://example.com/foo", false},
       {"https://example.com/foo", "filesystem:http://example.com/foo", false},
-      {"https://example.com/foo", "http://localhost/", false},
+      {"https://example.com/foo", "http://127.0.0.1/", false},
+      {"https://example.com/foo", "http://[::1]/", false},
       {"https://example.com/foo", "http://a.localhost/", false},
+      {"https://example.com/foo", "http://localhost/", false},
 
       {"https://example.com/foo", "http://example.com/foo", true},
       {"https://example.com/foo", "http://google.com/foo", true},
@@ -172,16 +173,16 @@ TEST(MixedContentCheckerTest, DetectMixedForm) {
 
   EXPECT_TRUE(MixedContentChecker::IsMixedFormAction(
       &dummy_page_holder->GetFrame(), http_form_action_url,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(MixedContentChecker::IsMixedFormAction(
       &dummy_page_holder->GetFrame(), https_form_action_url,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(MixedContentChecker::IsMixedFormAction(
       &dummy_page_holder->GetFrame(), javascript_form_action_url,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      ReportingDisposition::kSuppressReporting));
   EXPECT_TRUE(MixedContentChecker::IsMixedFormAction(
       &dummy_page_holder->GetFrame(), mailto_form_action_url,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      ReportingDisposition::kSuppressReporting));
 }
 
 TEST(MixedContentCheckerTest, DetectMixedFavicon) {
@@ -205,13 +206,80 @@ TEST(MixedContentCheckerTest, DetectMixedFavicon) {
   EXPECT_TRUE(MixedContentChecker::ShouldBlockFetch(
       &dummy_page_holder->GetFrame(), mojom::RequestContextType::FAVICON,
       ResourceRequest::RedirectStatus::kNoRedirect, http_favicon_url,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      base::Optional<String>(), ReportingDisposition::kSuppressReporting));
 
   // Test that a secure favicon is not blocked.
   EXPECT_FALSE(MixedContentChecker::ShouldBlockFetch(
       &dummy_page_holder->GetFrame(), mojom::RequestContextType::FAVICON,
       ResourceRequest::RedirectStatus::kNoRedirect, https_favicon_url,
-      SecurityViolationReportingPolicy::kSuppressReporting));
+      base::Optional<String>(), ReportingDisposition::kSuppressReporting));
+}
+
+class TestFetchClientSettingsObject : public FetchClientSettingsObject {
+ public:
+  const KURL& GlobalObjectUrl() const override { return url; }
+  HttpsState GetHttpsState() const override { return HttpsState::kModern; }
+  mojom::blink::InsecureRequestPolicy GetInsecureRequestsPolicy()
+      const override {
+    return mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
+  }
+
+  // These are not used in test, but need to be implemented since they are pure
+  // virtual.
+  const KURL& BaseUrl() const override { return url; }
+  const SecurityOrigin* GetSecurityOrigin() const override { return nullptr; }
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const override {
+    return network::mojom::ReferrerPolicy::kAlways;
+  }
+  const String GetOutgoingReferrer() const override { return ""; }
+  AllowedByNosniff::MimeTypeCheck MimeTypeCheckForClassicWorkerScript()
+      const override {
+    return AllowedByNosniff::MimeTypeCheck::kStrict;
+  }
+  network::mojom::IPAddressSpace GetAddressSpace() const override {
+    return network::mojom::IPAddressSpace::kLocal;
+  }
+  const InsecureNavigationsSet& GetUpgradeInsecureNavigationsSet()
+      const override {
+    return set;
+  }
+
+ private:
+  const KURL url = KURL("https://example.test");
+  const InsecureNavigationsSet set;
+};
+
+TEST(MixedContentCheckerTest,
+     NotAutoupgradedMixedContentHasUpgradeIfInsecureSet) {
+  ResourceRequest request;
+  request.SetUrl(KURL("https://example.test"));
+  request.SetRequestContext(mojom::RequestContextType::AUDIO);
+  TestFetchClientSettingsObject settings;
+  // Used to get a non-null document.
+  DummyPageHolder holder;
+
+  MixedContentChecker::UpgradeInsecureRequest(
+      request, &settings, holder.GetDocument().GetExecutionContext(),
+      mojom::RequestContextFrameType::kTopLevel, nullptr);
+
+  EXPECT_FALSE(request.IsAutomaticUpgrade());
+  EXPECT_TRUE(request.UpgradeIfInsecure());
+}
+
+TEST(MixedContentCheckerTest, AutoupgradedMixedContentHasUpgradeIfInsecureSet) {
+  ResourceRequest request;
+  request.SetUrl(KURL("http://example.test"));
+  request.SetRequestContext(mojom::RequestContextType::AUDIO);
+  TestFetchClientSettingsObject settings;
+  // Used to get a non-null document.
+  DummyPageHolder holder;
+
+  MixedContentChecker::UpgradeInsecureRequest(
+      request, &settings, holder.GetDocument().GetExecutionContext(),
+      mojom::RequestContextFrameType::kTopLevel, nullptr);
+
+  EXPECT_TRUE(request.IsAutomaticUpgrade());
+  EXPECT_TRUE(request.UpgradeIfInsecure());
 }
 
 }  // namespace blink

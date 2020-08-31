@@ -7,10 +7,15 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.cli import command
 from chromite.cli import deploy
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 @command.CommandDecorator('deploy')
@@ -42,7 +47,7 @@ For more information of cros build usage:
   def AddParser(cls, parser):
     """Add a parser."""
     super(cls, DeployCommand).AddParser(parser)
-    cls.AddDeviceArgument(parser)
+    cls.AddDeviceArgument(parser, positional=True)
     parser.add_argument(
         'packages', help='Packages to install. You can specify '
         '[category/]package[:slot] or the path to the binary package. '

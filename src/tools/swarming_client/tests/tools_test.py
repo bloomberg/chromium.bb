@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright 2019 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -11,6 +11,8 @@ import os
 import sys
 import tempfile
 import unittest
+
+import six
 
 # Mutates sys.path.
 import test_env
@@ -43,8 +45,10 @@ class FindExecutableTest(auto_stub.TestCase):
 
     if 'WIN' in self.id():
       self.mock(sys, "platform", "win32")
-    else:
+    elif six.PY2:
       self.mock(sys, "platform", "linux2")
+    else:
+      self.mock(sys, "platform", "linux")
 
     # initial
     self._touch_exe('SYSTEM', 'python')
@@ -79,7 +83,7 @@ class FindExecutableTest(auto_stub.TestCase):
   def _touch_exe(self, *path_toks):
     full = self._touch(*path_toks)
     if not _ACTUALLY_WINDOWS:
-      os.chmod(full, 0777)
+      os.chmod(full, 0o777)
     return full
 
   def _fe(self, cmd):

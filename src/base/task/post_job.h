@@ -19,10 +19,10 @@ namespace internal {
 class JobTaskSource;
 class PooledTaskRunnerDelegate;
 }
-namespace experimental {
 
 // Delegate that's passed to Job's worker task, providing an entry point to
-// communicate with the scheduler.
+// communicate with the scheduler. To prevent deadlocks, JobDelegate methods
+// should never be called while holding a user lock.
 class BASE_EXPORT JobDelegate {
  public:
   // A JobDelegate is instantiated for each worker task that is run.
@@ -73,7 +73,8 @@ class BASE_EXPORT JobDelegate {
 };
 
 // Handle returned when posting a Job. Provides methods to control execution of
-// the posted Job.
+// the posted Job. To prevent deadlocks, JobHandle methods should never be
+// called while holding a user lock.
 class BASE_EXPORT JobHandle {
  public:
   JobHandle();
@@ -121,9 +122,19 @@ class BASE_EXPORT JobHandle {
   DISALLOW_COPY_AND_ASSIGN(JobHandle);
 };
 
-// Posts a repeating |worker_task| with specific |traits| to run in parallel.
+// Posts a repeating |worker_task| with specific |traits| to run in parallel on
+// base::ThreadPool.
 // Returns a JobHandle associated with the Job, which can be joined, canceled or
 // detached.
+// ThreadPool APIs, including PostJob() and methods of the returned JobHandle,
+// must never be called while holding a lock that could be acquired by
+// |worker_task| or |max_concurrency_callback| -- that could result in a
+// deadlock. This is because [1] |max_concurrency_callback| may be invoked while
+// holding internal ThreadPool lock (A), hence |max_concurrency_callback| can
+// only use a lock (B) if that lock is *never* held while calling back into a
+// ThreadPool entry point from any thread (A=>B/B=>A deadlock) and [2]
+// |worker_task| or |max_concurrency_callback| is invoked synchronously from
+// JobHandle::Join() (A=>JobHandle::Join()=>A deadlock).
 // To avoid scheduling overhead, |worker_task| should do as much work as
 // possible in a loop when invoked, and JobDelegate::ShouldYield() should be
 // periodically invoked to conditionally exit and let the scheduler prioritize
@@ -154,8 +165,6 @@ class BASE_EXPORT JobHandle {
 // could be destroyed.
 //
 // |traits| requirements:
-// - base::ThreadPool() must be specified.
-// - Extension traits (e.g. BrowserThread) cannot be specified.
 // - base::ThreadPolicy must be specified if the priority of the task runner
 //   will ever be increased from BEST_EFFORT.
 JobHandle BASE_EXPORT
@@ -164,7 +173,6 @@ PostJob(const Location& from_here,
         RepeatingCallback<void(JobDelegate*)> worker_task,
         RepeatingCallback<size_t()> max_concurrency_callback);
 
-}  // namespace experimental
 }  // namespace base
 
 #endif  // BASE_TASK_POST_JOB_H_

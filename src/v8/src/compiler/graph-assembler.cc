@@ -19,7 +19,8 @@ namespace compiler {
 
 class GraphAssembler::BasicBlockUpdater {
  public:
-  BasicBlockUpdater(Schedule* schedule, Graph* graph, Zone* temp_zone);
+  BasicBlockUpdater(Schedule* schedule, Graph* graph,
+                    CommonOperatorBuilder* common, Zone* temp_zone);
 
   Node* AddNode(Node* node);
   Node* AddNode(Node* node, BasicBlock* to);
@@ -48,6 +49,7 @@ class GraphAssembler::BasicBlockUpdater {
   bool IsOriginalNode(Node* node);
   void UpdateSuccessors(BasicBlock* block);
   void SetBlockDeferredFromPredecessors();
+  void RemoveSuccessorsFromSchedule();
   void CopyForChange();
 
   Zone* temp_zone_;
@@ -64,6 +66,7 @@ class GraphAssembler::BasicBlockUpdater {
 
   Schedule* schedule_;
   Graph* graph_;
+  CommonOperatorBuilder* common_;
 
   // The nodes in the original block if we are in 'changed' state. Retained to
   // avoid invalidating iterators that are iterating over the original nodes of
@@ -85,14 +88,15 @@ class GraphAssembler::BasicBlockUpdater {
   State state_;
 };
 
-GraphAssembler::BasicBlockUpdater::BasicBlockUpdater(Schedule* schedule,
-                                                     Graph* graph,
-                                                     Zone* temp_zone)
+GraphAssembler::BasicBlockUpdater::BasicBlockUpdater(
+    Schedule* schedule, Graph* graph, CommonOperatorBuilder* common,
+    Zone* temp_zone)
     : temp_zone_(temp_zone),
       current_block_(nullptr),
       original_block_(nullptr),
       schedule_(schedule),
       graph_(graph),
+      common_(common),
       saved_nodes_(schedule->zone()),
       saved_successors_(schedule->zone()),
       original_control_(BasicBlock::kNone),
@@ -264,11 +268,66 @@ void GraphAssembler::BasicBlockUpdater::AddGoto(BasicBlock* from,
   current_block_ = nullptr;
 }
 
+void GraphAssembler::BasicBlockUpdater::RemoveSuccessorsFromSchedule() {
+  ZoneSet<BasicBlock*> blocks(temp_zone());
+  ZoneQueue<BasicBlock*> worklist(temp_zone());
+
+  for (SuccessorInfo succ : saved_successors_) {
+    BasicBlock* block = succ.block;
+    block->predecessors().erase(block->predecessors().begin() + succ.index);
+    blocks.insert(block);
+    worklist.push(block);
+  }
+  saved_successors_.clear();
+
+  // Walk through blocks until we get to the end node, then remove the path from
+  // end, clearing their successors / predecessors.
+  // This works because the unreachable paths form self-contained control flow
+  // that doesn't re-merge with reachable control flow (checked below) and
+  // DeadCodeElimination::ReduceEffectPhi preventing Unreachable from going into
+  // an effect-phi. We would need to extend this if we need the ability to mark
+  // control flow as unreachable later in the pipeline.
+  while (!worklist.empty()) {
+    BasicBlock* current = worklist.front();
+    worklist.pop();
+
+    for (BasicBlock* successor : current->successors()) {
+      // Remove the block from sucessors predecessors.
+      ZoneVector<BasicBlock*>& predecessors = successor->predecessors();
+      auto it = std::find(predecessors.begin(), predecessors.end(), current);
+      DCHECK_EQ(*it, current);
+      predecessors.erase(it);
+
+      if (successor == schedule_->end()) {
+        // If we have reached the end block, remove this block's control input
+        // from the end node's control inputs.
+        DCHECK_EQ(current->SuccessorCount(), 1);
+        NodeProperties::RemoveControlFromEnd(graph_, common_,
+                                             current->control_input());
+      } else {
+        // Otherwise, add successor to worklist if it's not already been seen.
+        if (blocks.insert(successor).second) {
+          worklist.push(successor);
+        }
+      }
+    }
+    current->ClearSuccessors();
+  }
+
+#ifdef DEBUG
+  // Ensure that the set of blocks being removed from the schedule are self
+  // contained, i.e., all predecessors have been removed from these blocks.
+  for (BasicBlock* block : blocks) {
+    CHECK_EQ(block->PredecessorCount(), 0);
+    CHECK_EQ(block->SuccessorCount(), 0);
+  }
+#endif
+}
+
 void GraphAssembler::BasicBlockUpdater::AddThrow(Node* node) {
   if (state_ == kUnchanged) {
     CopyForChange();
   }
-  schedule_->AddThrow(current_block_, node);
 
   // Clear original successors and replace the block's original control and
   // control input to the throw, since this block is now connected directly to
@@ -280,10 +339,19 @@ void GraphAssembler::BasicBlockUpdater::AddThrow(Node* node) {
   original_control_input_ = node;
   original_control_ = BasicBlock::kThrow;
 
-  for (SuccessorInfo succ : saved_successors_) {
-    succ.block->RemovePredecessor(succ.index);
+  bool already_connected_to_end =
+      saved_successors_.size() == 1 &&
+      saved_successors_[0].block == schedule_->end();
+  if (!already_connected_to_end) {
+    // Remove all successor blocks from the schedule.
+    RemoveSuccessorsFromSchedule();
+
+    // Update current block's successor withend.
+    DCHECK(saved_successors_.empty());
+    size_t index = schedule_->end()->predecessors().size();
+    schedule_->end()->AddPredecessor(current_block_);
+    saved_successors_.push_back({schedule_->end(), index});
   }
-  saved_successors_.clear();
 }
 
 void GraphAssembler::BasicBlockUpdater::UpdateSuccessors(BasicBlock* block) {
@@ -335,27 +403,31 @@ BasicBlock* GraphAssembler::BasicBlockUpdater::Finalize(BasicBlock* original) {
   return block;
 }
 
-GraphAssembler::GraphAssembler(JSGraph* jsgraph, Zone* zone, Schedule* schedule)
+GraphAssembler::GraphAssembler(MachineGraph* mcgraph, Zone* zone,
+                               Schedule* schedule, bool mark_loop_exits)
     : temp_zone_(zone),
-      jsgraph_(jsgraph),
+      mcgraph_(mcgraph),
       effect_(nullptr),
       control_(nullptr),
-      block_updater_(schedule != nullptr ? new BasicBlockUpdater(
-                                               schedule, jsgraph->graph(), zone)
-                                         : nullptr) {}
+      block_updater_(schedule != nullptr
+                         ? new BasicBlockUpdater(schedule, mcgraph->graph(),
+                                                 mcgraph->common(), zone)
+                         : nullptr),
+      loop_headers_(zone),
+      mark_loop_exits_(mark_loop_exits) {}
 
-GraphAssembler::~GraphAssembler() = default;
+GraphAssembler::~GraphAssembler() { DCHECK_EQ(loop_nesting_level_, 0); }
 
 Node* GraphAssembler::IntPtrConstant(intptr_t value) {
-  return AddClonedNode(jsgraph()->IntPtrConstant(value));
+  return AddClonedNode(mcgraph()->IntPtrConstant(value));
 }
 
 Node* GraphAssembler::Int32Constant(int32_t value) {
-  return AddClonedNode(jsgraph()->Int32Constant(value));
+  return AddClonedNode(mcgraph()->Int32Constant(value));
 }
 
 Node* GraphAssembler::Int64Constant(int64_t value) {
-  return AddClonedNode(jsgraph()->Int64Constant(value));
+  return AddClonedNode(mcgraph()->Int64Constant(value));
 }
 
 Node* GraphAssembler::UniqueIntPtrConstant(intptr_t value) {
@@ -365,37 +437,37 @@ Node* GraphAssembler::UniqueIntPtrConstant(intptr_t value) {
           : common()->Int32Constant(static_cast<int32_t>(value))));
 }
 
-Node* GraphAssembler::SmiConstant(int32_t value) {
+Node* JSGraphAssembler::SmiConstant(int32_t value) {
   return AddClonedNode(jsgraph()->SmiConstant(value));
 }
 
 Node* GraphAssembler::Uint32Constant(uint32_t value) {
-  return AddClonedNode(jsgraph()->Uint32Constant(value));
+  return AddClonedNode(mcgraph()->Uint32Constant(value));
 }
 
 Node* GraphAssembler::Float64Constant(double value) {
-  return AddClonedNode(jsgraph()->Float64Constant(value));
+  return AddClonedNode(mcgraph()->Float64Constant(value));
 }
 
-TNode<HeapObject> GraphAssembler::HeapConstant(Handle<HeapObject> object) {
+TNode<HeapObject> JSGraphAssembler::HeapConstant(Handle<HeapObject> object) {
   return TNode<HeapObject>::UncheckedCast(
       AddClonedNode(jsgraph()->HeapConstant(object)));
 }
 
-TNode<Object> GraphAssembler::Constant(const ObjectRef& ref) {
+TNode<Object> JSGraphAssembler::Constant(const ObjectRef& ref) {
   return TNode<Object>::UncheckedCast(AddClonedNode(jsgraph()->Constant(ref)));
 }
 
-TNode<Number> GraphAssembler::NumberConstant(double value) {
+TNode<Number> JSGraphAssembler::NumberConstant(double value) {
   return TNode<Number>::UncheckedCast(
       AddClonedNode(jsgraph()->Constant(value)));
 }
 
 Node* GraphAssembler::ExternalConstant(ExternalReference ref) {
-  return AddClonedNode(jsgraph()->ExternalConstant(ref));
+  return AddClonedNode(mcgraph()->ExternalConstant(ref));
 }
 
-Node* GraphAssembler::CEntryStubConstant(int result_size) {
+Node* JSGraphAssembler::CEntryStubConstant(int result_size) {
   return AddClonedNode(jsgraph()->CEntryStubConstant(result_size));
 }
 
@@ -403,18 +475,23 @@ Node* GraphAssembler::LoadFramePointer() {
   return AddNode(graph()->NewNode(machine()->LoadFramePointer()));
 }
 
+Node* GraphAssembler::LoadHeapNumberValue(Node* heap_number) {
+  return Load(MachineType::Float64(), heap_number,
+              IntPtrConstant(HeapNumber::kValueOffset - kHeapObjectTag));
+}
+
 #define SINGLETON_CONST_DEF(Name, Type)              \
-  TNode<Type> GraphAssembler::Name##Constant() {     \
+  TNode<Type> JSGraphAssembler::Name##Constant() {   \
     return TNode<Type>::UncheckedCast(               \
         AddClonedNode(jsgraph()->Name##Constant())); \
   }
 JSGRAPH_SINGLETON_CONSTANT_LIST(SINGLETON_CONST_DEF)
 #undef SINGLETON_CONST_DEF
 
-#define SINGLETON_CONST_TEST_DEF(Name, ...)                      \
-  TNode<Boolean> GraphAssembler::Is##Name(TNode<Object> value) { \
-    return TNode<Boolean>::UncheckedCast(                        \
-        ReferenceEqual(value, Name##Constant()));                \
+#define SINGLETON_CONST_TEST_DEF(Name, ...)                        \
+  TNode<Boolean> JSGraphAssembler::Is##Name(TNode<Object> value) { \
+    return TNode<Boolean>::UncheckedCast(                          \
+        ReferenceEqual(value, Name##Constant()));                  \
   }
 JSGRAPH_SINGLETON_CONSTANT_LIST(SINGLETON_CONST_TEST_DEF)
 #undef SINGLETON_CONST_TEST_DEF
@@ -447,26 +524,26 @@ Node* GraphAssembler::IntPtrEqual(Node* left, Node* right) {
 
 Node* GraphAssembler::TaggedEqual(Node* left, Node* right) {
   if (COMPRESS_POINTERS_BOOL) {
-    return Word32Equal(ChangeTaggedToCompressed(left),
-                       ChangeTaggedToCompressed(right));
+    return Word32Equal(left, right);
+  } else {
+    return WordEqual(left, right);
   }
-  return WordEqual(left, right);
 }
 
 Node* GraphAssembler::SmiSub(Node* left, Node* right) {
   if (COMPRESS_POINTERS_BOOL) {
-    return Int32Sub(ChangeTaggedToCompressed(left),
-                    ChangeTaggedToCompressed(right));
+    return Int32Sub(left, right);
+  } else {
+    return IntSub(left, right);
   }
-  return IntSub(left, right);
 }
 
 Node* GraphAssembler::SmiLessThan(Node* left, Node* right) {
   if (COMPRESS_POINTERS_BOOL) {
-    return Int32LessThan(ChangeTaggedToCompressed(left),
-                         ChangeTaggedToCompressed(right));
+    return Int32LessThan(left, right);
+  } else {
+    return IntLessThan(left, right);
   }
-  return IntLessThan(left, right);
 }
 
 Node* GraphAssembler::Float64RoundDown(Node* value) {
@@ -485,108 +562,138 @@ Node* GraphAssembler::Projection(int index, Node* value) {
       graph()->NewNode(common()->Projection(index), value, control()));
 }
 
-Node* GraphAssembler::Allocate(AllocationType allocation, Node* size) {
+Node* JSGraphAssembler::Allocate(AllocationType allocation, Node* size) {
   return AddNode(
       graph()->NewNode(simplified()->AllocateRaw(Type::Any(), allocation), size,
                        effect(), control()));
 }
 
-Node* GraphAssembler::LoadField(FieldAccess const& access, Node* object) {
+Node* JSGraphAssembler::LoadField(FieldAccess const& access, Node* object) {
   Node* value = AddNode(graph()->NewNode(simplified()->LoadField(access),
                                          object, effect(), control()));
   return value;
 }
 
-Node* GraphAssembler::LoadElement(ElementAccess const& access, Node* object,
-                                  Node* index) {
+Node* JSGraphAssembler::LoadElement(ElementAccess const& access, Node* object,
+                                    Node* index) {
   Node* value = AddNode(graph()->NewNode(simplified()->LoadElement(access),
                                          object, index, effect(), control()));
   return value;
 }
 
-Node* GraphAssembler::StoreField(FieldAccess const& access, Node* object,
-                                 Node* value) {
+Node* JSGraphAssembler::StoreField(FieldAccess const& access, Node* object,
+                                   Node* value) {
   return AddNode(graph()->NewNode(simplified()->StoreField(access), object,
                                   value, effect(), control()));
 }
 
-Node* GraphAssembler::StoreElement(ElementAccess const& access, Node* object,
-                                   Node* index, Node* value) {
+Node* JSGraphAssembler::StoreElement(ElementAccess const& access, Node* object,
+                                     Node* index, Node* value) {
   return AddNode(graph()->NewNode(simplified()->StoreElement(access), object,
                                   index, value, effect(), control()));
 }
 
-void GraphAssembler::TransitionAndStoreElement(MapRef double_map,
-                                               MapRef fast_map,
-                                               TNode<HeapObject> object,
-                                               TNode<Number> index,
-                                               TNode<Object> value) {
+void JSGraphAssembler::TransitionAndStoreElement(MapRef double_map,
+                                                 MapRef fast_map,
+                                                 TNode<HeapObject> object,
+                                                 TNode<Number> index,
+                                                 TNode<Object> value) {
   AddNode(graph()->NewNode(simplified()->TransitionAndStoreElement(
                                double_map.object(), fast_map.object()),
                            object, index, value, effect(), control()));
 }
 
-TNode<Number> GraphAssembler::StringLength(TNode<String> string) {
+TNode<Number> JSGraphAssembler::StringLength(TNode<String> string) {
   return AddNode<Number>(
       graph()->NewNode(simplified()->StringLength(), string));
 }
 
-TNode<Boolean> GraphAssembler::ReferenceEqual(TNode<Object> lhs,
-                                              TNode<Object> rhs) {
+TNode<Boolean> JSGraphAssembler::ReferenceEqual(TNode<Object> lhs,
+                                                TNode<Object> rhs) {
   return AddNode<Boolean>(
       graph()->NewNode(simplified()->ReferenceEqual(), lhs, rhs));
 }
 
-TNode<Number> GraphAssembler::NumberMin(TNode<Number> lhs, TNode<Number> rhs) {
+TNode<Number> JSGraphAssembler::NumberMin(TNode<Number> lhs,
+                                          TNode<Number> rhs) {
   return AddNode<Number>(graph()->NewNode(simplified()->NumberMin(), lhs, rhs));
 }
 
-TNode<Number> GraphAssembler::NumberMax(TNode<Number> lhs, TNode<Number> rhs) {
+TNode<Number> JSGraphAssembler::NumberMax(TNode<Number> lhs,
+                                          TNode<Number> rhs) {
   return AddNode<Number>(graph()->NewNode(simplified()->NumberMax(), lhs, rhs));
 }
 
-TNode<Number> GraphAssembler::NumberAdd(TNode<Number> lhs, TNode<Number> rhs) {
+TNode<Number> JSGraphAssembler::NumberAdd(TNode<Number> lhs,
+                                          TNode<Number> rhs) {
   return AddNode<Number>(graph()->NewNode(simplified()->NumberAdd(), lhs, rhs));
 }
 
-TNode<Number> GraphAssembler::NumberSubtract(TNode<Number> lhs,
-                                             TNode<Number> rhs) {
+TNode<Number> JSGraphAssembler::NumberSubtract(TNode<Number> lhs,
+                                               TNode<Number> rhs) {
   return AddNode<Number>(
       graph()->NewNode(simplified()->NumberSubtract(), lhs, rhs));
 }
 
-TNode<Boolean> GraphAssembler::NumberLessThan(TNode<Number> lhs,
-                                              TNode<Number> rhs) {
+TNode<Boolean> JSGraphAssembler::NumberLessThan(TNode<Number> lhs,
+                                                TNode<Number> rhs) {
   return AddNode<Boolean>(
       graph()->NewNode(simplified()->NumberLessThan(), lhs, rhs));
 }
 
-TNode<Boolean> GraphAssembler::NumberLessThanOrEqual(TNode<Number> lhs,
-                                                     TNode<Number> rhs) {
+TNode<Boolean> JSGraphAssembler::NumberLessThanOrEqual(TNode<Number> lhs,
+                                                       TNode<Number> rhs) {
   return AddNode<Boolean>(
       graph()->NewNode(simplified()->NumberLessThanOrEqual(), lhs, rhs));
 }
 
-TNode<String> GraphAssembler::StringSubstring(TNode<String> string,
-                                              TNode<Number> from,
-                                              TNode<Number> to) {
+TNode<String> JSGraphAssembler::StringSubstring(TNode<String> string,
+                                                TNode<Number> from,
+                                                TNode<Number> to) {
   return AddNode<String>(graph()->NewNode(
       simplified()->StringSubstring(), string, from, to, effect(), control()));
 }
 
-TNode<Boolean> GraphAssembler::ObjectIsCallable(TNode<Object> value) {
+TNode<Boolean> JSGraphAssembler::ObjectIsCallable(TNode<Object> value) {
   return AddNode<Boolean>(
       graph()->NewNode(simplified()->ObjectIsCallable(), value));
 }
 
-Node* GraphAssembler::CheckIf(Node* cond, DeoptimizeReason reason) {
+TNode<Boolean> JSGraphAssembler::ObjectIsUndetectable(TNode<Object> value) {
+  return AddNode<Boolean>(
+      graph()->NewNode(simplified()->ObjectIsUndetectable(), value));
+}
+
+Node* JSGraphAssembler::CheckIf(Node* cond, DeoptimizeReason reason) {
   return AddNode(graph()->NewNode(simplified()->CheckIf(reason), cond, effect(),
                                   control()));
 }
 
-TNode<Boolean> GraphAssembler::NumberIsFloat64Hole(TNode<Number> value) {
+TNode<Boolean> JSGraphAssembler::NumberIsFloat64Hole(TNode<Number> value) {
   return AddNode<Boolean>(
       graph()->NewNode(simplified()->NumberIsFloat64Hole(), value));
+}
+
+TNode<Boolean> JSGraphAssembler::ToBoolean(TNode<Object> value) {
+  return AddNode<Boolean>(graph()->NewNode(simplified()->ToBoolean(), value));
+}
+
+TNode<Object> JSGraphAssembler::ConvertTaggedHoleToUndefined(
+    TNode<Object> value) {
+  return AddNode<Object>(
+      graph()->NewNode(simplified()->ConvertTaggedHoleToUndefined(), value));
+}
+
+TNode<FixedArrayBase> JSGraphAssembler::MaybeGrowFastElements(
+    ElementsKind kind, const FeedbackSource& feedback, TNode<JSArray> array,
+    TNode<FixedArrayBase> elements, TNode<Number> new_length,
+    TNode<Number> old_length) {
+  GrowFastElementsMode mode = IsDoubleElementsKind(kind)
+                                  ? GrowFastElementsMode::kDoubleElements
+                                  : GrowFastElementsMode::kSmiOrObjectElements;
+  return AddNode<FixedArrayBase>(graph()->NewNode(
+      simplified()->MaybeGrowFastElements(mode, feedback), array, elements,
+      new_length, old_length, effect(), control()));
 }
 
 Node* GraphAssembler::TypeGuard(Type type, Node* value) {
@@ -597,16 +704,6 @@ Node* GraphAssembler::TypeGuard(Type type, Node* value) {
 Node* GraphAssembler::Checkpoint(FrameState frame_state) {
   return AddNode(graph()->NewNode(common()->Checkpoint(), frame_state, effect(),
                                   control()));
-}
-
-Node* GraphAssembler::LoopExit(Control loop_header) {
-  return AddNode(
-      graph()->NewNode(common()->LoopExit(), control(), loop_header));
-}
-
-Node* GraphAssembler::LoopExitEffect() {
-  return AddNode(
-      graph()->NewNode(common()->LoopExitEffect(), effect(), control()));
 }
 
 Node* GraphAssembler::DebugBreak() {
@@ -625,10 +722,18 @@ Node* GraphAssembler::Store(StoreRepresentation rep, Node* object, Node* offset,
                                   effect(), control()));
 }
 
+Node* GraphAssembler::Store(StoreRepresentation rep, Node* object, int offset,
+                            Node* value) {
+  return Store(rep, object, Int32Constant(offset), value);
+}
+
 Node* GraphAssembler::Load(MachineType type, Node* object, Node* offset) {
-  Node* value = AddNode(graph()->NewNode(machine()->Load(type), object, offset,
-                                         effect(), control()));
-  return value;
+  return AddNode(graph()->NewNode(machine()->Load(type), object, offset,
+                                  effect(), control()));
+}
+
+Node* GraphAssembler::Load(MachineType type, Node* object, int offset) {
+  return Load(type, object, Int32Constant(offset));
 }
 
 Node* GraphAssembler::StoreUnaligned(MachineRepresentation rep, Node* object,
@@ -661,10 +766,15 @@ Node* GraphAssembler::UnsafePointerAdd(Node* base, Node* external) {
                                   effect(), control()));
 }
 
-TNode<Number> GraphAssembler::ToNumber(TNode<Object> value) {
-  return AddNode<Number>(graph()->NewNode(ToNumberOperator(),
+TNode<Number> JSGraphAssembler::PlainPrimitiveToNumber(TNode<Object> value) {
+  return AddNode<Number>(graph()->NewNode(PlainPrimitiveToNumberOperator(),
                                           ToNumberBuiltinConstant(), value,
                                           NoContextConstant(), effect()));
+}
+
+Node* GraphAssembler::BitcastWordToTaggedSigned(Node* value) {
+  return AddNode(
+      graph()->NewNode(machine()->BitcastWordToTaggedSigned(), value));
 }
 
 Node* GraphAssembler::BitcastWordToTagged(Node* value) {
@@ -782,7 +892,7 @@ void GraphAssembler::GotoIfBasicBlock(BasicBlock* block, Node* branch,
 BasicBlock* GraphAssembler::FinalizeCurrentBlock(BasicBlock* block) {
   if (block_updater_) {
     block = block_updater_->Finalize(block);
-    if (control() == jsgraph()->Dead()) {
+    if (control() == mcgraph()->Dead()) {
       // If the block's end is unreachable, then reset current effect and
       // control to that of the block's throw control node.
       DCHECK(block->control() == BasicBlock::kThrow);
@@ -798,7 +908,7 @@ void GraphAssembler::ConnectUnreachableToEnd() {
   DCHECK_EQ(effect()->opcode(), IrOpcode::kUnreachable);
   Node* throw_node = graph()->NewNode(common()->Throw(), effect(), control());
   NodeProperties::MergeControlToEnd(graph(), common(), throw_node);
-  effect_ = control_ = jsgraph()->Dead();
+  effect_ = control_ = mcgraph()->Dead();
   if (block_updater_) {
     block_updater_->AddThrow(throw_node);
   }
@@ -840,10 +950,9 @@ void GraphAssembler::InitializeEffectControl(Node* effect, Node* control) {
   control_ = control;
 }
 
-Operator const* GraphAssembler::ToNumberOperator() {
+Operator const* JSGraphAssembler::PlainPrimitiveToNumberOperator() {
   if (!to_number_operator_.is_set()) {
-    Callable callable =
-        Builtins::CallableFor(jsgraph()->isolate(), Builtins::kToNumber);
+    Callable callable = Builtins::CallableFor(isolate(), Builtins::kToNumber);
     CallDescriptor::Flags flags = CallDescriptor::kNoFlags;
     auto call_descriptor = Linkage::GetStubCallDescriptor(
         graph()->zone(), callable.descriptor(),

@@ -14,10 +14,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
-#include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -29,6 +29,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -44,9 +45,6 @@ namespace chromeos {
 
 namespace {
 
-// Timeout for RunLoop::Run() in this test.
-const int kTimeoutSeconds = 2;
-
 // OOBE constants.
 const char kLanguageSelect[] = "languageSelect";
 const char kKeyboardSelect[] = "keyboardSelect";
@@ -56,52 +54,12 @@ std::string GetGetSelectStatement(const std::string& selectId) {
 }
 
 const char kUSLayout[] = "xkb:us::eng";
-class TimedRunLoop {
- public:
-  TimedRunLoop(const base::TimeDelta& timeout,
-               const std::string& failure_message)
-      : timeout_(timeout), message_(failure_message) {}
-
-  // Returns true if Run() successfully finished,
-  // Returns false on timeout.
-  bool Run() {
-    base::OneShotTimer timer;
-    timer.Start(FROM_HERE, timeout_,
-                base::Bind(&TimedRunLoop::OnTimeout, base::Unretained(this)));
-    loop_.Run();
-    return result_;
-  }
-
-  void Quit() {
-    result_ = true;
-    loop_.Quit();
-  }
-
-  base::Closure QuitClosure() {
-    return base::Bind(&TimedRunLoop::Quit, base::Unretained(this));
-  }
-
- private:
-  void OnTimeout() {
-    LOG(ERROR) << "Timeout waiting for: " << message_;
-    result_ = false;
-    loop_.Quit();
-  }
-
-  bool result_ = false;
-  const base::TimeDelta timeout_;
-  const std::string message_;
-  base::RunLoop loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TimedRunLoop);
-};
 
 class LanguageListWaiter : public WelcomeScreen::Observer {
  public:
   LanguageListWaiter()
       : welcome_screen_(WelcomeScreen::Get(
-            WizardController::default_controller()->screen_manager())),
-        loop_(base::TimeDelta::FromSeconds(kTimeoutSeconds), "LanguageList") {
+            WizardController::default_controller()->screen_manager())) {
     welcome_screen_->AddObserver(this);
     CheckLanguageList();
   }
@@ -111,13 +69,8 @@ class LanguageListWaiter : public WelcomeScreen::Observer {
   // WelcomeScreen::Observer implementation:
   void OnLanguageListReloaded() override { CheckLanguageList(); }
 
-  // Returns true on success, false on timeout.
-  bool Wait() {
-    if (LanguageListReady())
-      return true;
-
-    return loop_.Run();
-  }
+  // Run the loop until the list is ready or the default Run() timeout expires.
+  void RunUntilLanguageListReady() { loop_.Run(); }
 
  private:
   bool LanguageListReady() const { return welcome_screen_->language_list(); }
@@ -128,7 +81,7 @@ class LanguageListWaiter : public WelcomeScreen::Observer {
   }
 
   WelcomeScreen* welcome_screen_;
-  TimedRunLoop loop_;
+  base::RunLoop loop_;
 };
 
 }  // namespace
@@ -233,7 +186,7 @@ struct LocalizationTestParams {
 };
 
 class OobeLocalizationTest
-    : public LoginManagerTest,
+    : public OobeBaseTest,
       public testing::WithParamInterface<const LocalizationTestParams*> {
  public:
   OobeLocalizationTest();
@@ -255,23 +208,17 @@ class OobeLocalizationTest
   // Runs the test for the given locale and keyboard layout.
   void RunLocalizationTest();
 
-  // Returns true on success, false on error.
-  bool WaitUntilJSIsReady() {
+  // Runs until the OOBE UI JS is ready, or the default Run() timeout expires.
+  void RunUntilJSIsReady() {
     LoginDisplayHost* host = LoginDisplayHost::default_host();
-    if (!host)
-      return false;
+    ASSERT_TRUE(host);
 
     OobeUI* oobe_ui = host->GetOobeUI();
-    if (!oobe_ui)
-      return false;
+    ASSERT_TRUE(oobe_ui);
 
-    TimedRunLoop run_loop(base::TimeDelta::FromSeconds(kTimeoutSeconds),
-                          "WaitUntilJSIsReady()");
-    const bool oobe_ui_ready = oobe_ui->IsJSReady(run_loop.QuitClosure());
-    if (oobe_ui_ready)
-      return true;
-
-    return run_loop.Run();
+    base::RunLoop run_loop;
+    if (!oobe_ui->IsJSReady(run_loop.QuitClosure()))
+      run_loop.Run();
   }
 
  private:
@@ -280,7 +227,7 @@ class OobeLocalizationTest
   DISALLOW_COPY_AND_ASSIGN(OobeLocalizationTest);
 };
 
-OobeLocalizationTest::OobeLocalizationTest() : LoginManagerTest(false, true) {
+OobeLocalizationTest::OobeLocalizationTest() : OobeBaseTest() {
   fake_statistics_provider_.SetMachineStatistic("initial_locale",
                                                 GetParam()->initial_locale);
   fake_statistics_provider_.SetMachineStatistic("keyboard_layout",
@@ -402,9 +349,9 @@ void OobeLocalizationTest::RunLocalizationTest() {
   const std::string expected_keyboard_select =
       TranslateXKB2Extension(expected_keyboard_select_control);
 
-  ASSERT_TRUE(LanguageListWaiter().Wait());
+  ASSERT_NO_FATAL_FAILURE(LanguageListWaiter().RunUntilLanguageListReady());
 
-  ASSERT_TRUE(WaitUntilJSIsReady());
+  ASSERT_NO_FATAL_FAILURE(RunUntilJSIsReady());
 
   const std::string first_language =
       expected_locale.substr(0, expected_locale.find(','));

@@ -8,7 +8,6 @@ import logging
 import optparse
 import os
 import re
-import shutil
 import sys
 import time
 
@@ -115,17 +114,9 @@ def CaptureLogsAsArtifacts(results):
 
 
 def _RunStoryAndProcessErrorIfNeeded(story, results, state, test):
-  def ProcessError(exc, log_message):
+  def ProcessError(log_message):
     logging.exception(log_message)
     state.DumpStateUponStoryRunFailure(results)
-
-    # Dump app crash, if present
-    if exc:
-      if isinstance(exc, exceptions.AppCrashException):
-        minidump_path = exc.minidump_path
-        if minidump_path:
-          with results.CaptureArtifact('minidump.dmp') as path:
-            shutil.move(minidump_path, path)
 
     # Note: calling Fail on the results object also normally causes the
     # progress_reporter to log it in the output.
@@ -142,28 +133,42 @@ def _RunStoryAndProcessErrorIfNeeded(story, results, state, test):
             'Skipped because story is not supported '
             '(SharedState.CanRunStory() returns False).')
         return
+
+      if hasattr(state, 'browser') and state.browser:
+        state.browser.CleanupUnsymbolizedMinidumps()
+
       story.wpr_mode = state.wpr_mode
       state.RunStory(results)
       if isinstance(test, story_test.StoryTest):
         test.Measure(state.platform, results)
+
     except page_action.PageActionNotSupported as exc:
       results.Skip('Unsupported page action: %s' % exc)
     except (legacy_page_test.Failure, exceptions.TimeoutException,
-            exceptions.LoginException, py_utils.TimeoutException) as exc:
-      ProcessError(exc, log_message='Handleable error')
-    except _UNHANDLEABLE_ERRORS as exc:
-      ProcessError(exc, log_message=('Unhandleable error. '
-                                     'Benchmark run will be interrupted'))
+            exceptions.LoginException, py_utils.TimeoutException):
+      ProcessError(log_message='Handleable error')
+    except _UNHANDLEABLE_ERRORS:
+      ProcessError(log_message=('Unhandleable error. '
+                                'Benchmark run will be interrupted'))
       raise
-    except Exception as exc:  # pylint: disable=broad-except
-      ProcessError(exc, log_message=('Possibly handleable error. '
-                                     'Will try to restart shared state'))
+    except Exception:  # pylint: disable=broad-except
+      ProcessError(log_message=('Possibly handleable error. '
+                                'Will try to restart shared state'))
       # The caller, RunStorySet, will catch this exception, destory and
       # create a new shared state.
       raise
     finally:
       has_existing_exception = (sys.exc_info() != (None, None, None))
       try:
+        if hasattr(state, 'browser') and state.browser:
+          try:
+            state.browser.CleanupUnsymbolizedMinidumps(fatal=True)
+          except Exception: # pylint: disable=broad-except
+            exception_formatter.PrintFormattedException(
+                msg='Exception raised when cleaning unsymbolized minidumps: ')
+            state.DumpStateUponStoryRunFailure(results)
+            results.Fail(sys.exc_info())
+
         # We attempt to stop tracing and/or metric collecting before possibly
         # closing the browser. Closing the browser first and stopping tracing
         # later appeared to cause issues where subsequent browser instances

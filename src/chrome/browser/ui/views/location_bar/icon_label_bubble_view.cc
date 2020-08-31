@@ -12,16 +12,13 @@
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/ax_virtual_view.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -34,8 +31,6 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
-
-using MD = ui::MaterialDesignController;
 
 namespace {
 
@@ -53,8 +48,9 @@ constexpr int kIconLabelBubbleFadeOutDurationMs = 175;
 
 }  // namespace
 
-//////////////////////////////////////////////////////////////////
-// SeparatorView class
+SkColor IconLabelBubbleView::Delegate::GetIconLabelBubbleInkDropColor() const {
+  return GetIconLabelBubbleSurroundingForegroundColor();
+}
 
 IconLabelBubbleView::SeparatorView::SeparatorView(IconLabelBubbleView* owner) {
   DCHECK(owner);
@@ -65,14 +61,22 @@ IconLabelBubbleView::SeparatorView::SeparatorView(IconLabelBubbleView* owner) {
 }
 
 void IconLabelBubbleView::SeparatorView::OnPaint(gfx::Canvas* canvas) {
-  const SkColor background_color = owner_->GetParentBackgroundColor();
-  const SkColor separator_color =
-      SkColorSetA(color_utils::GetColorWithMaxContrast(background_color), 0x69);
+  // This uses the surrounding context as the base color instead of
+  // IconLabelBubbleView::GetForegroundColor() so that if the
+  // IconLabelBubbleView has been emphasized (e.g. red text for a security
+  // error) the separator will still blend into the background.
+  const SkColor separator_color = SkColorSetA(
+      owner_->delegate_->GetIconLabelBubbleSurroundingForegroundColor(), 0x69);
   const float x = GetLocalBounds().right() -
                   owner_->GetEndPaddingWithSeparator() -
                   1.0f / canvas->image_scale();
   canvas->DrawLine(gfx::PointF(x, GetLocalBounds().y()),
                    gfx::PointF(x, GetLocalBounds().bottom()), separator_color);
+}
+
+void IconLabelBubbleView::SeparatorView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  SchedulePaint();
 }
 
 void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
@@ -103,19 +107,11 @@ void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
     duration = kIconLabelBubbleFadeInDurationMs;
   }
 
-  if (disable_animation_for_test_) {
-    layer()->SetOpacity(opacity);
-  } else {
-    ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
-    animation.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(duration));
-    animation.SetTweenType(gfx::Tween::Type::EASE_IN);
-    layer()->SetOpacity(opacity);
-  }
+  ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
+  animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(duration));
+  animation.SetTweenType(gfx::Tween::Type::EASE_IN);
+  layer()->SetOpacity(opacity);
 }
-
-//////////////////////////////////////////////////////////////////
-// HighlightPathGenerator class
 
 class IconLabelBubbleView::HighlightPathGenerator
     : public views::HighlightPathGenerator {
@@ -131,12 +127,13 @@ class IconLabelBubbleView::HighlightPathGenerator
   DISALLOW_COPY_AND_ASSIGN(HighlightPathGenerator);
 };
 
-//////////////////////////////////////////////////////////////////
-// IconLabelBubbleView class
-
-IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
+IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list,
+                                         Delegate* delegate)
     : LabelButton(nullptr, base::string16()),
+      delegate_(delegate),
       separator_view_(new SeparatorView(this)) {
+  DCHECK(delegate_);
+
   SetFontList(font_list);
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
@@ -162,8 +159,6 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
   alert_view->GetCustomData().role = ax::mojom::Role::kAlert;
   alert_virtual_view_ = alert_view.get();
   GetViewAccessibility().AddVirtualChildView(std::move(alert_view));
-
-  md_observer_.Add(MD::GetInstance());
 }
 
 IconLabelBubbleView::~IconLabelBubbleView() {}
@@ -188,17 +183,17 @@ void IconLabelBubbleView::SetLabel(const base::string16& label_text) {
   separator_view_->UpdateOpacity();
 }
 
-void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
-  LabelButton::SetImage(STATE_NORMAL, image_skia);
-}
-
 void IconLabelBubbleView::SetFontList(const gfx::FontList& font_list) {
   label()->SetFontList(font_list);
 }
 
-SkColor IconLabelBubbleView::GetParentBackgroundColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultBackground);
+SkColor IconLabelBubbleView::GetForegroundColor() const {
+  return delegate_->GetIconLabelBubbleSurroundingForegroundColor();
+}
+
+void IconLabelBubbleView::UpdateLabelColors() {
+  SetEnabledTextColors(GetForegroundColor());
+  label()->SetBackgroundColor(delegate_->GetIconLabelBubbleBackgroundColor());
 }
 
 bool IconLabelBubbleView::ShouldShowSeparator() const {
@@ -247,6 +242,15 @@ bool IconLabelBubbleView::ShowBubble(const ui::Event& event) {
 
 bool IconLabelBubbleView::IsBubbleShowing() const {
   return false;
+}
+
+void IconLabelBubbleView::OnTouchUiChanged() {
+  UpdateBorder();
+
+  // PreferredSizeChanged() incurs an expensive layout of the location bar, so
+  // only call it when this view is showing.
+  if (GetVisible())
+    PreferredSizeChanged();
 }
 
 gfx::Size IconLabelBubbleView::CalculatePreferredSize() const {
@@ -310,9 +314,7 @@ void IconLabelBubbleView::OnThemeChanged() {
   // under certain conditions. We don't want that, so unset the background.
   label()->SetBackground(nullptr);
 
-  SetEnabledTextColors(GetTextColor());
-  label()->SetBackgroundColor(GetParentBackgroundColor());
-  SchedulePaint();
+  UpdateLabelColors();
 }
 
 std::unique_ptr<views::InkDrop> IconLabelBubbleView::CreateInkDrop() {
@@ -321,6 +323,10 @@ std::unique_ptr<views::InkDrop> IconLabelBubbleView::CreateInkDrop() {
   ink_drop->SetShowHighlightOnFocus(!focus_ring());
   ink_drop->AddObserver(this);
   return std::move(ink_drop);
+}
+
+SkColor IconLabelBubbleView::GetInkDropBaseColor() const {
+  return delegate_->GetIconLabelBubbleInkDropColor();
 }
 
 bool IconLabelBubbleView::IsTriggerableEvent(const ui::Event& event) {
@@ -387,13 +393,9 @@ void IconLabelBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->SetNameExplicitlyEmpty();
 }
 
-void IconLabelBubbleView::OnTouchUiChanged() {
-  UpdateBorder();
-
-  // PreferredSizeChanged() incurs an expensive layout of the location bar, so
-  // only call it when this view is showing.
-  if (GetVisible())
-    PreferredSizeChanged();
+void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
+  DCHECK(!image_skia.isNull());
+  LabelButton::SetImage(STATE_NORMAL, image_skia);
 }
 
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
@@ -420,7 +422,8 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
 int IconLabelBubbleView::GetInternalSpacing() const {
   if (image()->GetPreferredSize().IsEmpty())
     return 0;
-  return (MD::touch_ui() ? 10 : 8) + GetExtraInternalSpacing();
+  return (ui::TouchUiController::Get()->touch_ui() ? 10 : 8) +
+         GetExtraInternalSpacing();
 }
 
 int IconLabelBubbleView::GetExtraInternalSpacing() const {

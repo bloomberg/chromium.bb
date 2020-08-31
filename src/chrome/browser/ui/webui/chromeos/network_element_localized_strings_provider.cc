@@ -18,6 +18,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 namespace chromeos {
 namespace network_element {
@@ -31,6 +32,7 @@ constexpr webui::LocalizedString kElementLocalizedStrings[] = {
     {"OncTypeTether", IDS_NETWORK_TYPE_TETHER},
     {"OncTypeVPN", IDS_NETWORK_TYPE_VPN},
     {"OncTypeWiFi", IDS_NETWORK_TYPE_WIFI},
+    {"ipAddressNotAvailable", IDS_NETWORK_IP_ADDRESS_NA},
     {"networkListItemConnected", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED},
     {"networkListItemConnecting", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING},
     {"networkListItemConnectingTo", IDS_NETWORK_LIST_CONNECTING_TO},
@@ -69,6 +71,13 @@ constexpr webui::LocalizedString kElementLocalizedStrings[] = {
     {"networkListItemNotConnected", IDS_NETWORK_LIST_NOT_CONNECTED},
     {"networkListItemNoNetwork", IDS_NETWORK_LIST_NO_NETWORK},
     {"vpnNameTemplate", IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE},
+    {"networkIconLabelEthernet", IDS_NETWORK_ICON_LABEL_ETHERNET},
+    {"networkIconLabelVpn", IDS_NETWORK_ICON_LABEL_VPN},
+    {"networkIconLabelOff", IDS_NETWORK_ICON_LABEL_NETWORK_OFF},
+    {"networkIconLabelNoNetwork", IDS_NETWORK_ICON_LABEL_NO_NETWORK},
+    {"networkIconLabelConnecting", IDS_NETWORK_ICON_LABEL_CONNECTING},
+    {"networkIconLabelNotConnected", IDS_NETWORK_ICON_LABEL_NOT_CONNECTED},
+    {"networkIconLabelSignalStrength", IDS_NETWORK_ICON_LABEL_SIGNAL_STRENGTH},
 };
 
 }  //  namespace
@@ -197,7 +206,6 @@ void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
 
 void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"loading", IDS_SETTINGS_LOADING},
       {"hidePassword", IDS_SETTINGS_PASSWORD_HIDE},
       {"showPassword", IDS_SETTINGS_PASSWORD_SHOW},
       {"networkProxy", IDS_SETTINGS_INTERNET_NETWORK_PROXY_PROXY},

@@ -47,12 +47,9 @@ void LayoutSVGResourceMarker::UpdateLayout() {
   ClearInvalidationMask();
 }
 
-void LayoutSVGResourceMarker::RemoveAllClientsFromCache(
-    bool mark_for_invalidation) {
-  MarkAllClientsForInvalidation(
-      mark_for_invalidation ? SVGResourceClient::kLayoutInvalidation |
-                                  SVGResourceClient::kBoundariesInvalidation
-                            : SVGResourceClient::kParentOnlyInvalidation);
+void LayoutSVGResourceMarker::RemoveAllClientsFromCache() {
+  MarkAllClientsForInvalidation(SVGResourceClient::kLayoutInvalidation |
+                                SVGResourceClient::kBoundariesInvalidation);
 }
 
 FloatRect LayoutSVGResourceMarker::MarkerBoundaries(
@@ -141,7 +138,8 @@ void LayoutSVGResourceMarker::SetNeedsTransformUpdate() {
   needs_transform_update_ = true;
 }
 
-SVGTransformChange LayoutSVGResourceMarker::CalculateLocalTransform() {
+SVGTransformChange LayoutSVGResourceMarker::CalculateLocalTransform(
+    bool bounds_changed) {
   if (!needs_transform_update_)
     return SVGTransformChange::kNone;
 

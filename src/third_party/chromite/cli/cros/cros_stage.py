@@ -9,20 +9,24 @@ from __future__ import print_function
 
 import os
 import re
+import sys
 
 from chromite.cbuildbot import commands
 
 from chromite.cli import command
-from chromite.cli import flash
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import dev_server_wrapper
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import remote_access
 
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import paygen_stateful_payload_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 MOBLAB_STATIC_DIR = '/mnt/moblab/static'
@@ -235,22 +239,20 @@ NOTES:
                test bits.
     """
     with remote_access.ChromiumOSDeviceHandler(self.options.remote) as device:
-      device.RunCommand(['mkdir', '-p', self.stage_directory])
+      device.run(['mkdir', '-p', self.stage_directory])
       for f in os.listdir(tempdir):
         device.CopyToDevice(os.path.join(tempdir, f), self.stage_directory,
                             mode='rsync')
-      device.RunCommand(['chown', '-R', 'moblab:moblab',
-                         MOBLAB_TMP_DIR])
+      device.run(['chown', '-R', 'moblab:moblab', MOBLAB_TMP_DIR])
       # Delete this image from the Devserver in case it was previously staged.
-      device.RunCommand(['rm', '-rf', os.path.join(MOBLAB_STATIC_DIR,
-                                                   self.staged_image_name)])
+      device.run(['rm', '-rf', os.path.join(MOBLAB_STATIC_DIR,
+                                            self.staged_image_name)])
       stage_url = DEVSERVER_STAGE_URL % dict(moblab=self.options.remote,
                                              staged_dir=self.stage_directory)
       # Stage the image from the moblab, as port 8080 might not be reachable
       # from the developer's system.
-      res = device.RunCommand(['curl', '--fail',
-                               cros_build_lib.ShellQuote(stage_url)],
-                              error_code_ok=True)
+      res = device.run(['curl', '--fail', cros_build_lib.ShellQuote(stage_url)],
+                       check=False)
       if res.returncode == 0:
         logging.info('\n\nStaging Completed!')
         logging.info('Image is staged on Moblab as %s',
@@ -258,7 +260,7 @@ NOTES:
       else:
         logging.info('Staging failed. Error Message: %s', res.error)
 
-      device.RunCommand(['rm', '-rf', self.stage_directory])
+      device.run(['rm', '-rf', self.stage_directory])
 
   def _StageOnGS(self, tempdir):
     """Stage the generated payloads and test bits into a Google Storage bucket.
@@ -280,7 +282,7 @@ NOTES:
     logging.info('Attempting to stage: %s as Image: %s at Location: %s',
                  self.options.image, self.staged_image_name,
                  self.options.remote)
-    osutils.SafeMakedirsNonRoot(flash.DEVSERVER_STATIC_DIR)
+    dev_server_wrapper.DevServerWrapper.CreateStaticDirectory()
 
     with osutils.TempDir() as tempdir:
       if self._remote_image:

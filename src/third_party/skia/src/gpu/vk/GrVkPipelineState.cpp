@@ -39,7 +39,6 @@ GrVkPipelineState::GrVkPipelineState(
         std::unique_ptr<std::unique_ptr<GrGLSLFragmentProcessor>[]> fragmentProcessors,
         int fragmentProcessorCnt)
         : fPipeline(pipeline)
-        , fUniformDescriptorSet(nullptr)
         , fSamplerDSHandle(samplerDSHandle)
         , fBuiltinUniformHandles(builtinUniformHandles)
         , fGeometryProcessor(std::move(geometryProcessor))
@@ -50,11 +49,10 @@ GrVkPipelineState::GrVkPipelineState(
     fUniformBuffer.reset(GrVkUniformBuffer::Create(gpu, uniformSize));
 
     fNumSamplers = samplers.count();
-
-    for (int i = 0; i < fNumSamplers; ++i) {
+    for (const auto& sampler : samplers.items()) {
         // We store the immutable samplers here and take ownership of the ref from the
         // GrVkUnformHandler.
-        fImmutableSamplers.push_back(samplers[i].fImmutableSampler);
+        fImmutableSamplers.push_back(sampler.fImmutableSampler);
     }
 }
 
@@ -63,37 +61,15 @@ GrVkPipelineState::~GrVkPipelineState() {
     SkASSERT(!fPipeline);
 }
 
-void GrVkPipelineState::freeGPUResources(GrVkGpu* gpu) {
+void GrVkPipelineState::freeGPUResources() {
     if (fPipeline) {
-        fPipeline->unref(gpu);
+        fPipeline->unref();
         fPipeline = nullptr;
     }
 
     if (fUniformBuffer) {
-        fUniformBuffer->release(gpu);
+        fUniformBuffer->release();
         fUniformBuffer.reset();
-    }
-
-    if (fUniformDescriptorSet) {
-        fUniformDescriptorSet->recycle(const_cast<GrVkGpu*>(gpu));
-        fUniformDescriptorSet = nullptr;
-    }
-}
-
-void GrVkPipelineState::abandonGPUResources() {
-    if (fPipeline) {
-        fPipeline->unrefAndAbandon();
-        fPipeline = nullptr;
-    }
-
-    if (fUniformBuffer) {
-        fUniformBuffer->abandon();
-        fUniformBuffer.reset();
-    }
-
-    if (fUniformDescriptorSet) {
-        fUniformDescriptorSet->unrefAndAbandon();
-        fUniformDescriptorSet = nullptr;
     }
 }
 
@@ -122,22 +98,10 @@ bool GrVkPipelineState::setAndBindUniforms(GrVkGpu* gpu,
 
     // Get new descriptor set
     if (fUniformBuffer) {
-        if (fDataManager.uploadUniformBuffers(gpu, fUniformBuffer.get()) ||
-            !fUniformDescriptorSet) {
-            if (fUniformDescriptorSet) {
-                fUniformDescriptorSet->recycle(gpu);
-            }
-            fUniformDescriptorSet = gpu->resourceProvider().getUniformDescriptorSet();
-            if (!fUniformDescriptorSet) {
-                return false;
-            }
-            this->writeUniformBuffers(gpu);
-        }
+        fDataManager.uploadUniformBuffers(gpu, fUniformBuffer.get());
         static const int kUniformDSIdx = GrVkUniformHandler::kUniformBufferDescSet;
         commandBuffer->bindDescriptorSets(gpu, this, fPipeline->layout(), kUniformDSIdx, 1,
-                                          fUniformDescriptorSet->descriptorSet(), 0, nullptr);
-        SkASSERT(fUniformDescriptorSet);
-        commandBuffer->addRecycledResource(fUniformDescriptorSet);
+                                          fUniformBuffer->descriptorSet(), 0, nullptr);
         commandBuffer->addRecycledResource(fUniformBuffer->resource());
     }
     return true;
@@ -177,7 +141,7 @@ bool GrVkPipelineState::setAndBindTextures(GrVkGpu* gpu,
 
     if (GrTexture* dstTexture = pipeline.peekDstTexture()) {
         samplerBindings[currTextureBinding++] = {
-                GrSamplerState::ClampNearest(), static_cast<GrVkTexture*>(dstTexture)};
+                GrSamplerState::Filter::kNearest, static_cast<GrVkTexture*>(dstTexture)};
     }
 
     // Get new descriptor set
@@ -206,7 +170,7 @@ bool GrVkPipelineState::setAndBindTextures(GrVkGpu* gpu,
         }
 
         for (int i = 0; i < fNumSamplers; ++i) {
-            const GrSamplerState& state = samplerBindings[i].fState;
+            GrSamplerState state = samplerBindings[i].fState;
             GrVkTexture* texture = samplerBindings[i].fTexture;
 
             const GrVkImageView* textureView = texture->textureView();
@@ -242,13 +206,13 @@ bool GrVkPipelineState::setAndBindTextures(GrVkGpu* gpu,
                        UpdateDescriptorSets(gpu->device(), 1, &writeInfo, 0, nullptr));
             commandBuffer->addResource(sampler);
             if (!fImmutableSamplers[i]) {
-                sampler->unref(gpu);
+                sampler->unref();
             }
             commandBuffer->addResource(samplerBindings[i].fTexture->textureView());
             commandBuffer->addResource(samplerBindings[i].fTexture->resource());
         }
         if (fNumSamplers == 1) {
-            const GrSamplerState& state = samplerBindings[0].fState;
+            GrSamplerState state = samplerBindings[0].fState;
             GrVkTexture* texture = samplerBindings[0].fTexture;
             texture->addDescriptorSetToCache(descriptorSet, state);
         }
@@ -256,7 +220,7 @@ bool GrVkPipelineState::setAndBindTextures(GrVkGpu* gpu,
         commandBuffer->bindDescriptorSets(gpu, this, fPipeline->layout(), kSamplerDSIdx, 1,
                                           descriptorSet->descriptorSet(), 0, nullptr);
         commandBuffer->addRecycledResource(descriptorSet);
-        descriptorSet->recycle(gpu);
+        descriptorSet->recycle();
     }
     return true;
 }
@@ -282,29 +246,6 @@ void set_uniform_descriptor_writes(VkWriteDescriptorSet* descriptorWrite,
     descriptorWrite->pImageInfo = nullptr;
     descriptorWrite->pBufferInfo = bufferInfo;
     descriptorWrite->pTexelBufferView = nullptr;
-}
-
-void GrVkPipelineState::writeUniformBuffers(const GrVkGpu* gpu) {
-    VkWriteDescriptorSet descriptorWrites[3];
-    VkDescriptorBufferInfo bufferInfos[3];
-
-    uint32_t writeCount = 0;
-
-    if (fUniformBuffer.get()) {
-        SkASSERT(fUniformDescriptorSet);
-        set_uniform_descriptor_writes(&descriptorWrites[writeCount],
-                                      &bufferInfos[writeCount],
-                                      fUniformBuffer.get(),
-                                      *fUniformDescriptorSet->descriptorSet());
-        ++writeCount;
-    }
-
-    if (writeCount) {
-        GR_VK_CALL(gpu->vkInterface(), UpdateDescriptorSets(gpu->device(),
-                                                            writeCount,
-                                                            descriptorWrites,
-                                                            0, nullptr));
-    }
 }
 
 void GrVkPipelineState::setRenderTargetState(const GrRenderTarget* rt, GrSurfaceOrigin origin) {

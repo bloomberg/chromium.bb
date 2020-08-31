@@ -13,10 +13,12 @@
 #include "ui/base/ime/ime_input_context_handler_interface.h"
 
 #if defined(OS_CHROMEOS)
+#include "ui/base/ime/ime_assistive_window_handler_interface.h"
 #include "ui/base/ime/ime_candidate_window_handler_interface.h"
 
 namespace chromeos {
 class IMECandidateWindowHandlerInterface;
+class IMEAssistiveWindowHandlerInterface;
 }
 #endif
 
@@ -81,6 +83,11 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEBridge {
   // window service, pass NULL for |handler|. Caller must release |handler|.
   virtual void SetCandidateWindowHandler(
       chromeos::IMECandidateWindowHandlerInterface* handler) = 0;
+
+  virtual chromeos::IMEAssistiveWindowHandlerInterface*
+  GetAssistiveWindowHandler() const = 0;
+  virtual void SetAssistiveWindowHandler(
+      chromeos::IMEAssistiveWindowHandlerInterface* handler) = 0;
 #endif
 
  protected:

@@ -12,23 +12,26 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 using base::StringPiece;
@@ -78,7 +81,7 @@ void AdvancePastWhitespace(StringPiece* data) {
   size_t offset = data->find_first_not_of(" \t\r\n");
   if (offset == base::StringPiece::npos) {
     // |data| was entirely whitespace.
-    data->clear();
+    *data = StringPiece();
   } else {
     data->remove_prefix(offset);
   }
@@ -226,18 +229,80 @@ std::set<int>& GetPluginProxyingProcesses() {
 // without any confirmation sniffing (in contrast to HTML/JSON/XML which require
 // confirmation sniffing because images, scripts, etc. are frequently
 // mislabelled by http servers as HTML/JSON/XML).
+//
+// CORB cannot block images, scripts, stylesheets and other resources that the
+// web standards allows to be fetched in `no-cors` mode.  CORB cannot block
+// these resources even if they are not explicitly labeled with their type - in
+// practice http servers may serve images as application/octet-stream or even as
+// text/html.  OTOH, CORB *can* block all Content-Types that are very unlikely
+// to represent images, scripts, stylesheets, etc. - such Content-Types are
+// returned by GetNeverSniffedMimeTypes.
+//
+// Some of the Content-Types returned below might seem like a layering violation
+// (e.g. why would //services/network care about application/zip or
+// application/pdf or application/msword), but note that the decision to list a
+// Content-Type below is not driven by whether the type is handled above or
+// below //services/network layer.  Instead the decision to list a Content-Type
+// below is driven by whether the Content-Type is unlikely to be attached to an
+// image, script, stylesheet or other subresource type that web standards
+// require to be fetched in `no-cors` mode.  In particular, CORB would still
+// want to prevent cross-site disclosure of "application/msword" even if Chrome
+// did not support this type (AFAIK today this support is only present on
+// ChromeOS) in one of Chrome's many layers.  Similarly, CORB wants to prevent
+// disclosure of "application/zip" even though Chrome doesn't have built-in
+// support for this resource type.  And CORB also wants to protect
+// "application/pdf" even though Chrome happens to support this resource type.
 base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
   static base::NoDestructor<base::flat_set<std::string>> s_types{{
-      // The list below has been populated based on most commonly used content
-      // types according to HTTP Archive - see:
+      // The types below (zip, protobuf, etc.) are based on most commonly used
+      // content types according to HTTP Archive - see:
       // https://github.com/whatwg/fetch/issues/860#issuecomment-457330454
-      //
-      // TODO(lukasza): https://crbug.com/802836#c11: Add
-      // application/signed-exchange.
       "application/gzip",
       "application/x-gzip",
       "application/x-protobuf",
       "application/zip",
+      "text/event-stream",
+      // The types listed below were initially taken from the list of types
+      // handled by MimeHandlerView (although we would want to protect them even
+      // if Chrome didn't support rendering these content types and/or if there
+      // was no such thing as MimeHandlerView).
+      "application/msexcel",
+      "application/mspowerpoint",
+      "application/msword",
+      "application/msword-template",
+      "application/pdf",
+      "application/vnd.ces-quickpoint",
+      "application/vnd.ces-quicksheet",
+      "application/vnd.ces-quickword",
+      "application/vnd.ms-excel",
+      "application/vnd.ms-excel.sheet.macroenabled.12",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.ms-powerpoint.presentation.macroenabled.12",
+      "application/vnd.ms-word",
+      "application/vnd.ms-word.document.12",
+      "application/vnd.ms-word.document.macroenabled.12",
+      "application/vnd.msword",
+      "application/"
+          "vnd.openxmlformats-officedocument.presentationml.presentation",
+      "application/"
+          "vnd.openxmlformats-officedocument.presentationml.template",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.template",
+      "application/"
+          "vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/"
+          "vnd.openxmlformats-officedocument.wordprocessingml.template",
+      "application/vnd.presentation-openxml",
+      "application/vnd.presentation-openxmlm",
+      "application/vnd.spreadsheet-openxml",
+      "application/vnd.wordprocessing-openxml",
+      "text/csv",
+      // Block signed documents to protect (potentially sensitive) unencrypted
+      // body of the signed document.  There should be no need to block
+      // encrypted documents (e.g. `multipart/encrypted` nor
+      // `application/pgp-encrypted`) and no need to block the signatures (e.g.
+      // `application/pgp-signature`).
+      "multipart/signed",
       // Block multipart responses because a protected type (e.g. JSON) can
       // become multipart if returned in a range request with multiple parts.
       // This is compatible with the web because the renderer can only see into
@@ -245,7 +310,8 @@ base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
       // with CORS. Media tags only make single-range requests which will not
       // have the multipart type.
       "multipart/byteranges",
-      "text/event-stream",
+      // TODO(lukasza): https://crbug.com/802836#c11: Add
+      // application/signed-exchange.
   }};
 
   // All items need to be lower-case, to support case-insensitive comparisons
@@ -446,9 +512,7 @@ SniffingResult CrossOriginReadBlocking::SniffForJSON(base::StringPiece data) {
       case kRightQuoteState:
         if (c == ':')
           return kYes;
-        else
-          return kNo;
-        break;
+        return kNo;
     }
   }
   return kMaybe;
@@ -595,8 +659,10 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const GURL& request_url,
     const base::Optional<url::Origin>& request_initiator,
     const network::mojom::URLResponseHead& response,
-    base::Optional<url::Origin> request_initiator_site_lock,
-    mojom::RequestMode request_mode)
+    const base::Optional<url::Origin>& request_initiator_site_lock,
+    mojom::RequestMode request_mode,
+    const base::Optional<url::Origin>& isolated_world_origin,
+    mojom::NetworkServiceClient* network_service_client)
     : seems_sensitive_from_cors_heuristic_(
           SeemsSensitiveFromCORSHeuristic(response)),
       seems_sensitive_from_cache_heuristic_(
@@ -605,7 +671,9 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
       has_nosniff_header_(HasNoSniff(response)),
       content_length_(response.content_length),
       http_response_code_(response.headers ? response.headers->response_code()
-                                           : 0) {
+                                           : 0),
+      isolated_world_origin_(isolated_world_origin),
+      network_service_client_(network_service_client) {
   // CORB should look directly at the Content-Type header if one has been
   // received from the network. Ignoring |response.mime_type| helps avoid
   // breaking legitimate websites (which might happen more often when blocking
@@ -628,7 +696,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
 
   should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(
       request_mode, request_url, request_initiator, response,
-      request_initiator_site_lock, canonical_mime_type_);
+      request_initiator_site_lock, canonical_mime_type_,
+      &is_cors_blocking_expected_);
 
   // Check if the response seems sensitive and if so include in our CORB
   // protection logging. We have not sniffed yet, so the answer might be
@@ -640,7 +709,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     url::Origin cross_origin_request_initiator = url::Origin();
     BlockingDecision would_protect_based_on_headers = ShouldBlockBasedOnHeaders(
         request_mode, request_url, cross_origin_request_initiator, response,
-        cross_origin_request_initiator, canonical_mime_type_);
+        cross_origin_request_initiator, canonical_mime_type_,
+        nullptr /* is_cors_blocking_expected */);
     corb_protection_logging_needs_sniffing_ =
         (would_protect_based_on_headers ==
          BlockingDecision::kNeedToSniffMore) &&
@@ -675,7 +745,11 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
     const base::Optional<url::Origin>& request_initiator,
     const network::mojom::URLResponseHead& response,
     const base::Optional<url::Origin>& request_initiator_site_lock,
-    MimeType canonical_mime_type) {
+    MimeType canonical_mime_type,
+    bool* is_cors_blocking_expected) {
+  if (is_cors_blocking_expected)
+    *is_cors_blocking_expected = false;
+
   // The checks in this method are ordered to rule out blocking in most cases as
   // quickly as possible.  Checks that are likely to lead to returning false or
   // that are inexpensive should be near the top.
@@ -702,8 +776,6 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // valid CORS headers.
   switch (request_mode) {
     case mojom::RequestMode::kNavigate:
-    case mojom::RequestMode::kNavigateNestedFrame:
-    case mojom::RequestMode::kNavigateNestedObject:
     case mojom::RequestMode::kNoCors:
     case mojom::RequestMode::kSameOrigin:
       break;
@@ -715,6 +787,11 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
                                             &cors_header);
       if (IsValidCorsHeaderSet(initiator, cors_header))
         return kAllow;
+
+      // At this point we know that the response is 1) cross-origin from the
+      // initiator, 2) in CORS mode, 3) without valid ACAO header.
+      if (is_cors_blocking_expected)
+        *is_cors_blocking_expected = true;
       break;
   }
 
@@ -757,9 +834,9 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // fail in the renderer), then we can let CORB filter the response without
   // caring about MIME type or sniffing.
   //
-  // To make CrossOriginResourcePolicy::Verify apply to all fetch modes in this
-  // case and not just "no-cors", we pass kNoCors as a hard-coded value.  This
-  // does not affect the usual enforcement of CORP headers.
+  // To make CrossOriginResourcePolicy::IsBlocked apply to all fetch modes in
+  // this case and not just "no-cors", we pass kNoCors as a hard-coded value.
+  // This does not affect the usual enforcement of CORP headers.
   //
   // TODO(lukasza): Once OOR-CORS launches (https://crbug.com/736308), this code
   // block will no longer be necessary since all failed CORS requests will be
@@ -769,11 +846,10 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   constexpr mojom::RequestMode kOverreachingRequestMode =
       mojom::RequestMode::kNoCors;
   // COEP is not supported when OOR-CORS is disabled.
-  if (CrossOriginResourcePolicy::kBlock ==
-      CrossOriginResourcePolicy::Verify(
-          request_url, request_initiator, response, kOverreachingRequestMode,
-          request_initiator_site_lock,
-          mojom::CrossOriginEmbedderPolicy::kNone)) {
+  if (CrossOriginResourcePolicy::IsBlocked(
+          request_url, request_url, request_initiator, response,
+          kOverreachingRequestMode, request_initiator_site_lock,
+          CrossOriginEmbedderPolicy())) {
     // Ignore mime types and/or sniffing and have CORB block all responses with
     // COR*P* header.
     return kBlock;
@@ -815,18 +891,14 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
     case MimeType::kPlain:
       if (HasNoSniff(response))
         return kBlock;
-      else
-        return kNeedToSniffMore;
-      break;
+      return kNeedToSniffMore;
 
     case MimeType::kOthers:
       // Stylesheets shouldn't be sniffed for JSON parser breakers - see
       // https://crbug.com/809259.
       if (base::LowerCaseEqualsASCII(response.mime_type, "text/css"))
         return kAllow;
-      else
-        return kNeedToSniffMore;
-      break;
+      return kNeedToSniffMore;
 
     case MimeType::kInvalidMimeType:
     case MimeType::kNeverSniffed:  // Handled much earlier.
@@ -911,7 +983,6 @@ CrossOriginReadBlocking::ResponseAnalyzer::GetMimeTypeBucket(
     case MimeType::kNeverSniffed:
     case MimeType::kPlain:
       return kProtected;
-      break;
     case MimeType::kOthers:
       break;
     case MimeType::kInvalidMimeType:
@@ -1081,6 +1152,40 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldReportBlockedResponse()
 }
 
 void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
+  // Only log the ContentScript UMA when the request really came from a content
+  // script.
+  //
+  // Note that we will never get here in the following cases:
+  // 1) When CORB is disabled (e.g. for allowlisted content scripts OR for
+  //    extension background pages).
+  // 2) When CorbAllowlistAlsoAppliesToOorCors and OOR-CORS features are both
+  //    enabled, because:
+  //    2a) The former feature forces |ignore_isolated_world_origin| for
+  //        non-allowlisted content scripts and OOR-CORS in this case resets
+  //        |isolated_world_origin| to base::nullopt.
+  //    2b) Even if we could preserve |isolated_world_origin_| just for UMA,
+  //        CORS would block the response before LogAllowedResponse gets a
+  //        chance to run.
+  bool is_for_non_http_isolated_world =
+      isolated_world_origin_.has_value() &&
+      isolated_world_origin_->scheme() != url::kHttpScheme &&
+      isolated_world_origin_->scheme() != url::kHttpsScheme;
+  if (is_for_non_http_isolated_world) {
+    // We log whether CORS would block this response if it were enabled for
+    // content scripts.  Caveat: This will be true even in cases where the
+    // server would have sent an ACAO response header if Chrome had sent an
+    // Origin request header.
+    UMA_HISTOGRAM_BOOLEAN(
+        "SiteIsolation.XSD.Browser.AllowedByCorbButNotCors.ContentScript",
+        is_cors_blocking_expected_);
+
+    // Ask the browser process to log a UKM event.
+    if (network_service_client_ && is_cors_blocking_expected_) {
+      network_service_client_->LogCrossOriginFetchFromContentScript3(
+          isolated_world_origin_->host());
+    }
+  }
+
   if (corb_protection_logging_needs_sniffing_) {
     LogSensitiveResponseProtection(
         SniffingDecisionToProtectionDecision(found_blockable_content_));
@@ -1243,20 +1348,7 @@ bool CrossOriginReadBlocking::ShouldAllowForPlugin(int process_id) {
 // static
 void CrossOriginReadBlocking::RemoveExceptionForPlugin(int process_id) {
   std::set<int>& plugin_proxies = GetPluginProxyingProcesses();
-  size_t number_of_elements_removed = plugin_proxies.erase(process_id);
-  DCHECK_EQ(1u, number_of_elements_removed);
-}
-
-// static
-void CrossOriginReadBlocking::AddExtraMimeTypesForCorb(
-    const std::vector<std::string>& mime_types) {
-  // All items need to be lower-case, to support case-insensitive comparisons.
-  DCHECK(std::all_of(
-      mime_types.begin(), mime_types.end(),
-      [](const std::string& s) { return s == base::ToLowerASCII(s); }));
-  base::flat_set<std::string>& never_sniffed_types = GetNeverSniffedMimeTypes();
-  never_sniffed_types.insert(mime_types.begin(), mime_types.end());
-  never_sniffed_types.shrink_to_fit();
+  plugin_proxies.erase(process_id);
 }
 
 }  // namespace network

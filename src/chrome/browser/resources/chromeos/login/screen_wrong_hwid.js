@@ -9,24 +9,22 @@
 login.createScreen('WrongHWIDScreen', 'wrong-hwid', function() {
   return {
     /** @override */
-    decorate: function() {
+    decorate() {
       $('skip-hwid-warning-link').addEventListener('click', function(event) {
         chrome.send('wrongHWIDOnSkip');
       });
       this.updateLocalizedContent();
     },
 
-    /**
-     * Updates state of login shelf so that necessary buttons are displayed.
-     */
-    onBeforeShow: function(data) {
-      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.WRONG_HWID_WARNING);
+    /** Initial UI State for screen */
+    getOobeUIInitialState() {
+      return OOBE_UI_STATE.WRONG_HWID_WARNING;
     },
 
     /**
      * Updates localized content of the screen that is not updated via template.
      */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       $('wrong-hwid-message-content').innerHTML = '<p>' +
           loadTimeData.getStringF(
               'wrongHWIDMessageFirstPart', '<strong>', '</strong>') +

@@ -47,7 +47,6 @@ class Code : public HeapObject {
   V(WASM_TO_JS_FUNCTION)    \
   V(JS_TO_WASM_FUNCTION)    \
   V(JS_TO_JS_FUNCTION)      \
-  V(WASM_INTERPRETER_ENTRY) \
   V(C_WASM_ENTRY)
 
   enum Kind {
@@ -88,8 +87,7 @@ class Code : public HeapObject {
   // [deoptimization_data]: Array containing data for deopt.
   DECL_ACCESSORS(deoptimization_data, FixedArray)
 
-  // [source_position_table]: ByteArray for the source positions table or
-  // SourcePositionTableWithFrameCache.
+  // [source_position_table]: ByteArray for the source positions table.
   DECL_ACCESSORS(source_position_table, Object)
   inline ByteArray SourcePositionTable() const;
   inline ByteArray SourcePositionTableIfCollected() const;
@@ -139,6 +137,9 @@ class Code : public HeapObject {
   inline void set_builtin_index(int id);
   inline bool is_builtin() const;
 
+  inline unsigned inlined_bytecode_size() const;
+  inline void set_inlined_bytecode_size(unsigned size);
+
   inline bool has_safepoint_info() const;
 
   // [stack_slots]: If {has_safepoint_info()}, the number of stack slots
@@ -180,6 +181,12 @@ class Code : public HeapObject {
   // the code is going to be deoptimized.
   inline bool marked_for_deoptimization() const;
   inline void set_marked_for_deoptimization(bool flag);
+
+  // [deoptimzation_count]: In turboprop we retain the deoptimized code on soft
+  // deopts for a certain number of soft deopts. This field keeps track of
+  // number of deoptimizations we have seen so far.
+  inline int deoptimization_count() const;
+  inline void increment_deoptimization_count();
 
   // [embedded_objects_cleared]: For kind OPTIMIZED_FUNCTION tells whether
   // the embedded objects in the code marked for deoptimization were cleared.
@@ -398,6 +405,7 @@ class Code : public HeapObject {
     FLAG_enable_embedded_constant_pool ? kIntSize : 0)                    \
   V(kCodeCommentsOffsetOffset, kIntSize)                                  \
   V(kBuiltinIndexOffset, kIntSize)                                        \
+  V(kInlinedBytecodeSizeOffset, kIntSize)                                 \
   V(kUnalignedHeaderSize, 0)                                              \
   /* Add padding to align the instruction start following right after */  \
   /* the Code object header. */                                           \
@@ -410,22 +418,23 @@ class Code : public HeapObject {
   // This documents the amount of free space we have in each Code object header
   // due to padding for code alignment.
 #if V8_TARGET_ARCH_ARM64
-  static constexpr int kHeaderPaddingSize = COMPRESS_POINTERS_BOOL ? 20 : 0;
+  static constexpr int kHeaderPaddingSize = COMPRESS_POINTERS_BOOL ? 16 : 28;
 #elif V8_TARGET_ARCH_MIPS64
-  static constexpr int kHeaderPaddingSize = 0;
+  static constexpr int kHeaderPaddingSize = 28;
 #elif V8_TARGET_ARCH_X64
-  static constexpr int kHeaderPaddingSize = COMPRESS_POINTERS_BOOL ? 20 : 0;
+  static constexpr int kHeaderPaddingSize = COMPRESS_POINTERS_BOOL ? 16 : 28;
 #elif V8_TARGET_ARCH_ARM
-  static constexpr int kHeaderPaddingSize = 20;
+  static constexpr int kHeaderPaddingSize = 16;
 #elif V8_TARGET_ARCH_IA32
-  static constexpr int kHeaderPaddingSize = 20;
+  static constexpr int kHeaderPaddingSize = 16;
 #elif V8_TARGET_ARCH_MIPS
-  static constexpr int kHeaderPaddingSize = 20;
+  static constexpr int kHeaderPaddingSize = 16;
 #elif V8_TARGET_ARCH_PPC64
   static constexpr int kHeaderPaddingSize =
-      FLAG_enable_embedded_constant_pool ? 28 : 0;
+      FLAG_enable_embedded_constant_pool ? (COMPRESS_POINTERS_BOOL ? 12 : 24)
+                                         : (COMPRESS_POINTERS_BOOL ? 16 : 28);
 #elif V8_TARGET_ARCH_S390X
-  static constexpr int kHeaderPaddingSize = 0;
+  static constexpr int kHeaderPaddingSize = COMPRESS_POINTERS_BOOL ? 16 : 28;
 #else
 #error Unknown architecture.
 #endif
@@ -455,11 +464,11 @@ class Code : public HeapObject {
   V(DeoptAlreadyCountedField, bool, 1, _)         \
   V(CanHaveWeakObjectsField, bool, 1, _)          \
   V(IsPromiseRejectionField, bool, 1, _)          \
-  V(IsExceptionCaughtField, bool, 1, _)
+  V(IsExceptionCaughtField, bool, 1, _)           \
+  V(DeoptCountField, int, 4, _)
   DEFINE_BIT_FIELDS(CODE_KIND_SPECIFIC_FLAGS_BIT_FIELDS)
 #undef CODE_KIND_SPECIFIC_FLAGS_BIT_FIELDS
-  static_assert(IsExceptionCaughtField::kLastUsedBit < 32,
-                "KindSpecificFlags full");
+  static_assert(DeoptCountField::kLastUsedBit < 32, "KindSpecificFlags full");
 
   // The {marked_for_deoptimization} field is accessed from generated code.
   static const int kMarkedForDeoptimizationBit =
@@ -579,9 +588,6 @@ class AbstractCode : public HeapObject {
   // Return the source position table.
   inline ByteArray source_position_table();
 
-  inline Object stack_frame_cache();
-  static void SetStackFrameCache(Handle<AbstractCode> abstract_code,
-                                 Handle<SimpleNumberDictionary> cache);
   void DropStackFrameCache();
 
   // Returns the size of instructions and the metadata.
@@ -645,7 +651,9 @@ class DependentCode : public WeakFixedArray {
     kPropertyCellChangedGroup,
     // Group of code that omit run-time checks for field(s) introduced by
     // this map, i.e. for the field type.
-    kFieldOwnerGroup,
+    kFieldTypeGroup,
+    kFieldConstGroup,
+    kFieldRepresentationGroup,
     // Group of code that omit run-time type checks for initial maps of
     // constructors.
     kInitialMapChangedGroup,
@@ -663,9 +671,9 @@ class DependentCode : public WeakFixedArray {
                                                   Handle<HeapObject> object,
                                                   DependencyGroup group);
 
-  void DeoptimizeDependentCodeGroup(Isolate* isolate, DependencyGroup group);
+  void DeoptimizeDependentCodeGroup(DependencyGroup group);
 
-  bool MarkCodeForDeoptimization(Isolate* isolate, DependencyGroup group);
+  bool MarkCodeForDeoptimization(DependencyGroup group);
 
   // The following low-level accessors are exposed only for tests.
   inline DependencyGroup group();
@@ -713,8 +721,8 @@ class DependentCode : public WeakFixedArray {
 
   inline int flags();
   inline void set_flags(int flags);
-  using GroupField = base::BitField<int, 0, 3>;
-  using CountField = base::BitField<int, 3, 27>;
+  using GroupField = base::BitField<int, 0, 5>;
+  using CountField = base::BitField<int, 5, 27>;
   STATIC_ASSERT(kGroupCount <= GroupField::kMax + 1);
 
   OBJECT_CONSTRUCTORS(DependentCode, WeakFixedArray);
@@ -785,7 +793,6 @@ class BytecodeArray : public FixedArrayBase {
   // * empty_byte_array (for bytecode generated for functions that will never
   // have source positions, e.g. native functions).
   // * ByteArray (when source positions have been collected for the bytecode)
-  // * SourcePositionTableWithFrameCache (as above but with a frame cache)
   // * exception (when an error occurred while explicitly collecting source
   // positions for pre-existing bytecode).
   DECL_ACCESSORS(source_position_table, Object)
@@ -799,7 +806,6 @@ class BytecodeArray : public FixedArrayBase {
   inline ByteArray SourcePositionTableIfCollected() const;
   inline bool HasSourcePositionTable() const;
   inline bool DidSourcePositionGenerationFail() const;
-  inline void ClearFrameCacheFromSourcePositionTable();
 
   // Indicates that an attempt was made to collect source positions, but that it
   // failed most likely due to stack exhaustion. When in this state
@@ -870,7 +876,8 @@ class DeoptimizationData : public FixedArray {
   static const int kSharedFunctionInfoIndex = 6;
   static const int kInliningPositionsIndex = 7;
   static const int kDeoptExitStartIndex = 8;
-  static const int kFirstDeoptEntryIndex = 9;
+  static const int kNonLazyDeoptCountIndex = 9;
+  static const int kFirstDeoptEntryIndex = 10;
 
   // Offsets of deopt entry elements relative to the start of the entry.
   static const int kBytecodeOffsetRawOffset = 0;
@@ -892,6 +899,7 @@ class DeoptimizationData : public FixedArray {
   DECL_ELEMENT_ACCESSORS(SharedFunctionInfo, Object)
   DECL_ELEMENT_ACCESSORS(InliningPositions, PodArray<InliningPosition>)
   DECL_ELEMENT_ACCESSORS(DeoptExitStart, Smi)
+  DECL_ELEMENT_ACCESSORS(NonLazyDeoptCount, Smi)
 
 #undef DECL_ELEMENT_ACCESSORS
 
@@ -939,13 +947,6 @@ class DeoptimizationData : public FixedArray {
   static int LengthFor(int entry_count) { return IndexForEntry(entry_count); }
 
   OBJECT_CONSTRUCTORS(DeoptimizationData, FixedArray);
-};
-
-class SourcePositionTableWithFrameCache
-    : public TorqueGeneratedSourcePositionTableWithFrameCache<
-          SourcePositionTableWithFrameCache, Struct> {
- public:
-  TQ_OBJECT_CONSTRUCTORS(SourcePositionTableWithFrameCache)
 };
 
 }  // namespace internal

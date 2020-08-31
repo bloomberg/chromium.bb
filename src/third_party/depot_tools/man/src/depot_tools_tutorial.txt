@@ -74,13 +74,13 @@ Clone the 'depot_tools' repository:
 [white]**$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git**
 ----
 
-Add 'depot_tools' to the 'end' of your PATH (you will probably want to put this
+Add 'depot_tools' to the 'front' of your PATH (you will probably want to put this
 in your `~/.bashrc` or `~/.zshrc`). Assuming you cloned 'depot_tools' to
 `/path/to/depot_tools`:
 
 [postsubs="quotes"]
 ----
-[white]**$ export PATH=$PATH:/path/to/depot_tools**
+[white]**$ export PATH=/path/to/depot_tools:$PATH**
 ----
 
 // No need to show the Windows stuff on the manpage output.
@@ -96,7 +96,7 @@ extract it somewhere.
 extract the hidden ``.git'' folder which is necessary for 'depot_tools' to
 autoupdate itself. You can use ``Extract all...'' from the context menu though.
 
-Add 'depot_tools' to the 'start' of your PATH (must be ahead of any installs of
+Add 'depot_tools' to the 'front' of your PATH (must be ahead of any installs of
 Python). Assuming you unzipped the bundle to `C:\workspace\depot_tools`:
 
 With Administrator access: ::

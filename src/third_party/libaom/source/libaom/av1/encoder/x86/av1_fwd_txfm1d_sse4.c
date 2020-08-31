@@ -11,8 +11,8 @@
 
 #include "av1/encoder/x86/av1_txfm1d_sse4.h"
 
-void av1_fdct32_new_sse4_1(__m128i *input, __m128i *output, int cos_bit,
-                           const int stride) {
+void av1_fdct32_sse4_1(__m128i *input, __m128i *output, int cos_bit,
+                       const int stride) {
   __m128i buf0[32];
   __m128i buf1[32];
   const int32_t *cospi;
@@ -396,8 +396,8 @@ void av1_fdct32_new_sse4_1(__m128i *input, __m128i *output, int cos_bit,
   output[endidx] = buf0[1];
 }
 
-void av1_fadst4_new_sse4_1(const __m128i *input, __m128i *output,
-                           const int8_t cos_bit, const int8_t *stage_range) {
+void av1_fadst4_sse4_1(const __m128i *input, __m128i *output,
+                       const int8_t cos_bit, const int8_t *stage_range) {
   const int txfm_size = 4;
   const int num_per_128 = 4;
   const int32_t *cospi;
@@ -459,8 +459,8 @@ void av1_fadst4_new_sse4_1(const __m128i *input, __m128i *output,
   }
 }
 
-void av1_fdct64_new_sse4_1(__m128i *input, __m128i *output, int8_t cos_bit,
-                           const int instride, const int outstride) {
+void av1_fdct64_sse4_1(__m128i *input, __m128i *output, int8_t cos_bit,
+                       const int instride, const int outstride) {
   const int32_t *cospi = cospi_arr(cos_bit);
   const __m128i __rounding = _mm_set1_epi32(1 << (cos_bit - 1));
 
@@ -1408,8 +1408,8 @@ void av1_fdct64_new_sse4_1(__m128i *input, __m128i *output, int8_t cos_bit,
   output[endidx] = x10[1];
 }
 
-void av1_idtx32_new_sse4_1(__m128i *input, __m128i *output, int cos_bit,
-                           const int col_num) {
+void av1_idtx32_sse4_1(__m128i *input, __m128i *output, int cos_bit,
+                       const int col_num) {
   (void)cos_bit;
   for (int i = 0; i < 32; i++) {
     output[i * col_num] = _mm_slli_epi32(input[i * col_num], 2);

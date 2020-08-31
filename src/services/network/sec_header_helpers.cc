@@ -15,6 +15,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -26,6 +27,7 @@ namespace {
 const char kSecFetchMode[] = "Sec-Fetch-Mode";
 const char kSecFetchSite[] = "Sec-Fetch-Site";
 const char kSecFetchUser[] = "Sec-Fetch-User";
+const char kSecFetchDest[] = "Sec-Fetch-Dest";
 
 // Sec-Fetch-Site infrastructure:
 //
@@ -133,18 +135,24 @@ void SetSecFetchUserHeader(net::URLRequest* request, bool has_user_activation) {
     request->RemoveRequestHeaderByName(kSecFetchUser);
 }
 
+// Sec-Fetch-Dest
+void SetSecFetchDestHeader(net::URLRequest* request,
+                           network::mojom::RequestDestination dest) {
+  std::string header_value = RequestDestinationToString(dest);
+  request->SetExtraRequestHeaderByName(kSecFetchDest, header_value, true);
+}
+
 }  // namespace
 
 void SetFetchMetadataHeaders(
     net::URLRequest* request,
     network::mojom::RequestMode mode,
     bool has_user_activation,
+    network::mojom::RequestDestination dest,
     const GURL* pending_redirect_url,
     const mojom::URLLoaderFactoryParams& factory_params) {
   DCHECK(request);
   DCHECK_NE(0u, request->url_chain().size());
-  if (!base::FeatureList::IsEnabled(features::kFetchMetadata))
-    return;
 
   // Only append the header to potentially trustworthy URLs.
   const GURL& target_url =
@@ -155,14 +163,12 @@ void SetFetchMetadataHeaders(
   SetSecFetchSiteHeader(request, pending_redirect_url, factory_params);
   SetSecFetchModeHeader(request, mode);
   SetSecFetchUserHeader(request, has_user_activation);
+  SetSecFetchDestHeader(request, dest);
 }
 
 void MaybeRemoveSecHeaders(net::URLRequest* request,
                            const GURL& pending_redirect_url) {
   DCHECK(request);
-
-  if (!base::FeatureList::IsEnabled(features::kFetchMetadata))
-    return;
 
   // If our redirect destination is not trusted it would not have had sec-ch- or
   // sec-fetch- prefixed headers added to it. Our previous hops may have added

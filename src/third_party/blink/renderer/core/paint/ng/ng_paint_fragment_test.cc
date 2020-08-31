@@ -45,6 +45,8 @@ class NGPaintFragmentTest : public RenderingTest,
 };
 
 TEST_F(NGPaintFragmentTest, InlineFragmentsFor) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -70,7 +72,7 @@ TEST_F(NGPaintFragmentTest, InlineFragmentsFor) {
   results.AppendRange(it.begin(), it.end());
   EXPECT_EQ(1u, results.size());
   EXPECT_EQ(text1, results[0]->GetLayoutObject());
-  EXPECT_EQ(PhysicalOffset(), results[0]->InlineOffsetToContainerBox());
+  EXPECT_EQ(PhysicalOffset(), results[0]->OffsetInContainerBlock());
 
   results.clear();
   it = NGPaintFragment::InlineFragmentsFor(box);
@@ -80,15 +82,15 @@ TEST_F(NGPaintFragmentTest, InlineFragmentsFor) {
   EXPECT_EQ(box, results[1]->GetLayoutObject());
   EXPECT_EQ(box, results[2]->GetLayoutObject());
 
-  EXPECT_EQ(PhysicalOffset(60, 0), results[0]->InlineOffsetToContainerBox());
+  EXPECT_EQ(PhysicalOffset(60, 0), results[0]->OffsetInContainerBlock());
   EXPECT_EQ("789", To<NGPhysicalTextFragment>(
                        results[0]->FirstChild()->PhysicalFragment())
                        .Text());
-  EXPECT_EQ(PhysicalOffset(0, 10), results[1]->InlineOffsetToContainerBox());
+  EXPECT_EQ(PhysicalOffset(0, 10), results[1]->OffsetInContainerBlock());
   EXPECT_EQ("123456789", To<NGPhysicalTextFragment>(
                              results[1]->FirstChild()->PhysicalFragment())
                              .Text());
-  EXPECT_EQ(PhysicalOffset(0, 20), results[2]->InlineOffsetToContainerBox());
+  EXPECT_EQ(PhysicalOffset(0, 20), results[2]->OffsetInContainerBlock());
   EXPECT_EQ("123", To<NGPhysicalTextFragment>(
                        results[2]->FirstChild()->PhysicalFragment())
                        .Text());
@@ -102,6 +104,8 @@ TEST_F(NGPaintFragmentTest, InlineFragmentsFor) {
   } while (false)
 
 TEST_F(NGPaintFragmentTest, InlineBox) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -145,6 +149,8 @@ TEST_F(NGPaintFragmentTest, InlineBox) {
 }
 
 TEST_F(NGPaintFragmentTest, InlineBoxVerticalRL) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -189,6 +195,8 @@ TEST_F(NGPaintFragmentTest, InlineBoxVerticalRL) {
 }
 
 TEST_F(NGPaintFragmentTest, InlineBoxWithDecorations) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -244,6 +252,8 @@ TEST_F(NGPaintFragmentTest, InlineBoxWithDecorations) {
 }
 
 TEST_F(NGPaintFragmentTest, InlineBoxWithDecorationsVerticalRL) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -300,6 +310,8 @@ TEST_F(NGPaintFragmentTest, InlineBoxWithDecorationsVerticalRL) {
 }
 
 TEST_F(NGPaintFragmentTest, InlineBlock) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -404,6 +416,8 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
 }
 
 TEST_F(NGPaintFragmentTest, InlineBlockVerticalRL) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -511,6 +525,8 @@ TEST_F(NGPaintFragmentTest, InlineBlockVerticalRL) {
 }
 
 TEST_F(NGPaintFragmentTest, RelativeBlock) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -550,6 +566,8 @@ TEST_F(NGPaintFragmentTest, RelativeBlock) {
 }
 
 TEST_F(NGPaintFragmentTest, RelativeInline) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -604,6 +622,8 @@ TEST_F(NGPaintFragmentTest, RelativeInline) {
 }
 
 TEST_F(NGPaintFragmentTest, RelativeBlockAndInline) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -659,6 +679,8 @@ TEST_F(NGPaintFragmentTest, RelativeBlockAndInline) {
 
 // Test that OOF should not create a NGPaintFragment.
 TEST_F(NGPaintFragmentTest, OutOfFlow) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -682,20 +704,6 @@ TEST_F(NGPaintFragmentTest, OutOfFlow) {
   EXPECT_EQ(1u, lines[0]->Children().size());
 }
 
-TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveBr) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetBodyInnerHTML(
-      "<div id=container>line 1<br>line 2<br id=target>line 3<br>"
-      "</div>");
-  Element& target = *GetDocument().getElementById("target");
-  target.remove();
-  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
-  EXPECT_FALSE(container.FirstChild()->IsDirty());
-  EXPECT_TRUE(ToList(container.Children())[1]->IsDirty());
-  EXPECT_FALSE(ToList(container.Children())[2]->IsDirty());
-}
-
 static const char* inline_child_data[] = {
     "<span id='child'>XXX</span>",
     "<span id='child' style='background: yellow'>XXX</span>",
@@ -710,6 +718,8 @@ INSTANTIATE_TEST_SUITE_P(NGPaintFragmentTest,
                          testing::ValuesIn(inline_child_data));
 
 TEST_P(InlineChildTest, RemoveInlineChild) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return;
   SetBodyInnerHTML(String(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -732,180 +742,6 @@ TEST_P(InlineChildTest, RemoveInlineChild) {
 
   // Destroyed children should be eliminated immediately.
   EXPECT_EQ(linebox.Children().size(), 2u);
-}
-
-TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveChild) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetBodyInnerHTML(
-      "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
-      "</div>");
-  Element& target = *GetDocument().getElementById("target");
-  target.remove();
-  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
-  auto lines = ToList(container.Children());
-  EXPECT_TRUE(lines[0]->IsDirty());
-  EXPECT_FALSE(lines[1]->IsDirty());
-  EXPECT_FALSE(lines[2]->IsDirty());
-}
-
-TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveSpanWithBr) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetBodyInnerHTML(
-      "<div id=container>line 1<br>line 2<span id=target><br></span>line 3<br>"
-      "</div>");
-  // |target| is a culled inline box. There is no fragment in fragment tree.
-  Element& target = *GetDocument().getElementById("target");
-  target.remove();
-  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
-  EXPECT_FALSE(container.FirstChild()->IsDirty());
-  EXPECT_TRUE(ToList(container.Children())[1]->IsDirty());
-  EXPECT_FALSE(ToList(container.Children())[2]->IsDirty());
-}
-
-// "ByInsert" tests are disabled, because they require |UpdateStyleAndLayout()|
-// to update |IsDirty|, but NGPaintFragment maybe re-used during the layout. In
-// such case, the result is not deterministic.
-TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtStart) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetBodyInnerHTML(
-      "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
-      "</div>");
-  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
-  const scoped_refptr<const NGPaintFragment> line1 = container.FirstChild();
-  ASSERT_TRUE(line1->PhysicalFragment().IsLineBox()) << line1;
-  const scoped_refptr<const NGPaintFragment> line2 =
-      ToList(container.Children())[1];
-  ASSERT_TRUE(line2->PhysicalFragment().IsLineBox()) << line2;
-  const scoped_refptr<const NGPaintFragment> line3 =
-      ToList(container.Children())[2];
-  ASSERT_TRUE(line3->PhysicalFragment().IsLineBox()) << line3;
-  Element& target = *GetDocument().getElementById("target");
-  target.parentNode()->insertBefore(Text::Create(GetDocument(), "XYZ"),
-                                    &target);
-  GetDocument().UpdateStyleAndLayout();
-
-  EXPECT_TRUE(line1->IsDirty());
-  EXPECT_FALSE(line2->IsDirty());
-  EXPECT_FALSE(line3->IsDirty());
-}
-
-// "ByInsert" tests are disabled, because they require |UpdateStyleAndLayout()|
-// to update |IsDirty|, but NGPaintFragment maybe re-used during the layout. In
-// such case, the result is not deterministic.
-TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtLast) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetBodyInnerHTML(
-      "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
-      "</div>");
-  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
-  const scoped_refptr<const NGPaintFragment> line1 = container.FirstChild();
-  ASSERT_TRUE(line1->PhysicalFragment().IsLineBox()) << line1;
-  const scoped_refptr<const NGPaintFragment> line2 =
-      ToList(container.Children())[1];
-  ASSERT_TRUE(line2->PhysicalFragment().IsLineBox()) << line2;
-  const scoped_refptr<const NGPaintFragment> line3 =
-      ToList(container.Children())[2];
-  ASSERT_TRUE(line3->PhysicalFragment().IsLineBox()) << line3;
-  Element& target = *GetDocument().getElementById("target");
-  target.parentNode()->appendChild(Text::Create(GetDocument(), "XYZ"));
-  GetDocument().UpdateStyleAndLayout();
-
-  EXPECT_FALSE(line1->IsDirty());
-  EXPECT_FALSE(line2->IsDirty());
-  EXPECT_TRUE(line3->IsDirty());
-}
-
-// "ByInsert" tests are disabled, because they require |UpdateStyleAndLayout()|
-// to update |IsDirty|, but NGPaintFragment maybe re-used during the layout. In
-// such case, the result is not deterministic.
-TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtMiddle) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetBodyInnerHTML(
-      "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
-      "</div>");
-  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
-  const scoped_refptr<const NGPaintFragment> line1 = container.FirstChild();
-  ASSERT_TRUE(line1->PhysicalFragment().IsLineBox()) << line1;
-  const scoped_refptr<const NGPaintFragment> line2 =
-      ToList(container.Children())[1];
-  ASSERT_TRUE(line2->PhysicalFragment().IsLineBox()) << line2;
-  const scoped_refptr<const NGPaintFragment> line3 =
-      ToList(container.Children())[2];
-  ASSERT_TRUE(line3->PhysicalFragment().IsLineBox()) << line3;
-  Element& target = *GetDocument().getElementById("target");
-  target.parentNode()->insertBefore(Text::Create(GetDocument(), "XYZ"),
-                                    target.nextSibling());
-  GetDocument().UpdateStyleAndLayout();
-
-  EXPECT_TRUE(line1->IsDirty());
-  EXPECT_FALSE(line2->IsDirty());
-  EXPECT_FALSE(line3->IsDirty());
-}
-
-TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByTextSetData) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetBodyInnerHTML(
-      "<div id=container>line 1<br><b id=target>line 2</b><br>line "
-      "3<br></div>");
-  Element& target = *GetDocument().getElementById("target");
-  To<Text>(*target.firstChild()).setData("abc");
-  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
-  auto lines = ToList(container.Children());
-  // TODO(kojii): Currently we don't optimzie for <br>. We can do this, then
-  // lines[0] should not be dirty.
-  EXPECT_TRUE(lines[0]->IsDirty());
-}
-
-TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyWrappedLine) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetBodyInnerHTML(R"HTML(
-    <style>
-    #container {
-      font-size: 10px;
-      width: 10ch;
-    }
-    </style>
-    <div id=container>
-      1234567
-      123456<span id="target">7</span>
-    </div>)HTML");
-  Element& target = *GetDocument().getElementById("target");
-  target.remove();
-
-  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
-  const NGPaintFragment& line0 = *container.FirstChild();
-  const NGPaintFragment& line1 = *line0.NextSibling();
-  EXPECT_FALSE(line0.IsDirty());
-  EXPECT_TRUE(line1.IsDirty());
-}
-
-TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyInsideInlineBlock) {
-  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
-    return;
-  SetBodyInnerHTML(R"HTML(
-    <div id=container>
-      <div id="inline-block" style="display: inline-block">
-        <span id="target">DELETE ME</span>
-      </div>
-    </div>)HTML");
-  Element& target = *GetDocument().getElementById("target");
-  target.remove();
-
-  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
-  const NGPaintFragment& line0 = *container.FirstChild();
-  EXPECT_FALSE(line0.IsDirty());
-
-  const NGPaintFragment& inline_block =
-      *GetPaintFragmentByElementId("inline-block");
-  const NGPaintFragment& inner_line0 = *inline_block.FirstChild();
-  EXPECT_TRUE(inner_line0.IsDirty());
 }
 
 }  // namespace blink

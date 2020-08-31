@@ -15,9 +15,7 @@ static_library("demographic_metrics_provider") {
     "demographic_metrics_provider.h",
   ]
 
-  public_deps = [
-    "//third_party/metrics_proto",
-  ]
+  public_deps = [ "//third_party/metrics_proto" ]
 
   deps = [
     ":metrics",
@@ -45,6 +43,8 @@ jumbo_static_library("metrics") {
     "daily_event.h",
     "data_use_tracker.cc",
     "data_use_tracker.h",
+    "date_changed_helper.cc",
+    "date_changed_helper.h",
     "delegating_provider.cc",
     "delegating_provider.h",
     "drive_metrics_provider.cc",
@@ -56,6 +56,10 @@ jumbo_static_library("metrics") {
     "drive_metrics_provider_win.cc",
     "enabled_state_provider.cc",
     "enabled_state_provider.h",
+    "entropy_state.cc",
+    "entropy_state.h",
+    "entropy_state_provider.cc",
+    "entropy_state_provider.h",
     "environment_recorder.cc",
     "environment_recorder.h",
     "expired_histogram_util.cc",
@@ -72,7 +76,7 @@ jumbo_static_library("metrics") {
     "log_decoder.h",
     "log_store.h",
     "machine_id_provider.h",
-    "machine_id_provider_stub.cc",
+    "machine_id_provider_nonwin.cc",
     "machine_id_provider_win.cc",
     "metrics_log.cc",
     "metrics_log.h",
@@ -117,8 +121,6 @@ jumbo_static_library("metrics") {
     "stability_metrics_provider.h",
     "system_memory_stats_recorder.h",
     "system_memory_stats_recorder_linux.cc",
-    "system_session_analyzer_win.cc",
-    "system_session_analyzer_win.h",
     "ukm_demographic_metrics_provider.h",
     "unsent_log_store.cc",
     "unsent_log_store.h",
@@ -163,7 +165,11 @@ jumbo_static_library("metrics") {
   }
 
   if (is_win) {
-    sources -= [ "machine_id_provider_stub.cc" ]
+    sources += [
+      "system_session_analyzer/system_session_analyzer_win.cc",
+      "system_session_analyzer/system_session_analyzer_win.h",
+    ]
+    sources -= [ "machine_id_provider_nonwin.cc" ]
     deps += [ "//components/browser_watcher:stability_client" ]
     libs = [ "wevtapi.lib" ]
   }
@@ -177,9 +183,7 @@ if (is_android) {
   java_cpp_strings("java_switches_srcjar") {
     # External code should depend on ":metrics_java" instead.
     visibility = [ ":*" ]
-    sources = [
-      "//components/metrics/metrics_switches.cc",
-    ]
+    sources = [ "//components/metrics/metrics_switches.cc" ]
     template =
         "//components/metrics/android/java_templates/MetricsSwitches.java.tmpl"
   }
@@ -200,9 +204,7 @@ static_library("component_metrics") {
     "component_metrics_provider.h",
   ]
 
-  public_deps = [
-    "//third_party/metrics_proto",
-  ]
+  public_deps = [ "//third_party/metrics_proto" ]
 
   deps = [
     ":metrics",
@@ -216,17 +218,29 @@ if (!is_ios) {
     sources = [
       "gpu/gpu_metrics_provider.cc",
       "gpu/gpu_metrics_provider.h",
+      "gpu/rendering_perf_metrics_provider.cc",
+      "gpu/rendering_perf_metrics_provider.h",
     ]
 
-    public_deps = [
-      ":metrics",
-    ]
+    public_deps = [ ":metrics" ]
     deps = [
       "//base",
       "//content/public/browser",
       "//gpu/config",
     ]
   }
+}
+
+source_set("library_support") {
+  sources = [
+    "library_support/histogram_manager.cc",
+    "library_support/histogram_manager.h",
+  ]
+  deps = [
+    "//base",
+    "//components/metrics:metrics",
+    "//third_party/metrics_proto",
+  ]
 }
 
 jumbo_static_library("net") {
@@ -241,9 +255,7 @@ jumbo_static_library("net") {
     "net/wifi_access_point_info_provider.h",
   ]
 
-  public_deps = [
-    ":metrics",
-  ]
+  public_deps = [ ":metrics" ]
   allow_circular_includes_from = [ ":metrics" ]
 
   deps = [
@@ -273,9 +285,7 @@ static_library("ui") {
     "ui/screen_info_metrics_provider.h",
   ]
 
-  public_deps = [
-    ":metrics",
-  ]
+  public_deps = [ ":metrics" ]
   deps = [
     "//base",
     "//ui/display",
@@ -308,9 +318,7 @@ source_set("call_stack_profile_params") {
     "call_stack_profile_encoding.h",
     "call_stack_profile_params.h",
   ]
-  sources = [
-    "call_stack_profile_encoding.cc",
-  ]
+  sources = [ "call_stack_profile_encoding.cc" ]
 
   deps = [
     "//base:base",
@@ -330,9 +338,7 @@ source_set("child_call_stack_profile_builder") {
     "call_stack_profile_metadata.cc",
     "child_call_stack_profile_collector.cc",
   ]
-  public_deps = [
-    ":call_stack_profile_params",
-  ]
+  public_deps = [ ":call_stack_profile_params" ]
   deps = [
     "//base",
     "//components/metrics/public/mojom:call_stack_mojo_bindings",
@@ -346,12 +352,8 @@ source_set("child_call_stack_profile_builder") {
 
 # Dependency for browser process use of the CallStackProfileBuilder.
 source_set("call_stack_profile_builder") {
-  deps = [
-    ":metrics",
-  ]
-  public_deps = [
-    ":child_call_stack_profile_builder",
-  ]
+  deps = [ ":metrics" ]
+  public_deps = [ ":child_call_stack_profile_builder" ]
 }
 
 # The browser process mojo service for collecting profiles from child
@@ -371,21 +373,37 @@ source_set("call_stack_profile_collector") {
 jumbo_static_library("test_support") {
   testonly = true
   sources = [
-    "test_enabled_state_provider.cc",
-    "test_enabled_state_provider.h",
-    "test_metrics_log_uploader.cc",
-    "test_metrics_log_uploader.h",
-    "test_metrics_provider.cc",
-    "test_metrics_provider.h",
-    "test_metrics_service_client.cc",
-    "test_metrics_service_client.h",
+    "test/test_enabled_state_provider.cc",
+    "test/test_enabled_state_provider.h",
+    "test/test_metrics_log_uploader.cc",
+    "test/test_metrics_log_uploader.h",
+    "test/test_metrics_provider.cc",
+    "test/test_metrics_provider.h",
+    "test/test_metrics_service_client.cc",
+    "test/test_metrics_service_client.h",
   ]
 
-  public_deps = [
-    ":metrics",
+  public_deps = [ ":metrics" ]
+  deps = [ "//base" ]
+}
+
+static_library("demographics_test_support") {
+  testonly = true
+  sources = [
+    "test/demographic_metrics_test_utils.cc",
+    "test/demographic_metrics_test_utils.h",
   ]
+
   deps = [
+    ":metrics",
     "//base",
+    "//components/network_time",
+    "//components/prefs",
+    "//components/sync",
+    "//components/sync/base",
+    "//components/sync/test/fake_server",
+    "//third_party/metrics_proto",
+    "//third_party/zlib/google:compression_utils",
   ]
 }
 
@@ -397,9 +415,7 @@ if (is_linux) {
       "serialization/serialization_utils.cc",
       "serialization/serialization_utils.h",
     ]
-    deps = [
-      "//base",
-    ]
+    deps = [ "//base" ]
   }
 }
 
@@ -415,14 +431,18 @@ source_set("unit_tests") {
     "component_metrics_provider_unittest.cc",
     "daily_event_unittest.cc",
     "data_use_tracker_unittest.cc",
+    "date_changed_helper_unittest.cc",
     "demographic_metrics_provider_unittest.cc",
     "drive_metrics_provider_unittest.cc",
+    "entropy_state_provider_unittest.cc",
+    "entropy_state_unittest.cc",
     "environment_recorder_unittest.cc",
     "expired_histograms_checker_unittest.cc",
     "field_trials_provider_unittest.cc",
     "file_metrics_provider_unittest.cc",
     "histogram_encoder_unittest.cc",
-    "machine_id_provider_win_unittest.cc",
+    "library_support/histogram_manager_unittest.cc",
+    "machine_id_provider_nonwin_unittest.cc",
     "metrics_log_manager_unittest.cc",
     "metrics_log_store_unittest.cc",
     "metrics_log_unittest.cc",
@@ -436,7 +456,6 @@ source_set("unit_tests") {
     "single_sample_metrics_factory_impl_unittest.cc",
     "stability_metrics_helper_unittest.cc",
     "stability_metrics_provider_unittest.cc",
-    "system_session_analyzer_win_unittest.cc",
     "ui/screen_info_metrics_provider_unittest.cc",
     "unsent_log_store_unittest.cc",
   ]
@@ -445,6 +464,7 @@ source_set("unit_tests") {
     ":call_stack_profile_builder",
     ":component_metrics",
     ":demographic_metrics_provider",
+    ":library_support",
     ":metrics",
     ":net",
     ":single_sample_metrics",
@@ -464,9 +484,18 @@ source_set("unit_tests") {
     "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
     "//testing/gtest",
+    "//third_party/metrics_proto",
     "//third_party/zlib/google:compression_utils",
     "//ui/gfx/geometry",
   ]
+
+  if (is_win) {
+    sources -= [ "machine_id_provider_nonwin_unittest.cc" ]
+    sources += [
+      "machine_id_provider_win_unittest.cc",
+      "system_session_analyzer/system_session_analyzer_win_unittest.cc",
+    ]
+  }
 
   if (is_linux) {
     sources += [ "serialization/serialization_utils_unittest.cc" ]
@@ -497,9 +526,7 @@ source_set("unit_tests") {
 
 # Convenience testing target
 test("metrics_unittests") {
-  sources = [
-    "//components/test/run_all_unittests.cc",
-  ]
+  sources = [ "//components/test/run_all_unittests.cc" ]
   deps = [
     ":unit_tests",
     "//components/test:test_support",

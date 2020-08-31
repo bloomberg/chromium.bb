@@ -53,6 +53,10 @@ _AUDIO_EXTERNS = (
 _AUTOMATION_EXTERNS = (
     ChromeRootPath('third_party/closure_compiler/externs/automation.js'))
 
+# chromeosInfoPrivate API externs file.
+_CHROMEOS_INFO_PRIVATE_EXTERNS = (
+    ChromeRootPath('third_party/closure_compiler/externs/chromeos_info_private.js'))
+
 # MetricsPrivate externs file.
 _METRICS_PRIVATE_EXTERNS = (
     ChromeRootPath('third_party/closure_compiler/externs/metrics_private.js'))
@@ -88,6 +92,7 @@ _COMMON_EXTERNS = [
     _AUTOMATION_EXTERNS,
     _CHROME_EXTERNS,
     _CHROME_EXTENSIONS_EXTERNS,
+    _CHROMEOS_INFO_PRIVATE_EXTERNS,
     _COMMANDLINE_PRIVATE_EXTERNS,
     _METRICS_PRIVATE_EXTERNS,
     _LOGIN_STATE_EXTERNS,
@@ -96,11 +101,11 @@ _COMMON_EXTERNS = [
 
 # List of top-level scripts and externs that we can check.
 _TOP_LEVEL_SCRIPTS = [
-    [[CVoxPath('background/learn_mode/kbexplorer_loader.js')], _COMMON_EXTERNS],
+    [[CVoxPath('learn_mode/kbexplorer_loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('background/loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('background/logging/log_loader.js')], _COMMON_EXTERNS],
-    [[CVoxPath('background/options/options_loader.js')], _COMMON_EXTERNS],
-    [[CVoxPath('background/panel/panel_loader.js')], _COMMON_EXTERNS],
+    [[CVoxPath('options/options_loader.js')], _COMMON_EXTERNS],
+    [[CVoxPath('panel/panel_loader.js')], _COMMON_EXTERNS],
 ]
 
 
@@ -123,6 +128,7 @@ def CheckChromeVox(changed_files=None):
   ret_output = ''
   roots = [
       CVoxPath(),
+      CVoxPath('../common'),
       os.path.relpath(
           os.path.join(
               _CHROME_SOURCE_DIR,

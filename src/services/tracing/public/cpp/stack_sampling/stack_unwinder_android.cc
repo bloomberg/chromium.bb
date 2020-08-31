@@ -15,9 +15,10 @@
 #include <algorithm>
 
 #include "base/android/jni_generator/jni_generator_helper.h"
+#include "base/check_op.h"
 #include "base/debug/proc_maps_linux.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -470,7 +471,7 @@ __wrap_dl_unwind_find_exidx(_Unwind_Ptr pc, int* length) {
   static const FakeExidx chrome_exidx_data[] = {
       {CFIBacktraceAndroid::executable_start_addr(), 0x80000000},
       {CFIBacktraceAndroid::executable_end_addr(), 0x80000000}};
-  *length = sizeof(chrome_exidx_data);
+  *length = base::size(chrome_exidx_data);
   return reinterpret_cast<_Unwind_Ptr>(chrome_exidx_data);
 }
 

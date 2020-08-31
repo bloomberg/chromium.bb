@@ -35,9 +35,11 @@ class AnnotationInstance : public InstanceBase {
 
   AnnotationInstance();
   AnnotationInstance(const AnnotationInstance& other);
+  AnnotationInstance& operator=(const AnnotationInstance& other);
+  ~AnnotationInstance() override;
 
   // Deserializes an instance from serialized lines of the text provided by the
-  // clang tool.
+  // extractor.
   // |serialized_lines| are read from |start_line| to |end_line| and should
   // contain the following lines:
   //   1- File path.
@@ -111,6 +113,10 @@ class AnnotationInstance : public InstanceBase {
   // Protobuf of the annotation.
   traffic_annotation::NetworkTrafficAnnotation proto;
 
+  // Same message as |proto|, but with the schema loaded at runtime
+  // (using reflection) based on chrome_settings_full_runtime.proto.
+  std::unique_ptr<google::protobuf::Message> runtime_proto = nullptr;
+
   // Type of the annotation.
   Type type;
 
@@ -142,7 +148,7 @@ class CallInstance : public InstanceBase {
   CallInstance(const CallInstance& other);
 
   // Deserializes an instance from serialized lines of text provided by the
-  // clang tool.
+  // extractor.
   // |serialized_lines| are read from |start_line| to |end_line| and should
   // contain the following lines:
   //   1- File path.
@@ -172,7 +178,7 @@ class AssignmentInstance : public InstanceBase {
   AssignmentInstance(const AssignmentInstance& other);
 
   // Deserializes an instance from serialized lines of text provided by the
-  // clang tool.
+  // extractor.
   // |serialized_lines| are read from |start_line| to |end_line| and should
   // contain the following lines:
   //   1- File path.

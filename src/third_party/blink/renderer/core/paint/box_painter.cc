@@ -29,9 +29,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 
 namespace blink {
 
@@ -48,9 +46,8 @@ void BoxPainter::PaintChildren(const PaintInfo& paint_info) {
   PaintInfo child_info(paint_info);
   for (LayoutObject* child = layout_box_.SlowFirstChild(); child;
        child = child->NextSibling()) {
-    if (child->IsSVGForeignObject()) {
-      SVGForeignObjectPainter(ToLayoutSVGForeignObject(*child))
-          .PaintLayer(paint_info);
+    if (auto* foreign_object = DynamicTo<LayoutSVGForeignObject>(*child)) {
+      SVGForeignObjectPainter(*foreign_object).PaintLayer(paint_info);
     } else {
       child->Paint(child_info);
     }
@@ -121,20 +118,6 @@ void BoxPainter::PaintBoxDecorationBackground(
     RecordScrollHitTestData(paint_info, *background_client);
 }
 
-bool BoxPainter::BackgroundIsKnownToBeOpaque(const PaintInfo& paint_info) {
-  // If the box has multiple fragments, its VisualRect is the bounding box of
-  // all fragments' visual rects, which is likely to cover areas that are not
-  // covered by painted background.
-  if (layout_box_.FirstFragment().NextFragment())
-    return false;
-
-  PhysicalRect bounds =
-      BoxDecorationData::IsPaintingScrollingBackground(paint_info, layout_box_)
-          ? layout_box_.PhysicalLayoutOverflowRect()
-          : layout_box_.PhysicalSelfVisualOverflowRect();
-  return layout_box_.BackgroundIsKnownToBeOpaqueInRect(bounds);
-}
-
 void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     const PaintInfo& paint_info,
     const PhysicalRect& paint_rect,
@@ -142,17 +125,9 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   const ComputedStyle& style = layout_box_.StyleRef();
 
   base::Optional<DisplayItemCacheSkipper> cache_skipper;
-  // Disable cache in under-invalidation checking mode for MediaSliderPart
-  // because we always paint using the latest data (buffered ranges, current
-  // time and duration) which may be different from the cached data, and for
-  // delayed-invalidation object because it may change before it's actually
-  // invalidated. Note that we still report harmless under-invalidation of
-  // non-delayed-invalidation animated background, which should be ignored.
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
-      (style.EffectiveAppearance() == kMediaSliderPart ||
-       layout_box_.ShouldDelayFullPaintInvalidation())) {
+      BoxPainterBase::ShouldSkipPaintUnderInvalidationChecking(layout_box_))
     cache_skipper.emplace(paint_info.context);
-  }
 
   BoxDecorationData box_decoration_data(paint_info, layout_box_);
   if (!box_decoration_data.ShouldPaint())
@@ -166,11 +141,6 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   DrawingRecorder recorder(paint_info.context, background_client,
                            DisplayItem::kBoxDecorationBackground);
   GraphicsContextStateSaver state_saver(paint_info.context, false);
-
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      paint_rect.EdgesOnPixelBoundaries() &&
-      BackgroundIsKnownToBeOpaque(paint_info))
-    recorder.SetKnownToBeOpaque();
 
   bool needs_end_layer = false;
   // FIXME: Should eventually give the theme control over whether the box
@@ -293,8 +263,8 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
 void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
                                    const PhysicalRect& paint_rect,
                                    const DisplayItemClient& background_client) {
-  // Hit test display items are only needed for compositing. This flag is used
-  // for for printing and drag images which do not need hit testing.
+  // Hit test data are only needed for compositing. This flag is used for for
+  // printing and drag images which do not need hit testing.
   if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
     return;
 
@@ -302,20 +272,19 @@ void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (layout_box_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  auto touch_action = layout_box_.EffectiveAllowedTouchAction();
-  if (touch_action == TouchAction::kTouchActionAuto)
+  if (!paint_info.FragmentToPaint(layout_box_))
     return;
 
-  HitTestDisplayItem::Record(
-      paint_info.context, background_client,
-      HitTestRect(paint_rect.ToLayoutRect(), touch_action));
+  paint_info.context.GetPaintController().RecordHitTestData(
+      background_client, PixelSnappedIntRect(paint_rect),
+      layout_box_.EffectiveAllowedTouchAction());
 }
 
 void BoxPainter::RecordScrollHitTestData(
     const PaintInfo& paint_info,
     const DisplayItemClient& background_client) {
-  // Hit test display items are only needed for compositing. This flag is used
-  // for for printing and drag images which do not need hit testing.
+  // Scroll hit test data are only needed for compositing. This flag is used for
+  // printing and drag images which do not need hit testing.
   if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
     return;
 
@@ -330,29 +299,24 @@ void BoxPainter::RecordScrollHitTestData(
   if (!fragment)
     return;
 
-  // Only create scroll hit test data for objects that scroll.
-  if (layout_box_.GetScrollableArea()->ScrollsOverflow()) {
-    const auto* properties = fragment->PaintProperties();
-
-    // If there is an associated scroll node, emit a scroll hit test display
-    // item.
-    if (properties && properties->Scroll()) {
-      DCHECK(properties->ScrollTranslation());
-      // The local border box properties are used instead of the contents
-      // properties so that the scroll hit test is not clipped or scrolled.
-      ScopedPaintChunkProperties scroll_hit_test_properties(
-          paint_info.context.GetPaintController(),
-          fragment->LocalBorderBoxProperties(), background_client,
-          DisplayItem::kScrollHitTest);
-      ScrollHitTestDisplayItem::Record(
-          paint_info.context, background_client, DisplayItem::kScrollHitTest,
-          properties->ScrollTranslation(), fragment->VisualRect());
-    }
+  // If there is an associated scroll node, emit scroll hit test data.
+  const auto* properties = fragment->PaintProperties();
+  if (properties && properties->Scroll()) {
+    DCHECK(properties->ScrollTranslation());
+    // We record scroll hit test data in the local border box properties
+    // instead of the contents properties so that the scroll hit test is not
+    // clipped or scrolled.
+    auto& paint_controller = paint_info.context.GetPaintController();
+    DCHECK_EQ(fragment->LocalBorderBoxProperties(),
+              paint_controller.CurrentPaintChunkProperties());
+    paint_controller.RecordScrollHitTestData(
+        background_client, DisplayItem::kScrollHitTest,
+        properties->ScrollTranslation(), fragment->VisualRect());
   }
 
   ScrollableAreaPainter(*layout_box_.GetScrollableArea())
-      .RecordResizerScrollHitTestData(
-          paint_info.context, fragment->PaintOffset(), background_client);
+      .RecordResizerScrollHitTestData(paint_info.context,
+                                      fragment->PaintOffset());
 }
 
 }  // namespace blink

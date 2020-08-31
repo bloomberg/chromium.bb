@@ -9,7 +9,7 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/services/printing/public/mojom/pdf_nup_converter.mojom.h"
-#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
+#include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -18,7 +18,6 @@ struct PrintHostMsg_DidPreviewPage_Params;
 struct PrintHostMsg_DidStartPreview_Params;
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_RequestPrintPreview_Params;
-struct PrintHostMsg_SetOptionsFromDocument_Params;
 
 namespace base {
 class RefCountedMemory;
@@ -81,15 +80,10 @@ class PrintPreviewMessageHandler
       content::RenderFrameHost* render_frame_host,
       const PrintHostMsg_DidPreviewDocument_Params& params,
       const PrintHostMsg_PreviewIds& ids);
-  void OnPrintPreviewFailed(int document_cookie,
-                            const PrintHostMsg_PreviewIds& ids);
   void OnPrintPreviewCancelled(int document_cookie,
                                const PrintHostMsg_PreviewIds& ids);
   void OnInvalidPrinterSettings(int document_cookie,
                                 const PrintHostMsg_PreviewIds& ids);
-  void OnSetOptionsFromDocument(
-      const PrintHostMsg_SetOptionsFromDocument_Params& params,
-      const PrintHostMsg_PreviewIds& ids);
 
   void NotifyUIPreviewPageReady(
       PrintPreviewUI* print_preview_ui,
@@ -98,32 +92,27 @@ class PrintPreviewMessageHandler
       scoped_refptr<base::RefCountedMemory> data_bytes);
   void NotifyUIPreviewDocumentReady(
       PrintPreviewUI* print_preview_ui,
-      int page_count,
       const PrintHostMsg_PreviewIds& ids,
       scoped_refptr<base::RefCountedMemory> data_bytes);
 
-  // Callbacks for pdf compositor client.
+  // Callbacks for print compositor client.
   void OnCompositePdfPageDone(int page_number,
                               int document_cookie,
                               const PrintHostMsg_PreviewIds& ids,
-                              mojom::PdfCompositor::Status status,
+                              mojom::PrintCompositor::Status status,
                               base::ReadOnlySharedMemoryRegion region);
-  void OnCompositeOrCompleteDocumentToPdfDone(
-      bool composite_document_using_individual_pages,
-      int page_count,
-      int document_cookie,
-      const PrintHostMsg_PreviewIds& ids,
-      mojom::PdfCompositor::Status status,
-      base::ReadOnlySharedMemoryRegion region);
+  void OnCompositeToPdfDone(int document_cookie,
+                            const PrintHostMsg_PreviewIds& ids,
+                            mojom::PrintCompositor::Status status,
+                            base::ReadOnlySharedMemoryRegion region);
   void OnPrepareForDocumentToPdfDone(const PrintHostMsg_PreviewIds& ids,
-                                     mojom::PdfCompositor::Status status);
+                                     mojom::PrintCompositor::Status status);
 
   void OnNupPdfConvertDone(int page_number,
                            const PrintHostMsg_PreviewIds& ids,
                            mojom::PdfNupConverter::Status status,
                            base::ReadOnlySharedMemoryRegion region);
-  void OnNupPdfDocumentConvertDone(int page_count,
-                                   const PrintHostMsg_PreviewIds& ids,
+  void OnNupPdfDocumentConvertDone(const PrintHostMsg_PreviewIds& ids,
                                    mojom::PdfNupConverter::Status status,
                                    base::ReadOnlySharedMemoryRegion region);
 

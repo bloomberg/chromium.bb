@@ -15,7 +15,7 @@ enum CSSSampleId {
 
     // These internal properties exist but are mapped to 0 to ensure they don't get
     // reported in use counter.
-    kInternalEffectiveZoom = 0,
+    kInternalEmptyLineHeight = 0,
     kInternalVisitedBackgroundColor = 0,
     kInternalVisitedBorderBlockEndColor = 0,
     kInternalVisitedBorderBlockStartColor = 0,
@@ -217,7 +217,7 @@ enum CSSSampleId {
     kAliasWebkitAnimationName = 172,
     kAliasWebkitAnimationPlayState = 173,
     kAliasWebkitAnimationTimingFunction = 174,
-    kWebkitAppearance = 175,
+    kAliasWebkitAppearance = 175,
     // kWebkitAspectRatio = 176,
     kAliasWebkitBackfaceVisibility = 177,
     kAliasWebkitBackgroundClip = 178,
@@ -690,14 +690,25 @@ enum CSSSampleId {
     kOverscrollBehaviorBlock = 645,
     // kContentSize = 646,
     kFontOpticalSizing = 647,
-    kIntrinsicBlockSize = 648,
-    kIntrinsicHeight = 649,
-    kIntrinsicInlineSize = 650,
-    kIntrinsicSize = 651,
-    kIntrinsicWidth = 652,
-    kRenderSubtree = 653,
+    kContainIntrinsicBlockSize = 648,
+    kContainIntrinsicHeight = 649,
+    kContainIntrinsicInlineSize = 650,
+    kContainIntrinsicSize = 651,
+    kContainIntrinsicWidth = 652,
+    // kRenderSubtree = 653,
+    kOriginTrialTestProperty = 654,
+    // kSubtreeVisibility = 655,
+    kMathStyle = 656,
+    kAspectRatio = 657,
+    kAppearance = 658,
+    kMathSuperscriptShiftStyle = 659,
+    kRubyPosition = 660,
+    kTextUnderlineOffset = 661,
+    kContentVisibility = 662,
+    kTextDecorationThickness = 663,
+    kPageOrientation = 664,
     // 1. Add new features above this line (don't change the assigned numbers of
-    // the existing items).
-    // 2. Run the update_use_counter_css.py script in
-    // chromium/src/tools/metrics/histograms to update the UMA histogram names.
+    //    the existing items).
+    // 2. Run the src/tools/metrics/histograms/update_use_counter_css.py script
+    //    to update the UMA histogram names.
 };

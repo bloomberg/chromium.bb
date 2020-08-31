@@ -34,28 +34,32 @@ class MEDIA_BLINK_EXPORT SmoothnessHelper {
     virtual unsigned DroppedFrameCount() const = 0;
   };
 
-  virtual ~SmoothnessHelper() = default;
+  virtual ~SmoothnessHelper();
+
+  // Return the features that we were constructed with.
+  const learning::FeatureVector& features() const { return features_; }
+
+  // Notify us that an NNR has occurred.
+  virtual void NotifyNNR() = 0;
 
   // |features| are the features that we'll use for any labelled examples that
   // we create.  They should be features that could be captured at the time a
   // prediction would be needed.
   static std::unique_ptr<SmoothnessHelper> Create(
-      std::unique_ptr<learning::LearningTaskController> controller,
+      std::unique_ptr<learning::LearningTaskController> bad_controller,
+      std::unique_ptr<learning::LearningTaskController> nnr_controller,
       const learning::FeatureVector& features,
       Client* player);
-
-  // Notify us when we start or stop playing.
-  // TODO(liberato): There is an open question whether we'd like one call of
-  // the form "ThePlayerIsInTheRightStateToRecordSmoothness(bool)", or whether
-  // we'd like multiple calls to record the state of the player, like
-  // "SetIsPlaying", "SetIsBackgrounded", etc.  The difference is whether the
-  // decision to record is made by the player or by us.
-  virtual void NotifyPlayState(bool playing) = 0;
 
   // We split playbacks up into |kSegmentSize| units, and record the worst
   // dropped frame ratio over all segments of a playback.  A playback is not
   // recorded if it doesn't contain at least one full segment.
   static base::TimeDelta SegmentSizeForTesting();
+
+ protected:
+  SmoothnessHelper(const learning::FeatureVector& features);
+
+  learning::FeatureVector features_;
 };
 
 }  // namespace media

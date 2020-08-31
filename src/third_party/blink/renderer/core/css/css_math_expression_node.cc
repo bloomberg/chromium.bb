@@ -147,7 +147,9 @@ CSSMathExpressionNumericLiteral* CSSMathExpressionNumericLiteral::Create(
 CSSMathExpressionNumericLiteral::CSSMathExpressionNumericLiteral(
     const CSSNumericLiteralValue* value,
     bool is_integer)
-    : CSSMathExpressionNode(UnitCategory(value->GetType()), is_integer),
+    : CSSMathExpressionNode(UnitCategory(value->GetType()),
+                            is_integer,
+                            false /* has_comparisons*/),
       value_(value) {}
 
 bool CSSMathExpressionNumericLiteral::IsZero() const {
@@ -227,10 +229,7 @@ double CSSMathExpressionNumericLiteral::ComputeLengthPx(
     case kCalcAngle:
     case kCalcFrequency:
     case kCalcPercentLength:
-    case kCalcPercentNumber:
     case kCalcTime:
-    case kCalcLengthNumber:
-    case kCalcPercentLengthNumber:
     case kCalcOther:
       NOTREACHED();
       break;
@@ -269,7 +268,7 @@ bool CSSMathExpressionNumericLiteral::IsComputationallyIndependent() const {
   return value_->IsComputationallyIndependent();
 }
 
-void CSSMathExpressionNumericLiteral::Trace(blink::Visitor* visitor) {
+void CSSMathExpressionNumericLiteral::Trace(Visitor* visitor) {
   visitor->Trace(value_);
   CSSMathExpressionNode::Trace(visitor);
 }
@@ -283,43 +282,26 @@ bool CSSMathExpressionNumericLiteral::InvolvesPercentageComparisons() const {
 // ------ End of CSSMathExpressionNumericLiteral member functions
 
 static const CalculationCategory kAddSubtractResult[kCalcOther][kCalcOther] = {
-    /* CalcNumber */ {kCalcNumber, kCalcLengthNumber, kCalcPercentNumber,
-                      kCalcPercentNumber, kCalcOther, kCalcOther, kCalcOther,
-                      kCalcOther, kCalcLengthNumber, kCalcPercentLengthNumber},
+    /* CalcNumber */ {kCalcNumber, kCalcOther, kCalcOther, kCalcOther,
+                      kCalcOther, kCalcOther, kCalcOther},
     /* CalcLength */
-    {kCalcLengthNumber, kCalcLength, kCalcPercentLength, kCalcOther,
-     kCalcPercentLength, kCalcOther, kCalcOther, kCalcOther, kCalcLengthNumber,
-     kCalcPercentLengthNumber},
+    {kCalcOther, kCalcLength, kCalcPercentLength, kCalcPercentLength,
+     kCalcOther, kCalcOther, kCalcOther},
     /* CalcPercent */
-    {kCalcPercentNumber, kCalcPercentLength, kCalcPercent, kCalcPercentNumber,
-     kCalcPercentLength, kCalcOther, kCalcOther, kCalcOther,
-     kCalcPercentLengthNumber, kCalcPercentLengthNumber},
-    /* CalcPercentNumber */
-    {kCalcPercentNumber, kCalcPercentLengthNumber, kCalcPercentNumber,
-     kCalcPercentNumber, kCalcPercentLengthNumber, kCalcOther, kCalcOther,
-     kCalcOther, kCalcOther, kCalcPercentLengthNumber},
+    {kCalcOther, kCalcPercentLength, kCalcPercent, kCalcPercentLength,
+     kCalcOther, kCalcOther, kCalcOther},
     /* CalcPercentLength */
-    {kCalcPercentLengthNumber, kCalcPercentLength, kCalcPercentLength,
-     kCalcPercentLengthNumber, kCalcPercentLength, kCalcOther, kCalcOther,
-     kCalcOther, kCalcOther, kCalcPercentLengthNumber},
+    {kCalcOther, kCalcPercentLength, kCalcPercentLength, kCalcPercentLength,
+     kCalcOther, kCalcOther, kCalcOther},
     /* CalcAngle  */
-    {kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcAngle,
-     kCalcOther, kCalcOther, kCalcOther, kCalcOther},
+    {kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcAngle, kCalcOther,
+     kCalcOther},
     /* CalcTime */
-    {kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcOther,
-     kCalcTime, kCalcOther, kCalcOther, kCalcOther},
+    {kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcTime,
+     kCalcOther},
     /* CalcFrequency */
     {kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcOther, kCalcOther,
-     kCalcOther, kCalcFrequency, kCalcOther, kCalcOther},
-    /* CalcLengthNumber */
-    {kCalcLengthNumber, kCalcLengthNumber, kCalcPercentLengthNumber,
-     kCalcPercentLengthNumber, kCalcPercentLengthNumber, kCalcOther, kCalcOther,
-     kCalcOther, kCalcLengthNumber, kCalcPercentLengthNumber},
-    /* CalcPercentLengthNumber */
-    {kCalcPercentLengthNumber, kCalcPercentLengthNumber,
-     kCalcPercentLengthNumber, kCalcPercentLengthNumber,
-     kCalcPercentLengthNumber, kCalcOther, kCalcOther, kCalcOther,
-     kCalcPercentLengthNumber, kCalcPercentLengthNumber}};
+     kCalcFrequency}};
 
 static CalculationCategory DetermineCategory(
     const CSSMathExpressionNode& left_side,
@@ -473,8 +455,10 @@ CSSMathExpressionBinaryOperation::CSSMathExpressionBinaryOperation(
     const CSSMathExpressionNode* right_side,
     CSSMathOperator op,
     CalculationCategory category)
-    : CSSMathExpressionNode(category,
-                            IsIntegerResult(left_side, right_side, op)),
+    : CSSMathExpressionNode(
+          category,
+          IsIntegerResult(left_side, right_side, op),
+          left_side->HasComparisons() || right_side->HasComparisons()),
       left_side_(left_side),
       right_side_(right_side),
       operator_(op) {}
@@ -725,9 +709,6 @@ CSSPrimitiveValue::UnitType CSSMathExpressionBinaryOperation::ResolvedUnitType()
     case kCalcFrequency:
       return CSSPrimitiveValue::UnitType::kHertz;
     case kCalcPercentLength:
-    case kCalcPercentNumber:
-    case kCalcLengthNumber:
-    case kCalcPercentLengthNumber:
     case kCalcOther:
       return CSSPrimitiveValue::UnitType::kUnknown;
   }
@@ -735,7 +716,7 @@ CSSPrimitiveValue::UnitType CSSMathExpressionBinaryOperation::ResolvedUnitType()
   return CSSPrimitiveValue::UnitType::kUnknown;
 }
 
-void CSSMathExpressionBinaryOperation::Trace(blink::Visitor* visitor) {
+void CSSMathExpressionBinaryOperation::Trace(Visitor* visitor) {
   visitor->Trace(left_side_);
   visitor->Trace(right_side_);
   CSSMathExpressionNode::Trace(visitor);
@@ -816,11 +797,13 @@ CSSMathExpressionVariadicOperation::CSSMathExpressionVariadicOperation(
     bool is_integer_result,
     Operands&& operands,
     CSSMathOperator op)
-    : CSSMathExpressionNode(category, is_integer_result),
+    : CSSMathExpressionNode(category,
+                            is_integer_result,
+                            true /* has_comparisons */),
       operands_(std::move(operands)),
       operator_(op) {}
 
-void CSSMathExpressionVariadicOperation::Trace(blink::Visitor* visitor) {
+void CSSMathExpressionVariadicOperation::Trace(Visitor* visitor) {
   visitor->Trace(operands_);
   CSSMathExpressionNode::Trace(visitor);
 }
@@ -926,7 +909,7 @@ CSSMathExpressionVariadicOperation::ToCalculationExpression(
     const CSSToLengthConversionData& data) const {
   Vector<scoped_refptr<const CalculationExpressionNode>> operands;
   operands.ReserveCapacity(operands_.size());
-  for (const auto operand : operands_)
+  for (const auto& operand : operands_)
     operands.push_back(operand->ToCalculationExpression(data));
   auto expression_type = operator_ == CSSMathOperator::kMin
                              ? CalculationExpressionComparisonNode::Type::kMin
@@ -977,6 +960,9 @@ bool CSSMathExpressionVariadicOperation::operator==(
 
 CSSPrimitiveValue::UnitType
 CSSMathExpressionVariadicOperation::ResolvedUnitType() const {
+  if (Category() == kCalcNumber)
+    return CSSPrimitiveValue::UnitType::kNumber;
+
   CSSPrimitiveValue::UnitType result = operands_.front()->ResolvedUnitType();
   if (result == CSSPrimitiveValue::UnitType::kUnknown)
     return CSSPrimitiveValue::UnitType::kUnknown;
@@ -1083,8 +1069,14 @@ class CSSMathExpressionNodeParser {
 
     auto* nested = CSSMathExpressionVariadicOperation::Create(
         {val_operand, max_operand}, CSSMathOperator::kMin);
+    if (!nested)
+      return nullptr;
+
     auto* result = CSSMathExpressionVariadicOperation::Create(
         {min_operand, nested}, CSSMathOperator::kMax);
+    if (!result)
+      return nullptr;
+
     result->SetIsClamp();
     return result;
   }
@@ -1123,22 +1115,20 @@ class CSSMathExpressionNodeParser {
       return result;
     }
 
-    if (RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled()) {
-      if (tokens.Peek().GetType() == kFunctionToken) {
-        CSSValueID function_id = tokens.Peek().FunctionId();
-        CSSParserTokenRange inner_range = tokens.ConsumeBlock();
-        tokens.ConsumeWhitespace();
-        inner_range.ConsumeWhitespace();
-        switch (function_id) {
-          case CSSValueID::kMin:
-            return ParseMinOrMax(inner_range, CSSMathOperator::kMin, depth);
-          case CSSValueID::kMax:
-            return ParseMinOrMax(inner_range, CSSMathOperator::kMax, depth);
-          case CSSValueID::kClamp:
-            return ParseClamp(inner_range, depth);
-          default:
-            break;
-        }
+    if (tokens.Peek().GetType() == kFunctionToken) {
+      CSSValueID function_id = tokens.Peek().FunctionId();
+      CSSParserTokenRange inner_range = tokens.ConsumeBlock();
+      tokens.ConsumeWhitespace();
+      inner_range.ConsumeWhitespace();
+      switch (function_id) {
+        case CSSValueID::kMin:
+          return ParseMinOrMax(inner_range, CSSMathOperator::kMin, depth);
+        case CSSValueID::kMax:
+          return ParseMinOrMax(inner_range, CSSMathOperator::kMax, depth);
+        case CSSValueID::kClamp:
+          return ParseClamp(inner_range, depth);
+        default:
+          break;
       }
     }
 

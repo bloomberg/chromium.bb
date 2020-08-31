@@ -11,7 +11,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "base/optional.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/web_application_info.h"
 #include "components/arc/mojom/app.mojom.h"
 
@@ -28,9 +29,11 @@ namespace chromeos {
 // within it to install as a local web app.
 class ApkWebAppInstaller {
  public:
-  using InstallFinishCallback =
-      base::OnceCallback<void(const web_app::AppId&,
-                              web_app::InstallResultCode)>;
+  using InstallFinishCallback = base::OnceCallback<void(
+      const web_app::AppId&,
+      const bool is_web_only_twa,
+      const base::Optional<std::string> sha256_fingerprint,
+      web_app::InstallResultCode)>;
 
   // Do nothing class purely for the purpose of allowing us to specify
   // a WeakPtr<Owner> member as a proxy for a profile lifetime observer.
@@ -81,6 +84,8 @@ class ApkWebAppInstaller {
   // installation will be aborted. |weak_owner_|'s lifetime must be equal to or
   // shorter than that of |profile_|.
   Profile* profile_;
+  bool is_web_only_twa_;
+  base::Optional<std::string> sha256_fingerprint_;
   InstallFinishCallback callback_;
   base::WeakPtr<Owner> weak_owner_;
 

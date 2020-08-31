@@ -284,13 +284,10 @@ void LogFileCleanupStatus(FileCleanupReason reason,
   base::UmaHistogramCounts100(name, external_cleanups);
 }
 
-void LogFileLifeTime(const base::TimeDelta& file_life_time,
-                     int num_cleanup_attempts) {
+void LogFileLifeTime(const base::TimeDelta& file_life_time) {
   UMA_HISTOGRAM_CUSTOM_TIMES("Download.Service.Files.LifeTime", file_life_time,
                              base::TimeDelta::FromSeconds(1),
                              base::TimeDelta::FromDays(8), 100);
-  base::UmaHistogramSparse("Download.Service.Files.Cleanup.Attempts",
-                           num_cleanup_attempts);
 }
 
 void LogFileDirDiskUtilization(int64_t total_disk_space,
@@ -309,11 +306,6 @@ void LogFilePathRenamed(bool renamed) {
 void LogEntryEvent(DownloadEvent event) {
   UMA_HISTOGRAM_ENUMERATION("Download.Service.Entry.Event", event,
                             DownloadEvent::COUNT);
-}
-
-void LogEntryResumptionCount(uint32_t resume_count) {
-  UMA_HISTOGRAM_COUNTS_100("Download.Service.Entry.ResumptionCount",
-                           resume_count);
 }
 
 void LogEntryRetryCount(uint32_t retry_count) {

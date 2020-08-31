@@ -39,8 +39,6 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
   explicit WebGLProgram(WebGLRenderingContextBase*);
   ~WebGLProgram() override;
 
-  static WebGLProgram* Create(WebGLRenderingContextBase*);
-
   bool LinkStatus(WebGLRenderingContextBase*);
   void setLinkStatus(bool link_status);
 
@@ -73,7 +71,7 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
   bool AttachShader(WebGLShader*);
   bool DetachShader(WebGLShader*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;

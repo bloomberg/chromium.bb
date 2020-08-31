@@ -7,7 +7,8 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -58,7 +59,7 @@ bool IsRequestForPrivateHost(const URLRequest& request) {
   // reasons, but is needed to maximize the chances of a cache hit.
   return IsPrivateHost(request.context()->host_resolver(),
                        HostPortPair::FromURL(request.url()),
-                       request.network_isolation_key());
+                       request.isolation_info().network_isolation_key());
 }
 
 bool IsPrivateHostForTesting(HostResolver* host_resolver,

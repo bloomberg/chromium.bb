@@ -146,8 +146,9 @@ void DebugRectHistory::SaveTouchEventHandlerRects(LayerTreeImpl* tree_impl) {
 
 void DebugRectHistory::SaveTouchEventHandlerRectsCallback(LayerImpl* layer) {
   const TouchActionRegion& touch_action_region = layer->touch_action_region();
-  for (int touch_action_index = kTouchActionNone;
-       touch_action_index != kTouchActionMax; ++touch_action_index) {
+  for (int touch_action_index = static_cast<int>(TouchAction::kNone);
+       touch_action_index != static_cast<int>(TouchAction::kMax);
+       ++touch_action_index) {
     auto touch_action = static_cast<TouchAction>(touch_action_index);
     Region region = touch_action_region.GetRegionForTouchAction(touch_action);
     for (gfx::Rect rect : region) {
@@ -212,16 +213,14 @@ void DebugRectHistory::SaveMainThreadScrollingReasonRects(
     LayerTreeImpl* tree_impl) {
   const auto& scroll_tree = tree_impl->property_trees()->scroll_tree;
   for (auto* layer : *tree_impl) {
-    if (layer->scrollable()) {
-      if (const auto* scroll_node =
-              scroll_tree.Node(layer->scroll_tree_index())) {
-        if (auto reasons = scroll_node->main_thread_scrolling_reasons) {
-          debug_rects_.push_back(DebugRect(
-              MAIN_THREAD_SCROLLING_REASON_RECT_TYPE,
-              MathUtil::MapEnclosingClippedRect(layer->ScreenSpaceTransform(),
-                                                gfx::Rect(layer->bounds())),
-              kTouchActionNone, reasons));
-        }
+    if (const auto* scroll_node =
+            scroll_tree.FindNodeFromElementId(layer->element_id())) {
+      if (auto reasons = scroll_node->main_thread_scrolling_reasons) {
+        debug_rects_.push_back(DebugRect(
+            MAIN_THREAD_SCROLLING_REASON_RECT_TYPE,
+            MathUtil::MapEnclosingClippedRect(layer->ScreenSpaceTransform(),
+                                              gfx::Rect(layer->bounds())),
+            TouchAction::kNone, reasons));
       }
     }
   }

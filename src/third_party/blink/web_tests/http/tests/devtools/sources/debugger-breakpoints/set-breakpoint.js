@@ -24,9 +24,9 @@
             .then(() => SourcesTestRunner.runTestFunction());
       }
 
-      function didPause(callFrames) {
+      async function didPause(callFrames) {
         TestRunner.addResult('Script execution paused.');
-        SourcesTestRunner.captureStackTrace(callFrames);
+        await SourcesTestRunner.captureStackTrace(callFrames);
         SourcesTestRunner.dumpBreakpointSidebarPane();
         SourcesTestRunner.removeBreakpoint(currentSourceFrame, 13);
         SourcesTestRunner.waitBreakpointSidebarPane().then(breakpointRemoved);
@@ -57,8 +57,8 @@
                     'setTimeout(oneLineTestFunction, 0)'));
       }
 
-      function didPause(callFrames) {
-        SourcesTestRunner.captureStackTrace(callFrames);
+      async function didPause(callFrames) {
+        await SourcesTestRunner.captureStackTrace(callFrames);
         SourcesTestRunner.removeBreakpoint(currentSourceFrame, 3);
         SourcesTestRunner.resumeExecution(next);
       }
@@ -68,15 +68,15 @@
       SourcesTestRunner.showScriptSource(
           'set-breakpoint.html', didShowScriptSource);
 
-      function didShowScriptSource(sourceFrame) {
+      async function didShowScriptSource(sourceFrame) {
         currentSourceFrame = sourceFrame;
-        SourcesTestRunner.setBreakpoint(currentSourceFrame, 7, '', true);
+        await SourcesTestRunner.setBreakpoint(currentSourceFrame, 7, '', true);
         SourcesTestRunner.waitUntilPaused(didPause);
         TestRunner.evaluateInPage('setTimeout(oneLineTestFunction2, 0)');
       }
 
-      function didPause(callFrames) {
-        SourcesTestRunner.captureStackTrace(callFrames);
+      async function didPause(callFrames) {
+        await SourcesTestRunner.captureStackTrace(callFrames);
         SourcesTestRunner.removeBreakpoint(currentSourceFrame, 7);
         SourcesTestRunner.resumeExecution(next);
       }

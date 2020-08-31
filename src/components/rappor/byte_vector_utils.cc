@@ -4,11 +4,14 @@
 
 #include "components/rappor/byte_vector_utils.h"
 
+#include <string.h>
 #include <algorithm>
 #include <string>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "crypto/random.h"
 
@@ -23,10 +26,8 @@ base::StringPiece ByteVectorAsStringPiece(const ByteVector& lhs) {
 
 // Concatenates parameters together as a string.
 std::string Concat(const ByteVector& value, char c, base::StringPiece data) {
-  std::string result(value.begin(), value.end());
-  result += c;
-  data.AppendToString(&result);
-  return result;
+  return base::StrCat(
+      {ByteVectorAsStringPiece(value), base::StringPiece(&c, 1), data});
 }
 
 // Performs the operation: K = HMAC(K, data)
@@ -178,8 +179,8 @@ HmacByteVectorGenerator::HmacByteVectorGenerator(
   // Note: We are using the 8.6.7 interpretation, where the entropy_input and
   // nonce are acquired at the same time from the same source.
   DCHECK_EQ(kEntropyInputSize, entropy_input.size());
-  std::string seed_material(entropy_input);
-  personalization_string.AppendToString(&seed_material);
+  std::string seed_material =
+      base::StrCat({entropy_input, personalization_string});
   // 2. Key = 0x00 00...00
   crypto::HMAC hmac1(crypto::HMAC::SHA256);
   if (!hmac1.Init(std::string(hmac_.DigestLength(), 0x00)))

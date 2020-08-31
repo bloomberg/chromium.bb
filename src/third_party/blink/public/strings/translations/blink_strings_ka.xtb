@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">მენიუს ერთეული</translation>
 <translation id="10623998915015855">გადართვის ღილაკი</translation>
 <translation id="1088086359088493902">წამები</translation>
+<translation id="1142001580032786438">კვირის ამომრჩევის ჩვენება</translation>
 <translation id="1171774979989969504">გთხოვთ შეიყვანოთ ელექტრონული ფოსტის მისამართი.</translation>
 <translation id="1178581264944972037">პაუზა</translation>
 <translation id="1188858454923323853">დამატებითი</translation>
@@ -11,6 +12,7 @@
 <translation id="1206693055195146388">სლაიდერი</translation>
 <translation id="1211441953136645838">საბოლოო შენიშვნა</translation>
 <translation id="1281252709823657822">დიალოგი</translation>
+<translation id="1306460908038601864">გამორთული</translation>
 <translation id="1335095011850992622">შემქმნელები</translation>
 <translation id="1342835525016946179">არტიკლი</translation>
 <translation id="1359897965706325498">ბანერი</translation>
@@ -21,6 +23,7 @@
 <translation id="1727886345390570319">დახურული სუბტიტრების მენიუს დამალვა</translation>
 <translation id="1729654308190250600">გთხოვთ შეიყვანოთ შევსებული ელექტრონული ფოსტის მისამართი.</translation>
 <translation id="1758486001363313524">სხვა…</translation>
+<translation id="1787192514241997742">საერთო დრო: <ph name="REMAINING_TIME" /></translation>
 <translation id="1806710327868736751">გაფრთხილების დიალოგი</translation>
 <translation id="1821985195704844674">ხისებრი ბადე</translation>
 <translation id="1822429046913737220">AM/PM</translation>
@@ -32,6 +35,7 @@
 <translation id="1938124657309484470">მნიშვნელობა უნდა იყოს <ph name="MAXIMUM_DATE_OR_TIME" /> ან უფრო ადრე.</translation>
 <translation id="1946271899482435442">თარიღის ამომრჩევის ჩვენება</translation>
 <translation id="1993104285338243655">გადართულია არეკვლაზე</translation>
+<translation id="2031987842108996681">წითელი არხი</translation>
 <translation id="2060505056492490888">„<ph name="DOT" />“ გამოყენებულია, როგორც არასწორი პოზიცია მისამართში „<ph name="INVALIDDOMAIN" />“.</translation>
 <translation id="2148716181193084225">დღეს</translation>
 <translation id="2158401438286456825">გვერდების სია</translation>
@@ -42,6 +46,7 @@
 <translation id="2291999235780842123">მოსანიშნი ველი</translation>
 <translation id="2311842470354187719">გვერდის წყვეტა</translation>
 <translation id="2335594187091864976">თარიღისა და დროის ამომრჩევი</translation>
+<translation id="2393030564806080191">ფერის თექვსმეტობითი მნიშვნელობა</translation>
 <translation id="245932805758469625">ვიდეოს დარჩენილი წამების რაოდენობა</translation>
 <translation id="248395913932153421">დღე</translation>
 <translation id="2507943997699731163">შეავსეთ ეს ველი.</translation>
@@ -49,6 +54,7 @@
 <translation id="2561842179657104141">მედია-ფაილების მართვის მეტი საშუალების ჩვენება</translation>
 <translation id="2572483411312390101">დაკვრა</translation>
 <translation id="2613802280814924224">შეიყვანეთ სწორი მნიშვნელობა. უახლოესი სწორი მნიშვნელობაა <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">მწვანე არხი</translation>
 <translation id="2653659639078652383">გაგზავნა</translation>
 <translation id="2657045182931379222">გრაფიკული ობიექტი</translation>
 <translation id="2674318244760992338">ქვედა კოლონტიტული</translation>
@@ -69,6 +75,7 @@
 <translation id="310520048233152454">გთხოვთ შეიყვანოთ URL.</translation>
 <translation id="3175736971608411871">ტაიმერი</translation>
 <translation id="3199563858620722075">კომბო-ველი</translation>
+<translation id="3329013043687509092">გაჯერება</translation>
 <translation id="3450233048674729344">მნიშვნელობა უნდა იყოს ნაკლები ან უდრიდეს <ph name="MAXIMUM" />-ს.</translation>
 <translation id="3486220673238053218">განსაზღვრება</translation>
 <translation id="3557673793733683882">სათაური <ph name="HEADING_LEVEL" /></translation>
@@ -82,7 +89,6 @@
 <translation id="3822383571486410024">გთხოვთ, გაზარდოთ ეს ტექსტი <ph name="MIN_CHARACTERS" /> ან მეტ სიმბოლომდე (ამჟამად იყენებთ <ph name="CURRENT_LENGTH" /> სიმბოლოს).</translation>
 <translation id="383465348367842624">ნაწილი, რომელსაც მოყვება „<ph name="ATSIGN" />“ არ უნდა შეიცავდეს „<ph name="INVALIDCHARACTER" />“ სიმბოლოს.</translation>
 <translation id="3846214748874656680">სრულეკრანიანი რეჟიმიდან გამოსვლა</translation>
-<translation id="3889183436948184105">რედაქცია</translation>
 <translation id="3920932319529768807">დასკვნა</translation>
 <translation id="3924558731517983934">აპლიკაცია</translation>
 <translation id="3944740393230681990">პროლოგი</translation>
@@ -100,7 +106,6 @@
 <translation id="4444765639179266822">როგორც ჩანს, აქ წერია: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">მითითება ტერმინების ლექსიკონზე</translation>
 <translation id="4522570452068850558">დეტალები</translation>
-<translation id="4542388879936266156">დარჩენილი დრო: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">ფორმა</translation>
 <translation id="4661075872484491155">ხე</translation>
 <translation id="4664250907885839816">„<ph name="ATSIGN" />“-ის შემდეგ ნაწილი არ უნდა შეიცავდეს სიმბოლოს „<ph name="INVALIDCHARACTER" />“.</translation>
@@ -114,7 +119,10 @@
 <translation id="479989351350248267">ძიება</translation>
 <translation id="4812940957355064477">გთხოვთ შეიყვანეთ ნომერი.</translation>
 <translation id="4912536737030637138">ბიბლიოგრაფიის ჩანაწერი</translation>
+<translation id="4915360478455618802">დროის ამომრჩევის ჩვენება</translation>
 <translation id="492244087561876220">კომენტარი</translation>
+<translation id="4950364064308314478">ადგილობრივი თარიღისა და დროის ამომრჩევის ჩვენება</translation>
+<translation id="4971739861736909480">არჩეულია <ph name="ACCNAME" /></translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> არჩეულია</translation>
 <translation id="4992066212339426712">დადუმების მოხსნა</translation>
 <translation id="49969490063480558">შეიყვანეთ შესაბამისი ნაწილი „<ph name="ATSIGN" />“-ის შემდეგ. „<ph name="INVALIDADDRESS" />“ არასრულია.</translation>
@@ -122,6 +130,7 @@
 <translation id="5034860022980953847">პროგრესის ინდიკატორი</translation>
 <translation id="5090250355906949916">ვიდეოს დროის ცოცია</translation>
 <translation id="5093189678851173835">ეპიგრაფი</translation>
+<translation id="509897012892853729">ლურჯი არხი</translation>
 <translation id="5117590920725113268">შემდეგი თვის ჩვენება</translation>
 <translation id="512758898067543763">მწკრივის სათაური</translation>
 <translation id="5143125788380636750">ეპილოგი</translation>
@@ -129,6 +138,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> პბაიტი</translation>
 <translation id="5307600278924710095">გთხოვთ შეიყვანოთ ნაწილი, რომელსაც მოსდევს „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ არის არასრული.</translation>
 <translation id="5334352251556557839">მედიის დაკვრა ვერ მოხერხდა.</translation>
+<translation id="537648784377940524">მინიმალური თარიღი (<ph name="MIN_DATE_OR_TIME" />) წინ უნდა უსწრებდეს მაქსიმალურ თარიღს (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">მონაცემი</translation>
 <translation id="5453733299334684579">ხის ელემენტი</translation>
 <translation id="5466621249238537318">აირჩიეთ ერთი ან მეტი ფაილი.</translation>
@@ -144,7 +154,6 @@
 <translation id="5677946354068040947">დამატებითი ვარიანტები</translation>
 <translation id="576709008726043716">შესავალი</translation>
 <translation id="57838592816432529">დადუმება</translation>
-<translation id="5860033963881614850">გამორთვა</translation>
 <translation id="588258955323874662">სრული ეკრანი</translation>
 <translation id="5888666972993069672">ახლა ტრანსლირდება „<ph name="DEVICE_FRIENDLY_NAME" />“-ზე</translation>
 <translation id="591047860372322273">საძიებო ველი</translation>
@@ -159,6 +168,7 @@
 <translation id="6166809985690652833">ბოლოსიტყვაობა</translation>
 <translation id="6209276755895393898">როგორც ჩანს, ეს არის <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ტერმინების ლექსიკონი</translation>
+<translation id="6281588256137006900">სიღიავე</translation>
 <translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">რეჟიმიდან „გამოსახულება გამოსახულებაში“ გასვლა</translation>
 <translation id="6398862346408813489">თვის არჩევის პანელის ჩვენება</translation>
@@ -179,6 +189,7 @@
 <translation id="6790428901817661496">დაკვრა</translation>
 <translation id="6820355525329141109">დანამატი ვერ ჩაიტვირთა.</translation>
 <translation id="6820615603175220800">მითითება ბიბლიოგრაფიაზე</translation>
+<translation id="6831465880655513317">ფერთა წრე ორგანზომილებიანი სლაიდერით ინტენსივობისა და სიღიავის ასარჩევად</translation>
 <translation id="6843725295806269523">დადუმება</translation>
 <translation id="6885760532393684712">კატალოგი</translation>
 <translation id="689129560213475294">კოლოფონი</translation>
@@ -196,6 +207,7 @@
 <translation id="7263440858009898357">გთხოვთ აირჩიოთ ელემენტი სიაში.</translation>
 <translation id="727747134524199931">სვეტის სათაური</translation>
 <translation id="7320576522385648310">ბუფერირდება</translation>
+<translation id="7341556277900466204">ფერთა წრე</translation>
 <translation id="7353453495576941748">შემქმნელი</translation>
 <translation id="7364796246159120393">აირჩიეთ ფაილი</translation>
 <translation id="739024184232394898">სხვა…</translation>
@@ -216,9 +228,11 @@
 <translation id="775297008183122718">არასწორი ჩანაწერი</translation>
 <translation id="7789962463072032349">პაუზა</translation>
 <translation id="7802800022689234070">გაშლის სამკუთხედი</translation>
+<translation id="7852167693871241274">ტონის სლაიდერი</translation>
 <translation id="7888071071722539607">ჩაამატეთ „<ph name="ATSIGN" />“ ელფოსტის მისამართში. „<ph name="INVALIDADDRESS" />“-ში გამოტოვებულია „<ph name="ATSIGN" />“.</translation>
 <translation id="7891486169920085145">გამყოფი</translation>
 <translation id="795667975304826397">ფაილი არ არის არჩეული</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> არ არის არჩეული</translation>
 <translation id="8034303206267677282">მნიშვნელოვანი</translation>
 <translation id="8053789581856978548">საძიებო ტექსტის ველი</translation>
 <translation id="8057695513531652401">განცხადება</translation>
@@ -231,6 +245,7 @@
 <translation id="8284326494547611709">ტიტრები</translation>
 <translation id="8346634859695247203">სექცია</translation>
 <translation id="835897206747267392">არასწორი მნიშვნელობა.</translation>
+<translation id="839593075537728968">მნიშვნელობა უნდა იყოს <ph name="MINIMUM_TIME" />-სა და <ph name="MAXIMUM_TIME" />-ს შორის.</translation>
 <translation id="8403857369060869934">გასული დრო: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">ნაწილი</translation>
 <translation id="8433900881053900389">ხელსაწყოთა ზოლი</translation>
@@ -247,17 +262,19 @@
 <translation id="860475260694818407">სარჩევი</translation>
 <translation id="8613126697340063924">დისტანციური დაკვრის მართვა</translation>
 <translation id="862370744433916922">სუბტიტრი</translation>
+<translation id="8634971699417195529">თვის ამომრჩევის ჩვენება</translation>
 <translation id="8711688047404765493">გამოტანა</translation>
 <translation id="8750798805984357768">გთხოვთ აირჩიოთ ერთიერთი ამ ვარიანტთაგანი.</translation>
 <translation id="8808573423886751634">თავი</translation>
 <translation id="8845239796550121995">ამჟამად ტრანსლირებს თქვენს ტელევიზორზე</translation>
 <translation id="8851136666856101339">ძირითადი</translation>
 <translation id="8875657656876809964">შეცდომა ვიდეოს დაკვრისას</translation>
+<translation id="8889402386540077796">შეფერილობა</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> კბ</translation>
+<translation id="894736920926684893">ფორმატის გადამრთველი</translation>
 <translation id="8987927404178983737">თვე</translation>
 <translation id="901493112792887934">მიმდინარე დრო წამებში</translation>
 <translation id="901834265349196618">ელფოსტა</translation>
-<translation id="9023835124071926463">კომენტარების სექცია</translation>
 <translation id="9048119486235211610">ნავიგაცია</translation>
 <translation id="9062295712474918030">დოკუმენტი</translation>
 <translation id="9093215626363556771">რეჟიმიდან „გამოსახულება გამოსახულებაში“ გასვლა</translation>

@@ -2,9 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export default class AXBreadcrumbsPane extends Accessibility.AccessibilitySubPane {
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
+import {AccessibilityNode} from './AccessibilityModel.js';               // eslint-disable-line no-unused-vars
+import {AccessibilitySidebarView} from './AccessibilitySidebarView.js';  // eslint-disable-line no-unused-vars
+import {AccessibilitySubPane} from './AccessibilitySubPane.js';
+
+export class AXBreadcrumbsPane extends AccessibilitySubPane {
   /**
-   * @param {!Accessibility.AccessibilitySidebarView} axSidebarView
+   * @param {!AccessibilitySidebarView} axSidebarView
    */
   constructor(axSidebarView) {
     super(ls`Accessibility Tree`);
@@ -15,10 +23,12 @@ export default class AXBreadcrumbsPane extends Accessibility.AccessibilitySubPan
 
     this._axSidebarView = axSidebarView;
 
-    /** @type {?Accessibility.AXBreadcrumb} */
+    /** @type {?AXBreadcrumb} */
     this._preselectedBreadcrumb = null;
-    /** @type {?Accessibility.AXBreadcrumb} */
+    /** @type {?AXBreadcrumb} */
     this._inspectedNodeBreadcrumb = null;
+
+    this._collapsingBreadcrumbId = -1;
 
     this._hoveredBreadcrumb = null;
     this._rootElement = this.element.createChild('div', 'ax-breadcrumbs');
@@ -44,7 +54,7 @@ export default class AXBreadcrumbsPane extends Accessibility.AccessibilitySubPan
   }
 
   /**
-   * @param {?Accessibility.AccessibilityNode} axNode
+   * @param {?AccessibilityNode} axNode
    * @override
    */
   setAXNode(axNode) {
@@ -69,7 +79,7 @@ export default class AXBreadcrumbsPane extends Accessibility.AccessibilitySubPan
     let breadcrumb = null;
     let parent = null;
     for (ancestor of ancestorChain) {
-      breadcrumb = new Accessibility.AXBreadcrumb(ancestor, depth, (ancestor === axNode));
+      breadcrumb = new AXBreadcrumb(ancestor, depth, (ancestor === axNode));
       if (parent) {
         parent.appendChild(breadcrumb);
       } else {
@@ -85,12 +95,12 @@ export default class AXBreadcrumbsPane extends Accessibility.AccessibilitySubPan
     this._setPreselectedBreadcrumb(this._inspectedNodeBreadcrumb);
 
     /**
-     * @param {!Accessibility.AXBreadcrumb} parentBreadcrumb
-     * @param {!Accessibility.AccessibilityNode} axNode
+     * @param {!AXBreadcrumb} parentBreadcrumb
+     * @param {!AccessibilityNode} axNode
      * @param {number} localDepth
      */
     function append(parentBreadcrumb, axNode, localDepth) {
-      const childBreadcrumb = new Accessibility.AXBreadcrumb(axNode, localDepth, false);
+      const childBreadcrumb = new AXBreadcrumb(axNode, localDepth, false);
       parentBreadcrumb.appendChild(childBreadcrumb);
 
       // In most cases there will be no children here, but there are some special cases.
@@ -101,7 +111,11 @@ export default class AXBreadcrumbsPane extends Accessibility.AccessibilitySubPan
 
     for (const child of axNode.children()) {
       append(this._inspectedNodeBreadcrumb, child, depth);
+      if (child.backendDOMNodeId() === this._collapsingBreadcrumbId) {
+        this._setPreselectedBreadcrumb(this._inspectedNodeBreadcrumb.lastChild());
+      }
     }
+    this._collapsingBreadcrumbId = -1;
   }
 
   /**
@@ -126,11 +140,19 @@ export default class AXBreadcrumbsPane extends Accessibility.AccessibilitySubPan
     }
 
     let handled = false;
-    if ((event.key === 'ArrowUp' || event.key === 'ArrowLeft') && !event.altKey) {
+    if (event.key === 'ArrowUp' && !event.altKey) {
       handled = this._preselectPrevious();
-    } else if ((event.key === 'ArrowDown' || event.key === 'ArrowRight') && !event.altKey) {
+    } else if ((event.key === 'ArrowDown') && !event.altKey) {
       handled = this._preselectNext();
-    } else if (isEnterKey(event)) {
+    } else if (event.key === 'ArrowLeft' && !event.altKey) {
+      if (this._preselectedBreadcrumb.hasExpandedChildren()) {
+        this._collapseBreadcrumb(this._preselectedBreadcrumb);
+      } else {
+        handled = this._preselectParent();
+      }
+    } else if ((isEnterKey(event) ||
+                (event.key === 'ArrowRight' && !event.altKey &&
+                 this._preselectedBreadcrumb.axNode().hasOnlyUnloadedChildren()))) {
       handled = this._inspectDOMNode(this._preselectedBreadcrumb.axNode());
     }
 
@@ -164,7 +186,19 @@ export default class AXBreadcrumbsPane extends Accessibility.AccessibilitySubPan
   }
 
   /**
-   * @param {?Accessibility.AXBreadcrumb} breadcrumb
+   * @return {boolean}
+   */
+  _preselectParent() {
+    const parentBreadcrumb = this._preselectedBreadcrumb.parentBreadcrumb();
+    if (!parentBreadcrumb) {
+      return false;
+    }
+    this._setPreselectedBreadcrumb(parentBreadcrumb);
+    return true;
+  }
+
+  /**
+   * @param {?AXBreadcrumb} breadcrumb
    */
   _setPreselectedBreadcrumb(breadcrumb) {
     if (breadcrumb === this._preselectedBreadcrumb) {
@@ -182,8 +216,19 @@ export default class AXBreadcrumbsPane extends Accessibility.AccessibilitySubPan
     }
     this._preselectedBreadcrumb.setPreselected(true, hadFocus);
     if (!breadcrumb && hadFocus) {
-      SDK.OverlayModel.hideDOMNodeHighlight();
+      SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
     }
+  }
+
+  /**
+   * @param {!AXBreadcrumb} breadcrumb
+   */
+  _collapseBreadcrumb(breadcrumb) {
+    if (!breadcrumb.parentBreadcrumb()) {
+      return;
+    }
+    this._collapsingBreadcrumbId = breadcrumb.axNode().backendDOMNodeId();
+    this._inspectDOMNode(breadcrumb.parentBreadcrumb().axNode());
   }
 
   /**
@@ -230,8 +275,8 @@ export default class AXBreadcrumbsPane extends Accessibility.AccessibilitySubPan
     }
     const breadcrumb = breadcrumbElement.breadcrumb;
     if (breadcrumb.inspected()) {
-      // If the user is clicking the inspected breadcrumb, they probably want to
-      // focus it.
+      // This will collapse and preselect/focus the breadcrumb.
+      this._collapseBreadcrumb(breadcrumb);
       breadcrumb.nodeElement().focus();
       return;
     }
@@ -242,7 +287,7 @@ export default class AXBreadcrumbsPane extends Accessibility.AccessibilitySubPan
   }
 
   /**
-   * @param {?Accessibility.AXBreadcrumb} breadcrumb
+   * @param {?AXBreadcrumb} breadcrumb
    */
   _setHoveredBreadcrumb(breadcrumb) {
     if (breadcrumb === this._hoveredBreadcrumb) {
@@ -264,7 +309,7 @@ export default class AXBreadcrumbsPane extends Accessibility.AccessibilitySubPan
   }
 
   /**
-   * @param {!Accessibility.AccessibilityNode} axNode
+   * @param {!AccessibilityNode} axNode
    * @return {boolean}
    */
   _inspectDOMNode(axNode) {
@@ -294,7 +339,7 @@ export default class AXBreadcrumbsPane extends Accessibility.AccessibilitySubPan
       return;
     }
 
-    const contextMenu = new UI.ContextMenu(event);
+    const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.viewSection().appendItem(ls`Scroll into view`, () => {
       axNode.deferredDOMNode().resolvePromise().then(domNode => {
         if (!domNode) {
@@ -311,32 +356,38 @@ export default class AXBreadcrumbsPane extends Accessibility.AccessibilitySubPan
 
 export class AXBreadcrumb {
   /**
-   * @param {!Accessibility.AccessibilityNode} axNode
+   * @param {!AccessibilityNode} axNode
    * @param {number} depth
    * @param {boolean} inspected
    */
   constructor(axNode, depth, inspected) {
-    /** @type {!Accessibility.AccessibilityNode} */
+    /** @type {!AccessibilityNode} */
     this._axNode = axNode;
 
-    this._element = createElementWithClass('div', 'ax-breadcrumb');
+    this._element = document.createElement('div');
+    this._element.classList.add('ax-breadcrumb');
     this._element.breadcrumb = this;
 
-    this._nodeElement = createElementWithClass('div', 'ax-node');
+    this._nodeElement = document.createElement('div');
+    this._nodeElement.classList.add('ax-node');
     UI.ARIAUtils.markAsTreeitem(this._nodeElement);
     this._nodeElement.tabIndex = -1;
     this._element.appendChild(this._nodeElement);
-    this._nodeWrapper = createElementWithClass('div', 'wrapper');
+    this._nodeWrapper = document.createElement('div');
+    this._nodeWrapper.classList.add('wrapper');
     this._nodeElement.appendChild(this._nodeWrapper);
 
-    this._selectionElement = createElementWithClass('div', 'selection fill');
+    this._selectionElement = document.createElement('div');
+    this._selectionElement.classList.add('selection');
+    this._selectionElement.classList.add('fill');
     this._nodeElement.appendChild(this._selectionElement);
 
-    this._childrenGroupElement = createElementWithClass('div', 'children');
+    this._childrenGroupElement = document.createElement('div');
+    this._childrenGroupElement.classList.add('children');
     UI.ARIAUtils.markAsGroup(this._childrenGroupElement);
     this._element.appendChild(this._childrenGroupElement);
 
-    /** @type !Array<!Accessibility.AXBreadcrumb> */
+    /** @type !Array<!AXBreadcrumb> */
     this._children = [];
     this._hovered = false;
     this._preselected = false;
@@ -359,6 +410,7 @@ export class AXBreadcrumb {
 
     if (this._axNode.hasOnlyUnloadedChildren()) {
       this._nodeElement.classList.add('children-unloaded');
+      UI.ARIAUtils.setExpanded(this._nodeElement, false);
     }
 
     if (!this._axNode.isDOMNode()) {
@@ -381,7 +433,7 @@ export class AXBreadcrumb {
   }
 
   /**
-   * @param {!Accessibility.AXBreadcrumb} breadcrumb
+   * @param {!AXBreadcrumb} breadcrumb
    */
   appendChild(breadcrumb) {
     this._children.push(breadcrumb);
@@ -391,8 +443,12 @@ export class AXBreadcrumb {
     this._childrenGroupElement.appendChild(breadcrumb.element());
   }
 
+  hasExpandedChildren() {
+    return this._children.length;
+  }
+
   /**
-   * @param {!Accessibility.AXBreadcrumb} breadcrumb
+   * @param {!AXBreadcrumb} breadcrumb
    */
   setParent(breadcrumb) {
     this._parent = breadcrumb;
@@ -427,7 +483,7 @@ export class AXBreadcrumb {
       if (!this._inspected) {
         this._axNode.highlightDOMNode();
       } else {
-        SDK.OverlayModel.hideDOMNodeHighlight();
+        SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
       }
     }
   }
@@ -448,7 +504,7 @@ export class AXBreadcrumb {
   }
 
   /**
-   * @return {!Accessibility.AccessibilityNode}
+   * @return {!AccessibilityNode}
    */
   axNode() {
     return this._axNode;
@@ -469,7 +525,7 @@ export class AXBreadcrumb {
   }
 
   /**
-   * @return {?Accessibility.AXBreadcrumb}
+   * @return {?AXBreadcrumb}
    */
   nextBreadcrumb() {
     if (this._children.length) {
@@ -483,7 +539,7 @@ export class AXBreadcrumb {
   }
 
   /**
-   * @return {?Accessibility.AXBreadcrumb}
+   * @return {?AXBreadcrumb}
    */
   previousBreadcrumb() {
     const previousSibling = this.element().previousSibling;
@@ -492,6 +548,14 @@ export class AXBreadcrumb {
     }
 
     return this._parent;
+  }
+
+  parentBreadcrumb() {
+    return this._parent;
+  }
+
+  lastChild() {
+    return this._children[this._children.length - 1];
   }
 
   /**
@@ -512,15 +576,17 @@ export class AXBreadcrumb {
       return;
     }
 
-    const roleElement = createElementWithClass('span', 'monospace');
-    roleElement.classList.add(Accessibility.AXBreadcrumb.RoleStyles[role.type]);
+    const roleElement = document.createElement('span');
+    roleElement.classList.add('monospace');
+    roleElement.classList.add(RoleStyles[role.type]);
     roleElement.setTextContentTruncatedIfNeeded(role.value || '');
 
     this._nodeWrapper.appendChild(roleElement);
   }
 
   _appendIgnoredNodeElement() {
-    const ignoredNodeElement = createElementWithClass('span', 'monospace');
+    const ignoredNodeElement = document.createElement('span');
+    ignoredNodeElement.classList.add('monospace');
     ignoredNodeElement.textContent = ls`Ignored`;
     ignoredNodeElement.classList.add('ax-breadcrumbs-ignored-node');
     this._nodeWrapper.appendChild(ignoredNodeElement);
@@ -532,22 +598,3 @@ export const RoleStyles = {
   internalRole: 'ax-internal-role',
   role: 'ax-role',
 };
-
-/* Legacy exported object */
-self.Accessibility = self.Accessibility || {};
-
-/* Legacy exported object */
-Accessibility = Accessibility || {};
-
-/**
- * @constructor
- */
-Accessibility.AXBreadcrumbsPane = AXBreadcrumbsPane;
-
-/**
- * @constructor
- */
-Accessibility.AXBreadcrumb = AXBreadcrumb;
-
-/** @type {!Object<string, string>} */
-Accessibility.AXBreadcrumb.RoleStyles = RoleStyles;

@@ -236,12 +236,6 @@ int ItemIconInFolderIconMarginForType(ash::AppListConfigType type) {
   }
 }
 
-int SuggestionChipIconDimension() {
-  // This is needed because chrome uses default instance when generating icons
-  // for suggestion chip and needs to be done for all configs including kShared.
-  return app_list_features::IsScalableAppListEnabled() ? 20 : 16;
-}
-
 int SuggestionChipContainerTopMarginForType(ash::AppListConfigType type) {
   switch (type) {
     case ash::AppListConfigType::kSmall:
@@ -255,7 +249,7 @@ int SuggestionChipContainerTopMarginForType(ash::AppListConfigType type) {
 
 }  // namespace
 
-AppListConfig::AppListConfig(ash::AppListConfigType type)
+AppListConfig::AppListConfig(AppListConfigType type)
     : type_(type),
       scale_x_(1),
       scale_y_(1),
@@ -281,7 +275,7 @@ AppListConfig::AppListConfig(ash::AppListConfigType type)
       search_list_icon_dimension_(20),
       search_list_icon_vertical_bar_dimension_(48),
       search_list_badge_icon_dimension_(14),
-      suggestion_chip_icon_dimension_(SuggestionChipIconDimension()),
+      suggestion_chip_icon_dimension_(20),
       suggestion_chip_container_top_margin_(
           SuggestionChipContainerTopMarginForType(type)),
       suggestion_chip_container_height_(32),
@@ -482,22 +476,22 @@ AppListConfig::~AppListConfig() = default;
 // static
 AppListConfig& AppListConfig::instance() {
   return *AppListConfigProvider::Get().GetConfigForType(
-      ash::AppListConfigType::kShared, true /*can_create*/);
+      AppListConfigType::kShared, true /*can_create*/);
 }
 
 int AppListConfig::GetPreferredIconDimension(
-    ash::SearchResultDisplayType display_type) const {
+    SearchResultDisplayType display_type) const {
   switch (display_type) {
-    case ash::SearchResultDisplayType::kRecommendation:
-      FALLTHROUGH;
-    case ash::SearchResultDisplayType::kTile:
+    case SearchResultDisplayType::kTile:
       return search_tile_icon_dimension_;
-    case ash::SearchResultDisplayType::kList:
+    case SearchResultDisplayType::kChip:
+      return suggestion_chip_icon_dimension_;
+    case SearchResultDisplayType::kList:
       return search_list_icon_dimension_;
-    case ash::SearchResultDisplayType::kNone:  // Falls through.
-    case ash::SearchResultDisplayType::kCard:
+    case SearchResultDisplayType::kNone:  // Falls through.
+    case SearchResultDisplayType::kCard:
       return 0;
-    case ash::SearchResultDisplayType::kLast:
+    case SearchResultDisplayType::kLast:
       return 0;
   }
 }

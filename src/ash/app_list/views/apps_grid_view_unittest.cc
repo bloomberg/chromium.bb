@@ -10,7 +10,6 @@
 #include <string>
 
 #include "ash/app_list/app_list_metrics.h"
-#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
@@ -169,7 +168,8 @@ class DragAfterPageFlipTask : public ash::PaginationModelObserver {
 class TestSuggestedSearchResult : public TestSearchResult {
  public:
   TestSuggestedSearchResult() {
-    set_display_type(ash::SearchResultDisplayType::kRecommendation);
+    set_display_type(ash::SearchResultDisplayType::kTile);
+    set_is_recommendation(true);
   }
   ~TestSuggestedSearchResult() override {}
 
@@ -200,19 +200,17 @@ class AppsGridViewTest : public views::ViewsTestBase,
     // Ensure that parent is big enough to show the full AppListView.
     parent->SetBounds(gfx::Rect(gfx::Point(0, 0), gfx::Size(1024, 768)));
     delegate_ = std::make_unique<AppListTestViewDelegate>();
+    delegate_->SetIsTabletModeEnabled(create_as_tablet_mode_);
     app_list_view_ = new AppListView(delegate_.get());
-    app_list_view_->InitView(
-        create_as_tablet_mode_, parent,
-        base::BindRepeating(&UpdateActivationForAppListView, app_list_view_,
-                            create_as_tablet_mode_));
-    app_list_view_->Show(false /*is_side_shelf*/, create_as_tablet_mode_);
+    app_list_view_->InitView(parent);
+    app_list_view_->Show(false /*is_side_shelf*/);
     contents_view_ = app_list_view_->app_list_main_view()->contents_view();
-    apps_grid_view_ = contents_view_->GetAppsContainerView()->apps_grid_view();
+    apps_grid_view_ = contents_view_->apps_container_view()->apps_grid_view();
     app_list_view_->GetWidget()->Show();
 
     model_ = delegate_->GetTestModel();
     search_model_ = delegate_->GetSearchModel();
-    suggestions_container_ = contents_view_->GetAppsContainerView()
+    suggestions_container_ = contents_view_->apps_container_view()
                                  ->suggestion_chip_container_view_for_test();
     expand_arrow_view_ = contents_view_->expand_arrow_view();
     for (size_t i = 0; i < kNumOfSuggestedApps; ++i) {
@@ -265,7 +263,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
   }
 
   AppListFolderView* app_list_folder_view() const {
-    return contents_view_->GetAppsContainerView()->app_list_folder_view();
+    return contents_view_->apps_container_view()->app_list_folder_view();
   }
 
   // Points are in |apps_grid_view_|'s coordinates, and fixed for RTL.
@@ -416,28 +414,6 @@ TEST_P(AppsGridViewTest, CreatePage) {
   // Adds one more and gets a new page created.
   model_->CreateAndAddItem("Extra");
   EXPECT_EQ(kPages + 1, GetPaginationModel()->total_pages());
-}
-
-TEST_F(AppsGridViewTest, EnsureHighlightedVisible) {
-  const int kPages = 3;
-  model_->PopulateApps(GetTilesPerPage(0) + (kPages - 1) * GetTilesPerPage(1));
-  EXPECT_EQ(kPages, GetPaginationModel()->total_pages());
-  EXPECT_EQ(0, GetPaginationModel()->selected_page());
-
-  // Highlight first one and last one one first page and first page should be
-  // selected.
-  model_->HighlightItemAt(0);
-  EXPECT_EQ(0, GetPaginationModel()->selected_page());
-  model_->HighlightItemAt(GetTilesPerPage(0) - 1);
-  EXPECT_EQ(0, GetPaginationModel()->selected_page());
-
-  // Highlight first one on 2nd page and 2nd page should be selected.
-  model_->HighlightItemAt(GetTilesPerPage(1) + 1);
-  EXPECT_EQ(1, GetPaginationModel()->selected_page());
-
-  // Highlight last one in the model and last page should be selected.
-  model_->HighlightItemAt(model_->top_level_item_list()->item_count() - 1);
-  EXPECT_EQ(kPages - 1, GetPaginationModel()->selected_page());
 }
 
 TEST_F(AppsGridViewTest, RemoveSelectedLastApp) {
@@ -667,7 +643,7 @@ TEST_F(AppsGridViewTest,
 
 TEST_F(AppsGridViewTest, CloseFolderByClickingBackground) {
   AppsContainerView* apps_container_view =
-      contents_view_->GetAppsContainerView();
+      contents_view_->apps_container_view();
 
   const size_t kTotalItems =
       AppListConfig::instance().max_folder_items_per_page();
@@ -784,7 +760,7 @@ TEST_P(AppsGridViewTest, ScrollDownShouldNotExitFolder) {
 
   // Open the folder.
   test_api_->PressItemAt(0);
-  EXPECT_TRUE(contents_view_->GetAppsContainerView()->IsInFolderView());
+  EXPECT_TRUE(contents_view_->apps_container_view()->IsInFolderView());
 
   AppsGridView* items_grid_view = app_list_folder_view()->items_grid_view();
   gfx::Point apps_grid_view_origin =
@@ -802,7 +778,7 @@ TEST_P(AppsGridViewTest, ScrollDownShouldNotExitFolder) {
   // the folder should not be closed.
   items_grid_view->OnGestureEvent(&scroll_begin);
   EXPECT_TRUE(scroll_begin.handled());
-  EXPECT_TRUE(contents_view_->GetAppsContainerView()->IsInFolderView());
+  EXPECT_TRUE(contents_view_->apps_container_view()->IsInFolderView());
 }
 
 // Tests that an app icon is selected when a menu is shown by click.
@@ -1042,7 +1018,7 @@ TEST_P(AppsGridViewTest, MouseDragItemReorder) {
   // The default layout is 5x4, populate 7 apps so that we have second row to
   // test dragging item to second row.
   model_->PopulateApps(7);
-  contents_view_->GetAppsContainerView()->Layout();
+  contents_view_->apps_container_view()->Layout();
   EXPECT_EQ(7u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3,Item 4,Item 5,Item 6"),
             model_->GetModelContent());
@@ -1783,7 +1759,7 @@ TEST_F(AppsGridViewTest, UpdateFolderBackgroundOnCancelDrag) {
 // https://crbug.com/834682)
 TEST_F(AppsGridViewTest, FocusOfDraggedView) {
   model_->PopulateApps(1);
-  contents_view_->GetAppsContainerView()->Layout();
+  contents_view_->apps_container_view()->Layout();
   auto* search_box = contents_view_->GetSearchBoxView()->search_box();
   auto* item_view = apps_grid_view_->view_model()->view_at(0);
   EXPECT_TRUE(search_box->HasFocus());
@@ -1856,6 +1832,59 @@ TEST_P(AppsGridViewTabletTest, Basic) {
       "Apps.PaginationTransition.DragScroll.PresentationTime.MaxLatency."
       "TabletMode",
       1);
+}
+
+// Make sure that a folder icon resets background blur after scrolling the apps
+// grid without completing any transition (See https://crbug.com/1049275). The
+// background blur is masked by the apps grid's layer mask.
+TEST_F(AppsGridViewTabletTest, EnsureBlurAfterScrollingWithoutTransition) {
+  // Create a folder with 2 apps. Then add apps until a second page is created.
+  model_->CreateAndPopulateFolderWithApps(2);
+  model_->PopulateApps(GetTilesPerPage(0));
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+
+  gfx::Point apps_grid_view_origin =
+      apps_grid_view_->GetBoundsInScreen().origin();
+  ui::GestureEvent scroll_begin(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, -1));
+  ui::GestureEvent scroll_update_upwards(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, -10));
+  ui::GestureEvent scroll_update_downwards(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, 15));
+  ui::GestureEvent scroll_end(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(), ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END));
+
+  AppListItemView* folder_view = GetItemViewAt(0);
+  ASSERT_TRUE(folder_view->is_folder());
+  ASSERT_FALSE(apps_grid_view_->layer()->layer_mask_layer());
+
+  // On the first page drag upwards, there should not be a page switch and the
+  // layer mask should make the folder lose blur.
+  ASSERT_EQ(0, GetPaginationModel()->selected_page());
+  apps_grid_view_->OnGestureEvent(&scroll_begin);
+  EXPECT_TRUE(scroll_begin.handled());
+  apps_grid_view_->OnGestureEvent(&scroll_update_upwards);
+  EXPECT_TRUE(scroll_update_upwards.handled());
+
+  ASSERT_EQ(0, GetPaginationModel()->selected_page());
+  ASSERT_TRUE(apps_grid_view_->layer()->layer_mask_layer());
+
+  // Continue drag, now switching directions and release. There shouldn't be any
+  // transition and the mask layer should've been reset.
+  apps_grid_view_->OnGestureEvent(&scroll_update_downwards);
+  EXPECT_TRUE(scroll_update_downwards.handled());
+  apps_grid_view_->OnGestureEvent(&scroll_end);
+  EXPECT_TRUE(scroll_end.handled());
+
+  EXPECT_FALSE(GetPaginationModel()->has_transition());
+  EXPECT_FALSE(apps_grid_view_->layer()->layer_mask_layer());
 }
 
 INSTANTIATE_TEST_SUITE_P(All, AppsGridViewTabletTest, testing::Bool());

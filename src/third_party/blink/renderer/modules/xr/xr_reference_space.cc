@@ -46,25 +46,23 @@ XRReferenceSpace::XRReferenceSpace(XRSession* session,
 
 XRReferenceSpace::~XRReferenceSpace() = default;
 
-XRPose* XRReferenceSpace::getPose(
-    XRSpace* other_space,
-    const TransformationMatrix* mojo_from_viewer) {
+XRPose* XRReferenceSpace::getPose(XRSpace* other_space) {
   if (type_ == Type::kTypeViewer) {
-    std::unique_ptr<TransformationMatrix> other_offsetspace_from_viewer =
-        other_space->SpaceFromViewerWithDefaultAndOffset(mojo_from_viewer);
-    if (!other_offsetspace_from_viewer) {
+    base::Optional<TransformationMatrix> other_offset_from_viewer =
+        other_space->OffsetFromViewer();
+    if (!other_offset_from_viewer) {
       return nullptr;
     }
 
-    auto viewer_from_offset = OriginOffsetMatrix();
+    auto viewer_from_offset = NativeFromOffsetMatrix();
 
-    auto other_offsetspace_from_offset =
-        *other_offsetspace_from_viewer * viewer_from_offset;
+    auto other_offset_from_offset =
+        *other_offset_from_viewer * viewer_from_offset;
 
-    return MakeGarbageCollected<XRPose>(other_offsetspace_from_offset,
+    return MakeGarbageCollected<XRPose>(other_offset_from_offset,
                                         session()->EmulatedPosition());
   } else {
-    return XRSpace::getPose(other_space, mojo_from_viewer);
+    return XRSpace::getPose(other_space);
   }
 }
 
@@ -77,122 +75,123 @@ void XRReferenceSpace::SetFloorFromMojo() {
     floor_from_mojo_ = std::make_unique<TransformationMatrix>(
         display_info->stage_parameters->standing_transform.matrix());
   } else {
-    // Otherwise, create a transform based on the default emulated height.
-    floor_from_mojo_ = std::make_unique<TransformationMatrix>();
-    floor_from_mojo_->Translate3d(0, kDefaultEmulationHeightMeters, 0);
+    floor_from_mojo_.reset();
   }
 
   display_info_id_ = session()->DisplayInfoPtrId();
 }
 
-// Returns a default viewer pose if no actual viewer pose is available. Only
-// applicable to viewer reference spaces.
-std::unique_ptr<TransformationMatrix> XRReferenceSpace::DefaultViewerPose() {
-  // A viewer reference space always returns an identity matrix.
-  return type_ == Type::kTypeViewer ? std::make_unique<TransformationMatrix>()
-                                    : nullptr;
-}
-
-std::unique_ptr<TransformationMatrix> XRReferenceSpace::SpaceFromMojo(
-    const TransformationMatrix& mojo_from_viewer) {
+base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromMojo() {
   switch (type_) {
-    case Type::kTypeLocal:
-      // Currently 'local' space is equivalent to mojo space.
-      return std::make_unique<TransformationMatrix>();
-    case Type::kTypeLocalFloor:
-      // Currently all base poses are 'local' space, so use of 'local-floor'
-      // reference spaces requires adjustment. Ideally the service will
-      // eventually provide poses in the requested space directly, avoiding the
-      // need to do additional transformation here.
+    case Type::kTypeLocal: {
+      // The session is the source of truth for latest state of the transform
+      // between local space and mojo space.
+      auto mojo_from_local = session()->GetMojoFrom(Type::kTypeLocal);
+      if (!mojo_from_local) {
+        return base::nullopt;
+      }
 
+      DCHECK(mojo_from_local->IsInvertible());
+      return mojo_from_local->Inverse();
+    }
+    case Type::kTypeLocalFloor: {
       // Check first to see if the xrDisplayInfo has updated since the last
       // call. If so, update the floor-level transform.
       if (display_info_id_ != session()->DisplayInfoPtrId())
         SetFloorFromMojo();
-      return std::make_unique<TransformationMatrix>(*floor_from_mojo_);
-    case Type::kTypeViewer:
-      // Return viewer_from_mojo which is the inverse of mojo_from_viewer.
-      return std::make_unique<TransformationMatrix>(mojo_from_viewer.Inverse());
-    case Type::kTypeUnbounded:
-      // For now we assume that poses returned by systems that support unbounded
-      // reference spaces are already in the correct space. Return an identity.
-      return std::make_unique<TransformationMatrix>();
-    case Type::kTypeBoundedFloor:
-      NOTREACHED() << "kTypeBoundedFloor should be handled by subclass";
-      break;
-  }
 
-  return nullptr;
+      if (floor_from_mojo_) {
+        return *floor_from_mojo_;
+      }
+
+      // If the floor-level transform is unavailable, try to use the default
+      // transform based off of local space:
+      auto mojo_from_local = session()->GetMojoFrom(Type::kTypeLocal);
+      if (!mojo_from_local) {
+        return base::nullopt;
+      }
+
+      DCHECK(mojo_from_local->IsInvertible());
+      auto local_from_mojo = mojo_from_local->Inverse();
+
+      // local-floor_from_local transform corresponding to the default height.
+      auto floor_from_local = TransformationMatrix().Translate3d(
+          0, kDefaultEmulationHeightMeters, 0);
+
+      return floor_from_local * local_from_mojo;
+    }
+    case Type::kTypeViewer: {
+      auto mojo_from_viewer = session()->GetMojoFrom(Type::kTypeViewer);
+      // If we don't have mojo_from_viewer, then it's the default pose,
+      // which is the identity pose.
+      if (!mojo_from_viewer)
+        return TransformationMatrix();
+
+      // Otherwise we need to return viewer_from_mojo which is the inverse.
+      DCHECK(mojo_from_viewer->IsInvertible());
+      return mojo_from_viewer->Inverse();
+    }
+    case Type::kTypeUnbounded: {
+      // The session is the source of truth for latest state of the transform
+      // between unbounded space and mojo space.
+      auto mojo_from_unbounded = session()->GetMojoFrom(Type::kTypeUnbounded);
+      if (!mojo_from_unbounded) {
+        return base::nullopt;
+      }
+
+      DCHECK(mojo_from_unbounded->IsInvertible());
+      return mojo_from_unbounded->Inverse();
+    }
+    case Type::kTypeBoundedFloor: {
+      NOTREACHED() << "kTypeBoundedFloor should be handled by subclass";
+      return base::nullopt;
+    }
+  }
 }
 
-// Returns the refspace-from-viewerspace transform, corresponding to the pose of
-// the viewer in this space. This takes the mojo_from_viewer transform (viewer
-// pose in mojo space) as input, and left-multiplies space_from_mojo onto that.
-std::unique_ptr<TransformationMatrix> XRReferenceSpace::SpaceFromViewer(
-    const TransformationMatrix& mojo_from_viewer) {
+base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromViewer(
+    const base::Optional<TransformationMatrix>& mojo_from_viewer) {
   if (type_ == Type::kTypeViewer) {
     // Special case for viewer space, always return an identity matrix
-    // explicitly. In theory the default behavior of multiplying SpaceFromMojo *
-    // MojoFromViewer would be equivalent, but that would likely return an
+    // explicitly. In theory the default behavior of multiplying NativeFromMojo
+    // onto MojoFromViewer would be equivalent, but that would likely return an
     // almost-identity due to rounding errors.
-    return std::make_unique<TransformationMatrix>();
+    return TransformationMatrix();
   }
 
-  // Return space_from_viewer = space_from_mojo * mojo_from_viewer
-  auto space_from_viewer = SpaceFromMojo(mojo_from_viewer);
-  if (!space_from_viewer)
-    return nullptr;
-  space_from_viewer->Multiply(mojo_from_viewer);
-  return space_from_viewer;
+  if (!mojo_from_viewer)
+    return base::nullopt;
+
+  // Return native_from_viewer = native_from_mojo * mojo_from_viewer
+  auto native_from_viewer = NativeFromMojo();
+  if (!native_from_viewer)
+    return base::nullopt;
+  native_from_viewer->Multiply(*mojo_from_viewer);
+  return native_from_viewer;
 }
 
-std::unique_ptr<TransformationMatrix> XRReferenceSpace::SpaceFromInputForViewer(
-    const TransformationMatrix& mojo_from_input,
-    const TransformationMatrix& mojo_from_viewer) {
-  // Return space_from_input = space_from_mojo * mojo_from_input
-  auto space_from_input = SpaceFromMojo(mojo_from_viewer);
-  if (!space_from_input)
-    return nullptr;
-  space_from_input->Multiply(mojo_from_input);
-  return space_from_input;
+base::Optional<TransformationMatrix> XRReferenceSpace::MojoFromNative() {
+  return XRSpace::TryInvert(NativeFromMojo());
 }
 
-std::unique_ptr<TransformationMatrix> XRReferenceSpace::MojoFromSpace() {
-  // XRReferenceSpace doesn't do anything special with the base pose, but
-  // derived reference spaces (bounded, unbounded, stationary, etc.) have their
-  // own custom behavior.
-
-  // Calculate the offset space's pose (including originOffset) in mojo
-  // space.
-  // Note that although this calls SpaceFromViewer, because we're passing in
-  // identity, "viewer" is actually mojo.
-  TransformationMatrix identity;
-  std::unique_ptr<TransformationMatrix> base_space_from_mojo =
-      SpaceFromViewer(identity);
-
-  if (!base_space_from_mojo) {
-    // Transform wasn't possible.
-    return nullptr;
-  }
-
-  // Rigid transforms should always be invertible.
-  DCHECK(base_space_from_mojo->IsInvertible());
-  TransformationMatrix mojo_from_base_space = base_space_from_mojo->Inverse();
-
-  // Must account for position and orientation defined by origin offset.
-  // Result is mojo_from_offset = mojo_from_base_space * base_space_from_offset,
-  // where base_space_from_offset is originOffset's transform matrix.
-  // TODO(https://crbug.com/1008466): move originOffset to separate class?
-  return std::make_unique<TransformationMatrix>(
-      mojo_from_base_space.Multiply(origin_offset_->TransformMatrix()));
-}
-
-TransformationMatrix XRReferenceSpace::OriginOffsetMatrix() {
+TransformationMatrix XRReferenceSpace::NativeFromOffsetMatrix() {
   return origin_offset_->TransformMatrix();
 }
 
-TransformationMatrix XRReferenceSpace::InverseOriginOffsetMatrix() {
+TransformationMatrix XRReferenceSpace::OffsetFromNativeMatrix() {
   return origin_offset_->InverseTransformMatrix();
+}
+
+bool XRReferenceSpace::IsStationary() const {
+  switch (type_) {
+    case XRReferenceSpace::Type::kTypeLocal:
+    case XRReferenceSpace::Type::kTypeLocalFloor:
+    case XRReferenceSpace::Type::kTypeBoundedFloor:
+    case XRReferenceSpace::Type::kTypeUnbounded:
+      return true;
+    case XRReferenceSpace::Type::kTypeViewer:
+      return false;
+  }
 }
 
 XRReferenceSpace::Type XRReferenceSpace::GetType() const {
@@ -202,7 +201,7 @@ XRReferenceSpace::Type XRReferenceSpace::GetType() const {
 XRReferenceSpace* XRReferenceSpace::getOffsetReferenceSpace(
     XRRigidTransform* additional_offset) {
   auto matrix =
-      OriginOffsetMatrix().Multiply(additional_offset->TransformMatrix());
+      NativeFromOffsetMatrix().Multiply(additional_offset->TransformMatrix());
 
   auto* result_transform = MakeGarbageCollected<XRRigidTransform>(matrix);
   return cloneWithOriginOffset(result_transform);
@@ -219,7 +218,7 @@ base::Optional<XRNativeOriginInformation> XRReferenceSpace::NativeOrigin()
   return XRNativeOriginInformation::Create(this);
 }
 
-void XRReferenceSpace::Trace(blink::Visitor* visitor) {
+void XRReferenceSpace::Trace(Visitor* visitor) {
   visitor->Trace(origin_offset_);
   XRSpace::Trace(visitor);
 }

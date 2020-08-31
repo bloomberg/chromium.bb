@@ -11,7 +11,6 @@ goog.module('mr.NetUtils');
 goog.module.declareLegacyNamespace();
 
 
-
 /** @const @private {!RegExp} */
 exports.IPV4_REGEXP_ =
     new RegExp('^([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})$');
@@ -75,16 +74,6 @@ exports.isPrivateIPv4Address = function(ipAddress) {
       return true;
   }
   return false;
-};
-
-/**
- * @param {string} url A url.
- * @return {!HTMLAnchorElement} The result of parsing url.
- */
-exports.parseUrl = function(url) {
-  const a = document.createElement('a');
-  a.href = url;
-  return /** @type {!HTMLAnchorElement} */ (a);
 };
 
 /**

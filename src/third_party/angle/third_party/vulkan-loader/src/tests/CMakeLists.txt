@@ -105,9 +105,6 @@ else()
 endif()
 
 target_link_libraries(vk_loader_validation_tests "${LOADER_LIB}" gtest gtest_main)
-if(BUILD_LOADER AND ENABLE_STATIC_LOADER)
-    set_target_properties(vk_loader_validation_tests PROPERTIES LINK_FLAGS "/ignore:4098")
-endif()
 
 # Copy loader and googletest (gtest) libs to test dir so the test executable can find them.
 if(WIN32)
@@ -119,15 +116,15 @@ if(WIN32)
                             GTEST_COPY_SRC2)
         file(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> GTEST_COPY_DEST)
     else()
-        file(TO_NATIVE_PATH ${PROJECT_BINARY_DIR}/external/googletest/googeltest/gtest_main.dll GTEST_COPY_SRC1)
-        file(TO_NATIVE_PATH ${PROJECT_BINARY_DIR}/external/googletest/googletest/gtest.dll GTEST_COPY_SRC2)
+        file(TO_NATIVE_PATH ${PROJECT_BINARY_DIR}/external/googletest/googletest/gtest_main$<$<CONFIG:Debug>:d>.dll GTEST_COPY_SRC1)
+        file(TO_NATIVE_PATH ${PROJECT_BINARY_DIR}/external/googletest/googletest/gtest$<$<CONFIG:Debug>:d>.dll GTEST_COPY_SRC2)
         file(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} GTEST_COPY_DEST)
     endif()
     add_custom_command(TARGET vk_loader_validation_tests POST_BUILD
                        COMMAND xcopy /Y /I ${GTEST_COPY_SRC1} ${GTEST_COPY_DEST}
                        COMMAND xcopy /Y /I ${GTEST_COPY_SRC2} ${GTEST_COPY_DEST})
     # Copy the loader shared lib (if built) to the test application directory so the test app finds it.
-    if((NOT ENABLE_STATIC_LOADER) AND TARGET vulkan)
+    if(TARGET vulkan)
         add_custom_command(TARGET vk_loader_validation_tests POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:vulkan> $<TARGET_FILE_DIR:vk_loader_validation_tests>)
     endif()

@@ -15,11 +15,12 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
+#include "url/gurl.h"
 
 namespace base {
 class DictionaryValue;
 class RefCountedMemory;
-}
+}  // namespace base
 
 namespace content {
 class BrowserContext;
@@ -110,15 +111,22 @@ class WebUIDataSource {
   // Currently only used by embedders for WebUIs with multiple instances.
   virtual void DisableReplaceExistingSource() = 0;
   virtual void DisableContentSecurityPolicy() = 0;
-  virtual void OverrideContentSecurityPolicyScriptSrc(
+  virtual void OverrideContentSecurityPolicyChildSrc(
       const std::string& data) = 0;
+  virtual void OverrideContentSecurityPolicyDefaultSrc(
+      const std::string& data) = 0;
+  virtual void OverrideContentSecurityPolicyImgSrc(const std::string& data) = 0;
   virtual void OverrideContentSecurityPolicyObjectSrc(
       const std::string& data) = 0;
-  virtual void OverrideContentSecurityPolicyChildSrc(
+  virtual void OverrideContentSecurityPolicyScriptSrc(
+      const std::string& data) = 0;
+  virtual void OverrideContentSecurityPolicyStyleSrc(
       const std::string& data) = 0;
   virtual void OverrideContentSecurityPolicyWorkerSrc(
       const std::string& data) = 0;
+  // This method is deprecated and AddFrameAncestors should be used instead.
   virtual void DisableDenyXFrameOptions() = 0;
+  virtual void AddFrameAncestor(const GURL& frame_ancestor) = 0;
 
   // Replace i18n template strings in JS files. Needed for Web UIs that are
   // using Polymer 3.

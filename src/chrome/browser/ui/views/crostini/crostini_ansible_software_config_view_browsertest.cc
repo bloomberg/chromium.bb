@@ -10,8 +10,10 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/crostini/crostini_browser_test_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/test/browser_test.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -24,7 +26,10 @@ class CrostiniAnsibleSoftwareConfigViewBrowserTest
         container_id_(crostini::kCrostiniDefaultVmName,
                       crostini::kCrostiniDefaultContainerName),
         network_connection_tracker_(
-            network::TestNetworkConnectionTracker::CreateInstance()) {}
+            network::TestNetworkConnectionTracker::CreateInstance()) {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kCrostiniAnsibleInfrastructure);
+  }
 
   // CrostiniDialogBrowserTest:
   void ShowUi(const std::string& name) override {
@@ -114,6 +119,7 @@ class CrostiniAnsibleSoftwareConfigViewBrowserTest
   std::unique_ptr<network::TestNetworkConnectionTracker>
       network_connection_tracker_;
   std::unique_ptr<crostini::AnsibleManagementTestHelper> test_helper_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(CrostiniAnsibleSoftwareConfigViewBrowserTest,
@@ -212,13 +218,14 @@ IN_PROC_BROWSER_TEST_F(CrostiniAnsibleSoftwareConfigViewBrowserTest,
 
   ansible_management_service()->OnInstallLinuxPackageProgress(
       container_id_, crostini::InstallLinuxPackageProgressStatus::SUCCEEDED,
-      100);
+      100, /*error_message=*/{});
   base::RunLoop().RunUntilIdle();
 
   EXPECT_NE(nullptr, ActiveView());
 
   ansible_management_service()->OnApplyAnsiblePlaybookProgress(
-      vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::SUCCEEDED);
+      vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::SUCCEEDED,
+      /*failure_details=*/"");
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(HasNoView());
@@ -233,7 +240,8 @@ IN_PROC_BROWSER_TEST_F(CrostiniAnsibleSoftwareConfigViewBrowserTest,
   EXPECT_TRUE(IsDefaultDialog());
 
   ansible_management_service()->OnInstallLinuxPackageProgress(
-      container_id_, crostini::InstallLinuxPackageProgressStatus::FAILED, 0);
+      container_id_, crostini::InstallLinuxPackageProgressStatus::FAILED, 0,
+      /*error_message=*/{});
   base::RunLoop().RunUntilIdle();
 
   EXPECT_NE(nullptr, ActiveView());
@@ -250,13 +258,14 @@ IN_PROC_BROWSER_TEST_F(CrostiniAnsibleSoftwareConfigViewBrowserTest,
 
   ansible_management_service()->OnInstallLinuxPackageProgress(
       container_id_, crostini::InstallLinuxPackageProgressStatus::SUCCEEDED,
-      100);
+      100, /*error_message=*/{});
   base::RunLoop().RunUntilIdle();
 
   EXPECT_NE(nullptr, ActiveView());
 
   ansible_management_service()->OnApplyAnsiblePlaybookProgress(
-      vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::FAILED);
+      vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::FAILED,
+      /*failure_details=*/"");
   base::RunLoop().RunUntilIdle();
 
   EXPECT_NE(nullptr, ActiveView());

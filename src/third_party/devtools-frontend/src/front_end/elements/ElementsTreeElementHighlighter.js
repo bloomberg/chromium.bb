@@ -2,38 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
+import {ElementsTreeOutline} from './ElementsTreeOutline.js';
+
 /**
  * @unrestricted
  */
-export default class ElementsTreeElementHighlighter {
+export class ElementsTreeElementHighlighter {
   /**
-   * @param {!Elements.ElementsTreeOutline} treeOutline
+   * @param {!ElementsTreeOutline} treeOutline
    */
   constructor(treeOutline) {
-    this._throttler = new Common.Throttler(100);
+    this._throttler = new Common.Throttler.Throttler(100);
     this._treeOutline = treeOutline;
     this._treeOutline.addEventListener(UI.TreeOutline.Events.ElementExpanded, this._clearState, this);
     this._treeOutline.addEventListener(UI.TreeOutline.Events.ElementCollapsed, this._clearState, this);
-    this._treeOutline.addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, this._clearState, this);
-    SDK.targetManager.addModelListener(
-        SDK.OverlayModel, SDK.OverlayModel.Events.HighlightNodeRequested, this._highlightNode, this);
-    SDK.targetManager.addModelListener(
-        SDK.OverlayModel, SDK.OverlayModel.Events.InspectModeWillBeToggled, this._clearState, this);
+    this._treeOutline.addEventListener(ElementsTreeOutline.Events.SelectedNodeChanged, this._clearState, this);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.OverlayModel.OverlayModel, SDK.OverlayModel.Events.HighlightNodeRequested, this._highlightNode, this);
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.OverlayModel.OverlayModel, SDK.OverlayModel.Events.InspectModeWillBeToggled, this._clearState, this);
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _highlightNode(event) {
-    if (!Common.moduleSetting('highlightNodeOnHoverInOverlay').get()) {
+    if (!Common.Settings.Settings.instance().moduleSetting('highlightNodeOnHoverInOverlay').get()) {
       return;
     }
 
-    const domNode = /** @type {!SDK.DOMNode} */ (event.data);
+    const domNode = /** @type {!SDK.DOMModel.DOMNode} */ (event.data);
 
     this._throttler.schedule(callback.bind(this));
     this._pendingHighlightNode =
-        this._treeOutline === Elements.ElementsTreeOutline.forDOMModel(domNode.domModel()) ? domNode : null;
+        this._treeOutline === ElementsTreeOutline.forDOMModel(domNode.domModel()) ? domNode : null;
 
     /**
      * @this {ElementsTreeElementHighlighter}
@@ -46,7 +52,7 @@ export default class ElementsTreeElementHighlighter {
   }
 
   /**
-   * @param {?SDK.DOMNode} node
+   * @param {?SDK.DOMModel.DOMNode} node
    */
   _highlightNodeInternal(node) {
     this._isModifyingTreeOutline = true;
@@ -97,12 +103,3 @@ export default class ElementsTreeElementHighlighter {
     delete this._pendingHighlightNode;
   }
 }
-
-/* Legacy exported object */
-self.Elements = self.Elements || {};
-
-/* Legacy exported object */
-Elements = Elements || {};
-
-/** @constructor */
-Elements.ElementsTreeElementHighlighter = ElementsTreeElementHighlighter;

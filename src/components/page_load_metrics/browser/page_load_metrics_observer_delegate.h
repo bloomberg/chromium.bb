@@ -19,7 +19,7 @@ class WebContents;
 namespace page_load_metrics {
 
 namespace mojom {
-class PageLoadMetadata;
+class FrameMetadata;
 }  // namespace mojom
 
 struct UserInitiatedInfo;
@@ -91,11 +91,15 @@ class PageLoadMetricsObserverDelegate {
 
   // Extra information supplied to the page load metrics system from the
   // renderer for the main frame.
-  virtual const mojom::PageLoadMetadata& GetMainFrameMetadata() const = 0;
+  virtual const mojom::FrameMetadata& GetMainFrameMetadata() const = 0;
 
-  // PageLoadMetadata for subframes of the current page load.
-  virtual const mojom::PageLoadMetadata& GetSubframeMetadata() const = 0;
+  // FrameMetadata for subframes of the current page load. This contains
+  // aggregate information across all subframes. Non-aggregatable information
+  // such as subframe intersections is initialized to defaults.
+  virtual const mojom::FrameMetadata& GetSubframeMetadata() const = 0;
   virtual const PageRenderData& GetPageRenderData() const = 0;
+  // InputTiming data accumulated across all frames.
+  virtual const mojom::InputTiming& GetPageInputTiming() const = 0;
   virtual const PageRenderData& GetMainFrameRenderData() const = 0;
   virtual const ui::ScopedVisibilityTracker& GetVisibilityTracker() const = 0;
   virtual const ResourceTracker& GetResourceTracker() const = 0;

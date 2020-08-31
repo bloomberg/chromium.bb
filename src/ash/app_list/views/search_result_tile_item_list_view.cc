@@ -17,6 +17,7 @@
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_notifier.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/bind.h"
@@ -70,11 +71,9 @@ bool IsPlayStoreApp(SearchResult* result) {
 }  // namespace
 
 SearchResultTileItemListView::SearchResultTileItemListView(
-    SearchResultPageView* search_result_page_view,
     views::Textfield* search_box,
     AppListViewDelegate* view_delegate)
     : SearchResultContainerView(view_delegate),
-      search_result_page_view_(search_result_page_view),
       search_box_(search_box),
       is_play_store_app_search_enabled_(
           app_list_features::IsPlayStoreAppSearchEnabled()),
@@ -103,8 +102,7 @@ SearchResultTileItemListView::SearchResultTileItemListView(
 
     SearchResultTileItemView* tile_item =
         AddChildView(std::make_unique<SearchResultTileItemView>(
-            view_delegate, nullptr /* pagination model */,
-            false /* show_in_apps_page */));
+            view_delegate, false /* show_in_apps_page */));
     tile_item->set_index_in_container(i);
     tile_item->SetParentBackgroundColor(
         AppListConfig::instance().card_background_color());
@@ -150,6 +148,7 @@ int SearchResultTileItemListView::DoUpdate() {
 
   std::vector<SearchResult*> display_results = GetDisplayResults();
 
+  std::vector<std::string> display_ids;
   std::set<std::string> result_id_removed, result_id_added;
   bool is_result_an_installable_app = false;
   bool is_previous_result_installable_app = false;
@@ -194,6 +193,7 @@ int SearchResultTileItemListView::DoUpdate() {
     GetResultViewAt(i)->SetResult(item);
     GetResultViewAt(i)->set_group_index_in_container_view(app_group_index);
     result_id_added.insert(item->id());
+    display_ids.push_back(item->id());
     is_result_an_installable_app = IsResultAnInstallableApp(item);
 
     if (is_play_store_app_search_enabled_ ||
@@ -210,6 +210,11 @@ int SearchResultTileItemListView::DoUpdate() {
     }
 
     is_previous_result_installable_app = is_result_an_installable_app;
+  }
+
+  auto* notifier = view_delegate()->GetNotifier();
+  if (notifier) {
+    notifier->NotifyResultsUpdated(SearchResultDisplayType::kTile, display_ids);
   }
 
   // Track play store results and start the timer for recording their impression
@@ -262,7 +267,7 @@ int SearchResultTileItemListView::DoUpdate() {
   }
 
   set_container_score(
-      display_results.empty() ? 0 : display_results.front()->display_score());
+      display_results.empty() ? -1 : display_results.front()->display_score());
 
   return display_results.size();
 }
@@ -274,12 +279,15 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
 
   // We ask for |max_search_result_tiles_| policy tile results first,
   // then add them to their preferred position in the tile list if found.
+  // Note: Policy tile provides a mechanism to display the result tile at the
+  // preferred position recommended by display_index() property of the search
+  // result. This is what policy referred to. It has nothing to do with
+  // Enterprise policy.
   auto policy_tiles_filter =
       base::BindRepeating([](const SearchResult& r) -> bool {
-        return r.display_location() ==
-                   SearchResultDisplayLocation::kTileListContainer &&
-               r.display_index() != SearchResultDisplayIndex::kUndefined &&
-               r.display_type() == SearchResultDisplayType::kRecommendation;
+        return r.display_index() != SearchResultDisplayIndex::kUndefined &&
+               r.display_type() == SearchResultDisplayType::kTile &&
+               r.is_recommendation();
       });
   std::vector<SearchResult*> policy_tiles_results =
       is_app_reinstall_recommendation_enabled_ && query.empty()
@@ -287,11 +295,7 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
                 results(), policy_tiles_filter, max_search_result_tiles_)
           : std::vector<SearchResult*>();
 
-  SearchResult::DisplayType display_type =
-      app_list_features::IsZeroStateSuggestionsEnabled()
-          ? (query.empty() ? SearchResultDisplayType::kRecommendation
-                           : SearchResultDisplayType::kTile)
-          : SearchResultDisplayType::kTile;
+  SearchResult::DisplayType display_type = SearchResultDisplayType::kTile;
   size_t display_num = max_search_result_tiles_ - policy_tiles_results.size();
 
   // Do not display the repeat reinstall results or continue reading app in the
@@ -367,41 +371,6 @@ void SearchResultTileItemListView::OnPlayStoreImpressionTimer() {
 void SearchResultTileItemListView::CleanUpOnViewHide() {
   playstore_impression_timer_.Stop();
   recent_playstore_query_.clear();
-}
-
-bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
-  // Let the FocusManager handle Left/Right keys.
-  if (!IsUnhandledUpDownKeyEvent(event))
-    return false;
-
-  views::View* next_focusable_view = nullptr;
-
-  // Since search result tile item views have horizontal layout, hitting
-  // up/down when one of them is focused moves focus to the previous/next
-  // search result container.
-  if (event.key_code() == ui::VKEY_UP) {
-    next_focusable_view = GetFocusManager()->GetNextFocusableView(
-        tile_views_.front(), GetWidget(), true, false);
-    if (!search_result_page_view_->Contains(next_focusable_view)) {
-      // Focus should be moved to search box when it is moved outside search
-      // result page view.
-      search_box_->RequestFocus();
-      return true;
-    }
-  } else {
-    DCHECK_EQ(event.key_code(), ui::VKEY_DOWN);
-    next_focusable_view = GetFocusManager()->GetNextFocusableView(
-        tile_views_.back(), GetWidget(), false, false);
-  }
-
-  if (next_focusable_view) {
-    next_focusable_view->RequestFocus();
-    return true;
-  }
-
-  // Return false to let FocusManager to handle default focus move by key
-  // events.
-  return false;
 }
 
 const char* SearchResultTileItemListView::GetClassName() const {

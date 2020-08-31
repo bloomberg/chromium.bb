@@ -13,16 +13,15 @@
     [SameObject] readonly attribute GPUQueue defaultQueue;
 
     GPUBuffer createBuffer(GPUBufferDescriptor descriptor);
-    [CallWith=ScriptState, RaisesException] GPUMappedBuffer createBufferMapped(GPUBufferDescriptor descriptor);
-    [CallWith=ScriptState, RaisesException] Promise<GPUMappedBuffer> createBufferMappedAsync(GPUBufferDescriptor descriptor);
+    [RaisesException] GPUMappedBuffer createBufferMapped(GPUBufferDescriptor descriptor);
     [RaisesException] GPUTexture createTexture(GPUTextureDescriptor descriptor);
     GPUSampler createSampler(optional GPUSamplerDescriptor descriptor = {});
 
-    GPUBindGroup createBindGroup(GPUBindGroupDescriptor descriptor);
-    GPUBindGroupLayout createBindGroupLayout(GPUBindGroupLayoutDescriptor descriptor);
+    [RaisesException] GPUBindGroup createBindGroup(GPUBindGroupDescriptor descriptor);
+    [RaisesException] GPUBindGroupLayout createBindGroupLayout(GPUBindGroupLayoutDescriptor descriptor);
     GPUPipelineLayout createPipelineLayout(GPUPipelineLayoutDescriptor descriptor);
 
-    GPUShaderModule createShaderModule(GPUShaderModuleDescriptor descriptor);
+    [RaisesException] GPUShaderModule createShaderModule(GPUShaderModuleDescriptor descriptor);
     [CallWith=ScriptState] GPURenderPipeline createRenderPipeline(GPURenderPipelineDescriptor descriptor);
     GPUComputePipeline createComputePipeline(GPUComputePipelineDescriptor descriptor);
 
@@ -41,5 +40,5 @@ enum GPUErrorFilter {
     "validation"
 };
 
-typedef sequence<any> GPUMappedBuffer;  // [GPUBuffer, ArrayBuffer]
+typedef sequence<(GPUBuffer or ArrayBuffer)> GPUMappedBuffer;
 typedef (GPUOutOfMemoryError or GPUValidationError) GPUError;

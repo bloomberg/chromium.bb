@@ -15,18 +15,19 @@ function requestHistograms() {
 
 /**
  * Callback from backend with the list of histograms. Builds the UI.
- * @param {!Array<string>} histograms A list of trusted HTML strings
- *     representing histograms.
+ * @param {!Array<{header: string, body: string}>} histograms A list
+ *     of header and body strings representing histograms.
  */
 function addHistograms(histograms) {
-  let htmlOutput = '';
+  // TBD(jar) Write a nice HTML bar chart, with divs an mouse-overs etc.
   for (const histogram of histograms) {
-    htmlOutput += histogram;
-  }
+    const {header, body} = histogram;
+    const clone = $('histogram-template').content.cloneNode(true);
 
-  // NOTE: This is generally unsafe due to XSS attacks. Make sure |htmlOutput|
-  // cannot be modified by an external party.
-  $('histograms').innerHTML = htmlOutput;
+    clone.querySelector('h4').textContent = header;
+    clone.querySelector('p').textContent = body;
+    $('histograms').appendChild(clone);
+  }
 }
 
 /**

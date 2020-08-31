@@ -11,11 +11,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -274,9 +275,8 @@ class AuraClipboard {
     if (!HasFormat(AuraClipboardFormat::kCustom))
       return;
 
-    ui::ReadCustomDataForType(data->custom_data_data().c_str(),
-        data->custom_data_data().size(),
-        type, result);
+    ReadCustomDataForType(data->custom_data_data().c_str(),
+                          data->custom_data_data().size(), type, result);
   }
 
   // Reads bookmark from the data at the top of clipboard stack.
@@ -453,7 +453,7 @@ bool ClipboardAura::IsFormatAvailable(const ClipboardFormatType& format,
   if (ClipboardFormatType::GetWebKitSmartPasteType().Equals(format))
     return clipboard_internal_->IsFormatAvailable(AuraClipboardFormat::kWeb);
   const ClipboardData* data = clipboard_internal_->GetData();
-  return data && data->custom_data_format() == format.ToString();
+  return data && data->custom_data_format() == format.GetName();
 }
 
 void ClipboardAura::Clear(ClipboardBuffer buffer) {
@@ -462,35 +462,58 @@ void ClipboardAura::Clear(ClipboardBuffer buffer) {
   clipboard_internal_->Clear();
 }
 
-void ClipboardAura::ReadAvailableTypes(ClipboardBuffer buffer,
-                                       std::vector<base::string16>* types,
-                                       bool* contains_filenames) const {
+void ClipboardAura::ReadAvailableTypes(
+    ClipboardBuffer buffer,
+    std::vector<base::string16>* types) const {
   DCHECK(CalledOnValidThread());
-  if (!types || !contains_filenames) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(types);
 
   types->clear();
-  *contains_filenames = false;
   if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer))
     types->push_back(
-        base::UTF8ToUTF16(ClipboardFormatType::GetPlainTextType().ToString()));
+        base::UTF8ToUTF16(ClipboardFormatType::GetPlainTextType().GetName()));
   if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer))
     types->push_back(
-        base::UTF8ToUTF16(ClipboardFormatType::GetHtmlType().ToString()));
+        base::UTF8ToUTF16(ClipboardFormatType::GetHtmlType().GetName()));
   if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer))
     types->push_back(
-        base::UTF8ToUTF16(ClipboardFormatType::GetRtfType().ToString()));
+        base::UTF8ToUTF16(ClipboardFormatType::GetRtfType().GetName()));
   if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
 
   if (clipboard_internal_->IsFormatAvailable(AuraClipboardFormat::kCustom) &&
       clipboard_internal_->GetData()) {
-    ui::ReadCustomDataTypes(
+    ReadCustomDataTypes(
         clipboard_internal_->GetData()->custom_data_data().c_str(),
         clipboard_internal_->GetData()->custom_data_data().size(), types);
   }
+}
+
+std::vector<base::string16>
+ClipboardAura::ReadAvailablePlatformSpecificFormatNames(
+    ClipboardBuffer buffer) const {
+  DCHECK(CalledOnValidThread());
+
+  std::vector<base::string16> types;
+
+  // Includes all non-pickled AvailableTypes.
+  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer)) {
+    types.push_back(
+        base::UTF8ToUTF16(ClipboardFormatType::GetPlainTextType().GetName()));
+  }
+  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer)) {
+    types.push_back(
+        base::UTF8ToUTF16(ClipboardFormatType::GetHtmlType().GetName()));
+  }
+  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer)) {
+    types.push_back(
+        base::UTF8ToUTF16(ClipboardFormatType::GetRtfType().GetName()));
+  }
+  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer)) {
+    types.push_back(base::UTF8ToUTF16(kMimeTypePNG));
+  }
+
+  return types;
 }
 
 void ClipboardAura::ReadText(ClipboardBuffer buffer,
@@ -519,9 +542,10 @@ void ClipboardAura::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
   clipboard_internal_->ReadRTF(result);
 }
 
-SkBitmap ClipboardAura::ReadImage(ClipboardBuffer buffer) const {
+void ClipboardAura::ReadImage(ClipboardBuffer buffer,
+                              ReadImageCallback callback) const {
   DCHECK(CalledOnValidThread());
-  return clipboard_internal_->ReadImage();
+  std::move(callback).Run(clipboard_internal_->ReadImage());
 }
 
 void ClipboardAura::ReadCustomData(ClipboardBuffer buffer,
@@ -540,7 +564,7 @@ void ClipboardAura::ReadBookmark(base::string16* title,
 void ClipboardAura::ReadData(const ClipboardFormatType& format,
                              std::string* result) const {
   DCHECK(CalledOnValidThread());
-  clipboard_internal_->ReadData(format.ToString(), result);
+  clipboard_internal_->ReadData(format.GetName(), result);
 }
 
 void ClipboardAura::WritePortableRepresentations(ClipboardBuffer buffer,
@@ -596,7 +620,7 @@ void ClipboardAura::WriteBitmap(const SkBitmap& bitmap) {
 void ClipboardAura::WriteData(const ClipboardFormatType& format,
                               const char* data_data,
                               size_t data_len) {
-  ClipboardDataBuilder::WriteData(format.ToString(), data_data, data_len);
+  ClipboardDataBuilder::WriteData(format.GetName(), data_data, data_len);
 }
 
 }  // namespace ui

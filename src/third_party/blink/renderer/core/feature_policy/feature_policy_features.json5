@@ -94,6 +94,21 @@
       depends_on: ["FeaturePolicyForClientHints"],
     },
     {
+      name: "ClientHintUAMobile",
+      feature_policy_name: "ch-ua-mobile",
+      depends_on: ["FeaturePolicyForClientHints"],
+    },
+    {
+      name: "ClientHintUAFullVersion",
+      feature_policy_name: "ch-ua-full-version",
+      depends_on: ["FeaturePolicyForClientHints"],
+    },
+    {
+      name: "ClientHintUAPlatformVersion",
+      feature_policy_name: "ch-ua-platform-version",
+      depends_on: ["FeaturePolicyForClientHints"],
+    },
+    {
       name: "ClientHintViewportWidth",
       feature_policy_name: "ch-viewport-width",
       depends_on: ["FeaturePolicyForClientHints"],
@@ -102,6 +117,11 @@
       name: "ClientHintWidth",
       feature_policy_name: "ch-width",
       depends_on: ["FeaturePolicyForClientHints"],
+    },
+    {
+      name: "ConversionMeasurement",
+      feature_policy_name: "conversion-measurement",
+      depends_on: ["ConversionMeasurement"],
     },
     {
       name: "DocumentDomain",
@@ -137,11 +157,6 @@
       depends_on: ["BlockingFocusWithoutUserActivation"],
     },
     {
-      name: "FontDisplay",
-      feature_policy_name: "font-display-late-swap",
-      depends_on: ["ExperimentalProductivityFeatures"],
-    },
-    {
       name: "FormSubmission",
       feature_policy_name: "forms",
       depends_on: ["FeaturePolicyForSandbox"],
@@ -172,11 +187,6 @@
       name: "IdleDetection",
       feature_policy_name: "idle-detection",
       depends_on: ["IdleDetection"],
-    },
-    {
-      name: "LayoutAnimations",
-      feature_policy_name: "layout-animations",
-      depends_on: ["ExperimentalProductivityFeatures"],
     },
     {
       name: "LazyLoad",
@@ -211,11 +221,6 @@
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
-      name: "OversizedImages",
-      feature_policy_name: "oversized-images",
-      depends_on: ["UnoptimizedImagePolicies"],
-    },
-    {
       name: "Payment",
       feature_policy_name: "payment",
       depends_on: ["PaymentRequest"],
@@ -241,9 +246,14 @@
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
-      name: "PublicKeyCredentials",
-      feature_policy_name: "publickey-credentials",
-      depends_on: ["WebAuthenticationFeaturePolicy"],
+      name: "PublicKeyCredentialsGet",
+      feature_policy_name: "publickey-credentials-get",
+      depends_on: ["WebAuthenticationGetAssertionFeaturePolicy"],
+    },
+    {
+      name: "ScreenWakeLock",
+      feature_policy_name: "screen-wake-lock",
+      depends_on: ["WakeLock"],
     },
     {
       name: "Script",
@@ -270,24 +280,9 @@
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
-      name: "UnoptimizedLosslessImages",
-      feature_policy_name: "unoptimized-lossless-images",
-      depends_on: ["UnoptimizedImagePolicies"],
-    },
-    {
-      name: "UnoptimizedLosslessImagesStrict",
-      feature_policy_name: "unoptimized-lossless-images-strict",
-      depends_on: ["UnoptimizedImagePolicies"],
-    },
-    {
-      name: "UnoptimizedLossyImages",
-      feature_policy_name: "unoptimized-lossy-images",
-      depends_on: ["UnoptimizedImagePolicies"],
-    },
-    {
-      name: "UnsizedMedia",
-      feature_policy_name: "unsized-media",
-      depends_on: ["UnsizedMediaPolicy"],
+      name: "TrustTokenRedemption",
+      feature_policy_name: "trust-token-redemption",
+      depends_on: ["TrustTokens"],
     },
     {
       name: "Usb",
@@ -298,11 +293,6 @@
       name: "VerticalScroll",
       feature_policy_name: "vertical-scroll",
       depends_on: ["ExperimentalProductivityFeatures"],
-    },
-    {
-      name: "WakeLock",
-      feature_policy_name: "wake-lock",
-      depends_on: ["WakeLock"],
     },
     {
       name: "WebXr",

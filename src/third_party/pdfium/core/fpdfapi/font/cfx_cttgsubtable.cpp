@@ -8,20 +8,16 @@
 
 #include <utility>
 
-#include "core/fxge/fx_freetype.h"
+#include "core/fxge/cfx_fontmapper.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
 
-constexpr uint32_t MakeTag(char c1, char c2, char c3, char c4) {
-  return static_cast<uint8_t>(c1) << 24 | static_cast<uint8_t>(c2) << 16 |
-         static_cast<uint8_t>(c3) << 8 | static_cast<uint8_t>(c4);
-}
-
 bool IsVerticalFeatureTag(uint32_t tag) {
   static constexpr uint32_t kTags[] = {
-      MakeTag('v', 'r', 't', '2'), MakeTag('v', 'e', 'r', 't'),
+      CFX_FontMapper::MakeTag('v', 'r', 't', '2'),
+      CFX_FontMapper::MakeTag('v', 'e', 'r', 't'),
   };
   return tag == kTags[0] || tag == kTags[1];
 }
@@ -204,7 +200,8 @@ void CFX_CTTGSUBTable::ParseLangSys(FT_Bytes raw, TLangSysRecord* rec) {
   FT_Bytes sp = raw;
   rec->LookupOrder = GetUInt16(sp);
   rec->ReqFeatureIndex = GetUInt16(sp);
-  rec->FeatureIndices = std::vector<uint16_t>(GetUInt16(sp));
+  rec->FeatureIndices =
+      std::vector<uint16_t, FxAllocAllocator<uint16_t>>(GetUInt16(sp));
   for (auto& element : rec->FeatureIndices)
     element = GetUInt16(sp);
 }
@@ -221,7 +218,8 @@ void CFX_CTTGSUBTable::ParseFeatureList(FT_Bytes raw) {
 void CFX_CTTGSUBTable::ParseFeature(FT_Bytes raw, TFeatureRecord* rec) {
   FT_Bytes sp = raw;
   rec->FeatureParams = GetUInt16(sp);
-  rec->LookupListIndices = std::vector<uint16_t>(GetUInt16(sp));
+  rec->LookupListIndices =
+      std::vector<uint16_t, FxAllocAllocator<uint16_t>>(GetUInt16(sp));
   for (auto& listIndex : rec->LookupListIndices)
     listIndex = GetUInt16(sp);
 }
@@ -266,7 +264,8 @@ void CFX_CTTGSUBTable::ParseCoverageFormat1(FT_Bytes raw,
                                             TCoverageFormat1* rec) {
   FT_Bytes sp = raw;
   (void)GetUInt16(sp);
-  rec->GlyphArray = std::vector<uint16_t>(GetUInt16(sp));
+  rec->GlyphArray =
+      std::vector<uint16_t, FxAllocAllocator<uint16_t>>(GetUInt16(sp));
   for (auto& glyph : rec->GlyphArray)
     glyph = GetUInt16(sp);
 }
@@ -312,7 +311,8 @@ void CFX_CTTGSUBTable::ParseSingleSubstFormat2(FT_Bytes raw, TSubTable2* rec) {
   (void)GetUInt16(sp);
   uint16_t offset = GetUInt16(sp);
   rec->Coverage = ParseCoverage(&raw[offset]);
-  rec->Substitutes = std::vector<uint16_t>(GetUInt16(sp));
+  rec->Substitutes =
+      std::vector<uint16_t, FxAllocAllocator<uint16_t>>(GetUInt16(sp));
   for (auto& substitute : rec->Substitutes)
     substitute = GetUInt16(sp);
 }

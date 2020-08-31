@@ -22,6 +22,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_DOCUMENT_EXTENSIONS_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -35,7 +36,7 @@ class SVGElement;
 class SVGSVGElement;
 class SubtreeLayoutScope;
 
-class SVGDocumentExtensions final
+class CORE_EXPORT SVGDocumentExtensions final
     : public GarbageCollected<SVGDocumentExtensions> {
  public:
   explicit SVGDocumentExtensions(Document*);
@@ -70,7 +71,7 @@ class SVGDocumentExtensions final
   static SVGSVGElement* rootElement(const Document&);
   SVGSVGElement* rootElement() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   Member<Document> document_;

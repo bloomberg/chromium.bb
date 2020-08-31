@@ -49,8 +49,7 @@ RemoteWindowProxy::RemoteWindowProxy(v8::Isolate* isolate,
     : WindowProxy(isolate, frame, std::move(world)) {}
 
 void RemoteWindowProxy::DisposeContext(Lifecycle next_status,
-                                       FrameReuseStatus,
-                                       v8::Context::DetachedWindowReason) {
+                                       FrameReuseStatus) {
   DCHECK(next_status == Lifecycle::kV8MemoryIsForciblyPurged ||
          next_status == Lifecycle::kGlobalObjectIsDetached ||
          next_status == Lifecycle::kFrameIsDetached ||
@@ -146,9 +145,8 @@ void RemoteWindowProxy::SetupWindowPrototypeChain() {
   // The global object, aka window wrapper object.
   v8::Local<v8::Object> window_wrapper =
       global_proxy->GetPrototype().As<v8::Object>();
-  v8::Local<v8::Object> associated_wrapper =
-      AssociateWithWrapper(window, wrapper_type_info, window_wrapper);
-  DCHECK(associated_wrapper == window_wrapper);
+  V8DOMWrapper::SetNativeInfo(GetIsolate(), window_wrapper, wrapper_type_info,
+                              window);
 }
 
 }  // namespace blink

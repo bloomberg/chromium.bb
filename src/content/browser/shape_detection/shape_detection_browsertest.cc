@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_tokenizer.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -49,9 +50,9 @@ class ShapeDetectionBrowserTest
       public ::testing::WithParamInterface<struct TestParameters> {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Flag to enable ShapeDetection API.
+    // Enable FaceDetector since it is still experimental.
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "ShapeDetection");
+        switches::kEnableBlinkFeatures, "FaceDetector");
   }
 
  protected:

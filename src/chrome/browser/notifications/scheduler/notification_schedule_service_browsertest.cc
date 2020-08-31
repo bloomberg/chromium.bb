@@ -26,6 +26,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/test/browser_test.h"
 
 using ::testing::_;
 
@@ -60,6 +61,10 @@ class TestClient : public NotificationSchedulerClient {
   }
 
   void OnUserAction(const UserActionData& action_data) override {}
+
+  void GetThrottleConfig(ThrottleConfigCallback callback) override {
+    std::move(callback).Run(nullptr);
+  }
 
   // Any NotificationData received before showing the notification.
   std::vector<NotificationData> shown_notification_data_;
@@ -149,14 +154,10 @@ class NotificationScheduleServiceTest : public InProcessBrowserTest {
     auto* db_provider =
         content::BrowserContext::GetDefaultStoragePartition(profile)
             ->GetProtoDatabaseProvider();
-    NotificationScheduleService* service =
-        static_cast<NotificationScheduleService*>(
-            CreateNotificationScheduleService(
-                std::move(client_registrar),
-                std::move(background_task_scheduler), std::move(display_agent),
-                db_provider, tmp_dir_.GetPath().Append(kTestDir),
-                profile->IsOffTheRecord()));
-    service_ = std::unique_ptr<NotificationScheduleService>(service);
+    service_ = CreateNotificationScheduleService(
+        std::move(client_registrar), std::move(background_task_scheduler),
+        std::move(display_agent), db_provider,
+        tmp_dir_.GetPath().Append(kTestDir), profile->IsOffTheRecord());
   }
 
   // Helper function to schedule a notification immediately to show.
@@ -187,7 +188,9 @@ class NotificationScheduleServiceTest : public InProcessBrowserTest {
     loop.Run();
   }
 
-  NotificationScheduleService* schedule_service() { return service_.get(); }
+  NotificationScheduleService* schedule_service() {
+    return static_cast<NotificationScheduleService*>(service_.get());
+  }
 
   TestBackgroundTaskScheduler* task_scheduler() {
     DCHECK(task_scheduler_);
@@ -202,7 +205,7 @@ class NotificationScheduleServiceTest : public InProcessBrowserTest {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::ScopedTempDir tmp_dir_;
-  std::unique_ptr<NotificationScheduleService> service_;
+  std::unique_ptr<KeyedService> service_;
   TestBackgroundTaskScheduler* task_scheduler_;
   std::map<SchedulerClientType, TestClient*> clients_;
 

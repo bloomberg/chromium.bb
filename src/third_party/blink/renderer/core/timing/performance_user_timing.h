@@ -42,11 +42,6 @@ class UserTiming final : public GarbageCollected<UserTiming> {
  public:
   explicit UserTiming(Performance&);
 
-  PerformanceMark* CreatePerformanceMark(ScriptState*,
-                                         const AtomicString& mark_name,
-                                         PerformanceMarkOptions*,
-                                         ExceptionState&);
-
   void ClearMarks(const AtomicString& mark_name);
 
   PerformanceMeasure* Measure(ScriptState*,
@@ -65,7 +60,7 @@ class UserTiming final : public GarbageCollected<UserTiming> {
   PerformanceEntryVector GetMarks(const AtomicString& name) const;
   PerformanceEntryVector GetMeasures(const AtomicString& name) const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   double FindExistingMarkStartTime(const AtomicString& mark_name,

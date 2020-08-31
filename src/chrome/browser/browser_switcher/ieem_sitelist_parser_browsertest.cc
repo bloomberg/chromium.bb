@@ -9,6 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,9 +40,6 @@ class IeemSitelistParserTest : public InProcessBrowserTest {
  public:
   IeemSitelistParserTest() = default;
   ~IeemSitelistParserTest() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IeemSitelistParserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(IeemSitelistParserTest, BadXml) {

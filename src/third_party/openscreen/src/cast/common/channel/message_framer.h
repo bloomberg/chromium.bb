@@ -15,18 +15,17 @@
 #include "cast/common/channel/proto/cast_channel.pb.h"
 #include "platform/base/error.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 namespace message_serialization {
-
-using openscreen::ErrorOr;
 
 // Serializes |message_proto| into |message_data|.
 // Returns true if the message was serialized successfully, false otherwise.
-ErrorOr<std::vector<uint8_t>> Serialize(const CastMessage& message);
+ErrorOr<std::vector<uint8_t>> Serialize(
+    const ::cast::channel::CastMessage& message);
 
 struct DeserializeResult {
-  CastMessage message;
+  ::cast::channel::CastMessage message;
   size_t length;
 };
 
@@ -34,10 +33,10 @@ struct DeserializeResult {
 // read.  Returns a parsed CastMessage if a message was received in its
 // entirety, and an error otherwise.  The result also contains the number of
 // bytes consumed from |input| when a parse succeeds.
-ErrorOr<DeserializeResult> TryDeserialize(absl::Span<uint8_t> input);
+ErrorOr<DeserializeResult> TryDeserialize(absl::Span<const uint8_t> input);
 
 }  // namespace message_serialization
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_COMMON_CHANNEL_MESSAGE_FRAMER_H_

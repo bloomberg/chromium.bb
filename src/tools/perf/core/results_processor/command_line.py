@@ -85,7 +85,9 @@ def ArgumentParser(standalone=False):
           'Supported values are: %s; or a valid cloud storage bucket name.'
           % ', '.join(sorted(cloud_storage.BUCKET_ALIASES)),
           'Defaults to: %(default)s.'))
-  group.set_defaults(legacy_output_formats=[])
+  group.add_argument(
+      '--experimental-tbmv3-metrics', action='store_true',
+      help='Enable running experimental TBMv3 metrics.')
   return parser
 
 
@@ -182,16 +184,26 @@ def _GuessTraceProcessorPath():
   the path to trace processor binary located in that directory. Otherwise
   we don't guess, but leave it to the user to supply a path.
   """
+  executable_names = [trace_processor.TP_BINARY_NAME,
+                      trace_processor.TP_BINARY_NAME + '.exe']
+  chromium_output_dir = os.environ.get('CHROMIUM_OUTPUT_DIR')
+  if chromium_output_dir:
+    for executable_name in executable_names:
+      candidate_path = os.path.join(chromium_output_dir, executable_name)
+      if os.path.isfile(candidate_path):
+        return candidate_path
+
   build_dirs = ['build', 'out', 'xcodebuild']
   build_types = ['Debug', 'Debug_x64', 'Release', 'Release_x64', 'Default']
   candidate_paths = []
   for build_dir in build_dirs:
     for build_type in build_types:
-      candidate_path = os.path.join(
-          path_util.GetChromiumSrcDir(), build_dir, build_type,
-          trace_processor.TP_BINARY_NAME)
-      if os.path.isfile(candidate_path):
-        candidate_paths.append(candidate_path)
+      for executable_name in executable_names:
+        candidate_path = os.path.join(
+            path_util.GetChromiumSrcDir(), build_dir, build_type,
+            executable_name)
+        if os.path.isfile(candidate_path):
+          candidate_paths.append(candidate_path)
   if len(candidate_paths) == 1:
     return candidate_paths[0]
   else:

@@ -6,7 +6,7 @@
 
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.chromium.webview_shell"
+    package="{{manifest_package|default('org.chromium.webview_shell')}}"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -96,6 +96,15 @@
                 <data android:mimeType="application/xhtml+xml"/>
                 <data android:mimeType="application/vnd.wap.xhtml+xml"/> <!-- XHTML MP -->
             </intent-filter>
+        </activity>
+        <activity
+            android:name="org.chromium.webview_shell.WebViewBrowserSecondProcessActivity"
+            android:process=":second_process"
+            android:label="@string/title_activity_browser_second_process"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize"
+            android:colorMode="wideColorGamut"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density">
         </activity>
         <activity
             android:name="org.chromium.webview_shell.WebViewLayoutTestActivity"

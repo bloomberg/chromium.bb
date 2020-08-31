@@ -9,7 +9,6 @@ import android.annotation.TargetApi;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
@@ -17,22 +16,21 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.ui.ImmersiveModeManager;
-import org.chromium.chrome.browser.vr.VrModeObserver;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.vr.VrModeObserver;
 
 /**
  * Controls the bottom system navigation bar color for the provided {@link Window}.
@@ -59,34 +57,16 @@ class TabbedNavigationBarColorController implements VrModeObserver {
      * @param window The {@link Window} this controller should operate on.
      * @param tabModelSelector The {@link TabModelSelector} used to determine which tab model is
      *                         selected.
-     * @param immersiveModeManager The {@link ImmersiveModeManager} for the containing activity.
      * @param overviewModeBehaviorSupplier An {@link ObservableSupplier} for the
      *         {@link OverviewModeBehavior} associated with the containing activity.
      */
     TabbedNavigationBarColorController(Window window, TabModelSelector tabModelSelector,
-            @Nullable ImmersiveModeManager immersiveModeManager,
             ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1;
 
         mWindow = window;
         mRootView = (ViewGroup) mWindow.getDecorView().getRootView();
         mResources = mRootView.getResources();
-
-        if (immersiveModeManager != null && immersiveModeManager.isImmersiveModeSupported()) {
-            // TODO(https://crbug.com/937946): Hook up immersive mode observer.
-            mTabModelSelector = null;
-            mTabModelSelectorObserver = null;
-
-            window.setNavigationBarColor(Color.TRANSPARENT);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                window.setNavigationBarDividerColor(Color.TRANSPARENT);
-            }
-            int visibility =
-                    mRootView.getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-            mRootView.setSystemUiVisibility(visibility);
-
-            return;
-        }
 
         // If we're not using a light navigation bar, it will always be black so there's no need
         // to register observers and manipulate coloring.
@@ -169,7 +149,6 @@ class TabbedNavigationBarColorController implements VrModeObserver {
     public void onExitVr() {
         // The platform ignores the light navigation bar system UI flag when launching an Activity
         // in VR mode, so we need to restore it when VR is exited.
-        // TODO(https://crbug.com/937946): How does this interact with immersive mode?
         UiUtils.setNavigationBarIconColor(mRootView, mUseLightNavigation);
     }
 
@@ -185,7 +164,7 @@ class TabbedNavigationBarColorController implements VrModeObserver {
         if (ChromeFeatureList.isInitialized()
                 && (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
                         || DeviceClassManager.enableAccessibilityLayout()
-                        || FeatureUtilities.isGridTabSwitcherEnabled())) {
+                        || TabUiFeatureUtilities.isGridTabSwitcherEnabled())) {
             useLightNavigation = !mTabModelSelector.isIncognitoSelected();
         } else {
             useLightNavigation = !mTabModelSelector.isIncognitoSelected() || overviewVisible;

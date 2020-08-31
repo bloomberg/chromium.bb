@@ -6,9 +6,11 @@
 
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -37,11 +39,12 @@ NGPhysicalLineBoxFragment::Create(NGLineBoxFragmentBuilder* builder) {
       sizeof(NGPhysicalLineBoxFragment) +
           builder->children_.size() * sizeof(NGLink),
       ::WTF::GetStringWithTypeName<NGPhysicalLineBoxFragment>());
-  new (data) NGPhysicalLineBoxFragment(builder);
+  new (data) NGPhysicalLineBoxFragment(PassKey(), builder);
   return base::AdoptRef(static_cast<NGPhysicalLineBoxFragment*>(data));
 }
 
 NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
+    PassKey key,
     NGLineBoxFragmentBuilder* builder)
     : NGPhysicalContainerFragment(builder,
                                   builder->GetWritingMode(),
@@ -51,48 +54,51 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
       metrics_(builder->metrics_) {
   // A line box must have a metrics unless it's an empty line box.
   DCHECK(!metrics_.IsEmpty() || IsEmptyLineBox());
-  base_direction_ = static_cast<unsigned>(builder->base_direction_);
+  base_or_resolved_direction_ = static_cast<unsigned>(builder->base_direction_);
   has_hanging_ = builder->hang_inline_size_ != 0;
   has_propagated_descendants_ = has_floating_descendants_for_paint_ ||
                                 HasOutOfFlowPositionedDescendants() ||
                                 builder->unpositioned_list_marker_;
 }
 
-NGLineHeightMetrics NGPhysicalLineBoxFragment::BaselineMetrics(
-    FontBaseline) const {
+NGLineHeightMetrics NGPhysicalLineBoxFragment::BaselineMetrics() const {
   // TODO(kojii): Computing other baseline types than the used one is not
   // implemented yet.
   // TODO(kojii): We might need locale/script to look up OpenType BASE table.
   return metrics_;
 }
 
+namespace {
+
+// Include the inline-size of the line-box in the overflow.
+inline void AddInlineSizeToOverflow(const PhysicalRect& rect,
+                                    const WritingMode container_writing_mode,
+                                    PhysicalRect* overflow) {
+  PhysicalRect inline_rect;
+  inline_rect.offset = rect.offset;
+  if (IsHorizontalWritingMode(container_writing_mode))
+    inline_rect.size.width = rect.size.width;
+  else
+    inline_rect.size.height = rect.size.height;
+  overflow->UniteEvenIfEmpty(inline_rect);
+}
+
+}  // namespace
+
 PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
-    const LayoutObject* container,
-    const ComputedStyle* container_style,
-    PhysicalSize container_physical_size) const {
-  WritingMode container_writing_mode = container_style->GetWritingMode();
-  TextDirection container_direction = container_style->Direction();
+    const NGPhysicalBoxFragment& container,
+    const ComputedStyle& container_style) const {
+  const WritingMode container_writing_mode = container_style.GetWritingMode();
+  const TextDirection container_direction = container_style.Direction();
   PhysicalRect overflow;
   for (const auto& child : Children()) {
     PhysicalRect child_scroll_overflow =
         child->ScrollableOverflowForPropagation(container);
     child_scroll_overflow.offset += child.Offset();
 
-    // Chop the hanging part from scrollable overflow. Children overflow in
-    // inline direction should hang, which should not cause scroll.
-    // TODO(kojii): Should move to text fragment to make this more accurate.
     if (UNLIKELY(has_hanging_ && !child->IsFloatingOrOutOfFlowPositioned())) {
-      if (IsHorizontalWritingMode(container_writing_mode)) {
-        if (child_scroll_overflow.offset.left < 0)
-          child_scroll_overflow.offset.left = LayoutUnit();
-        if (child_scroll_overflow.Right() > Size().width)
-          child_scroll_overflow.ShiftRightEdgeTo(Size().width);
-      } else {
-        if (child_scroll_overflow.offset.top < 0)
-          child_scroll_overflow.offset.top = LayoutUnit();
-        if (child_scroll_overflow.Bottom() > Size().height)
-          child_scroll_overflow.ShiftBottomEdgeTo(Size().height);
-      }
+      AdjustScrollableOverflowForHanging(LocalRect(), container_writing_mode,
+                                         &child_scroll_overflow);
     }
 
     // For implementation reasons, text nodes inherit computed style from their
@@ -102,18 +108,35 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     if (!child->IsText()) {
       child_scroll_overflow.offset +=
           ComputeRelativeOffset(child->Style(), container_writing_mode,
-                                container_direction, container_physical_size);
+                                container_direction, container.Size());
     }
     overflow.Unite(child_scroll_overflow);
   }
 
   // Make sure we include the inline-size of the line-box in the overflow.
-  PhysicalRect rect;
-  if (IsHorizontalWritingMode(container_writing_mode))
-    rect.size.width = Size().width;
-  else
-    rect.size.height = Size().height;
-  overflow.UniteEvenIfEmpty(rect);
+  AddInlineSizeToOverflow(LocalRect(), container_writing_mode, &overflow);
+
+  return overflow;
+}
+
+PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflowForLine(
+    const NGPhysicalBoxFragment& container,
+    const ComputedStyle& container_style,
+    const NGFragmentItem& line,
+    const NGInlineCursor& cursor) const {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
+  DCHECK_EQ(&line, cursor.CurrentItem());
+  DCHECK_EQ(line.LineBoxFragment(), this);
+
+  PhysicalRect overflow;
+  AddScrollableOverflowForInlineChild(container, container_style, line,
+                                      has_hanging_, cursor, &overflow);
+
+  // Make sure we include the inline-size of the line-box in the overflow.
+  // Note, the bottom half-leading should not be included. crbug.com/996847
+  const WritingMode container_writing_mode = container_style.GetWritingMode();
+  AddInlineSizeToOverflow(line.RectInContainerBlock(), container_writing_mode,
+                          &overflow);
 
   return overflow;
 }

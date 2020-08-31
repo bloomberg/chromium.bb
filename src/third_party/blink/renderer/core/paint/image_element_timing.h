@@ -7,7 +7,7 @@
 
 #include <utility>
 
-#include "third_party/blink/public/web/web_widget_client.h"
+#include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -57,12 +57,13 @@ class CORE_EXPORT ImageElementTiming final
   void NotifyBackgroundImagePainted(
       Node*,
       const StyleFetchedImage* background_image,
-      const PropertyTreeState& current_paint_chunk_properties);
+      const PropertyTreeState& current_paint_chunk_properties,
+      const IntRect& image_border);
 
   void NotifyImageRemoved(const LayoutObject*,
                           const ImageResourceContent* image);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class ImageElementTimingTest;
@@ -72,11 +73,11 @@ class CORE_EXPORT ImageElementTiming final
       const LayoutObject&,
       const ImageResourceContent& cached_image,
       const PropertyTreeState& current_paint_chunk_properties,
-      base::TimeTicks load_time);
+      base::TimeTicks load_time,
+      const IntRect* image_border);
 
   // Callback for the swap promise. Reports paint timestamps.
-  void ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
-                                base::TimeTicks timestamp);
+  void ReportImagePaintSwapTime(WebSwapResult, base::TimeTicks timestamp);
 
   // Class containing information about image element timing.
   class ElementTimingInfo final : public GarbageCollected<ElementTimingInfo> {
@@ -97,7 +98,7 @@ class CORE_EXPORT ImageElementTiming final
           element(element) {}
     ~ElementTimingInfo() = default;
 
-    void Trace(blink::Visitor* visitor) { visitor->Trace(element); }
+    void Trace(Visitor* visitor) { visitor->Trace(element); }
 
     String url;
     FloatRect rect;

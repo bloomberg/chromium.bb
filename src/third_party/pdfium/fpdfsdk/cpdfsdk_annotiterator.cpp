@@ -12,6 +12,7 @@
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "fpdfsdk/cpdfsdk_annot.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
+#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -41,8 +42,15 @@ CPDFSDK_AnnotIterator::TabOrder GetTabOrder(CPDFSDK_PageView* pPageView) {
 
 CPDFSDK_AnnotIterator::CPDFSDK_AnnotIterator(CPDFSDK_PageView* pPageView,
                                              CPDF_Annot::Subtype nAnnotSubtype)
+    : CPDFSDK_AnnotIterator(
+          pPageView,
+          std::vector<CPDF_Annot::Subtype>(1, nAnnotSubtype)) {}
+
+CPDFSDK_AnnotIterator::CPDFSDK_AnnotIterator(
+    CPDFSDK_PageView* pPageView,
+    const std::vector<CPDF_Annot::Subtype>& subtypes_to_iterate)
     : m_pPageView(pPageView),
-      m_nAnnotSubtype(nAnnotSubtype),
+      m_subtypes(subtypes_to_iterate),
       m_eTabOrder(GetTabOrder(pPageView)) {
   GenerateResults();
 }
@@ -63,22 +71,20 @@ CPDFSDK_Annot* CPDFSDK_AnnotIterator::GetNextAnnot(CPDFSDK_Annot* pAnnot) {
     return nullptr;
   ++iter;
   if (iter == m_Annots.end())
-    iter = m_Annots.begin();
+    return nullptr;
   return *iter;
 }
 
 CPDFSDK_Annot* CPDFSDK_AnnotIterator::GetPrevAnnot(CPDFSDK_Annot* pAnnot) {
   auto iter = std::find(m_Annots.begin(), m_Annots.end(), pAnnot);
-  if (iter == m_Annots.end())
+  if (iter == m_Annots.begin() || iter == m_Annots.end())
     return nullptr;
-  if (iter == m_Annots.begin())
-    iter = m_Annots.end();
   return *(--iter);
 }
 
 void CPDFSDK_AnnotIterator::CollectAnnots(std::vector<CPDFSDK_Annot*>* pArray) {
   for (auto* pAnnot : m_pPageView->GetAnnotList()) {
-    if (pAnnot->GetAnnotSubtype() == m_nAnnotSubtype &&
+    if (pdfium::ContainsValue(m_subtypes, pAnnot->GetAnnotSubtype()) &&
         !pAnnot->IsSignatureWidget()) {
       pArray->push_back(pAnnot);
     }

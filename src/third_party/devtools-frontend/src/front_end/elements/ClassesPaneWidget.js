@@ -1,10 +1,18 @@
 // Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+import * as SDK from '../sdk/sdk.js';
+import * as UI from '../ui/ui.js';
+
+import {ElementsPanel} from './ElementsPanel.js';
+
 /**
  * @unrestricted
  */
-export default class ClassesPaneWidget extends UI.Widget {
+export class ClassesPaneWidget extends UI.Widget.Widget {
   constructor() {
     super(true);
     this.registerRequiredCSS('elements/classesPaneWidget.css');
@@ -19,19 +27,20 @@ export default class ClassesPaneWidget extends UI.Widget {
     this._prompt.renderAsBlock();
 
     const proxyElement = this._prompt.attach(this._input);
-    this._prompt.setPlaceholder(Common.UIString('Add new class'));
+    this._prompt.setPlaceholder(Common.UIString.UIString('Add new class'));
     this._prompt.addEventListener(UI.TextPrompt.Events.TextChanged, this._onTextChanged, this);
     proxyElement.addEventListener('keydown', this._onKeyDown.bind(this), false);
 
-    SDK.targetManager.addModelListener(SDK.DOMModel, SDK.DOMModel.Events.DOMMutated, this._onDOMMutated, this);
-    /** @type {!Set<!SDK.DOMNode>} */
+    SDK.SDKModel.TargetManager.instance().addModelListener(
+        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.DOMMutated, this._onDOMMutated, this);
+    /** @type {!Set<!SDK.DOMModel.DOMNode>} */
     this._mutatingNodes = new Set();
-    /** @type {!Map<!SDK.DOMNode, string>} */
+    /** @type {!Map<!SDK.DOMModel.DOMNode, string>} */
     this._pendingNodeClasses = new Map();
-    this._updateNodeThrottler = new Common.Throttler(0);
-    /** @type {?SDK.DOMNode} */
+    this._updateNodeThrottler = new Common.Throttler.Throttler(0);
+    /** @type {?SDK.DOMModel.DOMNode} */
     this._previousTarget = null;
-    UI.context.addFlavorChangeListener(SDK.DOMNode, this._onSelectedNodeChanged, this);
+    self.UI.context.addFlavorChangeListener(SDK.DOMModel.DOMNode, this._onSelectedNodeChanged, this);
   }
 
   /**
@@ -39,9 +48,7 @@ export default class ClassesPaneWidget extends UI.Widget {
    * @return {!Array.<string>}
    */
   _splitTextIntoClasses(text) {
-    return text.split(/[.,\s]/)
-      .map(className => className.trim())
-      .filter(className => className.length);
+    return text.split(/[,\s]/).map(className => className.trim()).filter(className => className.length);
   }
 
   /**
@@ -61,7 +68,7 @@ export default class ClassesPaneWidget extends UI.Widget {
 
     let text = event.target.textContent;
     if (isEscKey(event)) {
-      if (!text.isWhitespace()) {
+      if (!Platform.StringUtilities.isWhitespace(text)) {
         event.consume(true);
       }
       text = '';
@@ -70,21 +77,32 @@ export default class ClassesPaneWidget extends UI.Widget {
     this._prompt.clearAutocomplete();
     event.target.textContent = '';
 
-    const node = UI.context.flavor(SDK.DOMNode);
+    const node = self.UI.context.flavor(SDK.DOMModel.DOMNode);
     if (!node) {
       return;
     }
 
     const classNames = this._splitTextIntoClasses(text);
+    if (!classNames.length) {
+      return;
+    }
+
     for (const className of classNames) {
       this._toggleClass(node, className, true);
     }
+
+    // annoucementString is used for screen reader to announce that the class(es) has been added successfully.
+    const joinClassString = classNames.join(' ');
+    const announcementString =
+        classNames.length > 1 ? ls`Classes ${joinClassString} added.` : ls`Class ${joinClassString} added.`;
+    UI.ARIAUtils.alert(announcementString, this.contentElement);
+
     this._installNodeClasses(node);
     this._update();
   }
 
   _onTextChanged() {
-    const node = UI.context.flavor(SDK.DOMNode);
+    const node = self.UI.context.flavor(SDK.DOMModel.DOMNode);
     if (!node) {
       return;
     }
@@ -92,10 +110,10 @@ export default class ClassesPaneWidget extends UI.Widget {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onDOMMutated(event) {
-    const node = /** @type {!SDK.DOMNode} */ (event.data);
+    const node = /** @type {!SDK.DOMModel.DOMNode} */ (event.data);
     if (this._mutatingNodes.has(node)) {
       return;
     }
@@ -104,14 +122,14 @@ export default class ClassesPaneWidget extends UI.Widget {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onSelectedNodeChanged(event) {
     if (this._previousTarget && this._prompt.text()) {
       this._input.textContent = '';
       this._installNodeClasses(this._previousTarget);
     }
-    this._previousTarget = /** @type {?SDK.DOMNode} */ (event.data);
+    this._previousTarget = /** @type {?SDK.DOMModel.DOMNode} */ (event.data);
     this._update();
   }
 
@@ -127,7 +145,7 @@ export default class ClassesPaneWidget extends UI.Widget {
       return;
     }
 
-    let node = UI.context.flavor(SDK.DOMNode);
+    let node = self.UI.context.flavor(SDK.DOMModel.DOMNode);
     if (node) {
       node = node.enclosingElementOrSelf();
     }
@@ -140,11 +158,11 @@ export default class ClassesPaneWidget extends UI.Widget {
     }
 
     const classes = this._nodeClasses(node);
-    const keys = classes.keysArray();
+    const keys = [...classes.keys()];
     keys.sort(String.caseInsensetiveComparator);
     for (let i = 0; i < keys.length; ++i) {
       const className = keys[i];
-      const label = UI.CheckboxLabel.create(className, classes.get(className));
+      const label = UI.UIUtils.CheckboxLabel.create(className, classes.get(className));
       label.classList.add('monospace');
       label.checkboxElement.addEventListener('click', this._onClick.bind(this, className), false);
       this._classesContainer.appendChild(label);
@@ -156,7 +174,7 @@ export default class ClassesPaneWidget extends UI.Widget {
    * @param {!Event} event
    */
   _onClick(className, event) {
-    const node = UI.context.flavor(SDK.DOMNode);
+    const node = self.UI.context.flavor(SDK.DOMModel.DOMNode);
     if (!node) {
       return;
     }
@@ -166,7 +184,7 @@ export default class ClassesPaneWidget extends UI.Widget {
   }
 
   /**
-   * @param {!SDK.DOMNode} node
+   * @param {!SDK.DOMModel.DOMNode} node
    * @return {!Map<string, boolean>}
    */
   _nodeClasses(node) {
@@ -188,7 +206,7 @@ export default class ClassesPaneWidget extends UI.Widget {
   }
 
   /**
-   * @param {!SDK.DOMNode} node
+   * @param {!SDK.DOMModel.DOMNode} node
    * @param {string} className
    * @param {boolean} enabled
    */
@@ -198,7 +216,7 @@ export default class ClassesPaneWidget extends UI.Widget {
   }
 
   /**
-   * @param {!SDK.DOMNode} node
+   * @param {!SDK.DOMModel.DOMNode} node
    */
   _installNodeClasses(node) {
     const classes = this._nodeClasses(node);
@@ -214,8 +232,7 @@ export default class ClassesPaneWidget extends UI.Widget {
       activeClasses.add(className);
     }
 
-    const newClasses = activeClasses.valuesArray();
-    newClasses.sort();
+    const newClasses = [...activeClasses.values()].sort();
 
     this._pendingNodeClasses.set(node, newClasses.join(' '));
     this._updateNodeThrottler.schedule(this._flushPendingClasses.bind(this));
@@ -236,7 +253,7 @@ export default class ClassesPaneWidget extends UI.Widget {
     return Promise.all(promises);
 
     /**
-     * @param {!SDK.DOMNode} node
+     * @param {!SDK.DOMModel.DOMNode} node
      * @this {ClassesPaneWidget}
      */
     function onClassValueUpdated(node) {
@@ -248,25 +265,25 @@ export default class ClassesPaneWidget extends UI.Widget {
 ClassesPaneWidget._classesSymbol = Symbol('ClassesPaneWidget._classesSymbol');
 
 /**
- * @implements {UI.ToolbarItem.Provider}
+ * @implements {UI.Toolbar.Provider}
  * @unrestricted
  */
 export class ButtonProvider {
   constructor() {
-    this._button = new UI.ToolbarToggle(Common.UIString('Element Classes'), '');
+    this._button = new UI.Toolbar.ToolbarToggle(Common.UIString.UIString('Element Classes'), '');
     this._button.setText('.cls');
     this._button.element.classList.add('monospace');
-    this._button.addEventListener(UI.ToolbarButton.Events.Click, this._clicked, this);
+    this._button.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._clicked, this);
     this._view = new ClassesPaneWidget();
   }
 
   _clicked() {
-    Elements.ElementsPanel.instance().showToolbarPane(!this._view.isShowing() ? this._view : null, this._button);
+    ElementsPanel.instance().showToolbarPane(!this._view.isShowing() ? this._view : null, this._button);
   }
 
   /**
    * @override
-   * @return {!UI.ToolbarItem}
+   * @return {!UI.Toolbar.ToolbarItem}
    */
   item() {
     return this._button;
@@ -276,9 +293,9 @@ export class ButtonProvider {
 /**
  * @unrestricted
  */
-export class ClassNamePrompt extends UI.TextPrompt {
+export class ClassNamePrompt extends UI.TextPrompt.TextPrompt {
   /**
-   * @param {function(!SDK.DOMNode):!Map<string, boolean>} nodeClasses
+   * @param {function(!SDK.DOMModel.DOMNode):!Map<string, boolean>} nodeClasses
    */
   constructor(nodeClasses) {
     super();
@@ -290,10 +307,10 @@ export class ClassNamePrompt extends UI.TextPrompt {
   }
 
   /**
-   * @param {!SDK.DOMNode} selectedNode
+   * @param {!SDK.DOMModel.DOMNode} selectedNode
    * @return {!Promise.<!Array.<string>>}
    */
-  _getClassNames(selectedNode) {
+  async _getClassNames(selectedNode) {
     const promises = [];
     const completions = new Set();
     this._selectedFrameId = selectedNode.frameId();
@@ -304,15 +321,22 @@ export class ClassNamePrompt extends UI.TextPrompt {
       if (stylesheet.frameId !== this._selectedFrameId) {
         continue;
       }
-      const cssPromise = cssModel.classNamesPromise(stylesheet.id).then(classes => completions.addAll(classes));
+      const cssPromise = cssModel.classNamesPromise(stylesheet.id).then(classes => {
+        for (const className of classes) {
+          completions.add(className);
+        }
+      });
       promises.push(cssPromise);
     }
 
-    const domPromise = selectedNode.domModel()
-                           .classNamesPromise(selectedNode.ownerDocument.id)
-                           .then(classes => completions.addAll(classes));
+    const domPromise = selectedNode.domModel().classNamesPromise(selectedNode.ownerDocument.id).then(classes => {
+      for (const className of classes) {
+        completions.add(className);
+      }
+    });
     promises.push(domPromise);
-    return Promise.all(promises).then(() => completions.valuesArray());
+    await Promise.all(promises);
+    return [...completions];
   }
 
   /**
@@ -326,7 +350,7 @@ export class ClassNamePrompt extends UI.TextPrompt {
       this._classNamesPromise = null;
     }
 
-    const selectedNode = UI.context.flavor(SDK.DOMNode);
+    const selectedNode = self.UI.context.flavor(SDK.DOMModel.DOMNode);
     if (!selectedNode || (!prefix && !force && !expression.trim())) {
       return Promise.resolve([]);
     }
@@ -336,7 +360,7 @@ export class ClassNamePrompt extends UI.TextPrompt {
     }
 
     return this._classNamesPromise.then(completions => {
-      const classesMap = this._nodeClasses(/** @type {!SDK.DOMNode} */ (selectedNode));
+      const classesMap = this._nodeClasses(/** @type {!SDK.DOMModel.DOMNode} */ (selectedNode));
       completions = completions.filter(value => !classesMap.get(value));
 
       if (prefix[0] === '.') {
@@ -346,18 +370,3 @@ export class ClassNamePrompt extends UI.TextPrompt {
     });
   }
 }
-
-/* Legacy exported object */
-self.Elements = self.Elements || {};
-
-/* Legacy exported object */
-Elements = Elements || {};
-
-/** @constructor */
-Elements.ClassesPaneWidget = ClassesPaneWidget;
-
-/** @constructor */
-Elements.ClassesPaneWidget.ButtonProvider = ButtonProvider;
-
-/** @constructor */
-Elements.ClassesPaneWidget.ClassNamePrompt = ClassNamePrompt;

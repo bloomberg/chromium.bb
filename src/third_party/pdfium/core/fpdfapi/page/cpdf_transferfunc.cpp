@@ -8,15 +8,16 @@
 
 #include <utility>
 
-#include "core/fpdfapi/page/cpdf_dibtransferfunc.h"
+#include "core/fpdfapi/page/cpdf_transferfuncdib.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fxge/dib/cfx_dibbase.h"
 
-CPDF_TransferFunc::CPDF_TransferFunc(CPDF_Document* pDoc,
-                                     bool bIdentify,
-                                     std::vector<uint8_t> samples_r,
-                                     std::vector<uint8_t> samples_g,
-                                     std::vector<uint8_t> samples_b)
+CPDF_TransferFunc::CPDF_TransferFunc(
+    CPDF_Document* pDoc,
+    bool bIdentify,
+    std::vector<uint8_t, FxAllocAllocator<uint8_t>> samples_r,
+    std::vector<uint8_t, FxAllocAllocator<uint8_t>> samples_g,
+    std::vector<uint8_t, FxAllocAllocator<uint8_t>> samples_b)
     : m_pPDFDoc(pDoc),
       m_bIdentity(bIdentify),
       m_SamplesR(std::move(samples_r)),
@@ -38,9 +39,7 @@ FX_COLORREF CPDF_TransferFunc::TranslateColor(FX_COLORREF colorref) const {
 RetainPtr<CFX_DIBBase> CPDF_TransferFunc::TranslateImage(
     const RetainPtr<CFX_DIBBase>& pSrc) {
   RetainPtr<CPDF_TransferFunc> pHolder(this);
-  auto pDest = pdfium::MakeRetain<CPDF_DIBTransferFunc>(pHolder);
-  pDest->LoadSrc(pSrc);
-  return pDest;
+  return pdfium::MakeRetain<CPDF_TransferFuncDIB>(pSrc, pHolder);
 }
 
 pdfium::span<const uint8_t> CPDF_TransferFunc::GetSamplesR() const {

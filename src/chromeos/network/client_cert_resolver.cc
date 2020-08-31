@@ -19,6 +19,7 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/clock.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/certificate_helper.h"
@@ -553,7 +554,7 @@ void ClientCertResolver::NetworkConnectionStateChanged(
     return;
   if (!network->IsConnectingOrConnected()) {
     NET_LOG(EVENT) << "ClientCertResolver: ConnectionStateChanged: "
-                   << network->name();
+                   << NetworkId(network);
     ResolveNetworks(NetworkStateHandler::NetworkStateList(1, network));
   }
 }
@@ -590,7 +591,7 @@ void ClientCertResolver::PolicyAppliedToNetwork(
     return;
   }
   NET_LOG(EVENT) << "ClientCertResolver: PolicyAppliedToNetwork: "
-                 << network->name();
+                 << NetworkId(network);
   NetworkStateHandler::NetworkStateList networks;
   networks.push_back(network);
   ResolveNetworks(networks);
@@ -658,10 +659,9 @@ void ClientCertResolver::ResolveNetworks(
 
   VLOG(2) << "Start task for resolving client cert patterns.";
   resolve_task_running_ = true;
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&FindCertificateMatches,
                      NetworkCertLoader::CloneNetworkCertList(
                          NetworkCertLoader::Get()->client_certs()),
@@ -706,7 +706,7 @@ void ClientCertResolver::ConfigureCertificates(
     network_properties_changed_ = true;
 
     NET_LOG(EVENT) << "Configuring certificate for network: "
-                   << match.service_path;
+                   << NetworkPathId(match.service_path);
 
     base::DictionaryValue shill_properties;
     if (match.matching_cert.has_value()) {
@@ -724,7 +724,7 @@ void ClientCertResolver::ConfigureCertificates(
     }
     ShillServiceClient::Get()->SetProperties(
         dbus::ObjectPath(match.service_path), shill_properties,
-        base::DoNothing(), base::BindRepeating(&LogError, match.service_path));
+        base::DoNothing(), base::BindOnce(&LogError, match.service_path));
     network_state_handler_->RequestUpdateForNetwork(match.service_path);
   }
   resolve_task_running_ = false;

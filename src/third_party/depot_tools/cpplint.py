@@ -188,6 +188,7 @@ _ERROR_CATEGORIES = [
     'build/header_guard',
     'build/include',
     'build/include_alpha',
+    'build/include_directory',
     'build/include_order',
     'build/include_what_you_use',
     'build/namespaces',
@@ -424,8 +425,8 @@ _TYPES = re.compile(
     r')$')
 
 
-# These headers are excluded from [build/include] and [build/include_order]
-# checks:
+# These headers are excluded from [build/include], [build/include_directory],
+# and [build/include_order] checks:
 # - Anything not following google file name conventions (containing an
 #   uppercase character, such as Python.h or nsStringAPI.h, for example).
 # - Lua headers.
@@ -2868,7 +2869,7 @@ def CheckSpacingForFunctionCall(filename, clean_lines, linenum, error):
             'Extra space after (')
     if (Search(r'\w\s+\(', fncall) and
         not Search(r'_{0,2}asm_{0,2}\s+_{0,2}volatile_{0,2}\s+\(', fncall) and
-        not Search(r'#\s*define|typedef|using\s+\w+\s*=', fncall) and
+        not Search(r'#\s*define|typedef|__except|using\s+\w+\s*=', fncall) and
         not Search(r'\w\s+\((\w+::)*\*\w+\)\(', fncall) and
         not Search(r'\bcase\s+\(', fncall)):
       # TODO(unknown): Space after an operator function seem to be a common
@@ -3161,8 +3162,11 @@ def CheckSpacing(filename, clean_lines, linenum, nesting_state, error):
   line = clean_lines.elided[linenum]
 
   # You shouldn't have spaces before your brackets, except maybe after
-  # 'delete []' or 'return []() {};'
-  if Search(r'\w\s+\[', line) and not Search(r'(?:delete|return)\s+\[', line):
+  # 'delete []' or 'return []() {};', or in the case of c++ attributes
+  # like 'class [[clang::lto_visibility_public]] MyClass'.
+  if (Search(r'\w\s+\[', line)
+      and not Search(r'(?:delete|return)\s+\[', line)
+      and not Search(r'\s+\[\[', line)):
     error(filename, linenum, 'whitespace/braces', 5,
           'Extra space before [')
 
@@ -4409,7 +4413,7 @@ def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
   # naming convention but not the include convention.
   match = Match(r'#include\s*"([^/]+\.h)"', line)
   if match and not _THIRD_PARTY_HEADERS_PATTERN.match(match.group(1)):
-    error(filename, linenum, 'build/include', 4,
+    error(filename, linenum, 'build/include_directory', 4,
           'Include the directory when naming .h files')
 
   # we shouldn't include a file more than once. actually, there are a
@@ -5433,7 +5437,7 @@ def CheckForIncludeWhatYouUse(filename, clean_lines, include_state, error,
 
   # include_dict is modified during iteration, so we iterate over a copy of
   # the keys.
-  header_keys = include_dict.keys()
+  header_keys = list(include_dict.keys())
   for header in header_keys:
     (same_module, common_path) = FilesBelongToSameModule(abs_filename, header)
     fullpath = common_path + header

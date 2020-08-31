@@ -11,8 +11,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
+#include "components/password_manager/core/browser/leak_detection/mock_leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/ios/credential_manager_util.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "ios/chrome/browser/passwords/test/test_password_manager_client.h"
 #include "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/navigation/navigation_manager.h"
@@ -54,16 +56,6 @@ constexpr char kCertFileName[] = "ok_cert.pem";
 class MockLeakDetectionCheck : public password_manager::LeakDetectionCheck {
  public:
   MOCK_METHOD3(Start, void(const GURL&, base::string16, base::string16));
-};
-
-class MockLeakDetectionCheckFactory
-    : public password_manager::LeakDetectionCheckFactory {
- public:
-  MOCK_CONST_METHOD3(TryCreateLeakCheck,
-                     std::unique_ptr<password_manager::LeakDetectionCheck>(
-                         password_manager::LeakDetectionDelegateInterface*,
-                         signin::IdentityManager*,
-                         scoped_refptr<network::SharedURLLoaderFactory>));
 };
 
 }  // namespace
@@ -122,9 +114,6 @@ class CredentialManagerTest : public CredentialManagerBaseTest {
     UpdateSslStatus(net::CERT_STATUS_IS_EV, web::SECURITY_STYLE_AUTHENTICATED,
                     web::SSLStatus::NORMAL_CONTENT);
 
-    ON_CALL(*client_, OnCredentialManagerUsed())
-        .WillByDefault(testing::Return(true));
-
     password_credential_form_1_.username_value = base::ASCIIToUTF16("id1");
     password_credential_form_1_.display_name = base::ASCIIToUTF16("Name One");
     password_credential_form_1_.icon_url = GURL("https://example.com/icon.png");
@@ -175,8 +164,8 @@ class CredentialManagerTest : public CredentialManagerBaseTest {
 
 // Tests storing a PasswordCredential.
 TEST_F(CredentialManagerTest, StorePasswordCredential) {
-  auto mock_factory =
-      std::make_unique<testing::StrictMock<MockLeakDetectionCheckFactory>>();
+  auto mock_factory = std::make_unique<
+      testing::StrictMock<password_manager::MockLeakDetectionCheckFactory>>();
   auto* weak_factory = mock_factory.get();
   manager_->set_leak_factory(std::move(mock_factory));
 
@@ -286,10 +275,6 @@ TEST_F(CredentialManagerTest, TryToStoreCredentialFromInsecureContext) {
 
   // Expect that user will NOT be prompted to save or update password.
   EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(_)).Times(0);
-
-  // Expect that PasswordManagerClient method used by
-  // CredentialManagerImpl::Store will not be called.
-  EXPECT_CALL(*client_, OnCredentialManagerUsed()).Times(0);
 
   // Call API method |store|.
   ExecuteJavaScript(
@@ -407,10 +392,6 @@ TEST_F(CredentialManagerTest, TryToGetCredentialFromInsecureContext) {
   LoadHtml(@"<html></html>", GURL(kHttpWebOrigin));
   LoadHtmlAndInject(@"<html></html>");
   client_->set_current_url(GURL(kHttpWebOrigin));
-
-  // Expect that PasswordManagerClient method used by
-  // CredentialManagerImpl::Get will not be called.
-  EXPECT_CALL(*client_, OnCredentialManagerUsed()).Times(0);
 
   // Call API method |get|.
   ExecuteJavaScript(

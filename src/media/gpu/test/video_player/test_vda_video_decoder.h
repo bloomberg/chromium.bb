@@ -15,8 +15,8 @@
 #include "base/sequence_checker.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/base/video_decoder.h"
-#include "media/gpu/buildflags.h"
 #include "media/gpu/test/video_player/video_decoder_client.h"
+#include "media/media_buildflags.h"
 #include "media/video/video_decode_accelerator.h"
 
 namespace media {
@@ -37,6 +37,7 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   // whether allocating video frames will be done by the TestVDAVideoDecoder, or
   // delegated to the underlying VDA.
   TestVDAVideoDecoder(AllocationMode allocation_mode,
+                      bool use_vd_vda,
                       const gfx::ColorSpace& target_color_space,
                       FrameRenderer* const frame_renderer,
                       gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
@@ -61,6 +62,7 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   void Destroy() override;
 
   // media::VideoDecodeAccelerator::Client implementation
+  void NotifyInitializationComplete(Status status) override;
   void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
                              VideoPixelFormat format,
                              uint32_t textures_per_buffer,
@@ -91,6 +93,9 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   // Get the next picture buffer id to be used.
   int32_t GetNextPictureBufferId();
 
+  // Called when initialization is done. The callback is stored only when VDA
+  // allows deferred initialization.
+  InitCB init_cb_;
   // Called when a buffer is decoded.
   OutputCB output_cb_;
   // Called when the decoder finished flushing.
@@ -100,6 +105,9 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
 
   // Video decode accelerator output mode.
   const VideoDecodeAccelerator::Config::OutputMode output_mode_;
+
+  // Whether VdVideoDecodeAccelerator is used.
+  bool use_vd_vda_;
 
   // Output color space, used as hint to decoder to avoid conversions.
   const gfx::ColorSpace target_color_space_;

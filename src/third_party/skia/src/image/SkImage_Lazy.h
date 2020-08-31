@@ -8,7 +8,9 @@
 #ifndef SkImage_Lazy_DEFINED
 #define SkImage_Lazy_DEFINED
 
+#include "include/private/SkIDChangeListener.h"
 #include "include/private/SkMutex.h"
+#include "src/gpu/SkGr.h"
 #include "src/image/SkImage_Base.h"
 
 #if SK_SUPPORT_GPU
@@ -33,7 +35,6 @@ public:
     };
 
     SkImage_Lazy(Validator* validator);
-    ~SkImage_Lazy() override;
 
     SkIRect onGetSubset() const override {
         return SkIRect::MakeXYWH(fOrigin.fX, fOrigin.fY, this->width(), this->height());
@@ -42,9 +43,7 @@ public:
     bool onReadPixels(const SkImageInfo&, void*, size_t, int srcX, int srcY,
                       CachingHint) const override;
 #if SK_SUPPORT_GPU
-    sk_sp<GrTextureProxy> asTextureProxyRef(GrRecordingContext*,
-                                            const GrSamplerState&,
-                                            SkScalar scaleAdjust[2]) const override;
+    GrSurfaceProxyView refView(GrRecordingContext*, GrMipMapped) const override;
     sk_sp<SkCachedData> getPlanes(SkYUVASizeInfo*, SkYUVAIndex[4],
                                   SkYUVColorSpace*, const void* planes[4]) override;
 #endif
@@ -59,19 +58,22 @@ public:
     bool onIsValid(GrContext*) const override;
 
 #if SK_SUPPORT_GPU
-    // Returns the texture proxy. If we're going to generate and cache the texture, we should use
-    // the passed in key (if the key is valid). If genType is AllowedTexGenType::kCheap and the
-    // texture is not trivial to construct, returns nullptr.
-    sk_sp<GrTextureProxy> lockTextureProxy(GrRecordingContext*,
-                                           const GrUniqueKey& key,
-                                           SkImage::CachingHint,
-                                           bool willBeMipped,
-                                           GrTextureMaker::AllowedTexGenType genType) const;
+    // Returns the texture proxy. CachingHint refers to whether the generator's output should be
+    // cached in CPU memory. We will always cache the generated texture on success.
+    GrSurfaceProxyView lockTextureProxyView(GrRecordingContext*,
+                                            GrImageTexGenPolicy,
+                                            GrMipMapped) const;
 
-    void makeCacheKeyFromOrigKey(const GrUniqueKey& origKey, GrUniqueKey* cacheKey) const;
+    // Returns the GrColorType to use with the GrTextureProxy returned from lockTextureProxy. This
+    // may be different from the color type on the image in the case where we need up upload CPU
+    // data to a texture but the GPU doesn't support the format of CPU data. In this case we convert
+    // the data to RGBA_8888 unorm on the CPU then upload that.
+    GrColorType colorTypeOfLockTextureProxy(const GrCaps* caps) const;
 #endif
 
 private:
+    void addUniqueIDListener(sk_sp<SkIDChangeListener>) const;
+
     class ScopedGenerator;
 
     // Note that this->imageInfo() is not necessarily the info from the generator. It may be
@@ -88,10 +90,9 @@ private:
     mutable sk_sp<SkImage>      fOnMakeColorTypeAndSpaceResult;
 
 #if SK_SUPPORT_GPU
-    // When the SkImage_Lazy goes away, we will iterate over all the unique keys we've used and
-    // send messages to the GrContexts to say the unique keys are no longer valid. The GrContexts
-    // can then release the resources, conntected with the those unique keys, from their caches.
-    mutable SkTDArray<GrUniqueKeyInvalidatedMessage*> fUniqueKeyInvalidatedMessages;
+    // When the SkImage_Lazy goes away, we will iterate over all the listeners to inform them
+    // of the unique ID's demise. This is used to remove cached textures from GrContext.
+    mutable SkIDChangeListener::List fUniqueIDListeners;
 #endif
 
     typedef SkImage_Base INHERITED;

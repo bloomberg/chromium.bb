@@ -29,13 +29,10 @@ class WebTestDevToolsBindings : public ShellDevToolsBindings {
   class SecondaryObserver;
 
   // WebContentsObserver implementation.
-  void RenderProcessGone(base::TerminationStatus status) override;
-  void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   void DocumentAvailableInMainFrame() override;
 
   void NavigateDevToolsFrontend();
 
-  bool is_startup_test_ = false;
   GURL frontend_url_;
   std::unique_ptr<SecondaryObserver> secondary_observer_;
 

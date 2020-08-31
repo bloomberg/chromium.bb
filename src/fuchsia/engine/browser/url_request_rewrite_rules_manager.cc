@@ -4,6 +4,7 @@
 
 #include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
 #include "fuchsia/base/string_util.h"
 #include "fuchsia/engine/url_request_rewrite_type_converters.h"
@@ -67,6 +68,13 @@ bool ValidateReplaceUrl(
   return true;
 }
 
+bool ValidateAppendToQuery(
+    const fuchsia::web::UrlRequestRewriteAppendToQuery& append_to_query) {
+  if (!append_to_query.has_query())
+    return false;
+  return true;
+}
+
 bool ValidateRewrite(const fuchsia::web::UrlRequestRewrite& rewrite) {
   switch (rewrite.Which()) {
     case fuchsia::web::UrlRequestRewrite::Tag::kAddHeaders:
@@ -77,6 +85,8 @@ bool ValidateRewrite(const fuchsia::web::UrlRequestRewrite& rewrite) {
       return ValidateSubstituteQueryPattern(rewrite.substitute_query_pattern());
     case fuchsia::web::UrlRequestRewrite::Tag::kReplaceUrl:
       return ValidateReplaceUrl(rewrite.replace_url());
+    case fuchsia::web::UrlRequestRewrite::Tag::kAppendToQuery:
+      return ValidateAppendToQuery(rewrite.append_to_query());
     default:
       // This is to prevent build breakage when adding new rewrites to the FIDL
       // definition. This can also happen if the client sends an empty rewrite,
@@ -105,11 +115,18 @@ bool ValidateRules(
     }
     if (rule.has_schemes_filter() && rule.schemes_filter().empty())
       return false;
-    if (!rule.has_rewrites())
-      return false;
-    for (const auto& rewrite : rule.rewrites()) {
-      if (!ValidateRewrite(rewrite))
+
+    if (rule.has_rewrites()) {
+      if (rule.has_action())
         return false;
+
+      for (const auto& rewrite : rule.rewrites()) {
+        if (!ValidateRewrite(rewrite))
+          return false;
+      }
+    } else if (!rule.has_action()) {
+      // No rewrites, no action = no point!
+      return false;
     }
   }
   return true;
@@ -158,7 +175,7 @@ zx_status_t UrlRequestRewriteRulesManager::OnRulesUpdated(
   base::AutoLock auto_lock(lock_);
   cached_rules_ =
       base::MakeRefCounted<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>(
-          mojo::ConvertTo<std::vector<mojom::UrlRequestRewriteRulePtr>>(
+          mojo::ConvertTo<std::vector<mojom::UrlRequestRulePtr>>(
               std::move(rules)));
 
   // Send the updated rules to the receivers.

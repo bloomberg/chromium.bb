@@ -13,10 +13,15 @@ source modified and built using the unstable 'live' (9999) ebuild.
 
 from __future__ import print_function
 
+import sys
+
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import terminal
 from chromite.lib import workon_helper
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def GetParser():
@@ -26,11 +31,6 @@ def GetParser():
                       help='The board to set package keywords for.')
   parser.add_argument('--host', default=False, action='store_true',
                       help='Uses the host instead of board')
-  parser.add_argument('--remote', default='',
-                      help='For non-workon projects, the git remote to use.')
-  parser.add_argument('--revision', default='',
-                      help='Use to override the manifest defined default '
-                           'revision used for a project')
   parser.add_argument('--command', default='git status', dest='iterate_command',
                       help='The command to be run by forall.')
   parser.add_argument('--workon_only', default=False, action='store_true',

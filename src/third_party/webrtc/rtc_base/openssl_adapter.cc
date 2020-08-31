@@ -20,6 +20,7 @@
 
 #include <memory>
 
+#include "absl/memory/memory.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/location.h"
 #include "rtc_base/logging.h"
@@ -176,7 +177,6 @@ OpenSSLAdapter::OpenSSLAdapter(AsyncSocket* socket,
       role_(SSL_CLIENT),
       ssl_read_needs_write_(false),
       ssl_write_needs_read_(false),
-      restartable_(false),
       ssl_(nullptr),
       ssl_ctx_(nullptr),
       ssl_mode_(SSL_MODE_TLS),
@@ -221,9 +221,10 @@ void OpenSSLAdapter::SetCertVerifier(
   ssl_cert_verifier_ = ssl_cert_verifier;
 }
 
-void OpenSSLAdapter::SetIdentity(SSLIdentity* identity) {
+void OpenSSLAdapter::SetIdentity(std::unique_ptr<SSLIdentity> identity) {
   RTC_DCHECK(!identity_);
-  identity_.reset(static_cast<OpenSSLIdentity*>(identity));
+  identity_ =
+      absl::WrapUnique(static_cast<OpenSSLIdentity*>(identity.release()));
 }
 
 void OpenSSLAdapter::SetRole(SSLRole role) {
@@ -238,19 +239,18 @@ AsyncSocket* OpenSSLAdapter::Accept(SocketAddress* paddr) {
   }
 
   SSLAdapter* adapter = SSLAdapter::Create(socket);
-  adapter->SetIdentity(identity_->GetReference());
+  adapter->SetIdentity(identity_->Clone());
   adapter->SetRole(rtc::SSL_SERVER);
   adapter->SetIgnoreBadCert(ignore_bad_cert_);
-  adapter->StartSSL("", false);
+  adapter->StartSSL("");
   return adapter;
 }
 
-int OpenSSLAdapter::StartSSL(const char* hostname, bool restartable) {
+int OpenSSLAdapter::StartSSL(const char* hostname) {
   if (state_ != SSL_NONE)
     return -1;
 
   ssl_host_name_ = hostname;
-  restartable_ = restartable;
 
   if (socket_->GetState() != Socket::CS_CONNECTED) {
     state_ = SSL_WAIT;
@@ -646,7 +646,7 @@ int OpenSSLAdapter::RecvFrom(void* pv,
 
 int OpenSSLAdapter::Close() {
   Cleanup();
-  state_ = restartable_ ? SSL_WAIT : SSL_NONE;
+  state_ = SSL_NONE;
   return AsyncSocketAdapter::Close();
 }
 
@@ -780,7 +780,7 @@ void OpenSSLAdapter::SSLInfoCallback(const SSL* s, int where, int ret) {
     str = "SSL_accept";
   }
   if (where & SSL_CB_LOOP) {
-    RTC_DLOG(LS_INFO) << str << ":" << SSL_state_string_long(s);
+    RTC_DLOG(LS_VERBOSE) << str << ":" << SSL_state_string_long(s);
   } else if (where & SSL_CB_ALERT) {
     str = (where & SSL_CB_READ) ? "read" : "write";
     RTC_DLOG(LS_INFO) << "SSL3 alert " << str << ":"
@@ -857,8 +857,10 @@ SSL_CTX* OpenSSLAdapter::CreateContext(SSLMode mode, bool enable_cache) {
   if (ctx == nullptr) {
     unsigned long error = ERR_get_error();  // NOLINT: type used by OpenSSL.
     RTC_LOG(LS_WARNING) << "SSL_CTX creation failed: " << '"'
-                        << ERR_reason_error_string(error) << "\" "
-                        << "(error=" << error << ')';
+                        << ERR_reason_error_string(error)
+                        << "\" "
+                           "(error="
+                        << error << ')';
     return nullptr;
   }
 
@@ -906,7 +908,7 @@ std::string TransformAlpnProtocols(
   for (const std::string& proto : alpn_protocols) {
     if (proto.size() == 0 || proto.size() > 0xFF) {
       RTC_LOG(LS_ERROR) << "OpenSSLAdapter::Error("
-                        << "TransformAlpnProtocols received proto with size "
+                           "TransformAlpnProtocols received proto with size "
                         << proto.size() << ")";
       return "";
     }

@@ -11,9 +11,9 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_fallthrough.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/impl/quic_ip_address_impl.h"
 #include "net/third_party/quiche/src/quic/qbone/platform/rtnetlink_message.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
 
 namespace quic {
 
@@ -75,12 +75,12 @@ namespace {
 
 class LinkInfoParser : public NetlinkParserInterface {
  public:
-  LinkInfoParser(string interface_name, Netlink::LinkInfo* link_info)
+  LinkInfoParser(std::string interface_name, Netlink::LinkInfo* link_info)
       : interface_name_(std::move(interface_name)), link_info_(link_info) {}
 
   void Run(struct nlmsghdr* netlink_message) override {
     if (netlink_message->nlmsg_type != RTM_NEWLINK) {
-      QUIC_LOG(INFO) << QuicStrCat(
+      QUIC_LOG(INFO) << quiche::QuicheStrCat(
           "Unexpected nlmsg_type: ", netlink_message->nlmsg_type,
           " expected: ", RTM_NEWLINK);
       return;
@@ -91,7 +91,7 @@ class LinkInfoParser : public NetlinkParserInterface {
 
     // make sure interface_info is what we asked for.
     if (interface_info->ifi_family != AF_UNSPEC) {
-      QUIC_LOG(INFO) << QuicStrCat(
+      QUIC_LOG(INFO) << quiche::QuicheStrCat(
           "Unexpected ifi_family: ", interface_info->ifi_family,
           " expected: ", AF_UNSPEC);
       return;
@@ -101,7 +101,7 @@ class LinkInfoParser : public NetlinkParserInterface {
     size_t hardware_address_length = 0;
     char broadcast_address[kHwAddrSize];
     size_t broadcast_address_length = 0;
-    string name;
+    std::string name;
 
     // loop through the attributes
     struct rtattr* rta;
@@ -131,8 +131,8 @@ class LinkInfoParser : public NetlinkParserInterface {
           break;
         }
         case IFLA_IFNAME: {
-          name =
-              string(reinterpret_cast<char*>(RTA_DATA(rta)), RTA_PAYLOAD(rta));
+          name = std::string(reinterpret_cast<char*>(RTA_DATA(rta)),
+                             RTA_PAYLOAD(rta));
           // The name maybe a 0 terminated c string.
           name = name.substr(0, name.find('\0'));
           break;
@@ -163,14 +163,15 @@ class LinkInfoParser : public NetlinkParserInterface {
   bool found_link() { return found_link_; }
 
  private:
-  const string interface_name_;
+  const std::string interface_name_;
   Netlink::LinkInfo* const link_info_;
   bool found_link_ = false;
 };
 
 }  // namespace
 
-bool Netlink::GetLinkInfo(const string& interface_name, LinkInfo* link_info) {
+bool Netlink::GetLinkInfo(const std::string& interface_name,
+                          LinkInfo* link_info) {
   auto message = LinkMessage::New(RtnetlinkMessage::Operation::GET,
                                   NLM_F_ROOT | NLM_F_MATCH | NLM_F_REQUEST,
                                   seq_, getpid(), nullptr);
@@ -220,8 +221,8 @@ class LocalAddressParser : public NetlinkParserInterface {
     // Make sure this is for an address family we're interested in.
     if (interface_address->ifa_family != AF_INET &&
         interface_address->ifa_family != AF_INET6) {
-      QUIC_VLOG(2) << QuicStrCat("uninteresting ifa family: ",
-                                 interface_address->ifa_family);
+      QUIC_VLOG(2) << quiche::QuicheStrCat("uninteresting ifa family: ",
+                                           interface_address->ifa_family);
       return;
     }
 
@@ -235,7 +236,8 @@ class LocalAddressParser : public NetlinkParserInterface {
 
     uint8_t unwanted_flags = interface_address->ifa_flags & unwanted_flags_;
     if (unwanted_flags != 0) {
-      QUIC_VLOG(2) << QuicStrCat("unwanted ifa flags: ", unwanted_flags);
+      QUIC_VLOG(2) << quiche::QuicheStrCat("unwanted ifa flags: ",
+                                           unwanted_flags);
       return;
     }
 
@@ -274,8 +276,8 @@ class LocalAddressParser : public NetlinkParserInterface {
           }
           break;
         default:
-          QUIC_LOG(ERROR) << QuicStrCat("Unknown address family: ",
-                                        interface_address->ifa_family);
+          QUIC_LOG(ERROR) << quiche::QuicheStrCat(
+              "Unknown address family: ", interface_address->ifa_family);
       }
     }
 
@@ -411,7 +413,7 @@ class RoutingRuleParser : public NetlinkParserInterface {
 
   void Run(struct nlmsghdr* netlink_message) override {
     if (netlink_message->nlmsg_type != RTM_NEWROUTE) {
-      QUIC_LOG(WARNING) << QuicStrCat(
+      QUIC_LOG(WARNING) << quiche::QuicheStrCat(
           "Unexpected nlmsg_type: ", netlink_message->nlmsg_type,
           " expected: ", RTM_NEWROUTE);
       return;
@@ -421,7 +423,8 @@ class RoutingRuleParser : public NetlinkParserInterface {
     int payload_length = RTM_PAYLOAD(netlink_message);
 
     if (route->rtm_family != AF_INET && route->rtm_family != AF_INET6) {
-      QUIC_VLOG(2) << QuicStrCat("Uninteresting family: ", route->rtm_family);
+      QUIC_VLOG(2) << quiche::QuicheStrCat("Uninteresting family: ",
+                                           route->rtm_family);
       return;
     }
 
@@ -455,8 +458,8 @@ class RoutingRuleParser : public NetlinkParserInterface {
           break;
         }
         default: {
-          QUIC_VLOG(2) << QuicStrCat("Uninteresting attribute: ",
-                                     rta->rta_type);
+          QUIC_VLOG(2) << quiche::QuicheStrCat("Uninteresting attribute: ",
+                                               rta->rta_type);
         }
       }
     }
@@ -598,7 +601,7 @@ class IpRuleParser : public NetlinkParserInterface {
 
   void Run(struct nlmsghdr* netlink_message) override {
     if (netlink_message->nlmsg_type != RTM_NEWRULE) {
-      QUIC_LOG(WARNING) << QuicStrCat(
+      QUIC_LOG(WARNING) << quiche::QuicheStrCat(
           "Unexpected nlmsg_type: ", netlink_message->nlmsg_type,
           " expected: ", RTM_NEWRULE);
       return;
@@ -608,7 +611,8 @@ class IpRuleParser : public NetlinkParserInterface {
     int payload_length = RTM_PAYLOAD(netlink_message);
 
     if (rule->rtm_family != AF_INET6) {
-      QUIC_LOG(ERROR) << QuicStrCat("Unexpected family: ", rule->rtm_family);
+      QUIC_LOG(ERROR) << quiche::QuicheStrCat("Unexpected family: ",
+                                              rule->rtm_family);
       return;
     }
 
@@ -632,8 +636,8 @@ class IpRuleParser : public NetlinkParserInterface {
           break;
         }
         default: {
-          QUIC_VLOG(2) << QuicStrCat("Uninteresting attribute: ",
-                                     rta->rta_type);
+          QUIC_VLOG(2) << quiche::QuicheStrCat("Uninteresting attribute: ",
+                                               rta->rta_type);
         }
       }
     }

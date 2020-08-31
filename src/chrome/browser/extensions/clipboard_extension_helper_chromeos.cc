@@ -11,7 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/atomic_flag.h"
-#include "chrome/browser/image_decoder.h"
+#include "chrome/browser/image_decoder/image_decoder.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
@@ -41,7 +41,7 @@ class ClipboardExtensionHelper::ClipboardImageDataDecoder
         codec = ImageDecoder::ROBUST_PNG_CODEC;
         break;
       case clipboard::IMAGE_TYPE_JPEG:
-        codec = ImageDecoder::ROBUST_JPEG_CODEC;
+        codec = ImageDecoder::DEFAULT_CODEC;
         break;
       case clipboard::IMAGE_TYPE_NONE:
         NOTREACHED();

@@ -19,7 +19,7 @@
 #include "components/update_client/update_client.h"
 #include "url/gurl.h"
 
-class ComponentsUI;
+class ComponentsHandler;
 class PluginObserver;
 
 namespace policy {
@@ -135,7 +135,7 @@ class ComponentUpdateService {
   virtual void MaybeThrottle(const std::string& id,
                              base::OnceClosure callback) = 0;
 
-  virtual ~ComponentUpdateService() {}
+  virtual ~ComponentUpdateService() = default;
 
  private:
   // Returns details about registered component in the |item| parameter. The
@@ -143,7 +143,7 @@ class ComponentUpdateService {
   virtual bool GetComponentDetails(const std::string& id,
                                    CrxUpdateItem* item) const = 0;
 
-  friend class ::ComponentsUI;
+  friend class ::ComponentsHandler;
   FRIEND_TEST_ALL_PREFIXES(ComponentInstallerTest, RegisterComponent);
 };
 
@@ -156,15 +156,16 @@ class OnDemandUpdater {
   // away.
   enum class Priority { BACKGROUND = 0, FOREGROUND = 1 };
 
-  virtual ~OnDemandUpdater() {}
+  virtual ~OnDemandUpdater() = default;
 
  private:
   friend class OnDemandTester;
   friend class policy::ComponentUpdaterPolicyTest;
   friend class SupervisedUserWhitelistInstaller;
-  friend class ::ComponentsUI;
+  friend class ::ComponentsHandler;
   friend class ::PluginObserver;
   friend class SwReporterOnDemandFetcher;
+  friend class SODAComponentInstallerPolicy;
 #if defined(OS_CHROMEOS)
   friend class CrOSComponentInstaller;
 #endif  // defined(OS_CHROMEOS)

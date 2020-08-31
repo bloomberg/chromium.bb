@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
-#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
@@ -117,16 +116,6 @@ TestArrayBufferView* V8ArrayBufferView::ToImpl(v8::Local<v8::Object> object) {
 TestArrayBufferView* V8ArrayBufferView::ToImplWithTypeCheck(
     v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return value->IsArrayBufferView() ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
-}
-
-TestArrayBufferView* NativeValueTraits<TestArrayBufferView>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestArrayBufferView* native_value = V8ArrayBufferView::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "ArrayBufferView"));
-  }
-  return native_value;
 }
 
 }  // namespace blink

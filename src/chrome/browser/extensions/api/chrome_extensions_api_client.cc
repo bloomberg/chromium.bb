@@ -27,7 +27,6 @@
 #include "chrome/browser/extensions/api/storage/managed_value_store_cache.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -43,10 +42,11 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
-#include "components/performance_manager/performance_manager_tab_helper.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/browser_context.h"
@@ -54,9 +54,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/api/management/supervised_user_service_delegate.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
+#include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
@@ -76,9 +78,15 @@
 #include "chrome/browser/printing/printing_init.h"
 #endif
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+// TODO(https://crbug.com/1060801): Here and elsewhere, possibly switch build
+// flag to #if defined(OS_CHROMEOS)
+#include "chrome/browser/supervised_user/supervised_user_service_management_api_delegate.h"
+#endif
+
 namespace extensions {
 
-ChromeExtensionsAPIClient::ChromeExtensionsAPIClient() {}
+ChromeExtensionsAPIClient::ChromeExtensionsAPIClient() = default;
 
 ChromeExtensionsAPIClient::~ChromeExtensionsAPIClient() {}
 
@@ -108,9 +116,9 @@ void ChromeExtensionsAPIClient::AttachWebContentsHelpers(
 
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
-  if (performance_manager::PerformanceManager::IsAvailable()) {
-    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
-        web_contents);
+  if (auto* performance_manager_registry =
+          performance_manager::PerformanceManagerRegistry::GetInstance()) {
+    performance_manager_registry->CreatePageNodeForWebContents(web_contents);
   }
 }
 
@@ -119,9 +127,6 @@ bool ChromeExtensionsAPIClient::ShouldHideResponseHeader(
     const std::string& header_name) const {
   // Gaia may send a OAUth2 authorization code in the Dice response header,
   // which could allow an extension to generate a refresh token for the account.
-  // TODO(crbug.com/890006): Determine if the code here can be cleaned up
-  // since browser initiated non-navigation requests are now hidden from
-  // extensions.
   return (
       (url.host_piece() == GaiaUrls::GetInstance()->gaia_url().host_piece()) &&
       (base::CompareCaseInsensitiveASCII(header_name,
@@ -137,8 +142,9 @@ bool ChromeExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
   // But we do still need to protect some sensitive sub-frame navigation
   // requests.
   // Exclude main frame navigation requests.
-  bool is_browser_request = request.render_process_id == -1 &&
-                            request.type != content::ResourceType::kMainFrame;
+  bool is_browser_request =
+      request.render_process_id == -1 &&
+      request.type != blink::mojom::ResourceType::kMainFrame;
 
   // Hide requests made by the Devtools frontend.
   bool is_sensitive_request =
@@ -332,6 +338,15 @@ ChromeExtensionsAPIClient::CreateVirtualKeyboardDelegate(
 ManagementAPIDelegate* ChromeExtensionsAPIClient::CreateManagementAPIDelegate()
     const {
   return new ChromeManagementAPIDelegate;
+}
+
+std::unique_ptr<SupervisedUserServiceDelegate>
+ChromeExtensionsAPIClient::CreateSupervisedUserServiceDelegate() const {
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  return std::make_unique<SupervisedUserServiceManagementAPIDelegate>();
+#else
+  return nullptr;
+#endif
 }
 
 std::unique_ptr<DisplayInfoProvider>

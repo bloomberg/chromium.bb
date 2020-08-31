@@ -22,7 +22,7 @@
 class SkColorFilter;
 class SkNWayCanvas;
 class SkPictureRecorder;
-class SkRuntimeColorFilterFactory;
+class SkRuntimeEffect;
 
 namespace gpu {
 struct Capabilities;
@@ -49,11 +49,13 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   SkiaRenderer(const RendererSettings* settings,
                OutputSurface* output_surface,
                DisplayResourceProvider* resource_provider,
+               OverlayProcessorInterface* overlay_processor,
                SkiaOutputSurface* skia_output_surface,
                DrawMode mode);
   ~SkiaRenderer() override;
 
   void SwapBuffers(SwapFrameData swap_frame_data) override;
+  void SwapBuffersSkipped() override;
   void SwapBuffersComplete() override;
 
   void SetDisablePictureQuadImageFiltering(bool disable) {
@@ -333,9 +335,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   ContextProvider* context_provider_ = nullptr;
   base::Optional<SyncQueryCollection> sync_queries_;
 
-  std::map<
-      gfx::ColorSpace,
-      std::map<gfx::ColorSpace, std::unique_ptr<SkRuntimeColorFilterFactory>>>
+  std::map<gfx::ColorSpace, std::map<gfx::ColorSpace, sk_sp<SkRuntimeEffect>>>
       color_filter_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaRenderer);

@@ -15,16 +15,10 @@ class APP_LIST_MODEL_EXPORT AppListItemObserver {
   // Invoked after item's icon is changed.
   // |config_type| The app list configuration type for which the item icon
   // changed.
-  virtual void ItemIconChanged(ash::AppListConfigType config_type) {}
+  virtual void ItemIconChanged(AppListConfigType config_type) {}
 
   // Invoked after item's name is changed.
   virtual void ItemNameChanged() {}
-
-  // Invoked after item begins or finishes installing.
-  virtual void ItemIsInstallingChanged() {}
-
-  // Invoked after item's download percentage changes.
-  virtual void ItemPercentDownloadedChanged() {}
 
   // Invoked when the item is about to be destroyed.
   virtual void ItemBeingDestroyed() {}

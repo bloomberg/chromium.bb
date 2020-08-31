@@ -153,6 +153,8 @@ struct SpecializationRequester {
     return position == SourcePosition::Invalid() && scope == nullptr &&
            name == "";
   }
+  SpecializationRequester(SourcePosition position, Scope* scope,
+                          std::string name);
 };
 
 class Scope : public Declarable {
@@ -338,7 +340,7 @@ class Macro : public Callable {
   bool ShouldBeInlined() const override {
     for (const LabelDeclaration& label : signature().labels) {
       for (const Type* type : label.types) {
-        if (type->IsStructType()) return true;
+        if (type->StructSupertype()) return true;
       }
     }
     // Intrinsics that are used internally in Torque and implemented as torque

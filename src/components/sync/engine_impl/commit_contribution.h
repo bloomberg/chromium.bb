@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "components/sync/base/syncer_error.h"
+#include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -40,7 +41,13 @@ class CommitContribution {
       const sync_pb::ClientToServerResponse& response,
       StatusController* status) = 0;
 
-  // Cleans up any temproary state associated with the commit.  Must be called
+  // This method is called when there is an error during commit and there is no
+  // proper response to process (i.e. unparsable or unexpected server response,
+  // network error). This method may be called only if ProcessCommitResponse
+  // was never called.
+  virtual void ProcessCommitFailure(SyncCommitError commit_error) = 0;
+
+  // Cleans up any temporary state associated with the commit. Must be called
   // before destruction.
   virtual void CleanUp() = 0;
 

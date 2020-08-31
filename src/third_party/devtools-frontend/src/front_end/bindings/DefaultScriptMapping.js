@@ -27,21 +27,29 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+import * as Workspace from '../workspace/workspace.js';
+
+import {ContentProviderBasedProject} from './ContentProviderBasedProject.js';
+import {DebuggerSourceMapping, DebuggerWorkspaceBinding} from './DebuggerWorkspaceBinding.js';  // eslint-disable-line no-unused-vars
+
 /**
- * @implements {Bindings.DebuggerSourceMapping}
+ * @implements {DebuggerSourceMapping}
  * @unrestricted
  */
-export default class DefaultScriptMapping {
+export class DefaultScriptMapping {
   /**
-   * @param {!SDK.DebuggerModel} debuggerModel
-   * @param {!Workspace.Workspace} workspace
-   * @param {!Bindings.DebuggerWorkspaceBinding} debuggerWorkspaceBinding
+   * @param {!SDK.DebuggerModel.DebuggerModel} debuggerModel
+   * @param {!Workspace.Workspace.WorkspaceImpl} workspace
+   * @param {!DebuggerWorkspaceBinding} debuggerWorkspaceBinding
    */
   constructor(debuggerModel, workspace, debuggerWorkspaceBinding) {
     this._debuggerModel = debuggerModel;
     this._debuggerWorkspaceBinding = debuggerWorkspaceBinding;
-    this._project = new Bindings.ContentProviderBasedProject(
-        workspace, 'debugger:' + debuggerModel.target().id(), Workspace.projectTypes.Debugger, '',
+    this._project = new ContentProviderBasedProject(
+        workspace, 'debugger:' + debuggerModel.target().id(), Workspace.Workspace.projectTypes.Debugger, '',
         true /* isServiceProject */);
     this._eventListeners = [
       debuggerModel.addEventListener(SDK.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this),
@@ -53,8 +61,8 @@ export default class DefaultScriptMapping {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @return {?SDK.Script}
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+   * @return {?SDK.Script.Script}
    */
   static scriptForUISourceCode(uiSourceCode) {
     const scripts = uiSourceCode[_scriptsSymbol];
@@ -64,7 +72,7 @@ export default class DefaultScriptMapping {
   /**
    * @override
    * @param {!SDK.DebuggerModel.Location} rawLocation
-   * @return {?Workspace.UILocation}
+   * @return {?Workspace.UISourceCode.UILocation}
    */
   rawLocationToUILocation(rawLocation) {
     const script = rawLocation.script();
@@ -82,7 +90,7 @@ export default class DefaultScriptMapping {
 
   /**
    * @override
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @param {number} lineNumber
    * @param {number} columnNumber
    * @return {!Array<!SDK.DebuggerModel.Location>}
@@ -100,14 +108,14 @@ export default class DefaultScriptMapping {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _parsedScriptSource(event) {
-    const script = /** @type {!SDK.Script} */ (event.data);
-    const name = Common.ParsedURL.extractName(script.sourceURL);
+    const script = /** @type {!SDK.Script.Script} */ (event.data);
+    const name = Common.ParsedURL.ParsedURL.extractName(script.sourceURL);
     const url = 'debugger:///VM' + script.scriptId + (name ? ' ' + name : '');
 
-    const uiSourceCode = this._project.createUISourceCode(url, Common.resourceTypes.Script);
+    const uiSourceCode = this._project.createUISourceCode(url, Common.ResourceType.resourceTypes.Script);
     uiSourceCode[this._scriptSymbol] = script;
     if (!uiSourceCode[_scriptsSymbol]) {
       uiSourceCode[_scriptsSymbol] = new Set([script]);
@@ -120,10 +128,10 @@ export default class DefaultScriptMapping {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _discardedScriptSource(event) {
-    const script = /** @type {!SDK.Script} */ (event.data);
+    const script = /** @type {!SDK.Script.Script} */ (event.data);
     const uiSourceCode = script[_uiSourceCodeSymbol];
     if (!uiSourceCode) {
       return;
@@ -142,7 +150,7 @@ export default class DefaultScriptMapping {
   }
 
   dispose() {
-    Common.EventTarget.removeEventListeners(this._eventListeners);
+    Common.EventTarget.EventTarget.removeEventListeners(this._eventListeners);
     this._debuggerReset();
     this._project.dispose();
   }
@@ -150,12 +158,3 @@ export default class DefaultScriptMapping {
 
 const _scriptsSymbol = Symbol('symbol');
 const _uiSourceCodeSymbol = Symbol('uiSourceCodeSymbol');
-
-/* Legacy exported object */
-self.Bindings = self.Bindings || {};
-
-/* Legacy exported object */
-Bindings = Bindings || {};
-
-/** @constructor */
-Bindings.DefaultScriptMapping = DefaultScriptMapping;

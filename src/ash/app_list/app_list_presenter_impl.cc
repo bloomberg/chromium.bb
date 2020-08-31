@@ -9,7 +9,9 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/search_box_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -17,6 +19,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
@@ -36,11 +39,10 @@
 namespace ash {
 namespace {
 
-constexpr std::array<int, 7> kIdsOfContainersThatWontHideAppList = {
-    kShellWindowId_AppListContainer,      kShellWindowId_HomeScreenContainer,
-    kShellWindowId_MenuContainer,         kShellWindowId_SettingBubbleContainer,
-    kShellWindowId_ShelfBubbleContainer,  kShellWindowId_ShelfContainer,
-    kShellWindowId_ShelfControlContainer,
+constexpr std::array<int, 6> kIdsOfContainersThatWontHideAppList = {
+    kShellWindowId_AppListContainer,     kShellWindowId_HomeScreenContainer,
+    kShellWindowId_MenuContainer,        kShellWindowId_SettingBubbleContainer,
+    kShellWindowId_ShelfBubbleContainer, kShellWindowId_ShelfContainer,
 };
 
 inline ui::Layer* GetLayer(views::Widget* widget) {
@@ -64,6 +66,26 @@ void DidPresentCompositorFrame(base::TimeTicks event_time_stamp,
     UMA_HISTOGRAM_TIMES(kAppListHideInputLatencyHistogram, input_latency);
   }
 }
+
+// Implicit animation observer that runs a scoped closure runner, and deletes
+// itself when the observed implicit animations complete.
+class CallbackRunnerLayerAnimationObserver
+    : public ui::ImplicitAnimationObserver {
+ public:
+  explicit CallbackRunnerLayerAnimationObserver(
+      base::ScopedClosureRunner closure_runner)
+      : closure_runner_(std::move(closure_runner)) {}
+  ~CallbackRunnerLayerAnimationObserver() override = default;
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    closure_runner_.RunAndReset();
+    delete this;
+  }
+
+ private:
+  base::ScopedClosureRunner closure_runner_;
+};
 
 }  // namespace
 
@@ -96,10 +118,10 @@ void AppListPresenterImpl::Show(int64_t display_id,
   if (is_target_visibility_show_) {
     // Launcher is always visible on the internal display when home launcher is
     // enabled in tablet mode.
-    if (display_id != GetDisplayId() && !delegate_->IsTabletMode()) {
-      Dismiss(event_time_stamp);
-    }
-    return;
+    if (delegate_->IsTabletMode() || display_id == GetDisplayId())
+      return;
+
+    Dismiss(event_time_stamp);
   }
 
   if (!delegate_->GetRootWindowForDisplayId(display_id)) {
@@ -165,15 +187,22 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   delegate_->OnClosing();
 
   OnVisibilityWillChange(GetTargetVisibility(), GetDisplayId());
-  view_->SetState(ash::AppListViewState::kClosed);
+  view_->SetState(AppListViewState::kClosed);
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));
+}
+
+void AppListPresenterImpl::SetViewVisibility(bool visible) {
+  if (!view_)
+    return;
+  view_->SetVisible(visible);
+  view_->search_box_view()->SetVisible(visible);
 }
 
 bool AppListPresenterImpl::HandleCloseOpenFolder() {
   return is_target_visibility_show_ && view_ && view_->HandleCloseOpenFolder();
 }
 
-ash::ShelfAction AppListPresenterImpl::ToggleAppList(
+ShelfAction AppListPresenterImpl::ToggleAppList(
     int64_t display_id,
     AppListShowSource show_source,
     base::TimeTicks event_time_stamp) {
@@ -181,27 +210,27 @@ ash::ShelfAction AppListPresenterImpl::ToggleAppList(
                             show_source == kShelfButtonFullscreen;
   // Dismiss or show based on the target visibility because the show/hide
   // animation can be reversed.
-  if (is_target_visibility_show_) {
+  if (is_target_visibility_show_ && GetDisplayId() == display_id) {
     if (request_fullscreen) {
-      if (view_->app_list_state() == ash::AppListViewState::kPeeking) {
-        view_->SetState(ash::AppListViewState::kFullscreenAllApps);
-        return ash::SHELF_ACTION_APP_LIST_SHOWN;
-      } else if (view_->app_list_state() == ash::AppListViewState::kHalf) {
-        view_->SetState(ash::AppListViewState::kFullscreenSearch);
-        return ash::SHELF_ACTION_APP_LIST_SHOWN;
+      if (view_->app_list_state() == AppListViewState::kPeeking) {
+        view_->SetState(AppListViewState::kFullscreenAllApps);
+        return SHELF_ACTION_APP_LIST_SHOWN;
+      } else if (view_->app_list_state() == AppListViewState::kHalf) {
+        view_->SetState(AppListViewState::kFullscreenSearch);
+        return SHELF_ACTION_APP_LIST_SHOWN;
       }
     }
     Dismiss(event_time_stamp);
-    return ash::SHELF_ACTION_APP_LIST_DISMISSED;
+    return SHELF_ACTION_APP_LIST_DISMISSED;
   }
   Show(display_id, event_time_stamp);
   if (request_fullscreen)
-    view_->SetState(ash::AppListViewState::kFullscreenAllApps);
-  return ash::SHELF_ACTION_APP_LIST_SHOWN;
+    view_->SetState(AppListViewState::kFullscreenAllApps);
+  return SHELF_ACTION_APP_LIST_SHOWN;
 }
 
 bool AppListPresenterImpl::IsVisibleDeprecated() const {
-  return delegate_->IsVisible();
+  return delegate_->IsVisible(GetDisplayId());
 }
 
 bool AppListPresenterImpl::IsAtLeastPartiallyVisible() const {
@@ -214,7 +243,7 @@ bool AppListPresenterImpl::GetTargetVisibility() const {
   return is_target_visibility_show_;
 }
 
-void AppListPresenterImpl::UpdateYPositionAndOpacity(int y_position_in_screen,
+void AppListPresenterImpl::UpdateYPositionAndOpacity(float y_position_in_screen,
                                                      float background_opacity) {
   if (!is_target_visibility_show_)
     return;
@@ -223,8 +252,7 @@ void AppListPresenterImpl::UpdateYPositionAndOpacity(int y_position_in_screen,
     view_->UpdateYPositionAndOpacity(y_position_in_screen, background_opacity);
 }
 
-void AppListPresenterImpl::EndDragFromShelf(
-    ash::AppListViewState app_list_state) {
+void AppListPresenterImpl::EndDragFromShelf(AppListViewState app_list_state) {
   if (view_)
     view_->EndDragFromShelf(app_list_state);
 }
@@ -236,7 +264,7 @@ void AppListPresenterImpl::ProcessMouseWheelOffset(
 }
 
 void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
-    int y_position_in_screen,
+    float y_position_in_screen,
     float opacity,
     base::Optional<TabletModeAnimationTransition> transition,
     UpdateHomeLauncherAnimationSettingsCallback callback) {
@@ -255,7 +283,7 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
   }
 
   const gfx::Transform translation(1.f, 0.f, 0.f, 1.f, 0.f,
-                                   static_cast<float>(y_position_in_screen));
+                                   y_position_in_screen);
   if (layer->GetAnimator()->is_animating()) {
     layer->GetAnimator()->StopAnimating();
 
@@ -267,6 +295,16 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
   if (!callback.is_null()) {
     settings.emplace(layer->GetAnimator());
     callback.Run(&settings.value());
+
+    // Disable suggestion chips blur during animations to improve performance.
+    base::ScopedClosureRunner blur_disabler =
+        view_->app_list_main_view()
+            ->contents_view()
+            ->apps_container_view()
+            ->DisableSuggestionChipsBlur();
+    // The observer will delete itself when the animations are completed.
+    settings->AddObserver(
+        new CallbackRunnerLayerAnimationObserver(std::move(blur_disabler)));
   }
 
   // The animation metrics reporter will run for opacity and transform
@@ -314,6 +352,16 @@ void AppListPresenterImpl::UpdateScaleAndOpacityForHomeLauncher(
   if (!callback.is_null()) {
     settings.emplace(layer->GetAnimator());
     callback.Run(&settings.value());
+
+    // Disable suggestion chips blur during animations to improve performance.
+    base::ScopedClosureRunner blur_disabler =
+        view_->app_list_main_view()
+            ->contents_view()
+            ->apps_container_view()
+            ->DisableSuggestionChipsBlur();
+    // The observer will delete itself when the animations are completed.
+    settings->AddObserver(
+        new CallbackRunnerLayerAnimationObserver(std::move(blur_disabler)));
   }
 
   // The animation metrics reporter will run for opacity and transform
@@ -396,7 +444,7 @@ void AppListPresenterImpl::ResetView() {
   view_ = nullptr;
 }
 
-int64_t AppListPresenterImpl::GetDisplayId() {
+int64_t AppListPresenterImpl::GetDisplayId() const {
   views::Widget* widget = view_ ? view_->GetWidget() : nullptr;
   if (!widget)
     return display::kInvalidDisplayId;
@@ -454,17 +502,10 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
                        (IsAtLeastPartiallyVisible() && !app_list_lost_focus);
 
   if (delegate_->IsTabletMode()) {
-    if (visible != delegate_->IsVisible()) {
-      if (app_list_gained_focus) {
+    if (visible != delegate_->IsVisible(GetDisplayId())) {
+      if (app_list_gained_focus)
         view_->OnHomeLauncherGainingFocusWithoutAnimation();
-      } else {
-        // In tablet mode, when |AppList| lost focus after other new App window
-        // opened, we should perform "back" action on the active page, e.g.
-        // close the search box or the embedded Assistant UI if it's opened.
-        view_->Back();
-      }
 
-      OnVisibilityWillChange(visible, GetDisplayId());
       OnVisibilityChanged(visible, GetDisplayId());
     }
   }
@@ -513,7 +554,6 @@ void AppListPresenterImpl::OnWidgetDestroyed(views::Widget* widget) {
 void AppListPresenterImpl::OnWidgetVisibilityChanged(views::Widget* widget,
                                                      bool visible) {
   DCHECK_EQ(view_->GetWidget(), widget);
-  OnVisibilityWillChange(visible, GetDisplayId());
   OnVisibilityChanged(visible, GetDisplayId());
 }
 

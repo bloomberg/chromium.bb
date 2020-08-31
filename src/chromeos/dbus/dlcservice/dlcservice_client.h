@@ -31,13 +31,21 @@ namespace chromeos {
 // https://chromium.git.corp.google.com/chromiumos/platform2/+/HEAD/dlcservice
 class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
  public:
-  // The callback used for |Install()|, if the error is something other than
-  // |dlcservice::kErrorNone| the call has failed. For large DLC(s) to install,
-  // there may be delay between the time of this call and the callback being
-  // invoked.
-  using InstallCallback = base::OnceCallback<void(
-      const std::string& err,
-      const dlcservice::DlcModuleList& dlc_module_list)>;
+  // This object is returned as the result of DLC install success or failure.
+  struct InstallResult {
+    // The error associated with the install. |dlcservice::kErrorNone| indicates
+    // a success. Any other error code, indicates a failure.
+    std::string error;
+    // The unique DLC ID which was requested to be installed.
+    std::string dlc_id;
+    // The path where the DLC is available for users to use.
+    std::string root_path;
+  };
+
+  // The callback used for |Install()|. For large DLC(s) to install, there may
+  // be a delay between the time of this call and the callback being invoked.
+  using InstallCallback =
+      base::OnceCallback<void(const InstallResult& install_result)>;
 
   // The callback used for |Install()|, if the caller wants to listen in on the
   // progress of their download/install. If the caller only cares for whether
@@ -49,30 +57,46 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
   // |dlcservice::kErrorNone| the call has failed.
   using UninstallCallback = base::OnceCallback<void(const std::string& err)>;
 
-  // The callback used for |GetInstalled()|, if the error is something other
-  // than |dlcservice::kErrorNone| the call has failed. It is very rare case for
-  // |GetInstalled()| call to fail.
-  using GetInstalledCallback = base::OnceCallback<void(
+  // The callback used for |Purge()|, if the error is something other than
+  // |dlcservice::kErrorNone| the call has failed.
+  using PurgeCallback = base::OnceCallback<void(const std::string& err)>;
+
+  // The callback used for |GetExistingDlcs()|, if the error is something other
+  // than |dlcservice::kErrorNone| the call has failed. It is a very rare case
+  // for |GetExistingDlcs()| call to fail.
+  using GetExistingDlcsCallback = base::OnceCallback<void(
       const std::string& err,
-      const dlcservice::DlcModuleList& dlc_module_list)>;
+      const dlcservice::DlcsWithContent& dlcs_with_content)>;
 
   // The callback to use for |Install()|, if the caller wants to ignore the
   // progress updates.
   static const ProgressCallback IgnoreProgress;
 
-  // Installs all DLC(s) passed in while reporting progress through the progress
+  // Installs the DLC passed in while reporting progress through the progress
   // callback and only calls install callback on install success/failure.
-  virtual void Install(const dlcservice::DlcModuleList& dlc_module_list,
+  virtual void Install(const std::string& dlc_id,
                        InstallCallback callback,
                        ProgressCallback progress_callback) = 0;
 
   // Uninstalls a single DLC and calls the callback with indication of
-  // success/failure.
+  // success/failure. Uninstalling disables the DLC but does not remove the DLC
+  // from disk. After each uninstallation, a refcount to the DLC is decremented.
+  // Once the refcount reaches 0, the DLC will remain in cache. However, if
+  // the DLC is not installed within a window of time after reaching a
+  // refcount of 0, the DLC will be purged automatically.
   virtual void Uninstall(const std::string& dlc_id,
                          UninstallCallback callback) = 0;
 
-  // Provides the DLC(s) information such as id and root mount point.
-  virtual void GetInstalled(GetInstalledCallback callback) = 0;
+  // Purges a single DLC and calls the callback with indication of
+  // success/failure. Purging removes the DLC entirely from disk, regardless if
+  // the DLC has been uninstalled or if there is a nonzero installed refcount.
+  virtual void Purge(const std::string& dlc_id,
+                     PurgeCallback purge_callback) = 0;
+
+  // Provides the DLC(s) information such as:
+  // id, name, description, used_bytes_on_disk. (reference
+  // |dlcservice::DlcsWithContent| proto for complete details)
+  virtual void GetExistingDlcs(GetExistingDlcsCallback callback) = 0;
 
   // During testing, can be used to mimic signals received back from dlcservice.
   virtual void OnInstallStatusForTest(dbus::Signal* signal) = 0;

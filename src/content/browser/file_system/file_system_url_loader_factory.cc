@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -39,8 +40,8 @@
 #include "net/base/mime_util.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
@@ -103,9 +104,11 @@ class FileSystemEntryURLLoader
       : params_(std::move(params)) {}
 
   // network::mojom::URLLoader:
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      const base::Optional<GURL>& new_url) override {}
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers,
+      const base::Optional<GURL>& new_url) override {}
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
   void PauseReadingBodyFromNet() override {}
@@ -306,15 +309,15 @@ class FileSystemDirectoryURLLoader : public FileSystemEntryURLLoader {
     const DirectoryEntry& entry = entries_[index];
     const FileSystemURL entry_url =
         params_.file_system_context->CreateCrackedFileSystemURL(
-            url_.origin().GetURL(), url_.type(),
+            url_.origin(), url_.type(),
             url_.path().Append(base::FilePath(entry.name)));
     DCHECK(entry_url.is_valid());
     params_.file_system_context->operation_runner()->GetMetadata(
         entry_url,
         FileSystemOperation::GET_METADATA_FIELD_SIZE |
             FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
-        base::BindRepeating(&FileSystemDirectoryURLLoader::DidGetMetadata,
-                            base::AsWeakPtr(this), index));
+        base::BindOnce(&FileSystemDirectoryURLLoader::DidGetMetadata,
+                       base::AsWeakPtr(this), index));
   }
 
   void DidGetMetadata(size_t index,
@@ -354,13 +357,13 @@ class FileSystemDirectoryURLLoader : public FileSystemEntryURLLoader {
       return;
     }
 
-    network::ResourceResponseHead head;
-    head.mime_type = "text/html";
-    head.charset = "utf-8";
-    head.content_length = data_.size();
-    head.headers = CreateHttpResponseHeaders(200);
+    auto head = network::mojom::URLResponseHead::New();
+    head->mime_type = "text/html";
+    head->charset = "utf-8";
+    head->content_length = data_.size();
+    head->headers = CreateHttpResponseHeaders(200);
 
-    client_->OnReceiveResponse(head);
+    client_->OnReceiveResponse(std::move(head));
     client_->OnStartLoadingResponseBody(std::move(consumer_handle));
 
     data_producer_ =
@@ -460,11 +463,11 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
       net::RedirectInfo redirect_info;
       redirect_info.new_method = "GET";
       redirect_info.status_code = 301;
-      head_.headers = CreateHttpResponseHeaders(redirect_info.status_code);
+      head_->headers = CreateHttpResponseHeaders(redirect_info.status_code);
       redirect_info.new_url =
           original_request_.url.ReplaceComponents(replacements);
-      head_.encoded_data_length = 0;
-      client_->OnReceiveRedirect(redirect_info, head_);
+      head_->encoded_data_length = 0;
+      client_->OnReceiveRedirect(redirect_info, std::move(head_));
       return;
     }
 
@@ -491,10 +494,10 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
       return;
     }
 
-    head_.mime_type = "text/html";  // Will sniff file and possibly override.
-    head_.charset = "utf-8";
-    head_.content_length = remaining_bytes_;
-    head_.headers = CreateHttpResponseHeaders(200);
+    head_->mime_type = "text/html";  // Will sniff file and possibly override.
+    head_->charset = "utf-8";
+    head_->content_length = remaining_bytes_;
+    head_->headers = CreateHttpResponseHeaders(200);
 
     data_producer_ =
         std::make_unique<mojo::DataPipeProducer>(std::move(producer_handle));
@@ -512,7 +515,7 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
       if (consumer_handle_.is_valid()) {
         // This was an empty file; make sure to call OnReceiveResponse and
         // OnStartLoadingResponseBody regardless.
-        client_->OnReceiveResponse(head_);
+        client_->OnReceiveResponse(std::move(head_));
         client_->OnStartLoadingResponseBody(std::move(consumer_handle_));
       }
       OnFileWritten(MOJO_RESULT_OK);
@@ -542,11 +545,11 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
         GetMimeType(url_, &type_hint);
         SniffMimeType(file_data_->data(), result, url_.ToGURL(), type_hint,
                       net::ForceSniffFileUrlsForHtml::kDisabled,
-                      &head_.mime_type);
-        head_.did_mime_sniff = true;
+                      &head_->mime_type);
+        head_->did_mime_sniff = true;
       }
 
-      client_->OnReceiveResponse(head_);
+      client_->OnReceiveResponse(std::move(head_));
       client_->OnStartLoadingResponseBody(std::move(consumer_handle_));
     }
     remaining_bytes_ -= result;
@@ -586,7 +589,8 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
   std::unique_ptr<FileStreamReader> reader_;
   scoped_refptr<net::IOBuffer> file_data_;
-  network::ResourceResponseHead head_;
+  network::mojom::URLResponseHeadPtr head_ =
+      network::mojom::URLResponseHead::New();
   const network::ResourceRequest original_request_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 

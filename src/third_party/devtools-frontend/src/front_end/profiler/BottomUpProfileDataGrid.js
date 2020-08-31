@@ -28,13 +28,20 @@
 // each child still represent the root node. We have to be particularly careful of recursion with this mode
 // because a root node can represent itself AND an ancestor.
 
+import * as Platform from '../platform/platform.js';
+import * as SDK from '../sdk/sdk.js';  // eslint-disable-line no-unused-vars
+import * as UI from '../ui/ui.js';     // eslint-disable-line no-unused-vars
+
+import {Formatter, ProfileDataGridNode, ProfileDataGridTree} from './ProfileDataGrid.js';  // eslint-disable-line no-unused-vars
+import {TopDownProfileDataGridTree} from './TopDownProfileDataGrid.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
-Profiler.BottomUpProfileDataGridNode = class extends Profiler.ProfileDataGridNode {
+export class BottomUpProfileDataGridNode extends ProfileDataGridNode {
   /**
-   * @param {!SDK.ProfileNode} profileNode
-   * @param {!Profiler.TopDownProfileDataGridTree} owningTree
+   * @param {!SDK.ProfileTreeModel.ProfileNode} profileNode
+   * @param {!TopDownProfileDataGridTree} owningTree
    */
   constructor(profileNode, owningTree) {
     super(profileNode, owningTree, !!profileNode.parent && !!profileNode.parent.parent);
@@ -42,7 +49,7 @@ Profiler.BottomUpProfileDataGridNode = class extends Profiler.ProfileDataGridNod
   }
 
   /**
-   * @param {!Profiler.BottomUpProfileDataGridNode|!Profiler.BottomUpProfileDataGridTree} container
+   * @param {!BottomUpProfileDataGridNode|!BottomUpProfileDataGridTree} container
    */
   static _sharedPopulate(container) {
     const remainingNodeInfos = container._remainingNodeInfos;
@@ -66,8 +73,7 @@ Profiler.BottomUpProfileDataGridNode = class extends Profiler.ProfileDataGridNod
       } else {
         // If not, add it as a true ancestor.
         // In heavy mode, we take our visual identity from ancestor node...
-        child = new Profiler.BottomUpProfileDataGridNode(
-            ancestor, /** @type {!Profiler.TopDownProfileDataGridTree} */ (container.tree));
+        child = new BottomUpProfileDataGridNode(ancestor, /** @type {!TopDownProfileDataGridTree} */ (container.tree));
 
         if (ancestor !== focusNode) {
           // But the actual statistics from the "root" node (bottom of the callstack).
@@ -89,7 +95,7 @@ Profiler.BottomUpProfileDataGridNode = class extends Profiler.ProfileDataGridNod
   }
 
   /**
-   * @param {!Profiler.ProfileDataGridNode} profileDataGridNode
+   * @param {!ProfileDataGridNode} profileDataGridNode
    */
   _takePropertiesFromProfileDataGridNode(profileDataGridNode) {
     this.save();
@@ -99,7 +105,7 @@ Profiler.BottomUpProfileDataGridNode = class extends Profiler.ProfileDataGridNod
 
   /**
    * When focusing, we keep just the members of the callstack.
-   * @param {!Profiler.ProfileDataGridNode} child
+   * @param {!ProfileDataGridNode} child
    */
   _keepOnlyChild(child) {
     this.save();
@@ -145,7 +151,7 @@ Profiler.BottomUpProfileDataGridNode = class extends Profiler.ProfileDataGridNod
 
   /**
    * @override
-   * @param {!Profiler.ProfileDataGridNode} child
+   * @param {!ProfileDataGridNode} child
    * @param {boolean} shouldAbsorb
    */
   merge(child, shouldAbsorb) {
@@ -157,7 +163,7 @@ Profiler.BottomUpProfileDataGridNode = class extends Profiler.ProfileDataGridNod
    * @override
    */
   populateChildren() {
-    Profiler.BottomUpProfileDataGridNode._sharedPopulate(this);
+    BottomUpProfileDataGridNode._sharedPopulate(this);
   }
 
   _willHaveChildren(profileNode) {
@@ -165,17 +171,16 @@ Profiler.BottomUpProfileDataGridNode = class extends Profiler.ProfileDataGridNod
     // However, we don't want to show the very top parent since it is redundant.
     return !!(profileNode.parent && profileNode.parent.parent);
   }
-};
-
+}
 
 /**
  * @unrestricted
  */
-Profiler.BottomUpProfileDataGridTree = class extends Profiler.ProfileDataGridTree {
+export class BottomUpProfileDataGridTree extends ProfileDataGridTree {
   /**
-   * @param {!Profiler.ProfileDataGridNode.Formatter} formatter
-   * @param {!UI.SearchableView} searchableView
-   * @param {!SDK.ProfileNode} rootProfileNode
+   * @param {!Formatter} formatter
+   * @param {!UI.SearchableView.SearchableView} searchableView
+   * @param {!SDK.ProfileTreeModel.ProfileNode} rootProfileNode
    * @param {number} total
    */
   constructor(formatter, searchableView, rootProfileNode, total) {
@@ -237,14 +242,14 @@ Profiler.BottomUpProfileDataGridTree = class extends Profiler.ProfileDataGridTre
     }
 
     // Populate the top level nodes.
-    Profiler.ProfileDataGridNode.populate(this);
+    ProfileDataGridNode.populate(this);
 
     return this;
   }
 
   /**
    * When focusing, we keep the entire callstack up to this ancestor.
-   * @param {!Profiler.ProfileDataGridNode} profileDataGridNode
+   * @param {!ProfileDataGridNode} profileDataGridNode
    */
   focus(profileDataGridNode) {
     if (!profileDataGridNode) {
@@ -256,13 +261,13 @@ Profiler.BottomUpProfileDataGridTree = class extends Profiler.ProfileDataGridTre
     let currentNode = profileDataGridNode;
     let focusNode = profileDataGridNode;
 
-    while (currentNode.parent && (currentNode instanceof Profiler.ProfileDataGridNode)) {
+    while (currentNode.parent && (currentNode instanceof ProfileDataGridNode)) {
       currentNode._takePropertiesFromProfileDataGridNode(profileDataGridNode);
 
       focusNode = currentNode;
       currentNode = currentNode.parent;
 
-      if (currentNode instanceof Profiler.ProfileDataGridNode) {
+      if (currentNode instanceof ProfileDataGridNode) {
         currentNode._keepOnlyChild(focusNode);
       }
     }
@@ -272,7 +277,7 @@ Profiler.BottomUpProfileDataGridTree = class extends Profiler.ProfileDataGridTre
   }
 
   /**
-   * @param {!Profiler.ProfileDataGridNode} profileDataGridNode
+   * @param {!ProfileDataGridNode} profileDataGridNode
    */
   exclude(profileDataGridNode) {
     if (!profileDataGridNode) {
@@ -287,7 +292,7 @@ Profiler.BottomUpProfileDataGridTree = class extends Profiler.ProfileDataGridTre
     // If we have a top level node that is excluded, get rid of it completely (not keeping children),
     // since bottom up data relies entirely on the root node.
     if (excludedTopLevelChild) {
-      this.children.remove(excludedTopLevelChild);
+      Platform.ArrayUtilities.removeElement(this.children, excludedTopLevelChild);
     }
 
     const children = this.children;
@@ -306,6 +311,6 @@ Profiler.BottomUpProfileDataGridTree = class extends Profiler.ProfileDataGridTre
    * @override
    */
   populateChildren() {
-    Profiler.BottomUpProfileDataGridNode._sharedPopulate(this);
+    BottomUpProfileDataGridNode._sharedPopulate(this);
   }
-};
+}

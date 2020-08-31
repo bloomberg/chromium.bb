@@ -6,8 +6,6 @@
 
 from __future__ import print_function
 
-# pylint: disable=W0613
-
 import base64
 import collections
 import datetime
@@ -19,13 +17,6 @@ import socket
 import sys
 import threading
 import time
-import urllib
-# pylint: disable=ungrouped-imports
-# pylint: disable=no-name-in-module
-if sys.version_info.major == 2:
-  import urlparse # Python 2
-else:
-  from urllib import parse as urlparse # Python 3
 import webbrowser
 
 from utils import tools
@@ -33,16 +24,23 @@ tools.force_local_third_party()
 
 # third_party/
 import httplib2
-import rsa
+from oauth2client import client
+from oauth2client.contrib import locked_file
+# Handle the internal use case, where multistore_file has
+# 2 copies in oauth2client. One is in root folder, one is
+# in contrib folder.
+try:
+  from oauth2client.contrib import multistore_file
+except ImportError:
+  from oauth2client import multistore_file
 from pyasn1.codec.der import decoder
 from pyasn1.type import univ
-from oauth2client import client
-from oauth2client import locked_file
-from oauth2client import multistore_file
 import requests
+import rsa
+import six
+from six.moves import BaseHTTPServer, urllib
 
 from libs import luci_context
-from six.moves import BaseHTTPServer
 
 
 # Path to a file with cached OAuth2 credentials used by default. Can be
@@ -321,9 +319,9 @@ def create_access_token(urlhost, config, allow_user_interaction):
       return None
 
     # Body of token refresh request (with JWT assertion signed with secret key).
-    body = urllib.urlencode({
-      'assertion': _make_assertion_jwt(service_account),
-      'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+    body = urllib.parse.urlencode({
+        'assertion': _make_assertion_jwt(service_account),
+        'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
     })
 
     # Exchange it for access_token.
@@ -438,9 +436,8 @@ def _fetch_service_config(urlhost):
     # attacker needs some process running on user's machine to successfully
     # complete the flow and grab access_token. When you have malicious code
     # running on your machine you're screwed anyway.
-    response = requests.get(
-        '%s/auth/api/v1/server/oauth_config' % urlhost.rstrip('/'),
-        verify=tools.get_cacerts_bundle())
+    url = '%s/auth/api/v1/server/oauth_config' % urlhost.rstrip('/')
+    response = requests.get(url, verify=tools.get_cacerts_bundle())
     if response.status_code == 200:
       try:
         config = response.json()
@@ -454,7 +451,7 @@ def _fetch_service_config(urlhost):
         logging.error('Invalid response from the service: %s', err)
     else:
       logging.warning(
-          'Error when fetching oauth_config, HTTP status code %d',
+          'Error when fetching oauth_config from %s, HTTP status code %d', url,
           response.status_code)
     return None
 
@@ -475,7 +472,11 @@ def _monkey_patch_oauth2client_locked_file():
   for a few ms, there's a risk of one getting the lock of another instance, and
   this raises, particularly on Windows. Workaround by enforcing retry.
   """
-  locked_file.LockedFile.open_and_lock.im_func.func_defaults = (60, 0.05)
+  if six.PY2:
+    # Python2 does not allow to replace __defaults__.
+    locked_file.LockedFile.open_and_lock.__func__.func_defaults = (60, 0.05)
+  else:
+    locked_file.LockedFile.open_and_lock.__defaults__ = (60, 0.05)
 
 
 # Service account related code.
@@ -511,8 +512,8 @@ def _parse_private_key(pem):
     der = rsa.pem.load_pem(pem, 'PRIVATE KEY')
     keyinfo, _ = decoder.decode(der)
     if keyinfo[1][0] != univ.ObjectIdentifier('1.2.840.113549.1.1.1'):
-        raise BadServiceAccountCredentials(
-            'Not a DER-encoded OpenSSL private RSA key')
+      raise BadServiceAccountCredentials(
+          'Not a DER-encoded OpenSSL private RSA key')
     private_key_der = keyinfo[2].asOctets()
   except IndexError:
     raise BadServiceAccountCredentials(
@@ -721,8 +722,8 @@ def _get_luci_context_access_token(local_auth):
       headers={'Content-Type': 'application/json'})
   if resp.status != 200:
     logging.error(
-        'local_auth: Failed to grab access token from LUCI context server: %r',
-        content)
+        'local_auth: Failed to grab access token for %s from LUCI context '
+        'server: %r', local_auth.default_account_id, content)
     return None
 
   try:
@@ -806,7 +807,7 @@ class ClientRedirectHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.send_header('Content-type', 'text/html')
     self.end_headers()
     query = self.path.split('?', 1)[-1]
-    query = dict(urlparse.parse_qsl(query))
+    query = dict(urllib.parse.parse_qsl(query))
     self.server.query_params = query
     self.wfile.write('<html><head><title>Authentication Status</title></head>')
     self.wfile.write('<body><p>The authentication flow has completed.</p>')

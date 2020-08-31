@@ -238,14 +238,6 @@ class RTC_EXPORT BasicNetworkManager : public NetworkManagerBase,
     network_ignore_list_ = list;
   }
 
-#if defined(WEBRTC_LINUX)
-  // Sets the flag for ignoring non-default routes.
-  // Defaults to false.
-  void set_ignore_non_default_routes(bool value) {
-    ignore_non_default_routes_ = value;
-  }
-#endif
-
  protected:
 #if defined(WEBRTC_POSIX)
   // Separated from CreateNetworks for tests.
@@ -286,7 +278,6 @@ class RTC_EXPORT BasicNetworkManager : public NetworkManagerBase,
   bool sent_first_update_;
   int start_count_;
   std::vector<std::string> network_ignore_list_;
-  bool ignore_non_default_routes_;
   std::unique_ptr<NetworkMonitorInterface> network_monitor_;
 };
 
@@ -418,6 +409,21 @@ class RTC_EXPORT Network {
 
   bool IsVpn() const { return type_ == ADAPTER_TYPE_VPN; }
 
+  bool IsCellular() const { return IsCellular(type_); }
+
+  static bool IsCellular(AdapterType type) {
+    switch (type) {
+      case ADAPTER_TYPE_CELLULAR:
+      case ADAPTER_TYPE_CELLULAR_2G:
+      case ADAPTER_TYPE_CELLULAR_3G:
+      case ADAPTER_TYPE_CELLULAR_4G:
+      case ADAPTER_TYPE_CELLULAR_5G:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   uint16_t GetCost() const;
   // A unique id assigned by the network manager, which may be signaled
   // to the remote side in the candidate.
@@ -456,6 +462,7 @@ class RTC_EXPORT Network {
   int preference_;
   bool active_ = true;
   uint16_t id_ = 0;
+  bool use_differentiated_cellular_costs_ = false;
 
   friend class NetworkManager;
 };

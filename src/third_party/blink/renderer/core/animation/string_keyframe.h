@@ -81,7 +81,10 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
 
   bool HasCssProperty() const;
 
-  void AddKeyframePropertiesToV8Object(V8ObjectBuilder&) const override;
+  void AddKeyframePropertiesToV8Object(V8ObjectBuilder&,
+                                       Element*) const override;
+
+  Keyframe* Clone() const override;
 
   void Trace(Visitor*) override;
 
@@ -109,6 +112,7 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
     }
 
     bool IsNeutral() const final { return !value_; }
+    bool IsRevert() const final;
     Keyframe::PropertySpecificKeyframe* NeutralKeyframe(
         double offset,
         scoped_refptr<TimingFunction> easing) const final;
@@ -145,6 +149,7 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
     }
 
     bool IsNeutral() const final { return value_.IsNull(); }
+    bool IsRevert() const final { return false; }
     PropertySpecificKeyframe* NeutralKeyframe(
         double offset,
         scoped_refptr<TimingFunction> easing) const final;
@@ -156,7 +161,6 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
   };
 
  private:
-  Keyframe* Clone() const override;
   Keyframe::PropertySpecificKeyframe* CreatePropertySpecificKeyframe(
       const PropertyHandle&,
       EffectModel::CompositeOperation effect_composite,
@@ -194,21 +198,24 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
 using CSSPropertySpecificKeyframe = StringKeyframe::CSSPropertySpecificKeyframe;
 using SVGPropertySpecificKeyframe = StringKeyframe::SVGPropertySpecificKeyframe;
 
-DEFINE_TYPE_CASTS(StringKeyframe,
-                  Keyframe,
-                  value,
-                  value->IsStringKeyframe(),
-                  value.IsStringKeyframe());
-DEFINE_TYPE_CASTS(CSSPropertySpecificKeyframe,
-                  Keyframe::PropertySpecificKeyframe,
-                  value,
-                  value->IsCSSPropertySpecificKeyframe(),
-                  value.IsCSSPropertySpecificKeyframe());
-DEFINE_TYPE_CASTS(SVGPropertySpecificKeyframe,
-                  Keyframe::PropertySpecificKeyframe,
-                  value,
-                  value->IsSVGPropertySpecificKeyframe(),
-                  value.IsSVGPropertySpecificKeyframe());
+template <>
+struct DowncastTraits<StringKeyframe> {
+  static bool AllowFrom(const Keyframe& value) {
+    return value.IsStringKeyframe();
+  }
+};
+template <>
+struct DowncastTraits<CSSPropertySpecificKeyframe> {
+  static bool AllowFrom(const Keyframe::PropertySpecificKeyframe& value) {
+    return value.IsCSSPropertySpecificKeyframe();
+  }
+};
+template <>
+struct DowncastTraits<SVGPropertySpecificKeyframe> {
+  static bool AllowFrom(const Keyframe::PropertySpecificKeyframe& value) {
+    return value.IsSVGPropertySpecificKeyframe();
+  }
+};
 
 }  // namespace blink
 

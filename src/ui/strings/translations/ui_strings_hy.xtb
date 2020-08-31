@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Առավելացնել</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, տեղադրված հավելված</translation>
 <translation id="1450753235335490080">Չհաջողվեց ուղարկել բովանդակությունը (<ph name="CONTENT_TYPE" />)</translation>
+<translation id="1487931858675166540">«<ph name="FIRST_ITEM_TITLE" />» և «<ph name="SECOND_ITEM_TITLE" />» տարրերը տեղերով փոխվեցին</translation>
 <translation id="1498028757988366001">Դուք նախկինում որոնել եք սա: Եթե ջնջեք «<ph name="QUERY" />» հարցումը պատմությունից, այն ընդմիշտ կհեռացվի ձեր բոլոր սարքերից, որտեղ մուտք եք գործել հաշիվ։</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 րոպե }one{# րոպե }other{# րոպե }}</translation>
 <translation id="1643823602425662293">Ծանուցում</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Ընտրել &amp;բոլորը</translation>
-<translation id="1938451708255335766">Միջերեսի նոր կարգավորումները կիրառելու համար վերագործարկեք հավելվածը:</translation>
 <translation id="2006524834898217237">Համոզվեք, որ սարքը միացված է ինտերնետին։</translation>
 <translation id="208586643495776849">Նորից փորձեք</translation>
 <translation id="2090963878406559571">Համարը <ph name="ORIGIN" /> կայքից ձեր Android հեռախոսին ուղարկելու համար <ph name="TROUBLESHOOT_LINK" /> սարքերի համար կարգավորումներում։</translation>
@@ -48,7 +48,7 @@
 <translation id="2161656808144014275">Տեքստ</translation>
 <translation id="2168039046890040389">Էջը վեր</translation>
 <translation id="2190355936436201913">(դատարկ)</translation>
-<translation id="2192232475740621500">Ցուցադրել ավելի քիչ պատուհաններ</translation>
+<translation id="2192232475740621500">Ցույց տալ ավելի քիչ պատուհաններ</translation>
 <translation id="219905428774326614">Գործարկիչ, բոլոր հավելվածները</translation>
 <translation id="2267918077332197517">Արգելափակել այս կայքի բոլոր ծանուցումները</translation>
 <translation id="2289052229480071835">Ձեր էկրանին հպեք ինտերակտիվ տարրերին:</translation>
@@ -57,7 +57,7 @@
 <translation id="2353636109065292463">Ինտերնետ կապի ստուգում</translation>
 <translation id="2388990488038464401">Զանգե՞լ այս համարին ձեր հեռախոսից</translation>
 <translation id="24452542372838207">Ընդարձակել</translation>
-<translation id="2445449901874883781">Ցուցադրել ավելի շատ պատուհաններ</translation>
+<translation id="2445449901874883781">Ցույց տալ ավելի շատ պատուհաններ</translation>
 <translation id="2482878487686419369">Ծանուցումներ</translation>
 <translation id="2497284189126895209">Բոլոր ֆայլերը</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Վար սլաք</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 օր}one{# օր}other{# օր}}</translation>
 <translation id="3295886253693811851">Զանգել հավելվածից</translation>
+<translation id="3306688585798492231">Ներկառուցված էկրան</translation>
 <translation id="335581015389089642">Speech</translation>
 <translation id="3389286852084373014">Տեքստը չափազանց մեծ է</translation>
-<translation id="3479552764303398839">Հիմա չէ</translation>
 <translation id="348799646910989694">Դարակն ավտոմատ թաքցվում է</translation>
 <translation id="3554637740840164787">«<ph name="ITEM_TITLE" />» տարրն ամրացվեց</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Մնացել է 1 օր}one{Մնացել է # օր}other{Մնացել է # օր}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">Շարունակեք կարդալ «<ph name="TITLE" />» շարժական սարքից</translation>
 <translation id="385051799172605136">Հետ</translation>
 <translation id="3889424535448813030">Աջ սլաք</translation>
-<translation id="3892641579809465218">Ներկառուցված մոնիտոր</translation>
 <translation id="3897092660631435901">Ընտրացանկ</translation>
 <translation id="3909791450649380159">Կտ&amp;րել</translation>
 <translation id="3990502903496589789">Աջ եզր</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 րոպե}one{# րոպե}other{# րոպե}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Այսօր ակտիվ է եղել}=1{Ակտիվ է եղել 1 օր առաջ}one{Ակտիվ է եղել # օր առաջ}other{Ակտիվ է եղել # օր առաջ}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 օր }one{# օր }other{# օր }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 տ-ուց}one{# տ-ուց}other{# տ-ուց}}</translation>
-<translation id="5895138241574237353">Վերագործարկել</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Մնացել է 1 վայրկյան}one{Մնացել է # վայրկյան}other{Մնացել է # վայրկյան}}</translation>
 <translation id="5941711191222866238">Նվազեցնել</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ժամ}one{# ժամ}other{# ժամ}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Աջից ձախ</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ԱՌԱՎԵԼ ՀԱՎԱՆԱԿԱՆ</translation>
+<translation id="7170202025028120564">Հավելվածի էկրանի ձեր կարգավորումները կկիրառվեն, երբ հաջորդ անգան վերագործարկեք այն։</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Մնացել է 1 րոպե}one{Մնացել է # րոպե}other{Մնացել է # րոպե}}</translation>
 <translation id="7319740667687257810">Launcher՝ մասնակի տարբերակ</translation>

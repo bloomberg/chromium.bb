@@ -10,7 +10,7 @@
  **************************************************************************************************/
 #include "GrMixerEffect.h"
 
-#include "include/gpu/GrTexture.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
@@ -25,18 +25,18 @@ public:
         (void)_outer;
         auto weight = _outer.weight;
         (void)weight;
-        weightVar =
-                args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kHalf_GrSLType, "weight");
+        weightVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
+                                                     kHalf_GrSLType, "weight");
         SkString _input1278 = SkStringPrintf("%s", args.fInputColor);
-        SkString _sample1278("_sample1278");
-        this->invokeChild(_outer.fp0_index, _input1278.c_str(), &_sample1278, args);
+        SkString _sample1278;
+        _sample1278 = this->invokeChild(_outer.fp0_index, _input1278.c_str(), args);
         fragBuilder->codeAppendf("half4 in0 = %s;", _sample1278.c_str());
         SkString _input1335 = SkStringPrintf("%s", args.fInputColor);
-        SkString _sample1335("_sample1335");
+        SkString _sample1335;
         if (_outer.fp1_index >= 0) {
-            this->invokeChild(_outer.fp1_index, _input1335.c_str(), &_sample1335, args);
+            _sample1335 = this->invokeChild(_outer.fp1_index, _input1335.c_str(), args);
         } else {
-            fragBuilder->codeAppendf("half4 %s;", _sample1335.c_str());
+            _sample1335 = "half4(1)";
         }
         fragBuilder->codeAppendf("\nhalf4 in1 = %s ? %s : %s;\n%s = mix(in0, in1, %s);\n",
                                  _outer.fp1_index >= 0 ? "true" : "false", _sample1335.c_str(),
@@ -68,9 +68,19 @@ GrMixerEffect::GrMixerEffect(const GrMixerEffect& src)
         , fp0_index(src.fp0_index)
         , fp1_index(src.fp1_index)
         , weight(src.weight) {
-    this->registerChildProcessor(src.childProcessor(fp0_index).clone());
+    {
+        auto clone = src.childProcessor(fp0_index).clone();
+        if (src.childProcessor(fp0_index).isSampledWithExplicitCoords()) {
+            clone->setSampledWithExplicitCoords();
+        }
+        this->registerChildProcessor(std::move(clone));
+    }
     if (fp1_index >= 0) {
-        this->registerChildProcessor(src.childProcessor(fp1_index).clone());
+        auto clone = src.childProcessor(fp1_index).clone();
+        if (src.childProcessor(fp1_index).isSampledWithExplicitCoords()) {
+            clone->setSampledWithExplicitCoords();
+        }
+        this->registerChildProcessor(std::move(clone));
     }
 }
 std::unique_ptr<GrFragmentProcessor> GrMixerEffect::clone() const {

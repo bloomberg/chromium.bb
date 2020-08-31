@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/platform/bindings/shared_persistent.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
@@ -70,7 +69,7 @@ class CORE_EXPORT ScriptController final
   ScriptController(LocalFrame& frame,
                    LocalWindowProxyManager& window_proxy_manager)
       : frame_(&frame), window_proxy_manager_(&window_proxy_manager) {}
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   // This returns an initialized window proxy. (If the window proxy is not
   // yet initialized, it's implicitly initialized at the first access.)
@@ -113,7 +112,7 @@ class CORE_EXPORT ScriptController final
       const KURL& base_url,
       SanitizeScriptErrors sanitize_script_errors);
 
-  void ExecuteJavaScriptURL(const KURL&, ContentSecurityPolicyDisposition);
+  void ExecuteJavaScriptURL(const KURL&, network::mojom::CSPDisposition);
 
   // Creates a new isolated world for DevTools with the given human readable
   // |world_name| and returns it id or nullptr on failure.

@@ -11,12 +11,14 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
 #include "media/audio/audio_features.h"
 #include "media/base/media_switches.h"
+#include "media/base/supported_types.h"
 #include "media/base/test_data_util.h"
 #include "media/media_buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -35,6 +37,12 @@ void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
       switches::autoplay::kNoUserGestureRequiredPolicy);
   command_line->AppendSwitch(switches::kExposeInternalsForTesting);
 
+  std::vector<base::Feature> enabled_features = {
+#if defined(OS_ANDROID)
+    features::kLogJsConsoleMessages,
+#endif
+  };
+
   std::vector<base::Feature> disabled_features = {
     // Disable fallback after decode error to avoid unexpected test pass on
     // the fallback path.
@@ -47,8 +55,7 @@ void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
 #endif
   };
 
-  scoped_feature_list_.InitWithFeatures({/* enabled_features */},
-                                        disabled_features);
+  scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 }
 
 void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
@@ -150,13 +157,13 @@ class MediaTest : public testing::WithParamInterface<bool>,
   }
 
   void RunVideoSizeTest(const char* media_file, int width, int height) {
-    std::string expected;
-    expected += base::NumberToString(width);
-    expected += " ";
-    expected += base::NumberToString(height);
+    std::string expected_title = std::string(media::kEnded) + " " +
+                                 base::NumberToString(width) + " " +
+                                 base::NumberToString(height);
     base::StringPairs query_params;
     query_params.emplace_back("video", media_file);
-    RunMediaTestPage("player.html", query_params, expected, false);
+    query_params.emplace_back("sizetest", "true");
+    RunMediaTestPage("player.html", query_params, expected_title, false);
   }
 };
 
@@ -176,15 +183,15 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWebm) {
 }
 
 IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearOpusWebm) {
-  PlayVideo("bear-opus.webm", GetParam());
+  PlayAudio("bear-opus.webm", GetParam());
 }
 
 IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearOpusMp4) {
-  PlayVideo("bear-opus.mp4", GetParam());
+  PlayAudio("bear-opus.mp4", GetParam());
 }
 
 IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearOpusOgg) {
-  PlayVideo("bear-opus.ogg", GetParam());
+  PlayAudio("bear-opus.ogg", GetParam());
 }
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearSilentWebm) {
@@ -215,11 +222,11 @@ IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearFlac192kHzMp4) {
 }
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMovPcmS16be) {
-  PlayVideo("bear_pcm_s16be.mov", GetParam());
+  PlayAudio("bear_pcm_s16be.mov", GetParam());
 }
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMovPcmS24be) {
-  PlayVideo("bear_pcm_s24be.mov", GetParam());
+  PlayAudio("bear_pcm_s24be.mov", GetParam());
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -293,7 +300,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearFlac) {
 }
 
 IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearFlacOgg) {
-  PlayVideo("bear-flac.ogg", GetParam());
+  PlayAudio("bear-flac.ogg", GetParam());
 }
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavAlaw) {
@@ -331,10 +338,16 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoErrorEmptySrcAttribute) {
 }
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoErrorNoSupportedStreams) {
-  RunErrorMessageTest(
-      "video", "no_streams.webm",
-      "DEMUXER_ERROR_NO_SUPPORTED_STREAMS: FFmpegDemuxer: no supported streams",
-      GetParam());
+  // The test doesn't work from file: scheme without AllowFileAccessFromFiles.
+  // TODO(wolenetz): https://crbug.com/1071473: Investigate and reenable the
+  // test.
+  if (!GetParam())
+    return;
+
+  RunErrorMessageTest("video", "no_streams.webm",
+                      "DEMUXER_ERROR_NO_SUPPORTED_STREAMS: FFmpegDemuxer: no "
+                      "supported streams",
+                      GetParam());
 }
 
 // Covers tear-down when navigating away as opposed to browser exiting.
@@ -342,6 +355,13 @@ IN_PROC_BROWSER_TEST_F(MediaTest, Navigate) {
   PlayVideo("bear.webm", false);
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
   EXPECT_FALSE(shell()->web_contents()->IsCrashed());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaTest, AudioOnly_XHE_AAC_MP4) {
+  if (media::IsSupportedAudioType(
+          {media::kCodecAAC, media::AudioCodecProfile::kXHE_AAC})) {
+    PlayAudio("noise-xhe-aac.mp4", GetParam());
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(File, MediaTest, ::testing::Values(false));

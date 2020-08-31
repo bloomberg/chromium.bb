@@ -6,7 +6,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {$} from 'chrome://resources/js/util.m.js';
 
-import {FittingType} from './pdf_fitting_type.js';
+import {FittingType} from './constants.js';
 import {InactiveZoomManager, ZoomManager} from './zoom_manager.js';
 
 /**
@@ -19,7 +19,12 @@ import {InactiveZoomManager, ZoomManager} from './zoom_manager.js';
  */
 let DocumentDimensions;
 
-/** @typedef {{defaultPageOrientation: number}} */
+/**
+ * @typedef {{
+ *   defaultPageOrientation: number,
+ *   twoUpViewEnabled: boolean,
+ * }}
+ */
 export let LayoutOptions;
 
 /** @typedef {{x: number, y: number}} */
@@ -33,17 +38,6 @@ let Size;
 
 /** @typedef {{x: number, y: number, width: number, height: number}} */
 let ViewportRect;
-
-/**
- * Clamps the zoom factor (or page scale factor) to be within the limits.
- * @param {number} factor The zoom/scale factor.
- * @return {number} The factor clamped within the limits.
- */
-function clampZoom(factor) {
-  return Math.max(
-      Viewport.ZOOM_FACTOR_RANGE.min,
-      Math.min(factor, Viewport.ZOOM_FACTOR_RANGE.max));
-}
 
 /**
  * @param {!ViewportRect} rect1
@@ -128,6 +122,13 @@ export class Viewport {
     /** @private {number} */
     this.internalZoom_ = 1;
 
+    /**
+     * Predefined zoom factors to be used when zooming in/out. These are in
+     * ascending order.
+     * @private {!Array<number>}
+     */
+    this.presetZoomFactors_ = [];
+
     /** @private {?ZoomManager} */
     this.zoomManager_ = null;
 
@@ -139,12 +140,6 @@ export class Viewport {
 
     /** @private {!FittingType} */
     this.fittingType_ = FittingType.NONE;
-
-    /**
-     * |twoUpView_| should be in sync with |two_up_view_| in PDFiumEngine.
-     * @private {boolean}
-     */
-    this.twoUpView_ = false;
 
     /** @private {number} */
     this.prevScale_ = 1;
@@ -224,9 +219,35 @@ export class Viewport {
     return this.rotations_;
   }
 
-  /** @param {boolean} twoUpView The new two up view state to set. */
-  setTwoUpView(twoUpView) {
-    this.twoUpView_ = twoUpView;
+  /** @return {boolean} Whether viewport is in two-up view mode. */
+  twoUpViewEnabled() {
+    const options = this.getLayoutOptions();
+    if (options === undefined) {
+      return false;
+    }
+    return options.twoUpViewEnabled;
+  }
+
+  /**
+   * Clamps the zoom factor (or page scale factor) to be within the limits.
+   * @param {number} factor The zoom/scale factor.
+   * @return {number} The factor clamped within the limits.
+   * @private
+   */
+  clampZoom_(factor) {
+    return Math.max(
+        this.presetZoomFactors_[0],
+        Math.min(
+            factor,
+            this.presetZoomFactors_[this.presetZoomFactors_.length - 1]));
+  }
+
+  /**
+   * @param {!Array<number>} factors Array containing zoom/scale factors.
+   */
+  setZoomFactorRange(factors) {
+    assert(factors.length !== 0);
+    this.presetZoomFactors_ = factors;
   }
 
   /**
@@ -247,11 +268,11 @@ export class Viewport {
 
     const rotation = this.rotations_ * 90;
     // Set origin for rotation.
-    if (rotation == 90) {
+    if (rotation === 90) {
       matrix.translateSelf(width, 0);
-    } else if (rotation == 180) {
+    } else if (rotation === 180) {
       matrix.translateSelf(width, height);
-    } else if (rotation == 270) {
+    } else if (rotation === 270) {
       matrix.translateSelf(0, height);
     }
     matrix.rotateSelf(0, 0, rotation);
@@ -395,13 +416,13 @@ export class Viewport {
    * @private
    */
   resize_() {
-    if (this.fittingType_ == FittingType.FIT_TO_PAGE) {
+    if (this.fittingType_ === FittingType.FIT_TO_PAGE) {
       this.fitToPageInternal_(false);
-    } else if (this.fittingType_ == FittingType.FIT_TO_WIDTH) {
+    } else if (this.fittingType_ === FittingType.FIT_TO_WIDTH) {
       this.fitToWidth();
-    } else if (this.fittingType_ == FittingType.FIT_TO_HEIGHT) {
+    } else if (this.fittingType_ === FittingType.FIT_TO_HEIGHT) {
       this.fitToHeightInternal_(false);
-    } else if (this.internalZoom_ == 0) {
+    } else if (this.internalZoom_ === 0) {
       this.fitToNone();
     } else {
       this.updateViewport_();
@@ -532,7 +553,7 @@ export class Viewport {
         this.allowedToChangeZoom_,
         'Called Viewport.setPinchZoomInternal_ without calling ' +
             'Viewport.mightZoom_.');
-    this.internalZoom_ = clampZoom(this.internalZoom_ * scaleDelta);
+    this.internalZoom_ = this.clampZoom_(this.internalZoom_ * scaleDelta);
 
     const newCenterInContent = this.frameToContent_(center);
     const delta = {
@@ -574,7 +595,7 @@ export class Viewport {
   setZoom(newZoom) {
     this.fittingType_ = FittingType.NONE;
     this.mightZoom_(() => {
-      this.setZoomInternal_(clampZoom(newZoom));
+      this.setZoomInternal_(this.clampZoom_(newZoom));
       this.updateViewport_();
     });
   }
@@ -659,7 +680,7 @@ export class Viewport {
   getLastPageInViewport_(viewportRect) {
     const pageAtY = this.getPageAtY_(viewportRect.y + viewportRect.height);
 
-    if (!this.twoUpView_ || pageAtY % 2 == 1 ||
+    if (!this.twoUpViewEnabled() || pageAtY % 2 === 1 ||
         pageAtY + 1 >= this.pageDimensions_.length) {
       return pageAtY;
     }
@@ -943,10 +964,10 @@ export class Viewport {
   zoomOut() {
     this.mightZoom_(() => {
       this.fittingType_ = FittingType.NONE;
-      let nextZoom = Viewport.ZOOM_FACTORS[0];
-      for (let i = 0; i < Viewport.ZOOM_FACTORS.length; i++) {
-        if (Viewport.ZOOM_FACTORS[i] < this.internalZoom_) {
-          nextZoom = Viewport.ZOOM_FACTORS[i];
+      let nextZoom = this.presetZoomFactors_[0];
+      for (let i = 0; i < this.presetZoomFactors_.length; i++) {
+        if (this.presetZoomFactors_[i] < this.internalZoom_) {
+          nextZoom = this.presetZoomFactors_[i];
         }
       }
       this.setZoomInternal_(nextZoom);
@@ -958,10 +979,11 @@ export class Viewport {
   zoomIn() {
     this.mightZoom_(() => {
       this.fittingType_ = FittingType.NONE;
-      let nextZoom = Viewport.ZOOM_FACTORS[Viewport.ZOOM_FACTORS.length - 1];
-      for (let i = Viewport.ZOOM_FACTORS.length - 1; i >= 0; i--) {
-        if (Viewport.ZOOM_FACTORS[i] > this.internalZoom_) {
-          nextZoom = Viewport.ZOOM_FACTORS[i];
+      const maxZoomIndex = this.presetZoomFactors_.length - 1;
+      let nextZoom = this.presetZoomFactors_[maxZoomIndex];
+      for (let i = maxZoomIndex; i >= 0; i--) {
+        if (this.presetZoomFactors_[i] > this.internalZoom_) {
+          nextZoom = this.presetZoomFactors_[i];
         }
       }
       this.setZoomInternal_(nextZoom);
@@ -975,7 +997,7 @@ export class Viewport {
    */
   pinchZoom(e) {
     this.mightZoom_(() => {
-      this.pinchPhase_ = e.direction == 'out' ?
+      this.pinchPhase_ = e.direction === 'out' ?
           Viewport.PinchPhase.PINCH_UPDATE_ZOOM_OUT :
           Viewport.PinchPhase.PINCH_UPDATE_ZOOM_IN;
 
@@ -987,7 +1009,7 @@ export class Viewport {
 
       const needsScrollbars =
           this.documentNeedsScrollbars_(this.zoomManager_.applyBrowserZoom(
-              clampZoom(this.internalZoom_ * scaleDelta)));
+              this.clampZoom_(this.internalZoom_ * scaleDelta)));
 
       this.pinchCenter_ = e.center;
 
@@ -1051,7 +1073,8 @@ export class Viewport {
    */
   goToNextPage() {
     const currentPage = this.getMostVisiblePage();
-    const nextPageOffset = (this.twoUpView_ && currentPage % 2 == 0) ? 2 : 1;
+    const nextPageOffset =
+        (this.twoUpViewEnabled() && currentPage % 2 === 0) ? 2 : 1;
     this.goToPage(currentPage + nextPageOffset);
   }
 
@@ -1063,8 +1086,8 @@ export class Viewport {
     const currentPage = this.getMostVisiblePage();
     let previousPageOffset = -1;
 
-    if (this.twoUpView_) {
-      previousPageOffset = (currentPage % 2 == 0) ? -2 : -3;
+    if (this.twoUpViewEnabled()) {
+      previousPageOffset = (currentPage % 2 === 0) ? -2 : -3;
     }
 
     this.goToPage(currentPage + previousPageOffset);
@@ -1193,8 +1216,8 @@ export class Viewport {
    */
   isPagedMode() {
     return (
-        this.fittingType_ == FittingType.FIT_TO_PAGE ||
-        this.fittingType_ == FittingType.FIT_TO_HEIGHT);
+        this.fittingType_ === FittingType.FIT_TO_PAGE ||
+        this.fittingType_ === FittingType.FIT_TO_HEIGHT);
   }
 
   /**
@@ -1203,11 +1226,11 @@ export class Viewport {
   scrollTo(point) {
     let changed = false;
     const newPosition = this.position;
-    if (point.x !== undefined && point.x != newPosition.x) {
+    if (point.x !== undefined && point.x !== newPosition.x) {
       newPosition.x = point.x;
       changed = true;
     }
-    if (point.y !== undefined && point.y != newPosition.y) {
+    if (point.y !== undefined && point.y !== newPosition.y) {
       newPosition.y = point.y;
       changed = true;
     }
@@ -1253,23 +1276,6 @@ Viewport.PinchPhase = {
  * these events.
  */
 Viewport.SCROLL_INCREMENT = 40;
-
-/**
- * Predefined zoom factors to be used when zooming in/out. These are in
- * ascending order. This should match the lists in
- * components/zoom/page_zoom_constants.h and
- * chrome/browser/resources/settings/appearance_page/appearance_page.js
- */
-Viewport.ZOOM_FACTORS = [
-  0.25, 1 / 3, 0.5, 2 / 3, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3,
-  4, 5
-];
-
-/** The minimum and maximum range to be used to clip zoom factor. */
-Viewport.ZOOM_FACTOR_RANGE = {
-  min: Viewport.ZOOM_FACTORS[0],
-  max: Viewport.ZOOM_FACTORS[Viewport.ZOOM_FACTORS.length - 1]
-};
 
 /** The width of the page shadow around pages in pixels. */
 Viewport.PAGE_SHADOW = {

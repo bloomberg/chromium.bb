@@ -7,11 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/logging.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #if defined(OS_WIN)
@@ -30,8 +29,7 @@ CrxDownloader::DownloadMetrics::DownloadMetrics()
       error(0),
       downloaded_bytes(-1),
       total_bytes(-1),
-      download_time_ms(0) {
-}
+      download_time_ms(0) {}
 
 // On Windows, the first downloader in the chain is a background downloader,
 // which uses the BITS service.
@@ -55,7 +53,7 @@ CrxDownloader::CrxDownloader(std::unique_ptr<CrxDownloader> successor)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       successor_(std::move(successor)) {}
 
-CrxDownloader::~CrxDownloader() {}
+CrxDownloader::~CrxDownloader() = default;
 
 void CrxDownloader::set_progress_callback(
     const ProgressCallback& progress_callback) {
@@ -120,7 +118,7 @@ void CrxDownloader::OnDownloadComplete(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!result.error)
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE, kTaskTraits,
         base::BindOnce(&CrxDownloader::VerifyResponse, base::Unretained(this),
                        is_handled, result, download_metrics));
@@ -131,13 +129,14 @@ void CrxDownloader::OnDownloadComplete(
                                   download_metrics));
 }
 
-void CrxDownloader::OnDownloadProgress() {
+void CrxDownloader::OnDownloadProgress(int64_t downloaded_bytes,
+                                       int64_t total_bytes) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (progress_callback_.is_null())
     return;
 
-  progress_callback_.Run();
+  progress_callback_.Run(downloaded_bytes, total_bytes);
 }
 
 // The function mutates the values of the parameters |result| and

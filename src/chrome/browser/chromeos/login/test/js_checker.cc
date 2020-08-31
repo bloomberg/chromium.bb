@@ -35,6 +35,28 @@ std::string ElementHasClassCondition(
   return js;
 }
 
+std::string ElementHasAttributeCondition(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids) {
+  std::string js = "$Element.hasAttribute('$Attribute')";
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$Attribute", attribute);
+  base::ReplaceSubstringsAfterOffset(
+      &js, 0, "$Element", chromeos::test::GetOobeElementPath(element_ids));
+  return js;
+}
+
+std::string DescribePath(std::initializer_list<base::StringPiece> element_ids) {
+  CHECK(element_ids.size() > 0);
+  std::string result;
+  std::initializer_list<base::StringPiece>::const_iterator it =
+      element_ids.begin();
+  result.append("//").append(std::string(*it));
+  for (it++; it < element_ids.end(); it++) {
+    result.append("/").append(std::string(*it));
+  }
+  return result;
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -121,14 +143,49 @@ std::unique_ptr<TestConditionWaiter> JSChecker::CreateWaiter(
   return std::make_unique<TestPredicateWaiter>(predicate);
 }
 
+std::unique_ptr<TestConditionWaiter> JSChecker::CreateWaiterWithDescription(
+    const std::string& js_condition,
+    const std::string& description) {
+  TestPredicateWaiter::PredicateCheck predicate = base::BindRepeating(
+      &CheckOobeCondition, base::Unretained(web_contents_), js_condition);
+  auto result = std::make_unique<TestPredicateWaiter>(predicate);
+  result->set_description(description);
+  return result;
+}
+
+std::unique_ptr<TestConditionWaiter> JSChecker::CreateAttributePresenceWaiter(
+    const std::string& attribute,
+    bool presence,
+    std::initializer_list<base::StringPiece> element_ids) {
+  std::string condition = ElementHasAttributeCondition(attribute, element_ids);
+  if (!presence) {
+    condition = "!(" + condition + ")";
+  }
+  std::string description;
+  description.append("Attribute ")
+      .append(attribute)
+      .append(presence ? " present " : " absent ")
+      .append("for ")
+      .append(DescribePath(element_ids));
+  return CreateWaiterWithDescription(condition, description);
+}
+
 std::unique_ptr<TestConditionWaiter> JSChecker::CreateVisibilityWaiter(
     bool visibility,
     std::initializer_list<base::StringPiece> element_ids) {
-  std::string js_condition = GetOobeElementPath(element_ids) + ".hidden";
+  return CreateVisibilityWaiter(visibility, GetOobeElementPath(element_ids));
+}
+
+std::unique_ptr<TestConditionWaiter> JSChecker::CreateVisibilityWaiter(
+    bool visibility,
+    const std::string& element) {
+  std::string js_condition = element + ".hidden";
   if (visibility) {
     js_condition = "!(" + js_condition + ")";
   }
-  return CreateWaiter(js_condition);
+  std::string description;
+  description.append(element).append(visibility ? " visible" : " hidden");
+  return CreateWaiterWithDescription(js_condition, description);
 }
 
 std::unique_ptr<TestConditionWaiter> JSChecker::CreateDisplayedWaiter(
@@ -140,7 +197,10 @@ std::unique_ptr<TestConditionWaiter> JSChecker::CreateDisplayedWaiter(
   if (!displayed) {
     js_condition = "!(" + js_condition + ")";
   }
-  return CreateWaiter(js_condition);
+  std::string description;
+  description.append(DescribePath(element_ids))
+      .append(displayed ? " displayed" : " not displayed");
+  return CreateWaiterWithDescription(js_condition, description);
 }
 
 std::unique_ptr<TestConditionWaiter> JSChecker::CreateEnabledWaiter(
@@ -150,7 +210,10 @@ std::unique_ptr<TestConditionWaiter> JSChecker::CreateEnabledWaiter(
   if (enabled) {
     js_condition = "!(" + js_condition + ")";
   }
-  return CreateWaiter(js_condition);
+  std::string description;
+  description.append(DescribePath(element_ids))
+      .append(enabled ? " enabled" : " disabled");
+  return CreateWaiterWithDescription(js_condition, description);
 }
 
 std::unique_ptr<TestConditionWaiter> JSChecker::CreateHasClassWaiter(
@@ -161,7 +224,13 @@ std::unique_ptr<TestConditionWaiter> JSChecker::CreateHasClassWaiter(
   if (!has_class) {
     js_condition = "!(" + js_condition + ")";
   }
-  return CreateWaiter(js_condition);
+  std::string description;
+  description.append(DescribePath(element_ids))
+      .append(" has")
+      .append(has_class ? "" : " no")
+      .append(" css class ")
+      .append(css_class);
+  return CreateWaiterWithDescription(js_condition, description);
 }
 
 void JSChecker::GetBoolImpl(const std::string& expression, bool* result) {
@@ -228,10 +297,31 @@ void JSChecker::ExpectHasClass(
     std::initializer_list<base::StringPiece> element_ids) {
   ExpectTrue(ElementHasClassCondition(css_class, element_ids));
 }
+
 void JSChecker::ExpectHasNoClass(
     const std::string& css_class,
     std::initializer_list<base::StringPiece> element_ids) {
   ExpectFalse(ElementHasClassCondition(css_class, element_ids));
+}
+
+void JSChecker::ExpectHasAttribute(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectTrue(ElementHasAttributeCondition(attribute, element_ids));
+}
+
+void JSChecker::ExpectHasNoAttribute(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectFalse(ElementHasAttributeCondition(attribute, element_ids));
+}
+
+void JSChecker::ExpectElementText(
+    const std::string& content,
+    std::initializer_list<base::StringPiece> element_ids) {
+  const std::string element_path = GetOobeElementPath(element_ids);
+  const std::string expression = element_path + ".textContent.trim()";
+  ExpectEQ(expression, content);
 }
 
 void JSChecker::ClickOnPath(
@@ -352,7 +442,8 @@ std::unique_ptr<TestConditionWaiter> CreateOobeScreenWaiter(
     const std::string& oobe_screen_id) {
   std::string js = "Oobe.getInstance().currentScreen.id=='$ScreenId'";
   base::ReplaceSubstringsAfterOffset(&js, 0, "$ScreenId", oobe_screen_id);
-  return test::OobeJS().CreateWaiter(js);
+  std::string description = "OOBE Screen is " + oobe_screen_id;
+  return test::OobeJS().CreateWaiterWithDescription(js, description);
 }
 
 }  // namespace test

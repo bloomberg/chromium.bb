@@ -12,40 +12,6 @@
 #include "src/gpu/vk/GrVkGpu.h"
 #include "src/sksl/SkSLCompiler.h"
 
-#ifdef SK_DEBUG
-bool GrVkFormatColorTypePairIsValid(VkFormat format, GrColorType colorType) {
-    switch (format) {
-        case VK_FORMAT_R8G8B8A8_UNORM:            return GrColorType::kRGBA_8888 == colorType ||
-                                                         GrColorType::kRGB_888x == colorType;
-        case VK_FORMAT_B8G8R8A8_UNORM:            return GrColorType::kBGRA_8888 == colorType;
-        case VK_FORMAT_R8G8B8A8_SRGB:             return GrColorType::kRGBA_8888_SRGB == colorType;
-        case VK_FORMAT_R8G8B8_UNORM:              return GrColorType::kRGB_888x == colorType;
-        case VK_FORMAT_R8G8_UNORM:                return GrColorType::kRG_88 == colorType;
-        case VK_FORMAT_A2B10G10R10_UNORM_PACK32:  return GrColorType::kRGBA_1010102 == colorType;
-        case VK_FORMAT_R5G6B5_UNORM_PACK16:       return GrColorType::kBGR_565 == colorType;
-        // R4G4B4A4 is not required to be supported so we actually
-        // store RGBA_4444 data as B4G4R4A4.
-        case VK_FORMAT_B4G4R4A4_UNORM_PACK16:     return GrColorType::kABGR_4444 == colorType;
-        case VK_FORMAT_R4G4B4A4_UNORM_PACK16:     return GrColorType::kABGR_4444 == colorType;
-        case VK_FORMAT_R8_UNORM:                 return GrColorType::kAlpha_8 == colorType ||
-                                                         GrColorType::kGray_8 == colorType;
-        case VK_FORMAT_R16G16B16A16_SFLOAT:       return GrColorType::kRGBA_F16 == colorType ||
-                                                         GrColorType::kRGBA_F16_Clamped == colorType;
-        case VK_FORMAT_R16_SFLOAT:                return GrColorType::kAlpha_F16 == colorType;
-        case VK_FORMAT_R16_UNORM:                 return GrColorType::kAlpha_16 == colorType;
-        case VK_FORMAT_R16G16_UNORM:              return GrColorType::kRG_1616 == colorType;
-        case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM: return GrColorType::kRGB_888x == colorType;
-        case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:  return GrColorType::kRGB_888x == colorType;
-        case VK_FORMAT_R16G16B16A16_UNORM:        return GrColorType::kRGBA_16161616 == colorType;
-        case VK_FORMAT_R16G16_SFLOAT:             return GrColorType::kRG_F16 == colorType;
-        case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:   return GrColorType::kRGB_888x == colorType;
-        default:                                  return false;
-    }
-
-    SkUNREACHABLE;
-}
-#endif
-
 bool GrVkFormatIsSupported(VkFormat format) {
     switch (format) {
         case VK_FORMAT_R8G8B8A8_UNORM:
@@ -54,11 +20,14 @@ bool GrVkFormatIsSupported(VkFormat format) {
         case VK_FORMAT_R8G8B8_UNORM:
         case VK_FORMAT_R8G8_UNORM:
         case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+        case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
         case VK_FORMAT_R5G6B5_UNORM_PACK16:
         case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
         case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
         case VK_FORMAT_R8_UNORM:
         case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
+        case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
+        case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
         case VK_FORMAT_R16G16B16A16_SFLOAT:
         case VK_FORMAT_R16_SFLOAT:
         case VK_FORMAT_R16_UNORM:
@@ -173,18 +142,21 @@ bool GrInstallVkShaderModule(GrVkGpu* gpu,
 bool GrVkFormatIsCompressed(VkFormat vkFormat) {
     switch (vkFormat) {
         case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
+        case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
+        case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
             return true;
         default:
             return false;
     }
+    SkUNREACHABLE;
 }
 
-bool GrVkFormatToCompressionType(VkFormat vkFormat, SkImage::CompressionType* compressionType) {
+SkImage::CompressionType GrVkFormatToCompressionType(VkFormat vkFormat) {
     switch (vkFormat) {
-        case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
-            *compressionType = SkImage::kETC1_CompressionType;
-            return true;
-        default:
-            return false;
+        case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK: return SkImage::CompressionType::kETC2_RGB8_UNORM;
+        case VK_FORMAT_BC1_RGB_UNORM_BLOCK:     return SkImage::CompressionType::kBC1_RGB8_UNORM;
+        case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:    return SkImage::CompressionType::kBC1_RGBA8_UNORM;
+        default:                                return SkImage::CompressionType::kNone;
     }
+    SkUNREACHABLE;
 }

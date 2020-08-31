@@ -16,6 +16,12 @@
 // text.
 struct ContextualSearchContext {
  public:
+  // Languages needed for translation.
+  struct TranslationLanguages {
+    std::string detected_language;
+    std::string target_language;
+  };
+
   ContextualSearchContext(JNIEnv* env, jobject obj);
   // Constructor for tests.
   ContextualSearchContext(const std::string& home_country,
@@ -92,31 +98,55 @@ struct ContextualSearchContext {
   int64_t GetPreviousEventId() const;
   int GetPreviousEventResults() const;
 
-  // Causes the next resolve request to be for an exact match instead of an
-  // expandable term.
-  void RestrictResolve(JNIEnv* env,
+  // Causes resolve requests to be for an exact match instead of an expandable
+  // term.
+  void SetExactResolve(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);
+
+  // Returns whether the resolve request is for an exact match instead of an
+  // expandable term.
+  bool GetExactResolve();
 
   // Detects the language of the context using CLD from the translate utility.
   base::android::ScopedJavaLocalRef<jstring> DetectLanguage(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  // Sets the languages to remember for use in translation.
+  // See |GetTranslationLanguages|.
+  void SetTranslationLanguages(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& j_detected_language,
+      const base::android::JavaParamRef<jstring>& j_target_language);
+
+  // Returns the languages to use for translation, as set by
+  // |SetTranslationLanguages|.
+  const TranslationLanguages& GetTranslationLanguages();
+
   // Gets a WeakPtr to this instance.
   base::WeakPtr<ContextualSearchContext> GetWeakPtr();
 
  private:
-  bool can_resolve;
-  bool can_send_base_page_url;
+  // Gets the reliable language of the given |contents| using CLD, or an empty
+  // string if none can reliably be determined.
+  std::string GetReliableLanguage(const base::string16& contents);
 
-  std::string home_country;
-  GURL base_page_url;
-  std::string base_page_encoding;
-  base::string16 surrounding_text;
-  int start_offset;
-  int end_offset;
-  int64_t previous_event_id;
-  int previous_event_results;
+  // Gets the selection, or an empty string if none.
+  base::string16 GetSelection();
+
+  bool can_resolve_ = false;
+  bool can_send_base_page_url_ = false;
+  std::string home_country_;
+  GURL base_page_url_;
+  std::string base_page_encoding_;
+  base::string16 surrounding_text_;
+  int start_offset_ = 0;
+  int end_offset_ = 0;
+  int64_t previous_event_id_ = 0L;
+  int previous_event_results_ = 0;
+  bool is_exact_resolve_ = false;
+  TranslationLanguages translation_languages_;
 
   // The linked Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

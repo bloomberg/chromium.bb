@@ -77,6 +77,10 @@ if (build_with_chromium) {
       ":gtest_config",
     ]
 
+    public_deps = [
+      ":gtest",
+    ]
+
     include_dirs = [ "src/googlemock" ]
   }
 

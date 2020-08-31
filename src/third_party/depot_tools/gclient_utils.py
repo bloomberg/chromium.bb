@@ -17,12 +17,6 @@ import operator
 import os
 import pipes
 import platform
-
-try:
-  import Queue as queue
-except ImportError:  # For Py3 compatibility
-  import queue
-
 import re
 import stat
 import subprocess
@@ -30,18 +24,18 @@ import sys
 import tempfile
 import threading
 import time
-
-try:
-  import urlparse
-except ImportError:  # For Py3 compatibility
-  import urllib.parse as urlparse
-
 import subprocess2
 
 if sys.version_info.major == 2:
   from cStringIO import StringIO
+  import collections as collections_abc
+  import Queue as queue
+  import urlparse
 else:
+  from collections import abc as collections_abc
   from io import StringIO
+  import queue
+  import urllib.parse as urlparse
 
 
 RETRY_MAX = 3
@@ -164,6 +158,17 @@ class PrintableObject(object):
     return output
 
 
+def AskForData(message):
+  # Use this so that it can be mocked in tests on Python 2 and 3.
+  try:
+    if sys.version_info.major == 2:
+      return raw_input(message)
+    return input(message)
+  except KeyboardInterrupt:
+    # Hide the exception.
+    sys.exit(1)
+
+
 def FileRead(filename, mode='rbU'):
   # Always decodes output to a Unicode string.
   # On Python 3 newlines are converted to '\n' by default and 'U' is deprecated.
@@ -176,8 +181,8 @@ def FileRead(filename, mode='rbU'):
     return s
 
 
-def FileWrite(filename, content, mode='w'):
-  with codecs.open(filename, mode=mode, encoding='utf-8') as f:
+def FileWrite(filename, content, mode='w', encoding='utf-8'):
+  with codecs.open(filename, mode=mode, encoding=encoding) as f:
     f.write(content)
 
 
@@ -189,6 +194,35 @@ def temporary_directory(**kwargs):
   finally:
     if tdir:
       rmtree(tdir)
+
+
+@contextlib.contextmanager
+def temporary_file():
+  """Creates a temporary file.
+
+  On Windows, a file must be closed before it can be opened again. This function
+  allows to write something like:
+
+    with gclient_utils.temporary_file() as tmp:
+      gclient_utils.FileWrite(tmp, foo)
+      useful_stuff(tmp)
+
+  Instead of something like:
+
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+      tmp.write(foo)
+      tmp.close()
+      try:
+        useful_stuff(tmp)
+      finally:
+        os.remove(tmp.name)
+  """
+  handle, name = tempfile.mkstemp()
+  os.close(handle)
+  try:
+    yield name
+  finally:
+    os.remove(name)
 
 
 def safe_rename(old, new):
@@ -290,7 +324,7 @@ def rmtree(path):
 def safe_makedirs(tree):
   """Creates the directory in a safe manner.
 
-  Because multiple threads can create these directories concurently, trap the
+  Because multiple threads can create these directories concurrently, trap the
   exception and pass on.
   """
   count = 0
@@ -422,7 +456,7 @@ class Annotated(Wrapper):
     finally:
       self.lock.release()
 
-    # Don't keep the lock while writting. Will append \n when it shouldn't.
+    # Don't keep the lock while writing. Will append \n when it shouldn't.
     for orphan in orphans:
       if orphan[1]:
         self._wrapped_write(b'%d>%s\n' % (orphan[0], orphan[1]))
@@ -1171,7 +1205,7 @@ def FindExecutable(executable):
 
   for path_folder in path_folders:
     target = os.path.join(path_folder, executable)
-    # Just incase we have some ~/blah paths.
+    # Just in case we have some ~/blah paths.
     target = os.path.abspath(os.path.expanduser(target))
     if os.path.isfile(target) and os.access(target, os.X_OK):
       return target
@@ -1195,7 +1229,7 @@ def freeze(obj):
 
   Will raise TypeError if you pass an object which is not hashable.
   """
-  if isinstance(obj, collections.Mapping):
+  if isinstance(obj, collections_abc.Mapping):
     return FrozenDict((freeze(k), freeze(v)) for k, v in obj.items())
   elif isinstance(obj, (list, tuple)):
     return tuple(freeze(i) for i in obj)
@@ -1206,7 +1240,7 @@ def freeze(obj):
     return obj
 
 
-class FrozenDict(collections.Mapping):
+class FrozenDict(collections_abc.Mapping):
   """An immutable OrderedDict.
 
   Modified From: http://stackoverflow.com/a/2704866
@@ -1220,7 +1254,7 @@ class FrozenDict(collections.Mapping):
         operator.xor, (hash(i) for i in enumerate(self._d.items())), 0)
 
   def __eq__(self, other):
-    if not isinstance(other, collections.Mapping):
+    if not isinstance(other, collections_abc.Mapping):
       return NotImplemented
     if self is other:
       return True

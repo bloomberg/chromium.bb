@@ -34,8 +34,8 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the index below.
      * @return {number} The index below or -1 if not found.
      */
-    getIndexBelow: function(index) {
-      if (index == this.getLastIndex()) {
+    getIndexBelow(index) {
+      if (index === this.getLastIndex()) {
         return -1;
       }
       return index + 1;
@@ -46,7 +46,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the index above.
      * @return {number} The index below or -1 if not found.
      */
-    getIndexAbove: function(index) {
+    getIndexAbove(index) {
       return index - 1;
     },
 
@@ -58,7 +58,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the index before.
      * @return {number} The index before or -1 if not found.
      */
-    getIndexBefore: function(index) {
+    getIndexBefore(index) {
       return -1;
     },
 
@@ -70,7 +70,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the index after.
      * @return {number} The index after or -1 if not found.
      */
-    getIndexAfter: function(index) {
+    getIndexAfter(index) {
       return -1;
     },
 
@@ -80,8 +80,8 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the next index for.
      * @return {number} The next index or -1 if not found.
      */
-    getNextIndex: function(index) {
-      if (index == this.getLastIndex()) {
+    getNextIndex(index) {
+      if (index === this.getLastIndex()) {
         return -1;
       }
       return index + 1;
@@ -93,21 +93,21 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the previous index for.
      * @return {number} The previous index or -1 if not found.
      */
-    getPreviousIndex: function(index) {
+    getPreviousIndex(index) {
       return index - 1;
     },
 
     /**
      * @return {number} The first index.
      */
-    getFirstIndex: function() {
+    getFirstIndex() {
       return 0;
     },
 
     /**
      * @return {number} The last index.
      */
-    getLastIndex: function() {
+    getLastIndex() {
       return this.selectionModel.length - 1;
     },
 
@@ -118,14 +118,14 @@ cr.define('cr.ui', function() {
      * @param {number} index The index that was under the mouse pointer, -1 if
      *     none.
      */
-    handlePointerDownUp: function(e, index) {
+    handlePointerDownUp(e, index) {
       const sm = this.selectionModel;
       const anchorIndex = sm.anchorIndex;
-      const isDown = (e.type == 'mousedown');
+      const isDown = (e.type === 'mousedown');
 
       sm.beginChange();
 
-      if (index == -1) {
+      if (index === -1) {
         // On Mac we always clear the selection if the user clicks a blank area.
         // On Windows, we only clear the selection if neither Shift nor Ctrl are
         // pressed.
@@ -149,7 +149,7 @@ cr.define('cr.ui', function() {
             sm.leadIndex = index;
             sm.anchorIndex = index;
           }
-        } else if (e.shiftKey && anchorIndex != -1 && anchorIndex != index) {
+        } else if (e.shiftKey && anchorIndex !== -1 && anchorIndex !== index) {
           // Shift is done in mousedown.
           if (isDown) {
             sm.unselectAll();
@@ -162,7 +162,7 @@ cr.define('cr.ui', function() {
           }
         } else {
           // Right click for a context menu needs to not clear the selection.
-          const isRightClick = e.button == 2;
+          const isRightClick = e.button === 2;
 
           // If the index is selected this is handled in mouseup.
           const indexSelected = sm.getIndexSelected(index);
@@ -186,7 +186,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The index that was under the touched point, -1 if
      *     none.
      */
-    handleTouchEvents: function(e, index) {
+    handleTouchEvents(e, index) {
       // Do nothing.
     },
 
@@ -194,26 +194,26 @@ cr.define('cr.ui', function() {
      * Called by the view when it receives a keydown event.
      * @param {Event} e The keydown event.
      */
-    handleKeyDown: function(e) {
+    handleKeyDown(e) {
       const tagName = e.target.tagName;
       // If focus is in an input field of some kind, only handle navigation keys
       // that aren't likely to conflict with input interaction (e.g., text
       // editing, or changing the value of a checkbox or select).
-      if (tagName == 'INPUT') {
+      if (tagName === 'INPUT') {
         const inputType = e.target.type;
         // Just protect space (for toggling) for checkbox and radio.
-        if (inputType == 'checkbox' || inputType == 'radio') {
-          if (e.key == ' ') {
+        if (inputType === 'checkbox' || inputType === 'radio') {
+          if (e.key === ' ') {
             return;
           }
           // Protect all but the most basic navigation commands in anything
           // else.
-        } else if (e.key != 'ArrowUp' && e.key != 'ArrowDown') {
+        } else if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
           return;
         }
       }
       // Similarly, don't interfere with select element handling.
-      if (tagName == 'SELECT') {
+      if (tagName === 'SELECT') {
         return;
       }
 
@@ -223,15 +223,15 @@ cr.define('cr.ui', function() {
       let prevent = true;
 
       // Ctrl/Meta+A
-      if (sm.multiple && e.keyCode == 65 &&
+      if (sm.multiple && e.keyCode === 65 &&
           (cr.isMac && e.metaKey || !cr.isMac && e.ctrlKey)) {
         sm.selectAll();
         e.preventDefault();
         return;
       }
 
-      if (e.key == ' ') {
-        if (leadIndex != -1) {
+      if (e.key === ' ') {
+        if (leadIndex !== -1) {
           const selected = sm.getIndexSelected(leadIndex);
           if (e.ctrlKey || !selected) {
             sm.setIndexSelected(leadIndex, !selected || !sm.multiple);
@@ -248,28 +248,28 @@ cr.define('cr.ui', function() {
           newIndex = this.getLastIndex();
           break;
         case 'ArrowUp':
-          newIndex = leadIndex == -1 ? this.getLastIndex() :
-                                       this.getIndexAbove(leadIndex);
+          newIndex = leadIndex === -1 ? this.getLastIndex() :
+                                        this.getIndexAbove(leadIndex);
           break;
         case 'ArrowDown':
-          newIndex = leadIndex == -1 ? this.getFirstIndex() :
-                                       this.getIndexBelow(leadIndex);
+          newIndex = leadIndex === -1 ? this.getFirstIndex() :
+                                        this.getIndexBelow(leadIndex);
           break;
         case 'ArrowLeft':
         case 'MediaPreviousTrack':
-          newIndex = leadIndex == -1 ? this.getLastIndex() :
-                                       this.getIndexBefore(leadIndex);
+          newIndex = leadIndex === -1 ? this.getLastIndex() :
+                                        this.getIndexBefore(leadIndex);
           break;
         case 'ArrowRight':
         case 'MediaNextTrack':
-          newIndex = leadIndex == -1 ? this.getFirstIndex() :
-                                       this.getIndexAfter(leadIndex);
+          newIndex = leadIndex === -1 ? this.getFirstIndex() :
+                                        this.getIndexAfter(leadIndex);
           break;
         default:
           prevent = false;
       }
 
-      if (newIndex != -1) {
+      if (newIndex !== -1) {
         sm.beginChange();
 
         sm.leadIndex = newIndex;
@@ -278,7 +278,7 @@ cr.define('cr.ui', function() {
           if (sm.multiple) {
             sm.unselectAll();
           }
-          if (anchorIndex == -1) {
+          if (anchorIndex === -1) {
             sm.setIndexSelected(newIndex, true);
             sm.anchorIndex = newIndex;
           } else {

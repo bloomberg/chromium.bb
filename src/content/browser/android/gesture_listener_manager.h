@@ -9,7 +9,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "content/browser/android/render_widget_host_connector.h"
-#include "content/public/common/input_event_ack_state.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 
 namespace blink {
 class WebGestureEvent;
@@ -26,7 +26,7 @@ class NavigationHandle;
 class WebContentsImpl;
 
 // Native class for GestureListenerManagerImpl.
-class GestureListenerManager : public RenderWidgetHostConnector {
+class CONTENT_EXPORT GestureListenerManager : public RenderWidgetHostConnector {
  public:
   GestureListenerManager(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
@@ -44,7 +44,7 @@ class GestureListenerManager : public RenderWidgetHostConnector {
       const base::android::JavaParamRef<jobject>& obj,
       jboolean enabled);
   void GestureEventAck(const blink::WebGestureEvent& event,
-                       InputEventAckState ack_result);
+                       blink::mojom::InputEventResultState ack_result);
   void DidStopFlinging();
   bool FilterInputEvent(const blink::WebInputEvent& event);
 
@@ -68,6 +68,8 @@ class GestureListenerManager : public RenderWidgetHostConnector {
 
   void OnNavigationFinished(NavigationHandle* navigation_handle);
   void OnRenderProcessGone();
+
+  bool IsScrollInProgressForTesting();
 
  private:
   class ResetScrollObserver;

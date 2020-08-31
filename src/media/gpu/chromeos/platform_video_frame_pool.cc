@@ -10,7 +10,7 @@
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "media/gpu/chromeos/gpu_buffer_layout.h"
-#include "media/gpu/linux/platform_video_frame_utils.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 
 namespace media {
@@ -40,12 +40,6 @@ PlatformVideoFramePool::PlatformVideoFramePool(
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
-PlatformVideoFramePool::PlatformVideoFramePool(CreateFrameCB cb)
-    : create_frame_cb_(std::move(cb)) {
-  DVLOGF(4);
-  weak_this_ = weak_this_factory_.GetWeakPtr();
-}
-
 PlatformVideoFramePool::~PlatformVideoFramePool() {
   if (parent_task_runner_)
     DCHECK(parent_task_runner_->RunsTasksInCurrentSequence());
@@ -63,7 +57,7 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
   base::AutoLock auto_lock(lock_);
 
   if (!frame_layout_) {
-    VLOGF(1) << "Please call RequestFrames() first.";
+    VLOGF(1) << "Please call Initialize() first.";
     return nullptr;
   }
 
@@ -105,7 +99,7 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
   return wrapped_frame;
 }
 
-base::Optional<GpuBufferLayout> PlatformVideoFramePool::RequestFrames(
+base::Optional<GpuBufferLayout> PlatformVideoFramePool::Initialize(
     const Fourcc& fourcc,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
@@ -214,9 +208,8 @@ void PlatformVideoFramePool::OnFrameReleased(
   DCHECK(it != frames_in_use_.end());
   frames_in_use_.erase(it);
 
-  if (IsSameFormat_Locked(origin_frame->format(), origin_frame->coded_size())) {
+  if (IsSameFormat_Locked(origin_frame->format(), origin_frame->coded_size()))
     InsertFreeFrame_Locked(std::move(origin_frame));
-  }
 
   if (frame_available_cb_ && !IsExhausted_Locked())
     std::move(frame_available_cb_).Run();

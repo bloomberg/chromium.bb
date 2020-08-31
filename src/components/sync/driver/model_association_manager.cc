@@ -20,7 +20,6 @@
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_stop_metadata_fate.h"
-#include "components/sync/model/sync_merge_result.h"
 
 namespace syncer {
 
@@ -45,9 +44,10 @@ static const ModelType kStartOrder[] = {
     // UI thread data types.
     BOOKMARKS, PREFERENCES, PRIORITY_PREFERENCES, EXTENSIONS, APPS, APP_LIST,
     ARC_PACKAGE, READING_LIST, THEMES, SEARCH_ENGINES, SESSIONS, DICTIONARY,
-    FAVICON_IMAGES, FAVICON_TRACKING, PRINTERS, USER_CONSENTS, USER_EVENTS,
-    SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS, SEND_TAB_TO_SELF,
-    SECURITY_EVENTS, WEB_APPS, WIFI_CONFIGURATIONS};
+    DEPRECATED_FAVICON_IMAGES, DEPRECATED_FAVICON_TRACKING, PRINTERS,
+    USER_CONSENTS, USER_EVENTS, SHARING_MESSAGE, SUPERVISED_USER_SETTINGS,
+    SUPERVISED_USER_WHITELISTS, SEND_TAB_TO_SELF, SECURITY_EVENTS, WEB_APPS,
+    WIFI_CONFIGURATIONS};
 
 static_assert(base::size(kStartOrder) ==
                   ModelType::NUM_ENTRIES - FIRST_REAL_MODEL_TYPE,
@@ -57,38 +57,6 @@ static_assert(base::size(kStartOrder) ==
 // finished association by the time, DataTypeManager is notified of the
 // unfinished types.
 const int64_t kAssociationTimeOutInSeconds = 600;
-
-DataTypeAssociationStats BuildAssociationStatsFromMergeResults(
-    const SyncMergeResult& local_merge_result,
-    const SyncMergeResult& syncer_merge_result,
-    const base::TimeDelta& association_wait_time,
-    const base::TimeDelta& association_time) {
-  DCHECK_EQ(local_merge_result.model_type(), syncer_merge_result.model_type());
-  DataTypeAssociationStats stats;
-  stats.had_error =
-      local_merge_result.error().IsSet() || syncer_merge_result.error().IsSet();
-  stats.num_local_items_before_association =
-      local_merge_result.num_items_before_association();
-  stats.num_sync_items_before_association =
-      syncer_merge_result.num_items_before_association();
-  stats.num_local_items_after_association =
-      local_merge_result.num_items_after_association();
-  stats.num_sync_items_after_association =
-      syncer_merge_result.num_items_after_association();
-  stats.num_local_items_added = local_merge_result.num_items_added();
-  stats.num_local_items_deleted = local_merge_result.num_items_deleted();
-  stats.num_local_items_modified = local_merge_result.num_items_modified();
-  stats.local_version_pre_association =
-      local_merge_result.pre_association_version();
-  stats.num_sync_items_added = syncer_merge_result.num_items_added();
-  stats.num_sync_items_deleted = syncer_merge_result.num_items_deleted();
-  stats.num_sync_items_modified = syncer_merge_result.num_items_modified();
-  stats.sync_version_pre_association =
-      syncer_merge_result.pre_association_version();
-  stats.association_wait_time = association_wait_time;
-  stats.association_time = association_time;
-  return stats;
-}
 
 }  // namespace
 
@@ -218,16 +186,6 @@ void ModelAssociationManager::StopDatatypeImpl(
 }
 
 void ModelAssociationManager::LoadEnabledTypes() {
-  for (ModelType type : desired_types_) {
-    auto dtc_iter = controllers_->find(type);
-    DCHECK(dtc_iter != controllers_->end());
-    DataTypeController* dtc = dtc_iter->second.get();
-    if (dtc->state() == DataTypeController::NOT_RUNNING) {
-      DCHECK(!loaded_types_.Has(dtc->type()));
-      DCHECK(!associated_types_.Has(dtc->type()));
-      delegate_->OnSingleDataTypeWillStart(dtc->type());
-    }
-  }
   // Load in kStartOrder.
   for (size_t i = 0; i < base::size(kStartOrder); i++) {
     ModelType type = kStartOrder[i];
@@ -241,9 +199,10 @@ void ModelAssociationManager::LoadEnabledTypes() {
     if (dtc->state() == DataTypeController::NOT_RUNNING) {
       DCHECK(!loaded_types_.Has(dtc->type()));
       DCHECK(!associated_types_.Has(dtc->type()));
-      dtc->LoadModels(configure_context_,
-                      base::Bind(&ModelAssociationManager::ModelLoadCallback,
-                                 weak_ptr_factory_.GetWeakPtr()));
+      dtc->LoadModels(
+          configure_context_,
+          base::BindRepeating(&ModelAssociationManager::ModelLoadCallback,
+                              weak_ptr_factory_.GetWeakPtr()));
     }
   }
   NotifyDelegateIfReadyForConfigure();
@@ -255,8 +214,6 @@ void ModelAssociationManager::StartAssociationAsync(
   DVLOG(1) << "Starting association for "
            << ModelTypeSetToString(types_to_associate);
   state_ = ASSOCIATING;
-
-  association_start_time_ = base::TimeTicks::Now();
 
   requested_types_ = types_to_associate;
 
@@ -285,16 +242,10 @@ void ModelAssociationManager::StartAssociationAsync(
       continue;
 
     DataTypeController* dtc = controllers_->find(type)->second.get();
-    DCHECK(DataTypeController::MODEL_LOADED == dtc->state() ||
-           DataTypeController::ASSOCIATING == dtc->state());
-    if (dtc->state() == DataTypeController::MODEL_LOADED) {
-      TRACE_EVENT_ASYNC_BEGIN1("sync", "ModelAssociation", dtc, "DataType",
-                               ModelTypeToString(type));
+    TRACE_EVENT_ASYNC_BEGIN1("sync", "ModelAssociation", dtc, "DataType",
+                             ModelTypeToString(type));
 
-      dtc->StartAssociating(base::Bind(
-          &ModelAssociationManager::TypeStartCallback,
-          weak_ptr_factory_.GetWeakPtr(), type, base::TimeTicks::Now()));
-    }
+    TypeStartCallback(type);
   }
 }
 
@@ -336,11 +287,11 @@ void ModelAssociationManager::ModelLoadCallback(ModelType type,
            << ModelTypeToString(type);
 
   if (error.IsSet()) {
-    SyncMergeResult local_merge_result(type);
-    local_merge_result.set_error(error);
-    TypeStartCallback(type, base::TimeTicks::Now(),
-                      DataTypeController::ASSOCIATION_FAILED,
-                      local_merge_result, SyncMergeResult(type));
+    DVLOG(1) << "ModelAssociationManager: Type encountered an error.";
+    desired_types_.Remove(type);
+    DataTypeController* dtc = controllers_->find(type)->second.get();
+    StopDatatypeImpl(error, STOP_SYNC, dtc, base::DoNothing());
+    NotifyDelegateIfReadyForConfigure();
     return;
   }
 
@@ -362,35 +313,14 @@ void ModelAssociationManager::ModelLoadCallback(ModelType type,
     // TODO(pavely): Add test for this scenario in DataTypeManagerImpl
     // unittests.
     if (dtc->state() == DataTypeController::MODEL_LOADED) {
-      dtc->StartAssociating(base::Bind(
-          &ModelAssociationManager::TypeStartCallback,
-          weak_ptr_factory_.GetWeakPtr(), type, base::TimeTicks::Now()));
+      TypeStartCallback(type);
     }
   }
 }
 
-void ModelAssociationManager::TypeStartCallback(
-    ModelType type,
-    base::TimeTicks type_start_time,
-    DataTypeController::ConfigureResult start_result,
-    const SyncMergeResult& local_merge_result,
-    const SyncMergeResult& syncer_merge_result) {
-  if (desired_types_.Has(type) &&
-      !DataTypeController::IsSuccessfulResult(start_result)) {
-    DVLOG(1) << "ModelAssociationManager: Type encountered an error.";
-    desired_types_.Remove(type);
-    DataTypeController* dtc = controllers_->find(type)->second.get();
-    StopDatatypeImpl(local_merge_result.error(), STOP_SYNC, dtc,
-                     base::DoNothing());
-    NotifyDelegateIfReadyForConfigure();
-
-    // Update configuration result.
-    if (start_result == DataTypeController::UNRECOVERABLE_ERROR)
-      configure_status_ = DataTypeManager::UNRECOVERABLE_ERROR;
-  }
-
-  // This happens when a slow associating type is disabled or if a type
-  // disables itself after initial configuration.
+void ModelAssociationManager::TypeStartCallback(ModelType type) {
+  // This happens for example if a type disables itself after initial
+  // configuration.
   if (!desired_types_.Has(type)) {
     // It's possible all types failed to associate, in which case association
     // is complete.
@@ -400,7 +330,6 @@ void ModelAssociationManager::TypeStartCallback(
   }
 
   DCHECK(!associated_types_.Has(type));
-  DCHECK(DataTypeController::IsSuccessfulResult(start_result));
   associated_types_.Put(type);
 
   if (state_ != ASSOCIATING)
@@ -413,12 +342,8 @@ void ModelAssociationManager::TypeStartCallback(
   // Track the merge results if we succeeded or an association failure
   // occurred.
   if (ProtocolTypes().Has(type)) {
-    base::TimeDelta association_wait_time =
-        std::max(base::TimeDelta(), type_start_time - association_start_time_);
-    base::TimeDelta association_time = base::TimeTicks::Now() - type_start_time;
-    DataTypeAssociationStats stats = BuildAssociationStatsFromMergeResults(
-        local_merge_result, syncer_merge_result, association_wait_time,
-        association_time);
+    // TODO(crbug.com/647505): Clean up.
+    DataTypeAssociationStats stats;
     delegate_->OnSingleDataTypeAssociationDone(type, stats);
   }
 
@@ -476,12 +401,9 @@ base::OneShotTimer* ModelAssociationManager::GetTimerForTesting() {
 void ModelAssociationManager::NotifyDelegateIfReadyForConfigure() {
   if (notified_about_ready_for_configure_)
     return;
-  for (const auto& type_dtc_pair : *controllers_) {
-    ModelType type = type_dtc_pair.first;
-    if (!desired_types_.Has(type))
-      continue;
-    DataTypeController* dtc = type_dtc_pair.second.get();
-    if (dtc->ShouldLoadModelBeforeConfigure() && !loaded_types_.Has(type)) {
+
+  for (ModelType type : desired_types_) {
+    if (!loaded_types_.Has(type)) {
       // At least one type is not ready.
       return;
     }

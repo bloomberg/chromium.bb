@@ -59,8 +59,6 @@
 #define IDC_MINIMIZE_WINDOW             34046
 #define IDC_MAXIMIZE_WINDOW             34047
 #define IDC_ALL_WINDOWS_FRONT           34048
-#define IDC_VISIT_DESKTOP_OF_LRU_USER_2 34049
-#define IDC_VISIT_DESKTOP_OF_LRU_USER_3 34050
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #define IDC_USE_SYSTEM_TITLE_BAR        34051
@@ -68,6 +66,7 @@
 #endif
 
 #define IDC_OPEN_IN_PWA_WINDOW          34053
+#define IDC_MOVE_TAB_TO_NEW_WINDOW          34054
 
 // Web app window commands
 #define IDC_COPY_URL                    34060
@@ -79,6 +78,14 @@
 // Terminal system app commands
 #define IDC_TERMINAL_SPLIT_HORIZONTAL   34070
 #define IDC_TERMINAL_SPLIT_VERTICAL     34071
+
+// Move window to other user commands
+#define IDC_VISIT_DESKTOP_OF_LRU_USER_2 34080
+#define IDC_VISIT_DESKTOP_OF_LRU_USER_3 34081
+#define IDC_VISIT_DESKTOP_OF_LRU_USER_4 34082
+#define IDC_VISIT_DESKTOP_OF_LRU_USER_5 34083
+#define IDC_VISIT_DESKTOP_OF_LRU_USER_NEXT IDC_VISIT_DESKTOP_OF_LRU_USER_2
+#define IDC_VISIT_DESKTOP_OF_LRU_USER_LAST IDC_VISIT_DESKTOP_OF_LRU_USER_5
 #endif
 
 // Page-related commands
@@ -95,21 +102,23 @@
 #define IDC_ROUTE_MEDIA                 35011
 #define IDC_WINDOW_MUTE_SITE            35012
 #define IDC_WINDOW_PIN_TAB              35013
-#define IDC_MIGRATE_LOCAL_CREDIT_CARD_FOR_PAGE 35014
-#define IDC_SEND_TAB_TO_SELF            35015
-#define IDC_FOCUS_THIS_TAB              35016
-#define IDC_CONTENT_LINK_SEND_TAB_TO_SELF 35017
-#define IDC_SEND_TAB_TO_SELF_SINGLE_TARGET  35018
-#define IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET  35019
-#define IDC_QRCODE_GENERATOR            35020
-#define IDC_WINDOW_CLOSE_TABS_TO_RIGHT  35021
-#define IDC_WINDOW_CLOSE_OTHER_TABS     35022
+#define IDC_WINDOW_GROUP_TAB            35014
+#define IDC_MIGRATE_LOCAL_CREDIT_CARD_FOR_PAGE 35015
+#define IDC_SEND_TAB_TO_SELF            35016
+#define IDC_FOCUS_THIS_TAB              35017
+#define IDC_CONTENT_LINK_SEND_TAB_TO_SELF 35018
+#define IDC_SEND_TAB_TO_SELF_SINGLE_TARGET  35019
+#define IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET  35020
+#define IDC_QRCODE_GENERATOR            35021
+#define IDC_WINDOW_CLOSE_TABS_TO_RIGHT  35022
+#define IDC_WINDOW_CLOSE_OTHER_TABS     35023
 
 // Page-manipulation commands that target a specified tab, which may not be the
 // active one.
 #define IDC_MUTE_TARGET_SITE            35050
 #define IDC_PIN_TARGET_TAB              35051
-#define IDC_DUPLICATE_TARGET_TAB        35052
+#define IDC_GROUP_TARGET_TAB            35052
+#define IDC_DUPLICATE_TARGET_TAB        35053
 
 // Clipboard commands
 #define IDC_CUT                         36000
@@ -198,6 +207,7 @@
 #define IDC_PASTE_AND_GO                40256
 #define IDC_SHOW_SAVE_LOCAL_CARD_SIGN_IN_PROMO_IF_APPLICABLE 40257
 #define IDC_CLOSE_SIGN_IN_PROMO        40258
+#define IDC_SHOW_FULL_URLS             40259
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
@@ -393,6 +403,12 @@
 #define IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE 52410
 #define IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS 52411
 #define IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE 52412
+
+#if defined(OS_CHROMEOS)
+// Quick Answers context menu items.
+#define IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_ANSWER 52413
+#define IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY 52414
+#endif
 
 // NOTE: The last valid command value is 57343 (0xDFFF)
 // See http://msdn.microsoft.com/en-us/library/t2zechd4(VS.71).aspx

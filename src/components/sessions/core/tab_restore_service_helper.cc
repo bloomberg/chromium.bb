@@ -13,9 +13,10 @@
 #include <string>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/containers/flat_set.h"
-#include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -28,6 +29,8 @@
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/tab_restore_service_client.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 
 namespace sessions {
 
@@ -115,7 +118,7 @@ void TabRestoreServiceHelper::BrowserClosing(LiveTabContext* context) {
   window->show_state = context->GetRestoredState();
   window->workspace = context->GetWorkspace();
 
-  base::flat_set<base::Token> seen_groups;
+  base::flat_set<tab_groups::TabGroupId> seen_groups;
   for (int tab_index = 0; tab_index < context->GetTabCount(); ++tab_index) {
     auto tab = std::make_unique<Tab>();
     PopulateTab(tab.get(), tab_index, context,
@@ -128,9 +131,10 @@ void TabRestoreServiceHelper::BrowserClosing(LiveTabContext* context) {
     }
   }
 
-  for (const base::Token& group : seen_groups) {
-    TabGroupMetadata metadata = context->GetTabGroupMetadata(group);
-    window->tab_groups.emplace(group, std::move(metadata));
+  for (const tab_groups::TabGroupId& group : seen_groups) {
+    const tab_groups::TabGroupVisualData* visual_data =
+        context->GetVisualDataForGroup(group);
+    window->tab_groups.emplace(group, std::move(*visual_data));
   }
 
   if (window->tabs.size() == 1 && window->app_name.empty()) {
@@ -318,7 +322,7 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
           LiveTab* restored_tab = context->AddRestoredTab(
               tab.navigations, context->GetTabCount(),
               tab.current_navigation_index, tab.extension_app_id, tab.group,
-              base::OptionalOrNullptr(tab.group_metadata),
+              tab.group_visual_data.value_or(tab_groups::TabGroupVisualData()),
               static_cast<int>(tab_i) == window.selected_tab_index, tab.pinned,
               tab.from_last_session, tab.platform_data.get(),
               tab.user_agent_override);
@@ -330,7 +334,7 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
         }
 
         for (const auto& tab_group : window.tab_groups) {
-          context->SetTabGroupMetadata(tab_group.first, tab_group.second);
+          context->SetVisualDataForGroup(tab_group.first, tab_group.second);
         }
 
         // All the window's tabs had the same former browser_id.
@@ -556,10 +560,12 @@ void TabRestoreServiceHelper::PopulateTab(Tab* tab,
     tab->browser_id = context->GetSessionID().id();
     tab->pinned = context->IsTabPinned(tab->tabstrip_index);
     tab->group = context->GetTabGroupForTab(tab->tabstrip_index);
-    tab->group_metadata =
+    tab->group_visual_data =
         tab->group.has_value()
-            ? base::Optional<TabGroupMetadata>{context->GetTabGroupMetadata(
-                  tab->group.value())}
+            ? base::Optional<
+                  tab_groups::TabGroupVisualData>{*context
+                                                       ->GetVisualDataForGroup(
+                                                           tab->group.value())}
             : base::nullopt;
   }
 }
@@ -606,7 +612,7 @@ LiveTabContext* TabRestoreServiceHelper::RestoreTab(
     restored_tab = context->AddRestoredTab(
         tab.navigations, tab_index, tab.current_navigation_index,
         tab.extension_app_id, tab.group,
-        base::OptionalOrNullptr(tab.group_metadata),
+        tab.group_visual_data.value_or(tab_groups::TabGroupVisualData()),
         disposition != WindowOpenDisposition::NEW_BACKGROUND_TAB, tab.pinned,
         tab.from_last_session, tab.platform_data.get(),
         tab.user_agent_override);

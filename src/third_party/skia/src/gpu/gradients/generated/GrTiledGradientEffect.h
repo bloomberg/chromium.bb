@@ -11,6 +11,7 @@
 #ifndef GrTiledGradientEffect_DEFINED
 #define GrTiledGradientEffect_DEFINED
 #include "include/core/SkTypes.h"
+#include "include/core/SkM44.h"
 
 #include "src/gpu/GrCoordTransform.h"
 #include "src/gpu/GrFragmentProcessor.h"
@@ -18,7 +19,9 @@ class GrTiledGradientEffect : public GrFragmentProcessor {
 public:
     static std::unique_ptr<GrFragmentProcessor> Make(
             std::unique_ptr<GrFragmentProcessor> colorizer,
-            std::unique_ptr<GrFragmentProcessor> gradLayout, bool mirror, bool makePremul,
+            std::unique_ptr<GrFragmentProcessor> gradLayout,
+            bool mirror,
+            bool makePremul,
             bool colorsAreOpaque) {
         return std::unique_ptr<GrFragmentProcessor>(new GrTiledGradientEffect(
                 std::move(colorizer), std::move(gradLayout), mirror, makePremul, colorsAreOpaque));
@@ -34,8 +37,10 @@ public:
 
 private:
     GrTiledGradientEffect(std::unique_ptr<GrFragmentProcessor> colorizer,
-                          std::unique_ptr<GrFragmentProcessor> gradLayout, bool mirror,
-                          bool makePremul, bool colorsAreOpaque)
+                          std::unique_ptr<GrFragmentProcessor> gradLayout,
+                          bool mirror,
+                          bool makePremul,
+                          bool colorsAreOpaque)
             : INHERITED(kGrTiledGradientEffect_ClassID,
                         (OptimizationFlags)kCompatibleWithCoverageAsAlpha_OptimizationFlag |
                                 (colorsAreOpaque && gradLayout->preservesOpaqueInput()

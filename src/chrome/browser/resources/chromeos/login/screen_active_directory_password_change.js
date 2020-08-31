@@ -27,7 +27,7 @@ login.createScreen(
         adPasswordChanged_: null,
 
         /** @override */
-        decorate: function() {
+        decorate() {
           this.adPasswordChanged_ = $('active-directory-password-change');
           this.adPasswordChanged_.addEventListener(
               'cancel', this.cancel.bind(this));
@@ -41,10 +41,18 @@ login.createScreen(
         },
 
         /**
+         * Returns default event target element.
+         * @type {Object}
+         */
+        get defaultControl() {
+          return this.adPasswordChanged_;
+        },
+
+        /**
          * Cancels password changing and drops the user back to the login
          * screen.
          */
-        cancel: function() {
+        cancel() {
           chrome.send('cancelActiveDirectoryPasswordChange');
           Oobe.showUserPods();
         },
@@ -54,7 +62,7 @@ login.createScreen(
          * Event handler that is invoked just before the frame is shown.
          * @param {Object} data Screen init payload
          */
-        onBeforeShow: function(data) {
+        onBeforeShow(data) {
           // Active Directory password change screen is similar to Active
           // Directory login screen. So we restore bottom bar controls.
           this.adPasswordChanged_.reset();
@@ -69,7 +77,7 @@ login.createScreen(
          * @param {number} loginAttempts Number of login attemps tried.
          * @param {HTMLElement} content Content to show in bubble.
          */
-        showErrorBubble: function(loginAttempts, error) {
+        showErrorBubble(loginAttempts, error) {
           $('bubble').showContentForElement(
               $('ad-password-change'), cr.ui.Bubble.Attachment.BOTTOM, error,
               BUBBLE_HORIZONTAL_PADDING, BUBBLE_VERTICAL_PADDING);
@@ -79,7 +87,7 @@ login.createScreen(
          * Updates localized content of the screen that is not updated via
          * template.
          */
-        updateLocalizedContent: function() {
+        updateLocalizedContent() {
           $('active-directory-password-change').i18nUpdateLocale();
         },
 

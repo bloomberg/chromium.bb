@@ -8,10 +8,13 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkNo
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
@@ -29,7 +32,6 @@ import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.Token
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.TokenCompletedObserver;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.ContinuationViewHolder;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.FeedViewHolder;
-import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.R;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.ViewHolderType;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
@@ -63,7 +65,8 @@ public class ContinuationDriver extends LeafFeatureDriver
     private int mFailureCount;
     @SpinnerType
     private int mSpinnerType = SpinnerType.INFINITE_FEED;
-    /*@Nullable*/ private ContinuationViewHolder mContinuationViewHolder;
+    @Nullable
+    private ContinuationViewHolder mContinuationViewHolder;
 
     ContinuationDriver(BasicLoggingApi basicLoggingApi, Clock clock, Configuration configuration,
             Context context, CursorChangedListener cursorChangedListener, ModelChild modelChild,
@@ -218,8 +221,8 @@ public class ContinuationDriver extends LeafFeatureDriver
                 && (modelChildren.isEmpty()
                         || (modelChildren.size() == 1
                                 && modelChildren.get(0).getType() == Type.TOKEN))) {
-            mSnackbarApi.show(
-                    mContext.getResources().getString(R.string.snackbar_fetch_no_new_suggestions));
+            mSnackbarApi.show(mContext.getResources().getString(
+                    R.string.ntp_suggestions_fetch_no_new_suggestions));
         }
 
         mCursorChangedListener.onNewChildren(mModelChild, modelChildren, mModelToken.isSynthetic());
@@ -229,7 +232,9 @@ public class ContinuationDriver extends LeafFeatureDriver
     public void onError(ModelError modelError) {
         mBasicLoggingApi.onTokenFailedToComplete(mModelToken.isSynthetic(), ++mFailureCount);
         showErrorUi();
-        mSpinnerLogger.spinnerFinished();
+        if (mSpinnerLogger.isSpinnerActive()) {
+            mSpinnerLogger.spinnerFinished();
+        }
     }
 
     private void showErrorUi() {
@@ -239,7 +244,7 @@ public class ContinuationDriver extends LeafFeatureDriver
             mContinuationViewHolder.setShowSpinner(false);
         }
 
-        mSnackbarApi.show(mContext.getString(R.string.snackbar_fetch_failed));
+        mSnackbarApi.show(mContext.getString(R.string.ntp_suggestions_fetch_failed));
     }
 
     @Override
@@ -301,9 +306,7 @@ public class ContinuationDriver extends LeafFeatureDriver
     }
 
     @VisibleForTesting
-    SpinnerLogger createSpinnerLogger(
-            /*@UnderInitialization*/ ContinuationDriver this, BasicLoggingApi basicLoggingApi,
-            Clock clock) {
+    SpinnerLogger createSpinnerLogger(BasicLoggingApi basicLoggingApi, Clock clock) {
         return new SpinnerLogger(basicLoggingApi, clock);
     }
 

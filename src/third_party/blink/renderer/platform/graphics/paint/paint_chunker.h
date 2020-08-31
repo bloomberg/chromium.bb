@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
@@ -34,38 +35,50 @@ class PLATFORM_EXPORT PaintChunker final {
   const PropertyTreeState& CurrentPaintChunkProperties() const {
     return current_properties_;
   }
-  void UpdateCurrentPaintChunkProperties(const base::Optional<PaintChunk::Id>&,
+  void UpdateCurrentPaintChunkProperties(const PaintChunk::Id*,
                                          const PropertyTreeState&);
 
-  void ForceNewChunk();
+  // Sets the forcing new chunk status on or off. If the status is on, even the
+  // properties haven't change, we'll force a new paint chunk for the next
+  // display item and then automatically resets the status. Some special display
+  // item (e.g. ForeignLayerDisplayItem) also automatically sets the status on
+  // before and after the item to force a dedicated paint chunk.
+  void SetForceNewChunk(bool force) {
+    force_new_chunk_ = force;
+    next_chunk_id_ = base::nullopt;
+  }
+  bool WillForceNewChunk() const {
+    return force_new_chunk_ || chunks_.IsEmpty();
+  }
+
+  void AppendByMoving(PaintChunk&&);
 
   // Returns true if a new chunk is created.
   bool IncrementDisplayItemIndex(const DisplayItem&);
 
   const Vector<PaintChunk>& PaintChunks() const { return chunks_; }
+  wtf_size_t size() const { return chunks_.size(); }
 
-  PaintChunk& PaintChunkAt(wtf_size_t i) { return chunks_[i]; }
-  wtf_size_t LastChunkIndex() const {
-    return chunks_.IsEmpty() ? kNotFound : chunks_.size() - 1;
-  }
   PaintChunk& LastChunk() { return chunks_.back(); }
+  const PaintChunk& LastChunk() const { return chunks_.back(); }
 
-  PaintChunk& FindChunkByDisplayItemIndex(size_t index) {
-    auto* chunk = FindChunkInVectorByDisplayItemIndex(chunks_, index);
-    DCHECK(chunk != chunks_.end());
-    return *chunk;
-  }
+  // The id will be used when we need to create a new current chunk.
+  // Otherwise it's ignored.
+  void AddHitTestDataToCurrentChunk(const PaintChunk::Id&,
+                                    const IntRect&,
+                                    TouchAction);
+  void CreateScrollHitTestChunk(
+      const PaintChunk::Id&,
+      const TransformPaintPropertyNode* scroll_translation,
+      const IntRect&);
 
   // Releases the generated paint chunk list and raster invalidations and
   // resets the state of this object.
   Vector<PaintChunk> ReleasePaintChunks();
 
  private:
-  size_t ChunkIndex(const PaintChunk& chunk) const {
-    size_t index = &chunk - &chunks_.front();
-    DCHECK_LT(index, chunks_.size());
-    return index;
-  }
+  PaintChunk& EnsureCurrentChunk(const PaintChunk::Id&);
+  void UpdateLastChunkKnownToBeOpaque();
 
   Vector<PaintChunk> chunks_;
 
@@ -78,6 +91,8 @@ class PLATFORM_EXPORT PaintChunker final {
   base::Optional<PaintChunk::Id> next_chunk_id_;
 
   PropertyTreeState current_properties_;
+
+  Region last_chunk_known_to_be_opaque_region_;
 
   // True when an item forces a new chunk (e.g., foreign display items), and for
   // the item following a forced chunk. PaintController also forces new chunks

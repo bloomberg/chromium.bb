@@ -7,30 +7,34 @@
  * triggering factory resets of security keys.
  */
 
-cr.define('settings', function() {
-  /** @enum {string} */
-  const ResetDialogPage = {
-    INITIAL: 'initial',
-    NO_RESET: 'noReset',
-    RESET_FAILED: 'resetFailed',
-    RESET_CONFIRM: 'resetConfirm',
-    RESET_SUCCESS: 'resetSuccess',
-    RESET_NOT_ALLOWED: 'resetNotAllowed',
-  };
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import '../settings_shared_css.m.js';
 
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-  return {
-    ResetDialogPage: ResetDialogPage,
-  };
-});
+import {loadTimeData} from '../i18n_setup.js';
 
-(function() {
-'use strict';
+import {SecurityKeysResetBrowserProxy, SecurityKeysResetBrowserProxyImpl} from './security_keys_browser_proxy.js';
 
-const ResetDialogPage = settings.ResetDialogPage;
+/** @enum {string} */
+export const ResetDialogPage = {
+  INITIAL: 'initial',
+  NO_RESET: 'noReset',
+  RESET_FAILED: 'resetFailed',
+  RESET_CONFIRM: 'resetConfirm',
+  RESET_SUCCESS: 'resetSuccess',
+  RESET_NOT_ALLOWED: 'resetNotAllowed',
+};
+
 
 Polymer({
   is: 'settings-security-keys-reset-dialog',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [I18nBehavior],
 
@@ -52,7 +56,7 @@ Polymer({
 
     /**
      * The id of an element on the page that is currently shown.
-     * @private {!settings.ResetDialogPage}
+     * @private {!ResetDialogPage}
      */
     shown_: {
       type: String,
@@ -65,14 +69,13 @@ Polymer({
     title_: String,
   },
 
-  /** @private {?settings.SecurityKeysResetBrowserProxy} */
+  /** @private {?SecurityKeysResetBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.title_ = this.i18n('securityKeysResetTitle');
-    this.browserProxy_ =
-        settings.SecurityKeysResetBrowserProxyImpl.getInstance();
+    this.browserProxy_ = SecurityKeysResetBrowserProxyImpl.getInstance();
     this.$.dialog.showModal();
 
     this.browserProxy_.reset().then(code => {
@@ -105,13 +108,13 @@ Polymer({
   },
 
   /** @private */
-  closeDialog_: function() {
+  closeDialog_() {
     this.$.dialog.close();
     this.finish_();
   },
 
   /** @private */
-  finish_: function() {
+  finish_() {
     if (this.complete_) {
       return;
     }
@@ -123,9 +126,9 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onIronSelect_: function(e) {
-    // Prevent this event from bubbling since it is unnecessarily triggering the
-    // listener within settings-animated-pages.
+  onIronSelect_(e) {
+    // Prevent this event from bubbling since it is unnecessarily triggering
+    // the listener within settings-animated-pages.
     e.stopPropagation();
   },
 
@@ -135,7 +138,7 @@ Polymer({
           to the user. Used automatically by Polymer.
      @private
    */
-  resetFailed_: function(code) {
+  resetFailed_(code) {
     if (code === null) {
       return '';
     }
@@ -148,7 +151,7 @@ Polymer({
    *     Polymer.
    * @private
    */
-  closeText_: function(complete) {
+  closeText_(complete) {
     return this.i18n(complete ? 'ok' : 'cancel');
   },
 
@@ -158,8 +161,7 @@ Polymer({
    *     Polymer.
    * @private
    */
-  maybeActionButton_: function(complete) {
+  maybeActionButton_(complete) {
     return complete ? 'action-button' : 'cancel-button';
   },
 });
-})();

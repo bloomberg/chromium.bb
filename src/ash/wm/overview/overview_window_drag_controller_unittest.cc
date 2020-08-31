@@ -99,19 +99,18 @@ class WindowCloseWaiter : public aura::WindowObserver {
 
 }  // namespace
 
-// Tests the behavior of window dragging in overview when both VirtualDesks and
-// Clamshell SplitView features are both disabled.
-class NoDesksNoSplitViewTest : public AshTestBase {
+// Tests the behavior of window dragging in overview when the Clamshell
+// SplitView feature is disabled.
+class NoClamshellSplitViewTest : public AshTestBase {
  public:
-  NoDesksNoSplitViewTest() = default;
-  ~NoDesksNoSplitViewTest() override = default;
+  NoClamshellSplitViewTest() = default;
+  ~NoClamshellSplitViewTest() override = default;
 
   // AshTestBase:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{},
-        /*disabled_features=*/{features::kVirtualDesks,
-                               features::kDragToSnapInClamshellMode});
+        /*disabled_features=*/{features::kDragToSnapInClamshellMode});
 
     AshTestBase::SetUp();
   }
@@ -119,10 +118,10 @@ class NoDesksNoSplitViewTest : public AshTestBase {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(NoDesksNoSplitViewTest);
+  DISALLOW_COPY_AND_ASSIGN(NoClamshellSplitViewTest);
 };
 
-TEST_F(NoDesksNoSplitViewTest, NormalDragIsNotPossible) {
+TEST_F(NoClamshellSplitViewTest, NormalDragIsNotPossible) {
   auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
@@ -151,7 +150,7 @@ TEST_F(NoDesksNoSplitViewTest, NormalDragIsNotPossible) {
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 }
 
-TEST_F(NoDesksNoSplitViewTest, CanDoDragToClose) {
+TEST_F(NoClamshellSplitViewTest, CanDoDragToClose) {
   auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
@@ -222,26 +221,8 @@ TEST_F(OverviewWindowDragControllerTest, NoDragToCloseUsingMouse) {
   EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
 }
 
-class OverviewWindowDragControllerWithDesksTest : public AshTestBase {
- public:
-  OverviewWindowDragControllerWithDesksTest() = default;
-  ~OverviewWindowDragControllerWithDesksTest() override = default;
-
-  // AshTestBase:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
-
-    AshTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewWindowDragControllerWithDesksTest);
-};
-
-TEST_F(OverviewWindowDragControllerWithDesksTest,
-       SwitchDragToCloseToNormalDragWhendraggedToDesk) {
+TEST_F(OverviewWindowDragControllerTest,
+       SwitchDragToCloseToNormalDragWhenDraggedToDesk) {
   UpdateDisplay("600x800");
   auto* controller = DesksController::Get();
   controller->NewDesk(DesksCreationRemovalSource::kButton);
@@ -338,21 +319,16 @@ class OverviewWindowDragControllerDesksPortraitTabletTest
     return overview_grid()->desks_bar_view()->GetWidget();
   }
 
-  bool IsHotseatEnabled() { return GetParam(); }
-
-  // OverviewWindowDragControllerWithDesksTest:
+  // AshTestBase:
   void SetUp() override {
-    if (IsHotseatEnabled()) {
+    if (GetParam()) {
       scoped_feature_list_.InitWithFeatures(
-          /* enabled */ {features::kVirtualDesks,
-                         chromeos::features::kShelfScrollable,
-                         chromeos::features::kShelfHotseat},
+          /* enabled */ {chromeos::features::kShelfHotseat},
           /* disabled */ {});
     } else {
       scoped_feature_list_.InitWithFeatures(
-          /* enabled */ {features::kVirtualDesks},
-          /* disabled */ {chromeos::features::kShelfScrollable,
-                          chromeos::features::kShelfHotseat});
+          /* enabled */ {},
+          /* disabled */ {chromeos::features::kShelfHotseat});
     }
 
     AshTestBase::SetUp();
@@ -386,7 +362,7 @@ class OverviewWindowDragControllerDesksPortraitTabletTest
   }
 
   int GetExpectedDesksBarShiftAmount() {
-    return drag_indicators()->GetLeftHighlightViewBoundsForTesting().bottom() +
+    return drag_indicators()->GetLeftHighlightViewBounds().bottom() +
            kHighlightScreenEdgePaddingDp;
   }
 
@@ -419,10 +395,6 @@ class OverviewWindowDragControllerDesksPortraitTabletTest
 
 TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest,
        DragAndDropInEmptyArea) {
-  // TODO(https://crbug.com/1011128): Fix this test when the hotseat is enabled.
-  if (IsHotseatEnabled())
-    return;
-
   auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   StartDraggingAndValidateDesksBarShifted(window.get());
 
@@ -437,10 +409,6 @@ TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest,
 
 TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest,
        DragAndDropInSnapAreas) {
-  // TODO(https://crbug.com/1011128): Fix this test when the hotseat is enabled.
-  if (IsHotseatEnabled())
-    return;
-
   auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   StartDraggingAndValidateDesksBarShifted(window.get());
 
@@ -483,10 +451,6 @@ TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest,
 }
 
 TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest, DragAndDropInDesk) {
-  // TODO(https://crbug.com/1011128): Fix this test when the hotseat is enabled.
-  if (IsHotseatEnabled())
-    return;
-
   auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   StartDraggingAndValidateDesksBarShifted(window.get());
 

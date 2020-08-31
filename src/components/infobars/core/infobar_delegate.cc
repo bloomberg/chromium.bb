@@ -4,7 +4,6 @@
 
 #include "components/infobars/core/infobar_delegate.h"
 
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
@@ -54,6 +53,14 @@ gfx::Image InfoBarDelegate::GetIcon() const {
                    icon_id);
 }
 
+base::string16 InfoBarDelegate::GetLinkText() const {
+  return base::string16();
+}
+
+GURL InfoBarDelegate::GetLinkURL() const {
+  return GURL();
+}
+
 bool InfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
   return false;
 }
@@ -67,6 +74,11 @@ bool InfoBarDelegate::ShouldExpire(const NavigationDetails& details) const {
       // want reloads to dismiss infobars, but they will have unchanged entry
       // IDs.
       ((nav_entry_id_ != details.entry_id) || details.is_reload);
+}
+
+bool InfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
+  infobar()->owner()->OpenURL(GetLinkURL(), disposition);
+  return false;
 }
 
 void InfoBarDelegate::InfoBarDismissed() {

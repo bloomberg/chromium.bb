@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "src/base/logging.h"
 #include "src/builtins/builtins-utils-inl.h"
 #include "src/builtins/builtins.h"
 #include "src/codegen/code-factory.h"
@@ -336,11 +337,8 @@ V8_WARN_UNUSED_RESULT Object GenericArrayPush(Isolate* isolate,
           isolate, Object::SetElement(isolate, receiver, length, element,
                                       ShouldThrow::kThrowOnError));
     } else {
-      bool success;
-      LookupIterator it = LookupIterator::PropertyOrElement(
-          isolate, receiver, isolate->factory()->NewNumber(length), &success);
-      // Must succeed since we always pass a valid key.
-      DCHECK(success);
+      LookupIterator::Key key(isolate, length);
+      LookupIterator it(isolate, receiver, key);
       MAYBE_RETURN(Object::SetProperty(&it, element, StoreOrigin::kMaybeKeyed,
                                        Just(ShouldThrow::kThrowOnError)),
                    ReadOnlyRoots(isolate).exception());
@@ -474,6 +472,15 @@ BUILTIN(ArrayPop) {
     uint32_t new_length = len - 1;
     ASSIGN_RETURN_FAILURE_ON_EXCEPTION(
         isolate, result, JSReceiver::GetElement(isolate, array, new_length));
+
+    // The length could have become read-only during the last GetElement() call,
+    // so check again.
+    if (JSArray::HasReadOnlyLength(array)) {
+      THROW_NEW_ERROR_RETURN_FAILURE(
+          isolate, NewTypeError(MessageTemplate::kStrictReadOnlyProperty,
+                                isolate->factory()->length_string(),
+                                Object::TypeOf(isolate, array), array));
+    }
     JSArray::SetLength(array, new_length);
   }
 
@@ -944,15 +951,15 @@ void CollectElementIndices(Isolate* isolate, Handle<JSObject> object,
       TYPED_ARRAYS(TYPED_ARRAY_CASE)
 #undef TYPED_ARRAY_CASE
       {
-        // TODO(bmeurer, v8:4153): Change this to size_t later.
-        uint32_t length =
-            static_cast<uint32_t>(Handle<JSTypedArray>::cast(object)->length());
+        size_t length = Handle<JSTypedArray>::cast(object)->length();
         if (range <= length) {
           length = range;
           // We will add all indices, so we might as well clear it first
           // and avoid duplicates.
           indices->clear();
         }
+        // {range} puts a cap on {length}.
+        DCHECK_LE(length, std::numeric_limits<uint32_t>::max());
         for (uint32_t i = 0; i < length; i++) {
           indices->push_back(i);
         }

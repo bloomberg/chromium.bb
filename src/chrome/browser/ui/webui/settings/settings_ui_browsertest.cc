@@ -5,7 +5,10 @@
 #include <string>
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/hats/hats_service_factory.h"
+#include "chrome/browser/ui/hats/mock_hats_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -13,10 +16,12 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test.h"
 #include "url/gurl.h"
 
 typedef InProcessBrowserTest SettingsUITest;
 
+using ::testing::_;
 using ui_test_utils::NavigateToURL;
 
 IN_PROC_BROWSER_TEST_F(SettingsUITest, ViewSourceDoesntCrash) {
@@ -42,4 +47,14 @@ IN_PROC_BROWSER_TEST_F(SettingsUITest, ToggleJavaScript) {
     handler->DisallowJavascript();
     handler->AllowJavascriptForTesting();
   }
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsUITest, TriggerHappinessTrackingSurveys) {
+  MockHatsService* mock_hats_service_ = static_cast<MockHatsService*>(
+      HatsServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          browser()->profile(), base::BindRepeating(&BuildMockHatsService)));
+  EXPECT_CALL(*mock_hats_service_, LaunchDelayedSurveyForWebContents(
+                                       kHatsSurveyTriggerSettings, _, _));
+  NavigateToURL(browser(), GURL(chrome::kChromeUISettingsURL));
+  base::RunLoop().RunUntilIdle();
 }

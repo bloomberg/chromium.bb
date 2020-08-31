@@ -8,13 +8,14 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -128,7 +129,7 @@ class SearchTermLocation {
               TryMatchSearchParam(value_string,
                                   kGoogleUnescapedSearchTermsParameterFull)) {
             found_ = true;
-            url_component.substr(key.begin, key.len).CopyToString(&key_);
+            key_ = std::string(url_component.substr(key.begin, key.len));
             break;
           }
         }
@@ -149,8 +150,8 @@ class SearchTermLocation {
     size_t pos = value.find(pattern);
     if (pos == base::StringPiece::npos)
       return false;
-    value.substr(0, pos).CopyToString(&value_prefix_);
-    value.substr(pos + pattern.length()).CopyToString(&value_suffix_);
+    value_prefix_ = std::string(value.substr(0, pos));
+    value_suffix_ = std::string(value.substr(pos + pattern.size()));
     return true;
   }
 
@@ -216,23 +217,25 @@ size_t TemplateURLRef::SearchTermsArgs::EstimateMemoryUsage() const {
 }
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
-    ContextualSearchParams()
-    : version(-1),
-      contextual_cards_version(0),
-      previous_event_id(0),
-      previous_event_results(0) {}
+    ContextualSearchParams() = default;
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     int version,
     int contextual_cards_version,
-    const std::string& home_country,
+    std::string home_country,
     int64_t previous_event_id,
-    int previous_event_results)
+    int previous_event_results,
+    bool is_exact_search,
+    std::string source_lang,
+    std::string target_lang)
     : version(version),
       contextual_cards_version(contextual_cards_version),
       home_country(home_country),
       previous_event_id(previous_event_id),
-      previous_event_results(previous_event_results) {}
+      previous_event_results(previous_event_results),
+      is_exact_search(is_exact_search),
+      source_lang(source_lang),
+      target_lang(target_lang) {}
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     const ContextualSearchParams& other) = default;
@@ -995,6 +998,12 @@ std::string TemplateURLRef::HandleReplacements(
           args.push_back("ctxsl_per=" +
                          base::NumberToString(params.previous_event_results));
         }
+        if (params.is_exact_search)
+          args.push_back("ctxsl_exact=1");
+        if (!params.source_lang.empty())
+          args.push_back("tlitesl=" + params.source_lang);
+        if (!params.target_lang.empty())
+          args.push_back("tlitetl=" + params.target_lang);
 
         HandleReplacement(std::string(), base::JoinString(args, "&"), *i, &url);
         break;

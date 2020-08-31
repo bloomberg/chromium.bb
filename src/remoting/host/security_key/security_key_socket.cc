@@ -113,7 +113,7 @@ void SecurityKeySocket::DoWrite() {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("security_key_socket", R"(
         semantics {
-          sender: "Security Key Socket"
+          sender: "Chrome Remote Desktop"
           description:
             "This request performs the communication between processes when "
             "handling security key (gnubby) authentication."
@@ -135,7 +135,7 @@ void SecurityKeySocket::DoWrite() {
         })");
   int result = socket_->Write(
       write_buffer_.get(), write_buffer_->BytesRemaining(),
-      base::Bind(&SecurityKeySocket::OnDataWritten, base::Unretained(this)),
+      base::BindOnce(&SecurityKeySocket::OnDataWritten, base::Unretained(this)),
       traffic_annotation);
   if (result != net::ERR_IO_PENDING) {
     OnDataWritten(result);
@@ -176,7 +176,7 @@ void SecurityKeySocket::DoRead() {
 
   int result = socket_->Read(
       read_buffer_.get(), kRequestReadBufferLength,
-      base::Bind(&SecurityKeySocket::OnDataRead, base::Unretained(this)));
+      base::BindOnce(&SecurityKeySocket::OnDataRead, base::Unretained(this)));
   if (result != net::ERR_IO_PENDING) {
     OnDataRead(result);
   }

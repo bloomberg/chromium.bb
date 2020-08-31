@@ -19,8 +19,8 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.ui.widget.text.AlertDialogEditText;
-import org.chromium.chrome.download.R;
+import org.chromium.chrome.browser.download.R;
+import org.chromium.components.browser_ui.widget.text.AlertDialogEditText;
 import org.chromium.components.offline_items_collection.RenameResult;
 
 /**
@@ -147,7 +147,7 @@ public class RenameDialogCustomView extends ScrollView {
 
     private void setErrorMessageVisibility(boolean hasError) {
         mErrorMessageView.setTextColor(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.error_text_color));
+                ApiCompatibilityUtils.getColor(getResources(), R.color.default_text_color_error));
         mErrorMessageView.setVisibility(hasError ? View.VISIBLE : View.GONE);
     }
 

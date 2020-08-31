@@ -21,13 +21,14 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_switches.h"
 #include "ui/latency/latency_info.h"
@@ -160,20 +161,19 @@ class CompositorEventAckBrowserTest : public ContentBrowserTest {
     RenderFrameSubmissionObserver observer(
         GetWidgetHost()->render_frame_metadata_provider());
     auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
-        GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
+        GetWidgetHost(), blink::WebInputEvent::Type::kMouseWheel);
 
     // This event never completes its processing. As kCompositorEventAckDataURL
     // will block the renderer's main thread once it is received.
     blink::WebMouseWheelEvent wheel_event =
         SyntheticWebMouseWheelEventBuilder::Build(
-            10, 10, 0, -53, 0,
-            ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+            10, 10, 0, -53, 0, ui::ScrollGranularity::kScrollByPrecisePixel);
     wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
     GetWidgetHost()->ForwardWheelEvent(wheel_event);
 
     // The compositor should send the event ack, and not be blocked by the event
     // above. The event watcher runs until we get the InputMsgAck callback
-    EXPECT_EQ(INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING,
+    EXPECT_EQ(blink::mojom::InputEventResultState::kSetNonBlocking,
               input_msg_watcher->WaitForAck());
 
     // Expect that the compositor scrolled at least one pixel while the
@@ -260,15 +260,15 @@ IN_PROC_BROWSER_TEST_F(CompositorEventAckBrowserTest,
   touch_event.SetTimeStamp(ui::EventTimeForNow());
   input_event_router->RouteTouchEvent(root_view, &touch_event,
                                       ui::LatencyInfo());
-  GetWidgetHost()->input_router()->OnSetTouchAction(cc::kTouchActionAuto);
+  GetWidgetHost()->input_router()->OnSetTouchAction(cc::TouchAction::kAuto);
 
   // Send GSB to start scrolling sequence.
   blink::WebGestureEvent gesture_scroll_begin(
-      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebGestureEvent::Type::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   gesture_scroll_begin.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
-      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+      ui::ScrollGranularity::kScrollByPrecisePixel;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
   gesture_scroll_begin.data.scroll_begin.delta_y_hint = -5.f;
   GetWidgetHost()->ForwardGestureEvent(gesture_scroll_begin);
@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(CompositorEventAckBrowserTest,
   //  Send a GFS and wait for the page to scroll making sure that fling progress
   //  has started.
   blink::WebGestureEvent gesture_fling_start(
-      blink::WebGestureEvent::kGestureFlingStart,
+      blink::WebGestureEvent::Type::kGestureFlingStart,
       blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   gesture_fling_start.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
   gesture_fling_start.data.fling_start.velocity_x = 0.f;
@@ -303,8 +303,8 @@ IN_PROC_BROWSER_TEST_F(CompositorEventAckBrowserTest,
   // uncancelable since there is an on-going fling with touchscreen source. The
   // test will timeout if the touch start event is cancelable since there is a
   // busy loop in the blocking touch start event listener.
-  InputEventAckWaiter touch_start_ack_observer(GetWidgetHost(),
-                                               WebInputEvent::kTouchStart);
+  InputEventAckWaiter touch_start_ack_observer(
+      GetWidgetHost(), WebInputEvent::Type::kTouchStart);
   touch_event.PressPoint(50, 50);
   touch_event.SetTimeStamp(ui::EventTimeForNow());
   input_event_router->RouteTouchEvent(root_view, &touch_event,

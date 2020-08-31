@@ -11,11 +11,13 @@
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
 
 namespace quic {
 namespace test {
@@ -81,9 +83,9 @@ TEST(CryptoFramerTest, ConstructHandshakeMessage) {
   CryptoFramer framer;
   std::unique_ptr<QuicData> data = framer.ConstructHandshakeMessage(message);
   ASSERT_TRUE(data != nullptr);
-  test::CompareCharArraysWithHexError("constructed packet", data->data(),
-                                      data->length(), AsChars(packet),
-                                      QUIC_ARRAYSIZE(packet));
+  quiche::test::CompareCharArraysWithHexError(
+      "constructed packet", data->data(), data->length(), AsChars(packet),
+      QUICHE_ARRAYSIZE(packet));
 }
 
 TEST(CryptoFramerTest, ConstructHandshakeMessageWithTwoKeys) {
@@ -117,9 +119,9 @@ TEST(CryptoFramerTest, ConstructHandshakeMessageWithTwoKeys) {
   std::unique_ptr<QuicData> data = framer.ConstructHandshakeMessage(message);
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet", data->data(),
-                                      data->length(), AsChars(packet),
-                                      QUIC_ARRAYSIZE(packet));
+  quiche::test::CompareCharArraysWithHexError(
+      "constructed packet", data->data(), data->length(), AsChars(packet),
+      QUICHE_ARRAYSIZE(packet));
 }
 
 TEST(CryptoFramerTest, ConstructHandshakeMessageZeroLength) {
@@ -144,9 +146,9 @@ TEST(CryptoFramerTest, ConstructHandshakeMessageZeroLength) {
   std::unique_ptr<QuicData> data = framer.ConstructHandshakeMessage(message);
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet", data->data(),
-                                      data->length(), AsChars(packet),
-                                      QUIC_ARRAYSIZE(packet));
+  quiche::test::CompareCharArraysWithHexError(
+      "constructed packet", data->data(), data->length(), AsChars(packet),
+      QUICHE_ARRAYSIZE(packet));
 }
 
 TEST(CryptoFramerTest, ConstructHandshakeMessageTooManyEntries) {
@@ -194,9 +196,9 @@ TEST(CryptoFramerTest, ConstructHandshakeMessageMinimumSize) {
   std::unique_ptr<QuicData> data = framer.ConstructHandshakeMessage(message);
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet", data->data(),
-                                      data->length(), AsChars(packet),
-                                      QUIC_ARRAYSIZE(packet));
+  quiche::test::CompareCharArraysWithHexError(
+      "constructed packet", data->data(), data->length(), AsChars(packet),
+      QUICHE_ARRAYSIZE(packet));
 }
 
 TEST(CryptoFramerTest, ConstructHandshakeMessageMinimumSizePadLast) {
@@ -230,9 +232,9 @@ TEST(CryptoFramerTest, ConstructHandshakeMessageMinimumSizePadLast) {
   std::unique_ptr<QuicData> data = framer.ConstructHandshakeMessage(message);
   ASSERT_TRUE(data != nullptr);
 
-  test::CompareCharArraysWithHexError("constructed packet", data->data(),
-                                      data->length(), AsChars(packet),
-                                      QUIC_ARRAYSIZE(packet));
+  quiche::test::CompareCharArraysWithHexError(
+      "constructed packet", data->data(), data->length(), AsChars(packet),
+      QUICHE_ARRAYSIZE(packet));
 }
 
 TEST(CryptoFramerTest, ProcessInput) {
@@ -262,7 +264,7 @@ TEST(CryptoFramerTest, ProcessInput) {
   };
 
   EXPECT_TRUE(framer.ProcessInput(
-      QuicStringPiece(AsChars(input), QUIC_ARRAYSIZE(input))));
+      quiche::QuicheStringPiece(AsChars(input), QUICHE_ARRAYSIZE(input))));
   EXPECT_EQ(0u, framer.InputBytesRemaining());
   EXPECT_EQ(0, visitor.error_count_);
   ASSERT_EQ(1u, visitor.messages_.size());
@@ -306,7 +308,7 @@ TEST(CryptoFramerTest, ProcessInputWithThreeKeys) {
   };
 
   EXPECT_TRUE(framer.ProcessInput(
-      QuicStringPiece(AsChars(input), QUIC_ARRAYSIZE(input))));
+      quiche::QuicheStringPiece(AsChars(input), QUICHE_ARRAYSIZE(input))));
   EXPECT_EQ(0u, framer.InputBytesRemaining());
   EXPECT_EQ(0, visitor.error_count_);
   ASSERT_EQ(1u, visitor.messages_.size());
@@ -344,8 +346,9 @@ TEST(CryptoFramerTest, ProcessInputIncrementally) {
       'g', 'h', 'i', 'j', 'k',
   };
 
-  for (size_t i = 0; i < QUIC_ARRAYSIZE(input); i++) {
-    EXPECT_TRUE(framer.ProcessInput(QuicStringPiece(AsChars(input) + i, 1)));
+  for (size_t i = 0; i < QUICHE_ARRAYSIZE(input); i++) {
+    EXPECT_TRUE(
+        framer.ProcessInput(quiche::QuicheStringPiece(AsChars(input) + i, 1)));
   }
   EXPECT_EQ(0u, framer.InputBytesRemaining());
   ASSERT_EQ(1u, visitor.messages_.size());
@@ -379,8 +382,8 @@ TEST(CryptoFramerTest, ProcessInputTagsOutOfOrder) {
   };
 
   EXPECT_FALSE(framer.ProcessInput(
-      QuicStringPiece(AsChars(input), QUIC_ARRAYSIZE(input))));
-  EXPECT_EQ(QUIC_CRYPTO_TAGS_OUT_OF_ORDER, framer.error());
+      quiche::QuicheStringPiece(AsChars(input), QUICHE_ARRAYSIZE(input))));
+  EXPECT_THAT(framer.error(), IsError(QUIC_CRYPTO_TAGS_OUT_OF_ORDER));
   EXPECT_EQ(1, visitor.error_count_);
 }
 
@@ -407,8 +410,8 @@ TEST(CryptoFramerTest, ProcessEndOffsetsOutOfOrder) {
   };
 
   EXPECT_FALSE(framer.ProcessInput(
-      QuicStringPiece(AsChars(input), QUIC_ARRAYSIZE(input))));
-  EXPECT_EQ(QUIC_CRYPTO_TAGS_OUT_OF_ORDER, framer.error());
+      quiche::QuicheStringPiece(AsChars(input), QUICHE_ARRAYSIZE(input))));
+  EXPECT_THAT(framer.error(), IsError(QUIC_CRYPTO_TAGS_OUT_OF_ORDER));
   EXPECT_EQ(1, visitor.error_count_);
 }
 
@@ -427,8 +430,8 @@ TEST(CryptoFramerTest, ProcessInputTooManyEntries) {
   };
 
   EXPECT_FALSE(framer.ProcessInput(
-      QuicStringPiece(AsChars(input), QUIC_ARRAYSIZE(input))));
-  EXPECT_EQ(QUIC_CRYPTO_TOO_MANY_ENTRIES, framer.error());
+      quiche::QuicheStringPiece(AsChars(input), QUICHE_ARRAYSIZE(input))));
+  EXPECT_THAT(framer.error(), IsError(QUIC_CRYPTO_TOO_MANY_ENTRIES));
   EXPECT_EQ(1, visitor.error_count_);
 }
 
@@ -455,7 +458,7 @@ TEST(CryptoFramerTest, ProcessInputZeroLength) {
   };
 
   EXPECT_TRUE(framer.ProcessInput(
-      QuicStringPiece(AsChars(input), QUIC_ARRAYSIZE(input))));
+      quiche::QuicheStringPiece(AsChars(input), QUICHE_ARRAYSIZE(input))));
   EXPECT_EQ(0, visitor.error_count_);
 }
 

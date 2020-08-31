@@ -28,6 +28,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -262,6 +263,10 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
         base::BindRepeating(&DriveInternalsWebUIHandler::OnPeriodicUpdate,
                             weak_ptr_factory_.GetWeakPtr()));
     web_ui()->RegisterMessageCallback(
+        "restartDrive",
+        base::BindRepeating(&DriveInternalsWebUIHandler::RestartDrive,
+                            weak_ptr_factory_.GetWeakPtr()));
+    web_ui()->RegisterMessageCallback(
         "resetDriveFileSystem",
         base::BindRepeating(&DriveInternalsWebUIHandler::ResetDriveFileSystem,
                             weak_ptr_factory_.GetWeakPtr()));
@@ -283,7 +288,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
     UpdateDriveRelatedPreferencesSection();
     UpdateGCacheContentsSection();
-    UpdateLocalStorageUsageSection();
     UpdatePathConfigurationsSection();
 
     UpdateConnectionStatusSection();
@@ -293,6 +297,8 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     UpdateCacheContentsSection();
 
     UpdateInFlightOperationsSection();
+
+    UpdateDriveDebugSection();
 
     // When the drive-internals page is reloaded by the reload key, the page
     // content is recreated, but this WebUI object is not (instead, OnPageLoaded
@@ -401,16 +407,14 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     MaybeCallJavascript("updatePathConfigurations", std::move(paths));
   }
 
-  void UpdateLocalStorageUsageSection() {
-    SetSectionEnabled("local-metadata-section", true);
+  void UpdateDriveDebugSection() {
+    SetSectionEnabled("drive-debug", true);
 
     // Propagate the amount of local free space in bytes.
     base::FilePath home_path;
     if (base::PathService::Get(base::DIR_HOME, &home_path)) {
-      base::PostTaskAndReplyWithResult(
-          FROM_HERE,
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_VISIBLE},
+      base::ThreadPool::PostTaskAndReplyWithResult(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace, home_path),
           base::BindOnce(&DriveInternalsWebUIHandler::OnGetFreeDiskSpace,
                          weak_ptr_factory_.GetWeakPtr()));
@@ -502,10 +506,8 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
         "updateOtherServiceLogsUrl",
         base::Value(net::FilePathToFileURL(log_path.DirName()).spec()));
 
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&GetServiceLogContents, log_path,
                        service_log_file_inode_, last_sent_line_number_),
         base::BindOnce(&DriveInternalsWebUIHandler::OnServiceLogRead,
@@ -535,10 +537,8 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
     const base::FilePath root_path =
         drive::util::GetCacheRootPath(profile()).DirName();
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&GetGCacheContents, root_path),
         base::BindOnce(&DriveInternalsWebUIHandler::OnGetGCacheContents,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -552,6 +552,17 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
                         std::move(response.second));
   }
 
+  // Called when the "Restart Drive" button on the page is pressed.
+  void RestartDrive(const base::ListValue* args) {
+    AllowJavascript();
+
+    drive::DriveIntegrationService* integration_service =
+        GetIntegrationService();
+    if (integration_service) {
+      integration_service->RestartDrive();
+    }
+  }
+
   // Called when the corresponding button on the page is pressed.
   void ResetDriveFileSystem(const base::ListValue* args) {
     AllowJavascript();
@@ -560,8 +571,8 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
         GetIntegrationService();
     if (integration_service) {
       integration_service->ClearCacheAndRemountFileSystem(
-          base::Bind(&DriveInternalsWebUIHandler::ResetFinished,
-                     weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(&DriveInternalsWebUIHandler::ResetFinished,
+                         weak_ptr_factory_.GetWeakPtr()));
     }
   }
 
@@ -625,10 +636,8 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
         drive_internals_(std::move(drive_internals)) {}
 
   void Start() {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&LogsZipper::EnumerateLogFiles, logs_directory_,
                        zip_path_),
         base::BindOnce(&LogsZipper::ZipLogFiles, base::Unretained(this)));
@@ -639,7 +648,7 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
 
   void ZipLogFiles(const std::vector<base::FilePath>& files) {
     (new ZipFileCreator(
-         base::BindRepeating(&LogsZipper::OnZipDone, base::Unretained(this)),
+         base::BindOnce(&LogsZipper::OnZipDone, base::Unretained(this)),
          logs_directory_, files, zip_path_))
         ->Start(LaunchFileUtilService());
   }
@@ -684,9 +693,8 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
   }
 
   void CleanUp() {
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), zip_path_,
                        false));
     download_notifier_.reset();

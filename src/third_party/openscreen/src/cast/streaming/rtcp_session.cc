@@ -4,14 +4,14 @@
 
 #include "cast/streaming/rtcp_session.h"
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 RtcpSession::RtcpSession(Ssrc sender_ssrc,
                          Ssrc receiver_ssrc,
-                         openscreen::platform::Clock::time_point start_time)
+                         Clock::time_point start_time)
     : sender_ssrc_(sender_ssrc),
       receiver_ssrc_(receiver_ssrc),
       ntp_converter_(start_time) {
@@ -22,5 +22,5 @@ RtcpSession::RtcpSession(Ssrc sender_ssrc,
 
 RtcpSession::~RtcpSession() = default;
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

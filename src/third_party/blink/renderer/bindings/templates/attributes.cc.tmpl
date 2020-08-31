@@ -71,10 +71,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.cached_attribute_validation_method %}
   // [CachedAttribute]
-  {% if cpp_class == 'History' and attribute.camel_case_name == 'State' %}
-  V8PrivateProperty::Symbol property_symbol =
-      V8PrivateProperty::GetHistoryStateSymbol(info.GetIsolate());
-  {% else %}
   {% if not attribute.private_property_is_shared_between_getter_and_setter %}
   static const V8PrivateProperty::SymbolKey kPrivateProperty{{attribute.camel_case_name}};
 
@@ -82,7 +78,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
           kPrivateProperty{{attribute.camel_case_name}});
-  {% endif %}
   if (!static_cast<const {{cpp_class}}*>(impl)->{{attribute.cached_attribute_validation_method}}()) {
     v8::Local<v8::Value> v8_value;
     if (property_symbol.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
@@ -138,9 +133,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% if attribute.is_getter_raises_exception %}
   {{define_exception_state}}
   {% endif %}
-  {% if attribute.is_explicit_nullable %}
-  bool is_null = false;
-  {% endif %}
 
   {% if attribute.cpp_value_original %}
   {{attribute.cpp_type}} {{attribute.cpp_value}}({{attribute.cpp_value_original}});
@@ -163,17 +155,21 @@ const v8::FunctionCallbackInfo<v8::Value>& info
       | trim | indent(2)}}
   {% endif %}
 
+  {% if attribute.is_explicit_nullable %}
+  if (!{{attribute.cpp_value}}.has_value()) {
+    {% if attribute.cached_attribute_validation_method %}
+    // [CachedAttribute]
+    property_symbol.Set(holder, v8::Null(info.GetIsolate()));
+    {% endif %}
+    V8SetReturnValueNull(info);
+    return;
+  }
+  {% endif %}
+
   {% if attribute.cached_attribute_validation_method %}
   // [CachedAttribute]
   v8::Local<v8::Value> v8_value({{attribute.cpp_value_to_v8_value}});
   property_symbol.Set(holder, v8_value);
-  {% endif %}
-
-  {% if attribute.is_explicit_nullable %}
-  if (is_null) {
-    V8SetReturnValueNull(info);
-    return;
-  }
   {% endif %}
 
   {% if attribute.is_keep_alive_for_gc %}
@@ -440,9 +436,10 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
     if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues),
                      "{{attribute.enum_type}}", dummy_exception_state)) {
       ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
-          ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                                 mojom::ConsoleMessageLevel::kWarning,
-                                 dummy_exception_state.Message()));
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kWarning,
+              dummy_exception_state.Message()));
       return;
     }
   }
@@ -560,9 +557,10 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}AttributeSetterCallba
 
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
-{% set cached_property_key = 'V8PrivateProperty::k' +
+{% set cached_property_key = 'V8PrivateProperty::CachedAccessor::' +
     (attribute.cached_accessor_name if attribute.is_cached_accessor
-     else 'NoCachedAccessor') %}
+     else 'kNone') %}
+{% set cached_property_key = 'static_cast<unsigned>(%s)' % cached_property_key %}
 {% set holder_check = 'V8DOMConfiguration::kDoNotCheckHolder'
     if attribute.is_lenient_this or attribute.has_promise_type
     else 'V8DOMConfiguration::kCheckHolder' %}

@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_FILE_HANDLER_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_FILE_HANDLER_MANAGER_H_
 
+#include <map>
 #include <vector>
 
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "components/services/app_service/public/cpp/file_handler_info.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 
 class Profile;
 
@@ -20,8 +20,8 @@ class WebAppFileHandlerManager : public FileHandlerManager {
   explicit WebAppFileHandlerManager(Profile* profile);
   ~WebAppFileHandlerManager() override;
 
-  const std::vector<apps::FileHandlerInfo>* GetFileHandlers(
-      const AppId& app_id) override;
+ protected:
+  const apps::FileHandlers* GetAllFileHandlers(const AppId& app_id) override;
 };
 
 }  // namespace web_app

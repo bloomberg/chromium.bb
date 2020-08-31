@@ -11,7 +11,6 @@
 #include "include/core/SkPath.h"
 #include "include/core/SkRRect.h"
 #include "include/gpu/GrContext.h"
-#include "src/core/SkMakeUnique.h"
 #include "src/core/SkRectPriv.h"
 #include "src/gpu/GrColorInfo.h"
 #include "src/gpu/GrProcessorUnitTest.h"
@@ -337,11 +336,13 @@ sk_sp<GrColorSpaceXform> TestColorXform(SkRandom* random) {
 }
 
 TestAsFPArgs::TestAsFPArgs(GrProcessorTestData* d)
-        : fViewMatrixStorage(TestMatrix(d->fRandom))
-        , fColorInfoStorage(skstd::make_unique<GrColorInfo>(
+        : fMatrixProvider(TestMatrix(d->fRandom))
+        , fColorInfoStorage(std::make_unique<GrColorInfo>(
                   GrColorType::kRGBA_8888, kPremul_SkAlphaType, TestColorSpace(d->fRandom)))
-        , fArgs(d->context(), &fViewMatrixStorage, kNone_SkFilterQuality, fColorInfoStorage.get()) {
-}
+        , fArgs(d->context(),
+                fMatrixProvider,
+                kNone_SkFilterQuality,
+                fColorInfoStorage.get()) {}
 
 TestAsFPArgs::~TestAsFPArgs() {}
 

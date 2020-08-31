@@ -29,12 +29,12 @@
 #include "chrome/browser/media/router/mojo/media_sink_service_status.h"
 #include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -112,7 +112,8 @@ content::WebContents* GetWebContentsFromId(
       for (int i = 0; i < target_tab_strip->count(); ++i) {
         content::WebContents* target_contents =
             target_tab_strip->GetWebContentsAt(i);
-        if (SessionTabHelper::IdForTab(target_contents).id() == tab_id) {
+        if (sessions::SessionTabHelper::IdForTab(target_contents).id() ==
+            tab_id) {
           return target_contents;
         }
       }
@@ -139,15 +140,19 @@ MediaRouteProviderId FixProviderId(MediaRouteProviderId provider_id) {
 
 DesktopMediaPickerController::Params MakeDesktopPickerParams(
     content::WebContents* web_contents) {
+#ifndef OS_CHROMEOS
+  DCHECK(web_contents);
+#endif
+
   DesktopMediaPickerController::Params params;
   // Value of |web_contents| comes from the UI, and typically corresponds to
   // the active tab.
   params.web_contents = web_contents;
-  params.context = web_contents->GetTopLevelNativeWindow();
+  if (web_contents)
+    params.context = web_contents->GetTopLevelNativeWindow();
   params.app_name = l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   params.target_name = params.app_name;
-  // TODO(crbug.com/637643): Change to true after privacy approval.
-  params.select_only_screen = false;
+  params.select_only_screen = true;
   return params;
 }
 
@@ -327,9 +332,9 @@ void MediaRouterMojoImpl::CreateRoute(const MediaSource::Id& source_id,
                        presentation_id, origin, web_contents, timeout,
                        incognito, std::move(mr_callback)));
   } else {
-    const int tab_id = source.IsTabMirroringSource()
-                           ? SessionTabHelper::IdForTab(web_contents).id()
-                           : -1;
+    // Previously the tab ID was set to -1 for non-mirroring sessions, which
+    // mostly works, but it breaks auto-joining.
+    const int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
     media_route_providers_[provider_id]->CreateRoute(
         source_id, sink_id, presentation_id, origin, tab_id, timeout, incognito,
         std::move(mr_callback));
@@ -360,7 +365,7 @@ void MediaRouterMojoImpl::JoinRoute(const MediaSource::Id& source_id,
     return;
   }
 
-  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
+  int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
   auto mr_callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
       presentation_id, *provider_id, incognito, std::move(callback), true);
@@ -387,7 +392,7 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
     return;
   }
 
-  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
+  int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
   auto mr_callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
@@ -456,29 +461,6 @@ void MediaRouterMojoImpl::SendRouteBinaryMessage(
 }
 
 void MediaRouterMojoImpl::OnUserGesture() {}
-
-void MediaRouterMojoImpl::SearchSinks(
-    const MediaSink::Id& sink_id,
-    const MediaSource::Id& source_id,
-    const std::string& search_input,
-    const std::string& domain,
-    MediaSinkSearchResponseCallback sink_callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::Optional<MediaRouteProviderId> provider_id =
-      GetProviderIdForSink(sink_id);
-  if (!provider_id) {
-    DVLOG_WITH_INSTANCE(1) << __func__ << ": sink not found: " << sink_id;
-    std::move(sink_callback).Run("");
-    return;
-  }
-
-  auto sink_search_criteria = mojom::SinkSearchCriteria::New();
-  sink_search_criteria->input = search_input;
-  sink_search_criteria->domain = domain;
-  media_route_providers_[*provider_id]->SearchSinks(
-      sink_id, source_id, std::move(sink_search_criteria),
-      std::move(sink_callback));
-}
 
 void MediaRouterMojoImpl::GetMediaController(
     const MediaRoute::Id& route_id,
@@ -981,12 +963,10 @@ void MediaRouterMojoImpl::GetMediaSinkServiceStatus(
 void MediaRouterMojoImpl::GetMirroringServiceHostForTab(
     int32_t target_tab_id,
     mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost> receiver) {
-  if (ShouldUseMirroringService()) {
-    mirroring::CastMirroringServiceHost::GetForTab(
-        GetWebContentsFromId(target_tab_id, context_,
-                             true /* include_incognito */),
-        std::move(receiver));
-  }
+  mirroring::CastMirroringServiceHost::GetForTab(
+      GetWebContentsFromId(target_tab_id, context_,
+                           true /* include_incognito */),
+      std::move(receiver));
 }
 
 // TODO(crbug.com/809249): This method is currently part of a Mojo interface,
@@ -1015,7 +995,7 @@ void MediaRouterMojoImpl::GetMirroringServiceHostForDesktop(
     }
     mirroring::CastMirroringServiceHost::GetForDesktop(media_id,
                                                        std::move(receiver));
-  } else if (ShouldUseMirroringService()) {
+  } else {
     // This code path is taken when the mirroring service is enabled
     // but the native Cast MRP is not.
     //
@@ -1032,7 +1012,7 @@ void MediaRouterMojoImpl::GetMirroringServiceHostForOffscreenTab(
     const GURL& presentation_url,
     const std::string& presentation_id,
     mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost> receiver) {
-  if (ShouldUseMirroringService() && IsValidPresentationUrl(presentation_url)) {
+  if (IsValidPresentationUrl(presentation_url)) {
     mirroring::CastMirroringServiceHost::GetForOffscreenTab(
         context_, presentation_url, presentation_id, std::move(receiver));
   }
@@ -1046,14 +1026,15 @@ void MediaRouterMojoImpl::BindToMojoReceiver(
 base::Optional<MediaRouteProviderId> MediaRouterMojoImpl::GetProviderIdForRoute(
     const MediaRoute::Id& route_id) {
   for (const auto& routes_query : routes_queries_) {
-    for (const auto& provider_to_routes :
-         routes_query.second->providers_to_routes()) {
+    MediaRoutesQuery* query = routes_query.second.get();
+    for (const auto& provider_to_routes : query->providers_to_routes()) {
+      const MediaRouteProviderId provider_id = provider_to_routes.first;
       const std::vector<MediaRoute>& routes = provider_to_routes.second;
       if (std::find_if(routes.begin(), routes.end(),
                        [&route_id](const MediaRoute& route) {
                          return route.media_route_id() == route_id;
                        }) != routes.end()) {
-        return provider_to_routes.first;
+        return provider_id;
       }
     }
   }
@@ -1071,14 +1052,17 @@ base::Optional<MediaRouteProviderId>
 MediaRouterMojoImpl::GetProviderIdForPresentation(
     const std::string& presentation_id) {
   for (const auto& routes_query : routes_queries_) {
-    for (const auto& provider_to_routes :
-         routes_query.second->providers_to_routes()) {
+    MediaRoutesQuery* query = routes_query.second.get();
+    for (const auto& provider_to_routes : query->providers_to_routes()) {
+      const MediaRouteProviderId provider_id = provider_to_routes.first;
       const std::vector<MediaRoute>& routes = provider_to_routes.second;
-      if (std::find_if(routes.begin(), routes.end(),
-                       [&presentation_id](const MediaRoute& route) {
-                         return route.presentation_id() == presentation_id;
-                       }) != routes.end()) {
-        return provider_to_routes.first;
+      auto pred = [&presentation_id](const MediaRoute& route) {
+        return route.presentation_id() == presentation_id;
+      };
+      DCHECK_LE(std::count_if(routes.begin(), routes.end(), pred), 1)
+          << "Found multiple routes for presentation ID " << presentation_id;
+      if (std::find_if(routes.begin(), routes.end(), pred) != routes.end()) {
+        return provider_id;
       }
     }
   }
@@ -1092,9 +1076,12 @@ const MediaSink* MediaRouterMojoImpl::GetSinkById(
   for (const auto& sinks_query : sinks_queries_) {
     const std::vector<MediaSink>& sinks =
         sinks_query.second->cached_sink_list();
-    auto sink_it = std::find_if(
-        sinks.begin(), sinks.end(),
-        [&sink_id](const MediaSink& sink) { return sink.id() == sink_id; });
+    auto pred = [&sink_id](const MediaSink& sink) {
+      return sink.id() == sink_id;
+    };
+    DCHECK_LE(std::count_if(sinks.begin(), sinks.end(), pred), 1)
+        << "Found multiple sinks with ID " << sink_id;
+    auto sink_it = std::find_if(sinks.begin(), sinks.end(), pred);
     if (sink_it != sinks.end())
       return &(*sink_it);
   }
@@ -1125,7 +1112,6 @@ void MediaRouterMojoImpl::CreateRouteWithSelectedDesktop(
              RouteRequestResult::CANCELLED);
     return;
   }
-  content::RenderFrameHost* const main_frame = web_contents->GetMainFrame();
 
   // TODO(jrw): This is kind of ridiculous.  The PendingStreamRequest struct
   // only exists to store the arguments given to
@@ -1140,9 +1126,13 @@ void MediaRouterMojoImpl::CreateRouteWithSelectedDesktop(
   DCHECK(!pending_stream_request_);
   pending_stream_request_.emplace();
   PendingStreamRequest& request = *pending_stream_request_;
+#ifndef OS_CHROMEOS
+  DCHECK(web_contents);
+  content::RenderFrameHost* const main_frame = web_contents->GetMainFrame();
   request.render_process_id = main_frame->GetProcess()->GetID();
   request.render_frame_id = main_frame->GetRoutingID();
   request.origin = url::Origin::Create(web_contents->GetVisibleURL());
+#endif
   request.stream_id =
       content::DesktopStreamsRegistry::GetInstance()->RegisterStream(
           request.render_process_id, request.render_frame_id, request.origin,

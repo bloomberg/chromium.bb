@@ -175,11 +175,11 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 
 @implementation QRScannerViewControllerTestCase {
   // A swizzler for the CameraController method cameraControllerWithDelegate:.
-  std::unique_ptr<EarlGreyScopedBlockSwizzler> camera_controller_swizzler_;
+  std::unique_ptr<EarlGreyScopedBlockSwizzler> _camera_controller_swizzler;
   // A swizzler for the LocationBarCoordinator method
   // loadGURLFromLocationBar:transition:.
   std::unique_ptr<EarlGreyScopedBlockSwizzler>
-      load_GURL_from_location_bar_swizzler_;
+      _load_GURL_from_location_bar_swizzler;
 }
 
 #if defined(CHROME_EARL_GREY_1)
@@ -217,8 +217,8 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 
 - (void)tearDown {
   [super tearDown];
-  load_GURL_from_location_bar_swizzler_.reset();
-  camera_controller_swizzler_.reset();
+  _load_GURL_from_location_bar_swizzler.reset();
+  _camera_controller_swizzler.reset();
 }
 
 // Checks that the close button is visible, interactable, and enabled.
@@ -352,7 +352,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   id swizzleCameraControllerBlock = [QRScannerAppInterface
       cameraControllerSwizzleBlockWithMock:cameraControllerMock];
 
-  camera_controller_swizzler_ = std::make_unique<EarlGreyScopedBlockSwizzler>(
+  _camera_controller_swizzler = std::make_unique<EarlGreyScopedBlockSwizzler>(
       @"QRScannerViewController", @"cameraController",
       swizzleCameraControllerBlock);
 }
@@ -366,7 +366,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   id loadGURLFromLocationBarBlock = [QRScannerAppInterface
       locationBarCoordinatorLoadGURLFromLocationBarSwizzleBlockForSearchURL:
           replacementNSURL];
-  load_GURL_from_location_bar_swizzler_ =
+  _load_GURL_from_location_bar_swizzler =
       std::make_unique<EarlGreyScopedBlockSwizzler>(
           @"LocationBarCoordinator",
           @"loadGURLFromLocationBar:postContent:transition:disposition:",
@@ -643,8 +643,15 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 }
 
 // Tests that an error dialog is dismissed if the camera becomes available.
-// TODO(crbug.com/1019211): Re-enable test on iOS12.
-- (void)testDialogDismissedIfCameraBecomesAvailable {
+// TODO(crbug.com/1036094): Re-enable test on device.
+#if defined(CHROME_EARL_GREY_1) && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testDialogDismissedIfCameraBecomesAvailable \
+  DISABLED_testDialogDismissedIfCameraBecomesAvailable
+#else
+#define MAYBE_testDialogDismissedIfCameraBecomesAvailable \
+  testDialogDismissedIfCameraBecomesAvailable
+#endif
+- (void)MAYBE_testDialogDismissedIfCameraBecomesAvailable {
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];

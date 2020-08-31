@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/dom/mutation_observer_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_mutation_observer_init.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -19,7 +19,9 @@ class EmptyMutationCallback : public MutationObserver::Delegate {
  public:
   explicit EmptyMutationCallback(Document& document) : document_(document) {}
 
-  ExecutionContext* GetExecutionContext() const override { return document_; }
+  ExecutionContext* GetExecutionContext() const override {
+    return document_->GetExecutionContext();
+  }
 
   void Deliver(const MutationRecordVector&, MutationObserver&) override {}
 
@@ -39,7 +41,7 @@ TEST(MutationObserverTest, DisconnectCrash) {
   auto* root =
       To<HTMLElement>(document->CreateRawElement(html_names::kHTMLTag));
   document->AppendChild(root);
-  root->SetInnerHTMLFromString("<head><title>\n</title></head><body></body>");
+  root->setInnerHTML("<head><title>\n</title></head><body></body>");
   Node* head = root->firstChild()->firstChild();
   DCHECK(head);
   Persistent<MutationObserver> observer = MutationObserver::Create(

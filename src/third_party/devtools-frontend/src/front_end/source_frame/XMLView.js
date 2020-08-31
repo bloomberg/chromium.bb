@@ -1,11 +1,17 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+import * as UI from '../ui/ui.js';
+
 /**
- * @implements {UI.Searchable}
+ * @implements {UI.SearchableView.Searchable}
  * @unrestricted
  */
-export class XMLView extends UI.Widget {
+export class XMLView extends UI.Widget.Widget {
   /**
    * @param {!Document} parsedXML
    */
@@ -13,15 +19,15 @@ export class XMLView extends UI.Widget {
     super(true);
     this.registerRequiredCSS('source_frame/xmlView.css');
     this.contentElement.classList.add('shadow-xml-view', 'source-code');
-    this._treeOutline = new UI.TreeOutlineInShadow();
+    this._treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
     this._treeOutline.registerRequiredCSS('source_frame/xmlTree.css');
     this.contentElement.appendChild(this._treeOutline.element);
 
-    /** @type {?UI.SearchableView} */
+    /** @type {?UI.SearchableView.SearchableView} */
     this._searchableView;
     /** @type {number} */
     this._currentSearchFocusIndex = 0;
-    /** @type {!Array.<!UI.TreeElement>} */
+    /** @type {!Array.<!UI.TreeOutline.TreeElement>} */
     this._currentSearchTreeElements = [];
     /** @type {?UI.SearchableView.SearchConfig} */
     this._searchConfig;
@@ -32,12 +38,12 @@ export class XMLView extends UI.Widget {
 
   /**
    * @param {!Document} parsedXML
-   * @return {!UI.SearchableView}
+   * @return {!UI.SearchableView.SearchableView}
    */
   static createSearchableView(parsedXML) {
     const xmlView = new XMLView(parsedXML);
-    const searchableView = new UI.SearchableView(xmlView);
-    searchableView.setPlaceholder(Common.UIString('Find'));
+    const searchableView = new UI.SearchableView.SearchableView(xmlView);
+    searchableView.setPlaceholder(Common.UIString.UIString('Find'));
     xmlView._searchableView = searchableView;
     xmlView.show(searchableView.element);
     return searchableView;
@@ -81,7 +87,7 @@ export class XMLView extends UI.Widget {
       if (shouldJump) {
         newFocusElement.reveal(true);
       }
-      newFocusElement.setSearchRegex(regex, UI.highlightedCurrentSearchResultClassName);
+      newFocusElement.setSearchRegex(regex, UI.UIUtils.highlightedCurrentSearchResultClassName);
     } else {
       this._updateSearchIndex(0);
     }
@@ -145,7 +151,7 @@ export class XMLView extends UI.Widget {
       this._updateSearchIndex(0);
       return;
     }
-    newIndex = mod(newIndex, this._currentSearchTreeElements.length);
+    newIndex = Platform.NumberUtilities.mod(newIndex, this._currentSearchTreeElements.length);
 
     this._jumpToMatch(newIndex, shouldJump);
   }
@@ -189,7 +195,8 @@ export class XMLView extends UI.Widget {
       return;
     }
 
-    const newIndex = mod(this._currentSearchFocusIndex + 1, this._currentSearchTreeElements.length);
+    const newIndex =
+        Platform.NumberUtilities.mod(this._currentSearchFocusIndex + 1, this._currentSearchTreeElements.length);
     this._jumpToMatch(newIndex, true);
   }
 
@@ -201,7 +208,8 @@ export class XMLView extends UI.Widget {
       return;
     }
 
-    const newIndex = mod(this._currentSearchFocusIndex - 1, this._currentSearchTreeElements.length);
+    const newIndex =
+        Platform.NumberUtilities.mod(this._currentSearchFocusIndex - 1, this._currentSearchTreeElements.length);
     this._jumpToMatch(newIndex, true);
   }
 
@@ -226,7 +234,7 @@ export class XMLView extends UI.Widget {
 /**
  * @unrestricted
  */
-export class XMLViewNode extends UI.TreeElement {
+export class XMLViewNode extends UI.TreeOutline.TreeElement {
   /**
    * @param {!Node} node
    * @param {boolean} closeTag
@@ -244,7 +252,7 @@ export class XMLViewNode extends UI.TreeElement {
   }
 
   /**
-   * @param {!UI.TreeOutline|!UI.TreeElement} root
+   * @param {!UI.TreeOutline.TreeOutline|!UI.TreeOutline.TreeElement} root
    * @param {!Node} xmlNode
    * @param {!XMLView} xmlView
    */
@@ -280,7 +288,7 @@ export class XMLViewNode extends UI.TreeElement {
       return false;
     }
     regex.lastIndex = 0;
-    let cssClasses = UI.highlightedSearchResultClassName;
+    let cssClasses = UI.UIUtils.highlightedSearchResultClassName;
     if (additionalCssClassName) {
       cssClasses += ' ' + additionalCssClassName;
     }
@@ -288,24 +296,24 @@ export class XMLViewNode extends UI.TreeElement {
     let match = regex.exec(content);
     const ranges = [];
     while (match) {
-      ranges.push(new TextUtils.SourceRange(match.index, match[0].length));
+      ranges.push(new TextUtils.TextRange.SourceRange(match.index, match[0].length));
       match = regex.exec(content);
     }
     if (ranges.length) {
-      UI.highlightRangesWithStyleClass(this.listItemElement, ranges, cssClasses, this._highlightChanges);
+      UI.UIUtils.highlightRangesWithStyleClass(this.listItemElement, ranges, cssClasses, this._highlightChanges);
     }
     return !!this._highlightChanges.length;
   }
 
   revertHighlightChanges() {
-    UI.revertDomChanges(this._highlightChanges);
+    UI.UIUtils.revertDomChanges(this._highlightChanges);
     this._highlightChanges = [];
   }
 
   _updateTitle() {
     const node = this._node;
     switch (node.nodeType) {
-      case 1:  // ELEMENT
+      case 1: {  // ELEMENT
         const tag = node.tagName;
         if (this._closeTag) {
           this._setTitle(['</' + tag + '>', 'shadow-xml-view-tag']);
@@ -323,7 +331,7 @@ export class XMLViewNode extends UI.TreeElement {
         if (!this.expanded) {
           if (node.childElementCount) {
             titleItems.push(
-                '>', 'shadow-xml-view-tag', '\u2026', 'shadow-xml-view-comment', '</' + tag, 'shadow-xml-view-tag');
+                '>', 'shadow-xml-view-tag', '…', 'shadow-xml-view-comment', '</' + tag, 'shadow-xml-view-tag');
           } else if (this._node.textContent) {
             titleItems.push(
                 '>', 'shadow-xml-view-tag', node.textContent, 'shadow-xml-view-text', '</' + tag,
@@ -335,20 +343,25 @@ export class XMLViewNode extends UI.TreeElement {
         titleItems.push('>', 'shadow-xml-view-tag');
         this._setTitle(titleItems);
         return;
-      case 3:  // TEXT
+      }
+      case 3: {  // TEXT
         this._setTitle([node.nodeValue, 'shadow-xml-view-text']);
         return;
-      case 4:  // CDATA
+      }
+      case 4: {  // CDATA
         this._setTitle([
           '<![CDATA[', 'shadow-xml-view-cdata', node.nodeValue, 'shadow-xml-view-text', ']]>', 'shadow-xml-view-cdata'
         ]);
         return;
-      case 7:  // PROCESSING_INSTRUCTION
+      }
+      case 7: {  // PROCESSING_INSTRUCTION
         this._setTitle(['<?' + node.nodeName + ' ' + node.nodeValue + '?>', 'shadow-xml-view-processing-instruction']);
         return;
-      case 8:  // COMMENT
+      }
+      case 8: {  // COMMENT
         this._setTitle(['<!--' + node.nodeValue + '-->', 'shadow-xml-view-comment']);
         return;
+      }
     }
   }
 
@@ -394,15 +407,3 @@ export class XMLViewNode extends UI.TreeElement {
     this.appendChild(new XMLViewNode(this._node, true, this._xmlView));
   }
 }
-
-/* Legacy exported object */
-self.SourceFrame = self.SourceFrame || {};
-
-/* Legacy exported object */
-SourceFrame = SourceFrame || {};
-
-/** @constructor */
-SourceFrame.XMLView = XMLView;
-
-/** @constructor */
-SourceFrame.XMLView.Node = XMLViewNode;

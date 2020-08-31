@@ -12,15 +12,18 @@
 namespace blink {
 
 // SensorProviderProxy
-SensorProviderProxy::SensorProviderProxy(Document& document)
-    : Supplement<Document>(document), inspector_mode_(false) {}
+SensorProviderProxy::SensorProviderProxy(LocalDOMWindow& window)
+    : Supplement<LocalDOMWindow>(window),
+      sensor_provider_(&window),
+      inspector_mode_(false) {}
 
 void SensorProviderProxy::InitializeIfNeeded() {
   if (IsInitialized())
     return;
 
   GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
-      sensor_provider_.BindNewPipeAndPassReceiver());
+      sensor_provider_.BindNewPipeAndPassReceiver(
+          GetSupplementable()->GetTaskRunner(TaskType::kSensor)));
   sensor_provider_.set_disconnect_handler(
       WTF::Bind(&SensorProviderProxy::OnSensorProviderConnectionError,
                 WrapWeakPersistent(this)));
@@ -30,13 +33,13 @@ void SensorProviderProxy::InitializeIfNeeded() {
 const char SensorProviderProxy::kSupplementName[] = "SensorProvider";
 
 // static
-SensorProviderProxy* SensorProviderProxy::From(Document* document) {
-  DCHECK(document);
+SensorProviderProxy* SensorProviderProxy::From(LocalDOMWindow* window) {
+  DCHECK(window);
   SensorProviderProxy* provider_proxy =
-      Supplement<Document>::From<SensorProviderProxy>(*document);
+      Supplement<LocalDOMWindow>::From<SensorProviderProxy>(*window);
   if (!provider_proxy) {
-    provider_proxy = MakeGarbageCollected<SensorProviderProxy>(*document);
-    Supplement<Document>::ProvideTo(*document, provider_proxy);
+    provider_proxy = MakeGarbageCollected<SensorProviderProxy>(*window);
+    Supplement<LocalDOMWindow>::ProvideTo(*window, provider_proxy);
   }
   provider_proxy->InitializeIfNeeded();
   return provider_proxy;
@@ -44,9 +47,10 @@ SensorProviderProxy* SensorProviderProxy::From(Document* document) {
 
 SensorProviderProxy::~SensorProviderProxy() = default;
 
-void SensorProviderProxy::Trace(blink::Visitor* visitor) {
+void SensorProviderProxy::Trace(Visitor* visitor) {
   visitor->Trace(sensor_proxies_);
-  Supplement<Document>::Trace(visitor);
+  visitor->Trace(sensor_provider_);
+  Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
 SensorProxy* SensorProviderProxy::CreateSensorProxy(

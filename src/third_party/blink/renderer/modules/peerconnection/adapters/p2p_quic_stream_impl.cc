@@ -96,7 +96,8 @@ void P2PQuicStreamImpl::OnDataAvailable() {
   }
 }
 
-void P2PQuicStreamImpl::OnStreamDataConsumed(size_t bytes_consumed) {
+void P2PQuicStreamImpl::OnStreamDataConsumed(
+    quic::QuicByteCount bytes_consumed) {
   // We should never consume more than has been written.
   DCHECK_GE(write_buffered_amount_, bytes_consumed);
   QuicStream::OnStreamDataConsumed(bytes_consumed);
@@ -131,8 +132,8 @@ void P2PQuicStreamImpl::WriteData(Vector<uint8_t> data, bool fin) {
   DCHECK_GE(write_buffer_size_, data.size() + write_buffered_amount_);
   write_buffered_amount_ += data.size();
   QuicStream::WriteOrBufferData(
-      quic::QuicStringPiece(reinterpret_cast<const char*>(data.data()),
-                            data.size()),
+      quiche::QuicheStringPiece(reinterpret_cast<const char*>(data.data()),
+                                data.size()),
       fin, nullptr);
 }
 

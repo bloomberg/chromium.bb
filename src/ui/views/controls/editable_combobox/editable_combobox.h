@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_types.h"
@@ -122,6 +123,9 @@ class VIEWS_EXPORT EditableCombobox : public View,
   void Layout() override;
   void OnThemeChanged() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void RequestFocus() override;
+  bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
+  void OnVisibleBoundsChanged() override;
 
   // Overridden from TextfieldController:
   void ContentsChanged(Textfield* sender,
@@ -166,6 +170,8 @@ class VIEWS_EXPORT EditableCombobox : public View,
   // Whether we are currently showing the passwords for type
   // Type::kPassword.
   bool showing_password_text_;
+
+  ScopedObserver<View, ViewObserver> observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EditableCombobox);
 };

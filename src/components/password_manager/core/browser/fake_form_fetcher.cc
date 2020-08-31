@@ -26,6 +26,10 @@ void FakeFormFetcher::RemoveConsumer(Consumer* consumer) {
   consumers_.RemoveObserver(consumer);
 }
 
+void FakeFormFetcher::Fetch() {
+  state_ = State::WAITING;
+}
+
 FormFetcher::State FakeFormFetcher::GetState() const {
   return state_;
 }
@@ -33,6 +37,11 @@ FormFetcher::State FakeFormFetcher::GetState() const {
 const std::vector<InteractionsStats>& FakeFormFetcher::GetInteractionsStats()
     const {
   return stats_;
+}
+
+base::span<const CompromisedCredentials>
+FakeFormFetcher::GetCompromisedCredentials() const {
+  return base::span<const CompromisedCredentials>();
 }
 
 std::vector<const PasswordForm*> FakeFormFetcher::GetNonFederatedMatches()
@@ -46,6 +55,30 @@ std::vector<const PasswordForm*> FakeFormFetcher::GetFederatedMatches() const {
 
 bool FakeFormFetcher::IsBlacklisted() const {
   return is_blacklisted_;
+}
+
+bool FakeFormFetcher::IsMovingBlocked(const autofill::GaiaIdHash& destination,
+                                      const base::string16& username) const {
+  // This is analogous to the implementation in
+  // MultiStoreFormFetcher::IsMovingBlocked().
+  for (const std::vector<const PasswordForm*>& matches_vector :
+       {federated_, non_federated_}) {
+    for (const PasswordForm* form : matches_vector) {
+      // Only local entries can be moved to the account store (though
+      // account store matches should never have |moving_blocked_for_list|
+      // entries anyway).
+      if (form->IsUsingAccountStore())
+        continue;
+      // Ignore PSL matches for blocking moving.
+      if (form->is_public_suffix_match)
+        continue;
+      if (form->username_value != username)
+        continue;
+      if (base::Contains(form->moving_blocked_for_list, destination))
+        return true;
+    }
+  }
+  return false;
 }
 
 const std::vector<const PasswordForm*>& FakeFormFetcher::GetAllRelevantMatches()
@@ -62,13 +95,16 @@ const PasswordForm* FakeFormFetcher::GetPreferredMatch() const {
   return preferred_match_;
 }
 
+std::unique_ptr<FormFetcher> FakeFormFetcher::Clone() {
+  return std::make_unique<FakeFormFetcher>();
+}
+
 void FakeFormFetcher::SetNonFederated(
     const std::vector<const PasswordForm*>& non_federated) {
   non_federated_ = non_federated;
-  password_manager_util::FindBestMatches(
-      non_federated_, scheme_,
-      /*sort_matches_by_date_last_used=*/false, &non_federated_same_scheme_,
-      &best_matches_, &preferred_match_);
+  password_manager_util::FindBestMatches(non_federated_, scheme_,
+                                         &non_federated_same_scheme_,
+                                         &best_matches_, &preferred_match_);
 }
 
 void FakeFormFetcher::SetBlacklisted(bool is_blacklisted) {
@@ -80,13 +116,4 @@ void FakeFormFetcher::NotifyFetchCompleted() {
   for (Consumer& consumer : consumers_)
     consumer.OnFetchCompleted();
 }
-
-void FakeFormFetcher::Fetch() {
-  state_ = State::WAITING;
-}
-
-std::unique_ptr<FormFetcher> FakeFormFetcher::Clone() {
-  return std::make_unique<FakeFormFetcher>();
-}
-
 }  // namespace password_manager

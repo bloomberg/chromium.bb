@@ -26,6 +26,8 @@
 
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
@@ -34,6 +36,18 @@
 #include "url/url_util.h"
 
 namespace blink {
+
+// Function defined in third_party/blink/public/web/blink.h.
+void SetDomainRelaxationForbiddenForTest(bool forbidden,
+                                         const WebString& scheme) {
+  SchemeRegistry::SetDomainRelaxationForbiddenForURLScheme(forbidden,
+                                                           String(scheme));
+}
+
+// Function defined in third_party/blink/public/web/blink.h.
+void ResetDomainRelaxationForTest() {
+  SchemeRegistry::ResetDomainRelaxation();
+}
 
 namespace {
 
@@ -112,12 +126,6 @@ URLSchemesRegistry& GetMutableURLSchemesRegistry() {
 
 }  // namespace
 
-// Must be called before we create other threads to avoid racy static local
-// initialization.
-void SchemeRegistry::Initialize() {
-  GetURLSchemesRegistry();
-}
-
 void SchemeRegistry::RegisterURLSchemeAsLocal(const String& scheme) {
   DCHECK_EQ(scheme, scheme.LowerASCII());
   GetMutableURLSchemesRegistry().local_schemes.insert(scheme);
@@ -189,6 +197,11 @@ void SchemeRegistry::SetDomainRelaxationForbiddenForURLScheme(
     GetMutableURLSchemesRegistry()
         .schemes_forbidden_from_domain_relaxation.erase(scheme);
   }
+}
+
+void SchemeRegistry::ResetDomainRelaxation() {
+  GetMutableURLSchemesRegistry()
+      .schemes_forbidden_from_domain_relaxation.clear();
 }
 
 bool SchemeRegistry::IsDomainRelaxationForbiddenForURLScheme(

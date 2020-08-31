@@ -25,7 +25,7 @@ Normalizer::~Normalizer() = default;
 std::unique_ptr<base::DictionaryValue> Normalizer::NormalizeObject(
     const OncValueSignature* object_signature,
     const base::DictionaryValue& onc_object) {
-  CHECK(object_signature != NULL);
+  CHECK(object_signature != nullptr);
   bool error = false;
   std::unique_ptr<base::DictionaryValue> result =
       MapObject(*object_signature, onc_object, &error);
@@ -40,11 +40,11 @@ std::unique_ptr<base::DictionaryValue> Normalizer::MapObject(
   std::unique_ptr<base::DictionaryValue> normalized =
       Mapper::MapObject(signature, onc_object, error);
 
-  if (normalized.get() == NULL)
+  if (normalized.get() == nullptr)
     return std::unique_ptr<base::DictionaryValue>();
 
   if (remove_recommended_fields_)
-    normalized->RemoveWithoutPathExpansion(::onc::kRecommended, NULL);
+    normalized->RemoveWithoutPathExpansion(::onc::kRecommended, nullptr);
 
   if (&signature == &kCertificateSignature)
     NormalizeCertificate(normalized.get());
@@ -170,11 +170,11 @@ void Normalizer::NormalizeNetworkConfiguration(base::DictionaryValue* network) {
   network->GetBooleanWithoutPathExpansion(::onc::kRemove, &remove);
   if (remove) {
     network->RemoveWithoutPathExpansion(::onc::network_config::kStaticIPConfig,
-                                        NULL);
-    network->RemoveWithoutPathExpansion(::onc::network_config::kName, NULL);
+                                        nullptr);
+    network->RemoveWithoutPathExpansion(::onc::network_config::kName, nullptr);
     network->RemoveWithoutPathExpansion(::onc::network_config::kProxySettings,
-                                        NULL);
-    network->RemoveWithoutPathExpansion(::onc::network_config::kType, NULL);
+                                        nullptr);
+    network->RemoveWithoutPathExpansion(::onc::network_config::kType, nullptr);
     // Fields dependent on kType are removed afterwards, too.
   }
 
@@ -206,19 +206,25 @@ void Normalizer::NormalizeOpenVPN(base::DictionaryValue* openvpn) {
   base::Value* user_auth_type_value = openvpn->FindKeyOfType(
       ::onc::openvpn::kUserAuthenticationType, base::Value::Type::STRING);
   // If UserAuthenticationType is unspecified, do not strip Password and OTP.
-  if (!user_auth_type_value)
-    return;
-  std::string user_auth_type = user_auth_type_value->GetString();
-  RemoveEntryUnless(
-      openvpn,
-      ::onc::openvpn::kPassword,
-      user_auth_type == ::onc::openvpn_user_auth_type::kPassword ||
-          user_auth_type == ::onc::openvpn_user_auth_type::kPasswordAndOTP);
-  RemoveEntryUnless(
-      openvpn,
-      ::onc::openvpn::kOTP,
-      user_auth_type == ::onc::openvpn_user_auth_type::kOTP ||
-          user_auth_type == ::onc::openvpn_user_auth_type::kPasswordAndOTP);
+  if (user_auth_type_value) {
+    std::string user_auth_type = user_auth_type_value->GetString();
+    RemoveEntryUnless(
+        openvpn, ::onc::openvpn::kPassword,
+        user_auth_type == ::onc::openvpn_user_auth_type::kPassword ||
+            user_auth_type == ::onc::openvpn_user_auth_type::kPasswordAndOTP);
+    RemoveEntryUnless(
+        openvpn, ::onc::openvpn::kOTP,
+        user_auth_type == ::onc::openvpn_user_auth_type::kOTP ||
+            user_auth_type == ::onc::openvpn_user_auth_type::kPasswordAndOTP);
+  }
+
+  const std::string* compression_algorithm =
+      openvpn->FindStringKey(::onc::openvpn::kCompressionAlgorithm);
+  if (compression_algorithm) {
+    RemoveEntryUnless(
+        openvpn, ::onc::openvpn::kCompressionAlgorithm,
+        *compression_algorithm != ::onc::openvpn_compression_algorithm::kNone);
+  }
 }
 
 void Normalizer::NormalizeProxySettings(base::DictionaryValue* proxy) {
@@ -263,9 +269,6 @@ void Normalizer::NormalizeStaticIPConfigForNetwork(
       network, ::onc::network_config::kIPAddressConfigType);
   const bool name_servers_type_is_static = IsIpConfigTypeStatic(
       network, ::onc::network_config::kNameServersConfigType);
-
-  RemoveEntryUnless(network, ::onc::network_config::kStaticIPConfig,
-                    ip_config_type_is_static || name_servers_type_is_static);
 
   base::Value* static_ip_config = network->FindKeyOfType(
       ::onc::network_config::kStaticIPConfig, base::Value::Type::DICTIONARY);

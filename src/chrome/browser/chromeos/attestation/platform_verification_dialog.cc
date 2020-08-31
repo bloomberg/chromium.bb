@@ -38,9 +38,8 @@ namespace {
 
 std::unique_ptr<views::ImageButton> CreateLearnMoreButton(
     views::ButtonListener* listener) {
-  auto learn_more_button = views::CreateVectorImageButton(listener);
-  views::SetImageFromVectorIcon(learn_more_button.get(),
-                                vector_icons::kHelpOutlineIcon);
+  auto learn_more_button = views::CreateVectorImageButtonWithNativeTheme(
+      listener, vector_icons::kHelpOutlineIcon);
   learn_more_button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_CHROMEOS_ACC_LEARN_MORE));
   learn_more_button->SetFocusForPlatform();
@@ -93,11 +92,10 @@ PlatformVerificationDialog::PlatformVerificationDialog(
     ConsentCallback callback)
     : content::WebContentsObserver(web_contents),
       domain_(domain),
-      callback_(std::move(callback)),
-      learn_more_button_(nullptr) {
-  DialogDelegate::set_button_label(
+      callback_(std::move(callback)) {
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
-  DialogDelegate::set_button_label(
+  DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL, l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
   learn_more_button_ =
       DialogDelegate::SetExtraView(CreateLearnMoreButton(this));
@@ -106,33 +104,25 @@ PlatformVerificationDialog::PlatformVerificationDialog(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
           views::TEXT, views::TEXT)));
 
+  auto run_callback = [](PlatformVerificationDialog* dialog,
+                         ConsentResponse response) {
+    std::move(dialog->callback_).Run(response);
+  };
+
+  DialogDelegate::SetAcceptCallback(base::BindOnce(
+      run_callback, base::Unretained(this), CONSENT_RESPONSE_ALLOW));
+  DialogDelegate::SetCancelCallback(base::BindOnce(
+      run_callback, base::Unretained(this), CONSENT_RESPONSE_DENY));
+  DialogDelegate::SetCloseCallback(base::BindOnce(
+      run_callback, base::Unretained(this), CONSENT_RESPONSE_NONE));
+
   // Explanation string.
-  views::Label* label = new views::Label(l10n_util::GetStringFUTF16(
+  auto label = std::make_unique<views::Label>(l10n_util::GetStringFUTF16(
       IDS_PLATFORM_VERIFICATION_DIALOG_HEADLINE, domain_));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(label);
+  AddChildView(std::move(label));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PLATFORM_VERIFICATION);
-}
-
-bool PlatformVerificationDialog::Cancel() {
-  // This method is called when user clicked "Block" button.
-  std::move(callback_).Run(CONSENT_RESPONSE_DENY);
-  return true;
-}
-
-bool PlatformVerificationDialog::Accept() {
-  // This method is called when user clicked "Allow" button.
-  std::move(callback_).Run(CONSENT_RESPONSE_ALLOW);
-  return true;
-}
-
-bool PlatformVerificationDialog::Close() {
-  // This method is called when user clicked "x" or pressed "Esc" to dismiss the
-  // dialog, the permission request is canceled, or when the tab containing this
-  // dialog is closed.
-  std::move(callback_).Run(CONSENT_RESPONSE_NONE);
-  return true;
 }
 
 ui::ModalType PlatformVerificationDialog::GetModalType() const {

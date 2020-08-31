@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
+#include "chrome/browser/ui/app_list/app_service/app_service_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -49,10 +49,6 @@ class DataRemovalConfirmationDialog : public views::DialogDelegateView,
   base::string16 GetWindowTitle() const override;
   ui::ModalType GetModalType() const override;
 
-  // views::DialogDelegate:
-  bool Accept() override;
-  bool Cancel() override;
-
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
 
@@ -67,7 +63,7 @@ class DataRemovalConfirmationDialog : public views::DialogDelegateView,
   // UI hierarchy owned.
   views::ImageView* icon_view_ = nullptr;
 
-  std::unique_ptr<ArcAppIconLoader> icon_loader_;
+  std::unique_ptr<AppServiceAppIconLoader> icon_loader_;
 
   Profile* const profile_;
 
@@ -82,9 +78,16 @@ DataRemovalConfirmationDialog::DataRemovalConfirmationDialog(
     Profile* profile,
     DataRemovalConfirmationCallback confirm_callback)
     : profile_(profile), confirm_callback_(std::move(confirm_callback)) {
-  DialogDelegate::set_button_label(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_ARC_DATA_REMOVAL_CONFIRMATION_OK_BUTTON));
+
+  auto run_callback = [](DataRemovalConfirmationDialog* dialog, bool accept) {
+    std::move(dialog->confirm_callback_).Run(accept);
+  };
+  SetAcceptCallback(base::BindOnce(run_callback, base::Unretained(this), true));
+  SetCancelCallback(
+      base::BindOnce(run_callback, base::Unretained(this), false));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -108,8 +111,8 @@ DataRemovalConfirmationDialog::DataRemovalConfirmationDialog(
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(std::move(label));
 
-  icon_loader_ =
-      std::make_unique<ArcAppIconLoader>(profile_, kArcAppIconSize, this);
+  icon_loader_ = std::make_unique<AppServiceAppIconLoader>(
+      profile_, kArcAppIconSize, this);
   icon_loader_->FetchImage(kPlayStoreAppId);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::ARC_DATA_REMOVAL_CONFIRMATION);
@@ -134,18 +137,6 @@ ui::ModalType DataRemovalConfirmationDialog::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-bool DataRemovalConfirmationDialog::Accept() {
-  if (confirm_callback_)
-    std::move(confirm_callback_).Run(true);
-  return true;
-}
-
-bool DataRemovalConfirmationDialog::Cancel() {
-  if (confirm_callback_)
-    std::move(confirm_callback_).Run(false);
-  return true;
-}
-
 gfx::Size DataRemovalConfirmationDialog::CalculatePreferredSize() const {
   const int default_width = views::LayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
@@ -167,8 +158,7 @@ void DataRemovalConfirmationDialog::OnArcPlayStoreEnabledChanged(bool enabled) {
   // and current dialog is no longer needed.
   if (enabled)
     return;
-  Cancel();
-  GetWidget()->Close();
+  CancelDialog();
 }
 
 }  // namespace
@@ -187,11 +177,11 @@ bool IsDataRemovalConfirmationDialogOpenForTesting() {
 
 void CloseDataRemovalConfirmationDialogForTesting(bool confirm) {
   DCHECK(g_current_data_removal_confirmation);
-  if (confirm)
-    g_current_data_removal_confirmation->Accept();
-  else
-    g_current_data_removal_confirmation->Cancel();
-  g_current_data_removal_confirmation->GetWidget()->Close();
+  if (confirm) {
+    g_current_data_removal_confirmation->AcceptDialog();
+  } else {
+    g_current_data_removal_confirmation->CancelDialog();
+  }
 }
 
 }  // namespace arc

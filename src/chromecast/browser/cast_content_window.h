@@ -8,12 +8,14 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "chromecast/browser/cast_web_contents.h"
 #include "chromecast/graphics/gestures/cast_gesture_handler.h"
+#include "chromecast/ui/back_gesture_router.h"
 #include "chromecast/ui/mojom/media_control_ui.mojom.h"
 #include "chromecast/ui/mojom/ui_service.mojom.h"
 #include "ui/events/event.h"
@@ -99,6 +101,8 @@ class CastContentWindow {
     // Notify window destruction.
     virtual void OnWindowDestroyed() {}
 
+    using GestureHandledCallback = base::OnceCallback<void(bool)>;
+
     // Check to see if the gesture can be handled by the delegate. This is
     // called prior to ConsumeGesture().
     virtual bool CanHandleGesture(GestureType gesture_type) = 0;
@@ -112,9 +116,10 @@ class CastContentWindow {
     virtual void CancelGesture(GestureType gesture_type,
                                const gfx::Point& touch_location) {}
 
-    // Consume and handle a completed UI gesture. Returns whether the gesture
-    // was handled or not.
-    virtual bool ConsumeGesture(GestureType gesture_type) = 0;
+    // Consume and handle a completed UI gesture. Invokes the callback with a
+    // boolean indicating whether the gesture was handled or not.
+    virtual void ConsumeGesture(GestureType gesture_type,
+                                GestureHandledCallback handled_callback) = 0;
 
     // Notify visibility change for this window.
     virtual void OnVisibilityChange(VisibilityType visibility_type) {}
@@ -215,6 +220,10 @@ class CastContentWindow {
 
   // Media control interface. Non-null on Aura platforms.
   virtual mojom::MediaControlUi* media_controls();
+
+  // Registers this as a delegate to BackGestureRouter.
+  virtual void RegisterBackGestureRouter(
+      ::chromecast::BackGestureRouter* gesture_router) {}
 
   // Observer interface:
   void AddObserver(Observer* observer);

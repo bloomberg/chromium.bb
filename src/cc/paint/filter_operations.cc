@@ -5,9 +5,9 @@
 #include "cc/paint/filter_operations.h"
 
 #include <stddef.h>
-
 #include <cmath>
 #include <numeric>
+#include <utility>
 
 #include "base/trace_event/traced_value.h"
 #include "base/values.h"
@@ -176,11 +176,14 @@ bool FilterOperations::HasFilterThatAffectsOpacity() const {
 }
 
 bool FilterOperations::HasReferenceFilter() const {
-  for (size_t i = 0; i < operations_.size(); ++i) {
-    if (operations_[i].type() == FilterOperation::REFERENCE)
-      return true;
-  }
-  return false;
+  return HasFilterOfType(FilterOperation::REFERENCE);
+}
+
+bool FilterOperations::HasFilterOfType(FilterOperation::FilterType type) const {
+  return operations_.end() !=
+         std::find_if(
+             operations_.begin(), operations_.end(),
+             [type](const FilterOperation& op) { return op.type() == type; });
 }
 
 FilterOperations FilterOperations::Blend(const FilterOperations& from,
@@ -235,11 +238,11 @@ void FilterOperations::AsValueInto(
 }
 
 std::string FilterOperations::ToString() const {
-  base::trace_event::TracedValue value(0, /*force_json=*/true);
+  base::trace_event::TracedValueJSON value;
   value.BeginArray("FilterOperations");
   AsValueInto(&value);
   value.EndArray();
-  return value.ToString();
+  return value.ToJSON();
 }
 
 }  // namespace cc

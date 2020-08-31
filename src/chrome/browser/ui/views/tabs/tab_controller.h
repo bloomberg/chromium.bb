@@ -10,10 +10,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 
-class Browser;
 class Tab;
-class TabGroupVisualData;
-class TabGroupId;
 class TabSlotView;
 
 enum class BrowserFrameActiveState;
@@ -22,6 +19,10 @@ namespace gfx {
 class Point;
 class Rect;
 }
+namespace tab_groups {
+enum class TabGroupColorId;
+class TabGroupId;
+}  // namespace tab_groups
 namespace ui {
 class ListSelectionModel;
 class LocatedEvent;
@@ -57,11 +58,11 @@ class TabController {
   // Closes the tab.
   virtual void CloseTab(Tab* tab, CloseTabSource source) = 0;
 
-  // Attempts to move the specified tab to the right.
-  virtual void MoveTabRight(Tab* tab) = 0;
+  // Attempts to shift the specified tab to the right by one index.
+  virtual void ShiftTabRight(Tab* tab) = 0;
 
-  // Attempts to move the specified tab to the left.
-  virtual void MoveTabLeft(Tab* tab) = 0;
+  // Attempts to shift the specified tab to the left by one index.
+  virtual void ShiftTabLeft(Tab* tab) = 0;
 
   // Attempts to move the specified tab to the beginning of the tabstrip (or the
   // beginning of the unpinned tab region if the tab is not pinned).
@@ -122,6 +123,9 @@ class TabController {
   // hovered and whether the card should be shown. Providing a nullptr for |tab|
   // will cause the tab hover card to be hidden.
   virtual void UpdateHoverCard(Tab* tab) = 0;
+
+  // Returns whether domain/origin should be shown in tab hover cards.
+  virtual bool ShowDomainInHoverCards() const = 0;
 
   // Returns true if the hover card is showing for the given tab.
   virtual bool HoverCardIsShowingForTab(Tab* tab) = 0;
@@ -186,20 +190,18 @@ class TabController {
   // Returns opacity for use on tab hover radial highlight.
   virtual float GetHoverOpacityForRadialHighlight() const = 0;
 
-  // Returns the TabGroupVisualData instance for the given |group|.
-  virtual const TabGroupVisualData* GetVisualDataForGroup(
-      TabGroupId group) const = 0;
+  // Returns the displayed title of the given |group|.
+  virtual base::string16 GetGroupTitle(
+      const tab_groups::TabGroupId& group) const = 0;
 
-  virtual void SetVisualDataForGroup(TabGroupId group,
-                                     TabGroupVisualData visual_data) = 0;
+  // Returns the color ID of the given |group|.
+  virtual tab_groups::TabGroupColorId GetGroupColorId(
+      const tab_groups::TabGroupId& group) const = 0;
 
-  virtual void CloseAllTabsInGroup(TabGroupId group) = 0;
-
-  virtual void UngroupAllTabsInGroup(TabGroupId group) = 0;
-
-  virtual void AddNewTabInGroup(TabGroupId group) = 0;
-
-  virtual const Browser* GetBrowser() = 0;
+  // Returns the actual painted color of the given |group|, which depends on the
+  // current theme.
+  virtual SkColor GetPaintedGroupColor(
+      const tab_groups::TabGroupColorId& color_id) const = 0;
 
  protected:
   virtual ~TabController() {}

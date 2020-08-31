@@ -10,13 +10,11 @@ import android.view.View;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
-import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
-import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.webapps.WebApkActivity;
-import org.chromium.ui.base.ActivityAndroidPermissionDelegate;
+import org.chromium.chrome.browser.ui.messages.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 
 import java.lang.ref.WeakReference;
 
@@ -54,18 +52,9 @@ public class ChromeWindow extends ActivityWindowAndroid {
     }
 
     @Override
-    protected ActivityAndroidPermissionDelegate createAndroidPermissionDelegate() {
-        return new ActivityAndroidPermissionDelegate(getActivity()) {
-            @Override
-            protected void logUMAOnRequestPermissionDenied(String permission) {
-                Activity activity = getActivity().get();
-                if (activity instanceof WebApkActivity
-                        && ((ChromeActivity) activity).didFinishNativeInitialization()) {
-                    WebApkUma.recordAndroidRuntimePermissionDeniedInWebApk(
-                            new String[] {permission});
-                }
-            }
-        };
+    public ModalDialogManager getModalDialogManager() {
+        ChromeActivity activity = (ChromeActivity) getActivity().get();
+        return activity == null ? null : activity.getModalDialogManager();
     }
 
     @Override
@@ -85,8 +74,8 @@ public class ChromeWindow extends ActivityWindowAndroid {
         Tab tab = activity != null ? ((ChromeActivity) activity).getActivityTab() : null;
 
         if (tab != null) {
-            SimpleConfirmInfoBarBuilder.create(
-                    tab, InfoBarIdentifier.WINDOW_ERROR_INFOBAR_DELEGATE_ANDROID, error, false);
+            SimpleConfirmInfoBarBuilder.create(tab.getWebContents(),
+                    InfoBarIdentifier.WINDOW_ERROR_INFOBAR_DELEGATE_ANDROID, error, false);
         } else {
             super.showCallbackNonExistentError(error);
         }

@@ -1,8 +1,6 @@
 This test checks Web Inspector utilities.
 
 
-Running: remove
-
 Running: orderedMergeIntersect
 
 Running: binaryIndexOfTest
@@ -17,10 +15,6 @@ Running: naturalOrderComparatorTest
 Sorted in natural order: [1, 2, 2, 2, 5, 10, 11, 5555, 555555, a1, a007, a07, a7, a91, a4222, abc, abc0, abc00, abc000, abcd, dup, dup, dup, dup, dup, x09y19z29, x9y19z29, x10y19z43, x10y20z30, x10y22z23]
 
 Running: stringHashTest
-
-Running: stringTrimURLTest
-
-Running: stringToBase64Test
 
 Running: trimMiddle
 

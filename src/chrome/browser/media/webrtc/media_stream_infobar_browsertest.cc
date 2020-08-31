@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_common.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,6 +22,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
@@ -38,9 +38,12 @@ class MediaStreamPermissionTest : public WebRtcTestBase {
   ~MediaStreamPermissionTest() override {}
 
   // InProcessBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUp() override {
+    WebRtcTestBase::SetUp();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     // This test expects to run with fake devices but real UI.
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
+    EXPECT_TRUE(
+        command_line->HasSwitch(switches::kUseFakeDeviceForMediaStream));
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream))
         << "Since this test tests the UI we want the real UI!";
   }

@@ -1,10 +1,18 @@
 // Copyright (c) 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as ARIAUtils from './ARIAUtils.js';
+import {Toolbar} from './Toolbar.js';
+import {VBox} from './Widget.js';
+
 /**
  * @unrestricted
  */
-export default class ReportView extends UI.VBox {
+export class ReportView extends VBox {
   /**
    * @param {string=} title
    */
@@ -16,7 +24,7 @@ export default class ReportView extends UI.VBox {
     this._headerElement = this._contentBox.createChild('div', 'report-header vbox');
     this._titleElement = this._headerElement.createChild('div', 'report-title');
     this._titleElement.textContent = title;
-    UI.ARIAUtils.markAsHeading(this._titleElement, 1);
+    ARIAUtils.markAsHeading(this._titleElement, 1);
 
     this._sectionList = this._contentBox.createChild('div', 'vbox');
   }
@@ -58,10 +66,10 @@ export default class ReportView extends UI.VBox {
   }
 
   /**
-   * @return {!UI.Toolbar}
+   * @return {!Toolbar}
    */
   createToolbar() {
-    const toolbar = new UI.Toolbar('');
+    const toolbar = new Toolbar('');
     this._headerElement.appendChild(toolbar.element);
     return toolbar;
   }
@@ -101,7 +109,6 @@ export default class ReportView extends UI.VBox {
     this._headerElement.classList.toggle('hidden', !visible);
   }
 
-
   /**
    * @param {boolean} scrollable
    */
@@ -113,7 +120,7 @@ export default class ReportView extends UI.VBox {
 /**
  * @unrestricted
  */
-export class Section extends UI.VBox {
+export class Section extends VBox {
   /**
    * @param {string} title
    * @param {string=} className
@@ -127,7 +134,7 @@ export class Section extends UI.VBox {
     this._headerElement = this.element.createChild('div', 'report-section-header');
     this._titleElement = this._headerElement.createChild('div', 'report-section-title');
     this.setTitle(title);
-    UI.ARIAUtils.markAsHeading(this._titleElement, 2);
+    ARIAUtils.markAsHeading(this._titleElement, 2);
     this._fieldList = this.element.createChild('div', 'vbox');
     /** @type {!Map.<string, !Element>} */
     this._fieldMap = new Map();
@@ -155,15 +162,15 @@ export class Section extends UI.VBox {
    * @param {string} groupTitle
    */
   setUiGroupTitle(groupTitle) {
-    UI.ARIAUtils.markAsGroup(this.element);
-    UI.ARIAUtils.setAccessibleName(this.element, groupTitle);
+    ARIAUtils.markAsGroup(this.element);
+    ARIAUtils.setAccessibleName(this.element, groupTitle);
   }
 
   /**
-   * @return {!UI.Toolbar}
+   * @return {!Toolbar}
    */
   createToolbar() {
-    const toolbar = new UI.Toolbar('');
+    const toolbar = new Toolbar('');
     this._headerElement.appendChild(toolbar.element);
     return toolbar;
   }
@@ -249,21 +256,14 @@ export class Section extends UI.VBox {
   }
 
   markFieldListAsGroup() {
-    UI.ARIAUtils.markAsGroup(this._fieldList);
-    UI.ARIAUtils.setAccessibleName(this._fieldList, this.title());
+    ARIAUtils.markAsGroup(this._fieldList);
+    ARIAUtils.setAccessibleName(this._fieldList, this.title());
+  }
+
+  /**
+   * @param {boolean} masked
+   */
+  setIconMasked(masked) {
+    this.element.classList.toggle('show-mask', masked);
   }
 }
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.ReportView = ReportView;
-
-/**
- * @constructor
- */
-UI.ReportView.Section = Section;

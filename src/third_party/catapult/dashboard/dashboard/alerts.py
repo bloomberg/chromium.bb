@@ -18,7 +18,12 @@ from dashboard.common import request_handler
 from dashboard.common import utils
 from dashboard.models import anomaly
 from dashboard.models import bug_label_patterns
-from dashboard.models import sheriff
+
+# We need to import this last because importing it earlier causes issues with
+# module lookups when importing protobuf messages before loading the
+# appengine-specific shims to resolve package name lookup. This shows up as
+# interesting non-deterministic issues with test loading order.
+from dashboard import sheriff_config_client
 
 _MAX_ANOMALIES_TO_COUNT = 5000
 _MAX_ANOMALIES_TO_SHOW = 500
@@ -73,7 +78,7 @@ class AlertsHandler(request_handler.RequestHandler):
 
     anomalies, next_cursor, count = anomaly.Anomaly.QueryAsync(
         start_cursor=anomaly_cursor,
-        sheriff=sheriff_name,
+        subscriptions=[sheriff_name],
         bug_id=bug_id,
         is_improvement=is_improvement,
         recovered=recovered,
@@ -93,20 +98,16 @@ class AlertsHandler(request_handler.RequestHandler):
 
 def _SheriffIsFound(sheriff_name):
   """Checks whether the sheriff can be found for the current user."""
-  sheriff_key = ndb.Key('Sheriff', sheriff_name)
-  try:
-    sheriff_entity = sheriff_key.get()
-  except AssertionError:
-    # This assertion is raised in InternalOnlyModel._post_get_hook,
-    # and indicates an internal-only Sheriff but an external user.
-    return False
-  return sheriff_entity is not None
+  # TODO(fancl): Add an api for verifying single subscription visibility
+  subscriptions = _GetSheriffList()
+  return sheriff_name in subscriptions
 
 
 def _GetSheriffList():
   """Returns a list of sheriff names for all sheriffs in the datastore."""
-  sheriff_keys = sheriff.Sheriff.query().fetch(keys_only=True)
-  return [key.string_id() for key in sheriff_keys]
+  client = sheriff_config_client.GetSheriffConfigClient()
+  subscriptions, _ = client.List(check=True)
+  return [s.name for s in subscriptions]
 
 
 def AnomalyDicts(anomalies, v2=False):
@@ -149,13 +150,10 @@ def GetAnomalyDict(anomaly_entity, bisect_status=None, v2=False):
     bug_components = set()
     if anomaly_entity.internal_only:
       bug_labels.add('Restrict-View-Google')
-    tags = bug_label_patterns.GetBugLabelsForTest(test_key)
-    if anomaly_entity.sheriff:
-      try:
-        tags += anomaly_entity.sheriff.get().labels
-      except AssertionError:
-        # The Sheriff is internal_only even though the alert isn't.
-        pass
+    tags = set(bug_label_patterns.GetBugLabelsForTest(test_key))
+    subscriptions = [s for s in anomaly_entity.subscriptions]
+    tags.update([l for s in subscriptions for l in s.bug_labels])
+    bug_components = set(c for s in subscriptions for c in s.bug_components)
     for tag in tags:
       if tag.startswith('Cr-'):
         bug_components.add(tag.replace('Cr-', '').replace('-', '>'))

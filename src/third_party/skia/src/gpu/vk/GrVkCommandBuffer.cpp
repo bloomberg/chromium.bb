@@ -1,9 +1,9 @@
 /*
-* Copyright 2015 Google Inc.
-*
-* Use of this source code is governed by a BSD-style license that can be
-* found in the LICENSE file.
-*/
+ * Copyright 2015 Google Inc.
+ *
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 
 #include "src/gpu/vk/GrVkCommandBuffer.h"
 
@@ -13,7 +13,7 @@
 #include "src/gpu/vk/GrVkGpu.h"
 #include "src/gpu/vk/GrVkImage.h"
 #include "src/gpu/vk/GrVkImageView.h"
-#include "src/gpu/vk/GrVkIndexBuffer.h"
+#include "src/gpu/vk/GrVkMeshBuffer.h"
 #include "src/gpu/vk/GrVkPipeline.h"
 #include "src/gpu/vk/GrVkPipelineState.h"
 #include "src/gpu/vk/GrVkPipelineState.h"
@@ -21,7 +21,6 @@
 #include "src/gpu/vk/GrVkRenderTarget.h"
 #include "src/gpu/vk/GrVkTransferBuffer.h"
 #include "src/gpu/vk/GrVkUtil.h"
-#include "src/gpu/vk/GrVkVertexBuffer.h"
 
 void GrVkCommandBuffer::invalidateState() {
     for (auto& boundInputBuffer : fBoundInputBuffers) {
@@ -40,7 +39,7 @@ void GrVkCommandBuffer::invalidateState() {
     }
 }
 
-void GrVkCommandBuffer::freeGPUData(GrVkGpu* gpu, VkCommandPool cmdPool) const {
+void GrVkCommandBuffer::freeGPUData(const GrGpu* gpu, VkCommandPool cmdPool) const {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     SkASSERT(!fIsActive);
     SkASSERT(!fTrackedResources.count());
@@ -48,38 +47,22 @@ void GrVkCommandBuffer::freeGPUData(GrVkGpu* gpu, VkCommandPool cmdPool) const {
     SkASSERT(cmdPool != VK_NULL_HANDLE);
     SkASSERT(!this->isWrapped());
 
-    GR_VK_CALL(gpu->vkInterface(), FreeCommandBuffers(gpu->device(), cmdPool, 1, &fCmdBuffer));
+    GrVkGpu* vkGpu = (GrVkGpu*)gpu;
+    GR_VK_CALL(vkGpu->vkInterface(), FreeCommandBuffers(vkGpu->device(), cmdPool, 1, &fCmdBuffer));
 
-    this->onFreeGPUData(gpu);
+    this->onFreeGPUData(vkGpu);
 }
 
-void GrVkCommandBuffer::abandonGPUData() const {
-    SkDEBUGCODE(fResourcesReleased = true;)
-    for (int i = 0; i < fTrackedResources.count(); ++i) {
-        fTrackedResources[i]->notifyRemovedFromCommandBuffer();
-        fTrackedResources[i]->unrefAndAbandon();
-    }
-
-    for (int i = 0; i < fTrackedRecycledResources.count(); ++i) {
-        fTrackedRecycledResources[i]->notifyRemovedFromCommandBuffer();
-        // We don't recycle resources when abandoning them.
-        fTrackedRecycledResources[i]->unrefAndAbandon();
-    }
-
-    this->onAbandonGPUData();
-}
-
-void GrVkCommandBuffer::releaseResources(GrVkGpu* gpu) {
+void GrVkCommandBuffer::releaseResources() {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
-    SkDEBUGCODE(fResourcesReleased = true;)
     SkASSERT(!fIsActive);
     for (int i = 0; i < fTrackedResources.count(); ++i) {
-        fTrackedResources[i]->notifyRemovedFromCommandBuffer();
-        fTrackedResources[i]->unref(gpu);
+        fTrackedResources[i]->notifyFinishedWithWorkOnGpu();
+        fTrackedResources[i]->unref();
     }
     for (int i = 0; i < fTrackedRecycledResources.count(); ++i) {
-        fTrackedRecycledResources[i]->notifyRemovedFromCommandBuffer();
-        fTrackedRecycledResources[i]->recycle(const_cast<GrVkGpu*>(gpu));
+        fTrackedRecycledResources[i]->notifyFinishedWithWorkOnGpu();
+        fTrackedRecycledResources[i]->recycle();
     }
 
     if (++fNumResets > kNumRewindResetsBeforeFullReset) {
@@ -95,7 +78,7 @@ void GrVkCommandBuffer::releaseResources(GrVkGpu* gpu) {
 
     this->invalidateState();
 
-    this->onReleaseResources(gpu);
+    this->onReleaseResources();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -103,7 +86,7 @@ void GrVkCommandBuffer::releaseResources(GrVkGpu* gpu) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void GrVkCommandBuffer::pipelineBarrier(const GrVkGpu* gpu,
-                                        const GrVkResource* resource,
+                                        const GrManagedResource* resource,
                                         VkPipelineStageFlags srcStageMask,
                                         VkPipelineStageFlags dstStageMask,
                                         bool byRegion,
@@ -141,7 +124,7 @@ void GrVkCommandBuffer::pipelineBarrier(const GrVkGpu* gpu,
                 uint32_t newEnd = newRange.baseMipLevel + newRange.levelCount - 1;
                 uint32_t oldStart = oldRange.baseMipLevel;
                 uint32_t oldEnd = oldRange.baseMipLevel + oldRange.levelCount - 1;
-                if (SkTMax(newStart, oldStart) <= SkTMin(newEnd, oldEnd)) {
+                if (std::max(newStart, oldStart) <= std::min(newEnd, oldEnd)) {
                     this->submitPipelineBarriers(gpu);
                     break;
                 }
@@ -193,7 +176,7 @@ void GrVkCommandBuffer::submitPipelineBarriers(const GrVkGpu* gpu) {
 
 
 void GrVkCommandBuffer::bindInputBuffer(GrVkGpu* gpu, uint32_t binding,
-                                        const GrVkVertexBuffer* vbuffer) {
+                                        const GrVkMeshBuffer* vbuffer) {
     VkBuffer vkBuffer = vbuffer->buffer();
     SkASSERT(VK_NULL_HANDLE != vkBuffer);
     SkASSERT(binding < kMaxInputBuffers);
@@ -211,7 +194,7 @@ void GrVkCommandBuffer::bindInputBuffer(GrVkGpu* gpu, uint32_t binding,
     }
 }
 
-void GrVkCommandBuffer::bindIndexBuffer(GrVkGpu* gpu, const GrVkIndexBuffer* ibuffer) {
+void GrVkCommandBuffer::bindIndexBuffer(GrVkGpu* gpu, const GrVkMeshBuffer* ibuffer) {
     VkBuffer vkBuffer = ibuffer->buffer();
     SkASSERT(VK_NULL_HANDLE != vkBuffer);
     // TODO: once ibuffer->offset() no longer always returns 0, we will need to track the offset
@@ -316,6 +299,38 @@ void GrVkCommandBuffer::draw(const GrVkGpu* gpu,
                                            firstInstance));
 }
 
+void GrVkCommandBuffer::drawIndirect(const GrVkGpu* gpu,
+                                     const GrVkMeshBuffer* indirectBuffer,
+                                     VkDeviceSize offset,
+                                     uint32_t drawCount,
+                                     uint32_t stride) {
+    SkASSERT(fIsActive);
+    SkASSERT(fActiveRenderPass);
+    SkASSERT(!indirectBuffer->isCpuBuffer());
+    this->addingWork(gpu);
+    GR_VK_CALL(gpu->vkInterface(), CmdDrawIndirect(fCmdBuffer,
+                                                   indirectBuffer->buffer(),
+                                                   offset,
+                                                   drawCount,
+                                                   stride));
+}
+
+void GrVkCommandBuffer::drawIndexedIndirect(const GrVkGpu* gpu,
+                                            const GrVkMeshBuffer* indirectBuffer,
+                                            VkDeviceSize offset,
+                                            uint32_t drawCount,
+                                            uint32_t stride) {
+    SkASSERT(fIsActive);
+    SkASSERT(fActiveRenderPass);
+    SkASSERT(!indirectBuffer->isCpuBuffer());
+    this->addingWork(gpu);
+    GR_VK_CALL(gpu->vkInterface(), CmdDrawIndexedIndirect(fCmdBuffer,
+                                                          indirectBuffer->buffer(),
+                                                          offset,
+                                                          drawCount,
+                                                          stride));
+}
+
 void GrVkCommandBuffer::setViewport(const GrVkGpu* gpu,
                                     uint32_t firstViewport,
                                     uint32_t viewportCount,
@@ -359,6 +374,41 @@ void GrVkCommandBuffer::addingWork(const GrVkGpu* gpu) {
     this->submitPipelineBarriers(gpu);
     fHasWork = true;
 }
+
+#ifdef SK_DEBUG
+bool GrVkCommandBuffer::validateNoSharedImageResources(const GrVkCommandBuffer* other) {
+    auto resourceIsInCommandBuffer = [this](const GrManagedResource* resource) {
+        if (!resource->asVkImageResource()) {
+            return false;
+        }
+
+        for (int i = 0; i < fTrackedResources.count(); ++i) {
+            if (resource == fTrackedResources[i]->asVkImageResource()) {
+                return true;
+            }
+        }
+        for (int i = 0; i < fTrackedRecycledResources.count(); ++i) {
+            if (resource == fTrackedRecycledResources[i]->asVkImageResource()) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    for (int i = 0; i < other->fTrackedResources.count(); ++i) {
+        if (resourceIsInCommandBuffer(other->fTrackedResources[i])) {
+            return false;
+        }
+    }
+
+    for (int i = 0; i < other->fTrackedRecycledResources.count(); ++i) {
+        if (resourceIsInCommandBuffer(other->fTrackedRecycledResources[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // PrimaryCommandBuffer
@@ -623,11 +673,11 @@ void GrVkPrimaryCommandBuffer::addFinishedProc(sk_sp<GrRefCntedCallback> finishe
     fFinishedProcs.push_back(std::move(finishedProc));
 }
 
-void GrVkPrimaryCommandBuffer::onReleaseResources(GrVkGpu* gpu) {
+void GrVkPrimaryCommandBuffer::onReleaseResources() {
     for (int i = 0; i < fSecondaryCommandBuffers.count(); ++i) {
-        fSecondaryCommandBuffers[i]->releaseResources(gpu);
+        fSecondaryCommandBuffers[i]->releaseResources();
     }
-    fFinishedProcs.reset();
+    this->callFinishedProcs();
 }
 
 void GrVkPrimaryCommandBuffer::recycleSecondaryCommandBuffers(GrVkCommandPool* cmdPool) {
@@ -659,10 +709,10 @@ void GrVkPrimaryCommandBuffer::copyImage(const GrVkGpu* gpu,
 }
 
 void GrVkPrimaryCommandBuffer::blitImage(const GrVkGpu* gpu,
-                                         const GrVkResource* srcResource,
+                                         const GrManagedResource* srcResource,
                                          VkImage srcImage,
                                          VkImageLayout srcLayout,
-                                         const GrVkResource* dstResource,
+                                         const GrManagedResource* dstResource,
                                          VkImage dstImage,
                                          VkImageLayout dstLayout,
                                          uint32_t blitRegionCount,
@@ -843,20 +893,13 @@ void GrVkPrimaryCommandBuffer::resolveImage(GrVkGpu* gpu,
                                                    regions));
 }
 
-void GrVkPrimaryCommandBuffer::onFreeGPUData(GrVkGpu* gpu) const {
+void GrVkPrimaryCommandBuffer::onFreeGPUData(const GrVkGpu* gpu) const {
     SkASSERT(!fActiveRenderPass);
     // Destroy the fence, if any
     if (VK_NULL_HANDLE != fSubmitFence) {
         GR_VK_CALL(gpu->vkInterface(), DestroyFence(gpu->device(), fSubmitFence, nullptr));
     }
     SkASSERT(!fSecondaryCommandBuffers.count());
-}
-
-void GrVkPrimaryCommandBuffer::onAbandonGPUData() const {
-    SkASSERT(!fActiveRenderPass);
-    for (const auto& buffer : fSecondaryCommandBuffers) {
-        buffer->abandonGPUData();
-    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -65,11 +65,21 @@ struct IndexedRule {
   // UrlTransform for this rule.
   std::unique_ptr<api::declarative_net_request::URLTransform> url_transform;
 
-  // List of headers to remove, valid iff this is a remove headers rule.
-  std::set<api::declarative_net_request::RemoveHeaderType> remove_headers_set;
+  // List of request headers to modify. Valid iff this is a modify headers rule.
+  std::vector<api::declarative_net_request::ModifyHeaderInfo> request_headers;
+
+  // List of response headers to modify. Valid iff this is a modify headers
+  // rule.
+  std::vector<api::declarative_net_request::ModifyHeaderInfo> response_headers;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedRule);
 };
+
+// Compute the rule priority for indexing, by combining the priority from
+// the JSON rule and the priority of the action type. Exposed for testing.
+uint64_t ComputeIndexedRulePriority(
+    int parsed_rule_priority,
+    api::declarative_net_request::RuleActionType action_type);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

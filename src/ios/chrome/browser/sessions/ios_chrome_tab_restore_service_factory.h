@@ -11,12 +11,10 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+class ChromeBrowserState;
+
 namespace sessions {
 class TabRestoreService;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 // Singleton that owns all TabRestoreServices and associates them with
@@ -25,7 +23,7 @@ class IOSChromeTabRestoreServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:
   static sessions::TabRestoreService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   static IOSChromeTabRestoreServiceFactory* GetInstance();
 

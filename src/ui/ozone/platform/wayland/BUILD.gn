@@ -4,7 +4,9 @@
 
 visibility = [ "//ui/ozone/*" ]
 
+import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/linux/pkg_config.gni")
+import("//gpu/vulkan/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//ui/ozone/platform/wayland/wayland.gni")
 
@@ -22,6 +24,8 @@ source_set("wayland") {
     "common/wayland_util.h",
     "gpu/drm_render_node_path_finder.cc",
     "gpu/drm_render_node_path_finder.h",
+    "gpu/gl_surface_egl_readback_wayland.cc",
+    "gpu/gl_surface_egl_readback_wayland.h",
     "gpu/gl_surface_wayland.cc",
     "gpu/gl_surface_wayland.h",
     "gpu/wayland_buffer_manager_gpu.cc",
@@ -39,12 +43,8 @@ source_set("wayland") {
     "host/gtk_primary_selection_offer.h",
     "host/gtk_primary_selection_source.cc",
     "host/gtk_primary_selection_source.h",
-    "host/internal/wayland_data_device_base.cc",
-    "host/internal/wayland_data_device_base.h",
-    "host/internal/wayland_data_offer_base.cc",
-    "host/internal/wayland_data_offer_base.h",
-    "host/internal/wayland_data_source_base.cc",
-    "host/internal/wayland_data_source_base.h",
+    "host/shell_object_factory.cc",
+    "host/shell_object_factory.h",
     "host/shell_popup_wrapper.cc",
     "host/shell_popup_wrapper.h",
     "host/shell_surface_wrapper.cc",
@@ -63,14 +63,24 @@ source_set("wayland") {
     "host/wayland_cursor_position.h",
     "host/wayland_data_device.cc",
     "host/wayland_data_device.h",
+    "host/wayland_data_device_base.cc",
+    "host/wayland_data_device_base.h",
     "host/wayland_data_device_manager.cc",
     "host/wayland_data_device_manager.h",
     "host/wayland_data_offer.cc",
     "host/wayland_data_offer.h",
+    "host/wayland_data_offer_base.cc",
+    "host/wayland_data_offer_base.h",
     "host/wayland_data_source.cc",
     "host/wayland_data_source.h",
+    "host/wayland_data_source_base.cc",
+    "host/wayland_data_source_base.h",
     "host/wayland_drm.cc",
     "host/wayland_drm.h",
+    "host/wayland_event_source.cc",
+    "host/wayland_event_source.h",
+    "host/wayland_event_watcher.cc",
+    "host/wayland_event_watcher.h",
     "host/wayland_input_method_context.cc",
     "host/wayland_input_method_context.h",
     "host/wayland_input_method_context_factory.cc",
@@ -83,16 +93,23 @@ source_set("wayland") {
     "host/wayland_output_manager.h",
     "host/wayland_pointer.cc",
     "host/wayland_pointer.h",
+    "host/wayland_popup.cc",
+    "host/wayland_popup.h",
     "host/wayland_screen.cc",
     "host/wayland_screen.h",
     "host/wayland_shm.cc",
     "host/wayland_shm.h",
     "host/wayland_shm_buffer.cc",
     "host/wayland_shm_buffer.h",
+    "host/wayland_subsurface.cc",
+    "host/wayland_subsurface.h",
+    "host/wayland_surface.cc",
+    "host/wayland_surface.h",
     "host/wayland_touch.cc",
     "host/wayland_touch.h",
     "host/wayland_window.cc",
     "host/wayland_window.h",
+    "host/wayland_window_factory.cc",
     "host/wayland_window_manager.cc",
     "host/wayland_window_manager.h",
     "host/wayland_window_observer.cc",
@@ -141,9 +158,9 @@ source_set("wayland") {
     "//ui/gfx",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
+    "//ui/gfx/linux:drm",
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
-    "//ui/ozone/common/linux:drm",
     "//ui/ozone/public/mojom/wayland:wayland_mojom",
     "//ui/platform_window",
     "//ui/platform_window/platform_window_handler",
@@ -151,6 +168,17 @@ source_set("wayland") {
 
   if (is_linux && !is_chromeos) {
     deps += [ "//ui/base/ime/linux" ]
+  }
+
+  if (use_gtk) {
+    sources += [
+      "host/gtk_ui_delegate_wayland.cc",
+      "host/gtk_ui_delegate_wayland.h",
+    ]
+    deps += [
+      "//build/config/linux/gtk",
+      "//ui/gtk:gtk_ui_delegate",
+    ]
   }
 
   defines = [ "OZONE_IMPLEMENTATION" ]
@@ -169,8 +197,20 @@ source_set("wayland") {
     deps += [
       "//third_party/minigbm",
       "//ui/gfx:memory_buffer",
-      "//ui/ozone/common/linux:gbm",
+      "//ui/gfx/linux:gbm",
     ]
+  }
+
+  if (use_bundled_weston) {
+    data_deps = [ "//third_party/weston" ]
+  }
+
+  if (enable_vulkan) {
+    sources += [
+      "gpu/vulkan_implementation_wayland.cc",
+      "gpu/vulkan_implementation_wayland.h",
+    ]
+    deps += [ "//gpu/vulkan" ]
   }
 
   configs += [
@@ -194,8 +234,6 @@ source_set("test_support") {
     "test/mock_surface.h",
     "test/mock_wp_presentation.cc",
     "test/mock_wp_presentation.h",
-    "test/mock_xdg_popup.cc",
-    "test/mock_xdg_popup.h",
     "test/mock_xdg_shell.cc",
     "test/mock_xdg_shell.h",
     "test/mock_xdg_surface.cc",
@@ -234,6 +272,8 @@ source_set("test_support") {
     "test/test_touch.h",
     "test/test_wayland_server_thread.cc",
     "test/test_wayland_server_thread.h",
+    "test/test_xdg_popup.cc",
+    "test/test_xdg_popup.h",
     "test/test_zwp_linux_buffer_params.cc",
     "test/test_zwp_linux_buffer_params.h",
     "test/test_zwp_text_input_manager.cc",
@@ -266,6 +306,7 @@ source_set("wayland_unittests") {
     "gpu/wayland_surface_factory_unittest.cc",
     "host/wayland_connection_unittest.cc",
     "host/wayland_data_device_unittest.cc",
+    "host/wayland_event_source_unittest.cc",
     "host/wayland_input_method_context_unittest.cc",
     "host/wayland_keyboard_unittest.cc",
     "host/wayland_pointer_unittest.cc",
@@ -292,10 +333,11 @@ source_set("wayland_unittests") {
     "//ui/base:buildflags",
     "//ui/base/ime/linux",
     "//ui/events/ozone/layout",
+    "//ui/gfx/linux:drm",
+    "//ui/gfx/linux:gbm",
+    "//ui/gfx/linux:test_support",
     "//ui/ozone:platform",
     "//ui/ozone:test_support",
-    "//ui/ozone/common/linux:drm",
-    "//ui/ozone/common/linux:gbm",
     "//ui/platform_window/platform_window_handler",
   ]
 
@@ -312,9 +354,7 @@ source_set("wayland_unittests") {
 
 fuzzer_test("wayland_buffer_fuzzer") {
   defines = [ "WL_HIDE_DEPRECATED" ]
-  sources = [
-    "fuzzer/wayland_buffer_fuzzer.cc",
-  ]
+  sources = [ "fuzzer/wayland_buffer_fuzzer.cc" ]
   deps = [
     ":test_support",
     ":wayland",

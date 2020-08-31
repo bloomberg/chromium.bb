@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "components/device_event_log/device_event_log.h"
+#include "chromeos/network/network_event_log.h"
 
 namespace {
 
@@ -90,18 +90,18 @@ void ShillErrorCallbackFunction(const std::string& error_name,
   error_callback.Run(error_name, std::move(error_data));
 }
 
-void GetPropertiesCallback(const DictionaryResultCallback& callback,
+void GetPropertiesCallback(DictionaryResultCallback callback,
                            const ErrorCallback& error_callback,
                            const std::string& path,
                            DBusMethodCallStatus call_status,
                            const base::DictionaryValue& value) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    NET_LOG(ERROR) << "GetProperties failed: " << path
+    NET_LOG(ERROR) << "GetProperties failed: " << NetworkPathId(path)
                    << " Status: " << call_status;
     RunErrorCallback(
         error_callback, path, kDBusFailedError, kDBusFailedErrorMessage);
   } else if (!callback.is_null()) {
-    callback.Run(path, value);
+    std::move(callback).Run(path, value);
   }
 }
 

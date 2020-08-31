@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ios/web/common/features.h"
@@ -53,7 +53,7 @@ NavigationItemImpl::NavigationItemImpl()
       should_skip_serialization_(false),
       navigation_initiation_type_(web::NavigationInitiationType::NONE),
       is_untrusted_(false) {
-  if (base::FeatureList::IsEnabled(features::kDefaultToDesktopOnIPad)) {
+  if (features::UseWebClientDefaultUserAgent()) {
     // TODO(crbug.com/1025227): Once it is enabled by default, move it to the
     // default constructor.
     user_agent_type_ = UserAgentType::AUTOMATIC;
@@ -109,14 +109,12 @@ void NavigationItemImpl::SetURL(const GURL& url) {
   cached_display_title_.clear();
   error_retry_state_machine_.SetURL(url);
   if (!wk_navigation_util::URLNeedsUserAgentType(url)) {
-    SetUserAgentType(UserAgentType::NONE,
-                     /*update_inherited_user_agent =*/true);
-  } else if (GetUserAgentType() == web::UserAgentType::NONE) {
-    UserAgentType type =
-        base::FeatureList::IsEnabled(features::kDefaultToDesktopOnIPad)
-            ? UserAgentType::AUTOMATIC
-            : UserAgentType::MOBILE;
-    SetUserAgentType(type, /*update_inherited_user_agent =*/true);
+    SetUserAgentType(UserAgentType::NONE);
+  } else if (GetUserAgentForInheritance() == web::UserAgentType::NONE) {
+    UserAgentType type = features::UseWebClientDefaultUserAgent()
+                             ? UserAgentType::AUTOMATIC
+                             : UserAgentType::MOBILE;
+    SetUserAgentType(type);
   }
 }
 
@@ -210,11 +208,8 @@ base::Time NavigationItemImpl::GetTimestamp() const {
   return timestamp_;
 }
 
-void NavigationItemImpl::SetUserAgentType(UserAgentType type,
-                                          bool update_inherited_user_agent) {
+void NavigationItemImpl::SetUserAgentType(UserAgentType type) {
   user_agent_type_ = type;
-  if (update_inherited_user_agent)
-    user_agent_type_inheritance_ = type;
   DCHECK_EQ(!wk_navigation_util::URLNeedsUserAgentType(GetURL()),
             user_agent_type_ == UserAgentType::NONE);
 }
@@ -227,12 +222,17 @@ bool NavigationItemImpl::IsUntrusted() {
   return is_untrusted_;
 }
 
-UserAgentType NavigationItemImpl::GetUserAgentType() const {
+UserAgentType NavigationItemImpl::GetUserAgentType(
+    id<UITraitEnvironment> web_view) const {
+  if (user_agent_type_ == UserAgentType::AUTOMATIC) {
+    DCHECK(features::UseWebClientDefaultUserAgent());
+    return GetWebClient()->GetDefaultUserAgent(web_view, url_);
+  }
   return user_agent_type_;
 }
 
 UserAgentType NavigationItemImpl::GetUserAgentForInheritance() const {
-  return user_agent_type_inheritance_;
+  return user_agent_type_;
 }
 
 bool NavigationItemImpl::HasPostData() const {
@@ -338,7 +338,22 @@ void NavigationItemImpl::ResetForCommit() {
   SetNavigationInitiationType(web::NavigationInitiationType::NONE);
 }
 
+void NavigationItemImpl::RestoreStateFromItem(NavigationItem* other) {
+  // Restore the UserAgent type in any case, as if the URLs are different it
+  // might mean that |this| is a next navigation. The page display state and the
+  // virtual URL only make sense if it is the same item. The other headers might
+  // not make sense after creating a new navigation to the page.
+  if (other->GetUserAgentForInheritance() != UserAgentType::NONE) {
+    SetUserAgentType(other->GetUserAgentForInheritance());
+  }
+  if (url_ == other->GetURL()) {
+    SetPageDisplayState(other->GetPageDisplayState());
+    SetVirtualURL(other->GetVirtualURL());
+  }
+}
+
 ErrorRetryStateMachine& NavigationItemImpl::error_retry_state_machine() {
+  DCHECK(!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage));
   return error_retry_state_machine_;
 }
 
@@ -367,7 +382,7 @@ NSString* NavigationItemImpl::GetDescription() const {
       stringWithFormat:
           @"url:%s virtual_url_:%s originalurl:%s referrer: %s title:%s "
           @"transition:%d "
-           "displayState:%@ userAgentType:%s userAgentForInheritance:%s "
+           "displayState:%@ userAgent:%s "
            "is_create_from_push_state: %@ "
            "has_state_been_replaced: %@ is_created_from_hash_change: %@ "
            "navigation_initiation_type: %d",
@@ -376,7 +391,6 @@ NSString* NavigationItemImpl::GetDescription() const {
           base::UTF16ToUTF8(title_).c_str(), transition_type_,
           page_display_state_.GetDescription(),
           GetUserAgentTypeDescription(user_agent_type_).c_str(),
-          GetUserAgentTypeDescription(user_agent_type_inheritance_).c_str(),
           is_created_from_push_state_ ? @"true" : @"false",
           has_state_been_replaced_ ? @"true" : @"false",
           is_created_from_hash_change_ ? @"true" : @"false",

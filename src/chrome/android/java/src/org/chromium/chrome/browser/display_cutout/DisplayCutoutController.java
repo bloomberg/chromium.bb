@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.display_cutout;
 
+import android.app.Activity;
 import android.graphics.Rect;
+import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 
 import androidx.annotation.Nullable;
@@ -14,14 +16,15 @@ import org.chromium.base.UserData;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blink.mojom.ViewportFit;
-import org.chromium.chrome.browser.InsetObserverView;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Controls the display cutout state for the tab.
@@ -38,6 +41,9 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
 
     /** The tab that this controller belongs to. */
     private Tab mTab;
+
+    /** {@link Window} of the current {@link Activity}. */
+    private Window mWindow;
 
     /** The current viewport fit value. */
     private @WebContentsObserver.ViewportFitType int mViewportFit = ViewportFit.AUTO;
@@ -59,17 +65,17 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
         }
 
         @Override
-        public void onInteractabilityChanged(boolean interactable) {
+        public void onInteractabilityChanged(Tab tab, boolean interactable) {
             // Force a layout update if the tab is now in the foreground.
             maybeUpdateLayout();
         }
 
         @Override
-        public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
+        public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
             assert tab == mTab;
 
-            if (isAttached) {
-                maybeAddInsetObserver();
+            if (window != null) {
+                maybeAddInsetObserver(tab.getWindowAndroid().getActivity().get());
             } else {
                 maybeRemoveInsetObserver();
             }
@@ -93,20 +99,21 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
         mTab = tab;
 
         tab.addObserver(mTabObserver);
-        maybeAddInsetObserver();
+        maybeAddInsetObserver(tab.getWindowAndroid().getActivity().get());
     }
 
     /**
      * Add an observer to {@link InsetObserverView} if we have not already added
      * one.
      */
-    private void maybeAddInsetObserver() {
-        if (mInsetObserverView != null || ((TabImpl) mTab).getActivity() == null) return;
+    private void maybeAddInsetObserver(Activity activity) {
+        if (mInsetObserverView != null || activity == null) return;
 
-        mInsetObserverView = ((TabImpl) mTab).getActivity().getInsetObserverView();
+        mInsetObserverView = ((ChromeActivity) activity).getInsetObserverView();
 
         if (mInsetObserverView == null) return;
         mInsetObserverView.addObserver(this);
+        mWindow = activity.getWindow();
     }
 
     /**
@@ -118,6 +125,7 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
 
         mInsetObserverView.removeObserver(this);
         mInsetObserverView = null;
+        mWindow = null;
     }
 
     @Override
@@ -198,12 +206,12 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
 
     @VisibleForTesting
     protected Object getWindowAttributes() {
-        return ((TabImpl) mTab).getActivity().getWindow().getAttributes();
+        return mWindow.getAttributes();
     }
 
     @VisibleForTesting
     protected void setWindowAttributes(Object attributes) {
-        ((TabImpl) mTab).getActivity().getWindow().setAttributes((LayoutParams) attributes);
+        mWindow.setAttributes((LayoutParams) attributes);
     }
 
     /** Updates the layout based on internal state. */

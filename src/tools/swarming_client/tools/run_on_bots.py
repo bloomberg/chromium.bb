@@ -43,7 +43,7 @@ from utils import tools
 def get_bot_list(swarming_server, dimensions):
   """Returns a list of swarming bots: health, quarantined, dead."""
   q = '&'.join(
-      'dimensions=%s:%s' % (k, v) for k, v in sorted(dimensions.iteritems()))
+      'dimensions=%s:%s' % (k, v) for k, v in sorted(dimensions.items()))
   cmd = [
     sys.executable, 'swarming.py', 'query',
     '--swarming', swarming_server,
@@ -94,13 +94,15 @@ def archive(isolate_server, script):
 
 
 def batched_subprocess(cmd, sem):
-    def run(cmd, sem):
-      subprocess.call(cmd, cwd=CLIENT_DIR)
-      sem.release()
-    sem.acquire()
-    thread = threading.Thread(target=run, args=(cmd, sem))
-    thread.start()
-    return thread
+
+  def run(cmd, sem):
+    subprocess.call(cmd, cwd=CLIENT_DIR)
+    sem.release()
+
+  sem.acquire()
+  thread = threading.Thread(target=run, args=(cmd, sem))
+  thread.start()
+  return thread
 
 
 def run_batches(
@@ -113,7 +115,7 @@ def run_batches(
   """
   sem = threading.Semaphore(batches)
   threads = []
-  for i in xrange(repeat):
+  for i in range(repeat):
     for bot in bots:
       suffix = '/%d' % i if repeat > 1 else ''
       task_name = parallel_execution.task_to_name(
@@ -128,7 +130,7 @@ def run_batches(
         '--task-name', task_name,
         '-s', isolated_hash,
       ]
-      for k, v in sorted(dimensions.iteritems()):
+      for k, v in sorted(dimensions.items()):
         cmd.extend(('-d', k, v))
       for t in sorted(tags):
         cmd.extend(('--tags', t))
@@ -139,7 +141,7 @@ def run_batches(
         cmd.extend(args)
       threads.append(batched_subprocess(cmd, sem))
   for t in threads:
-     t.join()
+    t.join()
 
 
 def run_serial(
@@ -151,7 +153,7 @@ def run_serial(
   are busy and the priority is low.
   """
   result = 0
-  for i in xrange(repeat):
+  for i in range(repeat):
     for bot in bots:
       suffix = '/%d' % i if repeat > 1 else ''
       task_name = parallel_execution.task_to_name(
@@ -166,7 +168,7 @@ def run_serial(
         '--task-name', task_name,
         '-s', isolated_hash,
       ]
-      for k, v in sorted(dimensions.iteritems()):
+      for k, v in sorted(dimensions.items()):
         cmd.extend(('-d', k, v))
       for t in sorted(tags):
         cmd.extend(('--tags', t))
@@ -184,7 +186,7 @@ def run_parallel(
     swarming_server, isolate_server, dimensions, env, priority, deadline,
     repeat, isolated_hash, name, bots, args):
   tasks = []
-  for i in xrange(repeat):
+  for i in range(repeat):
     suffix = '/%d' % i if repeat > 1 else ''
     for bot in bots:
       d = {'id': bot}

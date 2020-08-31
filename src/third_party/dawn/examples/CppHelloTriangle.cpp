@@ -88,7 +88,7 @@ void initTextures() {
 void init() {
     device = CreateCppDawnDevice();
 
-    queue = device.CreateQueue();
+    queue = device.GetDefaultQueue();
     swapchain = GetSwapChain(device);
     swapchain.Configure(GetPreferredSwapChainTextureFormat(), wgpu::TextureUsage::OutputAttachment,
                         640, 480);
@@ -163,7 +163,7 @@ void frame() {
         pass.SetBindGroup(0, bindGroup);
         pass.SetVertexBuffer(0, vertexBuffer);
         pass.SetIndexBuffer(indexBuffer);
-        pass.DrawIndexed(3, 1, 0, 0, 0);
+        pass.DrawIndexed(3);
         pass.EndPass();
     }
 

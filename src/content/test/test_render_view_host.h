@@ -86,21 +86,12 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void ShowDefinitionForSelection() override {}
   void SpeakSelection() override;
 #endif  // defined(OS_MACOSX)
-  void DidCreateNewRendererCompositorFrameSink(
-      viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
-      override;
-  void SubmitCompositorFrame(
-      const viz::LocalSurfaceId& local_surface_id,
-      viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list) override;
 
   // Advances the fallback surface to the first surface after navigation. This
   // ensures that stale surfaces are not presented to the user for an indefinite
   // period of time.
   void ResetFallbackToFirstNavigationSurface() override {}
 
-  void SetNeedsBeginFrames(bool needs_begin_frames) override {}
-  void SetWantsAnimateOnlyBeginFrames() override {}
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
   void EnsureSurfaceSynchronizedForWebTest() override {}
 
@@ -115,7 +106,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override {}
   gfx::Rect GetBoundsInRootWindow() override;
-  bool LockMouse(bool) override;
+  blink::mojom::PointerLockResult LockMouse(bool) override;
+  blink::mojom::PointerLockResult ChangeMouseLock(bool) override;
   void UnlockMouse() override;
   const viz::FrameSinkId& GetFrameSinkId() const override;
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
@@ -126,14 +118,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
 
   bool is_showing() const { return is_showing_; }
   bool is_occluded() const { return is_occluded_; }
-  bool did_swap_compositor_frame() const { return did_swap_compositor_frame_; }
-  void reset_did_swap_compositor_frame() { did_swap_compositor_frame_ = false; }
-  bool did_change_compositor_frame_sink() {
-    return did_change_compositor_frame_sink_;
-  }
-  void reset_did_change_compositor_frame_sink() {
-    did_change_compositor_frame_sink_ = false;
-  }
+
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
@@ -147,20 +132,12 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
  private:
   bool is_showing_;
   bool is_occluded_;
-  bool did_swap_compositor_frame_;
-  bool did_change_compositor_frame_sink_ = false;
   ui::DummyTextInputClient text_input_client_;
 
 #if defined(USE_AURA)
   std::unique_ptr<aura::Window> window_;
 #endif
 };
-
-#if defined(COMPILER_MSVC)
-// See comment for same warning on RenderViewHostImpl.
-#pragma warning(push)
-#pragma warning(disable: 4250)
-#endif
 
 // TestRenderViewHost ----------------------------------------------------------
 
@@ -243,6 +220,7 @@ class TestRenderViewHost
   // RenderViewHost:
   bool CreateRenderView(int opener_frame_route_id,
                         int proxy_route_id,
+                        const base::UnguessableToken& frame_token,
                         const base::UnguessableToken& devtools_frame_token,
                         const FrameReplicationState& replicated_frame_state,
                         bool window_was_created_with_opener) override;
@@ -281,10 +259,6 @@ class TestRenderViewHost
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
 };
-
-#if defined(COMPILER_MSVC)
-#pragma warning(pop)
-#endif
 
 // Adds methods to get straight at the impl classes.
 class RenderViewHostImplTestHarness : public RenderViewHostTestHarness {

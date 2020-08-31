@@ -14,6 +14,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -22,9 +24,10 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -36,17 +39,22 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
+#include "chrome/browser/chromeos/policy/status_collector/status_collector.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/system_log_uploader.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/management_ui_handler_chromeos.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/proxy/proxy_config_handler.h"
+#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -131,14 +139,23 @@ const char kManagementReportHardwareStatus[] = "managementReportHardwareStatus";
 const char kManagementReportNetworkInterfaces[] =
     "managementReportNetworkInterfaces";
 const char kManagementReportUsers[] = "managementReportUsers";
+const char kManagementReportCrashReports[] = "managementReportCrashReports";
+const char kManagementReportExtensions[] = "managementReportExtensions";
+const char kManagementReportAndroidApplications[] =
+    "managementReportAndroidApplications";
 const char kManagementPrinting[] = "managementPrinting";
 const char kManagementCrostini[] = "managementCrostini";
+const char kManagementCrostiniContainerConfiguration[] =
+    "managementCrostiniContainerConfiguration";
+const char kManagementReportProxyServer[] = "managementReportProxyServer";
 const char kAccountManagedInfo[] = "accountManagedInfo";
 const char kDeviceManagedInfo[] = "deviceManagedInfo";
 const char kOverview[] = "overview";
 #endif  // defined(OS_CHROMEOS)
 
 const char kCustomerLogo[] = "customerLogo";
+
+const char kPowerfulExtensionsCountHistogram[] = "Extensions.PowerfulCount";
 
 namespace {
 
@@ -168,9 +185,14 @@ enum class DeviceReportingType {
   kDeviceActivity,
   kDeviceStatistics,
   kDevice,
+  kCrashReport,
   kLogs,
   kPrint,
-  kCrostini
+  kCrostini,
+  kUsername,
+  kExtensions,
+  kAndroidApplication,
+  kProxyServer
 };
 
 // Corresponds to DeviceReportingType in management_browser_proxy.js
@@ -184,12 +206,22 @@ std::string ToJSDeviceReportingType(const DeviceReportingType& type) {
       return "device statistics";
     case DeviceReportingType::kDevice:
       return "device";
+    case DeviceReportingType::kCrashReport:
+      return "crash report";
     case DeviceReportingType::kLogs:
       return "logs";
     case DeviceReportingType::kPrint:
       return "print";
     case DeviceReportingType::kCrostini:
       return "crostini";
+    case DeviceReportingType::kUsername:
+      return "username";
+    case DeviceReportingType::kExtensions:
+      return "extension";
+    case DeviceReportingType::kAndroidApplication:
+      return "android application";
+    case DeviceReportingType::kProxyServer:
+      return "proxy server";
     default:
       NOTREACHED() << "Unknown device reporting type";
       return "device";
@@ -204,60 +236,6 @@ void AddDeviceReportingElement(base::Value* report_sources,
   data.SetKey("reportingType", base::Value(ToJSDeviceReportingType(type)));
   report_sources->Append(std::move(data));
 }
-
-void AddDeviceReportingInfo(base::Value* report_sources, Profile* profile) {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-
-  // Only check for report status in managed environment.
-  if (!connector->IsEnterpriseManaged())
-    return;
-
-  policy::DeviceCloudPolicyManagerChromeOS* manager =
-      connector->GetDeviceCloudPolicyManager();
-
-  if (!manager)
-    return;
-
-  const policy::StatusCollector* collector =
-      manager->GetStatusUploader()->status_collector();
-
-  // Elements appear on the page in the order they are added.
-  if (collector->ShouldReportActivityTimes()) {
-    AddDeviceReportingElement(report_sources, kManagementReportActivityTimes,
-                              DeviceReportingType::kDeviceActivity);
-  } else {
-    if (collector->ShouldReportUsers()) {
-      AddDeviceReportingElement(report_sources, kManagementReportUsers,
-                                DeviceReportingType::kSupervisedUser);
-    }
-  }
-  if (collector->ShouldReportHardwareStatus()) {
-    AddDeviceReportingElement(report_sources, kManagementReportHardwareStatus,
-                              DeviceReportingType::kDeviceStatistics);
-  }
-  if (collector->ShouldReportNetworkInterfaces()) {
-    AddDeviceReportingElement(report_sources,
-                              kManagementReportNetworkInterfaces,
-                              DeviceReportingType::kDevice);
-  }
-  if (manager->GetSystemLogUploader()->upload_enabled()) {
-    AddDeviceReportingElement(report_sources, kManagementLogUploadEnabled,
-                              DeviceReportingType::kLogs);
-  }
-
-  if (profile->GetPrefs()->GetBoolean(
-          prefs::kPrintingSendUsernameAndFilenameEnabled)) {
-    AddDeviceReportingElement(report_sources, kManagementPrinting,
-                              DeviceReportingType::kPrint);
-  }
-
-  if (profile->GetPrefs()->GetBoolean(
-          crostini::prefs::kReportCrostiniUsageEnabled)) {
-    AddDeviceReportingElement(report_sources, kManagementCrostini,
-                              DeviceReportingType::kCrostini);
-  }
-}
 #endif  // defined(OS_CHROMEOS)
 
 std::vector<base::Value> GetPermissionsForExtension(
@@ -268,13 +246,14 @@ std::vector<base::Value> GetPermissionsForExtension(
     return permission_messages;
 
   extensions::PermissionIDSet permissions =
-      extensions::PermissionMessageProvider::Get()->GetAllPermissionIDs(
-          extension->permissions_data()->active_permissions(),
-          extension->GetType());
+      extensions::PermissionMessageProvider::Get()
+          ->GetManagementUIPermissionIDs(
+              extension->permissions_data()->active_permissions(),
+              extension->GetType());
 
   const extensions::PermissionMessages messages =
-      extensions::PermissionMessageProvider::Get()
-          ->GetPowerfulPermissionMessages(permissions);
+      extensions::PermissionMessageProvider::Get()->GetPermissionMessages(
+          permissions);
 
   for (const auto& message : messages)
     permission_messages.push_back(base::Value(message.message()));
@@ -516,9 +495,116 @@ void ManagementUIHandler::AddReportingInfo(base::Value* report_sources) {
   }
 }
 
-base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
-    Profile* profile) {
-  base::DictionaryValue response;
+#if defined(OS_CHROMEOS)
+const policy::DeviceCloudPolicyManagerChromeOS*
+ManagementUIHandler::GetDeviceCloudPolicyManager() const {
+  // Only check for report status in managed environment.
+  if (!device_managed_)
+    return nullptr;
+
+  const policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->GetDeviceCloudPolicyManager();
+}
+
+void ManagementUIHandler::AddDeviceReportingInfo(
+    base::Value* report_sources,
+    const policy::StatusCollector* collector,
+    const policy::SystemLogUploader* uploader,
+    Profile* profile) const {
+  if (!collector || !profile || !uploader)
+    return;
+
+  // Elements appear on the page in the order they are added.
+  if (collector->ShouldReportActivityTimes()) {
+    AddDeviceReportingElement(report_sources, kManagementReportActivityTimes,
+                              DeviceReportingType::kDeviceActivity);
+  } else {
+    if (collector->ShouldReportUsers()) {
+      AddDeviceReportingElement(report_sources, kManagementReportUsers,
+                                DeviceReportingType::kSupervisedUser);
+    }
+  }
+  if (collector->ShouldReportHardwareStatus()) {
+    AddDeviceReportingElement(report_sources, kManagementReportHardwareStatus,
+                              DeviceReportingType::kDeviceStatistics);
+  }
+  if (collector->ShouldReportNetworkInterfaces()) {
+    AddDeviceReportingElement(report_sources,
+                              kManagementReportNetworkInterfaces,
+                              DeviceReportingType::kDevice);
+  }
+  if (collector->ShouldReportCrashReportInfo()) {
+    AddDeviceReportingElement(report_sources, kManagementReportCrashReports,
+                              DeviceReportingType::kCrashReport);
+  }
+  if (uploader->upload_enabled()) {
+    AddDeviceReportingElement(report_sources, kManagementLogUploadEnabled,
+                              DeviceReportingType::kLogs);
+  }
+
+  if (profile->GetPrefs()->GetBoolean(
+          prefs::kPrintingSendUsernameAndFilenameEnabled)) {
+    AddDeviceReportingElement(report_sources, kManagementPrinting,
+                              DeviceReportingType::kPrint);
+  }
+
+  if (crostini::CrostiniFeatures::Get()->IsAllowed(profile)) {
+    if (!profile->GetPrefs()
+             ->GetFilePath(crostini::prefs::kCrostiniAnsiblePlaybookFilePath)
+             .empty()) {
+      AddDeviceReportingElement(report_sources,
+                                kManagementCrostiniContainerConfiguration,
+                                DeviceReportingType::kCrostini);
+    } else if (profile->GetPrefs()->GetBoolean(
+                   crostini::prefs::kReportCrostiniUsageEnabled)) {
+      AddDeviceReportingElement(report_sources, kManagementCrostini,
+                                DeviceReportingType::kCrostini);
+    }
+  }
+
+  if (g_browser_process->local_state()->GetBoolean(
+          prefs::kCloudReportingEnabled) &&
+      base::FeatureList::IsEnabled(features::kEnterpriseReportingInChromeOS)) {
+    AddDeviceReportingElement(report_sources,
+                              kManagementExtensionReportUsername,
+                              DeviceReportingType::kUsername);
+    AddDeviceReportingElement(report_sources, kManagementReportExtensions,
+                              DeviceReportingType::kExtensions);
+    AddDeviceReportingElement(report_sources,
+                              kManagementReportAndroidApplications,
+                              DeviceReportingType::kAndroidApplication);
+  }
+
+  chromeos::NetworkHandler* network_handler = chromeos::NetworkHandler::Get();
+  base::Value proxy_settings(base::Value::Type::DICTIONARY);
+  // |ui_proxy_config_service| may be missing in tests.
+  if (network_handler->has_ui_proxy_config_service()) {
+    // Check if proxy is enforced by user policy, a forced install extension or
+    // ONC policies. This will only read managed settings.
+    network_handler->ui_proxy_config_service()->MergeEnforcedProxyConfig(
+        network_handler->network_state_handler()->DefaultNetwork()->guid(),
+        &proxy_settings);
+  }
+  if (!proxy_settings.DictEmpty()) {
+    // Proxies can be specified by web server url, via a PAC script or via the
+    // web proxy auto-discovery protocol. Chrome also supports the "direct"
+    // mode, in which no proxy is used.
+    base::Value* proxy_specification_mode = proxy_settings.FindPath(
+        {::onc::network_config::kType, ::onc::kAugmentationActiveSetting});
+    bool use_proxy =
+        proxy_specification_mode &&
+        proxy_specification_mode->GetString() != ::onc::proxy::kDirect;
+    if (use_proxy) {
+      AddDeviceReportingElement(report_sources, kManagementReportProxyServer,
+                                DeviceReportingType::kProxyServer);
+    }
+  }
+}
+#endif
+
+base::Value ManagementUIHandler::GetContextualManagedData(Profile* profile) {
+  base::Value response(base::Value::Type::DICTIONARY);
 #if defined(OS_CHROMEOS)
   std::string management_domain = GetDeviceDomain();
   if (management_domain.empty())
@@ -526,26 +612,27 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
 #else
   std::string management_domain = GetAccountDomain(profile);
 
-  response.SetString("browserManagementNotice",
-                     l10n_util::GetStringFUTF16(
-                         managed_() ? IDS_MANAGEMENT_BROWSER_NOTICE
-                                    : IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
-                         base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
+  response.SetStringPath(
+      "browserManagementNotice",
+      l10n_util::GetStringFUTF16(
+          managed_() ? IDS_MANAGEMENT_BROWSER_NOTICE
+                     : IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
+          base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
 #endif
 
   if (management_domain.empty()) {
-    response.SetString(
+    response.SetStringPath(
         "extensionReportingTitle",
         l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
 
 #if !defined(OS_CHROMEOS)
-    response.SetString("pageSubtitle",
-                       l10n_util::GetStringUTF16(
-                           managed_() ? IDS_MANAGEMENT_SUBTITLE
-                                      : IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
+    response.SetStringPath(
+        "pageSubtitle", l10n_util::GetStringUTF16(
+                            managed_() ? IDS_MANAGEMENT_SUBTITLE
+                                       : IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
 #else
     const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
-    response.SetString(
+    response.SetStringPath(
         "pageSubtitle",
         managed_()
             ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
@@ -556,13 +643,13 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
 #endif  // !defined(OS_CHROMEOS)
 
   } else {
-    response.SetString(
+    response.SetStringPath(
         "extensionReportingTitle",
         l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
                                    base::UTF8ToUTF16(management_domain)));
 
 #if !defined(OS_CHROMEOS)
-    response.SetString(
+    response.SetStringPath(
         "pageSubtitle",
         managed_()
             ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
@@ -570,7 +657,7 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
             : l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
 #else
     const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
-    response.SetString(
+    response.SetStringPath(
         "pageSubtitle",
         managed_()
             ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
@@ -581,11 +668,11 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
                   l10n_util::GetStringUTF16(device_type)));
 #endif  // !defined(OS_CHROMEOS)
   }
-  response.SetBoolean("managed", managed_());
+  response.SetBoolPath("managed", managed_());
   GetManagementStatus(profile, &response);
   AsyncUpdateLogo();
   if (!fetched_image_.empty())
-    response.SetKey(kCustomerLogo, base::Value(fetched_image_));
+    response.SetPath(kCustomerLogo, base::Value(fetched_image_));
   return response;
 }
 
@@ -780,6 +867,11 @@ void ManagementUIHandler::HandleGetExtensions(const base::ListValue* args) {
 
   base::Value powerful_extensions = GetPowerfulExtensions(extensions);
 
+  // The number of extensions to be reported in chrome://management with
+  // powerful permissions.
+  base::UmaHistogramCounts1000(kPowerfulExtensionsCountHistogram,
+                               powerful_extensions.GetList().size());
+
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             powerful_extensions);
 }
@@ -806,7 +898,19 @@ void ManagementUIHandler::HandleGetDeviceReportingInfo(
   base::Value report_sources(base::Value::Type::LIST);
   AllowJavascript();
 
-  AddDeviceReportingInfo(&report_sources, Profile::FromWebUI(web_ui()));
+  const policy::DeviceCloudPolicyManagerChromeOS* manager =
+      GetDeviceCloudPolicyManager();
+  policy::StatusUploader* uploader = nullptr;
+  policy::SystemLogUploader* syslog_uploader = nullptr;
+  policy::StatusCollector* collector = nullptr;
+  if (manager) {
+    uploader = manager->GetStatusUploader();
+    syslog_uploader = manager->GetSystemLogUploader();
+    if (uploader)
+      collector = uploader->status_collector();
+  }
+  AddDeviceReportingInfo(&report_sources, collector, syslog_uploader,
+                         Profile::FromWebUI(web_ui()));
 
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             report_sources);

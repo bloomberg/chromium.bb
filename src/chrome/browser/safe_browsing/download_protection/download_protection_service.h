@@ -22,15 +22,17 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/download_reporter.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "components/safe_browsing/db/database_manager.h"
+#include "components/safe_browsing/core/db/database_manager.h"
 #include "components/sessions/core/session_id.h"
 #include "url/gurl.h"
 
@@ -51,11 +53,11 @@ class Profile;
 
 namespace safe_browsing {
 class BinaryFeatureExtractor;
-class ClientDownloadRequest;
-class DownloadFeedbackService;
 class CheckClientDownloadRequest;
 class CheckClientDownloadRequestBase;
 class CheckNativeFileSystemWriteRequest;
+class ClientDownloadRequest;
+class DownloadFeedbackService;
 class PPAPIDownloadRequest;
 
 // This class provides an asynchronous API to check whether a particular
@@ -83,6 +85,12 @@ class DownloadProtectionService {
   virtual void CheckClientDownload(download::DownloadItem* item,
                                    CheckDownloadRepeatingCallback callback);
 
+  // Checks the user permissions, then calls |CheckClientDownload| if
+  // appropriate. Returns whether we began scanning.
+  virtual bool MaybeCheckClientDownload(
+      download::DownloadItem* item,
+      CheckDownloadRepeatingCallback callback);
+
   // Checks whether any of the URLs in the redirect chain of the
   // download match the SafeBrowsing bad binary URL list.  The result is
   // delivered asynchronously via the given callback.  This method must be
@@ -90,6 +98,11 @@ class DownloadProtectionService {
   // thread.  Pre-condition: !info.download_url_chain.empty().
   virtual void CheckDownloadUrl(download::DownloadItem* item,
                                 CheckDownloadCallback callback);
+
+  // Checks the user permissions, then calls |CheckDownloadUrl|. Returns whether
+  // we began checking the URL.
+  virtual bool MaybeCheckDownloadUrl(download::DownloadItem* item,
+                                     CheckDownloadCallback callback);
 
   // Returns true iff the download specified by |info| should be scanned by
   // CheckClientDownload() for malicious content.
@@ -177,13 +190,20 @@ class DownloadProtectionService {
       const download::DownloadItem* item,
       bool show_download_in_folder);
 
-  // Uploads |request| to Safe Browsing for deep scanning, using the upload
-  // service attached to the given |profile|. This is non-blocking, and the
-  // result we be provided through the callback in |request|. This must be
-  // called on the UI thread.
+  // Uploads |item| to Safe Browsing for deep scanning, using the upload
+  // service attached to the profile |item| was downloaded in. This is
+  // non-blocking, and the result we be provided through |callback|. |source| is
+  // used to identify the reason for deep scanning. Only the scan types listed
+  // in |allowed_scans| will be performed. This must be called on the UI
+  // thread.
   void UploadForDeepScanning(
-      Profile* profile,
-      std::unique_ptr<BinaryUploadService::Request> request);
+      download::DownloadItem* item,
+      CheckDownloadRepeatingCallback callback,
+      DeepScanningRequest::DeepScanTrigger trigger,
+      std::vector<DeepScanningRequest::DeepScanType> allowed_scans);
+
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
+      content::BrowserContext* browser_context);
 
  private:
   friend class PPAPIDownloadRequest;
@@ -193,6 +213,7 @@ class DownloadProtectionService {
   friend class CheckClientDownloadRequestBase;
   friend class CheckClientDownloadRequest;
   friend class CheckNativeFileSystemWriteRequest;
+  friend class DeepScanningRequest;
 
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            TestDownloadRequestTimeout);
@@ -229,6 +250,10 @@ class DownloadProtectionService {
   // remove it from |download_requests_|.
   void RequestFinished(CheckClientDownloadRequestBase* request);
 
+  // Called by a DeepScanningRequest when it finishes, to remove it from
+  // |deep_scanning_requests_|.
+  virtual void RequestFinished(DeepScanningRequest* request);
+
   void PPAPIDownloadCheckRequestFinished(PPAPIDownloadRequest* request);
 
   // Identify referrer chain info of a download. This function also records UMA
@@ -255,6 +280,10 @@ class DownloadProtectionService {
   void OnDangerousDownloadOpened(const download::DownloadItem* item,
                                  Profile* profile);
 
+  // Get the BinaryUploadService for the given |profile|. Virtual so it can be
+  // overridden in tests.
+  virtual BinaryUploadService* GetBinaryUploadService(Profile* profile);
+
   SafeBrowsingService* sb_service_;
   // These pointers may be NULL if SafeBrowsing is disabled.
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
@@ -262,19 +291,18 @@ class DownloadProtectionService {
   scoped_refptr<SafeBrowsingNavigationObserverManager>
       navigation_observer_manager_;
 
-  // The loader factory we use to issue network requests.
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-
   // Set of pending server requests for DownloadManager mediated downloads.
-  std::unordered_map<CheckClientDownloadRequestBase*,
-                     std::unique_ptr<CheckClientDownloadRequestBase>>
+  base::flat_map<CheckClientDownloadRequestBase*,
+                 std::unique_ptr<CheckClientDownloadRequestBase>>
       download_requests_;
 
-  // Set of pending server requests for PPAPI mediated downloads. Using a map
-  // because heterogeneous lookups aren't available yet in std::unordered_map.
-  std::unordered_map<PPAPIDownloadRequest*,
-                     std::unique_ptr<PPAPIDownloadRequest>>
+  // Set of pending server requests for PPAPI mediated downloads.
+  base::flat_map<PPAPIDownloadRequest*, std::unique_ptr<PPAPIDownloadRequest>>
       ppapi_download_requests_;
+
+  // Set of pending server requests for deep scanning.
+  base::flat_map<DeepScanningRequest*, std::unique_ptr<DeepScanningRequest>>
+      deep_scanning_requests_;
 
   // Keeps track of the state of the service.
   bool enabled_;
@@ -308,6 +336,8 @@ class DownloadProtectionService {
 
   // DownloadReporter to send real time reports for dangerous download events.
   DownloadReporter download_reporter_;
+
+  base::WeakPtrFactory<DownloadProtectionService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadProtectionService);
 };

@@ -74,8 +74,9 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
   Testcase warning_testcases[] = {
     Testcase(
         "init_platform_app_csp_warning_1.json",
-        "'content_security_policy' is only allowed for extensions and legacy "
-            "packaged apps, but this is a packaged app."),
+        "'content_security_policy' is only allowed for extensions, legacy "
+            "packaged apps, and login screen extensions, but this is a "
+            "packaged app."),
     Testcase(
         "init_platform_app_csp_warning_2.json",
         "'app.content_security_policy' is not allowed for specified extension "
@@ -128,8 +129,7 @@ TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
     permissions.Append(base::Value("experimental"));
     permissions.Append(base::Value(api_name));
     manifest.SetKey("permissions", std::move(permissions));
-    manifests.push_back(
-        std::make_unique<ManifestData>(manifest.CreateDeepCopy(), ""));
+    manifests.push_back(std::make_unique<ManifestData>(manifest.Clone(), ""));
   }
   // First try to load without any flags. This should warn for every API.
   for (const std::unique_ptr<ManifestData>& manifest : manifests) {

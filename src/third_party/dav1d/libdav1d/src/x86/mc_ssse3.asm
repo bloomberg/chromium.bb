@@ -57,7 +57,15 @@ subpel_h_shufC: db 8,  9, 10, 11,  9, 10, 11, 12, 10, 11, 12, 13, 11, 12, 13, 14
 bilin_h_shuf4:  db 1,  0,  2,  1,  3,  2,  4,  3,  9,  8, 10,  9, 11, 10, 12, 11
 bilin_h_shuf8:  db 1,  0,  2,  1,  3,  2,  4,  3,  5,  4,  6,  5,  7,  6,  8,  7
 
+pb_8x0_8x8: times 8 db 0
+            times 8 db 8
+resize_mul: dd 0, 1, 2, 3
+resize_shuf: times 5 db 0
+             db 1, 2, 3, 4, 5, 6
+             times 5+16 db 7
+
 pb_64:    times 16 db 64
+pw_m256:  times 8 dw -256
 pw_8:     times 8 dw 8
 pw_26:    times 8 dw 26
 pw_34:    times 8 dw 34
@@ -67,6 +75,7 @@ pw_2048:  times 8 dw 2048
 pw_6903:  times 8 dw 6903
 pw_8192:  times 8 dw 8192
 pd_32:    times 4 dd 32
+pd_63:    times 4 dd 63
 pd_512:   times 4 dd 512
 pd_16384: times 4 dd 16484
 pd_32768: times 4 dd 32768
@@ -1425,7 +1434,7 @@ cglobal put_8tap, 1, 9, 0, dst, ds, src, ss, w, h, mx, my, ss3
     jmp                  wq
 .h_w2:
 %if ARCH_X86_32
-    and                 mxd, 0xff
+    and                 mxd, 0x7f
 %else
     movzx               mxd, mxb
 %endif
@@ -1455,7 +1464,7 @@ cglobal put_8tap, 1, 9, 0, dst, ds, src, ss, w, h, mx, my, ss3
     RET
 .h_w4:
 %if ARCH_X86_32
-    and                 mxd, 0xff
+    and                 mxd, 0x7f
 %else
     movzx               mxd, mxb
 %endif
@@ -1564,16 +1573,16 @@ cglobal put_8tap, 1, 9, 0, dst, ds, src, ss, w, h, mx, my, ss3
 %if ARCH_X86_32
     movzx               mxd, ssb
     shr                 ssd, 16
-    cmp                  hd, 4
-    cmovle              ssd, mxd
+    cmp                  hd, 6
+    cmovs               ssd, mxd
     lea                 ssq, [base_reg+ssq*8+subpel_filters-put_ssse3]
 %else
  %assign stack_offset org_stack_offset
     WIN64_SPILL_XMM      16
     movzx               mxd, myb
     shr                 myd, 16
-    cmp                  hd, 4
-    cmovle              myd, mxd
+    cmp                  hd, 6
+    cmovs               myd, mxd
     lea                 myq, [base_reg+myq*8+subpel_filters-put_ssse3]
 %endif
     tzcnt               r6d, wd
@@ -1850,14 +1859,18 @@ cglobal put_8tap, 1, 9, 0, dst, ds, src, ss, w, h, mx, my, ss3
     %assign stack_offset org_stack_offset
     cmp                  wd, 4
     jg .hv_w8
-    and                 mxd, 0xff
+%if ARCH_X86_32
+    and                 mxd, 0x7f
+%else
+    movzx               mxd, mxb
+%endif
     dec                srcq
     movd                 m1, [base_reg+mxq*8+subpel_filters-put_ssse3+2]
 %if ARCH_X86_32
     movzx               mxd, ssb
     shr                 ssd, 16
-    cmp                  hd, 4
-    cmovle              ssd, mxd
+    cmp                  hd, 6
+    cmovs               ssd, mxd
     movq                 m0, [base_reg+ssq*8+subpel_filters-put_ssse3]
     W32_RESTORE_SSQ
     lea                  r6, [ssq*3]
@@ -1886,8 +1899,8 @@ cglobal put_8tap, 1, 9, 0, dst, ds, src, ss, w, h, mx, my, ss3
 %else
     movzx               mxd, myb
     shr                 myd, 16
-    cmp                  hd, 4
-    cmovle              myd, mxd
+    cmp                  hd, 6
+    cmovs               myd, mxd
     movq                 m0, [base_reg+myq*8+subpel_filters-put_ssse3]
     ALLOC_STACK   mmsize*14, 14
     lea                ss3q, [ssq*3]
@@ -2202,8 +2215,8 @@ cglobal put_8tap, 1, 9, 0, dst, ds, src, ss, w, h, mx, my, ss3
     movq                 m1, [base_reg+mxq*8+subpel_filters-put_ssse3]
     movzx               mxd, ssb
     shr                 ssd, 16
-    cmp                  hd, 4
-    cmovle              ssd, mxd
+    cmp                  hd, 6
+    cmovs               ssd, mxd
     movq                 m5, [base_reg+ssq*8+subpel_filters-put_ssse3]
     mov                 ssq, ssmp
     ALLOC_STACK  -mmsize*13
@@ -2243,8 +2256,8 @@ cglobal put_8tap, 1, 9, 0, dst, ds, src, ss, w, h, mx, my, ss3
     movq                 m0, [base_reg+mxq*8+subpel_filters-put_ssse3]
     movzx               mxd, myb
     shr                 myd, 16
-    cmp                  hd, 4
-    cmovle              myd, mxd
+    cmp                  hd, 6
+    cmovs               myd, mxd
     movq                 m1, [base_reg+myq*8+subpel_filters-put_ssse3]
     pshufd         subpelh0, m0, q0000
     pshufd         subpelh1, m0, q1111
@@ -2511,7 +2524,7 @@ cglobal prep_8tap, 1, 9, 0, tmp, src, stride, w, h, mx, my, stride3
     jmp                  wq
 .h_w4:
 %if ARCH_X86_32
-    and                 mxd, 0xff
+    and                 mxd, 0x7f
 %else
     movzx               mxd, mxb
 %endif
@@ -2635,15 +2648,15 @@ cglobal prep_8tap, 1, 9, 0, tmp, src, stride, w, h, mx, my, stride3
 .v:
 %if ARCH_X86_32
     mov                 mxd, myd
-    and                 mxd, 0xff
+    and                 mxd, 0x7f
 %else
  %assign stack_offset org_stack_offset
     WIN64_SPILL_XMM      16
     movzx               mxd, myb
 %endif
     shr                 myd, 16
-    cmp                  hd, 4
-    cmovle              myd, mxd
+    cmp                  hd, 6
+    cmovs               myd, mxd
     lea                 myq, [base_reg+myq*8+subpel_filters-prep_ssse3]
     mova                 m2, [base+pw_512]
     psrlw                m2, m2, 1 ; 0x0100
@@ -2849,14 +2862,14 @@ cglobal prep_8tap, 1, 9, 0, tmp, src, stride, w, h, mx, my, stride3
     %assign stack_offset org_stack_offset
     cmp                  wd, 4
     jg .hv_w8
-    and                 mxd, 0xff
+    and                 mxd, 0x7f
     movd                 m1, [base_reg+mxq*8+subpel_filters-prep_ssse3+2]
 %if ARCH_X86_32
     mov                 mxd, myd
-    and                 mxd, 0xff
     shr                 myd, 16
-    cmp                  hd, 4
-    cmovle              myd, mxd
+    and                 mxd, 0x7f
+    cmp                  hd, 6
+    cmovs               myd, mxd
     movq                 m0, [base_reg+myq*8+subpel_filters-prep_ssse3]
     mov                  r5, r2; use as new base
  %define           base_reg  r5
@@ -2885,8 +2898,8 @@ cglobal prep_8tap, 1, 9, 0, tmp, src, stride, w, h, mx, my, stride3
 %else
     movzx               mxd, myb
     shr                 myd, 16
-    cmp                  hd, 4
-    cmovle              myd, mxd
+    cmp                  hd, 6
+    cmovs               myd, mxd
     movq                 m0, [base_reg+myq*8+subpel_filters-prep_ssse3]
     ALLOC_STACK   mmsize*14, 14
     lea            stride3q, [strideq*3]
@@ -3101,11 +3114,11 @@ cglobal prep_8tap, 1, 9, 0, tmp, src, stride, w, h, mx, my, stride3
  %define             accuv0  [rsp+mmsize*11]
  %define             accuv1  [rsp+mmsize*12]
     movq                 m1, [base_reg+mxq*8+subpel_filters-prep_ssse3]
-    movzx               mxd, myw
-    and                 mxd, 0xff
+    mov                 mxd, myd
     shr                 myd, 16
-    cmp                  hd, 4
-    cmovle              myd, mxd
+    and                 mxd, 0x7f
+    cmp                  hd, 6
+    cmovs               myd, mxd
     movq                 m5, [base_reg+myq*8+subpel_filters-prep_ssse3]
     ALLOC_STACK  -mmsize*13
 %if STACK_ALIGNMENT < mmsize
@@ -3150,8 +3163,8 @@ cglobal prep_8tap, 1, 9, 0, tmp, src, stride, w, h, mx, my, stride3
     movq                 m0, [base_reg+mxq*8+subpel_filters-prep_ssse3]
     movzx               mxd, myb
     shr                 myd, 16
-    cmp                  hd, 4
-    cmovle              myd, mxd
+    cmp                  hd, 6
+    cmovs               myd, mxd
     movq                 m1, [base_reg+myq*8+subpel_filters-prep_ssse3]
     pshufd         subpelh0, m0, q0000
     pshufd         subpelh1, m0, q1111
@@ -4743,9 +4756,9 @@ cglobal emu_edge, 10, 13, 2, bw, bh, iw, ih, x, \
     xor            reg_zero, reg_zero
     lea             reg_tmp, [ihq-1]
     cmp                  yq, ihq
-    cmovl           reg_tmp, yq
+    cmovs           reg_tmp, yq
     test                 yq, yq
-    cmovl           reg_tmp, reg_zero
+    cmovs           reg_tmp, reg_zero
 %if ARCH_X86_64
     imul            reg_tmp, sstrideq
     add                srcq, reg_tmp
@@ -4758,9 +4771,9 @@ cglobal emu_edge, 10, 13, 2, bw, bh, iw, ih, x, \
     ; ref += iclip(x, 0, iw - 1)
     lea             reg_tmp, [iwq-1]
     cmp                  xq, iwq
-    cmovl           reg_tmp, xq
+    cmovs           reg_tmp, xq
     test                 xq, xq
-    cmovl           reg_tmp, reg_zero
+    cmovs           reg_tmp, reg_zero
     add             reg_src, reg_tmp
 %if ARCH_X86_32
     mov                srcm, reg_src
@@ -4773,7 +4786,7 @@ cglobal emu_edge, 10, 13, 2, bw, bh, iw, ih, x, \
     lea       reg_bottomext, [yq+bhq]
     sub       reg_bottomext, ihq
     lea                  r3, [bhq-1]
-    cmovl     reg_bottomext, reg_zero
+    cmovs     reg_bottomext, reg_zero
     ;
 
     DEFINE_ARGS bw, bh, iw, ih, x, \
@@ -4782,9 +4795,9 @@ cglobal emu_edge, 10, 13, 2, bw, bh, iw, ih, x, \
 
     ; top_ext = iclip(-y, 0, bh - 1)
     neg             topextq
-    cmovl           topextq, reg_zero
+    cmovs           topextq, reg_zero
     cmp       reg_bottomext, bhq
-    cmovge    reg_bottomext, r3
+    cmovns    reg_bottomext, r3
     cmp             topextq, bhq
     cmovg           topextq, r3
  %if ARCH_X86_32
@@ -4796,7 +4809,7 @@ cglobal emu_edge, 10, 13, 2, bw, bh, iw, ih, x, \
     lea        reg_rightext, [xq+bwq]
     sub        reg_rightext, iwq
     lea                  r2, [bwq-1]
-    cmovl      reg_rightext, reg_zero
+    cmovs      reg_rightext, reg_zero
 
     DEFINE_ARGS bw, bh, iw, ih, leftext, \
                 topext, dst, dstride, src, sstride, \
@@ -4804,14 +4817,14 @@ cglobal emu_edge, 10, 13, 2, bw, bh, iw, ih, x, \
 
     ; left_ext = iclip(-x, 0, bw - 1)
     neg            leftextq
-    cmovl          leftextq, reg_zero
+    cmovs          leftextq, reg_zero
     cmp        reg_rightext, bwq
-    cmovge     reg_rightext, r2
+    cmovns     reg_rightext, r2
  %if ARCH_X86_32
     mov                 r3m, r1
  %endif
     cmp            leftextq, bwq
-    cmovge         leftextq, r2
+    cmovns         leftextq, r2
 
 %undef reg_zero
 %undef reg_tmp
@@ -4868,8 +4881,6 @@ cglobal emu_edge, 10, 13, 2, bw, bh, iw, ih, x, \
     mov                  r1, r1m
   %endif
 %if %1
-    test           leftextq, leftextq
-    jz .body_%3
     ; left extension
   %if ARCH_X86_64
     movd                 m0, [srcq]
@@ -4885,7 +4896,6 @@ cglobal emu_edge, 10, 13, 2, bw, bh, iw, ih, x, \
     cmp                  r3, leftextq
     jl .left_loop_%3
     ; body
-.body_%3:
     lea             reg_tmp, [dstq+leftextq]
 %endif
     xor                  r3, r3
@@ -4906,13 +4916,6 @@ cglobal emu_edge, 10, 13, 2, bw, bh, iw, ih, x, \
     jl .body_loop_%3
 %if %2
     ; right extension
-  %if ARCH_X86_64
-    test          rightextq, rightextq
-  %else
-    mov                  r1, r3m
-    test                 r1, r1
-  %endif
-    jz .body_loop_end_%3
 %if %1
     add             reg_tmp, centerwq
 %else
@@ -4935,7 +4938,6 @@ cglobal emu_edge, 10, 13, 2, bw, bh, iw, ih, x, \
     cmp                  r3, r3m
   %endif
     jl .right_loop_%3
-.body_loop_end_%3:
 %endif
   %if ARCH_X86_64
     add                dstq, dstrideq
@@ -5077,3 +5079,226 @@ cglobal emu_edge, 10, 13, 2, bw, bh, iw, ih, x, \
 %undef reg_dstride
 %undef reg_blkm
 %undef reg_tmp
+
+cextern resize_filter
+
+%macro SCRATCH 3
+%if ARCH_X86_32
+    mova [rsp+%3*mmsize], m%1
+%define m%2 [rsp+%3*mmsize]
+%else
+    SWAP             %1, %2
+%endif
+%endmacro
+
+INIT_XMM ssse3
+%if ARCH_X86_64
+cglobal resize, 0, 14, 16, dst, dst_stride, src, src_stride, \
+                           dst_w, h, src_w, dx, mx0
+%elif STACK_ALIGNMENT >= 16
+cglobal resize, 0, 7, 8, 3 * 16, dst, dst_stride, src, src_stride, \
+                                 dst_w, h, src_w, dx, mx0
+%else
+cglobal resize, 0, 6, 8, 3 * 16, dst, dst_stride, src, src_stride, \
+                                 dst_w, h, src_w, dx, mx0
+%endif
+    movifnidn          dstq, dstmp
+    movifnidn          srcq, srcmp
+%if STACK_ALIGNMENT >= 16
+    movifnidn        dst_wd, dst_wm
+%endif
+%if ARCH_X86_64
+    movifnidn            hd, hm
+%endif
+    sub          dword mx0m, 4<<14
+    sub        dword src_wm, 8
+    movd                 m7, dxm
+    movd                 m6, mx0m
+    movd                 m5, src_wm
+    pshufd               m7, m7, q0000
+    pshufd               m6, m6, q0000
+    pshufd               m5, m5, q0000
+
+%if ARCH_X86_64
+    DEFINE_ARGS dst, dst_stride, src, src_stride, dst_w, h, x, picptr
+    LEA                  r7, $$
+%define base r7-$$
+%else
+    DEFINE_ARGS dst, dst_stride, src, src_stride, dst_w, x
+%if STACK_ALIGNMENT >= 16
+    LEA                  r6, $$
+%define base r6-$$
+%else
+    LEA                  r4, $$
+%define base r4-$$
+%endif
+%endif
+
+%if ARCH_X86_64
+    mova                m12, [base+pw_m256]
+    mova                m11, [base+pd_63]
+    mova                m10, [base+pb_8x0_8x8]
+%else
+%define m12 [base+pw_m256]
+%define m11 [base+pd_63]
+%define m10 [base+pb_8x0_8x8]
+%endif
+    pmaddwd              m4, m7, [base+resize_mul]  ; dx*[0,1,2,3]
+    pslld                m7, 2                      ; dx*4
+    pslld                m5, 14
+    paddd                m6, m4                     ; mx+[0..3]*dx
+    SCRATCH               7, 15, 0
+    SCRATCH               6, 14, 1
+    SCRATCH               5, 13, 2
+
+    ; m2 = 0, m3 = pmulhrsw constant for x=(x+64)>>7
+    ; m8 = mx+[0..3]*dx, m5 = dx*4, m6 = src_w, m7 = 0x3f, m15=0,8
+
+.loop_y:
+    xor                  xd, xd
+    mova                 m0, m14                    ; per-line working version of mx
+
+.loop_x:
+    pxor                 m1, m1
+    pcmpgtd              m1, m0
+    pandn                m1, m0
+    psrad                m2, m0, 8                  ; filter offset (unmasked)
+    pcmpgtd              m3, m13, m1
+    pand                 m1, m3
+    pandn                m3, m13
+    por                  m1, m3
+    psubd                m3, m0, m1                 ; pshufb offset
+    psrad                m1, 14                     ; clipped src_x offset
+    psrad                m3, 14                     ; pshufb edge_emu offset
+    pand                 m2, m11                    ; filter offset (masked)
+
+    ; load source pixels
+%if ARCH_X86_64
+    movd                r8d, xm1
+    pshuflw             xm1, xm1, q3232
+    movd                r9d, xm1
+    punpckhqdq          xm1, xm1
+    movd               r10d, xm1
+    psrlq               xm1, 32
+    movd               r11d, xm1
+    movq                xm4, [srcq+r8]
+    movq                xm5, [srcq+r10]
+    movhps              xm4, [srcq+r9]
+    movhps              xm5, [srcq+r11]
+%else
+    movd                r3d, xm1
+    pshufd              xm1, xm1, q3312
+    movd                r1d, xm1
+    pshuflw             xm1, xm1, q3232
+    movq                xm4, [srcq+r3]
+    movq                xm5, [srcq+r1]
+    movd                r3d, xm1
+    punpckhqdq          xm1, xm1
+    movd                r1d, xm1
+    movhps              xm4, [srcq+r3]
+    movhps              xm5, [srcq+r1]
+%endif
+
+    ; if no emulation is required, we don't need to shuffle or emulate edges
+    ; this also saves 2 quasi-vpgatherdqs
+    pxor                 m6, m6
+    pcmpeqb              m6, m3
+%if ARCH_X86_64
+    pmovmskb            r8d, m6
+    cmp                 r8d, 0xffff
+%else
+    pmovmskb            r3d, m6
+    cmp                 r3d, 0xffff
+%endif
+    je .filter
+
+%if ARCH_X86_64
+    movd                r8d, xm3
+    pshuflw             xm3, xm3, q3232
+    movd                r9d, xm3
+    punpckhqdq          xm3, xm3
+    movd               r10d, xm3
+    psrlq               xm3, 32
+    movd               r11d, xm3
+    movsxd               r8, r8d
+    movsxd               r9, r9d
+    movsxd              r10, r10d
+    movsxd              r11, r11d
+    movq                xm6, [base+resize_shuf+4+r8]
+    movq                xm7, [base+resize_shuf+4+r10]
+    movhps              xm6, [base+resize_shuf+4+r9]
+    movhps              xm7, [base+resize_shuf+4+r11]
+%else
+    movd                r3d, xm3
+    pshufd              xm3, xm3, q3312
+    movd                r1d, xm3
+    pshuflw             xm3, xm3, q3232
+    movq                xm6, [base+resize_shuf+4+r3]
+    movq                xm7, [base+resize_shuf+4+r1]
+    movd                r3d, xm3
+    punpckhqdq          xm3, xm3
+    movd                r1d, xm3
+    movhps              xm6, [base+resize_shuf+4+r3]
+    movhps              xm7, [base+resize_shuf+4+r1]
+%endif
+
+    paddb                m6, m10
+    paddb                m7, m10
+    pshufb               m4, m6
+    pshufb               m5, m7
+
+.filter:
+%if ARCH_X86_64
+    movd                r8d, xm2
+    pshuflw             xm2, xm2, q3232
+    movd                r9d, xm2
+    punpckhqdq          xm2, xm2
+    movd               r10d, xm2
+    psrlq               xm2, 32
+    movd               r11d, xm2
+    movq                xm6, [base+resize_filter+r8*8]
+    movq                xm7, [base+resize_filter+r10*8]
+    movhps              xm6, [base+resize_filter+r9*8]
+    movhps              xm7, [base+resize_filter+r11*8]
+%else
+    movd                r3d, xm2
+    pshufd              xm2, xm2, q3312
+    movd                r1d, xm2
+    pshuflw             xm2, xm2, q3232
+    movq                xm6, [base+resize_filter+r3*8]
+    movq                xm7, [base+resize_filter+r1*8]
+    movd                r3d, xm2
+    punpckhqdq          xm2, xm2
+    movd                r1d, xm2
+    movhps              xm6, [base+resize_filter+r3*8]
+    movhps              xm7, [base+resize_filter+r1*8]
+%endif
+
+    pmaddubsw            m4, m6
+    pmaddubsw            m5, m7
+    phaddw               m4, m5
+    phaddsw              m4, m4
+    pmulhrsw             m4, m12                    ; x=(x+64)>>7
+    packuswb             m4, m4
+    movd          [dstq+xq], m4
+
+    paddd                m0, m15
+    add                  xd, 4
+%if STACK_ALIGNMENT >= 16
+    cmp                  xd, dst_wd
+%else
+    cmp                  xd, dst_wm
+%endif
+    jl .loop_x
+
+%if ARCH_X86_64
+    add                dstq, dst_strideq
+    add                srcq, src_strideq
+    dec                  hd
+%else
+    add                dstq, dst_stridem
+    add                srcq, src_stridem
+    dec           dword r5m
+%endif
+    jg .loop_y
+    RET

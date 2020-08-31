@@ -32,7 +32,7 @@ class GrVkUniformBuffer;
  * and other similar objects that are used along with the VkPipeline in the draw. This includes both
  * allocating and freeing these objects, as well as updating their values.
  */
-class GrVkPipelineState : public SkRefCnt {
+class GrVkPipelineState {
 public:
     using UniformInfoArray = GrVkPipelineStateDataManager::UniformInfoArray;
     using UniformHandle = GrGLSLProgramDataManager::UniformHandle;
@@ -66,13 +66,9 @@ public:
 
     void addUniformResources(GrVkCommandBuffer&, GrVkSampler*[], GrVkTexture*[], int numTextures);
 
-    void freeGPUResources(GrVkGpu* gpu);
-
-    void abandonGPUResources();
+    void freeGPUResources();
 
 private:
-    void writeUniformBuffers(const GrVkGpu* gpu);
-
     /**
      * We use the RT's size and origin to adjust from Skia device space to vulkan normalized device
      * space and to make device space positions have the correct origin for processors that require
@@ -112,10 +108,8 @@ private:
     // Helper for setData() that sets the view matrix and loads the render target height uniform
     void setRenderTargetState(const GrRenderTarget*, GrSurfaceOrigin);
 
-    // GrVkResources
+    // GrManagedResources
     GrVkPipeline* fPipeline;
-
-    const GrVkDescriptorSet* fUniformDescriptorSet;
 
     const GrVkDescriptorSetManager::Handle fSamplerDSHandle;
 

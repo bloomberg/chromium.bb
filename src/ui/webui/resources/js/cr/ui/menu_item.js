@@ -30,7 +30,7 @@ cr.define('cr.ui', function() {
     /**
      * Initializes the menu item.
      */
-    decorate: function() {
+    decorate() {
       let commandId;
       if ((commandId = this.getAttribute('command'))) {
         this.command = commandId;
@@ -73,7 +73,7 @@ cr.define('cr.ui', function() {
         this.command_.removeEventListener('checkedChange', this);
       }
 
-      if (typeof command == 'string' && command[0] == '#') {
+      if (typeof command === 'string' && command[0] === '#') {
         command = assert(this.ownerDocument.body.querySelector(command));
         cr.ui.decorate(command, Command);
       }
@@ -125,15 +125,15 @@ cr.define('cr.ui', function() {
     /**
      * @return {boolean} Whether the menu item is a separator.
      */
-    isSeparator: function() {
-      return this.tagName == 'HR';
+    isSeparator() {
+      return this.tagName === 'HR';
     },
 
     /**
      * Updates shortcut text according to associated command. If command has
      * multiple shortcuts, only first one is displayed.
      */
-    updateShortcut_: function() {
+    updateShortcut_() {
       this.removeAttribute('shortcutText');
 
       if (!this.command_ || !this.command_.shortcut ||
@@ -143,7 +143,7 @@ cr.define('cr.ui', function() {
 
       const shortcuts = this.command_.shortcut.split(/\s+/);
 
-      if (shortcuts.length == 0) {
+      if (shortcuts.length === 0) {
         return;
       }
 
@@ -173,11 +173,11 @@ cr.define('cr.ui', function() {
         }
       });
 
-      if (ident == ' ') {
+      if (ident === ' ') {
         ident = 'Space';
       }
 
-      if (ident.length != 1) {
+      if (ident.length !== 1) {
         shortcutText +=
             loadTimeData.getString('SHORTCUT_' + ident.toUpperCase());
       } else {
@@ -193,7 +193,7 @@ cr.define('cr.ui', function() {
      * @param {!Event} e The mouseup event object.
      * @private
      */
-    handleMouseUp_: function(e) {
+    handleMouseUp_(e) {
       e = /** @type {!MouseEvent} */ (e);
       // Only dispatch an activate event for left or middle click.
       if (e.button > 1) {
@@ -224,7 +224,7 @@ cr.define('cr.ui', function() {
      * Updates command according to the node on which this menu was invoked.
      * @param {Node=} opt_node Node on which menu was opened.
      */
-    updateCommand: function(opt_node) {
+    updateCommand(opt_node) {
       if (this.command_) {
         this.command_.canExecuteChange(opt_node);
       }
@@ -234,7 +234,7 @@ cr.define('cr.ui', function() {
      * Handles changes to the associated command.
      * @param {Event} e The event object.
      */
-    handleEvent: function(e) {
+    handleEvent(e) {
       switch (e.type) {
         case 'disabledChange':
           this.disabled = this.command.disabled;

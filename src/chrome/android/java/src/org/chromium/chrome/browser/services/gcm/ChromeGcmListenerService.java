@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.text.TextUtils;
 
 import com.google.android.gms.gcm.GcmListenerService;
@@ -127,13 +126,12 @@ public class ChromeGcmListenerService extends GcmListenerService {
      * the next time Chrome is launched into foreground.
      */
     private static boolean maybePersistLazyMessage(GCMMessage message) {
-        if (isNativeLoaded()) {
+        if (isFullBrowserLoaded()) {
             return false;
         }
 
         final String subscriptionId = LazySubscriptionsManager.buildSubscriptionUniqueId(
                 message.getAppId(), message.getSenderId());
-        long time = SystemClock.elapsedRealtime();
 
         boolean isSubscriptionLazy = LazySubscriptionsManager.isSubscriptionLazy(subscriptionId);
         boolean isHighPriority = message.getOriginalPriority() == GCMMessage.Priority.HIGH;
@@ -142,8 +140,6 @@ public class ChromeGcmListenerService extends GcmListenerService {
         if (shouldPersistMessage) {
             LazySubscriptionsManager.persistMessage(subscriptionId, message);
         }
-
-        GcmUma.recordSubscriptionLazyCheckTime(SystemClock.elapsedRealtime() - time);
 
         return shouldPersistMessage;
     }
@@ -204,7 +200,7 @@ public class ChromeGcmListenerService extends GcmListenerService {
 
         // Dispatch message immediately on pre N versions of Android.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            dispatchMessageToDriver(ContextUtils.getApplicationContext(), message);
+            dispatchMessageToDriver(message);
             return;
         }
 
@@ -219,14 +215,13 @@ public class ChromeGcmListenerService extends GcmListenerService {
      * of the browser process, and forward the message to the GCM Driver. Must be called on the UI
      * thread.
      */
-    static void dispatchMessageToDriver(Context applicationContext, GCMMessage message) {
+    static void dispatchMessageToDriver(GCMMessage message) {
         ThreadUtils.assertOnUiThread();
-        ChromeBrowserInitializer.getInstance(applicationContext).handleSynchronousStartup();
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
         GCMDriver.dispatchMessage(message);
     }
 
-    private static boolean isNativeLoaded() {
-        return ChromeBrowserInitializer.getInstance(ContextUtils.getApplicationContext())
-                .hasNativeInitializationCompleted();
+    private static boolean isFullBrowserLoaded() {
+        return ChromeBrowserInitializer.getInstance().isFullBrowserInitialized();
     }
 }

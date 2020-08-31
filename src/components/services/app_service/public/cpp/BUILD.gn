@@ -4,8 +4,15 @@
 
 source_set("app_file_handling") {
   sources = [
+    "file_handler.cc",
+    "file_handler.h",
     "file_handler_info.cc",
     "file_handler_info.h",
+  ]
+
+  deps = [
+    "//base",
+    "//url",
   ]
 }
 
@@ -15,7 +22,5 @@ source_set("intent_util") {
     "intent_util.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

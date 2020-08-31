@@ -1,8 +1,12 @@
 {
   "sandbox": {
+    "features": [
+      "config-data"
+    ],
     "services": [
       "chromium.cast.ApplicationConfigManager",
       "fuchsia.accessibility.semantics.SemanticsManager",
+      "fuchsia.camera3.DeviceWatcher",
       "fuchsia.device.NameProvider",
       "fuchsia.fonts.Provider",
       "fuchsia.intl.PropertyProvider",
@@ -12,6 +16,7 @@
       "fuchsia.media.drm.PlayReady",
       "fuchsia.media.drm.Widevine",
       "fuchsia.mediacodec.CodecFactory",
+      "fuchsia.memorypressure.Provider",
       "fuchsia.net.NameLookup",
       "fuchsia.netstack.Netstack",
       "fuchsia.posix.socket.Provider",

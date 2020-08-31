@@ -37,12 +37,13 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/ppapi_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/display.h"
@@ -208,10 +209,7 @@ void CompareSnapshotToReference(const base::FilePath& reference,
     std::vector<unsigned char> png_data;
     ASSERT_TRUE(
         gfx::PNGCodec::EncodeBGRASkBitmap(clipped_bitmap, false, &png_data));
-    ASSERT_EQ(static_cast<int>(png_data.size()),
-              base::WriteFile(reference,
-                              reinterpret_cast<const char*>(png_data.data()),
-                              png_data.size()));
+    ASSERT_TRUE(base::WriteFile(reference, png_data));
   }
 
   done_cb.Run();
@@ -287,7 +285,7 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), embedded_test_server()->GetURL(file),
         WindowOpenDisposition::NEW_BACKGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
     int index = browser()->tab_strip_model()->GetIndexOfLastWebContentsOpenedBy(
         GetActiveWebContents(), 0 /* start_index */);

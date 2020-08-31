@@ -5,7 +5,7 @@
  */
 
 .computed-properties {
-    -webkit-user-select: text;
+    user-select: text;
     flex-shrink: 0;
 }
 
@@ -35,4 +35,10 @@
 
 .styles-sidebar-pane-filter-box > input::placeholder {
     color: rgba(0, 0, 0, 0.54);
+}
+
+@media (forced-colors: active) {
+    .styles-sidebar-pane-filter-box > input {
+        border: 1px solid ButtonText;
+    }
 }

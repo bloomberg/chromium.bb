@@ -20,13 +20,13 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.settings.SettingsActivity;
-import org.chromium.chrome.browser.settings.website.SingleCategoryPreferences;
-import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
+import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
@@ -81,9 +81,9 @@ public class NotificationPlatformBridgeIntentTest {
                 });
         Assert.assertNotNull("Could not find the Settings activity", activity);
 
-        SingleCategoryPreferences fragment =
-                ActivityUtils.waitForFragmentToAttach(activity, SingleCategoryPreferences.class);
-        Assert.assertNotNull("Could not find the SingleCategoryPreferences fragment", fragment);
+        SingleCategorySettings fragment =
+                ActivityUtils.waitForFragmentToAttach(activity, SingleCategorySettings.class);
+        Assert.assertNotNull("Could not find the SingleCategorySettings fragment", fragment);
     }
 
     /**
@@ -121,9 +121,9 @@ public class NotificationPlatformBridgeIntentTest {
                 });
         Assert.assertNotNull("Could not find the Settings activity", activity);
 
-        SingleWebsitePreferences fragment =
-                ActivityUtils.waitForFragmentToAttach(activity, SingleWebsitePreferences.class);
-        Assert.assertNotNull("Could not find the SingleWebsitePreferences fragment", fragment);
+        SingleWebsiteSettings fragment =
+                ActivityUtils.waitForFragmentToAttach(activity, SingleWebsiteSettings.class);
+        Assert.assertNotNull("Could not find the SingleWebsiteSettings fragment", fragment);
     }
 
     /**

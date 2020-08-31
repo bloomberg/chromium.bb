@@ -4,10 +4,6 @@
 
 #include "build/build_config.h"
 
-#if defined(USE_X11)
-#include "ui/gfx/x/x11.h"
-#endif  // USE_X11
-
 #if defined(USE_EGL)
 #include <EGL/egl.h>
 #endif
@@ -77,7 +73,9 @@ std::string DriverEGL::GetClientExtensions() {
 
 #if defined(USE_GLX)
 std::string DriverGLX::GetPlatformExtensions() {
-  const char* str = glXQueryExtensionsString(gfx::GetXDisplay(), 0);
+  Display* display = gfx::GetXDisplay();
+  const int screen = (display == EGL_NO_DISPLAY ? 0 : DefaultScreen(display));
+  const char* str = glXQueryExtensionsString(display, screen);
   return str ? std::string(str) : "";
 }
 #endif

@@ -38,8 +38,7 @@ enum class ForInstallableSite {
 // Will sanitise the manifest fields to be suitable for installation to prevent
 // sites from using arbitrarily large amounts of disk space.
 void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
-                                  WebApplicationInfo* web_app_info,
-                                  ForInstallableSite installable_site);
+                                  WebApplicationInfo* web_app_info);
 
 // Form a list of icons to download: Remove icons with invalid urls.
 std::vector<GURL> GetValidIconUrlsToDownload(
@@ -47,6 +46,10 @@ std::vector<GURL> GetValidIconUrlsToDownload(
 
 // A map of icon urls to the bitmaps provided by that url.
 using IconsMap = std::map<GURL, std::vector<SkBitmap>>;
+
+// Populate shortcut item icon maps in WebApplicationInfo using the IconsMap.
+void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
+                               const IconsMap* icons_map);
 
 // Filter out square icons, ensure that the necessary-sized icons are available
 // by resizing larger icons down to smaller sizes, and generating icons for
@@ -59,8 +62,7 @@ using IconsMap = std::map<GURL, std::vector<SkBitmap>>;
 // other devices and could potentially create a never ending sync cycle. If
 // |is_for_sync| is true then icon links won't be changed.
 void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
-                                         const IconsMap* icons_map,
-                                         bool is_for_sync);
+                                         const IconsMap* icons_map);
 
 // Record an app banner added to homescreen event to ensure banners are not
 // shown for this app.

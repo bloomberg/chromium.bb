@@ -10,6 +10,7 @@
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrOpsTask.h"
+#include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/ops/GrOp.h"
 #include "tests/Test.h"
 
@@ -122,6 +123,11 @@ private:
                         HasAABloat::kNo, IsHairline::kNo);
     }
 
+    void onPrePrepare(GrRecordingContext*,
+                      const GrSurfaceProxyView* writeView,
+                      GrAppliedClip*,
+                      const GrXferProcessor::DstProxyView&) override {}
+
     void onPrepare(GrOpFlushState*) override {}
 
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override {
@@ -130,7 +136,11 @@ private:
         }
     }
 
-    CombineResult onCombineIfPossible(GrOp* t, const GrCaps&) override {
+    CombineResult onCombineIfPossible(GrOp* t, GrRecordingContext::Arenas* arenas,
+                                      const GrCaps&) override {
+        // This op doesn't use the arenas, but make sure the GrOpsTask is sending it
+        SkASSERT(arenas);
+        (void) arenas;
         auto that = t->cast<TestOp>();
         int v0 = fValueRanges[0].fValue;
         int v1 = that->fValueRanges[0].fValue;
@@ -162,10 +172,7 @@ private:
 DEF_GPUTEST(OpChainTest, reporter, /*ctxInfo*/) {
     auto context = GrContext::MakeMock(nullptr);
     SkASSERT(context);
-    GrSurfaceDesc desc;
-    desc.fConfig = kRGBA_8888_GrPixelConfig;
-    desc.fWidth = kNumOps + 1;
-    desc.fHeight = 1;
+    static constexpr SkISize kDims = {kNumOps + 1, 1};
 
     const GrBackendFormat format =
         context->priv().caps()->getDefaultBackendFormat(GrColorType::kRGBA_8888,
@@ -173,13 +180,12 @@ DEF_GPUTEST(OpChainTest, reporter, /*ctxInfo*/) {
 
     static const GrSurfaceOrigin kOrigin = kTopLeft_GrSurfaceOrigin;
     auto proxy = context->priv().proxyProvider()->createProxy(
-            format, desc, GrRenderable::kYes, 1, kOrigin, GrMipMapped::kNo,
-            SkBackingFit::kExact, SkBudgeted::kNo, GrProtected::kNo, GrInternalSurfaceFlags::kNone);
+            format, kDims, GrRenderable::kYes, 1, GrMipMapped::kNo, SkBackingFit::kExact,
+            SkBudgeted::kNo, GrProtected::kNo, GrInternalSurfaceFlags::kNone);
     SkASSERT(proxy);
     proxy->instantiate(context->priv().resourceProvider());
 
-    GrSwizzle outSwizzle = context->priv().caps()->getOutputSwizzle(format,
-                                                                    GrColorType::kRGBA_8888);
+    GrSwizzle writeSwizzle = context->priv().caps()->getWriteSwizzle(format, GrColorType::kRGBA_8888);
 
     int result[result_width()];
     int validResult[result_width()];
@@ -210,8 +216,8 @@ DEF_GPUTEST(OpChainTest, reporter, /*ctxInfo*/) {
                 GrOpFlushState flushState(context->priv().getGpu(),
                                           context->priv().resourceProvider(),
                                           &tracker);
-                GrOpsTask opsTask(context->priv().refOpMemoryPool(),
-                                  GrSurfaceProxyView(proxy, kOrigin, outSwizzle),
+                GrOpsTask opsTask(context->priv().arenas(),
+                                  GrSurfaceProxyView(proxy, kOrigin, writeSwizzle),
                                   context->priv().auditTrail());
                 // This assumes the particular values of kRanges.
                 std::fill_n(result, result_width(), -1);

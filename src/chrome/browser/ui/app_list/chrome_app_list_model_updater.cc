@@ -18,6 +18,25 @@
 #include "extensions/common/constants.h"
 #include "ui/base/models/menu_model.h"
 
+namespace {
+
+syncer::StringOrdinal CreateChromePositionOnLast(
+    const std::map<std::string, std::unique_ptr<ChromeAppListItem>>& items) {
+  syncer::StringOrdinal last_known_position;
+  for (auto& it : items) {
+    if (!last_known_position.IsValid() ||
+        (it.second->position().IsValid() &&
+         it.second->position().GreaterThan(last_known_position))) {
+      last_known_position = it.second->position();
+    }
+  }
+  return last_known_position.IsValid()
+             ? last_known_position.CreateAfter()
+             : syncer::StringOrdinal::CreateInitialOrdinal();
+}
+
+}  // namespace
+
 ChromeAppListModelUpdater::ChromeAppListModelUpdater(Profile* profile)
     : profile_(profile) {}
 
@@ -94,19 +113,6 @@ void ChromeAppListModelUpdater::SetStatus(ash::AppListModelStatus status) {
   if (!app_list_controller_)
     return;
   app_list_controller_->SetStatus(status);
-}
-
-void ChromeAppListModelUpdater::SetState(ash::AppListState state) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->SetState(state);
-}
-
-void ChromeAppListModelUpdater::HighlightItemInstalledFromUI(
-    const std::string& id) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->HighlightItemInstalledFromUI(id);
 }
 
 void ChromeAppListModelUpdater::SetSearchEngineIsGoogle(bool is_google) {
@@ -256,21 +262,6 @@ void ChromeAppListModelUpdater::SetItemFolderId(const std::string& id,
   app_list_controller_->SetItemMetadata(id, std::move(data));
 }
 
-void ChromeAppListModelUpdater::SetItemIsInstalling(const std::string& id,
-                                                    bool is_installing) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->SetItemIsInstalling(id, is_installing);
-}
-
-void ChromeAppListModelUpdater::SetItemPercentDownloaded(
-    const std::string& id,
-    int32_t percent_downloaded) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->SetItemPercentDownloaded(id, percent_downloaded);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Methods only used by ChromeSearchResult that talk to ash directly.
 
@@ -280,30 +271,6 @@ void ChromeAppListModelUpdater::SetSearchResultMetadata(
   if (!app_list_controller_)
     return;
   app_list_controller_->SetSearchResultMetadata(std::move(metadata));
-}
-
-void ChromeAppListModelUpdater::SetSearchResultIsInstalling(
-    const std::string& id,
-    bool is_installing) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->SetSearchResultIsInstalling(id, is_installing);
-}
-
-void ChromeAppListModelUpdater::SetSearchResultPercentDownloaded(
-    const std::string& id,
-    int percent_downloaded) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->SetSearchResultPercentDownloaded(id,
-                                                         percent_downloaded);
-}
-
-void ChromeAppListModelUpdater::NotifySearchResultItemInstalled(
-    const std::string& id) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->NotifySearchResultItemInstalled(id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -456,6 +423,10 @@ void ChromeAppListModelUpdater::AddItemToOemFolder(
       oem_folder->SetChromeIsFolder(true);
     }
     oem_folder->SetChromeName(oem_folder_name);
+
+    if (!position_to_try.IsValid())
+      position_to_try = CreateChromePositionOnLast(items_);
+
     oem_folder->SetChromePosition(position_to_try);
   }
 }

@@ -376,9 +376,16 @@ protected:
   void emitSandboxedReturn() {
     dispatchToConcrete(&Traits::ConcreteTarget::emitSandboxedReturn);
   }
+
+  void emitStackProbe(size_t StackSizeBytes) {
+    dispatchToConcrete(&Traits::ConcreteTarget::emitStackProbe,
+                       std::move(StackSizeBytes));
+  }
+
   /// Emit just the call instruction (without argument or return variable
   /// processing), sandboxing if needed.
-  virtual Inst *emitCallToTarget(Operand *CallTarget, Variable *ReturnReg) = 0;
+  virtual Inst *emitCallToTarget(Operand *CallTarget, Variable *ReturnReg,
+                                 size_t NumVariadicFpArgs = 0) = 0;
   /// Materialize the moves needed to return a value of the specified type.
   virtual Variable *moveReturnValueToRegister(Operand *Value,
                                               Type ReturnType) = 0;

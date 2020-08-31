@@ -72,14 +72,15 @@ TEST_P(WaylandPointerTest, Enter) {
 
 TEST_P(WaylandPointerTest, Leave) {
   MockPlatformWindowDelegate other_delegate;
-  WaylandWindow other_window(&other_delegate, connection_.get());
   gfx::AcceleratedWidget other_widget = gfx::kNullAcceleratedWidget;
   EXPECT_CALL(other_delegate, OnAcceleratedWidgetAvailable(_))
       .WillOnce(SaveArg<0>(&other_widget));
+
   PlatformWindowInitProperties properties;
   properties.bounds = gfx::Rect(0, 0, 10, 10);
   properties.type = PlatformWindowType::kWindow;
-  ASSERT_TRUE(other_window.Initialize(std::move(properties)));
+  auto other_window = WaylandWindow::Create(&other_delegate, connection_.get(),
+                                            std::move(properties));
   ASSERT_NE(other_widget, gfx::kNullAcceleratedWidget);
 
   Sync();
@@ -152,114 +153,6 @@ TEST_P(WaylandPointerTest, MotionDragged) {
   EXPECT_EQ(0, mouse_event->changed_button_flags());
   EXPECT_EQ(gfx::PointF(400, 500), mouse_event->location_f());
   EXPECT_EQ(gfx::PointF(400, 500), mouse_event->root_location_f());
-}
-
-TEST_P(WaylandPointerTest, ButtonPressAndCheckCapture) {
-  wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(),
-                        wl_fixed_from_int(200), wl_fixed_from_int(150));
-  Sync();
-
-  wl_pointer_send_button(pointer_->resource(), 2, 1002, BTN_RIGHT,
-                         WL_POINTER_BUTTON_STATE_PRESSED);
-  std::unique_ptr<Event> right_press_event;
-  // By the time ET_MOUSE_PRESSED event comes, WaylandWindow must have capture
-  // set.
-  EXPECT_CALL(delegate_, DispatchEvent(_))
-      .WillOnce(
-          CloneEventAndCheckCapture(window_.get(), true, &right_press_event));
-
-  Sync();
-  ASSERT_TRUE(right_press_event);
-  ASSERT_TRUE(right_press_event->IsMouseEvent());
-  auto* right_press_mouse_event = right_press_event->AsMouseEvent();
-  EXPECT_EQ(ET_MOUSE_PRESSED, right_press_mouse_event->type());
-  EXPECT_EQ(EF_RIGHT_MOUSE_BUTTON, right_press_mouse_event->button_flags());
-  EXPECT_EQ(EF_RIGHT_MOUSE_BUTTON,
-            right_press_mouse_event->changed_button_flags());
-
-  std::unique_ptr<Event> left_press_event;
-  // Ensure capture is still set before DispatchEvent returns.
-  EXPECT_CALL(delegate_, DispatchEvent(_))
-      .WillOnce(
-          CloneEventAndCheckCapture(window_.get(), true, &left_press_event));
-  wl_pointer_send_button(pointer_->resource(), 3, 1003, BTN_LEFT,
-                         WL_POINTER_BUTTON_STATE_PRESSED);
-
-  Sync();
-
-  // Ensure capture is still set after DispatchEvent returns.
-  ASSERT_TRUE(window_->HasCapture());
-
-  ASSERT_TRUE(left_press_event);
-  ASSERT_TRUE(left_press_event->IsMouseEvent());
-  auto* left_press_mouse_event = left_press_event->AsMouseEvent();
-  EXPECT_EQ(ET_MOUSE_PRESSED, left_press_mouse_event->type());
-  EXPECT_EQ(EF_LEFT_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
-            left_press_mouse_event->button_flags());
-  EXPECT_EQ(EF_LEFT_MOUSE_BUTTON,
-            left_press_mouse_event->changed_button_flags());
-  EXPECT_EQ(EF_LEFT_MOUSE_BUTTON,
-            left_press_mouse_event->changed_button_flags());
-  EXPECT_EQ(gfx::PointF(200, 150), left_press_mouse_event->location_f());
-  EXPECT_EQ(gfx::PointF(200, 150), left_press_mouse_event->root_location_f());
-}
-
-TEST_P(WaylandPointerTest, ButtonReleaseAndCheckCapture) {
-  wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(),
-                        wl_fixed_from_int(50), wl_fixed_from_int(50));
-  wl_pointer_send_button(pointer_->resource(), 2, 1002, BTN_BACK,
-                         WL_POINTER_BUTTON_STATE_PRESSED);
-  wl_pointer_send_button(pointer_->resource(), 3, 1003, BTN_LEFT,
-                         WL_POINTER_BUTTON_STATE_PRESSED);
-
-  Sync();
-
-  std::unique_ptr<Event> event;
-  // Ensure capture is set before DispatchEvent returns.
-  EXPECT_CALL(delegate_, DispatchEvent(_))
-      .WillOnce(CloneEventAndCheckCapture(window_.get(), true, &event));
-  wl_pointer_send_button(pointer_->resource(), 4, 1004, BTN_LEFT,
-                         WL_POINTER_BUTTON_STATE_RELEASED);
-
-  Sync();
-
-  ASSERT_TRUE(event);
-  ASSERT_TRUE(event->IsMouseEvent());
-  auto* mouse_event = event->AsMouseEvent();
-  EXPECT_EQ(ET_MOUSE_RELEASED, mouse_event->type());
-  EXPECT_EQ(EF_LEFT_MOUSE_BUTTON | EF_BACK_MOUSE_BUTTON,
-            mouse_event->button_flags());
-  EXPECT_EQ(EF_LEFT_MOUSE_BUTTON, mouse_event->changed_button_flags());
-  EXPECT_EQ(gfx::PointF(50, 50), mouse_event->location_f());
-  EXPECT_EQ(gfx::PointF(50, 50), mouse_event->root_location_f());
-
-  // Ensure capture is still set after DispatchEvent returns.
-  ASSERT_TRUE(window_->HasCapture());
-
-  mouse_event = nullptr;
-  event.reset();
-  // Ensure capture has not been reset before DispatchEvent returns, otherwise
-  // the code on top of Ozone (aura and etc), might get a wrong result, when
-  // calling HasCapture. If it is false, it can lead to mouse pressed handlers
-  // to be never released.
-  EXPECT_CALL(delegate_, DispatchEvent(_))
-      .WillOnce(CloneEventAndCheckCapture(window_.get(), true, &event));
-  wl_pointer_send_button(pointer_->resource(), 5, 1005, BTN_BACK,
-                         WL_POINTER_BUTTON_STATE_RELEASED);
-
-  Sync();
-
-  ASSERT_TRUE(event);
-  ASSERT_TRUE(event->IsMouseEvent());
-  mouse_event = event->AsMouseEvent();
-  EXPECT_EQ(ET_MOUSE_RELEASED, mouse_event->type());
-  EXPECT_EQ(EF_BACK_MOUSE_BUTTON, mouse_event->button_flags());
-  EXPECT_EQ(EF_BACK_MOUSE_BUTTON, mouse_event->changed_button_flags());
-  EXPECT_EQ(gfx::PointF(50, 50), mouse_event->location_f());
-  EXPECT_EQ(gfx::PointF(50, 50), mouse_event->root_location_f());
-
-  // It is safe to release capture now.
-  ASSERT_TRUE(!window_->HasCapture());
 }
 
 TEST_P(WaylandPointerTest, AxisVertical) {

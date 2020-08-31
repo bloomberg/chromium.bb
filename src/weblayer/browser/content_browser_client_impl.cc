@@ -7,42 +7,76 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/captive_portal/core/buildflags.h"
+#include "components/embedder_support/switches.h"
+#include "components/network_time/network_time_tracker.h"
+#include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/permissions/quota_permission_context_impl.h"
+#include "components/prefs/json_pref_store.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service_factory.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
+#include "components/security_interstitials/content/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
-#include "components/version_info/version_info.h"
+#include "components/strings/grit/components_locale_settings.h"
+#include "components/variations/net/variations_http_headers.h"
+#include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/generated_code_cache_settings.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/storage_partition.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
-#include "content/public/common/user_agent.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/window_container_type.mojom.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 #include "weblayer/browser/browser_main_parts_impl.h"
+#include "weblayer/browser/browser_process.h"
+#include "weblayer/browser/download_manager_delegate_impl.h"
+#include "weblayer/browser/feature_list_creator.h"
 #include "weblayer/browser/i18n_util.h"
+#include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
-#include "weblayer/browser/ssl_error_handler.h"
+#include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/tab_impl.h"
+#include "weblayer/browser/tab_specific_content_settings_delegate.h"
+#include "weblayer/browser/user_agent.h"
+#include "weblayer/browser/web_contents_view_delegate_impl.h"
+#include "weblayer/browser/weblayer_browser_interface_binders.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
+#include "weblayer/browser/weblayer_security_blocking_page_factory.h"
+#include "weblayer/browser/weblayer_speech_recognition_manager_delegate.h"
 #include "weblayer/common/features.h"
+#include "weblayer/common/weblayer_paths.h"
+#include "weblayer/public/common/switches.h"
 #include "weblayer/public/fullscreen_delegate.h"
 #include "weblayer/public/main.h"
 
@@ -53,7 +87,11 @@
 #include "base/android/path_utils.h"
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "components/cdm/browser/cdm_message_filter_android.h"
+#include "components/cdm/browser/media_drm_storage_impl.h"  // nogncheck
 #include "components/crash/content/browser/crash_handler_host_linux.h"
+#include "components/embedder_support/android/metrics/android_metrics_service_client.h"
+#include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/spellcheck/browser/spell_check_host_impl.h"  // nogncheck
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -61,7 +99,6 @@
 #include "ui/base/resource/resource_bundle_android.h"
 #include "weblayer/browser/android_descriptors.h"
 #include "weblayer/browser/devtools_manager_delegate_android.h"
-#include "weblayer/browser/java/jni/ExternalNavigationHandler_jni.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_service.h"
 #endif
 
@@ -74,6 +111,10 @@
 #include "services/service_manager/sandbox/win/sandbox_win.h"
 #endif
 
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "weblayer/browser/captive_portal_service_factory.h"
+#endif
+
 namespace switches {
 // Specifies a list of hosts for whom we bypass proxy settings and use direct
 // connections. Ignored if --proxy-auto-detect or --no-proxy-server are also
@@ -82,6 +123,8 @@ namespace switches {
 // TODO(alexclarke): Find a better place for this.
 const char kProxyBypassList[] = "proxy-bypass-list";
 }  // namespace switches
+
+namespace weblayer {
 
 namespace {
 
@@ -104,20 +147,87 @@ class SSLCertReporterImpl : public SSLCertReporter {
       const std::string& serialized_report) override {}
 };
 
+// Wrapper for SSLErrorHandler::HandleSSLError() that supplies //weblayer-level
+// parameters.
+void HandleSSLErrorWrapper(
+    content::WebContents* web_contents,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    const GURL& request_url,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+    SSLErrorHandler::BlockingPageReadyCallback blocking_page_ready_callback) {
+  captive_portal::CaptivePortalService* captive_portal_service = nullptr;
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  captive_portal_service = CaptivePortalServiceFactory::GetForBrowserContext(
+      web_contents->GetBrowserContext());
+#endif
+
+  SSLErrorHandler::HandleSSLError(
+      web_contents, cert_error, ssl_info, request_url,
+      std::move(ssl_cert_reporter), std::move(blocking_page_ready_callback),
+      BrowserProcess::GetInstance()->GetNetworkTimeTracker(),
+      captive_portal_service,
+      std::make_unique<WebLayerSecurityBlockingPageFactory>());
+}
+
+#if defined(OS_ANDROID)
+void CreateOriginId(cdm::MediaDrmStorageImpl::OriginIdObtainedCB callback) {
+  std::move(callback).Run(true, base::UnguessableToken::Create());
+}
+
+void AllowEmptyOriginIdCB(base::OnceCallback<void(bool)> callback) {
+  // Since CreateOriginId() always returns a non-empty origin ID, we don't need
+  // to allow empty origin ID.
+  std::move(callback).Run(false);
+}
+
+void CreateMediaDrmStorage(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<::media::mojom::MediaDrmStorage> receiver) {
+  DCHECK(render_frame_host);
+
+  if (render_frame_host->GetLastCommittedOrigin().opaque()) {
+    DVLOG(1) << __func__ << ": Unique origin.";
+    return;
+  }
+
+  // The object will be deleted on connection error, or when the frame navigates
+  // away.
+  new cdm::MediaDrmStorageImpl(
+      render_frame_host, base::BindRepeating(&CreateOriginId),
+      base::BindRepeating(&AllowEmptyOriginIdCB), std::move(receiver));
+}
+#endif  // defined(OS_ANDROID)
+
+void RegisterPrefs(PrefRegistrySimple* pref_registry) {
+  network_time::NetworkTimeTracker::RegisterPrefs(pref_registry);
+  pref_registry->RegisterIntegerPref(kDownloadNextIDPref, 0);
+#if defined(OS_ANDROID)
+  metrics::AndroidMetricsServiceClient::RegisterPrefs(pref_registry);
+#endif
+  variations::VariationsService::RegisterPrefs(pref_registry);
+}
+
 }  // namespace
 
-namespace weblayer {
-
 ContentBrowserClientImpl::ContentBrowserClientImpl(MainParams* params)
-    : params_(params) {}
+    : params_(params) {
+  if (!SystemNetworkContextManager::HasInstance())
+    SystemNetworkContextManager::CreateInstance(GetUserAgent());
+}
 
 ContentBrowserClientImpl::~ContentBrowserClientImpl() = default;
 
 std::unique_ptr<content::BrowserMainParts>
 ContentBrowserClientImpl::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
+  // This should be called after CreateFeatureListAndFieldTrials(), which
+  // creates |local_state_|.
+  DCHECK(local_state_);
   std::unique_ptr<BrowserMainPartsImpl> browser_main_parts =
-      std::make_unique<BrowserMainPartsImpl>(params_, parameters);
+      std::make_unique<BrowserMainPartsImpl>(params_, parameters,
+                                             std::move(local_state_));
 
   return browser_main_parts;
 }
@@ -134,7 +244,11 @@ std::string ContentBrowserClientImpl::GetAcceptLangs(
 content::WebContentsViewDelegate*
 ContentBrowserClientImpl::GetWebContentsViewDelegate(
     content::WebContents* web_contents) {
-  return nullptr;
+  return new WebContentsViewDelegateImpl(web_contents);
+}
+
+bool ContentBrowserClientImpl::CanShutdownGpuProcessNowOnIOThread() {
+  return true;
 }
 
 content::DevToolsManagerDelegate*
@@ -153,55 +267,49 @@ ContentBrowserClientImpl::GetServiceManifestOverlay(base::StringPiece name) {
   return base::nullopt;
 }
 
+void ContentBrowserClientImpl::LogWebFeatureForCurrentPage(
+    content::RenderFrameHost* render_frame_host,
+    blink::mojom::WebFeature feature) {
+  page_load_metrics::mojom::PageLoadFeatures new_features({feature}, {}, {});
+  page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
+      render_frame_host, new_features);
+}
+
 std::string ContentBrowserClientImpl::GetProduct() {
-  return version_info::GetProductNameAndVersionForUserAgent();
+  return weblayer::GetProduct();
 }
 
 std::string ContentBrowserClientImpl::GetUserAgent() {
-  std::string product = GetProduct();
-
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kUseMobileUserAgent))
-    product += " Mobile";
-  return content::BuildUserAgentFromProduct(product);
+  return weblayer::GetUserAgent();
 }
 
 blink::UserAgentMetadata ContentBrowserClientImpl::GetUserAgentMetadata() {
-  blink::UserAgentMetadata metadata;
-
-  metadata.brand = version_info::GetProductName();
-  metadata.full_version = version_info::GetVersionNumber();
-  metadata.major_version = version_info::GetMajorVersionNumber();
-  metadata.platform = version_info::GetOSType();
-
-  metadata.architecture = "";
-  metadata.model = "";
-
-  return metadata;
+  return weblayer::GetUserAgentMetadata();
 }
 
 void ContentBrowserClientImpl::OverrideWebkitPrefs(
     content::RenderViewHost* render_view_host,
     content::WebPreferences* prefs) {
+  prefs->default_encoding = l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING);
+
   content::WebContents* web_contents =
       content::WebContents::FromRenderViewHost(render_view_host);
-  if (!web_contents)
-    return;
   TabImpl* tab = TabImpl::FromWebContents(web_contents);
-  prefs->fullscreen_supported = tab && tab->fullscreen_delegate();
+  if (tab)
+    tab->SetWebPreferences(prefs);
 }
 
-mojo::Remote<network::mojom::NetworkContext>
-ContentBrowserClientImpl::CreateNetworkContext(
+void ContentBrowserClientImpl::ConfigureNetworkContextParams(
     content::BrowserContext* context,
     bool in_memory,
-    const base::FilePath& relative_partition_path) {
-  mojo::Remote<network::mojom::NetworkContext> network_context;
-  network::mojom::NetworkContextParamsPtr context_params =
-      network::mojom::NetworkContextParams::New();
-  context_params->user_agent = GetUserAgent();
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+  SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+      context_params, GetUserAgent());
+  // Headers coming from the embedder are implicitly trusted and should not
+  // trigger CORS checks.
+  context_params->allow_any_cors_exempt_header_for_browser = true;
   context_params->accept_language = GetAcceptLangs(context);
   if (!context->IsOffTheRecord()) {
     base::FilePath cookie_path = context->GetPath();
@@ -211,23 +319,22 @@ ContentBrowserClientImpl::CreateNetworkContext(
         ProfileImpl::GetCachePath(context).Append(FILE_PATH_LITERAL("Cache"));
   }
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kProxyServer)) {
+  if (command_line->HasSwitch(::switches::kProxyServer)) {
     std::string proxy_server =
-        command_line->GetSwitchValueASCII(switches::kProxyServer);
+        command_line->GetSwitchValueASCII(::switches::kProxyServer);
     net::ProxyConfig proxy_config;
     proxy_config.proxy_rules().ParseFromString(proxy_server);
-    if (command_line->HasSwitch(switches::kProxyBypassList)) {
+    if (command_line->HasSwitch(::switches::kProxyBypassList)) {
       std::string bypass_list =
-          command_line->GetSwitchValueASCII(switches::kProxyBypassList);
+          command_line->GetSwitchValueASCII(::switches::kProxyBypassList);
       proxy_config.proxy_rules().bypass_rules.ParseFromString(bypass_list);
     }
     context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
         proxy_config,
         net::DefineNetworkTrafficAnnotation("undefined", "Nothing here yet."));
   }
-  content::GetNetworkService()->CreateNetworkContext(
-      network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
-  return network_context;
+  content::UpdateCorsExemptHeader(context_params);
+  variations::UpdateCorsExemptHeaderForVariations(context_params);
 }
 
 void ContentBrowserClientImpl::OnNetworkServiceCreated(
@@ -236,6 +343,8 @@ void ContentBrowserClientImpl::OnNetworkServiceCreated(
   network::mojom::CryptConfigPtr config = network::mojom::CryptConfig::New();
   content::GetNetworkService()->SetCryptConfig(std::move(config));
 #endif
+  SystemNetworkContextManager::GetInstance()->OnNetworkServiceCreated(
+      network_service);
 }
 
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
@@ -251,11 +360,54 @@ ContentBrowserClientImpl::CreateURLLoaderThrottles(
       IsSafebrowsingSupported()) {
 #if defined(OS_ANDROID)
     result.push_back(GetSafeBrowsingService()->CreateURLLoaderThrottle(
-        browser_context->GetResourceContext(), wc_getter, frame_tree_node_id));
+        wc_getter, frame_tree_node_id));
 #endif
   }
 
   return result;
+}
+
+bool ContentBrowserClientImpl::IsHandledURL(const GURL& url) {
+  if (!url.is_valid()) {
+    // WebLayer handles error cases.
+    return true;
+  }
+
+  std::string scheme = url.scheme();
+
+  DCHECK_EQ(scheme, base::ToLowerASCII(scheme));
+  static const char* const kProtocolList[] = {
+    url::kHttpScheme,
+    url::kHttpsScheme,
+#if BUILDFLAG(ENABLE_WEBSOCKETS)
+    url::kWsScheme,
+    url::kWssScheme,
+#endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
+    url::kFileScheme,
+    content::kChromeDevToolsScheme,
+    content::kChromeUIScheme,
+    content::kChromeUIUntrustedScheme,
+    url::kDataScheme,
+#if defined(OS_ANDROID)
+    url::kContentScheme,
+#endif  // defined(OS_ANDROID)
+    url::kAboutScheme,
+    url::kBlobScheme,
+    url::kFileSystemScheme,
+  };
+  for (const char* supported_protocol : kProtocolList) {
+    if (scheme == supported_protocol)
+      return true;
+  }
+
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+  if (scheme == url::kFtpScheme &&
+      base::FeatureList::IsEnabled(::features::kFtpProtocol)) {
+    return true;
+  }
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+
+  return false;
 }
 
 bool ContentBrowserClientImpl::CanCreateWindow(
@@ -282,10 +434,16 @@ bool ContentBrowserClientImpl::CanCreateWindow(
   if (!tab || !tab->has_new_tab_delegate())
     return false;
 
-  if (container_type == content::mojom::WindowContainerType::BACKGROUND) {
-    // TODO(https://crbug.com/1019923): decide if WebLayer needs to support
-    // background tabs.
+  if (container_type == content::mojom::WindowContainerType::BACKGROUND ||
+      container_type == content::mojom::WindowContainerType::PERSISTENT) {
+    // WebLayer does not support extensions/apps, which are the only permitted
+    // users of background windows.
     return false;
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          embedder_support::kDisablePopupBlocking)) {
+    return true;
   }
 
   // WindowOpenDisposition has a *ton* of types, but the following are really
@@ -311,9 +469,48 @@ std::vector<std::unique_ptr<content::NavigationThrottle>>
 ContentBrowserClientImpl::CreateThrottlesForNavigation(
     content::NavigationHandle* handle) {
   std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+
+  if (handle->IsInMainFrame()) {
+    // MetricsNavigationThrottle requires that it runs before
+    // NavigationThrottles that may delay or cancel navigations, so only
+    // NavigationThrottles that don't delay or cancel navigations (e.g.
+    // throttles that are only observing callbacks without affecting navigation
+    // behavior) should be added before MetricsNavigationThrottle.
+    throttles.push_back(
+        page_load_metrics::MetricsNavigationThrottle::Create(handle));
+  }
+
+  // The next highest priority throttle *must* be this as it's responsible for
+  // calling to NavigationController for certain events.
+  TabImpl* tab = TabImpl::FromWebContents(handle->GetWebContents());
+  if (tab) {
+    auto throttle =
+        static_cast<NavigationControllerImpl*>(tab->GetNavigationController())
+            ->CreateNavigationThrottle(handle);
+    if (throttle)
+      throttles.push_back(std::move(throttle));
+  }
+
   throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
       handle, std::make_unique<SSLCertReporterImpl>(),
-      base::BindOnce(&HandleSSLError), base::BindOnce(&IsInHostedApp)));
+      base::BindOnce(&HandleSSLErrorWrapper), base::BindOnce(&IsInHostedApp)));
+
+#if defined(OS_ANDROID)
+  if (handle->IsInMainFrame()) {
+    if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
+        IsSafebrowsingSupported()) {
+      throttles.push_back(
+          GetSafeBrowsingService()->CreateSafeBrowsingNavigationThrottle(
+              handle));
+      if (handle->IsInMainFrame()) {
+        throttles.push_back(
+            navigation_interception::InterceptNavigationDelegate::
+                CreateThrottleFor(
+                    handle, navigation_interception::SynchronyMode::kAsync));
+      }
+    }
+  }
+#endif
   return throttles;
 }
 
@@ -326,6 +523,21 @@ ContentBrowserClientImpl::GetGeneratedCodeCacheSettings(
   // disk_cache::PreferredCacheSize in net/disk_cache/cache_util.cc.
   return content::GeneratedCodeCacheSettings(
       true, 0, ProfileImpl::GetCachePath(context));
+}
+
+bool ContentBrowserClientImpl::BindAssociatedReceiverFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle* handle) {
+  if (interface_name == autofill::mojom::AutofillDriver::Name_) {
+    autofill::ContentAutofillDriverFactory::BindAutofillDriver(
+        mojo::PendingAssociatedReceiver<autofill::mojom::AutofillDriver>(
+            std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+
+  return false;
 }
 
 void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
@@ -349,25 +561,50 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
 #endif  // defined(OS_ANDROID)
 }
 
-void ContentBrowserClientImpl::GetQuotaSettings(
-    content::BrowserContext* context,
-    content::StoragePartition* partition,
-    base::OnceCallback<void(base::Optional<storage::QuotaSettings>)> callback) {
-  storage::GetNominalDynamicSettings(
-      partition->GetPath(), context->IsOffTheRecord(),
-      storage::GetDefaultDeviceInfoHelper(), std::move(callback));
+void ContentBrowserClientImpl::BindMediaServiceReceiver(
+    content::RenderFrameHost* render_frame_host,
+    mojo::GenericPendingReceiver receiver) {
+#if defined(OS_ANDROID)
+  if (auto r = receiver.As<media::mojom::MediaDrmStorage>()) {
+    CreateMediaDrmStorage(render_frame_host, std::move(r));
+    return;
+  }
+#endif
+}
+
+void ContentBrowserClientImpl::RegisterBrowserInterfaceBindersForFrame(
+    content::RenderFrameHost* render_frame_host,
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
+  PopulateWebLayerFrameBinders(render_frame_host, map);
+}
+
+void ContentBrowserClientImpl::RenderProcessWillLaunch(
+    content::RenderProcessHost* host) {
+#if defined(OS_ANDROID)
+  host->AddFilter(new cdm::CdmMessageFilterAndroid(
+      /*can_persist_data*/ true,
+      /*force_to_support_secure_codecs*/ false));
+#endif
+  TabSpecificContentSettingsDelegate::UpdateRendererContentSettingRules(host);
+}
+
+scoped_refptr<content::QuotaPermissionContext>
+ContentBrowserClientImpl::CreateQuotaPermissionContext() {
+  return base::MakeRefCounted<permissions::QuotaPermissionContextImpl>();
+}
+
+void ContentBrowserClientImpl::CreateFeatureListAndFieldTrials() {
+  local_state_ = CreateLocalState();
+  feature_list_creator_ =
+      std::make_unique<FeatureListCreator>(local_state_.get());
+  feature_list_creator_->SetSystemNetworkContextManager(
+      SystemNetworkContextManager::GetInstance());
+  feature_list_creator_->CreateFeatureListAndFieldTrials();
 }
 
 #if defined(OS_ANDROID)
 SafeBrowsingService* ContentBrowserClientImpl::GetSafeBrowsingService() {
-  if (!safe_browsing_service_) {
-    // Create and initialize safe_browsing_service on first get.
-    // Note: Initialize() needs to happen on UI thread.
-    safe_browsing_service_ =
-        std::make_unique<SafeBrowsingService>(GetUserAgent());
-    safe_browsing_service_->Initialize();
-  }
-  return safe_browsing_service_.get();
+  return BrowserProcess::GetInstance()->GetSafeBrowsingService(GetUserAgent());
 }
 #endif
 
@@ -407,64 +644,57 @@ void ContentBrowserClientImpl::GetAdditionalMappedFilesForChildProcess(
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
-#if defined(OS_ANDROID)
-bool ContentBrowserClientImpl::ShouldOverrideUrlLoading(
-    int frame_tree_node_id,
-    bool browser_initiated,
-    const GURL& gurl,
-    const std::string& request_method,
-    bool has_user_gesture,
-    bool is_redirect,
-    bool is_main_frame,
-    ui::PageTransition transition,
-    bool* ignore_navigation) {
-  *ignore_navigation = false;
-
-  // Only GETs can be overridden.
-  if (request_method != "GET")
-    return true;
-
-  bool application_initiated =
-      browser_initiated || transition & ui::PAGE_TRANSITION_FORWARD_BACK;
-
-  // Don't offer application-initiated navigations unless it's a redirect.
-  if (application_initiated && !is_redirect)
-    return true;
-
-  // For HTTP schemes, only top-level navigations can be overridden. Similarly,
-  // WebView Classic lets app override only top level about:blank navigations.
-  // So we filter out non-top about:blank navigations here.
-  if (!is_main_frame &&
-      (gurl.SchemeIs(url::kHttpScheme) || gurl.SchemeIs(url::kHttpsScheme) ||
-       gurl.SchemeIs(url::kAboutScheme)))
-    return true;
-
-  content::WebContents* web_contents =
-      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
-  if (web_contents == nullptr)
-    return true;
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-
-  base::string16 url = base::UTF8ToUTF16(gurl.possibly_invalid_spec());
-  base::android::ScopedJavaLocalRef<jstring> jurl =
-      base::android::ConvertUTF16ToJavaString(env, url);
-
-  *ignore_navigation = Java_ExternalNavigationHandler_shouldOverrideUrlLoading(
-      env, jurl, has_user_gesture, is_redirect, is_main_frame);
-
-  if (base::android::HasException(env)) {
-    // Tell the chromium message loop to not perform any tasks after the
-    // current one - we want to make sure we return to Java cleanly without
-    // first making any new JNI calls.
-    base::MessageLoopCurrentForUI::Get()->Abort();
-    // If we crashed we don't want to continue the navigation.
-    *ignore_navigation = true;
-    return false;
+void ContentBrowserClientImpl::AppendExtraCommandLineSwitches(
+    base::CommandLine* command_line,
+    int child_process_id) {
+  const base::CommandLine& browser_command_line(
+      *base::CommandLine::ForCurrentProcess());
+  std::string process_type =
+      command_line->GetSwitchValueASCII(::switches::kProcessType);
+  if (process_type == ::switches::kRendererProcess) {
+    // Please keep this in alphabetical order.
+    static const char* const kSwitchNames[] = {
+        embedder_support::kOriginTrialDisabledFeatures,
+        embedder_support::kOriginTrialDisabledTokens,
+        embedder_support::kOriginTrialPublicKey,
+    };
+    command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                                   base::size(kSwitchNames));
   }
-
-  return true;
 }
-#endif
+
+// static
+std::unique_ptr<PrefService> ContentBrowserClientImpl::CreateLocalState() {
+  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+
+  RegisterPrefs(pref_registry.get());
+  base::FilePath path;
+  CHECK(base::PathService::Get(DIR_USER_DATA, &path));
+  path = path.AppendASCII("Local State");
+  PrefServiceFactory pref_service_factory;
+  pref_service_factory.set_user_prefs(
+      base::MakeRefCounted<JsonPrefStore>(path));
+
+  {
+    // Creating the prefs service may require reading the preferences from
+    // disk.
+    base::ScopedAllowBlocking allow_io;
+    return pref_service_factory.Create(pref_registry);
+  }
+}
+
+#if defined(OS_ANDROID)
+content::ContentBrowserClient::WideColorGamutHeuristic
+ContentBrowserClientImpl::GetWideColorGamutHeuristic() {
+  // Always match window since a mismatch can cause inefficiency in surface
+  // flinger.
+  return WideColorGamutHeuristic::kUseWindow;
+}
+#endif  // OS_ANDROID
+
+content::SpeechRecognitionManagerDelegate*
+ContentBrowserClientImpl::CreateSpeechRecognitionManagerDelegate() {
+  return new WebLayerSpeechRecognitionManagerDelegate();
+}
 
 }  // namespace weblayer

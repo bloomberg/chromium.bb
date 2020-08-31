@@ -14,12 +14,17 @@
 #import "components/history/ios/browser/web_state_top_sites_observer.h"
 #include "components/keyed_service/core/service_access_type.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper.h"
+#import "components/password_manager/ios/unique_id_tab_helper.h"
+#include "components/safe_browsing/core/features.h"
 #import "components/security_state/ios/insecure_input_tab_helper.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
+#import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/complex_tasks/ios_task_tab_helper.h"
+#import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
+#import "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
@@ -27,17 +32,23 @@
 #include "ios/chrome/browser/history/history_tab_helper.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
-#import "ios/chrome/browser/infobars/infobar_banner_overlay_request_factory_impl.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#import "ios/chrome/browser/infobars/infobar_overlay_tab_helper.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_factory_impl.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_tab_helper.h"
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
+#import "ios/chrome/browser/metrics/pageload_foreground_duration_tab_helper.h"
 #import "ios/chrome/browser/network_activity/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/open_in/open_in_tab_helper.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
-#include "ios/chrome/browser/reading_list/features.h"
+#import "ios/chrome/browser/policy/policy_features.h"
+#import "ios/chrome/browser/policy_url_blocking/policy_url_blocking_tab_helper.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_tab_helper.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -54,6 +65,7 @@
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
+#import "ios/chrome/browser/web/invalid_url_tab_helper.h"
 #import "ios/chrome/browser/web/java_script_console/java_script_console_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
@@ -61,15 +73,20 @@
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web/web_state_delegate_tab_helper.h"
+#import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_helper.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/web_state.h"
 
 void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   // TabIdHelper sets up the tab ID.
   TabIdTabHelper::CreateForWebState(web_state);
 
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
 
   // IOSChromeSessionTabHelper sets up the session ID used by other helpers,
   // so it needs to be created before them.
@@ -92,10 +109,17 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   LoadTimingTabHelper::CreateForWebState(web_state);
   OverscrollActionsTabHelper::CreateForWebState(web_state);
   IOSTaskTabHelper::CreateForWebState(web_state);
+  AppLauncherTabHelper::CreateForWebState(web_state);
+  security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
+      web_state);
+
+  if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
+    InvalidUrlTabHelper::CreateForWebState(web_state);
+  }
 
   if (base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
-    InfobarOverlayTabHelper::CreateForWebState(
-        web_state, std::make_unique<InfobarBannerOverlayRequestFactoryImpl>());
+    InfobarOverlayRequestInserter::CreateForWebState(web_state);
+    InfobarOverlayTabHelper::CreateForWebState(web_state);
   }
 
   if (base::FeatureList::IsEnabled(kCaptivePortalMetrics)) {
@@ -106,16 +130,25 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     FontSizeTabHelper::CreateForWebState(web_state);
   }
 
-  ImageFetchTabHelper::CreateForWebState(web_state);
-
-  if (!reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
-    ReadingListModel* model =
-        ReadingListModelFactory::GetForBrowserState(browser_state);
-    ReadingListWebStateObserver::CreateForWebState(web_state, model);
+  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+    BreadcrumbManagerTabHelper::CreateForWebState(web_state);
   }
 
+  if (base::FeatureList::IsEnabled(
+          safe_browsing::kSafeBrowsingAvailableOnIOS)) {
+    SafeBrowsingTabHelper::CreateForWebState(web_state);
+    SafeBrowsingUrlAllowList::CreateForWebState(web_state);
+    SafeBrowsingUnsafeResourceContainer::CreateForWebState(web_state);
+  }
+
+  if (IsURLBlocklistEnabled()) {
+    PolicyUrlBlockingTabHelper::CreateForWebState(web_state);
+  }
+
+  ImageFetchTabHelper::CreateForWebState(web_state);
+
   OpenInTabHelper::CreateForWebState(web_state);
-  ios::ChromeBrowserState* original_browser_state =
+  ChromeBrowserState* original_browser_state =
       browser_state->GetOriginalChromeBrowserState();
   favicon::WebFaviconDriver::CreateForWebState(
       web_state,
@@ -124,6 +157,8 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   history::WebStateTopSitesObserver::CreateForWebState(
       web_state,
       ios::TopSitesFactory::GetForBrowserState(original_browser_state).get());
+
+  UniqueIDTabHelper::CreateForWebState(web_state);
 
   PasswordTabHelper::CreateForWebState(web_state);
 
@@ -144,6 +179,15 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   ukm::InitializeSourceUrlRecorderForWebState(web_state);
 
   ARQuickLookTabHelper::CreateForWebState(web_state);
+
+  PageloadForegroundDurationTabHelper::CreateForWebState(web_state);
+
+  if (base::FeatureList::IsEnabled(
+          web::features::kIOSLookalikeUrlNavigationSuggestionsUI)) {
+    LookalikeUrlTabHelper::CreateForWebState(web_state);
+    LookalikeUrlTabAllowList::CreateForWebState(web_state);
+    LookalikeUrlContainer::CreateForWebState(web_state);
+  }
 
   // TODO(crbug.com/794115): pre-rendered WebState have lots of unnecessary
   // tab helpers for historical reasons. For the moment, AttachTabHelpers

@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 
-#include "base/logging.h"
-#include "base/mac/scoped_block.h"
+#include "base/check_op.h"
+#import "base/ios/block_types.h"
+#include "base/notreached.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
@@ -243,7 +244,7 @@ NSError* IdentityMissingError() {
 }
 
 - (void)continueSignin {
-  ios::ChromeBrowserState* browserState = _browser->GetBrowserState();
+  ChromeBrowserState* browserState = _browser->GetBrowserState();
   if (self.handlingError) {
     // The flow should not continue while the error is being handled, e.g. while
     // the user is being informed of an issue.
@@ -281,7 +282,8 @@ NSError* IdentityMissingError() {
     case SHOW_MANAGED_CONFIRMATION:
       [_performer
           showManagedConfirmationForHostedDomain:_identityToSignInHostedDomain
-                                  viewController:_presentingViewController];
+                                  viewController:_presentingViewController
+                                         browser:_browser];
       return;
 
     case SIGN_OUT_IF_NEEDED:
@@ -390,7 +392,8 @@ NSError* IdentityMissingError() {
                          [strongSelf setHandlingError:NO];
                          [strongSelf continueSignin];
                        }
-                       viewController:_presentingViewController];
+                       viewController:_presentingViewController
+                              browser:_browser];
 }
 
 #pragma mark AuthenticationFlowPerformerDelegate
@@ -407,6 +410,7 @@ NSError* IdentityMissingError() {
   DCHECK_NE(SHOULD_CLEAR_DATA_USER_CHOICE, shouldClearData);
   _shouldSignOut = YES;
   _shouldClearData = shouldClearData;
+
   [self continueSignin];
 }
 
@@ -442,8 +446,28 @@ NSError* IdentityMissingError() {
   [self cancelFlow];
 }
 
-- (UIViewController*)presentingViewController {
-  return _presentingViewController;
+- (void)dismissPresentingViewControllerAnimated:(BOOL)animated
+                                     completion:(ProceduralBlock)completion {
+  [_presentingViewController dismissViewControllerAnimated:animated
+                                                completion:^() {
+                                                  [_delegate didDismissDialog];
+                                                  if (completion) {
+                                                    completion();
+                                                  }
+                                                }];
+}
+
+- (void)presentViewController:(UIViewController*)viewController
+                     animated:(BOOL)animated
+                   completion:(ProceduralBlock)completion {
+  [_presentingViewController presentViewController:viewController
+                                          animated:animated
+                                        completion:^() {
+                                          [_delegate didPresentDialog];
+                                          if (completion) {
+                                            completion();
+                                          }
+                                        }];
 }
 
 #pragma mark - Used for testing

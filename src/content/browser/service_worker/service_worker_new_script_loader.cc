@@ -8,8 +8,9 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "content/browser/appcache/appcache_response.h"
+#include "content/browser/appcache/appcache_disk_cache_ops.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -23,7 +24,8 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "net/http/http_response_info.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
@@ -54,10 +56,11 @@ ServiceWorkerNewScriptLoader::CreateAndStart(
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    int64_t cache_resource_id) {
   return base::WrapUnique(new ServiceWorkerNewScriptLoader(
       routing_id, request_id, options, original_request, std::move(client),
-      version, loader_factory, traffic_annotation));
+      version, loader_factory, traffic_annotation, cache_resource_id));
 }
 
 // TODO(nhiroki): We're doing multiple things in the ctor. Consider factors out
@@ -70,9 +73,10 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    int64_t cache_resource_id)
     : request_url_(original_request.url),
-      resource_type_(static_cast<ResourceType>(original_request.resource_type)),
+      resource_destination_(original_request.destination),
       original_options_(options),
       version_(version),
       network_watcher_(FROM_HERE,
@@ -80,35 +84,23 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
                        base::SequencedTaskRunnerHandle::Get()),
       loader_factory_(std::move(loader_factory)),
       client_(std::move(client)) {
+  DCHECK_NE(cache_resource_id, blink::mojom::kInvalidServiceWorkerResourceId);
+
   network::ResourceRequest resource_request(original_request);
 #if DCHECK_IS_ON()
-  CheckVersionStatusBeforeLoad();
+  service_worker_loader_helpers::CheckVersionStatusBeforeWorkerScriptLoad(
+      version_->status(), resource_destination_);
 #endif  // DCHECK_IS_ON()
 
-  // TODO(nhiroki): Handle the case where |cache_resource_id| is invalid.
-  int64_t cache_resource_id = version->context()->storage()->NewResourceId();
-
-  // |incumbent_cache_resource_id| is valid if the incumbent service worker
-  // exists and it's required to do the byte-for-byte check.
-  int64_t incumbent_cache_resource_id =
-      ServiceWorkerConsts::kInvalidServiceWorkerResourceId;
   scoped_refptr<ServiceWorkerRegistration> registration =
       version_->context()->GetLiveRegistration(version_->registration_id());
   // ServiceWorkerVersion keeps the registration alive while the service
   // worker is starting up, and it must be starting up here.
   DCHECK(registration);
-  const bool is_main_script = resource_type_ == ResourceType::kServiceWorker;
+  const bool is_main_script =
+      (resource_destination_ ==
+       network::mojom::RequestDestination::kServiceWorker);
   if (is_main_script) {
-    ServiceWorkerVersion* stored_version = registration->waiting_version()
-                                               ? registration->waiting_version()
-                                               : registration->active_version();
-    // |pause_after_download()| indicates the version is required to do the
-    // byte-for-byte check.
-    if (stored_version && stored_version->script_url() == request_url_ &&
-        version_->pause_after_download()) {
-      incumbent_cache_resource_id =
-          stored_version->script_cache_map()->LookupResourceId(request_url_);
-    }
     // Request SSLInfo. It will be persisted in service worker storage and
     // may be used by ServiceWorkerNavigationLoader for navigations handled
     // by this service worker.
@@ -128,19 +120,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   }
 
   ServiceWorkerStorage* storage = version_->context()->storage();
-  if (incumbent_cache_resource_id !=
-      ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
-    // Create response readers only when we have to do the byte-for-byte check.
-    cache_writer_ = ServiceWorkerCacheWriter::CreateForComparison(
-        storage->CreateResponseReader(incumbent_cache_resource_id),
-        storage->CreateResponseReader(incumbent_cache_resource_id),
-        storage->CreateResponseWriter(cache_resource_id),
-        false /* pause_when_not_identical */);
-  } else {
-    // The script is new, create a cache writer for write back.
-    cache_writer_ = ServiceWorkerCacheWriter::CreateForWriteBack(
-        storage->CreateResponseWriter(cache_resource_id));
-  }
+  cache_writer_ = ServiceWorkerCacheWriter::CreateForWriteBack(
+      storage->CreateResponseWriter(cache_resource_id));
 
   version_->script_cache_map()->NotifyStartedCaching(request_url_,
                                                      cache_resource_id);
@@ -157,11 +138,25 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   network_loader_state_ = LoaderState::kLoadingHeader;
 }
 
-ServiceWorkerNewScriptLoader::~ServiceWorkerNewScriptLoader() = default;
+ServiceWorkerNewScriptLoader::~ServiceWorkerNewScriptLoader() {
+  // This class is used as a SelfOwnedReceiver and its lifetime is tied to the
+  // corresponding mojo connection. There could be cases where the mojo
+  // connection is disconnected while writing the response to the storage.
+  // Complete this loader with ERR_FAILED in such cases to update the script
+  // cache map.
+  bool writers_completed = header_writer_state_ == WriterState::kCompleted &&
+                           body_writer_state_ == WriterState::kCompleted;
+  if (network_loader_state_ == LoaderState::kCompleted && !writers_completed) {
+    DCHECK(client_);
+    CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED),
+                    ServiceWorkerConsts::kServiceWorkerInvalidVersionError);
+  }
+}
 
 void ServiceWorkerNewScriptLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     const base::Optional<GURL>& new_url) {
   // Resource requests for service worker scripts should not follow redirects.
   // See comments in OnReceiveRedirect().
@@ -199,17 +194,16 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
       blink::ServiceWorkerStatusCode::kOk;
   network::URLLoaderCompletionStatus completion_status;
   std::string error_message;
-  std::unique_ptr<net::HttpResponseInfo> response_info =
-      service_worker_loader_helpers::CreateHttpResponseInfoAndCheckHeaders(
+  if (!service_worker_loader_helpers::CheckResponseHead(
           *response_head, &service_worker_state, &completion_status,
-          &error_message);
-  if (!response_info) {
+          &error_message)) {
     DCHECK_NE(net::OK, completion_status.error_code);
     CommitCompleted(completion_status, error_message);
     return;
   }
 
-  if (resource_type_ == ResourceType::kServiceWorker) {
+  if (resource_destination_ ==
+      network::mojom::RequestDestination::kServiceWorker) {
     // Check the path restriction defined in the spec:
     // https://w3c.github.io/ServiceWorker/#service-worker-script-response
     std::string service_worker_allowed;
@@ -225,16 +219,26 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
       return;
     }
 
+    // TODO(arthursonzogni): Make the Cross-Origin-Embedder-Policy to be parsed
+    // when it reached this line, not matter what URLLoader it is coming from.
+    // The same mechanism as the one in NavigationURLLoader must be provided.
+    // Instead of being a "document", the main resource here is a "script".
+    version_->set_cross_origin_embedder_policy(
+        response_head->parsed_headers
+            ? response_head->parsed_headers->cross_origin_embedder_policy
+            : network::CrossOriginEmbedderPolicy());
+
     if (response_head->network_accessed)
       version_->embedded_worker()->OnNetworkAccessedForScriptLoad();
 
-    version_->SetMainScriptHttpResponseInfo(*response_info);
+    version_->SetMainScriptResponse(
+        std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
+            *response_head));
   }
 
   network_loader_state_ = LoaderState::kWaitingForBody;
 
-  WriteHeaders(
-      base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(response_info)));
+  WriteHeaders(response_head.Clone());
 
   // Don't pass SSLInfo to the client when the original request doesn't ask
   // to send it.
@@ -333,31 +337,12 @@ void ServiceWorkerNewScriptLoader::OnComplete(
 
 // End of URLLoaderClient ------------------------------------------------------
 
-#if DCHECK_IS_ON()
-void ServiceWorkerNewScriptLoader::CheckVersionStatusBeforeLoad() {
-  DCHECK(version_);
-
-  // ServiceWorkerNewScriptLoader is used for fetching the service worker main
-  // script (RESOURCE_TYPE_SERVICE_WORKER) during worker startup or
-  // importScripts() (RESOURCE_TYPE_SCRIPT).
-  // TODO(nhiroki): In the current implementation, importScripts() can be called
-  // in any ServiceWorkerVersion::Status except for REDUNDANT, but the spec
-  // defines importScripts() works only on the initial script evaluation and the
-  // install event. Update this check once importScripts() is fixed.
-  // (https://crbug.com/719052)
-  DCHECK((resource_type_ == ResourceType::kServiceWorker &&
-          version_->status() == ServiceWorkerVersion::NEW) ||
-         (resource_type_ == ResourceType::kScript &&
-          version_->status() != ServiceWorkerVersion::REDUNDANT));
-}
-#endif  // DCHECK_IS_ON()
-
 void ServiceWorkerNewScriptLoader::WriteHeaders(
-    scoped_refptr<HttpResponseInfoIOBuffer> info_buffer) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_EQ(WriterState::kNotStarted, header_writer_state_);
   header_writer_state_ = WriterState::kWriting;
   net::Error error = cache_writer_->MaybeWriteHeaders(
-      info_buffer.get(),
+      std::move(response_head),
       base::BindOnce(&ServiceWorkerNewScriptLoader::OnWriteHeadersComplete,
                      weak_factory_.GetWeakPtr()));
   if (error == net::ERR_IO_PENDING) {
@@ -533,14 +518,7 @@ void ServiceWorkerNewScriptLoader::CommitCompleted(
     DCHECK_EQ(LoaderState::kCompleted, network_loader_state_);
     DCHECK_EQ(WriterState::kCompleted, header_writer_state_);
     DCHECK_EQ(WriterState::kCompleted, body_writer_state_);
-    // If all the calls to WriteHeaders/WriteData succeeded, but the incumbent
-    // entry wasn't actually replaced because the new entry was equivalent, the
-    // new version didn't actually install because it already exists.
-    if (!cache_writer_->did_replace()) {
-      version_->SetStartWorkerStatusCode(
-          blink::ServiceWorkerStatusCode::kErrorExists);
-      error_code = net::ERR_FILE_EXISTS;
-    }
+    DCHECK(cache_writer_->did_replace());
     bytes_written = cache_writer_->bytes_written();
   } else {
     // AddMessageConsole must be called before notifying that an error occurred

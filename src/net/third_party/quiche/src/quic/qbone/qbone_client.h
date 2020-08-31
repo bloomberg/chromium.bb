@@ -10,14 +10,15 @@
 #include "net/third_party/quiche/src/quic/qbone/qbone_packet_writer.h"
 #include "net/third_party/quiche/src/quic/tools/quic_client_base.h"
 #include "net/third_party/quiche/src/quic/tools/quic_client_epoll_network_helper.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 // A QboneClient encapsulates connecting to a server via an epoll server
-// and setting up a Qbone tunnel. See the QboneTestClient in qbone_client_test
+// and setting up a QBONE tunnel. See the QboneTestClient in qbone_client_test
 // for usage.
 class QboneClient : public QuicClientBase, public QboneClientInterface {
  public:
-  // Note that the epoll server, qbone writer, and handler are owned
+  // Note that the epoll server, QBONE writer, and handler are owned
   // by the caller.
   QboneClient(QuicSocketAddress server_address,
               const QuicServerId& server_id,
@@ -33,7 +34,10 @@ class QboneClient : public QuicClientBase, public QboneClientInterface {
 
   // From QboneClientInterface. Accepts a given packet from the network and
   // sends the packet down to the QBONE connection.
-  void ProcessPacketFromNetwork(QuicStringPiece packet) override;
+  void ProcessPacketFromNetwork(quiche::QuicheStringPiece packet) override;
+
+  bool EarlyDataAccepted() override;
+  bool ReceivedInchoateReject() override;
 
  protected:
   int GetNumSentClientHellosFromSession() override;

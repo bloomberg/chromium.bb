@@ -8,8 +8,8 @@
 #include "cast/streaming/ntp_time.h"
 #include "cast/streaming/ssrc.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Session-level configuration and shared components for the RTCP messaging
 // associated with a single Cast RTP stream. Multiple packet serialization and
@@ -21,7 +21,7 @@ class RtcpSession {
   // world" wall time.
   RtcpSession(Ssrc sender_ssrc,
               Ssrc receiver_ssrc,
-              openscreen::platform::Clock::time_point start_time);
+              Clock::time_point start_time);
   ~RtcpSession();
 
   Ssrc sender_ssrc() const { return sender_ssrc_; }
@@ -36,7 +36,7 @@ class RtcpSession {
   NtpTimeConverter ntp_converter_;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_RTCP_SESSION_H_

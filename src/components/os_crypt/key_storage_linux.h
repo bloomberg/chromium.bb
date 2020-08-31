@@ -10,11 +10,13 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "components/os_crypt/key_storage_util_linux.h"
 
 namespace base {
 class SequencedTaskRunner;
 class WaitableEvent;
-}
+}  // namespace base
 
 namespace os_crypt {
 struct Config;
@@ -34,7 +36,7 @@ class COMPONENT_EXPORT(OS_CRYPT) KeyStorageLinux {
 
   // Gets the encryption key from the OS password-managing library. If a key is
   // not found, a new key will be generated, stored and returned.
-  std::string GetKey();
+  base::Optional<std::string> GetKey();
 
  protected:
   // Get the backend's favourite task runner, or nullptr for no preference.
@@ -46,7 +48,7 @@ class COMPONENT_EXPORT(OS_CRYPT) KeyStorageLinux {
 
   // The implementation of GetKey() for a specific backend. This will be called
   // on the backend's preferred thread.
-  virtual std::string GetKeyImpl() = 0;
+  virtual base::Optional<std::string> GetKeyImpl() = 0;
 
   // The name of the group, if any, containing the key.
   static const char kFolderName[];
@@ -54,13 +56,21 @@ class COMPONENT_EXPORT(OS_CRYPT) KeyStorageLinux {
   static const char kKey[];
 
  private:
+#if defined(USE_LIBSECRET) || defined(USE_KEYRING) || defined(USE_KWALLET)
+  // Tries to load the appropriate key storage. Returns null if none succeed.
+  static std::unique_ptr<KeyStorageLinux> CreateServiceInternal(
+      os_crypt::SelectedLinuxBackend selected_backend,
+      const os_crypt::Config& config);
+#endif  // defined(USE_LIBSECRET) || defined(USE_KEYRING) ||
+        // defined(USE_KWALLET)
+
   // Performs Init() on the backend's preferred thread.
   bool WaitForInitOnTaskRunner();
 
   // Perform the blocking calls to the backend to get the Key. Store it in
   // |password| and signal completion on |on_password_received|.
   void BlockOnGetKeyImplThenSignal(base::WaitableEvent* on_password_received,
-                                   std::string* password);
+                                   base::Optional<std::string>* password);
 
   // Perform the blocking calls to the backend to initialise. Store the
   // initialisation result in |success| and signal completion on |on_inited|.

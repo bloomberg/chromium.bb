@@ -694,7 +694,7 @@ ByteString WideString::ToUTF16LE() const {
   return result;
 }
 
-WideString WideString::Mid(size_t first, size_t count) const {
+WideString WideString::Substr(size_t first, size_t count) const {
   if (!m_pData)
     return WideString();
 
@@ -715,16 +715,16 @@ WideString WideString::Mid(size_t first, size_t count) const {
   return dest;
 }
 
-WideString WideString::Left(size_t count) const {
+WideString WideString::First(size_t count) const {
   if (count == 0 || !IsValidLength(count))
     return WideString();
-  return Mid(0, count);
+  return Substr(0, count);
 }
 
-WideString WideString::Right(size_t count) const {
+WideString WideString::Last(size_t count) const {
   if (count == 0 || !IsValidLength(count))
     return WideString();
-  return Mid(GetLength() - count, count);
+  return Substr(GetLength() - count, count);
 }
 
 void WideString::AllocCopy(WideString& dest,
@@ -942,6 +942,24 @@ WideString WideString::FromUTF16LE(const unsigned short* wstr, size_t wlen) {
     pdfium::span<wchar_t> buf = result.GetBuffer(wlen);
     for (size_t i = 0; i < wlen; i++)
       buf[i] = wstr[i];
+  }
+  result.ReleaseBuffer(wlen);
+  return result;
+}
+
+WideString WideString::FromUTF16BE(const unsigned short* wstr, size_t wlen) {
+  if (!wstr || wlen == 0)
+    return WideString();
+
+  WideString result;
+  {
+    // Span's lifetime must end before ReleaseBuffer() below.
+    pdfium::span<wchar_t> buf = result.GetBuffer(wlen);
+    for (size_t i = 0; i < wlen; i++) {
+      auto wch = wstr[i];
+      wch = (wch >> 8) | (wch << 8);
+      buf[i] = wch;
+    }
   }
   result.ReleaseBuffer(wlen);
   return result;

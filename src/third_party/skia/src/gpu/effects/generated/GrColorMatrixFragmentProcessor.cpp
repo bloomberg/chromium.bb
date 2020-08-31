@@ -10,7 +10,7 @@
  **************************************************************************************************/
 #include "GrColorMatrixFragmentProcessor.h"
 
-#include "include/gpu/GrTexture.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
@@ -34,12 +34,14 @@ public:
         (void)clampRGBOutput;
         auto premulOutput = _outer.premulOutput;
         (void)premulOutput;
-        mVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kHalf4x4_GrSLType, "m");
-        vVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kHalf4_GrSLType, "v");
+        mVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag, kHalf4x4_GrSLType,
+                                                "m");
+        vVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag, kHalf4_GrSLType,
+                                                "v");
         fragBuilder->codeAppendf(
                 "half4 inputColor = %s;\n@if (%s) {\n    half nonZeroAlpha = max(inputColor.w, "
                 "9.9999997473787516e-05);\n    inputColor = half4(inputColor.xyz / nonZeroAlpha, "
-                "nonZeroAlpha);\n}\n%s = %s * inputColor + %s;\n@if (%s) {\n    %s = clamp(%s, "
+                "inputColor.w);\n}\n%s = %s * inputColor + %s;\n@if (%s) {\n    %s = clamp(%s, "
                 "0.0, 1.0);\n} else {\n    %s.w = clamp(%s.w, 0.0, 1.0);\n}\n@if (%s) {\n    "
                 "%s.xyz *= %s.w;\n}\n",
                 args.fInputColor, (_outer.unpremulInput ? "true" : "false"), args.fOutputColor,
@@ -55,20 +57,20 @@ private:
                    const GrFragmentProcessor& _proc) override {
         const GrColorMatrixFragmentProcessor& _outer = _proc.cast<GrColorMatrixFragmentProcessor>();
         {
-            const SkMatrix44& mValue = _outer.m;
+            const SkM44& mValue = _outer.m;
             if (mPrev != (mValue)) {
                 mPrev = mValue;
-                pdman.setSkMatrix44(mVar, mValue);
+                pdman.setSkM44(mVar, mValue);
             }
-            const SkVector4& vValue = _outer.v;
+            const SkV4& vValue = _outer.v;
             if (vPrev != (vValue)) {
                 vPrev = vValue;
-                pdman.set4fv(vVar, 1, vValue.fData);
+                pdman.set4fv(vVar, 1, vValue.ptr());
             }
         }
     }
-    SkMatrix44 mPrev = SkMatrix44(SkMatrix44::kNaN_Constructor);
-    SkVector4 vPrev = SkVector4(SK_MScalarNaN, SK_MScalarNaN, SK_MScalarNaN, SK_MScalarNaN);
+    SkM44 mPrev = SkM44(SkM44::kNaN_Constructor);
+    SkV4 vPrev = SkV4{SK_FloatNaN, SK_FloatNaN, SK_FloatNaN, SK_FloatNaN};
     UniformHandle mVar;
     UniformHandle vVar;
 };

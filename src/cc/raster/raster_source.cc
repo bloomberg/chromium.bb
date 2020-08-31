@@ -16,28 +16,10 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "components/viz/common/traced_value.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
-namespace {
-
-// These enum values are persisted to logs and must never by renumbered or
-// reused.
-enum class RasterSourceClearType {
-  kNone = 0,
-  kFull = 1,
-  kBorder = 2,
-  kCount = 3
-};
-
-void TrackRasterSourceNeededClear(RasterSourceClearType clear_type) {
-  UMA_HISTOGRAM_ENUMERATION("Renderer4.RasterSourceClearType", clear_type,
-                            RasterSourceClearType::kCount);
-}
-
-}  // namespace
 
 RasterSource::RasterSource(const RecordingSource* other)
     : display_list_(other->display_list_),
@@ -51,6 +33,7 @@ RasterSource::RasterSource(const RecordingSource* other)
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       recording_scale_factor_(other->recording_scale_factor_) {}
+
 RasterSource::~RasterSource() = default;
 
 void RasterSource::ClearForOpaqueRaster(
@@ -89,9 +72,7 @@ void RasterSource::ClearForOpaqueRaster(
 
   // Intersect the device column and row with the playback rect and only
   // clear inside of that rect if needed.
-  RasterSourceClearType clear_type = RasterSourceClearType::kNone;
   if (device_column.intersect(playback_device_rect)) {
-    clear_type = RasterSourceClearType::kBorder;
     raster_canvas->save();
     raster_canvas->clipRect(SkRect::Make(device_column), SkClipOp::kIntersect,
                             false);
@@ -99,14 +80,12 @@ void RasterSource::ClearForOpaqueRaster(
     raster_canvas->restore();
   }
   if (device_row.intersect(playback_device_rect)) {
-    clear_type = RasterSourceClearType::kBorder;
     raster_canvas->save();
     raster_canvas->clipRect(SkRect::Make(device_row), SkClipOp::kIntersect,
                             false);
     raster_canvas->drawColor(background_color_, SkBlendMode::kSrc);
     raster_canvas->restore();
   }
-  TrackRasterSourceNeededClear(clear_type);
 }
 
 void RasterSource::PlaybackToCanvas(
@@ -137,7 +116,6 @@ void RasterSource::PlaybackToCanvas(
     // For non-opaque raster sources that are rastering the full tile,
     // just clear the entire canvas (even if stretches past the canvas
     // bitmap rect) as it's cheap to do so.
-    TrackRasterSourceNeededClear(RasterSourceClearType::kFull);
     raster_canvas->clear(SK_ColorTRANSPARENT);
   }
 
@@ -150,8 +128,6 @@ void RasterSource::PlaybackToCanvas(
                        raster_transform.scale() / recording_scale_factor_);
 
   if (is_partial_raster && requires_clear_) {
-    // TODO(enne): Should this be considered a partial clear?
-    TrackRasterSourceNeededClear(RasterSourceClearType::kFull);
     // Because Skia treats painted regions as transparent by default, we don't
     // need to clear outside of the playback rect in the same way that
     // ClearForOpaqueRaster must handle.
@@ -169,19 +145,6 @@ void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
   int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
   for (int i = 0; i < repeat_count; ++i)
     display_list_->Raster(raster_canvas, image_provider);
-}
-
-sk_sp<SkPicture> RasterSource::GetFlattenedPicture() {
-  TRACE_EVENT0("cc", "RasterSource::GetFlattenedPicture");
-
-  SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(size_.width(), size_.height());
-  if (!size_.IsEmpty()) {
-    canvas->clear(SK_ColorTRANSPARENT);
-    PlaybackToCanvas(canvas, nullptr);
-  }
-
-  return recorder.finishRecordingAsPicture();
 }
 
 size_t RasterSource::GetMemoryUsage() const {
@@ -243,10 +206,6 @@ bool RasterSource::HasRecordings() const {
 
 gfx::Rect RasterSource::RecordedViewport() const {
   return recorded_viewport_;
-}
-
-bool RasterSource::HasText() const {
-  return display_list_ && display_list_->HasText();
 }
 
 void RasterSource::AsValueInto(base::trace_event::TracedValue* array) const {

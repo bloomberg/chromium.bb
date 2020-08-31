@@ -25,9 +25,6 @@ class MODULES_EXPORT ServiceWorkerWindowClient final
   using ResolveWindowClientCallback = base::OnceCallback<
       void(bool, mojom::blink::ServiceWorkerClientInfoPtr, const String&)>;
 
-  static ServiceWorkerWindowClient* Create(
-      const mojom::blink::ServiceWorkerClientInfo&);
-
   static ResolveWindowClientCallback CreateResolveWindowClientCallback(
       ScriptPromiseResolver*);
 
@@ -41,7 +38,7 @@ class MODULES_EXPORT ServiceWorkerWindowClient final
   ScriptPromise focus(ScriptState*);
   ScriptPromise navigate(ScriptState*, const String& url);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool page_hidden_;

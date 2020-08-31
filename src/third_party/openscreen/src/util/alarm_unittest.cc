@@ -15,30 +15,28 @@ namespace {
 
 class AlarmTest : public testing::Test {
  public:
-  platform::FakeClock* clock() { return &clock_; }
-  platform::TaskRunner* task_runner() { return &task_runner_; }
+  FakeClock* clock() { return &clock_; }
+  FakeTaskRunner* task_runner() { return &task_runner_; }
   Alarm* alarm() { return &alarm_; }
 
  private:
-  platform::FakeClock clock_{platform::Clock::now()};
-  platform::FakeTaskRunner task_runner_{&clock_};
-  Alarm alarm_{&platform::FakeClock::now, &task_runner_};
+  FakeClock clock_{Clock::now()};
+  FakeTaskRunner task_runner_{&clock_};
+  Alarm alarm_{&FakeClock::now, &task_runner_};
 };
 
 TEST_F(AlarmTest, RunsTaskAsClockAdvances) {
-  constexpr platform::Clock::duration kDelay = std::chrono::milliseconds(20);
+  constexpr Clock::duration kDelay = std::chrono::milliseconds(20);
 
-  const platform::Clock::time_point alarm_time =
-      platform::FakeClock::now() + kDelay;
-  platform::Clock::time_point actual_run_time{};
-  alarm()->Schedule([&]() { actual_run_time = platform::FakeClock::now(); },
-                    alarm_time);
+  const Clock::time_point alarm_time = FakeClock::now() + kDelay;
+  Clock::time_point actual_run_time{};
+  alarm()->Schedule([&]() { actual_run_time = FakeClock::now(); }, alarm_time);
   // Confirm the lambda did not run immediately.
-  ASSERT_EQ(platform::Clock::time_point{}, actual_run_time);
+  ASSERT_EQ(Clock::time_point{}, actual_run_time);
 
   // Confirm the lambda does not run until the necessary delay has elapsed.
   clock()->Advance(kDelay / 2);
-  ASSERT_EQ(platform::Clock::time_point{}, actual_run_time);
+  ASSERT_EQ(Clock::time_point{}, actual_run_time);
 
   // Confirm the lambda is called when the necessary delay has elapsed.
   clock()->Advance(kDelay / 2);
@@ -49,17 +47,34 @@ TEST_F(AlarmTest, RunsTaskAsClockAdvances) {
   ASSERT_EQ(alarm_time, actual_run_time);
 }
 
-TEST_F(AlarmTest, CancelsTaskWhenGoingOutOfScope) {
-  constexpr platform::Clock::duration kDelay = std::chrono::milliseconds(20);
-  constexpr platform::Clock::time_point kNever{};
+TEST_F(AlarmTest, RunsTaskImmediately) {
+  const Clock::time_point expected_run_time = FakeClock::now();
+  Clock::time_point actual_run_time{};
+  alarm()->Schedule([&]() { actual_run_time = FakeClock::now(); },
+                    Alarm::kImmediately);
+  // Confirm the lambda did not run yet, since it should run asynchronously, in
+  // a separate TaskRunner task.
+  ASSERT_EQ(Clock::time_point{}, actual_run_time);
 
-  platform::Clock::time_point actual_run_time{};
+  // Confirm the lambda runs without the clock having to tick forward.
+  task_runner()->RunTasksUntilIdle();
+  ASSERT_EQ(expected_run_time, actual_run_time);
+
+  // Confirm the lambda is only run once.
+  clock()->Advance(std::chrono::seconds(2));
+  ASSERT_EQ(expected_run_time, actual_run_time);
+}
+
+TEST_F(AlarmTest, CancelsTaskWhenGoingOutOfScope) {
+  constexpr Clock::duration kDelay = std::chrono::milliseconds(20);
+  constexpr Clock::time_point kNever{};
+
+  Clock::time_point actual_run_time{};
   {
-    Alarm scoped_alarm(&platform::FakeClock::now, task_runner());
-    const platform::Clock::time_point alarm_time =
-        platform::FakeClock::now() + kDelay;
-    scoped_alarm.Schedule(
-        [&]() { actual_run_time = platform::FakeClock::now(); }, alarm_time);
+    Alarm scoped_alarm(&FakeClock::now, task_runner());
+    const Clock::time_point alarm_time = FakeClock::now() + kDelay;
+    scoped_alarm.Schedule([&]() { actual_run_time = FakeClock::now(); },
+                          alarm_time);
     // |scoped_alarm| is destroyed.
   }
 
@@ -70,31 +85,27 @@ TEST_F(AlarmTest, CancelsTaskWhenGoingOutOfScope) {
 }
 
 TEST_F(AlarmTest, Cancels) {
-  constexpr platform::Clock::duration kDelay = std::chrono::milliseconds(20);
+  constexpr Clock::duration kDelay = std::chrono::milliseconds(20);
 
-  const platform::Clock::time_point alarm_time =
-      platform::FakeClock::now() + kDelay;
-  platform::Clock::time_point actual_run_time{};
-  alarm()->Schedule([&]() { actual_run_time = platform::FakeClock::now(); },
-                    alarm_time);
+  const Clock::time_point alarm_time = FakeClock::now() + kDelay;
+  Clock::time_point actual_run_time{};
+  alarm()->Schedule([&]() { actual_run_time = FakeClock::now(); }, alarm_time);
 
   // Advance the clock for half the delay, and confirm the lambda has not run
   // yet.
   clock()->Advance(kDelay / 2);
-  ASSERT_EQ(platform::Clock::time_point{}, actual_run_time);
+  ASSERT_EQ(Clock::time_point{}, actual_run_time);
 
   // Cancel and then advance the clock well past the delay, and confirm the
   // lambda has never run.
   alarm()->Cancel();
   clock()->Advance(kDelay * 100);
-  ASSERT_EQ(platform::Clock::time_point{}, actual_run_time);
+  ASSERT_EQ(Clock::time_point{}, actual_run_time);
 }
 
 TEST_F(AlarmTest, CancelsAndRearms) {
-  constexpr platform::Clock::duration kShorterDelay =
-      std::chrono::milliseconds(10);
-  constexpr platform::Clock::duration kLongerDelay =
-      std::chrono::milliseconds(100);
+  constexpr Clock::duration kShorterDelay = std::chrono::milliseconds(10);
+  constexpr Clock::duration kLongerDelay = std::chrono::milliseconds(100);
 
   // Run the test twice: Once when scheduling first with a long delay, then a
   // shorter delay; and once when scheduling first with a short delay, then a
@@ -105,7 +116,7 @@ TEST_F(AlarmTest, CancelsAndRearms) {
     const auto delay2 = do_longer_then_shorter ? kShorterDelay : kLongerDelay;
 
     int count1 = 0;
-    alarm()->Schedule([&]() { ++count1; }, platform::FakeClock::now() + delay1);
+    alarm()->Schedule([&]() { ++count1; }, FakeClock::now() + delay1);
 
     // Advance the clock for half of |delay1|, and confirm the lambda that
     // increments the variable does not run.
@@ -116,7 +127,7 @@ TEST_F(AlarmTest, CancelsAndRearms) {
     // Schedule a different lambda, that increments a different variable, to run
     // after |delay2|.
     int count2 = 0;
-    alarm()->Schedule([&]() { ++count2; }, platform::FakeClock::now() + delay2);
+    alarm()->Schedule([&]() { ++count2; }, FakeClock::now() + delay2);
 
     // Confirm the second scheduling will fire at the right moment.
     clock()->Advance(delay2 / 2);

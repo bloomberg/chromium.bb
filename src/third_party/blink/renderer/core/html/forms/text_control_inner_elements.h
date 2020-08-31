@@ -32,15 +32,6 @@
 
 namespace blink {
 
-class TextControlInnerContainer final : public HTMLDivElement {
- public:
-  explicit TextControlInnerContainer(Document&);
-
- protected:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
-  bool TypeShouldForceLegacyLayout() const final { return true; }
-};
-
 class EditingViewPortElement final : public HTMLDivElement {
  public:
   explicit EditingViewPortElement(Document&);
@@ -60,6 +51,7 @@ class TextControlInnerEditorElement final : public HTMLDivElement {
   void DefaultEventHandler(Event&) override;
 
   void SetVisibility(bool is_visible);
+  void FocusChanged();
   scoped_refptr<ComputedStyle> CreateInnerEditorStyle() const;
 
  private:

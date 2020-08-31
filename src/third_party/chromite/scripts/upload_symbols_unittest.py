@@ -19,6 +19,7 @@ import mock
 from six.moves import BaseHTTPServer
 from six.moves import socketserver
 from six.moves import urllib
+import pytest  # pylint: disable=import-error
 
 # We specifically set up a local server to connect to, so make sure we
 # delete any proxy settings that might screw that up.  We also need to
@@ -52,6 +53,9 @@ from chromite.lib import parallel
 from chromite.lib import remote_access
 from chromite.scripts import cros_generate_breakpad_symbols
 from chromite.scripts import upload_symbols
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class SymbolsTestBase(cros_test_lib.MockTempDirTestCase):
@@ -141,6 +145,7 @@ class SymbolServer(socketserver.ThreadingTCPServer, BaseHTTPServer.HTTPServer):
   """Simple HTTP server that forks each request"""
 
 
+@pytest.mark.usefixtures('singleton_manager')
 class UploadSymbolsServerTest(cros_test_lib.MockTempDirTestCase):
   """Tests for UploadSymbols() and a local HTTP server"""
 
@@ -443,9 +448,9 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
     self.assertEqual(upload_symbols.GetUploadTimeout(self.sym_initial),
                      upload_symbols.UPLOAD_MIN_TIMEOUT)
 
-    # Timeout for 300M file.
-    large = self.createSymbolFile('large.sym', size=(300 * 1024 * 1024))
-    self.assertEqual(upload_symbols.GetUploadTimeout(large), 771)
+    # Timeout for 512M file.
+    large = self.createSymbolFile('large.sym', size=(512 * 1024 * 1024))
+    self.assertEqual(upload_symbols.GetUploadTimeout(large), 15 * 60)
 
   def testUploadSymbolFile(self):
     upload_symbols.UploadSymbolFile('fake_url', self.sym_initial,
@@ -561,6 +566,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
     self.assertEqual(skipped, 10 * 2)
 
 
+@pytest.mark.usefixtures('singleton_manager')
 class UploadSymbolsTest(SymbolsTestBase):
   """Test UploadSymbols, along with most helper methods."""
   def setUp(self):

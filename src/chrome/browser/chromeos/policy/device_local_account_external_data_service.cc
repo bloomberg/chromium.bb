@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
@@ -43,7 +43,7 @@ DeviceLocalAccountExternalDataService::
     DCHECK(it->second->HasOneRef());
   }
 #endif  // !defined(NDEBUG)
-  backend_task_runner_->DeleteSoon(FROM_HERE, resource_cache_.release());
+  backend_task_runner_->DeleteSoon(FROM_HERE, std::move(resource_cache_));
 }
 
 void DeviceLocalAccountExternalDataService::OnPolicyUpdated(

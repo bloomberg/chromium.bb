@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "core/fxcrt/fx_memory.h"
+#include "core/fxcrt/fx_safe_types.h"
 
 namespace {
 
@@ -67,8 +68,7 @@ bool CJBig2_ArithIntDecoder::Decode(CJBig2_ArithDecoder* pArithDecoder,
       PREV = (PREV & 511) | 256;
     nTemp = ShiftOr(nTemp, D);
   }
-  pdfium::base::CheckedNumeric<int> safeValue =
-      g_ArithIntDecodeData[nDecodeDataIndex].nValue;
+  FX_SAFE_INT32 safeValue = g_ArithIntDecodeData[nDecodeDataIndex].nValue;
   safeValue += nTemp;
 
   // Value does not fit in int.

@@ -4,10 +4,11 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_media_controller.h"
 
+#include "base/bind_helpers.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/media/router/providers/cast/activity_record.h"
+#include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "components/cast_channel/enum_table.h"
 
@@ -60,7 +61,7 @@ base::Optional<gfx::Size> GetValidSize(const base::Value* value) {
 }  // namespace
 
 CastMediaController::CastMediaController(
-    ActivityRecord* activity,
+    CastActivityRecord* activity,
     mojo::PendingReceiver<mojom::MediaController> receiver,
     mojo::PendingRemote<mojom::MediaStatusObserver> observer)
     : sender_id_("sender-" + base::NumberToString(base::RandUint64())),
@@ -189,6 +190,8 @@ void CastMediaController::UpdateMediaStatus(const base::Value& message_value) {
   SetIfValid(&media_session_id_, status_value.FindKey("mediaSessionId"));
   SetIfValid(&media_status_.title,
              status_value.FindPath("media.metadata.title"));
+  SetIfValid(&media_status_.secondary_title,
+             status_value.FindPath("media.metadata.subtitle"));
   SetIfValid(&media_status_.current_time, status_value.FindKey("currentTime"));
   SetIfValid(&media_status_.duration, status_value.FindPath("media.duration"));
 
@@ -205,17 +208,20 @@ void CastMediaController::UpdateMediaStatus(const base::Value& message_value) {
   }
 
   const base::Value* commands_value =
-      status_value.FindKey("supportedMediaCommands");
-  if (commands_value && commands_value->is_int()) {
-    int commands = commands_value->GetInt();
+      status_value.FindListKey("supportedMediaCommands");
+  if (commands_value) {
+    const base::ListValue& commands_list =
+        base::Value::AsListValue(*commands_value);
     // |can_set_volume| and |can_mute| are not used, because the receiver volume
     // info obtained in SetSession() is used instead.
-    media_status_.can_play_pause = commands & kSupportedMediaCommandPause;
-    media_status_.can_seek = commands & kSupportedMediaCommandSeek;
+    media_status_.can_play_pause =
+        base::Contains(commands_list, base::Value(kMediaCommandPause));
+    media_status_.can_seek =
+        base::Contains(commands_list, base::Value(kMediaCommandSeek));
     media_status_.can_skip_to_next_track =
-        commands & kSupportedMediaCommandQueueNext;
+        base::Contains(commands_list, base::Value(kMediaCommandQueueNext));
     media_status_.can_skip_to_previous_track =
-        commands & kSupportedMediaCommandQueuePrev;
+        base::Contains(commands_list, base::Value(kMediaCommandQueuePrev));
   }
 
   const base::Value* player_state = status_value.FindKey("playerState");

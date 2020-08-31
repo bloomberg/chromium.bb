@@ -32,9 +32,10 @@
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/omnibox_pref_names.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/remote_suggestions_service.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/omnibox/browser/search_suggestion_parser.h"
 #include "components/omnibox/browser/verbatim_match.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -44,7 +45,6 @@
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/escape.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -198,8 +198,7 @@ ZeroSuggestProvider* ZeroSuggestProvider::Create(
 }
 
 // static
-void ZeroSuggestProvider::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
+void ZeroSuggestProvider::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(omnibox::kZeroSuggestCachedResults,
                                std::string());
 }
@@ -299,6 +298,8 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
     // match relevance.
     results_.suggest_results.clear();
     results_.navigation_results.clear();
+    results_.experiment_stats.clear();
+    results_.headers_map.clear();
     current_query_.clear();
     current_title_.clear();
     most_visited_urls_.clear();
@@ -363,8 +364,7 @@ ZeroSuggestProvider::ZeroSuggestProvider(
   }
 }
 
-ZeroSuggestProvider::~ZeroSuggestProvider() {
-}
+ZeroSuggestProvider::~ZeroSuggestProvider() = default;
 
 const TemplateURL* ZeroSuggestProvider::GetTemplateURL(bool is_keyword) const {
   // Zero suggest provider should not receive keyword results.
@@ -451,13 +451,6 @@ bool ZeroSuggestProvider::UpdateResults(const std::string& json_data) {
   return results_updated;
 }
 
-void ZeroSuggestProvider::AddSuggestResultsToMap(
-    const SearchSuggestionParser::SuggestResults& results,
-    MatchMap* map) {
-  for (size_t i = 0; i < results.size(); ++i)
-    AddMatchToMap(results[i], std::string(), i, false, false, map);
-}
-
 AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
     const SearchSuggestionParser::NavigationResult& navigation) {
   AutocompleteMatch match(this, navigation.relevance(), false,
@@ -504,7 +497,7 @@ void ZeroSuggestProvider::OnMostVisitedUrlsAvailable(
 void ZeroSuggestProvider::OnRemoteSuggestionsLoaderAvailable(
     std::unique_ptr<network::SimpleURLLoader> loader) {
   // RemoteSuggestionsService has already started |loader|, so here it's
-  // only neccessary to grab its ownership until results come in to
+  // only necessary to grab its ownership until results come in to
   // OnURLLoadComplete().
   loader_ = std::move(loader);
   LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_SENT);
@@ -524,7 +517,16 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
     return;
 
   MatchMap map;
-  AddSuggestResultsToMap(results_.suggest_results, &map);
+
+  // Add all the SuggestResults to the map, re-classifying based on the
+  // permanent text as we go. This is to make ZeroSuggest results formatted in
+  // a congruent way with as-you-type search suggestions.
+  for (size_t i = 0; i < results_.suggest_results.size(); ++i) {
+    results_.suggest_results[i].ClassifyMatchContents(true, permanent_text_);
+
+    AddMatchToMap(results_.suggest_results[i], std::string(), i, false, false,
+                  &map);
+  }
 
   const int num_query_results = map.size();
   const int num_nav_results = results_.navigation_results.size();
@@ -552,8 +554,7 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
     }
     const base::string16 current_query_string16(
         base::ASCIIToUTF16(current_query_));
-    for (size_t i = 0; i < most_visited_urls_.size(); i++) {
-      const history::MostVisitedURL& url = most_visited_urls_[i];
+    for (const auto& url : most_visited_urls_) {
       SearchSuggestionParser::NavigationResult nav(
           client()->GetSchemeClassifier(), url.url,
           AutocompleteMatchType::NAVSUGGEST, 0, url.title, std::string(), false,
@@ -580,8 +581,8 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
 
   const SearchSuggestionParser::NavigationResults& nav_results(
       results_.navigation_results);
-  for (auto it = nav_results.begin(); it != nav_results.end(); ++it) {
-    matches_.push_back(NavigationToMatch(*it));
+  for (const auto& nav_result : nav_results) {
+    matches_.push_back(NavigationToMatch(nav_result));
   }
 }
 
@@ -694,29 +695,56 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
   const auto field_trial_variants =
       OmniboxFieldTrial::GetZeroSuggestVariants(current_page_classification_);
 
-  if (base::Contains(field_trial_variants, kNoneVariant) ||
-      base::FeatureList::IsEnabled(
-          omnibox::kOmniboxPopupShortcutIconsInZeroState)) {
+  if (base::Contains(field_trial_variants, kNoneVariant))
     return NONE;
-  }
 
-  // TODO(tommycli): Since this can be configured via ZeroSuggestVariant, we
-  // should eliminate this special case and use a field trial configuration.
   if (current_page_classification_ == OmniboxEventProto::CHROMEOS_APP_LIST)
     return REMOTE_NO_URL;
 
+  // Contextual Open Web.
+  if (current_page_classification_ == OmniboxEventProto::OTHER &&
+      base::FeatureList::IsEnabled(omnibox::kOnFocusSuggestionsContextualWeb) &&
+      can_send_current_url) {
+    return REMOTE_SEND_URL;
+  }
+
+  // Proactive ZeroSuggest (PZPS) on NTP cases.
+  bool remote_no_url_allowed =
+      RemoteNoUrlSuggestionsAreAllowed(client(), template_url_service);
+  if (remote_no_url_allowed) {
+    // NTP Omnibox.
+    if ((current_page_classification_ == OmniboxEventProto::NTP ||
+         current_page_classification_ ==
+             OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS) &&
+        base::FeatureList::IsEnabled(
+            omnibox::kProactiveZeroSuggestionsOnNTPOmnibox)) {
+      return REMOTE_NO_URL;
+    }
+    // NTP Realbox.
+    if (current_page_classification_ == OmniboxEventProto::NTP_REALBOX &&
+        base::FeatureList::IsEnabled(
+            omnibox::kProactiveZeroSuggestionsOnNTPRealbox)) {
+      return REMOTE_NO_URL;
+    }
+  }
+
   if (base::Contains(field_trial_variants, kRemoteNoUrlVariant)) {
-    if (RemoteNoUrlSuggestionsAreAllowed(client(), template_url_service))
+    if (remote_no_url_allowed)
       return REMOTE_NO_URL;
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
+    // Android defaults to presenting Zero-prefix recent query suggestions on
+    // new tab page.
+    return (IsNTPPage(current_page_classification_)) ? REMOTE_NO_URL
+                                                     : MOST_VISITED;
+#elif defined(OS_IOS)
     // Remote suggestions are replaced with the most visited ones.
     // TODO(tommycli): Most likely this fallback concept should be replaced by
     // a more general configuration setup.
     return MOST_VISITED;
 #else
     return NONE;
-#endif  //  defined(OS_ANDROID) || defined(OS_IOS)
+#endif
   }
 
   if (base::Contains(field_trial_variants, kRemoteSendUrlVariant) &&

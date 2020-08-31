@@ -6,13 +6,14 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "build/build_config.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/display/display_transform.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
@@ -80,7 +81,10 @@ void TestScreen::SetDeviceScaleFactor(float device_scale_factor) {
 void TestScreen::SetColorSpace(const gfx::ColorSpace& color_space,
                                float sdr_white_level) {
   display::Display display(GetPrimaryDisplay());
-  display.SetColorSpaceAndDepth(color_space, sdr_white_level);
+  gfx::DisplayColorSpaces display_color_spaces(color_space,
+                                               gfx::BufferFormat::RGBA_8888);
+  display_color_spaces.SetSDRWhiteLevel(sdr_white_level);
+  display.set_color_spaces(display_color_spaces);
   display_list().UpdateDisplay(display);
 }
 
@@ -117,8 +121,8 @@ void TestScreen::SetWorkAreaInsets(const gfx::Insets& insets) {
 
 gfx::Transform TestScreen::GetRotationTransform() const {
   display::Display display = GetPrimaryDisplay();
-  return display::Display::GetRotationTransform(display.rotation(),
-                                                gfx::SizeF(display.size()));
+  return display::CreateRotationTransform(display.rotation(),
+                                          gfx::SizeF(display.size()));
 }
 
 gfx::Transform TestScreen::GetUIScaleTransform() const {
@@ -159,9 +163,19 @@ gfx::NativeWindow TestScreen::GetWindowAtScreenPoint(const gfx::Point& point) {
   return host_->window()->GetEventHandlerForPoint(point);
 }
 
+gfx::NativeWindow TestScreen::GetLocalProcessWindowAtPoint(
+    const gfx::Point& point,
+    const std::set<gfx::NativeWindow>& ignore) {
+  return nullptr;
+}
+
 display::Display TestScreen::GetDisplayNearestWindow(
     gfx::NativeWindow window) const {
   return GetPrimaryDisplay();
+}
+
+std::string TestScreen::GetCurrentWorkspace() {
+  return {};
 }
 
 TestScreen::TestScreen(const gfx::Rect& screen_bounds) {

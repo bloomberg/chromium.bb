@@ -47,10 +47,7 @@ class NativeFileSystemRestrictedDirectoryDialogView
 
   // views::DialogDelegateView:
   base::string16 GetWindowTitle() const override;
-  int GetDialogButtons() const override;
   bool ShouldShowCloseButton() const override;
-  bool Accept() override;
-  bool Cancel() override;
   gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
 

@@ -24,13 +24,13 @@
 #include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
-#include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/policy/pre_signin_policy_fetcher.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/login/auth/login_performer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -60,18 +60,20 @@ class NetworkStateHelper;
 // ExistingUserController is used to handle login when someone has already
 // logged into the machine. ExistingUserController is created and owned by
 // LoginDisplayHost.
-class ExistingUserController
-    : public LoginDisplay::Delegate,
-      public content::NotificationObserver,
-      public LoginPerformer::Delegate,
-      public KioskAppManagerObserver,
-      public UserSessionManagerDelegate,
-      public user_manager::UserManager::Observer,
-      public policy::MinimumVersionPolicyHandler::Observer {
+class ExistingUserController : public LoginDisplay::Delegate,
+                               public content::NotificationObserver,
+                               public LoginPerformer::Delegate,
+                               public KioskAppManagerObserver,
+                               public UserSessionManagerDelegate,
+                               public user_manager::UserManager::Observer {
  public:
   // Returns the current existing user controller fetched from the current
   // LoginDisplayHost instance.
   static ExistingUserController* current_controller();
+
+  // Registers the pref for ManagedGuestSessionAutoLaunchNotificationReduced
+  // policy.
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   // All UI initialization is deferred till Init() call.
   ExistingUserController();
@@ -130,9 +132,6 @@ class ExistingUserController
   // KioskAppManagerObserver overrides.
   void OnKioskAppsSettingsChanged() override;
 
-  // policy::MinimumVersionPolicyHandler::Observer overrides.
-  void OnMinimumVersionStateChanged() override;
-
   // Set a delegate that we will pass AuthStatusConsumer events to.
   // Used for testing.
   void set_login_status_consumer(AuthStatusConsumer* consumer) {
@@ -147,11 +146,17 @@ class ExistingUserController
   // destroyed).
   bool password_changed() const;
 
+  // Returns true if auto launch is scheduled and the timer is running.
+  bool IsAutoLoginTimerRunningForTesting() const {
+    return auto_login_timer_ && auto_login_timer_->IsRunning();
+  }
+
  private:
   friend class ExistingUserControllerTest;
   friend class ExistingUserControllerAutoLoginTest;
   friend class ExistingUserControllerPublicSessionTest;
   friend class MockLoginPerformerDelegate;
+  friend class ExistingUserControllerForcedOnlineAuthTest;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
 
@@ -250,6 +255,14 @@ class ExistingUserController
 
   // Updates the |login_display_| attached to this controller.
   void UpdateLoginDisplay(const user_manager::UserList& users);
+
+  // Check if login screen will need to be refreshed when saml online login
+  // policy is set.
+  bool ForceOnlineFlagChanged(const user_manager::UserList& users);
+
+  // Refresh login screen.
+  void CheckSamlOfflineTimeLimitAndUpdateLoginDisplay(
+      const user_manager::UserList& users);
 
   // Sends an accessibility alert event to extension listeners.
   void SendAccessibilityAlert(const std::string& alert_text);
@@ -398,6 +411,10 @@ class ExistingUserController
   // Timer for the interval to wait for the reboot after TPM error UI was shown.
   base::OneShotTimer reboot_timer_;
 
+  // Timer to update login screen when SAMLOfflineSigninTimeLimit policy forces
+  // online user authentication.
+  std::unique_ptr<base::OneShotTimer> screen_refresh_timer_;
+
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
   std::unique_ptr<CrosSettings::ObserverSubscription>
@@ -412,8 +429,6 @@ class ExistingUserController
       local_account_auto_login_id_subscription_;
   std::unique_ptr<CrosSettings::ObserverSubscription>
       local_account_auto_login_delay_subscription_;
-  std::unique_ptr<policy::MinimumVersionPolicyHandler>
-      minimum_version_policy_handler_;
 
   std::unique_ptr<OAuth2TokenInitializer> oauth2_token_initializer_;
 

@@ -38,8 +38,6 @@ class WebGLRenderbuffer final : public WebGLSharedPlatform3DObject {
   explicit WebGLRenderbuffer(WebGLRenderingContextBase*);
   ~WebGLRenderbuffer() override;
 
-  static WebGLRenderbuffer* Create(WebGLRenderingContextBase*);
-
   void SetInternalFormat(GLenum internalformat) {
     internal_format_ = internalformat;
   }
@@ -63,7 +61,7 @@ class WebGLRenderbuffer final : public WebGLSharedPlatform3DObject {
   bool HasEverBeenBound() const { return Object() && has_ever_been_bound_; }
   void SetHasEverBeenBound() { has_ever_been_bound_ = true; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;

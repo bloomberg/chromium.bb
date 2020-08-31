@@ -17,11 +17,14 @@
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/rtc_event_log/rtc_event_log_factory.h"
 #include "api/task_queue/default_task_queue_factory.h"
+#include "api/test/create_time_controller.h"
 #include "api/video_codecs/builtin_video_decoder_factory.h"
 #include "api/video_codecs/builtin_video_encoder_factory.h"
 #include "media/engine/webrtc_media_engine.h"
 #include "modules/audio_device/include/test_audio_device.h"
 #include "p2p/client/basic_port_allocator.h"
+#include "test/fake_decoder.h"
+#include "test/fake_vp8_encoder.h"
 #include "test/frame_generator_capturer.h"
 #include "test/peer_scenario/sdp_callbacks.h"
 
@@ -112,6 +115,38 @@ class LambdaPeerConnectionObserver final : public PeerConnectionObserver {
  private:
   PeerScenarioClient::CallbackHandlers* handlers_;
 };
+
+class FakeVideoEncoderFactory : public VideoEncoderFactory {
+ public:
+  FakeVideoEncoderFactory(Clock* clock) : clock_(clock) {}
+  std::vector<SdpVideoFormat> GetSupportedFormats() const override {
+    return {SdpVideoFormat("VP8")};
+  }
+  CodecInfo QueryVideoEncoder(const SdpVideoFormat& format) const override {
+    RTC_CHECK_EQ(format.name, "VP8");
+    CodecInfo info;
+    info.has_internal_source = false;
+    info.is_hardware_accelerated = false;
+    return info;
+  }
+  std::unique_ptr<VideoEncoder> CreateVideoEncoder(
+      const SdpVideoFormat& format) override {
+    return std::make_unique<FakeVp8Encoder>(clock_);
+  }
+
+ private:
+  Clock* const clock_;
+};
+class FakeVideoDecoderFactory : public VideoDecoderFactory {
+ public:
+  std::vector<SdpVideoFormat> GetSupportedFormats() const override {
+    return {SdpVideoFormat("VP8")};
+  }
+  std::unique_ptr<VideoDecoder> CreateVideoDecoder(
+      const SdpVideoFormat& format) override {
+    return std::make_unique<FakeDecoder>();
+  }
+};
 }  // namespace
 
 PeerScenarioClient::PeerScenarioClient(
@@ -120,14 +155,12 @@ PeerScenarioClient::PeerScenarioClient(
     std::unique_ptr<LogWriterFactoryInterface> log_writer_factory,
     PeerScenarioClient::Config config)
     : endpoints_(CreateEndpoints(net, config.endpoints)),
+      task_queue_factory_(net->time_controller()->GetTaskQueueFactory()),
       signaling_thread_(signaling_thread),
       log_writer_factory_(std::move(log_writer_factory)),
-      worker_thread_(rtc::Thread::Create()),
+      worker_thread_(net->time_controller()->CreateThread("worker")),
       handlers_(config.handlers),
       observer_(new LambdaPeerConnectionObserver(&handlers_)) {
-  worker_thread_->SetName("worker", this);
-  worker_thread_->Start();
-
   handlers_.on_track.push_back(
       [this](rtc::scoped_refptr<RtpTransceiverInterface> transceiver) {
         auto track = transceiver->receiver()->track().get();
@@ -160,9 +193,10 @@ PeerScenarioClient::PeerScenarioClient(
   pcf_deps.network_thread = manager->network_thread();
   pcf_deps.signaling_thread = signaling_thread_;
   pcf_deps.worker_thread = worker_thread_.get();
-  pcf_deps.call_factory = CreateCallFactory();
-  pcf_deps.task_queue_factory = CreateDefaultTaskQueueFactory();
-  task_queue_factory_ = pcf_deps.task_queue_factory.get();
+  pcf_deps.call_factory =
+      CreateTimeControllerBasedCallFactory(net->time_controller());
+  pcf_deps.task_queue_factory =
+      net->time_controller()->CreateTaskQueueFactory();
   pcf_deps.event_log_factory =
       std::make_unique<RtcEventLogFactory>(task_queue_factory_);
 
@@ -177,8 +211,16 @@ PeerScenarioClient::PeerScenarioClient(
       TestAudioDeviceModule::CreateDiscardRenderer(config.audio.sample_rate));
 
   media_deps.audio_processing = AudioProcessingBuilder().Create();
-  media_deps.video_encoder_factory = CreateBuiltinVideoEncoderFactory();
-  media_deps.video_decoder_factory = CreateBuiltinVideoDecoderFactory();
+  if (config.video.use_fake_codecs) {
+    media_deps.video_encoder_factory =
+        std::make_unique<FakeVideoEncoderFactory>(
+            net->time_controller()->GetClock());
+    media_deps.video_decoder_factory =
+        std::make_unique<FakeVideoDecoderFactory>();
+  } else {
+    media_deps.video_encoder_factory = CreateBuiltinVideoEncoderFactory();
+    media_deps.video_decoder_factory = CreateBuiltinVideoDecoderFactory();
+  }
   media_deps.audio_encoder_factory = CreateBuiltinAudioEncoderFactory();
   media_deps.audio_decoder_factory = CreateBuiltinAudioDecoderFactory();
 

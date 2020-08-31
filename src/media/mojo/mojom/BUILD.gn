@@ -23,6 +23,7 @@ mojom("mojom") {
     "decryptor.mojom",
     "demuxer_stream.mojom",
     "display_media_information.mojom",
+    "frame_interface_factory.mojom",
     "interface_factory.mojom",
     "key_system_support.mojom",
     "media_log.mojom",
@@ -31,6 +32,7 @@ mojom("mojom") {
     "media_types.mojom",
     "output_protection.mojom",
     "platform_verification.mojom",
+    "playback_events_recorder.mojom",
     "provision_fetcher.mojom",
     "renderer.mojom",
     "renderer_extensions.mojom",
@@ -38,14 +40,18 @@ mojom("mojom") {
     "video_decode_stats_recorder.mojom",
     "video_decoder.mojom",
     "video_encode_accelerator.mojom",
+    "video_encoder_info.mojom",
     "watch_time_recorder.mojom",
   ]
 
+  if (enable_media_drm_storage) {
+    sources += [ "media_drm_storage.mojom" ]
+  }
+
   if (is_android) {
-    sources += [
-      "android_overlay.mojom",
-      "media_drm_storage.mojom",
-    ]
+    sources += [ "android_overlay.mojom" ]
+  } else {
+    sources += [ "speech_recognition_service.mojom" ]
   }
 
   if (is_chromecast) {
@@ -73,56 +79,31 @@ mojom("mojom") {
     enabled_features = [ "enable_cast_renderer" ]
   }
 
-  if (enable_cdm_proxy) {
-    enabled_features = [ "enable_cdm_proxy" ]
-    sources += [ "cdm_proxy.mojom" ]
-  }
-
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/public/platform/web_common.h"
 }
 
-mojom("constants") {
-  sources = [
-    "constants.mojom",
-  ]
-}
-
 mojom("remoting_common") {
-  sources = [
-    "remoting_common.mojom",
-  ]
+  sources = [ "remoting_common.mojom" ]
 }
 
 mojom("mirror_service_remoting") {
-  sources = [
-    "mirror_service_remoting.mojom",
-  ]
+  sources = [ "mirror_service_remoting.mojom" ]
 
-  public_deps = [
-    ":remoting_common",
-  ]
+  public_deps = [ ":remoting_common" ]
 }
 
 mojom("remoting") {
-  sources = [
-    "remoting.mojom",
-  ]
+  sources = [ "remoting.mojom" ]
 
-  public_deps = [
-    ":remoting_common",
-  ]
+  public_deps = [ ":remoting_common" ]
 }
 
 mojom("test_interfaces") {
   testonly = true
-  sources = [
-    "traits_test_service.mojom",
-  ]
-  public_deps = [
-    ":mojom",
-  ]
+  sources = [ "traits_test_service.mojom" ]
+  public_deps = [ ":mojom" ]
 }
 
 source_set("unit_tests") {
@@ -132,6 +113,7 @@ source_set("unit_tests") {
     "audio_decoder_config_mojom_traits_unittest.cc",
     "cdm_key_information_mojom_traits_unittest.cc",
     "video_decoder_config_mojom_traits_unittest.cc",
+    "video_encode_accelerator_mojom_traits_unittest.cc",
     "video_frame_mojom_traits_unittest.cc",
   ]
 
@@ -140,6 +122,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//media:test_support",
     "//media/mojo:test_support",
+    "//mojo/public/cpp/test_support:test_utils",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",

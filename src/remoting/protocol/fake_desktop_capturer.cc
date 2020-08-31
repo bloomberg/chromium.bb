@@ -7,8 +7,9 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
@@ -122,16 +123,16 @@ std::unique_ptr<webrtc::DesktopFrame> DefaultFrameGenerator::GenerateFrame(
 
 FakeDesktopCapturer::FakeDesktopCapturer()
     : callback_(nullptr) {
-  frame_generator_ = base::Bind(&DefaultFrameGenerator::GenerateFrame,
-                                base::MakeRefCounted<DefaultFrameGenerator>());
+  frame_generator_ =
+      base::BindRepeating(&DefaultFrameGenerator::GenerateFrame,
+                          base::MakeRefCounted<DefaultFrameGenerator>());
 }
 
 FakeDesktopCapturer::~FakeDesktopCapturer() = default;
 
-void FakeDesktopCapturer::set_frame_generator(
-    const FrameGenerator& frame_generator) {
+void FakeDesktopCapturer::set_frame_generator(FrameGenerator frame_generator) {
   DCHECK(!callback_);
-  frame_generator_ = frame_generator;
+  frame_generator_ = std::move(frame_generator);
 }
 
 void FakeDesktopCapturer::Start(Callback* callback) {

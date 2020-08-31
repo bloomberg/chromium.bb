@@ -17,6 +17,15 @@
 
 namespace autofill_assistant {
 
+namespace {
+void RunCallbackWithoutPayload(
+    base::OnceCallback<void(bool)> callback,
+    const ClientStatus& status,
+    const std::vector<std::string>& ignored_payloads) {
+  std::move(callback).Run(status.ok());
+}
+}  // namespace
+
 // Static
 std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
     const std::string& script_path,
@@ -25,8 +34,13 @@ std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
   for (const auto& pattern : script_precondition_proto.path_pattern()) {
     auto re = std::make_unique<re2::RE2>(pattern);
     if (re->error_code() != re2::RE2::NoError) {
+#ifdef NDEBUG
+      DVLOG(1) << "Invalid regexp in script precondition";
+#else
       DVLOG(1) << "Invalid regexp in script precondition '" << pattern
                << "' for script path: " << script_path << ".";
+#endif
+
       return nullptr;
     }
     path_pattern.emplace_back(std::move(re));
@@ -38,8 +52,7 @@ std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
       script_precondition_proto.domain(), std::move(path_pattern),
       script_precondition_proto.script_status_match(),
       script_precondition_proto.script_parameter_match(),
-      script_precondition_proto.elements_exist(),
-      script_precondition_proto.form_value_match());
+      script_precondition_proto.element_condition());
 }
 
 ScriptPrecondition::~ScriptPrecondition() {}
@@ -55,7 +68,9 @@ void ScriptPrecondition::Check(
     std::move(callback).Run(false);
     return;
   }
-  element_precondition_.Check(batch_checks, std::move(callback));
+  element_precondition_.Check(
+      batch_checks,
+      base::BindOnce(&RunCallbackWithoutPayload, std::move(callback)));
 }
 
 ScriptPrecondition::ScriptPrecondition(
@@ -65,15 +80,12 @@ ScriptPrecondition::ScriptPrecondition(
         status_match,
     const google::protobuf::RepeatedPtrField<ScriptParameterMatchProto>&
         parameter_match,
-    const google::protobuf::RepeatedPtrField<ElementReferenceProto>&
-        element_exists,
-    const google::protobuf::RepeatedPtrField<FormValueMatchProto>&
-        form_value_match)
+    const ElementConditionProto& element_condition)
     : domain_match_(domain_match.begin(), domain_match.end()),
       path_pattern_(std::move(path_pattern)),
       parameter_match_(parameter_match.begin(), parameter_match.end()),
       status_match_(status_match.begin(), status_match.end()),
-      element_precondition_(element_exists, form_value_match) {}
+      element_precondition_(element_condition) {}
 
 bool ScriptPrecondition::MatchDomain(const GURL& url) const {
   if (domain_match_.empty())
@@ -124,7 +136,7 @@ bool ScriptPrecondition::MatchParameters(const TriggerContext& context) const {
 
 bool ScriptPrecondition::MatchScriptStatus(
     const std::map<std::string, ScriptStatusProto>& executed_scripts) const {
-  for (const auto status_match : status_match_) {
+  for (const auto& status_match : status_match_) {
     auto status = SCRIPT_STATUS_NOT_RUN;
     auto iter = executed_scripts.find(status_match.script());
     if (iter != executed_scripts.end()) {

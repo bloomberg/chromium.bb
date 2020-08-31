@@ -12,11 +12,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 
 /**
@@ -30,6 +30,12 @@ public interface ToolbarDataProvider extends ToolbarCommonPropertiesModel {
      */
     @Nullable
     Tab getTab();
+
+    @Override
+    default boolean isLoading() {
+        Tab tab = getTab();
+        return tab != null && tab.isLoading();
+    }
 
     /**
      * @return Whether ToolbarDataProvider currently has a tab related to it.
@@ -125,21 +131,8 @@ public interface ToolbarDataProvider extends ToolbarCommonPropertiesModel {
      * @return The resource ID of the content description for the security icon.
      */
     @StringRes
-    default int getSecurityIconContentDescription() {
-        switch (getSecurityLevel()) {
-            case ConnectionSecurityLevel.NONE:
-            case ConnectionSecurityLevel.WARNING:
-                return R.string.accessibility_security_btn_warn;
-            case ConnectionSecurityLevel.DANGEROUS:
-                return R.string.accessibility_security_btn_dangerous;
-            case ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT:
-            case ConnectionSecurityLevel.SECURE:
-            case ConnectionSecurityLevel.EV_SECURE:
-                return R.string.accessibility_security_btn_secure;
-            default:
-                assert false;
-        }
-        return 0;
+    default int getSecurityIconContentDescriptionResourceId() {
+        return SecurityStatusIcon.getSecurityIconContentDescriptionResourceId(getSecurityLevel());
     }
 
     /**

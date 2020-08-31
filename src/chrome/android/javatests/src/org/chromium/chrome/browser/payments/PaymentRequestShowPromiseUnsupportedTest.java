@@ -13,10 +13,10 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
+import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.util.concurrent.TimeoutException;
 
@@ -43,6 +43,6 @@ public class PaymentRequestShowPromiseUnsupportedTest implements MainActivitySta
     public void testReject() throws TimeoutException {
         mRule.openPageAndClickNodeAndWait("buy", mRule.getShowFailed());
         mRule.expectResultContains(
-                new String[] {"NotSupportedError: Payment method not supported"});
+                new String[] {"NotSupportedError: The payment method", "not supported"});
     }
 }

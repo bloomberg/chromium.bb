@@ -28,6 +28,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
+#include "net/socket/client_socket_factory.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_server_socket.h"
 #include "net/socket/stream_socket.h"
@@ -38,12 +39,6 @@
 #include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/p2p_stream_socket.h"
 
-#if defined(OS_NACL)
-#include "net/socket/ssl_client_socket_impl.h"
-#else
-#include "net/socket/client_socket_factory.h"
-#endif
-
 namespace remoting {
 namespace protocol {
 
@@ -53,7 +48,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("ssl_hmac_channel_authenticator",
                                         R"(
         semantics {
-          sender: "Ssl Hmac Channel Authenticator"
+          sender: "Chrome Remote Desktop"
           description:
             "Performs the required authentication to start a Chrome Remote "
             "Desktop connection."
@@ -257,12 +252,6 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
 
   int result;
   if (is_ssl_server()) {
-#if defined(OS_NACL)
-    // Client plugin doesn't use server SSL sockets, and so SSLServerSocket
-    // implementation is not compiled for NaCl as part of net_nacl.
-    NOTREACHED();
-    result = net::ERR_FAILED;
-#else
     scoped_refptr<net::X509Certificate> cert =
         net::X509Certificate::CreateFromBytes(local_cert_.data(),
                                               local_cert_.length());
@@ -283,9 +272,8 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
             std::make_unique<NetStreamSocketAdapter>(std::move(socket)));
     net::SSLServerSocket* raw_server_socket = server_socket.get();
     socket_ = std::move(server_socket);
-    result = raw_server_socket->Handshake(base::Bind(
+    result = raw_server_socket->Handshake(base::BindOnce(
         &SslHmacChannelAuthenticator::OnConnected, base::Unretained(this)));
-#endif
   } else {
     socket_context_.transport_security_state =
         std::make_unique<net::TransportSecurityState>();
@@ -318,18 +306,12 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     net::HostPortPair host_and_port(kSslFakeHostName, 0);
     std::unique_ptr<net::StreamSocket> stream_socket =
         std::make_unique<NetStreamSocketAdapter>(std::move(socket));
-#if defined(OS_NACL)
-    // net_nacl doesn't include ClientSocketFactory.
-    socket_ = socket_context_.client_context->CreateSSLClientSocket(
-        std::move(stream_socket), host_and_port, ssl_config);
-#else
     socket_ =
         net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
             socket_context_.client_context.get(), std::move(stream_socket),
             host_and_port, ssl_config);
-#endif
 
-    result = socket_->Connect(base::Bind(
+    result = socket_->Connect(base::BindOnce(
         &SslHmacChannelAuthenticator::OnConnected, base::Unretained(this)));
   }
 
@@ -382,8 +364,8 @@ void SslHmacChannelAuthenticator::WriteAuthenticationBytes(
   while (true) {
     int result = socket_->Write(
         auth_write_buf_.get(), auth_write_buf_->BytesRemaining(),
-        base::Bind(&SslHmacChannelAuthenticator::OnAuthBytesWritten,
-                   base::Unretained(this)),
+        base::BindOnce(&SslHmacChannelAuthenticator::OnAuthBytesWritten,
+                       base::Unretained(this)),
         kTrafficAnnotation);
     if (result == net::ERR_IO_PENDING)
       break;
@@ -420,11 +402,10 @@ bool SslHmacChannelAuthenticator::HandleAuthBytesWritten(
 
 void SslHmacChannelAuthenticator::ReadAuthenticationBytes() {
   while (true) {
-    int result =
-        socket_->Read(auth_read_buf_.get(),
-                      auth_read_buf_->RemainingCapacity(),
-                      base::Bind(&SslHmacChannelAuthenticator::OnAuthBytesRead,
-                                 base::Unretained(this)));
+    int result = socket_->Read(
+        auth_read_buf_.get(), auth_read_buf_->RemainingCapacity(),
+        base::BindOnce(&SslHmacChannelAuthenticator::OnAuthBytesRead,
+                       base::Unretained(this)));
     if (result == net::ERR_IO_PENDING)
       break;
     if (!HandleAuthBytesRead(result))

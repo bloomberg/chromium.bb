@@ -3,9 +3,14 @@
 # that can be found in the LICENSE file.
 
 import logging
-import urlparse
+
+# Mutates sys.path.
+import test_env  # pylint: disable=unused-import
 
 import httpserver
+
+# third_party/
+from six.moves import urllib
 
 
 class FakeCipdServerHandler(httpserver.Handler):
@@ -26,7 +31,7 @@ class FakeCipdServerHandler(httpserver.Handler):
         'instance_id': 'a' * 40,
       })
     elif self.path.startswith('/_ah/api/repo/v1/client?'):
-      qs = urlparse.parse_qs(urlparse.urlparse(self.path).query)
+      qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
       pkg_name = qs.get('package_name', [])
       if not pkg_name:
         self.send_json({

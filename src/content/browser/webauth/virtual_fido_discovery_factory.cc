@@ -100,22 +100,8 @@ void VirtualFidoDiscoveryFactory::OnDiscoveryDestroyed(
 }
 
 std::unique_ptr<::device::FidoDiscoveryBase>
-VirtualFidoDiscoveryFactory::Create(device::FidoTransportProtocol transport,
-                                    ::service_manager::Connector* connector) {
+VirtualFidoDiscoveryFactory::Create(device::FidoTransportProtocol transport) {
   auto discovery = std::make_unique<VirtualFidoDiscovery>(transport);
-
-  if (receivers_.empty() && authenticators_.empty() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebAuthTestingAPI)) {
-    // If no bindings are active then create a virtual device. This is a
-    // stop-gap measure for running web-platform tests on the chromium CI.
-    // See crbug.com/1020361
-    CreateAuthenticator(
-        ::device::ProtocolVersion::kCtap2,
-        ::device::FidoTransportProtocol::kUsbHumanInterfaceDevice,
-        ::device::AuthenticatorAttachment::kCrossPlatform,
-        false /* has_resident_key */, false /* has_user_verification */);
-  }
 
   for (auto& authenticator : authenticators_) {
     if (discovery->transport() != authenticator.second->transport())
@@ -133,6 +119,7 @@ void VirtualFidoDiscoveryFactory::CreateAuthenticator(
   auto* authenticator = CreateAuthenticator(
       options->protocol, options->transport, options->attachment,
       options->has_resident_key, options->has_user_verification);
+  authenticator->SetUserPresence(options->is_user_present);
 
   std::move(callback).Run(GetMojoToVirtualAuthenticator(authenticator));
 }

@@ -14,10 +14,7 @@
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/hid/fido_hid_device.h"
 #include "device/fido/mock_fido_discovery_observer.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/hid.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/mojom/connector.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,7 +46,7 @@ class FidoHidDiscoveryTest : public ::testing::Test {
 };
 
 TEST_F(FidoHidDiscoveryTest, TestAddRemoveDevice) {
-  FidoHidDiscovery discovery(fake_hid_manager_.service_manager_connector());
+  FidoHidDiscovery discovery;
   MockFidoDiscoveryObserver observer;
 
   fake_hid_manager_.AddFidoHidDevice("known");

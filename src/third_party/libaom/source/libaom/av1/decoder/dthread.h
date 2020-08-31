@@ -39,7 +39,6 @@ typedef struct FrameWorkerData {
   const uint8_t *data_end;
   size_t data_size;
   void *user_priv;
-  int worker_id;
   int received_frame;
   int frame_context_ready;  // Current frame's context is ready to read.
   int frame_decoded;        // Finished decoding current frame.

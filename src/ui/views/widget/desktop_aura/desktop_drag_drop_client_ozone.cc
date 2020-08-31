@@ -5,6 +5,7 @@
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -17,6 +18,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
@@ -78,7 +80,7 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
   initial_cursor_ = source_window->GetHost()->last_cursor();
   drag_operation_ = operation;
   cursor_client->SetCursor(
-      cursor_manager_->GetInitializedCursor(ui::CursorType::kGrabbing));
+      cursor_manager_->GetInitializedCursor(ui::mojom::CursorType::kGrabbing));
 
   drag_handler_->StartDrag(
       *data.get(), operation, cursor_client->GetCursor(),
@@ -237,6 +239,7 @@ void DesktopDragDropClientOzone::PerformDrop() {
     drag_operation_ = drag_drop_delegate_->OnPerformDrop(
         *event, std::move(os_exchange_data_));
   DragDropSessionCompleted();
+  ResetDragDropTarget();
 }
 
 }  // namespace views

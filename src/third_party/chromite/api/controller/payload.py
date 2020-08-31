@@ -7,11 +7,16 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.api import controller
 from chromite.lib import cros_build_lib
 from chromite.api import faux
 from chromite.api import validate
 from chromite.service import payload
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 _VALID_IMAGE_PAIRS = (('src_signed_image', 'tgt_signed_image'),
@@ -23,7 +28,8 @@ _VALID_IMAGE_PAIRS = (('src_signed_image', 'tgt_signed_image'),
 # We have more fields we might validate however, they're either
 # 'oneof' or allowed to be the empty value by design. If @validate
 # gets more complex in the future we can add more here.
-@faux.all_empty
+@faux.empty_success
+@faux.empty_completed_unsuccessfully_error
 @validate.require('bucket')
 def GeneratePayload(input_proto, output_proto, config):
   """Generate a update payload ('do paygen').
@@ -65,14 +71,18 @@ def GeneratePayload(input_proto, output_proto, config):
   # Find the value of bucket or default to 'chromeos-releases'.
   destination_bucket = input_proto.bucket or 'chromeos-releases'
 
+  if input_proto.dryrun:
+    keyset = ''
+    upload = False
+  else:
+    keyset = input_proto.keyset
+    upload = True
+
   # There's a potential that some paygen_lib library might raise here, but since
   # we're still involved in config we'll keep it before the validate_only.
-  payload_config = payload.PayloadConfig(
-      tgt_image,
-      src_image,
-      destination_bucket,
-      input_proto.verify,
-      input_proto.keyset)
+  payload_config = payload.PayloadConfig(tgt_image, src_image,
+                                         destination_bucket, input_proto.verify,
+                                         keyset, upload)
 
   # If configured for validation only we're done here.
   if config.validate_only:

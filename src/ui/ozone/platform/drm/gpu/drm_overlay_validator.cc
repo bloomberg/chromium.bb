@@ -9,15 +9,17 @@
 #include <vector>
 
 #include "base/files/platform_file.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/gpu_fence.h"
-#include "ui/ozone/common/linux/drm_util_linux.h"
-#include "ui/ozone/common/linux/gbm_buffer.h"
+#include "ui/gfx/linux/drm_util_linux.h"
+#include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
+#include "ui/ozone/platform/drm/gpu/gbm_pixmap.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 
 namespace ui {
@@ -27,7 +29,12 @@ namespace {
 scoped_refptr<DrmFramebuffer> GetBufferForPageFlipTest(
     const DrmWindow* drm_window,
     const OverlaySurfaceCandidate& overlay_surface,
-    std::vector<scoped_refptr<DrmFramebuffer>>* reusable_buffers) {
+    std::vector<scoped_refptr<DrmFramebuffer>>* reusable_buffers,
+    size_t* total_allocated_memory_size) {
+  if (overlay_surface.native_pixmap) {
+    return static_cast<GbmPixmap*>(overlay_surface.native_pixmap.get())
+        ->framebuffer();
+  }
   uint32_t fourcc_format =
       overlay_surface.is_opaque
           ? GetFourCCFormatForOpaqueFramebuffer(overlay_surface.format)
@@ -58,11 +65,16 @@ scoped_refptr<DrmFramebuffer> GetBufferForPageFlipTest(
                          fourcc_format, size, GBM_BO_USE_SCANOUT, modifiers)
                    : drm_device->gbm_device()->CreateBuffer(fourcc_format, size,
                                                             GBM_BO_USE_SCANOUT);
+
   if (!buffer)
     return nullptr;
 
+  for (size_t i = 0; i < buffer->GetNumPlanes(); ++i)
+    *total_allocated_memory_size += buffer->GetPlaneSize(i);
+
   scoped_refptr<DrmFramebuffer> drm_framebuffer =
-      DrmFramebuffer::AddFramebuffer(drm_device, buffer.get(), modifiers);
+      DrmFramebuffer::AddFramebuffer(drm_device, buffer.get(),
+                                     buffer->GetSize(), modifiers);
   if (!drm_framebuffer)
     return nullptr;
 
@@ -96,14 +108,16 @@ OverlayStatusList DrmOverlayValidator::TestPageFlip(
   for (const auto& plane : last_used_planes)
     reusable_buffers.push_back(plane.buffer);
 
+  size_t total_allocated_memory_size = 0;
+
   for (size_t i = 0; i < params.size(); ++i) {
     if (!params[i].overlay_handled) {
       returns[i] = OVERLAY_STATUS_NOT;
       continue;
     }
 
-    scoped_refptr<DrmFramebuffer> buffer =
-        GetBufferForPageFlipTest(window_, params[i], &reusable_buffers);
+    scoped_refptr<DrmFramebuffer> buffer = GetBufferForPageFlipTest(
+        window_, params[i], &reusable_buffers, &total_allocated_memory_size);
 
     DrmOverlayPlane plane(buffer, params[i].plane_z_order, params[i].transform,
                           gfx::ToNearestRect(params[i].display_rect),
@@ -124,6 +138,10 @@ OverlayStatusList DrmOverlayValidator::TestPageFlip(
       test_list.pop_back();
     }
   }
+
+  UMA_HISTOGRAM_MEMORY_KB(
+      "Compositing.Display.DrmOverlayManager.TotalTestBufferMemorySize",
+      total_allocated_memory_size / 1024);
 
   return returns;
 }

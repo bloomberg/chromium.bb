@@ -11,18 +11,13 @@
       "position": [8, 28],
       "bounds": [186, 134],
       "backgroundColor": "#ADD8E6",
-      "paintInvalidations": [
-        {
-          "object": "LayoutTableSection TBODY id='target'",
-          "rect": [0, 0, 186, 134],
-          "reason": "background"
-        }
+      "invalidations": [
+        [0, 0, 186, 134]
       ]
     },
     {
       "name": "LayoutNGTableCell TD",
-      "position": [24, 22],
-      "bounds": [10, 19],
+      "bounds": [59, 64],
       "transform": 1
     }
   ],

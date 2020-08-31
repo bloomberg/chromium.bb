@@ -226,6 +226,9 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
     case kNoControlPart:
       value_id_ = CSSValueID::kNone;
       break;
+    case kAutoPart:
+      value_id_ = CSSValueID::kAuto;
+      break;
     case kCheckboxPart:
       value_id_ = CSSValueID::kCheckbox;
       break;
@@ -305,8 +308,10 @@ template <>
 inline ControlPart CSSIdentifierValue::ConvertTo() const {
   if (value_id_ == CSSValueID::kNone)
     return kNoControlPart;
+  if (value_id_ == CSSValueID::kAuto)
+    return kAutoPart;
   return ControlPart(static_cast<int>(value_id_) -
-                     static_cast<int>(CSSValueID::kCheckbox) + 1);
+                     static_cast<int>(CSSValueID::kCheckbox) + kCheckboxPart);
 }
 
 template <>
@@ -1425,31 +1430,31 @@ template <>
 inline TouchAction CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueID::kNone:
-      return TouchAction::kTouchActionNone;
+      return TouchAction::kNone;
     case CSSValueID::kAuto:
-      return TouchAction::kTouchActionAuto;
+      return TouchAction::kAuto;
     case CSSValueID::kPanLeft:
-      return TouchAction::kTouchActionPanLeft;
+      return TouchAction::kPanLeft;
     case CSSValueID::kPanRight:
-      return TouchAction::kTouchActionPanRight;
+      return TouchAction::kPanRight;
     case CSSValueID::kPanX:
-      return TouchAction::kTouchActionPanX;
+      return TouchAction::kPanX;
     case CSSValueID::kPanUp:
-      return TouchAction::kTouchActionPanUp;
+      return TouchAction::kPanUp;
     case CSSValueID::kPanDown:
-      return TouchAction::kTouchActionPanDown;
+      return TouchAction::kPanDown;
     case CSSValueID::kPanY:
-      return TouchAction::kTouchActionPanY;
+      return TouchAction::kPanY;
     case CSSValueID::kManipulation:
-      return TouchAction::kTouchActionManipulation;
+      return TouchAction::kManipulation;
     case CSSValueID::kPinchZoom:
-      return TouchAction::kTouchActionPinchZoom;
+      return TouchAction::kPinchZoom;
     default:
       break;
   }
 
   NOTREACHED();
-  return TouchAction::kTouchActionNone;
+  return TouchAction::kNone;
 }
 
 template <>
@@ -1756,16 +1761,17 @@ inline OverflowAlignment CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(ScrollBehavior behavior)
+inline CSSIdentifierValue::CSSIdentifierValue(
+    mojom::blink::ScrollBehavior behavior)
     : CSSValue(kIdentifierClass) {
   switch (behavior) {
-    case kScrollBehaviorAuto:
+    case mojom::blink::ScrollBehavior::kAuto:
       value_id_ = CSSValueID::kAuto;
       break;
-    case kScrollBehaviorSmooth:
+    case mojom::blink::ScrollBehavior::kSmooth:
       value_id_ = CSSValueID::kSmooth;
       break;
-    case kScrollBehaviorInstant:
+    case mojom::blink::ScrollBehavior::kInstant:
       // Behavior 'instant' is only allowed in ScrollOptions arguments passed to
       // CSSOM scroll APIs.
       NOTREACHED();
@@ -1773,17 +1779,17 @@ inline CSSIdentifierValue::CSSIdentifierValue(ScrollBehavior behavior)
 }
 
 template <>
-inline ScrollBehavior CSSIdentifierValue::ConvertTo() const {
+inline mojom::blink::ScrollBehavior CSSIdentifierValue::ConvertTo() const {
   switch (GetValueID()) {
     case CSSValueID::kAuto:
-      return kScrollBehaviorAuto;
+      return mojom::blink::ScrollBehavior::kAuto;
     case CSSValueID::kSmooth:
-      return kScrollBehaviorSmooth;
+      return mojom::blink::ScrollBehavior::kSmooth;
     default:
       break;
   }
   NOTREACHED();
-  return kScrollBehaviorAuto;
+  return mojom::blink::ScrollBehavior::kAuto;
 }
 
 template <>
@@ -1951,6 +1957,9 @@ inline CSSIdentifierValue::CSSIdentifierValue(TextUnderlinePosition position)
     case kTextUnderlinePositionAuto:
       value_id_ = CSSValueID::kAuto;
       break;
+    case kTextUnderlinePositionFromFont:
+      value_id_ = CSSValueID::kFromFont;
+      break;
     case kTextUnderlinePositionUnder:
       value_id_ = CSSValueID::kUnder;
       break;
@@ -1968,6 +1977,8 @@ inline TextUnderlinePosition CSSIdentifierValue::ConvertTo() const {
   switch (GetValueID()) {
     case CSSValueID::kAuto:
       return kTextUnderlinePositionAuto;
+    case CSSValueID::kFromFont:
+      return kTextUnderlinePositionFromFont;
     case CSSValueID::kUnder:
       return kTextUnderlinePositionUnder;
     case CSSValueID::kLeft:

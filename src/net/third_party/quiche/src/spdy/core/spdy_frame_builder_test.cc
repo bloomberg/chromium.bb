@@ -6,17 +6,17 @@
 
 #include <memory>
 
+#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 #include "net/third_party/quiche/src/spdy/core/array_output_buffer.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_export.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_test.h"
 
 namespace spdy {
 
 namespace test {
 
-class SPDY_EXPORT_PRIVATE SpdyFrameBuilderPeer {
+class QUICHE_EXPORT_PRIVATE SpdyFrameBuilderPeer {
  public:
   static char* GetWritableBuffer(SpdyFrameBuilder* builder, size_t length) {
     return builder->GetWritableBuffer(length);
@@ -48,8 +48,8 @@ TEST(SpdyFrameBuilderTest, GetWritableBuffer) {
   SpdySerializedFrame frame(builder.take());
   char expected[kBuilderSize];
   memset(expected, ~1, kBuilderSize);
-  EXPECT_EQ(SpdyStringPiece(expected, kBuilderSize),
-            SpdyStringPiece(frame.data(), kBuilderSize));
+  EXPECT_EQ(quiche::QuicheStringPiece(expected, kBuilderSize),
+            quiche::QuicheStringPiece(frame.data(), kBuilderSize));
 }
 
 // Verifies that SpdyFrameBuilder::GetWritableBuffer() can be used to build a
@@ -66,8 +66,8 @@ TEST(SpdyFrameBuilderTest, GetWritableOutput) {
   SpdySerializedFrame frame(output.Begin(), kBuilderSize, false);
   char expected[kBuilderSize];
   memset(expected, ~1, kBuilderSize);
-  EXPECT_EQ(SpdyStringPiece(expected, kBuilderSize),
-            SpdyStringPiece(frame.data(), kBuilderSize));
+  EXPECT_EQ(quiche::QuicheStringPiece(expected, kBuilderSize),
+            quiche::QuicheStringPiece(frame.data(), kBuilderSize));
 }
 
 // Verifies the case that the buffer's capacity is too small.

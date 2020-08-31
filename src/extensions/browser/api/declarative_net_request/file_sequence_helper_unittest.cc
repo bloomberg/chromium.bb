@@ -15,7 +15,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/crx_file/id_util.h"
-#include "components/version_info/version_info.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
@@ -24,8 +23,8 @@
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
-#include "extensions/common/features/feature_channel.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,9 +60,9 @@ struct TestCase {
 
 class FileSequenceHelperTest : public ExtensionsTest {
  public:
-  FileSequenceHelperTest() : channel_(::version_info::Channel::UNKNOWN) {}
+  FileSequenceHelperTest() = default;
 
-  // ExtensonsTest overrides:
+  // ExtensionsTest overrides:
   void SetUp() override {
     ExtensionsTest::SetUp();
     helper_ = std::make_unique<FileSequenceHelper>();
@@ -87,9 +86,9 @@ class FileSequenceHelperTest : public ExtensionsTest {
            base::Optional<std::string> expected_error, LoadRequestData data,
            base::Optional<std::string> error) {
           EXPECT_EQ(1u, data.rulesets.size());
+          EXPECT_EQ(expected_error, error) << error.value_or("no actual error");
           EXPECT_EQ(expected_did_load_successfully,
                     data.rulesets[0].did_load_successfully());
-          EXPECT_EQ(expected_error, error) << error.value_or("no actual error");
           run_loop->Quit();
         },
         &run_loop, expected_did_load_successfully, expected_error);
@@ -132,6 +131,7 @@ class FileSequenceHelperTest : public ExtensionsTest {
           ASSERT_EQ(data.rulesets.size(), test_cases.size());
 
           for (size_t i = 0; i < data.rulesets.size(); i++) {
+            SCOPED_TRACE(base::StringPrintf("Testing ruleset %" PRIuS, i));
             const RulesetInfo& ruleset = data.rulesets[i];
             const LoadRulesetResult& expected_result =
                 test_cases[i].expected_result;
@@ -141,7 +141,8 @@ class FileSequenceHelperTest : public ExtensionsTest {
             EXPECT_EQ(expected_result.reindexing_successful,
                       ruleset.reindexing_successful());
             EXPECT_EQ(expected_result.load_result,
-                      ruleset.load_ruleset_result());
+                      ruleset.load_ruleset_result())
+                << ruleset.load_ruleset_result();
           }
 
           run_loop->Quit();
@@ -157,10 +158,28 @@ class FileSequenceHelperTest : public ExtensionsTest {
     run_loop.Run();
   }
 
- private:
-  // Run this on the trunk channel to ensure the API is available.
-  ScopedCurrentChannel channel_;
+  // Initialize |num_rulesets| rulesets and returns the corresponding test
+  // cases.
+  std::vector<TestCase> InitializeRulesets(size_t num_rulesets) const {
+    std::vector<TestCase> test_cases;
+    test_cases.reserve(num_rulesets);
 
+    for (size_t i = 0; i < num_rulesets; i++) {
+      test_cases.emplace_back(CreateTemporarySource());
+
+      auto& test_case = test_cases.back();
+
+      std::unique_ptr<RulesetMatcher> matcher;
+      EXPECT_TRUE(CreateVerifiedMatcher({CreateGenericRule()}, test_case.source,
+                                        &matcher, &test_case.checksum));
+
+      // Initially loading all the rulesets should succeed.
+      test_case.expected_result.load_result = RulesetMatcher::kLoadSuccess;
+    }
+    return test_cases;
+  }
+
+ private:
   std::unique_ptr<FileSequenceHelper> helper_;
 
   // Required to use DataDecoder's JSON parsing for re-indexing.
@@ -169,24 +188,9 @@ class FileSequenceHelperTest : public ExtensionsTest {
   DISALLOW_COPY_AND_ASSIGN(FileSequenceHelperTest);
 };
 
-// Tests loading and reindexing multiple rulesets.
-TEST_F(FileSequenceHelperTest, MultipleRulesets) {
-  const int kNumRulesets = 3;
-  std::vector<TestCase> test_cases;
-
-  // First create |kNumRulesets| indexed rulesets.
-  for (size_t i = 0; i < kNumRulesets; i++) {
-    test_cases.emplace_back(CreateTemporarySource());
-
-    auto& test_case = test_cases.back();
-
-    std::unique_ptr<RulesetMatcher> matcher;
-    ASSERT_TRUE(CreateVerifiedMatcher({CreateGenericRule()}, test_case.source,
-                                      &matcher, &test_case.checksum));
-
-    // Initially loading all the rulesets should succeed.
-    test_case.expected_result.load_result = RulesetMatcher::kLoadSuccess;
-  }
+TEST_F(FileSequenceHelperTest, IndexedRulesetDeleted) {
+  const size_t kNumRulesets = 3;
+  std::vector<TestCase> test_cases = InitializeRulesets(kNumRulesets);
 
   TestLoadRulesets(test_cases);
 
@@ -202,10 +206,13 @@ TEST_F(FileSequenceHelperTest, MultipleRulesets) {
   // The files should have been re-indexed.
   EXPECT_TRUE(base::PathExists(test_cases[0].source.indexed_path()));
   EXPECT_TRUE(base::PathExists(test_cases[2].source.indexed_path()));
+}
 
-  // Reset state.
-  test_cases[0].expected_result.reindexing_successful = base::nullopt;
-  test_cases[2].expected_result.reindexing_successful = base::nullopt;
+TEST_F(FileSequenceHelperTest, ChecksumMismatch) {
+  const size_t kNumRulesets = 4;
+  std::vector<TestCase> test_cases = InitializeRulesets(kNumRulesets);
+
+  TestLoadRulesets(test_cases);
 
   // Change the expected checksum for rulesets 2 and 3. Loading both of the
   // rulesets should now fail due to a checksum mismatch.
@@ -219,16 +226,17 @@ TEST_F(FileSequenceHelperTest, MultipleRulesets) {
   test_cases[2].expected_result.reindexing_successful = false;
 
   TestLoadRulesets(test_cases);
+}
 
-  // Reset checksums.
-  test_cases[1].checksum++;
-  test_cases[2].checksum++;
+TEST_F(FileSequenceHelperTest, RulesetFormatVersionMismatch) {
+  const size_t kNumRulesets = 4;
+  std::vector<TestCase> test_cases = InitializeRulesets(kNumRulesets);
+
+  TestLoadRulesets(test_cases);
 
   // Now simulate a flatbuffer version mismatch.
-  const int kIndexedRulesetFormatVersion = 100;
-  std::string old_version_header = GetVersionHeaderForTesting();
-  SetIndexedRulesetFormatVersionForTesting(kIndexedRulesetFormatVersion);
-  ASSERT_NE(old_version_header, GetVersionHeaderForTesting());
+  ScopedIncrementRulesetVersion scoped_version_change =
+      CreateScopedIncrementRulesetVersionForTesting();
 
   // Version mismatch will cause reindexing and updated checksums.
   for (auto& test_case : test_cases) {
@@ -236,6 +244,30 @@ TEST_F(FileSequenceHelperTest, MultipleRulesets) {
     test_case.expected_result.has_new_checksum = true;
     test_case.expected_result.load_result = RulesetMatcher::kLoadSuccess;
   }
+
+  TestLoadRulesets(test_cases);
+}
+
+TEST_F(FileSequenceHelperTest, JSONAndIndexedRulesetDeleted) {
+  const size_t kNumRulesets = 3;
+  std::vector<TestCase> test_cases = InitializeRulesets(kNumRulesets);
+
+  TestLoadRulesets(test_cases);
+
+  base::DeleteFile(test_cases[0].source.json_path(), false /* recursive */);
+  base::DeleteFile(test_cases[1].source.json_path(), false /* recursive */);
+  base::DeleteFile(test_cases[0].source.indexed_path(), false /* recursive */);
+  base::DeleteFile(test_cases[1].source.indexed_path(), false /* recursive */);
+
+  // Reindexing will fail since the JSON ruleset is now deleted.
+  test_cases[0].expected_result.reindexing_successful = false;
+  test_cases[1].expected_result.reindexing_successful = false;
+
+  test_cases[0].expected_result.load_result =
+      RulesetMatcher::kLoadErrorInvalidPath;
+  test_cases[1].expected_result.load_result =
+      RulesetMatcher::kLoadErrorInvalidPath;
+  test_cases[2].expected_result.load_result = RulesetMatcher::kLoadSuccess;
 
   TestLoadRulesets(test_cases);
 }
@@ -268,16 +300,17 @@ TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
     rule.action->type = std::string("redirect");
     rule.action->redirect.emplace();
     rule.action->redirect->url = std::string("http://google.com");
+    rule.priority.reset();
     api_rules.clear();
     api_rules.push_back(GetAPIRule(rule));
-    TestAddDynamicRules(
-        source.Clone(), std::move(api_rules),
-        ReadJSONRulesResult::Status::kSuccess,
-        UpdateDynamicRulesStatus::kErrorInvalidRules,
-        ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY,
-                  kMinValidID + 1)
-            .GetErrorDescription(),
-        false /* expected_did_load_successfully */);
+
+    int rule_id = kMinValidID + 1;
+    ParseInfo info(ParseResult::ERROR_EMPTY_RULE_PRIORITY, &rule_id);
+    TestAddDynamicRules(source.Clone(), std::move(api_rules),
+                        ReadJSONRulesResult::Status::kSuccess,
+                        UpdateDynamicRulesStatus::kErrorInvalidRules,
+                        info.error(),
+                        false /* expected_did_load_successfully */);
   }
 
   // Write invalid JSON to the JSON rules file. The update should still succeed.

@@ -19,6 +19,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/animation/animation_delegate_views.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -26,6 +27,7 @@
 
 class OmniboxMatchCellView;
 class OmniboxPopupContentsView;
+class OmniboxSuggestionButtonRowView;
 class OmniboxTabSwitchButton;
 enum class OmniboxPart;
 enum class OmniboxPartState;
@@ -39,18 +41,18 @@ class Button;
 class FocusRing;
 }  // namespace views
 
-namespace ui {
-class ThemeProvider;
-}
-
 class OmniboxResultView : public views::View,
                           public views::AnimationDelegateViews,
                           public views::ButtonListener {
  public:
   OmniboxResultView(OmniboxPopupContentsView* popup_contents_view,
-                    size_t model_index,
-                    const ui::ThemeProvider* theme_provider);
+                    size_t model_index);
   ~OmniboxResultView() override;
+
+  // Static method to share logic about how to set backgrounds of popup cells.
+  static std::unique_ptr<views::Background> GetPopupCellBackground(
+      views::View* view,
+      OmniboxPartState part_state);
 
   // Helper to get the color for |part| using the current state.
   SkColor GetColor(OmniboxPart part) const;
@@ -62,13 +64,16 @@ class OmniboxResultView : public views::View,
 
   void ShowKeyword(bool show_keyword);
 
-  void Invalidate(bool force_reapply_styles = false);
+  // Applies the current theme to the current text and widget colors.
+  // Also refreshes the icons which may need to be re-colored as well.
+  void ApplyThemeAndRefreshIcons(bool force_reapply_styles = false);
 
-  // Invoked when this result view has been selected.
-  void OnSelected();
+  // Invoked when this result view has been selected or unselected.
+  void OnSelectionStateChanged();
 
-  // Whether |this| matches the model's selected index.
-  bool IsSelected() const;
+  // Whether this result view should be considered 'selected'. This returns
+  // false if this line's header is selected (instead of the match itself).
+  bool IsMatchSelected() const;
 
   // Returns the visible (and keyboard-focusable) secondary button, or nullptr
   // if none exists for this suggestion.
@@ -76,6 +81,14 @@ class OmniboxResultView : public views::View,
 
   // If this view has a secondary button, triggers the action and returns true.
   bool MaybeTriggerSecondaryButton(const ui::Event& event);
+
+  // This returns the accessibility label for this result view. This is an
+  // extended version of AutocompleteMatchType::ToAccessibilityLabel() which
+  // also returns narration about the secondary button.
+  base::string16 ToAccessibilityLabelWithSecondaryButton(
+      const base::string16& match_text,
+      size_t total_matches,
+      int* label_prefix_length = nullptr);
 
   OmniboxPartState GetThemeState() const;
 
@@ -86,8 +99,6 @@ class OmniboxResultView : public views::View,
   void SetRichSuggestionImage(const gfx::ImageSkia& image);
 
   // views::ButtonListener:
-
-  // Called when tab switch button pressed, due to being a listener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Called to indicate tab switch button has been focused.
@@ -105,7 +116,7 @@ class OmniboxResultView : public views::View,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
-  void OnMouseMoved(const ui::MouseEvent& event) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
@@ -117,13 +128,18 @@ class OmniboxResultView : public views::View,
 
   gfx::Image GetIcon() const;
 
-  // Sets the hovered state of this result.
-  void SetHovered(bool hovered);
+  // Updates the highlight state of the row, as well as conditionally shows
+  // controls that are only visible on row hover.
+  void UpdateHoverState();
 
   // Call model's OpenMatch() with the selected index and provided disposition
   // and timestamp the match was selected (base::TimeTicks() if unknown).
   void OpenMatch(WindowOpenDisposition disposition,
                  base::TimeTicks match_selection_timestamp);
+
+  // Sets the visibility of the |remove_suggestion_button_| based on the current
+  // state.
+  void UpdateRemoveSuggestionVisibility();
 
   // views::View:
   const char* GetClassName() const override;
@@ -138,18 +154,6 @@ class OmniboxResultView : public views::View,
   // This result's model index.
   size_t model_index_;
 
-  // The theme provider associated with this view.
-  const ui::ThemeProvider* theme_provider_;
-
-  // Whether this view is in the hovered state. Note: This is false when a
-  // child button is hovered, and therefore this is different from
-  // View::IsMouseHovered(). This is useful for a contrasting highlight between
-  // the tab-switch button and the row, but is a non-standard hover meaning.
-  //
-  // TODO(tommycli): Investigate if we can get the desired tab-switch button
-  // behavior while using just plain View::IsMouseHovered().
-  bool is_hovered_ = false;
-
   // The data this class is built to display (the "Omnibox Result").
   AutocompleteMatch match_;
 
@@ -163,6 +167,10 @@ class OmniboxResultView : public views::View,
   OmniboxMatchCellView* suggestion_view_;  // The leading (or left) view.
   OmniboxMatchCellView* keyword_view_;     // The trailing (or right) view.
   OmniboxTabSwitchButton* suggestion_tab_switch_button_;
+
+  // The row of buttons, only assigned and used if OmniboxSuggestionButtonRow
+  // feature is enabled. It is owned by the base view, not this raw pointer.
+  OmniboxSuggestionButtonRowView* button_row_ = nullptr;
 
   // The "X" button at the end of the match cell, used to remove suggestions.
   views::ImageButton* remove_suggestion_button_;

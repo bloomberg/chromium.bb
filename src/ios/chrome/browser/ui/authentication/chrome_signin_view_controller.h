@@ -14,13 +14,11 @@
 #import "ios/chrome/browser/signin/constants.h"
 
 @protocol ApplicationCommands;
+@protocol BrowsingDataCommands;
 class Browser;
+class ChromeBrowserState;
 @class ChromeIdentity;
 @class ChromeSigninViewController;
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 namespace signin_metrics {
 enum class AccessPoint;
@@ -81,7 +79,9 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 // It is valid to set this in the |willStartSignIn:| method of the delegate.
 @property(nonatomic, assign) ShouldClearData shouldClearData;
 
-@property(nonatomic, weak, readonly) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak, readonly)
+    id<ApplicationCommands, BrowsingDataCommands>
+        dispatcher;
 
 // Designated initializer.
 // * |browser| is the browser where sign-in is being presented.
@@ -93,7 +93,8 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
                     accessPoint:(signin_metrics::AccessPoint)accessPoint
                     promoAction:(signin_metrics::PromoAction)promoAction
                  signInIdentity:(ChromeIdentity*)identity
-                     dispatcher:(id<ApplicationCommands>)dispatcher;
+                     dispatcher:(id<ApplicationCommands, BrowsingDataCommands>)
+                                    dispatcher;
 
 // Cancels the on-going authentication operation (if any). |delegate| will be
 // called with |didFailSignIn|.
@@ -104,7 +105,7 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 @interface ChromeSigninViewController (Subclassing)
 
 @property(nonatomic, readonly) Browser* browser;
-@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
+@property(nonatomic, readonly) ChromeBrowserState* browserState;
 
 // Vertical padding used underneath buttons. Default value is 18.
 @property(nonatomic, assign) CGFloat buttonVerticalPadding;
@@ -128,9 +129,9 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 // base::OneShotTimer.
 @property(nonatomic, copy) TimerGeneratorBlock timerGenerator;
 
-// Returns an AutoReset object that ensures that all future
-// ChromeSigninViewController instances will not present the activity indicator.
-+ (std::unique_ptr<base::AutoReset<BOOL>>)hideActivityIndicatorForTesting;
+// If |shown| is set to NO, activity indicator is not visible while sign-in is
+// in progress. This method is needed for EarlGrey tests.
++ (void)setActivityIndicatorShownForTesting:(BOOL)shown;
 
 @end
 

@@ -57,12 +57,15 @@ StorageManager* WorkerNavigatorStorageQuota::storage(
 }
 
 StorageManager* WorkerNavigatorStorageQuota::storage() const {
-  if (!storage_manager_)
-    storage_manager_ = MakeGarbageCollected<StorageManager>();
+  if (!storage_manager_) {
+    storage_manager_ = MakeGarbageCollected<StorageManager>(
+        GetSupplementable() ? GetSupplementable()->GetExecutionContext()
+                            : nullptr);
+  }
   return storage_manager_.Get();
 }
 
-void WorkerNavigatorStorageQuota::Trace(blink::Visitor* visitor) {
+void WorkerNavigatorStorageQuota::Trace(Visitor* visitor) {
   visitor->Trace(storage_manager_);
   Supplement<WorkerNavigator>::Trace(visitor);
 }

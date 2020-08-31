@@ -33,13 +33,12 @@ class MessageDemuxer {
     // error code of Error::Code::kCborIncompleteMessage.  This way,
     // the MessageDemuxer knows to neither consume the data nor discard it as
     // bad.
-    virtual ErrorOr<size_t> OnStreamMessage(
-        uint64_t endpoint_id,
-        uint64_t connection_id,
-        msgs::Type message_type,
-        const uint8_t* buffer,
-        size_t buffer_size,
-        platform::Clock::time_point now) = 0;
+    virtual ErrorOr<size_t> OnStreamMessage(uint64_t endpoint_id,
+                                            uint64_t connection_id,
+                                            msgs::Type message_type,
+                                            const uint8_t* buffer,
+                                            size_t buffer_size,
+                                            Clock::time_point now) = 0;
   };
 
   class MessageWatch {
@@ -64,8 +63,7 @@ class MessageDemuxer {
 
   static constexpr size_t kDefaultBufferLimit = 1 << 16;
 
-  MessageDemuxer(platform::ClockNowFunctionPtr now_function,
-                 size_t buffer_limit);
+  MessageDemuxer(ClockNowFunctionPtr now_function, size_t buffer_limit);
   ~MessageDemuxer();
 
   // Starts watching for messages of type |message_type| from the endpoint
@@ -110,7 +108,7 @@ class MessageDemuxer {
       std::map<msgs::Type, MessageCallback*>* message_callbacks,
       std::vector<uint8_t>* buffer);
 
-  const platform::ClockNowFunctionPtr now_function_;
+  const ClockNowFunctionPtr now_function_;
   const size_t buffer_limit_;
   std::map<uint64_t, std::map<msgs::Type, MessageCallback*>> message_callbacks_;
   std::map<msgs::Type, MessageCallback*> default_callbacks_;

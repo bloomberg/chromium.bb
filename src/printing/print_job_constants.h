@@ -99,15 +99,11 @@ PRINTING_EXPORT extern const char kNormalGray[];
 PRINTING_EXPORT extern const char kRGB[];
 PRINTING_EXPORT extern const char kRGBA[];
 PRINTING_EXPORT extern const char kRGB16[];
+PRINTING_EXPORT extern const char kSharpCMColor[];
+PRINTING_EXPORT extern const char kSharpCMBW[];
+PRINTING_EXPORT extern const char kXeroxAutomatic[];
+PRINTING_EXPORT extern const char kXeroxBW[];
 #endif
-
-// Print job duplex mode values.
-enum DuplexMode {
-  UNKNOWN_DUPLEX_MODE = -1,
-  SIMPLEX,
-  LONG_EDGE,
-  SHORT_EDGE,
-};
 
 // Specifies the horizontal alignment of the headers and footers.
 enum HorizontalHeaderFooterPosition { LEFT, CENTER, RIGHT };
@@ -142,6 +138,13 @@ enum ColorModel {
   BROTHER_CUPS_MONO,            // Used in Brother color laser printer PPDs.
   BROTHER_BRSCRIPT3_COLOR,      // Used in Brother BRScript3 color printer PPDs.
   BROTHER_BRSCRIPT3_BLACK,      // Used in Brother BRScript3 color printer PPDs.
+  EPSON_INK_COLOR,              // Used in Epson printer PPDs.
+  EPSON_INK_MONO,               // Used in Epson printer PPDs.
+  SHARP_ARCMODE_CMCOLOR,        // Used in Sharp printer PPDs.
+  SHARP_ARCMODE_CMBW,           // Used in Sharp printer PPDs.
+  XEROX_XRXCOLOR_AUTOMATIC,     // Used in Xerox printer PPDs.
+  XEROX_XRXCOLOR_BW,            // Used in Xerox printer PPDs.
+  COLOR_MODEL_LAST = XEROX_XRXCOLOR_BW
 };
 
 // What kind of margins to use.
@@ -165,13 +168,7 @@ enum ScalingType {
 
 // Must match print_preview.PrinterType in
 // chrome/browser/resources/print_preview/data/destination_match.js
-enum PrinterType {
-  kPrivetPrinter,
-  kExtensionPrinter,
-  kPdfPrinter,
-  kLocalPrinter,
-  kCloudPrinter
-};
+enum class PrinterType { kPrivet, kExtension, kPdf, kLocal, kCloud };
 
 }  // namespace printing
 

@@ -8,8 +8,8 @@ depends on which build system you use, and is usually straightforward.
 
 ### Build with CMake
 
-Google Test comes with a CMake build script (
-[CMakeLists.txt](https://github.com/google/googletest/blob/master/CMakeLists.txt))
+Google Test comes with a CMake build script
+([CMakeLists.txt](https://github.com/google/googletest/blob/master/CMakeLists.txt))
 that can be used on a wide range of platforms ("C" stands for cross-platform.).
 If you don't have CMake installed already, you can download it for free from
 <http://www.cmake.org/>.
@@ -189,9 +189,9 @@ or
 
 When Google Test uses pthread, you may need to add flags to your compiler and/or
 linker to select the pthread library, or you'll get link errors. If you use the
-CMake script or the deprecated Autotools script, this is taken care of for you.
-If you use your own build script, you'll need to read your compiler and linker's
-manual to figure out what flags to add.
+CMake script, this is taken care of for you. If you use your own build script,
+you'll need to read your compiler and linker's manual to figure out what flags
+to add.
 
 ### As a Shared Library (DLL)
 

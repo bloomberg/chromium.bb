@@ -18,7 +18,6 @@
 #include "extensions/buildflags/buildflags.h"
 #include "ui/base/models/tree_node_model.h"
 
-class BrowsingDataCookieHelper;
 class CookiesTreeModel;
 class CookieTreeAppCacheNode;
 class CookieTreeAppCachesNode;
@@ -115,13 +114,14 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     DetailedInfo& InitAppCache(const content::StorageUsageInfo* usage_info);
     DetailedInfo& InitIndexedDB(const content::StorageUsageInfo* usage_info);
     DetailedInfo& InitFileSystem(
-        const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info);
+        const browsing_data::FileSystemHelper::FileSystemInfo*
+            file_system_info);
     DetailedInfo& InitQuota(
         const BrowsingDataQuotaHelper::QuotaInfo* quota_info);
     DetailedInfo& InitServiceWorker(
         const content::StorageUsageInfo* usage_info);
     DetailedInfo& InitSharedWorker(
-        const BrowsingDataSharedWorkerHelper::SharedWorkerInfo*
+        const browsing_data::SharedWorkerHelper::SharedWorkerInfo*
             shared_worker_info);
     DetailedInfo& InitCacheStorage(const content::StorageUsageInfo* usage_info);
     DetailedInfo& InitFlashLSO(const std::string& flash_lso_domain);
@@ -135,11 +135,11 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     // Used for AppCache, Database (WebSQL), IndexedDB, Service Worker, and
     // Cache Storage node types.
     const content::StorageUsageInfo* usage_info = nullptr;
-    const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info =
+    const browsing_data::FileSystemHelper::FileSystemInfo* file_system_info =
         nullptr;
     const BrowsingDataQuotaHelper::QuotaInfo* quota_info = nullptr;
-    const BrowsingDataSharedWorkerHelper::SharedWorkerInfo* shared_worker_info =
-        nullptr;
+    const browsing_data::SharedWorkerHelper::SharedWorkerInfo*
+        shared_worker_info = nullptr;
     std::string flash_lso_domain;
     const BrowsingDataMediaLicenseHelper::MediaLicenseInfo* media_license_info =
         nullptr;
@@ -357,7 +357,6 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   void PopulateFlashLSOInfo(LocalDataContainer* container);
   void PopulateMediaLicenseInfo(LocalDataContainer* container);
 
-  BrowsingDataCookieHelper* GetCookieHelper(const std::string& app_id);
   LocalDataContainer* data_container() {
     return data_container_.get();
   }
@@ -371,11 +370,11 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   // Create CookiesTreeModel by profile info.
   static std::unique_ptr<CookiesTreeModel> CreateForProfile(Profile* profile);
 
+  static browsing_data::CookieHelper::IsDeletionDisabledCallback
+  GetCookieDeletionDisabledCallback(Profile* profile);
+
  private:
   enum CookieIconIndex { COOKIE = 0, DATABASE = 1 };
-
-  // Reset the counters for batches.
-  void ResetBatches();
 
   // Record that one batch has been delivered.
   void RecordBatchSeen();

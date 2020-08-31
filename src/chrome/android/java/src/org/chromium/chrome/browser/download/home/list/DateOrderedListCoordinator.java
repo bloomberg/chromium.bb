@@ -13,10 +13,13 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Callback;
+import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.Log;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.FaviconProvider;
+import org.chromium.chrome.browser.download.home.LegacyDownloadProvider;
 import org.chromium.chrome.browser.download.home.StableIds;
 import org.chromium.chrome.browser.download.home.empty.EmptyCoordinator;
 import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
@@ -26,7 +29,7 @@ import org.chromium.chrome.browser.download.home.metrics.FilterChangeLogger;
 import org.chromium.chrome.browser.download.home.rename.RenameDialogManager;
 import org.chromium.chrome.browser.download.home.storage.StorageCoordinator;
 import org.chromium.chrome.browser.download.home.toolbar.ToolbarCoordinator;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -89,21 +92,29 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
     /**
      * Creates an instance of a DateOrderedListCoordinator, which will visually represent
      * {@code provider} as a list of items.
-     * @param context The {@link Context} to use to build the views.
-     * @param config The {@link DownloadManagerUiConfig} to provide UI configuration params.
-     * @param provider The {@link OfflineContentProvider} to visually represent.
-     * @param deleteController A class to manage whether or not items can be deleted.
-     * @param filterObserver A {@link FilterCoordinator.Observer} that should be notified of
-     *                       filter changes.  This is meant to be used for external components that
-     *                       need to take action based on the visual state of the list.
-     * @param dateOrderedListObserver A {@link DateOrderedListObserver}.
+     * @param context                   The {@link Context} to use to build the views.
+     * @param config                    The {@link DownloadManagerUiConfig} to provide UI
+     *                                  configuration params.
+     * @param isPrefetchEnabledSupplier A supplier that indicates whether or not prefetch is
+     *                                  enabled.
+     * @param provider                  The {@link OfflineContentProvider} to visually represent.
+     * @param legacyProvider            A legacy version of a provider for downloads.
+     * @param deleteController          A class to manage whether or not items can be deleted.
+     * @param filterObserver            A {@link FilterCoordinator.Observer} that should be notified
+     *                                  of filter changes.  This is meant to be used for external
+     *                                  components that need to take action based on the visual
+     *                                  state of the list.
+     * @param dateOrderedListObserver   A {@link DateOrderedListObserver}.
+     * @param discardableReferencePool  A {@linK DiscardableReferencePool} reference to use for
+     *                                  large objects (e.g. bitmaps) in the UI.
      */
     public DateOrderedListCoordinator(Context context, DownloadManagerUiConfig config,
-            OfflineContentProvider provider, DeleteController deleteController,
+            ObservableSupplier<Boolean> isPrefetchEnabledSupplier, OfflineContentProvider provider,
+            LegacyDownloadProvider legacyProvider, DeleteController deleteController,
             SelectionDelegate<ListItem> selectionDelegate,
             FilterCoordinator.Observer filterObserver,
             DateOrderedListObserver dateOrderedListObserver, ModalDialogManager modalDialogManager,
-            FaviconProvider faviconProvider) {
+            FaviconProvider faviconProvider, DiscardableReferencePool discardableReferencePool) {
         mContext = context;
 
         ListItemModel model = new ListItemModel();
@@ -112,15 +123,16 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
                 new DateOrderedListView(context, config, decoratedModel, dateOrderedListObserver);
         mRenameDialogManager = new RenameDialogManager(context, modalDialogManager);
 
-        mMediator = new DateOrderedListMediator(provider, faviconProvider, this::startShareIntent,
-                deleteController, this::startRename, selectionDelegate, config,
-                dateOrderedListObserver, model);
+        mMediator = new DateOrderedListMediator(provider, legacyProvider, faviconProvider,
+                this::startShareIntent, deleteController, this::startRename, selectionDelegate,
+                config, dateOrderedListObserver, model, discardableReferencePool);
 
         mEmptyCoordinator = new EmptyCoordinator(context, mMediator.getEmptySource());
 
         mStorageCoordinator = new StorageCoordinator(context, mMediator.getFilterSource());
 
-        mFilterCoordinator = new FilterCoordinator(context, mMediator.getFilterSource());
+        mFilterCoordinator = new FilterCoordinator(
+                context, mMediator.getFilterSource(), isPrefetchEnabledSupplier);
         mFilterCoordinator.addObserver(mMediator::onFilterTypeSelected);
         mFilterCoordinator.addObserver(filterObserver);
         mFilterCoordinator.addObserver(mEmptyCoordinator);

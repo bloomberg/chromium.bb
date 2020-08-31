@@ -11,7 +11,8 @@
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 using spdy::SpdyHeaderBlock;
 
@@ -24,7 +25,7 @@ void QuicSpdyClientBase::ClientQuicDataToResend::Resend() {
 
 QuicSpdyClientBase::QuicDataToResend::QuicDataToResend(
     std::unique_ptr<SpdyHeaderBlock> headers,
-    QuicStringPiece body,
+    quiche::QuicheStringPiece body,
     bool fin)
     : headers_(std::move(headers)), body_(body), fin_(fin) {}
 
@@ -49,8 +50,7 @@ QuicSpdyClientBase::QuicSpdyClientBase(
                      std::move(session_cache)),
       store_response_(false),
       latest_response_code_(-1),
-      max_allowed_push_id_(0),
-      disable_qpack_dynamic_table_(false) {}
+      max_allowed_push_id_(0) {}
 
 QuicSpdyClientBase::~QuicSpdyClientBase() {
   // We own the push promise index. We need to explicitly kill
@@ -63,14 +63,11 @@ QuicSpdyClientSession* QuicSpdyClientBase::client_session() {
 }
 
 void QuicSpdyClientBase::InitializeSession() {
-  if (disable_qpack_dynamic_table_) {
-    client_session()->set_qpack_maximum_dynamic_table_capacity(0);
-    client_session()->set_qpack_maximum_blocked_streams(0);
-  }
   client_session()->Initialize();
   client_session()->CryptoConnect();
-  if (max_allowed_push_id_ > 0) {
-    client_session()->SetMaxAllowedPushId(max_allowed_push_id_);
+  if (max_allowed_push_id_ > 0 &&
+      VersionUsesHttp3(client_session()->transport_version())) {
+    client_session()->SetMaxPushId(max_allowed_push_id_);
   }
 }
 
@@ -90,8 +87,8 @@ void QuicSpdyClientBase::OnClose(QuicSpdyStream* stream) {
     auto status = response_headers.find(":status");
     if (status == response_headers.end()) {
       QUIC_LOG(ERROR) << "Missing :status response header";
-    } else if (!QuicTextUtils::StringToInt(status->second,
-                                           &latest_response_code_)) {
+    } else if (!quiche::QuicheTextUtils::StringToInt(status->second,
+                                                     &latest_response_code_)) {
       QUIC_LOG(ERROR) << "Invalid :status response header: " << status->second;
     }
     latest_response_headers_ = response_headers.DebugString();
@@ -113,13 +110,13 @@ std::unique_ptr<QuicSession> QuicSpdyClientBase::CreateQuicClientSession(
 }
 
 void QuicSpdyClientBase::SendRequest(const SpdyHeaderBlock& headers,
-                                     QuicStringPiece body,
+                                     quiche::QuicheStringPiece body,
                                      bool fin) {
   if (GetQuicFlag(FLAGS_quic_client_convert_http_header_name_to_lowercase)) {
     QUIC_CODE_COUNT(quic_client_convert_http_header_name_to_lowercase);
     SpdyHeaderBlock sanitized_headers;
     for (const auto& p : headers) {
-      sanitized_headers[QuicTextUtils::ToLower(p.first)] = p.second;
+      sanitized_headers[quiche::QuicheTextUtils::ToLower(p.first)] = p.second;
     }
 
     SendRequestInternal(std::move(sanitized_headers), body, fin);
@@ -129,7 +126,7 @@ void QuicSpdyClientBase::SendRequest(const SpdyHeaderBlock& headers,
 }
 
 void QuicSpdyClientBase::SendRequestInternal(SpdyHeaderBlock sanitized_headers,
-                                             QuicStringPiece body,
+                                             quiche::QuicheStringPiece body,
                                              bool fin) {
   QuicClientPushPromiseIndex::TryHandle* handle;
   QuicAsyncStatus rv =
@@ -153,7 +150,7 @@ void QuicSpdyClientBase::SendRequestInternal(SpdyHeaderBlock sanitized_headers,
 
 void QuicSpdyClientBase::SendRequestAndWaitForResponse(
     const SpdyHeaderBlock& headers,
-    QuicStringPiece body,
+    quiche::QuicheStringPiece body,
     bool fin) {
   SendRequest(headers, body, fin);
   while (WaitForEvents()) {
@@ -178,7 +175,12 @@ QuicSpdyClientStream* QuicSpdyClientBase::CreateClientStream() {
   if (!connected()) {
     return nullptr;
   }
-
+  if (VersionHasIetfQuicFrames(client_session()->transport_version())) {
+    // Process MAX_STREAMS from peer.
+    while (!client_session()->CanOpenNextOutgoingBidirectionalStream()) {
+      network_helper()->RunEventLoop();
+    }
+  }
   auto* stream = static_cast<QuicSpdyClientStream*>(
       client_session()->CreateOutgoingBidirectionalStream());
   if (stream) {
@@ -187,6 +189,14 @@ QuicSpdyClientStream* QuicSpdyClientBase::CreateClientStream() {
     stream->set_visitor(this);
   }
   return stream;
+}
+
+bool QuicSpdyClientBase::EarlyDataAccepted() {
+  return client_session()->EarlyDataAccepted();
+}
+
+bool QuicSpdyClientBase::ReceivedInchoateReject() {
+  return client_session()->ReceivedInchoateReject();
 }
 
 int QuicSpdyClientBase::GetNumSentClientHellosFromSession() {
@@ -217,7 +227,7 @@ void QuicSpdyClientBase::ResendSavedData() {
 }
 
 void QuicSpdyClientBase::AddPromiseDataToResend(const SpdyHeaderBlock& headers,
-                                                QuicStringPiece body,
+                                                quiche::QuicheStringPiece body,
                                                 bool fin) {
   std::unique_ptr<SpdyHeaderBlock> new_headers(
       new SpdyHeaderBlock(headers.Clone()));

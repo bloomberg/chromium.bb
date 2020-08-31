@@ -103,8 +103,9 @@ class MockLoginScreenClient : public LoginScreenClient {
   MOCK_METHOD(void, FocusLockScreenApps, (bool reverse), (override));
   MOCK_METHOD(void,
               ShowGaiaSignin,
-              (bool can_close, const AccountId& prefilled_account),
+              (const AccountId& prefilled_account),
               (override));
+  MOCK_METHOD(void, HideGaiaSignin, (), (override));
   MOCK_METHOD(void, OnRemoveUserWarningShown, (), (override));
   MOCK_METHOD(void, RemoveUser, (const AccountId& account_id), (override));
   MOCK_METHOD(void,
@@ -119,8 +120,8 @@ class MockLoginScreenClient : public LoginScreenClient {
               (override));
   MOCK_METHOD(void, ShowFeedback, (), (override));
   MOCK_METHOD(void, ShowResetScreen, (), (override));
-  MOCK_METHOD(void, ShowAccountAccessHelpApp, (), (override));
-  MOCK_METHOD(void, ShowParentAccessHelpApp, (), (override));
+  MOCK_METHOD(void, ShowAccountAccessHelpApp, (gfx::NativeWindow), (override));
+  MOCK_METHOD(void, ShowParentAccessHelpApp, (gfx::NativeWindow), (override));
   MOCK_METHOD(void, ShowLockScreenNotificationSettings, (), (override));
   MOCK_METHOD(void, FocusOobeDialog, (), (override));
   MOCK_METHOD(void, OnFocusLeavingSystemTray, (bool reverse), (override));

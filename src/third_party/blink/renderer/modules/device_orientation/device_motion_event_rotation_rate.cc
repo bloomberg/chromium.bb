@@ -24,7 +24,7 @@
  */
 
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event_rotation_rate.h"
-#include "third_party/blink/renderer/modules/device_orientation/device_motion_event_rotation_rate_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_device_motion_event_rotation_rate_init.h"
 
 namespace blink {
 
@@ -51,18 +51,21 @@ bool DeviceMotionEventRotationRate::HasRotationData() const {
   return !std::isnan(alpha_) || !std::isnan(beta_) || !std::isnan(gamma_);
 }
 
-double DeviceMotionEventRotationRate::alpha(bool& is_null) const {
-  is_null = std::isnan(alpha_);
+base::Optional<double> DeviceMotionEventRotationRate::alpha() const {
+  if (std::isnan(alpha_))
+    return base::nullopt;
   return alpha_;
 }
 
-double DeviceMotionEventRotationRate::beta(bool& is_null) const {
-  is_null = std::isnan(beta_);
+base::Optional<double> DeviceMotionEventRotationRate::beta() const {
+  if (std::isnan(beta_))
+    return base::nullopt;
   return beta_;
 }
 
-double DeviceMotionEventRotationRate::gamma(bool& is_null) const {
-  is_null = std::isnan(gamma_);
+base::Optional<double> DeviceMotionEventRotationRate::gamma() const {
+  if (std::isnan(gamma_))
+    return base::nullopt;
   return gamma_;
 }
 

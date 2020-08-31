@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/layers/ui_resource_layer.h"
-#include "chrome/browser/android/thumbnail/thumbnail_cache.h"
+#include "chrome/browser/thumbnail/cc/thumbnail_cache.h"
 #include "content/public/browser/render_widget_host_view.h"
 
 using base::android::ScopedJavaLocalRef;
@@ -145,7 +145,7 @@ class TabContentManager : public ThumbnailCacheObserver {
       base::android::ScopedJavaGlobalRef<jobject> j_callback,
       bool need_downsampling,
       bool result,
-      SkBitmap bitmap);
+      const SkBitmap& bitmap);
 
   std::unique_ptr<ThumbnailCache> thumbnail_cache_;
   ThumbnailLayerMap static_layer_cache_;

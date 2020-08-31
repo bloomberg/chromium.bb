@@ -116,7 +116,8 @@ public:
 																	 VkFormat					stencilFormat,
 																	 const VkStencilOpState&	stencilOpStateFront,
 																	 const VkStencilOpState&	stencilOpStateBack,
-																	 const bool					colorAttachmentEnable);
+																	 const bool					colorAttachmentEnable,
+																	 const bool					separateDepthStencilLayouts);
 	virtual									~StencilTest			(void);
 	virtual void							initPrograms			(SourceCollections& sourceCollections) const;
 	virtual void							checkSupport			(Context& context) const;
@@ -127,6 +128,7 @@ private:
 	const VkStencilOpState					m_stencilOpStateFront;
 	const VkStencilOpState					m_stencilOpStateBack;
 	const bool								m_colorAttachmentEnable;
+	const bool								m_separateDepthStencilLayouts;
 };
 
 class StencilTestInstance : public vkt::TestInstance
@@ -136,7 +138,8 @@ public:
 																 VkFormat					stencilFormat,
 																 const VkStencilOpState&	stencilOpStatesFront,
 																 const VkStencilOpState&	stencilOpStatesBack,
-																 const bool					colorAttachmentEnable);
+																 const bool					colorAttachmentEnable,
+																 const bool					separateDepthStencilLayouts);
 	virtual								~StencilTestInstance	(void);
 	virtual tcu::TestStatus				iterate					(void);
 
@@ -146,6 +149,7 @@ private:
 	VkStencilOpState					m_stencilOpStateFront;
 	VkStencilOpState					m_stencilOpStateBack;
 	const bool							m_colorAttachmentEnable;
+	const bool							m_separateDepthStencilLayouts;
 	const tcu::UVec2					m_renderSize;
 	const VkFormat						m_colorFormat;
 	const VkFormat						m_stencilFormat;
@@ -265,12 +269,14 @@ StencilTest::StencilTest (tcu::TestContext&			testContext,
 						  VkFormat					stencilFormat,
 						  const VkStencilOpState&	stencilOpStateFront,
 						  const VkStencilOpState&	stencilOpStateBack,
-						  const bool				colorAttachmentEnable)
-	: vkt::TestCase				(testContext, name, description)
-	, m_stencilFormat			(stencilFormat)
-	, m_stencilOpStateFront		(stencilOpStateFront)
-	, m_stencilOpStateBack		(stencilOpStateBack)
-	, m_colorAttachmentEnable	(colorAttachmentEnable)
+						  const bool				colorAttachmentEnable,
+						  const bool				separateDepthStencilLayouts)
+	: vkt::TestCase					(testContext, name, description)
+	, m_stencilFormat				(stencilFormat)
+	, m_stencilOpStateFront			(stencilOpStateFront)
+	, m_stencilOpStateBack			(stencilOpStateBack)
+	, m_colorAttachmentEnable		(colorAttachmentEnable)
+	, m_separateDepthStencilLayouts	(separateDepthStencilLayouts)
 {
 }
 
@@ -282,11 +288,14 @@ void StencilTest::checkSupport (Context& context) const
 {
 	if (!isSupportedDepthStencilFormat(context.getInstanceInterface(), context.getPhysicalDevice(), m_stencilFormat))
 		throw tcu::NotSupportedError(std::string("Unsupported depth/stencil format: ") + getFormatName(m_stencilFormat));
+
+	if (m_separateDepthStencilLayouts && !context.isDeviceFunctionalitySupported("VK_KHR_separate_depth_stencil_layouts"))
+		TCU_THROW(NotSupportedError, "VK_KHR_separate_depth_stencil_layouts is not supported");
 }
 
 TestInstance* StencilTest::createInstance (Context& context) const
 {
-	return new StencilTestInstance(context, m_stencilFormat, m_stencilOpStateFront, m_stencilOpStateBack, m_colorAttachmentEnable);
+	return new StencilTestInstance(context, m_stencilFormat, m_stencilOpStateFront, m_stencilOpStateBack, m_colorAttachmentEnable, m_separateDepthStencilLayouts);
 }
 
 void StencilTest::initPrograms (SourceCollections& sourceCollections) const
@@ -323,12 +332,6 @@ void StencilTest::initPrograms (SourceCollections& sourceCollections) const
 			"{\n"
 			"	gl_Position = position;\n"
 			"}\n");
-
-		sourceCollections.glslSources.add("color_frag") << glu::FragmentSource(
-			"#version 310 es\n"
-			"void main (void)\n"
-			"{\n"
-			"}\n");
 	}
 }
 
@@ -339,14 +342,16 @@ StencilTestInstance::StencilTestInstance (Context&					context,
 										  VkFormat					stencilFormat,
 										  const VkStencilOpState&	stencilOpStateFront,
 										  const VkStencilOpState&	stencilOpStateBack,
-										  const bool				colorAttachmentEnable)
-	: vkt::TestInstance			(context)
-	, m_stencilOpStateFront		(stencilOpStateFront)
-	, m_stencilOpStateBack		(stencilOpStateBack)
-	, m_colorAttachmentEnable	(colorAttachmentEnable)
-	, m_renderSize				(32, 32)
-	, m_colorFormat				(colorAttachmentEnable ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_UNDEFINED)
-	, m_stencilFormat			(stencilFormat)
+										  const bool				colorAttachmentEnable,
+										  const bool				separateDepthStencilLayouts)
+	: vkt::TestInstance				(context)
+	, m_stencilOpStateFront			(stencilOpStateFront)
+	, m_stencilOpStateBack			(stencilOpStateBack)
+	, m_colorAttachmentEnable		(colorAttachmentEnable)
+	, m_separateDepthStencilLayouts	(separateDepthStencilLayouts)
+	, m_renderSize					(32, 32)
+	, m_colorFormat					(colorAttachmentEnable ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_UNDEFINED)
+	, m_stencilFormat				(stencilFormat)
 {
 	const DeviceInterface&		vk						= context.getDeviceInterface();
 	const VkDevice				vkDevice				= context.getDevice();
@@ -497,8 +502,9 @@ StencilTestInstance::StencilTestInstance (Context&					context,
 		m_pipelineLayout = createPipelineLayout(vk, vkDevice, &pipelineLayoutParams);
 	}
 
-	m_vertexShaderModule	= createShaderModule(vk, vkDevice, m_context.getBinaryCollection().get("color_vert"), 0);
-	m_fragmentShaderModule	= createShaderModule(vk, vkDevice, m_context.getBinaryCollection().get("color_frag"), 0);
+	m_vertexShaderModule		= createShaderModule(vk, vkDevice, m_context.getBinaryCollection().get("color_vert"), 0);
+	if (m_colorAttachmentEnable)
+		m_fragmentShaderModule	= createShaderModule(vk, vkDevice, m_context.getBinaryCollection().get("color_frag"), 0);
 
 	// Create pipeline
 	{
@@ -557,6 +563,24 @@ StencilTestInstance::StencilTestInstance (Context&					context,
 			1.0f														// float									maxDepthBounds;
 		};
 
+		// Make sure rasterization is not disabled when the fragment shader is missing.
+		const vk::VkPipelineRasterizationStateCreateInfo rasterizationStateParams =
+		{
+			vk::VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,	//	VkStructureType							sType;
+			nullptr,														//	const void*								pNext;
+			0u,																//	VkPipelineRasterizationStateCreateFlags	flags;
+			VK_FALSE,														//	VkBool32								depthClampEnable;
+			VK_FALSE,														//	VkBool32								rasterizerDiscardEnable;
+			vk::VK_POLYGON_MODE_FILL,										//	VkPolygonMode							polygonMode;
+			vk::VK_CULL_MODE_NONE,											//	VkCullModeFlags							cullMode;
+			vk::VK_FRONT_FACE_COUNTER_CLOCKWISE,							//	VkFrontFace								frontFace;
+			VK_FALSE,														//	VkBool32								depthBiasEnable;
+			0.0f,															//	float									depthBiasConstantFactor;
+			0.0f,															//	float									depthBiasClamp;
+			0.0f,															//	float									depthBiasSlopeFactor;
+			1.0f,															//	float									lineWidth;
+		};
+
 		// Setup different stencil masks and refs in each quad
 		for (int quadNdx = 0; quadNdx < StencilTest::QUAD_COUNT; quadNdx++)
 		{
@@ -587,7 +611,7 @@ StencilTestInstance::StencilTestInstance (Context&					context,
 																0u,										// const deUint32                                subpass
 																0u,										// const deUint32                                patchControlPoints
 																&vertexInputStateParams,				// const VkPipelineVertexInputStateCreateInfo*   vertexInputStateCreateInfo
-																DE_NULL,								// const VkPipelineRasterizationStateCreateInfo* rasterizationStateCreateInfo
+																&rasterizationStateParams,				// const VkPipelineRasterizationStateCreateInfo* rasterizationStateCreateInfo
 																DE_NULL,								// const VkPipelineMultisampleStateCreateInfo*   multisampleStateCreateInfo
 																&depthStencilStateParams);				// const VkPipelineDepthStencilStateCreateInfo*  depthStencilStateCreateInfo
 		}
@@ -629,7 +653,7 @@ StencilTestInstance::StencilTestInstance (Context&					context,
 
 	// Create command buffer
 	{
-		const VkImageMemoryBarrier	colorImageBarrier	=
+		const VkImageMemoryBarrier	colorImageBarrier					=
 		{
 			VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,			// VkStructureType            sType;
 			DE_NULL,										// const void*                pNext;
@@ -643,18 +667,26 @@ StencilTestInstance::StencilTestInstance (Context&					context,
 			{ VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u }	// VkImageSubresourceRange    subresourceRange;
 		};
 
-		const VkImageMemoryBarrier	stencilImageBarrier	=
+		VkImageSubresourceRange		stencilImageBarrierSubresourceRange	= m_stencilImageSubresourceRange;
+		VkImageLayout				newLayout							= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		if (m_separateDepthStencilLayouts)
 		{
-			VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,				// VkStructureType            sType;
-			DE_NULL,											// const void*                pNext;
-			(VkAccessFlags)0,									// VkAccessFlags              srcAccessMask;
-			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,		// VkAccessFlags              dstAccessMask;
-			VK_IMAGE_LAYOUT_UNDEFINED,							// VkImageLayout              oldLayout;
-			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,	// VkImageLayout              newLayout;
-			VK_QUEUE_FAMILY_IGNORED,							// uint32_t                   srcQueueFamilyIndex;
-			VK_QUEUE_FAMILY_IGNORED,							// uint32_t                   dstQueueFamilyIndex;
-			*m_stencilImage,									// VkImage                    image;
-			m_stencilImageSubresourceRange,						// VkImageSubresourceRange    subresourceRange;
+			stencilImageBarrierSubresourceRange.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+			newLayout = VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR;
+		}
+
+		const VkImageMemoryBarrier	stencilImageBarrier					=
+		{
+			VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,									// VkStructureType            sType;
+			DE_NULL,																// const void*                pNext;
+			(VkAccessFlags)0,														// VkAccessFlags              srcAccessMask;
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,							// VkAccessFlags              dstAccessMask;
+			VK_IMAGE_LAYOUT_UNDEFINED,												// VkImageLayout              oldLayout;
+			newLayout,																// VkImageLayout              newLayout;
+			VK_QUEUE_FAMILY_IGNORED,												// uint32_t                   srcQueueFamilyIndex;
+			VK_QUEUE_FAMILY_IGNORED,												// uint32_t                   dstQueueFamilyIndex;
+			*m_stencilImage,														// VkImage                    image;
+			stencilImageBarrierSubresourceRange,									// VkImageSubresourceRange    subresourceRange;
 		};
 
 		std::vector<VkClearValue>			attachmentClearValues;
@@ -904,80 +936,89 @@ tcu::TestCaseGroup* createStencilTests (tcu::TestContext& testCtx)
 
 		for (size_t formatNdx = 0; formatNdx < DE_LENGTH_OF_ARRAY(stencilFormats); formatNdx++)
 		{
-			const VkFormat					stencilFormat	= stencilFormats[formatNdx];
-			de::MovePtr<tcu::TestCaseGroup>	formatTest		(new tcu::TestCaseGroup(testCtx,
-																					getFormatCaseName(stencilFormat).c_str(),
-																					(std::string("Uses format ") + getFormatName(stencilFormat)).c_str()));
+			const VkFormat	stencilFormat				= stencilFormats[formatNdx];
+			const bool		hasDepth					= tcu::hasDepthComponent(mapVkFormat(stencilFormat).order);
+			const bool		hasStencil					= tcu::hasStencilComponent(mapVkFormat(stencilFormat).order);
+			const int		separateLayoutsLoopCount	= (hasDepth && hasStencil) ? 2 : 1;
 
-			de::MovePtr<tcu::TestCaseGroup>	stencilStateTests;
+			for (int separateDepthStencilLayouts = 0; separateDepthStencilLayouts < separateLayoutsLoopCount; ++separateDepthStencilLayouts)
 			{
-				std::ostringstream desc;
-				desc << "Draws 4 quads with the following depths and dynamic stencil states: ";
+				const bool			useSeparateDepthStencilLayouts	= bool(separateDepthStencilLayouts);
 
-				for (int quadNdx = 0; quadNdx < StencilTest::QUAD_COUNT; quadNdx++)
+				de::MovePtr<tcu::TestCaseGroup>	formatTest		(new tcu::TestCaseGroup(testCtx,
+																						(getFormatCaseName(stencilFormat) + ((useSeparateDepthStencilLayouts) ? "_separate_layouts" : "")).c_str(),
+																						(std::string("Uses format ") + getFormatName(stencilFormat) + ((useSeparateDepthStencilLayouts) ? " with separate depth/stencil layouts" : "")).c_str()));
+
+				de::MovePtr<tcu::TestCaseGroup>	stencilStateTests;
 				{
-					const StencilTest::StencilStateConfig& stencilConfig = StencilTest::s_stencilStateConfigs[quadNdx];
+					std::ostringstream desc;
+					desc << "Draws 4 quads with the following depths and dynamic stencil states: ";
 
-					desc << "(" << quadNdx << ") "
-						 << "z = " << StencilTest::s_quadDepths[quadNdx] << ", "
-						 << "frontReadMask = " << stencilConfig.frontReadMask << ", "
-						 << "frontWriteMask = " << stencilConfig.frontWriteMask << ", "
-						 << "frontRef = " << stencilConfig.frontRef << ", "
-						 << "backReadMask = " << stencilConfig.backReadMask << ", "
-						 << "backWriteMask = " << stencilConfig.backWriteMask << ", "
-						 << "backRef = " << stencilConfig.backRef;
-				}
-
-				stencilStateTests = de::MovePtr<tcu::TestCaseGroup>(new tcu::TestCaseGroup(testCtx, "states", desc.str().c_str()));
-			}
-
-			stencilOpItr.reset();
-
-			for (deUint32 failOpNdx = 0u; failOpNdx < DE_LENGTH_OF_ARRAY(stencilOps); failOpNdx++)
-			{
-				const std::string				failOpName	= std::string("fail_") + getShortName(stencilOps[failOpNdx]);
-				de::MovePtr<tcu::TestCaseGroup>	failOpTest	(new tcu::TestCaseGroup(testCtx, failOpName.c_str(), ""));
-
-				for (deUint32 passOpNdx = 0u; passOpNdx < DE_LENGTH_OF_ARRAY(stencilOps); passOpNdx++)
-				{
-					const std::string				passOpName	= std::string("pass_") + getShortName(stencilOps[passOpNdx]);
-					de::MovePtr<tcu::TestCaseGroup>	passOpTest	(new tcu::TestCaseGroup(testCtx, passOpName.c_str(), ""));
-
-					for (deUint32 dFailOpNdx = 0u; dFailOpNdx < DE_LENGTH_OF_ARRAY(stencilOps); dFailOpNdx++)
+					for (int quadNdx = 0; quadNdx < StencilTest::QUAD_COUNT; quadNdx++)
 					{
-						const std::string				dFailOpName	= std::string("dfail_") + getShortName(stencilOps[dFailOpNdx]);
-						de::MovePtr<tcu::TestCaseGroup>	dFailOpTest	(new tcu::TestCaseGroup(testCtx, dFailOpName.c_str(), ""));
+						const StencilTest::StencilStateConfig& stencilConfig = StencilTest::s_stencilStateConfigs[quadNdx];
 
-						for (deUint32 compareOpNdx = 0u; compareOpNdx < DE_LENGTH_OF_ARRAY(compareOps); compareOpNdx++)
-						{
-							// Iterate front set of stencil state in ascending order
-							const VkStencilOpState	stencilStateFront	=
-							{
-								stencilOps[failOpNdx],		// failOp
-								stencilOps[passOpNdx],		// passOp
-								stencilOps[dFailOpNdx],		// depthFailOp
-								compareOps[compareOpNdx],	// compareOp
-								0x0,						// compareMask
-								0x0,						// writeMask
-								0x0							// reference
-							};
-
-							// Iterate back set of stencil state in random order
-							const VkStencilOpState	stencilStateBack	= stencilOpItr.next();
-							const std::string		caseName			= compareOpNames[compareOpNdx];
-							const std::string		caseDesc			= getStencilStateSetDescription(stencilStateFront, stencilStateBack);
-
-							dFailOpTest->addChild(new StencilTest(testCtx, caseName, caseDesc, stencilFormat, stencilStateFront, stencilStateBack, colorEnabled));
-						}
-						passOpTest->addChild(dFailOpTest.release());
+						desc << "(" << quadNdx << ") "
+							 << "z = " << StencilTest::s_quadDepths[quadNdx] << ", "
+							 << "frontReadMask = " << stencilConfig.frontReadMask << ", "
+							 << "frontWriteMask = " << stencilConfig.frontWriteMask << ", "
+							 << "frontRef = " << stencilConfig.frontRef << ", "
+							 << "backReadMask = " << stencilConfig.backReadMask << ", "
+							 << "backWriteMask = " << stencilConfig.backWriteMask << ", "
+							 << "backRef = " << stencilConfig.backRef;
 					}
-					failOpTest->addChild(passOpTest.release());
-				}
-				stencilStateTests->addChild(failOpTest.release());
-			}
 
-			formatTest->addChild(stencilStateTests.release());
-			formatTests->addChild(formatTest.release());
+					stencilStateTests = de::MovePtr<tcu::TestCaseGroup>(new tcu::TestCaseGroup(testCtx, "states", desc.str().c_str()));
+				}
+
+				stencilOpItr.reset();
+
+				for (deUint32 failOpNdx = 0u; failOpNdx < DE_LENGTH_OF_ARRAY(stencilOps); failOpNdx++)
+				{
+					const std::string				failOpName	= std::string("fail_") + getShortName(stencilOps[failOpNdx]);
+					de::MovePtr<tcu::TestCaseGroup>	failOpTest	(new tcu::TestCaseGroup(testCtx, failOpName.c_str(), ""));
+
+					for (deUint32 passOpNdx = 0u; passOpNdx < DE_LENGTH_OF_ARRAY(stencilOps); passOpNdx++)
+					{
+						const std::string				passOpName	= std::string("pass_") + getShortName(stencilOps[passOpNdx]);
+						de::MovePtr<tcu::TestCaseGroup>	passOpTest	(new tcu::TestCaseGroup(testCtx, passOpName.c_str(), ""));
+
+						for (deUint32 dFailOpNdx = 0u; dFailOpNdx < DE_LENGTH_OF_ARRAY(stencilOps); dFailOpNdx++)
+						{
+							const std::string				dFailOpName	= std::string("dfail_") + getShortName(stencilOps[dFailOpNdx]);
+							de::MovePtr<tcu::TestCaseGroup>	dFailOpTest	(new tcu::TestCaseGroup(testCtx, dFailOpName.c_str(), ""));
+
+							for (deUint32 compareOpNdx = 0u; compareOpNdx < DE_LENGTH_OF_ARRAY(compareOps); compareOpNdx++)
+							{
+								// Iterate front set of stencil state in ascending order
+								const VkStencilOpState	stencilStateFront	=
+								{
+									stencilOps[failOpNdx],		// failOp
+									stencilOps[passOpNdx],		// passOp
+									stencilOps[dFailOpNdx],		// depthFailOp
+									compareOps[compareOpNdx],	// compareOp
+									0x0,						// compareMask
+									0x0,						// writeMask
+									0x0							// reference
+								};
+
+								// Iterate back set of stencil state in random order
+								const VkStencilOpState	stencilStateBack	= stencilOpItr.next();
+								const std::string		caseName			= compareOpNames[compareOpNdx];
+								const std::string		caseDesc			= getStencilStateSetDescription(stencilStateFront, stencilStateBack);
+
+								dFailOpTest->addChild(new StencilTest(testCtx, caseName, caseDesc, stencilFormat, stencilStateFront, stencilStateBack, colorEnabled, useSeparateDepthStencilLayouts));
+							}
+							passOpTest->addChild(dFailOpTest.release());
+						}
+						failOpTest->addChild(passOpTest.release());
+					}
+					stencilStateTests->addChild(failOpTest.release());
+				}
+
+				formatTest->addChild(stencilStateTests.release());
+				formatTests->addChild(formatTest.release());
+			}
 		}
 
 		if (colorEnabled)

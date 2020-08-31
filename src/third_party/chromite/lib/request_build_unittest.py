@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import json
+import sys
 
 import mock
 
@@ -20,6 +21,10 @@ from chromite.lib import request_build
 
 # Tests need internal access.
 # pylint: disable=protected-access
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 class RequestBuildHelperTestsBase(cros_test_lib.MockTestCase):
   """Tests for RequestBuild."""

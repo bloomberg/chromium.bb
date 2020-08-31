@@ -83,13 +83,15 @@ void AccessibilityFocusRingGroup::UpdateFocusRingsFromInfo(
   }
 
   for (size_t i = 0; i < focus_rings_.size(); ++i) {
-    focus_layers_[i]->SetAppearance(focus_ring_info_->type,
-                                    focus_ring_info_->color,
-                                    focus_ring_info_->secondary_color);
+    focus_layers_[i]->SetAppearance(
+        focus_ring_info_->type, focus_ring_info_->color,
+        focus_ring_info_->secondary_color, focus_ring_info_->background_color);
   }
 }
 
 bool AccessibilityFocusRingGroup::CanAnimate() const {
+  if (no_fade_for_testing_)
+    return false;
   return !focus_rings_.empty() && focus_layers_[0]->CanAnimate();
 }
 

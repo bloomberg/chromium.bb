@@ -12,15 +12,64 @@
 #include "base/strings/string_piece_forward.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/sharing/sharing_message_bridge.h"
 #include "chrome/browser/sharing/sharing_service.h"
+#include "chrome/browser/sharing/web_push/web_push_sender.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
-#include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
 #include "url/gurl.h"
 
+namespace syncer {
+class DeviceInfo;
+}  // namespace syncer
+
 class PageActionIconView;
+
+class FakeWebPushSender : public WebPushSender {
+ public:
+  FakeWebPushSender() : WebPushSender(/*url_loader_factory=*/nullptr) {}
+  ~FakeWebPushSender() override = default;
+
+  void SendMessage(const std::string& fcm_token,
+                   crypto::ECPrivateKey* vapid_key,
+                   WebPushMessage message,
+                   WebPushCallback callback) override;
+
+  const std::string& fcm_token() { return fcm_token_; }
+  const WebPushMessage& message() { return message_; }
+
+ private:
+  std::string fcm_token_;
+  WebPushMessage message_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeWebPushSender);
+};
+
+class FakeSharingMessageBridge : public SharingMessageBridge {
+ public:
+  FakeSharingMessageBridge() = default;
+  ~FakeSharingMessageBridge() override = default;
+
+  // SharingMessageBridge:
+  void SendSharingMessage(
+      std::unique_ptr<sync_pb::SharingMessageSpecifics> specifics,
+      CommitFinishedCallback on_commit_callback) override;
+
+  // SharingMessageBridge:
+  base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate()
+      override;
+
+  const sync_pb::SharingMessageSpecifics& specifics() const {
+    return specifics_;
+  }
+
+ private:
+  sync_pb::SharingMessageSpecifics specifics_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeSharingMessageBridge);
+};
 
 // Base test class for testing sharing features.
 class SharingBrowserTest : public SyncTest {
@@ -42,7 +91,7 @@ class SharingBrowserTest : public SyncTest {
       base::StringPiece link_text,
       base::StringPiece selection_text);
 
-  void CheckLastReceiver(const std::string& device_guid) const;
+  void CheckLastReceiver(const syncer::DeviceInfo& device) const;
 
   chrome_browser_sharing::SharingMessage GetLastSharingMessageSent() const;
 
@@ -64,11 +113,12 @@ class SharingBrowserTest : public SyncTest {
 
   gcm::GCMProfileServiceFactory::ScopedTestingFactoryInstaller
       scoped_testing_factory_installer_;
-  gcm::FakeGCMProfileService* gcm_service_;
   content::WebContents* web_contents_;
   syncer::FakeDeviceInfoTracker fake_device_info_tracker_;
   std::vector<std::unique_ptr<syncer::DeviceInfo>> device_infos_;
   SharingService* sharing_service_;
+  FakeWebPushSender* fake_web_push_sender_;
+  FakeSharingMessageBridge fake_sharing_message_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(SharingBrowserTest);
 };

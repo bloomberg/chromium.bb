@@ -14,6 +14,7 @@
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrMemoryPool.h"
+#include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/SkGr.h"
@@ -23,6 +24,7 @@
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
+#include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 
 namespace {
 
@@ -167,10 +169,32 @@ public:
 private:
     friend class ::GrOpMemoryPool;
 
-    void onPrepareDraws(Target* target) override {
-        GrGeometryProcessor* gp = GP::Make(target->allocator(), fMode, fColorSpaceXform);
+    GrProgramInfo* programInfo() override { return fProgramInfo; }
 
-        size_t vertexStride = gp->vertexStride();
+    void onCreateProgramInfo(const GrCaps* caps,
+                             SkArenaAlloc* arena,
+                             const GrSurfaceProxyView* writeView,
+                             GrAppliedClip&& appliedClip,
+                             const GrXferProcessor::DstProxyView& dstProxyView) override {
+        GrGeometryProcessor* gp = GP::Make(arena, fMode, fColorSpaceXform);
+
+        fProgramInfo = GrSimpleMeshDrawOpHelper::CreateProgramInfo(caps,
+                                                                   arena,
+                                                                   writeView,
+                                                                   std::move(appliedClip),
+                                                                   dstProxyView,
+                                                                   gp,
+                                                                   GrProcessorSet::MakeEmptySet(),
+                                                                   GrPrimitiveType::kTriangleStrip,
+                                                                   GrPipeline::InputFlags::kNone);
+    }
+
+    void onPrepareDraws(Target* target) override {
+        if (!fProgramInfo) {
+            this->createProgramInfo(target);
+        }
+
+        size_t vertexStride = fProgramInfo->primProc().vertexStride();
         const int kVertexCount = 1024;
         sk_sp<const GrBuffer> vertexBuffer;
         int firstVertex = 0;
@@ -228,21 +252,27 @@ private:
             }
         }
 
-        GrMesh* mesh = target->allocMesh(GrPrimitiveType::kTriangleStrip);
-        mesh->setNonIndexedNonInstanced(kVertexCount);
-        mesh->setVertexData(std::move(vertexBuffer), firstVertex);
-        target->recordDraw(gp, mesh, 1, GrPrimitiveType::kTriangleStrip);
+        fMesh = target->allocMesh();
+        fMesh->set(std::move(vertexBuffer), kVertexCount, firstVertex);
     }
 
     void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
-        flushState->executeDrawsAndUploadsForMeshDrawOp(
-                this, chainBounds, GrProcessorSet::MakeEmptySet());
+        if (!fProgramInfo || !fMesh) {
+            return;
+        }
+
+        flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
+        flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+        flushState->drawMesh(*fMesh);
     }
 
     Mode fMode;
     GrColor fColor;
     SkColor4f fColor4f;
     sk_sp<GrColorSpaceXform> fColorSpaceXform;
+
+    GrSimpleMesh*  fMesh = nullptr;
+    GrProgramInfo* fProgramInfo = nullptr;
 
     typedef GrMeshDrawOp INHERITED;
 };
@@ -270,7 +300,7 @@ public:
         GrOpMemoryPool* pool = context->priv().opMemoryPool();
 
         auto p3 = SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB,
-                                        SkNamedGamut::kDCIP3);
+                                        SkNamedGamut::kDisplayP3);
         auto xform = GrColorSpaceXform::Make(sk_srgb_singleton(), kUnpremul_SkAlphaType,
                                              p3.get(),            kUnpremul_SkAlphaType);
 
@@ -278,8 +308,8 @@ public:
         const int kDrawsPerLoop = 32;
 
         for (int i = 0; i < loops; ++i) {
-            auto rtc = context->priv().makeDeferredRenderTargetContext(
-                    SkBackingFit::kApprox, 100, 100, GrColorType::kRGBA_8888, p3);
+            auto rtc = GrRenderTargetContext::Make(
+                    context, GrColorType::kRGBA_8888, p3, SkBackingFit::kApprox, {100, 100});
             SkASSERT(rtc);
 
             for (int j = 0; j < kDrawsPerLoop; ++j) {

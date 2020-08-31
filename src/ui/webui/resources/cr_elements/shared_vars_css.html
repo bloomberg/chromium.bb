@@ -8,6 +8,8 @@
   html {
     --google-blue-50-rgb: 232, 240, 254;  /* #e8f0fe */
     --google-blue-50: rgb(var(--google-blue-50-rgb));
+    --google-blue-200-rgb: 174, 203, 250;  /* #aecbfa */
+    --google-blue-200: rgb(var(--google-blue-200-rgb));
     --google-blue-600-rgb: 26, 115, 232;  /* #1a73e8 */
     --google-blue-600: rgb(var(--google-blue-600-rgb));
 
@@ -34,6 +36,8 @@
     --google-blue-refresh-300: rgb(var(--google-blue-refresh-300-rgb));
     --google-blue-refresh-500-rgb: 66, 133, 244;  /* #4285f4 */
     --google-blue-refresh-500: rgb(var(--google-blue-refresh-500-rgb));
+    --google-blue-refresh-700-rgb: 25, 103, 210;  /* #1966d2 */
+    --google-blue-refresh-700: rgb(var(--google-blue-refresh-700-rgb));
 
     --google-green-refresh-300-rgb: 129, 201, 149;  /* #81c995 */
     --google-green-refresh-300: rgb(var(--google-green-refresh-300-rgb));
@@ -51,6 +55,8 @@
 
     --google-red-refresh-300-rgb: 242, 139, 130;  /* #f28b82 */
     --google-red-refresh-300: rgb(var(--google-red-refresh-300-rgb));
+    --google-red-refresh-500-rgb: 234, 67, 53;  /* #ea4335 */
+    --google-red-refresh-500: rgb(var(--google-red-refresh-500-rgb));
 
     --google-yellow-refresh-300-rgb: 253, 214, 51;  /* #fdd633 */
     --google-yellow-refresh-300: rgb(var(--google-yellow-refresh-300-rgb));
@@ -63,12 +69,6 @@
 
     --cr-card-shadow: rgba(var(--cr-card-shadow-color-rgb), .3) 0 1px 2px 0,
                       rgba(var(--cr-card-shadow-color-rgb), .15) 0 1px 3px 1px;
-
-    /* TODO(aee): rename --cr-card-shadow  to --cr-card-elevation-box-shadow and
-     * use directly in place of mixin. */
-    --cr-card-elevation: {
-      box-shadow: var(--cr-card-shadow);
-    }
 
     --cr-checked-color: var(--google-blue-600);
     --cr-focused-item-color: var(--google-grey-300);
@@ -127,25 +127,10 @@
 
     --cr-icon-size: 20px;
 
-    --cr-icon-height-width: {
-      height: var(--cr-icon-size);
-      width: var(--cr-icon-size);
-    }
-
     --cr-icon-button-margin-start: 16px;
 
+    /* Shift button so ripple overlaps the end of the row. */
     --cr-icon-ripple-margin: calc(var(--cr-icon-ripple-padding) * -1);
-
-    --cr-paper-icon-button-margin: {
-      /* Shift button so ripple overlaps the end of the row. */
-      margin-inline-end: var(--cr-icon-ripple-margin);
-      margin-inline-start: var(--cr-icon-button-margin-start);
-    }
-
-    --cr-secondary-text: {
-      color: var(--cr-secondary-text-color);
-      font-weight: 400;
-    }
 
     /* TODO (johntlee): re-implement with paddings instead; */
     /* These are used for row items such as radio buttons, check boxes, list
@@ -160,6 +145,8 @@
     --cr-section-indent-padding: calc(
         var(--cr-section-padding) + var(--cr-section-indent-width));
 
+    /* TODO(crbug.com/973674): Do not use this mixin. Use the class cr-row
+     * from shared_style_css.html instead. */
     --cr-section: {
       align-items: center;
       border-top: var(--cr-separator-line);
@@ -172,35 +159,6 @@
 
     --cr-centered-card-max-width: 680px;
     --cr-centered-card-width-percentage: 0.96;
-    --cr-centered-card-container: {
-      box-sizing: border-box;
-      display: block;
-      height: inherit;
-      margin: 0 auto;
-      max-width: var(--cr-centered-card-max-width);
-      min-width: 550px;
-      position: relative;
-      width: calc(100% * var(--cr-centered-card-width-percentage));
-    }
-
-    --cr-text-elide: {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    --cr-tooltip: {
-      font-size: 92.31%;  /* Effectively 12px if the host default is 13px. */
-      font-weight: 500;
-      max-width: 330px;
-      min-width: 200px;
-      padding: 10px 8px;
-    }
-
-    --cr-selectable-focus: {
-      background-color: var(--cr-focused-item-color);
-      outline: none;
-    }
 
     --cr-hairline: 1px solid rgba(var(--cr-hairline-rgb), .14);
 

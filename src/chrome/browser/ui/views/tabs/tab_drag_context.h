@@ -35,7 +35,8 @@ class TabDragContext {
   virtual int GetTabCount() const = 0;
   virtual bool IsTabPinned(const Tab* tab) const = 0;
   virtual int GetPinnedTabCount() const = 0;
-  virtual TabGroupHeader* GetTabGroupHeader(TabGroupId group) const = 0;
+  virtual TabGroupHeader* GetTabGroupHeader(
+      const tab_groups::TabGroupId& group) const = 0;
   virtual TabStripModel* GetTabStripModel() = 0;
 
   // Returns the index of the active tab in touch mode, or no value if not in
@@ -71,8 +72,13 @@ class TabDragContext {
   // the width of the new tab button.
   virtual int GetTabAreaWidth() const = 0;
 
-  // Returns where the drag region ends; tabs dragged past this should detach.
+  // Returns the width of the region in which dragged tabs are allowed to exist.
+  virtual int GetTabDragAreaWidth() const = 0;
+
+  // Returns where the drag region begins and ends; tabs dragged beyond these
+  // points should detach.
   virtual int TabDragAreaEndX() const = 0;
+  virtual int TabDragAreaBeginX() const = 0;
 
   // Returns the horizontal drag threshold - the amount a tab drag must move to
   // trigger a reorder. This is dependent on the width of tabs. The smaller the
@@ -95,7 +101,7 @@ class TabDragContext {
       int num_dragged_tabs,
       bool mouse_has_ever_moved_left,
       bool mouse_has_ever_moved_right,
-      base::Optional<TabGroupId> group) const = 0;
+      base::Optional<tab_groups::TabGroupId> group) const = 0;
 
   // Returns true if |dragged_bounds| is close enough to the next stacked tab
   // so that the active tab should be dragged there.

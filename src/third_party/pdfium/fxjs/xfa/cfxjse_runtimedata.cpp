@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "fxjs/cfxjs_engine.h"
+#include "fxjs/fxv8.h"
 #include "fxjs/xfa/cfxjse_isolatetracker.h"
 
 CFXJSE_RuntimeData::CFXJSE_RuntimeData() = default;
@@ -19,16 +20,13 @@ std::unique_ptr<CFXJSE_RuntimeData> CFXJSE_RuntimeData::Create(
     v8::Isolate* pIsolate) {
   std::unique_ptr<CFXJSE_RuntimeData> pRuntimeData(new CFXJSE_RuntimeData());
   CFXJSE_ScopeUtil_IsolateHandle scope(pIsolate);
-
   v8::Local<v8::FunctionTemplate> hFuncTemplate =
       v8::FunctionTemplate::New(pIsolate);
 
   v8::Local<v8::ObjectTemplate> hGlobalTemplate =
       hFuncTemplate->InstanceTemplate();
-  hGlobalTemplate->Set(
-      v8::Symbol::GetToStringTag(pIsolate),
-      v8::String::NewFromUtf8(pIsolate, "global", v8::NewStringType::kNormal)
-          .ToLocalChecked());
+  hGlobalTemplate->Set(v8::Symbol::GetToStringTag(pIsolate),
+                       fxv8::NewStringHelper(pIsolate, "global"));
 
   v8::Local<v8::Context> hContext =
       v8::Context::New(pIsolate, 0, hGlobalTemplate);

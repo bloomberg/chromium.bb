@@ -14,8 +14,8 @@
 #include "cast/streaming/rtcp_common.h"
 #include "cast/streaming/rtp_defines.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 class RtcpSession;
 
@@ -41,7 +41,7 @@ class CompoundRtcpParser {
 
     // Called when a Receiver Reference Time Report has been parsed.
     virtual void OnReceiverReferenceTimeAdvanced(
-        openscreen::platform::Clock::time_point reference_time);
+        Clock::time_point reference_time);
 
     // Called when a Receiver Report with a Report Block has been parsed.
     virtual void OnReceiverReport(const RtcpReportBlock& receiver_report);
@@ -101,9 +101,8 @@ class CompoundRtcpParser {
                      std::chrono::milliseconds* target_playout_delay,
                      std::vector<FrameId>* received_frames,
                      std::vector<PacketNack>* packet_nacks);
-  bool ParseExtendedReports(
-      absl::Span<const uint8_t> in,
-      openscreen::platform::Clock::time_point* receiver_reference_time);
+  bool ParseExtendedReports(absl::Span<const uint8_t> in,
+                            Clock::time_point* receiver_reference_time);
   bool ParsePictureLossIndicator(absl::Span<const uint8_t> in,
                                  bool* picture_loss_indicator);
 
@@ -113,10 +112,10 @@ class CompoundRtcpParser {
   // Tracks the latest timestamp seen from any Receiver Reference Time Report,
   // and uses this to ignore stale RTCP packets that arrived out-of-order and/or
   // late from the network.
-  openscreen::platform::Clock::time_point latest_receiver_timestamp_;
+  Clock::time_point latest_receiver_timestamp_;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_COMPOUND_RTCP_PARSER_H_

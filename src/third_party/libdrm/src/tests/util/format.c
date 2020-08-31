@@ -23,10 +23,6 @@
  * IN THE SOFTWARE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,6 +39,8 @@
 	.yuv = { (order), (xsub), (ysub), (chroma_stride) }
 
 static const struct util_format_info format_info[] = {
+	/* Indexed */
+	{ DRM_FORMAT_C8, "C8" },
 	/* YUV packed */
 	{ DRM_FORMAT_UYVY, "UYVY", MAKE_YUV_INFO(YUV_YCbCr | YUV_CY, 2, 2, 2) },
 	{ DRM_FORMAT_VYUY, "VYUY", MAKE_YUV_INFO(YUV_YCrCb | YUV_CY, 2, 2, 2) },
@@ -95,6 +93,11 @@ static const struct util_format_info format_info[] = {
 	{ DRM_FORMAT_RGBX1010102, "RX30", MAKE_RGB_INFO(10, 22, 10, 12, 10, 2, 0, 0) },
 	{ DRM_FORMAT_BGRA1010102, "BA30", MAKE_RGB_INFO(10, 2, 10, 12, 10, 22, 2, 0) },
 	{ DRM_FORMAT_BGRX1010102, "BX30", MAKE_RGB_INFO(10, 2, 10, 12, 10, 22, 0, 0) },
+	{ DRM_FORMAT_XRGB16161616F, "XR4H", MAKE_RGB_INFO(16, 32, 16, 16, 16, 0, 0, 0) },
+	{ DRM_FORMAT_XBGR16161616F, "XB4H", MAKE_RGB_INFO(16, 0, 16, 16, 16, 32, 0, 0) },
+	{ DRM_FORMAT_ARGB16161616F, "AR4H", MAKE_RGB_INFO(16, 32, 16, 16, 16, 0, 16, 48) },
+	{ DRM_FORMAT_ABGR16161616F, "AB4H", MAKE_RGB_INFO(16, 0, 16, 16, 16, 32, 16, 48) },
+
 };
 
 uint32_t util_format_fourcc(const char *name)

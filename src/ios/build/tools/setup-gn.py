@@ -205,9 +205,7 @@ class GnGenerator(object):
     if generate_xcode_project:
       gn_command.append('--ide=xcode')
       gn_command.append('--root-target=gn_all')
-      if self._settings.getboolean('goma', 'enabled'):
-        ninja_jobs = self._settings.getint('xcode', 'jobs') or 200
-        gn_command.append('--ninja-extra-args=-j%s' % ninja_jobs)
+      gn_command.append('--ninja-executable=autoninja')
       if self._settings.has_section('filters'):
         target_filters = self._settings.values('filters')
         if target_filters:
@@ -325,18 +323,6 @@ def Main(args):
     sys.stderr.write('ERROR: invalid value for build.arch: %s\n' %
         settings.getstring('build', 'arch'))
     sys.exit(1)
-
-  if settings.getboolean('goma', 'enabled'):
-    if settings.getint('xcode', 'jobs') < 0:
-      sys.stderr.write('ERROR: invalid value for xcode.jobs: %s\n' %
-          settings.get('xcode', 'jobs'))
-      sys.exit(1)
-    goma_install = os.path.expanduser(settings.getstring('goma', 'install'))
-    if not os.path.isdir(goma_install):
-      sys.stderr.write('WARNING: goma.install directory not found: %s\n' %
-          settings.get('goma', 'install'))
-      sys.stderr.write('WARNING: disabling goma\n')
-      settings.set('goma', 'enabled', 'false')
 
   # Find gn binary in PATH.
   gn_path = FindGn()

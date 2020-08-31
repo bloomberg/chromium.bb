@@ -12,6 +12,7 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_notifier.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/bind.h"
@@ -29,13 +30,12 @@ namespace {
 constexpr int kChipSpacing = 8;
 
 // The minimum allowed number of suggestion chips shown in the container
-// (provided that the suggestoin chip results contain at least than number of
+// (provided that the suggestion chip results contain at least that number of
 // items).
 constexpr int kMinimumSuggestionChipNumber = 3;
 
 bool IsPolicySuggestionChip(const SearchResult& result) {
-  return result.display_location() ==
-             SearchResultDisplayLocation::kSuggestionChipContainer &&
+  return result.display_type() == SearchResultDisplayType::kChip &&
          result.display_index() != SearchResultDisplayIndex::kUndefined;
 }
 
@@ -125,7 +125,8 @@ int SuggestionChipContainerView::DoUpdate() {
   // if shortcuts are displayed as suggestion chips. Also filter out any
   // duplicate policy chip results.
   auto filter_reinstall_and_shortcut = [](const SearchResult& r) -> bool {
-    return r.display_type() == SearchResultDisplayType::kRecommendation &&
+    return (r.display_type() == SearchResultDisplayType::kChip ||
+            r.display_type() == SearchResultDisplayType::kTile) &&
            r.result_type() != AppListSearchResultType::kPlayStoreReinstallApp &&
            r.result_type() != AppListSearchResultType::kArcAppShortcut &&
            !IsPolicySuggestionChip(r);
@@ -147,6 +148,8 @@ int SuggestionChipContainerView::DoUpdate() {
     }
   }
 
+  std::vector<std::string> display_ids;
+
   // Update search results here, but wait until layout to add them as child
   // views when we know this view's bounds.
   for (size_t i = 0; i < static_cast<size_t>(
@@ -154,6 +157,14 @@ int SuggestionChipContainerView::DoUpdate() {
        ++i) {
     suggestion_chip_views_[i]->SetResult(
         i < display_results.size() ? display_results[i] : nullptr);
+    if (i < display_results.size()) {
+      display_ids.push_back(display_results[i]->id());
+    }
+  }
+
+  auto* notifier = view_delegate()->GetNotifier();
+  if (notifier) {
+    notifier->NotifyResultsUpdated(SearchResultDisplayType::kChip, display_ids);
   }
 
   Layout();
@@ -274,9 +285,23 @@ void SuggestionChipContainerView::DisableFocusForShowingActiveFolder(
 }
 
 void SuggestionChipContainerView::OnTabletModeChanged(bool started) {
-  // Enable/Disable chips' background blur based on tablet mode.
+  in_tablet_mode_ = started;
+  UpdateBlurState();
+}
+
+void SuggestionChipContainerView::SetBlurDisabled(bool blur_disabled) {
+  if (blur_disabled_ == blur_disabled)
+    return;
+
+  blur_disabled_ = blur_disabled;
+  UpdateBlurState();
+}
+
+void SuggestionChipContainerView::UpdateBlurState() {
+  // Enable/Disable chips' background blur based on tablet mode, and whether
+  // blur has been explicitly disabled.
   for (auto* chip : suggestion_chip_views_)
-    chip->SetBackgroundBlurEnabled(started);
+    chip->SetBackgroundBlurEnabled(in_tablet_mode_ && !blur_disabled_);
 }
 
 }  // namespace ash

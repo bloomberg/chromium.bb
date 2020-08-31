@@ -14,19 +14,21 @@ FakeWebStatePolicyDecider::FakeWebStatePolicyDecider(WebState* web_state)
     : WebStatePolicyDecider(web_state) {}
 
 void FakeWebStatePolicyDecider::SetShouldAllowRequest(
-    bool should_allow_request) {
+    WebStatePolicyDecider::PolicyDecision should_allow_request) {
   should_allow_request_ = should_allow_request;
 }
 
-bool FakeWebStatePolicyDecider::ShouldAllowRequest(
-    NSURLRequest* request,
-    const RequestInfo& request_info) {
+WebStatePolicyDecider::PolicyDecision
+FakeWebStatePolicyDecider::ShouldAllowRequest(NSURLRequest* request,
+                                              const RequestInfo& request_info) {
   return should_allow_request_;
 }
 
-bool FakeWebStatePolicyDecider::ShouldAllowResponse(NSURLResponse* response,
-                                                    bool for_main_frame) {
-  return true;
+void FakeWebStatePolicyDecider::ShouldAllowResponse(
+    NSURLResponse* response,
+    bool for_main_frame,
+    base::OnceCallback<void(PolicyDecision)> callback) {
+  std::move(callback).Run(PolicyDecision::Allow());
 }
 
 }  // namespace web

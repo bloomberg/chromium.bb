@@ -14,15 +14,13 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/test_session_controller_client.h"
-#include "ash/test/ash_test_helper.h"
 #include "ash/wm/desks/desks_util.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/template_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/traits_bag.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/user_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -60,15 +58,18 @@ class Rect;
 }
 
 namespace views {
+class View;
 class Widget;
 class WidgetDelegate;
-}
+}  // namespace views
 
 namespace ash {
 
 class AppListTestHelper;
+class AshTestHelper;
 class Shelf;
 class TestScreenshotDelegate;
+class TestShellDelegate;
 class TestSystemTrayClient;
 class UnifiedSystemTray;
 class WorkAreaInsets;
@@ -80,20 +81,19 @@ class AshTestBase : public testing::Test {
   // specified.
   template <typename... TaskEnvironmentTraits>
   NOINLINE explicit AshTestBase(TaskEnvironmentTraits&&... traits)
-      : task_environment_(base::in_place,
-                          base::test::TaskEnvironment::MainThreadType::UI,
-                          std::forward<TaskEnvironmentTraits>(traits)...) {}
+      : AshTestBase(std::make_unique<base::test::TaskEnvironment>(
+            base::test::TaskEnvironment::MainThreadType::UI,
+            std::forward<TaskEnvironmentTraits>(traits)...)) {}
 
-  // Alternatively a subclass may pass this tag to ask this AshTestBase not to
-  // instantiate a TaskEnvironment. The subclass is then responsible to
-  // instantiate one before AshTestBase::SetUp().
-  struct SubclassManagesTaskEnvironment {};
-  explicit AshTestBase(SubclassManagesTaskEnvironment tag);
+  // Alternatively a subclass may pass a TaskEnvironment directly.
+  explicit AshTestBase(
+      std::unique_ptr<base::test::TaskEnvironment> task_environment);
 
   ~AshTestBase() override;
 
   // testing::Test:
   void SetUp() override;
+  void SetUp(std::unique_ptr<TestShellDelegate> delegate);
   void TearDown() override;
 
   // Returns the Shelf for the primary display.
@@ -112,7 +112,7 @@ class AshTestBase : public testing::Test {
   // Returns a root Window. Usually this is the active root Window, but that
   // method can return NULL sometimes, and in those cases, we fall back on the
   // primary root Window.
-  aura::Window* CurrentContext();
+  aura::Window* GetContext();
 
   // Creates and shows a widget. See ash/public/cpp/shell_window_ids.h for
   // values for |container_id|.
@@ -195,6 +195,11 @@ class AshTestBase : public testing::Test {
   bool TestIfMouseWarpsAt(ui::test::EventGenerator* event_generator,
                           const gfx::Point& point_in_screen);
 
+  // Moves the mouse to the center of the view and generates a left button click
+  // event.
+  void SimulateMouseClickAt(ui::test::EventGenerator* event_generator,
+                            const views::View* target_view);
+
  protected:
   enum UserSessionBlockReason {
     FIRST_BLOCK_REASON,
@@ -211,9 +216,16 @@ class AshTestBase : public testing::Test {
   static display::Display::Rotation GetCurrentInternalDisplayRotation();
 
   void set_start_session(bool start_session) { start_session_ = start_session; }
-  void disable_provide_local_state() { provide_local_state_ = false; }
 
-  AshTestHelper* ash_test_helper() { return &ash_test_helper_; }
+  base::test::TaskEnvironment* task_environment() {
+    return task_environment_.get();
+  }
+  TestingPrefServiceSimple* local_state() { return &local_state_; }
+  AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
+
+  void SetUserPref(const std::string& user_email,
+                   const std::string& path,
+                   const base::Value& value);
 
   TestScreenshotDelegate* GetScreenshotDelegate();
 
@@ -263,9 +275,9 @@ class AshTestBase : public testing::Test {
   void BlockUserSession(UserSessionBlockReason block_reason);
   void UnblockUserSession();
 
-  // Enable or disable the keyboard for touch and run the message loop to
-  // allow observer operations to complete.
-  void SetTouchKeyboardEnabled(bool enabled);
+  // Enable or disable the virtual on-screen keyboard and run the message loop
+  // to allow observer operations to complete.
+  void SetVirtualKeyboardEnabled(bool enabled);
 
   void DisableIME();
 
@@ -280,30 +292,22 @@ class AshTestBase : public testing::Test {
 
   bool setup_called_ = false;
   bool teardown_called_ = false;
-  // |SetUp()| doesn't activate session if this is set to false.
-  bool start_session_ = true;
-  // |SetUp()| doesn't inject local-state PrefService into Shell if this is
-  // set to false.
-  bool provide_local_state_ = true;
 
-  // Must be initialized at construction because some tests rely on AshTestBase
-  // methods before AshTestBase::SetUp().
-  AshTestHelper ash_test_helper_;
+  // SetUp() doesn't activate session if this is set to false.
+  bool start_session_ = true;
+
+  // |task_environment_| is initialized-once at construction time but
+  // subclasses may elect to provide their own.
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
+
+  // A pref service used for local state.
+  TestingPrefServiceSimple local_state_;
+
+  // Must be constructed after |task_environment_|.
+  std::unique_ptr<AshTestHelper> ash_test_helper_;
 
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
-  // protected so it can be accesssed by test subclasses to drive the task
-  // environment.
- protected:
-  // |task_environment_| is initialized-once at construction time but
-  // subclasses may elect to provide their own. Declare it last to ensure its
-  // initialization/destruction semantics are identical in the
-  // SubclassManagesTaskEnvironment mode.
-  base::Optional<base::test::TaskEnvironment> task_environment_;
-
-  // Private again for DISALLOW_COPY_AND_ASSIGN; additional members should be
-  // added in the first private section to be before |task_environment_|.
- private:
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };
 

@@ -5,7 +5,9 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_PLATFORM_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_PLATFORM_H_
 
+#include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
@@ -14,6 +16,7 @@
 #include "ui/platform_window/extensions/workspace_extension_delegate.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
+#include "ui/views/widget/desktop_aura/window_move_client_platform.h"
 
 namespace views {
 
@@ -26,6 +29,14 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostPlatform() override;
+
+  // A way of converting a |widget| into the content_window()
+  // of the associated DesktopNativeWidgetAura.
+  static aura::Window* GetContentWindowForWidget(gfx::AcceleratedWidget widget);
+
+  // A way of converting a |widget| into this object.
+  static DesktopWindowTreeHostPlatform* GetHostForWidget(
+      gfx::AcceleratedWidget widget);
 
   // Accessor for DesktopNativeWidgetAura::content_window().
   aura::Window* GetContentWindow();
@@ -129,7 +140,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   gfx::Rect ToPixelRect(const gfx::Rect& rect_in_dip) const;
 
  private:
-  void Relayout();
+  void ScheduleRelayout();
 
   Widget* GetWidget();
   const Widget* GetWidget() const;
@@ -158,6 +169,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   // visibility only if the window was minimized or was unminimized from the
   // normal state.
   ui::PlatformWindowState old_state_ = ui::PlatformWindowState::kUnknown;
+
+  // Used for tab dragging in move loop requests.
+  WindowMoveClientPlatform window_move_client_;
 
   base::WeakPtrFactory<DesktopWindowTreeHostPlatform> close_widget_factory_{
       this};

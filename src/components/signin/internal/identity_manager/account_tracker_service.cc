@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -17,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
@@ -25,6 +27,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/internal/identity_manager/account_info_util.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "ui/gfx/image/image.h"
 
 #if defined(OS_ANDROID)
@@ -33,7 +36,6 @@
 #endif
 
 namespace {
-
 const char kAccountKeyPath[] = "account_id";
 const char kAccountEmailPath[] = "email";
 const char kAccountGaiaPath[] = "gaia";
@@ -42,6 +44,8 @@ const char kAccountFullNamePath[] = "full_name";
 const char kAccountGivenNamePath[] = "given_name";
 const char kAccountLocalePath[] = "locale";
 const char kAccountPictureURLPath[] = "picture_url";
+const char kLastDownloadedImageURLWithSizePath[] =
+    "last_downloaded_image_url_with_size";
 const char kAccountChildAccountStatusPath[] = "is_child_account";
 const char kAdvancedProtectionAccountStatusPath[] =
     "is_under_advanced_protection";
@@ -70,7 +74,7 @@ gfx::Image ReadImage(const base::FilePath& image_path) {
 }
 
 // Saves |png_data| to disk at |image_path|.
-void SaveImage(scoped_refptr<base::RefCountedMemory> png_data,
+bool SaveImage(scoped_refptr<base::RefCountedMemory> png_data,
                const base::FilePath& image_path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -78,12 +82,14 @@ void SaveImage(scoped_refptr<base::RefCountedMemory> png_data,
   base::FilePath dir = image_path.DirName();
   if (!base::DirectoryExists(dir) && !base::CreateDirectory(dir)) {
     LOG(ERROR) << "Failed to create parent directory of: " << image_path;
-    return;
+    return false;
   }
   if (base::WriteFile(image_path, png_data->front_as<char>(),
                       png_data->size()) == -1) {
     LOG(ERROR) << "Failed to save image to file: " << image_path;
+    return false;
   }
+  return true;
 }
 
 // Removes the image at path |image_path|.
@@ -124,8 +130,8 @@ void AccountTrackerService::Initialize(PrefService* pref_service,
   if (!user_data_dir_.empty()) {
     // |image_storage_task_runner_| is a sequenced runner because we want to
     // avoid read and write operations to the same file at the same time.
-    image_storage_task_runner_ = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+    image_storage_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
     LoadAccountImagesFromDisk();
   }
@@ -183,7 +189,7 @@ AccountInfo AccountTrackerService::FindAccountInfoByEmail(
 // static
 bool AccountTrackerService::IsMigrationSupported() {
 #if defined(OS_CHROMEOS)
-  return false;
+  return base::FeatureList::IsEnabled(switches::kAccountIdMigration);
 #else
   return true;
 #endif
@@ -261,19 +267,22 @@ void AccountTrackerService::SetAccountInfoFromUserInfo(
   SaveToPrefs(account_info);
 }
 
-void AccountTrackerService::SetAccountImage(const CoreAccountId& account_id,
-                                            const gfx::Image& image) {
+void AccountTrackerService::SetAccountImage(
+    const CoreAccountId& account_id,
+    const std::string& image_url_with_size,
+    const gfx::Image& image) {
   if (!base::Contains(accounts_, account_id))
     return;
   AccountInfo& account_info = accounts_[account_id];
   account_info.account_image = image;
-  SaveAccountImageToDisk(account_id, image);
+  account_info.last_downloaded_image_url_with_size = image_url_with_size;
+  SaveAccountImageToDisk(account_id, image, image_url_with_size);
   NotifyAccountUpdated(account_info);
 }
 
 void AccountTrackerService::SetIsChildAccount(const CoreAccountId& account_id,
                                               bool is_child_account) {
-  DCHECK(base::Contains(accounts_, account_id));
+  DCHECK(base::Contains(accounts_, account_id)) << account_id.ToString();
   AccountInfo& account_info = accounts_[account_id];
   if (account_info.is_child_account == is_child_account)
     return;
@@ -286,7 +295,7 @@ void AccountTrackerService::SetIsChildAccount(const CoreAccountId& account_id,
 void AccountTrackerService::SetIsAdvancedProtectionAccount(
     const CoreAccountId& account_id,
     bool is_under_advanced_protection) {
-  DCHECK(base::Contains(accounts_, account_id));
+  DCHECK(base::Contains(accounts_, account_id)) << account_id.ToString();
   AccountInfo& account_info = accounts_[account_id];
   if (account_info.is_under_advanced_protection == is_under_advanced_protection)
     return;
@@ -306,6 +315,10 @@ void AccountTrackerService::SetOnAccountRemovedCallback(
     AccountInfoCallback callback) {
   DCHECK(!on_account_removed_callback_);
   on_account_removed_callback_ = callback;
+}
+
+void AccountTrackerService::CommitPendingAccountChanges() {
+  pref_service_->CommitPendingWrite();
 }
 
 void AccountTrackerService::MigrateToGaiaId() {
@@ -411,6 +424,10 @@ void AccountTrackerService::OnAccountImageLoaded(
       accounts_[account_id].account_image.IsEmpty()) {
     AccountInfo& account_info = accounts_[account_id];
     account_info.account_image = image;
+    if (account_info.account_image.IsEmpty()) {
+      account_info.last_downloaded_image_url_with_size = std::string();
+      OnAccountImageUpdated(account_id, std::string(), true);
+    }
     NotifyAccountUpdated(account_info);
   }
 }
@@ -430,12 +447,42 @@ void AccountTrackerService::LoadAccountImagesFromDisk() {
 
 void AccountTrackerService::SaveAccountImageToDisk(
     const CoreAccountId& account_id,
-    const gfx::Image& image) {
+    const gfx::Image& image,
+    const std::string& image_url_with_size) {
   if (!image_storage_task_runner_)
     return;
-  image_storage_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SaveImage, image.As1xPNGBytes(),
-                                GetImagePathFor(account_id)));
+
+  PostTaskAndReplyWithResult(
+      image_storage_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&SaveImage, image.As1xPNGBytes(),
+                     GetImagePathFor(account_id)),
+      base::BindOnce(&AccountTrackerService::OnAccountImageUpdated,
+                     weak_factory_.GetWeakPtr(), account_id,
+                     image_url_with_size));
+}
+
+void AccountTrackerService::OnAccountImageUpdated(
+    const CoreAccountId& account_id,
+    const std::string& image_url_with_size,
+    bool success) {
+  if (!success || !pref_service_)
+    return;
+
+  base::DictionaryValue* dict = nullptr;
+  ListPrefUpdate update(pref_service_, prefs::kAccountInfo);
+  for (size_t i = 0; i < update->GetSize(); ++i, dict = nullptr) {
+    if (update->GetDictionary(i, &dict)) {
+      std::string value;
+      if (dict->GetString(kAccountKeyPath, &value) &&
+          value == account_id.ToString())
+        break;
+    }
+  }
+
+  if (!dict) {
+    return;
+  }
+  dict->SetString(kLastDownloadedImageURLWithSizePath, image_url_with_size);
 }
 
 void AccountTrackerService::RemoveAccountImageFromDisk(
@@ -479,6 +526,8 @@ void AccountTrackerService::LoadFromPrefs() {
           account_info.locale = value;
         if (dict->GetString(kAccountPictureURLPath, &value))
           account_info.picture_url = value;
+        if (dict->GetString(kLastDownloadedImageURLWithSizePath, &value))
+          account_info.last_downloaded_image_url_with_size = value;
 
         bool is_child_account = false;
         if (dict->GetBoolean(kAccountChildAccountStatusPath, &is_child_account))
@@ -564,6 +613,9 @@ void AccountTrackerService::SaveToPrefs(const AccountInfo& account_info) {
                    account_info.is_child_account);
   dict->SetBoolean(kAdvancedProtectionAccountStatusPath,
                    account_info.is_under_advanced_protection);
+  // |kLastDownloadedImageURLWithSizePath| should only be set after the GAIA
+  // picture is successufly saved to disk. Otherwise, there is no guarantee that
+  // |kLastDownloadedImageURLWithSizePath| matches the picture on disk.
 }
 
 void AccountTrackerService::RemoveFromPrefs(const AccountInfo& account_info) {
@@ -640,6 +692,13 @@ CoreAccountId AccountTrackerService::SeedAccountInfo(AccountInfo info) {
 
     SaveToPrefs(account_info);
   }
+
+  if (!already_exists && !info.account_image.IsEmpty()) {
+    SetAccountImage(account_info.account_id,
+                    account_info.last_downloaded_image_url_with_size,
+                    info.account_image);
+  }
+
   return info.account_id;
 }
 

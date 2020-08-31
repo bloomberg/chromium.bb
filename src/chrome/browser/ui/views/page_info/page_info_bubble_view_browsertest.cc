@@ -13,7 +13,6 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/page_info/page_info.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -28,15 +27,18 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/page_info/page_info.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/safe_browsing/features.h"
-#include "components/safe_browsing/password_protection/metrics_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/safe_browsing/content/password_protection/metrics_util.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/cert_test_util.h"
@@ -50,7 +52,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/views/test/widget_test.h"
 
 namespace {
@@ -128,7 +130,10 @@ const GURL OpenSiteSettingsForUrl(Browser* browser, const GURL& url) {
 
 class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
  public:
-  PageInfoBubbleViewBrowserTest() {}
+  PageInfoBubbleViewBrowserTest() {
+    feature_list_.InitAndEnableFeature(
+        password_manager::features::kPasswordCheck);
+  }
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
@@ -150,6 +155,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     constexpr char kSignInSyncPasswordReuse[] = "SignInSyncPasswordReuse";
     constexpr char kSignInNonSyncPasswordReuse[] = "SignInNonSyncPasswordReuse";
     constexpr char kEnterprisePasswordReuse[] = "EnterprisePasswordReuse";
+    constexpr char kSavedPasswordReuse[] = "SavedPasswordReuse";
     constexpr char kMalwareAndBadCert[] = "MalwareAndBadCert";
     constexpr char kMixedContentForm[] = "MixedContentForm";
     constexpr char kMixedContent[] = "MixedContent";
@@ -226,6 +232,9 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     } else if (name == kEnterprisePasswordReuse) {
       identity.safe_browsing_status =
           PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE;
+    } else if (name == kSavedPasswordReuse) {
+      identity.safe_browsing_status =
+          PageInfo::SAFE_BROWSING_STATUS_SAVED_PASSWORD_REUSE;
     } else if (name == kMalwareAndBadCert) {
       identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_ERROR;
       identity.certificate = net::ImportCertFromFile(
@@ -290,7 +299,6 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
   bool VerifyUi() override {
     if (!DialogBrowserTest::VerifyUi())
       return false;
-#if defined(TOOLKIT_VIEWS)
     // Check that each expected View is present in the Page Info bubble.
     views::View* page_info_bubble_view =
         PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetContentsView();
@@ -300,10 +308,6 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
         return false;
     }
     return true;
-#else
-    NOTIMPLEMENTED();
-    return false;
-#endif
   }
 
  protected:
@@ -382,6 +386,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
 
  private:
   std::vector<PageInfoBubbleView::PageInfoBubbleViewID> expected_identifiers_;
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewBrowserTest);
 };
@@ -528,6 +533,80 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   EXPECT_THAT(
       histograms.GetAllSamples(
           safe_browsing::kEnterprisePasswordPageInfoHistogram),
+      testing::ElementsAre(
+          base::Bucket(static_cast<int>(safe_browsing::WarningAction::SHOWN),
+                       1),
+          base::Bucket(
+              static_cast<int>(safe_browsing::WarningAction::CHANGE_PASSWORD),
+              1),
+          base::Bucket(static_cast<int>(
+                           safe_browsing::WarningAction::MARK_AS_LEGITIMATE),
+                       1)));
+  // Security state will change after whitelisting.
+  visible_security_state = helper->GetVisibleSecurityState();
+  EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
+            visible_security_state->malicious_content_status);
+}
+
+// Test opening page info bubble that matches
+// SB_THREAT_TYPE_SAVED_PASSWORD_REUSE threat type.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       VerifySavedPasswordReusePageInfoBubble) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  base::HistogramTester histograms;
+  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL("/"));
+
+  // Update security state of the current page to match
+  // SB_THREAT_TYPE_SAVED_PASSWORD_REUSE.
+  safe_browsing::ChromePasswordProtectionService* service =
+      safe_browsing::ChromePasswordProtectionService::
+          GetPasswordProtectionService(browser()->profile());
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  safe_browsing::ReusedPasswordAccountType reused_password_account_type;
+  reused_password_account_type.set_account_type(
+      safe_browsing::ReusedPasswordAccountType::SAVED_PASSWORD);
+  service->set_reused_password_account_type_for_last_shown_warning(
+      reused_password_account_type);
+
+  service->ShowModalWarning(
+      contents, safe_browsing::RequestOutcome::UNKNOWN,
+      safe_browsing::LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+      "unused_token", reused_password_account_type);
+
+  OpenPageInfoBubble(browser());
+  views::View* change_password_button = GetView(
+      browser(), PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
+  views::View* whitelist_password_reuse_button = GetView(
+      browser(),
+      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE);
+
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SAVED_PASSWORD_REUSE,
+            visible_security_state->malicious_content_status);
+
+  // Verify these two buttons are showing.
+  EXPECT_TRUE(change_password_button->GetVisible());
+  EXPECT_TRUE(whitelist_password_reuse_button->GetVisible());
+
+  // Verify clicking on button will increment corresponding bucket of
+  // PasswordProtection.PageInfoAction.NonGaiaEnterprisePasswordEntry histogram.
+  PerformMouseClickOnView(change_password_button);
+  EXPECT_THAT(
+      histograms.GetAllSamples(safe_browsing::kSavedPasswordPageInfoHistogram),
+      testing::ElementsAre(
+          base::Bucket(static_cast<int>(safe_browsing::WarningAction::SHOWN),
+                       1),
+          base::Bucket(
+              static_cast<int>(safe_browsing::WarningAction::CHANGE_PASSWORD),
+              1)));
+
+  PerformMouseClickOnView(whitelist_password_reuse_button);
+  EXPECT_THAT(
+      histograms.GetAllSamples(safe_browsing::kSavedPasswordPageInfoHistogram),
       testing::ElementsAre(
           base::Bucket(static_cast<int>(safe_browsing::WarningAction::SHOWN),
                        1),

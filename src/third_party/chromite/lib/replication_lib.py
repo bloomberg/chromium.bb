@@ -10,6 +10,7 @@ from __future__ import print_function
 import json
 import os
 import shutil
+import sys
 
 from chromite.api.gen.config import replication_config_pb2
 
@@ -17,6 +18,9 @@ from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.utils import field_mask_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def _ValidateFileReplicationRule(rule):
@@ -53,6 +57,11 @@ def _ValidateFileReplicationRule(rule):
     raise NotImplementedError(
         'Replicate not implemented for replication type %s' %
         rule.replication_type)
+
+  if os.path.isabs(rule.source_path) or os.path.isabs(rule.destination_path):
+    raise ValueError(
+        'Only paths relative to the source root are allowed. In rule: %s' %
+        rule)
 
 
 def _ApplyStringReplacementRules(destination_path, rules):
@@ -120,12 +129,14 @@ def Replicate(replication_config):
 
       logging.info('Writing filtered JSON source to %s', dst)
       with open(dst, 'w') as f:
-        json.dump(
-            destination_json,
-            f,
-            sort_keys=True,
-            indent=2,
-            separators=(',', ': '))
+        # Use the print function, so the file ends in a newline.
+        print(
+            json.dumps(
+                destination_json,
+                sort_keys=True,
+                indent=2,
+                separators=(',', ': ')),
+            file=f)
     else:
       assert rule.file_type == replication_config_pb2.FILE_TYPE_OTHER
       assert (

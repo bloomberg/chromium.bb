@@ -17,7 +17,6 @@ import optparse
 import os
 import subprocess
 import sys
-import urllib
 
 CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
     __file__.decode(sys.getfilesystemencoding()))))
@@ -28,6 +27,7 @@ tools.force_local_third_party()
 
 # third_party/
 import colorama
+from six.moves import urllib
 
 # pylint: disable=ungrouped-imports
 from utils import graph
@@ -76,12 +76,12 @@ def _get_cmd(swarming, endpoint, start, end, state, tags):
   ]
   data = [('start', start), ('end', end), ('state', state)]
   data.extend(('tags', tag) for tag in tags)
-  return cmd + [endpoint + '?' + urllib.urlencode(data)]
+  return cmd + [endpoint + '?' + urllib.parse.urlencode(data)]
 
 
 def _flatten_dimensions(dimensions):
   items = {i['key']: i['value'] for i in dimensions}
-  return ','.join('%s=%s' % (k, v) for k, v in sorted(items.iteritems()))
+  return ','.join('%s=%s' % (k, v) for k, v in sorted(items.items()))
 
 
 def fetch_tasks(swarming, start, end, state, tags, parallel):
@@ -132,10 +132,10 @@ def _fetch_daily_internal(
 def present_dimensions(items, daily_count):
   # Split items per group.
   per_dimension = collections.defaultdict(lambda: collections.defaultdict(int))
-  for date, dimensions in items.iteritems():
+  for date, dimensions in items.items():
     for d in dimensions:
       per_dimension[d][date] += 1
-  for i, (dimension, data) in enumerate(sorted(per_dimension.iteritems())):
+  for i, (dimension, data) in enumerate(sorted(per_dimension.items())):
     print(
         '%s%s%s' % (
           colorama.Style.BRIGHT + colorama.Fore.MAGENTA,
@@ -148,26 +148,26 @@ def present_dimensions(items, daily_count):
 
 def present_counts(items, daily_count):
   months = collections.defaultdict(int)
-  for day, count in sorted(items.iteritems()):
+  for day, count in sorted(items.items()):
     month = day.rsplit('-', 1)[0]
     months[month] += count
 
   years = collections.defaultdict(int)
-  for month, count in months.iteritems():
+  for month, count in months.items():
     year = month.rsplit('-', 1)[0]
     years[year] += count
-  total = sum(months.itervalues())
+  total = sum(months.values())
   maxlen = len(str(total))
 
   if daily_count:
-    for day, count in sorted(items.iteritems()):
+    for day, count in sorted(items.items()):
       print('%s: %*d' % (day, maxlen, count))
 
   if len(items) > 1:
-    for month, count in sorted(months.iteritems()):
+    for month, count in sorted(months.items()):
       print('%s   : %*d' % (month, maxlen, count))
   if len(months) > 1:
-    for year, count in sorted(years.iteritems()):
+    for year, count in sorted(years.items()):
       print('%s      : %*d' % (year, maxlen, count))
   if len(years) > 1:
     print('Total     : %*d' % (maxlen, total))

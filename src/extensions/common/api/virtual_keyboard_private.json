@@ -85,8 +85,7 @@
           },
           "bounds": {
             "$ref": "Bounds",
-            "description": "The bounds of the virtual keyboard after changing mode",
-            "optional": true
+            "description": "The bounds of the virtual keyboard after changing mode"
           }
         }
       }
@@ -282,6 +281,18 @@
           {
             "name": "bounds",
             "description": "The bounds of the area inside the keyboard window, relative to the window origin, that should not be moved off screen. Any area outside of this bounds can be moved off screen.",
+            "$ref": "Bounds"
+          }
+        ]
+      },
+      {
+        "name": "setWindowBoundsInScreen",
+        "type": "function",
+        "description": "Sets the bounds of the keyboard window in screen coordinates.",
+        "parameters": [
+          {
+            "name": "bounds",
+            "description": "A rectangle defining the new bounds of the window in screen coordinates.",
             "$ref": "Bounds"
           }
         ]

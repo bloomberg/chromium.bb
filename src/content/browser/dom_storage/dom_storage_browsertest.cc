@@ -10,10 +10,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
+#include "components/services/storage/dom_storage/local_storage_impl.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
-#include "content/browser/dom_storage/local_storage_context_mojo.h"
-#include "content/browser/dom_storage/session_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -22,6 +21,7 @@
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -83,14 +83,6 @@ class DOMStorageBrowserTest : public ContentBrowserTest {
   DOMStorageContextWrapper* context_wrapper() {
     return static_cast<DOMStorageContextWrapper*>(
         partition()->GetDOMStorageContext());
-  }
-
-  base::SequencedTaskRunner* mojo_task_runner() {
-    return context_wrapper()->mojo_task_runner();
-  }
-
-  SessionStorageContextMojo* session_storage_context() {
-    return context_wrapper()->mojo_session_state_;
   }
 };
 
@@ -177,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, DataMigrates) {
   const base::FilePath legacy_local_storage_path =
       partition()->GetPath().Append(storage::kLocalStoragePath);
   base::FilePath db_path = legacy_local_storage_path.Append(
-      LocalStorageContextMojo::LegacyDatabaseFileNameFromOrigin(
+      storage::LocalStorageImpl::LegacyDatabaseFileNameFromOrigin(
           url::Origin::Create(GetTestUrl("dom_storage", "store_data.html"))));
   {
     base::ScopedAllowBlockingForTesting allow_blocking;

@@ -46,9 +46,14 @@ RUNTIME_FUNCTION(Runtime_NewArray) {
   HandleScope scope(isolate);
   DCHECK_LE(3, args.length());
   int const argc = args.length() - 3;
-  // TODO(bmeurer): Remove this Arguments nonsense.
-  Arguments argv(argc, args.address_of_arg_at(1));
+  // argv points to the arguments constructed by the JavaScript call.
+#ifdef V8_REVERSE_JSARGS
+  JavaScriptArguments argv(argc, args.address_of_arg_at(0));
+  CONVERT_ARG_HANDLE_CHECKED(JSFunction, constructor, argc);
+#else
+  JavaScriptArguments argv(argc, args.address_of_arg_at(1));
   CONVERT_ARG_HANDLE_CHECKED(JSFunction, constructor, 0);
+#endif
   CONVERT_ARG_HANDLE_CHECKED(JSReceiver, new_target, argc + 1);
   CONVERT_ARG_HANDLE_CHECKED(HeapObject, type_info, argc + 2);
   // TODO(bmeurer): Use MaybeHandle to pass around the AllocationSite.
@@ -301,11 +306,8 @@ RUNTIME_FUNCTION(Runtime_ArrayIncludes_Slow) {
     // Let elementK be the result of ? Get(O, ! ToString(k)).
     Handle<Object> element_k;
     {
-      Handle<Object> index_obj = isolate->factory()->NewNumberFromInt64(index);
-      bool success;
-      LookupIterator it = LookupIterator::PropertyOrElement(
-          isolate, object, index_obj, &success);
-      DCHECK(success);
+      LookupIterator::Key key(isolate, static_cast<double>(index));
+      LookupIterator it(isolate, object, key);
       ASSIGN_RETURN_FAILURE_ON_EXCEPTION(isolate, element_k,
                                          Object::GetProperty(&it));
     }
@@ -395,24 +397,21 @@ RUNTIME_FUNCTION(Runtime_ArrayIndexOf) {
     return *isolate->factory()->NewNumberFromInt64(result.FromJust());
   }
 
-  // Otherwise, perform slow lookups for special receiver types
+  // Otherwise, perform slow lookups for special receiver types.
   for (; index < len; ++index) {
     HandleScope iteration_hs(isolate);
     // Let elementK be the result of ? Get(O, ! ToString(k)).
     Handle<Object> element_k;
     {
-      Handle<Object> index_obj = isolate->factory()->NewNumberFromInt64(index);
-      bool success;
-      LookupIterator it = LookupIterator::PropertyOrElement(
-          isolate, object, index_obj, &success);
-      DCHECK(success);
+      LookupIterator::Key key(isolate, static_cast<double>(index));
+      LookupIterator it(isolate, object, key);
       Maybe<bool> present = JSReceiver::HasProperty(&it);
       MAYBE_RETURN(present, ReadOnlyRoots(isolate).exception());
       if (!present.FromJust()) continue;
       ASSIGN_RETURN_FAILURE_ON_EXCEPTION(isolate, element_k,
                                          Object::GetProperty(&it));
       if (search_element->StrictEquals(*element_k)) {
-        return *index_obj;
+        return *isolate->factory()->NewNumberFromInt64(index);
       }
     }
   }

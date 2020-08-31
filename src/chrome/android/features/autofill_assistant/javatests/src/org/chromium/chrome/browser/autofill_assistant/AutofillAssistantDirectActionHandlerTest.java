@@ -26,17 +26,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.directactions.DirectActionHandler;
 import org.chromium.chrome.browser.directactions.DirectActionReporter;
 import org.chromium.chrome.browser.directactions.DirectActionReporter.Type;
 import org.chromium.chrome.browser.directactions.FakeDirectActionReporter;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -54,6 +55,8 @@ public class AutofillAssistantDirectActionHandlerTest {
     private BottomSheetController mBottomSheetController;
     private DirectActionHandler mHandler;
     private TestingAutofillAssistantModuleEntryProvider mModuleEntryProvider;
+    private final SharedPreferencesManager mSharedPreferencesManager =
+            SharedPreferencesManager.getInstance();
 
     @Before
     public void setUp() throws Exception {
@@ -61,19 +64,18 @@ public class AutofillAssistantDirectActionHandlerTest {
         mActivity = mActivityTestRule.getActivity();
 
         mBottomSheetController = TestThreadUtils.runOnUiThreadBlocking(
-                () -> AutofillAssistantUiTestUtil.createBottomSheetController(mActivity));
+                () -> AutofillAssistantUiTestUtil.getBottomSheetController(mActivity));
         mModuleEntryProvider = new TestingAutofillAssistantModuleEntryProvider();
         mModuleEntryProvider.setCannotInstall();
 
         mHandler = new AutofillAssistantDirectActionHandler(mActivity, mBottomSheetController,
-                mActivity.getScrim(), mActivity.getTabModelSelector()::getCurrentTab,
-                mModuleEntryProvider);
+                mActivity.getFullscreenManager(), mActivity.getCompositorViewHolder(),
+                mActivity.getActivityTabProvider(), mActivity.getScrim(), mModuleEntryProvider);
 
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .remove(AutofillAssistantPreferencesUtil.AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED)
-                .remove(AutofillAssistantPreferencesUtil.AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN)
-                .apply();
+        mSharedPreferencesManager.removeKey(
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED);
+        mSharedPreferencesManager.removeKey(
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN);
     }
 
     @Test

@@ -27,6 +27,7 @@ class PageNodeObserver;
 // Extensions.
 class PageNode : public Node {
  public:
+  using FrameNodeVisitor = base::RepeatingCallback<bool(const FrameNode*)>;
   using InterventionPolicy = mojom::InterventionPolicy;
   using LifecycleState = mojom::LifecycleState;
   using Observer = PageNodeObserver;
@@ -37,10 +38,6 @@ class PageNode : public Node {
 
   // Returns the unique ID of the browser context that this page belongs to.
   virtual const std::string& GetBrowserContextID() const = 0;
-
-  // Returns the page almost idle state of this page.
-  // See PageNodeObserver::OnPageAlmostIdleChanged.
-  virtual bool IsPageAlmostIdle() const = 0;
 
   // Returns true if this page is currently visible, false otherwise.
   // See PageNodeObserver::OnIsVisibleChanged.
@@ -54,8 +51,12 @@ class PageNode : public Node {
   // See PageNodeObserver::OnIsAudibleChanged.
   virtual bool IsAudible() const = 0;
 
-  // Returns true if this page is currently loading, false otherwise.
-  // See PageNodeObserver::OnIsLoadingChanged.
+  // Returns true if this page is currently loading, false otherwise. The page
+  // starts loading when incoming data starts arriving for a top-level load to a
+  // different document. It stops loading when it reaches an "almost idle"
+  // state, based on CPU and network quiescence, or after an absolute timeout.
+  // Note: This is different from WebContents::IsLoading(). See
+  // PageNodeObserver::OnIsLoadingChanged.
   virtual bool IsLoading() const = 0;
 
   // Returns the UKM source ID associated with the URL of the main frame of
@@ -84,6 +85,10 @@ class PageNode : public Node {
   // See PageNodeObserver::OnMainFrameNavigationCommitted.
   virtual int64_t GetNavigationID() const = 0;
 
+  // Returns the MIME type of the contents associated with the last committed
+  // navigation event for the main frame of this page.
+  virtual const std::string& GetContentsMimeType() const = 0;
+
   // Returns "zero" if no navigation has happened, otherwise returns the time
   // since the last navigation commit.
   virtual base::TimeDelta GetTimeSinceLastNavigation() const = 0;
@@ -93,8 +98,15 @@ class PageNode : public Node {
   // are no main frames at the moment, returns nullptr.
   virtual const FrameNode* GetMainFrameNode() const = 0;
 
+  // Visits the main frame nodes associated with this page. The iteration is
+  // halted if the visitor returns false. Returns true if every call to the
+  // visitor returned true, false otherwise.
+  virtual bool VisitMainFrameNodes(const FrameNodeVisitor& visitor) const = 0;
+
   // Returns all of the main frame nodes, both current and otherwise. If there
-  // are no main frames at the moment, returns the empty set.
+  // are no main frames at the moment, returns the empty set. Note that this
+  // incurs a full container copy of all main frame nodes. Please use
+  // VisitMainFrameNodes when that makes sense.
   virtual const base::flat_set<const FrameNode*> GetMainFrameNodes() const = 0;
 
   // Returns the URL the main frame last committed a navigation to, or the
@@ -102,6 +114,10 @@ class PageNode : public Node {
   // by a zero navigation ID.
   // See PageNodeObserver::OnMainFrameNavigationCommitted.
   virtual const GURL& GetMainFrameUrl() const = 0;
+
+  // Indicates if at least one of the frames in the page has received some form
+  // interactions.
+  virtual bool HadFormInteraction() const = 0;
 
   // Returns the web contents associated with this page node. It is valid to
   // call this function on any thread but the weak pointer must only be
@@ -158,13 +174,13 @@ class PageNodeObserver {
   // Invoked when the MainFrameUrl property changes.
   virtual void OnMainFrameUrlChanged(const PageNode* page_node) = 0;
 
-  // Invoked when the PageAlmostIdle property changes.
-  virtual void OnPageAlmostIdleChanged(const PageNode* page_node) = 0;
-
   // This is fired when a non-same document navigation commits in the main
   // frame. It indicates that the the |NavigationId| property and possibly the
   // |MainFrameUrl| properties have changed.
   virtual void OnMainFrameDocumentChanged(const PageNode* page_node) = 0;
+
+  // Invoked when the HadFormInteraction property changes.
+  virtual void OnHadFormInteractionChanged(const PageNode* page_node) = 0;
 
   // Events with no property changes.
 
@@ -201,9 +217,9 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
   void OnPageIsHoldingWebLockChanged(const PageNode* page_node) override {}
   void OnPageIsHoldingIndexedDBLockChanged(const PageNode* page_node) override {
   }
-  void OnPageAlmostIdleChanged(const PageNode* page_node) override {}
   void OnMainFrameUrlChanged(const PageNode* page_node) override {}
   void OnMainFrameDocumentChanged(const PageNode* page_node) override {}
+  void OnHadFormInteractionChanged(const PageNode* page_node) override {}
   void OnTitleUpdated(const PageNode* page_node) override {}
   void OnFaviconUpdated(const PageNode* page_node) override {}
 

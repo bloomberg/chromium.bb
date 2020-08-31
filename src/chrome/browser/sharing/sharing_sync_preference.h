@@ -20,13 +20,12 @@
 
 namespace syncer {
 class DeviceInfoSyncService;
-class DeviceInfoTracker;
 class LocalDeviceInfoProvider;
 }  // namespace syncer
 
 namespace user_prefs {
 class PrefRegistrySyncable;
-}
+}  // namespace user_prefs
 
 class PrefService;
 
@@ -39,13 +38,14 @@ class SharingSyncPreference {
  public:
   // FCM registration status of current device. Not synced across devices.
   struct FCMRegistration {
-    FCMRegistration(std::string authorized_entity, base::Time timestamp);
+    FCMRegistration(base::Optional<std::string> authorized_entity,
+                    base::Time timestamp);
     FCMRegistration(FCMRegistration&& other);
     FCMRegistration& operator=(FCMRegistration&& other);
     ~FCMRegistration();
 
     // Authorized entity registered with FCM.
-    std::string authorized_entity;
+    base::Optional<std::string> authorized_entity;
 
     // Timestamp of latest registration.
     base::Time timestamp;
@@ -83,22 +83,6 @@ class SharingSyncPreference {
 
   void ClearFCMRegistration();
 
-  // Returns eanbled feaures of device with specified |device_info|.
-  // |device_info| must not be nullptr.
-  std::set<sync_pb::SharingSpecificFields::EnabledFeatures> GetEnabledFeatures(
-      const syncer::DeviceInfo* device_info) const;
-
-  // Returns the SharingTargetInfo of device with specified |device_info|.
-  base::Optional<syncer::DeviceInfo::SharingTargetInfo> GetTargetInfo(
-      const std::string& guid) const;
-
-  SharingDevicePlatform GetDevicePlatform(const std::string& guid) const;
-
-  base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo() const;
-
-  base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo(
-      const syncer::DeviceInfo* device_info) const;
-
   void SetLocalSharingInfo(syncer::DeviceInfo::SharingInfo sharing_info);
 
   void ClearLocalSharingInfo();
@@ -106,13 +90,8 @@ class SharingSyncPreference {
  private:
   friend class SharingSyncPreferenceTest;
 
-  // Returns local SharingInfo stored in preferences.
-  static base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo(
-      PrefService* prefs);
-
   PrefService* prefs_;
   syncer::DeviceInfoSyncService* device_info_sync_service_;
-  syncer::DeviceInfoTracker* device_info_tracker_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
   PrefChangeRegistrar pref_change_registrar_;
 

@@ -8,6 +8,7 @@
 
 #include "base/observer_list.h"
 #include "base/stl_util.h"
+#include "base/trace_event/common/trace_event_common.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -87,6 +88,14 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
     const int middle_x = content_area.x() + content_area.width() / 2;
     const int top = browser_view_layout_->web_contents_modal_dialog_top_y_;
     return gfx::Point(middle_x - size.width() / 2, top);
+  }
+
+  bool ShouldActivateDialog() const override {
+    // The browser Widget may be inactive if showing a bubble so instead check
+    // against the last active browser window when determining whether to
+    // activate the dialog.
+    return chrome::FindLastActive() ==
+           browser_view_layout_->browser_view_->browser();
   }
 
   gfx::Size GetMaximumDialogSize() override {
@@ -275,6 +284,7 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
 // BrowserViewLayout, views::LayoutManager implementation:
 
 void BrowserViewLayout::Layout(views::View* browser_view) {
+  TRACE_EVENT0("ui", "BrowserViewLayout::Layout");
   vertical_layout_rect_ = browser_view->GetLocalBounds();
   int top_inset = delegate_->GetTopInsetInBrowserView();
   int top = LayoutTabStripRegion(top_inset);
@@ -296,6 +306,7 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   bottom = LayoutDownloadShelf(bottom);
 
   // Layout the contents container in the remaining space.
+  const gfx::Rect old_contents_bounds = contents_container_->bounds();
   LayoutContentsContainerView(top, bottom);
 
   if (contents_border_widget_ && contents_border_widget_->IsVisible()) {
@@ -310,8 +321,16 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   // code calls back into us to find the bounding box the find bar
   // must be laid out within, and that code depends on the
   // TabContentsContainer's bounds being up to date.
-  if (delegate_->HasFindBarController())
+  //
+  // Because Find Bar can be repositioned to keep from hiding find results, we
+  // don't want to reset its position on every layout, however - only if the
+  // geometry of the contents pane actually changes in a way that could affect
+  // the positioning of the bar.
+  if (delegate_->HasFindBarController() &&
+      (contents_container_->y() != old_contents_bounds.y() ||
+       contents_container_->width() != old_contents_bounds.width())) {
     delegate_->MoveWindowForFindBarIfNecessary();
+  }
 
   // Adjust the fullscreen exit bubble bounds for |top_container_|'s new bounds.
   // This makes the fullscreen exit bubble look like it animates with
@@ -340,6 +359,7 @@ gfx::Size BrowserViewLayout::GetPreferredSize(const views::View* host) const {
 // BrowserViewLayout, private:
 
 int BrowserViewLayout::LayoutTabStripRegion(int top) {
+  TRACE_EVENT0("ui", "BrowserViewLayout::LayoutTabStripRegion");
   if (!delegate_->IsTabStripVisible()) {
     SetViewVisibility(tab_strip_region_view_, false);
     tab_strip_region_view_->SetBounds(0, 0, 0, 0);
@@ -358,6 +378,7 @@ int BrowserViewLayout::LayoutTabStripRegion(int top) {
 }
 
 int BrowserViewLayout::LayoutWebUITabStrip(int top) {
+  TRACE_EVENT0("ui", "BrowserViewLayout::LayoutWebUITabStrip");
   if (!webui_tab_strip_)
     return top;
   if (!webui_tab_strip_->GetVisible()) {
@@ -371,6 +392,7 @@ int BrowserViewLayout::LayoutWebUITabStrip(int top) {
 }
 
 int BrowserViewLayout::LayoutToolbar(int top) {
+  TRACE_EVENT0("ui", "BrowserViewLayout::LayoutToolbar");
   int browser_view_width = vertical_layout_rect_.width();
   bool toolbar_visible = delegate_->IsToolbarVisible();
   int height = toolbar_visible ? toolbar_->GetPreferredSize().height() : 0;
@@ -381,6 +403,7 @@ int BrowserViewLayout::LayoutToolbar(int top) {
 }
 
 int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top, int browser_view_y) {
+  TRACE_EVENT0("ui", "BrowserViewLayout::LayoutBookmarkAndInfoBars");
   web_contents_modal_dialog_top_y_ =
       top + browser_view_y - kConstrainedWindowOverlap;
 
@@ -396,9 +419,18 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top, int browser_view_y) {
     contents_separator_->SetBounds(vertical_layout_rect_.x(), top,
                                    vertical_layout_rect_.width(),
                                    separator_height);
+    if (loading_bar_) {
+      SetViewVisibility(loading_bar_, true);
+      loading_bar_->SetBounds(vertical_layout_rect_.x(), top - 2,
+                              vertical_layout_rect_.width(),
+                              separator_height + 2);
+      top_container_->ReorderChildView(loading_bar_, -1);
+    }
     top += separator_height;
   } else {
     SetViewVisibility(contents_separator_, false);
+    if (loading_bar_)
+      SetViewVisibility(loading_bar_, false);
   }
 
   return LayoutInfoBar(top);
@@ -442,6 +474,7 @@ int BrowserViewLayout::LayoutInfoBar(int top) {
 }
 
 void BrowserViewLayout::LayoutContentsContainerView(int top, int bottom) {
+  TRACE_EVENT0("ui", "BrowserViewLayout::LayoutContentsContainerView");
   // |contents_container_| contains web page contents and devtools.
   // See browser_view.h for details.
   gfx::Rect contents_container_bounds(vertical_layout_rect_.x(),
@@ -495,6 +528,7 @@ void BrowserViewLayout::UpdateTopContainerBounds() {
 }
 
 int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
+  TRACE_EVENT0("ui", "BrowserViewLayout::LayoutDownloadShelf");
   if (delegate_->DownloadShelfNeedsLayout()) {
     bool visible =
         delegate_->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF);

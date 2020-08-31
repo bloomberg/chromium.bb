@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals.mojom.h"
+#include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals.mojom-forward.h"
 #include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals_page_handler.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
@@ -23,13 +23,17 @@ class ExploreSitesInternalsUI : public ui::MojoWebUIController {
   explicit ExploreSitesInternalsUI(content::WebUI* web_ui);
   ~ExploreSitesInternalsUI() override;
 
- private:
-  void BindExploreSitesInternalsPageHandler(
+  // Instantiates the implementor of the mojom::PageHandler mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
       mojo::PendingReceiver<explore_sites_internals::mojom::PageHandler>
           receiver);
 
+ private:
   std::unique_ptr<ExploreSitesInternalsPageHandler> page_handler_;
   ExploreSitesService* explore_sites_service_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(ExploreSitesInternalsUI);
 };

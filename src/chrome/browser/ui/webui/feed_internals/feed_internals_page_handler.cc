@@ -15,34 +15,36 @@
 #include "chrome/browser/ui/webui/feed_internals/feed_internals.mojom.h"
 #include "components/feed/content/feed_host_service.h"
 #include "components/feed/content/feed_offline_host.h"
+#include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/common/user_classifier.h"
 #include "components/feed/core/feed_scheduler_host.h"
-#include "components/feed/core/pref_names.h"
-#include "components/feed/core/user_classifier.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/suggestions_provider.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "url/gurl.h"
 
 namespace {
 
 const char kFeedHistogramPrefix[] = "ContentSuggestions.Feed.";
 
-feed_internals::mojom::TimePtr ToMojoTime(base::Time time) {
-  return time.is_null() ? nullptr
-                        : feed_internals::mojom::Time::New(time.ToJsTime());
+// Converts |t| to a delta from the JS epoch, or 0 if |t| is null.
+base::TimeDelta ToJsTimeDelta(base::Time t) {
+  return t.is_null() ? base::TimeDelta() : t - base::Time::UnixEpoch();
 }
 
-std::string TriggerTypeToString(feed::FeedSchedulerHost::TriggerType* trigger) {
+std::string TriggerTypeToString(feed::TriggerType* trigger) {
   if (trigger == nullptr)
     return "Not set";
   switch (*trigger) {
-    case feed::FeedSchedulerHost::TriggerType::kNtpShown:
+    case feed::TriggerType::kNtpShown:
       return "NTP Shown";
-    case feed::FeedSchedulerHost::TriggerType::kForegrounded:
+    case feed::TriggerType::kForegrounded:
       return "Foregrounded";
-    case feed::FeedSchedulerHost::TriggerType::kFixedTimer:
+    case feed::TriggerType::kFixedTimer:
       return "Fixed Timer";
   }
 }
@@ -102,9 +104,9 @@ void FeedInternalsPageHandler::GetLastFetchProperties(
   properties->last_fetch_trigger = TriggerTypeToString(
       feed_scheduler_host_->GetLastFetchTriggerTypeForDebugging());
   properties->last_fetch_time =
-      ToMojoTime(pref_service_->GetTime(feed::prefs::kLastFetchAttemptTime));
-  properties->refresh_suppress_time =
-      ToMojoTime(feed_scheduler_host_->GetSuppressRefreshesUntilForDebugging());
+      ToJsTimeDelta(pref_service_->GetTime(feed::prefs::kLastFetchAttemptTime));
+  properties->refresh_suppress_time = ToJsTimeDelta(
+      feed_scheduler_host_->GetSuppressRefreshesUntilForDebugging());
   properties->last_bless_nonce =
       pref_service_->GetString(feed::prefs::kHostOverrideBlessNonce);
 
@@ -172,6 +174,8 @@ void FeedInternalsPageHandler::GetFeedHistograms(
   std::move(callback).Run(log);
 }
 
-void FeedInternalsPageHandler::OverrideFeedHost(const std::string& host) {
-  return pref_service_->SetString(feed::prefs::kHostOverrideHost, host);
+void FeedInternalsPageHandler::OverrideFeedHost(const GURL& host) {
+  return pref_service_->SetString(
+      feed::prefs::kHostOverrideHost,
+      host.is_valid() ? host.spec() : std::string());
 }

@@ -5,17 +5,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_GLOBAL_SCOPE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_GLOBAL_SCOPE_H_
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_param_descriptor.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/webaudio/audio_param_descriptor.h"
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
-class AudioBus;
 class AudioWorkletProcessor;
 class AudioWorkletProcessorDefinition;
 class CrossThreadAudioWorkletProcessorInfo;
@@ -77,14 +76,6 @@ class MODULES_EXPORT AudioWorkletGlobalScope final : public WorkletGlobalScope {
       MessagePortChannel,
       scoped_refptr<SerializedScriptValue> node_options);
 
-  // Invokes the JS audio processing function from an instance of
-  // AudioWorkletProcessor, along with given AudioBuffer from the audio graph.
-  bool Process(
-      AudioWorkletProcessor*,
-      Vector<AudioBus*>* input_buses,
-      Vector<AudioBus*>* output_buses,
-      HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map);
-
   AudioWorkletProcessorDefinition* FindDefinition(const String& name);
 
   unsigned NumberOfRegisteredDefinitions();
@@ -104,7 +95,7 @@ class MODULES_EXPORT AudioWorkletGlobalScope final : public WorkletGlobalScope {
   double currentTime() const;
   float sampleRate() const { return sample_rate_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool is_closing_ = false;

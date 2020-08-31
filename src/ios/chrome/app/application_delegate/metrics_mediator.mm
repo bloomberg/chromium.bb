@@ -11,23 +11,26 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/ios/features.h"
+#import "ios/chrome/app/application_delegate/ios_enable_metrickit_buildflags.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/net/connection_type_observer_bridge.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/common/app_group/app_group_metrics_mainapp.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -36,6 +39,10 @@
 #include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(IOS_ENABLE_METRICKIT)
+#import "ios/chrome/app/application_delegate/metric_kit_subscribing_util.h"  // nogncheck
+#endif  // BUILDFLAG(IOS_ENABLE_METRICKIT)
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -75,7 +82,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 
   // Observer for the connection type.  Contains a valid object only if the
   // metrics setting is set to wifi-only.
-  std::unique_ptr<ConnectionTypeObserverBridge> connectionTypeObserverBridge_;
+  std::unique_ptr<ConnectionTypeObserverBridge> _connectionTypeObserverBridge;
 }
 
 // Starts or stops metrics recording and/or uploading.
@@ -142,10 +149,19 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 
 + (void)logLaunchMetricsWithStartupInformation:
             (id<StartupInformation>)startupInformation
-                             interfaceProvider:(id<BrowserInterfaceProvider>)
-                                                   interfaceProvider {
-  int numTabs =
-      static_cast<int>(interfaceProvider.mainInterface.tabModel.count);
+                               connectedScenes:(NSArray<SceneState*>*)scenes {
+  int numTabs = 0;
+  for (SceneState* scene in scenes) {
+    if (!scene.interfaceProvider) {
+      // The scene might not yet be initiated.
+      // TODO(crbug.com/1064611): This will not be an issue when the tabs are
+      // counted in sessions instead of scenes.
+      continue;
+    }
+    numTabs += scene.interfaceProvider.mainInterface.browser->GetWebStateList()
+                   ->count();
+  }
+
   if (startupInformation.isColdStart) {
     [self recordNumTabAtStartup:numTabs];
   } else {
@@ -168,15 +184,27 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
     [startupInformation
         activateFirstUserActionRecorderWithBackgroundTime:interval];
 
-    web::WebState* currentWebState = interfaceProvider.currentInterface.tabModel
-                                         .webStateList->GetActiveWebState();
-    if (currentWebState &&
-        currentWebState->GetLastCommittedURL() == kChromeUINewTabURL) {
-      startupInformation.firstUserActionRecorder->RecordStartOnNTP();
-      [startupInformation resetFirstUserActionRecorder];
-    } else {
-      [startupInformation
-          expireFirstUserActionRecorderAfterDelay:kFirstUserActionTimeout];
+    SceneState* activeScene = nil;
+    for (SceneState* scene in scenes) {
+      if (scene.activationLevel == SceneActivationLevelForegroundActive) {
+        activeScene = scene;
+        break;
+      }
+    }
+
+    if (activeScene) {
+      web::WebState* currentWebState =
+          activeScene.interfaceProvider.currentInterface.browser
+              ->GetWebStateList()
+              ->GetActiveWebState();
+      if (currentWebState &&
+          currentWebState->GetLastCommittedURL() == kChromeUINewTabURL) {
+        startupInformation.firstUserActionRecorder->RecordStartOnNTP();
+        [startupInformation resetFirstUserActionRecorder];
+      } else {
+        [startupInformation
+            expireFirstUserActionRecorderAfterDelay:kFirstUserActionTimeout];
+      }
     }
     // Remove the value so it's not reused if the app crashes.
     [[NSUserDefaults standardUserDefaults]
@@ -199,6 +227,9 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   [self setBreakpadEnabled:optIn withUploading:allowUploading];
   [self setWatchWWANEnabled:optIn];
   [self setAppGroupMetricsEnabled:optIn];
+#if BUILDFLAG(IOS_ENABLE_METRICKIT)
+  EnableMetricKitReportCollection();
+#endif
 }
 
 - (BOOL)areMetricsEnabled {
@@ -282,9 +313,8 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   }
 
   app_group::main_app::RecordWidgetUsage();
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&app_group::main_app::ProcessPendingLogs, callback));
 }
 
@@ -316,12 +346,12 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 
 - (void)setWatchWWANEnabled:(BOOL)enabled {
   if (!enabled) {
-    connectionTypeObserverBridge_.reset();
+    _connectionTypeObserverBridge.reset();
     return;
   }
 
-  if (!connectionTypeObserverBridge_) {
-    connectionTypeObserverBridge_.reset(new ConnectionTypeObserverBridge(self));
+  if (!_connectionTypeObserverBridge) {
+    _connectionTypeObserverBridge.reset(new ConnectionTypeObserverBridge(self));
   }
 }
 

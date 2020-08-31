@@ -248,16 +248,14 @@ def BuildFileList(override_dir, include_arm):
                      os.path.join(dest_dir, system_crt_file)))
 
   # Generically drop all arm stuff that we don't need, and
-  # drop .msi files because we don't need installers, and drop windows.winmd
-  # because it is unneeded and is different on every machine and drop
+  # drop .msi files because we don't need installers and drop
   # samples since those are not used by any tools.
   def is_skippable(f):
     return ('arm\\' in f.lower() or
             (not include_arm and 'arm64\\' in f.lower()) or
             'samples\\' in f.lower() or
             f.lower().endswith(('.msi',
-                                '.msm',
-                                'windows.winmd')))
+                                '.msm')))
   return [(f, t) for f, t in result if not is_skippable(f)]
 
 def GenerateSetEnvCmd(target_dir):
@@ -279,6 +277,10 @@ def GenerateSetEnvCmd(target_dir):
     ['..', '..'] + vc_tools_parts + ['include'],
     ['..', '..'] + vc_tools_parts + ['atlmfc', 'include'],
   ])
+  libpath_dirs = [
+    ['..', '..'] + vc_tools_parts + ['lib', 'x86', 'store', 'references'],
+    ['..', '..', 'win_sdk', 'UnionMetadata', WIN_VERSION],
+  ]
   # Common to x86, x64, and arm64
   env = collections.OrderedDict([
     # Yuck: These have a trailing \ character. No good way to represent this in
@@ -286,6 +288,7 @@ def GenerateSetEnvCmd(target_dir):
     ('VSINSTALLDIR', [['..', '..\\']]),
     ('VCINSTALLDIR', [['..', '..', 'VC\\']]),
     ('INCLUDE', include_dirs),
+    ('LIBPATH', libpath_dirs),
   ])
   # x86. Always use amd64_x86 cross, not x86 on x86.
   env['VCToolsInstallDir'] = [['..', '..'] + vc_tools_parts[:]]

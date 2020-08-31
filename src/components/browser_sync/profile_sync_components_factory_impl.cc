@@ -21,7 +21,6 @@
 #include "components/history/core/browser/sync/history_delete_directives_model_type_controller.h"
 #include "components/history/core/browser/sync/typed_url_model_type_controller.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/browser/sync/password_data_type_controller.h"
 #include "components/password_manager/core/browser/sync/password_model_type_controller.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
@@ -255,48 +254,22 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                       .get()),
               history_disabled_pref_));
     }
-
-    // If |kDoNotSyncFaviconDataTypes| feature is enabled, never register
-    // controllers for favicon sync. Otherwise, it is enabled by default and we
-    // should register unless explicitly disabled.
-    if (!base::FeatureList::IsEnabled(switches::kDoNotSyncFaviconDataTypes) &&
-        !disabled_types.Has(syncer::FAVICON_IMAGES) &&
-        !disabled_types.Has(syncer::FAVICON_TRACKING)) {
-      controllers.push_back(
-          std::make_unique<SyncableServiceBasedModelTypeController>(
-              syncer::FAVICON_IMAGES,
-              sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
-              sync_client_->GetSyncableServiceForType(syncer::FAVICON_IMAGES),
-              dump_stack));
-      controllers.push_back(
-          std::make_unique<SyncableServiceBasedModelTypeController>(
-              syncer::FAVICON_TRACKING,
-              sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
-              sync_client_->GetSyncableServiceForType(syncer::FAVICON_TRACKING),
-              dump_stack));
-    }
   }
 
   // Password sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::PASSWORDS)) {
-    if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
-      if (profile_password_store_) {
-        // |profile_password_store_| can be null in tests.
-        controllers.push_back(
-            std::make_unique<password_manager::PasswordModelTypeController>(
-                profile_password_store_->CreateSyncControllerDelegate(),
-                account_password_store_
-                    ? account_password_store_->CreateSyncControllerDelegate()
-                    : nullptr,
-                sync_client_->GetPrefService(), sync_service,
-                sync_client_->GetPasswordStateChangedCallback()));
-      }
-    } else {
-      controllers.push_back(std::make_unique<PasswordDataTypeController>(
-          dump_stack, sync_service, sync_client_,
-          sync_client_->GetPasswordStateChangedCallback(),
-          profile_password_store_));
+    if (profile_password_store_) {
+      // |profile_password_store_| can be null in tests.
+      controllers.push_back(
+          std::make_unique<password_manager::PasswordModelTypeController>(
+              profile_password_store_->CreateSyncControllerDelegate(),
+              account_password_store_
+                  ? account_password_store_->CreateSyncControllerDelegate()
+                  : nullptr,
+              sync_client_->GetPrefService(),
+              sync_client_->GetIdentityManager(), sync_service,
+              sync_client_->GetPasswordStateChangedCallback()));
     }
   }
 
@@ -354,15 +327,17 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                     .get())));
   }
 
-  // Forward both full-sync and transport-only modes to the same delegate,
-  // since behavior for USER_CONSENTS does not differ (they are always
-  // persisted).
-  controllers.push_back(std::make_unique<ModelTypeController>(
-      syncer::USER_CONSENTS,
-      /*delegate_for_full_sync_mode=*/
-      CreateForwardingControllerDelegate(syncer::USER_CONSENTS),
-      /*delegate_for_transport_mode=*/
-      CreateForwardingControllerDelegate(syncer::USER_CONSENTS)));
+  if (!disabled_types.Has(syncer::USER_CONSENTS)) {
+    // Forward both full-sync and transport-only modes to the same delegate,
+    // since behavior for USER_CONSENTS does not differ (they are always
+    // persisted).
+    controllers.push_back(std::make_unique<ModelTypeController>(
+        syncer::USER_CONSENTS,
+        /*delegate_for_full_sync_mode=*/
+        CreateForwardingControllerDelegate(syncer::USER_CONSENTS),
+        /*delegate_for_transport_mode=*/
+        CreateForwardingControllerDelegate(syncer::USER_CONSENTS)));
+  }
 
   return controllers;
 }

@@ -2,30 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/toolchain/win/midl.gni")
+import("//build/util/process_version.gni")
 import("//chrome/process_version_rc_template.gni")
+import("//chrome/updater/branding.gni")
 import("//testing/test.gni")
-
-midl("updater_idl_idl") {
-  sources = [
-    "com/updater_idl.idl",
-  ]
-
-  writes_tlb = true
-}
-
-# The COM server needs to work with Windows 7, so explicitly setting the defines
-# to reflect this. Otherwise, WRL uses APIs that are only available in later
-# Windows versions.
-config("winver") {
-  defines = [
-    "NTDDI_VERSION=NTDDI_WIN7",
-
-    # Hardcoding version 0x0601, since _WIN32_WINNT_WIN7 may not be defined.
-    "_WIN32_WINNT=0x0601",
-    "WINVER=0x0601",
-  ]
-}
 
 # This target builds the updater executable, its installer, and unittests.
 group("win") {
@@ -44,36 +24,36 @@ executable("updater") {
   configs += [ "//build/config/win:windowed" ]
 
   deps = [
-    ":com",
-    ":core",
     ":install_app",
+    ":lib",
     ":version_resources",
     "//build/win:default_exe_manifest",
-    "//chrome/updater:common",
+    "//chrome/updater:lib",
     "//chrome/updater/win/ui:ui_resources",
   ]
+
+  data_deps = [ ":uninstall.cmd" ]
 }
 
-copy("uninstall.cmd") {
-  sources = [
-    "setup/uninstall.cmd",
-  ]
-  outputs = [
-    "$target_gen_dir/uninstall.cmd",
+process_version("uninstall.cmd") {
+  template_file = "setup/uninstall.cmd"
+  output = "$target_gen_dir/uninstall.cmd"
+  process_only = true
+  extra_args = [
+    "-e",
+    "PRODUCT_FULLNAME=\"$updater_product_full_name\"",
+    "-e",
+    "COMPANY_SHORTNAME=\"$updater_company_short_name\"",
   ]
 }
 
 process_version_rc_template("version_resources") {
-  sources = [
-    "updater.ver",
-  ]
+  sources = [ "updater.ver" ]
   output = "$target_gen_dir/updater_exe.rc"
 }
 
 source_set("base") {
   sources = [
-    "constants.cc",
-    "constants.h",
     "scoped_handle.h",
     "task_scheduler.cc",
     "task_scheduler.h",
@@ -86,8 +66,9 @@ source_set("base") {
   defines = [ "SECURITY_WIN32" ]
 
   deps = [
+    ":constants",
     "//base",
-    "//chrome/updater:common",
+    "//chrome/updater:base",
     "//chrome/updater:version_header",
   ]
 
@@ -97,22 +78,19 @@ source_set("base") {
   ]
 }
 
-source_set("com") {
+source_set("constants") {
   sources = [
-    "com/com_server.cc",
-    "com/com_server.h",
+    "constants.cc",
+    "constants.h",
   ]
 
-  configs -= [ "//build/config/win:winver" ]
-  configs += [ ":winver" ]
-
   deps = [
-    ":base",
-    ":updater_idl_idl",
+    "//base",
+    "//chrome/updater:version_header",
   ]
 }
 
-source_set("core") {
+source_set("lib") {
   sources = [
     "action_handler.cc",
     "net/net_util.cc",
@@ -129,19 +107,25 @@ source_set("core") {
     "setup/setup_util.h",
     "setup/uninstall.cc",
     "setup/uninstall.h",
+    "update_service_out_of_process.cc",
+    "update_service_out_of_process.h",
   ]
 
   libs = [ "winhttp.lib" ]
 
+  configs -= [ "//build/config/win:winver" ]
+  configs += [ "//chrome/updater/server/win:winver" ]
+
   deps = [
     ":base",
+    ":constants",
     "//base",
     "//chrome/installer/util:with_no_strings",
-    "//chrome/updater:common",
+    "//chrome/updater:base",
+    "//chrome/updater/server/win:updater_idl_idl",
     "//components/update_client",
     "//url:url",
   ]
-  allow_circular_includes_from = [ "//chrome/updater:common" ]
 }
 
 source_set("install_progress_observer") {
@@ -150,9 +134,7 @@ source_set("install_progress_observer") {
     "install_progress_observer.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 # This build target is defined to minimize the impact of -Wno-missing-braces
@@ -167,16 +149,18 @@ source_set("install_app") {
   ]
 
   deps = [
-    ":core",
     ":install_progress_observer",
+    ":lib",
     "//base",
     "//base:i18n",
-    "//chrome/updater:common",
+    "//chrome/updater:base",
+    "//chrome/updater:lib",
+    "//chrome/updater:version_header",
     "//chrome/updater/win/ui",
     "//components/prefs",
     "//components/update_client",
   ]
-  allow_circular_includes_from = [ "//chrome/updater:common" ]
+  allow_circular_includes_from = [ "//chrome/updater:lib" ]
 
   cflags_cc = [ "-Wno-missing-braces" ]
 }
@@ -192,8 +176,8 @@ source_set("updater_tests") {
 
   deps = [
     ":base",
-    ":core",
     ":install_app",
+    ":lib",
     "//base/test:test_support",
     "//testing/gtest",
   ]
@@ -211,18 +195,21 @@ test("updater_unittests") {
 
   sources = [
     "//chrome/updater/win/test/test_main.cc",
+    "setup/setup_util_unittest.cc",
     "task_scheduler_unittest.cc",
   ]
 
   deps = [
     ":base",
-    ":core",
     ":install_app",
+    ":lib",
     "//base",
     "//base/test:test_support",
-    "//chrome/updater/win:com",
+    "//chrome/updater:version_header",
     "//chrome/updater/win/test:test_executables",
     "//chrome/updater/win/test:test_strings",
     "//testing/gtest",
   ]
+
+  data = [ "//chrome/updater/test/data/updater.runtime_deps" ]
 }

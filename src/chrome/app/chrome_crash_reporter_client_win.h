@@ -6,7 +6,7 @@
 #define CHROME_APP_CHROME_CRASH_REPORTER_CLIENT_WIN_H_
 
 #include "base/macros.h"
-#include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/core/app/crash_reporter_client.h"
 
 class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
  public:
@@ -31,7 +31,6 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
                                base::string16* message,
                                bool* is_rtl_locale) override;
   bool AboutToRestart() override;
-  bool GetDeferredUploadsSupported(bool is_per_user_install) override;
   bool GetIsPerUserInstall() override;
   bool GetShouldDumpLargerDumps() override;
   int GetResultCodeRespawnFailed() override;

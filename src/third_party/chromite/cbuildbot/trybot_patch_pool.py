@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import functools
+import sys
 
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -15,6 +16,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import patch as cros_patch
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def ChromiteFilter(patch):
@@ -40,11 +44,6 @@ def ManifestFilter(patch):
 def BranchFilter(branch, patch):
   """Used with FilterFn to isolate patches based on a specific upstream."""
   return patch.tracking_branch == branch
-
-
-def GitRemoteUrlFilter(url, patch):
-  """Used with FilterFn to isolate a patch based on the url of its remote."""
-  return patch.git_remote_url == url
 
 
 class TrybotPatchPool(object):
@@ -108,11 +107,6 @@ class TrybotPatchPool(object):
   def FilterBranch(self, branch, negate=False):
     """Return a patch pool with only patches based on a particular branch."""
     return self.FilterFn(functools.partial(BranchFilter, branch), negate=negate)
-
-  def FilterGitRemoteUrl(self, url, negate=False):
-    """Return a patch pool where patches have a particular remote url."""
-    return self.FilterFn(functools.partial(GitRemoteUrlFilter, url),
-                         negate=negate)
 
   def __iter__(self):
     for source in [self.local_patches, self.remote_patches,

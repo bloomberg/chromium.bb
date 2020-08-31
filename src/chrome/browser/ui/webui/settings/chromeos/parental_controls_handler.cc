@@ -9,9 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/chromeos/child_accounts/child_user_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -28,13 +26,6 @@
 
 namespace chromeos {
 namespace settings {
-
-const char kFamilyLinkHelperAppPackageName[] =
-    "com.google.android.apps.kids.familylinkhelper";
-
-const char kFamilyLinkChildHelperAppPlayStoreURL[] =
-    "https://play.google.com/store/apps/"
-    "details?id=com.google.android.apps.kids.familylinkhelper";
 
 const char kFamilyLinkSiteURL[] = "https://families.google.com/families";
 
@@ -75,8 +66,8 @@ void ParentalControlsHandler::HandleLaunchFamilyLinkSettings(
       apps::AppServiceProxyFactory::GetForProfile(profile_);
 
   apps::AppRegistryCache& registry = proxy->AppRegistryCache();
-  const std::string app_id =
-      arc::ArcPackageNameToAppId(kFamilyLinkHelperAppPackageName, profile_);
+  const std::string app_id = arc::ArcPackageNameToAppId(
+      chromeos::ChildUserService::kFamilyLinkHelperAppPackageName, profile_);
   if (registry.GetAppType(app_id) != apps::mojom::AppType::kUnknown) {
     // Launch FLH app since it is available.
     proxy->Launch(app_id, ui::EventFlags::EF_NONE,
@@ -87,7 +78,8 @@ void ParentalControlsHandler::HandleLaunchFamilyLinkSettings(
   // No FLH app installed, so try to launch Play Store to FLH app install page.
   // If there is no Play Store available  LaunchPlayStoreWithUrl() will return
   // false.
-  if (arc::LaunchPlayStoreWithUrl(kFamilyLinkChildHelperAppPlayStoreURL)) {
+  if (arc::LaunchPlayStoreWithUrl(
+          chromeos::ChildUserService::kFamilyLinkHelperAppPlayStoreURL)) {
     return;
   }
   // As a last resort, launch browser to the family link site.
@@ -96,18 +88,6 @@ void ParentalControlsHandler::HandleLaunchFamilyLinkSettings(
   params.disposition = WindowOpenDisposition::NEW_WINDOW;
   params.window_action = NavigateParams::SHOW_WINDOW;
   Navigate(&params);
-}
-
-bool ShouldShowParentalControls(Profile* profile) {
-  // Show Parental controls for regular and child accounts that are the
-  // primary profile.  Do not show it to any secondary profiles, managed
-  // accounts that aren't child accounts (i.e. enterprise and EDU accounts),
-  // OTR accounts, or legacy supervised user accounts.
-  return chromeos::features::IsParentalControlsSettingsEnabled() &&
-         profile == ProfileManager::GetPrimaryUserProfile() &&
-         !profile->IsLegacySupervised() && !profile->IsGuestSession() &&
-         (profile->IsChild() ||
-          !profile->GetProfilePolicyConnector()->IsManaged());
 }
 
 }  // namespace settings

@@ -13,6 +13,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -246,14 +247,38 @@ public class TemplateUrlService {
      *              {@code query} inserted as the search parameter.
      */
     public String getUrlForSearchQuery(String query) {
-        return TemplateUrlServiceJni.get().getUrlForSearchQuery(
-                mNativeTemplateUrlServiceAndroid, TemplateUrlService.this, query);
+        return getUrlForSearchQuery(query, null);
+    }
+
+    /**
+     * Finds the default search engine for the default provider and returns the url query
+     * {@link String} for {@code query}.
+     * @param query The {@link String} that represents the text query the search url should
+     *              represent.
+     * @param searchParams A list of search params to be appended to the query.
+     * @return      A {@link String} that contains the url of the default search engine with
+     *              {@code query} inserted as the search parameter.
+     */
+    public String getUrlForSearchQuery(String query, List<String> searchParams) {
+        return TemplateUrlServiceJni.get().getUrlForSearchQuery(mNativeTemplateUrlServiceAndroid,
+                TemplateUrlService.this, query,
+                searchParams == null ? null : searchParams.toArray(new String[0]));
+    }
+
+    /**
+     * See {@link #getSearchQueryForUrl(GURL)}.
+     *
+     * @deprecated Please use {@link #getSearchQueryForUrl(GURL)} instead.
+     */
+    @Deprecated
+    public String getSearchQueryForUrl(String url) {
+        return getSearchQueryForUrl(new GURL(url));
     }
 
     /**
      * Finds the query in the url, if any. Returns empty if no query is present.
      */
-    public String getSearchQueryForUrl(String url) {
+    public String getSearchQueryForUrl(GURL url) {
         return TemplateUrlServiceJni.get().getSearchQueryForUrl(
                 mNativeTemplateUrlServiceAndroid, TemplateUrlService.this, url);
     }
@@ -266,7 +291,7 @@ public class TemplateUrlService {
      * @return      A {@link String} that contains the url of the default search engine with
      *              {@code query} inserted as the search parameter and voice input source param set.
      */
-    public String getUrlForVoiceSearchQuery(String query) {
+    public GURL getUrlForVoiceSearchQuery(String query) {
         return TemplateUrlServiceJni.get().getUrlForVoiceSearchQuery(
                 mNativeTemplateUrlServiceAndroid, TemplateUrlService.this, query);
     }
@@ -282,7 +307,7 @@ public class TemplateUrlService {
      *              {@code query} and {@code alternateTerm} inserted as parameters and contextual
      *              search and prefetch parameters conditionally set.
      */
-    public String getUrlForContextualSearchQuery(
+    public GURL getUrlForContextualSearchQuery(
             String query, String alternateTerm, boolean shouldPrefetch, String protocolVersion) {
         return TemplateUrlServiceJni.get().getUrlForContextualSearchQuery(
                 mNativeTemplateUrlServiceAndroid, TemplateUrlService.this, query, alternateTerm,
@@ -354,13 +379,13 @@ public class TemplateUrlService {
                 long nativeTemplateUrlServiceAndroid, TemplateUrlService caller);
         boolean isDefaultSearchEngineGoogle(
                 long nativeTemplateUrlServiceAndroid, TemplateUrlService caller);
-        String getUrlForSearchQuery(
-                long nativeTemplateUrlServiceAndroid, TemplateUrlService caller, String query);
+        String getUrlForSearchQuery(long nativeTemplateUrlServiceAndroid, TemplateUrlService caller,
+                String query, String[] searchParams);
         String getSearchQueryForUrl(
-                long nativeTemplateUrlServiceAndroid, TemplateUrlService caller, String url);
-        String getUrlForVoiceSearchQuery(
+                long nativeTemplateUrlServiceAndroid, TemplateUrlService caller, GURL url);
+        GURL getUrlForVoiceSearchQuery(
                 long nativeTemplateUrlServiceAndroid, TemplateUrlService caller, String query);
-        String getUrlForContextualSearchQuery(long nativeTemplateUrlServiceAndroid,
+        GURL getUrlForContextualSearchQuery(long nativeTemplateUrlServiceAndroid,
                 TemplateUrlService caller, String query, String alternateTerm,
                 boolean shouldPrefetch, String protocolVersion);
         String getSearchEngineUrlFromTemplateUrl(

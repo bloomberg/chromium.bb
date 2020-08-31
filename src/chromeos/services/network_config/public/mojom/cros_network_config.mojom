@@ -12,6 +12,7 @@
 
 module chromeos.network_config.mojom;
 
+import "chromeos/services/network_config/public/mojom/network_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/ip_address.mojom";
 
@@ -30,73 +31,6 @@ enum ActivationStateType {
 enum AuthenticationType {
   kNone,
   k8021x,
-};
-
-// Connection state of visible networks.
-enum ConnectionStateType {
-  kOnline,
-  kConnected,
-  kPortal,
-  kConnecting,
-  kNotConnected,
-};
-
-// Device / Technology state for devices.
-enum DeviceStateType {
-  kUninitialized,
-  kDisabled,
-  kEnabling,
-  kEnabled,
-  kProhibited,
-  // Not used in DeviceStateProperties, but useful when querying by type.
-  kUnavailable,
-};
-
-// The network technology type. NOTE: 'All' and 'Wireless' are only used by
-// FilterType for requesting groups of networks.
-enum NetworkType {
-  kAll,
-  kCellular,
-  kEthernet,
-  // Mobile includes Cellular, and Tether.
-  kMobile,
-  kTether,
-  kVPN,
-  // Wireles includes Cellular, Tether, and WiFi.
-  kWireless,
-  kWiFi,
-};
-
-// The ONC source for the network configuration, i.e. whether it is stored in
-// the User or Device profile and whether it was configured by policy.
-enum OncSource {
-  // The network is not remembered, or the property is not configurable.
-  kNone,
-  // The configuration is saved in the user profile.
-  kUser,
-  // The configuration is saved in the device profile.
-  kDevice,
-  // The configuration came from a user policy and is saved in the user profile.
-  kUserPolicy,
-  // The configuration came from a device policy and is saved in the device
-  // profile.
-  kDevicePolicy,
-};
-
-// The policy source for property values managed by policy.
-enum PolicySource {
-  // The property is not controlled by policy.
-  kNone,
-  // The property value came from a user policy and is enforced.
-  kUserPolicyEnforced,
-  // The property value came from a device policy and is enforced.
-  kDevicePolicyEnforced,
-  // The property value came from a user policy and is recommended.
-  kUserPolicyRecommended,
-  // The property value came from a device policy and is recommended.
-  kDevicePolicyRecommended,
-  // The property value came from an extension.
-  kActiveExtension,
 };
 
 enum ProxyMode {
@@ -366,7 +300,7 @@ struct PaymentPortalProperties {
 // active_value: The value provided by the configuration manager (e.g. Shill).
 //     This will match |policy_value| when |policy_source| is enforced.
 // policy_source: The source of the value provided by policy when available,
-//     or kNone (see PolicySource).
+//     or kNone (see PolicySource in network_types.mojom).
 // policy_value: The value provided by policy when available.
 
 // Fundamental managed types.
@@ -514,8 +448,7 @@ struct ManagedOpenVPNProperties {
   ManagedCertificatePattern? client_cert_pattern;
   ManagedString? client_cert_ref;
   ManagedString? client_cert_type;
-  ManagedString? comp_lzo;
-  ManagedBoolean? comp_no_adapt;
+  ManagedString? compression_algorithm;
   ManagedStringList? extra_hosts;
   ManagedBoolean? ignore_default_route;
   ManagedString? key_direction;
@@ -608,11 +541,12 @@ struct ManagedWiFiProperties {
   ManagedBoolean? hidden_ssid;
   // Note: |passphrase| contains a placeholder if set to avoid leaking secrets.
   ManagedString? passphrase;
-  ManagedInt32? roam_threshold;
   ManagedString ssid;
   SecurityType security;
   int32 signal_strength = 0;
   string? tethering_state;
+  // Indicates whether the network is eligible to be included in Chrome Sync.
+  bool is_syncable;
 };
 
 union NetworkTypeManagedProperties {
@@ -657,14 +591,21 @@ struct ManagedProperties {
 // ensures that configurations are valid before translating and passing them to
 // Shill.
 
-// Wrapper to allow optional configuration auto_connect configuration.
+// Wrapper to allow optional auto_connect configuration.
 struct AutoConnectConfig {
   bool value;
 };
 
-// Wrapper to allow optional configuration priority configuration.
+// Wrapper to allow optional priority configuration.
 struct PriorityConfig {
   int32 value;
+};
+
+// Wrapper to allow optional VpnType configuration. Note: only configuration of
+// internal VPN types (kOpenVPN and kL2TPIPsec) is supported.
+// TODO(657632): Remove wrapper once optional enums are supported.
+struct VpnTypeConfig {
+  VpnType value;
 };
 
 struct ProxyLocation {
@@ -745,7 +686,9 @@ struct CellularConfigProperties {
 };
 
 struct EthernetConfigProperties {
-  string authentication;
+  // |authentication| will default to "none" if not provided for new configs.
+  // TODO(657632): Use AuthenticationType here.
+  string? authentication;
   EAPConfigProperties? eap;
 };
 
@@ -754,15 +697,15 @@ struct VPNConfigProperties {
   IPSecConfigProperties? ip_sec;
   L2TPConfigProperties? l2tp;
   OpenVPNConfigProperties? open_vpn;
-  // For existing configurations, this must match the VPN type. Only
-  // configuration of internal VPN types (kOpenVPN and kL2TPIPsec) is supported.
-  VpnType type;
+  // |type| is required for new configs, optional otherwise.
+  VpnTypeConfig? type;
 };
 
 struct WiFiConfigProperties {
   EAPConfigProperties? eap;
   string? passphrase;
-  string ssid;
+  // |ssid| is required for new configurations, optional otherwise.
+  string? ssid;
   SecurityType security = kNone;
 };
 
@@ -775,6 +718,9 @@ union NetworkTypeConfigProperties {
 
 struct ConfigProperties {
   AutoConnectConfig? auto_connect;
+  // An optional guid may be provided when configuring a visible network to
+  // preserve the existing guid.
+  string? guid;
   string? ip_address_config_type;
   // Name is only required for new configurations.
   string? name;
@@ -885,18 +831,21 @@ interface CrosNetworkConfig {
   // available returns null.
   GetManagedProperties(string guid) => (ManagedProperties? result);
 
-  // Sets properties for the network matching |guid|. If |success| is false,
-  // |error_message| provides a string identifying the error. The string may
-  // be a Shill error, or an error token provided by the NetworkHandler layer.
-  // JS localization for a common subset of these is provided by
-  // network_element::AddErrorLocalizedStrings. TODO(1004434): Consider
-  // enumerating these.
+  // Sets properties for the network matching |guid|. |properties.guid| must be
+  // null or match |guid|, otherwise it will fail with an invalid input error.
+  // If |success| is false, |error_message| provides a string identifying the
+  // error. The string may be a Shill error, or an error token provided by the
+  // NetworkHandler layer. JS localization for a common subset of these is
+  // provided by network_element::AddErrorLocalizedStrings.
+  // TODO(1004434): Consider enumerating these.
   SetProperties(string guid, ConfigProperties properties) =>
     (bool success, string error_message);
 
-  // Configures a new network with |properties|. Returns the guid of the new
-  // network configuration on success. A null guid indicates that the properties
-  // were invalid or incomplete. See SetProperties for notes on errorMessage.
+  // Configures a new network with |properties|. If |properties.guid| is
+  // provided, an existing configuration must exist and match the provided
+  // |properties|. Returns the guid of the new network configuration on success.
+  // A null guid indicates that the properties were invalid or incomplete. See
+  // SetProperties for notes on errorMessage.
   ConfigureNetwork(ConfigProperties properties, bool shared) =>
     (string? guid, string error_message);
 

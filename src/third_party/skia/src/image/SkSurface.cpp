@@ -12,7 +12,6 @@
 #include "include/gpu/GrBackendSurface.h"
 #include "src/core/SkAutoPixmapStorage.h"
 #include "src/core/SkImagePriv.h"
-#include "src/core/SkMakeUnique.h"
 #include "src/image/SkSurface_Base.h"
 
 static SkPixelGeometry compute_default_geometry() {
@@ -52,10 +51,8 @@ SkSurfaceProps::SkSurfaceProps(uint32_t flags, SkPixelGeometry pg)
     : fFlags(flags), fPixelGeometry(pg)
 {}
 
-SkSurfaceProps::SkSurfaceProps(const SkSurfaceProps& other)
-    : fFlags(other.fFlags)
-    , fPixelGeometry(other.fPixelGeometry)
-{}
+SkSurfaceProps::SkSurfaceProps(const SkSurfaceProps&) = default;
+SkSurfaceProps& SkSurfaceProps::operator=(const SkSurfaceProps&) = default;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -74,6 +71,10 @@ SkSurface_Base::~SkSurface_Base() {
     }
 }
 
+GrContext* SkSurface_Base::onGetContext() {
+    return nullptr;
+}
+
 GrBackendTexture SkSurface_Base::onGetBackendTexture(BackendHandleAccess) {
     return GrBackendTexture(); // invalid
 }
@@ -83,7 +84,7 @@ GrBackendRenderTarget SkSurface_Base::onGetBackendRenderTarget(BackendHandleAcce
 }
 
 bool SkSurface_Base::onReplaceBackendTexture(const GrBackendTexture&,
-                                             GrSurfaceOrigin,
+                                             GrSurfaceOrigin, ContentChangeMode,
                                              TextureReleaseProc,
                                              ReleaseContext) {
     return false;
@@ -212,7 +213,7 @@ void SkSurface_Base::onAsyncRescaleAndReadPixels(const SkImageInfo& info, const 
             std::unique_ptr<const char[]> fData;
             size_t fRowBytes;
         };
-        callback(context, skstd::make_unique<Result>(std::move(data), rowBytes));
+        callback(context, std::make_unique<Result>(std::move(data), rowBytes));
     } else {
         callback(context, nullptr);
     }
@@ -423,6 +424,10 @@ void SkSurface::writePixels(const SkBitmap& src, int x, int y) {
     }
 }
 
+GrContext* SkSurface::getContext() {
+    return asSB(this)->onGetContext();
+}
+
 GrBackendTexture SkSurface::getBackendTexture(BackendHandleAccess access) {
     return asSB(this)->onGetBackendTexture(access);
 }
@@ -432,14 +437,14 @@ GrBackendRenderTarget SkSurface::getBackendRenderTarget(BackendHandleAccess acce
 }
 
 bool SkSurface::replaceBackendTexture(const GrBackendTexture& backendTexture,
-                                      GrSurfaceOrigin origin,
+                                      GrSurfaceOrigin origin, ContentChangeMode mode,
                                       TextureReleaseProc textureReleaseProc,
                                       ReleaseContext releaseContext) {
-    return asSB(this)->onReplaceBackendTexture(backendTexture, origin, textureReleaseProc,
+    return asSB(this)->onReplaceBackendTexture(backendTexture, origin, mode, textureReleaseProc,
                                                releaseContext);
 }
 
-void SkSurface::flush() {
+void SkSurface::flushAndSubmit() {
     this->flush(BackendSurfaceAccess::kNoAccess, GrFlushInfo());
 }
 

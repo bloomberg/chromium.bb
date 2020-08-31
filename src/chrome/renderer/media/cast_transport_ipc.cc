@@ -18,13 +18,13 @@ CastTransportIPC::CastTransportIPC(
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
     std::unique_ptr<base::DictionaryValue> options,
-    const media::cast::PacketReceiverCallback& packet_callback,
-    const media::cast::CastTransportStatusCallback& status_cb,
-    const media::cast::BulkRawEventsCallback& raw_events_cb)
+    media::cast::PacketReceiverCallback packet_callback,
+    media::cast::CastTransportStatusCallback status_callback,
+    BulkRawEventsCallback raw_events_cb)
     : channel_id_(-1),
-      packet_callback_(packet_callback),
-      status_callback_(status_cb),
-      raw_events_callback_(raw_events_cb) {
+      packet_callback_(std::move(packet_callback)),
+      status_callback_(std::move(status_callback)),
+      raw_events_callback_(std::move(raw_events_cb)) {
   if (CastIPCDispatcher::Get()) {
     // TODO(miu): CastIPCDispatcher should be provided as a ctor argument.
     channel_id_ = CastIPCDispatcher::Get()->AddSender(this);

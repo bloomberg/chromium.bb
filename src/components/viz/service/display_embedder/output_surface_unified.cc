@@ -33,10 +33,6 @@ unsigned OutputSurfaceUnified::GetOverlayTextureId() const {
   return 0;
 }
 
-gfx::BufferFormat OutputSurfaceUnified::GetOverlayBufferFormat() const {
-  return gfx::BufferFormat::RGBX_8888;
-}
-
 bool OutputSurfaceUnified::HasExternalStencilTest() const {
   return false;
 }
@@ -53,4 +49,12 @@ gfx::OverlayTransform OutputSurfaceUnified::GetDisplayTransform() {
   return gfx::OVERLAY_TRANSFORM_NONE;
 }
 
+scoped_refptr<gpu::GpuTaskSchedulerHelper>
+OutputSurfaceUnified::GetGpuTaskSchedulerHelper() {
+  return nullptr;
+}
+
+gpu::MemoryTracker* OutputSurfaceUnified::GetMemoryTracker() {
+  return nullptr;
+}
 }  // namespace viz

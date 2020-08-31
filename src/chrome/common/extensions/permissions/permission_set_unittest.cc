@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -57,12 +56,6 @@ size_t IndexOf(const PermissionMessages& warnings, const std::string& warning) {
   }
 
   return warnings.size();
-}
-
-PermissionIDSet MakePermissionIDSet(APIPermission::ID id) {
-  PermissionIDSet set;
-  set.insert(id);
-  return set;
 }
 
 PermissionIDSet MakePermissionIDSet(APIPermission::ID id1,
@@ -672,9 +665,8 @@ TEST(PermissionsTest, IsPrivilegeIncrease) {
       {"hosts6", false},        // http://a.com -> http://a.com + http://a.co.uk
       {"permissions1", false},  // tabs -> tabs
       {"permissions2", true},   // tabs -> tabs,bookmarks
-      // TODO(crbug.com/512344): This is wrong, kAllHosts implies kTabs.
-      {"permissions3", true},          // http://*/* -> http://*/*,tabs
-      {"permissions5", true},          // bookmarks -> bookmarks,history
+      {"permissions3", false},  // http://*/* -> http://*/*,tabs
+      {"permissions5", true},   // bookmarks -> bookmarks,history
       {"equivalent_warnings", false},  // tabs --> tabs, webNavigation
 
       // The plugins manifest key is deprecated and doesn't correspond to any
@@ -765,7 +757,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kDiagnostics);
   skip.insert(APIPermission::kDns);
   skip.insert(APIPermission::kDownloadsShelf);
-  skip.insert(APIPermission::kEmbeddedExtensionOptions);
   skip.insert(APIPermission::kFontSettings);
   skip.insert(APIPermission::kFullscreen);
   skip.insert(APIPermission::kGcm);
@@ -832,6 +823,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kAccessibilityPrivate);
   skip.insert(APIPermission::kArcAppsPrivate);
   skip.insert(APIPermission::kAutoTestPrivate);
+  skip.insert(APIPermission::kAutofillAssistantPrivate);
   skip.insert(APIPermission::kBookmarkManagerPrivate);
   skip.insert(APIPermission::kBrailleDisplayPrivate);
   skip.insert(APIPermission::kCast);
@@ -969,7 +961,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     APIPermissionSet api_permissions;
     api_permissions.insert(APIPermission::kTab);
     URLPatternSet hosts;
-    hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
+    hosts.AddPattern(URLPattern(URLPattern::SCHEME_HTTP, "*://*/*"));
     PermissionSet permissions(std::move(api_permissions),
                               ManifestPermissionSet(), std::move(hosts),
                               URLPatternSet());
@@ -982,7 +974,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     APIPermissionSet api_permissions;
     api_permissions.insert(APIPermission::kTopSites);
     URLPatternSet hosts;
-    hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
+    hosts.AddPattern(URLPattern(URLPattern::SCHEME_HTTP, "*://*/*"));
     PermissionSet permissions(std::move(api_permissions),
                               ManifestPermissionSet(), std::move(hosts),
                               URLPatternSet());
@@ -996,13 +988,14 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     APIPermissionSet api_permissions;
     api_permissions.insert(APIPermission::kDeclarativeWebRequest);
     URLPatternSet hosts;
-    hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
+    hosts.AddPattern(URLPattern(URLPattern::SCHEME_HTTP, "*://*/*"));
     PermissionSet permissions(std::move(api_permissions),
                               ManifestPermissionSet(), std::move(hosts),
                               URLPatternSet());
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions, Manifest::TYPE_EXTENSION,
-        MakePermissionIDSet(APIPermission::kHostsAll)));
+        MakePermissionIDSet(APIPermission::kHostsAll,
+                            APIPermission::kDeclarativeWebRequest)));
   }
   {
     // BrowsingHistory warning suppresses all history read/write warnings.

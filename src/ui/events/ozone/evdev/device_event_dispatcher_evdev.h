@@ -13,8 +13,8 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/ozone/gamepad/gamepad_event.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -25,7 +25,9 @@ enum class StylusState;
 
 struct COMPONENT_EXPORT(EVDEV) KeyEventParams {
   KeyEventParams(int device_id,
+                 int flags,
                  unsigned int code,
+                 unsigned int scan_code,
                  bool down,
                  bool suppress_auto_repeat,
                  base::TimeTicks timestamp);
@@ -34,7 +36,9 @@ struct COMPONENT_EXPORT(EVDEV) KeyEventParams {
   ~KeyEventParams();
 
   int device_id;
+  int flags;
   unsigned int code;
+  unsigned int scan_code;
   bool down;
   bool suppress_auto_repeat;
   base::TimeTicks timestamp;

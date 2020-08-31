@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/x11/x11_window.h"
@@ -22,8 +21,6 @@ class X11Window;
 
 namespace views {
 class DesktopDragDropClientAuraX11;
-class DesktopWindowTreeHostObserverX11;
-class X11DesktopWindowMoveClient;
 
 class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
                                               public ui::XEventDelegate {
@@ -33,31 +30,14 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
       DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostX11() override;
 
-  void AddObserver(DesktopWindowTreeHostObserverX11* observer);
-  void RemoveObserver(DesktopWindowTreeHostObserverX11* observer);
-
  protected:
   // Overridden from DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
-  void OnNativeWidgetCreated(const Widget::InitParams& params) override;
   std::unique_ptr<aura::client::DragDropClient> CreateDragDropClient(
       DesktopNativeCursorManager* cursor_manager) override;
-  Widget::MoveLoopResult RunMoveLoop(
-      const gfx::Vector2d& drag_offset,
-      Widget::MoveLoopSource source,
-      Widget::MoveLoopEscapeBehavior escape_behavior) override;
-  void EndMoveLoop() override;
 
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
-
-  // X11ExtensionDelegate overrides:
-  //
-  // DWTHX11 temporarily overrides the X11ExtensionDelegate
-  // methods instead of underlying DWTHPlatform and WTHPlatform. Eventually,
-  // these will be removed from here as we progress in https://crbug.com/990756.
-  void OnXWindowMapped() override;
-  void OnXWindowUnmapped() override;
 
   // Overridden from ui::XEventDelegate.
   void OnXWindowSelectionEvent(XEvent* xev) override;
@@ -70,11 +50,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   const ui::XWindow* GetXWindow() const;
 
   DesktopDragDropClientAuraX11* drag_drop_client_ = nullptr;
-
-  std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
-
-  base::ObserverList<DesktopWindowTreeHostObserverX11>::Unchecked
-      observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11);
 };

@@ -25,27 +25,19 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/inspector_protocol/crdtp/cbor.h"
+#include "third_party/inspector_protocol/crdtp/dispatch.h"
 #include "third_party/inspector_protocol/crdtp/json.h"
 
 namespace blink {
 
 namespace {
 const char kV8StateKey[] = "v8";
-bool ShouldInterruptForMethod(const String& method) {
-  return method == "Debugger.pause" || method == "Debugger.setBreakpoint" ||
-         method == "Debugger.setBreakpointByUrl" ||
-         method == "Debugger.removeBreakpoint" ||
-         method == "Debugger.setBreakpointsActive" ||
-         method == "Performance.getMetrics" || method == "Page.crash" ||
-         method == "Runtime.terminateExecution" ||
-         method == "Debugger.getStackTrace" ||
-         method == "Emulation.setScriptExecutionDisabled";
-}
+const char kSessionId[] = "sessionId";
 
-Vector<uint8_t> UnwrapMessage(const mojom::blink::DevToolsMessagePtr& message) {
-  Vector<uint8_t> unwrap_message;
-  unwrap_message.Append(message->data.data(), message->data.size());
-  return unwrap_message;
+bool ShouldInterruptForMethod(const String& method) {
+  return method != "Debugger.evaluateOnCallFrame" &&
+         method != "Runtime.evaluate" && method != "Runtime.callFunctionOn" &&
+         method != "Runtime.runScript";
 }
 
 std::vector<uint8_t> Get8BitStringFrom(v8_inspector::StringBuffer* msg) {
@@ -82,10 +74,9 @@ class DevToolsSession::IOSession : public mojom::blink::DevToolsSession {
   void DeleteSoon() { io_task_runner_->DeleteSoon(FROM_HERE, this); }
 
   // mojom::blink::DevToolsSession implementation.
-  void DispatchProtocolCommand(
-      int call_id,
-      const String& method,
-      mojom::blink::DevToolsMessagePtr message) override {
+  void DispatchProtocolCommand(int call_id,
+                               const String& method,
+                               base::span<const uint8_t> message) override {
     TRACE_EVENT_WITH_FLOW1("devtools", "IOSession::DispatchProtocolCommand",
                            call_id,
                            TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN,
@@ -95,14 +86,16 @@ class DevToolsSession::IOSession : public mojom::blink::DevToolsSession {
       CHECK(false);
     // Post a task to the worker or main renderer thread that will interrupt V8
     // and be run immediately. Only methods that do not run JS code are safe.
+    Vector<uint8_t> message_copy;
+    message_copy.Append(message.data(), message.size());
     if (ShouldInterruptForMethod(method)) {
       inspector_task_runner_->AppendTask(CrossThreadBindOnce(
           &::blink::DevToolsSession::DispatchProtocolCommandImpl, session_,
-          call_id, method, UnwrapMessage(message)));
+          call_id, method, std::move(message_copy)));
     } else {
       inspector_task_runner_->AppendTaskDontInterrupt(CrossThreadBindOnce(
           &::blink::DevToolsSession::DispatchProtocolCommandImpl, session_,
-          call_id, method, UnwrapMessage(message)));
+          call_id, method, std::move(message_copy)));
     }
   }
 
@@ -123,15 +116,16 @@ DevToolsSession::DevToolsSession(
         main_receiver,
     mojo::PendingReceiver<mojom::blink::DevToolsSession> io_receiver,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state,
-    bool client_expects_binary_responses)
+    bool client_expects_binary_responses,
+    const String& session_id)
     : agent_(agent),
       receiver_(this, std::move(main_receiver)),
       inspector_backend_dispatcher_(new protocol::UberDispatcher(this)),
       session_state_(std::move(reattach_session_state)),
       client_expects_binary_responses_(client_expects_binary_responses),
       v8_session_state_(kV8StateKey),
-      v8_session_state_cbor_(&v8_session_state_,
-                             /*default_value=*/{}) {
+      v8_session_state_cbor_(&v8_session_state_, /*default_value=*/{}),
+      session_id_(session_id) {
   io_session_ = new IOSession(
       agent_->io_task_runner_, agent_->inspector_task_runner_,
       WrapCrossThreadWeakPersistent(this), std::move(io_receiver));
@@ -190,25 +184,22 @@ void DevToolsSession::Detach() {
   agent_->client_->DebuggerTaskFinished();
 }
 
-void DevToolsSession::FlushProtocolNotifications() {
-  flushProtocolNotifications();
-}
-
 void DevToolsSession::DispatchProtocolCommand(
     int call_id,
     const String& method,
-    blink::mojom::blink::DevToolsMessagePtr message_ptr) {
-  // TODO(petermarshall): Remove the distinction between DevToolsSession and
-  // IOSession as we always use IOSession now.
-  NOTREACHED();
+    base::span<const uint8_t> message) {
+  TRACE_EVENT_WITH_FLOW1(
+      "devtools", "DevToolsSession::DispatchProtocolCommand", call_id,
+      TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN, "call_id", call_id);
+  return DispatchProtocolCommandImpl(call_id, method, message);
 }
 
-void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
-                                                  const String& method,
-                                                  Vector<uint8_t> data) {
+void DevToolsSession::DispatchProtocolCommandImpl(
+    int call_id,
+    const String& method,
+    base::span<const uint8_t> data) {
   DCHECK(crdtp::cbor::IsCBORMessage(
       crdtp::span<uint8_t>(data.data(), data.size())));
-
   TRACE_EVENT_WITH_FLOW1(
       "devtools", "DevToolsSession::DispatchProtocolCommandImpl", call_id,
       TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN, "call_id", call_id);
@@ -232,11 +223,10 @@ void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
     v8_session_->dispatchProtocolMessage(
         v8_inspector::StringView(data.data(), data.size()));
   } else {
-    std::unique_ptr<protocol::Value> value =
-        protocol::Value::parseBinary(data.data(), data.size());
-    // Don't pass protocol message further - there is no passthrough.
-    inspector_backend_dispatcher_->dispatch(call_id, method, std::move(value),
-                                            protocol::ProtocolMessage());
+    crdtp::Dispatchable dispatchable(crdtp::SpanFrom(data));
+    // This message has already been checked by content::DevToolsSession.
+    DCHECK(dispatchable.ok());
+    inspector_backend_dispatcher_->Dispatch(dispatchable).Run();
   }
   agent_->client_->DebuggerTaskFinished();
 }
@@ -260,15 +250,32 @@ void DevToolsSession::DidCommitLoad(LocalFrame* frame, DocumentLoader*) {
     v8_session_->setSkipAllPauses(false);
 }
 
-void DevToolsSession::sendProtocolResponse(
-    int call_id,
-    std::unique_ptr<protocol::Serializable> message) {
-  SendProtocolResponse(call_id, std::move(*message).TakeSerialized());
+void DevToolsSession::PaintTiming(Document* document,
+                                  const char* name,
+                                  double timestamp) {
+  if (v8_session_ &&
+      agent_->inspected_frames_->Root()->GetDocument() == document) {
+    v8_session_->triggerPreciseCoverageDeltaUpdate(
+        ToV8InspectorStringView(name));
+  }
 }
 
-void DevToolsSession::fallThrough(int call_id,
-                                  const String& method,
-                                  const protocol::ProtocolMessage& message) {
+void DevToolsSession::DomContentLoadedEventFired(LocalFrame* local_frame) {
+  if (v8_session_ && agent_->inspected_frames_->Root() == local_frame) {
+    v8_session_->triggerPreciseCoverageDeltaUpdate(
+        ToV8InspectorStringView("DomContentLoaded"));
+  }
+}
+
+void DevToolsSession::SendProtocolResponse(
+    int call_id,
+    std::unique_ptr<protocol::Serializable> message) {
+  SendProtocolResponse(call_id, message->Serialize());
+}
+
+void DevToolsSession::FallThrough(int call_id,
+                                  crdtp::span<uint8_t> method,
+                                  crdtp::span<uint8_t> message) {
   // There's no other layer to handle the command.
   NOTREACHED();
 }
@@ -298,13 +305,13 @@ void DevToolsSession::SendProtocolResponse(int call_id,
                                          call_id, session_state_.TakeUpdates());
 }
 
-void DevToolsSession::sendProtocolNotification(
+void DevToolsSession::SendProtocolNotification(
     std::unique_ptr<protocol::Serializable> notification) {
   if (IsDetached())
     return;
   notification_queue_.push_back(WTF::Bind(
       [](std::unique_ptr<protocol::Serializable> notification) {
-        return std::move(*notification).TakeSerialized();
+        return notification->Serialize();
       },
       std::move(notification)));
 }
@@ -321,6 +328,10 @@ void DevToolsSession::sendNotification(
 }
 
 void DevToolsSession::flushProtocolNotifications() {
+  FlushProtocolNotifications();
+}
+
+void DevToolsSession::FlushProtocolNotifications() {
   if (IsDetached())
     return;
   for (wtf_size_t i = 0; i < agents_.size(); i++)
@@ -337,7 +348,7 @@ void DevToolsSession::flushProtocolNotifications() {
   notification_queue_.clear();
 }
 
-void DevToolsSession::Trace(blink::Visitor* visitor) {
+void DevToolsSession::Trace(Visitor* visitor) {
   visitor->Trace(agent_);
   visitor->Trace(agents_);
 }
@@ -345,6 +356,12 @@ void DevToolsSession::Trace(blink::Visitor* visitor) {
 blink::mojom::blink::DevToolsMessagePtr DevToolsSession::FinalizeMessage(
     std::vector<uint8_t> message) const {
   std::vector<uint8_t> message_to_send = std::move(message);
+  if (!session_id_.IsEmpty()) {
+    crdtp::Status status = crdtp::cbor::AppendString8EntryToCBORMap(
+        crdtp::SpanFrom(kSessionId), crdtp::SpanFrom(session_id_.Ascii()),
+        &message_to_send);
+    CHECK(status.ok()) << status.ToASCIIString();
+  }
   if (!client_expects_binary_responses_) {
     std::vector<uint8_t> json;
     crdtp::Status status =

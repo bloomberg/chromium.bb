@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.webapps.addtohomescreen;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.annotation.StringRes;
 import android.text.TextUtils;
 
+import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -56,7 +56,9 @@ public class AddToHomescreenCoordinator {
     @VisibleForTesting
     boolean showForAppMenu(WebContents webContents) {
         // Don't start if there is no visible URL to add.
-        if (webContents == null || TextUtils.isEmpty(webContents.getVisibleUrl())) return false;
+        if (webContents == null || TextUtils.isEmpty(webContents.getVisibleUrlString())) {
+            return false;
+        }
 
         buildMediatorAndShowDialog().startForAppMenu(webContents);
         return true;

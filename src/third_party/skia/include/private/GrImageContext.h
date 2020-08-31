@@ -18,7 +18,7 @@ class GrImageContext : public GrContext_Base {
 public:
     ~GrImageContext() override;
 
-    GrBackendFormat defaultBackendFormat(SkColorType ct, GrRenderable renderable) const {
+    SK_API GrBackendFormat defaultBackendFormat(SkColorType ct, GrRenderable renderable) const {
         return INHERITED::defaultBackendFormat(ct, renderable);
     }
 
@@ -32,7 +32,7 @@ protected:
     GrImageContext(GrBackendApi, const GrContextOptions&, uint32_t contextID);
 
     SK_API virtual void abandonContext();
-    SK_API bool abandoned() const;
+    SK_API virtual bool abandoned();
 
     GrProxyProvider* proxyProvider() { return fProxyProvider.get(); }
     const GrProxyProvider* proxyProvider() const { return fProxyProvider.get(); }

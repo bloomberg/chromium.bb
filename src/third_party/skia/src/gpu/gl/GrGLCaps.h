@@ -93,12 +93,17 @@ public:
         kLast_MapBufferType = kChromium_MapBufferType,
     };
 
-    enum TransferBufferType {
-        kNone_TransferBufferType,
-        kPBO_TransferBufferType,          // ARB_pixel_buffer_object
-        kChromium_TransferBufferType,     // CHROMIUM_pixel_transfer_buffer_object
+    enum class TransferBufferType {
+        kNone,
+        kNV_PBO,    // NV__pixel_buffer_object
+        kARB_PBO,   // ARB_pixel_buffer_object
+        kChromium,  // CHROMIUM_pixel_transfer_buffer_object
+    };
 
-        kLast_TransferBufferType = kChromium_TransferBufferType,
+    enum class FenceType {
+        kNone,
+        kSyncObject,
+        kNVFence
     };
 
     /**
@@ -109,10 +114,8 @@ public:
              const GrGLInterface* glInterface);
 
     bool isFormatSRGB(const GrBackendFormat&) const override;
-    bool isFormatCompressed(const GrBackendFormat&,
-                            SkImage::CompressionType* compressionType = nullptr) const override;
+    SkImage::CompressionType compressionType(const GrBackendFormat&) const override;
 
-    bool isFormatTexturableAndUploadable(GrColorType, const GrBackendFormat&) const override;
     bool isFormatTexturable(const GrBackendFormat&) const override;
     bool isFormatTexturable(GrGLFormat) const;
 
@@ -195,6 +198,20 @@ public:
     bool formatSupportsTexStorage(GrGLFormat) const;
 
     /**
+     * Would it be useful to check GL_IMPLEMENTATION_READ_FORMAT and _TYPE for this format to
+     * detect more efficient glReadPixels arguments?
+     */
+    bool shouldQueryImplementationReadSupport(GrGLFormat format) const;
+
+    /**
+     * Let caps know the result of GL_IMPLEMENTATION_READ_FORMAT and _TYPE query for a format
+     * to update supported glReadPixels arguments.
+     */
+    void didQueryImplementationReadSupport(GrGLFormat format,
+                                           GrGLenum readFormat,
+                                           GrGLenum readType) const;
+
+    /**
      * Gets the internal format to use with glRenderbufferStorageMultisample...(). May be sized or
      * base depending upon the GL. Not applicable to compressed textures.
      */
@@ -269,6 +286,9 @@ public:
     /// What type of transfer buffer is supported?
     TransferBufferType transferBufferType() const { return fTransferBufferType; }
 
+    /// How are GrFences implemented?
+    FenceType fenceType() const { return fFenceType; }
+
     /// The maximum number of fragment uniform vectors (GLES has min. 16).
     int maxFragmentUniformVectors() const { return fMaxFragmentUniformVectors; }
 
@@ -290,13 +310,6 @@ public:
     /// Is there support for ES2 compatability?
     bool ES2CompatibilitySupport() const { return fES2CompatibilitySupport; }
 
-    /// Is there support for glDraw*Instanced?
-    bool drawInstancedSupport() const { return fDrawInstancedSupport; }
-
-    /// Is there support for glDraw*Indirect? Note that the baseInstance fields of indirect draw
-    /// commands cannot be used unless we have base instance support.
-    bool drawIndirectSupport() const { return fDrawIndirectSupport; }
-
     /// Is there support for glMultiDraw*Indirect? Note that the baseInstance fields of indirect
     /// draw commands cannot be used unless we have base instance support.
     bool multiDrawIndirectSupport() const { return fMultiDrawIndirectSupport; }
@@ -304,8 +317,9 @@ public:
     /// Is there support for glDrawRangeElements?
     bool drawRangeElementsSupport() const { return fDrawRangeElementsSupport; }
 
-    /// Are the baseInstance fields supported in indirect draw commands?
-    bool baseInstanceSupport() const { return fBaseInstanceSupport; }
+    /// Are the glDraw*Base(VertexBase)Instance methods, and baseInstance fields in indirect draw
+    //commands supported?
+    bool baseVertexBaseInstanceSupport() const { return fBaseVertexBaseInstanceSupport; }
 
     /// Use indices or vertices in CPU arrays rather than VBOs for dynamic content.
     bool useNonVBOVertexAndIndexDynamicData() const { return fUseNonVBOVertexAndIndexDynamicData; }
@@ -382,6 +396,11 @@ public:
     // PowerVRGX6250 drops every pixel if we modify the sample mask while color writes are disabled.
     bool neverDisableColorWrites() const { return fNeverDisableColorWrites; }
 
+    // Texture parameters must be used to enable MIP mapping even when a sampler object is used.
+    bool mustSetTexParameterMinFilterToEnableMipMapping() const {
+        return fMustSetTexParameterMinFilterToEnableMipMapping;
+    }
+
     // Returns the observed maximum number of instances the driver can handle in a single draw call
     // without crashing, or 'pendingInstanceCount' if this workaround is not necessary.
     // NOTE: the return value may be larger than pendingInstanceCount.
@@ -417,13 +436,15 @@ public:
     /* Is there support for enabling/disabling sRGB writes for sRGB-capable color buffers? */
     bool srgbWriteControl() const { return fSRGBWriteControl; }
 
-    GrColorType getYUVAColorTypeFromBackendFormat(const GrBackendFormat&,
-                                                  bool isAlphaChannel) const override;
+    /** Skip checks for GL errors, shader compilation success, program link success. */
+    bool skipErrorChecks() const { return fSkipErrorChecks; }
 
     GrBackendFormat getBackendFormatFromCompressionType(SkImage::CompressionType) const override;
 
-    GrSwizzle getTextureSwizzle(const GrBackendFormat&, GrColorType) const override;
-    GrSwizzle getOutputSwizzle(const GrBackendFormat&, GrColorType) const override;
+    GrSwizzle getReadSwizzle(const GrBackendFormat&, GrColorType) const override;
+    GrSwizzle getWriteSwizzle(const GrBackendFormat&, GrColorType) const override;
+
+    uint64_t computeFormatKey(const GrBackendFormat&) const override;
 
     GrProgramDesc makeDesc(const GrRenderTarget*, const GrProgramInfo&) const override;
 
@@ -454,9 +475,11 @@ private:
         bool fDisableLuminance16F = false;
         bool fDontDisableTexStorageOnAndroid = false;
         bool fDisallowDirectRG8ReadPixels = false;
+        bool fDisallowBGRA8ReadPixels = false;
     };
 
     void applyDriverCorrectnessWorkarounds(const GrGLContextInfo&, const GrContextOptions&,
+                                           const GrGLInterface*,
                                            GrShaderCaps*, FormatWorkarounds*);
 
     void onApplyOptionsOverrides(const GrContextOptions& options) override;
@@ -473,23 +496,23 @@ private:
     bool onSurfaceSupportsWritePixels(const GrSurface*) const override;
     bool onCanCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src,
                           const SkIRect& srcRect, const SkIPoint& dstPoint) const override;
-    GrBackendFormat onGetDefaultBackendFormat(GrColorType, GrRenderable) const override;
-    GrPixelConfig onGetConfigFromBackendFormat(const GrBackendFormat&, GrColorType) const override;
+    GrBackendFormat onGetDefaultBackendFormat(GrColorType) const override;
     bool onAreColorTypeAndFormatCompatible(GrColorType, const GrBackendFormat&) const override;
 
     SupportedRead onSupportedReadPixelsColorType(GrColorType, const GrBackendFormat&,
                                                  GrColorType) const override;
 
-    GrGLStandard fStandard;
+    GrGLStandard fStandard = kNone_GrGLStandard;
 
     SkTArray<StencilFormat, true> fStencilFormats;
 
-    int fMaxFragmentUniformVectors;
+    int fMaxFragmentUniformVectors = 0;
 
-    MSFBOType           fMSFBOType;
-    InvalidateFBType    fInvalidateFBType;
-    MapBufferType       fMapBufferType;
-    TransferBufferType  fTransferBufferType;
+    MSFBOType           fMSFBOType          = kNone_MSFBOType;
+    InvalidateFBType    fInvalidateFBType   = kNone_InvalidateFBType;
+    MapBufferType       fMapBufferType      = kNone_MapBufferType;
+    TransferBufferType  fTransferBufferType = TransferBufferType::kNone;
+    FenceType           fFenceType          = FenceType::kNone;
 
     bool fPackFlipYSupport : 1;
     bool fTextureUsageSupport : 1;
@@ -497,11 +520,9 @@ private:
     bool fVertexArrayObjectSupport : 1;
     bool fDebugSupport : 1;
     bool fES2CompatibilitySupport : 1;
-    bool fDrawInstancedSupport : 1;
-    bool fDrawIndirectSupport : 1;
     bool fDrawRangeElementsSupport : 1;
     bool fMultiDrawIndirectSupport : 1;
-    bool fBaseInstanceSupport : 1;
+    bool fBaseVertexBaseInstanceSupport : 1;
     bool fUseNonVBOVertexAndIndexDynamicData : 1;
     bool fIsCoreProfile : 1;
     bool fBindFragDataLocationSupport : 1;
@@ -519,6 +540,7 @@ private:
     bool fTiledRenderingSupport : 1;
     bool fFBFetchRequiresEnablePerSample : 1;
     bool fSRGBWriteControl : 1;
+    bool fSkipErrorChecks : 1;
 
     // Driver workarounds
     bool fDoManualMipmapping : 1;
@@ -530,9 +552,10 @@ private:
     bool fDetachStencilFromMSAABuffersBeforeReadPixels : 1;
     bool fDontSetBaseOrMaxLevelForExternalTextures : 1;
     bool fNeverDisableColorWrites : 1;
-    int fMaxInstancesPerDrawWithoutCrashing;
+    bool fMustSetTexParameterMinFilterToEnableMipMapping : 1;
+    int fMaxInstancesPerDrawWithoutCrashing = 0;
 
-    uint32_t fBlitFramebufferFlags;
+    uint32_t fBlitFramebufferFlags = kNoSupport_BlitFramebufferFlag;
 
     struct ReadPixelsFormat {
         ReadPixelsFormat() : fFormat(0), fType(0) {}
@@ -558,8 +581,8 @@ private:
         };
         uint32_t fFlags = 0;
 
-        GrSwizzle fTextureSwizzle;
-        GrSwizzle fOutputSwizzle;
+        GrSwizzle fReadSwizzle;
+        GrSwizzle fWriteSwizzle;
 
         struct ExternalIOFormats {
             GrColorType fColorType = GrColorType::kUnknown;
@@ -573,15 +596,25 @@ private:
             GrGLenum fExternalType = 0;
             GrGLenum fExternalTexImageFormat = 0;
             GrGLenum fExternalReadFormat = 0;
+            /**
+             * Must check whether GL_IMPLEMENTATION_COLOR_READ_FORMAT and _TYPE match
+             * fExternalReadFormat and fExternalType before using with glReadPixels.
+             */
+            bool fRequiresImplementationReadQuery = false;
         };
 
-        GrGLenum externalFormat(GrColorType externalColorType, ExternalFormatUsage usage) const {
+        GrGLenum externalFormat(GrColorType externalColorType, ExternalFormatUsage usage,
+                                bool haveQueriedImplementationReadFormat) const {
             for (int i = 0; i < fExternalIOFormatCount; ++i) {
                 if (fExternalIOFormats[i].fColorType == externalColorType) {
                     if (usage == kTexImage_ExternalFormatUsage) {
                         return fExternalIOFormats[i].fExternalTexImageFormat;
                     } else {
                         SkASSERT(usage == kReadPixels_ExternalFormatUsage);
+                        if (!haveQueriedImplementationReadFormat &&
+                            fExternalIOFormats[i].fRequiresImplementationReadQuery) {
+                            return 0;
+                        }
                         return fExternalIOFormats[i].fExternalReadFormat;
                     }
                 }
@@ -616,7 +649,8 @@ private:
                                 ExternalFormatUsage usage) const {
             for (int i = 0; i < fColorTypeInfoCount; ++i) {
                 if (fColorTypeInfos[i].fColorType == surfaceColorType) {
-                    return fColorTypeInfos[i].externalFormat(externalColorType, usage);
+                    return fColorTypeInfos[i].externalFormat(externalColorType, usage,
+                                                             fHaveQueriedImplementationReadSupport);
                 }
             }
             return 0;
@@ -665,6 +699,8 @@ private:
         GrColorType fDefaultColorType = GrColorType::kUnknown;
         // This value is only valid for regular formats. Compressed formats will be 0.
         GrGLenum fBytesPerPixel = 0;
+
+        bool fHaveQueriedImplementationReadSupport = false;
 
         enum {
             // This indicates that a stencil format has not yet been determined for the config.

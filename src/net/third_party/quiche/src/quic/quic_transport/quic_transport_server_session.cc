@@ -4,21 +4,25 @@
 
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_server_session.h"
 
+#include <algorithm>
 #include <memory>
+#include <string>
 
 #include "url/gurl.h"
+#include "url/url_constants.h"
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_protocol.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_stream.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
 namespace {
-class QuicTransportServerCryptoHelper : public QuicCryptoServerStream::Helper {
+class QuicTransportServerCryptoHelper
+    : public QuicCryptoServerStreamBase::Helper {
  public:
   bool CanAcceptClientHello(const CryptoHandshakeMessage& /*message*/,
                             const QuicSocketAddress& /*client_address*/,
@@ -28,6 +32,7 @@ class QuicTransportServerCryptoHelper : public QuicCryptoServerStream::Helper {
     return true;
   }
 };
+
 }  // namespace
 
 QuicTransportServerSession::QuicTransportServerSession(
@@ -51,7 +56,7 @@ QuicTransportServerSession::QuicTransportServerSession(
 
   static QuicTransportServerCryptoHelper* helper =
       new QuicTransportServerCryptoHelper();
-  crypto_stream_ = std::make_unique<QuicCryptoServerStream>(
+  crypto_stream_ = CreateCryptoServerStream(
       crypto_config, compressed_certs_cache, this, helper);
 }
 
@@ -83,8 +88,8 @@ void QuicTransportServerSession::ClientIndication::OnDataAvailable() {
   if (buffer_.size() > ClientIndicationMaxSize()) {
     session_->connection()->CloseConnection(
         QUIC_TRANSPORT_INVALID_CLIENT_INDICATION,
-        QuicStrCat("Client indication size exceeds ", ClientIndicationMaxSize(),
-                   " bytes"),
+        quiche::QuicheStrCat("Client indication size exceeds ",
+                             ClientIndicationMaxSize(), " bytes"),
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
@@ -96,6 +101,7 @@ void QuicTransportServerSession::ClientIndication::OnDataAvailable() {
 
 bool QuicTransportServerSession::ClientIndicationParser::Parse() {
   bool origin_received = false;
+  bool path_received = false;
   while (!reader_.IsDoneReading()) {
     uint16_t key;
     if (!reader_.ReadUInt16(&key)) {
@@ -103,9 +109,9 @@ bool QuicTransportServerSession::ClientIndicationParser::Parse() {
       return false;
     }
 
-    QuicStringPiece value;
+    quiche::QuicheStringPiece value;
     if (!reader_.ReadStringPiece16(&value)) {
-      ParseError(QuicStrCat("Failed to read value for key ", key));
+      ParseError(quiche::QuicheStrCat("Failed to read value for key ", key));
       return false;
     }
 
@@ -127,6 +133,14 @@ bool QuicTransportServerSession::ClientIndicationParser::Parse() {
         break;
       }
 
+      case QuicTransportClientIndicationKeys::kPath: {
+        if (!ProcessPath(value)) {
+          return false;
+        }
+        path_received = true;
+        break;
+      }
+
       default:
         QUIC_DLOG(INFO) << "Unknown client indication key: " << key;
         break;
@@ -137,7 +151,37 @@ bool QuicTransportServerSession::ClientIndicationParser::Parse() {
     Error("No origin received");
     return false;
   }
+  if (!path_received) {
+    Error("No path received");
+    return false;
+  }
 
+  return true;
+}
+
+bool QuicTransportServerSession::ClientIndicationParser::ProcessPath(
+    quiche::QuicheStringPiece path) {
+  if (path.empty() || path[0] != '/') {
+    // https://tools.ietf.org/html/draft-vvv-webtransport-quic-01#section-3.2.2
+    Error("Path must begin with a '/'");
+    return false;
+  }
+
+  // TODO(b/145674008): use the SNI value from the handshake instead of the IP
+  // address.
+  std::string url_text = quiche::QuicheStrCat(
+      url::kQuicTransportScheme, url::kStandardSchemeSeparator,
+      session_->self_address().ToString(), path);
+  GURL url{url_text};
+  if (!url.is_valid()) {
+    Error("Invalid path specified");
+    return false;
+  }
+
+  if (!session_->visitor_->ProcessPath(url)) {
+    Error("Specified path rejected");
+    return false;
+  }
   return true;
 }
 
@@ -149,13 +193,13 @@ void QuicTransportServerSession::ClientIndicationParser::Error(
 }
 
 void QuicTransportServerSession::ClientIndicationParser::ParseError(
-    QuicStringPiece error_message) {
-  Error(QuicStrCat("Failed to parse the client indication stream: ",
-                   error_message, reader_.DebugString()));
+    quiche::QuicheStringPiece error_message) {
+  Error(quiche::QuicheStrCat("Failed to parse the client indication stream: ",
+                             error_message, reader_.DebugString()));
 }
 
 void QuicTransportServerSession::ProcessClientIndication(
-    QuicStringPiece indication) {
+    quiche::QuicheStringPiece indication) {
   ClientIndicationParser parser(this, indication);
   if (!parser.Parse()) {
     return;

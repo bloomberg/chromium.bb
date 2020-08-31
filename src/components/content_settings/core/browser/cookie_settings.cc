@@ -5,8 +5,8 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -20,6 +20,10 @@
 #include "net/cookies/cookie_util.h"
 #include "url/gurl.h"
 
+#if !defined(OS_IOS)
+#include "third_party/blink/public/common/features.h"
+#endif
+
 namespace content_settings {
 
 CookieSettings::CookieSettings(
@@ -31,6 +35,7 @@ CookieSettings::CookieSettings(
       is_incognito_(is_incognito),
       extension_scheme_(extension_scheme),
       block_third_party_cookies_(false) {
+  content_settings_observer_.Add(host_content_settings_map_.get());
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
       prefs::kBlockThirdPartyCookies,
@@ -88,10 +93,14 @@ void CookieSettings::ResetCookieSetting(const GURL& primary_url) {
       CONTENT_SETTING_DEFAULT);
 }
 
-bool CookieSettings::IsThirdPartyAccessAllowed(const GURL& first_party_url) {
+bool CookieSettings::IsThirdPartyAccessAllowed(
+    const GURL& first_party_url,
+    content_settings::SettingSource* source) {
   // Use GURL() as an opaque primary url to check if any site
   // could access cookies in a 3p context on |first_party_url|.
-  return IsCookieAccessAllowed(GURL(), first_party_url);
+  ContentSetting setting;
+  GetCookieSetting(GURL(), first_party_url, source, &setting);
+  return IsAllowed(setting);
 }
 
 void CookieSettings::SetThirdPartyCookieSetting(const GURL& first_party_url,
@@ -198,11 +207,29 @@ void CookieSettings::GetCookieSettingInternal(
   DCHECK(value);
   ContentSetting setting = ValueToContentSetting(value.get());
   bool block = block_third && is_third_party_request;
+
+#if !defined(OS_IOS)
+  // IOS doesn't use blink and as such cannot check our feature flag. Disabling
+  // by default there should be no-op as the lack of Blink also means no grants
+  // would be generated. Everywhere else we'll use |kStorageAccessAPI| to gate
+  // our checking logic.
+  // We'll perform this check after we know if we will |block| or not to avoid
+  // performing extra work in scenarios we already allow.
+  if (block &&
+      base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
+    ContentSetting setting = host_content_settings_map_->GetContentSetting(
+        url, first_party_url, ContentSettingsType::STORAGE_ACCESS,
+        std::string());
+
+    if (setting == CONTENT_SETTING_ALLOW)
+      block = false;
+  }
+#endif
+
   *cookie_setting = block ? CONTENT_SETTING_BLOCK : setting;
 }
 
-CookieSettings::~CookieSettings() {
-}
+CookieSettings::~CookieSettings() = default;
 
 bool CookieSettings::IsCookieControlsEnabled() {
   if (base::FeatureList::IsEnabled(
@@ -219,7 +246,7 @@ bool CookieSettings::IsCookieControlsEnabled() {
       pref_change_registrar_.prefs()->GetInteger(prefs::kCookieControlsMode));
 
   switch (mode) {
-    case CookieControlsMode::kOn:
+    case CookieControlsMode::kBlockThirdParty:
       return true;
     case CookieControlsMode::kIncognitoOnly:
       return is_incognito_;
@@ -227,6 +254,17 @@ bool CookieSettings::IsCookieControlsEnabled() {
       return false;
   }
   return false;
+}
+
+void CookieSettings::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier) {
+  if (content_type == ContentSettingsType::COOKIES) {
+    for (auto& observer : observers_)
+      observer.OnCookieSettingChanged();
+  }
 }
 
 void CookieSettings::OnCookiePreferencesChanged() {

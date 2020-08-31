@@ -4,9 +4,9 @@
 
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 
+#include "build/build_config.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
-#include "gpu/command_buffer/common/webgpu_cmd_enums.h"
 #include "gpu/command_buffer/common/webgpu_cmd_format.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/decoder_client.h"
@@ -35,7 +35,6 @@ class WebGPUDecoderTest : public ::testing::Test {
     if (!WebGPUSupported()) {
       return;
     }
-
     // Shared image factories for some backends take a dependency on GL.
     // Failure to create a test context with a surface and making it current
     // will result in a "NoContext" context being current that asserts on all
@@ -49,11 +48,16 @@ class WebGPUDecoderTest : public ::testing::Test {
 
     gl_context_->MakeCurrent(gl_surface_.get());
 
+#if defined(OS_WIN)
+    // D3D shared images are only supported with passthrough command decoder.
+    gpu_preferences_.use_passthrough_cmd_decoder = true;
+#endif  // OS_WIN
+
     decoder_client_.reset(new FakeDecoderClient());
     command_buffer_service_.reset(new FakeCommandBufferServiceBase());
     decoder_.reset(WebGPUDecoder::Create(
         decoder_client_.get(), command_buffer_service_.get(),
-        &shared_image_manager_, nullptr, &outputter_));
+        &shared_image_manager_, nullptr, &outputter_, gpu_preferences_));
     ASSERT_EQ(decoder_->Initialize(), ContextResult::kSuccess);
 
     constexpr uint32_t kAdapterClientID = 0;
@@ -65,11 +69,11 @@ class WebGPUDecoderTest : public ::testing::Test {
 
     constexpr uint32_t kAdapterServiceID = 0;
     cmds::RequestDevice requestDeviceCmd;
-    requestDeviceCmd.Init(kAdapterServiceID, 0, 0, 0);
+    requestDeviceCmd.Init(kDeviceClientID, kAdapterServiceID, 0, 0, 0);
     ASSERT_EQ(error::kNoError, ExecuteCmd(requestDeviceCmd));
 
     factory_ = std::make_unique<SharedImageFactory>(
-        GpuPreferences(), GpuDriverBugWorkarounds(), GpuFeatureInfo(),
+        gpu_preferences_, GpuDriverBugWorkarounds(), GpuFeatureInfo(),
         /*context_state=*/nullptr, /*mailbox_manager=*/nullptr,
         &shared_image_manager_, /*image_factory=*/nullptr, /*tracker=*/nullptr,
         /*enable_wrapped_sk_image=*/false);
@@ -114,6 +118,7 @@ class WebGPUDecoderTest : public ::testing::Test {
   }
 
  protected:
+  GpuPreferences gpu_preferences_;
   std::unique_ptr<FakeCommandBufferServiceBase> command_buffer_service_;
   std::unique_ptr<WebGPUDecoder> decoder_;
   std::unique_ptr<FakeDecoderClient> decoder_client_;
@@ -122,6 +127,8 @@ class WebGPUDecoderTest : public ::testing::Test {
   std::unique_ptr<SharedImageFactory> factory_;
   scoped_refptr<gl::GLSurface> gl_surface_;
   scoped_refptr<gl::GLContext> gl_context_;
+
+  static const DawnDeviceClientID kDeviceClientID = 0u;
 };
 
 TEST_F(WebGPUDecoderTest, DawnCommands) {
@@ -131,7 +138,7 @@ TEST_F(WebGPUDecoderTest, DawnCommands) {
   }
 
   cmds::DawnCommands cmd;
-  cmd.Init(0, 0, 0);
+  cmd.Init(kDeviceClientID, 0, 0, 0);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
@@ -149,21 +156,33 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   gpu::Mailbox mailbox = Mailbox::GenerateForSharedImage();
   EXPECT_TRUE(factory_->CreateSharedImage(
       mailbox, viz::ResourceFormat::RGBA_8888, {1, 1},
-      gfx::ColorSpace::CreateSRGB(), SHARED_IMAGE_USAGE_WEBGPU));
+      gfx::ColorSpace::CreateSRGB(), gfx::kNullAcceleratedWidget,
+      SHARED_IMAGE_USAGE_WEBGPU));
 
   // Error case: invalid mailbox
   {
     gpu::Mailbox bad_mailbox;
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, WGPUTextureUsage_Sampled, bad_mailbox.name);
+    cmd.cmd.Init(kDeviceClientID, 0, 1, 0, WGPUTextureUsage_Sampled,
+                 bad_mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(bad_mailbox.name)));
   }
 
-  // Error case: device doesn't exist.
+  // Error case: device client id doesn't exist.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(42, 42, 1, 0, WGPUTextureUsage_Sampled, mailbox.name);
+    cmd.cmd.Init(kDeviceClientID + 1, 0, 1, 0, WGPUTextureUsage_Sampled,
+                 mailbox.name);
+    EXPECT_EQ(error::kInvalidArguments,
+              ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
+  }
+
+  // Error case: device generation is invalid.
+  {
+    AssociateMailboxCmdStorage cmd;
+    cmd.cmd.Init(kDeviceClientID, 42, 1, 0, WGPUTextureUsage_Sampled,
+                 mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -171,7 +190,8 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Error case: texture ID invalid for the wire server.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 42, 42, WGPUTextureUsage_Sampled, mailbox.name);
+    cmd.cmd.Init(kDeviceClientID, 0, 42, 42, WGPUTextureUsage_Sampled,
+                 mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -179,7 +199,8 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Error case: invalid usage.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 42, 42, WGPUTextureUsage_Sampled, mailbox.name);
+    cmd.cmd.Init(kDeviceClientID, 0, 42, 42, WGPUTextureUsage_Sampled,
+                 mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -187,7 +208,8 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Error case: invalid texture usage.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, WGPUTextureUsage_Force32, mailbox.name);
+    cmd.cmd.Init(kDeviceClientID, 0, 1, 0, WGPUTextureUsage_Force32,
+                 mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -199,7 +221,8 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // and generation invalid.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, WGPUTextureUsage_Sampled, mailbox.name);
+    cmd.cmd.Init(kDeviceClientID, 0, 1, 0, WGPUTextureUsage_Sampled,
+                 mailbox.name);
     EXPECT_EQ(error::kNoError,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -207,7 +230,8 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Error case: associated to an already associated texture.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, WGPUTextureUsage_Sampled, mailbox.name);
+    cmd.cmd.Init(kDeviceClientID, 0, 1, 0, WGPUTextureUsage_Sampled,
+                 mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -215,7 +239,7 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Dissociate the image from the control case to remove its reference.
   {
     cmds::DissociateMailbox cmd;
-    cmd.Init(1, 0);
+    cmd.Init(kDeviceClientID, 1, 0);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
 }
@@ -229,12 +253,14 @@ TEST_F(WebGPUDecoderTest, DissociateMailbox) {
   gpu::Mailbox mailbox = Mailbox::GenerateForSharedImage();
   EXPECT_TRUE(factory_->CreateSharedImage(
       mailbox, viz::ResourceFormat::RGBA_8888, {1, 1},
-      gfx::ColorSpace::CreateSRGB(), SHARED_IMAGE_USAGE_WEBGPU));
+      gfx::ColorSpace::CreateSRGB(), kNullSurfaceHandle,
+      SHARED_IMAGE_USAGE_WEBGPU));
 
   // Associate a mailbox so we can later dissociate it.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, WGPUTextureUsage_Sampled, mailbox.name);
+    cmd.cmd.Init(kDeviceClientID, 0, 1, 0, WGPUTextureUsage_Sampled,
+                 mailbox.name);
     EXPECT_EQ(error::kNoError,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -242,14 +268,28 @@ TEST_F(WebGPUDecoderTest, DissociateMailbox) {
   // Error case: wrong texture ID
   {
     cmds::DissociateMailbox cmd;
-    cmd.Init(42, 42);
+    cmd.Init(kDeviceClientID, 42, 0);
+    EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+  }
+
+  // Error case: wrong texture generation
+  {
+    cmds::DissociateMailbox cmd;
+    cmd.Init(kDeviceClientID, 1, 42);
+    EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+  }
+
+  // Error case: invalid client device ID
+  {
+    cmds::DissociateMailbox cmd;
+    cmd.Init(kDeviceClientID + 1, 1, 0);
     EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
   }
 
   // Success case
   {
     cmds::DissociateMailbox cmd;
-    cmd.Init(1, 0);
+    cmd.Init(kDeviceClientID, 1, 0);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
 }

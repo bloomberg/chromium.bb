@@ -63,7 +63,7 @@ struct dib_header {
 	unsigned int unused[12];
 } __attribute__((__packed__));
 
-static int
+static void
 bmp_header_write(int fd, int width, int height, int bgra, int noflip, int alpha)
 {
 	struct bmp_header bmp_header = {
@@ -98,8 +98,6 @@ bmp_header_write(int fd, int width, int height, int bgra, int noflip, int alpha)
 
 	write(fd, &bmp_header, sizeof(struct bmp_header));
 	write(fd, &dib_header, sizeof(struct dib_header));
-
-	return 0;
 }
 
 void

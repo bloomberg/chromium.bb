@@ -42,3 +42,15 @@ with the rest of the project, including any adapter files under
 `//third_party/<library>` (e.g. BUILD.gn).  Any necessary updates to make the
 rest of the project work with the new dependency version should happen in the
 same change.
+
+## Build Failures
+
+If after running `gclient sync`, your build starts failing due to errors in
+`//third_party/`, then do the following:
+
+  1. Delete the `//out/` directory.
+  1. Delete the `src/` directory of the failing `//third_party` library.
+  1. Re-run `gclient sync`.
+
+This will remove any directories and files which were removed in the updated
+library but not deleted by `gclient sync`.

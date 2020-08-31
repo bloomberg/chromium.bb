@@ -215,38 +215,34 @@ TEST(MdnsARecordRdataTest, CopyAndMove) {
 }
 
 TEST(MdnsAAAARecordRdataTest, Construct) {
-  constexpr uint8_t kIPv6AddressBytes1[] = {
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  constexpr uint16_t kIPv6AddressHextets1[] = {
+      0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
   };
-  constexpr uint8_t kIPv6AddressBytes2[] = {
-      0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x02, 0x02, 0xb3, 0xff, 0xfe, 0x1e, 0x83, 0x29,
+  constexpr uint16_t kIPv6AddressHextets2[] = {
+      0xfe80, 0x0000, 0x0000, 0x0000, 0x0202, 0xb3ff, 0xfe1e, 0x8329,
   };
 
-  IPAddress address1(kIPv6AddressBytes1);
+  IPAddress address1(kIPv6AddressHextets1);
   AAAARecordRdata rdata1;
   EXPECT_EQ(rdata1.MaxWireSize(), UINT64_C(18));
   EXPECT_EQ(rdata1.ipv6_address(), address1);
 
-  IPAddress address2(kIPv6AddressBytes2);
+  IPAddress address2(kIPv6AddressHextets2);
   AAAARecordRdata rdata2(address2);
   EXPECT_EQ(rdata2.MaxWireSize(), UINT64_C(18));
   EXPECT_EQ(rdata2.ipv6_address(), address2);
 }
 
 TEST(MdnsAAAARecordRdataTest, Compare) {
-  constexpr uint8_t kIPv6AddressBytes1[] = {
-      0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-      0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+  constexpr uint16_t kIPv6AddressHextets1[] = {
+      0x0001, 0x0203, 0x0405, 0x0607, 0x0809, 0x0A0B, 0x0C0D, 0x0E0F,
   };
-  constexpr uint8_t kIPv6AddressBytes2[] = {
-      0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x02, 0x02, 0xb3, 0xff, 0xfe, 0x1e, 0x83, 0x29,
+  constexpr uint16_t kIPv6AddressHextets2[] = {
+      0xfe80, 0x0000, 0x0000, 0x0000, 0x0202, 0xb3ff, 0xfe1e, 0x8329,
   };
 
-  IPAddress address1(kIPv6AddressBytes1);
-  IPAddress address2(kIPv6AddressBytes2);
+  IPAddress address1(kIPv6AddressHextets1);
+  IPAddress address2(kIPv6AddressHextets2);
   AAAARecordRdata rdata1(address1);
   AAAARecordRdata rdata2(address1);
   AAAARecordRdata rdata3(address2);
@@ -256,11 +252,10 @@ TEST(MdnsAAAARecordRdataTest, Compare) {
 }
 
 TEST(MdnsAAAARecordRdataTest, CopyAndMove) {
-  constexpr uint8_t kIPv6AddressBytes[] = {
-      0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x02, 0x02, 0xb3, 0xff, 0xfe, 0x1e, 0x83, 0x29,
+  constexpr uint16_t kIPv6AddressHextets[] = {
+      0xfe80, 0x0000, 0x0000, 0x0000, 0x0202, 0xb3ff, 0xfe1e, 0x8329,
   };
-  TestCopyAndMove(AAAARecordRdata(IPAddress(kIPv6AddressBytes)));
+  TestCopyAndMove(AAAARecordRdata(IPAddress(kIPv6AddressHextets)));
 }
 
 TEST(MdnsPtrRecordRdataTest, Construct) {
@@ -309,6 +304,135 @@ TEST(MdnsTxtRecordRdataTest, Compare) {
 
 TEST(MdnsTxtRecordRdataTest, CopyAndMove) {
   TestCopyAndMove(MakeTxtRecord({"foo=1", "bar=2"}));
+}
+
+TEST(MdnsNsecRecordRdataTest, Construct) {
+  const DomainName domain{"testing", "local"};
+  NsecRecordRdata rdata(domain);
+  EXPECT_EQ(rdata.MaxWireSize(), domain.MaxWireSize());
+  EXPECT_EQ(rdata.next_domain_name(), domain);
+
+  rdata = NsecRecordRdata(domain, DnsType::kA);
+  // It takes 3 bytes to encode the kA and kSRV records because:
+  // - Both record types have value less than 256, so they are both in window
+  //   block 1.
+  // - The bitmap length for this block is always a single byte
+  // - DnsType kA = 1 (encoded in byte 1)
+  // So the full encoded version is:
+  //   00000000 00000001 01000000
+  //   |window| | size | | 0-7  |
+  // For a total of 3 bytes.
+  EXPECT_EQ(rdata.encoded_types(), (std::vector<uint8_t>{0x00, 0x01, 0x40}));
+  EXPECT_EQ(rdata.MaxWireSize(), domain.MaxWireSize() + 3);
+  EXPECT_EQ(rdata.next_domain_name(), domain);
+
+  // It takes 8 bytes to encode the kA and kSRV records because:
+  // - Both record types have value less than 256, so they are both in window
+  //   block 1.
+  // - The bitmap length for this block is always a single byte
+  // - DnsTypes  kTXT = 16 (encoded in byte 3)
+  // So the full encoded version is:
+  //   00000000 00000011 00000000 00000000 10000000
+  //   |window| | size | | 0-7  | | 8-15 | |16-23 |
+  // For a total of 5 bytes.
+  rdata = NsecRecordRdata(domain, DnsType::kTXT);
+  EXPECT_EQ(rdata.encoded_types(),
+            (std::vector<uint8_t>{0x00, 0x03, 0x00, 0x00, 0x80}));
+  EXPECT_EQ(rdata.MaxWireSize(), domain.MaxWireSize() + 5);
+  EXPECT_EQ(rdata.next_domain_name(), domain);
+
+  // It takes 8 bytes to encode the kA and kSRV records because:
+  // - Both record types have value less than 256, so they are both in window
+  //   block 1.
+  // - The bitmap length for this block is always a single byte
+  // - DnsTypes kSRV = 33 (encoded in byte 5)
+  // So the full encoded version is:
+  //   00000000 00000101 00000000 00000000 00000000 00000000 01000000
+  //   |window| | size | | 0-7  | | 8-15 | |16-23 | |24-31 | |32-39 |
+  // For a total of 7 bytes.
+  rdata = NsecRecordRdata(domain, DnsType::kSRV);
+  EXPECT_EQ(rdata.encoded_types(),
+            (std::vector<uint8_t>{0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x40}));
+  EXPECT_EQ(rdata.MaxWireSize(), domain.MaxWireSize() + 7);
+  EXPECT_EQ(rdata.next_domain_name(), domain);
+
+  // It takes 8 bytes to encode the kA and kSRV records because:
+  // - Both record types have value less than 256, so they are both in window
+  //   block 1.
+  // - The bitmap length for this block is always a single byte
+  // - DnsTypes kNSEC = 47
+  // So the full encoded version is:
+  //   00000000 00000110 00000000 00000000 00000000 00000000 0000000  00000001
+  //   |window| | size | | 0-7  | | 8-15 | |16-23 | |24-31 | |32-39 | |40-47 |
+  // For a total of 8 bytes.
+  rdata = NsecRecordRdata(domain, DnsType::kNSEC);
+  EXPECT_EQ(
+      rdata.encoded_types(),
+      (std::vector<uint8_t>{0x00, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}));
+  EXPECT_EQ(rdata.MaxWireSize(), domain.MaxWireSize() + 8);
+  EXPECT_EQ(rdata.next_domain_name(), domain);
+
+  // It takes 8 bytes to encode the kA and kSRV records because:
+  // - Both record types have value less than 256, so they are both in window
+  //   block 1.
+  // - The bitmap length for this block is always a single byte
+  // - DnsTypes kNSEC = 255
+  // So 32 bits are required for the bitfield, for a total of 34 bits.
+  rdata = NsecRecordRdata(domain, DnsType::kANY);
+  std::vector<uint8_t> results{0x00, 32};
+  for (int i = 1; i < 32; i++) {
+    results.push_back(0x00);
+  }
+  results.push_back(0x01);
+  EXPECT_EQ(rdata.encoded_types(), results);
+  EXPECT_EQ(rdata.MaxWireSize(), domain.MaxWireSize() + 34);
+  EXPECT_EQ(rdata.next_domain_name(), domain);
+
+  // It takes 8 bytes to encode the kA and kSRV records because:
+  // - Both record types have value less than 256, so they are both in window
+  //   block 1.
+  // - The bitmap length for this block is always a single byte
+  // - DnsTypes have the following values:
+  //   - kA = 1 (encoded in byte 1)
+  //     kTXT = 16 (encoded in byte 3)
+  //   - kSRV = 33 (encoded in byte 5)
+  //   - kNSEC = 47 (encoded in 6 bytes)
+  // - The largest of these is 47, so 6 bytes are needed to encode this data.
+  // So the full encoded version is:
+  //   00000000 00000110 01000000 00000000 10000000 00000000 0100000  00000001
+  //   |window| | size | | 0-7  | | 8-15 | |16-23 | |24-31 | |32-39 | |40-47 |
+  // For a total of 8 bytes.
+  rdata = NsecRecordRdata(domain, DnsType::kA, DnsType::kTXT, DnsType::kSRV,
+                          DnsType::kNSEC);
+  EXPECT_EQ(
+      rdata.encoded_types(),
+      (std::vector<uint8_t>{0x00, 0x06, 0x40, 0x00, 0x80, 0x00, 0x40, 0x01}));
+  EXPECT_EQ(rdata.MaxWireSize(), domain.MaxWireSize() + 8);
+  EXPECT_EQ(rdata.next_domain_name(), domain);
+}
+
+TEST(MdnsNsecRecordRdataTest, Compare) {
+  const DomainName domain{"testing", "local"};
+  const NsecRecordRdata rdata1(domain, DnsType::kA, DnsType::kSRV);
+  const NsecRecordRdata rdata2(domain, DnsType::kSRV, DnsType::kA);
+  const NsecRecordRdata rdata3(domain, DnsType::kSRV, DnsType::kA,
+                               DnsType::kAAAA);
+  const NsecRecordRdata rdata4(domain, DnsType::kSRV, DnsType::kAAAA);
+
+  // Ensure equal Rdata values are evaluated as equal.
+  EXPECT_EQ(rdata1, rdata1);
+  EXPECT_EQ(rdata1, rdata2);
+  EXPECT_EQ(rdata2, rdata1);
+
+  // Ensure different Rdata values are not.
+  EXPECT_NE(rdata1, rdata3);
+  EXPECT_NE(rdata1, rdata4);
+  EXPECT_NE(rdata3, rdata4);
+}
+
+TEST(MdnsNsecRecordRdataTest, CopyAndMove) {
+  TestCopyAndMove(NsecRecordRdata(DomainName{"testing", "local"}, DnsType::kA,
+                                  DnsType::kSRV));
 }
 
 TEST(MdnsRecordTest, Construct) {

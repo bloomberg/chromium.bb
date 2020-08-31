@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2013 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -43,15 +43,16 @@ class Randomness(object):
   def __init__(self, random_pool_size=1024):
     """Creates 1mb of random data in a pool in 1kb chunks."""
     self.pool = [
-      ''.join(chr(random.randrange(256)) for _ in xrange(1024))
-      for _ in xrange(random_pool_size)
+        ''.join(chr(random.randrange(256))
+                for _ in range(1024))
+        for _ in range(random_pool_size)
     ]
 
   def gen(self, size):
     """Returns a str containing random data from the pool of size |size|."""
     chunks = int(size / 1024)
     rest = size - (chunks*1024)
-    data = ''.join(random.choice(self.pool) for _ in xrange(chunks))
+    data = ''.join(random.choice(self.pool) for _ in range(chunks))
     data += random.choice(self.pool)[:rest]
     return data
 
@@ -113,8 +114,8 @@ def send_and_receive(random_pool, storage, progress, size):
   start = time.time()
   batch = 1
   items = [
-    isolateserver.BufferItem(random_pool.gen(size), False)
-    for _ in xrange(batch)
+      isolateserver.BufferItem(random_pool.gen(size), False)
+      for _ in range(batch)
   ]
   try:
     # len(_uploaded) may be < len(items) happen if the items is not random
@@ -233,7 +234,7 @@ def main():
   with threading_utils.ThreadPoolWithProgress(
       progress, options.threads, options.threads, 0) as pool:
     if options.items:
-      for _ in xrange(options.items):
+      for _ in range(options.items):
         pool.add_task(0, do_item, gen_size(options.mid_size))
         progress.print_update()
     elif options.max_size:

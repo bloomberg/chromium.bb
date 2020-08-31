@@ -74,7 +74,8 @@ class StylePendingImage final : public StyleImage {
 
   FloatSize ImageSize(const Document&,
                       float /*multiplier*/,
-                      const LayoutSize& /*defaultObjectSize*/) const override {
+                      const LayoutSize& /*defaultObjectSize*/,
+                      RespectImageOrientationEnum) const override {
     return FloatSize();
   }
   bool HasIntrinsicSize() const override { return true; }
@@ -91,7 +92,7 @@ class StylePendingImage final : public StyleImage {
     return false;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(value_);
     StyleImage::Trace(visitor);
   }

@@ -6,6 +6,7 @@
 
 #include "chrome/common/buildflags.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_resources.h"
 #include "ui/resources/grit/webui_resources_map.h"
 
@@ -37,7 +38,7 @@ void SetupWebUIDataSource(content::WebUIDataSource* source,
 
     source->AddResourcePath(path, resource.value);
   }
-  source->SetDefaultResource(default_resource);
+  source->AddResourcePath("", default_resource);
 }
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
@@ -47,7 +48,7 @@ void SetupBundledWebUIDataSource(content::WebUIDataSource* source,
                                  int default_resource) {
   SetupPolymer3Defaults(source);
   source->AddResourcePath(bundled_path, bundle);
-  source->SetDefaultResource(default_resource);
+  source->AddResourcePath("", default_resource);
 }
 #endif
 
@@ -61,6 +62,12 @@ void AddResourcePathsBulk(content::WebUIDataSource* source,
                           base::span<const ResourcePath> paths) {
   for (const auto& path : paths)
     source->AddResourcePath(path.path, path.id);
+}
+
+void AddResourcePathsBulk(content::WebUIDataSource* source,
+                          base::span<const GritResourceMap> resources) {
+  for (const auto& resource : resources)
+    source->AddResourcePath(resource.name, resource.value);
 }
 
 }  // namespace webui

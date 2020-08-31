@@ -141,6 +141,7 @@ These options are passed to `codesign --verify` after the
 VerifyOptions = make_enum(
     'signing.model.VerifyOptions', {
         'DEEP': '--deep',
+        'STRICT': '--strict',
         'NO_STRICT': '--no-strict',
         'IGNORE_RESOURCES': '--ignore-resources',
     })
@@ -152,6 +153,12 @@ CodeSignOptions = make_enum(
         'HARDENED_RUNTIME': 'runtime',
         'KILL': 'kill',
     })
+
+# Specify the components of HARDENED_RUNTIME that are also available on
+# older macOS versions.
+CodeSignOptions.FULL_HARDENED_RUNTIME_OPTIONS = (
+    CodeSignOptions.HARDENED_RUNTIME + CodeSignOptions.RESTRICT +
+    CodeSignOptions.LIBRARY_VALIDATION + CodeSignOptions.KILL)
 
 
 class Distribution(object):

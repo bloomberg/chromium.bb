@@ -4,7 +4,10 @@
 
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator.h"
 
-#include "base/logging.h"
+#include <ostream>
+
+#include "base/check_op.h"
+#include "base/notreached.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_mediator.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_transition_delegate.h"
@@ -64,8 +67,7 @@ typedef NS_ENUM(NSInteger, IdentityChooserCoordinatorState) {
   self.state = IdentityChooserCoordinatorStateStarted;
   // Creates the controller.
   self.identityChooserViewController = [[IdentityChooserViewController alloc]
-      initWithTableViewStyle:UITableViewStylePlain
-                 appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+      initWithStyle:UITableViewStylePlain];
   self.identityChooserViewController.modalPresentationStyle =
       UIModalPresentationCustom;
   self.transitionController = [[IdentityChooserTransitionDelegate alloc] init];

@@ -35,13 +35,16 @@ namespace dawn_native { namespace d3d12 {
         void Release();
         bool IsOpen() const;
 
-        MaybeError ExecuteCommandList(ID3D12CommandQueue* d3d12CommandQueue);
+        MaybeError ExecuteCommandList(Device* device);
+
+        void TrackHeapUsage(Heap* heap, Serial serial);
 
       private:
         ComPtr<ID3D12GraphicsCommandList> mD3d12CommandList;
         ComPtr<ID3D12GraphicsCommandList4> mD3d12CommandList4;
         bool mIsOpen = false;
         std::set<Texture*> mSharedTextures;
+        std::vector<Heap*> mHeapsPendingUsage;
     };
 }}  // namespace dawn_native::d3d12
 

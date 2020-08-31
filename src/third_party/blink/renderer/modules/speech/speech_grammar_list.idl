@@ -26,10 +26,12 @@
 // https://w3c.github.io/speech-api/#speechgrammarlist
 
 [
-    Constructor,
-    Measure,
+    LegacyWindowAlias=webkitSpeechGrammarList,
+    LegacyWindowAlias_Measure,
+    LegacyWindowAlias_RuntimeEnabled=ScriptedSpeechRecognition,
     NoInterfaceObject
 ] interface SpeechGrammarList {
+    [Measure] constructor();
     readonly attribute unsigned long length;
     [Measure] getter SpeechGrammar item(unsigned long index);
     [CallWith=ScriptState, Measure] void addFromUri(DOMString src, optional float weight);

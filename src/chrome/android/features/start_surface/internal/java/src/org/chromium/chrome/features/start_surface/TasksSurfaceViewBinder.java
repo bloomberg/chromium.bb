@@ -6,6 +6,7 @@ package org.chromium.chrome.features.start_surface;
 
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_HEIGHT;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_STACK_TAB_SWITCHER;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
 
 import android.animation.ObjectAnimator;
@@ -35,14 +36,19 @@ class TasksSurfaceViewBinder {
 
     public static void bind(PropertyModel model, ViewHolder viewHolder, PropertyKey propertyKey) {
         if (IS_SHOWING_OVERVIEW == propertyKey) {
-            updateLayoutAndVisibility(viewHolder, model, model.get(IS_SHOWING_OVERVIEW));
+            updateLayoutAndVisibility(viewHolder, model);
+        } else if (IS_SHOWING_STACK_TAB_SWITCHER == propertyKey) {
+            updateLayoutAndVisibility(viewHolder, model);
         } else if (BOTTOM_BAR_HEIGHT == propertyKey) {
             setBottomBarHeight(viewHolder, model.get(BOTTOM_BAR_HEIGHT));
+        } else if (TOP_BAR_HEIGHT == propertyKey) {
+            setTopBarHeight(viewHolder, model.get(TOP_BAR_HEIGHT));
         }
     }
 
-    private static void updateLayoutAndVisibility(
-            ViewHolder viewHolder, PropertyModel model, boolean isShowing) {
+    private static void updateLayoutAndVisibility(ViewHolder viewHolder, PropertyModel model) {
+        boolean isShowing =
+                model.get(IS_SHOWING_OVERVIEW) && !model.get(IS_SHOWING_STACK_TAB_SWITCHER);
         if (isShowing && viewHolder.tasksSurfaceView.getParent() == null) {
             viewHolder.parentView.addView(viewHolder.tasksSurfaceView);
             MarginLayoutParams layoutParams =
@@ -70,5 +76,14 @@ class TasksSurfaceViewBinder {
         MarginLayoutParams layoutParams =
                 (MarginLayoutParams) viewHolder.tasksSurfaceView.getLayoutParams();
         if (layoutParams != null) layoutParams.bottomMargin = height;
+    }
+
+    private static void setTopBarHeight(ViewHolder viewHolder, int height) {
+        MarginLayoutParams layoutParams =
+                (MarginLayoutParams) viewHolder.tasksSurfaceView.getLayoutParams();
+        if (layoutParams == null) return;
+
+        layoutParams.topMargin = height;
+        viewHolder.tasksSurfaceView.setLayoutParams(layoutParams);
     }
 }

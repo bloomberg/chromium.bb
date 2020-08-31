@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Büyüt</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, Yüklü Uygulama</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> paylaşılamıyor</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" />, <ph name="SECOND_ITEM_TITLE" /> ile değiştirildi</translation>
 <translation id="1498028757988366001">Bunu daha önce aradınız. "<ph name="QUERY" />" sorgusunu geçmişinizden sildiğinizde bu sorgu tüm cihazlarınızda hesabınızdan kalıcı olarak kaldırılır.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 dakika ve }other{# dakika ve }}</translation>
 <translation id="1643823602425662293">Bildirim</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652">%<ph name="NUMBER" /></translation>
 <translation id="1901303067676059328">Tümünü &amp;seç</translation>
-<translation id="1938451708255335766">Pencerenin görüntü yoğunluğunu ayarlamak için uygulamayı yeniden başlatın.</translation>
 <translation id="2006524834898217237">Bu cihazın internete bağlı olduğundan emin olun.</translation>
 <translation id="208586643495776849">Lütfen tekrar deneyin</translation>
 <translation id="2090963878406559571"><ph name="ORIGIN" /> sitesinden Android telefonunuza bir numara göndermek üzere ayarlarda her iki cihaz için <ph name="TROUBLESHOOT_LINK" />.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Aşağı Ok</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 gün}other{# gün}}</translation>
 <translation id="3295886253693811851">Aramayı şununla yap:</translation>
+<translation id="3306688585798492231">Yerleşik ekran</translation>
 <translation id="335581015389089642">Konuşma</translation>
 <translation id="3389286852084373014">Metin çok büyük</translation>
-<translation id="3479552764303398839">Şimdi değil</translation>
 <translation id="348799646910989694">Raf otomatik olarak gizlenecek</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> sabitlendi</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 gün kaldı}other{# gün kaldı}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783"><ph name="TITLE" /> adlı mobil cihazınızdan okumaya devam edin</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3889424535448813030">Sağ Ok</translation>
-<translation id="3892641579809465218">Dahili Ekran</translation>
 <translation id="3897092660631435901">Menü</translation>
 <translation id="3909791450649380159">&amp;Kes</translation>
 <translation id="3990502903496589789">Sağ Kenar</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 dk.}other{# dk.}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Bugün etkin}=1{1 gün önce etkindi}other{# gün önce etkindi}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 gün ve }other{# gün ve }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 yıl içinde}other{# yıl içinde}}</translation>
-<translation id="5895138241574237353">Yeniden başlat</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 saniye kaldı}other{# saniye kaldı}}</translation>
 <translation id="5941711191222866238">Simge durumuna küçült</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 saat}other{# saat}}</translation>
@@ -156,7 +155,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/sn</translation>
 <translation id="6156262341071374681">Tüm uygulamalara genişlet</translation>
-<translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
+<translation id="6165508094623778733">Daha fazla bilgi</translation>
 <translation id="6264365405983206840">&amp;Tümünü Seç</translation>
 <translation id="6351032674660237738">UYGULAMA ÖNERİLERİ</translation>
 <translation id="6364916375976753737">Sola Kaydır</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Sağdan Sola</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">BÜYÜK İHTİMALLE</translation>
+<translation id="7170202025028120564">Uygulamanız yeniden başlatıldığında ekran ayarları devreye girecek.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 dk. kaldı}other{# dk. kaldı}}</translation>
 <translation id="7319740667687257810">Launcher, kısmi görünüm</translation>

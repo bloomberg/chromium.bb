@@ -46,17 +46,29 @@ suite('ModelSettingsAvailabilityTest', function() {
   test('copies', function() {
     assertTrue(model.settings.copies.available);
 
-    // Remove copies capability.
-    let capabilities = getCddTemplate(model.destination.id).capabilities;
-    delete capabilities.printer.copies;
-    model.set('destination.capabilities', capabilities);
+    // Set max copies to 1.
+    let caps = getCddTemplate(model.destination.id).capabilities;
+    const copiesCap = {max: 1};
+    caps.printer.copies = copiesCap;
+    model.set('destination.capabilities', caps);
+    assertFalse(model.settings.copies.available);
 
-    // Copies is no longer available.
+    // Set max copies to 2 (> 1).
+    caps = getCddTemplate(model.destination.id).capabilities;
+    copiesCap.max = 2;
+    caps.printer.copies = copiesCap;
+    model.set('destination.capabilities', caps);
+    assertTrue(model.settings.copies.available);
+
+    // Remove copies capability.
+    caps = getCddTemplate(model.destination.id).capabilities;
+    delete caps.printer.copies;
+    model.set('destination.capabilities', caps);
     assertFalse(model.settings.copies.available);
 
     // Copies is restored.
-    capabilities = getCddTemplate(model.destination.id).capabilities;
-    model.set('destination.capabilities', capabilities);
+    caps = getCddTemplate(model.destination.id).capabilities;
+    model.set('destination.capabilities', caps);
     assertTrue(model.settings.copies.available);
     assertFalse(model.settings.copies.setFromUi);
   });
@@ -421,33 +433,46 @@ suite('ModelSettingsAvailabilityTest', function() {
     // Default margins + letter paper + HTML page.
     assertTrue(model.settings.headerFooter.available);
 
+    // Custom margins initializes with customMargins undefined and margins
+    // values matching the defaults.
+    model.set('settings.margins.value', MarginsType.CUSTOM);
+    assertTrue(model.settings.headerFooter.available);
+
     // Set margins to NONE
     model.set('settings.margins.value', MarginsType.NO_MARGINS);
     assertFalse(model.settings.headerFooter.available);
+
+    // Set margins to MINIMUM
+    model.set('settings.margins.value', MarginsType.MINIMUM);
+    assertTrue(model.settings.headerFooter.available);
 
     // Custom margins of 0.
     model.set('settings.margins.value', MarginsType.CUSTOM);
     model.set(
         'settings.customMargins.value',
         {marginTop: 0, marginLeft: 0, marginRight: 0, marginBottom: 0});
+    model.set('margins', new Margins(0, 0, 0, 0));
     assertFalse(model.settings.headerFooter.available);
 
     // Custom margins of 36 -> header/footer available
     model.set(
         'settings.customMargins.value',
         {marginTop: 36, marginLeft: 36, marginRight: 36, marginBottom: 36});
+    model.set('margins', new Margins(36, 36, 36, 36));
     assertTrue(model.settings.headerFooter.available);
 
     // Zero top and bottom -> header/footer unavailable
     model.set(
         'settings.customMargins.value',
         {marginTop: 0, marginLeft: 36, marginRight: 36, marginBottom: 0});
+    model.set('margins', new Margins(0, 36, 0, 36));
     assertFalse(model.settings.headerFooter.available);
 
     // Zero top and nonzero bottom -> header/footer available
     model.set(
         'settings.customMargins.value',
         {marginTop: 0, marginLeft: 36, marginRight: 36, marginBottom: 36});
+    model.set('margins', new Margins(0, 36, 36, 36));
     assertTrue(model.settings.headerFooter.available);
 
     // Small paper sizes

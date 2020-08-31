@@ -8,11 +8,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
+#include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,7 +42,6 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/ax_event_manager.h"
@@ -49,6 +50,7 @@
 #include "ui/views/border.h"
 #include "ui/views/buildflags.h"
 #include "ui/views/context_menu_controller.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/metadata/metadata_impl_macros.h"
@@ -116,6 +118,66 @@ class ScopedChildrenLock {
 #endif
 
 }  // namespace internal
+
+////////////////////////////////////////////////////////////////////////////////
+// ViewMaskLayer
+// This class is responsible for creating a masking layer for a view that paints
+// to a layer. It tracks the size of the layer it is masking.
+class VIEWS_EXPORT ViewMaskLayer : public ui::LayerDelegate,
+                                   public ViewObserver {
+ public:
+  // Note that |observed_view| must outlive the ViewMaskLayer instance.
+  ViewMaskLayer(const SkPath& path, View* observed_view);
+  ViewMaskLayer(const ViewMaskLayer& mask_layer) = delete;
+  ViewMaskLayer& operator=(const ViewMaskLayer& mask_layer) = delete;
+  ~ViewMaskLayer() override;
+
+  ui::Layer* layer() { return &layer_; }
+
+ private:
+  // ui::LayerDelegate:
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override;
+  void OnPaintLayer(const ui::PaintContext& context) override;
+
+  // views::ViewObserver:
+  void OnViewBoundsChanged(View* observed_view) override;
+
+  ScopedObserver<View, ViewObserver> observed_view_{this};
+
+  SkPath path_;
+  ui::Layer layer_;
+};
+
+ViewMaskLayer::ViewMaskLayer(const SkPath& path, View* observed_view)
+    : path_{path} {
+  layer_.set_delegate(this);
+  layer_.SetFillsBoundsOpaquely(false);
+  layer_.SetName("ViewMaskLayer");
+  observed_view_.Add(observed_view);
+  OnViewBoundsChanged(observed_view);
+}
+
+ViewMaskLayer::~ViewMaskLayer() {
+  layer_.set_delegate(nullptr);
+}
+
+void ViewMaskLayer::OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                               float new_device_scale_factor) {}
+
+void ViewMaskLayer::OnPaintLayer(const ui::PaintContext& context) {
+  cc::PaintFlags flags;
+  flags.setAlpha(255);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setAntiAlias(true);
+
+  ui::PaintRecorder recorder(context, layer()->size());
+  recorder.canvas()->DrawPath(path_, flags);
+}
+
+void ViewMaskLayer::OnViewBoundsChanged(View* observed_view) {
+  layer_.SetBounds(observed_view->GetLocalBounds());
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // View, public:
@@ -425,6 +487,12 @@ int View::GetHeightForWidth(int w) const {
   return GetPreferredSize().height();
 }
 
+SizeBounds View::GetAvailableSize(const View* child) const {
+  if (layout_manager_)
+    return layout_manager_->GetAvailableSize(this, child);
+  return SizeBounds();
+}
+
 bool View::GetVisible() const {
   return visible_;
 }
@@ -444,7 +512,7 @@ void View::SetVisible(bool visible) {
     if (parent_) {
       parent_->ChildVisibilityChanged(this);
       parent_->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
-                                        false);
+                                        true);
     }
 
     // This notifies all sub-views recursively.
@@ -481,6 +549,7 @@ void View::SetEnabled(bool enabled) {
 
   enabled_ = enabled;
   AdvanceFocusIfNecessary();
+  NotifyAccessibilityEvent(ax::mojom::Event::kStateChanged, true);
   OnPropertyChanged(&enabled_, kPropertyEffectsPaint);
 }
 
@@ -511,6 +580,12 @@ gfx::Transform View::GetTransform() const {
   transform.Translate((base::i18n::IsRTL() ? 1 : -1) * scroll_offset.x(),
                       -scroll_offset.y());
   return transform;
+}
+
+void View::SetClipPath(const SkPath& path) {
+  clip_path_ = path;
+  if (layer())
+    CreateMaskLayer();
 }
 
 void View::SetTransform(const gfx::Transform& transform) {
@@ -545,6 +620,9 @@ void View::SetPaintToLayer(ui::LayerType layer_type) {
   // We directly call |CreateLayer()| here to pass |layer_type|. A call to
   // |CreateOrDestroyLayer()| is therefore not necessary.
   CreateLayer(layer_type);
+
+  if (!clip_path_.isEmpty() && !mask_layer_)
+    CreateMaskLayer();
 
   // Notify the parent chain about the layer change.
   NotifyParentsOfLayerChange();
@@ -972,7 +1050,8 @@ void View::Paint(const PaintInfo& parent_paint_info) {
           SkFloatToScalar(paint_info.paint_recording_scale_x()),
           SkFloatToScalar(paint_info.paint_recording_scale_y()));
 
-      clip_path_in_parent.transform(to_parent_recording_space.matrix());
+      clip_path_in_parent.transform(
+          SkMatrix(to_parent_recording_space.matrix()));
       clip_recorder.ClipPathWithAntiAliasing(clip_path_in_parent);
     }
   }
@@ -1009,6 +1088,7 @@ void View::SetBackground(std::unique_ptr<Background> b) {
 }
 
 void View::SetBorder(std::unique_ptr<Border> b) {
+  const gfx::Rect old_contents_bounds = GetContentsBounds();
   border_ = std::move(b);
 
   // Conceptually, this should be PreferredSizeChanged(), but for some view
@@ -1018,7 +1098,8 @@ void View::SetBorder(std::unique_ptr<Border> b) {
   // InvalidateLayout() still triggers a re-layout of the view, which should
   // include re-querying its preferred size so in practice this is both safe and
   // has the intended effect.
-  InvalidateLayout();
+  if (old_contents_bounds != GetContentsBounds())
+    InvalidateLayout();
 
   SchedulePaint();
 }
@@ -1134,20 +1215,15 @@ bool View::OnMouseDragged(const ui::MouseEvent& event) {
   return false;
 }
 
-void View::OnMouseReleased(const ui::MouseEvent& event) {
-}
+void View::OnMouseReleased(const ui::MouseEvent& event) {}
 
-void View::OnMouseCaptureLost() {
-}
+void View::OnMouseCaptureLost() {}
 
-void View::OnMouseMoved(const ui::MouseEvent& event) {
-}
+void View::OnMouseMoved(const ui::MouseEvent& event) {}
 
-void View::OnMouseEntered(const ui::MouseEvent& event) {
-}
+void View::OnMouseEntered(const ui::MouseEvent& event) {}
 
-void View::OnMouseExited(const ui::MouseEvent& event) {
-}
+void View::OnMouseExited(const ui::MouseEvent& event) {}
 
 void View::SetMouseHandler(View* new_mouse_handler) {
   // |new_mouse_handler| may be nullptr.
@@ -1168,8 +1244,8 @@ bool View::OnMouseWheel(const ui::MouseWheelEvent& event) {
 }
 
 void View::OnKeyEvent(ui::KeyEvent* event) {
-  bool consumed = (event->type() == ui::ET_KEY_PRESSED) ? OnKeyPressed(*event) :
-                                                          OnKeyReleased(*event);
+  bool consumed = (event->type() == ui::ET_KEY_PRESSED) ? OnKeyPressed(*event)
+                                                        : OnKeyReleased(*event);
   if (consumed)
     event->StopPropagation();
 }
@@ -1182,9 +1258,9 @@ void View::OnMouseEvent(ui::MouseEvent* event) {
       return;
 
     case ui::ET_MOUSE_MOVED:
-      if ((event->flags() & (ui::EF_LEFT_MOUSE_BUTTON |
-                             ui::EF_RIGHT_MOUSE_BUTTON |
-                             ui::EF_MIDDLE_MOUSE_BUTTON)) == 0) {
+      if ((event->flags() &
+           (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON |
+            ui::EF_MIDDLE_MOUSE_BUTTON)) == 0) {
         OnMouseMoved(*event);
         return;
       }
@@ -1217,15 +1293,13 @@ void View::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-void View::OnScrollEvent(ui::ScrollEvent* event) {
-}
+void View::OnScrollEvent(ui::ScrollEvent* event) {}
 
 void View::OnTouchEvent(ui::TouchEvent* event) {
   NOTREACHED() << "Views should not receive touch events.";
 }
 
-void View::OnGestureEvent(ui::GestureEvent* event) {
-}
+void View::OnGestureEvent(ui::GestureEvent* event) {}
 
 const ui::InputMethod* View::GetInputMethod() const {
   Widget* widget = const_cast<Widget*>(GetWidget());
@@ -1341,9 +1415,8 @@ bool View::CanHandleAccelerators() const {
   // check if they are focused instead. ChromeOS also behaves different than
   // Linux when an extension popup is about to handle the accelerator.
   bool child = widget && widget->GetTopLevelWidget() != widget;
-  bool focus_in_child =
-      widget &&
-      widget->GetRootView()->Contains(GetFocusManager()->GetFocusedView());
+  bool focus_in_child = widget && widget->GetRootView()->Contains(
+                                      GetFocusManager()->GetFocusedView());
   if ((child && !focus_in_child) || (!child && !widget->IsActive()))
     return false;
 #endif
@@ -1446,11 +1519,6 @@ void View::ShowContextMenu(const gfx::Point& p,
   context_menu_controller_->ShowContextMenuForView(this, p, source_type);
 }
 
-// static
-bool View::ShouldShowContextMenuOnMousePress() {
-  return kContextMenuOnMousePress;
-}
-
 gfx::Point View::GetKeyboardContextMenuLocation() {
   gfx::Rect vis_bounds = GetVisibleBounds();
   gfx::Point screen_point(vis_bounds.x() + vis_bounds.width() / 2,
@@ -1475,22 +1543,19 @@ bool View::CanDrop(const OSExchangeData& data) {
   return false;
 }
 
-void View::OnDragEntered(const ui::DropTargetEvent& event) {
-}
+void View::OnDragEntered(const ui::DropTargetEvent& event) {}
 
 int View::OnDragUpdated(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_NONE;
 }
 
-void View::OnDragExited() {
-}
+void View::OnDragExited() {}
 
 int View::OnPerformDrop(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_NONE;
 }
 
-void View::OnDragDone() {
-}
+void View::OnDragDone() {}
 
 // static
 bool View::ExceededDragThreshold(const gfx::Vector2d& delta) {
@@ -1615,16 +1680,13 @@ bool View::GetNeedsNotificationWhenVisibleBoundsChange() const {
   return false;
 }
 
-void View::OnVisibleBoundsChanged() {
-}
+void View::OnVisibleBoundsChanged() {}
 
 // Tree operations -------------------------------------------------------------
 
-void View::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
-}
+void View::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {}
 
-void View::VisibilityChanged(View* starting_from, bool is_visible) {
-}
+void View::VisibilityChanged(View* starting_from, bool is_visible) {}
 
 void View::NativeViewHierarchyChanged() {
   FocusManager* focus_manager = GetFocusManager();
@@ -1735,7 +1797,8 @@ void View::UpdateChildLayerVisibility(bool ancestor_visible) {
     layer()->SetVisible(layers_visible);
     for (ui::Layer* layer_beneath : layers_beneath_)
       layer_beneath->SetVisible(layers_visible);
-  } else {
+  }
+  {
     internal::ScopedChildrenLock lock(this);
     for (auto* child : children_)
       child->UpdateChildLayerVisibility(layers_visible);
@@ -1759,6 +1822,8 @@ void View::DestroyLayerImpl(LayerChangeNotifyBehavior notify_parents) {
     if (new_parent)
       new_parent->Add(child);
   }
+
+  mask_layer_.reset();
 
   LayerOwner::DestroyLayer();
 
@@ -1801,6 +1866,11 @@ void View::UpdateChildLayerBounds(const LayerOffsetData& offset_data) {
 
 void View::OnPaintLayer(const ui::PaintContext& context) {
   PaintFromPaintRoot(context);
+}
+
+void View::OnLayerTransformed(const gfx::Transform& old_transform,
+                              ui::PropertyChangeReason reason) {
+  NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged, false);
 }
 
 void View::OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -1906,12 +1976,18 @@ void View::OnFocus() {
   NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
 }
 
-void View::OnBlur() {
-}
+void View::OnBlur() {}
 
 void View::Focus() {
   OnFocus();
-  ScrollViewToVisible();
+
+  // If this is the contents root of a |ScrollView|, focus should bring the
+  // |ScrollView| to visible rather than resetting its content scroll position.
+  ScrollView* scroll_view = ScrollView::GetScrollViewForContents(this);
+  if (scroll_view)
+    scroll_view->ScrollViewToVisible();
+  else
+    ScrollViewToVisible();
 
   for (ViewObserver& observer : observers_)
     observer.OnViewFocused(this);
@@ -1927,6 +2003,14 @@ void View::Blur() {
   }
 }
 
+// System events ---------------------------------------------------------------
+
+void View::OnThemeChanged() {
+#if DCHECK_IS_ON()
+  on_theme_changed_called_ = true;
+#endif
+}
+
 // Tooltips --------------------------------------------------------------------
 
 void View::TooltipTextChanged() {
@@ -1939,9 +2023,9 @@ void View::TooltipTextChanged() {
 // Drag and drop ---------------------------------------------------------------
 
 int View::GetDragOperations(const gfx::Point& press_pt) {
-  return drag_controller_ ?
-      drag_controller_->GetDragOperationsForView(this, press_pt) :
-      ui::DragDropTypes::DRAG_NONE;
+  return drag_controller_
+             ? drag_controller_->GetDragOperationsForView(this, press_pt)
+             : ui::DragDropTypes::DRAG_NONE;
 }
 
 void View::WriteDragData(const gfx::Point& press_pt, OSExchangeData* data) {
@@ -2539,7 +2623,7 @@ void View::CreateLayer(ui::LayerType layer_type) {
 
   SetLayer(std::make_unique<ui::Layer>(layer_type));
   layer()->set_delegate(this);
-  layer()->set_name(GetClassName());
+  layer()->SetName(GetClassName());
 
   UpdateParentLayers();
   UpdateLayerVisibility();
@@ -2620,13 +2704,19 @@ void View::ReparentLayer(ui::Layer* parent_layer) {
   MoveLayerToParent(layer(), LayerOffsetData(layer()->device_scale_factor()));
 }
 
+void View::CreateMaskLayer() {
+  DCHECK(layer());
+  mask_layer_ = std::make_unique<views::ViewMaskLayer>(clip_path_, this);
+  layer()->SetMaskLayer(mask_layer_->layer());
+}
+
 // Input -----------------------------------------------------------------------
 
 bool View::ProcessMousePressed(const ui::MouseEvent& event) {
-  int drag_operations =
-      (enabled_ && event.IsOnlyLeftMouseButton() &&
-       HitTestPoint(event.location())) ?
-       GetDragOperations(event.location()) : 0;
+  int drag_operations = (enabled_ && event.IsOnlyLeftMouseButton() &&
+                         HitTestPoint(event.location()))
+                            ? GetDragOperations(event.location())
+                            : 0;
   ContextMenuController* context_menu_controller =
       event.IsRightMouseButton() ? context_menu_controller_ : nullptr;
   View::DragInfo* drag_info = GetDragInfo();
@@ -2809,6 +2899,15 @@ void View::PropagateThemeChanged() {
       child->PropagateThemeChanged();
   }
   OnThemeChanged();
+#if DCHECK_IS_ON()
+  DCHECK(on_theme_changed_called_)
+      << "views::View::OnThemeChanged() has not been called. This means that "
+         "some class in the hierarchy is not calling their direct parent's "
+         "OnThemeChanged(). Please fix this by adding the missing call. Do not "
+         "call views::View::OnThemeChanged() directly unless views::View is "
+         "the direct parent class.";
+  on_theme_changed_called_ = false;
+#endif
   for (ViewObserver& observer : observers_)
     observer.OnViewThemeChanged(this);
 }

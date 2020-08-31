@@ -7,10 +7,15 @@
 #include <set>
 #include <vector>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/predictors/loading_data_collector.h"
 #include "chrome/browser/predictors/preconnect_manager.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 
 namespace predictors {
 
@@ -39,10 +44,20 @@ RedirectStatus GetPredictionRedirectStatus(const GURL& initial_url,
              : RedirectStatus::REDIRECT_WRONG_PREDICTED;
 }
 
-void ReportPreconnectPredictionAccuracy(const PreconnectPrediction& prediction,
-                                        const PageRequestSummary& summary) {
+std::string GetHistogramNameForHintOrigin(HintOrigin hint_origin,
+                                          const char* histogram_base) {
+  return base::StringPrintf("%s.%s", histogram_base,
+                            GetStringNameForHintOrigin(hint_origin).c_str());
+}
+
+// Reports histograms for the accuracy of the prediction. Returns the number of
+// origins that were correctly predicted.
+size_t ReportPreconnectPredictionAccuracy(
+    const PreconnectPrediction& prediction,
+    const PageRequestSummary& summary,
+    HintOrigin hint_origin) {
   if (prediction.requests.empty() || summary.origins.empty())
-    return;
+    return 0;
 
   const auto& actual_origins = summary.origins;
 
@@ -56,21 +71,30 @@ void ReportPreconnectPredictionAccuracy(const PreconnectPrediction& prediction,
   size_t recall_percentage =
       (100 * correctly_predicted_count) / actual_origins.size();
 
-  UMA_HISTOGRAM_PERCENTAGE(
-      internal::kLoadingPredictorPreconnectLearningPrecision,
+  base::UmaHistogramPercentage(
+      GetHistogramNameForHintOrigin(
+          hint_origin, internal::kLoadingPredictorPreconnectLearningPrecision),
       precision_percentage);
-  UMA_HISTOGRAM_PERCENTAGE(internal::kLoadingPredictorPreconnectLearningRecall,
-                           recall_percentage);
-  UMA_HISTOGRAM_COUNTS_100(internal::kLoadingPredictorPreconnectLearningCount,
-                           prediction.requests.size());
+  base::UmaHistogramPercentage(
+      GetHistogramNameForHintOrigin(
+          hint_origin, internal::kLoadingPredictorPreconnectLearningRecall),
+      recall_percentage);
+  base::UmaHistogramCounts100(
+      GetHistogramNameForHintOrigin(
+          hint_origin, internal::kLoadingPredictorPreconnectLearningCount),
+      prediction.requests.size());
 
   RedirectStatus redirect_status = GetPredictionRedirectStatus(
       summary.initial_url, summary.main_frame_url, prediction.host,
       prediction.is_redirected, true /* is_host */);
 
-  UMA_HISTOGRAM_ENUMERATION(
-      internal::kLoadingPredictorPreconnectLearningRedirectStatus,
-      static_cast<int>(redirect_status), static_cast<int>(RedirectStatus::MAX));
+  base::UmaHistogramEnumeration(
+      GetHistogramNameForHintOrigin(
+          hint_origin,
+          internal::kLoadingPredictorPreconnectLearningRedirectStatus),
+      redirect_status, RedirectStatus::MAX);
+
+  return correctly_predicted_count;
 }
 
 void ReportPreconnectAccuracy(
@@ -143,18 +167,68 @@ void LoadingStatsCollector::RecordPreconnectStats(
 }
 
 void LoadingStatsCollector::RecordPageRequestSummary(
-    const PageRequestSummary& summary) {
+    const PageRequestSummary& summary,
+    const base::Optional<OptimizationGuidePrediction>&
+        optimization_guide_prediction) {
   const GURL& initial_url = summary.initial_url;
 
+  ukm::builders::LoadingPredictor builder(summary.ukm_source_id);
+  bool recorded_ukm = false;
+  size_t ukm_cap = 100;
+
   PreconnectPrediction preconnect_prediction;
-  if (predictor_->PredictPreconnectOrigins(initial_url, &preconnect_prediction))
-    ReportPreconnectPredictionAccuracy(preconnect_prediction, summary);
+  if (predictor_->PredictPreconnectOrigins(initial_url,
+                                           &preconnect_prediction)) {
+    size_t correctly_predicted_origins = ReportPreconnectPredictionAccuracy(
+        preconnect_prediction, summary, HintOrigin::NAVIGATION);
+    if (!preconnect_prediction.requests.empty()) {
+      builder.SetLocalPredictionOrigins(
+          std::min(ukm_cap, preconnect_prediction.requests.size()));
+      builder.SetLocalPredictionCorrectlyPredictedOrigins(
+          std::min(ukm_cap, correctly_predicted_origins));
+      recorded_ukm = true;
+    }
+  }
+  if (optimization_guide_prediction) {
+    builder.SetOptimizationGuidePredictionDecision(
+        static_cast<int64_t>(optimization_guide_prediction->decision));
+    if (!optimization_guide_prediction->preconnect_prediction.requests
+             .empty()) {
+      size_t correctly_predicted_origins = ReportPreconnectPredictionAccuracy(
+          optimization_guide_prediction->preconnect_prediction, summary,
+          HintOrigin::OPTIMIZATION_GUIDE);
+      builder.SetOptimizationGuidePredictionOrigins(
+          std::min(ukm_cap, optimization_guide_prediction->preconnect_prediction
+                                .requests.size()));
+      builder.SetOptimizationGuidePredictionCorrectlyPredictedOrigins(
+          std::min(ukm_cap, correctly_predicted_origins));
+    }
+    if (!optimization_guide_prediction->predicted_subresources.empty()) {
+      builder.SetOptimizationGuidePredictionSubresources(std::min(
+          ukm_cap,
+          optimization_guide_prediction->predicted_subresources.size()));
+      const auto& actual_subresource_urls = summary.subresource_urls;
+      size_t correctly_predicted_subresources = std::count_if(
+          optimization_guide_prediction->predicted_subresources.begin(),
+          optimization_guide_prediction->predicted_subresources.end(),
+          [&actual_subresource_urls](const GURL& subresource_url) {
+            return actual_subresource_urls.find(subresource_url) !=
+                   actual_subresource_urls.end();
+          });
+      builder.SetOptimizationGuidePredictionCorrectlyPredictedSubresources(
+          std::min(ukm_cap, correctly_predicted_subresources));
+    }
+    recorded_ukm = true;
+  }
 
   auto it = preconnect_stats_.find(initial_url);
   if (it != preconnect_stats_.end()) {
     ReportPreconnectAccuracy(*it->second, summary.origins);
     preconnect_stats_.erase(it);
   }
+
+  if (recorded_ukm)
+    builder.Record(ukm::UkmRecorder::Get());
 }
 
 void LoadingStatsCollector::CleanupAbandonedStats() {

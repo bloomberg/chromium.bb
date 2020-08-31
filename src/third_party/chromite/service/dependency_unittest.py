@@ -14,6 +14,8 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.service import dependency
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 class DependencyTests(cros_test_lib.TestCase):
   """General unittests for dependency module."""

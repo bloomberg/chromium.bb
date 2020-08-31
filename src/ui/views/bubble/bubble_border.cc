@@ -5,10 +5,14 @@
 #include "ui/views/bubble/bubble_border.h"
 
 #include <algorithm>
+#include <map>
+#include <tuple>
+#include <utility>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -31,7 +35,7 @@ namespace {
 // GetShadowValues and GetBorderAndShadowFlags cache their results. The shadow
 // values depend on both the shadow elevation and color, so we create a tuple to
 // key the cache.
-typedef std::tuple<int, SkColor> ShadowCacheKey;
+using ShadowCacheKey = std::tuple<int, SkColor>;
 
 // Utility functions for getting alignment points on the edge of a rectangle.
 gfx::Point CenterTop(const gfx::Rect& rect) {
@@ -245,7 +249,7 @@ const gfx::ShadowValues& BubbleBorder::GetShadowValues(
 
   gfx::ShadowValues shadows;
   if (elevation.has_value()) {
-    DCHECK(elevation.value() >= 0);
+    DCHECK_GE(elevation.value(), 0);
     shadows = LayoutProvider::Get()->MakeShadowValues(elevation.value(), color);
   } else {
     constexpr int kSmallShadowVerticalOffset = 2;
@@ -320,7 +324,8 @@ void BubbleBorder::PaintNoShadow(const View& view, gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(kBorderThicknessDip);
-  constexpr SkColor kBorderColor = gfx::kGoogleGrey600;
+  SkColor kBorderColor = view.GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_BubbleBorder);
   flags.setColor(kBorderColor);
   canvas->DrawRoundRect(bounds, corner_radius(), flags);
 }

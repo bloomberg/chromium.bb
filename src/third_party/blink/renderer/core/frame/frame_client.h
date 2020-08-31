@@ -33,6 +33,9 @@ class CORE_EXPORT FrameClient : public GarbageCollected<FrameClient> {
 
   virtual unsigned BackForwardLength() = 0;
 
+  virtual void OnMainFrameDocumentIntersectionChanged(
+      const IntRect& intersection_rect) {}
+
   virtual base::UnguessableToken GetDevToolsFrameToken() const = 0;
 
   // Transfers user activation state from |source_frame| to the this frame.
@@ -40,7 +43,7 @@ class CORE_EXPORT FrameClient : public GarbageCollected<FrameClient> {
 
   virtual ~FrameClient() = default;
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 };
 
 }  // namespace blink

@@ -11,19 +11,9 @@
       "position": [30, 30],
       "bounds": [20, 70],
       "contentsOpaque": true,
-      "backfaceVisibility": "hidden",
       "backgroundColor": "#008000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
-          "rect": [0, 0, 20, 70],
-          "reason": "full layer"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
-          "rect": [0, 0, 10, 60],
-          "reason": "full layer"
-        }
+      "invalidations": [
+        [0, 0, 20, 70]
       ],
       "transform": 1
     },
@@ -31,7 +21,6 @@
       "name": "LayoutBlockFlow DIV class='composited child'",
       "bounds": [50, 50],
       "contentsOpaque": true,
-      "backfaceVisibility": "hidden",
       "backgroundColor": "#008000",
       "transform": 2
     }

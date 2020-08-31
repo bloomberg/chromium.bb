@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -18,8 +19,8 @@ namespace content {
 namespace {
 const char kCommentToken = '#';
 const char kMarkSkipFile[] = "#<skip";
-const char kMarkEndOfFile[] = "<-- End-of-file -->";
 const char kSignalDiff[] = "*";
+const char kMarkEndOfFile[] = "<-- End-of-file -->";
 }  // namespace
 
 DumpAccessibilityTestHelper::DumpAccessibilityTestHelper(
@@ -79,10 +80,6 @@ DumpAccessibilityTestHelper::LoadExpectationFile(
       base::SplitString(expected_contents, "\n", base::KEEP_WHITESPACE,
                         base::SPLIT_WANT_NONEMPTY);
 
-  // Marking the end of the file with a line of text ensures that
-  // file length differences are found.
-  expected_lines.push_back(kMarkEndOfFile);
-
   return expected_lines;
 }
 
@@ -122,7 +119,11 @@ bool DumpAccessibilityTestHelper::ValidateAgainstExpectation(
     diff += "------\n";
     diff += base::JoinString(actual_lines, "\n");
     diff += "\n";
+
+    // This is used by rebase_dump_accessibility_tree_test.py to signify
+    // the end of the file when parsing the actual output from remote logs.
     diff += kMarkEndOfFile;
+    diff += "\n";
     LOG(ERROR) << "Diff:\n" << diff;
   } else {
     LOG(INFO) << "Test output matches expectations.";
@@ -133,9 +134,7 @@ bool DumpAccessibilityTestHelper::ValidateAgainstExpectation(
     base::ScopedAllowBlockingForTesting allow_blocking;
     std::string actual_contents_for_output =
         base::JoinString(actual_lines, "\n") + "\n";
-    CHECK(base::WriteFile(expected_file, actual_contents_for_output.c_str(),
-                          actual_contents_for_output.size()) ==
-          static_cast<int>(actual_contents_for_output.size()));
+    CHECK(base::WriteFile(expected_file, actual_contents_for_output));
     LOG(INFO) << "Wrote expectations to: " << expected_file.LossyDisplayName();
   }
 
@@ -161,6 +160,20 @@ std::vector<int> DumpAccessibilityTestHelper::DiffLines(
       diff_lines.push_back(j);
     ++i;
     ++j;
+  }
+
+  // Report a failure if there are additional expected lines or
+  // actual lines.
+  if (i < actual_lines_count) {
+    diff_lines.push_back(j);
+  } else {
+    while (j < expected_lines_count) {
+      if (expected_lines[j].size() > 0 &&
+          expected_lines[j][0] != kCommentToken) {
+        diff_lines.push_back(j);
+      }
+      j++;
+    }
   }
 
   // Actual file has been fully checked.

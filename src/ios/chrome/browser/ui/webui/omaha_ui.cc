@@ -83,12 +83,12 @@ void OmahaDOMHandler::OnDebugInformationAvailable(
 }  // namespace
 
 // OmahaUI
-OmahaUI::OmahaUI(web::WebUIIOS* web_ui) : WebUIIOSController(web_ui) {
+OmahaUI::OmahaUI(web::WebUIIOS* web_ui, const std::string& host)
+    : WebUIIOSController(web_ui, host) {
   web_ui->AddMessageHandler(std::make_unique<OmahaDOMHandler>());
 
   // Set up the chrome://omaha/ source.
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromWebUIIOS(web_ui);
+  ChromeBrowserState* browser_state = ChromeBrowserState::FromWebUIIOS(web_ui);
   web::WebUIIOSDataSource::Add(browser_state, CreateOmahaUIHTMLSource());
 }
 

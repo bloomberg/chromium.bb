@@ -12,6 +12,7 @@
 
 namespace blink {
 
+enum class NGBreakStatus;
 class NGBlockBreakToken;
 class NGConstraintSpace;
 
@@ -24,16 +25,57 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
-  base::Optional<MinMaxSize> ComputeMinMaxSize(
-      const MinMaxSizeInput&) const override;
+  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
+
+ private:
+  NGBreakStatus LayoutChildren();
+  NGBreakStatus LayoutLegend(
+      NGBlockNode& legend,
+      scoped_refptr<const NGBlockBreakToken> legend_break_token);
+  NGBreakStatus LayoutFieldsetContent(
+      NGBlockNode& fieldset_content,
+      scoped_refptr<const NGBlockBreakToken> content_break_token,
+      LogicalSize adjusted_padding_box_size,
+      bool has_legend);
 
   const NGConstraintSpace CreateConstraintSpaceForLegend(
       NGBlockNode legend,
-      LogicalSize available_size);
+      LogicalSize available_size,
+      LogicalSize percentage_size,
+      LayoutUnit block_offset);
   const NGConstraintSpace CreateConstraintSpaceForFieldsetContent(
-      LogicalSize padding_box_size);
+      NGBlockNode fieldset_content,
+      LogicalSize padding_box_size,
+      LayoutUnit block_offset);
+
+  bool IsFragmentainerOutOfSpace(LayoutUnit block_offset) const;
+
+  const WritingMode writing_mode_;
 
   const NGBoxStrut border_padding_;
+  NGBoxStrut borders_;
+  NGBoxStrut padding_;
+
+  // The border and padding after adjusting to ensure that the leading border
+  // and padding are only applied to the first fragment.
+  NGBoxStrut adjusted_border_padding_;
+
+  LayoutUnit intrinsic_block_size_;
+  const LayoutUnit consumed_block_size_;
+  LogicalSize border_box_size_;
+
+  // The legend may eat from the available content box block size. This
+  // represents the minimum block size needed by the border box to encompass
+  // the legend.
+  LayoutUnit minimum_border_box_block_size_;
+
+  // The amount of the border block-start that was consumed in previous
+  // fragments.
+  LayoutUnit consumed_border_block_start_;
+
+  // If true, this indicates that the legend broke during the current layout
+  // pass.
+  bool legend_broke_ = false;
 };
 
 }  // namespace blink

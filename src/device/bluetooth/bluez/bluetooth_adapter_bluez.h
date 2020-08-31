@@ -95,15 +95,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
   using ScanRecordCallback = base::OnceCallback<void(ScanRecordPtr)>;
 #endif  // defined(OS_CHROMEOS)
 
-  // Calls |init_callback| after a BluetoothAdapter is fully initialized.
-  static base::WeakPtr<BluetoothAdapter> CreateAdapter(
-      InitCallback init_callback);
+  static scoped_refptr<BluetoothAdapterBlueZ> CreateAdapter();
 
   // BluetoothAdapter:
+  void Initialize(base::OnceClosure callback) override;
   void Shutdown() override;
   UUIDList GetUUIDs() const override;
   std::string GetAddress() const override;
   std::string GetName() const override;
+  std::string GetSystemName() const override;
   void SetName(const std::string& name,
                const base::Closure& callback,
                const ErrorCallback& error_callback) override;
@@ -119,6 +119,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
                        const ErrorCallback& error_callback) override;
   uint32_t GetDiscoverableTimeout() const;
   bool IsDiscovering() const override;
+  bool IsDiscoveringForTesting() const;
   std::unordered_map<device::BluetoothDevice*, device::BluetoothDevice::UUIDSet>
   RetrieveGattConnectedDevicesWithDiscoveryFilter(
       const device::BluetoothDiscoveryFilter& discovery_filter) override;
@@ -276,7 +277,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
   using RegisterProfileCompletionPair =
       std::pair<base::Closure, ErrorCompletionCallback>;
 
-  explicit BluetoothAdapterBlueZ(InitCallback init_callback);
+  explicit BluetoothAdapterBlueZ();
   ~BluetoothAdapterBlueZ() override;
 
   // Init will get asynchronouly called once we know if Object Manager is
@@ -461,17 +462,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
       const std::string& error_name,
       const std::string& error_message);
 
-#if defined(OS_CHROMEOS)
-  // Inform DBus of the current list of long term keys.
-  void SetLongTermKeys();
-
-  // Called by dbus:: on an error while trying to set long term keys, see
-  // SetLongTermKeys().
-  void SetLongTermKeysError(const std::string& error_name,
-                            const std::string& error_message);
-#endif
-
-  InitCallback init_callback_;
+  base::OnceClosure init_callback_;
 
   bool initialized_;
 

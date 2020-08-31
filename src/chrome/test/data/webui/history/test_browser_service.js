@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-class TestBrowserService extends TestBrowserProxy {
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {createHistoryInfo} from 'chrome://test/history/test_util.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
+export class TestBrowserService extends TestBrowserProxy {
   constructor() {
     super([
       'deleteForeignSession',
+      'getForeignSessions',
       'historyLoaded',
       'navigateToUrl',
       'openForeignSessionTab',
@@ -13,20 +18,52 @@ class TestBrowserService extends TestBrowserProxy {
       'recordHistogram',
       'removeVisits',
       'queryHistory',
+      'queryHistoryContinuation',
     ]);
     this.histogramMap = {};
     this.actionMap = {};
     /** @private {?PromiseResolver} */
     this.delayedRemove_ = null;
+    /** @private {?PromiseResolver} */
+    this.delayedQueryResult_ = null;
+    this.ignoreNextQuery_ = false;
+    /** @private {!Array<!ForeignSession>} */
+    this.foreignSessions_ = [];
+    /** @private {!{info: !HistoryQuery, value: !Array<!HistoryEntry>}} */
+    this.queryResult_ = {info: createHistoryInfo(), value: []};
   }
 
+  // Will delay resolution of the queryHistory() promise until
+  // finishQueryHistory is called.
+  delayQueryResult() {
+    this.delayedQueryResult_ = new PromiseResolver();
+  }
+
+  // Will delay resolution of the removeVisits() promise until
+  // finishRemoveVisits is called.
   delayDelete() {
     this.delayedRemove_ = new PromiseResolver();
+  }
+
+  // Prevents a call to methodCalled for the next call to queryHistory.
+  ignoreNextQuery() {
+    this.ignoreNextQuery_ = true;
   }
 
   /** @override */
   deleteForeignSession(sessionTag) {
     this.methodCalled('deleteForeignSession', sessionTag);
+  }
+
+  /** @override */
+  getForeignSessions() {
+    this.methodCalled('getForeignSessions');
+    return Promise.resolve(this.foreignSessions_);
+  }
+
+  /** @param {!Array<!ForeignSession>} sessions */
+  setForeignSessions(sessions) {
+    this.foreignSessions_ = sessions;
   }
 
   /** @override */
@@ -38,9 +75,17 @@ class TestBrowserService extends TestBrowserProxy {
     return Promise.resolve();
   }
 
+  // Resolves the removeVisits promise. delayRemove() must be called first.
   finishRemoveVisits() {
     this.delayedRemove_.resolve();
     this.delayedRemove_ = null;
+  }
+
+  // Resolves the queryHistory promise. delayQueryHistory() must be called
+  // first.
+  finishQueryHistory() {
+    this.delayedQueryResult_.resolve(this.queryResult_);
+    this.delayedQueryResult_ = null;
   }
 
   /** @override */
@@ -77,13 +122,29 @@ class TestBrowserService extends TestBrowserProxy {
     this.methodCalled('otherDevicesInitialized');
   }
 
-  /** @override */
-  queryHistory(searchTerm) {
-    this.methodCalled('queryHistory', searchTerm);
+  /** @param {{info: !HistoryQuery, value: !Array<!QueryResult>}} queryResult */
+  setQueryResult(queryResult) {
+    this.queryResult_ = queryResult;
   }
 
   /** @override */
-  queryHistoryContinuation() {}
+  queryHistory(searchTerm) {
+    if (!this.ignoreNextQuery_) {
+      this.methodCalled('queryHistory', searchTerm);
+    } else {
+      this.ignoreNextQuery_ = false;
+    }
+    if (this.delayedQueryResult_) {
+      return this.delayedQueryResult_.promise;
+    }
+    return Promise.resolve(this.queryResult_);
+  }
+
+  /** @override */
+  queryHistoryContinuation() {
+    this.methodCalled('queryHistoryContinuation');
+    return Promise.resolve(this.queryResult_);
+  }
 
   /** @override */
   recordAction(action) {

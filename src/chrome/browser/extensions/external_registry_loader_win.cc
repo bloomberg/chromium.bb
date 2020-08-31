@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -252,8 +253,9 @@ void ExternalRegistryLoader::CompleteLoadAndStartWatchingRegistry(
 void ExternalRegistryLoader::OnRegistryKeyChanged(base::win::RegKey* key) {
   // |OnRegistryKeyChanged| is removed as an observer when the ChangeCallback is
   // called, so we need to re-register.
-  key->StartWatching(base::Bind(&ExternalRegistryLoader::OnRegistryKeyChanged,
-                                base::Unretained(this), base::Unretained(key)));
+  key->StartWatching(
+      base::BindOnce(&ExternalRegistryLoader::OnRegistryKeyChanged,
+                     base::Unretained(this), base::Unretained(key)));
 
   GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,
@@ -264,8 +266,8 @@ void ExternalRegistryLoader::OnRegistryKeyChanged(base::win::RegKey* key) {
 scoped_refptr<base::SequencedTaskRunner>
 ExternalRegistryLoader::GetOrCreateTaskRunner() {
   if (!task_runner_.get()) {
-    task_runner_ = base::CreateSequencedTaskRunner(
-        {base::ThreadPool(),  // Requires I/O for registry.
+    task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+        {// Requires I/O for registry.
          base::MayBlock(),
 
          // Inherit priority.
@@ -284,7 +286,7 @@ void ExternalRegistryLoader::UpatePrefsOnBlockingThread() {
                         base::TimeTicks::Now() - start_time);
   base::PostTask(FROM_HERE, {BrowserThread::UI},
                  base::BindOnce(&ExternalRegistryLoader::OnUpdated, this,
-                                base::Passed(&prefs)));
+                                std::move(prefs)));
 }
 
 }  // namespace extensions

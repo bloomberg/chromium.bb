@@ -20,6 +20,8 @@ glslang_dir = shaderc_glslang_dir
 spirv_tools_dir = shaderc_spirv_tools_dir
 spirv_cross_dir = shaderc_spirv_cross_dir
 spirv_headers_dir = shaderc_spirv_headers_dir
+use_direct_logging = shaderc_spvc_enable_direct_logging
+use_context_logging = !shaderc_spvc_disable_context_logging
 
 is_msvc = is_win && !is_clang
 
@@ -176,6 +178,10 @@ config("shaderc_spvc_public") {
 }
 
 component("libshaderc_spvc") {
+  public_deps = [ ":libshaderc_spvc_sources" ]
+}
+
+source_set("libshaderc_spvc_sources") {
   public_configs = [
     ":shaderc_spvc_public",
   ]
@@ -185,6 +191,14 @@ component("libshaderc_spvc") {
     "SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS"
   ]
 
+  if (use_direct_logging) {
+    defines += [ "SHADERC_SPVC_ENABLE_DIRECT_LOGGING", ]
+  }
+
+  if (!use_context_logging) {
+    defines += [ "SHADERC_SPVC_DISABLE_CONTEXT_LOGGING", ]
+  }
+  
   sources = [
     "libshaderc/include/shaderc/env.h",
     "libshaderc/include/shaderc/status.h",
@@ -192,6 +206,8 @@ component("libshaderc_spvc") {
     "libshaderc_spvc/include/spvc/spvc.h",
     "libshaderc_spvc/include/spvc/spvc.hpp",
     "libshaderc_spvc/src/spvc.cc",
+    "libshaderc_spvc/src/spvc_log.cc",
+    "libshaderc_spvc/src/spvc_log.h",
     "libshaderc_spvc/src/spvc_private.cc",
     "libshaderc_spvc/src/spvc_private.h",
     "libshaderc_spvc/src/spvcir_pass.cc",

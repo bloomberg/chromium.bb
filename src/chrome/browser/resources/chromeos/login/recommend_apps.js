@@ -10,7 +10,7 @@
 Polymer({
   is: 'recommend-apps',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**
@@ -26,30 +26,25 @@ Polymer({
     },
   },
 
-  focus: function() {
+  focus() {
     this.getElement('recommend-apps-dialog').focus();
   },
 
   /** @private */
-  onSkip_: function() {
+  onSkip_() {
     this.screen.onSkip();
   },
 
   /** @private */
-  onInstall_: function() {
+  onInstall_() {
     this.screen.onInstall();
-  },
-
-  /** @private */
-  onRetry_: function() {
-    this.screen.onRetry();
   },
 
   /**
    * Returns element by its id.
    * @param id String The ID of the element.
    */
-  getElement: function(id) {
+  getElement(id) {
     return this.$[id];
   },
 });

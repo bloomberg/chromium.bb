@@ -4,6 +4,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 
+#include <map>
 #include <memory>
 #include <set>
 #include <utility>
@@ -30,11 +31,15 @@
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
+#include "ash/system/accessibility/floating_accessibility_controller.h"
+#include "ash/system/accessibility/switch_access_menu_bubble_controller.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
@@ -56,6 +61,74 @@ using session_manager::SessionState;
 
 namespace ash {
 namespace {
+
+using FeatureType = AccessibilityControllerImpl::FeatureType;
+
+// These classes are used to store the static configuration for a11y features.
+struct FeatureData {
+  FeatureType type;
+  const char* pref;
+  const gfx::VectorIcon* icon;
+  FeatureType conflicting_feature = FeatureType::kNoConflictingFeature;
+};
+
+struct FeatureDialogData {
+  AccessibilityControllerImpl::FeatureType type;
+  const char* pref;
+  int title;
+  int body;
+  bool mandatory;
+};
+
+// A static array describing each feature.
+const FeatureData kFeatures[] = {
+    {FeatureType::kAutoclick, prefs::kAccessibilityAutoclickEnabled,
+     &kSystemMenuAccessibilityAutoClickIcon},
+    {FeatureType::kCaretHighlight, prefs::kAccessibilityCaretHighlightEnabled,
+     nullptr},
+    {FeatureType::KCursorHighlight, prefs::kAccessibilityCursorHighlightEnabled,
+     nullptr},
+    {FeatureType::kDictation, prefs::kAccessibilityDictationEnabled,
+     &kDictationMenuIcon},
+    {FeatureType::kFocusHighlight, prefs::kAccessibilityFocusHighlightEnabled,
+     nullptr, /* conflicting_feature= */ FeatureType::kSpokenFeedback},
+    {FeatureType::kFloatingMenu, prefs::kAccessibilityFloatingMenuEnabled,
+     nullptr},
+    {FeatureType::kFullscreenMagnifier,
+     prefs::kAccessibilityScreenMagnifierEnabled,
+     &kSystemMenuAccessibilityFullscreenMagnifierIcon},
+    {FeatureType::kDockedMagnifier, prefs::kDockedMagnifierEnabled,
+     &kSystemMenuAccessibilityDockedMagnifierIcon},
+    {FeatureType::kHighContrast, prefs::kAccessibilityHighContrastEnabled,
+     &kSystemMenuAccessibilityContrastIcon},
+    {FeatureType::kLargeCursor, prefs::kAccessibilityLargeCursorEnabled,
+     nullptr},
+    {FeatureType::kMonoAudio, prefs::kAccessibilityMonoAudioEnabled, nullptr},
+    {FeatureType::kSpokenFeedback, prefs::kAccessibilitySpokenFeedbackEnabled,
+     &kSystemMenuAccessibilityChromevoxIcon},
+    {FeatureType::kSelectToSpeak, prefs::kAccessibilitySelectToSpeakEnabled,
+     &kSystemMenuAccessibilitySelectToSpeakIcon},
+    {FeatureType::kStickyKeys, prefs::kAccessibilityStickyKeysEnabled, nullptr},
+    {FeatureType::kSwitchAccess, prefs::kAccessibilitySwitchAccessEnabled,
+     &kSwitchAccessIcon},
+    {FeatureType::kVirtualKeyboard, prefs::kAccessibilityVirtualKeyboardEnabled,
+     &kSystemMenuKeyboardIcon}};
+
+// An array describing the confirmation dialogs for the features which have
+// them.
+const FeatureDialogData kFeatureDialogs[] = {
+    {FeatureType::kDictation, prefs::kDictationAcceleratorDialogHasBeenAccepted,
+     IDS_ASH_DICTATION_CONFIRMATION_TITLE, IDS_ASH_DICTATION_CONFIRMATION_BODY,
+     true},
+    {FeatureType::kFullscreenMagnifier,
+     prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
+     IDS_ASH_SCREEN_MAGNIFIER_TITLE, IDS_ASH_SCREEN_MAGNIFIER_BODY, false},
+    {FeatureType::kDockedMagnifier,
+     prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted,
+     IDS_ASH_DOCKED_MAGNIFIER_TITLE, IDS_ASH_DOCKED_MAGNIFIER_BODY, false},
+    {FeatureType::kHighContrast,
+     prefs::kHighContrastAcceleratorDialogHasBeenAccepted,
+     IDS_ASH_HIGH_CONTRAST_TITLE, IDS_ASH_HIGH_CONTRAST_BODY, false}};
 
 constexpr char kNotificationId[] = "chrome://settings/accessibility";
 constexpr char kNotifierAccessibility[] = "ash.accessibility";
@@ -88,6 +161,7 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kAccessibilitySelectToSpeakEnabled,
     prefs::kAccessibilitySpokenFeedbackEnabled,
     prefs::kAccessibilityStickyKeysEnabled,
+    prefs::kAccessibilityShortcutsEnabled,
     prefs::kAccessibilitySwitchAccessEnabled,
     prefs::kAccessibilityVirtualKeyboardEnabled,
     prefs::kDockedMagnifierEnabled,
@@ -98,6 +172,26 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kDictationAcceleratorDialogHasBeenAccepted,
     prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted2,
 };
+
+// Helper function that is used to verify the validity of kFeatures and
+// kFeatureDialogs.
+bool VerifyFeaturesData() {
+  // All feature prefs must be unique.
+  std::set<const char*> feature_prefs;
+  for (auto feature_data : kFeatures) {
+    if (feature_prefs.find(feature_data.pref) != feature_prefs.end())
+      return false;
+    feature_prefs.insert(feature_data.pref);
+  }
+
+  for (auto dialog_data : kFeatureDialogs) {
+    if (feature_prefs.find(dialog_data.pref) != feature_prefs.end())
+      return false;
+    feature_prefs.insert(dialog_data.pref);
+  }
+
+  return true;
+}
 
 // Returns true if |pref_service| is the one used for the signin screen.
 bool IsSigninPrefService(PrefService* pref_service) {
@@ -179,15 +273,22 @@ enum class A11yNotificationType {
   // enabled yet. Note: in this case braille display connected would enable
   // spoken feeback.
   kSpokenFeedbackBrailleEnabled,
+  // Shown when Switch Access is enabled.
+  kSwitchAccessEnabled,
 };
 
 // Returns notification icon based on the A11yNotificationType.
 const gfx::VectorIcon& GetNotificationIcon(A11yNotificationType type) {
-  if (type == A11yNotificationType::kSpokenFeedbackBrailleEnabled)
-    return kNotificationAccessibilityIcon;
-  if (type == A11yNotificationType::kBrailleDisplayConnected)
-    return kNotificationAccessibilityBrailleIcon;
-  return kNotificationChromevoxIcon;
+  switch (type) {
+    case A11yNotificationType::kSpokenFeedbackBrailleEnabled:
+      return kNotificationAccessibilityIcon;
+    case A11yNotificationType::kBrailleDisplayConnected:
+      return kNotificationAccessibilityBrailleIcon;
+    case A11yNotificationType::kSwitchAccessEnabled:
+      return kSwitchAccessIcon;
+    default:
+      return kNotificationChromevoxIcon;
+  }
 }
 
 void ShowAccessibilityNotification(A11yNotificationType type) {
@@ -203,6 +304,10 @@ void ShowAccessibilityNotification(A11yNotificationType type) {
   if (type == A11yNotificationType::kBrailleDisplayConnected) {
     text = l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED);
+  } else if (type == A11yNotificationType::kSwitchAccessEnabled) {
+    title = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_SWITCH_ACCESS_ENABLED_TITLE);
+    text = l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SWITCH_ACCESS_ENABLED);
   } else {
     bool is_tablet = Shell::Get()->tablet_mode_controller()->InTabletMode();
 
@@ -294,13 +399,160 @@ SwitchAccessCommandKeyCode UmaValueForKeyCode(int key_code) {
 
 }  // namespace
 
+AccessibilityControllerImpl::Feature::Feature(
+    FeatureType type,
+    const std::string& pref_name,
+    const gfx::VectorIcon* icon,
+    AccessibilityControllerImpl* controller)
+    : type_(type), pref_name_(pref_name), icon_(icon), owner_(controller) {}
+
+AccessibilityControllerImpl::Feature::~Feature() = default;
+
+void AccessibilityControllerImpl::Feature::SetEnabled(bool enabled) {
+  PrefService* prefs = owner_->active_user_prefs_;
+  if (!prefs)
+    return;
+  prefs->SetBoolean(pref_name_, enabled);
+  prefs->CommitPendingWrite();
+}
+
+bool AccessibilityControllerImpl::Feature::IsVisibleInTray() const {
+  return (conflicting_feature_ == kNoConflictingFeature ||
+          !owner_->GetFeature(conflicting_feature_).enabled()) &&
+         owner_->IsAccessibilityFeatureVisibleInTrayMenu(pref_name_);
+}
+
+bool AccessibilityControllerImpl::Feature::IsEnterpriseIconVisible() const {
+  return owner_->IsEnterpriseIconVisibleInTrayMenu(pref_name_);
+}
+
+const gfx::VectorIcon& AccessibilityControllerImpl::Feature::icon() const {
+  DCHECK(icon_);
+  if (icon_)
+    return *icon_;
+  return kPaletteTrayIconDefaultIcon;
+}
+
+void AccessibilityControllerImpl::Feature::UpdateFromPref() {
+  PrefService* prefs = owner_->active_user_prefs_;
+  DCHECK(prefs);
+
+  bool enabled = prefs->GetBoolean(pref_name_);
+
+  if (conflicting_feature_ != FeatureType::kNoConflictingFeature &&
+      owner_->GetFeature(conflicting_feature_).enabled()) {
+    enabled = false;
+  }
+
+  if (enabled == enabled_)
+    return;
+
+  enabled_ = enabled;
+  owner_->UpdateFeatureFromPref(type_);
+}
+
+void AccessibilityControllerImpl::Feature::SetConflictingFeature(
+    AccessibilityControllerImpl::FeatureType feature) {
+  DCHECK_EQ(conflicting_feature_, FeatureType::kNoConflictingFeature);
+  conflicting_feature_ = feature;
+}
+
+AccessibilityControllerImpl::FeatureWithDialog::FeatureWithDialog(
+    FeatureType type,
+    const std::string& pref_name,
+    const gfx::VectorIcon* icon,
+    const Dialog& dialog,
+    AccessibilityControllerImpl* controller)
+    : AccessibilityControllerImpl::Feature(type, pref_name, icon, controller),
+      dialog_(dialog) {}
+AccessibilityControllerImpl::FeatureWithDialog::~FeatureWithDialog() = default;
+
+void AccessibilityControllerImpl::FeatureWithDialog::SetDialogAccepted() {
+  PrefService* prefs = owner_->active_user_prefs_;
+  if (!prefs)
+    return;
+  prefs->SetBoolean(dialog_.pref_name, true);
+  prefs->CommitPendingWrite();
+}
+
+bool AccessibilityControllerImpl::FeatureWithDialog::WasDialogAccepted() const {
+  PrefService* prefs = owner_->active_user_prefs_;
+  DCHECK(prefs);
+  return prefs->GetBoolean(dialog_.pref_name);
+}
+
+void AccessibilityControllerImpl::FeatureWithDialog::SetEnabledWithDialog(
+    bool enabled,
+    base::OnceClosure completion_callback) {
+  PrefService* prefs = owner_->active_user_prefs_;
+  if (!prefs)
+    return;
+  // We should not show the dialog when the feature is already enabled.
+  if (enabled && !this->enabled() && !WasDialogAccepted()) {
+    Shell::Get()->accelerator_controller()->MaybeShowConfirmationDialog(
+        dialog_.title_resource_id, dialog_.body_resource_id,
+        // Callback for if the user accepts the dialog
+        base::BindOnce(
+            [](base::WeakPtr<AccessibilityControllerImpl> owner,
+               FeatureType type, base::OnceClosure completion_callback) {
+              if (!owner)
+                return;
+
+              static_cast<FeatureWithDialog&>(owner->GetFeature(type))
+                  .SetDialogAccepted();
+              // If they accept, try again to set value to true
+              owner->GetFeature(type).SetEnabled(true);
+              std::move(completion_callback).Run();
+            },
+            owner_->weak_ptr_factory_.GetWeakPtr(), type_,
+            std::move(completion_callback)),
+        base::DoNothing());
+
+    return;
+  }
+  Feature::SetEnabled(enabled);
+  std::move(completion_callback).Run();
+}
+
+void AccessibilityControllerImpl::FeatureWithDialog::SetEnabled(bool enabled) {
+  if (dialog_.mandatory)
+    SetEnabledWithDialog(enabled, base::DoNothing());
+  else
+    Feature::SetEnabled(enabled);
+}
+
 AccessibilityControllerImpl::AccessibilityControllerImpl()
     : autoclick_delay_(AutoclickController::GetDefaultAutoclickDelay()) {
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  CreateAccessibilityFeatures();
 }
 
-AccessibilityControllerImpl::~AccessibilityControllerImpl() = default;
+AccessibilityControllerImpl::~AccessibilityControllerImpl() {
+  floating_menu_controller_.reset();
+}
+
+void AccessibilityControllerImpl::CreateAccessibilityFeatures() {
+  DCHECK(VerifyFeaturesData());
+  // First, build all features with dialog.
+  std::map<FeatureType, Dialog> dialogs;
+  for (auto dialog_data : kFeatureDialogs) {
+    dialogs[dialog_data.type] = {dialog_data.pref, dialog_data.title,
+                                 dialog_data.body, dialog_data.mandatory};
+  }
+  for (auto feature_data : kFeatures) {
+    DCHECK(!features_[feature_data.type]);
+    auto it = dialogs.find(feature_data.type);
+    if (it == dialogs.end()) {
+      features_[feature_data.type] = std::make_unique<Feature>(
+          feature_data.type, feature_data.pref, feature_data.icon, this);
+    } else {
+      features_[feature_data.type] = std::make_unique<FeatureWithDialog>(
+          feature_data.type, feature_data.pref, feature_data.icon, it->second,
+          this);
+    }
+  }
+}
 
 // static
 void AccessibilityControllerImpl::RegisterProfilePrefs(
@@ -339,6 +591,13 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
       prefs::kAccessibilityDictationEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
+      prefs::kAccessibilityFloatingMenuEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAccessibilityFloatingMenuPosition,
+      static_cast<int>(kDefaultFloatingMenuPosition),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
       prefs::kAccessibilityFocusHighlightEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
@@ -367,6 +626,9 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kAccessibilityStickyKeysEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityShortcutsEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kAccessibilitySwitchAccessEnabled, false,
@@ -407,6 +669,9 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kAccessibilityVirtualKeyboardEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kHighContrastAcceleratorDialogHasBeenAccepted, false);
@@ -519,22 +784,105 @@ void AccessibilityControllerImpl::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+AccessibilityControllerImpl::Feature& AccessibilityControllerImpl::GetFeature(
+    FeatureType type) const {
+  DCHECK(features_[type].get());
+  return *features_[type].get();
+}
+
+AccessibilityControllerImpl::Feature& AccessibilityControllerImpl::autoclick()
+    const {
+  return GetFeature(FeatureType::kAutoclick);
+}
+
+AccessibilityControllerImpl::Feature&
+AccessibilityControllerImpl::caret_highlight() const {
+  return GetFeature(FeatureType::kCaretHighlight);
+}
+
+AccessibilityControllerImpl::Feature&
+AccessibilityControllerImpl::cursor_highlight() const {
+  return GetFeature(FeatureType::KCursorHighlight);
+}
+
+AccessibilityControllerImpl::FeatureWithDialog&
+AccessibilityControllerImpl::dictation() const {
+  return static_cast<FeatureWithDialog&>(GetFeature(FeatureType::kDictation));
+}
+
+AccessibilityControllerImpl::Feature&
+AccessibilityControllerImpl::focus_highlight() const {
+  return GetFeature(FeatureType::kFocusHighlight);
+}
+
+AccessibilityControllerImpl::Feature&
+AccessibilityControllerImpl::floating_menu() const {
+  return GetFeature(FeatureType::kFloatingMenu);
+}
+
+AccessibilityControllerImpl::FeatureWithDialog&
+AccessibilityControllerImpl::fullscreen_magnifier() const {
+  return static_cast<FeatureWithDialog&>(
+      GetFeature(FeatureType::kFullscreenMagnifier));
+}
+
+AccessibilityControllerImpl::FeatureWithDialog&
+AccessibilityControllerImpl::docked_magnifier() const {
+  return static_cast<FeatureWithDialog&>(
+      GetFeature(FeatureType::kDockedMagnifier));
+}
+
+AccessibilityControllerImpl::FeatureWithDialog&
+AccessibilityControllerImpl::high_contrast() const {
+  return static_cast<FeatureWithDialog&>(
+      GetFeature(FeatureType::kHighContrast));
+}
+
+AccessibilityControllerImpl::Feature&
+AccessibilityControllerImpl::large_cursor() const {
+  return GetFeature(FeatureType::kLargeCursor);
+}
+
+AccessibilityControllerImpl::Feature& AccessibilityControllerImpl::mono_audio()
+    const {
+  return GetFeature(FeatureType::kMonoAudio);
+}
+
+AccessibilityControllerImpl::Feature&
+AccessibilityControllerImpl::spoken_feedback() const {
+  return GetFeature(FeatureType::kSpokenFeedback);
+}
+
+AccessibilityControllerImpl::Feature&
+AccessibilityControllerImpl::select_to_speak() const {
+  return GetFeature(FeatureType::kSelectToSpeak);
+}
+
+AccessibilityControllerImpl::Feature& AccessibilityControllerImpl::sticky_keys()
+    const {
+  return GetFeature(FeatureType::kStickyKeys);
+}
+
+AccessibilityControllerImpl::Feature&
+AccessibilityControllerImpl::switch_access() const {
+  return GetFeature(FeatureType::kSwitchAccess);
+}
+
+AccessibilityControllerImpl::Feature&
+AccessibilityControllerImpl::virtual_keyboard() const {
+  return GetFeature(FeatureType::kVirtualKeyboard);
+}
+
 void AccessibilityControllerImpl::SetAutoclickEnabled(bool enabled) {
-  if (!active_user_prefs_)
-    return;
-  active_user_prefs_->SetBoolean(prefs::kAccessibilityAutoclickEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  autoclick().SetEnabled(enabled);
 }
 
 bool AccessibilityControllerImpl::IsAutoclickSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
-      prefs::kAccessibilityAutoclickEnabled);
+  return autoclick().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForAutoclick() {
-  return IsEnterpriseIconVisibleInTrayMenu(
-      prefs::kAccessibilityAutoclickEnabled);
+  return autoclick().IsEnterpriseIconVisible();
 }
 
 bool AccessibilityControllerImpl::IsPrimarySettingsViewVisibleInTray() {
@@ -566,203 +914,127 @@ bool AccessibilityControllerImpl::IsAdditionalSettingsSeparatorVisibleInTray() {
 }
 
 void AccessibilityControllerImpl::SetCaretHighlightEnabled(bool enabled) {
-  if (!active_user_prefs_)
-    return;
-  active_user_prefs_->SetBoolean(prefs::kAccessibilityCaretHighlightEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  caret_highlight().SetEnabled(enabled);
 }
 
 bool AccessibilityControllerImpl::IsCaretHighlightSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
-      prefs::kAccessibilityCaretHighlightEnabled);
+  return caret_highlight().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForCaretHighlight() {
-  return IsEnterpriseIconVisibleInTrayMenu(
-      prefs::kAccessibilityCaretHighlightEnabled);
+  return caret_highlight().IsEnterpriseIconVisible();
 }
 
 void AccessibilityControllerImpl::SetCursorHighlightEnabled(bool enabled) {
-  if (!active_user_prefs_)
-    return;
-  active_user_prefs_->SetBoolean(prefs::kAccessibilityCursorHighlightEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  cursor_highlight().SetEnabled(enabled);
 }
 
 bool AccessibilityControllerImpl::IsCursorHighlightSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
-      prefs::kAccessibilityCursorHighlightEnabled);
+  return cursor_highlight().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForCursorHighlight() {
-  return IsEnterpriseIconVisibleInTrayMenu(
-      prefs::kAccessibilityCursorHighlightEnabled);
+  return cursor_highlight().IsEnterpriseIconVisible();
 }
 
 void AccessibilityControllerImpl::SetDictationEnabled(bool enabled) {
-  if (!active_user_prefs_)
-    return;
-
-  const bool dialog_ever_accepted = HasDictationAcceleratorDialogBeenAccepted();
-
-  if (enabled && !dialog_ever_accepted) {
-    Shell::Get()->accelerator_controller()->MaybeShowConfirmationDialog(
-        IDS_ASH_DICTATION_CONFIRMATION_TITLE,
-        IDS_ASH_DICTATION_CONFIRMATION_BODY,
-        // Callback for if the user accepts the dialog
-        base::BindOnce([]() {
-          AccessibilityControllerImpl* controller =
-              Shell::Get()->accessibility_controller();
-          controller->SetDictationAcceleratorDialogAccepted();
-          // If they accept, try again to set dictation_enabled to true
-          controller->SetDictationEnabled(true);
-        }),
-        base::DoNothing());
-    return;
-  }
-  active_user_prefs_->SetBoolean(prefs::kAccessibilityDictationEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  dictation().SetEnabled(enabled);
 }
 
 bool AccessibilityControllerImpl::IsDictationSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
-      prefs::kAccessibilityDictationEnabled);
+  return dictation().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForDictation() {
-  return IsEnterpriseIconVisibleInTrayMenu(
-      prefs::kAccessibilityDictationEnabled);
+  return dictation().IsEnterpriseIconVisible();
 }
 
 void AccessibilityControllerImpl::SetFocusHighlightEnabled(bool enabled) {
-  if (!active_user_prefs_)
-    return;
-  active_user_prefs_->SetBoolean(prefs::kAccessibilityFocusHighlightEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  focus_highlight().SetEnabled(enabled);
 }
 
 bool AccessibilityControllerImpl::IsFocusHighlightSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
-      prefs::kAccessibilityFocusHighlightEnabled);
+  return focus_highlight().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForFocusHighlight() {
-  return IsEnterpriseIconVisibleInTrayMenu(
-      prefs::kAccessibilityFocusHighlightEnabled);
+  return focus_highlight().IsEnterpriseIconVisible();
 }
 
 void AccessibilityControllerImpl::SetFullscreenMagnifierEnabled(bool enabled) {
-  if (!active_user_prefs_)
-    return;
-  active_user_prefs_->SetBoolean(prefs::kAccessibilityScreenMagnifierEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  fullscreen_magnifier().SetEnabled(enabled);
 }
 
 bool AccessibilityControllerImpl::IsFullscreenMagnifierEnabledForTesting() {
-  return active_user_prefs_ && active_user_prefs_->GetBoolean(
-                                   prefs::kAccessibilityScreenMagnifierEnabled);
+  return fullscreen_magnifier().enabled();
 }
 
 bool AccessibilityControllerImpl::IsFullScreenMagnifierSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
-      prefs::kAccessibilityScreenMagnifierEnabled);
+  return fullscreen_magnifier().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::
     IsEnterpriseIconVisibleForFullScreenMagnifier() {
-  return IsEnterpriseIconVisibleInTrayMenu(
-      prefs::kAccessibilityScreenMagnifierEnabled);
+  return fullscreen_magnifier().IsEnterpriseIconVisible();
 }
 
 void AccessibilityControllerImpl::SetDockedMagnifierEnabledForTesting(
     bool enabled) {
-  if (!active_user_prefs_)
-    return;
-  active_user_prefs_->SetBoolean(prefs::kDockedMagnifierEnabled, enabled);
-  active_user_prefs_->CommitPendingWrite();
+  docked_magnifier().SetEnabled(enabled);
 }
 
 bool AccessibilityControllerImpl::IsDockedMagnifierEnabledForTesting() {
-  return active_user_prefs_ &&
-         active_user_prefs_->GetBoolean(prefs::kDockedMagnifierEnabled);
+  return docked_magnifier().enabled();
 }
 
 bool AccessibilityControllerImpl::IsDockedMagnifierSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
-      prefs::kDockedMagnifierEnabled);
+  return docked_magnifier().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForDockedMagnifier() {
-  return IsEnterpriseIconVisibleInTrayMenu(prefs::kDockedMagnifierEnabled);
+  return docked_magnifier().IsEnterpriseIconVisible();
 }
 
 void AccessibilityControllerImpl::SetHighContrastEnabled(bool enabled) {
-  if (!active_user_prefs_)
-    return;
-  active_user_prefs_->SetBoolean(prefs::kAccessibilityHighContrastEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  high_contrast().SetEnabled(enabled);
 }
 
 bool AccessibilityControllerImpl::IsHighContrastSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
-      prefs::kAccessibilityHighContrastEnabled);
+  return high_contrast().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForHighContrast() {
-  return IsEnterpriseIconVisibleInTrayMenu(
-      prefs::kAccessibilityHighContrastEnabled);
+  return high_contrast().IsEnterpriseIconVisible();
 }
 
 void AccessibilityControllerImpl::SetLargeCursorEnabled(bool enabled) {
-  if (!active_user_prefs_)
-    return;
-  active_user_prefs_->SetBoolean(prefs::kAccessibilityLargeCursorEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  large_cursor().SetEnabled(enabled);
 }
 
 bool AccessibilityControllerImpl::IsLargeCursorSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
-      prefs::kAccessibilityLargeCursorEnabled);
+  return large_cursor().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForLargeCursor() {
-  return IsEnterpriseIconVisibleInTrayMenu(
-      prefs::kAccessibilityLargeCursorEnabled);
+  return large_cursor().IsEnterpriseIconVisible();
 }
 
 void AccessibilityControllerImpl::SetMonoAudioEnabled(bool enabled) {
-  if (!active_user_prefs_)
-    return;
-  active_user_prefs_->SetBoolean(prefs::kAccessibilityMonoAudioEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  mono_audio().SetEnabled(enabled);
 }
 
 bool AccessibilityControllerImpl::IsMonoAudioSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
-      prefs::kAccessibilityMonoAudioEnabled);
+  return mono_audio().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForMonoAudio() {
-  return IsEnterpriseIconVisibleInTrayMenu(
-      prefs::kAccessibilityMonoAudioEnabled);
+  return mono_audio().IsEnterpriseIconVisible();
 }
 
 void AccessibilityControllerImpl::SetSpokenFeedbackEnabled(
     bool enabled,
     AccessibilityNotificationVisibility notify) {
-  if (!active_user_prefs_)
-    return;
-  active_user_prefs_->SetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  spoken_feedback().SetEnabled(enabled);
 
   // Value could be left unchanged because of higher-priority pref source, eg.
   // policy. See crbug.com/953245.
@@ -776,31 +1048,23 @@ void AccessibilityControllerImpl::SetSpokenFeedbackEnabled(
 }
 
 bool AccessibilityControllerImpl::IsSpokenFeedbackSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
-      prefs::kAccessibilitySpokenFeedbackEnabled);
+  return spoken_feedback().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForSpokenFeedback() {
-  return IsEnterpriseIconVisibleInTrayMenu(
-      prefs::kAccessibilitySpokenFeedbackEnabled);
+  return spoken_feedback().IsEnterpriseIconVisible();
 }
 
 void AccessibilityControllerImpl::SetSelectToSpeakEnabled(bool enabled) {
-  if (!active_user_prefs_)
-    return;
-  active_user_prefs_->SetBoolean(prefs::kAccessibilitySelectToSpeakEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  select_to_speak().SetEnabled(enabled);
 }
 
 bool AccessibilityControllerImpl::IsSelectToSpeakSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
-      prefs::kAccessibilitySelectToSpeakEnabled);
+  return select_to_speak().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForSelectToSpeak() {
-  return IsEnterpriseIconVisibleInTrayMenu(
-      prefs::kAccessibilitySelectToSpeakEnabled);
+  return select_to_speak().IsEnterpriseIconVisible();
 }
 
 void AccessibilityControllerImpl::RequestSelectToSpeakStateChange() {
@@ -832,26 +1096,41 @@ SelectToSpeakState AccessibilityControllerImpl::GetSelectToSpeakState() const {
 }
 
 void AccessibilityControllerImpl::SetSwitchAccessEnabled(bool enabled) {
-  if (!active_user_prefs_)
-    return;
-  active_user_prefs_->SetBoolean(prefs::kAccessibilitySwitchAccessEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  switch_access().SetEnabled(enabled);
 }
 
 bool AccessibilityControllerImpl::IsSwitchAccessSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
+  return switch_access().IsVisibleInTray();
+  return IsEnterpriseIconVisibleInTrayMenu(
       prefs::kAccessibilitySwitchAccessEnabled);
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForSwitchAccess() {
-  return IsEnterpriseIconVisibleInTrayMenu(
-      prefs::kAccessibilitySwitchAccessEnabled);
+  return switch_access().IsEnterpriseIconVisible();
 }
 
 void AccessibilityControllerImpl::
     SetSwitchAccessIgnoreVirtualKeyEventForTesting(bool should_ignore) {
   switch_access_event_handler_->set_ignore_virtual_key_events(should_ignore);
+}
+
+void AccessibilityControllerImpl::HideSwitchAccessBackButton() {
+  switch_access_bubble_controller_->HideBackButton();
+}
+
+void AccessibilityControllerImpl::HideSwitchAccessMenu() {
+  switch_access_bubble_controller_->HideMenuBubble();
+}
+
+void AccessibilityControllerImpl::ShowSwitchAccessBackButton(
+    const gfx::Rect& anchor) {
+  switch_access_bubble_controller_->ShowBackButton(anchor);
+}
+
+void AccessibilityControllerImpl::ShowSwitchAccessMenu(
+    const gfx::Rect& anchor,
+    std::vector<std::string> actions_to_show) {
+  switch_access_bubble_controller_->ShowMenu(anchor, actions_to_show);
 }
 
 void AccessibilityControllerImpl::
@@ -871,39 +1150,52 @@ void AccessibilityControllerImpl::SetSwitchAccessEventHandlerDelegate(
 }
 
 void AccessibilityControllerImpl::SetStickyKeysEnabled(bool enabled) {
-  if (!active_user_prefs_)
-    return;
-  active_user_prefs_->SetBoolean(prefs::kAccessibilityStickyKeysEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  sticky_keys().SetEnabled(enabled);
 }
 
 bool AccessibilityControllerImpl::IsStickyKeysSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
-      prefs::kAccessibilityStickyKeysEnabled);
+  return sticky_keys().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForStickyKeys() {
-  return IsEnterpriseIconVisibleInTrayMenu(
-      prefs::kAccessibilityStickyKeysEnabled);
+  return sticky_keys().IsEnterpriseIconVisible();
 }
 
 void AccessibilityControllerImpl::SetVirtualKeyboardEnabled(bool enabled) {
-  if (!active_user_prefs_)
-    return;
-  active_user_prefs_->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled,
-                                 enabled);
-  active_user_prefs_->CommitPendingWrite();
+  virtual_keyboard().SetEnabled(enabled);
 }
 
 bool AccessibilityControllerImpl::IsVirtualKeyboardSettingVisibleInTray() {
-  return IsAccessibilityFeatureVisibleInTrayMenu(
-      prefs::kAccessibilityVirtualKeyboardEnabled);
+  return virtual_keyboard().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForVirtualKeyboard() {
-  return IsEnterpriseIconVisibleInTrayMenu(
-      prefs::kAccessibilityVirtualKeyboardEnabled);
+  return virtual_keyboard().IsEnterpriseIconVisible();
+}
+
+void AccessibilityControllerImpl::ShowFloatingMenuIfEnabled() {
+  if (floating_menu().enabled() && !floating_menu_controller_) {
+    floating_menu_controller_ =
+        std::make_unique<FloatingAccessibilityController>(this);
+    floating_menu_controller_->Show(GetFloatingMenuPosition());
+  } else {
+    always_show_floating_menu_when_enabled_ = true;
+  }
+}
+
+FloatingAccessibilityController*
+AccessibilityControllerImpl::GetFloatingMenuController() {
+  return floating_menu_controller_.get();
+}
+
+void AccessibilityControllerImpl::SetTabletModeShelfNavigationButtonsEnabled(
+    bool enabled) {
+  if (!active_user_prefs_)
+    return;
+
+  active_user_prefs_->SetBoolean(
+      prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled, enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 void AccessibilityControllerImpl::TriggerAccessibilityAlert(
@@ -1008,9 +1300,9 @@ void AccessibilityControllerImpl::SetDarkenScreen(bool darken) {
 
 void AccessibilityControllerImpl::BrailleDisplayStateChanged(bool connected) {
   A11yNotificationType type = A11yNotificationType::kNone;
-  if (connected && spoken_feedback_enabled_)
+  if (connected && spoken_feedback().enabled())
     type = A11yNotificationType::kBrailleDisplayConnected;
-  else if (connected && !spoken_feedback_enabled_)
+  else if (connected && !spoken_feedback().enabled())
     type = A11yNotificationType::kSpokenFeedbackBrailleEnabled;
 
   if (connected)
@@ -1092,10 +1384,20 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
   // Watch for pref updates from webui settings and policy.
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(prefs);
-  pref_change_registrar_->Add(
-      prefs::kAccessibilityAutoclickEnabled,
-      base::BindRepeating(&AccessibilityControllerImpl::UpdateAutoclickFromPref,
-                          base::Unretained(this)));
+
+  // It is safe to use base::Unreatined since we own pref_change_registrar.
+  for (int feature_id = 0; feature_id < FeatureType::kFeatureCount;
+       feature_id++) {
+    Feature* feature = features_[feature_id].get();
+    DCHECK(feature);
+    pref_change_registrar_->Add(
+        feature->pref_name(),
+        base::BindRepeating(
+            &AccessibilityControllerImpl::Feature::UpdateFromPref,
+            base::Unretained(feature)));
+    feature->UpdateFromPref();
+  }
+
   pref_change_registrar_->Add(
       prefs::kAccessibilityAutoclickDelayMs,
       base::BindRepeating(
@@ -1127,33 +1429,9 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
           &AccessibilityControllerImpl::UpdateAutoclickMenuPositionFromPref,
           base::Unretained(this)));
   pref_change_registrar_->Add(
-      prefs::kAccessibilityCaretHighlightEnabled,
+      prefs::kAccessibilityFloatingMenuPosition,
       base::BindRepeating(
-          &AccessibilityControllerImpl::UpdateCaretHighlightFromPref,
-          base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kAccessibilityCursorHighlightEnabled,
-      base::BindRepeating(
-          &AccessibilityControllerImpl::UpdateCursorHighlightFromPref,
-          base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kAccessibilityDictationEnabled,
-      base::BindRepeating(&AccessibilityControllerImpl::UpdateDictationFromPref,
-                          base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kAccessibilityFocusHighlightEnabled,
-      base::BindRepeating(
-          &AccessibilityControllerImpl::UpdateFocusHighlightFromPref,
-          base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kAccessibilityHighContrastEnabled,
-      base::BindRepeating(
-          &AccessibilityControllerImpl::UpdateHighContrastFromPref,
-          base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kAccessibilityLargeCursorEnabled,
-      base::BindRepeating(
-          &AccessibilityControllerImpl::UpdateLargeCursorFromPref,
+          &AccessibilityControllerImpl::UpdateFloatingMenuPositionFromPref,
           base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityLargeCursorDipSize,
@@ -1161,28 +1439,9 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
           &AccessibilityControllerImpl::UpdateLargeCursorFromPref,
           base::Unretained(this)));
   pref_change_registrar_->Add(
-      prefs::kAccessibilityMonoAudioEnabled,
-      base::BindRepeating(&AccessibilityControllerImpl::UpdateMonoAudioFromPref,
-                          base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kAccessibilitySpokenFeedbackEnabled,
+      prefs::kAccessibilityShortcutsEnabled,
       base::BindRepeating(
-          &AccessibilityControllerImpl::UpdateSpokenFeedbackFromPref,
-          base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kAccessibilitySelectToSpeakEnabled,
-      base::BindRepeating(
-          &AccessibilityControllerImpl::UpdateSelectToSpeakFromPref,
-          base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kAccessibilityStickyKeysEnabled,
-      base::BindRepeating(
-          &AccessibilityControllerImpl::UpdateStickyKeysFromPref,
-          base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kAccessibilitySwitchAccessEnabled,
-      base::BindRepeating(
-          &AccessibilityControllerImpl::UpdateSwitchAccessFromPref,
+          &AccessibilityControllerImpl::UpdateShortcutsEnabledFromPref,
           base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilitySwitchAccessSelectKeyCodes,
@@ -1215,47 +1474,27 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
                               UpdateSwitchAccessAutoScanKeyboardSpeedFromPref,
                           base::Unretained(this)));
   pref_change_registrar_->Add(
-      prefs::kAccessibilityVirtualKeyboardEnabled,
-      base::BindRepeating(
-          &AccessibilityControllerImpl::UpdateVirtualKeyboardFromPref,
-          base::Unretained(this)));
+      prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled,
+      base::BindRepeating(&AccessibilityControllerImpl::
+                              UpdateTabletModeShelfNavigationButtonsFromPref,
+                          base::Unretained(this)));
 
   // Load current state.
-  UpdateAutoclickFromPref();
+  for (int feature_id = 0; feature_id < FeatureType::kFeatureCount;
+       feature_id++) {
+    features_[feature_id]->UpdateFromPref();
+  }
+
   UpdateAutoclickDelayFromPref();
   UpdateAutoclickEventTypeFromPref();
   UpdateAutoclickRevertToLeftClickFromPref();
   UpdateAutoclickStabilizePositionFromPref();
   UpdateAutoclickMovementThresholdFromPref();
   UpdateAutoclickMenuPositionFromPref();
-  UpdateCaretHighlightFromPref();
-  UpdateCursorHighlightFromPref();
-  UpdateDictationFromPref();
-  UpdateFocusHighlightFromPref();
-  UpdateHighContrastFromPref();
+  UpdateFloatingMenuPositionFromPref();
   UpdateLargeCursorFromPref();
-  UpdateMonoAudioFromPref();
-  UpdateSpokenFeedbackFromPref();
-  UpdateSelectToSpeakFromPref();
-  UpdateStickyKeysFromPref();
-  UpdateSwitchAccessFromPref();
-  UpdateVirtualKeyboardFromPref();
-}
-
-void AccessibilityControllerImpl::UpdateAutoclickFromPref() {
-  DCHECK(active_user_prefs_);
-  const bool enabled =
-      active_user_prefs_->GetBoolean(prefs::kAccessibilityAutoclickEnabled);
-
-  if (autoclick_enabled_ == enabled)
-    return;
-
-  autoclick_enabled_ = enabled;
-
-  NotifyAccessibilityStatusChanged();
-
-  Shell::Get()->autoclick_controller()->SetEnabled(
-      enabled, true /* show confirmation dialog */);
+  UpdateShortcutsEnabledFromPref();
+  UpdateTabletModeShelfNavigationButtonsFromPref();
 }
 
 void AccessibilityControllerImpl::UpdateAutoclickDelayFromPref() {
@@ -1324,7 +1563,7 @@ void AccessibilityControllerImpl::UpdateAutoclickMenuPositionFromPref() {
 }
 
 void AccessibilityControllerImpl::SetAutoclickMenuPosition(
-    AutoclickMenuPosition position) {
+    FloatingMenuPosition position) {
   if (!active_user_prefs_)
     return;
   active_user_prefs_->SetInteger(prefs::kAccessibilityAutoclickMenuPosition,
@@ -1333,9 +1572,9 @@ void AccessibilityControllerImpl::SetAutoclickMenuPosition(
   Shell::Get()->autoclick_controller()->SetMenuPosition(position);
 }
 
-AutoclickMenuPosition AccessibilityControllerImpl::GetAutoclickMenuPosition() {
+FloatingMenuPosition AccessibilityControllerImpl::GetAutoclickMenuPosition() {
   DCHECK(active_user_prefs_);
-  return static_cast<AutoclickMenuPosition>(active_user_prefs_->GetInteger(
+  return static_cast<FloatingMenuPosition>(active_user_prefs_->GetInteger(
       prefs::kAccessibilityAutoclickMenuPosition));
 }
 
@@ -1355,80 +1594,24 @@ void AccessibilityControllerImpl::OnAutoclickScrollableBoundsFound(
       bounds_in_screen);
 }
 
-void AccessibilityControllerImpl::UpdateCaretHighlightFromPref() {
-  DCHECK(active_user_prefs_);
-  const bool enabled = active_user_prefs_->GetBoolean(
-      prefs::kAccessibilityCaretHighlightEnabled);
-
-  if (caret_highlight_enabled_ == enabled)
+void AccessibilityControllerImpl::SetFloatingMenuPosition(
+    FloatingMenuPosition position) {
+  if (!active_user_prefs_)
     return;
-
-  caret_highlight_enabled_ = enabled;
-
-  NotifyAccessibilityStatusChanged();
-  UpdateAccessibilityHighlightingFromPrefs();
+  active_user_prefs_->SetInteger(prefs::kAccessibilityFloatingMenuPosition,
+                                 static_cast<int>(position));
+  active_user_prefs_->CommitPendingWrite();
 }
 
-void AccessibilityControllerImpl::UpdateCursorHighlightFromPref() {
-  DCHECK(active_user_prefs_);
-  const bool enabled = active_user_prefs_->GetBoolean(
-      prefs::kAccessibilityCursorHighlightEnabled);
-
-  if (cursor_highlight_enabled_ == enabled)
-    return;
-
-  cursor_highlight_enabled_ = enabled;
-
-  NotifyAccessibilityStatusChanged();
-  UpdateAccessibilityHighlightingFromPrefs();
+void AccessibilityControllerImpl::UpdateFloatingMenuPositionFromPref() {
+  if (floating_menu_controller_)
+    floating_menu_controller_->SetMenuPosition(GetFloatingMenuPosition());
 }
 
-void AccessibilityControllerImpl::UpdateDictationFromPref() {
+FloatingMenuPosition AccessibilityControllerImpl::GetFloatingMenuPosition() {
   DCHECK(active_user_prefs_);
-  const bool enabled =
-      active_user_prefs_->GetBoolean(prefs::kAccessibilityDictationEnabled);
-
-  if (dictation_enabled_ == enabled)
-    return;
-
-  dictation_enabled_ = enabled;
-
-  NotifyAccessibilityStatusChanged();
-}
-
-void AccessibilityControllerImpl::UpdateFocusHighlightFromPref() {
-  DCHECK(active_user_prefs_);
-  bool enabled = active_user_prefs_->GetBoolean(
-      prefs::kAccessibilityFocusHighlightEnabled);
-
-  // Focus highlighting can't be on when spoken feedback is on, because
-  // ChromeVox does its own focus highlighting.
-  if (spoken_feedback_enabled_)
-    enabled = false;
-
-  if (focus_highlight_enabled_ == enabled)
-    return;
-
-  focus_highlight_enabled_ = enabled;
-
-  NotifyAccessibilityStatusChanged();
-  UpdateAccessibilityHighlightingFromPrefs();
-}
-
-void AccessibilityControllerImpl::UpdateHighContrastFromPref() {
-  DCHECK(active_user_prefs_);
-  const bool enabled =
-      active_user_prefs_->GetBoolean(prefs::kAccessibilityHighContrastEnabled);
-
-  if (high_contrast_enabled_ == enabled)
-    return;
-
-  high_contrast_enabled_ = enabled;
-
-  NotifyAccessibilityStatusChanged();
-
-  Shell::Get()->high_contrast_controller()->SetEnabled(enabled);
-  Shell::Get()->UpdateCursorCompositingEnabled();
+  return static_cast<FloatingMenuPosition>(active_user_prefs_->GetInteger(
+      prefs::kAccessibilityFloatingMenuPosition));
 }
 
 void AccessibilityControllerImpl::UpdateLargeCursorFromPref() {
@@ -1441,56 +1624,23 @@ void AccessibilityControllerImpl::UpdateLargeCursorFromPref() {
   const int size =
       active_user_prefs_->GetInteger(prefs::kAccessibilityLargeCursorDipSize);
 
-  if (large_cursor_enabled_ == enabled && large_cursor_size_in_dip_ == size)
+  if (large_cursor_size_in_dip_ == size)
     return;
 
-  large_cursor_enabled_ = enabled;
   large_cursor_size_in_dip_ = size;
 
   NotifyAccessibilityStatusChanged();
 
-  Shell::Get()->cursor_manager()->SetCursorSize(
-      large_cursor_enabled_ ? ui::CursorSize::kLarge : ui::CursorSize::kNormal);
+  Shell::Get()->cursor_manager()->SetCursorSize(large_cursor().enabled()
+                                                    ? ui::CursorSize::kLarge
+                                                    : ui::CursorSize::kNormal);
   Shell::Get()->SetLargeCursorSizeInDip(large_cursor_size_in_dip_);
   Shell::Get()->UpdateCursorCompositingEnabled();
 }
 
-void AccessibilityControllerImpl::UpdateMonoAudioFromPref() {
-  DCHECK(active_user_prefs_);
-  const bool enabled =
-      active_user_prefs_->GetBoolean(prefs::kAccessibilityMonoAudioEnabled);
-
-  if (mono_audio_enabled_ == enabled)
-    return;
-
-  mono_audio_enabled_ = enabled;
-
-  NotifyAccessibilityStatusChanged();
-  chromeos::CrasAudioHandler::Get()->SetOutputMonoEnabled(enabled);
-}
-
-void AccessibilityControllerImpl::UpdateSpokenFeedbackFromPref() {
-  DCHECK(active_user_prefs_);
-  const bool enabled = active_user_prefs_->GetBoolean(
-      prefs::kAccessibilitySpokenFeedbackEnabled);
-
-  if (spoken_feedback_enabled_ == enabled)
-    return;
-
-  spoken_feedback_enabled_ = enabled;
-
-  NotifyAccessibilityStatusChanged();
-
-  // TODO(warx): ChromeVox loading/unloading requires browser process started,
-  // thus it is still handled on Chrome side.
-
-  // ChromeVox focus highlighting overrides the other focus highlighting.
-  UpdateFocusHighlightFromPref();
-}
-
 void AccessibilityControllerImpl::UpdateAccessibilityHighlightingFromPrefs() {
-  if (!caret_highlight_enabled_ && !cursor_highlight_enabled_ &&
-      !focus_highlight_enabled_) {
+  if (!caret_highlight().enabled() && !cursor_highlight().enabled() &&
+      !focus_highlight().enabled()) {
     accessibility_highlight_controller_.reset();
     return;
   }
@@ -1500,36 +1650,20 @@ void AccessibilityControllerImpl::UpdateAccessibilityHighlightingFromPrefs() {
         std::make_unique<AccessibilityHighlightController>();
   }
 
-  accessibility_highlight_controller_->HighlightCaret(caret_highlight_enabled_);
+  accessibility_highlight_controller_->HighlightCaret(
+      caret_highlight().enabled());
   accessibility_highlight_controller_->HighlightCursor(
-      cursor_highlight_enabled_);
-  accessibility_highlight_controller_->HighlightFocus(focus_highlight_enabled_);
-}
-
-void AccessibilityControllerImpl::UpdateSelectToSpeakFromPref() {
-  DCHECK(active_user_prefs_);
-  const bool enabled =
-      active_user_prefs_->GetBoolean(prefs::kAccessibilitySelectToSpeakEnabled);
-
-  if (select_to_speak_enabled_ == enabled)
-    return;
-
-  select_to_speak_enabled_ = enabled;
-  select_to_speak_state_ = SelectToSpeakState::kSelectToSpeakStateInactive;
-
-  if (enabled)
-    MaybeCreateSelectToSpeakEventHandler();
-  else
-    select_to_speak_event_handler_.reset();
-
-  NotifyAccessibilityStatusChanged();
+      cursor_highlight().enabled());
+  accessibility_highlight_controller_->HighlightFocus(
+      focus_highlight().enabled());
 }
 
 void AccessibilityControllerImpl::MaybeCreateSelectToSpeakEventHandler() {
   // Construct the handler as needed when Select-to-Speak is enabled and the
   // delegate is set. Otherwise, destroy the handler when Select-to-Speak is
   // disabled or the delegate has been destroyed.
-  if (!select_to_speak_enabled_ || !select_to_speak_event_handler_delegate_) {
+  if (!select_to_speak().enabled() ||
+      !select_to_speak_event_handler_delegate_) {
     select_to_speak_event_handler_.reset();
     return;
   }
@@ -1539,38 +1673,6 @@ void AccessibilityControllerImpl::MaybeCreateSelectToSpeakEventHandler() {
 
   select_to_speak_event_handler_ = std::make_unique<SelectToSpeakEventHandler>(
       select_to_speak_event_handler_delegate_);
-}
-
-void AccessibilityControllerImpl::UpdateStickyKeysFromPref() {
-  DCHECK(active_user_prefs_);
-  const bool enabled =
-      active_user_prefs_->GetBoolean(prefs::kAccessibilityStickyKeysEnabled);
-
-  if (sticky_keys_enabled_ == enabled)
-    return;
-
-  sticky_keys_enabled_ = enabled;
-
-  NotifyAccessibilityStatusChanged();
-
-  Shell::Get()->sticky_keys_controller()->Enable(enabled);
-}
-
-void AccessibilityControllerImpl::UpdateSwitchAccessFromPref() {
-  DCHECK(active_user_prefs_);
-  const bool enabled =
-      active_user_prefs_->GetBoolean(prefs::kAccessibilitySwitchAccessEnabled);
-  if (switch_access_enabled_ == enabled)
-    return;
-
-  switch_access_enabled_ = enabled;
-
-  if (enabled)
-    MaybeCreateSwitchAccessEventHandler();
-  else
-    switch_access_event_handler_.reset();
-
-  NotifyAccessibilityStatusChanged();
 }
 
 void AccessibilityControllerImpl::UpdateSwitchAccessKeyCodesFromPref(
@@ -1630,11 +1732,26 @@ void AccessibilityControllerImpl::
       1 /* min */, 10000 /* max */, 100 /* buckets */);
 }
 
+void AccessibilityControllerImpl::SwitchAccessDisableDialogClosed(
+    bool disable_dialog_accepted) {
+  if (disable_dialog_accepted) {
+    // The pref was already disabled, but we left switch access on until they
+    // accepted the dialog.
+    switch_access_bubble_controller_.reset();
+    switch_access_event_handler_.reset();
+    NotifyAccessibilityStatusChanged();
+  } else {
+    // Reset the preference (which was already set to false) to match the
+    // behavior of keeping Switch Access enabled.
+    switch_access().SetEnabled(true);
+  }
+}
+
 void AccessibilityControllerImpl::MaybeCreateSwitchAccessEventHandler() {
   // Construct the handler as needed when Switch Access is enabled and the
   // delegate is set. Otherwise, destroy the handler when Switch Access is
   // disabled or the delegate has been destroyed.
-  if (!switch_access_enabled_ || !switch_access_event_handler_delegate_) {
+  if (!switch_access().enabled() || !switch_access_event_handler_delegate_) {
     switch_access_event_handler_.reset();
     return;
   }
@@ -1654,19 +1771,31 @@ void AccessibilityControllerImpl::MaybeCreateSwitchAccessEventHandler() {
   UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand::kPrevious);
 }
 
-void AccessibilityControllerImpl::UpdateVirtualKeyboardFromPref() {
+void AccessibilityControllerImpl::UpdateShortcutsEnabledFromPref() {
   DCHECK(active_user_prefs_);
-  const bool enabled = active_user_prefs_->GetBoolean(
-      prefs::kAccessibilityVirtualKeyboardEnabled);
+  const bool enabled =
+      active_user_prefs_->GetBoolean(prefs::kAccessibilityShortcutsEnabled);
 
-  if (virtual_keyboard_enabled_ == enabled)
+  if (shortcuts_enabled_ == enabled)
     return;
 
-  virtual_keyboard_enabled_ = enabled;
+  shortcuts_enabled_ = enabled;
 
   NotifyAccessibilityStatusChanged();
+}
 
-  keyboard::SetAccessibilityKeyboardEnabled(enabled);
+void AccessibilityControllerImpl::
+    UpdateTabletModeShelfNavigationButtonsFromPref() {
+  DCHECK(active_user_prefs_);
+  const bool enabled = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled);
+
+  if (tablet_mode_shelf_navigation_buttons_enabled_ == enabled)
+    return;
+
+  tablet_mode_shelf_navigation_buttons_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged();
 }
 
 base::string16 AccessibilityControllerImpl::GetBatteryDescription() const {
@@ -1696,6 +1825,107 @@ bool AccessibilityControllerImpl::IsAccessibilityFeatureVisibleInTrayMenu(
     return false;
   }
   return true;
+}
+
+void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
+  bool enabled = features_[feature]->enabled();
+
+  switch (feature) {
+    case FeatureType::kAutoclick:
+      Shell::Get()->autoclick_controller()->SetEnabled(
+          enabled, true /* show confirmation dialog */);
+      break;
+    case FeatureType::kCaretHighlight:
+      UpdateAccessibilityHighlightingFromPrefs();
+      break;
+    case FeatureType::KCursorHighlight:
+      UpdateAccessibilityHighlightingFromPrefs();
+      break;
+    case FeatureType::kDictation:
+      break;
+    case FeatureType::kFloatingMenu:
+      if (enabled && always_show_floating_menu_when_enabled_)
+        ShowFloatingMenuIfEnabled();
+      else
+        floating_menu_controller_.reset();
+      break;
+    case FeatureType::kFocusHighlight:
+      UpdateAccessibilityHighlightingFromPrefs();
+      break;
+    case FeatureType::kFullscreenMagnifier:
+      break;
+    case FeatureType::kDockedMagnifier:
+      break;
+    case FeatureType::kHighContrast:
+      Shell::Get()->high_contrast_controller()->SetEnabled(enabled);
+      Shell::Get()->UpdateCursorCompositingEnabled();
+      break;
+    case FeatureType::kLargeCursor:
+      if (!enabled)
+        active_user_prefs_->ClearPref(prefs::kAccessibilityLargeCursorDipSize);
+
+      Shell::Get()->cursor_manager()->SetCursorSize(
+          large_cursor().enabled() ? ui::CursorSize::kLarge
+                                   : ui::CursorSize::kNormal);
+      Shell::Get()->SetLargeCursorSizeInDip(large_cursor_size_in_dip_);
+      Shell::Get()->UpdateCursorCompositingEnabled();
+      break;
+    case FeatureType::kMonoAudio:
+      chromeos::CrasAudioHandler::Get()->SetOutputMonoEnabled(enabled);
+      break;
+    case FeatureType::kSpokenFeedback:
+      message_center::MessageCenter::Get()->SetSpokenFeedbackEnabled(enabled);
+      // TODO(warx): ChromeVox loading/unloading requires browser process
+      // started, thus it is still handled on Chrome side.
+
+      // ChromeVox focus highlighting overrides the other focus highlighting.
+      focus_highlight().UpdateFromPref();
+      break;
+    case FeatureType::kSelectToSpeak:
+      select_to_speak_state_ = SelectToSpeakState::kSelectToSpeakStateInactive;
+      if (enabled)
+        MaybeCreateSelectToSpeakEventHandler();
+      else
+        select_to_speak_event_handler_.reset();
+      break;
+    case FeatureType::kStickyKeys:
+      Shell::Get()->sticky_keys_controller()->Enable(enabled);
+      break;
+    case FeatureType::kSwitchAccess:
+      // Show a dialog before disabling Switch Access.
+      if (!enabled) {
+        ShowAccessibilityNotification(A11yNotificationType::kNone);
+
+        if (no_switch_access_disable_confirmation_dialog_for_testing_) {
+          SwitchAccessDisableDialogClosed(true);
+        } else {
+          new AccessibilityFeatureDisableDialog(
+              IDS_ASH_SWITCH_ACCESS_DISABLE_CONFIRMATION_TITLE,
+              IDS_ASH_SWITCH_ACCESS_DISABLE_CONFIRMATION_BODY,
+              base::BindOnce(
+                  &AccessibilityControllerImpl::SwitchAccessDisableDialogClosed,
+                  weak_ptr_factory_.GetWeakPtr(), true),
+              base::BindOnce(
+                  &AccessibilityControllerImpl::SwitchAccessDisableDialogClosed,
+                  weak_ptr_factory_.GetWeakPtr(), false));
+        }
+        return;
+      } else {
+        switch_access_bubble_controller_ =
+            std::make_unique<SwitchAccessMenuBubbleController>();
+        MaybeCreateSwitchAccessEventHandler();
+        ShowAccessibilityNotification(
+            A11yNotificationType::kSwitchAccessEnabled);
+      }
+      break;
+    case FeatureType::kVirtualKeyboard:
+      keyboard::SetAccessibilityKeyboardEnabled(enabled);
+      break;
+    case FeatureType::kFeatureCount:
+    case FeatureType::kNoConflictingFeature:
+      NOTREACHED();
+  }
+  NotifyAccessibilityStatusChanged();
 }
 
 }  // namespace ash

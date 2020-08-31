@@ -29,6 +29,7 @@ from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
 from chromite.lib import remote_access_unittest
+from chromite.lib import stateful_updater
 
 
 class ChromiumOSBaseUpdaterMock(partial_mock.PartialCmdMock):
@@ -96,10 +97,29 @@ class CrOSLocalTransferMock(partial_mock.PartialCmdMock):
     """Mock auto_updater_transfer.LocalTransfer.TransferUpdateUtilsPackage."""
 
   def TransferRootfsUpdate(self, _inst, *_args, **_kwargs):
-    """Mock auto_updater_transfer.LocalTransferTransferRootfsUpdate."""
+    """Mock auto_updater_transfer.LocalTransfer.TransferRootfsUpdate."""
 
   def TransferStatefulUpdate(self, _inst, *_args, **_kwargs):
-    """Mock auto_updater_transfer.LocalTransferTransferStatefulUpdate."""
+    """Mock auto_updater_transfer.LocalTransfer.TransferStatefulUpdate."""
+
+
+class CrOSLabTransferMock(partial_mock.PartialCmdMock):
+  """Mock out all transfer functions in auto_updater_transfer.LocalTransfer."""
+  TARGET = 'chromite.lib.auto_updater_transfer.LabTransfer'
+  ATTRS = ('TransferUpdateUtilsPackage', 'TransferRootfsUpdate',
+           'TransferStatefulUpdate')
+
+  def __init__(self):
+    partial_mock.PartialCmdMock.__init__(self)
+
+  def TransferUpdateUtilsPackage(self, _inst, *_args, **_kwargs):
+    """Mock auto_updater_transfer.LabTransfer.TransferUpdateUtilsPackage."""
+
+  def TransferRootfsUpdate(self, _inst, *_args, **_kwargs):
+    """Mock auto_updater_transfer.LabTransfer.TransferRootfsUpdate."""
+
+  def TransferStatefulUpdate(self, _inst, *_args, **_kwargs):
+    """Mock auto_updater_transfer.LabTransfer.TransferStatefulUpdate."""
 
 
 class ChromiumOSPreCheckMock(partial_mock.PartialCmdMock):
@@ -138,7 +158,8 @@ class ChromiumOSUpdaterBaseTest(cros_test_lib.MockTempDirTestCase):
   def setUp(self):
     self._payload_dir = self.tempdir
     self._base_updater_mock = self.StartPatcher(ChromiumOSBaseUpdaterMock())
-    self._transfer_mock = self.StartPatcher(CrOSLocalTransferMock())
+    self._local_xfer_mock = self.StartPatcher(CrOSLocalTransferMock())
+    self._lab_xfer_mock = self.StartPatcher(CrOSLabTransferMock())
     self._cros_transfer_mock = self.StartPatcher(ChromiumOSBaseTransferMock())
     self.PatchObject(remote_access.ChromiumOSDevice, 'Pingable',
                      return_value=True)
@@ -157,14 +178,38 @@ class CrOSLocalTransferTest(ChromiumOSUpdaterBaseTest):
     """
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self._payload_dir, do_stateful_update=False)
+          device, None, self._payload_dir, do_stateful_update=False,
+          transfer_class=auto_updater_transfer.LocalTransfer)
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
       CrOS_AU.RunUpdate()
       self.assertTrue(
-          self._transfer_mock.patched['TransferUpdateUtilsPackage'].called)
+          self._local_xfer_mock.patched['TransferUpdateUtilsPackage'].called)
       self.assertTrue(
-          self._transfer_mock.patched['TransferRootfsUpdate'].called)
+          self._local_xfer_mock.patched['TransferRootfsUpdate'].called)
       self.assertFalse(
-          self._transfer_mock.patched['TransferStatefulUpdate'].called)
+          self._local_xfer_mock.patched['TransferStatefulUpdate'].called)
+
+  def testLabTransferForRootfs(self):
+    """Test transfer functions for rootfs update.
+
+    When rootfs update is enabled, update-utils and rootfs update payload are
+    transferred. Stateful update payload is not.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir, do_stateful_update=False,
+          transfer_class=auto_updater_transfer.LabTransfer,
+          staging_server='http://0.0.0.0:8082/')
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
+      CrOS_AU.RunUpdate()
+      self.assertTrue(
+          self._lab_xfer_mock.patched['TransferUpdateUtilsPackage'].called)
+      self.assertTrue(
+          self._lab_xfer_mock.patched['TransferRootfsUpdate'].called)
+      self.assertFalse(
+          self._lab_xfer_mock.patched['TransferStatefulUpdate'].called)
 
   def testLocalTransferForStateful(self):
     """Test Transfer functions' code path for stateful update.
@@ -175,14 +220,35 @@ class CrOSLocalTransferTest(ChromiumOSUpdaterBaseTest):
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self._payload_dir, do_rootfs_update=False)
+          device, None, self._payload_dir, do_rootfs_update=False,
+          transfer_class=auto_updater_transfer.LocalTransfer)
       CrOS_AU.RunUpdate()
       self.assertTrue(
-          self._transfer_mock.patched['TransferUpdateUtilsPackage'].called)
+          self._local_xfer_mock.patched['TransferUpdateUtilsPackage'].called)
       self.assertFalse(
-          self._transfer_mock.patched['TransferRootfsUpdate'].called)
+          self._local_xfer_mock.patched['TransferRootfsUpdate'].called)
       self.assertTrue(
-          self._transfer_mock.patched['TransferStatefulUpdate'].called)
+          self._local_xfer_mock.patched['TransferStatefulUpdate'].called)
+
+  def testLabTransferForStateful(self):
+    """Test LabTransfer methods' code path for stateful update.
+
+    When stateful update is enabled, update-utils and stateful update payload
+    are transferred. Rootfs update payload is not.
+    """
+    with remote_access.ChromiumOSDeviceHandler(
+        remote_access.TEST_IP) as device:
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir, do_rootfs_update=False,
+          transfer_class=auto_updater_transfer.LabTransfer,
+          staging_server='http://0.0.0.0:8082/')
+      CrOS_AU.RunUpdate()
+      self.assertTrue(
+          self._lab_xfer_mock.patched['TransferUpdateUtilsPackage'].called)
+      self.assertFalse(
+          self._lab_xfer_mock.patched['TransferRootfsUpdate'].called)
+      self.assertTrue(
+          self._lab_xfer_mock.patched['TransferStatefulUpdate'].called)
 
   def testCrosTransferForRootfs(self):
     """Test auto_updater.ChromiumOSUpdater transfer methods for rootfs update.
@@ -196,7 +262,10 @@ class CrOSLocalTransferTest(ChromiumOSUpdaterBaseTest):
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self._payload_dir, do_stateful_update=False)
+          device, None, self._payload_dir, do_stateful_update=False,
+          transfer_class=auto_updater_transfer.LocalTransfer)
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
       CrOS_AU.RunUpdate()
       self.assertFalse(
           self._cros_transfer_mock.patched['TransferUpdateUtilsPackage'].called)
@@ -217,7 +286,8 @@ class CrOSLocalTransferTest(ChromiumOSUpdaterBaseTest):
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self._payload_dir, do_rootfs_update=False)
+          device, None, self._payload_dir, do_rootfs_update=False,
+          transfer_class=auto_updater_transfer.LocalTransfer)
       CrOS_AU.RunUpdate()
       self.assertFalse(
           self._cros_transfer_mock.patched['TransferUpdateUtilsPackage'].called)
@@ -235,7 +305,11 @@ class ChromiumOSUpdatePreCheckTest(ChromiumOSUpdaterBaseTest):
     precheck_mock = self.StartPatcher(ChromiumOSPreCheckMock())
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
-      CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self._payload_dir)
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir,
+          transfer_class=auto_updater_transfer.LocalTransfer)
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
       CrOS_AU.RunUpdate()
       self.assertTrue(precheck_mock.patched['CheckRestoreStateful'].called)
 
@@ -243,7 +317,9 @@ class ChromiumOSUpdatePreCheckTest(ChromiumOSUpdaterBaseTest):
     """Test CheckRestoreStateful fails with raising ChromiumOSUpdateError."""
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
-      CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self._payload_dir)
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir,
+          transfer_class=auto_updater_transfer.LocalTransfer)
       self.PatchObject(cros_build_lib, 'BooleanPrompt', return_value=False)
       self.PatchObject(auto_updater.ChromiumOSUpdater,
                        '_CheckNebraskaCanRun',
@@ -255,8 +331,11 @@ class ChromiumOSUpdatePreCheckTest(ChromiumOSUpdaterBaseTest):
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self._payload_dir, yes=True)
+          device, None, self._payload_dir, yes=True,
+          transfer_class=auto_updater_transfer.LocalTransfer)
       self.PatchObject(cros_build_lib, 'BooleanPrompt')
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
       CrOS_AU.RunUpdate()
       self.assertFalse(cros_build_lib.BooleanPrompt.called)
 
@@ -268,27 +347,39 @@ class ChromiumOSUpdaterRunTest(ChromiumOSUpdaterBaseTest):
     """Test RestoreStateful is called when it's required."""
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
-      CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self._payload_dir)
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir,
+          transfer_class=auto_updater_transfer.LocalTransfer)
       self.PatchObject(auto_updater.ChromiumOSUpdater,
                        'CheckRestoreStateful',
                        return_value=True)
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
       CrOS_AU.RunUpdate()
       self.assertTrue(self._base_updater_mock.patched['RestoreStateful'].called)
 
-  def test_FixPayloadPropertiesFile(self):
-    """Tests _FixPayloadPropertiesFile() correctly fixes the properties file."""
+  def test_FixPayloadPropertiesFileLocal(self):
+    """Tests _FixPayloadPropertiesFile() correctly fixes the properties file.
+
+    Tests if the payload properties file gets filled with correct data when
+    LocalTransfer methods are invoked internally.
+    """
     payload_filename = ('payloads/chromeos_9334.58.2_reef_stable-'
                         'channel_full_test.bin-e6a3290274a5b2ae0b9f491712ae1d8')
     payload_path = os.path.join(self._payload_dir, payload_filename)
     payload_properties_path = payload_path + '.json'
     osutils.WriteFile(payload_path, 'dummy-payload', makedirs=True)
     # Empty properties file.
-    osutils.WriteFile(payload_properties_path, json.dumps({}))
+    osutils.WriteFile(payload_properties_path, '{}')
 
-    with remote_access.ChromiumOSDeviceHandler(
-        remote_access.TEST_IP) as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self._payload_dir, payload_filename=payload_filename)
+          device, None, self._payload_dir, payload_filename=payload_filename,
+          transfer_class=auto_updater_transfer.LocalTransfer)
+
+      self.PatchObject(auto_updater_transfer.LocalTransfer,
+                       'GetPayloadPropsFile',
+                       return_value=payload_properties_path)
       CrOS_AU._FixPayloadPropertiesFile() # pylint: disable=protected-access
 
     # The payload properties file should be updated with new fields.
@@ -301,6 +392,40 @@ class ChromiumOSUpdaterRunTest(ChromiumOSUpdaterBaseTest):
     }
     self.assertEqual(props, expected_props)
 
+  def test_FixPayloadPropertiesFileLab(self):
+    """Tests _FixPayloadPropertiesFile() correctly fixes the properties file.
+
+    Tests if the payload properties file gets filled with correct data when
+    LabTransfer methods are invoked internally.
+    """
+    payload_dir = 'nyan_kitty-release/R76-12345.17.0'
+    payload_path = os.path.join(self.tempdir, 'test_update.gz')
+    payload_properties_path = payload_path + '.json'
+    osutils.WriteFile(payload_path, 'dummy-payload', makedirs=True)
+    # Empty properties file.
+    osutils.WriteFile(payload_properties_path, '{}')
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, payload_dir=payload_dir,
+          transfer_class=auto_updater_transfer.LabTransfer,
+          staging_server='http://0.0.0.0:8082')
+
+      self.PatchObject(auto_updater_transfer.LabTransfer, 'GetPayloadPropsFile',
+                       return_value=payload_properties_path)
+      self.PatchObject(auto_updater_transfer.LabTransfer, '_GetPayloadSize',
+                       return_value=os.path.getsize(payload_path))
+      CrOS_AU._FixPayloadPropertiesFile() # pylint: disable=protected-access
+
+    # The payload properties file should be updated with new fields.
+    props = json.loads(osutils.ReadFile(payload_properties_path))
+    expected_props = {
+        'appid': '',
+        'is_delta': False,
+        'size': os.path.getsize(payload_path),
+        'target_version': '12345.17.0',
+    }
+    self.assertEqual(props, expected_props)
+
   def testRunRootfs(self):
     """Test the update functions are called correctly.
 
@@ -309,7 +434,10 @@ class ChromiumOSUpdaterRunTest(ChromiumOSUpdaterBaseTest):
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self._payload_dir, do_stateful_update=False)
+          device, None, self._payload_dir, do_stateful_update=False,
+          transfer_class=auto_updater_transfer.LocalTransfer)
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
       CrOS_AU.RunUpdate()
       self.assertTrue(
           self._base_updater_mock.patched['SetupRootfsUpdate'].called)
@@ -324,73 +452,142 @@ class ChromiumOSUpdaterRunTest(ChromiumOSUpdaterBaseTest):
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self._payload_dir, do_rootfs_update=False)
+          device, None, self._payload_dir, do_rootfs_update=False,
+          transfer_class=auto_updater_transfer.LocalTransfer)
       CrOS_AU.RunUpdate()
       self.assertFalse(
           self._base_updater_mock.patched['SetupRootfsUpdate'].called)
       self.assertFalse(self._base_updater_mock.patched['UpdateRootfs'].called)
       self.assertTrue(self._base_updater_mock.patched['UpdateStateful'].called)
 
-  def testMismatchAppId(self):
-    """Tests that we correctly set the payload App ID to empty when mismatch."""
+  def testMismatchedAppId(self):
+    """Tests if App ID is set to empty when there's a mismatch."""
     self._payload_dir = self.tempdir
 
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
-      CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self._payload_dir)
-      prop_file = os.path.join(self._payload_dir, 'payload.json')
-      osutils.WriteFile(prop_file, '{"appid": "helloworld!"}')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'app_id',
-                       return_value='different')
-      CrOS_AU.ResolveAPPIDMismatchIfAny(prop_file)
-      self.assertEqual(osutils.ReadFile(prop_file), '{"appid": ""}')
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir,
+          transfer_class=auto_updater_transfer.LocalTransfer)
+      type(CrOS_AU.device).app_id = mock.PropertyMock(return_value='different')
+      resolved_appid = CrOS_AU.ResolveAPPIDMismatchIfAny('helloworld!')
+      self.assertEqual(resolved_appid, '')
 
-      osutils.WriteFile(prop_file, '{"appid": "same"}')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'app_id',
-                       return_value='same')
-      self.assertEqual(osutils.ReadFile(prop_file), '{"appid": "same"}')
-
-  def testPrepareLocalPayloadPropsFile(self):
-    """Tests that we correctly call ResolveAPPIDMismatchIfAny."""
+  def testMatchedAppId(self):
+    """Tests if App ID is unchanged when there's a match."""
     self._payload_dir = self.tempdir
+
+    with remote_access.ChromiumOSDeviceHandler(
+        remote_access.TEST_IP) as device:
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir,
+          transfer_class=auto_updater_transfer.LocalTransfer)
+      type(CrOS_AU.device).app_id = mock.PropertyMock(return_value='same')
+      resolved_appid = CrOS_AU.ResolveAPPIDMismatchIfAny('same')
+      self.assertEqual(resolved_appid, 'same')
+
+  def testCreateTransferObjectError(self):
+    """Test ChromiumOSUpdater.CreateTransferObject method.
+
+    Tests if the method throws ChromiumOSUpdater error when a class that is not
+    a subclass of auto_updater_transfer.Transfer is passed as value for the
+    transfer_class argument.
+    """
+    class NotATransferSubclass(object):
+      """Dummy class for testing ChromiumOSUpdater.CreateTransferObject."""
 
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
-      CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self._payload_dir)
-      local_xfer = auto_updater_transfer.LocalTransfer
-      cros_updater = auto_updater.ChromiumOSUpdater
+      self.assertRaises(AssertionError,
+                        auto_updater.ChromiumOSUpdater, device=device,
+                        build_name=None, payload_dir=self._payload_dir,
+                        staging_server='http://0.0.0.0:8082/',
+                        transfer_class=NotATransferSubclass)
 
-      self.PatchObject(local_xfer, 'GetPayloadPropsFile',
-                       return_value='/local/test_update.gz.json')
-      self.PatchObject(cros_updater, 'ResolveAPPIDMismatchIfAny')
+  def testCheckPayloadsLocalTransferObject(self):
+    """Tests if LocalTransfer.CheckPayloads is called.
 
-      CrOS_AU.PreparePayloadPropsFile()
-
-      self.assertTrue(local_xfer.GetPayloadPropsFile.called)
-      self.assertListEqual(
-          cros_updater.ResolveAPPIDMismatchIfAny.call_args_list,
-          [mock.call('/local/test_update.gz.json')])
-
-  def testPrepareLabPayloadPropsFile(self):
-    """Tests that we correctly call ResolveAPPIDMismatchIfAny."""
-    self._payload_dir = self.tempdir
-
+    This unittest can be removed once all callers of
+    ChromiumOSUpdater.CheckPayloads are removed.
+    """
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
           device, None, self._payload_dir,
-          staging_server='http://0.0.0.0:8082/')
-      lab_xfer = auto_updater_transfer.LabTransfer
-      cros_updater = auto_updater.ChromiumOSUpdater
+          transfer_class=auto_updater_transfer.LocalTransfer)
+      self.PatchObject(auto_updater_transfer.LocalTransfer, 'CheckPayloads')
+      CrOS_AU.CheckPayloads()
+      self.assertTrue(auto_updater_transfer.LocalTransfer.CheckPayloads.called)
 
-      self.PatchObject(lab_xfer, 'GetPayloadPropsFile',
-                       return_value='/local/test_update.gz.json')
-      self.PatchObject(cros_updater, 'ResolveAPPIDMismatchIfAny')
+  def testCheckPayloadsLabTransferObject(self):
+    """Tests if LabTransfer.CheckPayloads is called.
 
-      CrOS_AU.PreparePayloadPropsFile()
+    This unittest can be removed once all callers of
+    ChromiumOSUpdater.CheckPayloads are removed.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir,
+          staging_server='http://0.0.0.0:8082/',
+          transfer_class=auto_updater_transfer.LabTransfer)
+      self.PatchObject(auto_updater_transfer.LabTransfer, 'CheckPayloads')
+      CrOS_AU.CheckPayloads()
+      self.assertTrue(auto_updater_transfer.LabTransfer.CheckPayloads.called)
 
-      self.assertTrue(lab_xfer.GetPayloadPropsFile.called)
-      self.assertListEqual(
-          cros_updater.ResolveAPPIDMismatchIfAny.call_args_list,
-          [mock.call('/local/test_update.gz.json')])
+  def test_FixPayloadLocalTransfer(self):
+    """Tests if correct LocalTransfer methods are called."""
+    payload_filename = ('payloads/chromeos_9334.58.2_reef_stable-'
+                        'channel_full_test.bin-e6a3290274a5b2ae0b9f491712ae1d8')
+    payload_path = os.path.join(self.tempdir, payload_filename)
+    payload_properties_path = payload_path + '.json'
+    osutils.WriteFile(payload_path, 'dummy-payload', makedirs=True)
+    # Empty properties file.
+    osutils.WriteFile(payload_properties_path, '{}')
+
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, payload_dir=self._payload_dir,
+          payload_filename=payload_filename,
+          transfer_class=auto_updater_transfer.LocalTransfer)
+
+      self.PatchObject(
+          auto_updater_transfer.LocalTransfer, 'GetPayloadPropsFile',
+          return_value=payload_properties_path)
+      self.PatchObject(
+          auto_updater_transfer.LocalTransfer, 'GetPayloadProps',
+          return_value={'size': '123', 'image_version': '99999.9.9'})
+
+      CrOS_AU._FixPayloadPropertiesFile() # pylint: disable=protected-access
+      self.assertTrue(
+          auto_updater_transfer.LocalTransfer.GetPayloadPropsFile.called)
+      self.assertTrue(
+          auto_updater_transfer.LocalTransfer.GetPayloadProps.called)
+
+  def test_FixPayloadLabTransfer(self):
+    """Tests if correct LabTransfer methods are called."""
+    payload_dir = 'nyan_kitty-release/R76-12345.17.0'
+    payload_path = os.path.join(self.tempdir, 'test_update.gz')
+    payload_properties_path = payload_path + '.json'
+    osutils.WriteFile(payload_path, 'dummy-payload', makedirs=True)
+    # Empty properties file.
+    osutils.WriteFile(payload_properties_path, '{}')
+
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, payload_dir=payload_dir,
+          transfer_class=auto_updater_transfer.LabTransfer,
+          staging_server='http://0.0.0.0:8082')
+
+      self.PatchObject(
+          auto_updater_transfer.LabTransfer, 'GetPayloadPropsFile',
+          return_value=payload_properties_path)
+      self.PatchObject(
+          auto_updater_transfer.LabTransfer, 'GetPayloadProps',
+          return_value={'size': '123', 'image_version': '99999.9.9'})
+
+      CrOS_AU._FixPayloadPropertiesFile() # pylint: disable=protected-access
+      self.assertTrue(
+          auto_updater_transfer.LabTransfer.GetPayloadPropsFile.called)
+      self.assertTrue(
+          auto_updater_transfer.LabTransfer.GetPayloadProps.called)
 
 
 class ChromiumOSUpdaterVerifyTest(ChromiumOSUpdaterBaseTest):
@@ -400,7 +597,11 @@ class ChromiumOSUpdaterVerifyTest(ChromiumOSUpdaterBaseTest):
     """Test RebootAndVerify if rootfs update and reboot are enabled."""
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
-      CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self._payload_dir)
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir,
+          transfer_class=auto_updater_transfer.LocalTransfer)
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
       CrOS_AU.RunUpdate()
       self.assertTrue(self._base_updater_mock.patched['RebootAndVerify'].called)
 
@@ -409,7 +610,10 @@ class ChromiumOSUpdaterVerifyTest(ChromiumOSUpdaterBaseTest):
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self._payload_dir, reboot=False)
+          device, None, self._payload_dir, reboot=False,
+          transfer_class=auto_updater_transfer.LocalTransfer)
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
       CrOS_AU.RunUpdate()
       self.assertFalse(
           self._base_updater_mock.patched['RebootAndVerify'].called)
@@ -458,10 +662,13 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
     """
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
-      CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self._payload_dir)
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir,
+          transfer_class=auto_updater_transfer.LocalTransfer)
       self.PatchObject(auto_updater.ChromiumOSUpdater,
                        'CheckRestoreStateful',
                        return_value=True)
+      self.PatchObject(auto_updater.ChromiumOSUpdater, 'SetupRootfsUpdate')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'RunUpdateRootfs')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'PreSetupStatefulUpdate')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'TransferStatefulUpdate')
@@ -483,7 +690,9 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
     """
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
-      CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self._payload_dir)
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir,
+          transfer_class=auto_updater_transfer.LocalTransfer)
       self.PatchObject(auto_updater.ChromiumOSUpdater,
                        '_StartUpdateEngineIfNotRunning')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetUpdateStatus',
@@ -497,12 +706,16 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
     """
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
-      CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self._payload_dir)
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir,
+          transfer_class=auto_updater_transfer.LocalTransfer)
       self.prepareRootfsUpdate()
       self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'Start',
                        side_effect=nebraska_wrapper.Error())
       self.PatchObject(auto_updater.ChromiumOSUpdater,
                        'RevertBootPartition')
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
       with mock.patch('os.path.join', return_value=''):
         self.assertRaises(auto_updater.RootfsUpdateError, CrOS_AU.RunUpdate)
 
@@ -514,14 +727,18 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
     """
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
-      CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self._payload_dir)
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir,
+          transfer_class=auto_updater_transfer.LocalTransfer)
       self.prepareRootfsUpdate()
       self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'Start')
       self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'GetURL')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand',
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run',
                        side_effect=cros_build_lib.RunCommandError('fail'))
       self.PatchObject(auto_updater.ChromiumOSUpdater,
                        'RevertBootPartition')
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
       with mock.patch('os.path.join', return_value=''):
         self.assertRaises(auto_updater.RootfsUpdateError, CrOS_AU.RunUpdate)
 
@@ -533,44 +750,83 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
     """
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
-      CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self._payload_dir)
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir,
+          transfer_class=auto_updater_transfer.LocalTransfer)
       self.prepareRootfsUpdate()
       self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'Start')
       self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'GetURL')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetUpdateStatus',
                        side_effect=ValueError('Cannot get update status'))
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
       with mock.patch('os.path.join', return_value=''):
         self.assertRaises(auto_updater.RootfsUpdateError, CrOS_AU.RunUpdate)
 
-  def testStatefulUpdateCmdError(self):
-    """Test ChromiumOSUpdater.UpdateStateful with raising exception.
+  def testRootfsUpdateIdleError(self):
+    """Test ChromiumOSUpdater.UpdateRootfs with raising exception.
 
-    StatefulUpdateError is raised if device fails to run stateful update
-    command 'stateful_update ...'.
+    RootfsUpdateError is raised if the update engine goes to idle state
+    after downloading.
     """
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self._payload_dir, do_rootfs_update=False)
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand',
-                       side_effect=cros_build_lib.RunCommandError('fail'))
+          device, None, self._payload_dir,
+          transfer_class=auto_updater_transfer.LocalTransfer)
+      self.prepareRootfsUpdate()
+      self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'Start')
+      self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'GetURL')
+      mock_run = self.PatchObject(remote_access.ChromiumOSDevice, 'run')
+      self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetUpdateStatus',
+                       side_effect=(
+                           ('UPDATE_STATUS_DOWNLOADING', '0.5'),
+                           ('UPDATE_STATUS_DOWNLOADING', '0.9'),
+                           ('UPDATE_STATUS_FINALIZING', 0),
+                           ('UPDATE_STATUS_IDLE', 0),
+                       ))
       self.PatchObject(auto_updater.ChromiumOSUpdater,
-                       'ResetStatefulPartition')
-      with mock.patch('os.path.join', return_value=''):
-        self.assertRaises(auto_updater.StatefulUpdateError, CrOS_AU.RunUpdate)
+                       '_FixPayloadPropertiesFile')
+      patch_join = mock.patch('os.path.join', return_value='')
+      patch_sleep = mock.patch('time.sleep')
+      with patch_sleep as mock_sleep, patch_join as _:
+        self.assertRaises(auto_updater.RootfsUpdateError, CrOS_AU.RunUpdate)
+        mock_sleep.assert_called()
+        mock_run.assert_any_call(['cat', '/var/log/update_engine.log'])
+
+  def testStatefulUpdateCmdError(self):
+    """Test ChromiumOSUpdater.UpdateStateful with raising exception.
+
+    StatefulUpdateError is raised if device fails to update stateful partition.
+    """
+    with remote_access.ChromiumOSDeviceHandler(
+        remote_access.TEST_IP) as device:
+      CrOS_AU = auto_updater.ChromiumOSUpdater(
+          device, None, self._payload_dir, do_rootfs_update=False,
+          transfer_class=auto_updater_transfer.LocalTransfer)
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run',
+                       side_effect=cros_build_lib.RunCommandError('fail'))
+      self.PatchObject(stateful_updater.StatefulUpdater, 'Update',
+                       side_effect=stateful_updater.Error())
+      self.PatchObject(stateful_updater.StatefulUpdater, 'Reset',
+                       side_effect=stateful_updater.Error())
+      self.assertRaises(auto_updater.StatefulUpdateError, CrOS_AU.RunUpdate)
 
   def testVerifyErrorWithSameRootDev(self):
     """Test RebootAndVerify fails with raising AutoUpdateVerifyError."""
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self._payload_dir, do_stateful_update=False)
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+          device, None, self._payload_dir, do_stateful_update=False,
+          transfer_class=auto_updater_transfer.LocalTransfer)
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'SetupRootfsUpdate')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'UpdateRootfs')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetRootDev',
                        return_value='fake_path')
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
       self.assertRaises(auto_updater.AutoUpdateVerifyError, CrOS_AU.RunUpdate)
 
   def testVerifyErrorWithRootDevEqualsNone(self):
@@ -578,12 +834,15 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self._payload_dir, do_stateful_update=False)
+          device, None, self._payload_dir, do_stateful_update=False,
+          transfer_class=auto_updater_transfer.LocalTransfer)
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'SetupRootfsUpdate')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'UpdateRootfs')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetRootDev',
                        return_value=None)
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
       self.assertRaises(auto_updater.AutoUpdateVerifyError, CrOS_AU.RunUpdate)
 
   def testNoVerifyError(self):
@@ -595,10 +854,13 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self._payload_dir, do_rootfs_update=False)
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+          device, None, self._payload_dir, do_rootfs_update=False,
+          transfer_class=auto_updater_transfer.LocalTransfer)
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetRootDev',
                        return_value=None)
+      self.PatchObject(stateful_updater.StatefulUpdater, 'Update')
+
       try:
         CrOS_AU.RunUpdate()
       except auto_updater.AutoUpdateVerifyError:

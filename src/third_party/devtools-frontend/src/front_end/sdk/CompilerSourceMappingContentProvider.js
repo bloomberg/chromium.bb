@@ -27,14 +27,23 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as TextUtils from '../text_utils/text_utils.js';
+
+import {MultitargetNetworkManager} from './NetworkManager.js';
+
 /**
- * @implements {Common.ContentProvider}
+ * @implements {TextUtils.ContentProvider.ContentProvider}
  * @unrestricted
  */
 export class CompilerSourceMappingContentProvider {
   /**
    * @param {string} sourceURL
-   * @param {!Common.ResourceType} contentType
+   * @param {!Common.ResourceType.ResourceType} contentType
    */
   constructor(sourceURL, contentType) {
     this._sourceURL = sourceURL;
@@ -51,7 +60,7 @@ export class CompilerSourceMappingContentProvider {
 
   /**
    * @override
-   * @return {!Common.ResourceType}
+   * @return {!Common.ResourceType.ResourceType}
    */
   contentType() {
     return this._contentType;
@@ -67,21 +76,14 @@ export class CompilerSourceMappingContentProvider {
 
   /**
    * @override
-   * @return {!Promise<!Common.DeferredContent>}
+   * @return {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   requestContent() {
     return new Promise(resolve => {
-      SDK.multitargetNetworkManager.loadResource(
-          this._sourceURL,
-          /**
-         * @param {number} statusCode
-         * @param {!Object.<string, string>} _headers (unused)
-         * @param {string} content
-         * @this {SDK.CompilerSourceMappingContentProvider}
-         */
-          (statusCode, _headers, content) => {
-            if (statusCode >= 400) {
-              const error = ls`Could not load content for ${this._sourceURL} : HTTP status code: ${statusCode}`;
+      MultitargetNetworkManager.instance().loadResource(
+          this._sourceURL, (success, _headers, content, errorDescription) => {
+            if (!success) {
+              const error = ls`Could not load content for ${this._sourceURL} (${errorDescription.message})`;
               console.error(error);
               resolve({error, isEncoded: false});
             } else {
@@ -96,22 +98,13 @@ export class CompilerSourceMappingContentProvider {
    * @param {string} query
    * @param {boolean} caseSensitive
    * @param {boolean} isRegex
-   * @return {!Promise<!Array<!Common.ContentProvider.SearchMatch>>}
+   * @return {!Promise<!Array<!TextUtils.ContentProvider.SearchMatch>>}
    */
   async searchInContent(query, caseSensitive, isRegex) {
     const {content} = await this.requestContent();
     if (typeof content !== 'string') {
       return [];
     }
-    return Common.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex);
+    return TextUtils.TextUtils.performSearchInContent(content, query, caseSensitive, isRegex);
   }
 }
-
-/* Legacy exported object */
-self.SDK = self.SDK || {};
-
-/* Legacy exported object */
-SDK = SDK || {};
-
-/** @constructor */
-SDK.CompilerSourceMappingContentProvider = CompilerSourceMappingContentProvider;

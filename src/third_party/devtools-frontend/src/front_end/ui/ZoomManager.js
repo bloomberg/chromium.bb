@@ -1,19 +1,49 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Common from '../common/common.js';
+import * as Host from '../host/host.js';  // eslint-disable-line no-unused-vars
+
+/**
+ * @type {!ZoomManager}
+ */
+let zoomManagerInstance;
+
 /**
  * @unrestricted
  */
-export default class ZoomManager extends Common.Object {
+export class ZoomManager extends Common.ObjectWrapper.ObjectWrapper {
   /**
+   * @private
    * @param {!Window} window
-   * @param {!InspectorFrontendHostAPI} frontendHost
+   * @param {!Host.InspectorFrontendHostAPI.InspectorFrontendHostAPI} frontendHost
    */
   constructor(window, frontendHost) {
     super();
     this._frontendHost = frontendHost;
     this._zoomFactor = this._frontendHost.zoomFactor();
     window.addEventListener('resize', this._onWindowResize.bind(this), true);
+  }
+
+  /**
+   * @param {{forceNew: ?boolean, win: ?Window, frontendHost: ?Host.InspectorFrontendHostAPI.InspectorFrontendHostAPI}} opts
+   */
+  static instance(opts = {forceNew: null, win: null, frontendHost: null}) {
+    const {forceNew, win, frontendHost} = opts;
+    if (!zoomManagerInstance || forceNew) {
+      if (!win || !frontendHost) {
+        throw new Error(
+            `Unable to create zoom manager: window and frontendHost must be provided: ${new Error().stack}`);
+      }
+
+      zoomManagerInstance = new ZoomManager(win, frontendHost);
+    }
+
+    return zoomManagerInstance;
   }
 
   /**
@@ -52,20 +82,3 @@ export default class ZoomManager extends Common.Object {
 export const Events = {
   ZoomChanged: Symbol('ZoomChanged')
 };
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.ZoomManager = ZoomManager;
-
-/** @enum {symbol} */
-UI.ZoomManager.Events = Events;
-
-/**
- * @type {!UI.ZoomManager}
- */
-UI.zoomManager;

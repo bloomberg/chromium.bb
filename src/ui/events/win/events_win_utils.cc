@@ -4,16 +4,17 @@
 
 #include <stdint.h>
 
-#include "ui/events/event_constants.h"
-
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "base/win/windowsx_shim.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
 #include "ui/events/keycodes/platform_key_map_win.h"
+#include "ui/events/types/event_type.h"
 #include "ui/events/win/events_win_utils.h"
 #include "ui/events/win/system_event_state_lookup.h"
 #include "ui/gfx/geometry/point.h"
@@ -242,29 +243,43 @@ base::TimeTicks EventTimeFromMSG(const MSG& native_event) {
 }
 
 gfx::Point EventLocationFromMSG(const MSG& native_event) {
-  POINT native_point;
+  // This code may use GetCursorPos() to get a mouse location. This may
+  // fail in certain situations (see
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=540840#c20 for
+  // details). To handle failure this code tracks the last known location so
+  // that it can use a reasonable value should GetCursorPos() fail.
+  static gfx::Point last_known_location;
+  gfx::Point event_location = last_known_location;
   if ((native_event.message == WM_MOUSELEAVE ||
        native_event.message == WM_NCMOUSELEAVE) ||
       IsScrollEvent(native_event)) {
     // These events have no coordinates. For sanity with rest of events grab
     // coordinates from the OS.
-    ::GetCursorPos(&native_point);
+    POINT native_point;
+    if (::GetCursorPos(&native_point)) {
+      ScreenToClient(native_event.hwnd, &native_point);
+      event_location = gfx::Point(native_point);
+    }
   } else if (IsClientMouseEvent(native_event) &&
              !IsMouseWheelEvent(native_event)) {
     // Note: Wheel events are considered client, but their position is in screen
     //       coordinates.
     // Client message. The position is contained in the LPARAM.
-    return gfx::Point(static_cast<DWORD>(native_event.lParam));
+    event_location = gfx::Point(static_cast<DWORD>(native_event.lParam));
   } else {
     DCHECK(IsNonClientMouseEvent(native_event) ||
            IsMouseWheelEvent(native_event) || IsScrollEvent(native_event));
     // Non-client message. The position is contained in a POINTS structure in
     // LPARAM, and is in screen coordinates so we have to convert to client.
+    POINT native_point;
     native_point.x = GET_X_LPARAM(native_event.lParam);
     native_point.y = GET_Y_LPARAM(native_event.lParam);
+    ScreenToClient(native_event.hwnd, &native_point);
+    event_location = gfx::Point(native_point);
   }
-  ScreenToClient(native_event.hwnd, &native_point);
-  return gfx::Point(native_point);
+
+  last_known_location = event_location;
+  return event_location;
 }
 
 gfx::Point EventSystemLocationFromMSG(const MSG& native_event) {
@@ -308,9 +323,9 @@ PointerDetails GetMousePointerDetailsFromMSG(const MSG& native_event) {
   // We should filter out all the mouse events Synthesized from touch events.
   // TODO(lanwei): Will set the pointer ID, see https://crbug.com/616771.
   if ((GetMessageExtraInfo() & SIGNATURE_MASK) != MOUSEEVENTF_FROMTOUCHPEN)
-    return PointerDetails(EventPointerType::POINTER_TYPE_MOUSE);
+    return PointerDetails(EventPointerType::kMouse);
 
-  return PointerDetails(EventPointerType::POINTER_TYPE_PEN);
+  return PointerDetails(EventPointerType::kPen);
 }
 
 gfx::Vector2d GetMouseWheelOffsetFromMSG(const MSG& native_event) {
@@ -338,7 +353,7 @@ int GetTouchIdFromMSG(const MSG& xev) {
 
 PointerDetails GetTouchPointerDetailsFromMSG(const MSG& native_event) {
   NOTIMPLEMENTED();
-  return PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
+  return PointerDetails(EventPointerType::kTouch,
                         /* pointer_id*/ 0,
                         /* radius_x */ 1.0,
                         /* radius_y */ 1.0,
@@ -399,7 +414,7 @@ bool IsMouseEventFromTouch(UINT message) {
 
 // Conversion scan_code and LParam each other.
 // uint16_t scan_code:
-//     ui/events/keycodes/dom/keycode_converter_data.inc
+//     ui/events/keycodes/dom/dom_code_data.inc
 // 0 - 15bits: represetns the scan code.
 // 28 - 30 bits (0xE000): represents whether this is an extended key or not.
 //

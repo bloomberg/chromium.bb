@@ -352,6 +352,7 @@ GCCPatterns = [
   ( '(-D.+)',                 AddCCFlag),
   ( ('(-U)','(.*)'),          AddCCFlag),
   ( '(-U.+)',                 AddCCFlag),
+  ( ('(-fdebug-compilation-dir)','(.+)'), AddCCFlag),
   ( '(-f.*)',                 AddCCFlag),
   ( '(-pedantic)',            AddCCFlag),
   ( '(-pedantic-errors)',     AddCCFlag),

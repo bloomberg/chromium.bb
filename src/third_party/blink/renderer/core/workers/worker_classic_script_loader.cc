@@ -103,7 +103,8 @@ void WorkerClassicScriptLoader::LoadSynchronously(
     ExecutionContext& execution_context,
     ResourceFetcher* fetch_client_settings_object_fetcher,
     const KURL& url,
-    mojom::RequestContextType request_context) {
+    mojom::RequestContextType request_context,
+    network::mojom::RequestDestination destination) {
   DCHECK(fetch_client_settings_object_fetcher);
   url_ = url;
   fetch_client_settings_object_fetcher_ = fetch_client_settings_object_fetcher;
@@ -115,6 +116,7 @@ void WorkerClassicScriptLoader::LoadSynchronously(
           .GetFetchClientSettingsObject()
           .GetAddressSpace());
   request.SetRequestContext(request_context);
+  request.SetRequestDestination(destination);
 
   SECURITY_DCHECK(execution_context.IsWorkerGlobalScope());
 
@@ -126,7 +128,7 @@ void WorkerClassicScriptLoader::LoadSynchronously(
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
       execution_context, this, resource_loader_options,
       fetch_client_settings_object_fetcher);
-  threadable_loader_->Start(request);
+  threadable_loader_->Start(std::move(request));
 }
 
 void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
@@ -134,10 +136,14 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
     ResourceFetcher* fetch_client_settings_object_fetcher,
     const KURL& url,
     mojom::RequestContextType request_context,
+    network::mojom::RequestDestination destination,
     network::mojom::RequestMode request_mode,
     network::mojom::CredentialsMode credentials_mode,
     base::OnceClosure response_callback,
-    base::OnceClosure finished_callback) {
+    base::OnceClosure finished_callback,
+    RejectCoepUnsafeNone reject_coep_unsafe_none,
+    mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+        blob_url_loader_factory) {
   DCHECK(fetch_client_settings_object_fetcher);
   DCHECK(response_callback || finished_callback);
   response_callback_ = std::move(response_callback);
@@ -153,14 +159,23 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
           .GetFetchClientSettingsObject()
           .GetAddressSpace());
   request.SetRequestContext(request_context);
+  request.SetRequestDestination(destination);
   request.SetMode(request_mode);
   request.SetCredentialsMode(credentials_mode);
 
   need_to_cancel_ = true;
+  ResourceLoaderOptions resource_loader_options;
+  resource_loader_options.reject_coep_unsafe_none = reject_coep_unsafe_none;
+  if (blob_url_loader_factory) {
+    resource_loader_options.url_loader_factory =
+        base::MakeRefCounted<base::RefCountedData<
+            mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>>>(
+            std::move(blob_url_loader_factory));
+  }
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
-      execution_context, this, ResourceLoaderOptions(),
+      execution_context, this, resource_loader_options,
       fetch_client_settings_object_fetcher);
-  threadable_loader_->Start(request);
+  threadable_loader_->Start(std::move(request));
   if (failed_)
     NotifyFinished();
 }

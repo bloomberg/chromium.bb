@@ -10,6 +10,7 @@
 
 #include "content/public/browser/client_hints_controller_delegate.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/mojom/parsed_headers.mojom-forward.h"
 
 class BrowserContext;
 class FrameTreeNode;
@@ -29,11 +30,27 @@ CONTENT_EXPORT double RoundKbpsToMbpsForTesting(
     const std::string& host,
     const base::Optional<int32_t>& downlink_kbps);
 
+// Updates the user agent client hint headers. This is called if the value of
+// |override_ua| changes after the NavigationRequest was created.
+CONTENT_EXPORT void UpdateNavigationRequestClientUaHeaders(
+    const GURL& url,
+    ClientHintsControllerDelegate* delegate,
+    bool override_ua,
+    FrameTreeNode* frame_tree_node,
+    net::HttpRequestHeaders* headers);
+
 CONTENT_EXPORT void AddNavigationRequestClientHintsHeaders(
     const GURL& url,
     net::HttpRequestHeaders* headers,
     BrowserContext* context,
-    bool javascript_enabled,
+    ClientHintsControllerDelegate* delegate,
+    bool is_ua_override_on,
+    FrameTreeNode*);
+
+CONTENT_EXPORT void PersistAcceptCHAfterNagivationRequestRedirect(
+    const GURL& url,
+    const ::network::mojom::ParsedHeadersPtr& headers,
+    BrowserContext* context,
     ClientHintsControllerDelegate* delegate,
     FrameTreeNode*);
 

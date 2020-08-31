@@ -17,6 +17,7 @@
 namespace blink {
 
 uint32_t AtomicStringToFourByteTag(AtomicString tag);
+AtomicString FourByteTagToAtomicString(uint32_t tag);
 
 template <typename T>
 class FontTagValuePair {
@@ -34,7 +35,7 @@ class FontTagValuePair {
 
  private:
   AtomicString tag_;
-  const T value_;
+  T value_;
 };
 
 template <typename T>
@@ -47,6 +48,7 @@ class FontSettings {
   bool operator==(const FontSettings& other) const {
     return list_ == other.list_;
   }
+  bool operator!=(const FontSettings& other) const { return !(*this == other); }
   String ToString() const {
     StringBuilder builder;
     wtf_size_t num_features = size();
@@ -60,6 +62,20 @@ class FontSettings {
     }
     return builder.ToString();
   }
+
+  bool FindPair(AtomicString tag, T* found_pair) const {
+    if (!found_pair)
+      return false;
+
+    for (auto& pair : list_) {
+      if (pair.Tag() == tag) {
+        *found_pair = pair;
+        return true;
+      }
+    }
+    return false;
+  }
+
   const T* begin() const { return list_.begin(); }
   const T* end() const { return list_.end(); }
   T* begin() { return list_.begin(); }

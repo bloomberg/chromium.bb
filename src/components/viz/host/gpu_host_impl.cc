@@ -100,6 +100,16 @@ GpuHostImpl::GpuHostImpl(Delegate* delegate,
       viz_main_(std::move(viz_main)),
       params_(std::move(params)),
       host_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+  // Create a special GPU info collection service if the GPU process is used for
+  // info collection only.
+#if defined(OS_WIN)
+  if (params.info_collection_gpu_process) {
+    viz_main_->CreateInfoCollectionGpuService(
+        info_collection_gpu_service_remote_.BindNewPipeAndPassReceiver());
+    return;
+  }
+#endif
+
   DCHECK(delegate_);
 
   mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>
@@ -206,6 +216,8 @@ void GpuHostImpl::EstablishGpuChannel(int client_id,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("gpu", "GpuHostImpl::EstablishGpuChannel");
 
+  shutdown_timeout_.Stop();
+
   // If GPU features are already blacklisted, no need to establish the channel.
   if (!delegate_->GpuAccessAllowed()) {
     DVLOG(1) << "GPU blacklisted, refusing to open a GPU channel.";
@@ -271,6 +283,14 @@ mojom::GpuService* GpuHostImpl::gpu_service() {
   return gpu_service_remote_.get();
 }
 
+#if defined(OS_WIN)
+mojom::InfoCollectionGpuService* GpuHostImpl::info_collection_gpu_service() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(info_collection_gpu_service_remote_.is_bound());
+  return info_collection_gpu_service_remote_.get();
+}
+#endif
+
 #if defined(USE_OZONE)
 
 void GpuHostImpl::InitOzone() {
@@ -281,36 +301,17 @@ void GpuHostImpl::InitOzone() {
   // The Ozone/Wayland requires mojo communication to be established to be
   // functional with a separate gpu process. Thus, using the PlatformProperties,
   // check if there is such a requirement.
-  if (features::IsOzoneDrmMojo() ||
-      ui::OzonePlatform::GetInstance()->GetPlatformProperties().requires_mojo) {
-    // TODO(rjkroege): Remove the legacy IPC code paths when no longer
-    // necessary. https://crbug.com/806092
-    auto interface_binder = base::BindRepeating(&GpuHostImpl::BindInterface,
-                                                weak_ptr_factory_.GetWeakPtr());
-    auto terminate_callback = base::BindOnce(&GpuHostImpl::TerminateGpuProcess,
-                                             weak_ptr_factory_.GetWeakPtr());
+  auto interface_binder = base::BindRepeating(&GpuHostImpl::BindInterface,
+                                              weak_ptr_factory_.GetWeakPtr());
+  auto terminate_callback = base::BindOnce(&GpuHostImpl::TerminateGpuProcess,
+                                           weak_ptr_factory_.GetWeakPtr());
 
-    ui::OzonePlatform::GetInstance()
-        ->GetGpuPlatformSupportHost()
-        ->OnGpuServiceLaunched(params_.restart_id,
-                               params_.main_thread_task_runner,
-                               host_thread_task_runner_, interface_binder,
-                               std::move(terminate_callback));
-  } else {
-    auto send_callback = base::BindRepeating(
-        [](base::WeakPtr<GpuHostImpl> host, IPC::Message* message) {
-          if (host)
-            host->delegate_->SendGpuProcessMessage(message);
-          else
-            delete message;
-        },
-        weak_ptr_factory_.GetWeakPtr());
-    ui::OzonePlatform::GetInstance()
-        ->GetGpuPlatformSupportHost()
-        ->OnGpuProcessLaunched(params_.restart_id,
-                               params_.main_thread_task_runner,
-                               host_thread_task_runner_, send_callback);
-  }
+  ui::OzonePlatform::GetInstance()
+      ->GetGpuPlatformSupportHost()
+      ->OnGpuServiceLaunched(params_.restart_id,
+                             params_.main_thread_task_runner,
+                             host_thread_task_runner_, interface_binder,
+                             std::move(terminate_callback));
 }
 
 void GpuHostImpl::TerminateGpuProcess(const std::string& message) {
@@ -415,14 +416,8 @@ void GpuHostImpl::DidInitialize(
                            gpu_info_for_hardware_gpu,
                            gpu_feature_info_for_hardware_gpu, gpu_extra_info);
 
-  // Remove entries so that GPU process shader caches get populated on any
-  // GPU process start.
-  client_id_to_shader_cache_.clear();
-
   if (!params_.disable_gpu_shader_disk_cache) {
-    bool oopd_enabled = features::IsVizDisplayCompositorEnabled();
-    if (oopd_enabled)
-      CreateChannelCache(gpu::kInProcessCommandBufferClientId);
+    CreateChannelCache(gpu::kInProcessCommandBufferClientId);
 
     bool use_gr_shader_cache = base::FeatureList::IsEnabled(
                                    features::kDefaultEnableOopRasterization) ||
@@ -458,6 +453,22 @@ void GpuHostImpl::DidDestroyChannel(int32_t client_id) {
   client_id_to_shader_cache_.erase(client_id);
 }
 
+void GpuHostImpl::DidDestroyAllChannels() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!channel_requests_.empty())
+    return;
+  constexpr base::TimeDelta kShutDownTimeout = base::TimeDelta::FromSeconds(10);
+  shutdown_timeout_.Start(FROM_HERE, kShutDownTimeout,
+                          base::BindOnce(&GpuHostImpl::MaybeShutdownGpuProcess,
+                                         base::Unretained(this)));
+}
+
+void GpuHostImpl::MaybeShutdownGpuProcess() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(channel_requests_.empty());
+  delegate_->MaybeShutdownGpuProcess();
+}
+
 void GpuHostImpl::DidLoseContext(bool offscreen,
                                  gpu::error::ContextLostReason reason,
                                  const GURL& active_url) {
@@ -465,16 +476,7 @@ void GpuHostImpl::DidLoseContext(bool offscreen,
   TRACE_EVENT2("gpu", "GpuHostImpl::DidLoseContext", "reason", reason, "url",
                active_url.possibly_invalid_spec());
 
-  if (!offscreen || active_url.is_empty()) {
-    // Assume that the loss of the compositor's or accelerated canvas'
-    // context is a serious event and blame the loss on all live
-    // offscreen contexts. This more robustly handles situations where
-    // the GPU process may not actually detect the context loss in the
-    // offscreen context. However, situations have been seen where the
-    // compositor's context can be lost due to driver bugs (as of this
-    // writing, on Android), so allow that possibility.
-    if (!dont_disable_webgl_when_compositor_context_lost_)
-      BlockLiveOffscreenContexts();
+  if (active_url.is_empty()) {
     return;
   }
 
@@ -506,6 +508,10 @@ void GpuHostImpl::DisableGpuCompositing() {
 }
 
 #if defined(OS_WIN)
+void GpuHostImpl::DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) {
+  delegate_->DidUpdateOverlayInfo(overlay_info);
+}
+
 void GpuHostImpl::SetChildSurface(gpu::SurfaceHandle parent,
                                   gpu::SurfaceHandle child) {
   if (pid_ != base::kNullProcessId) {

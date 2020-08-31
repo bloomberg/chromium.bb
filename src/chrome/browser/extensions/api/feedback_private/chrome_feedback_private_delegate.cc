@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
@@ -33,10 +34,10 @@
 #include "chrome/browser/chromeos/system_logs/single_log_file_log_source.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "components/feedback/feedback_util.h"
 #include "components/feedback/system_logs/system_logs_source.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace extensions {
@@ -224,7 +225,7 @@ api::feedback_private::LandingPageType
 ChromeFeedbackPrivateDelegate::GetLandingPageType(
     const feedback::FeedbackData& feedback_data) const {
   // Googlers using eve get a custom landing page.
-  if (!feedback_util::IsGoogleEmail(feedback_data.user_email()))
+  if (!gaia::IsGoogleInternalAccountEmail(feedback_data.user_email()))
     return api::feedback_private::LANDING_PAGE_TYPE_NORMAL;
 
   const std::vector<std::string> board =
@@ -239,8 +240,12 @@ std::string ChromeFeedbackPrivateDelegate::GetSignedInUserEmail(
     content::BrowserContext* context) const {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(
       Profile::FromBrowserContext(context));
-  return identity_manager ? identity_manager->GetPrimaryAccountInfo().email
-                          : std::string();
+  if (!identity_manager)
+    return std::string();
+  // Browser sync consent is not required to use feedback.
+  return identity_manager
+      ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+      .email;
 }
 
 void ChromeFeedbackPrivateDelegate::NotifyFeedbackDelayed() const {

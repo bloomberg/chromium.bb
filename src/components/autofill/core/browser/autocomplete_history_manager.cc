@@ -357,17 +357,15 @@ void AutocompleteHistoryManager::CleanupEntries(
 //  - text field
 //  - autocomplete is not disabled
 //  - value is not a credit card number
-//  - value is not a SSN
-//  - field was not identified as a CVC field (this is handled in
-//    AutofillManager)
-//  - field is focusable
+//  - field has user typed input or is focusable (this is a mild criteria but
+//    this way it is consistent for all platforms)
 //  - not a presentation field
 bool AutocompleteHistoryManager::IsFieldValueSaveable(
     const FormFieldData& field) {
   // We don't want to save a trimmed string, but we want to make sure that the
   // value is non-empty nor only whitespaces.
   bool is_value_valid = false;
-  for (const char& c : field.value) {
+  for (const base::string16::value_type& c : field.value) {
     if (c != ' ') {
       is_value_valid = true;
       break;
@@ -376,7 +374,8 @@ bool AutocompleteHistoryManager::IsFieldValueSaveable(
 
   return is_value_valid && !field.name.empty() && IsTextField(field) &&
          field.should_autocomplete && !IsValidCreditCardNumber(field.value) &&
-         !IsSSN(field.value) && field.is_focusable &&
+         !IsSSN(field.value) &&
+         (field.properties_mask & kUserTyped || field.is_focusable) &&
          field.role != FormFieldData::RoleAttribute::kPresentation;
 }
 

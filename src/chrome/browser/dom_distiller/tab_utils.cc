@@ -8,10 +8,13 @@
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "components/dom_distiller/content/browser/distiller_page_web_contents.h"
+#include "components/dom_distiller/content/browser/uma_helper.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/task_tracker.h"
@@ -114,6 +117,7 @@ void StartNavigationToDistillerViewer(content::WebContents* web_contents,
                                       const GURL& url) {
   GURL viewer_url = dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
       dom_distiller::kDomDistillerScheme, url,
+      base::UTF16ToUTF8(web_contents->GetTitle()),
       (base::TimeTicks::Now() - base::TimeTicks()).InMilliseconds());
   content::NavigationController::LoadURLParams params(viewer_url);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
@@ -166,13 +170,17 @@ void DistillCurrentPageAndView(content::WebContents* old_web_contents) {
                                    old_web_contents->GetLastCommittedURL());
 
   std::unique_ptr<content::WebContents> old_web_contents_owned =
-      old_web_contents->GetDelegate()->SwapWebContents(
-          old_web_contents, std::move(new_web_contents), false, false);
+      CoreTabHelper::FromWebContents(old_web_contents)
+          ->SwapWebContents(std::move(new_web_contents), false, false);
 
   std::unique_ptr<SourcePageHandleWebContents> source_page_handle(
       new SourcePageHandleWebContents(old_web_contents_owned.release(), true));
 
   MaybeStartDistillation(std::move(source_page_handle));
+
+#if !defined(OS_ANDROID)
+  dom_distiller::UMAHelper::LogTimeOnDistillablePage(old_web_contents);
+#endif
 }
 
 void DistillCurrentPage(content::WebContents* source_web_contents) {

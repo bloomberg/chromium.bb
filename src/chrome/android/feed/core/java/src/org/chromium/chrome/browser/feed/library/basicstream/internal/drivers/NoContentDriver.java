@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.feed.library.basicstream.internal.drivers;
 
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
 
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.FeedViewHolder;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.NoContentViewHolder;
@@ -16,7 +17,8 @@ import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 /** {@link FeatureDriver} for NoContent card. */
 public class NoContentDriver extends LeafFeatureDriver {
     private static final String TAG = "NoContentDriver";
-    /*@Nullable*/ private NoContentViewHolder mNoContentViewHolder;
+    @Nullable
+    private NoContentViewHolder mNoContentViewHolder;
 
     @Override
     public void bind(FeedViewHolder viewHolder) {

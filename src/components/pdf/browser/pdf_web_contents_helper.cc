@@ -8,11 +8,13 @@
 
 #include "base/memory/ptr_util.h"
 #include "components/pdf/browser/pdf_web_contents_helper_client.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/referrer_type_converters.h"
+#include "ui/base/pointer/touch_editing_controller.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
-#include "ui/strings/grit/ui_strings.h"
 
 namespace pdf {
 
@@ -101,6 +103,12 @@ void PDFWebContentsHelper::DidScroll() {
     end.SetEdgeEnd(ConvertToRoot(gfx::PointF(
         selection_right_.x(), selection_right_.y() + selection_right_height_)));
 
+    // TouchSelectionControllerClientAura needs these visible edges of selection
+    // to show the quick menu and context menu. Set the visible edges by the
+    // edges of |start| and |end|.
+    start.SetVisibleEdge(start.edge_start(), start.edge_end());
+    end.SetVisibleEdge(end.edge_start(), end.edge_end());
+
     // Don't do left/right comparison after setting type.
     // TODO(wjmaclean): When PDFium supports editing, we'll need to detect
     // start == end as *either* no selection, or an insertion point.
@@ -164,7 +172,7 @@ bool PDFWebContentsHelper::IsCommandIdEnabled(int command_id) const {
   bool readable = true;
 
   switch (command_id) {
-    case IDS_APP_COPY:
+    case ui::TouchEditable::kCopy:
       return readable && has_selection_;
       // TODO(wjmaclean): add logic for cut/paste as the information required
       // from PDFium becomes available.
@@ -176,15 +184,41 @@ void PDFWebContentsHelper::ExecuteCommand(int command_id, int event_flags) {
   // TODO(wjmaclean, dsinclair): Need to communicate to PDFium to accept
   // cut/paste commands.
   switch (command_id) {
-    case IDS_APP_COPY:
+    case ui::TouchEditable::kCopy:
       web_contents()->Copy();
       break;
   }
 }
 
 void PDFWebContentsHelper::RunContextMenu() {
-  // TouchSelectionControllerClientAura will handle this for us.
-  NOTIMPLEMENTED();
+  content::RenderWidgetHostView* view =
+      web_contents()->GetRenderWidgetHostView();
+
+  if (!view)
+    return;
+
+  if (!touch_selection_controller_client_manager_)
+    InitTouchSelectionClientManager();
+
+  if (!touch_selection_controller_client_manager_)
+    return;
+
+  ui::TouchSelectionController* touch_selection_controller =
+      touch_selection_controller_client_manager_->GetTouchSelectionController();
+  gfx::RectF anchor_rect =
+      touch_selection_controller->GetVisibleRectBetweenBounds();
+  gfx::PointF anchor_point =
+      gfx::PointF(anchor_rect.CenterPoint().x(), anchor_rect.y());
+
+  gfx::PointF origin = view->TransformPointToRootCoordSpaceF(gfx::PointF());
+  anchor_point.Offset(-origin.x(), -origin.y());
+  view->GetRenderWidgetHost()->ShowContextMenuAtPoint(
+      gfx::ToRoundedPoint(anchor_point), ui::MENU_SOURCE_TOUCH_EDIT_MENU);
+
+  // Hide selection handles after getting rect-between-bounds from touch
+  // selection controller; otherwise, rect would be empty and the above
+  // calculations would be invalid.
+  touch_selection_controller->HideAndDisallowShowingAutomatically();
 }
 
 bool PDFWebContentsHelper::ShouldShowQuickMenu() {

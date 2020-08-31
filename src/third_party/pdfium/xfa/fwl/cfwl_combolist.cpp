@@ -21,7 +21,7 @@ CFWL_ComboList::CFWL_ComboList(
     const CFWL_App* app,
     std::unique_ptr<CFWL_WidgetProperties> properties,
     CFWL_Widget* pOuter)
-    : CFWL_ListBox(app, std::move(properties), pOuter), m_bNotifyOwner(true) {
+    : CFWL_ListBox(app, std::move(properties), pOuter) {
   ASSERT(pOuter);
 }
 
@@ -64,8 +64,8 @@ void CFWL_ComboList::ChangeSelected(int32_t iSel) {
 }
 
 CFX_PointF CFWL_ComboList::ClientToOuter(const CFX_PointF& point) {
-  CFX_PointF ret = point + CFX_PointF(m_pProperties->m_rtWidget.left,
-                                      m_pProperties->m_rtWidget.top);
+  CFX_PointF ret = point + CFX_PointF(m_pProperties->m_WidgetRect.left,
+                                      m_pProperties->m_WidgetRect.top);
   CFWL_Widget* pOwner = GetOwner();
   return pOwner ? pOwner->TransformTo(m_pOuter, ret) : ret;
 }
@@ -230,8 +230,8 @@ void CFWL_ComboList::OnDropListKeyDown(CFWL_MessageKey* pKey) {
 
       SetSelection(hItem, hItem, true);
       ScrollToVisible(hItem);
-      CFX_RectF rtInvalidate(0, 0, m_pProperties->m_rtWidget.width,
-                             m_pProperties->m_rtWidget.height);
+      CFX_RectF rtInvalidate(0, 0, m_pProperties->m_WidgetRect.width,
+                             m_pProperties->m_WidgetRect.height);
       RepaintRect(rtInvalidate);
       break;
     }

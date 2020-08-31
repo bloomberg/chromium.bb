@@ -16,7 +16,7 @@
 
 #include "aom/aom_integer.h"
 #include "aom_dsp/x86/mem_sse2.h"
-#include "av1/common/onyxc_int.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/common/txb_common.h"
 #include "aom_dsp/x86/synonyms.h"
 #include "aom_dsp/x86/synonyms_avx2.h"

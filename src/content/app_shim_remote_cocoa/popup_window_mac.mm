@@ -10,7 +10,7 @@
 @interface RenderWidgetPopupWindow : NSWindow {
   // The event tap that allows monitoring of all events, to properly close with
   // a click outside the bounds of the window.
-  id clickEventTap_;
+  id _clickEventTap;
 }
 @end
 
@@ -43,7 +43,7 @@
 
 // Install the callback.
 - (void)startObservingClicks {
-  clickEventTap_ = [NSEvent
+  _clickEventTap = [NSEvent
       addLocalMonitorForEventsMatchingMask:NSAnyEventMask
                                    handler:^NSEvent*(NSEvent* event) {
                                      if ([event window] == self)
@@ -65,11 +65,11 @@
 
 // Remove the callback.
 - (void)stopObservingClicks {
-  if (!clickEventTap_)
+  if (!_clickEventTap)
     return;
 
-  [NSEvent removeMonitor:clickEventTap_];
-  clickEventTap_ = nil;
+  [NSEvent removeMonitor:_clickEventTap];
+  _clickEventTap = nil;
 
   NSNotificationCenter* notificationCenter =
       [NSNotificationCenter defaultCenter];
@@ -83,6 +83,7 @@
 namespace remote_cocoa {
 
 PopupWindowMac::PopupWindowMac(const gfx::Rect& content_rect,
+                               bool has_shadow,
                                RenderWidgetHostViewCocoa* cocoa_view)
     : cocoa_view_(cocoa_view) {
   [cocoa_view_ setCloseOnDeactivate:YES];
@@ -93,6 +94,7 @@ PopupWindowMac::PopupWindowMac(const gfx::Rect& content_rect,
                 styleMask:NSBorderlessWindowMask
                   backing:NSBackingStoreBuffered
                     defer:NO]);
+  [popup_window_ setHasShadow:has_shadow];
   [popup_window_ setLevel:NSPopUpMenuWindowLevel];
   [popup_window_ setReleasedWhenClosed:NO];
   [popup_window_ makeKeyAndOrderFront:nil];

@@ -10,7 +10,6 @@
 #include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
@@ -25,11 +24,12 @@ namespace blink {
 namespace {
 const double kWaitingIntervalThreshold = 0.01;
 
-bool AreFeaturesEnabled(Document* document,
-                        const Vector<mojom::FeaturePolicyFeature>& features) {
+bool AreFeaturesEnabled(
+    ExecutionContext* context,
+    const Vector<mojom::blink::FeaturePolicyFeature>& features) {
   return std::all_of(features.begin(), features.end(),
-                     [document](mojom::FeaturePolicyFeature feature) {
-                       return document->IsFeatureEnabled(
+                     [context](mojom::blink::FeaturePolicyFeature feature) {
+                       return context->IsFeatureEnabled(
                            feature, ReportOptions::kReportOnFailure);
                      });
 }
@@ -40,8 +40,8 @@ Sensor::Sensor(ExecutionContext* execution_context,
                const SensorOptions* sensor_options,
                ExceptionState& exception_state,
                device::mojom::blink::SensorType type,
-               const Vector<mojom::FeaturePolicyFeature>& features)
-    : ContextLifecycleObserver(execution_context),
+               const Vector<mojom::blink::FeaturePolicyFeature>& features)
+    : ExecutionContextLifecycleObserver(execution_context),
       frequency_(0.0),
       type_(type),
       state_(SensorState::kIdle),
@@ -49,9 +49,8 @@ Sensor::Sensor(ExecutionContext* execution_context,
   // [SecureContext] in idl.
   DCHECK(execution_context->IsSecureContext());
   DCHECK(!features.IsEmpty());
-  Document* document = To<Document>(execution_context);
 
-  if (!AreFeaturesEnabled(document, features)) {
+  if (!AreFeaturesEnabled(execution_context, features)) {
     exception_state.ThrowSecurityError(
         "Access to sensor features is disallowed by feature policy");
     return;
@@ -67,7 +66,7 @@ Sensor::Sensor(ExecutionContext* execution_context,
       String message = String::Format(
           "Maximum allowed frequency value for this sensor type is %.0f Hz.",
           max_allowed_frequency);
-      ConsoleMessage* console_message = ConsoleMessage::Create(
+      auto* console_message = MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kJavaScript,
           mojom::ConsoleMessageLevel::kInfo, std::move(message));
       execution_context->AddConsoleMessage(console_message);
@@ -79,7 +78,7 @@ Sensor::Sensor(ExecutionContext* execution_context,
                const SpatialSensorOptions* options,
                ExceptionState& exception_state,
                device::mojom::blink::SensorType sensor_type,
-               const Vector<mojom::FeaturePolicyFeature>& features)
+               const Vector<mojom::blink::FeaturePolicyFeature>& features)
     : Sensor(execution_context,
              static_cast<const SensorOptions*>(options),
              exception_state,
@@ -116,23 +115,20 @@ bool Sensor::hasReading() const {
   return sensor_proxy_->GetReading().timestamp() != 0.0;
 }
 
-DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
-                                      bool& is_null) const {
+base::Optional<DOMHighResTimeStamp> Sensor::timestamp(
+    ScriptState* script_state) const {
   if (!hasReading()) {
-    is_null = true;
-    return 0.0;
+    return base::nullopt;
   }
 
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   if (!window) {
-    is_null = true;
-    return 0.0;
+    return base::nullopt;
   }
 
   WindowPerformance* performance = DOMWindowPerformance::performance(*window);
   DCHECK(performance);
   DCHECK(sensor_proxy_);
-  is_null = false;
 
   if (WebTestSupport::IsRunningWebTest()) {
     // In web tests performance.now() * 0.001 is passed to the shared buffer.
@@ -144,10 +140,10 @@ DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
       base::TimeDelta::FromSecondsD(sensor_proxy_->GetReading().timestamp()));
 }
 
-void Sensor::Trace(blink::Visitor* visitor) {
+void Sensor::Trace(Visitor* visitor) {
   visitor->Trace(sensor_proxy_);
   ActiveScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
 
@@ -179,18 +175,17 @@ void Sensor::InitSensorProxyIfNeeded() {
   if (sensor_proxy_)
     return;
 
-  Document* document = To<Document>(GetExecutionContext());
-  if (!document || !document->GetFrame())
-    return;
-
-  auto* provider = SensorProviderProxy::From(document);
+  LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
+  auto* provider = SensorProviderProxy::From(window);
   sensor_proxy_ = provider->GetSensorProxy(type_);
 
-  if (!sensor_proxy_)
-    sensor_proxy_ = provider->CreateSensorProxy(type_, document->GetPage());
+  if (!sensor_proxy_) {
+    sensor_proxy_ =
+        provider->CreateSensorProxy(type_, window->GetFrame()->GetPage());
+  }
 }
 
-void Sensor::ContextDestroyed(ExecutionContext*) {
+void Sensor::ContextDestroyed() {
   if (!IsIdleOrErrored())
     Deactivate();
 

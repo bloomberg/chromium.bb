@@ -33,17 +33,26 @@ Polymer({
    * Cancels existing auto-hide, and sets up new auto-hide.
    * @private
    */
-  resetAutoHide_: function() {
-    if (this.hideTimeoutId_ != null) {
+  resetAutoHide_() {
+    if (this.hideTimeoutId_ !== null) {
       window.clearTimeout(this.hideTimeoutId_);
       this.hideTimeoutId_ = null;
     }
 
-    if (this.open && this.duration != 0) {
+    if (this.open && this.duration !== 0) {
       this.hideTimeoutId_ = window.setTimeout(() => {
         this.open = false;
       }, this.duration);
     }
+  },
+
+  /**
+   * Announce a11y message
+   * @param {string} text
+   */
+  announceA11yMessage_(text) {
+    Polymer.IronA11yAnnouncer.requestAvailability();
+    this.fire('iron-announce', { text });
   },
 
   /**
@@ -56,15 +65,32 @@ Polymer({
    *
    * When |duration| is passed in the non-negative number, |this.duration|
    * is updated to that value.
+   *
+   * If text is set, replace the toast content with text,
+   * can also optionally announce a11y with text
+   *
    * @param {number=} duration
+   * @param {string=} text
+   * @param {boolean=} shouldAnnounceA11y
    */
-  show: function(duration) {
+  show(duration, text, shouldAnnounceA11y) {
+    if (text !== undefined) {
+      this.textContent = '';
+      const span = document.createElement('span');
+      span.textContent = text;
+      this.appendChild(span);
+
+      if (shouldAnnounceA11y) {
+        this.announceA11yMessage_(text);
+      }
+    }
+
     // |this.resetAutoHide_| is called whenever |this.duration| or |this.open|
     // is changed. If neither is changed, we will still need to reset auto-hide.
     let shouldResetAutoHide = true;
 
-    if (typeof(duration) != 'undefined' && duration >= 0 &&
-        this.duration != duration) {
+    if (typeof (duration) !== 'undefined' && duration >= 0 &&
+        this.duration !== duration) {
       this.duration = duration;
       shouldResetAutoHide = false;
     }
@@ -82,7 +108,7 @@ Polymer({
   /**
    * Hides the toast.
    */
-  hide: function() {
+  hide() {
     this.open = false;
   },
 });

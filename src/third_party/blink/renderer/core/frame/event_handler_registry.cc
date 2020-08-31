@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 
-#include "third_party/blink/renderer/core/dom/events/event_listener_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_options.h"
+#include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/events/event_util.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -247,6 +248,11 @@ void EventHandlerRegistry::NotifyHandlersChanged(
     bool has_active_handlers) {
   LocalFrame* frame = GetLocalFrameForTarget(target);
 
+  // TODO(keishi): Added for crbug.com/1090687. Change to CHECK once bug is
+  // fixed.
+  if (!GetPage())
+    return;
+
   switch (handler_class) {
     case kScrollEvent:
       GetPage()->GetChromeClient().SetHasScrollEventHandlers(
@@ -323,6 +329,10 @@ void EventHandlerRegistry::NotifyHandlersChanged(
 void EventHandlerRegistry::NotifyDidAddOrRemoveEventHandlerTarget(
     LocalFrame* frame,
     EventHandlerClass handler_class) {
+  // TODO(keishi): Added for crbug.com/1090687. Change to CHECK once bug is
+  // fixed.
+  if (!GetPage())
+    return;
   ScrollingCoordinator* scrolling_coordinator =
       GetPage()->GetScrollingCoordinator();
   if (scrolling_coordinator &&
@@ -334,13 +344,15 @@ void EventHandlerRegistry::NotifyDidAddOrRemoveEventHandlerTarget(
   }
 }
 
-void EventHandlerRegistry::Trace(blink::Visitor* visitor) {
+void EventHandlerRegistry::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->template RegisterWeakCallbackMethod<
       EventHandlerRegistry, &EventHandlerRegistry::ProcessCustomWeakness>(this);
 }
 
-void EventHandlerRegistry::ProcessCustomWeakness(const WeakCallbackInfo& info) {
+void EventHandlerRegistry::ProcessCustomWeakness(const LivenessBroker& info) {
+  // We use Vector<UntracedMember<>> here to avoid BlinkGC allocation in a
+  // custom weak callback.
   Vector<UntracedMember<EventTarget>> dead_targets;
   for (int i = 0; i < kEventHandlerClassCount; ++i) {
     EventHandlerClass handler_class = static_cast<EventHandlerClass>(i);
@@ -365,7 +377,7 @@ void EventHandlerRegistry::DocumentDetached(Document& document) {
        handler_class_index < kEventHandlerClassCount; ++handler_class_index) {
     EventHandlerClass handler_class =
         static_cast<EventHandlerClass>(handler_class_index);
-    Vector<UntracedMember<EventTarget>> targets_to_remove;
+    HeapVector<Member<EventTarget>> targets_to_remove;
     const EventTargetSet* targets = &targets_[handler_class];
     for (const auto& event_target : *targets) {
       if (Node* node = event_target.key->ToNode()) {

@@ -52,42 +52,68 @@ namespace {
 int ComputeHeadingMessageFromUsage(
     const NativeFileSystemUsageBubbleView::Usage& usage,
     base::FilePath* embedded_path) {
-  // Only writable files.
+  // Only files.
   if (usage.writable_directories.empty() &&
       usage.readable_directories.empty()) {
-    if (usage.writable_files.size() == 1) {
-      *embedded_path = usage.writable_files.front();
-      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_WRITABLE_FILE_TEXT;
+    // Only writable files.
+    if (usage.readable_files.empty()) {
+      DCHECK(!usage.writable_files.empty());
+      if (usage.writable_files.size() == 1) {
+        *embedded_path = usage.writable_files.front();
+        return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_WRITABLE_FILE_TEXT;
+      }
+      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_TEXT;
     }
-    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_TEXT;
+
+    // Only readable files.
+    if (usage.writable_files.empty()) {
+      DCHECK(!usage.readable_files.empty());
+      if (usage.readable_files.size() == 1) {
+        *embedded_path = usage.readable_files.front();
+        return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_READABLE_FILE_TEXT;
+      }
+      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_FILES_TEXT;
+    }
   }
 
-  // Only writable directories.
-  if (usage.writable_files.empty() && usage.readable_directories.empty()) {
-    if (usage.writable_directories.size() == 1) {
-      *embedded_path = usage.writable_directories.front();
-      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_WRITABLE_DIRECTORY_TEXT;
+  // Only directories.
+  if (usage.writable_files.empty() && usage.readable_files.empty()) {
+    // Only writable directories.
+    if (usage.readable_directories.empty()) {
+      DCHECK(!usage.writable_directories.empty());
+      if (usage.writable_directories.size() == 1) {
+        *embedded_path = usage.writable_directories.front();
+        return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_WRITABLE_DIRECTORY_TEXT;
+      }
+      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_TEXT;
     }
-    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_TEXT;
+
+    // Only readable directories.
+    if (usage.writable_directories.empty()) {
+      DCHECK(!usage.readable_directories.empty());
+      if (usage.readable_directories.size() == 1) {
+        *embedded_path = usage.readable_directories.front();
+        return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_READABLE_DIRECTORY_TEXT;
+      }
+      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_DIRECTORIES_TEXT;
+    }
   }
 
-  // Both writable files and writable directories, but no read-only directories.
-  if (usage.readable_directories.empty()) {
+  // Only readable files and directories.
+  if (usage.writable_files.empty() && usage.writable_directories.empty()) {
+    DCHECK(!usage.readable_files.empty());
+    DCHECK(!usage.readable_directories.empty());
+    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_FILES_AND_DIRECTORIES_TEXT;
+  }
+
+  // Only writable files and directories.
+  if (usage.readable_files.empty() && usage.readable_directories.empty()) {
     DCHECK(!usage.writable_files.empty());
     DCHECK(!usage.writable_directories.empty());
     return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_AND_DIRECTORIES_TEXT;
   }
 
-  // Only readable directories.
-  if (usage.writable_files.empty() && usage.writable_directories.empty()) {
-    if (usage.readable_directories.size() == 1) {
-      *embedded_path = usage.readable_directories.front();
-      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_READABLE_DIRECTORY_TEXT;
-    }
-    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_DIRECTORIES_TEXT;
-  }
-
-  // Some combination of read and write access.
+  // Some combination of read and/or write access to files and/or directories.
   return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READ_AND_WRITE;
 }
 
@@ -100,9 +126,6 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
   static constexpr int kExpandedTableRowCount = 3;
 
   explicit CollapsibleListView(ui::TableModel* model) {
-    const SkColor icon_color =
-        ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-            ui::NativeTheme::kColorId_DefaultIconColor);
     const views::LayoutProvider* provider = ChromeLayoutProvider::Get();
 
     SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -138,12 +161,8 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_layout->SetFlexForView(label, 1);
     auto button = views::CreateVectorToggleImageButton(this);
-    views::SetImageFromVectorIconWithColor(
-        button.get(), kCaretDownIcon, ui::TableModel::kIconSize, icon_color);
     button->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_EXPAND));
-    views::SetToggledImageFromVectorIconWithColor(
-        button.get(), kCaretUpIcon, ui::TableModel::kIconSize, icon_color);
     button->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_COLLAPSE));
     expand_collapse_button_ = label_container->AddChildView(std::move(button));
@@ -173,6 +192,19 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
     table_view_parent_->SetVisible(false);
   }
 
+  // views::View
+  void OnThemeChanged() override {
+    views::View::OnThemeChanged();
+    const SkColor icon_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_DefaultIconColor);
+    views::SetImageFromVectorIconWithColor(
+        expand_collapse_button_, kCaretDownIcon, ui::TableModel::kIconSize,
+        icon_color);
+    views::SetToggledImageFromVectorIconWithColor(
+        expand_collapse_button_, kCaretUpIcon, ui::TableModel::kIconSize,
+        icon_color);
+  }
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     table_is_expanded_ = !table_is_expanded_;
@@ -196,9 +228,12 @@ NativeFileSystemUsageBubbleView::Usage& NativeFileSystemUsageBubbleView::Usage::
 operator=(Usage&&) = default;
 
 NativeFileSystemUsageBubbleView::FilePathListModel::FilePathListModel(
+    const views::View* owner,
     std::vector<base::FilePath> files,
     std::vector<base::FilePath> directories)
-    : files_(std::move(files)), directories_(std::move(directories)) {}
+    : owner_(owner),
+      files_(std::move(files)),
+      directories_(std::move(directories)) {}
 
 NativeFileSystemUsageBubbleView::FilePathListModel::~FilePathListModel() =
     default;
@@ -217,10 +252,12 @@ base::string16 NativeFileSystemUsageBubbleView::FilePathListModel::GetText(
 
 gfx::ImageSkia NativeFileSystemUsageBubbleView::FilePathListModel::GetIcon(
     int row) {
+  const SkColor icon_color = owner_->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_DefaultIconColor);
   return gfx::CreateVectorIcon(size_t{row} < files_.size()
                                    ? vector_icons::kInsertDriveFileOutlineIcon
                                    : vector_icons::kFolderOpenIcon,
-                               kIconSize, gfx::kChromeIconGrey);
+                               kIconSize, icon_color);
 }
 
 base::string16 NativeFileSystemUsageBubbleView::FilePathListModel::GetTooltip(
@@ -252,17 +289,19 @@ void NativeFileSystemUsageBubbleView::ShowBubble(
   ToolbarButtonProvider* button_provider =
       BrowserView::GetBrowserViewForBrowser(browser)->toolbar_button_provider();
 
-  // Writable directories are generally also readable, but we don't want to
-  // display the same directory twice. So filter out any writable directories
-  // from the readable directories list.
+  // Writable files or directories are generally also readable, but we don't
+  // want to display the same path twice. So filter out any writable paths from
+  // the readable lists.
   std::set<base::FilePath> writable_directories(
       usage.writable_directories.begin(), usage.writable_directories.end());
-  std::vector<base::FilePath> readable_directories;
-  for (base::FilePath& path : usage.readable_directories) {
-    if (!base::Contains(writable_directories, path))
-      readable_directories.push_back(std::move(path));
-  }
-  usage.readable_directories = readable_directories;
+  base::EraseIf(usage.readable_directories, [&](const base::FilePath& path) {
+    return base::Contains(writable_directories, path);
+  });
+  std::set<base::FilePath> writable_files(usage.writable_files.begin(),
+                                          usage.writable_files.end());
+  base::EraseIf(usage.readable_files, [&](const base::FilePath& path) {
+    return base::Contains(writable_files, path);
+  });
 
   bubble_ = new NativeFileSystemUsageBubbleView(
       button_provider->GetAnchorView(
@@ -296,10 +335,19 @@ NativeFileSystemUsageBubbleView::NativeFileSystemUsageBubbleView(
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       origin_(origin),
       usage_(std::move(usage)),
-      writable_paths_model_(usage_.writable_files, usage_.writable_directories),
-      readable_paths_model_({}, usage_.readable_directories) {
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   l10n_util::GetStringUTF16(IDS_DONE));
+      readable_paths_model_(this,
+                            std::move(usage_.readable_files),
+                            std::move(usage_.readable_directories)),
+      writable_paths_model_(this,
+                            std::move(usage_.writable_files),
+                            std::move(usage_.writable_directories)) {
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_DONE));
+  SetButtonLabel(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_REMOVE_ACCESS));
+  SetCancelCallback(
+      base::BindOnce(&NativeFileSystemUsageBubbleView::OnDialogCancelled,
+                     base::Unretained(this)));
 }
 
 NativeFileSystemUsageBubbleView::~NativeFileSystemUsageBubbleView() = default;
@@ -315,14 +363,6 @@ base::string16 NativeFileSystemUsageBubbleView::GetAccessibleWindowTitle()
       ->toolbar_button_provider()
       ->GetPageActionIconView(PageActionIconType::kNativeFileSystemAccess)
       ->GetTextForTooltipAndAccessibleName();
-}
-
-base::string16 NativeFileSystemUsageBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  int message_id = IDS_DONE;
-  if (button == ui::DIALOG_BUTTON_CANCEL)
-    message_id = IDS_NATIVE_FILE_SYSTEM_USAGE_REMOVE_ACCESS;
-  return l10n_util::GetStringUTF16(message_id);
 }
 
 bool NativeFileSystemUsageBubbleView::ShouldShowCloseButton() const {
@@ -387,27 +427,22 @@ void NativeFileSystemUsageBubbleView::Init() {
   }
 }
 
-bool NativeFileSystemUsageBubbleView::Cancel() {
+void NativeFileSystemUsageBubbleView::OnDialogCancelled() {
   base::RecordAction(
       base::UserMetricsAction("NativeFileSystemAPI.RevokePermissions"));
 
   if (!web_contents())
-    return true;
+    return;
 
   content::BrowserContext* profile = web_contents()->GetBrowserContext();
   auto* context =
       NativeFileSystemPermissionContextFactory::GetForProfileIfExists(profile);
   if (!context)
-    return true;
+    return;
 
-  context->RevokeGrantsForOriginAndTab(
-      origin_, web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID());
-  return true;
-}
-
-bool NativeFileSystemUsageBubbleView::Close() {
-  return true;  // Do not revoke permissions via Cancel() when closing normally.
+  context->RevokeGrants(origin_,
+                        web_contents()->GetMainFrame()->GetProcess()->GetID(),
+                        web_contents()->GetMainFrame()->GetRoutingID());
 }
 
 void NativeFileSystemUsageBubbleView::WindowClosing() {

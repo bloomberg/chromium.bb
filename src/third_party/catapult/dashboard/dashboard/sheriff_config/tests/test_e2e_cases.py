@@ -15,19 +15,19 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from apiclient.http import HttpMockSequence
+from tests.utils import HttpMockSequenceWithDiscovery
 from google.auth import credentials
 from google.cloud import datastore
 import base64
 import service
+import time
 import unittest
+from unittest import mock
 
 
 class LuciPollingTest(unittest.TestCase):
 
   def setUp(self):
-    with open('tests/config-discovery.json') as discovery_file:
-      self.discovery_file = discovery_file.read()
     with open(
         'tests/sample-configs-get_project_configs.json') as sample_config_file:
       self.sample_config = sample_config_file.read()
@@ -41,12 +41,11 @@ class LuciPollingTest(unittest.TestCase):
                 credentials=credentials.AnonymousCredentials(),
                 project='chromeperf'),
         'http':
-            HttpMockSequence([({
-                'status': '200'
-            }, self.discovery_file), ({
+            HttpMockSequenceWithDiscovery([({
                 'status': '200'
             }, self.sample_config)]),
     })
+    self.maxDiff = None
 
   def testPollAndMatch(self):
     client = self.app.test_client()
@@ -76,15 +75,57 @@ class LuciPollingTest(unittest.TestCase):
                 'revision': '0123456789abcdff',
                 'subscription': {
                     'name': 'Expected 1',
-                    'notification_email': 'expected-1@example.com',
+                    'contact_email': 'expected-1@example.com',
                     'bug_labels': ['Some-Label'],
                     'bug_components': ['Some>Component'],
-                    'patterns': [{
-                        'glob': 'Master/Bot/Test/Metric/Something'
-                    }]
+                    'auto_triage': {'enable': False},
+                    'auto_bisection': {'enable': False},
+                    'rules': {},
                 }
             }]
         })
+
+  def testPollAndMatchTriageBisect(self):
+    client = self.app.test_client()
+    response = client.get(
+        '/configs/update', headers={'X-Forwarded-Proto': 'https'})
+    self.assertEqual(response.status_code, 200)
+    def Test(path, triaged, bisected):
+      response = client.post(
+          '/subscriptions/match',
+          json={
+              'path': 'Master/Bot/Test/Metric/Something_' + path,
+              'stats': ['PCT_99'],
+              'metadata': {
+                  'units': 'SomeUnit',
+                  'master': 'Master',
+                  'bot': 'Bot',
+                  'benchmark': 'Test',
+                  'metric_parts': ['Metric', 'Something'],
+              }
+          },
+          headers={'X-Forwarded-Proto': 'https'})
+      self.assertEqual(response.status_code, 200)
+      response_proto = response.get_json()
+      self.assertDictEqual(
+          response_proto, {
+              'subscriptions': [{
+                  'config_set': 'projects/other_project',
+                  'revision': '0123456789abcdff',
+                  'subscription': {
+                      'name': 'Expected 1',
+                      'contact_email': 'expected-1@example.com',
+                      'bug_labels': ['Some-Label'],
+                      'bug_components': ['Some>Component'],
+                      'auto_triage': {'enable': triaged},
+                      'auto_bisection': {'enable': bisected},
+                      'rules': {},
+                  }
+              }]
+          })
+    Test('Triage_Bisect', True, True)
+    Test('NoTriage_Bisect', False, False)
+    Test('Triage_NoBisect', True, False)
 
   def testPollAndMatchMultiple(self):
     client = self.app.test_client()
@@ -114,24 +155,24 @@ class LuciPollingTest(unittest.TestCase):
                 'revision': '0123456789abcdef',
                 'subscription': {
                     'name': 'Config 1',
-                    'notification_email': 'config-1@example.com',
+                    'contact_email': 'config-1@example.com',
                     'bug_labels': ['Some-Label'],
                     'bug_components': ['Some>Component'],
-                    'patterns': [{
-                        'glob': 'project/**'
-                    }]
+                    'auto_triage': {'enable': False},
+                    'auto_bisection': {'enable': False},
+                    'rules': {},
                 }
             }, {
                 'config_set': 'projects/project',
                 'revision': '0123456789abcdef',
                 'subscription': {
                     'name': 'Config 2',
-                    'notification_email': 'config-2@example.com',
+                    'contact_email': 'config-2@example.com',
                     'bug_labels': ['Some-Label'],
                     'bug_components': ['Some>Component'],
-                    'patterns': [{
-                        'regex': '^project/platform/.*/memory_peak$'
-                    }]
+                    'auto_triage': {'enable': False},
+                    'auto_bisection': {'enable': False},
+                    'rules': {},
                 }
             }]
         })
@@ -176,15 +217,101 @@ class LuciPollingTest(unittest.TestCase):
         headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 400)
 
+  def testListSubscriptions(self):
+    app = service.CreateApp({
+        'environ': {
+            'GOOGLE_CLOUD_PROJECT': 'chromeperf',
+            'GAE_SERVICE': 'sheriff-config',
+        },
+        'datastore_client':
+            datastore.Client(
+                credentials=credentials.AnonymousCredentials(),
+                project='chromeperf'),
+        'http':
+            HttpMockSequenceWithDiscovery([({
+                'status': '200'
+            }, self.sample_config), ({
+                'status': '200'
+            }, '{ "is_member": true }'), ({
+                'status': '200'
+            }, '{ "is_member": false }')]),
+    })
+    client = app.test_client()
+    response = client.get(
+        '/configs/update', headers={'X-Forwarded-Proto': 'https'})
+    self.assertEqual(response.status_code, 200)
+    response = client.post(
+        '/subscriptions/list',
+        json={
+            'identity_email': 'any@internal.com'
+        },
+        headers={'X-Forwarded-Proto': 'https'})
+    self.assertEqual(response.status_code, 200)
+    self.assertDictEqual(response.get_json(), {
+        'subscriptions': [{
+            'config_set': 'projects/project',
+            'revision': '0123456789abcdef',
+            'subscription': {
+                'name': 'Config 1',
+                'contact_email': 'config-1@example.com',
+                'bug_labels': ['Some-Label'],
+                'bug_components': ['Some>Component'],
+                'auto_triage': {'enable': False},
+                'auto_bisection': {'enable': False},
+                'rules': {},
+            }
+        }, {
+            'config_set': 'projects/project',
+            'revision': '0123456789abcdef',
+            'subscription': {
+                'name': 'Config 2',
+                'contact_email': 'config-2@example.com',
+                'bug_labels': ['Some-Label'],
+                'bug_components': ['Some>Component'],
+                'auto_triage': {'enable': False},
+                'auto_bisection': {'enable': False},
+                'rules': {},
+            }
+        }, {
+            'config_set': 'projects/other_project',
+            'revision': '0123456789abcdff',
+            'subscription': {
+                'name': 'Expected 1',
+                'contact_email': 'expected-1@example.com',
+                'bug_labels': ['Some-Label'],
+                'bug_components': ['Some>Component'],
+                'auto_triage': {'enable': False},
+                'auto_bisection': {'enable': False},
+                'rules': {},
+            }
+        }]
+    })
+    response = client.post(
+        '/subscriptions/list',
+        json={
+            'identity_email': 'any@public.com'
+        },
+        headers={'X-Forwarded-Proto': 'https'})
+    self.assertEqual(response.status_code, 200)
+    self.assertDictEqual(response.get_json(), {})
+
+  def testPollAndWarmup(self):
+    client = self.app.test_client()
+    response = client.get(
+        '/configs/update', headers={'X-Forwarded-Proto': 'https'})
+    self.assertEqual(response.status_code, 200)
+    response = client.get(
+        '/warmup', headers={'X-Forwarded-Proto': 'https'})
+    self.assertEqual(response.status_code, 200)
+
 
 class LuciContentChangesTest(unittest.TestCase):
 
   def setUp(self):
-    with open('tests/config-discovery.json') as discovery_file:
-      self.discovery_file = discovery_file.read()
     with open(
         'tests/sample-configs-get_project_configs.json') as sample_config_file:
       self.sample_config = sample_config_file.read()
+    self.maxDiff = None
 
   def AssertProjectConfigSet1Holds(self, client, expected_code):
     response = client.post(
@@ -212,12 +339,12 @@ class LuciContentChangesTest(unittest.TestCase):
                 'revision': '0123456789abcdff',
                 'subscription': {
                     'name': 'Expected 1',
-                    'notification_email': 'expected-1@example.com',
+                    'contact_email': 'expected-1@example.com',
                     'bug_labels': ['Some-Label'],
                     'bug_components': ['Some>Component'],
-                    'patterns': [{
-                        'glob': 'Master/Bot/Test/Metric/Something'
-                    }]
+                    'auto_triage': {'enable': False},
+                    'auto_bisection': {'enable': False},
+                    'rules': {},
                 }
             }]
         })
@@ -248,24 +375,24 @@ class LuciContentChangesTest(unittest.TestCase):
                 'revision': '0123456789abcdef',
                 'subscription': {
                     'name': 'Config 1',
-                    'notification_email': 'config-1@example.com',
+                    'contact_email': 'config-1@example.com',
                     'bug_labels': ['Some-Label'],
                     'bug_components': ['Some>Component'],
-                    'patterns': [{
-                        'glob': 'project/**'
-                    }]
+                    'auto_triage': {'enable': False},
+                    'auto_bisection': {'enable': False},
+                    'rules': {},
                 }
             }, {
                 'config_set': 'projects/project',
                 'revision': '0123456789abcdef',
                 'subscription': {
                     'name': 'Config 2',
-                    'notification_email': 'config-2@example.com',
+                    'contact_email': 'config-2@example.com',
                     'bug_labels': ['Some-Label'],
                     'bug_components': ['Some>Component'],
-                    'patterns': [{
-                        'regex': '^project/platform/.*/memory_peak$'
-                    }]
+                    'auto_triage': {'enable': False},
+                    'auto_bisection': {'enable': False},
+                    'rules': {},
                 }
             }]
         })
@@ -281,9 +408,7 @@ class LuciContentChangesTest(unittest.TestCase):
                 credentials=credentials.AnonymousCredentials(),
                 project='chromeperf'),
         'http':
-            HttpMockSequence([({
-                'status': '200'
-            }, self.discovery_file), ({
+            HttpMockSequenceWithDiscovery([({
                 'status': '200'
             }, '{}')])
     })
@@ -306,9 +431,7 @@ class LuciContentChangesTest(unittest.TestCase):
                 credentials=credentials.AnonymousCredentials(),
                 project='chromeperf'),
         'http':
-            HttpMockSequence([({
-                'status': '200'
-            }, self.discovery_file), ({
+            HttpMockSequenceWithDiscovery([({
                 'status': '200'
             }, self.sample_config), ({
                 'status': '200'
@@ -329,8 +452,15 @@ class LuciContentChangesTest(unittest.TestCase):
         '/configs/update', headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 200)
 
-    self.AssertProjectConfigSet1Holds(client, 404)
+    # Update doesn't take effect because of caching
+    self.AssertProjectConfigSet1Holds(client, 200)
     self.AssertProjectConfigSet2Holds(client, 200)
+
+    # mocking utils.Time to invalid caching
+    with mock.patch('utils.Time') as mock_time:
+      mock_time.method.return_value = (time.time() + 60)
+      self.AssertProjectConfigSet1Holds(client, 404)
+      self.AssertProjectConfigSet2Holds(client, 200)
 
   def testInvalidContentPulled(self):
     invalid_content = """
@@ -363,9 +493,7 @@ class LuciContentChangesTest(unittest.TestCase):
                 credentials=credentials.AnonymousCredentials(),
                 project='chromeperf'),
         'http':
-            HttpMockSequence([({
-                'status': '200'
-            }, self.discovery_file), ({
+            HttpMockSequenceWithDiscovery([({
                 'status': '200'
             }, invalid_content), ({
                 'status': '200'

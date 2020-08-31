@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <set>
 #include <vector>
 
 #include "base/command_line.h"
@@ -16,8 +17,8 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
-#include "content/common/accessibility_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
@@ -29,9 +30,8 @@ namespace content {
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory) {
-  return new BrowserAccessibilityManagerWin(initial_tree, delegate, factory);
+    BrowserAccessibilityDelegate* delegate) {
+  return new BrowserAccessibilityManagerWin(initial_tree, delegate);
 }
 
 BrowserAccessibilityManagerWin*
@@ -41,20 +41,13 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerWin() {
 
 BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
     const ui::AXTreeUpdate& initial_tree,
-    BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(delegate, factory),
-      load_complete_pending_(false) {
+    BrowserAccessibilityDelegate* delegate)
+    : BrowserAccessibilityManager(delegate), load_complete_pending_(false) {
   ui::win::CreateATLModuleIfNeeded();
   Initialize(initial_tree);
 }
 
-BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
-  // Destroy the tree in the subclass, rather than in the inherited
-  // destructor, otherwise our overrides of functions like
-  // OnNodeWillBeDeleted won't be called.
-  tree_.reset(NULL);
-}
+BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() = default;
 
 // static
 ui::AXTreeUpdate BrowserAccessibilityManagerWin::GetEmptyDocument() {
@@ -130,7 +123,7 @@ void BrowserAccessibilityManagerWin::FireBlinkEvent(
       FireUiaTextContainerEvent(UIA_Text_TextChangedEventId, node);
       break;
     case ax::mojom::Event::kTextSelectionChanged:
-      FireUiaTextContainerEvent(UIA_Text_TextSelectionChangedEventId, node);
+      text_selection_changed_events_.insert(node);
       break;
     default:
       break;
@@ -211,8 +204,10 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       // Fire the event on the object where the focus of the selection is.
       int32_t focus_id = ax_tree()->GetUnignoredSelection().focus_object_id;
       BrowserAccessibility* focus_object = GetFromID(focus_id);
-      if (focus_object && focus_object->HasVisibleCaretOrSelection())
+      if (focus_object && focus_object->HasVisibleCaretOrSelection()) {
         FireWinAccessibilityEvent(IA2_EVENT_TEXT_CARET_MOVED, focus_object);
+        text_selection_changed_events_.insert(node);
+      }
       break;
     }
     // aria-dropeffect is deprecated in WAI-ARIA 1.1.
@@ -246,13 +241,6 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
           FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPEND, node);
           FireUiaAccessibilityEvent(UIA_MenuClosedEventId, node);
         }
-      } else {
-        FireWinAccessibilityEvent(EVENT_OBJECT_SHOW, node);
-        FireUiaStructureChangedEvent(StructureChangeType_ChildAdded, node);
-        if (node->GetRole() == ax::mojom::Role::kMenu) {
-          FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPSTART, node);
-          FireUiaAccessibilityEvent(UIA_MenuOpenedEventId, node);
-        }
       }
       aria_properties_events_.insert(node);
       break;
@@ -279,6 +267,12 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       // This will force ATs that synchronously call get_newText (e.g., NVDA) to
       // read the entire live region hypertext.
       ToBrowserAccessibilityWin(node)->GetCOM()->ForceNewHypertext();
+      // TODO(accessibility) Technically this should only be fired if the new
+      // text is non-empty. Also, IA2_EVENT_TEXT_REMOVED should be fired if
+      // there was non-empty old text. However, this does not known to affect
+      // any current screen reader behavior either way. It could affect
+      // the aria-relevant="removals" case, but that in general is poorly
+      // supported markup across browser-AT combinations, and not recommended.
       FireWinAccessibilityEvent(IA2_EVENT_TEXT_INSERTED, node);
 
       // This event is redundant with the IA2_EVENT_TEXT_INSERTED events;
@@ -366,6 +360,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::SORT_CHANGED:
+      FireWinAccessibilityEvent(IA2_EVENT_OBJECT_ATTRIBUTE_CHANGED, node);
       aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::SUBTREE_CREATED:
@@ -383,6 +378,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
         aria_properties_events_.insert(node);
       } else if (ui::IsValuePatternSupported(node)) {
         FireUiaPropertyChangedEvent(UIA_ValueValuePropertyId, node);
+        FireUiaTextContainerEvent(UIA_Text_TextChangedEventId, node);
       }
       break;
     case ui::AXEventGenerator::Event::VALUE_MAX_CHANGED:
@@ -408,6 +404,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::FOCUS_CHANGED:
     case ui::AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED:
     case ui::AXEventGenerator::Event::LOAD_START:
+    case ui::AXEventGenerator::Event::PORTAL_ACTIVATED:
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
     case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::RELATED_NODE_CHANGED:
@@ -572,22 +569,28 @@ void BrowserAccessibilityManagerWin::FireUiaTextContainerEvent(
 }
 
 bool BrowserAccessibilityManagerWin::CanFireEvents() const {
-  if (!BrowserAccessibilityManager::CanFireEvents())
-    return false;
-  BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
-  if (!root_delegate)
-    return false;
-  HWND hwnd = root_delegate->AccessibilityGetAcceleratedWidget();
-  return hwnd != nullptr;
+  return BrowserAccessibilityManager::CanFireEvents() &&
+         GetDelegateFromRootManager() &&
+         GetDelegateFromRootManager()->AccessibilityGetAcceleratedWidget();
 }
 
-gfx::Rect BrowserAccessibilityManagerWin::GetViewBounds() {
+gfx::Rect BrowserAccessibilityManagerWin::GetViewBoundsInScreenCoordinates()
+    const {
   // We have to take the device scale factor into account on Windows.
   BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
   if (delegate) {
     gfx::Rect bounds = delegate->AccessibilityGetViewBounds();
-    if (device_scale_factor() > 0.0 && device_scale_factor() != 1.0)
+
+    // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
+    // The bounds returned by the delegate are always in device-independent
+    // pixels (DIPs), meaning physical pixels divided by device scale factor
+    // (DSF). However, if UseZoomForDSF is enabled, then Blink does not apply
+    // DSF when going from physical to screen pixels. In that case, we need to
+    // multiply DSF back in to get to Blink's notion of "screen pixels."
+    if (IsUseZoomForDSFEnabled() && device_scale_factor() > 0.0 &&
+        device_scale_factor() != 1.0) {
       bounds = ScaleToEnclosingRect(bounds, device_scale_factor());
+    }
     return bounds;
   }
   return gfx::Rect();
@@ -600,10 +603,16 @@ void BrowserAccessibilityManagerWin::OnSubtreeWillBeDeleted(ui::AXTree* tree,
   if (obj) {
     FireWinAccessibilityEvent(EVENT_OBJECT_HIDE, obj);
     FireUiaStructureChangedEvent(StructureChangeType_ChildRemoved, obj);
-    if (obj->GetRole() == ax::mojom::Role::kMenu) {
-      FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPEND, obj);
-      FireUiaAccessibilityEvent(UIA_MenuClosedEventId, obj);
-    }
+  }
+}
+
+void BrowserAccessibilityManagerWin::OnNodeWillBeDeleted(ui::AXTree* tree,
+                                                         ui::AXNode* node) {
+  if (node->data().role == ax::mojom::Role::kMenu) {
+    BrowserAccessibility* obj = GetFromAXNode(node);
+    DCHECK(obj);
+    FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPEND, obj);
+    FireUiaAccessibilityEvent(UIA_MenuClosedEventId, obj);
   }
 }
 
@@ -618,61 +627,23 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
   // done in a single pass that must complete before the next step starts.
   // The nodes that need to be updated are all of the nodes that were changed,
   // plus some parents.
-  std::map<BrowserAccessibilityComWin*, bool /* is_subtree_created */>
-      objs_to_update;
-  for (const auto& change : changes) {
-    const ui::AXNode* changed_node = change.node;
-    DCHECK(changed_node);
-
-    bool is_subtree_created = change.type == AXTreeObserver::SUBTREE_CREATED;
-    BrowserAccessibility* obj = GetFromAXNode(changed_node);
-    if (obj && obj->IsNative()) {
-      objs_to_update[ToBrowserAccessibilityWin(obj)->GetCOM()] =
-          is_subtree_created;
-    }
-
-    // When a node is a text node or line break, update its parent, because
-    // its text is part of its hypertext.
-    const ui::AXNode* parent = changed_node->parent();
-    if (!parent)
-      continue;
-    if (ui::IsTextOrLineBreak(changed_node->data().role)) {
-      BrowserAccessibility* parent_obj = GetFromAXNode(parent);
-      if (parent_obj && parent_obj->IsNative()) {
-        BrowserAccessibilityComWin* parent_com_obj =
-            ToBrowserAccessibilityWin(parent_obj)->GetCOM();
-        if (objs_to_update.find(parent_com_obj) == objs_to_update.end())
-          objs_to_update[parent_com_obj] = false;
-      }
-    }
-
-    // When a node is editable, update the editable root too.
-    if (!changed_node->data().HasState(ax::mojom::State::kEditable))
-      continue;
-    const ui::AXNode* editable_root = changed_node;
-    while (editable_root->parent() && editable_root->parent()->data().HasState(
-                                          ax::mojom::State::kEditable)) {
-      editable_root = editable_root->parent();
-    }
-    BrowserAccessibility* editable_root_obj = GetFromAXNode(editable_root);
-    if (editable_root_obj && editable_root_obj->IsNative()) {
-      BrowserAccessibilityComWin* editable_root_com_obj =
-          ToBrowserAccessibilityWin(editable_root_obj)->GetCOM();
-      if (objs_to_update.find(editable_root_com_obj) == objs_to_update.end())
-        objs_to_update[editable_root_com_obj] = false;
-    }
-  }
+  std::set<ui::AXPlatformNode*> objs_to_update;
+  CollectChangedNodesAndParentsForAtomicUpdate(tree, changes, &objs_to_update);
 
   // The first step moves win_attributes_ to old_win_attributes_ and then
   // recomputes all of win_attributes_ other than IAccessibleText.
-  for (auto& key_value : objs_to_update)
-    key_value.first->UpdateStep1ComputeWinAttributes();
+  for (auto* node : objs_to_update) {
+    static_cast<BrowserAccessibilityComWin*>(node)
+        ->UpdateStep1ComputeWinAttributes();
+  }
 
   // The next step updates the hypertext of each node, which is a
   // concatenation of all of its child text nodes, so it can't run until
   // the text of all of the nodes was computed in the previous step.
-  for (auto& key_value : objs_to_update)
-    key_value.first->UpdateStep2ComputeHypertext();
+  for (auto* node : objs_to_update) {
+    static_cast<BrowserAccessibilityComWin*>(node)
+        ->UpdateStep2ComputeHypertext();
+  }
 
   // The third step fires events on nodes based on what's changed - like
   // if the name, value, or description changed, or if the hypertext had
@@ -682,38 +653,9 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
   // client may walk the tree when it receives any of these events.
   // At the end, it deletes old_win_attributes_ since they're not needed
   // anymore.
-  for (auto& key_value : objs_to_update) {
-    BrowserAccessibilityComWin* obj = key_value.first;
-    bool is_subtree_created = key_value.second;
-    obj->UpdateStep3FireEvents(is_subtree_created);
+  for (auto* node : objs_to_update) {
+    static_cast<BrowserAccessibilityComWin*>(node)->UpdateStep3FireEvents();
   }
-}
-
-bool BrowserAccessibilityManagerWin::ShouldFireEventForNode(
-    BrowserAccessibility* node) const {
-  if (!node || !node->CanFireEvents())
-    return false;
-
-  // If the root delegate isn't the main-frame, this may be a new frame that
-  // hasn't yet been swapped in or added to the frame tree. Suppress firing
-  // events until then.
-  BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
-  if (!root_delegate)
-    return false;
-  if (!root_delegate->AccessibilityIsMainFrame())
-    return false;
-
-  // Don't fire events when this document might be stale as the user has
-  // started navigating to a new document.
-  if (user_is_navigating_away_)
-    return false;
-
-  // Inline text boxes are an internal implementation detail, we don't
-  // expose them to Windows.
-  if (node->GetRole() == ax::mojom::Role::kInlineTextBox)
-    return false;
-
-  return true;
 }
 
 void BrowserAccessibilityManagerWin::HandleSelectedStateChanged(
@@ -721,32 +663,33 @@ void BrowserAccessibilityManagerWin::HandleSelectedStateChanged(
   const bool is_selected =
       node->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
 
-  bool multiselect = false;
-  auto* selection_container = node->PlatformGetSelectionContainer();
-  if (selection_container &&
-      selection_container->HasState(ax::mojom::State::kMultiselectable))
-    multiselect = true;
-
-  if (multiselect) {
+  // Nodes that have selection container may support multiselect, for such nodes
+  // we add them to |selection_events_|, which FinalizeAccessibilityEvents
+  // handles selection item events firing.
+  // For nodes that do not have selection container, only single select is
+  // supported, selection item events firing are handled here.
+  if (auto* selection_container = node->PlatformGetSelectionContainer()) {
     if (is_selected) {
-      FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONADD, node);
-      if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
-        selection_events_[selection_container].added.push_back(node);
+      selection_events_[selection_container].added.push_back(node);
+    } else {
+      selection_events_[selection_container].removed.push_back(node);
+    }
+  } else {
+    if (is_selected) {
+      FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, node);
+      FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId, node);
     } else {
       FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONREMOVE, node);
-      if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
-        selection_events_[selection_container].removed.push_back(node);
+      FireUiaAccessibilityEvent(
+          UIA_SelectionItem_ElementRemovedFromSelectionEventId, node);
     }
-  } else if (is_selected) {
-    FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, node);
-    FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId, node);
   }
 }
 
 void BrowserAccessibilityManagerWin::BeforeAccessibilityEvents() {
   BrowserAccessibilityManager::BeforeAccessibilityEvents();
 
-  for (const auto& targeted_event : event_generator_) {
+  for (const auto& targeted_event : event_generator()) {
     if (targeted_event.event_params.event ==
         ui::AXEventGenerator::Event::IGNORED_CHANGED) {
       BrowserAccessibility* event_target = GetFromAXNode(targeted_event.node);
@@ -765,11 +708,20 @@ void BrowserAccessibilityManagerWin::BeforeAccessibilityEvents() {
 void BrowserAccessibilityManagerWin::FinalizeAccessibilityEvents() {
   BrowserAccessibilityManager::FinalizeAccessibilityEvents();
 
+  // Finalize aria properties events.
   for (auto&& event_node : aria_properties_events_) {
     FireUiaPropertyChangedEvent(UIA_AriaPropertiesPropertyId, event_node);
   }
   aria_properties_events_.clear();
 
+  // Finalize text selection events.
+  for (auto&& sel_event_node : text_selection_changed_events_) {
+    FireUiaTextContainerEvent(UIA_Text_TextSelectionChangedEventId,
+                              sel_event_node);
+  }
+  text_selection_changed_events_.clear();
+
+  // Finalize selection item events.
   for (auto&& selected : selection_events_) {
     auto* container = selected.first;
     auto&& changes = selected.second;
@@ -789,6 +741,7 @@ void BrowserAccessibilityManagerWin::FinalizeAccessibilityEvents() {
 
     if (selected_count == 1) {
       // Fire 'ElementSelected' on the only selected child
+      FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, first_selected_child);
       FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId,
                                 first_selected_child);
     } else {
@@ -800,10 +753,18 @@ void BrowserAccessibilityManagerWin::FinalizeAccessibilityEvents() {
         FireUiaAccessibilityEvent(UIA_Selection_InvalidatedEventId, container);
       } else {
         for (auto* item : changes.added) {
-          FireUiaAccessibilityEvent(
-              UIA_SelectionItem_ElementAddedToSelectionEventId, item);
+          if (container->HasState(ax::mojom::State::kMultiselectable)) {
+            FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONADD, item);
+            FireUiaAccessibilityEvent(
+                UIA_SelectionItem_ElementAddedToSelectionEventId, item);
+          } else {
+            FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, item);
+            FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId,
+                                      item);
+          }
         }
         for (auto* item : changes.removed) {
+          FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONREMOVE, item);
           FireUiaAccessibilityEvent(
               UIA_SelectionItem_ElementRemovedFromSelectionEventId, item);
         }

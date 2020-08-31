@@ -56,8 +56,7 @@ class MockServerObserver : public ProtocolConnectionServer::Observer {
 
 class FakeQuicBridge {
  public:
-  FakeQuicBridge(platform::FakeTaskRunner* task_runner,
-                 platform::ClockNowFunctionPtr now_function);
+  FakeQuicBridge(FakeTaskRunner* task_runner, ClockNowFunctionPtr now_function);
   ~FakeQuicBridge();
 
   const IPEndpoint kControllerEndpoint{{192, 168, 1, 3}, 4321};
@@ -79,10 +78,10 @@ class FakeQuicBridge {
   void PostPacketsUntilIdle();
   FakeClientQuicConnectionFactory* GetClientFactory();
   FakeServerQuicConnectionFactory* GetServerFactory();
-  platform::FakeTaskRunner* task_runner_;
+  FakeTaskRunner* task_runner_;
 
-  std::unique_ptr<platform::FakeUdpSocket> client_socket_;
-  std::unique_ptr<platform::FakeUdpSocket> server_socket_;
+  std::unique_ptr<FakeUdpSocket> client_socket_;
+  std::unique_ptr<FakeUdpSocket> server_socket_;
 };
 
 }  // namespace osp

@@ -46,6 +46,10 @@
 
 namespace blink {
 
+namespace bindings {
+class DictionaryBase;
+}
+
 // This file contains bindings helper functions that do not have dependencies
 // to core/ or bindings/core. For core-specific helper functions, see
 // bindings/core/v8/V8BindingForCore.h.
@@ -96,6 +100,11 @@ inline void V8SetReturnValue(const CallbackInfo& info, int32_t value) {
 template <typename CallbackInfo>
 inline void V8SetReturnValue(const CallbackInfo& info, uint32_t value) {
   info.GetReturnValue().Set(value);
+}
+
+template <typename CallbackInfo>
+inline void V8SetReturnValue(const CallbackInfo& info, uint64_t value) {
+  info.GetReturnValue().Set(static_cast<double>(value));
 }
 
 template <typename CallbackInfo>
@@ -162,7 +171,7 @@ inline void V8SetReturnValue(const CallbackInfo& callback_info,
   }
   if (DOMDataStore::SetReturnValue(callback_info.GetReturnValue(), impl))
     return;
-  v8::Local<v8::Object> wrapper =
+  v8::Local<v8::Value> wrapper =
       impl->Wrap(callback_info.GetIsolate(), creation_context);
   V8SetReturnValue(callback_info, wrapper);
 }
@@ -184,7 +193,7 @@ inline void V8SetReturnValueForMainWorld(const CallbackInfo& callback_info,
   if (DOMDataStore::SetReturnValueForMainWorld(callback_info.GetReturnValue(),
                                                impl))
     return;
-  v8::Local<v8::Object> wrapper =
+  v8::Local<v8::Value> wrapper =
       impl->Wrap(callback_info.GetIsolate(), callback_info.Holder());
   V8SetReturnValue(callback_info, wrapper);
 }
@@ -200,7 +209,7 @@ inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
   if (DOMDataStore::SetReturnValueFast(callback_info.GetReturnValue(), impl,
                                        callback_info.Holder(), wrappable))
     return;
-  v8::Local<v8::Object> wrapper =
+  v8::Local<v8::Value> wrapper =
       impl->Wrap(callback_info.GetIsolate(), callback_info.Holder());
   V8SetReturnValue(callback_info, wrapper);
 }
@@ -210,6 +219,20 @@ inline void V8SetReturnValueFast(const CallbackInfo& callback_info,
                                  const v8::Local<T> handle,
                                  const ScriptWrappable*) {
   V8SetReturnValue(callback_info, handle);
+}
+
+// Dictionary
+template <class CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      bindings::DictionaryBase* value,
+                      v8::Local<v8::Object> creation_context) {
+  V8SetReturnValue(info, ToV8(value, creation_context, info.GetIsolate()));
+}
+
+template <class CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      bindings::DictionaryBase* value) {
+  V8SetReturnValue(info, ToV8(value, info.Holder(), info.GetIsolate()));
 }
 
 // Convert v8::String to a WTF::String. If the V8 string is not already
@@ -358,6 +381,24 @@ static void IndexedPropertyEnumerator(
 // If the argument isn't an object, this will crash.
 PLATFORM_EXPORT v8::Local<v8::Value> FreezeV8Object(v8::Local<v8::Value>,
                                                     v8::Isolate*);
+
+// Return values of indexed properties and named properties
+
+enum class IndexedPropertySetterResult {
+  kDidNotIntercept,  // Fallback to the default set operation.
+  kIntercepted,      // Intercepted regardless of whether it succeeded or not.
+};
+
+enum class NamedPropertySetterResult {
+  kDidNotIntercept,  // Fallback to the default set operation.
+  kIntercepted,      // Intercepted regardless of whether it succeeded or not.
+};
+
+enum class NamedPropertyDeleterResult {
+  kDidNotIntercept,  // Fallback to the default delete operation.
+  kDeleted,          // Successfully deleted.
+  kDidNotDelete,     // Intercepted but failed to delete.
+};
 
 }  // namespace blink
 

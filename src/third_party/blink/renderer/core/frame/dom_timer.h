@@ -29,7 +29,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -41,7 +41,7 @@ class ExecutionContext;
 class ScheduledAction;
 
 class CORE_EXPORT DOMTimer final : public GarbageCollected<DOMTimer>,
-                                   public ContextLifecycleObserver,
+                                   public ExecutionContextLifecycleObserver,
                                    public TimerBase,
                                    public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(DOMTimer);
@@ -63,16 +63,16 @@ class CORE_EXPORT DOMTimer final : public GarbageCollected<DOMTimer>,
            int timeout_id);
   ~DOMTimer() override;
 
-  // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  // ExecutionContextLifecycleObserver
+  void ContextDestroyed() override;
 
   // Pre finalizer is needed to promptly stop this Timer object.
   // Otherwise timer events might fire at an object that's slated for
   // destruction (when lazily swept), but some of its members (m_action) may
   // already have been finalized & must not be accessed.
   void Dispose();
-  
-  void Trace(blink::Visitor*) override;
+
+  void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "DOMTimer"; }
 
   void Stop() override;

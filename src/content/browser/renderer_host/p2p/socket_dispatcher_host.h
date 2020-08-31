@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "content/public/browser/render_process_host.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/p2p.mojom.h"
@@ -31,15 +32,15 @@ class P2PSocketDispatcherHost
   ~P2PSocketDispatcherHost() override;
 
   // Starts the RTP packet header dumping.
-  void StartRtpDump(
-      bool incoming,
-      bool outgoing,
-      const RenderProcessHost::WebRtcRtpPacketCallback& packet_callback);
+  void StartRtpDump(bool incoming,
+                    bool outgoing,
+                    RenderProcessHost::WebRtcRtpPacketCallback packet_callback);
 
   // Stops the RTP packet header dumping.
   void StopRtpDump(bool incoming, bool outgoing);
 
-  void BindRequest(network::mojom::P2PSocketManagerRequest request);
+  void BindReceiver(
+      mojo::PendingReceiver<network::mojom::P2PSocketManager> receiver);
 
   base::WeakPtr<P2PSocketDispatcherHost> GetWeakPtr();
 

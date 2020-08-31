@@ -4,44 +4,118 @@
 
 #include "media/gpu/windows/d3d11_texture_wrapper.h"
 
+#include <list>
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "media/gpu/windows/return_on_failure.h"
+#include "media/base/bind_to_current_loop.h"
+#include "media/base/win/mf_helpers.h"
+#include "ui/gl/gl_image.h"
 
 namespace media {
 
-Texture2DWrapper::Texture2DWrapper(ComD3D11Texture2D texture)
-    : texture_(texture) {}
+// Handy structure so that we can activate / bind one or two textures.
+struct ScopedTextureEverything {
+  ScopedTextureEverything(GLenum unit, GLuint service_id)
+      : active_(unit), binder_(GL_TEXTURE_EXTERNAL_OES, service_id) {}
+  ~ScopedTextureEverything() = default;
 
-Texture2DWrapper::~Texture2DWrapper() {}
+  // Order is important; we need |active_| to be constructed first
+  // and destructed last.
+  gl::ScopedActiveTexture active_;
+  gl::ScopedTextureBinder binder_;
 
-const ComD3D11Texture2D Texture2DWrapper::Texture() const {
-  return texture_;
-}
+  DISALLOW_COPY_AND_ASSIGN(ScopedTextureEverything);
+};
 
-DefaultTexture2DWrapper::DefaultTexture2DWrapper(ComD3D11Texture2D texture)
-    : Texture2DWrapper(texture) {}
-DefaultTexture2DWrapper::~DefaultTexture2DWrapper() {}
+// Another handy helper class to guarantee that ScopedTextureEverythings
+// are deleted in reverse order.  This is required so that the scoped
+// active texture unit doesn't change.  Surprisingly, none of the stl
+// containers, or the chromium ones, seem to guarantee anything about
+// the order of destruction.
+struct OrderedDestructionList {
+  OrderedDestructionList() = default;
+  ~OrderedDestructionList() {
+    // Erase last-to-first.
+    while (!list_.empty())
+      list_.pop_back();
+  }
 
-bool DefaultTexture2DWrapper::ProcessTexture(const D3D11PictureBuffer* owner_pb,
-                                             MailboxHolderArray* mailbox_dest) {
+  template <typename... Args>
+  void emplace_back(Args&&... args) {
+    list_.emplace_back(std::forward<Args>(args)...);
+  }
+
+  std::list<ScopedTextureEverything> list_;
+  DISALLOW_COPY_AND_ASSIGN(OrderedDestructionList);
+};
+
+Texture2DWrapper::Texture2DWrapper() = default;
+
+Texture2DWrapper::~Texture2DWrapper() = default;
+
+DefaultTexture2DWrapper::DefaultTexture2DWrapper(const gfx::Size& size,
+                                                 DXGI_FORMAT dxgi_format)
+    : size_(size), dxgi_format_(dxgi_format) {}
+
+DefaultTexture2DWrapper::~DefaultTexture2DWrapper() = default;
+
+bool DefaultTexture2DWrapper::ProcessTexture(
+    ComD3D11Texture2D texture,
+    size_t array_slice,
+    const gfx::ColorSpace& input_color_space,
+    MailboxHolderArray* mailbox_dest,
+    gfx::ColorSpace* output_color_space) {
+  // If we've received an error, then return it to our caller.  This is probably
+  // from some previous operation.
+  // TODO(liberato): Return the error.
+  if (received_error_)
+    return false;
+
+  // It's okay to post and forget this call, since it'll be ordered correctly
+  // with respect to any access on the gpu main thread.
+  gpu_resources_.Post(FROM_HERE, &GpuResources::PushNewTexture,
+                      std::move(texture), array_slice);
+
+  // TODO(liberato): make sure that |mailbox_holders_| is zero-initialized in
+  // case we don't use all the planes.
   for (size_t i = 0; i < VideoFrame::kMaxPlanes; i++)
     (*mailbox_dest)[i] = mailbox_holders_[i];
+
+  // We're just binding, so the output and output color spaces are the same.
+  *output_color_space = input_color_space;
+
   return true;
 }
 
-bool DefaultTexture2DWrapper::Init(GetCommandBufferHelperCB get_helper_cb,
-                                   size_t array_slice,
-                                   gfx::Size size) {
-  gpu_resources_ = std::make_unique<GpuResources>();
-  if (!gpu_resources_)
-    return false;
+bool DefaultTexture2DWrapper::Init(
+    scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+    GetCommandBufferHelperCB get_helper_cb) {
+  gpu_resources_ = base::SequenceBound<GpuResources>(
+      std::move(gpu_task_runner),
+      BindToCurrentLoop(base::BindOnce(&DefaultTexture2DWrapper::OnError,
+                                       weak_factory_.GetWeakPtr())));
 
-  // We currently only bind NV12, which requires two GL textures.
-  const int textures_per_picture = 2;
+  // YUV textures are mapped onto two GL textures, while RGB use one.
+  int textures_per_picture = 0;
+  switch (dxgi_format_) {
+    case DXGI_FORMAT_NV12:
+    case DXGI_FORMAT_P010:
+      textures_per_picture = 2;
+      break;
+    case DXGI_FORMAT_B8G8R8A8_UNORM:
+    case DXGI_FORMAT_R16G16B16A16_FLOAT:
+      textures_per_picture = 1;
+      break;
+    default:
+      return false;
+  }
 
   // Generate mailboxes and holders.
+  // TODO(liberato): Verify that this is really okay off the GPU main thread.
+  // The current implementation is.
   std::vector<gpu::Mailbox> mailboxes;
   for (int texture_idx = 0; texture_idx < textures_per_picture; texture_idx++) {
     mailboxes.push_back(gpu::Mailbox::Generate());
@@ -54,15 +128,25 @@ bool DefaultTexture2DWrapper::Init(GetCommandBufferHelperCB get_helper_cb,
   // device for decoding.  Sharing seems not to work very well.  Otherwise, we
   // would create the texture with KEYED_MUTEX and NTHANDLE, then send along
   // a handle that we get from |texture| as an IDXGIResource1.
-  // TODO(liberato): this should happen on the gpu thread.
-  return gpu_resources_->Init(std::move(get_helper_cb), array_slice,
-                              std::move(mailboxes), GL_TEXTURE_EXTERNAL_OES,
-                              size, Texture(), textures_per_picture);
-
+  gpu_resources_.Post(FROM_HERE, &GpuResources::Init, std::move(get_helper_cb),
+                      std::move(mailboxes), GL_TEXTURE_EXTERNAL_OES, size_,
+                      textures_per_picture);
   return true;
 }
 
-DefaultTexture2DWrapper::GpuResources::GpuResources() {}
+void DefaultTexture2DWrapper::OnError(Status status) {
+  if (!received_error_)
+    received_error_ = status;
+}
+
+void DefaultTexture2DWrapper::SetStreamHDRMetadata(
+    const HDRMetadata& stream_metadata) {}
+
+void DefaultTexture2DWrapper::SetDisplayHDRMetadata(
+    const DXGI_HDR_METADATA_HDR10& dxgi_display_metadata) {}
+
+DefaultTexture2DWrapper::GpuResources::GpuResources(OnErrorCB on_error_cb)
+    : on_error_cb_(std::move(on_error_cb)) {}
 
 DefaultTexture2DWrapper::GpuResources::~GpuResources() {
   if (helper_ && helper_->MakeContextCurrent()) {
@@ -71,20 +155,22 @@ DefaultTexture2DWrapper::GpuResources::~GpuResources() {
   }
 }
 
-bool DefaultTexture2DWrapper::GpuResources::Init(
+void DefaultTexture2DWrapper::GpuResources::Init(
     GetCommandBufferHelperCB get_helper_cb,
-    int array_slice,
     const std::vector<gpu::Mailbox> mailboxes,
     GLenum target,
     gfx::Size size,
-    ComD3D11Texture2D angle_texture,
     int textures_per_picture) {
   helper_ = get_helper_cb.Run();
 
-  if (!helper_ || !helper_->MakeContextCurrent())
-    return false;
+  if (!helper_ || !helper_->MakeContextCurrent()) {
+    NotifyError(StatusCode::kCantMakeContextCurrent);
+    return;
+  }
 
   // Create the textures and attach them to the mailboxes.
+  // TODO(liberato): Should we use GL_FLOAT for an fp16 texture?  It doesn't
+  // really seem to matter so far as I can tell.
   for (int texture_idx = 0; texture_idx < textures_per_picture; texture_idx++) {
     uint32_t service_id =
         helper_->CreateTexture(target, GL_RGBA, size.width(), size.height(),
@@ -96,42 +182,56 @@ bool DefaultTexture2DWrapper::GpuResources::Init(
   // Create the stream for zero-copy use by gl.
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
   const EGLint stream_attributes[] = {
-      EGL_CONSUMER_LATENCY_USEC_KHR,
-      0,
-      EGL_CONSUMER_ACQUIRE_TIMEOUT_USEC_KHR,
-      0,
+      // clang-format off
+      EGL_CONSUMER_LATENCY_USEC_KHR,         0,
+      EGL_CONSUMER_ACQUIRE_TIMEOUT_USEC_KHR, 0,
       EGL_NONE,
+      // clang-format on
   };
   EGLStreamKHR stream = eglCreateStreamKHR(egl_display, stream_attributes);
-  RETURN_ON_FAILURE(!!stream, "Could not create stream", false);
+  if (!stream) {
+    NotifyError(StatusCode::kCantCreateEglStream);
+    return;
+  }
 
   // |stream| will be destroyed when the GLImage is.
   // TODO(liberato): for tests, it will be destroyed pretty much at the end of
   // this function unless |helper_| retains it.  Also, this won't work if we
   // have a FakeCommandBufferHelper since the service IDs aren't meaningful.
-  scoped_refptr<gl::GLImage> gl_image =
-      base::MakeRefCounted<gl::GLImageDXGI>(size, stream);
-  gl::ScopedActiveTexture texture0(GL_TEXTURE0);
-  gl::ScopedTextureBinder texture0_binder(GL_TEXTURE_EXTERNAL_OES,
-                                          service_ids_[0]);
-  gl::ScopedActiveTexture texture1(GL_TEXTURE1);
-  gl::ScopedTextureBinder texture1_binder(GL_TEXTURE_EXTERNAL_OES,
-                                          service_ids_[1]);
+  gl_image_ = base::MakeRefCounted<gl::GLImageDXGI>(size, stream);
 
-  EGLAttrib consumer_attributes[] = {
-      EGL_COLOR_BUFFER_TYPE,
-      EGL_YUV_BUFFER_EXT,
-      EGL_YUV_NUMBER_OF_PLANES_EXT,
-      2,
-      EGL_YUV_PLANE0_TEXTURE_UNIT_NV,
-      0,
-      EGL_YUV_PLANE1_TEXTURE_UNIT_NV,
-      1,
-      EGL_NONE,
-  };
+  // Bind all the textures so that the stream can find them.
+  OrderedDestructionList texture_everythings;
+  for (int i = 0; i < textures_per_picture; i++)
+    texture_everythings.emplace_back(GL_TEXTURE0 + i, service_ids_[i]);
+
+  std::vector<EGLAttrib> consumer_attributes;
+  if (textures_per_picture == 2) {
+    // Assume NV12.
+    consumer_attributes = {
+        // clang-format off
+        EGL_COLOR_BUFFER_TYPE,               EGL_YUV_BUFFER_EXT,
+        EGL_YUV_NUMBER_OF_PLANES_EXT,        2,
+        EGL_YUV_PLANE0_TEXTURE_UNIT_NV,      0,
+        EGL_YUV_PLANE1_TEXTURE_UNIT_NV,      1,
+        EGL_NONE,
+        // clang-format on
+    };
+  } else {
+    // Assume some rgb format.
+    consumer_attributes = {
+        // clang-format off
+        EGL_COLOR_BUFFER_TYPE,               EGL_RGB_BUFFER,
+        EGL_NONE,
+        // clang-format on
+    };
+  }
   EGLBoolean result = eglStreamConsumerGLTextureExternalAttribsNV(
-      egl_display, stream, consumer_attributes);
-  RETURN_ON_FAILURE(result, "Could not set stream consumer", false);
+      egl_display, stream, consumer_attributes.data());
+  if (!result) {
+    NotifyError(StatusCode::kCantCreateEglStreamConsumer);
+    return;
+  }
 
   EGLAttrib producer_attributes[] = {
       EGL_NONE,
@@ -139,35 +239,59 @@ bool DefaultTexture2DWrapper::GpuResources::Init(
 
   result = eglCreateStreamProducerD3DTextureANGLE(egl_display, stream,
                                                   producer_attributes);
-  RETURN_ON_FAILURE(result, "Could not create stream", false);
+  if (!result) {
+    NotifyError(StatusCode::kCantCreateEglStreamProducer);
+    return;
+  }
 
+  // Note that this is valid as long as |gl_image_| is valid; it is
+  // what deletes the stream.
+  stream_ = stream;
+
+  // Bind the image to each texture.
+  for (size_t texture_idx = 0; texture_idx < service_ids_.size();
+       texture_idx++) {
+    helper_->BindImage(service_ids_[texture_idx], gl_image_.get(),
+                       false /* client_managed */);
+  }
+}
+
+void DefaultTexture2DWrapper::GpuResources::PushNewTexture(
+    ComD3D11Texture2D texture,
+    size_t array_slice) {
+  if (!helper_ || !helper_->MakeContextCurrent()) {
+    NotifyError(StatusCode::kCantMakeContextCurrent);
+    return;
+  }
+
+  // Notify |gl_image_| that it has a new texture.
+  gl_image_->SetTexture(texture, array_slice);
+
+  // Notify angle that it has a new texture.
   EGLAttrib frame_attributes[] = {
       EGL_D3D_TEXTURE_SUBRESOURCE_ID_ANGLE,
       array_slice,
       EGL_NONE,
   };
 
-  result = eglStreamPostD3DTextureANGLE(egl_display, stream,
-                                        static_cast<void*>(angle_texture.Get()),
-                                        frame_attributes);
-  RETURN_ON_FAILURE(result, "Could not post texture", false);
-
-  result = eglStreamConsumerAcquireKHR(egl_display, stream);
-
-  RETURN_ON_FAILURE(result, "Could not post acquire stream", false);
-  gl::GLImageDXGI* gl_image_dxgi =
-      static_cast<gl::GLImageDXGI*>(gl_image.get());
-
-  gl_image_dxgi->SetTexture(angle_texture, array_slice);
-
-  // Bind the image to each texture.
-  for (size_t texture_idx = 0; texture_idx < service_ids_.size();
-       texture_idx++) {
-    helper_->BindImage(service_ids_[texture_idx], gl_image.get(),
-                       false /* client_managed */);
+  EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
+  if (!eglStreamPostD3DTextureANGLE(egl_display, stream_,
+                                    static_cast<void*>(texture.Get()),
+                                    frame_attributes)) {
+    NotifyError(StatusCode::kCantPostTexture);
+    return;
   }
 
-  return true;
+  if (!eglStreamConsumerAcquireKHR(egl_display, stream_)) {
+    NotifyError(StatusCode::kCantPostAcquireStream);
+    return;
+  }
+}
+
+void DefaultTexture2DWrapper::GpuResources::NotifyError(Status status) {
+  if (on_error_cb_)
+    std::move(on_error_cb_).Run(std::move(status));
+  // else this isn't the first error, so skip it.
 }
 
 }  // namespace media

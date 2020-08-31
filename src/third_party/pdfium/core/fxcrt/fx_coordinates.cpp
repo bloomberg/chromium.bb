@@ -10,8 +10,8 @@
 
 #include "build/build_config.h"
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/fx_safe_types.h"
-#include "third_party/base/numerics/safe_conversions.h"
 
 namespace {
 
@@ -54,6 +54,14 @@ static_assert(sizeof(FX_RECT::bottom) == sizeof(RECT::bottom),
 #endif
 
 }  // namespace
+
+bool FX_RECT::Valid() const {
+  FX_SAFE_INT32 w = right;
+  FX_SAFE_INT32 h = bottom;
+  w -= left;
+  h -= top;
+  return w.IsValid() && h.IsValid();
+}
 
 void FX_RECT::Normalize() {
   if (left > right)
@@ -138,10 +146,10 @@ FX_RECT CFX_FloatRect::GetOuterRect() const {
 
 FX_RECT CFX_FloatRect::GetInnerRect() const {
   FX_RECT rect;
-  rect.left = static_cast<int>(ceil(left));
-  rect.bottom = static_cast<int>(floor(top));
-  rect.right = static_cast<int>(floor(right));
-  rect.top = static_cast<int>(ceil(bottom));
+  rect.left = pdfium::base::saturated_cast<int>(ceil(left));
+  rect.bottom = pdfium::base::saturated_cast<int>(floor(top));
+  rect.right = pdfium::base::saturated_cast<int>(floor(right));
+  rect.top = pdfium::base::saturated_cast<int>(ceil(bottom));
   rect.Normalize();
   return rect;
 }
@@ -290,11 +298,6 @@ std::ostream& operator<<(std::ostream& os, const CFX_RectF& rect) {
 }
 #endif  // NDEBUG
 
-std::tuple<float, float, float, float, float, float> CFX_Matrix::AsTuple()
-    const {
-  return std::make_tuple(a, b, c, d, e, f);
-}
-
 CFX_Matrix CFX_Matrix::GetInverse() const {
   CFX_Matrix inverse;
   float i = a * d - b * c;
@@ -342,10 +345,6 @@ void CFX_Matrix::Rotate(float fRadian) {
   float cosValue = cos(fRadian);
   float sinValue = sin(fRadian);
   Concat(CFX_Matrix(cosValue, sinValue, -sinValue, cosValue, 0, 0));
-}
-
-void CFX_Matrix::Shear(float fAlphaRadian, float fBetaRadian) {
-  Concat(CFX_Matrix(1, tan(fAlphaRadian), tan(fBetaRadian), 1, 0, 0));
 }
 
 void CFX_Matrix::MatchRect(const CFX_FloatRect& dest,

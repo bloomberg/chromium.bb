@@ -39,10 +39,10 @@ class ShellContentRendererClient : public content::ContentRendererClient {
   void WillSendRequest(blink::WebLocalFrame* frame,
                        ui::PageTransition transition_type,
                        const blink::WebURL& url,
-                       const blink::WebURL& site_for_cookies,
+                       const net::SiteForCookies& site_for_cookies,
                        const url::Origin* initiator_origin,
                        GURL* new_url,
-                       bool* attach_same_site_cookies) override;
+                       bool* force_ignore_site_for_cookies) override;
   bool IsExternalPepperPlugin(const std::string& module_name) override;
   content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
       content::RenderFrame* render_frame,

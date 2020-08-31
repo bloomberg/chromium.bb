@@ -12,24 +12,20 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "components/services/storage/indexed_db/scopes/scopes_lock_manager.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom-test-utils.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
-#include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
-#include "content/public/browser/storage_partition.h"
-#include "content/public/common/url_constants.h"
-#include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_utils.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
@@ -90,14 +86,18 @@ class IndexedDBTest : public testing::Test {
       : kNormalOrigin(url::Origin::Create(GURL("http://normal/"))),
         kSessionOnlyOrigin(url::Origin::Create(GURL("http://session-only/"))),
         special_storage_policy_(
-            base::MakeRefCounted<MockSpecialStoragePolicy>()),
+            base::MakeRefCounted<storage::MockSpecialStoragePolicy>()),
         quota_manager_proxy_(
-            base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr)),
+            base::MakeRefCounted<storage::MockQuotaManagerProxy>(nullptr,
+                                                                 nullptr)),
         context_(base::MakeRefCounted<IndexedDBContextImpl>(
             CreateAndReturnTempDir(&temp_dir_),
             /*special_storage_policy=*/special_storage_policy_.get(),
             quota_manager_proxy_.get(),
             base::DefaultClock::GetInstance(),
+            /*blob_storage_context=*/mojo::NullRemote(),
+            /*native_file_system_context=*/mojo::NullRemote(),
+            base::SequencedTaskRunnerHandle::Get(),
             base::SequencedTaskRunnerHandle::Get())) {
     special_storage_policy_->AddSessionOnly(kSessionOnlyOrigin.GetURL());
   }
@@ -107,7 +107,7 @@ class IndexedDBTest : public testing::Test {
 
   void RunPostedTasks() {
     base::RunLoop loop;
-    context_->TaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
+    context_->IDBTaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
     loop.Run();
   }
 
@@ -119,40 +119,44 @@ class IndexedDBTest : public testing::Test {
       // deletion of the leveldb state. Once the states are no longer around,
       // delete all of the databases on disk.
       auto open_factory_origins = factory->GetOpenOrigins();
-      base::RunLoop loop;
-      auto callback = base::BarrierClosure(
-          open_factory_origins.size(), base::BindLambdaForTesting([&]() {
-            // All leveldb databases are closed, and they can be deleted.
-            for (auto origin : context_->GetAllOrigins()) {
-              context_->DeleteForOrigin(origin);
-            }
-            loop.Quit();
-          }));
       for (auto origin : open_factory_origins) {
-        IndexedDBOriginState* per_origin_factory =
-            factory->GetOriginFactory(origin);
-        per_origin_factory->backing_store()
-            ->db()
-            ->leveldb_state()
-            ->RequestDestruction(callback,
-                                 base::SequencedTaskRunnerHandle::Get());
-        context_->ForceClose(origin,
-                             IndexedDBContextImpl::FORCE_CLOSE_DELETE_ORIGIN);
+        context_->ForceCloseSync(
+            origin,
+            storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN);
       }
-      loop.Run();
+      // All leveldb databases are closed, and they can be deleted.
+      for (auto origin : context_->GetAllOrigins()) {
+        bool success = false;
+        storage::mojom::IndexedDBControlAsyncWaiter waiter(context_.get());
+        waiter.DeleteForOrigin(origin, &success);
+        EXPECT_TRUE(success);
+      }
     }
+
     if (temp_dir_.IsValid())
       ASSERT_TRUE(temp_dir_.Delete());
   }
 
+  base::FilePath GetFilePathForTesting(const url::Origin& origin) {
+    base::FilePath path;
+    base::RunLoop run_loop;
+    context()->GetFilePathForTesting(
+        origin,
+        base::BindLambdaForTesting([&](const base::FilePath& async_path) {
+          path = async_path;
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    return path;
+  }
+
  protected:
   IndexedDBContextImpl* context() const { return context_.get(); }
-  scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
-  scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
 
  private:
-  BrowserTaskEnvironment task_environment_;
-  TestBrowserContext browser_context_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<IndexedDBContextImpl> context_;
 
@@ -163,18 +167,18 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
   base::FilePath normal_path;
   base::FilePath session_only_path;
 
-  normal_path = context()->GetFilePathForTesting(kNormalOrigin);
-  session_only_path = context()->GetFilePathForTesting(kSessionOnlyOrigin);
+  normal_path = GetFilePathForTesting(kNormalOrigin);
+  session_only_path = GetFilePathForTesting(kSessionOnlyOrigin);
   ASSERT_TRUE(base::CreateDirectory(normal_path));
   ASSERT_TRUE(base::CreateDirectory(session_only_path));
-  RunAllTasksUntilIdle();
+  base::RunLoop().RunUntilIdle();
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
 
-  RunAllTasksUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   context()->Shutdown();
 
-  RunAllTasksUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(base::DirectoryExists(normal_path));
   EXPECT_FALSE(base::DirectoryExists(session_only_path));
@@ -187,8 +191,8 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   // Save session state. This should bypass the destruction-time deletion.
   context()->SetForceKeepSessionState();
 
-  normal_path = context()->GetFilePathForTesting(kNormalOrigin);
-  session_only_path = context()->GetFilePathForTesting(kSessionOnlyOrigin);
+  normal_path = GetFilePathForTesting(kNormalOrigin);
+  session_only_path = GetFilePathForTesting(kSessionOnlyOrigin);
   ASSERT_TRUE(base::CreateDirectory(normal_path));
   ASSERT_TRUE(base::CreateDirectory(session_only_path));
   base::RunLoop().RunUntilIdle();
@@ -209,7 +213,7 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
       : IndexedDBCallbacks(nullptr,
                            origin,
                            mojo::NullAssociatedRemote(),
-                           idb_context->TaskRunner()),
+                           idb_context->IDBTaskRunner()),
         idb_context_(idb_context),
         origin_(origin) {}
 
@@ -244,7 +248,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
       base::MakeRefCounted<ForceCloseDBCallbacks>(context(), kTestOrigin);
   auto closed_callbacks =
       base::MakeRefCounted<ForceCloseDBCallbacks>(context(), kTestOrigin);
-  base::FilePath test_path = context()->GetFilePathForTesting(kTestOrigin);
+  base::FilePath test_path = GetFilePathForTesting(kTestOrigin);
 
   const int64_t host_transaction_id = 0;
   const int64_t version = 0;
@@ -256,8 +260,6 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
   factory->Open(base::ASCIIToUTF16("opendb"),
                 std::make_unique<IndexedDBPendingConnection>(
                     open_callbacks, open_db_callbacks,
-                    IndexedDBExecutionContextConnectionTracker::Handle::
-                        CreateForTesting(),
                     host_transaction_id, version,
                     std::move(create_transaction_callback1)),
                 kTestOrigin, context()->data_path());
@@ -268,8 +270,6 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
   factory->Open(base::ASCIIToUTF16("closeddb"),
                 std::make_unique<IndexedDBPendingConnection>(
                     closed_callbacks, closed_db_callbacks,
-                    IndexedDBExecutionContextConnectionTracker::Handle::
-                        CreateForTesting(),
                     host_transaction_id, version,
                     std::move(create_transaction_callback2)),
                 kTestOrigin, context()->data_path());
@@ -279,14 +279,17 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
       IndexedDBConnection::CloseErrorHandling::kAbortAllReturnLastError);
   RunPostedTasks();
 
-  context()->ForceClose(kTestOrigin,
-                        IndexedDBContextImpl::FORCE_CLOSE_DELETE_ORIGIN);
+  context()->ForceCloseSync(
+      kTestOrigin, storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN);
   EXPECT_TRUE(open_db_callbacks->forced_close_called());
   EXPECT_FALSE(closed_db_callbacks->forced_close_called());
 
   RunPostedTasks();
 
-  context()->DeleteForOrigin(kTestOrigin);
+  bool success = false;
+  storage::mojom::IndexedDBControlAsyncWaiter waiter(context());
+  waiter.DeleteForOrigin(kTestOrigin, &success);
+  EXPECT_TRUE(success);
 
   EXPECT_FALSE(base::DirectoryExists(test_path));
 }
@@ -294,19 +297,22 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
   const Origin kTestOrigin = Origin::Create(GURL("http://test/"));
 
-  base::FilePath test_path = context()->GetFilePathForTesting(kTestOrigin);
+  base::FilePath test_path = GetFilePathForTesting(kTestOrigin);
   ASSERT_TRUE(base::CreateDirectory(test_path));
 
   auto lock = LockForTesting(test_path);
   ASSERT_TRUE(lock);
 
+  bool success = false;
   base::RunLoop loop;
-  context()->TaskRunner()->PostTask(FROM_HERE,
-                                    base::BindLambdaForTesting([&]() {
-                                      context()->DeleteForOrigin(kTestOrigin);
-                                      loop.Quit();
-                                    }));
+  context()->IDBTaskRunner()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        storage::mojom::IndexedDBControlAsyncWaiter waiter(context());
+        waiter.DeleteForOrigin(kTestOrigin, &success);
+        loop.Quit();
+      }));
   loop.Run();
+  EXPECT_FALSE(success);
 
   EXPECT_TRUE(base::DirectoryExists(test_path));
 }
@@ -325,7 +331,6 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
       callbacks, db_callbacks,
-      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
       transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback1));
   factory->Open(base::ASCIIToUTF16("db"), std::move(connection),

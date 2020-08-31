@@ -344,8 +344,6 @@ void DataTypeManagerImpl::Restart() {
 void DataTypeManagerImpl::OnAllDataTypesReadyForConfigure() {
   DCHECK(!download_started_);
   download_started_ = true;
-  UMA_HISTOGRAM_LONG_TIMES("Sync.USSLoadModelsTime",
-                           base::Time::Now() - last_restart_time_);
   // TODO(pavely): By now some of datatypes in |download_types_queue_| could
   // have failed loading and should be excluded from configuration. I need to
   // adjust |download_types_queue_| for such types.
@@ -658,9 +656,9 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
   params->to_purge = types_to_purge;
   params->to_journal = types_to_journal;
   params->to_unapply = unapply_types;
-  params->ready_task =
-      base::Bind(&DataTypeManagerImpl::DownloadReady,
-                 weak_ptr_factory_.GetWeakPtr(), download_types_queue_.front());
+  params->ready_task = base::BindOnce(&DataTypeManagerImpl::DownloadReady,
+                                      weak_ptr_factory_.GetWeakPtr(),
+                                      download_types_queue_.front());
   params->is_sync_feature_enabled =
       last_requested_context_.sync_mode == SyncMode::kFull;
 
@@ -705,12 +703,6 @@ void DataTypeManagerImpl::StartNextAssociation(AssociationGroup group) {
   model_association_manager_.StartAssociationAsync(types_to_associate);
 }
 
-void DataTypeManagerImpl::OnSingleDataTypeWillStart(ModelType type) {
-  DCHECK(controllers_->find(type) != controllers_->end());
-  DataTypeController* dtc = controllers_->find(type)->second.get();
-  dtc->BeforeLoadModels(configurer_);
-}
-
 void DataTypeManagerImpl::OnSingleDataTypeWillStop(ModelType type,
                                                    const SyncError& error) {
   auto c_it = controllers_->find(type);
@@ -741,12 +733,6 @@ void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(
     ModelType type,
     const DataTypeAssociationStats& association_stats) {
   DCHECK(!association_types_queue_.empty());
-  auto c_it = controllers_->find(type);
-  DCHECK(c_it != controllers_->end());
-  if (c_it->second->state() == DataTypeController::RUNNING) {
-    // Delegate activation to the controller.
-    c_it->second->ActivateDataType(configurer_);
-  }
 
   if (!debug_info_listener_.IsInitialized())
     return;

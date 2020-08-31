@@ -31,7 +31,7 @@ public:
      * the coordinates are 3-dimensional, it a perspective divide into is emitted into the
      * fragment shader (xy / z) to convert them to 2D.
      */
-    virtual SkString ensureCoords2D(const GrShaderVar&) = 0;
+    virtual SkString ensureCoords2D(const GrShaderVar&, const SkSL::SampleMatrix& matrix) = 0;
 
     // TODO: remove this method.
     void declAppendf(const char* fmt, ...);
@@ -46,7 +46,10 @@ private:
 class GrGLSLFPFragmentBuilder : virtual public GrGLSLFragmentBuilder {
 public:
     /** Appease the compiler; the derived class initializes GrGLSLFragmentBuilder. */
-    GrGLSLFPFragmentBuilder() : GrGLSLFragmentBuilder(nullptr) {}
+    GrGLSLFPFragmentBuilder() : GrGLSLFragmentBuilder(nullptr) {
+        // Suppress unused warning error
+        (void) fDummyPadding;
+    }
 
     /**
      * Returns the variable name that holds the array of sample offsets from pixel center to each
@@ -91,19 +94,26 @@ public:
      */
     virtual void applyFnToMultisampleMask(const char* fn, const char* grad, ScopeFlags) = 0;
 
+    SkString writeProcessorFunction(GrGLSLFragmentProcessor*, GrGLSLFragmentProcessor::EmitArgs&);
+
+    virtual void forceHighPrecision() = 0;
+
+private:
     /**
-     * Fragment procs with child procs should call these functions before/after calling emitCode
-     * on a child proc.
+     * These are called before/after calling emitCode on a child proc to update mangling.
      */
     virtual void onBeforeChildProcEmitCode() = 0;
     virtual void onAfterChildProcEmitCode() = 0;
 
-    virtual SkString writeProcessorFunction(GrGLSLFragmentProcessor* fp,
-                                            GrGLSLFragmentProcessor::EmitArgs& args);
-
     virtual const SkString& getMangleString() const = 0;
 
-    virtual void forceHighPrecision() = 0;
+    // WARNING: LIke GrRenderTargetProxy, changes to this can cause issues in ASAN. This is caused
+    // by GrGLSLProgramBuilder's GrTAllocators requiring 16 byte alignment, but since
+    // GrGLSLFragmentShaderBuilder has a virtual diamond hierarchy, ASAN requires all this pointers
+    // to start aligned, even though clang is already correctly offsetting the individual fields
+    // that require the larger alignment. In the current world, this extra padding is sufficient to
+    // correctly initialize GrGLSLXPFragmentBuilder second.
+    char fDummyPadding[4];
 };
 
 GR_MAKE_BITFIELD_CLASS_OPS(GrGLSLFPFragmentBuilder::ScopeFlags);
@@ -141,25 +151,28 @@ public:
     GrGLSLFragmentShaderBuilder(GrGLSLProgramBuilder* program);
 
     // Shared GrGLSLFragmentBuilder interface.
-    virtual SkString ensureCoords2D(const GrShaderVar&) override;
+    virtual SkString ensureCoords2D(const GrShaderVar&,
+                                    const SkSL::SampleMatrix& matrix) override;
 
     // GrGLSLFPFragmentBuilder interface.
     const char* sampleOffsets() override;
     void maskOffMultisampleCoverage(const char* mask, ScopeFlags) override;
     void applyFnToMultisampleMask(const char* fn, const char* grad, ScopeFlags) override;
-    const SkString& getMangleString() const override { return fMangleString; }
-    void onBeforeChildProcEmitCode() override;
-    void onAfterChildProcEmitCode() override;
     void forceHighPrecision() override { fForceHighPrecision = true; }
 
     // GrGLSLXPFragmentBuilder interface.
-    bool hasCustomColorOutput() const override { return fHasCustomColorOutput; }
+    bool hasCustomColorOutput() const override { return SkToBool(fCustomColorOutput); }
     bool hasSecondaryOutput() const override { return fHasSecondaryOutput; }
     const char* dstColor() override;
     void enableAdvancedBlendEquationIfNeeded(GrBlendEquation) override;
 
 private:
     using CustomFeatures = GrProcessor::CustomFeatures;
+
+    // GrGLSLFPFragmentBuilder private interface.
+    void onBeforeChildProcEmitCode() override;
+    void onAfterChildProcEmitCode() override;
+    const SkString& getMangleString() const override { return fMangleString; }
 
     // Private public interface, used by GrGLProgramBuilder to build a fragment shader
     void enableCustomOutput();
@@ -210,9 +223,9 @@ private:
      */
     SkString fMangleString;
 
+    GrShaderVar* fCustomColorOutput = nullptr;
+
     bool fSetupFragPosition = false;
-    bool fHasCustomColorOutput = false;
-    int fCustomColorOutputIndex = -1;
     bool fHasSecondaryOutput = false;
     bool fHasModifiedSampleMask = false;
     bool fForceHighPrecision = false;

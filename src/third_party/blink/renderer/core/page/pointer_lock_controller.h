@@ -28,7 +28,11 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-blink-forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -48,8 +52,10 @@ class CORE_EXPORT PointerLockController final
  public:
   explicit PointerLockController(Page*);
 
-  void RequestPointerLock(Element* target,
-                          const PointerLockOptions* options = nullptr);
+  ScriptPromise RequestPointerLock(ScriptPromiseResolver* resolver,
+                                   Element* target,
+                                   ExceptionState& exception_state,
+                                   const PointerLockOptions* options = nullptr);
   void RequestPointerUnlock();
   void ElementRemoved(Element*);
   void DocumentDetached(Document*);
@@ -68,12 +74,23 @@ class CORE_EXPORT PointerLockController final
   // changed if pointer is not locked.
   void GetPointerLockPosition(FloatPoint* lock_position,
                               FloatPoint* lock_screen_position);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void ClearElement();
   void EnqueueEvent(const AtomicString& type, Element*);
   void EnqueueEvent(const AtomicString& type, Document*);
+  void ChangeLockRequestCallback(Element* target,
+                                 ScriptPromiseResolver* resolver,
+                                 bool unadjusted_movement_requested,
+                                 mojom::blink::PointerLockResult result);
+  void LockRequestCallback(ScriptPromiseResolver* resolver,
+                           bool unadjusted_movement_requested,
+                           mojom::blink::PointerLockResult result);
+  DOMException* ConvertResultToException(
+      mojom::blink::PointerLockResult result);
+  void RejectIfPromiseEnabled(ScriptPromiseResolver* resolver,
+                              DOMException* exception);
 
   Member<Page> page_;
   bool lock_pending_;
@@ -84,6 +101,8 @@ class CORE_EXPORT PointerLockController final
   // in locked states. These values only get set when entering lock states.
   FloatPoint pointer_lock_position_;
   FloatPoint pointer_lock_screen_position_;
+
+  bool current_unadjusted_movement_setting_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PointerLockController);
 };

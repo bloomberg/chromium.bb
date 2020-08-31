@@ -2,65 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for views.
- */
-cca.views = cca.views || {};
-
-/**
- * import {assertString} from '../chrome_util.js';
- */
-var assertString = assertString || {};
-
-/**
- * import {assertInstanceof, assertString, assertBoolean}
- * from '../chrome_util.js';
- */
-var {assertInstanceof, assertString, assertBoolean} = {
-  assertInstanceof,
-  assertString,
-  assertBoolean,
-};
+import {assertInstanceof, assertString} from '../chrome_util.js';
+// eslint-disable-next-line no-unused-vars
+import {ViewName} from '../type.js';
+import {View} from './view.js';
 
 /**
  * Creates the Dialog view controller.
  */
-cca.views.Dialog = class extends cca.views.View {
+export class Dialog extends View {
   /**
-   * @param {string} viewId Root element id of dialog view.
+   * @param {ViewName} name View name of the dialog.
    */
-  constructor(viewId) {
-    super(viewId, true);
+  constructor(name) {
+    super(name, true);
 
     /**
      * @type {!HTMLButtonElement}
      * @private
      */
     this.positiveButton_ = assertInstanceof(
-        document.querySelector(`${viewId} .dialog-positive-button`),
-        HTMLButtonElement);
+        this.root.querySelector('.dialog-positive-button'), HTMLButtonElement);
 
     /**
      * @type {!HTMLButtonElement}
      * @private
      */
     this.negativeButton_ = assertInstanceof(
-        document.querySelector(`${viewId} .dialog-negative-button`),
-        HTMLButtonElement);
+        this.root.querySelector('.dialog-negative-button'), HTMLButtonElement);
 
     /**
      * @type {!HTMLElement}
      * @private
      */
     this.messageHolder_ = assertInstanceof(
-        document.querySelector(`${viewId} .dialog-msg-holder`), HTMLElement);
+        this.root.querySelector('.dialog-msg-holder'), HTMLElement);
 
     this.positiveButton_.addEventListener('click', () => this.leave(true));
     if (this.negativeButton_) {
@@ -85,4 +61,4 @@ cca.views.Dialog = class extends cca.views.View {
   focus() {
     this.positiveButton_.focus();
   }
-};
+}

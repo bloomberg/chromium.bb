@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">አስፋ</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />፣ የተጫነ መተግበሪያ</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> ን ማጋራት አይቻልም</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> ከ<ph name="SECOND_ITEM_TITLE" /> ጋር ተቀያይሯል</translation>
 <translation id="1498028757988366001">እርስዎ ይህን ከዚህ በፊት ፍለጋ አድርገውለታል። «<ph name="QUERY" />»ን ከታሪክዎ መሰረዝ በሁሉም መሣሪያዎችዎ ላይ እስከመጨረሻው ከመለያዎ ያስወግደዋል።</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ደቂቃ እና }one{# ደቂቃዎች እና }other{# ደቂቃዎች እና }}</translation>
 <translation id="1643823602425662293">ማሳወቂያ</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;ሁሉንም ምረጥ</translation>
-<translation id="1938451708255335766">የመስኮቱን የማሳያ ትፍገት ለማስተካከል መተግበሪያውን ዳግም ያስጀምሩት።</translation>
 <translation id="2006524834898217237">ይህ መሣሪያ ወደ በይነ መረብ እንደተገናኘ እርግጠኛ ይሁኑ።</translation>
 <translation id="208586643495776849">እባክዎ እንደገና ይሞክሩ</translation>
 <translation id="2090963878406559571">አንድ ቁጥር ከ<ph name="ORIGIN" /> ወደ የእርስዎ Android ስልክ ለመላክ በቅንብሮች ውስጥ ለሁሉም መሣሪያዎች <ph name="TROUBLESHOOT_LINK" />።</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">ዝቅዝቅ ቀስት</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ቀን}one{# ቀኖች}other{# ቀኖች}}</translation>
 <translation id="3295886253693811851">ከዚህ ላይ ጥሪ ያድርጉ</translation>
+<translation id="3306688585798492231">አብሮገነብ ማሳያ</translation>
 <translation id="335581015389089642">ንግግር</translation>
 <translation id="3389286852084373014">ጽሑፍ ከልክ በላይ ግዙፍ ነው</translation>
-<translation id="3479552764303398839">አሁን አይደለም</translation>
 <translation id="348799646910989694">መደርደሪያ በራስ-ሰር ተደብቋል</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> ተያይዟል</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 ቀን ቀርቷል}one{# ቀኖች ቀርቷል}other{# ቀኖች ቀርተዋል}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">ከእርስዎ ተንቀሳቃሽ መሣሪያ <ph name="TITLE" /> ማንበብ ይቀጥሉ</translation>
 <translation id="385051799172605136">ተመለስ</translation>
 <translation id="3889424535448813030">ቀኝ  ቀስት</translation>
-<translation id="3892641579809465218">የውስጥ ማሳያ</translation>
 <translation id="3897092660631435901">ምናሌ</translation>
 <translation id="3909791450649380159">&amp;ቁረጥ</translation>
 <translation id="3990502903496589789">የቀኝ ጠርዝ</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 ደቂቃ}one{# ደቂቃዎች}other{# ደቂቃዎች}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{ዛሬ ንቁ}=1{ከ1 ቀን በፊት ንቁ ነበር}one{ከ# ቀኖች በፊት ንቁ ነበር}other{ከ# ቀኖች በፊት ንቁ ነበር}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ቀን እና }one{# ቀኖች እና }other{# ቀኖች እና }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{በ 1ዓ ውስጥ}one{በ #ዓ ውስጥ}other{በ #ዓ ውስጥ}}</translation>
-<translation id="5895138241574237353">እንደገና ጀምር</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 ሰከንድ ቀርቷል}one{# ሰከንዶች ቀርቷል}other{# ሰከንዶች ቀርቷል}}</translation>
 <translation id="5941711191222866238">አሳንስ</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ሰዓት}one{# ሰዓቶች}other{# ሰዓቶች}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">ከቀኝ ወደ ግራ</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">የመሆን ዕድላቸው ከፍ ያለ ነው</translation>
+<translation id="7170202025028120564">የመተግበሪያዎ የማሳያ ቅንብሮች ቀጥለው ዳግም በሚነሱበት ጊዜ ይተገበራሉ።</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 ደቂቃ ቀርቷል}one{# ደቂቃዎች ቀርቷል}other{# ደቂቃዎች ቀርተዋል}}</translation>
 <translation id="7319740667687257810">ማስጀመሪያ፣ ከፊል እይታ</translation>

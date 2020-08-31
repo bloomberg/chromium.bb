@@ -9,10 +9,12 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -21,7 +23,9 @@
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/esni_content.h"
 #include "net/dns/public/dns_protocol.h"
+#include "net/socket/socket_test_util.h"
 
 namespace net {
 
@@ -198,7 +202,9 @@ std::string GenerateWellFormedEsniKeys(base::StringPiece custom_data = "");
 
 class AddressSorter;
 class DnsClient;
+class DnsSession;
 class IPAddress;
+class ResolveContext;
 class URLRequestContext;
 
 // Builds an address record for the given name and IP.
@@ -299,17 +305,12 @@ class MockDnsTransactionFactory : public DnsTransactionFactory {
       const NetLogWithSource&,
       bool secure,
       DnsConfig::SecureDnsMode secure_dns_mode,
-      URLRequestContext* url_request_context) override;
+      ResolveContext* resolve_context) override;
+
+  std::unique_ptr<DnsProbeRunner> CreateDohProbeRunner(
+      ResolveContext* resolve_context) override;
 
   void AddEDNSOption(const OptRecordRdata::Opt& opt) override;
-
-  base::TimeDelta GetDelayUntilNextProbeForTest(
-      unsigned doh_server_index) override;
-
-  void StartDohProbes(URLRequestContext* url_request_context,
-                      bool network_change) override;
-
-  void CancelDohProbes() override;
 
   DnsConfig::SecureDnsMode GetSecureDnsModeForTest() override;
 
@@ -319,15 +320,25 @@ class MockDnsTransactionFactory : public DnsTransactionFactory {
   bool CompleteOneDelayedTransactionOfType(DnsQueryType type)
       WARN_UNUSED_RESULT;
 
-  bool doh_probes_running() { return doh_probes_running_; }
+  bool doh_probes_running() { return !running_doh_probe_runners_.empty(); }
+  void CompleteDohProbeRuners() { running_doh_probe_runners_.clear(); }
+
+  void set_force_doh_server_available(bool available) {
+    force_doh_server_available_ = available;
+  }
 
  private:
   class MockTransaction;
+  class MockDohProbeRunner;
   using DelayedTransactionList = std::vector<base::WeakPtr<MockTransaction>>;
 
   MockDnsClientRuleList rules_;
   DelayedTransactionList delayed_transactions_;
-  bool doh_probes_running_ = false;
+
+  bool force_doh_server_available_ = true;
+  std::set<MockDohProbeRunner*> running_doh_probe_runners_;
+
+  base::WeakPtrFactory<MockDnsTransactionFactory> weak_ptr_factory_{this};
 };
 
 // MockDnsClient provides MockDnsTransactionFactory.
@@ -340,21 +351,21 @@ class MockDnsClient : public DnsClient {
   bool CanUseSecureDnsTransactions() const override;
   bool CanUseInsecureDnsTransactions() const override;
   void SetInsecureEnabled(bool enabled) override;
-  bool FallbackFromSecureTransactionPreferred() const override;
+  bool FallbackFromSecureTransactionPreferred(
+      ResolveContext* resolve_context) const override;
   bool FallbackFromInsecureTransactionPreferred() const override;
   bool SetSystemConfig(base::Optional<DnsConfig> system_config) override;
   bool SetConfigOverrides(DnsConfigOverrides config_overrides) override;
+  void ReplaceCurrentSession() override;
+  DnsSession* GetCurrentSession() override;
   const DnsConfig* GetEffectiveConfig() const override;
   const DnsHosts* GetHosts() const override;
-  void ActivateDohProbes(URLRequestContext* url_request_context) override;
-  void CancelDohProbes() override;
   DnsTransactionFactory* GetTransactionFactory() override;
   AddressSorter* GetAddressSorter() override;
   void IncrementInsecureFallbackFailures() override;
   void ClearInsecureFallbackFailures() override;
   base::Optional<DnsConfig> GetSystemConfigForTesting() const override;
   DnsConfigOverrides GetConfigOverridesForTesting() const override;
-  void SetProbeSuccessForTest(unsigned index, bool success) override;
   void SetTransactionFactoryForTesting(
       std::unique_ptr<DnsTransactionFactory> factory) override;
 
@@ -373,23 +384,28 @@ class MockDnsClient : public DnsClient {
     ignore_system_config_changes_ = ignore_system_config_changes;
   }
 
-  void set_doh_server_available(bool available) {
-    doh_server_available_ = available;
-  }
+  void SetForceDohServerAvailable(bool available);
 
   MockDnsTransactionFactory* factory() { return factory_.get(); }
 
  private:
   base::Optional<DnsConfig> BuildEffectiveConfig();
+  scoped_refptr<DnsSession> BuildSession();
 
   bool insecure_enabled_ = false;
   int fallback_failures_ = 0;
   int max_fallback_failures_ = DnsClient::kMaxInsecureFallbackFailures;
   bool ignore_system_config_changes_ = false;
-  bool doh_server_available_ = true;
-  URLRequestContext* probe_context_ = nullptr;
 
+  // If |true|, MockDnsClient will always pretend DoH servers are available and
+  // allow secure transactions no matter what the state is in the transaction
+  // ResolveContext. If |false|, the ResolveContext must contain at least one
+  // available DoH server to allow secure transactions.
+  bool force_doh_server_available_ = true;
+
+  MockClientSocketFactory socket_factory_;
   base::Optional<DnsConfig> config_;
+  scoped_refptr<DnsSession> session_;
   DnsConfigOverrides overrides_;
   base::Optional<DnsConfig> effective_config_;
   std::unique_ptr<MockDnsTransactionFactory> factory_;

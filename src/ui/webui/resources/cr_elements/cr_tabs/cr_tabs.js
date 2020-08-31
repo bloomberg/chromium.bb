@@ -56,12 +56,12 @@ Polymer({
   lastSelected_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.isRtl_ = this.matches(':host-context([dir=rtl]) cr-tabs');
   },
 
   /** @private */
-  onMouseDown_: function() {
+  onMouseDown_() {
     this.classList.remove('keyboard-focus');
   },
 
@@ -69,17 +69,17 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyDown_: function(e) {
+  onKeyDown_(e) {
     this.classList.add('keyboard-focus');
     const count = this.tabNames.length;
     let newSelection;
-    if (e.key == 'Home') {
+    if (e.key === 'Home') {
       newSelection = 0;
-    } else if (e.key == 'End') {
+    } else if (e.key === 'End') {
       newSelection = count - 1;
-    } else if (e.key == 'ArrowLeft' || e.key == 'ArrowRight') {
-      const delta = e.key == 'ArrowLeft' ? (this.isRtl_ ? 1 : -1) :
-                                           (this.isRtl_ ? -1 : 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      const delta = e.key === 'ArrowLeft' ? (this.isRtl_ ? 1 : -1) :
+                                            (this.isRtl_ ? -1 : 1);
       newSelection = (count + this.selected + delta) % count;
     } else {
       return;
@@ -90,7 +90,7 @@ Polymer({
   },
 
   /** @private */
-  onSelectionBarTransitionEnd_: function() {
+  onSelectionBarTransitionEnd_() {
     this.$.selectionBar.classList.replace('expand', 'contract');
     const tab = this.$$(`.tab:nth-of-type(${this.selected + 1})`);
     if (!tab) {
@@ -104,7 +104,7 @@ Polymer({
    * @param {!{model: !{index: number}}} _
    * @private
    */
-  onTabClick_: function({model: {index}}) {
+  onTabClick_({model: {index}}) {
     this.selected = index;
   },
 
@@ -113,7 +113,7 @@ Polymer({
    * @param {number} width
    * @private
    */
-  updateSelectionBar_: function(left, width) {
+  updateSelectionBar_(left, width) {
     const containerWidth = this.offsetWidth;
     const leftPercent = 100 * left / containerWidth;
     const widthRatio = width / containerWidth;
@@ -125,8 +125,8 @@ Polymer({
     // freeze in an expanded state since no transitionend events will be fired
     // for subsequent selection changes. Call transition end method to prevent
     // this.
-    if (this.$.selectionBar.style.transform == 'translateX(0%) scaleX(1)' &&
-        leftPercent == 0 && widthRatio == 1) {
+    if (this.$.selectionBar.style.transform === 'translateX(0%) scaleX(1)' &&
+        leftPercent === 0 && widthRatio === 1) {
       this.onSelectionBarTransitionEnd_();
       return;
     }
@@ -136,16 +136,16 @@ Polymer({
   },
 
   /** @private */
-  updateUi_: function() {
+  updateUi_() {
     const tabs = this.shadowRoot.querySelectorAll('.tab');
     // Tabs are not rendered yet by dom-repeat. Skip this update since
     // dom-repeat will fire a dom-change event when it is ready.
-    if (tabs.length == 0) {
+    if (tabs.length === 0) {
       return;
     }
 
     tabs.forEach((tab, i) => {
-      const isSelected = this.selected == i;
+      const isSelected = this.selected === i;
       if (isSelected) {
         tab.focus();
       }
@@ -154,7 +154,7 @@ Polymer({
       tab.setAttribute('tabindex', isSelected ? 0 : -1);
     });
 
-    if (this.selected == undefined) {
+    if (this.selected === undefined) {
       return;
     }
 
@@ -164,7 +164,7 @@ Polymer({
 
     // If there is no previously selected tab or the tab has not changed,
     // underline the selected tab instantly.
-    if (oldValue == null || oldValue == this.selected) {
+    if (oldValue === null || oldValue === this.selected) {
       // When handling the initial 'dom-change' event, it's possible for the
       // selected tab to exist and not yet be fully rendered. This will result
       // in the selection bar not rendering correctly.

@@ -8,9 +8,11 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
@@ -25,6 +27,8 @@
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/browser/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using storage::FileSystemContext;
 using storage::FileSystemOperationRunner;
@@ -66,7 +70,8 @@ class FileSystemOperationRunnerTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
     base::FilePath base_dir = base_.GetPath();
-    file_system_context_ = CreateFileSystemContextForTesting(nullptr, base_dir);
+    file_system_context_ =
+        storage::CreateFileSystemContextForTesting(nullptr, base_dir);
   }
 
   void TearDown() override {
@@ -76,7 +81,8 @@ class FileSystemOperationRunnerTest : public testing::Test {
 
   FileSystemURL URL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://example.com"), storage::kFileSystemTypeTemporary,
+        url::Origin::Create(GURL("http://example.com")),
+        storage::kFileSystemTypeTemporary,
         base::FilePath::FromUTF8Unsafe(path));
   }
 
@@ -188,15 +194,14 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
 
     base::FilePath base_dir = base_.GetPath();
-    file_system_context_ = new FileSystemContext(
+    file_system_context_ = base::MakeRefCounted<FileSystemContext>(
         base::ThreadTaskRunnerHandle::Get().get(),
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})
-            .get(),
+        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}).get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
-        base::MakeRefCounted<MockSpecialStoragePolicy>().get(), nullptr,
-        std::vector<std::unique_ptr<storage::FileSystemBackend>>(),
+        base::MakeRefCounted<storage::MockSpecialStoragePolicy>().get(),
+        nullptr, std::vector<std::unique_ptr<storage::FileSystemBackend>>(),
         std::vector<storage::URLRequestAutoMountHandler>(), base_dir,
-        CreateAllowFileAccessOptions());
+        storage::CreateAllowFileAccessOptions());
 
     // Disallow IO on the main loop.
     base::ThreadRestrictions::SetIOAllowed(false);
@@ -209,7 +214,8 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
 
   FileSystemURL URL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://example.com"), storage::kFileSystemTypeTemporary,
+        url::Origin::Create(GURL("http://example.com")),
+        storage::kFileSystemTypeTemporary,
         base::FilePath::FromUTF8Unsafe(path));
   }
 

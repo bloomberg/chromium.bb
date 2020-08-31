@@ -54,10 +54,11 @@ public:
         return fRenderTarget->renderTargetPriv().getSampleLocations().count();
     }
     const SkTArray<SkPoint>& getSampleLocations() const {
+        SkASSERT(GrProcessor::CustomFeatures::kSampleLocations & fProgramInfo.requestedFeatures());
         return fRenderTarget->renderTargetPriv().getSampleLocations();
     }
 
-    const GrProgramDesc* desc() const { return fDesc; }
+    const GrProgramDesc& desc() const { return fDesc; }
 
     void appendUniformDecls(GrShaderFlags visibility, SkString*) const;
 
@@ -104,9 +105,8 @@ public:
     int fStageIndex;
 
     const GrRenderTarget*        fRenderTarget; // TODO: remove this
+    const GrProgramDesc&         fDesc;
     const GrProgramInfo&         fProgramInfo;
-
-    const GrProgramDesc*         fDesc;
 
     GrGLSLBuiltinUniformHandles  fUniformHandles;
 
@@ -116,7 +116,7 @@ public:
     int fFragmentProcessorCnt;
 
 protected:
-    explicit GrGLSLProgramBuilder(GrRenderTarget*, const GrProgramInfo&, const GrProgramDesc*);
+    explicit GrGLSLProgramBuilder(GrRenderTarget*, const GrProgramDesc&, const GrProgramInfo&);
 
     void addFeature(GrShaderFlags shaders, uint32_t featureBit, const char* extensionName);
 
@@ -161,7 +161,7 @@ private:
                                     SkString output,
                                     SkTArray<std::unique_ptr<GrGLSLFragmentProcessor>>*);
     void emitAndInstallXferProc(const SkString& colorIn, const SkString& coverageIn);
-    SamplerHandle emitSampler(const GrSurfaceProxy*, const GrSamplerState&, const GrSwizzle&,
+    SamplerHandle emitSampler(const GrBackendFormat&, GrSamplerState, const GrSwizzle&,
                               const char* name);
     bool checkSamplerCounts();
 

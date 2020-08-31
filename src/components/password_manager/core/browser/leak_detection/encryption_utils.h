@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
 
 namespace password_manager {
@@ -18,6 +19,7 @@ constexpr size_t kUsernameHashPrefixLength = 24;
 // host in case the username is a mail address. |username| must be a UTF-8
 // string.
 std::string CanonicalizeUsername(base::StringPiece username);
+base::string16 CanonicalizeUsername(base::StringPiece16 username);
 
 // Hashes |canonicalized_username| by appending a fixed salt and computing the
 // SHA256 hash.
@@ -54,6 +56,9 @@ std::string CipherReEncrypt(const std::string& already_encrypted,
 // hash of it.
 std::string CipherDecrypt(const std::string& ciphertext,
                           const std::string& key);
+
+// Returns a new key suitable for the encryption functions above.
+std::string CreateNewKey();
 
 }  // namespace password_manager
 

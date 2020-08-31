@@ -32,6 +32,17 @@ void StripUsageWithBreakdownCallback(
 
 }  // namespace
 
+struct UsageTracker::AccumulateInfo {
+  AccumulateInfo() = default;
+  ~AccumulateInfo() = default;
+
+  size_t pending_clients = 0;
+  int64_t usage = 0;
+  int64_t unlimited_usage = 0;
+  blink::mojom::UsageBreakdownPtr usage_breakdown =
+      blink::mojom::UsageBreakdown::New();
+};
+
 UsageTracker::UsageTracker(
     const std::vector<scoped_refptr<QuotaClient>>& clients,
     blink::mojom::StorageType type,
@@ -39,22 +50,15 @@ UsageTracker::UsageTracker(
     : type_(type) {
   for (const auto& client : clients) {
     if (client->DoesSupport(type)) {
-      client_tracker_map_[client->id()] = std::make_unique<ClientUsageTracker>(
-          this, client, type, special_storage_policy);
+      client_tracker_map_[client->type()] =
+          std::make_unique<ClientUsageTracker>(this, client, type,
+                                               special_storage_policy);
     }
   }
 }
 
 UsageTracker::~UsageTracker() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-ClientUsageTracker* UsageTracker::GetClientTracker(QuotaClient::ID client_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto found = client_tracker_map_.find(client_id);
-  if (found != client_tracker_map_.end())
-    return found->second.get();
-  return nullptr;
 }
 
 void UsageTracker::GetGlobalLimitedUsage(UsageCallback callback) {
@@ -82,8 +86,8 @@ void UsageTracker::GetGlobalLimitedUsage(UsageCallback callback) {
       base::BindRepeating(&UsageTracker::AccumulateClientGlobalLimitedUsage,
                           weak_factory_.GetWeakPtr(), base::Owned(info));
 
-  for (const auto& client_id_and_tracker : client_tracker_map_)
-    client_id_and_tracker.second->GetGlobalLimitedUsage(accumulator);
+  for (const auto& client_type_and_tracker : client_tracker_map_)
+    client_type_and_tracker.second->GetGlobalLimitedUsage(accumulator);
 
   // Fire the sentinel as we've now called GetGlobalUsage for all clients.
   accumulator.Run(0);
@@ -108,8 +112,8 @@ void UsageTracker::GetGlobalUsage(GlobalUsageCallback callback) {
       base::BindRepeating(&UsageTracker::AccumulateClientGlobalUsage,
                           weak_factory_.GetWeakPtr(), base::Owned(info));
 
-  for (const auto& client_id_and_tracker : client_tracker_map_)
-    client_id_and_tracker.second->GetGlobalUsage(accumulator);
+  for (const auto& client_type_and_tracker : client_tracker_map_)
+    client_type_and_tracker.second->GetGlobalUsage(accumulator);
 
   // Fire the sentinel as we've now called GetGlobalUsage for all clients.
   accumulator.Run(0, 0);
@@ -140,70 +144,76 @@ void UsageTracker::GetHostUsageWithBreakdown(
       base::BindOnce(&UsageTracker::FinallySendHostUsageWithBreakdown,
                      weak_factory_.GetWeakPtr(), base::Owned(info), host));
 
-  for (const auto& client_id_and_tracker : client_tracker_map_) {
-    client_id_and_tracker.second->GetHostUsage(
+  for (const auto& client_type_and_tracker : client_tracker_map_) {
+    client_type_and_tracker.second->GetHostUsage(
         host, base::BindOnce(&UsageTracker::AccumulateClientHostUsage,
                              weak_factory_.GetWeakPtr(), barrier, info, host,
-                             client_id_and_tracker.first));
+                             client_type_and_tracker.first));
   }
 }
 
-void UsageTracker::UpdateUsageCache(QuotaClient::ID client_id,
+void UsageTracker::UpdateUsageCache(QuotaClientType client_type,
                                     const url::Origin& origin,
                                     int64_t delta) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ClientUsageTracker* client_tracker = GetClientTracker(client_id);
-  DCHECK(client_tracker);
+  DCHECK(client_tracker_map_.count(client_type));
+  ClientUsageTracker* client_tracker = client_tracker_map_[client_type].get();
   client_tracker->UpdateUsageCache(origin, delta);
 }
 
 int64_t UsageTracker::GetCachedUsage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   int64_t usage = 0;
-  for (const auto& client_id_and_tracker : client_tracker_map_)
-    usage += client_id_and_tracker.second->GetCachedUsage();
+  for (const auto& client_type_and_tracker : client_tracker_map_)
+    usage += client_type_and_tracker.second->GetCachedUsage();
   return usage;
 }
 
-void UsageTracker::GetCachedHostsUsage(
-    std::map<std::string, int64_t>* host_usage) const {
+std::map<std::string, int64_t> UsageTracker::GetCachedHostsUsage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(host_usage);
-  host_usage->clear();
-  for (const auto& client_id_and_tracker : client_tracker_map_)
-    client_id_and_tracker.second->GetCachedHostsUsage(host_usage);
+  std::map<std::string, int64_t> host_usage;
+  for (const auto& client_type_and_tracker : client_tracker_map_) {
+    std::map<std::string, int64_t> client_host_usage =
+        client_type_and_tracker.second->GetCachedHostsUsage();
+    for (const auto& host_and_usage : client_host_usage)
+      host_usage[host_and_usage.first] += host_and_usage.second;
+  }
+  return host_usage;
 }
 
-void UsageTracker::GetCachedOriginsUsage(
-    std::map<url::Origin, int64_t>* origin_usage) const {
+std::map<url::Origin, int64_t> UsageTracker::GetCachedOriginsUsage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(origin_usage);
-  origin_usage->clear();
-  for (const auto& client_id_and_tracker : client_tracker_map_)
-    client_id_and_tracker.second->GetCachedOriginsUsage(origin_usage);
+  std::map<url::Origin, int64_t> origin_usage;
+  for (const auto& client_type_and_tracker : client_tracker_map_) {
+    std::map<url::Origin, int64_t> client_origin_usage =
+        client_type_and_tracker.second->GetCachedOriginsUsage();
+    for (const auto& origin_and_usage : client_origin_usage)
+      origin_usage[origin_and_usage.first] += origin_and_usage.second;
+  }
+  return origin_usage;
 }
 
-void UsageTracker::GetCachedOrigins(std::set<url::Origin>* origins) const {
+std::set<url::Origin> UsageTracker::GetCachedOrigins() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(origins);
-  origins->clear();
-  for (const auto& client_id_and_tracker : client_tracker_map_)
-    client_id_and_tracker.second->GetCachedOrigins(origins);
+  std::set<url::Origin> origins;
+  for (const auto& client_type_and_tracker : client_tracker_map_) {
+    std::set<url::Origin> client_origins =
+        client_type_and_tracker.second->GetCachedOrigins();
+    for (const auto& client_origin : client_origins)
+      origins.insert(client_origin);
+  }
+  return origins;
 }
 
-void UsageTracker::SetUsageCacheEnabled(QuotaClient::ID client_id,
+void UsageTracker::SetUsageCacheEnabled(QuotaClientType client_type,
                                         const url::Origin& origin,
                                         bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ClientUsageTracker* client_tracker = GetClientTracker(client_id);
-  DCHECK(client_tracker);
+  DCHECK(client_tracker_map_.count(client_type));
+  ClientUsageTracker* client_tracker = client_tracker_map_[client_type].get();
 
   client_tracker->SetUsageCacheEnabled(origin, enabled);
 }
-
-UsageTracker::AccumulateInfo::AccumulateInfo() = default;
-
-UsageTracker::AccumulateInfo::~AccumulateInfo() = default;
 
 void UsageTracker::AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
                                                       int64_t limited_usage) {
@@ -253,7 +263,7 @@ void UsageTracker::AccumulateClientGlobalUsage(AccumulateInfo* info,
 void UsageTracker::AccumulateClientHostUsage(base::OnceClosure callback,
                                              AccumulateInfo* info,
                                              const std::string& host,
-                                             QuotaClient::ID client,
+                                             QuotaClientType client,
                                              int64_t usage) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   info->usage += usage;
@@ -262,31 +272,26 @@ void UsageTracker::AccumulateClientHostUsage(base::OnceClosure callback,
     info->usage = 0;
 
   switch (client) {
-    case QuotaClient::kUnknown:
-      break;
-    case QuotaClient::kFileSystem:
+    case QuotaClientType::kFileSystem:
       info->usage_breakdown->fileSystem += usage;
       break;
-    case QuotaClient::kDatabase:
+    case QuotaClientType::kDatabase:
       info->usage_breakdown->webSql += usage;
       break;
-    case QuotaClient::kAppcache:
+    case QuotaClientType::kAppcache:
       info->usage_breakdown->appcache += usage;
       break;
-    case QuotaClient::kIndexedDatabase:
+    case QuotaClientType::kIndexedDatabase:
       info->usage_breakdown->indexedDatabase += usage;
       break;
-    case QuotaClient::kServiceWorkerCache:
+    case QuotaClientType::kServiceWorkerCache:
       info->usage_breakdown->serviceWorkerCache += usage;
       break;
-    case QuotaClient::kServiceWorker:
+    case QuotaClientType::kServiceWorker:
       info->usage_breakdown->serviceWorker += usage;
       break;
-    case QuotaClient::kBackgroundFetch:
+    case QuotaClientType::kBackgroundFetch:
       info->usage_breakdown->backgroundFetch += usage;
-      break;
-    case QuotaClient::kAllClientsMask:
-      NOTREACHED();
       break;
   }
 

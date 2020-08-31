@@ -7,29 +7,26 @@
  * interact with the browser. Used on operating system that is not Chrome OS.
  */
 
-cr.define('settings', function() {
-  /** @interface */
-  class PrintingBrowserProxy {
-    /**
-     * Open the native print system dialog.
-     */
-    openSystemPrintDialog() {}
-  }
+// clang-format off
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+// clang-format on
 
+/** @interface */
+class PrintingBrowserProxy {
   /**
-   * @implements {settings.PrintingBrowserProxy}
+   * Open the native print system dialog.
    */
-  class PrintingBrowserProxyImpl {
-    /** @override */
-    openSystemPrintDialog() {
-      chrome.send('openSystemPrintDialog');
-    }
+  openSystemPrintDialog() {}
+}
+
+/**
+ * @implements {PrintingBrowserProxy}
+ */
+export class PrintingBrowserProxyImpl {
+  /** @override */
+  openSystemPrintDialog() {
+    chrome.send('openSystemPrintDialog');
   }
+}
 
-  cr.addSingletonGetter(PrintingBrowserProxyImpl);
-
-  return {
-    PrintingBrowserProxy: PrintingBrowserProxy,
-    PrintingBrowserProxyImpl: PrintingBrowserProxyImpl,
-  };
-});
+addSingletonGetter(PrintingBrowserProxyImpl);

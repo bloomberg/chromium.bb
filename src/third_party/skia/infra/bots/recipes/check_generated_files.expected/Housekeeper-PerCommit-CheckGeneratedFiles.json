@@ -166,73 +166,6 @@
     "cmd": [
       "python",
       "-u",
-      "bin/fetch-gn"
-    ],
-    "cwd": "[START_DIR]/cache/work/skia",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
-    },
-    "infra_step": true,
-    "name": "fetch-gn"
-  },
-  {
-    "cmd": [
-      "git",
-      "ls-files",
-      "*.gn"
-    ],
-    "cwd": "[START_DIR]/cache/work/skia",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
-    },
-    "infra_step": true,
-    "name": "list .gn files"
-  },
-  {
-    "cmd": [
-      "bin/gn",
-      "format",
-      "BUILD.gn"
-    ],
-    "cwd": "[START_DIR]/cache/work/skia",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
-    },
-    "name": "format BUILD.gn"
-  },
-  {
-    "cmd": [
-      "bin/gn",
-      "format",
-      "gn/foo.gn"
-    ],
-    "cwd": "[START_DIR]/cache/work/skia",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
-    },
-    "name": "format gn/foo.gn"
-  },
-  {
-    "cmd": [
-      "python",
-      "-u",
-      "tools/rewrite_includes.py"
-    ],
-    "cwd": "[START_DIR]/cache/work/skia",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
-    },
-    "name": "rewrite #includes"
-  },
-  {
-    "cmd": [
-      "python",
-      "-u",
       "import os\nimport subprocess\n\nfor r, d, files in os.walk('[START_DIR]/cache/work/skia'):\n  for f in files:\n    if f.endswith('.fp'):\n      path = os.path.join(r, f)\n      print 'touch %s' % path\n      subprocess.check_call(['touch', path])\n"
     ],
     "cwd": "[START_DIR]/cache/work/skia",
@@ -285,7 +218,7 @@
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
-    "name": "fetch-gn (2)"
+    "name": "fetch-gn"
   },
   {
     "cmd": [
@@ -303,13 +236,33 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cache/work/skia/bin/gn",
-      "gen",
-      "[START_DIR]/build/out/Release",
-      "--args=cc=\"[START_DIR]/clang_linux/bin/clang\" cxx=\"[START_DIR]/clang_linux/bin/clang++\" extra_cflags=[\"-B[START_DIR]/clang_linux/bin\", \"-DDUMMY_clang_linux_version=42\"] extra_ldflags=[\"-B[START_DIR]/clang_linux/bin\", \"-fuse-ld=lld\"] is_debug=false skia_compile_processors=true skia_generate_workarounds=true werror=true"
+      "[START_DIR]/ccache_linux/bin/ccache",
+      "-s"
     ],
     "cwd": "[START_DIR]/cache/work/skia",
     "env": {
+      "CCACHE_COMPILERCHECK": "content",
+      "CCACHE_DIR": "[START_DIR]/cache/ccache",
+      "CCACHE_MAXFILES": "0",
+      "CCACHE_MAXSIZE": "75G",
+      "CHROME_HEADLESS": "1",
+      "PATH": "[START_DIR]/cache/work/skia/bin:<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "name": "ccache stats-start"
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cache/work/skia/bin/gn",
+      "gen",
+      "[START_DIR]/build/out/Release",
+      "--args=cc=\"[START_DIR]/clang_linux/bin/clang\" cc_wrapper=\"[START_DIR]/ccache_linux/bin/ccache\" cxx=\"[START_DIR]/clang_linux/bin/clang++\" extra_cflags=[\"-B[START_DIR]/clang_linux/bin\", \"-DDUMMY_clang_linux_version=42\"] extra_ldflags=[\"-B[START_DIR]/clang_linux/bin\", \"-fuse-ld=lld\", \"-L[START_DIR]/clang_linux/lib\"] is_debug=false skia_compile_processors=true skia_generate_workarounds=true werror=true"
+    ],
+    "cwd": "[START_DIR]/cache/work/skia",
+    "env": {
+      "CCACHE_COMPILERCHECK": "content",
+      "CCACHE_DIR": "[START_DIR]/cache/ccache",
+      "CCACHE_MAXFILES": "0",
+      "CCACHE_MAXSIZE": "75G",
       "CHROME_HEADLESS": "1",
       "PATH": "[START_DIR]/cache/work/skia/bin:<PATH>:RECIPE_REPO[depot_tools]"
     },
@@ -323,10 +276,30 @@
     ],
     "cwd": "[START_DIR]/cache/work/skia",
     "env": {
+      "CCACHE_COMPILERCHECK": "content",
+      "CCACHE_DIR": "[START_DIR]/cache/ccache",
+      "CCACHE_MAXFILES": "0",
+      "CCACHE_MAXSIZE": "75G",
       "CHROME_HEADLESS": "1",
       "PATH": "[START_DIR]/cache/work/skia/bin:<PATH>:RECIPE_REPO[depot_tools]"
     },
     "name": "ninja"
+  },
+  {
+    "cmd": [
+      "[START_DIR]/ccache_linux/bin/ccache",
+      "-s"
+    ],
+    "cwd": "[START_DIR]/cache/work/skia",
+    "env": {
+      "CCACHE_COMPILERCHECK": "content",
+      "CCACHE_DIR": "[START_DIR]/cache/ccache",
+      "CCACHE_MAXFILES": "0",
+      "CCACHE_MAXSIZE": "75G",
+      "CHROME_HEADLESS": "1",
+      "PATH": "[START_DIR]/cache/work/skia/bin:<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "name": "ccache stats-end"
   },
   {
     "cmd": [

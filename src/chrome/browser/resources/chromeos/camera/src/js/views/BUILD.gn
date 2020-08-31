@@ -24,6 +24,7 @@ js_type_check("compile_resources") {
 
 js_library("camera") {
   deps = [
+    "..:background_ops",
     "..:chrome_util",
     "..:metrics",
     "..:type",
@@ -59,11 +60,7 @@ js_library("settings") {
 }
 
 js_library("view") {
-  deps = [
-    "..:toast",
-  ]
-
-  externs_list = [ "../externs/chrome.js" ]
+  deps = [ "..:toast" ]
 }
 
 js_library("warning") {

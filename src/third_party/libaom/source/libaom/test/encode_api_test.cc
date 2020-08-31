@@ -9,18 +9,19 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <cstdlib>
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "config/aom_config.h"
 
-#include "test/util.h"
 #include "aom/aomcx.h"
 #include "aom/aom_encoder.h"
 
 namespace {
 
 TEST(EncodeAPI, InvalidParams) {
-  static const aom_codec_iface_t *kCodecs[] = {
+  static aom_codec_iface_t *kCodecs[] = {
 #if CONFIG_AV1_ENCODER
     aom_codec_av1_cx(),
 #endif
@@ -43,17 +44,17 @@ TEST(EncodeAPI, InvalidParams) {
             aom_codec_enc_config_default(NULL, &cfg, 0));
   EXPECT_TRUE(aom_codec_error(NULL) != NULL);
 
-  for (int i = 0; i < NELEMENTS(kCodecs); ++i) {
-    SCOPED_TRACE(aom_codec_iface_name(kCodecs[i]));
+  for (aom_codec_iface_t *iface : kCodecs) {
+    SCOPED_TRACE(aom_codec_iface_name(iface));
     EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
-              aom_codec_enc_init(NULL, kCodecs[i], NULL, 0));
+              aom_codec_enc_init(NULL, iface, NULL, 0));
     EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
-              aom_codec_enc_init(&enc, kCodecs[i], NULL, 0));
+              aom_codec_enc_init(&enc, iface, NULL, 0));
     EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
-              aom_codec_enc_config_default(kCodecs[i], &cfg, 1));
+              aom_codec_enc_config_default(iface, &cfg, 2));
 
-    EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(kCodecs[i], &cfg, 0));
-    EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_init(&enc, kCodecs[i], &cfg, 0));
+    EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(iface, &cfg, 0));
+    EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_init(&enc, iface, &cfg, 0));
 
     EXPECT_EQ(NULL, aom_codec_get_global_headers(NULL));
 

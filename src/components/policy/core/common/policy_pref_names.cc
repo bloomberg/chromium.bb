@@ -11,13 +11,13 @@ namespace policy_prefs {
 // by UMA_HISTOGRAM_ENUMERATION.
 const char kLastPolicyStatisticsUpdate[] = "policy.last_statistics_update";
 
-// The enrollment token of machine level user cloud policy.
-const char kMachineLevelUserCloudPolicyEnrollmentToken[] =
-    "policy.machine_level_user_cloud_policy_enrollment_token";
-
 // Enum specifying if/how the SafeSites content filter should be applied.
 // See the SafeSitesFilterBehavior policy for details.
 const char kSafeSitesFilterBehavior[] = "policy.safe_sites_filter_behavior";
+
+// A list of system features to be disabled (see policy
+// "SystemFeaturesDisableList").
+const char kSystemFeaturesDisableList[] = "policy.system_features_disable_list";
 
 // Blocks access to the listed host patterns.
 const char kUrlBlacklist[] = "policy.url_blacklist";
@@ -38,6 +38,15 @@ const char kCloudManagementEnrollmentMandatory[] =
 // Boolean that specifies whether the cloud policy will override conflicting
 // machine policy.
 const char kCloudPolicyOverridesPlatformPolicy[] = "policy.cloud_override";
+
+// A boolean value that can be used to disable native window occlusion
+// calculation, even if the Finch feature is enabled.
+const char kNativeWindowOcclusionEnabled[] =
+    "policy.native_window_occlusion_enabled";
+
+// Boolean policy preference to disable the User-Agent Client Hints feature.
+const char kUserAgentClientHintsEnabled[] =
+    "policy.user_agent_client_hints_enabled";
 
 }  // namespace policy_prefs
 }  // namespace policy

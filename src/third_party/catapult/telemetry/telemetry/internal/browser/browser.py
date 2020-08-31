@@ -38,6 +38,7 @@ class Browser(app.App):
     try:
       self._browser_backend = backend
       self._platform_backend = platform_backend
+      self._startup_args = startup_args
       self._tabs = tab_list.TabList(backend.tab_list_backend)
       self._browser_backend.SetBrowser(self)
       if find_existing:
@@ -53,6 +54,10 @@ class Browser(app.App):
   @property
   def browser_type(self):
     return self.app_type
+
+  @property
+  def startup_args(self):
+    return self._startup_args
 
   @property
   def supports_extensions(self):
@@ -165,9 +170,6 @@ class Browser(app.App):
   def GetLogFileContents(self):
     return self._browser_backend.GetLogFileContents()
 
-  def GetStackTrace(self):
-    return self._browser_backend.GetStackTrace()
-
   def GetMostRecentMinidumpPath(self):
     """Returns the path to the most recent minidump."""
     return self._browser_backend.GetMostRecentMinidumpPath()
@@ -267,16 +269,27 @@ class Browser(app.App):
     return self._browser_backend.supports_memory_metrics
 
   def CollectDebugData(self, log_level):
-    """Attempts to symbolize all currently unsymbolized minidumps and log them.
+    """Collects various information that may be useful for debugging.
 
-    Platforms may override this to provide other crash information in addition
-    to the symbolized minidumps.
+    Specifically:
+      1. Captures a screenshot.
+      2. Collects stdout and system logs.
+      3. Attempts to symbolize all currently unsymbolized minidumps.
+
+    All collected information is stored as artifacts, and everything but the
+    screenshot is also included in the return value.
+
+    Platforms may override this to provide other debug information in addition
+    to the above set of information.
 
     Args:
       log_level: The logging level to use from the logging module, e.g.
           logging.ERROR.
+
+    Returns:
+      A debug_data.DebugData object containing the collected data.
     """
-    self._browser_backend.CollectDebugData(log_level)
+    return self._browser_backend.CollectDebugData(log_level)
 
   @exc_util.BestEffort
   def DumpStateUponFailure(self):
@@ -302,3 +315,21 @@ class Browser(app.App):
       logging.exception('Failed to get symbolized minidump:')
     logging.info(
         '***************** END OF SYMBOLIZED MINIDUMP ******************')
+
+  def CleanupUnsymbolizedMinidumps(self, fatal=False):
+    """Cleans up any unsymbolized minidumps so they aren't found later.
+
+    Args:
+      fatal: Whether the presence of unsymbolized minidumps should be considered
+          a fatal error or not. Typically, before a test should be non-fatal,
+          while after a test should be fatal.
+    """
+    self._browser_backend.CleanupUnsymbolizedMinidumps(fatal=fatal)
+
+  def IgnoreMinidump(self, path):
+    """Ignores the given minidump, treating it as already symbolized.
+
+    Args:
+      path: The path to the minidump to ignore.
+    """
+    self._browser_backend.IgnoreMinidump(path)

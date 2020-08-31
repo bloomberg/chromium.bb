@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /** A simple sheet content to test with. This only displays two empty white views. */
@@ -35,6 +36,9 @@ public class TestBottomSheetContent implements BottomSheetContent {
     /** Whether this content is browser specific. */
     private boolean mHasCustomLifecycle;
 
+    /** Whether this content has a custom scrim lifecycle. */
+    private boolean mHasCustomScrimLifecycle;
+
     /** The peek height of this content. */
     private int mPeekHeight;
 
@@ -46,6 +50,9 @@ public class TestBottomSheetContent implements BottomSheetContent {
 
     /** If set to true, the half state will be skipped when scrolling down the FULL sheet. */
     private boolean mSkipHalfStateScrollingDown;
+
+    /** Whether this content intercepts back button presses. */
+    private boolean mHandleBackPress;
 
     /**
      * @param context A context to inflate views with.
@@ -148,6 +155,15 @@ public class TestBottomSheetContent implements BottomSheetContent {
         return mFullHeight;
     }
 
+    public void setHasCustomScrimLifecycle(boolean hasCustomScrimLifecycle) {
+        mHasCustomScrimLifecycle = hasCustomScrimLifecycle;
+    }
+
+    @Override
+    public boolean hasCustomScrimLifecycle() {
+        return mHasCustomScrimLifecycle;
+    }
+
     @Override
     public boolean hasCustomLifecycle() {
         return mHasCustomLifecycle;
@@ -156,6 +172,15 @@ public class TestBottomSheetContent implements BottomSheetContent {
     @Override
     public boolean setContentSizeListener(@Nullable ContentSizeListener listener) {
         return false;
+    }
+
+    @Override
+    public boolean handleBackPress() {
+        return mHandleBackPress;
+    }
+
+    public void setHandleBackPress(boolean handleBackPress) {
+        mHandleBackPress = handleBackPress;
     }
 
     @Override

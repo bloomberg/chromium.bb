@@ -90,7 +90,7 @@ class ExtensionTabUtil {
   static int GetWindowId(const Browser* browser);
   static int GetWindowIdOfTabStripModel(const TabStripModel* tab_strip_model);
   static int GetTabId(const content::WebContents* web_contents);
-  static std::string GetTabStatusText(bool is_loading);
+  static std::string GetTabStatusText(content::WebContents* web_contents);
   static int GetWindowIdOfTab(const content::WebContents* web_contents);
   static std::unique_ptr<base::ListValue> CreateTabList(
       const Browser* browser,
@@ -194,8 +194,8 @@ class ExtensionTabUtil {
 
   // Takes |url_string| and returns a GURL which is either valid and absolute
   // or invalid. If |url_string| is not directly interpretable as a valid (it is
-  // likely a relative URL) an attempt is made to resolve it. |extension| is
-  // provided so it can be resolved relative to its extension base
+  // likely a relative URL) an attempt is made to resolve it. When |extension|
+  // is non-null, the URL is resolved relative to its extension base
   // (chrome-extension://<id>/). Using the source frame url would be more
   // correct, but because the api shipped with urls resolved relative to their
   // extension base, we decided it wasn't worth breaking existing extensions to
@@ -207,6 +207,18 @@ class ExtensionTabUtil {
   // itself, whether by simulating a crash, browser quit, thread hang, or
   // equivalent. Extensions should be prevented from navigating to such URLs.
   static bool IsKillURL(const GURL& url);
+
+  // Resolves the URL and ensures the extension is allowed to navigate to it.
+  // Returns true and sets |url| if successful. Returns false and sets |error|
+  // if an error occurs.
+  static bool PrepareURLForNavigation(const std::string& url_string,
+                                      const Extension* extension,
+                                      GURL* url,
+                                      std::string* error);
+
+  // Logs if the URL of a tab that an extension is creating or navitaging to has
+  // the devtools scheme.
+  static void LogPossibleDevtoolsSchemeNavigation(const GURL& url);
 
   // Opens a tab for the specified |web_contents|.
   static void CreateTab(std::unique_ptr<content::WebContents> web_contents,
@@ -237,6 +249,11 @@ class ExtensionTabUtil {
   // Returns true if the given Browser can report tabs to extensions.
   // Example of Browsers which don't support tabs include apps and devtools.
   static bool BrowserSupportsTabs(Browser* browser);
+
+  // Determines the loading status of the given |contents|. This needs to access
+  // some non-const member functions of |contents|, but actually leaves it
+  // unmodified.
+  static api::tabs::TabStatus GetLoadingStatus(content::WebContents* contents);
 };
 
 }  // namespace extensions

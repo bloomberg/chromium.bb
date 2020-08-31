@@ -5,7 +5,6 @@
 #ifndef OSP_PUBLIC_SERVICE_LISTENER_H_
 #define OSP_PUBLIC_SERVICE_LISTENER_H_
 
-#include <atomic>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -150,7 +149,7 @@ class ServiceListener {
  protected:
   ServiceListener();
 
-  std::atomic<State> state_;
+  State state_;
   ServiceListenerError last_error_;
   std::vector<Observer*> observers_;
 

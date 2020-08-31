@@ -3,18 +3,43 @@
 // found in the LICENSE file.
 
 /**
+ * @fileoverview
+ * 'settings-main' displays the selected settings page.
+ */
+import 'chrome://resources/cr_components/managed_footnote/managed_footnote.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/js/search_highlight_utils.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '../about_page/about_page.js';
+import '../basic_page/basic_page.js';
+import '../prefs/prefs.m.js';
+import '../search_settings.m.js';
+import '../settings_shared_css.m.js';
+import '../settings_vars_css.m.js';
+
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.js';
+import {PageVisibility} from '../page_visibility.js';
+import {routes} from '../route.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+
+/**
  * @typedef {{about: boolean, settings: boolean}}
  */
 let MainPageVisibility;
 
-/**
- * @fileoverview
- * 'settings-main' displays the selected settings page.
- */
 Polymer({
   is: 'settings-main',
 
-  behaviors: [settings.RouteObserverBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [RouteObserverBehavior],
 
   properties: {
     /**
@@ -43,7 +68,7 @@ Polymer({
      */
     showPages_: {
       type: Object,
-      value: function() {
+      value() {
         return {about: false, settings: false};
       },
     },
@@ -78,16 +103,10 @@ Polymer({
      * @type {!PageVisibility}
      */
     pageVisibility: Object,
-
-    showAndroidApps: Boolean,
-
-    showParentalControls: Boolean,
-
-    havePlayStoreApp: Boolean,
   },
 
   /** @private */
-  overscrollChanged_: function() {
+  overscrollChanged_() {
     if (!this.overscroll_ && this.boundScroll_) {
       this.offsetParent.removeEventListener('scroll', this.boundScroll_);
       window.removeEventListener('resize', this.boundScroll_);
@@ -109,7 +128,7 @@ Polymer({
    * @param {number=} opt_minHeight The minimum overscroll height needed.
    * @private
    */
-  setOverscroll_: function(opt_minHeight) {
+  setOverscroll_(opt_minHeight) {
     const scroller = this.offsetParent;
     if (!scroller) {
       return;
@@ -127,10 +146,11 @@ Polymer({
   /**
    * Updates the hidden state of the about and settings pages based on the
    * current route.
-   * @param {!settings.Route} newRoute
+   * @param {!Route} newRoute
    */
-  currentRouteChanged: function(newRoute) {
-    const inAbout = settings.routes.ABOUT.contains(settings.getCurrentRoute());
+  currentRouteChanged(newRoute) {
+    const inAbout =
+        routes.ABOUT.contains(Router.getInstance().getCurrentRoute());
     this.showPages_ = {about: inAbout, settings: !inAbout};
 
     if (!newRoute.isSubpage()) {
@@ -142,12 +162,12 @@ Polymer({
   },
 
   /** @private */
-  onShowingSubpage_: function() {
+  onShowingSubpage_() {
     this.showingSubpage_ = true;
   },
 
   /** @private */
-  onShowingMainPage_: function() {
+  onShowingMainPage_() {
     this.showingSubpage_ = false;
   },
 
@@ -158,7 +178,7 @@ Polymer({
    * @param {!CustomEvent<!HTMLElement>} e
    * @private
    */
-  onShowingSection_: function(e) {
+  onShowingSection_(e) {
     const section = e.detail;
     // Calculate the height that the overscroll padding should be set to, so
     // that the given section is displayed at the top of the viewport.
@@ -173,17 +193,16 @@ Polymer({
 
   /**
    * Returns the root page (if it exists) for a route.
-   * @param {!settings.Route} route
+   * @param {!Route} route
    * @return {(?SettingsAboutPageElement|?SettingsBasicPageElement)}
    */
-  getPage_: function(route) {
-    if (settings.routes.ABOUT.contains(route)) {
+  getPage_(route) {
+    if (routes.ABOUT.contains(route)) {
       return /** @type {?SettingsAboutPageElement} */ (
           this.$$('settings-about-page'));
     }
-    if (settings.routes.BASIC.contains(route) ||
-        (settings.routes.ADVANCED &&
-         settings.routes.ADVANCED.contains(route))) {
+    if (routes.BASIC.contains(route) ||
+        (routes.ADVANCED && routes.ADVANCED.contains(route))) {
       return /** @type {?SettingsBasicPageElement} */ (
           this.$$('settings-basic-page'));
     }
@@ -194,7 +213,7 @@ Polymer({
    * @param {string} query
    * @return {!Promise} A promise indicating that searching finished.
    */
-  searchContents: function(query) {
+  searchContents(query) {
     // Trigger rendering of the basic and advanced pages and search once ready.
     this.inSearchMode_ = true;
     this.toolbarSpinnerActive = true;
@@ -202,7 +221,7 @@ Polymer({
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         const whenSearchDone =
-            assert(this.getPage_(settings.routes.BASIC)).searchContents(query);
+            assert(this.getPage_(routes.BASIC)).searchContents(query);
         whenSearchDone.then(result => {
           resolve();
           if (result.canceled) {
@@ -218,7 +237,7 @@ Polymer({
               this.inSearchMode_ && !result.didFindMatches;
 
           if (this.inSearchMode_) {
-            Polymer.IronA11yAnnouncer.requestAvailability();
+            IronA11yAnnouncer.requestAvailability();
             this.fire('iron-announce', {
               text: this.showNoResultsFound_ ?
                   loadTimeData.getString('searchNoResults') :
@@ -234,7 +253,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showManagedHeader_: function() {
+  showManagedHeader_() {
     return !this.inSearchMode_ && !this.showingSubpage_ &&
         !this.showPages_.about;
   },

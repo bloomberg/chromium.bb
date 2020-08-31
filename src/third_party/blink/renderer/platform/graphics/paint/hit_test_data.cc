@@ -9,7 +9,7 @@
 
 namespace blink {
 
-static String HitTestRectsAsString(const Vector<HitTestRect>& rects) {
+static String TouchActionRectsAsString(const Vector<TouchActionRect>& rects) {
   StringBuilder sb;
   sb.Append("[");
   bool first = true;
@@ -32,27 +32,34 @@ String HitTestData::ToString() const {
   bool printed_top_level_field = false;
   if (!touch_action_rects.IsEmpty()) {
     sb.Append("touch_action_rects: ");
-    sb.Append(HitTestRectsAsString(touch_action_rects));
+    sb.Append(TouchActionRectsAsString(touch_action_rects));
     printed_top_level_field = true;
   }
 
-  if (scroll_hit_test) {
+  if (!scroll_hit_test_rect.IsEmpty()) {
     if (printed_top_level_field)
       sb.Append(", ");
-    sb.AppendFormat(
-        "scroll_hit_test: \"%s\" with offset %p",
-        scroll_hit_test->scroll_container_bounds.ToString().Utf8().data(),
-        scroll_hit_test->scroll_offset);
+    sb.Append("scroll_hit_test_rect: ");
+    sb.Append(scroll_hit_test_rect.ToString());
     printed_top_level_field = true;
+  }
+
+  if (scroll_translation) {
+    if (printed_top_level_field)
+      sb.Append(", ");
+    sb.AppendFormat("scroll_translation: %p", scroll_translation);
   }
 
   sb.Append("}");
-
   return sb.ToString();
 }
 
 std::ostream& operator<<(std::ostream& os, const HitTestData& data) {
   return os << data.ToString().Utf8();
+}
+
+std::ostream& operator<<(std::ostream& os, const HitTestData* data) {
+  return os << (data ? data->ToString().Utf8() : "null");
 }
 
 }  // namespace blink

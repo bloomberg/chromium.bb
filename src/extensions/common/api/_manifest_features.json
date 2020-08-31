@@ -56,7 +56,7 @@
     "min_manifest_version": 2
   },
   "background.service_worker": {
-    "channel": "canary",
+    "channel": "dev",
     "extension_types": ["extension"],
     "min_manifest_version": 2
   },
@@ -111,16 +111,19 @@
     // Platform apps have a restricted content security policy that cannot be
     // overriden (except for a whitelist of exceptions, see the
     // app.content_security_policy whitelist).
-    "extension_types": ["extension", "legacy_packaged_app"]
+    "extension_types": [
+      "extension", "legacy_packaged_app", "login_screen_extension"
+    ]
   },
   "current_locale": {
     "channel": "stable",
     "extension_types": "all"
   },
   "declarative_net_request": {
-    "channel": "beta",
+    "channel": "stable",
     "extension_types": ["extension"],
-    "min_manifest_version": 2
+    "min_manifest_version": 2,
+    "feature_flag": "DeclarativeNetRequest"
   },
   "default_locale": {
     "channel": "stable",
@@ -243,7 +246,8 @@
     "channel": "stable",
     "extension_types": [
       "extension", "legacy_packaged_app", "hosted_app", "platform_app"
-    ]
+    ],
+    "max_manifest_version": 2
   },
   "name": {
     "channel": "stable",
@@ -316,10 +320,20 @@
     ],
     "min_manifest_version": 2
   },
-  "sockets": {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
-  },
+  "sockets": [
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["extension"],
+      "whitelist": [
+        "3BC1ED0B3E6EFDC7BD4D3D1D75D44B52DEE0A226",  // Secure Shell Ext (stable)
+        "38C361D4A0726CE45D3572D65071B6BDB3092371"   // Secure Shell Ext (dev)
+      ]
+    }
+  ],
   "usb_printers": {
     "channel": "stable",
     "extension_types": ["platform_app"]
@@ -345,6 +359,21 @@
       "location": "component"
     }
   ],
+  "web_app_file_handlers": {
+    "channel": "stable",
+    "extension_types": ["hosted_app"]
+  },
+  // TODO(https://crbug.com/1065748): Remove web_app_linked_shortcut_icons and
+  // web_app_shortcut_icons keys once we've transitioned PWAs from the current
+  // Extensions based representation to WebApp based representation.
+  "web_app_linked_shortcut_icons" : {
+    "channel": "stable",
+    "extension_types": ["hosted_app"]
+  },
+  "web_app_shortcut_icons" : {
+    "channel": "stable",
+    "extension_types": ["hosted_app"]
+  },
   "webview": {
     "channel": "stable",
     "extension_types": ["platform_app"],

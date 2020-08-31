@@ -16,9 +16,14 @@ See cli/ for actual command implementations.
 
 from __future__ import print_function
 
+import sys
+
 from chromite.cli import command
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def GetOptions(cmd_name=None):

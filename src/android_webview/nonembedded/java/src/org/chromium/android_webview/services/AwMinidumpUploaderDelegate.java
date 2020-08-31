@@ -9,7 +9,7 @@ import android.net.ConnectivityManager;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.android_webview.common.CommandLineUtil;
+import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.common.crash.SystemWideCrashDirectories;
 import org.chromium.base.CommandLine;
@@ -83,6 +83,7 @@ public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
         return new CrashReportingPermissionManager() {
             @Override
             public boolean isClientInMetricsSample() {
+                // Downsample unknown channel as a precaution in case it ends up being shipped.
                 if (mSamplingDelegate.getChannel() == Channel.STABLE
                         || mSamplingDelegate.getChannel() == Channel.DEFAULT) {
                     return mSamplingDelegate.getRandomSample() < CRASH_DUMP_PERCENTAGE_FOR_STABLE;
@@ -108,7 +109,7 @@ public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
                 // on the main thread, but before the current worker thread started - so this thread
                 // will have seen the initialization of the CommandLine.
                 return CommandLine.getInstance().hasSwitch(
-                        CommandLineUtil.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
+                        AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
             }
         };
     }

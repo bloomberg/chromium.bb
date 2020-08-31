@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+</head>
+<body>
+<img id='frame_image' style='display: none;' src="pattern.png">
+<script>
+
+'use strict';
+
+async function generateBitmap(width, height, text) {
+  let img = document.getElementById('frame_image');
+  let cnv = document.createElement("canvas");
+  cnv.height = height;
+  cnv.width = width;
+  var ctx = cnv.getContext('2d');
+  ctx.drawImage(img, 0, 0, width, height);
+  ctx.font = '30px fantasy';
+  ctx.fillText(text, 5, 40);
+  return createImageBitmap(cnv);
+}
+
+async function createFrame(width, height, ts) {
+  let imageBitmap = await generateBitmap(width, height, ts.toString());
+  return new VideoFrame({ timestamp: ts }, imageBitmap);
+}
+
+promise_test(async function() {
+  const tune = {
+    width: 123,
+    height: 321,
+    bitrate: 1e6,
+    framerate: 24
+   }
+  const init_params = {
+    codec : "vp8",
+    tuneOptions: tune,
+    output : () => { return true; }
+  };
+  let encoder = new VideoEncoder();
+  await encoder.configure(init_params);
+  encoder = new VideoEncoder(init_params);
+  tune.width = null;
+  encoder.configure(init_params).catch(e => {
+    assert_equals(e.name, "InvalidStateError");
+  });
+}, "Initialization");
+
+promise_test(async function() {
+  let w = 256;
+  let h = 256;
+  let next_ts = 0
+  let frames_to_encode = 20;
+  let frames_processed = 0;
+  let process_video_chunk = function(chunk) {
+    assert_greater_than_equal(chunk.timestamp, next_ts++);
+    let type = (chunk.timestamp % 5 == 0) ? "key" : "delta";
+    assert_equals(chunk.type, type);
+    var data = new Uint8Array(chunk.data);
+    assert_greater_than_equal(data.length, 0);
+    console.log("data len: " + data.length);
+    frames_processed++;
+  };
+
+  const init_params = {
+    codec : "vp9",
+    profile : "vp09.00.10.08",
+    tuneOptions : {
+      width : w,
+      height : h,
+      bitrate: 10e6,
+      framerate: 30
+    },
+    output : process_video_chunk,
+    error: (e) => { console.log(e.message); }
+  };
+  let encoder = new VideoEncoder();
+  await encoder.configure(init_params);
+
+  for (let i = 0; i < frames_to_encode; i++) {
+    var frame = await createFrame(w, h, i);
+    let keyframe = (i % 5 == 0);
+    await encoder.encode(frame, { keyFrame : keyframe});
+  }
+  await encoder.flush();
+  await encoder.close();
+  assert_equals(frames_processed, frames_to_encode);
+}, "EncodeFrame");
+
+</script>
+</body>
+</html>

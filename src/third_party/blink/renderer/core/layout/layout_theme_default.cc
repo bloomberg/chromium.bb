@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -45,10 +46,16 @@ static const float kDefaultCancelButtonSize = 9;
 static const float kMinCancelButtonSize = 5;
 static const float kMaxCancelButtonSize = 21;
 
-LayoutThemeDefault::LayoutThemeDefault()
-    : LayoutTheme(),
-      caret_blink_interval_(LayoutTheme::CaretBlinkInterval()),
-      painter_(*this) {}
+base::TimeDelta LayoutThemeDefault::caret_blink_interval_;
+
+Color LayoutThemeDefault::active_selection_background_color_ = 0xff1e90ff;
+Color LayoutThemeDefault::active_selection_foreground_color_ = Color::kBlack;
+Color LayoutThemeDefault::inactive_selection_background_color_ = 0xffc8c8c8;
+Color LayoutThemeDefault::inactive_selection_foreground_color_ = 0xff323232;
+
+LayoutThemeDefault::LayoutThemeDefault() : LayoutTheme(), painter_(*this) {
+  caret_blink_interval_ = LayoutTheme::CaretBlinkInterval();
+}
 
 LayoutThemeDefault::~LayoutThemeDefault() = default;
 
@@ -94,7 +101,7 @@ String LayoutThemeDefault::ExtraDefaultStyleSheet() {
   String windows_style_sheet =
       UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_WIN_CSS);
   String controls_refresh_style_sheet =
-      RuntimeEnabledFeatures::FormControlsRefreshEnabled()
+      features::IsFormControlsRefreshEnabled()
           ? UncompressResourceAsASCIIString(
                 IDR_UASTYLE_THEME_CONTROLS_REFRESH_CSS)
           : String();
@@ -154,14 +161,14 @@ Color LayoutThemeDefault::PlatformInactiveSelectionForegroundColor(
 }
 
 IntSize LayoutThemeDefault::SliderTickSize() const {
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+  if (features::IsFormControlsRefreshEnabled())
     return IntSize(1, 4);
   else
     return IntSize(1, 6);
 }
 
 int LayoutThemeDefault::SliderTickOffsetFromTrackCenter() const {
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+  if (features::IsFormControlsRefreshEnabled())
     return 7;
   else
     return -16;
@@ -233,6 +240,10 @@ void LayoutThemeDefault::AdjustInnerSpinButtonStyle(
   style.SetMinWidth(Length::Fixed(size.Width() * zoom_level));
 }
 
+bool LayoutThemeDefault::PopsMenuByReturnKey() const {
+  return true;
+}
+
 bool LayoutThemeDefault::ShouldOpenPickerWithF4Key() const {
   return true;
 }
@@ -294,7 +305,8 @@ void LayoutThemeDefault::AdjustSearchFieldCancelButtonStyle(
 }
 
 void LayoutThemeDefault::AdjustMenuListStyle(ComputedStyle& style,
-                                             Element*) const {
+                                             Element* element) const {
+  LayoutTheme::AdjustMenuListStyle(style, element);
   // Height is locked to auto on all browsers.
   style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
 }

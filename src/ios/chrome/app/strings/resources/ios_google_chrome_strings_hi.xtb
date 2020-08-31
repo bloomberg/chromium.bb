@@ -4,14 +4,13 @@
 <translation id="1282031177488366470">Chrome की सुविधाओं और प्रदर्शन को बेहतर बनाने में मदद करें</translation>
 <translation id="1682483655351012182">अपना Chrome डेटा सिंक करें</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="1816764564654397850">Google Chrome निजता सूचना</translation>
-<translation id="1863312987075920112">इस ऐप्‍लिकेशन का इस्तेमाल करके, आप Chrome की <ph name="BEGIN_LINK_TOS" />सेवा की शर्तों<ph name="END_LINK_TOS" /> और <ph name="BEGIN_LINK_PRIVACY" />निजता सूचना<ph name="END_LINK_PRIVACY" /> से सहमत होते हैं.</translation>
 <translation id="2147651015520127414">Chrome ने सत्‍यापित किया है कि वेबसाइट का यह प्रमाणपत्र <ph name="ISSUER" /> ने जारी किया है.</translation>
 <translation id="2199719347983604670">Chrome सिंक का डेटा</translation>
 <translation id="2347208864470321755">जब यह सुविधा चालू होती है, तो Chrome अन्य भाषा में लिखे पृष्ठों को Google अनुवाद का उपयोग करके अनुवाद करने के लिए ऑफ़र करेगा. <ph name="BEGIN_LINK" />और जानें<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">इमेज को सेव करने के लिए, Chrome को अपने फ़ोटो का इस्तेमाल करने देने के लिए सेटिंग पर टैप करें</translation>
 <translation id="2576431527583832481">Chrome अब बेहतर हो गया है! एक नया वर्शन उपलब्ध है.</translation>
 <translation id="257708665678654955">क्या आप चाहते हैं कि Google Chrome अगली बार इस साइट के <ph name="LANGUAGE_NAME" /> पेजों का अनुवाद करने का ऑफ़र दे?</translation>
+<translation id="2919738076569633423">Chrome का इस्तेमाल करने का मतलब है कि आप <ph name="BEGIN_LINK_TOS" />सेवा की शर्तों<ph name="END_LINK_TOS" /> से सहमत हैं.</translation>
 <translation id="3030414234702425231">क्‍योंकि आप <ph name="SIGNOUT_MANAGED_DOMAIN" /> की ओर से प्रबंधित खाते से साइन आउट कर रहे हैं, इसलिए आपका Chrome डेटा इस डिवाइस से मिट जाएगा. आपका डेटा आपके Google खाते में बना रहेगा.</translation>
 <translation id="3148688391461398285">अपने स्थान के आधार पर Chrome में बेहतर अनुभव पाएं.</translation>
 <translation id="3167189358072330585">आपका खाता Google Chrome पर काम नहीं करता. कृपया साइन इन करने के लिए अपने डोमेन एडमिन से संपर्क करें या नियमित Google खाते का इस्तेमाल करें.</translation>
@@ -36,7 +35,6 @@
 <translation id="6600954340915313787">Chrome पर कॉपी किया गया</translation>
 <translation id="6648150602980899529">आप <ph name="DOMAIN" /> से प्रबंधित खाते में साइन इन कर रहे हैं और उसके एडमिन को अपने Chrome डेटा पर नियंत्रण दे रहे हैं. आपका डेटा इस खाते से स्थायी रूप से जुड़ जाएगा. Chrome से साइन आउट करने से आपका डेटा इस डिवाइस से मिट जाएगा, लेकिन वह आपके Google खाते में बना रहेगा.</translation>
 <translation id="6676840375528380067">इस डिवाइस से अपना Chrome डेटा हटाएं?</translation>
-<translation id="690638524486313356">Google Chrome सेवा की शर्तें</translation>
 <translation id="7165736900384873061">Google Chrome QR स्कैनर उपयोग शुरू करें</translation>
 <translation id="7172660552945675509">सलाह: <ph name="BEGIN_LINK" />Chrome को अपने डॉक में ले जाएं<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">आपके पासवर्ड का अधिकृत ऐक्सेस पक्का करने के लिए, Chrome 'फ़ेस आईडी' यानी चेहरा पहचान का इस्तेमाल करता है.</translation>

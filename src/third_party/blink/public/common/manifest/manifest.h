@@ -61,6 +61,19 @@ struct BLINK_COMMON_EXPORT Manifest {
     std::vector<Purpose> purpose;
   };
 
+  // Structure representing a shortcut as per the Manifest specification, see:
+  // https://w3c.github.io/manifest/#shortcuts-member
+  struct BLINK_COMMON_EXPORT ShortcutItem {
+    ShortcutItem();
+    ~ShortcutItem();
+
+    base::string16 name;
+    base::NullableString16 short_name;
+    base::NullableString16 description;
+    GURL url;
+    std::vector<ImageResource> icons;
+  };
+
   struct BLINK_COMMON_EXPORT FileFilter {
     base::string16 name;
     std::vector<base::string16> accept;
@@ -162,11 +175,15 @@ struct BLINK_COMMON_EXPORT Manifest {
   // icons inside the JSON array were invalid.
   std::vector<ImageResource> icons;
 
+  // Empty if the parsing failed, the field was not present, or all the
+  // icons inside the JSON array were invalid.
+  std::vector<ShortcutItem> shortcuts;
+
   // Null if parsing failed or the field was not present.
   base::Optional<ShareTarget> share_target;
 
   // Empty if parsing failed or the field was not present.
-  // TODO(harrisjay): This field is non-standard and part of a Chrome
+  // TODO(crbug.com/829689): This field is non-standard and part of a Chrome
   // experiment. See:
   // https://github.com/WICG/file-handling/blob/master/explainer.md
   std::vector<FileHandler> file_handlers;

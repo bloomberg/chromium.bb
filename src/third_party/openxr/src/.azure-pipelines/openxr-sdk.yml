@@ -1,0 +1,13 @@
+# Main azure-pipelines configuration for the OpenXR-SDK repo.
+variables:
+  VULKAN_SDK_VERSION: "1.1.114.0"
+
+trigger:
+  branches:
+    include:
+      - '*'
+
+stages:
+- stage: Build
+  jobs:
+  - template: build_jobs.yml

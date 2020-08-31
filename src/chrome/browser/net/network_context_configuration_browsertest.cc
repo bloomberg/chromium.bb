@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/location.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -21,6 +22,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -51,13 +53,16 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
+#include "net/base/address_list.h"
 #include "net/base/filename_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -66,6 +71,7 @@
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_util.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/ssl/ssl_config.h"
@@ -82,13 +88,13 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
-#include "services/network/public/cpp/resource_response.h"
-#include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/test/test_dns_util.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -104,6 +110,9 @@
 #endif
 
 namespace {
+
+constexpr char kHostname[] = "foo.test";
+constexpr char kAddress[] = "5.8.13.21";
 
 const char kCacheRandomPath[] = "/cacherandom";
 
@@ -236,6 +245,8 @@ class NetworkContextConfigurationBrowserTest
   void SetUpOnMainThread() override {
     // Used in a bunch of proxy tests. Should not resolve.
     host_resolver()->AddSimulatedFailure("does.not.resolve.test");
+
+    host_resolver()->AddRule(kHostname, kAddress);
 
     controllable_http_response_ =
         std::make_unique<net::test_server::ControllableHttpResponse>(
@@ -549,15 +560,16 @@ class NetworkContextConfigurationBrowserTest
     if (cookie_type == CookieType::kThirdParty)
       cookie_line += ";SameSite=None;Secure";
     request->url = server->GetURL("/set-cookie?" + cookie_line);
+    url::Origin origin;
     if (cookie_type == CookieType::kThirdParty)
-      request->site_for_cookies = GURL("http://example.com");
+      origin = url::Origin::Create(GURL("http://example.com"));
     else
-      request->site_for_cookies = server->base_url();
+      origin = url::Origin::Create(server->base_url());
+    request->site_for_cookies = net::SiteForCookies::FromOrigin(origin);
 
-    url::Origin origin = url::Origin::Create(request->site_for_cookies);
     request->trusted_params = network::ResourceRequest::TrustedParams();
-    request->trusted_params->network_isolation_key =
-        net::NetworkIsolationKey(origin, origin);
+    request->trusted_params->isolation_info =
+        net::IsolationInfo::CreateForInternalRequest(origin);
 
     content::SimpleURLLoaderTestHelper simple_loader_helper;
     std::unique_ptr<network::SimpleURLLoader> simple_loader =
@@ -788,11 +800,11 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->url = https_server.GetURL("/echoheader?Cookie");
-  request->site_for_cookies = GURL(chrome::kChromeUIPrintURL);
-  url::Origin origin = url::Origin::Create(request->site_for_cookies);
+  url::Origin origin = url::Origin::Create(GURL(chrome::kChromeUIPrintURL));
+  request->site_for_cookies = net::SiteForCookies::FromOrigin(origin);
   request->trusted_params = network::ResourceRequest::TrustedParams();
-  request->trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(origin, origin);
+  request->trusted_params->isolation_info =
+      net::IsolationInfo::CreateForInternalRequest(origin);
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
       network::SimpleURLLoader::Create(std::move(request),
@@ -858,8 +870,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
   // This request will show up as cross-site because the chrome-extension URL
   // won't match the test_server domain (127.0.0.1), but because we set
-  // |attach_same_site_cookies| to true for extension-initiated requests, this
-  // will actually be able to get the cookie.
+  // |force_ignore_site_for_cookies| to true for extension-initiated requests,
+  // this will actually be able to get the cookie.
   GURL url = test_server.GetURL("/echocookieheader");
   std::string script = R"((url => {
     var xhr = new XMLHttpRequest();
@@ -915,8 +927,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
       std::make_unique<network::ResourceRequest>();
   request->url = request_url;
   request->trusted_params = network::ResourceRequest::TrustedParams();
-  request->trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(request_origin, request_origin);
+  request->trusted_params->isolation_info =
+      net::IsolationInfo::CreateForInternalRequest(request_origin);
+  request->site_for_cookies =
+      request->trusted_params->isolation_info.site_for_cookies();
 
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
@@ -939,8 +953,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
       std::make_unique<network::ResourceRequest>();
   request2->url = request_url;
   request2->trusted_params = network::ResourceRequest::TrustedParams();
-  request2->trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(request_origin, request_origin);
+  request2->trusted_params->isolation_info =
+      net::IsolationInfo::CreateForInternalRequest(request_origin);
+  request2->site_for_cookies =
+      request2->trusted_params->isolation_info.site_for_cookies();
 
   content::SimpleURLLoaderTestHelper simple_loader_helper2;
   std::unique_ptr<network::SimpleURLLoader> simple_loader2 =
@@ -1028,8 +1044,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_DiskCache) {
       std::make_unique<network::ResourceRequest>();
   request->url = test_url;
   request->trusted_params = network::ResourceRequest::TrustedParams();
-  request->trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(test_origin, test_origin);
+  request->trusted_params->isolation_info =
+      net::IsolationInfo::CreateForInternalRequest(test_origin);
+  request->site_for_cookies =
+      request->trusted_params->isolation_info.site_for_cookies();
 
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
@@ -1046,9 +1064,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_DiskCache) {
   // Write the URL and expected response to a file.
   std::string file_data =
       test_url.spec() + "\n" + *simple_loader_helper.response_body();
-  ASSERT_EQ(
-      static_cast<int>(file_data.length()),
-      base::WriteFile(save_url_file_path, file_data.data(), file_data.size()));
+  ASSERT_TRUE(base::WriteFile(save_url_file_path, file_data));
 
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 }
@@ -1086,8 +1102,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
       std::make_unique<network::ResourceRequest>();
   request->url = test_url;
   request->trusted_params = network::ResourceRequest::TrustedParams();
-  request->trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(test_origin, test_origin);
+  request->trusted_params->isolation_info =
+      net::IsolationInfo::CreateForInternalRequest(test_origin);
+  request->site_for_cookies =
+      request->trusted_params->isolation_info.site_for_cookies();
 
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   request->load_flags = net::LOAD_ONLY_FROM_CACHE;
@@ -1107,6 +1125,60 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
     ASSERT_TRUE(simple_loader_helper.response_body());
     EXPECT_EQ(original_response, *simple_loader_helper.response_body());
   }
+}
+
+// Make sure that NetworkContexts have separate DNS caches.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       DnsCacheIsolation) {
+  net::NetworkIsolationKey network_isolation_key =
+      net::NetworkIsolationKey::CreateTransient();
+  net::HostPortPair host_port_pair(kHostname, 0);
+  network::mojom::ResolveHostParametersPtr params =
+      network::mojom::ResolveHostParameters::New();
+  // Use A queries, to avoid running into issues with the IPv6 probe, the
+  // results of which can change during runtime, and can affect the DNS cache
+  // key.
+  params->dns_query_type = net::DnsQueryType ::A;
+  // Resolve |host_port_pair|, which should succeed and put it in the
+  // NetworkContext's cache.
+  network::DnsLookupResult result =
+      network::BlockingDnsLookup(network_context(), host_port_pair,
+                                 std::move(params), network_isolation_key);
+  EXPECT_EQ(net::OK, result.error);
+  ASSERT_TRUE(result.resolved_addresses.has_value());
+  ASSERT_EQ(1u, result.resolved_addresses->size());
+  EXPECT_EQ(kAddress,
+            result.resolved_addresses.value()[0].ToStringWithoutPort());
+  // Make a cache-only request for the same hostname, for each other network
+  // context, and make sure no result is returned.
+  ForEachOtherContext(
+      base::BindLambdaForTesting([&](NetworkContextType network_context_type) {
+        params = network::mojom::ResolveHostParameters::New();
+        params->dns_query_type = net::DnsQueryType ::A;
+        // Cache only lookup.
+        params->cache_usage =
+            network::mojom::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
+        params->source = net::HostResolverSource::LOCAL_ONLY;
+        network::DnsLookupResult result = network::BlockingDnsLookup(
+            GetNetworkContextForContextType(network_context_type),
+            host_port_pair, std::move(params), network_isolation_key);
+        EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, result.error);
+      }));
+  // Do a cache-only lookup using the original network context, which should
+  // return the same result it initially did.
+  params = network::mojom::ResolveHostParameters::New();
+  // Cache only lookup.
+  params->dns_query_type = net::DnsQueryType ::A;
+  params->source = net::HostResolverSource::LOCAL_ONLY;
+  params->cache_usage =
+      network::mojom::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
+  result = network::BlockingDnsLookup(network_context(), host_port_pair,
+                                      std::move(params), network_isolation_key);
+  EXPECT_EQ(net::OK, result.error);
+  ASSERT_TRUE(result.resolved_addresses.has_value());
+  ASSERT_EQ(1u, result.resolved_addresses->size());
+  EXPECT_EQ(kAddress,
+            result.resolved_addresses.value()[0].ToStringWithoutPort());
 }
 
 // Visits a URL with an HSTS header, and makes sure it is respected.
@@ -1167,9 +1239,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_Hsts) {
   base::FilePath save_url_file_path = browser()->profile()->GetPath().Append(
       FILE_PATH_LITERAL("url_for_test.txt"));
   std::string file_data = start_url.spec();
-  ASSERT_EQ(
-      static_cast<int>(file_data.length()),
-      base::WriteFile(save_url_file_path, file_data.data(), file_data.size()));
+  ASSERT_TRUE(base::WriteFile(save_url_file_path, file_data));
 }
 
 // Checks if the HSTS information from the last test is still available after a
@@ -1505,8 +1575,20 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   // The preference is expected to be reset in incognito mode.
   if (is_incognito()) {
     EXPECT_FALSE(GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies));
+    EXPECT_EQ(
+        static_cast<int>(content_settings::CookieControlsMode::kIncognitoOnly),
+        GetPrefService()->GetInteger(prefs::kCookieControlsMode));
     return;
   }
+
+  // For regular sessions, the kBlockThirdpartyCookies preference gets migrated
+  // to kCookieControlsMode. Reset it so it doesn't interfere with the test.
+  EXPECT_EQ(
+      static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty),
+      GetPrefService()->GetInteger(prefs::kCookieControlsMode));
+  GetPrefService()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kIncognitoOnly));
 
   // The kBlockThirdPartyCookies pref should carry over to the next session.
   EXPECT_TRUE(GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies));
@@ -1727,9 +1809,7 @@ class NetworkContextConfigurationFilePacBrowserTest
         temp_dir_.GetPath().AppendASCII(kPacFileName);
 
     std::string pac_script = GetPacScript();
-    ASSERT_EQ(
-        static_cast<int>(pac_script.size()),
-        base::WriteFile(pac_file_path, pac_script.c_str(), pac_script.size()));
+    ASSERT_TRUE(base::WriteFile(pac_file_path, pac_script));
 
     command_line->AppendSwitchASCII(
         switches::kProxyPacUrl, net::FilePathToFileURL(pac_file_path).spec());
@@ -1777,11 +1857,15 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationDataPacBrowserTest, DataPac) {
 // results in an error, since the spawned test server is designed so that it can
 // run remotely (So can't just write a script to a local file and have the
 // server serve it).
+//
+// TODO(https://crbug.com/333943): Remove these tests when FTP support is
+// removed.
 class NetworkContextConfigurationFtpPacBrowserTest
     : public NetworkContextConfigurationBrowserTest {
  public:
   NetworkContextConfigurationFtpPacBrowserTest()
       : ftp_server_(net::SpawnedTestServer::TYPE_FTP, GetChromeTestDataDir()) {
+    scoped_feature_list_.InitAndEnableFeature(features::kFtpProtocol);
     EXPECT_TRUE(ftp_server_.Start());
   }
   ~NetworkContextConfigurationFtpPacBrowserTest() override {}
@@ -1794,6 +1878,7 @@ class NetworkContextConfigurationFtpPacBrowserTest
 
  private:
   net::SpawnedTestServer ftp_server_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationFtpPacBrowserTest);
 };
@@ -1817,54 +1902,6 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFtpPacBrowserTest, FtpPac) {
 
   EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED, simple_loader->NetError());
 }
-
-// Used to test that PAC HTTPS URL stripping works. A different test server is
-// used as the "proxy" based on whether the PAC script sees the full path or
-// not. The servers aren't correctly set up to mimic HTTP proxies that tunnel
-// to an HTTPS test server, so the test fixture just watches for any incoming
-// connection.
-class NetworkContextConfigurationHttpsStrippingPacBrowserTest
-    : public NetworkContextConfigurationBrowserTest {
- public:
-  NetworkContextConfigurationHttpsStrippingPacBrowserTest() {}
-
-  ~NetworkContextConfigurationHttpsStrippingPacBrowserTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Test server HostPortPair, as a string.
-    std::string test_server_host_port_pair =
-        net::HostPortPair::FromURL(embedded_test_server()->base_url())
-            .ToString();
-    // Set up a PAC file that directs to different servers based on the URL it
-    // sees.
-    std::string pac_script = base::StringPrintf(
-        "function FindProxyForURL(url, host) {"
-        // With the test URL stripped of the path, try to use the embedded test
-        // server to establish a an SSL tunnel over an HTTP proxy. The request
-        // will fail with ERR_TUNNEL_CONNECTION_FAILED.
-        "  if (url == 'https://does.not.resolve.test:1872/')"
-        "    return 'PROXY %s';"
-        // With the full test URL, try to use a domain that does not resolve as
-        // a proxy. Errors connecting to the proxy result in
-        // ERR_PROXY_CONNECTION_FAILED.
-        "  if (url == 'https://does.not.resolve.test:1872/foo')"
-        "    return 'PROXY does.not.resolve.test';"
-        // Otherwise, use direct. If a connection to "does.not.resolve.test"
-        // tries to use a direction connection, it will fail with
-        // ERR_NAME_NOT_RESOLVED. This path will also
-        // be used by the initial request in NetworkServiceState::kRestarted
-        // tests to make sure the network service process is fully started
-        // before it's crashed and restarted. Using direct in this case avoids
-        // that request failing with an unexpeced error when being directed to a
-        // bogus proxy.
-        "  return 'DIRECT';"
-        "}",
-        test_server_host_port_pair.c_str());
-
-    command_line->AppendSwitchASCII(switches::kProxyPacUrl,
-                                    "data:," + pac_script);
-  }
-};
 
 class NetworkContextConfigurationProxySettingsBrowserTest
     : public NetworkContextConfigurationHttpPacBrowserTest {
@@ -1947,12 +1984,11 @@ class NetworkContextConfigurationProxySettingsBrowserTest
     expected_connections_run_loop.Run();
 
     // Then wait for any remaining connections that we should NOT get.
-    base::RunLoop unexpected_connections_run_loop;
-    base::RunLoop::ScopedRunTimeoutForTest run_timeout(
-        base::TimeDelta::FromMilliseconds(100),
-        base::BindLambdaForTesting(
-            [&]() { unexpected_connections_run_loop.Quit(); }));
-    unexpected_connections_run_loop.Run();
+    base::RunLoop ugly_100ms_wait;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, ugly_100ms_wait.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(100));
+    ugly_100ms_wait.Run();
 
     // Stop the server.
     ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
@@ -2271,8 +2307,6 @@ INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationDataPacBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationFtpPacBrowserTest);
-INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
-    NetworkContextConfigurationHttpsStrippingPacBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationProxySettingsBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(

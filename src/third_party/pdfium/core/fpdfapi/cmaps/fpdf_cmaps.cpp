@@ -4,11 +4,9 @@
 
 // Original code copyright 2014 Foxit Software Inc. http://www.foxitsoftware.com
 
-#include "core/fpdfapi/cmaps/cmap_int.h"
+#include "core/fpdfapi/cmaps/fpdf_cmaps.h"
 
 #include <algorithm>
-
-#include "third_party/base/span.h"
 
 namespace {
 
@@ -30,7 +28,7 @@ const FXCMAP_CMap* FindNextCMap(const FXCMAP_CMap* pMap) {
 }  // namespace
 
 const FXCMAP_CMap* FindEmbeddedCMap(pdfium::span<const FXCMAP_CMap> pCMaps,
-                                    const ByteString& bsName) {
+                                    ByteStringView bsName) {
   for (size_t i = 0; i < pCMaps.size(); i++) {
     if (bsName == pCMaps[i].m_Name)
       return &pCMaps[i];

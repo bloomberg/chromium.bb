@@ -13,9 +13,7 @@
 
 #include <assert.h>
 
-#if CONFIG_RATE_CTRL
 #include "vp9/common/vp9_onyxc_int.h"
-#endif
 #include "vp9/encoder/vp9_lookahead.h"
 #include "vp9/encoder/vp9_ratectrl.h"
 
@@ -248,16 +246,57 @@ void vp9_twopass_postencode_update(struct VP9_COMP *cpi);
 void calculate_coded_size(struct VP9_COMP *cpi, int *scaled_frame_width,
                           int *scaled_frame_height);
 
-#if CONFIG_RATE_CTRL
 struct VP9EncoderConfig;
-int vp9_get_coding_frame_num(const struct VP9EncoderConfig *oxcf,
+int vp9_get_frames_to_next_key(const struct VP9EncoderConfig *oxcf,
+                               const FRAME_INFO *frame_info,
+                               const FIRST_PASS_INFO *first_pass_info,
+                               int kf_show_idx, int min_gf_interval);
+#if CONFIG_RATE_CTRL
+/* Call this function to get info about the next group of pictures.
+ * This function should be called after vp9_create_compressor() when encoding
+ * starts or after vp9_get_compressed_data() when the encoding process of
+ * the last group of pictures is just finished.
+ */
+void vp9_get_next_group_of_picture(const struct VP9_COMP *cpi,
+                                   int *first_is_key_frame, int *use_alt_ref,
+                                   int *coding_frame_count, int *first_show_idx,
+                                   int *last_gop_use_alt_ref);
+
+/*!\brief Call this function before coding a new group of pictures to get
+ * information about it.
+ * \param[in] external_arf_indexes External arf indexs passed in
+ * \param[in] oxcf                 Encoder config
+ * \param[in] frame_info           Frame info
+ * \param[in] first_pass_info      First pass stats
+ * \param[in] rc                   Rate control state
+ * \param[in] show_idx             Show index of the first frame in the group
+ * \param[in] multi_layer_arf      Is multi-layer alternate reference used
+ * \param[in] allow_alt_ref        Is alternate reference allowed
+ * \param[in] first_is_key_frame   Is the first frame in the group a key frame
+ * \param[in] last_gop_use_alt_ref Does the last group use alternate reference
+ *
+ * \param[out] use_alt_ref         Does this group use alternate reference
+ *
+ * \return Returns coding frame count
+ */
+int vp9_get_gop_coding_frame_count(const int *external_arf_indexes,
+                                   const struct VP9EncoderConfig *oxcf,
+                                   const FRAME_INFO *frame_info,
+                                   const FIRST_PASS_INFO *first_pass_info,
+                                   const RATE_CONTROL *rc, int show_idx,
+                                   int multi_layer_arf, int allow_alt_ref,
+                                   int first_is_key_frame,
+                                   int last_gop_use_alt_ref, int *use_alt_ref);
+
+int vp9_get_coding_frame_num(const int *external_arf_indexes,
+                             const struct VP9EncoderConfig *oxcf,
                              const FRAME_INFO *frame_info,
                              const FIRST_PASS_INFO *first_pass_info,
                              int multi_layer_arf, int allow_alt_ref);
-#endif
+#endif  // CONFIG_RATE_CTRL
 
-FIRSTPASS_STATS vp9_get_frame_stats(const TWO_PASS *two_pass);
-FIRSTPASS_STATS vp9_get_total_stats(const TWO_PASS *two_pass);
+FIRSTPASS_STATS vp9_get_frame_stats(const TWO_PASS *twopass);
+FIRSTPASS_STATS vp9_get_total_stats(const TWO_PASS *twopass);
 
 #ifdef __cplusplus
 }  // extern "C"

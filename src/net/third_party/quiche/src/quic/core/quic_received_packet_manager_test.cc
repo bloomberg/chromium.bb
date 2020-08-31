@@ -11,7 +11,9 @@
 #include "net/third_party/quiche/src/quic/core/congestion_control/rtt_stats.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection_stats.h"
+#include "net/third_party/quiche/src/quic/core/quic_constants.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 
@@ -27,6 +29,11 @@ class QuicReceivedPacketManagerPeer {
   static void SetFastAckAfterQuiescence(QuicReceivedPacketManager* manager,
                                         bool fast_ack_after_quiescence) {
     manager->fast_ack_after_quiescence_ = fast_ack_after_quiescence;
+  }
+
+  static void SetOneImmediateAck(QuicReceivedPacketManager* manager,
+                                 bool one_immediate_ack) {
+    manager->one_immediate_ack_ = one_immediate_ack;
   }
 
   static void SetAckDecimationDelay(QuicReceivedPacketManager* manager,
@@ -94,7 +101,8 @@ class QuicReceivedPacketManagerTest : public QuicTestWithParam<TestParams> {
   }
 
   void CheckAckTimeout(QuicTime time) {
-    DCHECK(HasPendingAck() && received_manager_.ack_timeout() == time);
+    DCHECK(HasPendingAck());
+    DCHECK_EQ(received_manager_.ack_timeout(), time);
     if (time <= clock_.ApproximateNow()) {
       // ACK timeout expires, send an ACK.
       received_manager_.ResetAckStates();
@@ -244,6 +252,16 @@ TEST_P(QuicReceivedPacketManagerTest, OutOfOrderReceiptCausesAckSent) {
   // Delayed ack is scheduled.
   CheckAckTimeout(clock_.ApproximateNow() + kDelayedAckTime);
 
+  RecordPacketReceipt(5, clock_.ApproximateNow());
+  MaybeUpdateAckTimeout(kInstigateAck, 5);
+  // Immediate ack is sent.
+  CheckAckTimeout(clock_.ApproximateNow());
+
+  RecordPacketReceipt(6, clock_.ApproximateNow());
+  MaybeUpdateAckTimeout(kInstigateAck, 6);
+  // Immediate ack is scheduled, because 4 is still missing.
+  CheckAckTimeout(clock_.ApproximateNow());
+
   RecordPacketReceipt(2, clock_.ApproximateNow());
   MaybeUpdateAckTimeout(kInstigateAck, 2);
   CheckAckTimeout(clock_.ApproximateNow());
@@ -253,9 +271,43 @@ TEST_P(QuicReceivedPacketManagerTest, OutOfOrderReceiptCausesAckSent) {
   // Should ack immediately, since this fills the last hole.
   CheckAckTimeout(clock_.ApproximateNow());
 
-  RecordPacketReceipt(4, clock_.ApproximateNow());
-  MaybeUpdateAckTimeout(kInstigateAck, 4);
+  RecordPacketReceipt(7, clock_.ApproximateNow());
+  MaybeUpdateAckTimeout(kInstigateAck, 7);
+  // Immediate ack is scheduled, because 4 is still missing.
+  CheckAckTimeout(clock_.ApproximateNow());
+}
+
+TEST_P(QuicReceivedPacketManagerTest, OutOfOrderReceiptCausesAckSent1Ack) {
+  QuicReceivedPacketManagerPeer::SetOneImmediateAck(&received_manager_, true);
+  EXPECT_FALSE(HasPendingAck());
+
+  RecordPacketReceipt(3, clock_.ApproximateNow());
+  MaybeUpdateAckTimeout(kInstigateAck, 3);
   // Delayed ack is scheduled.
+  CheckAckTimeout(clock_.ApproximateNow() + kDelayedAckTime);
+
+  RecordPacketReceipt(5, clock_.ApproximateNow());
+  MaybeUpdateAckTimeout(kInstigateAck, 5);
+  // Immediate ack is sent.
+  CheckAckTimeout(clock_.ApproximateNow());
+
+  RecordPacketReceipt(6, clock_.ApproximateNow());
+  MaybeUpdateAckTimeout(kInstigateAck, 6);
+  // Delayed ack is scheduled.
+  CheckAckTimeout(clock_.ApproximateNow() + kDelayedAckTime);
+
+  RecordPacketReceipt(2, clock_.ApproximateNow());
+  MaybeUpdateAckTimeout(kInstigateAck, 2);
+  CheckAckTimeout(clock_.ApproximateNow());
+
+  RecordPacketReceipt(1, clock_.ApproximateNow());
+  MaybeUpdateAckTimeout(kInstigateAck, 1);
+  // Should ack immediately, since this fills the last hole.
+  CheckAckTimeout(clock_.ApproximateNow());
+
+  RecordPacketReceipt(7, clock_.ApproximateNow());
+  MaybeUpdateAckTimeout(kInstigateAck, 7);
+  // Delayed ack is scheduled, even though 4 is still missing.
   CheckAckTimeout(clock_.ApproximateNow() + kDelayedAckTime);
 }
 
@@ -388,6 +440,43 @@ TEST_P(QuicReceivedPacketManagerTest, SendDelayedAckDecimation) {
   // The ack time should be based on min_rtt * 1/4, since it's less than the
   // default delayed ack time.
   QuicTime ack_time = clock_.ApproximateNow() + kMinRttMs * 0.25;
+
+  // Process all the packets in order so there aren't missing packets.
+  uint64_t kFirstDecimatedPacket = 101;
+  for (uint64_t i = 1; i < kFirstDecimatedPacket; ++i) {
+    RecordPacketReceipt(i, clock_.ApproximateNow());
+    MaybeUpdateAckTimeout(kInstigateAck, i);
+    if (i % 2 == 0) {
+      // Ack every 2 packets by default.
+      CheckAckTimeout(clock_.ApproximateNow());
+    } else {
+      CheckAckTimeout(clock_.ApproximateNow() + kDelayedAckTime);
+    }
+  }
+
+  RecordPacketReceipt(kFirstDecimatedPacket, clock_.ApproximateNow());
+  MaybeUpdateAckTimeout(kInstigateAck, kFirstDecimatedPacket);
+  CheckAckTimeout(ack_time);
+
+  // The 10th received packet causes an ack to be sent.
+  for (uint64_t i = 1; i < 10; ++i) {
+    RecordPacketReceipt(kFirstDecimatedPacket + i, clock_.ApproximateNow());
+    MaybeUpdateAckTimeout(kInstigateAck, kFirstDecimatedPacket + i);
+  }
+  CheckAckTimeout(clock_.ApproximateNow());
+}
+
+TEST_P(QuicReceivedPacketManagerTest, SendDelayedAckDecimationMin1ms) {
+  if (!GetQuicReloadableFlag(quic_ack_delay_alarm_granularity)) {
+    return;
+  }
+  EXPECT_FALSE(HasPendingAck());
+  QuicReceivedPacketManagerPeer::SetAckMode(&received_manager_, ACK_DECIMATION);
+  // Seed the min_rtt with a kAlarmGranularity signal.
+  rtt_stats_.UpdateRtt(kAlarmGranularity, QuicTime::Delta::Zero(),
+                       clock_.ApproximateNow());
+  // The ack time should be based on kAlarmGranularity, since the RTT is 1ms.
+  QuicTime ack_time = clock_.ApproximateNow() + kAlarmGranularity;
 
   // Process all the packets in order so there aren't missing packets.
   uint64_t kFirstDecimatedPacket = 101;

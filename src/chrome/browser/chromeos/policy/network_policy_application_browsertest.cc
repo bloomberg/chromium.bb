@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
@@ -125,12 +125,10 @@ class ScopedNetworkPolicyApplicationObserver : public NetworkPolicyObserver {
 // application across sign-in screen and/or user session.
 class NetworkPolicyApplicationTest : public LoginManagerTest {
  public:
-  NetworkPolicyApplicationTest()
-      : LoginManagerTest(true /* should_launch_browser */,
-                         true /* should_initialize_webui */),
-        test_account_id_(AccountId::FromUserEmailGaiaId(
-            policy::PolicyBuilder::kFakeUsername,
-            policy::PolicyBuilder::kFakeGaiaId)) {}
+  NetworkPolicyApplicationTest() : LoginManagerTest() {
+    login_mixin_.AppendRegularUsers(1);
+    test_account_id_ = login_mixin_.users()[0].account_id;
+  }
 
  protected:
   // InProcessBrowserTest:
@@ -205,9 +203,8 @@ class NetworkPolicyApplicationTest : public LoginManagerTest {
     base::RunLoop run_loop;
     ShillServiceClient::Get()->Connect(
         dbus::ObjectPath(service_path), run_loop.QuitClosure(),
-        base::BindRepeating(
-            &NetworkPolicyApplicationTest::OnConnectToServiceFailed,
-            base::Unretained(this), run_loop.QuitClosure()));
+        base::BindOnce(&NetworkPolicyApplicationTest::OnConnectToServiceFailed,
+                       base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -217,6 +214,7 @@ class NetworkPolicyApplicationTest : public LoginManagerTest {
   ShillProfileClient::TestInterface* shill_profile_client_test_ = nullptr;
   ShillDeviceClient::TestInterface* shill_device_client_test_ = nullptr;
 
+  LoginManagerMixin login_mixin_{&mixin_host_};
   AccountId test_account_id_;
 
  private:
@@ -225,12 +223,6 @@ class NetworkPolicyApplicationTest : public LoginManagerTest {
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPolicyApplicationTest);
 };
-
-IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest,
-                       PRE_OnlyPolicyAutoconnectWithSlowUserPolicyApplication) {
-  RegisterUser(test_account_id_);
-  StartupUtils::MarkOobeCompleted();
-}
 
 // This test applies a global network policy with
 // AllowOnlyPolicyNetworksToAutoconnect set to true. It then performs a user

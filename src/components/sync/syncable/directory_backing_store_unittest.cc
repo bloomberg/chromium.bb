@@ -33,10 +33,6 @@ namespace {
 
 const char kTestCacheGuid[] = "test_cache_guid";
 
-base::RepeatingCallback<std::string()> TestCacheGuidGenerator() {
-  return base::BindRepeating([]() -> std::string { return kTestCacheGuid; });
-}
-
 // A handler that simply sets |catastrophic_error_handler_was_called| to true.
 void CatastrophicErrorHandler(bool* catastrophic_error_handler_was_called) {
   *catastrophic_error_handler_was_called = true;
@@ -3957,7 +3953,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   MetahandleSet metahandles_to_purge;
 
   {
-    OnDiskDirectoryBackingStore dbs(GetUsername(), TestCacheGuidGenerator(),
+    OnDiskDirectoryBackingStore dbs(GetUsername(), kTestCacheGuid,
                                     GetDatabasePath());
     ASSERT_EQ(OPENED_EXISTING,
               dbs.Load(&handles_map, &metahandles_to_purge, &dir_info));
@@ -4258,9 +4254,7 @@ class OnDiskDirectoryBackingStoreForTest : public OnDiskDirectoryBackingStore {
 OnDiskDirectoryBackingStoreForTest::OnDiskDirectoryBackingStoreForTest(
     const std::string& dir_name,
     const base::FilePath& backing_filepath)
-    : OnDiskDirectoryBackingStore(dir_name,
-                                  TestCacheGuidGenerator(),
-                                  backing_filepath),
+    : OnDiskDirectoryBackingStore(dir_name, kTestCacheGuid, backing_filepath),
       first_open_failed_(false) {}
 
 OnDiskDirectoryBackingStoreForTest::~OnDiskDirectoryBackingStoreForTest() { }
@@ -4284,7 +4278,7 @@ bool OnDiskDirectoryBackingStoreForTest::DidFailFirstOpenAttempt() {
 // due to read-only file system), is not tested here.
 TEST_F(DirectoryBackingStoreTest, MinorCorruption) {
   {
-    OnDiskDirectoryBackingStore dbs(GetUsername(), TestCacheGuidGenerator(),
+    OnDiskDirectoryBackingStore dbs(GetUsername(), kTestCacheGuid,
                                     GetDatabasePath());
     EXPECT_TRUE(LoadAndIgnoreReturnedData(&dbs));
   }
@@ -4307,7 +4301,7 @@ TEST_F(DirectoryBackingStoreTest, MinorCorruption) {
 
 TEST_F(DirectoryBackingStoreTest, MinorCorruptionAndUpgrade) {
   {
-    OnDiskDirectoryBackingStore dbs(GetUsername(), TestCacheGuidGenerator(),
+    OnDiskDirectoryBackingStore dbs(GetUsername(), kTestCacheGuid,
                                     GetDatabasePath());
     EXPECT_TRUE(LoadAndIgnoreReturnedData(&dbs));
   }
@@ -4415,7 +4409,7 @@ TEST_F(DirectoryBackingStoreTest, CatastrophicErrorHandler_KeptAcrossReset) {
   ASSERT_FALSE(dbs.db_->has_error_callback());
   // Set one and see that it was set.
   dbs.SetCatastrophicErrorHandler(
-      base::Bind(&CatastrophicErrorHandler, nullptr));
+      base::BindRepeating(&CatastrophicErrorHandler, nullptr));
   EXPECT_TRUE(dbs.db_->has_error_callback());
   // Recreate the Connection and see that the handler remains set.
   dbs.ResetAndCreateConnection();
@@ -4427,8 +4421,8 @@ TEST_F(DirectoryBackingStoreTest, CatastrophicErrorHandler_KeptAcrossReset) {
 TEST_F(DirectoryBackingStoreTest,
        CatastrophicErrorHandler_InvocationDuringLoad) {
   bool was_called = false;
-  const base::Closure handler =
-      base::Bind(&CatastrophicErrorHandler, &was_called);
+  const base::RepeatingClosure handler =
+      base::BindRepeating(&CatastrophicErrorHandler, &was_called);
   {
     OnDiskDirectoryBackingStoreForTest dbs(GetUsername(), GetDatabasePath());
     dbs.SetCatastrophicErrorHandler(handler);
@@ -4471,8 +4465,8 @@ TEST_F(DirectoryBackingStoreTest,
 TEST_F(DirectoryBackingStoreTest,
        CatastrophicErrorHandler_InvocationDuringSaveChanges) {
   bool was_called = false;
-  const base::Closure handler =
-      base::Bind(&CatastrophicErrorHandler, &was_called);
+  const base::RepeatingClosure handler =
+      base::BindRepeating(&CatastrophicErrorHandler, &was_called);
   // Create a DB with many entries.
   OnDiskDirectoryBackingStoreForTest dbs(GetUsername(), GetDatabasePath());
   dbs.SetCatastrophicErrorHandler(handler);

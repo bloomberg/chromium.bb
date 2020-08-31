@@ -9,6 +9,8 @@
 
 namespace blink {
 
+class HeapObjectHeader;
+
 // Marking verifier that checks that a child is marked if its parent is marked.
 class MarkingVerifier final : public Visitor {
  public:
@@ -17,29 +19,21 @@ class MarkingVerifier final : public Visitor {
 
   void VerifyObject(HeapObjectHeader* header);
 
-  void Visit(void* object, TraceDescriptor desc) final;
-  void VisitWeak(void* object,
-                 void* object_weak_ref,
+  void Visit(const void* object, TraceDescriptor desc) final;
+  void VisitWeak(const void* object,
+                 const void* object_weak_ref,
                  TraceDescriptor desc,
                  WeakCallback callback) final;
 
-  void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) final;
-
-  void VisitBackingStoreWeakly(void*,
-                               void**,
-                               TraceDescriptor,
-                               TraceDescriptor,
-                               WeakCallback,
-                               void*) final;
-
-  // Unused overrides.
-  void VisitBackingStoreOnly(void*, void**) final {}
-  void RegisterBackingStoreCallback(void*, MovingObjectCallback) final {}
-  void RegisterWeakCallback(WeakCallback, void*) final {}
-  void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
+  void VisitWeakContainer(const void*,
+                          const void* const*,
+                          TraceDescriptor,
+                          TraceDescriptor,
+                          WeakCallback,
+                          const void*) final;
 
  private:
-  void VerifyChild(void* object, void* base_object_payload);
+  void VerifyChild(const void* object, const void* base_object_payload);
 
   HeapObjectHeader* parent_ = nullptr;
 };

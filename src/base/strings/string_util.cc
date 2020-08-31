@@ -51,21 +51,6 @@ static bool CompareParameter(const ReplacementOffset& elem1,
   return elem1.parameter < elem2.parameter;
 }
 
-// Overloaded function to append one string onto the end of another. Having a
-// separate overload for |source| as both string and StringPiece allows for more
-// efficient usage from functions templated to work with either type (avoiding a
-// redundant call to the BasicStringPiece constructor in both cases).
-template <typename string_type>
-inline void AppendToString(string_type* target, const string_type& source) {
-  target->append(source);
-}
-
-template <typename string_type>
-inline void AppendToString(string_type* target,
-                           const BasicStringPiece<string_type>& source) {
-  source.AppendToString(target);
-}
-
 // Assuming that a pointer is the size of a "machine word", then
 // uintptr_t is an integer type that is also a machine word.
 using MachineWord = uintptr_t;
@@ -505,18 +490,27 @@ bool IsStringASCII(WStringPiece str) {
 }
 #endif
 
-bool IsStringUTF8(StringPiece str) {
-  const char *src = str.data();
+template <bool (*Validator)(uint32_t)>
+inline static bool DoIsStringUTF8(StringPiece str) {
+  const char* src = str.data();
   int32_t src_len = static_cast<int32_t>(str.length());
   int32_t char_index = 0;
 
   while (char_index < src_len) {
     int32_t code_point;
     CBU8_NEXT(src, char_index, src_len, code_point);
-    if (!IsValidCharacter(code_point))
+    if (!Validator(code_point))
       return false;
   }
   return true;
+}
+
+bool IsStringUTF8(StringPiece str) {
+  return DoIsStringUTF8<IsValidCharacter>(str);
+}
+
+bool IsStringUTF8AllowingNoncharacters(StringPiece str) {
+  return DoIsStringUTF8<IsValidCodepoint>(str);
 }
 
 // Implementation note: Normally this function will be called with a hardcoded
@@ -926,11 +920,6 @@ char16* WriteInto(string16* str, size_t length_with_null) {
   return WriteIntoT(str, length_with_null);
 }
 
-#if defined(_MSC_VER) && !defined(__clang__)
-// Work around VC++ code-gen bug. https://crbug.com/804884
-#pragma optimize("", off)
-#endif
-
 // Generic version for all JoinString overloads. |list_type| must be a sequence
 // (std::vector or std::initializer_list) of strings/StringPieces (std::string,
 // string16, StringPiece or StringPiece16). |string_type| is either std::string
@@ -938,7 +927,7 @@ char16* WriteInto(string16* str, size_t length_with_null) {
 template <typename list_type, typename string_type>
 static string_type JoinStringT(const list_type& parts,
                                BasicStringPiece<string_type> sep) {
-  if (parts.size() == 0)
+  if (base::empty(parts))
     return string_type();
 
   // Pre-allocate the eventual size of the string. Start with the size of all of
@@ -951,15 +940,12 @@ static string_type JoinStringT(const list_type& parts,
 
   auto iter = parts.begin();
   DCHECK(iter != parts.end());
-  AppendToString(&result, *iter);
+  result.append(iter->data(), iter->size());
   ++iter;
 
   for (; iter != parts.end(); ++iter) {
-    sep.AppendToString(&result);
-    // Using the overloaded AppendToString allows this template function to work
-    // on both strings and StringPieces without creating an intermediate
-    // StringPiece object.
-    AppendToString(&result, *iter);
+    result.append(sep.data(), sep.size());
+    result.append(iter->data(), iter->size());
   }
 
   // Sanity-check that we pre-allocated correctly.
@@ -977,11 +963,6 @@ string16 JoinString(const std::vector<string16>& parts,
                     StringPiece16 separator) {
   return JoinStringT(parts, separator);
 }
-
-#if defined(_MSC_VER) && !defined(__clang__)
-// Work around VC++ code-gen bug. https://crbug.com/804884
-#pragma optimize("", on)
-#endif
 
 std::string JoinString(const std::vector<StringPiece>& parts,
                        StringPiece separator) {

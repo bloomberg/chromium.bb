@@ -121,7 +121,7 @@ AudioListener::AudioListener(BaseAudioContext& context)
 
 AudioListener::~AudioListener() = default;
 
-void AudioListener::Trace(blink::Visitor* visitor) {
+void AudioListener::Trace(Visitor* visitor) {
   visitor->Trace(position_x_);
   visitor->Trace(position_y_);
   visitor->Trace(position_z_);
@@ -159,6 +159,17 @@ bool AudioListener::HasSampleAccurateValues() const {
          upX()->Handler().HasSampleAccurateValues() ||
          upY()->Handler().HasSampleAccurateValues() ||
          upZ()->Handler().HasSampleAccurateValues();
+}
+
+bool AudioListener::IsAudioRate() const {
+  return positionX()->Handler().IsAudioRate() ||
+         positionY()->Handler().IsAudioRate() ||
+         positionZ()->Handler().IsAudioRate() ||
+         forwardX()->Handler().IsAudioRate() ||
+         forwardY()->Handler().IsAudioRate() ||
+         forwardZ()->Handler().IsAudioRate() ||
+         upX()->Handler().IsAudioRate() || upY()->Handler().IsAudioRate() ||
+         upZ()->Handler().IsAudioRate();
 }
 
 void AudioListener::UpdateValuesIfNeeded(uint32_t frames_to_process) {

@@ -46,6 +46,7 @@ class PRINTING_EXPORT PrintedDocument
   // Indicates that the PDF has been generated and the document is waiting for
   // conversion for printing. This is needed on Windows so that the print job
   // is not cancelled if the web contents dies before PDF conversion finishes.
+  // This is applicable when using the GDI print API.
   void SetConvertingPdf();
 
   // Sets a page's data. 0-based. Note: locks for a short amount of time.
@@ -59,27 +60,30 @@ class PRINTING_EXPORT PrintedDocument
   // requests to have this page be rendered and returns NULL.
   // Note: locks for a short amount of time.
   scoped_refptr<PrintedPage> GetPage(int page_number);
-#else
+
+  // Drop the specified page's reference for the particular page number.
+  // Note: locks for a short amount of time.
+  void DropPage(const PrintedPage* page);
+#endif  // defined(OS_WIN)
+
   // Sets the document data. Note: locks for a short amount of time.
-  void SetDocument(std::unique_ptr<MetafilePlayer> metafile,
-                   const gfx::Size& page_size,
-                   const gfx::Rect& page_content_rect);
+  void SetDocument(std::unique_ptr<MetafilePlayer> metafile);
 
   // Retrieves the metafile with the data to print. Lock must be held when
   // calling this function
   const MetafilePlayer* GetMetafile();
-#endif
 
 // Draws the page in the context.
 // Note: locks for a short amount of time in debug only.
 #if defined(OS_WIN)
+  // This is applicable when using the Windows GDI print API.
   void RenderPrintedPage(const PrintedPage& page,
                          printing::NativeDrawingContext context) const;
-#elif defined(OS_POSIX)
+#endif
+
   // Draws the document in the context. Returns true on success and false on
   // failure. Fails if context->NewPage() or context->PageDone() fails.
   bool RenderPrintedDocument(PrintingContext* context);
-#endif
 
   // Returns true if all the necessary pages for the settings are already
   // rendered.
@@ -120,18 +124,18 @@ class PRINTING_EXPORT PrintedDocument
       const base::string16& document_name,
       const base::FilePath::StringType& extension);
 
+#if defined(OS_WIN)
+  // Get page content rect adjusted based on
+  // http://dev.w3.org/csswg/css3-page/#positioning-page-box
+  static gfx::Rect GetCenteredPageContentRect(const gfx::Size& paper_size,
+                                              const gfx::Size& page_size,
+                                              const gfx::Rect& content_rect);
+#endif
+
   // Dump data on blocking task runner.
   // Should only be called when debug dumps are enabled.
   void DebugDumpData(const base::RefCountedMemory* data,
                      const base::FilePath::StringType& extension);
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // Get page content rect adjusted based on
-  // http://dev.w3.org/csswg/css3-page/#positioning-page-box
-  gfx::Rect GetCenteredPageContentRect(const gfx::Size& paper_size,
-                                       const gfx::Size& page_size,
-                                       const gfx::Rect& content_rect) const;
-#endif
 
  private:
   friend class base::RefCountedThreadSafe<PrintedDocument>;
@@ -154,19 +158,18 @@ class PRINTING_EXPORT PrintedDocument
     // The total number of pages in the document.
     int page_count_ = 0;
 
+    std::unique_ptr<MetafilePlayer> metafile_;
+
 #if defined(OS_WIN)
     // Contains the pages' representation. This is a collection of PrintedPage.
     // Warning: Lock must be held when accessing this member.
+    // This is applicable when using the Windows GDI print API which has the
+    // extra conversion step from PDF to EMF prior to sending to device.
+    // The metafile_ field is not used in this scenario.
     PrintedPages pages_;
 
     // Whether the PDF is being converted for printing.
     bool converting_pdf_ = false;
-#else
-    std::unique_ptr<MetafilePlayer> metafile_;
-#endif
-#if defined(OS_MACOSX)
-    gfx::Size page_size_;
-    gfx::Rect page_content_rect_;
 #endif
   };
 

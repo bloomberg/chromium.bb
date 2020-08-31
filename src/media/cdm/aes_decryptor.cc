@@ -470,15 +470,15 @@ int AesDecryptor::GetCdmId() const {
 }
 
 void AesDecryptor::RegisterNewKeyCB(StreamType stream_type,
-                                    const NewKeyCB& new_key_cb) {
+                                    NewKeyCB new_key_cb) {
   base::AutoLock auto_lock(new_key_cb_lock_);
 
   switch (stream_type) {
     case kAudio:
-      new_audio_key_cb_ = new_key_cb;
+      new_audio_key_cb_ = std::move(new_key_cb);
       break;
     case kVideo:
-      new_video_key_cb_ = new_key_cb;
+      new_video_key_cb_ = std::move(new_key_cb);
       break;
     default:
       NOTREACHED();
@@ -487,13 +487,13 @@ void AesDecryptor::RegisterNewKeyCB(StreamType stream_type,
 
 void AesDecryptor::Decrypt(StreamType stream_type,
                            scoped_refptr<DecoderBuffer> encrypted,
-                           const DecryptCB& decrypt_cb) {
+                           DecryptCB decrypt_cb) {
   DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
 
   if (!encrypted->decrypt_config()) {
     // If there is no DecryptConfig, then the data is unencrypted so return it
     // immediately.
-    decrypt_cb.Run(kSuccess, encrypted);
+    std::move(decrypt_cb).Run(kSuccess, encrypted);
     return;
   }
 
@@ -502,7 +502,7 @@ void AesDecryptor::Decrypt(StreamType stream_type,
   DecryptionKey* key = GetKey_Locked(key_id);
   if (!key) {
     DVLOG(1) << "Could not find a matching key for the given key ID.";
-    decrypt_cb.Run(kNoKey, nullptr);
+    std::move(decrypt_cb).Run(kNoKey, nullptr);
     return;
   }
 
@@ -510,13 +510,13 @@ void AesDecryptor::Decrypt(StreamType stream_type,
       DecryptData(*encrypted.get(), *key->decryption_key());
   if (!decrypted) {
     DVLOG(1) << "Decryption failed.";
-    decrypt_cb.Run(kError, nullptr);
+    std::move(decrypt_cb).Run(kError, nullptr);
     return;
   }
 
   DCHECK_EQ(decrypted->timestamp(), encrypted->timestamp());
   DCHECK_EQ(decrypted->duration(), encrypted->duration());
-  decrypt_cb.Run(kSuccess, std::move(decrypted));
+  std::move(decrypt_cb).Run(kSuccess, std::move(decrypted));
 }
 
 void AesDecryptor::CancelDecrypt(StreamType stream_type) {
@@ -524,15 +524,15 @@ void AesDecryptor::CancelDecrypt(StreamType stream_type) {
 }
 
 void AesDecryptor::InitializeAudioDecoder(const AudioDecoderConfig& config,
-                                          const DecoderInitCB& init_cb) {
+                                          DecoderInitCB init_cb) {
   // AesDecryptor does not support audio decoding.
-  init_cb.Run(false);
+  std::move(init_cb).Run(false);
 }
 
 void AesDecryptor::InitializeVideoDecoder(const VideoDecoderConfig& config,
-                                          const DecoderInitCB& init_cb) {
+                                          DecoderInitCB init_cb) {
   // AesDecryptor does not support video decoding.
-  init_cb.Run(false);
+  std::move(init_cb).Run(false);
 }
 
 void AesDecryptor::DecryptAndDecodeAudio(scoped_refptr<DecoderBuffer> encrypted,

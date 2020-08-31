@@ -21,12 +21,9 @@ using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
 
-using platform::kEmptyTraceId;
-using platform::MockLoggingPlatform;
-
 // These tests validate that parameters are passed correctly by using the Trace
 // Internals.
-constexpr auto category = platform::TraceCategory::mDNS;
+constexpr auto category = TraceCategory::kMdns;
 constexpr uint32_t line = 10;
 
 TEST(TraceLoggingInternalTest, CreatingNoTraceObjectValid) {
@@ -38,15 +35,13 @@ TEST(TraceLoggingInternalTest, TestMacroStyleInitializationTrue) {
   MockLoggingPlatform platform;
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _))
       .Times(1)
-      .WillOnce(
-          DoAll(Invoke(platform::ValidateTraceTimestampDiff<delay_in_ms>),
-                Invoke(platform::ValidateTraceErrorCode<Error::Code::kNone>)));
+      .WillOnce(DoAll(Invoke(ValidateTraceTimestampDiff<delay_in_ms>),
+                      Invoke(ValidateTraceErrorCode<Error::Code::kNone>)));
 
   {
     uint8_t temp[sizeof(SynchronousTraceLogger)];
-    auto ptr = true ? TraceInstanceHelper<SynchronousTraceLogger>::Create(
-                          temp, category, "Name", __FILE__, line)
-                    : TraceInstanceHelper<SynchronousTraceLogger>::Empty();
+    auto ptr = TraceInstanceHelper<SynchronousTraceLogger>::Create(
+        temp, category, "Name", __FILE__, line);
     std::this_thread::sleep_for(std::chrono::milliseconds(delay_in_ms));
     auto ids = ScopedTraceOperation::hierarchy();
     EXPECT_NE(ids.current, kEmptyTraceId);
@@ -62,10 +57,7 @@ TEST(TraceLoggingInternalTest, TestMacroStyleInitializationFalse) {
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _)).Times(0);
 
   {
-    uint8_t temp[sizeof(SynchronousTraceLogger)];
-    auto ptr = false ? TraceInstanceHelper<SynchronousTraceLogger>::Create(
-                           temp, category, "Name", __FILE__, line)
-                     : TraceInstanceHelper<SynchronousTraceLogger>::Empty();
+    auto ptr = TraceInstanceHelper<SynchronousTraceLogger>::Empty();
     auto ids = ScopedTraceOperation::hierarchy();
     EXPECT_EQ(ids.current, kEmptyTraceId);
     EXPECT_EQ(ids.parent, kEmptyTraceId);
@@ -81,7 +73,7 @@ TEST(TraceLoggingInternalTest, ExpectParametersPassedToResult) {
   MockLoggingPlatform platform;
   EXPECT_CALL(platform, LogTrace(testing::StrEq("Name"), line,
                                  testing::StrEq(__FILE__), _, _, _, _))
-      .WillOnce(Invoke(platform::ValidateTraceErrorCode<Error::Code::kNone>));
+      .WillOnce(Invoke(ValidateTraceErrorCode<Error::Code::kNone>));
 
   { SynchronousTraceLogger{category, "Name", __FILE__, line}; }
 }

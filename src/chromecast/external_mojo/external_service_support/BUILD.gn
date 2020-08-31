@@ -22,29 +22,33 @@ source_set("external_service") {
 
 source_set("process_setup") {
   sources = [
-    "crash_reporter_client.cc",
-    "crash_reporter_client.h",
     "process_setup.cc",
     "process_setup.h",
   ]
   deps = [
     "//base",
     "//base:base_static",
-    "//chromecast/crash",
-    "//components/crash/content/app",
+    "//chromecast:chromecast_buildflags",
   ]
+
+  if (!is_fuchsia) {
+    sources += [
+      "crash_reporter_client.cc",
+      "crash_reporter_client.h",
+    ]
+    deps += [
+      "//chromecast/crash",
+      "//components/crash/core/app",
+    ]
+  }
 }
 
 source_set("service_process") {
-  sources = [
-    "service_process.h",
-  ]
+  sources = [ "service_process.h" ]
 }
 
 source_set("standalone_service_main") {
-  sources = [
-    "standalone_service_main.cc",
-  ]
+  sources = [ "standalone_service_main.cc" ]
   deps = [
     ":external_service",
     ":process_setup",
@@ -52,9 +56,7 @@ source_set("standalone_service_main") {
     "//chromecast/external_mojo/public/cpp:common",
     "//mojo/core/embedder",
   ]
-  public_deps = [
-    ":service_process",
-  ]
+  public_deps = [ ":service_process" ]
 }
 
 source_set("chromium_service") {
@@ -73,9 +75,7 @@ source_set("chromium_service") {
 }
 
 executable("standalone_mojo_broker") {
-  sources = [
-    "standalone_mojo_broker.cc",
-  ]
+  sources = [ "standalone_mojo_broker.cc" ]
   deps = [
     ":process_setup",
     "//base",

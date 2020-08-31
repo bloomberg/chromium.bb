@@ -8,10 +8,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/system/platform_handle.h"
-#include "services/audio/public/mojom/audio_processing.mojom.h"
 
 namespace audio {
 
@@ -47,7 +46,7 @@ void InputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
       base::BindOnce(&InputIPC::OnError, base::Unretained(this)));
 
   // For now we don't care about key presses, so we pass a invalid buffer.
-  mojo::ScopedSharedBufferHandle invalid_key_press_count_buffer;
+  base::ReadOnlySharedMemoryRegion invalid_key_press_count_buffer;
 
   mojo::PendingRemote<media::mojom::AudioLog> log;
   if (log_)
@@ -56,7 +55,6 @@ void InputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
       stream_.BindNewPipeAndPassReceiver(), std::move(client), {},
       std::move(log), device_id_, params, total_segments,
       automatic_gain_control, std::move(invalid_key_press_count_buffer),
-      /*processing config*/ nullptr,
       base::BindOnce(&InputIPC::StreamCreated, weak_factory_.GetWeakPtr()));
 }
 
@@ -76,16 +74,14 @@ void InputIPC::StreamCreated(
   // but Loopback streams do not.
   stream_id_ = stream_id;
 
-  base::PlatformFile socket_handle;
-  auto result =
-      mojo::UnwrapPlatformFile(std::move(data_pipe->socket), &socket_handle);
-  DCHECK_EQ(result, MOJO_RESULT_OK);
+  DCHECK(data_pipe->socket.is_valid_platform_file());
+  base::ScopedPlatformFile socket_handle = data_pipe->socket.TakePlatformFile();
   base::ReadOnlySharedMemoryRegion& shared_memory_region =
       data_pipe->shared_memory;
   DCHECK(shared_memory_region.IsValid());
 
-  delegate_->OnStreamCreated(std::move(shared_memory_region), socket_handle,
-                             initially_muted);
+  delegate_->OnStreamCreated(std::move(shared_memory_region),
+                             std::move(socket_handle), initially_muted);
 }
 
 void InputIPC::RecordStream() {

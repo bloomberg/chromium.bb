@@ -4,6 +4,7 @@
 
 import("//build/config/linux/pkg_config.gni")
 import("//media/media_options.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//tools/generate_stubs/rules.gni")
 
 # When libpulse is not directly linked, use stubs to allow for dlopening of the
@@ -13,9 +14,7 @@ if (use_pulseaudio && !link_pulseaudio) {
     extra_header = "pulse/pulse_stub_header.fragment"
     sigs = [ "pulse/pulse.sigs" ]
     output_name = "pulse/pulse_stubs"
-    deps = [
-      "//base",
-    ]
+    deps = [ "//base" ]
   }
 }
 
@@ -24,17 +23,12 @@ if (is_android) {
     extra_header = "android/aaudio_stub_header.fragment"
     sigs = [ "android/aaudio.sigs" ]
     output_name = "android/aaudio_stubs"
-    deps = [
-      "//base",
-    ]
+    deps = [ "//base" ]
   }
 }
 
 config("platform_config") {
   defines = []
-  if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
-  }
   if (use_alsa) {
     defines += [ "USE_ALSA" ]
   }
@@ -45,6 +39,7 @@ source_set("audio") {
   # is a roll-up target which is part of the //media component. Most other DEPs
   # should be using //media and not directly DEP this roll-up target.
   visibility = [
+    ":wav_audio_handler_fuzzer",
     "//media",
 
     "//media/renderers",
@@ -108,8 +103,6 @@ source_set("audio") {
     "audio_output_resampler.h",
     "audio_output_stream_sink.cc",
     "audio_output_stream_sink.h",
-    "audio_power_monitor.cc",
-    "audio_power_monitor.h",
     "audio_sink_parameters.cc",
     "audio_sink_parameters.h",
     "audio_source_diverter.h",
@@ -149,6 +142,7 @@ source_set("audio") {
   ]
   deps = [
     "//base",
+    "//build:chromecast_buildflags",
     "//media/base",
     "//url",
   ]
@@ -300,8 +294,8 @@ source_set("audio") {
       "fuchsia/audio_output_stream_fuchsia.h",
     ]
     deps += [
-      "//third_party/fuchsia-sdk/sdk:fuchsia-media",
-      "//third_party/fuchsia-sdk/sdk:sys_cpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
   }
 
@@ -381,7 +375,6 @@ source_set("unit_tests") {
     "audio_output_device_unittest.cc",
     "audio_output_proxy_unittest.cc",
     "audio_output_unittest.cc",
-    "audio_power_monitor_unittest.cc",
     "audio_system_impl_unittest.cc",
     "audio_thread_hang_monitor_unittest.cc",
     "power_observer_helper_unittest.cc",
@@ -456,4 +449,13 @@ source_set("unit_tests") {
       "audio_low_latency_input_output_unittest.cc",
     ]
   }
+}
+
+fuzzer_test("wav_audio_handler_fuzzer") {
+  sources = [ "wav_audio_handler_fuzzer.cc" ]
+  deps = [
+    ":audio",
+    "//base",
+    "//media:test_support",
+  ]
 }

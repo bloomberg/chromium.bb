@@ -21,6 +21,8 @@
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/allow_service_worker_result.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -28,7 +30,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/cpp/resource_response_info.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -66,13 +68,16 @@ bool ShouldFallbackToLoadOfflinePage(
 ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerContainerHost> container_host,
-    ResourceType resource_type,
-    bool skip_service_worker)
+    blink::mojom::ResourceType resource_type,
+    bool skip_service_worker,
+    ServiceWorkerAccessedCallback service_worker_accessed_callback)
     : context_(std::move(context)),
       container_host_(std::move(container_host)),
       resource_type_(resource_type),
       skip_service_worker_(skip_service_worker),
-      force_update_started_(false) {
+      force_update_started_(false),
+      service_worker_accessed_callback_(
+          std::move(service_worker_accessed_callback)) {
   DCHECK(ServiceWorkerUtils::IsMainResourceType(resource_type));
   TRACE_EVENT_WITH_FLOW0("ServiceWorker",
                          "ServiceWorkerControlleeRequestHandler::"
@@ -95,7 +100,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeScheduleUpdate() {
 
   // For navigations, the update logic is taken care of
   // during navigation and waits for the HintToUpdateServiceWorker message.
-  if (IsResourceTypeFrame(resource_type_))
+  if (blink::IsResourceTypeFrame(resource_type_))
     return;
 
   // For shared workers. The renderer doesn't yet send a
@@ -165,7 +170,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   resource_context_ = resource_context;
 
   // Look up a registration.
-  context_->storage()->FindRegistrationForClientUrl(
+  context_->registry()->FindRegistrationForClientUrl(
       stripped_url_,
       base::BindOnce(
           &ServiceWorkerControlleeRequestHandler::ContinueWithRegistration,
@@ -228,12 +233,12 @@ bool ServiceWorkerControlleeRequestHandler::InitializeContainerHost(
   container_host_->SetControllerRegistration(nullptr,
                                              /*notify_controllerchange=*/false);
   stripped_url_ = net::SimplifyUrlForRequest(tentative_resource_request.url);
-  container_host_->UpdateUrls(
-      stripped_url_, tentative_resource_request.site_for_cookies,
-      tentative_resource_request.trusted_params
-          ? tentative_resource_request.trusted_params->network_isolation_key
-                .GetTopFrameOrigin()
-          : base::nullopt);
+  container_host_->UpdateUrls(stripped_url_,
+                              tentative_resource_request.site_for_cookies,
+                              tentative_resource_request.trusted_params
+                                  ? tentative_resource_request.trusted_params
+                                        ->isolation_info.top_frame_origin()
+                                  : base::nullopt);
   return true;
 }
 
@@ -278,20 +283,28 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
     return;
   }
 
-  bool allow_service_worker = false;
+  AllowServiceWorkerResult allow_service_worker =
+      AllowServiceWorkerResult::No();
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     allow_service_worker =
         GetContentClient()->browser()->AllowServiceWorkerOnUI(
-            registration->scope(), container_host_->site_for_cookies(),
+            registration->scope(),
+            container_host_->site_for_cookies().RepresentativeUrl(),
             container_host_->top_frame_origin(), /*script_url=*/GURL(),
-            browser_context_, container_host_->web_contents_getter());
+            browser_context_);
   } else {
     allow_service_worker =
         GetContentClient()->browser()->AllowServiceWorkerOnIO(
-            registration->scope(), container_host_->site_for_cookies(),
+            registration->scope(),
+            container_host_->site_for_cookies().RepresentativeUrl(),
             container_host_->top_frame_origin(), /*script_url=*/GURL(),
-            resource_context_, container_host_->web_contents_getter());
+            resource_context_);
   }
+
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(service_worker_accessed_callback_, registration->scope(),
+                     allow_service_worker));
 
   if (!allow_service_worker) {
     TRACE_EVENT_WITH_FLOW1(
@@ -439,10 +452,10 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
   DCHECK_NE(active_version->fetch_handler_existence(),
             ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
   ServiceWorkerMetrics::CountControlledPageLoad(
-      active_version->site_for_uma(), stripped_url_,
-      resource_type_ == ResourceType::kMainFrame);
+      active_version->site_for_uma(),
+      resource_type_ == blink::mojom::ResourceType::kMainFrame);
 
-  if (IsResourceTypeFrame(resource_type_))
+  if (blink::IsResourceTypeFrame(resource_type_))
     container_host_->AddServiceWorkerToUpdate(active_version);
 
   if (active_version->fetch_handler_existence() !=
@@ -496,7 +509,7 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
       !original_registration->installing_version()) {
     // Update failed. Look up the registration again since the original
     // registration was possibly unregistered in the meantime.
-    context_->storage()->FindRegistrationForClientUrl(
+    context_->registry()->FindRegistrationForClientUrl(
         stripped_url_,
         base::BindOnce(
             &ServiceWorkerControlleeRequestHandler::ContinueWithRegistration,
@@ -552,7 +565,7 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
     // When the status is REDUNDANT, the update failed (eg: script error), we
     // continue with the incumbent version.
     // In case unregister job may have run, look up the registration again.
-    context_->storage()->FindRegistrationForClientUrl(
+    context_->registry()->FindRegistrationForClientUrl(
         stripped_url_,
         base::BindOnce(
             &ServiceWorkerControlleeRequestHandler::ContinueWithRegistration,

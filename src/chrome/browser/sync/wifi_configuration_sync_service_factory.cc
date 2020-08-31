@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/common/channel_info.h"
@@ -16,15 +17,28 @@
 
 // static
 chromeos::sync_wifi::WifiConfigurationSyncService*
-WifiConfigurationSyncServiceFactory::GetForProfile(Profile* profile) {
+WifiConfigurationSyncServiceFactory::GetForProfile(Profile* profile,
+                                                   bool create) {
+  if (!ShouldRunInProfile(profile)) {
+    return nullptr;
+  }
+
   return static_cast<chromeos::sync_wifi::WifiConfigurationSyncService*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, create));
 }
 
 // static
 WifiConfigurationSyncServiceFactory*
 WifiConfigurationSyncServiceFactory::GetInstance() {
   return base::Singleton<WifiConfigurationSyncServiceFactory>::get();
+}
+
+// static
+bool WifiConfigurationSyncServiceFactory::ShouldRunInProfile(
+    const Profile* profile) {
+  return profile && !chromeos::ProfileHelper::IsSigninProfile(profile) &&
+         !chromeos::ProfileHelper::IsLockScreenAppProfile(profile) &&
+         !profile->IsOffTheRecord();
 }
 
 WifiConfigurationSyncServiceFactory::WifiConfigurationSyncServiceFactory()

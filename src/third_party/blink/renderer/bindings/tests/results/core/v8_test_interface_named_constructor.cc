@@ -155,8 +155,8 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
     default_null_string_optionalstring_arg = nullptr;
   }
   if (UNLIKELY(num_args_passed <= 5)) {
-    Document& document = *To<Document>(ToExecutionContext(
-        info.NewTarget().As<v8::Object>()->CreationContext()));
+    Document& document = *ToLocalDOMWindow(
+        info.NewTarget().As<v8::Object>()->CreationContext())->document();
     TestInterfaceNamedConstructor* impl = TestInterfaceNamedConstructor::CreateForJSConstructor(document, string_arg, default_undefined_optional_boolean_arg, default_undefined_optional_long_arg, default_undefined_optional_string_arg, default_null_string_optionalstring_arg, exception_state);
     if (exception_state.HadException()) {
       return;
@@ -170,8 +170,8 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
   if (!optional_string_arg.Prepare())
     return;
 
-  Document& document = *To<Document>(ToExecutionContext(
-      info.NewTarget().As<v8::Object>()->CreationContext()));
+  Document& document = *ToLocalDOMWindow(
+      info.NewTarget().As<v8::Object>()->CreationContext())->document();
   TestInterfaceNamedConstructor* impl = TestInterfaceNamedConstructor::CreateForJSConstructor(document, string_arg, default_undefined_optional_boolean_arg, default_undefined_optional_long_arg, default_undefined_optional_string_arg, default_null_string_optionalstring_arg, optional_string_arg, exception_state);
   if (exception_state.HadException()) {
     return;
@@ -309,16 +309,6 @@ v8::Local<v8::Object> V8TestInterfaceNamedConstructor::FindInstanceInPrototypeCh
 TestInterfaceNamedConstructor* V8TestInterfaceNamedConstructor::ToImplWithTypeCheck(
     v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
-}
-
-TestInterfaceNamedConstructor* NativeValueTraits<TestInterfaceNamedConstructor>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestInterfaceNamedConstructor* native_value = V8TestInterfaceNamedConstructor::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestInterfaceNamedConstructor"));
-  }
-  return native_value;
 }
 
 }  // namespace blink

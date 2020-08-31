@@ -4,13 +4,11 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.data;
 
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.view.ViewGroup;
 
 import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
-import androidx.annotation.Px;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
@@ -27,7 +25,7 @@ public class KeyboardAccessoryData {
      * Describes a tab which should be displayed as a small icon at the start of the keyboard
      * accessory. Typically, a tab is responsible to change the accessory sheet below the accessory.
      */
-    public final static class Tab {
+    public static final class Tab {
         private final String mTitle;
         private final Drawable mIcon;
         private final @Nullable String mOpeningAnnouncement;
@@ -172,44 +170,46 @@ public class KeyboardAccessoryData {
     }
 
     /**
+     * Represents a toggle displayed above suggestions in the accessory sheet, through which the
+     * user can set an option. Displayed for example when password saving is disabled for the
+     * current site, to allow the user to easily re-enable saving if desired.
+     */
+    public static final class OptionToggle {
+        private final String mDisplayText;
+        private final boolean mEnabled;
+        private final Callback<Boolean> mCallback;
+
+        public OptionToggle(String displayText, boolean enabled, Callback<Boolean> callback) {
+            mDisplayText = displayText;
+            mEnabled = enabled;
+            mCallback = callback;
+        }
+
+        public String getDisplayText() {
+            return mDisplayText;
+        }
+
+        public boolean isEnabled() {
+            return mEnabled;
+        }
+
+        public Callback<Boolean> getCallback() {
+            return mCallback;
+        }
+    }
+
+    /**
      * Represents a Profile, or a Credit Card, or the credentials for a website
      * (username + password), to be shown on the manual fallback UI.
      */
-    public final static class UserInfo {
+    public static final class UserInfo {
         private final String mOrigin;
         private final List<UserInfoField> mFields = new ArrayList<>();
-        private final @Nullable FaviconProvider mFaviconProvider;
+        private final boolean mIsPslMatch;
 
-        /**
-         * Favicons used by UserInfo views are provided and mocked using this interface.
-         */
-        public interface FaviconProvider {
-            /**
-             * Data object containing the result of a {@link FaviconProvider#fetchFavicon} calls.
-             */
-            class FaviconResult {
-                public final String mOrigin;
-                public final Bitmap mFavicon;
-
-                public FaviconResult(String origin, Bitmap favicon) {
-                    mOrigin = origin;
-                    mFavicon = favicon;
-                }
-            }
-
-            /**
-             * Starts a request for a favicon. The callback can be called either asynchronously or
-             * synchronously (depending on whether the icon was cached).
-             * @param origin The origin the icon should be requested for.
-             * @param desiredSize The size the icon should have. Used for height and width.
-             * @param favicon The callback that will be called once the icon was fetched.
-             */
-            void fetchFavicon(String origin, @Px int desiredSize, Callback<FaviconResult> favicon);
-        }
-
-        public UserInfo(String origin, @Nullable FaviconProvider faviconProvider) {
+        public UserInfo(String origin, boolean isPslMatch) {
             mOrigin = origin;
-            mFaviconProvider = faviconProvider;
+            mIsPslMatch = isPslMatch;
         }
 
         /**
@@ -235,18 +235,17 @@ public class KeyboardAccessoryData {
         }
 
         /**
-         * Possibly holds a favicon provider.
-         * @return A {@link FaviconProvider}. Optional.
+         * @return True iff the user info originates from a PSL match and is not a first-party item.
          */
-        public @Nullable FaviconProvider getFaviconProvider() {
-            return mFaviconProvider;
+        public boolean isPslMatch() {
+            return mIsPslMatch;
         }
     }
 
     /**
      * Represents a command below the suggestions, such as "Manage password...".
      */
-    public final static class FooterCommand {
+    public static final class FooterCommand {
         private final String mDisplayText;
         private final Callback<FooterCommand> mCallback;
 
@@ -269,8 +268,7 @@ public class KeyboardAccessoryData {
         }
 
         /**
-         * Returns the translated text to be shown on the UI for this footer command. This text is
-         * used for accessibility.
+         * Invokes the stored callback. To be called when the user taps on the footer command.
          */
         public void execute() {
             mCallback.onResult(this);
@@ -281,10 +279,11 @@ public class KeyboardAccessoryData {
      * Represents the contents of a accessory sheet tab below the keyboard accessory, which can
      * correspond to passwords, credit cards, or profiles data. Created natively.
      */
-    public final static class AccessorySheetData {
+    public static final class AccessorySheetData {
         private final String mTitle;
         private final String mWarning;
         private final @AccessoryTabType int mSheetType;
+        private OptionToggle mToggle;
         private final List<UserInfo> mUserInfoList = new ArrayList<>();
         private final List<FooterCommand> mFooterCommands = new ArrayList<>();
 
@@ -297,10 +296,20 @@ public class KeyboardAccessoryData {
             mSheetType = sheetType;
             mTitle = title;
             mWarning = warning;
+            mToggle = null;
         }
 
         public @AccessoryTabType int getSheetType() {
             return mSheetType;
+        }
+
+        public void setOptionToggle(OptionToggle toggle) {
+            mToggle = toggle;
+        }
+
+        @Nullable
+        public OptionToggle getOptionToggle() {
+            return mToggle;
         }
 
         /**

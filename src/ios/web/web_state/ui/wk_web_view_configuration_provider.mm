@@ -7,10 +7,12 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
+#include "base/check.h"
 #include "base/ios/ios_util.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/safe_browsing/core/features.h"
 #include "ios/web/common/features.h"
 #import "ios/web/js_messaging/crw_wk_script_message_router.h"
 #import "ios/web/js_messaging/page_script_util.h"
@@ -101,6 +103,9 @@ void WKWebViewConfigurationProvider::ResetWithWebViewConfiguration(
   } else {
     configuration = [configuration copy];
   }
+  if (configuration_) {
+    Purge();
+  }
   configuration_ = configuration;
 
   if (browser_state_->IsOffTheRecord()) {
@@ -108,20 +113,30 @@ void WKWebViewConfigurationProvider::ResetWithWebViewConfiguration(
         setWebsiteDataStore:[WKWebsiteDataStore nonPersistentDataStore]];
   }
 
-  if (base::FeatureList::IsEnabled(
-          web::features::kIgnoresViewportScaleLimits)) {
-    [configuration_ setIgnoresViewportScaleLimits:YES];
-  }
+  [configuration_ setIgnoresViewportScaleLimits:YES];
 
   if (@available(iOS 13, *)) {
     @try {
       // Disable system context menu on iOS 13 and later. Disabling
       // "longPressActions" prevents the WKWebView ContextMenu from being
-      // displayed.
+      // displayed and also prevents the iOS 13 ContextMenu delegate methods
+      // from being called.
       // https://github.com/WebKit/webkit/blob/1233effdb7826a5f03b3cdc0f67d713741e70976/Source/WebKit/UIProcess/API/Cocoa/WKWebViewConfiguration.mm#L307
-      [configuration_ setValue:@NO forKey:@"longPressActionsEnabled"];
+      BOOL enable_long_press_action =
+          !web::GetWebClient()->EnableLongPressAndForceTouchHandling();
+      [configuration_ setValue:@(enable_long_press_action)
+                        forKey:@"longPressActionsEnabled"];
     } @catch (NSException* exception) {
       NOTREACHED() << "Error setting value for longPressActionsEnabled";
+    }
+
+    // WKWebView's "fradulentWebsiteWarning" is an iOS 13+ feature that is
+    // conceptually similar to Safe Browsing but uses a non-Google provider and
+    // only works for devices in certain locales. Disable this feature when
+    // Safe Browsing is available.
+    if (base::FeatureList::IsEnabled(
+            safe_browsing::kSafeBrowsingAvailableOnIOS)) {
+      [[configuration_ preferences] setFraudulentWebsiteWarningEnabled:NO];
     }
   }
 

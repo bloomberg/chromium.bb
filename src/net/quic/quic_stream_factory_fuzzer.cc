@@ -97,7 +97,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       data_provider.ConsumeBool() ? 1 : 0;
   params.close_sessions_on_ip_change = data_provider.ConsumeBool();
   params.allow_server_migration = data_provider.ConsumeBool();
-  params.race_cert_verification = data_provider.ConsumeBool();
   params.estimate_initial_rtt = data_provider.ConsumeBool();
   params.headers_include_h2_stream_dependency = data_provider.ConsumeBool();
   params.enable_socket_recv_optimization = data_provider.ConsumeBool();
@@ -139,8 +138,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           env->cert_transparency_verifier.get(), nullptr,
           &env->crypto_client_stream_factory, &env->quic_context);
 
-  SetQuicReloadableFlag(quic_supports_tls_handshake, true);
-  SetQuicRestartFlag(quic_coalesce_stream_frames_2, true);
   QuicStreamRequest request(factory.get());
   TestCompletionCallback callback;
   NetErrorDetails net_error_details;
@@ -148,6 +145,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   quic::ParsedQuicVersion version =
       versions[data_provider.ConsumeIntegralInRange<size_t>(
           0, versions.size() - 1)];
+
+  quic::QuicEnableVersion(version);
+
   request.Request(
       env->host_port_pair, version, PRIVACY_MODE_DISABLED, DEFAULT_PRIORITY,
       SocketTag(), NetworkIsolationKey(), false /* disable_secure_dns */,

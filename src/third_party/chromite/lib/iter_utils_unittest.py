@@ -7,9 +7,14 @@
 
 from __future__ import print_function
 
-from chromite.lib import cros_test_lib
+import sys
 
+from chromite.lib import cros_test_lib
 from chromite.lib import iter_utils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 class IntervalsTest(cros_test_lib.TestCase):
   """Test of interval overlap calculation."""

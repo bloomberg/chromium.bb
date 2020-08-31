@@ -12,6 +12,7 @@ SkUnichar utf8_next(const char** ptr, const char* end) {
     SkUnichar val = SkUTF::NextUTF8(ptr, end);
     return val < 0 ? 0xFFFD : val;
 }
+
 }
 
 namespace skia {
@@ -47,7 +48,7 @@ Run::Run(ParagraphImpl* master,
     fOffsets[info.glyphCount] = { 0, 0};
     fClusterIndexes[info.glyphCount] = this->leftToRight() ? info.utf8Range.end() : info.utf8Range.begin();
     fEllipsis = false;
-    fPlaceholder = nullptr;
+    fPlaceholderIndex = std::numeric_limits<size_t>::max();
 }
 
 SkShaper::RunHandler::Buffer Run::newRunBuffer() {
@@ -65,9 +66,10 @@ SkScalar Run::calculateWidth(size_t start, size_t end, bool clip) const {
         shift = fShifts[clip ? end - 1 : end] - fShifts[start];
     }
     auto correction = 0.0f;
-    if (end > start) {
-        correction = fMaster->posShift(fIndex, clip ? end - 1 : end) -
-                     fMaster->posShift(fIndex, start);
+    if (end > start && !fJustificationShifts.empty()) {
+        // This is not a typo: we are using Point as a pair of SkScalars
+        correction = fJustificationShifts[end - 1].fX -
+                     fJustificationShifts[start].fY;
     }
     return posX(end) - posX(start) + shift + correction;
 }
@@ -83,12 +85,14 @@ void Run::copyTo(SkTextBlobBuilder& builder, size_t pos, size_t size, SkVector r
         if (fSpaced) {
             point.fX += fShifts[i + pos];
         }
-        point.fX += fMaster->posShift(fIndex, i + pos);
+        if (!fJustificationShifts.empty()) {
+            point.fX += fJustificationShifts[i + pos].fX;
+        }
         blobBuffer.points()[i] = point + runOffset;
     }
 }
 
-std::tuple<bool, ClusterIndex, ClusterIndex> Run::findLimitingClusters(TextRange text, bool onlyInnerClusters) const {
+std::tuple<bool, ClusterIndex, ClusterIndex> Run::findLimitingClusters(TextRange text, bool extendToClusters) const {
 
     if (text.width() == 0) {
         for (auto i = fClusterRange.start; i != fClusterRange.end; ++i) {
@@ -101,19 +105,27 @@ std::tuple<bool, ClusterIndex, ClusterIndex> Run::findLimitingClusters(TextRange
     }
     Cluster* start = nullptr;
     Cluster* end = nullptr;
-    if (onlyInnerClusters) {
+    if (extendToClusters) {
         for (auto i = fClusterRange.start; i != fClusterRange.end; ++i) {
             auto& cluster = fMaster->cluster(i);
-            if (cluster.textRange().start >= text.start && start == nullptr) {
-                start = &cluster;
-            }
-            if (cluster.textRange().end <= text.end) {
-                end = &cluster;
-            } else {
+            auto clusterRange = cluster.textRange();
+            if (clusterRange.end <= text.start) {
+                continue;
+            } else if (clusterRange.start >= text.end) {
                 break;
+            }
+
+            TextRange s = TextRange(std::max(clusterRange.start, text.start),
+                                    std::min(clusterRange.end, text.end));
+            if (s.width() > 0) {
+                if (start == nullptr) {
+                    start = &cluster;
+                }
+                end = &cluster;
             }
         }
     } else {
+        // We need this branch when we draw styles for the part of a cluster
         for (auto i = fClusterRange.start; i != fClusterRange.end; ++i) {
             auto& cluster = fMaster->cluster(i);
             if (cluster.textRange().end > text.start && start == nullptr) {
@@ -140,7 +152,7 @@ std::tuple<bool, ClusterIndex, ClusterIndex> Run::findLimitingClusters(TextRange
     return std::make_tuple(startIndex != fClusterRange.end && endIndex != fClusterRange.end, startIndex, endIndex);
 }
 
-void Run::iterateThroughClustersInTextOrder(const ClusterVisitor& visitor) {
+void Run::iterateThroughClustersInTextOrder(const ClusterTextVisitor& visitor) {
     // Can't figure out how to do it with one code for both cases without 100 ifs
     // Can't go through clusters because there are no cluster table yet
     if (leftToRight()) {
@@ -148,7 +160,7 @@ void Run::iterateThroughClustersInTextOrder(const ClusterVisitor& visitor) {
         size_t cluster = this->clusterIndex(start);
         for (size_t glyph = 1; glyph <= this->size(); ++glyph) {
             auto nextCluster = this->clusterIndex(glyph);
-            if (nextCluster == cluster) {
+            if (nextCluster <= cluster) {
                 continue;
             }
 
@@ -157,7 +169,7 @@ void Run::iterateThroughClustersInTextOrder(const ClusterVisitor& visitor) {
                     fClusterStart + cluster,
                     fClusterStart + nextCluster,
                     this->calculateWidth(start, glyph, glyph == size()),
-                    this->calculateHeight());
+                    this->calculateHeight(LineMetricStyle::CSS, LineMetricStyle::CSS));
 
             start = glyph;
             cluster = nextCluster;
@@ -168,7 +180,7 @@ void Run::iterateThroughClustersInTextOrder(const ClusterVisitor& visitor) {
         for (int32_t start = this->size() - 1; start >= 0; --start) {
             size_t nextCluster =
                     start == 0 ? this->fUtf8Range.end() : this->clusterIndex(start - 1);
-            if (nextCluster == cluster) {
+            if (nextCluster <= cluster) {
                 continue;
             }
 
@@ -177,11 +189,20 @@ void Run::iterateThroughClustersInTextOrder(const ClusterVisitor& visitor) {
                     fClusterStart + cluster,
                     fClusterStart + nextCluster,
                     this->calculateWidth(start, glyph, glyph == 0),
-                    this->calculateHeight());
+                    this->calculateHeight(LineMetricStyle::CSS, LineMetricStyle::CSS));
 
             glyph = start;
             cluster = nextCluster;
         }
+    }
+}
+
+void Run::iterateThroughClusters(const ClusterVisitor& visitor) {
+
+    for (size_t index = 0; index < fClusterRange.width(); ++index) {
+        auto correctIndex = leftToRight() ? fClusterRange.start + index : fClusterRange.end - index - 1;
+        auto cluster = &fMaster->cluster(correctIndex);
+        visitor(cluster);
     }
 }
 
@@ -238,9 +259,11 @@ void Run::shift(const Cluster* cluster, SkScalar offset) {
 
 void Run::updateMetrics(InternalLineMetrics* endlineMetrics) {
 
+    SkASSERT(isPlaceholder());
+    auto placeholderStyle = this->placeholderStyle();
     // Difference between the placeholder baseline and the line bottom
     SkScalar baselineAdjustment = 0;
-    switch (fPlaceholder->fBaseline) {
+    switch (placeholderStyle->fBaseline) {
         case TextBaseline::kAlphabetic:
             break;
 
@@ -249,11 +272,11 @@ void Run::updateMetrics(InternalLineMetrics* endlineMetrics) {
             break;
     }
 
-    auto height = fPlaceholder->fHeight;
-    auto offset = fPlaceholder->fBaselineOffset;
+    auto height = placeholderStyle->fHeight;
+    auto offset = placeholderStyle->fBaselineOffset;
 
     fFontMetrics.fLeading = 0;
-    switch (fPlaceholder->fAlignment) {
+    switch (placeholderStyle->fAlignment) {
         case PlaceholderAlignment::kBaseline:
             fFontMetrics.fAscent = baselineAdjustment - offset;
             fFontMetrics.fDescent = baselineAdjustment + height - offset;
@@ -332,11 +355,20 @@ SkScalar Cluster::trimmedWidth(size_t pos) const {
     // Find the width until the pos and return the min between trimmedWidth and the width(pos)
     // We don't have to take in account cluster shift since it's the same for 0 and for pos
     auto& run = fMaster->run(fRunIndex);
-    return SkTMin(run.positionX(pos) - run.positionX(fStart), fWidth - fSpacing);
+    return std::min(run.positionX(pos) - run.positionX(fStart), fWidth);
 }
 
 SkScalar Run::positionX(size_t pos) const {
-    return posX(pos) + fShifts[pos] + fMaster->posShift(fIndex, pos);
+    return posX(pos) + fShifts[pos] +
+            (fJustificationShifts.empty() ? 0 : fJustificationShifts[pos].fY);
+}
+
+PlaceholderStyle* Run::placeholderStyle() const {
+    if (isPlaceholder()) {
+        return &fMaster->placeholders()[fPlaceholderIndex].fStyle;
+    } else {
+        return nullptr;
+    }
 }
 
 Run* Cluster::run() const {

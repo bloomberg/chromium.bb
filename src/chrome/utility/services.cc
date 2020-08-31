@@ -12,13 +12,14 @@
 #include "build/build_config.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/services/language_detection/language_detection_service_impl.h"
+#include "components/services/language_detection/public/mojom/language_detection.mojom.h"
 #include "components/services/patch/file_patcher_impl.h"
 #include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "components/services/unzip/unzipper_impl.h"
 #include "content/public/common/content_features.h"
 #include "content/public/utility/utility_thread.h"
-#include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
 #include "printing/buildflags/buildflags.h"
@@ -33,9 +34,12 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/common/importer/profile_import.mojom.h"
+#include "chrome/services/sharing/public/mojom/sharing.mojom.h"
+#include "chrome/services/sharing/sharing_impl.h"
+#include "chrome/services/speech/speech_recognition_service_impl.h"
 #include "chrome/utility/importer/profile_import_impl.h"
-#include "components/mirroring/service/features.h"
 #include "components/mirroring/service/mirroring_service.h"
+#include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"  // nogncheck
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #endif  // !defined(OS_ANDROID)
@@ -49,6 +53,9 @@
 #include "chrome/services/file_util/file_util_service.h"  // nogncheck
 #endif
 
+#include "chrome/services/qrcode_generator/public/mojom/qrcode_generator.mojom.h"  // nogncheck
+#include "chrome/services/qrcode_generator/qrcode_generator_service_impl.h"  // nogncheck
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
 #include "chrome/services/removable_storage_writer/removable_storage_writer.h"
@@ -59,11 +66,6 @@
 #include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
 #endif
 
-#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
-#include "chrome/services/isolated_xr_device/xr_device_service.h"  // nogncheck
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"      // nogncheck
-#endif
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
     (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
 #include "chrome/services/printing/printing_service.h"
@@ -71,8 +73,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
-#include "components/services/pdf_compositor/pdf_compositor_impl.h"  // nogncheck
-#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"  // nogncheck
+#include "components/services/print_compositor/print_compositor_impl.h"  // nogncheck
+#include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"  // nogncheck
 #endif
 
 #include "components/services/paint_preview_compositor/paint_preview_compositor_collection_impl.h"
@@ -96,6 +98,20 @@ auto RunFilePatcher(mojo::PendingReceiver<patch::mojom::FilePatcher> receiver) {
 
 auto RunUnzipper(mojo::PendingReceiver<unzip::mojom::Unzipper> receiver) {
   return std::make_unique<unzip::UnzipperImpl>(std::move(receiver));
+}
+
+auto RunLanguageDetectionService(
+    mojo::PendingReceiver<language_detection::mojom::LanguageDetectionService>
+        receiver) {
+  return std::make_unique<language_detection::LanguageDetectionServiceImpl>(
+      std::move(receiver));
+}
+
+auto RunQRCodeGeneratorService(
+    mojo::PendingReceiver<qrcode_generator::mojom::QRCodeGeneratorService>
+        receiver) {
+  return std::make_unique<qrcode_generator::QRCodeGeneratorServiceImpl>(
+      std::move(receiver));
 }
 
 #if defined(OS_WIN)
@@ -125,9 +141,18 @@ auto RunProfileImporter(
 
 auto RunMirroringService(
     mojo::PendingReceiver<mirroring::mojom::MirroringService> receiver) {
-  DCHECK(base::FeatureList::IsEnabled(mirroring::features::kMirroringService));
   return std::make_unique<mirroring::MirroringService>(
       std::move(receiver), content::UtilityThread::Get()->GetIOTaskRunner());
+}
+
+auto RunSharing(mojo::PendingReceiver<sharing::mojom::Sharing> receiver) {
+  return std::make_unique<sharing::SharingImpl>(std::move(receiver));
+}
+
+auto RunSpeechRecognitionService(
+    mojo::PendingReceiver<media::mojom::SpeechRecognitionService> receiver) {
+  return std::make_unique<speech::SpeechRecognitionServiceImpl>(
+      std::move(receiver));
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -159,13 +184,6 @@ auto RunMediaParserFactory(
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
 
-#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
-auto RunXrDeviceService(
-    mojo::PendingReceiver<device::mojom::XRDeviceService> receiver) {
-  return std::make_unique<device::XrDeviceService>(std::move(receiver));
-}
-#endif
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
     (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
 auto RunPrintingService(
@@ -185,9 +203,9 @@ auto RunPaintPreviewCompositor(
 #endif  // BUILDFLAG(ENABLE_PAINT_PREVIEW)
 
 #if BUILDFLAG(ENABLE_PRINTING)
-auto RunPdfCompositor(
-    mojo::PendingReceiver<printing::mojom::PdfCompositor> receiver) {
-  return std::make_unique<printing::PdfCompositorImpl>(
+auto RunPrintCompositor(
+    mojo::PendingReceiver<printing::mojom::PrintCompositor> receiver) {
+  return std::make_unique<printing::PrintCompositorImpl>(
       std::move(receiver), true /* initialize_environment */,
       content::UtilityThread::Get()->GetIOTaskRunner());
 }
@@ -230,10 +248,14 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
   static base::NoDestructor<mojo::ServiceFactory> factory {
     RunFilePatcher,
     RunUnzipper,
+    RunLanguageDetectionService,
+    RunQRCodeGeneratorService,
 
 #if !defined(OS_ANDROID)
     RunProfileImporter,
     RunMirroringService,
+    RunSharing,
+    RunSpeechRecognitionService,
 #endif
 
 #if defined(OS_WIN)
@@ -258,17 +280,13 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
     RunMediaParserFactory,
 #endif
 
-#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
-    RunXrDeviceService,
-#endif
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
     (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
     RunPrintingService,
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
-    RunPdfCompositor,
+    RunPrintCompositor,
 #endif
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW)

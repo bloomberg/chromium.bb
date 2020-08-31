@@ -26,6 +26,9 @@
 #include "vkPlatform.hpp"
 #include "vkRefUtil.hpp"
 
+#include "deMemory.h"
+#include "deInt32.h"
+
 namespace vkt
 {
 namespace ExternalMemoryUtil
@@ -53,8 +56,9 @@ public:
 	NativeHandle&						operator=					(vk::pt::AndroidHardwareBufferPtr buffer);
 
 	void								setWin32Handle				(Win32HandleType type, vk::pt::Win32Handle handle);
-
 	vk::pt::Win32Handle					getWin32Handle				(void) const;
+	void								setHostPtr					(void* hostPtr);
+	void*								getHostPtr					(void) const;
 	int									getFd						(void) const;
 	vk::pt::AndroidHardwareBufferPtr	getAndroidHardwareBuffer	(void) const;
 	void								disown						(void);
@@ -65,6 +69,7 @@ private:
 	Win32HandleType						m_win32HandleType;
 	vk::pt::Win32Handle					m_win32Handle;
 	vk::pt::AndroidHardwareBufferPtr	m_androidHardwareBuffer;
+	void*								m_hostPtr;
 
 	// Disabled
 	NativeHandle&						operator=					(const NativeHandle&);
@@ -166,6 +171,26 @@ enum Transference
 	TRANSFERENCE_REFERENCE
 };
 
+struct ExternalHostMemory
+{
+	ExternalHostMemory(vk::VkDeviceSize aSize, vk::VkDeviceSize aAlignment)
+		: size(deAlignSize(static_cast<size_t>(aSize), static_cast<size_t>(aAlignment)))
+	{
+		data = deAlignedMalloc(this->size, static_cast<size_t>(aAlignment));
+	}
+
+	~ExternalHostMemory()
+	{
+		if (data != DE_NULL)
+		{
+			deAlignedFree(data);
+		}
+	}
+
+	size_t	size;
+	void*	data;
+};
+
 bool							isSupportedPermanence				(vk::VkExternalSemaphoreHandleTypeFlagBits	type,
 																	 Permanence									permanence);
 Transference					getHandelTypeTransferences			(vk::VkExternalSemaphoreHandleTypeFlagBits	type);
@@ -191,7 +216,7 @@ vk::Move<vk::VkSemaphore>		createExportableSemaphore			(const vk::DeviceInterfac
 
 vk::Move<vk::VkSemaphore>		createExportableSemaphoreType		(const vk::DeviceInterface&					vkd,
 																	 vk::VkDevice								device,
-																	 vk::VkSemaphoreTypeKHR						semaphoreType,
+																	 vk::VkSemaphoreType						semaphoreType,
 																	 vk::VkExternalSemaphoreHandleTypeFlagBits	externalType);
 
 int								getSemaphoreFd						(const vk::DeviceInterface&					vkd,
@@ -232,7 +257,7 @@ void							getFenceNative						(const vk::DeviceInterface&					vkd,
 																	 vk::VkFence								fence,
 																	 vk::VkExternalFenceHandleTypeFlagBits		externalType,
 																	 NativeHandle&								nativeHandle,
-                                                                     bool expectFenceUnsignaled = true);
+																	 bool expectFenceUnsignaled = true);
 
 void							importFence							(const vk::DeviceInterface&					vkd,
 																	 const vk::VkDevice							device,
@@ -247,28 +272,28 @@ vk::Move<vk::VkFence>			createAndImportFence				(const vk::DeviceInterface&					
 																	 NativeHandle&								handle,
 																	 vk::VkFenceImportFlags						flags);
 
-vk::Move<vk::VkDeviceMemory>	allocateExportableMemory			(const vk::DeviceInterface&					vkd,
-																	 vk::VkDevice								device,
-																	 const vk::VkMemoryRequirements&			requirements,
-																	 vk::VkExternalMemoryHandleTypeFlagBits		externalType,
-																	 deUint32&									exportedMemoryTypeIndex);
+deUint32						chooseMemoryType					(deUint32									bits);
+
+deUint32						chooseHostVisibleMemoryType			(deUint32									bits,
+																	 const vk::VkPhysicalDeviceMemoryProperties	properties);
 
 // If buffer is not null use dedicated allocation
 vk::Move<vk::VkDeviceMemory>	allocateExportableMemory			(const vk::DeviceInterface&					vkd,
 																	 vk::VkDevice								device,
-																	 const vk::VkMemoryRequirements&			requirements,
+																	 vk::VkDeviceSize							allocationSize,
+																	 deUint32									memoryTypeIndex,
 																	 vk::VkExternalMemoryHandleTypeFlagBits		externalType,
-																	 vk::VkBuffer								buffer,
-																	 deUint32&									exportedMemoryTypeIndex);
+																	 vk::VkBuffer								buffer);
 
 // If image is not null use dedicated allocation
 vk::Move<vk::VkDeviceMemory>	allocateExportableMemory			(const vk::DeviceInterface&					vkd,
 																	 vk::VkDevice								device,
-																	 const vk::VkMemoryRequirements&			requirements,
+																	 vk::VkDeviceSize							allocationSize,
+																	 deUint32									memoryTypeIndex,
 																	 vk::VkExternalMemoryHandleTypeFlagBits		externalType,
-																	 vk::VkImage								image,
-																	 deUint32&									exportedMemoryTypeIndex);
+																	 vk::VkImage								image);
 
+/*
 // \note hostVisible argument is strict. Setting it to false will cause NotSupportedError to be thrown if non-host visible memory doesn't exist.
 // If buffer is not null use dedicated allocation
 vk::Move<vk::VkDeviceMemory>	allocateExportableMemory			(const vk::InstanceInterface&				vki,
@@ -280,6 +305,7 @@ vk::Move<vk::VkDeviceMemory>	allocateExportableMemory			(const vk::InstanceInter
 																	 bool										hostVisible,
 																	 vk::VkBuffer								buffer,
 																	 deUint32&									exportedMemoryTypeIndex);
+*/
 
 vk::Move<vk::VkDeviceMemory>	importMemory						(const vk::DeviceInterface&					vkd,
 																	 vk::VkDevice								device,
@@ -324,6 +350,9 @@ vk::Move<vk::VkImage>			createExternalImage					(const vk::DeviceInterface&					
 																	 vk::VkImageUsageFlags						usageFlags,
 																	 deUint32									mipLevels = 1u,
 																	 deUint32									arrayLayers = 1u);
+
+vk::VkPhysicalDeviceExternalMemoryHostPropertiesEXT getPhysicalDeviceExternalMemoryHostProperties(const vk::InstanceInterface&	vki,
+																								  vk::VkPhysicalDevice			physicalDevice);
 
 } // ExternalMemoryUtil
 } // vkt

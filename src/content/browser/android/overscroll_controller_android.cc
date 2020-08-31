@@ -11,8 +11,8 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/android/edge_effect.h"
 #include "ui/android/edge_effect_l.h"
 #include "ui/android/resources/resource_manager.h"
@@ -151,23 +151,23 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
 
   bool handled = false;
   switch (event.GetType()) {
-    case blink::WebInputEvent::kGestureScrollBegin:
+    case blink::WebInputEvent::Type::kGestureScrollBegin:
       refresh_effect_->OnScrollBegin(
           gfx::ScalePoint(event.PositionInWidget(), dpi_scale_));
       break;
 
-    case blink::WebInputEvent::kGestureScrollUpdate: {
+    case blink::WebInputEvent::Type::kGestureScrollUpdate: {
       gfx::Vector2dF scroll_delta(event.data.scroll_update.delta_x,
                                   event.data.scroll_update.delta_y);
       scroll_delta.Scale(dpi_scale_);
       handled = refresh_effect_->WillHandleScrollUpdate(scroll_delta);
     } break;
 
-    case blink::WebInputEvent::kGestureScrollEnd:
+    case blink::WebInputEvent::Type::kGestureScrollEnd:
       refresh_effect_->OnScrollEnd(gfx::Vector2dF());
       break;
 
-    case blink::WebInputEvent::kGestureFlingStart: {
+    case blink::WebInputEvent::Type::kGestureFlingStart: {
       if (refresh_effect_->IsActive()) {
         gfx::Vector2dF scroll_velocity(event.data.fling_start.velocity_x,
                                        event.data.fling_start.velocity_y);
@@ -187,7 +187,7 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
       }
     } break;
 
-    case blink::WebInputEvent::kGesturePinchBegin:
+    case blink::WebInputEvent::Type::kGesturePinchBegin:
       refresh_effect_->ReleaseWithoutActivation();
       break;
 
@@ -200,22 +200,22 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
 
 void OverscrollControllerAndroid::OnGestureEventAck(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   if (!enabled_)
     return;
 
   // The overscroll effect requires an explicit release signal that may not be
   // sent from the renderer compositor.
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
-      event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
+  if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollEnd ||
+      event.GetType() == blink::WebInputEvent::Type::kGestureFlingStart) {
     OnOverscrolled(DidOverscrollParams());
   }
 
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
+  if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollUpdate &&
       refresh_effect_) {
     // The effect should only be allowed if the scroll events go unconsumed.
     if (refresh_effect_->IsAwaitingScrollUpdateAck() &&
-        ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
+        ack_result == blink::mojom::InputEventResultState::kConsumed) {
       refresh_effect_->Reset();
     }
   }

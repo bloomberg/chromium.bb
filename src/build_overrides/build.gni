@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//base/trace_event/features.gni")
 import("//build/config/gclient_args.gni")
 
 # Uncomment these to specify a different NDK location and version in
@@ -11,9 +12,6 @@ import("//build/config/gclient_args.gni")
 
 # Some non-Chromium builds don't support building java targets.
 enable_java_templates = true
-
-# Some non-Chromium builds don't use Chromium's third_party/binutils.
-linux_use_bundled_binutils_override = true
 
 # Allows different projects to specify their own suppressions and blacklist
 # files for sanitizer tools.

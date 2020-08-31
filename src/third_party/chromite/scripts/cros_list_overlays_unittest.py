@@ -7,9 +7,14 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.lib import cros_test_lib
 from chromite.lib import portage_util
 from chromite.scripts import cros_list_overlays
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class ListOverlaysTest(cros_test_lib.MockTestCase):

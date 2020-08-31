@@ -17,35 +17,14 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/shell/browser/shell_platform_delegate.h"
 #include "ipc/ipc_channel.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/scoped_java_ref.h"
-#elif defined(USE_AURA)
-#if defined(OS_CHROMEOS)
-
-namespace wm {
-class WMTestHelper;
-}
-#endif  // defined(OS_CHROMEOS)
-namespace views {
-class Widget;
-class ViewsDelegate;
-}
-namespace wm {
-class WMState;
-}
-#endif  // defined(USE_AURA)
-
 class GURL;
+
 namespace content {
-
-#if defined(USE_AURA)
-class ShellPlatformDataAura;
-#endif
-
 class BrowserContext;
 class ShellDevToolsFrontend;
 class ShellJavaScriptDialogManager;
@@ -81,14 +60,11 @@ class Shell : public WebContentsDelegate,
   void Close();
   void ShowDevTools();
   void CloseDevTools();
-  bool hide_toolbar() { return hide_toolbar_; }
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
   // Resizes the web content view to the given dimensions.
-  void SizeTo(const gfx::Size& content_size);
-#endif
+  void ResizeWebContentForTests(const gfx::Size& content_size);
 
-  // Do one time initialization at application startup.
-  static void Initialize();
+  // Do one-time initialization at application startup.
+  static void Initialize(std::unique_ptr<ShellPlatformDelegate> platform);
 
   static Shell* CreateNewWindow(
       BrowserContext* browser_context,
@@ -117,17 +93,21 @@ class Shell : public WebContentsDelegate,
   // is destroyed.
   static void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure);
 
-  // Used by the BlinkTestController to stop the message loop before closing all
-  // windows, for specific tests. Fails if called after the message loop has
-  // already been signalled to quit.
+  // Used by the WebTestControlHost to stop the message loop before closing all
+  // windows, for specific tests. Has no effect if the loop is already quitting.
   static void QuitMainMessageLoopForTesting();
 
   // Used for content_browsertests. Called once.
   static void SetShellCreatedCallback(
       base::OnceCallback<void(Shell*)> shell_created_callback);
 
+  static bool ShouldHideToolbar();
+
   WebContents* web_contents() const { return web_contents_.get(); }
-  gfx::NativeWindow window() { return window_; }
+
+#if !defined(OS_ANDROID)
+  gfx::NativeWindow window();
+#endif
 
 #if defined(OS_MACOSX)
   // Public to be called by an ObjC bridge object.
@@ -140,6 +120,7 @@ class Shell : public WebContentsDelegate,
                               const OpenURLParams& params) override;
   void AddNewContents(WebContents* source,
                       std::unique_ptr<WebContents> new_contents,
+                      const GURL& target_url,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
@@ -162,7 +143,8 @@ class Shell : public WebContentsDelegate,
                           bool last_unlocked_by_target) override;
   void CloseContents(WebContents* source) override;
   bool CanOverscrollContent() override;
-  void DidNavigateMainFramePostCommit(WebContents* web_contents) override;
+  void NavigationStateChanged(WebContents* source,
+                              InvalidateTypes changed_flags) override;
   JavaScriptDialogManager* GetJavaScriptDialogManager(
       WebContents* source) override;
   std::unique_ptr<BluetoothChooser> RunBluetoothChooser(
@@ -186,11 +168,9 @@ class Shell : public WebContentsDelegate,
       RenderWidgetHost* render_widget_host,
       base::RepeatingClosure hang_monitor_restarter) override;
   void ActivateContents(WebContents* contents) override;
-  std::unique_ptr<content::WebContents> SwapWebContents(
-      content::WebContents* old_contents,
-      std::unique_ptr<content::WebContents> new_contents,
-      bool did_start_load,
-      bool did_finish_load) override;
+  std::unique_ptr<content::WebContents> ActivatePortalWebContents(
+      content::WebContents* predecessor_contents,
+      std::unique_ptr<content::WebContents> portal_contents) override;
   bool ShouldAllowRunningInsecureContent(content::WebContents* web_contents,
                                          bool allowed_per_prefs,
                                          const url::Origin& origin,
@@ -207,13 +187,11 @@ class Shell : public WebContentsDelegate,
     delay_popup_contents_delegate_for_testing_ = delay;
   }
 
- private:
-  enum UIControl {
-    BACK_BUTTON,
-    FORWARD_BUTTON,
-    STOP_BUTTON
-  };
+  // TODO(danakj): Move this to WebTestShellPlatformDelegate (a test-only
+  // subclass of ShellPlatformDelegate that does not exist yet).
+  bool headless() const { return headless_; }
 
+ private:
   class DevToolsWebContentsObserver;
 
   Shell(std::unique_ptr<WebContents> web_contents, bool should_set_delegate);
@@ -223,39 +201,9 @@ class Shell : public WebContentsDelegate,
                             const gfx::Size& initial_size,
                             bool should_set_delegate);
 
-  // Helper for one time initialization of application
-  static void PlatformInitialize(const gfx::Size& default_window_size);
-  // Helper for one time deinitialization of platform specific state.
-  static void PlatformExit();
-
   // Adjust the size when Blink sends 0 for width and/or height.
   // This happens when Blink requests a default-sized window.
   static gfx::Size AdjustWindowSize(const gfx::Size& initial_size);
-
-  // All the methods that begin with Platform need to be implemented by the
-  // platform specific Shell implementation.
-  // Called from the destructor to let each platform do any necessary cleanup.
-  void PlatformCleanUp();
-  // Creates the main window GUI.
-  void PlatformCreateWindow(int width, int height);
-  // Links the WebContents into the newly created window.
-  void PlatformSetContents();
-  // Resize the content area and GUI.
-  void PlatformResizeSubViews();
-  // Enable/disable a button.
-  void PlatformEnableUIControl(UIControl control, bool is_enabled);
-  // Updates the url in the url bar.
-  void PlatformSetAddressBarURL(const GURL& url);
-  // Sets whether the spinner is spinning.
-  void PlatformSetIsLoading(bool loading);
-  // Set the title of shell window
-  void PlatformSetTitle(const base::string16& title);
-#if defined(OS_ANDROID)
-  void PlatformToggleFullscreenModeForTab(WebContents* web_contents,
-                                          bool enter_fullscreen);
-  bool PlatformIsFullscreenForTabOrPending(
-      const WebContents* web_contents) const;
-#endif
 
   // Helper method for the two public LoadData methods.
   void LoadDataWithBaseURLInternal(const GURL& url,
@@ -272,6 +220,7 @@ class Shell : public WebContentsDelegate,
   void LoadProgressChanged(double progress) override;
 #endif
   void TitleWasSet(NavigationEntry* entry) override;
+  void RenderViewReady() override;
 
   void OnDevToolsWebContentsDestroyed();
 
@@ -280,35 +229,13 @@ class Shell : public WebContentsDelegate,
   std::unique_ptr<WebContents> web_contents_;
 
   std::unique_ptr<DevToolsWebContentsObserver> devtools_observer_;
-  ShellDevToolsFrontend* devtools_frontend_;
+  ShellDevToolsFrontend* devtools_frontend_ = nullptr;
 
-  bool is_fullscreen_;
-
-  gfx::NativeWindow window_;
-#if defined(OS_MACOSX)
-  NSTextField* url_edit_view_;
-#endif
+  bool is_fullscreen_ = false;
 
   gfx::Size content_size_;
 
-#if defined(OS_ANDROID)
-  base::android::ScopedJavaGlobalRef<jobject> java_object_;
-#elif defined(USE_AURA)
-#if defined(OS_CHROMEOS)
-  static wm::WMTestHelper* wm_test_helper_;
-#else
-  static wm::WMState* wm_state_;
-#endif
-#if defined(TOOLKIT_VIEWS)
-  static views::ViewsDelegate* views_delegate_;
-
-  views::Widget* window_widget_;
-#endif // defined(TOOLKIT_VIEWS)
-  static ShellPlatformDataAura* platform_;
-#endif  // defined(USE_AURA)
-
-  bool headless_;
-  bool hide_toolbar_;
+  bool headless_ = false;
   bool delay_popup_contents_delegate_for_testing_ = false;
 
   // A container of all the open windows. We use a vector so we can keep track

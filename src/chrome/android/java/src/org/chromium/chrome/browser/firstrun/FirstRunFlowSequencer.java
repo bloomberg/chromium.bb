@@ -16,23 +16,25 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
-import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.services.AndroidChildAccountHelper;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChildAccountStatus;
-import org.chromium.components.signin.ChromeSigninController;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -48,12 +50,8 @@ public abstract class FirstRunFlowSequencer  {
     private static final String TAG = "firstrun";
 
     private final Activity mActivity;
-
-    // The following are initialized via initializeSharedState().
-    private boolean mIsAndroidEduDevice;
     private @ChildAccountStatus.Status int mChildAccountStatus;
     private List<Account> mGoogleAccounts;
-    private boolean mForceEduSignIn;
 
     /**
      * Callback that is called once the flow is determined.
@@ -73,15 +71,16 @@ public abstract class FirstRunFlowSequencer  {
      */
     public void start() {
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-                || ApiCompatibilityUtils.isDemoUser()) {
+                || ApiCompatibilityUtils.isDemoUser()
+                || ApiCompatibilityUtils.isRunningInUserTestHarness()) {
             onFlowIsKnown(null);
             return;
         }
 
-        new AndroidEduAndChildAccountHelper() {
+        new AndroidChildAccountHelper() {
             @Override
             public void onParametersReady() {
-                initializeSharedState(isAndroidEduDevice(), getChildAccountStatus());
+                initializeSharedState(getChildAccountStatus());
                 processFreEnvironmentPreNative();
             }
         }.start();
@@ -94,19 +93,19 @@ public abstract class FirstRunFlowSequencer  {
 
     @VisibleForTesting
     protected boolean isSignedIn() {
-        return ChromeSigninController.get().isSignedIn();
+        return IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount();
     }
 
     @VisibleForTesting
     protected boolean isSyncAllowed() {
-        SigninManager signinManager = IdentityServicesProvider.getSigninManager();
+        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager();
         return FirstRunUtils.canAllowSync() && !signinManager.isSigninDisabledByPolicy()
                 && signinManager.isSigninSupported();
     }
 
     @VisibleForTesting
     protected List<Account> getGoogleAccounts() {
-        return AccountManagerFacade.get().tryGetGoogleAccounts();
+        return AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts();
     }
 
     @VisibleForTesting
@@ -148,14 +147,9 @@ public abstract class FirstRunFlowSequencer  {
         FirstRunSignInProcessor.setFirstRunFlowSignInComplete(true);
     }
 
-    void initializeSharedState(
-            boolean isAndroidEduDevice, @ChildAccountStatus.Status int childAccountStatus) {
-        mIsAndroidEduDevice = isAndroidEduDevice;
+    void initializeSharedState(@ChildAccountStatus.Status int childAccountStatus) {
         mChildAccountStatus = childAccountStatus;
         mGoogleAccounts = getGoogleAccounts();
-        // EDU devices should always have exactly 1 google account, which will be automatically
-        // signed-in. All FRE screens are skipped in this case.
-        mForceEduSignIn = mIsAndroidEduDevice && mGoogleAccounts.size() == 1 && !isSignedIn();
     }
 
     void processFreEnvironmentPreNative() {
@@ -167,20 +161,14 @@ public abstract class FirstRunFlowSequencer  {
         }
 
         Bundle freProperties = new Bundle();
-
-        // In the full FRE we always show the Welcome page, except on EDU devices.
-        boolean showWelcomePage = !mForceEduSignIn;
-        freProperties.putBoolean(FirstRunActivity.SHOW_WELCOME_PAGE, showWelcomePage);
         freProperties.putInt(SigninFirstRunFragment.CHILD_ACCOUNT_STATUS, mChildAccountStatus);
 
         // Initialize usage and crash reporting according to the default value.
         // The user can explicitly enable or disable the reporting on the Welcome page.
-        // This is controlled by the administrator via a policy on EDU devices.
         setDefaultMetricsAndCrashReporting();
 
         onFlowIsKnown(freProperties);
-        if (ChildAccountStatus.isChild(mChildAccountStatus) || mForceEduSignIn) {
-            // Child and Edu forced signins are processed independently.
+        if (ChildAccountStatus.isChild(mChildAccountStatus)) {
             setFirstRunFlowSignInComplete();
         }
     }
@@ -190,15 +178,14 @@ public abstract class FirstRunFlowSequencer  {
      * @param freProperties Resulting FRE properties bundle.
      */
     public void onNativeInitialized(Bundle freProperties) {
-        // We show the sign-in page if sync is allowed, and not signed in, and this is not
-        // an EDU device, and
+        // We show the sign-in page if sync is allowed, and not signed in, and
         // - no "skip the first use hints" is set, or
         // - "skip the first use hints" is set, but there is at least one account.
-        boolean offerSignInOk = isSyncAllowed() && !isSignedIn() && !mForceEduSignIn
+        boolean offerSignInOk = isSyncAllowed() && !isSignedIn()
                 && (!shouldSkipFirstUseHints() || !mGoogleAccounts.isEmpty());
         freProperties.putBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE, offerSignInOk);
-        if (mForceEduSignIn || ChildAccountStatus.isChild(mChildAccountStatus)) {
-            // If the device is an Android EDU device or has a child account, there should be
+        if (ChildAccountStatus.isChild(mChildAccountStatus)) {
+            // If the device has a child account, there should be
             // exactly account on the device. Force sign-in in to that account.
             freProperties.putString(
                     SigninFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO, mGoogleAccounts.get(0).name);
@@ -212,7 +199,10 @@ public abstract class FirstRunFlowSequencer  {
         // Cache the flag for the bottom toolbar. If the flag is not cached here, Users, who are in
         // bottom toolbar experiment group, will see toolbar on the top in first run, and then
         // toolbar will appear to the bottom on the second run.
-        FeatureUtilities.cacheBottomToolbarEnabled();
+        CachedFeatureFlags.cacheNativeFlags(
+                Collections.singletonList(ChromeFeatureList.CHROME_DUET));
+        CachedFeatureFlags.cacheFieldTrialParameters(
+                Collections.singletonList(BottomToolbarVariationManager.BOTTOM_TOOLBAR_VARIATION));
     }
 
     /**
@@ -241,7 +231,8 @@ public abstract class FirstRunFlowSequencer  {
             Intent fromIntent, boolean preferLightweightFre) {
         // If FRE is disabled (e.g. in tests), proceed directly to the intent handling.
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-                || ApiCompatibilityUtils.isDemoUser()) {
+                || ApiCompatibilityUtils.isDemoUser()
+                || ApiCompatibilityUtils.isRunningInUserTestHarness()) {
             return false;
         }
 

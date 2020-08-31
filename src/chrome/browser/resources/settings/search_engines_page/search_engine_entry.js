@@ -6,10 +6,26 @@
  * @fileoverview 'settings-search-engine-entry' is a component for showing a
  * search engine with its name, domain and query URL.
  */
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import '../controls/extension_controlled_indicator.m.js';
+import './search_engine_entry_css.js';
+import '../settings_shared_css.m.js';
+import '../site_favicon.js';
+
+import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl} from './search_engines_browser_proxy.m.js';
+
 Polymer({
   is: 'settings-search-engine-entry',
 
-  behaviors: [cr.ui.FocusRowBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [FocusRowBehavior],
 
   properties: {
     /** @type {!SearchEngine} */
@@ -32,16 +48,16 @@ Polymer({
     },
   },
 
-  /** @private {settings.SearchEnginesBrowserProxy} */
+  /** @private {SearchEnginesBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
-  created: function() {
-    this.browserProxy_ = settings.SearchEnginesBrowserProxyImpl.getInstance();
+  created() {
+    this.browserProxy_ = SearchEnginesBrowserProxyImpl.getInstance();
   },
 
   /** @private */
-  closePopupMenu_: function() {
+  closePopupMenu_() {
     this.$$('cr-action-menu').close();
   },
 
@@ -49,7 +65,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeIsDefault_: function() {
+  computeIsDefault_() {
     return this.engine.default;
   },
 
@@ -60,18 +76,18 @@ Polymer({
    * @return {boolean} Whether to show the dots menu.
    * @private
    */
-  computeShowDots_: function(canBeDefault, canBeEdited, canBeRemoved) {
+  computeShowDots_(canBeDefault, canBeEdited, canBeRemoved) {
     return canBeDefault || canBeEdited || canBeRemoved;
   },
 
   /** @private */
-  onDeleteTap_: function() {
+  onDeleteTap_() {
     this.browserProxy_.removeSearchEngine(this.engine.modelIndex);
     this.closePopupMenu_();
   },
 
   /** @private */
-  onDotsTap_: function() {
+  onDotsTap_() {
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
         .showAt(assert(this.$$('cr-icon-button')), {
           anchorAlignmentY: AnchorAlignment.AFTER_END,
@@ -82,7 +98,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onEditTap_: function(e) {
+  onEditTap_(e) {
     e.preventDefault();
     this.closePopupMenu_();
     this.fire('edit-search-engine', {
@@ -92,7 +108,7 @@ Polymer({
   },
 
   /** @private */
-  onMakeDefaultTap_: function() {
+  onMakeDefaultTap_() {
     this.closePopupMenu_();
     this.browserProxy_.setDefaultSearchEngine(this.engine.modelIndex);
   },

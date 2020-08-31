@@ -42,9 +42,6 @@ void ClickToCallUiController::ShowDialog(
     const base::Optional<url::Origin>& initiating_origin,
     const GURL& url,
     bool hide_default_handler) {
-  LogClickToCallPhoneNumberSize(GetUnescapedURLContent(url),
-                                SharingClickToCallEntryPoint::kLeftClickLink,
-                                /*send_to_device=*/false);
   auto* controller = GetOrCreateFromWebContents(web_contents);
   controller->phone_url_ = url;
   controller->hide_default_handler_ = hide_default_handler;
@@ -97,7 +94,7 @@ PageActionIconType ClickToCallUiController::GetIconType() {
 
 sync_pb::SharingSpecificFields::EnabledFeatures
 ClickToCallUiController::GetRequiredFeature() {
-  return sync_pb::SharingSpecificFields::CLICK_TO_CALL;
+  return sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2;
 }
 
 void ClickToCallUiController::DoUpdateApps(UpdateAppsCallback callback) {
@@ -129,9 +126,6 @@ void ClickToCallUiController::SendNumberToDevice(
     const syncer::DeviceInfo& device,
     const std::string& phone_number,
     SharingClickToCallEntryPoint entry_point) {
-  LogClickToCallPhoneNumberSize(phone_number, entry_point,
-                                /*send_to_device=*/true);
-
   SharingMessage sharing_message;
   sharing_message.mutable_click_to_call_message()->set_phone_number(
       phone_number);
@@ -175,19 +169,14 @@ SharingFeatureName ClickToCallUiController::GetFeatureMetricsPrefix() const {
   return SharingFeatureName::kClickToCall;
 }
 
-void ClickToCallUiController::OnHelpTextClicked(SharingDialogType dialog_type) {
-  LogClickToCallHelpTextClicked(dialog_type);
-  SharingUiController::OnHelpTextClicked(dialog_type);
-}
-
 SharingDialogData ClickToCallUiController::CreateDialogData(
     SharingDialogType dialog_type) {
   SharingDialogData data = SharingUiController::CreateDialogData(dialog_type);
 
   // Do not add the header image for error dialogs.
   if (dialog_type != SharingDialogType::kErrorDialog) {
-    data.header_image_light = &kClickToCallIllustrationIcon;
-    data.header_image_dark = &kClickToCallIllustrationDarkIcon;
+    data.header_icons = SharingDialogData::HeaderIcons(
+        &kClickToCallIllustrationIcon, &kClickToCallIllustrationDarkIcon);
   }
 
   data.help_text_id =

@@ -20,6 +20,7 @@ import time
 import threading
 import uuid
 
+from symbolizer import RunSymbolizer
 from symbolizer import SymbolizerFilter
 
 FAR = common.GetHostToolPathFromPlatform('far')
@@ -34,6 +35,49 @@ def _AttachKernelLogReader(target):
   logging.info('Attaching kernel logger.')
   return target.RunCommandPiped(['dlog', '-f'], stdin=open(os.devnull, 'r'),
                                 stdout=subprocess.PIPE)
+
+
+def _BuildIdsPaths(package_paths):
+  """Generate build ids paths for symbolizer processes."""
+  build_ids_paths = map(
+      lambda package_path: os.path.join(
+          os.path.dirname(package_path), 'ids.txt'),
+      package_paths)
+  return build_ids_paths
+
+
+class SystemLogReader(object):
+  """Collects and symbolizes Fuchsia system log to a file."""
+
+  def __init__(self):
+    self._listener_proc = None
+    self._symbolizer_proc = None
+    self._system_log = None
+
+  def __enter__(self):
+      return self
+
+  def __exit__(self, exc_type, exc_val, exc_tb):
+    """Stops the system logging processes and closes the output file."""
+    if self._symbolizer_proc:
+      self._symbolizer_proc.kill()
+    if self._listener_proc:
+      self._listener_proc.kill()
+    if self._system_log:
+      self._system_log.close()
+
+  def Start(self, target, package_paths, system_log_file):
+    """Start a system log reader as a long-running SSH task."""
+    logging.debug('Writing fuchsia system log to %s' % system_log_file)
+
+    self._listener_proc = target.RunCommandPiped(['log_listener'],
+                                                  stdout=subprocess.PIPE,
+                                                  stderr=subprocess.STDOUT)
+
+    self._system_log = open(system_log_file,'w', buffering=1)
+    self._symbolizer_proc = RunSymbolizer(self._listener_proc.stdout,
+                                          self._system_log,
+                                          _BuildIdsPaths(package_paths))
 
 
 class MergedInputStream(object):
@@ -120,19 +164,15 @@ class RunPackageArgs:
   symbolizer_config: A newline delimited list of source files contained
       in the package. Omitting this parameter will disable symbolization.
   system_logging: If set, connects a system log reader to the target.
-  target_staging_path: Path to which package FARs will be staged, during
-      installation. Defaults to staging into '/data'.
   """
   def __init__(self):
     self.symbolizer_config = None
     self.system_logging = False
-    self.target_staging_path = '/data'
 
   @staticmethod
   def FromCommonArgs(args):
     run_package_args = RunPackageArgs()
     run_package_args.system_logging = args.include_system_logs
-    run_package_args.target_staging_path = args.target_staging_path
     return run_package_args
 
 
@@ -170,48 +210,48 @@ def RunPackage(output_dir, target, package_paths, package_name,
       # for easier diagnoses of early, pre-execution failures.
       log_output_quit_event = multiprocessing.Event()
       log_output_thread = threading.Thread(
-          target=lambda: _DrainStreamToStdout(system_logger.stdout,
-                                              log_output_quit_event))
+          target=
+          lambda: _DrainStreamToStdout(system_logger.stdout, log_output_quit_event)
+      )
       log_output_thread.daemon = True
       log_output_thread.start()
 
-    target.InstallPackage(package_paths)
+    with target.GetAmberRepo():
+      target.InstallPackage(package_paths)
 
-    if system_logger:
-      log_output_quit_event.set()
-      log_output_thread.join(timeout=_JOIN_TIMEOUT_SECS)
+      if system_logger:
+        log_output_quit_event.set()
+        log_output_thread.join(timeout=_JOIN_TIMEOUT_SECS)
 
-    logging.info('Running application.')
-    command = ['run', _GetComponentUri(package_name)] + package_args
-    process = target.RunCommandPiped(command,
-                                     stdin=open(os.devnull, 'r'),
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.STDOUT)
+      logging.info('Running application.')
+      command = ['run', _GetComponentUri(package_name)] + package_args
+      process = target.RunCommandPiped(
+          command,
+          stdin=open(os.devnull, 'r'),
+          stdout=subprocess.PIPE,
+          stderr=subprocess.STDOUT)
 
-    if system_logger:
-      output_stream = MergedInputStream([process.stdout,
-                                         system_logger.stdout]).Start()
-    else:
-      output_stream = process.stdout
+      if system_logger:
+        output_stream = MergedInputStream(
+            [process.stdout, system_logger.stdout]).Start()
+      else:
+        output_stream = process.stdout
 
-    # Run the log data through the symbolizer process.
-    build_ids_paths = map(
-        lambda package_path: os.path.join(
-            os.path.dirname(package_path), 'ids.txt'),
-        package_paths)
-    output_stream = SymbolizerFilter(output_stream, build_ids_paths)
+      # Run the log data through the symbolizer process.
+      output_stream = SymbolizerFilter(output_stream,
+                                       _BuildIdsPaths(package_paths))
 
-    for next_line in output_stream:
-      print(next_line.rstrip())
+      for next_line in output_stream:
+        print(next_line.rstrip())
 
-    process.wait()
-    if process.returncode == 0:
-      logging.info('Process exited normally with status code 0.')
-    else:
-      # The test runner returns an error status code if *any* tests fail,
-      # so we should proceed anyway.
-      logging.warning('Process exited with status code %d.' %
-                      process.returncode)
+      process.wait()
+      if process.returncode == 0:
+        logging.info('Process exited normally with status code 0.')
+      else:
+        # The test runner returns an error status code if *any* tests fail,
+        # so we should proceed anyway.
+        logging.warning(
+            'Process exited with status code %d.' % process.returncode)
 
   finally:
     if system_logger:

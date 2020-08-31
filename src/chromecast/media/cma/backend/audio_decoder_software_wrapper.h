@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chromecast/media/cma/decoder/cast_audio_decoder.h"
+#include "chromecast/media/api/cast_audio_decoder.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 
 namespace chromecast {
@@ -41,7 +41,6 @@ class AudioDecoderSoftwareWrapper
 
  private:
   bool CreateSoftwareDecoder(const AudioConfig& config);
-  void OnDecoderInitialized(bool success);
   void OnDecodedBuffer(CastAudioDecoder::Status status,
                        const media::AudioConfig& config,
                        scoped_refptr<DecoderBufferBase> decoded);

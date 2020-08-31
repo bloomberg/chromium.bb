@@ -5,6 +5,7 @@
 goog.setTestOnly('internal_message_listener_test');
 
 goog.require('mr.InternalMessageListener');
+goog.require('mr.InternalMessageType');
 
 describe('Tests mr.InternalMessageListener', () => {
   let listener;
@@ -14,7 +15,7 @@ describe('Tests mr.InternalMessageListener', () => {
   };
   const validEvent = {'type': mr.InternalMessageType.RETRIEVE_LOG_DATA};
   const validSender = {
-    'id': 'foo',
+    'origin': 'chrome-extension://foo',
     'url': 'chrome-extension://foo/feedback.html'
   };
   beforeEach(() => {

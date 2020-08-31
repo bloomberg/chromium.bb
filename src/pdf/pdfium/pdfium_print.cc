@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
+#include "pdf/geometry_conversions.h"
 #include "pdf/pdf_transform.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_read.h"
@@ -22,8 +23,10 @@
 #include "third_party/pdfium/public/fpdf_ppo.h"
 #include "third_party/pdfium/public/fpdf_transformpage.h"
 #include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 
 using printing::ConvertUnit;
 using printing::ConvertUnitDouble;
@@ -54,8 +57,8 @@ int GetDocumentPageCount(FPDF_DOCUMENT doc) {
 // points.
 void SetPageSizeAndContentRect(bool rotated,
                                bool is_src_page_landscape,
-                               pp::Size* page_size,
-                               pp::Rect* content_rect) {
+                               gfx::Size* page_size,
+                               gfx::Rect* content_rect) {
   bool is_dst_page_landscape = page_size->width() > page_size->height();
   bool page_orientation_mismatched =
       is_src_page_landscape != is_dst_page_landscape;
@@ -69,17 +72,19 @@ void SetPageSizeAndContentRect(bool rotated,
 
 // Transform |page| contents to fit in the selected printer paper size.
 void TransformPDFPageForPrinting(FPDF_PAGE page,
-                                 double scale_factor,
-                                 const PP_PrintSettings_Dev& print_settings) {
+                                 float scale_factor,
+                                 PP_PrintScalingOption_Dev scaling_option,
+                                 const gfx::Size& paper_size,
+                                 const gfx::Rect& printable_area) {
   // Get the source page width and height in points.
-  const double src_page_width = FPDF_GetPageWidth(page);
-  const double src_page_height = FPDF_GetPageHeight(page);
+  gfx::SizeF src_page_size(FPDF_GetPageWidthF(page), FPDF_GetPageHeightF(page));
   const int src_page_rotation = FPDFPage_GetRotation(page);
 
-  pp::Size page_size(print_settings.paper_size);
-  pp::Rect content_rect(print_settings.printable_area);
+  gfx::Size page_size = paper_size;
+  gfx::Rect content_rect = printable_area;
   const bool rotated = (src_page_rotation % 2 == 1);
-  SetPageSizeAndContentRect(rotated, src_page_width > src_page_height,
+  SetPageSizeAndContentRect(rotated,
+                            src_page_size.width() > src_page_size.height(),
                             &page_size, &content_rect);
 
   // Compute the screen page width and height in points.
@@ -90,7 +95,7 @@ void TransformPDFPageForPrinting(FPDF_PAGE page,
 
   gfx::Rect gfx_printed_rect;
   bool fitted_scaling;
-  switch (print_settings.print_scaling_option) {
+  switch (scaling_option) {
     case PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA:
       gfx_printed_rect = gfx::Rect(content_rect.x(), content_rect.y(),
                                    content_rect.width(), content_rect.height());
@@ -106,8 +111,8 @@ void TransformPDFPageForPrinting(FPDF_PAGE page,
   }
 
   if (fitted_scaling) {
-    scale_factor = CalculateScaleFactor(gfx_printed_rect, src_page_width,
-                                        src_page_height, rotated);
+    scale_factor =
+        CalculateScaleFactor(gfx_printed_rect, src_page_size, rotated);
   }
 
   // Calculate positions for the clip box.
@@ -124,17 +129,12 @@ void TransformPDFPageForPrinting(FPDF_PAGE page,
   ScalePdfRectangle(scale_factor, &source_clip_box);
 
   // Calculate the translation offset values.
-  double offset_x = 0;
-  double offset_y = 0;
-
-  if (fitted_scaling) {
-    CalculateScaledClipBoxOffset(gfx_printed_rect, source_clip_box, &offset_x,
-                                 &offset_y);
-  } else {
-    CalculateNonScaledClipBoxOffset(src_page_rotation, actual_page_width,
-                                    actual_page_height, source_clip_box,
-                                    &offset_x, &offset_y);
-  }
+  gfx::PointF offset =
+      fitted_scaling
+          ? CalculateScaledClipBoxOffset(gfx_printed_rect, source_clip_box)
+          : CalculateNonScaledClipBoxOffset(
+                src_page_rotation, actual_page_width, actual_page_height,
+                source_clip_box);
 
   // Reset the media box and crop box. When the page has crop box and media box,
   // the plugin will display the crop box contents and not the entire media box.
@@ -148,31 +148,28 @@ void TransformPDFPageForPrinting(FPDF_PAGE page,
   // Transformation is not required, return. Do this check only after updating
   // the media box and crop box. For more detailed information, please refer to
   // the comment block right before FPDF_SetMediaBox and FPDF_GetMediaBox calls.
-  if (scale_factor == 1.0 && offset_x == 0 && offset_y == 0)
+  if (scale_factor == 1.0f && offset.IsOrigin())
     return;
 
   // All the positions have been calculated, now manipulate the PDF.
-  FS_MATRIX matrix = {static_cast<float>(scale_factor),
-                      0,
-                      0,
-                      static_cast<float>(scale_factor),
-                      static_cast<float>(offset_x),
-                      static_cast<float>(offset_y)};
-  FS_RECTF cliprect = {static_cast<float>(source_clip_box.left + offset_x),
-                       static_cast<float>(source_clip_box.top + offset_y),
-                       static_cast<float>(source_clip_box.right + offset_x),
-                       static_cast<float>(source_clip_box.bottom + offset_y)};
+  const FS_MATRIX matrix = {scale_factor, 0.0f,       0.0f,
+                            scale_factor, offset.x(), offset.y()};
+  const FS_RECTF cliprect = {
+      source_clip_box.left + offset.x(), source_clip_box.top + offset.y(),
+      source_clip_box.right + offset.x(), source_clip_box.bottom + offset.y()};
   FPDFPage_TransFormWithClip(page, &matrix, &cliprect);
-  FPDFPage_TransformAnnots(page, scale_factor, 0, 0, scale_factor, offset_x,
-                           offset_y);
+  FPDFPage_TransformAnnots(page, scale_factor, 0, 0, scale_factor, offset.x(),
+                           offset.y());
 }
 
 void FitContentsToPrintableAreaIfRequired(
     FPDF_DOCUMENT doc,
-    double scale_factor,
-    const PP_PrintSettings_Dev& print_settings) {
+    float scale_factor,
+    PP_PrintScalingOption_Dev scaling_option,
+    const gfx::Size& paper_size,
+    const gfx::Rect& printable_area) {
   // Check to see if we need to fit pdf contents to printer paper size.
-  if (print_settings.print_scaling_option == PP_PRINTSCALINGOPTION_SOURCE_SIZE)
+  if (scaling_option == PP_PRINTSCALINGOPTION_SOURCE_SIZE)
     return;
 
   int num_pages = FPDF_GetPageCount(doc);
@@ -181,7 +178,8 @@ void FitContentsToPrintableAreaIfRequired(
   // every page to fit the contents in the selected printer paper.
   for (int i = 0; i < num_pages; ++i) {
     ScopedFPDFPage page(FPDF_LoadPage(doc, i));
-    TransformPDFPageForPrinting(page.get(), scale_factor, print_settings);
+    TransformPDFPageForPrinting(page.get(), scale_factor, scaling_option,
+                                paper_size, printable_area);
   }
 }
 
@@ -327,14 +325,9 @@ bool PDFiumPrint::IsSourcePdfLandscape(FPDF_DOCUMENT doc) {
 void PDFiumPrint::FitContentsToPrintableArea(FPDF_DOCUMENT doc,
                                              const gfx::Size& page_size,
                                              const gfx::Rect& printable_area) {
-  PP_PrintSettings_Dev print_settings;
-  print_settings.paper_size = pp::Size(page_size.width(), page_size.height());
-  print_settings.printable_area =
-      pp::Rect(printable_area.x(), printable_area.y(), printable_area.width(),
-               printable_area.height());
-  print_settings.print_scaling_option =
-      PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA;
-  FitContentsToPrintableAreaIfRequired(doc, 1.0, print_settings);
+  FitContentsToPrintableAreaIfRequired(
+      doc, /*scale_factor=*/1.0f, PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA,
+      page_size, printable_area);
 }
 
 std::vector<uint8_t> PDFiumPrint::PrintPagesAsPdf(
@@ -369,9 +362,11 @@ ScopedFPDFDocument PDFiumPrint::CreatePrintPdf(
     return nullptr;
   }
 
-  double scale_factor = pdf_print_settings.scale_factor / 100.0;
-  FitContentsToPrintableAreaIfRequired(output_doc.get(), scale_factor,
-                                       print_settings);
+  float scale_factor = pdf_print_settings.scale_factor / 100.0f;
+  FitContentsToPrintableAreaIfRequired(
+      output_doc.get(), scale_factor, print_settings.print_scaling_option,
+      SizeFromPPSize(print_settings.paper_size),
+      RectFromPPRect(print_settings.printable_area));
   if (!FlattenPrintData(output_doc.get()))
     return nullptr;
 
@@ -438,7 +433,7 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
   int height_in_pixels =
       ConvertUnit(source_page_height, kPointsPerInch, print_settings.dpi);
 
-  pp::Size bitmap_size(width_in_pixels, height_in_pixels);
+  gfx::Size bitmap_size(width_in_pixels, height_in_pixels);
   ScopedFPDFBitmap bitmap(FPDFBitmap_Create(
       bitmap_size.width(), bitmap_size.height(), /*alpha=*/false));
 
@@ -450,8 +445,6 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
                         bitmap_size.height(), print_settings.orientation,
                         FPDF_PRINTING);
 
-  unsigned char* bitmap_data =
-      static_cast<unsigned char*>(FPDFBitmap_GetBuffer(bitmap.get()));
   double ratio_x = ConvertUnitDouble(bitmap_size.width(), print_settings.dpi,
                                      kPointsPerInch);
   double ratio_y = ConvertUnitDouble(bitmap_size.height(), print_settings.dpi,
@@ -459,7 +452,7 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
 
   // Add the bitmap to an image object and add the image object to the output
   // page.
-  FPDF_PAGEOBJECT temp_img = FPDFPageObj_NewImageObj(temp_doc.get());
+  ScopedFPDFPageObject temp_img(FPDFPageObj_NewImageObj(temp_doc.get()));
 
   bool encoded = false;
   std::vector<uint8_t> compressed_bitmap_data;
@@ -471,7 +464,8 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
     SkImageInfo info = SkImageInfo::Make(
         FPDFBitmap_GetWidth(bitmap.get()), FPDFBitmap_GetHeight(bitmap.get()),
         kBGRA_8888_SkColorType, kOpaque_SkAlphaType);
-    SkPixmap src(info, bitmap_data, FPDFBitmap_GetStride(bitmap.get()));
+    SkPixmap src(info, FPDFBitmap_GetBuffer(bitmap.get()),
+                 FPDFBitmap_GetStride(bitmap.get()));
     encoded = gfx::JPEGCodec::Encode(src, kQuality, &compressed_bitmap_data);
   }
 
@@ -486,13 +480,14 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
       file_access.m_GetBlock = &GetBlockForJpeg;
       file_access.m_Param = &compressed_bitmap_data;
 
-      FPDFImageObj_LoadJpegFileInline(&temp_page, 1, temp_img, &file_access);
+      FPDFImageObj_LoadJpegFileInline(&temp_page, 1, temp_img.get(),
+                                      &file_access);
     } else {
-      FPDFImageObj_SetBitmap(&temp_page, 1, temp_img, bitmap.get());
+      FPDFImageObj_SetBitmap(&temp_page, 1, temp_img.get(), bitmap.get());
     }
 
-    FPDFImageObj_SetMatrix(temp_img, ratio_x, 0, 0, ratio_y, 0, 0);
-    FPDFPage_InsertObject(temp_page, temp_img);
+    FPDFImageObj_SetMatrix(temp_img.get(), ratio_x, 0, 0, ratio_y, 0, 0);
+    FPDFPage_InsertObject(temp_page, temp_img.release());
     FPDFPage_GenerateContent(temp_page);
   }
 

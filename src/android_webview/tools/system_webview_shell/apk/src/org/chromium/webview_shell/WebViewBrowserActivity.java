@@ -26,8 +26,6 @@ import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
 import android.provider.Browser;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -52,7 +50,10 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.chromium.base.ApiCompatibilityUtils;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StrictModeContext;
@@ -119,6 +120,10 @@ public class WebViewBrowserActivity extends AppCompatActivity {
     // look up the request in order to grant the approprate permissions.
     private SparseArray<PermissionRequest> mPendingRequests = new SparseArray<PermissionRequest>();
     private int mNextRequestKey;
+
+    // Permit any number of slashes, since chromium seems to canonicalize bad values.
+    private static final Pattern FILE_ANDROID_ASSET_PATTERN =
+            Pattern.compile("^file:///android_(asset|res)/.*");
 
     // Work around our wonky API by wrapping a geo permission prompt inside a regular
     // PermissionRequest.
@@ -234,6 +239,7 @@ public class WebViewBrowserActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ContextUtils.initApplicationContext(getApplicationContext());
         WebView.setWebContentsDebuggingEnabled(true);
         setContentView(R.layout.activity_webview_browser);
         setSupportActionBar((Toolbar) findViewById(R.id.browser_toolbar));
@@ -247,11 +253,17 @@ public class WebViewBrowserActivity extends AppCompatActivity {
         });
         findViewById(R.id.btn_load_url).setOnClickListener((view) -> loadUrlFromUrlBar(view));
 
-        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-                .detectAll()
-                .penaltyLog()
-                .penaltyDeath()
-                .build());
+        StrictMode.ThreadPolicy.Builder threadPolicyBuilder =
+                new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().penaltyDeath();
+        // See crbug.com/1056368, Samsung device has an internal method
+        // "android.util.GeneralUtil#isSupportedGloveModeInternal", which reads file and
+        // violates strict mode policy. This method is called when showing the dropdown menu after
+        // user clicks the 3-dots menu. However this showing code is part of Android framework and
+        // not controlled by this app, so we need to permit disk read for the UI thread.
+        if (Build.MANUFACTURER.toLowerCase(Locale.US).equals("samsung")) {
+            threadPolicyBuilder.permitDiskReads();
+        }
+        StrictMode.setThreadPolicy(threadPolicyBuilder.build());
         // Conspicuously omitted: detectCleartextNetwork() and detectFileUriExposure() to permit
         // http:// and file:// origins.
         StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
@@ -358,9 +370,12 @@ public class WebViewBrowserActivity extends AppCompatActivity {
             @SuppressWarnings("deprecation") // because we support api level 19 and up.
             @Override
             public boolean shouldOverrideUrlLoading(WebView webView, String url) {
-                // "about:" and "chrome:" schemes are internal to Chromium;
-                // don't want these to be dispatched to other apps.
-                if (url.startsWith("about:") || url.startsWith("chrome:")) {
+                // Treat some URLs as internal, always open them in the WebView:
+                // * about: scheme URIs
+                // * chrome:// scheme URIs
+                // * file:///android_asset/ or file:///android_res/ URIs
+                if (url.startsWith("about:") || url.startsWith("chrome://")
+                        || FILE_ANDROID_ASSET_PATTERN.matcher(url).matches()) {
                     return false;
                 }
                 return startBrowsingIntent(WebViewBrowserActivity.this, url);
@@ -729,9 +744,11 @@ public class WebViewBrowserActivity extends AppCompatActivity {
     }
 
     private void setUrlFail(boolean fail) {
-        mUrlBar.setTextColor(fail ?
-            ApiCompatibilityUtils.getColor(getResources(), R.color.url_error_color) :
-            ApiCompatibilityUtils.getColor(getResources(), R.color.url_color));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mUrlBar.setTextAppearance(fail ? R.style.UrlTextError : R.style.UrlText);
+        } else {
+            mUrlBar.setTextAppearance(this, fail ? R.style.UrlTextError : R.style.UrlText);
+        }
     }
 
     /**

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -40,6 +41,8 @@ class InteractionResponse {
 
   // A simple textual response.
   InteractionResponse* AddTextResponse(const std::string& text);
+  // A suggestion chip response.
+  InteractionResponse* AddSuggestionChip(const std::string& text);
   // If used this will cause us to finish the interaction by passing the given
   // |resolution| to |AssistantInteractionSubscriber::OnInteractionFinished|.
   InteractionResponse* AddResolution(Resolution resolution);
@@ -82,9 +85,10 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
   current_interaction();
 
   // mojom::Assistant overrides:
-  void StartCachedScreenContextInteraction() override;
   void StartEditReminderInteraction(const std::string& client_id) override;
-  void StartMetalayerInteraction(const gfx::Rect& region) override;
+  void StartScreenContextInteraction(
+      ax::mojom::AssistantStructurePtr assistant_structure,
+      const std::vector<uint8_t>& assistant_screenshot) override;
   void StartTextInteraction(
       const std::string& query,
       chromeos::assistant::mojom::AssistantQuerySource source,
@@ -102,13 +106,15 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
       int action_index) override;
   void DismissNotification(chromeos::assistant::mojom::AssistantNotificationPtr
                                notification) override;
-  void CacheScreenContext(CacheScreenContextCallback callback) override;
-  void ClearScreenContextCache() override {}
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
   void SendAssistantFeedback(
       chromeos::assistant::mojom::AssistantFeedbackPtr feedback) override;
-  void StopAlarmTimerRinging() override;
-  void CreateTimer(base::TimeDelta duration) override;
+  void NotifyEntryIntoAssistantUi(
+      chromeos::assistant::mojom::AssistantEntryPoint entry_point) override;
+  void AddTimeToTimer(const std::string& id, base::TimeDelta duration) override;
+  void PauseTimer(const std::string& id) override;
+  void RemoveAlarmOrTimer(const std::string& id) override;
+  void ResumeTimer(const std::string& id) override;
 
  private:
   void StartInteraction(

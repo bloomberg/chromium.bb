@@ -17,10 +17,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler.VoiceResult;
-import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceResult;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 
 import java.util.ArrayList;
@@ -36,18 +34,13 @@ public class VoiceSuggestionProviderTest {
     public final RuleChain mChain =
             RuleChain.outerRule(new ChromeBrowserTestRule()).around(new UiThreadTestRule());
 
-    private static OmniboxSuggestion createDummySuggestion(String text) {
-        List<MatchClassification> classifications = new ArrayList<>();
-        classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
-        return new OmniboxSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST, true, 0, 1, text,
-                classifications, null, classifications, null, "", "http://www.google.com", null,
-                null, false, false);
-    }
-
     private static List<OmniboxSuggestion> createDummySuggestions(String... texts) {
         List<OmniboxSuggestion> suggestions = new ArrayList<OmniboxSuggestion>(texts.length);
         for (int i = 0; i < texts.length; ++i) {
-            suggestions.add(createDummySuggestion(texts[i]));
+            suggestions.add(OmniboxSuggestionBuilderForTest
+                                    .searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                                    .setDisplayText(texts[i])
+                                    .build());
         }
 
         return suggestions;

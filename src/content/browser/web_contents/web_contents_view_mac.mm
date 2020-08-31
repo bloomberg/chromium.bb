@@ -10,9 +10,9 @@
 
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_sending_event.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop_current.h"
 #import "base/message_loop/message_pump_mac.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/remote_cocoa/browser/ns_view_ids.h"
 #include "components/remote_cocoa/common/application.mojom.h"
@@ -28,7 +28,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #import "content/browser/web_contents/web_drag_dest_mac.h"
 #include "content/common/web_contents_ns_view_bridge.mojom-shared.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -168,13 +167,6 @@ void WebContentsViewMac::StartDragging(
   }
 }
 
-void WebContentsViewMac::SizeContents(const gfx::Size& size) {
-  // TODO(brettw | japhet) This is a hack and should be removed.
-  // See web_contents_view.h.
-  // Note(erikchen): This method has /never/ worked correctly. I've removed the
-  // previous implementation.
-}
-
 void WebContentsViewMac::Focus() {
   if (delegate())
     delegate()->ResetStoredFocus();
@@ -223,10 +215,6 @@ void WebContentsViewMac::FocusThroughTabTraversal(bool reverse) {
   if (delegate())
     delegate()->ResetStoredFocus();
 
-  if (web_contents_->ShowingInterstitialPage()) {
-    web_contents_->GetInterstitialPage()->FocusThroughTabTraversal(reverse);
-    return;
-  }
   content::RenderWidgetHostView* fullscreen_view =
       web_contents_->GetFullscreenRenderWidgetHostView();
   if (fullscreen_view) {
@@ -283,23 +271,20 @@ void WebContentsViewMac::ShowContextMenu(
 
 void WebContentsViewMac::ShowPopupMenu(
     RenderFrameHost* render_frame_host,
+    mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
     const gfx::Rect& bounds,
     int item_height,
     double item_font_size,
     int selected_item,
-    const std::vector<MenuItem>& items,
+    std::vector<blink::mojom::MenuItemPtr> menu_items,
     bool right_aligned,
     bool allow_multiple_selection) {
-  popup_menu_helper_.reset(new PopupMenuHelper(this, render_frame_host));
+  popup_menu_helper_.reset(
+      new PopupMenuHelper(this, render_frame_host, std::move(popup_client)));
   popup_menu_helper_->ShowPopupMenu(bounds, item_height, item_font_size,
-                                    selected_item, items, right_aligned,
-                                    allow_multiple_selection);
+                                    selected_item, std::move(menu_items),
+                                    right_aligned, allow_multiple_selection);
   // Note: |this| may be deleted here.
-}
-
-void WebContentsViewMac::HidePopupMenu() {
-  if (popup_menu_helper_)
-    popup_menu_helper_->Hide();
 }
 
 void WebContentsViewMac::OnMenuClosed() {
@@ -385,6 +370,16 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForChildWidget(
     RenderWidgetHost* render_widget_host) {
   RenderWidgetHostViewMac* view =
       new RenderWidgetHostViewMac(render_widget_host);
+
+  // If the parent RenderWidgetHostViewMac is hosted in another process, ensure
+  // that the popup window will be created created in the same process.
+  // https://crbug.com/1091179
+  if (views_host_) {
+    auto* remote_cocoa_application = views_host_->GetRemoteCocoaApplication();
+    view->MigrateNSViewBridge(remote_cocoa_application,
+                              remote_cocoa::kInvalidNSViewId);
+  }
+
   if (delegate()) {
     base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate>>
         rw_delegate(delegate()->CreateRenderWidgetHostViewDelegate(
@@ -398,13 +393,6 @@ void WebContentsViewMac::SetPageTitle(const base::string16& title) {
   // Meaningless on the Mac; widgets don't have a "title" attribute
 }
 
-
-void WebContentsViewMac::RenderViewCreated(RenderViewHost* host) {
-  // We want updates whenever the intrinsic width of the webpage changes.
-  // Put the RenderView into that mode. The preferred width is used for example
-  // when the "zoom" button in the browser window is clicked.
-  host->EnablePreferredSizeMode();
-}
 
 void WebContentsViewMac::RenderViewReady() {}
 
@@ -514,7 +502,8 @@ bool WebContentsViewMac::DraggingUpdated(DraggingInfoPtr dragging_info,
 
 bool WebContentsViewMac::PerformDragOperation(DraggingInfoPtr dragging_info,
                                               bool* out_result) {
-  *out_result = [drag_dest_ performDragOperation:dragging_info.get()];
+  *out_result = [drag_dest_ performDragOperation:dragging_info.get()
+                     withWebContentsViewDelegate:delegate_.get()];
   return true;
 }
 
@@ -547,10 +536,8 @@ bool WebContentsViewMac::DragPromisedFileTo(const base::FilePath& file_path,
         new PromiseFileFinalizer(std::move(drag_file_downloader)));
   } else {
     // The writer will take care of closing and deletion.
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-         base::MayBlock()},
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
         base::BindOnce(&PromiseWriterHelper, drop_data, std::move(file)));
   }
 

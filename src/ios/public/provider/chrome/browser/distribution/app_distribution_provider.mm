@@ -22,6 +22,5 @@ void AppDistributionProvider::ScheduleDistributionNotifications(
 
 void AppDistributionProvider::CancelDistributionNotifications() {}
 
-bool AppDistributionProvider::IsPreFirebaseLegacyUser(int64_t install_date) {
-  return false;
-}
+void AppDistributionProvider::InitializeFirebase(int64_t install_date,
+                                                 bool is_first_run) {}

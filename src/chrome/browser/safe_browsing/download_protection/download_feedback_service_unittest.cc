@@ -18,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "content/public/browser/browser_thread.h"
@@ -122,9 +123,8 @@ bool WillStorePings(DownloadCheckResult result,
 class DownloadFeedbackServiceTest : public testing::Test {
  public:
   DownloadFeedbackServiceTest()
-      : file_task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::BEST_EFFORT})) {}
+      : file_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT})) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -212,7 +212,10 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackCompleteAndDiscardDownload) {
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(1000));
   EXPECT_CALL(item,
               StealDangerousDownload(true /*delete_file_after_feedback*/, _))
-      .WillOnce(SaveArg<1>(&download_discarded_callback));
+      .WillOnce([&download_discarded_callback](
+                    bool _, download::DownloadItem::AcquireFileCallback arg) {
+        download_discarded_callback = std::move(arg);
+      });
 
   DownloadFeedbackService service(nullptr, file_task_runner_.get());
   service.MaybeStorePingsForDownload(DownloadCheckResult::UNCOMMON,
@@ -223,7 +226,7 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackCompleteAndDiscardDownload) {
   ASSERT_FALSE(download_discarded_callback.is_null());
   EXPECT_EQ(0U, num_feedbacks());
 
-  download_discarded_callback.Run(file_path);
+  std::move(download_discarded_callback).Run(file_path);
   ASSERT_EQ(1U, num_feedbacks());
   ASSERT_TRUE(feedback(0));
   EXPECT_TRUE(feedback(0)->start_called());
@@ -245,12 +248,16 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackCompleteAndKeepDownload) {
   download::DownloadItem::AcquireFileCallback download_discarded_callback;
 
   download::MockDownloadItem item;
+  EXPECT_CALL(item, IsDangerous()).WillRepeatedly(Return(true));
   EXPECT_CALL(item, GetDangerType())
       .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(1000));
   EXPECT_CALL(item,
               StealDangerousDownload(false /*delete_file_after_feedback*/, _))
-      .WillOnce(SaveArg<1>(&download_discarded_callback));
+      .WillOnce([&download_discarded_callback](
+                    bool _, download::DownloadItem::AcquireFileCallback arg) {
+        download_discarded_callback = std::move(arg);
+      });
   EXPECT_CALL(item, ValidateDangerousDownload()).Times(1);
   GURL empty_url;
   EXPECT_CALL(item, GetURL()).WillOnce(ReturnRef(empty_url));
@@ -264,7 +271,7 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackCompleteAndKeepDownload) {
   ASSERT_FALSE(download_discarded_callback.is_null());
   EXPECT_EQ(0U, num_feedbacks());
 
-  download_discarded_callback.Run(file_path);
+  std::move(download_discarded_callback).Run(file_path);
   ASSERT_EQ(1U, num_feedbacks());
   ASSERT_TRUE(feedback(0));
   EXPECT_TRUE(feedback(0)->start_called());
@@ -295,7 +302,10 @@ TEST_F(DownloadFeedbackServiceTest, MultiplePendingFeedbackComplete) {
             Return(download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT));
     EXPECT_CALL(item[i], GetReceivedBytes()).WillRepeatedly(Return(1000));
     EXPECT_CALL(item[i], StealDangerousDownload(true, _))
-        .WillOnce(SaveArg<1>(&download_discarded_callback[i]));
+        .WillOnce([&download_discarded_callback, i](
+                      bool _, download::DownloadItem::AcquireFileCallback arg) {
+          download_discarded_callback[i] = std::move(arg);
+        });
     DownloadFeedbackService::MaybeStorePingsForDownload(
         DownloadCheckResult::UNCOMMON, true /* upload_requested */, &item[i],
         ping_request, ping_response);
@@ -312,7 +322,7 @@ TEST_F(DownloadFeedbackServiceTest, MultiplePendingFeedbackComplete) {
     EXPECT_EQ(0U, num_feedbacks());
 
     for (size_t i = 0; i < kNumDownloads; ++i) {
-      download_discarded_callback[i].Run(file_path[i]);
+      std::move(download_discarded_callback[i]).Run(file_path[i]);
     }
 
     ASSERT_EQ(3U, num_feedbacks());
@@ -364,7 +374,10 @@ TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
             Return(download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT));
     EXPECT_CALL(item[i], GetReceivedBytes()).WillRepeatedly(Return(1000));
     EXPECT_CALL(item[i], StealDangerousDownload(true, _))
-        .WillOnce(SaveArg<1>(&download_discarded_callback[i]));
+        .WillOnce([&download_discarded_callback, i](
+                      bool _, download::DownloadItem::AcquireFileCallback arg) {
+          download_discarded_callback[i] = std::move(arg);
+        });
     DownloadFeedbackService::MaybeStorePingsForDownload(
         DownloadCheckResult::UNCOMMON, true /* upload_requested */, &item[i],
         ping_request, ping_response);
@@ -380,12 +393,12 @@ TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
     }
     EXPECT_EQ(0U, num_feedbacks());
 
-    download_discarded_callback[0].Run(file_path[0]);
+    std::move(download_discarded_callback[0]).Run(file_path[0]);
     ASSERT_EQ(1U, num_feedbacks());
     ASSERT_TRUE(feedback(0));
     EXPECT_TRUE(feedback(0)->start_called());
 
-    download_discarded_callback[1].Run(file_path[1]);
+    std::move(download_discarded_callback[1]).Run(file_path[1]);
     ASSERT_EQ(2U, num_feedbacks());
     ASSERT_TRUE(feedback(1));
     EXPECT_FALSE(feedback(1)->start_called());
@@ -403,7 +416,7 @@ TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
 
   // Running a download acquired callback after the DownloadFeedbackService is
   // destroyed should delete the file.
-  download_discarded_callback[2].Run(file_path[2]);
+  std::move(download_discarded_callback[2]).Run(file_path[2]);
   EXPECT_EQ(2U, num_feedbacks());
 
   // File should still exist since the file deletion task hasn't run yet.

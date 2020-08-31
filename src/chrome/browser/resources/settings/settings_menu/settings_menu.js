@@ -6,10 +6,29 @@
  * @fileoverview
  * 'settings-menu' shows a menu with a hardcoded set of pages and subpages.
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
+import '../i18n_setup.js';
+import '../icons.m.js';
+import '../settings_shared_css.m.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {PageVisibility} from '../page_visibility.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+
 Polymer({
   is: 'settings-menu',
 
-  behaviors: [settings.RouteObserverBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [RouteObserverBehavior],
 
   properties: {
     advancedOpened: {
@@ -33,13 +52,13 @@ Polymer({
     pageVisibility: Object,
   },
 
-  /** @param {!settings.Route} newRoute */
-  currentRouteChanged: function(newRoute) {
+  /** @param {!Route} newRoute */
+  currentRouteChanged(newRoute) {
     // Focus the initially selected path.
     const anchors = this.root.querySelectorAll('a');
     for (let i = 0; i < anchors.length; ++i) {
       const anchorRoute =
-          settings.router.getRouteForPath(anchors[i].getAttribute('href'));
+          Router.getInstance().getRouteForPath(anchors[i].getAttribute('href'));
       if (anchorRoute && anchorRoute.contains(newRoute)) {
         this.setSelectedUrl_(anchors[i].href);
         return;
@@ -50,19 +69,8 @@ Polymer({
   },
 
   /** @private */
-  onAdvancedButtonToggle_: function() {
+  onAdvancedButtonToggle_() {
     this.advancedOpened = !this.advancedOpened;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  shouldHidePrivacy_: function() {
-    const pageVisibility = settings.pageVisibility || {};
-    return !(
-        this.privacySettingsRedesignEnabled_ &&
-        (pageVisibility.privacy !== false));
   },
 
   /**
@@ -71,7 +79,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onLinkClick_: function(event) {
+  onLinkClick_(event) {
     if (event.target.matches('a:not(#extensionsLink)')) {
       event.preventDefault();
     }
@@ -82,7 +90,7 @@ Polymer({
    * |iron-list| uses the entire url. Using |getAttribute| will not work.
    * @param {string} url
    */
-  setSelectedUrl_: function(url) {
+  setSelectedUrl_(url) {
     this.$.topMenu.selected = this.$.subMenu.selected = url;
   },
 
@@ -90,13 +98,13 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onSelectorActivate_: function(event) {
+  onSelectorActivate_(event) {
     this.setSelectedUrl_(event.detail.selected);
 
     const path = new URL(event.detail.selected).pathname;
-    const route = settings.getRouteForPath(path);
+    const route = Router.getInstance().getRouteForPath(path);
     assert(route, 'settings-menu has an entry with an invalid route.');
-    settings.navigateTo(
+    Router.getInstance().navigateTo(
         route, /* dynamicParams */ null, /* removeSearch */ true);
   },
 
@@ -105,12 +113,12 @@ Polymer({
    * @return {string} Which icon to use.
    * @private
    * */
-  arrowState_: function(opened) {
+  arrowState_(opened) {
     return opened ? 'cr:arrow-drop-up' : 'cr:arrow-drop-down';
   },
 
   /** @private */
-  onExtensionsLinkClick_: function() {
+  onExtensionsLinkClick_() {
     chrome.metricsPrivate.recordUserAction(
         'SettingsMenu_ExtensionsLinkClicked');
   },
@@ -120,7 +128,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  boolToString_: function(bool) {
+  boolToString_(bool) {
     return bool.toString();
   },
 });

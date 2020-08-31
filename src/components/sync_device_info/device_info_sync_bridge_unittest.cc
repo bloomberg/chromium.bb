@@ -26,6 +26,7 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/test/test_matchers.h"
 #include "components/sync_device_info/device_info_prefs.h"
+#include "components/sync_device_info/device_info_util.h"
 #include "components/sync_device_info/local_device_info_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,11 +74,11 @@ MATCHER_P(ModelEqualsSpecifics, expected_specifics, "") {
         expected_fields.vapid_p256dh() != arg_info.vapid_target_info.p256dh ||
         expected_fields.vapid_auth_secret() !=
             arg_info.vapid_target_info.auth_secret ||
-        expected_fields.sender_id_fcm_token() !=
+        expected_fields.sender_id_fcm_token_v2() !=
             arg_info.sender_id_target_info.fcm_token ||
-        expected_fields.sender_id_p256dh() !=
+        expected_fields.sender_id_p256dh_v2() !=
             arg_info.sender_id_target_info.p256dh ||
-        expected_fields.sender_id_auth_secret() !=
+        expected_fields.sender_id_auth_secret_v2() !=
             arg_info.sender_id_target_info.auth_secret ||
         static_cast<size_t>(expected_fields.enabled_features_size()) !=
             arg_info.enabled_features.size()) {
@@ -201,8 +202,8 @@ std::string SharingSenderIdAuthSecretForSuffix(int suffix) {
 
 sync_pb::SharingSpecificFields::EnabledFeatures SharingEnabledFeaturesForSuffix(
     int suffix) {
-  return suffix % 2 ? sync_pb::SharingSpecificFields::CLICK_TO_CALL
-                    : sync_pb::SharingSpecificFields::SHARED_CLIPBOARD;
+  return suffix % 2 ? sync_pb::SharingSpecificFields::CLICK_TO_CALL_V2
+                    : sync_pb::SharingSpecificFields::SHARED_CLIPBOARD_V2;
 }
 
 DataTypeActivationRequest TestDataTypeActivationRequest(SyncMode sync_mode) {
@@ -233,11 +234,11 @@ DeviceInfoSpecifics CreateSpecifics(
       SharingVapidP256dhForSuffix(suffix));
   specifics.mutable_sharing_fields()->set_vapid_auth_secret(
       SharingVapidAuthSecretForSuffix(suffix));
-  specifics.mutable_sharing_fields()->set_sender_id_fcm_token(
+  specifics.mutable_sharing_fields()->set_sender_id_fcm_token_v2(
       SharingSenderIdFcmTokenForSuffix(suffix));
-  specifics.mutable_sharing_fields()->set_sender_id_p256dh(
+  specifics.mutable_sharing_fields()->set_sender_id_p256dh_v2(
       SharingSenderIdP256dhForSuffix(suffix));
-  specifics.mutable_sharing_fields()->set_sender_id_auth_secret(
+  specifics.mutable_sharing_fields()->set_sender_id_auth_secret_v2(
       SharingSenderIdAuthSecretForSuffix(suffix));
   specifics.mutable_sharing_fields()->add_enabled_features(
       SharingEnabledFeaturesForSuffix(suffix));
@@ -253,10 +254,9 @@ ModelTypeState StateWithEncryption(const std::string& encryption_key_name) {
 }
 
 // Creates an EntityData around a copy of the given specifics.
-std::unique_ptr<EntityData> SpecificsToEntity(
-    const DeviceInfoSpecifics& specifics) {
-  auto data = std::make_unique<EntityData>();
-  *data->specifics.mutable_device_info() = specifics;
+EntityData SpecificsToEntity(const DeviceInfoSpecifics& specifics) {
+  EntityData data;
+  *data.specifics.mutable_device_info() = specifics;
   return data;
 }
 
@@ -303,7 +303,7 @@ class TestLocalDeviceInfoProvider : public MutableLocalDeviceInfoProvider {
         SyncUserAgentForSuffix(kLocalSuffix),
         sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
         SigninScopedDeviceIdForSuffix(kLocalSuffix), hardware_info,
-        base::Time(),
+        base::Time(), DeviceInfoUtil::GetPulseInterval(),
         /*send_tab_to_self_receiving_enabled=*/true,
         DeviceInfo::SharingInfo(
             {SharingVapidFcmTokenForSuffix(kLocalSuffix),

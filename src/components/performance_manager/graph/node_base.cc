@@ -13,26 +13,13 @@ namespace performance_manager {
 const uintptr_t NodeBase::kNodeBaseType =
     reinterpret_cast<uintptr_t>(&kNodeBaseType);
 
-NodeBase::NodeBase(NodeTypeEnum node_type, GraphImpl* graph)
-    : graph_(graph), type_(node_type) {}
+NodeBase::NodeBase(NodeTypeEnum node_type) : type_(node_type) {}
 
 NodeBase::~NodeBase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // The node must have been removed from the graph before destruction.
-  DCHECK(!graph_->NodeInGraph(this));
-}
-
-// static
-int64_t NodeBase::GetSerializationId(NodeBase* node) {
-  if (!node)
-    return 0u;
-
-  if (!node->serialization_id_)
-    node->serialization_id_ = node->graph()->GetNextNodeSerializationId();
-
-  DCHECK_NE(0u, node->serialization_id_);
-  return node->serialization_id_;
+  DCHECK(!graph_);
 }
 
 // static
@@ -47,13 +34,28 @@ NodeBase* NodeBase::FromNode(Node* node) {
   return reinterpret_cast<NodeBase*>(const_cast<void*>(node->GetImpl()));
 }
 
-void NodeBase::JoinGraph() {
-  DCHECK(graph_->NodeInGraph(this));
+void NodeBase::JoinGraph(GraphImpl* graph) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!graph_);
+  DCHECK(graph->NodeInGraph(this));
+
+  graph_ = graph;
+
+  OnJoiningGraph();
 }
 
 void NodeBase::LeaveGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(graph_);
   DCHECK(graph_->NodeInGraph(this));
+
+  OnBeforeLeavingGraph();
+
+  graph_ = nullptr;
 }
+
+void NodeBase::OnJoiningGraph() {}
+
+void NodeBase::OnBeforeLeavingGraph() {}
 
 }  // namespace performance_manager

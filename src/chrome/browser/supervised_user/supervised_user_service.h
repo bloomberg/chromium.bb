@@ -7,8 +7,8 @@
 
 #include <stddef.h>
 
-#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -20,7 +20,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/file_downloader.h"
-#include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
+#include "chrome/browser/supervised_user/supervised_user_blacklist.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -30,7 +30,8 @@
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "components/sync/model/sync_change.h"
+#include "base/strings/string16.h"
+#include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/management_policy.h"
@@ -38,6 +39,7 @@
 
 class Browser;
 class PermissionRequestCreator;
+class PrefService;
 class Profile;
 class SupervisedUserServiceObserver;
 class SupervisedUserSettingsService;
@@ -49,6 +51,12 @@ namespace base {
 class FilePath;
 class Version;
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+namespace extensions {
+class Extension;
+}
+#endif
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -77,6 +85,18 @@ class SupervisedUserService : public KeyedService,
     // false to indicate that the SupervisedUserService itself should handle it.
     virtual bool SetActive(bool active) = 0;
   };
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // These enum values represent operations to manage the
+  // kSupervisedUserApprovedExtensions user pref, which stores parent approved
+  // extension ids.
+  enum class ApprovedExtensionChange {
+    // Adds a new approved extension to the pref.
+    kAdd,
+    // Removes extension approval.
+    kRemove
+  };
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   ~SupervisedUserService() override;
 
@@ -139,11 +159,15 @@ class SupervisedUserService : public KeyedService,
 
   bool IsSupervisedUserIframeFilterEnabled() const;
 
-#if !defined(OS_ANDROID)
-  // Initializes this profile for syncing, using the provided |refresh_token| to
-  // mint access tokens for Sync.
-  void InitSync(const std::string& refresh_token);
-#endif
+  // Returns true if the user is a type of Family Link Child account,
+  // but will not return true for a Legacy Supervised user (or non child users).
+  bool IsChild() const;
+
+  bool IsSupervisedUserExtensionInstallEnabled() const;
+
+  // Returns true if there is a custodian for the child.  A child can have
+  // up to 2 custodians, and this returns true if they have at least 1.
+  bool HasACustodian() const;
 
   void AddObserver(SupervisedUserServiceObserver* observer);
   void RemoveObserver(SupervisedUserServiceObserver* observer);
@@ -155,7 +179,6 @@ class SupervisedUserService : public KeyedService,
   void Shutdown() override;
 
   // SyncTypePreferenceProvider implementation:
-  syncer::UserSelectableTypeSet GetForcedTypes() const override;
   bool IsEncryptEverythingAllowed() const override;
 
 #if !defined(OS_ANDROID)
@@ -179,19 +202,27 @@ class SupervisedUserService : public KeyedService,
       std::unique_ptr<PermissionRequestCreator> permission_creator);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Updates the map of approved extensions.
-  // If |type| is SyncChangeType::ADD, then add custodian approval for enabling
-  // the extension by adding the approved version to the map of approved
-  // extensions. If |type| is SyncChangeType::DELETE, then remove the extension
-  // from the map of approved extensions.
-  void UpdateApprovedExtensions(const std::string& extension_id,
-                                const std::string& version,
-                                syncer::SyncChange::SyncChangeType type);
+  // Updates the set of approved extensions to add approval for |extension|.
+  void AddExtensionApproval(const extensions::Extension& extension);
+
+  // Updates the set of approved extensions to remove approval for |extension|.
+  void RemoveExtensionApproval(const extensions::Extension& extension);
+
+  // Wraps UpdateApprovedExtension() for testing. Use this to simulate adding or
+  // removing custodian approval for an extension via sync.
+  void UpdateApprovedExtensionForTesting(const std::string& extension_id,
+                                         ApprovedExtensionChange type);
 
   bool GetSupervisedUserExtensionsMayRequestPermissionsPref() const;
 
   void SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(
       bool enabled);
+
+  bool CanInstallExtensions() const;
+
+  bool IsExtensionAllowed(const extensions::Extension& extension) const;
+
+  void RecordExtensionEnablementUmaMetrics(bool enabled) const;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
  private:
@@ -213,8 +244,6 @@ class SupervisedUserService : public KeyedService,
 
   void SetActive(bool active);
 
-  bool ProfileIsSupervised() const;
-
   void OnCustodianInfoChanged();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -222,8 +251,6 @@ class SupervisedUserService : public KeyedService,
   std::string GetDebugPolicyProviderName() const override;
   bool UserMayLoad(const extensions::Extension* extension,
                    base::string16* error) const override;
-  bool UserMayModifySettings(const extensions::Extension* extension,
-                             base::string16* error) const override;
   bool MustRemainDisabled(const extensions::Extension* extension,
                           extensions::disable_reason::DisableReason* reason,
                           base::string16* error) const override;
@@ -232,6 +259,10 @@ class SupervisedUserService : public KeyedService,
   void OnExtensionInstalled(content::BrowserContext* browser_context,
                             const extensions::Extension* extension,
                             bool is_update) override;
+
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // An extension can be in one of the following states:
   //
@@ -250,15 +281,40 @@ class SupervisedUserService : public KeyedService,
   ExtensionState GetExtensionState(
       const extensions::Extension& extension) const;
 
+  // Returns whether we should block an extension based on the state of the
+  // "Permissions for sites, apps and extensions" toggle.
+  bool ShouldBlockExtension(const std::string& extension_id) const;
+
+  // Enables/Disables extensions upon change in approvals. This function is
+  // idempotent.
+  void ChangeExtensionStateIfNecessary(const std::string& extension_id);
+
+  // Updates the synced set of approved extension ids.
+  // Use AddExtensionApproval() or RemoveExtensionApproval() for public access.
+  // If |type| is kAdd, then add approval.
+  // If |type| is kRemove, then remove approval.
+  // Triggers a call to RefreshApprovedExtensionsFromPrefs() via a listener.
+  // TODO(crbug/1072857): We don't need the extension version information. It's
+  // only included for backwards compatibility with previous versions of Chrome.
+  // Remove the version information once a sufficient number of users have
+  // migrated away from M83.
+  void UpdateApprovedExtension(const std::string& extension_id,
+                               const std::string& version,
+                               ApprovedExtensionChange type);
+
+  // Updates the set of approved extensions when the corresponding preference is
+  // changed.
+  void RefreshApprovedExtensionsFromPrefs();
+
   // Extensions helper to SetActive().
   void SetExtensionsActive();
-
-  // Enables/Disables extensions upon change in approved version of the
-  // extension_id. This function is idempotent.
-  void ChangeExtensionStateIfNecessary(const std::string& extension_id);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
+  // Returns the SupervisedUserSettingsService associated with |profile_|.
   SupervisedUserSettingsService* GetSettingsService();
+
+  // Returns the PrefService associated with |profile_|.
+  PrefService* GetPrefService();
 
   size_t FindEnabledPermissionRequestCreator(size_t start);
   void AddPermissionRequestInternal(
@@ -327,9 +383,9 @@ class SupervisedUserService : public KeyedService,
 
   SupervisedUserURLFilter url_filter_;
 
-  // Stores a map from extension_id -> approved version by the custodian.
+  // Store a set of extension ids approved by the custodian.
   // It is only relevant for SU-initiated installs.
-  std::map<std::string, base::Version> approved_extensions_map_;
+  std::set<std::string> approved_extensions_set_;
 
   enum class BlacklistLoadState {
     NOT_LOADED,

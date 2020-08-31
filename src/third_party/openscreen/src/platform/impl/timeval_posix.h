@@ -10,11 +10,9 @@
 #include "platform/api/time.h"
 
 namespace openscreen {
-namespace platform {
 
 struct timeval ToTimeval(const Clock::duration& timeout);
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_TIMEVAL_POSIX_H_

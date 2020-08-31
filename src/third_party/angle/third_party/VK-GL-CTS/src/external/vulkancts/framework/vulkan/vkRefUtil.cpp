@@ -50,14 +50,25 @@ Move<VkPipeline> createComputePipeline (const DeviceInterface&				vk,
 	return Move<VkPipeline>(check<VkPipeline>(object), Deleter<VkPipeline>(vk, device, pAllocator));
 }
 
-Move<VkPipeline> createRayTracingPipelineNV (const DeviceInterface&				vk,
-										VkDevice							device,
-										VkPipelineCache						pipelineCache,
-										const VkRayTracingPipelineCreateInfoNV*	pCreateInfo,
-										const VkAllocationCallbacks*		pAllocator)
+Move<VkPipeline> createRayTracingPipelineNV (const DeviceInterface&						vk,
+											 VkDevice									device,
+											 VkPipelineCache							pipelineCache,
+											 const VkRayTracingPipelineCreateInfoNV*	pCreateInfo,
+											 const VkAllocationCallbacks*				pAllocator)
 {
 	VkPipeline object = 0;
 	VK_CHECK(vk.createRayTracingPipelinesNV(device, pipelineCache, 1u, pCreateInfo, pAllocator, &object));
+	return Move<VkPipeline>(check<VkPipeline>(object), Deleter<VkPipeline>(vk, device, pAllocator));
+}
+
+Move<VkPipeline> createRayTracingPipelineKHR (const DeviceInterface&					vk,
+											  VkDevice									device,
+											  VkPipelineCache							pipelineCache,
+											  const VkRayTracingPipelineCreateInfoKHR*	pCreateInfo,
+											  const VkAllocationCallbacks*				pAllocator)
+{
+	VkPipeline object = 0;
+	VK_CHECK(vk.createRayTracingPipelinesKHR(device, pipelineCache, 1u, pCreateInfo, pAllocator, &object));
 	return Move<VkPipeline>(check<VkPipeline>(object), Deleter<VkPipeline>(vk, device, pAllocator));
 }
 
@@ -95,14 +106,14 @@ Move<VkSemaphore> createSemaphore (const DeviceInterface&		vk,
 
 Move<VkSemaphore> createSemaphoreType (const DeviceInterface&		vk,
 									   VkDevice						device,
-									   VkSemaphoreTypeKHR			type,
+									   VkSemaphoreType				type,
 									   VkSemaphoreCreateFlags		flags,
 									   const deUint64				initialValue,
 									   const VkAllocationCallbacks*	pAllocator)
 {
-	const VkSemaphoreTypeCreateInfoKHR	createTypeInfo =
+	const VkSemaphoreTypeCreateInfo	createTypeInfo =
 	{
-		VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR,
+		VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
 		DE_NULL,
 
 		type,

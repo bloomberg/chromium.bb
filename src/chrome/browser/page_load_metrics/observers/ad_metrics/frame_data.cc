@@ -62,6 +62,7 @@ FrameData::FrameData(FrameTreeNodeId root_frame_tree_node_id,
       network_bytes_(0u),
       same_origin_bytes_(0u),
       origin_status_(OriginStatus::kUnknown),
+      creative_origin_status_(OriginStatus::kUnknown),
       frame_navigated_(false),
       user_activation_status_(UserActivationStatus::kNoActivation),
       is_display_none_(false),
@@ -150,10 +151,8 @@ void FrameData::SetDisplayState(bool is_display_none) {
 }
 
 void FrameData::UpdateCpuUsage(base::TimeTicks update_time,
-                               base::TimeDelta update,
-                               InteractiveStatus interactive) {
+                               base::TimeDelta update) {
   // Update the overall usage for all of the relevant buckets.
-  cpu_by_interactive_period_[static_cast<size_t>(interactive)] += update;
   cpu_by_activation_period_[static_cast<size_t>(user_activation_status_)] +=
       update;
 
@@ -199,15 +198,10 @@ bool FrameData::MaybeTriggerHeavyAdIntervention() {
   // Only check if the feature is enabled once we have a heavy ad. This is done
   // to ensure that any experiment for this feature will only be comparing
   // groups who have seen a heavy ad.
-  if (!base::FeatureList::IsEnabled(features::kHeavyAdIntervention))
-    return false;
-  return true;
+  return base::FeatureList::IsEnabled(features::kHeavyAdIntervention) ||
+         base::FeatureList::IsEnabled(features::kHeavyAdInterventionWarning);
 }
 
-base::TimeDelta FrameData::GetInteractiveCpuUsage(
-    InteractiveStatus status) const {
-  return cpu_by_interactive_period_[static_cast<int>(status)];
-}
 
 base::TimeDelta FrameData::GetActivationCpuUsage(
     UserActivationStatus status) const {
@@ -216,7 +210,7 @@ base::TimeDelta FrameData::GetActivationCpuUsage(
 
 base::TimeDelta FrameData::GetTotalCpuUsage() const {
   base::TimeDelta total_cpu_time;
-  for (base::TimeDelta cpu_time : cpu_by_interactive_period_)
+  for (base::TimeDelta cpu_time : cpu_by_activation_period_)
     total_cpu_time += cpu_time;
   return total_cpu_time;
 }
@@ -286,17 +280,10 @@ void FrameData::RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const {
 
   builder.SetFrameDepth(frame_depth_);
 
-  if (timing_) {
-    if (!timing_->paint_timing.is_null() &&
-        timing_->paint_timing->first_contentful_paint) {
-      builder.SetTiming_FirstContentfulPaint(
-          timing_->paint_timing->first_contentful_paint->InMilliseconds());
-    }
-    if (!timing_->interactive_timing.is_null() &&
-        timing_->interactive_timing->interactive) {
-      builder.SetTiming_Interactive(
-          timing_->interactive_timing->interactive->InMilliseconds());
-    }
+  if (timing_ && !timing_->paint_timing.is_null() &&
+      timing_->paint_timing->first_contentful_paint) {
+    builder.SetTiming_FirstContentfulPaint(
+        timing_->paint_timing->first_contentful_paint->InMilliseconds());
   }
   builder.Record(ukm_recorder->Get());
 }

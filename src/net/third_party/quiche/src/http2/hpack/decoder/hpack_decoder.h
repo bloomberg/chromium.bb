@@ -28,16 +28,16 @@
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_listener.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_state.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_tables.h"
+#include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoding_error.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_whole_entry_buffer.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_export.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
 
 namespace http2 {
 namespace test {
 class HpackDecoderPeer;
 }  // namespace test
 
-class HTTP2_EXPORT_PRIVATE HpackDecoder {
+class QUICHE_EXPORT_PRIVATE HpackDecoder {
  public:
   HpackDecoder(HpackDecoderListener* listener, size_t max_string_size);
   virtual ~HpackDecoder();
@@ -92,8 +92,13 @@ class HTTP2_EXPORT_PRIVATE HpackDecoder {
   // and returns true; else returns false.
   bool EndDecodingBlock();
 
-  // Was an error detected?
-  bool error_detected();
+  // If no error has been detected so far, query |decoder_state_| for errors and
+  // set |error_| if necessary.  Returns true if an error has ever been
+  // detected.
+  bool DetectError();
+
+  // Error code if an error has occurred, HpackDecodingError::kOk otherwise.
+  HpackDecodingError error() const { return error_; }
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
@@ -102,7 +107,7 @@ class HTTP2_EXPORT_PRIVATE HpackDecoder {
   friend class test::HpackDecoderPeer;
 
   // Reports an error to the listener IF this is the first error detected.
-  void ReportError(Http2StringPiece error_message);
+  void ReportError(HpackDecodingError error);
 
   // The decompressor state, as defined by HPACK (i.e. the static and dynamic
   // tables).
@@ -114,8 +119,8 @@ class HTTP2_EXPORT_PRIVATE HpackDecoder {
   // The decoder of HPACK blocks into entry parts, passed to entry_buffer_.
   HpackBlockDecoder block_decoder_;
 
-  // Has an error been detected?
-  bool error_detected_;
+  // Error code if an error has occurred, HpackDecodingError::kOk otherwise.
+  HpackDecodingError error_;
 };
 
 }  // namespace http2

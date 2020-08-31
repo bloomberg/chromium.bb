@@ -222,7 +222,7 @@ namespace {
 // modifies all the columns in the entry table.
 static const string::size_type kUpdateStatementBufferSize = 2048;
 
-void OnSqliteError(const base::Closure& catastrophic_error_handler,
+void OnSqliteError(const base::RepeatingClosure& catastrophic_error_handler,
                    int err,
                    sql::Statement* statement) {
   // An error has been detected. Ignore unless it is catastrophic.
@@ -275,11 +275,10 @@ bool SaveEntryToDB(sql::Statement* save_statement, const EntryKernel& entry) {
 ///////////////////////////////////////////////////////////////////////////////
 // DirectoryBackingStore implementation.
 
-DirectoryBackingStore::DirectoryBackingStore(
-    const string& dir_name,
-    const base::RepeatingCallback<std::string()>& cache_guid_generator)
+DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
+                                             const std::string& cache_guid)
     : dir_name_(dir_name),
-      cache_guid_generator_(cache_guid_generator),
+      cache_guid_(cache_guid),
       database_page_size_(kCurrentPageSizeKB),
       needs_metas_column_refresh_(false),
       needs_share_info_column_refresh_(false) {
@@ -287,12 +286,9 @@ DirectoryBackingStore::DirectoryBackingStore(
   ResetAndCreateConnection();
 }
 
-DirectoryBackingStore::DirectoryBackingStore(
-    const string& dir_name,
-    const base::RepeatingCallback<std::string()>& cache_guid_generator,
-    sql::Database* db)
+DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
+                                             sql::Database* db)
     : dir_name_(dir_name),
-      cache_guid_generator_(cache_guid_generator),
       database_page_size_(kCurrentPageSizeKB),
       db_(db),
       needs_metas_column_refresh_(false),
@@ -1528,7 +1524,7 @@ bool DirectoryBackingStore::CreateTables() {
     s.BindString(0, dir_name_);                   // id
     s.BindString(1, dir_name_);                   // name
     s.BindString(2, std::string());               // store_birthday
-    s.BindString(3, cache_guid_generator_.Run());  // cache_guid
+    s.BindString(3, cache_guid_);
     s.BindBlob(4, nullptr, 0);                    // bag_of_chips
     if (!s.Run())
       return false;
@@ -1779,12 +1775,12 @@ void DirectoryBackingStore::ResetAndCreateConnection() {
 }
 
 void DirectoryBackingStore::SetCatastrophicErrorHandler(
-    const base::Closure& catastrophic_error_handler) {
+    const base::RepeatingClosure& catastrophic_error_handler) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!catastrophic_error_handler.is_null());
   catastrophic_error_handler_ = catastrophic_error_handler;
   sql::Database::ErrorCallback error_callback =
-      base::Bind(&OnSqliteError, catastrophic_error_handler_);
+      base::BindRepeating(&OnSqliteError, catastrophic_error_handler_);
   db_->set_error_callback(error_callback);
 }
 

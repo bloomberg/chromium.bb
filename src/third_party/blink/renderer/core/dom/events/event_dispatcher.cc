@@ -64,7 +64,7 @@ DispatchEventResult EventDispatcher::DispatchEvent(Node& node, Event& event) {
 }
 
 EventDispatcher::EventDispatcher(Node& node, Event& event)
-    : node_(node), event_(event) {
+    : node_(&node), event_(&event) {
   view_ = node.GetDocument().View();
   event_->InitEventPath(*node_);
 }
@@ -78,7 +78,7 @@ void EventDispatcher::DispatchScopedEvent(Node& node, Event& event) {
 
 void EventDispatcher::DispatchSimulatedClick(
     Node& node,
-    Event* underlying_event,
+    const Event* underlying_event,
     SimulatedClickMouseEventOptions mouse_event_options,
     SimulatedClickCreationScope creation_scope) {
   // This persistent vector doesn't cause leaks, because added Nodes are removed
@@ -140,8 +140,8 @@ DispatchEventResult EventDispatcher::Dispatch() {
   event_dispatched_ = true;
 #endif
   if (GetEvent().GetEventPath().IsEmpty()) {
-    // eventPath() can be empty if event path is shrinked by relataedTarget
-    // retargeting.
+    // eventPath() can be empty if relatedTarget retargeting has shrunk the
+    // path.
     return DispatchEventResult::kNotCanceled;
   }
   std::unique_ptr<EventTiming> eventTiming;
@@ -159,7 +159,8 @@ DispatchEventResult EventDispatcher::Dispatch() {
       // A genuine mouse click cannot be triggered by script so we don't expect
       // there are any script in the stack.
       DCHECK(!frame->GetAdTracker() ||
-             !frame->GetAdTracker()->IsAdScriptInStack());
+             !frame->GetAdTracker()->IsAdScriptInStack(
+                 AdTracker::StackType::kBottomAndTop));
       if (frame->IsAdSubframe()) {
         UseCounter::Count(document, WebFeature::kAdClick);
       }
@@ -202,9 +203,6 @@ DispatchEventResult EventDispatcher::Dispatch() {
                               pre_dispatch_event_handler_result) ==
       kContinueDispatching) {
     if (DispatchEventAtCapturing() == kContinueDispatching) {
-      // TODO(crbug/882574): Remove these.
-      CHECK(event_->HasEventPath());
-      CHECK(!event_->GetEventPath().IsEmpty());
       if (DispatchEventAtTarget() == kContinueDispatching)
         DispatchEventAtBubbling();
     }
@@ -309,8 +307,9 @@ inline void EventDispatcher::DispatchEventPostProcess(
   // 17. Set event’s currentTarget attribute to null.
   event_->SetCurrentTarget(nullptr);
 
-  bool is_click = event_->IsMouseEvent() &&
-                  ToMouseEvent(*event_).type() == event_type_names::kClick;
+  auto* mouse_event = DynamicTo<MouseEvent>(event_);
+  bool is_click =
+      mouse_event && mouse_event->type() == event_type_names::kClick;
   if (is_click) {
     // Fire an accessibility event indicating a node was clicked on.  This is
     // safe if event_->target()->ToNode() returns null.
@@ -347,10 +346,8 @@ inline void EventDispatcher::DispatchEventPostProcess(
   // Call default event handlers. While the DOM does have a concept of
   // preventing default handling, the detail of which handlers are called is an
   // internal implementation detail and not part of the DOM.
-  if (event_->defaultPrevented()) {
-    if (activation_target)
-      activation_target->DidPreventDefault(*event_);
-  } else if (!event_->DefaultHandled() && is_trusted_or_click) {
+  if (!event_->defaultPrevented() && !event_->DefaultHandled() &&
+      is_trusted_or_click) {
     // Non-bubbling events call only one default event handler, the one for the
     // target.
     node_->DefaultEventHandler(*event_);
@@ -368,10 +365,11 @@ inline void EventDispatcher::DispatchEventPostProcess(
     }
   }
 
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event_);
   if (Page* page = node_->GetDocument().GetPage()) {
     if (page->GetSettings().GetSpatialNavigationEnabled() &&
-        is_trusted_or_click && event_->IsKeyboardEvent() &&
-        ToKeyboardEvent(*event_).key() == "Enter" &&
+        is_trusted_or_click && keyboard_event &&
+        keyboard_event->key() == "Enter" &&
         event_->type() == event_type_names::kKeyup) {
       page->GetSpatialNavigationController().ResetEnterKeyState();
     }

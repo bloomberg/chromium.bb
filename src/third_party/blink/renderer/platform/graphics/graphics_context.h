@@ -70,14 +70,7 @@ class PLATFORM_EXPORT GraphicsContext {
   USING_FAST_MALLOC(GraphicsContext);
 
  public:
-  enum DisabledMode {
-    kNothingDisabled = 0,  // Run as normal.
-    kFullyDisabled = 1     // Do absolutely minimal work to remove the cost of
-                           // the context from performance tests.
-  };
-
   explicit GraphicsContext(PaintController&,
-                           DisabledMode = kNothingDisabled,
                            printing::MetafileSkia* = nullptr,
                            paint_preview::PaintPreviewTracker* = nullptr);
 
@@ -90,8 +83,6 @@ class PLATFORM_EXPORT GraphicsContext {
   const PaintController& GetPaintController() const {
     return paint_controller_;
   }
-
-  bool ContextDisabled() const { return disabled_state_; }
 
   const DarkModeSettings& dark_mode_settings() const {
     return dark_mode_filter_.settings();
@@ -242,22 +233,22 @@ class PLATFORM_EXPORT GraphicsContext {
                  const FloatRect* src_rect = nullptr,
                  bool has_filter_property = false,
                  SkBlendMode = SkBlendMode::kSrcOver,
-                 RespectImageOrientationEnum = kDoNotRespectImageOrientation);
-  void DrawImageRRect(
-      Image*,
-      Image::ImageDecodingMode,
-      const FloatRoundedRect& dest,
-      const FloatRect& src_rect,
-      bool has_filter_property = false,
-      SkBlendMode = SkBlendMode::kSrcOver,
-      RespectImageOrientationEnum = kDoNotRespectImageOrientation);
+                 RespectImageOrientationEnum = kRespectImageOrientation);
+  void DrawImageRRect(Image*,
+                      Image::ImageDecodingMode,
+                      const FloatRoundedRect& dest,
+                      const FloatRect& src_rect,
+                      bool has_filter_property = false,
+                      SkBlendMode = SkBlendMode::kSrcOver,
+                      RespectImageOrientationEnum = kRespectImageOrientation);
   void DrawImageTiled(Image* image,
                       const FloatRect& dest_rect,
                       const FloatRect& src_rect,
                       const FloatSize& scale_src_to_dest,
                       const FloatPoint& phase,
                       const FloatSize& repeat_spacing,
-                      SkBlendMode = SkBlendMode::kSrcOver);
+                      SkBlendMode = SkBlendMode::kSrcOver,
+                      RespectImageOrientationEnum = kRespectImageOrientation);
 
   // These methods write to the canvas.
   // Also drawLine(const IntPoint& point1, const IntPoint& point2) and
@@ -371,8 +362,9 @@ class PLATFORM_EXPORT GraphicsContext {
   void DrawFocusRing(const Vector<IntRect>&,
                      float width,
                      int offset,
-                     const Color&,
-                     bool is_outset);
+                     float border_radius,
+                     float min_border_width,
+                     const Color&);
   void DrawFocusRing(const Path&, float width, int offset, const Color&);
 
   enum Edge {
@@ -428,14 +420,22 @@ class PLATFORM_EXPORT GraphicsContext {
                                           FloatPoint& p2,
                                           float stroke_width);
 
-  static int FocusRingOutsetExtent(int offset, int width, bool is_outset);
+  static int FocusRingOutsetExtent(int offset, int width);
 
   void SetInDrawingRecorder(bool);
   bool InDrawingRecorder() const { return in_drawing_recorder_; }
 
+  // Set the DOM Node Id on the canvas. This is used to associate
+  // the drawing commands with the structure tree for the page when
+  // creating a tagged PDF. Callers are responsible for restoring it.
+  void SetDOMNodeId(DOMNodeId);
+  DOMNodeId GetDOMNodeId() const;
+
   static sk_sp<SkColorFilter> WebCoreColorFilterToSkiaColorFilter(ColorFilter);
 
  private:
+  friend class ScopedDarkModeElementRoleOverride;
+
   const GraphicsContextState* ImmutableState() const { return paint_state_; }
 
   GraphicsContextState* MutableState() {
@@ -462,14 +462,20 @@ class PLATFORM_EXPORT GraphicsContext {
   void RestoreLayer();
 
   // Helpers for drawing a focus ring (drawFocusRing)
-  void DrawFocusRingPath(const SkPath&, const Color&, float width);
-  void DrawFocusRingRect(const SkRect&, const Color&, float width);
+  void DrawFocusRingPath(const SkPath&,
+                         const Color&,
+                         float width,
+                         float border_radius);
+  void DrawFocusRingRect(const SkRect&,
+                         const Color&,
+                         float width,
+                         float border_radius);
 
   void DrawFocusRingInternal(const Vector<IntRect>&,
                              float width,
                              int offset,
-                             const Color&,
-                             bool is_outset);
+                             float border_radius,
+                             const Color&);
 
   // SkCanvas wrappers.
   void ClipRRect(const SkRRect&,
@@ -479,9 +485,6 @@ class PLATFORM_EXPORT GraphicsContext {
 
   // Apply deferred paint state saves
   void RealizePaintSave() {
-    if (ContextDisabled())
-      return;
-
     if (paint_state_->SaveCount()) {
       paint_state_->DecrementSaveCount();
       ++paint_state_index_;
@@ -503,7 +506,9 @@ class PLATFORM_EXPORT GraphicsContext {
 
   class DarkModeFlags;
 
-  // null indicates painting is contextDisabled. Never delete this object.
+  // This is owned by paint_recorder_. Never delete this object.
+  // Drawing operations are allowed only after the first BeginRecording() which
+  // initializes this to not null.
   cc::PaintCanvas* canvas_;
 
   PaintController& paint_controller_;
@@ -529,8 +534,6 @@ class PLATFORM_EXPORT GraphicsContext {
   bool disable_destruction_checks_;
 #endif
 
-  const DisabledMode disabled_state_;
-
   float device_scale_factor_;
 
   // TODO(gilmanmh): Investigate making this base::Optional<DarkModeFilter>
@@ -539,6 +542,9 @@ class PLATFORM_EXPORT GraphicsContext {
   unsigned printing_ : 1;
   unsigned is_painting_preview_ : 1;
   unsigned in_drawing_recorder_ : 1;
+
+  // The current node ID, which is used for marked content in a tagged PDF.
+  DOMNodeId dom_node_id_ = kInvalidDOMNodeId;
 
   DISALLOW_COPY_AND_ASSIGN(GraphicsContext);
 };

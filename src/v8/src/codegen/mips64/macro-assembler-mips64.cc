@@ -16,7 +16,7 @@
 #include "src/codegen/register-configuration.h"
 #include "src/debug/debug.h"
 #include "src/execution/frames-inl.h"
-#include "src/heap/heap-inl.h"  // For MemoryChunk.
+#include "src/heap/memory-chunk.h"
 #include "src/init/bootstrapper.h"
 #include "src/logging/counters.h"
 #include "src/objects/heap-number.h"
@@ -2729,7 +2729,7 @@ void TurboAssembler::BranchMSA(Label* target, MSABranchDF df,
 void TurboAssembler::BranchShortMSA(MSABranchDF df, Label* target,
                                     MSABranchCondition cond, MSARegister wt,
                                     BranchDelaySlot bd) {
-  if (kArchVariant == kMips64r6) {
+  if (IsEnabled(MIPS_SIMD)) {
     BlockTrampolinePoolScope block_trampoline_pool(this);
     if (target) {
       switch (cond) {
@@ -2775,6 +2775,8 @@ void TurboAssembler::BranchShortMSA(MSABranchDF df, Label* target,
           UNREACHABLE();
       }
     }
+  } else {
+    UNREACHABLE();
   }
   if (bd == PROTECT) {
     nop();
@@ -4302,6 +4304,25 @@ void TurboAssembler::CallBuiltinByIndex(Register builtin_index) {
   Call(builtin_index);
 }
 
+void TurboAssembler::PatchAndJump(Address target) {
+  if (kArchVariant != kMips64r6) {
+    UseScratchRegisterScope temps(this);
+    Register scratch = temps.Acquire();
+    mov(scratch, ra);
+    bal(1);                                  // jump to ld
+    nop();                                   // in the delay slot
+    ld(t9, MemOperand(ra, kInstrSize * 3));  // ra == pc_
+    jr(t9);
+    mov(ra, scratch);  // in delay slot
+    DCHECK_EQ(reinterpret_cast<uint64_t>(pc_) % 8, 0);
+    *reinterpret_cast<uint64_t*>(pc_) = target;  // pc_ should be align.
+    pc_ += sizeof(uint64_t);
+  } else {
+    // TODO(mips r6): Implement.
+    UNIMPLEMENTED();
+  }
+}
+
 void TurboAssembler::StoreReturnAddressAndCall(Register target) {
   // This generates the final instruction sequence for calls to C functions
   // once an exit frame has been constructed.
@@ -4965,6 +4986,7 @@ void MacroAssembler::DecrementCounter(StatsCounter* counter, int value,
 // Debugging.
 
 void TurboAssembler::Trap() { stop(); }
+void TurboAssembler::DebugBreak() { stop(); }
 
 void TurboAssembler::Assert(Condition cc, AbortReason reason, Register rs,
                             Operand rt) {
@@ -5296,7 +5318,7 @@ void MacroAssembler::AssertConstructor(Register object) {
 
     LoadMap(t8, object);
     Lbu(t8, FieldMemOperand(t8, Map::kBitFieldOffset));
-    And(t8, t8, Operand(Map::IsConstructorBit::kMask));
+    And(t8, t8, Operand(Map::Bits1::IsConstructorBit::kMask));
     Check(ne, AbortReason::kOperandIsNotAConstructor, t8, Operand(zero_reg));
   }
 }
@@ -5679,31 +5701,38 @@ void TurboAssembler::CallCFunctionHelper(Register function,
 
     // Save the frame pointer and PC so that the stack layout remains iterable,
     // even without an ExitFrame which normally exists between JS and C frames.
-    if (isolate() != nullptr) {
-      // 't' registers are caller-saved so this is safe as a scratch register.
-      Register scratch1 = t1;
-      Register scratch2 = t2;
-      DCHECK(!AreAliased(scratch1, scratch2, function));
+    // 't' registers are caller-saved so this is safe as a scratch register.
+    Register pc_scratch = t1;
+    Register scratch = t2;
+    DCHECK(!AreAliased(pc_scratch, scratch, function));
 
-      Label get_pc;
-      mov(scratch1, ra);
-      Call(&get_pc);
+    mov(scratch, ra);
+    nal();
+    mov(pc_scratch, ra);
+    mov(ra, scratch);
 
-      bind(&get_pc);
-      mov(scratch2, ra);
-      mov(ra, scratch1);
-
-      li(scratch1, ExternalReference::fast_c_call_caller_pc_address(isolate()));
-      Sd(scratch2, MemOperand(scratch1));
-      li(scratch1, ExternalReference::fast_c_call_caller_fp_address(isolate()));
-      Sd(fp, MemOperand(scratch1));
+    // See x64 code for reasoning about how to address the isolate data fields.
+    if (root_array_available()) {
+      Sd(pc_scratch, MemOperand(kRootRegister,
+                                IsolateData::fast_c_call_caller_pc_offset()));
+      Sd(fp, MemOperand(kRootRegister,
+                        IsolateData::fast_c_call_caller_fp_offset()));
+    } else {
+      DCHECK_NOT_NULL(isolate());
+      li(scratch, ExternalReference::fast_c_call_caller_pc_address(isolate()));
+      Sd(pc_scratch, MemOperand(scratch));
+      li(scratch, ExternalReference::fast_c_call_caller_fp_address(isolate()));
+      Sd(fp, MemOperand(scratch));
     }
 
     Call(function);
 
-    if (isolate() != nullptr) {
-      // We don't unset the PC; the FP is the source of truth.
-      Register scratch = t1;
+    // We don't unset the PC; the FP is the source of truth.
+    if (root_array_available()) {
+      Sd(zero_reg, MemOperand(kRootRegister,
+                              IsolateData::fast_c_call_caller_fp_offset()));
+    } else {
+      DCHECK_NOT_NULL(isolate());
       li(scratch, ExternalReference::fast_c_call_caller_fp_address(isolate()));
       Sd(zero_reg, MemOperand(scratch));
     }
@@ -5774,7 +5803,9 @@ void TurboAssembler::ResetSpeculationPoisonRegister() {
   li(kSpeculationPoisonRegister, -1);
 }
 
-void TurboAssembler::CallForDeoptimization(Address target, int deopt_id) {
+void TurboAssembler::CallForDeoptimization(Address target, int deopt_id,
+                                           Label* exit, DeoptimizeKind kind) {
+  USE(exit, kind);
   NoRootArrayScope no_root_array(this);
 
   // Save the deopt id in kRootRegister (we don't need the roots array from now

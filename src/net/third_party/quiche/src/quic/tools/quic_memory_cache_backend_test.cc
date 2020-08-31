@@ -4,11 +4,12 @@
 
 #include "net/third_party/quiche/src/quic/tools/quic_memory_cache_backend.h"
 
+#include "net/third_party/quiche/src/quic/platform/api/quic_file_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quiche/src/quic/tools/quic_backend_response.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 namespace quic {
 namespace test {
@@ -61,7 +62,7 @@ TEST_F(QuicMemoryCacheBackendTest, AddResponse) {
   spdy::SpdyHeaderBlock response_headers;
   response_headers[":status"] = "200";
   response_headers["content-length"] =
-      QuicTextUtils::Uint64ToString(kResponseBody.size());
+      quiche::QuicheTextUtils::Uint64ToString(kResponseBody.size());
 
   spdy::SpdyHeaderBlock response_trailers;
   response_trailers["key-1"] = "value-1";
@@ -115,6 +116,32 @@ TEST_F(QuicMemoryCacheBackendTest, UsesOriginalUrl) {
   EXPECT_LT(0U, response->body().length());
 }
 
+TEST_F(QuicMemoryCacheBackendTest, UsesOriginalUrlOnly) {
+  // Tests that if the URL cannot be inferred correctly from the path
+  // because the directory does not include the hostname, that the
+  // X-Original-Url header's value will be used.
+  std::string dir;
+  std::string path = "map.html";
+  for (const std::string& file : ReadFileContents(CacheDirectory())) {
+    if (quiche::QuicheTextUtils::EndsWithIgnoreCase(file, "map.html")) {
+      dir = file;
+      dir.erase(dir.length() - path.length() - 1);
+      break;
+    }
+  }
+  ASSERT_NE("", dir);
+
+  cache_.InitializeBackend(dir);
+  const Response* response =
+      cache_.GetResponse("test.example.com", "/site_map.html");
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  EXPECT_EQ("200", response->headers().find(":status")->second);
+  // Connection headers are not valid in HTTP/2.
+  EXPECT_FALSE(QuicContainsKey(response->headers(), "connection"));
+  EXPECT_LT(0U, response->body().length());
+}
+
 TEST_F(QuicMemoryCacheBackendTest, DefaultResponse) {
   // Verify GetResponse returns nullptr when no default is set.
   const Response* response = cache_.GetResponse("www.google.com", "/");
@@ -156,15 +183,16 @@ TEST_F(QuicMemoryCacheBackendTest, AddSimpleResponseWithServerPushResources) {
   std::list<ServerPushInfo> push_resources;
   std::string scheme = "http";
   for (int i = 0; i < NumResources; ++i) {
-    std::string path = "/server_push_src" + QuicTextUtils::Uint64ToString(i);
+    std::string path =
+        "/server_push_src" + quiche::QuicheTextUtils::Uint64ToString(i);
     std::string url = scheme + "://" + request_host + path;
     QuicUrl resource_url(url);
     std::string body =
-        QuicStrCat("This is server push response body for ", path);
+        quiche::QuicheStrCat("This is server push response body for ", path);
     spdy::SpdyHeaderBlock response_headers;
     response_headers[":status"] = "200";
     response_headers["content-length"] =
-        QuicTextUtils::Uint64ToString(body.size());
+        quiche::QuicheTextUtils::Uint64ToString(body.size());
     push_resources.push_back(
         ServerPushInfo(resource_url, response_headers.Clone(), i, body));
   }
@@ -195,14 +223,15 @@ TEST_F(QuicMemoryCacheBackendTest, GetServerPushResourcesAndPushResponses) {
                                                      "404"};
   std::list<ServerPushInfo> push_resources;
   for (int i = 0; i < NumResources; ++i) {
-    std::string path = "/server_push_src" + QuicTextUtils::Uint64ToString(i);
+    std::string path =
+        "/server_push_src" + quiche::QuicheTextUtils::Uint64ToString(i);
     std::string url = scheme + "://" + request_host + path;
     QuicUrl resource_url(url);
     std::string body = "This is server push response body for " + path;
     spdy::SpdyHeaderBlock response_headers;
     response_headers[":status"] = push_response_status[i];
     response_headers["content-length"] =
-        QuicTextUtils::Uint64ToString(body.size());
+        quiche::QuicheTextUtils::Uint64ToString(body.size());
     push_resources.push_back(
         ServerPushInfo(resource_url, response_headers.Clone(), i, body));
   }

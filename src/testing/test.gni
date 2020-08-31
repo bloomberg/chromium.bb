@@ -23,6 +23,12 @@ if (is_chromeos) {
   import("//build/config/chromeos/rules.gni")
 }
 
+if (is_ios) {
+  import("//build/config/ios/ios_sdk.gni")
+  import("//build/config/ios/ios_test_runner_wrapper.gni")
+  import("//build/config/ios/rules.gni")
+}
+
 # Define a test as an executable (or apk on Android) with the "testonly" flag
 # set.
 # Variable:
@@ -79,9 +85,7 @@ template("test") {
         testonly = true
         dist_dir = "$root_out_dir/$target_name"
         binary = _exec_output
-        deps = [
-          ":$_exec_target",
-        ]
+        deps = [ ":$_exec_target" ]
         if (defined(invoker.extra_dist_files)) {
           extra_files = invoker.extra_dist_files
         }
@@ -112,9 +116,7 @@ template("test") {
         unwind_table_asset(_unwind_table_asset_name) {
           testonly = true
           library_target = _library_target
-          deps = [
-            ":$_library_target",
-          ]
+          deps = [ ":$_library_target" ]
         }
       }
 
@@ -164,15 +166,14 @@ template("test") {
 
       if (_use_raw_android_executable) {
         executable_dist_dir = "$root_out_dir/$_dist_target"
+        data_deps = [ ":$_exec_target" ]
       } else {
         apk_target = ":$_apk_target"
         incremental_apk = incremental_install
 
         # Dep needed for the test runner .runtime_deps file to pick up data
         # deps from the forward_variables_from(invoker, "*") on the library.
-        data_deps = [
-          ":$_library_target",
-        ]
+        data_deps = [ ":$_library_target" ]
       }
       test_name = _output_name
       test_suite = _output_name
@@ -188,9 +189,7 @@ template("test") {
       testonly = true
       executable = "$root_build_dir/bin/run_$_output_name"
       wrapper_script = "$root_build_dir/$_output_name"
-      deps = [
-        ":$_test_runner_target",
-      ]
+      deps = [ ":$_test_runner_target" ]
       if (_use_raw_android_executable) {
         deps += [ ":$_dist_target" ]
       } else {
@@ -218,12 +217,10 @@ template("test") {
       package = ":$_pkg_target"
       package_name_override = _output_name
 
-      deps = [
-        "//testing/buildbot/filters:fuchsia_filters",
-      ]
+      data_deps = [ "//testing/buildbot/filters:fuchsia_filters" ]
     }
 
-    fuchsia_package(_pkg_target) {
+    cr_fuchsia_package(_pkg_target) {
       testonly = true
       forward_variables_from(invoker, [ "manifest" ])
       binary = ":$_exec_target"
@@ -236,9 +233,6 @@ template("test") {
       output_name = _exec_target
     }
   } else if (is_ios) {
-    import("//build/config/ios/ios_sdk.gni")
-    import("//build/config/ios/rules.gni")
-
     declare_args() {
       # Keep the unittest-as-xctest functionality defaulted to off until the
       # bots are updated to handle it properly.
@@ -248,16 +242,37 @@ template("test") {
     }
 
     _test_target = target_name
+    _wrapper_output_name = "run_${target_name}"
+    ios_test_runner_wrapper(_wrapper_output_name) {
+      forward_variables_from(invoker,
+                             [
+                               "data",
+                               "data_deps",
+                               "deps",
+                               "executable_args",
+                               "retries",
+                               "shards",
+                             ])
+
+      _root_build_dir = rebase_path("${root_build_dir}", root_build_dir)
+
+      if (!defined(executable_args)) {
+        executable_args = []
+      }
+      executable_args += [
+        "--app",
+        "@WrappedPath(${_root_build_dir}/${_test_target}.app)",
+      ]
+
+      wrapper_output_name = "${_wrapper_output_name}"
+    }
+
     _resources_bundle_data = target_name + "_resources_bundle_data"
 
     bundle_data(_resources_bundle_data) {
       visibility = [ ":$_test_target" ]
-      sources = [
-        "//testing/gtest_ios/Default.png",
-      ]
-      outputs = [
-        "{{bundle_resources_dir}}/{{source_file_part}}",
-      ]
+      sources = [ "//testing/gtest_ios/Default.png" ]
+      outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
     }
 
     if (enable_run_ios_unittests_with_xctest) {
@@ -283,19 +298,28 @@ template("test") {
         info_plist = "//testing/gtest_ios/unittest-Info.plist"
       }
 
-      _bundle_id_suffix = "${target_name}"
+      _gtest_bundle_id_suffix = "${target_name}"
+      xcode_product_bundle_id = "gtest.$_gtest_bundle_id_suffix"
 
       if (!defined(extra_substitutions)) {
         extra_substitutions = []
       }
-      extra_substitutions += [ "GTEST_BUNDLE_ID_SUFFIX=$_bundle_id_suffix" ]
+      extra_substitutions +=
+          [ "GTEST_BUNDLE_ID_SUFFIX=$_gtest_bundle_id_suffix" ]
 
       if (!defined(bundle_deps)) {
         bundle_deps = []
       }
       bundle_deps += [ ":$_resources_bundle_data" ]
+
+      if (!defined(data_deps)) {
+        data_deps = []
+      }
+
+      # Include the generate_wrapper as part of data_deps
+      data_deps += [ ":${_wrapper_output_name}" ]
     }
-  } else if (is_chromeos && is_chromeos_device) {
+  } else if (is_chromeos && cros_board != "") {
     # Building for a cros board (ie: not linux-chromeos).
 
     _gen_runner_target = "${target_name}__runner"

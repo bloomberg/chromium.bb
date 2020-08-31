@@ -85,6 +85,28 @@ struct StdParentHandles {
   base::win::ScopedHandle hstderr_read;
 };
 
+// Class used in tests to set registration data for testing.
+class GoogleRegistrationDataForTesting {
+ public:
+  explicit GoogleRegistrationDataForTesting(base::string16 serial_number);
+  ~GoogleRegistrationDataForTesting();
+};
+
+// Class used in tests to set gem device details for testing.
+class GemDeviceDetailsForTesting {
+ public:
+  explicit GemDeviceDetailsForTesting(std::vector<std::string>& mac_addresses,
+                                      std::string os_version);
+  ~GemDeviceDetailsForTesting();
+};
+
+// Class used in tests to set chrome path for testing.
+class GoogleChromePathForTesting {
+ public:
+  explicit GoogleChromePathForTesting(base::FilePath chrome_path);
+  ~GoogleChromePathForTesting();
+};
+
 // Process startup options that allows customization of stdin/stdout/stderr
 // handles.
 class ScopedStartupInfo {
@@ -209,8 +231,9 @@ HRESULT LookupLocalizedNameForWellKnownSid(WELL_KNOWN_SID_TYPE sid_type,
 // Handles the writing and deletion of a startup sentinel file used to ensure
 // that the GCPW does not crash continuously on startup and render the
 // winlogon process unusable.
-bool VerifyStartupSentinel();
+bool WriteToStartupSentinel();
 void DeleteStartupSentinel();
+void DeleteStartupSentinelForVersion(const base::string16& version);
 
 // Gets a string resource from the DLL with the given id.
 base::string16 GetStringResource(int base_message_id);
@@ -246,10 +269,23 @@ base::string16 GetDictString(const std::unique_ptr<base::Value>& dict,
 // names provided in the input should be in order. Below is an example : Lets
 // say the json object is {"key1": {"key2": {"key3": "value1"}}, "key4":
 // "value2"}. Then to search for the key "key3", this method should be called
-// by providing the names vector as {"key1", "key2", "key3"}.
+// by providing the |path| as {"key1", "key2", "key3"}.
 std::string SearchForKeyInStringDictUTF8(
     const std::string& json_string,
     const std::initializer_list<base::StringPiece>& path);
+
+// Perform a recursive search on a nested dictionary object. Note that the
+// names provided in the input should be in order. Below is an example : Lets
+// say the json object is
+// {"key1": {"key2": {"value": "value1", "value": "value2"}}}.
+// Then to search for the key "key2" and list_key as "value", then this method
+// should be called by providing |list_key| as "value", |path| as
+// ["key1", "key2"] and the result returned would be ["value1", "value2"].
+HRESULT SearchForListInStringDictUTF8(
+    const std::string& list_key,
+    const std::string& json_string,
+    const std::initializer_list<base::StringPiece>& path,
+    std::vector<std::string>* output);
 std::string GetDictStringUTF8(const base::Value& dict, const char* name);
 std::string GetDictStringUTF8(const std::unique_ptr<base::Value>& dict,
                               const char* name);
@@ -295,6 +331,39 @@ void InitWindowsStringWithString(const WindowsStringCharT* string,
       buffer_char_size);
   windows_string->MaximumLength = windows_string->Length + buffer_char_size;
 }
+
+// Extracts the provided keys from the given dictionary. Returns true if all
+// keys are found. If any of the key isn't found, returns false.
+bool ExtractKeysFromDict(
+    const base::Value& dict,
+    const std::vector<std::pair<std::string, std::string*>>& needed_outputs);
+
+// Gets the bios serial number of the windows device.
+base::string16 GetSerialNumber();
+
+// Gets the mac addresses of the windows device.
+std::vector<std::string> GetMacAddresses();
+
+// Gets the OS version installed on the device. The format is
+// "major.minor.build".
+void GetOsVersion(std::string* version);
+
+// Gets the obfuscated device_id that is a combination of multiple device
+// identifiers.
+HRESULT GenerateDeviceId(std::string* device_id);
+
+// Overrides the gaia_url and gcpw_endpoint_path that is used to load GLS.
+HRESULT SetGaiaEndpointCommandLineIfNeeded(const wchar_t* override_registry_key,
+                                           const std::string& default_endpoint,
+                                           bool provide_deviceid,
+                                           bool show_tos,
+                                           base::CommandLine* command_line);
+
+// Returns the file path to installed chrome.exe.
+base::FilePath GetChromePath();
+
+// Returns the file path to system installed chrome.exe.
+base::FilePath GetSystemChromePath();
 
 }  // namespace credential_provider
 

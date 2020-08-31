@@ -9,9 +9,10 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
-#include "components/safe_browsing/proto/webprotect.pb.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 
 namespace content {
 class WebContents;
@@ -31,8 +32,14 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
   using StatusCallback = base::RepeatingCallback<DeepScanningClientResponse(
       const base::FilePath&)>;
 
+  // Callback that determines the encryption of the file specified.  Returns
+  // true if the file is considered encrypted for tests.
+  using EncryptionStatusCallback =
+      base::RepeatingCallback<bool(const base::FilePath&)>;
+
   FakeDeepScanningDialogDelegate(base::RepeatingClosure delete_closure,
                                  StatusCallback status_callback,
+                                 EncryptionStatusCallback encryption_callback,
                                  std::string dm_token,
                                  content::WebContents* web_contents,
                                  Data data,
@@ -45,10 +52,15 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
   static std::unique_ptr<DeepScanningDialogDelegate> Create(
       base::RepeatingClosure delete_closure,
       StatusCallback status_callback,
+      EncryptionStatusCallback encryption_callback,
       std::string dm_token,
       content::WebContents* web_contents,
       Data data,
       CompletionCallback callback);
+
+  // Sets a delay to have before returning responses. This is used by tests that
+  // need to simulate response taking some time.
+  static void SetResponseDelay(base::TimeDelta delay);
 
   // Returns a deep scanning response that represents a successful scan.
   static DeepScanningClientResponse SuccessfulResponse(
@@ -72,6 +84,9 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
       const std::string& rule_name,
       DlpDeepScanningVerdict::TriggeredRule::Action action);
 
+  // Sets the BinaryUploadService::Result to use in the next response callback.
+  static void SetResponseResult(BinaryUploadService::Result result);
+
  private:
   // Simulates a response from the binary upload service.  the |path| argument
   // is used to call |status_callback_| to determine if the path should succeed
@@ -83,13 +98,17 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
   void UploadTextForDeepScanning(
       std::unique_ptr<BinaryUploadService::Request> request) override;
   void UploadFileForDeepScanning(
+      BinaryUploadService::Result result,
       const base::FilePath& path,
       std::unique_ptr<BinaryUploadService::Request> request) override;
-  bool CloseTabModalDialog() override;
 
+  static BinaryUploadService::Result result_;
   base::RepeatingClosure delete_closure_;
   StatusCallback status_callback_;
+  EncryptionStatusCallback encryption_callback_;
   std::string dm_token_;
+
+  base::WeakPtrFactory<FakeDeepScanningDialogDelegate> weakptr_factory_{this};
 };
 
 }  // namespace safe_browsing

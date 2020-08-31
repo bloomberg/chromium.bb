@@ -40,6 +40,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
@@ -383,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MemoryTracing) {
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND};
 
   base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(
-      args, base::BindRepeating(OnMemoryDumpDone, expected_names,
-                                run_loop.QuitClosure()));
+      args,
+      base::BindOnce(OnMemoryDumpDone, expected_names, run_loop.QuitClosure()));
   run_loop.Run();
 }

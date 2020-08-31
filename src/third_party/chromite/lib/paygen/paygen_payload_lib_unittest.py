@@ -10,6 +10,7 @@ from __future__ import print_function
 import json
 import os
 import shutil
+import subprocess
 import tempfile
 
 import mock
@@ -28,6 +29,8 @@ from chromite.lib.paygen import urilib
 from chromite.lib.paygen import utils
 
 from chromite.scripts import build_dlc
+
+pytestmark = cros_test_lib.pytestmark_inside_only
 
 
 # We access a lot of protected members during testing.
@@ -243,9 +246,24 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     run_mock.assert_called_once_with(
         expected_cmd,
-        redirect_stdout=True,
+        stdout=True,
         enter_chroot=True,
-        combine_stdout_stderr=True)
+        stderr=subprocess.STDOUT)
+
+    self.assertIn(mock_result.output,
+                  osutils.ReadFile(os.path.join(self.tempdir, 'delta.log'),
+                                   mode='rb'))
+
+    # Now run with squawk_wrap=true.
+    run_mock = self.PatchObject(cros_build_lib, 'run',
+                                return_value=mock_result)
+    gen._RunGeneratorCmd(expected_cmd, squawk_wrap=True)
+
+    run_mock.assert_called_once_with(
+        expected_cmd,
+        stdout=True,
+        enter_chroot=True,
+        stderr=subprocess.STDOUT)
 
     self.assertIn(mock_result.output,
                   osutils.ReadFile(os.path.join(self.tempdir, 'delta.log'),
@@ -483,7 +501,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--new_build_channel=dev-channel',
            '--new_build_version=1620.0.0',
            '--new_key=mp-v3']
-    run_mock.assert_called_once_with(cmd)
+    run_mock.assert_called_once_with(cmd, squawk_wrap=True)
 
   def testGenerateUnsignedPayloadDelta(self):
     """Test _GenerateUnsignedPayload with delta payload."""
@@ -515,7 +533,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--old_build_channel=dev-channel',
            '--old_build_version=1620.0.0',
            '--old_key=mp-v3']
-    run_mock.assert_called_once_with(cmd)
+    run_mock.assert_called_once_with(cmd, squawk_wrap=True)
 
   def testGenerateHashes(self):
     """Test _GenerateHashes."""

@@ -76,6 +76,26 @@ PaymentRequestTestController::PaymentRequestTestController()
 
 PaymentRequestTestController::~PaymentRequestTestController() = default;
 
+content::WebContents*
+PaymentRequestTestController::GetPaymentHandlerWebContents() {
+  // Todo(1053722): return the invoked payment app's web contents for testing.
+  return nullptr;
+}
+
+bool PaymentRequestTestController::ConfirmMinimalUI() {
+  // Desktop does not have a minimal UI.
+  return true;
+}
+
+bool PaymentRequestTestController::DismissMinimalUI() {
+  // Desktop does not have a minimal UI.
+  return true;
+}
+
+bool PaymentRequestTestController::IsAndroidMarshmallowOrLollipop() {
+  return false;
+}
+
 void PaymentRequestTestController::SetUpOnMainThread() {
   // Register all prefs with our pref testing service, since we're not using the
   // one chrome sets up.
@@ -121,9 +141,9 @@ void PaymentRequestTestController::UpdateDelegateFactory() {
         PaymentRequestWebContentsManager* manager =
             PaymentRequestWebContentsManager::GetOrCreateForWebContents(
                 web_contents);
-        manager->CreatePaymentRequest(web_contents->GetMainFrame(),
-                                      web_contents, std::move(delegate),
-                                      std::move(receiver), observer_for_test);
+        manager->CreatePaymentRequest(render_frame_host, web_contents,
+                                      std::move(delegate), std::move(receiver),
+                                      observer_for_test);
       },
       observer_converter_.get(), is_incognito_, valid_ssl_, prefs_.get()));
 }
@@ -157,6 +177,10 @@ void PaymentRequestTestController::OnCompleteCalled() {
   if (observer_) {
     observer_->OnCompleteCalled();
   }
+}
+
+void PaymentRequestTestController::OnMinimalUIReady() {
+  NOTREACHED();
 }
 
 void PaymentRequestTestController::OnNotSupportedError() {

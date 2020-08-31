@@ -4,12 +4,17 @@
 
 #include "base/power_monitor/power_monitor.h"
 
+#include <atomic>
 #include <utility>
 
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/trace_event/trace_event.h"
 
 namespace base {
+
+namespace {
+std::atomic_bool g_is_process_suspended{false};
+}
 
 void PowerMonitor::Initialize(std::unique_ptr<PowerMonitorSource> source) {
   DCHECK(!IsInitialized());
@@ -44,6 +49,11 @@ bool PowerMonitor::IsOnBatteryPower() {
 void PowerMonitor::ShutdownForTesting() {
   PowerMonitor::GetInstance()->observers_->AssertEmpty();
   GetInstance()->source_ = nullptr;
+  g_is_process_suspended.store(false);
+}
+
+bool PowerMonitor::IsProcessSuspended() {
+  return g_is_process_suspended.load(std::memory_order_relaxed);
 }
 
 void PowerMonitor::NotifyPowerStateChange(bool battery_in_use) {
@@ -57,16 +67,18 @@ void PowerMonitor::NotifyPowerStateChange(bool battery_in_use) {
 void PowerMonitor::NotifySuspend() {
   DCHECK(IsInitialized());
   TRACE_EVENT_INSTANT0("base", "PowerMonitor::NotifySuspend",
-                       TRACE_EVENT_SCOPE_GLOBAL);
+                       TRACE_EVENT_SCOPE_PROCESS);
   DVLOG(1) << "Power Suspending";
+  g_is_process_suspended.store(true, std::memory_order_relaxed);
   GetInstance()->observers_->Notify(FROM_HERE, &PowerObserver::OnSuspend);
 }
 
 void PowerMonitor::NotifyResume() {
   DCHECK(IsInitialized());
   TRACE_EVENT_INSTANT0("base", "PowerMonitor::NotifyResume",
-                       TRACE_EVENT_SCOPE_GLOBAL);
+                       TRACE_EVENT_SCOPE_PROCESS);
   DVLOG(1) << "Power Resuming";
+  g_is_process_suspended.store(false, std::memory_order_relaxed);
   GetInstance()->observers_->Notify(FROM_HERE, &PowerObserver::OnResume);
 }
 

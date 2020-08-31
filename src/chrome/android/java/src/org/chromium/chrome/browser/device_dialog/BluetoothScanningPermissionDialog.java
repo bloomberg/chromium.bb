@@ -24,13 +24,14 @@ import android.widget.ProgressBar;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.MathUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
-import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.components.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.content_public.browser.bluetooth_scanning.Event;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
@@ -96,17 +97,24 @@ public class BluetoothScanningPermissionDialog {
         mNativeBluetoothScanningPermissionDialogPtr = nativeBluetoothScanningPermissionDialogPtr;
 
         // Emphasize the origin.
-        Profile profile = Profile.getLastUsedProfile();
+        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. It works correctly now, but
+        // it is not safe.
+        Profile profile = Profile.getLastUsedRegularProfile();
         SpannableString originSpannableString = new SpannableString(origin);
 
         assert mActivity instanceof ChromeBaseAppCompatActivity;
         final boolean useDarkColors = !((ChromeBaseAppCompatActivity) mActivity)
                                                .getNightModeStateProvider()
                                                .isInNightMode();
-
-        OmniboxUrlEmphasizer.emphasizeUrl(originSpannableString, mActivity.getResources(), profile,
-                securityLevel, /*isInternalPage=*/false, useDarkColors,
+        ChromeAutocompleteSchemeClassifier chromeAutocompleteSchemeClassifier =
+                new ChromeAutocompleteSchemeClassifier(profile);
+        OmniboxUrlEmphasizer.emphasizeUrl(originSpannableString, mActivity.getResources(),
+                chromeAutocompleteSchemeClassifier, securityLevel,
+                /*isInternalPage=*/false, useDarkColors,
                 /*emphasizeScheme=*/true);
+        chromeAutocompleteSchemeClassifier.destroy();
+
         // Construct a full string and replace the |originSpannableString| text with emphasized
         // version.
         SpannableString title = new SpannableString(

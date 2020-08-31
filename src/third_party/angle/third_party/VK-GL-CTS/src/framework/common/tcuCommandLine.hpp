@@ -91,6 +91,13 @@ class CaseTreeNode;
 class CasePaths;
 class Archive;
 
+// Match a single path component against a pattern component that may contain *-wildcards.
+bool matchWildcards(std::string::const_iterator		patternStart,
+					std::string::const_iterator		patternEnd,
+					std::string::const_iterator		pathStart,
+					std::string::const_iterator		pathEnd,
+					bool							allowPrefix);
+
 class CaseListFilter
 {
 public:
@@ -133,6 +140,8 @@ public:
 
 	bool							parse							(int argc, const char* const* argv);
 	bool							parse							(const std::string& cmdLine);
+
+	const std::string&				getInitialCmdLine				(void) const;
 
 	//! Get log file name (--deqp-log-filename)
 	const char*						getLogFileName					(void) const;
@@ -234,11 +243,17 @@ public:
 	//! Enable RenderDoc frame markers (--deqp-renderdoc)
 	bool							isRenderDocEnabled			(void) const;
 
+	//! Get waiver file name (--deqp-waiver-file)
+	const char*						getWaiverFileName			(void) const;
+
 	//! Get case list fraction
 	const std::vector<int>&			getCaseFraction				(void) const;
 
 	//! Get must-list filename
 	const char*						getCaseFractionMandatoryTests(void) const;
+
+	//! Get archive directory path
+	const char*						getArchiveDir				(void) const;
 
 	/*--------------------------------------------------------------------*//*!
 	 * \brief Creates case list filter
@@ -269,6 +284,8 @@ private:
 
 	de::cmdline::CommandLine		m_cmdLine;
 	deUint32						m_logFlags;
+
+	std::string						m_initialCmdLine;
 };
 
 } // tcu

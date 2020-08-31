@@ -41,6 +41,7 @@ class V8TestInterfaceConstructor4 {
     return &v8_test_interface_constructor_4_wrapper_type_info;
   }
 
+  static void ConstructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
@@ -49,12 +50,6 @@ class V8TestInterfaceConstructor4 {
       v8::Isolate*,
       const DOMWrapperWorld&,
       v8::Local<v8::FunctionTemplate> interface_template);
-};
-
-template <>
-struct NativeValueTraits<TestInterfaceConstructor4> : public NativeValueTraitsBase<TestInterfaceConstructor4> {
-  CORE_EXPORT static TestInterfaceConstructor4* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestInterfaceConstructor4* NullValue() { return nullptr; }
 };
 
 template <>

@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2013 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
+from __future__ import print_function
 import functools
 import signal
 import sys
@@ -185,13 +186,13 @@ class ThreadPoolTest(unittest.TestCase):
 
     # Generator that yields [i * MULTIPLIER, i * MULTIPLIER + COUNT).
     def generator_task(i):
-      for j in xrange(COUNT):
+      for j in range(COUNT):
         time.sleep(0.001)
         yield i * MULTIPLIER + j
 
     # Arguments for tasks and expected results.
     args = range(0, 10)
-    expected = [i * MULTIPLIER + j for i in args for j in xrange(COUNT)]
+    expected = [i * MULTIPLIER + j for i in args for j in range(COUNT)]
 
     # Test all possible ways to pull results from the thread pool.
     getters = (self.get_results_via_join,
@@ -211,7 +212,7 @@ class ThreadPoolTest(unittest.TestCase):
 
     # Start a bunch of threads, all calling iter_results in parallel.
     pollers = []
-    for _ in xrange(0, 4):
+    for _ in range(0, 4):
       result = []
       poller = threading.Thread(target=poller_proc, args=(result,))
       poller.start()
@@ -281,7 +282,7 @@ class ThreadPoolTest(unittest.TestCase):
           pool.add_task(0, grab_and_return, i)
 
         # Running at 11 would hang.
-        results = [pool.get_one_result() for _ in xrange(10)]
+        results = [pool.get_one_result() for _ in range(10)]
         # At that point, there's 10 completed tasks and 2 tasks hanging, 88
         # pending.
         self.assertEqual(88, pool.abort())
@@ -297,7 +298,7 @@ class ThreadPoolTest(unittest.TestCase):
     finally:
       # Print debug data if it failed.
       if not completed:
-        print results
+        print(results)
 
 
 class AutoRetryThreadPoolTest(unittest.TestCase):
@@ -454,7 +455,7 @@ class AutoRetryThreadPoolTest(unittest.TestCase):
     with threading_utils.AutoRetryThreadPool([OSError], 2, 1, 1, 0) as pool:
       channel = threading_utils.TaskChannel()
       pool.add_task_with_channel(channel, 0, lambda: 0)
-      self.assertEqual(0, channel.next())
+      self.assertEqual(0, next(channel))
 
   def test_add_task_with_channel_fatal_error(self):
     with threading_utils.AutoRetryThreadPool([OSError], 2, 1, 1, 0) as pool:
@@ -463,7 +464,7 @@ class AutoRetryThreadPoolTest(unittest.TestCase):
         raise exc
       pool.add_task_with_channel(channel, 0, throw, ValueError())
       with self.assertRaises(ValueError):
-        channel.next()
+        next(channel)
 
   def test_add_task_with_channel_retryable_error(self):
     with threading_utils.AutoRetryThreadPool([OSError], 2, 1, 1, 0) as pool:
@@ -472,7 +473,7 @@ class AutoRetryThreadPoolTest(unittest.TestCase):
         raise exc
       pool.add_task_with_channel(channel, 0, throw, OSError())
       with self.assertRaises(OSError):
-        channel.next()
+        next(channel)
 
   def test_add_task_with_channel_captures_stack_trace(self):
     with threading_utils.AutoRetryThreadPool([OSError], 2, 1, 1, 0) as pool:
@@ -484,13 +485,13 @@ class AutoRetryThreadPoolTest(unittest.TestCase):
       pool.add_task_with_channel(channel, 0, throw, OSError())
       exc_traceback = ''
       try:
-        channel.next()
+        next(channel)
       except OSError:
         exc_traceback = traceback.format_exc()
       self.assertIn('function_with_some_unusual_name', exc_traceback)
 
   def test_max_value(self):
-    self.assertEqual(64, threading_utils.IOAutoRetryThreadPool.MAX_WORKERS)
+    self.assertEqual(16, threading_utils.IOAutoRetryThreadPool.MAX_WORKERS)
 
 
 class FakeProgress(object):
@@ -546,25 +547,25 @@ class TaskChannelTest(unittest.TestCase):
     with threading_utils.ThreadPool(1, 1, 0) as tp:
       channel = threading_utils.TaskChannel()
       tp.add_task(0, lambda: channel.send_result(0))
-      self.assertEqual(0, channel.next())
+      self.assertEqual(0, next(channel))
 
   def test_passes_exception_value(self):
     with threading_utils.ThreadPool(1, 1, 0) as tp:
       channel = threading_utils.TaskChannel()
       tp.add_task(0, lambda: channel.send_result(Exception()))
-      self.assertTrue(isinstance(channel.next(), Exception))
+      self.assertTrue(isinstance(next(channel), Exception))
 
   def test_wrap_task_passes_simple_value(self):
     with threading_utils.ThreadPool(1, 1, 0) as tp:
       channel = threading_utils.TaskChannel()
       tp.add_task(0, channel.wrap_task(lambda: 0))
-      self.assertEqual(0, channel.next())
+      self.assertEqual(0, next(channel))
 
   def test_wrap_task_passes_exception_value(self):
     with threading_utils.ThreadPool(1, 1, 0) as tp:
       channel = threading_utils.TaskChannel()
       tp.add_task(0, channel.wrap_task(Exception))
-      self.assertTrue(isinstance(channel.next(), Exception))
+      self.assertTrue(isinstance(next(channel), Exception))
 
   def test_send_exception_raises_exception(self):
     class CustomError(Exception):
@@ -574,7 +575,7 @@ class TaskChannelTest(unittest.TestCase):
       exc_info = (CustomError, CustomError(), None)
       tp.add_task(0, lambda: channel.send_exception(exc_info))
       with self.assertRaises(CustomError):
-        channel.next()
+        next(channel)
 
   def test_wrap_task_raises_exception(self):
     class CustomError(Exception):
@@ -585,7 +586,7 @@ class TaskChannelTest(unittest.TestCase):
         raise CustomError()
       tp.add_task(0, channel.wrap_task(task_func))
       with self.assertRaises(CustomError):
-        channel.next()
+        next(channel)
 
   def test_wrap_task_exception_captures_stack_trace(self):
     class CustomError(Exception):
@@ -599,7 +600,7 @@ class TaskChannelTest(unittest.TestCase):
       tp.add_task(0, channel.wrap_task(task_func))
       exc_traceback = ''
       try:
-        channel.next()
+        next(channel)
       except CustomError:
         exc_traceback = traceback.format_exc()
       self.assertIn('function_with_some_unusual_name', exc_traceback)
@@ -616,7 +617,7 @@ class TaskChannelTest(unittest.TestCase):
       tp.add_task(0, channel.wrap_task(task_func))
       with self.assertRaises(threading_utils.TaskChannel.Timeout):
         channel.next(timeout=0.001)
-      self.assertEqual(123, channel.next())
+      self.assertEqual(123, next(channel))
 
   def test_timeout_exception_from_task(self):
     with threading_utils.ThreadPool(1, 1, 0) as tp:
@@ -626,7 +627,7 @@ class TaskChannelTest(unittest.TestCase):
       tp.add_task(0, channel.wrap_task(task_func))
       # 'Timeout' raised by task gets transformed into 'RuntimeError'.
       with self.assertRaises(RuntimeError):
-        channel.next()
+        next(channel)
 
 
 if __name__ == '__main__':

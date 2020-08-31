@@ -8,6 +8,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/sequenced_task_runner.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/rect.h"
@@ -18,22 +19,19 @@
 
 class SkCanvas;
 
-namespace base {
-class TaskRunner;
-}
-
 namespace ui {
 
-class XShmImagePoolBase;
+class XShmImagePool;
 
 class COMPONENT_EXPORT(UI_BASE_X) X11SoftwareBitmapPresenter {
  public:
   // Corresponds to SwapBuffersCallback alias in SoftwareOutputDevice.
   using SwapBuffersCallback = base::OnceCallback<void(const gfx::Size&)>;
 
-  X11SoftwareBitmapPresenter(gfx::AcceleratedWidget widget,
-                             base::TaskRunner* host_task_runner,
-                             base::TaskRunner* event_task_runner);
+  X11SoftwareBitmapPresenter(
+      gfx::AcceleratedWidget widget,
+      scoped_refptr<base::SequencedTaskRunner> host_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> event_task_runner);
 
   ~X11SoftwareBitmapPresenter();
 
@@ -69,11 +67,11 @@ class COMPONENT_EXPORT(UI_BASE_X) X11SoftwareBitmapPresenter {
   // parent-relative background.
   int composite_ = 0;
 
-  scoped_refptr<ui::XShmImagePoolBase> shm_pool_;
+  scoped_refptr<ui::XShmImagePool> shm_pool_;
   bool needs_swap_ = false;
 
-  base::TaskRunner* host_task_runner_;
-  scoped_refptr<base::TaskRunner> event_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> host_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> event_task_runner_;
   sk_sp<SkSurface> surface_;
 
   gfx::Size viewport_pixel_size_;

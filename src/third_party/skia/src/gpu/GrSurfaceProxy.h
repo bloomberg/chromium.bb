@@ -10,12 +10,11 @@
 
 #include "include/core/SkRect.h"
 #include "include/gpu/GrBackendSurface.h"
-#include "include/gpu/GrGpuResource.h"
-#include "include/gpu/GrSurface.h"
-#include "include/gpu/GrTexture.h"
 #include "include/private/SkNoncopyable.h"
+#include "src/gpu/GrGpuResource.h"
 #include "src/gpu/GrNonAtomicRef.h"
-#include "src/gpu/GrSwizzle.h"
+#include "src/gpu/GrSurface.h"
+#include "src/gpu/GrTexture.h"
 
 class GrCaps;
 class GrContext_Base;
@@ -26,6 +25,7 @@ class GrRenderTask;
 class GrResourceProvider;
 class GrSurfaceContext;
 class GrSurfaceProxyPriv;
+class GrSurfaceProxyView;
 class GrTextureProxy;
 
 class GrSurfaceProxy : public SkNVRefCnt<GrSurfaceProxy> {
@@ -62,6 +62,21 @@ public:
         kSynced
     };
 
+    /**
+     * Specifies the expected properties of the GrSurface returned by a lazy instantiation
+     * callback. The dimensions will be negative in the case of a fully lazy proxy.
+     */
+    struct LazySurfaceDesc {
+        SkISize fDimensions;
+        SkBackingFit fFit;
+        GrRenderable fRenderable;
+        GrMipMapped fMipMapped;
+        int fSampleCnt;
+        const GrBackendFormat& fFormat;
+        GrProtected fProtected;
+        SkBudgeted fBudgeted;
+    };
+
     struct LazyCallbackResult {
         LazyCallbackResult() = default;
         LazyCallbackResult(const LazyCallbackResult&) = default;
@@ -85,7 +100,8 @@ public:
         bool fReleaseCallback = true;
     };
 
-    using LazyInstantiateCallback = std::function<LazyCallbackResult(GrResourceProvider*)>;
+    using LazyInstantiateCallback =
+            std::function<LazyCallbackResult(GrResourceProvider*, const LazySurfaceDesc&)>;
 
     enum class UseAllocator {
         /**
@@ -108,8 +124,6 @@ public:
         return result;
     }
 
-    GrPixelConfig config() const { return fConfig; }
-
     SkISize dimensions() const {
         SkASSERT(!this->isFullyLazy());
         return fDimensions;
@@ -124,6 +138,9 @@ public:
      */
     SkRect getBoundsRect() const { return SkRect::Make(this->dimensions()); }
 
+    /* A perhaps faster check for this->dimensions() == this->backingStoreDimensions(). */
+    bool isFunctionallyExact() const;
+
     /**
      * Helper that gets the dimensions the backing GrSurface will have as a bounding rectangle.
      */
@@ -131,14 +148,9 @@ public:
         return SkRect::Make(this->backingStoreDimensions());
     }
 
-    GrSurfaceOrigin origin() const {
-        SkASSERT(kTopLeft_GrSurfaceOrigin == fOrigin || kBottomLeft_GrSurfaceOrigin == fOrigin);
-        return fOrigin;
-    }
-
-    const GrSwizzle& textureSwizzle() const { return fTextureSwizzle; }
-
     const GrBackendFormat& backendFormat() const { return fFormat; }
+
+    bool isFormatCompressed(const GrCaps*) const;
 
     class UniqueID {
     public:
@@ -242,6 +254,9 @@ public:
      * assignment in GrResourceAllocator.
      */
     bool readOnly() const { return fSurfaceFlags & GrInternalSurfaceFlags::kReadOnly; }
+    bool framebufferOnly() const {
+        return fSurfaceFlags & GrInternalSurfaceFlags::kFramebufferOnly;
+    }
 
     /**
      * This means surface is a multisampled render target, and internally holds a non-msaa texture
@@ -284,13 +299,27 @@ public:
 
     // Helper function that creates a temporary SurfaceContext to perform the copy
     // The copy is is not a render target and not multisampled.
-    static sk_sp<GrTextureProxy> Copy(GrRecordingContext*, GrSurfaceProxy* src, GrMipMapped,
-                                      SkIRect srcRect, SkBackingFit, SkBudgeted,
+    //
+    // The intended use of this copy call is simply to copy exact pixel values from one proxy to a
+    // new one. Thus, there isn't a need for a swizzle when doing the copy. The format of the copy
+    // will be the same as the src. Therefore, the copy can be used in a view with the same swizzle
+    // as the original for use with a given color type.
+    static sk_sp<GrSurfaceProxy> Copy(GrRecordingContext*,
+                                      GrSurfaceProxy* src,
+                                      GrSurfaceOrigin,
+                                      GrMipMapped,
+                                      SkIRect srcRect,
+                                      SkBackingFit,
+                                      SkBudgeted,
                                       RectsMustMatch = RectsMustMatch::kNo);
 
-    // Copy the entire 'src'
-    static sk_sp<GrTextureProxy> Copy(GrRecordingContext*, GrSurfaceProxy* src, GrMipMapped,
-                                      SkBackingFit, SkBudgeted);
+    // Same as above Copy but copies the entire 'src'
+    static sk_sp<GrSurfaceProxy> Copy(GrRecordingContext*,
+                                      GrSurfaceProxy* src,
+                                      GrSurfaceOrigin,
+                                      GrMipMapped,
+                                      SkBackingFit,
+                                      SkBudgeted);
 
 #if GR_TEST_UTILS
     int32_t testingOnly_getBackingRefCnt() const;
@@ -303,16 +332,12 @@ public:
     inline GrSurfaceProxyPriv priv();
     inline const GrSurfaceProxyPriv priv() const;
 
-    // Returns true if we are working with protected content.
-    bool isProtected() const { return fIsProtected == GrProtected::kYes; }
+    GrProtected isProtected() const { return fIsProtected; }
 
 protected:
     // Deferred version - takes a new UniqueID from the shared resource/proxy pool.
     GrSurfaceProxy(const GrBackendFormat&,
-                   const GrSurfaceDesc&,
-                   GrRenderable,
-                   GrSurfaceOrigin,
-                   const GrSwizzle& textureSwizzle,
+                   SkISize,
                    SkBackingFit,
                    SkBudgeted,
                    GrProtected,
@@ -321,10 +346,7 @@ protected:
     // Lazy-callback version - takes a new UniqueID from the shared resource/proxy pool.
     GrSurfaceProxy(LazyInstantiateCallback&&,
                    const GrBackendFormat&,
-                   const GrSurfaceDesc&,
-                   GrRenderable,
-                   GrSurfaceOrigin,
-                   const GrSwizzle& textureSwizzle,
+                   SkISize,
                    SkBackingFit,
                    SkBudgeted,
                    GrProtected,
@@ -336,8 +358,6 @@ protected:
     // in allocation by having its backing resource recycled to other uninstantiated proxies or
     // not depending on UseAllocator.
     GrSurfaceProxy(sk_sp<GrSurface>,
-                   GrSurfaceOrigin,
-                   const GrSwizzle& textureSwizzle,
                    SkBackingFit,
                    UseAllocator);
 
@@ -347,7 +367,7 @@ protected:
     bool ignoredByResourceAllocator() const { return fIgnoredByResourceAllocator; }
     void setIgnoredByResourceAllocator() { fIgnoredByResourceAllocator = true; }
 
-    void computeScratchKey(GrScratchKey*) const;
+    void computeScratchKey(const GrCaps&, GrScratchKey*) const;
 
     virtual sk_sp<GrSurface> createSurface(GrResourceProvider*) const = 0;
     void assign(sk_sp<GrSurface> surface);
@@ -381,13 +401,10 @@ protected:
     GrInternalSurfaceFlags fSurfaceFlags;
 
 private:
-    // For wrapped resources, 'fFormat', 'fConfig', 'fWidth', 'fHeight', and 'fOrigin; will always
-    // be filled in from the wrapped resource.
+    // For wrapped resources, 'fFormat', 'fWidth', and 'fHeight'; will always be filled in from the
+    // wrapped resource.
     const GrBackendFormat  fFormat;
-    const GrPixelConfig    fConfig;
     SkISize                fDimensions;
-    const GrSurfaceOrigin  fOrigin;
-    const GrSwizzle        fTextureSwizzle;
 
     SkBackingFit           fFit;      // always kApprox for lazy-callback resources
                                       // always kExact for wrapped resources
@@ -408,6 +425,8 @@ private:
     SkDEBUGCODE(size_t getRawGpuMemorySize_debugOnly() const { return fGpuMemorySize; })
 
     virtual size_t onUninstantiatedGpuMemorySize(const GrCaps&) const = 0;
+
+    virtual LazySurfaceDesc callbackDesc() const = 0;
 
     bool                   fIgnoredByResourceAllocator = false;
     GrProtected            fIsProtected;

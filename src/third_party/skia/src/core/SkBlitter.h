@@ -18,6 +18,7 @@
 
 class SkArenaAlloc;
 class SkMatrix;
+class SkMatrixProvider;
 class SkPaint;
 class SkPixmap;
 struct SkMask;
@@ -140,16 +141,17 @@ public:
         Return the correct blitter to use given the specified context.
      */
     static SkBlitter* Choose(const SkPixmap& dst,
-                             const SkMatrix& matrix,
+                             const SkMatrixProvider& matrixProvider,
                              const SkPaint& paint,
                              SkArenaAlloc*,
-                             bool drawCoverage = false);
+                             bool drawCoverage,
+                             sk_sp<SkShader> clipShader);
 
     static SkBlitter* ChooseSprite(const SkPixmap& dst,
                                    const SkPaint&,
                                    const SkPixmap& src,
                                    int left, int top,
-                                   SkArenaAlloc*);
+                                   SkArenaAlloc*, sk_sp<SkShader> clipShader);
     ///@}
 
     static bool UseRasterPipelineBlitter(const SkPixmap&, const SkPaint&, const SkMatrix&);

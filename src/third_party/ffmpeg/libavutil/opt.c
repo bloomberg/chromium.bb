@@ -330,12 +330,7 @@ static int set_string_image_size(void *obj, const AVOption *o, const char *val, 
 
 static int set_string_video_rate(void *obj, const AVOption *o, const char *val, AVRational *dst)
 {
-    int ret;
-    if (!val) {
-        ret = AVERROR(EINVAL);
-    } else {
-        ret = av_parse_video_rate(dst, val);
-    }
+    int ret = av_parse_video_rate(dst, val);
     if (ret < 0)
         av_log(obj, AV_LOG_ERROR, "Unable to parse option value \"%s\" as video rate\n", val);
     return ret;
@@ -446,6 +441,24 @@ static int set_string_sample_fmt(void *obj, const AVOption *o, const char *val, 
                           AV_SAMPLE_FMT_NB, av_get_sample_fmt, "sample format");
 }
 
+static int set_string_dict(void *obj, const AVOption *o, const char *val, uint8_t **dst)
+{
+    AVDictionary *options = NULL;
+
+    if (val) {
+        int ret = av_dict_parse_string(&options, val, "=", ":", 0);
+        if (ret < 0) {
+            av_dict_free(&options);
+            return ret;
+        }
+    }
+
+    av_dict_free((AVDictionary **)dst);
+    *dst = (uint8_t *)options;
+
+    return 0;
+}
+
 int av_opt_set(void *obj, const char *name, const char *val, int search_flags)
 {
     int ret = 0;
@@ -455,7 +468,7 @@ int av_opt_set(void *obj, const char *name, const char *val, int search_flags)
         return AVERROR_OPTION_NOT_FOUND;
     if (!val && (o->type != AV_OPT_TYPE_STRING &&
                  o->type != AV_OPT_TYPE_PIXEL_FMT && o->type != AV_OPT_TYPE_SAMPLE_FMT &&
-                 o->type != AV_OPT_TYPE_IMAGE_SIZE && o->type != AV_OPT_TYPE_VIDEO_RATE &&
+                 o->type != AV_OPT_TYPE_IMAGE_SIZE &&
                  o->type != AV_OPT_TYPE_DURATION && o->type != AV_OPT_TYPE_COLOR &&
                  o->type != AV_OPT_TYPE_CHANNEL_LAYOUT && o->type != AV_OPT_TYPE_BOOL))
         return AVERROR(EINVAL);
@@ -527,6 +540,8 @@ int av_opt_set(void *obj, const char *name, const char *val, int search_flags)
             return ret;
         }
         break;
+    case AV_OPT_TYPE_DICT:
+        return set_string_dict(obj, o, val, dst);
     }
 
     av_log(obj, AV_LOG_ERROR, "Invalid option type.\n");
@@ -855,6 +870,12 @@ int av_opt_get(void *obj, const char *name, int search_flags, uint8_t **out_val)
         i64 = *(int64_t *)dst;
         ret = snprintf(buf, sizeof(buf), "0x%"PRIx64, i64);
         break;
+    case AV_OPT_TYPE_DICT:
+        if (!*(AVDictionary **)dst && (search_flags & AV_OPT_ALLOW_NULL)) {
+            *out_val = NULL;
+            return 0;
+        }
+        return av_dict_get_string(*(AVDictionary **)dst, (char **)out_val, '=', ':');
     default:
         return AVERROR(EINVAL);
     }
@@ -1174,6 +1195,9 @@ static void opt_list(void *obj, void *av_log_obj, const char *unit,
             case AV_OPT_TYPE_BINARY:
                 av_log(av_log_obj, AV_LOG_INFO, "%-12s ", "<binary>");
                 break;
+            case AV_OPT_TYPE_DICT:
+                av_log(av_log_obj, AV_LOG_INFO, "%-12s ", "<dictionary>");
+                break;
             case AV_OPT_TYPE_IMAGE_SIZE:
                 av_log(av_log_obj, AV_LOG_INFO, "%-12s ", "<image_size>");
                 break;
@@ -1247,6 +1271,7 @@ static void opt_list(void *obj, void *av_log_obj, const char *unit,
                 !((opt->type == AV_OPT_TYPE_COLOR      ||
                    opt->type == AV_OPT_TYPE_IMAGE_SIZE ||
                    opt->type == AV_OPT_TYPE_STRING     ||
+                   opt->type == AV_OPT_TYPE_DICT       ||
                    opt->type == AV_OPT_TYPE_VIDEO_RATE) &&
                   !opt->default_val.str)) {
             av_log(av_log_obj, AV_LOG_INFO, " (default ");
@@ -1297,6 +1322,7 @@ static void opt_list(void *obj, void *av_log_obj, const char *unit,
             case AV_OPT_TYPE_COLOR:
             case AV_OPT_TYPE_IMAGE_SIZE:
             case AV_OPT_TYPE_STRING:
+            case AV_OPT_TYPE_DICT:
             case AV_OPT_TYPE_VIDEO_RATE:
                 av_log(av_log_obj, AV_LOG_INFO, "\"%s\"", opt->default_val.str);
                 break;
@@ -1386,8 +1412,8 @@ void av_opt_set_defaults2(void *s, int mask, int flags)
                 set_string_binary(s, opt, opt->default_val.str, dst);
                 break;
             case AV_OPT_TYPE_DICT:
-                /* Cannot set defaults for these types */
-            break;
+                set_string_dict(s, opt, opt->default_val.str, dst);
+                break;
         default:
             av_log(s, AV_LOG_DEBUG, "AVOption type %d of option %s not implemented yet\n",
                    opt->type, opt->name);
@@ -1971,9 +1997,23 @@ int av_opt_is_set_to_default(void *obj, const AVOption *o)
         av_free(tmp.data);
         return ret;
     }
-    case AV_OPT_TYPE_DICT:
-        /* Binary and dict have not default support yet. Any pointer is not default. */
-        return !!(*(void **)dst);
+    case AV_OPT_TYPE_DICT: {
+        AVDictionary *dict1 = NULL;
+        AVDictionary *dict2 = *(AVDictionary **)dst;
+        AVDictionaryEntry *en1 = NULL;
+        AVDictionaryEntry *en2 = NULL;
+        ret = av_dict_parse_string(&dict1, o->default_val.str, "=", ":", 0);
+        if (ret < 0) {
+            av_dict_free(&dict1);
+            return ret;
+        }
+        do {
+            en1 = av_dict_get(dict1, "", en1, AV_DICT_IGNORE_SUFFIX);
+            en2 = av_dict_get(dict2, "", en2, AV_DICT_IGNORE_SUFFIX);
+        } while (en1 && en2 && !strcmp(en1->key, en2->key) && !strcmp(en1->value, en2->value));
+        av_dict_free(&dict1);
+        return (!en1 && !en2);
+    }
     case AV_OPT_TYPE_IMAGE_SIZE:
         if (!o->default_val.str || !strcmp(o->default_val.str, "none"))
             w = h = 0;

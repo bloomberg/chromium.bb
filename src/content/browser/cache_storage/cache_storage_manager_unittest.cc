@@ -18,6 +18,7 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -169,13 +170,14 @@ class CallbackScheduler : public CacheStorageScheduler {
   base::OnceClosure callback_;
 };
 
-class MockCacheStorageQuotaManagerProxy : public MockQuotaManagerProxy {
+class MockCacheStorageQuotaManagerProxy
+    : public storage::MockQuotaManagerProxy {
  public:
-  MockCacheStorageQuotaManagerProxy(MockQuotaManager* quota_manager,
+  MockCacheStorageQuotaManagerProxy(storage::MockQuotaManager* quota_manager,
                                     base::SingleThreadTaskRunner* task_runner)
       : MockQuotaManagerProxy(quota_manager, task_runner) {}
 
-  void RegisterClient(scoped_refptr<QuotaClient> client) override {
+  void RegisterClient(scoped_refptr<storage::QuotaClient> client) override {
     registered_clients_.push_back(std::move(client));
   }
 
@@ -191,7 +193,7 @@ class MockCacheStorageQuotaManagerProxy : public MockQuotaManagerProxy {
     DCHECK(registered_clients_.empty());
   }
 
-  std::vector<scoped_refptr<QuotaClient>> registered_clients_;
+  std::vector<scoped_refptr<storage::QuotaClient>> registered_clients_;
 };
 
 bool IsIndexFileCurrent(const base::FilePath& cache_dir) {
@@ -255,7 +257,7 @@ class TestCacheStorageContext : public CacheStorageContextWithManager {
     NOTREACHED();
   }
 
-  void DeleteForOrigin(const GURL& origin_url) override { NOTREACHED(); }
+  void DeleteForOrigin(const url::Origin& origin) override { NOTREACHED(); }
 
  private:
   ~TestCacheStorageContext() override = default;
@@ -371,8 +373,8 @@ class CacheStorageManagerTest : public testing::Test {
     if (!MemoryOnly())
       temp_dir_path = temp_dir_.GetPath();
 
-    quota_policy_ = new MockSpecialStoragePolicy;
-    mock_quota_manager_ = new MockQuotaManager(
+    quota_policy_ = base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
+    mock_quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
         MemoryOnly(), temp_dir_path, base::ThreadTaskRunnerHandle::Get().get(),
         quota_policy_.get());
     mock_quota_manager_->SetQuota(origin1_, StorageType::kTemporary,
@@ -380,8 +382,10 @@ class CacheStorageManagerTest : public testing::Test {
     mock_quota_manager_->SetQuota(origin2_, StorageType::kTemporary,
                                   1024 * 1024 * 100);
 
-    quota_manager_proxy_ = new MockCacheStorageQuotaManagerProxy(
-        mock_quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
+    quota_manager_proxy_ =
+        base::MakeRefCounted<MockCacheStorageQuotaManagerProxy>(
+            mock_quota_manager_.get(),
+            base::ThreadTaskRunnerHandle::Get().get());
 
     auto legacy_manager = LegacyCacheStorageManager::Create(
         temp_dir_path, base::ThreadTaskRunnerHandle::Get(),
@@ -664,7 +668,8 @@ class CacheStorageManagerTest : public testing::Test {
         std::vector<std::string>() /* cors_exposed_header_names */,
         nullptr /* side_data_blob */,
         nullptr /* side_data_blob_for_cache_put */,
-        nullptr /* content_security_policy */);
+        network::mojom::ParsedHeaders::New(),
+        false /* loaded_with_credentials */);
 
     blink::mojom::BatchOperationPtr operation =
         blink::mojom::BatchOperation::New();
@@ -807,8 +812,8 @@ class CacheStorageManagerTest : public testing::Test {
   TestBrowserContext browser_context_;
   scoped_refptr<BlobStorageContextWrapper> blob_storage_context_;
 
-  scoped_refptr<MockSpecialStoragePolicy> quota_policy_;
-  scoped_refptr<MockQuotaManager> mock_quota_manager_;
+  scoped_refptr<storage::MockSpecialStoragePolicy> quota_policy_;
+  scoped_refptr<storage::MockQuotaManager> mock_quota_manager_;
   scoped_refptr<MockCacheStorageQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<CacheStorageContextImpl::ObserverList> observers_;
   scoped_refptr<CacheStorageManager> cache_manager_;
@@ -1419,7 +1424,7 @@ TEST_F(CacheStorageManagerTest, TestErrorInitializingCache) {
 
   // Truncate the SimpleCache index to force an error when next opened.
   ASSERT_FALSE(index_path.empty());
-  ASSERT_EQ(5, base::WriteFile(index_path, "hello", 5));
+  ASSERT_TRUE(base::WriteFile(index_path, "hello"));
 
   // The cache_storage index and simple disk_cache index files are written from
   // background threads.  They may be written in unexpected orders due to timing
@@ -1440,7 +1445,8 @@ TEST_F(CacheStorageManagerTest, TestErrorInitializingCache) {
   EXPECT_EQ(0, Size(origin1_));
 }
 
-TEST_F(CacheStorageManagerTest, PutResponseWithExistingFileTest) {
+// TODO(crbug.com/1041371): Flaky on platforms which use POSIX file I/O.
+TEST_F(CacheStorageManagerTest, DISABLED_PutResponseWithExistingFileTest) {
   const GURL kFooURL("http://example.com/foo");
   const std::string kCacheName = "foo";
 
@@ -1475,12 +1481,8 @@ TEST_F(CacheStorageManagerTest, PutResponseWithExistingFileTest) {
 
   // Create a fake, empty file where the entry previously existed.
   const std::string kFakeData("foobar");
-  EXPECT_EQ(
-      base::WriteFile(entry_file_name, kFakeData.data(), kFakeData.size()),
-      static_cast<int>(kFakeData.size()));
-  EXPECT_EQ(
-      base::WriteFile(stream_2_file_name, kFakeData.data(), kFakeData.size()),
-      static_cast<int>(kFakeData.size()));
+  EXPECT_TRUE(base::WriteFile(entry_file_name, kFakeData));
+  EXPECT_TRUE(base::WriteFile(stream_2_file_name, kFakeData));
 
   // Re-open the cache.
   CreateStorageManager();
@@ -2524,7 +2526,8 @@ class CacheStorageQuotaClientTestP : public CacheStorageQuotaClientTest,
 };
 
 TEST_P(CacheStorageQuotaClientTestP, QuotaID) {
-  EXPECT_EQ(storage::QuotaClient::kServiceWorkerCache, quota_client_->id());
+  EXPECT_EQ(storage::QuotaClientType::kServiceWorkerCache,
+            quota_client_->type());
 }
 
 TEST_P(CacheStorageQuotaClientTestP, QuotaGetOriginUsage) {

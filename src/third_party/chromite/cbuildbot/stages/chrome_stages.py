@@ -18,6 +18,7 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
+from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -25,6 +26,7 @@ from chromite.lib import failures_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import path_util
+from chromite.lib import portage_util
 from chromite.lib import results_lib
 
 MASK_CHANGES_ERROR_SNIPPET = 'The following mask changes are necessary'
@@ -110,17 +112,13 @@ class SyncChromeStage(generic_stages.BuilderStage,
       logging.PrintBuildbotStepText('tag %s' % kwargs['tag'])
 
     useflags = self._run.config.useflags
+    git_cache_dir = (
+        self._run.options.chrome_preload_dir or self._run.options.git_cache_dir)
     commands.SyncChrome(self._build_root,
                         self._run.options.chrome_root,
                         useflags,
-                        git_cache_dir=self._run.options.git_cache_dir,
+                        git_cache_dir=git_cache_dir,
                         **kwargs)
-    if (self._chrome_rev and not chrome_atom_to_build and
-        self._run.options.buildbot and
-        self._run.config.build_type == constants.CHROME_PFQ_TYPE):
-      logging.info('Chrome already uprevved. Nothing else to do.')
-      raise failures_lib.ExitEarlyException(
-          'SyncChromeStage finished and exited early.')
 
   def _WriteChromeVersionToMetadata(self):
     """Write chrome version to metadata and upload partial json file."""
@@ -151,7 +149,7 @@ class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     self._upload_queue = multiprocessing.Queue()
     self._pkg_dir = os.path.join(
         self._build_root, constants.DEFAULT_CHROOT_DIR,
-        'build', self._current_board, 'var', 'db', 'pkg')
+        'build', self._current_board, portage_util.VDB_PATH)
 
   def _BuildAndArchiveChromeSysroot(self):
     """Generate and upload sysroot for building Chrome."""
@@ -184,7 +182,7 @@ class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
       bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
       cros_build_lib.run(
           [bzip2, '-d', env_bzip, '-c'],
-          log_stdout_to_file=os.path.join(tempdir, constants.CHROME_ENV_FILE))
+          stdout=os.path.join(tempdir, constants.CHROME_ENV_FILE))
       env_tar = os.path.join(self.archive_path, constants.CHROME_ENV_TAR)
       cros_build_lib.CreateTarball(env_tar, tempdir)
       self._upload_queue.put([os.path.basename(env_tar)])
@@ -199,7 +197,8 @@ class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     with self.ArtifactUploader(self._upload_queue, archive=False):
       parallel.RunParallelSteps(steps)
 
-      if self._run.config.chrome_sdk_build_chrome:
+      if (self._run.config.chrome_sdk_build_chrome and
+          config_lib.IsCanaryMaster(self._run)):
         test_stage = TestSimpleChromeWorkflowStage(self._run,
                                                    self.buildstore,
                                                    self._current_board)
@@ -269,7 +268,7 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
       ninja_env_path = os.path.join(goma.goma_log_dir, 'ninja_env')
       sdk_cmd.Run(['env', '--null'],
                   run_args={'extra_env': extra_env,
-                            'log_stdout_to_file': ninja_env_path})
+                            'stdout': ninja_env_path})
       osutils.WriteFile(os.path.join(goma.goma_log_dir, 'ninja_cwd'),
                         sdk_cmd.cwd)
       osutils.WriteFile(os.path.join(goma.goma_log_dir, 'ninja_command'),

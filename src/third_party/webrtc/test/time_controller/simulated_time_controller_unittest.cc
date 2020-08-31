@@ -18,6 +18,8 @@
 #include "test/gmock.h"
 #include "test/gtest.h"
 
+#include "rtc_base/event.h"
+
 // NOTE: Since these tests rely on real time behavior, they will be flaky
 // if run on heavily loaded systems.
 namespace webrtc {
@@ -27,12 +29,12 @@ using ::testing::Invoke;
 using ::testing::MockFunction;
 using ::testing::NiceMock;
 using ::testing::Return;
-constexpr Timestamp kStartTime = Timestamp::Seconds<1000>();
+constexpr Timestamp kStartTime = Timestamp::Seconds(1000);
 }  // namespace
 
 TEST(SimulatedTimeControllerTest, TaskIsStoppedOnStop) {
-  const TimeDelta kShortInterval = TimeDelta::ms(5);
-  const TimeDelta kLongInterval = TimeDelta::ms(20);
+  const TimeDelta kShortInterval = TimeDelta::Millis(5);
+  const TimeDelta kLongInterval = TimeDelta::Millis(20);
   const int kShortIntervalCount = 4;
   const int kMargin = 1;
   GlobalSimulatedTimeController time_simulation(kStartTime);
@@ -70,17 +72,18 @@ TEST(SimulatedTimeControllerTest, TaskCanStopItself) {
     handle = RepeatingTaskHandle::Start(task_queue.Get(), [&] {
       ++counter;
       handle.Stop();
-      return TimeDelta::ms(2);
+      return TimeDelta::Millis(2);
     });
   });
-  time_simulation.AdvanceTime(TimeDelta::ms(10));
+  time_simulation.AdvanceTime(TimeDelta::Millis(10));
   EXPECT_EQ(counter.load(), 1);
 }
+
 TEST(SimulatedTimeControllerTest, Example) {
   class ObjectOnTaskQueue {
    public:
     void DoPeriodicTask() {}
-    TimeDelta TimeUntilNextRun() { return TimeDelta::ms(100); }
+    TimeDelta TimeUntilNextRun() { return TimeDelta::Millis(100); }
     void StartPeriodicTask(RepeatingTaskHandle* handle,
                            rtc::TaskQueue* task_queue) {
       *handle = RepeatingTaskHandle::Start(task_queue->Get(), [this] {
@@ -110,4 +113,40 @@ TEST(SimulatedTimeControllerTest, Example) {
   };
   task_queue.PostTask(Destructor{std::move(object)});
 }
+
+TEST(SimulatedTimeControllerTest, DelayTaskRunOnTime) {
+  GlobalSimulatedTimeController time_simulation(kStartTime);
+  rtc::TaskQueue task_queue(
+      time_simulation.GetTaskQueueFactory()->CreateTaskQueue(
+          "TestQueue", TaskQueueFactory::Priority::NORMAL));
+
+  bool delay_task_executed = false;
+  task_queue.PostDelayedTask([&] { delay_task_executed = true; }, 10);
+
+  time_simulation.AdvanceTime(TimeDelta::Millis(10));
+  EXPECT_TRUE(delay_task_executed);
+}
+
+TEST(SimulatedTimeControllerTest, ThreadYeildsOnInvoke) {
+  GlobalSimulatedTimeController sim(kStartTime);
+  auto main_thread = sim.GetMainThread();
+  auto t2 = sim.CreateThread("thread", nullptr);
+  bool task_has_run = false;
+  // Posting a task to the main thread, this should not run until AdvanceTime is
+  // called.
+  main_thread->PostTask(RTC_FROM_HERE, [&] { task_has_run = true; });
+  t2->Invoke<void>(RTC_FROM_HERE, [] {
+    rtc::Event yield_event;
+    // Wait() triggers YieldExecution() which will runs message processing on
+    // all threads that are not in the yielded set.
+
+    yield_event.Wait(0);
+  });
+  // Since we are doing an invoke from the main thread, we don't expect the main
+  // thread message loop to be processed.
+  EXPECT_FALSE(task_has_run);
+  sim.AdvanceTime(TimeDelta::Seconds(1));
+  ASSERT_TRUE(task_has_run);
+}
+
 }  // namespace webrtc

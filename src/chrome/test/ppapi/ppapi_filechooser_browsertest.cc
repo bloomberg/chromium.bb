@@ -19,13 +19,14 @@
 #include "chrome/test/ppapi/ppapi_test_select_file_dialog_factory.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/services/quarantine/test_support.h"
+#include "content/public/test/browser_test.h"
 #include "ppapi/shared_impl/test_utils.h"
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
-#include "components/safe_browsing/db/test_database_manager.h"
+#include "components/safe_browsing/core/db/test_database_manager.h"
 
 using safe_browsing::DownloadProtectionService;
 using safe_browsing::SafeBrowsingService;
@@ -65,7 +66,7 @@ class FakeDownloadProtectionService : public DownloadProtectionService {
       return;
     }
 
-    for (const auto extension : alternate_extensions) {
+    for (const auto& extension : alternate_extensions) {
       EXPECT_EQ(base::FilePath::kExtensionSeparator, extension[0]);
       const auto iter = test_configuration_->result_map.find(extension);
       if (iter != test_configuration_->result_map.end()) {

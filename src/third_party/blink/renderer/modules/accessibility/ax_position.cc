@@ -696,13 +696,16 @@ const AXPosition AXPosition::AsValidDOMPosition(
   DCHECK(container);
   const AXObject* child = ChildAfterTreePosition();
   const AXObject* last_child = container->LastChild();
-  if ((IsTextPosition() && !container->GetNode()) ||
+  if ((IsTextPosition() && (!container->GetNode() ||
+                            container->GetNode()->IsMarkerPseudoElement())) ||
       container->IsMockObject() || container->IsVirtualObject() ||
       (!child && last_child &&
-       (!last_child->GetNode() || last_child->IsMockObject() ||
-        last_child->IsVirtualObject())) ||
-      (child && (!child->GetNode() || child->IsMockObject() ||
-                 child->IsVirtualObject()))) {
+       (!last_child->GetNode() ||
+        last_child->GetNode()->IsMarkerPseudoElement() ||
+        last_child->IsMockObject() || last_child->IsVirtualObject())) ||
+      (child &&
+       (!child->GetNode() || child->GetNode()->IsMarkerPseudoElement() ||
+        child->IsMockObject() || child->IsVirtualObject()))) {
     switch (adjustment_behavior) {
       case AXPositionAdjustmentBehavior::kMoveRight:
         return CreateNextPosition().AsValidDOMPosition(adjustment_behavior);
@@ -713,14 +716,14 @@ const AXPosition AXPosition::AsValidDOMPosition(
 
   // At this point, if a DOM node is associated with our container, then the
   // corresponding DOM position should be valid.
-  if (container->GetNode())
+  if (container->GetNode() && !container->GetNode()->IsMarkerPseudoElement())
     return *this;
 
-  DCHECK(container->IsAXLayoutObject())
+  DCHECK(IsA<AXLayoutObject>(container))
       << "Non virtual and non mock AX objects that are not associated to a DOM "
          "node should have an associated layout object.";
   const Node* container_node =
-      ToAXLayoutObject(container)->GetNodeOrContainingBlockNode();
+      To<AXLayoutObject>(container)->GetNodeOrContainingBlockNode();
   DCHECK(container_node) << "All anonymous layout objects and list markers "
                             "should have a containing block element.";
   DCHECK(!container->IsDetached());

@@ -29,7 +29,8 @@ int LLVMFuzzerInitialize(int* argc, char*** argv) {
   // has all possible sandbox flags set on the document already when the
   // CSP is bound.
   scoped_refptr<SharedBuffer> empty_document_data = SharedBuffer::Create();
-  g_page_holder->GetFrame().Loader().ForceSandboxFlags(WebSandboxFlags::kAll);
+  g_page_holder->GetFrame().Loader().ForceSandboxFlags(
+      network::mojom::blink::WebSandboxFlags::kAll);
   g_page_holder->GetFrame().ForceSynchronousDocumentInstall(
       "text/html", empty_document_data);
   return 0;
@@ -43,15 +44,16 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // 1st bit: header type.
   // 2nd bit: header source: HTTP (or other)
   // 3rd bit: header source: Meta or OriginPolicy (if not HTTP)
-  ContentSecurityPolicyHeaderType header_type =
-      hash & 0x01 ? kContentSecurityPolicyHeaderTypeEnforce
-                  : kContentSecurityPolicyHeaderTypeReport;
-  ContentSecurityPolicyHeaderSource header_source =
-      kContentSecurityPolicyHeaderSourceHTTP;
+  network::mojom::ContentSecurityPolicyType header_type =
+      hash & 0x01 ? network::mojom::ContentSecurityPolicyType::kEnforce
+                  : network::mojom::ContentSecurityPolicyType::kReport;
+  network::mojom::ContentSecurityPolicySource header_source =
+      network::mojom::ContentSecurityPolicySource::kHTTP;
   if (hash & 0x02) {
-    header_source = (hash & 0x04)
-                        ? kContentSecurityPolicyHeaderSourceMeta
-                        : kContentSecurityPolicyHeaderSourceOriginPolicy;
+    header_source =
+        (hash & 0x04)
+            ? network::mojom::ContentSecurityPolicySource::kMeta
+            : network::mojom::ContentSecurityPolicySource::kOriginPolicy;
   }
 
   // Construct and initialize a policy from the string.

@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+
+import {RecordType, TimelineModelImpl} from './TimelineModel.js';
+
 export class TimelineJSProfileProcessor {
   /**
-   * @param {!SDK.CPUProfileDataModel} jsProfileModel
+   * @param {!SDK.CPUProfileDataModel.CPUProfileDataModel} jsProfileModel
    * @param {!SDK.TracingModel.Thread} thread
    * @return {!Array<!SDK.TracingModel.Event>}
    */
@@ -36,8 +41,8 @@ export class TimelineJSProfileProcessor {
         }
       }
       const jsSampleEvent = new SDK.TracingModel.Event(
-          SDK.TracingModel.DevToolsTimelineEventCategory, TimelineModel.TimelineModel.RecordType.JSSample,
-          SDK.TracingModel.Phase.Instant, timestamps[i], thread);
+          SDK.TracingModel.DevToolsTimelineEventCategory, RecordType.JSSample, SDK.TracingModel.Phase.Instant,
+          timestamps[i], thread);
       jsSampleEvent.args['data'] = {stackTrace: callFrames};
       jsEvents.push(jsSampleEvent);
     }
@@ -66,12 +71,12 @@ export class TimelineJSProfileProcessor {
      */
     function isJSInvocationEvent(e) {
       switch (e.name) {
-        case TimelineModel.TimelineModel.RecordType.RunMicrotasks:
-        case TimelineModel.TimelineModel.RecordType.FunctionCall:
-        case TimelineModel.TimelineModel.RecordType.EvaluateScript:
-        case TimelineModel.TimelineModel.RecordType.EvaluateModule:
-        case TimelineModel.TimelineModel.RecordType.EventDispatch:
-        case TimelineModel.TimelineModel.RecordType.V8Execute:
+        case RecordType.RunMicrotasks:
+        case RecordType.FunctionCall:
+        case RecordType.EvaluateScript:
+        case RecordType.EvaluateModule:
+        case RecordType.EventDispatch:
+        case RecordType.V8Execute:
           return true;
       }
       return false;
@@ -83,7 +88,8 @@ export class TimelineJSProfileProcessor {
     let ordinal = 0;
     const showAllEvents = Root.Runtime.experiments.isEnabled('timelineShowAllEvents');
     const showRuntimeCallStats = Root.Runtime.experiments.isEnabled('timelineV8RuntimeCallStats');
-    const showNativeFunctions = Common.moduleSetting('showNativeFunctionsInJSProfile').get();
+    const showNativeFunctions =
+        Common.Settings.Settings.instance().moduleSetting('showNativeFunctionsInJSProfile').get();
 
     /**
      * @param {!SDK.TracingModel.Event} e
@@ -178,7 +184,7 @@ export class TimelineJSProfileProcessor {
      * @param {!SDK.TracingModel.Event} e
      */
     function extractStackTrace(e) {
-      const recordTypes = TimelineModel.TimelineModel.RecordType;
+      const recordTypes = RecordType;
       /** @type {!Array<!Protocol.Runtime.CallFrame>} */
       const callFrames = e.name === recordTypes.JSSample ? e.args['data']['stackTrace'].slice().reverse() :
                                                            jsFramesStack.map(frameEvent => frameEvent.args['data']);
@@ -208,9 +214,9 @@ export class TimelineJSProfileProcessor {
       }
     }
 
-    const firstTopLevelEvent = events.find(SDK.TracingModel.isTopLevelEvent);
+    const firstTopLevelEvent = events.find(SDK.TracingModel.TracingModel.isTopLevelEvent);
     const startTime = firstTopLevelEvent ? firstTopLevelEvent.startTime : 0;
-    TimelineModel.TimelineModel.forEachEvent(events, onStartEvent, onEndEvent, onInstantEvent, startTime);
+    TimelineModelImpl.forEachEvent(events, onStartEvent, onEndEvent, onInstantEvent, startTime);
     return jsFrameEvents;
   }
 
@@ -331,12 +337,3 @@ TimelineJSProfileProcessor.NativeGroups = {
   'Compile': 'Compile',
   'Parse': 'Parse'
 };
-
-/* Legacy exported object */
-self.TimelineModel = self.TimelineModel || {};
-
-/* Legacy exported object */
-TimelineModel = TimelineModel || {};
-
-/** @constructor */
-TimelineModel.TimelineJSProfileProcessor = TimelineJSProfileProcessor;

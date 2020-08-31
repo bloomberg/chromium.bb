@@ -21,8 +21,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.gesturenav.NavigationSheetMediator.ItemProperties;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -195,8 +195,8 @@ public class NavigationSheetTest {
             Tab tab = mActivityTestRule.getActivity().getActivityTabProvider().get();
             NavigationSheet navigationSheet =
                     NavigationSheet.create(tab.getContentView(), mActivityTestRule.getActivity(),
-                            mActivityTestRule.getActivity()::getBottomSheetController,
-                            new TestSheetDelegate(controller));
+                            mActivityTestRule.getActivity()::getBottomSheetController);
+            navigationSheet.setDelegate(new TestSheetDelegate(controller));
             navigationSheet.startAndExpand(false, false);
             return navigationSheet;
         });

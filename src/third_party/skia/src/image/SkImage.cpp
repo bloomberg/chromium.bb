@@ -28,7 +28,6 @@
 
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrContext.h"
-#include "include/gpu/GrTexture.h"
 #include "src/image/SkImage_Gpu.h"
 #endif
 #include "include/gpu/GrBackendSurface.h"
@@ -143,10 +142,6 @@ sk_sp<SkImage> SkImage::makeSubset(const SkIRect& subset) const {
 
 #if SK_SUPPORT_GPU
 
-GrTexture* SkImage::getTexture() const {
-    return as_IB(this)->onGetTexture();
-}
-
 bool SkImage::isTextureBacked() const { return as_IB(this)->onIsTextureBacked(); }
 
 GrBackendTexture SkImage::getBackendTexture(bool flushPendingGrContextIO,
@@ -168,8 +163,6 @@ GrSemaphoresSubmitted SkImage::flush(GrContext* context, const GrFlushInfo& flus
 void SkImage::flush(GrContext* context) { as_IB(this)->onFlush(context, {}); }
 
 #else
-
-GrTexture* SkImage::getTexture() const { return nullptr; }
 
 bool SkImage::isTextureBacked() const { return false; }
 
@@ -402,7 +395,7 @@ sk_sp<SkImage> SkImage::makeNonTextureImage() const {
     return this->makeRasterImage();
 }
 
-sk_sp<SkImage> SkImage::makeRasterImage() const {
+sk_sp<SkImage> SkImage::makeRasterImage(CachingHint chint) const {
     SkPixmap pm;
     if (this->peekPixels(&pm)) {
         return sk_ref_sp(const_cast<SkImage*>(this));
@@ -416,7 +409,7 @@ sk_sp<SkImage> SkImage::makeRasterImage() const {
 
     sk_sp<SkData> data = SkData::MakeUninitialized(size);
     pm = {fInfo.makeColorSpace(nullptr), data->writable_data(), fInfo.minRowBytes()};
-    if (!this->readPixels(pm, 0, 0)) {
+    if (!this->readPixels(pm, 0, 0, chint)) {
         return nullptr;
     }
 
@@ -435,6 +428,16 @@ sk_sp<SkImage> SkImage::MakeFromTexture(GrContext* ctx,
                                         const GrBackendTexture& tex, GrSurfaceOrigin origin,
                                         SkColorType ct, SkAlphaType at, sk_sp<SkColorSpace> cs,
                                         TextureReleaseProc releaseP, ReleaseContext releaseC) {
+    return nullptr;
+}
+
+sk_sp<SkImage> SkImage::MakeFromCompressedTexture(GrContext* ctx,
+                                                  const GrBackendTexture& tex,
+                                                  GrSurfaceOrigin origin,
+                                                  SkAlphaType at,
+                                                  sk_sp<SkColorSpace> cs,
+                                                  TextureReleaseProc releaseP,
+                                                  ReleaseContext releaseC) {
     return nullptr;
 }
 
@@ -497,7 +500,7 @@ sk_sp<SkImage> SkImage::MakeFromNV12TexturesCopy(GrContext* ctx, SkYUVColorSpace
     return nullptr;
 }
 
-sk_sp<SkImage> SkImage::makeTextureImage(GrContext*, GrMipMapped mipMapped) const {
+sk_sp<SkImage> SkImage::makeTextureImage(GrContext*, GrMipMapped, SkBudgeted) const {
     return nullptr;
 }
 

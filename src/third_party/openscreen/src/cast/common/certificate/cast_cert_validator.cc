@@ -17,26 +17,12 @@
 
 #include "cast/common/certificate/cast_cert_validator_internal.h"
 #include "cast/common/certificate/cast_crl.h"
+#include "cast/common/certificate/cast_trust_store.h"
+#include "util/osp_logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace certificate {
 namespace {
-
-using CastCertError = openscreen::Error::Code;
-
-// -------------------------------------------------------------------------
-// Cast trust anchors.
-// -------------------------------------------------------------------------
-
-// There are two trusted roots for Cast certificate chains:
-//
-//   (1) CN=Cast Root CA    (kCastRootCaDer)
-//   (2) CN=Eureka Root CA  (kEurekaRootCaDer)
-//
-// These constants are defined by the files included next:
-
-#include "cast/common/certificate/cast_root_ca_cert_der-inc.h"
-#include "cast/common/certificate/eureka_root_ca_der-inc.h"
 
 // Returns the OID for the Audio-Only Cast policy
 // (1.3.6.1.4.1.11129.2.5.2) in DER form.
@@ -49,8 +35,8 @@ const ConstDataSpan& AudioOnlyPolicyOid() {
 
 class CertVerificationContextImpl final : public CertVerificationContext {
  public:
-  CertVerificationContextImpl(bssl::UniquePtr<EVP_PKEY>&& cert,
-                              std::string&& common_name)
+  CertVerificationContextImpl(bssl::UniquePtr<EVP_PKEY> cert,
+                              std::string common_name)
       : public_key_{std::move(cert)}, common_name_(std::move(common_name)) {}
 
   ~CertVerificationContextImpl() override = default;
@@ -143,54 +129,31 @@ CastDeviceCertPolicy GetAudioPolicy(const std::vector<X509*>& path) {
 
 }  // namespace
 
-class CastTrustStore {
- public:
-  // Singleton for the Cast trust store for legacy networkingPrivate use.
-  static CastTrustStore* GetInstance() {
-    static CastTrustStore* store = new CastTrustStore();
-    return store;
-  }
-
-  CastTrustStore() {
-    trust_store_.certs.emplace_back(MakeTrustAnchor(kCastRootCaDer));
-    trust_store_.certs.emplace_back(MakeTrustAnchor(kEurekaRootCaDer));
-  }
-  ~CastTrustStore() = default;
-
-  TrustStore* trust_store() { return &trust_store_; }
-
- private:
-  TrustStore trust_store_;
-  OSP_DISALLOW_COPY_AND_ASSIGN(CastTrustStore);
-};
-
-openscreen::Error VerifyDeviceCert(
-    const std::vector<std::string>& der_certs,
-    const DateTime& time,
-    std::unique_ptr<CertVerificationContext>* context,
-    CastDeviceCertPolicy* policy,
-    const CastCRL* crl,
-    CRLPolicy crl_policy,
-    TrustStore* trust_store) {
+Error VerifyDeviceCert(const std::vector<std::string>& der_certs,
+                       const DateTime& time,
+                       std::unique_ptr<CertVerificationContext>* context,
+                       CastDeviceCertPolicy* policy,
+                       const CastCRL* crl,
+                       CRLPolicy crl_policy,
+                       TrustStore* trust_store) {
   if (!trust_store) {
     trust_store = CastTrustStore::GetInstance()->trust_store();
   }
 
   // Fail early if CRL is required but not provided.
   if (!crl && crl_policy == CRLPolicy::kCrlRequired) {
-    return CastCertError::kErrCrlInvalid;
+    return Error::Code::kErrCrlInvalid;
   }
 
   CertificatePathResult result_path = {};
-  openscreen::Error error =
-      FindCertificatePath(der_certs, time, &result_path, trust_store);
+  Error error = FindCertificatePath(der_certs, time, &result_path, trust_store);
   if (!error.ok()) {
     return error;
   }
 
   if (crl_policy == CRLPolicy::kCrlRequired &&
       !crl->CheckRevocation(result_path.path, time)) {
-    return CastCertError::kErrCertsRevoked;
+    return Error::Code::kErrCertsRevoked;
   }
 
   *policy = GetAudioPolicy(result_path.path);
@@ -203,7 +166,7 @@ openscreen::Error VerifyDeviceCert(
   int len = X509_NAME_get_text_by_NID(target_subject, NID_commonName,
                                       &common_name[0], common_name.size());
   if (len == 0) {
-    return CastCertError::kErrCertsRestrictions;
+    return Error::Code::kErrCertsRestrictions;
   }
   common_name.resize(len);
 
@@ -211,8 +174,8 @@ openscreen::Error VerifyDeviceCert(
       bssl::UniquePtr<EVP_PKEY>{X509_get_pubkey(result_path.target_cert.get())},
       std::move(common_name)));
 
-  return CastCertError::kNone;
+  return Error::Code::kNone;
 }
 
-}  // namespace certificate
 }  // namespace cast
+}  // namespace openscreen

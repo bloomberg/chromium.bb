@@ -10,11 +10,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
@@ -22,7 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_background_service_factory.h"
 #include "chrome/browser/search/chrome_colors/chrome_colors_service.h"
-#include "chrome/browser/search/instant_io_context.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
@@ -38,7 +40,7 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/search.mojom.h"
+#include "chrome/common/search/search.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/favicon_base/favicon_url_parser.h"
@@ -188,10 +190,6 @@ InstantService::InstantService(Profile* profile)
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI))
     return;
 
-  // This depends on the existence of the typical browser threads. Therefore it
-  // is only instantiated here (after the check for a UI thread above).
-  instant_io_context_ = new InstantIOContext();
-
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllSources());
@@ -222,13 +220,6 @@ InstantService::InstantService(Profile* profile)
   most_visited_info_->use_most_visited = !IsCustomLinksEnabled();
   most_visited_info_->is_visible =
       pref_service_->GetBoolean(prefs::kNtpShortcutsVisible);
-
-  if (profile_ && profile_->GetResourceContext()) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&InstantIOContext::SetUserDataOnIO,
-                       profile->GetResourceContext(), instant_io_context_));
-  }
 
   background_service_ = NtpBackgroundServiceFactory::GetForProfile(profile_);
 
@@ -272,12 +263,6 @@ InstantService::~InstantService() = default;
 
 void InstantService::AddInstantProcess(int process_id) {
   process_ids_.insert(process_id);
-
-  if (instant_io_context_.get()) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&InstantIOContext::AddInstantProcessOnIO,
-                                  instant_io_context_, process_id));
-  }
 }
 
 bool InstantService::IsInstantProcess(int process_id) const {
@@ -433,7 +418,7 @@ void InstantService::UpdateMostVisitedInfo() {
 void InstantService::SendNewTabPageURLToRenderer(
     content::RenderProcessHost* rph) {
   if (auto* channel = rph->GetChannel()) {
-    mojo::AssociatedRemote<chrome::mojom::SearchBouncer> client;
+    mojo::AssociatedRemote<search::mojom::SearchBouncer> client;
     channel->GetRemoteAssociatedInterface(&client);
     client->SetNewTabPageURL(search::GetNewTabPageURL(profile_));
   }
@@ -451,6 +436,9 @@ void InstantService::SetCustomBackgroundInfo(
     const GURL& action_url,
     const std::string& collection_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (IsCustomBackgroundDisabledByPolicy()) {
+    return;
+  }
   bool is_backdrop_collection =
       background_service_ &&
       background_service_->IsValidBackdropCollection(collection_id);
@@ -499,9 +487,11 @@ void InstantService::SetBackgroundToLocalResource() {
 }
 
 void InstantService::SelectLocalBackgroundImage(const base::FilePath& path) {
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  if (IsCustomBackgroundDisabledByPolicy()) {
+    return;
+  }
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&CopyFileToProfilePath, path, profile_->GetPath()),
       base::BindOnce(&InstantService::SetBackgroundToLocalResource,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -524,17 +514,9 @@ void InstantService::SetNativeThemeForTesting(ui::NativeTheme* theme) {
 void InstantService::Shutdown() {
   process_ids_.clear();
 
-  if (instant_io_context_.get()) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&InstantIOContext::ClearInstantProcessesOnIO,
-                                  instant_io_context_));
-  }
-
   if (most_visited_sites_) {
     most_visited_sites_.reset();
   }
-
-  instant_io_context_.reset();
 }
 
 void InstantService::OnNextCollectionImageAvailable() {
@@ -596,12 +578,6 @@ void InstantService::Observe(int type,
 
 void InstantService::OnRendererProcessTerminated(int process_id) {
   process_ids_.erase(process_id);
-
-  if (instant_io_context_.get()) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&InstantIOContext::RemoveInstantProcessOnIO,
-                                  instant_io_context_, process_id));
-  }
 }
 
 void InstantService::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
@@ -684,6 +660,8 @@ void InstantService::BuildNtpTheme() {
         GetOmniboxColor(&theme_provider, OmniboxPart::LOCATION_BAR_BACKGROUND);
     theme_->search_box.icon =
         GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_ICON);
+    theme_->search_box.icon_selected = GetOmniboxColor(
+        &theme_provider, OmniboxPart::RESULTS_ICON, OmniboxPartState::SELECTED);
     theme_->search_box.placeholder =
         GetOmniboxColor(&theme_provider, OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
     theme_->search_box.results_bg =
@@ -696,10 +674,19 @@ void InstantService::BuildNtpTheme() {
                         OmniboxPartState::SELECTED);
     theme_->search_box.results_dim =
         GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_DIMMED);
+    theme_->search_box.results_dim_selected =
+        GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_DIMMED,
+                        OmniboxPartState::SELECTED);
     theme_->search_box.results_text =
         GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_DEFAULT);
+    theme_->search_box.results_text_selected =
+        GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_DEFAULT,
+                        OmniboxPartState::SELECTED);
     theme_->search_box.results_url =
         GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_URL);
+    theme_->search_box.results_url_selected =
+        GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_URL,
+                        OmniboxPartState::SELECTED);
     theme_->search_box.text = GetOmniboxColor(
         &theme_provider, OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
   }
@@ -760,7 +747,8 @@ void InstantService::BuildNtpTheme() {
     theme_->color_picked = theme_service->GetAutogeneratedThemeColor();
     theme_->color_id =
         chrome_colors::ChromeColorsService::GetColorId(theme_->color_picked);
-    theme_->color_dark = theme_provider.GetColor(ThemeProperties::COLOR_FRAME);
+    theme_->color_dark =
+        theme_provider.GetColor(ThemeProperties::COLOR_FRAME_ACTIVE);
     theme_->color_light =
         theme_provider.GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
   }
@@ -912,8 +900,8 @@ void InstantService::UpdateCustomBackgroundColorAsync(
   // Calculate the bitmap color asynchronously as it is slow (1-2 seconds for
   // the thumbnail). However, prefs should be updated on the main thread.
   if (!fetched_image.IsEmpty()) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::ThreadPool(), base::TaskPriority::BEST_EFFORT},
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&GetBitmapMainColor, *fetched_image.ToSkBitmap()),
         base::BindOnce(&InstantService::UpdateCustomBackgroundPrefsWithColor,
                        weak_ptr_factory_.GetWeakPtr(), timestamp));
@@ -972,9 +960,8 @@ bool InstantService::IsCustomBackgroundPrefValid(GURL& custom_background_url) {
 void InstantService::RemoveLocalBackgroundImageCopy() {
   base::FilePath path = profile_->GetPath().AppendASCII(
       chrome::kChromeSearchLocalNtpBackgroundFilename);
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(IgnoreResult(&base::DeleteFile), path, false));
 }
 
@@ -1001,6 +988,25 @@ void InstantService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                 false);
   registry->RegisterBooleanPref(prefs::kNtpUseMostVisitedTiles, false);
   registry->RegisterBooleanPref(prefs::kNtpShortcutsVisible, true);
+}
+
+// static
+bool InstantService::ShouldServiceRequest(
+    const GURL& url,
+    content::BrowserContext* browser_context,
+    int render_process_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  auto* instant_service = InstantServiceFactory::GetForProfile(
+      static_cast<Profile*>(browser_context));
+
+  if (!instant_service)
+    return false;
+
+  // The process_id for the navigation request will be -1. If
+  // so, allow this request since it's not going to another renderer.
+  return render_process_id == -1 ||
+         instant_service->IsInstantProcess(render_process_id);
 }
 
 void InstantService::UpdateCustomBackgroundPrefsWithColor(
@@ -1067,14 +1073,7 @@ void InstantService::SetNtpElementsNtpTheme() {
                                 ThemeProperties::NTP_LOGO_ALTERNATE) == 1;
     theme->logo_color =
         theme_provider.GetColor(ThemeProperties::COLOR_NTP_LOGO);
-
-    // For default theme in dark mode use dark shortcuts.
-    if (native_theme_->ShouldUseDarkColors() &&
-        ThemeServiceFactory::GetForProfile(profile_)->UsingDefaultTheme()) {
-      theme->shortcut_color = gfx::kGoogleGrey900;
-    } else {
-      theme->shortcut_color =
-          theme_provider.GetColor(ThemeProperties::COLOR_NTP_SHORTCUT);
-    }
+    theme->shortcut_color =
+        theme_provider.GetColor(ThemeProperties::COLOR_NTP_SHORTCUT);
   }
 }

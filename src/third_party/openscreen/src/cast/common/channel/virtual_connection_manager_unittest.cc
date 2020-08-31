@@ -8,13 +8,22 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 namespace {
 
-static_assert(CastMessage_ProtocolVersion_CASTV2_1_0 ==
+static_assert(::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_0 ==
                   static_cast<int>(VirtualConnection::ProtocolVersion::kV2_1_0),
               "V2 1.0 constants must be equal");
+static_assert(::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_1 ==
+                  static_cast<int>(VirtualConnection::ProtocolVersion::kV2_1_1),
+              "V2 1.1 constants must be equal");
+static_assert(::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_2 ==
+                  static_cast<int>(VirtualConnection::ProtocolVersion::kV2_1_2),
+              "V2 1.2 constants must be equal");
+static_assert(::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_3 ==
+                  static_cast<int>(VirtualConnection::ProtocolVersion::kV2_1_3),
+              "V2 1.3 constants must be equal");
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -129,5 +138,5 @@ TEST_F(VirtualConnectionManagerTest, RemoveConnectionsByIds) {
   EXPECT_FALSE(manager_.GetConnectionData(vc3_));
 }
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen

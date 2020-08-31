@@ -8,10 +8,10 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/views/nav_button_provider.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/linux_ui/nav_button_provider.h"
 
 namespace {
 
@@ -57,7 +57,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
     return GetLayoutConstant(TAB_HEIGHT);
   }
   bool IsToolbarVisible() const override { return true; }
-  gfx::Size GetTabstripPreferredSize() const override {
+  gfx::Size GetTabstripMinimumSize() const override {
     return gfx::Size(78, 29);
   }
   int GetTopAreaHeight() const override { return 0; }
@@ -79,14 +79,14 @@ class TestNavButtonProvider : public views::NavButtonProvider {
     ASSERT_EQ(false, maximized);  // This only tests the restored state.
   }
 
-  gfx::ImageSkia GetImage(chrome::FrameButtonDisplayType type,
+  gfx::ImageSkia GetImage(views::NavButtonProvider::FrameButtonDisplayType type,
                           views::Button::ButtonState state) const override {
     switch (type) {
-      case chrome::FrameButtonDisplayType::kClose:
+      case views::NavButtonProvider::FrameButtonDisplayType::kClose:
         return GetTestImageForSize(kCloseButtonSize);
-      case chrome::FrameButtonDisplayType::kMaximize:
+      case views::NavButtonProvider::FrameButtonDisplayType::kMaximize:
         return GetTestImageForSize(kMaximizeButtonSize);
-      case chrome::FrameButtonDisplayType::kMinimize:
+      case views::NavButtonProvider::FrameButtonDisplayType::kMinimize:
         return GetTestImageForSize(kMinimizeButtonSize);
       default:
         NOTREACHED();
@@ -95,13 +95,13 @@ class TestNavButtonProvider : public views::NavButtonProvider {
   }
 
   gfx::Insets GetNavButtonMargin(
-      chrome::FrameButtonDisplayType type) const override {
+      views::NavButtonProvider::FrameButtonDisplayType type) const override {
     switch (type) {
-      case chrome::FrameButtonDisplayType::kClose:
+      case views::NavButtonProvider::FrameButtonDisplayType::kClose:
         return kCloseButtonMargin;
-      case chrome::FrameButtonDisplayType::kMaximize:
+      case views::NavButtonProvider::FrameButtonDisplayType::kMaximize:
         return kMaximizeButtonMargin;
-      case chrome::FrameButtonDisplayType::kMinimize:
+      case views::NavButtonProvider::FrameButtonDisplayType::kMinimize:
         return kMinimizeButtonMargin;
       default:
         NOTREACHED();
@@ -132,8 +132,7 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
         nav_button_provider_.get());
     layout->set_delegate(delegate_.get());
     layout->set_forced_window_caption_spacing_for_test(0);
-    widget_ = new views::Widget;
-    widget_->Init(CreateParams(views::Widget::InitParams::TYPE_POPUP));
+    widget_ = CreateTestWidget();
     root_view_ = widget_->GetRootView();
     root_view_->SetSize(gfx::Size(kWindowWidth, kWindowWidth));
     layout_manager_ = root_view_->SetLayoutManager(std::move(layout));
@@ -145,7 +144,7 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
   }
 
   void TearDown() override {
-    widget_->CloseNow();
+    widget_.reset();
 
     ChromeViewsTestBase::TearDown();
   }
@@ -161,10 +160,10 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
   void ResetNativeNavButtonImagesFromButtonProvider() {
     std::vector<views::ImageButton*> buttons{close_button_, maximize_button_,
                                              minimize_button_};
-    std::vector<chrome::FrameButtonDisplayType> button_types{
-        chrome::FrameButtonDisplayType::kClose,
-        chrome::FrameButtonDisplayType::kMaximize,
-        chrome::FrameButtonDisplayType::kMinimize};
+    std::vector<views::NavButtonProvider::FrameButtonDisplayType> button_types{
+        views::NavButtonProvider::FrameButtonDisplayType::kClose,
+        views::NavButtonProvider::FrameButtonDisplayType::kMaximize,
+        views::NavButtonProvider::FrameButtonDisplayType::kMinimize};
     for (size_t i = 0; i < buttons.size(); i++) {
       for (views::Button::ButtonState state :
            {views::Button::STATE_NORMAL, views ::Button::STATE_HOVERED,
@@ -185,7 +184,7 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
         ->FrameSideThickness(false);
   }
 
-  views::Widget* widget_ = nullptr;
+  std::unique_ptr<views::Widget> widget_;
   views::View* root_view_ = nullptr;
   DesktopLinuxBrowserFrameViewLayout* layout_manager_ = nullptr;
   std::unique_ptr<TestLayoutDelegate> delegate_;

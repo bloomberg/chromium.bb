@@ -14,6 +14,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -27,7 +28,7 @@ class TestClient : public content::DevToolsAgentHostClient {
   TestClient() {}
   ~TestClient() override {}
   void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
-                               const std::string& message) override {}
+                               base::span<const uint8_t> message) override {}
   void AgentHostClosed(content::DevToolsAgentHost* agent_host) override {}
 };
 
@@ -39,8 +40,9 @@ class ScopedDevtoolsOpener {
     EXPECT_TRUE(agent_host_);
     agent_host_->AttachClient(&test_client_);
     // Send Page.enable, which is required before any Page methods.
+    constexpr char kMsg[] = R"({"id": 0, "method": "Page.enable"})";
     agent_host_->DispatchProtocolMessage(
-        &test_client_, "{\"id\": 0, \"method\": \"Page.enable\"}");
+        &test_client_, base::as_bytes(base::make_span(kMsg, strlen(kMsg))));
   }
 
   explicit ScopedDevtoolsOpener(content::WebContents* web_contents)
@@ -60,7 +62,8 @@ class ScopedDevtoolsOpener {
     std::string json_string;
     JSONStringValueSerializer serializer(&json_string);
     ASSERT_TRUE(serializer.Serialize(ad_blocking_command));
-    agent_host_->DispatchProtocolMessage(&test_client_, json_string);
+    agent_host_->DispatchProtocolMessage(
+        &test_client_, base::as_bytes(base::make_span(json_string)));
   }
 
  private:
@@ -117,9 +120,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
-  content::ConsoleObserverDelegate console_observer(
-      web_contents(), kActivationWarningConsoleMessage);
-  web_contents()->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(kActivationWarningConsoleMessage);
 
   // Open up devtools and trigger forced activation.
   {
@@ -128,7 +130,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
     console_observer.Wait();
-    EXPECT_EQ(console_observer.message(), kActivationWarningConsoleMessage);
+    EXPECT_EQ(kActivationWarningConsoleMessage,
+              console_observer.GetMessageAt(0u));
     // Close devtools, should stop forced activation.
   }
   ui_test_utils::NavigateToURL(browser(), url);
@@ -137,9 +140,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterDevtoolsBrowserTest,
                        ForceActivation_SubresourceLogging) {
-  content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    kActivationConsoleMessage);
-  web_contents()->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(kActivationConsoleMessage);
   const GURL url(
       GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ASSERT_NO_FATAL_FAILURE(
@@ -149,8 +151,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterDevtoolsBrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-  EXPECT_FALSE(console_observer.message().empty());
-  console_observer.Wait();
+  EXPECT_FALSE(console_observer.messages().empty());
 }
 
 class SubresourceFilterDevtoolsBrowserTestWithSitePerProcess

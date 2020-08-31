@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_GRAPH_PROCESS_NODE_IMPL_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_GRAPH_PROCESS_NODE_IMPL_H_
 
+#include <memory>
+
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -43,7 +45,8 @@ class ProcessNodeImpl
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kProcess; }
 
-  ProcessNodeImpl(GraphImpl*, RenderProcessHostProxy render_process_proxy);
+  ProcessNodeImpl(content::ProcessType process_type,
+                  RenderProcessHostProxy render_process_proxy);
 
   ~ProcessNodeImpl() override;
 
@@ -53,10 +56,6 @@ class ProcessNodeImpl
   void SetExpectedTaskQueueingDuration(base::TimeDelta duration) override;
   void SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low) override;
 
-  // CPU usage is expressed as the average percentage of cores occupied over the
-  // last measurement interval. One core fully occupied would be 100, while two
-  // cores at 5% each would be 10.
-  void SetCPUUsage(double cpu_usage);
   void SetProcessExitStatus(int32_t exit_status);
   void SetProcess(base::Process process, base::Time launch_time);
 
@@ -65,14 +64,10 @@ class ProcessNodeImpl
     private_footprint_kb_ = private_footprint_kb;
   }
   uint64_t private_footprint_kb() const { return private_footprint_kb_; }
-  void set_cumulative_cpu_usage(base::TimeDelta cumulative_cpu_usage) {
-    cumulative_cpu_usage_ = cumulative_cpu_usage;
-  }
   uint64_t resident_set_kb() const { return resident_set_kb_; }
   void set_resident_set_kb(uint64_t resident_set_kb) {
     resident_set_kb_ = resident_set_kb;
   }
-  base::TimeDelta cumulative_cpu_usage() const { return cumulative_cpu_usage_; }
 
   const base::flat_set<FrameNodeImpl*>& frame_nodes() const;
 
@@ -84,6 +79,7 @@ class ProcessNodeImpl
   // Otherwise, returns nullptr.
   PageNodeImpl* GetPageNodeIfExclusive() const;
 
+  content::ProcessType process_type() const { return process_type_; }
   // Use process_id() in preference to process().Pid(). It's always valid to
   // access, but will return kNullProcessId when the process is not valid. It
   // will also retain the process ID for a process that has exited.
@@ -105,8 +101,6 @@ class ProcessNodeImpl
   }
 
   base::TaskPriority priority() const { return priority_.value(); }
-
-  double cpu_usage() const { return cpu_usage_; }
 
   // Add |frame_node| to this process.
   void AddFrame(FrameNodeImpl* frame_node);
@@ -136,16 +130,15 @@ class ProcessNodeImpl
 
   // ProcessNode implementation. These are private so that users of the impl use
   // the private getters rather than the public interface.
+  content::ProcessType GetProcessType() const override;
   base::ProcessId GetProcessId() const override;
   const base::Process& GetProcess() const override;
   base::Time GetLaunchTime() const override;
   base::Optional<int32_t> GetExitStatus() const override;
-  void VisitFrameNodes(const FrameNodeVisitor& visitor) const override;
+  bool VisitFrameNodes(const FrameNodeVisitor& visitor) const override;
   base::flat_set<const FrameNode*> GetFrameNodes() const override;
   base::TimeDelta GetExpectedTaskQueueingDuration() const override;
   bool GetMainThreadTaskLoadIsLow() const override;
-  double GetCpuUsage() const override;
-  base::TimeDelta GetCumulativeCpuUsage() const override;
   uint64_t GetPrivateFootprintKb() const override;
   uint64_t GetResidentSetKb() const override;
   const RenderProcessHostProxy& GetRenderProcessHostProxy() const override;
@@ -153,11 +146,11 @@ class ProcessNodeImpl
 
   void OnAllFramesInProcessFrozen();
 
-  void LeaveGraph() override;
+  // NodeBase:
+  void OnBeforeLeavingGraph() override;
 
   mojo::Receiver<mojom::ProcessCoordinationUnit> receiver_{this};
 
-  base::TimeDelta cumulative_cpu_usage_;
   uint64_t private_footprint_kb_ = 0u;
   uint64_t resident_set_kb_ = 0;
 
@@ -170,6 +163,7 @@ class ProcessNodeImpl
   base::Time launch_time_;
   base::Optional<int32_t> exit_status_;
 
+  const content::ProcessType process_type_;
   const RenderProcessHostProxy render_process_host_proxy_;
 
   ObservedProperty::NotifiesAlways<
@@ -180,7 +174,6 @@ class ProcessNodeImpl
       bool,
       &ProcessNodeObserver::OnMainThreadTaskLoadIsLow>
       main_thread_task_load_is_low_{false};
-  double cpu_usage_ = 0;
 
   // Process priority information. This is aggregated from the priority of
   // all workers and frames in a given process.

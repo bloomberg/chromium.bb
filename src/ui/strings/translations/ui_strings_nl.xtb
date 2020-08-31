@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maximaliseren</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, geïnstalleerde app</translation>
 <translation id="1450753235335490080">Kan <ph name="CONTENT_TYPE" /> niet delen</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> is verwisseld met <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Je hebt hier eerder naar gezocht. Als je '<ph name="QUERY" />' uit je geschiedenis verwijdert, wordt deze zoekopdracht definitief op al je apparaten uit je account verwijderd.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuut en }other{# minuten en }}</translation>
 <translation id="1643823602425662293">Melding</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">&amp;Alles selecteren</translation>
-<translation id="1938451708255335766">Als je de weergavedichtheid van het venster wilt aanpassen, start je de app opnieuw.</translation>
 <translation id="2006524834898217237">Zorg dat dit apparaat is verbonden met internet.</translation>
 <translation id="208586643495776849">Probeer het opnieuw</translation>
 <translation id="2090963878406559571">Als je vanaf <ph name="ORIGIN" /> een nummer naar je Android-telefoon wilt sturen, moet je in de instellingen <ph name="TROUBLESHOOT_LINK" /> voor beide apparaten.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Pijl-omlaag</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dag}other{# dagen}}</translation>
 <translation id="3295886253693811851">Bellen via</translation>
+<translation id="3306688585798492231">Ingebouwd scherm</translation>
 <translation id="335581015389089642">Spraak</translation>
 <translation id="3389286852084373014">Tekst is te groot</translation>
-<translation id="3479552764303398839">Niet nu</translation>
 <translation id="348799646910989694">Plank automatisch verborgen</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> is vastgezet</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag resterend}other{# dagen resterend}}</translation>
@@ -100,9 +100,8 @@
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Verder lezen vanaf je mobiele apparaat <ph name="TITLE" /></translation>
-<translation id="385051799172605136">Vorige</translation>
+<translation id="385051799172605136">Terug</translation>
 <translation id="3889424535448813030">Pijl-rechts</translation>
-<translation id="3892641579809465218">Ingebouwd scherm</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">&amp;Knippen</translation>
 <translation id="3990502903496589789">Rechterzijde</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min.}other{# min.}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Vandaag actief}=1{1 dag geleden actief}other{# dagen geleden actief}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dag en }other{# dagen en }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{over 1 j}other{over # j}}</translation>
-<translation id="5895138241574237353">Opnieuw starten</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 seconde resterend}other{# seconden reseterend}}</translation>
 <translation id="5941711191222866238">Minimaliseren</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 uur}other{# uur}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Rechts naar links</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">MEEST WAARSCHIJNLIJK</translation>
+<translation id="7170202025028120564">De weergave-instellingen van je app worden van kracht als de app opnieuw wordt opgestart.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min. resterend}other{# min. resterend}}</translation>
 <translation id="7319740667687257810">Launcher, gedeeltelijke weergave</translation>

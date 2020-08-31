@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_NAMESPACE_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_NAMESPACE_H_
 
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -20,8 +21,7 @@ struct CONTENT_EXPORT AppCacheNamespace {
   AppCacheNamespace();  // Type is APPCACHE_FALLBACK_NAMESPACE by default.
   AppCacheNamespace(AppCacheNamespaceType type,
                     const GURL& url,
-                    const GURL& target,
-                    bool is_pattern);
+                    const GURL& target);
   ~AppCacheNamespace();
 
   bool IsMatch(const GURL& url) const;
@@ -29,10 +29,7 @@ struct CONTENT_EXPORT AppCacheNamespace {
   AppCacheNamespaceType type;
   GURL namespace_url;
   GURL target_url;
-
-  // TODO(jsbell): Remove pattern support, since it has been removed from the
-  // parser already.
-  bool is_pattern;
+  base::Time token_expires;
 };
 
 }  // namespace content

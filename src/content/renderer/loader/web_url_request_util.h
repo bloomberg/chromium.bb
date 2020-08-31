@@ -8,11 +8,11 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "content/public/common/resource_type.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 
@@ -21,12 +21,6 @@ class WebHTTPBody;
 }
 
 namespace content {
-
-ResourceType RequestContextToResourceType(
-    blink::mojom::RequestContextType request_context);
-
-CONTENT_EXPORT ResourceType WebURLRequestToResourceType(
-    const blink::WebURLRequest& request);
 
 net::HttpRequestHeaders GetWebURLRequestHeaders(
     const blink::WebURLRequest& request);
@@ -53,6 +47,8 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebURLRequest(
 std::string GetFetchIntegrityForWebURLRequest(
     const blink::WebURLRequest& request);
 blink::mojom::RequestContextType GetRequestContextTypeForWebURLRequest(
+    const blink::WebURLRequest& request);
+network::mojom::RequestDestination GetRequestDestinationForWebURLRequest(
     const blink::WebURLRequest& request);
 blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
     const blink::WebURLRequest& request);

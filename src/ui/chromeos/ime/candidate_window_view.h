@@ -32,10 +32,7 @@ class UI_CHROMEOS_EXPORT CandidateWindowView
     virtual void OnCandidateCommitted(int index) = 0;
   };
 
-  explicit CandidateWindowView(
-      gfx::NativeView parent,
-      int window_shell_id =
-          -1 /* equals ash::ShellWindowId::kShellWindowId_Invalid */);
+  explicit CandidateWindowView(gfx::NativeView parent);
   ~CandidateWindowView() override;
   views::Widget* InitWidget();
 
@@ -82,7 +79,6 @@ class UI_CHROMEOS_EXPORT CandidateWindowView
 
   // views::BubbleDialogDelegateView:
   const char* GetClassName() const override;
-  int GetDialogButtons() const override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -134,9 +130,6 @@ class UI_CHROMEOS_EXPORT CandidateWindowView
   // True if the candidate window was open.  This is used to determine when to
   // send OnCandidateWindowOpened and OnCandidateWindowClosed events.
   bool was_candidate_window_open_;
-
-  // Corresponds to ash::ShellWindowId.
-  const int window_shell_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CandidateWindowView);
 };

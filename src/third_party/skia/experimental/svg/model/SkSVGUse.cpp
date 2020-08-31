@@ -52,7 +52,7 @@ void SkSVGUse::onSetAttribute(SkSVGAttribute attr, const SkSVGValue& v) {
 }
 
 bool SkSVGUse::onPrepareToRender(SkSVGRenderContext* ctx) const {
-    if (fHref.value().isEmpty() || !INHERITED::onPrepareToRender(ctx)) {
+    if (fHref.isEmpty() || !INHERITED::onPrepareToRender(ctx)) {
         return false;
     }
 
@@ -68,7 +68,7 @@ bool SkSVGUse::onPrepareToRender(SkSVGRenderContext* ctx) const {
 }
 
 void SkSVGUse::onRender(const SkSVGRenderContext& ctx) const {
-    const auto* ref = ctx.findNodeById(fHref);
+    const auto ref = ctx.findNodeById(fHref);
     if (!ref) {
         return;
     }
@@ -77,7 +77,7 @@ void SkSVGUse::onRender(const SkSVGRenderContext& ctx) const {
 }
 
 SkPath SkSVGUse::onAsPath(const SkSVGRenderContext& ctx) const {
-    const auto* ref = ctx.findNodeById(fHref);
+    const auto ref = ctx.findNodeById(fHref);
     if (!ref) {
         return SkPath();
     }

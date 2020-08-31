@@ -28,8 +28,7 @@ class ServiceWorkerFetchContextImplTest : public testing::Test {
 
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> CreateThrottles(
         int render_frame_id,
-        const blink::WebURLRequest& request,
-        ResourceType resource_type) override {
+        const blink::WebURLRequest& request) override {
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
       throttles.emplace_back(std::make_unique<FakeURLLoaderThrottle>());
       return throttles;
@@ -59,7 +58,8 @@ TEST_F(ServiceWorkerFetchContextImplTest, SkipThrottling) {
     context->WillSendRequest(request);
 
     // Throttles should be created by the provider.
-    auto* extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
+    auto* extra_data =
+        static_cast<RequestExtraData*>(request.GetExtraData().get());
     ASSERT_TRUE(extra_data);
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
         extra_data->TakeURLLoaderThrottles();
@@ -73,7 +73,8 @@ TEST_F(ServiceWorkerFetchContextImplTest, SkipThrottling) {
     context->WillSendRequest(request);
 
     // Throttles should not be created by the provider.
-    auto* extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
+    auto* extra_data =
+        static_cast<RequestExtraData*>(request.GetExtraData().get());
     ASSERT_TRUE(extra_data);
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
         extra_data->TakeURLLoaderThrottles();

@@ -22,6 +22,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
@@ -110,22 +111,22 @@ void GetDefaultMediaDeviceID(
     blink::MediaDeviceType device_type,
     int render_process_id,
     int render_frame_id,
-    const base::Callback<void(const std::string&)>& callback) {
+    base::OnceCallback<void(const std::string&)> callback) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeDeviceForMediaStream)) {
     std::string command_line_default_device_id =
         GetDefaultMediaDeviceIDFromCommandLine(device_type);
     if (!command_line_default_device_id.empty()) {
-      callback.Run(command_line_default_device_id);
+      std::move(callback).Run(command_line_default_device_id);
       return;
     }
   }
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&GetDefaultMediaDeviceIDOnUIThread, device_type,
-                 render_process_id, render_frame_id),
-      callback);
+      base::BindOnce(&GetDefaultMediaDeviceIDOnUIThread, device_type,
+                     render_process_id, render_frame_id),
+      std::move(callback));
 }
 
 MediaDeviceSaltAndOrigin GetMediaDeviceSaltAndOrigin(int render_process_id,
@@ -145,7 +146,7 @@ MediaDeviceSaltAndOrigin GetMediaDeviceSaltAndOrigin(int render_process_id,
   if (frame_host) {
     origin = frame_host->GetLastCommittedOrigin();
     url = frame_host->GetLastCommittedURL();
-    site_for_cookies = frame_host->ComputeSiteForCookies();
+    site_for_cookies = frame_host->ComputeSiteForCookies().RepresentativeUrl();
     top_level_origin = frame_host->frame_tree_node()
                            ->frame_tree()
                            ->GetMainFrame()
@@ -184,8 +185,12 @@ blink::WebMediaDeviceInfo TranslateMediaDeviceInfo(
     const MediaDeviceSaltAndOrigin& salt_and_origin,
     const blink::WebMediaDeviceInfo& device_info) {
   return blink::WebMediaDeviceInfo(
-      GetHMACForMediaDeviceID(salt_and_origin.device_id_salt,
-                              salt_and_origin.origin, device_info.device_id),
+      !base::FeatureList::IsEnabled(features::kEnumerateDevicesHideDeviceIDs) ||
+              has_permission
+          ? GetHMACForMediaDeviceID(salt_and_origin.device_id_salt,
+                                    salt_and_origin.origin,
+                                    device_info.device_id)
+          : std::string(),
       has_permission ? device_info.label : std::string(),
       device_info.group_id.empty()
           ? std::string()

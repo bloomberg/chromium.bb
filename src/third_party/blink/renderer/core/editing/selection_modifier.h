@@ -61,6 +61,8 @@ class CORE_EXPORT SelectionModifier {
   // to return |current_selection_|.
   VisibleSelection Selection() const;
 
+  TextDirection DirectionOfSelection() const;
+
   bool Modify(SelectionModifyAlteration,
               SelectionModifyDirection,
               TextGranularity);
@@ -78,7 +80,6 @@ class CORE_EXPORT SelectionModifier {
   VisibleSelection PrepareToModifySelection(SelectionModifyAlteration,
                                             SelectionModifyDirection) const;
   TextDirection DirectionOfEnclosingBlock() const;
-  TextDirection DirectionOfSelection() const;
   TextDirection LineDirectionOfExtent() const;
   VisiblePosition PositionForPlatform(bool is_get_start) const;
   VisiblePosition StartForPlatform() const;
@@ -111,7 +112,7 @@ class CORE_EXPORT SelectionModifier {
   static VisiblePosition NextParagraphPosition(const VisiblePosition&,
                                                LayoutUnit line_direction_point);
 
-  Member<const LocalFrame> frame_;
+  const LocalFrame* frame_;
   // TODO(editing-dev): We should get rid of |selection_| once we change
   // all member functions not to use |selection_|.
   // |selection_| is used as implicit parameter or a cache instead of pass it.

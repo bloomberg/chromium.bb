@@ -6,8 +6,8 @@
 
 #include <cmath>
 
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 
 namespace blink {
 namespace media_constraints {
@@ -119,7 +119,6 @@ Point::Point(double height, double width) : height_(height), width_(width) {
 }
 Point::Point(const Point& other) = default;
 Point& Point::operator=(const Point& other) = default;
-Point::~Point() = default;
 
 bool Point::operator==(const Point& other) const {
   return height_ == other.height_ && width_ == other.width_;
@@ -216,7 +215,7 @@ ResolutionSet::ResolutionSet()
     : ResolutionSet(0, kMaxDimension, 0, kMaxDimension, 0.0, HUGE_VAL) {}
 
 ResolutionSet::ResolutionSet(const ResolutionSet& other) = default;
-ResolutionSet::~ResolutionSet() = default;
+
 ResolutionSet& ResolutionSet::operator=(const ResolutionSet& other) = default;
 
 bool ResolutionSet::IsHeightEmpty() const {
@@ -269,7 +268,7 @@ ResolutionSet ResolutionSet::Intersection(const ResolutionSet& other) const {
 }
 
 Point ResolutionSet::SelectClosestPointToIdeal(
-    const WebMediaTrackConstraintSet& constraint_set,
+    const MediaTrackConstraintSetPlatform& constraint_set,
     int default_height,
     int default_width) const {
   DCHECK_GE(default_height, 1);
@@ -536,7 +535,7 @@ void ResolutionSet::TryAddVertex(std::vector<Point>* vertices,
 }
 
 ResolutionSet ResolutionSet::FromConstraintSet(
-    const WebMediaTrackConstraintSet& constraint_set) {
+    const MediaTrackConstraintSetPlatform& constraint_set) {
   return ResolutionSet(
       MinDimensionFromConstraint(constraint_set.height),
       MaxDimensionFromConstraint(constraint_set.height),
@@ -568,12 +567,12 @@ DiscreteSet<bool> BoolSetFromConstraint(const BooleanConstraint& constraint) {
 DiscreteSet<bool> RescaleSetFromConstraint(
     const StringConstraint& resize_mode_constraint) {
   DCHECK_EQ(resize_mode_constraint.GetName(),
-            WebMediaTrackConstraintSet().resize_mode.GetName());
+            MediaTrackConstraintSetPlatform().resize_mode.GetName());
   bool contains_none = resize_mode_constraint.Matches(
       WebString::FromASCII(WebMediaStreamTrack::kResizeModeNone));
   bool contains_rescale = resize_mode_constraint.Matches(
       WebString::FromASCII(WebMediaStreamTrack::kResizeModeRescale));
-  if (resize_mode_constraint.Exact().empty() ||
+  if (resize_mode_constraint.Exact().IsEmpty() ||
       (contains_none && contains_rescale)) {
     return DiscreteSet<bool>::UniversalSet();
   }

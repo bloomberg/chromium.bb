@@ -227,11 +227,10 @@ void RequestManager::UnsetRepeatingCaptureMetadata(
 }
 
 void RequestManager::SetJpegOrientation(
-    cros::mojom::CameraMetadataPtr* settings) {
+    cros::mojom::CameraMetadataPtr* settings,
+    int32_t orientation) {
   auto e = BuildMetadataEntry(
-      cros::mojom::CameraMetadataTag::ANDROID_JPEG_ORIENTATION,
-      base::checked_cast<int32_t>(
-          device_context_->GetCameraFrameOrientation()));
+      cros::mojom::CameraMetadataTag::ANDROID_JPEG_ORIENTATION, orientation);
   AddOrUpdateMetadataEntry(settings, std::move(e));
 }
 
@@ -319,6 +318,7 @@ void RequestManager::PrepareCaptureRequest() {
   pending_result.input_buffer_id = input_buffer_id;
   pending_result.reprocess_effect = reprocess_effect;
   pending_result.still_capture_callback = std::move(callback);
+  pending_result.orientation = device_context_->GetCameraFrameOrientation();
 
   // For reprocess supported devices, bind the ReprocessTaskQueue with this
   // frame number. Once the shot result is returned, we will rebind the
@@ -334,7 +334,11 @@ void RequestManager::PrepareCaptureRequest() {
     ++preview_buffers_queued_;
   }
 
-  UpdateCaptureSettings(&capture_request->settings);
+  // Currently only 3A related settings will be applied, which means we don't
+  // need to apply for reprocess request.
+  if (!is_reprocess_request) {
+    UpdateCaptureSettings(&capture_request->settings);
+  }
   capture_interface_->ProcessCaptureRequest(
       std::move(capture_request),
       base::BindOnce(&RequestManager::OnProcessedCaptureRequest, GetWeakPtr()));
@@ -371,9 +375,9 @@ bool RequestManager::TryPrepareReprocessRequest(
 
   stream_types->insert(kYUVReprocessStreams);
   // Prepare metadata by adding extra metadata.
-  *settings = repeating_request_settings_.Clone();
+  *settings = reprocess_job_info->metadata.Clone();
   SetSensorTimestamp(settings, reprocess_job_info->shutter_timestamp);
-  SetJpegOrientation(settings);
+  SetJpegOrientation(settings, reprocess_job_info->orientation);
   for (auto& metadata : task.extra_metadata) {
     AddOrUpdateMetadataEntry(settings, std::move(metadata));
   }
@@ -436,7 +440,7 @@ bool RequestManager::TryPrepareOneShotRequest(
     take_photo_callback_queue_.pop();
 
     *settings = std::move(take_photo_settings_queue_.front());
-    SetJpegOrientation(settings);
+    SetJpegOrientation(settings, device_context_->GetCameraFrameOrientation());
   }
   SetZeroShutterLag(settings, true);
   take_photo_settings_queue_.pop();
@@ -791,7 +795,8 @@ void RequestManager::SubmitCaptureResult(
       DCHECK_GT(pending_result.shutter_timestamp, 0UL);
       ReprocessJobInfo reprocess_job_info(
           std::move(frame_number_reprocess_tasks_map_[frame_number]),
-          pending_result.shutter_timestamp);
+          std::move(pending_result.metadata), pending_result.shutter_timestamp,
+          pending_result.orientation);
       buffer_id_reprocess_job_info_map_.emplace(buffer_ipc_id,
                                                 std::move(reprocess_job_info));
       frame_number_reprocess_tasks_map_.erase(frame_number);
@@ -940,13 +945,21 @@ RequestManager::CaptureResult::CaptureResult()
 
 RequestManager::CaptureResult::~CaptureResult() = default;
 
-RequestManager::ReprocessJobInfo::ReprocessJobInfo(ReprocessTaskQueue queue,
-                                                   uint64_t timestamp)
-    : task_queue(std::move(queue)), shutter_timestamp(timestamp) {}
+RequestManager::ReprocessJobInfo::ReprocessJobInfo(
+    ReprocessTaskQueue queue,
+    cros::mojom::CameraMetadataPtr metadata,
+    uint64_t timestamp,
+    int32_t orientation)
+    : task_queue(std::move(queue)),
+      metadata(std::move(metadata)),
+      shutter_timestamp(timestamp),
+      orientation(orientation) {}
 
 RequestManager::ReprocessJobInfo::ReprocessJobInfo(ReprocessJobInfo&& info)
     : task_queue(std::move(info.task_queue)),
-      shutter_timestamp(info.shutter_timestamp) {}
+      metadata(std::move(info.metadata)),
+      shutter_timestamp(info.shutter_timestamp),
+      orientation(info.orientation) {}
 
 RequestManager::ReprocessJobInfo::~ReprocessJobInfo() = default;
 

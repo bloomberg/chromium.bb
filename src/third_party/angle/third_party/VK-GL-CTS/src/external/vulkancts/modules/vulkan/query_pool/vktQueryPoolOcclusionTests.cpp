@@ -353,7 +353,7 @@ tcu::TestStatus	BasicOcclusionQueryTestInstance::iterate (void)
 	if (m_testVector.queryResultsMode == RESULTS_MODE_GET_RESET)
 	{
 		// Check VK_EXT_host_query_reset is supported
-		m_context.requireDeviceExtension("VK_EXT_host_query_reset");
+		m_context.requireDeviceFunctionality("VK_EXT_host_query_reset");
 		if(m_context.getHostQueryResetFeatures().hostQueryReset == VK_FALSE)
 			throw tcu::NotSupportedError(std::string("Implementation doesn't support resetting queries from the host").c_str());
 	}
@@ -400,7 +400,7 @@ tcu::TestStatus	BasicOcclusionQueryTestInstance::iterate (void)
 	endCommandBuffer(vk, *cmdBuffer);
 
 	if (m_testVector.queryResultsMode == RESULTS_MODE_GET_RESET)
-		vk.resetQueryPoolEXT(device, m_queryPool, 0, NUM_QUERIES_IN_POOL);
+		vk.resetQueryPool(device, m_queryPool, 0, NUM_QUERIES_IN_POOL);
 
 	submitCommandsAndWait(vk, device, queue, cmdBuffer.get());
 
@@ -601,7 +601,7 @@ tcu::TestStatus OcclusionQueryTestInstance::iterate (void)
 	if (m_testVector.queryResultsMode == RESULTS_MODE_GET_RESET)
 	{
 		// Check VK_EXT_host_query_reset is supported
-		m_context.requireDeviceExtension("VK_EXT_host_query_reset");
+		m_context.requireDeviceFunctionality("VK_EXT_host_query_reset");
 		if(m_context.getHostQueryResetFeatures().hostQueryReset == VK_FALSE)
 			throw tcu::NotSupportedError(std::string("Implementation doesn't support resetting queries from the host").c_str());
 	}
@@ -659,7 +659,7 @@ tcu::TestStatus OcclusionQueryTestInstance::iterate (void)
 		};
 
 		if (!hasSeparateResetCmdBuf() && m_testVector.queryResultsMode == RESULTS_MODE_GET_RESET)
-			vk.resetQueryPoolEXT(m_context.getDevice(), m_queryPool, 0, NUM_QUERIES_IN_POOL);
+			vk.resetQueryPool(m_context.getDevice(), m_queryPool, 0, NUM_QUERIES_IN_POOL);
 		vk.queueSubmit(queue, 1, &submitInfoRender, DE_NULL);
 	}
 
@@ -939,7 +939,7 @@ void OcclusionQueryTestInstance::captureResults (deUint64* retResults, deUint64*
 
 	if (m_testVector.queryResultsMode == RESULTS_MODE_GET_RESET)
 	{
-		vk.resetQueryPoolEXT(device, m_queryPool, 0, NUM_QUERIES_IN_POOL);
+		vk.resetQueryPool(device, m_queryPool, 0, NUM_QUERIES_IN_POOL);
 		vk::VkResult queryResult = vk.getQueryPoolResults(device, m_queryPool, 0, NUM_QUERIES_IN_POOL, resultsBuffer.size(), &resultsBuffer[0], m_testVector.queryResultsStride, m_queryResultFlags);
 
 		if (queryResult != vk::VK_NOT_READY)
@@ -966,7 +966,7 @@ void OcclusionQueryTestInstance::captureResults (deUint64* retResults, deUint64*
 
 				if (m_testVector.queryResultsAvailability && *(srcPtrTyped + 1) != 0)
 				{
-					TCU_FAIL("resetQueryPoolEXT did not disable availability bit");
+					TCU_FAIL("resetQueryPool did not disable availability bit");
 				}
 			}
 			else if (m_testVector.queryResultSize == RESULT_SIZE_64_BIT)
@@ -979,7 +979,7 @@ void OcclusionQueryTestInstance::captureResults (deUint64* retResults, deUint64*
 
 				if (m_testVector.queryResultsAvailability && *(srcPtrTyped + 1) != 0)
 				{
-					TCU_FAIL("resetQueryPoolEXT did not disable availability bit");
+					TCU_FAIL("resetQueryPool did not disable availability bit");
 				}
 			}
 			else

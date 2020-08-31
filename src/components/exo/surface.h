@@ -38,6 +38,7 @@ class TracedValue;
 }  // namespace base
 
 namespace gfx {
+class ColorSpace;
 class GpuFence;
 }
 
@@ -91,13 +92,14 @@ class Surface final : public ui::PropertyHandler {
 
   // Request notification when it's a good time to produce a new frame. Useful
   // for throttling redrawing operations, and driving animations.
-  using FrameCallback = base::Callback<void(base::TimeTicks frame_time)>;
+  using FrameCallback =
+      base::RepeatingCallback<void(base::TimeTicks frame_time)>;
   void RequestFrameCallback(const FrameCallback& callback);
 
   // Request notification when the next frame is displayed. Useful for
   // throttling redrawing operations, and driving animations.
   using PresentationCallback =
-      base::Callback<void(const gfx::PresentationFeedback&)>;
+      base::RepeatingCallback<void(const gfx::PresentationFeedback&)>;
   void RequestPresentationCallback(const PresentationCallback& callback);
 
   // This sets the region of the surface that contains opaque content.
@@ -163,6 +165,9 @@ class Surface final : public ui::PropertyHandler {
   // Request that surface should have a specific application ID string.
   void SetApplicationId(const char* application_id);
 
+  // This sets the color space for the buffer for this surface.
+  void SetColorSpace(gfx::ColorSpace color_space);
+
   // Request "parent" for surface.
   void SetParent(Surface* parent, const gfx::Point& position);
 
@@ -175,6 +180,9 @@ class Surface final : public ui::PropertyHandler {
   // the returned SurfaceId each frame.
   void SetEmbeddedSurfaceId(
       base::RepeatingCallback<viz::SurfaceId()> surface_id_callback);
+
+  // Set the size of the embedded surface, to allow proper scaling.
+  void SetEmbeddedSurfaceSize(const gfx::Size& size);
 
   // Request that the attached surface buffer at the next commit is associated
   // with a gpu fence to be signaled when the buffer is ready for use.
@@ -300,6 +308,7 @@ class Surface final : public ui::PropertyHandler {
     SkBlendMode blend_mode = SkBlendMode::kSrcOver;
     float alpha = 1.0f;
     gfx::Vector2d offset;
+    gfx::ColorSpace color_space;
   };
   class BufferAttachment {
    public:
@@ -452,6 +461,10 @@ class Surface final : public ui::PropertyHandler {
   viz::SurfaceId first_embedded_surface_id_;
   viz::SurfaceId latest_embedded_surface_id_;
   base::RepeatingCallback<viz::SurfaceId()> get_current_surface_id_;
+
+  // The embedded surface is actually |embedded_surface_size_|. This is used
+  // for calculating clipping and scaling.
+  gfx::Size embedded_surface_size_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

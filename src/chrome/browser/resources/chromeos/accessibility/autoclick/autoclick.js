@@ -66,7 +66,7 @@ class Autoclick {
     // TODO(katie): Add a property to FocusRingInfo to set FocusRingBehavior
     // to fade out.
     chrome.accessibilityPrivate.setFocusRings([{
-      rects: rects,
+      rects,
       type: chrome.accessibilityPrivate.FocusType.SOLID,
       color: AUTOCLICK_FOCUS_RING_COLOR,
       secondaryColor: AUTOCLICK_FOCUS_RING_COLOR,
@@ -112,7 +112,7 @@ class Autoclick {
     if (!node.location) {
       return;
     }
-    let bounds = node.location;
+    const bounds = node.location;
     this.setFocusRings_([bounds]);
     if (this.blinkFocusRings_) {
       // Blink the focus ring briefly per UX spec, using timeouts to turn it
@@ -147,4 +147,4 @@ class Autoclick {
 }
 
 // Initialize the Autoclick extension.
-let autoclick = new Autoclick(true /* blink focus rings */);
+var autoclick = new Autoclick(true /* blink focus rings */);

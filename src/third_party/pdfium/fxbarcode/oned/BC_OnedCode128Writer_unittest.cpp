@@ -4,6 +4,7 @@
 
 #include "fxbarcode/oned/BC_OnedCode128Writer.h"
 
+#include "core/fxcrt/fx_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -84,9 +85,9 @@ TEST(OnedCode128WriterTest, Encode128C) {
 TEST(OnedCode128WriterTest, CheckContentValidity) {
   {
     CBC_OnedCode128Writer writer(BC_CODE128_B);
-    EXPECT_TRUE(writer.CheckContentValidity(L""));
     EXPECT_TRUE(writer.CheckContentValidity(L"foo"));
     EXPECT_TRUE(writer.CheckContentValidity(L"xyz"));
+    EXPECT_FALSE(writer.CheckContentValidity(L""));
     EXPECT_FALSE(writer.CheckContentValidity(L"\""));
     EXPECT_FALSE(writer.CheckContentValidity(L"f\x10oo"));
     EXPECT_FALSE(writer.CheckContentValidity(L"bar\x7F"));
@@ -94,9 +95,9 @@ TEST(OnedCode128WriterTest, CheckContentValidity) {
   }
   {
     CBC_OnedCode128Writer writer(BC_CODE128_C);
-    EXPECT_TRUE(writer.CheckContentValidity(L""));
     EXPECT_TRUE(writer.CheckContentValidity(L"foo"));
     EXPECT_TRUE(writer.CheckContentValidity(L"xyz"));
+    EXPECT_FALSE(writer.CheckContentValidity(L""));
     EXPECT_FALSE(writer.CheckContentValidity(L"\""));
     EXPECT_FALSE(writer.CheckContentValidity(L"f\x10oo"));
     EXPECT_FALSE(writer.CheckContentValidity(L"bar\x7F"));

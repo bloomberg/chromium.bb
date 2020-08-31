@@ -12,7 +12,9 @@ import android.content.Context;
 import android.content.SyncResult;
 import android.os.Bundle;
 
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 
 /**
  * A Sync adapter that integrates with Android's OS-level Sync settings.
@@ -28,7 +30,9 @@ public class ChromeBrowserSyncAdapter extends AbstractThreadedSyncAdapter {
         // Make sure to only report Chrome as "syncable" if the given account matches our
         // signed-in account.
         if (extras.getBoolean(ContentResolver.SYNC_EXTRAS_INITIALIZE)) {
-            Account signedInAccount = ChromeSigninController.get().getSignedInUser();
+            Account signedInAccount = CoreAccountInfo.getAndroidAccountFrom(
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                            ConsentLevel.SYNC));
             if (account.equals(signedInAccount)) {
                 ContentResolver.setIsSyncable(account, authority, 1);
             } else {

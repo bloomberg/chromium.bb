@@ -92,7 +92,8 @@ class ChromeNativeAppWindowViewsAuraAsh
   Profile* GetProfile() override;
   bool IsFullscreen() const override;
   void EnterFullscreen(const GURL& url,
-                       ExclusiveAccessBubbleType bubble_type) override;
+                       ExclusiveAccessBubbleType bubble_type,
+                       const int64_t display_id) override;
   void ExitFullscreen() override;
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
@@ -101,8 +102,6 @@ class ChromeNativeAppWindowViewsAuraAsh
       bool force_update) override;
   void OnExclusiveAccessUserInput() override;
   content::WebContents* GetActiveWebContents() override;
-  void UnhideDownloadShelf() override;
-  void HideDownloadShelf() override;
   bool CanUserExitFullscreen() const override;
 
   // ExclusiveAccessBubbleViewsContext:

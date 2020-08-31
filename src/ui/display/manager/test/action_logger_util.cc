@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/format_macros.h"
-#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
@@ -67,6 +66,11 @@ std::string SetGammaCorrectionAction(
   return base::StringPrintf("set_gamma_correction(id=%" PRId64 "%s%s)",
                             display_id, degamma_table.c_str(),
                             gamma_table.c_str());
+}
+
+std::string SetPrivacyScreenAction(int64_t display_id, bool enabled) {
+  return base::StringPrintf("set_privacy_screen(id=%" PRId64 ",state=%d)",
+                            display_id, enabled);
 }
 
 std::string JoinActions(const char* action, ...) {

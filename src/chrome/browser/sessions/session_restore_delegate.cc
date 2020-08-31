@@ -9,10 +9,14 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
+#include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "chrome/browser/sessions/session_restore_stats_collector.h"
 #include "chrome/browser/sessions/tab_loader.h"
 #include "chrome/common/url_constants.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "components/performance_manager/public/graph/policies/background_tab_loading_policy.h"
+#include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -43,7 +47,7 @@ SessionRestoreDelegate::RestoredTab::RestoredTab(
     bool is_active,
     bool is_app,
     bool is_pinned,
-    const base::Optional<base::Token>& group)
+    const base::Optional<tab_groups::TabGroupId>& group)
     : contents_(contents),
       is_active_(is_active),
       is_app_(is_app),
@@ -85,5 +89,18 @@ void SessionRestoreDelegate::RestoreTabs(
                                  /*is_same_document=*/false);
   }
 
-  TabLoader::RestoreTabs(tabs, restore_started);
+  // Don't start a TabLoader here if background tab loading is done by
+  // PerformanceManager.
+  if (!base::FeatureList::IsEnabled(
+          performance_manager::features::
+              kBackgroundTabLoadingFromPerformanceManager)) {
+    TabLoader::RestoreTabs(tabs, restore_started);
+  } else {
+    std::vector<content::WebContents*> web_contents_vector;
+    web_contents_vector.reserve(tabs.size());
+    for (auto tab : tabs)
+      web_contents_vector.push_back(tab.contents());
+    performance_manager::policies::ScheduleLoadForRestoredTabs(
+        std::move(web_contents_vector));
+  }
 }

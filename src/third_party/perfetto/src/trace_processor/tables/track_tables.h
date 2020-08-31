@@ -17,7 +17,6 @@
 #ifndef SRC_TRACE_PROCESSOR_TABLES_TRACK_TABLES_H_
 #define SRC_TRACE_PROCESSOR_TABLES_TRACK_TABLES_H_
 
-#include "src/trace_processor/string_pool.h"
 #include "src/trace_processor/tables/macros.h"
 
 namespace perfetto {
@@ -50,6 +49,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_THREAD_TRACK_TABLE_DEF);
   NAME(GpuTrackTable, "gpu_track")                 \
   PARENT(PERFETTO_TP_TRACK_TABLE_DEF, C)           \
   C(StringPool::Id, scope)                         \
+  C(StringPool::Id, description)                   \
   C(base::Optional<int64_t>, context_id)
 
 PERFETTO_TP_TABLE(PERFETTO_TP_GPU_TRACK_DEF);
@@ -57,8 +57,6 @@ PERFETTO_TP_TABLE(PERFETTO_TP_GPU_TRACK_DEF);
 #define PERFETTO_TP_COUNTER_TRACK_DEF(NAME, PARENT, C) \
   NAME(CounterTrackTable, "counter_track")             \
   PARENT(PERFETTO_TP_TRACK_TABLE_DEF, C)               \
-  C(int64_t, ref)                                      \
-  C(StringPool::Id, ref_type)                          \
   C(StringPool::Id, unit)                              \
   C(StringPool::Id, description)
 

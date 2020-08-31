@@ -21,24 +21,19 @@ from chromite.utils import memoize
 GS_PATH_DEFAULT = 'default'  # Means gs://chromeos-image-archive/ + bot_id
 
 # Contains the valid build config suffixes.
-CONFIG_TYPE_PRECQ = 'pre-cq'
-CONFIG_TYPE_PALADIN = 'paladin'
 CONFIG_TYPE_RELEASE = 'release'
 CONFIG_TYPE_FULL = 'full'
 CONFIG_TYPE_FIRMWARE = 'firmware'
 CONFIG_TYPE_FACTORY = 'factory'
-CONFIG_TYPE_RELEASE_AFDO = 'release-afdo'
 CONFIG_TYPE_TOOLCHAIN = 'toolchain'
 
 # DISPLAY labels are used to group related builds together in the GE UI.
 
-DISPLAY_LABEL_PRECQ = 'pre_cq'
 DISPLAY_LABEL_TRYJOB = 'tryjob'
 DISPLAY_LABEL_INCREMENATAL = 'incremental'
 DISPLAY_LABEL_FULL = 'full'
 DISPLAY_LABEL_CHROME_INFORMATIONAL = 'chrome_informational'
 DISPLAY_LABEL_INFORMATIONAL = 'informational'
-DISPLAY_LABEL_CQ = 'cq'
 DISPLAY_LABEL_RELEASE = 'release'
 DISPLAY_LABEL_CHROME_PFQ = 'chrome_pfq'
 DISPLAY_LABEL_MST_ANDROID_PFQ = 'mst_android_pfq'
@@ -48,6 +43,8 @@ DISPLAY_LABEL_NYC_ANDROID_PFQ = 'nyc_android_pfq'
 DISPLAY_LABEL_PI_ANDROID_PFQ = 'pi_android_pfq'
 DISPLAY_LABEL_VMPI_ANDROID_PFQ = 'vmpi_android_pfq'
 DISPLAY_LABEL_QT_ANDROID_PFQ = 'qt_android_pfq'
+DISPLAY_LABEL_RVC_ANDROID_PFQ = 'rvc_android_pfq'
+DISPLAY_LABEL_VMRVC_ANDROID_PFQ = 'vmrvc_android_pfq'
 DISPLAY_LABEL_FIRMWARE = 'firmware'
 DISPLAY_LABEL_FACTORY = 'factory'
 DISPLAY_LABEL_TOOLCHAIN = 'toolchain'
@@ -56,13 +53,11 @@ DISPLAY_LABEL_PRODUCTION_TRYJOB = 'production_tryjob'
 
 # This list of constants should be kept in sync with GoldenEye code.
 ALL_DISPLAY_LABEL = {
-    DISPLAY_LABEL_PRECQ,
     DISPLAY_LABEL_TRYJOB,
     DISPLAY_LABEL_INCREMENATAL,
     DISPLAY_LABEL_FULL,
     DISPLAY_LABEL_CHROME_INFORMATIONAL,
     DISPLAY_LABEL_INFORMATIONAL,
-    DISPLAY_LABEL_CQ,
     DISPLAY_LABEL_RELEASE,
     DISPLAY_LABEL_CHROME_PFQ,
     DISPLAY_LABEL_MST_ANDROID_PFQ,
@@ -72,6 +67,8 @@ ALL_DISPLAY_LABEL = {
     DISPLAY_LABEL_PI_ANDROID_PFQ,
     DISPLAY_LABEL_VMPI_ANDROID_PFQ,
     DISPLAY_LABEL_QT_ANDROID_PFQ,
+    DISPLAY_LABEL_RVC_ANDROID_PFQ,
+    DISPLAY_LABEL_VMRVC_ANDROID_PFQ,
     DISPLAY_LABEL_FIRMWARE,
     DISPLAY_LABEL_FACTORY,
     DISPLAY_LABEL_TOOLCHAIN,
@@ -84,7 +81,6 @@ ALL_DISPLAY_LABEL = {
 # https://chrome-internal.googlesource.com/chromeos/
 #     infra/config/+/refs/heads/master/luci/cr-buildbucket.cfg
 LUCI_BUILDER_COMMITQUEUE = 'CommitQueue'
-LUCI_BUILDER_CQ = 'CQ'
 LUCI_BUILDER_FACTORY = 'Factory'
 LUCI_BUILDER_FULL = 'Full'
 LUCI_BUILDER_INCREMENTAL = 'Incremental'
@@ -93,8 +89,6 @@ LUCI_BUILDER_INFRA = 'Infra'
 LUCI_BUILDER_INFRA_TESTING = 'InfraTesting'
 LUCI_BUILDER_LEGACY_RELEASE = 'LegacyRelease'
 LUCI_BUILDER_PFQ = 'PFQ'
-LUCI_BUILDER_PRECQ = 'PreCQ'
-LUCI_BUILDER_PRECQ_LAUNCHER = 'PreCQLauncher'
 LUCI_BUILDER_PROD = 'Prod'
 LUCI_BUILDER_RELEASE = 'Release'
 LUCI_BUILDER_STAGING = 'Staging'
@@ -102,7 +96,6 @@ LUCI_BUILDER_TRY = 'Try'
 
 ALL_LUCI_BUILDER = {
     LUCI_BUILDER_COMMITQUEUE,
-    LUCI_BUILDER_CQ,
     LUCI_BUILDER_FACTORY,
     LUCI_BUILDER_FULL,
     LUCI_BUILDER_INCREMENTAL,
@@ -111,8 +104,6 @@ ALL_LUCI_BUILDER = {
     LUCI_BUILDER_INFRA_TESTING,
     LUCI_BUILDER_LEGACY_RELEASE,
     LUCI_BUILDER_PFQ,
-    LUCI_BUILDER_PRECQ,
-    LUCI_BUILDER_PRECQ_LAUNCHER,
     LUCI_BUILDER_PROD,
     LUCI_BUILDER_RELEASE,
     LUCI_BUILDER_STAGING,
@@ -129,7 +120,7 @@ def isTryjobConfig(build_config):
   Returns:
     Boolean. True if it's a tryjob config.
   """
-  return build_config.luci_builder in (LUCI_BUILDER_TRY, LUCI_BUILDER_PRECQ)
+  return build_config.luci_builder in {LUCI_BUILDER_TRY}
 
 
 # In the Json, this special build config holds the default values for all
@@ -160,25 +151,15 @@ CONFIG_ARM_INTERNAL = 'ARM_INTERNAL'
 CONFIG_ARM_EXTERNAL = 'ARM_EXTERNAL'
 
 
-def IsCanaryMaster(config):
+def IsCanaryMaster(builder_run):
   """Returns True if this build type is master-release"""
-  return config.build_type == constants.CANARY_TYPE and config.master
-
+  return (builder_run.config.build_type == constants.CANARY_TYPE and
+          builder_run.config.master and
+          builder_run.manifest_branch == 'master')
 
 def IsPFQType(b_type):
   """Returns True if this build type is a PFQ."""
-  return b_type in (constants.PFQ_TYPE, constants.PALADIN_TYPE,
-                    constants.CHROME_PFQ_TYPE, constants.ANDROID_PFQ_TYPE)
-
-
-def IsBinhostType(b_type):
-  """Returns True if this build type is a BINHOST.conf provider"""
-  return b_type in (constants.CHROME_PFQ_TYPE, constants.POSTSUBMIT_TYPE)
-
-
-def IsCQType(b_type):
-  """Returns True if this build type is a Commit Queue."""
-  return b_type == constants.PALADIN_TYPE
+  return b_type in (constants.PFQ_TYPE, constants.ANDROID_PFQ_TYPE)
 
 
 def IsCanaryType(b_type):
@@ -186,19 +167,9 @@ def IsCanaryType(b_type):
   return b_type == constants.CANARY_TYPE
 
 
-def IsMasterChromePFQ(config):
-  """Returns True if this build is master chrome PFQ type."""
-  return config.build_type == constants.CHROME_PFQ_TYPE and config.master
-
-
 def IsMasterAndroidPFQ(config):
   """Returns True if this build is master Android PFQ type."""
   return config.build_type == constants.ANDROID_PFQ_TYPE and config.master
-
-
-def IsMasterCQ(config):
-  """Returns True if this build is master CQ."""
-  return config.build_type == constants.PALADIN_TYPE and config.master
 
 
 def GetHWTestEnv(builder_run_config, model_config=None, suite_config=None):
@@ -212,15 +183,6 @@ def GetHWTestEnv(builder_run_config, model_config=None, suite_config=None):
   Returns:
     A string variable to indiate the hwtest environment.
   """
-  # arc-*ts-qual suites use a different logic because they use a separate pool
-  # on the release builder.
-  if suite_config and suite_config.suite in [
-      constants.HWTEST_CTS_QUAL_SUITE, constants.HWTEST_GTS_QUAL_SUITE
-  ]:
-    if builder_run_config.enable_skylab_cts_hw_tests:
-      return constants.ENV_SKYLAB
-    return constants.ENV_AUTOTEST
-
   enable_suite = True if suite_config is None else suite_config.enable_skylab
   enable_model = True if model_config is None else model_config.enable_skylab
   if (builder_run_config.enable_skylab_hw_tests and enable_suite and
@@ -228,32 +190,6 @@ def GetHWTestEnv(builder_run_config, model_config=None, suite_config=None):
     return constants.ENV_SKYLAB
 
   return constants.ENV_AUTOTEST
-
-
-def RetryAlreadyStartedSlaves(config):
-  """Returns True if wants to retry slaves which already start but fail.
-
-  For a slave scheduled by Buildbucket, if the slave started cbuildbot
-  and reported status to CIDB but failed to finish, its master may
-  still want to retry the slave.
-  """
-  return config.name == constants.CQ_MASTER
-
-
-def GetCriticalStageForRetry(config):
-  """Get critical stage names for retry decisions.
-
-  For a slave scheduled by Buildbucket, its master may want to retry it
-  if it didn't pass the critical stage.
-
-  Returns:
-    A set of critical stage names (strings) for the config;
-      default to an empty set.
-  """
-  if config.name == constants.CQ_MASTER:
-    return {'CommitQueueSync', 'MasterSlaveLKGMSync'}
-  else:
-    return set()
 
 
 class AttrDict(dict):
@@ -572,9 +508,12 @@ class HWTestConfig(object):
   """
   _MINUTE = 60
   _HOUR = 60 * _MINUTE
-  # CTS timeout about 2 * expected runtime in case other tests are using the CTS
+  _DAY = 24 * _HOUR
+  # CTS timeout ~ 2 * expected runtime in case other tests are using the CTS
   # pool.
-  CTS_QUAL_HW_TEST_TIMEOUT = int(48.0 * _HOUR)
+  # Must not exceed the buildbucket build timeout set at
+  # https://chrome-internal.googlesource.com/chromeos/infra/config/+/8f12edac54383831aaed9ed1819ef909a66ecc97/testplatform/main.star#90
+  CTS_QUAL_HW_TEST_TIMEOUT = int(1 * _DAY + 18 * _HOUR)
   # GTS runs faster than CTS. But to avoid starving GTS by CTS we set both
   # timeouts equal.
   GTS_QUAL_HW_TEST_TIMEOUT = CTS_QUAL_HW_TEST_TIMEOUT
@@ -672,6 +611,38 @@ class HWTestConfig(object):
     return self.__dict__ == other.__dict__
 
 
+class NotificationConfig(object):
+  """Config object for defining notification settings.
+
+  Attributes:
+    email: Email address that receives failure notifications.
+    threshold: Number of consecutive failures that should occur in order to
+              be notified. This number should be greater than or equal to 1. If
+              none is specified, default is 1.
+    template: Email template luci-notify should use when sending the email
+              notification. If none is specified, uses the default template.
+  """
+  DEFAULT_TEMPLATE = 'legacy_release'
+  DEFAULT_THRESHOLD = 1
+
+  def __init__(self,
+               email,
+               threshold=DEFAULT_THRESHOLD,
+               template=DEFAULT_TEMPLATE):
+    """Constructor -- see members above."""
+    self.email = email
+    self.threshold = threshold
+    self.template = template
+    self.threshold = threshold
+
+  @property
+  def email_notify(self):
+    return {'email': self.email, 'template': self.template}
+
+  def __eq__(self, other):
+    return self.__dict__ == other.__dict__
+
+
 def DefaultSettings():
   # Enumeration of valid settings; any/all config settings must be in this.
   # All settings must be documented.
@@ -729,17 +700,16 @@ def DefaultSettings():
       # Timeout for the build as a whole (in seconds).
       build_timeout=(5 * 60 + 30) * 60,
 
+      # A list of NotificationConfig objects describing who to notify of builder
+      # failures.
+      notification_configs=[],
+
       # An integer. If this builder fails this many times consecutively, send
       # an alert email to the recipients health_alert_recipients. This does
       # not apply to tryjobs. This feature is similar to the ERROR_WATERMARK
       # feature of upload_symbols, and it may make sense to merge the features
       # at some point.
       health_threshold=0,
-
-      # If this build_config fails this many times consecutively, trigger a
-      # sanity-check build on this build_config. A sanity-check-pre-cq is a
-      # pre-cq build without patched CLs.
-      sanity_check_threshold=0,
 
       # List of email addresses to send health alerts to for this builder. It
       # supports automatic email address lookup for the following sheriff
@@ -757,17 +727,6 @@ def DefaultSettings():
       # The name of the manifest to use. E.g., to use the buildtools manifest,
       # specify 'buildtools'.
       manifest=constants.DEFAULT_MANIFEST,
-
-      # Applies only to paladin builders. If true, Sync to the manifest
-      # without applying any test patches, then do a fresh build in a new
-      # chroot. Then, apply the patches and build in the existing chroot.
-      build_before_patching=False,
-
-      # Applies only to paladin builders. If True, Sync to the master manifest
-      # without applying any of the test patches, rather than running
-      # CommitQueueSync. This is basically ToT immediately prior to the
-      # current commit queue run.
-      do_not_apply_cq_patches=False,
 
       # emerge use flags to use while setting up the board, building packages,
       # making images, etc.
@@ -837,9 +796,6 @@ def DefaultSettings():
       # Android package name.
       android_package=None,
 
-      # Android GTS package branch name, if it is necessary to uprev.
-      android_gts_build_branch=None,
-
       # Uprev Chrome, values of 'tot', 'stable_release', or None.
       chrome_rev=None,
 
@@ -847,8 +803,8 @@ def DefaultSettings():
       # TODO(mtennant): Should be something like "compile_check_only".
       compilecheck=False,
 
-      # Test CLs to verify they're ready for the commit queue.
-      pre_cq=False,
+      # If True, run DebugInfoTest stage.
+      debuginfo_test=False,
 
       # Runs the tests that the signer would run. This should only be set if
       # 'recovery' is in images.
@@ -890,11 +846,14 @@ def DefaultSettings():
       afdo_generate_min=False,
 
       # Update the Chrome ebuild with the AFDO profile info.
-      afdo_update_ebuild=False,
+      afdo_update_chrome_ebuild=False,
+
+      # Update the kernel ebuild with the AFDO profile info.
+      afdo_update_kernel_ebuild=False,
 
       # Uses AFDO data. The Chrome build will be optimized using the AFDO
-      # profile information found in the chrome ebuild file.
-      afdo_use=False,
+      # profile information found in Chrome's source tree.
+      afdo_use=True,
 
       # A list of VMTestConfig objects to run by default.
       vm_tests=[
@@ -918,6 +877,10 @@ def DefaultSettings():
       # If True, run SkylabHWTestStage instead of HWTestStage for suites that
       # use pools other than pool:cts.
       enable_skylab_hw_tests=False,
+
+      # If set, this is the URL of the bug justifying why hw_tests are disabled
+      # on a builder that should always have hw_tests.
+      hw_tests_disabled_bug='',
 
       # If True, run SkylabHWTestStage instead of HWTestStage for suites that
       # use pool:cts.
@@ -1905,8 +1868,8 @@ def GetNonUniBuildLabBoardName(board):
   # and should run on DUT without those string.
   # We strip those string from the board so that lab can handle it correctly.
   SPECIAL_SUFFIX = [
-      '-arcnext$', '-arcvm$', '-kernelnext$', '-kvm$', '-ndktranslation$',
-      '-cfm$', '-campfire$'
+      '-arcnext$', '-arcvm$', '-arc-r$', '-blueznext$', '-kernelnext$', '-kvm$',
+      '-ndktranslation$', '-cfm$', '-campfire$'
   ]
   # ARM64 userspace boards use 64 suffix but can't put that in list above
   # because of collisions with boards like kevin-arc64.
@@ -1980,11 +1943,11 @@ def LoadConfigFromString(json_string):
   # Use standard defaults, but allow the config to override.
   defaults = DefaultSettings()
   defaults.update(config_dict.pop(DEFAULT_BUILD_CONFIG))
-  _DeserializeTestConfigs(defaults)
+  _DeserializeConfigs(defaults)
 
   templates = config_dict.pop('_templates', {})
   for t in templates.values():
-    _DeserializeTestConfigs(t)
+    _DeserializeConfigs(t)
 
   defaultBuildConfig = BuildConfig(**defaults)
 
@@ -2000,56 +1963,58 @@ def LoadConfigFromString(json_string):
   return result
 
 
-def _DeserializeTestConfig(build_dict,
-                           config_key,
-                           test_class,
-                           preserve_none=False):
-  """Deserialize test config of given type inside build_dict.
+def _DeserializeConfig(build_dict,
+                       config_key,
+                       config_class,
+                       preserve_none=False):
+  """Deserialize config of given type inside build_dict.
 
   Args:
     build_dict: The build_dict to update (in place)
     config_key: Key for the config inside build_dict.
-    test_class: The class to instantiate for the config.
+    config_class: The class to instantiate for the config.
     preserve_none: If True, None values are preserved as is. By default, they
         are dropped.
   """
-  serialized_test_configs = build_dict.pop(config_key, None)
-  if serialized_test_configs is None:
+  serialized_configs = build_dict.pop(config_key, None)
+  if serialized_configs is None:
     if preserve_none:
       build_dict[config_key] = None
     return
 
-  test_configs = []
-  for test_config_string in serialized_test_configs:
-    if isinstance(test_config_string, test_class):
-      test_config = test_config_string
+  deserialized_configs = []
+  for config_string in serialized_configs:
+    if isinstance(config_string, config_class):
+      deserialized_config = config_string
     else:
       # Each test config is dumped as a json string embedded in json.
-      embedded_configs = json.loads(test_config_string)
-      test_config = test_class(**embedded_configs)
-    test_configs.append(test_config)
-  build_dict[config_key] = test_configs
+      embedded_configs = json.loads(config_string)
+      deserialized_config = config_class(**embedded_configs)
+    deserialized_configs.append(deserialized_config)
+  build_dict[config_key] = deserialized_configs
 
 
-def _DeserializeTestConfigs(build_dict):
+def _DeserializeConfigs(build_dict):
   """Updates a config dictionary with recreated objects.
 
-  Various test configs are serialized as strings (rather than JSON objects), so
-  we need to turn them into real objects before they can be consumed.
+  Notification configs and various test configs are serialized as strings
+  (rather than JSON objects), so we need to turn them into real objects before
+  they can be consumed.
 
   Args:
     build_dict: The config dictionary to update (in place).
   """
-  _DeserializeTestConfig(build_dict, 'vm_tests', VMTestConfig)
-  _DeserializeTestConfig(
+  _DeserializeConfig(build_dict, 'vm_tests', VMTestConfig)
+  _DeserializeConfig(
       build_dict, 'vm_tests_override', VMTestConfig, preserve_none=True)
-  _DeserializeTestConfig(build_dict, 'models', ModelTestConfig)
-  _DeserializeTestConfig(build_dict, 'hw_tests', HWTestConfig)
-  _DeserializeTestConfig(
+  _DeserializeConfig(build_dict, 'models', ModelTestConfig)
+  _DeserializeConfig(build_dict, 'hw_tests', HWTestConfig)
+  _DeserializeConfig(
       build_dict, 'hw_tests_override', HWTestConfig, preserve_none=True)
-  _DeserializeTestConfig(build_dict, 'gce_tests', GCETestConfig)
-  _DeserializeTestConfig(build_dict, 'tast_vm_tests', TastVMTestConfig)
-  _DeserializeTestConfig(build_dict, 'moblab_vm_tests', MoblabVMTestConfig)
+  _DeserializeConfig(build_dict, 'gce_tests', GCETestConfig)
+  _DeserializeConfig(build_dict, 'tast_vm_tests', TastVMTestConfig)
+  _DeserializeConfig(build_dict, 'moblab_vm_tests', MoblabVMTestConfig)
+  _DeserializeConfig(build_dict, 'notification_configs', NotificationConfig)
 
 
 def _CreateBuildConfig(name, default, build_dict, templates):
@@ -2067,7 +2032,7 @@ def _CreateBuildConfig(name, default, build_dict, templates):
     result.update(templates[template])
   result.update(build_dict)
 
-  _DeserializeTestConfigs(result)
+  _DeserializeConfigs(result)
 
   if child_configs is not None:
     result['child_configs'] = [

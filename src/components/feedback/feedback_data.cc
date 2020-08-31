@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "components/feedback/feedback_util.h"
 #include "components/feedback/proto/extension.pb.h"
@@ -59,19 +60,17 @@ void FeedbackData::CompressSystemInfo() {
   if (trace_id_ != 0) {
     TracingManager* manager = TracingManager::Get();
     ++pending_op_count_;
-    if (!manager ||
-        !manager->GetTraceData(
-            trace_id_,
-            base::Bind(&FeedbackData::OnGetTraceData, this, trace_id_))) {
+    if (!manager || !manager->GetTraceData(
+                        trace_id_, base::BindOnce(&FeedbackData::OnGetTraceData,
+                                                  this, trace_id_))) {
       pending_op_count_--;
       trace_id_ = 0;
     }
   }
 
   ++pending_op_count_;
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&FeedbackData::CompressLogs, this),
       base::BindOnce(&FeedbackData::OnCompressComplete, this));
 }
@@ -80,9 +79,8 @@ void FeedbackData::SetAndCompressHistograms(std::string histograms) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ++pending_op_count_;
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&FeedbackData::CompressFile, this,
                      base::FilePath(kHistogramsFilename),
                      kHistogramsAttachmentName, std::move(histograms)),
@@ -97,9 +95,8 @@ void FeedbackData::AttachAndCompressFileData(std::string attached_filedata) {
   ++pending_op_count_;
   base::FilePath attached_file =
                   base::FilePath::FromUTF8Unsafe(attached_filename_);
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&FeedbackData::CompressFile, this, attached_file,
                      std::string(), std::move(attached_filedata)),
       base::BindOnce(&FeedbackData::OnCompressComplete, this));

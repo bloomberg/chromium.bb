@@ -22,7 +22,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/paint_context.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/view.h"
@@ -76,8 +76,7 @@ float GetDragWindowOpacity(aura::Window* root_window,
 // bounds and opacity based on the current bounds.
 class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
  public:
-  DragWindowDetails(const display::Display& display,
-                    aura::Window* original_window)
+  explicit DragWindowDetails(const display::Display& display)
       : root_window_(Shell::GetRootWindowForDisplayId(display.id())) {}
 
   ~DragWindowDetails() override {
@@ -85,7 +84,9 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
     DCHECK(!drag_window_);
   }
 
-  void Update(aura::Window* original_window, bool is_touch_dragging) {
+  void Update(aura::Window* original_window,
+              bool is_touch_dragging,
+              const base::Optional<gfx::Rect>& shadow_bounds) {
     const float opacity =
         GetDragWindowOpacity(root_window_, original_window, is_touch_dragging);
     if (opacity == 0.f) {
@@ -94,10 +95,11 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
       // when it becomes necessary again.
       DCHECK(!drag_window_);
       layer_owner_.reset();
+      shadow_.reset();
       return;
     }
     if (!drag_window_)
-      CreateDragWindow(original_window);
+      CreateDragWindow(original_window, shadow_bounds);
 
     gfx::Rect bounds = original_window->bounds();
     aura::Window::ConvertRectToTarget(original_window->parent(),
@@ -110,9 +112,9 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
  private:
   friend class DragWindowController;
 
-  void CreateDragWindow(aura::Window* original_window) {
+  void CreateDragWindow(aura::Window* original_window,
+                        const base::Optional<gfx::Rect>& shadow_bounds) {
     DCHECK(!drag_window_);
-    original_window_ = original_window;
     drag_window_ = window_factory::NewWindow(this).release();
     int parent_id = original_window->parent()->id();
     aura::Window* container = root_window_->GetChildById(parent_id);
@@ -127,21 +129,23 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
     drag_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
     container->AddChild(drag_window_);
     drag_window_->SetBounds(bounds);
-    ::wm::SetShadowElevation(drag_window_, ::wm::kShadowElevationActiveWindow);
+
+    if (shadow_bounds) {
+      shadow_ = std::make_unique<ui::Shadow>();
+      shadow_->Init(::wm::kShadowElevationActiveWindow);
+      shadow_->SetContentBounds(*shadow_bounds);
+      drag_window_->layer()->Add(shadow_->layer());
+    } else {
+      ::wm::SetShadowElevation(drag_window_,
+                               ::wm::kShadowElevationActiveWindow);
+    }
 
     RecreateWindowLayers(original_window);
-    layer_owner_->root()->SetVisible(true);
     drag_window_->layer()->Add(layer_owner_->root());
     drag_window_->layer()->StackAtTop(layer_owner_->root());
 
     // Show the widget after all the setups.
     drag_window_->Show();
-
-    // Fade the window in.
-    ui::Layer* drag_layer = drag_window_->layer();
-    drag_layer->SetOpacity(0);
-    ui::ScopedLayerAnimationSettings scoped_setter(drag_layer->GetAnimator());
-    drag_layer->SetOpacity(1);
   }
 
   void RecreateWindowLayers(aura::Window* original_window) {
@@ -152,13 +156,10 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
     layer_bounds.set_origin(gfx::Point(0, 0));
     layer_owner_->root()->SetBounds(layer_bounds);
     layer_owner_->root()->SetTransform(gfx::Transform());
-    layer_owner_->root()->SetVisible(false);
   }
 
   void SetOpacity(float opacity) {
-    ui::Layer* layer = drag_window_->layer();
-    ui::ScopedLayerAnimationSettings scoped_setter(layer->GetAnimator());
-    layer->SetOpacity(opacity);
+    drag_window_->layer()->SetOpacity(opacity);
     layer_owner_->root()->SetOpacity(1.0f);
   }
 
@@ -196,18 +197,21 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
 
   aura::Window* drag_window_ = nullptr;  // Owned by the container.
 
-  aura::Window* original_window_ = nullptr;
-
   // The copy of window_->layer() and its descendants.
   std::unique_ptr<ui::LayerTreeOwner> layer_owner_;
+
+  std::unique_ptr<ui::Shadow> shadow_;
 
   DISALLOW_COPY_AND_ASSIGN(DragWindowDetails);
 };
 
-DragWindowController::DragWindowController(aura::Window* window,
-                                           bool is_touch_dragging)
+DragWindowController::DragWindowController(
+    aura::Window* window,
+    bool is_touch_dragging,
+    const base::Optional<gfx::Rect>& shadow_bounds)
     : window_(window),
       is_touch_dragging_(is_touch_dragging),
+      shadow_bounds_(shadow_bounds),
       old_opacity_(window->layer()->opacity()) {
   DCHECK(drag_windows_.empty());
   display::Screen* screen = display::Screen::GetScreen();
@@ -218,8 +222,7 @@ DragWindowController::DragWindowController(aura::Window* window,
   for (const display::Display& display : screen->GetAllDisplays()) {
     if (current.id() == display.id())
       continue;
-    drag_windows_.push_back(
-        std::make_unique<DragWindowDetails>(display, window_));
+    drag_windows_.push_back(std::make_unique<DragWindowDetails>(display));
   }
 }
 
@@ -236,7 +239,7 @@ void DragWindowController::Update() {
   }
 
   for (std::unique_ptr<DragWindowDetails>& details : drag_windows_)
-    details->Update(window_, is_touch_dragging_);
+    details->Update(window_, is_touch_dragging_, shadow_bounds_);
 }
 
 int DragWindowController::GetDragWindowsCountForTest() const {
@@ -266,6 +269,18 @@ const ui::LayerTreeOwner* DragWindowController::GetDragLayerOwnerForTest(
     if (details->layer_owner_) {
       if (index == 0)
         return details->layer_owner_.get();
+      index--;
+    }
+  }
+  return nullptr;
+}
+
+const ui::Shadow* DragWindowController::GetDragWindowShadowForTest(
+    size_t index) const {
+  for (const std::unique_ptr<DragWindowDetails>& details : drag_windows_) {
+    if (details->drag_window_) {
+      if (index == 0)
+        return details->shadow_.get();
       index--;
     }
   }

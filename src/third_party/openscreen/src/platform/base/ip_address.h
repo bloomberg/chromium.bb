@@ -22,37 +22,35 @@ class IPAddress {
     kV6,
   };
 
+  static const IPAddress kV4LoopbackAddress;
+  static const IPAddress kV6LoopbackAddress;
+
   static constexpr size_t kV4Size = 4;
   static constexpr size_t kV6Size = 16;
 
-  // Parses a text representation of an IPv4 address (e.g. "192.168.0.1") or an
-  // IPv6 address (e.g. "abcd::1234") and puts the result into |address|.
-  static ErrorOr<IPAddress> Parse(const std::string& s);
-
   IPAddress();
+
+  // |bytes| contains 4 octets for IPv4, or 8 hextets (16 bytes of big-endian
+  // shorts) for IPv6.
+  IPAddress(Version version, const uint8_t* bytes);
+
+  // IPv4 constructors (IPAddress from 4 octets).
   explicit IPAddress(const std::array<uint8_t, 4>& bytes);
   explicit IPAddress(const uint8_t (&b)[4]);
-  explicit IPAddress(Version version, const uint8_t* b);
   IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4);
 
-  explicit IPAddress(const std::array<uint8_t, 16>& bytes);
-  explicit IPAddress(const uint8_t (&b)[16]);
-  IPAddress(uint8_t b1,
-            uint8_t b2,
-            uint8_t b3,
-            uint8_t b4,
-            uint8_t b5,
-            uint8_t b6,
-            uint8_t b7,
-            uint8_t b8,
-            uint8_t b9,
-            uint8_t b10,
-            uint8_t b11,
-            uint8_t b12,
-            uint8_t b13,
-            uint8_t b14,
-            uint8_t b15,
-            uint8_t b16);
+  // IPv6 constructors (IPAddress from 8 hextets).
+  explicit IPAddress(const std::array<uint16_t, 8>& hextets);
+  explicit IPAddress(const uint16_t (&hextets)[8]);
+  IPAddress(uint16_t h1,
+            uint16_t h2,
+            uint16_t h3,
+            uint16_t h4,
+            uint16_t h5,
+            uint16_t h6,
+            uint16_t h7,
+            uint16_t h8);
+
   IPAddress(const IPAddress& o) noexcept;
   IPAddress(IPAddress&& o) noexcept;
   ~IPAddress() = default;
@@ -62,6 +60,11 @@ class IPAddress {
 
   bool operator==(const IPAddress& o) const;
   bool operator!=(const IPAddress& o) const;
+
+  bool operator<(const IPAddress& other) const;
+  bool operator>(const IPAddress& other) const { return other < *this; }
+  bool operator<=(const IPAddress& other) const { return !(other < *this); }
+  bool operator>=(const IPAddress& other) const { return !(*this < other); }
   explicit operator bool() const;
 
   Version version() const { return version_; }
@@ -78,12 +81,11 @@ class IPAddress {
   // in order to avoid making multiple copies.
   const uint8_t* bytes() const { return bytes_.data(); }
 
+  // Parses a text representation of an IPv4 address (e.g. "192.168.0.1") or an
+  // IPv6 address (e.g. "abcd::1234").
+  static ErrorOr<IPAddress> Parse(const std::string& s);
+
  private:
-  static ErrorOr<IPAddress> ParseV4(const std::string& s);
-  static ErrorOr<IPAddress> ParseV6(const std::string& s);
-
-  friend class IPEndpointComparator;
-
   Version version_;
   std::array<uint8_t, 16> bytes_;
 };
@@ -91,16 +93,30 @@ class IPAddress {
 struct IPEndpoint {
  public:
   IPAddress address;
-  uint16_t port;
+  uint16_t port = 0;
+
+  explicit operator bool() const;
+
+  // Parses a text representation of an IPv4/IPv6 address and port (e.g.
+  // "192.168.0.1:8080" or "[abcd::1234]:8080").
+  static ErrorOr<IPEndpoint> Parse(const std::string& s);
+
+  std::string ToString() const;
 };
 
 bool operator==(const IPEndpoint& a, const IPEndpoint& b);
 bool operator!=(const IPEndpoint& a, const IPEndpoint& b);
 
-class IPEndpointComparator {
- public:
-  bool operator()(const IPEndpoint& a, const IPEndpoint& b) const;
-};
+bool operator<(const IPEndpoint& a, const IPEndpoint& b);
+inline bool operator>(const IPEndpoint& a, const IPEndpoint& b) {
+  return b < a;
+}
+inline bool operator<=(const IPEndpoint& a, const IPEndpoint& b) {
+  return !(b > a);
+}
+inline bool operator>=(const IPEndpoint& a, const IPEndpoint& b) {
+  return !(a > b);
+}
 
 // Outputs a string of the form:
 //      123.234.34.56

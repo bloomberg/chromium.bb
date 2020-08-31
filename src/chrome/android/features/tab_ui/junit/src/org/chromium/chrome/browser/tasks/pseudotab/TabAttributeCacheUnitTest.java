@@ -25,8 +25,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.TabImpl;
@@ -52,6 +50,7 @@ import java.util.List;
 /**
  * Unit tests for {@link TabAttributeCache}.
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabAttributeCacheUnitTest {
@@ -84,8 +83,6 @@ public class TabAttributeCacheUnitTest {
 
     @Before
     public void setUp() {
-        RecordUserAction.setDisabledForTests(true);
-        RecordHistogram.setDisabledForTests(true);
 
         MockitoAnnotations.initMocks(this);
 
@@ -118,8 +115,6 @@ public class TabAttributeCacheUnitTest {
 
     @After
     public void tearDown() {
-        RecordUserAction.setDisabledForTests(false);
-        RecordHistogram.setDisabledForTests(false);
         mCache.destroy();
         TabAttributeCache.setLastSearchTermMockForTesting(null);
         TabAttributeCache.clearAllForTesting();
@@ -128,7 +123,7 @@ public class TabAttributeCacheUnitTest {
     @Test
     public void updateUrl() {
         String url = "url 1";
-        doReturn(url).when(mTab1).getUrl();
+        doReturn(url).when(mTab1).getUrlString();
 
         Assert.assertNotEquals(url, TabAttributeCache.getUrl(TAB1_ID));
 
@@ -143,7 +138,7 @@ public class TabAttributeCacheUnitTest {
     @Test
     public void updateUrl_incognito() {
         String url = "url 1";
-        doReturn(url).when(mTab1).getUrl();
+        doReturn(url).when(mTab1).getUrlString();
         doReturn(true).when(mTab1).isIncognito();
 
         mTabObserverCaptor.getValue().onUrlUpdated(mTab1);
@@ -278,7 +273,7 @@ public class TabAttributeCacheUnitTest {
         NavigationEntry navigationEntry0 = mock(NavigationEntry.class);
         doReturn(navigationEntry1).when(navigationHistory).getEntryAtIndex(1);
         doReturn(navigationEntry0).when(navigationHistory).getEntryAtIndex(0);
-        doReturn(otherUrl).when(mTab1).getUrl();
+        doReturn(otherUrl).when(mTab1).getUrlString();
 
         // No searches.
         doReturn(otherUrl).when(navigationEntry1).getOriginalUrl();
@@ -306,11 +301,11 @@ public class TabAttributeCacheUnitTest {
 
         // Skip if the SRP is showing.
         doReturn(2).when(navigationHistory).getCurrentEntryIndex();
-        doReturn(searchUrl).when(mTab1).getUrl();
+        doReturn(searchUrl).when(mTab1).getUrlString();
         Assert.assertNull(TabAttributeCache.findLastSearchTerm(mTab1));
 
         // Reset current SRP.
-        doReturn(otherUrl).when(mTab1).getUrl();
+        doReturn(otherUrl).when(mTab1).getUrlString();
         Assert.assertEquals(searchTerm, TabAttributeCache.findLastSearchTerm(mTab1));
 
         verify(navigationHistory, never()).getEntryAtIndex(eq(2));
@@ -332,14 +327,14 @@ public class TabAttributeCacheUnitTest {
     @Test
     public void onTabStateInitialized() {
         String url1 = "url 1";
-        doReturn(url1).when(mTab1).getUrl();
+        doReturn(url1).when(mTab1).getUrlString();
         String title1 = "title 1";
         doReturn(title1).when(mTab1).getTitle();
         int rootId1 = 1337;
         doReturn(rootId1).when(mTab1).getRootId();
 
         String url2 = "url 2";
-        doReturn(url2).when(mTab2).getUrl();
+        doReturn(url2).when(mTab2).getUrlString();
         String title2 = "title 2";
         doReturn(title2).when(mTab2).getTitle();
         int rootId2 = 42;

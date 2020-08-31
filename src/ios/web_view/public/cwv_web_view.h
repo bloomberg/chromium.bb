@@ -12,6 +12,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class CWVAutofillController;
+@class CWVBackForwardList;
+@class CWVBackForwardListItem;
 @class CWVScriptCommand;
 @class CWVScrollView;
 @class CWVTranslationController;
@@ -79,7 +82,8 @@ CWV_EXPORT
 // @"https://example.com". Precisely speaking:
 //
 // - Internationalized domain names (IDN) are presented in Unicode if they're
-//   regarded safe. See
+//   regarded safe. Domain names with RTL characters will still be in
+//   ACE/punycode for now (crbug.com/650760). See
 //   https://dev.chromium.org/developers/design-documents/idn-in-google-chrome
 //   for details.
 // - Omits the path for standard schemes, excepting file and filesystem.
@@ -107,11 +111,34 @@ CWV_EXPORT
 @property(nonatomic, readonly) double estimatedProgress;
 
 // The scroll view associated with the web view.
-@property(nonatomic, readonly) CWVScrollView* scrollView;
+//
+// It is reset on state restoration.
+@property(nonatomic, readonly) UIScrollView* scrollView;
+
+// DEPRECATED: Use |scrollView| instead.
+//
+// The old implementation of the scroll view associated with the web view.
+//
+// TODO(crbug.com/1023250): Delete this once clients migrate to the new
+// |scrollView|.
+@property(nonatomic, readonly) CWVScrollView* legacyScrollView;
 
 // A Boolean value indicating whether horizontal swipe gestures will trigger
 // back-forward list navigations.
 @property(nonatomic) BOOL allowsBackForwardNavigationGestures;
+
+// The web view's autofill controller.
+@property(nonatomic, readonly) CWVAutofillController* autofillController;
+
+// An equivalent of
+// https://developer.apple.com/documentation/webkit/wkwebview/1414977-backforwardlist
+@property(nonatomic, readonly, nonnull) CWVBackForwardList* backForwardList;
+
+// Enables Chrome's custom logic to handle long press and force touch. Defaults
+// to YES. To use the system context menu this must be set to NO.
+// This class property setting should only be changed BEFORE any
+// CWVWebViewConfiguration instance is initialized.
+@property(nonatomic, class) BOOL chromeLongPressAndForceTouchHandlingEnabled;
 
 // The User Agent product string used to build the full User Agent.
 + (NSString*)userAgentProduct;
@@ -163,6 +190,11 @@ CWV_EXPORT
 // corresponding |canGoBack| or |canGoForward| method returns NO.
 - (void)goBack;
 - (void)goForward;
+
+// Navigates to the specified |item| in the |self.backForwardList| and returns
+// YES. Does nothing and returns NO when |item| is the current item, or it
+// belongs to an expired list, or the list does not contain |item|.
+- (BOOL)goToBackForwardListItem:(CWVBackForwardListItem*)item;
 
 // Reloads the current page.
 - (void)reload;

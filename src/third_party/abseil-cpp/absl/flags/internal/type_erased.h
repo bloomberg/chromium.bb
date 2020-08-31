@@ -18,30 +18,22 @@
 
 #include <string>
 
+#include "absl/base/config.h"
 #include "absl/flags/internal/commandlineflag.h"
 #include "absl/flags/internal/registry.h"
+#include "absl/strings/string_view.h"
 
 // --------------------------------------------------------------------
 // Registry interfaces operating on type erased handles.
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace flags_internal {
 
 // If a flag named "name" exists, store its current value in *OUTPUT
 // and return true.  Else return false without changing *OUTPUT.
 // Thread-safe.
 bool GetCommandLineOption(absl::string_view name, std::string* value);
-
-// If a flag named "name" exists, store its information in *OUTPUT
-// and return true.  Else return false without changing *OUTPUT.
-// Thread-safe.
-bool GetCommandLineFlagInfo(absl::string_view name,
-                            CommandLineFlagInfo* OUTPUT);
-
-// Returns the CommandLineFlagInfo of the flagname.  exit() with an
-// error code if name not found.
-// Thread-safe.
-CommandLineFlagInfo GetCommandLineFlagInfoOrDie(absl::string_view name);
 
 // Set the value of the flag named "name" to value.  If successful,
 // returns true.  If not successful (e.g., the flag was not found or
@@ -63,17 +55,6 @@ bool IsValidFlagValue(absl::string_view name, absl::string_view value);
 
 //-----------------------------------------------------------------------------
 
-// Returns true iff a flag named "name" was specified on the command line
-// (either directly, or via one of --flagfile or --fromenv or --tryfromenv).
-//
-// Any non-command-line modification of the flag does not affect the
-// result of this function.  So for example, if a flag was passed on
-// the command line but then reset via SET_FLAGS_DEFAULT, this
-// function will still return true.
-bool SpecifiedOnCommandLine(absl::string_view name);
-
-//-----------------------------------------------------------------------------
-
 // If a flag with specified "name" exists and has type T, store
 // its current value in *dst and return true.  Else return false
 // without touching *dst.  T must obey all of the requirements for
@@ -83,7 +64,7 @@ inline bool GetByName(absl::string_view name, T* dst) {
   CommandLineFlag* flag = flags_internal::FindCommandLineFlag(name);
   if (!flag) return false;
 
-  if (auto val = flag->Get<T>()) {
+  if (auto val = flag->TryGet<T>()) {
     *dst = *val;
     return true;
   }
@@ -92,6 +73,7 @@ inline bool GetByName(absl::string_view name, T* dst) {
 }
 
 }  // namespace flags_internal
+ABSL_NAMESPACE_END
 }  // namespace absl
 
 #endif  // ABSL_FLAGS_INTERNAL_TYPE_ERASED_H_

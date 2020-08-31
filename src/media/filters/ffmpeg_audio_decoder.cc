@@ -78,13 +78,24 @@ void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
   InitCB bound_init_cb = BindToCurrentLoop(std::move(init_cb));
 
   if (config.is_encrypted()) {
-    std::move(bound_init_cb).Run(false);
+    std::move(bound_init_cb)
+        .Run(Status(StatusCode::kEncryptedContentUnsupported,
+                    "FFmpegAudioDecoder does not support encrypted content"));
+    return;
+  }
+
+  // TODO(dalecurtis): Remove this if ffmpeg ever gets xHE-AAC support.
+  if (config.profile() == AudioCodecProfile::kXHE_AAC) {
+    std::move(bound_init_cb)
+        .Run(Status(StatusCode::kDecoderUnsupportedProfile)
+                 .WithData("decoder", "FFmpegAudioDecoder")
+                 .WithData("profile", config.profile()));
     return;
   }
 
   if (!ConfigureDecoder(config)) {
     av_sample_format_ = 0;
-    std::move(bound_init_cb).Run(false);
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedInitialization);
     return;
   }
 
@@ -92,7 +103,7 @@ void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
   config_ = config;
   output_cb_ = BindToCurrentLoop(output_cb);
   state_ = kNormal;
-  std::move(bound_init_cb).Run(true);
+  std::move(bound_init_cb).Run(OkStatus());
 }
 
 void FFmpegAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -369,6 +380,11 @@ int FFmpegAudioDecoder::GetAudioBuffer(struct AVCodecContext* s,
   AVSampleFormat format = static_cast<AVSampleFormat>(frame->format);
   SampleFormat sample_format =
       AVSampleFormatToSampleFormat(format, s->codec_id);
+  if (sample_format == kUnknownSampleFormat) {
+    DLOG(ERROR) << "Unknown sample format: " << format;
+    return AVERROR(EINVAL);
+  }
+
   int channels = DetermineChannels(frame);
   if (channels <= 0 || channels >= limits::kMaxChannels) {
     DLOG(ERROR) << "Requested number of channels (" << channels

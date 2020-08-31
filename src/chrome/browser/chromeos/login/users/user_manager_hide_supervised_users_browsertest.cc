@@ -16,6 +16,7 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_manager_base.h"
+#include "content/public/test/browser_test.h"
 
 namespace chromeos {
 
@@ -38,8 +39,7 @@ struct {
 
 class UserManagerHideSupervisedUsersBrowserTest : public LoginManagerTest {
  public:
-  UserManagerHideSupervisedUsersBrowserTest()
-      : LoginManagerTest(false, false) {}
+  UserManagerHideSupervisedUsersBrowserTest() = default;
 
   ~UserManagerHideSupervisedUsersBrowserTest() override = default;
 

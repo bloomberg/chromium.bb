@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
@@ -93,6 +94,110 @@ std::unique_ptr<protocol::DOMSnapshot::RareBooleanData> BooleanData() {
       .build();
 }
 
+String GetOriginUrlFast(int max_stack_depth) {
+  static const v8::StackTrace::StackTraceOptions stackTraceOptions =
+      static_cast<v8::StackTrace::StackTraceOptions>(v8::StackTrace::kDetailed);
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  DCHECK(isolate);
+
+  v8::Local<v8::StackTrace> v8StackTrace = v8::StackTrace::CurrentStackTrace(
+      isolate, max_stack_depth, stackTraceOptions);
+  if (v8StackTrace.IsEmpty())
+    return String();
+  for (int i = 0, frame_count = v8StackTrace->GetFrameCount(); i < frame_count;
+       ++i) {
+    v8::Local<v8::StackFrame> frame = v8StackTrace->GetFrame(isolate, i);
+    if (frame.IsEmpty())
+      continue;
+    v8::Local<v8::String> script_name = frame->GetScriptNameOrSourceURL();
+    if (script_name.IsEmpty() || !script_name->Length())
+      continue;
+    return ToCoreString(script_name);
+  }
+  return String();
+}
+
+String GetOriginUrl(const Node* node) {
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  ThreadDebugger* debugger = ThreadDebugger::From(isolate);
+  if (!isolate || !isolate->InContext() || !debugger)
+    return String();
+  v8::HandleScope handleScope(isolate);
+  // Try not getting the entire stack first.
+  String url = GetOriginUrlFast(/* maxStackSize=*/5);
+  if (!url.IsEmpty())
+    return url;
+  url = GetOriginUrlFast(/* maxStackSize=*/200);
+  if (!url.IsEmpty())
+    return url;
+  // If we did not get anything from the sync stack, let's try the slow
+  // way that also checks async stacks.
+  auto trace = debugger->GetV8Inspector()->captureStackTrace(true);
+  if (trace)
+    url = ToCoreString(trace->firstNonEmptySourceURL());
+  if (!url.IsEmpty())
+    return url;
+  // Fall back to document url.
+  return node->GetDocument().Url().GetString();
+}
+
+class DOMTreeIterator {
+  STACK_ALLOCATED();
+
+ public:
+  DOMTreeIterator(Node* root, int root_node_id)
+      : current_(root), path_to_current_node_({root_node_id}) {
+    DCHECK(current_);
+  }
+
+  void Advance(int next_node_id) {
+    DCHECK(current_);
+    const bool skip_shadow_root =
+        current_->GetShadowRoot() && current_->GetShadowRoot()->IsUserAgent();
+    if (Node* first_child = skip_shadow_root
+                                ? FirstFlatTreeSibling(current_->firstChild())
+                                : FlatTreeTraversal::FirstChild(*current_)) {
+      current_ = first_child;
+      path_to_current_node_.push_back(next_node_id);
+      return;
+    }
+    // No children, let's try siblings, then ancestor siblings.
+    while (current_) {
+      const bool in_ua_shadow_tree =
+          current_->ParentElementShadowRoot() &&
+          current_->ParentElementShadowRoot()->IsUserAgent();
+      if (Node* node = in_ua_shadow_tree
+                           ? FirstFlatTreeSibling(current_->nextSibling())
+                           : FlatTreeTraversal::NextSibling(*current_)) {
+        path_to_current_node_.back() = next_node_id;
+        current_ = node;
+        return;
+      }
+      current_ = in_ua_shadow_tree ? current_->parentNode()
+                                   : FlatTreeTraversal::Parent(*current_);
+      path_to_current_node_.pop_back();
+    }
+    DCHECK(path_to_current_node_.IsEmpty());
+  }
+
+  Node* CurrentNode() const { return current_; }
+
+  int ParentNodeId() const {
+    return path_to_current_node_.size() > 1
+               ? *(path_to_current_node_.rbegin() + 1)
+               : -1;
+  }
+
+ private:
+  static Node* FirstFlatTreeSibling(Node* node) {
+    while (node && !node->CanParticipateInFlatTree())
+      node = node->nextSibling();
+    return node;
+  }
+  Node* current_;
+  WTF::Vector<int> path_to_current_node_;
+};
+
 }  // namespace
 
 // Returns |layout_object|'s bounding box in document coordinates.
@@ -104,7 +209,7 @@ PhysicalRect InspectorDOMSnapshotAgent::RectInDocument(
   LocalFrameView* local_frame_view = layout_object->GetFrameView();
   // Don't do frame to document coordinate transformation for layout view,
   // whose bounding box is not affected by scroll offset.
-  if (local_frame_view && !layout_object->IsLayoutView())
+  if (local_frame_view && !IsA<LayoutView>(layout_object))
     return local_frame_view->FrameToDocument(rect_in_absolute);
   return rect_in_absolute;
 }
@@ -132,42 +237,15 @@ InspectorDOMSnapshotAgent::InspectorDOMSnapshotAgent(
 
 InspectorDOMSnapshotAgent::~InspectorDOMSnapshotAgent() = default;
 
-void InspectorDOMSnapshotAgent::GetOriginUrl(String* origin_url_ptr,
-                                             const Node* node) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  ThreadDebugger* debugger = ThreadDebugger::From(isolate);
-  if (!isolate || !isolate->InContext() || !debugger) {
-    origin_url_ptr = nullptr;
-    return;
-  }
-  // First try searching in one frame, since grabbing full trace is
-  // expensive.
-  auto trace = debugger->GetV8Inspector()->captureStackTrace(false);
-  if (!trace) {
-    origin_url_ptr = nullptr;
-    return;
-  }
-  if (!trace->firstNonEmptySourceURL().length())
-    trace = debugger->GetV8Inspector()->captureStackTrace(true);
-  String origin_url = ToCoreString(trace->firstNonEmptySourceURL());
-  if (origin_url.IsEmpty()) {
-    // Fall back to document url.
-    origin_url = node->GetDocument().Url().GetString();
-  }
-  *origin_url_ptr = origin_url;
-}
-
 void InspectorDOMSnapshotAgent::CharacterDataModified(
     CharacterData* character_data) {
-  String origin_url;
-  GetOriginUrl(&origin_url, character_data);
+  String origin_url = GetOriginUrl(character_data);
   if (origin_url)
     origin_url_map_->insert(DOMNodeIds::IdForNode(character_data), origin_url);
 }
 
 void InspectorDOMSnapshotAgent::DidInsertDOMNode(Node* node) {
-  String origin_url;
-  GetOriginUrl(&origin_url, node);
+  String origin_url = GetOriginUrl(node);
   if (origin_url)
     origin_url_map_->insert(DOMNodeIds::IdForNode(node), origin_url);
 }
@@ -186,16 +264,16 @@ void InspectorDOMSnapshotAgent::Restore() {
 Response InspectorDOMSnapshotAgent::enable() {
   if (!enabled_.Get())
     EnableAndReset();
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMSnapshotAgent::disable() {
   if (!enabled_.Get())
-    return Response::Error("DOM snapshot agent hasn't been enabled.");
+    return Response::ServerError("DOM snapshot agent hasn't been enabled.");
   enabled_.Clear();
   origin_url_map_.reset();
   instrumenting_agents_->RemoveInspectorDOMSnapshotAgent(this);
-  return Response::OK();
+  return Response::Success();
 }
 
 Response InspectorDOMSnapshotAgent::getSnapshot(
@@ -210,7 +288,7 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
         computed_styles) {
   Document* document = inspected_frames_->Root()->GetDocument();
   if (!document)
-    return Response::Error("Document is not available");
+    return Response::ServerError("Document is not available");
   LegacyDOMSnapshotAgent legacySupport(dom_debugger_agent_,
                                        origin_url_map_.get());
   return legacySupport.GetSnapshot(
@@ -226,9 +304,13 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
     std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>*
         documents,
     std::unique_ptr<protocol::Array<String>>* strings) {
-  Document* main_document = inspected_frames_->Root()->GetDocument();
-  if (!main_document)
-    return Response::Error("Document is not available");
+  // This function may kick the layout, but external clients may call this
+  // function outside of the layout phase.
+  FontCachePurgePreventer fontCachePurgePreventer;
+
+  auto* main_window = inspected_frames_->Root()->DomWindow();
+  if (!main_window)
+    return Response::ServerError("Document is not available");
 
   strings_ = std::make_unique<protocol::Array<String>>();
   documents_ = std::make_unique<
@@ -237,7 +319,7 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
   css_property_filter_ = std::make_unique<CSSPropertyFilter>();
   // Look up the CSSPropertyIDs for each entry in |computed_styles|.
   for (String& entry : *computed_styles) {
-    CSSPropertyID property_id = cssPropertyID(entry);
+    CSSPropertyID property_id = cssPropertyID(main_window, entry);
     if (property_id == CSSPropertyID::kInvalid)
       continue;
     css_property_filter_->emplace_back(std::move(entry),
@@ -246,7 +328,7 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
 
   if (include_paint_order.fromMaybe(false)) {
     paint_order_map_ =
-        InspectorDOMSnapshotAgent::BuildPaintLayerTree(main_document);
+        InspectorDOMSnapshotAgent::BuildPaintLayerTree(main_window->document());
   }
 
   include_snapshot_dom_rects_ = include_dom_rects.fromMaybe(false);
@@ -268,7 +350,7 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
   string_table_.clear();
   document_order_map_.clear();
   documents_.reset();
-  return Response::OK();
+  return Response::Success();
 }
 
 int InspectorDOMSnapshotAgent::AddString(const String& string) {
@@ -309,12 +391,12 @@ void InspectorDOMSnapshotAgent::SetRare(
 }
 
 void InspectorDOMSnapshotAgent::VisitDocument(Document* document) {
-  // Update layout tree before traversal of document so that we inspect a
+  // Update layout before traversal of document so that we inspect a
   // current and consistent state of all trees. No need to do this if paint
   // order was calculated, since layout trees were already updated during
   // TraversePaintLayerTree().
   if (!paint_order_map_)
-    document->UpdateStyleAndLayoutTree();
+    document->UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
 
   DocumentType* doc_type = document->doctype();
 
@@ -392,11 +474,16 @@ void InspectorDOMSnapshotAgent::VisitDocument(Document* document) {
         std::make_unique<protocol::Array<protocol::Array<double>>>());
   }
 
-  VisitNode(document, -1);
+  auto* node_names = document_->getNodes()->getNodeName(nullptr);
+  for (DOMTreeIterator it(document, node_names->size()); it.CurrentNode();
+       it.Advance(node_names->size())) {
+    DCHECK(!it.CurrentNode()->IsInUserAgentShadowRoot());
+    VisitNode(it.CurrentNode(), it.ParentNodeId());
+  }
   documents_->emplace_back(std::move(document_));
 }
 
-int InspectorDOMSnapshotAgent::VisitNode(Node* node, int parent_index) {
+void InspectorDOMSnapshotAgent::VisitNode(Node* node, int parent_index) {
   String node_value;
   switch (node->getNodeType()) {
     case Node::kTextNode:
@@ -471,14 +558,11 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node, int parent_index) {
     }
 
     if (element->GetPseudoId()) {
-      protocol::DOM::PseudoType pseudo_type;
-      if (InspectorDOMAgent::GetPseudoElementType(element->GetPseudoId(),
-                                                  &pseudo_type)) {
-        SetRare(nodes->getPseudoType(nullptr), index, pseudo_type);
-      }
-    } else {
-      VisitPseudoElements(element, index);
+      SetRare(
+          nodes->getPseudoType(nullptr), index,
+          InspectorDOMAgent::ProtocolPseudoElementType(element->GetPseudoId()));
     }
+    VisitPseudoElements(element, index);
 
     auto* image_element = DynamicTo<HTMLImageElement>(node);
     if (image_element) {
@@ -486,68 +570,12 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node, int parent_index) {
               image_element->currentSrc());
     }
   }
-  if (node->IsContainerNode())
-    VisitContainerChildren(node, index);
-  return index;
-}
-
-// static
-Node* InspectorDOMSnapshotAgent::FirstChild(
-    const Node& node,
-    bool include_user_agent_shadow_tree) {
-  DCHECK(include_user_agent_shadow_tree || !node.IsInUserAgentShadowRoot());
-  if (!include_user_agent_shadow_tree) {
-    ShadowRoot* shadow_root = node.GetShadowRoot();
-    if (shadow_root && shadow_root->GetType() == ShadowRootType::kUserAgent) {
-      Node* child = node.firstChild();
-      while (child && !child->CanParticipateInFlatTree())
-        child = child->nextSibling();
-      return child;
-    }
-  }
-  return FlatTreeTraversal::FirstChild(node);
-}
-
-// static
-bool InspectorDOMSnapshotAgent::HasChildren(
-    const Node& node,
-    bool include_user_agent_shadow_tree) {
-  return FirstChild(node, include_user_agent_shadow_tree);
-}
-
-// static
-Node* InspectorDOMSnapshotAgent::NextSibling(
-    const Node& node,
-    bool include_user_agent_shadow_tree) {
-  DCHECK(include_user_agent_shadow_tree || !node.IsInUserAgentShadowRoot());
-  if (!include_user_agent_shadow_tree) {
-    if (node.ParentElementShadowRoot() &&
-        node.ParentElementShadowRoot()->GetType() ==
-            ShadowRootType::kUserAgent) {
-      Node* sibling = node.nextSibling();
-      while (sibling && !sibling->CanParticipateInFlatTree())
-        sibling = sibling->nextSibling();
-      return sibling;
-    }
-  }
-  return FlatTreeTraversal::NextSibling(node);
-}
-
-void InspectorDOMSnapshotAgent::VisitContainerChildren(Node* container,
-                                                       int parent_index) {
-  if (!HasChildren(*container, false))
-    return;
-
-  for (Node* child = FirstChild(*container, false); child;
-       child = NextSibling(*child, false)) {
-    VisitNode(child, parent_index);
-  }
 }
 
 void InspectorDOMSnapshotAgent::VisitPseudoElements(Element* parent,
                                                     int parent_index) {
-  for (PseudoId pseudo_id :
-       {kPseudoIdFirstLetter, kPseudoIdBefore, kPseudoIdAfter}) {
+  for (PseudoId pseudo_id : {kPseudoIdFirstLetter, kPseudoIdBefore,
+                             kPseudoIdAfter, kPseudoIdMarker}) {
     if (Node* pseudo_node = parent->GetPseudoElement(pseudo_id))
       VisitNode(pseudo_node, parent_index);
   }
@@ -684,9 +712,9 @@ InspectorDOMSnapshotAgent::BuildPaintLayerTree(Document* document) {
 void InspectorDOMSnapshotAgent::TraversePaintLayerTree(
     Document* document,
     PaintOrderMap* paint_order_map) {
-  // Update layout tree before traversal of document so that we inspect a
+  // Update layout before traversal of document so that we inspect a
   // current and consistent state of all trees.
-  document->UpdateStyleAndLayoutTree();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
 
   PaintLayer* root_layer = document->GetLayoutView()->Layer();
   // LayoutView requires a PaintLayer.
@@ -716,7 +744,7 @@ void InspectorDOMSnapshotAgent::VisitPaintLayer(
     VisitPaintLayer(child_layer, paint_order_map);
 }
 
-void InspectorDOMSnapshotAgent::Trace(blink::Visitor* visitor) {
+void InspectorDOMSnapshotAgent::Trace(Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(dom_debugger_agent_);
   visitor->Trace(document_order_map_);

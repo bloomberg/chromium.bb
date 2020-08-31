@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Развернуть</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, установленное приложение</translation>
 <translation id="1450753235335490080">Не удается отправить: <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">Вы поменяли местами объекты "<ph name="FIRST_ITEM_TITLE" />" и "<ph name="SECOND_ITEM_TITLE" />"</translation>
 <translation id="1498028757988366001">Вы уже искали эту информацию. Если вы удалите запрос "<ph name="QUERY" />" из истории, он будет навсегда скрыт на всех ваших устройствах, где выполнен вход в аккаунт.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минута }one{# минута }few{# минуты }many{# минут }other{# минуты }}</translation>
 <translation id="1643823602425662293">Уведомление</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Выделить &amp;все</translation>
-<translation id="1938451708255335766">Чтобы применить новые настройки интерфейса, перезапустите приложение.</translation>
 <translation id="2006524834898217237">Убедитесь, что устройство подключено к Интернету.</translation>
 <translation id="208586643495776849">Повторите попытку.</translation>
 <translation id="2090963878406559571">Чтобы отправить номер с сайта <ph name="ORIGIN" /> на телефон Android, <ph name="TROUBLESHOOT_LINK" /> в настройках обоих устройств.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Стрелка вниз</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 день}one{# день}few{# дня}many{# дней}other{# дня}}</translation>
 <translation id="3295886253693811851">Позвонить:</translation>
+<translation id="3306688585798492231">Встроенный дисплей</translation>
 <translation id="335581015389089642">Озвучивание</translation>
 <translation id="3389286852084373014">Сообщение слишком длинное</translation>
-<translation id="3479552764303398839">Не сейчас</translation>
 <translation id="348799646910989694">Временное хранилище автоматически скрыто</translation>
 <translation id="3554637740840164787">Объект "<ph name="ITEM_TITLE" />" закреплен</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Остался 1 день}one{Остался # день}few{Осталось # дня}many{Осталось # дней}other{Осталось # дня}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">Продолжить чтение с мобильного устройства "<ph name="TITLE" />"</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3889424535448813030">Стрелка вправо</translation>
-<translation id="3892641579809465218">Встроенный дисплей</translation>
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3909791450649380159">Выре&amp;зать</translation>
 <translation id="3990502903496589789">Правый край</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 мин.}one{# мин.}few{# мин.}many{# мин.}other{# мин.}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Последние действия: сегодня}=1{Последние действия: 1 день назад}one{Последние действия: # день назад}few{Последние действия: # дня назад}many{Последние действия: # дней назад}other{Последние действия: # дня назад}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 день }one{# день }few{# дня }many{# дней }other{# дня }}</translation>
+<translation id="5789643057113097023">:</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{через 1 г.}one{через # г.}few{через # г.}many{через # л.}other{через # г.}}</translation>
-<translation id="5895138241574237353">Перезапустить</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Осталась 1 секунда}one{Осталась # секунда}few{Осталось # секунды}many{Осталось # секунд}other{Осталось # секунды}}</translation>
 <translation id="5941711191222866238">Свернуть</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 час}one{# час}few{# часа}many{# часов}other{# часа}}</translation>
@@ -156,7 +155,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> Б/с</translation>
 <translation id="6156262341071374681">Просмотреть все приложения</translation>
-<translation id="6165508094623778733">Подробнее...</translation>
+<translation id="6165508094623778733">Подробнее</translation>
 <translation id="6264365405983206840">Выделить все</translation>
 <translation id="6351032674660237738">ПРЕДЛАГАЕМЫЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="6364916375976753737">Прокрутка влево</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Справа налево</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">САМЫЕ ПОДХОДЯЩИЕ</translation>
+<translation id="7170202025028120564">Настройки экрана, заданные в приложении, изменятся после его перезапуска.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Осталась 1 мин.}one{Осталась # мин.}few{Осталось # мин.}many{Осталось # мин.}other{Осталось # мин.}}</translation>
 <translation id="7319740667687257810">Панель запуска, частичный список приложений</translation>

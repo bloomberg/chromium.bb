@@ -37,9 +37,7 @@ namespace blink {
 HTMLStyleElement::HTMLStyleElement(Document& document,
                                    const CreateElementFlags flags)
     : HTMLElement(html_names::kStyleTag, document),
-      StyleElement(&document, flags.IsCreatedByParser()),
-      fired_load_(false),
-      loaded_sheet_(false) {}
+      StyleElement(&document, flags.IsCreatedByParser()) {}
 
 HTMLStyleElement::~HTMLStyleElement() = default;
 
@@ -49,7 +47,8 @@ void HTMLStyleElement::ParseAttribute(
     sheet_->SetTitle(params.new_value);
   } else if (params.name == html_names::kMediaAttr && isConnected() &&
              GetDocument().IsActive() && sheet_) {
-    sheet_->SetMediaQueries(MediaQuerySet::Create(params.new_value));
+    sheet_->SetMediaQueries(
+        MediaQuerySet::Create(params.new_value, GetExecutionContext()));
     GetDocument().GetStyleEngine().MediaQueriesChangedInScope(GetTreeScope());
   } else if (params.name == html_names::kTypeAttr) {
     HTMLElement::ParseAttribute(params);
@@ -103,8 +102,9 @@ const AtomicString& HTMLStyleElement::type() const {
 }
 
 void HTMLStyleElement::DispatchPendingEvent(
-    std::unique_ptr<IncrementLoadEventDelayCount> count) {
-  if (loaded_sheet_) {
+    std::unique_ptr<IncrementLoadEventDelayCount> count,
+    bool is_load_event) {
+  if (is_load_event) {
     if (GetDocument().HasListenerType(
             Document::kLoadListenerAtCapturePhaseOrAtStyleElement))
       DispatchEvent(*Event::Create(event_type_names::kLoad));
@@ -119,9 +119,6 @@ void HTMLStyleElement::DispatchPendingEvent(
 void HTMLStyleElement::NotifyLoadedSheetAndAllCriticalSubresources(
     LoadedSheetErrorStatus error_status) {
   bool is_load_event = error_status == kNoErrorLoadingSubresource;
-  if (fired_load_ && is_load_event)
-    return;
-  loaded_sheet_ = is_load_event;
   // Per the spec this should post on the network task source.
   // https://html.spec.whatwg.org/multipage/semantics.html#the-style-element
   // This guarantees that the <style> will be applied before the next <script>
@@ -135,8 +132,8 @@ void HTMLStyleElement::NotifyLoadedSheetAndAllCriticalSubresources(
           WTF::Bind(&HTMLStyleElement::DispatchPendingEvent,
                     WrapPersistent(this),
                     WTF::Passed(std::make_unique<IncrementLoadEventDelayCount>(
-                        GetDocument()))));
-  fired_load_ = true;
+                        GetDocument())),
+                    is_load_event));
 }
 
 bool HTMLStyleElement::disabled() const {

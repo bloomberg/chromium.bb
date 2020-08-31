@@ -11,7 +11,6 @@
 using std::chrono::seconds;
 
 namespace openscreen {
-namespace platform {
 
 #if __cplusplus < 202000L
 // Before C++20, the standard does not guarantee that time_t is the number of
@@ -51,5 +50,4 @@ TEST(TimeTest, TimeTMeetsTheCpp20Standard) {
 }
 #endif
 
-}  // namespace platform
 }  // namespace openscreen

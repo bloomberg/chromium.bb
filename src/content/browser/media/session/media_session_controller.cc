@@ -30,14 +30,19 @@ bool MediaSessionController::Initialize(
     bool has_audio,
     bool is_remote,
     media::MediaContentType media_content_type,
-    media_session::MediaPosition* position) {
+    media_session::MediaPosition* position,
+    bool is_pip_available,
+    bool has_video) {
   // Store these as we will need them later.
   is_remote_ = is_remote;
   has_audio_ = has_audio;
+  has_video_ = has_video;
   media_content_type_ = media_content_type;
 
   if (position)
     position_ = *position;
+
+  is_picture_in_picture_available_ = is_pip_available;
 
   // Don't generate a new id if one has already been set.
   if (!has_session_) {
@@ -62,8 +67,7 @@ bool MediaSessionController::Initialize(
 
   // Don't bother with a MediaSession for remote players or without audio.  If
   // we already have a session from a previous call, release it.
-  if (!has_audio_ || is_remote ||
-      media_web_contents_observer_->web_contents()->IsAudioMuted()) {
+  if (!IsMediaSessionNeeded()) {
     has_session_ = false;
     media_session_->RemovePlayer(this, player_id_);
     return true;
@@ -118,6 +122,18 @@ void MediaSessionController::OnSetVolumeMultiplier(int player_id,
       volume_multiplier));
 }
 
+void MediaSessionController::OnEnterPictureInPicture(int player_id) {
+  DCHECK_EQ(player_id_, player_id);
+  id_.render_frame_host->Send(new MediaPlayerDelegateMsg_EnterPictureInPicture(
+      id_.render_frame_host->GetRoutingID(), id_.delegate_id));
+}
+
+void MediaSessionController::OnExitPictureInPicture(int player_id) {
+  DCHECK_EQ(player_id_, player_id);
+  id_.render_frame_host->Send(new MediaPlayerDelegateMsg_ExitPictureInPicture(
+      id_.render_frame_host->GetRoutingID(), id_.delegate_id));
+}
+
 RenderFrameHost* MediaSessionController::render_frame_host() const {
   return id_.render_frame_host;
 }
@@ -128,6 +144,11 @@ MediaSessionController::GetPosition(int player_id) const {
   return position_;
 }
 
+bool MediaSessionController::IsPictureInPictureAvailable(int player_id) const {
+  DCHECK_EQ(player_id_, player_id);
+  return is_picture_in_picture_available_;
+}
+
 void MediaSessionController::OnPlaybackPaused() {
   // We check for suspension here since the renderer may issue its own pause
   // in response to or while a pause from the browser is in flight.
@@ -135,25 +156,52 @@ void MediaSessionController::OnPlaybackPaused() {
     media_session_->OnPlayerPaused(this, player_id_);
 }
 
-void MediaSessionController::WebContentsMutedStateChanged(bool muted) {
-  if (!has_audio_ || is_remote_)
-    return;
+void MediaSessionController::PictureInPictureStateChanged(
+    bool is_picture_in_picture) {
+  AddOrRemovePlayer();
+}
 
-  // We want to make sure we do not request audio focus on a muted tab as it
-  // would break user expectations by pausing/ducking other playbacks.
-  if (!muted && !has_session_) {
-    if (media_session_->AddPlayer(this, player_id_, media_content_type_))
-      has_session_ = true;
-  } else if (muted) {
-    has_session_ = false;
-    media_session_->RemovePlayer(this, player_id_);
-  }
+void MediaSessionController::WebContentsMutedStateChanged(bool muted) {
+  AddOrRemovePlayer();
 }
 
 void MediaSessionController::OnMediaPositionStateChanged(
     const media_session::MediaPosition& position) {
   position_ = position;
   media_session_->RebuildAndNotifyMediaPositionChanged();
+}
+
+void MediaSessionController::OnPictureInPictureAvailabilityChanged(
+    bool available) {
+  is_picture_in_picture_available_ = available;
+  media_session_->OnPictureInPictureAvailabilityChanged();
+}
+
+bool MediaSessionController::IsMediaSessionNeeded() const {
+  // We want to make sure we do not request audio focus on a muted tab as it
+  // would break user expectations by pausing/ducking other playbacks.
+  const bool has_audio =
+      has_audio_ &&
+      !media_web_contents_observer_->web_contents()->IsAudioMuted();
+  return !is_remote_ &&
+         (has_audio || media_web_contents_observer_->web_contents()
+                           ->HasPictureInPictureVideo());
+}
+
+void MediaSessionController::AddOrRemovePlayer() {
+  const bool needs_session = IsMediaSessionNeeded();
+  if (needs_session && !has_session_) {
+    has_session_ =
+        media_session_->AddPlayer(this, player_id_, media_content_type_);
+  } else if (!needs_session && has_session_) {
+    has_session_ = false;
+    media_session_->RemovePlayer(this, player_id_);
+  }
+}
+
+bool MediaSessionController::HasVideo(int player_id) const {
+  DCHECK_EQ(player_id_, player_id);
+  return has_video_ && has_audio_;
 }
 
 }  // namespace content

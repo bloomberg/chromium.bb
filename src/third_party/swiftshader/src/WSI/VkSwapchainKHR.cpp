@@ -22,23 +22,22 @@
 #include <algorithm>
 #include <cstring>
 
-namespace vk
-{
+namespace vk {
 
-SwapchainKHR::SwapchainKHR(const VkSwapchainCreateInfoKHR *pCreateInfo, void *mem) :
-	surface(vk::Cast(pCreateInfo->surface)),
-	images(reinterpret_cast<PresentImage*>(mem)),
-	imageCount(pCreateInfo->minImageCount),
-	retired(false)
+SwapchainKHR::SwapchainKHR(const VkSwapchainCreateInfoKHR *pCreateInfo, void *mem)
+    : surface(vk::Cast(pCreateInfo->surface))
+    , images(reinterpret_cast<PresentImage *>(mem))
+    , imageCount(pCreateInfo->minImageCount)
+    , retired(false)
 {
-	memset(reinterpret_cast<void*>(images), 0, imageCount * sizeof(PresentImage));
+	memset(reinterpret_cast<void *>(images), 0, imageCount * sizeof(PresentImage));
 }
 
 void SwapchainKHR::destroy(const VkAllocationCallbacks *pAllocator)
 {
 	for(uint32_t i = 0; i < imageCount; i++)
 	{
-		PresentImage& currentImage = images[i];
+		PresentImage &currentImage = images[i];
 		if(currentImage.exists())
 		{
 			surface->detachImage(&currentImage);
@@ -68,7 +67,7 @@ void SwapchainKHR::retire()
 
 		for(uint32_t i = 0; i < imageCount; i++)
 		{
-			PresentImage& currentImage = images[i];
+			PresentImage &currentImage = images[i];
 			if(currentImage.isAvailable())
 			{
 				surface->detachImage(&currentImage);
@@ -126,7 +125,7 @@ VkResult SwapchainKHR::createImages(VkDevice device, const VkSwapchainCreateInfo
 	VkResult status;
 	for(uint32_t i = 0; i < imageCount; i++)
 	{
-		PresentImage& currentImage = images[i];
+		PresentImage &currentImage = images[i];
 
 		status = currentImage.allocateImage(device, imageInfo);
 		if(status != VK_SUCCESS)
@@ -171,11 +170,11 @@ VkResult SwapchainKHR::getImages(uint32_t *pSwapchainImageCount, VkImage *pSwapc
 	return VK_SUCCESS;
 }
 
-VkResult SwapchainKHR::getNextImage(uint64_t timeout, Semaphore* semaphore, Fence* fence, uint32_t *pImageIndex)
+VkResult SwapchainKHR::getNextImage(uint64_t timeout, Semaphore *semaphore, Fence *fence, uint32_t *pImageIndex)
 {
 	for(uint32_t i = 0; i < imageCount; i++)
 	{
-		PresentImage& currentImage = images[i];
+		PresentImage &currentImage = images[i];
 		if(currentImage.isAvailable())
 		{
 			currentImage.setStatus(DRAWING);
@@ -195,12 +194,12 @@ VkResult SwapchainKHR::getNextImage(uint64_t timeout, Semaphore* semaphore, Fenc
 		}
 	}
 
-	return VK_NOT_READY;
+	return (timeout > 0) ? VK_TIMEOUT : VK_NOT_READY;
 }
 
 VkResult SwapchainKHR::present(uint32_t index)
 {
-	auto& image = images[index];
+	auto &image = images[index];
 	image.setStatus(PRESENTING);
 	VkResult result = surface->present(&image);
 	image.setStatus(AVAILABLE);
@@ -214,4 +213,4 @@ VkResult SwapchainKHR::present(uint32_t index)
 	return result;
 }
 
-}
+}  // namespace vk

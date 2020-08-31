@@ -9,8 +9,9 @@
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -90,7 +91,7 @@ HttpNetworkSession::Params::Params()
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
       enable_websocket_over_http2(false),
-      enable_quic(false),
+      enable_quic(true),
       enable_quic_proxies_for_https_urls(false),
       disable_idle_sockets_close_on_memory_pressure(false),
       key_auth_cache_server_entries_by_network_isolation_key(false) {
@@ -283,8 +284,6 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    quic_params->reduced_ping_timeout.InSeconds());
   dict->SetBoolean("retry_without_alt_svc_on_quic_errors",
                    quic_params->retry_without_alt_svc_on_quic_errors);
-  dict->SetBoolean("race_cert_verification",
-                   quic_params->race_cert_verification);
   dict->SetBoolean("disable_bidirectional_streams",
                    quic_params->disable_bidirectional_streams);
   dict->SetBoolean("close_sessions_on_ip_change",
@@ -326,17 +325,19 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   return std::move(dict);
 }
 
-void HttpNetworkSession::CloseAllConnections() {
-  normal_socket_pool_manager_->FlushSocketPoolsWithError(ERR_ABORTED);
-  websocket_socket_pool_manager_->FlushSocketPoolsWithError(ERR_ABORTED);
-  spdy_session_pool_.CloseCurrentSessions(ERR_ABORTED);
-  quic_stream_factory_.CloseAllSessions(ERR_ABORTED,
-                                        quic::QUIC_PEER_GOING_AWAY);
+void HttpNetworkSession::CloseAllConnections(int net_error,
+                                             const char* net_log_reason_utf8) {
+  normal_socket_pool_manager_->FlushSocketPoolsWithError(net_error,
+                                                         net_log_reason_utf8);
+  websocket_socket_pool_manager_->FlushSocketPoolsWithError(
+      net_error, net_log_reason_utf8);
+  spdy_session_pool_.CloseCurrentSessions(static_cast<net::Error>(net_error));
+  quic_stream_factory_.CloseAllSessions(net_error, quic::QUIC_PEER_GOING_AWAY);
 }
 
-void HttpNetworkSession::CloseIdleConnections() {
-  normal_socket_pool_manager_->CloseIdleSockets();
-  websocket_socket_pool_manager_->CloseIdleSockets();
+void HttpNetworkSession::CloseIdleConnections(const char* net_log_reason_utf8) {
+  normal_socket_pool_manager_->CloseIdleSockets(net_log_reason_utf8);
+  websocket_socket_pool_manager_->CloseIdleSockets(net_log_reason_utf8);
   spdy_session_pool_.CloseCurrentIdleSessions();
 }
 
@@ -447,7 +448,7 @@ void HttpNetworkSession::OnMemoryPressure(
 
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      CloseIdleConnections();
+      CloseIdleConnections("Low memory");
       break;
   }
 }

@@ -7,6 +7,7 @@
 
 #include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/core/css/css_border_image_slice_value.h"
+#include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
@@ -24,7 +25,7 @@ class ComputedStyle;
 class StyleColor;
 class StylePropertyShorthand;
 
-class ComputedStyleUtils {
+class CORE_EXPORT ComputedStyleUtils {
   STATIC_ONLY(ComputedStyleUtils);
 
  public:
@@ -99,6 +100,7 @@ class ComputedStyleUtils {
   ValueForContentPositionAndDistributionWithOverflowAlignment(
       const StyleContentAlignmentData&);
   static CSSValue* ValueForLineHeight(const ComputedStyle&);
+  static CSSValue* ComputedValueForLineHeight(const ComputedStyle&);
   static CSSValueList* ValueForFontFamily(const ComputedStyle&);
   static CSSPrimitiveValue* ValueForFontSize(const ComputedStyle&);
   static CSSPrimitiveValue* ValueForFontStretch(const ComputedStyle&);
@@ -135,8 +137,8 @@ class ComputedStyleUtils {
   static CSSValue* ValueForAnimationTimingFunction(const CSSTimingData*);
   static CSSValueList* ValuesForBorderRadiusCorner(const LengthSize&,
                                                    const ComputedStyle&);
-  static const CSSValue& ValueForBorderRadiusCorner(const LengthSize&,
-                                                    const ComputedStyle&);
+  static CSSValue* ValueForBorderRadiusCorner(const LengthSize&,
+                                              const ComputedStyle&);
   // TODO(fs): For some properties ('transform') we use the pixel snapped
   // border-box as the reference box. In other cases ('transform-origin') we use
   // the "unsnapped" border-box. Maybe use the same (the "unsnapped") in both
@@ -145,10 +147,35 @@ class ComputedStyleUtils {
     kDontUsePixelSnappedBox,
     kUsePixelSnappedBox,
   };
+
+  // Serializes a TransformationMatrix into a matrix() or matrix3d() transform
+  // function value. If force_matrix3d is true, it will always give a matrix3d
+  // value (for serializing a matrix3d in a transform list), otherwise it
+  // will give a matrix() where possible (for serializing matrix in transform
+  // lists or resolved transformation matrices).
+  static CSSFunctionValue* ValueForTransformationMatrix(
+      const TransformationMatrix&,
+      float zoom,
+      bool force_matrix3d);
+  // Values unreperesentable in CSS will be converted to an equivalent matrix()
+  // value. The box_size parameter is used for deferred, layout-dependent
+  // interpolations and is not needed in the absence of animations.
+  static CSSFunctionValue* ValueForTransformOperation(
+      const TransformOperation&,
+      float zoom,
+      FloatSize box_size = FloatSize(0, 0));
+  // Serialize a transform list.
+  static CSSValue* ValueForTransformList(const TransformOperations&,
+                                         float zoom,
+                                         FloatSize box_size = FloatSize(0, 0));
   static FloatRect ReferenceBoxForTransform(
       const LayoutObject&,
       UsePixelSnappedBox = kUsePixelSnappedBox);
-  static CSSValue* ComputedTransform(const LayoutObject*, const ComputedStyle&);
+  // The LayoutObject parameter is only used for converting unreperesentable
+  // relative transforms into matrix() values, with a default box size of 0x0.
+  static CSSValue* ComputedTransformList(const ComputedStyle&,
+                                         const LayoutObject* = nullptr);
+  static CSSValue* ResolvedTransform(const LayoutObject*, const ComputedStyle&);
   static CSSValue* CreateTransitionPropertyValue(
       const CSSTransitionData::TransitionProperty&);
   static CSSValue* ValueForTransitionProperty(const CSSTransitionData*);
@@ -215,11 +242,22 @@ class ComputedStyleUtils {
   static std::unique_ptr<CrossThreadStyleValue>
   CrossThreadStyleValueFromCSSStyleValue(CSSStyleValue* style_value);
 
-  static CSSValuePair* ValuesForIntrinsicSizeShorthand(
-      const StylePropertyShorthand&,
-      const ComputedStyle&,
-      const LayoutObject*,
-      bool allow_visited_style);
+  // Returns the computed CSSValue of the given property from the style,
+  // which may different than the resolved value returned by
+  // CSSValueFromComputedStyle().
+  // see https://drafts.csswg.org/cssom/#resolved-values
+  //
+  // In most, but not all, cases, the resolved value involves layout-dependent
+  // calculations, and the computed value is used as a fallback when there is
+  // no layout object (display: none, etc). In those cases, this calls
+  // CSSValueFromComputedStyle(layout_object=nullptr), with the exceptions
+  // (transform and line-height currently) having their own logic here.
+  //
+  // The LayoutObject parameter is only used for converting unreperesentable
+  // relative transforms into matrix() values, with a default box size of 0x0.
+  static const CSSValue* ComputedPropertyValue(const CSSProperty&,
+                                               const ComputedStyle&,
+                                               const LayoutObject* = nullptr);
 };
 
 }  // namespace blink

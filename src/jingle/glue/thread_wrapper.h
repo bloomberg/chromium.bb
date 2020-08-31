@@ -92,17 +92,11 @@ class JingleThreadWrapper
   // Following methods are not supported. They are overriden just to
   // ensure that they are not called (each of them contain NOTREACHED
   // in the body). Some of this methods can be implemented if it
-  // becomes neccessary to use libjingle code that calls them.
+  // becomes necessary to use libjingle code that calls them.
   void Quit() override;
   void Restart() override;
   bool Get(rtc::Message* message, int delay_ms, bool process_io) override;
   bool Peek(rtc::Message* message, int delay_ms) override;
-  void PostAt(const rtc::Location& posted_from,
-              uint32_t timestamp,
-              rtc::MessageHandler* handler,
-              uint32_t id,
-              rtc::MessageData* data) override;
-  void ReceiveSends() override;
   int GetDelay() override;
 
   // rtc::Thread overrides.

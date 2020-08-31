@@ -10,6 +10,7 @@ from __future__ import print_function
 from six.moves import StringIO
 
 from chromite.lib import cros_test_lib
+from chromite.lib import parallel
 from chromite.lib import retry_stats
 
 
@@ -20,7 +21,10 @@ from chromite.lib import retry_stats
 class TestRetryException(Exception):
   """Used when testing failure cases."""
 
-class TestRetryStats(cros_test_lib.TestCase):
+
+# TODO(crbug.com/1072139): Use 'singleton_manager' fixture when this module
+#                          runs exclusively on Python 3.
+class TestRetryStats(cros_test_lib.MockTestCase):
   """This contains test cases for the retry_stats module."""
 
   CAT = 'Test Service A'
@@ -30,6 +34,11 @@ class TestRetryStats(cros_test_lib.TestCase):
 
   def setUp(self):
     retry_stats._STATS_COLLECTION = None
+    self._singleton_manager = parallel.Manager()
+    self.PatchObject(parallel, 'Manager', return_value=self._singleton_manager)
+
+  def tearDown(self):
+    self._singleton_manager.shutdown()
 
   def handlerNoRetry(self, _e):
     return False

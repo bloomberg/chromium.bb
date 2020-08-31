@@ -26,6 +26,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform_event.h"
 #include "ui/events/pointer_details.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/latency/latency_info.h"
@@ -469,8 +470,7 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
              int flags,
              int changed_button_flags,
              const PointerDetails& pointer_details =
-                 PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                                kPointerIdMouse));
+                 PointerDetails(EventPointerType::kMouse, kPointerIdMouse));
 
   // DEPRECATED: Prefer constructor that takes gfx::PointF.
   MouseEvent(EventType type,
@@ -480,11 +480,12 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
              int flags,
              int changed_button_flags,
              const PointerDetails& pointer_details =
-                 PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                                kPointerIdMouse));
+                 PointerDetails(EventPointerType::kMouse, kPointerIdMouse));
 
   MouseEvent(const MouseEvent& copy);
   ~MouseEvent() override;
+
+  void InitializeNative();
 
   class DispatcherApi {
    public:
@@ -638,7 +639,7 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
   gfx::Vector2d offset_;
 };
 
-// NOTE: Pen (stylus) events use TouchEvent with POINTER_TYPE_PEN. They were
+// NOTE: Pen (stylus) events use TouchEvent with kPen. They were
 // originally implemented as MouseEvent but switched to TouchEvent when UX
 // decided not to show hover effects for pen.
 class EVENTS_EXPORT TouchEvent : public LocatedEvent {
@@ -748,6 +749,11 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
 //    Japanese, etc. all use VKEY_Q for the key beside Tab, while French uses
 //    VKEY_A. The stored key_code_ is non-located (e.g. VKEY_SHIFT rather than
 //    VKEY_LSHIFT, VKEY_1 rather than VKEY_NUMPAD1).
+// -- |uint32_t scan_code_| [USE_OZONE only] supports remapping of the top
+//    function row based on a sysfs attribute provided by the kernel. This
+//    allows devices to have a custom top row layout and still be able to
+//    perform translation back and forth between F-Key and Action-Key. The
+//    value of this scan code is device specific.
 //
 // For a character event,
 // -- |bool is_char_| is true.
@@ -804,6 +810,8 @@ class EVENTS_EXPORT KeyEvent : public Event {
 
   ~KeyEvent() override;
 
+  void InitializeNative();
+
   // This bypasses the normal mapping from keystroke events to characters,
   // which allows an I18N virtual keyboard to fabricate a keyboard event that
   // does not have a corresponding KeyboardCode (example: U+00E1 Latin small
@@ -840,6 +848,14 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // This is only intended to be used externally by classes that are modifying
   // events in an EventRewriter.
   void set_key_code(KeyboardCode key_code) { key_code_ = key_code; }
+
+#if defined(USE_OZONE)
+  // The scan code of the physical key. This is used to perform the mapping
+  // of top row keys from Actions back to F-Keys on new Chrome OS keyboards
+  // that supply the mapping via the kernel.
+  uint32_t scan_code() const { return scan_code_; }
+  void set_scan_code(uint32_t scan_code) { scan_code_ = scan_code; }
+#endif  // defined(USE_OZONE)
 
   // Returns the same value as key_code(), except that located codes are
   // returned in place of non-located ones (e.g. VKEY_LSHIFT or VKEY_RSHIFT
@@ -881,7 +897,15 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // then updated with the new last KeyEvent address.
   bool IsRepeated(KeyEvent** last_key_event);
 
+  // Returns the pointer for the last processed KeyEvent.
+  KeyEvent** GetLastKeyEvent();
+
   KeyboardCode key_code_;
+
+#if defined(USE_OZONE)
+  // The scan code of the physical key on Chrome OS.
+  uint32_t scan_code_ = 0;
+#endif  // defined(USE_OZONE)
 
   // DOM KeyboardEvent |code| (e.g. DomCode::US_A, DomCode::SPACE).
   // http://www.w3.org/TR/DOM-Level-3-Events-code/

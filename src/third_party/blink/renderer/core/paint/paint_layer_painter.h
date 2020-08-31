@@ -82,8 +82,6 @@ class CORE_EXPORT PaintLayerPainter {
   void PaintForegroundForFragments(const PaintLayerFragments&,
                                    GraphicsContext&,
                                    const PaintLayerPaintingInfo&,
-                                   bool selection_only,
-                                   bool force_paint_chunks,
                                    PaintLayerFlags);
   void PaintForegroundForFragmentsWithPhase(PaintPhase,
                                             const PaintLayerFragments&,
@@ -106,8 +104,6 @@ class CORE_EXPORT PaintLayerPainter {
   void FillMaskingFragment(GraphicsContext&,
                            const ClipRect&,
                            const DisplayItemClient&);
-
-  void PaintEmptyContentForFilters(GraphicsContext&);
 
   void AdjustForPaintProperties(const GraphicsContext&,
                                 PaintLayerPaintingInfo&,

@@ -33,6 +33,11 @@ import os.path as path
 # How many bytes at a time to read from pipes.
 BUF_SIZE = 256
 
+# How many seconds of no stdout activity before process is considered stale. Can
+# be overridden via environmnet variable `STALE_PROCESS_DURATION`. If set to 0,
+# process won't be terminated.
+STALE_PROCESS_DURATION = 1200
+
 # Define a bunch of directory paths.
 # Relative to this script's filesystem path.
 THIS_DIR = path.dirname(path.abspath(__file__))
@@ -81,9 +86,6 @@ cache_dir = r%(cache_dir)s
 """
 
 
-# How many times to try before giving up.
-ATTEMPTS = 5
-
 GIT_CACHE_PATH = path.join(DEPOT_TOOLS_DIR, 'git_cache.py')
 GCLIENT_PATH = path.join(DEPOT_TOOLS_DIR, 'gclient.py')
 
@@ -111,16 +113,33 @@ OK = object()
 FAIL = object()
 
 
-class PsPrinter(object):
+class ProcessObservers(object):
+  """ProcessObservers allows monitoring of child process."""
+
+  def poke(self):
+    """poke is called when child process sent `BUF_SIZE` data to stdout."""
+    pass
+
+  def cancel(self):
+    """cancel is called once proc exists successfully."""
+    pass
+
+
+class PsPrinter(ProcessObservers):
   def __init__(self, interval=300):
     self.interval = interval
     self.active = sys.platform.startswith('linux2')
     self.thread = None
 
-  @staticmethod
-  def print_pstree():
+  def print_pstree(self):
     """Debugging function used to print "ps auxwwf" for stuck processes."""
+    # Add new line for cleaner output
+    print()
     subprocess.call(['ps', 'auxwwf'])
+
+    # Restart timer, we want to continue printing until the process is
+    # terminated.
+    self.poke()
 
   def poke(self):
     if self.active:
@@ -130,6 +149,30 @@ class PsPrinter(object):
 
   def cancel(self):
     if self.active and self.thread is not None:
+      self.thread.cancel()
+      self.thread = None
+
+
+class StaleProcess(ProcessObservers):
+  '''StaleProcess terminates process if there is no poke call in `interval`. '''
+
+  def __init__(self, interval, proc):
+    self.interval = interval
+    self.proc = proc
+    self.thread = None
+
+  def _terminate_process(self):
+    print('Terminating stale process...')
+    self.proc.terminate()
+
+  def poke(self):
+    self.cancel()
+    if self.interval > 0:
+      self.thread = threading.Timer(self.interval, self._terminate_process)
+      self.thread.start()
+
+  def cancel(self):
+    if self.thread is not None:
       self.thread.cancel()
       self.thread = None
 
@@ -160,12 +203,15 @@ def call(*args, **kwargs):  # pragma: no cover
   if stdin_data:
     proc.stdin.write(stdin_data)
     proc.stdin.close()
-  psprinter = PsPrinter()
+  stale_process_duration = env.get('STALE_PROCESS_DURATION',
+                                   STALE_PROCESS_DURATION)
+  observers = [PsPrinter(), StaleProcess(int(stale_process_duration), proc)]
   # This is here because passing 'sys.stdout' into stdout for proc will
   # produce out of order output.
   hanging_cr = False
   while True:
-    psprinter.poke()
+    for observer in observers:
+      observer.poke()
     buf = proc.stdout.read(BUF_SIZE)
     if not buf:
       break
@@ -180,7 +226,8 @@ def call(*args, **kwargs):  # pragma: no cover
   if hanging_cr:
     sys.stdout.write('\n')
     out.write('\n')
-  psprinter.cancel()
+  for observer in observers:
+    observer.cancel()
 
   code = proc.wait()
   elapsed_time = ((time.time() - start_time) / 60.0)
@@ -443,7 +490,7 @@ def create_manifest_old():
 
 # TODO(hinoka): Include patch revision.
 def create_manifest(gclient_output, patch_root):
-  """Return the JSONPB equivilent of the source manifest proto.
+  """Return the JSONPB equivalent of the source manifest proto.
 
   The source manifest proto is defined here:
   https://chromium.googlesource.com/infra/luci/recipes-py/+/master/recipe_engine/source_manifest.proto
@@ -746,7 +793,7 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
       git('clean', '-dff', cwd=sln_dir)
       return
     except SubprocessFailed as e:
-      # Exited abnormally, theres probably something wrong.
+      # Exited abnormally, there's probably something wrong.
       print('Something failed: %s.' % str(e))
       if first_try:
         first_try = False
@@ -759,16 +806,6 @@ def _git_disable_gc(cwd):
   git('config', 'gc.auto', '0', cwd=cwd)
   git('config', 'gc.autodetach', '0', cwd=cwd)
   git('config', 'gc.autopacklimit', '0', cwd=cwd)
-
-
-def _download(url):
-  """Fetch url and return content, with retries for flake."""
-  for attempt in xrange(ATTEMPTS):
-    try:
-      return urllib2.urlopen(url).read()
-    except Exception:
-      if attempt == ATTEMPTS - 1:
-        raise
 
 
 def get_commit_position(git_path, revision='HEAD'):
@@ -1012,7 +1049,7 @@ def parse_args():
       options.revision_mapping = json.load(f)
   except Exception as e:
     print(
-        'WARNING: Caught execption while parsing revision_mapping*: %s'
+        'WARNING: Caught exception while parsing revision_mapping*: %s'
         % (str(e),))
 
   # Because we print CACHE_DIR out into a .gclient file, and then later run
@@ -1064,6 +1101,16 @@ def checkout(options, git_slns, specs, revisions, step_text):
 
   first_sln = git_slns[0]['name']
   dir_names = [sln.get('name') for sln in git_slns if 'name' in sln]
+  dirty_path = '.dirty_bot_checkout'
+  if os.path.exists(dirty_path):
+    ensure_no_checkout(dir_names, options.cleanup_dir)
+
+  with open(dirty_path, 'w') as f:
+    # create file, no content
+    pass
+
+  should_delete_dirty_file = False
+
   try:
     # Outer try is for catching patch failures and exiting gracefully.
     # Inner try is for catching gclient failures and retrying gracefully.
@@ -1096,10 +1143,12 @@ def checkout(options, git_slns, specs, revisions, step_text):
           gerrit_reset=not options.gerrit_no_reset,
           disable_syntax_validation=options.disable_syntax_validation)
       gclient_output = ensure_checkout(**checkout_parameters)
+      should_delete_dirty_file = True
     except GclientSyncFailed:
       print('We failed gclient sync, lets delete the checkout and retry.')
       ensure_no_checkout(dir_names, options.cleanup_dir)
       gclient_output = ensure_checkout(**checkout_parameters)
+      should_delete_dirty_file = True
   except PatchFailed as e:
     # Tell recipes information such as root, got_revision, etc.
     emit_json(options.output_json,
@@ -1111,7 +1160,15 @@ def checkout(options, git_slns, specs, revisions, step_text):
               failed_patch_body=e.output,
               step_text='%s PATCH FAILED' % step_text,
               fixed_revisions=revisions)
+    should_delete_dirty_file = True
     raise
+  finally:
+    if should_delete_dirty_file:
+      try:
+        os.remove(dirty_path)
+      except OSError:
+        print('Dirty file %s has been removed by a different process.' %
+              dirty_path)
 
   # Take care of got_revisions outputs.
   revision_mapping = GOT_REVISION_MAPPINGS.get(git_slns[0]['url'], {})
@@ -1164,7 +1221,7 @@ def main():
   # Check if this script should activate or not.
   active = True
 
-  # Print a helpful message to tell developers whats going on with this step.
+  # Print a helpful message to tell developers what's going on with this step.
   print_debug_info()
 
   # Parse, manipulate, and print the gclient solutions.

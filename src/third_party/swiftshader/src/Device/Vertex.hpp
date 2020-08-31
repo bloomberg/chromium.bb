@@ -15,46 +15,46 @@
 #ifndef Vertex_hpp
 #define Vertex_hpp
 
-#include "Color.hpp"
-#include "System/Types.hpp"
 #include "Device/Config.hpp"
+#include "System/Types.hpp"
 
-namespace sw
+namespace sw {
+
+struct alignas(16) Vertex
 {
-	ALIGN(16, struct Vertex
+	union
 	{
-		union
+		struct
 		{
-			struct
-			{
-				float x;
-				float y;
-				float z;
-				float w;
-			};
-
-			float4 position;
-		};
-
-		float pointSize;
-
-		int clipFlags;
-		int cullMask;
-		float clipDistance[MAX_CLIP_DISTANCES];
-		float cullDistance[MAX_CLIP_DISTANCES];
-
-		alignas(16) struct
-		{
-			int x;
-			int y;
+			float x;
+			float y;
 			float z;
 			float w;
-		} projected;
+		};
 
-		alignas(16) float v[MAX_INTERFACE_COMPONENTS];
-	});
+		float4 position;
+	};
 
-	static_assert((sizeof(Vertex) & 0x0000000F) == 0, "Vertex size not a multiple of 16 bytes (alignment requirement)");
-}
+	float pointSize;
 
-#endif   // Vertex_hpp
+	int clipFlags;
+	int cullMask;
+	float clipDistance[MAX_CLIP_DISTANCES];
+	float cullDistance[MAX_CLIP_DISTANCES];
+
+	alignas(16) struct
+	{
+		int x;
+		int y;
+		float z;
+		float w;
+	} projected;
+
+	alignas(16) float v[MAX_INTERFACE_COMPONENTS];
+};
+
+static_assert((sizeof(Vertex) & 0x0000000F) == 0, "Vertex size not a multiple of 16 bytes (alignment requirement)");
+
+}  // namespace sw
+
+#endif  // Vertex_hpp

@@ -2654,12 +2654,9 @@ MinidumpModuleList::MinidumpModuleList(Minidump* minidump)
       modules_(NULL),
       module_count_(0) {
   MDOSPlatform platform;
-  if (minidump_->GetPlatform(&platform)) {
-    if (platform == MD_OS_ANDROID) {
-      range_map_->SetMergeStrategy(MergeRangeStrategy::kTruncateUpper);
-    } else if (platform == MD_OS_LINUX) {
-      range_map_->SetMergeStrategy(MergeRangeStrategy::kTruncateLower);
-    }
+  if (minidump_->GetPlatform(&platform) &&
+      (platform == MD_OS_ANDROID || platform == MD_OS_LINUX)) {
+    range_map_->SetMergeStrategy(MergeRangeStrategy::kTruncateLower);
   }
 }
 

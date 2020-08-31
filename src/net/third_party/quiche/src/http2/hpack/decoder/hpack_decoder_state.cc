@@ -31,7 +31,7 @@ HpackDecoderState::HpackDecoderState(HpackDecoderListener* listener)
       require_dynamic_table_size_update_(false),
       allow_dynamic_table_size_update_(true),
       saw_dynamic_table_size_update_(false),
-      error_detected_(false) {}
+      error_(HpackDecodingError::kOk) {}
 HpackDecoderState::~HpackDecoderState() = default;
 
 void HpackDecoderState::set_tables_debug_listener(
@@ -59,7 +59,8 @@ void HpackDecoderState::OnHeaderBlockStart() {
   // This instance can't be reused after an error has been detected, as we must
   // assume that the encoder and decoder compression states are no longer
   // synchronized.
-  DCHECK(!error_detected_);
+  DCHECK(error_ == HpackDecodingError::kOk)
+      << HpackDecodingErrorToString(error_);
   DCHECK_LE(lowest_header_table_size_, final_header_table_size_);
   allow_dynamic_table_size_update_ = true;
   saw_dynamic_table_size_update_ = false;
@@ -80,20 +81,19 @@ void HpackDecoderState::OnHeaderBlockStart() {
 
 void HpackDecoderState::OnIndexedHeader(size_t index) {
   HTTP2_DVLOG(2) << "HpackDecoderState::OnIndexedHeader: " << index;
-  if (error_detected_) {
+  if (error_ != HpackDecodingError::kOk) {
     return;
   }
   if (require_dynamic_table_size_update_) {
-    ReportError("Missing dynamic table size update.");
+    ReportError(HpackDecodingError::kMissingDynamicTableSizeUpdate);
     return;
   }
   allow_dynamic_table_size_update_ = false;
   const HpackStringPair* entry = decoder_tables_.Lookup(index);
   if (entry != nullptr) {
-    listener_->OnHeader(HpackEntryType::kIndexedHeader, entry->name,
-                        entry->value);
+    listener_->OnHeader(entry->name, entry->value);
   } else {
-    ReportError("Invalid index.");
+    ReportError(HpackDecodingError::kInvalidIndex);
   }
 }
 
@@ -104,23 +104,23 @@ void HpackDecoderState::OnNameIndexAndLiteralValue(
   HTTP2_DVLOG(2) << "HpackDecoderState::OnNameIndexAndLiteralValue "
                  << entry_type << ", " << name_index << ", "
                  << value_buffer->str();
-  if (error_detected_) {
+  if (error_ != HpackDecodingError::kOk) {
     return;
   }
   if (require_dynamic_table_size_update_) {
-    ReportError("Missing dynamic table size update.");
+    ReportError(HpackDecodingError::kMissingDynamicTableSizeUpdate);
     return;
   }
   allow_dynamic_table_size_update_ = false;
   const HpackStringPair* entry = decoder_tables_.Lookup(name_index);
   if (entry != nullptr) {
     HpackString value(ExtractHpackString(value_buffer));
-    listener_->OnHeader(entry_type, entry->name, value);
+    listener_->OnHeader(entry->name, value);
     if (entry_type == HpackEntryType::kIndexedLiteralHeader) {
       decoder_tables_.Insert(entry->name, value);
     }
   } else {
-    ReportError("Invalid name index.");
+    ReportError(HpackDecodingError::kInvalidNameIndex);
   }
 }
 
@@ -130,17 +130,17 @@ void HpackDecoderState::OnLiteralNameAndValue(
     HpackDecoderStringBuffer* value_buffer) {
   HTTP2_DVLOG(2) << "HpackDecoderState::OnLiteralNameAndValue " << entry_type
                  << ", " << name_buffer->str() << ", " << value_buffer->str();
-  if (error_detected_) {
+  if (error_ != HpackDecodingError::kOk) {
     return;
   }
   if (require_dynamic_table_size_update_) {
-    ReportError("Missing dynamic table size update.");
+    ReportError(HpackDecodingError::kMissingDynamicTableSizeUpdate);
     return;
   }
   allow_dynamic_table_size_update_ = false;
   HpackString name(ExtractHpackString(name_buffer));
   HpackString value(ExtractHpackString(value_buffer));
-  listener_->OnHeader(entry_type, name, value);
+  listener_->OnHeader(name, value);
   if (entry_type == HpackEntryType::kIndexedLiteralHeader) {
     decoder_tables_.Insert(name, value);
   }
@@ -152,27 +152,29 @@ void HpackDecoderState::OnDynamicTableSizeUpdate(size_t size_limit) {
                  << (require_dynamic_table_size_update_ ? "true" : "false")
                  << ", allowed="
                  << (allow_dynamic_table_size_update_ ? "true" : "false");
-  if (error_detected_) {
+  if (error_ != HpackDecodingError::kOk) {
     return;
   }
   DCHECK_LE(lowest_header_table_size_, final_header_table_size_);
   if (!allow_dynamic_table_size_update_) {
     // At most two dynamic table size updates allowed at the start, and not
     // after a header.
-    ReportError("Dynamic table size update not allowed.");
+    ReportError(HpackDecodingError::kDynamicTableSizeUpdateNotAllowed);
     return;
   }
   if (require_dynamic_table_size_update_) {
     // The new size must not be greater than the low water mark.
     if (size_limit > lowest_header_table_size_) {
-      ReportError("Initial dynamic table size update is above low water mark.");
+      ReportError(HpackDecodingError::
+                      kInitialDynamicTableSizeUpdateIsAboveLowWaterMark);
       return;
     }
     require_dynamic_table_size_update_ = false;
   } else if (size_limit > final_header_table_size_) {
     // The new size must not be greater than the final max header table size
     // that the peer acknowledged.
-    ReportError("Dynamic table size update is above acknowledged setting.");
+    ReportError(
+        HpackDecodingError::kDynamicTableSizeUpdateIsAboveAcknowledgedSetting);
     return;
   }
   decoder_tables_.DynamicTableSizeUpdate(size_limit);
@@ -185,34 +187,35 @@ void HpackDecoderState::OnDynamicTableSizeUpdate(size_t size_limit) {
   lowest_header_table_size_ = final_header_table_size_;
 }
 
-void HpackDecoderState::OnHpackDecodeError(Http2StringPiece error_message) {
-  HTTP2_DVLOG(2) << "HpackDecoderState::OnHpackDecodeError " << error_message;
-  if (!error_detected_) {
-    ReportError(error_message);
+void HpackDecoderState::OnHpackDecodeError(HpackDecodingError error) {
+  HTTP2_DVLOG(2) << "HpackDecoderState::OnHpackDecodeError "
+                 << HpackDecodingErrorToString(error);
+  if (error_ == HpackDecodingError::kOk) {
+    ReportError(error);
   }
 }
 
 void HpackDecoderState::OnHeaderBlockEnd() {
   HTTP2_DVLOG(2) << "HpackDecoderState::OnHeaderBlockEnd";
-  if (error_detected_) {
+  if (error_ != HpackDecodingError::kOk) {
     return;
   }
   if (require_dynamic_table_size_update_) {
     // Apparently the HPACK block was empty, but we needed it to contain at
     // least 1 dynamic table size update.
-    ReportError("Missing dynamic table size update.");
+    ReportError(HpackDecodingError::kMissingDynamicTableSizeUpdate);
   } else {
     listener_->OnHeaderListEnd();
   }
 }
 
-void HpackDecoderState::ReportError(Http2StringPiece error_message) {
+void HpackDecoderState::ReportError(HpackDecodingError error) {
   HTTP2_DVLOG(2) << "HpackDecoderState::ReportError is new="
-                 << (!error_detected_ ? "true" : "false")
-                 << ", error_message: " << error_message;
-  if (!error_detected_) {
-    listener_->OnHeaderErrorDetected(error_message);
-    error_detected_ = true;
+                 << (error_ == HpackDecodingError::kOk ? "true" : "false")
+                 << ", error: " << HpackDecodingErrorToString(error);
+  if (error_ == HpackDecodingError::kOk) {
+    listener_->OnHeaderErrorDetected(HpackDecodingErrorToString(error));
+    error_ = error;
   }
 }
 

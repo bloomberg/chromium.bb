@@ -19,8 +19,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesCatalogUpdateRequestSource;
-import org.chromium.chrome.browser.favicon.IconType;
-import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -32,6 +30,8 @@ import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSites;
+import org.chromium.chrome.browser.ui.favicon.IconType;
+import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.lang.annotation.Retention;
@@ -268,7 +268,7 @@ public class TileGroup implements MostVisitedSites.Observer {
             if (suggestion.url.equals(mPendingInsertionUrl)) insertionCompleted = true;
             if (suggestion.source == TileSource.EXPLORE && !mExploreSitesLoaded) {
                 mExploreSitesLoaded = true;
-                ExploreSitesBridge.initializeCatalog(Profile.getLastUsedProfile(),
+                ExploreSitesBridge.initializeCatalog(Profile.getLastUsedRegularProfile(),
                         ExploreSitesCatalogUpdateRequestSource.NEW_TAB_PAGE);
             }
         }

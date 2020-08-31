@@ -8,7 +8,6 @@
 
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
-#include "core/fpdfapi/parser/cpdf_document.h"
 
 CPDF_TextState::CPDF_TextState() = default;
 
@@ -58,20 +57,8 @@ void CPDF_TextState::SetWordSpace(float sp) {
   m_Ref.GetPrivateCopy()->m_WordSpace = sp;
 }
 
-float CPDF_TextState::GetFontSizeV() const {
-  return m_Ref.GetObject()->GetFontSizeV();
-}
-
 float CPDF_TextState::GetFontSizeH() const {
   return m_Ref.GetObject()->GetFontSizeH();
-}
-
-float CPDF_TextState::GetBaselineAngle() const {
-  return m_Ref.GetObject()->GetBaselineAngle();
-}
-
-float CPDF_TextState::GetShearAngle() const {
-  return m_Ref.GetObject()->GetShearAngle();
 }
 
 TextRenderingMode CPDF_TextState::GetTextMode() const {
@@ -90,18 +77,7 @@ float* CPDF_TextState::GetMutableCTM() {
   return m_Ref.GetPrivateCopy()->m_CTM;
 }
 
-CPDF_TextState::TextData::TextData()
-    : m_pFont(nullptr),
-      m_pDocument(nullptr),
-      m_FontSize(1.0f),
-      m_CharSpace(0),
-      m_WordSpace(0),
-      m_TextMode(TextRenderingMode::MODE_FILL) {
-  m_Matrix[0] = m_Matrix[3] = 1.0f;
-  m_Matrix[1] = m_Matrix[2] = 0;
-  m_CTM[0] = m_CTM[3] = 1.0f;
-  m_CTM[1] = m_CTM[2] = 0;
-}
+CPDF_TextState::TextData::TextData() = default;
 
 CPDF_TextState::TextData::TextData(const TextData& that)
     : m_pFont(that.m_pFont),
@@ -133,20 +109,8 @@ void CPDF_TextState::TextData::SetFont(const RetainPtr<CPDF_Font>& pFont) {
   m_pFont = pFont;
 }
 
-float CPDF_TextState::TextData::GetFontSizeV() const {
-  return fabs(FXSYS_sqrt2(m_Matrix[1], m_Matrix[3]) * m_FontSize);
-}
-
 float CPDF_TextState::TextData::GetFontSizeH() const {
   return fabs(FXSYS_sqrt2(m_Matrix[0], m_Matrix[2]) * m_FontSize);
-}
-
-float CPDF_TextState::TextData::GetBaselineAngle() const {
-  return atan2(m_Matrix[2], m_Matrix[0]);
-}
-
-float CPDF_TextState::TextData::GetShearAngle() const {
-  return GetBaselineAngle() + atan2(m_Matrix[1], m_Matrix[3]);
 }
 
 bool SetTextRenderingModeFromInt(int iMode, TextRenderingMode* mode) {

@@ -16,7 +16,130 @@
 #include "aom_dsp/x86/bitdepth_conversion_sse2.h"
 #include "aom_ports/mem.h"
 
-static void hadamard_col8_sse2(__m128i *in, int iter) {
+void aom_minmax_8x8_sse2(const uint8_t *s, int p, const uint8_t *d, int dp,
+                         int *min, int *max) {
+  __m128i u0, s0, d0, diff, maxabsdiff, minabsdiff, negdiff, absdiff0, absdiff;
+  u0 = _mm_setzero_si128();
+  // Row 0
+  s0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s)), u0);
+  d0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(d)), u0);
+  diff = _mm_subs_epi16(s0, d0);
+  negdiff = _mm_subs_epi16(u0, diff);
+  absdiff0 = _mm_max_epi16(diff, negdiff);
+  // Row 1
+  s0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + p)), u0);
+  d0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(d + dp)), u0);
+  diff = _mm_subs_epi16(s0, d0);
+  negdiff = _mm_subs_epi16(u0, diff);
+  absdiff = _mm_max_epi16(diff, negdiff);
+  maxabsdiff = _mm_max_epi16(absdiff0, absdiff);
+  minabsdiff = _mm_min_epi16(absdiff0, absdiff);
+  // Row 2
+  s0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + 2 * p)), u0);
+  d0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(d + 2 * dp)), u0);
+  diff = _mm_subs_epi16(s0, d0);
+  negdiff = _mm_subs_epi16(u0, diff);
+  absdiff = _mm_max_epi16(diff, negdiff);
+  maxabsdiff = _mm_max_epi16(maxabsdiff, absdiff);
+  minabsdiff = _mm_min_epi16(minabsdiff, absdiff);
+  // Row 3
+  s0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + 3 * p)), u0);
+  d0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(d + 3 * dp)), u0);
+  diff = _mm_subs_epi16(s0, d0);
+  negdiff = _mm_subs_epi16(u0, diff);
+  absdiff = _mm_max_epi16(diff, negdiff);
+  maxabsdiff = _mm_max_epi16(maxabsdiff, absdiff);
+  minabsdiff = _mm_min_epi16(minabsdiff, absdiff);
+  // Row 4
+  s0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + 4 * p)), u0);
+  d0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(d + 4 * dp)), u0);
+  diff = _mm_subs_epi16(s0, d0);
+  negdiff = _mm_subs_epi16(u0, diff);
+  absdiff = _mm_max_epi16(diff, negdiff);
+  maxabsdiff = _mm_max_epi16(maxabsdiff, absdiff);
+  minabsdiff = _mm_min_epi16(minabsdiff, absdiff);
+  // Row 5
+  s0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + 5 * p)), u0);
+  d0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(d + 5 * dp)), u0);
+  diff = _mm_subs_epi16(s0, d0);
+  negdiff = _mm_subs_epi16(u0, diff);
+  absdiff = _mm_max_epi16(diff, negdiff);
+  maxabsdiff = _mm_max_epi16(maxabsdiff, absdiff);
+  minabsdiff = _mm_min_epi16(minabsdiff, absdiff);
+  // Row 6
+  s0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + 6 * p)), u0);
+  d0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(d + 6 * dp)), u0);
+  diff = _mm_subs_epi16(s0, d0);
+  negdiff = _mm_subs_epi16(u0, diff);
+  absdiff = _mm_max_epi16(diff, negdiff);
+  maxabsdiff = _mm_max_epi16(maxabsdiff, absdiff);
+  minabsdiff = _mm_min_epi16(minabsdiff, absdiff);
+  // Row 7
+  s0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + 7 * p)), u0);
+  d0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(d + 7 * dp)), u0);
+  diff = _mm_subs_epi16(s0, d0);
+  negdiff = _mm_subs_epi16(u0, diff);
+  absdiff = _mm_max_epi16(diff, negdiff);
+  maxabsdiff = _mm_max_epi16(maxabsdiff, absdiff);
+  minabsdiff = _mm_min_epi16(minabsdiff, absdiff);
+
+  maxabsdiff = _mm_max_epi16(maxabsdiff, _mm_srli_si128(maxabsdiff, 8));
+  maxabsdiff = _mm_max_epi16(maxabsdiff, _mm_srli_epi64(maxabsdiff, 32));
+  maxabsdiff = _mm_max_epi16(maxabsdiff, _mm_srli_epi64(maxabsdiff, 16));
+  *max = _mm_extract_epi16(maxabsdiff, 0);
+
+  minabsdiff = _mm_min_epi16(minabsdiff, _mm_srli_si128(minabsdiff, 8));
+  minabsdiff = _mm_min_epi16(minabsdiff, _mm_srli_epi64(minabsdiff, 32));
+  minabsdiff = _mm_min_epi16(minabsdiff, _mm_srli_epi64(minabsdiff, 16));
+  *min = _mm_extract_epi16(minabsdiff, 0);
+}
+
+unsigned int aom_avg_8x8_sse2(const uint8_t *s, int p) {
+  __m128i s0, s1, u0;
+  unsigned int avg = 0;
+  u0 = _mm_setzero_si128();
+  s0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s)), u0);
+  s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + p)), u0);
+  s0 = _mm_adds_epu16(s0, s1);
+  s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + 2 * p)), u0);
+  s0 = _mm_adds_epu16(s0, s1);
+  s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + 3 * p)), u0);
+  s0 = _mm_adds_epu16(s0, s1);
+  s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + 4 * p)), u0);
+  s0 = _mm_adds_epu16(s0, s1);
+  s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + 5 * p)), u0);
+  s0 = _mm_adds_epu16(s0, s1);
+  s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + 6 * p)), u0);
+  s0 = _mm_adds_epu16(s0, s1);
+  s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + 7 * p)), u0);
+  s0 = _mm_adds_epu16(s0, s1);
+
+  s0 = _mm_adds_epu16(s0, _mm_srli_si128(s0, 8));
+  s0 = _mm_adds_epu16(s0, _mm_srli_epi64(s0, 32));
+  s0 = _mm_adds_epu16(s0, _mm_srli_epi64(s0, 16));
+  avg = _mm_extract_epi16(s0, 0);
+  return (avg + 32) >> 6;
+}
+
+unsigned int aom_avg_4x4_sse2(const uint8_t *s, int p) {
+  __m128i s0, s1, u0;
+  unsigned int avg = 0;
+  u0 = _mm_setzero_si128();
+  s0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s)), u0);
+  s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + p)), u0);
+  s0 = _mm_adds_epu16(s0, s1);
+  s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + 2 * p)), u0);
+  s0 = _mm_adds_epu16(s0, s1);
+  s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s + 3 * p)), u0);
+  s0 = _mm_adds_epu16(s0, s1);
+
+  s0 = _mm_adds_epu16(s0, _mm_srli_si128(s0, 4));
+  s0 = _mm_adds_epu16(s0, _mm_srli_epi64(s0, 16));
+  avg = _mm_extract_epi16(s0, 0);
+  return (avg + 8) >> 4;
+}
+
+static INLINE void hadamard_col8_sse2(__m128i *in, int iter) {
   __m128i a0 = in[0];
   __m128i a1 = in[1];
   __m128i a2 = in[2];
@@ -147,6 +270,38 @@ static INLINE void hadamard_8x8_sse2(const int16_t *src_diff,
 void aom_hadamard_8x8_sse2(const int16_t *src_diff, ptrdiff_t src_stride,
                            tran_low_t *coeff) {
   hadamard_8x8_sse2(src_diff, src_stride, coeff, 1);
+}
+
+void aom_hadamard_lp_8x8_sse2(const int16_t *src_diff, ptrdiff_t src_stride,
+                              int16_t *coeff) {
+  __m128i src[8];
+  src[0] = _mm_load_si128((const __m128i *)src_diff);
+  src[1] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
+  src[2] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
+  src[3] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
+  src[4] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
+  src[5] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
+  src[6] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
+  src[7] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
+
+  hadamard_col8_sse2(src, 0);
+  hadamard_col8_sse2(src, 1);
+
+  _mm_store_si128((__m128i *)coeff, src[0]);
+  coeff += 8;
+  _mm_store_si128((__m128i *)coeff, src[1]);
+  coeff += 8;
+  _mm_store_si128((__m128i *)coeff, src[2]);
+  coeff += 8;
+  _mm_store_si128((__m128i *)coeff, src[3]);
+  coeff += 8;
+  _mm_store_si128((__m128i *)coeff, src[4]);
+  coeff += 8;
+  _mm_store_si128((__m128i *)coeff, src[5]);
+  coeff += 8;
+  _mm_store_si128((__m128i *)coeff, src[6]);
+  coeff += 8;
+  _mm_store_si128((__m128i *)coeff, src[7]);
 }
 
 static INLINE void hadamard_16x16_sse2(const int16_t *src_diff,
@@ -282,4 +437,76 @@ int aom_satd_sse2(const tran_low_t *coeff, int length) {
   }
 
   return _mm_cvtsi128_si32(accum);
+}
+
+void aom_int_pro_row_sse2(int16_t *hbuf, const uint8_t *ref,
+                          const int ref_stride, const int height) {
+  int idx = 1;
+  __m128i zero = _mm_setzero_si128();
+  __m128i src_line = _mm_loadu_si128((const __m128i *)ref);
+  __m128i s0 = _mm_unpacklo_epi8(src_line, zero);
+  __m128i s1 = _mm_unpackhi_epi8(src_line, zero);
+  __m128i t0, t1;
+  int height_1 = height - 1;
+  ref += ref_stride;
+  do {
+    src_line = _mm_loadu_si128((const __m128i *)ref);
+    t0 = _mm_unpacklo_epi8(src_line, zero);
+    t1 = _mm_unpackhi_epi8(src_line, zero);
+    s0 = _mm_adds_epu16(s0, t0);
+    s1 = _mm_adds_epu16(s1, t1);
+    ref += ref_stride;
+
+    src_line = _mm_loadu_si128((const __m128i *)ref);
+    t0 = _mm_unpacklo_epi8(src_line, zero);
+    t1 = _mm_unpackhi_epi8(src_line, zero);
+    s0 = _mm_adds_epu16(s0, t0);
+    s1 = _mm_adds_epu16(s1, t1);
+    ref += ref_stride;
+    idx += 2;
+  } while (idx < height_1);
+
+  src_line = _mm_loadu_si128((const __m128i *)ref);
+  t0 = _mm_unpacklo_epi8(src_line, zero);
+  t1 = _mm_unpackhi_epi8(src_line, zero);
+  s0 = _mm_adds_epu16(s0, t0);
+  s1 = _mm_adds_epu16(s1, t1);
+  if (height == 128) {
+    s0 = _mm_srai_epi16(s0, 6);
+    s1 = _mm_srai_epi16(s1, 6);
+  } else if (height == 64) {
+    s0 = _mm_srai_epi16(s0, 5);
+    s1 = _mm_srai_epi16(s1, 5);
+  } else if (height == 32) {
+    s0 = _mm_srai_epi16(s0, 4);
+    s1 = _mm_srai_epi16(s1, 4);
+  } else {
+    assert(height == 16);
+    s0 = _mm_srai_epi16(s0, 3);
+    s1 = _mm_srai_epi16(s1, 3);
+  }
+
+  _mm_storeu_si128((__m128i *)hbuf, s0);
+  hbuf += 8;
+  _mm_storeu_si128((__m128i *)hbuf, s1);
+}
+
+int16_t aom_int_pro_col_sse2(const uint8_t *ref, const int width) {
+  __m128i zero = _mm_setzero_si128();
+  __m128i src_line = _mm_loadu_si128((const __m128i *)ref);
+  __m128i s0 = _mm_sad_epu8(src_line, zero);
+  __m128i s1;
+  int i;
+
+  for (i = 16; i < width; i += 16) {
+    ref += 16;
+    src_line = _mm_loadu_si128((const __m128i *)ref);
+    s1 = _mm_sad_epu8(src_line, zero);
+    s0 = _mm_adds_epu16(s0, s1);
+  }
+
+  s1 = _mm_srli_si128(s0, 8);
+  s0 = _mm_adds_epu16(s0, s1);
+
+  return _mm_extract_epi16(s0, 0);
 }

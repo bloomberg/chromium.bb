@@ -13,32 +13,11 @@ namespace web {
 class WebState;
 }
 
-@class CommandDispatcher;
 @protocol InfobarPositioner;
 @protocol SyncPresenter;
-class WebStateList;
 
 // Coordinator that owns and manages an InfobarContainer.
 @interface InfobarContainerCoordinator : ChromeCoordinator
-
-// TODO(crbug.com/892376): Pass a Browser object instead of BrowserState and
-// WebStateList once BVC has a Browser pointer.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
-                              webStateList:(WebStateList*)webStateList
-    NS_DESIGNATED_INITIALIZER;
-;
-
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_UNAVAILABLE;
-
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
-    NS_UNAVAILABLE;
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 // Sets the visibility of the container to |hidden|.
 - (void)hideContainer:(BOOL)hidden;
@@ -53,6 +32,11 @@ class WebStateList;
 // means the view is now visible and part of the main window hierarchy.
 - (void)baseViewDidAppear;
 
+// Notifies the coordinator that its baseViewController's ViewWillDisappear.
+// This means the view is not visible and no longer part of the main window
+// hierarchy.
+- (void)baseViewWillDisappear;
+
 // YES if an Infobar is being presented for |webState|.
 - (BOOL)isInfobarPresentingForWebState:(web::WebState*)webState;
 
@@ -61,9 +45,6 @@ class WebStateList;
 // run.
 - (void)dismissInfobarBannerAnimated:(BOOL)animated
                           completion:(void (^)())completion;
-
-// The CommandDispatcher for this Coordinator.
-@property(nonatomic, weak) CommandDispatcher* commandDispatcher;
 
 // The delegate used to position the InfobarContainer in the view.
 @property(nonatomic, weak) id<InfobarPositioner> positioner;

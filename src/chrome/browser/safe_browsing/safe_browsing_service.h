@@ -25,9 +25,9 @@
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/db/util.h"
-#include "components/safe_browsing/safe_browsing_service_interface.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/db/util.h"
+#include "components/safe_browsing/core/safe_browsing_service_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 
@@ -63,8 +63,9 @@ class SafeBrowsingPrivateApiUnitTest;
 namespace safe_browsing {
 class PingManager;
 class VerdictCacheManager;
-class ClientSideDetectionService;
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 class DownloadProtectionService;
+#endif
 class PasswordProtectionService;
 class SafeBrowsingDatabaseManager;
 class SafeBrowsingNavigationObserverManager;
@@ -113,20 +114,26 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
     return enabled_by_prefs_;
   }
 
-  ClientSideDetectionService* safe_browsing_detection_service() const {
-    return services_delegate_->GetCsdService();
-  }
-
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   // The DownloadProtectionService is not valid after the SafeBrowsingService
   // is destroyed.
   DownloadProtectionService* download_protection_service() const {
     return services_delegate_->GetDownloadService();
   }
+#endif
 
   // NetworkContext and URLLoaderFactory used for safe browsing requests.
   // Called on UI thread.
+  // TODO(crbug/1049833): Transition all callers of these functions to the
+  // per-profile methods below.
   network::mojom::NetworkContext* GetNetworkContext();
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
+
+  // Get the NetworkContext or URLLoaderFactory attached to |profile|. Called on
+  // UI thread.
+  network::mojom::NetworkContext* GetNetworkContext(Profile* profile);
+  virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
+      Profile* profile);
 
   // Flushes above two interfaces to avoid races in tests.
   void FlushNetworkInterfaceForTesting();
@@ -181,9 +188,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // Get the cache manager by profile.
   VerdictCacheManager* GetVerdictCacheManager(Profile* profile) const;
 
-  // Get the binary upload service by profile.
-  BinaryUploadService* GetBinaryUploadService(Profile* profile) const;
-
  protected:
   // Creates the safe browsing service.  Need to initialize before using.
   SafeBrowsingService();
@@ -208,7 +212,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   friend class extensions::SafeBrowsingPrivateApiUnitTest;
   friend class SafeBrowsingServerTest;
   friend class SafeBrowsingUIManagerTest;
-  friend class SafeBrowsingURLRequestContextGetter;
   friend class TestSafeBrowsingService;
   friend class TestSafeBrowsingServiceFactory;
   friend class V4SafeBrowsingServiceTest;

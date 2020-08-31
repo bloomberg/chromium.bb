@@ -8,6 +8,7 @@
 #include "components/rappor/public/sample.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace content {
@@ -87,8 +88,7 @@ bool RenderWidgetHostDelegate::ShouldShowStaleContentOnEviction() {
   return false;
 }
 
-blink::mojom::DisplayMode RenderWidgetHostDelegate::GetDisplayMode(
-    RenderWidgetHostImpl* render_widget_host) const {
+blink::mojom::DisplayMode RenderWidgetHostDelegate::GetDisplayMode() const {
   return blink::mojom::DisplayMode::kBrowser;
 }
 
@@ -141,13 +141,8 @@ bool RenderWidgetHostDelegate::AddDomainInfoToRapporSample(
   return false;
 }
 
-ukm::SourceId RenderWidgetHostDelegate::GetUkmSourceIdForLastCommittedSource()
-    const {
+ukm::SourceId RenderWidgetHostDelegate::GetCurrentPageUkmSourceId() {
   return ukm::kInvalidSourceId;
-}
-
-gfx::Size RenderWidgetHostDelegate::GetAutoResizeSize() {
-  return gfx::Size();
 }
 
 WebContents* RenderWidgetHostDelegate::GetAsWebContents() {
@@ -158,13 +153,13 @@ bool RenderWidgetHostDelegate::IsShowingContextMenuOnPage() const {
   return false;
 }
 
-InputEventShim* RenderWidgetHostDelegate::GetInputEventShim() const {
-  return nullptr;
-}
-
 RenderFrameHostImpl*
 RenderWidgetHostDelegate::GetFocusedFrameFromFocusedDelegate() {
   return nullptr;
+}
+
+bool RenderWidgetHostDelegate::IsPortal() {
+  return false;
 }
 
 }  // namespace content

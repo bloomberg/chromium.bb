@@ -42,7 +42,8 @@ void LogEvent(AdbSideloadingPromptEvent action) {
 EnableAdbSideloadingScreen::EnableAdbSideloadingScreen(
     EnableAdbSideloadingScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(EnableAdbSideloadingScreenView::kScreenId),
+    : BaseScreen(EnableAdbSideloadingScreenView::kScreenId,
+                 OobeScreenPriority::SCREEN_ADB_SIDELOADING),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);
@@ -71,12 +72,12 @@ void EnableAdbSideloadingScreen::OnUserAction(const std::string& action_id) {
   }
 }
 
-void EnableAdbSideloadingScreen::Show() {
+void EnableAdbSideloadingScreen::ShowImpl() {
   chromeos::SessionManagerClient* client =
       chromeos::SessionManagerClient::Get();
   client->QueryAdbSideload(
-      base::Bind(&EnableAdbSideloadingScreen::OnQueryAdbSideload,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EnableAdbSideloadingScreen::OnQueryAdbSideload,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnableAdbSideloadingScreen::OnQueryAdbSideload(
@@ -119,7 +120,7 @@ void EnableAdbSideloadingScreen::OnQueryAdbSideload(
   view_->Show();
 }
 
-void EnableAdbSideloadingScreen::Hide() {
+void EnableAdbSideloadingScreen::HideImpl() {
   DCHECK(view_);
   view_->Hide();
 }
@@ -133,8 +134,8 @@ void EnableAdbSideloadingScreen::OnEnable() {
   chromeos::SessionManagerClient* client =
       chromeos::SessionManagerClient::Get();
   client->EnableAdbSideload(
-      base::Bind(&EnableAdbSideloadingScreen::OnEnableAdbSideload,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EnableAdbSideloadingScreen::OnEnableAdbSideload,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnableAdbSideloadingScreen::OnEnableAdbSideload(
@@ -156,8 +157,7 @@ void EnableAdbSideloadingScreen::OnEnableAdbSideload(
 }
 
 void EnableAdbSideloadingScreen::OnLearnMore() {
-  // TODO(victorhsieh): replace the help center link
-  HelpAppLauncher::HelpTopic topic = HelpAppLauncher::HELP_POWERWASH;
+  HelpAppLauncher::HelpTopic topic = HelpAppLauncher::HELP_ADB_SIDELOADING;
   VLOG(1) << "Trying to view help article " << topic;
   if (!help_app_.get()) {
     help_app_ = new HelpAppLauncher(

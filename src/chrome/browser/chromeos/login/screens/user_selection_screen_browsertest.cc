@@ -5,101 +5,93 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "content/public/test/browser_test.h"
 
 namespace chromeos {
 
-namespace {
-
-// Consumer user according to BrowserPolicyConnector::IsNonEnterpriseUser
-// (@gmail.com).
-constexpr char kTestUser1[] = "test-user1@gmail.com";
-constexpr char kTestUser1GaiaId[] = "1111111111";
-
-// Consumer user according to BrowserPolicyConnector::IsNonEnterpriseUser
-// (@gmail.com).
-constexpr char kTestUser2[] = "test-user2@gmail.com";
-constexpr char kTestUser2GaiaId[] = "2222222222";
-
-// No consumer user according to BrowserPolicyConnector::IsNonEnterpriseUser.
-constexpr char kManagedTestUser[] = "manager@example.com";
-constexpr char kManagedTestUserGaiaId[] = "3333333333";
-
-}  // namespace
-
 class UserSelectionScreenTest : public LoginManagerTest {
  public:
-  UserSelectionScreenTest()
-      : LoginManagerTest(false /* should_launch_browser */,
-                         true /* should_initialize_webui */) {}
+  UserSelectionScreenTest() : LoginManagerTest() {
+    login_manager_mixin_.AppendRegularUsers(3);
+    login_manager_mixin_.AppendManagedUsers(1);
+  }
   ~UserSelectionScreenTest() override = default;
 
-  OobeUI* GetOobeUI() { return LoginDisplayHost::default_host()->GetOobeUI(); }
-
-  void FocusUserPod(int pod_id) {
-    base::RunLoop pod_focus_wait_loop;
-    GetOobeUI()->signin_screen_handler()->SetFocusPODCallbackForTesting(
-        pod_focus_wait_loop.QuitClosure());
-    test::OobeJS().Evaluate(base::StringPrintf(
-        "$('pod-row').focusPod($('pod-row').pods[%d])", pod_id));
-    pod_focus_wait_loop.Run();
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    LoginManagerTest::SetUpCommandLine(command_line);
+    // Enable ARC. Otherwise, the banner would not show.
+    command_line->AppendSwitchASCII(switches::kArcAvailability,
+                                    "officially-supported");
   }
 
- private:
+ protected:
+  LoginManagerMixin login_manager_mixin_{&mixin_host_};
+
   DISALLOW_COPY_AND_ASSIGN(UserSelectionScreenTest);
 };
-
-IN_PROC_BROWSER_TEST_F(UserSelectionScreenTest,
-                       PRE_ShowDircryptoMigrationBanner) {
-  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId));
-  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser2, kTestUser2GaiaId));
-  RegisterUser(
-      AccountId::FromUserEmailGaiaId(kManagedTestUser, kManagedTestUserGaiaId));
-  StartupUtils::MarkOobeCompleted();
-}
 
 // Test that a banner shows up for known-unmanaged users that need dircrypto
 // migration. Also test that no banner shows up for users that may be managed.
 IN_PROC_BROWSER_TEST_F(UserSelectionScreenTest, ShowDircryptoMigrationBanner) {
-  // Enable ARC. Otherwise, the banner would not show.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kArcAvailability, "officially-supported");
-
+  const auto& users = login_manager_mixin_.users();
   // No banner for the first user since default is no migration.
-  test::OobeJS().ExpectHasNoClass("message-set", {"signin-banner"});
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsWarningBubbleShown());
 
+  std::unique_ptr<base::HistogramTester> histogram_tester =
+      std::make_unique<base::HistogramTester>();
   // Change the needs dircrypto migration response.
   FakeCryptohomeClient::Get()->set_needs_dircrypto_migration(true);
 
   // Focus the 2nd user pod (consumer).
-  FocusUserPod(1);
+  ASSERT_TRUE(ash::LoginScreenTestApi::FocusUser(users[1].account_id));
 
   // Wait for FakeCryptohomeClient to send back the check result.
-  base::RunLoop().RunUntilIdle();
+  test::TestPredicateWaiter(base::BindRepeating([]() {
+    // Banner should be shown for the 2nd user (consumer).
+    return ash::LoginScreenTestApi::IsWarningBubbleShown();
+  })).Wait();
+  histogram_tester->ExpectBucketCount("Ash.Login.Login.MigrationBanner", true,
+                                      1);
 
-  // Banner should be shown for the 2nd user (consumer).
-  test::OobeJS().ExpectHasClass("message-set", {"signin-banner"});
-
-  // Focus to the 3rd user pod (enterprise).
-  FocusUserPod(2);
+  // Change the needs dircrypto migration response.
+  FakeCryptohomeClient::Get()->set_needs_dircrypto_migration(false);
+  histogram_tester = std::make_unique<base::HistogramTester>();
+  // Focus the 3rd user pod (consumer).
+  ASSERT_TRUE(ash::LoginScreenTestApi::FocusUser(users[2].account_id));
 
   // Wait for FakeCryptohomeClient to send back the check result.
-  base::RunLoop().RunUntilIdle();
+  test::TestPredicateWaiter(base::BindRepeating([]() {
+    // Banner should be shown for the 3rd user (consumer).
+    return !ash::LoginScreenTestApi::IsWarningBubbleShown();
+  })).Wait();
+  histogram_tester->ExpectBucketCount("Ash.Login.Login.MigrationBanner", false,
+                                      1);
 
-  // Banner should not be shown for the enterprise user.
-  test::OobeJS().ExpectHasNoClass("message-set", {"signin-banner"});
+  // Change the needs dircrypto migration response.
+  FakeCryptohomeClient::Get()->set_needs_dircrypto_migration(true);
+  histogram_tester = std::make_unique<base::HistogramTester>();
+
+  // Focus to the 4th user pod (enterprise).
+  ASSERT_TRUE(ash::LoginScreenTestApi::FocusUser(users[3].account_id));
+
+  // Wait for FakeCryptohomeClient to send back the check result.
+  test::TestPredicateWaiter(base::BindRepeating([]() {
+    // Banner should not be shown for the enterprise user.
+    return !ash::LoginScreenTestApi::IsWarningBubbleShown();
+  })).Wait();
+
+  // Not recorded for enterprise.
+  histogram_tester->ExpectUniqueSample("Ash.Login.Login.MigrationBanner", false,
+                                       0);
 }
 
 }  // namespace chromeos

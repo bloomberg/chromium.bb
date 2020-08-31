@@ -15,6 +15,7 @@
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/protocol/client_commands.pb.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::Eq;
@@ -54,7 +55,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest, ShouldInitializePollPrefs) {
 // This test verifies that updates of the poll interval get persisted
 // That's important make sure clients with short live times will eventually poll
 // (e.g. Android).
-IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest, ShouldUpdatePollPrefs) {
+IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
+                       PRE_ShouldUsePollIntervalFromPrefs) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   sync_pb::ClientCommand client_command;
@@ -76,17 +78,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest, ShouldUpdatePollPrefs) {
 
 IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
                        ShouldUsePollIntervalFromPrefs) {
-  // Setup clients and provide new poll interval via prefs.
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-  SyncPrefs sync_prefs(GetProfile(0)->GetPrefs());
-  sync_prefs.SetPollInterval(base::TimeDelta::FromSeconds(123));
-
   // Execute a sync cycle and verify this cycle used that interval.
   // This test assumes the SyncScheduler reads the actual interval from the
   // context. This is covered in the SyncSchedulerImpl's unittest.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   EXPECT_THAT(GetClient(0)->GetLastCycleSnapshot().poll_interval().InSeconds(),
-              Eq(123));
+              Eq(67));
 }
 
 // This test simulates the poll interval expiring between restarts.
@@ -130,11 +127,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
 IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
                        ShouldPollWhenIntervalExpiredAcrossRestarts) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
   // signin::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
   // to get a non-empty refresh token on startup.
   GetClient(0)->SignInPrimaryAccount();
-#endif  // defined(CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
   ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
 
   SyncPrefs remote_prefs(GetProfile(0)->GetPrefs());

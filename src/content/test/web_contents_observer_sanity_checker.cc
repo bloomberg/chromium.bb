@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -16,7 +17,6 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/navigation_policy.h"
 #include "net/base/net_errors.h"
 
 namespace content {
@@ -123,11 +123,15 @@ void WebContentsObserverSanityChecker::RenderFrameHostChanged(
     RenderFrameHost* new_host) {
   CHECK(new_host);
   CHECK_NE(new_host, old_host);
+  CHECK(GetRoutingPair(old_host) != GetRoutingPair(new_host));
 
   if (old_host) {
     EnsureStableParentValue(old_host);
     CHECK_EQ(old_host->GetParent(), new_host->GetParent());
     GlobalRoutingID routing_pair = GetRoutingPair(old_host);
+    // If the navigation requires a new RFH, IsCurrent on old host should be
+    // false.
+    CHECK(!old_host->IsCurrent());
     bool old_did_exist = !!current_hosts_.erase(routing_pair);
     if (!old_did_exist) {
       CHECK(false)
@@ -136,6 +140,7 @@ void WebContentsObserverSanityChecker::RenderFrameHostChanged(
     }
   }
 
+  CHECK(new_host->IsCurrent());
   EnsureStableParentValue(new_host);
   if (new_host->GetParent()) {
     AssertRenderFrameExists(new_host->GetParent());
@@ -226,6 +231,9 @@ void WebContentsObserverSanityChecker::DidFinishNavigation(
   CHECK(!navigation_handle->HasCommitted() ||
         navigation_handle->GetRenderFrameHost() != nullptr);
 
+  CHECK(!navigation_handle->HasCommitted() ||
+        navigation_handle->GetRenderFrameHost()->IsCurrent());
+
   // If ReadyToCommitNavigation was dispatched, verify that the
   // |navigation_handle| has the same RenderFrameHost at this time as the one
   // returned at ReadyToCommitNavigation.
@@ -262,8 +270,7 @@ void WebContentsObserverSanityChecker::DidFinishLoad(
 void WebContentsObserverSanityChecker::DidFailLoad(
     RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description) {
+    int error_code) {
   AssertRenderFrameExists(render_frame_host);
 }
 

@@ -7,14 +7,19 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "content/browser/gpu/gpu_data_manager_impl_private.h"
 #include "content/browser/gpu/gpu_data_manager_testing_autogen.h"
 #include "content/browser/gpu/gpu_data_manager_testing_entry_enums_autogen.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
+#include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_feature_type.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/common/memory_stats.h"
@@ -53,7 +58,17 @@ static GURL GetDomain2ForTesting() {
   return GURL("http://bar.com/");
 }
 
-}  // namespace anonymous
+gpu::GpuFeatureInfo ALLOW_UNUSED_TYPE
+GetGpuFeatureInfoWithOneDisabled(gpu::GpuFeatureType disabled_feature) {
+  gpu::GpuFeatureInfo gpu_feature_info;
+  for (auto& status : gpu_feature_info.status_values)
+    status = gpu::GpuFeatureStatus::kGpuFeatureStatusEnabled;
+  gpu_feature_info.status_values[disabled_feature] =
+      gpu::GpuFeatureStatus::kGpuFeatureStatusDisabled;
+  return gpu_feature_info;
+}
+
+}  // namespace
 
 class GpuDataManagerImplPrivateTest : public testing::Test {
  public:
@@ -248,5 +263,147 @@ TEST_F(GpuDataManagerImplPrivateTest, UnblockThisDomainFrom3DAPIs) {
             manager->Are3DAPIsBlockedAtTime(
                 GetDomain2ForTesting(), JustBeforeExpiration(manager.get())));
 }
+
+// Android and Chrome OS do not support software compositing, while Fuchsia does
+// not support falling back to software from Vulkan.
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_FUCHSIA)
+TEST_F(GpuDataManagerImplPrivateTest, FallbackToSwiftShader) {
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_GL, manager->GetGpuMode());
+
+  manager->FallBackToNextGpuMode();
+  EXPECT_EQ(gpu::GpuMode::SWIFTSHADER, manager->GetGpuMode());
+}
+
+TEST_F(GpuDataManagerImplPrivateTest, FallbackWithSwiftShaderDisabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableSoftwareRasterizer);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_GL, manager->GetGpuMode());
+
+  manager->FallBackToNextGpuMode();
+#if defined(OS_WIN)
+  gpu::GpuMode expected_mode = gpu::GpuMode::DISABLED;
+#else
+  gpu::GpuMode expected_mode = gpu::GpuMode::DISPLAY_COMPOSITOR;
+#endif  // !OS_WIN
+  EXPECT_EQ(expected_mode, manager->GetGpuMode());
+}
+#endif  // !OS_FUCHSIA
+
+#if !BUILDFLAG(IS_CHROMECAST)
+TEST_F(GpuDataManagerImplPrivateTest, GpuStartsWithGpuDisabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableGpu);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::SWIFTSHADER, manager->GetGpuMode());
+}
+#endif  // !IS_CHROMECAST
+#endif  // !OS_ANDROID && !OS_CHROMEOS
+
+// Chromecast audio-only builds should not launch the GPU process.
+#if BUILDFLAG(IS_CHROMECAST)
+TEST_F(GpuDataManagerImplPrivateTest, ChromecastStartsWithGpuDisabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableGpu);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::DISABLED, manager->GetGpuMode());
+}
+#endif  // IS_CHROMECAST
+
+#if defined(OS_MACOSX)
+TEST_F(GpuDataManagerImplPrivateTest, FallbackFromMetalToGL) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kMetal);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_METAL, manager->GetGpuMode());
+
+  manager->FallBackToNextGpuMode();
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_GL, manager->GetGpuMode());
+}
+
+TEST_F(GpuDataManagerImplPrivateTest, FallbackFromMetalWithGLDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kMetal);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_METAL, manager->GetGpuMode());
+
+  // Simulate GPU process initialization completing with GL unavailable.
+  gpu::GpuFeatureInfo gpu_feature_info = GetGpuFeatureInfoWithOneDisabled(
+      gpu::GpuFeatureType::GPU_FEATURE_TYPE_ACCELERATED_GL);
+  manager->UpdateGpuFeatureInfo(gpu_feature_info, base::nullopt);
+
+  manager->FallBackToNextGpuMode();
+  EXPECT_EQ(gpu::GpuMode::SWIFTSHADER, manager->GetGpuMode());
+}
+#endif  // OS_MACOSX
+
+#if BUILDFLAG(ENABLE_VULKAN)
+TEST_F(GpuDataManagerImplPrivateTest, GpuStartsWithUseVulkanFlag) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kUseVulkan, switches::kVulkanImplementationNameNative);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_VULKAN, manager->GetGpuMode());
+}
+
+TEST_F(GpuDataManagerImplPrivateTest, GpuStartsWithVulkanFeatureFlag) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kVulkan);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_VULKAN, manager->GetGpuMode());
+}
+
+// Don't run these tests on Fuchsia, which doesn't support falling back from
+// Vulkan.
+#if !defined(OS_FUCHSIA)
+TEST_F(GpuDataManagerImplPrivateTest, FallbackFromVulkanToGL) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kVulkan);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_VULKAN, manager->GetGpuMode());
+
+  manager->FallBackToNextGpuMode();
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_GL, manager->GetGpuMode());
+}
+
+TEST_F(GpuDataManagerImplPrivateTest, VulkanInitializationFails) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kVulkan);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_VULKAN, manager->GetGpuMode());
+
+  // Simulate GPU process initialization completing with Vulkan unavailable.
+  gpu::GpuFeatureInfo gpu_feature_info = GetGpuFeatureInfoWithOneDisabled(
+      gpu::GpuFeatureType::GPU_FEATURE_TYPE_VULKAN);
+  manager->UpdateGpuFeatureInfo(gpu_feature_info, base::nullopt);
+
+  // GpuDataManager should update its mode to be GL.
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_GL, manager->GetGpuMode());
+
+  // The first fallback should go to SwiftShader on platforms where fallback to
+  // software is allowed.
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  manager->FallBackToNextGpuMode();
+  EXPECT_EQ(gpu::GpuMode::SWIFTSHADER, manager->GetGpuMode());
+#endif  // !OS_ANDROID && !OS_CHROMEOS
+}
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+TEST_F(GpuDataManagerImplPrivateTest, FallbackFromVulkanWithGLDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kVulkan);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_VULKAN, manager->GetGpuMode());
+
+  // Simulate GPU process initialization completing with GL unavailable.
+  gpu::GpuFeatureInfo gpu_feature_info = GetGpuFeatureInfoWithOneDisabled(
+      gpu::GpuFeatureType::GPU_FEATURE_TYPE_ACCELERATED_GL);
+  manager->UpdateGpuFeatureInfo(gpu_feature_info, base::nullopt);
+
+  manager->FallBackToNextGpuMode();
+  EXPECT_EQ(gpu::GpuMode::SWIFTSHADER, manager->GetGpuMode());
+}
+#endif  // !OS_ANDROID && !OS_CHROMEOS
+#endif  // !OS_FUCHSIA
+#endif  // BUILDFLAG(ENABLE_VULKAN)
 
 }  // namespace content

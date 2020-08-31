@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
-#include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fxge/cfx_fontmgr.h"
 #include "core/fxge/cfx_gemodule.h"
 #include "xfa/fgas/font/cfgas_defaultfontmanager.h"
@@ -52,7 +51,7 @@ RetainPtr<CFGAS_GEFont> CXFA_FontMgr::GetFont(CXFA_FFDoc* hDoc,
   }
   if (!pFont) {
     pFont = CFGAS_DefaultFontManager::GetDefaultFont(
-        hDoc->GetApp()->GetFDEFontMgr(), wsFontFamily, dwFontStyles);
+        hDoc->GetApp()->GetFDEFontMgr(), dwFontStyles);
   }
   if (!pFont) {
     pFont = CFGAS_GEFont::LoadStockFont(

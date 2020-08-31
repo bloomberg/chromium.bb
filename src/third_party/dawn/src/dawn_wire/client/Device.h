@@ -24,6 +24,7 @@
 namespace dawn_wire { namespace client {
 
     class Client;
+    struct Queue;
 
     class Device : public ObjectBase {
       public:
@@ -32,11 +33,15 @@ namespace dawn_wire { namespace client {
 
         Client* GetClient();
         void HandleError(WGPUErrorType errorType, const char* message);
+        void HandleDeviceLost(const char* message);
         void SetUncapturedErrorCallback(WGPUErrorCallback errorCallback, void* errorUserdata);
+        void SetDeviceLostCallback(WGPUDeviceLostCallback errorCallback, void* errorUserdata);
 
         void PushErrorScope(WGPUErrorFilter filter);
         bool RequestPopErrorScope(WGPUErrorCallback callback, void* userdata);
         bool PopErrorScope(uint64_t requestSerial, WGPUErrorType type, const char* message);
+
+        WGPUQueue GetDefaultQueue();
 
       private:
         struct ErrorScopeData {
@@ -49,7 +54,12 @@ namespace dawn_wire { namespace client {
 
         Client* mClient = nullptr;
         WGPUErrorCallback mErrorCallback = nullptr;
-        void* mErrorUserdata;
+        WGPUDeviceLostCallback mDeviceLostCallback = nullptr;
+        bool mDidRunLostCallback = false;
+        void* mErrorUserdata = nullptr;
+        void* mDeviceLostUserdata = nullptr;
+
+        Queue* mDefaultQueue = nullptr;
     };
 
 }}  // namespace dawn_wire::client

@@ -9,18 +9,22 @@ import os
 import sys
 import unittest
 
+if sys.version_info.major == 2:
+  import mock
+else:
+  from unittest import mock
+
 DEPOT_TOOLS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, DEPOT_TOOLS)
 
 import subprocess
 import subprocess2
 
-from third_party import mock
-
+TEST_FILENAME = 'subprocess2_test_script.py'
 
 TEST_COMMAND = [
     sys.executable,
-    os.path.join(DEPOT_TOOLS, 'testing_support', 'subprocess2_test_script.py'),
+    os.path.join(DEPOT_TOOLS, 'testing_support', TEST_FILENAME),
 ]
 
 
@@ -78,6 +82,14 @@ class DefaultsTest(unittest.TestCase):
     mockCommunicate.assert_called_with(
         ['foo'], a=True, stdin=subprocess2.VOID_INPUT, stdout=subprocess2.PIPE)
 
+  @mock.patch('subprocess.Popen.__init__')
+  def test_env_type(self, mockPopen):
+    if sys.version_info.major != 2:
+      subprocess2.Popen(['foo'], env={b'key': b'value'})
+      mockPopen.assert_called_with(['foo'],
+                                   env={'key': 'value'},
+                                   shell=mock.ANY)
+
 
 def _run_test(with_subprocess=True):
   """Runs a tests in 12 combinations:
@@ -130,6 +142,15 @@ class SmokeTests(unittest.TestCase):
     for subp in (subprocess, subprocess2):
       with self.assertRaises(ValueError):
         subp.check_output(TEST_COMMAND, stdout=subp.PIPE)
+
+  def test_print_exception(self):
+    with self.assertRaises(subprocess2.CalledProcessError) as e:
+      subprocess2.check_output(TEST_COMMAND + ['--fail', '--stdout'])
+    exception_str = str(e.exception)
+    # Windows escapes backslashes so check only filename
+    self.assertIn(TEST_FILENAME + ' --fail --stdout', exception_str)
+    self.assertIn(str(e.exception.returncode), exception_str)
+    self.assertIn(e.exception.stdout.decode('utf-8', 'ignore'), exception_str)
 
   @_run_test()
   def test_check_output_throw_stdout(self, c, cmd, un, subp):

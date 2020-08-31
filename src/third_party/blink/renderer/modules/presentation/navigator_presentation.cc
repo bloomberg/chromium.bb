@@ -29,14 +29,14 @@ NavigatorPresentation& NavigatorPresentation::From(Navigator& navigator) {
 Presentation* NavigatorPresentation::presentation(Navigator& navigator) {
   NavigatorPresentation& self = NavigatorPresentation::From(navigator);
   if (!self.presentation_) {
-    if (!navigator.GetFrame())
+    if (!navigator.DomWindow())
       return nullptr;
-    self.presentation_ = Presentation::Create(navigator.GetFrame());
+    self.presentation_ = Presentation::Create(navigator.DomWindow());
   }
   return self.presentation_;
 }
 
-void NavigatorPresentation::Trace(blink::Visitor* visitor) {
+void NavigatorPresentation::Trace(Visitor* visitor) {
   visitor->Trace(presentation_);
   Supplement<Navigator>::Trace(visitor);
 }

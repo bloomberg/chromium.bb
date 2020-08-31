@@ -16,6 +16,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/network_service_util.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
@@ -96,10 +97,11 @@ class SameSiteDataRemoverBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(SameSiteDataRemoverBrowserTest,
                        TestClearDataWithStorageRemoval) {
   StoragePartition* storage_partition = GetStoragePartition();
-  CreateCookieForTest("TestCookie", "www.google.com",
-                      net::CookieSameSite::NO_RESTRICTION,
-                      net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
-                      true /* is_cookie_secure */, GetBrowserContext());
+  CreateCookieForTest(
+      "TestCookie", "www.google.com", net::CookieSameSite::NO_RESTRICTION,
+      net::CookieOptions::SameSiteCookieContext(
+          net::CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
+      true /* is_cookie_secure */, GetBrowserContext());
   browsing_data_browsertest_utils::AddServiceWorker(
       "www.google.com", storage_partition, GetHttpsServer());
 
@@ -119,10 +121,11 @@ IN_PROC_BROWSER_TEST_F(SameSiteDataRemoverBrowserTest,
 IN_PROC_BROWSER_TEST_F(SameSiteDataRemoverBrowserTest,
                        TestClearDataWithoutStorageRemoval) {
   StoragePartition* storage_partition = GetStoragePartition();
-  CreateCookieForTest("TestCookie", "www.google.com",
-                      net::CookieSameSite::NO_RESTRICTION,
-                      net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
-                      true /* is_cookie_secure */, GetBrowserContext());
+  CreateCookieForTest(
+      "TestCookie", "www.google.com", net::CookieSameSite::NO_RESTRICTION,
+      net::CookieOptions::SameSiteCookieContext(
+          net::CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
+      true /* is_cookie_secure */, GetBrowserContext());
   browsing_data_browsertest_utils::AddServiceWorker(
       "www.google.com", storage_partition, GetHttpsServer());
 

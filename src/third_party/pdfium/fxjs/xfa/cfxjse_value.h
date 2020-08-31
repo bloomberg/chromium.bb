@@ -21,6 +21,7 @@ class CFXJSE_HostObject;
 class CFXJSE_Value {
  public:
   explicit CFXJSE_Value(v8::Isolate* pIsolate);
+  CFXJSE_Value(v8::Isolate* pIsolate, v8::Local<v8::Value> value);
   ~CFXJSE_Value();
 
   bool IsEmpty() const;
@@ -65,7 +66,7 @@ class CFXJSE_Value {
                             CFXJSE_Value* lpPropValue);
   bool SetFunctionBind(CFXJSE_Value* lpOldFunction, CFXJSE_Value* lpNewThis);
 
-  v8::Isolate* GetIsolate() const { return m_pIsolate.Get(); }
+  v8::Local<v8::Value> GetValue() const;
   const v8::Global<v8::Value>& DirectGetValue() const { return m_hValue; }
   void ForceSetValue(v8::Local<v8::Value> hValue) {
     m_hValue.Reset(GetIsolate(), hValue);
@@ -83,6 +84,8 @@ class CFXJSE_Value {
   CFXJSE_Value() = delete;
   CFXJSE_Value(const CFXJSE_Value&) = delete;
   CFXJSE_Value& operator=(const CFXJSE_Value&) = delete;
+
+  v8::Isolate* GetIsolate() const { return m_pIsolate.Get(); }
 
   UnownedPtr<v8::Isolate> const m_pIsolate;
   v8::Global<v8::Value> m_hValue;

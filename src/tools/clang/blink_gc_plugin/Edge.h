@@ -63,6 +63,9 @@ class RecursiveEdgeVisitor : public EdgeVisitor {
   typedef std::deque<Edge*> Context;
   Context& context() { return context_; }
   Edge* Parent() { return context_.empty() ? 0 : context_.front(); }
+  Edge* GrandParent() {
+    return Parent() ? (context_.size() > 1 ? context_[1] : nullptr) : nullptr;
+  }
   void Enter(Edge* e) { return context_.push_front(e); }
   void Leave() { context_.pop_front(); }
 
@@ -158,14 +161,17 @@ class RawPtr : public PtrEdge {
 
 class RefPtr : public PtrEdge {
  public:
-  explicit RefPtr(Edge* ptr) : PtrEdge(ptr) { }
+  RefPtr(Edge* ptr, LivenessKind kind) : PtrEdge(ptr), kind_(kind) {}
   bool IsRefPtr() override { return true; }
-  LivenessKind Kind() override { return kStrong; }
+  LivenessKind Kind() override { return kind_; }
   bool NeedsFinalization() override { return true; }
   TracingStatus NeedsTracing(NeedsTracingOption) override {
     return TracingStatus::Illegal();
   }
   void Accept(EdgeVisitor* visitor) override { visitor->VisitRefPtr(this); }
+
+ private:
+  LivenessKind kind_;
 };
 
 class UniquePtr : public PtrEdge {

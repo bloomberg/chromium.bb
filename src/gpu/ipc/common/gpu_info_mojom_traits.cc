@@ -5,7 +5,7 @@
 #include "gpu/ipc/common/gpu_info_mojom_traits.h"
 #include "build/build_config.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -330,6 +330,8 @@ EnumTraits<gpu::mojom::OverlaySupport, gpu::OverlaySupport>::ToMojom(
       return gpu::mojom::OverlaySupport::DIRECT;
     case gpu::OverlaySupport::kScaling:
       return gpu::mojom::OverlaySupport::SCALING;
+    case gpu::OverlaySupport::kSoftware:
+      return gpu::mojom::OverlaySupport::SOFTWARE;
   }
 }
 
@@ -346,6 +348,9 @@ bool EnumTraits<gpu::mojom::OverlaySupport, gpu::OverlaySupport>::FromMojom(
     case gpu::mojom::OverlaySupport::SCALING:
       *out = gpu::OverlaySupport::kScaling;
       break;
+    case gpu::mojom::OverlaySupport::SOFTWARE:
+      *out = gpu::OverlaySupport::kSoftware;
+      break;
   }
   return true;
 }
@@ -361,6 +366,15 @@ bool StructTraits<gpu::mojom::Dx12VulkanVersionInfoDataView,
   out->vulkan_version = data.vulkan_version();
   return true;
 }
+
+bool StructTraits<gpu::mojom::OverlayInfoDataView, gpu::OverlayInfo>::Read(
+    gpu::mojom::OverlayInfoDataView data,
+    gpu::OverlayInfo* out) {
+  out->direct_composition = data.direct_composition();
+  out->supports_overlays = data.supports_overlays();
+  return data.ReadYuy2OverlaySupport(&out->yuy2_overlay_support) &&
+         data.ReadNv12OverlaySupport(&out->nv12_overlay_support);
+}
 #endif
 
 bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
@@ -375,20 +389,18 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
   out->passthrough_cmd_decoder = data.passthrough_cmd_decoder();
   out->can_support_threaded_texture_mailbox =
       data.can_support_threaded_texture_mailbox();
+#if defined(OS_MACOSX)
+  if (!gpu::ValidateMacOSSpecificTextureTarget(
+          data.macos_specific_texture_target())) {
+    return false;
+  }
+  out->macos_specific_texture_target = data.macos_specific_texture_target();
+#endif  // OS_MACOSX
   out->jpeg_decode_accelerator_supported =
       data.jpeg_decode_accelerator_supported();
 
-#if defined(USE_X11)
-  out->system_visual = data.system_visual();
-  out->rgba_visual = data.rgba_visual();
-#endif
   out->oop_rasterization_supported = data.oop_rasterization_supported();
   out->subpixel_font_rendering = data.subpixel_font_rendering();
-
-#if defined(OS_WIN)
-  out->direct_composition = data.direct_composition();
-  out->supports_overlays = data.supports_overlays();
-#endif
 
   return data.ReadInitializationTime(&out->initialization_time) &&
          data.ReadGpu(&out->gpu) &&
@@ -407,8 +419,7 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
          data.ReadGlWsExtensions(&out->gl_ws_extensions) &&
          data.ReadDirectRenderingVersion(&out->direct_rendering_version) &&
 #if defined(OS_WIN)
-         data.ReadYuy2OverlaySupport(&out->yuy2_overlay_support) &&
-         data.ReadNv12OverlaySupport(&out->nv12_overlay_support) &&
+         data.ReadOverlayInfo(&out->overlay_info) &&
          data.ReadDxDiagnostics(&out->dx_diagnostics) &&
          data.ReadDx12VulkanVersionInfo(&out->dx12_vulkan_version_info) &&
 #endif

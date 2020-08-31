@@ -34,6 +34,7 @@ class AccessibilityInfoDataWrapper {
   virtual int32_t GetId() const = 0;
   virtual const gfx::Rect GetBounds() const = 0;
   virtual bool IsVisibleToUser() const = 0;
+  virtual bool IsVirtualNode() const = 0;
   virtual bool CanBeAccessibilityFocused() const = 0;
   virtual void PopulateAXRole(ui::AXNodeData* out_data) const = 0;
   virtual void PopulateAXState(ui::AXNodeData* out_data) const = 0;
@@ -43,6 +44,14 @@ class AccessibilityInfoDataWrapper {
 
  protected:
   AXTreeSourceArc* tree_source_;
+
+ private:
+  // Populate bounds of a node which can be passed to AXNodeData.location.
+  // Bounds are returned in the following coordinates depending on whether it's
+  // root or not.
+  // - Root node is relative to its container, i.e. focused window.
+  // - Non-root node is relative to the root node of this tree.
+  void PopulateBounds(ui::AXNodeData* out_data) const;
 };
 
 }  // namespace arc

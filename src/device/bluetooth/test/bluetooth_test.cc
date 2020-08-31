@@ -8,9 +8,11 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_common.h"
 
@@ -117,6 +119,54 @@ BluetoothDevice* BluetoothTestBase::SimulateLowEnergyDevice(
 BluetoothDevice* BluetoothTestBase::SimulateClassicDevice() {
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+bool BluetoothTestBase::ConnectGatt(
+    BluetoothDevice* device,
+    base::Optional<BluetoothUUID> service_uuid,
+    base::Optional<base::OnceCallback<void(BluetoothDevice*)>>
+        simulate_callback) {
+  base::RunLoop run_loop;
+  base::Optional<bool> result;
+  base::Optional<std::unique_ptr<BluetoothGattConnection>> connection;
+
+  device->CreateGattConnection(
+      base::BindLambdaForTesting(
+          [&result, &connection,
+           &run_loop](std::unique_ptr<BluetoothGattConnection> new_connection) {
+            result = true;
+            connection = std::move(new_connection);
+            run_loop.Quit();
+          }),
+      base::BindLambdaForTesting(
+          [this, &result, &run_loop](BluetoothDevice::ConnectErrorCode error) {
+            result = false;
+            last_connect_error_code_ = error;
+            run_loop.Quit();
+          }),
+      std::move(service_uuid));
+
+  // Run the event loop so that the mock devices can react to the GATT
+  // connection. Some of the |Simulate*| calls depend on it.
+  base::RunLoop().RunUntilIdle();
+
+  if (simulate_callback.has_value())
+    std::move(*simulate_callback).Run(device);
+  else
+    SimulateGattConnection(device);
+
+  run_loop.Run();
+  CHECK(result.has_value());
+  if (!*result)
+    return false;
+
+  gatt_connections_.emplace_back(std::move(*connection));
+  return true;
+}
+
+base::Optional<BluetoothUUID> BluetoothTestBase::GetTargetGattService(
+    BluetoothDevice* device) {
+  return base::nullopt;
 }
 
 void BluetoothTestBase::SimulateDeviceBreaksConnection(
@@ -474,7 +524,7 @@ BluetoothTestBase::GetReentrantStartNotifySessionSuccessCallback(
     BluetoothRemoteGattCharacteristic* characteristic) {
   if (expected == Call::EXPECTED)
     ++expected_success_callback_calls_;
-  return base::Bind(
+  return base::BindOnce(
       &BluetoothTestBase::ReentrantStartNotifySessionSuccessCallback,
       weak_factory_.GetWeakPtr(), expected, characteristic);
 }

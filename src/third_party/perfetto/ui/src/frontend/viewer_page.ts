@@ -13,10 +13,11 @@
 // limitations under the License.
 
 import * as m from 'mithril';
+import {Row} from 'src/common/protos';
 
 import {Actions} from '../common/actions';
 import {QueryResponse} from '../common/queries';
-import {TimeSpan} from '../common/time';
+import {fromNs, TimeSpan} from '../common/time';
 
 import {copyToClipboard} from './clipboard';
 import {TRACK_SHELL_WIDTH} from './css_constants';
@@ -28,22 +29,98 @@ import {createPage} from './pages';
 import {PanAndZoomHandler} from './pan_and_zoom_handler';
 import {Panel} from './panel';
 import {AnyAttrsVnode, PanelContainer} from './panel_container';
+import {
+  horizontalScrollAndZoomToRange,
+  verticalScrollToTrack
+} from './scroll_helper';
 import {TickmarkPanel} from './tickmark_panel';
 import {TimeAxisPanel} from './time_axis_panel';
 import {computeZoom} from './time_scale';
 import {TimeSelectionPanel} from './time_selection_panel';
+import {DISMISSED_PANNING_HINT_KEY} from './topbar';
 import {TrackGroupPanel} from './track_group_panel';
 import {TrackPanel} from './track_panel';
 import {VideoPanel} from './video_panel';
 
 const SIDEBAR_WIDTH = 256;
 
+interface QueryTableRowAttrs {
+  row: Row;
+  columns: string[];
+}
+
+class QueryTableRow implements m.ClassComponent<QueryTableRowAttrs> {
+  static columnsContainsSliceLocation(columns: string[]) {
+    const requiredColumns = ['ts', 'dur', 'track_id'];
+    for (const col of requiredColumns) {
+      if (!columns.includes(col)) return false;
+    }
+    return true;
+  }
+
+  static findUiTrackId(traceTrackId: number) {
+    for (const [uiTrackId, trackState] of Object.entries(
+             globals.state.tracks)) {
+      const config = trackState.config as {trackId: number};
+      if (config.trackId === traceTrackId) return uiTrackId;
+    }
+    return null;
+  }
+
+  static rowOnClickHandler(event: Event, row: Row) {
+    // If the click bubbles up to the pan and zoom handler that will deselect
+    // the slice.
+    event.stopPropagation();
+
+    const sliceStart = fromNs(row.ts as number);
+    // row.dur can be negative. Clamp to 1ns.
+    const sliceDur = fromNs(Math.max(row.dur as number, 1));
+    const sliceEnd = sliceStart + sliceDur;
+    const trackId = row.track_id as number;
+    const uiTrackId = this.findUiTrackId(trackId);
+    if (uiTrackId === null) return;
+    verticalScrollToTrack(uiTrackId, true);
+    horizontalScrollAndZoomToRange(sliceStart, sliceEnd);
+    const sliceId = row.slice_id as number | undefined;
+    if (sliceId !== undefined) {
+      globals.makeSelection(Actions.selectChromeSlice(
+          {id: sliceId, trackId: uiTrackId, table: 'slice'}));
+    }
+  }
+
+  view(vnode: m.Vnode<QueryTableRowAttrs>) {
+    const cells = [];
+    const {row, columns} = vnode.attrs;
+    for (const col of columns) {
+      cells.push(m('td', row[col]));
+    }
+    const containsSliceLocation =
+        QueryTableRow.columnsContainsSliceLocation(columns);
+    const maybeOnClick = containsSliceLocation ?
+        (e: Event) => QueryTableRow.rowOnClickHandler(e, row) :
+        null;
+    return m(
+        'tr',
+        {onclick: maybeOnClick, 'clickable': containsSliceLocation},
+        cells);
+  }
+}
+
 class QueryTable extends Panel {
+  private previousResponse?: QueryResponse;
+
+  onbeforeupdate() {
+    const resp = globals.queryResults.get('command') as QueryResponse;
+    const res = resp !== this.previousResponse;
+    return res;
+  }
+
   view() {
     const resp = globals.queryResults.get('command') as QueryResponse;
     if (resp === undefined) {
       return m('');
     }
+    this.previousResponse = resp;
     const cols = [];
     for (const col of resp.columns) {
       cols.push(m('td', col));
@@ -52,43 +129,43 @@ class QueryTable extends Panel {
 
     const rows = [];
     for (let i = 0; i < resp.rows.length; i++) {
-      const cells = [];
-      for (const col of resp.columns) {
-        cells.push(m('td', resp.rows[i][col]));
-      }
-      rows.push(m('tr', cells));
+      rows.push(m(QueryTableRow, {row: resp.rows[i], columns: resp.columns}));
     }
+
     return m(
         'div',
-        m('header.overview',
-          `Query result - ${Math.round(resp.durationMs)} ms`,
-          m('span.code', resp.query),
-          resp.error ? null :
-                       m('button.query-ctrl',
-                         {
-                           onclick: () => {
-                             const lines: string[][] = [];
-                             lines.push(resp.columns);
-                             for (const row of resp.rows) {
-                               const line = [];
-                               for (const col of resp.columns) {
-                                 line.push(row[col].toString());
-                               }
-                               lines.push(line);
-                             }
-                             copyToClipboard(
-                                 lines.map(line => line.join('\t')).join('\n'));
-                           },
-                         },
-                         'Copy as .tsv'),
-          m('button.query-ctrl',
-            {
-              onclick: () => {
-                globals.queryResults.delete('command');
-                globals.rafScheduler.scheduleFullRedraw();
-              }
-            },
-            'Close'), ),
+        m(
+            'header.overview',
+            `Query result - ${Math.round(resp.durationMs)} ms`,
+            m('span.code', resp.query),
+            resp.error ?
+                null :
+                m('button.query-ctrl',
+                  {
+                    onclick: () => {
+                      const lines: string[][] = [];
+                      lines.push(resp.columns);
+                      for (const row of resp.rows) {
+                        const line = [];
+                        for (const col of resp.columns) {
+                          line.push(row[col].toString());
+                        }
+                        lines.push(line);
+                      }
+                      copyToClipboard(
+                          lines.map(line => line.join('\t')).join('\n'));
+                    },
+                  },
+                  'Copy as .tsv'),
+            m('button.query-ctrl',
+              {
+                onclick: () => {
+                  globals.queryResults.delete('command');
+                  globals.rafScheduler.scheduleFullRedraw();
+                }
+              },
+              'Close'),
+            ),
         resp.error ?
             m('.query-error', `SQL error: ${resp.error}`) :
             m('table.query-table', m('thead', header), m('tbody', rows)));
@@ -131,7 +208,10 @@ class TraceViewer implements m.ClassComponent {
     const frontendLocalState = globals.frontendLocalState;
     const updateDimensions = () => {
       const rect = vnode.dom.getBoundingClientRect();
-      frontendLocalState.updateResolution(0, rect.width - TRACK_SHELL_WIDTH);
+      frontendLocalState.updateResolution(
+          0,
+          rect.width - TRACK_SHELL_WIDTH -
+              frontendLocalState.getScrollbarWidth());
     };
 
     updateDimensions();
@@ -167,6 +247,8 @@ class TraceViewer implements m.ClassComponent {
           tStart = tEnd - origDelta;
         }
         frontendLocalState.updateVisibleTime(new TimeSpan(tStart, tEnd));
+        // If the user has panned they no longer need the hint.
+        localStorage.setItem(DISMISSED_PANNING_HINT_KEY, 'true');
         globals.rafScheduler.scheduleRedraw();
       },
       onZoomed: (zoomedPositionPx: number, zoomRatio: number) => {
@@ -179,10 +261,10 @@ class TraceViewer implements m.ClassComponent {
         frontendLocalState.updateVisibleTime(newSpan);
         globals.rafScheduler.scheduleRedraw();
       },
-      shouldDrag: (currentPx: number) => {
+      editSelection: (currentPx: number) => {
         return onTimeRangeBoundary(currentPx) !== null;
       },
-      onDrag: (
+      onSelection: (
           dragStartX: number,
           dragStartY: number,
           prevX: number,
@@ -195,30 +277,45 @@ class TraceViewer implements m.ClassComponent {
         if (editing) {
           const selectedArea = frontendLocalState.selectedArea.area;
           if (selectedArea !== undefined) {
-            const newTime = scale.pxToTime(currentX - TRACK_SHELL_WIDTH);
+            let newTime = scale.pxToTime(currentX - TRACK_SHELL_WIDTH);
             // Have to check again for when one boundary crosses over the other.
             const curBoundary = onTimeRangeBoundary(prevX);
             if (curBoundary == null) return;
             const keepTime = curBoundary === 'START' ? selectedArea.endSec :
                                                        selectedArea.startSec;
+            // Don't drag selection outside of current screen.
+            if (newTime < keepTime) {
+              newTime = Math.max(newTime, scale.pxToTime(scale.startPx));
+            } else {
+              newTime = Math.min(newTime, scale.pxToTime(scale.endPx));
+            }
             frontendLocalState.selectArea(
                 Math.max(Math.min(keepTime, newTime), traceTime.startSec),
                 Math.min(Math.max(keepTime, newTime), traceTime.endSec),
             );
           }
         } else {
-          frontendLocalState.setShowTimeSelectPreview(false);
-          const dragStartTime = scale.pxToTime(dragStartX - TRACK_SHELL_WIDTH);
-          const dragEndTime = scale.pxToTime(currentX - TRACK_SHELL_WIDTH);
+          const startPx = Math.max(
+              Math.min(dragStartX, currentX) - TRACK_SHELL_WIDTH,
+              scale.startPx);
+          const endPx = Math.min(
+              Math.max(dragStartX, currentX) - TRACK_SHELL_WIDTH, scale.endPx);
           frontendLocalState.selectArea(
-              Math.max(
-                  Math.min(dragStartTime, dragEndTime), traceTime.startSec),
-              Math.min(Math.max(dragStartTime, dragEndTime), traceTime.endSec),
-          );
+              scale.pxToTime(startPx), scale.pxToTime(endPx));
           frontendLocalState.areaY.start = dragStartY;
           frontendLocalState.areaY.end = currentY;
         }
         globals.rafScheduler.scheduleRedraw();
+      },
+      selectingStarted: () => {
+        globals.frontendLocalState.selectingArea = true;
+      },
+      selectingEnded: () => {
+        globals.frontendLocalState.selectingArea = false;
+        globals.frontendLocalState.areaY.start = undefined;
+        globals.frontendLocalState.areaY.end = undefined;
+        // Full redraw to color track shell.
+        globals.rafScheduler.scheduleFullRedraw();
       }
     });
   }
@@ -229,19 +326,21 @@ class TraceViewer implements m.ClassComponent {
   }
 
   view() {
-    const scrollingPanels: AnyAttrsVnode[] =
-        globals.state.scrollingTracks.map(id => m(TrackPanel, {key: id, id}));
+    const scrollingPanels: AnyAttrsVnode[] = globals.state.scrollingTracks.map(
+        id => m(TrackPanel, {key: id, id, selectable: true}));
 
     for (const group of Object.values(globals.state.trackGroups)) {
       scrollingPanels.push(m(TrackGroupPanel, {
         trackGroupId: group.id,
         key: `trackgroup-${group.id}`,
+        selectable: true,
       }));
       if (group.collapsed) continue;
       for (const trackId of group.tracks) {
         scrollingPanels.push(m(TrackPanel, {
           key: `track-${group.id}-${trackId}`,
           id: trackId,
+          selectable: true,
         }));
       }
     }
@@ -270,7 +369,7 @@ class TraceViewer implements m.ClassComponent {
                   m(NotesPanel, {key: 'notes'}),
                   m(TickmarkPanel, {key: 'searchTickmarks'}),
                   ...globals.state.pinnedTracks.map(
-                      id => m(TrackPanel, {key: id, id})),
+                      id => m(TrackPanel, {key: id, id, selectable: true})),
                 ],
                 kind: 'OVERVIEW',
               })),

@@ -8,12 +8,10 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "chromeos/components/quick_answers/result_loader.h"
 #include "chromeos/components/quick_answers/search_result_parsers/search_response_parser.h"
 
 namespace network {
-class SimpleURLLoader;
-
 namespace mojom {
 class URLLoaderFactory;
 }  // namespace mojom
@@ -22,34 +20,23 @@ class URLLoaderFactory;
 namespace chromeos {
 namespace quick_answers {
 
-struct QuickAnswer;
-
-class SearchResultLoader {
+class SearchResultLoader : public ResultLoader {
  public:
-  // Callback used when downloading of |quick_answer| is complete.
-  // Note that |proactive_suggestions| may be |nullptr|.
-  using CompleteCallback =
-      base::OnceCallback<void(std::unique_ptr<QuickAnswer> quick_answer)>;
-
   SearchResultLoader(network::mojom::URLLoaderFactory* url_loader_factory,
-                     CompleteCallback complete_callback);
-  ~SearchResultLoader();
+                     ResultLoaderDelegate* delegate);
 
   SearchResultLoader(const SearchResultLoader&) = delete;
   SearchResultLoader& operator=(const SearchResultLoader&) = delete;
 
-  // Starts downloading of |proactive_suggestions| associated with |url_|,
-  // running |complete_callback| when finished. Note that this method should be
-  // called only once per ProactiveSuggestionsLoader instance.
-  void Fetch(const std::string& selected_text);
+  ~SearchResultLoader() override;
+
+  // ResultLoader:
+  GURL BuildRequestUrl(const std::string& selected_text) const override;
+  void ProcessResponse(std::unique_ptr<std::string> response_body,
+                       ResponseParserCallback complete_callback) override;
 
  private:
-  void OnSimpleURLLoaderComplete(std::unique_ptr<std::string> response_body);
-
   std::unique_ptr<SearchResponseParser> search_response_parser_;
-  network::mojom::URLLoaderFactory* network_loader_factory_;
-  std::unique_ptr<network::SimpleURLLoader> loader_;
-  CompleteCallback complete_callback_;
 };
 
 }  // namespace quick_answers

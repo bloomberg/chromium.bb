@@ -47,7 +47,9 @@ std::string GetWhitelistEntries() {
 bool IsWhitelistedSourceId(SourceId source_id) {
   return GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID ||
          GetSourceIdType(source_id) == SourceIdType::APP_ID ||
-         GetSourceIdType(source_id) == SourceIdType::HISTORY_ID;
+         GetSourceIdType(source_id) == SourceIdType::HISTORY_ID ||
+         GetSourceIdType(source_id) == SourceIdType::WEBAPK_ID ||
+         GetSourceIdType(source_id) == SourceIdType::PAYMENT_APP_ID;
 }
 
 // Gets the maximum number of Sources we'll keep in memory before discarding any
@@ -94,6 +96,7 @@ enum class DroppedDataReason {
   EXTENSION_NOT_SYNCED = 7,
   NOT_MATCHED = 8,
   EMPTY_URL = 9,
+  REJECTED_BY_FILTER = 10,
   NUM_DROPPED_DATA_REASONS
 };
 
@@ -152,11 +155,22 @@ void AppendWhitelistedUrls(
   }
 }
 
+// Returns true if the event corresponding to |event_hash| has a comprehensive
+// decode map that includes all valid metrics.
+bool HasComprehensiveDecodeMap(int64_t event_hash) {
+  // All events other than "Identifiability" conforms to its decode map.
+  // TODO(asanka): It is technically an abstraction violation for
+  // //components/ukm to know this fact.
+  return event_hash != builders::Identifiability::kEntryNameHash;
+}
+
 bool HasUnknownMetrics(const builders::DecodeMap& decode_map,
                        const mojom::UkmEntry& entry) {
   const auto it = decode_map.find(entry.event_hash);
   if (it == decode_map.end())
     return true;
+  if (!HasComprehensiveDecodeMap(entry.event_hash))
+    return false;
   const auto& metric_map = it->second.metric_map;
   for (const auto& metric : entry.metrics) {
     if (metric_map.count(metric.first) == 0)
@@ -290,6 +304,12 @@ void UkmRecorderImpl::SetIsWebstoreExtensionCallback(
   is_webstore_extension_callback_ = callback;
 }
 
+void UkmRecorderImpl::SetEntryFilter(
+    std::unique_ptr<UkmEntryFilter> entry_filter) {
+  DCHECK(!entry_filter_ || !entry_filter);
+  entry_filter_ = std::move(entry_filter);
+}
+
 // TODO(rkaplow): This should be refactored.
 void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -320,7 +340,9 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
     // Don't keep sources of these types after current report because their
     // entries are logged only at source creation time.
     if (GetSourceIdType(kv.first) == base::UkmSourceId::Type::APP_ID ||
-        GetSourceIdType(kv.first) == base::UkmSourceId::Type::HISTORY_ID) {
+        GetSourceIdType(kv.first) == base::UkmSourceId::Type::HISTORY_ID ||
+        GetSourceIdType(kv.first) == base::UkmSourceId::Type::WEBAPK_ID ||
+        GetSourceIdType(kv.first) == SourceIdType::PAYMENT_APP_ID) {
       MarkSourceForDeletion(kv.first);
     }
     // If the source id is not whitelisted, don't send it unless it has
@@ -364,6 +386,8 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
         event_aggregate.dropped_due_to_sampling);
     proto_aggregate->set_dropped_due_to_whitelist(
         event_aggregate.dropped_due_to_whitelist);
+    proto_aggregate->set_dropped_due_to_filter(
+        event_aggregate.dropped_due_to_filter);
     for (const auto& metric_and_aggregate : event_aggregate.metrics) {
       const MetricAggregate& aggregate = metric_and_aggregate.second;
       Aggregate::Metric* proto_metric = proto_aggregate->add_metrics();
@@ -387,6 +411,11 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
           event_aggregate.dropped_due_to_whitelist) {
         proto_metric->set_dropped_due_to_whitelist(
             aggregate.dropped_due_to_whitelist);
+      }
+      if (aggregate.dropped_due_to_filter !=
+          event_aggregate.dropped_due_to_filter) {
+        proto_metric->set_dropped_due_to_filter(
+            aggregate.dropped_due_to_filter);
       }
     }
   }
@@ -496,6 +525,27 @@ bool UkmRecorderImpl::ShouldRestrictToWhitelistedEntries() const {
   return true;
 }
 
+bool UkmRecorderImpl::ApplyEntryFilter(mojom::UkmEntry* entry) {
+  base::flat_set<uint64_t> dropped_metric_hashes;
+
+  if (!entry_filter_)
+    return true;
+
+  bool keep_entry = entry_filter_->FilterEntry(entry, &dropped_metric_hashes);
+
+  for (auto metric : dropped_metric_hashes) {
+    recordings_.event_aggregations[entry->event_hash]
+        .metrics[metric]
+        .dropped_due_to_filter++;
+  }
+
+  if (!keep_entry) {
+    recordings_.event_aggregations[entry->event_hash].dropped_due_to_filter++;
+    return false;
+  }
+  return true;
+}
+
 int UkmRecorderImpl::PruneOldSources(size_t max_kept_sources) {
   if (recordings_.sources.size() <= max_kept_sources)
     return 0;
@@ -536,8 +586,10 @@ void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
   RecordSource(std::make_unique<UkmSource>(source_id, sanitized_url));
 }
 
-void UkmRecorderImpl::UpdateAppURL(SourceId source_id, const GURL& url) {
-  if (!extensions_enabled_) {
+void UkmRecorderImpl::UpdateAppURL(SourceId source_id,
+                                   const GURL& url,
+                                   const AppType app_type) {
+  if (app_type != AppType::kPWA && !extensions_enabled_) {
     RecordDroppedSource(DroppedDataReason::EXTENSION_URLS_DISABLED);
     return;
   }
@@ -626,11 +678,15 @@ void UkmRecorderImpl::RecordSource(std::unique_ptr<UkmSource> source) {
 
 void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   DCHECK(!HasUnknownMetrics(decode_map_, *entry));
 
   if (!recording_enabled_) {
     RecordDroppedEntry(DroppedDataReason::RECORDING_DISABLED);
+    return;
+  }
+
+  if (!ApplyEntryFilter(entry.get())) {
+    RecordDroppedEntry(DroppedDataReason::REJECTED_BY_FILTER);
     return;
   }
 
@@ -659,12 +715,7 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
       LoadExperimentSamplingInfo();
     }
 
-    auto found = event_sampling_rates_.find(entry->event_hash);
-    int sampling_rate = (found != event_sampling_rates_.end())
-                            ? found->second
-                            : default_sampling_rate_;
-    bool sampled_in =
-        IsSampledIn(entry->source_id, entry->event_hash, sampling_rate);
+    bool sampled_in = IsSampledIn(entry->source_id, entry->event_hash);
 
     if (!sampled_in) {
       RecordDroppedEntry(DroppedDataReason::SAMPLED_OUT);
@@ -701,28 +752,61 @@ void UkmRecorderImpl::LoadExperimentSamplingInfo() {
   // Check the parameters for sampling controls.
   std::map<std::string, std::string> params;
   if (base::GetFieldTrialParamsByFeature(kUkmSamplingRateFeature, &params)) {
-    for (const auto& kv : params) {
-      const std::string& key = kv.first;
-      if (key.length() == 0)
-        continue;
+    LoadExperimentSamplingParams(params);
+  }
+}
 
-      // Keys starting with an underscore are global configuration.
-      if (key.at(0) == '_') {
-        if (key == "_default_sampling") {
-          int sampling;
-          // We only load non-negative global sampling rates.
-          if (base::StringToInt(kv.second, &sampling) && sampling >= 0)
-            default_sampling_rate_ = sampling;
-        }
-        continue;
+void UkmRecorderImpl::LoadExperimentSamplingParams(
+    const std::map<std::string, std::string>& params) {
+  for (const auto& kv : params) {
+    const std::string& key = kv.first;
+    if (key.length() == 0)
+      continue;
+
+    // Keys starting with an underscore are global configuration.
+    if (key.at(0) == '_') {
+      if (key == "_default_sampling") {
+        int sampling;
+        // We only load non-negative global sampling rates.
+        if (base::StringToInt(kv.second, &sampling) && sampling >= 0)
+          default_sampling_rate_ = sampling;
       }
+      continue;
+    }
 
-      // Anything else is an event name.
-      int sampling;
-      if (base::StringToInt(kv.second, &sampling) && sampling >= 0)
-        event_sampling_rates_[base::HashMetricName(key)] = sampling;
+    // Anything else is an event name.
+    int sampling;
+    auto hash = base::HashMetricName(key);
+    if (base::StringToInt(kv.second, &sampling)) {
+      // If the parameter is a number then that's the sampling rate.
+      if (sampling >= 0)
+        event_sampling_rates_[hash] = sampling;
+    } else {
+      // If the parameter is a string then it's the name of another metric
+      // to which it should be slaved. This allows different metrics to be
+      // sampled in or out together.
+      event_sampling_master_[hash] = base::HashMetricName(kv.second);
     }
   }
+}
+
+bool UkmRecorderImpl::IsSampledIn(int64_t source_id, uint64_t event_id) {
+  // Determine the sampling rate. It's one of:
+  // - the default
+  // - an explicit sampling rate
+  // - a group sampling rate
+  int sampling_rate = default_sampling_rate_;
+  uint64_t sampling_hash = event_id;
+  auto master_found = event_sampling_master_.find(sampling_hash);
+  if (master_found != event_sampling_master_.end()) {
+    sampling_hash = master_found->second;
+  }
+  auto rate_found = event_sampling_rates_.find(sampling_hash);
+  if (rate_found != event_sampling_rates_.end()) {
+    sampling_rate = rate_found->second;
+  }
+
+  return IsSampledIn(source_id, sampling_hash, sampling_rate);
 }
 
 bool UkmRecorderImpl::IsSampledIn(int64_t source_id,

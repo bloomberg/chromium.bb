@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/native_file_system/native_file_system_restricted_directory_dialog_view.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/native_file_system/native_file_system_ui_helpers.h"
@@ -43,27 +44,9 @@ base::string16 NativeFileSystemRestrictedDirectoryDialogView::GetWindowTitle()
                     : IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_TITLE);
 }
 
-int NativeFileSystemRestrictedDirectoryDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
 bool NativeFileSystemRestrictedDirectoryDialogView::ShouldShowCloseButton()
     const {
   return false;
-}
-
-bool NativeFileSystemRestrictedDirectoryDialogView::Accept() {
-  // This dialog is only shown when chrome has already decided that the path is
-  // not allowed. The dialog gives no way for the user to override that
-  // decision. Acceptance of the dialog merely gives the user a chance to pick a
-  // different file or directory.
-  std::move(callback_).Run(SensitiveDirectoryResult::kTryAgain);
-  return true;
-}
-
-bool NativeFileSystemRestrictedDirectoryDialogView::Cancel() {
-  std::move(callback_).Run(SensitiveDirectoryResult::kAbort);
-  return true;
 }
 
 gfx::Size
@@ -86,11 +69,20 @@ NativeFileSystemRestrictedDirectoryDialogView::
         bool is_directory,
         base::OnceCallback<void(SensitiveDirectoryResult)> callback)
     : is_directory_(is_directory), callback_(std::move(callback)) {
-  DialogDelegate::set_button_label(
+  SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           is_directory_ ? IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_BUTTON
                         : IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_BUTTON));
+
+  auto run_callback = [](NativeFileSystemRestrictedDirectoryDialogView* dialog,
+                         SensitiveDirectoryResult result) {
+    std::move(dialog->callback_).Run(result);
+  };
+  SetAcceptCallback(base::BindOnce(run_callback, base::Unretained(this),
+                                   SensitiveDirectoryResult::kTryAgain));
+  SetCancelCallback(base::BindOnce(run_callback, base::Unretained(this),
+                                   SensitiveDirectoryResult::kAbort));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(

@@ -179,7 +179,7 @@ WebViewImpl::WebViewImpl(const std::string& id,
       heap_snapshot_taker_(new HeapSnapshotTaker(client_.get())),
       debugger_(new DebuggerTracker(client_.get())) {
   // Downloading in headless mode requires the setting of
-  // Page.setDownloadBehavior. This is handled by the
+  // Browser.setDownloadBehavior. This is handled by the
   // DownloadDirectoryOverrideManager, which is only instantiated
   // in headless chrome.
   if (browser_info->is_headless)
@@ -369,9 +369,11 @@ Status WebViewImpl::TraverseHistory(int delta, const Timeout* timeout) {
 Status WebViewImpl::TraverseHistoryWithJavaScript(int delta) {
   std::unique_ptr<base::Value> value;
   if (delta == -1)
-    return EvaluateScript(std::string(), "window.history.back();", &value);
+    return EvaluateScript(std::string(), "window.history.back();", false,
+                          &value);
   else if (delta == 1)
-    return EvaluateScript(std::string(), "window.history.forward();", &value);
+    return EvaluateScript(std::string(), "window.history.forward();", false,
+                          &value);
   else
     return Status(kUnknownError, "expected delta to be 1 or -1");
 }
@@ -380,6 +382,7 @@ Status WebViewImpl::EvaluateScriptWithTimeout(
     const std::string& frame,
     const std::string& expression,
     const base::TimeDelta& timeout,
+    const bool awaitPromise,
     std::unique_ptr<base::Value>* result) {
   WebViewImpl* target = GetTargetForFrame(this, frame);
   if (target != nullptr && target != this) {
@@ -387,22 +390,23 @@ Status WebViewImpl::EvaluateScriptWithTimeout(
       return Status(kTargetDetached);
     WebViewImplHolder target_holder(target);
     return target->EvaluateScriptWithTimeout(frame, expression, timeout,
-                                             result);
+                                             awaitPromise, result);
   }
 
   int context_id;
   Status status = GetContextIdForFrame(this, frame, &context_id);
   if (status.IsError())
     return status;
-  return internal::EvaluateScriptAndGetValue(client_.get(), context_id,
-                                             expression, timeout, result);
+  return internal::EvaluateScriptAndGetValue(
+      client_.get(), context_id, expression, timeout, awaitPromise, result);
 }
 
 Status WebViewImpl::EvaluateScript(const std::string& frame,
                                    const std::string& expression,
+                                   const bool awaitPromise,
                                    std::unique_ptr<base::Value>* result) {
   return EvaluateScriptWithTimeout(frame, expression, base::TimeDelta::Max(),
-                                   result);
+                                   awaitPromise, result);
 }
 
 Status WebViewImpl::CallFunctionWithTimeout(
@@ -423,7 +427,7 @@ Status WebViewImpl::CallFunctionWithTimeout(
       w3c.c_str());
   std::unique_ptr<base::Value> temp_result;
   Status status =
-      EvaluateScriptWithTimeout(frame, expression, timeout, &temp_result);
+      EvaluateScriptWithTimeout(frame, expression, timeout, true, &temp_result);
   if (status.IsError())
       return status;
   return internal::ParseCallFunctionResult(*temp_result, result);
@@ -499,7 +503,7 @@ Status WebViewImpl::GetFrameByFunction(const std::string& frame,
 }
 
 Status WebViewImpl::DispatchTouchEventsForMouseEvents(
-    const std::list<MouseEvent>& events,
+    const std::vector<MouseEvent>& events,
     const std::string& frame) {
   // Touch events are filtered by the compositor if there are no touch listeners
   // on the page. Wait two frames for the compositor to sync with the main
@@ -545,7 +549,7 @@ Status WebViewImpl::DispatchTouchEventsForMouseEvents(
   return Status(kOk);
 }
 
-Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
+Status WebViewImpl::DispatchMouseEvents(const std::vector<MouseEvent>& events,
                                         const std::string& frame,
                                         bool async_dispatch_events) {
   if (mobile_emulation_override_manager_->IsEmulatingTouch())
@@ -563,7 +567,8 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
     params.SetInteger("clickCount", it->click_count);
     params.SetString("pointerType", GetAsString(it->pointer_type));
 
-    if (async_dispatch_events) {
+    const bool last_event = (it == events.end() - 1);
+    if (async_dispatch_events || !last_event) {
       status = client_->SendCommandAndIgnoreResponse("Input.dispatchMouseEvent",
                                                      params);
     } else {
@@ -597,10 +602,12 @@ Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event,
   return status;
 }
 
-Status WebViewImpl::DispatchTouchEvents(const std::list<TouchEvent>& events,
+Status WebViewImpl::DispatchTouchEvents(const std::vector<TouchEvent>& events,
                                         bool async_dispatch_events) {
   for (auto it = events.begin(); it != events.end(); ++it) {
-    Status status = DispatchTouchEvent(*it, async_dispatch_events);
+    const bool last_event = (it == events.end() - 1);
+    Status status =
+        DispatchTouchEvent(*it, async_dispatch_events || !last_event);
     if (status.IsError())
       return status;
   }
@@ -608,7 +615,7 @@ Status WebViewImpl::DispatchTouchEvents(const std::list<TouchEvent>& events,
 }
 
 Status WebViewImpl::DispatchTouchEventWithMultiPoints(
-    const std::list<TouchEvent>& events,
+    const std::vector<TouchEvent>& events,
     bool async_dispatch_events) {
   if (events.size() == 0)
     return Status(kOk);
@@ -623,16 +630,10 @@ Status WebViewImpl::DispatchTouchEventWithMultiPoints(
     params.SetInteger("timestamp", current_time);
     std::string type = GetAsString(event.type);
     params.SetString("type", type);
-    if (type == "touchStart" || type == "touchMove") {
-      point_list->Append(GenerateTouchPoint(event));
-      for (auto point = touch_points_.begin(); point != touch_points_.end();
-           ++point) {
-        if (point->first != event.id) {
-          point_list->Append(GenerateTouchPoint(point->second));
-        }
-      }
-      touch_points_[event.id] = event;
-    }
+    if (type == "touchCancel")
+      continue;
+
+    point_list->Append(GenerateTouchPoint(event));
     params.Set("touchPoints", std::move(point_list));
 
     if (async_dispatch_events || touch_count < events.size()) {
@@ -644,18 +645,12 @@ Status WebViewImpl::DispatchTouchEventWithMultiPoints(
     if (status.IsError())
       return status;
 
-    if (type != "touchStart" && type != "touchMove") {
-      for (auto point = touch_points_.begin(); point != touch_points_.end();) {
-        point = touch_points_.erase(point);
-      }
-      break;
-    }
     touch_count++;
   }
   return Status(kOk);
 }
 
-Status WebViewImpl::DispatchKeyEvents(const std::list<KeyEvent>& events,
+Status WebViewImpl::DispatchKeyEvents(const std::vector<KeyEvent>& events,
                                       bool async_dispatch_events) {
   Status status(kOk);
   for (auto it = events.begin(); it != events.end(); ++it) {
@@ -694,7 +689,8 @@ Status WebViewImpl::DispatchKeyEvents(const std::list<KeyEvent>& events,
         params.SetInteger("location", it->location);
     }
 
-    if (async_dispatch_events) {
+    const bool last_event = (it == events.end() - 1);
+    if (async_dispatch_events || !last_event) {
       status = client_->SendCommandAndIgnoreResponse("Input.dispatchKeyEvent",
                                                      params);
     } else {
@@ -787,9 +783,9 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
     return Status(kUnsupportedOperation,
                   "Call WaitForPendingNavigations only on the parent WebView");
   VLOG(0) << "Waiting for pending navigations...";
-  const auto not_pending_navigation =
-      base::Bind(&WebViewImpl::IsNotPendingNavigation, base::Unretained(this),
-                 frame_id, base::Unretained(&timeout));
+  const auto not_pending_navigation = base::BindRepeating(
+      &WebViewImpl::IsNotPendingNavigation, base::Unretained(this), frame_id,
+      base::Unretained(&timeout));
   Status status = client_->HandleEventsUntil(not_pending_navigation, timeout);
   if (status.code() == kTimeout && stop_load_on_timeout) {
     VLOG(0) << "Timed out. Stopping navigation...";
@@ -984,23 +980,7 @@ Status WebViewImpl::TakeHeapSnapshot(std::unique_ptr<base::Value>* snapshot) {
 Status WebViewImpl::InitProfileInternal() {
   base::DictionaryValue params;
 
-  // TODO: Remove Debugger.enable after Chrome 36 stable is released.
-  Status status_debug = client_->SendCommand("Debugger.enable", params);
-
-  if (status_debug.IsError())
-    return status_debug;
-
-  Status status_profiler = client_->SendCommand("Profiler.enable", params);
-
-  if (status_profiler.IsError()) {
-    Status status_debugger = client_->SendCommand("Debugger.disable", params);
-    if (status_debugger.IsError())
-      return status_debugger;
-
-    return status_profiler;
-  }
-
-  return Status(kOk);
+  return client_->SendCommand("Profiler.enable", params);
 }
 
 Status WebViewImpl::StopProfileInternal() {
@@ -1153,6 +1133,11 @@ void WebViewImpl::ClearNavigationState(const std::string& new_frame_id) {
 Status WebViewImpl::IsNotPendingNavigation(const std::string& frame_id,
                                            const Timeout* timeout,
                                            bool* is_not_pending) {
+  if (!frame_id.empty() && !frame_tracker_->IsKnownFrame(frame_id)) {
+    // Frame has already been destroyed.
+    *is_not_pending = true;
+    return Status(kOk);
+  }
   bool is_pending;
   Status status =
       navigation_tracker_->IsPendingNavigation(frame_id, timeout, &is_pending);
@@ -1228,16 +1213,32 @@ std::unique_ptr<base::Value> WebViewImpl::GetCastIssueMessage() {
   return std::unique_ptr<base::Value>(cast_tracker_->issue().DeepCopy());
 }
 
-WebViewImplHolder::WebViewImplHolder(WebViewImpl* web_view)
-    : web_view_(web_view), was_locked_(web_view->Lock()) {}
+WebViewImplHolder::WebViewImplHolder(WebViewImpl* web_view) {
+  // Lock input web view and all its parents, to prevent them from being
+  // deleted while still in use. Inside |items_|, each web view must appear
+  // before its parent. This ensures the destructor unlocks the web views in
+  // the right order.
+  while (web_view != nullptr) {
+    Item item;
+    item.web_view = web_view;
+    item.was_locked = web_view->Lock();
+    items_.push_back(item);
+    web_view = const_cast<WebViewImpl*>(web_view->GetParent());
+  }
+}
 
 WebViewImplHolder::~WebViewImplHolder() {
-  if (web_view_ != nullptr && !was_locked_) {
-    if (!web_view_->IsDetached())
-      web_view_->Unlock();
-    else if (web_view_->GetParent() != nullptr)
-      web_view_->GetParent()->GetFrameTracker()->DeleteTargetForFrame(
-          web_view_->GetId());
+  for (Item& item : items_) {
+    // Once we find a web view that is still locked, then all its parents must
+    // also be locked.
+    if (item.was_locked)
+      break;
+    WebViewImpl* web_view = item.web_view;
+    if (!web_view->IsDetached())
+      web_view->Unlock();
+    else if (web_view->GetParent() != nullptr)
+      web_view->GetParent()->GetFrameTracker()->DeleteTargetForFrame(
+          web_view->GetId());
   }
 }
 
@@ -1248,13 +1249,14 @@ Status EvaluateScript(DevToolsClient* client,
                       const std::string& expression,
                       EvaluateScriptReturnType return_type,
                       const base::TimeDelta& timeout,
+                      const bool awaitPromise,
                       std::unique_ptr<base::DictionaryValue>* result) {
   base::DictionaryValue params;
   params.SetString("expression", expression);
   if (context_id)
     params.SetInteger("contextId", context_id);
   params.SetBoolean("returnByValue", return_type == ReturnByValue);
-  params.SetBoolean("awaitPromise", true);
+  params.SetBoolean("awaitPromise", awaitPromise);
   std::unique_ptr<base::DictionaryValue> cmd_result;
 
   Timeout local_timeout(timeout);
@@ -1263,14 +1265,7 @@ Status EvaluateScript(DevToolsClient* client,
   if (status.IsError())
     return status;
 
-  bool was_thrown;
-  if (!cmd_result->GetBoolean("wasThrown", &was_thrown)) {
-    // As of crrev.com/411814, Runtime.evaluate no longer returns a 'wasThrown'
-    // property in the response, so check 'exceptionDetails' instead.
-    // TODO(samuong): Ignore 'wasThrown' when we stop supporting Chrome 54.
-    was_thrown = cmd_result->HasKey("exceptionDetails");
-  }
-  if (was_thrown) {
+  if (cmd_result->HasKey("exceptionDetails")) {
     std::string description = "unknown";
     cmd_result->GetString("result.description", &description);
     return Status(kUnknownError,
@@ -1288,11 +1283,12 @@ Status EvaluateScriptAndGetObject(DevToolsClient* client,
                                   int context_id,
                                   const std::string& expression,
                                   const base::TimeDelta& timeout,
+                                  const bool awaitPromise,
                                   bool* got_object,
                                   std::string* object_id) {
   std::unique_ptr<base::DictionaryValue> result;
   Status status = EvaluateScript(client, context_id, expression, ReturnByObject,
-                                 timeout, &result);
+                                 timeout, awaitPromise, &result);
   if (status.IsError())
     return status;
   if (!result->HasKey("objectId")) {
@@ -1309,10 +1305,11 @@ Status EvaluateScriptAndGetValue(DevToolsClient* client,
                                  int context_id,
                                  const std::string& expression,
                                  const base::TimeDelta& timeout,
+                                 const bool awaitPromise,
                                  std::unique_ptr<base::Value>* result) {
   std::unique_ptr<base::DictionaryValue> temp_result;
   Status status = EvaluateScript(client, context_id, expression, ReturnByValue,
-                                 timeout, &temp_result);
+                                 timeout, awaitPromise, &temp_result);
   if (status.IsError())
     return status;
 
@@ -1376,7 +1373,7 @@ Status GetNodeIdFromFunction(DevToolsClient* client,
   bool got_object;
   std::string element_id;
   Status status = internal::EvaluateScriptAndGetObject(
-      client, context_id, expression, base::TimeDelta::Max(), &got_object,
+      client, context_id, expression, base::TimeDelta::Max(), true, &got_object,
       &element_id);
   if (status.IsError())
     return status;

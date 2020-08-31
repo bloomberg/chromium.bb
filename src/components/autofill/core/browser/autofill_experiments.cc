@@ -210,8 +210,6 @@ bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
     case AutofillSyncSigninState::kSyncPaused:
       return false;
     case AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled:
-      return base::FeatureList::IsEnabled(
-          features::kAutofillEnableLocalCardMigrationForNonSyncUser);
     case AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled:
       return true;
     case AutofillSyncSigninState::kNumSyncStates:
@@ -225,11 +223,6 @@ bool IsInAutofillSuggestionsDisabledExperiment() {
   std::string group_name =
       base::FieldTrialList::FindFullName("AutofillEnabled");
   return group_name == "Disabled";
-}
-
-bool IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled() {
-  return base::FeatureList::IsEnabled(
-      features::kAutofillNoLocalSaveOnUploadSuccess);
 }
 
 bool OfferStoreUnmaskedCards(bool is_off_the_record) {
@@ -260,15 +253,6 @@ bool OfferStoreUnmaskedCards(bool is_off_the_record) {
   // Otherwise use the field trial to show the checkbox or not.
   return group_name != "Disabled";
 #endif
-}
-
-bool ShouldUseActiveSignedInAccount() {
-  // If butter is enabled or the feature to get the Payment Identity from Sync
-  // is enabled, the account of the active signed-in user should be used.
-  return base::FeatureList::IsEnabled(
-             features::kAutofillEnableAccountWalletStorage) ||
-         base::FeatureList::IsEnabled(
-             features::kAutofillGetPaymentsIdentityFromSync);
 }
 
 }  // namespace autofill

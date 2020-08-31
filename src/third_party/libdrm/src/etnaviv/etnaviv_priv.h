@@ -150,7 +150,7 @@ struct etna_cmd_stream_priv {
 	struct etna_bo **bos;
 	uint32_t nr_bos, max_bos;
 
-	/* notify callback if buffer reset happend */
+	/* notify callback if buffer reset happened */
 	void (*reset_notify)(struct etna_cmd_stream *stream, void *priv);
 	void *reset_notify_priv;
 };

@@ -86,6 +86,7 @@ DE_DECLARE_COMMAND_LINE_OPT(EGLPixmapType,				std::string);
 DE_DECLARE_COMMAND_LINE_OPT(LogImages,					bool);
 DE_DECLARE_COMMAND_LINE_OPT(LogShaderSources,			bool);
 DE_DECLARE_COMMAND_LINE_OPT(TestOOM,					bool);
+DE_DECLARE_COMMAND_LINE_OPT(ArchiveDir,					std::string);
 DE_DECLARE_COMMAND_LINE_OPT(VKDeviceID,					int);
 DE_DECLARE_COMMAND_LINE_OPT(VKDeviceGroupID,			int);
 DE_DECLARE_COMMAND_LINE_OPT(LogFlush,					bool);
@@ -98,6 +99,7 @@ DE_DECLARE_COMMAND_LINE_OPT(ShaderCacheTruncate,		bool);
 DE_DECLARE_COMMAND_LINE_OPT(RenderDoc,					bool);
 DE_DECLARE_COMMAND_LINE_OPT(CaseFraction,				std::vector<int>);
 DE_DECLARE_COMMAND_LINE_OPT(CaseFractionMandatoryTests,	std::string);
+DE_DECLARE_COMMAND_LINE_OPT(WaiverFile,					std::string);
 
 static void parseIntList (const char* src, std::vector<int>* dst)
 {
@@ -185,6 +187,7 @@ void registerOptions (de::cmdline::Parser& parser)
 		<< Option<LogImages>					(DE_NULL,	"deqp-log-images",							"Enable or disable logging of result images",		s_enableNames,		"enable")
 		<< Option<LogShaderSources>				(DE_NULL,	"deqp-log-shader-sources",					"Enable or disable logging of shader sources",		s_enableNames,		"enable")
 		<< Option<TestOOM>						(DE_NULL,	"deqp-test-oom",							"Run tests that exhaust memory on purpose",			s_enableNames,		TEST_OOM_DEFAULT)
+		<< Option<ArchiveDir>					(DE_NULL,	"deqp-archive-dir",							"Path to test resource files",											".")
 		<< Option<LogFlush>						(DE_NULL,	"deqp-log-flush",							"Enable or disable log file fflush",				s_enableNames,		"enable")
 		<< Option<Validation>					(DE_NULL,	"deqp-validation",							"Enable or disable test case validation",			s_enableNames,		"disable")
 		<< Option<Optimization>					(DE_NULL,	"deqp-optimization-recipe",					"Shader optimization recipe (0=disabled, 1=performance, 2=size)",		"0")
@@ -194,7 +197,8 @@ void registerOptions (de::cmdline::Parser& parser)
 		<< Option<ShaderCacheTruncate>			(DE_NULL,	"deqp-shadercache-truncate",				"Truncate shader cache before running tests",		s_enableNames,		"enable")
 		<< Option<RenderDoc>					(DE_NULL,	"deqp-renderdoc",							"Enable RenderDoc frame markers",					s_enableNames,		"disable")
 		<< Option<CaseFraction>					(DE_NULL,	"deqp-fraction",							"Run a fraction of the test cases (e.g. N,M means run group%M==N)",	parseIntList,	"")
-		<< Option<CaseFractionMandatoryTests>	(DE_NULL,	"deqp-fraction-mandatory-caselist-file",	"Case list file that must be run for each fraction",					"");
+		<< Option<CaseFractionMandatoryTests>	(DE_NULL,	"deqp-fraction-mandatory-caselist-file",	"Case list file that must be run for each fraction",					"")
+		<< Option<WaiverFile>					(DE_NULL,	"deqp-waiver-file",							"Read waived tests from given file",									"");
 }
 
 void registerLegacyOptions (de::cmdline::Parser& parser)
@@ -552,9 +556,9 @@ static CaseTreeNode* parseCaseList (std::istream& in)
 class CasePaths
 {
 public:
-							CasePaths	(const string& pathList);
-							CasePaths	(const vector<string>& pathList);
-	bool					matches		(const string& caseName, bool allowPrefix=false) const;
+	CasePaths(const string& pathList);
+	CasePaths(const vector<string>& pathList);
+	bool					matches(const string& caseName, bool allowPrefix = false) const;
 
 private:
 	const vector<string>	m_casePatterns;
@@ -571,11 +575,11 @@ CasePaths::CasePaths(const vector<string>& pathList)
 }
 
 // Match a single path component against a pattern component that may contain *-wildcards.
-static bool matchWildcards(string::const_iterator	patternStart,
-						   string::const_iterator	patternEnd,
-						   string::const_iterator	pathStart,
-						   string::const_iterator	pathEnd,
-						   bool						allowPrefix)
+bool matchWildcards(string::const_iterator	patternStart,
+					string::const_iterator	patternEnd,
+					string::const_iterator	pathStart,
+					string::const_iterator	pathEnd,
+					bool					allowPrefix)
 {
 	string::const_iterator	pattern	= patternStart;
 	string::const_iterator	path	= pathStart;
@@ -683,6 +687,18 @@ CommandLine::CommandLine (void)
 CommandLine::CommandLine (int argc, const char* const* argv)
 	: m_logFlags	(0)
 {
+	if (argc > 1)
+	{
+		int loop = 1;		// skip application name
+		while (true)
+		{
+			m_initialCmdLine += std::string(argv[loop++]);
+			if (loop >= argc)
+				break;
+			m_initialCmdLine += " ";
+		}
+	}
+
 	if (!parse(argc, argv))
 		throw Exception("Failed to parse command line");
 }
@@ -695,6 +711,7 @@ CommandLine::CommandLine (int argc, const char* const* argv)
  * \param cmdLine Full command line string.
  *//*--------------------------------------------------------------------*/
 CommandLine::CommandLine (const std::string& cmdLine)
+	: m_initialCmdLine	(cmdLine)
 {
 	if (!parse(cmdLine))
 		throw Exception("Failed to parse command line");
@@ -713,6 +730,11 @@ void CommandLine::clear (void)
 const de::cmdline::CommandLine& CommandLine::getCommandLine (void) const
 {
 	return m_cmdLine;
+}
+
+const std::string& CommandLine::getInitialCmdLine(void) const
+{
+	return m_initialCmdLine;
 }
 
 void CommandLine::registerExtendedOptions (de::cmdline::Parser& parser)
@@ -822,8 +844,10 @@ bool					CommandLine::isShaderCacheTruncateEnabled	(void) const	{ return m_cmdLi
 int						CommandLine::getOptimizationRecipe			(void) const	{ return m_cmdLine.getOption<opt::Optimization>();							}
 bool					CommandLine::isSpirvOptimizationEnabled		(void) const	{ return m_cmdLine.getOption<opt::OptimizeSpirv>();							}
 bool					CommandLine::isRenderDocEnabled				(void) const	{ return m_cmdLine.getOption<opt::RenderDoc>();								}
+const char*				CommandLine::getWaiverFileName				(void) const	{ return m_cmdLine.getOption<opt::WaiverFile>().c_str();					}
 const std::vector<int>&	CommandLine::getCaseFraction				(void) const	{ return m_cmdLine.getOption<opt::CaseFraction>();							}
 const char*				CommandLine::getCaseFractionMandatoryTests	(void) const	{ return m_cmdLine.getOption<opt::CaseFractionMandatoryTests>().c_str();	}
+const char*				CommandLine::getArchiveDir					(void) const	{ return m_cmdLine.getOption<opt::ArchiveDir>().c_str();					}
 
 const char* CommandLine::getGLContextType (void) const
 {

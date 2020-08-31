@@ -23,6 +23,9 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+namespace cryptohome {
+class AccountIdentifier;
+}
 namespace chromeos {
 
 // A DbusLibraryError represents an error response received from D-Bus.
@@ -97,7 +100,18 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
   // Gets the scrubbed logs from debugd that are very large and cannot be
   // returned directly from D-Bus. These logs will include ARC and cheets
   // system information.
-  virtual void GetScrubbedBigLogs(GetLogsCallback callback) = 0;
+  // |id|: Cryptohome Account identifier for the user to get
+  // logs for.
+  virtual void GetScrubbedBigLogs(const cryptohome::AccountIdentifier& id,
+                                  GetLogsCallback callback) = 0;
+
+  // Retrieves the ARC bug report for user identified by |userhash|
+  // and saves it in debugd daemon store.
+  // If a backup already exists, it is overwritten.
+  // If backup operation fails, an error is logged.
+  // |userhash|: Cryptohome sanitized username.
+  virtual void BackupArcBugReport(const std::string& userhash,
+                                  VoidDBusMethodCallback callback) = 0;
 
   // Gets all logs collected by debugd.
   virtual void GetAllLogs(GetLogsCallback callback) = 0;
@@ -235,9 +249,11 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
   // StartPluginVmDispatcher/StopPluginVmDispatcher.
   using PluginVmDispatcherCallback = base::OnceCallback<void(bool success)>;
   // Calls debugd::kStartVmPluginDispatcher, which starts the PluginVm
-  // dispatcher service on behalf of |owner_id|. |callback| is called
+  // dispatcher service on behalf of |owner_id|. |lang| indicates
+  // currently selected system language. |callback| is called
   // when the method finishes.
   virtual void StartPluginVmDispatcher(const std::string& owner_id,
+                                       const std::string& lang,
                                        PluginVmDispatcherCallback callback) = 0;
   // Calls debug::kStopVmPluginDispatcher, which stops the PluginVm dispatcher
   // service. |callback| is called when the method finishes.

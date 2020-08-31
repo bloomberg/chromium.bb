@@ -13,12 +13,14 @@
 #include "base/feature_list.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_transaction.h"
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
+#include "content/browser/indexed_db/indexed_db_compaction_task.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
@@ -73,6 +75,9 @@ base::Time GenerateNextGlobalSweepTime(base::Time now) {
 
 }  // namespace
 
+const base::Feature kCompactIDBOnClose{"CompactIndexedDBOnClose",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
 constexpr const base::TimeDelta
     IndexedDBOriginState::kMaxEarliestGlobalSweepFromNow;
 constexpr const base::TimeDelta
@@ -105,8 +110,16 @@ IndexedDBOriginState::IndexedDBOriginState(
 
 IndexedDBOriginState::~IndexedDBOriginState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (backing_store_ && backing_store_->IsBlobCleanupPending())
+  if (!backing_store_)
+    return;
+  if (backing_store_->IsBlobCleanupPending())
     backing_store_->ForceRunBlobCleanup();
+
+  base::WaitableEvent leveldb_destruct_event;
+  backing_store_->db()->leveldb_state()->RequestDestruction(
+      &leveldb_destruct_event);
+  backing_store_.reset();
+  leveldb_destruct_event.Wait();
 }
 
 void IndexedDBOriginState::AbortAllTransactions(bool compact) {
@@ -305,22 +318,47 @@ void IndexedDBOriginState::StartPreCloseTasks() {
       },
       weak_factory_.GetWeakPtr()));
 
-  base::Time now = clock_->Now();
+  std::list<std::unique_ptr<IndexedDBPreCloseTaskQueue::PreCloseTask>> tasks;
 
+  if (ShouldRunTombstoneSweeper()) {
+    tasks.push_back(std::make_unique<IndexedDBTombstoneSweeper>(
+        kTombstoneSweeperRoundIterations, kTombstoneSweeperMaxIterations,
+        backing_store_->db()->db()));
+  }
+
+  if (ShouldRunCompaction()) {
+    tasks.push_back(
+        std::make_unique<IndexedDBCompactionTask>(backing_store_->db()->db()));
+  }
+
+  if (!tasks.empty()) {
+    pre_close_task_queue_ = std::make_unique<IndexedDBPreCloseTaskQueue>(
+        std::move(tasks), maybe_close_backing_store_runner.Release(),
+        base::TimeDelta::FromSeconds(kRunningPreCloseTasksMaxRunPeriodSeconds),
+        std::make_unique<base::OneShotTimer>());
+    pre_close_task_queue_->Start(
+        base::BindOnce(&IndexedDBBackingStore::GetCompleteMetadata,
+                       base::Unretained(backing_store_.get())));
+  }
+}
+
+bool IndexedDBOriginState::ShouldRunTombstoneSweeper() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::Time now = clock_->Now();
   // Check that the last sweep hasn't run too recently.
   if (*earliest_global_sweep_time_ > now)
-    return;
+    return false;
 
   base::Time origin_earliest_sweep;
   leveldb::Status s = indexed_db::GetEarliestSweepTime(backing_store_->db(),
                                                        &origin_earliest_sweep);
   // TODO(dmurph): Log this or report to UMA.
   if (!s.ok() && !s.IsNotFound())
-    return;
+    return false;
 
   // This origin hasn't been swept too recently.
   if (origin_earliest_sweep > now)
-    return;
+    return false;
 
   // A sweep will happen now, so reset the sweep timers.
   *earliest_global_sweep_time_ = GenerateNextGlobalSweepTime(now);
@@ -331,27 +369,18 @@ void IndexedDBOriginState::StartPreCloseTasks() {
                                        GenerateNextOriginSweepTime(now));
   // TODO(dmurph): Log this or report to UMA.
   if (!s.ok())
-    return;
+    return false;
   s = txn->Commit();
 
   // TODO(dmurph): Log this or report to UMA.
   if (!s.ok())
-    return;
+    return false;
+  return true;
+}
 
-  std::list<std::unique_ptr<IndexedDBPreCloseTaskQueue::PreCloseTask>> tasks;
-  tasks.push_back(std::make_unique<IndexedDBTombstoneSweeper>(
-      kTombstoneSweeperRoundIterations, kTombstoneSweeperMaxIterations,
-      backing_store_->db()->db()));
-  // TODO(dmurph): Add compaction task that compacts all indexes if we have
-  // more than X deletions.
-
-  pre_close_task_queue_ = std::make_unique<IndexedDBPreCloseTaskQueue>(
-      std::move(tasks), maybe_close_backing_store_runner.Release(),
-      base::TimeDelta::FromSeconds(kRunningPreCloseTasksMaxRunPeriodSeconds),
-      std::make_unique<base::OneShotTimer>());
-  pre_close_task_queue_->Start(
-      base::BindOnce(&IndexedDBBackingStore::GetCompleteMetadata,
-                     base::Unretained(backing_store_.get())));
+bool IndexedDBOriginState::ShouldRunCompaction() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return base::FeatureList::IsEnabled(kCompactIDBOnClose);
 }
 
 }  // namespace content

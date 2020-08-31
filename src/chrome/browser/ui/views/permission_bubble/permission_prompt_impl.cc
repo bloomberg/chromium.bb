@@ -7,17 +7,17 @@
 #include <memory>
 
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_bubble_view.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 
-// static
-std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
+std::unique_ptr<permissions::PermissionPrompt> CreatePermissionPrompt(
     content::WebContents* web_contents,
-    Delegate* delegate) {
+    permissions::PermissionPrompt::Delegate* delegate) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser) {
     DLOG(WARNING) << "Permission prompt suppressed because the WebContents is "
@@ -34,20 +34,21 @@ PermissionPromptImpl::PermissionPromptImpl(Browser* browser,
     : prompt_bubble_(nullptr),
       web_contents_(web_contents),
       showing_quiet_prompt_(false) {
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents_);
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents_);
   if (manager->ShouldCurrentRequestUseQuietUI()) {
     showing_quiet_prompt_ = true;
     // Shows the prompt as an indicator in the right side of the omnibox.
     content_settings::UpdateLocationBarUiForWebContents(web_contents_);
   } else {
     prompt_bubble_ = new PermissionPromptBubbleView(browser, delegate);
+    prompt_bubble_->Show();
   }
 }
 
 PermissionPromptImpl::~PermissionPromptImpl() {
   if (prompt_bubble_)
-    prompt_bubble_->CloseWithoutNotifyingDelegate();
+    prompt_bubble_->GetWidget()->Close();
 
   if (showing_quiet_prompt_) {
     // Hides the quiet prompt.
@@ -60,12 +61,8 @@ void PermissionPromptImpl::UpdateAnchorPosition() {
     prompt_bubble_->UpdateAnchorPosition();
 }
 
-gfx::NativeWindow PermissionPromptImpl::GetNativeWindow() {
-  return prompt_bubble_ ? prompt_bubble_->GetNativeWindow() : nullptr;
-}
-
-PermissionPrompt::TabSwitchingBehavior
+permissions::PermissionPrompt::TabSwitchingBehavior
 PermissionPromptImpl::GetTabSwitchingBehavior() {
-  return PermissionPrompt::TabSwitchingBehavior::
+  return permissions::PermissionPrompt::TabSwitchingBehavior::
       kDestroyPromptButKeepRequestPending;
 }

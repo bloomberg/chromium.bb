@@ -61,15 +61,14 @@ class MockCryptoClientStream : public quic::QuicCryptoClientStream,
   // QuicCryptoClientStream implementation.
   bool CryptoConnect() override;
   bool encryption_established() const override;
-  bool handshake_confirmed() const override;
+  bool one_rtt_keys_available() const override;
   const quic::QuicCryptoNegotiatedParameters& crypto_negotiated_params()
       const override;
   quic::CryptoMessageParser* crypto_message_parser() override;
+  void OnOneRttPacketAcknowledged() override;
 
-  // Invokes the sessions's CryptoHandshakeEvent method with the specified
-  // event.
-  void SendOnCryptoHandshakeEvent(
-      quic::QuicSession::CryptoHandshakeEvent event);
+  // Notify session that 1-RTT key is available.
+  void NotifySessionOneRttKeyAvailable();
 
   static quic::CryptoHandshakeMessage GetDummyCHLOMessage();
 

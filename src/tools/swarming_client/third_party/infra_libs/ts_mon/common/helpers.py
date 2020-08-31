@@ -116,7 +116,7 @@ class ScopedMeasureTime(object):
         'typo in field name `%s`?' % field)
     assert metric.units in self._UNITS_PER_SECOND, (
         'metric\'s units (%s) is not one of %s' %
-        (metric.units, self._UNITS_PER_SECOND.keys()))
+        (metric.units, list(self._UNITS_PER_SECOND.keys())))
 
     self._metric = metric
     self._field_values = dict(extra_fields_values)

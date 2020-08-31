@@ -4,16 +4,17 @@
 
 #include "ash/display/cros_display_config.h"
 
-#include <memory>
 #include <utility>
 
 #include "ash/display/display_configuration_controller.h"
+#include "ash/display/display_highlight_controller.h"
 #include "ash/display/display_prefs.h"
 #include "ash/display/overscan_calibrator.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/touch_calibrator_controller.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "ash/shell.h"
@@ -228,9 +229,7 @@ mojom::DisplayModePtr GetDisplayMode(
     const display::ManagedDisplayInfo& display_info,
     const display::ManagedDisplayMode& display_mode) {
   auto result = mojom::DisplayMode::New();
-  bool is_internal = display::Display::HasInternalDisplay() &&
-                     display::Display::InternalDisplayId() == display_info.id();
-  gfx::Size size_dip = display_mode.GetSizeInDIP(is_internal);
+  gfx::Size size_dip = display_mode.GetSizeInDIP();
   result->size = size_dip;
   result->size_in_native_pixels = display_mode.size();
   result->device_scale_factor = display_mode.device_scale_factor();
@@ -905,7 +904,7 @@ void CrosDisplayConfig::TouchCalibration(const std::string& display_id,
       return;
     }
     if (!touch_calibrator_)
-      touch_calibrator_ = std::make_unique<ash::TouchCalibratorController>();
+      touch_calibrator_ = std::make_unique<TouchCalibratorController>();
     if (op == mojom::DisplayConfigOperation::kShowNative) {
       // For native calibration, |callback| is not run until calibration
       // completes.
@@ -929,8 +928,8 @@ void CrosDisplayConfig::TouchCalibration(const std::string& display_id,
   }
 
   if (op == mojom::DisplayConfigOperation::kReset) {
-    ash::Shell::Get()->display_manager()->ClearTouchCalibrationData(
-        display.id(), base::nullopt);
+    Shell::Get()->display_manager()->ClearTouchCalibrationData(display.id(),
+                                                               base::nullopt);
     std::move(callback).Run(mojom::DisplayConfigResult::kSuccess);
     return;
   }
@@ -956,7 +955,7 @@ void CrosDisplayConfig::TouchCalibration(const std::string& display_id,
     return;
   }
 
-  ash::Shell::Get()->touch_transformer_controller()->SetForCalibration(false);
+  Shell::Get()->touch_transformer_controller()->SetForCalibration(false);
 
   display::TouchCalibrationData::CalibrationPointPairQuad calibration_points;
   calibration_points[0] = GetCalibrationPair(*calibration->pairs[0]);
@@ -999,6 +998,12 @@ OverscanCalibrator* CrosDisplayConfig::GetOverscanCalibrator(
     const std::string& id) {
   auto iter = overscan_calibrators_.find(id);
   return iter == overscan_calibrators_.end() ? nullptr : iter->second.get();
+}
+
+void CrosDisplayConfig::HighlightDisplay(int64_t id) {
+  DCHECK(base::FeatureList::IsEnabled(features::kDisplayIdentification));
+
+  Shell::Get()->display_highlight_controller()->SetHighlightedDisplay(id);
 }
 
 }  // namespace ash

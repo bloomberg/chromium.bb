@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "headless/lib/renderer/headless_print_render_frame_helper_delegate.h"
+#include "base/command_line.h"
+#include "headless/app/headless_shell_switches.h"
 
 #include "third_party/blink/public/web/web_element.h"
 
@@ -14,11 +16,6 @@ HeadlessPrintRenderFrameHelperDelegate::
 HeadlessPrintRenderFrameHelperDelegate::
     ~HeadlessPrintRenderFrameHelperDelegate() = default;
 
-bool HeadlessPrintRenderFrameHelperDelegate::CancelPrerender(
-    content::RenderFrame* render_frame) {
-  return false;
-}
-
 blink::WebElement HeadlessPrintRenderFrameHelperDelegate::GetPdfElement(
     blink::WebLocalFrame* frame) {
   return blink::WebElement();
@@ -26,6 +23,11 @@ blink::WebElement HeadlessPrintRenderFrameHelperDelegate::GetPdfElement(
 
 bool HeadlessPrintRenderFrameHelperDelegate::IsPrintPreviewEnabled() {
   return false;
+}
+
+bool HeadlessPrintRenderFrameHelperDelegate::ShouldGenerateTaggedPDF() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      headless::switches::kExportTaggedPDF);
 }
 
 bool HeadlessPrintRenderFrameHelperDelegate::OverridePrint(

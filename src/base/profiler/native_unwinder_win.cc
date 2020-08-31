@@ -6,13 +6,15 @@
 
 #include <winnt.h>
 
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/profiler/native_unwinder.h"
 #include "base/profiler/win32_stack_frame_unwinder.h"
 
 namespace base {
 
-bool NativeUnwinderWin::CanUnwindFrom(const Frame* current_frame) const {
-  return current_frame->module && current_frame->module->IsNative();
+bool NativeUnwinderWin::CanUnwindFrom(const Frame& current_frame) const {
+  return current_frame.module && current_frame.module->IsNative();
 }
 
 // Attempts to unwind the frame represented by the context values. If

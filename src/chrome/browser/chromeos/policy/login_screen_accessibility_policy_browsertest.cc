@@ -29,6 +29,7 @@
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace em = enterprise_management;
@@ -1091,5 +1092,33 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
   prefs->SetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu, false);
   EXPECT_FALSE(
       prefs->GetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu));
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenAccessibilityShortcutsEnabled) {
+  // Verifies that the state of accessibility shortcuts on the login screen, can
+  // be controlled using a device policy.
+  PrefService* prefs = login_profile_->GetPrefs();
+  ASSERT_TRUE(prefs);
+  EXPECT_TRUE(prefs->GetBoolean(ash::prefs::kAccessibilityShortcutsEnabled));
+
+  // Disable the accessibility shortcuts on login screen through device policy
+  // and wait for the change to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()->set_login_screen_shortcuts_enabled(
+      false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityShortcutsEnabled);
+
+  // Verify that the pref which controls whether the accessibiilty shortcuts
+  // been enabled or not on the login profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityShortcutsEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityShortcutsEnabled));
+
+  // Verify that its not possible to enable the accessibiilty shortcuts pref
+  // manually.
+  prefs->SetBoolean(ash::prefs::kAccessibilityShortcutsEnabled, true);
+  EXPECT_FALSE(prefs->GetBoolean(ash::prefs::kAccessibilityShortcutsEnabled));
 }
 }  // namespace policy

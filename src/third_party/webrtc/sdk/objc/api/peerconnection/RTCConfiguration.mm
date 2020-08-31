@@ -15,14 +15,14 @@
 #import "RTCCertificate.h"
 #import "RTCConfiguration+Native.h"
 #import "RTCIceServer+Private.h"
-#import "RTCIntervalRange+Private.h"
 #import "base/RTCLogging.h"
 
 #include "rtc_base/rtc_certificate_generator.h"
 #include "rtc_base/ssl_identity.h"
 
-@implementation RTCConfiguration
+@implementation RTC_OBJC_TYPE (RTCConfiguration)
 
+@synthesize enableDscp = _enableDscp;
 @synthesize iceServers = _iceServers;
 @synthesize certificate = _certificate;
 @synthesize iceTransportPolicy = _iceTransportPolicy;
@@ -48,7 +48,6 @@
 @synthesize shouldSurfaceIceCandidatesOnIceTransportTypeChanged =
     _shouldSurfaceIceCandidatesOnIceTransportTypeChanged;
 @synthesize iceCheckMinInterval = _iceCheckMinInterval;
-@synthesize iceRegatherIntervalRange = _iceRegatherIntervalRange;
 @synthesize sdpSemantics = _sdpSemantics;
 @synthesize turnCustomizer = _turnCustomizer;
 @synthesize activeResetSrtpParams = _activeResetSrtpParams;
@@ -68,9 +67,11 @@
 - (instancetype)initWithNativeConfiguration:
     (const webrtc::PeerConnectionInterface::RTCConfiguration &)config {
   if (self = [super init]) {
+    _enableDscp = config.dscp();
     NSMutableArray *iceServers = [NSMutableArray array];
     for (const webrtc::PeerConnectionInterface::IceServer& server : config.servers) {
-      RTCIceServer *iceServer = [[RTCIceServer alloc] initWithNativeServer:server];
+      RTC_OBJC_TYPE(RTCIceServer) *iceServer =
+          [[RTC_OBJC_TYPE(RTCIceServer) alloc] initWithNativeServer:server];
       [iceServers addObject:iceServer];
     }
     _iceServers = iceServers;
@@ -78,9 +79,9 @@
       rtc::scoped_refptr<rtc::RTCCertificate> native_cert;
       native_cert = config.certificates[0];
       rtc::RTCCertificatePEM native_pem = native_cert->ToPEM();
-      _certificate =
-          [[RTCCertificate alloc] initWithPrivateKey:@(native_pem.private_key().c_str())
-                                         certificate:@(native_pem.certificate().c_str())];
+      _certificate = [[RTC_OBJC_TYPE(RTCCertificate) alloc]
+          initWithPrivateKey:@(native_pem.private_key().c_str())
+                 certificate:@(native_pem.certificate().c_str())];
     }
     _iceTransportPolicy =
         [[self class] transportPolicyForTransportsType:config.type];
@@ -118,16 +119,11 @@
       _iceCheckMinInterval =
           [NSNumber numberWithInt:*config.ice_check_min_interval];
     }
-    if (config.ice_regather_interval_range) {
-      const rtc::IntervalRange &nativeIntervalRange = config.ice_regather_interval_range.value();
-      _iceRegatherIntervalRange =
-          [[RTCIntervalRange alloc] initWithNativeIntervalRange:nativeIntervalRange];
-    }
     _sdpSemantics = [[self class] sdpSemanticsForNativeSdpSemantics:config.sdp_semantics];
     _turnCustomizer = config.turn_customizer;
     _activeResetSrtpParams = config.active_reset_srtp_params;
     if (config.crypto_options) {
-      _cryptoOptions = [[RTCCryptoOptions alloc]
+      _cryptoOptions = [[RTC_OBJC_TYPE(RTCCryptoOptions) alloc]
                initWithSrtpEnableGcmCryptoSuites:config.crypto_options->srtp
                                                      .enable_gcm_crypto_suites
              srtpEnableAes128Sha1_32CryptoCipher:config.crypto_options->srtp
@@ -145,9 +141,9 @@
 }
 
 - (NSString *)description {
-  static NSString *formatString = @"RTCConfiguration: "
+  static NSString *formatString = @"RTC_OBJC_TYPE(RTCConfiguration): "
                                   @"{\n%@\n%@\n%@\n%@\n%@\n%@\n%@\n%@\n%d\n%d\n%d\n%d\n%d\n%d\n"
-                                  @"%d\n%@\n%@\n%d\n%d\n%d\n%d\n%d\n%@\n}\n";
+                                  @"%d\n%@\n%d\n%d\n%d\n%d\n%d\n%@\n%d\n}\n";
 
   return [NSString
       stringWithFormat:formatString,
@@ -168,13 +164,13 @@
                        _shouldPresumeWritableWhenFullyRelayed,
                        _shouldSurfaceIceCandidatesOnIceTransportTypeChanged,
                        _iceCheckMinInterval,
-                       _iceRegatherIntervalRange,
                        _disableLinkLocalNetworks,
                        _disableIPV6,
                        _disableIPV6OnWiFi,
                        _maxIPv6Networks,
                        _activeResetSrtpParams,
-                       _useMediaTransport];
+                       _useMediaTransport,
+                       _enableDscp];
 }
 
 #pragma mark - Private
@@ -185,7 +181,8 @@
       nativeConfig(new webrtc::PeerConnectionInterface::RTCConfiguration(
           webrtc::PeerConnectionInterface::RTCConfigurationType::kAggressive));
 
-  for (RTCIceServer *iceServer in _iceServers) {
+  nativeConfig->set_dscp(_enableDscp);
+  for (RTC_OBJC_TYPE(RTCIceServer) * iceServer in _iceServers) {
     nativeConfig->servers.push_back(iceServer.nativeServer);
   }
   nativeConfig->type =
@@ -250,12 +247,6 @@
       _shouldSurfaceIceCandidatesOnIceTransportTypeChanged ? true : false;
   if (_iceCheckMinInterval != nil) {
     nativeConfig->ice_check_min_interval = absl::optional<int>(_iceCheckMinInterval.intValue);
-  }
-  if (_iceRegatherIntervalRange != nil) {
-    std::unique_ptr<rtc::IntervalRange> nativeIntervalRange(
-        _iceRegatherIntervalRange.nativeIntervalRange);
-    nativeConfig->ice_regather_interval_range =
-        absl::optional<rtc::IntervalRange>(*nativeIntervalRange);
   }
   nativeConfig->sdp_semantics = [[self class] nativeSdpSemanticsForSdpSemantics:_sdpSemantics];
   if (_turnCustomizer) {

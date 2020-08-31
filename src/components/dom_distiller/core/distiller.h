@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/article_distillation_update.h"
@@ -31,12 +30,12 @@ class DistillerImpl;
 
 class Distiller {
  public:
-  typedef base::Callback<void(std::unique_ptr<DistilledArticleProto>)>
-      DistillationFinishedCallback;
-  typedef base::Callback<void(const ArticleDistillationUpdate&)>
-      DistillationUpdateCallback;
+  using DistillationFinishedCallback =
+      base::OnceCallback<void(std::unique_ptr<DistilledArticleProto>)>;
+  using DistillationUpdateCallback =
+      base::RepeatingCallback<void(const ArticleDistillationUpdate&)>;
 
-  virtual ~Distiller() {}
+  virtual ~Distiller() = default;
 
   // Distills a page, and asynchronously returns the article HTML to the
   // supplied |finished_cb| callback. |update_cb| is invoked whenever article
@@ -46,14 +45,14 @@ class Distiller {
   // distillation is completed.
   virtual void DistillPage(const GURL& url,
                            std::unique_ptr<DistillerPage> distiller_page,
-                           const DistillationFinishedCallback& finished_cb,
+                           DistillationFinishedCallback finished_cb,
                            const DistillationUpdateCallback& update_cb) = 0;
 };
 
 class DistillerFactory {
  public:
   virtual std::unique_ptr<Distiller> CreateDistillerForUrl(const GURL& url) = 0;
-  virtual ~DistillerFactory() {}
+  virtual ~DistillerFactory() = default;
 };
 
 // Factory for creating a Distiller.
@@ -80,12 +79,15 @@ class DistillerImpl : public Distiller {
 
   void DistillPage(const GURL& url,
                    std::unique_ptr<DistillerPage> distiller_page,
-                   const DistillationFinishedCallback& finished_cb,
+                   DistillationFinishedCallback finished_cb,
                    const DistillationUpdateCallback& update_cb) override;
 
   void SetMaxNumPagesInArticle(size_t max_num_pages);
 
   static bool DoesFetchImages();
+
+  DistillerImpl(const DistillerImpl&) = delete;
+  DistillerImpl& operator=(const DistillerImpl&) = delete;
 
  private:
   // In case of multiple pages, the Distiller maintains state of multiple pages
@@ -103,8 +105,8 @@ class DistillerImpl : public Distiller {
     scoped_refptr<base::RefCountedData<DistilledPageProto>>
         distilled_page_proto;
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(DistilledPageData);
+    DistilledPageData(const DistilledPageData&) = delete;
+    DistilledPageData& operator=(const DistilledPageData&) = delete;
   };
 
   void OnFetchImageDone(int page_num,
@@ -189,8 +191,6 @@ class DistillerImpl : public Distiller {
   bool destruction_allowed_;
 
   base::WeakPtrFactory<DistillerImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DistillerImpl);
 };
 
 }  // namespace dom_distiller

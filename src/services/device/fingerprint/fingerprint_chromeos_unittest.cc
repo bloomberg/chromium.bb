@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/biod/fake_biod_client.h"
@@ -149,14 +150,14 @@ TEST_F(FingerprintChromeOSTest, FingerprintObserverTest) {
   std::string label;
   chromeos::FakeBiodClient::Get()->StartEnrollSession(
       user_id, label,
-      base::Bind(&FingerprintChromeOSTest::onStartSession,
-                 base::Unretained(this)));
+      base::BindOnce(&FingerprintChromeOSTest::onStartSession,
+                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   GenerateEnrollScanDoneSignal();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(observer.enroll_scan_dones(), 1);
 
-  chromeos::FakeBiodClient::Get()->StartAuthSession(base::Bind(
+  chromeos::FakeBiodClient::Get()->StartAuthSession(base::BindOnce(
       &FingerprintChromeOSTest::onStartSession, base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   GenerateAuthScanDoneSignal();

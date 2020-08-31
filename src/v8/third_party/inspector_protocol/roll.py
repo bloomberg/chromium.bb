@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copcright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,6 +21,16 @@ FILES_TO_SYNC = [
     'crdtp/cbor.cc',
     'crdtp/cbor.h',
     'crdtp/cbor_test.cc',
+    'crdtp/dispatch.h',
+    'crdtp/dispatch.cc',
+    'crdtp/dispatch_test.cc',
+    'crdtp/error_support.cc',
+    'crdtp/error_support.h',
+    'crdtp/error_support_test.cc',
+    'crdtp/export_template.h',
+    'crdtp/find_by_first.h',
+    'crdtp/find_by_first_test.cc',
+    'crdtp/frontend_channel.h',
     'crdtp/glue.h',
     'crdtp/glue_test.cc',
     'crdtp/json.cc',
@@ -28,11 +38,19 @@ FILES_TO_SYNC = [
     'crdtp/json_platform.h',
     'crdtp/json_test.cc',
     'crdtp/parser_handler.h',
+    'crdtp/serializable.h',
+    'crdtp/serializable.cc',
+    'crdtp/serializable_test.cc',
+    'crdtp/serializer_traits.h',
+    'crdtp/serializer_traits_test.cc',
+    'crdtp/span.cc',
     'crdtp/span.h',
     'crdtp/span_test.cc',
     'crdtp/status.cc',
     'crdtp/status.h',
     'crdtp/status_test.cc',
+    'crdtp/status_test_support.cc',
+    'crdtp/status_test_support.h',
     'inspector_protocol.gni',
     'inspector_protocol.gypi',
     'lib/*',

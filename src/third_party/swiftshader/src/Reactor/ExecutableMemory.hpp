@@ -19,13 +19,26 @@
 #include <cstdint>
 #include <cstring>
 
-namespace rr
-{
+namespace rr {
+
 size_t memoryPageSize();
 
-void *allocateExecutable(size_t bytes);   // Allocates memory that can be made executable using markExecutable()
-void markExecutable(void *memory, size_t bytes);
-void deallocateExecutable(void *memory, size_t bytes);
+enum MemoryPermission
+{
+	PERMISSION_READ = 1,
+	PERMISSION_WRITE = 2,
+	PERMISSION_EXECUTE = 4,
+};
+
+// Allocates memory with the specified permissions. If |need_exec| is true then
+// the allocate memory can be made marked executable using protectMemoryPages().
+void *allocateMemoryPages(size_t bytes, int permissions, bool need_exec);
+
+// Sets permissions for memory allocated with allocateMemoryPages().
+void protectMemoryPages(void *memory, size_t bytes, int permissions);
+
+// Releases memory allocated with allocateMemoryPages().
+void deallocateMemoryPages(void *memory, size_t bytes);
 
 template<typename P>
 P unaligned_read(P *address)
@@ -46,7 +59,9 @@ template<typename P>
 class unaligned_ref
 {
 public:
-	explicit unaligned_ref(void *ptr) : ptr((P*)ptr) {}
+	explicit unaligned_ref(void *ptr)
+	    : ptr((P *)ptr)
+	{}
 
 	template<typename V>
 	P operator=(V value)
@@ -57,7 +72,7 @@ public:
 
 	operator P()
 	{
-		return unaligned_read((P*)ptr);
+		return unaligned_read((P *)ptr);
 	}
 
 private:
@@ -71,7 +86,9 @@ class unaligned_ptr
 	friend class unaligned_ptr;
 
 public:
-	unaligned_ptr(P *ptr) : ptr(ptr) {}
+	unaligned_ptr(P *ptr)
+	    : ptr(ptr)
+	{}
 
 	unaligned_ref<P> operator*()
 	{
@@ -87,6 +104,7 @@ public:
 private:
 	void *ptr;
 };
-}
 
-#endif   // rr_ExecutableMemory_hpp
+}  // namespace rr
+
+#endif  // rr_ExecutableMemory_hpp

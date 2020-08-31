@@ -35,7 +35,9 @@ class WebviewController : public CastWebContents::Delegate,
                           public CastWebContents::Observer,
                           public WebContentController {
  public:
-  WebviewController(content::BrowserContext* browser_context, Client* client);
+  WebviewController(content::BrowserContext* browser_context,
+                    Client* client,
+                    bool enabled_for_dev);
   ~WebviewController() override;
 
   // Returns a navigation throttle for the current navigation request, if one is
@@ -57,11 +59,14 @@ class WebviewController : public CastWebContents::Delegate,
   // navigation handle.
   void SendNavigationEvent(WebviewNavigationThrottle* throttle,
                            content::NavigationHandle* navigation_handle);
+  void OnNavigationThrottleDestroyed(WebviewNavigationThrottle* throttle);
 
  protected:
   content::WebContents* GetWebContents() override;
 
  private:
+  void HandleUpdateSettings(const webview::UpdateSettingsRequest& request);
+
   webview::AsyncPageEvent_State current_state();
 
   // CastWebContents::Delegate
@@ -72,6 +77,10 @@ class WebviewController : public CastWebContents::Delegate,
   // CastWebContents::Observer
   void ResourceLoadFailed(CastWebContents* cast_web_contents) override;
 
+  // content::WebContentsObserver
+  void DidFirstVisuallyNonEmptyPaint() override;
+
+  const bool enabled_for_dev_;
   std::unique_ptr<content::WebContents> contents_;
   std::unique_ptr<CastWebContents> cast_web_contents_;
   bool stopped_ = false;

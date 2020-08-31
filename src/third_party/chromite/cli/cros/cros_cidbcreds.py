@@ -9,12 +9,17 @@ from __future__ import print_function
 
 import os
 import shutil
+import sys
 
 from chromite.cli import command
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import locking
 from chromite.lib import path_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 PROD_REPLICA_CIDB_READONLY_BUCKET = (
     'gs://chromeos-cidb-creds/prod_replica_cidb_gen2_readonly/')

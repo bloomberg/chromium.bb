@@ -17,25 +17,41 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test_loopback.h"
-#include "net/quic/platform/impl/quic_socket_utils.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_packet_processor_test_tools.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_server_session.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_server_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/server_thread.h"
 #include "net/third_party/quiche/src/quic/tools/quic_memory_cache_backend.h"
 #include "net/third_party/quiche/src/quic/tools/quic_server.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 namespace test {
 namespace {
 
-string TestPacketIn(const string& body) {
+ParsedQuicVersionVector GetTestParams() {
+  ParsedQuicVersionVector test_versions;
+
+  // TODO(b/113130636): Make QBONE work with TLS.
+  for (const auto& version : CurrentSupportedVersionsWithQuicCrypto()) {
+    // QBONE requires MESSAGE frames
+    if (!version.SupportsMessageFrames()) {
+      continue;
+    }
+    test_versions.push_back(version);
+  }
+
+  return test_versions;
+}
+
+std::string TestPacketIn(const std::string& body) {
   return PrependIPv6HeaderForTest(body, 5);
 }
 
-string TestPacketOut(const string& body) {
+std::string TestPacketOut(const std::string& body) {
   return PrependIPv6HeaderForTest(body, 4);
 }
 
@@ -43,20 +59,20 @@ class DataSavingQbonePacketWriter : public QbonePacketWriter {
  public:
   void WritePacketToNetwork(const char* packet, size_t size) override {
     QuicWriterMutexLock lock(&mu_);
-    data_.push_back(string(packet, size));
+    data_.push_back(std::string(packet, size));
   }
 
-  std::vector<string> data() {
+  std::vector<std::string> data() {
     QuicWriterMutexLock lock(&mu_);
     return data_;
   }
 
  private:
   QuicMutex mu_;
-  std::vector<string> data_;
+  std::vector<std::string> data_;
 };
 
-// A subclass of a qbone session that will own the connection passed in.
+// A subclass of a QBONE session that will own the connection passed in.
 class ConnectionOwningQboneServerSession : public QboneServerSession {
  public:
   ConnectionOwningQboneServerSession(
@@ -93,7 +109,7 @@ class QuicQboneDispatcher : public QuicDispatcher {
       const QuicCryptoServerConfig* crypto_config,
       QuicVersionManager* version_manager,
       std::unique_ptr<QuicConnectionHelperInterface> helper,
-      std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
+      std::unique_ptr<QuicCryptoServerStreamBase::Helper> session_helper,
       std::unique_ptr<QuicAlarmFactory> alarm_factory,
       QbonePacketWriter* writer)
       : QuicDispatcher(config,
@@ -105,10 +121,10 @@ class QuicQboneDispatcher : public QuicDispatcher {
                        kQuicDefaultConnectionIdLength),
         writer_(writer) {}
 
-  QuicSession* CreateQuicSession(
+  std::unique_ptr<QuicSession> CreateQuicSession(
       QuicConnectionId id,
       const QuicSocketAddress& client,
-      QuicStringPiece alpn,
+      quiche::QuicheStringPiece alpn,
       const quic::ParsedQuicVersion& version) override {
     CHECK_EQ(alpn, "qbone");
     QuicConnection* connection =
@@ -116,7 +132,7 @@ class QuicQboneDispatcher : public QuicDispatcher {
                            /* owns_writer= */ false, Perspective::IS_SERVER,
                            ParsedQuicVersionVector{version});
     // The connection owning wrapper owns the connection created.
-    QboneServerSession* session = new ConnectionOwningQboneServerSession(
+    auto session = std::make_unique<ConnectionOwningQboneServerSession>(
         GetSupportedVersions(), connection, this, config(), crypto_config(),
         compressed_certs_cache(), writer_);
     session->Initialize();
@@ -145,19 +161,14 @@ class QboneTestServer : public QuicServer {
         std::unique_ptr<QuicEpollConnectionHelper>(
             new QuicEpollConnectionHelper(epoll_server(),
                                           QuicAllocator::BUFFER_POOL)),
-        std::unique_ptr<QuicCryptoServerStream::Helper>(
+        std::unique_ptr<QuicCryptoServerStreamBase::Helper>(
             new QboneCryptoServerStreamHelper()),
         std::unique_ptr<QuicEpollAlarmFactory>(
             new QuicEpollAlarmFactory(epoll_server())),
         &writer_);
   }
 
-  std::vector<string> data() { return writer_.data(); }
-
-  void WaitForDataSize(int n) {
-    while (data().size() != n) {
-    }
-  }
+  std::vector<std::string> data() { return writer_.data(); }
 
  private:
   quic::QuicMemoryCacheBackend response_cache_;
@@ -183,7 +194,7 @@ class QboneTestClient : public QboneClient {
 
   ~QboneTestClient() override {}
 
-  void SendData(const string& data) {
+  void SendData(const std::string& data) {
     qbone_session()->ProcessPacketFromNetwork(data);
   }
 
@@ -193,19 +204,35 @@ class QboneTestClient : public QboneClient {
     }
   }
 
-  void WaitForDataSize(int n) {
-    while (data().size() != n) {
+  // Returns true when the data size is reached or false on timeouts.
+  bool WaitForDataSize(int n, QuicTime::Delta timeout) {
+    const QuicClock* clock =
+        quic::test::QuicConnectionPeer::GetHelper(session()->connection())
+            ->GetClock();
+    const QuicTime deadline = clock->Now() + timeout;
+    while (data().size() < n) {
+      if (clock->Now() > deadline) {
+        return false;
+      }
       WaitForEvents();
     }
+    return true;
   }
 
-  std::vector<string> data() { return qbone_writer_.data(); }
+  std::vector<std::string> data() { return qbone_writer_.data(); }
 
  private:
   DataSavingQbonePacketWriter qbone_writer_;
 };
 
-TEST(QboneClientTest, SendDataFromClient) {
+class QboneClientTest : public QuicTestWithParam<ParsedQuicVersion> {};
+
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QboneClientTest,
+                         ::testing::ValuesIn(GetTestParams()),
+                         ::testing::PrintToStringParamName());
+
+TEST_P(QboneClientTest, SendDataFromClient) {
   auto server = new QboneTestServer(crypto_test_utils::ProofSourceForTesting());
   QuicSocketAddress server_address(TestLoopback(),
                                    QuicPickServerPortForTestsOrDie());
@@ -217,7 +244,7 @@ TEST(QboneClientTest, SendDataFromClient) {
   QboneTestClient client(
       server_address,
       QuicServerId("test.example.com", server_address.port(), false),
-      AllSupportedVersions(), &epoll_server,
+      ParsedQuicVersionVector{GetParam()}, &epoll_server,
       crypto_test_utils::ProofVerifierForTesting());
   ASSERT_TRUE(client.Initialize());
   ASSERT_TRUE(client.Connect());
@@ -225,24 +252,30 @@ TEST(QboneClientTest, SendDataFromClient) {
   client.SendData(TestPacketIn("hello"));
   client.SendData(TestPacketIn("world"));
   client.WaitForWriteToFlush();
-  server->WaitForDataSize(2);
-  EXPECT_THAT(server->data()[0], testing::Eq(TestPacketOut("hello")));
-  EXPECT_THAT(server->data()[1], testing::Eq(TestPacketOut("world")));
-  auto server_session =
-      static_cast<QboneServerSession*>(QuicServerPeer::GetDispatcher(server)
-                                           ->session_map()
-                                           .begin()
-                                           ->second.get());
-  string long_data(QboneConstants::kMaxQbonePacketBytes - sizeof(ip6_hdr) - 1,
-                   'A');
+
+  // Wait until the server has received at least two packets, timeout after 5s.
+  ASSERT_TRUE(
+      server_thread.WaitUntil([&] { return server->data().size() >= 2; },
+                              QuicTime::Delta::FromSeconds(5)));
+
+  std::string long_data(
+      QboneConstants::kMaxQbonePacketBytes - sizeof(ip6_hdr) - 1, 'A');
+
   // Pretend the server gets data.
-  server_thread.Schedule([&server_session, &long_data]() {
+  server_thread.Schedule([&server, &long_data]() {
+    EXPECT_THAT(server->data()[0], testing::Eq(TestPacketOut("hello")));
+    EXPECT_THAT(server->data()[1], testing::Eq(TestPacketOut("world")));
+    auto server_session =
+        static_cast<QboneServerSession*>(QuicServerPeer::GetDispatcher(server)
+                                             ->session_map()
+                                             .begin()
+                                             ->second.get());
     server_session->ProcessPacketFromNetwork(
         TestPacketIn("Somethingsomething"));
     server_session->ProcessPacketFromNetwork(TestPacketIn(long_data));
     server_session->ProcessPacketFromNetwork(TestPacketIn(long_data));
   });
-  client.WaitForDataSize(3);
+  ASSERT_TRUE(client.WaitForDataSize(3, QuicTime::Delta::FromSeconds(5)));
   EXPECT_THAT(client.data()[0],
               testing::Eq(TestPacketOut("Somethingsomething")));
   EXPECT_THAT(client.data()[1], testing::Eq(TestPacketOut(long_data)));

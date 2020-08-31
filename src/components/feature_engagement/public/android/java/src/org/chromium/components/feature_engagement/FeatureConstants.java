@@ -15,12 +15,13 @@ import java.lang.annotation.RetentionPolicy;
  */
 @StringDef({FeatureConstants.DOWNLOAD_PAGE_FEATURE,
         FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE, FeatureConstants.DOWNLOAD_HOME_FEATURE,
+        FeatureConstants.CHROME_DUET_HOME_BUTTON_FEATURE,
         FeatureConstants.CHROME_DUET_SEARCH_FEATURE,
         FeatureConstants.CHROME_DUET_TAB_SWITCHER_FEATURE,
         FeatureConstants.CHROME_HOME_EXPAND_FEATURE,
         FeatureConstants.CHROME_HOME_PULL_TO_REFRESH_FEATURE,
         FeatureConstants.DATA_SAVER_PREVIEW_FEATURE, FeatureConstants.DATA_SAVER_DETAIL_FEATURE,
-        FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE,
+        FeatureConstants.EPHEMERAL_TAB_FEATURE, FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE,
         FeatureConstants.TRANSLATE_MENU_BUTTON_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_WEB_SEARCH_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE,
@@ -37,7 +38,11 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.TAB_GROUPS_YOUR_TABS_ARE_TOGETHER_FEATURE,
         FeatureConstants.FEED_CARD_MENU_FEATURE, FeatureConstants.IDENTITY_DISC_FEATURE,
         FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE,
-        FeatureConstants.QUIET_NOTIFICATION_PROMPTS_FEATURE})
+        FeatureConstants.QUIET_NOTIFICATION_PROMPTS_FEATURE,
+        FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE, FeatureConstants.FEED_HEADER_MENU_FEATURE,
+        FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_1_FEATURE,
+        FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_2_FEATURE,
+        FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_3_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String DOWNLOAD_PAGE_FEATURE = "IPH_DownloadPage";
@@ -51,6 +56,7 @@ public @interface FeatureConstants {
     String DATA_SAVER_PREVIEW_FEATURE = "IPH_DataSaverPreview";
     String DATA_SAVER_DETAIL_FEATURE = "IPH_DataSaverDetail";
     String DATA_SAVER_MILESTONE_PROMO_FEATURE = "IPH_DataSaverMilestonePromo";
+    String EPHEMERAL_TAB_FEATURE = "IPH_EphemeralTab";
     String KEYBOARD_ACCESSORY_ADDRESS_FILL_FEATURE = "IPH_KeyboardAccessoryAddressFilling";
     String KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE = "IPH_KeyboardAccessoryPasswordFilling";
     String KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE = "IPH_KeyboardAccessoryPaymentFilling";
@@ -133,4 +139,30 @@ public @interface FeatureConstants {
      * the permission prompt (for notifications).
      */
     String QUIET_NOTIFICATION_PROMPTS_FEATURE = "IPH_QuietNotificationPrompts";
+
+    /**
+     * An IPH feature showing up a promo card on new tab page to promote users setting Chrome's new
+     * tab page as their homepage.
+     */
+    String HOMEPAGE_PROMO_CARD_FEATURE = "IPH_HomepagePromoCard";
+
+    /**
+     * An IPH feature to show on the feed header menu button of the FeedNewTabPage.
+     */
+    String FEED_HEADER_MENU_FEATURE = "IPH_FeedHeaderMenu";
+
+    /**
+     * An IPH feature to show the first re-engagement notification.
+     */
+    String CHROME_REENGAGEMENT_NOTIFICATION_1_FEATURE = "IPH_ChromeReengagementNotification1";
+
+    /**
+     * An IPH feature to show the second re-engagement notification.
+     */
+    String CHROME_REENGAGEMENT_NOTIFICATION_2_FEATURE = "IPH_ChromeReengagementNotification2";
+
+    /**
+     * An IPH feature to show the third re-engagement notification.
+     */
+    String CHROME_REENGAGEMENT_NOTIFICATION_3_FEATURE = "IPH_ChromeReengagementNotification3";
 }

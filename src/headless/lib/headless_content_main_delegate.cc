@@ -27,10 +27,12 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/profiling.h"
+#include "gpu/config/gpu_switches.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_content_browser_client.h"
 #include "headless/lib/headless_crash_reporter_client.h"
 #include "headless/lib/headless_macros.h"
+#include "headless/lib/renderer/headless_content_renderer_client.h"
 #include "headless/lib/utility/headless_content_utility_client.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -46,15 +48,11 @@
 #endif
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #endif
 
 #if defined(OS_LINUX)
-#include "components/crash/content/app/breakpad_linux.h"
-#endif
-
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-#include "headless/lib/renderer/headless_content_renderer_client.h"
+#include "components/crash/core/app/breakpad_linux.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -74,10 +72,8 @@ const base::FilePath::CharType kDefaultProfileName[] =
 namespace {
 
 // Keep in sync with content/common/content_constants_internal.h.
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
 // TODO(skyostil): Add a tracing test for this.
 const int kTraceEventBrowserProcessSortIndex = -6;
-#endif
 
 HeadlessContentMainDelegate* g_current_headless_content_main_delegate = nullptr;
 
@@ -228,9 +224,12 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   // is ready for display (because it isn't displayed to users).
   command_line->AppendSwitch(::switches::kAllowPreCommitInput);
 
-  content::Profiling::ProcessStarted();
+#if defined(OS_WIN)
+  command_line->AppendSwitch(
+      ::switches::kDisableGpuProcessForDX12VulkanInfoCollection);
+#endif
 
-  SetContentClient(&content_client_);
+  content::Profiling::ProcessStarted();
   return false;
 }
 
@@ -343,7 +342,7 @@ void HeadlessContentMainDelegate::InitCrashReporter(
 // Avoid adding this dependency in Windows Chrome non component builds, since
 // crashpad is already enabled.
 // TODO(dvallet): Ideally we would also want to avoid this for component builds.
-#elif defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL)
+#elif defined(OS_WIN)
   crash_reporter::InitializeCrashpadWithEmbeddedHandler(
       process_type.empty(), process_type, "", base::FilePath());
 #endif  // defined(HEADLESS_USE_BREAKPAD)
@@ -372,7 +371,6 @@ void HeadlessContentMainDelegate::PreSandboxStartup() {
   InitApplicationLocale(command_line);
 }
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
 int HeadlessContentMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
@@ -399,7 +397,6 @@ int HeadlessContentMainDelegate::RunProcess(
   // Return value >=0 here to disable calling content::BrowserMain.
   return 0;
 }
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 #if defined(OS_LINUX)
 void SIGTERMProfilingShutdown(int signal) {
@@ -449,16 +446,17 @@ HeadlessBrowser::Options* HeadlessContentMainDelegate::options() {
   return options_.get();
 }
 
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+content::ContentClient* HeadlessContentMainDelegate::CreateContentClient() {
+  return &content_client_;
+}
+
 content::ContentBrowserClient*
 HeadlessContentMainDelegate::CreateContentBrowserClient() {
   browser_client_ =
       std::make_unique<HeadlessContentBrowserClient>(browser_.get());
   return browser_client_.get();
 }
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
 content::ContentRendererClient*
 HeadlessContentMainDelegate::CreateContentRendererClient() {
   renderer_client_ = std::make_unique<HeadlessContentRendererClient>();
@@ -471,7 +469,6 @@ HeadlessContentMainDelegate::CreateContentUtilityClient() {
       std::make_unique<HeadlessContentUtilityClient>(options()->user_agent);
   return utility_client_.get();
 }
-#endif  // !defined(CHROME_MULTIPLE_DLL_BROWSER)
 
 void HeadlessContentMainDelegate::PostEarlyInitialization(
     bool is_running_tests) {

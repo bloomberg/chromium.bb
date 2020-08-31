@@ -4,7 +4,8 @@
 
 #include "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_mediator.h"
@@ -34,8 +35,9 @@
 
 @implementation UnifiedConsentCoordinator
 
-- (instancetype)init {
-  self = [super init];
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser {
+  self = [super initWithBaseViewController:nil browser:browser];
   if (self) {
     _unifiedConsentViewController = [[UnifiedConsentViewController alloc] init];
     _unifiedConsentViewController.delegate = self;
@@ -89,7 +91,8 @@
 // Opens the identity chooser dialog with an animation from |point|.
 - (void)showIdentityChooserDialogWithPoint:(CGPoint)point {
   self.identityChooserCoordinator = [[IdentityChooserCoordinator alloc]
-      initWithBaseViewController:self.unifiedConsentViewController];
+      initWithBaseViewController:self.unifiedConsentViewController
+                         browser:self.browser];
   self.identityChooserCoordinator.delegate = self;
   self.identityChooserCoordinator.origin = point;
   [self.identityChooserCoordinator start];

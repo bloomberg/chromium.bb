@@ -11,6 +11,7 @@
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -23,7 +24,7 @@
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
@@ -32,6 +33,8 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "extensions/common/constants.h"
 #include "url/gurl.h"
 
 namespace app_list {
@@ -78,10 +81,6 @@ Model ModelForType(RankingItemType type) {
   switch (type) {
     case RankingItemType::kFile:
     case RankingItemType::kOmniboxGeneric:
-    case RankingItemType::kOmniboxBookmark:
-    case RankingItemType::kOmniboxDocument:
-    case RankingItemType::kOmniboxHistory:
-    case RankingItemType::kOmniboxSearch:
     case RankingItemType::kZeroStateFile:
     case RankingItemType::kDriveQuickAccess:
       return Model::MIXED_TYPES;
@@ -121,29 +120,6 @@ FileOpenType GetTypeFromFileTaskNotifier(FileTasksObserver::OpenType type) {
   }
 }
 
-// Performs any per-type normalization required on a search result ID. This is
-// meant to simplify the space of IDs in cases where they are too sparse.
-std::string NormalizeId(const std::string& id, RankingItemType type) {
-  // Put any further normalizations here.
-  switch (type) {
-    case RankingItemType::kOmniboxGeneric:
-    case RankingItemType::kOmniboxBookmark:
-    case RankingItemType::kOmniboxDocument:
-    case RankingItemType::kOmniboxHistory:
-    case RankingItemType::kOmniboxSearch:
-      // Heuristically check if the URL points to a Drive file. If so, strip
-      // some extra information from it.
-      if (GURL(id).host() == "docs.google.com")
-        return SimplifyGoogleDocsUrlId(id);
-      else
-        return SimplifyUrlId(id);
-    case RankingItemType::kApp:
-      return NormalizeAppId(id);
-    default:
-      return id;
-  }
-}
-
 // Linearly maps |score| to the range [min, max].
 // |score| is assumed to be within [0.0, 1.0]; if it's greater than 1.0
 // then max is returned; if it's less than 0.0, then min is returned.
@@ -158,12 +134,9 @@ float ReRange(const float score, const float min, const float max) {
 
 }  // namespace
 
-SearchResultRanker::SearchResultRanker(Profile* profile,
-                                       history::HistoryService* history_service)
-    : history_service_observer_(this), profile_(profile), weak_factory_(this) {
+SearchResultRanker::SearchResultRanker(Profile* profile)
+    : profile_(profile), weak_factory_(this) {
   DCHECK(profile);
-  DCHECK(history_service);
-  history_service_observer_.Add(history_service);
   if (auto* notifier =
           file_manager::file_tasks::FileTasksNotifier::GetForProfile(
               profile_)) {
@@ -181,62 +154,6 @@ SearchResultRanker::~SearchResultRanker() {
 
 void SearchResultRanker::InitializeRankers(
     SearchController* search_controller) {
-  if (app_list_features::IsQueryBasedMixedTypesRankerEnabled()) {
-    results_list_boost_coefficient_ = base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableQueryBasedMixedTypesRanker,
-        "boost_coefficient", 0.1);
-
-    RecurrenceRankerConfigProto config;
-    config.set_min_seconds_between_saves(240u);
-    config.set_condition_limit(0u);
-    config.set_condition_decay(0.5f);
-    config.set_target_limit(base::GetFieldTrialParamByFeatureAsInt(
-        app_list_features::kEnableQueryBasedMixedTypesRanker, "target_limit",
-        200));
-    config.set_target_decay(base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableQueryBasedMixedTypesRanker, "target_decay",
-        0.8f));
-    config.mutable_predictor()->mutable_default_predictor();
-
-    if (GetFieldTrialParamByFeatureAsBool(
-            app_list_features::kEnableQueryBasedMixedTypesRanker,
-            "use_category_model", false)) {
-      // Group ranker model.
-      results_list_group_ranker_ = std::make_unique<RecurrenceRanker>(
-          "QueryBasedMixedTypesGroup",
-          profile_->GetPath().AppendASCII("results_list_group_ranker.pb"),
-          config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
-    } else if (GetFieldTrialParamByFeatureAsBool(
-                   app_list_features::kEnableQueryBasedMixedTypesRanker,
-                   "use_aggregated_model", false) ||
-               app_list_features::IsAggregatedMlSearchRankingEnabled()) {
-      use_aggregated_search_ranking_inference_ = true;
-    } else {
-      // Item ranker model.
-      const std::string config_json = GetFieldTrialParamValueByFeature(
-          app_list_features::kEnableQueryBasedMixedTypesRanker, "config");
-      query_mixed_config_converter_ = JsonConfigConverter::Convert(
-          config_json, "QueryBasedMixedTypes",
-          base::BindOnce(
-              [](SearchResultRanker* ranker,
-                 const RecurrenceRankerConfigProto& default_config,
-                 base::Optional<RecurrenceRankerConfigProto> parsed_config) {
-                ranker->query_mixed_config_converter_.reset();
-                if (ranker->json_config_parsed_for_testing_)
-                  std::move(ranker->json_config_parsed_for_testing_).Run();
-                ranker->query_based_mixed_types_ranker_ =
-                    std::make_unique<RecurrenceRanker>(
-                        "QueryBasedMixedTypes",
-                        ranker->profile_->GetPath().AppendASCII(
-                            "query_based_mixed_types_ranker.pb"),
-                        parsed_config ? parsed_config.value() : default_config,
-                        chromeos::ProfileHelper::IsEphemeralUserProfile(
-                            ranker->profile_));
-              },
-              base::Unretained(this), config));
-    }
-  }
-
   if (app_list_features::IsZeroStateMixedTypesRankerEnabled()) {
     zero_state_item_coeff_ = base::GetFieldTrialParamByFeatureAsDouble(
         app_list_features::kEnableZeroStateMixedTypesRanker, "item_coeff",
@@ -288,32 +205,24 @@ void SearchResultRanker::InitializeRankers(
 
   app_launch_event_logger_ = std::make_unique<app_list::AppLaunchEventLogger>();
 
-  bool apps_enabled = app_list_features::IsAppRankerEnabled();
-  if (app_list_features::IsAggregatedMlAppRankingEnabled() ||
-      (apps_enabled &&
-       GetFieldTrialParamByFeatureAsBool(app_list_features::kEnableAppRanker,
-                                         "use_topcat_ranker", false))) {
-    using_aggregated_app_inference_ = true;
-    app_launch_event_logger_->CreateRankings();
-  } else if (apps_enabled) {
-    RecurrenceRankerConfigProto config;
-    config.set_min_seconds_between_saves(240u);
-    config.set_condition_limit(1u);
-    config.set_condition_decay(0.5);
-    config.set_target_limit(200);
-    config.set_target_decay(0.8);
-    config.mutable_predictor()->mutable_default_predictor();
+  // Initialize on-device app ranking model.
+  RecurrenceRankerConfigProto config;
+  config.set_min_seconds_between_saves(240u);
+  config.set_condition_limit(1u);
+  config.set_condition_decay(0.5);
+  config.set_target_limit(200);
+  config.set_target_decay(0.8);
+  config.mutable_predictor()->mutable_default_predictor();
 
-    app_ranker_ = std::make_unique<RecurrenceRanker>(
-        "AppRanker", profile_->GetPath().AppendASCII("app_ranker.pb"), config,
-        chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
-  }
+  app_ranker_ = std::make_unique<RecurrenceRanker>(
+      "AppRanker", profile_->GetPath().AppendASCII("app_ranker.pb"), config,
+      chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
 }
 
 void SearchResultRanker::FetchRankings(const base::string16& query) {
   // The search controller potentially calls SearchController::FetchResults
   // several times for each user's search, so we cache the results of querying
-  // the models for a short time, to prevent uneccessary queries.
+  // the models for a short time, to prevent unecessary queries.
   const auto& now = Time::Now();
   if (now - time_of_last_fetch_ < kMinSecondsBetweenFetches)
     return;
@@ -337,17 +246,24 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
     zero_state_group_ranks_ = zero_state_group_ranker_->Rank();
   }
 
-  if (results_list_group_ranker_) {
-    group_ranks_.clear();
-    group_ranks_ = results_list_group_ranker_->Rank();
-  } else if (query_based_mixed_types_ranker_) {
-    query_mixed_ranks_.clear();
-    query_mixed_ranks_ =
-        query_based_mixed_types_ranker_->Rank(base::UTF16ToUTF8(query));
-  }
+  if (app_ranker_) {
+    // The Help app is being replaced with the Discover app, and we want to keep
+    // ranking consistent by swapping the app IDs. The rename is a no-op if the
+    // Help app ID doesn't exist, so it's safe to do it several times.
+    // Unfortunately we can't do this on initialization though, as the model
+    // won't have been loaded from disk. Instead, do it on the first rank.
+    // TODO(1052154): Remove this special case after M84, to give all devices
+    // time to swap IDs.
+    if (app_ranker_->is_initialized() && !have_renamed_help_app_ &&
+        base::FeatureList::IsEnabled(chromeos::features::kHelpAppV2)) {
+      app_ranker_->RenameTarget(extension_misc::kGeniusAppId,
+                                chromeos::default_web_apps::kHelpAppId);
+      app_ranker_->SaveToDisk();
+      have_renamed_help_app_ = true;
+    }
 
-  if (app_ranker_)
     app_ranks_ = app_ranker_->Rank();
+  }
 }
 
 void SearchResultRanker::Rank(Mixer::SortedResults* results) {
@@ -358,21 +274,11 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
             [](const Mixer::SortData& a, const Mixer::SortData& b) {
               return a.score > b.score;
             });
-  std::map<std::string, float> search_ranker_score_map;
-  if (!last_query_.empty() && use_aggregated_search_ranking_inference_) {
-    search_ranking_event_logger_->CreateRankings(results, last_query_.size());
-    search_ranker_score_map = search_ranking_event_logger_->RetrieveRankings();
-  }
-
-  std::map<std::string, float> ranking_map;
-  if (using_aggregated_app_inference_)
-    ranking_map = app_launch_event_logger_->RetrieveRankings();
-  int aggregated_app_rank_success_count = 0;
-  int aggregated_app_rank_fail_count = 0;
 
   // Counts how many times a given type has been seen so far in the results
   // list.
   base::flat_map<RankingItemType, int> zero_state_type_counts;
+
   for (auto& result : *results) {
     const auto& type = RankingItemTypeFromSearchResult(*result.result);
     const auto& model = ModelForType(type);
@@ -381,61 +287,19 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
       if (last_query_.empty() && zero_state_group_ranker_) {
         LogZeroStateResultScore(type, result.score);
         ScoreZeroStateItem(&result, type, &zero_state_type_counts);
-      } else if (results_list_group_ranker_) {
-        const auto& rank_it =
-            group_ranks_.find(base::NumberToString(static_cast<int>(type)));
-        // The ranker only contains entries trained with types relating to files
-        // or the omnibox. This means scores for apps, app shortcuts, and answer
-        // cards will be unchanged.
-        if (rank_it != group_ranks_.end()) {
-          // Ranker scores are guaranteed to be in [0,1]. But, enforce that the
-          // result of tweaking does not put the score above 3.0, as that may
-          // interfere with apps or answer cards.
-          result.score = std::min(
-              result.score + rank_it->second * results_list_boost_coefficient_,
-              3.0);
-        }
-      } else if (query_based_mixed_types_ranker_) {
-        const auto& rank_it =
-            query_mixed_ranks_.find(NormalizeId(result.result->id(), type));
-        if (rank_it != query_mixed_ranks_.end()) {
-          result.score = std::min(
-              result.score + rank_it->second * results_list_boost_coefficient_,
-              3.0);
-        }
-      } else if (!last_query_.empty() &&
-                 use_aggregated_search_ranking_inference_) {
-        result.score = search_ranker_score_map[result.result->id()];
       }
     } else if (model == Model::APPS) {
-      if (using_aggregated_app_inference_) {
-        const std::string id = NormalizeAppId(result.result->id());
+      // Do not rerank apps for a query-based search.
+      if (!last_query_.empty())
+        continue;
 
-        const auto& ranked = ranking_map.find(id);
-        if (ranked != ranking_map.end()) {
-          result.score =
-              kBoostOfApps + ReRange((ranked->second + 4.0) / 8.0, 0.67, 1.0);
-          ++aggregated_app_rank_success_count;
-        } else {
-          ++aggregated_app_rank_fail_count;
-        }
-      } else {
-        if (app_ranker_) {
-          const auto& it = app_ranks_.find(NormalizeAppId(result.result->id()));
-          if (it != app_ranks_.end()) {
-            result.score = kBoostOfApps + ReRange(it->second, 0.67, 1.0);
-          }
+      if (app_ranker_) {
+        const auto& it = app_ranks_.find(NormalizeAppId(result.result->id()));
+        if (it != app_ranks_.end()) {
+          result.score = kBoostOfApps + ReRange(it->second, 0.67, 1.0);
         }
       }
     }
-  }
-  if (using_aggregated_app_inference_ &&
-      (aggregated_app_rank_success_count != 0 ||
-       aggregated_app_rank_fail_count != 0)) {
-    UMA_HISTOGRAM_COUNTS_1000("Apps.AppList.AggregatedMlAppRankSuccess",
-                              aggregated_app_rank_success_count);
-    UMA_HISTOGRAM_COUNTS_1000("Apps.AppList.AggregatedMlAppRankFail",
-                              aggregated_app_rank_fail_count);
   }
 }
 
@@ -481,39 +345,23 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
         static_cast<int>(app_launch_data.launched_from));
   }
 
-  // Update rankings after logging the click.
-  if (using_aggregated_app_inference_)
-    app_launch_event_logger_->CreateRankings();
-
   auto model = ModelForType(app_launch_data.ranking_item_type);
   if (model == Model::MIXED_TYPES) {
-    if (app_launch_data.query.empty() && zero_state_group_ranker_) {
+    // We currently only have a mixed types model for zero-state, so stop if
+    // the launch has a query attached.
+    if (!app_launch_data.query.empty())
+      return;
+
+    LogZeroStateLaunchType(app_launch_data.ranking_item_type);
+    if (zero_state_group_ranker_) {
       zero_state_group_ranker_->Record(base::NumberToString(
           static_cast<int>(app_launch_data.ranking_item_type)));
-    } else if (results_list_group_ranker_) {
-      results_list_group_ranker_->Record(base::NumberToString(
-          static_cast<int>(app_launch_data.ranking_item_type)));
-    } else if (query_based_mixed_types_ranker_) {
-      query_based_mixed_types_ranker_->Record(
-          NormalizeId(app_launch_data.id, app_launch_data.ranking_item_type),
-          app_launch_data.query);
     }
   } else if (model == Model::APPS && app_ranker_) {
     app_ranker_->Record(NormalizeAppId(app_launch_data.id));
   }
 
-  if (model == Model::MIXED_TYPES && app_launch_data.query.empty()) {
-    LogZeroStateLaunchType(app_launch_data.ranking_item_type);
-
-    if (zero_state_group_ranker_) {
-      std::vector<std::string> weights;
-      for (const auto& pair : *zero_state_group_ranker_->GetTargetData())
-        weights.push_back(base::StrCat(
-            {pair.first, ":", base::NumberToString(pair.second.last_score)}));
-      VLOG(1) << "Zero state files model weights: ["
-              << base::JoinString(weights, ", ") << "]";
-    }
-  }
+  LogChipUsageMetrics(app_launch_data);
 }
 
 void SearchResultRanker::LogSearchResults(
@@ -585,25 +433,11 @@ void SearchResultRanker::OverrideZeroStateResults(
     if (candidate_override_index == -1)
       continue;
 
-    // TODO(crbug.com/1011221): Remove once the bug re. zero-state drive files
-    // not being shown is resolved.
-    VLOG(1) << "Zero state files override: newtype=" << static_cast<int>(group)
-            << " newpos=" << next_modifiable_index;
     // Override the result at |next_modifiable_index| with
     // |candidate_override_index| by swapping their scores.
     std::swap(result_ptrs[candidate_override_index]->score,
               result_ptrs[next_modifiable_index]->score);
     --next_modifiable_index;
-  }
-
-  // TODO(crbug.com/1011221): Remove once the bug re. zero-state drive files not
-  // being shown is resolved.
-  VLOG(1) << "Zero state files setting result scores";
-  for (const auto* result : result_ptrs) {
-    VLOG(1) << "Zero state files result score: type="
-            << static_cast<int>(
-                   RankingItemTypeFromSearchResult(*(result->result)))
-            << " score=" << result->score;
   }
 }
 
@@ -620,51 +454,10 @@ void SearchResultRanker::OnFilesOpened(
   }
 }
 
-void SearchResultRanker::OnURLsDeleted(
-    history::HistoryService* history_service,
-    const history::DeletionInfo& deletion_info) {
-  if (!query_based_mixed_types_ranker_)
-    return;
-
-  if (deletion_info.IsAllHistory()) {
-    // TODO(931149): We clear the whole model because we expect most targets to
-    // be URLs. In future, consider parsing the targets and only deleting URLs.
-    query_based_mixed_types_ranker_->GetTargetData()->clear();
-  } else {
-    for (const auto& row : deletion_info.deleted_rows()) {
-      // In order to perform URL normalization, NormalizeId requires any omnibox
-      // item type as argument. Pass kOmniboxGeneric here as we don't know the
-      // specific type.
-      query_based_mixed_types_ranker_->RemoveTarget(
-          NormalizeId(row.url().spec(), RankingItemType::kOmniboxGeneric));
-    }
-  }
-
-  // Force a save to disk. It is possible to get many calls to OnURLsDeleted in
-  // quick succession, eg. when all history is cleared from a different device.
-  // So delay the save slightly and only perform one save for all updates during
-  // that delay.
-  if (!query_mixed_ranker_save_queued_) {
-    query_mixed_ranker_save_queued_ = true;
-    DCHECK(base::SequencedTaskRunnerHandle::IsSet());
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&SearchResultRanker::SaveQueryMixedRankerAfterDelete,
-                       weak_factory_.GetWeakPtr()),
-        TimeDelta::FromSeconds(3));
-  }
-}
-
-void SearchResultRanker::SaveQueryMixedRankerAfterDelete() {
-  query_based_mixed_types_ranker_->SaveToDisk();
-  query_mixed_ranker_save_queued_ = false;
-}
-
 void SearchResultRanker::LogZeroStateResultScore(RankingItemType type,
                                                  float score) {
   const auto& now = Time::Now();
-  if (type == RankingItemType::kOmniboxGeneric ||
-      type == RankingItemType::kOmniboxSearch) {
+  if (type == RankingItemType::kOmniboxGeneric) {
     if (now - time_of_last_omnibox_log_ < kMinTimeBetweenLogs)
       return;
     time_of_last_omnibox_log_ = now;

@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/http/http_util.h"
@@ -184,8 +184,8 @@ void URLLoaderWrapperImpl::ReadResponseBody(char* buffer,
   buffer_size_ = buffer_size;
   read_starter_.Start(
       FROM_HERE, kReadDelayMs,
-      base::BindRepeating(&URLLoaderWrapperImpl::ReadResponseBodyImpl,
-                          base::Unretained(this)));
+      base::BindOnce(&URLLoaderWrapperImpl::ReadResponseBodyImpl,
+                     base::Unretained(this)));
 }
 
 void URLLoaderWrapperImpl::ReadResponseBodyImpl() {

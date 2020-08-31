@@ -68,8 +68,8 @@ class AnimationKeyframeEffectModel : public PageTestBase {
     interpolations.push_back(interpolation_value);
     EnsureInterpolatedValueCached(interpolations, GetDocument(), element);
 
-    const TypedInterpolationValue* typed_value =
-        ToInvalidatableInterpolation(interpolation_value)
+    const auto* typed_value =
+        To<InvalidatableInterpolation>(interpolation_value)
             ->GetCachedValueForTesting();
     // Length values are stored as an |InterpolableLength|; here we assume
     // pixels.
@@ -89,15 +89,15 @@ class AnimationKeyframeEffectModel : public PageTestBase {
     interpolations.push_back(interpolation_value);
     EnsureInterpolatedValueCached(interpolations, GetDocument(), element);
 
-    const TypedInterpolationValue* typed_value =
-        ToInvalidatableInterpolation(interpolation_value)
+    const auto* typed_value =
+        To<InvalidatableInterpolation>(interpolation_value)
             ->GetCachedValueForTesting();
     const NonInterpolableValue* non_interpolable_value =
         typed_value->GetNonInterpolableValue();
-    ASSERT_TRUE(IsCSSDefaultNonInterpolableValue(non_interpolable_value));
+    ASSERT_TRUE(IsA<CSSDefaultNonInterpolableValue>(non_interpolable_value));
 
     const CSSValue* css_value =
-        ToCSSDefaultNonInterpolableValue(non_interpolable_value)->CssValue();
+        To<CSSDefaultNonInterpolableValue>(non_interpolable_value)->CssValue();
     EXPECT_EQ(expected_value, css_value->CssText());
   }
 
@@ -151,8 +151,8 @@ const PropertySpecificKeyframeVector& ConstructEffectAndGetKeyframes(
   StringKeyframeVector keyframes =
       KeyframesAtZeroAndOne(property_name, zero_value, one_value);
 
-  element->style()->setProperty(document, property_name, zero_value,
-                                g_empty_string, exception_state);
+  element->style()->setProperty(document->GetExecutionContext(), property_name,
+                                zero_value, g_empty_string, exception_state);
 
   auto* effect = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
 
@@ -167,8 +167,7 @@ const PropertySpecificKeyframeVector& ConstructEffectAndGetKeyframes(
 
 void ExpectProperty(CSSPropertyID property,
                     Interpolation* interpolation_value) {
-  InvalidatableInterpolation* interpolation =
-      ToInvalidatableInterpolation(interpolation_value);
+  auto* interpolation = To<InvalidatableInterpolation>(interpolation_value);
   const PropertyHandle& property_handle = interpolation->GetProperty();
   ASSERT_TRUE(property_handle.IsCSSProperty());
   ASSERT_EQ(property, property_handle.GetCSSProperty().PropertyID());
@@ -177,8 +176,8 @@ void ExpectProperty(CSSPropertyID property,
 Interpolation* FindValue(HeapVector<Member<Interpolation>>& values,
                          CSSPropertyID id) {
   for (auto& value : values) {
-    const PropertyHandle& property =
-        ToInvalidatableInterpolation(value)->GetProperty();
+    const auto& property =
+        To<InvalidatableInterpolation>(value.Get())->GetProperty();
     if (property.IsCSSProperty() &&
         property.GetCSSProperty().PropertyID() == id)
       return value;
@@ -707,15 +706,16 @@ TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateCustomProperty) {
   // Test value holds the correct number type
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->IsDouble());
-  EXPECT_EQ(ToCompositorKeyframeDouble(value)->ToDouble(), 100);
+  EXPECT_EQ(To<CompositorKeyframeDouble>(value)->ToDouble(), 100);
 }
 
 TEST_F(AnimationKeyframeEffectModel, CompositorUpdateColorProperty) {
   ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
   DummyExceptionStateForTesting exception_state;
 
-  element->style()->setProperty(&GetDocument(), "color", "rgb(0, 255, 0)",
-                                g_empty_string, exception_state);
+  element->style()->setProperty(GetDocument().GetExecutionContext(), "color",
+                                "rgb(0, 255, 0)", g_empty_string,
+                                exception_state);
 
   // Compositor keyframe value available after snapshot
   const CompositorKeyframeValue* value_rgb =
@@ -752,22 +752,22 @@ TEST_F(AnimationKeyframeEffectModel, CompositorUpdateColorProperty) {
   // Test rgb color input
   EXPECT_TRUE(value_rgb);
   EXPECT_TRUE(value_rgb->IsColor());
-  EXPECT_EQ(ToCompositorKeyframeColor(value_rgb)->ToColor(), SK_ColorGREEN);
+  EXPECT_EQ(To<CompositorKeyframeColor>(value_rgb)->ToColor(), SK_ColorGREEN);
 
   // Test hsl color input
   EXPECT_TRUE(value_hsl);
   EXPECT_TRUE(value_hsl->IsColor());
-  EXPECT_EQ(ToCompositorKeyframeColor(value_hsl)->ToColor(), SK_ColorGREEN);
+  EXPECT_EQ(To<CompositorKeyframeColor>(value_hsl)->ToColor(), SK_ColorGREEN);
 
   // Test named color input
   EXPECT_TRUE(value_name);
   EXPECT_TRUE(value_name->IsColor());
-  EXPECT_EQ(ToCompositorKeyframeColor(value_name)->ToColor(), SK_ColorGREEN);
+  EXPECT_EQ(To<CompositorKeyframeColor>(value_name)->ToColor(), SK_ColorGREEN);
 
   // Test hex color input
   EXPECT_TRUE(value_hex);
   EXPECT_TRUE(value_hex->IsColor());
-  EXPECT_EQ(ToCompositorKeyframeColor(value_hex)->ToColor(), SK_ColorGREEN);
+  EXPECT_EQ(To<CompositorKeyframeColor>(value_hex)->ToColor(), SK_ColorGREEN);
 
   // currentcolor is a CSSIdentifierValue not a color
   EXPECT_FALSE(value_curr);
@@ -780,11 +780,13 @@ TEST_F(AnimationKeyframeEffectModel, CompositorUpdateColorProperty) {
 
   EXPECT_TRUE(value_mixed0);
   EXPECT_TRUE(value_mixed0->IsColor());
-  EXPECT_EQ(ToCompositorKeyframeColor(value_mixed0)->ToColor(), SK_ColorBLACK);
+  EXPECT_EQ(To<CompositorKeyframeColor>(value_mixed0)->ToColor(),
+            SK_ColorBLACK);
 
   EXPECT_TRUE(value_mixed1);
   EXPECT_TRUE(value_mixed1->IsColor());
-  EXPECT_EQ(ToCompositorKeyframeColor(value_mixed1)->ToColor(), SK_ColorGREEN);
+  EXPECT_EQ(To<CompositorKeyframeColor>(value_mixed1)->ToColor(),
+            SK_ColorGREEN);
 }
 
 }  // namespace blink

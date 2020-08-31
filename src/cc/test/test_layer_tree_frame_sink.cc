@@ -16,6 +16,7 @@
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/overlay_processor_stub.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -53,10 +54,10 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
 TestLayerTreeFrameSink::~TestLayerTreeFrameSink() = default;
 
 void TestLayerTreeFrameSink::SetDisplayColorSpace(
-    const gfx::ColorSpace& output_color_space) {
-  output_color_space_ = output_color_space;
+    const gfx::ColorSpace& display_color_space) {
+  display_color_spaces_ = gfx::DisplayColorSpaces(display_color_space);
   if (display_)
-    display_->SetColorSpace(output_color_space_);
+    display_->SetDisplayColorSpaces(display_color_spaces_);
 }
 
 bool TestLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
@@ -100,16 +101,15 @@ bool TestLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
         display_output_surface->capabilities().max_frames_pending);
   }
 
+  auto overlay_processor = std::make_unique<viz::OverlayProcessorStub>();
   display_ = std::make_unique<viz::Display>(
       shared_bitmap_manager_.get(), renderer_settings_, frame_sink_id_,
-      std::move(display_output_surface), std::move(scheduler),
-      compositor_task_runner_);
+      std::move(display_output_surface), std::move(overlay_processor),
+      std::move(scheduler), compositor_task_runner_);
 
   constexpr bool is_root = true;
-  constexpr bool needs_sync_points = true;
   support_ = std::make_unique<viz::CompositorFrameSinkSupport>(
-      this, frame_sink_manager_.get(), frame_sink_id_, is_root,
-      needs_sync_points);
+      this, frame_sink_manager_.get(), frame_sink_id_, is_root);
   support_->SetWantsAnimateOnlyBeginFrames();
   client_->SetBeginFrameSource(&external_begin_frame_source_);
   if (display_begin_frame_source_) {
@@ -119,7 +119,7 @@ bool TestLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
   display_->Initialize(this, frame_sink_manager_->surface_manager());
   display_->renderer_for_testing()->SetEnlargePassTextureAmountForTesting(
       enlarge_pass_texture_amount_);
-  display_->SetColorSpace(output_color_space_);
+  display_->SetDisplayColorSpaces(display_color_spaces_);
   display_->SetVisible(true);
   return true;
 }
@@ -159,8 +159,7 @@ void TestLayerTreeFrameSink::SubmitCompositorFrame(viz::CompositorFrame frame,
                                                    bool hit_test_data_changed,
                                                    bool show_hit_test_borders) {
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
-  DCHECK_LE(viz::BeginFrameArgs::kStartingFrameNumber,
-            frame.metadata.begin_frame_ack.sequence_number);
+  DCHECK(frame.metadata.begin_frame_ack.frame_id.IsSequenceValid());
   test_client_->DisplayReceivedCompositorFrame(frame);
 
   gfx::Size frame_size = frame.size_in_pixels();
@@ -184,7 +183,7 @@ void TestLayerTreeFrameSink::SubmitCompositorFrame(viz::CompositorFrame frame,
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 
   if (!display_->has_scheduler()) {
-    display_->DrawAndSwap();
+    display_->DrawAndSwap(base::TimeTicks::Now());
     // Post this to get a new stack frame so that we exit this function before
     // calling the client to tell it that it is done.
     compositor_task_runner_->PostTask(
@@ -196,7 +195,7 @@ void TestLayerTreeFrameSink::SubmitCompositorFrame(viz::CompositorFrame frame,
 
 void TestLayerTreeFrameSink::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
   DCHECK(!ack.has_damage);
-  DCHECK_LE(viz::BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
+  DCHECK(ack.frame_id.IsSequenceValid());
   support_->DidNotProduceFrame(ack);
 }
 
@@ -269,7 +268,8 @@ void TestLayerTreeFrameSink::SendCompositorFrameAckToClient() {
 }
 
 base::TimeDelta TestLayerTreeFrameSink::GetPreferredFrameIntervalForFrameSinkId(
-    const viz::FrameSinkId& id) {
+    const viz::FrameSinkId& id,
+    viz::mojom::CompositorFrameSinkType* type) {
   return viz::BeginFrameArgs::MinInterval();
 }
 

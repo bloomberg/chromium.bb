@@ -59,18 +59,17 @@ enum TableTypes {
   ICON_AND_TEXT,
 };
 
-class VIEWS_EXPORT TableView
-    : public views::View,
-      public ui::TableModelObserver {
+class VIEWS_EXPORT TableView : public views::View,
+                               public ui::TableModelObserver {
  public:
   METADATA_HEADER(TableView);
 
   // Used by AdvanceActiveVisibleColumn(), AdvanceSelection() and
   // ResizeColumnViaKeyboard() to determine the direction to change the
   // selection.
-  enum AdvanceDirection {
-    ADVANCE_DECREMENT,
-    ADVANCE_INCREMENT,
+  enum class AdvanceDirection {
+    kDecrement,
+    kIncrement,
   };
 
   // Used to track a visible column. Useful only for the header.
@@ -92,8 +91,7 @@ class VIEWS_EXPORT TableView
   struct VIEWS_EXPORT SortDescriptor {
     SortDescriptor() = default;
     SortDescriptor(int column_id, bool ascending)
-        : column_id(column_id),
-          ascending(ascending) {}
+        : column_id(column_id), ascending(ascending) {}
 
     // ID of the sorted column.
     int column_id = -1;
@@ -207,9 +205,18 @@ class VIEWS_EXPORT TableView
 
   TableTypes GetTableType() const;
 
+  // Updates the relative bounds of the virtual accessibility children created
+  // in UpdateVirtualAccessibilityChildren(). This function is public so that
+  // the table's |header_| can trigger an update when its visible bounds are
+  // changed, because its accessibility information is also contained in the
+  // table's virtual accessibility children.
+  void UpdateVirtualAccessibilityChildrenBounds();
+
   // View overrides:
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
+  void OnVisibleBoundsChanged() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -227,9 +234,9 @@ class VIEWS_EXPORT TableView
  protected:
   // View overrides:
   gfx::Point GetKeyboardContextMenuLocation() override;
-  void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   friend class TableViewTestHelper;
@@ -251,6 +258,8 @@ class VIEWS_EXPORT TableView
     int min_column = 0;
     int max_column = 0;
   };
+
+  void OnPaintImpl(gfx::Canvas* canvas);
 
   // Returns the horizontal margin between the bounds of a cell and its
   // contents.
@@ -343,6 +352,23 @@ class VIEWS_EXPORT TableView
   // to assistive software.
   void UpdateVirtualAccessibilityChildren();
 
+  // Clears the set of accessibility views set up in
+  // UpdateVirtualAccessibilityChildren(). Useful when the model is in the
+  // process of changing but the virtual accessibility children haven't been
+  // updated yet, e.g. showing or hiding a column via SetColumnVisibility().
+  void ClearVirtualAccessibilityChildren();
+
+  // Helper functions used in UpdateVirtualAccessibilityChildrenBounds() for
+  // calculating the accessibility bounds for the header and table rows and
+  // cells.
+  gfx::Rect CalculateHeaderRowAccessibilityBounds() const;
+  gfx::Rect CalculateHeaderCellAccessibilityBounds(
+      const int visible_column_index) const;
+  gfx::Rect CalculateTableRowAccessibilityBounds(const int row_index) const;
+  gfx::Rect CalculateTableCellAccessibilityBounds(
+      const int row_index,
+      const int visible_column_index) const;
+
   // Updates the internal accessibility state and fires the required
   // accessibility events to indicate to assistive software which row is active
   // and which cell is focused, if any.
@@ -356,10 +382,6 @@ class VIEWS_EXPORT TableView
   // |row| should be a view index, not a model index.
   // |visible_column_index| indexes into |visible_columns_|.
   AXVirtualView* GetVirtualAccessibilityCell(int row, int visible_column_index);
-
-  // Returns |rect|, adjusted for use in AXRelativeBounds by converting it to
-  // gfx::RectF and translating it into screen coordinates.
-  gfx::RectF AdjustRectForAXRelativeBounds(gfx::Rect rect) const;
 
   ui::TableModel* model_ = nullptr;
 

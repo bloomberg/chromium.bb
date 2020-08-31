@@ -5,11 +5,13 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend_impl.h"
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
@@ -36,9 +38,10 @@ AutofillWebDataBackendImpl::AutofillWebDataBackendImpl(
     scoped_refptr<WebDatabaseBackend> web_database_backend,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
-    const base::Closure& on_changed_callback,
-    const base::Closure& on_address_conversion_completed_callback,
-    const base::Callback<void(syncer::ModelType)>& on_sync_started_callback)
+    const base::RepeatingClosure& on_changed_callback,
+    const base::RepeatingClosure& on_address_conversion_completed_callback,
+    const base::RepeatingCallback<void(syncer::ModelType)>&
+        on_sync_started_callback)
     : base::RefCountedDeleteOnSequence<AutofillWebDataBackendImpl>(
           std::move(db_task_runner)),
       ui_task_runner_(ui_task_runner),
@@ -525,13 +528,24 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateServerAddressMetadata(
   return WebDatabase::COMMIT_NEEDED;
 }
 
-WebDatabase::State AutofillWebDataBackendImpl::AddVPA(const std::string& vpa_id,
-                                                      WebDatabase* db) {
+WebDatabase::State AutofillWebDataBackendImpl::AddUpiId(
+    const std::string& upi_id,
+    WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
 
-  if (!AutofillTable::FromWebDatabase(db)->InsertVPA(vpa_id))
+  if (!AutofillTable::FromWebDatabase(db)->InsertUpiId(upi_id))
     return WebDatabase::COMMIT_NOT_NEEDED;
   return WebDatabase::COMMIT_NEEDED;
+}
+
+std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetAllUpiIds(
+    WebDatabase* db) {
+  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+
+  std::vector<std::string> upi_ids =
+      AutofillTable::FromWebDatabase(db)->GetAllUpiIds();
+  return std::make_unique<WDResult<std::vector<std::string>>>(
+      AUTOFILL_UPI_RESULT, std::move(upi_ids));
 }
 
 std::unique_ptr<WDTypedResult>
@@ -541,6 +555,17 @@ AutofillWebDataBackendImpl::GetPaymentsCustomerData(WebDatabase* db) {
   AutofillTable::FromWebDatabase(db)->GetPaymentsCustomerData(&customer_data);
   return std::make_unique<WDResult<std::unique_ptr<PaymentsCustomerData>>>(
       AUTOFILL_CUSTOMERDATA_RESULT, std::move(customer_data));
+}
+
+std::unique_ptr<WDTypedResult>
+AutofillWebDataBackendImpl::GetCreditCardCloudTokenData(WebDatabase* db) {
+  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+  std::vector<std::unique_ptr<CreditCardCloudTokenData>> cloud_token_data;
+  AutofillTable::FromWebDatabase(db)->GetCreditCardCloudTokenData(
+      &cloud_token_data);
+  return std::make_unique<
+      WDResult<std::vector<std::unique_ptr<CreditCardCloudTokenData>>>>(
+      AUTOFILL_CLOUDTOKEN_RESULT, std::move(cloud_token_data));
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::ClearAllServerData(

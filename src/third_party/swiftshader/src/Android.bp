@@ -26,7 +26,6 @@ cc_defaults {
         "-D__STDC_LIMIT_MACROS",
         "-D__STDC_CONSTANT_MACROS",
         "-D__STDC_FORMAT_MACROS",
-        "-DHAVE_GRALLOC1",
         "-DNO_SANITIZE_FUNCTION=",
         // FIXME: Use <android/api-level.h> instead?
         "-DANDROID_PLATFORM_SDK_VERSION=10000",
@@ -44,17 +43,24 @@ cc_defaults {
 
     target: {
         android: {
+            cflags: [
+                "-DHAVE_GRALLOC1",
+                "-DHAVE_GRALLOC3",
+            ],
             relative_install_path: "egl",
             header_libs: [
                 "swiftshader_platform_headers",
-		"libnativebase_headers",
+                "libnativebase_headers",
             ],
             shared_libs: [
+                "android.hardware.graphics.mapper@3.0",
                 "libnativewindow",
                 "libhardware",
+                "libhidlbase",
                 "libcutils",
                 "libsync",
                 "liblog",
+                "libutils",
             ],
             static_libs: [
                 "libarect",
@@ -65,7 +71,7 @@ cc_defaults {
             header_libs: [
                 "swiftshader_host_headers",
                 "swiftshader_platform_headers",
-		"libnativebase_headers",
+                "libnativebase_headers",
             ],
 
             // Pretend to build for Android
@@ -113,18 +119,18 @@ cc_defaults {
     ],
 
     srcs: [
-        "Common/CPUID.cpp",
         "Common/Configurator.cpp",
+        "Common/CPUID.cpp",
         "Common/DebugAndroid.cpp",
         "Common/GrallocAndroid.cpp",
         "Common/Half.cpp",
         "Common/Math.cpp",
         "Common/Memory.cpp",
         "Common/Resource.cpp",
+        "Common/SharedLibrary.cpp",
         "Common/Socket.cpp",
         "Common/Thread.cpp",
         "Common/Timer.cpp",
-	"Common/SharedLibrary.cpp",
         "Main/Config.cpp",
         "Main/FrameBuffer.cpp",
         "Main/FrameBufferAndroid.cpp",
@@ -177,11 +183,18 @@ cc_defaults {
 
     defaults: [ "libswiftshader_common_defaults" ],
 
+    header_libs: [
+        "swiftshader_platform_headers",
+    ],
+
     srcs: [
-        "Reactor/Reactor.cpp",
-        "Reactor/LLVMReactor.cpp",
-        "Reactor/Debug.cpp",
         "Reactor/CPUID.cpp",
+        "Reactor/Debug.cpp",
+        "Reactor/EmulatedReactor.cpp",
+        "Reactor/ExecutableMemory.cpp",
+        "Reactor/LLVMJIT.cpp",
+        "Reactor/LLVMReactor.cpp",
+        "Reactor/Reactor.cpp",
     ],
 
     cflags: [
@@ -190,18 +203,29 @@ cc_defaults {
     ],
 
     static_libs: [
-        "libLLVM7_swiftshader",
+        "libLLVM10_swiftshader",
+    ],
+
+    shared_libs: [
+        "liblog",
     ],
 }
 
 cc_defaults {
     name: "libswiftshadervk_llvm_defaults",
 
+    header_libs: [
+        "swiftshader_platform_headers",
+    ],
+
     srcs: [
-        "Reactor/Reactor.cpp",
-        "Reactor/LLVMReactor.cpp",
-        "Reactor/Debug.cpp",
         "Reactor/CPUID.cpp",
+        "Reactor/Debug.cpp",
+        "Reactor/EmulatedReactor.cpp",
+        "Reactor/ExecutableMemory.cpp",
+        "Reactor/LLVMJIT.cpp",
+        "Reactor/LLVMReactor.cpp",
+        "Reactor/Reactor.cpp",
     ],
 
     cflags: [
@@ -210,11 +234,12 @@ cc_defaults {
     ],
 
     static_libs: [
-        "libLLVM7_swiftshader",
+        "libLLVM10_swiftshader",
     ],
 
     shared_libs: [
         "libcutils",
+        "liblog",
     ],
 }
 
@@ -327,7 +352,7 @@ cc_defaults {
     defaults: [ "libswiftshader_release" ],
     static_libs: [
         "libswiftshader_llvm",
-        "libLLVM7_swiftshader",
+        "libLLVM10_swiftshader",
     ],
 }
 
@@ -337,7 +362,7 @@ cc_defaults {
     defaults: [ "libswiftshader_debug" ],
     static_libs: [
         "libswiftshader_llvm_debug",
-        "libLLVM7_swiftshader",
+        "libLLVM10_swiftshader",
     ],
 }
 
@@ -520,6 +545,7 @@ cc_defaults {
         "-D__STDC_CONSTANT_MACROS",
         "-D__STDC_FORMAT_MACROS",
         "-DHAVE_GRALLOC1",
+        "-DHAVE_GRALLOC3",
         "-DNO_SANITIZE_FUNCTION=",
         // FIXME: Use <android/api-level.h> instead?
         "-DANDROID_PLATFORM_SDK_VERSION=10000",
@@ -536,9 +562,15 @@ cc_defaults {
         "-Wno-non-virtual-dtor",
     ],
 
+    ldflags: [
+        // -Bsymbolic binds symbol references to their global definitions within
+        // a shared object, thereby preventing symbol preemption.
+        "-Wl,-Bsymbolic",
+    ],
+
     local_include_dirs: [ "Vulkan" ],
 
-    version_script: "Vulkan/vk_swiftshader.lds",
+    version_script: "Vulkan/android_vk_swiftshader.lds",
 
     generated_headers: [ "commit_header" ],
 
@@ -547,18 +579,46 @@ cc_defaults {
             relative_install_path: "hw",
             header_libs: [
                 "swiftshader_platform_headers",
-				"vulkan_headers",
+                "vulkan_headers",
                 "hwvulkan_headers",
             ],
             shared_libs: [
+                "android.hardware.graphics.mapper@3.0",
                 "libnativewindow",
                 "libhardware",
+                "libhidlbase",
                 "libcutils",
                 "libsync",
                 "liblog",
+                "libutils",
+            ],
+            static_libs: [
+                "libarect",
             ],
         },
     },
+}
+
+cc_library_static {
+    name: "swiftshader_debug",
+
+    vendor_available: true,
+
+    cflags: [
+        "-DLOG_TAG=\"swiftshader\"",
+    ],
+
+    srcs: [
+        "System/Debug.cpp",
+    ],
+
+    export_include_dirs: [
+        ".",
+    ],
+
+    shared_libs: [
+        "liblog",
+    ],
 }
 
 cc_defaults {
@@ -566,25 +626,29 @@ cc_defaults {
 
     cflags: [
         "-DLOG_TAG=\"swiftshader\"",
+        "-DSWIFTSHADER_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER",
+        "-DSWIFTSHADER_ENABLE_ASTC",  // TODO(b/150130101)
     ],
 
     srcs: [
-        "System/CPUID.cpp",
+        "System/Build.cpp",
         "System/Configurator.cpp",
+        "System/CPUID.cpp",
+        "System/GrallocAndroid.cpp",
         "System/Half.cpp",
         "System/Linux/MemFd.cpp",
         "System/Math.cpp",
         "System/Memory.cpp",
         "System/Socket.cpp",
         "System/Timer.cpp",
-        "System/DebugAndroid.cpp",
-        "System/GrallocAndroid.cpp",
         "Device/*.cpp",
         "Pipeline/*.cpp",
         "Vulkan/*.cpp",
     ],
 
     static_libs: [
+        "swiftshader_astc",
+        "swiftshader_debug",
         "swiftshader_marl",
         "swiftshader_spirv-tools",
     ],
@@ -600,7 +664,7 @@ cc_library_shared {
 
     static_libs: [
         "libswiftshadervk_llvm_debug",
-        "libLLVM7_swiftshader",
+        "libLLVM10_swiftshader",
     ],
 
     defaults: [
@@ -614,7 +678,7 @@ cc_library_shared {
 
     static_libs: [
         "libswiftshadervk_llvm_debug",
-        "libLLVM7_swiftshader",
+        "libLLVM10_swiftshader",
     ],
 
     cflags: [

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/paint/filter_operation.h"
@@ -14,12 +15,15 @@
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_impl_test_base.h"
+#include "cc/test/property_tree_test_utils.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
 namespace {
@@ -140,6 +144,78 @@ class DamageTrackerTest : public LayerTreeImplTestBase, public testing::Test {
     return root;
   }
 
+  LayerImpl* CreateTestTreeWithFourSurfaces() {
+    // This test tree has four render surfaces: one each for the root, child1_,
+    // grand_child3_ and grand_child4_. child1_ has four children of its own.
+    // Additionally, the root has a second child layer.
+    // child1_ has a screen space rect 270,270 36x38, from
+    //   - grand_child1_ 300,300, 6x8
+    //   - grand_child2_ 290,290, 6x8
+    //   - grand_child3_ 270,270, 6x8
+    //   - grand_child4_ 280,280, 15x16
+    // child2_ has a screen space rect 11,11 18x18
+
+    ClearLayersAndProperties();
+
+    LayerImpl* root = root_layer();
+    root->SetBounds(gfx::Size(500, 500));
+    root->layer_tree_impl()->SetDeviceViewportRect(gfx::Rect(root->bounds()));
+    root->SetDrawsContent(true);
+    SetupRootProperties(root);
+
+    child1_ = AddLayer<TestLayerImpl>();
+    grand_child1_ = AddLayer<TestLayerImpl>();
+    grand_child2_ = AddLayer<TestLayerImpl>();
+    grand_child3_ = AddLayer<TestLayerImpl>();
+    grand_child4_ = AddLayer<TestLayerImpl>();
+    child2_ = AddLayer<TestLayerImpl>();
+    SetElementIdsForTesting();
+
+    child1_->SetBounds(gfx::Size(30, 30));
+    // With a child that draws_content, opacity will cause the layer to create
+    // its own RenderSurface. This layer does not draw, but is intended to
+    // create its own RenderSurface.
+    child1_->SetDrawsContent(false);
+    CopyProperties(root, child1_);
+    CreateTransformNode(child1_).post_translation =
+        gfx::Vector2dF(100.f, 100.f);
+    CreateEffectNode(child1_).render_surface_reason =
+        RenderSurfaceReason::kTest;
+
+    grand_child1_->SetBounds(gfx::Size(6, 8));
+    grand_child1_->SetDrawsContent(true);
+    CopyProperties(child1_, grand_child1_);
+    grand_child1_->SetOffsetToTransformParent(gfx::Vector2dF(200.f, 200.f));
+
+    grand_child2_->SetBounds(gfx::Size(6, 8));
+    grand_child2_->SetDrawsContent(true);
+    CopyProperties(child1_, grand_child2_);
+    grand_child2_->SetOffsetToTransformParent(gfx::Vector2dF(190.f, 190.f));
+
+    grand_child3_->SetBounds(gfx::Size(6, 8));
+    grand_child3_->SetDrawsContent(true);
+    CopyProperties(child1_, grand_child3_);
+    CreateEffectNode(grand_child3_).render_surface_reason =
+        RenderSurfaceReason::kTest;
+    CreateTransformNode(grand_child3_).post_translation =
+        gfx::Vector2dF(170.f, 170.f);
+
+    grand_child4_->SetBounds(gfx::Size(15, 16));
+    grand_child4_->SetDrawsContent(true);
+    CopyProperties(child1_, grand_child4_);
+    CreateEffectNode(grand_child4_).render_surface_reason =
+        RenderSurfaceReason::kTest;
+    CreateTransformNode(grand_child4_).post_translation =
+        gfx::Vector2dF(180.f, 180.f);
+
+    child2_->SetBounds(gfx::Size(18, 18));
+    child2_->SetDrawsContent(true);
+    CopyProperties(root, child2_);
+    child2_->SetOffsetToTransformParent(gfx::Vector2dF(11.f, 11.f));
+
+    return root;
+  }
+
   LayerImpl* CreateAndSetUpTestTreeWithOneSurface(int number_of_children = 1) {
     LayerImpl* root = CreateTestTreeWithOneSurface(number_of_children);
 
@@ -152,6 +228,16 @@ class DamageTrackerTest : public LayerTreeImplTestBase, public testing::Test {
 
   LayerImpl* CreateAndSetUpTestTreeWithTwoSurfaces() {
     LayerImpl* root = CreateTestTreeWithTwoSurfaces();
+
+    // Setup includes going past the first frame which always damages
+    // everything, so that we can actually perform specific tests.
+    EmulateDrawingOneFrame(root);
+
+    return root;
+  }
+
+  LayerImpl* CreateAndSetUpTestTreeWithFourSurfaces() {
+    LayerImpl* root = CreateTestTreeWithFourSurfaces();
 
     // Setup includes going past the first frame which always damages
     // everything, so that we can actually perform specific tests.
@@ -182,7 +268,8 @@ class DamageTrackerTest : public LayerTreeImplTestBase, public testing::Test {
     host_impl()->active_tree()->DetachLayersKeepingRootLayerForTesting();
     host_impl()->active_tree()->property_trees()->clear();
     child_layers_.clear();
-    child1_ = child2_ = grand_child1_ = grand_child2_ = nullptr;
+    child1_ = child2_ = grand_child1_ = grand_child2_ = grand_child3_ =
+        grand_child4_ = nullptr;
   }
 
   // Stores result of CreateTestTreeWithOneSurface().
@@ -193,6 +280,8 @@ class DamageTrackerTest : public LayerTreeImplTestBase, public testing::Test {
   TestLayerImpl* child2_ = nullptr;
   TestLayerImpl* grand_child1_ = nullptr;
   TestLayerImpl* grand_child2_ = nullptr;
+  TestLayerImpl* grand_child3_ = nullptr;
+  TestLayerImpl* grand_child4_ = nullptr;
 };
 
 TEST_F(DamageTrackerTest, SanityCheckTestTreeWithOneSurface) {
@@ -981,148 +1070,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForHighDPIImageFilter) {
 
   EXPECT_EQ(expected_root_damage_rect, root_damage_rect);
   EXPECT_EQ(expected_child_damage_rect, child_damage_rect);
-}
-
-TEST_F(DamageTrackerTest, VerifyDamageForBackdropBlurredChild) {
-  LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
-
-  // Allow us to set damage on child1_ too.
-  child1_->SetDrawsContent(true);
-
-  FilterOperations filters;
-  filters.Append(FilterOperation::CreateBlurFilter(2.f));
-
-  // Setting the filter will damage the whole surface.
-  ClearDamageForAllSurfaces(root);
-  SetBackdropFilter(child1_, filters);
-  child1_->NoteLayerPropertyChanged();
-  EmulateDrawingOneFrame(root);
-
-  // CASE 1: Setting the update rect should cause the corresponding damage to
-  //         the surface, blurred based on the size of the child's backdrop
-  //         blur filter. Note that child1_'s render surface has a size of
-  //         206x208 due to contributions from grand_child1_ and grand_child2_.
-  ClearDamageForAllSurfaces(root);
-  root->UnionUpdateRect(gfx::Rect(297, 297, 2, 2));
-  EmulateDrawingOneFrame(root);
-
-  gfx::Rect root_damage_rect;
-  EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
-      &root_damage_rect));
-  // Damage position on the surface should be a composition of the damage on
-  // the root and on child2_.  Damage on the root should be: position of
-  // update_rect (297, 297), but expanded by the blur outsets.
-  gfx::Rect expected_damage_rect = gfx::Rect(297, 297, 2, 2);
-
-  // 6px spread for a 2px blur.
-  expected_damage_rect.Inset(-6, -6, -6, -6);
-  EXPECT_EQ(expected_damage_rect.ToString(), root_damage_rect.ToString());
-
-  // CASE 2: Setting the update rect should cause the corresponding damage to
-  //         the surface, blurred based on the size of the child's backdrop
-  //         blur filter. Since the damage extends to the right/bottom outside
-  //         of the blurred layer, only the left/top should end up expanded.
-  ClearDamageForAllSurfaces(root);
-  root->UnionUpdateRect(gfx::Rect(297, 297, 30, 30));
-  EmulateDrawingOneFrame(root);
-
-  EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
-      &root_damage_rect));
-  // Damage position on the surface should be a composition of the damage on
-  // the root and on child2_.  Damage on the root should be: position of
-  // update_rect (297, 297), but expanded on the left/top by the blur outsets.
-  expected_damage_rect = gfx::Rect(297, 297, 30, 30);
-
-  // 6px spread for a 2px blur.
-  expected_damage_rect.Inset(-6, -6, 0, 0);
-  EXPECT_EQ(expected_damage_rect.ToString(), root_damage_rect.ToString());
-
-  // CASE 3: Setting this update rect outside the blurred content_bounds of the
-  //         blurred child1_ will not cause it to be expanded.
-  ClearDamageForAllSurfaces(root);
-  root->UnionUpdateRect(gfx::Rect(30, 30, 2, 2));
-  EmulateDrawingOneFrame(root);
-
-  EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
-      &root_damage_rect));
-  // Damage on the root should be: position of update_rect (30, 30), not
-  // expanded.
-  expected_damage_rect = gfx::Rect(30, 30, 2, 2);
-
-  EXPECT_EQ(expected_damage_rect.ToString(), root_damage_rect.ToString());
-
-  // CASE 4: Setting this update rect inside the blurred content_bounds but
-  //         outside the original content_bounds of the blurred child1_ will
-  //         cause it to be expanded.
-  ClearDamageForAllSurfaces(root);
-  root->UnionUpdateRect(gfx::Rect(99, 99, 1, 1));
-  EmulateDrawingOneFrame(root);
-
-  EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
-      &root_damage_rect));
-  // Damage on the root should be: the originally damaged rect (99,99 1x1)
-  // plus the rect that can influence with a 2px blur (93,93 13x13) intersected
-  // with the surface rect (100,100 206x208). So no additional damage occurs
-  // above or to the left, but there is additional damage within the blurred
-  // area.
-  expected_damage_rect = gfx::Rect(99, 99, 7, 7);
-  EXPECT_EQ(expected_damage_rect.ToString(), root_damage_rect.ToString());
-
-  // CASE 5: Setting the update rect on child2_, which is above child1_, will
-  // not get blurred by child1_, so it does not need to get expanded.
-  ClearDamageForAllSurfaces(root);
-  child2_->UnionUpdateRect(gfx::Rect(1, 1));
-  EmulateDrawingOneFrame(root);
-
-  EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
-      &root_damage_rect));
-  // Damage on child2_ should be: position of update_rect offset by the child's
-  // position (11, 11), and not expanded by anything.
-  expected_damage_rect = gfx::Rect(11, 11, 1, 1);
-
-  EXPECT_EQ(expected_damage_rect.ToString(), root_damage_rect.ToString());
-
-  // CASE 6: Setting the update rect on child1_ will also blur the damage, so
-  //         that any pixels needed for the blur are redrawn in the current
-  //         frame.
-  ClearDamageForAllSurfaces(root);
-  child1_->UnionUpdateRect(gfx::Rect(1, 1));
-  EmulateDrawingOneFrame(root);
-
-  EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
-      &root_damage_rect));
-  // Damage on child1_ should be: position of update_rect offset by the child's
-  // position (100, 100), and expanded by the damage.
-
-  // Damage should be (0,0 1x1), offset by the 100,100 offset of child1_ in
-  // root, and expanded 6px for the 2px blur (i.e., 94,94 13x13), but there
-  // should be no damage outside child1_ (i.e. none above or to the left of
-  // 100,100.
-  expected_damage_rect = gfx::Rect(100, 100, 7, 7);
-  EXPECT_EQ(expected_damage_rect.ToString(), root_damage_rect.ToString());
-
-  // CASE 7: No changes, so should not damage the surface.
-  ClearDamageForAllSurfaces(root);
-  // We want to make sure that the backdrop filter doesn't cause empty damage
-  // to get expanded. We position child1_ so that an expansion of the empty rect
-  // would have non-empty intersection with child1_ in its target space (root
-  // space).
-  SetPostTranslation(child1_, gfx::Vector2dF());
-  child1_->NoteLayerPropertyChanged();
-  // The first call clears the damage caused by the movement.
-  EmulateDrawingOneFrame(root);
-  ClearDamageForAllSurfaces(root);
-  EmulateDrawingOneFrame(root);
-
-  gfx::Rect child_damage_rect;
-  EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
-      &root_damage_rect));
-  EXPECT_TRUE(GetRenderSurface(child1_)->damage_tracker()->GetDamageRectIfValid(
-      &child_damage_rect));
-
-  // Should not be expanded by the blur filter.
-  EXPECT_EQ(gfx::Rect(), root_damage_rect);
-  EXPECT_EQ(gfx::Rect(), child_damage_rect);
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
@@ -2051,6 +1998,200 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
   EXPECT_TRUE(GetRenderSurface(child1_)
                   ->damage_tracker()
                   ->has_damage_from_contributing_content());
+}
+
+TEST_F(DamageTrackerTest, CanUseCachedBackdropFilterResultTest) {
+  LayerImpl* root = CreateAndSetUpTestTreeWithFourSurfaces();
+
+  // child1_ has a screen space rect of 270,270 36x38, from
+  //   - grand_child1_ 300,300, 6x8
+  //   - grand_child2_ 290,290, 6x8
+  //   - grand_child3_ 270,270, 6x8
+  //   - grand_child4_ 280,280, 15x16
+  // child2_ has a screen space rect 11,11 18x18
+
+  ClearDamageForAllSurfaces(root);
+
+  // Add a backdrop blur filter onto child1_
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateBlurFilter(2.f));
+  SetBackdropFilter(child1_, filters);
+  child1_->NoteLayerPropertyChanged();
+  // can_use_cached_backdrop_filtered_result_ is false by default.
+  EXPECT_FALSE(
+      GetRenderSurface(child1_)->can_use_cached_backdrop_filtered_result());
+
+  EmulateDrawingOneFrame(root);
+  EXPECT_FALSE(
+      GetRenderSurface(child1_)->can_use_cached_backdrop_filtered_result());
+
+  // Let run for one update and there should be no damage left.
+  ClearDamageForAllSurfaces(root);
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(
+      GetRenderSurface(child1_)->can_use_cached_backdrop_filtered_result());
+
+  // CASE 1.1: Setting a non-intersecting update rect on the root
+  // doesn't invalidate child1_'s cached backdrop-filtered result.
+  // Damage rect at 0,0 20x20 (expanded to -6,-6 32x32) doesn't intersect
+  // 270,270 36x38.
+  ClearDamageForAllSurfaces(root);
+  root->UnionUpdateRect(gfx::Rect(0, 0, 20, 20));
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(
+      GetRenderSurface(child1_)->can_use_cached_backdrop_filtered_result());
+
+  // CASE 1.2: Setting an intersecting update rect on the root invalidates
+  // child1_'s cached backdrop-filtered result.
+  // Damage rect at 260,260 20x20 (expanded to 254,254 32x32) intersects 270,270
+  // 36x38.
+  ClearDamageForAllSurfaces(root);
+  root->UnionUpdateRect(gfx::Rect(260, 260, 20, 20));
+  EmulateDrawingOneFrame(root);
+  EXPECT_FALSE(
+      GetRenderSurface(child1_)->can_use_cached_backdrop_filtered_result());
+
+  // CASE 1.3: Damage on layers above the surface with the backdrop filter
+  // doesn't invalidate cached backdrop-filtered result. Move child2_ to overlap
+  // with child1_.
+  ClearDamageForAllSurfaces(root);
+  child2_->SetOffsetToTransformParent(gfx::Vector2dF(180.f, 180.f));
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(grand_child1_)
+                  ->can_use_cached_backdrop_filtered_result());
+
+  // CASE 2: Adding or removing a backdrop filter would invalidate cached
+  // backdrop-filtered result of the corresponding render surfaces.
+  ClearDamageForAllSurfaces(root);
+  // Remove the backdrop filter on child1_
+  SetBackdropFilter(child1_, FilterOperations());
+  grand_child1_->NoteLayerPropertyChanged();
+  // Add a backdrop blur filtre to grand_child4_
+  SetBackdropFilter(grand_child4_, filters);
+  grand_child4_->NoteLayerPropertyChanged();
+  EmulateDrawingOneFrame(root);
+  EXPECT_FALSE(GetRenderSurface(grand_child4_)
+                   ->can_use_cached_backdrop_filtered_result());
+  EXPECT_FALSE(GetRenderSurface(grand_child1_)
+                   ->can_use_cached_backdrop_filtered_result());
+
+  // Let run for one update and there should be no damage left.
+  ClearDamageForAllSurfaces(root);
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(grand_child4_)
+                  ->can_use_cached_backdrop_filtered_result());
+
+  // CASE 3.1: Adding a non-intersecting damage rect to a sibling layer under
+  // the render surface with the backdrop filter doesn't invalidate cached
+  // backdrop-filtered result. Damage rect on grand_child1_ at 302,302 1x1
+  // expanded by a 6-pixel spread (296,296 13x13)
+  // doesn't intersect 280,280 15x16.
+  ClearDamageForAllSurfaces(root);
+  grand_child1_->AddDamageRect(gfx::Rect(2, 2, 1.f, 1.f));
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(grand_child4_)
+                  ->can_use_cached_backdrop_filtered_result());
+
+  // CASE 3.2: Adding an intersecting damage rect to a sibling layer under the
+  // render surface with the backdrop filter invalidates cached
+  // backdrop-filtered result. Damage rect on grand_child2_ at 290,290 1x1
+  // expanded by a 6-pixel spread (284,284 13x13)
+  // intersects 280,280 15x16.
+  ClearDamageForAllSurfaces(root);
+  grand_child2_->AddDamageRect(gfx::Rect(0, 0, 1.f, 1.f));
+  EmulateDrawingOneFrame(root);
+  EXPECT_FALSE(GetRenderSurface(grand_child4_)
+                   ->can_use_cached_backdrop_filtered_result());
+
+  // CASE 4.1: Non-intersecting damage rect on a sibling surface under the
+  // render surface with the backdrop filter doesn't invalidate cached
+  // backdrop-filtered result.
+  ClearDamageForAllSurfaces(root);
+  grand_child3_->AddDamageRect(gfx::Rect(0, 0, 1.f, 1.f));
+  EmulateDrawingOneFrame(root);
+  gfx::Rect damage_rect;
+  EXPECT_TRUE(GetRenderSurface(grand_child3_)
+                  ->damage_tracker()
+                  ->GetDamageRectIfValid(&damage_rect));
+  EXPECT_EQ(gfx::Rect(170, 170, 1.f, 1.f), damage_rect);
+  // Damage rect at 170,170 1x1 (expanded to 164,164 13x13) in render target
+  // local space doesn't intersect 180,180 15x16.
+  EXPECT_TRUE(GetRenderSurface(grand_child4_)
+                  ->can_use_cached_backdrop_filtered_result());
+
+  // CASE 4.2: Intersecting damage rect on a sibling surface under the render
+  // surface with the backdrop filter invalidates cached backdrop-filtered
+  // result.
+  ClearDamageForAllSurfaces(root);
+  grand_child3_->SetBounds(gfx::Size(11.f, 11.f));
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(grand_child3_)
+                  ->damage_tracker()
+                  ->GetDamageRectIfValid(&damage_rect));
+  EXPECT_EQ(gfx::Rect(170, 170, 11.f, 11.f), damage_rect);
+  // Damage rect at 170,170 11x11 (expanded to 164,164 23x23) in render target
+  // local space intersects 180,180 15x16
+  EXPECT_FALSE(GetRenderSurface(grand_child4_)
+                   ->can_use_cached_backdrop_filtered_result());
+
+  // CASE 5.1: Removing a non-intersecting sibling layer under the render
+  // surface with the backdrop filter doesn't invalidate cached
+  // backdrop-filtered result. Removing grand_child1_ at 300,300 6x8 which
+  // doesn't intersect 280,280 15x16.
+  ClearDamageForAllSurfaces(root);
+  OwnedLayerImplList layers =
+      host_impl()->active_tree()->DetachLayersKeepingRootLayerForTesting();
+  ASSERT_EQ(7u, layers.size());
+  ASSERT_EQ(child1_, layers[1].get());
+  ASSERT_EQ(grand_child1_, layers[2].get());
+  ASSERT_EQ(grand_child2_, layers[3].get());
+  ASSERT_EQ(grand_child3_, layers[4].get());
+  ASSERT_EQ(grand_child4_, layers[5].get());
+  ASSERT_EQ(child2_, layers[6].get());
+  host_impl()->active_tree()->AddLayer(std::move(layers[1]));
+  host_impl()->active_tree()->AddLayer(std::move(layers[3]));
+  host_impl()->active_tree()->AddLayer(std::move(layers[4]));
+  host_impl()->active_tree()->AddLayer(std::move(layers[5]));
+  host_impl()->active_tree()->AddLayer(std::move(layers[6]));
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(grand_child4_)
+                  ->can_use_cached_backdrop_filtered_result());
+
+  // CASE 5.2: Removing an intersecting sibling layer under the render surface
+  // with the backdrop filter invalidates cached backdrop-filtered result.
+  // Removing grand_child2_ at 290,290 6x8 which intersects 280,280 15x16.
+  ClearDamageForAllSurfaces(root);
+  layers = host_impl()->active_tree()->DetachLayersKeepingRootLayerForTesting();
+  ASSERT_EQ(6u, layers.size());
+  ASSERT_EQ(child1_, layers[1].get());
+  ASSERT_EQ(grand_child2_, layers[2].get());
+  ASSERT_EQ(grand_child3_, layers[3].get());
+  ASSERT_EQ(grand_child4_, layers[4].get());
+  ASSERT_EQ(child2_, layers[5].get());
+  host_impl()->active_tree()->AddLayer(std::move(layers[1]));
+  host_impl()->active_tree()->AddLayer(std::move(layers[3]));
+  host_impl()->active_tree()->AddLayer(std::move(layers[4]));
+  host_impl()->active_tree()->AddLayer(std::move(layers[5]));
+
+  EmulateDrawingOneFrame(root);
+  EXPECT_FALSE(GetRenderSurface(grand_child4_)
+                   ->can_use_cached_backdrop_filtered_result());
+
+  // Let run for one update and there should be no damage left.
+  ClearDamageForAllSurfaces(root);
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(grand_child4_)
+                  ->can_use_cached_backdrop_filtered_result());
+
+  // CASE 6: Removing a intersecting sibling surface under the render
+  // surface with the backdrop filter invalidate cached backdrop-filtered
+  // result.
+  ClearDamageForAllSurfaces(root);
+  SetRenderSurfaceReason(grand_child3_, RenderSurfaceReason::kNone);
+  grand_child3_->SetDrawsContent(false);
+  EmulateDrawingOneFrame(root);
+  EXPECT_FALSE(GetRenderSurface(grand_child4_)
+                   ->can_use_cached_backdrop_filtered_result());
 }
 
 }  // namespace

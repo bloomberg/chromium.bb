@@ -8,33 +8,27 @@
 export class Linkifier {
   /**
    * @param {!Object} object
-   * @param {!Common.Linkifier.Options=} options
+   * @param {!Options=} options
    * @return {!Node}
    */
   linkify(object, options) {
+    throw new Error('linkify not implemented');
   }
 
   /**
    * @param {?Object} object
-   * @param {!Common.Linkifier.Options=} options
+   * @param {!Options=} options
    * @return {!Promise<!Node>}
    */
   static linkify(object, options) {
     if (!object) {
       return Promise.reject(new Error('Can\'t linkify ' + object));
     }
+    // @ts-ignore self.runtime needs to be moved to ESModules so we can import this.
     return self.runtime.extension(Linkifier, object).instance().then(linkifier => linkifier.linkify(object, options));
   }
 }
 
-/* Legacy exported object */
-self.Common = self.Common || {};
-Common = Common || {};
-
-/**
- * @interface
- */
-Common.Linkifier = Linkifier;
-
 /** @typedef {{tooltip: (string|undefined), preventKeyboardFocus: (boolean|undefined)}} */
-Common.Linkifier.Options;
+// @ts-ignore typedef.
+export let Options;

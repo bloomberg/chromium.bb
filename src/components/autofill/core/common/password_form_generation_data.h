@@ -8,11 +8,8 @@
 #include <stdint.h>
 
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -21,22 +18,27 @@ namespace autofill {
 // which fields password should be generated.
 struct PasswordFormGenerationData {
   PasswordFormGenerationData();
-  PasswordFormGenerationData(const PasswordFormGenerationData& other);
-  PasswordFormGenerationData(uint32_t new_password_renderer_id,
-                             uint32_t confirmation_password_renderer_id);
+  PasswordFormGenerationData(FieldRendererId new_password_renderer_id,
+                             FieldRendererId confirmation_password_renderer_id);
 #if defined(OS_IOS)
-  PasswordFormGenerationData(base::string16 form_name,
+  PasswordFormGenerationData(FormRendererId form_renderer_id,
                              base::string16 new_password_element,
-                             base::string16 confirmation_password_element);
+                             FieldRendererId new_password_renderer_id,
+                             FieldRendererId confirmation_password_renderer_id);
 
-  base::string16 form_name;
+  PasswordFormGenerationData(const PasswordFormGenerationData&);
+  PasswordFormGenerationData& operator=(const PasswordFormGenerationData&);
+  PasswordFormGenerationData(PasswordFormGenerationData&&);
+  PasswordFormGenerationData& operator=(PasswordFormGenerationData&&);
+  ~PasswordFormGenerationData();
+
+  FormRendererId form_renderer_id;
+  // TODO(crbug.com/1075444): Remove this once VotesUploader starts to use
+  // unique renderer IDs.
   base::string16 new_password_element;
-  base::string16 confirmation_password_element;
 #endif
-  uint32_t new_password_renderer_id =
-      FormFieldData::kNotSetFormControlRendererId;
-  uint32_t confirmation_password_renderer_id =
-      FormFieldData::kNotSetFormControlRendererId;
+  FieldRendererId new_password_renderer_id;
+  FieldRendererId confirmation_password_renderer_id;
 };
 
 }  // namespace autofill

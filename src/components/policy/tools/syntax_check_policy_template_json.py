@@ -6,8 +6,8 @@
 Checks a policy_templates.json file for conformity to its syntax specification.
 '''
 
+import argparse
 import json
-import optparse
 import os
 import re
 import sys
@@ -68,6 +68,11 @@ LEGACY_EMBEDDED_JSON_WHITELIST = [
     # NOTE: Do not add any new policies to this list! Do not store policies with
     # complex schemas using stringified JSON - instead, store them as dicts.
 ]
+
+# List of policies where not all properties are required to be presented in the
+# example value. This could be useful e.g. in case of mutually exclusive fields.
+# See crbug.com/1068257 for the details.
+OPTIONAL_PROPERTIES_POLICIES_WHITELIST = []
 
 # 100 MiB upper limit on the total device policy external data max size limits
 # due to the security reasons.
@@ -132,11 +137,41 @@ KEYS_DEFINING_SCHEMAS_PER_TYPE = {
     'array': ['items']
 }
 
+# The list of platforms policy could support.
+ALL_SUPPORTED_PLATFOMRS = [
+    'chrome_frame', 'chrome_os', 'android', 'webview_android', 'ios',
+    'chrome.win', 'chrome.win7', 'chrome.linux', 'chrome.mac', 'chrome.*'
+]
+
+# The list of platforms that chrome.* represents.
+CHROME_STAR_PLATFORMS = ['chrome.win', 'chrome.mac', 'chrome.linux']
+
 
 # Helper function to determine if a given type defines a key in a dictionary
 # that is used to condition certain backwards compatibility checks.
 def IsKeyDefinedForTypeInDictionary(type, key, key_per_type_dict):
   return type in key_per_type_dict and key in key_per_type_dict[type]
+
+
+# Helper function that expand chrome.* in the |platforms| list or dict.
+def ExpandChromeStar(platforms):
+  if platforms and 'chrome.*' in platforms:
+    if isinstance(platforms, list):
+      index = platforms.index('chrome.*')
+      platforms[index:index + 1] = CHROME_STAR_PLATFORMS
+    elif isinstance(platforms, dict):
+      value = platforms.pop('chrome.*')
+      for chrome_star_platform in CHROME_STAR_PLATFORMS:
+        # copy reference here as the value shouldn't be changed.
+        platforms[chrome_star_platform] = value
+  return platforms
+
+
+def MergeDict(*dicts):
+  result = {}
+  for dictionary in dicts:
+    result.update(dictionary)
+  return result
 
 
 class PolicyTemplateChecker(object):
@@ -151,6 +186,10 @@ class PolicyTemplateChecker(object):
     self.features = []
     self.schema_validator = SchemaValidator()
     self.has_schema_error = False
+
+  def _Warning(self, message):
+    self.warning_count += 1
+    print message
 
   def _Error(self,
              message,
@@ -258,7 +297,7 @@ class PolicyTemplateChecker(object):
     '''
     highest_id_in_policies = max(policy_ids)
     if highest_id != highest_id_in_policies:
-      self._Error(("\'highest_id_currently_used\' must be set to the highest"
+      self._Error(("'highest_id_currently_used' must be set to the highest"
                    "policy id in use, which is currently %s (vs %s).") %
                   (highest_id_in_policies, highest_id))
 
@@ -403,17 +442,36 @@ class PolicyTemplateChecker(object):
 
     # There should not be any unknown keys in |policy|.
     for key in policy:
-      if key not in ('name', 'owners', 'type', 'caption', 'desc', 'device_only',
-                     'supported_on', 'label', 'policies', 'items',
-                     'example_value', 'features', 'deprecated', 'future', 'id',
-                     'schema', 'validation_schema', 'description_schema',
-                     'url_schema', 'max_size', 'tags',
-                     'default_for_enterprise_users',
-                     'default_for_managed_devices_doc_only', 'arc_support',
-                     'supported_chrome_os_management'):
-        self.warning_count += 1
-        print('In policy %s: Warning: Unknown key: %s' % (policy.get('name'),
-                                                          key))
+      if key not in (
+          'name',
+          'owners',
+          'type',
+          'caption',
+          'desc',
+          'device_only',
+          'supported_on',
+          'label',
+          'policies',
+          'items',
+          'example_value',
+          'features',
+          'deprecated',
+          'future',
+          'future_on',
+          'id',
+          'schema',
+          'validation_schema',
+          'description_schema',
+          'url_schema',
+          'max_size',
+          'tags',
+          'default_for_enterprise_users',
+          'default_for_managed_devices_doc_only',
+          'arc_support',
+          'supported_chrome_os_management',
+      ):
+        self._Warning('In policy %s: Warning: Unknown key: %s' %
+                      (policy.get('name'), key))
 
     # Each policy must have a name.
     self._CheckContains(policy, 'name', str, regexp_check=NO_WHITESPACE)
@@ -450,7 +508,7 @@ class PolicyTemplateChecker(object):
     self._CheckContains(policy, 'deprecated', bool, True)
 
     # If 'future' is present, it must be a bool.
-    self._CheckContains(policy, 'future', bool, True)
+    is_future = self._CheckContains(policy, 'future', bool, True)
 
     # If 'arc_support' is present, it must be a string.
     self._CheckContains(policy, 'arc_support', str, True)
@@ -495,14 +553,20 @@ class PolicyTemplateChecker(object):
       self._CheckPolicySchema(policy, policy_type)
 
       # Each policy must have a supported_on list.
-      supported_on = self._CheckContains(policy, 'supported_on', list)
-      if supported_on is not None:
+      supported_on = self._CheckContains(policy,
+                                         'supported_on',
+                                         list,
+                                         optional=False)
+      supported_platforms = []
+      if supported_on:
         for s in supported_on:
           (
               supported_on_platform,
               supported_on_from,
               supported_on_to,
           ) = self._GetSupportedVersionPlatformAndRange(s)
+
+          supported_platforms.append(supported_on_platform)
           if not isinstance(supported_on_platform,
                             str) or not supported_on_platform:
             self._Error(
@@ -519,6 +583,33 @@ class PolicyTemplateChecker(object):
                 'Entries in "supported_on" that have an ending '
                 'supported version must have a version larger than the '
                 'starting supported version.', 'policy', policy, supported_on)
+
+      supported_platforms = ExpandChromeStar(supported_platforms)
+      future_on = ExpandChromeStar(
+          self._CheckContains(policy, 'future_on', list, optional=True))
+
+      self._CheckPlatform(supported_platforms, 'supported_on',
+                          policy.get('name'))
+      self._CheckPlatform(future_on, 'future_on', policy.get('name'))
+
+      #TODO(crbug.com/1091432): Make supported_on optional and check if it's
+      # empty. Also check if both supported_on and future_on are empty.
+
+      if future_on == []:
+        self._Warning("Policy %s: 'future_on' is empty." % (policy.get('name')))
+
+      if future_on is not None and is_future is not None:
+        self._Error(
+            "Tag 'future' has been deprecated, please use 'future_on' instead.",
+            'policy', policy.get('name'))
+
+      if future_on:
+        for platform in set(supported_platforms).intersection(future_on):
+          self._Error(
+              "Platform %s is marked as 'supported_on' and 'future_on'. Only "
+              "put released platform in 'supported_on' field" % (platform),
+              'policy', policy.get('name'))
+
 
       # Each policy must have a 'features' dict.
       features = self._CheckContains(policy, 'features', dict)
@@ -579,6 +670,27 @@ class PolicyTemplateChecker(object):
           container_name='features',
           identifier=policy.get('name'))
 
+      # 'cloud_only' feature must be an optional boolean flag.
+      cloud_only = self._CheckContains(
+          features,
+          'cloud_only',
+          bool,
+          optional=True,
+          container_name='features')
+
+      # 'platform_only' feature must be an optional boolean flag.
+      platform_only = self._CheckContains(
+          features,
+          'platform_only',
+          bool,
+          optional=True,
+          container_name='features')
+
+      if cloud_only and platform_only:
+        self._Error("cloud_only and platfrom_only must not be true at the same "
+                    "time.")
+
+
       # Chrome OS policies may have a non-empty supported_chrome_os_management
       # list with either 'active_directory' or 'google_cloud' or both.
       supported_chrome_os_management = self._CheckContains(
@@ -625,9 +737,11 @@ class PolicyTemplateChecker(object):
       # admins.
       schema = policy.get('schema')
       example = policy.get('example_value')
+      enforce_use_entire_schema = policy.get(
+          'name') not in OPTIONAL_PROPERTIES_POLICIES_WHITELIST
       if not self.has_schema_error:
-        if not self.schema_validator.ValidateValue(
-            schema, example, enforce_use_entire_schema=True):
+        if not self.schema_validator.ValidateValue(schema, example,
+                                                   enforce_use_entire_schema):
           self._Error(('Example for policy %s does not comply to the policy\'s '
                        'schema or does not use all properties at least once.') %
                       policy.get('name'))
@@ -693,6 +807,25 @@ class PolicyTemplateChecker(object):
       # Each policy referencing external data must specify a maximum data size.
       self._CheckContains(policy, 'max_size', int)
 
+  def _CheckPlatform(self, platforms, field_name, policy_name):
+    ''' Verifies the |platforms| list. Records any error with |field_name| and
+        |policy_name|.  '''
+    if not platforms:
+      return
+
+    duplicated = set()
+    for platform in platforms:
+      if platform not in ALL_SUPPORTED_PLATFOMRS:
+        self._Error(
+            'Platform %s is not supported in %s. Valid platforms are %s.' %
+            (platform, field_name, ', '.join(ALL_SUPPORTED_PLATFOMRS)),
+            'policy', policy_name)
+      if platform in duplicated:
+        self._Error(
+            'platform %s appears more than once in %s.' %
+            (platform, field_name), 'policy', policy_name)
+      duplicated.add(platform)
+
   def _CheckMessage(self, key, value):
     # |key| must be a string, |value| a dict.
     if not isinstance(key, str):
@@ -714,43 +847,58 @@ class PolicyTemplateChecker(object):
     # There should not be any unknown keys in |value|.
     for vkey in value:
       if vkey not in ('desc', 'text'):
-        self.warning_count += 1
-        print 'In message %s: Warning: Unknown key: %s' % (key, vkey)
+        self._Warning('In message %s: Warning: Unknown key: %s' % (key, vkey))
 
   def _GetSupportedVersionPlatformAndRange(self, supported_on):
-    (supported_on_platform, supported_on_versions) = supported_on.split(":")
+    (supported_on_platform, supported_on_versions) = supported_on.split(':')
 
-    (supported_on_from, supported_on_to) = supported_on_versions.split("-")
+    (supported_on_from, supported_on_to) = supported_on_versions.split('-')
 
     return supported_on_platform, (
         int(supported_on_from) if supported_on_from else None), (
             int(supported_on_to) if supported_on_to else None)
 
-  def _CheckPolicyIsReleasedToStableBranch(self, original_policy,
-                                           current_version):
+  def _GetReleasedPlatforms(self, policy, current_version):
     '''
-    Given the unchanged policy definition, check if it was already released to
-    a stable branch (not necessarily fully released publicly to stable) by
-    checking the current_version found in the code at head.
+    Returns a dictionary that contains released platforms and their released
+    version. Returns empty dictionary if policy is None or policy.future is
+    True.
 
-    |original_policy|: The policy definition as it appeared in the unmodified
-      policy templates file.
-    |current_version|: The current major version of the branch as stored in
-      chrome/VERSION. This is usually the master version, but may also be a
-      stable version number if we are trying to submit a change into a stable
-      cut branch.
+    Args:
+      policy: A dictionary contains all policy data from policy_templates.json.
+      current_version: A integer represents the current major milestone.
+
+    Returns:
+      released_platforms: A dictionary contains all platforms that have been
+                          released to stable and their released version.
+      rolling_out_platform: A dictionary contains all platforms that have been
+                            released but haven't reached stable.
+      Example:
+      {
+        'chrome.win' : 10,
+        'chrome_os': '10,
+      }, {
+        'chrome.mac': 15,
+      }
     '''
 
-    if 'future' in original_policy and original_policy['future']:
-      return False
+    released_platforms = {}
+    rolling_out_platform = {}
+    if not policy or policy.get('future', False):
+      return released_platforms, rolling_out_platform
 
-    if all(original_supported_version >= current_version
-           for original_supported_version in (
-               self._GetSupportedVersionPlatformAndRange(supported_on)[1]
-               for supported_on in original_policy['supported_on'])):
-      return False
+    for supported_on in policy.get('supported_on', []):
+      supported_platform, supported_from, _ = \
+              self._GetSupportedVersionPlatformAndRange(supported_on)
+      if supported_from < current_version - 1:
+        released_platforms[supported_platform] = supported_from
+      else:
+        rolling_out_platform[supported_platform] = supported_from
 
-    return True
+    released_platforms = ExpandChromeStar(released_platforms)
+    rolling_out_platform = ExpandChromeStar(rolling_out_platform)
+
+    return released_platforms, rolling_out_platform
 
   def _CheckSingleSchemaValueIsCompatible(
       self, old_schema_value, new_schema_value, custom_value_validation):
@@ -1010,90 +1158,63 @@ class PolicyTemplateChecker(object):
           (new_key, current_schema_key))
 
   def _CheckPolicyDefinitionChangeCompatibility(self, original_policy,
-                                                new_policy, current_version):
+                                                original_released_platforms,
+                                                new_policy,
+                                                new_released_platforms,
+                                                current_version):
     '''
     Checks if the new policy definition is compatible with the original policy
     definition.
 
-    |original_policy|: The policy definition as it was in the original policy
-      templates file.
-    |new_policy|: The policy definition as it is (if any) in the modified policy
-      templates file.
-    |current_version|: The current major version of the branch as stored in
+    Args:
+      original_policy: The policy definition as it was in the original policy
+                       templates file.
+      original_released_platforms: A dictionary contains a released platforms
+                                   and their release version in the  original
+                                   policy template files.
+      new_policy: The policy definition as it is (if any) in the modified policy
+                  templates file.
+      new_released_platforms: A dictionary contains a released platforms and
+                              their release version in the modified policy
+                              template files.
+      current_version: The current major version of the branch as stored in
       chrome/VERSION.
-    '''
 
+    '''
     # 1. Check if the supported_on versions are valid.
 
     # All starting versions in supported_on in the original policy must also
     # appear in the changed policy. The only thing that can be added is an
     # ending version.
-    new_supported_versions = {}
-    for new_supported_version in new_policy['supported_on']:
-      (supported_on_platform, supported_on_from_version,
-       _) = self._GetSupportedVersionPlatformAndRange(new_supported_version)
-      new_supported_versions[supported_on_platform] = supported_on_from_version
-
-    is_pushed_postponed = False
-    has_version_error = False
-    for original_supported_on in original_policy['supported_on']:
-      (original_supported_on_platform, original_supported_on_version,
-       _) = self._GetSupportedVersionPlatformAndRange(original_supported_on)
-
-      if original_supported_on_platform not in new_supported_versions:
+    for platform in original_released_platforms:
+      if platform not in new_released_platforms:
+        self._Error('Released platform %s has been removed.' % (platform),
+                    'policy', original_policy['name'])
+      elif original_released_platforms[platform] < new_released_platforms[
+          platform]:
         self._Error(
-            'Cannot remove supported_on \'%s\' on released policy \'%s\'.' %
-            (original_supported_on_platform, original_policy['name']))
-        has_version_error = True
-      # It's possible that a policy was cut to the stable branch but now we
-      # want to release later than the current stable breanch. We check if
-      # we are trying to change the supported version of the policy to
-      # version_of_stable_branch + 1.
-      # This means:
-      # original supported version ==
-      #   version of stable branch == current_version - 1
-      # and
-      # changed supported version = current dev version = current_version.
-      elif new_supported_versions[
-          original_supported_on_platform] != original_supported_on_version:
-        if (not new_supported_versions[original_supported_on_platform] >=
-            original_supported_on_version or
-            original_supported_on_version != current_version - 1):
-          has_version_error = True
-          self._Error(
-              'Cannot change the supported_on of released policy \'%s\' on '
-              'platform \'%s\' from %d to %d.' %
-              (original_policy['name'], original_supported_on_platform,
-               original_supported_on_version,
-               new_supported_versions[original_supported_on_platform]))
-        elif (original_supported_on_version == current_version - 1):
-          is_pushed_postponed = True
+            'Supported version of released platform %s is changed to a later '
+            'version %d from %d.' % (platform, new_released_platforms[platform],
+                                     original_released_platforms[platform]),
+            'policy', original_policy['name'])
 
-    # If the policy release has been pushed back from the stable branch we
-    # consider the policy as un-released and all changes to it are allowed.
-    if is_pushed_postponed and not has_version_error:
-      print('Policy %s release has been postponed. Skipping further '
-            'verification') % (
-                new_policy['name'])
-      return
-
-    #3. Check if the type of the policy has changed.
+    #2. Check if the type of the policy has changed.
     if new_policy['type'] != original_policy['type']:
       self._Error(
           'Cannot change the type of released policy \'%s\' from %s to %s.' %
           (new_policy['name'], original_policy['type'], new_policy['type']))
 
-    #4 Check if the policy has suddenly been marked as future: true.
-    if ('future' in new_policy and
-        new_policy['future']) and ('future' not in original_policy or
-                                   not original_policy['future']):
+    #3 Check if the policy has suddenly been marked as future: true.
+    if ('future' in new_policy
+        and new_policy['future']) and ('future' not in original_policy
+                                       or not original_policy['future']):
       self._Error('Cannot make released policy \'%s\' a future policy' %
                   (new_policy['name']))
 
     original_device_only = ('device_only' in original_policy and
                             original_policy['device_only'])
 
-    #5 Check if the policy has changed its device_only value
+    #4 Check if the policy has changed its device_only value
     if (('device_only' in new_policy and
          original_device_only != new_policy['device_only']) or
         ('device_only' not in new_policy and original_device_only)):
@@ -1101,10 +1222,29 @@ class PolicyTemplateChecker(object):
           'Cannot change the device_only status of released policy \'%s\'' %
           (new_policy['name']))
 
-    #6 Check schema changes for compatibility.
+    #5 Check schema changes for compatibility.
     self._CheckSchemasAreCompatible([original_policy['name']],
                                     original_policy['schema'],
                                     new_policy['schema'])
+
+  def _CheckNewReleasedPlatforms(self, original_platforms, new_platforms,
+                                 current_version, policy_name):
+    '''If released version has changed, it should be the current version unless
+       there is a special reason.'''
+    for platform in new_platforms:
+      new_version = new_platforms[platform]
+      if new_version == original_platforms.get(platform):
+        continue
+      if new_version == current_version - 1:
+        self._Warning(
+            'Policy %s on %s will be released in %d which has passed the '
+            'branch point. Please merge it into Beta or change the version to '
+            '%d.' % (policy_name, platform, new_version, current_version))
+      elif new_version < current_version - 1:
+        self._Error(
+            'Version %d has been released to Stable already. Please use '
+            'version %d instead for platform %s.' %
+            (new_version, current_version, platform), 'policy', policy_name)
 
   # Checks if the new policy definitions are compatible with the policy
   # definitions coming from the original_file_contents.
@@ -1122,7 +1262,6 @@ class PolicyTemplateChecker(object):
     |current_version|: The current major version of the branch as stored in
       chrome/VERSION.
     '''
-
     try:
       original_container = eval(original_file_contents)
     except:
@@ -1159,25 +1298,34 @@ class PolicyTemplateChecker(object):
       if original_policy['type'] == 'group':
         continue
 
-      # First check if the unchanged policy is considered unreleased. If it is
-      # then any change on it is allowed and we can skip verification.
-      if not self._CheckPolicyIsReleasedToStableBranch(original_policy,
-                                                       current_version):
-        continue
-
-      # The unchanged policy is considered released, now check if the changed
-      # policy is still present and has the valid supported_on versions.
+      original_released_platforms, original_rolling_out_platforms = \
+              self._GetReleasedPlatforms( original_policy, current_version)
 
       new_policy = policy_definitions_dict.get(original_policy['name'])
 
-      # A policy that is considered released cannot be removed.
-      if new_policy is None:
+      # A policy that has at least one released platform cannot be removed.
+      if new_policy is None and original_released_platforms:
         self._Error('Released policy \'%s\' has been removed.' %
                     original_policy['name'])
         continue
 
-      self._CheckPolicyDefinitionChangeCompatibility(
-          original_policy, new_policy, current_version)
+      new_released_platforms, new_rolling_out_platform = \
+              self._GetReleasedPlatforms(new_policy, current_version)
+
+      # Check policy compatibility if there is at least one released platform.
+      if original_released_platforms:
+        self._CheckPolicyDefinitionChangeCompatibility(
+            original_policy, original_released_platforms, new_policy,
+            new_released_platforms, current_version)
+
+      # New released platforms should always use the current version unless they
+      # are going to be merged into previous milestone.
+      if new_released_platforms or new_rolling_out_platform:
+        self._CheckNewReleasedPlatforms(
+            MergeDict(original_released_platforms,
+                      original_rolling_out_platforms),
+            MergeDict(new_released_platforms, new_rolling_out_platform),
+            current_version, original_policy['name'])
 
   def _LeadingWhitespace(self, line):
     match = LEADING_WHITESPACE.match(line)
@@ -1196,9 +1344,8 @@ class PolicyTemplateChecker(object):
     print 'In line %d: Error: %s' % (line_number, message)
 
   def _LineWarning(self, message, line_number):
-    self.warning_count += 1
-    print('In line %d: Warning: Automatically fixing formatting: %s' %
-          (line_number, message))
+    self._Warning('In line %d: Warning: Automatically fixing formatting: %s' %
+                  (line_number, message))
 
   def _CheckFormat(self, filename):
     if self.options.fix:
@@ -1276,7 +1423,7 @@ class PolicyTemplateChecker(object):
     actual_highest_id = max(ids)
     if actual_highest_id != max_id:
       self._Error(
-          ("\'highest_atomic_group_id_currently_used\' must be set to the "
+          ("'highest_atomic_group_id_currently_used' must be set to the "
            "highest atomic group id in use, which is currently %s (vs %s).") %
           (actual_highest_id, max_id))
       return
@@ -1469,32 +1616,25 @@ class PolicyTemplateChecker(object):
           filename=None,
           original_file_contents=None,
           current_version=None):
-    parser = optparse.OptionParser(
+    parser = argparse.ArgumentParser(
         usage='usage: %prog [options] filename',
         description='Syntax check a policy_templates.json file.')
-    parser.add_option(
+    parser.add_argument(
         '--device_policy_proto_path',
-        help='[REQUIRED] File path of the device policy proto file.',
-        type='string')
-    parser.add_option(
+        help='[REQUIRED] File path of the device policy proto file.')
+    parser.add_argument(
         '--fix', action='store_true', help='Automatically fix formatting.')
-    parser.add_option(
+    parser.add_argument(
         '--backup',
         action='store_true',
         help='Create backup of original file (before fixing).')
-    parser.add_option(
+    parser.add_argument(
         '--stats', action='store_true', help='Generate statistics.')
-    (options, args) = parser.parse_args(argv)
+    args = parser.parse_args(argv)
     if filename is None:
-      if len(args) != 2:
-        parser.print_help()
-        return 1
-      filename = args[1]
-    if options.device_policy_proto_path is None:
+      print('Error: Filename not specified.')
+      return 1
+    if args.device_policy_proto_path is None:
       print('Error: Missing --device_policy_proto_path argument.')
       return 1
-    return self.Main(filename, options, original_file_contents, current_version)
-
-
-if __name__ == '__main__':
-  sys.exit(PolicyTemplateChecker().Run(sys.argv))
+    return self.Main(filename, args, original_file_contents, current_version)

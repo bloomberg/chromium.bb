@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_POLICY_LOADER_IOS_H_
 #define COMPONENTS_POLICY_CORE_COMMON_POLICY_LOADER_IOS_H_
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
@@ -15,11 +14,14 @@
 
 namespace policy {
 
+class SchemaRegistry;
+
 // A policy loader that loads policy from the managed app configuration
 // introduced in iOS 7.
 class POLICY_EXPORT PolicyLoaderIOS : public AsyncPolicyLoader {
  public:
   explicit PolicyLoaderIOS(
+      SchemaRegistry* registry,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~PolicyLoaderIOS() override;
 
@@ -32,11 +34,21 @@ class POLICY_EXPORT PolicyLoaderIOS : public AsyncPolicyLoader {
   void UserDefaultsChanged();
 
   // Loads the Chrome policies in |dictionary| into the given |bundle|.
-  static void LoadNSDictionaryToPolicyBundle(NSDictionary* dictionary,
-                                             PolicyBundle* bundle);
+  void LoadNSDictionaryToPolicyBundle(NSDictionary* dictionary,
+                                      PolicyBundle* bundle);
+
+  // Validates the given policy data against the stored |schema_|, converting
+  // data to the expected type if necessary.  The returned value is suitable for
+  // adding to a PolicyMap.
+  std::unique_ptr<base::Value> ConvertPolicyDataIfNecessary(
+      const std::string& key,
+      const base::Value& value);
+
+  // The schema used by |ValidatePolicyData()|.
+  const Schema* policy_schema_;
 
   // Used to manage the registration for NSNotificationCenter notifications.
-  base::scoped_nsobject<id> notification_observer_;
+  __strong id notification_observer_;
 
   // Timestamp of the last notification.
   // Used to coalesce repeated notifications into a single Load() call.

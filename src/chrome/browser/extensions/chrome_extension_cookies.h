@@ -16,7 +16,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/network/cookie_settings.h"
-#include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 
 class Profile;
@@ -52,7 +52,7 @@ class ChromeExtensionCookies
   // storage or not depends on the Profile |this| was created for.
   void CreateRestrictedCookieManager(
       const url::Origin& origin,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const url::Origin& top_frame_origin,
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver);
 
@@ -76,7 +76,7 @@ class ChromeExtensionCookies
 
     void CreateRestrictedCookieManager(
         const url::Origin& origin,
-        const GURL& site_for_cookies,
+        const net::SiteForCookies& site_for_cookies,
         const url::Origin& top_frame_origin,
         mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
             receiver);

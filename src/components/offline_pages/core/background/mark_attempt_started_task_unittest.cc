@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
@@ -19,8 +20,13 @@ namespace offline_pages {
 namespace {
 const int64_t kRequestId1 = 42;
 const int64_t kRequestId2 = 44;
-const GURL kUrl1("http://example.com");
 const ClientId kClientId1("download", "1234");
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL Url1() {
+  return GURL("http://example.com");
+}
 
 class MarkAttemptStartedTaskTest : public RequestQueueTaskTestBase {
  public:
@@ -42,7 +48,7 @@ class MarkAttemptStartedTaskTest : public RequestQueueTaskTestBase {
 
 void MarkAttemptStartedTaskTest::AddItemToStore() {
   base::Time creation_time = OfflineTimeNow();
-  SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
+  SavePageRequest request_1(kRequestId1, Url1(), kClientId1, creation_time,
                             true);
   store_.AddRequest(
       request_1, RequestQueue::AddOptions(),
@@ -63,7 +69,7 @@ TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenStoreEmpty) {
       &store_, kRequestId1,
       base::BindOnce(&MarkAttemptStartedTaskTest::ChangeRequestsStateCallback,
                      base::Unretained(this)));
-  task.Run();
+  task.Execute(base::DoNothing());
   PumpLoop();
   ASSERT_TRUE(last_result());
   EXPECT_EQ(1UL, last_result()->item_statuses.size());
@@ -84,7 +90,7 @@ TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenExists) {
 
   // Current time for verification.
   base::Time before_time = OfflineTimeNow();
-  task.Run();
+  task.Execute(base::DoNothing());
   PumpLoop();
   ASSERT_TRUE(last_result());
   EXPECT_EQ(1UL, last_result()->item_statuses.size());
@@ -109,7 +115,7 @@ TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenItemMissing) {
       &store_, kRequestId2,
       base::BindOnce(&MarkAttemptStartedTaskTest::ChangeRequestsStateCallback,
                      base::Unretained(this)));
-  task.Run();
+  task.Execute(base::DoNothing());
   PumpLoop();
   ASSERT_TRUE(last_result());
   EXPECT_EQ(1UL, last_result()->item_statuses.size());

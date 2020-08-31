@@ -767,9 +767,9 @@ process_common_toolchain() {
 
     # detect tgt_os
     case "$gcctarget" in
-      *darwin1[0-8]*)
+      *darwin1[0-9]*)
         tgt_isa=x86_64
-        tgt_os=`echo $gcctarget | sed 's/.*\(darwin1[0-8]\).*/\1/'`
+        tgt_os=`echo $gcctarget | sed 's/.*\(darwin1[0-9]\).*/\1/'`
         ;;
       x86_64*mingw32*)
         tgt_os=win64
@@ -906,6 +906,10 @@ process_common_toolchain() {
     *-darwin18-*)
       add_cflags  "-mmacosx-version-min=10.14"
       add_ldflags "-mmacosx-version-min=10.14"
+      ;;
+    *-darwin19-*)
+      add_cflags  "-mmacosx-version-min=10.15"
+      add_ldflags "-mmacosx-version-min=10.15"
       ;;
     *-iphonesimulator-*)
       add_cflags  "-miphoneos-version-min=${IOS_VERSION_MIN}"
@@ -1130,14 +1134,14 @@ EOF
                 ;;
             esac
 
-            asm_conversion_cmd="${source_path}/build/make/ads2gas_apple.pl"
-
             if [ "$(show_darwin_sdk_major_version iphoneos)" -gt 8 ]; then
               check_add_cflags -fembed-bitcode
               check_add_asflags -fembed-bitcode
               check_add_ldflags -fembed-bitcode
             fi
           fi
+
+          asm_conversion_cmd="${source_path}/build/make/ads2gas_apple.pl"
           ;;
 
         linux*)

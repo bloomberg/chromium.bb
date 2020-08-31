@@ -88,21 +88,28 @@ Polymer({
     activationUnavailable: {
       type: Boolean,
       value: false,
-    }
+    },
+
+    /**
+     * DeviceState associated with the network item type, or undefined if none
+     * was provided.
+     * @private {!OncMojo.DeviceStateProperties|undefined} deviceState
+     */
+    deviceState: Object,
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.listen(this, 'keydown', 'onKeydown_');
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.unlisten(this, 'keydown', 'onKeydown_');
   },
 
   /** @private */
-  itemChanged_: function() {
+  itemChanged_() {
     if (this.item && !this.item.hasOwnProperty('customItemName')) {
       this.networkState =
           /** @type {!OncMojo.NetworkStateProperties} */ (this.item);
@@ -112,12 +119,12 @@ Polymer({
   },
 
   /** @private */
-  networkStateChanged_: function() {
+  networkStateChanged_() {
     if (!this.networkState) {
       return;
     }
     const connectionState = this.networkState.connectionState;
-    if (connectionState == this.connectionState_) {
+    if (connectionState === this.connectionState_) {
       return;
     }
     this.connectionState_ = connectionState;
@@ -129,7 +136,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getItemName_: function() {
+  getItemName_() {
     if (this.item.hasOwnProperty('customItemName')) {
       const item = /** @type {!NetworkList.CustomItemState} */ (this.item);
       const name = item.customItemName || '';
@@ -146,7 +153,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getButtonLabel_: function() {
+  getButtonLabel_() {
     return this.i18n('networkListItemSubpageButtonLabel', this.getItemName_());
   },
 
@@ -155,7 +162,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getAriaLabel_: function() {
+  getAriaLabel_() {
     const NetworkType = chromeos.networkConfig.mojom.NetworkType;
     const OncSource = chromeos.networkConfig.mojom.OncSource;
     const SecurityType = chromeos.networkConfig.mojom.SecurityType;
@@ -253,7 +260,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isStateTextVisible_: function() {
+  isStateTextVisible_() {
     return !!this.networkState && !!this.getNetworkStateText_();
   },
 
@@ -262,29 +269,31 @@ Polymer({
    * @return {string}
    * @private
    */
-  getNetworkStateText_: function() {
+  getNetworkStateText_() {
     const mojom = chromeos.networkConfig.mojom;
     if (!this.networkState) {
       return '';
     }
-    const connectionState = this.networkState.connectionState;
-    if (this.networkState.type == mojom.NetworkType.kCellular) {
+
+    if (this.networkState.type === mojom.NetworkType.kCellular) {
       if (this.shouldShowNotAvailableText_()) {
         return this.i18n('networkListItemNotAvailable');
       }
-      if (this.networkState.typeState.cellular.scanning) {
+      if (this.deviceState && this.deviceState.scanning) {
         return this.i18n('networkListItemScanning');
       }
       if (this.networkState.typeState.cellular.simLocked) {
         return this.i18n('networkListItemSimCardLocked');
       }
     }
+
+    const connectionState = this.networkState.connectionState;
     if (OncMojo.connectionStateIsConnected(connectionState)) {
       // TODO(khorimoto): Consider differentiating between Portal, Connected,
       // and Online.
       return this.i18n('networkListItemConnected');
     }
-    if (connectionState == mojom.ConnectionStateType.kConnecting) {
+    if (connectionState === mojom.ConnectionStateType.kConnecting) {
       return this.i18n('networkListItemConnecting');
     }
     return '';
@@ -296,7 +305,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isSubpageButtonVisible_: function(networkState, showButtons) {
+  isSubpageButtonVisible_(networkState, showButtons) {
     return !!networkState && showButtons;
   },
 
@@ -306,7 +315,7 @@ Polymer({
    *     additional properties (e.g., must be activated for cellular networks).
    * @private
    */
-  isStateTextActive_: function() {
+  isStateTextActive_() {
     if (!this.networkState) {
       return false;
     }
@@ -321,12 +330,12 @@ Polymer({
    * @param {!KeyboardEvent} event
    * @private
    */
-  onKeydown_: function(event) {
+  onKeydown_(event) {
     // The only key event handled by this element is pressing Enter when the
     // subpage arrow is focused.
-    if (event.key != 'Enter' ||
+    if (event.key !== 'Enter' ||
         !this.isSubpageButtonVisible_(this.networkState, this.showButtons) ||
-        this.$$('#subpage-button') != this.shadowRoot.activeElement) {
+        this.$$('#subpage-button') !== this.shadowRoot.activeElement) {
       return;
     }
 
@@ -343,7 +352,7 @@ Polymer({
    * @param {!MouseEvent} event
    * @private
    */
-  onSubpageArrowClick_: function(event) {
+  onSubpageArrowClick_(event) {
     this.fireShowDetails_(event);
   },
 
@@ -352,7 +361,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  fireShowDetails_: function(event) {
+  fireShowDetails_(event) {
     assert(this.networkState);
     this.fire('show-detail', this.networkState);
     event.stopPropagation();
@@ -362,7 +371,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowNotAvailableText_: function() {
+  shouldShowNotAvailableText_() {
     if (!this.networkState || !this.activationUnavailable) {
       return false;
     }
@@ -370,8 +379,8 @@ Polymer({
     // If cellular activation is not currently available and |this.networkState|
     // describes an unactivated cellular network, the text should be shown.
     const mojom = chromeos.networkConfig.mojom;
-    return this.networkState.type == mojom.NetworkType.kCellular &&
-        this.networkState.typeState.cellular.activationState !=
+    return this.networkState.type === mojom.NetworkType.kCellular &&
+        this.networkState.typeState.cellular.activationState !==
         mojom.ActivationStateType.kActivated;
   },
 });

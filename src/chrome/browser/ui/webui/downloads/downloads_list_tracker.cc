@@ -44,6 +44,9 @@ using DownloadVector = DownloadManager::DownloadVector;
 
 namespace {
 
+// Max URL length to be sent to the download page.
+const int kMaxURLLength = 2 * 1024 * 1024;
+
 // Returns a string constant to be used as the |danger_type| value in
 // CreateDownloadData(). This can be the empty string, if the danger type is not
 // relevant for the UI.
@@ -75,6 +78,9 @@ const char* GetDangerTypeString(download::DownloadDangerType danger_type) {
       return "DEEP_SCANNED_SAFE";
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
       return "DEEP_SCANNED_OPENED_DANGEROUS";
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
+      return "BLOCKED_UNSUPPORTED_FILE_TYPE";
+    case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
@@ -252,8 +258,12 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
   base::string16 file_name =
       download_item->GetFileNameToReportUser().LossyDisplayName();
   file_name = base::i18n::GetDisplayStringInLTRDirectionality(file_name);
+
   file_value->file_name = base::UTF16ToUTF8(file_name);
   file_value->url = download_item->GetURL().spec();
+  // If URL is too long, truncate it.
+  if (file_value->url.size() > kMaxURLLength)
+    file_value->url.resize(kMaxURLLength);
   file_value->total = static_cast<int>(download_item->GetTotalBytes());
   file_value->file_externally_removed =
       download_item->GetFileExternallyRemoved();
@@ -272,6 +282,11 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
     case download::DownloadItem::IN_PROGRESS: {
       if (download_item->IsDangerous()) {
         state = "DANGEROUS";
+      } else if (download_item->IsMixedContent()) {
+        state = "MIXED_CONTENT";
+      } else if (download_item->GetDangerType() ==
+                 download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING) {
+        state = "ASYNC_SCANNING";
       } else if (download_item->IsPaused()) {
         state = "PAUSED";
       } else {

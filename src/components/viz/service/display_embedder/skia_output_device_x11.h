@@ -20,13 +20,14 @@ class SkiaOutputDeviceX11 final : public SkiaOutputDeviceOffscreen {
   SkiaOutputDeviceX11(
       scoped_refptr<gpu::SharedContextState> context_state,
       gfx::AcceleratedWidget widget,
+      gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceX11() override;
 
   bool Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
-               bool has_alpha,
+               gfx::BufferFormat format,
                gfx::OverlayTransform transform) override;
   void SwapBuffers(BufferPresentedCallback feedback,
                    std::vector<ui::LatencyInfo> latency_info) override;

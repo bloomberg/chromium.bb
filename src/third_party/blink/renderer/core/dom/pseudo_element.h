@@ -44,6 +44,7 @@ class CORE_EXPORT PseudoElement : public Element {
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
   void AttachLayoutTree(AttachContext&) override;
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
+  bool CanGeneratePseudoElement(PseudoId) const override;
 
   bool CanStartSelection() const override { return false; }
   bool CanContainRangeEndPoint() const override { return false; }
@@ -68,7 +69,7 @@ class CORE_EXPORT PseudoElement : public Element {
     ~AttachLayoutTreeScope();
 
    private:
-    Member<PseudoElement> element_;
+    PseudoElement* element_;
     scoped_refptr<const ComputedStyle> original_style_;
   };
 
@@ -77,7 +78,8 @@ class CORE_EXPORT PseudoElement : public Element {
 
 const QualifiedName& PseudoElementTagName(PseudoId);
 
-bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle*);
+bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle* pseudo_style,
+                                       const Element* originating_element);
 
 template <>
 struct DowncastTraits<PseudoElement> {

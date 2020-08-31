@@ -4,12 +4,15 @@
 
 #include "chromeos/services/network_config/cros_network_config.h"
 
+#include "base/strings/string_util.h"
+#include "chromeos/components/sync_wifi/network_eligibility_checker.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -1086,9 +1089,8 @@ mojom::ManagedOpenVPNPropertiesPtr GetManagedOpenVPNProperties(
       GetManagedString(openvpn_dict, ::onc::client_cert::kClientCertRef);
   openvpn->client_cert_type =
       GetManagedString(openvpn_dict, ::onc::client_cert::kClientCertType);
-  openvpn->comp_lzo = GetManagedString(openvpn_dict, ::onc::openvpn::kCompLZO);
-  openvpn->comp_no_adapt =
-      GetManagedBoolean(openvpn_dict, ::onc::openvpn::kCompNoAdapt);
+  openvpn->compression_algorithm =
+      GetManagedString(openvpn_dict, ::onc::openvpn::kCompressionAlgorithm);
   openvpn->extra_hosts =
       GetManagedStringList(openvpn_dict, ::onc::openvpn::kExtraHosts);
   openvpn->ignore_default_route =
@@ -1400,13 +1402,15 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       wifi->hidden_ssid =
           GetManagedBoolean(wifi_dict, ::onc::wifi::kHiddenSSID);
       wifi->passphrase = GetManagedString(wifi_dict, ::onc::wifi::kPassphrase);
-      wifi->roam_threshold =
-          GetManagedInt32(wifi_dict, ::onc::wifi::kRoamThreshold);
       wifi->ssid = GetRequiredManagedString(wifi_dict, ::onc::wifi::kSSID);
       CHECK(wifi->ssid);
       wifi->signal_strength = GetInt32(wifi_dict, ::onc::wifi::kSignalStrength);
       wifi->tethering_state =
           GetString(wifi_dict, ::onc::wifi::kTetheringState);
+      wifi->is_syncable = sync_wifi::IsEligibleForSync(
+          result->guid, result->connectable, result->source, wifi->security,
+          /*log_result=*/false);
+
       result->type_properties =
           mojom::NetworkTypeManagedProperties::NewWifi(std::move(wifi));
       break;
@@ -1459,13 +1463,23 @@ base::Value GetEAPProperties(const mojom::EAPConfigProperties& eap) {
 }
 
 std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
-    const mojom::ConfigProperties* properties) {
+    const mojom::ConfigProperties* properties,
+    base::Optional<std::string> guid) {
   auto onc = std::make_unique<base::DictionaryValue>();
 
   // Process |properties->network_type| and set |type|. Configurations have only
   // one type dictionary.
   mojom::NetworkType type = mojom::NetworkType::kAll;  // Invalid type
   base::Value type_dict(base::Value::Type::DICTIONARY);
+
+  if (properties->guid && !properties->guid->empty()) {
+    if (guid && *guid != *properties->guid) {
+      NET_LOG(ERROR) << "GUID does not match: " << *guid
+                     << " != " << *properties->guid;
+      return nullptr;
+    }
+    SetString(::onc::network_config::kGUID, *properties->guid, onc.get());
+  }
 
   if (properties->type_config->is_cellular()) {
     type = mojom::NetworkType::kCellular;
@@ -1553,7 +1567,10 @@ std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
                 open_vpn.user_authentication_type, &open_vpn_dict);
       type_dict.SetKey(::onc::vpn::kOpenVPN, std::move(open_vpn_dict));
     }
-    SetString(::onc::vpn::kType, MojoVpnTypeToOnc(vpn.type), &type_dict);
+    if (vpn.type) {
+      SetString(::onc::vpn::kType, MojoVpnTypeToOnc(vpn.type->value),
+                &type_dict);
+    }
   } else if (properties->type_config->is_wifi()) {
     type = mojom::NetworkType::kWiFi;
     const mojom::WiFiConfigProperties& wifi =
@@ -1817,8 +1834,8 @@ void CrosNetworkConfig::GetManagedProperties(
 
   network_configuration_handler_->GetManagedProperties(
       chromeos::LoginState::Get()->primary_user_hash(), network->path(),
-      base::Bind(&CrosNetworkConfig::GetManagedPropertiesSuccess,
-                 weak_factory_.GetWeakPtr(), callback_id),
+      base::BindOnce(&CrosNetworkConfig::GetManagedPropertiesSuccess,
+                     weak_factory_.GetWeakPtr(), callback_id),
       base::Bind(&CrosNetworkConfig::GetManagedPropertiesFailure,
                  weak_factory_.GetWeakPtr(), guid, callback_id));
 }
@@ -1866,8 +1883,8 @@ void CrosNetworkConfig::GetManagedPropertiesSuccess(
   managed_properties_[callback_id] = std::move(managed_properties);
   network_configuration_handler_->GetManagedProperties(
       chromeos::LoginState::Get()->primary_user_hash(), eap_state->path(),
-      base::Bind(&CrosNetworkConfig::GetManagedPropertiesSuccessEap,
-                 weak_factory_.GetWeakPtr(), callback_id),
+      base::BindOnce(&CrosNetworkConfig::GetManagedPropertiesSuccessEap,
+                     weak_factory_.GetWeakPtr(), callback_id),
       base::Bind(&CrosNetworkConfig::GetManagedPropertiesSuccessNoEap,
                  weak_factory_.GetWeakPtr(), callback_id));
 }
@@ -1969,7 +1986,7 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
   }
 
   std::unique_ptr<base::DictionaryValue> onc =
-      GetOncFromConfigProperties(properties.get());
+      GetOncFromConfigProperties(properties.get(), guid);
   if (!onc) {
     NET_LOG(ERROR) << "Bad ONC Configuration for " << guid;
     std::move(callback).Run(false, kErrorInvalidONCConfiguration);
@@ -2049,10 +2066,11 @@ void CrosNetworkConfig::ConfigureNetwork(mojom::ConfigPropertiesPtr properties,
     NET_LOG(ERROR)
         << "Attempt to set unshared configuration from non primary user";
     std::move(callback).Run(/*guid=*/base::nullopt, kErrorAccessToSharedConfig);
+    return;
   }
 
   std::unique_ptr<base::DictionaryValue> onc =
-      GetOncFromConfigProperties(properties.get());
+      GetOncFromConfigProperties(properties.get(), /*guid=*/base::nullopt);
   if (!onc) {
     std::move(callback).Run(/*guid=*/base::nullopt,
                             kErrorInvalidONCConfiguration);
@@ -2361,8 +2379,8 @@ void CrosNetworkConfig::StartConnect(const std::string& guid,
 
   network_connection_handler_->ConnectToNetwork(
       service_path,
-      base::Bind(&CrosNetworkConfig::StartConnectSuccess,
-                 weak_factory_.GetWeakPtr(), callback_id),
+      base::BindOnce(&CrosNetworkConfig::StartConnectSuccess,
+                     weak_factory_.GetWeakPtr(), callback_id),
       base::Bind(&CrosNetworkConfig::StartConnectFailure,
                  weak_factory_.GetWeakPtr(), callback_id),
       true /* check_error_state */, chromeos::ConnectCallbackMode::ON_STARTED);
@@ -2423,8 +2441,8 @@ void CrosNetworkConfig::StartDisconnect(const std::string& guid,
 
   network_connection_handler_->DisconnectNetwork(
       service_path,
-      base::Bind(&CrosNetworkConfig::StartDisconnectSuccess,
-                 weak_factory_.GetWeakPtr(), callback_id),
+      base::BindOnce(&CrosNetworkConfig::StartDisconnectSuccess,
+                     weak_factory_.GetWeakPtr(), callback_id),
       base::Bind(&CrosNetworkConfig::StartDisconnectFailure,
                  weak_factory_.GetWeakPtr(), callback_id));
 }

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_POPUP_BASE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_POPUP_BASE_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -37,7 +39,9 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   // Get colors used throughout various popup UIs, based on the current native
   // theme.
   SkColor GetBackgroundColor();
+  SkColor GetForegroundColor();
   SkColor GetSelectedBackgroundColor();
+  SkColor GetSelectedForegroundColor();
   SkColor GetFooterBackgroundColor();
   SkColor GetSeparatorColor();
   SkColor GetWarningColor();
@@ -55,24 +59,20 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
 
   // Ensure the child views are not rendered beyond the bubble border
   // boundaries. Should be overridden together with CreateBorder.
-  void SetClipPath();
+  void UpdateClipPath();
+
+  // Returns the bounds of the containing window in screen space.
+  gfx::Rect GetWindowBounds() const;
 
   // Update size of popup and paint (virtual for testing).
   virtual void DoUpdateBoundsAndRedrawPopup();
 
-  const AutofillPopupViewDelegate* delegate() { return delegate_; }
+  const AutofillPopupViewDelegate* delegate() const { return delegate_; }
 
  private:
   friend class AutofillPopupBaseViewTest;
 
   // views::Views implementation.
-  void OnMouseCaptureLost() override;
-  bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
-  void OnMouseMoved(const ui::MouseEvent& event) override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::WidgetFocusChangeListener implementation.
@@ -86,13 +86,9 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   // Stop observing the widget.
   void RemoveWidgetObservers();
 
-  void SetSelection(const gfx::Point& point);
-  void AcceptSelection(const gfx::Point& point);
-  void ClearSelection();
-
   // Hide the controller of this view. This assumes that doing so will
   // eventually hide this view in the process.
-  void HideController();
+  void HideController(PopupHidingReason reason);
 
   // Returns the border to be applied to the popup.
   std::unique_ptr<views::Border> CreateBorder();

@@ -26,6 +26,7 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/keyboard_layout_monitor.h"
 #include "remoting/host/process_stats_sender.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/host/screen_controls.h"
@@ -406,13 +407,21 @@ void DesktopSessionAgent::OnStartSessionAgent(
   }
 
   // Start the video capturer and mouse cursor monitor.
-  video_capturer_ = desktop_environment_->CreateVideoCapturer();
+  video_capturer_ = std::make_unique<DesktopAndCursorConditionalComposer>(
+      desktop_environment_->CreateVideoCapturer());
   video_capturer_->Start(this);
   video_capturer_->SetSharedMemoryFactory(
       std::unique_ptr<webrtc::SharedMemoryFactory>(new SharedMemoryFactoryImpl(
           base::Bind(&DesktopSessionAgent::SendToNetwork, this))));
   mouse_cursor_monitor_ = desktop_environment_->CreateMouseCursorMonitor();
-  mouse_cursor_monitor_->Init(this, webrtc::MouseCursorMonitor::SHAPE_ONLY);
+  mouse_cursor_monitor_->Init(this,
+                              webrtc::MouseCursorMonitor::SHAPE_AND_POSITION);
+  // Unretained is sound because callback will never be invoked once after
+  // |keyboard_layout_monitor_| is destroyed.
+  keyboard_layout_monitor_ = desktop_environment_->CreateKeyboardLayoutMonitor(
+      base::BindRepeating(&DesktopSessionAgent::OnKeyboardLayoutChange,
+                          base::Unretained(this)));
+  keyboard_layout_monitor_->Start();
 
   // Set up the message handler for file transfers.
   session_file_operations_handler_.emplace(
@@ -452,13 +461,17 @@ void DesktopSessionAgent::OnMouseCursor(webrtc::MouseCursor* cursor) {
 
   SendToNetwork(
       std::make_unique<ChromotingDesktopNetworkMsg_MouseCursor>(*owned_cursor));
+
+  if (video_capturer_)
+    video_capturer_->SetMouseCursor(owned_cursor.release());
 }
 
 void DesktopSessionAgent::OnMouseCursorPosition(
-    webrtc::MouseCursorMonitor::CursorState state,
     const webrtc::DesktopVector& position) {
-  // We're not subscribing to mouse position changes.
-  NOTREACHED();
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  if (video_capturer_)
+    video_capturer_->SetMouseCursorPosition(position);
 }
 
 void DesktopSessionAgent::InjectClipboardEvent(
@@ -558,6 +571,7 @@ void DesktopSessionAgent::Stop() {
     action_executor_.reset();
     input_injector_.reset();
     screen_controls_.reset();
+    keyboard_layout_monitor_.reset();
 
     // Stop the audio capturer.
     audio_capture_task_runner_->PostTask(
@@ -654,6 +668,10 @@ void DesktopSessionAgent::OnInjectMouseEvent(
     return;
   }
 
+  if (video_capturer_)
+    video_capturer_->SetComposeEnabled(event.has_delta_x() ||
+                                       event.has_delta_y());
+
   // InputStub implementations must verify events themselves, so we don't need
   // verification here. This matches HostEventDispatcher.
   remote_input_filter_->InjectMouseEvent(event);
@@ -677,6 +695,14 @@ void DesktopSessionAgent::OnExecuteActionRequestEvent(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   action_executor_->ExecuteAction(request);
+}
+
+void DesktopSessionAgent::OnKeyboardLayoutChange(
+    const protocol::KeyboardLayout& layout) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  SendToNetwork(
+      std::make_unique<ChromotingDesktopNetworkMsg_KeyboardChanged>(layout));
 }
 
 void DesktopSessionAgent::SetScreenResolution(

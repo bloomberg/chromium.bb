@@ -41,28 +41,8 @@ class SkWStream;
 class SK_API SkPath {
 public:
 
-#ifdef SK_SUPPORT_LEGACY_PATH_DIRECTION_ENUM
-    /** \enum SkPath::Direction
-        Direction describes whether contour is clockwise or counterclockwise.
-        When SkPath contains multiple overlapping contours, Direction together with
-        FillType determines whether overlaps are filled or form holes.
-
-        Direction also determines how contour is measured. For instance, dashing
-        measures along SkPath to determine where to start and stop stroke; Direction
-        will change dashed results as it steps clockwise or counterclockwise.
-
-        Closed contours like SkRect, SkRRect, circle, and oval added with
-        kCW_Direction travel clockwise; the same added with kCCW_Direction
-        travel counterclockwise.
-    */
-    enum Direction : int {
-        kCW_Direction  = static_cast<int>(SkPathDirection::kCW),
-        kCCW_Direction = static_cast<int>(SkPathDirection::kCCW)
-    };
-#endif
-
     /** Constructs an empty SkPath. By default, SkPath has no verbs, no SkPoint, and no weights.
-        SkPath::FillType is set to kWinding_FillType.
+        FillType is set to kWinding.
 
         @return  empty SkPath
 
@@ -165,86 +145,14 @@ public:
     */
     bool interpolate(const SkPath& ending, SkScalar weight, SkPath* out) const;
 
-#ifdef SK_SUPPORT_LEGACY_PATH_FILLTYPE_ENUM
-    /** \enum SkPath::FillType
-        FillType selects the rule used to fill SkPath. SkPath set to kWinding_FillType
-        fills if the sum of contour edges is not zero, where clockwise edges add one, and
-        counterclockwise edges subtract one. SkPath set to kEvenOdd_FillType fills if the
-        number of contour edges is odd. Each FillType has an inverse variant that
-        reverses the rule:
-        kInverseWinding_FillType fills where the sum of contour edges is zero;
-        kInverseEvenOdd_FillType fills where the number of contour edges is even.
-    */
-    enum FillType {
-        kWinding_FillType        = static_cast<int>(SkPathFillType::kWinding),
-        kEvenOdd_FillType        = static_cast<int>(SkPathFillType::kEvenOdd),
-        kInverseWinding_FillType = static_cast<int>(SkPathFillType::kInverseWinding),
-        kInverseEvenOdd_FillType = static_cast<int>(SkPathFillType::kInverseEvenOdd)
-    };
+    /** Returns SkPathFillType, the rule used to fill SkPath.
 
-    /** Returns FillType, the rule used to fill SkPath. FillType of a new SkPath is
-        kWinding_FillType.
-
-        @return  one of: kWinding_FillType, kEvenOdd_FillType,  kInverseWinding_FillType,
-                 kInverseEvenOdd_FillType
-    */
-    FillType getFillType() const { return (FillType)fFillType; }
-
-    /** Sets FillType, the rule used to fill SkPath. While there is no check
-        that ft is legal, values outside of FillType are not supported.
-
-        @param ft  one of: kWinding_FillType, kEvenOdd_FillType,  kInverseWinding_FillType,
-                   kInverseEvenOdd_FillType
-    */
-    void setFillType(FillType ft) {
-        fFillType = SkToU8(ft);
-    }
-
-    /** Returns true if fill is inverted and SkPath with fill represents area outside
-        of its geometric bounds.
-
-        @param fill  one of: kWinding_FillType, kEvenOdd_FillType,
-                     kInverseWinding_FillType, kInverseEvenOdd_FillType
-        @return      true if SkPath fills outside its bounds
-    */
-    static bool IsInverseFillType(FillType fill) {
-        static_assert(0 == kWinding_FillType, "fill_type_mismatch");
-        static_assert(1 == kEvenOdd_FillType, "fill_type_mismatch");
-        static_assert(2 == kInverseWinding_FillType, "fill_type_mismatch");
-        static_assert(3 == kInverseEvenOdd_FillType, "fill_type_mismatch");
-        return (fill & 2) != 0;
-    }
-
-    /** Returns equivalent SkPath::FillType representing SkPath fill inside its bounds.
-        .
-
-        @param fill  one of: kWinding_FillType, kEvenOdd_FillType,
-                     kInverseWinding_FillType, kInverseEvenOdd_FillType
-        @return      fill, or kWinding_FillType or kEvenOdd_FillType if fill is inverted
-    */
-    static FillType ConvertToNonInverseFillType(FillType fill) {
-        static_assert(0 == kWinding_FillType, "fill_type_mismatch");
-        static_assert(1 == kEvenOdd_FillType, "fill_type_mismatch");
-        static_assert(2 == kInverseWinding_FillType, "fill_type_mismatch");
-        static_assert(3 == kInverseEvenOdd_FillType, "fill_type_mismatch");
-        return (FillType)(fill & 1);
-    }
-#else
-    /** Returns FillType, the rule used to fill SkPath. FillType of a new SkPath is
-        kWinding_FillType.
-
-        @return  one of: kWinding_FillType, kEvenOdd_FillType,  kInverseWinding_FillType,
-                 kInverseEvenOdd_FillType
+        @return  current SkPathFillType setting
     */
     SkPathFillType getFillType() const { return (SkPathFillType)fFillType; }
-#endif
-    // Temporary method -- remove when we've switched to the new enum
-    SkPathFillType getNewFillType() const { return (SkPathFillType)this->getFillType(); }
 
     /** Sets FillType, the rule used to fill SkPath. While there is no check
         that ft is legal, values outside of FillType are not supported.
-
-        @param ft  one of: kWinding, kEvenOdd,  kInverseWinding, kInverseEvenOdd
     */
     void setFillType(SkPathFillType ft) {
         fFillType = SkToU8(ft);
@@ -253,9 +161,9 @@ public:
     /** Returns if FillType describes area outside SkPath geometry. The inverse fill area
         extends indefinitely.
 
-        @return  true if FillType is kInverseWinding_FillType or kInverseEvenOdd_FillType
+        @return  true if FillType is kInverseWinding or kInverseEvenOdd
     */
-    bool isInverseFillType() const { return SkPathFillType_IsInverse(this->getNewFillType()); }
+    bool isInverseFillType() const { return SkPathFillType_IsInverse(this->getFillType()); }
 
     /** Replaces FillType with its inverse. The inverse of FillType describes the area
         unmodified by the original FillType.
@@ -289,8 +197,6 @@ public:
      *  getConvexityTypeOrUnknown() is called. If you pass kUnknown, then if getContexityType()
      *  is called, the real convexity will be computed.
      *
-     *  @param convexity  one of: kUnknown, kConvex, or kConcave
-     *
      *  example: https://fiddle.skia.org/c/@Path_setConvexity
      */
     void setConvexityType(SkPathConvexityType convexity);
@@ -300,32 +206,6 @@ public:
     bool isConvex() const {
         return SkPathConvexityType::kConvex == this->getConvexityType();
     }
-
-#ifdef SK_SUPPORT_LEGACY_PATH_DIRECTION_ENUM
-    /** \enum SkPath::Convexity
-        SkPath is convex if it contains one contour and contour loops no more than
-        360 degrees, and contour angles all have same Direction. Convex SkPath
-        may have better performance and require fewer resources on GPU surface.
-
-        SkPath is concave when either at least one Direction change is clockwise and
-        another is counterclockwise, or the sum of the changes in Direction is not 360
-        degrees.
-
-        Initially SkPath Convexity is kUnknown_Convexity. SkPath Convexity is computed
-        if needed by destination SkSurface.
-    */
-    enum Convexity : uint8_t {
-        kUnknown_Convexity = static_cast<int>(SkPathConvexityType::kUnknown),
-        kConvex_Convexity  = static_cast<int>(SkPathConvexityType::kConvex),
-        kConcave_Convexity = static_cast<int>(SkPathConvexityType::kConcave),
-    };
-
-    Convexity getConvexity() const { return (Convexity)this->getConvexityType(); }
-    Convexity getConvexityOrUnknown() const { return (Convexity)this->getConvexityTypeOrUnknown(); }
-    void setConvexity(Convexity convexity) {
-        this->setConvexityType((SkPathConvexityType)convexity);
-    }
-#endif
 
     /** Returns true if this path is recognized as an oval or circle.
 
@@ -1423,19 +1303,23 @@ public:
 
         @param matrix  SkMatrix to apply to SkPath
         @param dst     overwritten, transformed copy of SkPath; may be nullptr
+        @param pc      whether to apply perspective clipping
 
         example: https://fiddle.skia.org/c/@Path_transform
     */
-    void transform(const SkMatrix& matrix, SkPath* dst) const;
+    void transform(const SkMatrix& matrix, SkPath* dst,
+                   SkApplyPerspectiveClip pc = SkApplyPerspectiveClip::kYes) const;
 
     /** Transforms verb array, SkPoint array, and weight by matrix.
         transform may change verbs and increase their number.
         SkPath is replaced by transformed data.
 
         @param matrix  SkMatrix to apply to SkPath
+        @param pc      whether to apply perspective clipping
     */
-    void transform(const SkMatrix& matrix) {
-        this->transform(matrix, this);
+    void transform(const SkMatrix& matrix,
+                   SkApplyPerspectiveClip pc = SkApplyPerspectiveClip::kYes) {
+        this->transform(matrix, this, pc);
     }
 
     /** Returns last point on SkPath in lastPt. Returns false if SkPoint array is empty,
@@ -1499,7 +1383,7 @@ public:
         kConic_Verb = static_cast<int>(SkPathVerb::kConic),
         kCubic_Verb = static_cast<int>(SkPathVerb::kCubic),
         kClose_Verb = static_cast<int>(SkPathVerb::kClose),
-        kDone_Verb  = static_cast<int>(SkPathVerb::kDone),
+        kDone_Verb  = kClose_Verb + 1
     };
 
     /** \class SkPath::Iter
@@ -1609,9 +1493,83 @@ public:
         Verb autoClose(SkPoint pts[2]);
     };
 
+private:
+    /** \class SkPath::RangeIter
+        Iterates through a raw range of path verbs, points, and conics. All values are returned
+        unaltered.
+
+        NOTE: This class will be moved into SkPathPriv once RangeIter is removed.
+    */
+    class RangeIter {
+    public:
+        RangeIter() = default;
+        RangeIter(const uint8_t* verbs, const SkPoint* points, const SkScalar* weights)
+                : fVerb(verbs), fPoints(points), fWeights(weights) {
+            SkDEBUGCODE(fInitialPoints = fPoints;)
+        }
+        bool operator!=(const RangeIter& that) const {
+            return fVerb != that.fVerb;
+        }
+        bool operator==(const RangeIter& that) const {
+            return fVerb == that.fVerb;
+        }
+        RangeIter& operator++() {
+            auto verb = static_cast<SkPathVerb>(*fVerb++);
+            fPoints += pts_advance_after_verb(verb);
+            if (verb == SkPathVerb::kConic) {
+                ++fWeights;
+            }
+            return *this;
+        }
+        RangeIter operator++(int) {
+            RangeIter copy = *this;
+            this->operator++();
+            return copy;
+        }
+        SkPathVerb peekVerb() const {
+            return static_cast<SkPathVerb>(*fVerb);
+        }
+        std::tuple<SkPathVerb, const SkPoint*, const SkScalar*> operator*() const {
+            SkPathVerb verb = this->peekVerb();
+            // We provide the starting point for beziers by peeking backwards from the current
+            // point, which works fine as long as there is always a kMove before any geometry.
+            // (SkPath::injectMoveToIfNeeded should have guaranteed this to be the case.)
+            int backset = pts_backset_for_verb(verb);
+            SkASSERT(fPoints + backset >= fInitialPoints);
+            return {verb, fPoints + backset, fWeights};
+        }
+    private:
+        constexpr static int pts_advance_after_verb(SkPathVerb verb) {
+            switch (verb) {
+                case SkPathVerb::kMove: return 1;
+                case SkPathVerb::kLine: return 1;
+                case SkPathVerb::kQuad: return 2;
+                case SkPathVerb::kConic: return 2;
+                case SkPathVerb::kCubic: return 3;
+                case SkPathVerb::kClose: return 0;
+            }
+            SkUNREACHABLE;
+        }
+        constexpr static int pts_backset_for_verb(SkPathVerb verb) {
+            switch (verb) {
+                case SkPathVerb::kMove: return 0;
+                case SkPathVerb::kLine: return -1;
+                case SkPathVerb::kQuad: return -1;
+                case SkPathVerb::kConic: return -1;
+                case SkPathVerb::kCubic: return -1;
+                case SkPathVerb::kClose: return 0;
+            }
+            SkUNREACHABLE;
+        }
+        const uint8_t* fVerb = nullptr;
+        const SkPoint* fPoints = nullptr;
+        const SkScalar* fWeights = nullptr;
+        SkDEBUGCODE(const SkPoint* fInitialPoints = nullptr;)
+    };
+public:
+
     /** \class SkPath::RawIter
-        Iterates through verb array, and associated SkPoint array and conic weight.
-        verb array, SkPoint array, and conic weight are returned unaltered.
+        Use Iter instead. This class will soon be removed and RangeIter will be made private.
     */
     class SK_API RawIter {
     public:
@@ -1637,9 +1595,7 @@ public:
 
             @param path  SkPath to iterate
         */
-        void setPath(const SkPath& path) {
-            fRawIter.setPathRef(*path.fPathRef.get());
-        }
+        void setPath(const SkPath&);
 
         /** Returns next SkPath::Verb in verb array, and advances RawIter.
             When verb array is exhausted, returns kDone_Verb.
@@ -1648,16 +1604,14 @@ public:
             @param pts  storage for SkPoint data describing returned SkPath::Verb
             @return     next SkPath::Verb from verb array
         */
-        Verb next(SkPoint pts[4]) {
-            return (Verb) fRawIter.next(pts);
-        }
+        Verb next(SkPoint[4]);
 
         /** Returns next SkPath::Verb, but does not advance RawIter.
 
             @return  next SkPath::Verb from verb array
         */
         Verb peek() const {
-            return (Verb) fRawIter.peek();
+            return (fIter != fEnd) ? static_cast<Verb>(std::get<0>(*fIter)) : kDone_Verb;
         }
 
         /** Returns conic weight if next() returned kConic_Verb.
@@ -1668,11 +1622,13 @@ public:
             @return  conic weight for conic SkPoint returned by next()
         */
         SkScalar conicWeight() const {
-            return fRawIter.conicWeight();
+            return fConicWeight;
         }
 
     private:
-        SkPathRef::Iter fRawIter;
+        RangeIter fIter;
+        RangeIter fEnd;
+        SkScalar fConicWeight = 0;
         friend class SkPath;
 
     };
@@ -1791,58 +1747,6 @@ public:
     */
     bool isValid() const { return this->isValidImpl() && fPathRef->isValid(); }
 
-#ifdef SK_SUPPORT_LEGACY_PATH_DIRECTION_ENUM
-    SkPath& arcTo(SkScalar rx, SkScalar ry, SkScalar xAxisRotate, ArcSize largeArc,
-                  Direction sweep, SkScalar x, SkScalar y) {
-        return this->arcTo(rx, ry, xAxisRotate, largeArc, (SkPathDirection)sweep, x, y);
-    }
-    SkPath& arcTo(const SkPoint r, SkScalar xAxisRotate, ArcSize largeArc, Direction sweep,
-                  const SkPoint xy) {
-        return this->arcTo(r.fX, r.fY, xAxisRotate, largeArc, (SkPathDirection)sweep, xy.fX, xy.fY);
-    }
-    SkPath& rArcTo(SkScalar rx, SkScalar ry, SkScalar xAxisRotate, ArcSize largeArc,
-                   Direction sweep, SkScalar dx, SkScalar dy) {
-        return this->rArcTo(rx, ry, xAxisRotate, largeArc, (SkPathDirection)sweep, dx, dy);
-    }
-    bool isRect(SkRect* rect, bool* isClosed, Direction* direction) const {
-        return this->isRect(rect, isClosed, (SkPathDirection*)direction);
-    }
-    bool isRect(SkRect* rect, bool* isClosed, nullptr_t) const {
-        return this->isRect(rect, isClosed);
-    }
-    SkPath& addRect(const SkRect& rect, Direction dir) {
-        return this->addRect(rect, (SkPathDirection)dir);
-    }
-    SkPath& addRect(const SkRect& rect, Direction dir, unsigned start) {
-        return this->addRect(rect, (SkPathDirection)dir, start);
-    }
-    SkPath& addRect(SkScalar left, SkScalar top, SkScalar right, SkScalar bottom,
-                    Direction dir) {
-        return this->addRect(left, top, right, bottom, (SkPathDirection)dir);
-    }
-    SkPath& addOval(const SkRect& oval, Direction dir) {
-        return addOval(oval, (SkPathDirection)dir);
-    }
-    SkPath& addOval(const SkRect& oval, Direction dir, unsigned start) {
-        return this->addOval(oval, (SkPathDirection)dir, start);
-    }
-    SkPath& addCircle(SkScalar x, SkScalar y, SkScalar radius, Direction dir) {
-        return this->addCircle(x, y, radius, (SkPathDirection)dir);
-    }
-    SkPath& addRoundRect(const SkRect& rect, SkScalar rx, SkScalar ry, Direction dir) {
-        return this->addRoundRect(rect, rx, ry, (SkPathDirection)dir);
-    }
-    SkPath& addRoundRect(const SkRect& rect, const SkScalar radii[], Direction dir) {
-        return this->addRoundRect(rect, radii, (SkPathDirection)dir);
-    }
-    SkPath& addRRect(const SkRRect& rrect, Direction dir) {
-        return this->addRRect(rrect, (SkPathDirection)dir);
-    }
-    SkPath& addRRect(const SkRRect& rrect, Direction dir, unsigned start) {
-        return this->addRRect(rrect, (SkPathDirection)dir, start);
-    }
-#endif
-
 private:
     sk_sp<SkPathRef>               fPathRef;
     int                            fLastMoveToIndex;
@@ -1916,6 +1820,8 @@ private:
     }
 
     void setPt(int index, SkScalar x, SkScalar y);
+
+    SkPath& dirtyAfterEdit();
 
     // Bottlenecks for working with fConvexity and fFirstDirection.
     // Notice the setters are const... these are mutable atomic fields.

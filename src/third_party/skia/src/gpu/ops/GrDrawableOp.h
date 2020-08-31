@@ -37,9 +37,16 @@ private:
 
     GrDrawableOp(std::unique_ptr<SkDrawable::GpuDrawHandler>, const SkRect& bounds);
 
-    CombineResult onCombineIfPossible(GrOp* that, const GrCaps& caps) override {
+    CombineResult onCombineIfPossible(GrOp* that, GrRecordingContext::Arenas*,
+                                      const GrCaps& caps) override {
         return CombineResult::kCannotCombine;
     }
+
+    void onPrePrepare(GrRecordingContext*,
+                      const GrSurfaceProxyView* writeView,
+                      GrAppliedClip*,
+                      const GrXferProcessor::DstProxyView&) override {}
+
     void onPrepare(GrOpFlushState*) override {}
 
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;

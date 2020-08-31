@@ -7,24 +7,24 @@
 
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
+#include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/arc/mojom/power.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "ui/display/manager/display_configurator.h"
 
 namespace content {
 class BrowserContext;
 }  // namespace content
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace arc {
 
@@ -46,9 +46,7 @@ class ArcPowerBridge : public KeyedService,
                  ArcBridgeService* bridge_service);
   ~ArcPowerBridge() override;
 
-  void set_connector_for_test(service_manager::Connector* connector) {
-    connector_for_test_ = connector;
-  }
+  void SetUserIdHash(const std::string& user_id_hash);
 
   // If |notify_brightness_timer_| is set, runs it and returns true. Returns
   // false otherwise.
@@ -78,6 +76,11 @@ class ArcPowerBridge : public KeyedService,
   void IsDisplayOn(IsDisplayOnCallback callback) override;
   void OnScreenBrightnessUpdateRequest(double percent) override;
 
+  void SetWakeLockProviderForTesting(
+      mojo::Remote<device::mojom::WakeLockProvider> provider) {
+    wake_lock_provider_ = std::move(provider);
+  }
+
  private:
   class WakeLockRequestor;
 
@@ -87,12 +90,31 @@ class ArcPowerBridge : public KeyedService,
   // Called on PowerManagerClient::GetScreenBrightnessPercent() completion.
   void OnGetScreenBrightnessPercent(base::Optional<double> percent);
 
+  // Called by Android when ready to suspend.
+  void OnAndroidSuspendReady(base::UnguessableToken token);
+
+  // Called by ConciergeClient when a response has been receive for the
+  // SuspendVm D-Bus call.
+  void OnConciergeSuspendVmResponse(
+      base::UnguessableToken token,
+      base::Optional<vm_tools::concierge::SuspendVmResponse> reply);
+
+  // Called by ConciergeClient when a response has been receive for the
+  // ResumeVm D-Bus call.
+  void OnConciergeResumeVmResponse(
+      base::Optional<vm_tools::concierge::ResumeVmResponse> reply);
+
+  // Sends a PowerInstance::UpdateScreenBrightnessSettings mojo call to Android.
   void UpdateAndroidScreenBrightness(double percent);
+
+  // Sends a PowerInstance::Resume mojo call to Android.
+  void DispatchAndroidResume();
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
-  // If non-null, used instead of the process-wide connector to fetch services.
-  service_manager::Connector* connector_for_test_ = nullptr;
+  std::string user_id_hash_;
+
+  mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider_;
 
   // Used to track Android wake lock requests and acquire and release device
   // service wake locks as needed.

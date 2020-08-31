@@ -27,16 +27,9 @@ namespace dawn_native {
 
     MaybeError ValidateBufferDescriptor(DeviceBase* device, const BufferDescriptor* descriptor);
 
-    // Add an extra buffer usage (readonly storage buffer usage) for render pass resource tracking
-    static constexpr wgpu::BufferUsage kReadOnlyStorage =
-        static_cast<wgpu::BufferUsage>(0x80000000);
-
     static constexpr wgpu::BufferUsage kReadOnlyBufferUsages =
         wgpu::BufferUsage::MapRead | wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::Index |
-        wgpu::BufferUsage::Vertex | wgpu::BufferUsage::Uniform | kReadOnlyStorage;
-
-    static constexpr wgpu::BufferUsage kWritableBufferUsages =
-        wgpu::BufferUsage::MapWrite | wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage;
+        wgpu::BufferUsage::Vertex | wgpu::BufferUsage::Uniform | kReadOnlyStorageBuffer;
 
     class BufferBase : public ObjectBase {
         enum class BufferState {
@@ -47,7 +40,6 @@ namespace dawn_native {
 
       public:
         BufferBase(DeviceBase* device, const BufferDescriptor* descriptor);
-        ~BufferBase();
 
         static BufferBase* MakeError(DeviceBase* device);
         static BufferBase* MakeErrorMapped(DeviceBase* device,
@@ -70,6 +62,7 @@ namespace dawn_native {
 
       protected:
         BufferBase(DeviceBase* device, ObjectBase::ErrorTag tag);
+        ~BufferBase() override;
 
         void CallMapReadCallback(uint32_t serial,
                                  WGPUBufferMapAsyncStatus status,
@@ -81,6 +74,8 @@ namespace dawn_native {
                                   uint32_t dataLength);
 
         void DestroyInternal();
+
+        bool IsMapped() const;
 
       private:
         virtual MaybeError MapAtCreationImpl(uint8_t** mappedPointer) = 0;
@@ -94,7 +89,8 @@ namespace dawn_native {
         MaybeError CopyFromStagingBuffer();
 
         MaybeError ValidateSetSubData(uint32_t start, uint32_t count) const;
-        MaybeError ValidateMap(wgpu::BufferUsage requiredUsage) const;
+        MaybeError ValidateMap(wgpu::BufferUsage requiredUsage,
+                               WGPUBufferMapAsyncStatus* status) const;
         MaybeError ValidateUnmap() const;
         MaybeError ValidateDestroy() const;
 

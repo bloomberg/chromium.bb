@@ -10,10 +10,11 @@
 #include <tuple>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/file_version_info_win.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -188,7 +189,7 @@ OSInfo::OSInfo(const _OSVERSIONINFOEXW& version_info,
   }
 }
 
-OSInfo::~OSInfo() {}
+OSInfo::~OSInfo() = default;
 
 Version OSInfo::Kernel32Version() const {
   static const Version kernel32_version =
@@ -196,19 +197,6 @@ Version OSInfo::Kernel32Version() const {
                                Kernel32BaseVersion().components()[1],
                                Kernel32BaseVersion().components()[2]);
   return kernel32_version;
-}
-
-Version OSInfo::UcrtVersion() const {
-  auto ucrt_version_info = FileVersionInfoWin::CreateFileVersionInfoWin(
-      FilePath(FILE_PATH_LITERAL("ucrtbase.dll")));
-  if (ucrt_version_info) {
-    auto ucrt_components = ucrt_version_info->GetFileVersion().components();
-    if (ucrt_components.size() == 4) {
-      return MajorMinorBuildToVersion(ucrt_components[0], ucrt_components[1],
-                                      ucrt_components[2]);
-    }
-  }
-  return Version();
 }
 
 // Retrieve a version from kernel32. This is useful because when running in

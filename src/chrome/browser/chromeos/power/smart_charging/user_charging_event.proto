@@ -45,7 +45,8 @@ message UserChargingEvent {
     }
 
     enum DeviceMode {
-      CLOSE_LID_MODE = 1;
+      UNKNOWN_MODE = 0;
+      CLOSED_LID_MODE = 1;
       LAPTOP_MODE = 2;
       TABLET_MODE = 3;
     }
@@ -88,6 +89,11 @@ message UserChargingEvent {
     optional int32 screen_brightness_percent = 19;
     // Charge voltage in mV.
     optional int32 voltage = 20;
+    // Whether there's any shutdown/suspend action between the last charge
+    // and current event.
+    optional bool halt_from_last_charge = 21;
+    // Whether the device is being charged or not.
+    optional bool is_charging = 22;
   }
 
   message Event {
@@ -112,4 +118,22 @@ message UserChargingEvent {
 
   optional Features features = 1;
   optional Event event = 2;
+}
+
+// PastChargingEvents contain a list of events that have information about "past
+// charging events". It will only store the plug/unplug pair of the last charge
+// and a recent plug/halt event if any.
+message PastChargingEvents {
+  message Event {
+    // Time of the event in minutes since Windows epoch.
+    optional int32 time = 1;
+    // Battery percentage of the device.
+    optional int32 battery_percent = 2;
+    // Timezone of the device.
+    optional int32 timezone = 3;
+    // Reason for the event.
+    optional UserChargingEvent.Event.Reason reason = 4;
+  }
+  // A list containing past charging events.
+  repeated Event events = 1;
 }

@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/location_bar/cookie_controls_icon_view.h"
 
 #include <memory>
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_controller.h"
@@ -17,8 +16,12 @@
 #include "ui/gfx/paint_vector_icon.h"
 
 CookieControlsIconView::CookieControlsIconView(
-    PageActionIconView::Delegate* delegate)
-    : PageActionIconView(nullptr, 0, delegate) {
+    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+    PageActionIconView::Delegate* page_action_icon_delegate)
+    : PageActionIconView(nullptr,
+                         0,
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate) {
   SetVisible(false);
 }
 
@@ -37,7 +40,8 @@ void CookieControlsIconView::UpdateImpl() {
 }
 
 void CookieControlsIconView::OnStatusChanged(
-    CookieControlsController::Status status,
+    CookieControlsStatus status,
+    CookieControlsEnforcement enforcement,
     int blocked_cookies) {
   if (status_ != status) {
     status_ = status;
@@ -57,7 +61,7 @@ void CookieControlsIconView::OnBlockedCookiesCountChanged(int blocked_cookies) {
 }
 
 bool CookieControlsIconView::ShouldBeVisible() const {
-  if (delegate()->IsLocationBarUserInputInProgress())
+  if (delegate()->ShouldHidePageActionIcons())
     return false;
 
   if (HasAssociatedBubble())
@@ -67,12 +71,12 @@ bool CookieControlsIconView::ShouldBeVisible() const {
     return false;
 
   switch (status_) {
-    case CookieControlsController::Status::kDisabledForSite:
+    case CookieControlsStatus::kDisabledForSite:
       return true;
-    case CookieControlsController::Status::kEnabled:
+    case CookieControlsStatus::kEnabled:
       return has_blocked_cookies_;
-    case CookieControlsController::Status::kDisabled:
-    case CookieControlsController::Status::kUninitialized:
+    case CookieControlsStatus::kDisabled:
+    case CookieControlsStatus::kUninitialized:
       return false;
   }
 }
@@ -100,9 +104,13 @@ views::BubbleDialogDelegateView* CookieControlsIconView::GetBubble() const {
 }
 
 const gfx::VectorIcon& CookieControlsIconView::GetVectorIcon() const {
-  if (status_ == CookieControlsController::Status::kDisabledForSite)
+  if (status_ == CookieControlsStatus::kDisabledForSite)
     return kEyeIcon;
   return kEyeCrossedIcon;
+}
+
+const char* CookieControlsIconView::GetClassName() const {
+  return "CookieControlsIconView";
 }
 
 base::string16 CookieControlsIconView::GetTextForTooltipAndAccessibleName()

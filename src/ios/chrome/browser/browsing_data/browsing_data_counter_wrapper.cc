@@ -29,11 +29,8 @@ namespace {
 // Creates a new instance of BrowsingDataCounter that is counting the data
 // for |browser_state| related to a given deletion preference |pref_name|.
 std::unique_ptr<browsing_data::BrowsingDataCounter>
-CreateCounterForBrowserStateAndPref(ios::ChromeBrowserState* browser_state,
+CreateCounterForBrowserStateAndPref(ChromeBrowserState* browser_state,
                                     base::StringPiece pref_name) {
-  if (!IsNewClearBrowsingDataUIEnabled())
-    return nullptr;
-
   if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory) {
     return std::make_unique<browsing_data::HistoryCounter>(
         ios::HistoryServiceFactory::GetForBrowserStateIfExists(
@@ -70,7 +67,7 @@ CreateCounterForBrowserStateAndPref(ios::ChromeBrowserState* browser_state,
 std::unique_ptr<BrowsingDataCounterWrapper>
 BrowsingDataCounterWrapper::CreateCounterWrapper(
     base::StringPiece pref_name,
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     PrefService* pref_service,
     UpdateUICallback update_ui_callback) {
   std::unique_ptr<browsing_data::BrowsingDataCounter> counter =

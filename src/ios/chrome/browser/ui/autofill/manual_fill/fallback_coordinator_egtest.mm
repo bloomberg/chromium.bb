@@ -157,8 +157,11 @@ BOOL WaitForKeyboardToAppear() {
         performAction:grey_tapAtPoint(CGPointMake(0, 0))];
 
     // Verify the table view is not visible.
-    [[EarlGrey selectElementWithMatcher:grey_kindOfClass([UITableView class])]
-        assertWithMatcher:grey_notVisible()];
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(
+                                     grey_kindOfClass([UITableView class]),
+                                     grey_not(grey_notVisible()), nil)]
+        assertWithMatcher:grey_nil()];
   }
   [super tearDown];
 }
@@ -178,6 +181,8 @@ BOOL WaitForKeyboardToAppear() {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the profiles icon.
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
@@ -219,6 +224,8 @@ BOOL WaitForKeyboardToAppear() {
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Tap on the profiles icon.
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
@@ -288,8 +295,11 @@ BOOL WaitForKeyboardToAppear() {
         performAction:grey_tapAtPoint(CGPointMake(0, 0))];
 
     // Verify the table view is not visible.
-    [[EarlGrey selectElementWithMatcher:grey_kindOfClass([UITableView class])]
-        assertWithMatcher:grey_notVisible()];
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(
+                                     grey_kindOfClass([UITableView class]),
+                                     grey_not(grey_notVisible()), nil)]
+        assertWithMatcher:grey_nil()];
   }
 
   // Bring up the regular keyboard again.
@@ -341,6 +351,8 @@ BOOL WaitForKeyboardToAppear() {
   DockKeyboard();
 
   // Tap on the profiles icon.
+  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       performAction:grey_tap()];
 
@@ -362,8 +374,10 @@ BOOL WaitForKeyboardToAppear() {
       performAction:grey_tapAtPoint(CGPointMake(0, 0))];
 
   // Verify the table view is not visible.
-  [[EarlGrey selectElementWithMatcher:grey_kindOfClass([UITableView class])]
-      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_kindOfClass([UITableView class]),
+                                          grey_not(grey_notVisible()), nil)]
+      assertWithMatcher:grey_nil()];
 
   // Bring up the regular keyboard again.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]

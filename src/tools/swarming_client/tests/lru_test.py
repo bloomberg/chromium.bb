@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright 2013 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -55,11 +55,11 @@ class LRUDictTest(unittest.TestCase):
   def assert_same_data(self, expected, lru_dict):
     """Asserts that given |lru_dict| contains same data as |expected|.
 
-    Tests iteritems(), itervalues(), get(), __iter__.
+    Tests items(), values(), get(), __iter__.
     """
-    self.assertEqual(list(lru_dict.iteritems()), expected)
+    self.assertEqual(list(lru_dict.items()), expected)
     self.assertEqual(set(lru_dict), set(k for k, v in expected))
-    self.assertEqual(list(lru_dict.itervalues()), [v for k, v in expected])
+    self.assertEqual(list(lru_dict.values()), [v for k, v in expected])
     for k, v in expected:
       self.assertEqual(lru_dict.get(k), v)
 
@@ -180,14 +180,14 @@ class LRUDictTest(unittest.TestCase):
 
   def test_corrupted_state_file(self):
     # Loads correct state just fine.
-    s = _load_from_raw(json.dumps(
-      {
-        'version': 2,
-        'items': [
-          ['key1', ['value1', 1]],
-          ['key2', ['value2', 2]],
-        ],
-      }))
+    s = _load_from_raw(
+        json.dumps({
+            'version': lru.CURRENT_VERSION,
+            'items': [
+                ['key1', ['value1', 1]],
+                ['key2', ['value2', 2]],
+            ],
+        }))
     self.assertIsNotNone(s)
     self.assertEqual(2, len(s))
 

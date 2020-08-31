@@ -4,6 +4,7 @@
 
 #include "content/browser/scheduler/responsiveness/jank_monitor.h"
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
@@ -148,20 +149,20 @@ TEST_F(JankMonitorTest, JankUIThread) {
 
   // Post a janky task to the UI thread. Number of callback calls should be
   // incremented by 1.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindLambdaForTesting(janky_task));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindLambdaForTesting(janky_task));
   task_environment_.RunUntilIdle();
   VALIDATE_TEST_OBSERVER_CALLS();
 
   // Post a non janky task. Number of callback calls should remain the same.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, base::DoNothing());
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::DoNothing());
   task_environment_.RunUntilIdle();
   VALIDATE_TEST_OBSERVER_CALLS();
 
   // Post a janky task again. Monitor thread timer should fire again. Number of
   // callback calls should be incremented by 1 again.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindLambdaForTesting(janky_task));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindLambdaForTesting(janky_task));
   task_environment_.RunUntilIdle();
   VALIDATE_TEST_OBSERVER_CALLS();
 }
@@ -183,8 +184,8 @@ TEST_F(JankMonitorTest, JankIOThread) {
 
   // Post a janky task to the IO thread. This should increment the number of
   // callback calls by 1.
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindLambdaForTesting(janky_task));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindLambdaForTesting(janky_task));
   task_environment_.RunUntilIdle();
   VALIDATE_TEST_OBSERVER_CALLS();
 }
@@ -209,8 +210,8 @@ TEST_F(JankMonitorTest, JankUIThreadReentrant) {
       // The callback shouldn't be called.
       VALIDATE_TEST_OBSERVER_CALLS();
     };
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindLambdaForTesting(nested_janky_task));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindLambdaForTesting(nested_janky_task));
     // Spin a nested run loop to run |nested_janky_task|.
     base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
     expected_jank_stopped_++;
@@ -218,9 +219,81 @@ TEST_F(JankMonitorTest, JankUIThreadReentrant) {
 
   // Post a janky task to the UI thread. Number of callback calls should be
   // incremented by 1.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindLambdaForTesting(janky_task));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindLambdaForTesting(janky_task));
   task_environment_.RunUntilIdle();
+  VALIDATE_TEST_OBSERVER_CALLS();
+}
+
+// Test that the jank monitor shouldn't report a jank if a nested runloop is
+// responsive.
+TEST_F(JankMonitorTest, ReentrantResponsive) {
+  auto enclosing_task = [&]() {
+    // Run 5 responsive tasks in the inner runloop.
+    for (int i  = 0; i < 5; i++) {
+      auto nested_responsive_task = [&]() {
+        task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(999));
+
+        // The callback shouldn't be called. |expected_jank_started_| and
+        // |expected_jank_stopped_| should be 0.
+        VALIDATE_TEST_OBSERVER_CALLS();
+      };
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindLambdaForTesting(nested_responsive_task));
+      // Spin a nested run loop to run |nested_responsive_task|.
+      base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
+    }
+  };
+
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindLambdaForTesting(enclosing_task));
+  task_environment_.RunUntilIdle();
+  // |expected_jank_started_| and |expected_jank_stopped_| should be 0 even if
+  // the enclosing task runs much longer than the jank threshold.
+  VALIDATE_TEST_OBSERVER_CALLS();
+}
+
+// Test that the jank monitor reports only the janky task running in the nested
+// runloop. The enclosing task shouldn't be reported even if its total duration
+// is longer than the jank threshold.
+TEST_F(JankMonitorTest, JankNestedRunLoop) {
+  auto enclosing_task = [&]() {
+    // Run 1 responsive tasks in the inner runloop.
+    auto nested_responsive_task = [&]() {
+      task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(999));
+
+      // The callback shouldn't be called. |expected_jank_started_| should be 0.
+      VALIDATE_TEST_OBSERVER_CALLS();
+    };
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindLambdaForTesting(nested_responsive_task));
+    // Spin a nested run loop to run |nested_responsive_task|.
+    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
+
+    // Then run 1 responsive tasks in the inner runloop.
+    auto nested_janky_task = [&]() {
+      task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1500));
+
+      // We should detect one jank.
+      expected_jank_started_++;
+      // The callback shouldn't be called. |expected_jank_started_| should be 0.
+      VALIDATE_TEST_OBSERVER_CALLS();
+    };
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindLambdaForTesting(nested_janky_task));
+    // Spin a nested run loop to run |nested_responsive_task|.
+    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
+
+    task_environment_.RunUntilIdle();
+    expected_jank_stopped_++;
+    // The callback shouldn't be called. |expected_jank_started_| should be 1.
+    VALIDATE_TEST_OBSERVER_CALLS();
+  };
+
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindLambdaForTesting(enclosing_task));
+  task_environment_.RunUntilIdle();
+  // |expected_jank_started_| and |expected_jank_stopped_| should still be 1.
   VALIDATE_TEST_OBSERVER_CALLS();
 }
 
@@ -244,8 +317,8 @@ TEST_F(JankMonitorTest, JankUIAndIOThread) {
 
       // Monitor should observe that the jank has started.
     };
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindLambdaForTesting(janky_task_io));
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindLambdaForTesting(janky_task_io));
     task_environment_.RunUntilIdle();
     // TestJankMonitor::OnJankStopped() shouldn't be called.
     VALIDATE_TEST_OBSERVER_CALLS();
@@ -253,8 +326,8 @@ TEST_F(JankMonitorTest, JankUIAndIOThread) {
     task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(500));
     expected_jank_stopped_++;
   };
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindLambdaForTesting(janky_task_ui));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindLambdaForTesting(janky_task_ui));
   task_environment_.RunUntilIdle();
   // Expect that TestJankMonitor::OnJankStopped() was called.
   VALIDATE_TEST_OBSERVER_CALLS();
@@ -264,8 +337,8 @@ TEST_F(JankMonitorTest, JankUIAndIOThread) {
 // timer on new activity.
 TEST_F(JankMonitorTest, StartStopTimer) {
   // Activity on the UI thread - timer should be running.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(base::DoNothing::Once()));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(base::DoNothing::Once()));
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(monitor_->timer_running());
 
@@ -274,8 +347,8 @@ TEST_F(JankMonitorTest, StartStopTimer) {
   EXPECT_FALSE(monitor_->timer_running());
 
   // Activity on IO thread - timer should be restarted.
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(base::DoNothing::Once()));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(base::DoNothing::Once()));
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(monitor_->timer_running());
 
@@ -303,10 +376,12 @@ class TestJankMonitorShutdownRace : public JankMonitor {
   void DestroyOnMonitorThread() override {
     JankMonitor::DestroyOnMonitorThread();
 
-    // Posts a task to the UI thread. If MetricSource is still active, this
-    // will restart the timer and fail the test.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(base::DoNothing::Once()));
+    // Posts a task to the UI thread. Note that we run concurrently with the
+    // destruction of MetricSource. Even if MetricSource is still active and
+    // attempts to start the timer, the attempt should be a no-op since the
+    // the timer is already destroyed. We should still expect timer not running.
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(base::DoNothing::Once()));
 
     shutdown_on_monitor_thread_->Signal();
   }
@@ -322,7 +397,8 @@ class TestJankMonitorShutdownRace : public JankMonitor {
   base::WaitableEvent* shutdown_on_ui_thread_;
 };
 
-// Test that shutdown race with the monitor timer doesn't happen.
+// Test that completion of shutdown shouldn't leave the timer in the running
+// state.
 TEST(JankMonitorShutdownTest, ShutdownRace_TimerRestarted) {
   content::BrowserTaskEnvironment task_environment;
 
@@ -347,8 +423,9 @@ TEST(JankMonitorShutdownTest, ShutdownRace_TimerRestarted) {
     shutdown_on_ui_thread.Wait();
   task_environment.RunUntilIdle();
 
-  // The monitor thread should be shut down with MetricSource destroyed, i.e.
-  // the monitor timer shouldn't be restarted.
+  // After shutdown of both MetricSource and the monitor timer, we should expect
+  // that the timer isn't running even if a task runs on the UI thread during
+  // shutdown.
   EXPECT_FALSE(jank_monitor->timer_running());
 }
 
@@ -408,8 +485,8 @@ TEST(JankMonitorShutdownTest, ShutdownRace_TimerFired) {
   jank_monitor->Destroy();
   task_environment.RunUntilIdle();
 
-  // The timer fires, but we shouldn't crash.
-  EXPECT_TRUE(jank_monitor->monitor_timer_fired());
+  // The monitor timer isn't expected to fire.
+  EXPECT_FALSE(jank_monitor->monitor_timer_fired());
 }
 
 #undef VALIDATE_TEST_OBSERVER_CALLS

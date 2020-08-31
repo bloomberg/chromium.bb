@@ -8,7 +8,6 @@
 #include <functional>
 
 namespace openscreen {
-namespace platform {
 
 SocketHandle::SocketHandle(int descriptor) : fd(descriptor) {}
 
@@ -20,5 +19,4 @@ size_t SocketHandleHash::operator()(const SocketHandle& handle) const {
   return std::hash<int>()(handle.fd);
 }
 
-}  // namespace platform
 }  // namespace openscreen

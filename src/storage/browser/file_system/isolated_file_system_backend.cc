@@ -8,10 +8,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/file_system/async_file_util_adapter.h"
@@ -106,25 +108,25 @@ FileSystemOperation* IsolatedFileSystemBackend::CreateFileSystemOperation(
 }
 
 bool IsolatedFileSystemBackend::SupportsStreaming(
-    const storage::FileSystemURL& url) const {
+    const FileSystemURL& url) const {
   return false;
 }
 
 bool IsolatedFileSystemBackend::HasInplaceCopyImplementation(
-    storage::FileSystemType type) const {
+    FileSystemType type) const {
   DCHECK(type == kFileSystemTypeNativeLocal || type == kFileSystemTypeDragged ||
          type == kFileSystemTypeForTransientFile);
   return false;
 }
 
-std::unique_ptr<storage::FileStreamReader>
+std::unique_ptr<FileStreamReader>
 IsolatedFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64_t offset,
     int64_t max_bytes_to_read,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-  return storage::FileStreamReader::CreateForLocalFile(
+  return FileStreamReader::CreateForLocalFile(
       context->default_file_task_runner(), url.path(), offset,
       expected_modification_time);
 }

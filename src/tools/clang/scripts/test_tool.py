@@ -142,6 +142,8 @@ def main(argv):
   parser.add_argument('tool_name',
                       nargs=1,
                       help='Clang tool to be tested.')
+  parser.add_argument(
+      '--test-filter', default='*', help='optional glob filter for test names')
   args = parser.parse_args(argv)
   tool_to_test = args.tool_name[0]
   print('\nTesting %s\n' % tool_to_test)
@@ -151,8 +153,9 @@ def main(argv):
       tools_clang_directory, tool_to_test, 'tests')
   compile_database = os.path.join(test_directory_for_tool,
                                   'compile_commands.json')
-  source_files = glob.glob(os.path.join(test_directory_for_tool,
-                                        '*-original.cc'))
+  source_files = glob.glob(
+      os.path.join(test_directory_for_tool,
+                   '%s-original.cc' % args.test_filter))
   ext = 'cc' if args.apply_edits else 'txt'
   actual_files = ['-'.join([source_file.rsplit('-', 1)[0], 'actual.cc'])
                   for source_file in source_files]
@@ -203,15 +206,15 @@ def main(argv):
     print('[ RUN      ] %s' % os.path.relpath(actual))
     expected_output = actual_output = None
     with open(expected, 'r') as f:
-      expected_output = f.read().splitlines()
+      expected_output = f.readlines()
     with open(actual, 'r') as f:
-      actual_output =  f.read().splitlines()
+      actual_output =  f.readlines()
     if actual_output != expected_output:
       failed += 1
-      for line in difflib.unified_diff(expected_output, actual_output,
-                                       fromfile=os.path.relpath(expected),
-                                       tofile=os.path.relpath(actual)):
-        sys.stdout.write(line)
+      lines = difflib.unified_diff(expected_output, actual_output,
+                                   fromfile=os.path.relpath(expected),
+                                   tofile=os.path.relpath(actual))
+      sys.stdout.writelines(lines)
       print('[  FAILED  ] %s' % os.path.relpath(actual))
       # Don't clean up the file on failure, so the results can be referenced
       # more easily.

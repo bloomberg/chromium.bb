@@ -100,6 +100,10 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
 SkColor ChromeTypographyProvider::GetColor(const views::View& view,
                                            int context,
                                            int style) const {
+  // Body text styles are the same as for labels.
+  if (context == CONTEXT_BODY_TEXT_LARGE || context == CONTEXT_BODY_TEXT_SMALL)
+    context = views::style::CONTEXT_LABEL;
+
   // Monospaced styles have the same colors as their normal counterparts.
   if (style == STYLE_PRIMARY_MONOSPACED) {
     style = views::style::STYLE_PRIMARY;
@@ -109,9 +113,6 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
 
   ui::NativeTheme::ColorId color_id;
   switch (style) {
-    case STYLE_HINT:
-      color_id = ui::NativeTheme::kColorId_LabelSecondaryColor;
-      break;
     case STYLE_RED:
       color_id = ui::NativeTheme::kColorId_AlertSeverityHigh;
       break;

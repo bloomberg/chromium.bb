@@ -17,22 +17,24 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
 class HTMLMetaElementTest : public PageTestBase,
                             private ScopedDisplayCutoutAPIForTest,
                             private ScopedMetaColorSchemeForTest,
-                            private ScopedMediaQueryPrefersColorSchemeForTest,
                             private ScopedCSSColorSchemeForTest {
  public:
   HTMLMetaElementTest()
       : ScopedDisplayCutoutAPIForTest(true),
         ScopedMetaColorSchemeForTest(true),
-        ScopedMediaQueryPrefersColorSchemeForTest(true),
         ScopedCSSColorSchemeForTest(true) {}
   void SetUp() override {
     PageTestBase::SetUp();
@@ -70,7 +72,7 @@ class HTMLMetaElementTest : public PageTestBase,
 
  private:
   void LoadTestPageWithViewportFitValue(const String& value) {
-    GetDocument().documentElement()->SetInnerHTMLFromString(
+    GetDocument().documentElement()->setInnerHTML(
         "<head>"
         "<meta name='viewport' content='viewport-fit=" +
         value +
@@ -78,6 +80,7 @@ class HTMLMetaElementTest : public PageTestBase,
         "</head>");
   }
 };
+class HTMLMetaElementSimTest : public SimTest {};
 
 TEST_F(HTMLMetaElementTest, ViewportFit_Auto) {
   EXPECT_EQ(mojom::ViewportFit::kAuto,
@@ -100,7 +103,7 @@ TEST_F(HTMLMetaElementTest, ViewportFit_Invalid) {
 }
 
 TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_FirstWins) {
-  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().head()->setInnerHTML(R"HTML(
     <meta name="color-scheme" content="dark">
     <meta name="color-scheme" content="light">
   )HTML");
@@ -109,7 +112,7 @@ TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_FirstWins) {
 }
 
 TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_Remove) {
-  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().head()->setInnerHTML(R"HTML(
     <meta id="first-meta" name="color-scheme" content="dark">
     <meta name="color-scheme" content="light">
   )HTML");
@@ -122,7 +125,7 @@ TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_Remove) {
 }
 
 TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_InsertBefore) {
-  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().head()->setInnerHTML(R"HTML(
     <meta name="color-scheme" content="dark">
   )HTML");
 
@@ -135,7 +138,7 @@ TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_InsertBefore) {
 }
 
 TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_AppendChild) {
-  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().head()->setInnerHTML(R"HTML(
     <meta name="color-scheme" content="dark">
   )HTML");
 
@@ -147,7 +150,7 @@ TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_AppendChild) {
 }
 
 TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_SetAttribute) {
-  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().head()->setInnerHTML(R"HTML(
     <meta id="meta" name="color-scheme" content="dark">
   )HTML");
 
@@ -160,7 +163,7 @@ TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_SetAttribute) {
 }
 
 TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_RemoveContentAttribute) {
-  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().head()->setInnerHTML(R"HTML(
     <meta id="meta" name="color-scheme" content="dark">
   )HTML");
 
@@ -173,7 +176,7 @@ TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_RemoveContentAttribute) {
 }
 
 TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_RemoveNameAttribute) {
-  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().head()->setInnerHTML(R"HTML(
     <meta id="meta" name="color-scheme" content="dark">
   )HTML");
 
@@ -222,9 +225,8 @@ TEST_F(HTMLMetaElementTest, ColorSchemeParsing) {
 }
 
 TEST_F(HTMLMetaElementTest, ColorSchemeForcedDarkeningAndMQ) {
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
 
   auto* media_query = GetDocument().GetMediaQueryMatcher().MatchMedia(
       "(prefers-color-scheme: dark)");
@@ -243,12 +245,68 @@ TEST_F(HTMLMetaElementTest, ColorSchemeForcedDarkeningAndMQ) {
 }
 
 TEST_F(HTMLMetaElementTest, ReferrerPolicyWithoutContent) {
-  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().head()->setInnerHTML(R"HTML(
     <meta name="referrer" content="strict-origin">
     <meta name="referrer" >
   )HTML");
   EXPECT_EQ(network::mojom::ReferrerPolicy::kStrictOrigin,
             GetDocument().GetReferrerPolicy());
+}
+
+// This tests whether Web Monetization counter is properly triggered.
+TEST_F(HTMLMetaElementTest, WebMonetizationCounter) {
+  // <meta> elements that don't have name equal to "monetization" or that lack
+  // a content attribute are not counted.
+  GetDocument().head()->setInnerHTML(R"HTML(
+    <meta name="color-scheme" content="dark">
+    <meta name="monetization">
+  )HTML");
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kHTMLMetaElementMonetization));
+
+  // A <link rel="monetization"> with a content attribute is counted.
+  GetDocument().head()->setInnerHTML(R"HTML(
+    <meta name="monetization" content="$payment.pointer.url">
+  )HTML");
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kHTMLMetaElementMonetization));
+
+  // However, it does not affect the counter for <link rel="monetization">.
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kHTMLLinkElementMonetization));
+}
+
+TEST_F(HTMLMetaElementSimTest, WebMonetizationNotCountedInSubFrame) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest child_frame_resource("https://example.com/subframe.html",
+                                  "text/html");
+
+  LoadURL("https://example.com/");
+
+  main_resource.Complete(String::Format(
+      R"HTML(
+        <body onload='console.log("main body onload");'>
+          <iframe src='https://example.com/subframe.html'
+                  onload='console.log("child frame element onload");'></iframe>
+        </body>)HTML"));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  child_frame_resource.Complete(String::Format(R"HTML(
+    <meta name="monetization" content="$payment.pointer.url">
+  )HTML"));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  // Ensure that main frame and subframe are loaded before checking the counter.
+  EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
+
+  // <meta name="monetization"> is not counted in subframes.
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kHTMLMetaElementMonetization));
 }
 
 }  // namespace blink

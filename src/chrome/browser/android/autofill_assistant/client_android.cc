@@ -19,9 +19,9 @@
 #include "base/time/default_tick_clock.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantClient_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantDirectActionImpl_jni.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -30,14 +30,17 @@
 #include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/features.h"
-#include "components/autofill_assistant/browser/website_login_fetcher_impl.h"
+#include "components/autofill_assistant/browser/switches.h"
+#include "components/autofill_assistant/browser/website_login_manager_impl.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "google_apis/google_api_keys.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -45,15 +48,7 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 
 namespace autofill_assistant {
-namespace switches {
-const char* const kAutofillAssistantServerKey = "autofill-assistant-key";
-const char* const kAutofillAssistantUrl = "autofill-assistant-url";
-}  // namespace switches
-
 namespace {
-
-const char* const kDefaultAutofillAssistantServerUrl =
-    "https://automate-pa.googleapis.com";
 
 // A direct action that corresponds to pressing the close or cancel button on
 // the UI.
@@ -102,13 +97,7 @@ ClientAndroid::ClientAndroid(content::WebContents* web_contents)
     : web_contents_(web_contents),
       java_object_(Java_AutofillAssistantClient_create(
           AttachCurrentThread(),
-          reinterpret_cast<intptr_t>(this))) {
-  server_url_ = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kAutofillAssistantUrl);
-  if (server_url_.empty()) {
-    server_url_ = kDefaultAutofillAssistantServerUrl;
-  }
-}
+          reinterpret_cast<intptr_t>(this))) {}
 
 ClientAndroid::~ClientAndroid() {
   if (controller_ != nullptr && started_) {
@@ -129,8 +118,10 @@ bool ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jobject>& jcaller,
                           const JavaParamRef<jstring>& jinitial_url,
                           const JavaParamRef<jstring>& jexperiment_ids,
-                          const JavaParamRef<jobjectArray>& parameter_names,
-                          const JavaParamRef<jobjectArray>& parameter_values,
+                          const JavaParamRef<jstring>& jcaller_account,
+                          const JavaParamRef<jobjectArray>& jparameter_names,
+                          const JavaParamRef<jobjectArray>& jparameter_values,
+                          jboolean jis_cct,
                           const JavaParamRef<jobject>& jonboarding_coordinator,
                           jboolean jonboarding_shown,
                           jlong jservice) {
@@ -150,12 +141,31 @@ bool ClientAndroid::Start(JNIEnv* env,
     AttachUI(jonboarding_coordinator);
   }
 
-  std::unique_ptr<TriggerContextImpl> trigger_context = CreateTriggerContext(
-      env, jexperiment_ids, parameter_names, parameter_values);
-  trigger_context->SetCCT(true);
-  trigger_context->SetOnboardingShown(jonboarding_shown);
-
   GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
+  auto trigger_context = CreateTriggerContext(
+      env, jexperiment_ids, jparameter_names, jparameter_values);
+  trigger_context->SetCCT(jis_cct);
+  trigger_context->SetOnboardingShown(jonboarding_shown);
+  if (jcaller_account) {
+    trigger_context->SetCallerAccountHash(
+        base::android::ConvertJavaStringToUTF8(env, jcaller_account));
+  }
+
+  if (VLOG_IS_ON(2)) {
+    std::string experiment_ids =
+        base::android::ConvertJavaStringToUTF8(env, jexperiment_ids);
+    std::map<std::string, std::string> parameters;
+    FillStringMapFromJava(env, jparameter_names, jparameter_values,
+                          &parameters);
+
+    DVLOG(2) << "Starting autofill assistant with parameters:";
+    DVLOG(2) << "\tinitial_url: " << initial_url;
+    DVLOG(2) << "\texperiment_ids: " << experiment_ids;
+    DVLOG(2) << "\tparameters:";
+    for (const auto& param : parameters) {
+      DVLOG(2) << "\t\t" << param.first << ": " << param.second;
+    }
+  }
   return controller_->Start(initial_url, std::move(trigger_context));
 }
 
@@ -176,6 +186,9 @@ void ClientAndroid::TransferUITo(
   // From this point on, the UIController, in ui_ptr, is either transferred or
   // deleted.
 
+  GetPasswordManagerClient()->GetPasswordManager()->SetAutofillAssistantMode(
+      password_manager::AutofillAssistantMode::kNotRunning);
+
   if (!jother_web_contents)
     return;
 
@@ -195,11 +208,8 @@ void ClientAndroid::TransferUITo(
 base::android::ScopedJavaLocalRef<jstring> ClientAndroid::GetPrimaryAccountName(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  CoreAccountInfo account_info =
-      IdentityManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext()))
-          ->GetPrimaryAccountInfo();
-  return base::android::ConvertUTF8ToJavaString(env, account_info.email);
+  return base::android::ConvertUTF8ToJavaString(
+      env, GetChromeSignedInEmailAddress());
 }
 
 void ClientAndroid::OnAccessToken(JNIEnv* env,
@@ -216,16 +226,16 @@ void ClientAndroid::FetchWebsiteActions(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jexperiment_ids,
-    const base::android::JavaParamRef<jobjectArray>& jargument_names,
-    const base::android::JavaParamRef<jobjectArray>& jargument_values,
+    const base::android::JavaParamRef<jobjectArray>& jparameter_names,
+    const base::android::JavaParamRef<jobjectArray>& jparameter_values,
     const base::android::JavaParamRef<jobject>& jcallback) {
   if (!controller_)
     CreateController(nullptr);
 
   base::android::ScopedJavaGlobalRef<jobject> scoped_jcallback(env, jcallback);
   controller_->Track(
-      CreateTriggerContext(env, jexperiment_ids, jargument_names,
-                           jargument_values),
+      CreateTriggerContext(env, jexperiment_ids, jparameter_names,
+                           jparameter_values),
       base::BindOnce(&ClientAndroid::OnFetchWebsiteActions,
                      weak_ptr_factory_.GetWeakPtr(), scoped_jcallback));
 }
@@ -334,17 +344,18 @@ bool ClientAndroid::PerformDirectAction(
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jaction_name,
     const base::android::JavaParamRef<jstring>& jexperiment_ids,
-    const base::android::JavaParamRef<jobjectArray>& jargument_names,
-    const base::android::JavaParamRef<jobjectArray>& jargument_values,
+    const base::android::JavaParamRef<jobjectArray>& jparameter_names,
+    const base::android::JavaParamRef<jobjectArray>& jparameter_values,
     const base::android::JavaParamRef<jobject>& jonboarding_coordinator) {
   std::string action_name =
       base::android::ConvertJavaStringToUTF8(env, jaction_name);
 
   int action_index = FindDirectAction(action_name);
 
-  std::unique_ptr<TriggerContextImpl> trigger_context = CreateTriggerContext(
-      env, jexperiment_ids, jargument_names, jargument_values);
+  auto trigger_context = CreateTriggerContext(
+      env, jexperiment_ids, jparameter_names, jparameter_values);
   trigger_context->SetDirectAction(true);
+
   // Cancel through the UI if it is up. This allows the user to undo. This is
   // always available, even if no action was found and action_index == -1.
   if (action_name == kCancelActionName && ui_controller_android_) {
@@ -403,11 +414,21 @@ void ClientAndroid::AttachUI(
     }
   }
 
-  if (!ui_controller_android_->IsAttached()) {
+  if (!ui_controller_android_->IsAttached() ||
+      (controller_ != nullptr &&
+       !ui_controller_android_->IsAttachedTo(controller_.get()))) {
     if (!controller_)
       CreateController(nullptr);
-
     ui_controller_android_->Attach(web_contents_, this, controller_.get());
+
+    // Suppress password manager's prompts while running a password change
+    // script.
+    auto* password_manager_client = GetPasswordManagerClient();
+    if (password_manager_client &&
+        password_manager_client->WasCredentialLeakDialogShown()) {
+      password_manager_client->GetPasswordManager()->SetAutofillAssistantMode(
+          password_manager::AutofillAssistantMode::kRunning);
+    }
   }
 }
 
@@ -415,59 +436,73 @@ void ClientAndroid::DestroyUI() {
   ui_controller_android_.reset();
 }
 
-std::string ClientAndroid::GetApiKey() {
-  std::string api_key;
-  if (google_apis::IsGoogleChromeAPIKeyUsed()) {
-    api_key = chrome::GetChannel() == version_info::Channel::STABLE
-                  ? google_apis::GetAPIKey()
-                  : google_apis::GetNonStableAPIKey();
-  }
-  const auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAutofillAssistantServerKey)) {
-    api_key = command_line->GetSwitchValueASCII(
-        switches::kAutofillAssistantServerKey);
-  }
-  return api_key;
+version_info::Channel ClientAndroid::GetChannel() const {
+  return chrome::GetChannel();
 }
 
-std::string ClientAndroid::GetAccountEmailAddress() {
+std::string ClientAndroid::GetEmailAddressForAccessTokenAccount() const {
   JNIEnv* env = AttachCurrentThread();
   return base::android::ConvertJavaStringToUTF8(
-      Java_AutofillAssistantClient_getAccountEmailAddress(env, java_object_));
+      Java_AutofillAssistantClient_getEmailAddressForAccessTokenAccount(
+          env, java_object_));
+}
+
+std::string ClientAndroid::GetChromeSignedInEmailAddress() const {
+  CoreAccountInfo account_info =
+      IdentityManagerFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents_->GetBrowserContext()))
+          ->GetPrimaryAccountInfo();
+  return account_info.email;
 }
 
 AccessTokenFetcher* ClientAndroid::GetAccessTokenFetcher() {
   return this;
 }
 
-autofill::PersonalDataManager* ClientAndroid::GetPersonalDataManager() {
+autofill::PersonalDataManager* ClientAndroid::GetPersonalDataManager() const {
   return autofill::PersonalDataManagerFactory::GetForProfile(
       ProfileManager::GetLastUsedProfile());
 }
 
-WebsiteLoginFetcher* ClientAndroid::GetWebsiteLoginFetcher() {
-  if (!website_login_fetcher_) {
-    website_login_fetcher_ = std::make_unique<WebsiteLoginFetcherImpl>(
-        ChromePasswordManagerClient::FromWebContents(web_contents_));
+password_manager::PasswordManagerClient*
+ClientAndroid::GetPasswordManagerClient() const {
+  if (!password_manager_client_) {
+    password_manager_client_ =
+        ChromePasswordManagerClient::FromWebContents(web_contents_);
   }
-  return website_login_fetcher_.get();
+  return password_manager_client_;
 }
 
-std::string ClientAndroid::GetServerUrl() {
-  return server_url_;
+WebsiteLoginManager* ClientAndroid::GetWebsiteLoginManager() const {
+  if (!website_login_manager_) {
+    auto* client = GetPasswordManagerClient();
+    auto* factory =
+        password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
+            web_contents_);
+    // TODO(crbug.com/1043132): Add support for non-main frames. If another
+    // frame has a different origin than the main frame, passwords-related
+    // features may not work.
+    auto* driver = factory->GetDriverForFrame(web_contents_->GetMainFrame());
+    website_login_manager_ =
+        std::make_unique<WebsiteLoginManagerImpl>(client, driver);
+  }
+  return website_login_manager_.get();
 }
 
-std::string ClientAndroid::GetLocale() {
+std::string ClientAndroid::GetLocale() const {
   return base::android::GetDefaultLocaleString();
 }
 
-std::string ClientAndroid::GetCountryCode() {
-  return base::android::ConvertJavaStringToUTF8(
-      Java_AutofillAssistantClient_getCountryCode(AttachCurrentThread(),
-                                                  java_object_));
+std::string ClientAndroid::GetCountryCode() const {
+  JNIEnv* env = AttachCurrentThread();
+  auto code = Java_AutofillAssistantClient_getCountryCode(env, java_object_);
+  // Use fallback "ZZ". It is an unused country code.
+  if (!code)
+    return "ZZ";
+  return base::android::ConvertJavaStringToUTF8(env, code);
 }
 
-DeviceContext ClientAndroid::GetDeviceContext() {
+DeviceContext ClientAndroid::GetDeviceContext() const {
   DeviceContext context;
   Version version;
   version.sdk_int = Java_AutofillAssistantClient_getSdkInt(
@@ -483,9 +518,16 @@ DeviceContext ClientAndroid::GetDeviceContext() {
   return context;
 }
 
+content::WebContents* ClientAndroid::GetWebContents() const {
+  return web_contents_;
+}
+
 void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
   if (!controller_)
     return;
+
+  GetPasswordManagerClient()->GetPasswordManager()->SetAutofillAssistantMode(
+      password_manager::AutofillAssistantMode::kNotRunning);
 
   if (ui_controller_android_ && ui_controller_android_->IsAttached())
     DestroyUI();
@@ -536,4 +578,4 @@ bool ClientAndroid::NeedsUI() {
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientAndroid)
 
-}  // namespace autofill_assistant.
+}  // namespace autofill_assistant

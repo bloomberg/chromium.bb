@@ -7,7 +7,8 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 
@@ -108,6 +109,14 @@ void SegregatedPrefStore::SetValue(const std::string& key,
 
 void SegregatedPrefStore::RemoveValue(const std::string& key, uint32_t flags) {
   StoreForKey(key)->RemoveValue(key, flags);
+}
+
+void SegregatedPrefStore::RemoveValuesByPrefixSilently(
+    const std::string& prefix) {
+  // Since we can't guarantee to have all the prefs in one the pref stores, we
+  // have to push the removal command down to both of them.
+  default_pref_store_->RemoveValuesByPrefixSilently(prefix);
+  selected_pref_store_->RemoveValuesByPrefixSilently(prefix);
 }
 
 bool SegregatedPrefStore::GetMutableValue(const std::string& key,

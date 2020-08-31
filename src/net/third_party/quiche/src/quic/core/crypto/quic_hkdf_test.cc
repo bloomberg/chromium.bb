@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 namespace quic {
 namespace test {
@@ -67,14 +67,15 @@ static const HKDFInput kHKDFInputs[] = {
 class QuicHKDFTest : public QuicTest {};
 
 TEST_F(QuicHKDFTest, HKDF) {
-  for (size_t i = 0; i < QUIC_ARRAYSIZE(kHKDFInputs); i++) {
+  for (size_t i = 0; i < QUICHE_ARRAYSIZE(kHKDFInputs); i++) {
     const HKDFInput& test(kHKDFInputs[i]);
     SCOPED_TRACE(i);
 
-    const std::string key = QuicTextUtils::HexDecode(test.key_hex);
-    const std::string salt = QuicTextUtils::HexDecode(test.salt_hex);
-    const std::string info = QuicTextUtils::HexDecode(test.info_hex);
-    const std::string expected = QuicTextUtils::HexDecode(test.output_hex);
+    const std::string key = quiche::QuicheTextUtils::HexDecode(test.key_hex);
+    const std::string salt = quiche::QuicheTextUtils::HexDecode(test.salt_hex);
+    const std::string info = quiche::QuicheTextUtils::HexDecode(test.info_hex);
+    const std::string expected =
+        quiche::QuicheTextUtils::HexDecode(test.output_hex);
 
     // We set the key_length to the length of the expected output and then take
     // the result from the first key, which is the client write key.

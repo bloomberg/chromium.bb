@@ -16,7 +16,7 @@ namespace views {
 class Label;
 }
 
-@class FullscreenToolbarControllerViews;
+@class FullscreenToolbarController;
 
 class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
  public:
@@ -31,7 +31,7 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
       const views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
-  void UpdateFullscreenTopUI(bool needs_check_tab_fullscreen) override;
+  void UpdateFullscreenTopUI() override;
   bool ShouldHideTopUIForFullscreen() const override;
   void UpdateThrobber(bool running) override;
 
@@ -77,7 +77,7 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
 
   views::Label* window_title_ = nullptr;
 
-  base::scoped_nsobject<FullscreenToolbarControllerViews>
+  base::scoped_nsobject<FullscreenToolbarController>
       fullscreen_toolbar_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewMac);

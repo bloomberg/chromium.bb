@@ -4,15 +4,19 @@
 
 #include "chrome/browser/wake_lock/wake_lock_permission_context.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 WakeLockPermissionContext::WakeLockPermissionContext(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     ContentSettingsType content_settings_type)
-    : PermissionContextBase(profile,
-                            content_settings_type,
-                            blink::mojom::FeaturePolicyFeature::kWakeLock),
+    : PermissionContextBase(
+          browser_context,
+          content_settings_type,
+          content_settings_type == ContentSettingsType::WAKE_LOCK_SCREEN
+              ? blink::mojom::FeaturePolicyFeature::kScreenWakeLock
+              : blink::mojom::FeaturePolicyFeature::kNotFound),
       content_settings_type_(content_settings_type) {
   DCHECK(content_settings_type == ContentSettingsType::WAKE_LOCK_SCREEN ||
          content_settings_type == ContentSettingsType::WAKE_LOCK_SYSTEM);

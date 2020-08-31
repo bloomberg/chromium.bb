@@ -378,7 +378,7 @@ TEST(CSSPropertyParserTest, GradientUseCount) {
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kCSSGradient;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<style>* { background-image: linear-gradient(red, blue); }</style>");
   EXPECT_TRUE(document.IsUseCounted(feature));
 }
@@ -387,10 +387,10 @@ TEST(CSSPropertyParserTest, PaintUseCount) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
-  document.SetSecureContextStateForTesting(SecureContextState::kSecure);
+  document.SetSecureContextModeForTesting(SecureContextMode::kSecureContext);
   WebFeature feature = WebFeature::kCSSPaintFunction;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<style>span { background-image: paint(geometry); }</style>");
   EXPECT_TRUE(document.IsUseCounted(feature));
 }
@@ -401,7 +401,7 @@ TEST(CSSPropertyParserTest, CrossFadeUseCount) {
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kWebkitCrossFade;
   EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<style>div { background-image: -webkit-cross-fade(url('from.png'), "
       "url('to.png'), 0.2); }</style>");
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -415,7 +415,7 @@ TEST(CSSPropertyParserTest, TwoValueOverflowOverlayCount) {
   WebFeature feature2 = WebFeature::kTwoValuedOverflow;
   EXPECT_FALSE(document.IsUseCounted(feature));
   EXPECT_FALSE(document.IsUseCounted(feature2));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style=\"height: 10px; width: 10px; overflow: overlay overlay;\">"
       "<div style=\"height: 50px; width: 50px;\"></div></div>");
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -430,7 +430,7 @@ TEST(CSSPropertyParserTest, OneValueOverflowOverlayCount) {
   WebFeature feature2 = WebFeature::kTwoValuedOverflow;
   EXPECT_FALSE(document.IsUseCounted(feature));
   EXPECT_FALSE(document.IsUseCounted(feature2));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style=\"height: 10px; width: 10px; overflow: overlay;\">"
       "<div style=\"height: 50px; width: 50px;\"></div></div>");
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -445,7 +445,7 @@ TEST(CSSPropertyParserTest, OverflowXOverlayCount) {
   WebFeature feature2 = WebFeature::kTwoValuedOverflow;
   EXPECT_FALSE(document.IsUseCounted(feature));
   EXPECT_FALSE(document.IsUseCounted(feature2));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style=\"height: 10px; width: 10px; overflow-x: overlay;\">"
       "<div style=\"height: 50px; width: 50px;\"></div></div>");
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -460,7 +460,7 @@ TEST(CSSPropertyParserTest, OverflowYOverlayCount) {
   WebFeature feature2 = WebFeature::kTwoValuedOverflow;
   EXPECT_FALSE(document.IsUseCounted(feature));
   EXPECT_FALSE(document.IsUseCounted(feature2));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style=\"height: 10px; width: 10px; overflow-y: overlay;\">"
       "<div style=\"height: 50px; width: 50px;\"></div></div>");
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -475,7 +475,7 @@ TEST(CSSPropertyParserTest, OverflowFirstValueOverlayCount) {
   WebFeature feature2 = WebFeature::kTwoValuedOverflow;
   EXPECT_FALSE(document.IsUseCounted(feature));
   EXPECT_FALSE(document.IsUseCounted(feature2));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style=\"height: 10px; width: 10px; overflow: overlay scroll;\">"
       "<div style=\"height: 50px; width: 50px;\"></div></div>");
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -490,7 +490,7 @@ TEST(CSSPropertyParserTest, OverflowSecondValueOverlayCount) {
   WebFeature feature2 = WebFeature::kTwoValuedOverflow;
   EXPECT_FALSE(document.IsUseCounted(feature));
   EXPECT_FALSE(document.IsUseCounted(feature2));
-  document.documentElement()->SetInnerHTMLFromString(
+  document.documentElement()->setInnerHTML(
       "<div style=\"height: 10px; width: 10px; overflow: scroll overlay;\">"
       "<div style=\"height: 50px; width: 50px;\"></div></div>");
   EXPECT_TRUE(document.IsUseCounted(feature));
@@ -615,7 +615,7 @@ TEST_F(CSSPropertyUseCounterTest, CSSPropertyCyUnitlessUseCount) {
 TEST_F(CSSPropertyUseCounterTest, UnitlessPresentationAttributesNotCounted) {
   WebFeature feature = WebFeature::kSVGGeometryPropertyHasNonZeroUnitlessValue;
   EXPECT_FALSE(IsCounted(feature));
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+  GetDocument().body()->setInnerHTML(R"HTML(
     <svg>
       <rect x="42" y="42" rx="42" ry="42"/>
       <circle cx="42" cy="42" r="42"/>
@@ -635,20 +635,6 @@ TEST_F(CSSPropertyUseCounterTest, CSSPropertyDefaultAnimationNameUseCount) {
   EXPECT_FALSE(IsCounted(feature));
 
   ParseProperty(CSSPropertyID::kAnimationName, "default");
-  EXPECT_TRUE(IsCounted(feature));
-}
-
-TEST_F(CSSPropertyUseCounterTest, CSSPropertyRevertAnimationNameUseCount) {
-  WebFeature feature = WebFeature::kRevertInCustomIdent;
-  EXPECT_FALSE(IsCounted(feature));
-
-  ParseProperty(CSSPropertyID::kAnimationName, "initial");
-  EXPECT_FALSE(IsCounted(feature));
-
-  ParseProperty(CSSPropertyID::kAnimationName, "test");
-  EXPECT_FALSE(IsCounted(feature));
-
-  ParseProperty(CSSPropertyID::kAnimationName, "revert");
   EXPECT_TRUE(IsCounted(feature));
 }
 
@@ -675,16 +661,18 @@ TEST_F(CSSPropertyUseCounterTest, CSSPropertyFontSizeWebkitXxxLargeUseCount) {
   EXPECT_TRUE(IsCounted(feature));
 }
 
-TEST(CSSPropertyParserTest, InternalLightDarkColorAuthor) {
+TEST(CSSPropertyParserTest, InternalLightDarkAuthor) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  // -internal-light-dark-color() is only valid in UA sheets.
+  // -internal-light-dark() is only valid in UA sheets.
   ASSERT_FALSE(CSSParser::ParseSingleValue(
-      CSSPropertyID::kColor, "-internal-light-dark-color(#000000, #ffffff)",
+      CSSPropertyID::kColor, "-internal-light-dark(#000000, #ffffff)",
       context));
   ASSERT_FALSE(CSSParser::ParseSingleValue(
-      CSSPropertyID::kColor, "-internal-light-dark-color(red, green)",
-      context));
+      CSSPropertyID::kColor, "-internal-light-dark(red, green)", context));
+  ASSERT_FALSE(CSSParser::ParseSingleValue(
+      CSSPropertyID::kBackgroundImage,
+      "-internal-light-dark(url(light.png), url(dark.png))", context));
 }
 
 TEST(CSSPropertyParserTest, UAInternalLightDarkColor) {
@@ -695,14 +683,14 @@ TEST(CSSPropertyParserTest, UAInternalLightDarkColor) {
     const char* value;
     bool valid;
   } tests[] = {
-      {"-internal-light-dark-color()", false},
-      {"-internal-light-dark-color(#feedab)", false},
-      {"-internal-light-dark-color(red blue)", false},
-      {"-internal-light-dark-color(red,,blue)", false},
-      {"-internal-light-dark-color(red, blue)", true},
-      {"-internal-light-dark-color(#000000, #ffffff)", true},
-      {"-internal-light-dark-color(rgb(0, 0, 0), hsl(180, 75%, 50%))", true},
-      {"-internal-light-dark-color(rgba(0, 0, 0, 0.5), hsla(180, 75%, 50%, "
+      {"-internal-light-dark()", false},
+      {"-internal-light-dark(#feedab)", false},
+      {"-internal-light-dark(red blue)", false},
+      {"-internal-light-dark(red,,blue)", false},
+      {"-internal-light-dark(red, blue)", true},
+      {"-internal-light-dark(#000000, #ffffff)", true},
+      {"-internal-light-dark(rgb(0, 0, 0), hsl(180, 75%, 50%))", true},
+      {"-internal-light-dark(rgba(0, 0, 0, 0.5), hsla(180, 75%, 50%, "
        "0.7))",
        true},
   };
@@ -718,11 +706,103 @@ TEST(CSSPropertyParserTest, UAInternalLightDarkColorSerialization) {
   auto* ua_context = MakeGarbageCollected<CSSParserContext>(
       kUASheetMode, SecureContextMode::kInsecureContext);
   const CSSValue* value = CSSParser::ParseSingleValue(
-      CSSPropertyID::kColor, "-internal-light-dark-color(red,#aaa)",
-      ua_context);
+      CSSPropertyID::kColor, "-internal-light-dark(red,#aaa)", ua_context);
   ASSERT_TRUE(value);
-  EXPECT_EQ("-internal-light-dark-color(red, rgb(170, 170, 170))",
-            value->CssText());
+  EXPECT_EQ("-internal-light-dark(red, rgb(170, 170, 170))", value->CssText());
+}
+
+TEST(CSSPropertyParserTest, UAInternalLightDarkBackgroundImage) {
+  auto* ua_context = MakeGarbageCollected<CSSParserContext>(
+      kUASheetMode, SecureContextMode::kInsecureContext);
+
+  const struct {
+    const char* value;
+    bool valid;
+  } tests[] = {
+      {"-internal-light-dark()", false},
+      {"-internal-light-dark(url(light.png))", false},
+      {"-internal-light-dark(url(light.png) url(dark.png))", false},
+      {"-internal-light-dark(url(light.png),,url(dark.png))", false},
+      {"-internal-light-dark(url(light.png), url(dark.png))", true},
+      {"-internal-light-dark(url(light.png), none)", true},
+      {"-internal-light-dark(none, -webkit-image-set(url(dark.png) 1x))", true},
+      {"-internal-light-dark(  none  ,  none   )", true},
+      {"-internal-light-dark(  url(light.png)  ,  url(dark.png)   )", true},
+  };
+
+  for (const auto& test : tests) {
+    EXPECT_EQ(!!CSSParser::ParseSingleValue(CSSPropertyID::kBackgroundImage,
+                                            test.value, ua_context),
+              test.valid)
+        << test.value;
+  }
+}
+
+namespace {
+
+bool ParseCSSValue(CSSPropertyID property_id,
+                   const String& value,
+                   const CSSParserContext* context) {
+  CSSTokenizer tokenizer(value);
+  const auto tokens = tokenizer.TokenizeToEOF();
+  const CSSParserTokenRange range(tokens);
+  HeapVector<CSSPropertyValue, 256> parsed_properties;
+  return CSSPropertyParser::ParseValue(property_id, false, range, context,
+                                       parsed_properties,
+                                       StyleRule::RuleType::kStyle);
+}
+
+}  // namespace
+
+TEST(CSSPropertyParserTest, UAInternalLightDarkBackgroundShorthand) {
+  auto* ua_context = MakeGarbageCollected<CSSParserContext>(
+      kUASheetMode, SecureContextMode::kInsecureContext);
+
+  const struct {
+    const char* value;
+    bool valid;
+  } tests[] = {
+      {"-internal-light-dark()", false},
+      {"-internal-light-dark(url(light.png))", false},
+      {"-internal-light-dark(url(light.png) url(dark.png))", false},
+      {"-internal-light-dark(url(light.png),,url(dark.png))", false},
+      {"-internal-light-dark(url(light.png), url(dark.png))", true},
+      {"-internal-light-dark(url(light.png), none)", true},
+      {"-internal-light-dark(none, -webkit-image-set(url(dark.png) 1x))", true},
+      {"-internal-light-dark(  none  ,  none   )", true},
+      {"-internal-light-dark(  url(light.png)  ,  url(dark.png)   )", true},
+  };
+
+  for (const auto& test : tests) {
+    EXPECT_EQ(
+        !!ParseCSSValue(CSSPropertyID::kBackground, test.value, ua_context),
+        test.valid)
+        << test.value;
+  }
+}
+
+TEST(CSSPropertyParserTest, ParseRevert) {
+  auto* context = MakeGarbageCollected<CSSParserContext>(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
+
+  String string = " revert";
+  CSSTokenizer tokenizer(string);
+  const auto tokens = tokenizer.TokenizeToEOF();
+
+  {
+    ScopedCSSRevertForTest scoped_revert(true);
+    const CSSValue* value = CSSPropertyParser::ParseSingleValue(
+        CSSPropertyID::kMarginLeft, CSSParserTokenRange(tokens), context);
+    ASSERT_TRUE(value);
+    EXPECT_TRUE(value->IsRevertValue());
+  }
+
+  {
+    ScopedCSSRevertForTest scoped_revert(false);
+    const CSSValue* value = CSSPropertyParser::ParseSingleValue(
+        CSSPropertyID::kMarginLeft, CSSParserTokenRange(tokens), context);
+    EXPECT_FALSE(value);
+  }
 }
 
 }  // namespace blink

@@ -7,19 +7,19 @@
 #include "discovery/mdns/mdns_reader.h"
 #include "util/trace_logging.h"
 
-using openscreen::platform::TraceCategory;
-
 namespace openscreen {
 namespace discovery {
 
-MdnsReceiver::MdnsReceiver(UdpSocket* socket) : socket_(socket) {
-  OSP_DCHECK(socket_);
-}
+MdnsReceiver::ResponseClient::~ResponseClient() = default;
+
+MdnsReceiver::MdnsReceiver(Config config) : config_(std::move(config)) {}
 
 MdnsReceiver::~MdnsReceiver() {
   if (state_ == State::kRunning) {
     Stop();
   }
+
+  OSP_DCHECK(response_clients_.empty());
 }
 
 void MdnsReceiver::SetQueryCallback(
@@ -30,13 +30,20 @@ void MdnsReceiver::SetQueryCallback(
   query_callback_ = callback;
 }
 
-void MdnsReceiver::SetResponseCallback(
-    std::function<void(const MdnsMessage&)> callback) {
-  // This check verifies that either new or stored callback has a target. It
-  // will fail in case multiple objects try to set or clear the callback.
-  OSP_DCHECK(static_cast<bool>(response_callback_) !=
-             static_cast<bool>(callback));
-  response_callback_ = callback;
+void MdnsReceiver::AddResponseCallback(ResponseClient* callback) {
+  auto it =
+      std::find(response_clients_.begin(), response_clients_.end(), callback);
+  OSP_DCHECK(it == response_clients_.end());
+
+  response_clients_.push_back(callback);
+}
+
+void MdnsReceiver::RemoveResponseCallback(ResponseClient* callback) {
+  auto it =
+      std::find(response_clients_.begin(), response_clients_.end(), callback);
+  OSP_DCHECK(it != response_clients_.end());
+
+  response_clients_.erase(it);
 }
 
 void MdnsReceiver::Start() {
@@ -55,32 +62,27 @@ void MdnsReceiver::OnRead(UdpSocket* socket,
 
   UdpPacket packet = std::move(packet_or_error.value());
 
-  TRACE_SCOPED(TraceCategory::mDNS, "MdnsReceiver::OnRead");
-  MdnsReader reader(packet.data(), packet.size());
+  TRACE_SCOPED(TraceCategory::kMdns, "MdnsReceiver::OnRead");
+  MdnsReader reader(config_, packet.data(), packet.size());
   MdnsMessage message;
   if (!reader.Read(&message)) {
     return;
   }
 
   if (message.type() == MessageType::Response) {
-    if (response_callback_) {
-      response_callback_(message);
+    for (ResponseClient* client : response_clients_) {
+      client->OnMessageReceived(message);
+    }
+    if (response_clients_.empty()) {
+      OSP_DVLOG << "Response message dropped. No response client registered...";
     }
   } else {
     if (query_callback_) {
       query_callback_(message, packet.source());
+    } else {
+      OSP_DVLOG << "Query message dropped. No query client registered...";
     }
   }
-}
-
-void MdnsReceiver::OnError(UdpSocket* socket, Error error) {
-  // This method should never be called for MdnsReciever.
-  OSP_UNIMPLEMENTED();
-}
-
-void MdnsReceiver::OnSendError(UdpSocket* socket, Error error) {
-  // This method should never be called for MdnsReciever.
-  OSP_UNIMPLEMENTED();
 }
 
 }  // namespace discovery

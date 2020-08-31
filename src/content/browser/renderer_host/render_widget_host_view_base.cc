@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -97,15 +96,15 @@ MouseWheelPhaseHandler* RenderWidgetHostViewBase::GetMouseWheelPhaseHandler() {
 
 void RenderWidgetHostViewBase::StopFlingingIfNecessary(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   // Reset view_stopped_flinging_for_test_ at the beginning of the scroll
   // sequence.
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
+  if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollBegin)
     view_stopped_flinging_for_test_ = false;
 
-  bool processed = INPUT_EVENT_ACK_STATE_CONSUMED == ack_result;
+  bool processed = blink::mojom::InputEventResultState::kConsumed == ack_result;
   if (!processed &&
-      event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
+      event.GetType() == blink::WebInputEvent::Type::kGestureScrollUpdate &&
       event.data.scroll_update.inertial_phase ==
           blink::WebGestureEvent::InertialPhaseState::kMomentum &&
       event.SourceDevice() != blink::WebGestureDevice::kSyntheticAutoscroll) {
@@ -118,9 +117,14 @@ void RenderWidgetHostViewBase::OnRenderFrameMetadataChangedBeforeActivation(
     const cc::RenderFrameMetadata& metadata) {}
 
 void RenderWidgetHostViewBase::OnRenderFrameMetadataChangedAfterActivation() {
-  is_scroll_offset_at_top_ = host_->render_frame_metadata_provider()
-                                 ->LastRenderFrameMetadata()
-                                 .is_scroll_offset_at_top;
+  const cc::RenderFrameMetadata& metadata =
+      host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
+  is_scroll_offset_at_top_ = metadata.is_scroll_offset_at_top;
+
+  BrowserAccessibilityManager* manager =
+      host()->GetRootBrowserAccessibilityManager();
+  if (manager)
+    manager->SetPageScaleFactor(metadata.page_scale_factor);
 }
 
 void RenderWidgetHostViewBase::OnRenderFrameSubmission() {}
@@ -129,7 +133,7 @@ void RenderWidgetHostViewBase::OnLocalSurfaceIdChanged(
     const cc::RenderFrameMetadata& metadata) {}
 
 void RenderWidgetHostViewBase::UpdateIntrinsicSizingInfo(
-    const blink::WebIntrinsicSizingInfo& sizing_info) {}
+    blink::mojom::IntrinsicSizingInfoPtr sizing_info) {}
 
 gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() {
   return gfx::ScaleToCeiledSize(GetRequestedRendererSize(),
@@ -354,52 +358,41 @@ RenderWidgetHostViewBase::GetKeyboardLayoutMap() {
   return base::flat_map<std::string, std::string>();
 }
 
-InputEventAckState RenderWidgetHostViewBase::FilterInputEvent(
+blink::mojom::InputEventResultState RenderWidgetHostViewBase::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   // By default, input events are simply forwarded to the renderer.
-  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+  return blink::mojom::InputEventResultState::kNotConsumed;
 }
 
 void RenderWidgetHostViewBase::WheelEventAck(
     const blink::WebMouseWheelEvent& event,
-    InputEventAckState ack_result) {
-}
+    blink::mojom::InputEventResultState ack_result) {}
 
 void RenderWidgetHostViewBase::GestureEventAck(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
-}
+    blink::mojom::InputEventResultState ack_result) {}
 
-bool RenderWidgetHostViewBase::OnUnconsumedKeyboardEventAck(
-    const NativeWebKeyboardEventWithLatencyInfo& event) {
-  return false;
-}
-
-void RenderWidgetHostViewBase::FallbackCursorModeLockCursor(bool left,
-                                                            bool right,
-                                                            bool up,
-                                                            bool down) {}
-
-void RenderWidgetHostViewBase::FallbackCursorModeSetCursorVisibility(
-    bool visible) {}
+void RenderWidgetHostViewBase::ChildDidAckGestureEvent(
+    const blink::WebGestureEvent& event,
+    blink::mojom::InputEventResultState ack_result) {}
 
 void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
     const blink::WebGestureEvent& event,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   if (!event.IsTouchpadZoomEvent())
     return;
   if (!event.NeedsWheelEvent())
     return;
 
   switch (event.GetType()) {
-    case blink::WebInputEvent::kGesturePinchBegin:
+    case blink::WebInputEvent::Type::kGesturePinchBegin:
       // Don't send the begin event until we get the first unconsumed update, so
       // that we elide pinch gesture steams consisting of only a begin and end.
       pending_touchpad_pinch_begin_ = event;
       pending_touchpad_pinch_begin_->SetNeedsWheelEvent(false);
       break;
-    case blink::WebInputEvent::kGesturePinchUpdate:
-      if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED &&
+    case blink::WebInputEvent::Type::kGesturePinchUpdate:
+      if (ack_result != blink::mojom::InputEventResultState::kConsumed &&
           !event.data.pinch_update.zoom_disabled) {
         if (pending_touchpad_pinch_begin_) {
           host()->ForwardGestureEvent(*pending_touchpad_pinch_begin_);
@@ -412,7 +405,7 @@ void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
         host()->ForwardGestureEvent(pinch_event);
       }
       break;
-    case blink::WebInputEvent::kGesturePinchEnd:
+    case blink::WebInputEvent::Type::kGesturePinchEnd:
       if (pending_touchpad_pinch_begin_) {
         pending_touchpad_pinch_begin_.reset();
       } else {
@@ -421,8 +414,8 @@ void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
         host()->ForwardGestureEvent(pinch_end_event);
       }
       break;
-    case blink::WebInputEvent::kGestureDoubleTap:
-      if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED) {
+    case blink::WebInputEvent::Type::kGestureDoubleTap:
+      if (ack_result != blink::mojom::InputEventResultState::kConsumed) {
         blink::WebGestureEvent double_tap(event);
         double_tap.SetNeedsWheelEvent(false);
         // TODO(mcnee): Support double-tap zoom gesture for OOPIFs. For now,
@@ -485,7 +478,7 @@ bool RenderWidgetHostViewBase::RequestRepaintForTesting() {
 
 void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultState ack_result) {
   NOTREACHED();
 }
 
@@ -505,14 +498,14 @@ bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
   if (current_display_area_ == display.work_area() &&
       current_device_scale_factor_ == display.device_scale_factor() &&
       current_display_rotation_ == display.rotation() &&
-      current_display_color_space_ == display.color_space()) {
+      current_display_color_spaces_ == display.color_spaces()) {
     return false;
   }
 
   current_display_area_ = display.work_area();
   current_device_scale_factor_ = display.device_scale_factor();
   current_display_rotation_ = display.rotation();
-  current_display_color_space_ = display.color_space();
+  current_display_color_spaces_ = display.color_spaces();
   return true;
 }
 
@@ -532,10 +525,6 @@ void RenderWidgetHostViewBase::EnableAutoResize(const gfx::Size& min_size,
 void RenderWidgetHostViewBase::DisableAutoResize(const gfx::Size& new_size) {
   if (!new_size.IsEmpty())
     SetSize(new_size);
-  // This clears the cached value in the WebContents, so that OOPIFs will
-  // stop using it.
-  if (host()->delegate())
-    host()->delegate()->ResetAutoResizeSize();
   host()->SetAutoResize(false, gfx::Size(), gfx::Size());
   host()->SynchronizeVisualProperties();
 }
@@ -763,16 +752,29 @@ RenderWidgetHostViewBase::GetTouchSelectionControllerClientManager() {
   return nullptr;
 }
 
-void RenderWidgetHostViewBase::SetRecordTabSwitchTimeRequest(
+void RenderWidgetHostViewBase::SetRecordContentToVisibleTimeRequest(
     base::TimeTicks start_time,
-    bool destination_is_loaded,
-    bool destination_is_frozen) {
-  last_record_tab_switch_time_request_.emplace(
-      start_time, destination_is_loaded, destination_is_frozen);
+    base::Optional<bool> destination_is_loaded,
+    base::Optional<bool> destination_is_frozen,
+    bool show_reason_tab_switching,
+    bool show_reason_unoccluded,
+    bool show_reason_bfcache_restore) {
+  if (last_record_tab_switch_time_request_.has_value()) {
+    last_record_tab_switch_time_request_.value().UpdateRequest(
+        RecordContentToVisibleTimeRequest(
+            start_time, destination_is_loaded, destination_is_frozen,
+            show_reason_tab_switching, show_reason_unoccluded,
+            show_reason_bfcache_restore));
+  } else {
+    last_record_tab_switch_time_request_.emplace(
+        start_time, destination_is_loaded, destination_is_frozen,
+        show_reason_tab_switching, show_reason_unoccluded,
+        show_reason_bfcache_restore);
+  }
 }
 
-base::Optional<RecordTabSwitchTimeRequest>
-RenderWidgetHostViewBase::TakeRecordTabSwitchTimeRequest() {
+base::Optional<RecordContentToVisibleTimeRequest>
+RenderWidgetHostViewBase::TakeRecordContentToVisibleTimeRequest() {
   auto stored_state = std::move(last_record_tab_switch_time_request_);
   last_record_tab_switch_time_request_.reset();
   return stored_state;

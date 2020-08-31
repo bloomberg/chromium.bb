@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.feed.library.piet;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.Supplier;
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
 import org.chromium.chrome.browser.feed.library.piet.PietStylesHelper.PietStylesHelperFactory;
 import org.chromium.chrome.browser.feed.library.piet.ui.RoundedCornerMaskCache;
@@ -26,7 +27,7 @@ class AdapterParameters {
     private static final int DEFAULT_NUM_TEMPLATE_POOLS = 30;
 
     final Context mContext;
-    final Supplier</*@Nullable*/ ViewGroup> mParentViewSupplier;
+    final Supplier<ViewGroup> mParentViewSupplier;
     final HostProviders mHostProviders;
     final ParameterizedTextEvaluator mTemplatedStringEvaluator;
     final ElementAdapterFactory mElementAdapterFactory;
@@ -41,8 +42,8 @@ class AdapterParameters {
     // Doesn't like passing "this" to the new ElementAdapterFactory; however, nothing in the
     // factory's construction will reference the elementAdapterFactory member of this, so should be
     // safe.
-    @SuppressWarnings("initialization")
-    public AdapterParameters(Context context, Supplier</*@Nullable*/ ViewGroup> parentViewSupplier,
+    @SuppressWarnings("nullness")
+    public AdapterParameters(Context context, Supplier<ViewGroup> parentViewSupplier,
             HostProviders hostProviders, Clock clock, boolean allowLegacyRoundedCornerImpl,
             boolean allowOutlineRoundedCornerImpl) {
         this.mContext = context;
@@ -68,7 +69,7 @@ class AdapterParameters {
 
     /** Testing-only constructor for mocking the internally-constructed objects. */
     @VisibleForTesting
-    AdapterParameters(Context context, Supplier</*@Nullable*/ ViewGroup> parentViewSupplier,
+    AdapterParameters(Context context, Supplier<ViewGroup> parentViewSupplier,
             HostProviders hostProviders, ParameterizedTextEvaluator templatedStringEvaluator,
             ElementAdapterFactory elementAdapterFactory, TemplateBinder templateBinder,
             Clock clock) {
@@ -79,7 +80,7 @@ class AdapterParameters {
 
     /** Testing-only constructor for mocking the internally-constructed objects. */
     @VisibleForTesting
-    AdapterParameters(Context context, Supplier</*@Nullable*/ ViewGroup> parentViewSupplier,
+    AdapterParameters(Context context, Supplier<ViewGroup> parentViewSupplier,
             HostProviders hostProviders, ParameterizedTextEvaluator templatedStringEvaluator,
             ElementAdapterFactory elementAdapterFactory, TemplateBinder templateBinder, Clock clock,
             PietStylesHelperFactory pietStylesHelperFactory, RoundedCornerMaskCache maskCache,

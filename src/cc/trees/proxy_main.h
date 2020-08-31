@@ -13,7 +13,6 @@
 
 namespace cc {
 
-class MutatorEvents;
 class CompletionEvent;
 class LayerTreeFrameSink;
 class LayerTreeHost;
@@ -48,7 +47,6 @@ class CC_EXPORT ProxyMain : public Proxy {
   void BeginMainFrameNotExpectedSoon();
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time);
   void DidCommitAndDrawFrame();
-  void SetAnimationEvents(std::unique_ptr<MutatorEvents> events);
   void DidLoseLayerTreeFrameSink();
   void RequestNewLayerTreeFrameSink();
   void DidInitializeLayerTreeFrameSink(bool success);
@@ -59,6 +57,7 @@ class CC_EXPORT ProxyMain : public Proxy {
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback);
+  void NotifyThroughputTrackerResults(CustomTrackerResults results);
 
   CommitPipelineStage max_requested_pipeline_stage() const {
     return max_requested_pipeline_stage_;

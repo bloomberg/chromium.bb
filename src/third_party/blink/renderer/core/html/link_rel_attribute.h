@@ -47,7 +47,7 @@ class CORE_EXPORT LinkRelAttribute {
   explicit LinkRelAttribute(const String&);
 
   bool IsStyleSheet() const { return is_style_sheet_; }
-  IconType GetIconType() const { return icon_type_; }
+  mojom::blink::FaviconIconType GetIconType() const { return icon_type_; }
   bool IsAlternate() const { return is_alternate_; }
   bool IsDNSPrefetch() const { return is_dns_prefetch_; }
   bool IsPreconnect() const { return is_preconnect_; }
@@ -60,9 +60,10 @@ class CORE_EXPORT LinkRelAttribute {
   bool IsModulePreload() const { return is_module_preload_; }
   bool IsServiceWorker() const { return is_service_worker_; }
   bool IsCanonical() const { return is_canonical_; }
+  bool IsMonetization() const { return is_monetization_; }
 
  private:
-  IconType icon_type_;
+  mojom::blink::FaviconIconType icon_type_;
   bool is_style_sheet_ : 1;
   bool is_alternate_ : 1;
   bool is_dns_prefetch_ : 1;
@@ -76,6 +77,7 @@ class CORE_EXPORT LinkRelAttribute {
   bool is_module_preload_ : 1;
   bool is_service_worker_ : 1;
   bool is_canonical_ : 1;
+  bool is_monetization_ : 1;
 };
 
 }  // namespace blink

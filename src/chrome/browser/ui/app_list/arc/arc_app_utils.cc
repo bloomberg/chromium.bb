@@ -28,8 +28,13 @@
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/chromeos/arc/notification/arc_supervision_transition_notification.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
+#include "chrome/browser/ui/app_list/app_list_client_impl.h"
+#include "chrome/browser/ui/app_list/search/search_controller.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/arc_shelf_spinner_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -78,8 +83,6 @@ constexpr char kIntentHelperClassName[] =
     "org.chromium.arc.intent_helper.SettingsReceiver";
 constexpr char kSetInTouchModeIntent[] =
     "org.chromium.arc.intent_helper.SET_IN_TOUCH_MODE";
-constexpr char kShowTalkbackSettingsIntent[] =
-    "org.chromium.arc.intent_helper.SHOW_TALKBACK_SETTINGS";
 
 constexpr char kAction[] = "action";
 constexpr char kActionMain[] = "android.intent.action.MAIN";
@@ -96,7 +99,6 @@ constexpr char kAndroidContactsAppId[] = "kipfkokfekalckplgaikemhghlbkgpfl";
 
 constexpr char const* kAppIdsHiddenInLauncher[] = {
     kAndroidClockAppId,   kSettingsAppId,     kAndroidFilesAppId,
-    kCameraAppId,         kLegacyCameraAppId, kCameraMigrationAppId,
     kAndroidContactsAppId};
 
 // Returns true if |event_flags| came from a mouse or touch event.
@@ -155,18 +157,8 @@ bool Launch(content::BrowserContext* context,
     return false;
   }
 
-  arc::mojom::IntentHelperInstance* intent_helper_instance =
-      GET_INTENT_HELPER_INSTANCE(SendBroadcast);
-  if (intent_helper_instance) {
-    base::DictionaryValue extras;
-    extras.SetBoolean("inTouchMode", IsMouseOrTouchEventFromFlags(event_flags));
-    std::string extras_string;
-    base::JSONWriter::Write(extras, &extras_string);
-    intent_helper_instance->SendBroadcast(
-        kSetInTouchModeIntent,
-        ArcIntentHelperBridge::kArcIntentHelperPackageName,
-        kIntentHelperClassName, extras_string);
-  }
+  if (IsMouseOrTouchEventFromFlags(event_flags))
+    SetTouchMode(IsMouseOrTouchEventFromFlags(event_flags));
 
   // Unthrottle the ARC instance before launching an ARC app. This is done
   // to minimize lag on an app launch.
@@ -206,6 +198,14 @@ int64_t GetValidDisplayId(int64_t display_id) {
   return display::kInvalidDisplayId;
 }
 
+// Converts an app_id and a shortcut_id, eg. manifest_new_note_shortcut, into a
+// full URL for an Arc app shortcut, of the form:
+// appshortcutsearch://[app_id]/[shortcut_id].
+std::string ConstructArcAppShortcutUrl(const std::string& app_id,
+                                       const std::string& shortcut_id) {
+  return "appshortcutsearch://" + app_id + "/" + shortcut_id;
+}
+
 }  // namespace
 
 // Package names, kept in sorted order.
@@ -220,15 +220,12 @@ const char kSettingsAppDomainUrlActivity[] =
 constexpr char kSettingsAppPackage[] = "com.android.settings";
 
 // App IDs, kept in sorted order.
-const char kCameraAppId[] = "goamfaniemdfcajgcmmflhchgkmbngka";
-const char kCameraMigrationAppId[] = "ngmkobaiicipbagcngcmilfkhejlnfci";
 const char kGmailAppId[] = "hhkfkjpmacfncmbapfohfocpjpdnobjg";
 const char kGoogleCalendarAppId[] = "decaoeahkmjpajbmlbpogjjkjbjokeed";
 const char kGoogleDuoAppId[] = "djkcbcmkefiiphjkonbeknmcgiheajce";
 const char kGoogleMapsAppId[] = "gmhipfhgnoelkiiofcnimehjnpaejiel";
 const char kGooglePhotosAppId[] = "fdbkkojdbojonckghlanfaopfakedeca";
 const char kInfinitePainterAppId[] = "afihfgfghkmdmggakhkgnfhlikhdpima";
-const char kLegacyCameraAppId[] = "obfofkigjfamlldmipdegnjlcpincibc";
 const char kLightRoomAppId[] = "fpegfnbgomakooccabncdaelhfppceni";
 const char kPlayBooksAppId[] = "cafegjnmmjpfibnlddppihpnkbkgicbg";
 const char kPlayGamesAppId[] = "nplnnjkbeijcggmpdcecpabgbjgeiedc";
@@ -301,6 +298,19 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
     VLOG(1) << "Attempt to launch " << app_id
             << " while ARC++ is blocked due to incompatible file system.";
     arc::ShowArcMigrationGuideNotification(profile);
+    return false;
+  }
+
+  // Check if ARC apps are not allowed to start because device needs to be
+  // powerwashed. If it is so then show notification instead of starting
+  // the application.
+  policy::PowerwashRequirementsChecker pw_checker(
+      policy::PowerwashRequirementsChecker::Context::kArc, profile);
+  if (pw_checker.GetState() !=
+      policy::PowerwashRequirementsChecker::State::kNotRequired) {
+    VLOG(1) << "Attempt to launch " << app_id
+            << " while ARC++ is blocked due to powerwash request.";
+    pw_checker.ShowNotification();
     return false;
   }
 
@@ -444,16 +454,21 @@ void CloseTask(int task_id) {
   app_instance->CloseTask(task_id);
 }
 
-void ShowTalkBackSettings() {
+bool SetTouchMode(bool enable) {
   arc::mojom::IntentHelperInstance* intent_helper_instance =
       GET_INTENT_HELPER_INSTANCE(SendBroadcast);
   if (!intent_helper_instance)
-    return;
+    return false;
 
+  base::DictionaryValue extras;
+  extras.SetBoolean("inTouchMode", enable);
+  std::string extras_string;
+  base::JSONWriter::Write(extras, &extras_string);
   intent_helper_instance->SendBroadcast(
-      kShowTalkbackSettingsIntent,
-      ArcIntentHelperBridge::kArcIntentHelperPackageName,
-      kIntentHelperClassName, "{}");
+      kSetInTouchModeIntent, ArcIntentHelperBridge::kArcIntentHelperPackageName,
+      kIntentHelperClassName, extras_string);
+
+  return true;
 }
 
 std::vector<std::string> GetSelectedPackagesFromPrefs(
@@ -754,6 +769,58 @@ void Intent::AddExtraParam(const std::string& extra_param) {
 
 bool Intent::HasExtraParam(const std::string& extra_param) const {
   return base::Contains(extra_params_, extra_param);
+}
+
+const std::string GetAppFromAppOrGroupId(content::BrowserContext* context,
+                                         const std::string& app_or_group_id) {
+  const arc::ArcAppShelfId app_shelf_id =
+      arc::ArcAppShelfId::FromString(app_or_group_id);
+  if (!app_shelf_id.has_shelf_group_id())
+    return app_shelf_id.app_id();
+
+  const ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(context);
+  DCHECK(prefs);
+
+  // Try to find a shortcut with requested shelf group id.
+  const std::vector<std::string> app_ids = prefs->GetAppIds();
+  for (const auto& app_id : app_ids) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+    DCHECK(app_info);
+    if (!app_info || !app_info->shortcut)
+      continue;
+    const arc::ArcAppShelfId shortcut_shelf_id =
+        arc::ArcAppShelfId::FromIntentAndAppId(app_info->intent_uri, app_id);
+    if (shortcut_shelf_id.has_shelf_group_id() &&
+        shortcut_shelf_id.shelf_group_id() == app_shelf_id.shelf_group_id()) {
+      return app_id;
+    }
+  }
+
+  // Shortcut with requested shelf group id was not found, use app id as
+  // fallback.
+  return app_shelf_id.app_id();
+}
+
+void ExecuteArcShortcutCommand(content::BrowserContext* context,
+                               const std::string& id,
+                               const std::string& shortcut_id,
+                               int64_t display_id) {
+  const arc::ArcAppShelfId arc_shelf_id = arc::ArcAppShelfId::FromString(id);
+  DCHECK(arc_shelf_id.valid());
+  arc::LaunchAppShortcutItem(context, arc_shelf_id.app_id(), shortcut_id,
+                             display_id);
+
+  // Send a training signal to the search controller.
+  AppListClientImpl* app_list_client_impl = AppListClientImpl::GetInstance();
+  if (!app_list_client_impl)
+    return;
+
+  app_list::AppLaunchData app_launch_data;
+  app_launch_data.id =
+      ConstructArcAppShortcutUrl(arc_shelf_id.app_id(), shortcut_id),
+  app_launch_data.ranking_item_type =
+      app_list::RankingItemType::kArcAppShortcut;
+  app_list_client_impl->search_controller()->Train(std::move(app_launch_data));
 }
 
 }  // namespace arc

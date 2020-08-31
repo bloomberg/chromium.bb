@@ -10,14 +10,12 @@
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 
-namespace ios {
-class ChromeBrowserState;
-}
-
 @protocol ApplicationCommands;
-@class DeviceSharingManager;
+class ChromeBrowserState;
 @class MainController;
 @class NewTabPageController;
+@class SceneController;
+@class SceneState;
 @class UIViewController;
 
 namespace chrome_test_util {
@@ -25,17 +23,20 @@ namespace chrome_test_util {
 // Returns the main controller.
 MainController* GetMainController();
 
-// Returns the DeviceSharingManager object.
-DeviceSharingManager* GetDeviceSharingManager();
+// Returns the foreground, active scene.
+SceneState* GetForegroundActiveScene();
+
+// Returns the foreground, active scene controller.
+SceneController* GetForegroundActiveSceneController();
 
 // Returns the current, non-incognito ChromeBrowserState.
-ios::ChromeBrowserState* GetOriginalBrowserState();
+ChromeBrowserState* GetOriginalBrowserState();
 
 // Returns the current incognito ChromeBrowserState
-ios::ChromeBrowserState* GetCurrentIncognitoBrowserState();
+ChromeBrowserState* GetCurrentIncognitoBrowserState();
 
 // Returns the dispatcher for the main BVC.
-// TODO(crbug.com/738881): Use DispatcherForActiveBrowserViewController()
+// TODO(crbug.com/738881): Use HandlerForActiveBrowser()
 // instead.
 id<BrowserCommands> BrowserCommandDispatcherForMainBVC();
 
@@ -44,10 +45,8 @@ id<BrowserCommands> BrowserCommandDispatcherForMainBVC();
 // possible.
 UIViewController* GetActiveViewController();
 
-// Returns the dispatcher for the active BrowserViewController. If the
-// BrowserViewController isn't presented, returns nil.
-id<ApplicationCommands, BrowserCommands>
-DispatcherForActiveBrowserViewController();
+// Returns the dispatcher for the active Browser.
+id<ApplicationCommands, BrowserCommands> HandlerForActiveBrowser();
 
 // Removes all presented infobars.
 void RemoveAllInfoBars();
@@ -60,7 +59,7 @@ void ClearPresentedState();
 void SetBooleanLocalStatePref(const char* pref_name, bool value);
 
 // Sets the value of a boolean user pref in the given browser state.
-void SetBooleanUserPref(ios::ChromeBrowserState* browser_state,
+void SetBooleanUserPref(ChromeBrowserState* browser_state,
                         const char* pref_name,
                         bool value);
 

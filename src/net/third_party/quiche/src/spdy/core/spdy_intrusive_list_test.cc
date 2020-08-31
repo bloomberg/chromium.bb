@@ -10,7 +10,7 @@
 #include <string>
 #include <utility>
 
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_test.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 
 namespace spdy {
 namespace test {
@@ -29,11 +29,12 @@ void swap(TestItem &a, TestItem &b) {
   swap(a.n, b.n);
 }
 
-class IntrusiveListTest : public ::testing::Test {
+class IntrusiveListTest : public QuicheTest {
  protected:
   void CheckLists() {
     CheckLists(l1, ll1);
-    if (::testing::Test::HasFailure()) return;
+    if (QuicheTest::HasFailure())
+      return;
     CheckLists(l2, ll2);
   }
 
@@ -287,19 +288,19 @@ struct AbstractBase : public SpdyIntrusiveLink<AbstractBase, BaseLinkId> {
 AbstractBase::~AbstractBase() {}
 struct DerivedClass : public SpdyIntrusiveLink<DerivedClass, DerivedLinkId>,
                       public AbstractBase {
-  virtual ~DerivedClass() {}
-  virtual std::string name() { return "DerivedClass"; }
+  ~DerivedClass() override {}
+  std::string name() override { return "DerivedClass"; }
 };
 struct VirtuallyDerivedBaseClass : public virtual AbstractBase {
-  virtual ~VirtuallyDerivedBaseClass() = 0;
-  virtual std::string name() { return "VirtuallyDerivedBaseClass"; }
+  ~VirtuallyDerivedBaseClass() override = 0;
+  std::string name() override { return "VirtuallyDerivedBaseClass"; }
 };
 VirtuallyDerivedBaseClass::~VirtuallyDerivedBaseClass() {}
 struct VirtuallyDerivedClassA
     : public SpdyIntrusiveLink<VirtuallyDerivedClassA, DerivedLinkId>,
       public virtual VirtuallyDerivedBaseClass {
-  virtual ~VirtuallyDerivedClassA() {}
-  virtual std::string name() { return "VirtuallyDerivedClassA"; }
+  ~VirtuallyDerivedClassA() override {}
+  std::string name() override { return "VirtuallyDerivedClassA"; }
 };
 struct NonceClass {
   virtual ~NonceClass() {}
@@ -309,16 +310,16 @@ struct VirtuallyDerivedClassB
     : public SpdyIntrusiveLink<VirtuallyDerivedClassB, DerivedLinkId>,
       public virtual NonceClass,
       public virtual VirtuallyDerivedBaseClass {
-  virtual ~VirtuallyDerivedClassB() {}
-  virtual std::string name() { return "VirtuallyDerivedClassB"; }
+  ~VirtuallyDerivedClassB() override {}
+  std::string name() override { return "VirtuallyDerivedClassB"; }
 };
 struct VirtuallyDerivedClassC
     : public SpdyIntrusiveLink<VirtuallyDerivedClassC, DerivedLinkId>,
       public virtual AbstractBase,
       public virtual NonceClass,
       public virtual VirtuallyDerivedBaseClass {
-  virtual ~VirtuallyDerivedClassC() {}
-  virtual std::string name() { return "VirtuallyDerivedClassC"; }
+  ~VirtuallyDerivedClassC() override {}
+  std::string name() override { return "VirtuallyDerivedClassC"; }
 };
 
 // Test for multiple layers between the element type and the link.

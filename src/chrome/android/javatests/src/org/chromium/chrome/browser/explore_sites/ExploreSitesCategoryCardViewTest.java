@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.explore_sites;
 import static org.junit.Assert.assertEquals;
 
 import android.support.test.filters.SmallTest;
-import android.support.v7.widget.RecyclerView;
 import android.util.Pair;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -18,11 +19,11 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.embedder_support.util.UrlConstants;
 
 import java.util.ArrayList;
 

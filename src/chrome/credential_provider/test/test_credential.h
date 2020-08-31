@@ -5,24 +5,21 @@
 #ifndef CHROME_CREDENTIAL_PROVIDER_TEST_TEST_CREDENTIAL_H_
 #define CHROME_CREDENTIAL_PROVIDER_TEST_TEST_CREDENTIAL_H_
 
-#include <memory>
-#include <string>
-
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlcomcli.h>
 #include <credentialprovider.h>
 
+#include <memory>
+#include <string>
+
+#include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/test/gls_runner_test_base.h"
-
-namespace base {
-class CommandLine;
-}
 
 namespace credential_provider {
 
@@ -46,6 +43,8 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
   virtual HRESULT STDMETHODCALLTYPE
   SetStartGlsEventName(const base::string16& event_name) = 0;
   virtual HRESULT STDMETHODCALLTYPE FailLoadingGaiaLogonStub() = 0;
+  virtual HRESULT STDMETHODCALLTYPE
+  UseRealGlsBaseCommandLine(bool use_real_gls_base_command_line) = 0;
   virtual BSTR STDMETHODCALLTYPE GetFinalUsername() = 0;
   virtual std::string STDMETHODCALLTYPE GetFinalEmail() = 0;
   virtual bool STDMETHODCALLTYPE IsAuthenticationResultsEmpty() = 0;
@@ -56,6 +55,8 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
   virtual bool STDMETHODCALLTYPE IsGlsRunning() = 0;
   virtual bool STDMETHODCALLTYPE IsAdJoinedUser() = 0;
   virtual bool STDMETHODCALLTYPE ContainsIsAdJoinedUser() = 0;
+  virtual base::CommandLine STDMETHODCALLTYPE GetTestGlsCommandline() = 0;
+  virtual std::string STDMETHODCALLTYPE GetShowTosFromCmdLine() = 0;
 };
 
 // Test implementation of an ICredentialProviderCredential backed by a Gaia
@@ -87,6 +88,8 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   IFACEMETHODIMP WaitForGls() override;
   IFACEMETHODIMP SetStartGlsEventName(
       const base::string16& event_name) override;
+  IFACEMETHODIMP UseRealGlsBaseCommandLine(
+      bool use_real_gls_base_command_line) override;
   BSTR STDMETHODCALLTYPE GetFinalUsername() override;
   std::string STDMETHODCALLTYPE GetFinalEmail() override;
   bool STDMETHODCALLTYPE IsAuthenticationResultsEmpty() override;
@@ -97,6 +100,8 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   bool STDMETHODCALLTYPE IsGlsRunning() override;
   bool STDMETHODCALLTYPE IsAdJoinedUser() override;
   bool STDMETHODCALLTYPE ContainsIsAdJoinedUser() override;
+  base::CommandLine STDMETHODCALLTYPE GetTestGlsCommandline() override;
+  std::string STDMETHODCALLTYPE GetShowTosFromCmdLine() override;
 
   void SignalGlsCompletion();
 
@@ -122,8 +127,8 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
       CGaiaCredentialBase::UIProcessInfo* uiprocinfo) override;
 
   // Overrides to directly save to a fake scoped user profile.
-  HRESULT ForkSaveAccountInfoStub(const base::Value& dict,
-                                  BSTR* status_text) override;
+  HRESULT ForkPerformPostSigninActionsStub(const base::Value& dict,
+                                           BSTR* status_text) override;
 
   UiExitCodes default_exit_code_ = kUiecSuccess;
   std::string gls_email_;
@@ -137,6 +142,8 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   bool gls_process_started_ = false;
   bool ignore_expected_gaia_id_ = false;
   bool fail_loading_gaia_logon_stub_ = false;
+  std::string show_tos_command_line_;
+  bool use_real_gls_base_command_line_ = false;
 };
 
 template <class T>
@@ -264,6 +271,25 @@ bool CTestCredentialBase<T>::ContainsIsAdJoinedUser() {
 }
 
 template <class T>
+std::string CTestCredentialBase<T>::GetShowTosFromCmdLine() {
+  return show_tos_command_line_;
+}
+
+template <class T>
+HRESULT CTestCredentialBase<T>::UseRealGlsBaseCommandLine(
+    bool use_real_gls_base_command_line) {
+  use_real_gls_base_command_line_ = use_real_gls_base_command_line;
+  return S_OK;
+}
+
+template <class T>
+base::CommandLine CTestCredentialBase<T>::GetTestGlsCommandline() {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  T::GetGlsCommandline(&command_line);
+  return command_line;
+}
+
+template <class T>
 BSTR CTestCredentialBase<T>::GetErrorText() {
   return error_text_;
 }
@@ -297,6 +323,9 @@ void CTestCredentialBase<T>::SignalGlsCompletion() {
 template <class T>
 HRESULT CTestCredentialBase<T>::GetBaseGlsCommandline(
     base::CommandLine* command_line) {
+  if (use_real_gls_base_command_line_)
+    return T::GetBaseGlsCommandline(command_line);
+
   return GlsRunnerTestBase::GetFakeGlsCommandline(
       default_exit_code_, gls_email_, gaia_id_override_, gaia_password_,
       full_name_override_, start_gls_event_name_, ignore_expected_gaia_id_,
@@ -308,6 +337,12 @@ HRESULT CTestCredentialBase<T>::ForkGaiaLogonStub(
     OSProcessManager* process_manager,
     const base::CommandLine& command_line,
     CGaiaCredentialBase::UIProcessInfo* uiprocinfo) {
+  // Record command_line parameter "show_tos" into global variable.
+  std::string gcpw_path =
+      command_line.GetSwitchValueASCII(kGcpwEndpointPathSwitch);
+  show_tos_command_line_ =
+      (gcpw_path.find("show_tos=1") != std::string::npos) ? "1" : "0";
+
   if (fail_loading_gaia_logon_stub_)
     return E_FAIL;
 
@@ -323,9 +358,11 @@ HRESULT CTestCredentialBase<T>::ForkGaiaLogonStub(
 }
 
 template <class T>
-HRESULT CTestCredentialBase<T>::ForkSaveAccountInfoStub(const base::Value& dict,
-                                                        BSTR* status_text) {
-  return CGaiaCredentialBase::SaveAccountInfo(dict);
+HRESULT CTestCredentialBase<T>::ForkPerformPostSigninActionsStub(
+    const base::Value& dict,
+    BSTR* status_text) {
+  return CGaiaCredentialBase::PerformPostSigninActions(
+      dict, /* com_initialized */ true);
 }
 
 template <class T>

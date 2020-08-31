@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/lazy_task_runner.h"
+#include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/onc/onc_constants.h"
@@ -35,10 +35,10 @@ void ShutdownWifiServiceOnWorkerThread(
 
 // Ensure that all calls to WiFiService are called from the same task runner
 // since the implementations do not provide any thread safety gaurantees.
-base::LazySequencedTaskRunner g_sequenced_task_runner =
-    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(base::TaskTraits(
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
+base::LazyThreadPoolSequencedTaskRunner g_sequenced_task_runner =
+    LAZY_THREAD_POOL_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits({base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 
 }  // namespace
 
@@ -134,12 +134,13 @@ void NetworkingPrivateServiceClient::GetProperties(
 
   base::DictionaryValue* properties_ptr = properties.get();
   task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&WiFiService::GetProperties,
-                            base::Unretained(wifi_service_.get()), guid,
-                            properties_ptr, error),
-      base::Bind(&NetworkingPrivateServiceClient::AfterGetProperties,
-                 weak_factory_.GetWeakPtr(), service_callbacks->id, guid,
-                 base::Passed(&properties), base::Owned(error)));
+      FROM_HERE,
+      base::BindOnce(&WiFiService::GetProperties,
+                     base::Unretained(wifi_service_.get()), guid,
+                     properties_ptr, error),
+      base::BindOnce(&NetworkingPrivateServiceClient::AfterGetProperties,
+                     weak_factory_.GetWeakPtr(), service_callbacks->id, guid,
+                     base::Passed(&properties), base::Owned(error)));
 }
 
 void NetworkingPrivateServiceClient::GetManagedProperties(
@@ -155,12 +156,13 @@ void NetworkingPrivateServiceClient::GetManagedProperties(
 
   base::DictionaryValue* properties_ptr = properties.get();
   task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&WiFiService::GetManagedProperties,
-                            base::Unretained(wifi_service_.get()), guid,
-                            properties_ptr, error),
-      base::Bind(&NetworkingPrivateServiceClient::AfterGetProperties,
-                 weak_factory_.GetWeakPtr(), service_callbacks->id, guid,
-                 base::Passed(&properties), base::Owned(error)));
+      FROM_HERE,
+      base::BindOnce(&WiFiService::GetManagedProperties,
+                     base::Unretained(wifi_service_.get()), guid,
+                     properties_ptr, error),
+      base::BindOnce(&NetworkingPrivateServiceClient::AfterGetProperties,
+                     weak_factory_.GetWeakPtr(), service_callbacks->id, guid,
+                     base::Passed(&properties), base::Owned(error)));
 }
 
 void NetworkingPrivateServiceClient::GetState(
@@ -177,11 +179,12 @@ void NetworkingPrivateServiceClient::GetState(
   base::DictionaryValue* properties_ptr = properties.get();
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&WiFiService::GetState, base::Unretained(wifi_service_.get()),
-                 guid, properties_ptr, error),
-      base::Bind(&NetworkingPrivateServiceClient::AfterGetProperties,
-                 weak_factory_.GetWeakPtr(), service_callbacks->id, guid,
-                 base::Passed(&properties), base::Owned(error)));
+      base::BindOnce(&WiFiService::GetState,
+                     base::Unretained(wifi_service_.get()), guid,
+                     properties_ptr, error),
+      base::BindOnce(&NetworkingPrivateServiceClient::AfterGetProperties,
+                     weak_factory_.GetWeakPtr(), service_callbacks->id, guid,
+                     base::Passed(&properties), base::Owned(error)));
 }
 
 void NetworkingPrivateServiceClient::SetProperties(
@@ -199,12 +202,13 @@ void NetworkingPrivateServiceClient::SetProperties(
   std::string* error = new std::string;
 
   task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&WiFiService::SetProperties,
-                            base::Unretained(wifi_service_.get()), guid,
-                            base::Passed(&properties), error),
-      base::Bind(&NetworkingPrivateServiceClient::AfterSetProperties,
-                 weak_factory_.GetWeakPtr(), service_callbacks->id,
-                 base::Owned(error)));
+      FROM_HERE,
+      base::BindOnce(&WiFiService::SetProperties,
+                     base::Unretained(wifi_service_.get()), guid,
+                     base::Passed(&properties), error),
+      base::BindOnce(&NetworkingPrivateServiceClient::AfterSetProperties,
+                     weak_factory_.GetWeakPtr(), service_callbacks->id,
+                     base::Owned(error)));
 }
 
 void NetworkingPrivateServiceClient::CreateNetwork(
@@ -220,12 +224,13 @@ void NetworkingPrivateServiceClient::CreateNetwork(
   std::string* error = new std::string;
 
   task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&WiFiService::CreateNetwork,
-                            base::Unretained(wifi_service_.get()), shared,
-                            base::Passed(&properties), network_guid, error),
-      base::Bind(&NetworkingPrivateServiceClient::AfterCreateNetwork,
-                 weak_factory_.GetWeakPtr(), service_callbacks->id,
-                 base::Owned(network_guid), base::Owned(error)));
+      FROM_HERE,
+      base::BindOnce(&WiFiService::CreateNetwork,
+                     base::Unretained(wifi_service_.get()), shared,
+                     base::Passed(&properties), network_guid, error),
+      base::BindOnce(&NetworkingPrivateServiceClient::AfterCreateNetwork,
+                     weak_factory_.GetWeakPtr(), service_callbacks->id,
+                     base::Owned(network_guid), base::Owned(error)));
 }
 
 void NetworkingPrivateServiceClient::ForgetNetwork(
@@ -254,12 +259,13 @@ void NetworkingPrivateServiceClient::GetNetworks(
 
   base::ListValue* networks_ptr = networks.get();
   task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&WiFiService::GetVisibleNetworks,
-                            base::Unretained(wifi_service_.get()), network_type,
-                            networks_ptr, false),
-      base::Bind(&NetworkingPrivateServiceClient::AfterGetVisibleNetworks,
-                 weak_factory_.GetWeakPtr(), service_callbacks->id,
-                 base::Passed(&networks)));
+      FROM_HERE,
+      base::BindOnce(&WiFiService::GetVisibleNetworks,
+                     base::Unretained(wifi_service_.get()), network_type,
+                     networks_ptr, false),
+      base::BindOnce(&NetworkingPrivateServiceClient::AfterGetVisibleNetworks,
+                     weak_factory_.GetWeakPtr(), service_callbacks->id,
+                     base::Passed(&networks)));
 }
 
 void NetworkingPrivateServiceClient::StartConnect(
@@ -273,11 +279,12 @@ void NetworkingPrivateServiceClient::StartConnect(
   std::string* error = new std::string;
 
   task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&WiFiService::StartConnect,
-                            base::Unretained(wifi_service_.get()), guid, error),
-      base::Bind(&NetworkingPrivateServiceClient::AfterStartConnect,
-                 weak_factory_.GetWeakPtr(), service_callbacks->id,
-                 base::Owned(error)));
+      FROM_HERE,
+      base::BindOnce(&WiFiService::StartConnect,
+                     base::Unretained(wifi_service_.get()), guid, error),
+      base::BindOnce(&NetworkingPrivateServiceClient::AfterStartConnect,
+                     weak_factory_.GetWeakPtr(), service_callbacks->id,
+                     base::Owned(error)));
 }
 
 void NetworkingPrivateServiceClient::StartDisconnect(
@@ -291,11 +298,12 @@ void NetworkingPrivateServiceClient::StartDisconnect(
   std::string* error = new std::string;
 
   task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&WiFiService::StartDisconnect,
-                            base::Unretained(wifi_service_.get()), guid, error),
-      base::Bind(&NetworkingPrivateServiceClient::AfterStartDisconnect,
-                 weak_factory_.GetWeakPtr(), service_callbacks->id,
-                 base::Owned(error)));
+      FROM_HERE,
+      base::BindOnce(&WiFiService::StartDisconnect,
+                     base::Unretained(wifi_service_.get()), guid, error),
+      base::BindOnce(&NetworkingPrivateServiceClient::AfterStartDisconnect,
+                     weak_factory_.GetWeakPtr(), service_callbacks->id,
+                     base::Owned(error)));
 }
 
 void NetworkingPrivateServiceClient::SetWifiTDLSEnabledState(

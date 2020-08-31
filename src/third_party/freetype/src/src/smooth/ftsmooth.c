@@ -4,7 +4,7 @@
  *
  *   Anti-aliasing renderer interface (body).
  *
- * Copyright (C) 2000-2019 by
+ * Copyright (C) 2000-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -44,7 +44,7 @@
     sub[2].x = 21;
     sub[2].y = 0;
 
-#elif 0   /* or else, once ClearType patents expire */
+#else   /* set up default LCD filtering */
 
     FT_Library_SetLcdFilter( render->root.library, FT_LCD_FILTER_DEFAULT );
 
@@ -110,11 +110,10 @@
 
   /* convert a slot's glyph image into a bitmap */
   static FT_Error
-  ft_smooth_render_generic( FT_Renderer       render,
-                            FT_GlyphSlot      slot,
-                            FT_Render_Mode    mode,
-                            const FT_Vector*  origin,
-                            FT_Render_Mode    required_mode )
+  ft_smooth_render( FT_Renderer       render,
+                    FT_GlyphSlot      slot,
+                    FT_Render_Mode    mode,
+                    const FT_Vector*  origin )
   {
     FT_Error     error   = FT_Err_Ok;
     FT_Outline*  outline = &slot->outline;
@@ -136,7 +135,9 @@
     }
 
     /* check mode */
-    if ( mode != required_mode )
+    if ( mode != FT_RENDER_MODE_NORMAL &&
+         mode != FT_RENDER_MODE_LIGHT  &&
+         !hmul && !vmul )
     {
       error = FT_THROW( Cannot_Render_Glyph );
       goto Exit;
@@ -154,6 +155,9 @@
       error = FT_THROW( Raster_Overflow );
       goto Exit;
     }
+
+    if ( !bitmap->rows || !bitmap->pitch )
+      goto Exit;
 
     /* allocate new one */
     if ( FT_ALLOC_MULT( bitmap->buffer, bitmap->rows, bitmap->pitch ) )
@@ -188,7 +192,7 @@
     /* implode outline if needed */
     {
       FT_Vector*  points     = outline->points;
-      FT_Vector*  points_end = points + outline->n_points;
+      FT_Vector*  points_end = FT_OFFSET( points, outline->n_points );
       FT_Vector*  vec;
 
 
@@ -207,7 +211,7 @@
     /* deflate outline if needed */
     {
       FT_Vector*  points     = outline->points;
-      FT_Vector*  points_end = points + outline->n_points;
+      FT_Vector*  points_end = FT_OFFSET( points, outline->n_points );
       FT_Vector*  vec;
 
 
@@ -380,45 +384,6 @@
   }
 
 
-  /* convert a slot's glyph image into a bitmap */
-  static FT_Error
-  ft_smooth_render( FT_Renderer       render,
-                    FT_GlyphSlot      slot,
-                    FT_Render_Mode    mode,
-                    const FT_Vector*  origin )
-  {
-    if ( mode == FT_RENDER_MODE_LIGHT )
-      mode = FT_RENDER_MODE_NORMAL;
-
-    return ft_smooth_render_generic( render, slot, mode, origin,
-                                     FT_RENDER_MODE_NORMAL );
-  }
-
-
-  /* convert a slot's glyph image into a horizontal LCD bitmap */
-  static FT_Error
-  ft_smooth_render_lcd( FT_Renderer       render,
-                        FT_GlyphSlot      slot,
-                        FT_Render_Mode    mode,
-                        const FT_Vector*  origin )
-  {
-    return ft_smooth_render_generic( render, slot, mode, origin,
-                                     FT_RENDER_MODE_LCD );
-  }
-
-
-  /* convert a slot's glyph image into a vertical LCD bitmap */
-  static FT_Error
-  ft_smooth_render_lcd_v( FT_Renderer       render,
-                          FT_GlyphSlot      slot,
-                          FT_Render_Mode    mode,
-                          const FT_Vector*  origin )
-  {
-    return ft_smooth_render_generic( render, slot, mode, origin,
-                                     FT_RENDER_MODE_LCD_V );
-  }
-
-
   FT_DEFINE_RENDERER(
     ft_smooth_renderer_class,
 
@@ -443,60 +408,6 @@
     (FT_Renderer_SetModeFunc)  ft_smooth_set_mode,   /* set_mode        */
 
     (FT_Raster_Funcs*)&ft_grays_raster               /* raster_class    */
-  )
-
-
-  FT_DEFINE_RENDERER(
-    ft_smooth_lcd_renderer_class,
-
-      FT_MODULE_RENDERER,
-      sizeof ( FT_RendererRec ),
-
-      "smooth-lcd",
-      0x10000L,
-      0x20000L,
-
-      NULL,    /* module specific interface */
-
-      (FT_Module_Constructor)ft_smooth_init,  /* module_init   */
-      (FT_Module_Destructor) NULL,            /* module_done   */
-      (FT_Module_Requester)  NULL,            /* get_interface */
-
-    FT_GLYPH_FORMAT_OUTLINE,
-
-    (FT_Renderer_RenderFunc)   ft_smooth_render_lcd,  /* render_glyph    */
-    (FT_Renderer_TransformFunc)ft_smooth_transform,   /* transform_glyph */
-    (FT_Renderer_GetCBoxFunc)  ft_smooth_get_cbox,    /* get_glyph_cbox  */
-    (FT_Renderer_SetModeFunc)  ft_smooth_set_mode,    /* set_mode        */
-
-    (FT_Raster_Funcs*)&ft_grays_raster                /* raster_class    */
-  )
-
-
-  FT_DEFINE_RENDERER(
-    ft_smooth_lcdv_renderer_class,
-
-      FT_MODULE_RENDERER,
-      sizeof ( FT_RendererRec ),
-
-      "smooth-lcdv",
-      0x10000L,
-      0x20000L,
-
-      NULL,    /* module specific interface */
-
-      (FT_Module_Constructor)ft_smooth_init,  /* module_init   */
-      (FT_Module_Destructor) NULL,            /* module_done   */
-      (FT_Module_Requester)  NULL,            /* get_interface */
-
-    FT_GLYPH_FORMAT_OUTLINE,
-
-    (FT_Renderer_RenderFunc)   ft_smooth_render_lcd_v,  /* render_glyph    */
-    (FT_Renderer_TransformFunc)ft_smooth_transform,     /* transform_glyph */
-    (FT_Renderer_GetCBoxFunc)  ft_smooth_get_cbox,      /* get_glyph_cbox  */
-    (FT_Renderer_SetModeFunc)  ft_smooth_set_mode,      /* set_mode        */
-
-    (FT_Raster_Funcs*)&ft_grays_raster                  /* raster_class    */
   )
 
 

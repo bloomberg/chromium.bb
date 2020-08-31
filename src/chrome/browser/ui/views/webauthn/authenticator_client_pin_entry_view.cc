@@ -52,12 +52,12 @@ AuthenticatorClientPinEntryView::AuthenticatorClientPinEntryView(
   views::ColumnSet* columns = layout->AddColumnSet(0);
 
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-                     0, 0);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   columns->AddPaddingColumn(views::GridLayout::kFixedSize, 10);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-                     0, 0);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
 
@@ -92,22 +92,9 @@ AuthenticatorClientPinEntryView::AuthenticatorClientPinEntryView(
   }
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
-
-  auto error_label = std::make_unique<views::Label>(
-      base::string16(), views::style::CONTEXT_LABEL, STYLE_RED);
-  error_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  error_label_ = layout->AddView(std::move(error_label), 3 /* col_span */,
-                                 1 /* row_span */);
 }
 
 AuthenticatorClientPinEntryView::~AuthenticatorClientPinEntryView() = default;
-
-void AuthenticatorClientPinEntryView::UpdateError(const base::string16& text) {
-  error_label_->SetVisible(true);
-  error_label_->SetText(text);
-  error_label_->SizeToPreferredSize();
-  Layout();
-}
 
 void AuthenticatorClientPinEntryView::RequestFocus() {
   pin_text_field_->RequestFocus();

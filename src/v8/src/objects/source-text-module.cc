@@ -369,9 +369,14 @@ bool SourceTextModule::RunInitializationCode(Isolate* isolate,
   Handle<JSFunction> function(JSFunction::cast(module->code()), isolate);
   DCHECK_EQ(MODULE_SCOPE, function->shared().scope_info().scope_type());
   Handle<Object> receiver = isolate->factory()->undefined_value();
-  Handle<Object> argv[] = {module};
+
+  Handle<ScopeInfo> scope_info(function->shared().scope_info(), isolate);
+  Handle<Context> context = isolate->factory()->NewModuleContext(
+      module, isolate->native_context(), scope_info);
+  function->set_context(*context);
+
   MaybeHandle<Object> maybe_generator =
-      Execution::Call(isolate, function, receiver, arraysize(argv), argv);
+      Execution::Call(isolate, function, receiver, 0, {});
   Handle<Object> generator;
   if (!maybe_generator.ToHandle(&generator)) {
     DCHECK(isolate->has_pending_exception());
@@ -576,6 +581,16 @@ Handle<JSModuleNamespace> SourceTextModule::GetModuleNamespace(
   Handle<Module> requested_module(
       Module::cast(module->requested_modules().get(module_request)), isolate);
   return Module::GetModuleNamespace(isolate, requested_module);
+}
+
+Handle<JSObject> SourceTextModule::GetImportMeta(
+    Isolate* isolate, Handle<SourceTextModule> module) {
+  Handle<HeapObject> import_meta(module->import_meta(), isolate);
+  if (import_meta->IsTheHole(isolate)) {
+    import_meta = isolate->RunHostInitializeImportMetaObjectCallback(module);
+    module->set_import_meta(*import_meta);
+  }
+  return Handle<JSObject>::cast(import_meta);
 }
 
 MaybeHandle<Object> SourceTextModule::EvaluateMaybeAsync(
@@ -906,7 +921,9 @@ MaybeHandle<Object> SourceTextModule::InnerExecuteAsyncModule(
   Handle<Object> result;
   ASSIGN_RETURN_ON_EXCEPTION(
       isolate, result,
-      Execution::Call(isolate, resume, async_function_object, 0, nullptr),
+      Execution::TryCall(isolate, resume, async_function_object, 0, nullptr,
+                         Execution::MessageHandling::kKeepPending, nullptr,
+                         false),
       Object);
   return result;
 }
@@ -919,9 +936,21 @@ MaybeHandle<Object> SourceTextModule::ExecuteModule(
   Handle<JSFunction> resume(
       isolate->native_context()->generator_next_internal(), isolate);
   Handle<Object> result;
-  ASSIGN_RETURN_ON_EXCEPTION(
-      isolate, result, Execution::Call(isolate, resume, generator, 0, nullptr),
-      Object);
+
+  // With top_level_await, we need to catch any exceptions and reject
+  // the top level capability.
+  if (FLAG_harmony_top_level_await) {
+    ASSIGN_RETURN_ON_EXCEPTION(
+        isolate, result,
+        Execution::TryCall(isolate, resume, generator, 0, nullptr,
+                           Execution::MessageHandling::kKeepPending, nullptr,
+                           false),
+        Object);
+  } else {
+    ASSIGN_RETURN_ON_EXCEPTION(
+        isolate, result,
+        Execution::Call(isolate, resume, generator, 0, nullptr), Object);
+  }
   DCHECK(JSIteratorResult::cast(*result).done().BooleanValue(isolate));
   return handle(JSIteratorResult::cast(*result).value(), isolate);
 }
@@ -1040,7 +1069,7 @@ MaybeHandle<Object> SourceTextModule::InnerModuleEvaluation(
         module->IncrementPendingAsyncDependencies();
 
         //      2. Append module to requiredModule.[[AsyncParentModules]].
-        required_module->AddAsyncParentModule(isolate, module);
+        AddAsyncParentModule(isolate, required_module, module);
       }
     } else {
       RETURN_ON_EXCEPTION(isolate, Module::Evaluate(isolate, requested_module),

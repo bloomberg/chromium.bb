@@ -49,13 +49,17 @@ Location::Location(DOMWindow* dom_window)
     : dom_window_(dom_window),
       fragment_directive_(MakeGarbageCollected<FragmentDirective>()) {}
 
-void Location::Trace(blink::Visitor* visitor) {
+void Location::Trace(Visitor* visitor) {
   visitor->Trace(dom_window_);
   visitor->Trace(fragment_directive_);
   ScriptWrappable::Trace(visitor);
 }
 
 inline const KURL& Location::Url() const {
+  const KURL& web_bundle_claimed_url = GetDocument()->WebBundleClaimedUrl();
+  if (web_bundle_claimed_url.IsValid()) {
+    return web_bundle_claimed_url;
+  }
   const KURL& url = GetDocument()->Url();
   if (!url.IsValid()) {
     // Use "about:blank" while the page is still loading (before we have a
@@ -99,6 +103,7 @@ String Location::origin() const {
 }
 
 FragmentDirective* Location::fragmentDirective() const {
+  GetDocument()->CountUse(WebFeature::kLocationFragmentDirectiveAccessed);
   return fragment_directive_;
 }
 

@@ -59,7 +59,6 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
 
   void ForgeDiscoveries() {
     discovery_ = fake_discovery_factory_->ForgeNextHidDiscovery();
-    ble_discovery_ = fake_discovery_factory_->ForgeNextBleDiscovery();
     nfc_discovery_ = fake_discovery_factory_->ForgeNextNfcDiscovery();
     platform_discovery_ = fake_discovery_factory_->ForgeNextPlatformDiscovery();
   }
@@ -83,11 +82,13 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
         test_data::kClientDataJson, std::move(rp), std::move(user),
         std::move(credential_params));
 
+    MakeCredentialRequestHandler::Options options;
+    options.allow_skipping_pin_touch = true;
+
     auto handler = std::make_unique<MakeCredentialRequestHandler>(
-        nullptr, fake_discovery_factory_.get(), supported_transports_,
+        fake_discovery_factory_.get(), supported_transports_,
         std::move(request_parameter),
-        std::move(authenticator_selection_criteria),
-        /*allow_skipping_pin_touch=*/true, cb_.callback());
+        std::move(authenticator_selection_criteria), options, cb_.callback());
     if (pending_mock_platform_device_) {
       platform_discovery_->AddDevice(std::move(pending_mock_platform_device_));
       platform_discovery_->WaitForCallToStartAndSimulateSuccess();
@@ -101,8 +102,6 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
     using Transport = FidoTransportProtocol;
     if (base::Contains(transports, Transport::kUsbHumanInterfaceDevice))
       discovery()->WaitForCallToStartAndSimulateSuccess();
-    if (base::Contains(transports, Transport::kBluetoothLowEnergy))
-      ble_discovery()->WaitForCallToStartAndSimulateSuccess();
     if (base::Contains(transports, Transport::kNearFieldCommunication))
       nfc_discovery()->WaitForCallToStartAndSimulateSuccess();
 
@@ -111,8 +110,6 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
 
     if (!base::Contains(transports, Transport::kUsbHumanInterfaceDevice))
       EXPECT_FALSE(discovery()->is_start_requested());
-    if (!base::Contains(transports, Transport::kBluetoothLowEnergy))
-      EXPECT_FALSE(ble_discovery()->is_start_requested());
     if (!base::Contains(transports, Transport::kNearFieldCommunication))
       EXPECT_FALSE(nfc_discovery()->is_start_requested());
 
@@ -122,7 +119,6 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   }
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
-  test::FakeFidoDiscovery* ble_discovery() const { return ble_discovery_; }
   test::FakeFidoDiscovery* nfc_discovery() const { return nfc_discovery_; }
   TestMakeCredentialRequestCallback& callback() { return cb_; }
 
@@ -141,7 +137,6 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   std::unique_ptr<test::FakeFidoDiscoveryFactory> fake_discovery_factory_ =
       std::make_unique<test::FakeFidoDiscoveryFactory>();
   test::FakeFidoDiscovery* discovery_;
-  test::FakeFidoDiscovery* ble_discovery_;
   test::FakeFidoDiscovery* nfc_discovery_;
   test::FakeFidoDiscovery* platform_discovery_;
   scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
@@ -247,7 +242,6 @@ TEST_F(FidoMakeCredentialHandlerTest, UserVerificationRequirementNotMet) {
 }
 
 TEST_F(FidoMakeCredentialHandlerTest, CrossPlatformAttachment) {
-  EXPECT_CALL(*mock_adapter_, IsPresent()).WillOnce(::testing::Return(true));
   auto request_handler =
       CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
           AuthenticatorSelectionCriteria(
@@ -257,8 +251,7 @@ TEST_F(FidoMakeCredentialHandlerTest, CrossPlatformAttachment) {
 
   // kCloudAssistedBluetoothLowEnergy not yet supported for MakeCredential.
   ExpectAllowedTransportsForRequestAre(
-      request_handler.get(), {FidoTransportProtocol::kBluetoothLowEnergy,
-                              FidoTransportProtocol::kNearFieldCommunication,
+      request_handler.get(), {FidoTransportProtocol::kNearFieldCommunication,
                               FidoTransportProtocol::kUsbHumanInterfaceDevice});
 }
 
@@ -521,14 +514,12 @@ TEST_F(FidoMakeCredentialHandlerTest,
   EXPECT_FALSE(callback().was_called());
 }
 
-TEST_F(FidoMakeCredentialHandlerTest, SupportedTransportsAreOnlyBleAndNfc) {
-  const base::flat_set<FidoTransportProtocol> kBleAndNfc = {
-      FidoTransportProtocol::kBluetoothLowEnergy,
+TEST_F(FidoMakeCredentialHandlerTest, SupportedTransportsAreOnlyNfc) {
+  const base::flat_set<FidoTransportProtocol> kNfc = {
       FidoTransportProtocol::kNearFieldCommunication,
   };
 
-  set_supported_transports(kBleAndNfc);
-  EXPECT_CALL(*mock_adapter_, IsPresent()).WillOnce(::testing::Return(true));
+  set_supported_transports(kNfc);
   auto request_handler =
       CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
           AuthenticatorSelectionCriteria(
@@ -536,7 +527,7 @@ TEST_F(FidoMakeCredentialHandlerTest, SupportedTransportsAreOnlyBleAndNfc) {
               /*require_resident_key=*/false,
               UserVerificationRequirement::kPreferred));
 
-  ExpectAllowedTransportsForRequestAre(request_handler.get(), kBleAndNfc);
+  ExpectAllowedTransportsForRequestAre(request_handler.get(), kNfc);
 }
 
 TEST_F(FidoMakeCredentialHandlerTest, IncorrectRpIdHash) {

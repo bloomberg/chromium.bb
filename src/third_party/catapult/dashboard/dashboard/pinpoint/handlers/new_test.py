@@ -29,8 +29,10 @@ _BASE_REQUEST = {
     'configuration': 'chromium-rel-mac11-pro',
     'benchmark': 'speedometer',
     'bug_id': '12345',
+    'base_git_hash': '3',
     'start_git_hash': '1',
     'end_git_hash': '3',
+    'story': 'speedometer',
 }
 
 
@@ -53,11 +55,15 @@ class _NewTest(test.TestCase):
     self.SetCurrentUserOAuth(testing_common.INTERNAL_USER)
     self.SetCurrentClientIdOAuth(api_auth.OAUTH_CLIENT_ID_WHITELIST[0])
 
-    key = namespaced_stored_object.NamespaceKey(
-        'bot_configurations', datastore_hooks.INTERNAL)
-    stored_object.Set(key, {
-        'chromium-rel-mac11-pro': _CONFIGURATION_ARGUMENTS
-    })
+    key = namespaced_stored_object.NamespaceKey('bot_configurations',
+                                                datastore_hooks.INTERNAL)
+    config_with_args = _CONFIGURATION_ARGUMENTS.copy()
+    config_with_args.update({'extra_test_args': '--experimental-flag'})
+    stored_object.Set(
+        key, {
+            'chromium-rel-mac11-pro': _CONFIGURATION_ARGUMENTS,
+            'test-config-with-args': config_with_args,
+        })
 
 
 class NewAuthTest(_NewTest):
@@ -138,12 +144,79 @@ class NewTest(_NewTest):
     job = job_module.JobFromId(json.loads(response.body)['jobId'])
     self.assertEqual(job.comparison_mode, 'performance')
 
+  def testComparisonModePerformance_ApplyPatch(self):
+    request = dict(_BASE_REQUEST)
+    request['comparison_mode'] = 'performance'
+    request['patch'] = 'https://lalala/c/foo/bar/+/123'
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertEqual(job.comparison_mode, 'performance')
+    self.assertEqual(
+        job.state._changes[0].id_string,
+        'chromium@1 + %s' % ('https://lalala/repo~branch~id/abc123',))
+    self.assertEqual(
+        job.state._changes[1].id_string,
+        'chromium@3 + %s' % ('https://lalala/repo~branch~id/abc123',))
+
   def testComparisonModeTry(self):
     request = dict(_BASE_REQUEST)
     request['comparison_mode'] = 'try'
     response = self.Post('/api/new', request, status=200)
     job = job_module.JobFromId(json.loads(response.body)['jobId'])
     self.assertEqual(job.comparison_mode, 'try')
+    self.assertEqual(job.state._changes[0].id_string, 'chromium@3')
+    self.assertEqual(job.state._changes[1].id_string, 'chromium@3')
+
+  def testComparisonModeTry_ApplyPatch(self):
+    request = dict(_BASE_REQUEST)
+    request['comparison_mode'] = 'try'
+    request['patch'] = 'https://lalala/c/foo/bar/+/123'
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertEqual(job.comparison_mode, 'try')
+    self.assertEqual(job.state._changes[0].id_string, 'chromium@3')
+    self.assertEqual(
+        job.state._changes[1].id_string,
+        'chromium@3 + %s' % ('https://lalala/repo~branch~id/abc123',))
+
+  def testComparisonModeTry_MissingRequiredArgs(self):
+    request = dict(_BASE_REQUEST)
+    request['comparison_mode'] = 'try'
+    del request['story']
+    response = self.Post('/api/new', request, status=400)
+    self.assertIn('error', json.loads(response.body))
+
+  def testComparisonModeTry_MissingBaseGitHash(self):
+    request = dict(_BASE_REQUEST)
+    request['comparison_mode'] = 'try'
+    del request['base_git_hash']
+    response = self.Post('/api/new', request, status=400)
+    self.assertIn('error', json.loads(response.body))
+
+  def testComparisonModeTry_SupportDebugTrace(self):
+    request = dict(_BASE_REQUEST)
+    request['comparison_mode'] = 'try'
+    request['end_git_hash'] = 'f00d'
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertEqual(job.comparison_mode, 'try')
+    self.assertEqual(job.state._changes[0].id_string, 'chromium@3')
+    self.assertEqual(job.state._changes[1].id_string, 'chromium@f00d')
+
+  def testComparisonModeTry_SupportDebugTraceWithPatch(self):
+    request = dict(_BASE_REQUEST)
+    request['comparison_mode'] = 'try'
+    request['end_git_hash'] = 'f00d'
+    request['patch'] = 'https://lalala/c/foo/bar/+/123'
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertEqual(job.comparison_mode, 'try')
+    self.assertEqual(
+        job.state._changes[0].id_string,
+        'chromium@3 + %s' % ('https://lalala/repo~branch~id/abc123',))
+    self.assertEqual(
+        job.state._changes[1].id_string,
+        'chromium@f00d + %s' % ('https://lalala/repo~branch~id/abc123',))
 
   def testComparisonModeOmitted(self):
     request = dict(_BASE_REQUEST)
@@ -266,6 +339,12 @@ class NewTest(_NewTest):
     response = self.Post('/api/new', request, status=400)
     self.assertIn('error', json.loads(response.body))
 
+  def testInvalidPriority(self):
+    request = dict(_BASE_REQUEST)
+    request['priority'] = 'unsupported'
+    response = self.Post('/api/new', request, status=400)
+    self.assertIn('error', json.loads(response.body))
+
   def testUserFromParams(self):
     request = dict(_BASE_REQUEST)
     request['user'] = 'foo@example.org'
@@ -295,6 +374,26 @@ class NewTest(_NewTest):
     self.assertEqual('some_chart', job.benchmark_arguments.chart)
     self.assertEqual(None, job.benchmark_arguments.statistic)
 
+  def testExtraArgsSupported(self):
+    request = dict(_BASE_REQUEST)
+    request.update({
+        'extra_test_args': '["--provided-args"]',
+        'configuration': 'test-config-with-args',
+    })
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+
+    # Validate that the arguments are only the input arguments.
+    self.assertEqual(
+        job.arguments.get('extra_test_args'),
+        json.dumps(['--provided-args']))
+
+    # And that the RunTest instance has the extra arguments.
+    for quest in job.state._quests:
+      if isinstance(quest, quest_module.RunTelemetryTest) or isinstance(
+          quest, quest_module.RunGTest):
+        self.assertIn('--experimental-flag', quest._extra_args)
+
   def testNewUsingExecutionEngine(self):
     request = dict(_BASE_REQUEST)
     request.update({
@@ -316,7 +415,6 @@ class NewTest(_NewTest):
     self.assertEqual(None, job.benchmark_arguments.statistic)
     self.assertTrue(job.use_execution_engine)
 
-
   def testVrQuest(self):
     request = dict(_BASE_REQUEST)
     request['target'] = 'vr_perf_tests'
@@ -329,5 +427,4 @@ class NewTest(_NewTest):
     self.assertEqual(len(job.state._quests), 3)
     self.assertIsInstance(job.state._quests[0], quest_module.FindIsolate)
     self.assertIsInstance(job.state._quests[1], quest_module.RunVrTelemetryTest)
-    self.assertIsInstance(job.state._quests[2],
-                          quest_module.ReadHistogramsJsonValue)
+    self.assertIsInstance(job.state._quests[2], quest_module.ReadValue)

@@ -9,13 +9,15 @@
 
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/common/cursor_info.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(USE_AURA)
+#include "base/optional.h"
+
 #include "ui/base/cursor/cursor.h"
 #endif
 
@@ -27,16 +29,16 @@ namespace content {
 // WebCursor. This class is highly similar to ui::Cursor.
 class CONTENT_EXPORT WebCursor {
  public:
-  WebCursor() = default;
-  explicit WebCursor(const CursorInfo& info);
+  WebCursor();
+  explicit WebCursor(const ui::Cursor& info);
   explicit WebCursor(const WebCursor& other);
   WebCursor& operator=(const WebCursor& other);
   ~WebCursor();
 
-  const CursorInfo& info() const { return info_; }
+  const ui::Cursor& cursor() const { return cursor_; }
 
-  // Sets the cursor |info|; returns whether the struct has reasonable values.
-  bool SetInfo(const CursorInfo& info);
+  // Sets the ui::Cursor |cursor|; returns whether it has reasonable values.
+  bool SetCursor(const ui::Cursor& cursor);
 
   // Equality operator; performs bitmap content comparison as needed.
   bool operator==(const WebCursor& other) const;
@@ -54,6 +56,8 @@ class CONTENT_EXPORT WebCursor {
   void CreateScaledBitmapAndHotspotFromCustomData(SkBitmap* bitmap,
                                                   gfx::Point* hotspot,
                                                   float* scale);
+
+  bool has_custom_cursor_for_test() const { return !!custom_cursor_; }
 #endif
 
  private:
@@ -72,7 +76,7 @@ class CONTENT_EXPORT WebCursor {
   float GetCursorScaleFactor(SkBitmap* bitmap);
 
   // The basic cursor info.
-  CursorInfo info_;
+  ui::Cursor cursor_;
 
 #if defined(USE_AURA) || defined(USE_OZONE)
   // Only used for custom cursors.
@@ -85,6 +89,10 @@ class CONTENT_EXPORT WebCursor {
   // This matches ozone drm_util.cc's kDefaultCursorWidth/Height.
   static constexpr int kDefaultMaxSize = 64;
   gfx::Size maximum_cursor_size_ = {kDefaultMaxSize, kDefaultMaxSize};
+#endif
+
+#if defined(USE_AURA)
+  base::Optional<ui::Cursor> custom_cursor_;
 #endif
 };
 

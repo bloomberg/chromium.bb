@@ -30,5 +30,5 @@ __git_cl_compute_all_commands () {
 
 _git_cl () {
   __git_cl_compute_all_commands
-  __gitcomp_nl "$(__git_cl_commands)"
+  __gitcomp_nl "$(__git_cl_all_commands)"
 }

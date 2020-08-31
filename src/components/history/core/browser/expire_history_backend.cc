@@ -12,11 +12,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -447,7 +447,7 @@ VisitVector ExpireHistoryBackend::GetVisitsAndRedirectParents(
     const VisitVector& visits) {
   base::flat_set<VisitID> seen_visits;
   VisitVector visits_and_redirects;
-  for (const auto v : visits) {
+  for (const auto& v : visits) {
     VisitRow current_visit = v;
     do {
       if (!seen_visits.insert(current_visit.visit_id).second)

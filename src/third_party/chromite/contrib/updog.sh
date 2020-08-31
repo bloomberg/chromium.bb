@@ -7,6 +7,9 @@
 
 package_name="$1"
 
+# Make sure we have prod access so we don't fail without getting any work done.
+prodcertstatus 1>/dev/null 2>/dev/null || prodaccess
+
 dremel \
   --min_completion_ratio 1 \
   --output csv \

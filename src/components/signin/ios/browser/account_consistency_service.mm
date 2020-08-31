@@ -61,8 +61,10 @@ class AccountConsistencyHandler : public web::WebStatePolicyDecider {
 
  private:
   // web::WebStatePolicyDecider override
-  bool ShouldAllowResponse(NSURLResponse* response,
-                           bool for_main_frame) override;
+  void ShouldAllowResponse(
+      NSURLResponse* response,
+      bool for_main_frame,
+      base::OnceCallback<void(PolicyDecision)> callback) override;
   void WebStateDestroyed() override;
 
   AccountConsistencyService* account_consistency_service_;  // Weak.
@@ -81,12 +83,16 @@ AccountConsistencyHandler::AccountConsistencyHandler(
       account_reconcilor_(account_reconcilor),
       delegate_(delegate) {}
 
-bool AccountConsistencyHandler::ShouldAllowResponse(NSURLResponse* response,
-                                                    bool for_main_frame) {
+void AccountConsistencyHandler::ShouldAllowResponse(
+    NSURLResponse* response,
+    bool for_main_frame,
+    base::OnceCallback<void(PolicyDecision)> callback) {
   NSHTTPURLResponse* http_response =
       base::mac::ObjCCast<NSHTTPURLResponse>(response);
-  if (!http_response)
-    return true;
+  if (!http_response) {
+    std::move(callback).Run(PolicyDecision::Allow());
+    return;
+  }
 
   GURL url = net::GURLWithNSURL(http_response.URL);
   if (google_util::IsGoogleDomainUrl(
@@ -102,12 +108,16 @@ bool AccountConsistencyHandler::ShouldAllowResponse(NSURLResponse* response,
         "google.com", true /* force_update_if_too_old */);
   }
 
-  if (!gaia::IsGaiaSignonRealm(url.GetOrigin()))
-    return true;
+  if (!gaia::IsGaiaSignonRealm(url.GetOrigin())) {
+    std::move(callback).Run(PolicyDecision::Allow());
+    return;
+  }
   NSString* manage_accounts_header = [[http_response allHeaderFields]
       objectForKey:@"X-Chrome-Manage-Accounts"];
-  if (!manage_accounts_header)
-    return true;
+  if (!manage_accounts_header) {
+    std::move(callback).Run(PolicyDecision::Allow());
+    return;
+  }
 
   signin::ManageAccountsParams params = signin::BuildManageAccountsParams(
       base::SysNSStringToUTF8(manage_accounts_header));
@@ -141,7 +151,7 @@ bool AccountConsistencyHandler::ShouldAllowResponse(NSURLResponse* response,
   // for the following reasons:
   // * Avoid loading a blank page in WKWebView.
   // * Avoid adding this request to history.
-  return false;
+  std::move(callback).Run(PolicyDecision::Cancel());
 }
 
 void AccountConsistencyHandler::WebStateDestroyed() {
@@ -154,7 +164,7 @@ void AccountConsistencyHandler::WebStateDestroyed() {
 
 // Designated initializer. |callback| will be called every time a navigation has
 // finished. |callback| must not be empty.
-- (instancetype)initWithCallback:(const base::Closure&)callback
+- (instancetype)initWithCallback:(const base::RepeatingClosure&)callback
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -162,10 +172,10 @@ void AccountConsistencyHandler::WebStateDestroyed() {
 
 @implementation AccountConsistencyNavigationDelegate {
   // Callback that will be called every time a navigation has finished.
-  base::Closure _callback;
+  base::RepeatingClosure _callback;
 }
 
-- (instancetype)initWithCallback:(const base::Closure&)callback {
+- (instancetype)initWithCallback:(const base::RepeatingClosure&)callback {
   self = [super init];
   if (self) {
     DCHECK(!callback.is_null());
@@ -426,9 +436,9 @@ WKWebView* AccountConsistencyService::GetWKWebView() {
   if (!web_view_) {
     web_view_ = BuildWKWebView();
     navigation_delegate_ = [[AccountConsistencyNavigationDelegate alloc]
-        initWithCallback:base::Bind(&AccountConsistencyService::
-                                        FinishedApplyingCookieRequest,
-                                    base::Unretained(this), true)];
+        initWithCallback:base::BindRepeating(&AccountConsistencyService::
+                                                 FinishedApplyingCookieRequest,
+                                             base::Unretained(this), true)];
     [web_view_ setNavigationDelegate:navigation_delegate_];
   }
   return web_view_;

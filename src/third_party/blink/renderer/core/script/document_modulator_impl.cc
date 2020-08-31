@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/script/document_modulator_impl.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
@@ -16,9 +16,10 @@ DocumentModulatorImpl::DocumentModulatorImpl(ScriptState* script_state)
     : ModulatorImplBase(script_state) {}
 
 ModuleScriptFetcher* DocumentModulatorImpl::CreateModuleScriptFetcher(
-    ModuleScriptCustomFetchType custom_fetch_type) {
+    ModuleScriptCustomFetchType custom_fetch_type,
+    util::PassKey<ModuleScriptLoader> pass_key) {
   DCHECK_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
-  return MakeGarbageCollected<DocumentModuleScriptFetcher>();
+  return MakeGarbageCollected<DocumentModuleScriptFetcher>(pass_key);
 }
 
 bool DocumentModulatorImpl::IsDynamicImportForbidden(String* reason) {
@@ -26,8 +27,8 @@ bool DocumentModulatorImpl::IsDynamicImportForbidden(String* reason) {
 }
 
 V8CacheOptions DocumentModulatorImpl::GetV8CacheOptions() const {
-  Document* document = To<Document>(GetExecutionContext());
-  const Settings* settings = document->GetFrame()->GetSettings();
+  LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
+  const Settings* settings = window->GetFrame()->GetSettings();
   if (settings)
     return settings->GetV8CacheOptions();
   return kV8CacheOptionsDefault;

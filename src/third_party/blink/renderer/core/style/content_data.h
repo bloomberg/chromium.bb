@@ -50,6 +50,7 @@ class ContentData : public GarbageCollected<ContentData> {
   virtual bool IsQuote() const { return false; }
   virtual bool IsText() const { return false; }
   virtual bool IsAltText() const { return false; }
+  virtual bool IsNone() const { return false; }
 
   virtual LayoutObject* CreateLayoutObject(PseudoElement&,
                                            const ComputedStyle&,
@@ -58,11 +59,15 @@ class ContentData : public GarbageCollected<ContentData> {
   virtual ContentData* Clone() const;
 
   ContentData* Next() const { return next_.Get(); }
-  void SetNext(ContentData* next) { next_ = next; }
+  void SetNext(ContentData* next) {
+    DCHECK(!IsNone());
+    DCHECK(!next || !next->IsNone());
+    next_ = next;
+  }
 
   virtual bool Equals(const ContentData&) const = 0;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
  private:
   virtual ContentData* CloneInternal() const = 0;
@@ -97,7 +102,7 @@ class ImageContentData final : public ContentData {
            *GetImage();
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ContentData* CloneInternal() const override {
@@ -256,6 +261,30 @@ struct DowncastTraits<QuoteContentData> {
   static bool AllowFrom(const ContentData& content) {
     return content.IsQuote();
   }
+};
+
+class NoneContentData final : public ContentData {
+  friend class ContentData;
+
+ public:
+  explicit NoneContentData() {}
+
+  bool IsNone() const override { return true; }
+  LayoutObject* CreateLayoutObject(PseudoElement&,
+                                   const ComputedStyle&,
+                                   LegacyLayout) const override;
+
+  bool Equals(const ContentData& data) const override { return data.IsNone(); }
+
+ private:
+  ContentData* CloneInternal() const override {
+    return MakeGarbageCollected<NoneContentData>();
+  }
+};
+
+template <>
+struct DowncastTraits<NoneContentData> {
+  static bool AllowFrom(const ContentData& content) { return content.IsNone(); }
 };
 
 inline bool operator==(const ContentData& a, const ContentData& b) {

@@ -9,16 +9,17 @@
 #include <memory>
 #include <utility>
 
+#include "fxjs/cfx_v8.h"
 #include "fxjs/cjs_result.h"
+#include "fxjs/fxv8.h"
 #include "fxjs/js_resources.h"
-#include "fxjs/xfa/cfxjse_arguments.h"
 #include "fxjs/xfa/cfxjse_context.h"
 #include "fxjs/xfa/cfxjse_isolatetracker.h"
 #include "fxjs/xfa/cfxjse_value.h"
 #include "third_party/base/ptr_util.h"
 
-using pdfium::fxjse::kFuncTag;
 using pdfium::fxjse::kClassTag;
+using pdfium::fxjse::kFuncTag;
 
 namespace {
 
@@ -39,14 +40,7 @@ void V8FunctionCallback_Wrapper(
   if (!lpFunctionInfo)
     return;
 
-  ByteStringView szFunctionName(lpFunctionInfo->name);
-  auto lpThisValue = pdfium::MakeUnique<CFXJSE_Value>(info.GetIsolate());
-  lpThisValue->ForceSetValue(info.Holder());
-  auto lpRetValue = pdfium::MakeUnique<CFXJSE_Value>(info.GetIsolate());
-  CFXJSE_Arguments impl(&info, lpRetValue.get());
-  lpFunctionInfo->callbackProc(lpThisValue.get(), szFunctionName, impl);
-  if (!lpRetValue->DirectGetValue().IsEmpty())
-    info.GetReturnValue().Set(lpRetValue->DirectGetValue());
+  lpFunctionInfo->callbackProc(CFXJSE_HostObject::FromV8(info.Holder()), info);
 }
 
 void V8ConstructorCallback_Wrapper(
@@ -74,10 +68,7 @@ void Context_GlobalObjToString(
   if (info.This() == info.Holder() && lpClass->name) {
     ByteString szStringVal = ByteString::Format("[object %s]", lpClass->name);
     info.GetReturnValue().Set(
-        v8::String::NewFromUtf8(info.GetIsolate(), szStringVal.c_str(),
-                                v8::NewStringType::kNormal,
-                                szStringVal.GetLength())
-            .ToLocalChecked());
+        fxv8::NewStringHelper(info.GetIsolate(), szStringVal.AsStringView()));
     return;
   }
   v8::Local<v8::String> local_str =
@@ -114,9 +105,7 @@ void DynPropGetterAdapter_MethodCallback(
   if (result.HasError()) {
     WideString err = JSFormatErrorString(pClassDescriptor->name, *szPropName,
                                          result.Error());
-    v8::MaybeLocal<v8::String> str = v8::String::NewFromUtf8(
-        info.GetIsolate(), err.ToDefANSI().c_str(), v8::NewStringType::kNormal);
-    info.GetIsolate()->ThrowException(str.ToLocalChecked());
+    fxv8::ThrowExceptionHelper(info.GetIsolate(), err.AsStringView());
     return;
   }
 
@@ -124,7 +113,8 @@ void DynPropGetterAdapter_MethodCallback(
     info.GetReturnValue().Set(result.Return());
 }
 
-void DynPropGetterAdapter(const FXJSE_CLASS_DESCRIPTOR* lpClass,
+void DynPropGetterAdapter(v8::Isolate* pIsolate,
+                          const FXJSE_CLASS_DESCRIPTOR* lpClass,
                           CFXJSE_Value* pObject,
                           ByteStringView szPropName,
                           CFXJSE_Value* pValue) {
@@ -139,24 +129,19 @@ void DynPropGetterAdapter(const FXJSE_CLASS_DESCRIPTOR* lpClass,
       lpClass->dynPropGetter(pObject, szPropName, pValue);
   } else if (nPropType == FXJSE_ClassPropType_Method) {
     if (lpClass->dynMethodCall && pValue) {
-      v8::Isolate* pIsolate = pValue->GetIsolate();
       v8::HandleScope hscope(pIsolate);
       v8::Local<v8::ObjectTemplate> hCallBackInfoTemplate =
           v8::ObjectTemplate::New(pIsolate);
       hCallBackInfoTemplate->SetInternalFieldCount(2);
       v8::Local<v8::Object> hCallBackInfo =
-          hCallBackInfoTemplate
-              ->NewInstance(pValue->GetIsolate()->GetCurrentContext())
+          hCallBackInfoTemplate->NewInstance(pIsolate->GetCurrentContext())
               .ToLocalChecked();
       hCallBackInfo->SetAlignedPointerInInternalField(
           0, const_cast<FXJSE_CLASS_DESCRIPTOR*>(lpClass));
       hCallBackInfo->SetInternalField(
-          1, v8::String::NewFromUtf8(
-                 pIsolate, reinterpret_cast<const char*>(szPropName.raw_str()),
-                 v8::NewStringType::kNormal, szPropName.GetLength())
-                 .ToLocalChecked());
+          1, fxv8::NewStringHelper(pIsolate, szPropName));
       pValue->ForceSetValue(
-          v8::Function::New(pValue->GetIsolate()->GetCurrentContext(),
+          v8::Function::New(pIsolate->GetCurrentContext(),
                             DynPropGetterAdapter_MethodCallback, hCallBackInfo,
                             0, v8::ConstructorBehavior::kThrow)
               .ToLocalChecked());
@@ -226,8 +211,8 @@ void NamedPropertyGetterCallback(
   auto lpThisValue = pdfium::MakeUnique<CFXJSE_Value>(info.GetIsolate());
   lpThisValue->ForceSetValue(thisObject);
   auto lpNewValue = pdfium::MakeUnique<CFXJSE_Value>(info.GetIsolate());
-  DynPropGetterAdapter(lpClass, lpThisValue.get(), szFxPropName,
-                       lpNewValue.get());
+  DynPropGetterAdapter(info.GetIsolate(), lpClass, lpThisValue.get(),
+                       szFxPropName, lpNewValue.get());
   info.GetReturnValue().Set(lpNewValue->DirectGetValue());
 }
 
@@ -296,10 +281,12 @@ CFXJSE_Class* CFXJSE_Class::Create(
       pIsolate, bIsJSGlobal ? 0 : V8ConstructorCallback_Wrapper,
       v8::External::New(
           pIsolate, const_cast<FXJSE_CLASS_DESCRIPTOR*>(lpClassDefinition)));
-  hFunctionTemplate->SetClassName(
-      v8::String::NewFromUtf8(pIsolate, lpClassDefinition->name,
-                              v8::NewStringType::kNormal)
-          .ToLocalChecked());
+  v8::Local<v8::String> classname =
+      fxv8::NewStringHelper(pIsolate, lpClassDefinition->name);
+  hFunctionTemplate->SetClassName(classname);
+  hFunctionTemplate->PrototypeTemplate()->Set(
+      v8::Symbol::GetToStringTag(pIsolate), classname,
+      static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
   hFunctionTemplate->InstanceTemplate()->SetInternalFieldCount(2);
   v8::Local<v8::ObjectTemplate> hObjectTemplate =
       hFunctionTemplate->InstanceTemplate();
@@ -313,24 +300,19 @@ CFXJSE_Class* CFXJSE_Class::Create(
                                           lpClassDefinition->methods + i)));
       fun->RemovePrototype();
       hObjectTemplate->Set(
-          v8::String::NewFromUtf8(pIsolate, lpClassDefinition->methods[i].name,
-                                  v8::NewStringType::kNormal)
-              .ToLocalChecked(),
+          fxv8::NewStringHelper(pIsolate, lpClassDefinition->methods[i].name),
           fun,
           static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
     }
   }
 
   if (bIsJSGlobal) {
-    v8::Local<v8::FunctionTemplate> fun = v8::FunctionTemplate::New(
+    v8::Local<v8::FunctionTemplate> fn = v8::FunctionTemplate::New(
         pIsolate, Context_GlobalObjToString,
         v8::External::New(
             pIsolate, const_cast<FXJSE_CLASS_DESCRIPTOR*>(lpClassDefinition)));
-    fun->RemovePrototype();
-    hObjectTemplate->Set(v8::String::NewFromUtf8(pIsolate, "toString",
-                                                 v8::NewStringType::kNormal)
-                             .ToLocalChecked(),
-                         fun);
+    fn->RemovePrototype();
+    hObjectTemplate->Set(fxv8::NewStringHelper(pIsolate, "toString"), fn);
   }
   pClass->m_hTemplate.Reset(lpContext->GetIsolate(), hFunctionTemplate);
   CFXJSE_Class* pResult = pClass.get();

@@ -6,7 +6,8 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 #include "services/preferences/tracked/pref_hash_store_transaction.h"
@@ -59,9 +60,6 @@ bool TrackedSplitPreference::EnforceAndReport(
   std::vector<std::string> invalid_keys;
   ValueState value_state =
       transaction->CheckSplitValue(pref_path_, dict_value, &invalid_keys);
-
-  if (value_state == ValueState::CHANGED)
-    helper_.ReportSplitPreferenceChangedCount(invalid_keys.size());
 
   helper_.ReportValidationResult(value_state, transaction->GetStoreUMASuffix());
 

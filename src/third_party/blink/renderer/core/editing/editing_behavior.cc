@@ -27,7 +27,7 @@
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
 
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
@@ -177,6 +177,10 @@ const KeyboardCodeKeyDownEntry kKeyboardCodeKeyDownEntries[] = {
     {'Z', kCtrlKey | kShiftKey, "Redo"},
     {'Y', kCtrlKey, "Redo"},
 #endif
+#if defined(OS_WIN)
+    {VKEY_BACK, kAltKey, "Undo"},
+    {VKEY_BACK, kAltKey | kShiftKey, "Redo"},
+#endif
     {VKEY_INSERT, 0, "OverWrite"},
 };
 
@@ -232,7 +236,7 @@ const char* EditingBehavior::InterpretKeyEvent(
   unsigned modifiers =
       key_event->GetModifiers() & (kShiftKey | kAltKey | kCtrlKey | kMetaKey);
 
-  if (key_event->GetType() == WebInputEvent::kRawKeyDown) {
+  if (key_event->GetType() == WebInputEvent::Type::kRawKeyDown) {
     int map_key = modifiers << 16 | event.keyCode();
     const char* name = map_key ? key_down_commands_map->at(map_key) : nullptr;
     if (!name)

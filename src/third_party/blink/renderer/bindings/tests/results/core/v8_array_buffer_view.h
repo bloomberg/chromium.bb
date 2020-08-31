@@ -29,6 +29,11 @@ CORE_EXPORT extern const WrapperTypeInfo v8_array_buffer_view_wrapper_type_info;
 class V8ArrayBufferView {
   STATIC_ONLY(V8ArrayBufferView);
  public:
+  // Migration adapter
+  CORE_EXPORT static bool HasInstance(v8::Isolate*, v8::Local<v8::Value> value) {
+    return value->IsArrayBufferView();
+  }
+
   CORE_EXPORT static TestArrayBufferView* ToImpl(v8::Local<v8::Object> object);
   CORE_EXPORT static TestArrayBufferView* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
 
@@ -43,12 +48,6 @@ class V8ArrayBufferView {
   CORE_EXPORT static void BufferAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void ByteOffsetAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void ByteLengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-};
-
-template <>
-struct NativeValueTraits<TestArrayBufferView> : public NativeValueTraitsBase<TestArrayBufferView> {
-  CORE_EXPORT static TestArrayBufferView* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestArrayBufferView* NullValue() { return nullptr; }
 };
 
 template <>

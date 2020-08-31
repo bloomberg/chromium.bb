@@ -14,10 +14,8 @@
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/touch_uma.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
-#include "ash/public/mojom/constants.mojom.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
@@ -46,8 +44,6 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -160,14 +156,16 @@ void BrowserNonClientFrameViewAsh::Init() {
     // TODO(oshima): Add Tooltip, accessibility name.
   }
 
-  frame_header_ = CreateFrameHeader();
+  if (frame()->ShouldDrawFrameHeader())
+    frame_header_ = CreateFrameHeader();
 
-  if (browser_view()->IsBrowserTypeWebApp())
-    SetUpForWebApp();
+  if (browser_view()->IsBrowserTypeWebApp() && !browser->is_type_app_popup()) {
+    // Add the container for extra web app buttons (e.g app menu button).
+    set_web_app_frame_toolbar(AddChildView(
+        std::make_unique<WebAppFrameToolbarView>(frame(), browser_view())));
+  }
 
   browser_view()->immersive_mode_controller()->AddObserver(this);
-
-  UpdateFrameColor();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -202,14 +200,15 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
     // but the inset is still calculated below, so the overview code can align
     // the window content with a fake header.
     if (!IsInOverviewMode() || frame()->IsFullscreen() ||
-        browser_view()->IsTabStripVisible()) {
+        browser_view()->IsTabStripVisible() ||
+        browser_view()->webui_tab_strip()) {
       return 0;
     }
   }
 
   Browser* browser = browser_view()->browser();
 
-  int header_height = frame_header_->GetHeaderHeight();
+  int header_height = frame_header_ ? frame_header_->GetHeaderHeight() : 0;
   if (web_app_frame_toolbar()) {
     header_height = std::max(
         header_height, web_app_frame_toolbar()->GetPreferredSize().height());
@@ -227,33 +226,7 @@ int BrowserNonClientFrameViewAsh::GetThemeBackgroundXInset() const {
 }
 
 void BrowserNonClientFrameViewAsh::UpdateFrameColor() {
-  aura::Window* window = frame()->GetNativeWindow();
-  base::Optional<SkColor> active_color, inactive_color;
-  if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {
-    active_color = GetFrameColor(BrowserFrameActiveState::kActive);
-    inactive_color = GetFrameColor(BrowserFrameActiveState::kInactive);
-  } else if (browser_view()->IsBrowserTypeWebApp()) {
-    active_color = browser_view()->browser()->app_controller()->GetThemeColor();
-  } else if (!browser_view()->browser()->deprecated_is_app()) {
-    // TODO(crbug.com/836128): Remove when System Web Apps flag is removed, as
-    // the above web-app branch will render the theme color.
-    active_color =
-        base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
-            ? SK_ColorWHITE
-            : SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
-  }
-
-  if (active_color) {
-    window->SetProperty(ash::kFrameActiveColorKey, *active_color);
-    window->SetProperty(ash::kFrameInactiveColorKey,
-                        inactive_color.value_or(*active_color));
-  } else {
-    window->ClearProperty(ash::kFrameActiveColorKey);
-    window->ClearProperty(ash::kFrameInactiveColorKey);
-  }
-
-  frame_header_->UpdateFrameColors();
-
+  OnUpdateFrameColor();
   BrowserNonClientFrameView::UpdateFrameColor();
 }
 
@@ -346,8 +319,13 @@ void BrowserNonClientFrameViewAsh::UpdateWindowIcon() {
 }
 
 void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
-  if (!frame()->IsFullscreen())
+  if (!frame()->IsFullscreen() && frame_header_)
     frame_header_->SchedulePaintForTitle();
+
+  frame()->GetNativeWindow()->SetProperty(
+      ash::kWindowOverviewTitleKey,
+      browser_view()->browser()->GetWindowTitleForCurrentTab(
+          /*include_app_name=*/false));
 }
 
 void BrowserNonClientFrameViewAsh::SizeConstraintsChanged() {}
@@ -358,7 +336,8 @@ void BrowserNonClientFrameViewAsh::PaintAsActiveChanged(bool active) {
   UpdateProfileIcons();
 
   const bool should_paint_as_active = ShouldPaintAsActive();
-  frame_header_->SetPaintAsActive(should_paint_as_active);
+  if (frame_header_)
+    frame_header_->SetPaintAsActive(should_paint_as_active);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -371,20 +350,23 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   const ash::FrameHeader::Mode header_mode =
       ShouldPaintAsActive() ? ash::FrameHeader::MODE_ACTIVE
                             : ash::FrameHeader::MODE_INACTIVE;
-  frame_header_->PaintHeader(canvas, header_mode);
+  if (frame_header_)
+    frame_header_->PaintHeader(canvas, header_mode);
 }
 
 void BrowserNonClientFrameViewAsh::Layout() {
   // The header must be laid out before computing |painted_height| because the
   // computation of |painted_height| for app and popup windows depends on the
   // position of the window controls.
-  frame_header_->LayoutHeader();
+  if (frame_header_)
+    frame_header_->LayoutHeader();
 
   int painted_height = GetTopInset(false);
   if (browser_view()->IsTabStripVisible())
     painted_height += browser_view()->tabstrip()->GetPreferredSize().height();
 
-  frame_header_->SetHeaderHeightForPainting(painted_height);
+  if (frame_header_)
+    frame_header_->SetHeaderHeightForPainting(painted_height);
 
   if (profile_indicator_icon_)
     LayoutProfileIndicator();
@@ -397,10 +379,12 @@ void BrowserNonClientFrameViewAsh::Layout() {
   BrowserNonClientFrameView::Layout();
   UpdateTopViewInset();
 
-  // The top right corner must be occupied by a caption button for easy mouse
-  // access. This check is agnostic to RTL layout.
-  DCHECK_EQ(caption_button_container_->y(), 0);
-  DCHECK_EQ(caption_button_container_->bounds().right(), width());
+  if (frame_header_) {
+    // The top right corner must be occupied by a caption button for easy mouse
+    // access. This check is agnostic to RTL layout.
+    DCHECK_EQ(caption_button_container_->y(), 0);
+    DCHECK_EQ(caption_button_container_->bounds().right(), width());
+  }
 }
 
 const char* BrowserNonClientFrameViewAsh::GetClassName() const {
@@ -422,7 +406,8 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() const {
   }
 
   gfx::Size min_client_view_size(frame()->client_view()->GetMinimumSize());
-  const int min_frame_width = frame_header_->GetMinimumHeaderWidth();
+  const int min_frame_width =
+      frame_header_ ? frame_header_->GetMinimumHeaderWidth() : 0;
   int min_width = std::max(min_frame_width, min_client_view_size.width());
   if (browser_view()->IsTabStripVisible()) {
     // Ensure that the minimum width is enough to hold a minimum width tab strip
@@ -437,7 +422,7 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() const {
 }
 
 void BrowserNonClientFrameViewAsh::OnThemeChanged() {
-  UpdateFrameColor();
+  OnUpdateFrameColor();
   BrowserNonClientFrameView::OnThemeChanged();
 }
 
@@ -570,11 +555,19 @@ void BrowserNonClientFrameViewAsh::OnWindowDestroying(aura::Window* window) {
 void BrowserNonClientFrameViewAsh::OnWindowPropertyChanged(aura::Window* window,
                                                            const void* key,
                                                            intptr_t old) {
+  if (key == ash::kIsShowingInOverviewKey) {
+    OnAddedToOrRemovedFromOverview();
+    return;
+  }
+
+  if (!frame_header_)
+    return;
+
   if (key == aura::client::kShowStateKey) {
     frame_header_->OnShowStateChanged(
         window->GetProperty(aura::client::kShowStateKey));
-  } else if (key == ash::kIsShowingInOverviewKey) {
-    OnAddedToOrRemovedFromOverview();
+  } else if (key == ash::kFrameRestoreLookKey) {
+    frame_header_->view()->InvalidateLayout();
   }
 }
 
@@ -630,19 +623,13 @@ void BrowserNonClientFrameViewAsh::OnProfileAvatarChanged(
 // BrowserNonClientFrameViewAsh, private:
 
 bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
-  // In tablet mode, to prevent accidental taps of the window controls, and to
-  // give more horizontal space for tabs and the new tab button especially in
-  // splitscreen view, we hide the window controls. We only do this when the
-  // Home Launcher feature is enabled, since it gives the user the ability to
-  // minimize all windows when pressing the Launcher button on the shelf.
-  const bool hide_caption_buttons_in_tablet_mode =
-      !UsePackagedAppHeaderStyle(browser_view()->browser());
-  if (hide_caption_buttons_in_tablet_mode &&
-      ash::TabletMode::Get()->InTabletMode()) {
-    return false;
-  }
+  return ShouldShowCaptionButtonsWhenNotInOverview() && !IsInOverviewMode();
+}
 
-  return !IsInOverviewMode();
+bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtonsWhenNotInOverview()
+    const {
+  return UsePackagedAppHeaderStyle(browser_view()->browser()) ||
+         !ash::TabletMode::Get()->InTabletMode();
 }
 
 int BrowserNonClientFrameViewAsh::GetToolbarLeftInset() const {
@@ -662,7 +649,7 @@ int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
 
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
   int inset = 0;
-  if (ShouldShowCaptionButtons())
+  if (ShouldShowCaptionButtonsWhenNotInOverview())
     inset += caption_button_container_->GetPreferredSize().width();
   if (web_app_frame_toolbar())
     inset += web_app_frame_toolbar()->GetPreferredSize().width();
@@ -713,19 +700,6 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
   return header;
 }
 
-void BrowserNonClientFrameViewAsh::SetUpForWebApp() {
-  Browser* browser = browser_view()->browser();
-  if (!browser->app_controller()->HasTitlebarToolbar())
-    return;
-
-  // Add the container for extra web app buttons (e.g app menu button).
-  set_web_app_frame_toolbar(new WebAppFrameToolbarView(
-      frame(), browser_view(),
-      GetCaptionColor(BrowserFrameActiveState::kActive),
-      GetCaptionColor(BrowserFrameActiveState::kInactive)));
-  AddChildView(web_app_frame_toolbar());
-}
-
 void BrowserNonClientFrameViewAsh::UpdateTopViewInset() {
   // In immersive fullscreen mode, the top view inset property should be 0.
   const bool immersive =
@@ -746,6 +720,14 @@ bool BrowserNonClientFrameViewAsh::ShouldShowProfileIndicatorIcon() const {
 
   if (browser->is_type_popup())
     return false;
+
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  // TODO(http://crbug.com/1059514): This check shouldn't be necessary.  Provide
+  // an appropriate affordance for the profile icon with the webUI tabstrip and
+  // remove this block.
+  if (!browser_view()->IsTabStripVisible())
+    return false;
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
   return MultiUserWindowManagerHelper::ShouldShowAvatar(
       browser_view()->GetNativeWindow());
@@ -793,6 +775,33 @@ void BrowserNonClientFrameViewAsh::LayoutProfileIndicator() {
 
 bool BrowserNonClientFrameViewAsh::IsInOverviewMode() const {
   return GetFrameWindow()->GetProperty(ash::kIsShowingInOverviewKey);
+}
+
+void BrowserNonClientFrameViewAsh::OnUpdateFrameColor() {
+  aura::Window* window = frame()->GetNativeWindow();
+  base::Optional<SkColor> active_color, inactive_color;
+  if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {
+    active_color = GetFrameColor(BrowserFrameActiveState::kActive);
+    inactive_color = GetFrameColor(BrowserFrameActiveState::kInactive);
+  } else if (browser_view()->IsBrowserTypeWebApp()) {
+    active_color = browser_view()->browser()->app_controller()->GetThemeColor();
+  } else if (!browser_view()->browser()->deprecated_is_app()) {
+    // TODO(crbug.com/836128): Remove when System Web Apps flag is removed, as
+    // the above web-app branch will render the theme color.
+    active_color = SK_ColorWHITE;
+  }
+
+  if (active_color) {
+    window->SetProperty(ash::kFrameActiveColorKey, *active_color);
+    window->SetProperty(ash::kFrameInactiveColorKey,
+                        inactive_color.value_or(*active_color));
+  } else {
+    window->ClearProperty(ash::kFrameActiveColorKey);
+    window->ClearProperty(ash::kFrameInactiveColorKey);
+  }
+
+  if (frame_header_)
+    frame_header_->UpdateFrameColors();
 }
 
 const aura::Window* BrowserNonClientFrameViewAsh::GetFrameWindow() const {

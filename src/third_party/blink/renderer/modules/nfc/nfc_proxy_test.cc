@@ -13,9 +13,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ndef_scan_options.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_reader.h"
-#include "third_party/blink/renderer/modules/nfc/ndef_scan_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_proxy.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -25,7 +26,8 @@ namespace {
 using ::testing::_;
 using ::testing::Invoke;
 
-static const char kTestUrl[] = "https://w3c.github.io/web-nfc/";
+static const char kFakeRecordId[] =
+    "https://w3c.github.io/web-nfc/dummy-record-id";
 static const char kFakeNfcTagSerialNumber[] = "c0:45:00:02";
 
 MATCHER_P(MessageEquals, expected, "") {
@@ -77,10 +79,10 @@ class FakeNfcService : public device::mojom::blink::NFC {
     if (!client_ || !tag_message_)
       return;
 
-    // Only match the watches using |url| in options.
+    // Only match the watches using |id| in options.
     WTF::Vector<uint32_t> ids;
     for (auto& pair : watches_) {
-      if (pair.second->id == tag_message_->url) {
+      if (pair.second->id == tag_message_->data[0]->id) {
         ids.push_back(pair.first);
       }
     }
@@ -114,13 +116,12 @@ class FakeNfcService : public device::mojom::blink::NFC {
     client_.Bind(std::move(client));
   }
   void Push(device::mojom::blink::NDEFMessagePtr message,
-            device::mojom::blink::NDEFPushOptionsPtr options,
+            device::mojom::blink::NDEFWriteOptionsPtr options,
             PushCallback callback) override {
     set_tag_message(std::move(message));
     std::move(callback).Run(nullptr);
   }
-  void CancelPush(device::mojom::blink::NDEFPushTarget target,
-                  CancelPushCallback callback) override {
+  void CancelPush(CancelPushCallback callback) override {
     std::move(callback).Run(nullptr);
   }
   void Watch(device::mojom::blink::NDEFScanOptionsPtr options,
@@ -136,7 +137,7 @@ class FakeNfcService : public device::mojom::blink::NFC {
   void CancelWatch(uint32_t id, CancelWatchCallback callback) override {
     if (watches_.erase(id) < 1) {
       std::move(callback).Run(device::mojom::blink::NDEFError::New(
-          device::mojom::blink::NDEFErrorType::NOT_FOUND));
+          device::mojom::blink::NDEFErrorType::NOT_FOUND, ""));
     } else {
       std::move(callback).Run(nullptr);
     }
@@ -145,8 +146,6 @@ class FakeNfcService : public device::mojom::blink::NFC {
     watches_.clear();
     std::move(callback).Run(nullptr);
   }
-  void SuspendNFCOperations() override {}
-  void ResumeNFCOperations() override {}
 
   device::mojom::blink::NDEFErrorPtr watch_error_;
   device::mojom::blink::NDEFMessagePtr tag_message_;
@@ -162,14 +161,14 @@ class NFCProxyTest : public PageTestBase {
 
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
+    GetFrame().DomWindow()->GetBrowserInterfaceBroker().SetBinderForTesting(
         device::mojom::blink::NFC::Name_,
         WTF::BindRepeating(&FakeNfcService::BindRequest,
                            WTF::Unretained(nfc_service())));
   }
 
   void TearDown() override {
-    GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
+    GetFrame().DomWindow()->GetBrowserInterfaceBroker().SetBinderForTesting(
         device::mojom::blink::NFC::Name_, {});
   }
 
@@ -180,11 +179,11 @@ class NFCProxyTest : public PageTestBase {
 };
 
 TEST_F(NFCProxyTest, SuccessfulPath) {
-  auto& document = GetDocument();
-  auto* nfc_proxy = NFCProxy::From(document);
+  auto* window = GetFrame().DomWindow();
+  auto* nfc_proxy = NFCProxy::From(*window);
   auto* scan_options = NDEFScanOptions::Create();
-  scan_options->setId(kTestUrl);
-  auto* reader = MakeGarbageCollected<MockNDEFReader>(&document);
+  scan_options->setId(kFakeRecordId);
+  auto* reader = MakeGarbageCollected<MockNDEFReader>(window);
 
   {
     base::RunLoop loop;
@@ -201,11 +200,11 @@ TEST_F(NFCProxyTest, SuccessfulPath) {
 
   // Construct a NDEFMessagePtr
   auto message = device::mojom::blink::NDEFMessage::New();
-  message->url = kTestUrl;
   auto record = device::mojom::blink::NDEFRecord::New();
   WTF::Vector<uint8_t> record_data(
       {0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10});
   record->record_type = "mime";
+  record->id = kFakeRecordId;
   record->data = WTF::Vector<uint8_t>(record_data);
   message->data.push_back(std::move(record));
 
@@ -233,15 +232,15 @@ TEST_F(NFCProxyTest, SuccessfulPath) {
 }
 
 TEST_F(NFCProxyTest, ErrorPath) {
-  auto& document = GetDocument();
-  auto* nfc_proxy = NFCProxy::From(document);
+  auto* window = GetFrame().DomWindow();
+  auto* nfc_proxy = NFCProxy::From(*window);
   auto* scan_options = NDEFScanOptions::Create();
-  scan_options->setId(kTestUrl);
-  auto* reader = MakeGarbageCollected<MockNDEFReader>(&document);
+  scan_options->setId(kFakeRecordId);
+  auto* reader = MakeGarbageCollected<MockNDEFReader>(window);
 
   // Make the fake NFC service return an error for the incoming watch request.
   nfc_service()->set_watch_error(device::mojom::blink::NDEFError::New(
-      device::mojom::blink::NDEFErrorType::NOT_READABLE));
+      device::mojom::blink::NDEFErrorType::NOT_READABLE, ""));
   base::RunLoop loop;
   nfc_proxy->StartReading(
       reader, scan_options,

@@ -22,6 +22,7 @@
 #include "remoting/host/desktop_session_proxy.h"
 #include "remoting/host/file_transfer/file_operations.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/keyboard_layout_monitor.h"
 #include "remoting/host/screen_controls.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
@@ -68,6 +69,13 @@ IpcDesktopEnvironment::CreateMouseCursorMonitor() {
   return desktop_session_proxy_->CreateMouseCursorMonitor();
 }
 
+std::unique_ptr<KeyboardLayoutMonitor>
+IpcDesktopEnvironment::CreateKeyboardLayoutMonitor(
+    base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback) {
+  return desktop_session_proxy_->CreateKeyboardLayoutMonitor(
+      std::move(callback));
+}
+
 std::unique_ptr<webrtc::DesktopCapturer>
 IpcDesktopEnvironment::CreateVideoCapturer() {
   return desktop_session_proxy_->CreateVideoCapturer();
@@ -87,6 +95,12 @@ void IpcDesktopEnvironment::SetCapabilities(const std::string& capabilities) {
 
 uint32_t IpcDesktopEnvironment::GetDesktopSessionId() const {
   return desktop_session_proxy_->desktop_session_id();
+}
+
+std::unique_ptr<DesktopAndCursorConditionalComposer>
+IpcDesktopEnvironment::CreateComposingVideoCapturer() {
+  // Cursor compositing is done by the desktop process if necessary.
+  return nullptr;
 }
 
 IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(

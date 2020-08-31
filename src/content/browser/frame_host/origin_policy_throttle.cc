@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,11 +35,7 @@ void OriginPolicyAddExceptionFor(BrowserContext* browser_context,
 // static
 bool OriginPolicyThrottle::ShouldRequestOriginPolicy(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  bool origin_policy_enabled =
-      base::FeatureList::IsEnabled(features::kOriginPolicy) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures);
-  if (!origin_policy_enabled)
+  if (!base::FeatureList::IsEnabled(features::kOriginPolicy))
     return false;
 
   if (!url.SchemeIs(url::kHttpsScheme))
@@ -104,8 +101,7 @@ OriginPolicyThrottle::WillProcessResponse() {
 
   switch (origin_policy->state) {
     case network::OriginPolicyState::kCannotLoadPolicy:
-    case network::OriginPolicyState::kInvalidRedirect:
-    case network::OriginPolicyState::kOther:
+    case network::OriginPolicyState::kCannotParseHeader:
       return NavigationThrottle::ThrottleCheckResult(
           NavigationThrottle::CANCEL, net::ERR_BLOCKED_BY_CLIENT,
           GetContentClient()->browser()->GetOriginPolicyErrorPage(

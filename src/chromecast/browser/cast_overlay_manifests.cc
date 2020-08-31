@@ -10,7 +10,6 @@
 #include "chromecast/common/mojom/application_media_capabilities.mojom.h"
 #include "chromecast/common/mojom/media_caps.mojom.h"
 #include "chromecast/common/mojom/memory_pressure.mojom.h"
-#include "media/mojo/services/media_manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 #if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
@@ -32,10 +31,6 @@ const service_manager::Manifest& GetCastContentBrowserOverlayManifest() {
                           service_manager::Manifest::InterfaceList<
                               chromecast::media::mojom::MediaCaps,
                               chromecast::mojom::MemoryPressureController>())
-        .ExposeInterfaceFilterCapability_Deprecated(
-            "navigation:frame", "renderer",
-            service_manager::Manifest::InterfaceList<
-                mojom::ApplicationMediaCapabilities>())
         .Build()
 #if defined(USE_INTERNAL_OVERLAY_MANIFESTS)
         .Amend(cast_content_browser_internal_manifest_overlay::GetManifest())
@@ -48,7 +43,6 @@ const service_manager::Manifest&
 GetCastContentPackagedServicesOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest {
     service_manager::ManifestBuilder()
-        .PackageService(::media::GetMediaManifest())
 #if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
         .PackageService(chromecast::external_mojo::BrokerService::GetManifest())
 #endif

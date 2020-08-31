@@ -22,28 +22,23 @@ class NGFragmentPainter : public ObjectPainterBase {
 
  public:
   NGFragmentPainter(const NGPhysicalBoxFragment& box,
-                    const NGPaintFragment* paint_fragment)
-      : box_fragment_(box), paint_fragment_(paint_fragment) {}
+                    const DisplayItemClient& display_item_client)
+      : box_fragment_(box), display_item_client_(display_item_client) {}
 
   void PaintOutline(const PaintInfo&, const PhysicalOffset& paint_offset);
 
   void AddURLRectIfNeeded(const PaintInfo&, const PhysicalOffset& paint_offset);
-
-  static bool ShouldRecordHitTestData(const PaintInfo&,
-                                      const NGPhysicalBoxFragment&);
 
  private:
   const NGPhysicalBoxFragment& PhysicalFragment() const {
     return box_fragment_;
   }
   const DisplayItemClient& GetDisplayItemClient() const {
-    if (paint_fragment_)
-      return *paint_fragment_;
-    return *PhysicalFragment().GetLayoutObject();
+    return display_item_client_;
   }
 
   const NGPhysicalBoxFragment& box_fragment_;
-  const NGPaintFragment* paint_fragment_;
+  const DisplayItemClient& display_item_client_;
 };
 
 }  // namespace blink

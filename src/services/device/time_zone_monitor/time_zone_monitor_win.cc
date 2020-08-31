@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 
@@ -21,8 +22,8 @@ class TimeZoneMonitorWin : public TimeZoneMonitor {
   TimeZoneMonitorWin()
       : TimeZoneMonitor(),
         singleton_hwnd_observer_(new gfx::SingletonHwndObserver(
-            base::Bind(&TimeZoneMonitorWin::OnWndProc,
-                       base::Unretained(this)))) {}
+            base::BindRepeating(&TimeZoneMonitorWin::OnWndProc,
+                                base::Unretained(this)))) {}
 
   ~TimeZoneMonitorWin() override {}
 
@@ -31,7 +32,7 @@ class TimeZoneMonitorWin : public TimeZoneMonitor {
     if (message != WM_TIMECHANGE) {
       return;
     }
-
+    TRACE_EVENT0("browser", "TimeZoneMonitorWin::UpdateIcuAndNotifyClients");
     UpdateIcuAndNotifyClients(DetectHostTimeZoneFromIcu());
   }
 

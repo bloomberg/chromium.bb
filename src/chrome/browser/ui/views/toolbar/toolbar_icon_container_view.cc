@@ -26,7 +26,10 @@ ToolbarIconContainerView::ToolbarIconContainerView(bool uses_highlight)
     : uses_highlight_(uses_highlight) {
   views::AnimatingLayoutManager* animating_layout =
       SetLayoutManager(std::make_unique<views::AnimatingLayoutManager>());
-  animating_layout->SetShouldAnimateBounds(true);
+  animating_layout->SetBoundsAnimationMode(
+      views::AnimatingLayoutManager::BoundsAnimationMode::kAnimateBothAxes);
+  animating_layout->SetDefaultFadeMode(
+      views::AnimatingLayoutManager::FadeInOutMode::kSlideFromTrailingEdge);
   auto* flex_layout = animating_layout->SetTargetLayoutManager(
       std::make_unique<views::FlexLayout>());
   flex_layout->SetCollapseMargins(true)
@@ -88,10 +91,6 @@ void ToolbarIconContainerView::OnViewBlurred(views::View* observed_view) {
   UpdateHighlight();
 }
 
-const views::View::Views& ToolbarIconContainerView::GetChildren() const {
-  return children();
-}
-
 void ToolbarIconContainerView::OnMouseEntered(const ui::MouseEvent& event) {
   UpdateHighlight();
 }
@@ -119,7 +118,7 @@ bool ToolbarIconContainerView::ShouldDisplayHighlight() {
     return true;
 
   // Focused, pressed or hovered children should trigger the highlight.
-  for (views::View* child : GetChildren()) {
+  for (views::View* child : children()) {
     if (child == main_button_)
       continue;
     if (child->HasFocus())

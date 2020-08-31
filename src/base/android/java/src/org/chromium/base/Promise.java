@@ -44,22 +44,11 @@ public class Promise<T> {
     private boolean mThrowingRejectionHandler;
 
     /**
-     * A function class for use when chaining Promises with {@link Promise#then(Function)}.
-     * @param <A> The type of the function input.
-     * @param <R> The type of the function output.
-     */
-    public interface Function<A, R> {
-        R apply(A argument);
-    }
-
-    /**
      * A function class for use when chaining Promises with {@link Promise#then(AsyncFunction)}.
      * @param <A> The type of the function input.
      * @param <R> The type of the function output.
      */
-    public interface AsyncFunction<A, R> {
-        Promise<R> apply(A argument);
-    }
+    public interface AsyncFunction<A, R> extends Function<A, Promise<R>> {}
 
     /**
      * An exception class for when a rejected Promise is not handled and cannot pass the rejection
@@ -144,8 +133,8 @@ public class Promise<T> {
     }
 
     /**
-     * Queues a {@link Promise.Function} to be run when the Promise is fulfilled. When this Promise
-     * is fulfilled, the function will be run and its result will be place in the returned Promise.
+     * Queues a {@link Function} to be run when the Promise is fulfilled. When this Promise is
+     * fulfilled, the function will be run and its result will be place in the returned Promise.
      */
     public <R> Promise<R> then(final Function<T, R> function) {
         checkThread();
@@ -279,6 +268,15 @@ public class Promise<T> {
     public static <T> Promise<T> fulfilled(T result) {
         Promise<T> promise = new Promise<>();
         promise.fulfill(result);
+        return promise;
+    }
+
+    /**
+     * Convenience method to return a rejected Promise.
+     */
+    public static <T> Promise<T> rejected() {
+        Promise<T> promise = new Promise<>();
+        promise.reject();
         return promise;
     }
 

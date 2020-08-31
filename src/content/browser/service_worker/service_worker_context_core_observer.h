@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container_type.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -64,10 +64,9 @@ class ServiceWorkerContextCoreObserver {
   virtual void OnVersionDevToolsRoutingIdChanged(int64_t version_id,
                                                  int process_id,
                                                  int devtools_agent_route_id) {}
-  virtual void OnMainScriptHttpResponseInfoSet(
-      int64_t version_id,
-      base::Time script_response_time,
-      base::Time script_last_modified) {}
+  virtual void OnMainScriptResponseSet(int64_t version_id,
+                                       base::Time script_response_time,
+                                       base::Time script_last_modified) {}
   virtual void OnErrorReported(int64_t version_id, const ErrorInfo& info) {}
   virtual void OnReportConsoleMessage(int64_t version_id,
                                       const ConsoleMessage& message) {}

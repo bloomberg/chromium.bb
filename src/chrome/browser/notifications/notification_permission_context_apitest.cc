@@ -4,11 +4,12 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "ui/message_center/public/cpp/notifier_id.h"

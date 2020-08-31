@@ -6,8 +6,21 @@
  * @fileoverview 'settings-search-engine-dialog' is a component for adding
  * or editing a search engine entry.
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.js';
+
+import {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo} from './search_engines_browser_proxy.m.js';
+
 Polymer({
   is: 'settings-search-engine-dialog',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [WebUIListenerBehavior],
 
@@ -35,7 +48,7 @@ Polymer({
     actionButtonText_: String,
   },
 
-  /** @private {settings.SearchEnginesBrowserProxy} */
+  /** @private {SearchEnginesBrowserProxy} */
   browserProxy_: null,
 
   /**
@@ -47,12 +60,12 @@ Polymer({
   DEFAULT_MODEL_INDEX: -1,
 
   /** @override */
-  created: function() {
-    this.browserProxy_ = settings.SearchEnginesBrowserProxyImpl.getInstance();
+  created() {
+    this.browserProxy_ = SearchEnginesBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     if (this.model) {
       this.dialogTitle_ =
           loadTimeData.getString('searchEnginesEditSearchEngine');
@@ -77,7 +90,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.async(this.updateActionButtonState_.bind(this));
     this.browserProxy_.searchEngineEditStarted(
         this.model ? this.model.modelIndex : this.DEFAULT_MODEL_INDEX);
@@ -88,7 +101,7 @@ Polymer({
    * @param {!SearchEnginesInfo} searchEnginesInfo
    * @private
    */
-  enginesChanged_: function(searchEnginesInfo) {
+  enginesChanged_(searchEnginesInfo) {
     if (this.model) {
       const engineWasRemoved = ['defaults', 'others', 'extensions'].every(
           engineType =>
@@ -104,12 +117,12 @@ Polymer({
   },
 
   /** @private */
-  cancel_: function() {
-    this.$.dialog.cancel();
+  cancel_() {
+    /** @type {!CrDialogElement} */ (this.$.dialog).cancel();
   },
 
   /** @private */
-  onActionButtonTap_: function() {
+  onActionButtonTap_() {
     this.browserProxy_.searchEngineEditCompleted(
         this.searchEngine_, this.keyword_, this.queryUrl_);
     this.$.dialog.close();
@@ -119,7 +132,7 @@ Polymer({
    * @param {!Element} inputElement
    * @private
    */
-  validateElement_: function(inputElement) {
+  validateElement_(inputElement) {
     // If element is empty, disable the action button, but don't show the red
     // invalid message.
     if (inputElement.value == '') {
@@ -140,13 +153,13 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  validate_: function(event) {
+  validate_(event) {
     const inputElement = /** @type {!Element} */ (event.target);
     this.validateElement_(inputElement);
   },
 
   /** @private */
-  updateActionButtonState_: function() {
+  updateActionButtonState_() {
     const allValid = [
       this.$.searchEngine, this.$.keyword, this.$.queryUrl
     ].every(function(inputElement) {

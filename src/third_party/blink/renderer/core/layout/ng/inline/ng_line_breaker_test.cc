@@ -17,6 +17,17 @@
 
 namespace blink {
 
+String ToString(NGInlineItemResults line, NGInlineNode node) {
+  StringBuilder builder;
+  const String& text = node.ItemsData(false).text_content;
+  for (const auto& item_result : line) {
+    builder.Append(
+        StringView(text, item_result.start_offset,
+                   item_result.end_offset - item_result.start_offset));
+  }
+  return builder.ToString();
+}
+
 class NGLineBreakerTest : public NGLayoutTest {
  protected:
   NGInlineNode CreateInlineNode(const String& html_content) {
@@ -28,8 +39,10 @@ class NGLineBreakerTest : public NGLayoutTest {
   }
 
   // Break lines using the specified available width.
-  Vector<NGLineInfo> BreakToLineInfo(NGInlineNode node,
-                                     LayoutUnit available_width) {
+  Vector<std::pair<String, unsigned>> BreakLines(
+      NGInlineNode node,
+      LayoutUnit available_width,
+      bool fill_first_space_ = false) {
     DCHECK(node);
 
     node.PrepareLayoutIfNeeded();
@@ -42,13 +55,13 @@ class NGLineBreakerTest : public NGLayoutTest {
 
     scoped_refptr<NGInlineBreakToken> break_token;
 
-    Vector<NGLineInfo> line_infos;
+    Vector<std::pair<String, unsigned>> lines;
     trailing_whitespaces_.resize(0);
     NGExclusionSpace exclusion_space;
     NGPositionedFloatVector leading_floats;
     NGLineLayoutOpportunity line_opportunity(available_width);
     while (!break_token || !break_token->IsFinished()) {
-      NGLineInfo& line_info = line_infos.emplace_back();
+      NGLineInfo line_info;
       NGLineBreaker line_breaker(node, NGLineBreakerMode::kContent, space,
                                  line_opportunity, leading_floats, 0u,
                                  break_token.get(), &exclusion_space);
@@ -60,35 +73,24 @@ class NGLineBreakerTest : public NGLayoutTest {
         break;
 
       break_token = line_breaker.CreateBreakToken(line_info);
+      if (fill_first_space_ && lines.IsEmpty()) {
+        first_should_hang_trailing_space_ =
+            line_info.ShouldHangTrailingSpaces();
+        first_hang_width_ = line_info.HangWidth();
+      }
+      lines.push_back(std::make_pair(ToString(line_info.Results(), node),
+                                     line_info.Results().back().item_index));
     }
 
-    return line_infos;
-  }
-
-  Vector<NGInlineItemResults> BreakLines(NGInlineNode node,
-                                         LayoutUnit available_width) {
-    Vector<NGLineInfo> line_infos = BreakToLineInfo(node, available_width);
-    Vector<NGInlineItemResults> lines;
-    for (NGLineInfo& line_info : line_infos)
-      lines.push_back(std::move(line_info.Results()));
     return lines;
   }
 
   Vector<NGLineBreaker::WhitespaceState> trailing_whitespaces_;
+  bool first_should_hang_trailing_space_;
+  LayoutUnit first_hang_width_;
 };
 
 namespace {
-
-String ToString(NGInlineItemResults line, NGInlineNode node) {
-  StringBuilder builder;
-  const String& text = node.ItemsData(false).text_content;
-  for (const auto& item_result : line) {
-    builder.Append(
-        StringView(text, item_result.start_offset,
-                   item_result.end_offset - item_result.start_offset));
-  }
-  return builder.ToString();
-}
 
 TEST_F(NGLineBreakerTest, SingleNode) {
   LoadAhem();
@@ -102,17 +104,17 @@ TEST_F(NGLineBreakerTest, SingleNode) {
     <div id=container>123 456 789</div>
   )HTML");
 
-  Vector<NGInlineItemResults> lines;
+  Vector<std::pair<String, unsigned>> lines;
   lines = BreakLines(node, LayoutUnit(80));
   EXPECT_EQ(2u, lines.size());
-  EXPECT_EQ("123 456", ToString(lines[0], node));
-  EXPECT_EQ("789", ToString(lines[1], node));
+  EXPECT_EQ("123 456", lines[0].first);
+  EXPECT_EQ("789", lines[1].first);
 
   lines = BreakLines(node, LayoutUnit(60));
   EXPECT_EQ(3u, lines.size());
-  EXPECT_EQ("123", ToString(lines[0], node));
-  EXPECT_EQ("456", ToString(lines[1], node));
-  EXPECT_EQ("789", ToString(lines[2], node));
+  EXPECT_EQ("123", lines[0].first);
+  EXPECT_EQ("456", lines[1].first);
+  EXPECT_EQ("789", lines[2].first);
 }
 
 TEST_F(NGLineBreakerTest, OverflowWord) {
@@ -128,17 +130,17 @@ TEST_F(NGLineBreakerTest, OverflowWord) {
   )HTML");
 
   // The first line overflows, but the last line does not.
-  Vector<NGInlineItemResults> lines;
+  Vector<std::pair<String, unsigned>> lines;
   lines = BreakLines(node, LayoutUnit(40));
   EXPECT_EQ(2u, lines.size());
-  EXPECT_EQ("12345", ToString(lines[0], node));
-  EXPECT_EQ("678", ToString(lines[1], node));
+  EXPECT_EQ("12345", lines[0].first);
+  EXPECT_EQ("678", lines[1].first);
 
   // Both lines overflow.
   lines = BreakLines(node, LayoutUnit(20));
   EXPECT_EQ(2u, lines.size());
-  EXPECT_EQ("12345", ToString(lines[0], node));
-  EXPECT_EQ("678", ToString(lines[1], node));
+  EXPECT_EQ("12345", lines[0].first);
+  EXPECT_EQ("678", lines[1].first);
 }
 
 TEST_F(NGLineBreakerTest, OverflowTab) {
@@ -156,11 +158,11 @@ TEST_F(NGLineBreakerTest, OverflowTab) {
     <div id=container>12345&#9;&#9;678</div>
   )HTML");
 
-  Vector<NGInlineItemResults> lines;
+  Vector<std::pair<String, unsigned>> lines;
   lines = BreakLines(node, LayoutUnit(100));
   EXPECT_EQ(2u, lines.size());
-  EXPECT_EQ("12345\t\t", ToString(lines[0], node));
-  EXPECT_EQ("678", ToString(lines[1], node));
+  EXPECT_EQ("12345\t\t", lines[0].first);
+  EXPECT_EQ("678", lines[1].first);
 }
 
 TEST_F(NGLineBreakerTest, OverflowTabBreakWord) {
@@ -179,11 +181,11 @@ TEST_F(NGLineBreakerTest, OverflowTabBreakWord) {
     <div id=container>12345&#9;&#9;678</div>
   )HTML");
 
-  Vector<NGInlineItemResults> lines;
+  Vector<std::pair<String, unsigned>> lines;
   lines = BreakLines(node, LayoutUnit(100));
   EXPECT_EQ(2u, lines.size());
-  EXPECT_EQ("12345\t\t", ToString(lines[0], node));
-  EXPECT_EQ("678", ToString(lines[1], node));
+  EXPECT_EQ("12345\t\t", lines[0].first);
+  EXPECT_EQ("678", lines[1].first);
 }
 
 TEST_F(NGLineBreakerTest, OverflowAtomicInline) {
@@ -203,28 +205,28 @@ TEST_F(NGLineBreakerTest, OverflowAtomicInline) {
     <div id=container>12345<span></span>678</div>
   )HTML");
 
-  Vector<NGInlineItemResults> lines;
+  Vector<std::pair<String, unsigned>> lines;
   lines = BreakLines(node, LayoutUnit(80));
   EXPECT_EQ(2u, lines.size());
-  EXPECT_EQ(String(u"12345\uFFFC"), ToString(lines[0], node));
-  EXPECT_EQ("678", ToString(lines[1], node));
+  EXPECT_EQ(String(u"12345\uFFFC"), lines[0].first);
+  EXPECT_EQ("678", lines[1].first);
 
   lines = BreakLines(node, LayoutUnit(70));
   EXPECT_EQ(2u, lines.size());
-  EXPECT_EQ("12345", ToString(lines[0], node));
-  EXPECT_EQ(String(u"\uFFFC678"), ToString(lines[1], node));
+  EXPECT_EQ("12345", lines[0].first);
+  EXPECT_EQ(String(u"\uFFFC678"), lines[1].first);
 
   lines = BreakLines(node, LayoutUnit(40));
   EXPECT_EQ(3u, lines.size());
-  EXPECT_EQ("12345", ToString(lines[0], node));
-  EXPECT_EQ(String(u"\uFFFC"), ToString(lines[1], node));
-  EXPECT_EQ("678", ToString(lines[2], node));
+  EXPECT_EQ("12345", lines[0].first);
+  EXPECT_EQ(String(u"\uFFFC"), lines[1].first);
+  EXPECT_EQ("678", lines[2].first);
 
   lines = BreakLines(node, LayoutUnit(20));
   EXPECT_EQ(3u, lines.size());
-  EXPECT_EQ("12345", ToString(lines[0], node));
-  EXPECT_EQ(String(u"\uFFFC"), ToString(lines[1], node));
-  EXPECT_EQ("678", ToString(lines[2], node));
+  EXPECT_EQ("12345", lines[0].first);
+  EXPECT_EQ(String(u"\uFFFC"), lines[1].first);
+  EXPECT_EQ("678", lines[2].first);
 }
 
 TEST_F(NGLineBreakerTest, OverflowMargin) {
@@ -246,21 +248,21 @@ TEST_F(NGLineBreakerTest, OverflowMargin) {
   // While "123 456" can fit in a line, "456" has a right margin that cannot
   // fit. Since "456" and its right margin is not breakable, "456" should be on
   // the next line.
-  Vector<NGInlineItemResults> lines;
+  Vector<std::pair<String, unsigned>> lines;
   lines = BreakLines(node, LayoutUnit(80));
   EXPECT_EQ(3u, lines.size());
-  EXPECT_EQ("123", ToString(lines[0], node));
-  EXPECT_EQ("456", ToString(lines[1], node));
-  DCHECK_EQ(NGInlineItem::kCloseTag, items[lines[1].back().item_index].Type());
-  EXPECT_EQ("789", ToString(lines[2], node));
+  EXPECT_EQ("123", lines[0].first);
+  EXPECT_EQ("456", lines[1].first);
+  DCHECK_EQ(NGInlineItem::kCloseTag, items[lines[1].second].Type());
+  EXPECT_EQ("789", lines[2].first);
 
   // Same as above, but this time "456" overflows the line because it is 70px.
   lines = BreakLines(node, LayoutUnit(60));
   EXPECT_EQ(3u, lines.size());
-  EXPECT_EQ("123", ToString(lines[0], node));
-  EXPECT_EQ("456", ToString(lines[1], node));
-  DCHECK_EQ(NGInlineItem::kCloseTag, items[lines[1].back().item_index].Type());
-  EXPECT_EQ("789", ToString(lines[2], node));
+  EXPECT_EQ("123", lines[0].first);
+  EXPECT_EQ("456", lines[1].first);
+  DCHECK_EQ(NGInlineItem::kCloseTag, items[lines[1].second].Type());
+  EXPECT_EQ("789", lines[2].first);
 }
 
 TEST_F(NGLineBreakerTest, OverflowAfterSpacesAcrossElements) {
@@ -278,12 +280,12 @@ TEST_F(NGLineBreakerTest, OverflowAfterSpacesAcrossElements) {
     <div id=container><span>12345 </span> 1234567890123</div>
   )HTML");
 
-  Vector<NGInlineItemResults> lines;
+  Vector<std::pair<String, unsigned>> lines;
   lines = BreakLines(node, LayoutUnit(100));
   EXPECT_EQ(3u, lines.size());
-  EXPECT_EQ("12345  ", ToString(lines[0], node));
-  EXPECT_EQ("1234567890", ToString(lines[1], node));
-  EXPECT_EQ("123", ToString(lines[2], node));
+  EXPECT_EQ("12345  ", lines[0].first);
+  EXPECT_EQ("1234567890", lines[1].first);
+  EXPECT_EQ("123", lines[2].first);
 }
 
 // Tests when the last word in a node wraps, and another node continues.
@@ -299,11 +301,11 @@ TEST_F(NGLineBreakerTest, WrapLastWord) {
     <div id=container>AAA AAA AAA <span>BB</span> CC</div>
   )HTML");
 
-  Vector<NGInlineItemResults> lines;
+  Vector<std::pair<String, unsigned>> lines;
   lines = BreakLines(node, LayoutUnit(100));
   EXPECT_EQ(2u, lines.size());
-  EXPECT_EQ("AAA AAA", ToString(lines[0], node));
-  EXPECT_EQ("AAA BB CC", ToString(lines[1], node));
+  EXPECT_EQ("AAA AAA", lines[0].first);
+  EXPECT_EQ("AAA BB CC", lines[1].first);
 }
 
 TEST_F(NGLineBreakerTest, WrapLetterSpacing) {
@@ -319,11 +321,11 @@ TEST_F(NGLineBreakerTest, WrapLetterSpacing) {
     <div id=container>Star Wars</div>
   )HTML");
 
-  Vector<NGInlineItemResults> lines;
+  Vector<std::pair<String, unsigned>> lines;
   lines = BreakLines(node, LayoutUnit(100));
   EXPECT_EQ(2u, lines.size());
-  EXPECT_EQ("Star", ToString(lines[0], node));
-  EXPECT_EQ("Wars", ToString(lines[1], node));
+  EXPECT_EQ("Star", lines[0].first);
+  EXPECT_EQ("Wars", lines[1].first);
 }
 
 TEST_F(NGLineBreakerTest, BoundaryInWord) {
@@ -340,20 +342,20 @@ TEST_F(NGLineBreakerTest, BoundaryInWord) {
 
   // The element boundary within "456789" should not cause a break.
   // Since "789" does not fit, it should go to the next line along with "456".
-  Vector<NGInlineItemResults> lines;
+  Vector<std::pair<String, unsigned>> lines;
   lines = BreakLines(node, LayoutUnit(80));
   EXPECT_EQ(3u, lines.size());
-  EXPECT_EQ("123", ToString(lines[0], node));
-  EXPECT_EQ("456789", ToString(lines[1], node));
-  EXPECT_EQ("abc", ToString(lines[2], node));
+  EXPECT_EQ("123", lines[0].first);
+  EXPECT_EQ("456789", lines[1].first);
+  EXPECT_EQ("abc", lines[2].first);
 
   // Same as above, but this time "456789" overflows the line because it is
   // 60px.
   lines = BreakLines(node, LayoutUnit(50));
   EXPECT_EQ(3u, lines.size());
-  EXPECT_EQ("123", ToString(lines[0], node));
-  EXPECT_EQ("456789", ToString(lines[1], node));
-  EXPECT_EQ("abc", ToString(lines[2], node));
+  EXPECT_EQ("123", lines[0].first);
+  EXPECT_EQ("456789", lines[1].first);
+  EXPECT_EQ("abc", lines[2].first);
 }
 
 TEST_F(NGLineBreakerTest, BoundaryInFirstWord) {
@@ -368,21 +370,21 @@ TEST_F(NGLineBreakerTest, BoundaryInFirstWord) {
     <div id=container><span>123</span>456 789</div>
   )HTML");
 
-  Vector<NGInlineItemResults> lines;
+  Vector<std::pair<String, unsigned>> lines;
   lines = BreakLines(node, LayoutUnit(80));
   EXPECT_EQ(2u, lines.size());
-  EXPECT_EQ("123456", ToString(lines[0], node));
-  EXPECT_EQ("789", ToString(lines[1], node));
+  EXPECT_EQ("123456", lines[0].first);
+  EXPECT_EQ("789", lines[1].first);
 
   lines = BreakLines(node, LayoutUnit(50));
   EXPECT_EQ(2u, lines.size());
-  EXPECT_EQ("123456", ToString(lines[0], node));
-  EXPECT_EQ("789", ToString(lines[1], node));
+  EXPECT_EQ("123456", lines[0].first);
+  EXPECT_EQ("789", lines[1].first);
 
   lines = BreakLines(node, LayoutUnit(20));
   EXPECT_EQ(2u, lines.size());
-  EXPECT_EQ("123456", ToString(lines[0], node));
-  EXPECT_EQ("789", ToString(lines[1], node));
+  EXPECT_EQ("123456", lines[0].first);
+  EXPECT_EQ("789", lines[1].first);
 }
 
 struct WhitespaceStateTestData {
@@ -451,7 +453,7 @@ TEST_P(NGWhitespaceStateTest, WhitespaceState) {
                                        R"HTML(</div>
   )HTML");
 
-  Vector<NGLineInfo> line_infos = BreakToLineInfo(node, LayoutUnit(50));
+  BreakLines(node, LayoutUnit(50));
   EXPECT_EQ(trailing_whitespaces_[0], data.expected);
 }
 
@@ -512,13 +514,11 @@ TEST_P(NGTrailingSpaceWidthTest, TrailingSpaceWidth) {
                                        R"HTML(</div>
   )HTML");
 
-  Vector<NGLineInfo> line_infos = BreakToLineInfo(node, LayoutUnit(50));
-  const NGLineInfo& line_info = line_infos[0];
-  if (line_info.ShouldHangTrailingSpaces()) {
-    EXPECT_EQ(line_info.HangWidth(),
-              LayoutUnit(10) * data.trailing_space_width);
+  BreakLines(node, LayoutUnit(50), true);
+  if (first_should_hang_trailing_space_) {
+    EXPECT_EQ(first_hang_width_, LayoutUnit(10) * data.trailing_space_width);
   } else {
-    EXPECT_EQ(line_info.HangWidth(), LayoutUnit());
+    EXPECT_EQ(first_hang_width_, LayoutUnit());
   }
 }
 
@@ -535,11 +535,13 @@ TEST_F(NGLineBreakerTest, MinMaxWithTrailingSpaces) {
     <div id=container>12345 6789 </div>
   )HTML");
 
-  auto size = node.ComputeMinMaxSize(
-      WritingMode::kHorizontalTb,
-      MinMaxSizeInput(/* percentage_resolution_block_size */ (LayoutUnit())));
-  EXPECT_EQ(size.min_size, LayoutUnit(60));
-  EXPECT_EQ(size.max_size, LayoutUnit(110));
+  auto sizes = node.ComputeMinMaxSizes(
+                       WritingMode::kHorizontalTb,
+                       MinMaxSizesInput(/* percentage_resolution_block_size */ (
+                           LayoutUnit())))
+                   .sizes;
+  EXPECT_EQ(sizes.min_size, LayoutUnit(60));
+  EXPECT_EQ(sizes.max_size, LayoutUnit(110));
 }
 
 TEST_F(NGLineBreakerTest, TableCellWidthCalculationQuirkOutOfFlow) {
@@ -559,9 +561,9 @@ TEST_F(NGLineBreakerTest, TableCellWidthCalculationQuirkOutOfFlow) {
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   EXPECT_TRUE(node.GetDocument().InQuirksMode());
 
-  node.ComputeMinMaxSize(
+  node.ComputeMinMaxSizes(
       WritingMode::kHorizontalTb,
-      MinMaxSizeInput(/* percentage_resolution_block_size */ LayoutUnit()));
+      MinMaxSizesInput(/* percentage_resolution_block_size */ LayoutUnit()));
   // Pass if |ComputeMinMaxSize| doesn't hit DCHECK failures.
 }
 

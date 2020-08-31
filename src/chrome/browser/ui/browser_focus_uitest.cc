@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/chrome_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -36,8 +37,6 @@
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
-#include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -45,9 +44,11 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/test/ui_controls.h"
 
 namespace {
 
@@ -170,45 +171,6 @@ class BrowserFocusTest : public InProcessBrowserTest {
       }
     }
   }
-};
-
-// A test interstitial page with typical HTML contents.
-class TestInterstitialPage : public content::InterstitialPageDelegate {
- public:
-  explicit TestInterstitialPage(WebContents* tab) {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    base::FilePath file_path;
-    bool success = base::PathService::Get(chrome::DIR_TEST_DATA, &file_path);
-    EXPECT_TRUE(success);
-    file_path = file_path.AppendASCII("focus/typical_page.html");
-    success = base::ReadFileToString(file_path, &html_contents_);
-    EXPECT_TRUE(success);
-    interstitial_page_ = content::InterstitialPage::Create(
-        tab, true, GURL("http://interstitial.com"), this);
-
-    // Show the interstitial and delay return until it has attached.
-    interstitial_page_->Show();
-    content::WaitForInterstitialAttach(tab);
-
-    EXPECT_TRUE(tab->ShowingInterstitialPage());
-  }
-
-  std::string GetHTMLContents() override { return html_contents_; }
-
-  RenderViewHost* render_view_host() {
-    return interstitial_page_->GetMainFrame()->GetRenderViewHost();
-  }
-
-  void DontProceed() { interstitial_page_->DontProceed(); }
-
-  bool HasFocus() {
-    return render_view_host()->GetWidget()->GetView()->HasFocus();
-  }
-
- private:
-  std::string html_contents_;
-  content::InterstitialPage* interstitial_page_;  // Owns this.
-  DISALLOW_COPY_AND_ASSIGN(TestInterstitialPage);
 };
 
 // Flaky on Mac (http://crbug.com/67301).
@@ -449,47 +411,6 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
   EXPECT_NO_FATAL_FAILURE(TestFocusTraversal(tab->GetRenderViewHost(), true));
 }
 
-// Test forward and reverse focus traversal while an interstitial is showing.
-// Disabled, see http://crbug.com/60973
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
-                       DISABLED_FocusTraversalOnInterstitial) {
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  const GURL url = embedded_test_server()->GetURL(kSimplePage);
-  ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
-
-  // Create and show a test interstitial page.
-  TestInterstitialPage* interstitial_page = new TestInterstitialPage(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  content::RenderViewHost* host = interstitial_page->render_view_host();
-
-  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
-  chrome::FocusLocationBar(browser());
-  EXPECT_NO_FATAL_FAILURE(TestFocusTraversal(host, false));
-  EXPECT_NO_FATAL_FAILURE(TestFocusTraversal(host, true));
-}
-
-// Test the transfer of focus when an interstitial is shown and hidden.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  const GURL url = embedded_test_server()->GetURL(kSimplePage);
-  ui_test_utils::NavigateToURL(browser(), url);
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
-  EXPECT_TRUE(tab->GetRenderViewHost()->GetWidget()->GetView()->HasFocus());
-
-  // Create and show a test interstitial page; it should gain focus.
-  TestInterstitialPage* interstitial_page = new TestInterstitialPage(tab);
-  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
-  EXPECT_TRUE(interstitial_page->HasFocus());
-
-  // Hide the interstitial; the original page should gain focus.
-  interstitial_page->DontProceed();
-  content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
-  EXPECT_TRUE(tab->GetRenderViewHost()->GetWidget()->GetView()->HasFocus());
-}
-
 // Test that find-in-page UI can request focus, even when it is already open.
 #if defined(OS_MACOSX)
 #define MAYBE_FindFocusTest DISABLED_FindFocusTest
@@ -640,6 +561,46 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusAfterCrashedTab) {
   content::CrashTab(browser()->tab_strip_model()->GetActiveWebContents());
 
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+}
+
+// Tests that when omnibox triggers a navigation, then the focus is moved into
+// the current tab.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmnibox) {
+  const GURL url = embedded_test_server()->GetURL("/title1.html");
+
+  // Focus the Omnibox.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  chrome::FocusLocationBar(browser());
+  OmniboxView* view = browser()->window()->GetLocationBar()->GetOmniboxView();
+
+  // Simulate typing a URL into the omnibox.
+  view->SetUserText(base::UTF8ToUTF16(url.spec()));
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
+  EXPECT_FALSE(view->IsSelectAll());
+
+  // Simulate pressing Enter and wait until the navigation starts.
+  content::WebContents* web_contents =
+      chrome_test_utils::GetActiveWebContents(this);
+  content::TestNavigationManager nav_manager(web_contents, url);
+  ASSERT_TRUE(ui_controls::SendKeyPress(browser()->window()->GetNativeWindow(),
+                                        ui::VKEY_RETURN, false, false, false,
+                                        false));
+  ASSERT_TRUE(nav_manager.WaitForRequestStart());
+
+  // Verify that a navigation has started.
+  EXPECT_TRUE(web_contents->GetController().GetPendingEntry());
+  // Verify that the Omnibox text is not selected - this is a regression test
+  // for https://crbug.com/1048742.
+  EXPECT_FALSE(view->IsSelectAll());
+  // Intentionally not asserting anything about IsViewFocused in this
+  // _intermediate_ state.
+
+  // Wait for the navigation to finish and verify final, steady state.
+  nav_manager.WaitForNavigationFinished();
+  EXPECT_TRUE(nav_manager.was_successful());
+  EXPECT_EQ(url, web_contents->GetLastCommittedURL());
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  EXPECT_FALSE(view->IsSelectAll());
 }
 
 // Tests that when a new tab is opened from the omnibox, the focus is moved from

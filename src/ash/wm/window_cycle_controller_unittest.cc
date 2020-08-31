@@ -30,6 +30,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -648,7 +649,7 @@ TEST_F(WindowCycleControllerTest, TabPastFullscreenWindow) {
 TEST_F(WindowCycleControllerTest, MultiDisplayPositioning) {
   int64_t primary_id = GetPrimaryDisplay().id();
   display::DisplayIdList list =
-      display::test::CreateDisplayIdListN(2, primary_id, primary_id + 1);
+      display::test::CreateDisplayIdListN(primary_id, 2);
 
   auto placements = {
       display::DisplayPlacement::BOTTOM, display::DisplayPlacement::TOP,
@@ -696,34 +697,20 @@ TEST_F(WindowCycleControllerTest, MultiDisplayPositioning) {
   }
 }
 
-class DesksWindowCyclingTest : public WindowCycleControllerTest {
- public:
-  DesksWindowCyclingTest() = default;
-  ~DesksWindowCyclingTest() override = default;
-
-  // WindowCycleControllerTest:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
-    WindowCycleControllerTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(DesksWindowCyclingTest);
-};
-
-TEST_F(DesksWindowCyclingTest, CycleShowsAllDesksWindows) {
-  // Create two desks with two windows in each.
+TEST_F(WindowCycleControllerTest, CycleShowsAllDesksWindows) {
   auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   auto* desks_controller = DesksController::Get();
   desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
-  ASSERT_EQ(2u, desks_controller->desks().size());
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(3u, desks_controller->desks().size());
   const Desk* desk_2 = desks_controller->desks()[1].get();
   ActivateDesk(desk_2);
   EXPECT_EQ(desk_2, desks_controller->active_desk());
   auto win2 = CreateAppWindow(gfx::Rect(0, 0, 300, 200));
+  const Desk* desk_3 = desks_controller->desks()[2].get();
+  ActivateDesk(desk_3);
+  EXPECT_EQ(desk_3, desks_controller->active_desk());
   auto win3 = CreateAppWindow(gfx::Rect(10, 30, 400, 200));
 
   WindowCycleController* cycle_controller =
@@ -740,13 +727,104 @@ TEST_F(DesksWindowCyclingTest, CycleShowsAllDesksWindows) {
   // The MRU order is {win3, win2, win1, win0}. We're now at win2. Cycling one
   // more time and completing the cycle, will activate win1 which exists on a
   // desk_1. This should activate desk_1.
-  DeskSwitchAnimationWaiter waiter;
+  {
+    base::HistogramTester histogram_tester;
+    DeskSwitchAnimationWaiter waiter;
+    cycle_controller->HandleCycleWindow(WindowCycleController::FORWARD);
+    cycle_controller->CompleteCycling();
+    waiter.Wait();
+    Desk* desk_1 = desks_controller->desks()[0].get();
+    EXPECT_EQ(desk_1, desks_controller->active_desk());
+    EXPECT_EQ(win1.get(), window_util::GetActiveWindow());
+    histogram_tester.ExpectUniqueSample(
+        "Ash.WindowCycleController.DesksSwitchDistance",
+        /*desk distance of 3 - 1 = */ 2, /*expected_count=*/1);
+  }
+
+  // Cycle again and activate win2, which exist on desk_2. Expect that desk to
+  // be activated, and a histogram sample of distance of 1 is recorded.
+  // MRU is {win1, win3, win2, win0}.
+  {
+    base::HistogramTester histogram_tester;
+    DeskSwitchAnimationWaiter waiter;
+    cycle_controller->HandleCycleWindow(WindowCycleController::FORWARD);
+    cycle_controller->HandleCycleWindow(WindowCycleController::FORWARD);
+    cycle_controller->CompleteCycling();
+    waiter.Wait();
+    EXPECT_EQ(desk_2, desks_controller->active_desk());
+    EXPECT_EQ(win2.get(), window_util::GetActiveWindow());
+    histogram_tester.ExpectUniqueSample(
+        "Ash.WindowCycleController.DesksSwitchDistance",
+        /*desk distance of 2 - 1 = */ 1, /*expected_count=*/1);
+  }
+}
+
+class LimitedWindowCycleControllerTest : public WindowCycleControllerTest {
+ public:
+  LimitedWindowCycleControllerTest() = default;
+  LimitedWindowCycleControllerTest(const LimitedWindowCycleControllerTest&) =
+      delete;
+  LimitedWindowCycleControllerTest& operator=(
+      const LimitedWindowCycleControllerTest&) = delete;
+  ~LimitedWindowCycleControllerTest() override = default;
+
+  // WindowCycleControllerTest:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kLimitAltTabToActiveDesk);
+    WindowCycleControllerTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(LimitedWindowCycleControllerTest, CycleShowsActiveDeskWindows) {
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(3u, desks_controller->desks().size());
+  const Desk* desk_2 = desks_controller->desks()[1].get();
+  ActivateDesk(desk_2);
+  EXPECT_EQ(desk_2, desks_controller->active_desk());
+  auto win2 = CreateAppWindow(gfx::Rect(0, 0, 300, 200));
+  const Desk* desk_3 = desks_controller->desks()[2].get();
+  ActivateDesk(desk_3);
+  EXPECT_EQ(desk_3, desks_controller->active_desk());
+  auto win3 = CreateAppWindow(gfx::Rect(10, 30, 400, 200));
+
+  WindowCycleController* cycle_controller =
+      Shell::Get()->window_cycle_controller();
+
+  // Should contain only windows from |desk_3|.
   cycle_controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  auto cycle_windows = GetWindows(cycle_controller);
+  EXPECT_EQ(1u, cycle_windows.size());
+  EXPECT_TRUE(base::Contains(cycle_windows, win3.get()));
   cycle_controller->CompleteCycling();
-  waiter.Wait();
-  Desk* desk_1 = desks_controller->desks()[0].get();
-  EXPECT_EQ(desk_1, desks_controller->active_desk());
-  EXPECT_EQ(win1.get(), window_util::GetActiveWindow());
+  EXPECT_EQ(win3.get(), window_util::GetActiveWindow());
+
+  // Should contain only windows from |desk_2|.
+  ActivateDesk(desk_2);
+  cycle_controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  cycle_windows = GetWindows(cycle_controller);
+  EXPECT_EQ(1u, cycle_windows.size());
+  EXPECT_TRUE(base::Contains(cycle_windows, win2.get()));
+  cycle_controller->CompleteCycling();
+  EXPECT_EQ(win2.get(), window_util::GetActiveWindow());
+
+  // Should contain only windows from |desk_1|.
+  const Desk* desk_1 = desks_controller->desks()[0].get();
+  ActivateDesk(desk_1);
+  cycle_controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  cycle_windows = GetWindows(cycle_controller);
+  EXPECT_EQ(2u, cycle_windows.size());
+  EXPECT_TRUE(base::Contains(cycle_windows, win0.get()));
+  EXPECT_TRUE(base::Contains(cycle_windows, win1.get()));
+  cycle_controller->CompleteCycling();
+  EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
 }
 
 }  // namespace ash

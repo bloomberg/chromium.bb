@@ -15,40 +15,52 @@
 #ifndef VK_DESCRIPTOR_SET_HPP_
 #define VK_DESCRIPTOR_SET_HPP_
 
-// Intentionally not including VkObject.hpp here due to b/127920555
+#include "VkObject.hpp"
+#include "marl/mutex.h"
 
 #include <array>
+#include <cstdint>
 #include <memory>
 
-namespace vk
+namespace vk {
+
+class DescriptorSetLayout;
+class Device;
+class PipelineLayout;
+
+struct alignas(16) DescriptorSetHeader
 {
-	class DescriptorSetLayout;
+	DescriptorSetLayout *layout;
+	marl::mutex mutex;
+};
 
-	struct alignas(16) DescriptorSetHeader
+class alignas(16) DescriptorSet : public Object<DescriptorSet, VkDescriptorSet>
+{
+public:
+	using Array = std::array<DescriptorSet *, vk::MAX_BOUND_DESCRIPTOR_SETS>;
+	using Bindings = std::array<uint8_t *, vk::MAX_BOUND_DESCRIPTOR_SETS>;
+	using DynamicOffsets = std::array<uint32_t, vk::MAX_DESCRIPTOR_SET_COMBINED_BUFFERS_DYNAMIC>;
+
+	static void ContentsChanged(const Array &descriptorSets, const PipelineLayout *layout, Device *device);
+	static void PrepareForSampling(const Array &descriptorSets, const PipelineLayout *layout, Device *device);
+
+	DescriptorSetHeader header;
+	alignas(16) uint8_t data[1];
+
+private:
+	enum NotificationType
 	{
-		DescriptorSetLayout* layout;
+		CONTENTS_CHANGED,
+		PREPARE_FOR_SAMPLING
 	};
+	static void ParseDescriptors(const Array &descriptorSets, const PipelineLayout *layout, Device *device, NotificationType notificationType);
+};
 
-	class alignas(16) DescriptorSet
-	{
-	public:
-		static inline DescriptorSet* Cast(VkDescriptorSet object)
-		{
-			return static_cast<DescriptorSet*>(static_cast<void*>(object));
-		}
+inline DescriptorSet *Cast(VkDescriptorSet object)
+{
+	return DescriptorSet::Cast(object);
+}
 
-		using Bindings = std::array<vk::DescriptorSet*, vk::MAX_BOUND_DESCRIPTOR_SETS>;
-		using DynamicOffsets = std::array<uint32_t, vk::MAX_DESCRIPTOR_SET_COMBINED_BUFFERS_DYNAMIC>;
+}  // namespace vk
 
-		DescriptorSetHeader header;
-		alignas(16) uint8_t data[1];
-	};
-
-	inline DescriptorSet* Cast(VkDescriptorSet object)
-	{
-		return DescriptorSet::Cast(object);
-	}
-
-} // namespace vk
-
-#endif // VK_DESCRIPTOR_SET_HPP_
+#endif  // VK_DESCRIPTOR_SET_HPP_

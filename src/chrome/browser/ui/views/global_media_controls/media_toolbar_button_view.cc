@@ -18,7 +18,7 @@
 #include "components/vector_icons/vector_icons.h"
 #include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
@@ -139,33 +139,10 @@ void MediaToolbarButtonView::UpdateIcon() {
   if (!GetWidget())
     return;
 
-  const gfx::VectorIcon& icon = ui::MaterialDesignController::touch_ui()
-                                    ? kMediaToolbarButtonTouchIcon
-                                    : kMediaToolbarButtonIcon;
-
-  const SkColor normal_color =
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-  const SkColor disabled_color = GetThemeProvider()->GetColor(
-      ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
-
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, normal_color));
-
-#if defined(OS_MACOSX)
-  // On Mac OS X, the toolbar is set to disabled any time the current window is
-  // not in focus. This causes the icon to look disabled in weird cases, such as
-  // when the dialog is open. Therefore on Mac we only set the disabled image
-  // when necessary.
-  if (GetEnabled()) {
-    SetImage(views::Button::STATE_DISABLED, gfx::ImageSkia());
-  } else {
-    SetImage(views::Button::STATE_DISABLED,
-             gfx::CreateVectorIcon(icon, disabled_color));
-  }
-#else
-  SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(icon, disabled_color));
-#endif  // defined(OS_MACOSX)
+  const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
+  const gfx::VectorIcon& icon =
+      touch_ui ? kMediaToolbarButtonTouchIcon : kMediaToolbarButtonIcon;
+  UpdateIconsWithStandardColors(icon);
 }
 
 void MediaToolbarButtonView::ShowPromo() {

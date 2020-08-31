@@ -17,12 +17,9 @@ namespace signin {
 #if defined(OS_ANDROID)
 // Mice is similar to Mirror but also works when the user is not opted into
 // Sync.
-extern const base::Feature kMiceFeature;
+extern const base::Feature kMobileIdentityConsistency;
 #endif
 
-// TODO(https://crbug.com/777774): Cleanup this enum and remove related
-// functions once Dice is fully rolled out, and/or Mirror code is removed on
-// desktop.
 enum class AccountConsistencyMethod : int {
   // No account consistency.
   kDisabled,

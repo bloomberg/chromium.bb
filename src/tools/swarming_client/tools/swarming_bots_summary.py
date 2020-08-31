@@ -47,10 +47,10 @@ def present_data(bots, bucket_type, order_count):
   print('%-*s  Alive  Dead' % (maxlen, 'Type'))
   counts = {
     k: [len(v), sum(1 for i in v if i.get('is_dead'))]
-    for k, v in buckets.iteritems()
+    for k, v in buckets.items()
   }
   key = (lambda x: -x[1][0]) if order_count else (lambda x: x)
-  for bucket, count in sorted(counts.iteritems(), key=key):
+  for bucket, count in sorted(counts.items(), key=key):
     print('%-*s: %5d %5d' % (maxlen, bucket, count[0], count[1]))
 
 

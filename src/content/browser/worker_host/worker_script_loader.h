@@ -14,6 +14,8 @@
 #include "base/optional.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/public/browser/dedicated_worker_id.h"
+#include "content/public/browser/shared_worker_id.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -36,7 +38,7 @@ class AppCacheHost;
 class BrowserContext;
 class NavigationLoaderInterceptor;
 class ResourceContext;
-class ServiceWorkerNavigationHandle;
+class ServiceWorkerMainResourceHandle;
 
 // The URLLoader for loading a shared worker script. Only used for the main
 // script request.
@@ -67,12 +69,14 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   // chrome-extension:// URL.
   WorkerScriptLoader(
       int process_id,
+      DedicatedWorkerId dedicated_worker_id,
+      SharedWorkerId shared_worker_id,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& resource_request,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-      base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle,
+      base::WeakPtr<ServiceWorkerMainResourceHandle> service_worker_handle,
       base::WeakPtr<AppCacheHost> appcache_host,
       const BrowserContextGetter& browser_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
@@ -80,9 +84,11 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   ~WorkerScriptLoader() override;
 
   // network::mojom::URLLoader:
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      const base::Optional<GURL>& new_url) override;
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers,
+      const base::Optional<GURL>& new_url) override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
@@ -145,7 +151,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   const uint32_t options_;
   network::ResourceRequest resource_request_;
   mojo::Remote<network::mojom::URLLoaderClient> client_;
-  base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle_;
+  base::WeakPtr<ServiceWorkerMainResourceHandle> service_worker_handle_;
   BrowserContextGetter browser_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;

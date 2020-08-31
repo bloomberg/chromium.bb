@@ -7,9 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/address_list.h"
@@ -21,6 +22,7 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/mapped_host_resolver.h"
+#include "net/dns/resolve_context.h"
 
 namespace net {
 
@@ -165,9 +167,11 @@ std::unique_ptr<HostResolver> HostResolver::CreateResolver(
     bool enable_caching) {
   DCHECK(manager);
 
-  auto cache = enable_caching ? HostCache::CreateDefaultCache() : nullptr;
-  auto resolver =
-      std::make_unique<ContextHostResolver>(manager, std::move(cache));
+  auto resolve_context = std::make_unique<ResolveContext>(
+      nullptr /* url_request_context */, enable_caching);
+
+  auto resolver = std::make_unique<ContextHostResolver>(
+      manager, std::move(resolve_context));
 
   if (host_mapping_rules.empty())
     return resolver;
@@ -201,13 +205,14 @@ HostResolver::CreateStandaloneContextResolver(
     NetLog* net_log,
     base::Optional<ManagerOptions> options,
     bool enable_caching) {
-  auto cache = enable_caching ? HostCache::CreateDefaultCache() : nullptr;
+  auto resolve_context = std::make_unique<ResolveContext>(
+      nullptr /* url_request_context */, enable_caching);
 
   return std::make_unique<ContextHostResolver>(
       std::make_unique<HostResolverManager>(
           std::move(options).value_or(ManagerOptions()),
           NetworkChangeNotifier::GetSystemDnsConfigNotifier(), net_log),
-      std::move(cache));
+      std::move(resolve_context));
 }
 
 // static
@@ -242,8 +247,12 @@ HostResolverFlags HostResolver::ParametersToHostResolverFlags(
 
 // static
 int HostResolver::SquashErrorCode(int error) {
-  if (error == OK || error == ERR_IO_PENDING ||
-      error == ERR_NAME_NOT_RESOLVED) {
+  // TODO(crbug.com/1040686): Once InProcessBrowserTests do not use
+  // ERR_NOT_IMPLEMENTED to simulate DNS failures, it should be ok to squash
+  // ERR_NOT_IMPLEMENTED.
+  // TODO(crbug.com/1043281): Consider squashing ERR_INTERNET_DISCONNECTED.
+  if (error == OK || error == ERR_IO_PENDING || error == ERR_NOT_IMPLEMENTED ||
+      error == ERR_INTERNET_DISCONNECTED || error == ERR_NAME_NOT_RESOLVED) {
     return error;
   } else {
     return ERR_NAME_NOT_RESOLVED;

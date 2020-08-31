@@ -8,6 +8,8 @@
 from __future__ import print_function
 
 import os
+import subprocess
+import sys
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -24,6 +26,9 @@ if cros_build_lib.IsInsideChroot():
   # We'll check in main() if the operation needs portage.
   # pylint: disable=import-error
   import portage
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class Error(Exception):
@@ -286,8 +291,8 @@ class ToolchainInstaller(object):
     with osutils.TempDir(sudo_rm=True) as tempdir:
       # Extract to the temporary directory.
       cmd = ['tar', '-I', compressor, '-xpf', libc_path, '-C', tempdir]
-      result = cros_build_lib.sudo_run(cmd, error_code_ok=True,
-                                       combine_stdout_stderr=True)
+      result = cros_build_lib.sudo_run(cmd, check=False,
+                                       stderr=subprocess.STDOUT)
       if result.returncode:
         raise ToolchainInstallError('Error extracting libc: %s' % result.output,
                                     result)
@@ -296,8 +301,8 @@ class ToolchainInstaller(object):
       # Trailing / on source to sync contents instead of the directory itself.
       source = os.path.join(tempdir, 'usr', board_chost)
       cmd = ['rsync', '--archive', '%s/' % source, '%s/' % sysroot.path]
-      result = cros_build_lib.sudo_run(cmd, error_code_ok=True,
-                                       combine_stdout_stderr=True)
+      result = cros_build_lib.sudo_run(cmd, check=False,
+                                       stderr=subprocess.STDOUT)
       if result.returncode:
         raise ToolchainInstallError('Error installing libc: %s' % result.output,
                                     result)
@@ -308,8 +313,8 @@ class ToolchainInstaller(object):
       # Sync the debug files to the debug directory.
       source = os.path.join(tempdir, 'usr/lib/debug/usr', board_chost)
       cmd = ['rsync', '--archive', '%s/' % source, '%s/' % debug_dir]
-      result = cros_build_lib.sudo_run(cmd, error_code_ok=True,
-                                       combine_stdout_stderr=True)
+      result = cros_build_lib.sudo_run(cmd, check=False,
+                                       stderr=subprocess.STDOUT)
       if result.returncode:
         logging.warning('libc debug info not copied: %s', result.output)
 

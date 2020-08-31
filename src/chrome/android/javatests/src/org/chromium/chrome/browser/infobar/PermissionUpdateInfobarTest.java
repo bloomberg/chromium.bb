@@ -16,14 +16,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.settings.website.ContentSettingValues;
-import org.chromium.chrome.browser.settings.website.PermissionInfo;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
+import org.chromium.components.browser_ui.site_settings.PermissionInfo;
+import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -101,7 +102,10 @@ public class PermissionUpdateInfobarTest {
 
         try {
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> geolocationSettings.setContentSetting(ContentSettingValues.ALLOW));
+                    ()
+                            -> geolocationSettings.setContentSetting(
+                                    Profile.getLastUsedRegularProfile(),
+                                    ContentSettingValues.ALLOW));
 
             mActivityTestRule.loadUrl(mTestServer.getURL(GEOLOCATION_PAGE));
             mListener.addInfoBarAnimationFinished("InfoBar not added");
@@ -138,7 +142,10 @@ public class PermissionUpdateInfobarTest {
             }));
         } finally {
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> geolocationSettings.setContentSetting(ContentSettingValues.DEFAULT));
+                    ()
+                            -> geolocationSettings.setContentSetting(
+                                    Profile.getLastUsedRegularProfile(),
+                                    ContentSettingValues.DEFAULT));
         }
     }
 

@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/task/post_task.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -17,12 +17,10 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/system_connector.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/user_input_monitor.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -86,8 +84,7 @@ void CreateSystemWideLoopbackStreamHelper(
   const bool enable_agc = false;
   factory->CreateInputStream(
       -1, -1, media::AudioDeviceDescription::kLoopbackWithMuteDeviceId, params,
-      total_segments, enable_agc, nullptr /* processing_config */,
-      std::move(client_remote));
+      total_segments, enable_agc, std::move(client_remote));
 }
 
 }  // namespace
@@ -98,7 +95,6 @@ InProcessAudioLoopbackStreamCreator::InProcessAudioLoopbackStreamCreator()
                    ? static_cast<media::UserInputMonitorBase*>(
                          BrowserMainLoop::GetInstance()->user_input_monitor())
                    : nullptr,
-               content::GetSystemConnector()->Clone(),
                AudioStreamBrokerFactory::CreateImpl()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }

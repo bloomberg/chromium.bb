@@ -24,9 +24,7 @@ namespace syncer {
 // behavior.
 class FakeSyncEngine : public SyncEngine {
  public:
-  static constexpr char kTestCacheGuid[] = "test-guid";
   static constexpr char kTestBirthday[] = "1";
-  static constexpr char kTestKeystoreKey[] = "test-keystore-key";
 
   FakeSyncEngine();
   ~FakeSyncEngine() override;
@@ -50,8 +48,9 @@ class FakeSyncEngine : public SyncEngine {
 
   void SetDecryptionPassphrase(const std::string& passphrase) override;
 
-  void AddTrustedVaultDecryptionKeys(const std::vector<std::string>& keys,
-                                     base::OnceClosure done_cb) override;
+  void AddTrustedVaultDecryptionKeys(
+      const std::vector<std::vector<uint8_t>>& keys,
+      base::OnceClosure done_cb) override;
 
   void StopSyncingForShutdown() override;
 
@@ -59,25 +58,19 @@ class FakeSyncEngine : public SyncEngine {
 
   void ConfigureDataTypes(ConfigureParams params) override;
 
-  void RegisterDirectoryDataType(ModelType type, ModelSafeGroup group) override;
-
-  void UnregisterDirectoryDataType(ModelType type) override;
-
   void EnableEncryptEverything() override;
-
-  void ActivateDirectoryDataType(ModelType type,
-                                 ModelSafeGroup group,
-                                 ChangeProcessor* change_processor) override;
-  void DeactivateDirectoryDataType(ModelType type) override;
 
   void ActivateNonBlockingDataType(
       ModelType type,
       std::unique_ptr<DataTypeActivationResponse>) override;
   void DeactivateNonBlockingDataType(ModelType type) override;
 
+  void ActivateProxyDataType(ModelType type) override;
+  void DeactivateProxyDataType(ModelType type) override;
+
   UserShare* GetUserShare() const override;
 
-  SyncStatus GetDetailedStatus() override;
+  const SyncStatus& GetDetailedStatus() const override;
 
   void HasUnsyncedItemsForTest(
       base::OnceCallback<void(bool)> cb) const override;
@@ -94,7 +87,7 @@ class FakeSyncEngine : public SyncEngine {
 
   void OnCookieJarChanged(bool account_mismatch,
                           bool empty_jar,
-                          const base::Closure& callback) override;
+                          base::OnceClosure callback) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
   void GetNigoriNodeForDebugging(AllNodesCallback callback) override;
   void set_fail_initial_download(bool should_fail);
@@ -102,6 +95,7 @@ class FakeSyncEngine : public SyncEngine {
  private:
   bool fail_initial_download_ = false;
   bool initialized_ = false;
+  const SyncStatus default_sync_status_;
 };
 
 }  // namespace syncer

@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -59,6 +58,7 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/captive_portal/core/buildflags.h"
 #include "components/google/core/common/google_util.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -84,7 +84,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-#include "chrome/browser/captive_portal/captive_portal_service.h"
+#include "components/captive_portal/content/captive_portal_service.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -93,6 +93,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/shell.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -109,8 +110,12 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/test/views/accessibility_checker.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/views_delegate.h"
+#include "ui/views/widget/widget.h"
 #endif
 
 namespace {
@@ -123,7 +128,7 @@ class FakeDeviceSyncImplFactory
   ~FakeDeviceSyncImplFactory() override = default;
 
   // chromeos::device_sync::DeviceSyncImpl::Factory:
-  std::unique_ptr<chromeos::device_sync::DeviceSyncBase> BuildInstance(
+  std::unique_ptr<chromeos::device_sync::DeviceSyncBase> CreateInstance(
       signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       PrefService* profile_prefs,
@@ -164,13 +169,25 @@ InProcessBrowserTest::InProcessBrowserTest(
 }
 #endif
 
-std::unique_ptr<storage::QuotaSettings>
-InProcessBrowserTest::CreateQuotaSettings() {
-  // By default use hardcoded quota settings to have a consistent testing
-  // environment.
-  const int kQuota = 5 * 1024 * 1024;
-  return std::make_unique<storage::QuotaSettings>(kQuota * 5, kQuota, 0, 0);
+void InProcessBrowserTest::RunScheduledLayouts() {
+#if defined(TOOLKIT_VIEWS)
+  views::Widget::Widgets widgets_to_layout;
+
+#if defined(OS_CHROMEOS)
+  // WidgetTest::GetAllWidgets() doesn't work for ChromeOS in a production
+  // environment. We must get the Widgets ourself.
+  for (aura::Window* root_window : ash::Shell::GetAllRootWindows())
+    views::Widget::GetAllChildWidgets(root_window, &widgets_to_layout);
+#else
+  widgets_to_layout = views::test::WidgetTest::GetAllWidgets();
+#endif  // defined(OS_CHROMEOS)
+
+  for (views::Widget* widget : widgets_to_layout)
+    widget->LayoutRootViewIfNecessary();
+#endif  // defined(TOOLKIT_VIEWS)
 }
+
+// defined(TOOLKIT_VIEWS)
 
 void InProcessBrowserTest::Initialize() {
   CreateTestServer(GetChromeTestDataDir());
@@ -252,6 +269,10 @@ void InProcessBrowserTest::SetUp() {
                                       chrome::kTestUserProfileDir);
     }
   }
+
+  // By default, OS settings are not opened in a browser tab but in settings
+  // app. OS browsertests require OS settings to be opened in a browser tab.
+  SetAllowOsSettingsInTabForTesting(true);
 #endif
 
   SetScreenInstance();
@@ -266,8 +287,8 @@ void InProcessBrowserTest::SetUp() {
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  CaptivePortalService::set_state_for_testing(
-      CaptivePortalService::DISABLED_FOR_TESTING);
+  captive_portal::CaptivePortalService::set_state_for_testing(
+      captive_portal::CaptivePortalService::DISABLED_FOR_TESTING);
 #endif
 
   chrome_browser_net::NetErrorTabHelper::set_state_for_testing(
@@ -276,7 +297,7 @@ void InProcessBrowserTest::SetUp() {
   google_util::SetMockLinkDoctorBaseURLForTesting();
 
 #if defined(OS_CHROMEOS)
-  chromeos::device_sync::DeviceSyncImpl::Factory::SetInstanceForTesting(
+  chromeos::device_sync::DeviceSyncImpl::Factory::SetFactoryForTesting(
       GetFakeDeviceSyncImplFactory());
 
   // On Chrome OS, access to files via file: scheme is restricted. Enable
@@ -289,16 +310,19 @@ void InProcessBrowserTest::SetUp() {
   ash::ShellTestApi::SetTabletControllerUseScreenshotForTest(false);
 #endif  // defined(OS_CHROMEOS)
 
-  quota_settings_ = CreateQuotaSettings();
-  ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(
-      quota_settings_.get());
-
   // Redirect the default download directory to a temporary directory.
   ASSERT_TRUE(default_download_dir_.CreateUniqueTempDir());
   CHECK(base::PathService::Override(chrome::DIR_DEFAULT_DOWNLOADS,
                                     default_download_dir_.GetPath()));
 
   AfterStartupTaskUtils::DisableScheduleTaskDelayForTesting();
+
+#if defined(TOOLKIT_VIEWS)
+  // Prevent hover cards from appearing when the mouse is over the tab. Tests
+  // don't typically account for this possibly, so it can cause unrelated tests
+  // to fail. See crbug.com/1050012.
+  Tab::SetShowHoverCardOnMouseHoverForTesting(false);
+#endif  // defined(TOOLKIT_VIEWS)
 
   BrowserTestBase::SetUp();
 }
@@ -323,11 +347,9 @@ void InProcessBrowserTest::TearDown() {
 #if defined(OS_MACOSX) || defined(OS_LINUX)
   OSCryptMocker::TearDown();
 #endif
-  ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(nullptr);
 
 #if defined(OS_CHROMEOS)
-  chromeos::device_sync::DeviceSyncImpl::Factory::SetInstanceForTesting(
-      nullptr);
+  chromeos::device_sync::DeviceSyncImpl::Factory::SetFactoryForTesting(nullptr);
 #endif
 }
 

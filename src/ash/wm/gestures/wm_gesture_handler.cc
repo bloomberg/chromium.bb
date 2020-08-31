@@ -4,14 +4,13 @@
 
 #include "ash/wm/gestures/wm_gesture_handler.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_histogram_enums.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 
 namespace ash {
 
@@ -45,23 +44,19 @@ bool Handle3FingerVerticalScroll(float scroll_y) {
 // Handles horizontal 4-finger scroll by switching desks if possible.
 // Returns true if the gesture was handled.
 bool HandleDesksSwitchHorizontalScroll(float scroll_x) {
-  DCHECK(features::IsVirtualDesksEnabled());
-
   if (std::fabs(scroll_x) < WmGestureHandler::kHorizontalThresholdDp)
     return false;
 
   // This does not invert if the user changes their touchpad settings
   // currently. The scroll works Australian way (scroll left to go to the
   // desk on the right and vice versa).
-  DesksController::Get()->ActivateAdjacentDesk(
+  return DesksController::Get()->ActivateAdjacentDesk(
       /*going_left=*/scroll_x > 0, DesksSwitchSource::kDeskSwitchTouchpad);
-  return true;
 }
 
 }  // namespace
 
-WmGestureHandler::WmGestureHandler()
-    : can_handle_desks_gestures_(features::IsVirtualDesksEnabled()) {}
+WmGestureHandler::WmGestureHandler() = default;
 
 WmGestureHandler::~WmGestureHandler() = default;
 
@@ -124,8 +119,7 @@ bool WmGestureHandler::EndScroll() {
     return MoveOverviewSelection(finger_count, scroll_x, scroll_y);
   }
 
-  return finger_count == 4 && can_handle_desks_gestures_ &&
-         HandleDesksSwitchHorizontalScroll(scroll_x);
+  return finger_count == 4 && HandleDesksSwitchHorizontalScroll(scroll_x);
 }
 
 bool WmGestureHandler::MoveOverviewSelection(int finger_count,

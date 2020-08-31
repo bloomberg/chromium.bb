@@ -2,11 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-class SnippetFileSystem extends Persistence.PlatformFileSystem {
+import * as Common from '../common/common.js';
+import * as Persistence from '../persistence/persistence.js';
+import * as SDK from '../sdk/sdk.js';
+import * as TextUtils from '../text_utils/text_utils.js';  // eslint-disable-line no-unused-vars
+import * as Workspace from '../workspace/workspace.js';
+
+class SnippetFileSystem extends Persistence.PlatformFileSystem.PlatformFileSystem {
   constructor() {
     super('snippet://', 'snippets');
-    this._lastSnippetIdentifierSetting = Common.settings.createSetting('scriptSnippets_lastIdentifier', 0);
-    this._snippetsSetting = Common.settings.createSetting('scriptSnippets', []);
+    this._lastSnippetIdentifierSetting =
+        Common.Settings.Settings.instance().createSetting('scriptSnippets_lastIdentifier', 0);
+    this._snippetsSetting = Common.Settings.Settings.instance().createSetting('scriptSnippets', []);
   }
 
   /**
@@ -55,7 +62,7 @@ class SnippetFileSystem extends Persistence.PlatformFileSystem {
   /**
    * @override
    * @param {string} path
-   * @returns {!Promise<!Common.DeferredContent>}
+   * @returns {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   async requestFileContent(path) {
     const name = unescape(path.substring(1));
@@ -104,7 +111,7 @@ class SnippetFileSystem extends Persistence.PlatformFileSystem {
   /**
    * @override
    * @param {string} query
-   * @param {!Common.Progress} progress
+   * @param {!Common.Progress.Progress} progress
    * @return {!Promise<!Array<string>>}
    */
   async searchInPath(query, progress) {
@@ -125,10 +132,10 @@ class SnippetFileSystem extends Persistence.PlatformFileSystem {
   /**
    * @override
    * @param {string} path
-   * @return {!Common.ResourceType}
+   * @return {!Common.ResourceType.ResourceType}
    */
   contentType(path) {
-    return Common.resourceTypes.Script;
+    return Common.ResourceType.resourceTypes.Script;
   }
 
   /**
@@ -150,14 +157,14 @@ class SnippetFileSystem extends Persistence.PlatformFileSystem {
 }
 
 /**
- * @param {!Workspace.UISourceCode} uiSourceCode
+ * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
  */
 export async function evaluateScriptSnippet(uiSourceCode) {
   if (!uiSourceCode.url().startsWith('snippet://')) {
     return;
   }
 
-  const executionContext = UI.context.flavor(SDK.ExecutionContext);
+  const executionContext = self.UI.context.flavor(SDK.RuntimeModel.ExecutionContext);
   if (!executionContext) {
     return;
   }
@@ -166,7 +173,7 @@ export async function evaluateScriptSnippet(uiSourceCode) {
   await uiSourceCode.requestContent();
   uiSourceCode.commitWorkingCopy();
   const expression = uiSourceCode.workingCopy();
-  Common.console.show();
+  Common.Console.Console.instance().show();
 
   const url = uiSourceCode.url();
 
@@ -184,7 +191,7 @@ export async function evaluateScriptSnippet(uiSourceCode) {
       /* awaitPromise */ true);
 
   if (result.exceptionDetails) {
-    SDK.consoleModel.addMessage(SDK.ConsoleMessage.fromException(
+    SDK.ConsoleModel.ConsoleModel.instance().addMessage(SDK.ConsoleModel.ConsoleMessage.fromException(
         runtimeModel, result.exceptionDetails, /* messageType */ undefined, /* timestamp */ undefined, url));
     return;
   }
@@ -194,14 +201,14 @@ export async function evaluateScriptSnippet(uiSourceCode) {
 
   const scripts = executionContext.debuggerModel.scriptsForSourceURL(url);
   const scriptId = scripts[scripts.length - 1].scriptId;
-  SDK.consoleModel.addMessage(new SDK.ConsoleMessage(
-      runtimeModel, SDK.ConsoleMessage.MessageSource.JS, SDK.ConsoleMessage.MessageLevel.Info, '',
-      SDK.ConsoleMessage.MessageType.Result, url, undefined, undefined, [result.object], undefined, undefined,
+  SDK.ConsoleModel.ConsoleModel.instance().addMessage(new SDK.ConsoleModel.ConsoleMessage(
+      runtimeModel, SDK.ConsoleModel.MessageSource.JS, SDK.ConsoleModel.MessageLevel.Info, '',
+      SDK.ConsoleModel.MessageType.Result, url, undefined, undefined, [result.object], undefined, undefined,
       executionContext.id, scriptId));
 }
 
 /**
- * @param {!Workspace.UISourceCode} uiSourceCode
+ * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
  * @return {boolean}
  */
 export function isSnippetsUISourceCode(uiSourceCode) {
@@ -209,26 +216,13 @@ export function isSnippetsUISourceCode(uiSourceCode) {
 }
 
 /**
- * @param {!Workspace.Project} project
+ * @param {!Workspace.Workspace.Project} project
  * @return {boolean}
  */
 export function isSnippetsProject(project) {
-  return project.type() === Workspace.projectTypes.FileSystem &&
-      Persistence.FileSystemWorkspaceBinding.fileSystemType(project) === 'snippets';
+  return project.type() === Workspace.Workspace.projectTypes.FileSystem &&
+      Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) === 'snippets';
 }
 
-/* Legacy exported object */
-self.Snippets = self.Snippets || {};
-
-/* Legacy exported object */
-Snippets = Snippets || {};
-
-Snippets.evaluateScriptSnippet = evaluateScriptSnippet;
-Snippets.isSnippetsUISourceCode = isSnippetsUISourceCode;
-Snippets.isSnippetsProject = isSnippetsProject;
-
-Persistence.isolatedFileSystemManager.addPlatformFileSystem('snippet://', new SnippetFileSystem());
-
-Snippets.project = /** @type {!Workspace.Project} */ (
-    Workspace.workspace.projectsForType(Workspace.projectTypes.FileSystem)
-        .find(project => Persistence.FileSystemWorkspaceBinding.fileSystemType(project) === 'snippets'));
+Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addPlatformFileSystem(
+    'snippet://', new SnippetFileSystem());

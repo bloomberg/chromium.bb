@@ -37,8 +37,8 @@ class MockScriptElementBase : public GarbageCollected<MockScriptElementBase>,
   MOCK_CONST_METHOD0(NomoduleAttributeValue, bool());
   MOCK_CONST_METHOD0(SourceAttributeValue, String());
   MOCK_CONST_METHOD0(TypeAttributeValue, String());
-
-  MOCK_METHOD0(TextFromChildren, String());
+  MOCK_METHOD0(ChildTextContent, String());
+  MOCK_CONST_METHOD0(ScriptTextInternalSlot, String());
   MOCK_CONST_METHOD0(HasSourceAttribute, bool());
   MOCK_CONST_METHOD0(IsConnected, bool());
   MOCK_CONST_METHOD0(HasChildren, bool());
@@ -50,10 +50,14 @@ class MockScriptElementBase : public GarbageCollected<MockScriptElementBase>,
                     const WTF::OrdinalNumber&,
                     const String&));
   MOCK_CONST_METHOD0(GetDocument, Document&());
+  MOCK_CONST_METHOD0(GetExecutionContext, ExecutionContext*());
   MOCK_METHOD1(SetScriptElementForBinding,
                void(HTMLScriptElementOrSVGScriptElement&));
   MOCK_CONST_METHOD0(Loader, ScriptLoader*());
 
+  ScriptElementBase::Type GetScriptElementType() override {
+    return ScriptElementBase::Type::kHTMLScriptElement;
+  }
   void Trace(Visitor* visitor) override { ScriptElementBase::Trace(visitor); }
 };
 

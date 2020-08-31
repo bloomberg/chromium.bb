@@ -15,7 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
-#include "third_party/blink/renderer/modules/peerconnection/mock_web_rtc_peer_connection_handler.h"
+#include "third_party/blink/renderer/modules/peerconnection/mock_rtc_peer_connection_handler_platform.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -45,14 +45,14 @@ void RunSynchronous(base::TestSimpleTaskRunner* thread,
   waitable_event.Wait();
 }
 
-class MockPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
+class MockPeerConnectionHandler : public MockRTCPeerConnectionHandlerPlatform {
  public:
   MockPeerConnectionHandler(
       scoped_refptr<base::TestSimpleTaskRunner> signaling_thread)
       : signaling_thread_(signaling_thread) {}
 
   void RunSynchronousOnceClosureOnSignalingThread(
-      base::OnceClosure closure,
+      CrossThreadOnceClosure closure,
       const char* trace_event_name) override {
     closure_ = std::move(closure);
     RunSynchronous(
@@ -68,7 +68,7 @@ class MockPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
   }
 
   scoped_refptr<base::TestSimpleTaskRunner> signaling_thread_;
-  base::OnceClosure closure_;
+  CrossThreadOnceClosure closure_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionHandler);
 };
@@ -283,8 +283,7 @@ TEST_F(RTCDataChannelTest, Open) {
       MakeGarbageCollected<NullExecutionContext>(), webrtc_channel.get(),
       pc.get());
   channel->OnStateChange(webrtc::DataChannelInterface::kOpen);
-  ASSERT_EQ(1U, channel->scheduled_events_.size());
-  EXPECT_EQ("open", channel->scheduled_events_.back()->type().Utf8());
+  EXPECT_EQ("open", channel->readyState());
 }
 
 TEST_F(RTCDataChannelTest, Close) {
@@ -296,8 +295,7 @@ TEST_F(RTCDataChannelTest, Close) {
       MakeGarbageCollected<NullExecutionContext>(), webrtc_channel.get(),
       pc.get());
   channel->OnStateChange(webrtc::DataChannelInterface::kClosed);
-  ASSERT_EQ(1U, channel->scheduled_events_.size());
-  EXPECT_EQ("close", channel->scheduled_events_.back()->type().Utf8());
+  EXPECT_EQ("closed", channel->readyState());
 }
 
 TEST_F(RTCDataChannelTest, Message) {
@@ -325,7 +323,7 @@ TEST_F(RTCDataChannelTest, SendAfterContextDestroyed) {
       pc.get());
   webrtc_channel->ChangeState(webrtc::DataChannelInterface::kOpen);
 
-  channel->ContextDestroyed(nullptr);
+  channel->ContextDestroyed();
 
   String message(std::string(100, 'A').c_str());
   DummyExceptionStateForTesting exception_state;
@@ -344,7 +342,7 @@ TEST_F(RTCDataChannelTest, CloseAfterContextDestroyed) {
       pc.get());
   webrtc_channel->ChangeState(webrtc::DataChannelInterface::kOpen);
 
-  channel->ContextDestroyed(nullptr);
+  channel->ContextDestroyed();
   channel->close();
   EXPECT_EQ(String::FromUTF8("closed"), channel->readyState());
 }

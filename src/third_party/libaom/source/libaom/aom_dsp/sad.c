@@ -64,15 +64,24 @@ static INLINE unsigned int sad(const uint8_t *a, int a_stride, const uint8_t *b,
   }
 
 // Calculate sad against 4 reference locations and store each in sad_array
-#define sadMxNx4D(m, n)                                                    \
-  void aom_sad##m##x##n##x4d_c(const uint8_t *src, int src_stride,         \
-                               const uint8_t *const ref_array[],           \
-                               int ref_stride, uint32_t *sad_array) {      \
-    int i;                                                                 \
-    for (i = 0; i < 4; ++i) {                                              \
-      sad_array[i] =                                                       \
-          aom_sad##m##x##n##_c(src, src_stride, ref_array[i], ref_stride); \
-    }                                                                      \
+#define sadMxNx4D(m, n)                                                      \
+  void aom_sad##m##x##n##x4d_c(const uint8_t *src, int src_stride,           \
+                               const uint8_t *const ref_array[],             \
+                               int ref_stride, uint32_t *sad_array) {        \
+    int i;                                                                   \
+    for (i = 0; i < 4; ++i) {                                                \
+      sad_array[i] =                                                         \
+          aom_sad##m##x##n##_c(src, src_stride, ref_array[i], ref_stride);   \
+    }                                                                        \
+  }                                                                          \
+  void aom_sad##m##x##n##x4d_avg_c(                                          \
+      const uint8_t *src, int src_stride, const uint8_t *const ref_array[],  \
+      int ref_stride, const uint8_t *second_pred, uint32_t *sad_array) {     \
+    int i;                                                                   \
+    for (i = 0; i < 4; ++i) {                                                \
+      sad_array[i] = aom_sad##m##x##n##_avg_c(src, src_stride, ref_array[i], \
+                                              ref_stride, second_pred);      \
+    }                                                                        \
   }
 
 // 128x128
@@ -159,6 +168,7 @@ sadMxNx4D(16, 64);
 sadMxN(64, 16);
 sadMxNx4D(64, 16);
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static INLINE unsigned int highbd_sad(const uint8_t *a8, int a_stride,
                                       const uint8_t *b8, int b_stride,
                                       int width, int height) {
@@ -178,11 +188,12 @@ static INLINE unsigned int highbd_sad(const uint8_t *a8, int a_stride,
 }
 
 static INLINE unsigned int highbd_sadb(const uint8_t *a8, int a_stride,
-                                       const uint16_t *b, int b_stride,
+                                       const uint8_t *b8, int b_stride,
                                        int width, int height) {
   int y, x;
   unsigned int sad = 0;
   const uint16_t *a = CONVERT_TO_SHORTPTR(a8);
+  const uint16_t *b = CONVERT_TO_SHORTPTR(b8);
   for (y = 0; y < height; y++) {
     for (x = 0; x < width; x++) {
       sad += abs(a[x] - b[x]);
@@ -204,18 +215,18 @@ static INLINE unsigned int highbd_sadb(const uint8_t *a8, int a_stride,
       const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride,  \
       const uint8_t *second_pred) {                                            \
     uint16_t comp_pred[m * n];                                                 \
-    aom_highbd_comp_avg_pred(CONVERT_TO_BYTEPTR(comp_pred), second_pred, m, n, \
-                             ref, ref_stride);                                 \
-    return highbd_sadb(src, src_stride, comp_pred, m, m, n);                   \
+    uint8_t *const comp_pred8 = CONVERT_TO_BYTEPTR(comp_pred);                 \
+    aom_highbd_comp_avg_pred(comp_pred8, second_pred, m, n, ref, ref_stride);  \
+    return highbd_sadb(src, src_stride, comp_pred8, m, m, n);                  \
   }                                                                            \
   unsigned int aom_highbd_dist_wtd_sad##m##x##n##_avg_c(                       \
       const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride,  \
       const uint8_t *second_pred, const DIST_WTD_COMP_PARAMS *jcp_param) {     \
     uint16_t comp_pred[m * n];                                                 \
-    aom_highbd_dist_wtd_comp_avg_pred(CONVERT_TO_BYTEPTR(comp_pred),           \
-                                      second_pred, m, n, ref, ref_stride,      \
-                                      jcp_param);                              \
-    return highbd_sadb(src, src_stride, comp_pred, m, m, n);                   \
+    uint8_t *const comp_pred8 = CONVERT_TO_BYTEPTR(comp_pred);                 \
+    aom_highbd_dist_wtd_comp_avg_pred(comp_pred8, second_pred, m, n, ref,      \
+                                      ref_stride, jcp_param);                  \
+    return highbd_sadb(src, src_stride, comp_pred8, m, m, n);                  \
   }
 
 #define highbd_sadMxNx4D(m, n)                                               \
@@ -305,3 +316,4 @@ highbd_sadMxN(16, 64);
 highbd_sadMxNx4D(16, 64);
 highbd_sadMxN(64, 16);
 highbd_sadMxNx4D(64, 16);
+#endif  // CONFIG_AV1_HIGHBITDEPTH

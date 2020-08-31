@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
-#include "components/safe_browsing/db/util.h"
+#include "components/safe_browsing/core/db/util.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -93,7 +93,8 @@ class SafeBrowsingTriggeredPopupBlocker
   // subresource_filter::SubresourceFilterObserver:
   void OnSafeBrowsingChecksComplete(
       content::NavigationHandle* navigation_handle,
-      const SafeBrowsingCheckResults& results) override;
+      const subresource_filter::SubresourceFilterSafeBrowsingClient::
+          CheckResult& result) override;
   void OnSubresourceFilterGoingAway() override;
 
   // Enabled state is governed by both a feature flag and a pref (which can be

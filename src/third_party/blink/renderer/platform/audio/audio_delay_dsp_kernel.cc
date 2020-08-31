@@ -61,7 +61,8 @@ size_t AudioDelayDSPKernel::BufferLengthForDelay(double max_delay_time,
   // Compute the length of the buffer needed to handle a max delay of
   // |maxDelayTime|. One is added to handle the case where the actual delay
   // equals the maximum delay.
-  return 1 + audio_utilities::TimeToSampleFrame(max_delay_time, sample_rate);
+  return 1 + audio_utilities::TimeToSampleFrame(max_delay_time, sample_rate,
+                                                audio_utilities::kRoundUp);
 }
 
 bool AudioDelayDSPKernel::HasSampleAccurateValues() {
@@ -72,6 +73,10 @@ void AudioDelayDSPKernel::CalculateSampleAccurateValues(float*, uint32_t) {
   NOTREACHED();
 }
 
+bool AudioDelayDSPKernel::IsAudioRate() {
+  return true;
+}
+
 double AudioDelayDSPKernel::DelayTime(float sample_rate) {
   return desired_delay_frames_ / sample_rate;
 }
@@ -79,19 +84,19 @@ double AudioDelayDSPKernel::DelayTime(float sample_rate) {
 void AudioDelayDSPKernel::Process(const float* source,
                                   float* destination,
                                   uint32_t frames_to_process) {
-  size_t buffer_length = buffer_.size();
+  int buffer_length = buffer_.size();
   float* buffer = buffer_.Data();
 
   DCHECK(buffer_length);
   DCHECK(source);
   DCHECK(destination);
   DCHECK_GE(write_index_, 0);
-  DCHECK_LT(static_cast<size_t>(write_index_), buffer_length);
+  DCHECK_LT(write_index_, buffer_length);
 
   float sample_rate = this->SampleRate();
   double max_time = MaxDelayTime();
 
-  if (HasSampleAccurateValues()) {
+  if (HasSampleAccurateValues() && IsAudioRate()) {
     float* delay_times = delay_times_.Data();
     CalculateSampleAccurateValues(delay_times, frames_to_process);
 
@@ -112,28 +117,25 @@ void AudioDelayDSPKernel::Process(const float* source,
       // Linearly interpolate in-between delay times.
       int read_index1 = static_cast<int>(read_position);
       DCHECK_GE(read_index1, 0);
-      DCHECK_LT(static_cast<size_t>(read_index1), buffer_length);
+      DCHECK_LT(read_index1, buffer_length);
       int read_index2 = read_index1 + 1;
-      if (read_index2 >= static_cast<int>(buffer_length))
+      if (read_index2 >= buffer_length)
         read_index2 -= buffer_length;
       DCHECK_GE(read_index2, 0);
-      DCHECK_LT(static_cast<size_t>(read_index2), buffer_length);
-
-      double interpolation_factor = read_position - read_index1;
+      DCHECK_LT(read_index2, buffer_length);
 
       buffer[w_index] = *source++;
 
-      ++w_index;
-      if (w_index >= static_cast<int>(buffer_length))
-        w_index -= buffer_length;
+      float interpolation_factor = read_position - read_index1;
 
       float sample1 = buffer[read_index1];
       float sample2 = buffer[read_index2];
 
-      double output =
-          (1 - interpolation_factor) * sample1 + interpolation_factor * sample2;
+      ++w_index;
+      if (w_index >= buffer_length)
+        w_index -= buffer_length;
 
-      *destination++ = static_cast<float>(output);
+      *destination++ = sample1 + interpolation_factor * (sample2 - sample1);
     }
 
     write_index_ = w_index;
@@ -152,7 +154,8 @@ void AudioDelayDSPKernel::Process(const float* source,
     // Make sure the delay time is in a valid range.
     delay_time = clampTo(delay_time, 0.0, max_time);
     double desired_delay_frames = delay_time * sample_rate;
-    double read_position = write_index_ + buffer_length - desired_delay_frames;
+    int w_index = write_index_;
+    double read_position = w_index + buffer_length - desired_delay_frames;
     if (read_position >= buffer_length)
       read_position -= buffer_length;
 
@@ -161,34 +164,34 @@ void AudioDelayDSPKernel::Process(const float* source,
     // interpolation.
     int read_index1 = static_cast<int>(read_position);
     int read_index2 = (read_index1 + 1) % buffer_length;
-    double interp_factor = read_position - read_index1;
+    float interp_factor = read_position - read_index1;
 
-    int w_index = write_index_;
+    float* w = &buffer[w_index];
+    float* r1 = &buffer[read_index1];
+    float* r2 = &buffer[read_index2];
+    float* buffer_end = &buffer[buffer_length];
 
     for (unsigned i = 0; i < frames_to_process; ++i) {
       // Copy the latest sample into the buffer.  Needed because
       // w_index could be the same as read_index1 or read_index2.
-      buffer[w_index] = *source++;
-      float sample1 = buffer[read_index1];
-      float sample2 = buffer[read_index2];
+      *w++ = *source++;
+      float sample1 = *r1++;
+      float sample2 = *r2++;
 
       // Update the indices and wrap them to the beginning of the buffer if
       // needed.
-      ++w_index;
-      ++read_index1;
-      ++read_index2;
-      if (w_index >= static_cast<int>(buffer_length))
-        w_index -= buffer_length;
-      if (read_index1 >= static_cast<int>(buffer_length))
-        read_index1 -= buffer_length;
-      if (read_index2 >= static_cast<int>(buffer_length))
-        read_index2 -= buffer_length;
+      if (w >= buffer_end)
+        w = buffer;
+      if (r1 >= buffer_end)
+        r1 = buffer;
+      if (r2 >= buffer_end)
+        r2 = buffer;
 
       // Linearly interpolate between samples.
-      *destination++ = (1 - interp_factor) * sample1 + interp_factor * sample2;
+      *destination++ = sample1 + interp_factor * (sample2 - sample1);
     }
 
-    write_index_ = w_index;
+    write_index_ = w - buffer;
   }
 }
 

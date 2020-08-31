@@ -7,10 +7,8 @@ LIBDRM_AMDGPU_FILES := \
 	amdgpu_internal.h \
 	amdgpu_vamgr.c \
 	amdgpu_vm.c \
-	util_hash.c \
-	util_hash.h \
-	util_hash_table.c \
-	util_hash_table.h
+	handle_table.c \
+	handle_table.h
 
 LIBDRM_AMDGPU_H_FILES := \
 	amdgpu.h

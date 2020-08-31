@@ -12,12 +12,13 @@
 #include "chrome/browser/media/router/presentation/presentation_navigation_policy.h"
 #include "chrome/browser/media/router/presentation/receiver_presentation_service_delegate_impl.h"  // nogncheck
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/presentation_receiver_flags.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/common/presentation/presentation_receiver_flags.h"
 
 #if defined(USE_AURA)
 #include "base/threading/thread_task_runner_handle.h"
@@ -123,21 +124,21 @@ class OffscreenTab::WindowAdoptionAgent : protected aura::WindowObserver {
 
 OffscreenTab::OffscreenTab(Owner* owner, content::BrowserContext* context)
     : owner_(owner),
-      otr_profile_registration_(
-          IndependentOTRProfileManager::GetInstance()
-              ->CreateFromOriginalProfile(
-                  Profile::FromBrowserContext(context),
-                  base::BindOnce(&OffscreenTab::DieIfOriginalProfileDestroyed,
-                                 base::Unretained(this)))),
+      otr_profile_(Profile::FromBrowserContext(context)->GetOffTheRecordProfile(
+          Profile::OTRProfileID::CreateUnique("Media::OffscreenTab"))),
       content_capture_was_detected_(false),
       navigation_policy_(
           std::make_unique<media_router::DefaultNavigationPolicy>()) {
   DCHECK(owner_);
-  DCHECK(otr_profile_registration_->profile());
+  otr_profile_->AddObserver(this);
 }
 
 OffscreenTab::~OffscreenTab() {
   DVLOG(1) << "Destroying OffscreenTab for start_url=" << start_url_.spec();
+  if (otr_profile_) {
+    otr_profile_->RemoveObserver(this);
+    ProfileDestroyer::DestroyProfileWhenAppropriate(otr_profile_);
+  }
 }
 
 void OffscreenTab::Start(const GURL& start_url,
@@ -149,9 +150,9 @@ void OffscreenTab::Start(const GURL& start_url,
            << initial_size.ToString() << " for start_url=" << start_url_.spec();
 
   // Create the WebContents to contain the off-screen tab's page.
-  WebContents::CreateParams params(otr_profile_registration_->profile());
+  WebContents::CreateParams params(otr_profile_);
   if (!optional_presentation_id.empty())
-    params.starting_sandbox_flags = blink::kPresentationReceiverSandboxFlags;
+    params.starting_sandbox_flags = content::kPresentationReceiverSandboxFlags;
 
   offscreen_tab_web_contents_ = WebContents::Create(params);
   offscreen_tab_web_contents_->SetDelegate(this);
@@ -403,11 +404,12 @@ void OffscreenTab::DieIfContentCaptureEnded() {
   // Schedule the timer to check again in a second.
   capture_poll_timer_.Start(
       FROM_HERE, kPollInterval,
-      base::BindRepeating(&OffscreenTab::DieIfContentCaptureEnded,
-                          base::Unretained(this)));
+      base::BindOnce(&OffscreenTab::DieIfContentCaptureEnded,
+                     base::Unretained(this)));
 }
 
-void OffscreenTab::DieIfOriginalProfileDestroyed(Profile* profile) {
-  DCHECK(profile == otr_profile_registration_->profile());
+void OffscreenTab::OnProfileWillBeDestroyed(Profile* profile) {
+  DCHECK(profile == otr_profile_);
+  otr_profile_ = nullptr;
   owner_->DestroyTab(this);
 }

@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
@@ -61,7 +62,7 @@ void RemoveManagedDefaultSearchPreferences(TestingProfile* profile) {
       DefaultSearchManager::kDefaultSearchProviderDataPrefName);
 }
 
-TemplateURLServiceTestUtil::TemplateURLServiceTestUtil() : changed_count_(0) {
+TemplateURLServiceTestUtil::TemplateURLServiceTestUtil() {
   // Make unique temp directory.
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   profile_.reset(new TestingProfile(temp_dir_.GetPath()));
@@ -75,9 +76,8 @@ TemplateURLServiceTestUtil::TemplateURLServiceTestUtil() : changed_count_(0) {
   web_database_service->LoadDatabase();
 
   web_data_service_ = new KeywordWebDataService(
-      web_database_service.get(), base::ThreadTaskRunnerHandle::Get(),
-      KeywordWebDataService::ProfileErrorCallback());
-  web_data_service_->Init();
+      web_database_service.get(), base::ThreadTaskRunnerHandle::Get());
+  web_data_service_->Init(base::NullCallback());
 
   ResetModel(false);
 }
@@ -137,7 +137,8 @@ void TemplateURLServiceTestUtil::ResetModel(bool verify_load) {
               HistoryServiceFactory::GetForProfileIfExists(
                   profile(), ServiceAccessType::EXPLICIT_ACCESS),
               &search_term_)),
-      base::Closure()));
+      base::BindLambdaForTesting(
+          [&] { ++dsp_set_to_google_callback_count_; })));
   model()->AddObserver(this);
   changed_count_ = 0;
   if (verify_load)

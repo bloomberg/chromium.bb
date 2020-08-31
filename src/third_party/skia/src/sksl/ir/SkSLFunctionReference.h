@@ -24,7 +24,7 @@ struct FunctionReference : public Expression {
     : INHERITED(offset, kFunctionReference_Kind, *context.fInvalid_Type)
     , fFunctions(function) {}
 
-    bool hasSideEffects() const override {
+    bool hasProperty(Property property) const override {
         return false;
     }
 

@@ -28,7 +28,6 @@
 #include "base/auto_reset.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
@@ -61,13 +60,6 @@ bool HasConnectionEventListeners(LocalDOMWindow* window) {
 // static
 const char NavigatorGamepad::kSupplementName[] = "NavigatorGamepad";
 
-NavigatorGamepad* NavigatorGamepad::From(Document& document) {
-  if (!document.GetFrame() || !document.GetFrame()->DomWindow())
-    return nullptr;
-  Navigator& navigator = *document.GetFrame()->DomWindow()->navigator();
-  return &From(navigator);
-}
-
 NavigatorGamepad& NavigatorGamepad::From(Navigator& navigator) {
   NavigatorGamepad* supplement =
       Supplement<Navigator>::From<NavigatorGamepad>(navigator);
@@ -80,6 +72,12 @@ NavigatorGamepad& NavigatorGamepad::From(Navigator& navigator) {
 
 // static
 GamepadList* NavigatorGamepad::getGamepads(Navigator& navigator) {
+  if (!navigator.DomWindow()) {
+    // Using an existing NavigatorGamepad if one exists, but don't create one
+    // for a detached window, as its subclasses depend on a non-null window.
+    auto* gamepad = Supplement<Navigator>::From<NavigatorGamepad>(navigator);
+    return gamepad ? gamepad->Gamepads() : nullptr;
+  }
   return NavigatorGamepad::From(navigator).Gamepads();
 }
 
@@ -98,10 +96,9 @@ GamepadList* NavigatorGamepad::Gamepads() {
   }
   is_gamepads_exposed_ = true;
 
-  ExecutionContext* context =
-      DomWindow() ? DomWindow()->GetExecutionContext() : nullptr;
+  ExecutionContext* context = DomWindow();
 
-  if (GetFrame() && GetFrame()->IsCrossOriginSubframe()) {
+  if (GetFrame() && GetFrame()->IsCrossOriginToMainFrame()) {
     UseCounter::Count(context, WebFeature::kGetGamepadsFromCrossOriginSubframe);
   }
 
@@ -115,7 +112,6 @@ GamepadList* NavigatorGamepad::Gamepads() {
 void NavigatorGamepad::SampleGamepads() {
   device::Gamepads gamepads;
   gamepad_dispatcher_->SampleGamepads(gamepads);
-
 
   for (uint32_t i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
     device::Gamepad& device_gamepad = gamepads.items[i];
@@ -150,8 +146,7 @@ GamepadHapticActuator* NavigatorGamepad::GetVibrationActuatorForGamepad(
   int pad_index = gamepad.index();
   DCHECK_GE(pad_index, 0);
   if (!vibration_actuators_[pad_index]) {
-    ExecutionContext* context =
-        DomWindow() ? DomWindow()->GetExecutionContext() : nullptr;
+    ExecutionContext* context = DomWindow();
     auto* actuator = GamepadHapticActuator::Create(context, pad_index);
     actuator->SetType(gamepad.GetVibrationActuatorType());
     vibration_actuators_[pad_index] = actuator;
@@ -159,13 +154,13 @@ GamepadHapticActuator* NavigatorGamepad::GetVibrationActuatorForGamepad(
   return vibration_actuators_[pad_index].Get();
 }
 
-void NavigatorGamepad::Trace(blink::Visitor* visitor) {
+void NavigatorGamepad::Trace(Visitor* visitor) {
   visitor->Trace(gamepads_);
   visitor->Trace(gamepads_back_);
   visitor->Trace(vibration_actuators_);
   visitor->Trace(gamepad_dispatcher_);
   Supplement<Navigator>::Trace(visitor);
-  DOMWindowClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   PlatformEventController::Trace(visitor);
   Gamepad::Client::Trace(visitor);
 }
@@ -195,24 +190,17 @@ void NavigatorGamepad::DidUpdateData() {
 
 NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
     : Supplement<Navigator>(navigator),
-      DOMWindowClient(navigator.DomWindow()),
-      PlatformEventController(
-          navigator.GetFrame() ? navigator.GetFrame()->GetDocument() : nullptr),
-      // See https://bit.ly/2S0zRAS for task types
-      gamepad_dispatcher_(MakeGarbageCollected<GamepadDispatcher>(
-          navigator.GetFrame() ? navigator.GetFrame()->GetTaskRunner(
-                                     blink::TaskType::kMiscPlatformAPI)
-                               : nullptr)) {
-  if (navigator.DomWindow())
-    navigator.DomWindow()->RegisterEventListenerObserver(this);
+      ExecutionContextClient(navigator.DomWindow()),
+      PlatformEventController(*navigator.DomWindow()),
+      gamepad_dispatcher_(
+          MakeGarbageCollected<GamepadDispatcher>(navigator.DomWindow())) {
+  navigator.DomWindow()->RegisterEventListenerObserver(this);
 
   // Fetch |window.performance.timing.navigationStart|. Gamepad timestamps are
   // reported relative to this value.
-  if (GetFrame()) {
-    DocumentLoader* loader = GetFrame()->Loader().GetDocumentLoader();
-    if (loader)
-      navigation_start_ = loader->GetTiming().NavigationStart();
-  }
+  DocumentLoader* loader = GetFrame()->Loader().GetDocumentLoader();
+  if (loader)
+    navigation_start_ = loader->GetTiming().NavigationStart();
 
   vibration_actuators_.resize(device::Gamepads::kItemsLengthCap);
 }

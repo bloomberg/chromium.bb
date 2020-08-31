@@ -9,16 +9,18 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "components/browsing_data/content/browsing_data_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/storage_partition.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
 using blink::mojom::StorageType;
@@ -89,7 +91,7 @@ void BrowsingDataQuotaHelperImpl::GotOrigins(
     StorageType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (const url::Origin& origin : origins) {
-    if (!BrowsingDataHelper::IsWebScheme(origin.scheme()))
+    if (!browsing_data::IsWebScheme(origin.scheme()))
       continue;  // Non-websafe state is not considered browsing data.
     pending_hosts->insert(std::make_pair(origin.host(), type));
   }

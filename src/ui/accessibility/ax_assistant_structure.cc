@@ -374,6 +374,11 @@ AssistantNode::~AssistantNode() = default;
 AssistantTree::AssistantTree() = default;
 AssistantTree::~AssistantTree() = default;
 
+AssistantTree::AssistantTree(const AssistantTree& other) {
+  for (const auto& node : other.nodes)
+    nodes.emplace_back(std::make_unique<AssistantNode>(*node));
+}
+
 std::unique_ptr<AssistantTree> CreateAssistantTree(const AXTreeUpdate& update,
                                                    bool show_password) {
   auto tree = std::make_unique<AXSerializableTree>();
@@ -426,6 +431,7 @@ const char* AXRoleToAndroidClassName(ax::mojom::Role role, bool has_parent) {
       return kAXSpinnerClassname;
     case ax::mojom::Role::kButton:
     case ax::mojom::Role::kMenuButton:
+    case ax::mojom::Role::kPdfActionableHighlight:
       return kAXButtonClassname;
     case ax::mojom::Role::kCheckBox:
     case ax::mojom::Role::kSwitch:
@@ -459,6 +465,8 @@ const char* AXRoleToAndroidClassName(ax::mojom::Role role, bool has_parent) {
     case ax::mojom::Role::kMenuItemCheckBox:
     case ax::mojom::Role::kMenuItemRadio:
       return kAXMenuItemClassname;
+    case ax::mojom::Role::kStaticText:
+      return kAXTextViewClassname;
     default:
       return kAXViewClassname;
   }

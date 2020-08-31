@@ -5,8 +5,12 @@
 import("//build/config/android/rules.gni")
 
 android_library("java") {
-  java_files = [
+  sources = [
+    "android/java/src/org/chromium/chrome/browser/preferences/BaseChromePreferenceKeyChecker.java",
+    "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeyChecker.java",
     "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeys.java",
+    "android/java/src/org/chromium/chrome/browser/preferences/DeprecatedChromePreferenceKeys.java",
+    "android/java/src/org/chromium/chrome/browser/preferences/GrandfatheredChromePreferenceKeys.java",
     "android/java/src/org/chromium/chrome/browser/preferences/KeyPrefix.java",
     "android/java/src/org/chromium/chrome/browser/preferences/PrefChangeRegistrar.java",
     "android/java/src/org/chromium/chrome/browser/preferences/PrefServiceBridge.java",
@@ -28,18 +32,18 @@ generate_jni("jni_headers") {
 }
 
 java_cpp_enum("java_enums_srcjar") {
-  sources = [
-    "//chrome/browser/android/preferences/prefs.h",
-  ]
+  sources = [ "//chrome/browser/android/preferences/prefs.h" ]
 }
 
 java_library("preferences_junit_tests") {
   # Skip platform checks since Robolectric depends on requires_android targets.
   bypass_platform_checks = true
   testonly = true
-  java_files = [
+  sources = [
+    "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeyCheckerTest.java",
     "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeysTest.java",
     "android/java/src/org/chromium/chrome/browser/preferences/KeyPrefixTest.java",
+    "android/java/src/org/chromium/chrome/browser/preferences/SharedPreferencesManagerTest.java",
   ]
   deps = [
     ":java",

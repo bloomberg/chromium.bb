@@ -3,13 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
+#include "chrome/browser/sync/test/integration/sync_disabled_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/common/pref_names.h"
@@ -18,6 +17,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/protocol/sync_protocol_error.h"
+#include "content/public/test/browser_test.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 using bookmarks::BookmarkNode;
@@ -26,31 +26,6 @@ using bookmarks_helper::SetTitle;
 using syncer::ProfileSyncService;
 
 namespace {
-
-class SyncDisabledChecker : public SingleClientStatusChangeChecker {
- public:
-  explicit SyncDisabledChecker(ProfileSyncService* service)
-      : SingleClientStatusChangeChecker(service) {}
-
-  SyncDisabledChecker(ProfileSyncService* service,
-                      base::OnceClosure condition_satisfied_callback)
-      : SingleClientStatusChangeChecker(service),
-        condition_satisfied_callback_(std::move(condition_satisfied_callback)) {
-  }
-
-  bool IsExitConditionSatisfied(std::ostream* os) override {
-    *os << "Waiting until sync is disabled";
-    bool satisfied = !service()->IsSetupInProgress() &&
-                     !service()->GetUserSettings()->IsFirstSetupComplete();
-    if (satisfied && condition_satisfied_callback_) {
-      std::move(condition_satisfied_callback_).Run();
-    }
-    return satisfied;
-  }
-
- private:
-  base::OnceClosure condition_satisfied_callback_;
-};
 
 class SyncEngineStoppedChecker : public SingleClientStatusChangeChecker {
  public:
@@ -190,7 +165,16 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, MAYBE_ErrorWhileSettingUp) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
+#if defined(OS_WIN)
+// TODO(crbug.com/1045619) Flaky test on Windows.
+#define MAYBE_BirthdayErrorUsingActionableErrorTest \
+  DISABLED_BirthdayErrorUsingActionableErrorTest
+#else
+#define MAYBE_BirthdayErrorUsingActionableErrorTest \
+  BirthdayErrorUsingActionableErrorTest
+#endif
+IN_PROC_BROWSER_TEST_F(SyncErrorTest,
+                       MAYBE_BirthdayErrorUsingActionableErrorTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   const BookmarkNode* node1 = AddFolder(0, 0, "title1");
@@ -207,20 +191,16 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
   SetTitle(0, node2, "new_title2");
+  EXPECT_TRUE(SyncDisabledChecker(GetSyncService(0)).Wait());
+  syncer::SyncStatus status;
+  GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
 
-  auto condition = base::BindLambdaForTesting([&]() {
-    syncer::SyncStatus status;
-    GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
-
-    // Note: If SyncStandaloneTransport is enabled, then on receiving the error,
-    // the SyncService will immediately start up again in transport mode, which
-    // resets the status. So query the status that the checker recorded at the
-    // time Sync was off.
-    EXPECT_EQ(status.sync_protocol_error.error_type, syncer::NOT_MY_BIRTHDAY);
-    EXPECT_EQ(status.sync_protocol_error.action,
-              syncer::DISABLE_SYNC_ON_CLIENT);
-  });
-  EXPECT_TRUE(SyncDisabledChecker(GetSyncService(0), condition).Wait());
+  // Note: If SyncStandaloneTransport is enabled, then on receiving the error,
+  // the SyncService will immediately start up again in transport mode, which
+  // resets the status. So query the status that the checker recorded at the
+  // time Sync was off.
+  EXPECT_EQ(status.sync_protocol_error.error_type, syncer::NOT_MY_BIRTHDAY);
+  EXPECT_EQ(status.sync_protocol_error.action, syncer::DISABLE_SYNC_ON_CLIENT);
 }
 
 // Tests that on receiving CLIENT_DATA_OBSOLETE sync engine gets restarted and
@@ -256,6 +236,32 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ClientDataObsoleteTest) {
   // Ensure cache_guid changed.
   GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
   ASSERT_NE(old_cache_guid, status.sync_id);
+}
+
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, EncryptionObsoleteErrorTest) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  const BookmarkNode* node1 = AddFolder(0, 0, "title1");
+  SetTitle(0, node1, "new_title1");
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+
+  GetFakeServer()->TriggerActionableError(
+      sync_pb::SyncEnums::ENCRYPTION_OBSOLETE, "Not My Fault", "www.google.com",
+      sync_pb::SyncEnums::UNKNOWN_ACTION);
+
+  // Now make one more change so we will do another sync.
+  const BookmarkNode* node2 = AddFolder(0, 0, "title2");
+  SetTitle(0, node2, "new_title2");
+  EXPECT_TRUE(SyncDisabledChecker(GetSyncService(0)).Wait());
+
+  // Note: If SyncStandaloneTransport is enabled, then on receiving the error,
+  // the SyncService will immediately start up again in transport mode, which
+  // resets the status. So query the status that the checker recorded at the
+  // time Sync was off.
+  syncer::SyncStatus status;
+  GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
+  EXPECT_EQ(status.sync_protocol_error.error_type, syncer::ENCRYPTION_OBSOLETE);
+  EXPECT_EQ(status.sync_protocol_error.action, syncer::DISABLE_SYNC_ON_CLIENT);
 }
 
 IN_PROC_BROWSER_TEST_F(SyncErrorTest, DisableDatatypeWhileRunning) {

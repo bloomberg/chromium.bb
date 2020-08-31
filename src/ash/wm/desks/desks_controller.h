@@ -71,6 +71,10 @@ class ASH_EXPORT DesksController : public DesksHelper,
 
   const Desk* active_desk() const { return active_desk_; }
 
+  // Returns the current |active_desk()| or the soon-to-be active desk if a desk
+  // switch animation is in progress.
+  const Desk* GetTargetActiveDesk() const;
+
   // Destroys any pending animations in preparation for shutdown.
   void Shutdown();
 
@@ -119,13 +123,28 @@ class ASH_EXPORT DesksController : public DesksHelper,
   bool ActivateAdjacentDesk(bool going_left, DesksSwitchSource source);
 
   // Moves |window| (which must belong to the currently active desk) to
-  // |target_desk| (which must be a different desk). If |window| is minimized,
-  // it will be unminimized after it's moved to |target_desk|.
+  // |target_desk| (which must be a different desk).
+  // |target_root| is provided if |window| is desired to be moved to another
+  // desk on another display, otherwise, you can just provide
+  // |window->GetRootWindow()| if the window should stay on the same display.
+  // If |window| is minimized, it will be unminimized after it's moved to
+  // |target_desk|.
   // Returns true on success, false otherwise (e.g. if |window| doesn't belong
   // to the active desk).
   bool MoveWindowFromActiveDeskTo(aura::Window* window,
                                   Desk* target_desk,
+                                  aura::Window* target_root,
                                   DesksMoveWindowFromActiveDeskSource source);
+
+  // Reverts the name of the given |desk| to the default value (i.e. "Desk 1",
+  // "Desk 2", ... etc.) according to its position in the |desks_| list, as if
+  // it was never modified by users.
+  void RevertDeskNameToDefault(Desk* desk);
+
+  // Restores the desk at |index| to the given |name|. This is only for user-
+  // modified desk names, and hence |name| should never be empty since users are
+  // not allowed to set empty names.
+  void RestoreNameOfDeskAtIndex(base::string16 name, size_t index);
 
   // Called explicitly by the RootWindowController when a root window has been
   // added or about to be removed in order to update all the available desks.
@@ -145,6 +164,7 @@ class ASH_EXPORT DesksController : public DesksHelper,
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
+  void OnFirstSessionStarted() override;
 
  private:
   class DeskAnimationBase;
@@ -180,6 +200,11 @@ class ASH_EXPORT DesksController : public DesksHelper,
   void ReportNumberOfWindowsPerDeskHistogram() const;
 
   void ReportDesksCountHistogram() const;
+
+  // Updates the default names (e.g. "Desk 1", "Desk 2", ... etc.) given to the
+  // desks. This is called when desks are added or removed to update the names
+  // based on the desks order.
+  void UpdateDesksDefaultNames();
 
   std::vector<std::unique_ptr<Desk>> desks_;
 

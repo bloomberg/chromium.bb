@@ -11,6 +11,7 @@
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/modules/mediarecorder/track_recorder.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace media {
@@ -32,10 +33,7 @@ class Thread;
 // which lives an AudioTrackEncoder with its own threading subtleties, see the
 // implementation file.
 class MODULES_EXPORT AudioTrackRecorder
-    : public GarbageCollected<AudioTrackRecorder>,
-      public WebMediaStreamAudioSink {
-  USING_PRE_FINALIZER(AudioTrackRecorder, Prefinalize);
-
+    : public TrackRecorder<WebMediaStreamAudioSink> {
  public:
   enum class CodecId {
     // Do not change the order of codecs. Add new ones right before LAST.
@@ -54,6 +52,7 @@ class MODULES_EXPORT AudioTrackRecorder
   AudioTrackRecorder(CodecId codec,
                      MediaStreamComponent* track,
                      OnEncodedAudioCB on_encoded_audio_cb,
+                     base::OnceClosure on_track_source_ended_cb,
                      int32_t bits_per_second);
   ~AudioTrackRecorder() override;
 
@@ -64,8 +63,6 @@ class MODULES_EXPORT AudioTrackRecorder
 
   void Pause();
   void Resume();
-
-  void Trace(blink::Visitor*);
 
  private:
   // Creates an audio encoder from |codec|. Returns nullptr if the codec is
@@ -85,7 +82,7 @@ class MODULES_EXPORT AudioTrackRecorder
   THREAD_CHECKER(capture_thread_checker_);
 
   // We need to hold on to the Blink track to remove ourselves on destruction.
-  Member<MediaStreamComponent> track_;
+  Persistent<MediaStreamComponent> track_;
 
   // Thin wrapper around OpusEncoder.
   // |encoder_| should be initialized before |encoder_thread_| such that

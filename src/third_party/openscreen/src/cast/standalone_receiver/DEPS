@@ -5,4 +5,6 @@
 include_rules = [
   '+cast',
   '+platform/impl',
+  '+discovery/common',
+  '+discovery/public',
 ]

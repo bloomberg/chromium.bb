@@ -59,6 +59,7 @@ class SyncUserSettingsTest : public testing::Test {
 
     sync_service_crypto_ = std::make_unique<SyncServiceCrypto>(
         /*notify_observers=*/base::DoNothing(),
+        /*notify_required_user_action_changed=*/base::DoNothing(),
         /*reconfigure=*/base::DoNothing(), sync_prefs_.get(),
         /*trusted_vault_client=*/nullptr);
   }
@@ -137,7 +138,10 @@ TEST_F(SyncUserSettingsTest, PreferredTypesSyncEverything) {
   ModelTypeSet expected_types = GetUserTypes();
   EXPECT_TRUE(sync_user_settings->IsSyncEverythingEnabled());
   EXPECT_EQ(expected_types, GetPreferredUserTypes(*sync_user_settings));
-  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+
+  UserSelectableTypeSet all_registered_types =
+      sync_user_settings->GetRegisteredSelectableTypes();
+  for (UserSelectableType type : all_registered_types) {
     sync_user_settings->SetSelectedTypes(/*sync_everything=*/true,
                                          /*selected_type=*/{type});
     EXPECT_EQ(expected_types, GetPreferredUserTypes(*sync_user_settings));
@@ -169,9 +173,23 @@ TEST_F(SyncUserSettingsTest, PreferredTypesNotKeepEverythingSynced) {
   sync_user_settings->SetSelectedTypes(
       /*sync_everything=*/false,
       /*selected_types=*/UserSelectableTypeSet());
-  ASSERT_NE(GetUserTypes(), GetPreferredUserTypes(*sync_user_settings));
+#if defined(OS_CHROMEOS)
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    // GetPreferredUserTypes() returns ModelTypes, which includes both browser
+    // and OS types. However, this test exercises browser UserSelectableTypes,
+    // so disable OS selectable types.
+    sync_user_settings->SetSelectedOsTypes(/*sync_all_os_types=*/false,
+                                           UserSelectableOsTypeSet());
+  }
+#endif  // defined(OS_CHROMEOS)
+  // No user selectable types are enabled, so only the "always preferred" types
+  // are preferred.
+  ASSERT_EQ(AlwaysPreferredUserTypes(),
+            GetPreferredUserTypes(*sync_user_settings));
 
-  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+  UserSelectableTypeSet all_registered_types =
+      sync_user_settings->GetRegisteredSelectableTypes();
+  for (UserSelectableType type : all_registered_types) {
     ModelTypeSet expected_preferred_types =
         UserSelectableTypeToAllModelTypes(type);
     expected_preferred_types.PutAll(AlwaysPreferredUserTypes());
@@ -218,14 +236,19 @@ TEST_F(SyncUserSettingsTest, DeviceInfo) {
   std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
       MakeSyncUserSettings(GetUserTypes());
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(DEVICE_INFO));
+
+  UserSelectableTypeSet all_registered_types =
+      sync_user_settings->GetRegisteredSelectableTypes();
   sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/true,
-      /*selected_types=*/UserSelectableTypeSet::All());
+      /*selected_types=*/all_registered_types);
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(DEVICE_INFO));
+
   sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/false,
-      /*selected_types=*/UserSelectableTypeSet::All());
+      /*selected_types=*/all_registered_types);
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(DEVICE_INFO));
+
   sync_user_settings = MakeSyncUserSettings(ModelTypeSet(DEVICE_INFO));
   sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/false,
@@ -238,14 +261,19 @@ TEST_F(SyncUserSettingsTest, UserConsents) {
   std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
       MakeSyncUserSettings(GetUserTypes());
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(USER_CONSENTS));
+
+  UserSelectableTypeSet all_registered_types =
+      sync_user_settings->GetRegisteredSelectableTypes();
   sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/true,
-      /*selected_types=*/UserSelectableTypeSet::All());
+      /*selected_types=*/all_registered_types);
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(USER_CONSENTS));
+
   sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/false,
-      /*selected_types=*/UserSelectableTypeSet::All());
+      /*selected_types=*/all_registered_types);
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(USER_CONSENTS));
+
   sync_user_settings = MakeSyncUserSettings(ModelTypeSet(USER_CONSENTS));
   sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/false,
@@ -275,6 +303,48 @@ TEST_F(SyncUserSettingsTest, AlwaysPreferredTypes_ChromeOS) {
   ModelTypeSet preferred_types = sync_user_settings->GetPreferredDataTypes();
   EXPECT_TRUE(preferred_types.Has(DEVICE_INFO));
   EXPECT_TRUE(preferred_types.Has(USER_CONSENTS));
+}
+
+TEST_F(SyncUserSettingsTest, AppsAreHandledByOsSettings) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
+
+  std::unique_ptr<SyncUserSettingsImpl> settings =
+      MakeSyncUserSettings(GetUserTypes());
+
+  ASSERT_TRUE(settings->IsSyncEverythingEnabled());
+  ASSERT_TRUE(settings->IsSyncAllOsTypesEnabled());
+
+  // App model types are enabled.
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(APP_LIST));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(APP_SETTINGS));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(APPS));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(ARC_PACKAGE));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(WEB_APPS));
+
+  // Disable browser types.
+  settings->SetSelectedTypes(
+      /*keep_everything_synced=*/false,
+      /*selected_types=*/UserSelectableTypeSet());
+
+  // App model types are still enabled.
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(APP_LIST));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(APP_SETTINGS));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(APPS));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(ARC_PACKAGE));
+  EXPECT_TRUE(settings->GetPreferredDataTypes().Has(WEB_APPS));
+
+  // Disable OS types.
+  settings->SetSelectedOsTypes(
+      /*sync_all_os_types=*/false,
+      /*selected_types=*/UserSelectableOsTypeSet());
+
+  // Apps are disabled.
+  EXPECT_FALSE(settings->GetPreferredDataTypes().Has(APP_LIST));
+  EXPECT_FALSE(settings->GetPreferredDataTypes().Has(APP_SETTINGS));
+  EXPECT_FALSE(settings->GetPreferredDataTypes().Has(APPS));
+  EXPECT_FALSE(settings->GetPreferredDataTypes().Has(ARC_PACKAGE));
+  EXPECT_FALSE(settings->GetPreferredDataTypes().Has(WEB_APPS));
 }
 #endif  // defined(OS_CHROMEOS)
 

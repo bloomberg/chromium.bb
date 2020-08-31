@@ -20,6 +20,7 @@ namespace {
 using base::ASCIIToUTF16;
 using testing::ElementsAre;
 
+using BlacklistedStatus = OriginCredentialStore::BlacklistedStatus;
 using IsPublicSuffixMatch = UiCredential::IsPublicSuffixMatch;
 using IsAffiliationBasedMatch = UiCredential::IsAffiliationBasedMatch;
 
@@ -99,6 +100,47 @@ TEST_F(OriginCredentialStoreTest, ClearsCredentials) {
 
   store()->ClearCredentials();
   EXPECT_EQ(store()->GetCredentials().size(), 0u);
+}
+
+TEST_F(OriginCredentialStoreTest, SetBlacklistedAfterNeverBlacklisted) {
+  store()->SetBlacklistedStatus(true);
+  EXPECT_EQ(BlacklistedStatus::kIsBlacklisted, store()->GetBlacklistedStatus());
+}
+
+TEST_F(OriginCredentialStoreTest, CorrectlyUpdatesBlacklistedStatus) {
+  store()->SetBlacklistedStatus(true);
+  ASSERT_EQ(BlacklistedStatus::kIsBlacklisted, store()->GetBlacklistedStatus());
+
+  store()->SetBlacklistedStatus(false);
+  EXPECT_EQ(BlacklistedStatus::kWasBlacklisted,
+            store()->GetBlacklistedStatus());
+
+  store()->SetBlacklistedStatus(true);
+  EXPECT_EQ(BlacklistedStatus::kIsBlacklisted, store()->GetBlacklistedStatus());
+}
+
+TEST_F(OriginCredentialStoreTest, WasBlacklistedStaysTheSame) {
+  store()->SetBlacklistedStatus(true);
+  ASSERT_EQ(BlacklistedStatus::kIsBlacklisted, store()->GetBlacklistedStatus());
+
+  store()->SetBlacklistedStatus(false);
+  ASSERT_EQ(BlacklistedStatus::kWasBlacklisted,
+            store()->GetBlacklistedStatus());
+
+  // If unblacklisting is communicated twice in a row, the status shouldn't
+  // change.
+  store()->SetBlacklistedStatus(false);
+  EXPECT_EQ(BlacklistedStatus::kWasBlacklisted,
+            store()->GetBlacklistedStatus());
+}
+
+TEST_F(OriginCredentialStoreTest, NeverBlacklistedStaysTheSame) {
+  ASSERT_EQ(BlacklistedStatus::kNeverBlacklisted,
+            store()->GetBlacklistedStatus());
+
+  store()->SetBlacklistedStatus(false);
+  EXPECT_EQ(BlacklistedStatus::kNeverBlacklisted,
+            store()->GetBlacklistedStatus());
 }
 
 }  // namespace password_manager

@@ -19,10 +19,10 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -84,7 +84,7 @@ public class UndoIntegrationTest {
         // Attempt to close the tab, which will delay closing until the undo timeout goes away.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TabModelUtils.closeTabById(model, tab.getId(), true);
-            Assert.assertTrue("Tab was not marked as closing", ((TabImpl) tab).isClosing());
+            Assert.assertTrue("Tab was not marked as closing", tab.isClosing());
             Assert.assertTrue("Tab is not actually closing", model.isClosurePending(tab.getId()));
         });
 

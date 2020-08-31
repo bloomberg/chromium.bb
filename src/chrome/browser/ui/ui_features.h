@@ -11,33 +11,38 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
+#include "extensions/buildflags/buildflags.h"
 
 namespace features {
 
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
 
-extern const base::Feature kAnimatedAvatarButton;
-extern const base::Feature kAnimatedAvatarButtonOnSignIn;
-extern const base::Feature kAnimatedAvatarButtonOnOpeningWindow;
-
 extern const base::Feature kEvDetailsInPageInfo;
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+extern const base::Feature kExtensionSettingsOverriddenDialogs;
+#endif
 
 extern const base::Feature kExtensionsToolbarMenu;
 
 extern const base::Feature kMixBrowserTypeTabs;
 
+extern const base::Feature kNewProfilePicker;
+
 extern const base::Feature kNewTabstripAnimation;
 
-extern const base::Feature kProfileMenuRevamp;
+extern const base::Feature kPermissionChip;
 
 extern const base::Feature kProminentDarkModeActiveTabTitle;
 
 extern const base::Feature kScrollableTabStrip;
 
-extern const base::Feature kShowSyncPausedReasonCookiesClearedOnExit;
-
 extern const base::Feature kTabGroups;
+
+extern const base::Feature kTabGroupsCollapse;
+
+extern const base::Feature kTabGroupsFeedback;
 
 extern const base::Feature kTabHoverCards;
 extern const char kTabHoverCardsFeatureParameterName[];
@@ -50,9 +55,11 @@ extern const base::Feature kUseTextForUpdateButton;
 
 extern const base::Feature kWebFooterExperiment;
 
-#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+extern const base::Feature kWebUITabStrip;
+
 extern const base::Feature kWebUITabStripDemoOptions;
-#endif  // defined(ENABLE_WEBUI_TAB_STRIP)
+
+extern const base::Feature kSyncSetupFriendlySettings;
 
 #if defined(OS_CHROMEOS)
 extern const base::Feature kHiddenNetworkWarning;

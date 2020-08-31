@@ -875,12 +875,12 @@ Litmus Test
 <div class="content">
 <pre><code><strong><span class="white">$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git</span></strong></code></pre>
 </div></div>
-<div class="paragraph"><p>Add <em>depot_tools</em> to the <em>end</em> of your PATH (you will probably want to put this
+<div class="paragraph"><p>Add <em>depot_tools</em> to the <em>front</em> of your PATH (you will probably want to put this
 in your <code>~/.bashrc</code> or <code>~/.zshrc</code>). Assuming you cloned <em>depot_tools</em> to
 <code>/path/to/depot_tools</code>:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code><strong><span class="white">$ export PATH=$PATH:/path/to/depot_tools</span></strong></code></pre>
+<pre><code><strong><span class="white">$ export PATH=/path/to/depot_tools:$PATH</span></strong></code></pre>
 </div></div>
 </div>
 <div class="sect3">
@@ -898,7 +898,7 @@ extract the hidden &#8220;.git&#8221; folder which is necessary for <em>depot_to
 autoupdate itself. You can use &#8220;Extract all&#8230;&#8221; from the context menu though.</td>
 </tr></table>
 </div>
-<div class="paragraph"><p>Add <em>depot_tools</em> to the <em>start</em> of your PATH (must be ahead of any installs of
+<div class="paragraph"><p>Add <em>depot_tools</em> to the <em>front</em> of your PATH (must be ahead of any installs of
 Python). Assuming you unzipped the bundle to <code>C:\workspace\depot_tools</code>:</p></div>
 <div class="dlist"><dl>
 <dt class="hdlist1">

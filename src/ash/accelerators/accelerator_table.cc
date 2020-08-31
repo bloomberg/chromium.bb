@@ -32,7 +32,6 @@ namespace ash {
 // 5- Don't forget to update the keyboard_shortcut_viewer_metadata.cc and
 //    shortcut_viewer_strings.grdp.
 const AcceleratorData kDeprecatedAccelerators[] = {
-    {true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN},
     {true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER},
 
     // Deprecated in M59.
@@ -47,12 +46,6 @@ const size_t kDeprecatedAcceleratorsLength =
     base::size(kDeprecatedAccelerators);
 
 const DeprecatedAcceleratorData kDeprecatedAcceleratorsData[] = {
-    {
-        LOCK_SCREEN, "Ash.Accelerators.Deprecated.LockScreen",
-        IDS_DEPRECATED_LOCK_SCREEN_MSG, IDS_SHORTCUT_LOCK_SCREEN_OLD,
-        IDS_SHORTCUT_LOCK_SCREEN_NEW,
-        false  // Old accelerator was disabled in M56.
-    },
     {SHOW_TASK_MANAGER, "Ash.Accelerators.Deprecated.ShowTaskManager",
      IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG, IDS_SHORTCUT_TASK_MANAGER_OLD,
      IDS_SHORTCUT_TASK_MANAGER_NEW, true},
@@ -69,6 +62,10 @@ const DeprecatedAcceleratorData kDeprecatedAcceleratorsData[] = {
 
 const size_t kDeprecatedAcceleratorsDataLength =
     base::size(kDeprecatedAcceleratorsData);
+
+static_assert(kDeprecatedAcceleratorsLength ==
+                  kDeprecatedAcceleratorsDataLength,
+              "Deprecated accelerator tables must be kept in sync");
 
 const AcceleratorData kDebugAcceleratorData[] = {
     {true, ui::VKEY_N, kDebugModifier, TOGGLE_WIFI},
@@ -88,6 +85,7 @@ const AcceleratorData kDebugAcceleratorData[] = {
     {true, ui::VKEY_F, kDebugModifier, DEBUG_TOGGLE_SHOW_FPS_COUNTER},
     {true, ui::VKEY_P, kDebugModifier, DEBUG_TOGGLE_SHOW_PAINT_RECTS},
     {true, ui::VKEY_K, kDebugModifier, DEBUG_TRIGGER_CRASH},
+    {true, ui::VKEY_G, kDebugModifier, DEBUG_TOGGLE_HUD_DISPLAY},
 };
 
 const size_t kDebugAcceleratorDataLength = base::size(kDebugAcceleratorData);
@@ -147,6 +145,7 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
     DEBUG_PRINT_LAYER_HIERARCHY,
     DEBUG_PRINT_VIEW_HIERARCHY,
     DEBUG_PRINT_WINDOW_HIERARCHY,
+    DEBUG_TOGGLE_HUD_DISPLAY,
     DEBUG_TOGGLE_TOUCH_PAD,
     DEBUG_TOGGLE_TOUCH_SCREEN,
     DEBUG_TOGGLE_TABLET_MODE,
@@ -156,9 +155,15 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
     KEYBOARD_BRIGHTNESS_UP,
     MAGNIFIER_ZOOM_IN,   // Control+F7
     MAGNIFIER_ZOOM_OUT,  // Control+F6
+    MEDIA_FAST_FORWARD,
     MEDIA_NEXT_TRACK,
+    MEDIA_PAUSE,
+    MEDIA_PLAY,
     MEDIA_PLAY_PAUSE,
     MEDIA_PREV_TRACK,
+    MEDIA_REWIND,
+    MEDIA_STOP,
+    PRIVACY_SCREEN_TOGGLE,
     PRINT_UI_HIERARCHIES,
     ROTATE_SCREEN,
     SCALE_UI_DOWN,
@@ -220,13 +225,19 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
     LOCK_SCREEN,
     MAGNIFIER_ZOOM_IN,
     MAGNIFIER_ZOOM_OUT,
+    MEDIA_FAST_FORWARD,
     MEDIA_NEXT_TRACK,
+    MEDIA_PAUSE,
+    MEDIA_PLAY,
     MEDIA_PLAY_PAUSE,
     MEDIA_PREV_TRACK,
+    MEDIA_REWIND,
+    MEDIA_STOP,
     OPEN_FEEDBACK_PAGE,
     POWER_PRESSED,
     POWER_RELEASED,
     PRINT_UI_HIERARCHIES,
+    PRIVACY_SCREEN_TOGGLE,
     ROTATE_SCREEN,
     SCALE_UI_DOWN,
     SCALE_UI_RESET,
@@ -266,8 +277,10 @@ const AcceleratorAction kRepeatableActions[] = {
     KEYBOARD_BRIGHTNESS_UP,
     MAGNIFIER_ZOOM_IN,
     MAGNIFIER_ZOOM_OUT,
+    MEDIA_FAST_FORWARD,
     MEDIA_NEXT_TRACK,
     MEDIA_PREV_TRACK,
+    MEDIA_REWIND,
     RESTORE_TAB,
     VOLUME_DOWN,
     VOLUME_UP,
@@ -289,12 +302,18 @@ const AcceleratorAction kActionsAllowedInAppModeOrPinnedMode[] = {
     KEYBOARD_BRIGHTNESS_UP,
     MAGNIFIER_ZOOM_IN,   // Control+F7
     MAGNIFIER_ZOOM_OUT,  // Control+F6
+    MEDIA_FAST_FORWARD,
     MEDIA_NEXT_TRACK,
+    MEDIA_PAUSE,
+    MEDIA_PLAY,
     MEDIA_PLAY_PAUSE,
     MEDIA_PREV_TRACK,
+    MEDIA_REWIND,
+    MEDIA_STOP,
     POWER_PRESSED,
     POWER_RELEASED,
     PRINT_UI_HIERARCHIES,
+    PRIVACY_SCREEN_TOGGLE,
     ROTATE_SCREEN,
     SCALE_UI_DOWN,
     SCALE_UI_RESET,
@@ -331,6 +350,13 @@ const AcceleratorAction kActionsAllowedInPinnedMode[] = {
 const size_t kActionsAllowedInPinnedModeLength =
     base::size(kActionsAllowedInPinnedMode);
 
+const AcceleratorAction kActionsAllowedInAppMode[] = {
+    FOCUS_SHELF,
+};
+
+const size_t kActionsAllowedInAppModeLength =
+    base::size(kActionsAllowedInAppMode);
+
 const AcceleratorAction kActionsNeedingWindow[] = {
     // clang-format off
     DESKS_MOVE_ACTIVE_ITEM,
@@ -354,10 +380,16 @@ const AcceleratorAction kActionsKeepingMenuOpen[] = {
     DISABLE_CAPS_LOCK,
     KEYBOARD_BRIGHTNESS_DOWN,
     KEYBOARD_BRIGHTNESS_UP,
+    MEDIA_FAST_FORWARD,
     MEDIA_NEXT_TRACK,
+    MEDIA_PAUSE,
+    MEDIA_PLAY,
     MEDIA_PLAY_PAUSE,
     MEDIA_PREV_TRACK,
+    MEDIA_REWIND,
+    MEDIA_STOP,
     PRINT_UI_HIERARCHIES,
+    PRIVACY_SCREEN_TOGGLE,
     SWITCH_TO_LAST_USED_IME,
     SWITCH_TO_NEXT_IME,
     TAKE_PARTIAL_SCREENSHOT,

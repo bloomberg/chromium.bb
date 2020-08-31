@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/ui/screen_capture_notification_ui_chromeos.h"
 #include "chrome/browser/media/webrtc/desktop_capture_access_handler.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/arc/mojom/screen_capture.mojom.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -83,16 +84,16 @@ struct ArcScreenCaptureSession::DesktopTexture {
 };
 
 // static
-mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Create(
-    mojom::ScreenCaptureSessionNotifierPtr notifier,
-    const std::string& display_name,
-    content::DesktopMediaID desktop_id,
-    const gfx::Size& size,
-    bool enable_notification) {
+mojo::PendingRemote<mojom::ScreenCaptureSession>
+ArcScreenCaptureSession::Create(mojom::ScreenCaptureSessionNotifierPtr notifier,
+                                const std::string& display_name,
+                                content::DesktopMediaID desktop_id,
+                                const gfx::Size& size,
+                                bool enable_notification) {
   // This will get cleaned up when the connection error handler is called.
   ArcScreenCaptureSession* session =
       new ArcScreenCaptureSession(std::move(notifier), size);
-  mojo::InterfacePtr<mojom::ScreenCaptureSession> result =
+  mojo::PendingRemote<mojom::ScreenCaptureSession> result =
       session->Initialize(desktop_id, display_name, enable_notification);
   if (!result)
     delete session;
@@ -102,26 +103,25 @@ mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Create(
 ArcScreenCaptureSession::ArcScreenCaptureSession(
     mojom::ScreenCaptureSessionNotifierPtr notifier,
     const gfx::Size& size)
-    : binding_(this),
-      notifier_(std::move(notifier)),
+    : notifier_(std::move(notifier)),
       size_(size),
       client_native_pixmap_factory_(
           gfx::CreateClientNativePixmapFactoryDmabuf()) {}
 
-mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
-    content::DesktopMediaID desktop_id,
-    const std::string& display_name,
-    bool enable_notification) {
+mojo::PendingRemote<mojom::ScreenCaptureSession>
+ArcScreenCaptureSession::Initialize(content::DesktopMediaID desktop_id,
+                                    const std::string& display_name,
+                                    bool enable_notification) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   display_root_window_ =
       content::DesktopMediaID::GetNativeWindowById(desktop_id);
   if (!display_root_window_) {
     LOG(ERROR) << "Unable to find Aura desktop window";
-    return nullptr;
+    return mojo::NullRemote();
   }
 
   auto context_provider = GetContextProvider();
-  gl_helper_ = std::make_unique<viz::GLHelper>(
+  gl_helper_ = std::make_unique<gpu::GLHelper>(
       context_provider->ContextGL(), context_provider->ContextSupport());
 
   display::Display display =
@@ -131,7 +131,7 @@ mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
   gfx::Size desktop_size = display.GetSizeInPixel();
 
   scaler_ = gl_helper_->CreateScaler(
-      viz::GLHelper::ScalerQuality::SCALER_QUALITY_GOOD,
+      gpu::GLHelper::ScalerQuality::SCALER_QUALITY_GOOD,
       gfx::Vector2d(desktop_size.width(), desktop_size.height()),
       gfx::Vector2d(size_.width(), size_.height()), false, true, false);
 
@@ -152,11 +152,11 @@ mojom::ScreenCaptureSessionPtr ArcScreenCaptureSession::Initialize(
   ash::Shell::Get()->display_manager()->inc_screen_capture_active_counter();
   ash::Shell::Get()->UpdateCursorCompositingEnabled();
 
-  mojom::ScreenCaptureSessionPtr interface_ptr;
-  binding_.Bind(mojo::MakeRequest(&interface_ptr));
-  binding_.set_connection_error_handler(
+  mojo::PendingRemote<mojom::ScreenCaptureSession> remote =
+      receiver_.BindNewPipeAndPassRemote();
+  receiver_.set_disconnect_handler(
       base::BindOnce(&ArcScreenCaptureSession::Close, base::Unretained(this)));
-  return interface_ptr;
+  return remote;
 }
 
 void ArcScreenCaptureSession::Close() {

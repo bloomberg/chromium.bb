@@ -13,7 +13,7 @@
 #include <cstdint>
 
 #include "api/array_view.h"
-#include "common_video/generic_frame_descriptor/generic_frame_info.h"
+#include "api/transport/rtp/dependency_descriptor.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 
 namespace webrtc {
@@ -26,8 +26,8 @@ class RtpDependencyDescriptorExtension {
   static constexpr RTPExtensionType kId = kRtpExtensionGenericFrameDescriptor02;
   // TODO(bugs.webrtc.org/10342): Use uri from the spec when there is one.
   static constexpr char kUri[] =
-      "http://www.webrtc.org/experiments/rtp-hdrext/"
-      "generic-frame-descriptor-02";
+      "https://aomediacodec.github.io/av1-rtp-spec/"
+      "#dependency-descriptor-rtp-header-extension";
 
   static bool Parse(rtc::ArrayView<const uint8_t> data,
                     const FrameDependencyStructure* structure,

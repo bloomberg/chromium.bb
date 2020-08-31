@@ -48,7 +48,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
     kArtist,
     kAlbum,
     kCount,
-    kMaxValue = kCount,
+    kSource,
+    kMaxValue = kSource,
   };
 
   MediaNotificationViewImpl(
@@ -79,12 +80,18 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
       override;
   void UpdateWithMediaArtwork(const gfx::ImageSkia& image) override;
   void UpdateWithFavicon(const gfx::ImageSkia& icon) override;
+  void UpdateWithVectorIcon(const gfx::VectorIcon& vector_icon) override;
 
   const views::Label* title_label_for_testing() const { return title_label_; }
 
   const views::Label* artist_label_for_testing() const { return artist_label_; }
 
+  const views::Button* picture_in_picture_button_for_testing() const {
+    return picture_in_picture_button_;
+  }
+
   views::Button* GetHeaderRowForTesting() const;
+  base::string16 GetSourceTitleForTesting() const;
 
  private:
   friend class MediaNotificationViewImplTest;
@@ -140,7 +147,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   // Container views directly attached to this view.
   message_center::NotificationHeaderView* header_row_ = nullptr;
   views::View* button_row_ = nullptr;
+  views::View* pip_button_separator_view_ = nullptr;
   views::ToggleImageButton* play_pause_button_ = nullptr;
+  views::ToggleImageButton* picture_in_picture_button_ = nullptr;
   views::View* title_artist_row_ = nullptr;
   views::Label* title_label_ = nullptr;
   views::Label* artist_label_ = nullptr;
@@ -148,6 +157,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   views::View* main_row_ = nullptr;
 
   views::BoxLayout* title_artist_row_layout_ = nullptr;
+  const gfx::VectorIcon* vector_header_icon_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationViewImpl);
 };

@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
+#include "third_party/blink/renderer/core/paint/url_metadata_utils.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
@@ -76,20 +77,6 @@ void BuildBackplate(const InlineFlowBox* box,
 
 }  // anonymous namespace
 
-static void AddURLRectsForInlineChildrenRecursively(
-    const LayoutObject& layout_object,
-    const PaintInfo& paint_info,
-    const PhysicalOffset& paint_offset) {
-  for (LayoutObject* child = layout_object.SlowFirstChild(); child;
-       child = child->NextSibling()) {
-    if (!child->IsLayoutInline() ||
-        ToLayoutBoxModelObject(child)->HasSelfPaintingLayer())
-      continue;
-    ObjectPainter(*child).AddURLRectIfNeeded(paint_info, paint_offset);
-    AddURLRectsForInlineChildrenRecursively(*child, paint_info, paint_offset);
-  }
-}
-
 bool LineBoxListPainter::ShouldPaint(const LayoutBoxModelObject& layout_object,
                                      const PaintInfo& paint_info,
                                      const PhysicalOffset& paint_offset) const {
@@ -99,12 +86,6 @@ bool LineBoxListPainter::ShouldPaint(const LayoutBoxModelObject& layout_object,
   // The only way an inline could paint like this is if it has a layer.
   DCHECK(layout_object.IsLayoutBlock() ||
          (layout_object.IsLayoutInline() && layout_object.HasLayer()));
-
-  if (paint_info.phase == PaintPhase::kForeground &&
-      paint_info.ShouldAddUrlMetadata()) {
-    AddURLRectsForInlineChildrenRecursively(layout_object, paint_info,
-                                            paint_offset);
-  }
 
   // If we have no lines then we have no work to do.
   if (!line_box_list_.First())
@@ -123,10 +104,16 @@ void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
                                const PhysicalOffset& paint_offset) const {
   // Only paint during the foreground/selection phases.
   if (paint_info.phase != PaintPhase::kForeground &&
-      paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kSelectionDragImage &&
       paint_info.phase != PaintPhase::kTextClip &&
       paint_info.phase != PaintPhase::kMask)
     return;
+
+  if (paint_info.phase == PaintPhase::kForeground &&
+      paint_info.ShouldAddUrlMetadata()) {
+    AddURLRectsForInlineChildrenRecursively(layout_object, paint_info,
+                                            paint_offset);
+  }
 
   if (!ShouldPaint(layout_object, paint_info, paint_offset))
     return;
@@ -158,8 +145,9 @@ void LineBoxListPainter::PaintBackplate(
     const LayoutBoxModelObject& layout_object,
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) const {
-  if (paint_info.phase != PaintPhase::kForcedColorsModeBackplate ||
-      !ShouldPaint(layout_object, paint_info, paint_offset))
+  DCHECK_EQ(paint_info.phase, PaintPhase::kForcedColorsModeBackplate);
+
+  if (!ShouldPaint(layout_object, paint_info, paint_offset))
     return;
 
   // Only paint backplates behind text when forced-color-adjust is auto.

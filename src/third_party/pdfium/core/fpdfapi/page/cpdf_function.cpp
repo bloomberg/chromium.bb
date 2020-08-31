@@ -20,6 +20,22 @@
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
+namespace {
+
+CPDF_Function::Type IntegerToFunctionType(int iType) {
+  switch (iType) {
+    case 0:
+    case 2:
+    case 3:
+    case 4:
+      return static_cast<CPDF_Function::Type>(iType);
+    default:
+      return CPDF_Function::Type::kTypeInvalid;
+  }
+}
+
+}  // namespace
+
 // static
 std::unique_ptr<CPDF_Function> CPDF_Function::Load(
     const CPDF_Object* pFuncObj) {
@@ -48,7 +64,7 @@ std::unique_ptr<CPDF_Function> CPDF_Function::Load(
   Type type = IntegerToFunctionType(iType);
   if (type == Type::kType0Sampled)
     pFunc = pdfium::MakeUnique<CPDF_SampledFunc>();
-  else if (type == Type::kType2ExpotentialInterpolation)
+  else if (type == Type::kType2ExponentialInterpolation)
     pFunc = pdfium::MakeUnique<CPDF_ExpIntFunc>();
   else if (type == Type::kType3Stitching)
     pFunc = pdfium::MakeUnique<CPDF_StitchFunc>();
@@ -59,19 +75,6 @@ std::unique_ptr<CPDF_Function> CPDF_Function::Load(
     return nullptr;
 
   return pFunc;
-}
-
-// static
-CPDF_Function::Type CPDF_Function::IntegerToFunctionType(int iType) {
-  switch (iType) {
-    case 0:
-    case 2:
-    case 3:
-    case 4:
-      return static_cast<Type>(iType);
-    default:
-      return Type::kTypeInvalid;
-  }
 }
 
 CPDF_Function::CPDF_Function(Type type) : m_Type(type) {}
@@ -165,7 +168,7 @@ const CPDF_SampledFunc* CPDF_Function::ToSampledFunc() const {
 }
 
 const CPDF_ExpIntFunc* CPDF_Function::ToExpIntFunc() const {
-  return m_Type == Type::kType2ExpotentialInterpolation
+  return m_Type == Type::kType2ExponentialInterpolation
              ? static_cast<const CPDF_ExpIntFunc*>(this)
              : nullptr;
 }

@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_operation_status.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
 namespace message_center {
@@ -26,8 +26,9 @@ class CrostiniPackageService;
 
 // Notification for various Crostini package operations, such as installing
 // from a package or uninstalling an existing app.
-class CrostiniPackageNotification : public message_center::NotificationObserver,
-                                    public CrostiniRegistryService::Observer {
+class CrostiniPackageNotification
+    : public message_center::NotificationObserver,
+      public guest_os::GuestOsRegistryService::Observer {
  public:
   enum class NotificationType { PACKAGE_INSTALL, APPLICATION_UNINSTALL };
 
@@ -42,7 +43,9 @@ class CrostiniPackageNotification : public message_center::NotificationObserver,
                               CrostiniPackageService* installer_service);
   ~CrostiniPackageNotification() override;
 
-  void UpdateProgress(PackageOperationStatus status, int progress_percent);
+  void UpdateProgress(PackageOperationStatus status,
+                      int progress_percent,
+                      const std::string& error_message = {});
 
   void ForceAllowAutoHide();
 
@@ -54,14 +57,16 @@ class CrostiniPackageNotification : public message_center::NotificationObserver,
   void Click(const base::Optional<int>& button_index,
              const base::Optional<base::string16>& reply) override;
 
-  // CrostiniRegistryService::Observer:
+  // GuestOsRegistryService::Observer:
   void OnRegistryUpdated(
-      CrostiniRegistryService* registry_service,
+      guest_os::GuestOsRegistryService* registry_service,
       const std::vector<std::string>& updated_apps,
       const std::vector<std::string>& removed_apps,
       const std::vector<std::string>& inserted_apps) override;
 
   int GetButtonCountForTesting();
+
+  const std::string& GetErrorMessageForTesting() const;
 
  private:
   // A type giving the string, etc displayed for each notification type. Note
@@ -106,6 +111,10 @@ class CrostiniPackageNotification : public message_center::NotificationObserver,
 
   // True if we think the notification is visible.
   bool visible_;
+
+  // If nonempty, contains an error string reported when installing the the
+  // application.
+  std::string error_message_;
 
   // If we show a launch button on completion, this is the app that will be
   // launched.

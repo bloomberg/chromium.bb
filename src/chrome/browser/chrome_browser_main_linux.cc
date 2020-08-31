@@ -12,11 +12,12 @@
 #include "base/files/file_path.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/grit/chromium_strings.h"
-#include "components/crash/content/app/breakpad_linux.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/breakpad_linux.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/metrics/metrics_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -24,7 +25,9 @@
 #include "media/audio/audio_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+#include "chrome/installer/util/google_update_settings.h"
+#else
 #include "base/command_line.h"
 #include "base/linux_util.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -47,9 +50,8 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   // Needs to be called after we have chrome::DIR_USER_DATA and
   // g_browser_process.  This happens in PreCreateThreads.
   // base::GetLinuxDistro() will initialize its value if needed.
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(base::IgnoreResult(&base::GetLinuxDistro)));
 #endif
 
@@ -81,10 +83,23 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 void ChromeBrowserMainPartsLinux::PostProfileInit() {
   ChromeBrowserMainPartsPosix::PostProfileInit();
 
-  bool enabled = (crash_reporter::IsCrashpadEnabled() &&
-                  crash_reporter::GetUploadsEnabled()) ||
-                 breakpad::IsCrashReporterEnabled();
-  g_browser_process->metrics_service()->RecordBreakpadRegistration(enabled);
+  bool breakpad_registered;
+  if (crash_reporter::IsCrashpadEnabled()) {
+    // If we're using crashpad, there's no breakpad and crashpad is always
+    // registered as a crash handler. Since setting |breakpad_registered| to
+    // true all the time isn't useful, we overload the meaning of the breakpad
+    // registration metric to mean "is crash reporting enabled", since that's
+    // what breakpad registration effectively meant in the days before crashpad.
+#if defined(OS_CHROMEOS)
+    breakpad_registered = GoogleUpdateSettings::GetCollectStatsConsent();
+#else
+    breakpad_registered = crash_reporter::GetUploadsEnabled();
+#endif
+  } else {
+    breakpad_registered = breakpad::IsCrashReporterEnabled();
+  }
+  g_browser_process->metrics_service()->RecordBreakpadRegistration(
+      breakpad_registered);
 }
 
 void ChromeBrowserMainPartsLinux::PostMainMessageLoopStart() {

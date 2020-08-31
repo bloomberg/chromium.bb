@@ -4,13 +4,17 @@
 
 package org.chromium.weblayer_private;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.os.Build;
 
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
+import org.chromium.ui.base.ImmutableWeakReference;
 import org.chromium.ui.base.IntentWindowAndroid;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 
 import java.lang.ref.WeakReference;
 
@@ -20,6 +24,11 @@ import java.lang.ref.WeakReference;
  */
 public class FragmentWindowAndroid extends IntentWindowAndroid {
     private BrowserFragmentImpl mFragment;
+    private ModalDialogManager mModalDialogManager;
+
+    // This WeakReference is purely to avoid gc churn of creating a new WeakReference in
+    // every getActivity call. It is not needed for correctness.
+    private ImmutableWeakReference<Activity> mActivityWeakRefHolder;
 
     FragmentWindowAndroid(Context context, BrowserFragmentImpl fragment) {
         super(context);
@@ -42,6 +51,27 @@ public class FragmentWindowAndroid extends IntentWindowAndroid {
 
     @Override
     public final WeakReference<Activity> getActivity() {
-        return new WeakReference<>(mFragment.getActivity());
+        if (mActivityWeakRefHolder == null
+                || mActivityWeakRefHolder.get() != mFragment.getActivity()) {
+            mActivityWeakRefHolder = new ImmutableWeakReference<>(mFragment.getActivity());
+        }
+        return mActivityWeakRefHolder;
+    }
+
+    @Override
+    public final ModalDialogManager getModalDialogManager() {
+        return mModalDialogManager;
+    }
+
+    public void setModalDialogManager(ModalDialogManager modalDialogManager) {
+        mModalDialogManager = modalDialogManager;
+    }
+
+    @Override
+    @TargetApi(Build.VERSION_CODES.O)
+    public void setWideColorEnabled(boolean enabled) {
+        // WebLayer should not change its behavior when the content contains wide color.
+        // Rather, the app embedding the WebLayer gets to choose whether or not it is wide.
+        // So we should do nothing in this override.
     }
 }

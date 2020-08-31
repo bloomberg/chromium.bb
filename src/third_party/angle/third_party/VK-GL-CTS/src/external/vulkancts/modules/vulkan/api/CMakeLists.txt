@@ -20,6 +20,8 @@ set(DEQP_VK_API_SRCS
 	vktApiObjectManagementTests.hpp
 	vktApiBufferTests.cpp
 	vktApiBufferTests.hpp
+	vktApiBufferMarkerTests.cpp
+	vktApiBufferMarkerTests.hpp
 	vktApiBufferViewCreateTests.cpp
 	vktApiBufferViewCreateTests.hpp
 	vktApiBufferViewAccessTests.cpp
@@ -58,6 +60,8 @@ set(DEQP_VK_API_SRCS
 	vktApiPipelineTests.cpp
 	vktApiMemoryRequirementInvarianceTests.cpp
 	vktApiMemoryRequirementInvarianceTests.hpp
+    vktApiToolingInfoTests.cpp
+    vktApiToolingInfoTests.hpp
 	)
 
 set(DEQP_VK_API_LIBS

@@ -15,7 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "printing/backend/cups_connection.h"
-#include "printing/backend/cups_ipp_util.h"
+#include "printing/backend/cups_ipp_helper.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/units.h"
 
@@ -73,6 +73,13 @@ bool PrintBackendCupsIpp::GetPrinterBasicInfo(const std::string& printer_name,
   DCHECK_EQ(printer_name, printer->GetName());
 
   return printer->ToPrinterInfo(printer_info);
+}
+
+bool PrintBackendCupsIpp::GetPrinterCapsAndDefaults(
+    const std::string& printer_name,
+    PrinterCapsAndDefaults* printer_info) {
+  NOTREACHED();
+  return false;
 }
 
 bool PrintBackendCupsIpp::GetPrinterSemanticCapsAndDefaults(

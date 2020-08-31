@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "chrome/browser/chromeos/app_mode/app_session.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data_base.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_cryptohome_remover.h"
@@ -70,9 +71,29 @@ void KioskAppManagerBase::OnKioskAppDataLoadFailure(
     observer.OnKioskAppDataLoadFailure(app_id);
 }
 
+void KioskAppManagerBase::OnExternalCacheDamaged(const std::string& app_id) {
+  // Should be implemented only in those kiosks that use ExternalCache.
+  NOTREACHED();
+}
+
+bool KioskAppManagerBase::GetDisableBailoutShortcut() const {
+  bool enable;
+  if (CrosSettings::Get()->GetBoolean(
+          kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled, &enable)) {
+    return !enable;
+  }
+
+  return false;
+}
+
 void KioskAppManagerBase::NotifyKioskAppsChanged() const {
   for (auto& observer : observers_)
     observer.OnKioskAppsSettingsChanged();
+}
+
+void KioskAppManagerBase::NotifySessionInitialized() const {
+  for (auto& observer : observers_)
+    observer.OnKioskSessionInitialized();
 }
 
 void KioskAppManagerBase::AddObserver(KioskAppManagerObserver* observer) {

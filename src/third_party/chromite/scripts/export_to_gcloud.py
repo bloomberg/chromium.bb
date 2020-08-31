@@ -9,11 +9,19 @@ from __future__ import print_function
 
 import ast
 import json
-
-from gcloud import datastore  # pylint: disable=import-error
+import sys
 
 from chromite.lib import commandline
 from chromite.lib import dslib
+
+try:
+  import pytest  # pylint: disable=import-error
+  datastore = pytest.importorskip('gcloud.datastore')
+except ImportError:
+  from gcloud import datastore  # pylint: disable=import-error
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def GetParser():

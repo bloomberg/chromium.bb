@@ -25,21 +25,24 @@ jumbo_static_library("core") {
     "//net",
     "//url",
   ]
+
+  deps = [ "//services/network/public/cpp" ]
 }
 
 if (is_android) {
-  java_cpp_enum("security_state_enums_java") {
-    sources = [
-      "security_state.h",
-    ]
+  java_cpp_enum("security_state_enums") {
+    sources = [ "security_state.h" ]
+  }
+
+  android_library("security_state_enums_java") {
+    srcjar_deps = [ ":security_state_enums" ]
+    deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
   }
 }
 
 jumbo_source_set("unit_tests") {
   testonly = true
-  sources = [
-    "security_state_unittest.cc",
-  ]
+  sources = [ "security_state_unittest.cc" ]
 
   deps = [
     ":core",
@@ -59,7 +62,5 @@ component("features") {
     "features.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

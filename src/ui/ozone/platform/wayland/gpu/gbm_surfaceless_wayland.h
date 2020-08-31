@@ -29,7 +29,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   GbmSurfacelessWayland(WaylandBufferManagerGpu* buffer_manager,
                         gfx::AcceleratedWidget widget);
 
-  void QueueOverlayPlane(OverlayPlane plane);
+  void QueueOverlayPlane(OverlayPlane plane, uint32_t buffer_id);
 
   // gl::GLSurface:
   bool ScheduleOverlayPlane(int z_order,
@@ -57,8 +57,12 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
                           PresentationCallback presentation_callback) override;
   EGLConfig GetConfig() override;
   void SetRelyOnImplicitSync() override;
+  gfx::SurfaceOrigin GetOrigin() const override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WaylandSurfaceFactoryTest,
+                           GbmSurfacelessWaylandCheckOrderOfCallbacksTest);
+
   ~GbmSurfacelessWayland() override;
 
   // WaylandSurfaceGpu overrides:
@@ -88,13 +92,21 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
     PresentationCallback presentation_callback;
   };
 
+  struct PlaneData {
+    OverlayPlane plane;
+    const uint32_t buffer_id;
+  };
+
   void SubmitFrame();
 
   EGLSyncKHR InsertFence(bool implicit);
   void FenceRetired(PendingFrame* frame);
 
+  // Sets a flag that skips glFlush step in unittests.
+  void SetNoGLFlushForTests();
+
   WaylandBufferManagerGpu* const buffer_manager_;
-  std::vector<OverlayPlane> planes_;
+  std::vector<PlaneData> planes_;
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
   gfx::AcceleratedWidget widget_;
@@ -104,6 +116,8 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   bool has_implicit_external_sync_;
   bool last_swap_buffers_result_ = true;
   bool use_egl_fence_sync_ = true;
+
+  bool no_gl_flush_for_tests_ = false;
 
   base::WeakPtrFactory<GbmSurfacelessWayland> weak_factory_;
 

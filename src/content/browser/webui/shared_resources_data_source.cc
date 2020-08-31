@@ -7,10 +7,11 @@
 #include <stddef.h>
 #include <string>
 
+#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -80,14 +81,12 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
   };
 
 #if defined(OS_CHROMEOS)
-  // Add lottie library for Chrome OS.
-  aliases["../../../third_party/lottie/"] = "lottie/";
-
   if (UsingMultiplePolymerVersions())
     return aliases;
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
+  aliases["../../../third_party/lottie/"] = "lottie/";
   aliases["../../../third_party/polymer/v1_0/components-chromium/polymer2/"] =
       "polymer/v1_0/polymer/";
 #endif  // !defined(OS_ANDROID)
@@ -127,12 +126,18 @@ const std::map<int, std::string> CreateMojoResourceIdToAliasMap() {
          "mojo/mojo/public/mojom/base/string16.mojom.html"},
         {IDR_MOJO_STRING16_MOJOM_LITE_JS,
          "mojo/mojo/public/mojom/base/string16.mojom-lite.js"},
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+        {IDR_MOJO_TEXT_DIRECTION_MOJOM_HTML,
+         "mojo/mojo/public/mojom/base/text_direction.mojom.html"},
+        {IDR_MOJO_TEXT_DIRECTION_MOJOM_LITE_JS,
+         "mojo/mojo/public/mojom/base/text_direction.mojom-lite.js"},
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_ANDROID)
         {IDR_MOJO_TIME_MOJOM_HTML,
          "mojo/mojo/public/mojom/base/time.mojom.html"},
         {IDR_MOJO_TIME_MOJOM_LITE_JS,
          "mojo/mojo/public/mojom/base/time.mojom-lite.js"},
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        //  defined(OS_ANDROID)
   };
 }
 
@@ -169,6 +174,12 @@ const std::map<int, std::string> CreateChromeosMojoResourceIdToAliasMap() {
       {IDR_NETWORK_CONFIG_MOJOM_LITE_JS,
        "mojo/chromeos/services/network_config/public/mojom/"
        "cros_network_config.mojom-lite.js"},
+      {IDR_NETWORK_CONFIG_TYPES_MOJOM_HTML,
+       "mojo/chromeos/services/network_config/public/mojom/"
+       "network_types.mojom.html"},
+      {IDR_NETWORK_CONFIG_TYPES_MOJOM_LITE_JS,
+       "mojo/chromeos/services/network_config/public/mojom/"
+       "network_types.mojom-lite.js"},
       {IDR_IP_ADDRESS_MOJOM_HTML,
        "mojo/services/network/public/mojom/"
        "ip_address.mojom.html"},
@@ -373,28 +384,6 @@ bool SharedResourcesDataSource::ShouldServeMimeTypeAsContentTypeHeader() {
   return true;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-SharedResourcesDataSource::TaskRunnerForRequestPath(const std::string& path) {
-  // Since WebContentsGetter can only be run on the UI thread, always return
-  // a task runner if we need to choose between Polymer resources based on the
-  // WebContents that is requesting the resource.
-  // TODO (rbpotter): Remove this once the OOBE Polymer 2 migration is complete.
-#if defined(OS_CHROMEOS)
-  if (UsingMultiplePolymerVersions())
-    return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
-#endif  // defined(OS_CHROMEOS)
-
-  int idr = GetIdrForPath(path);
-  if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS ||
-      idr == IDR_WEBUI_CSS_TEXT_DEFAULTS_MD) {
-    // Use UI thread to load CSS since its construction touches non-thread-safe
-    // gfx::Font names in ui::ResourceBundle.
-    return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
-  }
-
-  return nullptr;
-}
-
 std::string SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
     const std::string& origin) {
   // For now we give access only for "chrome://*" origins.
@@ -410,15 +399,15 @@ std::string SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
   return origin;
 }
 
+std::string SharedResourcesDataSource::GetContentSecurityPolicyWorkerSrc() {
+  return "worker-src blob: 'self';";
+}
+
 #if defined(OS_CHROMEOS)
 void SharedResourcesDataSource::DisablePolymer2ForHost(
     const std::string& host) {
   DCHECK(disabled_polymer2_host_.empty() || host == disabled_polymer2_host_);
   disabled_polymer2_host_ = host;
-}
-
-std::string SharedResourcesDataSource::GetContentSecurityPolicyWorkerSrc() {
-  return "worker-src blob: 'self';";
 }
 
 // Returns true if the WebContents making the request has disabled Polymer 2.

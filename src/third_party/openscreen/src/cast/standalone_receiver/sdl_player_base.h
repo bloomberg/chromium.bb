@@ -18,8 +18,8 @@
 #include "platform/api/time.h"
 #include "platform/base/error.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Common base class that consumes frames from a Receiver, decodes them, and
 // plays them out via the appropriate SDL subsystem. Subclasses implement the
@@ -29,7 +29,7 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   ~SDLPlayerBase() override;
 
   // Returns OK unless a fatal error has occurred.
-  const openscreen::Error& error_status() const { return error_status_; }
+  const Error& error_status() const { return error_status_; }
 
  protected:
   // Current player state, which is used to determine what to render/present,
@@ -43,7 +43,7 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
 
   // A decoded frame and its target presentation time.
   struct PresentableFrame {
-    openscreen::platform::Clock::time_point presentation_time;
+    Clock::time_point presentation_time;
     AVFrameUniquePtr decoded_frame;
 
     PresentableFrame();
@@ -55,9 +55,10 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   // |error_callback| is run only if a fatal error occurs, at which point the
   // player has halted and set |error_status()|. |media_type| should be "audio"
   // or "video" (only used when logging).
-  SDLPlayerBase(openscreen::platform::ClockNowFunctionPtr now_function,
-                openscreen::platform::TaskRunner* task_runner,
+  SDLPlayerBase(ClockNowFunctionPtr now_function,
+                TaskRunner* task_runner,
                 Receiver* receiver,
+                const std::string& codec_name,
                 std::function<void()> error_callback,
                 const char* media_type);
 
@@ -68,8 +69,8 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   void OnFatalError(std::string message) final;
 
   // Renders the |frame| and returns its [possibly adjusted] presentation time.
-  virtual openscreen::ErrorOr<openscreen::platform::Clock::time_point>
-  RenderNextFrame(const PresentableFrame& frame) = 0;
+  virtual ErrorOr<Clock::time_point> RenderNextFrame(
+      const PresentableFrame& frame) = 0;
 
   // Called to render when the player has no new content, and returns true if a
   // Present() is necessary. |frame| may be null, if it is not available. This
@@ -82,8 +83,24 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   virtual void Present() = 0;
 
  private:
+  struct PendingFrame : public PresentableFrame {
+    Clock::time_point start_time;
+
+    PendingFrame();
+    ~PendingFrame();
+    PendingFrame(PendingFrame&& other) noexcept;
+    PendingFrame& operator=(PendingFrame&& other) noexcept;
+  };
+
   // Receiver::Consumer implementation.
   void OnFramesReady(int next_frame_buffer_size) final;
+
+  // Determine the presentation time of the frame. Ideally, this will occur
+  // based on the time progression of the media, given by the RTP timestamps.
+  // However, if this falls too far out-of-sync with the system reference clock,
+  // re-synchronize, possibly causing user-visible "jank."
+  Clock::time_point ResyncAndDeterminePresentationTime(
+      const EncodedFrame& frame);
 
   // AVCodecDecoder::Client implementation. These are called-back from
   // |decoder_| to provide results.
@@ -108,13 +125,13 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   // require rendering/presenting a different output.
   void ResumeRendering();
 
-  const openscreen::platform::ClockNowFunctionPtr now_;
+  const ClockNowFunctionPtr now_;
   Receiver* const receiver_;
   std::function<void()> error_callback_;  // Run once by OnFatalError().
   const char* const media_type_;          // For logging only.
 
   // Set to the error code that placed the player in a fatal error state.
-  openscreen::Error error_status_;
+  Error error_status_;
 
   // Current player state, which is used to determine what to render/present,
   // and how frequently.
@@ -122,14 +139,7 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
 
   // Queue of frames currently being decoded and decoded frames awaiting
   // rendering.
-  struct PendingFrame : public PresentableFrame {
-    openscreen::platform::Clock::time_point start_time;
 
-    PendingFrame();
-    ~PendingFrame();
-    PendingFrame(PendingFrame&& other) noexcept;
-    PendingFrame& operator=(PendingFrame&& other) noexcept;
-  };
   std::map<FrameId, PendingFrame> frames_to_render_;
 
   // Buffer for holding EncodedFrame::data.
@@ -139,7 +149,7 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   // whenever the media (RTP) timestamps drift too much away from the rate at
   // which the local clock ticks. This is important for A/V synchronization.
   RtpTimeTicks last_sync_rtp_timestamp_{};
-  openscreen::platform::Clock::time_point last_sync_reference_time_{};
+  Clock::time_point last_sync_reference_time_{};
 
   Decoder decoder_;
 
@@ -149,13 +159,13 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   // A cumulative moving average of recent single-frame processing times
   // (consume + decode + render). This is passed to the Cast Receiver so that it
   // can determine when to drop late frames.
-  openscreen::platform::Clock::duration recent_processing_time_{};
+  Clock::duration recent_processing_time_{};
 
   // Alarms that execute the various stages of the player pipeline at certain
   // times.
-  openscreen::Alarm decode_alarm_;
-  openscreen::Alarm render_alarm_;
-  openscreen::Alarm presentation_alarm_;
+  Alarm decode_alarm_;
+  Alarm render_alarm_;
+  Alarm presentation_alarm_;
 
   // Maximum number of frames in the decode/render pipeline. This limit is about
   // making sure the player uses resources efficiently: It is better for frames
@@ -164,7 +174,7 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   static constexpr int kMaxFramesInPipeline = 8;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STANDALONE_RECEIVER_SDL_PLAYER_BASE_H_

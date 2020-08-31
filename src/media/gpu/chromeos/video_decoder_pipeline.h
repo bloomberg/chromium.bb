@@ -42,7 +42,7 @@ class DmabufVideoFramePool;
 // Note: All methods and callbacks should be called on the same sequence.
 class MEDIA_GPU_EXPORT DecoderInterface {
  public:
-  using InitCB = base::OnceCallback<void(bool success)>;
+  using InitCB = base::OnceCallback<void(::media::Status status)>;
   // TODO(crbug.com/998413): Replace VideoFrame to GpuMemoryBuffer-based
   // instance.
   using OutputCB = base::RepeatingCallback<void(scoped_refptr<VideoFrame>)>;
@@ -59,7 +59,7 @@ class MEDIA_GPU_EXPORT DecoderInterface {
     virtual DmabufVideoFramePool* GetVideoFramePool() const = 0;
 
     // After this method is called from |decoder_|, the client needs to call
-    // DecoderInterface::OnPipelineFlushed() when all pending frames are
+    // DecoderInterface::ApplyResolutionChange() when all pending frames are
     // flushed.
     virtual void PrepareChangeResolution() = 0;
 
@@ -114,7 +114,7 @@ class MEDIA_GPU_EXPORT DecoderInterface {
   // After DecoderInterface calls |prepare_change_resolution_cb| passed
   // from the constructor, this method is called when the pipeline flushes
   // pending frames.
-  virtual void OnPipelineFlushed() = 0;
+  virtual void ApplyResolutionChange() = 0;
 
  protected:
   // Decoder task runner. All public methods of
@@ -194,10 +194,12 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   void DecodeTask(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb);
 
   void CreateAndInitializeVD(base::queue<CreateVDFunc> create_vd_funcs,
-                             VideoDecoderConfig config);
+                             VideoDecoderConfig config,
+                             ::media::Status parent_error);
   void OnInitializeDone(base::queue<CreateVDFunc> create_vd_funcs,
                         VideoDecoderConfig config,
-                        bool success);
+                        ::media::Status parent_error,
+                        ::media::Status success);
 
   void OnDecodeDone(bool eos_buffer, DecodeCB decode_cb, DecodeStatus status);
   void OnResetDone();
@@ -215,8 +217,8 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   // i.e. |image_processor_| or |frame_converter_| has pending frames.
   bool HasPendingFrames() const;
 
-  // Call DecoderInterface::OnPipelineFlushed() when we need to.
-  void CallOnPipelineFlushedIfNeeded();
+  // Call DecoderInterface::ApplyResolutionChange() when we need to.
+  void CallApplyResolutionChangeIfNeeded();
 
   // Call |client_flush_cb_| with |status|.
   void CallFlushCbIfNeeded(DecodeStatus status);
@@ -269,8 +271,8 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   base::OnceClosure client_reset_cb_;
 
   // True if we need to notify |decoder_| that the pipeline is flushed via
-  // DecoderInterface::OnPipelineFlushed().
-  bool need_notify_decoder_flushed_ = false;
+  // DecoderInterface::ApplyResolutionChange().
+  bool need_apply_new_resolution = false;
 
   // True if the decoder needs bitstream conversion before decoding.
   bool needs_bitstream_conversion_ = false;

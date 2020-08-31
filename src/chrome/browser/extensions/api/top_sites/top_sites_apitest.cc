@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/history/core/browser/top_sites.h"
+#include "content/public/test/browser_test.h"
 
 namespace utils = extension_function_test_utils;
 
@@ -39,7 +40,7 @@ class TopSitesExtensionTest : public InProcessBrowserTest {
     // This may return async or sync. If sync, top_sites_inited_ will be true
     // before we get to the conditional below. Otherwise, we'll run a nested
     // message loop until the async callback.
-    top_sites->GetMostVisitedURLs(base::Bind(
+    top_sites->GetMostVisitedURLs(base::BindOnce(
         &TopSitesExtensionTest::OnTopSitesAvailable, base::Unretained(this)));
 
     if (!top_sites_inited_) {

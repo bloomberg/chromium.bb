@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_end_effect.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -27,9 +26,10 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
 
   NGTextFragmentBuilder(const NGPhysicalTextFragment& fragment);
 
+  TextDirection ResolvedDirection() const { return resolved_direction_; }
+
   // NOTE: Takes ownership of the shape result within the item result.
-  void SetItem(NGPhysicalTextFragment::NGTextType,
-               const NGInlineItemsData&,
+  void SetItem(const String& text_content,
                NGInlineItemResult*,
                LayoutUnit line_height);
 
@@ -44,17 +44,15 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
   scoped_refptr<const NGPhysicalTextFragment> ToTextFragment();
 
  private:
-  // Returns true if the text is generated (from, e.g., list marker,
-  // pseudo-element, ...) instead of from a DOM text node.
-  bool IsGeneratedText() const;
-
   String text_;
   unsigned start_offset_;
   unsigned end_offset_;
   scoped_refptr<const ShapeResultView> shape_result_;
 
-  NGPhysicalTextFragment::NGTextType text_type_ =
-      NGPhysicalTextFragment::kNormalText;
+  NGTextType text_type_ = NGTextType::kNormal;
+
+  // Set from |NGInlineItem| by |SetItem()|.
+  TextDirection resolved_direction_ = TextDirection::kLtr;
 
   friend class NGPhysicalTextFragment;
 };

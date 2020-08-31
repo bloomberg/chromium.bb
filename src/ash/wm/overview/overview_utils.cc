@@ -8,22 +8,28 @@
 
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
-#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/no_destructor.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -54,6 +60,40 @@ bool CanCoverAvailableWorkspace(aura::Window* window) {
   if (split_view_controller->InSplitViewMode())
     return split_view_controller->CanSnapWindow(window);
   return WindowState::Get(window)->IsMaximizedOrFullscreenOrPinned();
+}
+
+bool ShouldAnimateWallpaper(aura::Window* root_window) {
+  // |overview_session| will be null on overview exit because we call this
+  // after the animations are done running. Check the mru window list windows in
+  // this case to see if they cover the workspace.
+  OverviewSession* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
+  if (overview_session) {
+    // Never animate when doing app dragging or when immediately exiting.
+    const auto enter_exit_type = overview_session->enter_exit_overview_type();
+    if (enter_exit_type == OverviewEnterExitType::kImmediateEnter ||
+        enter_exit_type == OverviewEnterExitType::kImmediateExit) {
+      return false;
+    }
+
+    OverviewGrid* grid = overview_session->GetGridWithRootWindow(root_window);
+    // If one of the windows covers the workspace, we do not need to animate.
+    for (const auto& overview_item : grid->window_list()) {
+      if (CanCoverAvailableWorkspace(overview_item->GetWindow()))
+        return false;
+    }
+
+    return true;
+  }
+
+  auto windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
+  for (auto* window : windows) {
+    if (window->GetRootWindow() == root_window &&
+        CanCoverAvailableWorkspace(window))
+      return false;
+  }
+  return true;
 }
 
 void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
@@ -221,12 +261,19 @@ void MaximizeIfSnapped(aura::Window* window) {
   }
 }
 
-// Get the grid bounds if a window is snapped in splitview, or what they will be
-// when snapped based on |target_root| and |indicator_state|.
-gfx::Rect GetGridBoundsInScreenForSplitview(
+gfx::Rect GetGridBoundsInScreen(aura::Window* target_root) {
+  return GetGridBoundsInScreen(target_root,
+                               /*window_dragging_state=*/base::nullopt,
+                               /*divider_changed=*/false,
+                               /*account_for_hotseat=*/true);
+}
+
+gfx::Rect GetGridBoundsInScreen(
     aura::Window* target_root,
     base::Optional<SplitViewDragIndicators::WindowDraggingState>
-        window_dragging_state) {
+        window_dragging_state,
+    bool divider_changed,
+    bool account_for_hotseat) {
   auto* split_view_controller = SplitViewController::Get(target_root);
   auto state = split_view_controller->state();
 
@@ -245,22 +292,94 @@ gfx::Rect GetGridBoundsInScreenForSplitview(
     }
   }
 
+  gfx::Rect bounds;
+  gfx::Rect work_area =
+      WorkAreaInsets::ForWindow(target_root)->ComputeStableWorkArea();
+  base::Optional<SplitViewController::SnapPosition> opposite_position =
+      base::nullopt;
   switch (state) {
     case SplitViewController::State::kLeftSnapped:
-      return split_view_controller->GetSnappedWindowBoundsInScreen(
+      bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
           SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr);
+      opposite_position = base::make_optional(SplitViewController::RIGHT);
+      break;
     case SplitViewController::State::kRightSnapped:
-      return split_view_controller->GetSnappedWindowBoundsInScreen(
+      bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
           SplitViewController::LEFT, /*window_for_minimum_size=*/nullptr);
-    default:
-      return screen_util::
-          GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(target_root);
+      opposite_position = base::make_optional(SplitViewController::LEFT);
+      break;
+    case SplitViewController::State::kNoSnap:
+      bounds = work_area;
+      break;
+    case SplitViewController::State::kBothSnapped:
+      // When this function is called, SplitViewController should have already
+      // handled the state change.
+      NOTREACHED();
   }
+
+  // Hotseat is overlaps the work area / split view bounds when extended, but in
+  // some cases we don't want its bounds in our calculations.
+  if (account_for_hotseat) {
+    Shelf* shelf = Shelf::ForWindow(target_root);
+    const bool hotseat_extended =
+        shelf->shelf_layout_manager()->hotseat_state() ==
+        HotseatState::kExtended;
+    // When a window is dragged from the top of the screen, overview gets
+    // entered immediately but the window does not get deactivated right away so
+    // the hotseat state does not get updated until the window gets dragged a
+    // bit. In this case, determine whether the hotseat will be extended to
+    // avoid doing a expensive double grid layout.
+    auto* overview_session =
+        Shell::Get()->overview_controller()->overview_session();
+    const bool hotseat_will_extend =
+        overview_session &&
+        overview_session->enter_exit_overview_type() ==
+            OverviewEnterExitType::kImmediateEnter &&
+        !split_view_controller->InSplitViewMode();
+    if (hotseat_extended || hotseat_will_extend) {
+      // Use the default hotseat size here to avoid the possible re-layout
+      // due to the update in HotseatWidget::is_forced_dense_.
+      const int hotseat_bottom_inset =
+          ShelfConfig::Get()->GetHotseatSize(/*force_dense=*/false) +
+          ShelfConfig::Get()->hotseat_bottom_padding();
+
+      bounds.Inset(0, 0, 0, hotseat_bottom_inset);
+    }
+  }
+
+  if (!divider_changed)
+    return bounds;
+
+  DCHECK(opposite_position);
+  const bool horizontal = SplitViewController::IsLayoutHorizontal();
+  const int min_length =
+      (horizontal ? work_area.width() : work_area.height()) / 3;
+  const int current_length = horizontal ? bounds.width() : bounds.height();
+
+  if (current_length > min_length)
+    return bounds;
+
+  // Clamp bounds' length to the minimum length.
+  if (horizontal)
+    bounds.set_width(min_length);
+  else
+    bounds.set_height(min_length);
+
+  if (SplitViewController::IsPhysicalLeftOrTop(*opposite_position)) {
+    // If we are shifting to the left or top we need to update the origin as
+    // well.
+    const int offset = min_length - current_length;
+    bounds.Offset(horizontal ? gfx::Vector2d(-offset, 0)
+                             : gfx::Vector2d(0, -offset));
+  }
+
+  return bounds;
 }
 
-base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
-    aura::Window* window) {
+base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio() {
   if (!ShouldAllowSplitView())
+    return base::nullopt;
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
     return base::nullopt;
   auto* overview_session =
       Shell::Get()->overview_controller()->overview_session();
@@ -268,8 +387,6 @@ base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   DCHECK(overview_session->GetGridWithRootWindow(root_window)
              ->split_view_drag_indicators());
-  // TODO(sammiequon): This does not work for drag from top as they have
-  // different drag indicators object as regular overview.
   auto window_dragging_state =
       overview_session->GetGridWithRootWindow(root_window)
           ->split_view_drag_indicators()
@@ -280,13 +397,20 @@ base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
     return base::nullopt;
   }
 
-  return base::make_optional(gfx::RectF(GetGridBoundsInScreenForSplitview(
-      root_window, base::make_optional(window_dragging_state))));
+  // The hotseat bounds do not affect splitview after a window is snapped, so
+  // the aspect ratio should reflect it and not worry about the hotseat.
+  return base::make_optional(gfx::RectF(GetGridBoundsInScreen(
+      root_window, base::make_optional(window_dragging_state),
+      /*divider_changed=*/false, /*account_for_hotseat=*/false)));
 }
 
 bool ShouldUseTabletModeGridLayout() {
-  return base::FeatureList::IsEnabled(features::kNewOverviewLayout) &&
-         Shell::Get()->tablet_mode_controller()->InTabletMode();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
+}
+
+gfx::Rect ToStableSizeRoundedRect(const gfx::RectF& rect) {
+  return gfx::Rect(gfx::ToRoundedPoint(rect.origin()),
+                   gfx::ToRoundedSize(rect.size()));
 }
 
 }  // namespace ash

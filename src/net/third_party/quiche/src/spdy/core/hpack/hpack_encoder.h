@@ -14,11 +14,11 @@
 #include <utility>
 #include <vector>
 
+#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_header_table.h"
 #include "net/third_party/quiche/src/spdy/core/hpack/hpack_output_stream.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_export.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_string_piece.h"
 
 // An HpackEncoder encodes header sets as outlined in
 // http://tools.ietf.org/html/rfc7541.
@@ -31,18 +31,21 @@ namespace test {
 class HpackEncoderPeer;
 }  // namespace test
 
-class SPDY_EXPORT_PRIVATE HpackEncoder {
+class QUICHE_EXPORT_PRIVATE HpackEncoder {
  public:
-  using Representation = std::pair<SpdyStringPiece, SpdyStringPiece>;
+  using Representation =
+      std::pair<quiche::QuicheStringPiece, quiche::QuicheStringPiece>;
   using Representations = std::vector<Representation>;
 
   // Callers may provide a HeaderListener to be informed of header name-value
   // pairs processed by this encoder.
-  using HeaderListener = std::function<void(SpdyStringPiece, SpdyStringPiece)>;
+  using HeaderListener =
+      std::function<void(quiche::QuicheStringPiece, quiche::QuicheStringPiece)>;
 
   // An indexing policy should return true if the provided header name-value
   // pair should be inserted into the HPACK dynamic table.
-  using IndexingPolicy = std::function<bool(SpdyStringPiece, SpdyStringPiece)>;
+  using IndexingPolicy =
+      std::function<bool(quiche::QuicheStringPiece, quiche::QuicheStringPiece)>;
 
   // |table| is an initialized HPACK Huffman table, having an
   // externally-managed lifetime which spans beyond HpackEncoder.
@@ -55,7 +58,7 @@ class SPDY_EXPORT_PRIVATE HpackEncoder {
   // whether or not the encoding was successful.
   bool EncodeHeaderSet(const SpdyHeaderBlock& header_set, std::string* output);
 
-  class SPDY_EXPORT_PRIVATE ProgressiveEncoder {
+  class QUICHE_EXPORT_PRIVATE ProgressiveEncoder {
    public:
     virtual ~ProgressiveEncoder() {}
 
@@ -71,6 +74,12 @@ class SPDY_EXPORT_PRIVATE HpackEncoder {
   // SpdyHeaderBlock and this object.
   std::unique_ptr<ProgressiveEncoder> EncodeHeaderSet(
       const SpdyHeaderBlock& header_set);
+  // Returns a ProgressiveEncoder which must be outlived by this HpackEncoder.
+  // The encoder will not attempt to split any \0-delimited values in
+  // |representations|. If such splitting is desired, it must be performed by
+  // the caller when constructing the list of representations.
+  std::unique_ptr<ProgressiveEncoder> EncodeRepresentations(
+      const Representations& representations);
 
   // Called upon a change to SETTINGS_HEADER_TABLE_SIZE. Specifically, this
   // is to be called after receiving (and sending an acknowledgement for) a
@@ -113,11 +122,12 @@ class SPDY_EXPORT_PRIVATE HpackEncoder {
 
   // Emits a literal representation (Section 7.2).
   void EmitIndexedLiteral(const Representation& representation);
-  void EmitNonIndexedLiteral(const Representation& representation);
+  void EmitNonIndexedLiteral(const Representation& representation,
+                             bool enable_compression);
   void EmitLiteral(const Representation& representation);
 
   // Emits a Huffman or identity string (whichever is smaller).
-  void EmitString(SpdyStringPiece str);
+  void EmitString(quiche::QuicheStringPiece str);
 
   // Emits the current dynamic table size if the table size was recently
   // updated and we have not yet emitted it (Section 6.3).
@@ -130,10 +140,6 @@ class SPDY_EXPORT_PRIVATE HpackEncoder {
   // Crumbles other header field values at \0 delimiters.
   static void DecomposeRepresentation(const Representation& header_field,
                                       Representations* out);
-
-  // Gathers headers without crumbling. Used when compression is not enabled.
-  static void GatherRepresentation(const Representation& header_field,
-                                   Representations* out);
 
   HpackHeaderTable header_table_;
   HpackOutputStream output_stream_;

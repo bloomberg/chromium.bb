@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -26,7 +26,7 @@
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
@@ -137,12 +137,10 @@ class EditableCombobox::EditableComboboxMenuModel
         filter_on_edit_(filter_on_edit),
         show_on_empty_(show_on_empty) {
     UpdateItemsShown();
-    combobox_model_->AddObserver(this);
+    observer_.Add(combobox_model_);
   }
 
-  ~EditableComboboxMenuModel() override {
-    combobox_model_->RemoveObserver(this);
-  }
+  ~EditableComboboxMenuModel() override = default;
 
   void UpdateItemsShown() {
     if (!update_items_shown_enabled_)
@@ -228,7 +226,9 @@ class EditableCombobox::EditableComboboxMenuModel
 
   int GetGroupIdAt(int index) const override { return -1; }
 
-  bool GetIconAt(int index, gfx::Image* icon) const override { return false; }
+  ui::ImageModel GetIconAt(int index) const override {
+    return ui::ImageModel();
+  }
 
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override {
     return nullptr;
@@ -257,6 +257,8 @@ class EditableCombobox::EditableComboboxMenuModel
 
   // When false, UpdateItemsShown doesn't do anything.
   bool update_items_shown_enabled_ = true;
+
+  ScopedObserver<ui::ComboboxModel, ui::ComboboxModelObserver> observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EditableComboboxMenuModel);
 };
@@ -328,7 +330,7 @@ EditableCombobox::EditableCombobox(
       text_style_(text_style),
       type_(type),
       showing_password_text_(type != Type::kPassword) {
-  textfield_->AddObserver(this);
+  observer_.Add(textfield_);
   textfield_->set_controller(this);
   textfield_->SetFontList(GetFontList());
   textfield_->SetTextInputType((type == Type::kPassword)
@@ -348,7 +350,6 @@ EditableCombobox::EditableCombobox(
 EditableCombobox::~EditableCombobox() {
   CloseMenu();
   textfield_->set_controller(nullptr);
-  textfield_->RemoveObserver(this);
 }
 
 const base::string16& EditableCombobox::GetText() const {
@@ -411,6 +412,7 @@ void EditableCombobox::Layout() {
 }
 
 void EditableCombobox::OnThemeChanged() {
+  View::OnThemeChanged();
   textfield_->OnThemeChanged();
 }
 
@@ -419,6 +421,18 @@ void EditableCombobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
   node_data->SetName(textfield_->GetAccessibleName());
   node_data->SetValue(GetText());
+}
+
+void EditableCombobox::RequestFocus() {
+  textfield_->RequestFocus();
+}
+
+bool EditableCombobox::GetNeedsNotificationWhenVisibleBoundsChange() const {
+  return true;
+}
+
+void EditableCombobox::OnVisibleBoundsChanged() {
+  CloseMenu();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

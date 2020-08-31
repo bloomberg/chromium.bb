@@ -28,10 +28,11 @@ cr.define('local_discovery', function() {
   let isUserLoggedIn = true;
 
   /**
-   * Whether or not the user is supervised or off the record.
+   * Whether or not the user's profile is restricted because of being
+   * supervised, off the record, or limited by an enterprise policy.
    * @type bool
    */
-  let isUserSupervisedOrOffTheRecord = false;
+  let isUserProfileRestricted = false;
 
   /**
    * Whether or not the path-based dialog has been shown.
@@ -61,7 +62,7 @@ cr.define('local_discovery', function() {
      * Update the device.
      * @param {Object} info New information about the device.
      */
-    updateDevice: function(info) {
+    updateDevice(info) {
       this.info = info;
       this.renderDevice();
     },
@@ -69,14 +70,14 @@ cr.define('local_discovery', function() {
     /**
      * Delete the device.
      */
-    removeDevice: function() {
+    removeDevice() {
       this.deviceContainer().removeChild(this.domElement);
     },
 
     /**
      * Render the device to the device list.
      */
-    renderDevice: function() {
+    renderDevice() {
       if (this.domElement) {
         clearElement(this.domElement);
       } else {
@@ -95,21 +96,21 @@ cr.define('local_discovery', function() {
     /**
      * Return the correct container for the device.
      */
-    deviceContainer: function() {
+    deviceContainer() {
       return $('register-device-list');
     },
 
     /**
      * Register the device.
      */
-    register: function() {
+    register() {
       chrome.send('registerDevice', [this.info.service_name]);
       setRegisterPage('register-printer-page-adding1');
     },
     /**
      * Show registrtation UI for device.
      */
-    showRegister: function() {
+    showRegister() {
       $('register-continue').onclick = this.register.bind(this);
 
       showRegisterOverlay();
@@ -117,7 +118,7 @@ cr.define('local_discovery', function() {
     /**
      * Set registration button enabled/disabled
      */
-    setRegisterEnabled: function(isEnabled) {
+    setRegisterEnabled(isEnabled) {
       this.registerEnabled = isEnabled;
       if (this.registerButton) {
         this.registerButton.disabled = !isEnabled;
@@ -138,7 +139,7 @@ cr.define('local_discovery', function() {
   LocalDiscoveryFocusManager.prototype = {
     __proto__: cr.ui.FocusManager.prototype,
     /** @override */
-    getFocusParent: function() {
+    getFocusParent() {
       return document.querySelector('#overlay .showing') || $('main-page');
     }
   };
@@ -357,7 +358,7 @@ cr.define('local_discovery', function() {
     } else {
       $('no-printers-message').hidden = true;
       $('register-login-promo').hidden =
-          isUserLoggedIn || isUserSupervisedOrOffTheRecord;
+          isUserLoggedIn || isUserProfileRestricted;
     }
     if (!($('register-login-promo').hidden) ||
         !($('cloud-devices-login-promo').hidden) ||
@@ -433,26 +434,31 @@ cr.define('local_discovery', function() {
   }
 
   /**
-   * User is not logged in.
+   * Registers whether the user is logged in. Modifies the UI to display the
+   * appropriate content based on user log-in status and profile restrictions.
+   * @param {boolean} userLoggedIn Whether the user is logged in.
+   * @param {boolean} userProfileRestricted Whether the user profile's access to
+   *     the local discovery page is restricted because of being supervised, off
+   *     the record, or disallowed by policy.
    */
-  function setUserLoggedIn(userLoggedIn, userSupervisedOrOffTheRecord) {
+  function setUserLoggedIn(userLoggedIn, userProfileRestricted) {
     isUserLoggedIn = userLoggedIn;
-    isUserSupervisedOrOffTheRecord = userSupervisedOrOffTheRecord;
+    isUserProfileRestricted = userProfileRestricted;
 
     $('cloud-devices-login-promo').hidden =
-        isUserLoggedIn || isUserSupervisedOrOffTheRecord;
+        isUserLoggedIn || isUserProfileRestricted;
     $('register-overlay-login-promo').hidden =
-        isUserLoggedIn || isUserSupervisedOrOffTheRecord;
+        isUserLoggedIn || isUserProfileRestricted;
     $('register-continue').disabled =
-        !isUserLoggedIn || isUserSupervisedOrOffTheRecord;
+        !isUserLoggedIn || isUserProfileRestricted;
 
-    $('my-devices-container').hidden = userSupervisedOrOffTheRecord;
+    $('my-devices-container').hidden = isUserProfileRestricted;
 
-    if (isUserSupervisedOrOffTheRecord) {
+    if (isUserProfileRestricted) {
       $('cloud-print-connector-section').hidden = true;
     }
 
-    if (isUserLoggedIn && !isUserSupervisedOrOffTheRecord) {
+    if (isUserLoggedIn && !isUserProfileRestricted) {
       requestDeviceList();
       $('register-login-promo').hidden = true;
     } else {

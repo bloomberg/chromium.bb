@@ -169,8 +169,8 @@ class NavigationModelFakeItem extends NavigationModelItem {
 class NavigationListModel extends cr.EventTarget {
   /**
    * @param {!VolumeManager} volumeManager VolumeManager instance.
-   * @param {(!cr.ui.ArrayDataModel|!FolderShortcutsDataModel)}
-   *     shortcutListModel The list of folder shortcut.
+   * @param {!FolderShortcutsDataModel} shortcutListModel The list of folder
+   *     shortcut.
    * @param {NavigationModelFakeItem} recentModelItem Recent folder.
    * @param {!DirectoryModel} directoryModel
    * @param {!AndroidAppListModel} androidAppListModel
@@ -187,7 +187,7 @@ class NavigationListModel extends cr.EventTarget {
     this.volumeManager_ = volumeManager;
 
     /**
-     * @private {(!cr.ui.ArrayDataModel|!FolderShortcutsDataModel)}
+     * @private {!FolderShortcutsDataModel}
      * @const
      */
     this.shortcutListModel_ = shortcutListModel;
@@ -530,7 +530,7 @@ class NavigationListModel extends cr.EventTarget {
       for (const removable of removableVolumes) {
         // Partitions on the same physical device share device path and drive
         // label. Create keys using these two identifiers.
-        let key = removable.volumeInfo.devicePath + '/' +
+        const key = removable.volumeInfo.devicePath + '/' +
             removable.volumeInfo.driveLabel;
         if (!removableGroups.has(key)) {
           // New key, so create a new array to hold partitions.
@@ -543,18 +543,52 @@ class NavigationListModel extends cr.EventTarget {
       return removableGroups;
     };
 
+    /**
+     * Creates a model item for a Recent view whose contents are filtered by
+     * their file types.
+     * @param {string} label
+     * @param {chrome.fileManagerPrivate.RecentFileType} fileType
+     * @param {VolumeManagerCommon.RootType} rootType
+     * @return {!NavigationModelFakeItem}
+     */
+    const createFilteredRecentModelItem = (label, fileType, rootType) => {
+      const entry = /** @type {!FakeEntry} */ (Object.assign(
+          Object.create(FakeEntry.prototype), this.recentModelItem_.entry));
+      entry.recentFileType = fileType;
+      entry.rootType = rootType;
+      return new NavigationModelFakeItem(
+          label, NavigationModelItemType.RECENT, entry);
+    };
+
     // Items as per required order.
     this.navigationItems_ = [];
 
     if (this.recentModelItem_) {
       this.navigationItems_.push(this.recentModelItem_);
+      if (util.isUnifiedMediaViewEnabled()) {
+        // Unified Media View (Images, Videos and Audio).
+        this.navigationItems_.push(createFilteredRecentModelItem(
+            str('MEDIA_VIEW_AUDIO_ROOT_LABEL'),
+            chrome.fileManagerPrivate.RecentFileType.AUDIO,
+            VolumeManagerCommon.RootType.RECENT_AUDIO));
+        this.navigationItems_.push(createFilteredRecentModelItem(
+            str('MEDIA_VIEW_IMAGES_ROOT_LABEL'),
+            chrome.fileManagerPrivate.RecentFileType.IMAGE,
+            VolumeManagerCommon.RootType.RECENT_IMAGES));
+        this.navigationItems_.push(createFilteredRecentModelItem(
+            str('MEDIA_VIEW_VIDEOS_ROOT_LABEL'),
+            chrome.fileManagerPrivate.RecentFileType.VIDEO,
+            VolumeManagerCommon.RootType.RECENT_VIDEOS));
+      }
     }
 
-    // Media View (Images, Videos and Audio).
-    for (const mediaView of getVolumes(
-             VolumeManagerCommon.VolumeType.MEDIA_VIEW)) {
-      this.navigationItems_.push(mediaView);
-      mediaView.section = NavigationSection.TOP;
+    // Legacy Media View (Images, Videos and Audio).
+    if (!util.isUnifiedMediaViewEnabled()) {
+      for (const mediaView of getVolumes(
+               VolumeManagerCommon.VolumeType.MEDIA_VIEW)) {
+        this.navigationItems_.push(mediaView);
+        mediaView.section = NavigationSection.TOP;
+      }
     }
     // Shortcuts.
     for (const shortcut of this.shortcutList_) {

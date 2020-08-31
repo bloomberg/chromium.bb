@@ -8,10 +8,12 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_session_plugin_handler_delegate.h"
 
 class Profile;
+class Browser;
 
 namespace content {
 class WebContents;
@@ -34,8 +36,17 @@ class AppSession : public KioskSessionPluginHandlerDelegate {
   // Initializes an app session.
   void Init(Profile* profile, const std::string& app_id);
 
+  // Initializes an app session for Web kiosk.
+  void InitForWebKiosk(Browser* browser);
+
   // Invoked when GuestViewManager adds a guest web contents.
   void OnGuestAdded(content::WebContents* guest_web_contents);
+
+  // Replaces chrome::AttemptUserExit() by |closure|.
+  void SetAttemptUserExitForTesting(base::OnceClosure closure);
+
+  Browser* GetSettingsBrowserForTesting() { return settings_browser_; }
+  void SetOnHandleBrowserCallbackForTesting(base::RepeatingClosure closure);
 
  private:
   // AppWindowHandler watches for app window and exits the session when the
@@ -60,6 +71,17 @@ class AppSession : public KioskSessionPluginHandlerDelegate {
   std::unique_ptr<AppWindowHandler> app_window_handler_;
   std::unique_ptr<BrowserWindowHandler> browser_window_handler_;
   std::unique_ptr<KioskSessionPluginHandler> plugin_handler_;
+
+  // Browser in which settings are shown, restricted by
+  // KioskSettingsNavigationThrottle.
+  Browser* settings_browser_ = nullptr;
+
+  Profile* profile_ = nullptr;
+
+  base::OnceClosure attempt_user_exit_;
+  // Is called whenever a new browser creation was handled by the
+  // BrowserWindowHandler.
+  base::RepeatingClosure on_handle_browser_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSession);
 };

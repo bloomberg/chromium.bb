@@ -101,6 +101,7 @@
         color: var(--google-blue-500);
       }
 
+      collapse-radio-button,
       controlled-radio-button,
       cr-radio-button {
         min-height: var(--settings-row-min-height);
@@ -125,7 +126,9 @@
 
       /* See also: .no-min-width below. */
       .text-elide {
-        @apply --cr-text-elide;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       /* By default, flexbox children have min-width calculated to be the width
@@ -151,9 +154,11 @@
        * outside of a settings-box. A list-frame is likely to follow a
        * settings box. */
       .list-frame {
-        @apply --settings-list-frame-padding;
-        align-items: center;
         display: block;
+        padding-block-end: 0;
+        padding-block-start: 0;
+        padding-inline-end: var(--cr-section-padding);
+        padding-inline-start: var(--cr-section-indent-padding);
       }
 
       /* A list-item is intended to be contained within a list-frame. The list
@@ -284,8 +289,10 @@
       }
 
       /* The lower line of text in a two-line row. */
+      /* TODO: Remove and merge with .cr-secondary-text. */
       .secondary {
-        @apply --cr-secondary-text;
+        color: var(--cr-secondary-text-color);
+        font-weight: 400;
       }
 
       /* The |:empty| CSS selector only works when there is no whitespace.

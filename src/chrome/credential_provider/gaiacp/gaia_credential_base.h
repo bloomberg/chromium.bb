@@ -50,8 +50,9 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   static HRESULT OnDllRegisterServer();
   static HRESULT OnDllUnregisterServer();
 
-  // Saves gaia information in the OS account that was just created.
-  static HRESULT SaveAccountInfo(const base::Value& properties);
+  // Perform non-critical post-sign operations after everything is setup here.
+  static HRESULT PerformPostSigninActions(const base::Value& properties,
+                                          bool com_initialized);
 
   // Allocates a BSTR from a DLL string resource given by |id|.
   static BSTR AllocErrorString(UINT id);
@@ -75,8 +76,8 @@ class ATL_NO_VTABLE CGaiaCredentialBase
     StdParentHandles parent_handles;
   };
 
-  // Returns true if "enable_ad_association" registry key is set to 1.
-  static bool IsAdToGoogleAssociationEnabled();
+  // Returns true if "enable_cloud_association" registry key is set to 1.
+  static bool IsCloudAssociationEnabled();
 
  protected:
   CGaiaCredentialBase();
@@ -95,6 +96,10 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   const base::Optional<base::Value>& get_authentication_results() const {
     return authentication_results_;
   }
+
+  // Saves account association and user profile information. Makes various HTTP
+  // calls regarding device provisioning and password management.
+  static HRESULT PerformActions(const base::Value& properties);
 
   // Returns true if the current credentials stored in |username_| and
   // |password_| are valid and should succeed a local Windows logon. This
@@ -155,20 +160,20 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // Display error message to the user.  Virtual so that tests can override.
   virtual void DisplayErrorInUI(LONG status, LONG substatus, BSTR status_text);
 
-  // Forks a stub process to save account information for a user.
-  virtual HRESULT ForkSaveAccountInfoStub(const base::Value& dict,
-                                          BSTR* status_text);
+  // Forks a stub process to perform all post sign-in actions for a user.
+  virtual HRESULT ForkPerformPostSigninActionsStub(const base::Value& dict,
+                                                   BSTR* status_text);
 
   // Forks the logon stub process and waits for it to start.
   virtual HRESULT ForkGaiaLogonStub(OSProcessManager* process_manager,
                                     const base::CommandLine& command_line,
                                     UIProcessInfo* uiprocinfo);
 
- private:
   // Gets the full command line to run the Gaia Logon stub (GLS). This
   // function calls GetBaseGlsCommandline.
   HRESULT GetGlsCommandline(base::CommandLine* command_line);
 
+ private:
   // Called from GetSerialization() to handle auto-logon.  If the credential
   // has enough information in internal state to auto-logon, the two arguments
   // are filled in as needed and S_OK is returned.  S_FALSE is returned to
@@ -277,6 +282,20 @@ class ATL_NO_VTABLE CGaiaCredentialBase
                                BSTR* error_text);
 
   HRESULT RecoverWindowsPasswordIfPossible(base::string16* recovered_password);
+
+  // Sets the error message in the password field based on the HRESULT returned
+  // by NetUserChangePassword win32 function.
+  void SetErrorMessageInPasswordField(HRESULT hr);
+
+  // Determines whether given message id corresponds to a password change error
+  // which can't be worked out with manual user input in the forgot password
+  // flow.
+  bool BlockingPasswordError(UINT message_id);
+
+  // Determines whether the logon stub can be launched by checking internet
+  // connection and registry keys that should be present. |status_text| is
+  // populated with a message to show in the login UI.
+  bool CanProceedToLogonStub(wchar_t** status_text);
 
   Microsoft::WRL::ComPtr<ICredentialProviderCredentialEvents> events_;
   Microsoft::WRL::ComPtr<IGaiaCredentialProvider> provider_;

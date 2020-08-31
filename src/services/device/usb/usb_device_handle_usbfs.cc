@@ -183,7 +183,7 @@ struct UsbDeviceHandleUsbfs::Transfer {
 
   scoped_refptr<base::RefCountedBytes> control_transfer_buffer;
   scoped_refptr<base::RefCountedBytes> buffer;
-  base::CancelableClosure timeout_closure;
+  base::CancelableOnceClosure timeout_closure;
   bool cancelled = false;
 
   // When the URB is |cancelled| these two flags track whether the URB has both
@@ -575,10 +575,22 @@ void UsbDeviceHandleUsbfs::ResetDevice(ResultCallback callback) {
           base::Unretained(helper_.get()), std::move(callback)));
 }
 
-void UsbDeviceHandleUsbfs::ClearHalt(uint8_t endpoint_address,
+void UsbDeviceHandleUsbfs::ClearHalt(mojom::UsbTransferDirection direction,
+                                     uint8_t endpoint_number,
                                      ResultCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   if (!device_) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(callback), false));
+    return;
+  }
+
+  uint8_t endpoint_address =
+      ConvertEndpointDirection(direction) | endpoint_number;
+  auto it = endpoints_.find(endpoint_address);
+  if (it == endpoints_.end()) {
+    USB_LOG(USER) << "Endpoint address " << static_cast<int>(endpoint_address)
+                  << " is not part of a claimed interface.";
     task_runner_->PostTask(FROM_HERE,
                            base::BindOnce(std::move(callback), false));
     return;
@@ -914,7 +926,7 @@ void UsbDeviceHandleUsbfs::SetUpTimeoutCallback(Transfer* transfer,
     return;
 
   transfer->timeout_closure.Reset(
-      base::Bind(&UsbDeviceHandleUsbfs::OnTimeout, this, transfer));
+      base::BindOnce(&UsbDeviceHandleUsbfs::OnTimeout, this, transfer));
   task_runner_->PostDelayedTask(FROM_HERE, transfer->timeout_closure.callback(),
                                 base::TimeDelta::FromMilliseconds(timeout));
 }

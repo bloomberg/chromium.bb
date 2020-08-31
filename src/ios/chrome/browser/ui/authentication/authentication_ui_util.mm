@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 
+#include "base/check.h"
 #include "base/format_macros.h"
-#include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -17,11 +17,12 @@
 
 AlertCoordinator* ErrorCoordinator(NSError* error,
                                    ProceduralBlock dismissAction,
-                                   UIViewController* viewController) {
+                                   UIViewController* viewController,
+                                   Browser* browser) {
   DCHECK(error);
 
   AlertCoordinator* alertCoordinator =
-      ErrorCoordinatorNoItem(error, viewController);
+      ErrorCoordinatorNoItem(error, viewController, browser);
 
   NSString* okButtonLabel = l10n_util::GetNSString(IDS_OK);
   [alertCoordinator addItemWithTitle:okButtonLabel
@@ -55,7 +56,8 @@ NSString* DialogMessageFromError(NSError* error) {
 }
 
 AlertCoordinator* ErrorCoordinatorNoItem(NSError* error,
-                                         UIViewController* viewController) {
+                                         UIViewController* viewController,
+                                         Browser* browser) {
   DCHECK(error);
 
   NSString* title = l10n_util::GetNSString(
@@ -70,6 +72,7 @@ AlertCoordinator* ErrorCoordinatorNoItem(NSError* error,
   }
   AlertCoordinator* alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:viewController
+                                                   browser:browser
                                                      title:title
                                                    message:errorMessage];
   return alertCoordinator;

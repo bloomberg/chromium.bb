@@ -16,13 +16,14 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
                          OmniboxResultView* result_view,
                          const base::string16& hint,
                          const base::string16& hint_short,
-                         const gfx::VectorIcon& icon,
-                         const ui::ThemeProvider* theme_provider);
+                         const gfx::VectorIcon& icon);
 
   ~OmniboxTabSwitchButton() override;
 
   // views::MdTextButton:
   void StateChanged(ButtonState old_state) override;
+  void OnThemeChanged() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Called by parent views to change background on external (not mouse related)
   // event (tab key).
@@ -34,22 +35,10 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
 
   // Called to indicate button has been focused.
   void ProvideFocusHint();
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
   // Consults the parent views to see if the button is selected.
   bool IsSelected() const;
-
-  // Produces a path custom to this button for the focus ring to follow.
-  SkPath GetFocusRingPath() const;
-
-  // Encapsulates the color look-up, which uses the button state (hovered,
-  // etc.) and consults the parent result view.
-  SkColor GetBackgroundColor() const;
-
-  // Encapsulates changing the color of the button to display being
-  // pressed.
-  void SetPressed();
 
   // Helper function to translate parent width into goal width, and
   // pass back the text at that width.
@@ -68,8 +57,6 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   // Label strings for hint text and its short version (may be same).
   base::string16 hint_;
   base::string16 hint_short_;
-
-  const ui::ThemeProvider* theme_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxTabSwitchButton);
 };

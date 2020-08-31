@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "ash/metrics/task_switch_time_tracker.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 
 namespace ash {
 

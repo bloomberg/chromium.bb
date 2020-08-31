@@ -43,10 +43,9 @@ ChooserDialogView::ChooserDialogView(
 
   DCHECK(chooser_controller);
 
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   chooser_controller->GetOkButtonLabel());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
-                                   chooser_controller->GetCancelButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, chooser_controller->GetOkButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 chooser_controller->GetCancelButtonLabel());
 
   device_chooser_content_view_ =
       new DeviceChooserContentView(this, std::move(chooser_controller));
@@ -54,12 +53,22 @@ ChooserDialogView::ChooserDialogView(
       ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
           views::CONTROL, views::CONTROL)));
 
-  DialogDelegate::SetExtraView(device_chooser_content_view_->CreateExtraView());
+  SetExtraView(device_chooser_content_view_->CreateExtraView());
+
+  SetAcceptCallback(
+      base::BindOnce(&DeviceChooserContentView::Accept,
+                     base::Unretained(device_chooser_content_view_)));
+  SetCancelCallback(
+      base::BindOnce(&DeviceChooserContentView::Cancel,
+                     base::Unretained(device_chooser_content_view_)));
+  SetCloseCallback(
+      base::BindOnce(&DeviceChooserContentView::Close,
+                     base::Unretained(device_chooser_content_view_)));
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER);
 }
 
-ChooserDialogView::~ChooserDialogView() {}
+ChooserDialogView::~ChooserDialogView() = default;
 
 base::string16 ChooserDialogView::GetWindowTitle() const {
   return device_chooser_content_view_->GetWindowTitle();
@@ -81,21 +90,6 @@ views::View* ChooserDialogView::GetInitiallyFocusedView() {
   return GetCancelButton();
 }
 
-bool ChooserDialogView::Accept() {
-  device_chooser_content_view_->Accept();
-  return true;
-}
-
-bool ChooserDialogView::Cancel() {
-  device_chooser_content_view_->Cancel();
-  return true;
-}
-
-bool ChooserDialogView::Close() {
-  device_chooser_content_view_->Close();
-  return true;
-}
-
 views::View* ChooserDialogView::GetContentsView() {
   return device_chooser_content_view_;
 }
@@ -110,11 +104,6 @@ const views::Widget* ChooserDialogView::GetWidget() const {
 
 void ChooserDialogView::OnSelectionChanged() {
   DialogModelChanged();
-}
-
-DeviceChooserContentView*
-ChooserDialogView::device_chooser_content_view_for_test() const {
-  return device_chooser_content_view_;
 }
 
 void ChromeExtensionChooserDialog::ShowDialogImpl(

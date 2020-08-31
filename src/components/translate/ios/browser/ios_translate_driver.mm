@@ -5,7 +5,7 @@
 #include "components/translate/ios/browser/ios_translate_driver.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -68,15 +68,17 @@ IOSTranslateDriver::IOSTranslateDriver(
   JsLanguageDetectionManager* language_detection_manager =
       static_cast<JsLanguageDetectionManager*>(
           [receiver instanceOfClass:[JsLanguageDetectionManager class]]);
-  language_detection_controller_.reset(new LanguageDetectionController(
-      web_state, language_detection_manager,
-      translate_manager_->translate_client()->GetPrefs()));
+  language_detection_controller_ =
+      std::make_unique<LanguageDetectionController>(
+          web_state, language_detection_manager,
+          translate_manager_->translate_client()->GetPrefs());
 
   // Create the translate controller.
   JsTranslateManager* js_translate_manager = static_cast<JsTranslateManager*>(
       [receiver instanceOfClass:[JsTranslateManager class]]);
-  translate_controller_.reset(
-      new TranslateController(web_state, js_translate_manager));
+  translate_controller_ =
+      std::make_unique<TranslateController>(web_state, js_translate_manager);
+
   translate_controller_->set_observer(this);
 }
 

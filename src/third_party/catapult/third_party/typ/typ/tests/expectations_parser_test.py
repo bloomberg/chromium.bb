@@ -9,6 +9,8 @@ from typ import json_results
 
 ResultType = json_results.ResultType
 Expectation = expectations_parser.Expectation
+TestExpectations = expectations_parser.TestExpectations
+
 
 class TaggedTestListParserTest(unittest.TestCase):
     def testInitWithGoodData(self):
@@ -21,7 +23,7 @@ class TaggedTestListParserTest(unittest.TestCase):
 #   Win ]
 # results: [ Skip ]
 
-crbug.com/12345 [ Mac ] b1/s1 [ Skip ]
+crbug.com/12345 [ Mac ] b1/s1 [ Skip ] # foo
 crbug.com/23456 [ Mac Debug ] b1/s2 [ Skip ]
 """
         parser = expectations_parser.TaggedTestListParser(good_data)
@@ -30,7 +32,7 @@ crbug.com/23456 [ Mac Debug ] b1/s2 [ Skip ]
         self.assertEqual(tag_sets, parser.tag_sets)
         expected_outcome = [
             expectations_parser.Expectation('crbug.com/12345', 'b1/s1',
-                                            ['mac'], ['SKIP'], 10),
+                                            ['mac'], ['SKIP'], 10, trailing_comments=' # foo'),
             expectations_parser.Expectation('crbug.com/23456', 'b1/s2',
                                             ['mac', 'debug'], ['SKIP'], 11)
         ]
@@ -187,7 +189,8 @@ crbug.com/12345 [ tag1 ] b1/s1 [ Skip ]
         parser = expectations_parser.TaggedTestListParser(raw_data)
         expected_outcome = [
             expectations_parser.Expectation('crbug.com/23456', 'b1/s2',
-                                            ['mac'], ['SKIP'], 3)
+                                            ['mac'], ['SKIP'], 3,
+                                            trailing_comments=' # abc 123')
         ]
         for i in range(len(parser.expectations)):
             self.assertEqual(parser.expectations[i], expected_outcome[i])
@@ -300,7 +303,6 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
                       str(context.exception))
         self.assertNotIn('  - Tags webgl-version-1', str(context.exception))
 
-
     def testEachTagInGroupIsFromDisjointTagSets(self):
         raw_data = (
             '# tags: [ Mac Win Linux ]\n'
@@ -336,6 +338,86 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         exp = parser.expectations[0]
         self.assertEqual(exp.should_retry_on_failure, True)
 
+    def testDefaultPass(self):
+        raw_data = (
+            '# tags: [ Linux ]\n'
+            '# results: [ Failure ]\n'
+            'crbug.com/23456 [ linux ] b1/s1 [ Failure ]\n')
+        expectations = expectations_parser.TestExpectations(tags=['linux'])
+        expectations.parse_tagged_list(raw_data)
+        exp = expectations.expectations_for('b1/s1')
+        self.assertEqual(exp.results, set([ResultType.Failure]))
+        self.assertFalse(exp.is_default_pass)
+        self.assertFalse(exp.is_slow_test)
+
+        exp = expectations.expectations_for('b1/s2')
+        self.assertEqual(exp.results, set([ResultType.Pass]))
+        self.assertTrue(exp.is_default_pass)
+        self.assertFalse(exp.is_slow_test)
+
+    def testSlowDefaultPassAndFailure(self):
+        raw_data = (
+            '# tags: [ Linux ]\n'
+            '# results: [ Failure Slow ]\n'
+            'crbug.com/23456 [ Linux ] b1/s1 [ Failure ]\n'
+            'crbug.com/23456 b1/s1 [ Slow ]\n')
+
+        expectations = expectations_parser.TestExpectations(tags=['linux'])
+        expectations.parse_tagged_list(raw_data)
+        exp = expectations.expectations_for('b1/s1')
+        self.assertEqual(exp.results, set([ResultType.Failure]))
+        self.assertFalse(exp.is_default_pass)
+        self.assertTrue(exp.is_slow_test)
+
+        expectations = expectations_parser.TestExpectations(tags=['win'])
+        expectations.parse_tagged_list(raw_data)
+        exp = expectations.expectations_for('b1/s1')
+        self.assertEqual(exp.results, set([ResultType.Pass]))
+        self.assertTrue(exp.is_default_pass)
+        self.assertTrue(exp.is_slow_test)
+
+    def testRetryOnFailureDefaultPassAndFailure(self):
+        raw_data = (
+            '# tags: [ Linux ]\n'
+            '# results: [ Failure RetryOnFailure ]\n'
+            'crbug.com/23456 [ Linux ] b1/s1 [ Failure ]\n'
+            'crbug.com/23456 b1/s1 [ RetryOnFailure ]\n')
+
+        expectations = expectations_parser.TestExpectations(tags=['linux'])
+        expectations.parse_tagged_list(raw_data)
+        exp = expectations.expectations_for('b1/s1')
+        self.assertEqual(exp.results, set([ResultType.Failure]))
+        self.assertFalse(exp.is_default_pass)
+        self.assertTrue(exp.should_retry_on_failure)
+
+        expectations = expectations_parser.TestExpectations(tags=['win'])
+        expectations.parse_tagged_list(raw_data)
+        exp = expectations.expectations_for('b1/s1')
+        self.assertEqual(exp.results, set([ResultType.Pass]))
+        self.assertTrue(exp.is_default_pass)
+        self.assertTrue(exp.should_retry_on_failure)
+
+    def testGetExpectationsFromGlob(self):
+        raw_data = (
+            '# tags: [ Linux ]\n'
+            '# results: [ Failure ]\n'
+            'crbug.com/23456 [ linux ] b1/s1* [ Failure ]\n')
+        expectations = expectations_parser.TestExpectations(tags=['linux'])
+        expectations.parse_tagged_list(raw_data)
+        exp = expectations.expectations_for('b1/s1')
+        self.assertEqual(exp.results, set([ResultType.Failure]))
+
+    def testGetExpectationsFromGlobShorterThanLongestMatchingGlob(self):
+        raw_data = (
+            '# tags: [ Linux Mac ]\n'
+            '# results: [ Failure Pass ]\n'
+            'crbug.com/23456 [ linux ] b1/s1* [ Failure ]\n'
+            'crbug.com/23456 [ mac ] b1/* [ Pass ]\n')
+        expectations = expectations_parser.TestExpectations(tags=['mac'])
+        expectations.parse_tagged_list(raw_data)
+        exp = expectations.expectations_for('b1/s1')
+        self.assertEqual(exp.results, set([ResultType.Pass]))
+
     def testIsTestRetryOnFailure(self):
         raw_data = (
             '# tags: [ linux ]\n'
@@ -350,7 +432,7 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
             test_expectations.parse_tagged_list(raw_data, 'test.txt'), (0,''))
         self.assertEqual(test_expectations.expectations_for('b1/s1'),
                          Expectation(
-                             test='b1/s1', results={ResultType.Failure, ResultType.Pass}, retry_on_failure=True,
+                             test='b1/s1', results={ResultType.Failure}, retry_on_failure=True,
                              is_slow_test=False, reason='crbug.com/23456'))
         self.assertEqual(test_expectations.expectations_for('b1/s2'),
                          Expectation(
@@ -370,13 +452,13 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
             '# tags: [ linux ]\n'
             '# results: [ Failure RetryOnFailure Slow ]\n'
             '[ linux ] b1/s3 [ Failure ]\n'
-            'crbug.com/2431 [ linux ] b1/s2 [ Failure RetryOnFailure ]\n'
+            'crbug.com/2431 [ linux ] b1/s2 [ Failure RetryOnFailure ] # c1\n'
             'crbug.com/2432 [ linux ] b1/s* [ Failure Slow ]\n')
         raw_data2 = (
             '# tags: [ Intel ]\n'
             '# results: [ Pass RetryOnFailure ]\n'
             '[ intel ] b1/s1 [ RetryOnFailure ]\n'
-            'crbug.com/2432 [ intel ] b1/s2 [ Pass ]\n'
+            'crbug.com/2432 [ intel ] b1/s2 [ Pass ] # c2\n'
             'crbug.com/2431 [ intel ] b1/s* [ RetryOnFailure ]\n')
         test_exp1 = expectations_parser.TestExpectations(['Linux'])
         ret, _ = test_exp1.parse_tagged_list(raw_data1)
@@ -390,7 +472,8 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
                          Expectation(
                              test='b1/s2', results={ResultType.Pass, ResultType.Failure},
                              retry_on_failure=True, is_slow_test=False,
-                             reason='crbug.com/2431 crbug.com/2432'))
+                             reason='crbug.com/2431 crbug.com/2432',
+                             trailing_comments=' # c1\n # c2\n'))
         self.assertEqual(test_exp1.expectations_for('b1/s1'),
                          Expectation(
                              test='b1/s1', results={ResultType.Pass},
@@ -401,7 +484,7 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
                              retry_on_failure=False, is_slow_test=False))
         self.assertEqual(test_exp1.expectations_for('b1/s5'),
                          Expectation(
-                             test='b1/s5', results={ResultType.Failure, ResultType.Pass},
+                             test='b1/s5', results={ResultType.Failure},
                              retry_on_failure=True, is_slow_test=True,
                              reason='crbug.com/2431 crbug.com/2432'))
 
@@ -443,6 +526,20 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
                                      retry_on_failure=True, is_slow_test=False,
                                      reason='crbug.com/2431'))
 
+    def testIsNotTestRetryOnFailureUsingEscapedGlob(self):
+        raw_data = (
+            '# tags: [ Linux ]\n'
+            '# results: [ RetryOnFailure ]\n'
+            'crbug.com/23456 [ Linux ] b1/\* [ RetryOnFailure ]\n')
+        test_expectations = expectations_parser.TestExpectations(['Linux'])
+        self.assertEqual(
+            test_expectations.parse_tagged_list(raw_data, 'test.txt'),
+            (0, ''))
+        self.assertIn('b1/*', test_expectations.individual_exps)
+        self.assertEqual(test_expectations.expectations_for('b1/s1'),
+                         Expectation(test='b1/s1', results={ResultType.Pass},
+                                     retry_on_failure=False, is_slow_test=False))
+
     def testIsTestRetryOnFailureUsingGlob(self):
         raw_data = (
             '# tags: [ Linux ]\n'
@@ -457,11 +554,26 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
                                      retry_on_failure=True, is_slow_test=False,
                                      reason='crbug.com/23456'))
 
+    def testGlobsCanExistInMiddleofPatternUsingEscapeCharacter(self):
+        raw_data = (
+            '# tags: [ Linux ]\n'
+            '# results: [ RetryOnFailure ]\n'
+            'crbug.com/23456 [ Linux ] b1/\*/c [ RetryOnFailure ]\n')
+        expectations_parser.TaggedTestListParser(raw_data)
+
     def testGlobsCanOnlyHaveStarInEnd(self):
         raw_data = (
             '# tags: [ Linux ]\n'
             '# results: [ RetryOnFailure ]\n'
             'crbug.com/23456 [ Linux ] b1/*/c [ RetryOnFailure ]\n')
+        with self.assertRaises(expectations_parser.ParseError):
+            expectations_parser.TaggedTestListParser(raw_data)
+
+    def testGlobsCanOnlyHaveStarInEnd1(self):
+        raw_data = (
+            '# tags: [ Linux ]\n'
+            '# results: [ RetryOnFailure ]\n'
+            'crbug.com/23456 [ Linux ] */c [ RetryOnFailure ]\n')
         with self.assertRaises(expectations_parser.ParseError):
             expectations_parser.TaggedTestListParser(raw_data)
 
@@ -580,12 +692,12 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         self.assertFalse(msg)
 
     def testExpectationPatternIsBroken(self):
-        test_expectations = '# results: [ Failure ]\na/b [ Failure ]'
+        test_expectations = '# results: [ Failure ]\na/\* [ Failure ]'
         expectations = expectations_parser.TestExpectations()
         expectations.parse_tagged_list(test_expectations, 'test.txt')
         broken_expectations = expectations.check_for_broken_expectations(
             ['a/b/c'])
-        self.assertEqual(broken_expectations[0].test, 'a/b')
+        self.assertEqual(broken_expectations[0].test, 'a/*')
 
     def testExpectationPatternIsNotBroken(self):
         test_expectations = '# results: [ Failure ]\na/b/d [ Failure ]'
@@ -608,7 +720,7 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         expectations = expectations_parser.TestExpectations()
         expectations.parse_tagged_list(test_expectations, 'test.txt')
         broken_expectations = expectations.check_for_broken_expectations(
-            ['a/b/c'])
+            ['a/b'])
         self.assertFalse(broken_expectations)
 
     def testNonDeclaredSystemConditionTagRaisesException(self):
@@ -657,3 +769,96 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         self.assertFalse(msg)
         expectations.set_tags(['win', 'nVidia', 'nvidia-0x1010'],
                               raise_ex_for_bad_tags=True)
+
+    def testMultipleReasonsForExpectation(self):
+        test_expectations = '''# results: [ Failure ]
+        skbug.com/111 crbug.com/wpt/222 skbug.com/hello/333 crbug.com/444 test [ Failure ]
+        '''
+        expectations = expectations_parser.TestExpectations()
+        _, msg = expectations.parse_tagged_list(
+            test_expectations, 'test.txt')
+        self.assertFalse(msg)
+        exp = expectations.expectations_for('test')
+        self.assertEqual(exp.reason, 'skbug.com/111 crbug.com/wpt/222 skbug.com/hello/333 crbug.com/444')
+
+    def testExpectationToString(self):
+        exp = Expectation(reason='crbug.com/123', test='test.html?*', tags=['intel'],
+                          results={ResultType.Pass, ResultType.Failure}, is_slow_test=True,
+                          retry_on_failure=True)
+        self.assertEqual(
+            exp.to_string(), 'crbug.com/123 [ Intel ] test.html?\* [ Failure Slow RetryOnFailure Pass ]')
+
+    def testGlobExpectationToString(self):
+        exp = Expectation(reason='crbug.com/123', test='a/*/test.html?*', tags=['intel'],
+                          results={ResultType.Pass, ResultType.Failure}, is_slow_test=True,
+                          retry_on_failure=True, is_glob=True)
+        self.assertEqual(
+            exp.to_string(), 'crbug.com/123 [ Intel ] a/\*/test.html?* [ Failure Slow RetryOnFailure Pass ]')
+
+    def testExpectationToStringUsingRawSpecifiers(self):
+        raw_expectations = (
+            '# tags: [ NVIDIA intel ]\n'
+            '# results: [ Failure Pass Slow ]\n'
+            'crbug.com/123 [ iNteL ] test.html?\* [ PasS FailuRe ]\n'
+            '[ NVIDIA ] test.\*.* [ SloW ]  # hello world\n')
+        test_exps = TestExpectations()
+        ret, errors = test_exps.parse_tagged_list(raw_expectations)
+        assert not ret, errors
+        self.assertEqual(test_exps.individual_exps['test.html?*'][0].to_string(),
+                         'crbug.com/123 [ iNteL ] test.html?\* [ PasS FailuRe ]')
+        self.assertEqual(test_exps.glob_exps['test.*.*'][0].to_string(),
+                         '[ NVIDIA ] test.\*.* [ SloW ]  # hello world')
+
+    def testExpectationToStringAfterRenamingTest(self):
+        exp = Expectation(reason='crbug.com/123', test='test.html?*', tags=['intel'],
+                          results={ResultType.Pass, ResultType.Failure}, raw_tags=['iNteL'],
+                          raw_results=['FailuRe', 'PasS'])
+        exp.test = 'a/*/test.html?*'
+        self.assertEqual(exp.to_string(), 'crbug.com/123 [ iNteL ] a/\*/test.html?\* [ FailuRe PasS ]')
+
+    def testAddExpectationsToExpectation(self):
+        raw_expectations = (
+            '# tags: [ NVIDIA intel ]\n'
+            '# results: [ Failure Pass Slow ]\n'
+            'crbug.com/123 [ iNteL ] test.html?\* [ PasS FailuRe ]\n'
+            '[ NVIDIA ] test.\*.* [ SloW ]  # hello world\n')
+        test_exps = TestExpectations()
+        ret, errors = test_exps.parse_tagged_list(raw_expectations)
+        test_exps.individual_exps['test.html?*'][0].add_expectations(
+            {ResultType.Timeout}, reason='crbug.com/124 crbug.com/123')
+        assert not ret, errors
+        self.assertEqual(test_exps.individual_exps['test.html?*'][0].results,
+                         frozenset([ResultType.Pass, ResultType.Failure,
+                                    ResultType.Timeout]))
+        self.assertEqual(test_exps.individual_exps['test.html?*'][0].reason,
+                         'crbug.com/123 crbug.com/124')
+
+    def testAddingExistingExpectationsDoesntChangeRawResults(self):
+        raw_expectations = (
+            '# tags: [ NVIDIA intel ]\n'
+            '# results: [ Failure Pass Slow ]\n'
+            'crbug.com/123 [ iNteL ] test.html?\* [ PasS FailuRe ]\n'
+            '[ NVIDIA ] test.\*.* [ SloW ]  # hello world\n')
+        test_exps = TestExpectations()
+        ret, errors = test_exps.parse_tagged_list(raw_expectations)
+        test_exps.individual_exps['test.html?*'][0].add_expectations(
+            {ResultType.Failure}, reason='crbug.com/124')
+        assert not ret, errors
+        self.assertIn('[ PasS FailuRe ]',
+            test_exps.individual_exps['test.html?*'][0].to_string())
+
+    def testTopDownOrderMaintainedForNonGlobExps(self):
+        raw_expectations = (
+            '# tags: [ NVIDIA intel ]\n'
+            '# results: [ Failure Pass Slow ]\n'
+            'crbug.com/123 [ iNteL ] test1 [ PasS FailuRe ]\n'
+            'crbug.com/123 [ iNteL ] test2 [ PasS FailuRe ]\n'
+            'crbug.com/123 [ iNteL ] test8 [ PasS FailuRe ]\n'
+            'crbug.com/123 [ iNteL ] test9 [ PasS FailuRe ]\n'
+            'crbug.com/123 [ iNteL ] test5 [ PasS FailuRe ]\n'
+            '[ NVIDIA ] test.\* [ SloW ]  # hello world\n')
+        test_exps = TestExpectations()
+        ret, errors = test_exps.parse_tagged_list(raw_expectations)
+        assert not ret, errors
+        self.assertEqual(list(test_exps.individual_exps),
+                         ['test1','test2','test8', 'test9', 'test5', 'test.*'])

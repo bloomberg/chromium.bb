@@ -183,6 +183,7 @@ source_set("app_shell_lib") {
       "browser/shell_native_app_window_aura.h",
     ]
     deps += [
+      "//ui/base/cursor/mojom:cursor_type",
       "//ui/platform_window",
       "//ui/wm",
       "//ui/wm/public",
@@ -201,7 +202,7 @@ source_set("app_shell_lib") {
     ]
     deps += [
       "//build:branding_buildflags",
-      "//components/crash/content/app",
+      "//components/crash/core/app",
       "//components/crash/core/common",
       "//components/upload_list",
       "//components/version_info:generate_version_info",
@@ -256,14 +257,12 @@ source_set("app_shell_lib") {
 executable("app_shell") {
   # testonly because :app_shell_lib is testonly. See :app_shell_lib comment.
   testonly = true
-  sources = [
-    "app/shell_main.cc",
-  ]
+  sources = [ "app/shell_main.cc" ]
 
   deps = [
     ":app_shell_lib",
     "//build/win:default_exe_manifest",
-    "//content/public/app:both",
+    "//content/public/app",
     "//extensions:shell_and_test_pak",
   ]
 
@@ -430,8 +429,6 @@ if (is_desktop_linux && is_official_build) {
 
     binary = "$root_out_dir/app_shell"
     symbol_file = "$root_out_dir/app_shell.breakpad.$current_cpu"
-    deps = [
-      ":app_shell",
-    ]
+    deps = [ ":app_shell" ]
   }
 }

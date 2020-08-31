@@ -14,7 +14,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.widget.ChipView;
 
@@ -263,6 +263,30 @@ public class TopView extends RelativeLayout
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTACTS_PICKER_SELECT_ALL)) {
             mSelectAllBox.setChecked(!mSelectAllBox.isChecked());
         }
+    }
+
+    /**
+     * Returns how many filter chips are checked.
+     */
+    public int filterChipsChecked() {
+        int checked = 0;
+        if (mNamesFilterChip.getVisibility() == View.VISIBLE && mNamesFilterChip.isSelected()) {
+            ++checked;
+        }
+        if (mAddressFilterChip.getVisibility() == View.VISIBLE && mAddressFilterChip.isSelected()) {
+            ++checked;
+        }
+        if (mEmailFilterChip.getVisibility() == View.VISIBLE && mEmailFilterChip.isSelected()) {
+            ++checked;
+        }
+        if (mTelephonesFilterChip.getVisibility() == View.VISIBLE
+                && mTelephonesFilterChip.isSelected()) {
+            ++checked;
+        }
+        if (mIconsFilterChip.getVisibility() == View.VISIBLE && mIconsFilterChip.isSelected()) {
+            ++checked;
+        }
+        return checked;
     }
 
     /**

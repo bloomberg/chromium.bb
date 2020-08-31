@@ -25,7 +25,7 @@ struct BoolLiteral : public Expression {
         return String(fValue ? "true" : "false");
     }
 
-    bool hasSideEffects() const override {
+    bool hasProperty(Property property) const override {
         return false;
     }
 

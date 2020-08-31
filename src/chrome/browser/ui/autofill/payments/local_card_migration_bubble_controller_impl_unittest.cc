@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_bubble.h"
 #include "chrome/browser/ui/autofill/test/test_autofill_bubble_handler.h"
@@ -19,6 +20,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,8 +82,13 @@ class LocalCardMigrationBubbleControllerImplTest
     controller()->ShowBubble(base::BindOnce(&LocalCardMigrationCallback));
   }
 
+  void CloseBubble(PaymentsBubbleClosedReason closed_reason =
+                       PaymentsBubbleClosedReason::kNotInteracted) {
+    controller()->OnBubbleClosed(closed_reason);
+  }
+
   void CloseAndReshowBubble() {
-    controller()->OnBubbleClosed();
+    CloseBubble();
     controller()->ReshowBubble();
   }
 
@@ -129,7 +136,7 @@ TEST_F(LocalCardMigrationBubbleControllerImplTest,
 
   base::HistogramTester histogram_tester;
   controller()->OnConfirmButtonClicked();
-  controller()->OnBubbleClosed();
+  CloseBubble();
 
   histogram_tester.ExpectUniqueSample(
       "Autofill.LocalCardMigrationBubbleUserInteraction.FirstShow",
@@ -142,7 +149,7 @@ TEST_F(LocalCardMigrationBubbleControllerImplTest, Metrics_Reshows_SaveButton) {
 
   base::HistogramTester histogram_tester;
   controller()->OnConfirmButtonClicked();
-  controller()->OnBubbleClosed();
+  CloseBubble();
 
   histogram_tester.ExpectUniqueSample(
       "Autofill.LocalCardMigrationBubbleUserInteraction.Reshows",
@@ -155,7 +162,7 @@ TEST_F(LocalCardMigrationBubbleControllerImplTest,
 
   base::HistogramTester histogram_tester;
   controller()->OnCancelButtonClicked();
-  controller()->OnBubbleClosed();
+  CloseBubble();
 
   histogram_tester.ExpectUniqueSample(
       "Autofill.LocalCardMigrationBubbleUserInteraction.FirstShow",
@@ -169,7 +176,7 @@ TEST_F(LocalCardMigrationBubbleControllerImplTest,
 
   base::HistogramTester histogram_tester;
   controller()->OnCancelButtonClicked();
-  controller()->OnBubbleClosed();
+  CloseBubble();
 
   histogram_tester.ExpectUniqueSample(
       "Autofill.LocalCardMigrationBubbleUserInteraction.Reshows",
@@ -230,7 +237,7 @@ TEST_F(LocalCardMigrationBubbleControllerImplTest,
   ShowBubble();
 
   base::HistogramTester histogram_tester;
-  controller()->OnBubbleClosed();
+  CloseBubble();
   // Fake-navigate after bubble has been visible for a long time.
   controller()->set_elapsed(base::TimeDelta::FromMinutes(1));
   controller()->SimulateNavigation();
@@ -248,7 +255,7 @@ TEST_F(LocalCardMigrationBubbleControllerImplTest,
   CloseAndReshowBubble();
 
   base::HistogramTester histogram_tester;
-  controller()->OnBubbleClosed();
+  CloseBubble();
   // Fake-navigate after bubble has been visible for a long time.
   controller()->set_elapsed(base::TimeDelta::FromMinutes(1));
   controller()->SimulateNavigation();
@@ -273,5 +280,197 @@ TEST_F(LocalCardMigrationBubbleControllerImplTest,
           Bucket(AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_REQUESTED, 1),
           Bucket(AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_SHOWN, 1)));
 }
+
+// Ensures the bubble should still stick around even if the time since bubble
+// showing is longer than kCardBubbleSurviveNavigationTime (5 seconds) when the
+// feature is enabled.
+TEST_F(LocalCardMigrationBubbleControllerImplTest,
+       StickyBubble_ShouldNotDismissUponNavigation) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillEnableStickyPaymentsBubble);
+
+  ShowBubble();
+  base::HistogramTester histogram_tester;
+  controller()->set_elapsed(base::TimeDelta::FromSeconds(10));
+  controller()->SimulateNavigation();
+
+  histogram_tester.ExpectTotalCount(
+      "Autofill.LocalCardMigrationBubbleOffer.FirstShow", 0);
+  EXPECT_NE(nullptr, controller()->local_card_migration_bubble_view());
+}
+
+// Test class to ensure the local card migration bubble result is logged
+// correctly. The boolean Param of this class decides whether the new logging
+// experiment has been enabled.
+class LocalCardMigrationBubbleLoggingTest
+    : public LocalCardMigrationBubbleControllerImplTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  LocalCardMigrationBubbleLoggingTest() = default;
+  ~LocalCardMigrationBubbleLoggingTest() override = default;
+
+  void SetUp() override {
+    LocalCardMigrationBubbleControllerImplTest::SetUp();
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kAutofillEnableFixedPaymentsBubbleLogging);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kAutofillEnableFixedPaymentsBubbleLogging);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_P(LocalCardMigrationBubbleLoggingTest, FirstShow_BubbleAccepted) {
+  base::HistogramTester histogram_tester;
+  ShowBubble();
+  CloseBubble(PaymentsBubbleClosedReason::kAccepted);
+
+  if (GetParam()) {
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_ACCEPTED, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow", 0);
+  }
+}
+
+TEST_P(LocalCardMigrationBubbleLoggingTest, FirstShow_BubbleClosed) {
+  base::HistogramTester histogram_tester;
+  ShowBubble();
+  CloseBubble(PaymentsBubbleClosedReason::kClosed);
+
+  if (GetParam()) {
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_CLOSED, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow", 0);
+  }
+}
+
+TEST_P(LocalCardMigrationBubbleLoggingTest, FirstShow_BubbleNotInteracted) {
+  base::HistogramTester histogram_tester;
+  ShowBubble();
+  CloseBubble(PaymentsBubbleClosedReason::kNotInteracted);
+
+  if (GetParam()) {
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_NOT_INTERACTED, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow", 0);
+  }
+}
+
+TEST_P(LocalCardMigrationBubbleLoggingTest, FirstShow_BubbleLostFocus) {
+  base::HistogramTester histogram_tester;
+  ShowBubble();
+  CloseBubble(PaymentsBubbleClosedReason::kLostFocus);
+
+  if (GetParam()) {
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_LOST_FOCUS, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow", 0);
+  }
+}
+
+TEST_P(LocalCardMigrationBubbleLoggingTest, Reshows_BubbleAccepted) {
+  base::HistogramTester histogram_tester;
+  ShowBubble();
+  CloseAndReshowBubble();
+  CloseBubble(PaymentsBubbleClosedReason::kAccepted);
+
+  if (GetParam()) {
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_NOT_INTERACTED, 1);
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.Reshows",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_ACCEPTED, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow", 0);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.Reshows", 0);
+  }
+}
+
+TEST_P(LocalCardMigrationBubbleLoggingTest, Reshows_BubbleClosed) {
+  base::HistogramTester histogram_tester;
+  ShowBubble();
+  CloseAndReshowBubble();
+  CloseBubble(PaymentsBubbleClosedReason::kClosed);
+
+  if (GetParam()) {
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_NOT_INTERACTED, 1);
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.Reshows",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_CLOSED, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow", 0);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.Reshows", 0);
+  }
+}
+
+TEST_P(LocalCardMigrationBubbleLoggingTest, Reshows_BubbleNotInteracted) {
+  base::HistogramTester histogram_tester;
+  ShowBubble();
+  CloseAndReshowBubble();
+  CloseBubble(PaymentsBubbleClosedReason::kNotInteracted);
+
+  if (GetParam()) {
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_NOT_INTERACTED, 1);
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.Reshows",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_NOT_INTERACTED, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow", 0);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.Reshows", 0);
+  }
+}
+
+TEST_P(LocalCardMigrationBubbleLoggingTest, Reshows_BubbleLostFocus) {
+  base::HistogramTester histogram_tester;
+  ShowBubble();
+  CloseAndReshowBubble();
+  CloseBubble(PaymentsBubbleClosedReason::kLostFocus);
+
+  if (GetParam()) {
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_NOT_INTERACTED, 1);
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.LocalCardMigrationBubbleResult.Reshows",
+        AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_LOST_FOCUS, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.FirstShow", 0);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.LocalCardMigrationBubbleResult.Reshows", 0);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(LocalCardMigrationBubbleControllerImplTest,
+                         LocalCardMigrationBubbleLoggingTest,
+                         ::testing::Bool());
 
 }  // namespace autofill

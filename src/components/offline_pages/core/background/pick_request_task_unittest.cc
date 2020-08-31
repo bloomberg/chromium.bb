@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/background/device_conditions.h"
@@ -28,11 +29,9 @@ namespace offline_pages {
 namespace {
 // Data for request 1.
 const int64_t kRequestId1 = 17;
-const GURL kUrl1("https://google.com");
 const ClientId kClientId1("bookmark", "1234");
 // Data for request 2.
 const int64_t kRequestId2 = 42;
-const GURL kUrl2("http://nytimes.com");
 const ClientId kClientId2("bookmark", "5678");
 const bool kUserRequested = true;
 const int kAttemptCount = 1;
@@ -45,18 +44,26 @@ const bool kPreferEarlier = true;
 const bool kPreferRetryCount = true;
 const int kBackgroundProcessingTimeBudgetSeconds = 170;
 
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL Url1() {
+  return GURL("https://google.com");
+}
+
+GURL Url2() {
+  return GURL("http://nytimes.com");
+}
+
 // Default request
-const SavePageRequest kEmptyRequest(0UL,
-                                    GURL(""),
-                                    ClientId("", ""),
-                                    base::Time(),
-                                    true);
+SavePageRequest EmptyRequest() {
+  return SavePageRequest(0UL, GURL(""), ClientId("", ""), base::Time(), true);
+}
 
 // Helper class needed by the PickRequestTask
 class RequestNotifierStub : public RequestNotifier {
  public:
   RequestNotifierStub()
-      : last_expired_request_(kEmptyRequest), total_expired_requests_(0) {}
+      : last_expired_request_(EmptyRequest()), total_expired_requests_(0) {}
 
   void NotifyAdded(const SavePageRequest& request) override {}
   void NotifyChanged(const SavePageRequest& request) override {}
@@ -116,9 +123,14 @@ class PickRequestTaskTest : public RequestQueueTaskTestBase {
 
   PickRequestTask* task() { return task_.get(); }
 
-  void TaskCompletionCallback(Task* completed_task);
+  base::OnceClosure TaskCompletionCallback() {
+    return base::BindOnce(&PickRequestTaskTest::OnTaskComplete,
+                          base::Unretained(this));
+  }
 
  protected:
+  void OnTaskComplete() { task_complete_called_ = true; }
+
   std::unique_ptr<RequestNotifierStub> notifier_;
   std::unique_ptr<SavePageRequest> last_picked_;
   std::unique_ptr<OfflinerPolicy> policy_;
@@ -147,10 +159,6 @@ void PickRequestTaskTest::SetUp() {
 
   InitializeStore();
   PumpLoop();
-}
-
-void PickRequestTaskTest::TaskCompletionCallback(Task* completed_task) {
-  task_complete_called_ = true;
 }
 
 void PickRequestTaskTest::RequestPicked(
@@ -198,13 +206,10 @@ void PickRequestTaskTest::MakePickRequestTask() {
       base::BindOnce(&PickRequestTaskTest::RequestCountCallback,
                      base::Unretained(this)),
       conditions, disabled_requests_, &prioritized_requests_));
-  task_->SetTaskCompletionCallbackForTesting(
-      base::BindRepeating(&PickRequestTaskTest::TaskCompletionCallback,
-                          base::Unretained(this)));
 }
 
 TEST_F(PickRequestTaskTest, PickFromEmptyQueue) {
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   // Pump the loop again to give the async queue the opportunity to return
@@ -226,15 +231,15 @@ TEST_F(PickRequestTaskTest, ChooseRequestWithHigherRetryCount) {
   MakePickRequestTask();
 
   base::Time creation_time = OfflineTimeNow();
-  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
+  SavePageRequest request1(kRequestId1, Url1(), kClientId1, creation_time,
                            kUserRequested);
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+  SavePageRequest request2(kRequestId2, Url2(), kClientId2, creation_time,
                            kUserRequested);
   request2.set_completed_attempt_count(kAttemptCount);
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
@@ -248,14 +253,14 @@ TEST_F(PickRequestTaskTest, ChooseRequestWithSameRetryCountButEarlier) {
   base::Time creation_time1 =
       OfflineTimeNow() - base::TimeDelta::FromSeconds(10);
   base::Time creation_time2 = OfflineTimeNow();
-  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time1,
+  SavePageRequest request1(kRequestId1, Url1(), kClientId1, creation_time1,
                            kUserRequested);
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time2,
+  SavePageRequest request2(kRequestId2, Url2(), kClientId2, creation_time2,
                            kUserRequested);
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
@@ -273,15 +278,15 @@ TEST_F(PickRequestTaskTest, ChooseEarlierRequest) {
   base::Time creation_time1 =
       OfflineTimeNow() - base::TimeDelta::FromSeconds(10);
   base::Time creation_time2 = OfflineTimeNow();
-  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time1,
+  SavePageRequest request1(kRequestId1, Url1(), kClientId1, creation_time1,
                            kUserRequested);
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time2,
+  SavePageRequest request2(kRequestId2, Url2(), kClientId2, creation_time2,
                            kUserRequested);
   request2.set_completed_attempt_count(kAttemptCount);
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
@@ -297,15 +302,15 @@ TEST_F(PickRequestTaskTest, ChooseSameTimeRequestWithHigherRetryCount) {
   MakePickRequestTask();
 
   base::Time creation_time = OfflineTimeNow();
-  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
+  SavePageRequest request1(kRequestId1, Url1(), kClientId1, creation_time,
                            kUserRequested);
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+  SavePageRequest request2(kRequestId2, Url2(), kClientId2, creation_time,
                            kUserRequested);
   request2.set_completed_attempt_count(kAttemptCount);
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
@@ -321,15 +326,15 @@ TEST_F(PickRequestTaskTest, ChooseRequestWithLowerRetryCount) {
   MakePickRequestTask();
 
   base::Time creation_time = OfflineTimeNow();
-  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
+  SavePageRequest request1(kRequestId1, Url1(), kClientId1, creation_time,
                            kUserRequested);
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+  SavePageRequest request2(kRequestId2, Url2(), kClientId2, creation_time,
                            kUserRequested);
   request2.set_completed_attempt_count(kAttemptCount);
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
@@ -347,14 +352,14 @@ TEST_F(PickRequestTaskTest, ChooseLaterRequest) {
   base::Time creation_time1 =
       OfflineTimeNow() - base::TimeDelta::FromSeconds(10);
   base::Time creation_time2 = OfflineTimeNow();
-  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time1,
+  SavePageRequest request1(kRequestId1, Url1(), kClientId1, creation_time1,
                            kUserRequested);
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time2,
+  SavePageRequest request2(kRequestId2, Url2(), kClientId2, creation_time2,
                            kUserRequested);
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
@@ -367,14 +372,14 @@ TEST_F(PickRequestTaskTest, ChooseNonExpiredRequest) {
   base::Time expired_time =
       creation_time - base::TimeDelta::FromSeconds(
                           policy_->GetRequestExpirationTimeInSeconds() + 60);
-  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
+  SavePageRequest request1(kRequestId1, Url1(), kClientId1, creation_time,
                            kUserRequested);
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, expired_time,
+  SavePageRequest request2(kRequestId2, Url2(), kClientId2, expired_time,
                            kUserRequested);
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
@@ -389,9 +394,9 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatHasNotExceededStartLimit) {
   base::Time creation_time1 =
       OfflineTimeNow() - base::TimeDelta::FromSeconds(1);
   base::Time creation_time2 = OfflineTimeNow();
-  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time1,
+  SavePageRequest request1(kRequestId1, Url1(), kClientId1, creation_time1,
                            kUserRequested);
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time2,
+  SavePageRequest request2(kRequestId2, Url2(), kClientId2, creation_time2,
                            kUserRequested);
 
   // With default policy settings, we should choose the earlier request.
@@ -400,7 +405,7 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatHasNotExceededStartLimit) {
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
@@ -415,9 +420,9 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatHasNotExceededCompletionLimit) {
   base::Time creation_time1 =
       OfflineTimeNow() - base::TimeDelta::FromSeconds(1);
   base::Time creation_time2 = OfflineTimeNow();
-  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time1,
+  SavePageRequest request1(kRequestId1, Url1(), kClientId1, creation_time1,
                            kUserRequested);
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time2,
+  SavePageRequest request2(kRequestId2, Url2(), kClientId2, creation_time2,
                            kUserRequested);
 
   // With default policy settings, we should choose the earlier request.
@@ -426,7 +431,7 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatHasNotExceededCompletionLimit) {
 
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
@@ -446,16 +451,16 @@ TEST_F(PickRequestTaskTest, ChooseRequestThatIsNotDisabled) {
   MakePickRequestTask();
 
   base::Time creation_time = OfflineTimeNow();
-  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
+  SavePageRequest request1(kRequestId1, Url1(), kClientId1, creation_time,
                            kUserRequested);
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+  SavePageRequest request2(kRequestId2, Url2(), kClientId2, creation_time,
                            kUserRequested);
   request2.set_completed_attempt_count(kAttemptCount);
 
   // Add test requests on the Queue.
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   // Pump the loop again to give the async queue the opportunity to return
@@ -475,9 +480,9 @@ TEST_F(PickRequestTaskTest, ChoosePrioritizedRequests) {
   MakePickRequestTask();
 
   base::Time creation_time = OfflineTimeNow();
-  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
+  SavePageRequest request1(kRequestId1, Url1(), kClientId1, creation_time,
                            kUserRequested);
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+  SavePageRequest request2(kRequestId2, Url2(), kClientId2, creation_time,
                            kUserRequested);
   // Since default policy prefer untried requests, make request1 the favorable
   // pick if no prioritized requests. But request2 is prioritized so it should
@@ -487,7 +492,7 @@ TEST_F(PickRequestTaskTest, ChoosePrioritizedRequests) {
   // Add test requests on the Queue.
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   // Pump the loop again to give the async queue the opportunity to return
@@ -516,16 +521,16 @@ TEST_F(PickRequestTaskTest, ChooseFromTwoPrioritizedRequests) {
   base::Time creation_time = OfflineTimeNow();
   base::Time older_creation_time =
       creation_time - base::TimeDelta::FromMinutes(10);
-  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, older_creation_time,
+  SavePageRequest request1(kRequestId1, Url1(), kClientId1, older_creation_time,
                            kUserRequested);
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+  SavePageRequest request2(kRequestId2, Url2(), kClientId2, creation_time,
                            kUserRequested);
   request2.set_completed_attempt_count(kAttemptCount);
 
   // Add test requests on the Queue.
   QueueRequests(request1, request2);
 
-  task()->Run();
+  task()->Execute(TaskCompletionCallback());
   PumpLoop();
 
   // Pump the loop again to give the async queue the opportunity to return

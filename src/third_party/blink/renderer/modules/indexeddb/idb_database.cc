@@ -30,6 +30,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/optional.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
@@ -93,12 +94,15 @@ const char IDBDatabase::kTransactionReadOnlyErrorMessage[] =
 const char IDBDatabase::kDatabaseClosedErrorMessage[] =
     "The database connection is closed.";
 
-IDBDatabase::IDBDatabase(ExecutionContext* context,
-                         std::unique_ptr<WebIDBDatabase> backend,
-                         IDBDatabaseCallbacks* callbacks,
-                         v8::Isolate* isolate)
-    : ContextLifecycleObserver(context),
+IDBDatabase::IDBDatabase(
+    ExecutionContext* context,
+    std::unique_ptr<WebIDBDatabase> backend,
+    IDBDatabaseCallbacks* callbacks,
+    v8::Isolate* isolate,
+    mojo::PendingRemote<mojom::blink::ObservedFeature> connection_lifetime)
+    : ExecutionContextLifecycleObserver(context),
       backend_(std::move(backend)),
+      connection_lifetime_(std::move(connection_lifetime)),
       event_queue_(
           MakeGarbageCollected<EventQueue>(context, TaskType::kDatabaseAccess)),
       database_callbacks_(callbacks),
@@ -117,14 +121,14 @@ IDBDatabase::~IDBDatabase() {
     backend_->Close();
 }
 
-void IDBDatabase::Trace(blink::Visitor* visitor) {
+void IDBDatabase::Trace(Visitor* visitor) {
   visitor->Trace(version_change_transaction_);
   visitor->Trace(transactions_);
   visitor->Trace(observers_);
   visitor->Trace(event_queue_);
   visitor->Trace(database_callbacks_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 int64_t IDBDatabase::NextTransactionId() {
@@ -463,6 +467,7 @@ void IDBDatabase::close() {
   if (close_pending_)
     return;
 
+  connection_lifetime_.reset();
   close_pending_ = true;
   feature_handle_for_scheduler_.reset();
 
@@ -521,10 +526,17 @@ void IDBDatabase::EnqueueEvent(Event* event) {
 
 DispatchEventResult IDBDatabase::DispatchEventInternal(Event& event) {
   IDB_TRACE("IDBDatabase::dispatchEvent");
-  if (!GetExecutionContext())
-    return DispatchEventResult::kCanceledBeforeDispatch;
+
+  event.SetTarget(this);
+
+  // If this event originated from script, it should have no side effects.
+  if (!event.isTrusted())
+    return EventTarget::DispatchEventInternal(event);
   DCHECK(event.type() == event_type_names::kVersionchange ||
          event.type() == event_type_names::kClose);
+
+  if (!GetExecutionContext())
+    return DispatchEventResult::kCanceledBeforeDispatch;
 
   DispatchEventResult dispatch_result =
       EventTarget::DispatchEventInternal(event);
@@ -593,7 +605,7 @@ bool IDBDatabase::HasPendingActivity() const {
   return !close_pending_ && GetExecutionContext() && HasEventListeners();
 }
 
-void IDBDatabase::ContextDestroyed(ExecutionContext*) {
+void IDBDatabase::ContextDestroyed() {
   // Immediately close the connection to the back end. Don't attempt a
   // normal close() since that may wait on transactions which require a
   // round trip to the back-end to abort.
@@ -601,6 +613,8 @@ void IDBDatabase::ContextDestroyed(ExecutionContext*) {
     backend_->Close();
     backend_.reset();
   }
+
+  connection_lifetime_.reset();
 
   if (database_callbacks_)
     database_callbacks_->DetachWebCallbacks();
@@ -611,7 +625,7 @@ const AtomicString& IDBDatabase::InterfaceName() const {
 }
 
 ExecutionContext* IDBDatabase::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 STATIC_ASSERT_ENUM(mojom::blink::IDBException::kNoError,

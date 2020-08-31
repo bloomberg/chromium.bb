@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/task_runner.h"
 #include "build/build_config.h"
 #include "mojo/core/channel.h"
 #include "mojo/core/connection_params.h"
@@ -80,7 +80,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
       Delegate* delegate,
       ConnectionParams connection_params,
       Channel::HandlePolicy channel_handle_policy,
-      scoped_refptr<base::TaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       const ProcessErrorCallback& process_error_callback);
 
   static Channel::MessagePtr CreateEventMessage(size_t capacity,
@@ -103,8 +103,13 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   // Leaks the pipe handle instead of closing it on shutdown.
   void LeakHandleOnShutdown();
 
-  // Invokes the bad message callback for this channel, if any.
+  // Invokes the bad message callback for this channel.  To avoid losing error
+  // reports the caller should ensure that the channel |HasBadMessageHandler|
+  // before calling |NotifyBadMessage|.
   void NotifyBadMessage(const std::string& error);
+
+  // Returns whether the channel has a bad message handler.
+  bool HasBadMessageHandler() { return !process_error_callback_.is_null(); }
 
   void SetRemoteProcessHandle(ScopedProcessHandle process_handle);
   bool HasRemoteProcessHandle();
@@ -159,7 +164,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   NodeChannel(Delegate* delegate,
               ConnectionParams connection_params,
               Channel::HandlePolicy channel_handle_policy,
-              scoped_refptr<base::TaskRunner> io_task_runner,
+              scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
               const ProcessErrorCallback& process_error_callback);
   ~NodeChannel() override;
 
@@ -176,7 +181,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   void WriteChannelMessage(Channel::MessagePtr message);
 
   Delegate* const delegate_;
-  const scoped_refptr<base::TaskRunner> io_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   const ProcessErrorCallback process_error_callback_;
 
   base::Lock channel_lock_;

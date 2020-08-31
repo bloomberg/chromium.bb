@@ -1,60 +1,24 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function, division, absolute_import
-
-import sys, os, subprocess, tempfile, threading
-
-
-def which (program):
-	# https://stackoverflow.com/a/377028
-	def is_exe (fpath):
-		return os.path.isfile (fpath) and os.access (fpath, os.X_OK)
-
-	fpath, _ = os.path.split (program)
-	if fpath:
-		if is_exe (program):
-			return program
-	else:
-		for path in os.environ["PATH"].split (os.pathsep):
-			exe_file = os.path.join (path, program)
-			if is_exe (exe_file):
-				return exe_file
-
-	return None
+import sys, os, subprocess, tempfile, shutil
 
 
 def cmd (command):
-	# https://stackoverflow.com/a/4408409
-	# https://stackoverflow.com/a/10012262
+	# https://stackoverflow.com/a/4408409 as we might have huge output sometimes
 	with tempfile.TemporaryFile () as tempf:
 		p = subprocess.Popen (command, stderr=tempf)
-		is_killed = {'value': False}
-
-		def timeout (p, is_killed):
-			is_killed['value'] = True
-			p.kill ()
-		timeout_seconds = int (os.environ.get ("HB_TEST_SHAPE_FUZZER_TIMEOUT", "2"))
-		timer = threading.Timer (timeout_seconds, timeout, [p, is_killed])
 
 		try:
-			timer.start()
-			p.wait ()
+			p.wait (timeout=int (os.environ.get ("HB_TEST_SHAPE_FUZZER_TIMEOUT", "2")))
 			tempf.seek (0)
 			text = tempf.read ()
 
 			#TODO: Detect debug mode with a better way
 			is_debug_mode = b"SANITIZE" in text
 
-			text = "" if is_debug_mode else text.decode ("utf-8").strip ()
-			returncode = p.returncode
-		finally:
-			timer.cancel()
-
-		if is_killed['value']:
-			text = 'error: timeout, ' + text
-			returncode = 1
-
-		return text, returncode
+			return ("" if is_debug_mode else text.decode ("utf-8").strip ()), p.returncode
+		except subprocess.TimeoutExpired:
+			return 'error: timeout, ' + ' '.join (command), 1
 
 
 srcdir = os.environ.get ("srcdir", ".")
@@ -76,7 +40,7 @@ fails = 0
 libtool = os.environ.get ('LIBTOOL')
 valgrind = None
 if os.environ.get ('RUN_VALGRIND', ''):
-	valgrind = which ('valgrind')
+	valgrind = shutil.which ('valgrind')
 	if valgrind is None:
 		print ("""Valgrind requested but not found.""")
 		sys.exit (1)

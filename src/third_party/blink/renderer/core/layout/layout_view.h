@@ -23,6 +23,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_VIEW_H_
 
 #include <memory>
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/hit_test_cache.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -31,11 +32,13 @@
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
 class LayoutQuote;
 class LocalFrameView;
+class NamedPagesMapper;
 class PaintLayerCompositor;
 class ViewFragmentationContext;
 
@@ -164,18 +167,17 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
           kIgnorePlatformOverlayScrollbarSize) const override;
 
   // If either direction has a non-auto mode, the other must as well.
-  void SetAutosizeScrollbarModes(ScrollbarMode h_mode, ScrollbarMode v_mode);
-  ScrollbarMode AutosizeHorizontalScrollbarMode() const {
+  void SetAutosizeScrollbarModes(mojom::blink::ScrollbarMode h_mode,
+                                 mojom::blink::ScrollbarMode v_mode);
+  mojom::blink::ScrollbarMode AutosizeHorizontalScrollbarMode() const {
     return autosize_h_scrollbar_mode_;
   }
-  ScrollbarMode AutosizeVerticalScrollbarMode() const {
+  mojom::blink::ScrollbarMode AutosizeVerticalScrollbarMode() const {
     return autosize_v_scrollbar_mode_;
   }
 
-  void CalculateScrollbarModes(ScrollbarMode& h_mode,
-                               ScrollbarMode& v_mode) const;
-
-  void MayUpdateHoverWhenContentUnderMouseChanged(EventHandler&) override;
+  void CalculateScrollbarModes(mojom::blink::ScrollbarMode& h_mode,
+                               mojom::blink::ScrollbarMode& v_mode) const;
 
   LayoutState* GetLayoutState() const { return layout_state_; }
 
@@ -189,6 +191,10 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   LayoutUnit PageLogicalHeight() const { return page_logical_height_; }
   void SetPageLogicalHeight(LayoutUnit height) {
     page_logical_height_ = height;
+  }
+
+  NamedPagesMapper* GetNamedPagesMapper() const {
+    return named_pages_mapper_.get();
   }
 
   PaintLayerCompositor* Compositor();
@@ -277,6 +283,12 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
     previous_background_rect_ = r;
   }
 
+  void MapAncestorToLocal(const LayoutBoxModelObject*,
+                          TransformState&,
+                          MapCoordinatesFlags) const override;
+
+  bool ShouldUsePrintingLayout() const;
+
  private:
   void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                           TransformState&,
@@ -285,10 +297,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   const LayoutObject* PushMappingToContainer(
       const LayoutBoxModelObject* ancestor_to_stop_at,
       LayoutGeometryMap&) const override;
-  void MapAncestorToLocal(const LayoutBoxModelObject*,
-                          TransformState&,
-                          MapCoordinatesFlags) const override;
-
   bool CanHaveChildren() const override;
 
   void UpdateBlockLayout(bool relayout_children) override;
@@ -298,8 +306,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 #endif
 
   void UpdateFromStyle() override;
-
-  bool ShouldUsePrintingLayout() const;
 
   int ViewLogicalWidthForBoxSizing() const {
     return ViewLogicalWidth(kIncludeScrollbars);
@@ -324,6 +330,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   LayoutState* layout_state_;
 
   std::unique_ptr<ViewFragmentationContext> fragmentation_context_;
+  std::unique_ptr<NamedPagesMapper> named_pages_mapper_;
   std::unique_ptr<PaintLayerCompositor> compositor_;
   scoped_refptr<IntervalArena> interval_arena_;
 
@@ -338,15 +345,20 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   // FrameViewAutoSizeInfo controls scrollbar appearance manually rather than
   // relying on layout. These members are used to override the ScrollbarModes
   // calculated from style. kScrollbarAuto disables the override.
-  ScrollbarMode autosize_h_scrollbar_mode_;
-  ScrollbarMode autosize_v_scrollbar_mode_;
+  mojom::blink::ScrollbarMode autosize_h_scrollbar_mode_;
+  mojom::blink::ScrollbarMode autosize_v_scrollbar_mode_;
 
   Vector<IntRect> tickmarks_override_;
 
   mutable PhysicalRect previous_background_rect_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, IsLayoutView());
+template <>
+struct DowncastTraits<LayoutView> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsLayoutView();
+  }
+};
 
 }  // namespace blink
 

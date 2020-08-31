@@ -9,11 +9,14 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
-#include "components/safe_browsing/password_protection/password_protection_service.h"
+#include "components/safe_browsing/content/password_protection/password_protection_service.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 class Profile;
+class ProxyConfigMonitor;
 
 namespace content {
 class DownloadManager;
@@ -31,9 +34,9 @@ class TrackedPreferenceValidationDelegate;
 
 namespace safe_browsing {
 
-class BinaryUploadService;
-class ClientSideDetectionService;
+#if !defined(OS_ANDROID)
 class DownloadProtectionService;
+#endif
 class IncidentReportingService;
 class PasswordProtectionService;
 class ResourceRequestDetector;
@@ -41,7 +44,7 @@ struct ResourceRequestInfo;
 class SafeBrowsingService;
 class SafeBrowsingDatabaseManager;
 struct V4ProtocolConfig;
-class VerdictCacheManager;
+class SafeBrowsingNetworkContext;
 
 // Abstraction to help organize code for mobile vs full safe browsing modes.
 // This helper class should be owned by a SafeBrowsingService, and it handles
@@ -57,18 +60,20 @@ class ServicesDelegate {
   class ServicesCreator {
    public:
     virtual bool CanCreateDatabaseManager() = 0;
+#if !defined(OS_ANDROID)
     virtual bool CanCreateDownloadProtectionService() = 0;
+#endif
     virtual bool CanCreateIncidentReportingService() = 0;
     virtual bool CanCreateResourceRequestDetector() = 0;
-    virtual bool CanCreateBinaryUploadService() = 0;
 
     // Caller takes ownership of the returned object. Cannot use std::unique_ptr
     // because services may not be implemented for some build configs.
     virtual SafeBrowsingDatabaseManager* CreateDatabaseManager() = 0;
+#if !defined(OS_ANDROID)
     virtual DownloadProtectionService* CreateDownloadProtectionService() = 0;
+#endif
     virtual IncidentReportingService* CreateIncidentReportingService() = 0;
     virtual ResourceRequestDetector* CreateResourceRequestDetector() = 0;
-    virtual BinaryUploadService* CreateBinaryUploadService() = 0;
   };
 
   // Creates the ServicesDelegate using its's default ServicesCreator.
@@ -91,15 +96,11 @@ class ServicesDelegate {
   // Initializes internal state using the ServicesCreator.
   virtual void Initialize() = 0;
 
-  // Creates the CSD service for the given |url_loader_factory|.
-  virtual void InitializeCsdService(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) = 0;
-
   virtual void SetDatabaseManagerForTest(
       SafeBrowsingDatabaseManager* database_manager) = 0;
 
   // Shuts down the download service.
-  virtual void ShutdownServices() = 0;
+  virtual void ShutdownServices();
 
   // Handles SafeBrowsingService::RefreshState() for the provided services.
   virtual void RefreshState(bool enable) = 0;
@@ -114,9 +115,9 @@ class ServicesDelegate {
       content::DownloadManager* download_manager) = 0;
 
   // Returns nullptr for any service that is not available.
-  virtual ClientSideDetectionService* GetCsdService() = 0;
+#if !defined(OS_ANDROID)
   virtual DownloadProtectionService* GetDownloadService() = 0;
-
+#endif
   virtual void StartOnIOThread(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const V4ProtocolConfig& v4_config) = 0;
@@ -130,23 +131,22 @@ class ServicesDelegate {
   virtual void CreateTelemetryService(Profile* profile) {}
   virtual void RemoveTelemetryService(Profile* profile) {}
 
-  virtual void CreateVerdictCacheManager(Profile* profile);
-  virtual void RemoveVerdictCacheManager(Profile* profile);
-  virtual VerdictCacheManager* GetVerdictCacheManager(Profile* profile) const;
-
-  virtual void CreateBinaryUploadService(Profile* profile) = 0;
-  virtual void RemoveBinaryUploadService(Profile* profile) = 0;
-  virtual BinaryUploadService* GetBinaryUploadService(
-      Profile* profile) const = 0;
-
-  virtual std::string GetSafetyNetId() const = 0;
+  virtual void CreateSafeBrowsingNetworkContext(Profile* profile);
+  virtual void RemoveSafeBrowsingNetworkContext(Profile* profile);
+  virtual SafeBrowsingNetworkContext* GetSafeBrowsingNetworkContext(
+      Profile* profile) const;
 
  protected:
+  network::mojom::NetworkContextParamsPtr CreateNetworkContextParams(
+      Profile* profile);
+
   // Unowned pointer
   SafeBrowsingService* const safe_browsing_service_;
 
   // Unowned pointer
   ServicesCreator* const services_creator_;
+
+  std::unique_ptr<ProxyConfigMonitor> proxy_config_monitor_;
 
   // Tracks existing Profiles, and their corresponding
   // ChromePasswordProtectionService instances.
@@ -154,10 +154,12 @@ class ServicesDelegate {
   base::flat_map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
       password_protection_service_map_;
 
-  // Tracks existing Profiles, and their corresponding VerdictCacheManager
-  // instances. Accessed on UI thread.
-  base::flat_map<Profile*, std::unique_ptr<VerdictCacheManager>>
-      cache_manager_map_;
+  // Tracks existing Profiles, and their corresponding
+  // SafeBrowsingNetworkContexts. Accessed on UI thread.
+  base::flat_map<Profile*, std::unique_ptr<SafeBrowsingNetworkContext>>
+      network_context_map_;
+  base::flat_map<Profile*, std::unique_ptr<ProxyConfigMonitor>>
+      proxy_config_monitor_map_;
 };
 
 }  // namespace safe_browsing

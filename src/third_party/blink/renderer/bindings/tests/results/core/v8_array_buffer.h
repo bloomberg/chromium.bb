@@ -29,6 +29,11 @@ CORE_EXPORT extern const WrapperTypeInfo v8_array_buffer_wrapper_type_info;
 class V8ArrayBuffer {
   STATIC_ONLY(V8ArrayBuffer);
  public:
+  // Migration adapter
+  CORE_EXPORT static bool HasInstance(v8::Isolate*, v8::Local<v8::Value> value) {
+    return value->IsArrayBuffer();
+  }
+
   CORE_EXPORT static TestArrayBuffer* ToImpl(v8::Local<v8::Object> object);
   CORE_EXPORT static TestArrayBuffer* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
 
@@ -41,12 +46,6 @@ class V8ArrayBuffer {
   // Callback functions
 
   CORE_EXPORT static void ByteLengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-};
-
-template <>
-struct NativeValueTraits<TestArrayBuffer> : public NativeValueTraitsBase<TestArrayBuffer> {
-  CORE_EXPORT static TestArrayBuffer* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestArrayBuffer* NullValue() { return nullptr; }
 };
 
 template <>

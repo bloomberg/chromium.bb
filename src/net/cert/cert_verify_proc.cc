@@ -34,10 +34,15 @@
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/known_roots.h"
 #include "net/cert/ocsp_revocation_status.h"
+#include "net/cert/pem.h"
 #include "net/cert/symantec_certs.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_certificate_net_log_param.h"
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_values.h"
+#include "net/log/net_log_with_source.h"
 #include "net/net_buildflags.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "url/url_canon.h"
@@ -47,9 +52,7 @@
 #include "net/cert/cert_verify_proc_builtin.h"
 #endif
 
-#if defined(USE_NSS_CERTS)
-#include "net/cert/cert_verify_proc_nss.h"
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
 #include "net/cert/cert_verify_proc_android.h"
 #elif defined(OS_IOS)
 #include "net/cert/cert_verify_proc_ios.h"
@@ -451,15 +454,51 @@ WARN_UNUSED_RESULT bool InspectSignatureAlgorithmsInChain(
   return true;
 }
 
+base::Value CertVerifyParams(X509Certificate* cert,
+                             const std::string& hostname,
+                             const std::string& ocsp_response,
+                             const std::string& sct_list,
+                             int flags,
+                             CRLSet* crl_set,
+                             const CertificateList& additional_trust_anchors) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetKey("certificates", NetLogX509CertificateList(cert));
+  if (!ocsp_response.empty()) {
+    dict.SetStringKey("ocsp_response",
+                      PEMEncode(ocsp_response, "NETLOG OCSP RESPONSE"));
+  }
+  if (!sct_list.empty()) {
+    dict.SetStringKey("sct_list", PEMEncode(sct_list, "NETLOG SCT LIST"));
+  }
+  dict.SetKey("host", NetLogStringValue(hostname));
+  dict.SetIntKey("verify_flags", flags);
+  dict.SetKey("crlset_sequence", NetLogNumberValue(crl_set->sequence()));
+  if (crl_set->IsExpired())
+    dict.SetBoolKey("crlset_is_expired", true);
+
+  if (!additional_trust_anchors.empty()) {
+    base::Value certs(base::Value::Type::LIST);
+    for (auto& cert : additional_trust_anchors) {
+      std::string pem_encoded;
+      if (X509Certificate::GetPEMEncodedFromDER(
+              x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()),
+              &pem_encoded)) {
+        certs.Append(std::move(pem_encoded));
+      }
+    }
+    dict.SetKey("additional_trust_anchors", std::move(certs));
+  }
+
+  return dict;
+}
+
 }  // namespace
 
-#if !defined(OS_FUCHSIA)
+#if !(defined(OS_FUCHSIA) || defined(OS_LINUX) || defined(OS_CHROMEOS))
 // static
 scoped_refptr<CertVerifyProc> CertVerifyProc::CreateSystemVerifyProc(
     scoped_refptr<CertNetFetcher> cert_net_fetcher) {
-#if defined(USE_NSS_CERTS)
-  return new CertVerifyProcNSS();
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   return new CertVerifyProcAndroid(std::move(cert_net_fetcher));
 #elif defined(OS_IOS)
   return new CertVerifyProcIOS();
@@ -495,7 +534,12 @@ int CertVerifyProc::Verify(X509Certificate* cert,
                            int flags,
                            CRLSet* crl_set,
                            const CertificateList& additional_trust_anchors,
-                           CertVerifyResult* verify_result) {
+                           CertVerifyResult* verify_result,
+                           const NetLogWithSource& net_log) {
+  net_log.BeginEvent(NetLogEventType::CERT_VERIFY_PROC, [&] {
+    return CertVerifyParams(cert, hostname, ocsp_response, sct_list, flags,
+                            crl_set, additional_trust_anchors);
+  });
   // CertVerifyProc's contract allows ::VerifyInternal() to wait on File I/O
   // (such as the Windows registry or smart cards on all platforms) or may re-
   // enter this code via extension hooks (such as smart card UI). To ensure
@@ -509,8 +553,9 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   verify_result->verified_cert = cert;
 
   DCHECK(crl_set);
-  int rv = VerifyInternal(cert, hostname, ocsp_response, sct_list, flags,
-                          crl_set, additional_trust_anchors, verify_result);
+  int rv =
+      VerifyInternal(cert, hostname, ocsp_response, sct_list, flags, crl_set,
+                     additional_trust_anchors, verify_result, net_log);
 
   // Check for mismatched signature algorithms and unknown signature algorithms
   // in the chain. Also fills in the has_* booleans for the digest algorithms
@@ -651,6 +696,8 @@ int CertVerifyProc::Verify(X509Certificate* cert,
                                verify_result->is_issued_by_known_root);
   }
 
+  net_log.EndEvent(NetLogEventType::CERT_VERIFY_PROC,
+                   [&] { return verify_result->NetLogParams(rv); });
   return rv;
 }
 
@@ -841,9 +888,9 @@ bool CertVerifyProc::HasNameConstraintsViolation(
       // Not a real certificate - just for testing.
       // net/data/ssl/certificates/name_constraint_*.pem
       {
-          {{0x8e, 0x9b, 0x14, 0x9f, 0x01, 0x45, 0x4c, 0xee, 0xde, 0xfa, 0x5e,
-            0x73, 0x40, 0x36, 0x21, 0xba, 0xd9, 0x1f, 0xee, 0xe0, 0x3e, 0x74,
-            0x25, 0x6c, 0x59, 0xf4, 0x6f, 0xbf, 0x45, 0x03, 0x5f, 0x8d}},
+          {{0x0d, 0x93, 0x13, 0xa7, 0xd7, 0x0d, 0x35, 0x89, 0x33, 0x50, 0x6e,
+            0x9b, 0x68, 0x30, 0x7a, 0x4f, 0x7d, 0x3a, 0x7a, 0x42, 0xd4, 0x60,
+            0x9a, 0x5e, 0x10, 0x4b, 0x58, 0xa5, 0xa7, 0x90, 0xa5, 0x81}},
           kDomainsTest,
       },
   };

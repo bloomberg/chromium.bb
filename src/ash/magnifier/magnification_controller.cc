@@ -441,8 +441,7 @@ void MagnificationController::OnMouseEvent(ui::MouseEvent* event) {
     }
 
     if (IsMagnified() && event->type() == ui::ET_MOUSE_MOVED &&
-        event->pointer_details().pointer_type !=
-            ui::EventPointerType::POINTER_TYPE_PEN) {
+        event->pointer_details().pointer_type != ui::EventPointerType::kPen) {
       OnMouseMove(event->root_location());
     }
   }
@@ -638,23 +637,33 @@ bool MagnificationController::RedrawDIP(const gfx::PointF& position_in_dip,
   std::unique_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(display));
 
-  // Inverse the transformation on the keyboard container so the keyboard will
-  // remain zoomed out. Apply the same animation settings to it.
-  // Note: if |scale_| is 1.0f, the transform matrix will be an identity matrix.
-  // Applying the inverse of an identity matrix will not change the
-  // transformation.
+  // Inverse the transformation on the keyboard container and display
+  // identification highlight so the keyboard will remain zoomed out and the
+  // highlight will render around the edges of the display. Apply the same
+  // animation settings to it. Note: if |scale_| is 1.0f, the transform matrix
+  // will be an identity matrix. Applying the inverse of an identity matrix will
+  // not change the transformation.
   // TODO(spqchan): Find a way to sync the layer animations together.
-  aura::Window* virtual_keyboard_container =
-      root_window_->GetChildById(kShellWindowId_ImeWindowParentContainer);
+  gfx::Transform inverse_transform;
+  if (GetMagnifierTransform().GetInverse(&inverse_transform)) {
+    std::vector<aura::Window*> undo_transform_windows = {
+        root_window_->GetChildById(kShellWindowId_ImeWindowParentContainer)};
 
-  gfx::Transform vk_transform;
-  if (GetMagnifierTransform().GetInverse(&vk_transform)) {
-    ui::ScopedLayerAnimationSettings vk_layer_settings(
-        virtual_keyboard_container->layer()->GetAnimator());
-    vk_layer_settings.SetPreemptionStrategy(strategy);
-    vk_layer_settings.SetTweenType(tween_type);
-    vk_layer_settings.SetTransitionDuration(duration);
-    virtual_keyboard_container->SetTransform(vk_transform);
+    aura::Window* display_identification_highlight =
+        root_window_->GetChildById(kShellWindowId_ScreenRotationContainer)
+            ->GetChildById(kShellWindowId_DisplayIdentificationHighlightWindow);
+
+    if (display_identification_highlight)
+      undo_transform_windows.push_back(display_identification_highlight);
+
+    for (auto* window : undo_transform_windows) {
+      ui::ScopedLayerAnimationSettings layer_settings(
+          window->layer()->GetAnimator());
+      layer_settings.SetPreemptionStrategy(strategy);
+      layer_settings.SetTweenType(tween_type);
+      layer_settings.SetTransitionDuration(duration);
+      window->SetTransform(inverse_transform);
+    }
   }
 
   RootWindowController::ForWindow(root_window_)
@@ -821,9 +830,25 @@ bool MagnificationController::ProcessGestures() {
       if (!consume_touch_event_)
         cancel_pressed_touches = true;
     } else if (gesture->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
+      // The scroll offsets are apparently in pixels and does not take into
+      // account the display rotation. Convert back to dip by applying the
+      // inverse transform of the rotation (these are offsets, so we don't care
+      // about scale or translation. We'll take care of the scale below).
+      // https://crbug.com/867537.
+      const auto display =
+          display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);
+      gfx::Transform rotation_transform;
+      rotation_transform.Rotate(display.PanelRotationAsDegree());
+      gfx::Transform rotation_inverse_transform;
+      const bool result =
+          rotation_transform.GetInverse(&rotation_inverse_transform);
+      DCHECK(result);
+      gfx::PointF scroll(details.scroll_x(), details.scroll_y());
+      rotation_inverse_transform.TransformPoint(&scroll);
+
       // Divide by scale to keep scroll speed same at any scale.
-      float new_x = origin_.x() + (-1.0f * details.scroll_x() / scale_);
-      float new_y = origin_.y() + (-1.0f * details.scroll_y() / scale_);
+      float new_x = origin_.x() + (-scroll.x() / scale_);
+      float new_y = origin_.y() + (-scroll.y() / scale_);
 
       RedrawDIP(gfx::PointF(new_x, new_y), scale_, 0,
                 kDefaultAnimationTweenType);

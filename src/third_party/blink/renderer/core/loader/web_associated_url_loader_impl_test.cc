@@ -185,8 +185,8 @@ class WebAssociatedURLLoaderTest : public testing::Test,
     request.SetMode(network::mojom::RequestMode::kSameOrigin);
     request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
     if (EqualIgnoringASCIICase(WebString::FromUTF8(header_field), "referer")) {
-      request.SetHttpReferrer(WebString::FromUTF8(header_value),
-                              network::mojom::ReferrerPolicy::kDefault);
+      request.SetReferrerString(WebString::FromUTF8(header_value));
+      request.SetReferrerPolicy(network::mojom::ReferrerPolicy::kDefault);
     } else {
       request.SetHttpHeaderField(WebString::FromUTF8(header_field),
                                  WebString::FromUTF8(header_value));
@@ -370,36 +370,6 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlFailure) {
   expected_response_ = WebURLResponse();
   expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
-  expected_response_.AddHttpHeaderField("access-control-allow-origin", "*");
-  RegisterMockedURLLoadWithCustomResponse(url, expected_response_,
-                                          frame_file_path_);
-
-  WebAssociatedURLLoaderOptions options;
-  expected_loader_ = CreateAssociatedURLLoader(options);
-  EXPECT_TRUE(expected_loader_);
-  expected_loader_->LoadAsynchronously(request, this);
-
-  // Failure should not be reported synchronously.
-  EXPECT_FALSE(did_fail_);
-  // The loader needs to receive the response, before doing the CORS check.
-  ServeRequests();
-  EXPECT_TRUE(did_fail_);
-  EXPECT_FALSE(did_receive_response_);
-}
-
-// Test an unsuccessful cross-origin load using CORS.
-TEST_F(WebAssociatedURLLoaderTest,
-       CrossOriginWithAccessControlFailureBadStatusCode) {
-  // This is cross-origin since the frame was loaded from www.test.com.
-  KURL url =
-      ToKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
-  WebURLRequest request(url);
-  request.SetMode(network::mojom::RequestMode::kCors);
-  request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
-
-  expected_response_ = WebURLResponse();
-  expected_response_.SetMimeType("text/html");
-  expected_response_.SetHttpStatusCode(0);
   expected_response_.AddHttpHeaderField("access-control-allow-origin", "*");
   RegisterMockedURLLoadWithCustomResponse(url, expected_response_,
                                           frame_file_path_);
@@ -617,6 +587,7 @@ TEST_F(WebAssociatedURLLoaderTest, MAYBE_UntrustedCheckHeaders) {
   CheckHeaderFails("keep-alive");
   CheckHeaderFails("origin");
   CheckHeaderFails("referer", "http://example.com/");
+  CheckHeaderFails("referer", "");  // no-referrer.
   CheckHeaderFails("te");
   CheckHeaderFails("trailer");
   CheckHeaderFails("transfer-encoding");

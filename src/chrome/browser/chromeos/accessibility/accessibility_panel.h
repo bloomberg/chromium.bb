@@ -37,7 +37,7 @@ class AccessibilityPanel : public views::WidgetDelegate,
   // Closes the panel asynchronously.
   void Close();
 
-  // WidgetDelegate overrides.
+  // WidgetDelegate:
   const views::Widget* GetWidget() const override;
   views::Widget* GetWidget() override;
   void DeleteDelegate() override;

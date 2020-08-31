@@ -30,6 +30,9 @@ from chromite.lib import commandline
 from chromite.lib import config_lib
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 _CONFIG_HEADER = """# Defines buckets on luci-scheduler.appspot.com.
 #
 # For schema of this file and documentation see ProjectConfig message in

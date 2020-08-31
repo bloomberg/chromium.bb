@@ -73,14 +73,6 @@ class AuthenticatorRequestDialogModel {
     kBlePowerOnAutomatic,
     kBlePowerOnManual,
 
-    kBlePairingBegin,
-    kBleEnterPairingMode,
-    kBleDeviceSelection,
-    kBlePinEntry,
-
-    kBleActivate,
-    kBleVerifying,
-
     // Touch ID.
     kTouchIdIncognitoSpeedBump,
 
@@ -94,6 +86,10 @@ class AuthenticatorRequestDialogModel {
     kClientPinErrorSoftBlock,
     kClientPinErrorHardBlock,
     kClientPinErrorAuthenticatorRemoved,
+
+    // Authenticator Internal User Verification
+    kInlineBioEnrollment,
+    kRetryInternalUserVerification,
 
     // Confirm user consent to create a resident credential. Used prior to
     // triggering Windows-native APIs when Windows itself won't show any
@@ -181,8 +177,7 @@ class AuthenticatorRequestDialogModel {
   // Valid action when at step: kNotStarted.
   void StartFlow(
       TransportAvailabilityInfo transport_availability,
-      base::Optional<device::FidoTransportProtocol> last_used_transport,
-      const base::ListValue* previously_paired_bluetooth_device_list);
+      base::Optional<device::FidoTransportProtocol> last_used_transport);
 
   // Restarts the UX flow.
   void StartOver();
@@ -200,14 +195,16 @@ class AuthenticatorRequestDialogModel {
   //
   // Valid action when at step: kNotStarted.
   // kTransportSelection, and steps where the other transports menu is shown,
-  // namely, kUsbInsertAndActivate, kBleActivate, kCableActivate.
-  void StartGuidedFlowForTransport(
-      AuthenticatorTransport transport,
-      bool pair_with_new_device_for_bluetooth_low_energy = false);
+  // namely, kUsbInsertAndActivate, kCableActivate.
+  void StartGuidedFlowForTransport(AuthenticatorTransport transport);
 
   // Hides the modal Chrome UI dialog and shows the native Windows WebAuthn
   // UI instead.
   void HideDialogAndDispatchToNativeWindowsApi();
+
+  // Displays a resident-key warning if needed and then calls
+  // |HideDialogAndDispatchToNativeWindowsApi|.
+  void StartWinNativeApi();
 
   // StartPhonePairing triggers the display of a QR code for pairing a new
   // phone.
@@ -221,7 +218,7 @@ class AuthenticatorRequestDialogModel {
   //
   // Valid action when at step: kNotStarted, kTransportSelection, and steps
   // where the other transports menu is shown, namely, kUsbInsertAndActivate,
-  // kBleActivate, kCableActivate.
+  // kCableActivate.
   void EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step step);
 
   // Continues with the BLE/caBLE flow now that the Bluetooth adapter is
@@ -234,32 +231,6 @@ class AuthenticatorRequestDialogModel {
   //
   // Valid action when at step: kBlePowerOnAutomatic.
   void PowerOnBleAdapter();
-
-  // Lets the pairing procedure start after the user learned about the need.
-  //
-  // Valid action when at step: kBlePairingBegin.
-  void StartBleDiscovery();
-
-  // Initiates pairing of the device that the user has chosen.
-  //
-  // Valid action when at step: kBleDeviceSelection.
-  void InitiatePairingDevice(base::StringPiece authenticator_id);
-
-  // Finishes pairing of the previously chosen device with the |pin| code
-  // entered.
-  //
-  // Valid action when at step: kBlePinEntry.
-  void FinishPairingWithPin(const base::string16& pin);
-
-  // Dispatches WebAuthN request to successfully paired Bluetooth authenticator.
-  //
-  // Valid action when at step: kBleVerifying.
-  void OnPairingSuccess();
-
-  // Returns to Bluetooth device selection modal.
-  //
-  // Valid action when at step: kBleVerifying.
-  void OnPairingFailure();
 
   // Tries if a USB device is present -- the user claims they plugged it in.
   //
@@ -334,23 +305,26 @@ class AuthenticatorRequestDialogModel {
   // system Touch ID prompt.
   void OnUserConsentDenied();
 
+  // To be called when the user clicks "Cancel" in the native Windows UI.
+  // Returns true if the event was handled.
+  bool OnWinUserCancelled();
+
   // To be called when the Bluetooth adapter powered state changes.
   void OnBluetoothPoweredStateChanged(bool powered);
 
   void SetRequestCallback(RequestCallback request_callback);
 
-  void SetBlePairingCallback(BlePairingCallback ble_pairing_callback);
-
   void SetBluetoothAdapterPowerOnCallback(
       base::RepeatingClosure bluetooth_adapter_power_on_callback);
-
-  void SetBleDevicePairedCallback(
-      BleDevicePairedCallback ble_device_paired_callback);
 
   void SetPINCallback(base::OnceCallback<void(std::string)> pin_callback);
 
   // OnHavePIN is called when the user enters a PIN in the UI.
   void OnHavePIN(const std::string& pin);
+
+  // Called when the user needs to retry user verification with the number of
+  // |attempts| remaining.
+  void OnRetryUserVerification(int attempts);
 
   // OnResidentCredentialConfirmed is called when a user accepts a dialog
   // confirming that they're happy to create a resident credential.
@@ -360,15 +334,8 @@ class AuthenticatorRequestDialogModel {
   // disallows an attestation permission request.
   void OnAttestationPermissionResponse(bool attestation_permission_granted);
 
-  void UpdateAuthenticatorReferenceId(base::StringPiece old_authenticator_id,
-                                      std::string new_authenticator_id);
   void AddAuthenticator(const device::FidoAuthenticator& authenticator);
   void RemoveAuthenticator(base::StringPiece authenticator_id);
-
-  void UpdateAuthenticatorReferencePairingMode(
-      base::StringPiece authenticator_id,
-      bool is_in_pairing_mode,
-      base::string16 display_name);
 
   // SelectAccount is called to trigger an account selection dialog.
   void SelectAccount(
@@ -380,9 +347,6 @@ class AuthenticatorRequestDialogModel {
   // has been picked. |index| is the index of the selected account in
   // |responses()|.
   void OnAccountSelected(size_t index);
-
-  // OnSuccess is called when a WebAuthn operation completes successfully.
-  void OnSuccess(AuthenticatorTransport transport);
 
   void SetSelectedAuthenticatorForTesting(AuthenticatorReference authenticator);
 
@@ -404,6 +368,16 @@ class AuthenticatorRequestDialogModel {
     return ephemeral_state_.has_attempted_pin_entry_;
   }
   base::Optional<int> pin_attempts() const { return pin_attempts_; }
+
+  void StartInlineBioEnrollment(base::OnceClosure next_callback);
+  void OnSampleCollected(int bio_samples_remaining);
+  void OnBioEnrollmentDone();
+  base::Optional<int> max_bio_samples() { return max_bio_samples_; }
+  base::Optional<int> bio_samples_remaining() { return bio_samples_remaining_; }
+
+  // Flags the authenticator's internal user verification as locked.
+  void set_internal_uv_locked() { uv_attempts_ = 0; }
+  base::Optional<int> uv_attempts() const { return uv_attempts_; }
 
   void RequestAttestationPermission(base::OnceCallback<void(bool)> callback);
 
@@ -432,9 +406,15 @@ class AuthenticatorRequestDialogModel {
       bool has_paired_phones,
       base::Optional<device::QRGeneratorKey> qr_generator_key);
 
+  bool win_native_api_enabled() const {
+    return transport_availability_.has_win_native_api_authenticator;
+  }
+
+  bool cable_extension_provided() const { return cable_extension_provided_; }
+
   const std::string& relying_party_id() const { return relying_party_id_; }
 
-  bool request_may_start_over() const { return request_may_start_over_; }
+  bool offer_try_again_in_ui() const { return offer_try_again_in_ui_; }
 
  private:
   // Contains the state that will be reset when calling StartOver(). StartOver()
@@ -476,11 +456,6 @@ class AuthenticatorRequestDialogModel {
   // kBlePowerOnAutomatic.
   base::Optional<Step> next_step_once_ble_powered_;
 
-  // Determines whether Bluetooth device selection UI and pin pairing UI should
-  // be shown. We proceed directly to Step::kBleVerifying if the user has paired
-  // with a bluetooth authenticator previously.
-  bool previously_paired_with_bluetooth_authenticator_ = false;
-
   base::ObserverList<Observer>::Unchecked observers_;
 
   // These fields are only filled out when the UX flow is started.
@@ -489,12 +464,15 @@ class AuthenticatorRequestDialogModel {
   base::Optional<device::FidoTransportProtocol> last_used_transport_;
 
   RequestCallback request_callback_;
-  BlePairingCallback ble_pairing_callback_;
   base::RepeatingClosure bluetooth_adapter_power_on_callback_;
-  BleDevicePairedCallback ble_device_paired_callback_;
+
+  base::Optional<int> max_bio_samples_;
+  base::Optional<int> bio_samples_remaining_;
+  base::OnceClosure bio_enrollment_callback_;
 
   base::OnceCallback<void(std::string)> pin_callback_;
   base::Optional<int> pin_attempts_;
+  base::Optional<int> uv_attempts_;
 
   base::OnceCallback<void(bool)> attestation_callback_;
 
@@ -509,10 +487,10 @@ class AuthenticatorRequestDialogModel {
 
   bool incognito_mode_ = false;
 
-  // request_may_start_over_ indicates whether a button to retry the request
+  // offer_try_again_in_ui_ indicates whether a button to retry the request
   // should be included on the dialog sheet shown when encountering certain
   // errors.
-  bool request_may_start_over_ = true;
+  bool offer_try_again_in_ui_ = true;
 
   // cable_extension_provided_ indicates whether the request included a caBLE
   // extension.
@@ -521,9 +499,10 @@ class AuthenticatorRequestDialogModel {
   // phones.
   bool have_paired_phones_ = false;
   base::Optional<device::QRGeneratorKey> qr_generator_key_;
-  // did_cable_broadcast_ is true if a caBLE v1 extension was provided and
-  // BLE adverts were broadcast.
-  bool did_cable_broadcast_ = false;
+  // win_native_api_already_tried_ is true if the Windows-native UI has been
+  // displayed already and the user cancelled it. In this case, we shouldn't
+  // jump straight to showing it again.
+  bool win_native_api_already_tried_ = false;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_{this};
 

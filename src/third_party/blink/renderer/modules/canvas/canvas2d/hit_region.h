@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_hit_region_options.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/modules/canvas/canvas2d/hit_region_options.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
@@ -28,7 +28,7 @@ class HitRegion final : public GarbageCollected<HitRegion> {
   const Path& GetPath() const { return path_; }
   Element* Control() const { return control_.Get(); }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   String id_;
@@ -56,7 +56,7 @@ class HitRegionManager final : public GarbageCollected<HitRegionManager> {
 
   unsigned GetHitRegionsCount() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   typedef HeapLinkedHashSet<Member<HitRegion>> HitRegionList;

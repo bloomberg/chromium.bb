@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "src/torque/type-oracle.h"
+#include "src/base/optional.h"
 #include "src/torque/type-visitor.h"
+#include "src/torque/types.h"
 
 namespace v8 {
 namespace internal {
@@ -12,14 +14,22 @@ namespace torque {
 DEFINE_CONTEXTUAL_VARIABLE(TypeOracle)
 
 // static
-const std::vector<std::unique_ptr<AggregateType>>*
+const std::vector<std::unique_ptr<AggregateType>>&
 TypeOracle::GetAggregateTypes() {
-  return &Get().aggregate_types_;
+  return Get().aggregate_types_;
+}
+
+// static
+const std::vector<std::unique_ptr<BitFieldStructType>>&
+TypeOracle::GetBitFieldStructTypes() {
+  return Get().bit_field_struct_types_;
 }
 
 // static
 void TypeOracle::FinalizeAggregateTypes() {
-  for (const std::unique_ptr<AggregateType>& p : Get().aggregate_types_) {
+  size_t current = 0;
+  while (current != Get().aggregate_types_.size()) {
+    auto& p = Get().aggregate_types_[current++];
     p->Finalize();
   }
 }
@@ -58,6 +68,32 @@ Namespace* TypeOracle::CreateGenericTypeInstantiationNamespace() {
   Get().generic_type_instantiation_namespaces_.push_back(
       std::make_unique<Namespace>(GENERIC_TYPE_INSTANTIATION_NAMESPACE_STRING));
   return Get().generic_type_instantiation_namespaces_.back().get();
+}
+
+// static
+std::vector<const ClassType*> TypeOracle::GetClasses() {
+  std::vector<const ClassType*> result;
+  for (const std::unique_ptr<AggregateType>& t : Get().aggregate_types_) {
+    if (auto* class_type = ClassType::DynamicCast(t.get())) {
+      result.push_back(class_type);
+    }
+  }
+  return result;
+}
+
+base::Optional<const Type*> TypeOracle::MatchReferenceGeneric(
+    const Type* reference_type, bool* is_const) {
+  if (auto type = Type::MatchUnaryGeneric(reference_type,
+                                          GetMutableReferenceGeneric())) {
+    if (is_const) *is_const = false;
+    return type;
+  }
+  if (auto type =
+          Type::MatchUnaryGeneric(reference_type, GetConstReferenceGeneric())) {
+    if (is_const) *is_const = true;
+    return type;
+  }
+  return base::nullopt;
 }
 
 }  // namespace torque

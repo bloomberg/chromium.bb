@@ -17,6 +17,7 @@ from dashboard.pinpoint.models import evaluators
 from dashboard.pinpoint.models.change import commit as commit_module
 from dashboard.pinpoint.models.quest import find_isolate as find_isolate_quest
 from dashboard.services import buildbucket_service
+from dashboard.services import request
 
 FAILURE_MAPPING = {'FAILURE': 'failed', 'CANCELLED': 'cancelled'}
 
@@ -58,15 +59,13 @@ class ScheduleBuildAction(object):
     task_module.UpdateTask(self.job, self.task.id, payload=self.task.payload)
 
   def __str__(self):
-    return 'Build Action <job = %s, task = %s>' % (self.job.job_id, self.task)
+    return 'Build Action(job = %s, task = %s)' % (self.job.job_id, self.task.id)
 
 
-class UpdateBuildStatusAction(object):
-
-  def __init__(self, job, task, change):
-    self.job = job
-    self.task = task
-    self.change = change
+class UpdateBuildStatusAction(
+    collections.namedtuple('UpdateBuildStatusAction',
+                           ('job', 'task', 'change', 'event'))):
+  __slots__ = ()
 
   @task_module.LogStateTransitionFailures
   def __call__(self, accumulator):
@@ -80,9 +79,46 @@ class UpdateBuildStatusAction(object):
       task_module.UpdateTask(self.job, self.task.id, new_state='failed')
       return None
 
-    # Use the build ID and poll.
-    # TODO(dberris): Handle errors when getting job status?
-    build = buildbucket_service.GetJobStatus(build_details).get('build', {})
+    # Attempt to use the payload in a buildbucket pub/sub update to handle the
+    # update without polling. Only poll as a last resort.
+    build = self.event.payload
+    if build is None or 'id' not in build:
+      try:
+        build_id = build_details.get('build', {}).get('id')
+        if build_id is None:
+          logging.error('No build details stored in task payload; task = %s',
+                        self.task)
+          self.task.payload.update({
+              'errors':
+                  self.task.payload.get('errors', []) + [{
+                      'reason': 'MissingBuildDetails',
+                      'message': 'Cannot find build details in task.',
+                  }]
+          })
+          task_module.UpdateTask(
+              self.job,
+              self.task.id,
+              new_state='failed',
+              payload=self.task.payload)
+          return None
+
+        build = buildbucket_service.GetJobStatus(build_id).get('build', {})
+      except request.RequestError as e:
+        logging.error('Failed getting Buildbucket Job status: %s', e)
+        self.task.payload.update({
+            'errors':
+                self.task.payload.get('errors', []) + [{
+                    'reason': type(e).__name__,
+                    'message': 'Service request error response: %s' % (e,),
+                }]
+        })
+        task_module.UpdateTask(
+            self.job,
+            self.task.id,
+            new_state='failed',
+            payload=self.task.payload)
+        return None
+
     logging.debug('buildbucket response: %s', build)
 
     # Update the buildbucket result.
@@ -92,9 +128,7 @@ class UpdateBuildStatusAction(object):
 
     # Decide whether the build was successful or not.
     if build.get('status') != 'COMPLETED':
-      logging.error('Unexpected status: %s', build.get('status'))
-      task_module.UpdateTask(
-          self.job, self.task.id, new_state='failed', payload=self.task.payload)
+      # Skip this update.
       return None
 
     result = build.get('result')
@@ -103,10 +137,8 @@ class UpdateBuildStatusAction(object):
       self.task.payload.update({
           'errors':
               self.task.payload.get('errors', []) + [{
-                  'reason':
-                      'InvalidResponse',
-                  'message':
-                      'Response is missing the "result" field.'
+                  'reason': 'InvalidResponse',
+                  'message': 'Response is missing the "result" field.'
               }]
       })
       task_module.UpdateTask(
@@ -225,7 +257,7 @@ class UpdateBuildStatusAction(object):
 
   def __str__(self):
     return 'Update Build Action <job = %s, task = %s>' % (self.job.job_id,
-                                                          self.task)
+                                                          self.task.id)
 
 
 class InitiateEvaluator(object):
@@ -237,7 +269,7 @@ class InitiateEvaluator(object):
   def __call__(self, task, _, change):
     if task.status == 'ongoing':
       logging.warning(
-          'Ignoring an initiate event on an ongoing task; task = %s', task)
+          'Ignoring an initiate event on an ongoing task; task = %s', task.id)
       return None
 
     # Outline:
@@ -271,7 +303,8 @@ class InitiateEvaluator(object):
 
       return [CompleteWithCachedIsolate]
     except KeyError as e:
-      logging.error('Failed to find isolate for task = %s;\nError: %s', task, e)
+      logging.error('Failed to find isolate for task = %s;\nError: %s', task.id,
+                    e)
       return [ScheduleBuildAction(self.job, task, change)]
     return None
 
@@ -290,14 +323,9 @@ class UpdateEvaluator(object):
     #       - Retry if the failure is a retryable error (update payload with
     #         retry information)
     #       - Fail if failure is non-retryable or we've exceeded retries.
-    if event.payload.get('status') == 'build_completed':
-      change = change_module.Change(
-          commits=[
-              commit_module.Commit.FromDict(c)
-              for c in task.payload.get('change', {}).get('commits', [])
-          ],
-          patch=task.payload.get('patch'))
-      return [UpdateBuildStatusAction(self.job, task, change)]
+    if event.type == 'update':
+      change = change_module.ReconstituteChange(task.payload.get('change'))
+      return [UpdateBuildStatusAction(self.job, task, change, event)]
     return None
 
 
@@ -338,16 +366,14 @@ def BuildSerializer(task, _, accumulator):
   })
 
   buildbucket_result = task.payload.get('buildbucket_result')
-  if not buildbucket_result:
-    return None
-
-  build = buildbucket_result.get('build')
-  if build:
-    results.get('details').append({
-        'key': 'build',
-        'value': build.get('id'),
-        'url': build.get('url'),
-    })
+  if buildbucket_result:
+    build = buildbucket_result.get('build')
+    if build:
+      results.get('details').append({
+          'key': 'build',
+          'value': build.get('id'),
+          'url': build.get('url'),
+      })
 
   if {'isolate_server', 'isolate_hash'} & set(task.payload):
     results.get('details').append({
@@ -367,11 +393,7 @@ class Serializer(evaluators.FilteringEvaluator):
 
   def __init__(self):
     super(Serializer, self).__init__(
-        predicate=evaluators.All(
-            evaluators.TaskTypeEq('find_isolate'),
-            evaluators.TaskStatusIn(
-                {'ongoing', 'failed', 'completed', 'cancelled'}),
-        ),
+        predicate=evaluators.TaskTypeEq('find_isolate'),
         delegate=BuildSerializer)
 
 

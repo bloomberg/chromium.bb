@@ -17,11 +17,13 @@
 #include <cstring>
 #include <fstream>
 #include <functional>
+#include <random>
 #include <sstream>
 #include <string>
 
 #include "source/fuzz/force_render_red.h"
 #include "source/fuzz/fuzzer.h"
+#include "source/fuzz/fuzzer_util.h"
 #include "source/fuzz/protobufs/spirvfuzz_protobufs.h"
 #include "source/fuzz/replayer.h"
 #include "source/fuzz/shrinker.h"
@@ -74,7 +76,8 @@ void PrintUsage(const char* program) {
   printf(
       R"(%s - Fuzzes an equivalent SPIR-V binary based on a given binary.
 
-USAGE: %s [options] <input.spv> -o <output.spv>
+USAGE: %s [options] <input.spv> -o <output.spv> \
+  --donors=<donors.txt>
 USAGE: %s [options] <input.spv> -o <output.spv> \
   --shrink=<input.transformations> -- <interestingness_test> [args...]
 
@@ -99,6 +102,11 @@ Options (in lexicographical order):
 
   -h, --help
                Print this help.
+  --donors=
+               File specifying a series of donor files, one per line.  Must be
+               provided if the tool is invoked in fuzzing mode; incompatible
+               with replay and shrink modes.  The file should be empty if no
+               donors are to be used.
   --force-render-red
                Transforms the input shader into a shader that writes red to the
                output buffer, and then captures the original shader as the body
@@ -106,9 +114,25 @@ Options (in lexicographical order):
                facts to make the guard non-obviously false.  This option is a
                helper for massaging crash-inducing tests into a runnable
                format; it does not perform any fuzzing.
+  --fuzzer-pass-validation
+               Run the validator after applying each fuzzer pass during
+               fuzzing.  Aborts fuzzing early if an invalid binary is created.
+               Useful for debugging spirv-fuzz.
   --replay
                File from which to read a sequence of transformations to replay
                (instead of fuzzing)
+  --replay-range=
+               Signed 32-bit integer.  If set to a positive value N, only the
+               first N transformations will be applied during replay.  If set to
+               a negative value -N, all but the final N transformations will be
+               applied during replay.  If set to 0 (the default), all
+               transformations will be applied during replay.  Ignored unless
+               --replay is used.
+  --replay-validation
+               Run the validator after applying each transformation during
+               replay (including the replay that occurs during shrinking).
+               Aborts if an invalid binary is created.  Useful for debugging
+               spirv-fuzz.
   --seed=
                Unsigned 32-bit integer seed to control random number
                generation.
@@ -125,14 +149,16 @@ Options (in lexicographical order):
                extension will be added.  The default is "temp_", which will
                cause files like "temp_0001.spv" to be output to the current
                directory.  Ignored unless --shrink is used.
-  --replay-validation
-               Run the validator after applying each transformation during
-               replay (including the replay that occurs during shrinking).
-               Aborts if an invalid binary is created.  Useful for debugging
-               spirv-fuzz.
   --version
                Display fuzzer version information.
 
+Supported validator options are as follows. See `spirv-val --help` for details.
+  --before-hlsl-legalization
+  --relax-block-layout
+  --relax-logical-pointer
+  --relax-struct-store
+  --scalar-block-layout
+  --skip-block-layout
 )",
       program, program, program, program);
 }
@@ -149,12 +175,13 @@ void FuzzDiagnostic(spv_message_level_t level, const char* /*source*/,
 }
 
 FuzzStatus ParseFlags(int argc, const char** argv, std::string* in_binary_file,
-                      std::string* out_binary_file,
+                      std::string* out_binary_file, std::string* donors_file,
                       std::string* replay_transformations_file,
                       std::vector<std::string>* interestingness_test,
                       std::string* shrink_transformations_file,
                       std::string* shrink_temp_file_prefix,
-                      spvtools::FuzzerOptions* fuzzer_options) {
+                      spvtools::FuzzerOptions* fuzzer_options,
+                      spvtools::ValidatorOptions* validator_options) {
   uint32_t positional_arg_index = 0;
   bool only_positional_arguments_remain = false;
   bool force_render_red = false;
@@ -176,12 +203,27 @@ FuzzStatus ParseFlags(int argc, const char** argv, std::string* in_binary_file,
           PrintUsage(argv[0]);
           return {FuzzActions::STOP, 1};
         }
+      } else if (0 == strncmp(cur_arg, "--donors=", sizeof("--donors=") - 1)) {
+        const auto split_flag = spvtools::utils::SplitFlagArgs(cur_arg);
+        *donors_file = std::string(split_flag.second);
       } else if (0 == strncmp(cur_arg, "--force-render-red",
                               sizeof("--force-render-red") - 1)) {
         force_render_red = true;
+      } else if (0 == strncmp(cur_arg, "--fuzzer-pass-validation",
+                              sizeof("--fuzzer-pass-validation") - 1)) {
+        fuzzer_options->enable_fuzzer_pass_validation();
       } else if (0 == strncmp(cur_arg, "--replay=", sizeof("--replay=") - 1)) {
         const auto split_flag = spvtools::utils::SplitFlagArgs(cur_arg);
         *replay_transformations_file = std::string(split_flag.second);
+      } else if (0 == strncmp(cur_arg, "--replay-range=",
+                              sizeof("--replay-range=") - 1)) {
+        const auto split_flag = spvtools::utils::SplitFlagArgs(cur_arg);
+        char* end = nullptr;
+        errno = 0;
+        const auto replay_range =
+            static_cast<int32_t>(strtol(split_flag.second.c_str(), &end, 10));
+        assert(end != split_flag.second.c_str() && errno == 0);
+        fuzzer_options->set_replay_range(replay_range);
       } else if (0 == strncmp(cur_arg, "--replay-validation",
                               sizeof("--replay-validation") - 1)) {
         fuzzer_options->enable_replay_validation();
@@ -209,6 +251,18 @@ FuzzStatus ParseFlags(int argc, const char** argv, std::string* in_binary_file,
                               sizeof("--shrinker-temp-file-prefix=") - 1)) {
         const auto split_flag = spvtools::utils::SplitFlagArgs(cur_arg);
         *shrink_temp_file_prefix = std::string(split_flag.second);
+      } else if (0 == strcmp(cur_arg, "--before-hlsl-legalization")) {
+        validator_options->SetBeforeHlslLegalization(true);
+      } else if (0 == strcmp(cur_arg, "--relax-logical-pointer")) {
+        validator_options->SetRelaxLogicalPointer(true);
+      } else if (0 == strcmp(cur_arg, "--relax-block-layout")) {
+        validator_options->SetRelaxBlockLayout(true);
+      } else if (0 == strcmp(cur_arg, "--scalar-block-layout")) {
+        validator_options->SetScalarBlockLayout(true);
+      } else if (0 == strcmp(cur_arg, "--skip-block-layout")) {
+        validator_options->SetSkipBlockLayout(true);
+      } else if (0 == strcmp(cur_arg, "--relax-struct-store")) {
+        validator_options->SetRelaxStructStore(true);
       } else if (0 == strcmp(cur_arg, "--")) {
         only_positional_arguments_remain = true;
       } else {
@@ -277,6 +331,18 @@ FuzzStatus ParseFlags(int argc, const char** argv, std::string* in_binary_file,
     return {FuzzActions::STOP, 1};
   }
 
+  if (!replay_transformations_file->empty() ||
+      !shrink_transformations_file->empty()) {
+    // Donors should not be provided when replaying or shrinking: they only make
+    // sense during fuzzing.
+    if (!donors_file->empty()) {
+      spvtools::Error(FuzzDiagnostic, nullptr, {},
+                      "The --donors argument is not compatible with --replay "
+                      "nor --shrink.");
+      return {FuzzActions::STOP, 1};
+    }
+  }
+
   if (!replay_transformations_file->empty()) {
     // A replay transformations file was given, thus the tool is being invoked
     // in replay mode.
@@ -297,6 +363,12 @@ FuzzStatus ParseFlags(int argc, const char** argv, std::string* in_binary_file,
     return {FuzzActions::SHRINK, 0};
   }
 
+  // The tool is being invoked in fuzz mode.
+  if (donors_file->empty()) {
+    spvtools::Error(FuzzDiagnostic, nullptr, {},
+                    "Fuzzing requires that the --donors option is used.");
+    return {FuzzActions::STOP, 1};
+  }
   return {FuzzActions::FUZZ, 0};
 }
 
@@ -321,6 +393,7 @@ bool ParseTransformations(
 
 bool Replay(const spv_target_env& target_env,
             spv_const_fuzzer_options fuzzer_options,
+            spv_validator_options validator_options,
             const std::vector<uint32_t>& binary_in,
             const spvtools::fuzz::protobufs::FactSequence& initial_facts,
             const std::string& replay_transformations_file,
@@ -332,18 +405,37 @@ bool Replay(const spv_target_env& target_env,
                             &transformation_sequence)) {
     return false;
   }
-  spvtools::fuzz::Replayer replayer(target_env,
-                                    fuzzer_options->replay_validation_enabled);
+  spvtools::fuzz::Replayer replayer(
+      target_env, fuzzer_options->replay_validation_enabled, validator_options);
   replayer.SetMessageConsumer(spvtools::utils::CLIMessageConsumer);
-  auto replay_result_status =
-      replayer.Run(binary_in, initial_facts, transformation_sequence,
-                   binary_out, transformations_applied);
+
+  uint32_t num_transformations_to_apply;
+  if (fuzzer_options->replay_range > 0) {
+    // We have a positive replay range, N.  We would like transformations
+    // [0, N), truncated to the number of available transformations if N is too
+    // large.
+    num_transformations_to_apply = static_cast<uint32_t>(
+        std::min(fuzzer_options->replay_range,
+                 transformation_sequence.transformation_size()));
+  } else {
+    // We have non-positive replay range, -N (where N may be 0).  We would like
+    // transformations [0, num_transformations - N), or no transformations if N
+    // is too large.
+    num_transformations_to_apply = static_cast<uint32_t>(
+        std::max(0, transformation_sequence.transformation_size() +
+                        fuzzer_options->replay_range));
+  }
+
+  auto replay_result_status = replayer.Run(
+      binary_in, initial_facts, transformation_sequence,
+      num_transformations_to_apply, binary_out, transformations_applied);
   return !(replay_result_status !=
            spvtools::fuzz::Replayer::ReplayerResultStatus::kComplete);
 }
 
 bool Shrink(const spv_target_env& target_env,
             spv_const_fuzzer_options fuzzer_options,
+            spv_validator_options validator_options,
             const std::vector<uint32_t>& binary_in,
             const spvtools::fuzz::protobufs::FactSequence& initial_facts,
             const std::string& shrink_transformations_file,
@@ -357,9 +449,9 @@ bool Shrink(const spv_target_env& target_env,
                             &transformation_sequence)) {
     return false;
   }
-  spvtools::fuzz::Shrinker shrinker(target_env,
-                                    fuzzer_options->shrinker_step_limit,
-                                    fuzzer_options->replay_validation_enabled);
+  spvtools::fuzz::Shrinker shrinker(
+      target_env, fuzzer_options->shrinker_step_limit,
+      fuzzer_options->replay_validation_enabled, validator_options);
   shrinker.SetMessageConsumer(spvtools::utils::CLIMessageConsumer);
 
   assert(!interestingness_command.empty() &&
@@ -397,16 +489,48 @@ bool Shrink(const spv_target_env& target_env,
 }
 
 bool Fuzz(const spv_target_env& target_env,
-          const spvtools::FuzzerOptions& fuzzer_options,
+          spv_const_fuzzer_options fuzzer_options,
+          spv_validator_options validator_options,
           const std::vector<uint32_t>& binary_in,
           const spvtools::fuzz::protobufs::FactSequence& initial_facts,
-          std::vector<uint32_t>* binary_out,
+          const std::string& donors, std::vector<uint32_t>* binary_out,
           spvtools::fuzz::protobufs::TransformationSequence*
               transformations_applied) {
-  spvtools::fuzz::Fuzzer fuzzer(target_env);
-  fuzzer.SetMessageConsumer(spvtools::utils::CLIMessageConsumer);
-  auto fuzz_result_status = fuzzer.Run(binary_in, initial_facts, fuzzer_options,
-                                       binary_out, transformations_applied);
+  auto message_consumer = spvtools::utils::CLIMessageConsumer;
+
+  std::vector<spvtools::fuzz::fuzzerutil::ModuleSupplier> donor_suppliers;
+
+  std::ifstream donors_file(donors);
+  if (!donors_file) {
+    spvtools::Error(FuzzDiagnostic, nullptr, {}, "Error opening donors file");
+    return false;
+  }
+  std::string donor_filename;
+  while (std::getline(donors_file, donor_filename)) {
+    donor_suppliers.emplace_back(
+        [donor_filename, message_consumer,
+         target_env]() -> std::unique_ptr<spvtools::opt::IRContext> {
+          std::vector<uint32_t> donor_binary;
+          if (!ReadFile<uint32_t>(donor_filename.c_str(), "rb",
+                                  &donor_binary)) {
+            return nullptr;
+          }
+          return spvtools::BuildModule(target_env, message_consumer,
+                                       donor_binary.data(),
+                                       donor_binary.size());
+        });
+  }
+
+  spvtools::fuzz::Fuzzer fuzzer(
+      target_env,
+      fuzzer_options->has_random_seed
+          ? fuzzer_options->random_seed
+          : static_cast<uint32_t>(std::random_device()()),
+      fuzzer_options->fuzzer_pass_validation_enabled, validator_options);
+  fuzzer.SetMessageConsumer(message_consumer);
+  auto fuzz_result_status =
+      fuzzer.Run(binary_in, initial_facts, donor_suppliers, binary_out,
+                 transformations_applied);
   if (fuzz_result_status !=
       spvtools::fuzz::Fuzzer::FuzzerResultStatus::kComplete) {
     spvtools::Error(FuzzDiagnostic, nullptr, {}, "Error running fuzzer");
@@ -439,17 +563,20 @@ const auto kDefaultEnvironment = SPV_ENV_UNIVERSAL_1_3;
 int main(int argc, const char** argv) {
   std::string in_binary_file;
   std::string out_binary_file;
+  std::string donors_file;
   std::string replay_transformations_file;
   std::vector<std::string> interestingness_test;
   std::string shrink_transformations_file;
   std::string shrink_temp_file_prefix = "temp_";
 
   spvtools::FuzzerOptions fuzzer_options;
+  spvtools::ValidatorOptions validator_options;
 
-  FuzzStatus status = ParseFlags(
-      argc, argv, &in_binary_file, &out_binary_file,
-      &replay_transformations_file, &interestingness_test,
-      &shrink_transformations_file, &shrink_temp_file_prefix, &fuzzer_options);
+  FuzzStatus status =
+      ParseFlags(argc, argv, &in_binary_file, &out_binary_file, &donors_file,
+                 &replay_transformations_file, &interestingness_test,
+                 &shrink_transformations_file, &shrink_temp_file_prefix,
+                 &fuzzer_options, &validator_options);
 
   if (status.action == FuzzActions::STOP) {
     return status.code;
@@ -487,20 +614,22 @@ int main(int argc, const char** argv) {
 
   switch (status.action) {
     case FuzzActions::FORCE_RENDER_RED:
-      if (!spvtools::fuzz::ForceRenderRed(target_env, binary_in, initial_facts,
+      if (!spvtools::fuzz::ForceRenderRed(target_env, validator_options,
+                                          binary_in, initial_facts,
                                           &binary_out)) {
         return 1;
       }
       break;
     case FuzzActions::FUZZ:
-      if (!Fuzz(target_env, fuzzer_options, binary_in, initial_facts,
-                &binary_out, &transformations_applied)) {
+      if (!Fuzz(target_env, fuzzer_options, validator_options, binary_in,
+                initial_facts, donors_file, &binary_out,
+                &transformations_applied)) {
         return 1;
       }
       break;
     case FuzzActions::REPLAY:
-      if (!Replay(target_env, fuzzer_options, binary_in, initial_facts,
-                  replay_transformations_file, &binary_out,
+      if (!Replay(target_env, fuzzer_options, validator_options, binary_in,
+                  initial_facts, replay_transformations_file, &binary_out,
                   &transformations_applied)) {
         return 1;
       }
@@ -511,9 +640,9 @@ int main(int argc, const char** argv) {
                   << std::endl;
         return 1;
       }
-      if (!Shrink(target_env, fuzzer_options, binary_in, initial_facts,
-                  shrink_transformations_file, shrink_temp_file_prefix,
-                  interestingness_test, &binary_out,
+      if (!Shrink(target_env, fuzzer_options, validator_options, binary_in,
+                  initial_facts, shrink_transformations_file,
+                  shrink_temp_file_prefix, interestingness_test, &binary_out,
                   &transformations_applied)) {
         return 1;
       }

@@ -28,6 +28,7 @@ _SYSTRACE_TO_TRACE_DATA_NAME_MAPPING = {
     'systraceController': trace_data.TELEMETRY_PART,
     'traceEvents': trace_data.CHROME_TRACE_PART,
     'waltTrace': trace_data.WALT_TRACE_PART,
+    'cgroupDump': trace_data.CGROUP_TRACE_PART,
 }
 _SYSTRACE_HEADER = 'Systrace'
 
@@ -61,7 +62,7 @@ def GenerateHTMLOutput(trace_results, output_file_name):
   # Java verison of systrace. Java systrace is expected to be deleted at a later
   # date. We should consolidate this logic when that happens.
 
-  if len(trace_results) > 3:
+  if len(trace_results) > 4:
     NewGenerateHTMLOutput(trace_results, output_file_name)
     return os.path.abspath(output_file_name)
 

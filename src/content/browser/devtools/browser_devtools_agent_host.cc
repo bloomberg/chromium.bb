@@ -68,17 +68,18 @@ BrowserDevToolsAgentHost::~BrowserDevToolsAgentHost() {
 }
 
 bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session) {
-  if (!session->client()->MayAttachToBrowser())
+  if (!session->GetClient()->MayAttachToBrowser())
     return false;
 
   session->SetBrowserOnly(true);
   session->AddHandler(std::make_unique<protocol::TargetHandler>(
-      protocol::TargetHandler::AccessMode::kBrowser, GetId(),
-      GetRendererChannel(), session->GetRootSession()));
+      protocol::TargetHandler::AccessMode::kBrowser, GetId(), nullptr,
+      session->GetRootSession()));
   if (only_discovery_)
     return true;
 
-  session->AddHandler(std::make_unique<protocol::BrowserHandler>());
+  session->AddHandler(std::make_unique<protocol::BrowserHandler>(
+      session->GetClient()->MayWriteLocalFiles()));
   session->AddHandler(std::make_unique<protocol::IOHandler>(GetIOContext()));
   session->AddHandler(std::make_unique<protocol::FetchHandler>(
       GetIOContext(),

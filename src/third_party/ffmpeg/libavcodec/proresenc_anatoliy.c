@@ -224,7 +224,7 @@ static void encode_codeword(PutBitContext *pb, int val, int codebook)
 }
 
 #define QSCALE(qmat,ind,val) ((val) / ((qmat)[ind]))
-#define TO_GOLOMB(val) (((val) << 1) ^ ((val) >> 31))
+#define TO_GOLOMB(val) (((val) * 2) ^ ((val) >> 31))
 #define DIFF_SIGN(val, sign) (((val) >> 31) ^ (sign))
 #define IS_NEGATIVE(val) ((((val) >> 31) ^ -1) + 1)
 #define TO_GOLOMB2(val,sign) ((val)==0 ? 0 : ((val) << 1) + (sign))
@@ -924,7 +924,7 @@ static av_cold int prores_encode_close(AVCodecContext *avctx)
 #define VE     AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_ENCODING_PARAM
 
 static const AVOption options[] = {
-    { "vendor", "vendor ID", OFFSET(vendor), AV_OPT_TYPE_STRING, { .str = "fmpg" }, CHAR_MIN, CHAR_MAX, VE },
+    { "vendor", "vendor ID", OFFSET(vendor), AV_OPT_TYPE_STRING, { .str = "fmpg" }, 0, 0, VE },
     { NULL }
 };
 

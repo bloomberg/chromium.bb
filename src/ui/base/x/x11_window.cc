@@ -8,11 +8,15 @@
 #include <vector>
 
 #include "base/location.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/hit_test_x11.h"
+#include "ui/base/wm_role_names_linux.h"
+#include "ui/base/x/x11_menu_registrar.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
@@ -28,6 +32,7 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/gfx/x/x11_path.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
 
@@ -42,6 +47,12 @@ const int kAllWorkspaces = 0xFFFFFFFF;
 constexpr char kX11WindowRolePopup[] = "popup";
 constexpr char kX11WindowRoleBubble[] = "bubble";
 constexpr unsigned char kDarkGtkThemeVariant[] = "dark";
+
+constexpr long kSystemTrayRequestDock = 0;
+
+constexpr int kXembedInfoProtocolVersion = 0;
+constexpr int kXembedFlagMap = 1 << 0;
+constexpr int kXembedInfoFlags = kXembedFlagMap;
 
 // In some situations, views tries to make a zero sized window, and that
 // makes us crash. Make sure we have valid sizes.
@@ -134,9 +145,16 @@ XWindow::XWindow()
   DCHECK_NE(x_root_window_, x11::None);
 }
 
-XWindow::~XWindow() = default;
+XWindow::~XWindow() {
+  DCHECK_EQ(xwindow_, x11::None) << "XWindow destructed without calling "
+                                    "Close() to release allocated resources.";
+}
 
 void XWindow::Init(const Configuration& config) {
+  // Ensure that the X11MenuRegistrar exists. The X11MenuRegistrar is
+  // necessary to properly track menu windows.
+  X11MenuRegistrar::Get();
+
   activatable_ = config.activatable;
 
   unsigned long attribute_mask = CWBackPixel | CWBitGravity;
@@ -171,7 +189,7 @@ void XWindow::Init(const Configuration& config) {
       break;
   }
   // An in-activatable window should not interact with the system wm.
-  if (!activatable_)
+  if (!activatable_ || config.override_redirect)
     swa.override_redirect = x11::True;
 
 #if !defined(USE_X11)
@@ -205,8 +223,17 @@ void XWindow::Init(const Configuration& config) {
       enable_transparent_visuals = config.type == WindowType::kDrag;
   }
 
+  int visual_id;
+  if (config.wm_role_name == kStatusIconWmRoleName) {
+    std::string atom_name =
+        "_NET_SYSTEM_TRAY_S" + base::NumberToString(DefaultScreen(xdisplay_));
+    XID manager =
+        XGetSelectionOwner(xdisplay_, gfx::GetAtom(atom_name.c_str()));
+    if (ui::GetIntProperty(manager, "_NET_SYSTEM_TRAY_VISUAL", &visual_id))
+      visual_id_ = visual_id;
+  }
+
   Visual* visual = CopyFromParent;
-  SetVisualId(config.visual_id);
   int depth = CopyFromParent;
   Colormap colormap = CopyFromParent;
   ui::XVisualManager* visual_manager = ui::XVisualManager::GetInstance();
@@ -234,6 +261,16 @@ void XWindow::Init(const Configuration& config) {
                            bounds_in_pixels_.height(),
                            0,  // border width
                            depth, InputOutput, visual, attribute_mask, &swa);
+
+  // It can be a status icon window. If it fails to initialize, don't provide
+  // him with a native window handle, close self and let the client destroy
+  // ourselves.
+  if (config.wm_role_name == kStatusIconWmRoleName &&
+      !InitializeAsStatusIcon()) {
+    Close();
+    return;
+  }
+
   OnXWindowCreated();
 
   // TODO(erg): Maybe need to set a ViewProp here like in RWHL::RWHL().
@@ -466,6 +503,9 @@ bool XWindow::Hide() {
   if (!window_mapped_in_client_)
     return false;
 
+  // Make sure no resize task will run after the window is unmapped.
+  CancelResize();
+
   XWithdrawWindow(xdisplay_, xwindow_, 0);
   window_mapped_in_client_ = false;
   return true;
@@ -551,17 +591,7 @@ bool XWindow::IsActive() const {
   // a window is topmost iff it has focus, just use the focus state to determine
   // if a window is active.  Note that Activate() and Deactivate() change the
   // stacking order in addition to changing the focus state.
-  bool is_active =
-      (has_window_focus_ || has_pointer_focus_) && !ignore_keyboard_input_;
-
-  // is_active => window_mapped_in_server_
-  // !window_mapped_in_server_ => !is_active
-  DCHECK(!is_active || window_mapped_in_server_);
-
-  // |has_window_focus_| and |has_pointer_focus_| are mutually exclusive.
-  DCHECK(!has_window_focus_ || !has_pointer_focus_);
-
-  return is_active;
+  return (has_window_focus_ || has_pointer_focus_) && !ignore_keyboard_input_;
 }
 void XWindow::SetSize(const gfx::Size& size_in_pixels) {
   XResizeWindow(xdisplay_, xwindow_, size_in_pixels.width(),
@@ -613,6 +643,11 @@ void XWindow::SetBounds(const gfx::Rect& requested_bounds_in_pixels) {
   // |bounds_in_pixels_| later.
   bounds_in_pixels_ = bounds_in_pixels;
   ResetWindowRegion();
+
+  // Even if the pixel bounds didn't change this call to the delegate should
+  // still happen. The device scale factor may have changed which effectively
+  // changes the bounds.
+  OnXWindowBoundsChanged(bounds_in_pixels);
 }
 
 bool XWindow::IsXWindowVisible() const {
@@ -691,6 +726,7 @@ void XWindow::StackXWindowAtTop() {
 }
 
 void XWindow::SetCursor(::Cursor cursor) {
+  last_cursor_ = cursor;
   XDefineCursor(xdisplay_, xwindow_, cursor);
 }
 
@@ -1063,8 +1099,6 @@ void XWindow::WmMoveResize(int hittest, const gfx::Point& location) const {
 // by PlatformWindow, which is supposed to use XWindow in Ozone builds. So
 // handling these events is disabled for Ozone.
 void XWindow::ProcessEvent(XEvent* xev) {
-  UpdateWMUserTime(xev);
-
   // We can lose track of the window's position when the window is reparented.
   // When the parent window is moved, we won't get an event, so the window's
   // position relative to the root window will get out-of-sync.  We can re-sync
@@ -1087,20 +1121,8 @@ void XWindow::ProcessEvent(XEvent* xev) {
   switch (xev->type) {
     case EnterNotify:
     case LeaveNotify: {
-#if defined(USE_X11)
-      // Ignore EventNotify and LeaveNotify events from children of |xwindow_|.
-      // NativeViewGLSurfaceGLX adds a child to |xwindow_|.
-      if (xev->xcrossing.detail != NotifyInferior) {
-        DCHECK(xev);
-        ui::MouseEvent mouse_event(xev);
-        OnXWindowEvent(&mouse_event);
-      } else
-#endif
-      {
-        bool is_enter = xev->type == EnterNotify;
-        OnCrossingEvent(is_enter, xev->xcrossing.focus, xev->xcrossing.mode,
-                        xev->xcrossing.detail);
-      }
+      OnCrossingEvent(xev->type == EnterNotify, xev->xcrossing.focus,
+                      xev->xcrossing.mode, xev->xcrossing.detail);
       break;
     }
     case Expose: {
@@ -1109,37 +1131,6 @@ void XWindow::ProcessEvent(XEvent* xev) {
       OnXWindowDamageEvent(damage_rect_in_pixels);
       break;
     }
-#if !defined(USE_OZONE)
-    case KeyPress:
-    case KeyRelease: {
-      ui::KeyEvent key_event(xev);
-      OnXWindowEvent(&key_event);
-      break;
-    }
-    case ButtonPress:
-    case ButtonRelease: {
-      ui::EventType event_type = ui::EventTypeFromNative(xev);
-      switch (event_type) {
-        case ui::ET_MOUSEWHEEL: {
-          ui::MouseWheelEvent mouseev(xev);
-          OnXWindowEvent(&mouseev);
-          break;
-        }
-        case ui::ET_MOUSE_PRESSED:
-        case ui::ET_MOUSE_RELEASED: {
-          ui::MouseEvent mouseev(xev);
-          OnXWindowEvent(&mouseev);
-          break;
-        }
-        case ui::ET_UNKNOWN:
-          // No event is created for X11-release events for mouse-wheel buttons.
-          break;
-        default:
-          NOTREACHED() << event_type;
-      }
-      break;
-    }
-#endif
     case x11::FocusIn:
     case x11::FocusOut:
       OnFocusEvent(xev->type == x11::FocusIn, xev->xfocus.mode,
@@ -1157,8 +1148,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
       switch (static_cast<XIEvent*>(xev->xcookie.data)->evtype) {
         case XI_Enter:
         case XI_Leave: {
-          bool is_enter = enter_event->evtype == XI_Enter;
-          OnCrossingEvent(is_enter, enter_event->focus,
+          OnCrossingEvent(enter_event->evtype == XI_Enter, enter_event->focus,
                           XI2ModeToXMode(enter_event->mode),
                           enter_event->detail);
           return;
@@ -1172,82 +1162,6 @@ void XWindow::ProcessEvent(XEvent* xev) {
         default:
           break;
       }
-#if !defined(USE_OZONE)
-      int num_coalesced = 0;
-      ui::EventType type = ui::EventTypeFromNative(xev);
-      XEvent last_event;
-
-      switch (type) {
-        case ui::ET_TOUCH_MOVED:
-          num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
-          if (num_coalesced > 0)
-            xev = &last_event;
-          FALLTHROUGH;
-        case ui::ET_TOUCH_PRESSED:
-        case ui::ET_TOUCH_RELEASED: {
-          ui::TouchEvent touchev(xev);
-          OnXWindowEvent(&touchev);
-          break;
-        }
-        case ui::ET_MOUSE_MOVED:
-        case ui::ET_MOUSE_DRAGGED:
-        case ui::ET_MOUSE_PRESSED:
-        case ui::ET_MOUSE_RELEASED:
-        case ui::ET_MOUSE_ENTERED:
-        case ui::ET_MOUSE_EXITED: {
-          if (type == ui::ET_MOUSE_MOVED || type == ui::ET_MOUSE_DRAGGED) {
-            // If this is a motion event, we want to coalesce all pending motion
-            // events that are at the top of the queue.
-            num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
-            if (num_coalesced > 0)
-              xev = &last_event;
-          }
-          ui::MouseEvent mouseev(xev);
-          // If after CoalescePendingMotionEvents the type of xev is resolved to
-          // UNKNOWN, don't dispatch the event.
-          // TODO(804418): investigate why ColescePendingMotionEvents can
-          // include mouse wheel events as well. Investigation showed that
-          // events on Linux are checked with cmt-device path, and can include
-          // DT_CMT_SCROLL_ data. See more discussion in
-          // https://crrev.com/c/853953
-          if (mouseev.type() != ui::ET_UNKNOWN)
-            OnXWindowEvent(&mouseev);
-          break;
-        }
-        case ui::ET_MOUSEWHEEL: {
-          ui::MouseWheelEvent mouseev(xev);
-          OnXWindowEvent(&mouseev);
-          break;
-        }
-        case ui::ET_SCROLL_FLING_START:
-        case ui::ET_SCROLL_FLING_CANCEL:
-        case ui::ET_SCROLL: {
-          ui::ScrollEvent scrollev(xev);
-          // We need to filter zero scroll offset here. Because
-          // MouseWheelEventQueue assumes we'll never get a zero scroll offset
-          // event and we need delta to determine which element to scroll on
-          // phaseBegan.
-          if (scrollev.x_offset() != 0.0 || scrollev.y_offset() != 0.0)
-            OnXWindowEvent(&scrollev);
-          break;
-        }
-        case ui::ET_KEY_PRESSED:
-        case ui::ET_KEY_RELEASED: {
-          ui::KeyEvent key_event(xev);
-          OnXWindowEvent(&key_event);
-          break;
-        }
-        case ui::ET_UNKNOWN:
-          break;
-        default:
-          NOTREACHED();
-      }
-
-      // If we coalesced an event we need to free its cookie.
-      if (num_coalesced > 0)
-        XFreeEventData(xev->xgeneric.display, &last_event.xcookie);
-#endif
-
       break;
     }
     case MapNotify: {
@@ -1260,7 +1174,6 @@ void XWindow::ProcessEvent(XEvent* xev) {
       has_pointer_grab_ = false;
       has_pointer_focus_ = false;
       has_window_focus_ = false;
-      OnXWindowUnmapped();
       break;
     }
     case ClientMessage: {
@@ -1303,30 +1216,6 @@ void XWindow::ProcessEvent(XEvent* xev) {
       }
       break;
     }
-#if !defined(USE_OZONE)
-    case MotionNotify: {
-      // Discard all but the most recent motion event that targets the same
-      // window with unchanged state.
-      XEvent last_event;
-      while (XPending(xev->xany.display)) {
-        XEvent next_event;
-        XPeekEvent(xev->xany.display, &next_event);
-        if (next_event.type == MotionNotify &&
-            next_event.xmotion.window == xev->xmotion.window &&
-            next_event.xmotion.subwindow == xev->xmotion.subwindow &&
-            next_event.xmotion.state == xev->xmotion.state) {
-          XNextEvent(xev->xany.display, &last_event);
-          xev = &last_event;
-        } else {
-          break;
-        }
-      }
-
-      ui::MouseEvent mouseev(xev);
-      OnXWindowEvent(&mouseev);
-      break;
-    }
-#endif
     case PropertyNotify: {
       XAtom changed_atom = xev->xproperty.atom;
       if (changed_atom == gfx::GetAtom("_NET_WM_STATE")) {
@@ -1345,15 +1234,15 @@ void XWindow::ProcessEvent(XEvent* xev) {
   }
 }
 
-void XWindow::UpdateWMUserTime(XEvent* xev) {
+void XWindow::UpdateWMUserTime(ui::Event* event) {
   if (!IsActive())
     return;
-
-  ui::EventType type = ui::EventTypeFromXEvent(*xev);
+  DCHECK(event);
+  ui::EventType type = event->type();
   if (type == ui::ET_MOUSE_PRESSED || type == ui::ET_KEY_PRESSED ||
       type == ui::ET_TOUCH_PRESSED) {
-    unsigned long wm_user_time_ms = static_cast<unsigned long>(
-        (ui::EventTimeFromXEvent(*xev) - base::TimeTicks()).InMilliseconds());
+    unsigned long wm_user_time_ms =
+        (event->time_stamp() - base::TimeTicks()).InMilliseconds();
     XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom("_NET_WM_USER_TIME"),
                     XA_CARDINAL, 32, PropModeReplace,
                     reinterpret_cast<const unsigned char*>(&wm_user_time_ms),
@@ -1363,7 +1252,6 @@ void XWindow::UpdateWMUserTime(XEvent* xev) {
 
 void XWindow::OnWindowMapped() {
   window_mapped_in_server_ = true;
-  OnXWindowMapped();
   // Some WMs only respect maximize hints after the window has been mapped.
   // Check whether we need to re-do a maximization.
   if (should_maximize_after_map_) {
@@ -1494,9 +1382,8 @@ void XWindow::DispatchResize() {
     // WM doesn't support _NET_WM_SYNC_REQUEST.
     // Or we are too slow, so _NET_WM_SYNC_REQUEST is disabled by the
     // compositor.
-    delayed_resize_task_.Reset(base::BindOnce(&XWindow::DelayedResize,
-                                              weak_factory_.GetWeakPtr(),
-                                              bounds_in_pixels_));
+    delayed_resize_task_.Reset(base::BindOnce(
+        &XWindow::DelayedResize, base::Unretained(this), bounds_in_pixels_));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, delayed_resize_task_.callback());
     return;
@@ -1526,8 +1413,13 @@ void XWindow::DelayedResize(const gfx::Rect& bounds_in_pixels) {
     SyncSetCounter(xdisplay_, extended_update_counter_,
                    ++current_counter_value_);
   }
-  NotifyBoundsChanged(bounds_in_pixels);
+
   CancelResize();
+  NotifyBoundsChanged(bounds_in_pixels);
+
+  // No more member accesses here: bounds change propagation may have deleted
+  // |this| (e.g. when a chrome window is snapped into a tab strip. Further
+  // details at crbug.com/1068755).
 }
 
 void XWindow::CancelResize() {
@@ -1566,6 +1458,20 @@ void XWindow::LowerWindow() {
   XLowerWindow(xdisplay_, xwindow_);
 }
 
+void XWindow::SetOverrideRedirect(bool override_redirect) {
+  bool remap = window_mapped_in_client_;
+  if (remap)
+    Hide();
+  XSetWindowAttributes swa;
+  swa.override_redirect = override_redirect;
+  XChangeWindowAttributes(xdisplay_, xwindow_, CWOverrideRedirect, &swa);
+  if (remap) {
+    Map();
+    if (has_pointer_grab_)
+      ui::ChangeActivePointerGrabCursor(x11::None);
+  }
+}
+
 bool XWindow::ContainsPointInRegion(const gfx::Point& point) const {
   if (!shape())
     return true;
@@ -1584,7 +1490,7 @@ void XWindow::SetXWindowShape(std::unique_ptr<NativeShapeRects> native_shape,
       SkPath path_in_dip;
       if (native_region.getBoundaryPath(&path_in_dip)) {
         SkPath path_in_pixels;
-        path_in_dip.transform(transform.matrix(), &path_in_pixels);
+        path_in_dip.transform(SkMatrix(transform.matrix()), &path_in_pixels);
         xregion = gfx::CreateRegionFromSkPath(path_in_pixels);
       } else {
         xregion = XCreateRegion();
@@ -1608,14 +1514,6 @@ void XWindow::UnconfineCursor() {
   pointer_barriers_.fill(x11::None);
 
   has_pointer_barriers_ = false;
-}
-
-void XWindow::SetVisualId(base::Optional<int> visual_id) {
-  if (!visual_id.has_value())
-    return;
-
-  DCHECK_GE(visual_id.value(), 0);
-  visual_id_ = visual_id.value();
 }
 
 void XWindow::UpdateWindowRegion(XRegion* xregion) {
@@ -1659,6 +1557,45 @@ void XWindow::UpdateWindowRegion(XRegion* xregion) {
 void XWindow::NotifyBoundsChanged(const gfx::Rect& new_bounds_in_px) {
   ResetWindowRegion();
   OnXWindowBoundsChanged(new_bounds_in_px);
+}
+
+bool XWindow::InitializeAsStatusIcon() {
+  std::string atom_name =
+      "_NET_SYSTEM_TRAY_S" + base::NumberToString(DefaultScreen(xdisplay_));
+  XID manager = XGetSelectionOwner(xdisplay_, gfx::GetAtom(atom_name.c_str()));
+  if (manager == x11::None)
+    return false;
+
+  ui::SetIntArrayProperty(xwindow_, "_XEMBED_INFO", "CARDINAL",
+                          {kXembedInfoProtocolVersion, kXembedInfoFlags});
+
+  XSetWindowAttributes attrs;
+  unsigned long flags = 0;
+  if (has_alpha()) {
+    flags |= CWBackPixel;
+    attrs.background_pixel = 0;
+  } else {
+    ui::SetIntProperty(xwindow_, "CHROMIUM_COMPOSITE_WINDOW", "CARDINAL", 1);
+    flags |= CWBackPixmap;
+    attrs.background_pixmap = ParentRelative;
+  }
+  XChangeWindowAttributes(xdisplay_, xwindow_, flags, &attrs);
+  XEvent ev;
+  memset(&ev, 0, sizeof(ev));
+  ev.xclient.type = ClientMessage;
+  ev.xclient.window = manager;
+  ev.xclient.message_type = gfx::GetAtom("_NET_SYSTEM_TRAY_OPCODE");
+  ev.xclient.format = 32;
+  ev.xclient.data.l[0] = ui::X11EventSource::GetInstance()->GetTimestamp();
+  ev.xclient.data.l[1] = kSystemTrayRequestDock;
+  ev.xclient.data.l[2] = xwindow_;
+  bool error;
+  {
+    gfx::X11ErrorTracker error_tracker;
+    XSendEvent(xdisplay_, manager, false, NoEventMask, &ev);
+    error = error_tracker.FoundNewError();
+  }
+  return !error;
 }
 
 }  // namespace ui

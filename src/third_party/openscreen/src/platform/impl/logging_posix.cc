@@ -16,7 +16,6 @@
 #include "util/trace_logging.h"
 
 namespace openscreen {
-namespace platform {
 namespace {
 
 int g_log_fd = STDERR_FILENO;
@@ -80,22 +79,22 @@ void SetLogLevel(LogLevel level) {
   g_log_level = level;
 }
 
-bool IsLoggingOn(LogLevel level, absl::string_view file) {
+bool IsLoggingOn(LogLevel level, const char* file) {
   // Possible future enhancement: Use glob patterns passed on the command-line
   // to use a different logging level for certain files, like in Chromium.
   return level >= g_log_level;
 }
 
 void LogWithLevel(LogLevel level,
-                  absl::string_view file,
+                  const char* file,
                   int line,
-                  absl::string_view msg) {
+                  std::stringstream message) {
   if (level < g_log_level)
     return;
 
   std::stringstream ss;
   ss << "[" << level << ":" << file << "(" << line << "):T" << std::hex
-     << TRACE_CURRENT_ID << "] " << msg << '\n';
+     << TRACE_CURRENT_ID << "] " << message.rdbuf() << '\n';
   const auto ss_str = ss.str();
   const auto bytes_written = write(g_log_fd, ss_str.c_str(), ss_str.size());
   OSP_DCHECK(bytes_written);
@@ -109,5 +108,4 @@ void Break() {
 #endif
 }
 
-}  // namespace platform
 }  // namespace openscreen

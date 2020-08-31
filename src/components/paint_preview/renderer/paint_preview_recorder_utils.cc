@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/trace_event.h"
 #include "components/paint_preview/common/file_stream.h"
 #include "components/paint_preview/common/paint_preview_tracker.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
@@ -23,8 +25,7 @@ void ParseGlyphs(const cc::PaintOpBuffer* buffer,
       // Recurse into nested records if they contain text blobs (equivalent to
       // nested SkPictures).
       auto* record_op = static_cast<cc::DrawRecordOp*>(*it);
-      if (record_op->HasText())
-        ParseGlyphs(record_op->record.get(), tracker);
+      ParseGlyphs(record_op->record.get(), tracker);
     }
   }
 }
@@ -32,7 +33,10 @@ void ParseGlyphs(const cc::PaintOpBuffer* buffer,
 bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
                           PaintPreviewTracker* tracker,
                           const gfx::Rect& dimensions,
-                          base::File file) {
+                          base::File file,
+                          size_t max_size,
+                          size_t* serialized_size) {
+  TRACE_EVENT0("paint_preview", "SerializeAsSkPicture");
   if (!file.IsValid())
     return false;
 
@@ -50,21 +54,29 @@ bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
   TypefaceSerializationContext typeface_context(tracker->GetTypefaceUsageMap());
   auto serial_procs = MakeSerialProcs(tracker->GetPictureSerializationContext(),
                                       &typeface_context);
-  FileWStream stream(std::move(file));
+  FileWStream stream(std::move(file), max_size);
   skp->serialize(&stream, &serial_procs);
   stream.flush();
   stream.Close();
-  return true;
+  DCHECK(serialized_size);
+  *serialized_size = stream.ActualBytesWritten();
+  return !stream.DidWriteFail();
 }
 
 void BuildResponse(PaintPreviewTracker* tracker,
                    mojom::PaintPreviewCaptureResponse* response) {
-  response->id = tracker->RoutingId();
-  for (const auto& id_pair : *(tracker->GetPictureSerializationContext())) {
-    response->content_id_proxy_id_map.insert({id_pair.first, id_pair.second});
+  response->embedding_token = tracker->EmbeddingToken();
+
+  PictureSerializationContext* picture_context =
+      tracker->GetPictureSerializationContext();
+  if (picture_context) {
+    for (const auto& id_pair : *picture_context) {
+      response->content_id_to_embedding_token.insert(
+          {id_pair.first, id_pair.second});
+    }
   }
-  for (const auto& link : tracker->GetLinks())
-    response->links.push_back(link.Clone());
+
+  tracker->MoveLinks(&response->links);
 }
 
 }  // namespace paint_preview

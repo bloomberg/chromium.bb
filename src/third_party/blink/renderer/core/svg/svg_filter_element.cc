@@ -77,7 +77,7 @@ SVGFilterElement::SVGFilterElement(Document& document)
 
 SVGFilterElement::~SVGFilterElement() = default;
 
-void SVGFilterElement::Trace(blink::Visitor* visitor) {
+void SVGFilterElement::Trace(Visitor* visitor) {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);
@@ -113,18 +113,12 @@ LocalSVGResource* SVGFilterElement::AssociatedResource() const {
 void SVGFilterElement::PrimitiveAttributeChanged(
     SVGFilterPrimitiveStandardAttributes& primitive,
     const QualifiedName& attribute) {
-  if (LayoutObject* layout_object = GetLayoutObject()) {
-    ToLayoutSVGResourceFilter(layout_object)
-        ->PrimitiveAttributeChanged(primitive, attribute);
-  } else if (LocalSVGResource* resource = AssociatedResource()) {
-    resource->NotifyContentChanged(SVGResourceClient::kPaintInvalidation);
-  }
+  if (LocalSVGResource* resource = AssociatedResource())
+    resource->NotifyFilterPrimitiveChanged(primitive, attribute);
 }
 
 void SVGFilterElement::InvalidateFilterChain() {
-  if (LayoutObject* layout_object = GetLayoutObject()) {
-    ToLayoutSVGResourceFilter(layout_object)->RemoveAllClientsFromCache();
-  } else if (LocalSVGResource* resource = AssociatedResource()) {
+  if (LocalSVGResource* resource = AssociatedResource()) {
     resource->NotifyContentChanged(SVGResourceClient::kLayoutInvalidation |
                                    SVGResourceClient::kBoundariesInvalidation);
   }
@@ -133,7 +127,7 @@ void SVGFilterElement::InvalidateFilterChain() {
 void SVGFilterElement::ChildrenChanged(const ChildrenChange& change) {
   SVGElement::ChildrenChanged(change);
 
-  if (change.by_parser)
+  if (change.ByParser())
     return;
 
   if (LayoutObject* object = GetLayoutObject()) {

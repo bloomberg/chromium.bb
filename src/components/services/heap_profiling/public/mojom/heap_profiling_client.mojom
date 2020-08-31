@@ -46,8 +46,13 @@ struct HeapProfileSample {
   // Allocator type.
   AllocatorType allocator;
 
-  // The size in bytes accounted for the sample.
+  // The size of the allocation.
   uint64 size;
+
+  // The total bytes attributed to the desampled allocation. Each sampled
+  // allocation represents a series of similar allocations. Dividing |total| by
+  // |size| yields the expected number of allocations.
+  uint64 total;
 
   // Id of the context string.
   uint64 context_id;
@@ -77,7 +82,7 @@ interface ProfilingClient {
   // |params.sender_pipe|, or accumulated in the profiled process depending on
   // the |params.use_in_process_storage|.
   // There is currently no mechanism to stop recording allocations.
-  StartProfiling(ProfilingParams params);
+  StartProfiling(ProfilingParams params) => ();
 
   RetrieveHeapProfile() => (HeapProfile profile);
 };

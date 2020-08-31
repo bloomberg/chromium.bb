@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 
@@ -58,7 +59,15 @@ void InvalidateInlineItems(LayoutObject* object) {
     }
   }
 
-  if (NGPaintFragment* fragment = object->FirstInlineFragment()) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    // This LayoutObject is not technically destroyed, but further access should
+    // be prohibited when moved to different parent as if it were destroyed.
+    if (object->FirstInlineFragmentItemIndex()) {
+      if (auto* text = ToLayoutTextOrNull(object))
+        text->DetachAbstractInlineTextBoxesIfNeeded();
+      NGFragmentItems::LayoutObjectWillBeMoved(*object);
+    }
+  } else if (NGPaintFragment* fragment = object->FirstInlineFragment()) {
     // This LayoutObject is not technically destroyed, but further access should
     // be prohibited when moved to different parent as if it were destroyed.
     fragment->LayoutObjectWillBeDestroyed();
@@ -70,20 +79,13 @@ void InvalidateInlineItems(LayoutObject* object) {
 }  // namespace
 
 void LayoutObjectChildList::DestroyLeftoverChildren() {
-  while (FirstChild()) {
-    // List markers are owned by their enclosing list and so don't get destroyed
-    // by this container.
-    if (FirstChild()->IsListMarkerIncludingNG()) {
-      FirstChild()->Remove();
-      continue;
-    }
-
-    // Destroy any anonymous children remaining in the layout tree, as well as
-    // implicit (shadow) DOM elements like those used in the engine-based text
-    // fields.
-    if (FirstChild()->GetNode())
-      FirstChild()->GetNode()->SetLayoutObject(nullptr);
-    FirstChild()->Destroy();
+  // Destroy any anonymous children remaining in the layout tree, as well as
+  // implicit (shadow) DOM elements like those used in the engine-based text
+  // fields.
+  while (LayoutObject* child = FirstChild()) {
+    if (Node* child_node = child->GetNode())
+      child_node->SetLayoutObject(nullptr);
+    child->Destroy();
   }
 }
 
@@ -103,7 +105,7 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
     // issue paint invalidations, so that the area exposed when the child
     // disappears gets paint invalidated properly.
     if (notify_layout_object && old_child->EverHadLayout()) {
-      old_child->SetNeedsLayoutAndPrefWidthsRecalc(
+      old_child->SetNeedsLayoutAndIntrinsicWidthsRecalc(
           layout_invalidation_reason::kRemovedFromLayout);
       if (old_child->IsOutOfFlowPositioned() &&
           RuntimeEnabledFeatures::LayoutNGEnabled())
@@ -129,6 +131,8 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
 
     if (old_child->IsInLayoutNGInlineFormattingContext()) {
       owner->SetChildNeedsCollectInlines();
+      if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+        InvalidateInlineItems(old_child);
     }
   }
 
@@ -182,6 +186,12 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   if (before_child && before_child->Parent() != owner) {
     NOTREACHED();
     return;
+  }
+
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled() &&
+      !owner->DocumentBeingDestroyed() &&
+      new_child->IsInLayoutNGInlineFormattingContext()) {
+    InvalidateInlineItems(new_child);
   }
 
   new_child->SetParent(owner);
@@ -239,7 +249,7 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
     // actually happens.
   }
 
-  new_child->SetNeedsLayoutAndPrefWidthsRecalc(
+  new_child->SetNeedsLayoutAndIntrinsicWidthsRecalc(
       layout_invalidation_reason::kAddedToLayout);
   if (new_child->IsOutOfFlowPositioned() &&
       RuntimeEnabledFeatures::LayoutNGEnabled())

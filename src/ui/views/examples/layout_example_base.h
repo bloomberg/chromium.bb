@@ -81,32 +81,17 @@ class VIEWS_EXAMPLES_EXPORT LayoutExampleBase : public ExampleBase,
  protected:
   View* layout_panel() { return layout_panel_; }
 
-  // Creates a Combobox with a label with |label_text| to the left. Adjust
-  // |vertical_pos| to |vertical_pos| + combo_box->height() + kSpacing.
-  Combobox* CreateCombobox(const base::string16& label_text,
-                           const char* const* items,
-                           int count,
-                           int* vertical_pos);
+  // Creates and adds a Combobox with a label with |label_text| to the left.
+  // Adjust |vertical_pos| to |vertical_pos| + combo_box->height() + kSpacing.
+  Combobox* CreateAndAddCombobox(const base::string16& label_text,
+                                 const char* const* items,
+                                 int count,
+                                 int* vertical_pos);
 
-  // Creates just a Textfield at the current position of |horizontal_pos| and
-  // |vertical_pos|. Update |horizontal_pos| to |horizontal_pos| +
-  // text_field->width() + kSpacing.
-  Textfield* CreateRawTextfield(int vertical_pos,
-                                bool add,
-                                int* horizontal_pos);
-
-  // Creates a Textfield with a label with |label_text| to the left. Adjust
-  // |vertical_pos| to |vertical_pos| + combo_box->height() + kSpacing.
-  Textfield* CreateTextfield(const base::string16& label_text,
-                             int* vertical_pos);
-
-  // Creates a set of labeled Textfields with |label_text|, and four text fields
-  // arranged at compass points representing a set of insets. |vertical_pos| is
-  // updated to the bottom of the last Textfield + kSpacing, and |textfields| is
-  // populated with the fieds that are created.
-  void CreateMarginsTextFields(const base::string16& label_text,
-                               Textfield* textfields[4],
-                               int* vertical_pos);
+  // Creates and adds a Textfield with a label with |label_text| to the left.
+  // Adjusts |vertical_pos| to |vertical_pos| + combo_box->height() + kSpacing.
+  Textfield* CreateAndAddTextfield(const base::string16& label_text,
+                                   int* vertical_pos);
 
   // Creates a set of labeled Textfields with |label_text|, and four text fields
   // arranged at compass points representing a set of insets. |vertical_pos| is
@@ -116,9 +101,10 @@ class VIEWS_EXAMPLES_EXPORT LayoutExampleBase : public ExampleBase,
                                InsetTextfields* textfields,
                                int* vertical_pos);
 
-  // Creates a Checkbox with label |label_text|. Adjust |vertical_pos| to
-  // |vertical_pos| + checkbox->height() + kSpacing.
-  Checkbox* CreateCheckbox(const base::string16& label_text, int* vertical_pos);
+  // Creates and adds a Checkbox with label |label_text|. Adjust |vertical_pos|
+  // to |vertical_pos| + checkbox->height() + kSpacing.
+  Checkbox* CreateAndAddCheckbox(const base::string16& label_text,
+                                 int* vertical_pos);
 
   // ButtonListener:
   // Be sure to call LayoutExampleBase::ButtonPressed() to ensure the "add"
@@ -145,6 +131,11 @@ class VIEWS_EXAMPLES_EXPORT LayoutExampleBase : public ExampleBase,
   virtual void UpdateLayoutManager() = 0;
 
  private:
+  // Creates and adds a Textfield at the current position of |horizontal_pos|
+  // and |vertical_pos|. Update |horizontal_pos| to |horizontal_pos| +
+  // text_field->width() + kSpacing.
+  Textfield* CreateAndAddRawTextfield(int vertical_pos, int* horizontal_pos);
+
   View* layout_panel_ = nullptr;
   View* control_panel_ = nullptr;
   LabelButton* add_button_ = nullptr;

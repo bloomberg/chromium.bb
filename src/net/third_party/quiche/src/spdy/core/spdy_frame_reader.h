@@ -7,8 +7,8 @@
 
 #include <cstdint>
 
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_export.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace spdy {
 
@@ -26,7 +26,7 @@ namespace spdy {
 // trusted and it is up to the caller to throw away the failed instance and
 // handle the error as appropriate. None of the Read*() methods should ever be
 // called after failure, as they will also fail immediately.
-class SPDY_EXPORT_PRIVATE SpdyFrameReader {
+class QUICHE_EXPORT_PRIVATE SpdyFrameReader {
  public:
   // Caller must provide an underlying buffer to work on.
   SpdyFrameReader(const char* data, const size_t len);
@@ -73,7 +73,7 @@ class SPDY_EXPORT_PRIVATE SpdyFrameReader {
   //
   // Forwards the internal iterator on success.
   // Returns true on success, false otherwise.
-  bool ReadStringPiece16(SpdyStringPiece* result);
+  bool ReadStringPiece16(quiche::QuicheStringPiece* result);
 
   // Reads a string prefixed with 32-bit length into the given output parameter.
   //
@@ -82,7 +82,7 @@ class SPDY_EXPORT_PRIVATE SpdyFrameReader {
   //
   // Forwards the internal iterator on success.
   // Returns true on success, false otherwise.
-  bool ReadStringPiece32(SpdyStringPiece* result);
+  bool ReadStringPiece32(quiche::QuicheStringPiece* result);
 
   // Reads a given number of bytes into the given buffer. The buffer
   // must be of adequate size.

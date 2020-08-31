@@ -19,13 +19,14 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
+#include "components/printing/common/print.mojom.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 struct PrintHostMsg_DidStartPreview_Params;
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_RequestPrintPreview_Params;
-struct PrintHostMsg_SetOptionsFromDocument_Params;
 
 namespace base {
 class DictionaryValue;
@@ -42,17 +43,27 @@ namespace printing {
 class PrintPreviewHandler;
 struct PageSizeMargins;
 
-class PrintPreviewUI : public ConstrainedWebDialogUI {
+class PrintPreviewUI : public ConstrainedWebDialogUI,
+                       public mojom::PrintPreviewUI {
  public:
   explicit PrintPreviewUI(content::WebUI* web_ui);
 
   ~PrintPreviewUI() override;
+
+  mojo::PendingAssociatedRemote<mojom::PrintPreviewUI> BindPrintPreviewUI();
 
   // Gets the print preview |data|. |index| is zero-based, and can be
   // |COMPLETE_PREVIEW_DOCUMENT_INDEX| to get the entire preview document.
   virtual void GetPrintPreviewDataForIndex(
       int index,
       scoped_refptr<base::RefCountedMemory>* data) const;
+
+  // printing::mojo::PrintPreviewUI:
+  void SetOptionsFromDocument(const mojom::OptionsFromDocumentParamsPtr params,
+                              int32_t request_id) override;
+  void PrintPreviewFailed(int32_t document_cookie, int32_t request_id) override;
+
+  bool IsBound() const;
 
   // Setters
   void SetInitiatorTitle(const base::string16& initiator_title);
@@ -74,13 +85,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   const gfx::Rect& printable_area() const { return printable_area_; }
 
   const gfx::Size& page_size() const { return page_size_; }
-
-  // Determines if the PDF compositor is being used to generate full document
-  // from individual pages, which can avoid the need for an extra composite
-  // request containing all of the pages together.
-  // TODO(awscreen): Can remove this method once all modifiable content is
-  // handled with MSKP document type.
-  bool ShouldCompositeDocumentUsingIndividualPages() const;
 
   // Returns true if |page_number| is the last page in |pages_to_render_|.
   // |page_number| is a 0-based number.
@@ -156,10 +160,8 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
                         int preview_request_id);
 
   // Notifies the Web UI renderer that preview data is available.
-  // |expected_pages_count| specifies the total number of pages.
   // |preview_request_id| indicates which request resulted in this response.
-  void OnPreviewDataIsAvailable(int expected_pages_count,
-                                scoped_refptr<base::RefCountedMemory> data,
+  void OnPreviewDataIsAvailable(scoped_refptr<base::RefCountedMemory> data,
                                 int preview_request_id);
 
   // Notifies the Web UI that the print preview failed to render for the request
@@ -190,11 +192,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   // Closes the print preview dialog.
   virtual void OnClosePrintPreviewDialog();
-
-  // Notifies the WebUI to set print preset options from source PDF.
-  void OnSetOptionsFromDocument(
-      const PrintHostMsg_SetOptionsFromDocument_Params& params,
-      int request_id);
 
   // Allows tests to wait until the print preview dialog is loaded.
   class TestDelegate {
@@ -304,6 +301,8 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   // The printable area of the printed document pages.
   gfx::Rect printable_area_;
+
+  mojo::AssociatedReceiver<mojom::PrintPreviewUI> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };

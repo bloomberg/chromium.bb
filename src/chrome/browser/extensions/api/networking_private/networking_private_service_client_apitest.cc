@@ -15,6 +15,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/wifi/fake_wifi_service.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "extensions/browser/api/networking_private/networking_private_event_router.h"
@@ -88,8 +89,8 @@ class NetworkingPrivateServiceClientApiTest
 
   bool RunNetworkingSubtest(const std::string& subtest) {
     return RunExtensionSubtest("networking_private/service_client",
-                               "main.html?" + subtest,
-                               kFlagEnableFileAccess | kFlagLoadAsComponent);
+                               "main.html?" + subtest, kFlagEnableFileAccess,
+                               kFlagLoadAsComponent);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

@@ -34,13 +34,8 @@ class InstanceRegistryTest : public testing::Test,
   }
 
   apps::InstanceState GetState(apps::InstanceRegistry& instance_registry,
-                               const aura::Window* window) {
-    apps::InstanceState state = apps::InstanceState::kUnknown;
-    instance_registry.ForOneInstance(
-        window, [&state](const apps::InstanceUpdate& update) {
-          state = update.State();
-        });
-    return state;
+                               aura::Window* window) {
+    return instance_registry.GetState(window);
   }
 
   // apps::InstanceRegistry::Observer overrides.
@@ -146,6 +141,7 @@ class InstanceRecursiveObserver : public apps::InstanceRegistry::Observer {
     EXPECT_EQ(outer.LaunchId(), inner.LaunchId());
     EXPECT_EQ(outer.State(), inner.State());
     EXPECT_EQ(outer.LastUpdatedTime(), inner.LastUpdatedTime());
+    EXPECT_EQ(outer.BrowserContext(), inner.BrowserContext());
   }
 
   apps::InstanceRegistry* instance_registry_;

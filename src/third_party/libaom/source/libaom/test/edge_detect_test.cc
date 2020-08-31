@@ -10,6 +10,8 @@
  */
 
 #include <stdbool.h>
+#include <memory>
+#include <tuple>
 #include "aom_mem/aom_mem.h"
 #include "av1/encoder/rdopt.h"
 #include "test/util.h"
@@ -17,8 +19,8 @@
 
 namespace {
 
-using ::testing::get;
-using ::testing::tuple;
+using std::get;
+using std::tuple;
 
 static int get_pix(uint8_t *buf, int i, bool high_bd) {
   if (high_bd) {
@@ -59,13 +61,18 @@ static uint8_t *pad_8tap_convolve(const int *data, int w, int h, bool high_bd) {
   } else {
     dst = (uint8_t *)aom_memalign(32, sizeof(uint8_t) * pad_w * pad_h);
   }
+  if (dst == nullptr) {
+    EXPECT_NE(dst, nullptr);
+    return nullptr;
+  }
+
   for (int j = 0; j < pad_h; ++j) {
     for (int i = 0; i < pad_w; ++i) {
       const int v = get_nearest_pix(data, w, h, i - 3, j - 3);
       if (high_bd) {
         *CONVERT_TO_SHORTPTR(dst + i + j * pad_w) = v;
       } else {
-        dst[i + j * pad_w] = v;
+        dst[i + j * pad_w] = static_cast<uint8_t>(v);
       }
     }
   }
@@ -81,6 +88,18 @@ static void free_pad_8tap(uint8_t *padded, int width, bool high_bd) {
     aom_free(padded - (width + 7) * 3 - 3);
   }
 }
+
+struct Pad8TapConvolveDeleter {
+  Pad8TapConvolveDeleter(const int width, const bool high_bd)
+      : width(width), high_bd(high_bd) {}
+  void operator()(uint8_t *p) {
+    if (p != nullptr) {
+      free_pad_8tap(p, width, high_bd);
+    }
+  }
+  const int width;
+  const bool high_bd;
+};
 
 static uint8_t *malloc_bd(int num_entries, bool high_bd) {
   const int bytes_per_entry = high_bd ? sizeof(uint16_t) : sizeof(uint8_t);
@@ -101,6 +120,12 @@ static void free_bd(uint8_t *p, bool high_bd) {
   }
 }
 
+struct MallocBdDeleter {
+  explicit MallocBdDeleter(const bool high_bd) : high_bd(high_bd) {}
+  void operator()(uint8_t *p) { free_bd(p, high_bd); }
+  const bool high_bd;
+};
+
 class EdgeDetectBrightnessTest :
     // Parameters are (brightness, width, height, high bit depth representation,
     // bit depth).
@@ -116,13 +141,15 @@ class EdgeDetectBrightnessTest :
     const bool high_bd = GET_PARAM(3);
 
     // Create the padded image of uniform brightness.
-    int *orig = (int *)malloc(width * height * sizeof(int));
+    std::unique_ptr<int[]> orig(new int[width * height]);
+    ASSERT_NE(orig, nullptr);
     for (int i = 0; i < width * height; ++i) {
       orig[i] = brightness;
     }
-    input_ = pad_8tap_convolve(orig, width, height, high_bd);
-    free(orig);
+    input_ = pad_8tap_convolve(orig.get(), width, height, high_bd);
+    ASSERT_NE(input_, nullptr);
     output_ = malloc_bd(width * height, high_bd);
+    ASSERT_NE(output_, nullptr);
   }
 
   void TearDown() override {
@@ -168,8 +195,8 @@ TEST_P(EdgeDetectBrightnessTest, BlurUniformBrightness) {
   const bool high_bd = GET_PARAM(3);
   const int bd = GET_PARAM(4);
 
-  gaussian_blur(input_, stride_8tap(width), width, height, output_, high_bd,
-                bd);
+  av1_gaussian_blur(input_, stride_8tap(width), width, height, output_, high_bd,
+                    bd);
   for (int i = 0; i < width * height; ++i) {
     ASSERT_EQ(brightness, get_pix(output_, i, high_bd));
   }
@@ -185,24 +212,42 @@ TEST_P(EdgeDetectBrightnessTest, DetectUniformBrightness) {
   const bool high_bd = GET_PARAM(3);
   const int bd = GET_PARAM(4);
 
-  ASSERT_EQ(0, av1_edge_exists(input_, stride_8tap(width), width, height,
-                               high_bd, bd));
+  ASSERT_EQ(
+      0, av1_edge_exists(input_, stride_8tap(width), width, height, high_bd, bd)
+             .magnitude);
 }
 
-INSTANTIATE_TEST_CASE_P(ImageBrightnessTests, EdgeDetectBrightnessTest,
-                        ::testing::Combine(
-                            // Brightness
-                            ::testing::Values(0, 1, 2, 127, 128, 129, 254, 255,
-                                              256, 511, 512, 1023, 1024, 2048,
-                                              4095),
-                            // Width
-                            ::testing::Values(8, 16, 32),
-                            // Height
-                            ::testing::Values(4, 8, 12, 32),
-                            // High bit depth representation
-                            ::testing::Bool(),
-                            // Bit depth
-                            ::testing::Values(8, 10, 12)));
+#if CONFIG_AV1_HIGHBITDEPTH
+INSTANTIATE_TEST_SUITE_P(ImageBrightnessTests, EdgeDetectBrightnessTest,
+                         ::testing::Combine(
+                             // Brightness
+                             ::testing::Values(0, 1, 2, 127, 128, 129, 254, 255,
+                                               256, 511, 512, 1023, 1024, 2048,
+                                               4095),
+                             // Width
+                             ::testing::Values(8, 16, 32),
+                             // Height
+                             ::testing::Values(4, 8, 12, 32),
+                             // High bit depth representation
+                             ::testing::Bool(),
+                             // Bit depth
+                             ::testing::Values(8, 10, 12)));
+#else
+INSTANTIATE_TEST_SUITE_P(ImageBrightnessTests, EdgeDetectBrightnessTest,
+                         ::testing::Combine(
+                             // Brightness
+                             ::testing::Values(0, 1, 2, 127, 128, 129, 254, 255,
+                                               256, 511, 512, 1023, 1024, 2048,
+                                               4095),
+                             // Width
+                             ::testing::Values(8, 16, 32),
+                             // Height
+                             ::testing::Values(4, 8, 12, 32),
+                             // High bit depth representation
+                             ::testing::Values(false),
+                             // Bit depth
+                             ::testing::Values(8)));
+#endif
 
 class EdgeDetectImageTest :
     // Parameters are (width, height, high bit depth representation, bit depth).
@@ -231,7 +276,7 @@ TEST_P(EdgeDetectImageTest, BlackWhite) {
   const int bd = GET_PARAM(3);
 
   const int white = (1 << bd) - 1;
-  int *orig = (int *)malloc(width * height * sizeof(int));
+  std::unique_ptr<int[]> orig(new int[width * height]);
   for (int j = 0; j < height; ++j) {
     for (int i = 0; i < width; ++i) {
       if (i < width / 2) {
@@ -241,15 +286,18 @@ TEST_P(EdgeDetectImageTest, BlackWhite) {
       }
     }
   }
-  uint8_t *padded = pad_8tap_convolve(orig, width, height, high_bd);
-  free(orig);
-  // Value should be between 556 and 560.
-  ASSERT_LE(556, av1_edge_exists(padded, stride_8tap(width), width, height,
-                                 high_bd, bd));
-  ASSERT_GE(560, av1_edge_exists(padded, stride_8tap(width), width, height,
-                                 high_bd, bd));
 
-  free_pad_8tap(padded, width, high_bd);
+  std::unique_ptr<uint8_t[], Pad8TapConvolveDeleter> padded(
+      pad_8tap_convolve(orig.get(), width, height, high_bd),
+      Pad8TapConvolveDeleter(width, high_bd));
+  ASSERT_NE(padded, nullptr);
+  // Value should be between 556 and 560.
+  ASSERT_LE(556, av1_edge_exists(padded.get(), stride_8tap(width), width,
+                                 height, high_bd, bd)
+                     .magnitude);
+  ASSERT_GE(560, av1_edge_exists(padded.get(), stride_8tap(width), width,
+                                 height, high_bd, bd)
+                     .magnitude);
 }
 
 // Hardcoded blur tests.
@@ -271,14 +319,18 @@ static void hardcoded_blur_test_aux(const bool high_bd) {
     if (bd > 8 && !high_bd) {
       break;
     }
-    uint8_t *output = malloc_bd(w * h, high_bd);
-    uint8_t *padded = pad_8tap_convolve(luma, w, h, high_bd);
-    gaussian_blur(padded, stride_8tap(w), w, h, output, high_bd, bd);
+    std::unique_ptr<uint8_t[], MallocBdDeleter> output(
+        malloc_bd(w * h, high_bd), MallocBdDeleter(high_bd));
+    ASSERT_NE(output, nullptr);
+    std::unique_ptr<uint8_t[], Pad8TapConvolveDeleter> padded(
+        pad_8tap_convolve(luma, w, h, high_bd),
+        Pad8TapConvolveDeleter(w, high_bd));
+    ASSERT_NE(padded, nullptr);
+    av1_gaussian_blur(padded.get(), stride_8tap(w), w, h, output.get(), high_bd,
+                      bd);
     for (int i = 0; i < w * h; ++i) {
-      ASSERT_EQ(expected[i], get_pix(output, i, high_bd));
+      ASSERT_EQ(expected[i], get_pix(output.get(), i, high_bd));
     }
-    free_pad_8tap(padded, w, high_bd);
-    free_bd(output, high_bd);
 
     // If we multiply the inputs by a constant factor, the output should not
     // vary more than 0.5 * factor.
@@ -287,21 +339,23 @@ static void hardcoded_blur_test_aux(const bool high_bd) {
       for (int i = 0; i < 32; ++i) {
         scaled_luma[i] = luma[i] * c;
       }
-      uint8_t *output = malloc_bd(w * h, high_bd);
-      uint8_t *padded = pad_8tap_convolve(scaled_luma, w, h, high_bd);
-      gaussian_blur(padded, stride_8tap(w), w, h, output, high_bd, bd);
+      padded.reset(pad_8tap_convolve(scaled_luma, w, h, high_bd));
+      ASSERT_NE(padded, nullptr);
+      av1_gaussian_blur(padded.get(), stride_8tap(w), w, h, output.get(),
+                        high_bd, bd);
       for (int i = 0; i < w * h; ++i) {
-        ASSERT_GE(c / 2, abs(expected[i] * c - get_pix(output, i, high_bd)));
+        ASSERT_GE(c / 2,
+                  abs(expected[i] * c - get_pix(output.get(), i, high_bd)));
       }
-      free_pad_8tap(padded, w, high_bd);
-      free_bd(output, high_bd);
     }
   }
 }
 
 TEST(EdgeDetectImageTest, HardcodedBlurTest) {
   hardcoded_blur_test_aux(false);
+#if CONFIG_AV1_HIGHBITDEPTH
   hardcoded_blur_test_aux(true);
+#endif
 }
 
 TEST(EdgeDetectImageTest, SobelTest) {
@@ -309,32 +363,47 @@ TEST(EdgeDetectImageTest, SobelTest) {
   const uint8_t buf[9] = { 241, 147, 7, 90, 184, 103, 28, 186, 2 };
   const int stride = 3;
   bool high_bd = false;
-  sobel_xy result = sobel(buf, stride, 1, 1, high_bd);
+  sobel_xy result = av1_sobel(buf, stride, 1, 1, high_bd);
   ASSERT_EQ(234, result.x);
   ASSERT_EQ(140, result.y);
 
+#if CONFIG_AV1_HIGHBITDEPTH
   // Verify it works for 8-bit values in a high bit-depth buffer.
   const uint16_t buf8_16[9] = { 241, 147, 7, 90, 184, 103, 28, 186, 2 };
   high_bd = true;
-  result = sobel(CONVERT_TO_BYTEPTR(buf8_16), stride, 1, 1, high_bd);
+  result = av1_sobel(CONVERT_TO_BYTEPTR(buf8_16), stride, 1, 1, high_bd);
   ASSERT_EQ(234, result.x);
   ASSERT_EQ(140, result.y);
 
   // Verify it works for high bit-depth values as well.
   const uint16_t buf16[9] = { 241, 147, 7, 90, 184, 2003, 1028, 186, 2 };
-  result = sobel(CONVERT_TO_BYTEPTR(buf16), stride, 1, 1, high_bd);
+  result = av1_sobel(CONVERT_TO_BYTEPTR(buf16), stride, 1, 1, high_bd);
   ASSERT_EQ(-2566, result.x);
   ASSERT_EQ(-860, result.y);
+#endif
 }
 
-INSTANTIATE_TEST_CASE_P(EdgeDetectImages, EdgeDetectImageTest,
-                        ::testing::Combine(
-                            // Width
-                            ::testing::Values(8, 16, 32),
-                            // Height
-                            ::testing::Values(4, 8, 12, 32),
-                            // High bit depth representation
-                            ::testing::Bool(),
-                            // Bit depth
-                            ::testing::Values(8, 10, 12)));
+#if CONFIG_AV1_HIGHBITDEPTH
+INSTANTIATE_TEST_SUITE_P(EdgeDetectImages, EdgeDetectImageTest,
+                         ::testing::Combine(
+                             // Width
+                             ::testing::Values(8, 16, 32),
+                             // Height
+                             ::testing::Values(4, 8, 12, 32),
+                             // High bit depth representation
+                             ::testing::Bool(),
+                             // Bit depth
+                             ::testing::Values(8, 10, 12)));
+#else
+INSTANTIATE_TEST_SUITE_P(EdgeDetectImages, EdgeDetectImageTest,
+                         ::testing::Combine(
+                             // Width
+                             ::testing::Values(8, 16, 32),
+                             // Height
+                             ::testing::Values(4, 8, 12, 32),
+                             // High bit depth representation
+                             ::testing::Values(false),
+                             // Bit depth
+                             ::testing::Values(8)));
+#endif
 }  // namespace

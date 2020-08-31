@@ -5,9 +5,15 @@
 #ifndef BASE_TEST_ICU_TEST_UTIL_H_
 #define BASE_TEST_ICU_TEST_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
+#include "third_party/icu/source/common/unicode/uversion.h"
+
+U_NAMESPACE_BEGIN
+class TimeZone;
+U_NAMESPACE_END
 
 namespace base {
 namespace test {
@@ -24,7 +30,25 @@ class ScopedRestoreICUDefaultLocale {
  private:
   const std::string default_locale_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedRestoreICUDefaultLocale);
+  ScopedRestoreICUDefaultLocale(const ScopedRestoreICUDefaultLocale&) = delete;
+  ScopedRestoreICUDefaultLocale& operator=(
+      const ScopedRestoreICUDefaultLocale&) = delete;
+};
+
+// In unit tests, prefer ScopedRestoreDefaultTimezone over
+// calling icu::TimeZone::adoptDefault() directly. This scoper makes it
+// harder to accidentally forget to reset the locale.
+class ScopedRestoreDefaultTimezone {
+ public:
+  ScopedRestoreDefaultTimezone(const char* zoneid);
+  ~ScopedRestoreDefaultTimezone();
+
+  ScopedRestoreDefaultTimezone(const ScopedRestoreDefaultTimezone&) = delete;
+  ScopedRestoreDefaultTimezone& operator=(const ScopedRestoreDefaultTimezone&) =
+      delete;
+
+ private:
+  std::unique_ptr<icu::TimeZone> original_zone_;
 };
 
 void InitializeICUForTesting();

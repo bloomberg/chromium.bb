@@ -940,6 +940,24 @@ TEST_F(ShellUtilRegistryTest, DeleteFileAssociations) {
   EXPECT_EQ(L"SomeOtherApp", value);
 }
 
+TEST_F(ShellUtilRegistryTest, GetFileAssociationsAndAppName) {
+  ShellUtil::FileAssociationsAndAppName empty_file_associations_and_app_name(
+      ShellUtil::GetFileAssociationsAndAppName(kTestProgid));
+  EXPECT_TRUE(empty_file_associations_and_app_name.app_name.empty());
+
+  // Add file associations and test that GetFileAssociationsAndAppName returns
+  // the registered file associations and app name. Pass kTestApplicationName
+  // for the open command, to handle the win7 case, which returns the open
+  // command executable name as the app_name.
+  ASSERT_TRUE(ShellUtil::AddFileAssociations(
+      kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
+      base::FilePath(kTestIconPath), FileExtensions()));
+  ShellUtil::FileAssociationsAndAppName file_associations_and_app_name(
+      ShellUtil::GetFileAssociationsAndAppName(kTestProgid));
+  EXPECT_EQ(file_associations_and_app_name.app_name, kTestApplicationName);
+  EXPECT_EQ(file_associations_and_app_name.file_associations, FileExtensions());
+}
+
 TEST_F(ShellUtilRegistryTest, GetApplicationForProgId) {
   // Create file associations.
   ASSERT_TRUE(ShellUtil::AddFileAssociations(
@@ -965,6 +983,19 @@ TEST(ShellUtilTest, BuildAppModelIdManySmall) {
   components.push_back(L"Test");
   ASSERT_EQ(suffixed_app_id + L".Default.Test",
             ShellUtil::BuildAppModelId(components));
+}
+
+TEST(ShellUtilTest, BuildAppModelIdNullTerminatorInTheMiddle) {
+  std::vector<base::string16> components;
+  base::string16 appname_with_nullTerminator(
+      L"I_have_null_terminator_in_middle");
+  appname_with_nullTerminator[5] = '\0';
+  components.push_back(appname_with_nullTerminator);
+  components.push_back(L"Default");
+  components.push_back(L"Test");
+  base::string16 expected_string(L"I_have_nul_in_middle.Default.Test");
+  expected_string[5] = '\0';
+  ASSERT_EQ(expected_string, ShellUtil::BuildAppModelId(components));
 }
 
 TEST(ShellUtilTest, BuildAppModelIdLongUsernameNormalProfile) {

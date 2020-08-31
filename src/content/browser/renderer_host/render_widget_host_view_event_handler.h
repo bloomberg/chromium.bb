@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_result.mojom.h"
 #include "ui/aura/scoped_enable_unadjusted_mouse_events.h"
 #include "ui/aura/scoped_keyboard_hook.h"
 #include "ui/aura/window_tracker.h"
@@ -143,7 +144,10 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   void set_window(aura::Window* window) { window_ = window; }
 
   // Lock/Unlock processing of future mouse events.
-  bool LockMouse(bool request_unadjusted_movement);
+  blink::mojom::PointerLockResult LockMouse(bool request_unadjusted_movement);
+  // Change the current lock to have the given unadjusted_movement.
+  blink::mojom::PointerLockResult ChangeMouseLock(
+      bool request_unadjusted_movement);
   void UnlockMouse();
 
   // Start/Stop processing of future system keyboard events.
@@ -159,7 +163,7 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   void GestureEventAck(const blink::WebGestureEvent& event,
-                       InputEventAckState ack_result);
+                       blink::mojom::InputEventResultState ack_result);
 
   // Used to set the mouse_wheel_phase_handler_ timer timeout for testing.
   void set_mouse_wheel_wheel_phase_handler_timeout(base::TimeDelta timeout) {

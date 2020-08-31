@@ -23,7 +23,7 @@
 #include "ios/chrome/browser/ui/bookmarks/undo_manager_wrapper.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -151,7 +151,7 @@ MDCSnackbarMessage* CreateOrUpdateBookmarkWithUndoToast(
     const GURL& url,
     const BookmarkNode* folder,
     bookmarks::BookmarkModel* bookmark_model,
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   DCHECK(!node || node->is_url());
   base::string16 titleString = base::SysNSStringToUTF16(title);
 
@@ -200,7 +200,7 @@ MDCSnackbarMessage* UpdateBookmarkPositionWithUndoToast(
     const bookmarks::BookmarkNode* folder,
     int position,
     bookmarks::BookmarkModel* bookmark_model,
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   DCHECK(node);
   DCHECK(folder);
   DCHECK(!folder->HasAncestor(node));
@@ -240,7 +240,7 @@ void DeleteBookmarks(const std::set<const BookmarkNode*>& bookmarks,
 MDCSnackbarMessage* DeleteBookmarksWithUndoToast(
     const std::set<const BookmarkNode*>& nodes,
     bookmarks::BookmarkModel* model,
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   size_t nodeCount = nodes.size();
   DCHECK_GT(nodeCount, 0u);
 
@@ -293,7 +293,7 @@ MDCSnackbarMessage* MoveBookmarksWithUndoToast(
     const std::set<const BookmarkNode*>& nodes,
     bookmarks::BookmarkModel* model,
     const BookmarkNode* folder,
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   size_t nodeCount = nodes.size();
   DCHECK_GT(nodeCount, 0u);
 

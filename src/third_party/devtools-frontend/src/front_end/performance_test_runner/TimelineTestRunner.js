@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -130,7 +130,7 @@ PerformanceTestRunner.createPerformanceModelWithEvents = function(events) {
 };
 
 PerformanceTestRunner.createTimelineController = function() {
-  const controller = new Timeline.TimelineController(SDK.targetManager.mainTarget(), UI.panels.timeline);
+  const controller = new Timeline.TimelineController(self.SDK.targetManager.mainTarget(), UI.panels.timeline);
   controller._tracingManager = TestRunner.tracingManager;
   return controller;
 };
@@ -152,6 +152,26 @@ PerformanceTestRunner.stopTimeline = function() {
   });
 };
 
+PerformanceTestRunner.runPerfTraceWithReload = async function() {
+  await PerformanceTestRunner.startTimeline();
+  await TestRunner.reloadPagePromise();
+  await PerformanceTestRunner.stopTimeline();
+};
+
+PerformanceTestRunner.getTimelineWidget = async function() {
+  return await self.UI.viewManager.view('timeline').widget();
+};
+
+PerformanceTestRunner.getNetworkFlameChartElement = async function() {
+  const widget = await PerformanceTestRunner.getTimelineWidget();
+  return widget._flameChart._networkFlameChart.contentElement;
+};
+
+PerformanceTestRunner.getMainFlameChartElement = async function() {
+  const widget = await PerformanceTestRunner.getTimelineWidget();
+  return widget._flameChart._mainFlameChart.contentElement;
+};
+
 PerformanceTestRunner.evaluateWithTimeline = async function(actions) {
   await PerformanceTestRunner.startTimeline();
   await TestRunner.evaluateInPageAnonymously(actions);
@@ -166,7 +186,7 @@ PerformanceTestRunner.invokeAsyncWithTimeline = async function(functionName) {
 
 PerformanceTestRunner.performActionsAndPrint = async function(actions, typeName, includeTimeStamps) {
   await PerformanceTestRunner.evaluateWithTimeline(actions);
-  PerformanceTestRunner.printTimelineRecordsWithDetails(typeName);
+  await PerformanceTestRunner.printTimelineRecordsWithDetails(typeName);
   if (includeTimeStamps) {
     TestRunner.addResult('Timestamp records: ');
     PerformanceTestRunner.printTimestampRecords(typeName);
@@ -182,33 +202,33 @@ PerformanceTestRunner.printTimelineRecords = function(name) {
   }
 };
 
-PerformanceTestRunner.printTimelineRecordsWithDetails = function(name) {
+PerformanceTestRunner.printTimelineRecordsWithDetails = async function(name) {
   for (const event of PerformanceTestRunner.timelineModel().inspectedTargetEvents()) {
     if (name === event.name) {
-      PerformanceTestRunner.printTraceEventPropertiesWithDetails(event);
+      await PerformanceTestRunner.printTraceEventPropertiesWithDetails(event);
     }
   }
 };
 
-PerformanceTestRunner.walkTimelineEventTree = function(callback) {
+PerformanceTestRunner.walkTimelineEventTree = async function(callback) {
   const view = new Timeline.EventsTimelineTreeView(UI.panels.timeline._filters, null);
   view.setModel(PerformanceTestRunner.performanceModel(), PerformanceTestRunner.mainTrack());
   const selection = Timeline.TimelineSelection.fromRange(
       PerformanceTestRunner.timelineModel().minimumRecordTime(),
       PerformanceTestRunner.timelineModel().maximumRecordTime());
   view.updateContents(selection);
-  PerformanceTestRunner.walkTimelineEventTreeUnderNode(callback, view._currentTree, 0);
+  await PerformanceTestRunner.walkTimelineEventTreeUnderNode(callback, view._currentTree, 0);
 };
 
-PerformanceTestRunner.walkTimelineEventTreeUnderNode = function(callback, root, level) {
+PerformanceTestRunner.walkTimelineEventTreeUnderNode = async function(callback, root, level) {
   const event = root.event;
 
   if (event) {
-    callback(event, level, root);
+    await callback(event, level, root);
   }
 
   for (const child of root.children().values()) {
-    PerformanceTestRunner.walkTimelineEventTreeUnderNode(callback, child, (level || 0) + 1);
+    await PerformanceTestRunner.walkTimelineEventTreeUnderNode(callback, child, (level || 0) + 1);
   }
 };
 
@@ -222,7 +242,7 @@ PerformanceTestRunner.printTimestampRecords = function(typeName) {
   }
 };
 
-PerformanceTestRunner.forAllEvents = function(events, callback) {
+PerformanceTestRunner.forAllEvents = async function(events, callback) {
   const eventStack = [];
 
   for (const event of events) {
@@ -230,7 +250,7 @@ PerformanceTestRunner.forAllEvents = function(events, callback) {
       eventStack.pop();
     }
 
-    callback(event, eventStack);
+    await callback(event, eventStack);
 
     if (event.endTime) {
       eventStack.push(event);
@@ -261,10 +281,11 @@ PerformanceTestRunner.printTraceEventProperties = function(traceEvent) {
   TestRunner.addObject(object, PerformanceTestRunner.timelinePropertyFormatters);
 };
 
-PerformanceTestRunner.printTraceEventPropertiesWithDetails = function(event) {
+PerformanceTestRunner.printTraceEventPropertiesWithDetails = async function(event) {
   PerformanceTestRunner.printTraceEventProperties(event);
-  const details = Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(
-      event, SDK.targetManager.mainTarget(), new Components.Linkifier());
+  const details = await Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(
+      event, self.SDK.targetManager.mainTarget(), new Components.Linkifier());
+  TestRunner.waitForPendingLiveLocationUpdates();
   TestRunner.addResult(`Text details for ${event.name}: ${details}`);
 
   if (TimelineModel.TimelineData.forEvent(event).warning) {

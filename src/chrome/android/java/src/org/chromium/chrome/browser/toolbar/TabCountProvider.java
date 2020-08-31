@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.toolbar;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tab.TabCreationState;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -104,9 +104,10 @@ public class TabCountProvider {
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
-        mTabModelFilterObserver = new EmptyTabModelObserver() {
+        mTabModelFilterObserver = new TabModelObserver() {
             @Override
-            public void didAddTab(Tab tab, @TabLaunchType int type) {
+            public void didAddTab(
+                    Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {
                 updateTabCount();
             }
 

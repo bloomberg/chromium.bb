@@ -16,33 +16,32 @@
 #include "src/gpu/ops/GrOp.h"
 
 GrPipeline::GrPipeline(const InitArgs& args,
-                       GrProcessorSet&& processors,
-                       GrAppliedClip&& appliedClip)
-        : fOutputSwizzle(args.fOutputSwizzle) {
-    SkASSERT(processors.isFinalized());
-
+                       sk_sp<const GrXferProcessor> xferProcessor,
+                       const GrAppliedHardClip& hardClip)
+        : fWriteSwizzle(args.fWriteSwizzle) {
     fFlags = (Flags)args.fInputFlags;
-    if (appliedClip.hasStencilClip()) {
+    if (hardClip.hasStencilClip()) {
         fFlags |= Flags::kHasStencilClip;
     }
-    if (appliedClip.scissorState().enabled()) {
-        fFlags |= Flags::kScissorEnabled;
+    if (hardClip.scissorState().enabled()) {
+        fFlags |= Flags::kScissorTestEnabled;
     }
 
-    fWindowRectsState = appliedClip.windowRectsState();
-    if (!args.fUserStencil->isDisabled(fFlags & Flags::kHasStencilClip)) {
-        fFlags |= Flags::kStencilEnabled;
-    }
+    fWindowRectsState = hardClip.windowRectsState();
+    this->setUserStencil(args.fUserStencil);
 
-    fUserStencilSettings = args.fUserStencil;
-
-    fXferProcessor = processors.refXferProcessor();
+    fXferProcessor = std::move(xferProcessor);
 
     if (args.fDstProxyView.proxy()) {
         fDstProxyView = args.fDstProxyView.proxyView();
         fDstTextureOffset = args.fDstProxyView.offset();
     }
+}
 
+GrPipeline::GrPipeline(const InitArgs& args, GrProcessorSet&& processors,
+                       GrAppliedClip&& appliedClip)
+        : GrPipeline(args, processors.refXferProcessor(), appliedClip.hardClip()) {
+    SkASSERT(processors.isFinalized());
     // Copy GrFragmentProcessors from GrProcessorSet to Pipeline
     fNumColorProcessors = processors.numColorFragmentProcessors();
     int numTotalProcessors = fNumColorProcessors +
@@ -70,22 +69,19 @@ GrXferBarrierType GrPipeline::xferBarrierType(GrTexture* texture, const GrCaps& 
     return this->getXferProcessor().xferBarrierType(caps);
 }
 
-GrPipeline::GrPipeline(GrScissorTest scissorTest, sk_sp<const GrXferProcessor> xp,
-                       const GrSwizzle& outputSwizzle, InputFlags inputFlags,
+GrPipeline::GrPipeline(GrScissorTest scissorTest,
+                       sk_sp<const GrXferProcessor> xp,
+                       const GrSwizzle& writeSwizzle,
+                       InputFlags inputFlags,
                        const GrUserStencilSettings* userStencil)
         : fWindowRectsState()
-        , fUserStencilSettings(userStencil)
         , fFlags((Flags)inputFlags)
         , fXferProcessor(std::move(xp))
-        , fFragmentProcessors()
-        , fNumColorProcessors(0)
-        , fOutputSwizzle(outputSwizzle) {
+        , fWriteSwizzle(writeSwizzle) {
     if (GrScissorTest::kEnabled == scissorTest) {
-        fFlags |= Flags::kScissorEnabled;
+        fFlags |= Flags::kScissorTestEnabled;
     }
-    if (!userStencil->isDisabled(false)) {
-        fFlags |= Flags::kStencilEnabled;
-    }
+    this->setUserStencil(userStencil);
 }
 
 void GrPipeline::genKey(GrProcessorKeyBuilder* b, const GrCaps& caps) const {
@@ -101,8 +97,8 @@ void GrPipeline::genKey(GrProcessorKeyBuilder* b, const GrCaps& caps) const {
 
     static const uint32_t kBlendWriteShift = 1;
     static const uint32_t kBlendCoeffShift = 5;
-    GR_STATIC_ASSERT(kLast_GrBlendCoeff < (1 << kBlendCoeffShift));
-    GR_STATIC_ASSERT(kFirstAdvancedGrBlendEquation - 1 < 4);
+    static_assert(kLast_GrBlendCoeff < (1 << kBlendCoeffShift));
+    static_assert(kFirstAdvancedGrBlendEquation - 1 < 4);
 
     uint32_t blendKey = blendInfo.fWriteColor;
     blendKey |= (blendInfo.fSrcBlend << kBlendWriteShift);
@@ -116,7 +112,7 @@ void GrPipeline::visitProxies(const GrOp::VisitProxyFunc& func) const {
     // This iteration includes any clip coverage FPs
     for (auto [sampler, fp] : GrFragmentProcessor::PipelineTextureSamplerRange(*this)) {
         bool mipped = (GrSamplerState::Filter::kMipMap == sampler.samplerState().filter());
-        func(sampler.proxy(), GrMipMapped(mipped));
+        func(sampler.view().proxy(), GrMipMapped(mipped));
     }
     if (fDstProxyView.asTextureProxy()) {
         func(fDstProxyView.asTextureProxy(), GrMipMapped::kNo);

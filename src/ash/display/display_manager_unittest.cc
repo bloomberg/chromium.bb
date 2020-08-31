@@ -55,6 +55,7 @@
 #include "ui/display/manager/test/touch_device_manager_test_api.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font_render_params.h"
@@ -385,8 +386,8 @@ TEST_F(DisplayManagerTest, UpdateThreeDisplaysWithDefaultLayout) {
 
 TEST_F(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  display::DisplayIdList list = display::test::CreateDisplayIdListN(
-      3, primary_id, primary_id + 1, primary_id + 2);
+  display::DisplayIdList list =
+      display::test::CreateDisplayIdListN(primary_id, 3);
   {
     // Layout: [2]
     //         [1][P]
@@ -460,9 +461,7 @@ TEST_F(DisplayManagerTest, LayoutMorethanThreeDisplaysTest) {
   }
 
   {
-    list = display::test::CreateDisplayIdListN(5, primary_id, primary_id + 1,
-                                               primary_id + 2, primary_id + 3,
-                                               primary_id + 4);
+    list = display::test::CreateDisplayIdListN(primary_id, 5);
     // Layout: [P][2]
     //      [3][4]
     //      [1]
@@ -522,9 +521,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplays) {
     //                 |        | |        |
     //                 +--------+ +--------+
 
-    display::DisplayIdList list = display::test::CreateDisplayIdListN(
-        8, primary_id, primary_id + 1, primary_id + 2, primary_id + 3,
-        primary_id + 4, primary_id + 5, primary_id + 6, primary_id + 7);
+    display::DisplayIdList list =
+        display::test::CreateDisplayIdListN(primary_id, 8);
     display::DisplayLayoutBuilder builder(primary_id);
     builder.AddDisplayPlacement(list[1], primary_id,
                                 display::DisplayPlacement::BOTTOM, 50);
@@ -632,8 +630,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplays) {
     // +------+--+----+
     //
 
-    display::DisplayIdList list = display::test::CreateDisplayIdListN(
-        4, primary_id, primary_id + 1, primary_id + 2, primary_id + 3);
+    display::DisplayIdList list =
+        display::test::CreateDisplayIdListN(primary_id, 4);
     display::DisplayLayoutBuilder builder(primary_id);
     builder.AddDisplayPlacement(list[1], primary_id,
                                 display::DisplayPlacement::BOTTOM, 0);
@@ -701,8 +699,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplays) {
     // |         |
     // +---------+
 
-    display::DisplayIdList list = display::test::CreateDisplayIdListN(
-        3, primary_id, primary_id + 1, primary_id + 2);
+    display::DisplayIdList list =
+        display::test::CreateDisplayIdListN(primary_id, 3);
     display::DisplayLayoutBuilder builder(primary_id);
     builder.AddDisplayPlacement(list[1], primary_id,
                                 display::DisplayPlacement::LEFT, 0);
@@ -752,8 +750,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplays) {
     //           +---------+
     //
 
-    display::DisplayIdList list = display::test::CreateDisplayIdListN(
-        3, primary_id, primary_id + 1, primary_id + 2);
+    display::DisplayIdList list =
+        display::test::CreateDisplayIdListN(primary_id, 3);
     display::DisplayLayoutBuilder builder(primary_id);
     builder.AddDisplayPlacement(list[1], primary_id,
                                 display::DisplayPlacement::TOP, 0);
@@ -803,8 +801,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplaysNotFitBetweenTwo) {
   //
 
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  display::DisplayIdList list = display::test::CreateDisplayIdListN(
-      4, primary_id, primary_id + 1, primary_id + 2, primary_id + 3);
+  display::DisplayIdList list =
+      display::test::CreateDisplayIdListN(primary_id, 4);
   display::DisplayLayoutBuilder builder(primary_id);
   builder.AddDisplayPlacement(list[1], primary_id,
                               display::DisplayPlacement::TOP, -110);
@@ -865,9 +863,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplaysAfterResolutionChange) {
   //
 
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  display::DisplayIdList list = display::test::CreateDisplayIdListN(
-      5, primary_id, primary_id + 1, primary_id + 2, primary_id + 3,
-      primary_id + 4);
+  display::DisplayIdList list =
+      display::test::CreateDisplayIdListN(primary_id, 5);
   display::DisplayLayoutBuilder builder(primary_id);
   builder.AddDisplayPlacement(list[1], primary_id,
                               display::DisplayPlacement::TOP, -250);
@@ -948,9 +945,8 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplaysWithDetachedDisplays) {
   //
 
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  display::DisplayIdList list = display::test::CreateDisplayIdListN(
-      6, primary_id, primary_id + 1, primary_id + 2, primary_id + 3,
-      primary_id + 4, primary_id + 5);
+  display::DisplayIdList list =
+      display::test::CreateDisplayIdListN(primary_id, 6);
   display::DisplayLayoutBuilder builder(primary_id);
   builder.AddDisplayPlacement(list[1], primary_id,
                               display::DisplayPlacement::TOP, -250);
@@ -1038,8 +1034,9 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
   EXPECT_EQ("378x376", updated_display_info2.size_in_pixel().ToString());
   EXPECT_EQ("13,12,11,10",
             updated_display_info2.overscan_insets_in_dip().ToString());
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
   EXPECT_EQ("500,0 378x376",
-            display_manager()->GetSecondaryDisplay().bounds().ToString());
+            display_manager_test.GetSecondaryDisplay().bounds().ToString());
 
   // Make sure that SetOverscanInsets() is idempotent.
   display_manager()->SetOverscanInsets(display_info1.id(), gfx::Insets());
@@ -1097,12 +1094,12 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
             updated_display_info2.GetOverscanInsetsInPixel().ToString());
 
   // Make sure switching primary display applies the overscan offset only once.
-  ash::Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
-      display_manager()->GetSecondaryDisplay().id());
+  Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
+      display_manager_test.GetSecondaryDisplay().id());
   EXPECT_EQ("-500,0 500x500",
-            display_manager()->GetSecondaryDisplay().bounds().ToString());
+            display_manager_test.GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("0,0 500x500",
-            GetDisplayInfo(display_manager()->GetSecondaryDisplay())
+            GetDisplayInfo(display_manager_test.GetSecondaryDisplay())
                 .bounds_in_native()
                 .ToString());
   EXPECT_EQ("0,501 400x400",
@@ -1171,14 +1168,12 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
   const ui::TouchscreenDevice touchdevice(
       11, ui::InputDeviceType::INPUT_DEVICE_USB,
       std::string("test touch device"), gfx::Size(123, 456), 1);
-  const display::TouchDeviceIdentifier touch_device_identifier_2 =
-      display::TouchDeviceIdentifier::FromDevice(touchdevice);
 
   ASSERT_EQ(2u, display_manager()->GetNumDisplays());
   const display::ManagedDisplayInfo display_info1 = GetDisplayInfoAt(0);
   const display::ManagedDisplayInfo display_info2 = GetDisplayInfoAt(1);
 
-  EXPECT_FALSE(tdm_test_api.GetTouchDeviceCount(display_info2));
+  EXPECT_FALSE(tdm_test_api.AreAssociated(display_info2, touchdevice));
 
   const display::TouchCalibrationData::CalibrationPointPairQuad
       point_pair_quad = {
@@ -1192,15 +1187,14 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
 
   // Set the touch calibration data for the secondary display.
   display_manager()->SetTouchCalibrationData(
-      display_info2.id(), point_pair_quad, bounds_at_calibration,
-      touch_device_identifier_2);
+      display_info2.id(), point_pair_quad, bounds_at_calibration, touchdevice);
 
-  EXPECT_TRUE(tdm_test_api.GetTouchDeviceCount(display_info2));
+  EXPECT_TRUE(tdm_test_api.AreAssociated(display_info2, touchdevice));
   EXPECT_EQ(touch_data, touch_device_manager->GetCalibrationData(
                             touchdevice, display_info2.id()));
 
   // Clearing touch calibration data from the secondary display.
-  touch_device_manager->ClearTouchCalibrationData(touch_device_identifier_2,
+  touch_device_manager->ClearTouchCalibrationData(touchdevice,
                                                   GetDisplayInfoAt(1).id());
 
   EXPECT_TRUE(touch_device_manager
@@ -1216,7 +1210,7 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
                                              bounds_at_calibration);
   display_manager()->SetTouchCalibrationData(
       display_info2.id(), point_pair_quad_2, bounds_at_calibration,
-      touch_device_identifier_2);
+      touchdevice);
 
   EXPECT_EQ(touch_data_2, touch_device_manager->GetCalibrationData(
                               touchdevice, GetDisplayInfoAt(1).id()));
@@ -1237,8 +1231,7 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
 
   // Make sure multiple touch devices works.
   display_manager()->SetTouchCalibrationData(
-      display_info2.id(), point_pair_quad, bounds_at_calibration,
-      touch_device_identifier_2);
+      display_info2.id(), point_pair_quad, bounds_at_calibration, touchdevice);
 
   EXPECT_EQ(touch_data, touch_device_manager->GetCalibrationData(
                             touchdevice, GetDisplayInfoAt(1).id()));
@@ -1246,12 +1239,10 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
   const ui::TouchscreenDevice touchdevice_2(
       12, ui::InputDeviceType::INPUT_DEVICE_USB,
       std::string("test touch device 2"), gfx::Size(234, 567), 1);
-  display::TouchDeviceIdentifier touch_device_identifier_2_2 =
-      display::TouchDeviceIdentifier::FromDevice(touchdevice_2);
 
   display_manager()->SetTouchCalibrationData(
       display_info2.id(), point_pair_quad_2, bounds_at_calibration,
-      touch_device_identifier_2_2);
+      touchdevice_2);
   EXPECT_EQ(touch_data_2, touch_device_manager->GetCalibrationData(
                               touchdevice_2, GetDisplayInfoAt(1).id()));
   EXPECT_EQ(touch_data, touch_device_manager->GetCalibrationData(
@@ -1658,8 +1649,9 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
 TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
   UpdateDisplay("100+0-500x500,0+501-400x400");
 
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
   const int64_t primary_id = WindowTreeHostManager::GetPrimaryDisplayId();
-  const int64_t secondary_id = display_manager()->GetSecondaryDisplay().id();
+  const int64_t secondary_id = display_manager_test.GetSecondaryDisplay().id();
 
   display::ManagedDisplayInfo primary_info =
       display_manager()->GetDisplayInfo(primary_id);
@@ -1667,7 +1659,7 @@ TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
       display_manager()->GetDisplayInfo(secondary_id);
 
   // An id which is different from primary and secondary.
-  const int64_t third_id = secondary_id + 1;
+  const int64_t third_id = display::GetNextSynthesizedDisplayId(secondary_id);
 
   display::ManagedDisplayInfo third_info =
       display::CreateDisplayInfo(third_id, gfx::Rect(0, 0, 600, 600));
@@ -1679,7 +1671,7 @@ TEST_F(DisplayManagerTest, DisplayAddRemoveAtTheSameTime) {
 
   // Secondary seconary_id becomes the primary as it has smaller output index.
   EXPECT_EQ(secondary_id, WindowTreeHostManager::GetPrimaryDisplayId());
-  EXPECT_EQ(third_id, display_manager()->GetSecondaryDisplay().id());
+  EXPECT_EQ(third_id, display_manager_test.GetSecondaryDisplay().id());
   EXPECT_EQ("600x600", GetDisplayForId(third_id).size().ToString());
 }
 
@@ -1699,7 +1691,7 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChangedNoInternal) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("1,1 100x100",
             GetDisplayInfoForId(10).bounds_in_native().ToString());
-  EXPECT_EQ("100x100", ash::Shell::GetPrimaryRootWindow()
+  EXPECT_EQ("100x100", Shell::GetPrimaryRootWindow()
                            ->GetHost()
                            ->GetBoundsInPixels()
                            .size()
@@ -1725,7 +1717,7 @@ TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
             GetDisplayForId(internal_display_id).bounds().ToString());
   EXPECT_EQ("500,0 100x100", GetDisplayForId(10).bounds().ToString());
 
-  ash::Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
+  Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
       secondary_display_info.id());
   EXPECT_EQ("-500,0 500x500",
             GetDisplayForId(internal_display_id).bounds().ToString());
@@ -2446,13 +2438,14 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   // Switch back to extended desktop.
   display_manager()->SetUnifiedDesktopEnabled(false);
   EXPECT_EQ(gfx::Size(500, 300), screen->GetPrimaryDisplay().size());
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
   EXPECT_EQ(gfx::Size(400, 500),
-            display_manager()->GetSecondaryDisplay().size());
-  EXPECT_EQ(
-      gfx::Size(500, 300),
-      display_manager()
-          ->GetDisplayForId(display_manager()->GetSecondaryDisplay().id() + 1)
-          .size());
+            display_manager_test.GetSecondaryDisplay().size());
+  EXPECT_EQ(gfx::Size(500, 300),
+            display_manager()
+                ->GetDisplayForId(display::GetNextSynthesizedDisplayId(
+                    display_manager_test.GetSecondaryDisplay().id()))
+                .size());
 }
 
 TEST_F(DisplayManagerTest, UnifiedDesktopWithHardwareMirroring) {
@@ -3065,7 +3058,8 @@ TEST_F(DisplayManagerTest, UnifiedDesktopTabletMode) {
   auto* app_list_controller = Shell::Get()->app_list_controller();
   auto* tablet_mode_controller = Shell::Get()->tablet_mode_controller();
   EXPECT_TRUE(tablet_mode_controller->InTabletMode());
-  EXPECT_TRUE(app_list_controller->IsVisible());
+  EXPECT_TRUE(
+      app_list_controller->IsVisible(display_manager()->first_display_id()));
 
   // Exiting tablet mode should exit mirror mode and return back to Unified
   // mode.
@@ -3076,7 +3070,8 @@ TEST_F(DisplayManagerTest, UnifiedDesktopTabletMode) {
 
   // Home Launcher should be dismissed.
   EXPECT_FALSE(tablet_mode_controller->InTabletMode());
-  EXPECT_FALSE(app_list_controller->IsVisible());
+  EXPECT_FALSE(
+      app_list_controller->IsVisible(display_manager()->first_display_id()));
 }
 
 TEST_F(DisplayManagerTest, DisplayPrefsAndForcedMirrorMode) {
@@ -3358,8 +3353,8 @@ TEST_F(DisplayManagerTest, GuessDisplayIdFieldsInDisplayLayout) {
 }
 
 TEST_F(DisplayManagerTest, AccelerometerSupport) {
-  display::test::DisplayManagerTestApi(display_manager())
-      .SetFirstDisplayAsInternalDisplay();
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
+  display_manager_test.SetFirstDisplayAsInternalDisplay();
   display::Screen* screen = display::Screen::GetScreen();
   EXPECT_EQ(display::Display::AccelerometerSupport::UNAVAILABLE,
             screen->GetPrimaryDisplay().accelerometer_support());
@@ -3373,13 +3368,13 @@ TEST_F(DisplayManagerTest, AccelerometerSupport) {
   EXPECT_EQ(display::Display::AccelerometerSupport::AVAILABLE,
             screen->GetPrimaryDisplay().accelerometer_support());
   EXPECT_EQ(display::Display::AccelerometerSupport::UNAVAILABLE,
-            display_manager()->GetSecondaryDisplay().accelerometer_support());
+            display_manager_test.GetSecondaryDisplay().accelerometer_support());
 
   // Secondary is now primary and should not have accelerometer support.
   std::vector<display::ManagedDisplayInfo> display_info_list;
-  display_info_list.push_back(
-      display::CreateDisplayInfo(display_manager()->GetSecondaryDisplay().id(),
-                                 gfx::Rect(1, 1, 100, 100)));
+  display_info_list.push_back(display::CreateDisplayInfo(
+      display_manager_test.GetSecondaryDisplay().id(),
+      gfx::Rect(1, 1, 100, 100)));
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(display::Display::AccelerometerSupport::UNAVAILABLE,
             screen->GetPrimaryDisplay().accelerometer_support());
@@ -4522,13 +4517,28 @@ TEST_F(DisplayManagerTest, DISABLED_SoftwareMirrorRotationForNonTablet) {
 TEST_F(DisplayManagerTest, DPSizeTest) {
   display::test::DisplayManagerTestApi(display_manager())
       .SetFirstDisplayAsInternalDisplay();
-  UpdateDisplay("3840x2160*2.66666");
-  EXPECT_EQ(gfx::Size(1440, 810),
-            display::Screen::GetScreen()->GetPrimaryDisplay().size());
+  UpdateDisplay(base::StringPrintf("3840x2160*%s", display::kDsfStr_2_666));
+  {
+    gfx::Size expected(1440, 810);
+    EXPECT_EQ(expected,
+              display::Screen::GetScreen()->GetPrimaryDisplay().size());
+    EXPECT_EQ(expected, Shell::GetPrimaryRootWindow()->bounds().size());
+  }
 
-  UpdateDisplay("1920x1200*1.77777");
-  EXPECT_EQ(gfx::Size(1080, 675),
-            display::Screen::GetScreen()->GetPrimaryDisplay().size());
+  UpdateDisplay(base::StringPrintf("1920x1200*%s", display::kDsfStr_1_777));
+  {
+    gfx::Size expected(1080, 675);
+    EXPECT_EQ(expected,
+              display::Screen::GetScreen()->GetPrimaryDisplay().size());
+    EXPECT_EQ(expected, Shell::GetPrimaryRootWindow()->bounds().size());
+  }
+  UpdateDisplay(base::StringPrintf("3000x2000*%s", display::kDsfStr_2_252));
+  {
+    gfx::Size expected(1332, 888);
+    EXPECT_EQ(expected,
+              display::Screen::GetScreen()->GetPrimaryDisplay().size());
+    EXPECT_EQ(expected, Shell::GetPrimaryRootWindow()->bounds().size());
+  }
 }
 
 TEST_F(DisplayManagerTest, PanelOrientation) {

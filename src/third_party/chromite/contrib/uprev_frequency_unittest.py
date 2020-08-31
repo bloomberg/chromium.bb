@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import datetime
+
 import mock
 
 from chromite.contrib import uprev_frequency

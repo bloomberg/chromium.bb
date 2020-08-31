@@ -10,12 +10,18 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/threading/sequence_bound.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "media/base/hdr_metadata.h"
+#include "media/base/status.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_com_defs.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_dxgi.h"
@@ -29,45 +35,58 @@ using MailboxHolderArray = gpu::MailboxHolder[VideoFrame::kMaxPlanes];
 using GetCommandBufferHelperCB =
     base::RepeatingCallback<CommandBufferHelperPtr()>;
 
-class D3D11PictureBuffer;
-
 // Support different strategies for processing pictures - some may need copying,
-// for example.
+// for example.  Each wrapper owns the resources for a single texture, so it's
+// up to you not to re-use a wrapper for a second image before a previously
+// processed image is no longer needed.
 class MEDIA_GPU_EXPORT Texture2DWrapper {
  public:
-  Texture2DWrapper(ComD3D11Texture2D texture);
+  Texture2DWrapper();
   virtual ~Texture2DWrapper();
 
-  virtual const ComD3D11Texture2D Texture() const;
+  // Initialize the wrapper.
+  virtual bool Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+                    GetCommandBufferHelperCB get_helper_cb) = 0;
 
-  // This pointer can be raw, since each Texture2DWrapper is directly owned
-  // by the D3D11PictureBuffer through a unique_ptr.
-  virtual bool ProcessTexture(const D3D11PictureBuffer* owner_pb,
-                              MailboxHolderArray* mailbox_dest) = 0;
+  // Import |texture|, |array_slice| and return the mailbox(es) that can be
+  // used to refer to it.
+  virtual bool ProcessTexture(ComD3D11Texture2D texture,
+                              size_t array_slice,
+                              const gfx::ColorSpace& input_color_space,
+                              MailboxHolderArray* mailbox_dest_out,
+                              gfx::ColorSpace* output_color_space) = 0;
 
-  // |array_slice| Tells us which array index of the array-type Texture2D
-  // we should be using - if it is not an array-type, |array_slice| is 0.
-  virtual bool Init(GetCommandBufferHelperCB get_helper_cb,
-                    size_t array_slice,
-                    gfx::Size size) = 0;
-
- private:
-  ComD3D11Texture2D texture_;
+  virtual void SetStreamHDRMetadata(const HDRMetadata& stream_metadata) = 0;
+  virtual void SetDisplayHDRMetadata(
+      const DXGI_HDR_METADATA_HDR10& dxgi_display_metadata) = 0;
 };
 
 // The default texture wrapper that uses GPUResources to talk to hardware
-// on behalf of a Texture2D.
+// on behalf of a Texture2D.  Each DefaultTexture2DWrapper owns GL textures
+// that it uses to bind the provided input texture.  Thus, one needs one wrapper
+// instance for each concurrently outstanding texture.
 class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
  public:
-  DefaultTexture2DWrapper(ComD3D11Texture2D texture);
+  // Error callback for GpuResource to notify us of errors.
+  using OnErrorCB = base::OnceCallback<void(Status)>;
+
+  // While the specific texture instance can change on every call to
+  // ProcessTexture, the dxgi format must be the same for all of them.
+  DefaultTexture2DWrapper(const gfx::Size& size, DXGI_FORMAT dxgi_format);
   ~DefaultTexture2DWrapper() override;
 
-  bool Init(GetCommandBufferHelperCB get_helper_cb,
-            size_t array_slice,
-            gfx::Size size) override;
+  bool Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+            GetCommandBufferHelperCB get_helper_cb) override;
 
-  bool ProcessTexture(const D3D11PictureBuffer* owner_pb,
-                      MailboxHolderArray* mailbox_dest) override;
+  bool ProcessTexture(ComD3D11Texture2D texture,
+                      size_t array_slice,
+                      const gfx::ColorSpace& input_color_space,
+                      MailboxHolderArray* mailbox_dest,
+                      gfx::ColorSpace* output_color_space) override;
+
+  void SetStreamHDRMetadata(const HDRMetadata& stream_metadata) override;
+  void SetDisplayHDRMetadata(
+      const DXGI_HDR_METADATA_HDR10& dxgi_display_metadata) override;
 
  private:
   // Things that are to be accessed / freed only on the main thread.  In
@@ -76,27 +95,46 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
   // can use the mailbox.
   class GpuResources {
    public:
-    GpuResources();
+    GpuResources(OnErrorCB on_error_cb);
     ~GpuResources();
 
-    bool Init(GetCommandBufferHelperCB get_helper_cb,
-              int array_slice,
+    void Init(GetCommandBufferHelperCB get_helper_cb,
               const std::vector<gpu::Mailbox> mailboxes,
               GLenum target,
               gfx::Size size,
-              ComD3D11Texture2D angle_texture,
               int textures_per_picture);
+
+    // Push a new |texture|, |array_slice| to |gl_image_|.
+    void PushNewTexture(ComD3D11Texture2D texture, size_t array_slice);
 
     std::vector<uint32_t> service_ids_;
 
    private:
+    // Notify our wrapper about |status|, if we haven't before.
+    void NotifyError(Status status);
+
+    // May be empty if we've already sent an error.
+    OnErrorCB on_error_cb_;
+
     scoped_refptr<CommandBufferHelper> helper_;
+    scoped_refptr<gl::GLImageDXGI> gl_image_;
+    EGLStreamKHR stream_;
 
     DISALLOW_COPY_AND_ASSIGN(GpuResources);
   };
 
-  std::unique_ptr<GpuResources> gpu_resources_;
+  // Receive an error from |gpu_resources_| and store it in |received_error_|.
+  void OnError(Status status);
+
+  // The first error status that we've received from |gpu_resources_|, if any.
+  base::Optional<Status> received_error_;
+
+  gfx::Size size_;
+  base::SequenceBound<GpuResources> gpu_resources_;
   MailboxHolderArray mailbox_holders_;
+  DXGI_FORMAT dxgi_format_;
+
+  base::WeakPtrFactory<DefaultTexture2DWrapper> weak_factory_{this};
 };
 
 }  // namespace media

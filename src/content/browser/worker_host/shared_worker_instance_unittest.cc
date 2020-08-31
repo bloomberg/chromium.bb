@@ -22,9 +22,9 @@ class SharedWorkerInstanceTest : public testing::Test {
                                       const std::string& name,
                                       const url::Origin& constructor_origin) {
     return SharedWorkerInstance(
-        next_service_worker_instance_id_++, script_url, name,
-        constructor_origin, std::string(),
-        network::mojom::ContentSecurityPolicyType::kReport,
+        script_url, blink::mojom::ScriptType::kClassic,
+        network::mojom::CredentialsMode::kSameOrigin, name, constructor_origin,
+        std::string(), network::mojom::ContentSecurityPolicyType::kReport,
         network::mojom::IPAddressSpace::kPublic,
         blink::mojom::SharedWorkerCreationContextType::kNonsecure);
   }
@@ -41,8 +41,6 @@ class SharedWorkerInstanceTest : public testing::Test {
   }
 
  private:
-  int64_t next_service_worker_instance_id_ = 0;
-
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerInstanceTest);
 };
 
@@ -272,38 +270,13 @@ TEST_F(SharedWorkerInstanceTest, AddressSpace) {
       network::mojom::IPAddressSpace::kPublic};
   for (auto address_space : kAddressSpaces) {
     SharedWorkerInstance instance(
-        0, GURL("http://example.com/w.js"), "name",
+        GURL("http://example.com/w.js"), blink::mojom::ScriptType::kClassic,
+        network::mojom::CredentialsMode::kSameOrigin, "name",
         url::Origin::Create(GURL("http://example.com/")), std::string(),
         network::mojom::ContentSecurityPolicyType::kReport, address_space,
         blink::mojom::SharedWorkerCreationContextType::kNonsecure);
     EXPECT_EQ(address_space, instance.creation_address_space());
   }
-}
-
-// This test ensures that 2 distinct SharedWorkerInstance using the same file:
-// script URL have different identities and can be ordered.
-TEST_F(SharedWorkerInstanceTest, StrictWeakOrderingFileURLs) {
-  GURL script_url("file://path/to/script.js");
-  std::string name = "name";
-  url::Origin constructor_origin = url::Origin::Create(script_url);
-
-  SharedWorkerInstance instance1 =
-      CreateInstance(script_url, name, constructor_origin);
-  SharedWorkerInstance instance2 =
-      CreateInstance(script_url, name, constructor_origin);
-
-  // file: URLs are treated as opaque. Both instances should not match.
-  EXPECT_FALSE(instance1.Matches(instance2.url(), instance2.name(),
-                                 instance2.constructor_origin()));
-  EXPECT_FALSE(instance2.Matches(instance1.url(), instance1.name(),
-                                 instance1.constructor_origin()));
-
-  // The instances are not equivalent
-  EXPECT_TRUE(instance1 < instance2 || instance2 < instance1);
-
-  // An instance is equivalent to itself.
-  EXPECT_FALSE(instance1 < instance1);
-  EXPECT_FALSE(instance2 < instance2);
 }
 
 }  // namespace content

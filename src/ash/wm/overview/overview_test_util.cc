@@ -4,6 +4,7 @@
 
 #include "ash/wm/overview/overview_test_util.h"
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -13,6 +14,8 @@
 
 namespace ash {
 
+// TODO(sammiequon): Consider adding an overload for this function to trigger
+// the key event |count| times.
 void SendKey(ui::KeyboardCode key, int flags) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.PressKey(key, flags);
@@ -41,7 +44,7 @@ const aura::Window* GetOverviewHighlightedWindow() {
   return item->GetWindow();
 }
 
-void ToggleOverview(OverviewSession::EnterExitOverviewType type) {
+void ToggleOverview(OverviewEnterExitType type) {
   auto* overview_controller = Shell::Get()->overview_controller();
   if (overview_controller->InOverviewSession())
     overview_controller->EndOverview(type);
@@ -62,6 +65,15 @@ const std::vector<std::unique_ptr<OverviewItem>>& GetOverviewItemsForRoot(
 
 OverviewItem* GetOverviewItemForWindow(aura::Window* window) {
   return GetOverviewSession()->GetOverviewItemForWindow(window);
+}
+
+gfx::Rect ShrinkBoundsByHotseatInset(const gfx::Rect& rect) {
+  gfx::Rect new_rect = rect;
+  const int hotseat_bottom_inset =
+      ShelfConfig::Get()->GetHotseatSize(/*force_dense=*/false) +
+      ShelfConfig::Get()->hotseat_bottom_padding();
+  new_rect.Inset(0, 0, 0, hotseat_bottom_inset);
+  return new_rect;
 }
 
 }  // namespace ash

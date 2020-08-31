@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "ui/base/window_open_disposition.h"
@@ -45,10 +46,6 @@ class RenderText;
 namespace ui {
 class OSExchangeData;
 }  // namespace ui
-
-namespace views {
-class Button;
-}  // namespace views
 
 // Views-implementation of OmniboxView.
 class OmniboxViewViews : public OmniboxView,
@@ -154,6 +151,7 @@ class OmniboxViewViews : public OmniboxView,
 
  protected:
   // views::Textfield:
+  void OnThemeChanged() override;
   bool IsDropCursorForInsertion() const override;
 
  private:
@@ -193,10 +191,6 @@ class OmniboxViewViews : public OmniboxView,
   void SetAccessibilityLabel(const base::string16& display_text,
                              const AutocompleteMatch& match) override;
 
-  // Selects the whole omnibox contents as a result of the user gesture. This
-  // may also unapply steady state elisions depending on user preferences.
-  void SelectAllForUserGesture();
-
   // Returns true if the user text was updated with the full URL (without
   // steady-state elisions).  |gesture| is the user gesture causing unelision.
   bool UnapplySteadyStateElisions(UnelisionGesture gesture);
@@ -205,22 +199,16 @@ class OmniboxViewViews : public OmniboxView,
   // flip.)
   bool TextAndUIDirectionMatch() const;
 
-  // Gets the secondary button (like the tab switch or remove suggestion)
-  // for the selected line. Returns nullptr if there is no secondary button.
-  views::Button* GetSecondaryButtonForSelectedLine() const;
-
   // Like SelectionAtEnd(), but accounts for RTL.
   bool DirectionAwareSelectionAtEnd() const;
-
-  // Attempts to either focus or unfocus the secondary button (tests if all
-  // conditions are met and makes necessary subroutine call) and returns
-  // whether it succeeded.
-  bool MaybeFocusSecondaryButton();
-  bool MaybeUnfocusSecondaryButton();
 
   // If the Secondary button for the current suggestion is focused, clicks it
   // and returns true.
   bool MaybeTriggerSecondaryButton(const ui::KeyEvent& event);
+
+#if defined(OS_MACOSX)
+  void AnnounceFriendlySuggestionText();
+#endif
 
   // OmniboxView:
   void SetCaretPos(size_t caret_pos) override;
@@ -291,6 +279,9 @@ class OmniboxViewViews : public OmniboxView,
   int OnDrop(const ui::OSExchangeData& data) override;
   void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) override;
 
+  // ui::SimpleMenuModel::Delegate:
+  bool IsCommandIdChecked(int id) const override;
+
   // ui::CompositorObserver:
   void OnCompositingDidCommit(ui::Compositor* compositor) override;
   void OnCompositingStarted(ui::Compositor* compositor,
@@ -350,10 +341,6 @@ class OmniboxViewViews : public OmniboxView,
   // and gets a tap. So we use this variable to remember focus state before tap.
   bool select_all_on_gesture_tap_ = false;
 
-  // True if we should suppress on-focus suggestions, because we are currently
-  // processing a focus ovent that we know the user didn't explicitly initiate.
-  bool suppress_on_focus_suggestions_ = false;
-
   // The time of the first character insert operation that has not yet been
   // painted. Used to measure omnibox responsiveness with a histogram.
   base::TimeTicks insert_char_time_;
@@ -387,6 +374,10 @@ class OmniboxViewViews : public OmniboxView,
   // Send tab to self submenu.
   std::unique_ptr<send_tab_to_self::SendTabToSelfSubMenuModel>
       send_tab_to_self_sub_menu_model_;
+
+  PrefChangeRegistrar pref_change_registrar_;
+
+  base::WeakPtrFactory<OmniboxViewViews> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViews);
 };

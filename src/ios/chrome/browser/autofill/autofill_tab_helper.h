@@ -12,6 +12,7 @@
 #import "ios/web/public/web_state_user_data.h"
 
 @class AutofillAgent;
+class ChromeBrowserState;
 @protocol FormSuggestionProvider;
 @class UIViewController;
 
@@ -21,10 +22,6 @@ class ChromeAutofillClientIOS;
 
 namespace password_manager {
 class PasswordManager;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 // Class binding an instance of AutofillAgent to a WebState.
@@ -54,7 +51,7 @@ class AutofillTabHelper : public web::WebStateObserver,
   void WebStateDestroyed(web::WebState* web_state) override;
 
   // The BrowserState associated with this WebState.
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
 
   // The Objective-C AutofillAgent instance.
   __strong AutofillAgent* autofill_agent_;

@@ -11,7 +11,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 
 namespace web_app {
 
@@ -25,6 +25,10 @@ class WebAppInstallObserver final : public AppRegistrarObserver {
 
   AppId AwaitNextInstall();
 
+  using WebAppInstalledDelegate =
+      base::RepeatingCallback<void(const AppId& app_id)>;
+  void SetWebAppInstalledDelegate(WebAppInstalledDelegate delegate);
+
   using WebAppUninstalledDelegate =
       base::RepeatingCallback<void(const AppId& app_id)>;
   void SetWebAppUninstalledDelegate(WebAppUninstalledDelegate delegate);
@@ -37,6 +41,7 @@ class WebAppInstallObserver final : public AppRegistrarObserver {
   base::RunLoop run_loop_;
   AppId app_id_;
 
+  WebAppInstalledDelegate app_installed_delegate_;
   WebAppUninstalledDelegate app_uninstalled_delegate_;
 
   ScopedObserver<AppRegistrar, AppRegistrarObserver> observer_{this};

@@ -1,6 +1,6 @@
-/* Copyright (c) 2015-2016, 2019 The Khronos Group Inc.
- * Copyright (c) 2015-2016, 2019 Valve Corporation
- * Copyright (c) 2015-2016, 2019 LunarG, Inc.
+/* Copyright (c) 2015-2016, 2020 The Khronos Group Inc.
+ * Copyright (c) 2015-2016, 2020 Valve Corporation
+ * Copyright (c) 2015-2016, 2020 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ VK_LAYER_EXPORT VkStringErrorFlags vk_string_validate(const int max_length, cons
         if (utf8[i] == 0) {
             break;
         } else if (i == max_length) {
-            result = VK_STRING_ERROR_LENGTH;
+            result |= VK_STRING_ERROR_LENGTH;
             break;
         } else if ((utf8[i] >= 0xa) && (utf8[i] < 0x7f)) {
             num_char_bytes = 0;
@@ -58,7 +58,8 @@ VK_LAYER_EXPORT VkStringErrorFlags vk_string_validate(const int max_length, cons
         } else if ((utf8[i] & UTF8_THREE_BYTE_MASK) == UTF8_THREE_BYTE_CODE) {
             num_char_bytes = 3;
         } else {
-            result = VK_STRING_ERROR_BAD_DATA;
+            result |= VK_STRING_ERROR_BAD_DATA;
+            break;
         }
 
         // Validate the following num_char_bytes of data
@@ -69,8 +70,10 @@ VK_LAYER_EXPORT VkStringErrorFlags vk_string_validate(const int max_length, cons
             }
             if ((utf8[i] & UTF8_DATA_BYTE_MASK) != UTF8_DATA_BYTE_CODE) {
                 result |= VK_STRING_ERROR_BAD_DATA;
+                break;
             }
         }
+        if (result != VK_STRING_ERROR_NONE) break;
     }
     return result;
 }
@@ -101,27 +104,27 @@ VK_LAYER_EXPORT void layer_debug_messenger_actions(debug_report_data *report_dat
     log_filename_key.append(".log_filename");
 
     // Initialize layer options
-    VkDebugReportFlagsEXT report_flags = GetLayerOptionFlags(report_flags_key, report_flags_option_definitions, 0);
+    LogMessageTypeFlags report_flags = GetLayerOptionFlags(report_flags_key, log_msg_type_option_definitions, 0);
     VkLayerDbgActionFlags debug_action = GetLayerOptionFlags(debug_action_key, debug_actions_option_definitions, 0);
     // Flag as default if these settings are not from a vk_layer_settings.txt file
     VkDebugUtilsMessengerCreateInfoEXT dbgCreateInfo;
     memset(&dbgCreateInfo, 0, sizeof(dbgCreateInfo));
-    dbgCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+    dbgCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     dbgCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
-    if (report_flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
+    if (report_flags & kErrorBit) {
         dbgCreateInfo.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     }
-    if (report_flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
+    if (report_flags & kWarningBit) {
         dbgCreateInfo.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
     }
-    if (report_flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
+    if (report_flags & kPerformanceWarningBit) {
         dbgCreateInfo.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
         dbgCreateInfo.messageType |= VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     }
-    if (report_flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
+    if (report_flags & kInformationBit) {
         dbgCreateInfo.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
     }
-    if (report_flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
+    if (report_flags & kDebugBit) {
         dbgCreateInfo.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
     }
 

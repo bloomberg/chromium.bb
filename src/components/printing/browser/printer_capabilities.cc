@@ -29,19 +29,22 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#endif
+#endif  // defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
 #include "base/feature_list.h"
 #include "components/printing/browser/ipp_l10n.h"
 #include "components/strings/grit/components_strings.h"
-#include "printing/printing_features_chromeos.h"
+#include "printing/printing_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
 #include "components/printing/browser/print_media_l10n.h"
-#endif
+#if defined(OS_MACOSX)
+#include "printing/printing_features.h"
+#endif  // defined(OS_MACOSX)
+#endif  // BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
 
 namespace printing {
 
@@ -92,7 +95,7 @@ void PopulateAdvancedCapsLocalization(
 // an empty dictionary if a dictionary could not be generated.
 base::Value GetPrinterCapabilitiesOnBlockingTaskRunner(
     const std::string& device_name,
-    const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
+    PrinterSemanticCapsAndDefaults::Papers user_defined_papers,
     bool has_secure_protocol,
     scoped_refptr<PrintBackend> backend) {
   DCHECK(!device_name.empty());
@@ -111,15 +114,25 @@ base::Value GetPrinterCapabilitiesOnBlockingTaskRunner(
   }
 
 #if BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
-  PopulateAllPaperDisplayNames(&info);
+  bool populate_paper_display_names = true;
+#if defined(OS_MACOSX)
+  // Paper display name localization requires standardized vendor ID names
+  // populated by CUPS IPP. If the CUPS IPP backend is not enabled, localization
+  // will not properly occur.
+  populate_paper_display_names =
+      base::FeatureList::IsEnabled(features::kCupsIppPrintingBackend);
 #endif
-  info.papers.insert(info.papers.end(), additional_papers.begin(),
-                     additional_papers.end());
+  if (populate_paper_display_names)
+    PopulateAllPaperDisplayNames(&info);
+#endif  // BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
+
+  info.user_defined_papers = std::move(user_defined_papers);
+
 #if defined(OS_CHROMEOS)
   if (!has_secure_protocol)
     info.pin_supported = false;
 
-  if (base::FeatureList::IsEnabled(printing::kAdvancedPpdAttributes))
+  if (base::FeatureList::IsEnabled(printing::features::kAdvancedPpdAttributes))
     PopulateAdvancedCapsLocalization(&info.advanced_capabilities);
 #endif  // defined(OS_CHROMEOS)
 
@@ -152,7 +165,7 @@ std::string GetUserFriendlyName(const std::string& printer_name) {
 base::Value GetSettingsOnBlockingTaskRunner(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info,
-    const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
+    PrinterSemanticCapsAndDefaults::Papers user_defined_papers,
     bool has_secure_protocol,
     scoped_refptr<PrintBackend> print_backend) {
   SCOPED_UMA_HISTOGRAM_TIMER("Printing.PrinterCapabilities");
@@ -169,10 +182,6 @@ base::Value GetSettingsOnBlockingTaskRunner(
   base::Value options(base::Value::Type::DICTIONARY);
 
 #if defined(OS_CHROMEOS)
-  auto it = basic_info.options.find(kPrinterEulaURL);
-  options.SetKey(kPrinterEulaURL, it != basic_info.options.end()
-                                      ? base::Value(it->second)
-                                      : base::Value());
   printer_info.SetKey(
       kCUPSEnterprisePrinter,
       base::Value(base::Contains(basic_info.options, kCUPSEnterprisePrinter) &&
@@ -184,9 +193,9 @@ base::Value GetSettingsOnBlockingTaskRunner(
   base::Value printer_info_capabilities(base::Value::Type::DICTIONARY);
   printer_info_capabilities.SetKey(kPrinter, std::move(printer_info));
   printer_info_capabilities.SetKey(
-      kSettingCapabilities,
-      GetPrinterCapabilitiesOnBlockingTaskRunner(
-          device_name, additional_papers, has_secure_protocol, print_backend));
+      kSettingCapabilities, GetPrinterCapabilitiesOnBlockingTaskRunner(
+                                device_name, std::move(user_defined_papers),
+                                has_secure_protocol, print_backend));
   return printer_info_capabilities;
 }
 

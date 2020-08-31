@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -46,9 +46,6 @@ namespace {
   if (UNIQUE_VARNAME > 0) {                             \
     UMA_HISTOGRAM_COUNTS_1M(uma, UNIQUE_VARNAME >> 10); \
   }
-
-const double kSecondsPerWeek =
-    base::Time::kMicrosecondsPerWeek / base::Time::kMicrosecondsPerSecond;
 
 // Returns the value at |index| of |list_value| as an int64_t.
 int64_t GetInt64PrefValue(const base::ListValue& list_value, size_t index) {
@@ -93,6 +90,12 @@ void RecordSavingsClearedMetric(DataReductionProxySavingsClearedReason reason) {
       "DataReductionProxy.SavingsCleared.Reason", reason,
       DataReductionProxySavingsClearedReason::REASON_COUNT);
 }
+
+// TODO(rajendrant): Enable aggregate metrics recording in x86 Android.
+// http://crbug.com/865373
+#if !defined(OS_ANDROID) || !defined(ARCH_CPU_X86)
+const double kSecondsPerWeek =
+    base::Time::kMicrosecondsPerWeek / base::Time::kMicrosecondsPerSecond;
 
 // Returns the week number for the current time. The epoch time is treated as
 // week=0.
@@ -178,6 +181,7 @@ void RecordDictionaryToHistogram(const std::string& histogram_name,
     }
   }
 }
+#endif
 
 }  // namespace
 
@@ -333,13 +337,13 @@ void DataReductionProxyCompressionStats::Init() {
 
   data_usage_reporting_enabled_.Init(
       prefs::kDataUsageReportingEnabled, pref_service_,
-      base::Bind(
+      base::BindRepeating(
           &DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged,
           weak_factory_.GetWeakPtr()));
 
   if (data_usage_reporting_enabled_.GetValue()) {
     current_data_usage_load_status_ = LOADING;
-    service_->LoadCurrentDataUsageBucket(base::Bind(
+    service_->LoadCurrentDataUsageBucket(base::BindRepeating(
         &DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded,
         weak_factory_.GetWeakPtr()));
   }
@@ -522,8 +526,9 @@ void DataReductionProxyCompressionStats::GetContentLengths(
 }
 
 void DataReductionProxyCompressionStats::GetHistoricalDataUsage(
-    const HistoricalDataUsageCallback& get_data_usage_callback) {
-  GetHistoricalDataUsageImpl(get_data_usage_callback, base::Time::Now());
+    HistoricalDataUsageCallback get_data_usage_callback) {
+  GetHistoricalDataUsageImpl(std::move(get_data_usage_callback),
+                             base::Time::Now());
 }
 
 void DataReductionProxyCompressionStats::DeleteBrowsingHistory(
@@ -751,7 +756,7 @@ void DataReductionProxyCompressionStats::DeleteHistoricalDataUsage() {
 }
 
 void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
-    const HistoricalDataUsageCallback& get_data_usage_callback,
+    HistoricalDataUsageCallback get_data_usage_callback,
     const base::Time& now) {
 #if !defined(OS_ANDROID)
   if (current_data_usage_load_status_ != LOADED) {
@@ -759,8 +764,8 @@ void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
     // extension can retry after a slight delay.
     // This use case is unlikely to occur in practice since current data usage
     // should have sufficient time to load before user tries to view data usage.
-    get_data_usage_callback.Run(
-        std::make_unique<std::vector<DataUsageBucket>>());
+    std::move(get_data_usage_callback)
+        .Run(std::make_unique<std::vector<DataUsageBucket>>());
     return;
   }
 #endif
@@ -779,14 +784,14 @@ void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
     service_->StoreCurrentDataUsageBucket(std::move(data_usage_bucket));
   }
 
-  service_->LoadHistoricalDataUsage(get_data_usage_callback);
+  service_->LoadHistoricalDataUsage(std::move(get_data_usage_callback));
 }
 
 void DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged() {
   if (data_usage_reporting_enabled_.GetValue()) {
     if (current_data_usage_load_status_ == NOT_LOADED) {
       current_data_usage_load_status_ = LOADING;
-      service_->LoadCurrentDataUsageBucket(base::Bind(
+      service_->LoadCurrentDataUsageBucket(base::BindOnce(
           &DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded,
           weak_factory_.GetWeakPtr()));
     }
@@ -808,12 +813,9 @@ void DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged() {
 
 void DataReductionProxyCompressionStats::InitializeWeeklyAggregateDataUse(
     const base::Time& now) {
-#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
   // TODO(rajendrant): Enable aggregate metrics recording in x86 Android.
   // http://crbug.com/865373
-  return;
-#endif
-
+#if !defined(OS_ANDROID) || !defined(ARCH_CPU_X86)
   MaybeInitWeeklyAggregateDataUsePrefs(now, pref_service_);
   // Record the histograms that will show up in the user feedback.
   RecordDictionaryToHistogram(
@@ -842,6 +844,7 @@ void DataReductionProxyCompressionStats::InitializeWeeklyAggregateDataUse(
       "ContentType",
       pref_service_->GetDictionary(
           prefs::kLastWeekUserTrafficContentTypeDownstreamKB));
+#endif
 }
 
 void DataReductionProxyCompressionStats::RecordWeeklyAggregateDataUse(
@@ -850,11 +853,9 @@ void DataReductionProxyCompressionStats::RecordWeeklyAggregateDataUse(
     bool is_user_request,
     data_use_measurement::DataUseUserData::DataUseContentType content_type,
     int32_t service_hash_code) {
-#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
   // TODO(rajendrant): Enable aggregate metrics recording in x86 Android.
   // http://crbug.com/865373
-  return;
-#endif
+#if !defined(OS_ANDROID) || !defined(ARCH_CPU_X86)
   // Update the prefs if this is a new week. This can happen when chrome is open
   // for weeks without being closed.
   MaybeInitWeeklyAggregateDataUsePrefs(now, pref_service_);
@@ -874,6 +875,7 @@ void DataReductionProxyCompressionStats::RecordWeeklyAggregateDataUse(
                           service_hash_code, data_used_kb);
     }
   }
+#endif
 }
 
 // static

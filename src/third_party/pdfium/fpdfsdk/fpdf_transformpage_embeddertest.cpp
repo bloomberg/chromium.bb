@@ -6,10 +6,23 @@
 
 #include "build/build_config.h"
 #include "testing/embedder_test.h"
+#include "testing/embedder_test_constants.h"
 
 #if defined(OS_LINUX) || defined(OS_FUCHSIA)
 #include "third_party/base/test/scoped_locale.h"
 #endif
+
+using pdfium::kRectanglesChecksum;
+
+namespace {
+
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+constexpr char kShrunkMD5[] = "78c52d6029283090036e6db6683401e2";
+#else
+constexpr char kShrunkMD5[] = "f4136cc9209207ab60eb8381a3df2e69";
+#endif
+
+}  // namespace
 
 class FPDFTransformEmbedderTest : public EmbedderTest {};
 
@@ -194,16 +207,12 @@ TEST_F(FPDFTransformEmbedderTest, NoArtBox) {
   UnloadPage(page);
 }
 
-// TODO(crbug.com/pdfium/11): Fix this test and enable.
+TEST_F(FPDFTransformEmbedderTest, SetCropBox) {
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_SetCropBox DISABLED_SetCropBox
+  const char kCroppedMD5[] = "4b9d2d2246be61c583f454245fe3172f";
 #else
-#define MAYBE_SetCropBox SetCropBox
-#endif
-TEST_F(FPDFTransformEmbedderTest, MAYBE_SetCropBox) {
-  const char kOriginalMD5[] = "0a90de37f52127619c3dfb642b5fa2fe";
   const char kCroppedMD5[] = "9937883715d5144c079fb8f7e3d4f395";
-
+#endif
   {
     ASSERT_TRUE(OpenDocument("rectangles.pdf"));
     FPDF_PAGE page = LoadPage(0);
@@ -219,7 +228,7 @@ TEST_F(FPDFTransformEmbedderTest, MAYBE_SetCropBox) {
       EXPECT_EQ(200, page_width);
       EXPECT_EQ(300, page_height);
       ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
-      CompareBitmap(bitmap.get(), page_width, page_height, kOriginalMD5);
+      CompareBitmap(bitmap.get(), page_width, page_height, kRectanglesChecksum);
     }
 
     FPDFPage_SetCropBox(page, 10, 20, 100, 150);
@@ -273,15 +282,12 @@ TEST_F(FPDFTransformEmbedderTest, MAYBE_SetCropBox) {
   }
 }
 
-// TODO(crbug.com/pdfium/11): Fix this test and enable.
+TEST_F(FPDFTransformEmbedderTest, SetMediaBox) {
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_SetMediaBox DISABLED_SetMediaBox
+  const char kShrunkMD5SetMediaBox[] = "9f28f0610a7f789c24cfd5f9bd5dc3de";
 #else
-#define MAYBE_SetMediaBox SetMediaBox
+  const char kShrunkMD5SetMediaBox[] = "eab5958f62f7ce65d7c32de98389fee1";
 #endif
-TEST_F(FPDFTransformEmbedderTest, MAYBE_SetMediaBox) {
-  const char kOriginalMD5[] = "0a90de37f52127619c3dfb642b5fa2fe";
-  const char kShrunkMD5[] = "eab5958f62f7ce65d7c32de98389fee1";
 
   {
     ASSERT_TRUE(OpenDocument("rectangles.pdf"));
@@ -298,7 +304,7 @@ TEST_F(FPDFTransformEmbedderTest, MAYBE_SetMediaBox) {
       EXPECT_EQ(200, page_width);
       EXPECT_EQ(300, page_height);
       ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
-      CompareBitmap(bitmap.get(), page_width, page_height, kOriginalMD5);
+      CompareBitmap(bitmap.get(), page_width, page_height, kRectanglesChecksum);
     }
 
     FPDFPage_SetMediaBox(page, 20, 30, 100, 150);
@@ -319,7 +325,8 @@ TEST_F(FPDFTransformEmbedderTest, MAYBE_SetMediaBox) {
       EXPECT_EQ(80, page_width);
       EXPECT_EQ(120, page_height);
       ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
-      CompareBitmap(bitmap.get(), page_width, page_height, kShrunkMD5);
+      CompareBitmap(bitmap.get(), page_width, page_height,
+                    kShrunkMD5SetMediaBox);
     }
 
     UnloadPage(page);
@@ -346,7 +353,7 @@ TEST_F(FPDFTransformEmbedderTest, MAYBE_SetMediaBox) {
     EXPECT_EQ(80, page_width);
     EXPECT_EQ(120, page_height);
     ScopedFPDFBitmap bitmap = RenderSavedPage(saved_page);
-    CompareBitmap(bitmap.get(), page_width, page_height, kShrunkMD5);
+    CompareBitmap(bitmap.get(), page_width, page_height, kShrunkMD5SetMediaBox);
 
     CloseSavedPage(saved_page);
     CloseSavedDocument();
@@ -412,16 +419,7 @@ TEST_F(FPDFTransformEmbedderTest, TransFormWithClipWithPatterns) {
   UnloadPage(page);
 }
 
-// TODO(crbug.com/pdfium/11): Fix this test and enable.
-#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_TransFormWithClipAndSave DISABLED_TransFormWithClipAndSave
-#else
-#define MAYBE_TransFormWithClipAndSave TransFormWithClipAndSave
-#endif
-TEST_F(FPDFTransformEmbedderTest, MAYBE_TransFormWithClipAndSave) {
-  const char kOriginalMD5[] = "0a90de37f52127619c3dfb642b5fa2fe";
-  const char kShrunkMD5[] = "f4136cc9209207ab60eb8381a3df2e69";
-
+TEST_F(FPDFTransformEmbedderTest, TransFormWithClipAndSave) {
   {
     ASSERT_TRUE(OpenDocument("rectangles.pdf"));
     FPDF_PAGE page = LoadPage(0);
@@ -434,7 +432,7 @@ TEST_F(FPDFTransformEmbedderTest, MAYBE_TransFormWithClipAndSave) {
       EXPECT_EQ(200, page_width);
       EXPECT_EQ(300, page_height);
       ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
-      CompareBitmap(bitmap.get(), page_width, page_height, kOriginalMD5);
+      CompareBitmap(bitmap.get(), page_width, page_height, kRectanglesChecksum);
     }
 
     {
@@ -449,7 +447,7 @@ TEST_F(FPDFTransformEmbedderTest, MAYBE_TransFormWithClipAndSave) {
       EXPECT_EQ(200, page_width);
       EXPECT_EQ(300, page_height);
       ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
-      CompareBitmap(bitmap.get(), page_width, page_height, kOriginalMD5);
+      CompareBitmap(bitmap.get(), page_width, page_height, kRectanglesChecksum);
     }
 
     UnloadPage(page);
@@ -476,18 +474,7 @@ TEST_F(FPDFTransformEmbedderTest, MAYBE_TransFormWithClipAndSave) {
 }
 
 #if defined(OS_LINUX) || defined(OS_FUCHSIA)
-// TODO(crbug.com/pdfium/11): Fix this test and enable.
-#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-#define MAYBE_TransFormWithClipAndSaveWithLocale \
-  DISABLED_TransFormWithClipAndSaveWithLocale
-#else
-#define MAYBE_TransFormWithClipAndSaveWithLocale \
-  TransFormWithClipAndSaveWithLocale
-#endif
-TEST_F(FPDFTransformEmbedderTest, MAYBE_TransFormWithClipAndSaveWithLocale) {
-  const char kOriginalMD5[] = "0a90de37f52127619c3dfb642b5fa2fe";
-  const char kShrunkMD5[] = "f4136cc9209207ab60eb8381a3df2e69";
-
+TEST_F(FPDFTransformEmbedderTest, TransFormWithClipAndSaveWithLocale) {
   pdfium::base::ScopedLocale scoped_locale("da_DK.UTF-8");
 
   {
@@ -502,7 +489,7 @@ TEST_F(FPDFTransformEmbedderTest, MAYBE_TransFormWithClipAndSaveWithLocale) {
       EXPECT_EQ(200, page_width);
       EXPECT_EQ(300, page_height);
       ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
-      CompareBitmap(bitmap.get(), page_width, page_height, kOriginalMD5);
+      CompareBitmap(bitmap.get(), page_width, page_height, kRectanglesChecksum);
     }
 
     {
@@ -517,7 +504,7 @@ TEST_F(FPDFTransformEmbedderTest, MAYBE_TransFormWithClipAndSaveWithLocale) {
       EXPECT_EQ(200, page_width);
       EXPECT_EQ(300, page_height);
       ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
-      CompareBitmap(bitmap.get(), page_width, page_height, kOriginalMD5);
+      CompareBitmap(bitmap.get(), page_width, page_height, kRectanglesChecksum);
     }
 
     UnloadPage(page);

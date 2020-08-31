@@ -211,48 +211,56 @@ void V8TestCallbackFunctions::CustomElementsCallbacksReadonlyAttributeAttributeG
 }
 
 void V8TestCallbackFunctions::ReturnCallbackFunctionMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestCallbackFunctions.returnCallbackFunctionMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_returnCallbackFunctionMethod");
 
   test_callback_functions_v8_internal::ReturnCallbackFunctionMethodMethod(info);
 }
 
 void V8TestCallbackFunctions::ReturnCallbackFunctionMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestCallbackFunctions.returnCallbackFunctionMethod2");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_returnCallbackFunctionMethod2");
 
   test_callback_functions_v8_internal::ReturnCallbackFunctionMethod2Method(info);
 }
 
 void V8TestCallbackFunctions::VoidMethodCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestCallbackFunctions.voidMethodCallbackFunctionInArg");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_voidMethodCallbackFunctionInArg");
 
   test_callback_functions_v8_internal::VoidMethodCallbackFunctionInArgMethod(info);
 }
 
 void V8TestCallbackFunctions::VoidMethodCallbackFunctionInArg2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestCallbackFunctions.voidMethodCallbackFunctionInArg2");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_voidMethodCallbackFunctionInArg2");
 
   test_callback_functions_v8_internal::VoidMethodCallbackFunctionInArg2Method(info);
 }
 
 void V8TestCallbackFunctions::VoidMethodCallbackFunctionWithReturnValueInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestCallbackFunctions.voidMethodCallbackFunctionWithReturnValueInArg");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_voidMethodCallbackFunctionWithReturnValueInArg");
 
   test_callback_functions_v8_internal::VoidMethodCallbackFunctionWithReturnValueInArgMethod(info);
 }
 
 void V8TestCallbackFunctions::VoidMethodOptionalCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestCallbackFunctions.voidMethodOptionalCallbackFunctionInArg");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_voidMethodOptionalCallbackFunctionInArg");
 
   test_callback_functions_v8_internal::VoidMethodOptionalCallbackFunctionInArgMethod(info);
 }
 
 void V8TestCallbackFunctions::VoidMethodNullableCallbackFunctionInArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestCallbackFunctions.voidMethodNullableCallbackFunctionInArg");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_voidMethodNullableCallbackFunctionInArg");
 
   test_callback_functions_v8_internal::VoidMethodNullableCallbackFunctionInArgMethod(info);
 }
 
 void V8TestCallbackFunctions::CustomElementCallbacksMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestCallbackFunctions.customElementCallbacksMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestCallbackFunctions_customElementCallbacksMethod");
 
   test_callback_functions_v8_internal::CustomElementCallbacksMethodMethod(info);
@@ -286,7 +294,7 @@ static void InstallV8TestCallbackFunctionsTemplate(
   // Register IDL constants, attributes and operations.
   static constexpr V8DOMConfiguration::AccessorConfiguration
   kAccessorConfigurations[] = {
-      { "customElementsCallbacksReadonlyAttribute", V8TestCallbackFunctions::CustomElementsCallbacksReadonlyAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+      { "customElementsCallbacksReadonlyAttribute", V8TestCallbackFunctions::CustomElementsCallbacksReadonlyAttributeAttributeGetterCallback, nullptr, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
   };
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instance_template, prototype_template, interface_template,
@@ -338,16 +346,6 @@ v8::Local<v8::Object> V8TestCallbackFunctions::FindInstanceInPrototypeChain(
 TestCallbackFunctions* V8TestCallbackFunctions::ToImplWithTypeCheck(
     v8::Isolate* isolate, v8::Local<v8::Value> value) {
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
-}
-
-TestCallbackFunctions* NativeValueTraits<TestCallbackFunctions>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestCallbackFunctions* native_value = V8TestCallbackFunctions::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestCallbackFunctions"));
-  }
-  return native_value;
 }
 
 }  // namespace blink

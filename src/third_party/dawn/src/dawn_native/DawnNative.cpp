@@ -15,6 +15,7 @@
 #include "dawn_native/DawnNative.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/Instance.h"
+#include "dawn_native/Texture.h"
 #include "dawn_platform/DawnPlatform.h"
 
 // Contains the entry-points into dawn_native
@@ -44,12 +45,44 @@ namespace dawn_native {
         mImpl = nullptr;
     }
 
+    void Adapter::GetProperties(wgpu::AdapterProperties* properties) const {
+        properties->backendType = mImpl->GetBackendType();
+        properties->adapterType = mImpl->GetAdapterType();
+        properties->deviceID = mImpl->GetPCIInfo().deviceId;
+        properties->vendorID = mImpl->GetPCIInfo().vendorId;
+        properties->name = mImpl->GetPCIInfo().name.c_str();
+    }
+
     BackendType Adapter::GetBackendType() const {
-        return mImpl->GetBackendType();
+        switch (mImpl->GetBackendType()) {
+            case wgpu::BackendType::D3D12:
+                return BackendType::D3D12;
+            case wgpu::BackendType::Metal:
+                return BackendType::Metal;
+            case wgpu::BackendType::Null:
+                return BackendType::Null;
+            case wgpu::BackendType::OpenGL:
+                return BackendType::OpenGL;
+            case wgpu::BackendType::Vulkan:
+                return BackendType::Vulkan;
+            default:
+                UNREACHABLE();
+        }
     }
 
     DeviceType Adapter::GetDeviceType() const {
-        return mImpl->GetDeviceType();
+        switch (mImpl->GetAdapterType()) {
+            case wgpu::AdapterType::DiscreteGPU:
+                return DeviceType::DiscreteGPU;
+            case wgpu::AdapterType::IntegratedGPU:
+                return DeviceType::IntegratedGPU;
+            case wgpu::AdapterType::CPU:
+                return DeviceType::CPU;
+            case wgpu::AdapterType::Unknown:
+                return DeviceType::Unknown;
+            default:
+                UNREACHABLE();
+        }
     }
 
     const PCIInfo& Adapter::GetPCIInfo() const {
@@ -75,17 +108,20 @@ namespace dawn_native {
 
     // AdapterDiscoverOptionsBase
 
-    AdapterDiscoveryOptionsBase::AdapterDiscoveryOptionsBase(BackendType type) : backendType(type) {
+    AdapterDiscoveryOptionsBase::AdapterDiscoveryOptionsBase(WGPUBackendType type)
+        : backendType(type) {
     }
 
     // Instance
 
-    Instance::Instance() : mImpl(new InstanceBase()) {
+    Instance::Instance() : mImpl(InstanceBase::Create()) {
     }
 
     Instance::~Instance() {
-        delete mImpl;
-        mImpl = nullptr;
+        if (mImpl != nullptr) {
+            mImpl->Release();
+            mImpl = nullptr;
+        }
     }
 
     void Instance::DiscoverDefaultAdapters() {
@@ -113,24 +149,16 @@ namespace dawn_native {
         mImpl->EnableBackendValidation(enableBackendValidation);
     }
 
-    bool Instance::IsBackendValidationEnabled() const {
-        return mImpl->IsBackendValidationEnabled();
-    }
-
     void Instance::EnableBeginCaptureOnStartup(bool beginCaptureOnStartup) {
         mImpl->EnableBeginCaptureOnStartup(beginCaptureOnStartup);
-    }
-
-    bool Instance::IsBeginCaptureOnStartupEnabled() const {
-        return mImpl->IsBeginCaptureOnStartupEnabled();
     }
 
     void Instance::SetPlatform(dawn_platform::Platform* platform) {
         mImpl->SetPlatform(platform);
     }
 
-    dawn_platform::Platform* Instance::GetPlatform() const {
-        return mImpl->GetPlatform();
+    WGPUInstance Instance::Get() const {
+        return reinterpret_cast<WGPUInstance>(mImpl);
     }
 
     size_t GetLazyClearCountForTesting(WGPUDevice device) {
@@ -138,10 +166,30 @@ namespace dawn_native {
         return deviceBase->GetLazyClearCountForTesting();
     }
 
+    size_t GetDeprecationWarningCountForTesting(WGPUDevice device) {
+        dawn_native::DeviceBase* deviceBase = reinterpret_cast<dawn_native::DeviceBase*>(device);
+        return deviceBase->GetDeprecationWarningCountForTesting();
+    }
+
+    bool IsTextureSubresourceInitialized(WGPUTexture texture,
+                                         uint32_t baseMipLevel,
+                                         uint32_t levelCount,
+                                         uint32_t baseArrayLayer,
+                                         uint32_t layerCount) {
+        dawn_native::TextureBase* textureBase =
+            reinterpret_cast<dawn_native::TextureBase*>(texture);
+        return textureBase->IsSubresourceContentInitialized(baseMipLevel, levelCount,
+                                                            baseArrayLayer, layerCount);
+    }
+
     std::vector<const char*> GetProcMapNamesForTestingInternal();
 
     std::vector<const char*> GetProcMapNamesForTesting() {
         return GetProcMapNamesForTestingInternal();
+    }
+
+    ExternalImageDescriptor::ExternalImageDescriptor(ExternalImageDescriptorType type)
+        : type(type) {
     }
 
 }  // namespace dawn_native

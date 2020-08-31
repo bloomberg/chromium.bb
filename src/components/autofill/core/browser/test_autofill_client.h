@@ -27,6 +27,10 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 
+#if !defined(OS_IOS)
+#include "components/autofill/core/browser/payments/internal_authenticator.h"
+#endif
+
 namespace autofill {
 
 // This class is for easier writing of tests.
@@ -48,11 +52,22 @@ class TestAutofillClient : public AutofillClient {
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
+  std::string GetPageLanguage() const override;
+#if !defined(OS_IOS)
+  std::unique_ptr<InternalAuthenticator> CreateCreditCardInternalAuthenticator(
+      content::RenderFrameHost* rfh) override;
+#endif
+
   void ShowAutofillSettings(bool show_credit_card_settings) override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         UnmaskCardReason reason,
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  std::vector<std::string> GetMerchantWhitelistForVirtualCards() override;
+  std::vector<std::string> GetBinRangeWhitelistForVirtualCards() override;
+
   void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) override;
   void ConfirmMigrateLocalCardToCloud(
@@ -65,28 +80,31 @@ class TestAutofillClient : public AutofillClient {
       const base::string16& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) override;
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
   void ShowWebauthnOfferDialog(
       WebauthnDialogCallback offer_dialog_callback) override;
   void ShowWebauthnVerifyPendingDialog(
       WebauthnDialogCallback verify_pending_dialog_callback) override;
   void UpdateWebauthnOfferDialogWithError() override;
   bool CloseWebauthnDialog() override;
-#endif
-  void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
-                                  base::OnceClosure callback) override;
-  void ConfirmSaveCreditCardLocally(
-      const CreditCard& card,
-      SaveCreditCardOptions options,
-      LocalSaveCardPromptCallback callback) override;
-#if defined(OS_ANDROID) || defined(OS_IOS)
+  void ConfirmSaveUpiIdLocally(
+      const std::string& upi_id,
+      base::OnceCallback<void(bool accept)> callback) override;
+  void OfferVirtualCardOptions(
+      const std::vector<CreditCard*>& candidates,
+      base::OnceCallback<void(const std::string&)> callback) override;
+#else  // defined(OS_ANDROID) || defined(OS_IOS)
   void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) override;
   void ConfirmExpirationDateFixFlow(
       const CreditCard& card,
       base::OnceCallback<void(const base::string16&, const base::string16&)>
           callback) override;
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif
+  void ConfirmSaveCreditCardLocally(
+      const CreditCard& card,
+      SaveCreditCardOptions options,
+      LocalSaveCardPromptCallback callback) override;
+
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       const LegalMessageLines& legal_message_lines,
@@ -96,7 +114,7 @@ class TestAutofillClient : public AutofillClient {
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
   bool HasCreditCardScanFeature() override;
-  void ScanCreditCard(const CreditCardScanCallback& callback) override;
+  void ScanCreditCard(CreditCardScanCallback callback) override;
   void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
       base::i18n::TextDirection text_direction,
@@ -107,11 +125,15 @@ class TestAutofillClient : public AutofillClient {
   void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,
       const std::vector<base::string16>& labels) override;
-  void HideAutofillPopup() override;
+  base::span<const Suggestion> GetPopupSuggestions() const override;
+  void PinPopupView() override;
+  void UpdatePopup(const std::vector<Suggestion>& suggestions,
+                   PopupType popup_type) override;
+  void HideAutofillPopup(PopupHidingReason reason) override;
   bool IsAutocompleteEnabled() override;
   void PropagateAutofillPredictions(
       content::RenderFrameHost* rfh,
-      const std::vector<autofill::FormStructure*>& forms) override;
+      const std::vector<FormStructure*>& forms) override;
   void DidFillOrPreviewField(const base::string16& autofilled_value,
                              const base::string16& profile_full_name) override;
   // By default, TestAutofillClient will report that the context is
@@ -145,6 +167,11 @@ class TestAutofillClient : public AutofillClient {
     payments_client_ = std::move(payments_client);
   }
 
+  // Sets the page language that is retrieved by |GetPageLanguage()|.
+  void set_page_language(std::string page_language) {
+    page_language_ = page_language;
+  }
+
   void set_test_form_data_importer(
       std::unique_ptr<TestFormDataImporter> form_data_importer) {
     form_data_importer_ = std::move(form_data_importer);
@@ -158,6 +185,22 @@ class TestAutofillClient : public AutofillClient {
 
   void set_security_level(security_state::SecurityLevel security_level) {
     security_level_ = security_level;
+  }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  void set_merchant_whitelist(
+      const std::vector<std::string>& merchant_whitelist) {
+    merchant_whitelist_ = merchant_whitelist;
+  }
+
+  void set_bin_range_whitelist(
+      const std::vector<std::string>& bin_range_whitelist) {
+    bin_range_whitelist_ = bin_range_whitelist;
+  }
+#endif
+
+  void set_should_save_autofill_profiles(bool value) {
+    should_save_autofill_profiles_ = value;
   }
 
   bool ConfirmSaveCardLocallyWasCalled() {
@@ -204,6 +247,8 @@ class TestAutofillClient : public AutofillClient {
   security_state::SecurityLevel security_level_ =
       security_state::SecurityLevel::NONE;
 
+  bool should_save_autofill_profiles_ = true;
+
   bool confirm_save_credit_card_locally_called_ = false;
 
   // Populated if save was offered. True if bubble was shown, false otherwise.
@@ -217,6 +262,14 @@ class TestAutofillClient : public AutofillClient {
   base::Optional<SaveCreditCardOptions> save_credit_card_options_;
 
   std::vector<std::string> migration_card_selection_;
+
+  // The language that is returned by |GetPageLanguage()|.
+  std::string page_language_;
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  std::vector<std::string> merchant_whitelist_;
+  std::vector<std::string> bin_range_whitelist_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillClient);
 };

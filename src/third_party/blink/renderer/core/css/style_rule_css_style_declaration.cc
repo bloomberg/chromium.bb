@@ -31,7 +31,14 @@ namespace blink {
 StyleRuleCSSStyleDeclaration::StyleRuleCSSStyleDeclaration(
     MutableCSSPropertyValueSet& property_set_arg,
     CSSRule* parent_rule)
-    : PropertySetCSSStyleDeclaration(property_set_arg),
+    : PropertySetCSSStyleDeclaration(
+          const_cast<Document*>(CSSStyleSheet::SingleOwnerDocument(
+              parent_rule->parentStyleSheet()))
+              ? const_cast<Document*>(CSSStyleSheet::SingleOwnerDocument(
+                                          parent_rule->parentStyleSheet()))
+                    ->GetExecutionContext()
+              : nullptr,
+          property_set_arg),
       parent_rule_(parent_rule) {}
 
 StyleRuleCSSStyleDeclaration::~StyleRuleCSSStyleDeclaration() = default;
@@ -57,7 +64,7 @@ void StyleRuleCSSStyleDeclaration::Reattach(
   property_set_ = &property_set;
 }
 
-void StyleRuleCSSStyleDeclaration::Trace(blink::Visitor* visitor) {
+void StyleRuleCSSStyleDeclaration::Trace(Visitor* visitor) {
   visitor->Trace(parent_rule_);
   PropertySetCSSStyleDeclaration::Trace(visitor);
 }

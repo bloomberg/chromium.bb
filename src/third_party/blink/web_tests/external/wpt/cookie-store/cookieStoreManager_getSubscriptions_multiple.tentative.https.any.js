@@ -1,5 +1,5 @@
 // META: title=Cookie Store API: ServiceWorker with multiple cookie change subscriptions
-// META: global=!default,serviceworker,window
+// META: global=window,serviceworker
 // META: script=/service-workers/service-worker/resources/test-helpers.sub.js
 
 'use strict';
@@ -43,7 +43,13 @@ promise_test(async testCase => {
       { name: 'cookie-name1', matchType: 'equals', url: `${scope}/path1` },
     ];
     await registration.cookies.subscribe(subscriptions);
-    testCase.add_cleanup(() => registration.cookies.unsubscribe(subscriptions));
+    testCase.add_cleanup(() => {
+      // For non-ServiceWorker environments, registration.unregister() cleans up
+      // cookie subscriptions.
+      if (self.GLOBAL.isWorker()) {
+        return registration.cookies.unsubscribe(subscriptions);
+      }
+    });
   }
   {
     const subscriptions = [
@@ -51,7 +57,13 @@ promise_test(async testCase => {
       { name: 'cookie-prefix', matchType: 'starts-with' },
     ];
     await registration.cookies.subscribe(subscriptions);
-    testCase.add_cleanup(() => registration.cookies.unsubscribe(subscriptions));
+    testCase.add_cleanup(() => {
+      // For non-ServiceWorker environments, registration.unregister() cleans up
+      // cookie subscriptions.
+      if (self.GLOBAL.isWorker()) {
+        return registration.cookies.unsubscribe(subscriptions);
+      }
+    });
   }
 
   const subscriptions = await registration.cookies.getSubscriptions();

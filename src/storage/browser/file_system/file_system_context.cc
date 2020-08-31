@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -40,9 +41,6 @@
 #include "storage/common/file_system/file_system_info.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
-#include "url/gurl.h"
-
-using storage::QuotaClient;
 
 namespace storage {
 
@@ -137,8 +135,8 @@ FileSystemContext::FileSystemContext(
     base::SingleThreadTaskRunner* io_task_runner,
     base::SequencedTaskRunner* file_task_runner,
     ExternalMountPoints* external_mount_points,
-    storage::SpecialStoragePolicy* special_storage_policy,
-    storage::QuotaManagerProxy* quota_manager_proxy,
+    SpecialStoragePolicy* special_storage_policy,
+    QuotaManagerProxy* quota_manager_proxy,
     std::vector<std::unique_ptr<FileSystemBackend>> additional_backends,
     const std::vector<URLRequestAutoMountHandler>& auto_mount_handlers,
     const base::FilePath& partition_path,
@@ -209,9 +207,9 @@ FileSystemContext::FileSystemContext(
 }
 
 bool FileSystemContext::DeleteDataForOriginOnFileTaskRunner(
-    const GURL& origin_url) {
+    const url::Origin& origin) {
   DCHECK(default_file_task_runner()->RunsTasksInCurrentSequence());
-  DCHECK(origin_url == origin_url.GetOrigin());
+  DCHECK(origin.GetURL().is_valid());
 
   bool success = true;
   for (auto& type_backend_pair : backend_map_) {
@@ -219,7 +217,7 @@ bool FileSystemContext::DeleteDataForOriginOnFileTaskRunner(
     if (!backend->GetQuotaUtil())
       continue;
     if (backend->GetQuotaUtil()->DeleteOriginDataOnFileTaskRunner(
-            this, quota_manager_proxy(), origin_url, type_backend_pair.first) !=
+            this, quota_manager_proxy(), origin, type_backend_pair.first) !=
         base::File::FILE_OK) {
       // Continue the loop, but record the failure.
       success = false;
@@ -231,14 +229,14 @@ bool FileSystemContext::DeleteDataForOriginOnFileTaskRunner(
 
 scoped_refptr<QuotaReservation>
 FileSystemContext::CreateQuotaReservationOnFileTaskRunner(
-    const GURL& origin_url,
+    const url::Origin& origin,
     FileSystemType type) {
   DCHECK(default_file_task_runner()->RunsTasksInCurrentSequence());
   FileSystemBackend* backend = GetFileSystemBackend(type);
   if (!backend || !backend->GetQuotaUtil())
     return scoped_refptr<QuotaReservation>();
-  return backend->GetQuotaUtil()->CreateQuotaReservationOnFileTaskRunner(
-      origin_url, type);
+  return backend->GetQuotaUtil()->CreateQuotaReservationOnFileTaskRunner(origin,
+                                                                         type);
 }
 
 void FileSystemContext::Shutdown() {
@@ -331,7 +329,7 @@ ExternalFileSystemBackend* FileSystemContext::external_backend() const {
       GetFileSystemBackend(kFileSystemTypeExternal));
 }
 
-void FileSystemContext::OpenFileSystem(const GURL& origin_url,
+void FileSystemContext::OpenFileSystem(const url::Origin& origin,
                                        FileSystemType type,
                                        OpenFileSystemMode mode,
                                        OpenFileSystemCallback callback) {
@@ -353,7 +351,7 @@ void FileSystemContext::OpenFileSystem(const GURL& origin_url,
   }
 
   backend->ResolveURL(
-      CreateCrackedFileSystemURL(origin_url, type, base::FilePath()), mode,
+      CreateCrackedFileSystemURL(origin, type, base::FilePath()), mode,
       std::move(callback));
 }
 
@@ -402,11 +400,11 @@ void FileSystemContext::AttemptAutoMountForURLRequest(
   copyable_callback.Run(base::File::FILE_ERROR_NOT_FOUND);
 }
 
-void FileSystemContext::DeleteFileSystem(const GURL& origin_url,
+void FileSystemContext::DeleteFileSystem(const url::Origin& origin,
                                          FileSystemType type,
                                          StatusCallback callback) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(origin_url == origin_url.GetOrigin());
+  DCHECK(origin.GetURL().is_valid());
   DCHECK(!callback.is_null());
 
   FileSystemBackend* backend = GetFileSystemBackend(type);
@@ -425,12 +423,11 @@ void FileSystemContext::DeleteFileSystem(const GURL& origin_url,
       base::BindOnce(&FileSystemQuotaUtil::DeleteOriginDataOnFileTaskRunner,
                      base::Unretained(backend->GetQuotaUtil()),
                      base::RetainedRef(this),
-                     base::Unretained(quota_manager_proxy()), origin_url, type),
+                     base::Unretained(quota_manager_proxy()), origin, type),
       std::move(callback));
 }
 
-std::unique_ptr<storage::FileStreamReader>
-FileSystemContext::CreateFileStreamReader(
+std::unique_ptr<FileStreamReader> FileSystemContext::CreateFileStreamReader(
     const FileSystemURL& url,
     int64_t offset,
     int64_t max_bytes_to_read,
@@ -473,11 +470,10 @@ FileSystemURL FileSystemContext::CrackURL(const GURL& url) const {
 }
 
 FileSystemURL FileSystemContext::CreateCrackedFileSystemURL(
-    const GURL& origin,
+    const url::Origin& origin,
     FileSystemType type,
     const base::FilePath& path) const {
-  return CrackFileSystemURL(
-      FileSystemURL(url::Origin::Create(origin), type, path));
+  return CrackFileSystemURL(FileSystemURL(origin, type, path));
 }
 
 bool FileSystemContext::CanServeURLRequest(const FileSystemURL& url) const {
@@ -495,7 +491,7 @@ bool FileSystemContext::CanServeURLRequest(const FileSystemURL& url) const {
 }
 
 void FileSystemContext::OpenPluginPrivateFileSystem(
-    const GURL& origin_url,
+    const url::Origin& origin,
     FileSystemType type,
     const std::string& filesystem_id,
     const std::string& plugin_id,
@@ -503,7 +499,7 @@ void FileSystemContext::OpenPluginPrivateFileSystem(
     StatusCallback callback) {
   DCHECK(plugin_private_backend_);
   plugin_private_backend_->OpenPrivateFileSystem(
-      origin_url, type, filesystem_id, plugin_id, mode, std::move(callback));
+      origin, type, filesystem_id, plugin_id, mode, std::move(callback));
 }
 
 FileSystemContext::~FileSystemContext() {
@@ -605,8 +601,7 @@ void FileSystemContext::DidOpenFileSystemForResolveURL(
     return;
   }
 
-  storage::FileSystemInfo info(filesystem_name, filesystem_root,
-                               url.mount_type());
+  FileSystemInfo info(filesystem_name, filesystem_root, url.mount_type());
 
   // Extract the virtual path not containing a filesystem type part from |url|.
   base::FilePath parent = CrackURL(filesystem_root).virtual_path();

@@ -20,18 +20,8 @@ Polymer({
     // True when the toolbar is displaying in narrow mode.
     narrow: {
       type: Boolean,
+      value: false,
       reflectToAttribute: true,
-      readonly: true,
-      notify: true,
-    },
-
-    /**
-     * The threshold at which the toolbar will change from normal to narrow
-     * mode, in px.
-     */
-    narrowThreshold: {
-      type: Number,
-      value: 900,
     },
 
     /** @private */
@@ -39,15 +29,31 @@ Polymer({
       type: Boolean,
       reflectToAttribute: true,
     },
+
+    /** @private */
+    newOsSettingsSearch_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('newOsSettingsSearch');
+      },
+      readOnly: true,
+    },
   },
 
-  /** @return {!CrToolbarSearchFieldElement} */
-  getSearchField: function() {
-    return this.$.search;
+  /** @return {?CrToolbarSearchFieldElement} */
+  getSearchField() {
+    if (this.newOsSettingsSearch_) {
+      return /** @type {?CrToolbarSearchFieldElement} */ (
+          this.shadowRoot.querySelector('os-settings-search-box')
+              .$$('cr-toolbar-search-field'));
+    }
+    // TODO(crbug/1080777): Remove when new settings search complete.
+    return /** @type {?CrToolbarSearchFieldElement} */ (
+        this.$$('cr-toolbar-search-field'));
   },
 
   /** @private */
-  onMenuTap_: function() {
+  onMenuTap_() {
     this.fire('os-toolbar-menu-tap');
   },
 });

@@ -9,10 +9,9 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "media/audio/audio_debug_recording_manager.h"
-#include "services/audio/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace audio {
 
@@ -50,9 +49,9 @@ void DebugRecordingSession::DebugRecordingFileProvider::CreateWavFile(
     media::AudioDebugRecordingStreamType stream_type,
     uint32_t id,
     CreateWavFileCallback reply_callback) {
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
           [](const base::FilePath& file_name) {
@@ -67,17 +66,14 @@ void DebugRecordingSession::DebugRecordingFileProvider::CreateWavFile(
 
 DebugRecordingSession::DebugRecordingSession(
     const base::FilePath& file_name_base,
-    std::unique_ptr<service_manager::Connector> connector) {
-  DCHECK(connector);
-
+    mojo::PendingRemote<mojom::DebugRecording> debug_recording) {
   mojo::PendingRemote<mojom::DebugRecordingFileProvider> remote_file_provider;
   file_provider_ = std::make_unique<DebugRecordingFileProvider>(
       remote_file_provider.InitWithNewPipeAndPassReceiver(), file_name_base);
-
-  connector->Connect(audio::mojom::kServiceName,
-                     debug_recording_.BindNewPipeAndPassReceiver());
-  if (debug_recording_.is_bound())
+  if (debug_recording) {
+    debug_recording_.Bind(std::move(debug_recording));
     debug_recording_->Enable(std::move(remote_file_provider));
+  }
 }
 
 DebugRecordingSession::~DebugRecordingSession() {}

@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_advertising_event.h"
 #include "third_party/blink/renderer/bindings/modules/v8/string_or_unsigned_long.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_bluetooth_advertising_event_init.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
-#include "third_party/blink/renderer/modules/bluetooth/bluetooth_advertising_event_init.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_device.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_manufacturer_data_map.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_service_data_map.h"
@@ -48,7 +48,7 @@ BluetoothAdvertisingEvent::BluetoothAdvertisingEvent(
 
 BluetoothAdvertisingEvent::~BluetoothAdvertisingEvent() {}
 
-void BluetoothAdvertisingEvent::Trace(blink::Visitor* visitor) {
+void BluetoothAdvertisingEvent::Trace(Visitor* visitor) {
   visitor->Trace(device_);
   visitor->Trace(uuids_);
   visitor->Trace(manufacturer_data_map_);
@@ -71,21 +71,6 @@ const String& BluetoothAdvertisingEvent::name() const {
 const HeapVector<StringOrUnsignedLong>& BluetoothAdvertisingEvent::uuids()
     const {
   return uuids_;
-}
-
-uint16_t BluetoothAdvertisingEvent::appearance(bool& is_null) const {
-  is_null = !appearance_.has_value();
-  return appearance_.value_or(0);
-}
-
-int8_t BluetoothAdvertisingEvent::txPower(bool& is_null) const {
-  is_null = !txPower_.has_value();
-  return txPower_.value_or(0);
-}
-
-int8_t BluetoothAdvertisingEvent::rssi(bool& is_null) const {
-  is_null = !rssi_.has_value();
-  return rssi_.value_or(0);
 }
 
 BluetoothManufacturerDataMap* BluetoothAdvertisingEvent::manufacturerData()

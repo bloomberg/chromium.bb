@@ -11,7 +11,6 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_content_browser_client.h"
@@ -196,7 +195,10 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     request_ = NavigationRequest::CreateBrowserInitiated(
         main_test_rfh()->frame_tree_node(), std::move(common_params),
         CreateCommitNavigationParams(), false /* browser-initiated */,
-        std::string(), nullptr, nullptr, nullptr, nullptr);
+        GlobalFrameRoutingId() /* initiator_routing_id */,
+        std::string() /* extra_headers */, nullptr /* frame_entry */,
+        nullptr /* entry */, nullptr /* post_body */,
+        nullptr /* navigation_ui_data */, base::nullopt /* impression */);
     request_->StartNavigation(true);
   }
 

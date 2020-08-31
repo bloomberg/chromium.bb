@@ -26,11 +26,13 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device_poller.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 
@@ -61,6 +63,14 @@ class V4L2Queue;
 class V4L2BufferRefBase;
 class V4L2BuffersList;
 class V4L2DecodeSurface;
+class V4L2RequestRef;
+
+// Wrapper for the 'v4l2_ext_control' structure.
+struct V4L2ExtCtrl {
+  V4L2ExtCtrl(uint32_t id);
+  V4L2ExtCtrl(uint32_t id, int32_t val);
+  struct v4l2_ext_control ctrl;
+};
 
 // A unique reference to a buffer for clients to prepare and submit.
 //
@@ -69,49 +79,56 @@ class V4L2DecodeSurface;
 // type of the buffer, or drop the reference to make the buffer available again.
 class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
  public:
-  // Default constructor, creates invalid buffer reference.
-  V4L2WritableBufferRef();
   V4L2WritableBufferRef(V4L2WritableBufferRef&& other);
+  V4L2WritableBufferRef() = delete;
   V4L2WritableBufferRef& operator=(V4L2WritableBufferRef&& other);
-
-  // Returns true if the reference points to a valid buffer.
-  bool IsValid() const;
 
   // Return the memory type of the buffer. Useful to e.g. decide which Queue()
   // method to use.
   enum v4l2_memory Memory() const;
 
   // Queue a MMAP buffer.
+  // When requests are supported, a |request_ref| can be passed along this
+  // the buffer to be submitted.
   // If successful, true is returned and the reference to the buffer is dropped
   // so this reference becomes invalid.
   // In case of error, false is returned and the buffer is returned to the free
   // list.
-  bool QueueMMap() &&;
+  bool QueueMMap(V4L2RequestRef* request_ref = nullptr) &&;
   // Queue a USERPTR buffer, assigning |ptrs| as pointer for each plane.
   // The size of |ptrs| must be equal to the number of planes of this buffer.
+  // When requests are supported, a |request_ref| can be passed along this
+  // the buffer to be submitted.
   // If successful, true is returned and the reference to the buffer is dropped
   // so this reference becomes invalid.
   // In case of error, false is returned and the buffer is returned to the free
   // list.
-  bool QueueUserPtr(const std::vector<void*>& ptrs) &&;
+  bool QueueUserPtr(const std::vector<void*>& ptrs,
+                    V4L2RequestRef* request_ref = nullptr) &&;
   // Queue a DMABUF buffer, assigning |fds| as file descriptors for each plane.
   // It is allowed the number of |fds| might be greater than the number of
   // planes of this buffer. It happens when the v4l2 pixel format is single
   // planar. The fd of the first plane is only used in that case.
+  // When requests are supported, a |request_ref| can be passed along this
+  // the buffer to be submitted.
   // If successful, true is returned and the reference to the buffer is dropped
   // so this reference becomes invalid.
   // In case of error, false is returned and the buffer is returned to the free
   // list.
-  bool QueueDMABuf(const std::vector<base::ScopedFD>& fds) &&;
+  bool QueueDMABuf(const std::vector<base::ScopedFD>& fds,
+                   V4L2RequestRef* request_ref = nullptr) &&;
   // Queue a DMABUF buffer, assigning file descriptors of |planes| for planes.
   // It is allowed the number of |planes| might be greater than the number of
   // planes of this buffer. It happens when the v4l2 pixel format is single
   // planar. The fd of the first plane of |planes| is only used in that case.
+  // When requests are supported, a |request_ref| can be passed along this
+  // the buffer to be submitted.
   // If successful, true is returned and the reference to the buffer is dropped
   // so this reference becomes invalid.
   // In case of error, false is returned and the buffer is returned to the free
   // list.
-  bool QueueDMABuf(const std::vector<gfx::NativePixmapPlane>& planes) &&;
+  bool QueueDMABuf(const std::vector<gfx::NativePixmapPlane>& planes,
+                   V4L2RequestRef* request_ref = nullptr) &&;
 
   // Returns the number of planes in this buffer.
   size_t PlanesCount() const;
@@ -146,24 +163,26 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // return nullptr for any other buffer type.
   scoped_refptr<VideoFrame> GetVideoFrame() WARN_UNUSED_RESULT;
 
-  // Add the request or config store information to |surface|.
-  // TODO(acourbot): This method is a temporary hack. Implement proper config
-  // store/request API support.
-  void PrepareQueueBuffer(const V4L2DecodeSurface& surface);
-
   // Return the V4L2 buffer ID of the underlying buffer.
   // TODO(acourbot) This is used for legacy clients but should be ultimately
   // removed. See crbug/879971
   size_t BufferId() const;
+
+  // Set the passed config store to this buffer.
+  // This method is only used for backward compatibility until the config
+  // store is deprecated and should not be called by new code.
+  void SetConfigStore(uint32_t config_store);
 
   ~V4L2WritableBufferRef();
 
  private:
   // Do the actual queue operation once the v4l2_buffer structure is properly
   // filled.
-  bool DoQueue() &&;
+  // When requests are supported, a |request_ref| can be passed along this
+  // the buffer to be submitted.
+  bool DoQueue(V4L2RequestRef* request_ref) &&;
 
-  V4L2WritableBufferRef(const struct v4l2_buffer* v4l2_buffer,
+  V4L2WritableBufferRef(const struct v4l2_buffer& v4l2_buffer,
                         base::WeakPtr<V4L2Queue> queue);
   friend class V4L2BufferRefFactory;
 
@@ -225,7 +244,7 @@ class MEDIA_GPU_EXPORT V4L2ReadableBuffer
 
   ~V4L2ReadableBuffer();
 
-  V4L2ReadableBuffer(const struct v4l2_buffer* v4l2_buffer,
+  V4L2ReadableBuffer(const struct v4l2_buffer& v4l2_buffer,
                      base::WeakPtr<V4L2Queue> queue);
 
   std::unique_ptr<V4L2BufferRefBase> buffer_data_;
@@ -274,6 +293,26 @@ class MEDIA_GPU_EXPORT V4L2Queue
                                                size_t buffer_size)
       WARN_UNUSED_RESULT;
 
+  // Returns the currently set format on the queue. The result is returned as
+  // a std::pair where the first member is the format, or base::nullopt if the
+  // format could not be obtained due to an ioctl error. The second member is
+  // only used in case of an error and contains the |errno| set by the failing
+  // ioctl. If the first member is not base::nullopt, the second member will
+  // always be zero.
+  //
+  // If the second member is 0, then the first member is guaranteed to have
+  // a valid value. So clients that are not interested in the precise error
+  // message can just check that the first member is valid and go on.
+  //
+  // This pair is used because not all failures to get the format are
+  // necessarily errors, so we need to way to let the use decide whether it
+  // is one or not.
+  std::pair<base::Optional<struct v4l2_format>, int> GetFormat();
+
+  // Codec-specific method to get the visible rectangle of the queue, using the
+  // VIDIOC_G_SELECTION ioctl if available, or VIDIOC_G_CROP as a fallback.
+  base::Optional<gfx::Rect> GetVisibleRect();
+
   // Allocate |count| buffers for the current format of this queue, with a
   // specific |memory| allocation, and returns the number of buffers allocated
   // or zero if an error occurred, or if references to any previously allocated
@@ -298,12 +337,12 @@ class MEDIA_GPU_EXPORT V4L2Queue
   // Returns |memory_|, memory type of last buffers allocated by this V4L2Queue.
   v4l2_memory GetMemoryType() const;
 
-  // Return a unique pointer to a free buffer for the caller to prepare and
-  // submit, or an empty pointer if no buffer is currently free.
+  // Return a reference to a free buffer for the caller to prepare and submit,
+  // or nullopt if no buffer is currently free.
   //
   // If the caller discards the returned reference, the underlying buffer is
   // made available to clients again.
-  V4L2WritableBufferRef GetFreeBuffer();
+  base::Optional<V4L2WritableBufferRef> GetFreeBuffer();
 
   // Attempt to dequeue a buffer, and return a reference to it if one was
   // available.
@@ -340,6 +379,9 @@ class MEDIA_GPU_EXPORT V4L2Queue
   // Returns the number of buffers currently queued on this queue.
   size_t QueuedBuffersCount() const;
 
+  // Returns true if requests are supported by this queue.
+  bool SupportsRequests();
+
  private:
   ~V4L2Queue();
 
@@ -349,6 +391,8 @@ class MEDIA_GPU_EXPORT V4L2Queue
   const enum v4l2_buf_type type_;
   enum v4l2_memory memory_ = V4L2_MEMORY_MMAP;
   bool is_streaming_ = false;
+  // Set to true if the queue supports requests.
+  bool supports_requests_ = false;
   size_t planes_count_ = 0;
   // Current format as set by SetFormat.
   base::Optional<struct v4l2_format> current_format_;
@@ -386,9 +430,6 @@ class V4L2Request;
 // This class is used to manage requests and not intended to be used
 // directly.
 class MEDIA_GPU_EXPORT V4L2RequestRefBase {
- public:
-  bool IsValid() const { return request_ != nullptr; }
-
  protected:
   V4L2RequestRefBase(V4L2RequestRefBase&& req_base);
   V4L2RequestRefBase(V4L2Request* request);
@@ -415,11 +456,11 @@ class MEDIA_GPU_EXPORT V4L2RequestRef : public V4L2RequestRefBase {
   V4L2RequestRef(V4L2RequestRef&& req_ref) :
     V4L2RequestRefBase(std::move(req_ref)) {}
   // Apply controls to the request.
-  bool SetCtrls(struct v4l2_ext_controls* ctrls) const;
+  bool ApplyCtrls(struct v4l2_ext_controls* ctrls) const;
   // Apply buffer to the request.
-  bool SetQueueBuffer(struct v4l2_buffer* buffer) const;
+  bool ApplyQueueBuffer(struct v4l2_buffer* buffer) const;
   // Submits the request to the driver.
-  V4L2SubmittedRequestRef Submit() &&;
+  base::Optional<V4L2SubmittedRequestRef> Submit() &&;
 
  private:
   friend class V4L2RequestsQueue;
@@ -462,12 +503,9 @@ class MEDIA_GPU_EXPORT V4L2SubmittedRequestRef : public V4L2RequestRefBase {
 //    back to the free request pool described in 1).
 class MEDIA_GPU_EXPORT V4L2RequestsQueue {
  public:
-  // Allocates |nb_requests|. Returns true if all requests
-  // could be created.
-  bool AllocateRequests(size_t nb_requests);
   // Gets a free request. If no request is available, a non-valid request
   // reference will be returned.
-  V4L2RequestRef GetFreeRequest();
+  base::Optional<V4L2RequestRef> GetFreeRequest();
 
  private:
   // File descriptor of the media device (/dev/mediaX) from which requests
@@ -597,48 +635,35 @@ class MEDIA_GPU_EXPORT V4L2Device
 
   // Return true if the given V4L2 pixfmt can be used in CreateEGLImage()
   // for the current platform.
-  virtual bool CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) = 0;
+  virtual bool CanCreateEGLImageFrom(const Fourcc fourcc) const = 0;
 
-  // Create an EGLImage from provided |dmabuf_fds| and bind |texture_id| to it.
+  // Create an EGLImage from provided |handle|, taking full ownership of it.
   // Some implementations may also require the V4L2 |buffer_index| of the buffer
-  // for which |dmabuf_fds| have been exported.
-  // The caller may choose to close the file descriptors after this method
-  // returns, and may expect the buffers to remain valid for the lifetime of
-  // the created EGLImage.
+  // for which |handle| has been exported.
   // Return EGL_NO_IMAGE_KHR on failure.
-  virtual EGLImageKHR CreateEGLImage(
-      EGLDisplay egl_display,
-      EGLContext egl_context,
-      GLuint texture_id,
-      const gfx::Size& size,
-      unsigned int buffer_index,
-      uint32_t v4l2_pixfmt,
-      const std::vector<base::ScopedFD>& dmabuf_fds) = 0;
+  virtual EGLImageKHR CreateEGLImage(EGLDisplay egl_display,
+                                     EGLContext egl_context,
+                                     GLuint texture_id,
+                                     const gfx::Size& size,
+                                     unsigned int buffer_index,
+                                     const Fourcc fourcc,
+                                     gfx::NativePixmapHandle handle) const = 0;
 
-  // Create a GLImage from provided |dmabuf_fds|.
-  // The caller may choose to close the file descriptors after this method
-  // returns, and may expect the buffers to remain valid for the lifetime of
-  // the created GLImage.
-  // Return the newly created GLImage.
+  // Create a GLImage from provided |handle|, taking full ownership of it.
   virtual scoped_refptr<gl::GLImage> CreateGLImage(
       const gfx::Size& size,
-      uint32_t fourcc,
-      const std::vector<base::ScopedFD>& dmabuf_fds) = 0;
+      const Fourcc fourcc,
+      gfx::NativePixmapHandle handle) const = 0;
 
   // Destroys the EGLImageKHR.
   virtual EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
-                                     EGLImageKHR egl_image) = 0;
+                                     EGLImageKHR egl_image) const = 0;
 
   // Returns the supported texture target for the V4L2Device.
-  virtual GLenum GetTextureTarget() = 0;
+  virtual GLenum GetTextureTarget() const = 0;
 
   // Returns the preferred V4L2 input formats for |type| or empty if none.
-  virtual std::vector<uint32_t> PreferredInputFormat(Type type) = 0;
-
-  // NOTE: The below methods to query capabilities have a side effect of
-  // closing the previously-open device, if any, and should not be called after
-  // Open().
-  // TODO(posciak): fix this.
+  virtual std::vector<uint32_t> PreferredInputFormat(Type type) const = 0;
 
   // Get minimum and maximum resolution for fourcc |pixelformat| and store to
   // |min_resolution| and |max_resolution|.
@@ -647,6 +672,11 @@ class MEDIA_GPU_EXPORT V4L2Device
                               gfx::Size* max_resolution);
 
   std::vector<uint32_t> EnumerateSupportedPixelformats(v4l2_buf_type buf_type);
+
+  // NOTE: The below methods to query capabilities have a side effect of
+  // closing the previously-open device, if any, and should not be called after
+  // Open().
+  // TODO(b/150431552): fix this.
 
   // Return V4L2 pixelformats supported by the available image processor
   // devices for |buf_type|.
@@ -683,9 +713,22 @@ class MEDIA_GPU_EXPORT V4L2Device
   // to be called from V4L2Queue, clients should not need to call it directly.
   void SchedulePoll();
 
+  // Attempt to dequeue a V4L2 event and return it.
+  base::Optional<struct v4l2_event> DequeueEvent();
+
   // Returns requests queue to get free requests. A null pointer is returned if
   // the queue creation failed or if requests are not supported.
   V4L2RequestsQueue* GetRequestsQueue();
+
+  // Check whether the V4L2 control with specified |ctrl_id| is supported.
+  bool IsCtrlExposed(uint32_t ctrl_id);
+  // Set the specified list of |ctrls| for the specified |ctrl_class|, returns
+  // whether the operation succeeded.
+  bool SetExtCtrls(uint32_t ctrl_class, std::vector<V4L2ExtCtrl> ctrls);
+
+  // Get the value of a single control, or base::nullopt of the control is not
+  // exposed by the device.
+  base::Optional<struct v4l2_ext_control> GetCtrl(uint32_t ctrl_id);
 
  protected:
   friend class base::RefCountedThreadSafe<V4L2Device>;

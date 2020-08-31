@@ -69,6 +69,7 @@ class BaseTemporalInputType : public InputType {
                              bool has_hour,
                              bool has_minute,
                              bool has_second) const = 0;
+  virtual String AriaRoleForPickerIndicator() const = 0;
 
  protected:
   BaseTemporalInputType(HTMLInputElement& element) : InputType(element) {}
@@ -96,6 +97,8 @@ class BaseTemporalInputType : public InputType {
   bool ValueMissing(const String&) const override;
   String RangeOverflowText(const Decimal& maximum) const override;
   String RangeUnderflowText(const Decimal& minimum) const override;
+  String RangeInvalidText(const Decimal& minimum,
+                          const Decimal& maximum) const override;
   Decimal DefaultValueForStepUp() const override;
   bool IsSteppable() const override;
   virtual String SerializeWithDate(const base::Optional<base::Time>&) const;

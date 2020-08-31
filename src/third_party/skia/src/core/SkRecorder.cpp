@@ -193,43 +193,6 @@ void SkRecorder::onDrawPath(const SkPath& path, const SkPaint& paint) {
     this->append<SkRecords::DrawPath>(paint, path);
 }
 
-void SkRecorder::onDrawBitmap(const SkBitmap& bitmap,
-                              SkScalar left,
-                              SkScalar top,
-                              const SkPaint* paint) {
-    sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
-    if (image) {
-        this->onDrawImage(image.get(), left, top, paint);
-    }
-}
-
-void SkRecorder::onDrawBitmapRect(const SkBitmap& bitmap,
-                                  const SkRect* src,
-                                  const SkRect& dst,
-                                  const SkPaint* paint,
-                                  SrcRectConstraint constraint) {
-    sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
-    if (image) {
-        this->onDrawImageRect(image.get(), src, dst, paint, constraint);
-    }
-}
-
-void SkRecorder::onDrawBitmapNine(const SkBitmap& bitmap,
-                                  const SkIRect& center,
-                                  const SkRect& dst,
-                                  const SkPaint* paint) {
-    sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
-    if (image) {
-        this->onDrawImageNine(image.get(), center, dst, paint);
-    }
-}
-
-void SkRecorder::onDrawBitmapLattice(const SkBitmap& bitmap, const Lattice& lattice,
-                                     const SkRect& dst, const SkPaint* paint) {
-    sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
-    this->onDrawImageLattice(image.get(), lattice, dst, paint);
-}
-
 void SkRecorder::onDrawImage(const SkImage* image, SkScalar left, SkScalar top,
                              const SkPaint* paint) {
     this->append<SkRecords::DrawImage>(this->copy(paint), sk_ref_sp(image), left, top);
@@ -281,12 +244,10 @@ void SkRecorder::onDrawPicture(const SkPicture* pic, const SkMatrix* matrix, con
     }
 }
 
-void SkRecorder::onDrawVerticesObject(const SkVertices* vertices, const SkVertices::Bone bones[],
-                                      int boneCount, SkBlendMode bmode, const SkPaint& paint) {
+void SkRecorder::onDrawVerticesObject(const SkVertices* vertices, SkBlendMode bmode,
+                                      const SkPaint& paint) {
     this->append<SkRecords::DrawVertices>(paint,
                                           sk_ref_sp(const_cast<SkVertices*>(vertices)),
-                                          this->copy(bones, boneCount),
-                                          boneCount,
                                           bmode);
 }
 
@@ -370,12 +331,24 @@ void SkRecorder::didRestore() {
     this->append<SkRecords::Restore>(this->getTotalMatrix());
 }
 
+void SkRecorder::onMarkCTM(const char* name) {
+    this->append<SkRecords::MarkCTM>(SkString(name));
+}
+
+void SkRecorder::didConcat44(const SkM44& m) {
+    this->append<SkRecords::Concat44>(m);
+}
+
 void SkRecorder::didConcat(const SkMatrix& matrix) {
     this->append<SkRecords::Concat>(matrix);
 }
 
 void SkRecorder::didSetMatrix(const SkMatrix& matrix) {
     this->append<SkRecords::SetMatrix>(matrix);
+}
+
+void SkRecorder::didScale(SkScalar sx, SkScalar sy) {
+    this->append<SkRecords::Scale>(sx, sy);
 }
 
 void SkRecorder::didTranslate(SkScalar dx, SkScalar dy) {
@@ -398,6 +371,11 @@ void SkRecorder::onClipPath(const SkPath& path, SkClipOp op, ClipEdgeStyle edgeS
     INHERITED(onClipPath, path, op, edgeStyle);
     SkRecords::ClipOpAndAA opAA(op, kSoft_ClipEdgeStyle == edgeStyle);
     this->append<SkRecords::ClipPath>(path, opAA);
+}
+
+void SkRecorder::onClipShader(sk_sp<SkShader> cs, SkClipOp op) {
+    INHERITED(onClipShader, cs, op);
+    this->append<SkRecords::ClipShader>(std::move(cs), op);
 }
 
 void SkRecorder::onClipRegion(const SkRegion& deviceRgn, SkClipOp op) {

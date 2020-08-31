@@ -41,36 +41,8 @@
     border: 1px solid rgb(204, 204, 204);
 }
 
-#network-container.no-node-selected:focus-within {
+#network-container.grid-focused.no-node-selected:focus-within {
     border: 1px solid var(--accent-color);
-}
-
-.network-log-grid {
-    --network-grid-default-color: rgba(255, 255, 255, 1.0);
-    --network-grid-stripe-color: rgba(245, 245, 245, 1.0);
-    --network-grid-navigation-color: rgba(221, 238, 255, 1.0);
-    --network-grid-hovered-color: rgba(235, 242, 252, 0.7);
-    --network-grid-initiator-path-color: rgba(58, 217, 58, 0.4);
-    --network-grid-initiated-path-color: rgba(217, 58, 58, 0.4);
-    --network-grid-selected-color: rgba(219, 219, 219, .6);
-    --network-grid-focus-selected-color: var(--selection-bg-color);
-    --network-grid-focus-selected-color-has-error: rgb(255, 240, 240, 1.0);
-    --network-grid-from-frame-color: rgba(224, 247, 250, .4);
-    --network-grid-is-product-color: rgba(255, 252, 225, .6);
-}
-
-.-theme-with-dark-background .network-log-grid {
-    --network-grid-default-color: rgba(36, 36, 36, 1.0);
-    --network-grid-stripe-color: rgba(41, 41, 41, 1.0);
-    --network-grid-navigation-color: rgba(221, 238, 255, 1.0);
-    --network-grid-hovered-color: rgba(20, 37, 63, 0.7);
-    --network-grid-initiator-path-color: rgba(58, 217, 58, 0.4);
-    --network-grid-initiated-path-color: rgba(217, 58, 58, 0.4);
-    --network-grid-selected-color: rgba(57, 57, 57, .6);
-    --network-grid-focus-selected-color: var(--selection-bg-color);
-    --network-grid-focus-selected-color-has-error: rgba(217, 58, 58, 0.15);
-    --network-grid-from-frame-color: rgba(224, 247, 250, .4);
-    --network-grid-is-product-color: rgba(255, 252, 225, .6);
 }
 
 .network-summary-bar {
@@ -221,6 +193,11 @@
     display: none;
 }
 
+.network-log-grid.data-grid.small tr.selected .network-cell-subtitle-show-inline-when-selected {
+    display: inline;
+    margin-left: 4px;
+}
+
 /* Resource preview icons */
 
 .network-log-grid.data-grid .icon {
@@ -343,6 +320,12 @@
     pointer-events: none;
 }
 
+.network-log-grid.data-grid span.separator-in-cell {
+    user-select: none;
+    min-width: 1ex;
+    display: inline-block;
+}
+
 #network-container {
     overflow: hidden;
 }
@@ -409,4 +392,45 @@
 
 .network-frame-group-badge {
     margin-right: 4px;
+}
+
+@media (forced-colors: active) {
+    .network-status-pane > .recording-hint {
+        color: CanvasText;
+    }
+    .network-log-grid.data-grid table.data tr.revealed.selected,
+    .network-log-grid.data-grid:focus table.data tr.revealed.selected,
+    .network-log-grid.data-grid:focus tr.selected .network-dim-cell,
+    .network-log-grid.data-grid tr.selected .network-dim-cell,
+    .network-log-grid.data-grid:focus tr.selected .initiator-column .devtools-link,
+    .network-log-grid.data-grid tr.selected .initiator-column .devtools-link,
+    .network-waterfall-header:hover * {
+        color: HighlightText;
+    }
+    .network-log-grid {
+        --network-grid-default-color: Canvas;
+        --network-grid-stripe-color: Canvas;
+        --network-grid-hovered-color: Highlight;
+        --network-grid-selected-color: ButtonText;
+        --network-grid-focus-selected-color: Highlight;
+    }
+    #network-container.no-node-selected:focus-within,
+    .network-status-pane {
+        forced-color-adjust: none;
+        border-color: Highlight;
+        background-color: Canvas !important;
+    }
+    .network-waterfall-header.small,
+    .network-log-grid.data-grid.small .header-container
+    .network-waterfall-header,
+    .network-log-grid.data-grid .header-container {
+        background-color: Canvas;
+    }
+    .network-waterfall-header:hover {
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+    .network-waterfall-header:hover .sort-order-icon-container [is=ui-icon].icon-mask {
+        background-color: HighlightText;
+    }
 }

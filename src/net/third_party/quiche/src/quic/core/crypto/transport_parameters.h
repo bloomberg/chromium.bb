@@ -8,13 +8,15 @@
 #include <memory>
 #include <vector>
 
-#include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
+#include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_optional.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -24,7 +26,7 @@ namespace quic {
 // This struct currently uses the values from draft 20.
 struct QUIC_EXPORT_PRIVATE TransportParameters {
   // The identifier used to differentiate transport parameters.
-  enum TransportParameterId : uint16_t;
+  enum TransportParameterId : uint64_t;
   // A map used to specify custom parameters.
   using ParameterMap = QuicUnorderedMap<TransportParameterId, std::string>;
   // Represents an individual QUIC transport parameter that only encodes a
@@ -34,7 +36,6 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
    public:
     // Forbid constructing and copying apart from TransportParameters.
     IntegerParameter() = delete;
-    IntegerParameter(const IntegerParameter&) = delete;
     IntegerParameter& operator=(const IntegerParameter&) = delete;
     // Sets the value of this transport parameter.
     void set_value(uint64_t value);
@@ -45,10 +46,12 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
     // Writes to a crypto byte buffer, used during serialization. Does not write
     // anything if the value is equal to the parameter's default value.
     // Returns whether the write was successful.
-    bool WriteToCbb(CBB* parent_cbb) const;
+    bool Write(QuicDataWriter* writer, ParsedQuicVersion version) const;
     // Reads from a crypto byte string, used during parsing.
     // Returns whether the read was successful.
-    bool ReadFromCbs(CBS* const value_cbs);
+    // On failure, this method will write a human-readable error message to
+    // |error_details|.
+    bool Read(QuicDataReader* reader, std::string* error_details);
     // operator<< allows easily logging integer transport parameters.
     friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
         std::ostream& os,
@@ -64,6 +67,8 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
                      uint64_t default_value,
                      uint64_t min_value,
                      uint64_t max_value);
+    IntegerParameter(const IntegerParameter& other) = default;
+    IntegerParameter(IntegerParameter&& other) = default;
     // Human-readable string representation.
     std::string ToString(bool for_use_in_list) const;
 
@@ -78,14 +83,18 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
     // Maximum value of this transport parameter, as per IETF specification.
     const uint64_t max_value_;
     // Ensures this parameter is not parsed twice in the same message.
-    bool has_been_read_from_cbs_;
+    bool has_been_read_;
   };
 
   // Represents the preferred_address transport parameter that a server can
   // send to clients.
   struct QUIC_EXPORT_PRIVATE PreferredAddress {
     PreferredAddress();
+    PreferredAddress(const PreferredAddress& other) = default;
+    PreferredAddress(PreferredAddress&& other) = default;
     ~PreferredAddress();
+    bool operator==(const PreferredAddress& rhs) const;
+    bool operator!=(const PreferredAddress& rhs) const;
 
     QuicSocketAddress ipv4_socket_address;
     QuicSocketAddress ipv6_socket_address;
@@ -100,7 +109,10 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
   };
 
   TransportParameters();
+  TransportParameters(const TransportParameters& other);
   ~TransportParameters();
+  bool operator==(const TransportParameters& rhs) const;
+  bool operator!=(const TransportParameters& rhs) const;
 
   // Represents the sender of the transport parameters. When |perspective| is
   // Perspective::IS_CLIENT, this struct is being used in the client_hello
@@ -120,7 +132,7 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
 
   // The value of the Destination Connection ID field from the first
   // Initial packet sent by the client.
-  QuicConnectionId original_connection_id;
+  quiche::QuicheOptional<QuicConnectionId> original_connection_id;
 
   // Idle timeout expressed in milliseconds.
   IntegerParameter idle_timeout_milliseconds;
@@ -169,8 +181,18 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
   IntegerParameter active_connection_id_limit;
 
   // Indicates support for the DATAGRAM frame and the maximum frame size that
-  // the sender accepts. See draft-pauly-quic-datagram.
+  // the sender accepts. See draft-ietf-quic-datagram.
   IntegerParameter max_datagram_frame_size;
+
+  // Google-specific transport parameter that carries an estimate of the
+  // initial round-trip time in microseconds.
+  IntegerParameter initial_round_trip_time_us;
+
+  // Google-specific connection options.
+  quiche::QuicheOptional<QuicTagVector> google_connection_options;
+
+  // Google-specific user agent identifier.
+  quiche::QuicheOptional<std::string> user_agent_id;
 
   // Transport parameters used by Google QUIC but not IETF QUIC. This is
   // serialized into a TransportParameter struct with a TransportParameterId of
@@ -178,8 +200,9 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
   std::unique_ptr<CryptoHandshakeMessage> google_quic_params;
 
   // Validates whether transport parameters are valid according to
-  // the specification.
-  bool AreValid() const;
+  // the specification. If the transport parameters are not valid, this method
+  // will write a human-readable error message to |error_details|.
+  bool AreValid(std::string* error_details) const;
 
   // Custom parameters that may be specific to application protocol.
   ParameterMap custom_parameters;
@@ -203,12 +226,14 @@ QUIC_EXPORT_PRIVATE bool SerializeTransportParameters(
 // parsed parameters into |*out|. Input is read from |in| for |in_len| bytes.
 // |perspective| indicates whether the input came from a client or a server.
 // This method returns true if the input was successfully parsed.
-// TODO(nharper): Write fuzz tests for this method.
+// On failure, this method will write a human-readable error message to
+// |error_details|.
 QUIC_EXPORT_PRIVATE bool ParseTransportParameters(ParsedQuicVersion version,
                                                   Perspective perspective,
                                                   const uint8_t* in,
                                                   size_t in_len,
-                                                  TransportParameters* out);
+                                                  TransportParameters* out,
+                                                  std::string* error_details);
 
 }  // namespace quic
 

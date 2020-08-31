@@ -7,43 +7,40 @@ GEN_INCLUDE(['chromevox_e2e_test_base.js']);
 
 /**
  * Base test fixture for ChromeVox Next end to end tests.
- *
  * These tests are identical to ChromeVoxE2ETests except for performing the
  * necessary setup to run ChromeVox Next.
- * @constructor
- * @extends {ChromeVoxE2ETest}
  */
-function ChromeVoxNextE2ETest() {
-  ChromeVoxE2ETest.call(this);
+ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
+  constructor() {
+    super();
 
-  if (this.runtimeDeps.length > 0) {
-    chrome.extension.getViews().forEach(function(w) {
-      this.runtimeDeps.forEach(function(dep) {
-        if (w[dep]) {
-          window[dep] = w[dep];
-        }
+    if (this.runtimeDeps.length > 0) {
+      chrome.extension.getViews().forEach(function(w) {
+        this.runtimeDeps.forEach(function(dep) {
+          if (w[dep]) {
+            window[dep] = w[dep];
+          }
+        }.bind(this));
       }.bind(this));
-    }.bind(this));
+    }
+
+    // For tests, enable announcement of events we trigger via automation.
+    DesktopAutomationHandler.announceActions = true;
+
+    this.originalOutputContextValues_ = {};
+    for (const role in Output.ROLE_INFO_) {
+      this.originalOutputContextValues_[role] =
+          Output.ROLE_INFO_[role]['outputContextFirst'];
+    }
   }
-
-  // For tests, enable announcement of events we trigger via automation.
-  DesktopAutomationHandler.announceActions = true;
-
-  this.originalOutputContextValues_ = {};
-  for (var role in Output.ROLE_INFO_) {
-    this.originalOutputContextValues_[role] =
-        Output.ROLE_INFO_[role]['outputContextFirst'];
-  }
-}
-
-ChromeVoxNextE2ETest.prototype = {
-  __proto__: ChromeVoxE2ETest.prototype,
 
   /**
    * Dependencies defined on a background window other than this one.
    * @type {!Array<string>}
    */
-  runtimeDeps: [],
+  get runtimeDeps() {
+    return [];
+  }
 
   /**
    * Gets the desktop from the automation API and Launches a new tab with
@@ -55,13 +52,16 @@ ChromeVoxNextE2ETest.prototype = {
    * @param {function() : void} doc Snippet wrapped inside of a function.
    * @param {function(chrome.automation.AutomationNode)} callback
    *     Called once the document is ready.
-   * @param {string=} opt_url Optional url to wait for. Defaults to undefined.
+   * @param {{url: (boolean=), isAsync: (boolean=)}} opt_params
+   *           url Optional url to wait for. Defaults to undefined.
+   *           isAsync True if the callback is async.
    */
-  runWithLoadedTree: function(doc, callback, opt_url) {
-    callback = this.newCallback(callback);
+  runWithLoadedTree(doc, callback, opt_params) {
+    opt_params = opt_params || {};
+    callback = this.newCallback(callback, opt_params.isAsync);
     chrome.automation.getDesktop(function(r) {
-      var url = opt_url || TestUtils.createUrlForDoc(doc);
-      var listener = function(evt) {
+      const url = opt_params.url || TestUtils.createUrlForDoc(doc);
+      const listener = function(evt) {
         if (evt.target.root.url != url) {
           return;
         }
@@ -78,39 +78,41 @@ ChromeVoxNextE2ETest.prototype = {
       };
       r.addEventListener('focus', listener, true);
       r.addEventListener('loadComplete', listener, true);
-      var createParams = {active: true, url: url};
+      const createParams = {active: true, url};
       chrome.tabs.create(createParams);
     }.bind(this));
-  },
+  }
 
-  listenOnce: function(node, eventType, callback, capture) {
-    var innerCallback = this.newCallback(function() {
+  listenOnce(node, eventType, callback, capture) {
+    const innerCallback = this.newCallback(function() {
       node.removeEventListener(eventType, innerCallback, capture);
       callback.apply(this, arguments);
     });
     node.addEventListener(eventType, innerCallback, capture);
-  },
+  }
 
   /**
    * Forces output to place context utterances at the end of output. This eases
    * rebaselining when changing context ordering for a specific role.
    */
-  forceContextualLastOutput: function() {
-    for (var role in Output.ROLE_INFO_)
+  forceContextualLastOutput() {
+    for (const role in Output.ROLE_INFO_) {
       Output.ROLE_INFO_[role]['outputContextFirst'] = undefined;
-  },
+    }
+  }
 
   /**
    * Forces output to place context utterances at the beginning of output.
    */
-  forceContextualFirstOutput: function() {
-    for (var role in Output.ROLE_INFO_)
+  forceContextualFirstOutput() {
+    for (const role in Output.ROLE_INFO_) {
       Output.ROLE_INFO_[role]['outputContextFirst'] = true;
-  },
+    }
+  }
 
   /** Resets contextual output values to their defaults. */
-  resetContextualOutput: function() {
-    for (var role in Output.ROLE_INFO_) {
+  resetContextualOutput() {
+    for (const role in Output.ROLE_INFO_) {
       Output.ROLE_INFO_[role]['outputContextFirst'] =
           this.originalOutputContextValues_[role];
     }

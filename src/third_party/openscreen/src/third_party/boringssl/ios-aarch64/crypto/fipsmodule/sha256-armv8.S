@@ -1,3 +1,17 @@
+// This file is generated from a similarly-named Perl script in the BoringSSL
+// source tree. Do not edit by hand.
+
+#if !defined(__has_feature)
+#define __has_feature(x) 0
+#endif
+#if __has_feature(memory_sanitizer) && !defined(OPENSSL_NO_ASM)
+#define OPENSSL_NO_ASM
+#endif
+
+#if !defined(OPENSSL_NO_ASM)
+#if defined(BORINGSSL_PREFIX)
+#include <boringssl_prefix_symbols_asm.h>
+#endif
 // Copyright 2014-2016 The OpenSSL Project Authors. All Rights Reserved.
 //
 // Licensed under the OpenSSL license (the "License").  You may not use
@@ -50,14 +64,12 @@
 .align	6
 _sha256_block_data_order:
 #ifndef	__KERNEL__
-# ifdef	__ILP32__
-	ldrsw	x16,LOPENSSL_armcap_P
-# else
-	ldr	x16,LOPENSSL_armcap_P
-# endif
-	adr	x17,LOPENSSL_armcap_P
-	add	x16,x16,x17
-	ldr	w16,[x16]
+#if __has_feature(hwaddress_sanitizer) && __clang_major__ >= 10
+	adrp	x16,:pg_hi21_nc:_OPENSSL_armcap_P
+#else
+	adrp	x16,_OPENSSL_armcap_P@PAGE
+#endif
+	ldr	w16,[x16,_OPENSSL_armcap_P@PAGEOFF]
 	tst	w16,#ARMV8_SHA256
 	b.ne	Lv8_entry
 #endif
@@ -76,7 +88,8 @@ _sha256_block_data_order:
 	ldp	w24,w25,[x0,#4*4]
 	add	x2,x1,x2,lsl#6	// end of input
 	ldp	w26,w27,[x0,#6*4]
-	adr	x30,LK256
+	adrp	x30,LK256@PAGE
+	add	x30,x30,LK256@PAGEOFF
 	stp	x0,x2,[x29,#96]
 
 Loop:
@@ -1023,6 +1036,7 @@ Loop_16_xx:
 	ret
 
 
+.section	__TEXT,__const
 .align	6
 
 LK256:
@@ -1044,18 +1058,10 @@ LK256:
 .long	0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
 .long	0	//terminator
 
-#ifndef	__KERNEL__
-.align	3
-LOPENSSL_armcap_P:
-# ifdef	__ILP32__
-.long	_OPENSSL_armcap_P-.
-# else
-.quad	_OPENSSL_armcap_P-.
-# endif
-#endif
 .byte	83,72,65,50,53,54,32,98,108,111,99,107,32,116,114,97,110,115,102,111,114,109,32,102,111,114,32,65,82,77,118,56,44,32,67,82,89,80,84,79,71,65,77,83,32,98,121,32,60,97,112,112,114,111,64,111,112,101,110,115,115,108,46,111,114,103,62,0
 .align	2
 .align	2
+.text
 #ifndef	__KERNEL__
 
 .align	6
@@ -1065,7 +1071,8 @@ Lv8_entry:
 	add	x29,sp,#0
 
 	ld1	{v0.4s,v1.4s},[x0]
-	adr	x3,LK256
+	adrp	x3,LK256@PAGE
+	add	x3,x3,LK256@PAGEOFF
 
 Loop_hw:
 	ld1	{v4.16b,v5.16b,v6.16b,v7.16b},[x1],#64
@@ -1198,4 +1205,6 @@ Loop_hw:
 #endif
 #ifndef	__KERNEL__
 .comm	_OPENSSL_armcap_P,4,4
+.private_extern	_OPENSSL_armcap_P
 #endif
+#endif  // !OPENSSL_NO_ASM

@@ -2,8 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './cloud_printers.js';
+import '../settings_page/settings_animated_pages.m.js';
+import '../settings_page/settings_subpage.m.js';
+import '../settings_shared_css.m.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {routes} from '../route.js';
+import {Router} from '../router.m.js';
+
+// <if expr="not chromeos">
+import {PrintingBrowserProxyImpl} from './printing_browser_proxy.js';
+// </if>
+
 Polymer({
   is: 'settings-printing-page',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /** Preferences state. */
@@ -19,48 +35,24 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
-        if (settings.routes.CLOUD_PRINTERS) {
-          map.set(settings.routes.CLOUD_PRINTERS.path, '#cloudPrinters');
+        if (routes.CLOUD_PRINTERS) {
+          map.set(routes.CLOUD_PRINTERS.path, '#cloudPrinters');
         }
-        // <if expr="chromeos">
-        if (settings.routes.CUPS_PRINTERS) {
-          map.set(settings.routes.CUPS_PRINTERS.path, '#cupsPrinters');
-        }
-        // </if>
         return map;
       },
     },
-
-    // <if expr="chromeos">
-    /**
-     * TODO(crbug.com/950007): Remove when SplitSettings is the default because
-     * CUPS printers will exist only in the OS settings page.
-     * @private
-     */
-    showCupsPrinters_: {
-      type: Boolean,
-      value: () => loadTimeData.getBoolean('showOSSettings'),
-    }
-    // </if>
   },
-
-  // <if expr="chromeos">
-  /** @private */
-  onTapCupsPrinters_: function() {
-    settings.navigateTo(settings.routes.CUPS_PRINTERS);
-  },
-  // </if>
 
   // <if expr="not chromeos">
-  onTapLocalPrinters_: function() {
-    settings.PrintingBrowserProxyImpl.getInstance().openSystemPrintDialog();
+  onTapLocalPrinters_() {
+    PrintingBrowserProxyImpl.getInstance().openSystemPrintDialog();
   },
   // </if>
 
   /** @private */
-  onTapCloudPrinters_: function() {
-    settings.navigateTo(settings.routes.CLOUD_PRINTERS);
+  onTapCloudPrinters_() {
+    Router.getInstance().navigateTo(routes.CLOUD_PRINTERS);
   },
 });

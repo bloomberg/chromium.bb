@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
@@ -377,6 +378,8 @@ v8::Local<v8::Object> GenerateNtpTheme(v8::Isolate* isolate,
   gin::DataObjectBuilder search_box(isolate);
   search_box.Set("bg", SkColorToArray(isolate, theme.search_box.bg));
   search_box.Set("icon", SkColorToArray(isolate, theme.search_box.icon));
+  search_box.Set("iconSelected",
+                 SkColorToArray(isolate, theme.search_box.icon_selected));
   search_box.Set("placeholder",
                  SkColorToArray(isolate, theme.search_box.placeholder));
   search_box.Set("resultsBg",
@@ -387,10 +390,19 @@ v8::Local<v8::Object> GenerateNtpTheme(v8::Isolate* isolate,
                  SkColorToArray(isolate, theme.search_box.results_bg_selected));
   search_box.Set("resultsDim",
                  SkColorToArray(isolate, theme.search_box.results_dim));
+  search_box.Set(
+      "resultsDimSelected",
+      SkColorToArray(isolate, theme.search_box.results_dim_selected));
   search_box.Set("resultsText",
                  SkColorToArray(isolate, theme.search_box.results_text));
+  search_box.Set(
+      "resultsTextSelected",
+      SkColorToArray(isolate, theme.search_box.results_text_selected));
   search_box.Set("resultsUrl",
                  SkColorToArray(isolate, theme.search_box.results_url));
+  search_box.Set(
+      "resultsUrlSelected",
+      SkColorToArray(isolate, theme.search_box.results_url_selected));
   search_box.Set("text", SkColorToArray(isolate, theme.search_box.text));
   builder.Set("searchBox", search_box.Build());
 
@@ -416,9 +428,9 @@ SearchBox* GetSearchBoxForCurrentContext() {
 }
 
 base::Value CreateAutocompleteMatches(
-    const std::vector<chrome::mojom::AutocompleteMatchPtr>& matches) {
+    const std::vector<search::mojom::AutocompleteMatchPtr>& matches) {
   base::Value list(base::Value::Type::LIST);
-  for (const chrome::mojom::AutocompleteMatchPtr& match : matches) {
+  for (const search::mojom::AutocompleteMatchPtr& match : matches) {
     base::Value dict(base::Value::Type::DICTIONARY);
     dict.SetBoolKey("allowedToBeDefaultMatch",
                     match->allowed_to_be_default_match);
@@ -440,10 +452,14 @@ base::Value CreateAutocompleteMatches(
       description_class.Append(std::move(entry));
     }
     dict.SetKey("descriptionClass", std::move(description_class));
-    dict.SetStringKey("destinationUrl", match->destination_url);
+    dict.SetStringKey("destinationUrl", match->destination_url.spec());
+    dict.SetIntKey("suggestionGroupId", match->suggestion_group_id);
     dict.SetStringKey("inlineAutocompletion", match->inline_autocompletion);
     dict.SetBoolKey("isSearchType", match->is_search_type);
     dict.SetStringKey("fillIntoEdit", match->fill_into_edit);
+    dict.SetStringKey("iconUrl", match->icon_url);
+    dict.SetStringKey("imageDominantColor", match->image_dominant_color);
+    dict.SetStringKey("imageUrl", match->image_url);
     dict.SetBoolKey("swapContentsAndDescription",
                     match->swap_contents_and_description);
     dict.SetStringKey("type", match->type);
@@ -451,6 +467,20 @@ base::Value CreateAutocompleteMatches(
     list.Append(std::move(dict));
   }
   return list;
+}
+
+base::Value CreateSuggestionGroupsMap(
+    const base::flat_map<int32_t, search::mojom::SuggestionGroupPtr>&
+        suggestion_groups_map) {
+  base::Value result_map(base::Value::Type::DICTIONARY);
+  for (const auto& pair : suggestion_groups_map) {
+    base::Value suggestion_group(base::Value::Type::DICTIONARY);
+    suggestion_group.SetStringKey("header", pair.second->header);
+    suggestion_group.SetBoolKey("hidden", pair.second->hidden);
+    result_map.SetPath(base::NumberToString(pair.first),
+                       std::move(suggestion_group));
+  }
+  return result_map;
 }
 
 static const char kDispatchFocusChangedScript[] =
@@ -494,6 +524,19 @@ static const char kDispatchAutocompleteResultChanged[] =
     "    typeof window.chrome.embeddedSearch.searchBox"
     "        .autocompleteresultchanged === 'function') {"
     "  window.chrome.embeddedSearch.searchBox.autocompleteresultchanged(%s);"
+    "  true;"
+    "}";
+
+static const char kDispatchAutocompleteMatchImageAvailable[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.searchBox &&"
+    "    "
+    "window.chrome.embeddedSearch.searchBox.autocompletematchimageavailable &&"
+    "    typeof window.chrome.embeddedSearch.searchBox"
+    "        .autocompletematchimageavailable === 'function') {"
+    "  window.chrome.embeddedSearch.searchBox"
+    "      .autocompletematchimageavailable(%d, '%s', '%s');"
     "  true;"
     "}";
 
@@ -601,6 +644,7 @@ class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings> {
   static void QueryAutocomplete(const base::string16& input,
                                 bool prevent_inline_autocomplete);
   static void StopAutocomplete(bool clear_result);
+  static void LogCharTypedToRepaintLatency(uint32_t latency_ms);
   static void StartCapturingKeyStrokes();
   static void StopCapturingKeyStrokes();
   static void OpenAutocompleteMatch(int line,
@@ -612,6 +656,7 @@ class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings> {
                                     bool ctrl_key,
                                     bool meta_key,
                                     bool shift_key);
+  static void ToggleSuggestionGroupIdVisibility(int32_t suggestion_group_id);
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxBindings);
 };
@@ -631,6 +676,8 @@ gin::ObjectTemplateBuilder SearchBoxBindings::GetObjectTemplateBuilder(
                    &SearchBoxBindings::IsKeyCaptureEnabled)
       .SetMethod("deleteAutocompleteMatch",
                  &SearchBoxBindings::DeleteAutocompleteMatch)
+      .SetMethod("logCharTypedToRepaintLatency",
+                 &SearchBoxBindings::LogCharTypedToRepaintLatency)
       .SetMethod("openAutocompleteMatch",
                  &SearchBoxBindings::OpenAutocompleteMatch)
       .SetMethod("paste", &SearchBoxBindings::Paste)
@@ -639,7 +686,9 @@ gin::ObjectTemplateBuilder SearchBoxBindings::GetObjectTemplateBuilder(
       .SetMethod("startCapturingKeyStrokes",
                  &SearchBoxBindings::StartCapturingKeyStrokes)
       .SetMethod("stopCapturingKeyStrokes",
-                 &SearchBoxBindings::StopCapturingKeyStrokes);
+                 &SearchBoxBindings::StopCapturingKeyStrokes)
+      .SetMethod("toggleSuggestionGroupIdVisibility",
+                 &SearchBoxBindings::ToggleSuggestionGroupIdVisibility);
 }
 
 // static
@@ -666,6 +715,15 @@ void SearchBoxBindings::DeleteAutocompleteMatch(int line) {
   if (!search_box)
     return;
   search_box->DeleteAutocompleteMatch(line);
+}
+
+// static
+void SearchBoxBindings::ToggleSuggestionGroupIdVisibility(
+    int32_t suggestion_group_id) {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box)
+    return;
+  search_box->ToggleSuggestionGroupIdVisibility(suggestion_group_id);
 }
 
 // static
@@ -713,6 +771,14 @@ void SearchBoxBindings::StopAutocomplete(bool clear_result) {
   if (!search_box)
     return;
   search_box->StopAutocomplete(clear_result);
+}
+
+// static
+void SearchBoxBindings::LogCharTypedToRepaintLatency(uint32_t latency_ms) {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box)
+    return;
+  search_box->LogCharTypedToRepaintLatency(latency_ms);
 }
 
 // static
@@ -811,6 +877,11 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   static void RevertThemeChanges();
   static void ConfirmThemeChanges();
   static void BlocklistPromo(const std::string& promo_id);
+  static void OpenExtensionsPage(double button,
+                                 bool alt_key,
+                                 bool ctrl_key,
+                                 bool meta_key,
+                                 bool shift_key);
   static v8::Local<v8::Value> GetColorsInfo(v8::Isolate* isolate);
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageBindings);
@@ -886,7 +957,8 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetMethod("confirmThemeChanges",
                  &NewTabPageBindings::ConfirmThemeChanges)
       .SetMethod("getColorsInfo", &NewTabPageBindings::GetColorsInfo)
-      .SetMethod("blocklistPromo", &NewTabPageBindings::BlocklistPromo);
+      .SetMethod("blocklistPromo", &NewTabPageBindings::BlocklistPromo)
+      .SetMethod("openExtensionsPage", &NewTabPageBindings::OpenExtensionsPage);
 }
 
 // static
@@ -1302,8 +1374,6 @@ void NewTabPageBindings::ApplyDefaultTheme() {
   if (!search_box)
     return;
   search_box->ApplyDefaultTheme();
-  content::RenderThread::Get()->RecordAction(
-      base::UserMetricsAction("ChromeColors_DefaultApplied"));
 }
 
 // static
@@ -1313,8 +1383,6 @@ void NewTabPageBindings::UseDefaultTheme() {
     return;
   search_box->ApplyDefaultTheme();
   search_box->ConfirmThemeChanges();
-  content::RenderThread::Get()->RecordAction(
-      base::UserMetricsAction("ChromeColors_ThemeUninstalled"));
 }
 
 // static
@@ -1325,15 +1393,9 @@ void NewTabPageBindings::ApplyAutogeneratedTheme(v8::Isolate* isolate,
   if (!search_box || !value->IsArray())
     return;
   SkColor color;
-  if (ArrayToSkColor(isolate, value.As<v8::Array>(), &color)) {
-    search_box->ApplyAutogeneratedTheme(color);
-    content::RenderThread::Get()->RecordAction(
-        base::UserMetricsAction("ChromeColors_ColorApplied"));
-    if (id > 0 && id < static_cast<int>(chrome_colors::kNumColorsInfo)) {
-      UMA_HISTOGRAM_ENUMERATION("ChromeColors.AppliedColor", id,
-                                chrome_colors::kNumColorsInfo);
-    }
-  }
+  if (!ArrayToSkColor(isolate, value.As<v8::Array>(), &color))
+    return;
+  search_box->ApplyAutogeneratedTheme(color);
 }
 
 // static
@@ -1376,6 +1438,18 @@ void NewTabPageBindings::BlocklistPromo(const std::string& promo_id) {
   if (!search_box)
     return;
   search_box->BlocklistPromo(promo_id);
+}
+
+void NewTabPageBindings::OpenExtensionsPage(double button,
+                                            bool alt_key,
+                                            bool ctrl_key,
+                                            bool meta_key,
+                                            bool shift_key) {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box)
+    return;
+  search_box->OpenExtensionsPage(button, alt_key, ctrl_key, meta_key,
+                                 shift_key);
 }
 
 }  // namespace
@@ -1449,17 +1523,32 @@ void SearchBoxExtension::DispatchDeleteCustomLinkResult(
   Dispatch(frame, script);
 }
 
+// static
 void SearchBoxExtension::DispatchAutocompleteResultChanged(
     blink::WebLocalFrame* frame,
-    chrome::mojom::AutocompleteResultPtr result) {
+    search::mojom::AutocompleteResultPtr result) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("input", result->input);
   dict.SetKey("matches", CreateAutocompleteMatches(result->matches));
+  dict.SetKey("suggestionGroupsMap",
+              CreateSuggestionGroupsMap(result->suggestion_groups_map));
 
   std::string json;
   base::JSONWriter::Write(dict, &json);
   Dispatch(frame, blink::WebString::FromUTF8(base::StringPrintf(
                       kDispatchAutocompleteResultChanged, json.c_str())));
+}
+
+// static
+void SearchBoxExtension::DispatchAutocompleteMatchImageAvailable(
+    blink::WebLocalFrame* frame,
+    uint32_t match_index,
+    const std::string& image_url,
+    const std::string& data_url) {
+  blink::WebString script(blink::WebString::FromUTF8(
+      base::StringPrintf(kDispatchAutocompleteMatchImageAvailable, match_index,
+                         image_url.c_str(), data_url.c_str())));
+  Dispatch(frame, script);
 }
 
 // static

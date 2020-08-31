@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_EXTENSIONS_APP_LAUNCH_PARAMS_H_
 
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "ui/base/window_open_disposition.h"
 
 class Profile;
@@ -22,16 +22,6 @@ apps::AppLaunchParams CreateAppLaunchParamsUserContainer(
     const extensions::Extension* extension,
     WindowOpenDisposition disposition,
     apps::mojom::AppLaunchSource source);
-
-// Helper to create AppLaunchParams using event flags that allows user to
-// override the user-configured container using modifier keys. |display_id| is
-// the id of the display from which the app is launched.
-apps::AppLaunchParams CreateAppIdLaunchParamsWithEventFlags(
-    const std::string& app_id,
-    int event_flags,
-    apps::mojom::AppLaunchSource source,
-    int64_t display_id,
-    apps::mojom::LaunchContainer fallback_container);
 
 // Helper to create AppLaunchParams, falling back to
 // extensions::GetLaunchContainer() with no modifiers.

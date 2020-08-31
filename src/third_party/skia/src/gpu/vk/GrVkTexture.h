@@ -8,10 +8,10 @@
 #ifndef GrVkTexture_DEFINED
 #define GrVkTexture_DEFINED
 
-#include "include/gpu/GrTexture.h"
 #include "include/gpu/vk/GrVkTypes.h"
 #include "src/core/SkLRUCache.h"
 #include "src/gpu/GrSamplerState.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/vk/GrVkImage.h"
 
 class GrVkDescriptorSet;
@@ -23,12 +23,16 @@ class GrVkTexture : public GrTexture, public virtual GrVkImage {
 public:
     static sk_sp<GrVkTexture> MakeNewTexture(GrVkGpu*,
                                              SkBudgeted budgeted,
-                                             const GrSurfaceDesc&,
+                                             SkISize dimensions,
                                              const GrVkImage::ImageDesc&,
                                              GrMipMapsStatus);
 
-    static sk_sp<GrVkTexture> MakeWrappedTexture(GrVkGpu*, const GrSurfaceDesc&, GrWrapOwnership,
-                                                 GrWrapCacheable, GrIOType, const GrVkImageInfo&,
+    static sk_sp<GrVkTexture> MakeWrappedTexture(GrVkGpu*,
+                                                 SkISize dimensions,
+                                                 GrWrapOwnership,
+                                                 GrWrapCacheable,
+                                                 GrIOType,
+                                                 const GrVkImageInfo&,
                                                  sk_sp<GrVkImageLayout>);
 
     ~GrVkTexture() override;
@@ -42,20 +46,25 @@ public:
     const GrVkImageView* textureView();
 
     void addIdleProc(sk_sp<GrRefCntedCallback>, IdleState) override;
-    void callIdleProcsOnBehalfOfResource();
+    void callIdleProcsOnBehalfOfResource() override;
 
     // For each GrVkTexture, there is a cache of GrVkDescriptorSets which only contain a single
     // texture/sampler descriptor. If there is a cached descriptor set that matches the passed in
     // GrSamplerState, then a pointer to it is returned. The ref count is not incremented on the
     // returned pointer, thus the caller must call ref it if they wish to keep ownership of the
     // GrVkDescriptorSet.
-    const GrVkDescriptorSet* cachedSingleDescSet(const GrSamplerState&);
+    const GrVkDescriptorSet* cachedSingleDescSet(GrSamplerState);
 
-    void addDescriptorSetToCache(const GrVkDescriptorSet*, const GrSamplerState&);
+    void addDescriptorSetToCache(const GrVkDescriptorSet*, GrSamplerState);
 
 protected:
-    GrVkTexture(GrVkGpu*, const GrSurfaceDesc&, const GrVkImageInfo&, sk_sp<GrVkImageLayout>,
-                const GrVkImageView*, GrMipMapsStatus, GrBackendObjectOwnership);
+    GrVkTexture(GrVkGpu*,
+                SkISize dimensions,
+                const GrVkImageInfo&,
+                sk_sp<GrVkImageLayout>,
+                const GrVkImageView*,
+                GrMipMapsStatus,
+                GrBackendObjectOwnership);
 
     GrVkGpu* getVkGpu() const;
 
@@ -69,10 +78,9 @@ protected:
     void willRemoveLastRef() override;
 
 private:
-    GrVkTexture(GrVkGpu*, SkBudgeted, const GrSurfaceDesc&, const GrVkImageInfo&,
-                sk_sp<GrVkImageLayout> layout, const GrVkImageView* imageView,
-                GrMipMapsStatus);
-    GrVkTexture(GrVkGpu*, const GrSurfaceDesc&, const GrVkImageInfo&, sk_sp<GrVkImageLayout>,
+    GrVkTexture(GrVkGpu*, SkBudgeted, SkISize, const GrVkImageInfo&, sk_sp<GrVkImageLayout> layout,
+                const GrVkImageView* imageView, GrMipMapsStatus);
+    GrVkTexture(GrVkGpu*, SkISize, const GrVkImageInfo&, sk_sp<GrVkImageLayout>,
                 const GrVkImageView*, GrMipMapsStatus, GrBackendObjectOwnership, GrWrapCacheable,
                 GrIOType, bool isExternal);
 
@@ -88,7 +96,7 @@ private:
     const GrVkImageView* fTextureView;
 
     struct SamplerHash {
-        uint32_t operator()(const GrSamplerState& state) const {
+        uint32_t operator()(GrSamplerState state) const {
             return GrSamplerState::GenerateKey(state);
         }
     };

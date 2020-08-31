@@ -6,6 +6,7 @@ const CalculatorModifier = Object.freeze({
   kNone: Object.freeze({postfix: '', multiplier: 1}),
   kMillisecondsFromSeconds:
       Object.freeze({postfix: '_in_ms', multiplier: 1000}),
+  kBytesToBits: Object.freeze({bitrate: true, multiplier: 8}),
 });
 
 class Metric {
@@ -134,8 +135,8 @@ class StatsReport {
         }
       };
       Object.keys(stats).forEach(metricName => {
-        if (metricName == 'id' || metricName == 'type' ||
-            metricName == 'timestamp') {
+        if (metricName === 'id' || metricName === 'type' ||
+            metricName === 'timestamp') {
           return;  // continue;
         }
         internalReport.stats.values.push(metricName);
@@ -158,14 +159,14 @@ class StatsReport {
   toString() {
     let str = '';
     for (let stats of this.statsById.values()) {
-      if (str != '') {
+      if (str !== '') {
         str += ',';
       }
       str += JSON.stringify(stats);
     }
     let str2 = '';
     for (let stats of this.calculatedStatsById.values()) {
-      if (str2 != '') {
+      if (str2 !== '') {
         str2 += ',';
       }
       str2 += stats.toString();
@@ -180,7 +181,7 @@ class StatsReport {
   getByType(type) {
     const result = [];
     for (let stats of this.statsById.values()) {
-      if (stats.type == type) {
+      if (stats.type === type) {
         result.push(stats);
       }
     }
@@ -217,10 +218,13 @@ class RateCalculator {
   }
 
   getCalculatedMetricName() {
-    if (this.samplesMetric == 'timestamp') {
-      return '[' + this.accumulativeMetric + '/s]';
+    const accumulativeMetric = this.modifier.bitrate ?
+        this.accumulativeMetric + '_in_bits' :
+        this.accumulativeMetric;
+    if (this.samplesMetric === 'timestamp') {
+      return '[' + accumulativeMetric + '/s]';
     }
-    return '[' + this.accumulativeMetric + '/' + this.samplesMetric +
+    return '[' + accumulativeMetric + '/' + this.samplesMetric +
         this.modifier.postfix + ']';
   }
 
@@ -250,13 +254,13 @@ class RateCalculator {
     // int64, uint64 and double) are passed as strings.
     const previousValue = Number(previousStats[accumulativeMetric]);
     const currentValue = Number(currentStats[accumulativeMetric]);
-    if (typeof previousValue != 'number' || typeof currentValue != 'number') {
+    if (typeof previousValue !== 'number' || typeof currentValue !== 'number') {
       return undefined;
     }
     const previousSamples = Number(previousStats[samplesMetric]);
     const currentSamples = Number(currentStats[samplesMetric]);
-    if (typeof previousSamples != 'number' ||
-        typeof currentSamples != 'number') {
+    if (typeof previousSamples !== 'number' ||
+        typeof currentSamples !== 'number') {
       return undefined;
     }
     const deltaValue = currentValue - previousValue;
@@ -281,7 +285,12 @@ class CodecCalculator {
     // If mimeType is 'video/VP8' then codec is 'VP8'.
     const codec =
         codecStats.mimeType.substr(codecStats.mimeType.indexOf('/') + 1);
-    return codec + ' (payloadType: ' + codecStats.payloadType + ')';
+
+    let fmtpLine = '';
+    if (codecStats.sdpFmtpLine) {
+      fmtpLine = ', ' + codecStats.sdpFmtpLine;
+    }
+    return codec + ' (' + codecStats.payloadType + fmtpLine + ')';
   }
 }
 
@@ -361,14 +370,14 @@ class StandardDeviationCalculator {
     const previousSquaredSumValue =
         Number(previousStats[totalSquaredSumMetric]);
     const currentSquaredSumValue = Number(currentStats[totalSquaredSumMetric]);
-    if (typeof previousSquaredSumValue != 'number' ||
-        typeof currentSquaredSumValue != 'number') {
+    if (typeof previousSquaredSumValue !== 'number' ||
+        typeof currentSquaredSumValue !== 'number') {
       return undefined;
     }
     const previousSumValue = Number(previousStats[totalSumMetric]);
     const currentSumValue = Number(currentStats[totalSumMetric]);
-    if (typeof previousSumValue != 'number' ||
-        typeof currentSumValue != 'number') {
+    if (typeof previousSumValue !== 'number' ||
+        typeof currentSumValue !== 'number') {
       return undefined;
     }
 
@@ -407,8 +416,10 @@ class StatsRatesCalculator {
         metricCalculators: {
           messagesSent: new RateCalculator('messagesSent', 'timestamp'),
           messagesReceived: new RateCalculator('messagesReceived', 'timestamp'),
-          bytesSent: new RateCalculator('bytesSent', 'timestamp'),
-          bytesReceived: new RateCalculator('bytesReceived', 'timestamp'),
+          bytesSent: new RateCalculator(
+              'bytesSent', 'timestamp', CalculatorModifier.kBytesToBits),
+          bytesReceived: new RateCalculator(
+              'bytesReceived', 'timestamp', CalculatorModifier.kBytesToBits),
         },
       },
       {
@@ -434,25 +445,38 @@ class StatsRatesCalculator {
       {
         type: 'outbound-rtp',
         metricCalculators: {
-          bytesSent: new RateCalculator('bytesSent', 'timestamp'),
+          bytesSent: new RateCalculator(
+              'bytesSent', 'timestamp', CalculatorModifier.kBytesToBits),
+          headerBytesSent: new RateCalculator(
+              'headerBytesSent', 'timestamp', CalculatorModifier.kBytesToBits),
           packetsSent: new RateCalculator('packetsSent', 'timestamp'),
           totalPacketSendDelay: new RateCalculator(
               'totalPacketSendDelay', 'packetsSent',
               CalculatorModifier.kMillisecondsFromSeconds),
           framesEncoded: new RateCalculator('framesEncoded', 'timestamp'),
-          totalEncodedBytesTarget:
-              new RateCalculator('totalEncodedBytesTarget', 'timestamp'),
+          totalEncodedBytesTarget: new RateCalculator(
+              'totalEncodedBytesTarget', 'timestamp',
+              CalculatorModifier.kBytesToBits),
           totalEncodeTime: new RateCalculator(
               'totalEncodeTime', 'framesEncoded',
               CalculatorModifier.kMillisecondsFromSeconds),
           qpSum: new RateCalculator('qpSum', 'framesEncoded'),
           codecId: new CodecCalculator(),
+          retransmittedPacketsSent:
+              new RateCalculator('retransmittedPacketsSent', 'timestamp'),
+          retransmittedBytesSent: new RateCalculator(
+              'retransmittedBytesSent', 'timestamp',
+              CalculatorModifier.kBytesToBits),
         },
       },
       {
         type: 'inbound-rtp',
         metricCalculators: {
-          bytesReceived: new RateCalculator('bytesReceived', 'timestamp'),
+          bytesReceived: new RateCalculator(
+              'bytesReceived', 'timestamp', CalculatorModifier.kBytesToBits),
+          headerBytesReceived: new RateCalculator(
+              'headerBytesReceived', 'timestamp',
+              CalculatorModifier.kBytesToBits),
           packetsReceived: new RateCalculator('packetsReceived', 'timestamp'),
           framesDecoded: new RateCalculator('framesDecoded', 'timestamp'),
           totalDecodeTime: new RateCalculator(
@@ -471,8 +495,10 @@ class StatsRatesCalculator {
       {
         type: 'transport',
         metricCalculators: {
-          bytesSent: new RateCalculator('bytesSent', 'timestamp'),
-          bytesReceived: new RateCalculator('bytesReceived', 'timestamp'),
+          bytesSent: new RateCalculator(
+              'bytesSent', 'timestamp', CalculatorModifier.kBytesToBits),
+          bytesReceived: new RateCalculator(
+              'bytesReceived', 'timestamp', CalculatorModifier.kBytesToBits),
           // TODO(https://crbug.com/webrtc/10568): Add packetsSent and
           // packetsReceived once implemented.
         },
@@ -480,19 +506,12 @@ class StatsRatesCalculator {
       {
         type: 'candidate-pair',
         metricCalculators: {
-          bytesSent: new RateCalculator('bytesSent', 'timestamp'),
-          bytesReceived: new RateCalculator('bytesReceived', 'timestamp'),
+          bytesSent: new RateCalculator(
+              'bytesSent', 'timestamp', CalculatorModifier.kBytesToBits),
+          bytesReceived: new RateCalculator(
+              'bytesReceived', 'timestamp', CalculatorModifier.kBytesToBits),
           // TODO(https://crbug.com/webrtc/10569): Add packetsSent and
           // packetsReceived once implemented.
-          requestsSent: new RateCalculator('requestsSent', 'timestamp'),
-          requestsReceived: new RateCalculator('requestsReceived', 'timestamp'),
-          responsesSent: new RateCalculator('responsesSent', 'timestamp'),
-          responsesReceived:
-              new RateCalculator('responsesReceived', 'timestamp'),
-          consentRequestsSent:
-              new RateCalculator('consentRequestsSent', 'timestamp'),
-          consentRequestsReceived:
-              new RateCalculator('consentRequestsReceived', 'timestamp'),
           totalRoundTripTime: new RateCalculator(
               'totalRoundTripTime', 'responsesReceived',
               CalculatorModifier.kMillisecondsFromSeconds),

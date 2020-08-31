@@ -4,8 +4,8 @@
  * Copyright (C) 2009 Joseph Pecoraro
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * modification, are permitted provided that the following conditions are
+ * met:
  *
  * 1.  Redistributions of source code must retain the above copyright
  *     notice, this list of conditions and the following disclaimer.
@@ -27,12 +27,19 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+import * as SDK from '../sdk/sdk.js';
+import * as Workspace from '../workspace/workspace.js';
+
 /**
  * @param {string} url
- * @return {?SDK.Resource}
+ * @return {?SDK.Resource.Resource}
  */
 export function resourceForURL(url) {
-  for (const resourceTreeModel of SDK.targetManager.models(SDK.ResourceTreeModel)) {
+  for (const resourceTreeModel of SDK.SDKModel.TargetManager.instance().models(
+           SDK.ResourceTreeModel.ResourceTreeModel)) {
     const resource = resourceTreeModel.resourceForURL(url);
     if (resource) {
       return resource;
@@ -50,23 +57,23 @@ export function displayNameForURL(url) {
     return '';
   }
 
-  const resource = Bindings.resourceForURL(url);
+  const resource = resourceForURL(url);
   if (resource) {
     return resource.displayName;
   }
 
-  const uiSourceCode = Workspace.workspace.uiSourceCodeForURL(url);
+  const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
   if (uiSourceCode) {
     return uiSourceCode.displayName();
   }
 
-  const mainTarget = SDK.targetManager.mainTarget();
+  const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
   const inspectedURL = mainTarget && mainTarget.inspectedURL();
   if (!inspectedURL) {
-    return url.trimURL('');
+    return Platform.StringUtilities.trimURL(url, '');
   }
 
-  const parsedURL = inspectedURL.asParsedURL();
+  const parsedURL = Common.ParsedURL.ParsedURL.fromString(inspectedURL);
   const lastPathComponent = parsedURL ? parsedURL.lastPathComponent : parsedURL;
   const index = inspectedURL.indexOf(lastPathComponent);
   if (index !== -1 && index + lastPathComponent.length === inspectedURL.length) {
@@ -80,18 +87,18 @@ export function displayNameForURL(url) {
     return url;
   }
 
-  const displayName = url.trimURL(parsedURL.host);
+  const displayName = Platform.StringUtilities.trimURL(url, parsedURL.host);
   return displayName === '/' ? parsedURL.host + '/' : displayName;
 }
 
 /**
- * @param {!SDK.Target} target
+ * @param {!SDK.SDKModel.Target} target
  * @param {string} frameId
  * @param {string} url
- * @return {?Workspace.UISourceCodeMetadata}
+ * @return {?Workspace.UISourceCode.UISourceCodeMetadata}
  */
 export function metadataForURL(target, frameId, url) {
-  const resourceTreeModel = target.model(SDK.ResourceTreeModel);
+  const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
   if (!resourceTreeModel) {
     return null;
   }
@@ -99,45 +106,16 @@ export function metadataForURL(target, frameId, url) {
   if (!frame) {
     return null;
   }
-  return Bindings.resourceMetadata(frame.resourceForURL(url));
+  return resourceMetadata(frame.resourceForURL(url));
 }
 
 /**
- * @param {?SDK.Resource} resource
- * @return {?Workspace.UISourceCodeMetadata}
+ * @param {?SDK.Resource.Resource} resource
+ * @return {?Workspace.UISourceCode.UISourceCodeMetadata}
  */
 export function resourceMetadata(resource) {
   if (!resource || (typeof resource.contentSize() !== 'number' && !resource.lastModified())) {
     return null;
   }
-  return new Workspace.UISourceCodeMetadata(resource.lastModified(), resource.contentSize());
+  return new Workspace.UISourceCode.UISourceCodeMetadata(resource.lastModified(), resource.contentSize());
 }
-
-/**
- * @param {!SDK.Script} script
- * @return {string}
- */
-export function frameIdForScript(script) {
-  const executionContext = script.executionContext();
-  if (executionContext) {
-    return executionContext.frameId || '';
-  }
-  // This is to overcome compilation cache which doesn't get reset.
-  const resourceTreeModel = script.debuggerModel.target().model(SDK.ResourceTreeModel);
-  if (!resourceTreeModel || !resourceTreeModel.mainFrame) {
-    return '';
-  }
-  return resourceTreeModel.mainFrame.id;
-}
-
-/* Legacy exported object */
-self.Bindings = self.Bindings || {};
-
-/* Legacy exported object */
-Bindings = Bindings || {};
-
-Bindings.resourceForURL = resourceForURL;
-Bindings.displayNameForURL = displayNameForURL;
-Bindings.metadataForURL = metadataForURL;
-Bindings.resourceMetadata = resourceMetadata;
-Bindings.frameIdForScript = frameIdForScript;

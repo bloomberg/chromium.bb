@@ -17,7 +17,7 @@
         android:layout_marginStart="@dimen/autofill_assistant_bottombar_horizontal_spacing"
         android:layout_marginEnd="@dimen/autofill_assistant_bottombar_horizontal_spacing"
         app:column_spacing="8dp"
-        app:can_add_items="false">
+        app:layout_has_edit_button="false">
         <!-- Choices are created in code. -->
     </org.chromium.chrome.browser.autofill_assistant.user_data.AssistantChoiceList>
 
@@ -26,10 +26,9 @@
         android:id="@+id/collect_data_privacy_notice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:layout_marginStart="@dimen/autofill_assistant_bottombar_horizontal_spacing"
         android:layout_marginEnd="@dimen/autofill_assistant_bottombar_horizontal_spacing"
         android:background="@drawable/autofill_assistant_lightblue_rect_bg"
         android:padding="8dp"
-        android:textAppearance="@style/TextAppearance.BlackCaption"/>
+        android:textAppearance="@style/TextAppearance.TextSmall.Secondary"/>
 </LinearLayout>

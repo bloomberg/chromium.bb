@@ -15,6 +15,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/test_web_ui.h"
@@ -139,7 +140,13 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, OpenNewWindowForProfile) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteSoleProfile) {
+// TODO(https://crbug.com/1073451) flaky on windows bots
+#if defined(OS_WIN)
+#define MAYBE_DeleteSoleProfile DISABLED_DeleteSoleProfile
+#else
+#define MAYBE_DeleteSoleProfile DeleteSoleProfile
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileHelperTest, MAYBE_DeleteSoleProfile) {
   content::TestWebUI web_ui;
   Browser* original_browser = browser();
   ProfileAttributesStorage& storage =
@@ -163,7 +170,13 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteSoleProfile) {
   EXPECT_EQ(1u, storage.GetNumberOfProfiles());
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteActiveProfile) {
+// TODO(https://crbug.com/1073451) flaky on windows bots
+#if defined(OS_WIN)
+#define MAYBE_DeleteActiveProfile DISABLED_DeleteActiveProfile
+#else
+#define MAYBE_DeleteActiveProfile DeleteActiveProfile
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileHelperTest, MAYBE_DeleteActiveProfile) {
   content::TestWebUI web_ui;
   Browser* original_browser = browser();
   ProfileAttributesStorage& storage =

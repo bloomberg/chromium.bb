@@ -89,7 +89,7 @@ aomenc_av1_ivf() {
     aomenc $(yuv_raw_input) \
       $(aomenc_encode_test_fast_params) \
       --ivf \
-      --output="${output}"
+      --output="${output}" || return 1
 
     if [ ! -e "${output}" ]; then
       elog "Output file does not exist."
@@ -108,7 +108,7 @@ aomenc_av1_obu_annexb() {
       $(aomenc_encode_test_fast_params) \
       --obu \
       --annexb=1 \
-      --output="${output}"
+      --output="${output}" || return 1
 
     if [ ! -e "${output}" ]; then
       elog "Output file does not exist."
@@ -126,7 +126,7 @@ aomenc_av1_obu_section5() {
     aomenc $(yuv_raw_input) \
       $(aomenc_encode_test_fast_params) \
       --obu \
-      --output="${output}"
+      --output="${output}" || return 1
 
     if [ ! -e "${output}" ]; then
       elog "Output file does not exist."
@@ -144,7 +144,7 @@ aomenc_av1_webm() {
     fi
     aomenc $(yuv_raw_input) \
       $(aomenc_encode_test_fast_params) \
-      --output="${output}"
+      --output="${output}" || return 1
 
     if [ ! -e "${output}" ]; then
       elog "Output file does not exist."
@@ -160,7 +160,7 @@ aomenc_av1_webm_1pass() {
     aomenc $(yuv_raw_input) \
       $(aomenc_encode_test_fast_params) \
       --passes=1 \
-      --output="${output}"
+      --output="${output}" || return 1
 
     if [ ! -e "${output}" ]; then
       elog "Output file does not exist."
@@ -176,7 +176,7 @@ aomenc_av1_ivf_lossless() {
       $(aomenc_encode_test_fast_params) \
       --ivf \
       --output="${output}" \
-      --lossless=1
+      --lossless=1 || return 1
 
     if [ ! -e "${output}" ]; then
       elog "Output file does not exist."
@@ -193,7 +193,7 @@ aomenc_av1_ivf_minq0_maxq0() {
       --ivf \
       --output="${output}" \
       --min-q=0 \
-      --max-q=0
+      --max-q=0 || return 1
 
     if [ ! -e "${output}" ]; then
       elog "Output file does not exist."
@@ -212,7 +212,7 @@ aomenc_av1_webm_lag5_frames10() {
       $(aomenc_encode_test_fast_params) \
       --limit=${lag_total_frames} \
       --lag-in-frames=${lag_frames} \
-      --output="${output}"
+      --output="${output}" || return 1
 
     if [ ! -e "${output}" ]; then
       elog "Output file does not exist."
@@ -228,7 +228,7 @@ aomenc_av1_webm_non_square_par() {
     local output="${AOM_TEST_OUTPUT_DIR}/av1_non_square_par.webm"
     aomenc $(y4m_input_non_square_par) \
       $(aomenc_encode_test_fast_params) \
-      --output="${output}"
+      --output="${output}" || return 1
 
     if [ ! -e "${output}" ]; then
       elog "Output file does not exist."
@@ -245,7 +245,7 @@ aomenc_av1_webm_cdf_update_mode() {
       aomenc $(yuv_raw_input) \
         $(aomenc_encode_test_fast_params) \
         --cdf-update-mode=${mode} \
-        --output="${output}"
+        --output="${output}" || return 1
 
       if [ ! -e "${output}" ]; then
         elog "Output file does not exist."

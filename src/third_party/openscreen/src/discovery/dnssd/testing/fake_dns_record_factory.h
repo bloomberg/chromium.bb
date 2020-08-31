@@ -5,11 +5,11 @@
 #ifndef DISCOVERY_DNSSD_TESTING_FAKE_DNS_RECORD_FACTORY_H_
 #define DISCOVERY_DNSSD_TESTING_FAKE_DNS_RECORD_FACTORY_H_
 
-#include <chrono>
-#include <string>
+#include <stdint.h>
+
+#include <chrono>  // NOLINT
 
 #include "discovery/dnssd/impl/constants.h"
-#include "discovery/dnssd/impl/instance_key.h"
 #include "discovery/mdns/mdns_records.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -20,16 +20,13 @@ namespace discovery {
 class FakeDnsRecordFactory {
  public:
   static constexpr uint16_t kPortNum = 80;
-  static const IPAddress kV4Address;
-  static const IPAddress kV6Address;
-  static const IPEndpoint kV4Endpoint;
-  static const IPEndpoint kV6Endpoint;
-  static const std::string kInstanceName;
-  static const std::string kServiceName;
-  static const std::string kServiceNameProtocolPart;
-  static const std::string kServiceNameServicePart;
-  static const std::string kDomainName;
-  static const InstanceKey kKey;
+  static const uint8_t kV4AddressOctets[4];
+  static const uint16_t kV6AddressHextets[8];
+  static const char kInstanceName[];
+  static const char kServiceName[];
+  static const char kServiceNameProtocolPart[];
+  static const char kServiceNameServicePart[];
+  static const char kDomainName[];
 
   static MdnsRecord CreateFullyPopulatedSrvRecord(uint16_t port = kPortNum);
 };

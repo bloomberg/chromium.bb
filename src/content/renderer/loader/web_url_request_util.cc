@@ -9,7 +9,8 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "content/child/child_thread_impl.h"
@@ -26,7 +27,6 @@
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_http_body.h"
@@ -106,107 +106,6 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
 };
 
 }  // namespace
-
-ResourceType RequestContextToResourceType(
-    blink::mojom::RequestContextType request_context) {
-  switch (request_context) {
-    // CSP report
-    case blink::mojom::RequestContextType::CSP_REPORT:
-      return ResourceType::kCspReport;
-
-    // Favicon
-    case blink::mojom::RequestContextType::FAVICON:
-      return ResourceType::kFavicon;
-
-    // Font
-    case blink::mojom::RequestContextType::FONT:
-      return ResourceType::kFontResource;
-
-    // Image
-    case blink::mojom::RequestContextType::IMAGE:
-    case blink::mojom::RequestContextType::IMAGE_SET:
-      return ResourceType::kImage;
-
-    // Media
-    case blink::mojom::RequestContextType::AUDIO:
-    case blink::mojom::RequestContextType::VIDEO:
-      return ResourceType::kMedia;
-
-    // Object
-    case blink::mojom::RequestContextType::EMBED:
-    case blink::mojom::RequestContextType::OBJECT:
-      return ResourceType::kObject;
-
-    // Ping
-    case blink::mojom::RequestContextType::BEACON:
-    case blink::mojom::RequestContextType::PING:
-      return ResourceType::kPing;
-
-    // Subresource of plugins
-    case blink::mojom::RequestContextType::PLUGIN:
-      return ResourceType::kPluginResource;
-
-    // Prefetch
-    case blink::mojom::RequestContextType::PREFETCH:
-      return ResourceType::kPrefetch;
-
-    // Script
-    case blink::mojom::RequestContextType::IMPORT:
-    case blink::mojom::RequestContextType::SCRIPT:
-      return ResourceType::kScript;
-
-    // Style
-    case blink::mojom::RequestContextType::XSLT:
-    case blink::mojom::RequestContextType::STYLE:
-      return ResourceType::kStylesheet;
-
-    // Subresource
-    case blink::mojom::RequestContextType::DOWNLOAD:
-    case blink::mojom::RequestContextType::MANIFEST:
-    case blink::mojom::RequestContextType::SUBRESOURCE:
-      return ResourceType::kSubResource;
-
-    // TextTrack
-    case blink::mojom::RequestContextType::TRACK:
-      return ResourceType::kMedia;
-
-    // Workers
-    case blink::mojom::RequestContextType::SERVICE_WORKER:
-      return ResourceType::kServiceWorker;
-    case blink::mojom::RequestContextType::SHARED_WORKER:
-      return ResourceType::kSharedWorker;
-    case blink::mojom::RequestContextType::WORKER:
-      return ResourceType::kWorker;
-
-    // Unspecified
-    case blink::mojom::RequestContextType::INTERNAL:
-    case blink::mojom::RequestContextType::UNSPECIFIED:
-      return ResourceType::kSubResource;
-
-    // XHR
-    case blink::mojom::RequestContextType::EVENT_SOURCE:
-    case blink::mojom::RequestContextType::FETCH:
-    case blink::mojom::RequestContextType::XML_HTTP_REQUEST:
-      return ResourceType::kXhr;
-
-    // Navigation requests should not go through WebURLLoader.
-    case blink::mojom::RequestContextType::FORM:
-    case blink::mojom::RequestContextType::HYPERLINK:
-    case blink::mojom::RequestContextType::LOCATION:
-    case blink::mojom::RequestContextType::FRAME:
-    case blink::mojom::RequestContextType::IFRAME:
-      NOTREACHED();
-      return ResourceType::kSubResource;
-
-    default:
-      NOTREACHED();
-      return ResourceType::kSubResource;
-  }
-}
-
-ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
-  return RequestContextToResourceType(request.GetRequestContext());
-}
 
 net::HttpRequestHeaders GetWebURLRequestHeaders(
     const blink::WebURLRequest& request) {
@@ -293,7 +192,8 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
         if (element.file_length == -1) {
           request_body->AppendFileRange(
               blink::WebStringToFilePath(element.file_path), 0,
-              std::numeric_limits<uint64_t>::max(), base::Time());
+              std::numeric_limits<uint64_t>::max(),
+              element.modification_time.value_or(base::Time()));
         } else {
           request_body->AppendFileRange(
               blink::WebStringToFilePath(element.file_path),
@@ -353,6 +253,12 @@ blink::mojom::RequestContextType GetRequestContextTypeForWebURLRequest(
     const WebURLRequest& request) {
   return static_cast<blink::mojom::RequestContextType>(
       request.GetRequestContext());
+}
+
+network::mojom::RequestDestination GetRequestDestinationForWebURLRequest(
+    const WebURLRequest& request) {
+  return static_cast<network::mojom::RequestDestination>(
+      request.GetRequestDestination());
 }
 
 blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(

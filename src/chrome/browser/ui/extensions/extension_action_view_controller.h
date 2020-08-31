@@ -62,14 +62,14 @@ class ExtensionActionViewController
   PageInteractionStatus GetPageInteractionStatus(
       content::WebContents* web_contents) const override;
   bool IsEnabled(content::WebContents* web_contents) const override;
-  bool WantsToRun(content::WebContents* web_contents) const override;
   bool HasPopup(content::WebContents* web_contents) const override;
   bool IsShowingPopup() const override;
   void HidePopup() override;
   gfx::NativeView GetPopupNativeView() override;
   ui::MenuModel* GetContextMenu() override;
+  void OnContextMenuShown() override;
   void OnContextMenuClosed() override;
-  bool ExecuteAction(bool by_user) override;
+  bool ExecuteAction(bool by_user, InvocationSource source) override;
   void UpdateState() override;
   void RegisterCommand() override;
   bool DisabledClickOpensMenu() const override;
@@ -79,7 +79,14 @@ class ExtensionActionViewController
 
   // Populates |command| with the command associated with |extension|, if one
   // exists. Returns true if |command| was populated.
-  bool GetExtensionCommand(extensions::Command* command);
+  bool GetExtensionCommand(extensions::Command* command) const;
+
+  // Returns true if this controller can handle accelerators (i.e., keyboard
+  // commands) on the currently-active WebContents.
+  // This must only be called if the extension has an associated command.
+  // TODO(devlin): Move accelerator logic out of the platform delegate and into
+  // this class.
+  bool CanHandleAccelerators() const;
 
   const extensions::Extension* extension() const { return extension_.get(); }
   Browser* browser() { return browser_; }
@@ -90,6 +97,7 @@ class ExtensionActionViewController
   std::unique_ptr<IconWithBadgeImageSource> GetIconImageSourceForTesting(
       content::WebContents* web_contents,
       const gfx::Size& size);
+  bool HasBeenBlockedForTesting(content::WebContents* web_contents) const;
 
  private:
   // ExtensionActionIconFactory::Observer:

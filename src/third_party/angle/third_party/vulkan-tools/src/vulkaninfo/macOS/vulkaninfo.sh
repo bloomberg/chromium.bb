@@ -7,3 +7,4 @@ then
 else
     open /Applications/Utilities/Terminal.app $BASEDIR/vulkaninfo
 fi
+

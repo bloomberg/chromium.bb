@@ -9,10 +9,18 @@ if (typeof distillerOnIos === 'undefined') {
   distillerOnIos = false;
 }
 
+// The style guide recommends preferring $() to getElementById(). Chrome's
+// standard implementation of $() is imported from chrome://resources, which the
+// distilled page is prohibited from accessing. A version of it is
+// re-implemented here to allow stylistic consistency with other JS code.
+function $(id) {
+  return document.getElementById(id);
+}
+
 function addToPage(html) {
   const div = document.createElement('div');
   div.innerHTML = html;
-  document.getElementById('content').appendChild(div);
+  $('content').appendChild(div);
   fillYouTubePlaceholders();
 }
 
@@ -20,7 +28,7 @@ function fillYouTubePlaceholders() {
   const placeholders = document.getElementsByClassName('embed-placeholder');
   for (let i = 0; i < placeholders.length; i++) {
     if (!placeholders[i].hasAttribute('data-type') ||
-        placeholders[i].getAttribute('data-type') != 'youtube' ||
+        placeholders[i].getAttribute('data-type') !== 'youtube' ||
         !placeholders[i].hasAttribute('data-id')) {
       continue;
     }
@@ -42,16 +50,17 @@ function fillYouTubePlaceholders() {
 }
 
 function showLoadingIndicator(isLastPage) {
-  document.getElementById('loading-indicator').className =
-      isLastPage ? 'hidden' : 'visible';
+  $('loading-indicator').className = isLastPage ? 'hidden' : 'visible';
 }
 
 // Sets the title.
-function setTitle(title) {
-  const holder = document.getElementById('title-holder');
-
-  holder.textContent = title;
-  document.title = title;
+function setTitle(title, documentTitleSuffix) {
+  $('title-holder').textContent = title;
+  if (documentTitleSuffix) {
+    document.title = title + documentTitleSuffix;
+  } else {
+    document.title = title;
+  }
 }
 
 // Set the text direction of the document ('ltr', 'rtl', or 'auto').
@@ -59,63 +68,38 @@ function setTextDirection(direction) {
   document.body.setAttribute('dir', direction);
 }
 
-function removeAll(source, elementsToRemove) {
-  elementsToRemove.forEach(function(element) {
-    source.remove(element);
-  });
-}
-
 // These classes must agree with the font classes in distilledpage.css.
 const fontFamilyClasses = ['sans-serif', 'serif', 'monospace'];
-function getFontFamilyClass(fontFamily) {
-  if (fontFamilyClasses.includes(fontFamily)) {
-    return fontFamily;
-  }
-  return fontFamilyClasses[0];
-}
-
 function useFontFamily(fontFamily) {
-  removeAll(document.body.classList, fontFamilyClasses);
-  document.body.classList.add(getFontFamilyClass(fontFamily));
+  fontFamilyClasses.forEach(
+      (element) =>
+          document.body.classList.toggle(element, element === fontFamily));
 }
 
 // These classes must agree with the theme classes in distilledpage.css.
 const themeClasses = ['light', 'dark', 'sepia'];
-function getThemeClass(theme) {
-  if (themeClasses.includes(theme)) {
-    return theme;
-  }
-  return themeClasses[0];
-}
-
 function useTheme(theme) {
-  removeAll(document.body.classList, themeClasses);
-  document.body.classList.add(getThemeClass(theme));
-  updateToolbarColor();
+  themeClasses.forEach(
+      (element) => document.body.classList.toggle(element, element === theme));
+  updateToolbarColor(theme);
 }
 
-function getThemeFromElement(element) {
-  let foundTheme = themeClasses[0];
-  themeClasses.forEach(function(theme) {
-    if (element.classList.contains(theme)) {
-      foundTheme = theme;
-    }
-  });
-  return foundTheme;
+function getPageTheme() {
+  const cls = Array.from(document.body.classList)
+                  .find((cls) => themeClasses.includes(cls));
+  return cls ? cls : themeClasses[0];
 }
 
-function updateToolbarColor() {
-  const themeClass = getThemeFromElement(document.body);
-
+function updateToolbarColor(theme) {
   let toolbarColor;
-  if (themeClass == 'sepia') {
+  if (theme === 'sepia') {
     toolbarColor = '#BF9A73';
-  } else if (themeClass == 'dark') {
+  } else if (theme === 'dark') {
     toolbarColor = '#1A1A1A';
   } else {
     toolbarColor = '#F5F5F5';
   }
-  document.getElementById('theme-color').content = toolbarColor;
+  $('theme-color').content = toolbarColor;
 }
 
 function useFontScaling(scaling) {
@@ -138,39 +122,66 @@ function maybeSetWebFont() {
   document.head.appendChild(e);
 }
 
-const supportedTextSizes = [14, 15, 16, 18, 20, 24, 28, 32, 40, 48];
-function updateSlider(position) {
-  document.documentElement.style.setProperty(
-      '--fontSizePercent', (position / 9 * 100) + '%');
-  for (let i = 0; i < supportedTextSizes.length; i++) {
-    const option =
-        document.querySelector('.tickmarks option[value="' + i + '"]');
-    if (!option) {
-      continue;
+// TODO(https://crbug.com/1027612): Consider making this a custom HTML element.
+class FontSizeSlider {
+  constructor(element, supportedFontSizes) {
+    this.element = element;
+    this.supportedFontSizes = supportedFontSizes;
+
+    this.element.addEventListener('input', (e) => {
+      document.body.style.fontSize =
+          this.supportedFontSizes[e.target.value] + 'px';
+      this.update(e.target.value);
+    });
+
+    this.tickmarks = document.createElement('datalist');
+    this.tickmarks.setAttribute('class', 'tickmarks');
+    this.element.after(this.tickmarks);
+
+    for (let i = 0; i < this.supportedFontSizes.length; i++) {
+      const option = document.createElement('option');
+      option.setAttribute('value', i);
+      option.textContent = supportedFontSizes[i];
+      this.tickmarks.appendChild(option);
     }
 
-    const optionClasses = option.classList;
-    removeAll(optionClasses, ['before-thumb', 'after-thumb']);
-    if (i < position) {
-      optionClasses.add('before-thumb');
-    } else {
-      optionClasses.add('after-thumb');
+    this.update(this.element.value);
+  }
+
+  update(position) {
+    this.element.style.setProperty(
+        '--fontSizePercent',
+        (position / (this.supportedFontSizes.length - 1) * 100) + '%');
+    this.element.setAttribute(
+        'aria-valuetext', this.supportedFontSizes[position] + 'px');
+    for (let option = this.tickmarks.firstChild; option != null;
+         option = option.nextSibling) {
+      const isBeforeThumb = option.value < position;
+      option.classList.toggle('before-thumb', isBeforeThumb);
+      option.classList.toggle('after-thumb', !isBeforeThumb);
     }
   }
 }
 
-function updateSliderFromElement(element) {
-  if (element) {
-    updateSlider(element.value);
-  }
-}
+const fontSizeSlider = new FontSizeSlider(
+    $('font-size-selection'), [14, 15, 16, 18, 20, 24, 28, 32, 40, 48]);
 
-updateToolbarColor();
+// Set the toolbar color to match the page's theme.
+updateToolbarColor(getPageTheme());
+
 maybeSetWebFont();
-updateSliderFromElement(document.querySelector('#font-size-selection'));
 
-const pincher = (function() {
-  'use strict';
+// The zooming speed relative to pinching speed.
+const FONT_SCALE_MULTIPLIER = 0.5;
+
+const MIN_SPAN_LENGTH = 20;
+
+// This has to be in sync with 'font-size' in distilledpage.css.
+// This value is hard-coded because JS might be injected before CSS is ready.
+// See crbug.com/1004663.
+const baseSize = 14;
+
+class Pincher {
   // When users pinch in Reader Mode, the page would zoom in or out as if it
   // is a normal web page allowing user-zoom. At the end of pinch gesture, the
   // page would do text reflow. These pinch-to-zoom and text reflow effects
@@ -187,84 +198,98 @@ const pincher = (function() {
   //
   // TODO(wychen): Improve scroll position when elementFromPoint is body.
 
-  let pinching = false;
-  let fontSizeAnchor = 1.0;
+  constructor() {
+    this.pinching = false;
+    this.fontSizeAnchor = 1.0;
 
-  let focusElement = null;
-  let focusPos = 0;
-  let initClientMid;
+    this.focusElement = null;
+    this.focusPos = 0;
+    this.initClientMid = null;
 
-  let clampedScale = 1;
+    this.clampedScale = 1.0;
 
-  let lastSpan;
-  let lastClientMid;
+    this.lastSpan = null;
+    this.lastClientMid = null;
 
-  let scale = 1;
-  let shiftX;
-  let shiftY;
+    this.scale = 1.0;
+    this.shiftX = 0;
+    this.shiftY = 0;
 
-  // The zooming speed relative to pinching speed.
-  const FONT_SCALE_MULTIPLIER = 0.5;
+    window.addEventListener('touchstart', (e) => {
+      this.handleTouchStart(e);
+    }, {passive: false});
+    window.addEventListener('touchmove', (e) => {
+      this.handleTouchMove(e);
+    }, {passive: false});
+    window.addEventListener('touchend', (e) => {
+      this.handleTouchEnd(e);
+    }, {passive: false});
+    window.addEventListener('touchcancel', (e) => {
+      this.handleTouchCancel(e);
+    }, {passive: false});
+  }
 
-  const MIN_SPAN_LENGTH = 20;
-
-  // This has to be in sync with 'font-size' in distilledpage.css.
-  // This value is hard-coded because JS might be injected before CSS is ready.
-  // See crbug.com/1004663.
-  const baseSize = 14;
-
-  const refreshTransform = function() {
-    const slowedScale = Math.exp(Math.log(scale) * FONT_SCALE_MULTIPLIER);
-    clampedScale = Math.max(0.5, Math.min(2.0, fontSizeAnchor * slowedScale));
+  /** @private */
+  refreshTransform_() {
+    const slowedScale = Math.exp(Math.log(this.scale) * FONT_SCALE_MULTIPLIER);
+    this.clampedScale =
+        Math.max(0.5, Math.min(2.0, this.fontSizeAnchor * slowedScale));
 
     // Use "fake" 3D transform so that the layer is not repainted.
     // With 2D transform, the frame rate would be much lower.
     // clang-format off
     document.body.style.transform =
-        'translate3d(' + shiftX + 'px,'
-                       + shiftY + 'px, 0px)' +
-        'scale(' + clampedScale / fontSizeAnchor + ')';
+        'translate3d(' + this.shiftX + 'px,'
+                       + this.shiftY + 'px, 0px)' +
+        'scale(' + this.clampedScale / this.fontSizeAnchor + ')';
     // clang-format on
-  };
-
-  function saveCenter(clientMid) {
-    // Try to preserve the pinching center after text reflow.
-    // This is accurate to the HTML element level.
-    focusElement = document.elementFromPoint(clientMid.x, clientMid.y);
-    const rect = focusElement.getBoundingClientRect();
-    initClientMid = clientMid;
-    focusPos = (initClientMid.y - rect.top) / (rect.bottom - rect.top);
   }
 
-  function restoreCenter() {
-    const rect = focusElement.getBoundingClientRect();
-    const targetTop = focusPos * (rect.bottom - rect.top) + rect.top +
-        document.scrollingElement.scrollTop - (initClientMid.y + shiftY);
+  /** @private */
+  saveCenter_(clientMid) {
+    // Try to preserve the pinching center after text reflow.
+    // This is accurate to the HTML element level.
+    this.focusElement = document.elementFromPoint(clientMid.x, clientMid.y);
+    const rect = this.focusElement.getBoundingClientRect();
+    this.initClientMid = clientMid;
+    this.focusPos =
+        (this.initClientMid.y - rect.top) / (rect.bottom - rect.top);
+  }
+
+  /** @private */
+  restoreCenter_() {
+    const rect = this.focusElement.getBoundingClientRect();
+    const targetTop = this.focusPos * (rect.bottom - rect.top) + rect.top +
+        document.scrollingElement.scrollTop -
+        (this.initClientMid.y + this.shiftY);
     document.scrollingElement.scrollTop = targetTop;
   }
 
-  function endPinch() {
-    pinching = false;
+  /** @private */
+  endPinch_() {
+    this.pinching = false;
 
     document.body.style.transformOrigin = '';
     document.body.style.transform = '';
-    document.documentElement.style.fontSize = clampedScale * baseSize + 'px';
+    document.documentElement.style.fontSize =
+        this.clampedScale * baseSize + 'px';
 
-    restoreCenter();
+    this.restoreCenter_();
 
-    let img = document.getElementById('fontscaling-img');
+    let img = $('fontscaling-img');
     if (!img) {
       img = document.createElement('img');
       img.id = 'fontscaling-img';
       img.style.display = 'none';
       document.body.appendChild(img);
     }
-    img.src = '/savefontscaling/' + clampedScale;
+    img.src = '/savefontscaling/' + this.clampedScale;
   }
 
-  function touchSpan(e) {
+  /** @private */
+  touchSpan_(e) {
     const count = e.touches.length;
-    const mid = touchClientMid(e);
+    const mid = this.touchClientMid_(e);
     let sum = 0;
     for (let i = 0; i < count; i++) {
       const dx = (e.touches[i].clientX - mid.x);
@@ -275,7 +300,8 @@ const pincher = (function() {
     return Math.max(MIN_SPAN_LENGTH, sum / count);
   }
 
-  function touchClientMid(e) {
+  /** @private */
+  touchClientMid_(e) {
     const count = e.touches.length;
     let sumX = 0;
     let sumY = 0;
@@ -286,169 +312,175 @@ const pincher = (function() {
     return {x: sumX / count, y: sumY / count};
   }
 
-  function touchPageMid(e) {
-    const clientMid = touchClientMid(e);
+  /** @private */
+  touchPageMid_(e) {
+    const clientMid = this.touchClientMid_(e);
     return {
       x: clientMid.x - e.touches[0].clientX + e.touches[0].pageX,
       y: clientMid.y - e.touches[0].clientY + e.touches[0].pageY
     };
   }
 
-  return {
-    handleTouchStart: function(e) {
-      if (e.touches.length < 2) {
-        return;
-      }
-      e.preventDefault();
-
-      const span = touchSpan(e);
-      const clientMid = touchClientMid(e);
-
-      if (e.touches.length > 2) {
-        lastSpan = span;
-        lastClientMid = clientMid;
-        refreshTransform();
-        return;
-      }
-
-      scale = 1;
-      shiftX = 0;
-      shiftY = 0;
-
-      pinching = true;
-      fontSizeAnchor =
-          parseFloat(getComputedStyle(document.documentElement).fontSize) /
-          baseSize;
-
-      const pinchOrigin = touchPageMid(e);
-      document.body.style.transformOrigin =
-          pinchOrigin.x + 'px ' + pinchOrigin.y + 'px';
-
-      saveCenter(clientMid);
-
-      lastSpan = span;
-      lastClientMid = clientMid;
-
-      refreshTransform();
-    },
-
-    handleTouchMove: function(e) {
-      if (!pinching) {
-        return;
-      }
-      if (e.touches.length < 2) {
-        return;
-      }
-      e.preventDefault();
-
-      const span = touchSpan(e);
-      const clientMid = touchClientMid(e);
-
-      scale *= touchSpan(e) / lastSpan;
-      shiftX += clientMid.x - lastClientMid.x;
-      shiftY += clientMid.y - lastClientMid.y;
-
-      refreshTransform();
-
-      lastSpan = span;
-      lastClientMid = clientMid;
-    },
-
-    handleTouchEnd: function(e) {
-      if (!pinching) {
-        return;
-      }
-      e.preventDefault();
-
-      const span = touchSpan(e);
-      const clientMid = touchClientMid(e);
-
-      if (e.touches.length >= 2) {
-        lastSpan = span;
-        lastClientMid = clientMid;
-        refreshTransform();
-        return;
-      }
-
-      endPinch();
-    },
-
-    handleTouchCancel: function(e) {
-      if (!pinching) {
-        return;
-      }
-      endPinch();
-    },
-
-    reset: function() {
-      scale = 1;
-      shiftX = 0;
-      shiftY = 0;
-      clampedScale = 1;
-      document.documentElement.style.fontSize = clampedScale * baseSize + 'px';
-    },
-
-    status: function() {
-      return {
-        scale: scale,
-        clampedScale: clampedScale,
-        shiftX: shiftX,
-        shiftY: shiftY
-      };
-    },
-
-    useFontScaling: function(scaling) {
-      saveCenter({x: window.innerWidth / 2, y: window.innerHeight / 2});
-      shiftX = 0;
-      shiftY = 0;
-      document.documentElement.style.fontSize = scaling * baseSize + 'px';
-      clampedScale = scaling;
-      restoreCenter();
+  handleTouchStart(e) {
+    if (e.touches.length < 2) {
+      return;
     }
-  };
-}());
+    e.preventDefault();
 
-window.addEventListener(
-    'touchstart', pincher.handleTouchStart, {passive: false});
-window.addEventListener('touchmove', pincher.handleTouchMove, {passive: false});
-window.addEventListener('touchend', pincher.handleTouchEnd, {passive: false});
-window.addEventListener(
-    'touchcancel', pincher.handleTouchCancel, {passive: false});
+    const span = this.touchSpan_(e);
+    const clientMid = this.touchClientMid_(e);
 
-document.querySelector('#settings-toggle').addEventListener('click', (e) => {
-  const dialog = document.querySelector('#settings-dialog');
-  const toggle = document.querySelector('#settings-toggle');
-  if (dialog.open) {
-    toggle.classList.remove('activated');
-    dialog.close();
-  } else {
-    toggle.classList.add('activated');
-    dialog.show();
+    if (e.touches.length > 2) {
+      this.lastSpan = span;
+      this.lastClientMid = clientMid;
+      this.refreshTransform_();
+      return;
+    }
+
+    this.scale = 1;
+    this.shiftX = 0;
+    this.shiftY = 0;
+
+    this.pinching = true;
+    this.fontSizeAnchor =
+        parseFloat(getComputedStyle(document.documentElement).fontSize) /
+        baseSize;
+
+    const pinchOrigin = this.touchPageMid_(e);
+    document.body.style.transformOrigin =
+        pinchOrigin.x + 'px ' + pinchOrigin.y + 'px';
+
+    this.saveCenter_(clientMid);
+
+    this.lastSpan = span;
+    this.lastClientMid = clientMid;
+
+    this.refreshTransform_();
   }
-});
 
-document.querySelector('#close-settings-button')
-    .addEventListener('click', (e) => {
-      document.querySelector('#settings-toggle').classList.remove('activated');
-      document.querySelector('#settings-dialog').close();
+  handleTouchMove(e) {
+    if (!this.pinching) {
+      return;
+    }
+    if (e.touches.length < 2) {
+      return;
+    }
+    e.preventDefault();
+
+    const span = this.touchSpan_(e);
+    const clientMid = this.touchClientMid_(e);
+
+    this.scale *= this.touchSpan_(e) / this.lastSpan;
+    this.shiftX += clientMid.x - this.lastClientMid.x;
+    this.shiftY += clientMid.y - this.lastClientMid.y;
+
+    this.refreshTransform_();
+
+    this.lastSpan = span;
+    this.lastClientMid = clientMid;
+  }
+
+  handleTouchEnd(e) {
+    if (!this.pinching) {
+      return;
+    }
+    e.preventDefault();
+
+    const span = this.touchSpan_(e);
+    const clientMid = this.touchClientMid_(e);
+
+    if (e.touches.length >= 2) {
+      this.lastSpan = span;
+      this.lastClientMid = clientMid;
+      this.refreshTransform_();
+      return;
+    }
+
+    this.endPinch_();
+  }
+
+  handleTouchCancel(e) {
+    if (!this.pinching) {
+      return;
+    }
+    this.endPinch_();
+  }
+
+  reset() {
+    this.scale = 1;
+    this.shiftX = 0;
+    this.shiftY = 0;
+    this.clampedScale = 1;
+    document.documentElement.style.fontSize =
+        this.clampedScale * baseSize + 'px';
+  }
+
+  status() {
+    return {
+      scale: this.scale,
+      clampedScale: this.clampedScale,
+      shiftX: this.shiftX,
+      shiftY: this.shiftY
+    };
+  }
+
+  useFontScaling(scaling) {
+    this.saveCenter_({x: window.innerWidth / 2, y: window.innerHeight / 2});
+    this.shiftX = 0;
+    this.shiftY = 0;
+    document.documentElement.style.fontSize = scaling * baseSize + 'px';
+    this.clampedScale = scaling;
+    this.restoreCenter_();
+  }
+}
+
+const pincher = new Pincher;
+
+class SettingsDialog {
+  constructor(toggleElement, dialogElement, backdropElement) {
+    this._toggleElement = toggleElement;
+    this._dialogElement = dialogElement;
+    this._backdropElement = backdropElement;
+
+    this._toggleElement.addEventListener('click', this.toggle.bind(this));
+    this._dialogElement.addEventListener('close', this.close.bind(this));
+    this._backdropElement.addEventListener('click', this.close.bind(this));
+
+    $('close-settings-button').addEventListener('click', this.close.bind(this));
+
+    $('theme-selection').addEventListener('change', (e) => {
+      const newTheme = e.target.value;
+      useTheme(newTheme);
+      distiller.storeThemePref(themeClasses.indexOf(newTheme));
     });
 
-document.querySelector('#theme-selection').addEventListener('change', (e) => {
-  useTheme(e.target.value);
-});
-
-document.querySelector('#font-size-selection')
-    .addEventListener('change', (e) => {
-      document.body.style.fontSize = supportedTextSizes[e.target.value] + 'px';
-      updateSlider(e.target.value);
+    $('font-family-selection').addEventListener('change', (e) => {
+      const newFontFamily = e.target.value;
+      useFontFamily(newFontFamily);
+      distiller.storeFontFamilyPref(fontFamilyClasses.indexOf(newFontFamily));
     });
+  }
 
-document.querySelector('#font-size-selection')
-    .addEventListener('input', (e) => {
-      updateSlider(e.target.value);
-    });
+  toggle() {
+    if (this._dialogElement.open) {
+      this.close();
+    } else {
+      this.showModal();
+    }
+  }
 
-document.querySelector('#font-family-selection')
-    .addEventListener('change', (e) => {
-      useFontFamily(e.target.value);
-    });
+  showModal() {
+    this._toggleElement.classList.add('activated');
+    this._backdropElement.style.display = 'block';
+    this._dialogElement.showModal();
+  }
+
+  close() {
+    this._toggleElement.classList.remove('activated');
+    this._backdropElement.style.display = 'none';
+    this._dialogElement.close();
+  }
+}
+
+const settingsDialog = new SettingsDialog(
+    $('settings-toggle'), $('settings-dialog'), $('dialog-backdrop'));

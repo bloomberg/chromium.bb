@@ -48,6 +48,18 @@ class TemplateWriter(object):
     '''
     return False
 
+  def IsCloudOnlyPolicySupported(self, policy):
+    '''Checks if the given cloud only policy is supported by the writer.
+
+    Args:
+      policy: The dictionary of the policy.
+
+    Returns:
+      True if the writer chooses to include the deprecated 'policy' in its
+      output.
+    '''
+    return False
+
   def IsPolicySupported(self, policy):
     '''Checks if the given policy is supported by the writer.
     In other words, the set of platforms supported by the writer
@@ -68,23 +80,40 @@ class TemplateWriter(object):
         not self.IsFuturePolicySupported(policy)):
       return False
 
+    if (self.IsCloudOnlyPolicy(policy)
+        and not self.IsCloudOnlyPolicySupported(policy)):
+      return False
+
     for supported_on in policy['supported_on']:
       if not self.IsVersionSupported(policy, supported_on):
         continue
-      if '*' in self.platforms:
+      if '*' in self.platforms or supported_on['platform'] in self.platforms:
         return True
-      if any(
-          platform in self.platforms for platform in supported_on['platforms']):
+
+    if self.IsFuturePolicySupported(policy):
+      if '*' in self.platforms and policy['future_on']:
         return True
+      for future in policy['future_on']:
+        if future['platform'] in self.platforms:
+          return True
     return False
+
+  def GetPolicyFeature(self, policy, feature_name, value=None):
+    '''Returns policy feature with |feature_name| if exsits. Otherwise, returns
+    |value|.'''
+    return policy.get('features', {}).get(feature_name, value)
 
   def CanBeRecommended(self, policy):
     '''Checks if the given policy can be recommended.'''
-    return policy.get('features', {}).get('can_be_recommended', False)
+    return self.GetPolicyFeature(policy, 'can_be_recommended', False)
 
   def CanBeMandatory(self, policy):
     '''Checks if the given policy can be mandatory.'''
-    return policy.get('features', {}).get('can_be_mandatory', True)
+    return self.GetPolicyFeature(policy, 'can_be_mandatory', True)
+
+  def IsCloudOnlyPolicy(self, policy):
+    '''Checks if the given policy is cloud only'''
+    return self.GetPolicyFeature(policy, 'cloud_only', False)
 
   def IsPolicyOrItemSupportedOnPlatform(self,
                                         item,
@@ -109,9 +138,18 @@ class TemplateWriter(object):
       return False
 
     for supported_on in item['supported_on']:
-      if (platform in supported_on['platforms'] and
-          (not product or product in supported_on['product']) and
-          self.IsVersionSupported(item, supported_on)):
+      if (platform == supported_on['platform']
+          and (not product or product in supported_on['product'])
+          and self.IsVersionSupported(item, supported_on)):
+        return True
+    if self.IsFuturePolicySupported(item):
+      if (product and {
+          'platform': platform,
+          'product': product
+      } in item.get('future_on', [])):
+        return True
+      if (not product and filter(lambda f: f['platform'] == platform,
+                                 item.get('future_on', []))):
         return True
     return False
 

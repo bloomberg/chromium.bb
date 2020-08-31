@@ -6,6 +6,8 @@
 
 """Reproduce one or multiple tasks from one Swarming server on another one."""
 
+from __future__ import print_function
+
 import argparse
 import json
 import logging
@@ -13,7 +15,8 @@ import os
 import subprocess
 import sys
 import tempfile
-import urllib
+
+from six.moves import urllib
 
 CLIENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
     __file__.decode(sys.getfilesystemencoding()))))
@@ -38,7 +41,7 @@ def get_all_by_tags(server, tags):
   # master:tryserver.chromium.win
   # buildername:win_chromium_rel_ng
   # buildnumber:516399
-  url = 'tasks/list?' + '&'.join('tags=' + urllib.quote(t) for t in tags)
+  url = 'tasks/list?' + '&'.join('tags=' + urllib.parse.quote(t) for t in tags)
   tasks = query_swarming(server, url)['items']
   print('Found %d original tasks' % len(tasks))
   return [t['task_id'] for t in tasks]
@@ -51,7 +54,7 @@ def reproduce(server_old, server_new, task_id):
   inputs = prop['inputs_ref']
   name = request['name']
   if prop.get('secret_bytes'):
-    print >> sys.stderr, 'Can\'t reproduce task %s with secrets' % task_id
+    print('Can\'t reproduce task %s with secrets' % task_id, file=sys.stderr)
     sys.exit(1)
   cmd = [
     'trigger', '--tag', 'testing:1',

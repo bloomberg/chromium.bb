@@ -106,9 +106,7 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view)
           web_view->GetPage()->GetSettings().GetCookieEnabled()),
       document_cookie_disabled_(false) {}
 
-DevToolsEmulator::~DevToolsEmulator() = default;
-
-void DevToolsEmulator::Trace(blink::Visitor* visitor) {}
+void DevToolsEmulator::Trace(Visitor* visitor) {}
 
 void DevToolsEmulator::SetTextAutosizingEnabled(bool enabled) {
   embedder_text_autosizing_enabled_ = enabled;
@@ -253,10 +251,10 @@ TransformationMatrix DevToolsEmulator::EnableDeviceEmulation(
   if (web_view_->MainFrameImpl()) {
     if (Document* document =
             web_view_->MainFrameImpl()->GetFrame()->GetDocument())
-      document->MediaQueryAffectingValueChanged();
+      document->MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   }
 
-  if (params.viewport_offset.x >= 0)
+  if (params.viewport_offset.x() >= 0)
     return ForceViewport(params.viewport_offset, params.viewport_scale);
   else
     return ResetViewport();
@@ -279,7 +277,7 @@ void DevToolsEmulator::DisableDeviceEmulation() {
   if (web_view_->MainFrameImpl()) {
     if (Document* document =
             web_view_->MainFrameImpl()->GetFrame()->GetDocument())
-      document->MediaQueryAffectingValueChanged();
+      document->MediaQueryAffectingValueChanged(MediaValueChange::kOther);
   }
 
   TransformationMatrix matrix = ResetViewport();
@@ -300,6 +298,7 @@ void DevToolsEmulator::EnableMobileEmulation() {
       RuntimeEnabledFeatures::MobileLayoutThemeEnabled();
   RuntimeEnabledFeatures::SetMobileLayoutThemeEnabled(true);
   ComputedStyle::InvalidateInitialStyle();
+  Page::PlatformColorsChanged();
   web_view_->GetPage()->GetSettings().SetForceAndroidOverlayScrollbar(true);
   web_view_->GetPage()->GetSettings().SetViewportStyle(
       WebViewportStyle::kMobile);
@@ -337,6 +336,7 @@ void DevToolsEmulator::DisableMobileEmulation() {
   RuntimeEnabledFeatures::SetMobileLayoutThemeEnabled(
       is_mobile_layout_theme_enabled_);
   ComputedStyle::InvalidateInitialStyle();
+  Page::PlatformColorsChanged();
   web_view_->GetPage()->GetSettings().SetForceAndroidOverlayScrollbar(false);
   web_view_->GetPage()->GetSettings().SetViewportEnabled(false);
   web_view_->GetPage()->GetSettings().SetViewportMetaEnabled(false);
@@ -363,12 +363,12 @@ void DevToolsEmulator::DisableMobileEmulation() {
 }
 
 TransformationMatrix DevToolsEmulator::ForceViewport(
-    const WebFloatPoint& position,
+    const gfx::PointF& position,
     float scale) {
   if (!viewport_override_)
     viewport_override_ = ViewportOverride();
 
-  viewport_override_->position = FloatPoint(position.x, position.y);
+  viewport_override_->position = FloatPoint(position);
   viewport_override_->scale = scale;
 
   // Move the correct (scaled) content area to show in the top left of the
@@ -402,9 +402,9 @@ void DevToolsEmulator::ApplyViewportOverride(TransformationMatrix* transform) {
       web_view_->MainFrame()->IsWebLocalFrame()
           ? web_view_->MainFrame()->ToWebLocalFrame()->GetScrollOffset()
           : WebSize();
-  WebFloatPoint visual_offset = web_view_->VisualViewportOffset();
-  float scroll_x = scroll_offset.width + visual_offset.x;
-  float scroll_y = scroll_offset.height + visual_offset.y;
+  gfx::PointF visual_offset = web_view_->VisualViewportOffset();
+  float scroll_x = scroll_offset.width + visual_offset.x();
+  float scroll_y = scroll_offset.height + visual_offset.y();
   transform->Translate(-viewport_override_->position.X() + scroll_x,
                        -viewport_override_->position.Y() + scroll_y);
 
@@ -423,15 +423,19 @@ TransformationMatrix DevToolsEmulator::ComputeRootLayerTransform() {
   return transform;
 }
 
-void DevToolsEmulator::OverrideVisibleRect(const IntSize& viewport_size,
-                                           IntRect* visible_rect) const {
-  if (!viewport_override_)
+void DevToolsEmulator::OverrideVisibleRect(
+    const IntSize& viewport_size,
+    IntRect* visible_rect_in_frame) const {
+  WebLocalFrameImpl* frame = web_view_->MainFrameImpl();
+  if (!viewport_override_ || !frame)
     return;
 
   FloatSize scaled_viewport_size(viewport_size);
   scaled_viewport_size.Scale(1. / viewport_override_->scale);
-  *visible_rect = EnclosingIntRect(
+  IntRect visible_rect_in_document = EnclosingIntRect(
       FloatRect(viewport_override_->position, scaled_viewport_size));
+  *visible_rect_in_frame =
+      frame->GetFrameView()->DocumentToFrame(visible_rect_in_document);
 }
 
 float DevToolsEmulator::InputEventsScaleForEmulation() {

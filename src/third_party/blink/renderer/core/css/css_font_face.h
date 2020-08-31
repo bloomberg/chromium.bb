@@ -80,9 +80,14 @@ class CORE_EXPORT CSSFontFace final : public GarbageCollected<CSSFontFace> {
   void Load();
   void Load(const FontDescription&);
 
+  // Recalculate the font loading timeline period for the font face.
+  // https://drafts.csswg.org/css-fonts-4/#font-display-timeline
+  // Returns true if the display period is changed.
+  bool UpdatePeriod();
+
   bool HadBlankText() { return IsValid() && sources_.front()->HadBlankText(); }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void SetLoadStatus(FontFace::LoadStatusType);

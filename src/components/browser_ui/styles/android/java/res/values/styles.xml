@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<!-- TODO(crbug.com/1017190): Remove the UnusedResources workaround. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
+    <!-- Theme shared between Chrome and embedders. -->
+    <style name="Theme.BrowserUI" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Text colors -->
+        <item name="android:textColorLink">@color/default_text_color_link</item>
+        <item name="android:textColorHighlight">@color/text_highlight_color</item>
+
+        <!-- Color of checkboxes, switches, buttons, etc. -->
+        <item name="colorAccent">@color/default_control_color_active</item>
+        <item name="colorControlNormal">@color/control_normal_color</item>
+        <item name="colorControlActivated">@color/default_control_color_active</item>
+        <item name="colorControlHighlight">@color/control_highlight_color</item>
+    </style>
+
+    <!-- Basic theme for an overflow menu displayed in Chrome. -->
+    <style name="Base.OverflowMenuThemeOverlay" parent="Theme.AppCompat.DayNight">
+        <item name="android:popupBackground">@null</item>
+        <item name="android:listDivider">@null</item>
+        <item name="android:listPreferredItemHeightSmall">48dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.TextLarge.Primary</item>
+        <item name="colorControlHighlight">@color/control_highlight_color</item>
+    </style>
+    <style name="OverflowMenuThemeOverlay" parent="Base.OverflowMenuThemeOverlay" />
+
+    <!-- AlertDialog styles -->
+    <style name="Base.Theme.Chromium.AlertDialog" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+        <item name="android:textColorPrimary">@color/default_text_color</item>
+        <item name="android:windowBackground">@drawable/popup_bg_tinted</item>
+        <item name="android:windowTitleStyle">@style/TextAppearance.AlertDialogTitleStyle</item>
+        <item name="android:textColorHighlight">@color/text_highlight_color</item>
+
+        <!--  Overriding AppCompat values -->
+        <item name="colorAccent">@color/default_control_color_active</item>
+        <item name="colorControlActivated">@color/default_control_color_active</item>
+        <item name="colorControlNormal">@color/control_normal_color</item>
+        <item name="colorControlHighlight">@color/control_highlight_color</item>
+        <item name="colorPrimary">@color/default_control_color_active</item>
+        <item name="buttonBarButtonStyle">@style/AlertDialogButtonStyle</item>
+        <item name="spinnerStyle">@style/SpinnerStyle</item>
+    </style>
+
+    <style name="Theme.Chromium.AlertDialog" parent="Base.Theme.Chromium.AlertDialog" />
+
+    <style name="Theme.Chromium.AlertDialog.NoActionBar">
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+    </style>
+
+    <style name="AlertDialogButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textAppearance">@style/TextAppearance.Button.Text.Blue</item>
+    </style>
+
+    <!-- Styled to match BlackHeadline but setup to override values in the app compat parent theme.
+         Note that the fontFamily doesn't get applied on older versions of Android.
+         See https://crbug.com/918697.-->
+    <style name="TextAppearance.AlertDialogTitleStyle"
+        parent="RtlOverlay.DialogWindowTitle.AppCompat">
+        <item name="android:textColor">@color/default_text_color_list</item>
+        <item name="android:textSize">@dimen/headline_size</item>
+        <item name="android:fontFamily">@font/accent_font</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="AlertDialogContent">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:paddingStart">@dimen/dialog_padding_sides</item>
+        <item name="android:paddingEnd">@dimen/dialog_padding_sides</item>
+        <item name="android:paddingTop">@dimen/dialog_padding_top</item>
+    </style>
+    <style name="AlertDialogSummaryViewItem" parent="@android:style/TextAppearance.Small">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:paddingTop">10dp</item>
+    </style>
+
+    <!-- Spinner styles -->
+    <style name="SpinnerStyle" parent="Widget.AppCompat.Spinner">
+        <item name="android:popupBackground">@drawable/popup_bg_tinted</item>
+        <item name="android:popupElevation" tools:targetApi="21">0dp</item>
+    </style>
+
+    <!-- Switch styling for dark theme -->
+    <style name="SwitchCompatDark" >
+        <item name="colorAccent">@color/default_control_color_active_dark</item>
+        <item name="colorControlNormal">@color/default_control_color_normal_dark</item>
+        <item name="colorControlActivated">@color/default_control_color_active_dark</item>
+        <item name="colorControlHighlight">@color/default_control_color_highlight_dark</item>
+        <item name="android:colorForeground">@color/modern_grey_100</item>
+    </style>
+</resources>

@@ -106,7 +106,19 @@ message CloudTokenData {
   optional string instrument_token = 5;
 }
 
+message CardIssuer {
+  enum Issuer {
+    ISSUER_UNKNOWN = 0;
+    // Card where the issuer is Google.
+    GOOGLE = 1;
+  }
+  optional Issuer issuer = 1;
+}
+
 message WalletMaskedCreditCard {
+  reserved 9;
+  reserved "card_class";
+
   enum WalletCardStatus {
     VALID = 0;
     EXPIRED = 1;
@@ -123,13 +135,6 @@ message WalletMaskedCreditCard {
     SWITCH = 7;
     VISA = 8;
     UNIONPAY = 9;
-  }
-
-  enum WalletCardClass {
-    UNKNOWN_CARD_CLASS = 0;
-    CREDIT = 1;
-    DEBIT = 2;
-    PREPAID = 3;
   }
 
   // Server-generated unique ID string. This is opaque to the client.
@@ -154,9 +159,6 @@ message WalletMaskedCreditCard {
   // The WalletPostalAddress.id of the billing address.
   optional string billing_address_id = 8;
 
-  // Card class: credit, debit, or prepaid.
-  optional WalletCardClass card_class = 9;
-
   // Issuing Bank name which is internationalized (e.g. "Chase", "工商银行")
   optional string bank_name = 10;
 
@@ -165,6 +167,12 @@ message WalletMaskedCreditCard {
   // Use WalletCreditCardCloudTokenData instead. This field will be set if
   // a cloud token is available for the instrument.
   optional CloudTokenData cloud_token_data = 11;
+
+  // The card's nickname, if it exists.
+  optional string nickname = 12;
+
+  // Issuer of the card.
+  optional CardIssuer card_issuer = 13;
 }
 
 // Different than an AutofillProfile because this represents some known address

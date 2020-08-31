@@ -55,12 +55,10 @@ class Checkout(object):
     self.root = root
 
   def exists(self):
+    """Check does this checkout already exist on desired location"""
     pass
 
   def init(self):
-    pass
-
-  def sync(self):
     pass
 
   def run(self, cmd, return_stdout=False, **kwargs):
@@ -269,14 +267,14 @@ def run_config_fetch(config, props, aliased=False):
   cmd = [sys.executable, config_path + '.py', 'fetch'] + props
   result = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
 
-  spec = json.loads(result)
+  spec = json.loads(result.decode("utf-8"))
   if 'alias' in spec:
     assert not aliased
     return run_config_fetch(
         spec['alias']['config'], spec['alias']['props'] + props, aliased=True)
   cmd = [sys.executable, config_path + '.py', 'root']
   result = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
-  root = json.loads(result)
+  root = json.loads(result.decode("utf-8"))
   return spec, root
 
 

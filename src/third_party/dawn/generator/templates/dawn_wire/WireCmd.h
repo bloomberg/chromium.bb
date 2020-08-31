@@ -20,14 +20,16 @@
 namespace dawn_wire {
 
     using ObjectId = uint32_t;
-    using ObjectSerial = uint32_t;
+    using ObjectGeneration = uint32_t;
     struct ObjectHandle {
       ObjectId id;
-      ObjectSerial serial;
+      ObjectGeneration generation;
 
       ObjectHandle();
-      ObjectHandle(ObjectId id, ObjectSerial serial);
+      ObjectHandle(ObjectId id, ObjectGeneration generation);
+
       ObjectHandle(const volatile ObjectHandle& rhs);
+      ObjectHandle& operator=(const volatile ObjectHandle& rhs);
 
       // MSVC has a bug where it thinks the volatile copy assignment is a duplicate.
       // Workaround this by forwarding to a different function AssignFrom.
@@ -100,7 +102,7 @@ namespace dawn_wire {
         //* Serialize the structure and everything it points to into serializeBuffer which must be
         //* big enough to contain all the data (as queried from GetRequiredSize).
         void Serialize(char* serializeBuffer
-            {%- if command.has_dawn_object -%}
+            {%- if command.may_have_dawn_object -%}
                 , const ObjectIdProvider& objectIdProvider
             {%- endif -%}
         ) const;
@@ -113,7 +115,7 @@ namespace dawn_wire {
         //*  - Success if everything went well (yay!)
         //*  - FatalError is something bad happened (buffer too small for example)
         DeserializeResult Deserialize(const volatile char** buffer, size_t* size, DeserializeAllocator* allocator
-            {%- if command.has_dawn_object -%}
+            {%- if command.may_have_dawn_object -%}
                 , const ObjectIdResolver& resolver
             {%- endif -%}
         );

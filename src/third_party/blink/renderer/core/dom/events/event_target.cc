@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/js_based_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/events/event_target_impl.h"
@@ -179,7 +180,7 @@ void CountFiringEventListeners(const Event& event,
   }
   if (CheckTypeThenUseCount(event, event_type_names::kPointerdown,
                             WebFeature::kPointerDownFired, document)) {
-    if (event.IsPointerEvent() &&
+    if (IsA<PointerEvent>(event) &&
         static_cast<const PointerEvent&>(event).pointerType() == "touch") {
       UseCounter::Count(document, WebFeature::kPointerDownFiredForTouch);
     }
@@ -212,24 +213,11 @@ void CountFiringEventListeners(const Event& event,
                               counted_event.feature, document))
       return;
   }
-
-  if (event.eventPhase() == Event::kCapturingPhase ||
-      event.eventPhase() == Event::kBubblingPhase) {
-    if (CheckTypeThenUseCount(
-            event, event_type_names::kDOMNodeRemoved,
-            WebFeature::kDOMNodeRemovedEventListenedAtNonTarget, document))
-      return;
-    if (CheckTypeThenUseCount(
-            event, event_type_names::kDOMNodeRemovedFromDocument,
-            WebFeature::kDOMNodeRemovedFromDocumentEventListenedAtNonTarget,
-            document))
-      return;
-  }
 }
 
 void RegisterWithScheduler(ExecutionContext* execution_context,
                            const AtomicString& event_type) {
-  if (!execution_context)
+  if (!execution_context || !execution_context->GetScheduler())
     return;
   // TODO(altimin): Ideally we would also support tracking unregistration of
   // event listeners, but we don't do this for performance reasons.
@@ -311,9 +299,7 @@ EventTarget* EventTarget::Create(ScriptState* script_state) {
 }
 
 inline LocalDOMWindow* EventTarget::ExecutingWindow() {
-  if (ExecutionContext* context = GetExecutionContext())
-    return context->ExecutingWindow();
-  return nullptr;
+  return DynamicTo<LocalDOMWindow>(GetExecutionContext());
 }
 
 bool EventTarget::IsTopLevelNode() {
@@ -354,8 +340,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
     }
   }
 
-  if (RuntimeEnabledFeatures::PassiveDocumentEventListenersEnabled() &&
-      IsTouchScrollBlockingEvent(event_type)) {
+  if (IsTouchScrollBlockingEvent(event_type)) {
     if (!options->hasPassive() && IsTopLevelNode()) {
       options->setPassive(true);
       options->SetPassiveForcedForDocumentTarget(true);
@@ -378,11 +363,9 @@ void EventTarget::SetDefaultAddEventListenerOptions(
             executing_window->document(),
             WebFeature::kAddDocumentLevelPassiveDefaultWheelEventListener);
       }
-      if (RuntimeEnabledFeatures::PassiveDocumentWheelEventListenersEnabled()) {
-        options->setPassive(true);
-        options->SetPassiveForcedForDocumentTarget(true);
-        return;
-      }
+      options->setPassive(true);
+      options->SetPassiveForcedForDocumentTarget(true);
+      return;
     }
   }
 
@@ -410,7 +393,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
                           WebFeature::kSmoothScrollJSInterventionActivated);
 
         executing_window->GetFrame()->Console().AddMessage(
-            ConsoleMessage::Create(
+            MakeGarbageCollected<ConsoleMessage>(
                 mojom::ConsoleMessageSource::kIntervention,
                 mojom::ConsoleMessageLevel::kWarning,
                 "Registering mousewheel event as passive due to "

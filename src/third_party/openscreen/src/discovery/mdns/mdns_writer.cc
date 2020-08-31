@@ -6,7 +6,8 @@
 
 #include "absl/hash/hash.h"
 #include "absl/strings/ascii.h"
-#include "util/logging.h"
+#include "util/hashing.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace discovery {
@@ -14,25 +15,14 @@ namespace discovery {
 namespace {
 
 std::vector<uint64_t> ComputeDomainNameSubhashes(const DomainName& name) {
-  // Based on absl Hash128to64 that combines two 64-bit hashes into one
-  auto hash_combiner = [](uint64_t seed, const std::string& value) -> uint64_t {
-    static const uint64_t kMultiplier = UINT64_C(0x9ddfea08eb382d69);
-    const uint64_t hash_value = absl::Hash<std::string>{}(value);
-    uint64_t a = (hash_value ^ seed) * kMultiplier;
-    a ^= (a >> 47);
-    uint64_t b = (seed ^ a) * kMultiplier;
-    b ^= (b >> 47);
-    b *= kMultiplier;
-    return b;
-  };
-
   const std::vector<std::string>& labels = name.labels();
   // Use a large prime between 2^63 and 2^64 as a starting value.
   // This is taken from absl::Hash implementation.
   uint64_t hash_value = UINT64_C(0xc3a5c85c97cb3127);
   std::vector<uint64_t> subhashes(labels.size());
   for (size_t i = labels.size(); i-- > 0;) {
-    hash_value = hash_combiner(hash_value, absl::AsciiStrToLower(labels[i]));
+    hash_value =
+        ComputeAggregateHash(hash_value, absl::AsciiStrToLower(labels[i]));
     subhashes[i] = hash_value;
   }
   return subhashes;
@@ -201,6 +191,17 @@ bool MdnsWriter::Write(const TxtRecordRdata& rdata) {
   return true;
 }
 
+bool MdnsWriter::Write(const NsecRecordRdata& rdata) {
+  Cursor cursor(this);
+  if (Skip(sizeof(uint16_t)) && Write(rdata.next_domain_name()) &&
+      Write(rdata.encoded_types()) &&
+      UpdateRecordLength(current(), cursor.origin())) {
+    cursor.Commit();
+    return true;
+  }
+  return false;
+}
+
 bool MdnsWriter::Write(const MdnsRecord& record) {
   Cursor cursor(this);
   if (Write(record.name()) && Write(static_cast<uint16_t>(record.dns_type())) &&
@@ -229,7 +230,7 @@ bool MdnsWriter::Write(const MdnsMessage& message) {
   Cursor cursor(this);
   Header header;
   header.id = message.id();
-  header.flags = MakeFlags(message.type());
+  header.flags = MakeFlags(message.type(), message.is_truncated());
   header.question_count = message.questions().size();
   header.answer_count = message.answers().size();
   header.authority_record_count = message.authority_records().size();

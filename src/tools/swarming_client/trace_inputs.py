@@ -18,6 +18,8 @@ information, including the individual child processes and the files accessed
 from the log.
 """
 
+from __future__ import print_function
+
 import codecs
 import csv
 import errno
@@ -41,6 +43,7 @@ tools.force_local_third_party()
 import colorama
 from depot_tools import fix_encoding
 from depot_tools import subcommand
+import six
 
 # pylint: disable=ungrouped-imports
 from utils import file_path
@@ -99,7 +102,7 @@ if sys.platform == 'win32':
     """Splits a commandline into argv using CommandLineToArgvW()."""
     # http://msdn.microsoft.com/library/windows/desktop/bb776391.aspx
     size = c_int()
-    assert isinstance(command_line, unicode)
+    assert isinstance(command_line, six.text_type)
     ptr = windll.shell32.CommandLineToArgvW(command_line, byref(size))
     try:
       return [arg for arg in (c_wchar_p * size.value).from_address(ptr)]
@@ -284,15 +287,13 @@ def strace_process_quoted_arguments(text):
 
 def assert_is_renderable(pseudo_string):
   """Asserts the input is a valid object to be processed by render()."""
-  assert (
-      pseudo_string is None or
-      isinstance(pseudo_string, unicode) or
-      hasattr(pseudo_string, 'render')), repr(pseudo_string)
+  assert (pseudo_string is None or isinstance(pseudo_string, six.text_type) or
+          hasattr(pseudo_string, 'render')), repr(pseudo_string)
 
 
 def render(pseudo_string):
   """Converts the pseudo-string to an unicode string."""
-  if pseudo_string is None or isinstance(pseudo_string, unicode):
+  if pseudo_string is None or isinstance(pseudo_string, six.text_type):
     return pseudo_string
   return pseudo_string.render()
 
@@ -375,7 +376,7 @@ class Results(object):
 
       If a variable replacement occurs, the cloned object becomes tainted.
       """
-      for variable, root_path in variables.iteritems():
+      for variable, root_path in variables.items():
         if self.path.startswith(root_path):
           return self._clone(
               self.root, variable + self.path[len(root_path):], True)
@@ -639,7 +640,7 @@ class ApiBase(object):
         # instances. It is important to do it first since there could still be
         # multiple entries with the same path but different modes.
         rendered = (
-            fix_and_blacklist_path(f, m) for f, m in self.files.iteritems())
+            fix_and_blacklist_path(f, m) for f, m in self.files.items())
         files = sorted(
           (f for f in rendered if f[0]),
           key=lambda x: (x[0], Results.File.ACCEPTABLE_MODES.index(x[1])))
@@ -647,7 +648,7 @@ class ApiBase(object):
         # important values.
         files = [
           Results.File(None, f, False, None, m)
-          for f, m in dict(files).iteritems()
+          for f, m in dict(files).items()
         ]
         return Results.Process(
             self.pid,
@@ -895,9 +896,8 @@ class Strace(ApiBase):
         def __init__(self, parent, value):
           assert_is_renderable(parent)
           self.parent = parent
-          assert (
-              value is None or
-              (isinstance(value, unicode) and not os.path.isabs(value)))
+          assert (value is None or (isinstance(value, six.text_type) and
+                                    not os.path.isabs(value)))
           self.value = value
           if self.value:
             # TODO(maruel): On POSIX, '\\' is a valid character so remove this
@@ -933,7 +933,7 @@ class Strace(ApiBase):
         self._pending_calls = {}
         self._line_number = 0
         # Current directory when the process started.
-        if isinstance(self._root(), unicode):
+        if isinstance(self._root(), six.text_type):
           self.initial_cwd = self._root()
         else:
           self.initial_cwd = self.RelativePath(self._root(), None)
@@ -1130,7 +1130,7 @@ class Strace(ApiBase):
           filepath = args[0][1:-1]
           if os.path.isabs(filepath):
             logging.debug('handle_chdir(%d, %s)' % (self.pid, self.cwd))
-            if not isinstance(self.cwd, unicode):
+            if not isinstance(self.cwd, six.text_type):
               # Take the occasion to reset the path.
               self.cwd = self._mangle(filepath)
             else:
@@ -1301,7 +1301,7 @@ class Strace(ApiBase):
         if os.path.isabs(filepath):
           return filepath
         else:
-          if isinstance(self.get_cwd(), unicode):
+          if isinstance(self.get_cwd(), six.text_type):
             return os.path.normpath(os.path.join(self.get_cwd(), filepath))
           return self.RelativePath(self.get_cwd(), filepath)
 
@@ -1332,7 +1332,7 @@ class Strace(ApiBase):
       if not self.root_pid:
         # The non-sudo case. The traced process was started by strace itself,
         # so the pid of the traced process is not known.
-        root = [p for p in self._process_lookup.itervalues() if not p.parentid]
+        root = [p for p in self._process_lookup.values() if not p.parentid]
         if len(root) == 1:
           self.root_process = root[0]
           # Save it for later.
@@ -1620,14 +1620,14 @@ class Dtrace(ApiBase):
       logging.info(
           '%s(%d, %s)' % (self.__class__.__name__, thunk_pid, initial_cwd))
       super(Dtrace.Context, self).__init__(blacklist)
-      assert isinstance(initial_cwd, unicode), initial_cwd
+      assert isinstance(initial_cwd, six.text_type), initial_cwd
       # Process ID of the temporary script created by create_subprocess_thunk().
       self._thunk_pid = thunk_pid
       self._initial_cwd = initial_cwd
       self._line_number = 0
 
     def on_line(self, line):
-      assert isinstance(line, unicode), line
+      assert isinstance(line, six.text_type), line
       self._line_number += 1
       match = self.RE_HEADER.match(line)
       if not match:
@@ -2338,7 +2338,7 @@ class Dtrace(ApiBase):
 
         if self._dtrace.returncode != 0:
           # Warn about any dtrace failure but basically ignore it.
-          print 'dtrace failure: %s' % self._dtrace.returncode
+          print('dtrace failure: %s' % self._dtrace.returncode)
       finally:
         os.close(self._dummy_file_id)
         fs.remove(self._dummy_file_name)
@@ -2774,8 +2774,8 @@ class LogmanTrace(ApiBase):
       csv.reader() fails to read them properly, it mangles file names quoted
       with "" with a comma in it.
       """
-        # 0. Had a ',' or one of the following ' ' after a comma, next should
-        # be ' ', '"' or string or ',' for an empty field.
+      # 0. Had a ',' or one of the following ' ' after a comma, next should
+      # be ' ', '"' or string or ',' for an empty field.
       (HAD_DELIMITER,
        # 1. Processing an unquoted field up to ','.
        IN_STR,
@@ -2929,10 +2929,11 @@ class LogmanTrace(ApiBase):
             stderr=subprocess.STDOUT)
       except subprocess.CalledProcessError, e:
         if e.returncode == -2147024891:
-          print >> sys.stderr, 'Please restart with an elevated admin prompt'
+          print('Please restart with an elevated admin prompt', file=sys.stderr)
         elif e.returncode == -2144337737:
-          print >> sys.stderr, (
-              'A kernel trace was already running, stop it and try again')
+          print(
+              'A kernel trace was already running, stop it and try again',
+              file=sys.stderr)
         raise
 
     def trace(self, cmd, cwd, tracename, output):
@@ -3087,7 +3088,7 @@ class LogmanTrace(ApiBase):
       # memory for large trace. use a csv file as a workaround since the json
       # parser requires a complete in-memory file.
       path = os.path.join(
-          unicode(os.getcwd()), u'%s.preprocessed' % self._logname)
+          six.text_type(os.getcwd()), u'%s.preprocessed' % self._logname)
       with fs.open(path, 'wb') as f:
         # $ and * can't be used in file name on windows, reducing the likelihood
         # of having to escape a string.
@@ -3278,14 +3279,14 @@ def extract_directories(root_dir, files, blacklist):
         root_dir,
         directory[root_prefix:],
         False,
-        sum(f.size for f in buckets[directory].itervalues()),
-        sum(f.nb_files for f in buckets[directory].itervalues()))
+        sum(f.size for f in buckets[directory].values()),
+        sum(f.nb_files for f in buckets[directory].values()))
       # Remove the whole bucket.
       del buckets[directory]
 
   # Reverse the mapping with what remains. The original instances are returned,
   # so the cached meta data is kept.
-  files = sum((x.values() for x in buckets.itervalues()), [])
+  files = sum((x.values() for x in buckets.values()), [])
   return sorted(files, key=lambda x: x.path)
 
 
@@ -3371,7 +3372,7 @@ def CMDread(parser, args):
 
   if options.root_dir:
     options.root_dir = file_path.get_native_path_case(
-        unicode(os.path.abspath(options.root_dir)))
+        six.text_type(os.path.abspath(options.root_dir)))
 
   variables = dict(options.variables)
   api = get_api()
@@ -3383,9 +3384,10 @@ def CMDread(parser, args):
     for item in data:
       if 'exception' in item:
         # Do not abort the other traces.
-        print >> sys.stderr, (
-            'Trace %s: Got an exception: %s' % (
-              item['trace'], item['exception'][1]))
+        print(
+            'Trace %s: Got an exception: %s' % (item['trace'],
+                                                item['exception'][1]),
+            file=sys.stderr)
         continue
       results = item['results']
       if options.root_dir:
@@ -3444,7 +3446,7 @@ class OptionParserTraceInputs(logging_utils.OptionParserWithLogging):
         self, *args, **kwargs)
     if not options.log:
       self.error('Must supply a log file with -l')
-    options.log = unicode(os.path.abspath(options.log))
+    options.log = six.text_type(os.path.abspath(options.log))
     return options, args
 
 

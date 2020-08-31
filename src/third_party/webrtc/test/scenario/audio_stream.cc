@@ -79,7 +79,7 @@ SendAudioStream::SendAudioStream(
   SdpAudioFormat::Parameters sdp_params;
   if (config.source.channels == 2)
     sdp_params["stereo"] = "1";
-  if (config.encoder.initial_frame_length != TimeDelta::ms(20))
+  if (config.encoder.initial_frame_length != TimeDelta::Millis(20))
     sdp_params["ptime"] =
         std::to_string(config.encoder.initial_frame_length.ms());
   if (config.encoder.enable_dtx)
@@ -96,8 +96,9 @@ SendAudioStream::SendAudioStream(
   if (config.encoder.fixed_rate)
     send_config.send_codec_spec->target_bitrate_bps =
         config.encoder.fixed_rate->bps();
-
-  if (config.network_adaptation) {
+  if (!config.adapt.binary_proto.empty()) {
+    send_config.audio_network_adaptor_config = config.adapt.binary_proto;
+  } else if (config.network_adaptation) {
     send_config.audio_network_adaptor_config =
         CreateAdaptationString(config.adapt);
   }
@@ -152,7 +153,7 @@ void SendAudioStream::Stop() {
 }
 
 void SendAudioStream::SetMuted(bool mute) {
-  send_stream_->SetMuted(mute);
+  sender_->SendTask([this, mute] { send_stream_->SetMuted(mute); });
 }
 
 ColumnPrinter SendAudioStream::StatsPrinter() {

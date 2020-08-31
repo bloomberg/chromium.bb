@@ -17,8 +17,15 @@
 #include "cast/common/certificate/proto/revocation.pb.h"
 #include "platform/base/macros.h"
 
+namespace openscreen {
 namespace cast {
-namespace certificate {
+
+// TODO(crbug.com/openscreen/90): Remove these after Chromium is migrated to
+// openscreen::cast
+using CrlBundle = ::cast::certificate::CrlBundle;
+using Crl = ::cast::certificate::Crl;
+using TbsCrl = ::cast::certificate::TbsCrl;
+using SerialNumberRange = ::cast::certificate::SerialNumberRange;
 
 // This class represents the certificate revocation list information parsed from
 // the binary in a protobuf message.
@@ -81,7 +88,7 @@ std::unique_ptr<CastCRL> ParseAndVerifyCRL(const std::string& crl_proto,
                                            const DateTime& time,
                                            TrustStore* trust_store = nullptr);
 
-}  // namespace certificate
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_COMMON_CERTIFICATE_CAST_CRL_H_

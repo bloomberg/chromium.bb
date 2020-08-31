@@ -19,6 +19,9 @@
 // Annotation interface. Because not all platforms use Crashpad yet, a
 // source-compatible interface is provided on top of the older Breakpad
 // storage mechanism.
+//
+// See https://cs.chromium.org/chromium/src/docs/debugging_with_crash_keys.md
+// for more information on using this.
 #if BUILDFLAG(USE_CRASHPAD_ANNOTATION) || BUILDFLAG(USE_COMBINED_ANNOTATIONS)
 #include "third_party/crashpad/crashpad/client/annotation.h"  // nogncheck
 #endif
@@ -72,6 +75,7 @@ using CrashKeyString = crashpad::StringAnnotation<MaxLength>;
 
 namespace internal {
 
+constexpr size_t kCrashKeyStorageKeySize = 40;
 constexpr size_t kCrashKeyStorageNumEntries = 200;
 constexpr size_t kCrashKeyStorageValueSize = 128;
 

@@ -35,9 +35,9 @@ def GetMergesForCommit(sha1):
                   'cherry picked from commit %s' % sha1).splitlines()]
 
 
-def main():
+def main(args):
   parser = optparse.OptionParser(usage=sys.modules[__name__].__doc__)
-  _, args = parser.parse_args()
+  _, args = parser.parse_args(args)
 
   if len(args) == 0:
     parser.error('Need at least one commit.')
@@ -61,7 +61,7 @@ def main():
 
 if __name__ == '__main__':
   try:
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))
   except KeyboardInterrupt:
     sys.stderr.write('interrupted\n')
     sys.exit(1)

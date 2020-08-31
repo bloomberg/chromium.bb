@@ -8,6 +8,7 @@
 #include <sstream>
 
 #include "ash/public/cpp/accelerators.h"
+#include "base/bind.h"
 #include "base/strings/string_piece_forward.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -30,12 +31,15 @@ void PrintValue(std::stringstream* result,
 
 AssistantStateBase::AssistantStateBase() = default;
 
-AssistantStateBase::~AssistantStateBase() = default;
+AssistantStateBase::~AssistantStateBase() {
+  for (auto& observer : observers_)
+    observer.OnAssistantStateDestroyed();
+}
 
 std::string AssistantStateBase::ToString() const {
   std::stringstream result;
-  result << "AssistantState:";
-  result << assistant_state_;
+  result << "AssistantStatus:";
+  result << assistant_status_;
   PRINT_VALUE(settings_enabled);
   PRINT_VALUE(context_enabled);
   PRINT_VALUE(hotword_enabled);
@@ -92,6 +96,10 @@ void AssistantStateBase::RegisterPrefChanges(PrefService* pref_service) {
       chromeos::assistant::prefs::kAssistantNotificationEnabled,
       base::BindRepeating(&AssistantStateBase::UpdateNotificationEnabled,
                           base::Unretained(this)));
+  pref_change_registrar_->Add(
+      chromeos::assistant::prefs::kAssistantQuickAnswersEnabled,
+      base::BindRepeating(&AssistantStateBase::UpdateQuickAnswersEnabled,
+                          base::Unretained(this)));
 
   UpdateConsentStatus();
   UpdateContextEnabled();
@@ -100,6 +108,14 @@ void AssistantStateBase::RegisterPrefChanges(PrefService* pref_service) {
   UpdateHotwordEnabled();
   UpdateLaunchWithMicOpen();
   UpdateNotificationEnabled();
+  UpdateQuickAnswersEnabled();
+}
+
+bool AssistantStateBase::IsScreenContextAllowed() const {
+  return allowed_state() ==
+             chromeos::assistant::AssistantAllowedState::ALLOWED &&
+         settings_enabled().value_or(false) &&
+         context_enabled().value_or(false);
 }
 
 void AssistantStateBase::InitializeObserver(AssistantStateObserver* observer) {
@@ -117,13 +133,10 @@ void AssistantStateBase::InitializeObserver(AssistantStateObserver* observer) {
     observer->OnAssistantLaunchWithMicOpen(launch_with_mic_open_.value());
   if (notification_enabled_.has_value())
     observer->OnAssistantNotificationEnabled(notification_enabled_.value());
+  if (quick_answers_enabled_.has_value())
+    observer->OnAssistantQuickAnswersEnabled(quick_answers_enabled_.value());
 
-  InitializeObserverMojom(observer);
-}
-
-void AssistantStateBase::InitializeObserverMojom(
-    mojom::AssistantStateObserver* observer) {
-  observer->OnAssistantStatusChanged(assistant_state_);
+  observer->OnAssistantStatusChanged(assistant_status_);
   if (allowed_state_.has_value())
     observer->OnAssistantFeatureAllowedChanged(allowed_state_.value());
   if (locale_.has_value())
@@ -216,14 +229,15 @@ void AssistantStateBase::UpdateNotificationEnabled() {
     observer.OnAssistantNotificationEnabled(notification_enabled_.value());
 }
 
-void AssistantStateBase::UpdateAssistantStatus(mojom::AssistantState state) {
-  assistant_state_ = state;
+void AssistantStateBase::UpdateAssistantStatus(
+    chromeos::assistant::AssistantStatus status) {
+  assistant_status_ = status;
   for (auto& observer : observers_)
-    observer.OnAssistantStatusChanged(assistant_state_);
+    observer.OnAssistantStatusChanged(assistant_status_);
 }
 
 void AssistantStateBase::UpdateFeatureAllowedState(
-    mojom::AssistantAllowedState state) {
+    chromeos::assistant::AssistantAllowedState state) {
   allowed_state_ = state;
   for (auto& observer : observers_)
     observer.OnAssistantFeatureAllowedChanged(allowed_state_.value());
@@ -247,6 +261,18 @@ void AssistantStateBase::UpdateLockedFullScreenState(bool enabled) {
     observer.OnLockedFullScreenStateChanged(
         locked_full_screen_enabled_.value());
   }
+}
+
+void AssistantStateBase::UpdateQuickAnswersEnabled() {
+  auto quick_answers_enabled = pref_change_registrar_->prefs()->GetBoolean(
+      chromeos::assistant::prefs::kAssistantQuickAnswersEnabled);
+  if (quick_answers_enabled_.has_value() &&
+      quick_answers_enabled_.value() == quick_answers_enabled) {
+    return;
+  }
+  quick_answers_enabled_ = quick_answers_enabled;
+  for (auto& observer : observers_)
+    observer.OnAssistantQuickAnswersEnabled(quick_answers_enabled_.value());
 }
 
 }  // namespace ash

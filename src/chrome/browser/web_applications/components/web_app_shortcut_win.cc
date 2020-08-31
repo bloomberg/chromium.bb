@@ -10,12 +10,13 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/hash/md5.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -26,6 +27,7 @@
 #include "base/win/shortcut.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/shell_integration_win.h"
+#include "chrome/browser/web_applications/components/web_app_shortcuts_menu_win.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -176,11 +178,6 @@ bool CreateShortcutsInPaths(const base::FilePath& web_app_path,
                             const std::vector<base::FilePath>& shortcut_paths,
                             web_app::ShortcutCreationReason creation_reason,
                             std::vector<base::FilePath>* out_filenames) {
-  // Ensure web_app_path exists.
-  if (!base::PathExists(web_app_path) && !base::CreateDirectory(web_app_path)) {
-    return false;
-  }
-
   // Generates file name to use with persisted ico and shortcut file.
   base::FilePath icon_file =
       web_app::internals::GetIconFilePath(web_app_path, shortcut_info.title);
@@ -340,9 +337,6 @@ void CreateIconAndSetRelaunchDetails(
   ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
                                        shortcut_info.title, hwnd);
 
-  if (!base::PathExists(web_app_path) && !base::CreateDirectory(web_app_path))
-    return;
-
   ui::win::SetAppIconForWindow(icon_file, 0, hwnd);
   web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon, true);
 }
@@ -366,9 +360,9 @@ void OnShortcutInfoLoadedForSetRelaunchDetails(
 
   // Set window's icon to the one we're about to create/update in the web app
   // path. The icon cache will refresh on icon creation.
-  base::FilePath web_app_path =
-      GetWebAppDataDirectory(shortcut_info->profile_path,
-                             shortcut_info->extension_id, shortcut_info->url);
+  base::FilePath web_app_path = GetOsIntegrationResourcesDirectoryForApp(
+      shortcut_info->profile_path, shortcut_info->extension_id,
+      shortcut_info->url);
   base::FilePath icon_file =
       web_app::internals::GetIconFilePath(web_app_path, shortcut_info->title);
 
@@ -382,6 +376,9 @@ bool CheckAndSaveIcon(const base::FilePath& icon_file,
                       bool refresh_shell_icon_cache) {
   if (!ShouldUpdateIcon(icon_file, image))
     return true;
+
+  if (!base::CreateDirectory(icon_file.DirName()))
+    return false;
 
   if (!SaveIconWithCheckSum(icon_file, image))
     return false;
@@ -491,6 +488,9 @@ void DeletePlatformShortcuts(const base::FilePath& web_app_path,
     if (base::IsDirectoryEmpty(chrome_apps_dir))
       base::DeleteFile(chrome_apps_dir, false);
   }
+
+  // Delete downloaded shortcut icons for the web app.
+  web_app::internals::DeleteShortcutsMenuIcons(web_app_path);
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {

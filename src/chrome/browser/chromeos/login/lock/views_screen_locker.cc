@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/dbus/media_perception/media_perception.pb.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
@@ -100,9 +99,7 @@ ViewsScreenLocker::~ViewsScreenLocker() {
 
 void ViewsScreenLocker::Init() {
   lock_time_ = base::TimeTicks::Now();
-  user_selection_screen_->Init(screen_locker_->users());
-  if (!ime_state_.get())
-    ime_state_ = input_method::InputMethodManager::Get()->GetActiveIMEState();
+  user_selection_screen_->Init(screen_locker_->GetUsersToShow());
 
   // Reset Caps Lock state when lock screen is shown.
   input_method::InputMethodManager::Get()->GetImeKeyboard()->SetCapsLockEnabled(
@@ -129,13 +126,6 @@ void ViewsScreenLocker::Init() {
                       base::TimeTicks::Now() - lock_time_);
   screen_locker_->ScreenLockReady();
   lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(this);
-
-  allowed_input_methods_subscription_ =
-      CrosSettings::Get()->AddSettingsObserver(
-          kDeviceLoginScreenInputMethods,
-          base::Bind(&ViewsScreenLocker::OnAllowedInputMethodsChanged,
-                     base::Unretained(this)));
-  OnAllowedInputMethodsChanged();
 }
 
 void ViewsScreenLocker::ShowErrorMessage(
@@ -221,30 +211,13 @@ void ViewsScreenLocker::HandleHardlockPod(const AccountId& account_id) {
 }
 
 void ViewsScreenLocker::HandleOnFocusPod(const AccountId& account_id) {
-  proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(account_id);
-  if (user_selection_screen_)
-    user_selection_screen_->CheckUserStatus(account_id);
+  user_selection_screen_->HandleFocusPod(account_id);
 
-  focused_pod_account_id_ = base::Optional<AccountId>(account_id);
-
-  lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
-                                        ime_state_.get());
-  lock_screen_utils::SetKeyboardSettings(account_id);
   WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
-
-  bool use_24hour_clock = false;
-  if (user_manager::known_user::GetBooleanPref(
-          account_id, prefs::kUse24HourClock, &use_24hour_clock)) {
-    g_browser_process->platform_part()
-        ->GetSystemClock()
-        ->SetLastFocusedPodHourClockType(use_24hour_clock ? base::k24HourClock
-                                                          : base::k12HourClock);
-  }
 }
 
 void ViewsScreenLocker::HandleOnNoPodFocused() {
-  focused_pod_account_id_.reset();
-  lock_screen_utils::EnforcePolicyInputMethods(std::string());
+  user_selection_screen_->HandleNoPodFocused();
 }
 
 bool ViewsScreenLocker::HandleFocusLockScreenApps(bool reverse) {
@@ -326,16 +299,6 @@ void ViewsScreenLocker::UpdateChallengeResponseAuthAvailability(
       ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id);
   ash::LoginScreen::Get()->GetModel()->SetChallengeResponseAuthEnabledForUser(
       account_id, enable_challenge_response);
-}
-
-void ViewsScreenLocker::OnAllowedInputMethodsChanged() {
-  if (focused_pod_account_id_) {
-    std::string user_input_method = lock_screen_utils::GetUserLastInputMethod(
-        focused_pod_account_id_->GetUserEmail());
-    lock_screen_utils::EnforcePolicyInputMethods(user_input_method);
-  } else {
-    lock_screen_utils::EnforcePolicyInputMethods(std::string());
-  }
 }
 
 void ViewsScreenLocker::OnPinCanAuthenticate(const AccountId& account_id,

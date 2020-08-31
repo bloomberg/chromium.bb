@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {PageStatus, SyncBrowserProxy, SyncStatus} from 'chrome://settings/settings.js';
+// #import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 /** @implements {settings.SyncBrowserProxy} */
-class TestSyncBrowserProxy extends TestBrowserProxy {
+/* #export */ class TestSyncBrowserProxy extends TestBrowserProxy {
   constructor() {
-    super([
+    const methodNames = [
       'didNavigateAwayFromSyncPage',
       'didNavigateToSyncPage',
       'getPromoImpressionCount',
@@ -19,7 +25,13 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
       'sendSyncPrefsChanged',
       'startSignIn',
       'startSyncingWithEmail',
-    ]);
+    ];
+
+    if (cr.isChromeOS) {
+      methodNames.push('turnOnSync', 'turnOffSync');
+    }
+
+    super(methodNames);
 
     /** @private {number} */
     this.impressionCount_ = 0;
@@ -31,7 +43,8 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
   /** @override */
   getSyncStatus() {
     this.methodCalled('getSyncStatus');
-    return Promise.resolve({signedIn: true, signedInUsername: 'fakeUsername'});
+    return Promise.resolve(/** @type {!settings.SyncStatus} */ (
+        {signedIn: true, signedInUsername: 'fakeUsername'}));
   }
 
   /** @override */
@@ -101,4 +114,25 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
   sendSyncPrefsChanged() {
     this.methodCalled('sendSyncPrefsChanged');
   }
+
+  /** @override */
+  attemptUserExit() {}
+
+  /** @override */
+  openActivityControlsUrl() {}
+
+  /** @override */
+  startKeyRetrieval() {}
+}
+
+if (cr.isChromeOS) {
+  /** @override */
+  TestSyncBrowserProxy.prototype.turnOnSync = function() {
+    this.methodCalled('turnOnSync');
+  };
+
+  /** @override */
+  TestSyncBrowserProxy.prototype.turnOffSync = function() {
+    this.methodCalled('turnOffSync');
+  };
 }

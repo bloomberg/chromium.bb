@@ -40,13 +40,12 @@ class WebGLExtensionScopedContext final {
 
  public:
   explicit WebGLExtensionScopedContext(WebGLExtension*);
-  ~WebGLExtensionScopedContext();
 
   bool IsLost() const { return !context_; }
-  WebGLRenderingContextBase* Context() const { return context_.Get(); }
+  WebGLRenderingContextBase* Context() const { return context_; }
 
  private:
-  Member<WebGLRenderingContextBase> context_;
+  WebGLRenderingContextBase* context_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGLExtensionScopedContext);
 };
@@ -62,7 +61,7 @@ class WebGLExtension : public ScriptWrappable {
 
   bool IsLost() { return !context_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   explicit WebGLExtension(WebGLRenderingContextBase*);

@@ -7,9 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/bind.h"
-#include "base/mac/availability.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
@@ -39,7 +37,7 @@ using base::ASCIIToUTF16;
 // Drop() methods. Out of the required methods of the protocol, only
 // draggingLocation and draggingPasteboard are used.
 @interface MockDraggingInfo : NSObject<NSDraggingInfo> {
-  NSPasteboard* pasteboard_;
+  NSPasteboard* _pasteboard;
 }
 
 @property BOOL animatesToDestination;
@@ -59,7 +57,7 @@ using base::ASCIIToUTF16;
 
 - (instancetype)initWithPasteboard:(NSPasteboard*)pasteboard {
   if ((self = [super init])) {
-    pasteboard_ = pasteboard;
+    _pasteboard = pasteboard;
   }
   return self;
 }
@@ -69,7 +67,7 @@ using base::ASCIIToUTF16;
 }
 
 - (NSPasteboard*)draggingPasteboard {
-  return pasteboard_;
+  return _pasteboard;
 }
 
 - (NSInteger)draggingSequenceNumber {

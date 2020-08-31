@@ -20,17 +20,11 @@ source_set("power_save_blocker") {
     "//services/device/wake_lock:*",
   ]
 
-  sources = [
-    "power_save_blocker.h",
-  ]
+  sources = [ "power_save_blocker.h" ]
 
-  public_deps = [
-    "//services/device/public/mojom",
-  ]
+  public_deps = [ "//services/device/public/mojom" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   if (use_dbus) {
     deps += [ "//dbus" ]
@@ -53,10 +47,7 @@ source_set("power_save_blocker") {
       "//ui/gfx",
     ]
     if (use_x11) {
-      configs += [
-        "//build/config/linux:x11",
-        "//build/config/linux:xscrnsaver",
-      ]
+      configs += [ "//build/config/linux:xscrnsaver" ]
       deps += [ "//ui/gfx/x" ]
     }
   } else if (is_mac) {
@@ -89,9 +80,7 @@ if (is_android) {
       "//services:*",
       "//services/device:*",
     ]
-    java_files = java_sources_needing_jni
-    deps = [
-      "//base:base_java",
-    ]
+    sources = java_sources_needing_jni
+    deps = [ "//base:base_java" ]
   }
 }

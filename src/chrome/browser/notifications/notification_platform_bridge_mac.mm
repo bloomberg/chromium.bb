@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_common.h"
@@ -36,7 +37,7 @@
 #import "chrome/browser/ui/cocoa/notifications/notification_response_builder_mac.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/crash/content/app/crashpad.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -113,7 +114,10 @@ void RecordXPCEvent(XPCConnectionEvent event) {
 base::string16 CreateNotificationTitle(
     const message_center::Notification& notification) {
   base::string16 title;
-  if (notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS) {
+  // Show progress percentage if available. We don't support indeterminate
+  // states on macOS native notifications.
+  if (notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS &&
+      notification.progress() >= 0 && notification.progress() <= 100) {
     title += base::FormatPercent(notification.progress());
     title += base::UTF8ToUTF16(" - ");
   }
@@ -123,10 +127,7 @@ base::string16 CreateNotificationTitle(
 
 bool IsPersistentNotification(
     const message_center::Notification& notification) {
-  // TODO(crbug.com/1007418): Remove this and find a way to show alert style
-  // notifications in 10.15 and above. At least show them as banners until then
-  // as a temporary workaround.
-  if (base::mac::IsAtLeastOS10_15())
+  if (!NotificationPlatformBridgeMac::SupportsAlerts())
     return false;
 
   return notification.never_timeout() ||
@@ -174,6 +175,19 @@ base::string16 CreateNotificationContext(
 
   return etldplusone;
 }
+
+// Implements the version check to determine if alerts are supported. Do not
+// call this method directly as SysInfo::OperatingSystemVersionNumbers might be
+// an expensive call. Instead use NotificationPlatformBridgeMac::SupportsAlerts
+// which caches this value.
+bool SupportsAlertsImpl() {
+  int32_t major, minor, bugfix;
+  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+  // Allow alerts on all versions except 10.15.0, 10.15.1 & 10.15.2.
+  // See crbug.com/1007418 for details.
+  return major != 10 || minor != 15 || bugfix > 2;
+}
+
 }  // namespace
 
 // A Cocoa class that represents the delegate of NSUserNotificationCenter and
@@ -462,6 +476,13 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
   return true;
 }
 
+// static
+bool NotificationPlatformBridgeMac::SupportsAlerts() {
+  // Cache result as SysInfo::OperatingSystemVersionNumbers might be expensive.
+  static bool supports_alerts = SupportsAlertsImpl();
+  return supports_alerts;
+}
+
 // /////////////////////////////////////////////////////////////////////////////
 @implementation NotificationCenterDelegate
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center
@@ -510,44 +531,44 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
 
 @implementation AlertDispatcherImpl {
   // The connection to the XPC server in charge of delivering alerts.
-  base::scoped_nsobject<NSXPCConnection> xpcConnection_;
+  base::scoped_nsobject<NSXPCConnection> _xpcConnection;
 
   // YES if the remote object has had |-setMachExceptionPort:| called
   // since the service was last started, interrupted, or invalidated.
   // If NO, then -serviceProxy will set the exception port.
-  BOOL setExceptionPort_;
+  BOOL _setExceptionPort;
 }
 
 - (instancetype)init {
   if ((self = [super init])) {
-    xpcConnection_.reset([[NSXPCConnection alloc]
+    _xpcConnection.reset([[NSXPCConnection alloc]
         initWithServiceName:
             [NSString
                 stringWithFormat:notification_constants::kAlertXPCServiceName,
                                  [base::mac::OuterBundle() bundleIdentifier]]]);
-    xpcConnection_.get().remoteObjectInterface =
+    _xpcConnection.get().remoteObjectInterface =
         [NSXPCInterface interfaceWithProtocol:@protocol(NotificationDelivery)];
 
-    xpcConnection_.get().interruptionHandler = ^{
+    _xpcConnection.get().interruptionHandler = ^{
       // We will be getting this handler both when the XPC server crashes or
       // when it decides to close the connection.
       LOG(WARNING) << "AlertNotificationService: XPC connection interrupted.";
       RecordXPCEvent(INTERRUPTED);
-      setExceptionPort_ = NO;
+      _setExceptionPort = NO;
     };
 
-    xpcConnection_.get().invalidationHandler = ^{
+    _xpcConnection.get().invalidationHandler = ^{
       // This means that the connection should be recreated if it needs
       // to be used again.
       LOG(WARNING) << "AlertNotificationService: XPC connection invalidated.";
       RecordXPCEvent(INVALIDATED);
-      setExceptionPort_ = NO;
+      _setExceptionPort = NO;
     };
 
-    xpcConnection_.get().exportedInterface =
+    _xpcConnection.get().exportedInterface =
         [NSXPCInterface interfaceWithProtocol:@protocol(NotificationReply)];
-    xpcConnection_.get().exportedObject = self;
-    [xpcConnection_ resume];
+    _xpcConnection.get().exportedObject = self;
+    [_xpcConnection resume];
   }
 
   return self;
@@ -619,15 +640,15 @@ getDisplayedAlertsForProfileId:(NSString*)profileId
 // to going directly through the connection, since this will ensure that the
 // service has its exception port configured for crash reporting.
 - (id<NotificationDelivery>)serviceProxy {
-  id<NotificationDelivery> proxy = [xpcConnection_ remoteObjectProxy];
+  id<NotificationDelivery> proxy = [_xpcConnection remoteObjectProxy];
 
-  if (!setExceptionPort_) {
+  if (!_setExceptionPort) {
     base::mac::ScopedMachSendRight exceptionPort(
         crash_reporter::GetCrashpadClient().GetHandlerMachPort());
     base::scoped_nsobject<CrXPCMachPort> xpcPort(
         [[CrXPCMachPort alloc] initWithMachSendRight:std::move(exceptionPort)]);
     [proxy setMachExceptionPort:xpcPort];
-    setExceptionPort_ = YES;
+    _setExceptionPort = YES;
   }
 
   return proxy;

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "src/wasm/leb-helper.h"
 #include "test/unittests/test-utils.h"
 
 #include "src/init/v8.h"
@@ -38,8 +39,8 @@ static const byte kCodeGetLocal1[] = {kExprLocalGet, 1};
 static const byte kCodeSetLocal0[] = {WASM_SET_LOCAL(0, WASM_ZERO)};
 static const byte kCodeTeeLocal0[] = {WASM_TEE_LOCAL(0, WASM_ZERO)};
 
-static const ValueType kValueTypes[] = {kWasmI32, kWasmI64, kWasmF32, kWasmF64,
-                                        kWasmAnyRef};
+static const ValueType kValueTypes[] = {kWasmI32, kWasmI64,    kWasmF32,
+                                        kWasmF64, kWasmAnyRef, kWasmNullRef};
 static const MachineType machineTypes[] = {
     MachineType::Int8(),   MachineType::Uint8(),  MachineType::Int16(),
     MachineType::Uint16(), MachineType::Int32(),  MachineType::Uint32(),
@@ -109,7 +110,7 @@ class FunctionBodyDecoderTest : public TestWithZone {
   // Prepends local variable declarations and renders nice error messages for
   // verification failures.
   template <typename Code = std::initializer_list<const byte>>
-  void Validate(bool expected_success, FunctionSig* sig, Code&& raw_code,
+  void Validate(bool expected_success, const FunctionSig* sig, Code&& raw_code,
                 AppendEnd append_end = kAppendEnd,
                 const char* message = nullptr) {
     Vector<const byte> code =
@@ -136,20 +137,20 @@ class FunctionBodyDecoderTest : public TestWithZone {
   }
 
   template <typename Code = std::initializer_list<const byte>>
-  void ExpectValidates(FunctionSig* sig, Code&& raw_code,
+  void ExpectValidates(const FunctionSig* sig, Code&& raw_code,
                        AppendEnd append_end = kAppendEnd,
                        const char* message = nullptr) {
     Validate(true, sig, std::forward<Code>(raw_code), append_end, message);
   }
 
   template <typename Code = std::initializer_list<const byte>>
-  void ExpectFailure(FunctionSig* sig, Code&& raw_code,
+  void ExpectFailure(const FunctionSig* sig, Code&& raw_code,
                      AppendEnd append_end = kAppendEnd,
                      const char* message = nullptr) {
     Validate(false, sig, std::forward<Code>(raw_code), append_end, message);
   }
 
-  void TestBinop(WasmOpcode opcode, FunctionSig* success) {
+  void TestBinop(WasmOpcode opcode, const FunctionSig* success) {
     // op(local[0], local[1])
     byte code[] = {WASM_BINOP(opcode, WASM_GET_LOCAL(0), WASM_GET_LOCAL(1))};
     ExpectValidates(success, code);
@@ -171,7 +172,7 @@ class FunctionBodyDecoderTest : public TestWithZone {
     }
   }
 
-  void TestUnop(WasmOpcode opcode, FunctionSig* success) {
+  void TestUnop(WasmOpcode opcode, const FunctionSig* success) {
     TestUnop(opcode, success->GetReturn(), success->GetParam(0));
   }
 
@@ -215,35 +216,36 @@ class TestModuleBuilder {
     CHECK_LE(mod.globals.size(), kMaxByteSizedLeb128);
     return static_cast<byte>(mod.globals.size() - 1);
   }
-  byte AddSignature(FunctionSig* sig) {
-    mod.signatures.push_back(sig);
-    CHECK_LE(mod.signatures.size(), kMaxByteSizedLeb128);
-    return static_cast<byte>(mod.signatures.size() - 1);
+  byte AddSignature(const FunctionSig* sig) {
+    mod.add_signature(sig);
+    CHECK_LE(mod.types.size(), kMaxByteSizedLeb128);
+    return static_cast<byte>(mod.types.size() - 1);
   }
-  byte AddFunction(FunctionSig* sig) {
-    mod.functions.push_back({sig,      // sig
-                             0,        // func_index
-                             0,        // sig_index
-                             {0, 0},   // code
-                             false,    // import
-                             false});  // export
+  byte AddFunction(const FunctionSig* sig, bool declared = true) {
+    mod.functions.push_back({sig,         // sig
+                             0,           // func_index
+                             0,           // sig_index
+                             {0, 0},      // code
+                             false,       // import
+                             false,       // export
+                             declared});  // declared
     CHECK_LE(mod.functions.size(), kMaxByteSizedLeb128);
     return static_cast<byte>(mod.functions.size() - 1);
   }
-  byte AddImport(FunctionSig* sig) {
+  byte AddImport(const FunctionSig* sig) {
     byte result = AddFunction(sig);
     mod.functions[result].imported = true;
     return result;
   }
   byte AddException(WasmExceptionSig* sig) {
     mod.exceptions.emplace_back(sig);
-    CHECK_LE(mod.signatures.size(), kMaxByteSizedLeb128);
+    CHECK_LE(mod.types.size(), kMaxByteSizedLeb128);
     return static_cast<byte>(mod.exceptions.size() - 1);
   }
 
   byte AddTable(ValueType type, uint32_t initial_size, bool has_maximum_size,
                 uint32_t maximum_size) {
-    CHECK(type == kWasmAnyRef || type == kWasmFuncRef);
+    CHECK(type == kWasmAnyRef || type == kWasmFuncRef || type == kWasmNullRef);
     mod.tables.emplace_back();
     WasmTable& table = mod.tables.back();
     table.type = type;
@@ -259,15 +261,26 @@ class TestModuleBuilder {
     mod.maximum_pages = 100;
   }
 
-  void InitializeTable() { mod.tables.emplace_back(); }
+  byte InitializeTable(wasm::ValueType type) {
+    mod.tables.emplace_back();
+    mod.tables.back().type = type;
+    return static_cast<byte>(mod.tables.size() - 1);
+  }
 
-  byte AddPassiveElementSegment() {
-    mod.elem_segments.emplace_back();
+  byte AddPassiveElementSegment(wasm::ValueType type) {
+    mod.elem_segments.emplace_back(false);
     auto& init = mod.elem_segments.back();
+    init.type = type;
     // Add 5 empty elements.
     for (uint32_t j = 0; j < 5; j++) {
       init.entries.push_back(WasmElemSegment::kNullIndex);
     }
+    return static_cast<byte>(mod.elem_segments.size() - 1);
+  }
+
+  byte AddDeclarativeElementSegment() {
+    mod.elem_segments.emplace_back(true);
+    mod.elem_segments.back().entries.push_back(WasmElemSegment::kNullIndex);
     return static_cast<byte>(mod.elem_segments.size() - 1);
   }
 
@@ -296,6 +309,7 @@ TEST_F(FunctionBodyDecoderTest, Int32Const1) {
 TEST_F(FunctionBodyDecoderTest, RefNull) {
   WASM_FEATURE_SCOPE(anyref);
   ExpectValidates(sigs.r_v(), {kExprRefNull});
+  ExpectValidates(sigs.n_v(), {kExprRefNull});
 }
 
 TEST_F(FunctionBodyDecoderTest, RefFunc) {
@@ -386,10 +400,8 @@ TEST_F(FunctionBodyDecoderTest, TooManyLocals) {
 }
 
 TEST_F(FunctionBodyDecoderTest, GetLocal0_param_n) {
-  FunctionSig* array[] = {sigs.i_i(), sigs.i_ii(), sigs.i_iii()};
-
-  for (size_t i = 0; i < arraysize(array); i++) {
-    ExpectValidates(array[i], kCodeGetLocal0);
+  for (const FunctionSig* sig : {sigs.i_i(), sigs.i_ii(), sigs.i_iii()}) {
+    ExpectValidates(sig, kCodeGetLocal0);
   }
 }
 
@@ -1347,17 +1359,16 @@ TEST_F(FunctionBodyDecoderTest, MacrosInt64) {
 }
 
 TEST_F(FunctionBodyDecoderTest, AllSimpleExpressions) {
-  WASM_FEATURE_SCOPE(se);
   WASM_FEATURE_SCOPE(anyref);
 // Test all simple expressions which are described by a signature.
-#define DECODE_TEST(name, opcode, sig)                      \
-  {                                                         \
-    FunctionSig* sig = WasmOpcodes::Signature(kExpr##name); \
-    if (sig->parameter_count() == 1) {                      \
-      TestUnop(kExpr##name, sig);                           \
-    } else {                                                \
-      TestBinop(kExpr##name, sig);                          \
-    }                                                       \
+#define DECODE_TEST(name, opcode, sig)                            \
+  {                                                               \
+    const FunctionSig* sig = WasmOpcodes::Signature(kExpr##name); \
+    if (sig->parameter_count() == 1) {                            \
+      TestUnop(kExpr##name, sig);                                 \
+    } else {                                                      \
+      TestBinop(kExpr##name, sig);                                \
+    }                                                             \
   }
 
   FOREACH_SIMPLE_OPCODE(DECODE_TEST);
@@ -1475,7 +1486,7 @@ TEST_F(FunctionBodyDecoderTest, AllLoadMemCombinations) {
       MachineType mem_type = machineTypes[j];
       byte code[] = {WASM_LOAD_MEM(mem_type, WASM_ZERO)};
       FunctionSig sig(1, 0, &local_type);
-      Validate(local_type == ValueTypes::ValueTypeFor(mem_type), &sig, code);
+      Validate(local_type == ValueType::For(mem_type), &sig, code);
     }
   }
 }
@@ -1490,13 +1501,13 @@ TEST_F(FunctionBodyDecoderTest, AllStoreMemCombinations) {
       MachineType mem_type = machineTypes[j];
       byte code[] = {WASM_STORE_MEM(mem_type, WASM_ZERO, WASM_GET_LOCAL(0))};
       FunctionSig sig(0, 1, &local_type);
-      Validate(local_type == ValueTypes::ValueTypeFor(mem_type), &sig, code);
+      Validate(local_type == ValueType::For(mem_type), &sig, code);
     }
   }
 }
 
 TEST_F(FunctionBodyDecoderTest, SimpleCalls) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1511,7 +1522,7 @@ TEST_F(FunctionBodyDecoderTest, SimpleCalls) {
 }
 
 TEST_F(FunctionBodyDecoderTest, CallsWithTooFewArguments) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1525,7 +1536,7 @@ TEST_F(FunctionBodyDecoderTest, CallsWithTooFewArguments) {
 }
 
 TEST_F(FunctionBodyDecoderTest, CallsWithMismatchedSigs2) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1537,7 +1548,7 @@ TEST_F(FunctionBodyDecoderTest, CallsWithMismatchedSigs2) {
 }
 
 TEST_F(FunctionBodyDecoderTest, CallsWithMismatchedSigs3) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1557,7 +1568,7 @@ TEST_F(FunctionBodyDecoderTest, CallsWithMismatchedSigs3) {
 TEST_F(FunctionBodyDecoderTest, SimpleReturnCalls) {
   WASM_FEATURE_SCOPE(return_call);
 
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1574,7 +1585,7 @@ TEST_F(FunctionBodyDecoderTest, SimpleReturnCalls) {
 TEST_F(FunctionBodyDecoderTest, ReturnCallsWithTooFewArguments) {
   WASM_FEATURE_SCOPE(return_call);
 
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1590,7 +1601,7 @@ TEST_F(FunctionBodyDecoderTest, ReturnCallsWithTooFewArguments) {
 TEST_F(FunctionBodyDecoderTest, ReturnCallsWithMismatchedSigs) {
   WASM_FEATURE_SCOPE(return_call);
 
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1609,7 +1620,7 @@ TEST_F(FunctionBodyDecoderTest, ReturnCallsWithMismatchedSigs) {
 TEST_F(FunctionBodyDecoderTest, SimpleIndirectReturnCalls) {
   WASM_FEATURE_SCOPE(return_call);
 
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   builder.AddTable(kWasmFuncRef, 20, true, 30);
   module = builder.module();
@@ -1628,7 +1639,7 @@ TEST_F(FunctionBodyDecoderTest, SimpleIndirectReturnCalls) {
 TEST_F(FunctionBodyDecoderTest, IndirectReturnCallsOutOfBounds) {
   WASM_FEATURE_SCOPE(return_call);
 
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   builder.AddTable(kWasmFuncRef, 20, false, 20);
   module = builder.module();
@@ -1650,9 +1661,9 @@ TEST_F(FunctionBodyDecoderTest, IndirectReturnCallsOutOfBounds) {
 TEST_F(FunctionBodyDecoderTest, IndirectReturnCallsWithMismatchedSigs3) {
   WASM_FEATURE_SCOPE(return_call);
 
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
-  builder.InitializeTable();
+  builder.InitializeTable(wasm::kWasmStmt);
   module = builder.module();
 
   byte sig0 = builder.AddSignature(sigs.i_f());
@@ -1681,7 +1692,7 @@ TEST_F(FunctionBodyDecoderTest, IndirectReturnCallsWithMismatchedSigs3) {
 TEST_F(FunctionBodyDecoderTest, IndirectReturnCallsWithoutTableCrash) {
   WASM_FEATURE_SCOPE(return_call);
 
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1697,9 +1708,9 @@ TEST_F(FunctionBodyDecoderTest, IndirectReturnCallsWithoutTableCrash) {
 }
 
 TEST_F(FunctionBodyDecoderTest, IncompleteIndirectReturnCall) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
-  builder.InitializeTable();
+  builder.InitializeTable(wasm::kWasmStmt);
   module = builder.module();
 
   static byte code[] = {kExprReturnCallIndirect};
@@ -1739,7 +1750,8 @@ TEST_F(FunctionBodyDecoderTest, MultiReturnType) {
 
           ExpectValidates(&sig_cd_v, {WASM_CALL_FUNCTION0(0)});
 
-          if (a == c && b == d) {
+          if (kValueTypes[c].IsSubTypeOf(kValueTypes[a]) &&
+              kValueTypes[d].IsSubTypeOf(kValueTypes[b])) {
             ExpectValidates(&sig_ab_v, {WASM_CALL_FUNCTION0(0)});
           } else {
             ExpectFailure(&sig_ab_v, {WASM_CALL_FUNCTION0(0)});
@@ -1751,7 +1763,7 @@ TEST_F(FunctionBodyDecoderTest, MultiReturnType) {
 }
 
 TEST_F(FunctionBodyDecoderTest, SimpleIndirectCalls) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   builder.AddTable(kWasmFuncRef, 20, false, 20);
   module = builder.module();
@@ -1767,7 +1779,7 @@ TEST_F(FunctionBodyDecoderTest, SimpleIndirectCalls) {
 }
 
 TEST_F(FunctionBodyDecoderTest, IndirectCallsOutOfBounds) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   builder.AddTable(kWasmFuncRef, 20, false, 20);
   module = builder.module();
@@ -1784,9 +1796,9 @@ TEST_F(FunctionBodyDecoderTest, IndirectCallsOutOfBounds) {
 }
 
 TEST_F(FunctionBodyDecoderTest, IndirectCallsWithMismatchedSigs3) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
-  builder.InitializeTable();
+  builder.InitializeTable(wasm::kWasmStmt);
   module = builder.module();
 
   byte sig0 = builder.AddSignature(sigs.i_f());
@@ -1807,7 +1819,7 @@ TEST_F(FunctionBodyDecoderTest, IndirectCallsWithMismatchedSigs3) {
 }
 
 TEST_F(FunctionBodyDecoderTest, IndirectCallsWithoutTableCrash) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1822,9 +1834,9 @@ TEST_F(FunctionBodyDecoderTest, IndirectCallsWithoutTableCrash) {
 }
 
 TEST_F(FunctionBodyDecoderTest, IncompleteIndirectCall) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
-  builder.InitializeTable();
+  builder.InitializeTable(wasm::kWasmStmt);
   module = builder.module();
 
   static byte code[] = {kExprCallIndirect};
@@ -1832,10 +1844,10 @@ TEST_F(FunctionBodyDecoderTest, IncompleteIndirectCall) {
 }
 
 TEST_F(FunctionBodyDecoderTest, IncompleteStore) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   builder.InitializeMemory();
-  builder.InitializeTable();
+  builder.InitializeTable(wasm::kWasmStmt);
   module = builder.module();
 
   static byte code[] = {kExprI32StoreMem};
@@ -1844,10 +1856,10 @@ TEST_F(FunctionBodyDecoderTest, IncompleteStore) {
 
 TEST_F(FunctionBodyDecoderTest, IncompleteS8x16Shuffle) {
   WASM_FEATURE_SCOPE(simd);
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   builder.InitializeMemory();
-  builder.InitializeTable();
+  builder.InitializeTable(wasm::kWasmStmt);
   module = builder.module();
 
   static byte code[] = {kSimdPrefix,
@@ -1856,7 +1868,7 @@ TEST_F(FunctionBodyDecoderTest, IncompleteS8x16Shuffle) {
 }
 
 TEST_F(FunctionBodyDecoderTest, SimpleImportCalls) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1871,7 +1883,7 @@ TEST_F(FunctionBodyDecoderTest, SimpleImportCalls) {
 }
 
 TEST_F(FunctionBodyDecoderTest, ImportCallsWithMismatchedSigs3) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1891,7 +1903,7 @@ TEST_F(FunctionBodyDecoderTest, ImportCallsWithMismatchedSigs3) {
 }
 
 TEST_F(FunctionBodyDecoderTest, Int32Globals) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1903,7 +1915,7 @@ TEST_F(FunctionBodyDecoderTest, Int32Globals) {
 }
 
 TEST_F(FunctionBodyDecoderTest, ImmutableGlobal) {
-  FunctionSig* sig = sigs.v_v();
+  const FunctionSig* sig = sigs.v_v();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1915,7 +1927,7 @@ TEST_F(FunctionBodyDecoderTest, ImmutableGlobal) {
 }
 
 TEST_F(FunctionBodyDecoderTest, Int32Globals_fail) {
-  FunctionSig* sig = sigs.i_i();
+  const FunctionSig* sig = sigs.i_i();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1936,7 +1948,7 @@ TEST_F(FunctionBodyDecoderTest, Int32Globals_fail) {
 }
 
 TEST_F(FunctionBodyDecoderTest, Int64Globals) {
-  FunctionSig* sig = sigs.l_l();
+  const FunctionSig* sig = sigs.l_l();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1953,7 +1965,7 @@ TEST_F(FunctionBodyDecoderTest, Int64Globals) {
 }
 
 TEST_F(FunctionBodyDecoderTest, Float32Globals) {
-  FunctionSig* sig = sigs.f_ff();
+  const FunctionSig* sig = sigs.f_ff();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1965,7 +1977,7 @@ TEST_F(FunctionBodyDecoderTest, Float32Globals) {
 }
 
 TEST_F(FunctionBodyDecoderTest, Float64Globals) {
-  FunctionSig* sig = sigs.d_dd();
+  const FunctionSig* sig = sigs.d_dd();
   TestModuleBuilder builder;
   module = builder.module();
 
@@ -1985,7 +1997,7 @@ TEST_F(FunctionBodyDecoderTest, AllGetGlobalCombinations) {
       TestModuleBuilder builder;
       module = builder.module();
       builder.AddGlobal(global_type);
-      Validate(local_type == global_type, &sig, {WASM_GET_GLOBAL(0)});
+      Validate(global_type.IsSubTypeOf(local_type), &sig, {WASM_GET_GLOBAL(0)});
     }
   }
 }
@@ -1999,7 +2011,7 @@ TEST_F(FunctionBodyDecoderTest, AllSetGlobalCombinations) {
       TestModuleBuilder builder;
       module = builder.module();
       builder.AddGlobal(global_type);
-      Validate(local_type == global_type, &sig,
+      Validate(local_type.IsSubTypeOf(global_type), &sig,
                {WASM_SET_GLOBAL(0, WASM_GET_LOCAL(0))});
     }
   }
@@ -2013,11 +2025,14 @@ TEST_F(FunctionBodyDecoderTest, TableSet) {
   byte tab_func1 = builder.AddTable(kWasmFuncRef, 20, true, 30);
   byte tab_func2 = builder.AddTable(kWasmFuncRef, 10, false, 20);
   byte tab_ref2 = builder.AddTable(kWasmAnyRef, 10, false, 20);
-  ValueType sig_types[]{kWasmAnyRef, kWasmFuncRef, kWasmI32};
-  FunctionSig sig(0, 3, sig_types);
+  byte tab_null1 = builder.AddTable(kWasmNullRef, 10, true, 20);
+  byte tab_null2 = builder.AddTable(kWasmNullRef, 10, false, 20);
+  ValueType sig_types[]{kWasmAnyRef, kWasmFuncRef, kWasmNullRef, kWasmI32};
+  FunctionSig sig(0, 4, sig_types);
   byte local_ref = 0;
   byte local_func = 1;
-  byte local_int = 2;
+  byte local_null = 2;
+  byte local_int = 3;
   ExpectValidates(&sig, {WASM_TABLE_SET(tab_ref1, WASM_I32V(6),
                                         WASM_GET_LOCAL(local_ref))});
   ExpectValidates(&sig, {WASM_TABLE_SET(tab_func1, WASM_I32V(5),
@@ -2040,12 +2055,42 @@ TEST_F(FunctionBodyDecoderTest, TableSet) {
                                       WASM_GET_LOCAL(local_int))});
   ExpectFailure(&sig, {WASM_TABLE_SET(tab_func1, WASM_I32V(3),
                                       WASM_GET_LOCAL(local_int))});
+
+  // We can store nullref values as funcref or anyref but not the other way
+  // round.
+  ExpectValidates(&sig, {WASM_TABLE_SET(tab_null1, WASM_I32V(3),
+                                        WASM_GET_LOCAL(local_null))});
+  ExpectValidates(&sig, {WASM_TABLE_SET(tab_ref1, WASM_I32V(8),
+                                        WASM_GET_LOCAL(local_null))});
+  ExpectValidates(&sig, {WASM_TABLE_SET(tab_func1, WASM_I32V(8),
+                                        WASM_GET_LOCAL(local_null))});
+  ExpectFailure(&sig, {WASM_TABLE_SET(tab_null1, WASM_I32V(3),
+                                      WASM_GET_LOCAL(local_ref))});
+  ExpectFailure(&sig, {WASM_TABLE_SET(tab_null1, WASM_I32V(3),
+                                      WASM_GET_LOCAL(local_func))});
+  ExpectFailure(&sig, {WASM_TABLE_SET(tab_null1, WASM_I32V(3),
+                                      WASM_GET_LOCAL(local_int))});
+  ExpectValidates(&sig, {WASM_TABLE_SET(tab_null2, WASM_I32V(3),
+                                        WASM_GET_LOCAL(local_null))});
+  ExpectValidates(&sig, {WASM_TABLE_SET(tab_ref2, WASM_I32V(8),
+                                        WASM_GET_LOCAL(local_null))});
+  ExpectValidates(&sig, {WASM_TABLE_SET(tab_func2, WASM_I32V(8),
+                                        WASM_GET_LOCAL(local_null))});
+  ExpectFailure(&sig, {WASM_TABLE_SET(tab_null2, WASM_I32V(3),
+                                      WASM_GET_LOCAL(local_ref))});
+  ExpectFailure(&sig, {WASM_TABLE_SET(tab_null2, WASM_I32V(3),
+                                      WASM_GET_LOCAL(local_func))});
+  ExpectFailure(&sig, {WASM_TABLE_SET(tab_null2, WASM_I32V(3),
+                                      WASM_GET_LOCAL(local_int))});
+
   // Out-of-bounds table index should fail.
   byte oob_tab = 37;
   ExpectFailure(
       &sig, {WASM_TABLE_SET(oob_tab, WASM_I32V(9), WASM_GET_LOCAL(local_ref))});
   ExpectFailure(&sig, {WASM_TABLE_SET(oob_tab, WASM_I32V(3),
                                       WASM_GET_LOCAL(local_func))});
+  ExpectFailure(&sig, {WASM_TABLE_SET(oob_tab, WASM_I32V(3),
+                                      WASM_GET_LOCAL(local_null))});
 }
 
 TEST_F(FunctionBodyDecoderTest, TableGet) {
@@ -2146,7 +2191,7 @@ TEST_F(FunctionBodyDecoderTest, AsmJsBinOpsCheckOrigin) {
   FunctionSig sig_d_id(1, 2, float64int32float64);
   struct {
     WasmOpcode op;
-    FunctionSig* sig;
+    const FunctionSig* sig;
   } AsmJsBinOps[] = {
       {kExprF64Atan2, sigs.d_dd()},
       {kExprF64Pow, sigs.d_dd()},
@@ -2190,7 +2235,7 @@ TEST_F(FunctionBodyDecoderTest, AsmJsUnOpsCheckOrigin) {
   FunctionSig sig_d_i(1, 1, float64int32);
   struct {
     WasmOpcode op;
-    FunctionSig* sig;
+    const FunctionSig* sig;
   } AsmJsUnOps[] = {{kExprF64Acos, sigs.d_d()},
                     {kExprF64Asin, sigs.d_d()},
                     {kExprF64Atan, sigs.d_d()},
@@ -2332,9 +2377,8 @@ TEST_F(FunctionBodyDecoderTest, BreakNesting_6_levels) {
 }
 
 TEST_F(FunctionBodyDecoderTest, Break_TypeCheck) {
-  FunctionSig* sigarray[] = {sigs.i_i(), sigs.l_l(), sigs.f_ff(), sigs.d_dd()};
-  for (size_t i = 0; i < arraysize(sigarray); i++) {
-    FunctionSig* sig = sigarray[i];
+  for (const FunctionSig* sig :
+       {sigs.i_i(), sigs.l_l(), sigs.f_ff(), sigs.d_dd()}) {
     // unify X and X => OK
     byte code[] = {WASM_BLOCK_T(
         sig->GetReturn(), WASM_IF(WASM_ZERO, WASM_BRV(0, WASM_GET_LOCAL(0))),
@@ -2355,6 +2399,7 @@ TEST_F(FunctionBodyDecoderTest, Break_TypeCheck) {
 }
 
 TEST_F(FunctionBodyDecoderTest, Break_TypeCheckAll1) {
+  WASM_FEATURE_SCOPE(anyref);
   for (size_t i = 0; i < arraysize(kValueTypes); i++) {
     for (size_t j = 0; j < arraysize(kValueTypes); j++) {
       ValueType storage[] = {kValueTypes[i], kValueTypes[i], kValueTypes[j]};
@@ -2363,12 +2408,13 @@ TEST_F(FunctionBodyDecoderTest, Break_TypeCheckAll1) {
           sig.GetReturn(), WASM_IF(WASM_ZERO, WASM_BRV(0, WASM_GET_LOCAL(0))),
           WASM_GET_LOCAL(1))};
 
-      Validate(i == j, &sig, code);
+      Validate(kValueTypes[j].IsSubTypeOf(kValueTypes[i]), &sig, code);
     }
   }
 }
 
 TEST_F(FunctionBodyDecoderTest, Break_TypeCheckAll2) {
+  WASM_FEATURE_SCOPE(anyref);
   for (size_t i = 0; i < arraysize(kValueTypes); i++) {
     for (size_t j = 0; j < arraysize(kValueTypes); j++) {
       ValueType storage[] = {kValueTypes[i], kValueTypes[i], kValueTypes[j]};
@@ -2377,12 +2423,13 @@ TEST_F(FunctionBodyDecoderTest, Break_TypeCheckAll2) {
                                     WASM_BRV_IF_ZERO(0, WASM_GET_LOCAL(0)),
                                     WASM_GET_LOCAL(1))};
 
-      Validate(i == j, &sig, code);
+      Validate(kValueTypes[j].IsSubTypeOf(kValueTypes[i]), &sig, code);
     }
   }
 }
 
 TEST_F(FunctionBodyDecoderTest, Break_TypeCheckAll3) {
+  WASM_FEATURE_SCOPE(anyref);
   for (size_t i = 0; i < arraysize(kValueTypes); i++) {
     for (size_t j = 0; j < arraysize(kValueTypes); j++) {
       ValueType storage[] = {kValueTypes[i], kValueTypes[i], kValueTypes[j]};
@@ -2391,7 +2438,7 @@ TEST_F(FunctionBodyDecoderTest, Break_TypeCheckAll3) {
                                     WASM_GET_LOCAL(1),
                                     WASM_BRV_IF_ZERO(0, WASM_GET_LOCAL(0)))};
 
-      Validate(i == j, &sig, code);
+      Validate(kValueTypes[j].IsSubTypeOf(kValueTypes[i]), &sig, code);
     }
   }
 }
@@ -2413,6 +2460,7 @@ TEST_F(FunctionBodyDecoderTest, Break_Unify) {
 }
 
 TEST_F(FunctionBodyDecoderTest, BreakIf_cond_type) {
+  WASM_FEATURE_SCOPE(anyref);
   for (size_t i = 0; i < arraysize(kValueTypes); i++) {
     for (size_t j = 0; j < arraysize(kValueTypes); j++) {
       ValueType types[] = {kValueTypes[i], kValueTypes[i], kValueTypes[j]};
@@ -2426,6 +2474,7 @@ TEST_F(FunctionBodyDecoderTest, BreakIf_cond_type) {
 }
 
 TEST_F(FunctionBodyDecoderTest, BreakIf_val_type) {
+  WASM_FEATURE_SCOPE(anyref);
   for (size_t i = 0; i < arraysize(kValueTypes); i++) {
     for (size_t j = 0; j < arraysize(kValueTypes); j++) {
       ValueType types[] = {kValueTypes[i], kValueTypes[i], kValueTypes[j],
@@ -2435,7 +2484,7 @@ TEST_F(FunctionBodyDecoderTest, BreakIf_val_type) {
           types[1], WASM_BRV_IF(0, WASM_GET_LOCAL(1), WASM_GET_LOCAL(2)),
           WASM_DROP, WASM_GET_LOCAL(0))};
 
-      Validate(i == j, &sig, code);
+      Validate(kValueTypes[j].IsSubTypeOf(kValueTypes[i]), &sig, code);
     }
   }
 }
@@ -2666,7 +2715,7 @@ TEST_F(FunctionBodyDecoderTest, Select_fail2) {
     ValueType type = kValueTypes[i];
     if (type == kWasmI32) continue;
     // Select without specified type is only allowed for number types.
-    if (type == kWasmAnyRef) continue;
+    if (type == kWasmAnyRef || type == kWasmNullRef) continue;
 
     ValueType types[] = {type, kWasmI32, type};
     FunctionSig sig(1, 2, types);
@@ -3114,6 +3163,20 @@ TEST_F(FunctionBodyDecoderTest, DataDrop) {
   ExpectFailure(sigs.v_v(), {WASM_DATA_DROP(1)});
 }
 
+TEST_F(FunctionBodyDecoderTest, DataSegmentIndexUnsigned) {
+  TestModuleBuilder builder;
+  builder.InitializeMemory();
+  builder.SetDataSegmentCount(65);
+  module = builder.module();
+
+  WASM_FEATURE_SCOPE(bulk_memory);
+  // Make sure that the index is interpreted as an unsigned number; 64 is
+  // interpreted as -64 when decoded as a signed LEB.
+  ExpectValidates(sigs.v_v(),
+                  {WASM_MEMORY_INIT(64, WASM_ZERO, WASM_ZERO, WASM_ZERO)});
+  ExpectValidates(sigs.v_v(), {WASM_DATA_DROP(64)});
+}
+
 TEST_F(FunctionBodyDecoderTest, MemoryCopy) {
   TestModuleBuilder builder;
   builder.InitializeMemory();
@@ -3150,8 +3213,8 @@ TEST_F(FunctionBodyDecoderTest, BulkMemoryOpsWithoutMemory) {
 
 TEST_F(FunctionBodyDecoderTest, TableInit) {
   TestModuleBuilder builder;
-  builder.InitializeTable();
-  builder.AddPassiveElementSegment();
+  builder.InitializeTable(wasm::kWasmFuncRef);
+  builder.AddPassiveElementSegment(wasm::kWasmFuncRef);
   module = builder.module();
 
   ExpectFailure(sigs.v_v(),
@@ -3163,10 +3226,22 @@ TEST_F(FunctionBodyDecoderTest, TableInit) {
                 {WASM_TABLE_INIT(0, 1, WASM_ZERO, WASM_ZERO, WASM_ZERO)});
 }
 
+TEST_F(FunctionBodyDecoderTest, TableInitWrongType) {
+  TestModuleBuilder builder;
+  uint32_t table_index = builder.InitializeTable(wasm::kWasmFuncRef);
+  uint32_t element_index = builder.AddPassiveElementSegment(wasm::kWasmAnyRef);
+  module = builder.module();
+
+  WASM_FEATURE_SCOPE(bulk_memory);
+  WASM_FEATURE_SCOPE(anyref);
+  ExpectFailure(sigs.v_v(), {WASM_TABLE_INIT(table_index, element_index,
+                                             WASM_ZERO, WASM_ZERO, WASM_ZERO)});
+}
+
 TEST_F(FunctionBodyDecoderTest, TableInitInvalid) {
   TestModuleBuilder builder;
-  builder.InitializeTable();
-  builder.AddPassiveElementSegment();
+  builder.InitializeTable(wasm::kWasmFuncRef);
+  builder.AddPassiveElementSegment(wasm::kWasmFuncRef);
   module = builder.module();
 
   WASM_FEATURE_SCOPE(bulk_memory);
@@ -3179,8 +3254,8 @@ TEST_F(FunctionBodyDecoderTest, TableInitInvalid) {
 
 TEST_F(FunctionBodyDecoderTest, ElemDrop) {
   TestModuleBuilder builder;
-  builder.InitializeTable();
-  builder.AddPassiveElementSegment();
+  builder.InitializeTable(wasm::kWasmFuncRef);
+  builder.AddPassiveElementSegment(wasm::kWasmFuncRef);
   module = builder.module();
 
   ExpectFailure(sigs.v_v(), {WASM_ELEM_DROP(0)});
@@ -3189,9 +3264,76 @@ TEST_F(FunctionBodyDecoderTest, ElemDrop) {
   ExpectFailure(sigs.v_v(), {WASM_ELEM_DROP(1)});
 }
 
+TEST_F(FunctionBodyDecoderTest, TableInitDeclarativeElem) {
+  TestModuleBuilder builder;
+  builder.InitializeTable(wasm::kWasmFuncRef);
+  builder.AddDeclarativeElementSegment();
+  module = builder.module();
+
+  WASM_FEATURE_SCOPE(bulk_memory);
+  WASM_FEATURE_SCOPE(anyref);
+  byte code[] = {WASM_TABLE_INIT(0, 0, WASM_ZERO, WASM_ZERO, WASM_ZERO),
+                 WASM_END};
+  for (size_t i = 0; i <= arraysize(code); ++i) {
+    Validate(i == arraysize(code), sigs.v_v(), VectorOf(code, i), kOmitEnd);
+  }
+}
+
+TEST_F(FunctionBodyDecoderTest, DeclarativeElemDrop) {
+  TestModuleBuilder builder;
+  builder.InitializeTable(wasm::kWasmFuncRef);
+  builder.AddDeclarativeElementSegment();
+  module = builder.module();
+
+  ExpectFailure(sigs.v_v(), {WASM_ELEM_DROP(0)});
+  WASM_FEATURE_SCOPE(bulk_memory);
+  WASM_FEATURE_SCOPE(anyref);
+  ExpectValidates(sigs.v_v(), {WASM_ELEM_DROP(0)});
+  ExpectFailure(sigs.v_v(), {WASM_ELEM_DROP(1)});
+}
+
+TEST_F(FunctionBodyDecoderTest, RefFuncDeclared) {
+  TestModuleBuilder builder;
+  builder.InitializeTable(wasm::kWasmStmt);
+  byte function_index = builder.AddFunction(sigs.v_i());
+  module = builder.module();
+
+  ExpectFailure(sigs.a_v(), {WASM_REF_FUNC(function_index)});
+  WASM_FEATURE_SCOPE(bulk_memory);
+  WASM_FEATURE_SCOPE(anyref);
+  ExpectValidates(sigs.a_v(), {WASM_REF_FUNC(function_index)});
+}
+
+TEST_F(FunctionBodyDecoderTest, RefFuncUndeclared) {
+  TestModuleBuilder builder;
+  builder.InitializeTable(wasm::kWasmStmt);
+  byte function_index = builder.AddFunction(sigs.v_i(), false);
+  module = builder.module();
+
+  WASM_FEATURE_SCOPE(bulk_memory);
+  WASM_FEATURE_SCOPE(anyref);
+  ExpectFailure(sigs.a_v(), {WASM_REF_FUNC(function_index)});
+}
+
+TEST_F(FunctionBodyDecoderTest, ElemSegmentIndexUnsigned) {
+  TestModuleBuilder builder;
+  builder.InitializeTable(wasm::kWasmFuncRef);
+  for (int i = 0; i < 65; ++i) {
+    builder.AddPassiveElementSegment(wasm::kWasmFuncRef);
+  }
+  module = builder.module();
+
+  WASM_FEATURE_SCOPE(bulk_memory);
+  // Make sure that the index is interpreted as an unsigned number; 64 is
+  // interpreted as -64 when decoded as a signed LEB.
+  ExpectValidates(sigs.v_v(),
+                  {WASM_TABLE_INIT(0, 64, WASM_ZERO, WASM_ZERO, WASM_ZERO)});
+  ExpectValidates(sigs.v_v(), {WASM_ELEM_DROP(64)});
+}
+
 TEST_F(FunctionBodyDecoderTest, TableCopy) {
   TestModuleBuilder builder;
-  builder.InitializeTable();
+  builder.InitializeTable(wasm::kWasmStmt);
   module = builder.module();
 
   ExpectFailure(sigs.v_v(),
@@ -3201,26 +3343,53 @@ TEST_F(FunctionBodyDecoderTest, TableCopy) {
                   {WASM_TABLE_COPY(0, 0, WASM_ZERO, WASM_ZERO, WASM_ZERO)});
 }
 
+TEST_F(FunctionBodyDecoderTest, TableCopyWrongType) {
+  TestModuleBuilder builder;
+  uint32_t dst_table_index = builder.InitializeTable(wasm::kWasmFuncRef);
+  uint32_t src_table_index = builder.InitializeTable(wasm::kWasmAnyRef);
+  module = builder.module();
+
+  WASM_FEATURE_SCOPE(bulk_memory);
+  WASM_FEATURE_SCOPE(anyref);
+  ExpectFailure(sigs.v_v(), {WASM_TABLE_COPY(dst_table_index, src_table_index,
+                                             WASM_ZERO, WASM_ZERO, WASM_ZERO)});
+}
+
 TEST_F(FunctionBodyDecoderTest, TableGrow) {
   TestModuleBuilder builder;
   byte tab_func = builder.AddTable(kWasmFuncRef, 10, true, 20);
   byte tab_ref = builder.AddTable(kWasmAnyRef, 10, true, 20);
+  byte tab_null = builder.AddTable(kWasmNullRef, 10, true, 20);
 
   module = builder.module();
 
   ExpectFailure(sigs.i_a(),
                 {WASM_TABLE_GROW(tab_func, WASM_REF_NULL, WASM_ONE)});
+  ExpectFailure(sigs.i_n(),
+                {WASM_TABLE_GROW(tab_null, WASM_REF_NULL, WASM_ONE)});
   WASM_FEATURE_SCOPE(anyref);
   ExpectValidates(sigs.i_a(),
                   {WASM_TABLE_GROW(tab_func, WASM_REF_NULL, WASM_ONE)});
   ExpectValidates(sigs.i_r(),
                   {WASM_TABLE_GROW(tab_ref, WASM_REF_NULL, WASM_ONE)});
+  ExpectValidates(sigs.i_n(),
+                  {WASM_TABLE_GROW(tab_null, WASM_REF_NULL, WASM_ONE)});
   // FuncRef table cannot be initialized with an anyref value.
   ExpectFailure(sigs.i_r(),
                 {WASM_TABLE_GROW(tab_func, WASM_GET_LOCAL(0), WASM_ONE)});
-  // Anyref table can be initialized with an funcref value.
+  // FuncRef table can be initialized with a nullref value.
+  ExpectValidates(sigs.i_n(),
+                  {WASM_TABLE_GROW(tab_func, WASM_GET_LOCAL(0), WASM_ONE)});
+  // Anyref table can be initialized with an funcref or nullref value.
   ExpectValidates(sigs.i_a(),
                   {WASM_TABLE_GROW(tab_ref, WASM_GET_LOCAL(0), WASM_ONE)});
+  ExpectValidates(sigs.i_n(),
+                  {WASM_TABLE_GROW(tab_ref, WASM_GET_LOCAL(0), WASM_ONE)});
+  // NullRef table cannot be initialized with an funcref or anyref value.
+  ExpectFailure(sigs.i_a(),
+                {WASM_TABLE_GROW(tab_null, WASM_GET_LOCAL(0), WASM_ONE)});
+  ExpectFailure(sigs.i_r(),
+                {WASM_TABLE_GROW(tab_null, WASM_GET_LOCAL(0), WASM_ONE)});
   // Check that the table index gets verified.
   ExpectFailure(sigs.i_r(),
                 {WASM_TABLE_GROW(tab_ref + 2, WASM_REF_NULL, WASM_ONE)});
@@ -3242,21 +3411,31 @@ TEST_F(FunctionBodyDecoderTest, TableFill) {
   TestModuleBuilder builder;
   byte tab_func = builder.AddTable(kWasmFuncRef, 10, true, 20);
   byte tab_ref = builder.AddTable(kWasmAnyRef, 10, true, 20);
+  byte tab_null = builder.AddTable(kWasmNullRef, 10, true, 20);
 
   module = builder.module();
 
   ExpectFailure(sigs.v_a(),
                 {WASM_TABLE_FILL(tab_func, WASM_ONE, WASM_REF_NULL, WASM_ONE)});
+  ExpectFailure(sigs.v_n(),
+                {WASM_TABLE_FILL(tab_null, WASM_ONE, WASM_REF_NULL, WASM_ONE)});
   WASM_FEATURE_SCOPE(anyref);
   ExpectValidates(sigs.v_a(), {WASM_TABLE_FILL(tab_func, WASM_ONE,
                                                WASM_REF_NULL, WASM_ONE)});
   ExpectValidates(sigs.v_r(), {WASM_TABLE_FILL(tab_ref, WASM_ONE, WASM_REF_NULL,
                                                WASM_ONE)});
+  ExpectValidates(sigs.v_n(), {WASM_TABLE_FILL(tab_null, WASM_ONE,
+                                               WASM_REF_NULL, WASM_ONE)});
   // FuncRef table cannot be initialized with an anyref value.
   ExpectFailure(sigs.v_r(), {WASM_TABLE_FILL(tab_func, WASM_ONE,
                                              WASM_GET_LOCAL(0), WASM_ONE)});
-  // Anyref table can be initialized with an funcref value.
+  // FuncRef table can be initialized with an nullref value.
+  ExpectValidates(sigs.v_n(), {WASM_TABLE_FILL(tab_func, WASM_ONE,
+                                               WASM_GET_LOCAL(0), WASM_ONE)});
+  // Anyref table can be initialized with an funcref or nullref value.
   ExpectValidates(sigs.v_a(), {WASM_TABLE_FILL(tab_ref, WASM_ONE,
+                                               WASM_GET_LOCAL(0), WASM_ONE)});
+  ExpectValidates(sigs.v_n(), {WASM_TABLE_FILL(tab_ref, WASM_ONE,
                                                WASM_GET_LOCAL(0), WASM_ONE)});
   // Check that the table index gets verified.
   ExpectFailure(sigs.v_r(), {WASM_TABLE_FILL(tab_ref + 2, WASM_ONE,
@@ -3275,7 +3454,7 @@ TEST_F(FunctionBodyDecoderTest, TableOpsWithoutTable) {
   }
   {
     WASM_FEATURE_SCOPE(bulk_memory);
-    builder.AddPassiveElementSegment();
+    builder.AddPassiveElementSegment(wasm::kWasmFuncRef);
     ExpectFailure(sigs.v_v(),
                   {WASM_TABLE_INIT(0, 0, WASM_ZERO, WASM_ZERO, WASM_ZERO)});
     ExpectFailure(sigs.v_v(),
@@ -3289,7 +3468,7 @@ TEST_F(FunctionBodyDecoderTest, TableCopyMultiTable) {
   {
     TestModuleBuilder builder;
     builder.AddTable(kWasmAnyRef, 10, true, 20);
-    builder.AddPassiveElementSegment();
+    builder.AddPassiveElementSegment(wasm::kWasmFuncRef);
     module = builder.module();
     // We added one table, therefore table.copy on table 0 should work.
     int table_src = 0;
@@ -3311,7 +3490,7 @@ TEST_F(FunctionBodyDecoderTest, TableCopyMultiTable) {
     TestModuleBuilder builder;
     builder.AddTable(kWasmAnyRef, 10, true, 20);
     builder.AddTable(kWasmAnyRef, 10, true, 20);
-    builder.AddPassiveElementSegment();
+    builder.AddPassiveElementSegment(wasm::kWasmFuncRef);
     module = builder.module();
     // We added two tables, therefore table.copy on table 0 should work.
     int table_src = 0;
@@ -3339,7 +3518,7 @@ TEST_F(FunctionBodyDecoderTest, TableInitMultiTable) {
   {
     TestModuleBuilder builder;
     builder.AddTable(kWasmAnyRef, 10, true, 20);
-    builder.AddPassiveElementSegment();
+    builder.AddPassiveElementSegment(wasm::kWasmFuncRef);
     module = builder.module();
     // We added one table, therefore table.init on table 0 should work.
     int table_index = 0;
@@ -3354,7 +3533,7 @@ TEST_F(FunctionBodyDecoderTest, TableInitMultiTable) {
     TestModuleBuilder builder;
     builder.AddTable(kWasmAnyRef, 10, true, 20);
     builder.AddTable(kWasmAnyRef, 10, true, 20);
-    builder.AddPassiveElementSegment();
+    builder.AddPassiveElementSegment(wasm::kWasmFuncRef);
     module = builder.module();
     // We added two tables, therefore table.init on table 0 should work.
     int table_index = 0;
@@ -3454,6 +3633,20 @@ class WasmOpcodeLengthTest : public TestWithZone {
     const byte code[] = {bytes..., 0, 0, 0, 0, 0, 0, 0, 0};
     EXPECT_EQ(expected, OpcodeLength(code, code + sizeof(code)))
         << PrintOpcodes{code, code + sizeof...(bytes)};
+  }
+
+  // Helper to check for prefixed opcodes, which can have multiple bytes.
+  void ExpectLengthPrefixed(unsigned operands, WasmOpcode opcode) {
+    uint8_t prefix = (opcode >> 8) & 0xff;
+    DCHECK(WasmOpcodes::IsPrefixOpcode(static_cast<WasmOpcode>(prefix)));
+    uint8_t index = opcode & 0xff;
+    uint8_t encoded[2] = {0, 0};
+    uint8_t* p = encoded;
+    unsigned len = static_cast<unsigned>(LEBHelper::sizeof_u32v(index));
+    DCHECK_GE(2, len);
+    LEBHelper::write_u32v(&p, index);
+    // length of index, + number of operands + prefix bye
+    ExpectLength(len + operands + 1, prefix, encoded[0], encoded[1]);
   }
 };
 
@@ -3581,17 +3774,15 @@ TEST_F(WasmOpcodeLengthTest, SimpleExpressions) {
 }
 
 TEST_F(WasmOpcodeLengthTest, SimdExpressions) {
-#define TEST_SIMD(name, opcode, sig) \
-  ExpectLength(2, kSimdPrefix, static_cast<byte>(kExpr##name & 0xFF));
+#define TEST_SIMD(name, opcode, sig) ExpectLengthPrefixed(0, kExpr##name);
   FOREACH_SIMD_0_OPERAND_OPCODE(TEST_SIMD)
 #undef TEST_SIMD
-#define TEST_SIMD(name, opcode, sig) \
-  ExpectLength(3, kSimdPrefix, static_cast<byte>(kExpr##name & 0xFF));
+#define TEST_SIMD(name, opcode, sig) ExpectLengthPrefixed(1, kExpr##name);
   FOREACH_SIMD_1_OPERAND_OPCODE(TEST_SIMD)
 #undef TEST_SIMD
-  ExpectLength(18, kSimdPrefix, static_cast<byte>(kExprS8x16Shuffle & 0xFF));
-  // test for bad simd opcode
-  ExpectLength(2, kSimdPrefix, 0xFF);
+  ExpectLengthPrefixed(16, kExprS8x16Shuffle);
+  // test for bad simd opcode, 0xFF is encoded in two bytes.
+  ExpectLength(3, kSimdPrefix, 0xFF, 0x1);
 }
 
 using TypesOfLocals = ZoneVector<ValueType>;
@@ -3633,8 +3824,7 @@ TEST_F(LocalDeclDecoderTest, OneLocal) {
   WASM_FEATURE_SCOPE(anyref);
   for (size_t i = 0; i < arraysize(kValueTypes); i++) {
     ValueType type = kValueTypes[i];
-    const byte data[] = {1, 1,
-                         static_cast<byte>(ValueTypes::ValueTypeCodeFor(type))};
+    const byte data[] = {1, 1, static_cast<byte>(type.value_type_code())};
     BodyLocalDecls decls(zone());
     bool result = DecodeLocalDecls(&decls, data, data + sizeof(data));
     EXPECT_TRUE(result);
@@ -3649,8 +3839,7 @@ TEST_F(LocalDeclDecoderTest, FiveLocals) {
   WASM_FEATURE_SCOPE(anyref);
   for (size_t i = 0; i < arraysize(kValueTypes); i++) {
     ValueType type = kValueTypes[i];
-    const byte data[] = {1, 5,
-                         static_cast<byte>(ValueTypes::ValueTypeCodeFor(type))};
+    const byte data[] = {1, 5, static_cast<byte>(type.value_type_code())};
     BodyLocalDecls decls(zone());
     bool result = DecodeLocalDecls(&decls, data, data + sizeof(data));
     EXPECT_TRUE(result);
@@ -3715,8 +3904,7 @@ TEST_F(LocalDeclDecoderTest, UseEncoder) {
 TEST_F(LocalDeclDecoderTest, ExnRef) {
   WASM_FEATURE_SCOPE(eh);
   ValueType type = kWasmExnRef;
-  const byte data[] = {1, 1,
-                       static_cast<byte>(ValueTypes::ValueTypeCodeFor(type))};
+  const byte data[] = {1, 1, static_cast<byte>(type.value_type_code())};
   BodyLocalDecls decls(zone());
   bool result = DecodeLocalDecls(&decls, data, data + sizeof(data));
   EXPECT_TRUE(result);

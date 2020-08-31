@@ -22,10 +22,10 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
@@ -102,6 +102,8 @@ class SearchBoxImageButton : public views::ImageButton {
     SetPreferredSize({kButtonSizeDip, kButtonSizeDip});
     SetImageHorizontalAlignment(ALIGN_CENTER);
     SetImageVerticalAlignment(ALIGN_MIDDLE);
+
+    views::InstallCircleHighlightPathGenerator(this);
   }
   ~SearchBoxImageButton() override {}
 
@@ -121,11 +123,7 @@ class SearchBoxImageButton : public views::ImageButton {
 
   void OnBlur() override { SchedulePaint(); }
 
-  // views::InkDropHost overrides:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    return CreateDefaultFloodFillInkDropImpl();
-  }
-
+  // views::InkDropHostView:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     const gfx::Point center = GetLocalBounds().CenterPoint();
     const int ripple_radius = GetInkDropRadius();
@@ -138,18 +136,13 @@ class SearchBoxImageButton : public views::ImageButton {
         GetInkDropCenterBasedOnLastEvent(), ripple_color, 1.0f);
   }
 
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::CircleInkDropMask>(
-        size(), GetLocalBounds().CenterPoint(), GetInkDropRadius());
-  }
-
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
     constexpr SkColor ripple_color = SkColorSetA(gfx::kGoogleGrey900, 0x12);
-    return std::make_unique<views::InkDropHighlight>(
-        gfx::PointF(GetLocalBounds().CenterPoint()),
-        std::make_unique<views::CircleLayerDelegate>(ripple_color,
-                                                     GetInkDropRadius()));
+    auto highlight = std::make_unique<views::InkDropHighlight>(
+        gfx::SizeF(size()), ripple_color);
+    highlight->set_visible_opacity(1.f);
+    return highlight;
   }
 
  private:
@@ -243,6 +236,9 @@ SearchBoxViewBase::SearchBoxViewBase(SearchBoxViewDelegate* delegate)
     : delegate_(delegate),
       content_container_(new views::View),
       search_box_(new SearchBoxTextfield(this)) {
+  // Focus should be able to move from search box to items in app list view.
+  SetFocusTraversesOut(true);
+
   DCHECK(delegate_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(content_container_);
@@ -286,6 +282,7 @@ SearchBoxViewBase::SearchBoxViewBase(SearchBoxViewDelegate* delegate)
   content_container_->AddChildView(search_box_right_space_);
 
   assistant_button_ = new SearchBoxImageButton(this);
+  assistant_button_->EnableCanvasFlippingForRTLUI(false);
   // Default hidden, child class should decide if it should shown.
   assistant_button_->SetVisible(false);
   content_container_->AddChildView(assistant_button_);
@@ -408,11 +405,6 @@ ax::mojom::Role SearchBoxViewBase::GetAccessibleWindowRole() {
   // focus within the root view. Assign ax::mojom::Role::kGroup here to allow
   // the focus to move from elements in search box to app list view.
   return ax::mojom::Role::kGroup;
-}
-
-bool SearchBoxViewBase::ShouldAdvanceFocusToTopLevelWidget() const {
-  // Focus should be able to move from search box to items in app list view.
-  return true;
 }
 
 void SearchBoxViewBase::ButtonPressed(views::Button* sender,
@@ -545,16 +537,22 @@ void SearchBoxViewBase::SetShowAssistantButton(bool show) {
 void SearchBoxViewBase::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {
   if (located_event->type() == ui::ET_MOUSE_PRESSED ||
       located_event->type() == ui::ET_GESTURE_TAP) {
-    bool event_is_in_searchbox_bounds =
+    const bool event_is_in_searchbox_bounds =
         GetWidget()->GetWindowBoundsInScreen().Contains(
             located_event->root_location());
-    if (is_search_box_active_ || !event_is_in_searchbox_bounds ||
-        !search_box_->GetText().empty())
+    // Don't handle an event out of the searchbox bounds.
+    if (!event_is_in_searchbox_bounds)
       return;
-    // If the event was within the searchbox bounds and in an inactive empty
-    // search box, enable the search box.
 
-    SetSearchBoxActive(true, located_event->type());
+    // If the event is in an inactive empty search box, enable the search box.
+    if (!is_search_box_active_ && search_box_->GetText().empty()) {
+      SetSearchBoxActive(true, located_event->type());
+      return;
+    }
+
+    // Otherwise, update the keyboard in case it was hidden. Tapping again
+    // should reopen it.
+    UpdateKeyboardVisibility();
   }
   located_event->SetHandled();
 }

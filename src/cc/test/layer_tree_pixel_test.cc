@@ -37,8 +37,10 @@ using gpu::gles2::GLES2Interface;
 
 namespace cc {
 
-LayerTreePixelTest::LayerTreePixelTest()
-    : pixel_comparator_(new ExactPixelComparator(true)),
+LayerTreePixelTest::LayerTreePixelTest(
+    LayerTreeTest::RendererType renderer_type)
+    : LayerTreeTest(renderer_type),
+      pixel_comparator_(new ExactPixelComparator(true)),
       pending_texture_mailbox_callbacks_(0) {}
 
 LayerTreePixelTest::~LayerTreePixelTest() = default;
@@ -52,13 +54,18 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
   scoped_refptr<viz::TestInProcessContextProvider> compositor_context_provider;
   scoped_refptr<viz::TestInProcessContextProvider> worker_context_provider;
   if (!use_software_renderer()) {
+    // Use gpu rasterization when using vulkan.
+    if (use_oopr())
+      DCHECK(gpu_rasterization_);
     compositor_context_provider =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
+            /*enable_gpu_rasterization=*/gpu_rasterization_,
             /*enable_oop_rasterization=*/false, /*support_locking=*/false);
     // With vulkan, OOPR has to be enabled.
     worker_context_provider =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
-            /*enable_oop_rasterization=*/use_vulkan(),
+            /*enable_gpu_rasterization=*/gpu_rasterization_,
+            /*enable_oop_rasterization=*/use_oopr(),
             /*support_locking=*/true);
     // Bind worker context to main thread like it is in production. This is
     // needed to fully initialize the context. Compositor context is bound to
@@ -83,6 +90,23 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
   return delegating_output_surface;
 }
 
+void LayerTreePixelTest::DrawLayersOnThread(LayerTreeHostImpl* host_impl) {
+  // Verify that we're using Gpu rasterization or not as requested.
+  if (!use_software_renderer()) {
+    viz::ContextProvider* context_provider =
+        host_impl->layer_tree_frame_sink()->context_provider();
+    viz::RasterContextProvider* worker_context_provider =
+        host_impl->layer_tree_frame_sink()->worker_context_provider();
+    EXPECT_EQ(gpu_rasterization_,
+              context_provider->ContextCapabilities().gpu_rasterization);
+    EXPECT_EQ(gpu_rasterization_,
+              worker_context_provider->ContextCapabilities().gpu_rasterization);
+  } else {
+    EXPECT_FALSE(gpu_rasterization_);
+  }
+  LayerTreeTest::DrawLayersOnThread(host_impl);
+}
+
 std::unique_ptr<viz::SkiaOutputSurface>
 LayerTreePixelTest::CreateDisplaySkiaOutputSurfaceOnThread() {
   // Set up the SkiaOutputSurfaceImpl.
@@ -104,13 +128,14 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     // compositor.
     auto display_context_provider =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
+            /*enable_gpu_rasterization=*/false,
             /*enable_oop_rasterization=*/false, /*support_locking=*/false);
     gpu::ContextResult result = display_context_provider->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
 
-    bool flipped_output_surface = false;
+    gfx::SurfaceOrigin surface_origin = gfx::SurfaceOrigin::kBottomLeft;
     display_output_surface = std::make_unique<PixelTestOutputSurface>(
-        std::move(display_context_provider), flipped_output_surface);
+        std::move(display_context_provider), surface_origin);
   } else {
     EXPECT_EQ(RENDERER_SOFTWARE, renderer_type_);
     display_output_surface = std::make_unique<PixelTestOutputSurface>(
@@ -197,10 +222,6 @@ void LayerTreePixelTest::EndTest() {
   TryEndTest();
 }
 
-void LayerTreePixelTest::InitializeSettings(LayerTreeSettings* settings) {
-  settings->gpu_rasterization_forced = use_vulkan();
-}
-
 void LayerTreePixelTest::TryEndTest() {
   if (!result_bitmap_)
     return;
@@ -254,20 +275,16 @@ void LayerTreePixelTest::CreateSolidColorLayerPlusBorders(
   layers.push_back(border_bottom);
 }
 
-void LayerTreePixelTest::RunPixelTest(RendererType renderer_type,
-                                      scoped_refptr<Layer> content_root,
+void LayerTreePixelTest::RunPixelTest(scoped_refptr<Layer> content_root,
                                       base::FilePath file_name) {
-  renderer_type_ = renderer_type;
   content_root_ = content_root;
   readback_target_ = nullptr;
   ref_file_ = file_name;
   RunTest(CompositorMode::THREADED);
 }
 
-void LayerTreePixelTest::RunPixelTest(RendererType renderer_type,
-                                      scoped_refptr<Layer> content_root,
+void LayerTreePixelTest::RunPixelTest(scoped_refptr<Layer> content_root,
                                       const SkBitmap& expected_bitmap) {
-  renderer_type_ = renderer_type;
   content_root_ = content_root;
   readback_target_ = nullptr;
   ref_file_ = base::FilePath();
@@ -275,19 +292,15 @@ void LayerTreePixelTest::RunPixelTest(RendererType renderer_type,
   RunTest(CompositorMode::THREADED);
 }
 
-void LayerTreePixelTest::RunPixelTestWithLayerList(RendererType renderer_type,
-                                                   base::FilePath file_name) {
-  renderer_type_ = renderer_type;
+void LayerTreePixelTest::RunPixelTestWithLayerList(base::FilePath file_name) {
   readback_target_ = nullptr;
   ref_file_ = file_name;
   RunTest(CompositorMode::THREADED);
 }
 
 void LayerTreePixelTest::RunSingleThreadedPixelTest(
-    RendererType renderer_type,
     scoped_refptr<Layer> content_root,
     base::FilePath file_name) {
-  renderer_type_ = renderer_type;
   content_root_ = content_root;
   readback_target_ = nullptr;
   ref_file_ = file_name;
@@ -295,11 +308,9 @@ void LayerTreePixelTest::RunSingleThreadedPixelTest(
 }
 
 void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
-    RendererType renderer_type,
     scoped_refptr<Layer> content_root,
     Layer* target,
     base::FilePath file_name) {
-  renderer_type_ = renderer_type;
   content_root_ = content_root;
   readback_target_ = target;
   ref_file_ = file_name;

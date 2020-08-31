@@ -59,7 +59,7 @@ CSSInterpolationTypesMap::CSSInterpolationTypesMap(
     const Document& document)
     : registry_(registry) {
   allow_all_animations_ = document.IsFeatureEnabled(
-      blink::mojom::FeaturePolicyFeature::kLayoutAnimations);
+      blink::mojom::blink::DocumentPolicyFeature::kLayoutAnimations);
 }
 
 static const PropertyRegistration* GetRegistration(
@@ -91,7 +91,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
   // Custom property interpolation types may change over time so don't trust the
   // applicableTypesMap without checking the registry.
   if (registry_ && property.IsCSSCustomProperty()) {
-    const auto* registration = GetRegistration(registry_.Get(), property);
+    const auto* registration = GetRegistration(registry_, property);
     if (registration) {
       if (found_entry) {
         applicable_types_map.erase(entry);
@@ -351,7 +351,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
             std::make_unique<CSSTransformInterpolationType>(used_property));
         break;
       case CSSPropertyID::kVariable:
-        DCHECK_EQ(GetRegistration(registry_.Get(), property), nullptr);
+        DCHECK_EQ(GetRegistration(registry_, property), nullptr);
         break;
       default:
         DCHECK(!css_property.IsInterpolable());
@@ -368,10 +368,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
 }
 
 size_t CSSInterpolationTypesMap::Version() const {
-  // Property registrations are never removed so the number of registered
-  // custom properties is equivalent to how many changes there have been to the
-  // property registry.
-  return registry_ ? registry_->RegistrationCount() : 0;
+  return registry_ ? registry_->Version() : 0;
 }
 
 static std::unique_ptr<CSSInterpolationType>

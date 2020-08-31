@@ -13,16 +13,18 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -345,6 +347,7 @@ std::string CalculateSelectedLanguage(const std::string& requested_locale,
 }
 
 void ResolveLanguageListInThreadPool(
+    const std::string& locale,
     std::unique_ptr<chromeos::locale_util::LanguageSwitchResult>
         language_switch_result,
     const scoped_refptr<base::TaskRunner> task_runner,
@@ -353,14 +356,7 @@ void ResolveLanguageListInThreadPool(
                                                 base::BlockingType::MAY_BLOCK);
 
   std::string selected_language;
-  if (!language_switch_result) {
-    if (!g_browser_process->GetApplicationLocale().empty()) {
-      selected_language = g_browser_process->GetApplicationLocale();
-    } else {
-      selected_language =
-          StartupCustomizationDocument::GetInstance()->initial_locale_default();
-    }
-  } else {
+  if (language_switch_result) {
     if (language_switch_result->success) {
       if (language_switch_result->requested_locale ==
           language_switch_result->loaded_locale) {
@@ -373,19 +369,22 @@ void ResolveLanguageListInThreadPool(
     } else {
       selected_language = language_switch_result->loaded_locale;
     }
+  } else {
+    selected_language = !locale.empty()
+                            ? locale
+                            : StartupCustomizationDocument::GetInstance()
+                                  ->initial_locale_default();
   }
   const std::string selected_code =
-      selected_language.empty() ? g_browser_process->GetApplicationLocale()
-                                : selected_language;
+      selected_language.empty() ? locale : selected_language;
 
   const std::string list_locale =
-      language_switch_result ? language_switch_result->loaded_locale
-                             : g_browser_process->GetApplicationLocale();
+      language_switch_result ? language_switch_result->loaded_locale : locale;
   std::unique_ptr<base::ListValue> language_list(
       chromeos::GetUILanguageList(nullptr, selected_code));
 
   task_runner->PostTask(
-      FROM_HERE, base::BindOnce(resolved_callback, base::Passed(&language_list),
+      FROM_HERE, base::BindOnce(resolved_callback, std::move(language_list),
                                 list_locale, selected_language));
 }
 
@@ -430,10 +429,11 @@ void ResolveUILanguageList(
     const UILanguageListResolvedCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTask(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&ResolveLanguageListInThreadPool,
-                     base::Passed(&language_switch_result),
+                     g_browser_process->GetApplicationLocale(),
+                     std::move(language_switch_result),
                      base::SequencedTaskRunnerHandle::Get(), callback));
 }
 
@@ -585,10 +585,9 @@ void GetKeyboardLayoutsForLocale(
   // thread.
   std::string (*get_application_locale)(const std::string&, bool) =
       &l10n_util::GetApplicationLocale;
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(get_application_locale, locale,
                      false /* set_icu_locale */),
       base::BindOnce(&GetKeyboardLayoutsForResolvedLocale, locale, callback));

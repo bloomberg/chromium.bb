@@ -9,30 +9,9 @@
     <title>&#xfeff;</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="../css/main.css">
-    <script src="../js/chrome_util.js"></script>
-    <script src="../js/browser_proxy/browser_proxy.js"></script>
-    <script src="../js/google-analytics-bundle.js"></script>
-    <script src="../js/type.js"></script>
-    <script src="../js/metrics.js"></script>
-    <script src="../js/intent.js"></script>
-    <script src="../js/util.js"></script>
-    <script src="../js/toast.js"></script>
-    <script src="../js/tooltip.js"></script>
-    <script src="../js/state.js"></script>
-    <script src="../js/sound.js"></script>
-    <script src="../js/device/error.js"></script>
-    <script src="../js/device/camera3_device_info.js"></script>
-    <script src="../js/device/constraints_preferrer.js"></script>
-    <script src="../js/device/device_info_updater.js"></script>
-    <script src="../js/models/filenamer.js"></script>
-    <script src="../js/models/gallery.js"></script>
-    <script src="../js/gallerybutton.js"></script>
-    <script src="../js/models/filesystem.js"></script>
-    <script src="../js/models/result_saver.js"></script>
-    <script src="../js/models/video_saver_interface.js"></script>
-    <script src="../js/models/file_video_saver.js"></script>
-    <script src="../js/models/intent_video_saver.js"></script>
     <script src="../js/mojo/mojo_bindings_lite.js"></script>
+    <script src="../js/mojo/time.mojom-lite.js"></script>
+    <script src="../js/mojo/idle_manager.mojom-lite.js"></script>
     <script src="../js/mojo/camera_metadata_tags.mojom-lite.js"></script>
     <script src="../js/mojo/camera_metadata.mojom-lite.js"></script>
     <script src="../js/mojo/camera_common.mojom-lite.js"></script>
@@ -42,27 +21,10 @@
     <script src="../js/mojo/camera_intent.mojom-lite.js"></script>
     <script src="../js/mojo/camera_app.mojom-lite.js"></script>
     <script src="../js/mojo/camera_app_helper.mojom-lite.js"></script>
-    <script src="../js/mojo/chrome_helper.js"></script>
-    <script src="../js/mojo/device_operator.js"></script>
-    <script src="../js/mojo/image_capture.js"></script>
-    <script src="../js/views/view.js"></script>
-    <script src="../js/views/camera.js"></script>
-    <script src="../js/views/camera_intent.js"></script>
-    <script src="../js/views/camera/layout.js"></script>
-    <script src="../js/views/camera/options.js"></script>
-    <script src="../js/views/camera/preview.js"></script>
-    <script src="../js/views/camera/recordtime.js"></script>
-    <script src="../js/views/camera/review_result.js"></script>
-    <script src="../js/views/camera/timertick.js"></script>
-    <script src="../js/views/camera/modes.js"></script>
-    <script src="../js/views/dialog.js"></script>
-    <script src="../js/views/settings.js"></script>
-    <script src="../js/views/warning.js"></script>
-    <script src="../js/nav.js"></script>
-    <script src="../js/main.js"></script>
+    <script type="module" src="../js/main.js"></script>
   </head>
   <body class="sound mirror mic _3x3">
-    <div id="camera">
+    <div id="view-camera">
       <div id="preview-wrapper">
         <img id="review-photo-result" class="preview-content"
           aria-hidden="true">
@@ -109,10 +71,11 @@
         <div class="centered-overlay" id="camera-mode"></div>
       </div>
       <div id="shutters-group" class="buttons right-stripe circle">
-        <button id="start-recordvideo" class="shutter" tabindex="0"
-                i18n-label="record_video_start_button"></button>
-        <button id="stop-recordvideo" class="shutter" tabindex="0"
-                i18n-label="record_video_stop_button"></button>
+        <button id="recordvideo" class="shutter" tabindex="0"
+                i18n-label="record_video_start_button">
+          <div class="red-dot"></div>
+          <div class="white-square"></div>
+        </button>
         <button id="start-takephoto" class="shutter" tabindex="0"
                 i18n-label="take_photo_button"></button>
         <button id="stop-takephoto" class="shutter" tabindex="0"
@@ -193,7 +156,7 @@
         <div id="timer-tick-msg"></div>
       </div>
     </div>
-    <div id="settings">
+    <div id="view-settings">
       <div class="menu">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -246,7 +209,7 @@
         </button>
       </div>
     </div>
-    <div id="gridsettings">
+    <div id="view-grid-settings">
       <div class="menu">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -269,7 +232,7 @@
         </label>
       </div>
     </div>
-    <div id="timersettings">
+    <div id="view-timer-settings">
       <div class="menu">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -288,7 +251,7 @@
         </label>
       </div>
     </div>
-    <div id="resolutionsettings">
+    <div id="view-resolution-settings">
       <div class="menu">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -345,7 +308,7 @@
         </button>
       </div>
     </div>
-    <div id="photoresolutionsettings">
+    <div id="view-photo-resolution-settings">
       <div class="menu" data-name="photores">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -353,7 +316,7 @@
         </div>
       </div>
     </div>
-    <div id="videoresolutionsettings">
+    <div id="view-video-resolution-settings">
       <div class="menu" data-name="videores">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -361,7 +324,7 @@
         </div>
       </div>
     </div>
-    <div id="expertsettings">
+    <div id="view-expert-settings">
       <div class="menu">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -379,13 +342,20 @@
                  data-key="saveMetadata">
           <span i18n-content="expert_save_metadata"></span>
         </label>
+        <label class="menu-item" for="expert-print-performance-logs">
+          <input class="icon" id="expert-print-performance-logs" type="checkbox"
+                 tabindex="0" data-state="print-performance-logs"
+                 data-key="printPerformanceLogs">
+          <span i18n-content="expert_print_performance_logs"></span>
+        </label>
       </div>
     </div>
     <div class="centered-overlay" id="spinner"></div>
-    <div id="warning">
+    <div id="view-splash"></div>
+    <div id="view-warning">
       <div id="error-msg" aria-live="polite"></div>
     </div>
-    <div id="message-dialog" class="dialog">
+    <div id="view-message-dialog" class="dialog">
       <div class="dialog-popup" role="dialog" aria-labelledby="dialog-msg">
         <div class="dialog-msg dialog-msg-holder"></div>
         <div class="dialog-buttons">
@@ -408,7 +378,7 @@
       data-timeout="200">
     <audio id="sound-rec-end" src="../sounds/record_end.ogg" data-timeout="450">
     <template id="resolution-item-template">
-      <label class="menu-item circle">
+      <label class="menu-item circle resolution-option">
         <input class="icon" type="radio" tabindex="0">
         <span></span>
       </label>

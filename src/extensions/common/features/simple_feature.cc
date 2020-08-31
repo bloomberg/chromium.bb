@@ -19,6 +19,7 @@
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/features/feature_channel.h"
+#include "extensions/common/features/feature_flags.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/switches.h"
@@ -115,6 +116,8 @@ std::string GetDisplayName(Feature::Context context) {
       return "hosted app";
     case Feature::WEBUI_CONTEXT:
       return "webui";
+    case Feature::WEBUI_UNTRUSTED_CONTEXT:
+      return "webui untrusted";
     case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
       return "lock screen app";
   }
@@ -226,9 +229,9 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   if (!manifest_availability.is_available())
     return manifest_availability;
 
-  return CheckDependencies(base::Bind(&IsAvailableToManifestForBind, hashed_id,
-                                      type, location, manifest_version,
-                                      platform));
+  return CheckDependencies(base::BindRepeating(&IsAvailableToManifestForBind,
+                                               hashed_id, type, location,
+                                               manifest_version, platform));
 }
 
 Feature::Availability SimpleFeature::IsAvailableToContext(
@@ -266,9 +269,9 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
 
   // TODO(kalman): Assert that if the context was a webpage or WebUI context
   // then at some point a "matches" restriction was checked.
-  return CheckDependencies(base::Bind(&IsAvailableToContextForBind,
-                                      base::RetainedRef(extension), context,
-                                      url, platform));
+  return CheckDependencies(base::BindRepeating(&IsAvailableToContextForBind,
+                                               base::RetainedRef(extension),
+                                               context, url, platform));
 }
 
 Feature::Availability SimpleFeature::IsAvailableToEnvironment() const {
@@ -277,7 +280,8 @@ Feature::Availability SimpleFeature::IsAvailableToEnvironment() const {
                                  GetCurrentFeatureSessionType());
   if (!environment_availability.is_available())
     return environment_availability;
-  return CheckDependencies(base::Bind(&IsAvailableToEnvironmentForBind));
+  return CheckDependencies(
+      base::BindRepeating(&IsAvailableToEnvironmentForBind));
 }
 
 std::string SimpleFeature::GetAvailabilityMessage(
@@ -352,6 +356,11 @@ std::string SimpleFeature::GetAvailabilityMessage(
       return base::StringPrintf(
           "'%s' requires the '%s' command line switch to be enabled.",
           name().c_str(), command_line_switch_->c_str());
+    case FEATURE_FLAG_DISABLED:
+      DCHECK(feature_flag_);
+      return base::StringPrintf(
+          "'%s' requires the '%s' feature flag to be enabled.", name().c_str(),
+          feature_flag_->c_str());
   }
 
   NOTREACHED();
@@ -478,7 +487,8 @@ bool SimpleFeature::MatchesSessionTypes(FeatureSessionType session_type) const {
 }
 
 Feature::Availability SimpleFeature::CheckDependencies(
-    const base::Callback<Availability(const Feature*)>& checker) const {
+    const base::RepeatingCallback<Availability(const Feature*)>& checker)
+    const {
   for (const auto& dep_name : dependencies_) {
     const Feature* dependency =
         ExtensionAPI::GetSharedInstance()->GetFeatureDependency(dep_name);
@@ -532,6 +542,10 @@ void SimpleFeature::set_extension_types(
   extension_types_ = types;
 }
 
+void SimpleFeature::set_feature_flag(base::StringPiece feature_flag) {
+  feature_flag_ = feature_flag.as_string();
+}
+
 void SimpleFeature::set_session_types(
     std::initializer_list<FeatureSessionType> types) {
   session_types_ = types;
@@ -576,6 +590,9 @@ Feature::Availability SimpleFeature::GetEnvironmentAvailability(
       !IsCommandLineSwitchEnabled(command_line, *command_line_switch_)) {
     return CreateAvailability(MISSING_COMMAND_LINE_SWITCH);
   }
+
+  if (feature_flag_ && !IsFeatureFlagEnabled(*feature_flag_))
+    return CreateAvailability(FEATURE_FLAG_DISABLED);
 
   if (!MatchesSessionTypes(session_type))
     return CreateAvailability(INVALID_SESSION_TYPE, session_type);
@@ -642,8 +659,10 @@ Feature::Availability SimpleFeature::GetContextAvailability(
   // TODO(kalman): Consider checking |matches_| regardless of context type.
   // Fewer surprises, and if the feature configuration wants to isolate
   // "matches" from say "blessed_extension" then they can use complex features.
-  if ((context == WEB_PAGE_CONTEXT || context == WEBUI_CONTEXT) &&
-      !matches_.MatchesURL(url)) {
+  const bool supports_url_matching = context == WEB_PAGE_CONTEXT ||
+                                     context == WEBUI_CONTEXT ||
+                                     context == WEBUI_UNTRUSTED_CONTEXT;
+  if (supports_url_matching && !matches_.MatchesURL(url)) {
     return CreateAvailability(INVALID_URL, url);
   }
 

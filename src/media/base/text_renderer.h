@@ -45,17 +45,17 @@ class MEDIA_EXPORT TextRenderer {
 
   // |ended_cb| is executed when all of the text tracks have reached
   // end of stream, following a play request.
-  void Initialize(const base::Closure& ended_cb);
+  void Initialize(const base::RepeatingClosure& ended_cb);
 
   // Starts text track cue decoding and rendering.
   void StartPlaying();
 
   // Temporarily suspends decoding and rendering, executing |callback| when
   // playback has been suspended.
-  void Pause(const base::Closure& callback);
+  void Pause(base::OnceClosure callback);
 
   // Discards any text data, executing |callback| when completed.
-  void Flush(const base::Closure& callback);
+  void Flush(base::OnceClosure callback);
 
   // Adds new |text_stream|, having the indicated |config|, to the text stream
   // collection managed by this text renderer.
@@ -106,10 +106,10 @@ class MEDIA_EXPORT TextRenderer {
   const AddTextTrackCB add_text_track_cb_;
 
   // Callbacks provided during Initialize().
-  base::Closure ended_cb_;
+  base::RepeatingClosure ended_cb_;
 
   // Callback provided to Pause().
-  base::Closure pause_cb_;
+  base::OnceClosure pause_cb_;
 
   // Simple state tracking variable.
   enum State {

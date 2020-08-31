@@ -10,6 +10,7 @@ details on the presubmit API built into depot_tools.
 
 import fnmatch
 import os
+import sys
 
 
 # CIPD ensure manifest for checking CIPD client itself.
@@ -23,6 +24,10 @@ $VerifiedPlatform linux-mips64 linux-mips64le linux-mipsle
 
 %s %s
 '''
+
+# Timeout for a test to be executed.
+TEST_TIMEOUT_S = 330  # 5m 30s
+
 
 
 def DepotToolsPylint(input_api, output_api):
@@ -57,6 +62,8 @@ def DepotToolsPylint(input_api, output_api):
 
 
 def CommonChecks(input_api, output_api, tests_to_black_list, run_on_python3):
+  input_api.SetTimeout(TEST_TIMEOUT_S)
+
   results = []
   results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
   results.extend(input_api.canned_checks.CheckOwnersFormat(
@@ -70,17 +77,11 @@ def CommonChecks(input_api, output_api, tests_to_black_list, run_on_python3):
     print('Warning: skipping most unit tests on Windows')
     tests_to_black_list = [
         r'.*auth_test\.py$',
-        r'.*gclient_smoketest\.py$',
-        r'.*git_cl_test\.py$',
         r'.*git_common_test\.py$',
         r'.*git_hyper_blame_test\.py$',
-        r'.*git_number_test\.py$',
-        r'.*git_rebase_update_test\.py$',
+        r'.*git_map_test\.py$',
         r'.*ninjalog_uploader_test\.py$',
         r'.*recipes_test\.py$',
-        r'.*roll_dep_test\.py$',
-        r'.*scm_unittest\.py$',
-        r'.*subprocess2_test\.py$',
     ]
 
   # TODO(maruel): Make sure at least one file is modified first.
@@ -100,8 +101,8 @@ def CommonChecks(input_api, output_api, tests_to_black_list, run_on_python3):
   rel_file = lambda rel: input_api.os_path.join(root, rel)
   cipd_manifests = set(rel_file(input_api.os_path.join(*x)) for x in (
     ('cipd_manifest.txt',),
-    ('bootstrap', 'win', 'manifest.txt'),
-    ('bootstrap', 'win', 'manifest_bleeding_edge.txt'),
+    ('bootstrap', 'manifest.txt'),
+    ('bootstrap', 'manifest_bleeding_edge.txt'),
 
     # Also generate a file for the cipd client itself.
     ('cipd_client_version',),

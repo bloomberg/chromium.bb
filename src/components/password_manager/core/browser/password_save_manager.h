@@ -11,6 +11,7 @@
 namespace autofill {
 struct FormData;
 struct PasswordForm;
+class GaiaIdHash;
 }  // namespace autofill
 
 namespace password_manager {
@@ -39,7 +40,7 @@ class PasswordSaveManager {
                     scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder,
                     VotesUploader* votes_uploader) = 0;
 
-  virtual const autofill::PasswordForm* GetPendingCredentials() const = 0;
+  virtual const autofill::PasswordForm& GetPendingCredentials() const = 0;
 
   virtual const base::string16& GetGeneratedPassword() const = 0;
 
@@ -53,6 +54,8 @@ class PasswordSaveManager {
       const autofill::FormData& submitted_form,
       bool is_http_auth,
       bool is_credential_api_save) = 0;
+
+  virtual void ResetPendingCrednetials() = 0;
 
   virtual void Save(const autofill::FormData& observed_form,
                     const autofill::PasswordForm& parsed_submitted_form) = 0;
@@ -75,6 +78,16 @@ class PasswordSaveManager {
 
   // Signals that the user cancels password generation.
   virtual void PasswordNoLongerGenerated() = 0;
+
+  // Moves the pending credentials together with any other PSL matched ones from
+  // the profile store to the account store.
+  virtual void MoveCredentialsToAccountStore() = 0;
+
+  // Adds the |gaia_id_hash| to the |moving_blocked_for_list| of the
+  // PasswordForm returned by GetPendingCredentials() and stores it in the
+  // profile store. This is relevant only for account store users.
+  virtual void BlockMovingToAccountStoreFor(
+      const autofill::GaiaIdHash& gaia_id_hash) = 0;
 
   virtual bool IsNewLogin() const = 0;
   virtual bool IsPasswordUpdate() const = 0;

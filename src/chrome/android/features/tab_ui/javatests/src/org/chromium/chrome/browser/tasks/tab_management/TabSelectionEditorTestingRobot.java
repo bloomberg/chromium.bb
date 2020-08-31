@@ -30,10 +30,12 @@ import static org.chromium.chrome.browser.tasks.tab_management.RecyclerViewMatch
 
 import android.os.Build;
 import android.support.test.espresso.NoMatchingRootException;
+import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.Root;
 import android.support.test.espresso.matcher.BoundedMatcher;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -132,23 +134,23 @@ public class TabSelectionEditorTestingRobot {
     public final TabSelectionEditorTestingRobot.Result resultRobot;
     public final TabSelectionEditorTestingRobot.Action actionRobot;
 
-    TabSelectionEditorTestingRobot() {
-        resultRobot = new TabSelectionEditorTestingRobot.Result();
-        actionRobot = new TabSelectionEditorTestingRobot.Action();
+    public TabSelectionEditorTestingRobot() {
+        resultRobot = new Result();
+        actionRobot = new Action();
     }
 
     /**
      * This Robot is used to perform action within the TabSelectionEditor.
      */
-    class Action {
-        TabSelectionEditorTestingRobot.Action clickItemAtAdapterPosition(int position) {
+    public static class Action {
+        public TabSelectionEditorTestingRobot.Action clickItemAtAdapterPosition(int position) {
             onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                     .inRoot(isTabSelectionEditorPopup())
                     .perform(actionOnItemAtPosition(position, click()));
             return this;
         }
 
-        TabSelectionEditorTestingRobot.Action clickToolbarActionButton() {
+        public TabSelectionEditorTestingRobot.Action clickToolbarActionButton() {
             onView(allOf(withId(org.chromium.chrome.tab_ui.R.id.action_button),
                            withParent(withId(org.chromium.chrome.tab_ui.R.id.action_bar))))
                     .inRoot(isTabSelectionEditorPopup())
@@ -156,7 +158,7 @@ public class TabSelectionEditorTestingRobot {
             return this;
         }
 
-        TabSelectionEditorTestingRobot.Action clickToolbarNavigationButton() {
+        public TabSelectionEditorTestingRobot.Action clickToolbarNavigationButton() {
             onView(allOf(withContentDescription(org.chromium.chrome.tab_ui.R.string.close),
                            withParent(withId(org.chromium.chrome.tab_ui.R.id.action_bar))))
                     .inRoot(isTabSelectionEditorPopup())
@@ -168,20 +170,20 @@ public class TabSelectionEditorTestingRobot {
     /**
      * This Robot is used to verify result within the TabSelectionEditor.
      */
-    class Result {
-        TabSelectionEditorTestingRobot.Result verifyTabSelectionEditorIsVisible() {
+    public static class Result {
+        public TabSelectionEditorTestingRobot.Result verifyTabSelectionEditorIsVisible() {
             onView(withId(org.chromium.chrome.tab_ui.R.id.selectable_list))
                     .inRoot(isTabSelectionEditorPopup())
                     .check(matches(isDisplayed()));
             return this;
         }
 
-        TabSelectionEditorTestingRobot.Result verifyTabSelectionEditorIsHidden() {
+        public TabSelectionEditorTestingRobot.Result verifyTabSelectionEditorIsHidden() {
             try {
                 onView(withId(org.chromium.chrome.tab_ui.R.id.selectable_list))
                         .inRoot(isTabSelectionEditorPopup())
                         .check(matches(isDisplayed()));
-            } catch (NoMatchingRootException e) {
+            } catch (NoMatchingRootException | NoMatchingViewException e) {
                 return this;
             }
 
@@ -189,7 +191,7 @@ public class TabSelectionEditorTestingRobot {
             return this;
         }
 
-        TabSelectionEditorTestingRobot.Result verifyToolbarSelectionTextWithResourceId(
+        public TabSelectionEditorTestingRobot.Result verifyToolbarSelectionTextWithResourceId(
                 int resourceId) {
             onView(withText(resourceId))
                     .inRoot(isTabSelectionEditorPopup())
@@ -197,14 +199,14 @@ public class TabSelectionEditorTestingRobot {
             return this;
         }
 
-        TabSelectionEditorTestingRobot.Result verifyToolbarSelectionText(String text) {
+        public TabSelectionEditorTestingRobot.Result verifyToolbarSelectionText(String text) {
             onView(withText(text))
                     .inRoot(isTabSelectionEditorPopup())
                     .check(matches(isDisplayed()));
             return this;
         }
 
-        TabSelectionEditorTestingRobot.Result verifyToolbarActionButtonWithResourceId(
+        public TabSelectionEditorTestingRobot.Result verifyToolbarActionButtonWithResourceId(
                 int resourceId) {
             onView(allOf(withId(org.chromium.chrome.tab_ui.R.id.action_button),
                            withParent(withId(org.chromium.chrome.tab_ui.R.id.action_bar))))
@@ -213,7 +215,8 @@ public class TabSelectionEditorTestingRobot {
             return this;
         }
 
-        TabSelectionEditorTestingRobot.Result verifyToolbarActionButtonWithText(String text) {
+        public TabSelectionEditorTestingRobot.Result verifyToolbarActionButtonWithText(
+                String text) {
             onView(allOf(withId(org.chromium.chrome.tab_ui.R.id.action_button),
                            withParent(withId(org.chromium.chrome.tab_ui.R.id.action_bar))))
                     .inRoot(isTabSelectionEditorPopup())
@@ -221,7 +224,7 @@ public class TabSelectionEditorTestingRobot {
             return this;
         }
 
-        TabSelectionEditorTestingRobot.Result verifyToolbarActionButtonDisabled() {
+        public TabSelectionEditorTestingRobot.Result verifyToolbarActionButtonDisabled() {
             onView(allOf(withId(org.chromium.chrome.tab_ui.R.id.action_button),
                            withParent(withId(org.chromium.chrome.tab_ui.R.id.action_bar))))
                     .inRoot(isTabSelectionEditorPopup())
@@ -229,7 +232,7 @@ public class TabSelectionEditorTestingRobot {
             return this;
         }
 
-        TabSelectionEditorTestingRobot.Result verifyToolbarActionButtonEnabled() {
+        public TabSelectionEditorTestingRobot.Result verifyToolbarActionButtonEnabled() {
             onView(allOf(withId(org.chromium.chrome.tab_ui.R.id.action_button),
                            withParent(withId(org.chromium.chrome.tab_ui.R.id.action_bar))))
                     .inRoot(isTabSelectionEditorPopup())
@@ -237,7 +240,7 @@ public class TabSelectionEditorTestingRobot {
             return this;
         }
 
-        TabSelectionEditorTestingRobot.Result verifyHasAtLeastNItemVisible(int count) {
+        public TabSelectionEditorTestingRobot.Result verifyHasAtLeastNItemVisible(int count) {
             onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                     .inRoot(isTabSelectionEditorPopup())
                     .check((v, noMatchException) -> {
@@ -249,14 +252,15 @@ public class TabSelectionEditorTestingRobot {
             return this;
         }
 
-        TabSelectionEditorTestingRobot.Result verifyAdapterHasItemCount(int count) {
+        public TabSelectionEditorTestingRobot.Result verifyAdapterHasItemCount(int count) {
             onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                     .inRoot(isTabSelectionEditorPopup())
                     .check(matches(RecyclerViewMatcherUtils.adapterHasItemCount(count)));
             return this;
         }
 
-        TabSelectionEditorTestingRobot.Result verifyItemNotSelectedAtAdapterPosition(int position) {
+        public TabSelectionEditorTestingRobot.Result verifyItemNotSelectedAtAdapterPosition(
+                int position) {
             onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                     .inRoot(isTabSelectionEditorPopup())
                     .check(matches(
@@ -264,7 +268,8 @@ public class TabSelectionEditorTestingRobot {
             return this;
         }
 
-        TabSelectionEditorTestingRobot.Result verifyItemSelectedAtAdapterPosition(int position) {
+        public TabSelectionEditorTestingRobot.Result verifyItemSelectedAtAdapterPosition(
+                int position) {
             onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                     .inRoot(isTabSelectionEditorPopup())
                     .check(matches(
@@ -272,12 +277,13 @@ public class TabSelectionEditorTestingRobot {
             return this;
         }
 
-        TabSelectionEditorTestingRobot.Result verifyUndoSnackbarWithTextIsShown(String text) {
+        public TabSelectionEditorTestingRobot.Result verifyUndoSnackbarWithTextIsShown(
+                String text) {
             onView(withText(text)).check(matches(isDisplayed()));
             return this;
         }
 
-        Result verifyDividerAlwaysStartsAtTheEdgeOfScreen() {
+        public Result verifyDividerAlwaysStartsAtTheEdgeOfScreen() {
             onView(allOf(isDivider(),
                            withParent(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))))
                     .inRoot(isTabSelectionEditorPopup())
@@ -291,7 +297,7 @@ public class TabSelectionEditorTestingRobot {
             return this;
         }
 
-        Result verifyDividerAlwaysStartsAtTheEdgeOfScreenAtPosition(int position) {
+        public Result verifyDividerAlwaysStartsAtTheEdgeOfScreenAtPosition(int position) {
             onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                     .inRoot(isTabSelectionEditorPopup())
                     .perform(scrollToPosition(position));
@@ -309,7 +315,7 @@ public class TabSelectionEditorTestingRobot {
             return this;
         }
 
-        Result verifyDividerNotClickableNotFocusable() {
+        public Result verifyDividerNotClickableNotFocusable() {
             onView(allOf(isDivider(),
                            withParent(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))))
                     .inRoot(isTabSelectionEditorPopup())
@@ -329,7 +335,7 @@ public class TabSelectionEditorTestingRobot {
          * @param targetItemViewType The item view type to be matched.
          * @return {@link Result} to do chain verification.
          */
-        Result verifyHasItemViewTypeAtAdapterPosition(int position, int targetItemViewType) {
+        public Result verifyHasItemViewTypeAtAdapterPosition(int position, int targetItemViewType) {
             onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                     .inRoot(isTabSelectionEditorPopup())
                     .perform(scrollToPosition(position));

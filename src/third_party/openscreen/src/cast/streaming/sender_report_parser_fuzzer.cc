@@ -8,10 +8,10 @@
 #include "platform/api/time.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  using cast::streaming::RtcpSenderReport;
-  using cast::streaming::RtcpSession;
-  using cast::streaming::SenderReportParser;
-  using cast::streaming::Ssrc;
+  using openscreen::cast::RtcpSenderReport;
+  using openscreen::cast::RtcpSession;
+  using openscreen::cast::SenderReportParser;
+  using openscreen::cast::Ssrc;
 
   constexpr Ssrc kSenderSsrcInSeedCorpus = 1;
   constexpr Ssrc kReceiverSsrcInSeedCorpus = 2;
@@ -24,7 +24,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wexit-time-destructors"
   static RtcpSession session(kSenderSsrcInSeedCorpus, kReceiverSsrcInSeedCorpus,
-                             openscreen::platform::Clock::now());
+                             openscreen::Clock::now());
   static SenderReportParser parser(&session);
 #pragma clang diagnostic pop
 

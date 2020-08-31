@@ -15,16 +15,20 @@
 #include "base/optional.h"
 
 class TabGroup;
-class TabGroupId;
-class TabGroupVisualData;
 class TabGroupController;
 
+namespace tab_groups {
+enum class TabGroupColorId;
+class TabGroupId;
+class TabGroupVisualData;
+}  // namespace tab_groups
+
 // A model for all tab groups with at least one tab in the tabstrip. Keeps a map
-// of TabGroupIds and TabGroups and provides an API for maintaining it. It is
-// owned and used primarily by TabStripModel, which handles tab-to-group
-// correspondences and any groupedness state changes on tabs. TabStipModel then
-// notifies TabStrip of any groupedness state changes that need to be reflected
-// in the view.
+// of tab_groups::TabGroupIds and TabGroups and provides an API for maintaining
+// it. It is owned and used primarily by TabStripModel, which handles
+// tab-to-group correspondences and any groupedness state changes on tabs.
+// TabStipModel then notifies TabStrip of any groupedness state changes that
+// need to be reflected in the view.
 class TabGroupModel {
  public:
   explicit TabGroupModel(TabGroupController* controller);
@@ -33,25 +37,31 @@ class TabGroupModel {
   // Registers a tab group and returns the newly registered group. It will
   // initially be empty, but the expectation is that at least one tab will be
   // added to it immediately.
-  TabGroup* AddTabGroup(TabGroupId id,
-                        base::Optional<TabGroupVisualData> visual_data);
+  TabGroup* AddTabGroup(
+      const tab_groups::TabGroupId& id,
+      base::Optional<tab_groups::TabGroupVisualData> visual_data);
 
   // Returns whether a tab group with the given |id| exists.
-  bool ContainsTabGroup(TabGroupId id) const;
+  bool ContainsTabGroup(const tab_groups::TabGroupId& id) const;
 
   // Returns the tab group with the given |id|. The group must exist.
-  TabGroup* GetTabGroup(TabGroupId id) const;
+  TabGroup* GetTabGroup(const tab_groups::TabGroupId& id) const;
 
   // Removes the tab group with the given |id| from the registry. Should be
   // called whenever the group becomes empty.
-  void RemoveTabGroup(TabGroupId id);
+  void RemoveTabGroup(const tab_groups::TabGroupId& id);
 
-  std::vector<TabGroupId> ListTabGroups() const;
+  std::vector<tab_groups::TabGroupId> ListTabGroups() const;
 
  private:
-  std::map<TabGroupId, std::unique_ptr<TabGroup>> groups_;
+  std::map<tab_groups::TabGroupId, std::unique_ptr<TabGroup>> groups_;
 
   TabGroupController* controller_;
+
+  // Returns the least-used color in the color set, breaking ties toward the
+  // first color in the set. Used to initialize a new group's color, which
+  // should be as distinct from the other groups as possible.
+  tab_groups::TabGroupColorId GetNextColor() const;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_GROUP_MODEL_H_

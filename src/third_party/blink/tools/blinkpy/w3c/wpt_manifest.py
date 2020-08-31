@@ -1,7 +1,6 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """WPTManifest is responsible for handling MANIFEST.json.
 
 The MANIFEST.json file contains metadata about files in web-platform-tests,
@@ -25,10 +24,22 @@ _log = logging.getLogger(__file__)
 
 # The default filename of manifest expected by `wpt`.
 MANIFEST_NAME = 'MANIFEST.json'
+
+# Generating the WPT manifest entirely from scratch is a slow process; it takes
+# >10 seconds real-time on a powerful Linux desktop. To avoid paying this cost,
+# we keep a cached version of the manifest in the source tree, the 'base
+# manifest', and update it automatically whenever we import WPT. We utilize a
+# separate file for this and then copy it to MANIFEST_NAME so that modifications
+# or corruptions (which often happen if the test runner is killed by the user
+# mid-run) do not cause trouble.
+#
 # The filename used for the base manifest includes the version as a
 # workaround for trouble landing huge changes to the base manifest when
 # the version changes. See https://crbug.com/876717.
-BASE_MANIFEST_NAME = 'WPT_BASE_MANIFEST_6.json'
+#
+# NOTE: If this is changed, be sure to update other instances of
+# "WPT_BASE_MANIFEST_8" in the code.
+BASE_MANIFEST_NAME = 'WPT_BASE_MANIFEST_8.json'
 
 # TODO(robertma): Use the official wpt.manifest module.
 
@@ -39,15 +50,27 @@ class WPTManifest(object):
     The high-level structure of the manifest is as follows:
         {
             "items": {
-                "manual": {
-                    "file/path": [manifest items],
-                    ...
+                "crashtest": {
+                    "dir1": {
+                        "dir2": {
+                            "filename1": [
+                                "git object ID",
+                                [manifest item],
+                                [manifest item],
+                                ...
+                            ],
+                        },
+                    },
                 },
+                "manual": {...},
                 "reftest": {...},
-                "testharness": {...}
+                "testharness": {...},
             },
             // other info...
         }
+
+    The 'git object ID' is the ID the git repository has assigned to the file
+    blob, i.e. via git hash-object.
 
     The format of a manifest item depends on:
         https://github.com/web-platform-tests/wpt/blob/master/tools/manifest/item.py
@@ -63,7 +86,14 @@ class WPTManifest(object):
 
     def __init__(self, json_content):
         self.raw_dict = json.loads(json_content)
-        self.test_types = ('manual', 'reftest', 'testharness')
+        # As a workaround to handle the change from a flat-list to a trie
+        # structure in the v8 manifest, flatten the items back to the v7 format.
+        #
+        # TODO(crbug.com/912496): Properly support the trie structure.
+        self.raw_dict['items'] = self._flatten_items(
+            self.raw_dict.get('items', {}))
+
+        self.test_types = ('manual', 'reftest', 'testharness', 'crashtest')
         self.test_name_to_file = {}
 
     def _items_for_file_path(self, path_in_wpt):
@@ -145,6 +175,11 @@ class WPTManifest(object):
         assert not url.startswith('/')
         return url in self.all_urls()
 
+    def is_crash_test(self, url):
+        """Checks if a WPT is a crashtest according to the manifest."""
+        items = self.raw_dict.get('items', {})
+        return url in items.get('crashtest', {})
+
     def is_slow_test(self, url):
         """Checks if a WPT is slow (long timeout) according to the manifest.
 
@@ -219,29 +254,115 @@ class WPTManifest(object):
 
         # TODO(crbug.com/853815): perhaps also cache the manifest for wpt_internal.
         if 'external' in path:
-            base_manifest_path = fs.join(port.web_tests_dir(), 'external', BASE_MANIFEST_NAME)
+            base_manifest_path = fs.join(port.web_tests_dir(), 'external',
+                                         BASE_MANIFEST_NAME)
             if fs.exists(base_manifest_path):
                 fs.copyfile(base_manifest_path, manifest_path)
             else:
-                _log.error('Manifest base not found at "%s".', base_manifest_path)
+                _log.error('Manifest base not found at "%s".',
+                           base_manifest_path)
 
         WPTManifest.generate_manifest(port.host, wpt_path)
 
         if fs.isfile(manifest_path):
             _log.debug('Manifest generation completed.')
         else:
-            _log.error('Manifest generation failed; creating an empty MANIFEST.json...')
+            _log.error(
+                'Manifest generation failed; creating an empty MANIFEST.json...'
+            )
             fs.write_text_file(manifest_path, '{}')
 
     @staticmethod
     def generate_manifest(host, dest_path):
         """Generates MANIFEST.json on the specified directory."""
         finder = PathFinder(host.filesystem)
-        wpt_exec_path = finder.path_from_blink_tools('blinkpy', 'third_party', 'wpt', 'wpt', 'wpt')
-        cmd = ['python', wpt_exec_path, 'manifest', '--no-download', '--tests-root', dest_path]
+        wpt_exec_path = finder.path_from_blink_tools('blinkpy', 'third_party',
+                                                     'wpt', 'wpt', 'wpt')
+        cmd = [
+            'python', wpt_exec_path, 'manifest', '--no-download',
+            '--tests-root', dest_path
+        ]
 
         # ScriptError will be raised if the command fails.
         host.executive.run_command(
             cmd,
-            return_stderr=True  # This will also include stderr in the exception message.
-        )
+            # This will also include stderr in the exception message.
+            return_stderr=True)
+
+    @staticmethod
+    def _flatten_items(items):
+        """Flattens the 'items' object of a v8 manifest to the v7 format.
+
+        The v8 manifest is a trie, where each level is a directory. The v7
+        format, which the blinkpy code was written around, uses flat list:
+
+        {
+            "items": {
+                "crashtest": {
+                    "dir1/dir2/filename1": [manifest items],
+                    "dir1/dir2/filename2": [manifest items],
+                    ...
+                },
+                "manual": {...},
+                "reftest": {...},
+                "testharness": {...}
+            },
+            // other info...
+        }
+
+        Args:
+            items: an 'items' entry in the v8 trie format.
+
+        Returns:
+            The input data, rewritten to the v7 flat-list format.
+        """
+
+        def _handle_node(test_type_items, node, path):
+            """Recursively walks the trie, converting to the flat format.
+
+            Args:
+                test_type_items: the root dictionary for the current test type
+                    (e.g. 'testharness'). Will be updated by this function with
+                    new entries for any files found.
+                node: the current node in the trie
+                path: the accumulated filepath so far
+            """
+            assert isinstance(node, dict)
+
+            for k, v in node.items():
+                # WPT urls are always joined by '/', even on Windows.
+                new_path = k if not path else path + '/' + k
+
+                # Leafs (files) map to a list rather than a dict, e.g.
+                #     'filename.html': [
+                #       'git object ID',
+                #       [manifest item],
+                #       [manifest item],
+                #     ],
+                if isinstance(v, list):
+                    # A file should be unique, and it should always contain both
+                    # a git object ID and at least one manifest item (which may
+                    # be empty).
+                    assert new_path not in test_type_items
+                    assert len(v) >= 2
+
+                    # We have no use for the git object ID.
+                    manifest_items = v[1:]
+                    for manifest_item in manifest_items:
+                        # As an optimization, the v8 manifest will omit the URL
+                        # if it is the same as the filepath. The v7 manifest did
+                        # not, so restore that information.
+                        if len(manifest_item) and manifest_item[0] is None:
+                            manifest_item[0] = new_path
+                    test_type_items[new_path] = manifest_items
+                else:
+                    # Otherwise, we should be at a directory and so can recurse.
+                    _handle_node(test_type_items, v, new_path)
+
+        new_items = {}
+        for test_type, value in items.items():
+            test_type_items = {}
+            _handle_node(test_type_items, value, '')
+            new_items[test_type] = test_type_items
+
+        return new_items

@@ -5,9 +5,11 @@
 #import <Cocoa/Cocoa.h>
 #import <SecurityInterface/SFCertificatePanel.h>
 
+#include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/remote_cocoa/browser/window.h"
@@ -55,11 +57,11 @@
 
 @implementation SSLCertificateViewerMac {
   // The corresponding list of certificates.
-  base::scoped_nsobject<NSArray> certificates_;
-  base::scoped_nsobject<SFCertificatePanel> panel_;
+  base::scoped_nsobject<NSArray> _certificates;
+  base::scoped_nsobject<SFCertificatePanel> _panel;
 
   // Invisible overlay window used to block interaction with the tab underneath.
-  views::Widget* overlayWindow_;
+  views::Widget* _overlayWindow;
 }
 
 - (instancetype)initWithCertificate:(net::X509Certificate*)certificate
@@ -71,7 +73,7 @@
     if (!certChain)
       return self;
     NSArray* certificates = base::mac::CFToNSCast(certChain.get());
-    certificates_.reset([certificates retain]);
+    _certificates.reset([certificates retain]);
   }
 
   // Explicitly disable revocation checking, regardless of user preferences
@@ -111,17 +113,17 @@
     return self;
   }
 
-  panel_.reset([[SFCertificatePanel alloc] init]);
-  [panel_ setPolicies:base::mac::CFToNSCast(policies.get())];
+  _panel.reset([[SFCertificatePanel alloc] init]);
+  [_panel setPolicies:base::mac::CFToNSCast(policies.get())];
   return self;
 }
 
 - (void)showCertificateSheet:(NSWindow*)window {
-  [panel_ beginSheetForWindow:window
+  [_panel beginSheetForWindow:window
                 modalDelegate:self
                didEndSelector:@selector(sheetDidEnd:returnCode:context:)
                   contextInfo:nil
-                 certificates:certificates_
+                 certificates:_certificates
                     showGroup:YES];
 }
 
@@ -129,18 +131,18 @@
   // Closing the sheet using -[NSApp endSheet:] doesn't work so use the private
   // method. If the sheet is already closed then this is a call on nil and thus
   // a no-op.
-  [panel_ _dismissWithCode:NSModalResponseCancel];
+  [_panel _dismissWithCode:NSModalResponseCancel];
 }
 
 - (void)sheetDidEnd:(NSWindow*)parent
          returnCode:(NSInteger)returnCode
             context:(void*)context {
-  overlayWindow_->Close();  // Asynchronously releases |self|.
-  panel_.reset();
+  _overlayWindow->Close();  // Asynchronously releases |self|.
+  _panel.reset();
 }
 
 - (void)setOverlayWindow:(views::Widget*)overlayWindow {
-  overlayWindow_ = overlayWindow;
+  _overlayWindow = overlayWindow;
 }
 
 @end
@@ -156,22 +158,10 @@ class CertificateAnchorWidgetDelegate : public views::WidgetDelegateView {
       : certificate_viewer_([[SSLCertificateViewerMac alloc]
             initWithCertificate:cert
                  forWebContents:web_contents]) {
-    views::Widget* overlayWindow =
-        constrained_window::ShowWebModalDialogWithOverlayViews(this,
-                                                               web_contents);
-    NSWindow* overlayNSWindow =
-        overlayWindow->GetNativeWindow().GetNativeNSWindow();
-    // TODO(https://crbug.com/913303): The certificate viewer's interface to
-    // Cocoa should be wrapped in a mojo interface in order to allow
-    // instantiating across processes. As a temporary solution, create a
-    // transparent in-process window to the front.
-    if (remote_cocoa::IsWindowRemote(overlayNSWindow)) {
-      remote_views_clone_window_ =
-          remote_cocoa::CreateInProcessTransparentClone(overlayNSWindow);
-      overlayNSWindow = remote_views_clone_window_;
-    }
-    [certificate_viewer_ showCertificateSheet:overlayNSWindow];
-    [certificate_viewer_ setOverlayWindow:overlayWindow];
+    constrained_window::ShowWebModalDialogWithOverlayViews(
+        this, web_contents,
+        base::BindOnce(&CertificateAnchorWidgetDelegate::ShowSheet,
+                       weak_factory_.GetWeakPtr()));
   }
 
   ~CertificateAnchorWidgetDelegate() override {
@@ -186,8 +176,25 @@ class CertificateAnchorWidgetDelegate : public views::WidgetDelegateView {
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_CHILD; }
 
  private:
+  void ShowSheet(views::Widget* overlay_window) {
+    NSWindow* overlay_ns_window =
+        overlay_window->GetNativeWindow().GetNativeNSWindow();
+    // TODO(https://crbug.com/913303): The certificate viewer's interface to
+    // Cocoa should be wrapped in a mojo interface in order to allow
+    // instantiating across processes. As a temporary solution, create a
+    // transparent in-process window to the front.
+    if (remote_cocoa::IsWindowRemote(overlay_ns_window)) {
+      remote_views_clone_window_ =
+          remote_cocoa::CreateInProcessTransparentClone(overlay_ns_window);
+      overlay_ns_window = remote_views_clone_window_;
+    }
+    [certificate_viewer_ showCertificateSheet:overlay_ns_window];
+    [certificate_viewer_ setOverlayWindow:overlay_window];
+  }
+
   base::scoped_nsobject<SSLCertificateViewerMac> certificate_viewer_;
   NSWindow* remote_views_clone_window_ = nil;
+  base::WeakPtrFactory<CertificateAnchorWidgetDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CertificateAnchorWidgetDelegate);
 };

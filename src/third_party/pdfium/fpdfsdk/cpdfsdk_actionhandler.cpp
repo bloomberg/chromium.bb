@@ -59,6 +59,50 @@ bool CPDFSDK_ActionHandler::DoAction_FieldJavaScript(
   return false;
 }
 
+bool CPDFSDK_ActionHandler::DoAction_Link(
+    const CPDF_Action& action,
+    CPDF_AAction::AActionType type,
+    CPDFSDK_FormFillEnvironment* form_fill_env,
+    int modifiers) {
+  ASSERT(form_fill_env);
+
+  if (!CPDF_AAction::IsUserInput(type))
+    return false;
+
+  switch (action.GetType()) {
+    case CPDF_Action::GoTo:
+      DoAction_GoTo(form_fill_env, action);
+      return true;
+    case CPDF_Action::URI:
+      DoAction_URI(form_fill_env, action, modifiers);
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool CPDFSDK_ActionHandler::DoAction_Destination(
+    const CPDF_Dest& dest,
+    CPDFSDK_FormFillEnvironment* form_fill_env) {
+  ASSERT(form_fill_env);
+  CPDF_Document* document = form_fill_env->GetPDFDocument();
+  ASSERT(document);
+
+  const CPDF_Array* dest_array = dest.GetArray();
+  std::vector<float> dest_positions;
+  // |dest_array| index 0 contains destination page details and index 1 contains
+  // parameter that explains about the rest of |dest_array|.
+  if (dest_array) {
+    for (size_t i = 2; i < dest_array->size(); i++)
+      dest_positions.push_back(dest_array->GetNumberAt(i));
+  }
+
+  form_fill_env->DoGoToAction(dest.GetDestPageIndex(document),
+                              dest.GetZoomMode(), dest_positions.data(),
+                              dest_positions.size());
+  return true;
+}
+
 bool CPDFSDK_ActionHandler::DoAction_Page(
     const CPDF_Action& action,
     enum CPDF_AAction::AActionType eType,
@@ -105,7 +149,7 @@ bool CPDFSDK_ActionHandler::ExecuteDocumentOpenAction(
     }
   } else {
     DoAction_NoJs(action, CPDF_AAction::AActionType::kDocumentOpen,
-                  pFormFillEnv);
+                  pFormFillEnv, /*modifiers=*/0);
   }
 
   for (int32_t i = 0, sz = action.GetSubActionsCount(); i < sz; i++) {
@@ -136,7 +180,7 @@ bool CPDFSDK_ActionHandler::ExecuteDocumentPageAction(
         RunDocumentPageJavaScript(pFormFillEnv, type, swJS);
     }
   } else {
-    DoAction_NoJs(action, type, pFormFillEnv);
+    DoAction_NoJs(action, type, pFormFillEnv, /*modifiers=*/0);
   }
 
   ASSERT(pFormFillEnv);
@@ -184,7 +228,7 @@ bool CPDFSDK_ActionHandler::ExecuteFieldAction(
       }
     }
   } else {
-    DoAction_NoJs(action, type, pFormFillEnv);
+    DoAction_NoJs(action, type, pFormFillEnv, /*modifiers=*/0);
   }
 
   for (int32_t i = 0, sz = action.GetSubActionsCount(); i < sz; i++) {
@@ -200,7 +244,8 @@ bool CPDFSDK_ActionHandler::ExecuteFieldAction(
 void CPDFSDK_ActionHandler::DoAction_NoJs(
     const CPDF_Action& action,
     CPDF_AAction::AActionType type,
-    CPDFSDK_FormFillEnvironment* pFormFillEnv) {
+    CPDFSDK_FormFillEnvironment* pFormFillEnv,
+    int modifiers) {
   ASSERT(pFormFillEnv);
 
   switch (action.GetType()) {
@@ -208,8 +253,8 @@ void CPDFSDK_ActionHandler::DoAction_NoJs(
       DoAction_GoTo(pFormFillEnv, action);
       break;
     case CPDF_Action::URI:
-      if (CPDF_AAction::IsUserClick(type))
-        DoAction_URI(pFormFillEnv, action);
+      if (CPDF_AAction::IsUserInput(type))
+        DoAction_URI(pFormFillEnv, action, modifiers);
       break;
     case CPDF_Action::Hide:
       DoAction_Hide(action, pFormFillEnv);
@@ -218,7 +263,7 @@ void CPDFSDK_ActionHandler::DoAction_NoJs(
       DoAction_Named(pFormFillEnv, action);
       break;
     case CPDF_Action::SubmitForm:
-      if (CPDF_AAction::IsUserClick(type))
+      if (CPDF_AAction::IsUserInput(type))
         DoAction_SubmitForm(action, pFormFillEnv);
       break;
     case CPDF_Action::ResetForm:
@@ -254,25 +299,17 @@ void CPDFSDK_ActionHandler::DoAction_GoTo(
   ASSERT(pPDFDocument);
 
   CPDF_Dest MyDest = action.GetDest(pPDFDocument);
-  int nPageIndex = MyDest.GetDestPageIndex(pPDFDocument);
-  int nFitType = MyDest.GetZoomMode();
-  const CPDF_Array* pMyArray = MyDest.GetArray();
-  std::vector<float> posArray;
-  if (pMyArray) {
-    for (size_t i = 2; i < pMyArray->size(); i++)
-      posArray.push_back(pMyArray->GetNumberAt(i));
-  }
-  pFormFillEnv->DoGoToAction(nPageIndex, nFitType, posArray.data(),
-                             posArray.size());
+  DoAction_Destination(MyDest, pFormFillEnv);
 }
 
 void CPDFSDK_ActionHandler::DoAction_URI(
     CPDFSDK_FormFillEnvironment* pFormFillEnv,
-    const CPDF_Action& action) {
+    const CPDF_Action& action,
+    int modifiers) {
   ASSERT(action.GetDict());
 
   ByteString sURI = action.GetURI(pFormFillEnv->GetPDFDocument());
-  pFormFillEnv->DoURIAction(sURI.c_str());
+  pFormFillEnv->DoURIAction(sURI.c_str(), modifiers);
 }
 
 void CPDFSDK_ActionHandler::DoAction_Named(
@@ -293,51 +330,51 @@ void CPDFSDK_ActionHandler::RunFieldJavaScript(
   ASSERT(type != CPDF_AAction::kCalculate);
   ASSERT(type != CPDF_AAction::kFormat);
 
-  RunScript(
-      pFormFillEnv, script,
-      [type, data, pFormField](IJS_EventContext* context) {
-        switch (type) {
-          case CPDF_AAction::kCursorEnter:
-            context->OnField_MouseEnter(data->bModifier, data->bShift,
-                                        pFormField);
-            break;
-          case CPDF_AAction::kCursorExit:
-            context->OnField_MouseExit(data->bModifier, data->bShift,
-                                       pFormField);
-            break;
-          case CPDF_AAction::kButtonDown:
-            context->OnField_MouseDown(data->bModifier, data->bShift,
-                                       pFormField);
-            break;
-          case CPDF_AAction::kButtonUp:
-            context->OnField_MouseUp(data->bModifier, data->bShift, pFormField);
-            break;
-          case CPDF_AAction::kGetFocus:
-            context->OnField_Focus(data->bModifier, data->bShift, pFormField,
-                                   &data->sValue);
-            break;
-          case CPDF_AAction::kLoseFocus:
-            context->OnField_Blur(data->bModifier, data->bShift, pFormField,
-                                  &data->sValue);
-            break;
-          case CPDF_AAction::kKeyStroke:
-            context->OnField_Keystroke(
-                &data->sChange, data->sChangeEx, data->bKeyDown,
-                data->bModifier, &data->nSelEnd, &data->nSelStart, data->bShift,
-                pFormField, &data->sValue, data->bWillCommit, data->bFieldFull,
-                &data->bRC);
-            break;
-          case CPDF_AAction::kValidate:
-            context->OnField_Validate(&data->sChange, data->sChangeEx,
-                                      data->bKeyDown, data->bModifier,
-                                      data->bShift, pFormField, &data->sValue,
-                                      &data->bRC);
-            break;
-          default:
-            NOTREACHED();
-            break;
-        }
-      });
+  RunScript(pFormFillEnv, script,
+            [type, data, pFormField](IJS_EventContext* context) {
+              switch (type) {
+                case CPDF_AAction::kCursorEnter:
+                  context->OnField_MouseEnter(data->bModifier, data->bShift,
+                                              pFormField);
+                  break;
+                case CPDF_AAction::kCursorExit:
+                  context->OnField_MouseExit(data->bModifier, data->bShift,
+                                             pFormField);
+                  break;
+                case CPDF_AAction::kButtonDown:
+                  context->OnField_MouseDown(data->bModifier, data->bShift,
+                                             pFormField);
+                  break;
+                case CPDF_AAction::kButtonUp:
+                  context->OnField_MouseUp(data->bModifier, data->bShift,
+                                           pFormField);
+                  break;
+                case CPDF_AAction::kGetFocus:
+                  context->OnField_Focus(data->bModifier, data->bShift,
+                                         pFormField, &data->sValue);
+                  break;
+                case CPDF_AAction::kLoseFocus:
+                  context->OnField_Blur(data->bModifier, data->bShift,
+                                        pFormField, &data->sValue);
+                  break;
+                case CPDF_AAction::kKeyStroke:
+                  context->OnField_Keystroke(
+                      &data->sChange, data->sChangeEx, data->bKeyDown,
+                      data->bModifier, &data->nSelEnd, &data->nSelStart,
+                      data->bShift, pFormField, &data->sValue,
+                      data->bWillCommit, data->bFieldFull, &data->bRC);
+                  break;
+                case CPDF_AAction::kValidate:
+                  context->OnField_Validate(&data->sChange, data->sChangeEx,
+                                            data->bKeyDown, data->bModifier,
+                                            data->bShift, pFormField,
+                                            &data->sValue, &data->bRC);
+                  break;
+                default:
+                  NOTREACHED();
+                  break;
+              }
+            });
 }
 
 void CPDFSDK_ActionHandler::RunDocumentOpenJavaScript(

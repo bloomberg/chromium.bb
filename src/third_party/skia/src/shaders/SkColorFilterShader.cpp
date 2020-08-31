@@ -10,6 +10,7 @@
 #include "src/core/SkArenaAlloc.h"
 #include "src/core/SkRasterPipeline.h"
 #include "src/core/SkReadBuffer.h"
+#include "src/core/SkVM.h"
 #include "src/core/SkWriteBuffer.h"
 #include "src/shaders/SkColorFilterShader.h"
 
@@ -60,31 +61,27 @@ bool SkColorFilterShader::onAppendStages(const SkStageRec& rec) const {
     return true;
 }
 
-bool SkColorFilterShader::onProgram(skvm::Builder* p,
-                                    SkColorSpace* dstCS,
-                                    skvm::Uniforms* uniforms,
-                                    skvm::F32 x, skvm::F32 y,
-                                    skvm::F32* r, skvm::F32* g, skvm::F32* b, skvm::F32* a) const {
+skvm::Color SkColorFilterShader::onProgram(skvm::Builder* p,
+                                           skvm::F32 x, skvm::F32 y, skvm::Color paint,
+                                           const SkMatrix& ctm, const SkMatrix* localM,
+                                           SkFilterQuality quality, const SkColorInfo& dst,
+                                           skvm::Uniforms* uniforms, SkArenaAlloc* alloc) const {
     // Run the shader.
-    if (!as_SB(fShader)->program(p, dstCS, uniforms, x,y, r,g,b,a)) {
-        return false;
+    skvm::Color c = as_SB(fShader)->program(p, x,y, paint, ctm,localM, quality,dst, uniforms,alloc);
+    if (!c) {
+        return {};
     }
-
     // Scale that by alpha.
     if (fAlpha != 1.0f) {
         skvm::F32 A = p->uniformF(uniforms->pushF(fAlpha));
-        *r = p->mul(*r, A);
-        *g = p->mul(*g, A);
-        *b = p->mul(*b, A);
-        *a = p->mul(*a, A);
+        c.r *= A;
+        c.g *= A;
+        c.b *= A;
+        c.a *= A;
     }
 
     // Finally run that through the color filter.
-    if (!fFilter->program(p, dstCS, uniforms, r,g,b,a)) {
-        return false;
-    }
-
-    return true;
+    return fFilter->program(p,c, dst.colorSpace(), uniforms,alloc);
 }
 
 #if SK_SUPPORT_GPU

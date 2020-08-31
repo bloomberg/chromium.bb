@@ -163,8 +163,8 @@ class CPDF_CalRGB final : public CPDF_ColorSpace {
   float m_BlackPoint[kBlackWhitePointCount];
   float m_Gamma[kGammaCount];
   float m_Matrix[kMatrixCount];
-  bool m_bGamma = false;
-  bool m_bMatrix = false;
+  bool m_bHasGamma = false;
+  bool m_bHasMatrix = false;
 };
 
 class CPDF_LabCS final : public CPDF_ColorSpace {
@@ -231,13 +231,12 @@ class CPDF_ICCBasedCS final : public CPDF_ColorSpace {
                             uint32_t nExpectedComponents);
   static RetainPtr<CPDF_ColorSpace> GetStockAlternateProfile(
       uint32_t nComponents);
-  static bool IsValidComponents(int32_t nComps);
   static std::vector<float> GetRanges(const CPDF_Dictionary* pDict,
                                       uint32_t nComponents);
 
   RetainPtr<CPDF_ColorSpace> m_pAlterCS;
   RetainPtr<CPDF_IccProfile> m_pProfile;
-  mutable std::vector<uint8_t> m_pCache;
+  mutable std::vector<uint8_t, FxAllocAllocator<uint8_t>> m_pCache;
   std::vector<float> m_pRanges;
 };
 
@@ -254,7 +253,6 @@ class CPDF_IndexedCS final : public CPDF_ColorSpace {
   uint32_t v_Load(CPDF_Document* pDoc,
                   const CPDF_Array* pArray,
                   std::set<const CPDF_Object*>* pVisited) override;
-
 
  private:
   explicit CPDF_IndexedCS(CPDF_Document* pDoc);
@@ -580,6 +578,11 @@ uint32_t CPDF_ColorSpace::ComponentsForFamily(int family) {
   }
 }
 
+// static
+bool CPDF_ColorSpace::IsValidIccComponents(int components) {
+  return components == 1 || components == 3 || components == 4;
+}
+
 std::vector<float> CPDF_ColorSpace::CreateBufAndSetDefaultColor() const {
   ASSERT(m_Family != PDFCS_PATTERN);
 
@@ -732,14 +735,14 @@ uint32_t CPDF_CalRGB::v_Load(CPDF_Document* pDoc,
 
   const CPDF_Array* pParam = pDict->GetArrayFor("Gamma");
   if (pParam) {
-    m_bGamma = true;
+    m_bHasGamma = true;
     for (size_t i = 0; i < FX_ArraySize(m_Gamma); ++i)
       m_Gamma[i] = pParam->GetNumberAt(i);
   }
 
   pParam = pDict->GetArrayFor("Matrix");
   if (pParam) {
-    m_bMatrix = true;
+    m_bHasMatrix = true;
     for (size_t i = 0; i < FX_ArraySize(m_Matrix); ++i)
       m_Matrix[i] = pParam->GetNumberAt(i);
   }
@@ -753,7 +756,7 @@ bool CPDF_CalRGB::GetRGB(const float* pBuf,
   float A_ = pBuf[0];
   float B_ = pBuf[1];
   float C_ = pBuf[2];
-  if (m_bGamma) {
+  if (m_bHasGamma) {
     A_ = FXSYS_pow(A_, m_Gamma[0]);
     B_ = FXSYS_pow(B_, m_Gamma[1]);
     C_ = FXSYS_pow(C_, m_Gamma[2]);
@@ -762,7 +765,7 @@ bool CPDF_CalRGB::GetRGB(const float* pBuf,
   float X;
   float Y;
   float Z;
-  if (m_bMatrix) {
+  if (m_bHasMatrix) {
     X = m_Matrix[0] * A_ + m_Matrix[3] * B_ + m_Matrix[6] * C_;
     Y = m_Matrix[1] * A_ + m_Matrix[4] * B_ + m_Matrix[7] * C_;
     Z = m_Matrix[2] * A_ + m_Matrix[5] * B_ + m_Matrix[8] * C_;
@@ -916,7 +919,7 @@ uint32_t CPDF_ICCBasedCS::v_Load(CPDF_Document* pDoc,
   // with Acrobat and reject bad values.
   const CPDF_Dictionary* pDict = pStream->GetDict();
   int32_t nDictComponents = pDict ? pDict->GetIntegerFor("N") : 0;
-  if (!IsValidComponents(nDictComponents))
+  if (!IsValidIccComponents(nDictComponents))
     return 0;
 
   uint32_t nComponents = static_cast<uint32_t>(nDictComponents);
@@ -1001,7 +1004,7 @@ void CPDF_ICCBasedCS::TranslateImageLine(uint8_t* pDestBuf,
 
   // |nMaxColors| will not overflow since |nComponents| is limited in size.
   const uint32_t nComponents = CountComponents();
-  ASSERT(IsValidComponents(nComponents));
+  ASSERT(IsValidIccComponents(nComponents));
   int nMaxColors = 1;
   for (uint32_t i = 0; i < nComponents; i++)
     nMaxColors *= 52;
@@ -1020,8 +1023,10 @@ void CPDF_ICCBasedCS::TranslateImageLine(uint8_t* pDestBuf,
   }
 
   if (m_pCache.empty()) {
-    m_pCache = pdfium::Vector2D<uint8_t>(nMaxColors, 3);
-    auto temp_src = pdfium::Vector2D<uint8_t>(nMaxColors, nComponents);
+    m_pCache =
+        pdfium::Vector2D<uint8_t, FxAllocAllocator<uint8_t>>(nMaxColors, 3);
+    auto temp_src = pdfium::Vector2D<uint8_t, FxAllocAllocator<uint8_t>>(
+        nMaxColors, nComponents);
     size_t src_index = 0;
     for (int i = 0; i < nMaxColors; i++) {
       uint32_t color = i;
@@ -1095,14 +1100,9 @@ RetainPtr<CPDF_ColorSpace> CPDF_ICCBasedCS::GetStockAlternateProfile(
 }
 
 // static
-bool CPDF_ICCBasedCS::IsValidComponents(int32_t nComps) {
-  return nComps == 1 || nComps == 3 || nComps == 4;
-}
-
-// static
 std::vector<float> CPDF_ICCBasedCS::GetRanges(const CPDF_Dictionary* pDict,
                                               uint32_t nComponents) {
-  ASSERT(IsValidComponents(nComponents));
+  ASSERT(IsValidIccComponents(nComponents));
 
   std::vector<float> ranges;
   const CPDF_Array* pRanges = pDict->GetArrayFor("Range");
@@ -1163,7 +1163,7 @@ uint32_t CPDF_IndexedCS::v_Load(CPDF_Document* pDoc,
   } else if (const CPDF_Stream* pStream = pTableObj->AsStream()) {
     auto pAcc = pdfium::MakeRetain<CPDF_StreamAcc>(pStream);
     pAcc->LoadAllDataFiltered();
-    m_Table = ByteStringView(pAcc->GetData(), pAcc->GetSize());
+    m_Table = ByteStringView(pAcc->GetSpan());
   }
   return 1;
 }

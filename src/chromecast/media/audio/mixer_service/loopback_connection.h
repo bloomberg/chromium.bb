@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "chromecast/media/audio/mixer_service/loopback_interrupt_reason.h"
 #include "chromecast/media/audio/mixer_service/mixer_connection.h"
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
 #include "chromecast/public/media/decoder_config.h"
@@ -42,7 +43,7 @@ class LoopbackConnection : public MixerConnection,
     // Called if the loopback data is not continuous (ie, does not accurately
     // represent the actual output) for any reason. For example, if there is an
     // output underflow, or if output is disabled due to no output streams.
-    virtual void OnLoopbackInterrupted() = 0;
+    virtual void OnLoopbackInterrupted(LoopbackInterruptReason reason) = 0;
 
    protected:
     virtual ~Delegate() = default;
@@ -65,7 +66,7 @@ class LoopbackConnection : public MixerConnection,
 
   // MixerSocket::Delegate implementation:
   bool HandleMetadata(const Generic& message) override;
-  bool HandleAudioData(char* data, int size, int64_t timestamp) override;
+  bool HandleAudioData(char* data, size_t size, int64_t timestamp) override;
 
   Delegate* const delegate_;
 

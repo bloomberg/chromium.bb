@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test.h"
 
 namespace banners {
 
@@ -221,7 +222,7 @@ class AppBannerManagerBrowserTest : public AppBannerManagerBrowserTestBase {
         base::BindOnce(
             base::IgnoreResult(&ui_test_utils::NavigateToURLWithDisposition),
             browser, url, WindowOpenDisposition::CURRENT_TAB,
-            ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION),
+            ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP),
         expected_will_show, expected_state);
   }
 

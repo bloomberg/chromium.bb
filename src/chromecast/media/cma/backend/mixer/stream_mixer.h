@@ -38,6 +38,7 @@ namespace media {
 class AudioOutputRedirector;
 class InterleavedChannelMixer;
 class LoopbackHandler;
+enum class LoopbackInterruptReason;
 class MixerServiceReceiver;
 class MixerOutputStream;
 class PostProcessingPipelineFactory;
@@ -145,8 +146,6 @@ class StreamMixer {
 
   // Contains volume control information for an audio content type.
   struct VolumeInfo {
-    float GetEffectiveVolume();
-
     float volume = 0.0f;
     float limit = 1.0f;
     bool muted = false;
@@ -160,7 +159,7 @@ class StreamMixer {
                             int expected_input_channels);
   void FinalizeOnMixerThread();
   void Start();
-  void Stop();
+  void Stop(LoopbackInterruptReason reason);
   void CheckChangeOutputParams(int num_input_channels,
                                int input_samples_per_second);
   void SignalError(MixerInput::Source::MixerError error);
@@ -215,6 +214,9 @@ class StreamMixer {
 
   int redirector_samples_per_second_ = 0;
   int redirector_frames_per_write_ = 0;
+
+  int last_sent_primary_stream_count_ = 0;
+  int last_sent_sfx_stream_count_ = 0;
 
   State state_;
   base::TimeTicks close_timestamp_;

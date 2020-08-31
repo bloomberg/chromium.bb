@@ -14,7 +14,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
@@ -76,8 +75,8 @@ class WiFiServiceMac : public WiFiService {
 
   void SetEventObservers(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const NetworkGuidListCallback& networks_changed_observer,
-      const NetworkGuidListCallback& network_list_changed_observer) override;
+      NetworkGuidListCallback networks_changed_observer,
+      NetworkGuidListCallback network_list_changed_observer) override;
 
   void RequestConnectedNetworkUpdate() override;
 
@@ -382,11 +381,11 @@ void WiFiServiceMac::GetKeyFromSystem(const std::string& network_guid,
 
 void WiFiServiceMac::SetEventObservers(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const NetworkGuidListCallback& networks_changed_observer,
-    const NetworkGuidListCallback& network_list_changed_observer) {
+    NetworkGuidListCallback networks_changed_observer,
+    NetworkGuidListCallback network_list_changed_observer) {
   event_task_runner_.swap(task_runner);
-  networks_changed_observer_ = networks_changed_observer;
-  network_list_changed_observer_ = network_list_changed_observer;
+  networks_changed_observer_ = std::move(networks_changed_observer);
+  network_list_changed_observer_ = std::move(network_list_changed_observer);
 
   // Remove previous OS notifications observer.
   if (wlan_observer_) {
@@ -396,17 +395,33 @@ void WiFiServiceMac::SetEventObservers(
 
   // Subscribe to OS notifications.
   if (!networks_changed_observer_.is_null()) {
-    void (^ns_observer) (NSNotification* notification) =
-        ^(NSNotification* notification) {
-            DVLOG(1) << "Received CWSSIDDidChangeNotification";
-            task_runner_->PostTask(
-                FROM_HERE,
-                base::BindOnce(&WiFiServiceMac::OnWlanObserverNotification,
-                               base::Unretained(this)));
+    void (^ns_observer)(NSNotification* notification) = ^(
+        NSNotification* notification) {
+      DVLOG(1) << "Received CoreWLAN notification that the SSID changed";
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&WiFiServiceMac::OnWlanObserverNotification,
+                                    base::Unretained(this)));
     };
 
+    // A notification with the symbol kCWSSIDDidChangeNotification started being
+    // broadcast on SSID change starting with 10.6 and continuing on through
+    // 10.15. However, that symbol was marked as deprecated after macOS 10.10,
+    // and actually was removed starting with the macOS 10.9 SDK.
+    //
+    // Starting with 10.8, a set of parallel notifications with explicitly-
+    // specified string names started being broadcast. The parallel notification
+    // for that symbol is @"com.apple.coreWLAN.notification.ssid.legacy".
+    //
+    // Given the choice between a symbol that is marked as "deprecated" in the
+    // docs and actually removed from the SDK, and an undocumented string that
+    // is secretly broadcast, the string is the safer choice.
+    //
+    // This is not a supported way to do this. The correct way to do this is the
+    // -[CWWiFiClient startMonitoringEventWithType:error:] API:
+    // https://developer.apple.com/documentation/corewlan/cwwificlient/1512439-startmonitoringeventwithtype?language=objc
+    // TODO(avi): Use this API. https://crbug.com/1054063
     wlan_observer_ = [[NSNotificationCenter defaultCenter]
-        addObserverForName:kCWSSIDDidChangeNotification
+        addObserverForName:@"com.apple.coreWLAN.notification.ssid.legacy"
                     object:nil
                      queue:nil
                 usingBlock:ns_observer];
@@ -591,7 +606,7 @@ void WiFiServiceMac::OnWlanObserverNotification() {
 }
 
 void WiFiServiceMac::NotifyNetworkListChanged(const NetworkList& networks) {
-  if (network_list_changed_observer_.is_null())
+  if (!network_list_changed_observer_)
     return;
 
   NetworkGuidList current_networks;
@@ -607,7 +622,7 @@ void WiFiServiceMac::NotifyNetworkListChanged(const NetworkList& networks) {
 }
 
 void WiFiServiceMac::NotifyNetworkChanged(const std::string& network_guid) {
-  if (networks_changed_observer_.is_null())
+  if (!networks_changed_observer_)
     return;
 
   DVLOG(1) << "NotifyNetworkChanged: " << network_guid;

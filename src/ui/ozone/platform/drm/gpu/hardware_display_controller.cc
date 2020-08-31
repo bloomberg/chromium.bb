@@ -29,6 +29,12 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/page_flip_request.h"
 
+// Vendor ID for downstream, interim ChromeOS specific modifiers.
+#define DRM_FORMAT_MOD_VENDOR_CHROMEOS 0xf0
+// TODO(gurchetansingh) Remove once DRM_FORMAT_MOD_ARM_AFBC is used by all
+// kernels and allocators.
+#define DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC fourcc_mod_code(CHROMEOS, 1)
+
 namespace ui {
 
 namespace {
@@ -52,7 +58,7 @@ void DrawCursor(DrmDumbBuffer* cursor, const SkBitmap& image) {
   // Clear to transparent in case |image| is smaller than the canvas.
   SkCanvas* canvas = cursor->GetCanvas();
   canvas->clear(SK_ColorTRANSPARENT);
-  canvas->drawBitmapRect(image, damage, NULL);
+  canvas->drawBitmapRect(image, damage, nullptr);
 }
 
 }  // namespace
@@ -65,29 +71,29 @@ HardwareDisplayController::HardwareDisplayController(
   AllocateCursorBuffers();
 }
 
-HardwareDisplayController::~HardwareDisplayController() {
-}
+HardwareDisplayController::~HardwareDisplayController() = default;
 
 bool HardwareDisplayController::Modeset(const DrmOverlayPlane& primary,
-                                        drmModeModeInfo mode) {
+                                        const drmModeModeInfo& mode) {
   TRACE_EVENT0("drm", "HDC::Modeset");
-  DCHECK(primary.buffer.get());
-  bool status = true;
-  for (const auto& controller : crtc_controllers_)
-    status &= controller->Modeset(primary, mode);
-
-  is_disabled_ = false;
-  ResetCursor();
-  OnModesetComplete(primary);
-  return status;
+  return ModesetCrtc(primary, /*use_current_crtc_mode=*/false, mode);
 }
 
 bool HardwareDisplayController::Enable(const DrmOverlayPlane& primary) {
   TRACE_EVENT0("drm", "HDC::Enable");
+  drmModeModeInfo empty_mode = {};
+  return ModesetCrtc(primary, /*use_current_crtc_mode=*/true, empty_mode);
+}
+
+bool HardwareDisplayController::ModesetCrtc(const DrmOverlayPlane& primary,
+                                            bool use_current_crtc_mode,
+                                            const drmModeModeInfo& mode) {
   DCHECK(primary.buffer.get());
   bool status = true;
   for (const auto& controller : crtc_controllers_)
-    status &= controller->Modeset(primary, controller->mode());
+    status &= controller->Modeset(
+        primary, use_current_crtc_mode ? controller->mode() : mode,
+        owned_hardware_planes_);
 
   is_disabled_ = false;
   ResetCursor();
@@ -99,6 +105,10 @@ void HardwareDisplayController::Disable() {
   TRACE_EVENT0("drm", "HDC::Disable");
 
   for (const auto& controller : crtc_controllers_)
+    // TODO(crbug.com/1015104): Modeset and Disable operations should go
+    // together. The current split is due to how the legacy/atomic split
+    // evolved. It should be cleaned up under the more generic
+    // HardwareDisplayPlaneManager{Legacy,Atomic} calls.
     controller->Disable();
 
   bool ret = GetDrmDevice()->plane_manager()->DisableOverlayPlanes(

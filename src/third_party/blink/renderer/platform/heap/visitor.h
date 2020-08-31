@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_VISITOR_H_
 
 #include <memory>
+#include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -52,7 +53,7 @@ namespace blink {
 
 template <typename T>
 class GarbageCollected;
-class WeakCallbackInfo;
+class LivenessBroker;
 template <typename T>
 struct TraceTrait;
 class ThreadState;
@@ -69,19 +70,19 @@ class TraceWrapperV8Reference;
 //
 // This interface is safe to use on concurrent threads. All accesses (reads)
 // from member are done atomically.
-template <typename T, void (T::*method)(Visitor*)>
+template <typename T, void (T::*method)(Visitor*) const>
 struct TraceMethodDelegate {
   STATIC_ONLY(TraceMethodDelegate);
-  static void Trampoline(Visitor* visitor, void* self) {
-    (reinterpret_cast<T*>(self)->*method)(visitor);
+  static void Trampoline(Visitor* visitor, const void* self) {
+    (reinterpret_cast<T*>(const_cast<void*>(self))->*method)(visitor);
   }
 };
 
-template <typename T, void (T::*method)(const WeakCallbackInfo&)>
+template <typename T, void (T::*method)(const LivenessBroker&)>
 struct WeakCallbackMethodDelegate {
   STATIC_ONLY(WeakCallbackMethodDelegate);
-  static void Trampoline(const WeakCallbackInfo& info, void* self) {
-    (reinterpret_cast<T*>(self)->*method)(info);
+  static void Trampoline(const LivenessBroker& info, const void* self) {
+    (reinterpret_cast<T*>(const_cast<void*>(self))->*method)(info);
   }
 };
 
@@ -105,67 +106,53 @@ class PLATFORM_EXPORT Visitor {
                   "T needs to be a garbage collected object");
     if (!t)
       return;
-    VisitRoot(const_cast<T*>(t), TraceDescriptorFor(t), location);
+    VisitRoot(t, TraceDescriptorFor(t), location);
   }
 
   template <typename T>
   void Trace(const Member<T>& t) {
-    DCHECK(!t.IsHashTableDeletedValueSafe());
-    Trace(t.GetSafe());
+    const T* value = t.GetSafe();
+
+    DCHECK(!Member<T>::IsMemberHashTableDeletedValue(value));
+
+    Trace(value);
+  }
+
+  template <typename T>
+  ALWAYS_INLINE void TraceMaybeDeleted(const Member<T>& t) {
+    const T* value = t.GetSafe();
+
+    if (Member<T>::IsMemberHashTableDeletedValue(value))
+      return;
+
+    Trace<T>(value);
+  }
+
+  // TraceMayBeDeleted strongifies WeakMembers.
+  template <typename T>
+  ALWAYS_INLINE void TraceMaybeDeleted(const WeakMember<T>& t) {
+    const T* value = t.GetSafe();
+
+    if (WeakMember<T>::IsMemberHashTableDeletedValue(value))
+      return;
+
+    Trace<T>(value);
   }
 
   // Fallback methods used only when we need to trace raw pointers of T. This is
   // the case when a member is a union where we do not support members.
   template <typename T>
-  void Trace(const T* t) {
-    Trace(const_cast<T*>(t));
-  }
-
-  template <typename T>
   void Trace(T* t) {
+    Trace(const_cast<const T*>(t));
+  }
+  template <typename T>
+  void Trace(const T* t) {
     static_assert(sizeof(T), "T must be fully defined");
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
     if (!t)
       return;
     Visit(t, TraceDescriptorFor(t));
-  }
-
-  template <typename T>
-  void TraceBackingStoreStrongly(T* backing_store, T** backing_store_slot) {
-    static_assert(sizeof(T), "T must be fully defined");
-    static_assert(IsGarbageCollectedType<T>::value,
-                  "T needs to be a garbage collected object");
-
-    VisitBackingStoreStrongly(backing_store,
-                              reinterpret_cast<void**>(backing_store_slot),
-                              TraceDescriptorFor(backing_store));
-  }
-
-  template <typename HashTable, typename T>
-  void TraceBackingStoreWeakly(T* backing_store,
-                               T** backing_store_slot,
-                               WeakCallback weak_callback,
-                               void* weak_callback_parameter) {
-    static_assert(sizeof(T), "T must be fully defined");
-    static_assert(IsGarbageCollectedType<T>::value,
-                  "T needs to be a garbage collected object");
-
-    VisitBackingStoreWeakly(backing_store,
-                            reinterpret_cast<void**>(backing_store_slot),
-                            TraceDescriptorFor(backing_store),
-                            WeakTraceDescriptorFor(backing_store),
-                            weak_callback, weak_callback_parameter);
-  }
-
-  template <typename T>
-  void TraceBackingStoreOnly(T* backing_store, T** backing_store_slot) {
-    static_assert(sizeof(T), "T must be fully defined");
-    static_assert(IsGarbageCollectedType<T>::value,
-                  "T needs to be a garbage collected object");
-
-    VisitBackingStoreOnly(backing_store,
-                          reinterpret_cast<void**>(backing_store_slot));
   }
 
   // WeakMember version of the templated trace method. It doesn't keep
@@ -175,19 +162,17 @@ class PLATFORM_EXPORT Visitor {
   // picking the correct overload, so all these trace methods have to have
   // the same constness on their argument to allow the type to decide.
   template <typename T>
-  void Trace(const WeakMember<T>& const_weak_member) {
+  void Trace(const WeakMember<T>& weak_member) {
     static_assert(sizeof(T), "T must be fully defined");
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
 
-    WeakMember<T>& weak_member = const_cast<WeakMember<T>&>(const_weak_member);
-    std::remove_const_t<T>* value =
-        const_cast<std::remove_const_t<T>*>(weak_member.GetSafe());
+    const T* value = weak_member.GetSafe();
 
     if (!value)
       return;
 
-    DCHECK(!weak_member.IsHashTableDeletedValueSafe());
+    DCHECK(!WeakMember<T>::IsMemberHashTableDeletedValue(value));
     VisitWeak(value, &weak_member, TraceDescriptorFor(value),
               &HandleWeakCell<T>);
   }
@@ -204,23 +189,45 @@ class PLATFORM_EXPORT Visitor {
   void Trace(const T& t) {
     static_assert(sizeof(T), "T must be fully defined");
     if (std::is_polymorphic<T>::value) {
-      intptr_t vtable = *reinterpret_cast<const intptr_t*>(&t);
+      const intptr_t vtable = *reinterpret_cast<const intptr_t*>(&t);
       if (!vtable)
         return;
     }
-    TraceTrait<T>::Trace(this, &const_cast<T&>(t));
+    TraceTrait<T>::Trace(this, &t);
   }
 
-  // Registers an instance method using |RegisterWeakCallback|. See description
-  // below.
-  template <typename T, void (T::*method)(const WeakCallbackInfo&)>
-  void RegisterWeakCallbackMethod(const T* obj) {
-    RegisterWeakCallback(&WeakCallbackMethodDelegate<T, method>::Trampoline,
-                         const_cast<T*>(obj));
+  template <typename T>
+  void TraceEphemeron(const WeakMember<T>& key,
+                      const void* value,
+                      TraceCallback value_trace_callback) {
+    T* t = key.Get();
+    if (!t)
+      return;
+    VisitEphemeron(TraceDescriptorFor(t).base_object_payload, value,
+                   value_trace_callback);
+  }
+
+  template <typename T>
+  void TraceWeakContainer(const T* object,
+                          const T* const* slot,
+                          TraceDescriptor strong_desc,
+                          TraceDescriptor weak_dec,
+                          WeakCallback weak_callback,
+                          const void* weak_callback_parameter) {
+    static_assert(sizeof(T), "T must be fully defined");
+    static_assert(IsGarbageCollectedType<T>::value,
+                  "T needs to be a garbage collected object");
+    VisitWeakContainer(reinterpret_cast<const void*>(object),
+                       reinterpret_cast<const void* const*>(slot), strong_desc,
+                       weak_dec, weak_callback, weak_callback_parameter);
+  }
+
+  template <typename T>
+  void TraceMovablePointer(const T* const* slot) {
+    RegisterMovableSlot(reinterpret_cast<const void* const*>(slot));
   }
 
   // Cross-component tracing interface.
-
   template <typename V8Type>
   void Trace(const TraceWrapperV8Reference<V8Type>& v8reference) {
     Visit(v8reference.template Cast<v8::Value>());
@@ -228,49 +235,14 @@ class PLATFORM_EXPORT Visitor {
 
   // Dynamic visitor interface.
 
-  virtual void VisitRoot(void* t, TraceDescriptor desc, const base::Location&) {
-    Visit(t, desc);
-  }
-
-  // Visits an object through a strong reference.
-  virtual void Visit(void*, TraceDescriptor) = 0;
-
-  // Visits an object through a weak reference.
-  virtual void VisitWeak(void*, void*, TraceDescriptor, WeakCallback) = 0;
-
-  // Visitors for collection backing stores.
-  virtual void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) = 0;
-  virtual void VisitBackingStoreWeakly(void*,
-                                       void**,
-                                       TraceDescriptor,
-                                       TraceDescriptor,
-                                       WeakCallback,
-                                       void*) = 0;
-  virtual void VisitBackingStoreOnly(void*, void**) = 0;
-
-  // Visits ephemeron pairs which are a combination of weak and strong keys and
-  // values.
-  using EphemeronTracingCallback = bool (*)(Visitor*, void*);
-  virtual bool VisitEphemeronKeyValuePair(
-      void* key,
-      void* value,
-      EphemeronTracingCallback key_trace_callback,
-      EphemeronTracingCallback value_trace_callback) {
-    return true;
-  }
-
-  // Visits cross-component references to V8.
-
-  virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) = 0;
-
   // Registers backing store pointers so that they can be moved and properly
   // updated.
-  virtual void RegisterBackingStoreCallback(void* backing,
-                                            MovingObjectCallback) = 0;
+  virtual void RegisterBackingStoreCallback(const void* backing,
+                                            MovingObjectCallback) {}
 
   // Adds a |callback| that is invoked with |parameter| after liveness has been
   // computed on the whole object graph. The |callback| may use the provided
-  // |WeakCallbackInfo| to determine whether an object is considered alive or
+  // |LivenessBroker| to determine whether an object is considered alive or
   // dead.
   //
   // - Upon returning from the callback all references to dead objects must have
@@ -280,22 +252,76 @@ class PLATFORM_EXPORT Visitor {
   // - Clearing out pointers is allowed.
   // - Removing elements from heap collections is allowed as these collections
   //   are aware of custom weakness and won't resize their backings.
-  virtual void RegisterWeakCallback(WeakCallback callback, void* parameter) = 0;
+  virtual void RegisterWeakCallback(WeakCallback callback,
+                                    const void* parameter) {}
 
- protected:
-  template <typename T>
-  static inline TraceDescriptor TraceDescriptorFor(const T* traceable) {
-    return TraceTrait<T>::GetTraceDescriptor(const_cast<T*>(traceable));
+  // Registers an instance method using |RegisterWeakCallback|. See description
+  // below.
+  template <typename T, void (T::*method)(const LivenessBroker&)>
+  void RegisterWeakCallbackMethod(const T* obj) {
+    RegisterWeakCallback(&WeakCallbackMethodDelegate<T, method>::Trampoline,
+                         obj);
   }
 
+  // Returns whether the visitor is used in a concurrent setting.
+  virtual bool IsConcurrent() const { return false; }
+
+  // Defers invoking |desc| to the main thread when running concurrently.
+  // Returns true if |desc| has been queued for later processing and false if
+  // running in a non-concurrent setting.
+  //
+  // This can be used to defer processing data structures to the main thread
+  // when support for concurrent processing is missing.
+  virtual bool DeferredTraceIfConcurrent(TraceDescriptor desc) { return false; }
+
+ protected:
+  // Visits an object through a strong reference.
+  virtual void Visit(const void*, TraceDescriptor) {}
+
+  // Visits an object through a weak reference.
+  virtual void VisitWeak(const void*,
+                         const void*,
+                         TraceDescriptor,
+                         WeakCallback) {}
+
+  // Visits cross-component references to V8.
+  virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) {}
+
+  virtual void VisitRoot(const void* t,
+                         TraceDescriptor desc,
+                         const base::Location&) {
+    Visit(t, desc);
+  }
+
+  // Visits ephemeron pairs which are a combination of weak and strong keys and
+  // values.
+  virtual void VisitEphemeron(const void*, const void*, TraceCallback) {}
+
+  // Visits a container |object| holding ephemeron pairs held from |slot|.  The
+  // descriptor |strong_desc| can be used to enforce strong treatment of
+  // |object|. The |weak_desc| descriptor is invoked repeatedly until no
+  // more new objects are found. It is expected that |weak_desc| processing
+  // ultimately yields in a call to VisitEphemeron. After marking all reachable
+  // objects, |weak_callback| is invoked with |weak_callback_parameter|. It is
+  // expected that this callback is used to reset non-live entries in the
+  // ephemeron container.
+  virtual void VisitWeakContainer(const void* object,
+                                  const void* const* slot,
+                                  TraceDescriptor strong_desc,
+                                  TraceDescriptor weak_desc,
+                                  WeakCallback weak_callback,
+                                  const void* weak_callback_parameter) {}
+
+  virtual void RegisterMovableSlot(const void* const* slot) {}
+
   template <typename T>
-  static inline TraceDescriptor WeakTraceDescriptorFor(const T* traceable) {
-    return TraceTrait<T>::GetWeakTraceDescriptor(const_cast<T*>(traceable));
+  static TraceDescriptor TraceDescriptorFor(const T* traceable) {
+    return TraceTrait<T>::GetTraceDescriptor(traceable);
   }
 
  private:
   template <typename T>
-  static void HandleWeakCell(const WeakCallbackInfo&, void*);
+  static void HandleWeakCell(const LivenessBroker&, const void*);
 
   ThreadState* const state_;
 };

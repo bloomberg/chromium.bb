@@ -9,6 +9,7 @@
 
 #include "libANGLE/renderer/d3d/d3d11/renderer11_utils.h"
 
+#include <versionhelpers.h>
 #include <algorithm>
 
 #include "common/debug.h"
@@ -109,6 +110,7 @@ gl::TextureCaps GenerateTextureFormatCaps(gl::Version maxClientVersion,
         (support.query(formatInfo.rtvFormat, D3D11_FORMAT_SUPPORT_RENDER_TARGET)) ||
         (support.query(formatInfo.dsvFormat, D3D11_FORMAT_SUPPORT_DEPTH_STENCIL));
     textureCaps.renderbuffer = textureCaps.textureAttachment;
+    textureCaps.blendable    = textureCaps.renderbuffer;
 
     DXGI_FORMAT renderFormat = DXGI_FORMAT_UNKNOWN;
     if (formatInfo.dsvFormat != DXGI_FORMAT_UNKNOWN)
@@ -1566,22 +1568,26 @@ void GenerateCaps(ID3D11Device *device,
 
     // Explicitly disable GL_OES_compressed_ETC1_RGB8_texture because it's emulated and never
     // becomes core. WebGL doesn't want to expose it unless there is native support.
-    extensions->compressedETC1RGB8Texture = false;
+    extensions->compressedETC1RGB8TextureOES = false;
+    extensions->compressedETC1RGB8SubTexture = false;
 
-    extensions->elementIndexUint            = true;
-    extensions->getProgramBinary            = true;
-    extensions->rgb8rgba8                   = true;
-    extensions->readFormatBGRA              = true;
-    extensions->pixelBufferObject           = true;
-    extensions->mapBuffer                   = true;
-    extensions->mapBufferRange              = true;
-    extensions->textureNPOT                 = GetNPOTTextureSupport(featureLevel);
-    extensions->drawBuffers                 = GetMaximumSimultaneousRenderTargets(featureLevel) > 1;
+    extensions->elementIndexUintOES = true;
+    extensions->getProgramBinaryOES = true;
+    extensions->rgb8rgba8OES        = true;
+    extensions->readFormatBGRA      = true;
+    extensions->pixelBufferObjectNV = true;
+    extensions->mapBufferOES        = true;
+    extensions->mapBufferRange      = true;
+    extensions->textureNPOTOES      = GetNPOTTextureSupport(featureLevel);
+    extensions->drawBuffers         = GetMaximumSimultaneousRenderTargets(featureLevel) > 1;
+    extensions->drawBuffersIndexedEXT =
+        (renderer11DeviceCaps.featureLevel >= D3D_FEATURE_LEVEL_10_1);
+    extensions->drawBuffersIndexedOES       = extensions->drawBuffersIndexedEXT;
     extensions->textureStorage              = true;
     extensions->textureFilterAnisotropic    = true;
     extensions->maxTextureAnisotropy        = GetMaximumAnisotropy(featureLevel);
     extensions->occlusionQueryBoolean       = GetOcclusionQuerySupport(featureLevel);
-    extensions->fence                       = GetEventQuerySupport(featureLevel);
+    extensions->fenceNV                     = GetEventQuerySupport(featureLevel);
     extensions->disjointTimerQuery          = true;
     extensions->queryCounterBitsTimeElapsed = 64;
     extensions->queryCounterBitsTimestamp =
@@ -1599,7 +1605,7 @@ void GenerateCaps(ID3D11Device *device,
     extensions->instancedArraysANGLE   = GetInstancingSupport(featureLevel);
     extensions->instancedArraysEXT     = GetInstancingSupport(featureLevel);
     extensions->packReverseRowOrder    = true;
-    extensions->standardDerivatives    = GetDerivativeInstructionSupport(featureLevel);
+    extensions->standardDerivativesOES = GetDerivativeInstructionSupport(featureLevel);
     extensions->shaderTextureLOD       = GetShaderTextureLODSupport(featureLevel);
     extensions->fragDepth              = true;
     extensions->multiview              = IsMultiviewSupported(featureLevel);
@@ -1613,38 +1619,47 @@ void GenerateCaps(ID3D11Device *device,
     }
     extensions->textureUsage       = true;  // This could be false since it has no effect in D3D11
     extensions->discardFramebuffer = true;
-    extensions->translatedShaderSource           = true;
-    extensions->fboRenderMipmap                  = true;
-    extensions->debugMarker                      = true;
-    extensions->eglImage                         = true;
-    extensions->eglImageExternal                 = true;
-    extensions->eglImageExternalEssl3            = true;
-    extensions->eglStreamConsumerExternal        = true;
-    extensions->unpackSubimage                   = true;
-    extensions->packSubimage                     = true;
-    extensions->lossyETCDecode                   = true;
-    extensions->syncQuery                        = GetEventQuerySupport(featureLevel);
-    extensions->copyTexture                      = true;
-    extensions->copyCompressedTexture            = true;
-    extensions->textureStorageMultisample2DArray = true;
-    extensions->multiviewMultisample     = ((extensions->multiview || extensions->multiview2) &&
-                                        extensions->textureStorageMultisample2DArray);
-    extensions->copyTexture3d            = true;
-    extensions->textureBorderClamp       = true;
-    extensions->textureMultisample       = true;
-    extensions->provokingVertex          = true;
-    extensions->blendFuncExtended        = true;
-    extensions->maxDualSourceDrawBuffers = 1;
-    extensions->texture3DOES             = true;
-    extensions->baseVertexBaseInstance   = true;
+    extensions->translatedShaderSource              = true;
+    extensions->fboRenderMipmapOES                  = true;
+    extensions->debugMarker                         = true;
+    extensions->eglImageOES                         = true;
+    extensions->eglImageExternalOES                 = true;
+    extensions->eglImageExternalWrapModesEXT        = true;
+    extensions->eglImageExternalEssl3OES            = true;
+    extensions->eglStreamConsumerExternalNV         = true;
+    extensions->unpackSubimage                      = true;
+    extensions->packSubimage                        = true;
+    extensions->lossyETCDecode                      = true;
+    extensions->syncQuery                           = GetEventQuerySupport(featureLevel);
+    extensions->copyTexture                         = true;
+    extensions->copyCompressedTexture               = true;
+    extensions->textureStorageMultisample2DArrayOES = true;
+    extensions->multiviewMultisample      = ((extensions->multiview || extensions->multiview2) &&
+                                        extensions->textureStorageMultisample2DArrayOES);
+    extensions->copyTexture3d             = true;
+    extensions->textureBorderClampOES     = true;
+    extensions->textureMultisample        = true;
+    extensions->provokingVertex           = true;
+    extensions->blendFuncExtended         = true;
+    extensions->maxDualSourceDrawBuffers  = 1;
+    extensions->texture3DOES              = true;
+    extensions->baseVertexBaseInstance    = true;
+    extensions->drawElementsBaseVertexOES = true;
+    extensions->drawElementsBaseVertexEXT = true;
     if (!strstr(description, "Adreno"))
     {
         extensions->multisampledRenderToTexture = true;
     }
+    extensions->webglVideoTexture = true;
 
     // D3D11 cannot support reading depth texture as a luminance texture.
     // It treats it as a red-channel-only texture.
     extensions->depthTextureOES = false;
+
+    // readPixels on depth & stencil not working with D3D11 backend.
+    extensions->readDepthNV         = false;
+    extensions->readStencilNV       = false;
+    extensions->depthBufferFloat2NV = false;
 
     // D3D11 Feature Level 10_0+ uses SV_IsFrontFace in HLSL to emulate gl_FrontFacing.
     // D3D11 Feature Level 9_3 doesn't support SV_IsFrontFace, and has no equivalent, so can't
@@ -2210,6 +2225,11 @@ BlendStateKey::BlendStateKey()
     memset(this, 0, sizeof(BlendStateKey));
 }
 
+BlendStateKey::BlendStateKey(const BlendStateKey &other)
+{
+    memcpy(this, &other, sizeof(BlendStateKey));
+}
+
 bool operator==(const BlendStateKey &a, const BlendStateKey &b)
 {
     return memcmp(&a, &b, sizeof(BlendStateKey)) == 0;
@@ -2354,14 +2374,19 @@ void InitializeFeatures(const Renderer11DeviceCaps &deviceCaps,
                         const DXGI_ADAPTER_DESC &adapterDesc,
                         angle::FeaturesD3D *features)
 {
-    bool isNvidia                  = IsNvidia(adapterDesc.VendorId);
-    bool isIntel                   = IsIntel(adapterDesc.VendorId);
-    bool isSkylake                 = false;
-    bool isBroadwell               = false;
-    bool isHaswell                 = false;
-    bool isIvyBridge               = false;
-    bool isAMD                     = IsAMD(adapterDesc.VendorId);
-    bool isFeatureLevel9_3         = (deviceCaps.featureLevel <= D3D_FEATURE_LEVEL_9_3);
+    bool isNvidia          = IsNvidia(adapterDesc.VendorId);
+    bool isIntel           = IsIntel(adapterDesc.VendorId);
+    bool isSkylake         = false;
+    bool isBroadwell       = false;
+    bool isHaswell         = false;
+    bool isIvyBridge       = false;
+    bool isAMD             = IsAMD(adapterDesc.VendorId);
+    bool isFeatureLevel9_3 = (deviceCaps.featureLevel <= D3D_FEATURE_LEVEL_9_3);
+#if defined(ANGLE_ENABLE_WINDOWS_UWP)
+    bool isWin10 = true;
+#else
+    bool isWin10 = IsWindows10OrGreater();
+#endif
     IntelDriverVersion capsVersion = IntelDriverVersion(0);
     if (isIntel)
     {
@@ -2440,8 +2465,13 @@ void InitializeFeatures(const Renderer11DeviceCaps &deviceCaps,
     ANGLE_FEATURE_CONDITION(features, selectViewInGeometryShader,
                             !deviceCaps.supportsVpRtIndexWriteFromVertexShader);
 
-    // Never clear for robust resource init.  This matches Chrome's texture clearning behaviour.
-    ANGLE_FEATURE_CONDITION(features, allowClearForRobustResourceInit, false);
+    // NVidia drivers have no trouble clearing textures without showing corruption. AMD ones do.
+    // Intel drivers that have trouble have been blocklisted to the DX9 runtime by Chromium.
+    ANGLE_FEATURE_CONDITION(features, allowClearForRobustResourceInit, isNvidia || isIntel);
+
+    // Don't translate uniform block to StructuredBuffer on Windows 7 and earlier. This is targeted
+    // to work around a bug that fails to allocate ShaderResourceView for StructuredBuffer.
+    ANGLE_FEATURE_CONDITION(features, dontTranslateUniformBlockToStructuredBuffer, !isWin10);
 
     // Call platform hooks for testing overrides.
     auto *platform = ANGLEPlatformCurrent();

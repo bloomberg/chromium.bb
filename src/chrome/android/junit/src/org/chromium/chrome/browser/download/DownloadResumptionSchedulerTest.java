@@ -19,6 +19,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -28,7 +29,9 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
@@ -46,6 +49,7 @@ import java.util.concurrent.TimeUnit;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features.DisableFeatures({ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE})
 public class DownloadResumptionSchedulerTest {
     @Mock
     private BackgroundTaskScheduler mScheduler;
@@ -53,10 +57,13 @@ public class DownloadResumptionSchedulerTest {
     @Rule
     public MockitoRule mockitoRule = MockitoJUnit.rule();
 
+    @Rule
+    public TestRule mProcessor = new Features.InstrumentationProcessor();
+
     @Before
     public void setUp() {
-        FeatureUtilities.setDownloadAutoResumptionEnabledInNativeForTesting(false);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mScheduler);
+        ChromeBackgroundTaskFactory.setAsDefault();
     }
 
     @After
@@ -204,7 +211,6 @@ public class DownloadResumptionSchedulerTest {
 
         assertNotNull(task);
         assertEquals(TaskIds.DOWNLOAD_RESUMPTION_JOB_ID, task.getTaskId());
-        assertEquals(DownloadResumptionBackgroundTask.class, task.getBackgroundTaskClass());
         assertTrue(task.getExtras().isEmpty());
         assertEquals(expectedNetworkType, task.getRequiredNetworkType());
         assertFalse(task.requiresCharging());

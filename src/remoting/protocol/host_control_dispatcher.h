@@ -33,12 +33,16 @@ class HostControlDispatcher : public ChannelDispatcherBase,
   void SetPairingResponse(const PairingResponse& pairing_response) override;
   void DeliverHostMessage(const ExtensionMessage& message) override;
   void SetVideoLayout(const VideoLayout& layout) override;
+  void SetTransportInfo(const TransportInfo& transport_info) override;
 
   // ClipboardStub implementation for sending clipboard data to client.
   void InjectClipboardEvent(const ClipboardEvent& event) override;
 
   // CursorShapeStub implementation for sending cursor shape to client.
   void SetCursorShape(const CursorShapeInfo& cursor_shape) override;
+
+  // KeyboardLayoutStub implementation for sending keyboard layout to client.
+  void SetKeyboardLayout(const KeyboardLayout& layout) override;
 
   // Sets the ClipboardStub that will be called for each incoming clipboard
   // message. |clipboard_stub| must outlive this object.

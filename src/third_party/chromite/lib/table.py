@@ -14,6 +14,9 @@ import sys
 from chromite.lib import cros_build_lib
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 class Table(object):
   """Class to represent column headers and rows of data."""
 

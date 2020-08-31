@@ -15,9 +15,12 @@ namespace crostini {
 
 enum class ExportImportType;
 
+// CrostiniExportImportStatusTracker handles communication between the
+// CrostiniExportImport operation and ui elements that reflect progress.
 class CrostiniExportImportStatusTracker {
  public:
   enum class Status {
+    NONE,
     RUNNING,
     CANCELLING,
     DONE,
@@ -57,13 +60,12 @@ class CrostiniExportImportStatusTracker {
   void SetStatusFailedInsufficientSpace(uint64_t additional_required_space);
   void SetStatusFailedConcurrentOperation(
       ExportImportType in_progress_operation_type);
-
  private:
   void SetStatusFailedWithMessage(Status status, const base::string16& message);
 
   ExportImportType type_;
   base::FilePath path_;
-  Status status_ = Status::RUNNING;
+  Status status_ = Status::NONE;
 };
 
 }  // namespace crostini

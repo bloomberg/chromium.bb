@@ -15,12 +15,16 @@
 #include "base/time/tick_clock.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
-#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom-forward.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/common/load_policy.h"
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source.h"
+
+namespace features {
+extern const base::Feature kRestrictedNavigationAdTagging;
+}
 
 class HeavyAdBlocklist;
 
@@ -96,10 +100,6 @@ class AdsPageLoadMetricsObserver
   void OnCpuTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
       const page_load_metrics::mojom::CpuTiming& timing) override;
-  void RecordAdFrameData(FrameTreeNodeId ad_id,
-                         bool is_adframe,
-                         content::RenderFrameHost* ad_host,
-                         bool frame_navigated);
   void ReadyToCommitNextNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnDidFinishSubFrameNavigation(
@@ -112,8 +112,6 @@ class AdsPageLoadMetricsObserver
       content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
-  void OnPageInteractive(
-      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void FrameReceivedFirstUserActivation(content::RenderFrameHost* rfh) override;
   void FrameDisplayStateChanged(content::RenderFrameHost* render_frame_host,
                                 bool is_display_none) override;
@@ -138,6 +136,12 @@ class AdsPageLoadMetricsObserver
       content::NavigationHandle* navigation_handle,
       const subresource_filter::mojom::ActivationState& activation_state)
       override;
+
+  void UpdateAdFrameData(FrameTreeNodeId ad_id,
+                         bool is_adframe,
+                         bool should_ignored_detected_ad,
+                         content::RenderFrameHost* ad_host,
+                         bool frame_navigated);
 
   // Gets the number of bytes that we may have not attributed to ad
   // resources due to the resource being reported as an ad late.
@@ -170,6 +174,13 @@ class AdsPageLoadMetricsObserver
   // RenderFrameHost to commit before it can be processed. If so, call
   // OnResourceDataUpdate for the delayed resource.
   void ProcessOngoingNavigationResource(content::RenderFrameHost* rfh);
+
+  // Records whether an ad frame was ignored by the Restricted Navigation
+  // AdTagging feature. For frames that are ignored, this is recorded when a
+  // FrameData object would have been created for them, or when their FrameData
+  // is deleted. For non-ignored frames, this is recorded when it is logged to
+  // metrics.
+  void RecordAdFrameIgnoredByRestrictedAdTagging(bool ignored);
 
   // Find the FrameData object associated with a given FrameTreeNodeId in
   // |ad_frames_data_storage_|.
@@ -225,20 +236,6 @@ class AdsPageLoadMetricsObserver
   // the frame elements are being destroyed in the renderer.
   bool process_display_state_updates_ = true;
 
-  // Time the page was committed.
-  base::TimeTicks time_commit_;
-
-  // Time the page was observed to be interactive.
-  base::TimeTicks time_interactive_;
-
-  // Duration before |time_interactive_| during which the page was foregrounded.
-  base::TimeDelta pre_interactive_duration_;
-
-  // Total ad bytes loaded by the page since it was observed to be interactive.
-  size_t page_ad_bytes_at_interactive_ = 0u;
-
-  bool committed_ = false;
-
   ScopedObserver<subresource_filter::SubresourceFilterObserverManager,
                  subresource_filter::SubresourceFilterObserver>
       subresource_observer_;
@@ -249,6 +246,10 @@ class AdsPageLoadMetricsObserver
   // Whether the page load currently being observed is a reload of a previous
   // page.
   bool page_load_is_reload_ = false;
+
+  // Whether the restricted navigation ad tagging feature is enabled on this
+  // page load.
+  const bool restricted_navigation_ad_tagging_enabled_;
 
   // Stores whether the heavy ad intervention is blocklisted or not for the user
   // on the URL of this page. Incognito Profiles will cause this to be set to
@@ -268,17 +269,6 @@ class AdsPageLoadMetricsObserver
 
   std::unique_ptr<HeavyAdThresholdNoiseProvider>
       heavy_ad_threshold_noise_provider_;
-
-  // Whether we should only send reports, and not unload frames tagged as heavy
-  // ads by the intervention. This is null until the proper feature param is
-  // queried once a heavy ad is seen. Sending reports should still log entries
-  // to the blocklist as it is observable by the page. Reporting only should use
-  // a different message that indicates the frame was not unloaded.
-  base::Optional<bool> heavy_ad_send_reports_only_;
-
-  // Whether reports should be sent when the heavy ad intervention occurs. This
-  // is null until the proper feature param is queried once a heavy ad is seen.
-  base::Optional<bool> heavy_ad_reporting_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserver);
 };

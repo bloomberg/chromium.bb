@@ -142,7 +142,7 @@ TetherService::TetherService(
           std::make_unique<
               chromeos::tether::GmsCoreNotificationsStateTrackerImpl>()),
       tether_host_fetcher_(
-          chromeos::tether::TetherHostFetcherImpl::Factory::NewInstance(
+          chromeos::tether::TetherHostFetcherImpl::Factory::Create(
               device_sync_client_,
               multidevice_setup_client_)),
       timer_(std::make_unique<base::OneShotTimer>()) {
@@ -181,17 +181,15 @@ void TetherService::StartTetherIfPossible() {
     return;
 
   PA_LOG(VERBOSE) << "Starting up TetherComponent.";
-  tether_component_ =
-      chromeos::tether::TetherComponentImpl::Factory::NewInstance(
-          device_sync_client_, secure_channel_client_,
-          tether_host_fetcher_.get(), notification_presenter_.get(),
-          gms_core_notifications_state_tracker_.get(), profile_->GetPrefs(),
-          network_state_handler_,
-          chromeos::NetworkHandler::Get()
-              ->managed_network_configuration_handler(),
-          chromeos::NetworkConnect::Get(),
-          chromeos::NetworkHandler::Get()->network_connection_handler(),
-          adapter_, session_manager_);
+  tether_component_ = chromeos::tether::TetherComponentImpl::Factory::Create(
+      device_sync_client_, secure_channel_client_, tether_host_fetcher_.get(),
+      notification_presenter_.get(),
+      gms_core_notifications_state_tracker_.get(), profile_->GetPrefs(),
+      network_state_handler_,
+      chromeos::NetworkHandler::Get()->managed_network_configuration_handler(),
+      chromeos::NetworkConnect::Get(),
+      chromeos::NetworkHandler::Get()->network_connection_handler(), adapter_,
+      session_manager_);
 }
 
 chromeos::tether::GmsCoreNotificationsStateTracker*
@@ -500,8 +498,10 @@ void TetherService::GetBluetoothAdapter() {
   // GetAdapter() may call OnBluetoothAdapterFetched immediately which can cause
   // problems with the Fake implementation since the class is not fully
   // constructed yet. Post the GetAdapter call to avoid this.
+  auto* factory = device::BluetoothAdapterFactory::Get();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(device::BluetoothAdapterFactory::GetAdapter,
+      FROM_HERE, base::BindOnce(&device::BluetoothAdapterFactory::GetAdapter,
+                                base::Unretained(factory),
                                 base::BindRepeating(
                                     &TetherService::OnBluetoothAdapterFetched,
                                     weak_ptr_factory_.GetWeakPtr())));
@@ -623,8 +623,6 @@ TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
   if (!IsBluetoothPowered())
     return BLUETOOTH_DISABLED;
 
-  // For the cases below, the state is computed differently depending on whether
-  // the MultiDeviceSetup service is active.
   chromeos::multidevice_setup::mojom::FeatureState tether_multidevice_state =
       multidevice_setup_client_->GetFeatureState(
           chromeos::multidevice_setup::mojom::Feature::kInstantTethering);
@@ -662,14 +660,6 @@ TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
       NOTREACHED();
       return NO_AVAILABLE_HOSTS;
   }
-
-  if (!IsAllowedByPolicy())
-    return PROHIBITED;
-
-  if (!IsEnabledByPreference())
-    return USER_PREFERENCE_DISABLED;
-
-  return ENABLED;
 }
 
 void TetherService::RecordTetherFeatureState() {
@@ -735,8 +725,8 @@ bool TetherService::HandleFeatureStateMetricIfUninitialized() {
   // metric value is actually correct.
   timer_->Start(FROM_HERE,
                 base::TimeDelta::FromSeconds(kMetricFalsePositiveSeconds),
-                base::BindRepeating(&TetherService::RecordTetherFeatureState,
-                                    weak_ptr_factory_.GetWeakPtr()));
+                base::BindOnce(&TetherService::RecordTetherFeatureState,
+                               weak_ptr_factory_.GetWeakPtr()));
 
   return true;
 }

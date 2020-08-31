@@ -1,16 +1,21 @@
 // Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import {AnimationGroup} from './AnimationModel.js';  // eslint-disable-line no-unused-vars
+import {AnimationUI} from './AnimationUI.js';
+
 /**
  * @unrestricted
  */
-export default class AnimationGroupPreviewUI {
+export class AnimationGroupPreviewUI {
   /**
-   * @param {!Animation.AnimationModel.AnimationGroup} model
+   * @param {!AnimationGroup} model
    */
   constructor(model) {
     this._model = model;
-    this.element = createElementWithClass('div', 'animation-buffer-preview');
+    this.element = document.createElement('div');
+    this.element.classList.add('animation-buffer-preview');
     this.element.createChild('div', 'animation-paused fill');
     this._removeButton = this.element.createChild('div', 'animation-remove-button');
     this._removeButton.textContent = '\u2715';
@@ -68,19 +73,7 @@ export default class AnimationGroupPreviewUI {
       const y = Math.floor(this._viewBoxHeight / Math.max(6, numberOfAnimations) * i + 1);
       line.setAttribute('y1', y);
       line.setAttribute('y2', y);
-      line.style.stroke = Animation.AnimationUI.Color(this._model.animations()[i]);
+      line.style.stroke = AnimationUI.Color(this._model.animations()[i]);
     }
   }
 }
-
-/* Legacy exported object */
-self.Animation = self.Animation || {};
-
-/* Legacy exported object */
-Animation = Animation || {};
-
-/**
- * @constructor
- * @unrestricted
- */
-Animation.AnimationGroupPreviewUI = AnimationGroupPreviewUI;

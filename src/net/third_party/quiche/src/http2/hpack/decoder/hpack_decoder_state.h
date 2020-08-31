@@ -19,17 +19,18 @@
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_listener.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_string_buffer.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_tables.h"
+#include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoding_error.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_whole_entry_listener.h"
 #include "net/third_party/quiche/src/http2/hpack/http2_hpack_constants.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_export.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace http2 {
 namespace test {
 class HpackDecoderStatePeer;
 }  // namespace test
 
-class HTTP2_EXPORT_PRIVATE HpackDecoderState : public HpackWholeEntryListener {
+class QUICHE_EXPORT_PRIVATE HpackDecoderState : public HpackWholeEntryListener {
  public:
   explicit HpackDecoderState(HpackDecoderListener* listener);
   ~HpackDecoderState() override;
@@ -76,15 +77,15 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderState : public HpackWholeEntryListener {
                              HpackDecoderStringBuffer* name_buffer,
                              HpackDecoderStringBuffer* value_buffer) override;
   void OnDynamicTableSizeUpdate(size_t size) override;
-  void OnHpackDecodeError(Http2StringPiece error_message) override;
+  void OnHpackDecodeError(HpackDecodingError error) override;
 
   // OnHeaderBlockEnd notifies this object that an entire HPACK block has been
   // decoded, which might have extended into CONTINUATION blocks.
   void OnHeaderBlockEnd();
 
-  // Was an error detected? After an error has been detected and reported,
-  // no further callbacks will be made to the listener.
-  bool error_detected() const { return error_detected_; }
+  // Returns error code after an error has been detected and reported.
+  // No further callbacks will be made to the listener.
+  HpackDecodingError error() const { return error_; }
 
   const HpackDecoderTables& decoder_tables_for_test() const {
     return decoder_tables_;
@@ -94,7 +95,7 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderState : public HpackWholeEntryListener {
   friend class test::HpackDecoderStatePeer;
 
   // Reports an error to the listener IF this is the first error detected.
-  void ReportError(Http2StringPiece error_message);
+  void ReportError(HpackDecodingError error);
 
   // The static and dynamic HPACK tables.
   HpackDecoderTables decoder_tables_;
@@ -121,7 +122,7 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderState : public HpackWholeEntryListener {
   bool saw_dynamic_table_size_update_;
 
   // Has an error already been detected and reported to the listener?
-  bool error_detected_;
+  HpackDecodingError error_;
 };
 
 }  // namespace http2

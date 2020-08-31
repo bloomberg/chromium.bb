@@ -44,9 +44,24 @@ class WebLaunchFilesHelper
                              const GURL& launch_url,
                              std::vector<base::FilePath> launch_paths);
 
+  // System Web Apps Only. |launch_dir| is prepended to |launch_entries_| and
+  // sent to the JavaScript side.
+  static void SetLaunchDirectoryAndLaunchPaths(
+      content::WebContents* web_contents,
+      const GURL& launch_url,
+      base::FilePath launch_dir,
+      std::vector<base::FilePath> launch_paths);
+
   WebLaunchFilesHelper(content::WebContents* web_contents,
                        const GURL& launch_url,
                        std::vector<base::FilePath> launch_paths);
+
+  // System Web Apps Only.
+  WebLaunchFilesHelper(content::WebContents* web_contents,
+                       const GURL& launch_url,
+                       base::FilePath launch_dir,
+                       std::vector<base::FilePath> launch_paths);
+
   ~WebLaunchFilesHelper() override;
 
   // content::WebContentsObserver:
@@ -63,7 +78,7 @@ class WebLaunchFilesHelper
   // The url the launch entries are for.
   GURL launch_url_;
 
-  base::WeakPtrFactory<WebLaunchFilesHelper> weak_ptr_factory{this};
+  base::WeakPtrFactory<WebLaunchFilesHelper> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(WebLaunchFilesHelper);
 };
 

@@ -29,7 +29,7 @@ namespace aura {
 namespace test {
 class AuraTestHelper;
 }
-}
+}  // namespace aura
 
 namespace display {
 class Screen;
@@ -56,6 +56,7 @@ class RenderProcessHostFactory;
 class TestRenderFrameHostFactory;
 class TestRenderViewHostFactory;
 class TestRenderWidgetHostFactory;
+class TestNavigationURLLoaderFactory;
 class WebContents;
 struct WebPreferences;
 
@@ -91,12 +92,13 @@ class RenderFrameHostTester {
   // Gives tests access to RenderFrameHostImpl::OnDetach. Destroys |this|.
   virtual void Detach() = 0;
 
-  // Calls OnBeforeUnloadACK on this RenderFrameHost with the given parameter.
-  virtual void SendBeforeUnloadACK(bool proceed) = 0;
+  // Calls ProcessBeforeUnloadCompleted on this RenderFrameHost with the given
+  // parameter.
+  virtual void SimulateBeforeUnloadCompleted(bool proceed) = 0;
 
-  // Simulates the SwapOut_ACK that fires if you commit a cross-site
+  // Simulates the FrameHostMsg_Unload_ACK that fires if you commit a cross-site
   // navigation without making any network requests.
-  virtual void SimulateSwapOutACK() = 0;
+  virtual void SimulateUnloadACK() = 0;
 
   // Set the feature policy header for the RenderFrameHost for test. Currently
   // this is limited to setting an allowlist for a single feature. This function
@@ -105,6 +107,9 @@ class RenderFrameHostTester {
   virtual void SimulateFeaturePolicyHeader(
       blink::mojom::FeaturePolicyFeature feature,
       const std::vector<url::Origin>& allowlist) = 0;
+
+  // Simulates the frame receiving a user activation.
+  virtual void SimulateUserActivation() = 0;
 
   // Gets all the console messages requested via
   // RenderFrameHost::AddMessageToConsole in this frame.
@@ -162,6 +167,7 @@ class RenderViewHostTestEnabler {
   std::unique_ptr<TestRenderViewHostFactory> rvh_factory_;
   std::unique_ptr<TestRenderFrameHostFactory> rfh_factory_;
   std::unique_ptr<TestRenderWidgetHostFactory> rwhi_factory_;
+  std::unique_ptr<TestNavigationURLLoaderFactory> loader_factory_;
 };
 
 // RenderViewHostTestHarness ---------------------------------------------------
@@ -248,7 +254,7 @@ class RenderViewHostTestHarness : public testing::Test {
   BrowserTaskEnvironment* task_environment() { return task_environment_.get(); }
 
 #if defined(USE_AURA)
-  aura::Window* root_window() { return aura_test_helper_->root_window(); }
+  aura::Window* root_window() { return aura_test_helper_->GetContext(); }
 #endif
 
   // Replaces the RPH being used.

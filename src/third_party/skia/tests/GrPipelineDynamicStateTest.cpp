@@ -10,7 +10,6 @@
 
 #include "include/gpu/GrContext.h"
 #include "include/private/GrRecordingContext.h"
-#include "src/core/SkMakeUnique.h"
 #include "src/gpu/GrColor.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrGeometryProcessor.h"
@@ -146,32 +145,37 @@ private:
                                       bool hasMixedSampledCoverage, GrClampType) override {
         return GrProcessorSet::EmptySetAnalysis();
     }
+    void onPrePrepare(GrRecordingContext*,
+                      const GrSurfaceProxyView* writeView,
+                      GrAppliedClip*,
+                      const GrXferProcessor::DstProxyView&) override {}
     void onPrepare(GrOpFlushState*) override {}
     void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
         GrPipeline pipeline(fScissorTest, SkBlendMode::kSrc,
-                            flushState->drawOpArgs().outputSwizzle());
-        SkSTArray<kNumMeshes, GrMesh> meshes;
+                            flushState->drawOpArgs().writeSwizzle());
+        SkSTArray<kNumMeshes, GrSimpleMesh> meshes;
         for (int i = 0; i < kNumMeshes; ++i) {
-            GrMesh& mesh = meshes.emplace_back(GrPrimitiveType::kTriangleStrip);
-            mesh.setNonIndexedNonInstanced(4);
-            mesh.setVertexData(fVertexBuffer, 4 * i);
+            GrSimpleMesh& mesh = meshes.push_back();
+            mesh.set(fVertexBuffer, 4, 4 * i);
         }
-        GrPipeline::DynamicStateArrays dynamicState;
-        dynamicState.fScissorRects = kDynamicScissors;
 
         auto geomProc = GrPipelineDynamicStateTestProcessor::Make(flushState->allocator());
 
         GrProgramInfo programInfo(flushState->proxy()->numSamples(),
                                   flushState->proxy()->numStencilSamples(),
                                   flushState->proxy()->backendFormat(),
-                                  flushState->view()->origin(),
+                                  flushState->writeView()->origin(),
                                   &pipeline,
                                   geomProc,
-                                  nullptr,
-                                  &dynamicState, 0, GrPrimitiveType::kTriangleStrip);
+                                  GrPrimitiveType::kTriangleStrip);
 
-        flushState->opsRenderPass()->draw(programInfo, meshes.begin(), 4,
-                                          SkRect::MakeIWH(kScreenSize, kScreenSize));
+        flushState->bindPipeline(programInfo, SkRect::MakeIWH(kScreenSize, kScreenSize));
+        for (int i = 0; i < 4; ++i) {
+            if (fScissorTest == GrScissorTest::kEnabled) {
+                flushState->setScissorRect(kDynamicScissors[i]);
+            }
+            flushState->drawMesh(meshes[i]);
+        }
     }
 
     GrScissorTest               fScissorTest;
@@ -184,8 +188,9 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrPipelineDynamicStateTest, reporter, ctxInfo
     GrContext* context = ctxInfo.grContext();
     GrResourceProvider* rp = context->priv().resourceProvider();
 
-    auto rtc = context->priv().makeDeferredRenderTargetContext(
-            SkBackingFit::kExact, kScreenSize, kScreenSize, GrColorType::kRGBA_8888, nullptr);
+    auto rtc = GrRenderTargetContext::Make(
+            context, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact,
+            {kScreenSize, kScreenSize});
     if (!rtc) {
         ERRORF(reporter, "could not create render target context.");
         return;

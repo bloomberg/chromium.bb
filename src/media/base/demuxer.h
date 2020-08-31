@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "media/base/container_names.h"
 #include "media/base/data_source.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/eme_constants.h"
@@ -57,14 +58,14 @@ class MEDIA_EXPORT Demuxer : public MediaResource {
   // First parameter - The type of initialization data.
   // Second parameter - The initialization data associated with the stream.
   using EncryptedMediaInitDataCB =
-      base::Callback<void(EmeInitDataType type,
-                          const std::vector<uint8_t>& init_data)>;
+      base::RepeatingCallback<void(EmeInitDataType type,
+                                   const std::vector<uint8_t>& init_data)>;
 
   // Notifies demuxer clients that media track configuration has been updated
   // (e.g. the initial stream metadata has been parsed successfully, or a new
   // init segment has been parsed successfully in MSE case).
   using MediaTracksUpdatedCB =
-      base::Callback<void(std::unique_ptr<MediaTracks>)>;
+      base::RepeatingCallback<void(std::unique_ptr<MediaTracks>)>;
 
   // Called once the demuxer has finished enabling or disabling tracks. The type
   // argument is required because the vector may be empty.
@@ -137,6 +138,13 @@ class MEDIA_EXPORT Demuxer : public MediaResource {
 
   // Returns the memory usage in bytes for the demuxer.
   virtual int64_t GetMemoryUsage() const = 0;
+
+  // Returns the container name to use for metrics.
+  // Implementations where this is not meaningful will return an empty value.
+  // Implementations that do provide values should always provide a value,
+  // returning CONTAINER_UNKNOWN in cases where the container is not known.
+  virtual base::Optional<container_names::MediaContainerName>
+  GetContainerForMetrics() const = 0;
 
   // The |track_ids| vector has either 1 track, or is empty, indicating that
   // all tracks should be disabled. |change_completed_cb| is fired after the

@@ -5,37 +5,7 @@
 import("//third_party/protobuf/proto_library.gni")
 
 config("chromium_quic_config") {
-  cflags_cc = [
-    "-Wno-error=attributes",
-    "-Wno-unused-const-variable",
-  ]
-
-  if (is_clang) {
-    cflags_cc += [
-      "-Wno-defaulted-function-deleted",
-      "-Wno-c++98-compat-extra-semi",
-      "-Wno-extra-semi",
-    ]
-
-    # The clang version on the Mac OS X build bots is old, causing them to
-    # not recognize the defaulted-function-deleted warning. This flag allows
-    # us to build on both older and newer Mac OS X Clang toolchains.
-    if (is_mac) {
-      cflags_cc += [ "-Wno-unknown-warning-option" ]
-    }
-  }
-
-  if (is_gcc) {
-    cflags_cc += [
-      "-Wno-dangling-else",
-      "-Wno-return-type",
-      "-Wno-unused-but-set-variable",
-
-      # Don't warn about "maybe" uninitialized. Clang doesn't include this
-      # in -Wall but gcc does, and it gives false positives.
-      "-Wno-maybe-uninitialized",
-    ]
-  }
+  cflags = [ "-w" ]  # Disable all warnings.
 
   configs = [ "//third_party/protobuf:protobuf_config" ]
 
@@ -56,7 +26,7 @@ source_set("chromium_quic") {
   ]
 }
 
-executable("quic_demo_client") {
+executable("quic_streaming_playback_controller") {
   sources = [
     "demo/client.cc",
     "demo/delegates.cc",

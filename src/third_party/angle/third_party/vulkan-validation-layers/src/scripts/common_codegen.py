@@ -1,8 +1,8 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2015-2017, 2019 The Khronos Group Inc.
-# Copyright (c) 2015-2017, 2019 Valve Corporation
-# Copyright (c) 2015-2017, 2019 LunarG, Inc.
+# Copyright (c) 2015-2017, 2019-2020 The Khronos Group Inc.
+# Copyright (c) 2015-2017, 2019-2020 Valve Corporation
+# Copyright (c) 2015-2017, 2019-2020 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -59,6 +59,7 @@ platform_dict = {
     'xcb' : 'VK_USE_PLATFORM_XCB_KHR',
     'xlib' : 'VK_USE_PLATFORM_XLIB_KHR',
     'xlib_xrandr' : 'VK_USE_PLATFORM_XLIB_XRANDR_EXT',
+    'provisional' : 'VK_ENABLE_BETA_EXTENSIONS',
 }
 
 #
@@ -85,6 +86,25 @@ def GetHandleTypes(tree):
         if not elem.get('alias'):
             name = elem.get('name')
             handles[name] = elem.find('type').text
+
+    for elem in tree.findall("types/type/[@category='handle']"):
+        if elem.get('alias'):
+            name = elem.get('name')
+            # Get the dispatchable/non-dispatchable type from the alias
+            handles[name] = handles[elem.get('alias')]
+
+    return handles
+
+# Return a dict indicating whether a handle is an aliased type
+def GetHandleAliased(tree):
+    handles = OrderedDict()
+    for elem in tree.findall("types/type/[@category='handle']"):
+        name = elem.get('name')
+        if elem.get('alias'):
+            handles[name] = True
+        else:
+            handles[name] = False
+
     return handles
 
 # Return a dict containing the parent of every handle

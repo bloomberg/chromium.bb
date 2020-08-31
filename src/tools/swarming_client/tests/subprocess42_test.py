@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2013 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
 
+from __future__ import print_function
 import ctypes
 import itertools
 import os
@@ -10,6 +11,7 @@ import signal
 import sys
 import tempfile
 import unittest
+import platform
 
 # Mutates sys.path.
 import test_env
@@ -294,6 +296,8 @@ class Subprocess42Test(unittest.TestCase):
       proc.wait()
       self.assertLessEqual(0.5, proc.duration())
 
+  @unittest.skipIf(platform.system() == 'Darwin',
+                   "TODO(crbug.com/1017545): AssertionError: '12345' != ''")
   def test_communicate_input_stdout_timeout(self):
     cmd = [
       sys.executable, '-u', '-c',

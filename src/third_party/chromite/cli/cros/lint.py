@@ -26,6 +26,12 @@ import os
 import re
 import sys
 
+try:
+  import pytest  # pylint: disable=import-error
+  pytest.importorskip('pylint')
+except ImportError:
+  pass
+
 import pylint.checkers
 from pylint.config import ConfigurationMixIn
 import pylint.interfaces
@@ -353,7 +359,10 @@ class DocStringChecker(pylint.checkers.BaseChecker):
             'prop', 'props', 'properties',
             'member', 'members',
         },
-        'Args': {'arg', 'argument', 'arguments'},
+        'Args': {
+            'arg', 'argument', 'arguments',
+            'param', 'params', 'parameter', 'parameters',
+        },
         'Returns': {
             'ret', 'rets', 'return', 'retrun', 'retruns', 'result', 'results',
         },
@@ -584,6 +593,10 @@ class Py3kCompatChecker(pylint.checkers.BaseChecker):
   def close(self):
     """Called when done processing module"""
     if not self.seen_print_func:
+      # Only enforce this on Python 2 files.
+      if sys.version_info.major >= 3:
+        return
+
       # Do not warn if moduler doesn't import anything at all (like
       # empty __init__.py files).
       if self.saw_imports:
@@ -694,7 +707,9 @@ class SourceChecker(pylint.checkers.BaseChecker):
       if m.group(1) != b'utf-8':
         self.add_message('R9205')
     else:
-      self.add_message('R9204')
+      # Only enforce this on Python 2 files.
+      if sys.version_info.major < 3:
+        self.add_message('R9204')
 
   def _check_module_name(self, node):
     """Make sure the module name is sane"""

@@ -176,7 +176,7 @@ mkdir -p "${rundir}/tmp"
 ssh-keygen -t rsa -q -f "${rundir}/tmp/id_rsa" -N ""
 ssh_public_key="$(cat ${rundir}/tmp/id_rsa.pub)"
 
-# Set up the first user, with admin priveleges.
+# Set up the first user, with admin privileges.
 cat <<EOF | java -jar "$gerrit_exe" gsql -d "${rundir}" > /dev/null
 INSERT INTO ACCOUNTS (FULL_NAME, MAXIMUM_PAGE_SIZE, PREFERRED_EMAIL, REGISTERED_ON, ACCOUNT_ID) VALUES ('${full_name}', ${maximum_page_size}, '${preferred_email}', '${registered_on}', ${account_id});
 INSERT INTO ACCOUNT_EXTERNAL_IDS (ACCOUNT_ID, EXTERNAL_ID) VALUES (${account_id}, 'gerrit:${username}');

@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <iterator>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "base/stl_util.h"
@@ -48,7 +49,7 @@ struct IsTransparentCompare<T, void_t<typename T::is_transparent>>
 //   const Key& operator()(const Value&).
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 class flat_tree {
- private:
+ protected:
   using underlying_type = std::vector<Value>;
 
  public:
@@ -109,8 +110,9 @@ class flat_tree {
   flat_tree(const flat_tree&);
   flat_tree(flat_tree&&) noexcept = default;
 
-  flat_tree(std::vector<value_type> items,
+  flat_tree(const underlying_type& items,
             const key_compare& comp = key_compare());
+  flat_tree(underlying_type&& items, const key_compare& comp = key_compare());
 
   flat_tree(std::initializer_list<value_type> ilist,
             const key_compare& comp = key_compare());
@@ -196,6 +198,19 @@ class flat_tree {
 
   template <class... Args>
   iterator emplace_hint(const_iterator position_hint, Args&&... args);
+
+  // --------------------------------------------------------------------------
+  // Underlying type operations.
+  //
+  // Assume that either operation invalidates iterators and references.
+
+  // Extracts the underlying_type and returns it to the caller. Ensures that
+  // `this` is `empty()` afterwards.
+  underlying_type extract() &&;
+
+  // Replaces the underlying_type with `body`. Expects that `body` is sorted
+  // and has no repeated elements with regard to value_comp().
+  void replace(underlying_type&& body);
 
   // --------------------------------------------------------------------------
   // Erase operations.
@@ -472,7 +487,15 @@ flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
 
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
-    std::vector<value_type> items,
+    const underlying_type& items,
+    const KeyCompare& comp)
+    : impl_(comp, items) {
+  sort_and_unique(begin(), end());
+}
+
+template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::flat_tree(
+    underlying_type&& items,
     const KeyCompare& comp)
     : impl_(comp, std::move(items)) {
   sort_and_unique(begin(), end());
@@ -715,17 +738,40 @@ auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::emplace_hint(
 }
 
 // ----------------------------------------------------------------------------
+// Underlying type operations.
+
+template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::
+    extract() && -> underlying_type {
+  return std::exchange(impl_.body_, underlying_type());
+}
+
+template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
+void flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::replace(
+    underlying_type&& body) {
+  // Ensure that |body| is sorted and has no repeated elements.
+  DCHECK(std::is_sorted(body.begin(), body.end(), value_comp()));
+  DCHECK(std::adjacent_find(body.begin(), body.end(),
+                            [this](const auto& lhs, const auto& rhs) {
+                              return !value_comp()(lhs, rhs);
+                            }) == body.end());
+  impl_.body_ = std::move(body);
+}
+
+// ----------------------------------------------------------------------------
 // Erase operations.
 
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::erase(
     iterator position) -> iterator {
+  CHECK(position != impl_.body_.end());
   return impl_.body_.erase(position);
 }
 
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::erase(
     const_iterator position) -> iterator {
+  CHECK(position != impl_.body_.end());
   return impl_.body_.erase(position);
 }
 
@@ -776,7 +822,7 @@ template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 template <typename K>
 auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::find(const K& key)
     -> iterator {
-  return const_cast_it(as_const(*this).find(key));
+  return const_cast_it(base::as_const(*this).find(key));
 }
 
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
@@ -799,7 +845,7 @@ template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 template <typename K>
 auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::equal_range(
     const K& key) -> std::pair<iterator, iterator> {
-  auto res = as_const(*this).equal_range(key);
+  auto res = base::as_const(*this).equal_range(key);
   return {const_cast_it(res.first), const_cast_it(res.second)};
 }
 
@@ -820,7 +866,7 @@ template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 template <typename K>
 auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::lower_bound(
     const K& key) -> iterator {
-  return const_cast_it(as_const(*this).lower_bound(key));
+  return const_cast_it(base::as_const(*this).lower_bound(key));
 }
 
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
@@ -841,7 +887,7 @@ template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 template <typename K>
 auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::upper_bound(
     const K& key) -> iterator {
-  return const_cast_it(as_const(*this).upper_bound(key));
+  return const_cast_it(base::as_const(*this).upper_bound(key));
 }
 
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
@@ -925,11 +971,14 @@ template <class Key,
           class GetKeyFromValue,
           class KeyCompare,
           typename Predicate>
-void EraseIf(base::internal::flat_tree<Key, Value, GetKeyFromValue, KeyCompare>&
-                 container,
-             Predicate pred) {
-  container.erase(std::remove_if(container.begin(), container.end(), pred),
-                  container.end());
+size_t EraseIf(
+    base::internal::flat_tree<Key, Value, GetKeyFromValue, KeyCompare>&
+        container,
+    Predicate pred) {
+  auto it = std::remove_if(container.begin(), container.end(), pred);
+  size_t removed = std::distance(it, container.end());
+  container.erase(it, container.end());
+  return removed;
 }
 
 }  // namespace base

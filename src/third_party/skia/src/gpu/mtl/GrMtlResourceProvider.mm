@@ -58,7 +58,7 @@ GrMtlDepthStencil* GrMtlResourceProvider::findOrCreateCompatibleDepthStencilStat
     return depthStencilState;
 }
 
-GrMtlSampler* GrMtlResourceProvider::findOrCreateCompatibleSampler(const GrSamplerState& params) {
+GrMtlSampler* GrMtlResourceProvider::findOrCreateCompatibleSampler(GrSamplerState params) {
     GrMtlSampler* sampler;
     sampler = fSamplers.find(GrMtlSampler::GenerateKey(params));
     if (!sampler) {
@@ -70,18 +70,10 @@ GrMtlSampler* GrMtlResourceProvider::findOrCreateCompatibleSampler(const GrSampl
 }
 
 void GrMtlResourceProvider::destroyResources() {
-    // Iterate through all stored GrMtlSamplers and unref them before resetting the hash.
-    SkTDynamicHash<GrMtlSampler, GrMtlSampler::Key>::Iter samplerIter(&fSamplers);
-    for (; !samplerIter.done(); ++samplerIter) {
-        (*samplerIter).unref();
-    }
+    fSamplers.foreach([&](GrMtlSampler* sampler) { sampler->unref(); });
     fSamplers.reset();
 
-    // Iterate through all stored GrMtlDepthStencils and unref them before resetting the hash.
-    SkTDynamicHash<GrMtlDepthStencil, GrMtlDepthStencil::Key>::Iter dsIter(&fDepthStencilStates);
-    for (; !dsIter.done(); ++dsIter) {
-        (*dsIter).unref();
-    }
+    fDepthStencilStates.foreach([&](GrMtlDepthStencil* stencil) { stencil->unref(); });
     fDepthStencilStates.reset();
 
     fPipelineStateCache->release();
@@ -153,7 +145,7 @@ GrMtlPipelineState* GrMtlResourceProvider::PipelineStateCache::refPipelineState(
         ++fCacheMisses;
 #endif
         GrMtlPipelineState* pipelineState(GrMtlPipelineStateBuilder::CreatePipelineState(
-            fGpu, renderTarget, programInfo, &desc));
+            fGpu, renderTarget, desc, programInfo));
         if (!pipelineState) {
             return nullptr;
         }
@@ -239,7 +231,7 @@ id<MTLBuffer> GrMtlResourceProvider::BufferSuballocator::getAllocation(size_t si
     *offset = modHead;
     // We're not sure what the usage of the next allocation will be --
     // to be safe we'll use 16 byte alignment.
-    fHead = GrSizeAlignUp(head + size, 16);
+    fHead = GrAlignTo(head + size, 16);
     return fBuffer;
 }
 
@@ -262,7 +254,7 @@ void GrMtlResourceProvider::BufferSuballocator::addCompletionHandler(
 id<MTLBuffer> GrMtlResourceProvider::getDynamicBuffer(size_t size, size_t* offset) {
 #ifdef SK_BUILD_FOR_MAC
     // Mac requires 4-byte alignment for didModifyRange:
-    size = GrSizeAlignUp(size, 4);
+    size = SkAlign4(size);
 #endif
     id<MTLBuffer> buffer = fBufferSuballocator->getAllocation(size, offset);
     if (buffer) {

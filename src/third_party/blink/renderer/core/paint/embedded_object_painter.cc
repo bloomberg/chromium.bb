@@ -31,7 +31,6 @@ static Font ReplacementTextFont() {
   font_description.SetWeight(BoldWeightValue());
   font_description.SetComputedSize(font_description.SpecifiedSize());
   Font font(font_description);
-  font.Update(nullptr);
   return font;
 }
 
@@ -43,7 +42,7 @@ void EmbeddedObjectPainter::PaintReplaced(const PaintInfo& paint_info,
     return;
   }
 
-  if (paint_info.phase == PaintPhase::kSelection)
+  if (paint_info.phase == PaintPhase::kSelectionDragImage)
     return;
 
   GraphicsContext& context = paint_info.context;

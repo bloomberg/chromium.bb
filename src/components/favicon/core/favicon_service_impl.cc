@@ -59,7 +59,8 @@ FaviconServiceImpl::FaviconServiceImpl(
     history::HistoryService* history_service)
     : favicon_client_(std::move(favicon_client)),
       history_service_(history_service) {
-  DCHECK(history_service_);
+  // TODO(https://crbug.com/1024959): convert to DCHECK once crash is resolved.
+  CHECK(history_service_);
 }
 
 FaviconServiceImpl::~FaviconServiceImpl() {}
@@ -163,8 +164,12 @@ FaviconServiceImpl::GetLargestRawFaviconForPageURL(
             base::Unretained(this), std::move(callback), 0),
         tracker);
   }
+  const GURL fetched_url(
+      (favicon_client_ && favicon_client_->IsReaderModeURL(page_url))
+          ? favicon_client_->GetOriginalUrlFromReaderModeUrl(page_url)
+          : page_url);
   return history_service_->GetLargestFaviconForURL(
-      page_url, icon_types, minimum_size_in_pixels, std::move(callback),
+      fetched_url, icon_types, minimum_size_in_pixels, std::move(callback),
       tracker);
 }
 
@@ -308,8 +313,12 @@ FaviconServiceImpl::GetFaviconForPageURLImpl(
     return favicon_client_->GetFaviconForNativeApplicationURL(
         page_url, desired_sizes_in_pixel, std::move(callback), tracker);
   }
+  const GURL fetched_url(
+      (favicon_client_ && favicon_client_->IsReaderModeURL(page_url))
+          ? favicon_client_->GetOriginalUrlFromReaderModeUrl(page_url)
+          : page_url);
   return history_service_->GetFaviconsForURL(
-      page_url, icon_types, desired_sizes_in_pixel, fallback_to_host,
+      fetched_url, icon_types, desired_sizes_in_pixel, fallback_to_host,
       std::move(callback), tracker);
 }
 

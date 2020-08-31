@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/drivefs/drivefs_bootstrap.h"
@@ -47,6 +49,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
@@ -58,12 +61,9 @@
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
-#include "services/identity/public/mojom/identity_service.mojom.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
@@ -166,10 +166,6 @@ FileError InitializeMetadata(
   }
 
   return FILE_ERROR_OK;
-}
-
-void ResetCacheDone(base::OnceCallback<void(bool)> callback, FileError error) {
-  std::move(callback).Run(error == FILE_ERROR_OK);
 }
 
 base::FilePath GetFullPath(internal::ResourceMetadataStorage* metadata_storage,
@@ -456,12 +452,8 @@ class DriveIntegrationService::DriveFsHolder
     return profile_->GetURLLoaderFactory();
   }
 
-  void BindIdentityAccessor(
-      mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver)
-      override {
-    auto* service = profile_->GetIdentityService();
-    if (service)
-      service->BindIdentityAccessor(std::move(receiver));
+  signin::IdentityManager* GetIdentityManager() override {
+    return IdentityManagerFactory::GetForProfile(profile_);
   }
 
   const AccountId& GetAccountId() override {
@@ -561,8 +553,8 @@ DriveIntegrationService::DriveIntegrationService(
   DCHECK(profile && !profile->IsOffTheRecord());
 
   logger_ = std::make_unique<EventLogger>();
-  blocking_task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+  blocking_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::WithBaseSyncPrimitives()});
 
   if (preference_watcher_)
@@ -692,17 +684,55 @@ void DriveIntegrationService::RemoveObserver(
 }
 
 void DriveIntegrationService::ClearCacheAndRemountFileSystem(
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(callback);
-
-  if (state_ != INITIALIZED || !GetDriveFsInterface()) {
-    callback.Run(false);
+  if (in_clear_cache_) {
+    std::move(callback).Run(false);
     return;
   }
+  in_clear_cache_ = true;
 
-  GetDriveFsInterface()->ResetCache(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-      base::BindOnce(&ResetCacheDone, callback), FILE_ERROR_ABORT));
+  if (IsMounted()) {
+    RemoveDriveMountPoint();
+    // TODO(crbug/1069328): We wait 2 seconds here so that DriveFS can unmount
+    // completely. Ideally we'd wait for an unmount complete callback.
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&DriveIntegrationService::
+                           ClearCacheAndRemountFileSystemAfterUnmount,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
+        base::TimeDelta::FromSeconds(2));
+  } else {
+    ClearCacheAndRemountFileSystemAfterUnmount(std::move(callback));
+  }
+}
+
+void DriveIntegrationService::ClearCacheAndRemountFileSystemAfterUnmount(
+    base::OnceCallback<void(bool)> callback) {
+  bool success = true;
+  base::FilePath cache_path = GetDriveFsHost()->GetDataPath();
+  base::FilePath logs_path = GetDriveFsLogPath().DirName();
+  base::FileEnumerator content_enumerator(
+      cache_path, false,
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES |
+          base::FileEnumerator::SHOW_SYM_LINKS);
+  for (base::FilePath path = content_enumerator.Next(); !path.empty();
+       path = content_enumerator.Next()) {
+    // Keep the logs folder as it's useful for debugging.
+    if (path == logs_path) {
+      continue;
+    }
+    if (!base::DeleteFileRecursively(path)) {
+      success = false;
+      break;
+    }
+  }
+
+  if (is_enabled()) {
+    AddDriveMountPoint();
+  }
+  in_clear_cache_ = false;
+  std::move(callback).Run(success);
 }
 
 drivefs::DriveFsHost* DriveIntegrationService::GetDriveFsHost() const {
@@ -894,14 +924,13 @@ void DriveIntegrationService::Initialize() {
   state_ = INITIALIZING;
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&InitializeMetadata,
-                 cache_root_directory_,
-                 metadata_storage_.get(),
-                 file_manager::util::GetDownloadsFolderForProfile(profile_)),
-      base::Bind(&DriveIntegrationService::InitializeAfterMetadataInitialized,
-                 weak_ptr_factory_.GetWeakPtr()));
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(
+          &InitializeMetadata, cache_root_directory_, metadata_storage_.get(),
+          file_manager::util::GetDownloadsFolderForProfile(profile_)),
+      base::BindOnce(
+          &DriveIntegrationService::InitializeAfterMetadataInitialized,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveIntegrationService::InitializeAfterMetadataInitialized(
@@ -1018,6 +1047,10 @@ void DriveIntegrationService::OnGetQuickAccessItems(
     result.push_back({item->path, item->metadata->quick_access->score});
   }
   std::move(callback).Run(error, std::move(result));
+}
+
+void DriveIntegrationService::RestartDrive() {
+  MaybeRemountFileSystem(base::TimeDelta(), false);
 }
 
 //===================== DriveIntegrationServiceFactory =======================

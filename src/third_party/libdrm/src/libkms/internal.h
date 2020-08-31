@@ -29,10 +29,6 @@
 #ifndef INTERNAL_H_
 #define INTERNAL_H_
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "libdrm_macros.h"
 #include "libkms.h"
 

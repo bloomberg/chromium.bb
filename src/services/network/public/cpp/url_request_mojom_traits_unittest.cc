@@ -7,8 +7,10 @@
 #include "base/test/gtest_util.h"
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
+#include "net/base/isolation_info.h"
 #include "services/network/public/cpp/http_request_headers_mojom_traits.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
+#include "services/network/public/cpp/optional_trust_token_params.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/mojom/origin_mojom_traits.h"
@@ -47,8 +49,9 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   network::ResourceRequest original;
   original.method = "POST";
   original.url = GURL("https://example.com/resources/dummy.xml");
-  original.site_for_cookies = GURL("https://example.com/index.html");
-  original.attach_same_site_cookies = true;
+  original.site_for_cookies =
+      net::SiteForCookies::FromUrl(GURL("https://example.com/index.html"));
+  original.force_ignore_site_for_cookies = true;
   original.update_first_party_url_on_redirect = false;
   original.request_initiator = url::Origin::Create(original.url);
   original.isolated_world_origin =
@@ -71,7 +74,6 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.credentials_mode = mojom::CredentialsMode::kInclude;
   original.redirect_mode = mojom::RedirectMode::kFollow;
   original.fetch_integrity = "dummy_fetch_integrity";
-  original.fetch_request_context_type = 0;
   original.keepalive = true;
   original.has_user_gesture = false;
   original.enable_load_timing = true;
@@ -85,17 +87,25 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.upgrade_if_insecure = true;
   original.is_revalidating = false;
   original.throttling_profile_id = base::UnguessableToken::Create();
-  original.custom_proxy_pre_cache_headers.SetHeader("pre_x", "x_value");
-  original.custom_proxy_post_cache_headers.SetHeader("post_y", "y_value");
   original.fetch_window_id = base::UnguessableToken::Create();
 
   original.trusted_params = ResourceRequest::TrustedParams();
-  url::Origin origin = url::Origin::Create(original.url);
-  original.trusted_params->network_isolation_key =
-      net::NetworkIsolationKey(origin, origin);
-  original.trusted_params->update_network_isolation_key_on_redirect = network::
-      mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateTopFrameAndFrameOrigin;
+  original.trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateTopFrame,
+      url::Origin::Create(original.url), url::Origin::Create(original.url),
+      original.site_for_cookies);
   original.trusted_params->disable_secure_dns = true;
+
+  original.trust_token_params = network::mojom::TrustTokenParams();
+  original.trust_token_params->issuer =
+      url::Origin::Create(GURL("https://issuer.com"));
+  original.trust_token_params->type =
+      mojom::TrustTokenOperationType::kRedemption;
+  original.trust_token_params->include_timestamp_header = true;
+  original.trust_token_params->sign_request_data =
+      mojom::TrustTokenSignRequestData::kInclude;
+  original.trust_token_params->additional_signed_headers.push_back(
+      "some_header");
 
   network::ResourceRequest copied;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::URLRequest>(&original,

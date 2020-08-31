@@ -42,7 +42,9 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
   // Returns after InitializeGlobalScope() is called.
   void RunUntilInitializeGlobalScope();
 
-  bool is_zero_idle_timer_delay() const { return is_zero_idle_timer_delay_; }
+  const base::Optional<base::TimeDelta>& idle_delay() const {
+    return idle_delay_;
+  }
 
   FetchHandlerExistence fetch_handler_existence() const {
     return fetch_handler_existence_;
@@ -55,7 +57,11 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
           service_worker_host,
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info,
       blink::mojom::ServiceWorkerObjectInfoPtr service_worker_info,
-      FetchHandlerExistence fetch_handler_existence) override;
+      FetchHandlerExistence fetch_handler_existence,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          subresource_loader_factories,
+      mojo::PendingReceiver<blink::mojom::ReportingObserver>
+          reporting_observer_receiver) override;
   void DispatchInstallEvent(DispatchInstallEventCallback callback) override;
   void DispatchActivateEvent(DispatchActivateEventCallback callback) override;
   void DispatchBackgroundFetchAbortEvent(
@@ -123,7 +129,7 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
       const std::string& id,
       DispatchContentDeleteEventCallback callback) override;
   void Ping(PingCallback callback) override;
-  void SetIdleTimerDelayToZero() override;
+  void SetIdleDelay(base::TimeDelta delay) override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
 
@@ -144,7 +150,8 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
 
   mojo::Receiver<blink::mojom::ServiceWorker> receiver_{this};
 
-  bool is_zero_idle_timer_delay_ = false;
+  // base::nullopt means SetIdleDelay() is not called.
+  base::Optional<base::TimeDelta> idle_delay_;
 };
 
 }  // namespace content

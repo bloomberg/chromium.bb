@@ -15,6 +15,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/shortcut_helper.h"
@@ -53,7 +54,6 @@ InstallableParams ParamsToPerformManifestAndIconFetch() {
   params.valid_primary_icon = true;
   params.prefer_maskable_icon =
       ShortcutHelper::DoesAndroidSupportMaskableIcons();
-  params.valid_badge_icon = true;
   params.wait_for_worker = true;
   return params;
 }
@@ -134,7 +134,7 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
   // Bind the InterfacePtr into the callback so that it's kept alive until
   // there's either a connection error or a response.
   auto* web_app_info_proxy = chrome_render_frame.get();
-  web_app_info_proxy->GetWebApplicationInfo(base::Bind(
+  web_app_info_proxy->GetWebApplicationInfo(base::BindOnce(
       &AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo,
       weak_ptr_factory_.GetWeakPtr(), base::Passed(&chrome_render_frame)));
 }
@@ -188,8 +188,8 @@ void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
   // worst, a dynamically-generated launcher icon.
   data_timeout_timer_.Start(
       FROM_HERE, data_timeout_ms_,
-      base::Bind(&AddToHomescreenDataFetcher::OnDataTimedout,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&AddToHomescreenDataFetcher::OnDataTimedout,
+                     weak_ptr_factory_.GetWeakPtr()));
   start_time_ = base::TimeTicks::Now();
 
   installable_manager_->GetData(
@@ -254,10 +254,6 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
           data.manifest->icons, shortcut_info_.ideal_splash_image_size_in_px,
           shortcut_info_.minimum_splash_image_size_in_px,
           blink::Manifest::ImageResource::Purpose::ANY);
-  if (data.badge_icon) {
-    shortcut_info_.best_badge_icon_url = data.badge_icon_url;
-    badge_icon_ = *data.badge_icon;
-  }
 
   installable_manager_->GetData(
       ParamsToPerformInstallableCheck(),
@@ -320,8 +316,8 @@ void AddToHomescreenDataFetcher::FetchFavicon() {
       ShortcutHelper::GetIdealHomescreenIconSizeInPx() - 1;
   favicon_service->GetLargestRawFaviconForPageURL(
       shortcut_info_.url, icon_types, threshold_to_get_any_largest_icon,
-      base::Bind(&AddToHomescreenDataFetcher::OnFaviconFetched,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&AddToHomescreenDataFetcher::OnFaviconFetched,
+                     weak_ptr_factory_.GetWeakPtr()),
       &favicon_task_tracker_);
 }
 
@@ -337,9 +333,9 @@ void AddToHomescreenDataFetcher::OnFaviconFetched(
   // The user is waiting for the icon to be processed before they can proceed
   // with add to homescreen. But if we shut down, there's no point starting the
   // image processing. Use USER_VISIBLE with MayBlock and SKIP_ON_SHUTDOWN.
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&CreateLauncherIconFromFaviconInBackground,
                      shortcut_info_.url, bitmap_result,
@@ -356,9 +352,9 @@ void AddToHomescreenDataFetcher::CreateIconForView(const SkBitmap& base_icon,
   // The user is waiting for the icon to be processed before they can proceed
   // with add to homescreen. But if we shut down, there's no point starting the
   // image processing. Use USER_VISIBLE with MayBlock and SKIP_ON_SHUTDOWN.
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
           &CreateLauncherIconInBackground, shortcut_info_.url, base_icon,
@@ -378,5 +374,6 @@ void AddToHomescreenDataFetcher::OnIconCreated(bool use_for_launcher,
     primary_icon_ = icon_for_view;
   if (is_icon_generated)
     shortcut_info_.best_primary_icon_url = GURL();
-  observer_->OnDataAvailable(shortcut_info_, icon_for_view, badge_icon_);
+
+  observer_->OnDataAvailable(shortcut_info_, icon_for_view);
 }

@@ -44,6 +44,9 @@ std::shared_ptr<NativeModule> CompileToNativeModule(
     std::shared_ptr<const WasmModule> module, const ModuleWireBytes& wire_bytes,
     Handle<FixedArray>* export_wrappers_out);
 
+void RecompileNativeModule(NativeModule* native_module,
+                           TieringState new_tiering_state);
+
 V8_EXPORT_PRIVATE
 void CompileJsToWasmWrappers(Isolate* isolate, const WasmModule* module,
                              Handle<FixedArray>* export_wrappers_out);
@@ -54,12 +57,8 @@ void CompileJsToWasmWrappers(Isolate* isolate, const WasmModule* module,
 V8_EXPORT_PRIVATE
 WasmCode* CompileImportWrapper(
     WasmEngine* wasm_engine, NativeModule* native_module, Counters* counters,
-    compiler::WasmImportCallKind kind, FunctionSig* sig,
+    compiler::WasmImportCallKind kind, const FunctionSig* sig,
     WasmImportWrapperCache::ModificationScope* cache_scope);
-
-V8_EXPORT_PRIVATE Handle<Script> CreateWasmScript(
-    Isolate* isolate, const ModuleWireBytes& wire_bytes,
-    const std::string& source_map_url, WireBytesRef name);
 
 // Triggered by the WasmCompileLazy builtin. The return value indicates whether
 // compilation was successful. Lazy compilation can fail only if validation is
@@ -145,9 +144,12 @@ class AsyncCompileJob {
 
   void CreateNativeModule(std::shared_ptr<const WasmModule> module,
                           size_t code_size_estimate);
+  // Return true for cache hit, false for cache miss.
+  bool GetOrCreateNativeModule(std::shared_ptr<const WasmModule> module,
+                               size_t code_size_estimate);
   void PrepareRuntimeObjects();
 
-  void FinishCompile();
+  void FinishCompile(bool is_after_cache_hit);
 
   void DecodeFailed(const WasmError&);
   void AsyncCompileFailed();

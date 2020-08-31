@@ -63,7 +63,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
                                     RawResourceClient*);
 
   // Exposed for testing
-  static RawResource* CreateForTest(ResourceRequest request,
+  static RawResource* CreateForTest(const ResourceRequest& request,
                                     ResourceType type) {
     ResourceLoaderOptions options;
     return MakeGarbageCollected<RawResource>(request, type, options);
@@ -128,8 +128,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
                    uint64_t total_bytes_to_be_sent) override;
   void DidDownloadData(uint64_t) override;
   void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) override;
-  bool MatchPreload(const FetchParameters&,
-                    base::SingleThreadTaskRunner*) override;
+  void MatchPreload(const FetchParameters&) override;
 
   scoped_refptr<BlobDataHandle> downloaded_blob_;
 
@@ -207,7 +206,6 @@ class PLATFORM_EXPORT RawResourceClientStateChecker final {
 
  public:
   RawResourceClientStateChecker();
-  ~RawResourceClientStateChecker();
 
   // Call before addClient()/removeClient() is called.
   void WillAddClient();

@@ -17,7 +17,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace {
@@ -114,7 +113,6 @@ TEST_F(CompoundEventFilterTest, CursorVisibilityChange) {
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
 // Touch visually hides the cursor on ChromeOS and Windows.
 TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
-  new wm::DefaultActivationClient(root_window());
   std::unique_ptr<CompoundEventFilter> compound_filter(new CompoundEventFilter);
   aura::Env::GetInstance()->AddPreTargetHandler(compound_filter.get());
   aura::test::TestWindowDelegate delegate;
@@ -132,21 +130,18 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
 
   // This press is required for the GestureRecognizer to associate a target
   // with kTouchId
-  ui::TouchEvent press0(
-      ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), GetTime(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  ui::TouchEvent press0(ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), GetTime(),
+                        ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   DispatchEventUsingWindowDispatcher(&press0);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
 
-  ui::TouchEvent move(
-      ui::ET_TOUCH_MOVED, gfx::Point(10, 10), GetTime(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), GetTime(),
+                      ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   DispatchEventUsingWindowDispatcher(&move);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
 
-  ui::TouchEvent release(
-      ui::ET_TOUCH_RELEASED, gfx::Point(10, 10), GetTime(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(10, 10), GetTime(),
+                         ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   DispatchEventUsingWindowDispatcher(&release);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
 
@@ -157,9 +152,8 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   EXPECT_TRUE(cursor_client.IsMouseEventsEnabled());
 
   // Now activate the window and press on it again.
-  ui::TouchEvent press1(
-      ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), GetTime(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), GetTime(),
+                        ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   GetActivationClient(root_window())->ActivateWindow(window.get());
   DispatchEventUsingWindowDispatcher(&press1);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());

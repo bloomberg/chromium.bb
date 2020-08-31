@@ -11,6 +11,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_WORKLIST_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_WORKLIST_H_
 
+#include <atomic>
 #include <cstddef>
 #include <utility>
 
@@ -30,13 +31,15 @@ namespace blink {
 //
 // Work stealing is best effort, i.e., there is no way to inform other tasks
 // of the need of items.
-template <typename _EntryType, int segment_size, int max_tasks = 2>
+template <typename _EntryType, int segment_size, int num_tasks = 4>
 class Worklist {
   USING_FAST_MALLOC(Worklist);
-  using WorklistType = Worklist<_EntryType, segment_size, max_tasks>;
+  using WorklistType = Worklist<_EntryType, segment_size, num_tasks>;
 
  public:
   using EntryType = _EntryType;
+
+  static constexpr int kNumTasks = num_tasks;
 
   class View {
     DISALLOW_NEW();
@@ -79,11 +82,8 @@ class Worklist {
 
   static constexpr size_t kSegmentCapacity = segment_size;
 
-  Worklist() : Worklist(max_tasks) {}
-
-  explicit Worklist(int num_tasks) : num_tasks_(num_tasks) {
-    CHECK_LE(num_tasks, max_tasks);
-    for (int i = 0; i < num_tasks_; i++) {
+  Worklist() {
+    for (int i = 0; i < kNumTasks; i++) {
       private_push_segment(i) = NewSegment();
       private_pop_segment(i) = NewSegment();
     }
@@ -91,7 +91,7 @@ class Worklist {
 
   ~Worklist() {
     CHECK(IsGlobalEmpty());
-    for (int i = 0; i < num_tasks_; i++) {
+    for (int i = 0; i < kNumTasks; i++) {
       DCHECK(private_push_segment(i));
       DCHECK(private_pop_segment(i));
       delete private_push_segment(i);
@@ -100,7 +100,7 @@ class Worklist {
   }
 
   bool Push(int task_id, EntryType entry) {
-    DCHECK_LT(task_id, num_tasks_);
+    DCHECK_LT(task_id, kNumTasks);
     DCHECK(private_push_segment(task_id));
     if (!private_push_segment(task_id)->Push(entry)) {
       PublishPushSegmentToGlobal(task_id);
@@ -112,7 +112,7 @@ class Worklist {
   }
 
   bool Pop(int task_id, EntryType* entry) {
-    DCHECK_LT(task_id, num_tasks_);
+    DCHECK_LT(task_id, kNumTasks);
     DCHECK(private_pop_segment(task_id));
     if (!private_pop_segment(task_id)->Pop(entry)) {
       if (!private_push_segment(task_id)->IsEmpty()) {
@@ -137,7 +137,7 @@ class Worklist {
   bool IsGlobalPoolEmpty() const { return global_pool_.IsEmpty(); }
 
   bool IsGlobalEmpty() const {
-    for (int i = 0; i < num_tasks_; i++) {
+    for (int i = 0; i < kNumTasks; i++) {
       if (!IsLocalEmpty(i))
         return false;
     }
@@ -153,6 +153,9 @@ class Worklist {
            private_push_segment(task_id)->Size();
   }
 
+  // Thread-safe but may return an outdated result.
+  size_t GlobalPoolSize() const { return global_pool_.Size(); }
+
   size_t LocalPushSegmentSize(int task_id) const {
     return private_push_segment(task_id)->Size();
   }
@@ -161,7 +164,7 @@ class Worklist {
   //
   // Assumes that no other tasks are running.
   void Clear() {
-    for (int i = 0; i < num_tasks_; i++) {
+    for (int i = 0; i < kNumTasks; i++) {
       private_pop_segment(i)->Clear();
       private_push_segment(i)->Clear();
     }
@@ -178,7 +181,7 @@ class Worklist {
   // Assumes that no other tasks are running.
   template <typename Callback>
   void Update(Callback callback) {
-    for (int i = 0; i < num_tasks_; i++) {
+    for (int i = 0; i < kNumTasks; i++) {
       private_pop_segment(i)->Update(callback);
       private_push_segment(i)->Update(callback);
     }
@@ -196,11 +199,8 @@ class Worklist {
   }
 
   void MergeGlobalPool(Worklist* other) {
-    auto pair = other->global_pool_.Extract();
-    global_pool_.MergeList(pair.first, pair.second);
+    global_pool_.Merge(&other->global_pool_);
   }
-
-  int num_tasks() const { return num_tasks_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WorklistTest, SegmentCreate);
@@ -284,11 +284,14 @@ class Worklist {
       base::AutoLock guard(lock_);
       segment->set_next(top_);
       set_top(segment);
+      size_.fetch_add(1, std::memory_order_relaxed);
     }
 
     inline bool Pop(Segment** segment) {
       base::AutoLock guard(lock_);
       if (top_) {
+        DCHECK_LT(0U, size_);
+        size_.fetch_sub(1, std::memory_order_relaxed);
         *segment = top_;
         set_top(top_->next());
         return true;
@@ -301,8 +304,16 @@ class Worklist {
                  reinterpret_cast<const base::subtle::AtomicWord*>(&top_)) == 0;
     }
 
+    inline size_t Size() const {
+      // It is safe to read |size_| without a lock since this variable is
+      // atomic, keeping in mind that threads may not immediately see the new
+      // value when it is updated.
+      return TS_UNCHECKED_READ(size_).load(std::memory_order_relaxed);
+    }
+
     void Clear() {
       base::AutoLock guard(lock_);
+      size_.store(0, std::memory_order_relaxed);
       Segment* current = top_;
       while (current) {
         Segment* tmp = current;
@@ -321,6 +332,8 @@ class Worklist {
       while (current) {
         current->Update(callback);
         if (current->IsEmpty()) {
+          DCHECK_LT(0U, size_);
+          size_.fetch_sub(1, std::memory_order_relaxed);
           if (!prev) {
             top_ = current->next();
           } else {
@@ -345,28 +358,28 @@ class Worklist {
       }
     }
 
-    std::pair<Segment*, Segment*> Extract() {
+    void Merge(GlobalPool* other) {
       Segment* top = nullptr;
+      size_t other_size = 0;
       {
-        base::AutoLock guard(lock_);
-        if (!top_)
-          return std::make_pair(nullptr, nullptr);
-        top = top_;
-        set_top(nullptr);
+        base::AutoLock guard(other->lock_);
+        if (!other->top_)
+          return;
+        top = other->top_;
+        other_size = other->size_.load(std::memory_order_relaxed);
+        other->size_.store(0, std::memory_order_relaxed);
+        other->set_top(nullptr);
       }
+
       Segment* end = top;
       while (end->next())
         end = end->next();
-      return std::make_pair(top, end);
-    }
 
-    void MergeList(Segment* start, Segment* end) {
-      if (!start)
-        return;
       {
         base::AutoLock guard(lock_);
+        size_.fetch_add(other_size, std::memory_order_relaxed);
         end->set_next(top_);
-        set_top(start);
+        set_top(top);
       }
     }
 
@@ -378,7 +391,8 @@ class Worklist {
     }
 
     mutable base::Lock lock_;
-    Segment* top_;
+    Segment* top_ GUARDED_BY(lock_);
+    std::atomic<size_t> size_ GUARDED_BY(lock_){0};
   };
 
   ALWAYS_INLINE Segment*& private_push_segment(int task_id) {
@@ -430,9 +444,8 @@ class Worklist {
     return new Segment();
   }
 
-  PrivateSegmentHolder private_segments_[max_tasks];
+  PrivateSegmentHolder private_segments_[kNumTasks];
   GlobalPool global_pool_;
-  int num_tasks_;
 };
 
 }  // namespace blink

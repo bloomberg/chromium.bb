@@ -22,6 +22,7 @@ import distutils.version  # pylint: disable=import-error,no-name-in-module
 import filecmp
 import os
 import re
+import sys
 
 from six.moves import urllib
 
@@ -34,6 +35,9 @@ from chromite.lib import gob_util
 from chromite.lib import portage_util
 from chromite.lib import timeout_util
 from chromite.scripts import cros_mark_as_stable
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Helper regex's for finding ebuilds.
@@ -109,7 +113,7 @@ def _GetTipOfTrunkVersionFile(root):
   try:
     chrome_version_info = cros_build_lib.run(
         ['cat', version_file],
-        redirect_stdout=True).stdout
+        stdout=True).stdout
   except cros_build_lib.RunCommandError as e:
     e.msg += '\nCould not read version file at %s.' % version_file
     raise e

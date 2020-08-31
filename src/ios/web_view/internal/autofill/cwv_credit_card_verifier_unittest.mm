@@ -65,6 +65,7 @@ class FakeCardUnmaskDelegate : public autofill::CardUnmaskDelegate {
         }));
   }
   void OnUnmaskPromptClosed() override {}
+  bool ShouldOfferFidoAuth() const override { return false; }
 
   base::WeakPtr<FakeCardUnmaskDelegate> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -142,7 +143,6 @@ class CWVCreditCardVerifierTest : public PlatformTest {
 // Tests CWVCreditCardVerifier properties.
 TEST_F(CWVCreditCardVerifierTest, Properties) {
   EXPECT_TRUE(credit_card_verifier_.creditCard);
-  EXPECT_FALSE(credit_card_verifier_.lastStoreLocallyValue);
   EXPECT_TRUE(credit_card_verifier_.navigationTitle);
   EXPECT_TRUE(credit_card_verifier_.instructionMessage);
   EXPECT_TRUE(credit_card_verifier_.confirmButtonLabel);
@@ -156,22 +156,6 @@ TEST_F(CWVCreditCardVerifierTest, Properties) {
   EXPECT_FALSE(credit_card_verifier_.shouldRequestUpdateForExpirationDate);
   [credit_card_verifier_ requestUpdateForExpirationDate];
   EXPECT_TRUE(credit_card_verifier_.shouldRequestUpdateForExpirationDate);
-}
-
-// Tests CWVCreditCardVerifier's |canStoreLocally| property.
-TEST_F(CWVCreditCardVerifierTest, CanStoreLocallyProperty) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess);
-  EXPECT_FALSE(credit_card_verifier_.canStoreLocally);
-}
-
-// Tests CWVCreditCardVerifier's |canStoreLocally| property.
-TEST_F(CWVCreditCardVerifierTest, CanStoreLocallyPropertyFlagOff) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess);
-  EXPECT_TRUE(credit_card_verifier_.canStoreLocally);
 }
 
 // Tests CWVCreditCardVerifier's |isCVCValid| method.
@@ -197,7 +181,7 @@ TEST_F(CWVCreditCardVerifierTest, IsExpirationDateValid) {
 // Tests CWVCreditCardVerifier's verification method handles success case.
 TEST_F(CWVCreditCardVerifierTest, VerifyCardSucceeded) {
   NSString* cvc = @"123";
-  BOOL store_locally = YES;
+  BOOL store_locally = NO;
   [credit_card_verifier_ loadRiskData:std::move(base::DoNothing())];
   __block BOOL completionCalled = NO;
   __block NSError* completionError;
@@ -205,13 +189,11 @@ TEST_F(CWVCreditCardVerifierTest, VerifyCardSucceeded) {
           verifyWithCVC:cvc
         expirationMonth:@""  // Expiration dates are ignored here because
          expirationYear:@""  // |needsUpdateForExpirationDate| is NO.
-           storeLocally:store_locally
                riskData:@"dummy-risk-data"
       completionHandler:^(NSError* error) {
         completionCalled = YES;
         completionError = error;
       }];
-  EXPECT_TRUE(credit_card_verifier_.lastStoreLocallyValue);
 
   const FakeCardUnmaskDelegate::UserProvidedUnmaskDetails& unmask_details_ =
       card_unmask_delegate_.GetUserProvidedUnmaskDetails();
@@ -227,19 +209,17 @@ TEST_F(CWVCreditCardVerifierTest, VerifyCardSucceeded) {
 // Tests CWVCreditCardVerifier's verification method handles failure case.
 TEST_F(CWVCreditCardVerifierTest, VerifyCardFailed) {
   NSString* cvc = @"123";
-  BOOL store_locally = YES;
+  BOOL store_locally = NO;
   [credit_card_verifier_ loadRiskData:std::move(base::DoNothing())];
   __block NSError* completionError;
   [credit_card_verifier_
           verifyWithCVC:cvc
         expirationMonth:@""  // Expiration dates are ignored here because
          expirationYear:@""  // |needsUpdateForExpirationDate| is NO.
-           storeLocally:store_locally
                riskData:@"dummy-risk-data"
       completionHandler:^(NSError* error) {
         completionError = error;
       }];
-  EXPECT_TRUE(credit_card_verifier_.lastStoreLocallyValue);
 
   const FakeCardUnmaskDelegate::UserProvidedUnmaskDetails& unmask_details_ =
       card_unmask_delegate_.GetUserProvidedUnmaskDetails();

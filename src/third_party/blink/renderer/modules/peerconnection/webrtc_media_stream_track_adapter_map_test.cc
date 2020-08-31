@@ -7,10 +7,11 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_timeouts.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -261,11 +262,7 @@ class WebRtcMediaStreamTrackAdapterMapStressTest
     : public WebRtcMediaStreamTrackAdapterMapTest {
  public:
   WebRtcMediaStreamTrackAdapterMapStressTest()
-      : WebRtcMediaStreamTrackAdapterMapTest(),
-        increased_run_timeout_(
-            TestTimeouts::action_max_timeout(),
-            base::MakeExpectedNotRunClosure(FROM_HERE,
-                                            "RunLoop::Run() timed out.")) {}
+      : increased_run_timeout_(FROM_HERE, TestTimeouts::action_max_timeout()) {}
 
   void RunStressTest(size_t iterations) {
     base::RunLoop run_loop;
@@ -344,7 +341,7 @@ class WebRtcMediaStreamTrackAdapterMapStressTest
  private:
   // TODO(https://crbug.com/1002761): Fix this test to run in < action_timeout()
   // on slower bots (e.g. Debug, ASAN, etc).
-  const base::RunLoop::ScopedRunTimeoutForTest increased_run_timeout_;
+  const base::test::ScopedRunLoopTimeout increased_run_timeout_;
 
   size_t remaining_iterations_;
 };

@@ -6,14 +6,14 @@ package org.chromium.chrome.browser.download.home.filter.chips;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ItemDecoration;
-import android.support.v7.widget.RecyclerView.State;
 import android.view.View;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ItemDecoration;
+import androidx.recyclerview.widget.RecyclerView.State;
+
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
 import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
@@ -69,7 +69,6 @@ public class ChipsCoordinator implements ChipsProvider.Observer {
     public void onChipsChanged() {
         List<Chip> chips = mProvider.getChips();
         mModel.set(chips);
-        UmaUtils.recordChipStats(chips.size());
     }
 
     private static RecyclerView createView(Context context) {

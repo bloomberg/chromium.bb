@@ -151,22 +151,22 @@ FSITestCase::~FSITestCase	(void)
 
 void FSITestCase::checkSupport(Context& context) const
 {
-	context.requireDeviceExtension("VK_EXT_fragment_shader_interlock");
+	context.requireDeviceFunctionality("VK_EXT_fragment_shader_interlock");
 
 	if ((m_data.interlock == INT_SAMPLE_ORDERED || m_data.interlock == INT_SAMPLE_UNORDERED) &&
-		!context.getFragmentShaderInterlockFeatures().fragmentShaderSampleInterlock)
+		!context.getFragmentShaderInterlockFeaturesEXT().fragmentShaderSampleInterlock)
 	{
 		TCU_THROW(NotSupportedError, "Fragment shader sample interlock not supported");
 	}
 
 	if ((m_data.interlock == INT_PIXEL_ORDERED || m_data.interlock == INT_PIXEL_UNORDERED) &&
-		!context.getFragmentShaderInterlockFeatures().fragmentShaderPixelInterlock)
+		!context.getFragmentShaderInterlockFeaturesEXT().fragmentShaderPixelInterlock)
 	{
 		TCU_THROW(NotSupportedError, "Fragment shader pixel interlock not supported");
 	}
 
 	if ((m_data.interlock == INT_SHADING_RATE_ORDERED || m_data.interlock == INT_SHADING_RATE_UNORDERED) &&
-		!context.getFragmentShaderInterlockFeatures().fragmentShaderShadingRateInterlock)
+		!context.getFragmentShaderInterlockFeaturesEXT().fragmentShaderShadingRateInterlock)
 	{
 		TCU_THROW(NotSupportedError, "Fragment shader shading rate interlock not supported");
 	}
@@ -763,6 +763,11 @@ tcu::TestStatus FSITestInstance::iterate (void)
 		const VkBufferCopy		copyRegion	= makeBufferCopy(0u, 0u, copyDimX*copyDimY*sizeof(deUint32));
 		vk.cmdCopyBuffer(*cmdBuffer, **buffer, **copyBuffer, 1, &copyRegion);
 	}
+
+	memBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	memBarrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+	vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT,
+		0, 1, &memBarrier, 0, DE_NULL, 0, DE_NULL);
 
 	endCommandBuffer(vk, *cmdBuffer);
 

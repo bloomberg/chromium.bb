@@ -12,7 +12,7 @@ suite('RuntimeHostsDialog', function() {
   const ITEM_ID = 'a'.repeat(32);
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     dialog = document.createElement('extensions-runtime-hosts-dialog');
 
     delegate = new TestService();
@@ -121,6 +121,8 @@ suite('RuntimeHostsDialog', function() {
     expectEquals(
         'https://example.com:80/*',
         getPatternFromSite('https://example.com:80/*'));
+    expectEquals(
+        'http://localhost:3030/*', getPatternFromSite('http://localhost:3030'));
   });
 
   test('update site access', function() {

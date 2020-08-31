@@ -32,12 +32,13 @@
 #include "url/third_party/mozilla/url_parse.h"
 
 #define REGISTER_RESPONSE_HANDLER(url, method) \
-  request_handlers_.insert(std::make_pair( \
-        url.path(), base::Bind(&FakeGaia::method, base::Unretained(this))))
+  request_handlers_.insert(std::make_pair(     \
+      url.path(),                              \
+      base::BindRepeating(&FakeGaia::method, base::Unretained(this))))
 
 #define REGISTER_PATH_RESPONSE_HANDLER(path, method) \
-  request_handlers_.insert(std::make_pair( \
-        path, base::Bind(&FakeGaia::method, base::Unretained(this))))
+  request_handlers_.insert(std::make_pair(           \
+      path, base::BindRepeating(&FakeGaia::method, base::Unretained(this))))
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
@@ -59,9 +60,6 @@ const char kTestCookieAttributes[] =
     "; Path=/; HttpOnly; SameSite=None; Secure";
 
 const char kDefaultGaiaId[] = "12345";
-
-const base::FilePath::CharType kServiceLogin[] =
-    FILE_PATH_LITERAL("google_apis/test/service_login.html");
 
 const base::FilePath::CharType kEmbeddedSetupChromeos[] =
     FILE_PATH_LITERAL("google_apis/test/embedded_setup_chromeos.html");
@@ -105,6 +103,22 @@ void SetCookies(BasicHttpResponse* http_response,
                                        kTestCookieAttributes));
 }
 
+std::string FormatCookieForMultilogin(std::string name, std::string value) {
+  std::string format = R"(
+    {
+      "name":"%s",
+      "value":"%s",
+      "domain":".google.fr",
+      "path":"/",
+      "isSecure":true,
+      "isHttpOnly":false,
+      "priority":"HIGH",
+      "maxAge":63070000
+    }
+  )";
+  return base::StringPrintf(format.c_str(), name.c_str(), value.c_str());
+}
+
 }  // namespace
 
 FakeGaia::AccessTokenInfo::AccessTokenInfo() = default;
@@ -141,9 +155,6 @@ void FakeGaia::MergeSessionParams::Update(const MergeSessionParams& update) {
 FakeGaia::FakeGaia() : issue_oauth_code_cookie_(false) {
   base::FilePath source_root_dir;
   base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
-  CHECK(base::ReadFileToString(
-      source_root_dir.Append(base::FilePath(kServiceLogin)),
-      &service_login_response_));
   CHECK(base::ReadFileToString(
       source_root_dir.Append(base::FilePath(kEmbeddedSetupChromeos)),
       &embedded_setup_chromeos_response_));
@@ -211,9 +222,9 @@ void FakeGaia::Initialize() {
   REGISTER_RESPONSE_HANDLER(
       gaia_urls->merge_session_url(), HandleMergeSession);
 
-  // Handles /ServiceLogin GAIA call.
-  REGISTER_RESPONSE_HANDLER(
-      gaia_urls->service_login_url(), HandleServiceLogin);
+  // Handles /oauth/multilogin GAIA call.
+  REGISTER_RESPONSE_HANDLER(gaia_urls->oauth_multilogin_url(),
+                            HandleMultilogin);
 
   // Handles /embedded/setup/v2/chromeos GAIA call.
   REGISTER_RESPONSE_HANDLER(gaia_urls->embedded_setup_chromeos_url(2),
@@ -298,6 +309,15 @@ std::unique_ptr<net::test_server::HttpResponse> FakeGaia::HandleRequest(
   GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
   std::string request_path = request_url.path();
   auto http_response = std::make_unique<BasicHttpResponse>();
+
+  ErrorResponseMap::const_iterator error_response =
+      error_responses_.find(request_path);
+  if (error_response != error_responses_.end() &&
+      error_response->second != net::HTTP_OK) {
+    http_response->set_code(error_response->second);
+    return std::move(http_response);
+  }
+
   RequestHandlerMap::iterator iter = request_handlers_.find(request_path);
   if (iter == request_handlers_.end()) {
     // If exact match yielded no handler, try to find one by prefix,
@@ -346,6 +366,11 @@ std::string FakeGaia::GetDeviceIdByRefreshToken(
   auto it = refresh_token_to_device_id_map_.find(refresh_token);
   return it != refresh_token_to_device_id_map_.end() ? it->second
                                                      : std::string();
+}
+
+void FakeGaia::SetErrorResponse(const GURL& gaia_url,
+                                net::HttpStatusCode http_status_code) {
+  error_responses_[gaia_url.path()] = http_status_code;
 }
 
 void FakeGaia::SetRefreshTokenToDeviceIdMap(
@@ -444,13 +469,6 @@ const FakeGaia::AccessTokenInfo* FakeGaia::GetAccessTokenInfo(
   return nullptr;
 }
 
-void FakeGaia::HandleServiceLogin(const HttpRequest& request,
-                                  BasicHttpResponse* http_response) {
-  http_response->set_code(net::HTTP_OK);
-  http_response->set_content(service_login_response_);
-  http_response->set_content_type("text/html");
-}
-
 void FakeGaia::HandleEmbeddedSetupChromeos(const HttpRequest& request,
                                            BasicHttpResponse* http_response) {
   GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
@@ -466,7 +484,7 @@ void FakeGaia::HandleEmbeddedSetupChromeos(const HttpRequest& request,
   GetQueryParameter(request_url.query(), "Email", &prefilled_email_);
 
   http_response->set_code(net::HTTP_OK);
-  http_response->set_content(embedded_setup_chromeos_response_);
+  http_response->set_content(GetEmbeddedSetupChromeosResponseContent());
   http_response->set_content_type("text/html");
 }
 
@@ -853,4 +871,49 @@ void FakeGaia::HandleGetReAuthProofToken(const HttpRequest& request,
                  << static_cast<int>(next_reauth_status_);
       break;
   }
+}
+
+void FakeGaia::HandleMultilogin(const HttpRequest& request,
+                                BasicHttpResponse* http_response) {
+  http_response->set_code(net::HTTP_UNAUTHORIZED);
+
+  if (merge_session_params_.session_sid_cookie.empty() ||
+      merge_session_params_.session_lsid_cookie.empty()) {
+    http_response->set_code(net::HTTP_BAD_REQUEST);
+    return;
+  }
+
+  GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
+  std::string request_query = request_url.query();
+
+  std::string source;
+  if (!GetQueryParameter(request_query, "source", &source)) {
+    LOG(ERROR) << "Missing or invalid 'source' param in /Multilogin call";
+    return;
+  }
+
+  http_response->set_content(
+      ")]}'\n{\"status\":\"OK\",\"cookies\":[" +
+      FormatCookieForMultilogin("SID",
+                                merge_session_params_.session_sid_cookie) +
+      "," +
+      FormatCookieForMultilogin("LSID",
+                                merge_session_params_.session_lsid_cookie) +
+      "]}");
+  http_response->set_code(net::HTTP_OK);
+}
+
+std::string FakeGaia::GetEmbeddedSetupChromeosResponseContent() const {
+  if (embedded_setup_chromeos_iframe_url_.is_empty())
+    return embedded_setup_chromeos_response_;
+  const std::string iframe =
+      base::StringPrintf("<iframe src=\"%s\" style=\"%s\"></iframe>",
+                         embedded_setup_chromeos_iframe_url_.spec().c_str(),
+                         "width:0; height:0; border:none;");
+  // Insert the iframe right before </body>
+  std::string response_with_iframe = embedded_setup_chromeos_response_;
+  size_t pos_of_body_closing_tag = response_with_iframe.find("</body>");
+  CHECK(pos_of_body_closing_tag != std::string::npos);
+  response_with_iframe.insert(pos_of_body_closing_tag, iframe);
+  return response_with_iframe;
 }

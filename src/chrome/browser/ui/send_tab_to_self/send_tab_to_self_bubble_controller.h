@@ -16,7 +16,11 @@ class Profile;
 
 namespace content {
 class WebContents;
-}
+}  // namespace content
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
 
 namespace send_tab_to_self {
 
@@ -51,8 +55,20 @@ class SendTabToSelfBubbleController
   // Close the bubble when the user click on the close button.
   void OnBubbleClosed();
 
+  // Shows the confirmation message in the omnibox.
+  void ShowConfirmationMessage();
+
+  // Returns true if the initial "Send" animation that's displayed once per
+  // profile was shown.
+  bool InitialSendAnimationShown() const;
+  void SetInitialSendAnimationShown(bool shown);
+
   bool show_message() const { return show_message_; }
   void set_show_message(bool show_message) { show_message_ = show_message; }
+
+  // Register SendTabToSelfBubbleController related prefs in the Profile prefs.
+  static void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* user_prefs);
 
  protected:
   SendTabToSelfBubbleController();
@@ -63,9 +79,6 @@ class SendTabToSelfBubbleController
   friend class SendTabToSelfBubbleViewImplTest;
   FRIEND_TEST_ALL_PREFIXES(SendTabToSelfBubbleViewImplTest, PopulateScrollView);
   FRIEND_TEST_ALL_PREFIXES(SendTabToSelfBubbleViewImplTest, DevicePressed);
-
-  // Updates the omnibox icon if available.
-  void UpdateIcon();
 
   // Get information of valid devices.
   void FetchDeviceInfo();

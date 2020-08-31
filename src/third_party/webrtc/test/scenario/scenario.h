@@ -19,6 +19,7 @@
 #include "rtc_base/fake_clock.h"
 #include "rtc_base/task_queue.h"
 #include "rtc_base/task_utils/repeating_task.h"
+#include "test/gtest.h"
 #include "test/logging/log_writer.h"
 #include "test/network/network_emulation_manager.h"
 #include "test/scenario/audio_stream.h"
@@ -41,6 +42,7 @@ namespace test {
 class Scenario {
  public:
   Scenario();
+  explicit Scenario(const testing::TestInfo* test_info);
   explicit Scenario(std::string file_name);
   Scenario(std::string file_name, bool real_time);
   Scenario(std::unique_ptr<LogWriterFactoryInterface> log_writer_manager,
@@ -100,6 +102,10 @@ class Scenario {
   void Every(TimeDelta interval, std::function<void(TimeDelta)> function);
   void Every(TimeDelta interval, std::function<void()> function);
 
+  // Runs the provided function on the internal task queue. This ensure that
+  // it's run on the main thread for simulated time tests.
+  void Post(std::function<void()> function);
+
   // Runs the provided function after given duration has passed. For real time
   // tests, |function| is called after |target_time_since_start| from the call
   // to Every().
@@ -155,7 +161,7 @@ class Scenario {
   TimeDelta TimeUntilTarget(TimeDelta target_time_offset);
 
   const std::unique_ptr<LogWriterFactoryInterface> log_writer_factory_;
-  std::unique_ptr<TimeController> time_controller_;
+  NetworkEmulationManagerImpl network_manager_;
   Clock* clock_;
 
   std::vector<std::unique_ptr<CallClient>> clients_;
@@ -165,12 +171,10 @@ class Scenario {
   std::vector<std::unique_ptr<SimulationNode>> simulation_nodes_;
   std::vector<std::unique_ptr<StatesPrinter>> printers_;
 
-  int64_t next_route_id_ = 40000;
   rtc::scoped_refptr<AudioDecoderFactory> audio_decoder_factory_;
   rtc::scoped_refptr<AudioEncoderFactory> audio_encoder_factory_;
 
   Timestamp start_time_ = Timestamp::PlusInfinity();
-  NetworkEmulationManagerImpl network_manager_;
   // Defined last so it's destroyed first.
   rtc::TaskQueue task_queue_;
 };

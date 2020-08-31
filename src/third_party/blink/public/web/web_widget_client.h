@@ -33,91 +33,54 @@
 
 #include <memory>
 
-#include "cc/input/event_listener_properties.h"
-#include "cc/input/layer_selection_bound.h"
-#include "cc/input/overscroll_behavior.h"
-#include "cc/layers/layer.h"
-#include "cc/paint/paint_worklet_layer_painter.h"
+#include "base/callback.h"
+#include "base/i18n/rtl.h"
+#include "base/time/time.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-forward.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_touch_action.h"
 #include "third_party/blink/public/web/web_meaningful_layout.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
-#include "third_party/blink/public/web/web_text_direction.h"
 
 class SkBitmap;
 
 namespace cc {
 struct ElementId;
-class LayerTreeMutator;
-class ScopedDeferMainFrameUpdate;
 class PaintImage;
 }
 
 namespace gfx {
 class Point;
-class Vector2d;
+class PointF;
+}
+
+namespace ui {
+class Cursor;
 }
 
 namespace blink {
 class WebDragData;
 class WebGestureEvent;
+struct WebFloatRect;
 class WebString;
 class WebWidget;
-struct WebCursorInfo;
-struct WebFloatPoint;
-struct WebFloatRect;
-struct WebFloatSize;
 class WebLocalFrame;
 
 class WebWidgetClient {
  public:
   virtual ~WebWidgetClient() = default;
 
-  // Sets an object which the compositor uses to ask blink for mutations on the
-  // compositor thread, in order to modify compositor state directly, avoiding
-  // the need to generate and commit main frames, and avoiding the potentially-
-  // janky main thread. This is used to allow AnimationWorklet to operate in
-  // sync with composited animations running ahead of the main frame state.
-  virtual void SetLayerTreeMutator(std::unique_ptr<cc::LayerTreeMutator>) {}
-
-  // Similar to the |SetLayerTreeMutator|, but used by PaintWorklet.
-  virtual void SetPaintWorkletLayerPainterClient(
-      std::unique_ptr<cc::PaintWorkletLayerPainter>) {}
-
-  // Sets the root layer of the tree in the compositor. It may be null to remove
-  // the root layer in which case nothing would be shown by the compositor.
-  virtual void SetRootLayer(scoped_refptr<cc::Layer>) {}
-
   // Called to request a BeginMainFrame from the compositor. For tests with
   // single thread and no scheduler, the impl should schedule a task to run
   // a synchronous composite.
   virtual void ScheduleAnimation() {}
-
-  // Show or hide compositor debug visualizations.
-  virtual void SetShowFPSCounter(bool) {}
-  virtual void SetShowPaintRects(bool) {}
-  virtual void SetShowLayoutShiftRegions(bool) {}
-  virtual void SetShowDebugBorders(bool) {}
-  virtual void SetShowScrollBottleneckRects(bool) {}
-  virtual void SetShowHitTestBorders(bool) {}
-
-  // Sets the background color to be filled in as gutter behind/around the
-  // painted content. Non-composited WebViews need not implement this, as they
-  // paint into another widget which has a background color of its own.
-  virtual void SetBackgroundColor(SkColor color) {}
-
-  // A notification callback for when the intrinsic sizing of the
-  // widget changed. This is only called for SVG within a remote frame.
-  virtual void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) {}
 
   // Called immediately following the first compositor-driven (frame-generating)
   // layout that happened after an interesting document lifecyle change (see
@@ -125,11 +88,7 @@ class WebWidgetClient {
   virtual void DidMeaningfulLayout(WebMeaningfulLayout) {}
 
   // Called when the cursor for the widget changes.
-  virtual void DidChangeCursor(const WebCursorInfo&) {}
-
-  virtual void AutoscrollStart(const WebFloatPoint&) {}
-  virtual void AutoscrollFling(const WebFloatSize& velocity) {}
-  virtual void AutoscrollEnd() {}
+  virtual void DidChangeCursor(const ui::Cursor&) {}
 
   // Called to show the widget according to the given policy.
   virtual void Show(WebNavigationPolicy) {}
@@ -149,15 +108,25 @@ class WebWidgetClient {
   virtual WebRect ViewRect() { return WebRect(); }
 
   // Called when a tooltip should be shown at the current cursor position.
-  virtual void SetToolTipText(const WebString&, WebTextDirection hint) {}
+  virtual void SetToolTipText(const WebString&,
+                              base::i18n::TextDirection hint) {}
 
   // Requests to lock the mouse cursor for the |requester_frame| in the
   // widget. If true is returned, the success result will be asynchronously
   // returned via a single call to WebWidget::didAcquirePointerLock() or
-  // WebWidget::didNotAcquirePointerLock().
+  // WebWidget::didNotAcquirePointerLock() and a single call to the callback.
   // If false, the request has been denied synchronously.
+  using PointerLockCallback =
+      base::OnceCallback<void(mojom::PointerLockResult)>;
   virtual bool RequestPointerLock(WebLocalFrame* requester_frame,
+                                  PointerLockCallback callback,
                                   bool request_unadjusted_movement) {
+    return false;
+  }
+
+  virtual bool RequestPointerLockChange(WebLocalFrame* requester_frame,
+                                        PointerLockCallback callback,
+                                        bool request_unadjusted_movement) {
     return false;
   }
 
@@ -175,10 +144,10 @@ class WebWidgetClient {
 
   // Called when overscrolled on main thread. All parameters are in
   // viewport-space.
-  virtual void DidOverscroll(const WebFloatSize& overscroll_delta,
-                             const WebFloatSize& accumulated_overscroll,
-                             const WebFloatPoint& position_in_viewport,
-                             const WebFloatSize& velocity_in_viewport) {}
+  virtual void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
+                             const gfx::Vector2dF& accumulated_overscroll,
+                             const gfx::PointF& position_in_viewport,
+                             const gfx::Vector2dF& velocity_in_viewport) {}
 
   // Requests that a gesture of |injected_type| be reissued at a later point in
   // time. |injected_type| is required to be one of
@@ -187,23 +156,13 @@ class WebWidgetClient {
   // delta + granularity.
   virtual void InjectGestureScrollEvent(
       WebGestureDevice device,
-      const WebFloatSize& delta,
-      ui::input_types::ScrollGranularity granularity,
+      const gfx::Vector2dF& delta,
+      ui::ScrollGranularity granularity,
       cc::ElementId scrollable_area_element_id,
       WebInputEvent::Type injected_type) {}
 
-  // Set the browser's behavior when overscroll happens, e.g. whether to glow
-  // or navigate.
-  virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
-
   // Called to update if pointerrawupdate events should be sent.
   virtual void SetHasPointerRawUpdateEventHandlers(bool) {}
-
-  // Called to update if touch events should be sent.
-  virtual void SetHasTouchEventHandlers(bool) {}
-
-  // Called to update if scroll events should be sent.
-  virtual void SetHaveScrollEventHandlers(bool) {}
 
   // Called to update whether low latency input mode is enabled or not.
   virtual void SetNeedsLowLatencyInput(bool) {}
@@ -253,24 +212,6 @@ class WebWidgetClient {
                              const SkBitmap& drag_image,
                              const gfx::Point& drag_image_offset) {}
 
-  // Double tap zooms a rect in the main-frame renderer.
-  virtual void AnimateDoubleTapZoomInMainFrame(const blink::WebPoint& point,
-                                               const blink::WebRect& bounds) {}
-
-  // Find in page zooms a rect in the main-frame renderer.
-  virtual void ZoomToFindInPageRectInMainFrame(const blink::WebRect& rect) {}
-
-  // Used to update the active selection bounds. Pass a default-constructed
-  // LayerSelection to clear it.
-  virtual void RegisterSelection(const cc::LayerSelection&) {}
-
-  // Used to call platform API for FallbackCursorMode.
-  virtual void FallbackCursorModeLockCursor(bool left,
-                                            bool right,
-                                            bool up,
-                                            bool down) {}
-  virtual void FallbackCursorModeSetCursorVisibility(bool visible) {}
-
   // Sets the current page scale factor and minimum / maximum limits. Both
   // limits are initially 1 (no page scale allowed).
   virtual void SetPageScaleStateAndLimits(float page_scale_factor,
@@ -278,19 +219,9 @@ class WebWidgetClient {
                                           float minimum,
                                           float maximum) {}
 
-  // Starts an animation of the page scale to a target scale factor and scroll
-  // offset.
-  // If use_anchor is true, destination is a point on the screen that will
-  // remain fixed for the duration of the animation.
-  // If use_anchor is false, destination is the final top-left scroll position.
-  virtual void StartPageScaleAnimation(const gfx::Vector2d& destination,
-                                       bool use_anchor,
-                                       float new_page_scale,
-                                       base::TimeDelta duration) {}
-
-  // For when the embedder itself change scales on the page (e.g. devtools)
-  // and wants all of the content at the new scale to be crisp.
-  virtual void ForceRecalculateRasterScales() {}
+  // Dispatch any pending input. This method will called before
+  // dispatching a RequestAnimationFrame to the widget.
+  virtual void DispatchRafAlignedInput(base::TimeTicks frame_time) {}
 
   // Requests an image decode and will have the |callback| run asynchronously
   // when it completes. Forces a new main frame to occur that will trigger
@@ -298,83 +229,56 @@ class WebWidgetClient {
   virtual void RequestDecode(const cc::PaintImage& image,
                              base::OnceCallback<void(bool)> callback) {}
 
-  // SwapResult mirrors the values of cc::SwapPromise::DidNotSwapReason, and
-  // should be kept consistent with it. SwapResult additionally adds a success
-  // value (kDidSwap).
-  // These values are written to logs. New enum values can be added, but
-  // existing enums must never be renumbered, deleted or reused.
-  enum SwapResult {
-    kDidSwap = 0,
-    kDidNotSwapSwapFails = 1,
-    kDidNotSwapCommitFails = 2,
-    kDidNotSwapCommitNoUpdate = 3,
-    kDidNotSwapActivationFails = 4,
-    kSwapResultMax,
-  };
-  using ReportTimeCallback =
-      base::OnceCallback<void(SwapResult, base::TimeTicks)>;
+  using LayerTreeFrameSinkCallback = base::OnceCallback<void(
+      std::unique_ptr<cc::LayerTreeFrameSink>,
+      std::unique_ptr<cc::RenderFrameMetadataObserver>)>;
 
-  // The |callback| will be fired when the corresponding renderer frame is
-  // submitted (still called "swapped") to the display compositor (either with
-  // DidSwap or DidNotSwap).
-  virtual void NotifySwapTime(ReportTimeCallback callback) {}
-
-  // Set or get what event handlers exist in the document contained in the
-  // WebWidget in order to inform the compositor thread if it is able to handle
-  // an input event, or it needs to pass it to the main thread to be handled.
-  // The class is the type of input event, and for each class there is a
-  // properties defining if the compositor thread can handle the event.
-  virtual void SetEventListenerProperties(cc::EventListenerClass,
-                                          cc::EventListenerProperties) {}
-  virtual cc::EventListenerProperties EventListenerProperties(
-      cc::EventListenerClass) const {
-    return cc::EventListenerProperties::kNone;
-  }
-
-  // Prevents any updates to the input for the layer tree, and the layer tree
-  // itself, and the layer tree from becoming visible.
-  virtual std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
-  DeferMainFrameUpdate() {
-    return nullptr;
-  }
-
-  // Start deferring commits to the compositor, allowing document lifecycle
-  // updates without committing the layer tree. Commits are deferred
-  // until at most the given |timeout| has passed. If multiple calls are made
-  // when deferal is active then the initial timeout applies.
-  virtual void StartDeferringCommits(base::TimeDelta timeout) {}
-  // Immediately stop deferring commits.
-  virtual void StopDeferringCommits(cc::PaintHoldingCommitTrigger) {}
-
-  // Enable or disable BeginMainFrameNotExpected signals from the compositor,
-  // which are consumed by the blink scheduler.
-  virtual void RequestBeginMainFrameNotExpected(bool request) {}
-
-  // A stable numeric Id for the local root's compositor. For tracing/debugging
-  // purposes.
-  virtual int GetLayerTreeId() const { return 0; }
-
-  // Sets the amount that the top and bottom browser controls are showing, from
-  // 0 (hidden) to 1 (fully shown).
-  virtual void SetBrowserControlsShownRatio(float top_ratio,
-                                            float bottom_ratio) {}
-
-  // Set browser controls params. These params consist of top and bottom
-  // heights, min-heights, browser_controls_shrink_blink_size, and
-  // animate_browser_controls_height_changes. If
-  // animate_browser_controls_height_changes is set to true, changes to the
-  // browser controls height will be animated. If
-  // browser_controls_shrink_blink_size is set to true, then Blink shrunk the
-  // viewport clip layers by the top and bottom browser controls height. Top
-  // controls will translate the web page down and do not immediately scroll
-  // when hiding. The bottom controls scroll immediately and never translate the
-  // content (only clip it).
-  virtual void SetBrowserControlsParams(cc::BrowserControlsParams params) {}
+  // Requests a LayerTreeFrameSink to submit CompositorFrames to.
+  virtual void RequestNewLayerTreeFrameSink(
+      LayerTreeFrameSinkCallback callback) {}
 
   virtual viz::FrameSinkId GetFrameSinkId() {
     NOTREACHED();
     return viz::FrameSinkId();
   }
+
+  // Notification that the LayerTreeHost started or stopped deferring main frame
+  // updates.
+  virtual void OnDeferMainFrameUpdatesChanged(bool defer) {}
+
+  // Notification that the LayerTreeHost started or stopped deferring commits.
+  virtual void OnDeferCommitsChanged(bool defer) {}
+
+  // For more information on the sequence of when these callbacks are made
+  // consult cc/trees/layer_tree_host_client.h.
+
+  // Indicates that the compositor is about to begin a frame. This is primarily
+  // to signal to flow control mechanisms that a frame is beginning, not to
+  // perform actual painting work.
+  virtual void WillBeginMainFrame() {}
+
+  // Notification that the BeginMainFrame completed, was committed into the
+  // compositor (thread) and submitted to the display compositor.
+  virtual void DidCommitAndDrawCompositorFrame() {}
+
+  // Notification that page scale animation was changed.
+  virtual void DidCompletePageScaleAnimation() {}
+
+  // Notification that the output of a BeginMainFrame was committed to the
+  // compositor (thread), though would not be submitted to the display
+  // compositor yet (see DidCommitAndDrawCompositorFrame()).
+  virtual void DidCommitCompositorFrame(base::TimeTicks commit_start_time) {}
+
+  // Notifies that the layer tree host has completed a call to
+  // RequestMainFrameUpdate in response to a BeginMainFrame.
+  virtual void DidBeginMainFrame() {}
+
+  // Record the time it took for the first paint after the widget transitioned
+  // from background inactive to active.
+  virtual void RecordTimeToFirstActivePaint(base::TimeDelta duration) {}
+
+  // Returns a scale of the device emulator from the widget.
+  virtual float GetEmulatorScale() const { return 1.0f; }
 };
 
 }  // namespace blink

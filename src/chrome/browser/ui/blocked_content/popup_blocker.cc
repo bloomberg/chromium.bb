@@ -6,17 +6,17 @@
 
 #include <string>
 
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/safe_browsing/triggers/ad_popup_trigger.h"
+#include "components/embedder_support/switches.h"
+#include "components/safe_browsing/content/triggers/ad_popup_trigger.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -30,7 +30,7 @@ PopupBlockType ShouldBlockPopup(content::WebContents* web_contents,
                                 bool user_gesture,
                                 const content::OpenURLParams* open_url_params) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisablePopupBlocking)) {
+          embedder_support::kDisablePopupBlocking)) {
     return PopupBlockType::kNotBlocked;
   }
   // If an explicit opener is not given, use the current committed load in this

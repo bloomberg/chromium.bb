@@ -187,7 +187,6 @@ bool ContentCaptureTask::RunInternal() {
         break;
       case TaskState::kProcessCurrentSession:
         return ProcessSession();
-        break;
       default:
         return true;
     }
@@ -266,6 +265,11 @@ base::TimeDelta ContentCaptureTask::GetTaskNextFireIntervalForTesting() const {
 void ContentCaptureTask::CancelTaskForTesting() {
   if (delay_task_ && delay_task_->IsActive())
     delay_task_->Stop();
+}
+
+void ContentCaptureTask::Trace(Visitor* visitor) {
+  visitor->Trace(local_frame_root_);
+  visitor->Trace(task_session_);
 }
 
 }  // namespace blink

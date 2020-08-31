@@ -18,12 +18,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
+#include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/common/web_application_info.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace web_app {
@@ -44,18 +46,24 @@ void PendingAppInstallTask::CreateTabHelpers(
   InstallableManager::CreateForWebContents(web_contents);
   SecurityStateTabHelper::CreateForWebContents(web_contents);
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
+  if (auto* performance_manager_registry =
+          performance_manager::PerformanceManagerRegistry::GetInstance()) {
+    performance_manager_registry->CreatePageNodeForWebContents(web_contents);
+  }
 }
 
 PendingAppInstallTask::PendingAppInstallTask(
     Profile* profile,
     AppRegistrar* registrar,
     AppShortcutManager* shortcut_manger,
+    FileHandlerManager* file_handler_manager,
     WebAppUiManager* ui_manager,
     InstallFinalizer* install_finalizer,
     ExternalInstallOptions install_options)
     : profile_(profile),
       registrar_(registrar),
       shortcut_manager_(shortcut_manger),
+      file_handler_manager_(file_handler_manager),
       install_finalizer_(install_finalizer),
       ui_manager_(ui_manager),
       externally_installed_app_prefs_(profile_->GetPrefs()),
@@ -111,6 +119,9 @@ void PendingAppInstallTask::Install(content::WebContents* web_contents,
     case WebAppUrlLoader::Result::kFailedPageTookTooLong:
       code = InstallResultCode::kInstallURLLoadTimeOut;
       break;
+    case WebAppUrlLoader::Result::kFailedErrorPageLoaded:
+      code = InstallResultCode::kInstallURLLoadFailed;
+      break;
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -133,7 +144,7 @@ void PendingAppInstallTask::UninstallPlaceholderApp(
   }
 
   // Otherwise, uninstall the placeholder app.
-  install_finalizer_->UninstallExternalWebApp(
+  install_finalizer_->UninstallExternalWebAppByUrl(
       install_options_.url, install_options_.install_source,
       base::BindOnce(&PendingAppInstallTask::OnPlaceholderUninstalled,
                      weak_ptr_factory_.GetWeakPtr(), web_contents,
@@ -256,13 +267,19 @@ void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
     shortcut_manager_->CreateShortcuts(
         app_id, install_options_.add_to_desktop,
         base::BindOnce(
-            [](base::ScopedClosureRunner scoped_closure,
+            [](base::WeakPtr<PendingAppInstallTask> task, const AppId& app_id,
+               base::ScopedClosureRunner scoped_closure,
                bool shortcuts_created) {
+              if (task) {
+                task->file_handler_manager_->EnableAndRegisterOsFileHandlers(
+                    app_id);
+              }
+
               // Even if the shortcuts failed to be created, we consider the
               // installation successful since an app was created.
               scoped_closure.RunAndReset();
             },
-            std::move(scoped_closure)));
+            weak_ptr_factory_.GetWeakPtr(), app_id, std::move(scoped_closure)));
     return;
   }
 }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/policy_test_utils.h"
 
+#include "base/bind_helpers.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,7 +28,6 @@
 #include "components/variations/variations_params_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -90,30 +90,23 @@ void PolicyTest::SetScreenshotPolicy(bool enabled) {
   UpdateProviderPolicy(policies);
 }
 
-void PolicyTest::SetShouldRequireCTForTesting(bool* required) {
+void PolicyTest::SetRequireCTForTesting(bool required) {
   if (content::IsOutOfProcessNetworkService()) {
     mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
     content::GetNetworkService()->BindTestInterface(
         network_service_test.BindNewPipeAndPassReceiver());
-    network::mojom::NetworkServiceTest::ShouldRequireCT required_ct;
-    if (!required) {
-      required_ct = network::mojom::NetworkServiceTest::ShouldRequireCT::RESET;
-    } else {
-      required_ct =
-          *required
-              ? network::mojom::NetworkServiceTest::ShouldRequireCT::REQUIRE
-              : network::mojom::NetworkServiceTest::ShouldRequireCT::
-                    DONT_REQUIRE;
-    }
+    network::mojom::NetworkServiceTest::RequireCT required_ct =
+        required ? network::mojom::NetworkServiceTest::RequireCT::REQUIRE
+                 : network::mojom::NetworkServiceTest::RequireCT::DEFAULT;
 
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    network_service_test->SetShouldRequireCT(required_ct);
+    network_service_test->SetRequireCT(required_ct);
     return;
   }
 
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&net::TransportSecurityState::SetShouldRequireCTForTesting,
+      base::BindOnce(&net::TransportSecurityState::SetRequireCTForTesting,
                      required));
 }
 
@@ -173,13 +166,14 @@ void PolicyTest::PerformClick(int x, int y) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   blink::WebMouseEvent click_event(
-      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::Type::kMouseDown,
+      blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   click_event.button = blink::WebMouseEvent::Button::kLeft;
   click_event.click_count = 1;
   click_event.SetPositionInWidget(x, y);
   contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(click_event);
-  click_event.SetType(blink::WebInputEvent::kMouseUp);
+  click_event.SetType(blink::WebInputEvent::Type::kMouseUp);
   contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(click_event);
 }
 

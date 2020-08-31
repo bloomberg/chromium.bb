@@ -17,34 +17,12 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
 
-#include "mojo/public/cpp/bindings/strong_binding.h"
-
 namespace blink {
 namespace {
-class NoopStoragePartitionService
-    : public mojom::blink::StoragePartitionService {
- public:
-  void OpenLocalStorage(
-      const scoped_refptr<const SecurityOrigin>& origin,
-      mojo::PendingReceiver<mojom::blink::StorageArea> receiver) override {}
 
-  void OpenSessionStorage(
-      const String& namespace_id,
-      mojo::PendingReceiver<mojom::blink::SessionStorageNamespace> receiver)
-      override {}
-};
+constexpr size_t kTestCacheLimit = 100;
 
-}  // namespace
-
-class StorageNamespaceTest : public testing::Test {
- public:
-  const size_t kTestCacheLimit = 100;
-
-  StorageNamespaceTest() {}
-  ~StorageNamespaceTest() override {}
-};
-
-TEST_F(StorageNamespaceTest, BasicStorageAreas) {
+TEST(StorageNamespaceTest, BasicStorageAreas) {
   const auto kOrigin = SecurityOrigin::CreateFromString("http://dom_storage1/");
   const auto kOrigin2 =
       SecurityOrigin::CreateFromString("http://dom_storage2/");
@@ -57,22 +35,10 @@ TEST_F(StorageNamespaceTest, BasicStorageAreas) {
   Persistent<FakeAreaSource> source_area =
       MakeGarbageCollected<FakeAreaSource>(kPageUrl);
 
-  mojo::PendingRemote<mojom::blink::StoragePartitionService>
-      storage_partition_service_remote;
-  PostCrossThreadTask(
-      *base::CreateSequencedTaskRunner({base::ThreadPool()}), FROM_HERE,
-      CrossThreadBindOnce(
-          [](mojo::PendingReceiver<mojom::blink::StoragePartitionService>
-                 receiver) {
-            mojo::MakeSelfOwnedReceiver(
-                std::make_unique<NoopStoragePartitionService>(),
-                std::move(receiver));
-          },
-          WTF::Passed(storage_partition_service_remote
-                          .InitWithNewPipeAndPassReceiver())));
-
-  StorageController controller(scheduler::GetSingleThreadTaskRunnerForTesting(),
-                               std::move(storage_partition_service_remote),
+  StorageController::DomStorageConnection connection;
+  ignore_result(connection.dom_storage_remote.BindNewPipeAndPassReceiver());
+  StorageController controller(std::move(connection),
+                               scheduler::GetSingleThreadTaskRunnerForTesting(),
                                kTestCacheLimit);
 
   StorageNamespace* localStorage =
@@ -98,4 +64,5 @@ TEST_F(StorageNamespaceTest, BasicStorageAreas) {
   EXPECT_EQ(cached_area3->GetItem(kKey), kValue);
 }
 
+}  // namespace
 }  // namespace blink

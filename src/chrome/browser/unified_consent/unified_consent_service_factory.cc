@@ -10,9 +10,10 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/embedder_support/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/unified_consent/unified_consent_metrics.h"
@@ -33,7 +34,7 @@ namespace {
 
 std::vector<std::string> GetSyncedServicePrefNames() {
   return {
-    prefs::kSearchSuggestEnabled, prefs::kAlternateErrorPagesEnabled,
+    prefs::kSearchSuggestEnabled, embedder_support::kAlternateErrorPagesEnabled,
         prefs::kSafeBrowsingEnabled, prefs::kSafeBrowsingScoutReportingEnabled,
         spellcheck::prefs::kSpellCheckUseSpellingService,
 #if defined(OS_ANDROID)
@@ -87,12 +88,4 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
   return new UnifiedConsentService(
       pref_service, IdentityManagerFactory::GetForProfile(profile),
       sync_service, GetSyncedServicePrefNames());
-}
-
-bool UnifiedConsentServiceFactory::ServiceIsNULLWhileTesting() const {
-  return false;
-}
-
-bool UnifiedConsentServiceFactory::ServiceIsCreatedWithBrowserContext() const {
-  return false;
 }

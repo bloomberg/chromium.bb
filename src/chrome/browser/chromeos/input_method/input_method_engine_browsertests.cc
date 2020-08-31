@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
@@ -231,10 +232,11 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   // onSurroundingTextChange should be fired if SetSurroundingText is called.
   ExtensionTestMessageListener surrounding_text_listener(
       "onSurroundingTextChanged", false);
-  engine_handler->SetSurroundingText("text",  // Surrounding text.
-                                     0,       // focused position.
-                                     1,       // anchor position.
-                                     0);      // offset position.
+  engine_handler->SetSurroundingText(
+      base::UTF8ToUTF16("text"),  // Surrounding text.
+      0,                          // focused position.
+      1,                          // anchor position.
+      0);                         // offset position.
   ASSERT_TRUE(surrounding_text_listener.WaitUntilSatisfied());
   ASSERT_TRUE(surrounding_text_listener.was_satisfied());
 
@@ -796,6 +798,46 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
         mock_candidate_window->last_update_lookup_table_arg().lookup_table;
     EXPECT_TRUE(table.is_auxiliary_text_visible());
     EXPECT_EQ("AUXILIARY_TEXT", table.auxiliary_text());
+  }
+  {
+    SCOPED_TRACE("setCandidateWindowProperties:currentCandidateIndex test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+
+    const char set_candidate_window_properties_test_script[] =
+        "chrome.input.ime.setCandidateWindowProperties({"
+        "  engineID: engineBridge.getActiveEngineID(),"
+        "  properties: {"
+        "    currentCandidateIndex: 1"
+        "  }"
+        "});";
+    ASSERT_TRUE(content::ExecuteScript(
+        host->host_contents(), set_candidate_window_properties_test_script));
+    EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
+
+    const ui::CandidateWindow& table =
+        mock_candidate_window->last_update_lookup_table_arg().lookup_table;
+    EXPECT_EQ(1, table.current_candidate_index());
+  }
+  {
+    SCOPED_TRACE("setCandidateWindowProperties:totalCandidates test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+
+    const char set_candidate_window_properties_test_script[] =
+        "chrome.input.ime.setCandidateWindowProperties({"
+        "  engineID: engineBridge.getActiveEngineID(),"
+        "  properties: {"
+        "    totalCandidates: 100"
+        "  }"
+        "});";
+    ASSERT_TRUE(content::ExecuteScript(
+        host->host_contents(), set_candidate_window_properties_test_script));
+    EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
+
+    const ui::CandidateWindow& table =
+        mock_candidate_window->last_update_lookup_table_arg().lookup_table;
+    EXPECT_EQ(100, table.total_candidates());
   }
   {
     SCOPED_TRACE("setCandidates test");

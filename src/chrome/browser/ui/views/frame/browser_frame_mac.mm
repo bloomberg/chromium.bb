@@ -7,10 +7,9 @@
 #import "base/mac/foundation_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
-#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #import "chrome/browser/ui/cocoa/browser_window_command_handler.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #import "components/remote_cocoa/app_shim/window_touch_bar_delegate.h"
@@ -38,10 +38,10 @@
 namespace {
 
 AppShimHost* GetHostForBrowser(Browser* browser) {
-  auto* shim_handler = apps::ExtensionAppShimHandler::Get();
-  if (!shim_handler)
+  auto* shim_manager = apps::AppShimManager::Get();
+  if (!shim_manager)
     return nullptr;
-  return shim_handler->GetHostForBrowser(browser);
+  return shim_manager->GetHostForRemoteCocoaBrowser(browser);
 }
 
 bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
@@ -51,7 +51,7 @@ bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
     return false;
 
   // Ignore synthesized keyboard events. See http://crbug.com/23221.
-  if (event.GetType() == content::NativeWebKeyboardEvent::kChar)
+  if (event.GetType() == content::NativeWebKeyboardEvent::Type::kChar)
     return false;
 
   // If the event was not synthesized it should have an os_event.
@@ -68,9 +68,9 @@ bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
 API_AVAILABLE(macos(10.12.2))
 @interface BrowserWindowTouchBarViewsDelegate
     : NSObject<WindowTouchBarDelegate> {
-  Browser* browser_;  // Weak.
-  NSWindow* window_;  // Weak.
-  base::scoped_nsobject<BrowserWindowTouchBarController> touchBarController_;
+  Browser* _browser;  // Weak.
+  NSWindow* _window;  // Weak.
+  base::scoped_nsobject<BrowserWindowTouchBarController> _touchBarController;
 }
 
 - (BrowserWindowTouchBarController*)touchBarController;
@@ -81,24 +81,24 @@ API_AVAILABLE(macos(10.12.2))
 
 - (instancetype)initWithBrowser:(Browser*)browser window:(NSWindow*)window {
   if ((self = [super init])) {
-    browser_ = browser;
-    window_ = window;
+    _browser = browser;
+    _window = window;
   }
 
   return self;
 }
 
 - (BrowserWindowTouchBarController*)touchBarController {
-  return touchBarController_.get();
+  return _touchBarController.get();
 }
 
 - (NSTouchBar*)makeTouchBar API_AVAILABLE(macos(10.12.2)) {
-  if (!touchBarController_) {
-    touchBarController_.reset([[BrowserWindowTouchBarController alloc]
-        initWithBrowser:browser_
-                 window:window_]);
+  if (!_touchBarController) {
+    _touchBarController.reset([[BrowserWindowTouchBarController alloc]
+        initWithBrowser:_browser
+                 window:_window]);
   }
-  return [touchBarController_ makeTouchBar];
+  return [_touchBarController makeTouchBar];
 }
 
 @end
@@ -174,24 +174,6 @@ void BrowserFrameMac::ValidateUserInterfaceItem(
                                             : IDS_ENTER_FULLSCREEN_MAC));
       break;
     }
-    case IDC_BOOKMARK_THIS_TAB: {
-      // Extensions have the ability to hide the bookmark tab menu item.
-      // This only affects the bookmark tab menu item under the main menu.
-      // The bookmark tab menu item under the app menu has its visibility
-      // controlled by AppMenuModel.
-      result->new_hidden_state =
-          chrome::ShouldRemoveBookmarkThisTabUI(browser->profile());
-      break;
-    }
-    case IDC_BOOKMARK_ALL_TABS: {
-      // Extensions have the ability to hide the bookmark all tabs menu
-      // item.  This only affects the bookmark page menu item under the main
-      // menu.  The bookmark page menu item under the app menu has its
-      // visibility controlled by AppMenuModel.
-      result->new_hidden_state =
-          chrome::ShouldRemoveBookmarkAllTabsUI(browser->profile());
-      break;
-    }
     case IDC_SHOW_AS_TAB: {
       // Hide this menu option if the window is tabbed or is the devtools
       // window.
@@ -231,6 +213,12 @@ void BrowserFrameMac::ValidateUserInterfaceItem(
           prefs->GetBoolean(prefs::kShowFullscreenToolbar);
       break;
     }
+    case IDC_SHOW_FULL_URLS: {
+      PrefService* prefs = browser->profile()->GetPrefs();
+      result->new_toggle_state =
+          prefs->GetBoolean(omnibox::kPreventUrlElisionsInOmnibox);
+      break;
+    }
     case IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS: {
       PrefService* prefs = browser->profile()->GetPrefs();
       result->new_toggle_state =
@@ -245,11 +233,19 @@ void BrowserFrameMac::ValidateUserInterfaceItem(
       result->new_toggle_state = !model->empty() && !will_mute;
       break;
     }
-    case IDC_WINDOW_PIN_TAB:
+    case IDC_WINDOW_PIN_TAB: {
       TabStripModel* model = browser->tab_strip_model();
       result->new_toggle_state =
           !model->empty() && !model->WillContextMenuPin(model->active_index());
       break;
+    }
+    case IDC_WINDOW_GROUP_TAB: {
+      TabStripModel* model = browser->tab_strip_model();
+      result->new_toggle_state =
+          !model->empty() &&
+          !model->WillContextMenuGroup(model->active_index());
+      break;
+    }
   }
 }
 
@@ -274,8 +270,8 @@ bool BrowserFrameMac::ExecuteCommand(
     // https://crbug.com/836947.
     // The function IsReservedCommandOrKey does not examine its event argument
     // on macOS.
-    content::NativeWebKeyboardEvent dummy_event(blink::WebInputEvent::kKeyDown,
-                                                0, base::TimeTicks());
+    content::NativeWebKeyboardEvent dummy_event(
+        blink::WebInputEvent::Type::kKeyDown, 0, base::TimeTicks());
     if (!browser->command_controller()->IsReservedCommandOrKey(command,
                                                                dummy_event)) {
       return false;

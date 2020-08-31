@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
 #include "extensions/browser/preload_check.h"
 #include "extensions/common/manifest.h"
 
@@ -124,10 +125,10 @@ class UnpackedInstaller
                      int flags,
                      std::string* error);
 
-  // Reads the Declarative Net Request JSON ruleset for the extension, if it
-  // provided one, and persists the indexed ruleset. Returns false and populates
-  // |error| in case of an error. Should be called on a sequence where file IO
-  // is allowed.
+  // Reads the Declarative Net Request JSON rulesets for the extension, if it
+  // provided any, and persists the indexed rulesets. Returns false and
+  // populates |error| in case of an error. Should be called on a sequence where
+  // file IO is allowed.
   bool IndexAndPersistRulesIfNeeded(std::string* error);
 
   const Extension* extension() { return extension_.get(); }
@@ -159,9 +160,9 @@ class UnpackedInstaller
   // Runs the above checks.
   std::unique_ptr<PreloadCheckGroup> check_group_;
 
-  // The checksum for the indexed ruleset corresponding to the Declarative Net
+  // The checksums for the indexed rulesets corresponding to the Declarative Net
   // Request API.
-  base::Optional<int> dnr_ruleset_checksum_;
+  declarative_net_request::RulesetChecksums ruleset_checksums_;
 
   CompletionCallback callback_;
 

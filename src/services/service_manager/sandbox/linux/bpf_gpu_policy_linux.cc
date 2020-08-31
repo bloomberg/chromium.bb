@@ -11,7 +11,6 @@
 #include <unistd.h>
 
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
@@ -38,10 +37,20 @@ GpuProcessPolicy::~GpuProcessPolicy() {}
 // Main policy for x86_64/i386. Extended by CrosArmGpuProcessPolicy.
 ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
-#if !defined(OS_CHROMEOS)
-    case __NR_ftruncate:
+#if defined(OS_CHROMEOS)
+    case __NR_memfd_create:
+#else   // !defined(OS_CHROMEOS)
     case __NR_fallocate:
+#endif  // defined(OS_CHROMEOS)
+    case __NR_ftruncate:
+#if defined(__i386__) || defined(__arm__) || \
+    (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
+    case __NR_ftruncate64:
 #endif
+#if !defined(__aarch64__)
+    case __NR_getdents:
+#endif
+    case __NR_getdents64:
     case __NR_ioctl:
       return Allow();
 #if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
@@ -55,6 +64,7 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
     // TODO(jln): restrict prctl.
     case __NR_prctl:
     case __NR_sysinfo:
+    case __NR_uname:  // https://crbug.com/1075934
       return Allow();
     case __NR_sched_getaffinity:
     case __NR_sched_setaffinity:

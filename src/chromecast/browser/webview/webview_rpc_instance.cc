@@ -17,27 +17,15 @@
 
 namespace chromecast {
 
-// TODO(sagallea): Remove this when ready to deprecate WebviewService.
-WebviewRpcInstance::WebviewRpcInstance(
-    webview::WebviewService::AsyncService* service,
-    grpc::ServerCompletionQueue* cq,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    WebviewWindowManager* window_manager)
-    : PlatformViewsRpcInstance(cq, task_runner, window_manager),
-      webview_service_(service),
-      platform_views_service_(nullptr) {
-  webview_service_->RequestCreateWebview(&ctx_, &io_, cq_, cq_,
-                                         &init_callback_);
-}
-
 WebviewRpcInstance::WebviewRpcInstance(
     webview::PlatformViewsService::AsyncService* service,
     grpc::ServerCompletionQueue* cq,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    WebviewWindowManager* window_manager)
+    WebviewWindowManager* window_manager,
+    bool enabled_for_dev)
     : PlatformViewsRpcInstance(cq, task_runner, window_manager),
-      webview_service_(nullptr),
-      platform_views_service_(service) {
+      platform_views_service_(service),
+      enabled_for_dev_(enabled_for_dev) {
   platform_views_service_->RequestCreateWebview(&ctx_, &io_, cq_, cq_,
                                                 &init_callback_);
 }
@@ -45,12 +33,8 @@ WebviewRpcInstance::WebviewRpcInstance(
 WebviewRpcInstance::~WebviewRpcInstance() {}
 
 void WebviewRpcInstance::CreateNewInstance() {
-  if (webview_service_)
-    new WebviewRpcInstance(webview_service_, cq_, task_runner_,
-                           window_manager_);
-  else
-    new WebviewRpcInstance(platform_views_service_, cq_, task_runner_,
-                           window_manager_);
+  new WebviewRpcInstance(platform_views_service_, cq_, task_runner_,
+                         window_manager_, enabled_for_dev_);
 }
 
 bool WebviewRpcInstance::Initialize() {
@@ -76,7 +60,8 @@ void WebviewRpcInstance::CreateWebview(int app_id, int window_id) {
 
   content::BrowserContext* browser_context =
       shell::CastBrowserProcess::GetInstance()->browser_context();
-  controller_ = std::make_unique<WebviewController>(browser_context, this);
+  controller_ = std::make_unique<WebviewController>(browser_context, this,
+                                                    enabled_for_dev_);
 
   // Begin reading again.
   io_.Read(request_.get(), &read_callback_);

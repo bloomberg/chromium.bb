@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 from datetime import datetime, date
+import sys
 
 from google.protobuf import field_mask_pb2
 from google.protobuf.struct_pb2 import Struct, Value
@@ -22,6 +23,10 @@ from chromite.lib.luci.prpc.client import Client, ProtocolError
 
 from infra_libs.buildbucket.proto import build_pb2, rpc_pb2, common_pb2
 from infra_libs.buildbucket.proto import step_pb2
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 class BuildbucketV2Test(cros_test_lib.MockTestCase):
   """Tests for buildbucket_v2."""
@@ -393,7 +398,8 @@ class StaticFunctionsTest(cros_test_lib.MockTestCase):
         toolchain_url='toolchain_url',
         build_type='canary',
         unibuild=True,
-        suite_scheduling=False)
+        suite_scheduling=False,
+        channels=None)
 
   def testBuildStepToDict(self):
     """Test the working of BuildStepToDict."""

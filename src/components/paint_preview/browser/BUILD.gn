@@ -6,10 +6,12 @@ import("//testing/test.gni")
 
 assert(!is_ios, "Paint Previews are not supported on iOS.")
 
-static_library("browser") {
+source_set("browser") {
   sources = [
     "compositor_utils.cc",
     "compositor_utils.h",
+    "directory_key.cc",
+    "directory_key.h",
     "file_manager.cc",
     "file_manager.h",
     "hit_tester.cc",
@@ -18,16 +20,25 @@ static_library("browser") {
     "paint_preview_base_service.h",
     "paint_preview_client.cc",
     "paint_preview_client.h",
+    "paint_preview_compositor_client_impl.cc",
+    "paint_preview_compositor_client_impl.h",
+    "paint_preview_compositor_service_impl.cc",
+    "paint_preview_compositor_service_impl.h",
+    "paint_preview_policy.h",
   ]
 
   deps = [
     "//base",
     "//cc/base",
     "//components/discardable_memory/service",
-    "//components/strings:components_strings",
+    "//components/keyed_service/core",
+    "//components/strings:components_strings_grit",
+    "//components/ukm/content",
     "//content/public/browser",
     "//mojo/public/cpp/base",
     "//mojo/public/cpp/bindings",
+    "//services/metrics/public/cpp:metrics_cpp",
+    "//services/metrics/public/cpp:ukm_builders",
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/public/common",
     "//third_party/zlib/google:zip",
@@ -39,8 +50,27 @@ static_library("browser") {
     "//components/paint_preview/common",
     "//components/paint_preview/common/mojom",
     "//components/paint_preview/common/proto",
+    "//components/paint_preview/public",
     "//components/services/paint_preview_compositor/public/mojom",
   ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "paint_preview_base_service_test_factory.cc",
+    "paint_preview_base_service_test_factory.h",
+    "test_paint_preview_policy.cc",
+    "test_paint_preview_policy.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/keyed_service/core",
+    "//content/public/browser",
+  ]
+
+  public_deps = [ ":browser" ]
 }
 
 source_set("unit_tests") {
@@ -55,6 +85,7 @@ source_set("unit_tests") {
 
   deps = [
     ":browser",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/paint_preview/common:test_utils",

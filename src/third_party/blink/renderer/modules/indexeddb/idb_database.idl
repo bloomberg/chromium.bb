@@ -24,7 +24,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://w3c.github.io/IndexedDB/#idl-def-IDBDatabase
+// https://w3c.github.io/IndexedDB/#database-interface
 
 [
     ActiveScriptWrappable,
@@ -38,14 +38,13 @@
                                                                                   optional IDBTransactionMode mode = "readonly");
 
     [NewObject, CallWith=ScriptState, RaisesException, RuntimeEnabled=IDBRelaxedDurability] IDBTransaction transaction((DOMString or sequence<DOMString>) storeNames,
-
                                                                                   optional IDBTransactionMode mode = "readonly",
                                                                                   IDBTransactionOptions options);
     void close();
 
     [MeasureAs=IndexedDBWrite, NewObject, RaisesException]
     IDBObjectStore createObjectStore(DOMString name,
-                                     optional IDBObjectStoreParameters options);
+                                     optional IDBObjectStoreParameters options = {});
 
     [MeasureAs=IndexedDBWrite, RaisesException]
     void deleteObjectStore(DOMString name);

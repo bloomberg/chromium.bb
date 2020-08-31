@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,15 +20,15 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
+import org.chromium.chrome.browser.profiles.ProfileJni;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
@@ -40,11 +39,13 @@ import org.chromium.content_public.browser.WebContents;
 public class SendTabToSelfShareActivityTest {
     @Rule
     public JniMocker mocker = new JniMocker();
+    @Mock
+    public Profile.Natives mMockProfileNatives;
 
     @Mock
     SendTabToSelfAndroidBridge.Natives mNativeMock;
     @Mock
-    private TabImpl mTab;
+    private Tab mTab;
     @Mock
     private ChromeActivity mChromeActivity;
     @Mock
@@ -66,12 +67,7 @@ public class SendTabToSelfShareActivityTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mocker.mock(SendTabToSelfAndroidBridgeJni.TEST_HOOKS, mNativeMock);
-        RecordHistogram.setDisabledForTests(true);
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
+        mocker.mock(ProfileJni.TEST_HOOKS, mMockProfileNatives);
     }
 
     @Test
@@ -91,7 +87,7 @@ public class SendTabToSelfShareActivityTest {
         // Setup the mocked object chain to get to the profile.
         when(mChromeActivity.getActivityTabProvider()).thenReturn(mActivityTabProvider);
         when(mActivityTabProvider.get()).thenReturn(mTab);
-        when((mTab).getProfile()).thenReturn(mProfile);
+        when(mMockProfileNatives.fromWebContents(eq(mWebContents))).thenReturn(mProfile);
 
         // Setup the mocked object chain to get to the url, title and timestamp.
         when(mTab.getWebContents()).thenReturn(mWebContents);

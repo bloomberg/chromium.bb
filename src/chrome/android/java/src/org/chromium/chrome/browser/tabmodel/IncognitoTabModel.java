@@ -9,6 +9,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
+import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 
 import java.util.List;
 
@@ -239,10 +242,11 @@ public class IncognitoTabModel implements TabModel {
     }
 
     @Override
-    public void addTab(Tab tab, int index, @TabLaunchType int type) {
+    public void addTab(
+            Tab tab, int index, @TabLaunchType int type, @TabCreationState int creationState) {
         mIsAddingTab = true;
         ensureTabModelImpl();
-        mDelegateModel.addTab(tab, index, type);
+        mDelegateModel.addTab(tab, index, type, creationState);
         mIsAddingTab = false;
     }
 

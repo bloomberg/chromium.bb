@@ -15,16 +15,15 @@ etc., where each group organizes related histograms.
 
 ## Coding (Emitting to Histograms)
 
-Generally you should be using the
+Prefer the helper functions defined in
 [histogram_functions.h](https://cs.chromium.org/chromium/src/base/metrics/histogram_functions.h).
-You can also use the macros in
-[histogram_macros.h](https://cs.chromium.org/chromium/src/base/metrics/histogram_macros.h).
-The macros are best used in code where efficiency matters--when the histogram is
-emitted frequently (i.e., on any regular basis resulting in more than about ten
-calls per hour) or on a critical path.  The macros cache a pointer to the
-histogram object for efficiency, though this comes at the cost of increased
-binary size. (130 bytes/macro sounds small but could and does easily add up.)
-If efficiency isn't a concern, prefer the histogram_functions.h methods.
+These functions take a lock and perform a map lookup, but the overhead is
+generally insignificant. However, when recording metrics on the critical path
+(e.g. called in a loop or logged multiple times per second), use the macros in
+[histogram_macros.h](https://cs.chromium.org/chromium/src/base/metrics/histogram_macros.h)
+instead. These macros cache a pointer to the histogram object for efficiency,
+though this comes at the cost of increased binary size: 130 bytes/macro usage
+sounds small but quickly adds up.
 
 ### Don't Use the Same Histogram Logging Call in Multiple Places
 
@@ -122,7 +121,7 @@ additional buckets are added later.
 
 #### Usage
 
-Define an `enum class` with a `kMaxValue` enumerator:
+*In C++*, define an `enum class` with a `kMaxValue` enumerator:
 
 ```c++
 enum class NewTabPageAction {
@@ -155,7 +154,7 @@ UmaHistogramEnumeration("NewTabPageAction", action);
 #### Legacy Enums
 
 **Note: this method of defining histogram enums is deprecated. Do not use this
-for new enums.**
+for new enums *in C++*.**
 
 Many legacy enums define a `kCount` sentinel, reying on the compiler to
 automatically update it when new entries are added:
@@ -262,16 +261,20 @@ UMA_HISTOGRAM_PERCENTAGE macro provided in
 You can also easily emit any ratio as a linear histogram (for equally
 sized buckets).
 
-For such histograms, you should think carefully about _when_ the values are
-emitted.  Normally, you should emit values periodically at a set time interval,
-such as every 5 minutes.  Conversely, we strongly discourage emitting values
-based on event triggers.  For example, we do not recommend recording a ratio
-at the end of a video playback.
+For such histograms, you want each value recorded to cover approximately
+the same span of time.  This typically means emitting values periodically
+at a set time interval, such as every 5 minutes.  We do not recommend
+recording a ratio at the end of a video playback, as lengths of videos
+vary greatly.
 
-Why?  You typically cannot make decisions based on histograms whose values are
-recorded in response to an event, because such metrics can conflate heavy usage
-with light usage.  It's easier to reason about metrics that route around this
-source of bias.
+It is okay to emit at the end of an animation sequence when what's being
+animated is fixed / known.  In this case, each value will represent
+roughly the same span of time.
+
+Why?  You typically cannot make decisions based on histograms whose
+values are recorded in response to an event that varies in length,
+because such metrics can conflate heavy usage with light usage.  It's
+easier to reason about metrics that route around this source of bias.
 
 Many developers have been bitten by this.  For example, it was previously common
 to emit an actions-per-minute ratio whenever Chrome was backgrounded.

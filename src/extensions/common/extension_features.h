@@ -9,6 +9,9 @@
 
 namespace extensions_features {
 
+extern const base::Feature kDisableMalwareExtensionsRemotely;
+
+// Extension check up related features.
 extern const base::Feature kExtensionsCheckup;
 extern const char kExtensionsCheckupEntryPointParameter[];
 extern const char kExtensionsCheckupBannerMessageParameter[];
@@ -19,6 +22,8 @@ extern const char kPrivacyMessage[];
 extern const char kNeutralMessage[];
 
 extern const base::Feature kForceWebRequestProxyForTest;
+
+extern const base::Feature kAllowWithholdingExtensionPermissionsOnInstall;
 
 }  // namespace extensions_features
 

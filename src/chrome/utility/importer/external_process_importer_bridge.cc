@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
@@ -107,11 +107,6 @@ void ExternalProcessImporterBridge::SetKeywords(
     const std::vector<importer::SearchEngineInfo>& search_engines,
     bool unique_on_host_and_path) {
   observer_->OnKeywordsImportReady(search_engines, unique_on_host_and_path);
-}
-
-void ExternalProcessImporterBridge::SetFirefoxSearchEnginesXMLData(
-    const std::vector<std::string>& search_engine_data) {
-  observer_->OnFirefoxSearchEngineDataReceived(search_engine_data);
 }
 
 void ExternalProcessImporterBridge::SetPasswordForm(

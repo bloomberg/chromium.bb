@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace {
@@ -122,9 +123,8 @@ class MediaStreamVideoTrack::FrameDeliverer
 
   using VideoIdCallbackPair =
       std::pair<VideoSinkId, VideoCaptureDeliverFrameInternalCallback>;
-  std::vector<VideoIdCallbackPair> callbacks_;
-  WTF::HashMap<VideoSinkId, EncodedVideoFrameInternalCallback>
-      encoded_callbacks_;
+  Vector<VideoIdCallbackPair> callbacks_;
+  HashMap<VideoSinkId, EncodedVideoFrameInternalCallback> encoded_callbacks_;
   bool await_next_key_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
@@ -149,7 +149,7 @@ MediaStreamVideoTrack::FrameDeliverer::FrameDeliverer(
 }
 
 MediaStreamVideoTrack::FrameDeliverer::~FrameDeliverer() {
-  DCHECK(callbacks_.empty());
+  DCHECK(callbacks_.IsEmpty());
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::AddCallback(
@@ -203,7 +203,7 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
     VideoSinkId id,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  auto it = callbacks_.begin();
+  auto* it = callbacks_.begin();
   for (; it != callbacks_.end(); ++it) {
     if (it->first == id) {
       // Callback destruction needs to happen on the specified task runner.
@@ -494,7 +494,8 @@ void MediaStreamVideoTrack::AddEncodedSink(WebMediaStreamSink* sink,
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   AddSinkInternal(&encoded_sinks_, sink);
   frame_deliverer_->AddEncodedCallback(sink, std::move(callback));
-  source_->UpdateNumEncodedSinks();
+  if (source_)
+    source_->UpdateNumEncodedSinks();
   UpdateSourceHasConsumers();
 }
 
@@ -514,7 +515,8 @@ void MediaStreamVideoTrack::RemoveEncodedSink(WebMediaStreamSink* sink) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   RemoveSinkInternal(&encoded_sinks_, sink);
   frame_deliverer_->RemoveEncodedCallback(sink);
-  source_->UpdateNumEncodedSinks();
+  if (source_)
+    source_->UpdateNumEncodedSinks();
   UpdateSourceHasConsumers();
 }
 
@@ -532,13 +534,16 @@ void MediaStreamVideoTrack::SetEnabled(bool enabled) {
   // need a new keyframe from the source as we may have dropped data making the
   // stream undecodable.
   bool maybe_await_key_frame = false;
-  if (enabled && source_->SupportsEncodedOutput() && !encoded_sinks_.empty()) {
+  if (enabled && source_ && source_->SupportsEncodedOutput() &&
+      !encoded_sinks_.empty()) {
     source_->RequestRefreshFrame();
     maybe_await_key_frame = true;
   }
   frame_deliverer_->SetEnabled(enabled, maybe_await_key_frame);
   for (auto* sink : sinks_)
     sink->OnEnabledChanged(enabled);
+  for (auto* encoded_sink : encoded_sinks_)
+    encoded_sink->OnEnabledChanged(enabled);
 }
 
 size_t MediaStreamVideoTrack::CountEncodedSinks() const {
@@ -551,6 +556,8 @@ void MediaStreamVideoTrack::SetContentHint(
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   for (auto* sink : sinks_)
     sink->OnContentHintChanged(content_hint);
+  for (auto* encoded_sink : encoded_sinks_)
+    encoded_sink->OnContentHintChanged(content_hint);
 }
 
 void MediaStreamVideoTrack::StopAndNotify(base::OnceClosure callback) {
@@ -611,6 +618,8 @@ void MediaStreamVideoTrack::OnReadyStateChanged(
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   for (auto* sink : sinks_)
     sink->OnReadyStateChanged(state);
+  for (auto* encoded_sink : encoded_sinks_)
+    encoded_sink->OnReadyStateChanged(state);
 }
 
 void MediaStreamVideoTrack::SetTrackAdapterSettings(

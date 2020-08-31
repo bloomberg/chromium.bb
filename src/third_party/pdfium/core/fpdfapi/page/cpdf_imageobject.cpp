@@ -10,7 +10,6 @@
 
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/page/cpdf_image.h"
-#include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fxge/dib/cfx_dibbase.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
@@ -63,7 +62,7 @@ RetainPtr<CPDF_Image> CPDF_ImageObject::GetImage() const {
 RetainPtr<CFX_DIBitmap> CPDF_ImageObject::GetIndependentBitmap() const {
   RetainPtr<CFX_DIBBase> pSource = GetImage()->LoadDIBBase();
 
-  // Clone() is non-virtual, and can't be overloaded by CPDF_DIBBase to
+  // Clone() is non-virtual, and can't be overloaded by CPDF_DIB to
   // return a clone of the subclass as one would typically expect from a
   // such a method. Instead, it only clones the CFX_DIBBase, none of whose
   // members point to objects owned by |this| or the form containing |this|.

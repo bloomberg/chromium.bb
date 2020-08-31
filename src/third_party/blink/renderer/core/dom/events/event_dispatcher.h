@@ -56,7 +56,7 @@ class EventDispatcher {
   static void DispatchScopedEvent(Node&, Event&);
 
   static void DispatchSimulatedClick(Node&,
-                                     Event* underlying_event,
+                                     const Event* underlying_event,
                                      SimulatedClickMouseEventOptions,
                                      SimulatedClickCreationScope);
 
@@ -76,9 +76,9 @@ class EventDispatcher {
   void DispatchEventPostProcess(Node* activation_target,
                                 EventDispatchHandlingState*);
 
-  Member<Node> node_;
-  Member<Event> event_;
-  Member<LocalFrameView> view_;
+  Node* node_;
+  Event* event_;
+  LocalFrameView* view_;
 #if DCHECK_IS_ON()
   bool event_dispatched_ = false;
 #endif

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/api/cloud_print_private.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -85,14 +86,8 @@ MATCHER(IsExpectedUserSettings, "") {
          settings.printers[1].connect;
 }
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_CloudPrintHostedWithMock DISABLED_CloudPrintHostedWithMock
-#else
-#define MAYBE_CloudPrintHostedWithMock CloudPrintHostedWithMock
-#endif
 IN_PROC_BROWSER_TEST_F(ExtensionCloudPrintPrivateApiTest,
-                       MAYBE_CloudPrintHostedWithMock) {
+                       CloudPrintHostedWithMock) {
   CloudPrintTestsDelegateMock cloud_print_mock;
 
   EXPECT_CALL(cloud_print_mock,
@@ -124,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCloudPrintPrivateApiTest,
                        CloudPrintHostedIncognito) {
   GURL page_url = GetTestServerURL(
       "enable_chrome_connector/cloud_print_incognito_failure_tests.html");
-  ASSERT_TRUE(RunPageTest(page_url.spec(), kFlagUseIncognito));
+  ASSERT_TRUE(RunPageTest(page_url.spec(), kFlagNone, kFlagUseIncognito));
 }
 
 #endif  // !defined(OS_CHROMEOS)

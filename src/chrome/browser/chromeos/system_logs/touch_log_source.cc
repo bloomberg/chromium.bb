@@ -6,17 +6,17 @@
 
 #include <stddef.h>
 
-#include "ash/touch/touch_hud_debug.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/json/json_string_value_serializer.h"
-#include "base/logging.h"
 #include "base/process/launch.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/ozone/public/input_controller.h"
@@ -25,8 +25,6 @@
 using content::BrowserThread;
 
 namespace {
-
-const char kHUDLogDataKey[] = "hud_log";
 
 // The prefix "hack-33025" was historically chosen in http://crbug.com/139715.
 // We continue to go with it in order to be compatible with the existing touch
@@ -126,9 +124,8 @@ void PackEventLog(system_logs::SystemLogsResponse* response,
   }
 
   // Cleanup these temporary log files.
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(CleanupEventLog, log_paths));
 }
 
@@ -141,9 +138,8 @@ void OnEventLogCollected(
     const std::vector<base::FilePath>& log_paths) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   system_logs::SystemLogsResponse* response_ptr = response.get();
-  base::PostTaskAndReply(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&PackEventLog, response_ptr, log_paths),
       base::BindOnce(std::move(callback), std::move(response)));
 }
@@ -172,19 +168,6 @@ void OnStatusLogCollected(
                                     std::move(callback)));
 }
 
-// Collect touch HUD debug logs. This needs to be done on the UI thread.
-void CollectTouchHudDebugLog(system_logs::SystemLogsResponse* response) {
-  std::unique_ptr<base::DictionaryValue> dictionary =
-      ash::TouchHudDebug::GetAllAsDictionary();
-  if (!dictionary->empty()) {
-    std::string touch_log;
-    JSONStringValueSerializer json(&touch_log);
-    json.set_pretty_print(true);
-    if (json.Serialize(*dictionary) && !touch_log.empty())
-      (*response)[kHUDLogDataKey] = touch_log;
-  }
-}
-
 }  // namespace
 
 namespace system_logs {
@@ -193,10 +176,8 @@ void TouchLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  auto response = std::make_unique<SystemLogsResponse>();
-  CollectTouchHudDebugLog(response.get());
-
   // Collect touch device status logs.
+  auto response = std::make_unique<SystemLogsResponse>();
   ui::InputController* input_controller =
       ui::OzonePlatform::GetInstance()->GetInputController();
   input_controller->GetTouchDeviceStatus(base::BindOnce(

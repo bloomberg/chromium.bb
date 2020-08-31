@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -112,13 +113,12 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
   }
 
   // Callback when using CopyFromSurface() API.
-  void FinishCopyFromSurface(const base::Closure& quit_closure,
+  void FinishCopyFromSurface(base::OnceClosure quit_closure,
                              const SkBitmap& bitmap) {
     ++callback_invoke_count_;
     if (!bitmap.drawsNothing())
       ++frames_captured_;
-    if (!quit_closure.is_null())
-      quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
  protected:

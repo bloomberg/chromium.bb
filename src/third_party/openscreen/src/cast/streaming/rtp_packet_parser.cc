@@ -8,12 +8,10 @@
 #include <utility>
 
 #include "cast/streaming/packet_util.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
-using openscreen::ReadBigEndian;
-
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 RtpPacketParser::RtpPacketParser(Ssrc sender_ssrc)
     : sender_ssrc_(sender_ssrc), highest_rtp_frame_id_(FrameId::first()) {}
@@ -114,5 +112,5 @@ absl::optional<RtpPacketParser::ParseResult> RtpPacketParser::Parse(
 RtpPacketParser::ParseResult::ParseResult() = default;
 RtpPacketParser::ParseResult::~ParseResult() = default;
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

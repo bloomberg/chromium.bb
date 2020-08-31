@@ -10,9 +10,14 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_registrar_observer.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -29,7 +34,7 @@ class Profile;
 
 namespace extensions {
 class ExtensionService;
-}
+}  // namespace extensions
 
 namespace favicon_base {
 struct FaviconImageResult;
@@ -39,25 +44,32 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+namespace web_app {
+class WebAppProvider;
+}  // namespace web_app
+
 // The handler for Javascript messages related to the "apps" view.
 class AppLauncherHandler
     : public content::WebUIMessageHandler,
       public extensions::ExtensionUninstallDialog::Delegate,
       public ExtensionEnableFlowDelegate,
       public content::NotificationObserver,
+      public web_app::AppRegistrarObserver,
       public extensions::ExtensionRegistryObserver {
  public:
-  explicit AppLauncherHandler(extensions::ExtensionService* extension_service);
+  AppLauncherHandler(extensions::ExtensionService* extension_service,
+                     web_app::WebAppProvider* web_app_provider);
   ~AppLauncherHandler() override;
 
-  // Populate a dictionary with the information from an extension.
-  static void CreateAppInfo(const extensions::Extension* extension,
-                            extensions::ExtensionService* service,
-                            base::DictionaryValue* value);
+  void CreateWebAppInfo(const web_app::AppId& app_id,
+                        base::DictionaryValue* value);
+
+  void CreateExtensionInfo(const extensions::Extension* extension,
+                           base::DictionaryValue* value);
 
   // Registers values (strings etc.) for the page.
   static void GetLocalizedValues(Profile* profile,
-      base::DictionaryValue* values);
+                                 base::DictionaryValue* values);
 
   // Register per-profile preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -80,13 +92,21 @@ class AppLauncherHandler
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
 
+  // web_app::AppRegistrarObserver:
+  void OnWebAppInstalled(const web_app::AppId& app_id) override;
+  void OnWebAppUninstalled(const web_app::AppId& app_id) override;
+  void OnAppRegistrarDestroyed() override;
+
   // Populate the given dictionary with all installed app info.
   void FillAppDictionary(base::DictionaryValue* value);
 
-  // Create a dictionary value for the given extension. May return null, e.g. if
-  // the given extension is not an app.
-  std::unique_ptr<base::DictionaryValue> GetAppInfo(
+  // Create a dictionary value for the given extension.
+  std::unique_ptr<base::DictionaryValue> GetExtensionInfo(
       const extensions::Extension* extension);
+
+  // Create a dictionary value for the given web app.
+  std::unique_ptr<base::DictionaryValue> GetWebAppInfo(
+      const web_app::AppId& app_id);
 
   // Populate the given dictionary with the web store promo content.
   void FillPromoDictionary(base::DictionaryValue* value);
@@ -154,6 +174,11 @@ class AppLauncherHandler
   // Prompts the user to re-enable the app for |extension_id|.
   void PromptToEnableApp(const std::string& extension_id);
 
+  // Registers file handlers for |app_id|, after shortcuts have been
+  // created.
+  void OnShortcutsCreatedRegisterOsIntegration(const web_app::AppId& app_id,
+                                               bool shortcuts_created);
+
   // ExtensionUninstallDialog::Delegate:
   void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
                                         const base::string16& error) override;
@@ -175,8 +200,10 @@ class AppLauncherHandler
 
   void OnExtensionPreferenceChanged();
 
-  // Called when an app is removed (unloaded or uninstalled). Updates the UI.
-  void AppRemoved(const extensions::Extension* extension, bool is_uninstall);
+  // Called when an extension is removed (unloaded or uninstalled). Updates the
+  // UI.
+  void ExtensionRemoved(const extensions::Extension* extension,
+                        bool is_uninstall);
 
   // True if the extension should be displayed.
   bool ShouldShow(const extensions::Extension* extension) const;
@@ -184,6 +211,14 @@ class AppLauncherHandler
   // The apps are represented in the extensions model, which
   // outlives us since it's owned by our containing profile.
   extensions::ExtensionService* const extension_service_;
+
+  // The apps are represented in the web apps model, which outlives us since
+  // it's owned by our containing profile. Populated iff
+  // features::kDesktopPWAsWithoutExtensions is enabled.
+  web_app::WebAppProvider* const web_app_provider_;
+
+  ScopedObserver<web_app::AppRegistrar, web_app::AppRegistrarObserver>
+      web_apps_observer_{this};
 
   // We monitor changes to the extension system so that we can reload the apps
   // when necessary.
@@ -213,9 +248,10 @@ class AppLauncherHandler
   // refreshing. This is useful when making many batch updates to avoid flicker.
   bool ignore_changes_;
 
-  // When true, we have attempted to install a bookmark app, and are still
+  // When populated, we have attempted to install a bookmark app, and are still
   // waiting to hear about success or failure from the extensions system.
-  bool attempted_bookmark_app_install_;
+  base::Optional<syncer::StringOrdinal>
+      attempting_web_app_install_page_ordinal_;
 
   // True if we have executed HandleGetApps() at least once.
   bool has_loaded_apps_;
@@ -227,6 +263,9 @@ class AppLauncherHandler
 
   // Used for favicon loading tasks.
   base::CancelableTaskTracker cancelable_task_tracker_;
+
+  // Used to register file handlers after shortcuts have been created.
+  base::WeakPtrFactory<AppLauncherHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppLauncherHandler);
 };

@@ -24,8 +24,12 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.components.browser_ui.notifications.ChromeNotification;
+import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
+import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -150,7 +154,6 @@ public abstract class NotificationBuilderBase {
     protected boolean mRenotify;
     protected int mPriority;
     private Bitmap mLargeIcon;
-    private boolean mHideLargeIcon;
 
     public NotificationBuilderBase(Resources resources) {
         mLargeIconWidthPx =
@@ -425,11 +428,6 @@ public abstract class NotificationBuilderBase {
         return this;
     }
 
-    public NotificationBuilderBase setHideLargeIcon(boolean hideLargeIcon) {
-        mHideLargeIcon = hideLargeIcon;
-        return this;
-    }
-
     /**
      * Gets the large icon for the notification.
      *
@@ -441,9 +439,6 @@ public abstract class NotificationBuilderBase {
      * See {@link NotificationBuilderBase#ensureNormalizedIcon} for more details.
      */
     protected Bitmap getNormalizedLargeIcon() {
-        if (mHideLargeIcon) {
-            return null;
-        }
         return ensureNormalizedIcon(mLargeIcon, mOrigin);
     }
 

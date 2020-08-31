@@ -16,6 +16,11 @@ from dashboard.pinpoint.models.change import commit_cache
 from dashboard.pinpoint.models.change import repository as repository_module
 from dashboard.services import gitiles_service
 
+from dashboard.common import utils
+
+
+_REPO_EXCLUSION_KEY = 'pinpoint_repo_exclusion_map'
+
 
 class NonLinearError(Exception):
   """Raised when trying to find the midpoint of Changes that are not linear."""
@@ -161,14 +166,18 @@ class Commit(collections.namedtuple('Commit', ('repository', 'git_hash'))):
 
     If the repository url is unknown, it will be added to the local datastore.
 
+    If the repository is on the exclusion list returns None.
+
     Arguments:
       dep: A Dep namedtuple.
 
     Returns:
-      A Commit.
+      A Commit or None.
     """
     repository = repository_module.RepositoryName(
         dep.repository_url, add_if_missing=True)
+    if repository in utils.GetRepositoryExclusions():
+      return None
     commit = cls(repository, dep.git_hash)
     commit._repository_url = dep.repository_url
     return commit
@@ -376,3 +385,8 @@ def _ParseCommitField(field, commit_message):
     if len(match) == 2:
       return match[1]
   return None
+
+
+def RepositoryInclusionFilter(commit):
+  """Returns False for changes in repositories in the exclusion list."""
+  return commit.repository not in utils.GetRepositoryExclusions()

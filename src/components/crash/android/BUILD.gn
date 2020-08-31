@@ -5,9 +5,9 @@
 import("//build/config/android/rules.gni")
 
 _jni_sources = [
+  "java/src/org/chromium/components/crash/CrashKeys.java",
   "java/src/org/chromium/components/crash/browser/ChildProcessCrashObserver.java",
   "java/src/org/chromium/components/crash/browser/PackagePaths.java",
-  "java/src/org/chromium/components/crash/CrashKeys.java",
 ]
 
 generate_jni("jni_headers") {
@@ -15,9 +15,7 @@ generate_jni("jni_headers") {
 }
 
 java_cpp_enum("java_enums_srcjar") {
-  sources = [
-    "crash_keys_android.h",
-  ]
+  sources = [ "crash_keys_android.h" ]
 }
 
 android_library("java") {
@@ -27,7 +25,7 @@ android_library("java") {
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   srcjar_deps = [ ":java_enums_srcjar" ]
-  java_files = _jni_sources
+  sources = _jni_sources
 }
 
 source_set("crash_android") {
@@ -44,9 +42,7 @@ source_set("crash_android") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "crash_keys_android_unittest.cc",
-  ]
+  sources = [ "crash_keys_android_unittest.cc" ]
   deps = [
     ":crash_android",
     "//components/crash/core/common:crash_key",
@@ -67,13 +63,11 @@ android_library("handler_java") {
     "//base:jni_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  java_files = _java_handler_jni_sources
+  sources = _java_handler_jni_sources
 }
 
 static_library("crashpad_main") {
-  sources = [
-    "crashpad_main.cc",
-  ]
+  sources = [ "crashpad_main.cc" ]
 
   deps = [
     ":java_handler_jni_headers",

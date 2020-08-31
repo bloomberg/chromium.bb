@@ -2,17 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './BinaryResourceViewFactory.js';
-import './SourcesTextEditor.js';
-import './FontView.js';
-import './ImageView.js';
-import './SourceFrame.js';
-import './ResourceSourceFrame.js';
-import './JSONView.js';
-import './XMLView.js';
-import './PreviewFactory.js';
-import './SourceCodeDiff.js';
-
 import * as BinaryResourceViewFactory from './BinaryResourceViewFactory.js';
 import * as FontView from './FontView.js';
 import * as ImageView from './ImageView.js';
@@ -23,6 +12,14 @@ import * as SourceCodeDiff from './SourceCodeDiff.js';
 import * as SourceFrame from './SourceFrame.js';
 import * as SourcesTextEditor from './SourcesTextEditor.js';
 import * as XMLView from './XMLView.js';
+
+/**
+ * @typedef {{
+  *  editorToRawLocation: function(number, number=):!Array<number>,
+  *  rawToEditorLocation: function(number, number=):!Array<number>
+  * }}
+  */
+export let Transformer;
 
 export {
   BinaryResourceViewFactory,

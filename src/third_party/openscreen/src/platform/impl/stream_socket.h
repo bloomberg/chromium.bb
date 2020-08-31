@@ -17,7 +17,6 @@
 #include "platform/impl/socket_handle.h"
 
 namespace openscreen {
-namespace platform {
 
 // StreamSocket is an incomplete abstraction of synchronous platform methods for
 // creating, initializing, and closing stream sockets. Callers can use this
@@ -68,7 +67,6 @@ class StreamSocket {
   virtual IPAddress::Version version() const = 0;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_STREAM_SOCKET_H_

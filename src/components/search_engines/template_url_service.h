@@ -282,6 +282,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   //       2.) The default search engine is disabled by policy.
   const TemplateURL* GetDefaultSearchProvider() const;
 
+  // Returns the default search provider, ignoring any that were provided by an
+  // extension.
+  const TemplateURL* GetDefaultSearchProviderIgnoringExtensions() const;
+
   // Returns true if the |url| is a search results page from the default search
   // provider.
   bool IsSearchResultsPageFromDefaultSearchProvider(const GURL& url) const;
@@ -365,17 +369,17 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Returns all syncable TemplateURLs from this model as SyncData. This should
   // include every search engine and no Extension keywords.
-  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const;
   // Process new search engine changes from Sync, merging them into our local
   // data. This may send notifications if local search engines are added,
   // updated or removed.
-  syncer::SyncError ProcessSyncChanges(
+  base::Optional<syncer::ModelError> ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
   // Merge initial search engine data from Sync and push any local changes up
   // to Sync. This may send notifications if local search engines are added,
   // updated or removed.
-  syncer::SyncMergeResult MergeDataAndStartSyncing(
+  base::Optional<syncer::ModelError> MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
@@ -687,8 +691,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   void MergeInSyncTemplateURL(TemplateURL* sync_turl,
                               const SyncDataMap& sync_data,
                               syncer::SyncChangeList* change_list,
-                              SyncDataMap* local_data,
-                              syncer::SyncMergeResult* merge_result);
+                              SyncDataMap* local_data);
 
   // Goes through a vector of TemplateURLs and ensure that both the in-memory
   // and database copies have valid sync_guids. This is to fix crbug.com/102038,
@@ -812,6 +815,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Whether we're currently processing changes from the syncer. While this is
   // true, we ignore any local search engine changes, since we triggered them.
   bool processing_syncer_changes_ = false;
+
+  // We never want reentrancy while applying a default search engine change.
+  // This can happen when deleting keyword conflicts. crbug.com/1031506
+  bool applying_default_search_engine_change_ = false;
 
   // Sync's syncer::SyncChange handler. We push all our changes through this.
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;

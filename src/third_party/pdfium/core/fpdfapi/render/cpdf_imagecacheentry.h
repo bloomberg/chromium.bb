@@ -7,7 +7,7 @@
 #ifndef CORE_FPDFAPI_RENDER_CPDF_IMAGECACHEENTRY_H_
 #define CORE_FPDFAPI_RENDER_CPDF_IMAGECACHEENTRY_H_
 
-#include "core/fpdfapi/page/cpdf_dibbase.h"
+#include "core/fpdfapi/page/cpdf_dib.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
@@ -29,13 +29,10 @@ class CPDF_ImageCacheEntry {
   uint32_t GetTimeCount() const { return m_dwTimeCount; }
   CPDF_Image* GetImage() const { return m_pImage.Get(); }
 
-  CPDF_DIBBase::LoadState StartGetCachedBitmap(
-      const CPDF_Dictionary* pFormResources,
+  CPDF_DIB::LoadState StartGetCachedBitmap(
       CPDF_Dictionary* pPageResources,
-      bool bStdCS,
-      uint32_t GroupFamily,
-      bool bLoadMask,
-      CPDF_RenderStatus* pRenderStatus);
+      const CPDF_RenderStatus* pRenderStatus,
+      bool bStdCS);
 
   // Returns whether to Continue() or not.
   bool Continue(PauseIndicatorIface* pPause, CPDF_RenderStatus* pRenderStatus);
@@ -47,7 +44,7 @@ class CPDF_ImageCacheEntry {
   uint32_t m_MatteColor = 0;
 
  private:
-  void ContinueGetCachedBitmap(CPDF_RenderStatus* pRenderStatus);
+  void ContinueGetCachedBitmap(const CPDF_RenderStatus* pRenderStatus);
   void CalcSize();
 
   UnownedPtr<CPDF_Document> const m_pDocument;

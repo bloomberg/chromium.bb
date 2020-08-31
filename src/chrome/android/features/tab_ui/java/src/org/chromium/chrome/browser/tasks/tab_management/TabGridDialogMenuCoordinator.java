@@ -9,15 +9,17 @@ import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
-import android.support.annotation.IntDef;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ListView;
 
+import androidx.annotation.IntDef;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.LifetimeAssert;
-import org.chromium.chrome.R;
+import org.chromium.chrome.tab_ui.R;
+import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
@@ -90,12 +92,13 @@ public class TabGridDialogMenuCoordinator {
         listView.setAdapter(adapter);
         // clang-format off
         adapter.registerType(ListItemType.MENU_ITEM,
-                () -> LayoutInflater.from(listView.getContext())
-                        .inflate(R.layout.list_menu_item, listView, false),
+                new LayoutViewBuilder(R.layout.list_menu_item),
                 TabGridDialogMenuItemBinder::binder);
         // clang-format on
         listView.setOnItemClickListener((p, v, pos, id) -> {
-            mOnItemClickedCallback.onResult((int) id);
+            if (mOnItemClickedCallback != null) {
+                mOnItemClickedCallback.onResult((int) id);
+            }
             mMenuWindow.dismiss();
         });
 
@@ -141,10 +144,11 @@ public class TabGridDialogMenuCoordinator {
     private ModelList buildMenuItems(Context context) {
         ModelList itemList = new ModelList();
         itemList.add(new ListItem(ListItemType.MENU_ITEM,
-                buildPropertyModel(context,
-                        org.chromium.chrome.tab_ui.R.string
-                                .tab_grid_dialog_toolbar_remove_from_group,
+                buildPropertyModel(context, R.string.tab_grid_dialog_toolbar_remove_from_group,
                         R.id.ungroup_tab)));
+        itemList.add(new ListItem(ListItemType.MENU_ITEM,
+                buildPropertyModel(context, R.string.tab_grid_dialog_toolbar_share_group,
+                        R.id.share_tab_group)));
         return itemList;
     }
 

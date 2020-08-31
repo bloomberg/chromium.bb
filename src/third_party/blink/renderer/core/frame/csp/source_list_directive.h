@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CSP_SOURCE_LIST_DIRECTIVE_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/csp_directive.h"
 #include "third_party/blink/renderer/core/frame/csp/csp_source.h"
@@ -26,7 +25,7 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   SourceListDirective(const String& name,
                       const String& value,
                       ContentSecurityPolicy*);
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void Parse(const UChar* begin, const UChar* end);
 
@@ -46,18 +45,20 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   bool AllowUnsafeHashes() const;
   bool AllowReportSample() const;
   bool IsNone() const;
+  bool IsSelf() const;
   bool IsHashOrNoncePresent() const;
   uint8_t HashAlgorithmsUsed() const;
   bool AllowAllInline() const;
+  bool AllowsURLBasedMatching() const;
 
-  // The algorothm is described more extensively here:
+  // The algorithm is described more extensively here:
   // https://w3c.github.io/webappsec-csp/embedded/#subsume-source-list
   bool Subsumes(const HeapVector<Member<SourceListDirective>>&) const;
 
   // Export a subset of the source list that affect navigation.
   // It contains every source-expressions, '*', 'none' and 'self'.
   // It doesn't contain 'unsafe-inline' or 'unsafe-eval' for instance.
-  WebContentSecurityPolicySourceList ExposeForNavigationalChecks() const;
+  network::mojom::blink::CSPSourceListPtr ExposeForNavigationalChecks() const;
   String DirectiveName() const { return directive_name_; }
 
  private:

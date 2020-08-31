@@ -4,11 +4,16 @@
 
 syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
+option java_package = "org.chromium.components.optimization_guide.proto";
+option java_outer_classname = "HintsProto";
 
 package optimization_guide.proto;
 
 import "common_types.proto";
+import "loading_predictor_metadata.proto";
+import "performance_hints_metadata.proto";
 import "previews_metadata.proto";
+import "public_image_metadata.proto";
 
 // Information about the hint that the client already has for a host.
 message MatchedHintInfo {
@@ -27,11 +32,20 @@ message HostInfo {
   optional MatchedHintInfo matched_hint = 2;
 }
 
+// Information about a URL to request hints for.
+message UrlInfo {
+  // The URL that the client is requesting information for.
+  optional string url = 1;
+}
+
 // Request to return a set of hints that guide what optimizations to perform
 // on those hosts.
 message GetHintsRequest {
   // Information about the set of hosts to retrieve hints for.
   repeated HostInfo hosts = 1;
+
+  // Information about the set of URLs to retrieve hints for.
+  repeated UrlInfo urls = 4;
 
   // The set of optimization types that the requesting client can support
   // and perform.
@@ -60,8 +74,8 @@ message GetHintsResponse {
   // hints from (HOST_SUFFIX,sports.cnn.com).
   repeated Hint hints = 1;
 
-  // The maximum duration in which the hints provided in this response should
-  // be retained in the client cache.
+  // The maximum duration in which the hints, or lack of hints, provided in
+  // this response are valid.
   optional Duration max_cache_duration = 2;
 
   // A set of hint keys to remove from the client cache.
@@ -111,6 +125,17 @@ enum OptimizationType {
   // This optimization defers execution of parser-blocking script until after
   // parsing completes.
   DEFER_ALL_SCRIPT = 5;
+  // This optimization is used to provide aggregated performance information
+  // about the page and pages it links to.
+  PERFORMANCE_HINTS = 6;
+  // This optimization allows page loads going through the data reduction
+  // proxy to be transformed by the proxy.
+  LITE_PAGE = 7;
+  // This optimization compresses public images.
+  COMPRESS_PUBLIC_IMAGES = 8;
+  // This optimization provides the Loading Predictor with resources predicted
+  // to be on the page.
+  LOADING_PREDICTOR = 9;
 }
 
 // Presents semantics for how page load URLs should be matched.
@@ -121,26 +146,17 @@ enum KeyRepresentation {
   // Example: A host suffix of example.com would match pages with host
   // sports.example.com, but not fooexample.com.
   HOST_SUFFIX = 1;
+  // The full URL to match.
+  //
+  // This will be an exact match of a page load URL, including query params and
+  // fragments.
+  FULL_URL = 2;
 }
 
 message Optimization {
+  reserved 2, 3;
   // The type of optimization the hint applies to.
   optional OptimizationType optimization_type = 1;
-  // A percent value to inflate the number of received bytes by for the purposes
-  // of data savings calculations in the client.
-  //
-  // If this value is set to 0, the client should use its configured default.
-  //
-  // Ex: If the received bytes is 100 and the inflation_percent is 30, the
-  // inflated bytes calculated by the client will be 30 in order to have a total
-  // consumed bytes value of 130.
-  optional int64 inflation_percent = 2 [deprecated = true];
-  // An ordered set of resource loading hints for OptimizationType
-  // RESOURCE_LOADING.
-  //
-  // Only the first ResourceLoadingHint record that matches a target resource
-  // URL will be applied to that resource.
-  repeated ResourceLoadingHint resource_loading_hints = 3 [deprecated = true];
   // The experiment name that activates the optimization.
   //
   // If a non-empty name is provided, the optimization will be disabled unless
@@ -165,7 +181,12 @@ message Optimization {
   //
   // It is expected that the client and server have agreed upon the appropriate
   // metadata type for the optimization type.
-  oneof metadata { PreviewsMetadata previews_metadata = 10; }
+  oneof metadata {
+    PreviewsMetadata previews_metadata = 10;
+    PerformanceHintsMetadata performance_hints_metadata = 11;
+    PublicImageMetadata public_image_metadata = 12;
+    LoadingPredictorMetadata loading_predictor_metadata = 13;
+  }
 }
 
 message PageHint {
@@ -187,14 +208,13 @@ message PageHint {
 }
 
 message Hint {
+  reserved 3;
+
   // Describes the granularity of the key field.
   optional KeyRepresentation key_representation = 1;
   // The key that applies to this hint. The key_representation field describes
   // the form in which this key takes. Guaranteed to be non-empty.
   optional string key = 2;
-  // Top-level optimizations are currently unused on the client as of M-72. This
-  // may change in the future as new optimization types are added.
-  repeated Optimization whitelisted_optimizations = 3;
   // An ordered set of per-page hints. Only the first PageHint record
   // that matches a committed page URL should be used for that page load.
   repeated PageHint page_hints = 4;
@@ -203,6 +223,8 @@ message Hint {
   // It is expected that this version be sent along with subsequent requests
   // for hosts that match this hint.
   optional string version = 5;
+  // The maximum duration for which the hint should be used for.
+  optional Duration max_cache_duration = 6;
 }
 
 // Configuration and data for a Bloom filter.

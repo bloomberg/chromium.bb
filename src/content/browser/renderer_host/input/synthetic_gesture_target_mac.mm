@@ -4,9 +4,10 @@
 
 #include "content/browser/renderer_host/input/synthetic_gesture_target_mac.h"
 
+#import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
-#import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
+#include "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
 // Unlike some event APIs, Apple does not provide a way to programmatically
@@ -31,30 +32,30 @@
 
 @implementation SyntheticPinchEvent
 
-@synthesize magnification = magnification_;
-@synthesize locationInWindow = locationInWindow_;
-@synthesize type = type_;
-@synthesize phase = phase_;
-@synthesize deltaX = deltaX_;
-@synthesize deltaY = deltaY_;
-@synthesize modifierFlags = modifierFlags_;
-@synthesize timestamp = timestamp_;
+@synthesize magnification = _magnification;
+@synthesize locationInWindow = _locationInWindow;
+@synthesize type = _type;
+@synthesize phase = _phase;
+@synthesize deltaX = _deltaX;
+@synthesize deltaY = _deltaY;
+@synthesize modifierFlags = _modifierFlags;
+@synthesize timestamp = _timestamp;
 
 - (id)initWithMagnification:(float)magnification
            locationInWindow:(NSPoint)location {
   self = [super init];
   if (self) {
-    type_ = NSEventTypeMagnify;
-    phase_ = NSEventPhaseChanged;
-    magnification_ = magnification;
-    locationInWindow_ = location;
+    _type = NSEventTypeMagnify;
+    _phase = NSEventPhaseChanged;
+    _magnification = magnification;
+    _locationInWindow = location;
 
-    deltaX_ = 0;
-    deltaY_ = 0;
-    modifierFlags_ = 0;
+    _deltaX = 0;
+    _deltaY = 0;
+    _modifierFlags = 0;
 
     // Default timestamp to current time.
-    timestamp_ = [[NSDate date] timeIntervalSince1970];
+    _timestamp = [[NSDate date] timeIntervalSince1970];
   }
 
   return self;
@@ -89,13 +90,13 @@ void SyntheticGestureTargetMac::DispatchWebGestureEventToPlatform(
   // generate.
   @autoreleasepool {
     NSPoint content_local = NSMakePoint(
-        web_gesture.PositionInWidget().x,
-        [cocoa_view_ frame].size.height - web_gesture.PositionInWidget().y);
+        web_gesture.PositionInWidget().x(),
+        [cocoa_view_ frame].size.height - web_gesture.PositionInWidget().y());
     NSPoint location_in_window = [cocoa_view_ convertPoint:content_local
                                                     toView:nil];
 
     switch (web_gesture.GetType()) {
-      case WebInputEvent::kGesturePinchBegin: {
+      case WebInputEvent::Type::kGesturePinchBegin: {
         id cocoa_event =
             [SyntheticPinchEvent eventWithMagnification:0.0f
                                        locationInWindow:location_in_window
@@ -104,7 +105,7 @@ void SyntheticGestureTargetMac::DispatchWebGestureEventToPlatform(
                          isSyntheticallyInjected:YES];
         return;
       }
-      case WebInputEvent::kGesturePinchEnd: {
+      case WebInputEvent::Type::kGesturePinchEnd: {
         id cocoa_event =
             [SyntheticPinchEvent eventWithMagnification:0.0f
                                        locationInWindow:location_in_window
@@ -112,7 +113,7 @@ void SyntheticGestureTargetMac::DispatchWebGestureEventToPlatform(
         [cocoa_view_ handleEndGestureWithEvent:cocoa_event];
         return;
       }
-      case WebInputEvent::kGesturePinchUpdate: {
+      case WebInputEvent::Type::kGesturePinchUpdate: {
         id cocoa_event = [SyntheticPinchEvent
             eventWithMagnification:web_gesture.data.pinch_update.scale - 1.0f
                   locationInWindow:location_in_window
@@ -135,7 +136,12 @@ void SyntheticGestureTargetMac::DispatchWebTouchEventToPlatform(
 void SyntheticGestureTargetMac::DispatchWebMouseWheelEventToPlatform(
     const blink::WebMouseWheelEvent& web_wheel,
     const ui::LatencyInfo& latency_info) {
-  GetView()->RouteOrProcessWheelEvent(web_wheel);
+  blink::WebMouseWheelEvent wheel_event = web_wheel;
+  wheel_event.wheel_ticks_x =
+      web_wheel.delta_x / ui::kScrollbarPixelsPerCocoaTick;
+  wheel_event.wheel_ticks_y =
+      web_wheel.delta_y / ui::kScrollbarPixelsPerCocoaTick;
+  GetView()->RouteOrProcessWheelEvent(wheel_event);
   if (web_wheel.phase == blink::WebMouseWheelEvent::kPhaseEnded) {
     // Send the pending wheel end event immediately. Otherwise, the
     // MouseWheelPhaseHandler will defer the end event in case of momentum

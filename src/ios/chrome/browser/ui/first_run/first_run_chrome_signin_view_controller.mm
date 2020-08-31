@@ -10,14 +10,14 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/first_run/first_run_configuration.h"
 #include "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
-#import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -50,7 +50,8 @@
                  firstRunConfig:(FirstRunConfiguration*)firstRunConfig
                  signInIdentity:(ChromeIdentity*)identity
                       presenter:(id<SyncPresenter>)presenter
-                     dispatcher:(id<ApplicationCommands>)dispatcher {
+                     dispatcher:(id<ApplicationCommands, BrowsingDataCommands>)
+                                    dispatcher {
   DCHECK(browser);
   self = [super
       initWithBrowser:browser
@@ -71,10 +72,6 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
   [self.navigationController setNavigationBarHidden:YES];
-  self.primaryButton.accessibilityIdentifier =
-      first_run::kSignInButtonAccessibilityIdentifier;
-  self.secondaryButton.accessibilityIdentifier =
-      first_run::kSignInSkipButtonAccessibilityIdentifier;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -92,7 +89,7 @@
 
   // Save the version number to prevent showing the SSO Recall promo on the next
   // cold start.
-  [SigninPromoViewController recordVersionSeen];
+  SigninRecordVersionSeen();
 }
 
 - (BOOL)shouldAutorotate {
@@ -176,7 +173,8 @@
     // Save a reference to the presentingViewController since this view
     // controller will be dismissed.
     __weak UIViewController* baseViewController = self.presentingViewController;
-    __weak id<ApplicationCommands> dispatcher = self.dispatcher;
+    __weak id<ApplicationCommands, BrowsingDataCommands> dispatcher =
+        self.dispatcher;
     completion = ^{
       [dispatcher
           showAdvancedSigninSettingsFromViewController:baseViewController];

@@ -40,7 +40,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
-              ColorSpace color_space,
+              const gfx::ColorSpace& color_space,
               bool has_alpha) override;
   bool IsOffscreen() override;
 
@@ -82,6 +82,8 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   bool SupportsPostSubBuffer() override;
   bool SupportsCommitOverlayPlanes() override;
   void SetDisplayTransform(gfx::OverlayTransform transform) override;
+  gfx::SurfaceOrigin GetOrigin() const override;
+  void SetFrameRate(float frame_rate) override;
 
  private:
   ~GLSurfaceEGLSurfaceControl() override;
@@ -195,6 +197,10 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   bool transaction_ack_pending_ = false;
 
   gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
+
+  float frame_rate_ = 0;
+  bool frame_rate_update_pending_ = false;
+
   EGLSurface offscreen_surface_ = nullptr;
   base::CancelableOnceClosure check_pending_presentation_callback_queue_task_;
 

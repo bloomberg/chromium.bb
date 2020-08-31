@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/browser_resources.h"
+#include "chrome/grit/dev_ui_browser_resources.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -57,14 +57,13 @@ InterventionsInternalsUI::InterventionsInternalsUI(content::WebUI* web_ui)
   }
   content::WebUIDataSource::Add(profile, GetSource());
   previews_ui_service_ = previews_service->previews_ui_service();
-  AddHandlerToRegistry(base::BindRepeating(
-      &InterventionsInternalsUI::BindInterventionsInternalsPageHandler,
-      base::Unretained(this)));
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(InterventionsInternalsUI)
 
 InterventionsInternalsUI::~InterventionsInternalsUI() {}
 
-void InterventionsInternalsUI::BindInterventionsInternalsPageHandler(
+void InterventionsInternalsUI::BindInterface(
     mojo::PendingReceiver<mojom::InterventionsInternalsPageHandler> receiver) {
   DCHECK(previews_ui_service_);
   page_handler_ = std::make_unique<InterventionsInternalsPageHandler>(

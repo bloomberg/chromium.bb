@@ -14,7 +14,7 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/toolbar_height_no_shadow"
     android:layout_marginTop="@dimen/tab_strip_height"
-    android:background="@color/modern_primary_color"
+    android:background="@color/default_bg_color"
     android:paddingStart="@dimen/tablet_toolbar_start_padding" >
 
     <LinearLayout
@@ -28,28 +28,28 @@
             android:src="@drawable/btn_toolbar_home"
             android:contentDescription="@string/accessibility_toolbar_btn_home"
             android:visibility="gone"
-            app:tint="@color/standard_mode_tint" />
+            app:tint="@color/default_icon_color_tint_list" />
 
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/back_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_back"
             android:contentDescription="@string/accessibility_toolbar_btn_back"
-            app:tint="@color/standard_mode_tint" />
+            app:tint="@color/default_icon_color_tint_list" />
 
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/forward_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_forward"
             android:contentDescription="@string/accessibility_toolbar_btn_forward"
-            app:tint="@color/standard_mode_tint" />
+            app:tint="@color/default_icon_color_tint_list" />
 
         <!-- The src will be set in onFinishInflate. -->
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/refresh_button"
             android:src="@drawable/btn_reload_stop"
             android:contentDescription="@string/accessibility_btn_refresh"
-            app:tint="@color/standard_mode_tint"
+            app:tint="@color/default_icon_color_tint_list"
             style="@style/ToolbarButton" />
 
         <org.chromium.chrome.browser.omnibox.LocationBarTablet
@@ -59,13 +59,12 @@
             android:layout_weight="1"
             android:layout_gravity="center_vertical"
             android:background="@drawable/modern_toolbar_text_box_background"
-            android:paddingEnd="@dimen/location_bar_lateral_padding"
-            android:paddingStart="2dp" />
+            android:paddingEnd="@dimen/location_bar_lateral_padding" />
 
         <ViewStub
-            android:id="@+id/experimental_button_stub"
-            android:inflatedId="@+id/experimental_toolbar_button"
-            android:layout="@layout/experimental_toolbar_button"
+            android:id="@+id/optional_button_stub"
+            android:inflatedId="@+id/optional_toolbar_button"
+            android:layout="@layout/optional_toolbar_button"
             style="@style/ToolbarButton"
             android:paddingStart="8dp"
             android:visibility="gone" />
@@ -87,7 +86,7 @@
                 android:src="@drawable/ic_more_vert_24dp"
                 android:contentDescription="@string/accessibility_toolbar_btn_menu"
                 android:layout_gravity="center"
-                app:tint="@color/standard_mode_tint" />
+                app:tint="@color/default_icon_color_tint_list" />
 
             <ImageView
                 android:id="@+id/menu_badge"

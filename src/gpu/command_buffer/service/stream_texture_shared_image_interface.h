@@ -10,41 +10,13 @@
 
 namespace gpu {
 class TextureOwner;
-
-namespace gles2 {
-class Texture;
-}  // namespace gles2
+class TextureBase;
 
 // This class is a specialized GLImage that lets SharedImageVideo draw video
 // frames.
 class GPU_GLES2_EXPORT StreamTextureSharedImageInterface
     : public gles2::GLStreamTextureImage {
  public:
-  // Release the underlying resources. This should be called when the image is
-  // not longer valid or the context is lost.
-  virtual void ReleaseResources() = 0;
-
-  // Whether the StreamTextureSharedImageInterface is accounting for gpu memory
-  // or not.
-  virtual bool IsUsingGpuMemory() const = 0;
-
-  // Update the texture image to the most recent frame and bind it to the
-  // texture.
-  virtual void UpdateAndBindTexImage() = 0;
-  virtual bool HasTextureOwner() const = 0;
-  virtual gles2::Texture* GetTexture() const = 0;
-
-  // Notify the texture of overlay decision, When overlay promotion is true,
-  // this also sets the bounds of where the overlay is.
-  virtual void NotifyOverlayPromotion(bool promotion,
-                                      const gfx::Rect& bounds) = 0;
-  // Render the video frame into an overlay plane. Should only be called after
-  // the overlay promotion. Return true if it could render to overlay correctly.
-  virtual bool RenderToOverlay() = 0;
-
- protected:
-  ~StreamTextureSharedImageInterface() override = default;
-
   enum class BindingsMode {
     // Ensures that the TextureOwner's texture is bound to the latest image, if
     // it requires explicit binding.
@@ -58,6 +30,31 @@ class GPU_GLES2_EXPORT StreamTextureSharedImageInterface
     // implicitly binds the texture, the current bindings will not be restored.
     kDontRestoreIfBound
   };
+
+  // Release the underlying resources. This should be called when the image is
+  // not longer valid or the context is lost.
+  virtual void ReleaseResources() = 0;
+
+  // Whether the StreamTextureSharedImageInterface is accounting for gpu memory
+  // or not.
+  virtual bool IsUsingGpuMemory() const = 0;
+
+  // Update the texture image to the most recent frame and bind it to the
+  // texture.
+  virtual void UpdateAndBindTexImage() = 0;
+  virtual bool HasTextureOwner() const = 0;
+  virtual TextureBase* GetTextureBase() const = 0;
+
+  // Notify the texture of overlay decision, When overlay promotion is true,
+  // this also sets the bounds of where the overlay is.
+  virtual void NotifyOverlayPromotion(bool promotion,
+                                      const gfx::Rect& bounds) = 0;
+  // Render the video frame into an overlay plane. Should only be called after
+  // the overlay promotion. Return true if it could render to overlay correctly.
+  virtual bool RenderToOverlay() = 0;
+
+ protected:
+  ~StreamTextureSharedImageInterface() override = default;
 };
 
 }  // namespace gpu

@@ -11,12 +11,10 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+class ChromeBrowserState;
+
 namespace dom_distiller {
 class DomDistillerService;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 namespace dom_distiller {
@@ -25,7 +23,7 @@ class DomDistillerServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   static DomDistillerServiceFactory* GetInstance();
   static DomDistillerService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
  private:
   friend class base::NoDestructor<DomDistillerServiceFactory>;

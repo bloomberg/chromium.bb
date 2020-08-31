@@ -95,8 +95,8 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     case PIXEL_FORMAT_XR30:
     case PIXEL_FORMAT_XB30:
       buffer_formats[0] = (format == PIXEL_FORMAT_XR30)
-                              ? gfx::BufferFormat::BGRX_1010102
-                              : gfx::BufferFormat::RGBX_1010102;
+                              ? gfx::BufferFormat::BGRA_1010102
+                              : gfx::BufferFormat::RGBA_1010102;
       return VideoFrameResourceType::RGB;
     case PIXEL_FORMAT_I420:
       DCHECK_EQ(num_textures, 3);
@@ -121,6 +121,9 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
       buffer_formats[1] = gfx::BufferFormat::RG_88;
       return VideoFrameResourceType::YUV;
 
+    case PIXEL_FORMAT_UYVY:
+      NOTREACHED();
+      FALLTHROUGH;
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I422:
     case PIXEL_FORMAT_I444:
@@ -525,13 +528,13 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
   gfx::Rect visible_rect = frame->visible_rect();
   gfx::Size coded_size = frame->coded_size();
 
-  const float tex_width_scale =
-      static_cast<float>(visible_rect.width()) / coded_size.width();
-  const float tex_height_scale =
-      static_cast<float>(visible_rect.height()) / coded_size.height();
+  const gfx::PointF uv_top_left(
+      static_cast<float>(visible_rect.x()) / coded_size.width(),
+      static_cast<float>(visible_rect.y()) / coded_size.height());
 
-  const gfx::PointF uv_top_left(0.f, 0.f);
-  const gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
+  const gfx::PointF uv_bottom_right(
+      static_cast<float>(visible_rect.right()) / coded_size.width(),
+      static_cast<float>(visible_rect.bottom()) / coded_size.height());
 
   switch (frame_resource_type_) {
     case VideoFrameResourceType::VIDEO_HOLE: {
@@ -765,10 +768,16 @@ void VideoResourceUpdater::CopyHardwarePlane(
                                       : context_provider_->ContextGL();
 
   gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
-  // TODO(piman): convert to CreateAndTexStorage2DSharedImageCHROMIUM once
-  // VideoFrame is all converted to SharedImage.
+
+  // This is only used on Android where all video mailboxes already use shared
+  // images.
+  DCHECK(mailbox_holder.mailbox.IsSharedImage());
+
+  // TODO(vikassoni): Use raster interface instead of gl interface eventually.
   GLuint src_texture_id =
-      gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
+      gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox_holder.mailbox.name);
+  gl->BeginSharedImageAccessDirectCHROMIUM(
+      src_texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   {
     HardwarePlaneResource::ScopedTexture scope(gl, hardware_resource);
     gl->CopySubTextureCHROMIUM(
@@ -776,6 +785,7 @@ void VideoResourceUpdater::CopyHardwarePlane(
         output_plane_resource_size.width(), output_plane_resource_size.height(),
         false, false, false);
   }
+  gl->EndSharedImageAccessDirectCHROMIUM(src_texture_id);
   gl->DeleteTextures(1, &src_texture_id);
 
   // Pass an empty sync token to force generation of a new sync token.

@@ -1,5 +1,5 @@
-CONSOLE WARNING: line 124: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 124: Application Cache API use is deprecated and will be removed in M82, around April 2020. See https://www.chromestatus.com/features/6192449487634432 for more details.
+CONSOLE WARNING: line 138: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 138: Application Cache API use is deprecated and will be removed in M85, around August 2020. See https://www.chromestatus.com/features/6192449487634432 for more details.
 Tests property access on a cached DOMWindow after the associated frame is navigated. Test should not crash and properties read from the cached DOMWindow should be identical to properties through the 'current' DOMWindow.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -70,11 +70,15 @@ PASS oldChildWindow.navigator.usb.ondisconnect is newChildWindow.navigator.usb.o
 PASS oldChildWindow.navigator.userActivation.hasBeenActive is newChildWindow.navigator.userActivation.hasBeenActive
 PASS oldChildWindow.navigator.userActivation.isActive is newChildWindow.navigator.userActivation.isActive
 PASS oldChildWindow.navigator.userAgent is newChildWindow.navigator.userAgent
+PASS oldChildWindow.navigator.userAgentData.brands[0].brand is newChildWindow.navigator.userAgentData.brands[0].brand
+PASS oldChildWindow.navigator.userAgentData.brands[0].version is newChildWindow.navigator.userAgentData.brands[0].version
+PASS oldChildWindow.navigator.userAgentData.mobile is newChildWindow.navigator.userAgentData.mobile
 PASS oldChildWindow.navigator.vendor is newChildWindow.navigator.vendor
 PASS oldChildWindow.navigator.vendorSub is newChildWindow.navigator.vendorSub
+PASS oldChildWindow.navigator.virtualKeyboard.onoverlaygeometrychange is newChildWindow.navigator.virtualKeyboard.onoverlaygeometrychange
+PASS oldChildWindow.navigator.virtualKeyboard.overlaysContent is newChildWindow.navigator.virtualKeyboard.overlaysContent
 PASS oldChildWindow.navigator.xr.ondevicechange is newChildWindow.navigator.xr.ondevicechange
 PASS oldChildWindow.onabort is newChildWindow.onabort
-PASS oldChildWindow.onactivateinvisible is newChildWindow.onactivateinvisible
 PASS oldChildWindow.onafterprint is newChildWindow.onafterprint
 PASS oldChildWindow.onanimationend is newChildWindow.onanimationend
 PASS oldChildWindow.onanimationiteration is newChildWindow.onanimationiteration
@@ -158,6 +162,7 @@ PASS oldChildWindow.onrejectionhandled is newChildWindow.onrejectionhandled
 PASS oldChildWindow.onrendersubtreeactivation is newChildWindow.onrendersubtreeactivation
 PASS oldChildWindow.onreset is newChildWindow.onreset
 PASS oldChildWindow.onresize is newChildWindow.onresize
+PASS oldChildWindow.onscreenschange is newChildWindow.onscreenschange
 PASS oldChildWindow.onscroll is newChildWindow.onscroll
 PASS oldChildWindow.onscrollend is newChildWindow.onscrollend
 PASS oldChildWindow.onsearch is newChildWindow.onsearch
@@ -171,6 +176,7 @@ PASS oldChildWindow.onstorage is newChildWindow.onstorage
 PASS oldChildWindow.onsubmit is newChildWindow.onsubmit
 PASS oldChildWindow.onsuspend is newChildWindow.onsuspend
 PASS oldChildWindow.ontimeupdate is newChildWindow.ontimeupdate
+PASS oldChildWindow.ontimezonechange is newChildWindow.ontimezonechange
 PASS oldChildWindow.ontoggle is newChildWindow.ontoggle
 PASS oldChildWindow.ontouchcancel is newChildWindow.ontouchcancel
 PASS oldChildWindow.ontouchend is newChildWindow.ontouchend
@@ -218,15 +224,19 @@ PASS oldChildWindow.performance.timing.unloadEventEnd is newChildWindow.performa
 PASS oldChildWindow.performance.timing.unloadEventStart is newChildWindow.performance.timing.unloadEventStart
 PASS oldChildWindow.personalbar.visible is newChildWindow.personalbar.visible
 PASS oldChildWindow.portalHost is newChildWindow.portalHost
+PASS oldChildWindow.scheduler.currentTaskSignal.aborted is newChildWindow.scheduler.currentTaskSignal.aborted
+PASS oldChildWindow.scheduler.currentTaskSignal.onabort is newChildWindow.scheduler.currentTaskSignal.onabort
+PASS oldChildWindow.scheduler.currentTaskSignal.onprioritychange is newChildWindow.scheduler.currentTaskSignal.onprioritychange
+PASS oldChildWindow.scheduler.currentTaskSignal.priority is newChildWindow.scheduler.currentTaskSignal.priority
 PASS oldChildWindow.screen.availHeight is newChildWindow.screen.availHeight
 PASS oldChildWindow.screen.availLeft is newChildWindow.screen.availLeft
 PASS oldChildWindow.screen.availTop is newChildWindow.screen.availTop
 PASS oldChildWindow.screen.availWidth is newChildWindow.screen.availWidth
 PASS oldChildWindow.screen.colorDepth is newChildWindow.screen.colorDepth
 PASS oldChildWindow.screen.height is newChildWindow.screen.height
+PASS oldChildWindow.screen.id is newChildWindow.screen.id
 PASS oldChildWindow.screen.internal is newChildWindow.screen.internal
 PASS oldChildWindow.screen.left is newChildWindow.screen.left
-PASS oldChildWindow.screen.name is newChildWindow.screen.name
 PASS oldChildWindow.screen.orientation.angle is newChildWindow.screen.orientation.angle
 PASS oldChildWindow.screen.orientation.onchange is newChildWindow.screen.orientation.onchange
 PASS oldChildWindow.screen.orientation.type is newChildWindow.screen.orientation.type
@@ -234,6 +244,7 @@ PASS oldChildWindow.screen.pixelDepth is newChildWindow.screen.pixelDepth
 PASS oldChildWindow.screen.primary is newChildWindow.screen.primary
 PASS oldChildWindow.screen.scaleFactor is newChildWindow.screen.scaleFactor
 PASS oldChildWindow.screen.top is newChildWindow.screen.top
+PASS oldChildWindow.screen.touchSupport is newChildWindow.screen.touchSupport
 PASS oldChildWindow.screen.width is newChildWindow.screen.width
 PASS oldChildWindow.screenLeft is newChildWindow.screenLeft
 PASS oldChildWindow.screenTop is newChildWindow.screenTop

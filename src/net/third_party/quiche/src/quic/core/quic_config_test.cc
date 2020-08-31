@@ -12,6 +12,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
@@ -21,18 +22,36 @@ namespace quic {
 namespace test {
 namespace {
 
-const uint32_t kMaxPacketSizeForTest = 1234;
-const uint32_t kMaxDatagramFrameSizeForTest = 1333;
+constexpr uint32_t kMaxPacketSizeForTest = 1234;
+constexpr uint32_t kMaxDatagramFrameSizeForTest = 1333;
+constexpr uint8_t kFakeStatelessResetTokenData[16] = {
+    0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97,
+    0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F};
+constexpr uint64_t kFakeAckDelayExponent = 10;
+constexpr uint64_t kFakeMaxAckDelay = 51;
+constexpr uint64_t kFakeActiveConnectionIdLimit = 52;
 
-class QuicConfigTest : public QuicTestWithParam<QuicTransportVersion> {
+// TODO(b/153726130): Consider merging this with methods in
+// transport_parameters_test.cc.
+std::vector<uint8_t> CreateFakeStatelessResetToken() {
+  return std::vector<uint8_t>(
+      kFakeStatelessResetTokenData,
+      kFakeStatelessResetTokenData + sizeof(kFakeStatelessResetTokenData));
+}
+
+class QuicConfigTest : public QuicTestWithParam<ParsedQuicVersion> {
+ public:
+  QuicConfigTest() : version_(GetParam()) {}
+
  protected:
+  ParsedQuicVersion version_;
   QuicConfig config_;
 };
 
 // Run all tests with all versions of QUIC.
 INSTANTIATE_TEST_SUITE_P(QuicConfigTests,
                          QuicConfigTest,
-                         ::testing::ValuesIn(AllSupportedTransportVersions()),
+                         ::testing::ValuesIn(AllSupportedVersions()),
                          ::testing::PrintToStringParamName());
 
 TEST_P(QuicConfigTest, SetDefaults) {
@@ -85,14 +104,17 @@ TEST_P(QuicConfigTest, AutoSetIetfFlowControl) {
 }
 
 TEST_P(QuicConfigTest, ToHandshakeMessage) {
+  if (version_.UsesTls()) {
+    // CryptoHandshakeMessage is only used for QUIC_CRYPTO.
+    return;
+  }
   config_.SetInitialStreamFlowControlWindowToSend(
       kInitialStreamFlowControlWindowForTest);
   config_.SetInitialSessionFlowControlWindowToSend(
       kInitialSessionFlowControlWindowForTest);
-  config_.SetIdleNetworkTimeout(QuicTime::Delta::FromSeconds(5),
-                                QuicTime::Delta::FromSeconds(2));
+  config_.SetIdleNetworkTimeout(QuicTime::Delta::FromSeconds(5));
   CryptoHandshakeMessage msg;
-  config_.ToHandshakeMessage(&msg, GetParam());
+  config_.ToHandshakeMessage(&msg, version_.transport_version);
 
   uint32_t value;
   QuicErrorCode error = msg.GetUint32(kICSL, &value);
@@ -109,14 +131,17 @@ TEST_P(QuicConfigTest, ToHandshakeMessage) {
 }
 
 TEST_P(QuicConfigTest, ProcessClientHello) {
+  if (version_.UsesTls()) {
+    // CryptoHandshakeMessage is only used for QUIC_CRYPTO.
+    return;
+  }
   const uint32_t kTestMaxAckDelayMs =
       static_cast<uint32_t>(kDefaultDelayedAckTimeMs + 1);
   QuicConfig client_config;
   QuicTagVector cgst;
   cgst.push_back(kQBIC);
   client_config.SetIdleNetworkTimeout(
-      QuicTime::Delta::FromSeconds(2 * kMaximumIdleTimeoutSecs),
-      QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs));
+      QuicTime::Delta::FromSeconds(2 * kMaximumIdleTimeoutSecs));
   client_config.SetInitialRoundTripTimeUsToSend(10 * kNumMicrosPerMilli);
   client_config.SetInitialStreamFlowControlWindowToSend(
       2 * kInitialStreamFlowControlWindowForTest);
@@ -127,7 +152,7 @@ TEST_P(QuicConfigTest, ProcessClientHello) {
   client_config.SetConnectionOptionsToSend(copt);
   client_config.SetMaxAckDelayToSendMs(kTestMaxAckDelayMs);
   CryptoHandshakeMessage msg;
-  client_config.ToHandshakeMessage(&msg, GetParam());
+  client_config.ToHandshakeMessage(&msg, version_.transport_version);
 
   std::string error_details;
   QuicTagVector initial_received_options;
@@ -171,6 +196,10 @@ TEST_P(QuicConfigTest, ProcessClientHello) {
 }
 
 TEST_P(QuicConfigTest, ProcessServerHello) {
+  if (version_.UsesTls()) {
+    // CryptoHandshakeMessage is only used for QUIC_CRYPTO.
+    return;
+  }
   QuicIpAddress host;
   host.FromString("127.0.3.1");
   const QuicSocketAddress kTestServerAddress = QuicSocketAddress(host, 1234);
@@ -181,18 +210,17 @@ TEST_P(QuicConfigTest, ProcessServerHello) {
   QuicTagVector cgst;
   cgst.push_back(kQBIC);
   server_config.SetIdleNetworkTimeout(
-      QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs / 2),
       QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs / 2));
   server_config.SetInitialRoundTripTimeUsToSend(10 * kNumMicrosPerMilli);
   server_config.SetInitialStreamFlowControlWindowToSend(
       2 * kInitialStreamFlowControlWindowForTest);
   server_config.SetInitialSessionFlowControlWindowToSend(
       2 * kInitialSessionFlowControlWindowForTest);
-  server_config.SetAlternateServerAddressToSend(kTestServerAddress);
+  server_config.SetIPv4AlternateServerAddressToSend(kTestServerAddress);
   server_config.SetStatelessResetTokenToSend(kTestResetToken);
   server_config.SetMaxAckDelayToSendMs(kTestMaxAckDelayMs);
   CryptoHandshakeMessage msg;
-  server_config.ToHandshakeMessage(&msg, GetParam());
+  server_config.ToHandshakeMessage(&msg, version_.transport_version);
   std::string error_details;
   const QuicErrorCode error =
       config_.ProcessPeerHello(msg, SERVER, &error_details);
@@ -205,8 +233,9 @@ TEST_P(QuicConfigTest, ProcessServerHello) {
             2 * kInitialStreamFlowControlWindowForTest);
   EXPECT_EQ(config_.ReceivedInitialSessionFlowControlWindowBytes(),
             2 * kInitialSessionFlowControlWindowForTest);
-  EXPECT_TRUE(config_.HasReceivedAlternateServerAddress());
-  EXPECT_EQ(kTestServerAddress, config_.ReceivedAlternateServerAddress());
+  EXPECT_TRUE(config_.HasReceivedIPv4AlternateServerAddress());
+  EXPECT_EQ(kTestServerAddress, config_.ReceivedIPv4AlternateServerAddress());
+  EXPECT_FALSE(config_.HasReceivedIPv6AlternateServerAddress());
   EXPECT_TRUE(config_.HasReceivedStatelessResetToken());
   EXPECT_EQ(kTestResetToken, config_.ReceivedStatelessResetToken());
   if (GetQuicReloadableFlag(quic_negotiate_ack_delay_time)) {
@@ -225,6 +254,10 @@ TEST_P(QuicConfigTest, ProcessServerHello) {
 }
 
 TEST_P(QuicConfigTest, MissingOptionalValuesInCHLO) {
+  if (version_.UsesTls()) {
+    // CryptoHandshakeMessage is only used for QUIC_CRYPTO.
+    return;
+  }
   CryptoHandshakeMessage msg;
   msg.SetValue(kICSL, 1);
 
@@ -241,6 +274,10 @@ TEST_P(QuicConfigTest, MissingOptionalValuesInCHLO) {
 }
 
 TEST_P(QuicConfigTest, MissingOptionalValuesInSHLO) {
+  if (version_.UsesTls()) {
+    // CryptoHandshakeMessage is only used for QUIC_CRYPTO.
+    return;
+  }
   CryptoHandshakeMessage msg;
 
   // Set all REQUIRED tags.
@@ -256,6 +293,10 @@ TEST_P(QuicConfigTest, MissingOptionalValuesInSHLO) {
 }
 
 TEST_P(QuicConfigTest, MissingValueInCHLO) {
+  if (version_.UsesTls()) {
+    // CryptoHandshakeMessage is only used for QUIC_CRYPTO.
+    return;
+  }
   // Server receives CHLO with missing kICSL.
   CryptoHandshakeMessage msg;
   std::string error_details;
@@ -265,6 +306,10 @@ TEST_P(QuicConfigTest, MissingValueInCHLO) {
 }
 
 TEST_P(QuicConfigTest, MissingValueInSHLO) {
+  if (version_.UsesTls()) {
+    // CryptoHandshakeMessage is only used for QUIC_CRYPTO.
+    return;
+  }
   // Client receives SHLO with missing kICSL.
   CryptoHandshakeMessage msg;
   std::string error_details;
@@ -274,13 +319,16 @@ TEST_P(QuicConfigTest, MissingValueInSHLO) {
 }
 
 TEST_P(QuicConfigTest, OutOfBoundSHLO) {
+  if (version_.UsesTls()) {
+    // CryptoHandshakeMessage is only used for QUIC_CRYPTO.
+    return;
+  }
   QuicConfig server_config;
   server_config.SetIdleNetworkTimeout(
-      QuicTime::Delta::FromSeconds(2 * kMaximumIdleTimeoutSecs),
       QuicTime::Delta::FromSeconds(2 * kMaximumIdleTimeoutSecs));
 
   CryptoHandshakeMessage msg;
-  server_config.ToHandshakeMessage(&msg, GetParam());
+  server_config.ToHandshakeMessage(&msg, version_.transport_version);
   std::string error_details;
   const QuicErrorCode error =
       config_.ProcessPeerHello(msg, SERVER, &error_details);
@@ -301,6 +349,10 @@ TEST_P(QuicConfigTest, InvalidFlowControlWindow) {
 }
 
 TEST_P(QuicConfigTest, HasClientSentConnectionOption) {
+  if (version_.UsesTls()) {
+    // CryptoHandshakeMessage is only used for QUIC_CRYPTO.
+    return;
+  }
   QuicConfig client_config;
   QuicTagVector copt;
   copt.push_back(kTBBR);
@@ -309,7 +361,7 @@ TEST_P(QuicConfigTest, HasClientSentConnectionOption) {
       kTBBR, Perspective::IS_CLIENT));
 
   CryptoHandshakeMessage msg;
-  client_config.ToHandshakeMessage(&msg, GetParam());
+  client_config.ToHandshakeMessage(&msg, version_.transport_version);
 
   std::string error_details;
   const QuicErrorCode error =
@@ -324,13 +376,17 @@ TEST_P(QuicConfigTest, HasClientSentConnectionOption) {
 }
 
 TEST_P(QuicConfigTest, DontSendClientConnectionOptions) {
+  if (version_.UsesTls()) {
+    // CryptoHandshakeMessage is only used for QUIC_CRYPTO.
+    return;
+  }
   QuicConfig client_config;
   QuicTagVector copt;
   copt.push_back(kTBBR);
   client_config.SetClientConnectionOptions(copt);
 
   CryptoHandshakeMessage msg;
-  client_config.ToHandshakeMessage(&msg, GetParam());
+  client_config.ToHandshakeMessage(&msg, version_.transport_version);
 
   std::string error_details;
   const QuicErrorCode error =
@@ -342,6 +398,10 @@ TEST_P(QuicConfigTest, DontSendClientConnectionOptions) {
 }
 
 TEST_P(QuicConfigTest, HasClientRequestedIndependentOption) {
+  if (version_.UsesTls()) {
+    // CryptoHandshakeMessage is only used for QUIC_CRYPTO.
+    return;
+  }
   QuicConfig client_config;
   QuicTagVector client_opt;
   client_opt.push_back(kRENO);
@@ -357,7 +417,7 @@ TEST_P(QuicConfigTest, HasClientRequestedIndependentOption) {
       kTBBR, Perspective::IS_CLIENT));
 
   CryptoHandshakeMessage msg;
-  client_config.ToHandshakeMessage(&msg, GetParam());
+  client_config.ToHandshakeMessage(&msg, version_.transport_version);
 
   std::string error_details;
   const QuicErrorCode error =
@@ -374,23 +434,30 @@ TEST_P(QuicConfigTest, HasClientRequestedIndependentOption) {
 }
 
 TEST_P(QuicConfigTest, IncomingLargeIdleTimeoutTransportParameter) {
-  // Configure our default to 30s and max to 60s, then receive 120s from peer.
-  // Since the received value is above the max, we should then use the max.
-  config_.SetIdleNetworkTimeout(quic::QuicTime::Delta::FromSeconds(60),
-                                quic::QuicTime::Delta::FromSeconds(30));
+  if (!version_.UsesTls()) {
+    // TransportParameters are only used for QUIC+TLS.
+    return;
+  }
+  // Configure our idle timeout to 60s, then receive 120s from peer.
+  // Since the received value is above ours, we should then use ours.
+  config_.SetIdleNetworkTimeout(quic::QuicTime::Delta::FromSeconds(60));
   TransportParameters params;
   params.idle_timeout_milliseconds.set_value(120000);
 
   std::string error_details = "foobar";
-  EXPECT_THAT(
-      config_.ProcessTransportParameters(params, SERVER, &error_details),
-      IsQuicNoError());
+  EXPECT_THAT(config_.ProcessTransportParameters(
+                  params, SERVER, /* is_resumption = */ false, &error_details),
+              IsQuicNoError());
   EXPECT_EQ("", error_details);
   EXPECT_EQ(quic::QuicTime::Delta::FromSeconds(60),
             config_.IdleNetworkTimeout());
 }
 
 TEST_P(QuicConfigTest, FillTransportParams) {
+  if (!version_.UsesTls()) {
+    // TransportParameters are only used for QUIC+TLS.
+    return;
+  }
   config_.SetInitialMaxStreamDataBytesIncomingBidirectionalToSend(
       2 * kMinimumFlowControlSendWindow);
   config_.SetInitialMaxStreamDataBytesOutgoingBidirectionalToSend(
@@ -399,6 +466,7 @@ TEST_P(QuicConfigTest, FillTransportParams) {
       4 * kMinimumFlowControlSendWindow);
   config_.SetMaxPacketSizeToSend(kMaxPacketSizeForTest);
   config_.SetMaxDatagramFrameSizeToSend(kMaxDatagramFrameSizeForTest);
+  config_.SetActiveConnectionIdLimitToSend(kFakeActiveConnectionIdLimit);
 
   TransportParameters params;
   config_.FillTransportParameters(&params);
@@ -416,9 +484,16 @@ TEST_P(QuicConfigTest, FillTransportParams) {
   EXPECT_EQ(kMaxPacketSizeForTest, params.max_packet_size.value());
   EXPECT_EQ(kMaxDatagramFrameSizeForTest,
             params.max_datagram_frame_size.value());
+  EXPECT_EQ(kFakeActiveConnectionIdLimit,
+            params.active_connection_id_limit.value());
 }
 
 TEST_P(QuicConfigTest, ProcessTransportParametersServer) {
+  if (!version_.UsesTls()) {
+    // TransportParameters are only used for QUIC+TLS.
+    return;
+  }
+  SetQuicReloadableFlag(quic_negotiate_ack_delay_time, true);
   TransportParameters params;
 
   params.initial_max_stream_data_bidi_local.set_value(
@@ -429,11 +504,19 @@ TEST_P(QuicConfigTest, ProcessTransportParametersServer) {
                                                kMinimumFlowControlSendWindow);
   params.max_packet_size.set_value(kMaxPacketSizeForTest);
   params.max_datagram_frame_size.set_value(kMaxDatagramFrameSizeForTest);
+  params.initial_max_streams_bidi.set_value(kDefaultMaxStreamsPerConnection);
+  params.stateless_reset_token = CreateFakeStatelessResetToken();
+  params.max_ack_delay.set_value(kFakeMaxAckDelay);
+  params.ack_delay_exponent.set_value(kFakeAckDelayExponent);
+  params.active_connection_id_limit.set_value(kFakeActiveConnectionIdLimit);
 
   std::string error_details;
-  EXPECT_THAT(
-      config_.ProcessTransportParameters(params, SERVER, &error_details),
-      IsQuicNoError());
+  EXPECT_THAT(config_.ProcessTransportParameters(
+                  params, SERVER, /* is_resumption = */ true, &error_details),
+              IsQuicNoError())
+      << error_details;
+
+  EXPECT_FALSE(config_.negotiated());
 
   ASSERT_TRUE(
       config_.HasReceivedInitialMaxStreamDataBytesIncomingBidirectional());
@@ -456,16 +539,89 @@ TEST_P(QuicConfigTest, ProcessTransportParametersServer) {
   EXPECT_EQ(kMaxDatagramFrameSizeForTest,
             config_.ReceivedMaxDatagramFrameSize());
 
+  ASSERT_TRUE(config_.HasReceivedMaxBidirectionalStreams());
+  EXPECT_EQ(kDefaultMaxStreamsPerConnection,
+            config_.ReceivedMaxBidirectionalStreams());
+
   EXPECT_FALSE(config_.DisableConnectionMigration());
+
+  // The following config shouldn't be processed because of resumption.
+  EXPECT_FALSE(config_.HasReceivedStatelessResetToken());
+  EXPECT_FALSE(config_.HasReceivedMaxAckDelayMs());
+  EXPECT_FALSE(config_.HasReceivedAckDelayExponent());
+
+  // Let the config process another slightly tweaked transport paramters.
+  // Note that the values for flow control and stream limit cannot be smaller
+  // than before. This rule is enforced in QuicSession::OnConfigNegotiated().
+  params.initial_max_stream_data_bidi_local.set_value(
+      2 * kMinimumFlowControlSendWindow + 1);
+  params.initial_max_stream_data_bidi_remote.set_value(
+      4 * kMinimumFlowControlSendWindow);
+  params.initial_max_stream_data_uni.set_value(5 *
+                                               kMinimumFlowControlSendWindow);
+  params.max_packet_size.set_value(2 * kMaxPacketSizeForTest);
+  params.max_datagram_frame_size.set_value(2 * kMaxDatagramFrameSizeForTest);
+  params.initial_max_streams_bidi.set_value(2 *
+                                            kDefaultMaxStreamsPerConnection);
+  params.disable_migration = true;
+
+  EXPECT_THAT(config_.ProcessTransportParameters(
+                  params, SERVER, /* is_resumption = */ false, &error_details),
+              IsQuicNoError())
+      << error_details;
+
+  EXPECT_TRUE(config_.negotiated());
+
+  ASSERT_TRUE(
+      config_.HasReceivedInitialMaxStreamDataBytesIncomingBidirectional());
+  EXPECT_EQ(2 * kMinimumFlowControlSendWindow + 1,
+            config_.ReceivedInitialMaxStreamDataBytesIncomingBidirectional());
+
+  ASSERT_TRUE(
+      config_.HasReceivedInitialMaxStreamDataBytesOutgoingBidirectional());
+  EXPECT_EQ(4 * kMinimumFlowControlSendWindow,
+            config_.ReceivedInitialMaxStreamDataBytesOutgoingBidirectional());
+
+  ASSERT_TRUE(config_.HasReceivedInitialMaxStreamDataBytesUnidirectional());
+  EXPECT_EQ(5 * kMinimumFlowControlSendWindow,
+            config_.ReceivedInitialMaxStreamDataBytesUnidirectional());
+
+  ASSERT_TRUE(config_.HasReceivedMaxPacketSize());
+  EXPECT_EQ(2 * kMaxPacketSizeForTest, config_.ReceivedMaxPacketSize());
+
+  ASSERT_TRUE(config_.HasReceivedMaxDatagramFrameSize());
+  EXPECT_EQ(2 * kMaxDatagramFrameSizeForTest,
+            config_.ReceivedMaxDatagramFrameSize());
+
+  ASSERT_TRUE(config_.HasReceivedMaxBidirectionalStreams());
+  EXPECT_EQ(2 * kDefaultMaxStreamsPerConnection,
+            config_.ReceivedMaxBidirectionalStreams());
+
+  EXPECT_TRUE(config_.DisableConnectionMigration());
+
+  ASSERT_TRUE(config_.HasReceivedStatelessResetToken());
+  ASSERT_TRUE(config_.HasReceivedMaxAckDelayMs());
+  EXPECT_EQ(config_.ReceivedMaxAckDelayMs(), kFakeMaxAckDelay);
+
+  ASSERT_TRUE(config_.HasReceivedAckDelayExponent());
+  EXPECT_EQ(config_.ReceivedAckDelayExponent(), kFakeAckDelayExponent);
+
+  ASSERT_TRUE(config_.HasReceivedActiveConnectionIdLimit());
+  EXPECT_EQ(config_.ReceivedActiveConnectionIdLimit(),
+            kFakeActiveConnectionIdLimit);
 }
 
 TEST_P(QuicConfigTest, DisableMigrationTransportParameter) {
+  if (!version_.UsesTls()) {
+    // TransportParameters are only used for QUIC+TLS.
+    return;
+  }
   TransportParameters params;
   params.disable_migration = true;
   std::string error_details;
-  EXPECT_THAT(
-      config_.ProcessTransportParameters(params, SERVER, &error_details),
-      IsQuicNoError());
+  EXPECT_THAT(config_.ProcessTransportParameters(
+                  params, SERVER, /* is_resumption = */ false, &error_details),
+              IsQuicNoError());
   EXPECT_TRUE(config_.DisableConnectionMigration());
 }
 

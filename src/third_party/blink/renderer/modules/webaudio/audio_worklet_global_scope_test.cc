@@ -21,7 +21,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/messaging/message_channel.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
@@ -64,20 +64,24 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
   std::unique_ptr<AudioWorkletThread> CreateAudioWorkletThread() {
     std::unique_ptr<AudioWorkletThread> thread =
         AudioWorkletThread::Create(*reporting_proxy_);
-    Document* document = &GetDocument();
+    LocalDOMWindow* window = GetFrame().DomWindow();
     thread->Start(
         std::make_unique<GlobalScopeCreationParams>(
-            document->Url(), mojom::ScriptType::kModule,
-            OffMainThreadWorkerScriptFetchOption::kEnabled, "AudioWorklet",
-            document->UserAgent(), nullptr /* web_worker_fetch_context */,
-            Vector<CSPHeaderAndType>(), document->GetReferrerPolicy(),
-            document->GetSecurityOrigin(), document->IsSecureContext(),
-            document->GetHttpsState(), nullptr /* worker_clients */,
-            nullptr /* content_settings_client */, document->AddressSpace(),
-            OriginTrialContext::GetTokens(document).get(),
+            window->Url(), mojom::blink::ScriptType::kModule, "AudioWorklet",
+            window->UserAgent(),
+            window->GetFrame()->Loader().UserAgentMetadata(),
+            nullptr /* web_worker_fetch_context */, Vector<CSPHeaderAndType>(),
+            window->GetReferrerPolicy(), window->GetSecurityOrigin(),
+            window->IsSecureContext(), window->GetHttpsState(),
+            nullptr /* worker_clients */, nullptr /* content_settings_client */,
+            window->GetSecurityContext().AddressSpace(),
+            OriginTrialContext::GetTokens(window).get(),
             base::UnguessableToken::Create(), nullptr /* worker_settings */,
             kV8CacheOptionsDefault,
-            MakeGarbageCollected<WorkletModuleResponsesMap>()),
+            MakeGarbageCollected<WorkletModuleResponsesMap>(),
+            mojo::NullRemote() /* browser_interface_broker */,
+            BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
+            window->GetAgentClusterID()),
         base::nullopt, std::make_unique<WorkerDevToolsParams>());
     return thread;
   }
@@ -144,8 +148,9 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
         ModuleRecord::Instantiate(script_state, module, js_url);
     EXPECT_TRUE(exception.IsEmpty());
 
-    ScriptValue value = ModuleRecord::Evaluate(script_state, module, js_url);
-    return value.IsEmpty();
+    ModuleEvaluationResult result =
+        ModuleRecord::Evaluate(script_state, module, js_url);
+    return result.IsSuccess();
   }
 
   // Test if AudioWorkletGlobalScope and V8 components (ScriptState, Isolate)
@@ -290,8 +295,8 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
                                       SerializedScriptValue::NullValue());
     EXPECT_TRUE(processor);
 
-    Vector<AudioBus*> input_buses;
-    Vector<AudioBus*> output_buses;
+    Vector<scoped_refptr<AudioBus>> input_buses;
+    Vector<scoped_refptr<AudioBus>> output_buses;
     HashMap<String, std::unique_ptr<AudioFloatArray>> param_data_map;
     scoped_refptr<AudioBus> input_bus =
         AudioBus::Create(1, kRenderQuantumFrames);

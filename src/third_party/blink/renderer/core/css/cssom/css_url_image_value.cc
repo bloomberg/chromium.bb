@@ -20,8 +20,9 @@ base::Optional<IntSize> CSSURLImageValue::IntrinsicSize() const {
 
   DCHECK(!value_->IsCachePending());
   ImageResourceContent* resource_content = value_->CachedImage()->CachedImage();
+
   return resource_content
-             ? resource_content->IntrinsicSize(kDoNotRespectImageOrientation)
+             ? resource_content->IntrinsicSize(kRespectImageOrientation)
              : IntSize(0, 0);
 }
 
@@ -58,7 +59,7 @@ const CSSValue* CSSURLImageValue::ToCSSValue() const {
   return value_;
 }
 
-void CSSURLImageValue::Trace(blink::Visitor* visitor) {
+void CSSURLImageValue::Trace(Visitor* visitor) {
   visitor->Trace(value_);
   CSSStyleImageValue::Trace(visitor);
 }

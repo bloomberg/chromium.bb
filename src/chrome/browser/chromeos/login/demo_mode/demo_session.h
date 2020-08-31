@@ -78,13 +78,18 @@ class DemoSession : public session_manager::SessionManagerObserver,
   // TODO(crbug.com/983359): Sort these by country name in the current locale
   // instead of using this hard-coded US-centric order.
   static constexpr char kSupportedCountries[][3] = {
-      "us", "be", "ca", "dk", "fi", "fr", "de",
-      "ie", "jp", "lu", "nl", "no", "se", "gb"};
+      "us", "be", "ca", "dk", "fi", "fr", "de", "ie",
+      "it", "jp", "lu", "nl", "no", "es", "se", "gb"};
 
   static std::string DemoConfigToString(DemoModeConfig config);
 
   // Whether the device is set up to run demo sessions.
   static bool IsDeviceInDemoMode();
+
+  // Whether the device is set up to enroll Demo Mode offline.
+  // The device needs to be set up for Demo Mode in order to return true.
+  // TODO(b/154290639): Move into anonymous namespace when fixed.
+  static bool IsDemoModeOfflineEnrolled();
 
   // Returns current demo mode configuration.
   static DemoModeConfig GetDemoConfig();

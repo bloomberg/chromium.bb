@@ -27,19 +27,24 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-const SettingsUI = {};
 
-export default SettingsUI;
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Common from '../common/common.js';
+
+import * as ARIAUtils from './ARIAUtils.js';
+import {CheckboxLabel} from './UIUtils.js';
 
 /**
  * @param {string} name
- * @param {!Common.Setting} setting
+ * @param {!Common.Settings.Setting<*>} setting
  * @param {boolean=} omitParagraphElement
  * @param {string=} tooltip
  * @return {!Element}
  */
 export const createSettingCheckbox = function(name, setting, omitParagraphElement, tooltip) {
-  const label = UI.CheckboxLabel.create(name);
+  const label = CheckboxLabel.create(name);
   if (tooltip) {
     label.title = tooltip;
   }
@@ -60,7 +65,7 @@ export const createSettingCheckbox = function(name, setting, omitParagraphElemen
 /**
  * @param {string} name
  * @param {!Array<!{text: string, value: *, raw: (boolean|undefined)}>} options
- * @param {!Common.Setting} setting
+ * @param {!Common.Settings.Setting<*>} setting
  * @param {string=} subtitle
  * @return {!Element}
  */
@@ -73,12 +78,12 @@ const createSettingSelect = function(name, options, setting, subtitle) {
     settingSelectElement.classList.add('chrome-select-label');
     label.createChild('p').textContent = subtitle;
   }
-  UI.ARIAUtils.bindLabelToControl(label, select);
+  ARIAUtils.bindLabelToControl(label, select);
 
   for (let i = 0; i < options.length; ++i) {
     // The "raw" flag indicates text is non-i18n-izable.
     const option = options[i];
-    const optionName = option.raw ? option.text : Common.UIString(option.text);
+    const optionName = option.raw ? option.text : Common.UIString.UIString(option.text);
     select.add(new Option(optionName, option.value));
   }
 
@@ -104,7 +109,7 @@ const createSettingSelect = function(name, options, setting, subtitle) {
 
 /**
  * @param {!Element} input
- * @param {!Common.Setting} setting
+ * @param {!Common.Settings.Setting<*>} setting
  */
 export const bindCheckbox = function(input, setting) {
   function settingChanged() {
@@ -133,13 +138,13 @@ export const createCustomSetting = function(name, element) {
   const fieldsetElement = p.createChild('fieldset');
   const label = fieldsetElement.createChild('label');
   label.textContent = name;
-  UI.ARIAUtils.bindLabelToControl(label, element);
+  ARIAUtils.bindLabelToControl(label, element);
   fieldsetElement.appendChild(element);
   return p;
 };
 
 /**
- * @param {!Common.Setting} setting
+ * @param {!Common.Settings.Setting<*>} setting
  * @param {string=} subtitle
  * @return {?Element}
  */
@@ -148,7 +153,7 @@ export const createControlForSetting = function(setting, subtitle) {
     return null;
   }
   const descriptor = setting.extension().descriptor();
-  const uiTitle = Common.UIString(setting.title() || '');
+  const uiTitle = Common.UIString.UIString(setting.title() || '');
   switch (descriptor['settingType']) {
     case 'boolean':
       return createSettingCheckbox(uiTitle, setting);
@@ -173,45 +178,3 @@ export class SettingUI {
    */
   settingElement() {}
 }
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-UI.SettingsUI = SettingsUI;
-
-/**
- * @interface
- */
-UI.SettingUI = SettingUI;
-
-/**
- * @param {string} name
- * @param {!Common.Setting} setting
- * @param {boolean=} omitParagraphElement
- * @param {string=} tooltip
- * @return {!Element}
- */
-UI.SettingsUI.createSettingCheckbox = createSettingCheckbox;
-
-/**
- * @param {!Element} input
- * @param {!Common.Setting} setting
- */
-UI.SettingsUI.bindCheckbox = bindCheckbox;
-
-/**
- * @param {string} name
- * @param {!Element} element
- * @return {!Element}
- */
-UI.SettingsUI.createCustomSetting = createCustomSetting;
-
-/**
- * @param {!Common.Setting} setting
- * @param {string=} subtitle
- * @return {?Element}
- */
-UI.SettingsUI.createControlForSetting = createControlForSetting;

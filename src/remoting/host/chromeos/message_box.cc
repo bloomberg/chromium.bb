@@ -36,13 +36,9 @@ class MessageBox::Core : public views::DialogDelegateView {
   void Show();
   void Hide();
 
-  // views::DialogDelegateView interface.
-  bool Accept() override;
-  bool Cancel() override;
+  // views::DialogDelegateView:
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
-
-  // views::WidgetDelegate interface.
   views::View* GetContentsView() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
@@ -74,8 +70,19 @@ MessageBox::Core::Core(const base::string16& title_label,
       message_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(message_label))) {
   DCHECK(message_box_);
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK, ok_label);
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL, cancel_label);
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_label);
+  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_label);
+
+  auto run_callback = [](MessageBox::Core* core, Result result) {
+    if (core->result_callback_)
+      std::move(core->result_callback_).Run(result);
+  };
+  DialogDelegate::SetAcceptCallback(
+      base::BindOnce(run_callback, base::Unretained(this), OK));
+  DialogDelegate::SetCancelCallback(
+      base::BindOnce(run_callback, base::Unretained(this), CANCEL));
+  DialogDelegate::SetCloseCallback(
+      base::BindOnce(run_callback, base::Unretained(this), CANCEL));
 }
 
 void MessageBox::Core::Show() {
@@ -94,20 +101,6 @@ void MessageBox::Core::Hide() {
   if (GetWidget()) {
     GetWidget()->Close();
   }
-}
-
-bool MessageBox::Core::Accept() {
-  if (!result_callback_.is_null()) {
-    std::move(result_callback_).Run(OK);
-  }
-  return true /* close the window*/;
-}
-
-bool MessageBox::Core::Cancel() {
-  if (!result_callback_.is_null()) {
-    std::move(result_callback_).Run(CANCEL);
-  }
-  return true /* close the window*/;
 }
 
 ui::ModalType MessageBox::Core::GetModalType() const {

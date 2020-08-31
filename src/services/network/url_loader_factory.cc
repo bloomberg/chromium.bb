@@ -9,15 +9,23 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/optional.h"
+#include "mojo/public/cpp/bindings/message.h"
+#include "net/cookies/cookie_constants.h"
+#include "net/url_request/url_request_context.h"
+#include "services/network/cookie_manager.h"
+#include "services/network/cookie_settings.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/network_usage_accumulator.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
+#include "services/network/trust_tokens/trust_token_request_helper_factory.h"
 #include "services/network/url_loader.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -65,10 +73,17 @@ URLLoaderFactory::URLLoaderFactory(
       params_(std::move(params)),
       resource_scheduler_client_(std::move(resource_scheduler_client)),
       header_client_(std::move(params_->header_client)),
-      cors_url_loader_factory_(cors_url_loader_factory) {
+      coep_reporter_(std::move(params_->coep_reporter)),
+      cors_url_loader_factory_(cors_url_loader_factory),
+      cookie_observer_(std::move(params_->cookie_observer)) {
   DCHECK(context);
   DCHECK_NE(mojom::kInvalidProcessId, params_->process_id);
   DCHECK(!params_->factory_override);
+  // Only non-navigation IsolationInfos should be bound to URLLoaderFactories.
+  DCHECK_EQ(net::IsolationInfo::RedirectMode::kUpdateNothing,
+            params_->isolation_info.redirect_mode());
+  DCHECK(!params_->automatically_assign_isolation_info ||
+         params_->isolation_info.IsEmpty());
 
   if (!params_->top_frame_id) {
     params_->top_frame_id = base::UnguessableToken::Create();
@@ -196,6 +211,48 @@ void URLLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
+  if (url_request.trust_token_params && !context_->trust_token_store()) {
+    mojo::ReportBadMessage(
+        "Got a request with Trust Tokens parameters with Trust tokens "
+        "disabled.");
+    return;
+  }
+
+  if (url_request.trust_token_params && url_request.request_initiator &&
+      !IsOriginPotentiallyTrustworthy(*url_request.request_initiator)) {
+    mojo::ReportBadMessage(
+        "Got a request with Trust Tokens parameters from an insecure context, "
+        "but Trust Tokens operations may only be executed from secure "
+        "contexts.");
+    return;
+  }
+
+  std::unique_ptr<TrustTokenRequestHelperFactory> trust_token_factory;
+  if (url_request.trust_token_params) {
+    trust_token_factory = std::make_unique<TrustTokenRequestHelperFactory>(
+        context_->trust_token_store(),
+        context_->network_service()->trust_token_key_commitments(),
+        // It's safe to use Unretained here because
+        // NetworkContext::CookieManager outlives the URLLoaders associated with
+        // the NetworkContext.
+        base::BindRepeating(
+            [](const CookieManager* manager) {
+              return !manager->cookie_settings()
+                          .are_third_party_cookies_blocked();
+            },
+            base::Unretained(context_->cookie_manager())));
+  }
+
+  mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer;
+  if (url_request.trusted_params &&
+      url_request.trusted_params->cookie_observer) {
+    cookie_observer =
+        std::move(const_cast<mojo::PendingRemote<mojom::CookieAccessObserver>&>(
+            url_request.trusted_params->cookie_observer));
+  } else if (cookie_observer_) {
+    cookie_observer_->Clone(cookie_observer.InitWithNewPipeAndPassReceiver());
+  }
+
   auto loader = std::make_unique<URLLoader>(
       context_->url_request_context(), network_service_client,
       context_->client(),
@@ -203,11 +260,14 @@ void URLLoaderFactory::CreateLoaderAndStart(
                      base::Unretained(cors_url_loader_factory_)),
       std::move(receiver), options, url_request, std::move(client),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      params_.get(), request_id, keepalive_request_size,
-      resource_scheduler_client_, std::move(keepalive_statistics_recorder),
+      params_.get(), coep_reporter_ ? coep_reporter_.get() : nullptr,
+      request_id, keepalive_request_size, resource_scheduler_client_,
+      std::move(keepalive_statistics_recorder),
       std::move(network_usage_accumulator),
       header_client_.is_bound() ? header_client_.get() : nullptr,
-      context_->origin_policy_manager());
+      context_->origin_policy_manager(), std::move(trust_token_factory),
+      std::move(cookie_observer));
+
   cors_url_loader_factory_->OnLoaderCreated(std::move(loader));
 }
 

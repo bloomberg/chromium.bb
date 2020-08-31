@@ -21,7 +21,9 @@ int64_t TestAppListControllerDelegate::GetAppListDisplayId() {
   return display::kInvalidDisplayId;
 }
 
-void TestAppListControllerDelegate::DismissView() {}
+void TestAppListControllerDelegate::DismissView() {
+  did_dismiss_view_ = true;
+}
 
 gfx::NativeWindow TestAppListControllerDelegate::GetAppListWindow() {
   return nullptr;
@@ -46,18 +48,12 @@ bool TestAppListControllerDelegate::IsAppOpen(const std::string& app_id) const {
   return false;
 }
 
-bool TestAppListControllerDelegate::CanDoShowAppInfoFlow() {
-  return false;
-}
-
 void TestAppListControllerDelegate::DoShowAppInfoFlow(
     Profile* profile,
     const std::string& extension_id) {
 }
 
-void TestAppListControllerDelegate::CreateNewWindow(Profile* profile,
-                                                    bool incognito) {
-}
+void TestAppListControllerDelegate::CreateNewWindow(bool incognito) {}
 
 void TestAppListControllerDelegate::OpenURL(Profile* profile,
                                             const GURL& url,
@@ -79,6 +75,11 @@ void TestAppListControllerDelegate::LaunchApp(
     AppListSource source,
     int event_flags,
     int64_t display_id) {
+}
+
+void TestAppListControllerDelegate::Reset() {
+  did_dismiss_view_ = false;
+  last_opened_url_ = GURL();
 }
 
 }  // namespace test

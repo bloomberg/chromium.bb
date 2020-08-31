@@ -16,7 +16,7 @@ namespace autofill {
 namespace {
 
 const content::NativeWebKeyboardEvent
-    kDummyEvent(blink::WebInputEvent::kUndefined, 0, base::TimeTicks());
+    kDummyEvent(blink::WebInputEvent::Type::kUndefined, 0, base::TimeTicks());
 
 // Dummy keyboard event handler: ignores the event, but appends the given |name|
 // to a logging |target|.
@@ -57,7 +57,7 @@ class KeyPressHandlerManagerTest : public testing::Test {
  protected:
   content::RenderWidgetHost::KeyPressEventCallback CallbackForName(
       const char* name) {
-    return base::Bind(DummyHandler, name, &callback_trace_);
+    return base::BindRepeating(DummyHandler, name, &callback_trace_);
   }
 
   // String encoding the events related to adding and removing callbacks. For

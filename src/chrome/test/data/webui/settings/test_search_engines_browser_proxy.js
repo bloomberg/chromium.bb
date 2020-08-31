@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+// #import {SearchEnginesBrowserProxy, SearchEnginesInfo, SearchEngine} from 'chrome://settings/settings.js';
+// clang-format on
+
 cr.define('settings_search', function() {
   /**
    * A test version of SearchEnginesBrowserProxy. Provides helper methods
@@ -10,7 +15,7 @@ cr.define('settings_search', function() {
    *
    * @implements {settings.SearchEnginesBrowserProxy}
    */
-  class TestSearchEnginesBrowserProxy extends TestBrowserProxy {
+  /* #export */ class TestSearchEnginesBrowserProxy extends TestBrowserProxy {
     constructor() {
       super([
         'getSearchEnginesList',
@@ -78,7 +83,8 @@ cr.define('settings_search', function() {
    * @param {boolean} canBeRemoved
    * @return {!SearchEngine}
    */
-  function createSampleSearchEngine(canBeDefault, canBeEdited, canBeRemoved) {
+  /* #export */ function createSampleSearchEngine(
+      canBeDefault, canBeEdited, canBeRemoved) {
     return {
       canBeDefault: canBeDefault,
       canBeEdited: canBeEdited,
@@ -86,6 +92,7 @@ cr.define('settings_search', function() {
       default: false,
       displayName: 'Google',
       iconURL: 'http://www.google.com/favicon.ico',
+      id: 0,
       isOmniboxExtension: false,
       keyword: 'google.com',
       modelIndex: 0,
@@ -95,6 +102,7 @@ cr.define('settings_search', function() {
     };
   }
 
+  // #cr_define_end
   return {
     createSampleSearchEngine: createSampleSearchEngine,
     TestSearchEnginesBrowserProxy: TestSearchEnginesBrowserProxy,

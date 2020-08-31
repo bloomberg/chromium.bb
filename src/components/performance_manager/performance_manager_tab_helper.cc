@@ -14,6 +14,7 @@
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/performance_manager_registry_impl.h"
 #include "components/performance_manager/render_process_user_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -24,33 +25,15 @@
 
 namespace performance_manager {
 
-// static
-PerformanceManagerTabHelper* PerformanceManagerTabHelper::first_ = nullptr;
-
-// static
-void PerformanceManagerTabHelper::DetachAndDestroyAll() {
-  while (first_) {
-    PerformanceManagerTabHelper* helper = first_;
-    // Tear it down and detach it from the WebContents, which will
-    // delete it.
-    content::WebContents* web_contents = helper->web_contents();
-    DCHECK(web_contents);
-    helper->TearDown();
-    DCHECK(!helper->web_contents());
-    web_contents->RemoveUserData(UserDataKey());
-  }
-}
-
 PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      performance_manager_(PerformanceManagerImpl::GetInstance()) {
-  page_node_ = performance_manager_->CreatePageNode(
+    : content::WebContentsObserver(web_contents) {
+  page_node_ = PerformanceManagerImpl::CreatePageNode(
       WebContentsProxy(weak_factory_.GetWeakPtr()),
       web_contents->GetBrowserContext()->UniqueId(),
       web_contents->GetVisibleURL(),
       web_contents->GetVisibility() == content::Visibility::VISIBLE,
-      web_contents->IsCurrentlyAudible());
+      web_contents->IsCurrentlyAudible(), web_contents->GetLastActiveTime());
   // Dispatch creation notifications for any pre-existing frames.
   std::vector<content::RenderFrameHost*> existing_frames =
       web_contents->GetAllFrames();
@@ -60,29 +43,14 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     if (frame->IsRenderFrameCreated())
       RenderFrameCreated(frame);
   }
-
-  // Push this instance to the list.
-  next_ = first_;
-  if (next_)
-    next_->prev_ = this;
-  prev_ = nullptr;
-  first_ = this;
 }
 
 PerformanceManagerTabHelper::~PerformanceManagerTabHelper() {
   DCHECK(!page_node_);
   DCHECK(frames_.empty());
-  DCHECK_NE(this, first_);
-  DCHECK(!prev_);
-  DCHECK(!next_);
 }
 
 void PerformanceManagerTabHelper::TearDown() {
-  // Validate that this instance is in list of tab helpers.
-  DCHECK(first_ == this || next_ || prev_);
-  DCHECK_NE(this, next_);
-  DCHECK_NE(this, prev_);
-
   // Ship our page and frame nodes to the PerformanceManagerImpl for
   // incineration.
   std::vector<std::unique_ptr<NodeBase>> nodes;
@@ -101,27 +69,21 @@ void PerformanceManagerTabHelper::TearDown() {
   frames_.clear();
 
   // Delete the page and its entire frame tree from the graph.
-  performance_manager_->BatchDeleteNodes(std::move(nodes));
+  PerformanceManagerImpl::BatchDeleteNodes(std::move(nodes));
 
-  if (first_ == this) {
-    DCHECK(!prev_);
-    first_ = next_;
+  if (destruction_observer_) {
+    destruction_observer_->OnPerformanceManagerTabHelperDestroying(
+        web_contents());
   }
-
-  if (prev_) {
-    DCHECK_EQ(prev_->next_, this);
-    prev_->next_ = next_;
-  }
-
-  if (next_) {
-    DCHECK_EQ(next_->prev_, this);
-    next_->prev_ = prev_;
-  }
-  prev_ = nullptr;
-  next_ = nullptr;
 
   // Unsubscribe from the associated WebContents.
   Observe(nullptr);
+}
+
+void PerformanceManagerTabHelper::SetDestructionObserver(
+    DestructionObserver* destruction_observer) {
+  DCHECK(!destruction_observer || !destruction_observer_);
+  destruction_observer_ = destruction_observer;
 }
 
 void PerformanceManagerTabHelper::RenderFrameCreated(
@@ -137,9 +99,12 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
     parent_frame_node = frames_[parent].get();
   }
 
-  // Ideally this would strictly be a "Get", but it is possible in tests for
-  // the the RenderProcessUserData to not have attached at this point.
-  auto* process_node = RenderProcessUserData::GetOrCreateForRenderProcessHost(
+  // Ideally, creation would not be required here, but it is possible in tests
+  // for the RenderProcessUserData to not have attached at this point.
+  PerformanceManagerRegistryImpl::GetInstance()
+      ->EnsureProcessNodeForRenderProcessHost(render_frame_host->GetProcess());
+
+  auto* process_node = RenderProcessUserData::GetForRenderProcessHost(
                            render_frame_host->GetProcess())
                            ->process_node();
 
@@ -147,20 +112,22 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
 
   // Create the frame node, and provide a callback that will run in the graph to
   // initialize it.
-  std::unique_ptr<FrameNodeImpl> frame = performance_manager_->CreateFrameNode(
-      process_node, page_node_.get(), parent_frame_node,
-      render_frame_host->GetFrameTreeNodeId(),
-      render_frame_host->GetRoutingID(),
-      render_frame_host->GetDevToolsFrameToken(),
-      site_instance->GetBrowsingInstanceId(), site_instance->GetId(),
-      base::BindOnce(
-          [](const GURL& url, bool is_current, FrameNodeImpl* frame_node) {
-            if (!url.is_empty())
-              frame_node->OnNavigationCommitted(url, /* same_document */ false);
-            frame_node->SetIsCurrent(is_current);
-          },
-          render_frame_host->GetLastCommittedURL(),
-          render_frame_host->IsCurrent()));
+  std::unique_ptr<FrameNodeImpl> frame =
+      PerformanceManagerImpl::CreateFrameNode(
+          process_node, page_node_.get(), parent_frame_node,
+          render_frame_host->GetFrameTreeNodeId(),
+          render_frame_host->GetRoutingID(),
+          render_frame_host->GetDevToolsFrameToken(),
+          site_instance->GetBrowsingInstanceId(), site_instance->GetId(),
+          base::BindOnce(
+              [](const GURL& url, bool is_current, FrameNodeImpl* frame_node) {
+                if (!url.is_empty())
+                  frame_node->OnNavigationCommitted(url,
+                                                    /* same_document */ false);
+                frame_node->SetIsCurrent(is_current);
+              },
+              render_frame_host->GetLastCommittedURL(),
+              render_frame_host->IsCurrent()));
 
   frames_[render_frame_host] = std::move(frame);
 }
@@ -185,7 +152,7 @@ void PerformanceManagerTabHelper::RenderFrameDeleted(
     observer.OnBeforeFrameNodeRemoved(this, frame_node.get());
 
   // Then delete the node.
-  performance_manager_->DeleteNode(std::move(frame_node));
+  PerformanceManagerImpl::DeleteNode(std::move(frame_node));
   frames_.erase(it);
 }
 
@@ -232,7 +199,7 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
     return;
 
   // Perform the swap in the graph.
-  PerformanceManagerImpl::GetTaskRunner()->PostTask(
+  PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE, base::BindOnce(
                      [](FrameNodeImpl* old_frame, FrameNodeImpl* new_frame) {
                        if (old_frame) {
@@ -247,24 +214,19 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
                      old_frame, new_frame));
 }
 
-void PerformanceManagerTabHelper::DidStartLoading() {
-  PostToGraph(FROM_HERE, &PageNodeImpl::SetIsLoading, page_node_.get(), true);
-}
-
-void PerformanceManagerTabHelper::DidStopLoading() {
-  PostToGraph(FROM_HERE, &PageNodeImpl::SetIsLoading, page_node_.get(), false);
-}
-
 void PerformanceManagerTabHelper::OnVisibilityChanged(
     content::Visibility visibility) {
   const bool is_visible = visibility == content::Visibility::VISIBLE;
-  PostToGraph(FROM_HERE, &PageNodeImpl::SetIsVisible, page_node_.get(),
-              is_visible);
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE,
+      base::BindOnce(&PageNodeImpl::SetIsVisible,
+                     base::Unretained(page_node_.get()), is_visible));
 }
 
 void PerformanceManagerTabHelper::OnAudioStateChanged(bool audible) {
-  PostToGraph(FROM_HERE, &PageNodeImpl::SetIsAudible, page_node_.get(),
-              audible);
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(&PageNodeImpl::SetIsAudible,
+                                base::Unretained(page_node_.get()), audible));
 }
 
 void PerformanceManagerTabHelper::DidFinishNavigation(
@@ -289,8 +251,10 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
 
   // Notify the frame of the committed URL.
   GURL url = navigation_handle->GetURL();
-  PostToGraph(FROM_HERE, &FrameNodeImpl::OnNavigationCommitted, frame_node, url,
-              navigation_handle->IsSameDocument());
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(&FrameNodeImpl::OnNavigationCommitted,
+                                base::Unretained(frame_node), url,
+                                navigation_handle->IsSameDocument()));
 
   if (!navigation_handle->IsInMainFrame())
     return;
@@ -298,10 +262,14 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
   // Make sure the hierarchical structure is constructed before sending signal
   // to the performance manager.
   OnMainFrameNavigation(navigation_handle->GetNavigationId());
-  PostToGraph(FROM_HERE, &PageNodeImpl::OnMainFrameNavigationCommitted,
-              page_node_.get(), navigation_handle->IsSameDocument(),
-              navigation_committed_time, navigation_handle->GetNavigationId(),
-              url);
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE,
+      base::BindOnce(
+          &PageNodeImpl::OnMainFrameNavigationCommitted,
+          base::Unretained(page_node_.get()),
+          navigation_handle->IsSameDocument(), navigation_committed_time,
+          navigation_handle->GetNavigationId(), url,
+          navigation_handle->GetWebContents()->GetContentsMimeType()));
 }
 
 void PerformanceManagerTabHelper::TitleWasSet(content::NavigationEntry* entry) {
@@ -310,7 +278,9 @@ void PerformanceManagerTabHelper::TitleWasSet(content::NavigationEntry* entry) {
     first_time_title_set_ = true;
     return;
   }
-  PostToGraph(FROM_HERE, &PageNodeImpl::OnTitleUpdated, page_node_.get());
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(&PageNodeImpl::OnTitleUpdated,
+                                base::Unretained(page_node_.get())));
 }
 
 void PerformanceManagerTabHelper::WebContentsDestroyed() {
@@ -318,13 +288,15 @@ void PerformanceManagerTabHelper::WebContentsDestroyed() {
 }
 
 void PerformanceManagerTabHelper::DidUpdateFaviconURL(
-    const std::vector<content::FaviconURL>& candidates) {
+    const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   // TODO(siggi): This logic belongs in the policy layer rather than here.
   if (!first_time_favicon_set_) {
     first_time_favicon_set_ = true;
     return;
   }
-  PostToGraph(FROM_HERE, &PageNodeImpl::OnFaviconUpdated, page_node_.get());
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(&PageNodeImpl::OnFaviconUpdated,
+                                base::Unretained(page_node_.get())));
 }
 
 void PerformanceManagerTabHelper::BindDocumentCoordinationUnit(
@@ -349,8 +321,10 @@ void PerformanceManagerTabHelper::BindDocumentCoordinationUnit(
     }
   }
 
-  PostToGraph(FROM_HERE, &FrameNodeImpl::Bind, it->second.get(),
-              std::move(receiver));
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE,
+      base::BindOnce(&FrameNodeImpl::Bind, base::Unretained(it->second.get()),
+                     std::move(receiver)));
 }
 
 content::WebContents* PerformanceManagerTabHelper::GetWebContents() const {
@@ -364,13 +338,7 @@ int64_t PerformanceManagerTabHelper::LastNavigationId() const {
 FrameNodeImpl* PerformanceManagerTabHelper::GetFrameNode(
     content::RenderFrameHost* render_frame_host) {
   auto it = frames_.find(render_frame_host);
-  if (it == frames_.end()) {
-    // Avoid dereferencing an invalid iterator because it produces hard to debug
-    // crashes.
-    NOTREACHED();
-    return nullptr;
-  }
-  return it->second.get();
+  return it != frames_.end() ? it->second.get() : nullptr;
 }
 
 void PerformanceManagerTabHelper::AddObserver(Observer* observer) {
@@ -381,24 +349,14 @@ void PerformanceManagerTabHelper::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-template <typename Functor, typename NodeType, typename... Args>
-void PerformanceManagerTabHelper::PostToGraph(const base::Location& from_here,
-                                              Functor&& functor,
-                                              NodeType* node,
-                                              Args&&... args) {
-  static_assert(std::is_base_of<NodeBase, NodeType>::value,
-                "NodeType must be descended from NodeBase");
-  PerformanceManagerImpl::GetTaskRunner()->PostTask(
-      from_here, base::BindOnce(functor, base::Unretained(node),
-                                std::forward<Args>(args)...));
-}
-
 void PerformanceManagerTabHelper::OnMainFrameNavigation(int64_t navigation_id) {
   last_navigation_id_ = navigation_id;
   ukm_source_id_ =
       ukm::ConvertToSourceId(navigation_id, ukm::SourceIdType::NAVIGATION_ID);
-  PostToGraph(FROM_HERE, &PageNodeImpl::SetUkmSourceId, page_node_.get(),
-              ukm_source_id_);
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE,
+      base::BindOnce(&PageNodeImpl::SetUkmSourceId,
+                     base::Unretained(page_node_.get()), ukm_source_id_));
 
   first_time_title_set_ = false;
   first_time_favicon_set_ = false;

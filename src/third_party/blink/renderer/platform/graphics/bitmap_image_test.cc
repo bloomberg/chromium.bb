@@ -606,7 +606,7 @@ class BitmapImageTestWithMockDecoder : public BitmapImageTest,
     BitmapImageTest::SetUp();
 
     auto decoder = std::make_unique<MockImageDecoder>(this);
-    decoder->SetSize(10, 10);
+    decoder->SetSize(10u, 10u);
     image_->SetDecoderForTesting(
         DeferredImageDecoder::CreateForTesting(std::move(decoder)));
   }
@@ -868,6 +868,29 @@ INSTANTIATE_TEST_SUITE_P(
     DecodedImageOrientationHistogramTest,
     DecodedImageOrientationHistogramTest,
     testing::ValuesIn(kDecodedImageOrientationHistogramTestParams));
+
+using DecodedImageDensitySizeCorrectionDetectedHistogramTest =
+    BitmapHistogramTest<bool>;
+
+TEST_P(DecodedImageDensitySizeCorrectionDetectedHistogramTest, bool) {
+  RunTest("Blink.DecodedImage.DensitySizeCorrectionDetected");
+}
+
+const DecodedImageDensitySizeCorrectionDetectedHistogramTest::ParamType
+    kDecodedImageDensitySizeCorrectionHistogramTestParams[] = {
+        {"exif-resolution-none.jpg", false},
+        {"exif-resolution-invalid-cm.jpg", false},
+        {"exif-resolution-invalid-no-match.jpg", false},
+        {"exif-resolution-invalid-partial.jpg", false},
+        {"exif-resolution-no-change.jpg", false},
+        {"exif-resolution-valid-hires.jpg", true},
+        {"exif-resolution-valid-lores.jpg", true},
+        {"exif-resolution-valid-non-uniform.jpg", true}};
+
+INSTANTIATE_TEST_SUITE_P(
+    DecodedImageDensitySizeCorrectionDetectedHistogramTest,
+    DecodedImageDensitySizeCorrectionDetectedHistogramTest,
+    testing::ValuesIn(kDecodedImageDensitySizeCorrectionHistogramTestParams));
 
 using DecodedImageDensityHistogramTestKiBWeighted = BitmapHistogramTest<int>;
 

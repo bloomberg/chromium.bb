@@ -16,30 +16,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "TRYJOB DO NOT RETRY",
-    "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@do_not_retry@true@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python",
-      "-u",
-      "import sys; sys.exit(1)"
-    ],
-    "name": "fail",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@foo@@@",
-      "@@@SET_BUILD_PROPERTY@failure_hash@\"622c0c52e65e6d0dc78957dd113ad343e57ae6d2\"@@@",
-      "@@@STEP_FAILURE@@@"
-    ]
-  },
-  {
-    "failure": {
-      "failure": {},
-      "humanReason": "Step('fail') (retcode: 1)"
-    },
     "name": "$result"
   }
 ]

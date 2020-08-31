@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/load_flags.h"
@@ -28,8 +29,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/static_http_user_agent_settings.h"
-#include "net/url_request/url_request_status.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/zlib/google/compression_utils.h"
 
@@ -100,8 +99,8 @@ HttpBridge::HttpBridge(
       pending_url_loader_factory_(std::move(pending_url_loader_factory)),
       network_task_runner_(g_io_capable_task_runner_for_tests.Get()
                                ? g_io_capable_task_runner_for_tests.Get()
-                               : base::CreateSequencedTaskRunner(
-                                     {base::ThreadPool(), base::MayBlock()})),
+                               : base::ThreadPool::CreateSequencedTaskRunner(
+                                     {base::MayBlock()})),
       network_time_update_callback_(network_time_update_callback) {}
 
 HttpBridge::~HttpBridge() {}
@@ -384,12 +383,10 @@ void HttpBridge::OnURLLoadCompleteInternal(
 
   if (fetch_state_.request_succeeded)
     LogTimeout(false);
-  base::UmaHistogramSparse(
-      "Sync.URLFetchResponse",
-      fetch_state_.request_succeeded
-          ? fetch_state_.http_status_code
-          : net::URLRequestStatus::FromError(fetch_state_.net_error_code)
-                .ToNetError());
+  base::UmaHistogramSparse("Sync.URLFetchResponse",
+                           fetch_state_.request_succeeded
+                               ? fetch_state_.http_status_code
+                               : fetch_state_.net_error_code);
   UMA_HISTOGRAM_LONG_TIMES("Sync.URLFetchTime",
                            fetch_state_.end_time - fetch_state_.start_time);
 

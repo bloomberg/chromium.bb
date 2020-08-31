@@ -184,8 +184,8 @@ class MockMultibufferDataSource : public MultibufferDataSource {
             std::move(url_data),
             &media_log_,
             host,
-            base::Bind(&MockMultibufferDataSource::set_downloading,
-                       base::Unretained(this))),
+            base::BindRepeating(&MockMultibufferDataSource::set_downloading,
+                                base::Unretained(this))),
         downloading_(false) {}
 
   bool downloading() { return downloading_; }
@@ -235,7 +235,7 @@ class MultibufferDataSourceTest : public testing::Test {
 
     response_generator_.reset(new TestResponseGenerator(gurl, file_size));
     EXPECT_CALL(*this, OnInitialize(expected));
-    data_source_->Initialize(base::Bind(
+    data_source_->Initialize(base::BindOnce(
         &MultibufferDataSourceTest::OnInitialize, base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
 
@@ -336,8 +336,8 @@ class MultibufferDataSourceTest : public testing::Test {
 
   void ReadAt(int64_t position, int64_t howmuch = kDataSize) {
     data_source_->Read(position, howmuch, buffer_,
-                       base::Bind(&MultibufferDataSourceTest::ReadCallback,
-                                  base::Unretained(this)));
+                       base::BindOnce(&MultibufferDataSourceTest::ReadCallback,
+                                      base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -888,8 +888,8 @@ TEST_F(MultibufferDataSourceTest, StopDuringRead) {
 
   uint8_t buffer[256];
   data_source_->Read(kDataSize, base::size(buffer), buffer,
-                     base::Bind(&MultibufferDataSourceTest::ReadCallback,
-                                base::Unretained(this)));
+                     base::BindOnce(&MultibufferDataSourceTest::ReadCallback,
+                                    base::Unretained(this)));
 
   // The outstanding read should fail before the stop callback runs.
   {
@@ -1000,8 +1000,8 @@ TEST_F(MultibufferDataSourceTest, Http_ShareData) {
   // This call would not be expected if we were not sharing data.
   EXPECT_CALL(host2, SetTotalBytes(response_generator_->content_length()));
   EXPECT_CALL(host2, AddBufferedByteRange(0, kDataSize * 2));
-  source2.Initialize(base::Bind(&MultibufferDataSourceTest::OnInitialize,
-                                base::Unretained(this)));
+  source2.Initialize(base::BindOnce(&MultibufferDataSourceTest::OnInitialize,
+                                    base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   // Always loading after initialize.
@@ -1282,8 +1282,8 @@ TEST_F(MultibufferDataSourceTest,
   ReceiveData(kDataSize);
   EXPECT_EQ(data_source_->downloading(), false);
   data_source_->Read(kDataSize * 10, kDataSize, buffer_,
-                     base::Bind(&MultibufferDataSourceTest::ReadCallback,
-                                base::Unretained(this)));
+                     base::BindOnce(&MultibufferDataSourceTest::ReadCallback,
+                                    base::Unretained(this)));
   data_source_->OnBufferingHaveEnough(false);
   EXPECT_TRUE(active_loader_allownull());
   EXPECT_CALL(*this, ReadCallback(-1));
@@ -1362,8 +1362,8 @@ TEST_F(MultibufferDataSourceTest, SeekPastEOF) {
 
   response_generator_.reset(new TestResponseGenerator(gurl, kDataSize + 1));
   EXPECT_CALL(*this, OnInitialize(true));
-  data_source_->Initialize(base::Bind(&MultibufferDataSourceTest::OnInitialize,
-                                      base::Unretained(this)));
+  data_source_->Initialize(base::BindOnce(
+      &MultibufferDataSourceTest::OnInitialize, base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   // Not really loading until after OnInitialize is called.
@@ -1738,8 +1738,8 @@ TEST_F(MultibufferDataSourceTest, Http_CheckLoadingTransition) {
 
   response_generator_.reset(new TestResponseGenerator(gurl, kDataSize * 1));
   EXPECT_CALL(*this, OnInitialize(true));
-  data_source_->Initialize(base::Bind(&MultibufferDataSourceTest::OnInitialize,
-                                      base::Unretained(this)));
+  data_source_->Initialize(base::BindOnce(
+      &MultibufferDataSourceTest::OnInitialize, base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   // Not really loading until after OnInitialize is called.
@@ -1758,8 +1758,8 @@ TEST_F(MultibufferDataSourceTest, Http_CheckLoadingTransition) {
 
   EXPECT_CALL(*this, ReadCallback(1));
   data_source_->Read(kDataSize, 2, buffer_,
-                     base::Bind(&MultibufferDataSourceTest::ReadCallback,
-                                base::Unretained(this)));
+                     base::BindOnce(&MultibufferDataSourceTest::ReadCallback,
+                                    base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   // Make sure we're not downloading anymore.

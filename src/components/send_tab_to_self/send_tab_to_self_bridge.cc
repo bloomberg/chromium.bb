@@ -8,11 +8,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/guid.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_service.h"
@@ -208,6 +209,9 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
     if (change->type() == syncer::EntityChange::ACTION_DELETE) {
       LogApplySyncChangesStatus(UMAApplySyncChangesStatus::DELETE);
       if (entries_.find(guid) != entries_.end()) {
+        if (mru_entry_ && mru_entry_->GetGUID() == guid) {
+          mru_entry_ = nullptr;
+        }
         entries_.erase(change->storage_key());
         batch->DeleteData(guid);
         removed.push_back(change->storage_key());
@@ -215,7 +219,6 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
         LogApplySyncChangesStatus(UMAApplySyncChangesStatus::NOTIFY_DELETED);
       }
     } else {
-
       const sync_pb::SendTabToSelfSpecifics& specifics =
           change->data().specifics.send_tab_to_self();
 
@@ -546,23 +549,19 @@ void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryAdded(
 
   std::vector<const SendTabToSelfEntry*> new_local_entries;
 
-  if (base::FeatureList::IsEnabled(kSendTabToSelfBroadcast)) {
-    new_local_entries = new_entries;
-  } else {
-    // Only pass along entries that are not dismissed or opened, and are
-    // targeted at this device, which is determined by comparing the cache guid
-    // associated with the entry to each device's local list of recently used
-    // cache_guids
-    DCHECK(!change_processor()->TrackedCacheGuid().empty());
-    for (const SendTabToSelfEntry* entry : new_entries) {
-      if (device_info_tracker_->IsRecentLocalCacheGuid(
-              entry->GetTargetDeviceSyncCacheGuid()) &&
-          !entry->GetNotificationDismissed() && !entry->IsOpened()) {
-        new_local_entries.push_back(entry);
-        LogLocalDeviceNotified(UMANotifyLocalDevice::LOCAL);
-      } else {
-        LogLocalDeviceNotified(UMANotifyLocalDevice::REMOTE);
-      }
+  // Only pass along entries that are not dismissed or opened, and are
+  // targeted at this device, which is determined by comparing the cache guid
+  // associated with the entry to each device's local list of recently used
+  // cache_guids
+  DCHECK(!change_processor()->TrackedCacheGuid().empty());
+  for (const SendTabToSelfEntry* entry : new_entries) {
+    if (device_info_tracker_->IsRecentLocalCacheGuid(
+            entry->GetTargetDeviceSyncCacheGuid()) &&
+        !entry->GetNotificationDismissed() && !entry->IsOpened()) {
+      new_local_entries.push_back(entry);
+      LogLocalDeviceNotified(UMANotifyLocalDevice::LOCAL);
+    } else {
+      LogLocalDeviceNotified(UMANotifyLocalDevice::REMOTE);
     }
   }
 
@@ -794,7 +793,7 @@ void SendTabToSelfBridge::DeleteEntries(const std::vector<GURL>& urls) {
 
   std::vector<std::string> removed_guids;
 
-  for (const GURL url : urls) {
+  for (const GURL& url : urls) {
     auto entry = entries_.begin();
     while (entry != entries_.end()) {
       bool to_delete = (url == entry->second->GetURL());

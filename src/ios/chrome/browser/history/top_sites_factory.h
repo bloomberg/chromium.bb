@@ -10,20 +10,19 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/refcounted_browser_state_keyed_service_factory.h"
 
+class ChromeBrowserState;
+
 namespace history {
 class TopSites;
 }
 
 namespace ios {
-
-class ChromeBrowserState;
-
 // TopSitesFactory is a singleton that associates history::TopSites instance to
 // ChromeBrowserState.
 class TopSitesFactory : public RefcountedBrowserStateKeyedServiceFactory {
  public:
   static scoped_refptr<history::TopSites> GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
   static TopSitesFactory* GetInstance();
 
  private:

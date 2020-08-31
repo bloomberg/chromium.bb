@@ -70,6 +70,7 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
 
   // InkDrop:
   void HostSizeChanged(const gfx::Size& new_size) override;
+  void HostTransformChanged(const gfx::Transform& new_transform) override;
   InkDropState GetTargetInkDropState() const override;
   void AnimateToState(InkDropState ink_drop_state) override;
   void SetHoverHighlightFadeDuration(base::TimeDelta duration) override;
@@ -171,12 +172,10 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
     std::unique_ptr<HighlightState> CreateStartState();
 
     std::unique_ptr<HighlightState> CreateHiddenState(
-        base::TimeDelta animation_duration,
-        bool explode);
+        base::TimeDelta animation_duration);
 
     std::unique_ptr<HighlightState> CreateVisibleState(
-        base::TimeDelta animation_duration,
-        bool explode);
+        base::TimeDelta animation_duration);
 
     InkDropImpl* ink_drop() { return ink_drop_; }
 
@@ -244,11 +243,8 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
 
   // Enables or disables the highlight state based on |should_highlight| and if
   // an animation is triggered it will be scheduled to have the given
-  // |animation_duration|. If |explode| is true the highlight will expand as it
-  // fades out. |explode| is ignored when |should_higlight| is true.
-  void SetHighlight(bool should_highlight,
-                    base::TimeDelta animation_duration,
-                    bool explode);
+  // |animation_duration|.
+  void SetHighlight(bool should_highlight, base::TimeDelta animation_duration);
 
   // Returns true if |this| the highlight should be visible based on the
   // hover/focus status.

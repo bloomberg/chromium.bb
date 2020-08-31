@@ -38,7 +38,9 @@ def main(argv):
   parser.add_option("--nano",
       help="Use to generate nano protos.", action='store_true')
   parser.add_option("--protoc-javalite-plugin-dir",
-      help="Path to protoc java lite plugin directory.")
+                    help="Path to protoc java lite plugin directory.")
+  parser.add_option("--import-dir", action="append", default=[],
+                    help="Extra import directory for protos, can be repeated.")
   options, args = parser.parse_args(argv)
 
   build_utils.CheckOptions(options, parser, ['protoc', 'proto_path'])
@@ -46,9 +48,9 @@ def main(argv):
     print('One of --java-out-dir or --srcjar must be specified.')
     return 1
 
-  if not options.nano and not options.protoc_javalite_plugin_dir:
-    print('One of --nano or --protoc-javalite-plugin-dir must be specified.')
-    return 1
+  proto_path_args = ['--proto_path', options.proto_path]
+  for path in options.import_dir:
+    proto_path_args += ["--proto_path", path]
 
   with build_utils.TempDir() as temp_dir:
     if options.nano:
@@ -61,15 +63,22 @@ def main(argv):
 
     custom_env = os.environ.copy()
     if options.protoc_javalite_plugin_dir:
-      # if we are generating lite protos, then the lite plugin needs to be in the path when protoc
-      # is called. See https://github.com/protocolbuffers/protobuf/blob/master/java/lite.md
+      # If we are generating lite protos, then the lite plugin needs to be in
+      # the path when protoc is called. See
+      # https://github.com/protocolbuffers/protobuf/blob/master/java/lite.md
       custom_env['PATH'] = '{}:{}'.format(
-          os.path.abspath(options.protoc_javalite_plugin_dir), custom_env['PATH'])
+          os.path.abspath(options.protoc_javalite_plugin_dir),
+          custom_env['PATH'])
 
     # Generate Java files using protoc.
     build_utils.CheckOutput(
-        [options.protoc, '--proto_path', options.proto_path, out_arg]
-        + args, env=custom_env)
+        [options.protoc] + proto_path_args + [out_arg] + args,
+        env=custom_env,
+        # protoc generates superfluous warnings about LITE_RUNTIME deprecation
+        # even though we are using the new non-deprecated method.
+        stderr_filter=lambda output: build_utils.FilterLines(
+            output, '|'.join([r'optimize_for = LITE_RUNTIME', r'java/lite\.md'])
+        ))
 
     if options.java_out_dir:
       build_utils.DeleteDirectory(options.java_out_dir)

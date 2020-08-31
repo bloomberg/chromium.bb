@@ -25,6 +25,11 @@ Polymer({
       observer: 'delayChanged_',
     },
 
+    disabled: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * Icons to be displayed on the FAB. Multiple icons should be separated with
      * spaces, and will be cycled through every time the FAB is clicked.
@@ -83,7 +88,7 @@ Polymer({
    * @return {!Array<string>} Array of icon name strings
    * @private
    */
-  computeIconsArray_: function(icons) {
+  computeIconsArray_(icons) {
     return icons.split(' ');
   },
 
@@ -93,7 +98,7 @@ Polymer({
    * @return {string} Icon name for the currently visible icon.
    * @private
    */
-  computeVisibleIcon_: function(icons, activeIndex) {
+  computeVisibleIcon_(icons, activeIndex) {
     return icons[activeIndex];
   },
 
@@ -103,25 +108,25 @@ Polymer({
    * @return {string} Tooltip for the currently visible icon.
    * @private
    */
-  computeVisibleTooltip_: function(tooltips, activeIndex) {
+  computeVisibleTooltip_(tooltips, activeIndex) {
     return tooltips === undefined ? '' : tooltips[activeIndex];
   },
 
   /** @private */
-  delayChanged_: function() {
+  delayChanged_() {
     this.$.wrapper.style.transitionDelay = this.delay + 'ms';
   },
 
-  show: function() {
+  show() {
     this.closed_ = false;
   },
 
-  hide: function() {
+  hide() {
     this.closed_ = true;
   },
 
   /** @private */
-  fireClick_: function() {
+  fireClick_() {
     // We cannot attach an on-click to the entire viewer-zoom-button, as this
     // will include clicks on the margins. Instead, proxy clicks on the FAB
     // through.

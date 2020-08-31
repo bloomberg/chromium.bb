@@ -62,15 +62,15 @@ CULineInfoHandler::CULineInfoHandler(std::vector<SourceFileInfo>* files,
   files->push_back(s);
 }
 
-void CULineInfoHandler::DefineDir(const string& name, uint32 dir_num) {
+void CULineInfoHandler::DefineDir(const string& name, uint32_t dir_num) {
   // These should never come out of order, actually
   assert(dir_num == dirs_->size());
   dirs_->push_back(name);
 }
 
 void CULineInfoHandler::DefineFile(const string& name,
-                                   int32 file_num, uint32 dir_num,
-                                   uint64 mod_time, uint64 length) {
+                                   int32 file_num, uint32_t dir_num,
+                                   uint64_t mod_time, uint64_t length) {
   assert(dir_num >= 0);
   assert(dir_num < dirs_->size());
 
@@ -93,8 +93,9 @@ void CULineInfoHandler::DefineFile(const string& name,
   }
 }
 
-void CULineInfoHandler::AddLine(uint64 address, uint64 length, uint32 file_num,
-                                uint32 line_num, uint32 column_num) {
+void CULineInfoHandler::AddLine(uint64_t address, uint64_t length,
+                                uint32_t file_num, uint32_t line_num,
+                                uint32_t column_num) {
   if (file_num < files_->size()) {
     linemap_->insert(
         std::make_pair(address,
@@ -109,11 +110,11 @@ void CULineInfoHandler::AddLine(uint64 address, uint64 length, uint32 file_num,
   }
 }
 
-bool CUFunctionInfoHandler::StartCompilationUnit(uint64 offset,
-                                                 uint8 address_size,
-                                                 uint8 offset_size,
-                                                 uint64 cu_length,
-                                                 uint8 dwarf_version) {
+bool CUFunctionInfoHandler::StartCompilationUnit(uint64_t offset,
+                                                 uint8_t address_size,
+                                                 uint8_t offset_size,
+                                                 uint64_t cu_length,
+                                                 uint8_t dwarf_version) {
   current_compilation_unit_offset_ = offset;
   return true;
 }
@@ -123,7 +124,7 @@ bool CUFunctionInfoHandler::StartCompilationUnit(uint64 offset,
 // subroutines. For line info, the DW_AT_stmt_list lives in the
 // compile unit tag.
 
-bool CUFunctionInfoHandler::StartDIE(uint64 offset, enum DwarfTag tag) {
+bool CUFunctionInfoHandler::StartDIE(uint64_t offset, enum DwarfTag tag) {
   switch (tag) {
     case DW_TAG_subprogram:
     case DW_TAG_inlined_subroutine: {
@@ -146,7 +147,7 @@ bool CUFunctionInfoHandler::StartDIE(uint64 offset, enum DwarfTag tag) {
 
 // Only care about the name attribute for functions
 
-void CUFunctionInfoHandler::ProcessAttributeString(uint64 offset,
+void CUFunctionInfoHandler::ProcessAttributeString(uint64_t offset,
                                                    enum DwarfAttribute attr,
                                                    enum DwarfForm form,
                                                    const string &data) {
@@ -158,10 +159,10 @@ void CUFunctionInfoHandler::ProcessAttributeString(uint64 offset,
   }
 }
 
-void CUFunctionInfoHandler::ProcessAttributeUnsigned(uint64 offset,
+void CUFunctionInfoHandler::ProcessAttributeUnsigned(uint64_t offset,
                                                      enum DwarfAttribute attr,
                                                      enum DwarfForm form,
-                                                     uint64 data) {
+                                                     uint64_t data) {
   if (attr == DW_AT_stmt_list) {
     SectionMap::const_iterator iter = sections_.find("__debug_line");
     assert(iter != sections_.end());
@@ -193,10 +194,10 @@ void CUFunctionInfoHandler::ProcessAttributeUnsigned(uint64 offset,
   }
 }
 
-void CUFunctionInfoHandler::ProcessAttributeReference(uint64 offset,
+void CUFunctionInfoHandler::ProcessAttributeReference(uint64_t offset,
                                                       enum DwarfAttribute attr,
                                                       enum DwarfForm form,
-                                                      uint64 data) {
+                                                      uint64_t data) {
   if (current_function_info_) {
     switch (attr) {
       case DW_AT_specification: {
@@ -225,7 +226,7 @@ void CUFunctionInfoHandler::ProcessAttributeReference(uint64 offset,
   }
 }
 
-void CUFunctionInfoHandler::EndDIE(uint64 offset) {
+void CUFunctionInfoHandler::EndDIE(uint64_t offset) {
   if (current_function_info_ && current_function_info_->lowpc)
     address_to_funcinfo_->insert(std::make_pair(current_function_info_->lowpc,
                                                 current_function_info_));

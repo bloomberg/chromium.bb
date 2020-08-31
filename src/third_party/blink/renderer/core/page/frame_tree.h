@@ -69,7 +69,7 @@ class CORE_EXPORT FrameTree final {
 
    public:
     FindResult(Frame* f, bool is_new) : frame(f), new_window(is_new) {}
-    Member<Frame> frame;
+    Frame* frame;
     bool new_window;
   };
   FindResult FindOrCreateFrameForNavigation(FrameLoadRequest&,
@@ -87,7 +87,7 @@ class CORE_EXPORT FrameTree final {
   unsigned ScopedChildCount() const;
   void InvalidateScopedChildCount();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   Frame* FindFrameForNavigationInternal(const AtomicString& name,

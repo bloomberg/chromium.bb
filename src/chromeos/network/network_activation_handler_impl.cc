@@ -28,33 +28,33 @@ void NetworkActivationHandlerImpl::Activate(
     const std::string& carrier,
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) {
-  NET_LOG_USER("ActivateNetwork", service_path + ": '" + carrier + "'");
+  NET_LOG(USER) << "ActivateNetwork: " << NetworkPathId(service_path)
+                << ": Carrier: " << carrier;
   ShillServiceClient::Get()->ActivateCellularModem(
       dbus::ObjectPath(service_path), carrier,
-      base::Bind(&NetworkActivationHandlerImpl::HandleShillSuccess, AsWeakPtr(),
-                 service_path, success_callback),
-      base::Bind(&network_handler::ShillErrorCallbackFunction, kErrorShillError,
-                 service_path, error_callback));
+      base::BindOnce(&NetworkActivationHandlerImpl::HandleShillSuccess,
+                     AsWeakPtr(), success_callback),
+      base::BindOnce(&network_handler::ShillErrorCallbackFunction,
+                     kErrorShillError, service_path, error_callback));
 }
 
 void NetworkActivationHandlerImpl::CompleteActivation(
     const std::string& service_path,
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) {
-  NET_LOG_USER("CompleteActivation", service_path);
+  NET_LOG(USER) << "CompleteActivation: " << NetworkPathId(service_path);
   ShillServiceClient::Get()->CompleteCellularActivation(
       dbus::ObjectPath(service_path),
-      base::Bind(&NetworkActivationHandlerImpl::HandleShillSuccess, AsWeakPtr(),
-                 service_path, success_callback),
-      base::Bind(&network_handler::ShillErrorCallbackFunction, kErrorShillError,
-                 service_path, error_callback));
+      base::BindOnce(&NetworkActivationHandlerImpl::HandleShillSuccess,
+                     AsWeakPtr(), success_callback),
+      base::BindOnce(&network_handler::ShillErrorCallbackFunction,
+                     kErrorShillError, service_path, error_callback));
 }
 
 void NetworkActivationHandlerImpl::HandleShillSuccess(
-    const std::string& service_path,
-    const base::Closure& success_callback) {
+    base::OnceClosure success_callback) {
   if (!success_callback.is_null())
-    success_callback.Run();
+    std::move(success_callback).Run();
 }
 
 }  // namespace chromeos

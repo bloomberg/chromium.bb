@@ -85,6 +85,7 @@ bool StructTraits<viz::mojom::RenderPassQuadStateDataView, viz::DrawQuad>::Read(
   }
   quad->force_anti_aliasing_off = data.force_anti_aliasing_off();
   quad->backdrop_filter_quality = data.backdrop_filter_quality();
+  quad->can_use_backdrop_filter_cache = data.can_use_backdrop_filter_cache();
   return true;
 }
 
@@ -106,8 +107,7 @@ bool StructTraits<viz::mojom::StreamVideoQuadStateDataView, viz::DrawQuad>::
       data.resource_id();
   quad->resources.count = 1;
   return data.ReadResourceSizeInPixels(
-             &quad->overlay_resources.size_in_pixels
-                  [viz::StreamVideoDrawQuad::kResourceIdIndex]) &&
+             &quad->overlay_resources.size_in_pixels) &&
          data.ReadUvTopLeft(&quad->uv_top_left) &&
          data.ReadUvBottomRight(&quad->uv_bottom_right);
 }
@@ -132,19 +132,20 @@ bool StructTraits<viz::mojom::TextureQuadStateDataView, viz::DrawQuad>::Read(
 
   quad->resources.ids[viz::TextureDrawQuad::kResourceIdIndex] =
       data.resource_id();
-  if (!data.ReadResourceSizeInPixels(
-          &quad->overlay_resources
-               .size_in_pixels[viz::TextureDrawQuad::kResourceIdIndex])) {
+  if (!data.ReadResourceSizeInPixels(&quad->overlay_resources.size_in_pixels)) {
     return false;
   }
 
   quad->resources.count = 1;
   quad->premultiplied_alpha = data.premultiplied_alpha();
+  gfx::ProtectedVideoType protected_video_type =
+      gfx::ProtectedVideoType::kClear;
   if (!data.ReadUvTopLeft(&quad->uv_top_left) ||
       !data.ReadUvBottomRight(&quad->uv_bottom_right) ||
-      !data.ReadProtectedVideoType(&quad->protected_video_type)) {
+      !data.ReadProtectedVideoType(&protected_video_type)) {
     return false;
   }
+  quad->protected_video_type = protected_video_type;
   quad->background_color = data.background_color();
   base::span<float> vertex_opacity_array(quad->vertex_opacity);
   if (!data.ReadVertexOpacity(&vertex_opacity_array))
@@ -226,6 +227,12 @@ bool StructTraits<viz::mojom::DrawQuadDataView, viz::DrawQuad>::Read(
   if (!data.ReadRect(&out->rect) || !data.ReadVisibleRect(&out->visible_rect)) {
     return false;
   }
+  // Reject quads with areas larger than int32.
+  if (!out->rect.size().GetCheckedArea().IsValid())
+    return false;
+  if (!out->rect.Contains(out->visible_rect))
+    return false;
+
   out->needs_blending = data.needs_blending();
   return data.ReadDrawQuadState(out);
 }

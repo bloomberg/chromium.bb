@@ -21,11 +21,10 @@
 #include "base/metrics/field_trial_params.h"
 #include "cc/layers/layer.h"
 #include "chrome/android/chrome_jni_headers/TabContentManager_jni.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/compositor/layer/thumbnail_layer.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/android/thumbnail/thumbnail.h"
-#include "content/public/browser/interstitial_page.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
+#include "chrome/browser/thumbnail/cc/thumbnail.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -130,12 +129,14 @@ TabContentManager::TabContentManager(JNIEnv* env,
                                      jboolean use_approximation_thumbnail,
                                      jboolean save_jpeg_thumbnails)
     : weak_java_tab_content_manager_(env, obj) {
+  double jpeg_aspect_ratio = base::GetFieldTrialParamByFeatureAsDouble(
+      chrome::android::kTabGridLayoutAndroid, "thumbnail_aspect_ratio", 1.0);
   thumbnail_cache_ = std::make_unique<ThumbnailCache>(
       static_cast<size_t>(default_cache_size),
       static_cast<size_t>(approximation_cache_size),
       static_cast<size_t>(compression_queue_max_size),
       static_cast<size_t>(write_queue_max_size), use_approximation_thumbnail,
-      save_jpeg_thumbnails);
+      save_jpeg_thumbnails, jpeg_aspect_ratio);
   thumbnail_cache_->AddThumbnailCacheObserver(this);
 }
 
@@ -240,14 +241,6 @@ content::RenderWidgetHostView* TabContentManager::GetRwhvForTab(
   DCHECK(web_contents);
 
   content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
-  if (web_contents->ShowingInterstitialPage()) {
-    if (!web_contents->GetInterstitialPage()->GetMainFrame())
-      return nullptr;
-
-    rvh = web_contents->GetInterstitialPage()
-              ->GetMainFrame()
-              ->GetRenderViewHost();
-  }
   if (!rvh)
     return nullptr;
 
@@ -390,7 +383,7 @@ void TabContentManager::SendThumbnailToJava(
     base::android::ScopedJavaGlobalRef<jobject> j_callback,
     bool need_downsampling,
     bool result,
-    SkBitmap bitmap) {
+    const SkBitmap& bitmap) {
   ScopedJavaLocalRef<jobject> j_bitmap;
   if (!bitmap.isNull() && result) {
     // In portrait mode, we want to show thumbnails in squares.

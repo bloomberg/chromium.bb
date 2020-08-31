@@ -11,13 +11,13 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import android.support.test.filters.MediumTest;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.After;
 import org.junit.Before;
@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
@@ -144,7 +144,7 @@ public class CreditCardAccessorySheetViewTest {
         assertThat(mView.get().getChildCount(), is(0));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            UserInfo infoWithUnclickableField = new UserInfo("", null);
+            UserInfo infoWithUnclickableField = new UserInfo("", false);
             infoWithUnclickableField.addField(
                     new UserInfoField("4111111111111111", "4111111111111111", "", false, null));
             infoWithUnclickableField.addField(new UserInfoField("", "", "month", false, null));
@@ -210,7 +210,7 @@ public class CreditCardAccessorySheetViewTest {
 
     private UserInfo createInfo(
             String number, String month, String year, String name, AtomicBoolean clickRecorder) {
-        UserInfo info = new UserInfo("", null);
+        UserInfo info = new UserInfo("", false);
         info.addField(
                 new UserInfoField(number, number, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(month, month, "", false, item -> clickRecorder.set(true)));

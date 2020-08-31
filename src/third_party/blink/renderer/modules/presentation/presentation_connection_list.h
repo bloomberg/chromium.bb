@@ -18,7 +18,7 @@ namespace blink {
 // presentation controllers.
 class MODULES_EXPORT PresentationConnectionList final
     : public EventTargetWithInlineData,
-      public ContextClient {
+      public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PresentationConnectionList);
 
@@ -29,7 +29,7 @@ class MODULES_EXPORT PresentationConnectionList final
   // EventTarget implementation.
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override {
-    return ContextClient::GetExecutionContext();
+    return ExecutionContextClient::GetExecutionContext();
   }
 
   // PresentationConnectionList.idl implementation.
@@ -43,7 +43,7 @@ class MODULES_EXPORT PresentationConnectionList final
   void DispatchConnectionAvailableEvent(PresentationConnection*);
   bool IsEmpty();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   // EventTarget implementation.

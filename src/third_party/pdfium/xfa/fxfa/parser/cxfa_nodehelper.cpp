@@ -48,7 +48,7 @@ bool CXFA_NodeHelper::CreateNodeForCondition(const WideString& wsCondition) {
     m_iCreateFlag = XFA_ResolveNode_RSType_CreateNodeAll;
   } else {
     m_iCreateFlag = XFA_ResolveNode_RSType_CreateNodeOne;
-    wsIndex = wsCondition.Mid(i, szLen - 1 - i);
+    wsIndex = wsCondition.Substr(i, szLen - 1 - i);
   }
   int32_t iCount = wsIndex.GetInteger();
   if (iCount < 0)
@@ -69,13 +69,13 @@ bool CXFA_NodeHelper::CreateNode(const WideString& wsName,
   bool bIsClassName = false;
   bool bResult = false;
   if (!wsNameView.IsEmpty() && wsNameView[0] == '!') {
-    wsNameView = wsNameView.Right(wsNameView.GetLength() - 1);
+    wsNameView = wsNameView.Last(wsNameView.GetLength() - 1);
     m_pCreateParent = ToNode(
         pScriptContext->GetDocument()->GetXFAObject(XFA_HASHCODE_Datasets));
   }
   if (!wsNameView.IsEmpty() && wsNameView[0] == '#') {
     bIsClassName = true;
-    wsNameView = wsNameView.Right(wsNameView.GetLength() - 1);
+    wsNameView = wsNameView.Last(wsNameView.GetLength() - 1);
   }
   if (wsNameView.IsEmpty())
     return false;

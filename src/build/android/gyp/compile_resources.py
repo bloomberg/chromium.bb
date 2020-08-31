@@ -16,38 +16,36 @@ import argparse
 import collections
 import contextlib
 import filecmp
-import multiprocessing.pool
+import hashlib
+import logging
+import multiprocessing.dummy
 import os
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import textwrap
+import time
 import zipfile
 from xml.etree import ElementTree
 
 from util import build_utils
 from util import diff_utils
 from util import manifest_utils
+from util import md5_check
+from util import protoresources
 from util import resource_utils
 
-# Name of environment variable that can be used to force this script to
-# put temporary resource files into specific sub-directories, instead of
-# temporary ones.
-_ENV_DEBUG_VARIABLE = 'ANDROID_DEBUG_TEMP_RESOURCES_DIR'
-
-# Import jinja2 from third_party/jinja2
-sys.path.insert(1, os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party'))
-from jinja2 import Template # pylint: disable=F0401
-
 # Pngs that we shouldn't convert to webp. Please add rationale when updating.
-_PNG_WEBP_BLACKLIST_PATTERN = re.compile('|'.join([
+_PNG_WEBP_EXCLUSION_PATTERN = re.compile('|'.join([
     # Crashes on Galaxy S5 running L (https://crbug.com/807059).
     r'.*star_gray\.png',
     # Android requires pngs for 9-patch images.
     r'.*\.9\.png',
     # Daydream requires pngs for icon files.
-    r'.*daydream_icon_.*\.png']))
+    r'.*daydream_icon_.*\.png'
+]))
 
 
 def _ParseArgs(args):
@@ -63,14 +61,30 @@ def _ParseArgs(args):
   input_opts.add_argument(
       '--android-manifest', required=True, help='AndroidManifest.xml path.')
   input_opts.add_argument(
-      '--android-manifest-expected',
-      help='Expected contents for the final manifest.')
+      '--expected-file',
+      help='Expected contents for the check. If'
+      '--android-manifest-verify-diff-base is set, this is a diff file. If'
+      'not, this is a AndroidManifest file.')
   input_opts.add_argument(
       '--android-manifest-normalized', help='Normalized manifest.')
   input_opts.add_argument(
       '--android-manifest-expectations-failure-file',
       help='Write to this file if expected manifest contents do not match '
       'final manifest contents.')
+  input_opts.add_argument(
+      '--fail-on-expectations',
+      action="store_true",
+      help='When passed, fails the build on AndroidManifest expectation '
+      'mismatches.')
+  input_opts.add_argument(
+      '--expected-manifest-base-expectation',
+      help='When we expect the actual normalized manifest is different from'
+      'the file from --android-manifest-expected, this file specifies the'
+      'difference.')
+  input_opts.add_argument(
+      '--only-verify-expectations',
+      action='store_true',
+      help='If passed, only verify the android manifest expectation and exit.')
   input_opts.add_argument(
       '--r-java-root-package-name',
       default='base',
@@ -108,18 +122,18 @@ def _ParseArgs(args):
       'only used for apks under test.')
 
   input_opts.add_argument(
-      '--shared-resources-whitelist',
-      help='An R.txt file acting as a whitelist for resources that should be '
-           'non-final and have their package ID changed at runtime in R.java. '
-           'Implies and overrides --shared-resources.')
+      '--shared-resources-allowlist',
+      help='An R.txt file acting as a allowlist for resources that should be '
+      'non-final and have their package ID changed at runtime in R.java. '
+      'Implies and overrides --shared-resources.')
 
   input_opts.add_argument(
-      '--shared-resources-whitelist-locales',
+      '--shared-resources-allowlist-locales',
       default='[]',
       help='Optional GN-list of locales. If provided, all strings corresponding'
       ' to this locale list will be kept in the final output for the '
-      'resources identified through --shared-resources-whitelist, even '
-      'if --locale-whitelist is being used.')
+      'resources identified through --shared-resources-allowlist, even '
+      'if --locale-allowlist is being used.')
 
   input_opts.add_argument(
       '--use-resource-ids-path',
@@ -157,26 +171,32 @@ def _ParseArgs(args):
       '--manifest-package', help='Package name of the AndroidManifest.xml.')
 
   input_opts.add_argument(
-      '--locale-whitelist',
+      '--locale-allowlist',
       default='[]',
       help='GN list of languages to include. All other language configs will '
-          'be stripped out. List may include a combination of Android locales '
-          'or Chrome locales.')
-
-  input_opts.add_argument('--resource-blacklist-regex', default='',
-                          help='Do not include matching drawables.')
-
+      'be stripped out. List may include a combination of Android locales '
+      'or Chrome locales.')
   input_opts.add_argument(
-      '--resource-blacklist-exceptions',
+      '--resource-exclusion-regex',
+      default='',
+      help='File-based filter for resources (applied before compiling)')
+  input_opts.add_argument(
+      '--resource-exclusion-exceptions',
       default='[]',
-      help='GN list of globs that say which blacklisted images to include even '
-           'when --resource-blacklist-regex is set.')
+      help='GN list of globs that say which files to include even '
+      'when --resource-exclusion-regex is set.')
+  input_opts.add_argument(
+      '--values-filter-rules',
+      help='GN list of source_glob:regex for filtering resources after they '
+      'are compiled. Use this to filter out entries within values/ files.')
 
   input_opts.add_argument('--png-to-webp', action='store_true',
                           help='Convert png files to webp format.')
 
   input_opts.add_argument('--webp-binary', default='',
                           help='Path to the cwebp binary.')
+  input_opts.add_argument(
+      '--webp-cache-dir', help='The directory to store webp image cache.')
 
   input_opts.add_argument(
       '--no-xml-namespaces',
@@ -230,15 +250,22 @@ def _ParseArgs(args):
       help='Path to file produced by aapt2 that maps original resource paths '
       'to shortened resource paths inside the apk or module.')
 
+  input_opts.add_argument(
+      '--is-bundle-module',
+      action='store_true',
+      help='Whether resources are being generated for a bundle module.')
+
   options = parser.parse_args(args)
 
   resource_utils.HandleCommonOptions(options)
 
-  options.locale_whitelist = build_utils.ParseGnList(options.locale_whitelist)
-  options.shared_resources_whitelist_locales = build_utils.ParseGnList(
-      options.shared_resources_whitelist_locales)
-  options.resource_blacklist_exceptions = build_utils.ParseGnList(
-      options.resource_blacklist_exceptions)
+  options.locale_allowlist = build_utils.ParseGnList(options.locale_allowlist)
+  options.shared_resources_allowlist_locales = build_utils.ParseGnList(
+      options.shared_resources_allowlist_locales)
+  options.resource_exclusion_exceptions = build_utils.ParseGnList(
+      options.resource_exclusion_exceptions)
+  options.values_filter_rules = build_utils.ParseGnList(
+      options.values_filter_rules)
   options.extra_main_r_text_files = build_utils.ParseGnList(
       options.extra_main_r_text_files)
 
@@ -259,23 +286,14 @@ def _ParseArgs(args):
   return options
 
 
-def _SortZip(original_path, sorted_path):
-  """Generate new zip archive by sorting all files in the original by name."""
-  with zipfile.ZipFile(sorted_path, 'w') as sorted_zip, \
-      zipfile.ZipFile(original_path, 'r') as original_zip:
-    for info in sorted(original_zip.infolist(), key=lambda i: i.filename):
-      sorted_zip.writestr(info, original_zip.read(info))
-
-
 def _IterFiles(root_dir):
   for root, _, files in os.walk(root_dir):
     for f in files:
       yield os.path.join(root, f)
 
 
-def _DuplicateZhResources(resource_dirs):
+def _DuplicateZhResources(resource_dirs, path_info):
   """Duplicate Taiwanese resources into Hong-Kong specific directory."""
-  renamed_paths = dict()
   for resource_dir in resource_dirs:
     # We use zh-TW resources for zh-HK (if we have zh-TW resources).
     for path in _IterFiles(resource_dir):
@@ -283,12 +301,12 @@ def _DuplicateZhResources(resource_dirs):
         hk_path = path.replace('zh-rTW', 'zh-rHK')
         build_utils.MakeDirectory(os.path.dirname(hk_path))
         shutil.copyfile(path, hk_path)
-        renamed_paths[os.path.relpath(hk_path, resource_dir)] = os.path.relpath(
-            path, resource_dir)
-  return renamed_paths
+        path_info.RegisterRename(
+            os.path.relpath(path, resource_dir),
+            os.path.relpath(hk_path, resource_dir))
 
 
-def _RenameLocaleResourceDirs(resource_dirs):
+def _RenameLocaleResourceDirs(resource_dirs, path_info):
   """Rename locale resource directories into standard names when necessary.
 
   This is necessary to deal with the fact that older Android releases only
@@ -317,11 +335,7 @@ def _RenameLocaleResourceDirs(resource_dirs):
 
   Args:
     resource_dirs: list of top-level resource directories.
-  Returns:
-    A dictionary mapping renamed paths to their original location
-    (e.g. '.../values-tl/strings.xml' -> ' .../values-fil/strings.xml').
   """
-  renamed_paths = dict()
   for resource_dir in resource_dirs:
     for path in _IterFiles(resource_dir):
       locale = resource_utils.FindLocaleInStringResourceFilePath(path)
@@ -342,23 +356,23 @@ def _RenameLocaleResourceDirs(resource_dirs):
           continue
         build_utils.MakeDirectory(os.path.dirname(path2))
         shutil.move(path, path2)
-        renamed_paths[os.path.relpath(path2, resource_dir)] = os.path.relpath(
-            path, resource_dir)
-  return renamed_paths
+        path_info.RegisterRename(
+            os.path.relpath(path, resource_dir),
+            os.path.relpath(path2, resource_dir))
 
 
-def _ToAndroidLocales(locale_whitelist, support_zh_hk):
+def _ToAndroidLocales(locale_allowlist, support_zh_hk):
   """Converts the list of Chrome locales to Android config locale qualifiers.
 
   Args:
-    locale_whitelist: A list of Chromium locale names.
+    locale_allowlist: A list of Chromium locale names.
     support_zh_hk: True if we need to support zh-HK by duplicating
       the zh-TW strings.
   Returns:
     A set of matching Android config locale qualifier names.
   """
   ret = set()
-  for locale in locale_whitelist:
+  for locale in locale_allowlist:
     locale = resource_utils.ToAndroidLocaleName(locale)
     if locale is None or ('-' in locale and '-r' not in locale):
       raise Exception('Unsupported Chromium locale name: %s' % locale)
@@ -371,18 +385,17 @@ def _ToAndroidLocales(locale_whitelist, support_zh_hk):
   # native side behavior where we use zh-TW resources when the locale is set to
   # zh-HK. See https://crbug.com/780847.
   if support_zh_hk:
-    assert not any('HK' in l for l in locale_whitelist), (
+    assert not any('HK' in l for l in locale_allowlist), (
         'Remove special logic if zh-HK is now supported (crbug.com/780847).')
     ret.add('zh-rHK')
   return set(ret)
 
 
-def _MoveImagesToNonMdpiFolders(res_root):
+def _MoveImagesToNonMdpiFolders(res_root, path_info):
   """Move images from drawable-*-mdpi-* folders to drawable-* folders.
 
   Why? http://crbug.com/289843
   """
-  renamed_paths = dict()
   for src_dir_name in os.listdir(res_root):
     src_components = src_dir_name.split('-')
     if src_components[0] != 'drawable' or 'mdpi' not in src_components:
@@ -402,9 +415,9 @@ def _MoveImagesToNonMdpiFolders(res_root):
       dst_file = os.path.join(dst_dir, src_file_name)
       assert not os.path.lexists(dst_file)
       shutil.move(src_file, dst_file)
-      renamed_paths[os.path.relpath(dst_file, res_root)] = os.path.relpath(
-          src_file, res_root)
-  return renamed_paths
+      path_info.RegisterRename(
+          os.path.relpath(src_file, res_root),
+          os.path.relpath(dst_file, res_root))
 
 
 def _FixManifest(options, temp_dir):
@@ -472,11 +485,23 @@ def _FixManifest(options, temp_dir):
   return debug_manifest_path, orig_package
 
 
-def _VerifyManifest(actual_manifest, expected_manifest, normalized_manifest,
-                    unexpected_manifest_failure_file):
+def _VerifyManifest(actual_manifest, expected_file, normalized_manifest,
+                    expected_manifest_base_expectation,
+                    unexpected_manifest_failure_file, fail_on_mismatch):
   with build_utils.AtomicOutput(normalized_manifest) as normalized_output:
     normalized_output.write(manifest_utils.NormalizeManifest(actual_manifest))
-  msg = diff_utils.DiffFileContents(expected_manifest, normalized_manifest)
+
+  if expected_manifest_base_expectation:
+    with tempfile.NamedTemporaryFile() as generated_diff:
+      actual_diff_content = diff_utils.GenerateDiffWithOnlyAdditons(
+          expected_manifest_base_expectation, normalized_manifest)
+      generated_diff.write(actual_diff_content)
+      generated_diff.flush()
+
+      msg = diff_utils.DiffFileContents(expected_file, generated_diff.name)
+  else:
+    msg = diff_utils.DiffFileContents(expected_file, normalized_manifest)
+
   if not msg:
     return
 
@@ -491,128 +516,185 @@ https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README
     with open(unexpected_manifest_failure_file, 'w') as f:
       f.write(msg_header)
       f.write(msg)
+  if fail_on_mismatch:
+    sys.exit(1)
 
 
-def _CreateKeepPredicate(resource_blacklist_regex,
-                         resource_blacklist_exceptions):
+def _CreateKeepPredicate(resource_exclusion_regex,
+                         resource_exclusion_exceptions):
   """Return a predicate lambda to determine which resource files to keep.
 
   Args:
-    resource_blacklist_regex: A regular expression describing all resources
+    resource_exclusion_regex: A regular expression describing all resources
       to exclude, except if they are mip-maps, or if they are listed
-      in |resource_blacklist_exceptions|.
-    resource_blacklist_exceptions: A list of glob patterns corresponding
-      to exceptions to the |resource_blacklist_regex|.
+      in |resource_exclusion_exceptions|.
+    resource_exclusion_exceptions: A list of glob patterns corresponding
+      to exceptions to the |resource_exclusion_regex|.
   Returns:
     A lambda that takes a path, and returns true if the corresponding file
     must be kept.
   """
   predicate = lambda path: os.path.basename(path)[0] != '.'
-  if resource_blacklist_regex == '':
+  if resource_exclusion_regex == '':
     # Do not extract dotfiles (e.g. ".gitkeep"). aapt ignores them anyways.
     return predicate
 
   # A simple predicate that only removes (returns False for) paths covered by
-  # the blacklist regex or listed as exceptions.
+  # the exclusion regex or listed as exceptions.
   return lambda path: (
-      not re.search(resource_blacklist_regex, path) or
-      build_utils.MatchesGlob(path, resource_blacklist_exceptions))
+      not re.search(resource_exclusion_regex, path) or
+      build_utils.MatchesGlob(path, resource_exclusion_exceptions))
 
 
-def _ConvertToWebP(webp_binary, png_files):
-  renamed_paths = dict()
-  pool = multiprocessing.pool.ThreadPool(10)
-  def convert_image(png_path_tuple):
-    png_path, original_dir = png_path_tuple
+def _ConvertToWebP(webp_binary, png_paths, path_info, webp_cache_dir):
+  pool = multiprocessing.dummy.Pool(10)
+
+  build_utils.MakeDirectory(webp_cache_dir)
+
+  cwebp_version = subprocess.check_output([webp_binary, '-version']).rstrip()
+  cwebp_arguments = ['-mt', '-quiet', '-m', '6', '-q', '100', '-lossless']
+
+  sha1_time = [0]
+  cwebp_time = [0]
+  cache_hits = [0]
+
+  def cal_sha1(png_path):
+    start = time.time()
+    with open(png_path, 'rb') as f:
+      png_content = f.read()
+
+    sha1_hex = hashlib.sha1(png_content).hexdigest()
+    sha1_time[0] += time.time() - start
+    return sha1_hex
+
+  def get_converted_image(png_path):
+    sha1_hash = cal_sha1(png_path)
+
+    webp_cache_path = os.path.join(
+        webp_cache_dir, '{}-{}-{}'.format(sha1_hash, cwebp_version,
+                                          ''.join(cwebp_arguments)))
     # No need to add an extension, android can load images fine without them.
     webp_path = os.path.splitext(png_path)[0]
-    args = [webp_binary, png_path, '-mt', '-quiet', '-m', '6', '-q', '100',
-        '-lossless', '-o', webp_path]
-    subprocess.check_call(args)
+
+    if os.path.exists(webp_cache_path):
+      cache_hits[0] += 1
+      os.link(webp_cache_path, webp_path)
+    else:
+      # We place the generated webp image to webp_path, instead of in the
+      # webp_cache_dir to avoid concurrency issues.
+      start = time.time()
+      args = [webp_binary, png_path] + cwebp_arguments + ['-o', webp_path]
+      subprocess.check_call(args)
+      cwebp_time[0] += time.time() - start
+
+      try:
+        os.link(webp_path, webp_cache_path)
+      except OSError:
+        # Because of concurrent run, a webp image may already exists in
+        # webp_cache_path.
+        pass
+
     os.remove(png_path)
-    renamed_paths[os.path.relpath(webp_path, original_dir)] = os.path.relpath(
-        png_path, original_dir)
+    original_dir = os.path.dirname(os.path.dirname(png_path))
+    path_info.RegisterRename(
+        os.path.relpath(png_path, original_dir),
+        os.path.relpath(webp_path, original_dir))
 
-  pool.map(convert_image, [f for f in png_files
-                           if not _PNG_WEBP_BLACKLIST_PATTERN.match(f[0])])
-  pool.close()
-  pool.join()
-  return renamed_paths
+  png_paths = [f for f in png_paths if not _PNG_WEBP_EXCLUSION_PATTERN.match(f)]
+  try:
+    pool.map(get_converted_image, png_paths)
+  finally:
+    pool.close()
+    pool.join()
+  logging.debug('png->webp: cache: %d/%d sha1 time: %.1fms cwebp time: %.1fms',
+                cache_hits[0], len(png_paths), sha1_time[0], cwebp_time[0])
 
 
-def _RemoveImageExtensions(directory):
+def _RemoveImageExtensions(directory, path_info):
   """Remove extensions from image files in the passed directory.
 
   This reduces binary size but does not affect android's ability to load the
   images.
-
-  Returns: dict[destination] -> source
   """
-  renamed_paths = {}
   for f in _IterFiles(directory):
     if (f.endswith('.png') or f.endswith('.webp')) and not f.endswith('.9.png'):
       path_with_extension = f
       path_no_extension = os.path.splitext(path_with_extension)[0]
       if path_no_extension != path_with_extension:
         shutil.move(path_with_extension, path_no_extension)
-        renamed_paths[os.path.relpath(path_no_extension, directory)] = (
-            os.path.relpath(path_with_extension, directory))
-  return renamed_paths
+        path_info.RegisterRename(
+            os.path.relpath(path_with_extension, directory),
+            os.path.relpath(path_no_extension, directory))
 
 
-def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
-  partials_dir = os.path.join(temp_dir, 'partials')
-  build_utils.MakeDirectory(partials_dir)
-  partial_compile_command = [
+def _CompileSingleDep(args):
+  index, dep_path, aapt2_path, partials_dir, exclusion_rules = args
+  basename = os.path.basename(dep_path)
+  unique_name = '{}_{}'.format(index, basename)
+  partial_path = os.path.join(partials_dir, '{}.zip'.format(unique_name))
+
+  compile_command = [
       aapt2_path,
       'compile',
       # TODO(wnwen): Turn this on once aapt2 forces 9-patch to be crunched.
       # '--no-crunch',
+      '--dir',
+      dep_path,
+      '-o',
+      partial_path
   ]
-  pool = multiprocessing.pool.ThreadPool(10)
 
-  def compile_partial(params):
-    index, dep_path = params
-    basename = os.path.basename(dep_path)
-    unique_name = '{}_{}'.format(index, basename)
-    partial_path = os.path.join(partials_dir, '{}.zip'.format(unique_name))
-    compile_command = (
-        partial_compile_command + ['--dir', dep_path, '-o', partial_path])
+  # There are resources targeting API-versions lower than our minapi. For
+  # various reasons it's easier to let aapt2 ignore these than for us to
+  # remove them from our build (e.g. it's from a 3rd party library).
+  build_utils.CheckOutput(
+      compile_command,
+      stderr_filter=lambda output: build_utils.FilterLines(
+          output, r'ignoring configuration .* for (styleable|attribute)'))
 
-    # There are resources targeting API-versions lower than our minapi. For
-    # various reasons it's easier to let aapt2 ignore these than for us to
-    # remove them from our build (e.g. it's from a 3rd party library).
-    build_utils.CheckOutput(
-        compile_command,
-        stderr_filter=lambda output:
-            build_utils.FilterLines(
-                output, r'ignoring configuration .* for (styleable|attribute)'))
-
-    # Sorting the files in the partial ensures deterministic output from the
-    # aapt2 link step which uses order of files in the partial.
-    sorted_partial_path = os.path.join(partials_dir,
-                                       unique_name + '.sorted.zip')
-    _SortZip(partial_path, sorted_partial_path)
-
-    return sorted_partial_path
-
-  partials = pool.map(compile_partial, enumerate(dep_subdirs))
-  pool.close()
-  pool.join()
-  return partials
+  # Filtering these files is expensive, so only apply filters to the partials
+  # that have been explicitly targeted.
+  keep_predicate = _CreateValuesKeepPredicate(exclusion_rules, dep_path)
+  if keep_predicate:
+    logging.debug('Applying .arsc filtering to %s', dep_path)
+    protoresources.StripUnwantedResources(partial_path, keep_predicate)
+  return partial_path
 
 
-def _CreateResourceInfoFile(renamed_paths, info_path, dependencies_res_zips):
-  lines = set()
+def _CompileDeps(aapt2_path, dep_subdirs, temp_dir, exclusion_rules):
+  partials_dir = os.path.join(temp_dir, 'partials')
+  build_utils.MakeDirectory(partials_dir)
+
+  def iter_params():
+    for i, dep_path in enumerate(dep_subdirs):
+      yield i, dep_path, aapt2_path, partials_dir, exclusion_rules
+
+  pool = multiprocessing.dummy.Pool(10)
+  try:
+    return pool.map(_CompileSingleDep, iter_params())
+  finally:
+    pool.close()
+    pool.join()
+
+
+def _CreateValuesKeepPredicate(exclusion_rules, dep_path):
+  patterns = [
+      x[1] for x in exclusion_rules
+      if build_utils.MatchesGlob(dep_path, [x[0]])
+  ]
+  if not patterns:
+    return None
+
+  regexes = [re.compile(p) for p in patterns]
+  return lambda x: not any(r.search(x) for r in regexes)
+
+
+def _CreateResourceInfoFile(path_info, info_path, dependencies_res_zips):
   for zip_file in dependencies_res_zips:
     zip_info_file_path = zip_file + '.info'
     if os.path.exists(zip_info_file_path):
-      with open(zip_info_file_path, 'r') as zip_info_file:
-        lines.update(zip_info_file.readlines())
-  for dest, source in renamed_paths.iteritems():
-    lines.add('Rename:{},{}\n'.format(dest, source))
-  with open(info_path, 'w') as info_file:
-    info_file.writelines(sorted(lines))
+      path_info.MergeInfoFile(zip_info_file_path)
+  path_info.Write(info_path)
 
 
 def _RemoveUnwantedLocalizedStrings(dep_subdirs, options):
@@ -622,11 +704,6 @@ def _RemoveUnwantedLocalizedStrings(dep_subdirs, options):
     dep_subdirs: List of resource dependency directories.
     options: Command-line options namespace.
   """
-  if (not options.locale_whitelist
-      and not options.shared_resources_whitelist_locales):
-    # Keep everything, there is nothing to do.
-    return
-
   # Collect locale and file paths from the existing subdirs.
   # The following variable maps Android locale names to
   # sets of corresponding xml file paths.
@@ -640,23 +717,23 @@ def _RemoveUnwantedLocalizedStrings(dep_subdirs, options):
   all_locales = set(locale_to_files_map)
 
   # Set A: wanted locales, either all of them or the
-  # list provided by --locale-whitelist.
+  # list provided by --locale-allowlist.
   wanted_locales = all_locales
-  if options.locale_whitelist:
-    wanted_locales = _ToAndroidLocales(options.locale_whitelist,
+  if options.locale_allowlist:
+    wanted_locales = _ToAndroidLocales(options.locale_allowlist,
                                        options.support_zh_hk)
 
   # Set B: shared resources locales, which is either set A
-  # or the list provided by --shared-resources-whitelist-locales
+  # or the list provided by --shared-resources-allowlist-locales
   shared_resources_locales = wanted_locales
-  shared_names_whitelist = set()
-  if options.shared_resources_whitelist_locales:
-    shared_names_whitelist = set(
+  shared_names_allowlist = set()
+  if options.shared_resources_allowlist_locales:
+    shared_names_allowlist = set(
         resource_utils.GetRTxtStringResourceNames(
-            options.shared_resources_whitelist))
+            options.shared_resources_allowlist))
 
     shared_resources_locales = _ToAndroidLocales(
-        options.shared_resources_whitelist_locales, options.support_zh_hk)
+        options.shared_resources_allowlist_locales, options.support_zh_hk)
 
   # Remove any file that belongs to a locale not covered by
   # either A or B.
@@ -670,14 +747,29 @@ def _RemoveUnwantedLocalizedStrings(dep_subdirs, options):
   for locale in shared_resources_locales - wanted_locales:
     for path in locale_to_files_map[locale]:
       resource_utils.FilterAndroidResourceStringsXml(
-          path, lambda x: x in shared_names_whitelist)
+          path, lambda x: x in shared_names_allowlist)
 
   # For any locale in A but not in B, only keep the strings
   # that are _not_ from shared resources in the file.
   for locale in wanted_locales - shared_resources_locales:
     for path in locale_to_files_map[locale]:
       resource_utils.FilterAndroidResourceStringsXml(
-          path, lambda x: x not in shared_names_whitelist)
+          path, lambda x: x not in shared_names_allowlist)
+
+
+def _FilterResourceFiles(dep_subdirs, keep_predicate):
+  # Create a function that selects which resource files should be packaged
+  # into the final output. Any file that does not pass the predicate will
+  # be removed below.
+  png_paths = []
+  for directory in dep_subdirs:
+    for f in _IterFiles(directory):
+      if not keep_predicate(f):
+        os.remove(f)
+      elif f.endswith('.png'):
+        png_paths.append(f)
+
+  return png_paths
 
 
 def _PackageApk(options, build):
@@ -689,34 +781,37 @@ def _PackageApk(options, build):
   Returns:
     The manifest package name for the APK.
   """
+  logging.debug('Extracting resource .zips')
   dep_subdirs = resource_utils.ExtractDeps(options.dependencies_res_zips,
                                            build.deps_dir)
-  renamed_paths = dict()
-  renamed_paths.update(_DuplicateZhResources(dep_subdirs))
-  renamed_paths.update(_RenameLocaleResourceDirs(dep_subdirs))
+  logging.debug('Applying locale transformations')
+  path_info = resource_utils.ResourceInfoFile()
+  if options.support_zh_hk:
+    _DuplicateZhResources(dep_subdirs, path_info)
+  _RenameLocaleResourceDirs(dep_subdirs, path_info)
 
-  _RemoveUnwantedLocalizedStrings(dep_subdirs, options)
+  logging.debug('Applying file-based exclusions')
+  keep_predicate = _CreateKeepPredicate(options.resource_exclusion_regex,
+                                        options.resource_exclusion_exceptions)
+  png_paths = _FilterResourceFiles(dep_subdirs, keep_predicate)
 
-  # Create a function that selects which resource files should be packaged
-  # into the final output. Any file that does not pass the predicate will
-  # be removed below.
-  keep_predicate = _CreateKeepPredicate(options.resource_blacklist_regex,
-                                        options.resource_blacklist_exceptions)
-  png_paths = []
-  for directory in dep_subdirs:
-    for f in _IterFiles(directory):
-      if not keep_predicate(f):
-        os.remove(f)
-      elif f.endswith('.png'):
-        png_paths.append((f, directory))
+  if options.locale_allowlist or options.shared_resources_allowlist_locales:
+    logging.debug('Applying locale-based string exclusions')
+    _RemoveUnwantedLocalizedStrings(dep_subdirs, options)
+
   if png_paths and options.png_to_webp:
-    renamed_paths.update(_ConvertToWebP(options.webp_binary, png_paths))
+    logging.debug('Converting png->webp')
+    _ConvertToWebP(options.webp_binary, png_paths, path_info,
+                   options.webp_cache_dir)
+  logging.debug('Applying drawable transformations')
   for directory in dep_subdirs:
-    renamed_paths.update(_MoveImagesToNonMdpiFolders(directory))
-    renamed_paths.update(_RemoveImageExtensions(directory))
+    _MoveImagesToNonMdpiFolders(directory, path_info)
+    _RemoveImageExtensions(directory, path_info)
 
-  _CreateResourceInfoFile(renamed_paths, build.info_path,
-                          options.dependencies_res_zips)
+  logging.debug('Running aapt2 compile')
+  exclusion_rules = [x.split(':', 1) for x in options.values_filter_rules]
+  partials = _CompileDeps(options.aapt2_path, dep_subdirs, build.temp_dir,
+                          exclusion_rules)
 
   link_command = [
       options.aapt2_path,
@@ -750,7 +845,7 @@ def _PackageApk(options, build):
 
   # Note: only one of --proto-format, --shared-lib or --app-as-shared-lib
   #       can be used with recent versions of aapt2.
-  if options.shared_resources and not options.proto_path:
+  if options.shared_resources:
     link_command.append('--shared-lib')
 
   if options.no_xml_namespaces:
@@ -767,10 +862,6 @@ def _PackageApk(options, build):
       options, build.temp_dir)
   if options.rename_manifest_package:
     desired_manifest_package_name = options.rename_manifest_package
-  if options.android_manifest_expected:
-    _VerifyManifest(fixed_manifest, options.android_manifest_expected,
-                    options.android_manifest_normalized,
-                    options.android_manifest_expectations_failure_file)
 
   link_command += [
       '--manifest', fixed_manifest, '--rename-manifest-package',
@@ -784,16 +875,28 @@ def _PackageApk(options, build):
                          desired_manifest_package_name)
     link_command += ['--stable-ids', build.stable_ids_path]
 
-  partials = _CompileDeps(options.aapt2_path, dep_subdirs, build.temp_dir)
   for partial in partials:
     link_command += ['-R', partial]
 
-  if options.proto_path:
-    link_command += ['--proto-format', '-o', build.proto_path]
-  else:
-    link_command += ['-o', build.arsc_path]
+  # We always create a binary arsc file first, then convert to proto, so flags
+  # such as --shared-lib can be supported.
+  arsc_path = build.arsc_path
+  if arsc_path is None:
+    _, arsc_path = tempfile.mkstmp()
+  link_command += ['-o', build.arsc_path]
 
-  build_utils.CheckOutput(link_command, print_stdout=False, print_stderr=False)
+  logging.debug('Starting: aapt2 link')
+  link_proc = subprocess.Popen(link_command)
+
+  # Create .res.info file in parallel.
+  _CreateResourceInfoFile(path_info, build.info_path,
+                          options.dependencies_res_zips)
+  logging.debug('Created .res.info file')
+
+  exit_code = link_proc.wait()
+  logging.debug('Finished: aapt2 link')
+  if exit_code:
+    raise subprocess.CalledProcessError(exit_code, link_command)
 
   if options.proguard_file and (options.shared_resources
                                 or options.app_as_shared_lib):
@@ -808,10 +911,27 @@ def _PackageApk(options, build):
                   '''.format(package=desired_manifest_package_name)
       proguard_file.write(textwrap.dedent(keep_rule))
 
-  if options.proto_path and options.arsc_path:
+  logging.debug('Running aapt2 convert')
+  build_utils.CheckOutput([
+      options.aapt2_path, 'convert', '--output-format', 'proto', '-o',
+      build.proto_path, build.arsc_path
+  ])
+
+  # Workaround for b/147674078. This is only needed for WebLayer and does not
+  # affect WebView usage, since WebView does not used dynamic attributes.
+  if options.shared_resources:
+    logging.debug('Hardcoding dynamic attributes')
+    protoresources.HardcodeSharedLibraryDynamicAttributes(
+        build.proto_path, options.is_bundle_module,
+        options.shared_resources_allowlist)
+
     build_utils.CheckOutput([
-        options.aapt2_path, 'convert', '-o', build.arsc_path, build.proto_path
+        options.aapt2_path, 'convert', '--output-format', 'binary', '-o',
+        build.arsc_path, build.proto_path
     ])
+
+  if build.arsc_path is None:
+    os.remove(arsc_path)
 
   if options.optimized_proto_path:
     _OptimizeApk(build.optimized_proto_path, options, build.temp_dir,
@@ -857,18 +977,19 @@ def _OptimizeApk(output, options, temp_dir, unoptimized_path, r_txt_path):
         config.write('{}#no_obfuscate\n'.format(resource))
 
     optimize_command += [
-        '--enable-resource-obfuscation',
+        '--collapse-resource-names',
         '--resources-config-path',
         gen_config_path,
     ]
 
   if options.short_resource_paths:
-    optimize_command += ['--enable-resource-path-shortening']
+    optimize_command += ['--shorten-resource-paths']
   if options.resources_path_map_out_path:
     optimize_command += [
         '--resource-path-shortening-map', options.resources_path_map_out_path
     ]
 
+  logging.debug('Running aapt2 optimize')
   build_utils.CheckOutput(
       optimize_command, print_stdout=False, print_stderr=False)
 
@@ -932,12 +1053,19 @@ def _WriteOutputs(options, build):
       shutil.move(temp, final)
 
 
-def main(args):
-  args = build_utils.ExpandFileArgs(args)
-  options = _ParseArgs(args)
+def _VerifyExpectations(options):
+  with build_utils.TempDir() as tempdir:
+    fixed_manifest, _ = _FixManifest(options, tempdir)
+    _VerifyManifest(fixed_manifest, options.expected_file,
+                    options.android_manifest_normalized,
+                    options.expected_manifest_base_expectation,
+                    options.android_manifest_expectations_failure_file,
+                    options.fail_on_expectations)
 
+
+def _OnStaleMd5(options):
   path = options.arsc_path or options.proto_path
-  debug_temp_resources_dir = os.environ.get(_ENV_DEBUG_VARIABLE)
+  debug_temp_resources_dir = os.environ.get('TEMP_RESOURCES_DIR')
   if debug_temp_resources_dir:
     path = os.path.join(debug_temp_resources_dir, os.path.basename(path))
   else:
@@ -945,14 +1073,14 @@ def main(args):
     # path of resources: crbug.com/939984
     path = path + '.tmpdir'
   build_utils.DeleteDirectory(path)
-  build_utils.MakeDirectory(path)
 
   with resource_utils.BuildContext(
       temp_dir=path, keep_files=bool(debug_temp_resources_dir)) as build:
+
     manifest_package_name = _PackageApk(options, build)
 
-    # If --shared-resources-whitelist is used, the all resources listed in
-    # the corresponding R.txt file will be non-final, and an onResourcesLoaded()
+    # If --shared-resources-allowlist is used, all the resources listed in the
+    # corresponding R.txt file will be non-final, and an onResourcesLoaded()
     # will be generated to adjust them at runtime.
     #
     # Otherwise, if --shared-resources is used, the all resources will be
@@ -961,10 +1089,15 @@ def main(args):
     # Otherwise, all resources will be final, and no method will be generated.
     #
     rjava_build_options = resource_utils.RJavaBuildOptions()
-    if options.shared_resources_whitelist:
+    if options.shared_resources_allowlist:
       rjava_build_options.ExportSomeResources(
-          options.shared_resources_whitelist)
+          options.shared_resources_allowlist)
       rjava_build_options.GenerateOnResourcesLoaded()
+      if options.shared_resources:
+        # The final resources will only be used in WebLayer, so hardcode the
+        # package ID to be what WebLayer expects.
+        rjava_build_options.SetFinalPackageId(
+            protoresources.SHARED_LIBRARY_HARDCODED_ID)
     elif options.shared_resources or options.app_as_shared_lib:
       rjava_build_options.ExportAllResources()
       rjava_build_options.GenerateOnResourcesLoaded()
@@ -986,15 +1119,16 @@ def main(args):
     else:
       package_for_library = None
 
+    logging.debug('Creating R.srcjar')
     resource_utils.CreateRJavaFiles(
         build.srcjar_dir, package_for_library, build.r_txt_path,
         options.extra_res_packages, options.extra_r_text_files,
         rjava_build_options, options.srcjar_out, custom_root_package_name,
         grandparent_custom_package_name, options.extra_main_r_text_files)
-
     build_utils.ZipDir(build.srcjar_path, build.srcjar_dir)
 
     # Sanity check that the created resources have the expected package ID.
+    logging.debug('Performing sanity check')
     if options.package_id:
       expected_id = options.package_id
     elif options.shared_resources:
@@ -1008,14 +1142,92 @@ def main(args):
       raise Exception(
           'Invalid package ID 0x%x (expected 0x%x)' % (package_id, expected_id))
 
+    logging.debug('Copying outputs')
     _WriteOutputs(options, build)
 
-  if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        options.srcjar_out,
-        inputs=options.dependencies_res_zips + options.extra_r_text_files,
-        add_pydeps=False)
+
+def main(args):
+  build_utils.InitLogging('RESOURCE_DEBUG')
+  args = build_utils.ExpandFileArgs(args)
+  options = _ParseArgs(args)
+
+  if options.expected_file:
+    _VerifyExpectations(options)
+  if options.only_verify_expectations:
+    return
+
+  depfile_deps = (
+      options.dependencies_res_zips + options.extra_main_r_text_files +
+      options.extra_r_text_files + options.include_resources)
+
+  possible_input_paths = depfile_deps + [
+      options.aapt2_path,
+      options.android_manifest,
+      options.expected_file,
+      options.expected_manifest_base_expectation,
+      options.resources_config_path,
+      options.shared_resources_allowlist,
+      options.use_resource_ids_path,
+      options.webp_binary,
+  ]
+  input_paths = [p for p in possible_input_paths if p]
+  input_strings = [
+      options.android_manifest_expectations_failure_file,
+      options.app_as_shared_lib,
+      options.arsc_package_name,
+      options.debuggable,
+      options.extra_res_packages,
+      options.include_resources,
+      options.locale_allowlist,
+      options.manifest_package,
+      options.max_sdk_version,
+      options.min_sdk_version,
+      options.no_xml_namespaces,
+      options.package_id,
+      options.package_name,
+      options.png_to_webp,
+      options.rename_manifest_package,
+      options.resource_exclusion_exceptions,
+      options.resource_exclusion_regex,
+      options.r_java_root_package_name,
+      options.shared_resources,
+      options.shared_resources_allowlist_locales,
+      options.short_resource_paths,
+      options.strip_resource_names,
+      options.support_zh_hk,
+      options.target_sdk_version,
+      options.values_filter_rules,
+      options.version_code,
+      options.version_name,
+      options.webp_cache_dir,
+  ]
+  output_paths = [options.srcjar_out]
+  possible_output_paths = [
+      options.android_manifest_normalized,
+      options.arsc_path,
+      options.emit_ids_out,
+      options.info_path,
+      options.optimized_arsc_path,
+      options.optimized_proto_path,
+      options.proguard_file,
+      options.proguard_file_main_dex,
+      options.proto_path,
+      options.resources_path_map_out_path,
+      options.r_text_out,
+  ]
+  output_paths += [p for p in possible_output_paths if p]
+
+  # Since we overspecify deps, this target depends on java deps that are not
+  # going to change its output. This target is also slow (6-12 seconds) and
+  # blocking the critical path. We want changes to java_library targets to not
+  # trigger re-compilation of resources, thus we need to use md5_check.
+  md5_check.CallAndWriteDepfileIfStale(
+      lambda: _OnStaleMd5(options),
+      options,
+      input_paths=input_paths,
+      input_strings=input_strings,
+      output_paths=output_paths,
+      depfile_deps=depfile_deps)
 
 
 if __name__ == '__main__':

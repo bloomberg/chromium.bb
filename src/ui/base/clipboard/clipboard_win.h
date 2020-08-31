@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 
 namespace base {
 namespace win {
@@ -39,8 +40,9 @@ class ClipboardWin : public Clipboard {
                          ClipboardBuffer buffer) const override;
   void Clear(ClipboardBuffer buffer) override;
   void ReadAvailableTypes(ClipboardBuffer buffer,
-                          std::vector<base::string16>* types,
-                          bool* contains_filenames) const override;
+                          std::vector<base::string16>* types) const override;
+  std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(
+      ClipboardBuffer buffer) const override;
   void ReadText(ClipboardBuffer buffer, base::string16* result) const override;
   void ReadAsciiText(ClipboardBuffer buffer,
                      std::string* result) const override;
@@ -50,7 +52,8 @@ class ClipboardWin : public Clipboard {
                 uint32_t* fragment_start,
                 uint32_t* fragment_end) const override;
   void ReadRTF(ClipboardBuffer buffer, std::string* result) const override;
-  SkBitmap ReadImage(ClipboardBuffer buffer) const override;
+  void ReadImage(ClipboardBuffer buffer,
+                 ReadImageCallback callback) const override;
   void ReadCustomData(ClipboardBuffer buffer,
                       const base::string16& type,
                       base::string16* result) const override;
@@ -79,12 +82,13 @@ class ClipboardWin : public Clipboard {
                  const char* data_data,
                  size_t data_len) override;
   void WriteBitmapFromHandle(HBITMAP source_hbitmap, const gfx::Size& size);
+  SkBitmap ReadImageInternal(ClipboardBuffer buffer) const;
 
   // Safely write to system clipboard. Free |handle| on failure.
-  void WriteToClipboard(unsigned int format, HANDLE handle);
+  void WriteToClipboard(ClipboardFormatType format, HANDLE handle);
 
   // Return the window that should be the clipboard owner, creating it
-  // if neccessary.  Marked const for lazily initialization by const methods.
+  // if necessary.  Marked const for lazily initialization by const methods.
   HWND GetClipboardWindow() const;
 
   // Mark this as mutable so const methods can still do lazy initialization.

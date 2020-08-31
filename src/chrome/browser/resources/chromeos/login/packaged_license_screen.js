@@ -9,13 +9,13 @@
 Polymer({
   is: 'packaged-license-screen',
 
-  behaviors: [I18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
   properties: {
 
   },
 
-  ready: function() {
+  ready() {
     this.initializeLoginScreen('PackagedLicenseScreen', {
       resetAllowed: true,
     });
@@ -31,7 +31,7 @@ Polymer({
   /*
    * Executed on language change.
    */
-  updateLocalizedContent: function() {
+  updateLocalizedContent() {
     this.i18nUpdateLocale();
   },
 
@@ -40,8 +40,8 @@ Polymer({
    *
    * @private
    */
-  onDontEnrollButtonPressed_: function() {
-    chrome.send('login.PackagedLicenseScreen.userActed', ['dont-enroll']);
+  onDontEnrollButtonPressed_() {
+    this.userActed('dont-enroll');
   },
 
   /**
@@ -49,8 +49,8 @@ Polymer({
    *
    * @private
    */
-  onEnrollButtonPressed_: function() {
-    chrome.send('login.PackagedLicenseScreen.userActed', ['enroll']);
+  onEnrollButtonPressed_() {
+    this.userActed('enroll');
   },
 
 });

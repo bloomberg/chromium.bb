@@ -24,6 +24,8 @@ source_set("browser") {
     "form_suggestion.h",
     "form_suggestion.mm",
     "form_suggestion_provider.h",
+    "form_suggestion_provider_query.h",
+    "form_suggestion_provider_query.mm",
     "js_autofill_manager.h",
     "js_autofill_manager.mm",
     "js_suggestion_manager.h",
@@ -63,9 +65,7 @@ source_set("test_support") {
     "fake_js_autofill_manager.mm",
     "ios_test_event_waiter.h",
   ]
-  public_deps = [
-    ":browser",
-  ]
+  public_deps = [ ":browser" ]
   deps = [
     "//base",
     "//base/test:test_support",
@@ -81,6 +81,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "autofill_agent_unittests.mm",
+    "form_suggestion_provider_query_unittests.mm",
   ]
   deps = [
     ":browser",
@@ -102,11 +103,7 @@ source_set("unit_tests") {
 
 bundle_data("autofill_test_bundle_data") {
   testonly = true
-  sources = [
-    "//components/test/data/autofill/credit_card_upload_form_address_and_cc.html",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  sources = [ "//components/test/data/autofill/credit_card_upload_form_address_and_cc.html" ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }

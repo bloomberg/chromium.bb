@@ -7,15 +7,15 @@
 #include <memory>
 
 #include "base/stl_util.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/screen_orientation/lock_orientation_callback.h"
-#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -93,31 +93,18 @@ static WebScreenOrientationLockType StringToOrientationLock(
 }
 
 // static
-ScreenOrientation* ScreenOrientation::Create(LocalFrame* frame) {
-  DCHECK(frame);
-
-  // Check if the ScreenOrientationController is supported for the
-  // frame. It will not be for all LocalFrames, or the frame may
-  // have been detached.
-  if (!ScreenOrientationControllerImpl::From(*frame))
-    return nullptr;
-
+ScreenOrientation* ScreenOrientation::Create(LocalDOMWindow* window) {
+  DCHECK(window);
   ScreenOrientation* orientation =
-      MakeGarbageCollected<ScreenOrientation>(frame);
-  DCHECK(orientation->Controller());
-  // FIXME: ideally, we would like to provide the ScreenOrientationController
-  // the case where it is not defined but for the moment, it is eagerly
-  // created when the LocalFrame is created so we shouldn't be in that
-  // situation.
-  // In order to create the ScreenOrientationController lazily, we would need
-  // to be able to access WebLocalFrameClient from modules/.
-
+      MakeGarbageCollected<ScreenOrientation>(window);
   orientation->Controller()->SetOrientation(orientation);
   return orientation;
 }
 
-ScreenOrientation::ScreenOrientation(LocalFrame* frame)
-    : ContextClient(frame), type_(kWebScreenOrientationUndefined), angle_(0) {}
+ScreenOrientation::ScreenOrientation(LocalDOMWindow* window)
+    : ExecutionContextClient(window),
+      type_(kWebScreenOrientationUndefined),
+      angle_(0) {}
 
 ScreenOrientation::~ScreenOrientation() = default;
 
@@ -126,9 +113,7 @@ const WTF::AtomicString& ScreenOrientation::InterfaceName() const {
 }
 
 ExecutionContext* ScreenOrientation::GetExecutionContext() const {
-  if (!GetFrame())
-    return nullptr;
-  return GetFrame()->GetDocument();
+  return ExecutionContextClient::GetExecutionContext();
 }
 
 String ScreenOrientation::type() const {
@@ -148,22 +133,21 @@ void ScreenOrientation::SetAngle(uint16_t angle) {
 }
 
 ScriptPromise ScreenOrientation::lock(ScriptState* state,
-                                      const AtomicString& lock_string) {
-  Document* document = GetFrame() ? GetFrame()->GetDocument() : nullptr;
-
-  if (!document || !Controller()) {
-    return ScriptPromise::RejectWithDOMException(
-        state, MakeGarbageCollected<DOMException>(
-                   DOMExceptionCode::kInvalidStateError,
-                   "The object is no longer associated to a document."));
+                                      const AtomicString& lock_string,
+                                      ExceptionState& exception_state) {
+  if (!state->ContextIsValid() || !Controller()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The object is no longer associated to a window.");
+    return ScriptPromise();
   }
 
-  if (document->IsSandboxed(WebSandboxFlags::kOrientationLock)) {
-    return ScriptPromise::RejectWithDOMException(
-        state, MakeGarbageCollected<DOMException>(
-                   DOMExceptionCode::kSecurityError,
-                   "The document is sandboxed and lacks the "
-                   "'allow-orientation-lock' flag."));
+  if (GetExecutionContext()->IsSandboxed(
+          network::mojom::blink::WebSandboxFlags::kOrientationLock)) {
+    exception_state.ThrowSecurityError(
+        "The window is sandboxed and lacks the "
+        "'allow-orientation-lock' flag.");
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(state);
@@ -180,16 +164,17 @@ void ScreenOrientation::unlock() {
   Controller()->unlock();
 }
 
-ScreenOrientationControllerImpl* ScreenOrientation::Controller() {
-  if (!GetFrame())
+ScreenOrientationController* ScreenOrientation::Controller() {
+  if (!GetExecutionContext())
     return nullptr;
 
-  return ScreenOrientationControllerImpl::From(*GetFrame());
+  return ScreenOrientationController::From(
+      *To<LocalDOMWindow>(GetExecutionContext()));
 }
 
-void ScreenOrientation::Trace(blink::Visitor* visitor) {
+void ScreenOrientation::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

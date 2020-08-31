@@ -5,6 +5,7 @@
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 
 #include "core/fpdfapi/parser/cpdf_array.h"
+#include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
@@ -20,95 +21,161 @@ TEST(fpdf_parser_decode, ValidateDecoderPipeline) {
   {
     // 1 decoder is almost always valid.
     auto decoders = pdfium::MakeRetain<CPDF_Array>();
-    decoders->AddNew<CPDF_Name>("FlateEncode");
+    decoders->AppendNew<CPDF_Name>("FlateEncode");
     EXPECT_TRUE(ValidateDecoderPipeline(decoders.Get()));
   }
   {
     // 1 decoder is almost always valid, even with an unknown decoder.
     auto decoders = pdfium::MakeRetain<CPDF_Array>();
-    decoders->AddNew<CPDF_Name>("FooBar");
+    decoders->AppendNew<CPDF_Name>("FooBar");
     EXPECT_TRUE(ValidateDecoderPipeline(decoders.Get()));
   }
   {
     // Valid 2 decoder pipeline.
     auto decoders = pdfium::MakeRetain<CPDF_Array>();
-    decoders->AddNew<CPDF_Name>("AHx");
-    decoders->AddNew<CPDF_Name>("LZWDecode");
+    decoders->AppendNew<CPDF_Name>("AHx");
+    decoders->AppendNew<CPDF_Name>("LZWDecode");
     EXPECT_TRUE(ValidateDecoderPipeline(decoders.Get()));
   }
   {
     // Valid 2 decoder pipeline.
     auto decoders = pdfium::MakeRetain<CPDF_Array>();
-    decoders->AddNew<CPDF_Name>("ASCII85Decode");
-    decoders->AddNew<CPDF_Name>("ASCII85Decode");
+    decoders->AppendNew<CPDF_Name>("ASCII85Decode");
+    decoders->AppendNew<CPDF_Name>("ASCII85Decode");
     EXPECT_TRUE(ValidateDecoderPipeline(decoders.Get()));
   }
   {
     // Valid 5 decoder pipeline.
     auto decoders = pdfium::MakeRetain<CPDF_Array>();
-    decoders->AddNew<CPDF_Name>("ASCII85Decode");
-    decoders->AddNew<CPDF_Name>("A85");
-    decoders->AddNew<CPDF_Name>("RunLengthDecode");
-    decoders->AddNew<CPDF_Name>("FlateDecode");
-    decoders->AddNew<CPDF_Name>("RL");
+    decoders->AppendNew<CPDF_Name>("ASCII85Decode");
+    decoders->AppendNew<CPDF_Name>("A85");
+    decoders->AppendNew<CPDF_Name>("RunLengthDecode");
+    decoders->AppendNew<CPDF_Name>("FlateDecode");
+    decoders->AppendNew<CPDF_Name>("RL");
     EXPECT_TRUE(ValidateDecoderPipeline(decoders.Get()));
   }
   {
     // Valid 5 decoder pipeline, with an image decoder at the end.
     auto decoders = pdfium::MakeRetain<CPDF_Array>();
-    decoders->AddNew<CPDF_Name>("RunLengthDecode");
-    decoders->AddNew<CPDF_Name>("ASCII85Decode");
-    decoders->AddNew<CPDF_Name>("FlateDecode");
-    decoders->AddNew<CPDF_Name>("LZW");
-    decoders->AddNew<CPDF_Name>("DCTDecode");
+    decoders->AppendNew<CPDF_Name>("RunLengthDecode");
+    decoders->AppendNew<CPDF_Name>("ASCII85Decode");
+    decoders->AppendNew<CPDF_Name>("FlateDecode");
+    decoders->AppendNew<CPDF_Name>("LZW");
+    decoders->AppendNew<CPDF_Name>("DCTDecode");
     EXPECT_TRUE(ValidateDecoderPipeline(decoders.Get()));
   }
   {
     // Invalid 1 decoder pipeline due to wrong type.
     auto decoders = pdfium::MakeRetain<CPDF_Array>();
-    decoders->AddNew<CPDF_String>("FlateEncode", false);
+    decoders->AppendNew<CPDF_String>("FlateEncode", false);
     EXPECT_FALSE(ValidateDecoderPipeline(decoders.Get()));
   }
   {
     // Invalid 2 decoder pipeline, with 2 image decoders.
     auto decoders = pdfium::MakeRetain<CPDF_Array>();
-    decoders->AddNew<CPDF_Name>("DCTDecode");
-    decoders->AddNew<CPDF_Name>("CCITTFaxDecode");
+    decoders->AppendNew<CPDF_Name>("DCTDecode");
+    decoders->AppendNew<CPDF_Name>("CCITTFaxDecode");
     EXPECT_FALSE(ValidateDecoderPipeline(decoders.Get()));
   }
   {
     // Invalid 2 decoder pipeline, with 1 image decoder at the start.
     auto decoders = pdfium::MakeRetain<CPDF_Array>();
-    decoders->AddNew<CPDF_Name>("DCTDecode");
-    decoders->AddNew<CPDF_Name>("FlateDecode");
+    decoders->AppendNew<CPDF_Name>("DCTDecode");
+    decoders->AppendNew<CPDF_Name>("FlateDecode");
     EXPECT_FALSE(ValidateDecoderPipeline(decoders.Get()));
   }
   {
     // Invalid 2 decoder pipeline due to wrong type.
     auto decoders = pdfium::MakeRetain<CPDF_Array>();
-    decoders->AddNew<CPDF_String>("AHx", false);
-    decoders->AddNew<CPDF_Name>("LZWDecode");
+    decoders->AppendNew<CPDF_String>("AHx", false);
+    decoders->AppendNew<CPDF_Name>("LZWDecode");
     EXPECT_FALSE(ValidateDecoderPipeline(decoders.Get()));
   }
   {
     // Invalid 5 decoder pipeline.
     auto decoders = pdfium::MakeRetain<CPDF_Array>();
-    decoders->AddNew<CPDF_Name>("FlateDecode");
-    decoders->AddNew<CPDF_Name>("FlateDecode");
-    decoders->AddNew<CPDF_Name>("DCTDecode");
-    decoders->AddNew<CPDF_Name>("FlateDecode");
-    decoders->AddNew<CPDF_Name>("FlateDecode");
+    decoders->AppendNew<CPDF_Name>("FlateDecode");
+    decoders->AppendNew<CPDF_Name>("FlateDecode");
+    decoders->AppendNew<CPDF_Name>("DCTDecode");
+    decoders->AppendNew<CPDF_Name>("FlateDecode");
+    decoders->AppendNew<CPDF_Name>("FlateDecode");
     EXPECT_FALSE(ValidateDecoderPipeline(decoders.Get()));
   }
   {
     // Invalid 5 decoder pipeline due to wrong type.
     auto decoders = pdfium::MakeRetain<CPDF_Array>();
-    decoders->AddNew<CPDF_Name>("ASCII85Decode");
-    decoders->AddNew<CPDF_Name>("A85");
-    decoders->AddNew<CPDF_Name>("RunLengthDecode");
-    decoders->AddNew<CPDF_Name>("FlateDecode");
-    decoders->AddNew<CPDF_String>("RL", false);
+    decoders->AppendNew<CPDF_Name>("ASCII85Decode");
+    decoders->AppendNew<CPDF_Name>("A85");
+    decoders->AppendNew<CPDF_Name>("RunLengthDecode");
+    decoders->AppendNew<CPDF_Name>("FlateDecode");
+    decoders->AppendNew<CPDF_String>("RL", false);
     EXPECT_FALSE(ValidateDecoderPipeline(decoders.Get()));
+  }
+}
+
+// TODO(thestig): Test decoder params.
+TEST(fpdf_parser_decode, GetDecoderArray) {
+  {
+    // Treat no filter as an empty filter array.
+    auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
+    Optional<DecoderArray> decoder_array = GetDecoderArray(dict.Get());
+    ASSERT_TRUE(decoder_array.has_value());
+    EXPECT_TRUE(decoder_array.value().empty());
+  }
+  {
+    // Wrong filter type.
+    auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
+    dict->SetNewFor<CPDF_String>("Filter", "RL", false);
+    Optional<DecoderArray> decoder_array = GetDecoderArray(dict.Get());
+    EXPECT_FALSE(decoder_array.has_value());
+  }
+  {
+    // Filter name.
+    auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
+    dict->SetNewFor<CPDF_Name>("Filter", "RL");
+    Optional<DecoderArray> decoder_array = GetDecoderArray(dict.Get());
+    ASSERT_TRUE(decoder_array.has_value());
+    ASSERT_EQ(1u, decoder_array.value().size());
+    EXPECT_EQ("RL", decoder_array.value()[0].first);
+  }
+  {
+    // Empty filter array.
+    auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
+    dict->SetNewFor<CPDF_Array>("Filter");
+    Optional<DecoderArray> decoder_array = GetDecoderArray(dict.Get());
+    ASSERT_TRUE(decoder_array.has_value());
+    EXPECT_TRUE(decoder_array.value().empty());
+  }
+  {
+    // Valid 1 element filter array.
+    auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
+    auto* filter_array = dict->SetNewFor<CPDF_Array>("Filter");
+    filter_array->AppendNew<CPDF_Name>("FooBar");
+    Optional<DecoderArray> decoder_array = GetDecoderArray(dict.Get());
+    ASSERT_TRUE(decoder_array.has_value());
+    ASSERT_EQ(1u, decoder_array.value().size());
+    EXPECT_EQ("FooBar", decoder_array.value()[0].first);
+  }
+  {
+    // Valid 2 element filter array.
+    auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
+    auto* filter_array = dict->SetNewFor<CPDF_Array>("Filter");
+    filter_array->AppendNew<CPDF_Name>("AHx");
+    filter_array->AppendNew<CPDF_Name>("LZWDecode");
+    Optional<DecoderArray> decoder_array = GetDecoderArray(dict.Get());
+    ASSERT_TRUE(decoder_array.has_value());
+    ASSERT_EQ(2u, decoder_array.value().size());
+    EXPECT_EQ("AHx", decoder_array.value()[0].first);
+    EXPECT_EQ("LZWDecode", decoder_array.value()[1].first);
+  }
+  {
+    // Invalid 2 element filter array.
+    auto dict = pdfium::MakeRetain<CPDF_Dictionary>();
+    auto* invalid_filter_array = dict->SetNewFor<CPDF_Array>("Filter");
+    invalid_filter_array->AppendNew<CPDF_Name>("DCTDecode");
+    invalid_filter_array->AppendNew<CPDF_Name>("CCITTFaxDecode");
+    Optional<DecoderArray> decoder_array = GetDecoderArray(dict.Get());
+    EXPECT_FALSE(decoder_array.has_value());
   }
 }
 
@@ -144,6 +211,78 @@ TEST(fpdf_parser_decode, A85Decode) {
       EXPECT_EQ(test_case.expected[j], result_ptr[j])
           << "for case " << test_case.input << " char " << j;
     }
+  }
+}
+
+// NOTE: python's zlib.compress() and zlib.decompress() may be useful for
+// external validation of the FlateDncode/FlateEecode test cases.
+TEST(FPDFParserDecodeEmbedderTest, FlateDecode) {
+  static const pdfium::DecodeTestData flate_decode_cases[] = {
+      STR_IN_OUT_CASE("", "", 0),
+      STR_IN_OUT_CASE("preposterous nonsense", "", 2),
+      STR_IN_OUT_CASE("\x78\x9c\x03\x00\x00\x00\x00\x01", "", 8),
+      STR_IN_OUT_CASE("\x78\x9c\x53\x00\x00\x00\x21\x00\x21", " ", 9),
+      STR_IN_OUT_CASE("\x78\x9c\x33\x34\x32\x06\x00\01\x2d\x00\x97", "123", 11),
+      STR_IN_OUT_CASE("\x78\x9c\x63\xf8\x0f\x00\x01\x01\x01\x00", "\x00\xff",
+                      10),
+      STR_IN_OUT_CASE(
+          "\x78\x9c\x33\x54\x30\x00\x42\x5d\x43\x05\x23\x4b\x05\x73\x33\x63"
+          "\x85\xe4\x5c\x2e\x90\x80\xa9\xa9\xa9\x82\xb9\xb1\xa9\x42\x51\x2a"
+          "\x57\xb8\x42\x1e\x57\x21\x92\xa0\x89\x9e\xb1\xa5\x09\x92\x84\x9e"
+          "\x85\x81\x81\x25\xd8\x14\x24\x26\xd0\x18\x43\x05\x10\x0c\x72\x57"
+          "\x80\x30\x8a\xd2\xb9\xf4\xdd\x0d\x14\xd2\x8b\xc1\x46\x99\x59\x1a"
+          "\x2b\x58\x1a\x9a\x83\x8c\x49\xe3\x0a\x04\x42\x00\x37\x4c\x1b\x42",
+          "1 0 0 -1 29 763 cm\n0 0 555 735 re\nW n\nq\n0 0 555 734.394 re\n"
+          "W n\nq\n0.8009 0 0 0.8009 0 0 cm\n1 1 1 RG 1 1 1 rg\n/G0 gs\n"
+          "0 0 693 917 re\nf\nQ\nQ\n",
+          96),
+  };
+
+  for (size_t i = 0; i < FX_ArraySize(flate_decode_cases); ++i) {
+    const pdfium::DecodeTestData& data = flate_decode_cases[i];
+    std::unique_ptr<uint8_t, FxFreeDeleter> buf;
+    uint32_t buf_size;
+    EXPECT_EQ(data.processed_size,
+              FlateDecode({data.input, data.input_size}, &buf, &buf_size))
+        << " for case " << i;
+    ASSERT_TRUE(buf);
+    EXPECT_EQ(data.expected_size, buf_size) << " for case " << i;
+    if (data.expected_size != buf_size)
+      continue;
+    EXPECT_EQ(0, memcmp(data.expected, buf.get(), data.expected_size))
+        << " for case " << i;
+  }
+}
+
+TEST(fpdf_parser_decode, FlateEncode) {
+  static const pdfium::StrFuncTestData flate_encode_cases[] = {
+      STR_IN_OUT_CASE("", "\x78\x9c\x03\x00\x00\x00\x00\x01"),
+      STR_IN_OUT_CASE(" ", "\x78\x9c\x53\x00\x00\x00\x21\x00\x21"),
+      STR_IN_OUT_CASE("123", "\x78\x9c\x33\x34\x32\x06\x00\01\x2d\x00\x97"),
+      STR_IN_OUT_CASE("\x00\xff", "\x78\x9c\x63\xf8\x0f\x00\x01\x01\x01\x00"),
+      STR_IN_OUT_CASE(
+          "1 0 0 -1 29 763 cm\n0 0 555 735 re\nW n\nq\n0 0 555 734.394 re\n"
+          "W n\nq\n0.8009 0 0 0.8009 0 0 cm\n1 1 1 RG 1 1 1 rg\n/G0 gs\n"
+          "0 0 693 917 re\nf\nQ\nQ\n",
+          "\x78\x9c\x33\x54\x30\x00\x42\x5d\x43\x05\x23\x4b\x05\x73\x33\x63"
+          "\x85\xe4\x5c\x2e\x90\x80\xa9\xa9\xa9\x82\xb9\xb1\xa9\x42\x51\x2a"
+          "\x57\xb8\x42\x1e\x57\x21\x92\xa0\x89\x9e\xb1\xa5\x09\x92\x84\x9e"
+          "\x85\x81\x81\x25\xd8\x14\x24\x26\xd0\x18\x43\x05\x10\x0c\x72\x57"
+          "\x80\x30\x8a\xd2\xb9\xf4\xdd\x0d\x14\xd2\x8b\xc1\x46\x99\x59\x1a"
+          "\x2b\x58\x1a\x9a\x83\x8c\x49\xe3\x0a\x04\x42\x00\x37\x4c\x1b\x42"),
+  };
+
+  for (size_t i = 0; i < FX_ArraySize(flate_encode_cases); ++i) {
+    const pdfium::StrFuncTestData& data = flate_encode_cases[i];
+    std::unique_ptr<uint8_t, FxFreeDeleter> buf;
+    uint32_t buf_size;
+    EXPECT_TRUE(FlateEncode({data.input, data.input_size}, &buf, &buf_size));
+    ASSERT_TRUE(buf);
+    EXPECT_EQ(data.expected_size, buf_size) << " for case " << i;
+    if (data.expected_size != buf_size)
+      continue;
+    EXPECT_EQ(0, memcmp(data.expected, buf.get(), data.expected_size))
+        << " for case " << i;
   }
 }
 

@@ -1,8 +1,8 @@
 /**************************************************************************
  *
- * Copyright 2014-2019 Valve Software
- * Copyright 2015-2019 Google Inc.
- * Copyright 2019 LunarG, Inc.
+ * Copyright 2014-2020 Valve Software
+ * Copyright 2015-2020 Google Inc.
+ * Copyright 2019-2020 LunarG, Inc.
  * All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,6 +33,8 @@
 #include <sys/stat.h>
 
 #include <vulkan/vk_layer.h>
+// sdk_platform header redefines NOMINMAX
+#undef NOMINMAX
 #include <vulkan/vk_sdk_platform.h>
 #include "vk_layer_utils.h"
 
@@ -190,9 +192,9 @@ string ConfigFile::FindSettings() {
     LSTATUS err = RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Khronos\\Vulkan\\Settings", 0, KEY_READ, &hive);
     if (err == ERROR_SUCCESS) {
         char name[2048];
-        DWORD i = 0, name_size = sizeof(name), type, value, value_size = sizeof(value);
-        while (ERROR_SUCCESS ==
-               RegEnumValue(hive, i++, name, &name_size, nullptr, &type, reinterpret_cast<LPBYTE>(&value), &value_size)) {
+        DWORD i = 0, name_size, type, value, value_size;
+        while (ERROR_SUCCESS == RegEnumValue(hive, i++, name, &(name_size = sizeof(name)), nullptr, &type,
+                                             reinterpret_cast<LPBYTE>(&value), &(value_size = sizeof(value)))) {
             // Check if the registry entry is a dword with a value of zero
             if (type != REG_DWORD || value != 0) {
                 continue;

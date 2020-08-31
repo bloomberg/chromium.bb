@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "chrome/browser/notifications/scheduler/public/notification_data.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
+#include "chrome/browser/notifications/scheduler/public/throttle_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace notifications {
@@ -24,7 +25,8 @@ class NotificationSchedulerClient {
  public:
   using NotificationDataCallback =
       base::OnceCallback<void(std::unique_ptr<NotificationData>)>;
-
+  using ThrottleConfigCallback =
+      base::OnceCallback<void(std::unique_ptr<ThrottleConfig>)>;
   NotificationSchedulerClient() = default;
   virtual ~NotificationSchedulerClient() = default;
 
@@ -44,6 +46,10 @@ class NotificationSchedulerClient {
 
   // Called when the user interacts with the notification.
   virtual void OnUserAction(const UserActionData& action_data) = 0;
+
+  // Used to pull customized throttle config from client and may override global
+  // config in the framework. Return |nullptr| to callback if no customization.
+  virtual void GetThrottleConfig(ThrottleConfigCallback callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationSchedulerClient);

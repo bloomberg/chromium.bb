@@ -55,12 +55,22 @@ class CORE_EXPORT HTMLTableColElement final : public HTMLTablePartElement {
   unsigned span_;
 };
 
-inline bool IsHTMLTableColElement(const HTMLElement& element) {
-  return element.HasTagName(html_names::kColTag) ||
-         element.HasTagName(html_names::kColgroupTag);
+template <>
+inline bool IsElementOfType<const HTMLTableColElement>(const Node& node) {
+  return IsA<HTMLTableColElement>(node);
 }
-
-DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableColElement);
+template <>
+struct DowncastTraits<HTMLTableColElement> {
+  static bool AllowFrom(const Node& node) {
+    auto* html_element = DynamicTo<HTMLElement>(node);
+    return html_element && AllowFrom(*html_element);
+  }
+  static bool AllowFrom(const HTMLElement& html_element) {
+    return html_element.HasTagName(html_names::kColTag) ||
+           html_element.HasTagName(html_names::kColgroupTag);
+    ;
+  }
+};
 
 }  // namespace blink
 

@@ -69,7 +69,6 @@ source_set("exo") {
     "//base",
     "//cc",
     "//components/viz/host",
-    "//components/viz/service",
     "//device/gamepad",
     "//device/gamepad/public/cpp:shared_with_blink",
     "//gpu",
@@ -95,6 +94,11 @@ source_set("exo") {
     "//ui/views",
     "//ui/wm",
     "//ui/wm/public",
+  ]
+
+  public_deps = [
+    "//ui/base/cursor",
+    "//ui/base/cursor/mojom:cursor_type",
   ]
 
   if (is_chromeos) {
@@ -152,14 +156,15 @@ source_set("test_support") {
     "test/exo_test_suite_aura.h",
   ]
 
+  public_deps = [ "//testing/gtest" ]
+
   deps = [
     ":exo",
     "//base",
     "//base/test:test_support",
-    "//components/viz/service:service",
+    "//components/viz/service",
     "//gpu",
     "//skia",
-    "//testing/gtest",
     "//ui/aura",
     "//ui/base/ime/init",
     "//ui/compositor",
@@ -217,9 +222,7 @@ source_set("unit_tests") {
     "//ui/wm",
   ]
 
-  sources = [
-    "mime_utils_unittest.cc",
-  ]
+  sources = [ "mime_utils_unittest.cc" ]
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
@@ -235,6 +238,7 @@ source_set("unit_tests") {
       "data_source_unittest.cc",
       "display_unittest.cc",
       "gaming_seat_unittest.cc",
+      "input_method_surface_unittest.cc",
       "keyboard_unittest.cc",
       "notification_unittest.cc",
       "permission_unittest.cc",
@@ -254,6 +258,8 @@ source_set("unit_tests") {
       "//ash:test_support",
       "//ash/keyboard/ui",
       "//ash/public/cpp",
+      "//chromeos/constants",
+      "//ui/base/cursor/mojom:cursor_type",
     ]
   }
 
@@ -264,9 +270,7 @@ source_set("unit_tests") {
 }
 
 test("exo_unittests") {
-  sources = [
-    "test/run_all_unittests.cc",
-  ]
+  sources = [ "test/run_all_unittests.cc" ]
 
   deps = [
     ":test_support",
@@ -304,9 +308,9 @@ test("exo_unittests") {
     ]
 
     data_deps += [
-      "//ash/strings:ash_test_strings",
       "//ash/resources:ash_test_resources_100_percent",
       "//ash/resources:ash_test_resources_200_percent",
+      "//ash/strings:ash_test_strings",
     ]
   }
 }

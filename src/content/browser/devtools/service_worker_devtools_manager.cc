@@ -52,6 +52,10 @@ void ServiceWorkerDevToolsManager::WorkerCreated(
     const GURL& url,
     const GURL& scope,
     bool is_installed_version,
+    base::Optional<network::CrossOriginEmbedderPolicy>
+        cross_origin_embedder_policy,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter,
     base::UnguessableToken* devtools_worker_token,
     bool* pause_on_start) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -66,10 +70,11 @@ void ServiceWorkerDevToolsManager::WorkerCreated(
   if (it == terminated_hosts_.end()) {
     *devtools_worker_token = base::UnguessableToken::Create();
     scoped_refptr<ServiceWorkerDevToolsAgentHost> host =
-        new ServiceWorkerDevToolsAgentHost(worker_process_id, worker_route_id,
-                                           context, context_weak, version_id,
-                                           url, scope, is_installed_version,
-                                           *devtools_worker_token);
+        new ServiceWorkerDevToolsAgentHost(
+            worker_process_id, worker_route_id, context, context_weak,
+            version_id, url, scope, is_installed_version,
+            cross_origin_embedder_policy, std::move(coep_reporter),
+            *devtools_worker_token);
     live_hosts_[worker_id] = host;
     *pause_on_start = debug_service_worker_on_start_;
     for (auto& observer : observer_list_) {
@@ -105,6 +110,22 @@ void ServiceWorkerDevToolsManager::WorkerReadyForInspection(
   // Bring up UI for the ones not picked by other clients.
   if (debug_service_worker_on_start_ && !host->IsAttached())
     host->Inspect();
+}
+
+void ServiceWorkerDevToolsManager::UpdateCrossOriginEmbedderPolicy(
+    int worker_process_id,
+    int worker_route_id,
+    network::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
+    mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
+        coep_reporter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const WorkerId worker_id(worker_process_id, worker_route_id);
+  auto it = live_hosts_.find(worker_id);
+  if (it == live_hosts_.end())
+    return;
+  scoped_refptr<ServiceWorkerDevToolsAgentHost> host = it->second;
+  host->UpdateCrossOriginEmbedderPolicy(std::move(cross_origin_embedder_policy),
+                                        std::move(coep_reporter));
 }
 
 void ServiceWorkerDevToolsManager::WorkerVersionInstalled(int worker_process_id,

@@ -4,9 +4,10 @@
 
 #include "ui/gl/gl_surface.h"
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
@@ -39,7 +40,7 @@ void GLSurface::PrepareToDestroy(bool have_context) {}
 
 bool GLSurface::Resize(const gfx::Size& size,
                        float scale_factor,
-                       ColorSpace color_space,
+                       const gfx::ColorSpace& color_space,
                        bool has_alpha) {
   NOTIMPLEMENTED();
   return false;
@@ -139,10 +140,6 @@ void* GLSurface::GetConfig() {
   return NULL;
 }
 
-unsigned long GLSurface::GetCompatibilityKey() {
-  return 0;
-}
-
 gfx::VSyncProvider* GLSurface::GetVSyncProvider() {
   return NULL;
 }
@@ -184,8 +181,8 @@ bool GLSurface::IsSurfaceless() const {
   return false;
 }
 
-bool GLSurface::FlipsVertically() const {
-  return false;
+gfx::SurfaceOrigin GLSurface::GetOrigin() const {
+  return gfx::SurfaceOrigin::kBottomLeft;
 }
 
 bool GLSurface::BuffersFlipped() const {
@@ -193,10 +190,6 @@ bool GLSurface::BuffersFlipped() const {
 }
 
 bool GLSurface::SupportsDCLayers() const {
-  return false;
-}
-
-bool GLSurface::UseOverlaysForVideo() const {
   return false;
 }
 
@@ -254,13 +247,21 @@ GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }
 
-GLSurface::~GLSurface() {
-  if (GetCurrent() == this)
-    SetCurrent(NULL);
+bool GLSurface::IsCurrent() {
+  return GetCurrent() == this;
 }
 
-void GLSurface::SetCurrent(GLSurface* surface) {
-  current_surface_.Pointer()->Set(surface);
+GLSurface::~GLSurface() {
+  if (GetCurrent() == this)
+    ClearCurrent();
+}
+
+void GLSurface::ClearCurrent() {
+  current_surface_.Pointer()->Set(nullptr);
+}
+
+void GLSurface::SetCurrent() {
+  current_surface_.Pointer()->Set(this);
 }
 
 bool GLSurface::ExtensionsContain(const char* c_extensions, const char* name) {
@@ -292,7 +293,7 @@ void GLSurfaceAdapter::Destroy() {
 
 bool GLSurfaceAdapter::Resize(const gfx::Size& size,
                               float scale_factor,
-                              ColorSpace color_space,
+                              const gfx::ColorSpace& color_space,
                               bool has_alpha) {
   return surface_->Resize(size, scale_factor, color_space, has_alpha);
 }
@@ -410,10 +411,6 @@ void* GLSurfaceAdapter::GetConfig() {
   return surface_->GetConfig();
 }
 
-unsigned long GLSurfaceAdapter::GetCompatibilityKey() {
-  return surface_->GetCompatibilityKey();
-}
-
 GLSurfaceFormat GLSurfaceAdapter::GetFormat() {
   return surface_->GetFormat();
 }
@@ -452,8 +449,8 @@ bool GLSurfaceAdapter::IsSurfaceless() const {
   return surface_->IsSurfaceless();
 }
 
-bool GLSurfaceAdapter::FlipsVertically() const {
-  return surface_->FlipsVertically();
+gfx::SurfaceOrigin GLSurfaceAdapter::GetOrigin() const {
+  return surface_->GetOrigin();
 }
 
 bool GLSurfaceAdapter::BuffersFlipped() const {
@@ -462,10 +459,6 @@ bool GLSurfaceAdapter::BuffersFlipped() const {
 
 bool GLSurfaceAdapter::SupportsDCLayers() const {
   return surface_->SupportsDCLayers();
-}
-
-bool GLSurfaceAdapter::UseOverlaysForVideo() const {
-  return surface_->UseOverlaysForVideo();
 }
 
 bool GLSurfaceAdapter::SupportsProtectedVideo() const {
@@ -514,6 +507,18 @@ void GLSurfaceAdapter::SetGpuVSyncEnabled(bool enabled) {
 
 void GLSurfaceAdapter::SetDisplayTransform(gfx::OverlayTransform transform) {
   return surface_->SetDisplayTransform(transform);
+}
+
+void GLSurfaceAdapter::SetFrameRate(float frame_rate) {
+  surface_->SetFrameRate(frame_rate);
+}
+
+void GLSurfaceAdapter::SetCurrent() {
+  surface_->SetCurrent();
+}
+
+bool GLSurfaceAdapter::IsCurrent() {
+  return surface_->IsCurrent();
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}

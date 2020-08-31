@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/limits.h"
@@ -137,7 +136,11 @@ TEST(AudioLatency, HighLatencyBufferSizes) {
   }
 #else
   for (int i = 6400; i <= 204800; i *= 2)
+#if defined(USE_CRAS)
+    EXPECT_EQ(8 * (i / 100), AudioLatency::GetHighLatencyBufferSize(i, 32));
+#else
     EXPECT_EQ(2 * (i / 100), AudioLatency::GetHighLatencyBufferSize(i, 32));
+#endif  // defined(USE_CRAS)
 #endif  // defined(OS_WIN)
 }
 
@@ -165,7 +168,7 @@ TEST_P(AudioLatencyTest, ExactBufferSizes) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     AudioLatencyTest,
 #if defined(OS_WIN)
     // Windows 10 with supported driver will have valid min and max buffer sizes

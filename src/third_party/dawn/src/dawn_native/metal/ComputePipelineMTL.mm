@@ -19,27 +19,36 @@
 
 namespace dawn_native { namespace metal {
 
-    ComputePipeline::ComputePipeline(Device* device, const ComputePipelineDescriptor* descriptor)
-        : ComputePipelineBase(device, descriptor) {
+    // static
+    ResultOrError<ComputePipeline*> ComputePipeline::Create(
+        Device* device,
+        const ComputePipelineDescriptor* descriptor) {
+        Ref<ComputePipeline> pipeline = AcquireRef(new ComputePipeline(device, descriptor));
+        DAWN_TRY(pipeline->Initialize(descriptor));
+        return pipeline.Detach();
+    }
+
+    MaybeError ComputePipeline::Initialize(const ComputePipelineDescriptor* descriptor) {
         auto mtlDevice = ToBackend(GetDevice())->GetMTLDevice();
 
-        const ShaderModule* computeModule = ToBackend(descriptor->computeStage.module);
+        ShaderModule* computeModule = ToBackend(descriptor->computeStage.module);
         const char* computeEntryPoint = descriptor->computeStage.entryPoint;
-        ShaderModule::MetalFunctionData computeData = computeModule->GetFunction(
-            computeEntryPoint, SingleShaderStage::Compute, ToBackend(GetLayout()));
+        ShaderModule::MetalFunctionData computeData;
+        DAWN_TRY(computeModule->GetFunction(computeEntryPoint, SingleShaderStage::Compute,
+                                            ToBackend(GetLayout()), &computeData));
 
         NSError* error = nil;
         mMtlComputePipelineState =
             [mtlDevice newComputePipelineStateWithFunction:computeData.function error:&error];
         if (error != nil) {
             NSLog(@" error => %@", error);
-            GetDevice()->HandleError(wgpu::ErrorType::DeviceLost, "Error creating pipeline state");
-            return;
+            return DAWN_INTERNAL_ERROR("Error creating pipeline state");
         }
 
         // Copy over the local workgroup size as it is passed to dispatch explicitly in Metal
         mLocalWorkgroupSize = computeData.localWorkgroupSize;
         mRequiresStorageBufferLength = computeData.needsStorageBufferLength;
+        return {};
     }
 
     ComputePipeline::~ComputePipeline() {

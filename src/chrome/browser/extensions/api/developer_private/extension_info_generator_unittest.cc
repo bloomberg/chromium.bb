@@ -35,7 +35,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -77,7 +76,6 @@ const developer::ExtensionInfo* GetInfoFromList(
 std::string SiteControlsToString(
     const std::vector<developer::SiteControl>& controls) {
   base::Value list(base::Value::Type::LIST);
-  list.GetList().reserve(controls.size());
   for (const auto& control : controls) {
     std::unique_ptr<base::Value> control_value = control.ToValue();
     list.Append(std::move(*control_value));
@@ -231,9 +229,6 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
 
 // Test some of the basic fields.
 TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
-  // Enable error console for testing.
-  FeatureSwitch::ScopedOverride error_console_override(
-      FeatureSwitch::error_console(), true);
   profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
 
   const char kName[] = "extension name";
@@ -299,6 +294,8 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   EXPECT_FALSE(info->file_access.is_active);
   EXPECT_TRUE(info->incognito_access.is_enabled);
   EXPECT_FALSE(info->incognito_access.is_active);
+  EXPECT_TRUE(
+      base::StringPiece(info->icon_url).starts_with("data:image/png;base64,"));
 
   // Strip out the kHostReadWrite permission created by the extension requesting
   // host permissions above; runtime host permissions mean these are always
@@ -569,6 +566,43 @@ TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissionsSpecificHosts) {
       R"({"granted":false,"host":"https://example.com/*"}])",
       SiteControlsToString(runtime_hosts->hosts));
   EXPECT_FALSE(runtime_hosts->has_all_hosts);
+}
+
+// Tests that requesting all_url style permissions as a runtime granted pattern
+// correctly is treated as having access to all sites.
+TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissionsAllURLs) {
+  scoped_refptr<const Extension> all_urls_extension = CreateExtension(
+      "all_urls", ListBuilder().Append(kAllHostsPermission).Build(),
+      Manifest::INTERNAL);
+
+  // Withholding host permissions should result in the extension being set to
+  // run on click.
+  ScriptingPermissionsModifier permissions_modifier(profile(),
+                                                    all_urls_extension);
+  permissions_modifier.SetWithholdHostPermissions(true);
+  std::unique_ptr<developer::ExtensionInfo> info =
+      GenerateExtensionInfo(all_urls_extension->id());
+  const developer::RuntimeHostPermissions* runtime_hosts =
+      info->permissions.runtime_host_permissions.get();
+  EXPECT_EQ(developer::HOST_ACCESS_ON_CLICK, runtime_hosts->host_access);
+  EXPECT_EQ(R"([{"granted":false,"host":"*://*/*"}])",
+            SiteControlsToString(runtime_hosts->hosts));
+
+  // Grant the requested pattern ("*://*/*").
+  URLPattern all_url(Extension::kValidHostPermissionSchemes,
+                     kAllHostsPermission);
+  PermissionSet all_url_set(APIPermissionSet(), ManifestPermissionSet(),
+                            URLPatternSet({all_url}), URLPatternSet({all_url}));
+  PermissionsUpdater(profile()).GrantRuntimePermissions(
+      *all_urls_extension, all_url_set, base::DoNothing::Once());
+
+  // Now the extension should look like it has access to all hosts, while still
+  // also counting as having permission withholding enabled.
+  info = GenerateExtensionInfo(all_urls_extension->id());
+  runtime_hosts = info->permissions.runtime_host_permissions.get();
+  EXPECT_EQ(developer::HOST_ACCESS_ON_ALL_SITES, runtime_hosts->host_access);
+  EXPECT_EQ(R"([{"granted":true,"host":"*://*/*"}])",
+            SiteControlsToString(runtime_hosts->hosts));
 }
 
 // Tests the population of withheld runtime hosts when they overlap with granted

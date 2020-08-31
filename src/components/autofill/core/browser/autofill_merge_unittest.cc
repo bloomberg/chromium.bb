@@ -129,7 +129,7 @@ class PersonalDataManagerMock : public PersonalDataManager {
 };
 
 PersonalDataManagerMock::PersonalDataManagerMock()
-    : PersonalDataManager("en-US") {}
+    : PersonalDataManager("en-US", "US") {}
 
 PersonalDataManagerMock::~PersonalDataManagerMock() {}
 
@@ -139,11 +139,14 @@ void PersonalDataManagerMock::Reset() {
 
 std::string PersonalDataManagerMock::SaveImportedProfile(
     const AutofillProfile& profile) {
-  std::vector<AutofillProfile> profiles;
+  std::vector<AutofillProfile> new_profiles;
   std::string merged_guid = AutofillProfileComparator::MergeProfile(
-      profile, &profiles_, "en-US", &profiles);
-  if (merged_guid == profile.guid())
-    profiles_.push_back(std::make_unique<AutofillProfile>(profile));
+      profile, profiles_, "en-US", &new_profiles);
+
+  profiles_.clear();
+  for (const AutofillProfile& it : new_profiles) {
+    profiles_.push_back(std::make_unique<AutofillProfile>(it));
+  }
   return merged_guid;
 }
 
@@ -276,15 +279,15 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
 
       // Import the profile.
       std::unique_ptr<CreditCard> imported_credit_card;
-      base::Optional<std::string> unused_imported_vpa;
+      base::Optional<std::string> unused_imported_upi_id;
       form_data_importer_->ImportFormData(form_structure,
                                           true,  // address autofill enabled,
                                           true,  // credit card autofill enabled
                                           false,  // should return local card
                                           &imported_credit_card,
-                                          &unused_imported_vpa);
+                                          &unused_imported_upi_id);
       EXPECT_FALSE(imported_credit_card);
-      EXPECT_FALSE(unused_imported_vpa.has_value());
+      EXPECT_FALSE(unused_imported_upi_id.has_value());
 
       // Clear the |form| to start a new profile.
       form.fields.clear();

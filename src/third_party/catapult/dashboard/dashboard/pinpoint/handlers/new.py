@@ -8,6 +8,7 @@ from __future__ import absolute_import
 
 import json
 import logging
+import shlex
 
 from dashboard.api import api_request_handler
 from dashboard.common import bot_configurations
@@ -24,7 +25,7 @@ from dashboard.pinpoint.models.tasks import read_value
 _ERROR_BUG_ID = 'Bug ID must be an integer.'
 _ERROR_TAGS_DICT = 'Tags must be a dict of key/value string pairs.'
 _ERROR_UNSUPPORTED = 'This benchmark (%s) is unsupported.'
-_UNSUPPORTED_BENCHMARKS = []
+_ERROR_PRIORITY = 'Priority must be an integer.'
 
 
 class New(api_request_handler.ApiRequestHandler):
@@ -59,8 +60,9 @@ def _CreateJob(request):
 
   # Validate arguments and convert them to canonical internal representation.
   quests = _GenerateQuests(arguments)
-  changes = _ValidateChanges(arguments)
 
+  # Validate the priority, if it's present.
+  priority = _ValidatePriority(arguments.get('priority'))
   bug_id = _ValidateBugId(arguments.get('bug_id'))
   comparison_mode = _ValidateComparisonMode(arguments.get('comparison_mode'))
   comparison_magnitude = _ValidateComparisonMagnitude(
@@ -70,11 +72,30 @@ def _CreateJob(request):
   pin = _ValidatePin(arguments.get('pin'))
   tags = _ValidateTags(arguments.get('tags'))
   user = _ValidateUser(arguments.get('user'))
+  changes = _ValidateChanges(comparison_mode, arguments)
+
+  # If this is a try job, we assume it's higher priority than bisections, so
+  # we'll set it at a negative priority.
+  if priority not in arguments and comparison_mode == job_state.TRY:
+    arguments['priority'] = -10
 
   # TODO(dberris): Make this the default when we've graduated the beta.
   use_execution_engine = (
       arguments.get('experimental_execution_engine') and
       arguments.get('comparison_mode') == job_state.PERFORMANCE)
+
+  # Ensure that we have the required fields in tryjob requests.
+  if comparison_mode == 'try':
+    if 'benchmark' not in arguments:
+      raise ValueError('Missing required "benchmark" argument.')
+
+    # First we check whether there's a quest that's of type 'RunTelemetryTest'.
+    is_telemetry_test = any(
+        [isinstance(q, quest_module.RunTelemetryTest) for q in quests])
+    if is_telemetry_test and ('story' not in arguments and
+                              'story_tags' not in arguments):
+      raise ValueError(
+          'Missing either "story" or "story_tags" as arguments for try jobs.')
 
   # Create job.
   job = job_module.Job.New(
@@ -90,6 +111,7 @@ def _CreateJob(request):
       pin=pin,
       tags=tags,
       user=user,
+      priority=priority,
       use_execution_engine=use_execution_engine)
 
   if use_execution_engine:
@@ -103,9 +125,9 @@ def _CreateJob(request):
     target = arguments.get('target')
     task_options = performance_bisection.TaskOptions(
         build_option_template=performance_bisection.BuildOptionTemplate(
-            builder=arguments.get('configuration'),
-            target=arguments.get('target'),
-            bucket='master.tryserver.chromium.perf',
+            builder=arguments.get('builder'),
+            target=target,
+            bucket=arguments.get('bucket', 'master.tryserver.chromium.perf'),
         ),
         test_option_template=performance_bisection.TestOptionTemplate(
             swarming_server=arguments.get('swarming_server'),
@@ -118,6 +140,7 @@ def _CreateJob(request):
                 grouping_label=arguments.get('grouping_label'),
                 story=arguments.get('story'),
                 statistic=arguments.get('statistic'),
+                histogram_name=arguments.get('chart'),
             ),
             graph_json_options=read_value.GraphJsonOptions(
                 chart=arguments.get('chart'), trace=arguments.get('trace')),
@@ -154,10 +177,29 @@ def _ArgumentsWithConfiguration(original_arguments):
 
     if default_arguments:
       for k, v in list(default_arguments.items()):
-        new_arguments.setdefault(k, v)
+        # We special-case the extra_test_args argument to be additive, so that
+        # we can respect the value set in bot_configurations in addition to
+        # those provided from the UI.
+        if k == 'extra_test_args':
+          # First, parse whatever is already there. We'll canonicalise the
+          # inputs as a JSON list of strings.
+          provided_args = new_arguments.get('extra_test_args', '')
+          extra_test_args = []
+          if provided_args:
+            try:
+              extra_test_args = json.loads(provided_args)
+            except ValueError:
+              extra_test_args = shlex.split(provided_args)
 
-  if new_arguments.get('benchmark') in _UNSUPPORTED_BENCHMARKS:
-    raise ValueError(_ERROR_UNSUPPORTED % new_arguments.get('benchmark'))
+          try:
+            configured_args = json.loads(v)
+          except ValueError:
+            configured_args = shlex.split(v)
+
+          new_arguments['extra_test_args'] = json.dumps(extra_test_args +
+                                                        configured_args)
+        else:
+          new_arguments.setdefault(k, v)
 
   return new_arguments
 
@@ -171,12 +213,71 @@ def _ValidateBugId(bug_id):
   except ValueError:
     raise ValueError(_ERROR_BUG_ID)
 
+def _ValidatePriority(priority):
+  if not priority:
+    return None
 
-def _ValidateChanges(arguments):
+  try:
+    return int(priority)
+  except ValueError:
+    raise ValueError(_ERROR_PRIORITY)
+
+
+def _ValidateChanges(comparison_mode, arguments):
   changes = arguments.get('changes')
   if changes:
     # FromData() performs input validation.
     return [change.Change.FromData(c) for c in json.loads(changes)]
+
+  # There are valid cases where a tryjob requests a base_git_hash and an
+  # end_git_hash without a patch. Let's check first whether we're finding the
+  # right combination of inputs here.
+  if comparison_mode == job_state.TRY:
+    if 'base_git_hash' not in arguments:
+      raise ValueError('base_git_hash is required for try jobs')
+
+    commit_1 = change.Commit.FromDict({
+        'repository': arguments.get('repository'),
+        'git_hash': arguments.get('base_git_hash'),
+    })
+
+    commit_2 = change.Commit.FromDict({
+        'repository':
+            arguments.get('repository'),
+        'git_hash':
+            arguments.get('end_git_hash', arguments.get('base_git_hash')),
+    })
+
+    # Now, if we have a patch argument, we need to handle the case where a patch
+    # needs to be applied to both the 'end_git_hash' and the 'base_git_hash'.
+    if 'patch' in arguments:
+      patch = change.GerritPatch.FromUrl(arguments['patch'])
+    else:
+      patch = None
+
+    if 'end_git_hash' in arguments and arguments['end_git_hash'] != arguments[
+        'base_git_hash']:
+      # This is the case where 'end_git_hash' was also provided, in which case
+      # it means that we want to apply the patch to both the base_git_hash and
+      # the end_git_hash.
+      change_1 = change.Change(commits=(commit_1,), patch=patch)
+      change_2 = change.Change(commits=(commit_2,), patch=patch)
+    else:
+      # This is the case where only 'base_git_hash' was provided, or that
+      # 'end_git_hash' is the same as 'base_git_hash', in which case this is an
+      # A/B test.
+      change_1 = change.Change(commits=(commit_1,))
+      change_2 = change.Change(commits=(commit_1,), patch=patch)
+
+    return change_1, change_2
+
+  # Everything else that follows only applies to bisections.
+  assert (comparison_mode == job_state.FUNCTIONAL or
+          comparison_mode == job_state.PERFORMANCE)
+
+  if 'start_git_hash' not in arguments or 'end_git_hash' not in arguments:
+    raise ValueError(
+        'bisections require both a start_git_hash and an end_git_hash')
 
   commit_1 = change.Commit.FromDict({
       'repository': arguments.get('repository'),
@@ -193,7 +294,9 @@ def _ValidateChanges(arguments):
   else:
     patch = None
 
-  change_1 = change.Change(commits=(commit_1,))
+  # If we find a patch in the request, this means we want to apply it even to
+  # the start commit.
+  change_1 = change.Change(commits=(commit_1,), patch=patch)
   change_2 = change.Change(commits=(commit_2,), patch=patch)
 
   return change_1, change_2
@@ -250,14 +353,14 @@ def _GenerateQuests(arguments):
     if target in ('performance_test_suite', 'performance_webview_test_suite',
                   'telemetry_perf_tests', 'telemetry_perf_webview_tests'):
       quest_classes = (quest_module.FindIsolate, quest_module.RunTelemetryTest,
-                       quest_module.ReadHistogramsJsonValue)
+                       quest_module.ReadValue)
     elif target == 'vr_perf_tests':
       quest_classes = (quest_module.FindIsolate,
                        quest_module.RunVrTelemetryTest,
-                       quest_module.ReadHistogramsJsonValue)
+                       quest_module.ReadValue)
     else:
       quest_classes = (quest_module.FindIsolate, quest_module.RunGTest,
-                       quest_module.ReadGraphJsonValue)
+                       quest_module.ReadValue)
 
   quest_instances = []
   for quest_class in quest_classes:

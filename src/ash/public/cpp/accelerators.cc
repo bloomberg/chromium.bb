@@ -32,6 +32,7 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN,
      TOGGLE_APP_LIST_FULLSCREEN},
     {true, ui::VKEY_WLAN, ui::EF_NONE, TOGGLE_WIFI},
+    {true, ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::EF_NONE, PRIVACY_SCREEN_TOGGLE},
     {true, ui::VKEY_KBD_BRIGHTNESS_DOWN, ui::EF_NONE, KEYBOARD_BRIGHTNESS_DOWN},
     {true, ui::VKEY_KBD_BRIGHTNESS_UP, ui::EF_NONE, KEYBOARD_BRIGHTNESS_UP},
     // Maximize button.
@@ -117,6 +118,7 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, RESTORE_TAB},
     // This corresponds to the "Print Screen" key.
     {true, ui::VKEY_SNAPSHOT, ui::EF_NONE, TAKE_SCREENSHOT},
+    {true, ui::VKEY_SNAPSHOT, ui::EF_ALT_DOWN, TAKE_PARTIAL_SCREENSHOT},
     // On Chrome OS, Search key is mapped to LWIN. The Search key binding should
     // act on release instead of press when using Search as a modifier key for
     // extended keyboard shortcuts.
@@ -175,8 +177,13 @@ const AcceleratorData kAcceleratorData[] = {
 
     // Media Player shortcuts.
     {true, ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE, MEDIA_NEXT_TRACK},
+    {true, ui::VKEY_MEDIA_PAUSE, ui::EF_NONE, MEDIA_PAUSE},
+    {true, ui::VKEY_MEDIA_PLAY, ui::EF_NONE, MEDIA_PLAY},
     {true, ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE, MEDIA_PLAY_PAUSE},
     {true, ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE, MEDIA_PREV_TRACK},
+    {true, ui::VKEY_MEDIA_STOP, ui::EF_NONE, MEDIA_STOP},
+    {true, ui::VKEY_OEM_103, ui::EF_NONE, MEDIA_REWIND},
+    {true, ui::VKEY_OEM_104, ui::EF_NONE, MEDIA_FAST_FORWARD},
 
     // Assistant shortcuts.
     {true, ui::VKEY_A, ui::EF_COMMAND_DOWN, START_ASSISTANT},
@@ -216,6 +223,51 @@ const AcceleratorData kAcceleratorData[] = {
 };
 
 const size_t kAcceleratorDataLength = base::size(kAcceleratorData);
+
+const AcceleratorData kNewAdditionalAcceleratorData[] = {
+    // Desk activation:
+    {true, ui::VKEY_LEFT, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+     DESKS_ACTIVATE_DESK},
+    {true, ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN,
+     DESKS_ACTIVATE_DESK},
+
+    // Moving windows to desks:
+    {true, ui::VKEY_LEFT, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
+     DESKS_MOVE_ACTIVE_ITEM},
+    {true, ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
+     DESKS_MOVE_ACTIVE_ITEM},
+
+    // Snap
+    {true, ui::VKEY_OEM_COMMA,
+     ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+     WINDOW_CYCLE_SNAP_LEFT},
+    {true, ui::VKEY_OEM_PERIOD,
+     ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+     WINDOW_CYCLE_SNAP_RIGHT},
+
+    // Zoom
+    {true, ui::VKEY_UP,
+     ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+     SCALE_UI_UP},
+    {true, ui::VKEY_DOWN,
+     ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+     SCALE_UI_DOWN},
+    {true, ui::VKEY_BACK,
+     ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+     SCALE_UI_RESET},
+
+    // Shortcut Viewer
+    {true, ui::VKEY_OEM_2, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+     SHOW_SHORTCUT_VIEWER},
+
+    // Minimize / Maximize
+    {true, ui::VKEY_OEM_MINUS, ui::EF_COMMAND_DOWN, WINDOW_MINIMIZE},
+    {true, ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
+     TOGGLE_MAXIMIZED},
+};
+
+const size_t kNewAdditionalAcceleratorDataLength =
+    base::size(kNewAdditionalAcceleratorData);
 
 // static
 AcceleratorController* AcceleratorController::Get() {

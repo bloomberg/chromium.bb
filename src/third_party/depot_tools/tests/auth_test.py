@@ -12,17 +12,17 @@ import os
 import unittest
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if sys.version_info.major == 2:
+  import mock
+  BUILTIN_OPEN = '__builtin__.open'
+else:
+  from unittest import mock
+  BUILTIN_OPEN = 'builtins.open'
 
-from third_party import mock
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import auth
 import subprocess2
-
-if sys.version_info.major == 2:
-  BUILTIN_OPEN = '__builtin__.open'
-else:
-  BUILTIN_OPEN = 'builtins.open'
 
 
 NOW = datetime.datetime(2019, 10, 17, 12, 30, 59, 0)
@@ -57,7 +57,7 @@ class AuthenticatorTest(unittest.TestCase):
     authenticator._access_token = auth.AccessToken('token', None)
     self.assertEqual(
         auth.AccessToken('token', None), authenticator.get_access_token())
-    self.assertEqual(0, len(subprocess2.check_call_out.mock_calls))
+    subprocess2.check_call_out.assert_not_called()
 
   def testGetAccesstoken_LoggedIn(self):
     expiry = calendar.timegm(VALID_EXPIRY.timetuple())
@@ -128,7 +128,7 @@ class HasLuciContextLocalAuthTest(unittest.TestCase):
     os.environ = {}
     self.assertFalse(auth.has_luci_context_local_auth())
 
-  def testUnexistentPath(self):
+  def testNonexistentPath(self):
     os.environ = {'LUCI_CONTEXT': 'path'}
     open.side_effect = OSError
     self.assertFalse(auth.has_luci_context_local_auth())

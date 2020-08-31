@@ -28,10 +28,10 @@ js_type_check("closure_compile_module") {
     ":files_ripple",
     ":files_safe_media",
     ":files_safe_media_webview_content",
+    ":files_spinner",
     ":files_toast",
     ":files_toggle_ripple",
     ":files_tooltip",
-    ":xf_activity_complete",
     ":xf_button",
     ":xf_circular_progress",
     ":xf_display_panel",
@@ -79,9 +79,7 @@ js_library("files_metadata_entry") {
 }
 
 js_library("files_quick_view") {
-  deps = [
-    ":files_metadata_box",
-  ]
+  deps = [ ":files_metadata_box" ]
   externs_list = [
     "$externs_path/chrome_extensions.js",
     "$externs_path/webview_tag.js",
@@ -90,15 +88,16 @@ js_library("files_quick_view") {
 }
 
 js_library("files_ripple") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-  ]
+  deps = [ "//ui/webui/resources/js:assert" ]
 }
 
 js_library("files_safe_media") {
 }
 
 js_library("files_safe_media_webview_content") {
+}
+
+js_library("files_spinner") {
 }
 
 # TODO(tapted): Move this to //ui/file_manager/base.
@@ -114,6 +113,7 @@ js_library("files_toggle_ripple") {
 # TODO(tapted): Move this to //ui/file_manager/base.
 js_library("files_tooltip") {
   visibility += [ "//ui/file_manager/gallery/*" ]
+  deps = [ "//ui/file_manager/file_manager/common/js:util" ]
 }
 
 js_unittest("files_tooltip_unittest") {
@@ -149,9 +149,6 @@ js_test_gen_html("js_test_gen_html") {
   html_import = true
 }
 
-js_library("xf_activity_complete") {
-}
-
 js_library("xf_button") {
   deps = [
     "//ui/webui/resources/cr_elements/cr_button:cr_button",
@@ -171,7 +168,6 @@ js_library("xf_display_panel") {
 
 js_library("xf_panel_item") {
   deps = [
-    ":xf_activity_complete",
     ":xf_button",
     ":xf_circular_progress",
   ]

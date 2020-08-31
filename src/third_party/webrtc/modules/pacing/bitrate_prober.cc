@@ -28,16 +28,16 @@ namespace {
 // we have a min probe packet size of 200 bytes.
 constexpr size_t kMinProbePacketSize = 200;
 
-constexpr TimeDelta kProbeClusterTimeout = TimeDelta::Seconds<5>();
+constexpr TimeDelta kProbeClusterTimeout = TimeDelta::Seconds(5);
 
 }  // namespace
 
 BitrateProberConfig::BitrateProberConfig(
     const WebRtcKeyValueConfig* key_value_config)
     : min_probe_packets_sent("min_probe_packets_sent", 5),
-      min_probe_delta("min_probe_delta", TimeDelta::ms(1)),
-      min_probe_duration("min_probe_duration", TimeDelta::ms(15)),
-      max_probe_delay("max_probe_delay", TimeDelta::ms(3)) {
+      min_probe_delta("min_probe_delta", TimeDelta::Millis(1)),
+      min_probe_duration("min_probe_duration", TimeDelta::Millis(15)),
+      max_probe_delay("max_probe_delay", TimeDelta::Millis(3)) {
   ParseFieldTrial({&min_probe_packets_sent, &min_probe_delta,
                    &min_probe_duration, &max_probe_delay},
                   key_value_config->Lookup("WebRTC-Bwe-ProbingConfiguration"));
@@ -72,10 +72,6 @@ void BitrateProber::SetEnabled(bool enable) {
     probing_state_ = ProbingState::kDisabled;
     RTC_LOG(LS_INFO) << "Bandwidth probing disabled";
   }
-}
-
-bool BitrateProber::IsProbing() const {
-  return probing_state_ == ProbingState::kActive;
 }
 
 void BitrateProber::OnIncomingPacket(size_t packet_size) {
@@ -132,8 +128,9 @@ Timestamp BitrateProber::NextProbeTime(Timestamp now) const {
   if (next_probe_time_.IsFinite() &&
       now - next_probe_time_ > config_.max_probe_delay.Get()) {
     RTC_DLOG(LS_WARNING) << "Probe delay too high"
-                         << " (next_ms:" << next_probe_time_.ms()
-                         << ", now_ms: " << now.ms() << ")";
+                            " (next_ms:"
+                         << next_probe_time_.ms() << ", now_ms: " << now.ms()
+                         << ")";
     return Timestamp::PlusInfinity();
   }
 
@@ -193,8 +190,9 @@ Timestamp BitrateProber::CalculateNextProbeTime(
 
   // Compute the time delta from the cluster start to ensure probe bitrate stays
   // close to the target bitrate. Result is in milliseconds.
-  DataSize sent_bytes = DataSize::bytes(cluster.sent_bytes);
-  DataRate send_bitrate = DataRate::bps(cluster.pace_info.send_bitrate_bps);
+  DataSize sent_bytes = DataSize::Bytes(cluster.sent_bytes);
+  DataRate send_bitrate =
+      DataRate::BitsPerSec(cluster.pace_info.send_bitrate_bps);
   TimeDelta delta = sent_bytes / send_bitrate;
   return cluster.started_at + delta;
 }

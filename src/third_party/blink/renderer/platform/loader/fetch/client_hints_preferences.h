@@ -22,12 +22,14 @@ class PLATFORM_EXPORT ClientHintsPreferences {
  public:
   class Context {
    public:
-    virtual void CountClientHints(mojom::WebClientHintsType) = 0;
+    virtual void CountClientHints(network::mojom::WebClientHintsType) = 0;
     virtual void CountPersistentClientHintHeaders() = 0;
 
    protected:
     virtual ~Context() = default;
   };
+
+  enum class UpdateMode { kReplace, kMerge };
 
   ClientHintsPreferences();
 
@@ -39,12 +41,13 @@ class PLATFORM_EXPORT ClientHintsPreferences {
   // |url|, then |this| would not be updated.
   void UpdateFromAcceptClientHintsHeader(const String& header_value,
                                          const KURL&,
+                                         UpdateMode mode,
                                          Context*);
 
-  bool ShouldSend(mojom::WebClientHintsType type) const {
+  bool ShouldSend(network::mojom::WebClientHintsType type) const {
     return enabled_hints_.IsEnabled(type);
   }
-  void SetShouldSendForTesting(mojom::WebClientHintsType type) {
+  void SetShouldSendForTesting(network::mojom::WebClientHintsType type) {
     enabled_hints_.SetIsEnabled(type, true);
   }
 
@@ -59,6 +62,8 @@ class PLATFORM_EXPORT ClientHintsPreferences {
   // Returns true if client hints are allowed for the provided KURL. Client
   // hints are allowed only on HTTP URLs that belong to secure contexts.
   static bool IsClientHintsAllowed(const KURL&);
+
+  static bool UserAgentClientHintEnabled();
 
   WebEnabledClientHints GetWebEnabledClientHints() const;
 

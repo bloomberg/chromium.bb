@@ -29,11 +29,12 @@ mr.ExternalMessageListener = class extends mr.EventListener {
    * @override
    */
   validateEvent(message, sender, sendResponse) {
-    // Make sure all messages have a sender |id| and that the ID is whitelisted.
-    // If messages have a |tab| they are from a web page (most likely the Cast
-    // setup page).
-    if (!sender.id ||
-        mr.ExternalMessageListener.WHITELIST_.indexOf(sender.id) == -1) {
+    // Make sure all messages have a sender |origin| and that the origin is
+    // whitelisted.
+    const prefix = 'chrome-extension://';
+    if (!sender.origin || !sender.origin.startsWith(prefix) ||
+        !mr.ExternalMessageListener.WHITELIST_.includes(
+            sender.origin.substring(prefix.length))) {
       return false;
     }
 

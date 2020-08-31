@@ -25,12 +25,8 @@ config("audio_device_warnings_config") {
 
 rtc_source_set("audio_device_default") {
   visibility = [ "*" ]
-  sources = [
-    "include/audio_device_default.h",
-  ]
-  deps = [
-    ":audio_device_api",
-  ]
+  sources = [ "include/audio_device_default.h" ]
+  deps = [ ":audio_device_api" ]
 }
 
 rtc_source_set("audio_device") {
@@ -274,23 +270,23 @@ rtc_library("audio_device_impl") {
           "linux/latebindingsymboltable_linux.cc",
           "linux/latebindingsymboltable_linux.h",
         ]
-        defines += [ "LINUX_ALSA" ]
+        defines += [ "WEBRTC_ENABLE_LINUX_ALSA" ]
         libs = [ "dl" ]
         if (rtc_use_x11) {
           libs += [ "X11" ]
           defines += [ "WEBRTC_USE_X11" ]
         }
         if (rtc_include_pulse_audio) {
-          sources += [
-            "linux/audio_device_pulse_linux.cc",
-            "linux/audio_device_pulse_linux.h",
-            "linux/audio_mixer_manager_pulse_linux.cc",
-            "linux/audio_mixer_manager_pulse_linux.h",
-            "linux/pulseaudiosymboltable_linux.cc",
-            "linux/pulseaudiosymboltable_linux.h",
-          ]
-          defines += [ "LINUX_PULSE" ]
+          defines += [ "WEBRTC_ENABLE_LINUX_PULSE" ]
         }
+        sources += [
+          "linux/audio_device_pulse_linux.cc",
+          "linux/audio_device_pulse_linux.h",
+          "linux/audio_mixer_manager_pulse_linux.cc",
+          "linux/audio_mixer_manager_pulse_linux.h",
+          "linux/pulseaudiosymboltable_linux.cc",
+          "linux/pulseaudiosymboltable_linux.h",
+        ]
       }
       if (is_mac) {
         sources += [
@@ -359,6 +355,7 @@ rtc_source_set("mock_audio_device") {
     ":audio_device",
     ":audio_device_buffer",
     ":audio_device_impl",
+    "../../rtc_base:refcount",
     "../../test:test_support",
   ]
 }
@@ -425,7 +422,7 @@ if (rtc_include_tests) {
 
 if (!build_with_chromium && is_android) {
   rtc_android_library("audio_device_java") {
-    java_files = [
+    sources = [
       "android/java/src/org/webrtc/voiceengine/BuildInfo.java",
       "android/java/src/org/webrtc/voiceengine/WebRtcAudioEffects.java",
       "android/java/src/org/webrtc/voiceengine/WebRtcAudioManager.java",

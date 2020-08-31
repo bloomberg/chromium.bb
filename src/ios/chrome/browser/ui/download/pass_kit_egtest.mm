@@ -8,11 +8,15 @@
 
 #include "base/bind.h"
 #import "base/test/ios/wait_util.h"
+#include "components/infobars/core/infobar_feature.h"
 #include "ios/chrome/browser/download/download_test_util.h"
 #include "ios/chrome/browser/download/pass_kit_mime_type.h"
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -20,6 +24,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if defined(CHROME_EARL_GREY_1)
+#include "base/test/scoped_feature_list.h"
 // EG1 test relies on view controller presentation as the signal that PassKit
 // Dialog is shown.
 #import "ios/chrome/app/main_controller.h"  // nogncheck
@@ -38,9 +43,10 @@ namespace {
 
 // Returns matcher for PassKit error infobar.
 id<GREYMatcher> PassKitErrorInfobar() {
-  using l10n_util::GetNSStringWithFixup;
-  NSString* label = GetNSStringWithFixup(IDS_IOS_GENERIC_PASSKIT_ERROR);
-  return grey_accessibilityLabel(label);
+  return grey_allOf(grey_accessibilityID(kInfobarBannerViewIdentifier),
+                    grey_accessibilityLabel(
+                        l10n_util::GetNSString(IDS_IOS_GENERIC_PASSKIT_ERROR)),
+                    nil);
 }
 
 // PassKit landing page and download request handler.
@@ -70,13 +76,31 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 @interface PassKitEGTest : ChromeTestCase
 @end
 
-@implementation PassKitEGTest
+@implementation PassKitEGTest {
+#if defined(CHROME_EARL_GREY_1)
+  base::test::ScopedFeatureList _featureList;
+#endif
+}
 
 - (void)setUp {
   [super setUp];
 
+// Turn on Messages UI.
+#if defined(CHROME_EARL_GREY_1)
+  _featureList.InitWithFeatures(
+      /*enabled_features=*/{kIOSInfobarUIReboot},
+      /*disabled_features=*/{kInfobarUIRebootOnlyiOS13});
+#endif
+
   self.testServer->RegisterRequestHandler(base::Bind(&GetResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+}
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  config.features_enabled.push_back(kIOSInfobarUIReboot);
+  config.features_disabled.push_back(kInfobarUIRebootOnlyiOS13);
+  return config;
 }
 
 // Tests that Chrome presents PassKit error infobar if pkpass file cannot be

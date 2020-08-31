@@ -26,31 +26,21 @@ class CancelCastingDialog : public views::DialogDelegateView {
     AddChildView(new views::MessageBoxView(views::MessageBoxView::InitParams(
         l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_MESSAGE))));
     SetLayoutManager(std::make_unique<views::FillLayout>());
+    SetTitle(l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_TITLE));
+    SetShowCloseButton(false);
+    SetButtonLabel(
+        ui::DIALOG_BUTTON_OK,
+        l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_CONTINUE));
+    SetAcceptCallback(base::BindOnce(&CancelCastingDialog::OnDialogAccepted,
+                                     base::Unretained(this)));
+    SetCancelCallback(base::BindOnce(&CancelCastingDialog::OnDialogCancelled,
+                                     base::Unretained(this)));
   }
   ~CancelCastingDialog() override = default;
 
-  base::string16 GetWindowTitle() const override {
-    return l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_TITLE);
-  }
+  void OnDialogCancelled() { std::move(callback_).Run(false); }
 
-  int GetDialogButtons() const override {
-    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-  }
-
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override {
-    if (button == ui::DIALOG_BUTTON_OK)
-      return l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_CONTINUE);
-    if (button == ui::DIALOG_BUTTON_CANCEL)
-      return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
-    return base::string16();
-  }
-
-  bool Cancel() override {
-    std::move(callback_).Run(false);
-    return true;
-  }
-
-  bool Accept() override {
+  void OnDialogAccepted() {
     // Stop screen sharing and capturing. When notified, all capture sessions or
     // all share sessions will be stopped.
     // Currently, the logic is in ScreenSecurityNotificationController.
@@ -58,10 +48,7 @@ class CancelCastingDialog : public views::DialogDelegateView {
     Shell::Get()->system_tray_notifier()->NotifyScreenShareStop();
 
     std::move(callback_).Run(true);
-    return true;
   }
-
-  bool ShouldShowCloseButton() const override { return false; }
 
  private:
   base::OnceCallback<void(bool)> callback_;

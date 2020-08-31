@@ -16,48 +16,60 @@ import("../swiftshader.gni")
 
 swiftshader_source_set("Device_headers") {
   sources = [
+    "ASTC_Decoder.hpp",
+    "BC_Decoder.hpp",
     "Blitter.hpp",
     "Clipper.hpp",
-    "Color.hpp",
     "Config.hpp",
     "Context.hpp",
     "ETC_Decoder.hpp",
-    "Matrix.hpp",
     "Memset.hpp",
     "PixelProcessor.hpp",
-    "Plane.hpp",
-    "Point.hpp",
     "QuadRasterizer.hpp",
     "Renderer.hpp",
     "SetupProcessor.hpp",
-    "Vector.hpp",
     "VertexProcessor.hpp",
+    "../../third_party/astc-encoder/Source/astc_codec_internals.h",
+    "../../third_party/astc-encoder/Source/astc_mathlib.h",
   ]
 }
 
 swiftshader_source_set("Device") {
   sources = [
+    "ASTC_Decoder.cpp",
+    "BC_Decoder.cpp",
     "Blitter.cpp",
     "Clipper.cpp",
-    "Color.cpp",
-    "Config.cpp",
     "Context.cpp",
     "ETC_Decoder.cpp",
-    "Matrix.cpp",
     "PixelProcessor.cpp",
-    "Plane.cpp",
-    "Point.cpp",
     "QuadRasterizer.cpp",
     "Renderer.cpp",
     "SetupProcessor.cpp",
-    "Vector.cpp",
     "VertexProcessor.cpp",
+    # TODO: Write Build.gn for third_party/astc-encoder
+    "../../third_party/astc-encoder/Source/astc_block_sizes2.cpp",
+    "../../third_party/astc-encoder/Source/astc_color_unquantize.cpp",
+    "../../third_party/astc-encoder/Source/astc_decompress_symbolic.cpp",
+    "../../third_party/astc-encoder/Source/astc_image_load_store.cpp",
+    "../../third_party/astc-encoder/Source/astc_integer_sequence.cpp",
+    "../../third_party/astc-encoder/Source/astc_mathlib.cpp",
+    "../../third_party/astc-encoder/Source/astc_mathlib_softfloat.cpp",
+    "../../third_party/astc-encoder/Source/astc_partition_tables.cpp",
+    "../../third_party/astc-encoder/Source/astc_quantization.cpp",
+    "../../third_party/astc-encoder/Source/astc_symbolic_physical.cpp",
+    "../../third_party/astc-encoder/Source/astc_weight_quant_xfer_tables.cpp",
   ]
 
   include_dirs = [
     "..",
     "../../include",
     "../../third_party/SPIRV-Headers/include",
+    "../../third_party/astc-encoder/Source"
+  ]
+
+  defines = [
+     "SWIFTSHADER_ENABLE_ASTC",  # TODO(b/150130101)
   ]
 
   deps = [

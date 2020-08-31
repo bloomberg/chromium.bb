@@ -4,7 +4,7 @@
 
 #include "osp/impl/service_publisher_impl.h"
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace osp {

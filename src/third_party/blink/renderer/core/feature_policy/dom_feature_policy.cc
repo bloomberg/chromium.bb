@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
@@ -20,10 +21,7 @@ bool DOMFeaturePolicy::allowsFeature(ScriptState* script_state,
       script_state ? ExecutionContext::From(script_state) : nullptr;
   if (GetAvailableFeatures(execution_context).Contains(feature)) {
     auto feature_name = GetDefaultFeatureNameMap().at(feature);
-    mojom::PolicyValueType feature_type =
-        GetPolicy()->GetFeatureList().at(feature_name).second;
-    PolicyValue value = PolicyValue::CreateMaxPolicyValue(feature_type);
-    return GetPolicy()->IsFeatureEnabled(feature_name, value);
+    return GetPolicy()->IsFeatureEnabled(feature_name);
   }
 
   AddWarningForUnrecognizedFeature(feature);
@@ -38,7 +36,7 @@ bool DOMFeaturePolicy::allowsFeature(ScriptState* script_state,
   scoped_refptr<const SecurityOrigin> origin =
       SecurityOrigin::CreateFromString(url);
   if (!origin || origin->IsOpaque()) {
-    GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
+    GetDocument()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning,
         "Invalid origin url for feature '" + feature + "': " + url + "."));
@@ -51,11 +49,8 @@ bool DOMFeaturePolicy::allowsFeature(ScriptState* script_state,
   }
 
   auto feature_name = GetDefaultFeatureNameMap().at(feature);
-  mojom::PolicyValueType feature_type =
-      GetPolicy()->GetFeatureList().at(feature_name).second;
-  PolicyValue value = PolicyValue::CreateMaxPolicyValue(feature_type);
   return GetPolicy()->IsFeatureEnabledForOrigin(feature_name,
-                                                origin->ToUrlOrigin(), value);
+                                                origin->ToUrlOrigin());
 }
 
 Vector<String> DOMFeaturePolicy::features(ScriptState* script_state) const {
@@ -71,10 +66,7 @@ Vector<String> DOMFeaturePolicy::allowedFeatures(
   Vector<String> allowed_features;
   for (const String& feature : GetAvailableFeatures(execution_context)) {
     auto feature_name = GetDefaultFeatureNameMap().at(feature);
-    mojom::PolicyValueType feature_type =
-        GetPolicy()->GetFeatureList().at(feature_name).second;
-    PolicyValue value = PolicyValue::CreateMaxPolicyValue(feature_type);
-    if (GetPolicy()->IsFeatureEnabled(feature_name, value))
+    if (GetPolicy()->IsFeatureEnabled(feature_name))
       allowed_features.push_back(feature);
   }
   return allowed_features;
@@ -87,21 +79,17 @@ Vector<String> DOMFeaturePolicy::getAllowlistForFeature(
       script_state ? ExecutionContext::From(script_state) : nullptr;
   if (GetAvailableFeatures(execution_context).Contains(feature)) {
     auto feature_name = GetDefaultFeatureNameMap().at(feature);
-    auto feature_type = GetPolicy()->GetFeatureList().at(feature_name).second;
 
     const FeaturePolicy::Allowlist allowlist =
         GetPolicy()->GetAllowlistForFeature(feature_name);
-    auto values = allowlist.Values();
-    PolicyValue max_value = PolicyValue::CreateMaxPolicyValue(feature_type);
-    if (values.empty()) {
-      if (allowlist.GetFallbackValue().Type() !=
-              mojom::PolicyValueType::kNull &&
-          allowlist.GetFallbackValue() >= max_value)
+    const auto& allowed_origins = allowlist.AllowedOrigins();
+    if (allowed_origins.empty()) {
+      if (allowlist.GetFallbackValue())
         return Vector<String>({"*"});
     }
     Vector<String> result;
-    for (const auto& entry : values) {
-      result.push_back(WTF::String::FromUTF8(entry.first.Serialize()));
+    for (const auto& origin : allowed_origins) {
+      result.push_back(WTF::String::FromUTF8(origin.Serialize()));
     }
     return result;
   }
@@ -112,12 +100,12 @@ Vector<String> DOMFeaturePolicy::getAllowlistForFeature(
 
 void DOMFeaturePolicy::AddWarningForUnrecognizedFeature(
     const String& feature) const {
-  GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
+  GetDocument()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kWarning,
       "Unrecognized feature: '" + feature + "'."));
 }
 
-void DOMFeaturePolicy::Trace(blink::Visitor* visitor) {
+void DOMFeaturePolicy::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 

@@ -73,11 +73,9 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(TextureBindingsResetTest, reporter, ctxInf
     context->resetContext();
 
     // Test creating a texture and then resetting bindings.
-    GrSurfaceDesc desc;
-    desc.fWidth = desc.fHeight = 10;
-    desc.fConfig = kRGBA_8888_GrPixelConfig;
+    static constexpr SkISize kDims = {10, 10};
     auto format = gpu->caps()->getDefaultBackendFormat(GrColorType::kRGBA_8888, GrRenderable::kNo);
-    auto tex = gpu->createTexture(desc, format, GrRenderable::kNo, 1, GrMipMapped::kNo,
+    auto tex = gpu->createTexture(kDims, format, GrRenderable::kNo, 1, GrMipMapped::kNo,
                                   SkBudgeted::kNo, GrProtected::kNo);
     REPORTER_ASSERT(reporter, tex);
     context->resetGLTextureBindings();

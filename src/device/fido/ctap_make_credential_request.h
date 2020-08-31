@@ -15,6 +15,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "device/fido/client_data.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_params.h"
@@ -33,6 +34,22 @@ namespace device {
 struct COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
  public:
   using ClientDataHash = std::array<uint8_t, kClientDataHashLength>;
+
+  // ParseOpts are optional parameters passed to Parse().
+  struct ParseOpts {
+    // reject_all_extensions makes parsing fail if any extensions are present.
+    bool reject_all_extensions = false;
+  };
+
+  // Decodes a CTAP2 authenticatorMakeCredential request message. The request's
+  // |client_data_json| will be empty and |client_data_hash| will be set.
+  static base::Optional<CtapMakeCredentialRequest> Parse(
+      const cbor::Value::MapValue& request_map) {
+    return Parse(request_map, ParseOpts());
+  }
+  static base::Optional<CtapMakeCredentialRequest> Parse(
+      const cbor::Value::MapValue& request_map,
+      const ParseOpts& opts);
 
   CtapMakeCredentialRequest(
       std::string client_data_json,
@@ -74,10 +91,15 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
 
   // cred_protect indicates the level of protection afforded to a credential.
   // This depends on a CTAP2 extension that not all authenticators will support.
-  // The second element is true if the indicated protection level must be
-  // provided by the target authenticator for the MakeCredential request to be
-  // sent.
-  base::Optional<std::pair<CredProtect, bool>> cred_protect;
+  // This is filled out by |MakeCredentialRequestHandler|.
+  base::Optional<CredProtect> cred_protect;
+  // If |cred_protect| is not |nullopt|, this is true if the credProtect level
+  // must be provided by the target authenticator for the MakeCredential request
+  // to be sent. This only makes sense when there is a collection of
+  // authenticators to consider, i.e. for the Windows API.
+  bool cred_protect_enforce = false;
+
+  base::Optional<AndroidClientDataExtensionInput> android_client_data_ext;
 };
 
 // Serializes MakeCredential request parameter into CBOR encoded map with

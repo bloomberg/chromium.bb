@@ -9,7 +9,6 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
-#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -181,7 +180,9 @@ bool ChromeKeyboardControllerClient::IsEnableFlagSet(
 }
 
 void ChromeKeyboardControllerClient::ReloadKeyboardIfNeeded() {
-  keyboard_controller_->ReloadKeyboardIfNeeded();
+  // |keyboard_controller_| may be null if the keyboard reloads during shutdown.
+  if (keyboard_controller_)
+    keyboard_controller_->ReloadKeyboardIfNeeded();
 }
 
 void ChromeKeyboardControllerClient::RebuildKeyboardIfEnabled() {
@@ -198,7 +199,7 @@ void ChromeKeyboardControllerClient::HideKeyboard(ash::HideReason reason) {
 
 void ChromeKeyboardControllerClient::SetContainerType(
     keyboard::ContainerType container_type,
-    const base::Optional<gfx::Rect>& target_bounds,
+    const gfx::Rect& target_bounds,
     base::OnceCallback<void(bool)> callback) {
   keyboard_controller_->SetContainerType(container_type, target_bounds,
                                          std::move(callback));
@@ -227,14 +228,13 @@ void ChromeKeyboardControllerClient::SetDraggableArea(const gfx::Rect& bounds) {
   keyboard_controller_->SetDraggableArea(bounds);
 }
 
+bool ChromeKeyboardControllerClient::SetWindowBoundsInScreen(
+    const gfx::Rect& bounds_in_screen) {
+  return keyboard_controller_->SetWindowBoundsInScreen(bounds_in_screen);
+}
+
 bool ChromeKeyboardControllerClient::IsKeyboardOverscrollEnabled() {
-  DCHECK(cached_keyboard_config_);
-  if (cached_keyboard_config_->overscroll_behavior !=
-      keyboard::KeyboardOverscrollBehavior::kDefault) {
-    return cached_keyboard_config_->overscroll_behavior ==
-           keyboard::KeyboardOverscrollBehavior::kEnabled;
-  }
-  return true;
+  return keyboard_controller_->ShouldOverscroll();
 }
 
 GURL ChromeKeyboardControllerClient::GetVirtualKeyboardUrl() {

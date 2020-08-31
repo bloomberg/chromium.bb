@@ -65,7 +65,8 @@ private:
         this->setBounds(SkRect::Make(rect), HasAABloat::kNo, IsHairline::kNo);
     }
 
-    CombineResult onCombineIfPossible(GrOp* t, const GrCaps& caps) override {
+    CombineResult onCombineIfPossible(GrOp* t, GrRecordingContext::Arenas*,
+                                      const GrCaps& caps) override {
         // This could be much more complicated. Currently we look at cases where the new clear
         // contains the old clear, or when the new clear is a subset of the old clear and is the
         // same color.
@@ -89,6 +90,11 @@ private:
                (that->fClip.scissorEnabled() &&
                 fClip.scissorRect().contains(that->fClip.scissorRect()));
     }
+
+    void onPrePrepare(GrRecordingContext*,
+                      const GrSurfaceProxyView* writeView,
+                      GrAppliedClip*,
+                      const GrXferProcessor::DstProxyView&) override {}
 
     void onPrepare(GrOpFlushState*) override {}
 

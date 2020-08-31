@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/ozone/platform/drm/common/drm_overlay_manager.h"
+#include "ui/ozone/platform/drm/gpu/drm_overlay_manager.h"
 
 namespace ui {
 class DrmThreadProxy;
@@ -26,6 +26,11 @@ class DrmOverlayManagerGpu : public DrmOverlayManager {
   void SendOverlayValidationRequest(
       const std::vector<OverlaySurfaceCandidate>& candidates,
       gfx::AcceleratedWidget widget) override;
+  std::vector<OverlayStatus> SendOverlayValidationRequestSync(
+      const std::vector<OverlaySurfaceCandidate>& candidates,
+      gfx::AcceleratedWidget widget) override;
+
+  void SetClearCacheCallbackIfNecessary();
 
   void ReceiveOverlayValidationResponse(
       gfx::AcceleratedWidget widget,

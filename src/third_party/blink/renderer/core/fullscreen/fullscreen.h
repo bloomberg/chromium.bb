@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -43,6 +43,7 @@
 
 namespace blink {
 
+class LocalDOMWindow;
 class FullscreenOptions;
 class ScriptPromiseResolver;
 
@@ -51,17 +52,16 @@ class ScriptPromiseResolver;
 // Document supplement as each document has some fullscreen state, and to
 // actually enter and exit fullscreen it (indirectly) uses FullscreenController.
 class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
-                                     public Supplement<Document>,
-                                     public ContextLifecycleObserver {
+                                     public Supplement<LocalDOMWindow>,
+                                     public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(Fullscreen);
 
  public:
   static const char kSupplementName[];
 
-  explicit Fullscreen(Document&);
+  explicit Fullscreen(LocalDOMWindow&);
   virtual ~Fullscreen();
 
-  static Fullscreen& From(Document&);
   static Element* FullscreenElementFrom(Document&);
   static Element* FullscreenElementForBindingFrom(TreeScope&);
   static bool IsFullscreenElement(const Element&);
@@ -79,36 +79,37 @@ class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
   };
 
   static void RequestFullscreen(Element&);
-  static ScriptPromise RequestFullscreen(Element&,
-                                         const FullscreenOptions*,
-                                         RequestType,
-                                         ScriptState* state = nullptr);
+  static ScriptPromise RequestFullscreen(
+      Element&,
+      const FullscreenOptions*,
+      RequestType,
+      ScriptState* state = nullptr,
+      ExceptionState* exception_state = nullptr);
 
   static void FullyExitFullscreen(Document&, bool ua_originated = false);
   static ScriptPromise ExitFullscreen(Document&,
                                       ScriptState* state = nullptr,
+                                      ExceptionState* exception_state = nullptr,
                                       bool ua_originated = false);
 
   static bool FullscreenEnabled(Document&);
 
   // Called by FullscreenController to notify that we've entered or exited
   // fullscreen. All frames are notified, so there may be no pending request.
-  static void DidEnterFullscreen(Document&);
+  static void DidResolveEnterFullscreenRequest(Document&, bool granted);
   static void DidExitFullscreen(Document&);
 
   static void DidUpdateSize(Element&);
 
   static void ElementRemoved(Element&);
 
-  // ContextLifecycleObserver:
-  void ContextDestroyed(ExecutionContext*) override;
+  // ExecutionContextLifecycleObserver:
+  void ContextDestroyed() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
-  static Fullscreen* FromIfExists(Document&);
-
-  Document* GetDocument();
+  static Fullscreen& From(LocalDOMWindow&);
 
   static void ContinueRequestFullscreen(Document&,
                                         Element&,
@@ -132,7 +133,7 @@ class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
                    RequestType type,
                    ScriptPromiseResolver* resolver);
     virtual ~PendingRequest();
-    virtual void Trace(blink::Visitor* visitor);
+    virtual void Trace(Visitor* visitor);
 
     Element* element() { return element_; }
     RequestType type() { return type_; }

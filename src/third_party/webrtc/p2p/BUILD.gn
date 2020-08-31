@@ -52,7 +52,6 @@ rtc_library("rtc_p2p") {
     "base/p2p_transport_channel.cc",
     "base/p2p_transport_channel.h",
     "base/p2p_transport_channel_ice_field_trials.h",
-    "base/packet_transport_interface.h",
     "base/packet_transport_internal.cc",
     "base/packet_transport_internal.h",
     "base/port.cc",
@@ -122,9 +121,7 @@ if (rtc_include_tests) {
   rtc_library("fake_ice_transport") {
     testonly = true
     visibility = [ "*" ]
-    sources = [
-      "base/fake_ice_transport.h",
-    ]
+    sources = [ "base/fake_ice_transport.h" ]
     deps = [
       ":rtc_p2p",
       "../api:libjingle_peerconnection_api",
@@ -138,9 +135,7 @@ if (rtc_include_tests) {
   rtc_library("fake_port_allocator") {
     testonly = true
     visibility = [ "*" ]
-    sources = [
-      "base/fake_port_allocator.h",
-    ]
+    sources = [ "base/fake_port_allocator.h" ]
     deps = [
       ":rtc_p2p",
       "../rtc_base",
@@ -198,6 +193,7 @@ if (rtc_include_tests) {
       "base/stun_server_unittest.cc",
       "base/tcp_port_unittest.cc",
       "base/transport_description_factory_unittest.cc",
+      "base/transport_description_unittest.cc",
       "base/turn_port_unittest.cc",
       "base/turn_server_unittest.cc",
       "client/basic_port_allocator_unittest.cc",
@@ -272,9 +268,7 @@ if (rtc_include_tests) {
   rtc_library("libstunprober_unittests") {
     testonly = true
 
-    sources = [
-      "stunprober/stun_prober_unittest.cc",
-    ]
+    sources = [ "stunprober/stun_prober_unittest.cc" ]
     deps = [
       ":libstunprober",
       ":p2p_test_utils",

@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/css/resolver/font_builder.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
 #include "third_party/blink/renderer/core/style/svg_computed_style.h"
@@ -35,7 +36,7 @@ namespace {{namespace}} {
 {% set is_alias = property.alias_for %}
 // {{property.name}}
 
-  {% if property.is_internal or property.runtime_flag %}
+  {% if property.is_internal or property.runtime_flag and not property.in_origin_trial%}
 CSSExposure {{class_name}}::Exposure() const {
     {% if property.runtime_flag %}
   if (!RuntimeEnabledFeatures::{{property.runtime_flag}}Enabled())
@@ -46,6 +47,14 @@ CSSExposure {{class_name}}::Exposure() const {
     {% else %}
   return CSSExposure::kWeb;
     {% endif %}
+}
+  {% endif %}
+
+  {% if property.in_origin_trial %}
+CSSExposure {{class_name}}::Exposure(const ExecutionContext* execution_context) const {
+  if (!RuntimeEnabledFeatures::{{property.runtime_flag}}Enabled(execution_context))
+    return CSSExposure::kNone;
+  return CSSExposure::kWeb;
 }
   {% endif %}
 
@@ -73,10 +82,34 @@ const CSSProperty* {{class_name}}::GetUnvisitedProperty() const {
 }
   {% endif %}
 
+  {% if property.surrogate_for %}
+const CSSProperty* {{class_name}}::SurrogateFor(TextDirection direction,
+    blink::WritingMode writing_mode) const {
+  return &GetCSSProperty{{property.surrogate_for.name.to_upper_camel_case()}}();
+}
+  {% endif %}
+  {% if property.computed_value_comparable %}
+bool {{class_name}}::ComputedValuesEqual(const ComputedStyle& a, const ComputedStyle& b) const {
+    {% if property.computed_value_compare_fields %}
+      {% for field in property.computed_value_compare_fields %}
+  if (!(a.{{field}}() == b.{{field}}()))
+    return false;
+      {% endfor %}
+  return true;
+    {% else %}
+  return a.{{property.getter}}() == b.{{property.getter}}();
+    {% endif %}
+}
+  {% endif %}
   {% if property.direction_aware_options %}
     {% set options = property.direction_aware_options %}
     {% set resolver_name = options.resolver_name.to_upper_camel_case() %}
     {% set physical_group_name = options.physical_group_name.to_upper_camel_case() %}
+const CSSProperty* {{class_name}}::SurrogateFor(TextDirection direction,
+    blink::WritingMode writing_mode) const {
+  return &ResolveDirectionAwareProperty(direction, writing_mode);
+}
+
 const CSSProperty& {{class_name}}::ResolveDirectionAwareProperty(
     TextDirection direction,
     blink::WritingMode writing_mode) const {

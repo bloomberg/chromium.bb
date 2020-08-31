@@ -22,9 +22,11 @@ from util import java_cpp_utils
 #
 # This script can parse .idl files however, at present it ignores special
 # rules such as [cpp_enum_prefix_override="ax_attr"].
-ENUM_FIXED_TYPE_WHITELIST = ['char', 'unsigned char',
-  'short', 'unsigned short',
-  'int', 'int8_t', 'int16_t', 'int32_t', 'uint8_t', 'uint16_t']
+ENUM_FIXED_TYPE_ALLOWLIST = [
+    'char', 'unsigned char', 'short', 'unsigned short', 'int', 'int8_t',
+    'int16_t', 'int32_t', 'uint8_t', 'uint16_t'
+]
+
 
 class EnumDefinition(object):
   def __init__(self, original_enum_name=None, class_name_override=None,
@@ -61,15 +63,15 @@ class EnumDefinition(object):
     assert self.class_name
     assert self.enum_package
     assert self.entries
-    if self.fixed_type and self.fixed_type not in ENUM_FIXED_TYPE_WHITELIST:
-      raise Exception('Fixed type %s for enum %s not whitelisted.' %
-          (self.fixed_type, self.class_name))
+    if self.fixed_type and self.fixed_type not in ENUM_FIXED_TYPE_ALLOWLIST:
+      raise Exception('Fixed type %s for enum %s not in allowlist.' %
+                      (self.fixed_type, self.class_name))
 
   def _AssignEntryIndices(self):
     # Enums, if given no value, are given the value of the previous enum + 1.
     if not all(self.entries.values()):
       prev_enum_value = -1
-      for key, value in self.entries.iteritems():
+      for key, value in self.entries.items():
         if not value:
           self.entries[key] = prev_enum_value + 1
         elif value in self.entries:
@@ -102,9 +104,9 @@ class EnumDefinition(object):
 
     def StripEntries(entries):
       ret = collections.OrderedDict()
-      for k, v in entries.iteritems():
+      for k, v in entries.items():
         stripped_key = k.replace(prefix_to_strip, '', 1)
-        if isinstance(v, basestring):
+        if isinstance(v, str):
           stripped_value = v.replace(prefix_to_strip, '')
         else:
           stripped_value = v
@@ -124,10 +126,10 @@ def _TransformKeys(d, func):
   """Normalize keys in |d| and update references to old keys in |d| values."""
   normal_keys = {k: func(k) for k in d}
   ret = collections.OrderedDict()
-  for k, v in d.iteritems():
+  for k, v in d.items():
     # Need to transform values as well when the entry value was explicitly set
     # (since it could contain references to other enum entry values).
-    if isinstance(v, basestring):
+    if isinstance(v, str):
       for normal_key in normal_keys:
         v = v.replace(normal_key, normal_keys[normal_key])
     ret[normal_keys[k]] = v
@@ -368,7 +370,7 @@ ${ENUM_ENTRIES}
   enum_template = Template('  int ${NAME} = ${VALUE};')
   enum_entries_string = []
   enum_names = []
-  for enum_name, enum_value in enum_definition.entries.iteritems():
+  for enum_name, enum_value in enum_definition.entries.items():
     values = {
         'NAME': enum_name,
         'VALUE': enum_value,

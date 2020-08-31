@@ -16,6 +16,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -120,13 +121,13 @@ IN_PROC_BROWSER_TEST_F(LocalNTPSearchSuggestTest,
   // Open a new blank tab, then go to NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  content::ConsoleObserverDelegate console_observer(active_tab,
-                                                    "suggestions-done");
-  active_tab->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(active_tab);
+  console_observer.SetPattern("suggestions-done");
+
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser(),
                                                         /*delay=*/1000);
   console_observer.Wait();
-  EXPECT_EQ("suggestions-done", console_observer.message());
+  EXPECT_EQ("suggestions-done", console_observer.GetMessageAt(0u));
 
   bool result;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(

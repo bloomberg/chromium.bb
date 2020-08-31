@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -26,14 +27,16 @@
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/extensions/api/context_menus.h"
+#include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
@@ -41,9 +44,11 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/test_management_policy.h"
+#include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
@@ -68,6 +73,43 @@ namespace {
 void Increment(int* i) {
   CHECK(i);
   ++(*i);
+}
+
+MenuItem::Context MenuItemContextForActionType(ActionInfo::Type type) {
+  MenuItem::Context context = MenuItem::ALL;
+  switch (type) {
+    case ActionInfo::TYPE_BROWSER:
+      context = MenuItem::BROWSER_ACTION;
+      break;
+    case ActionInfo::TYPE_PAGE:
+      context = MenuItem::PAGE_ACTION;
+      break;
+    case ActionInfo::TYPE_ACTION:
+      // TODO(devlin): Add support for the "action" type.
+      NOTREACHED();
+      break;
+  }
+
+  return context;
+}
+
+scoped_refptr<const Extension> BuildExtensionWithActionType(
+    ActionInfo::Type type) {
+  ExtensionBuilder builder("extension");
+  switch (type) {
+    case ActionInfo::TYPE_BROWSER:
+      builder.SetAction(ExtensionBuilder::ActionType::BROWSER_ACTION);
+      break;
+    case ActionInfo::TYPE_PAGE:
+      builder.SetAction(ExtensionBuilder::ActionType::PAGE_ACTION);
+      break;
+    case ActionInfo::TYPE_ACTION:
+      // TODO(devlin): Add support for the "action" type.
+      NOTREACHED();
+      break;
+  }
+
+  return builder.Build();
 }
 
 // Label for test extension menu item.
@@ -207,6 +249,8 @@ class ExtensionContextMenuModelTest : public ExtensionServiceTestBase {
 
   Browser* GetBrowser();
 
+  MenuManager* CreateMenuManager();
+
   // Adds a new tab with |url| to the tab strip, and returns the WebContents
   // associated with it.
   content::WebContents* AddTab(const GURL& url);
@@ -288,6 +332,13 @@ Browser* ExtensionContextMenuModelTest::GetBrowser() {
   return browser_.get();
 }
 
+MenuManager* ExtensionContextMenuModelTest::CreateMenuManager() {
+  return static_cast<MenuManager*>(
+      MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile(), base::BindRepeating(
+                         &MenuManagerFactory::BuildServiceInstanceForTesting)));
+}
+
 content::WebContents* ExtensionContextMenuModelTest::AddTab(const GURL& url) {
   std::unique_ptr<content::WebContents> contents(
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
@@ -346,7 +397,6 @@ bool ExtensionContextMenuModelTest::HasCantAccessPageEntry(
 
 void ExtensionContextMenuModelTest::SetUp() {
   ExtensionServiceTestBase::SetUp();
-  content::BrowserSideNavigationSetUp();
   scoped_screen_override_ =
       std::make_unique<ScopedScreenOverride>(&test_screen_);
 }
@@ -365,7 +415,6 @@ void ExtensionContextMenuModelTest::TearDown() {
   chromeos::KioskAppManager::Shutdown();
 #endif
 
-  content::BrowserSideNavigationTearDown();
   ExtensionServiceTestBase::TearDown();
 }
 
@@ -402,8 +451,7 @@ TEST_F(ExtensionContextMenuModelTest, RequiredInstallationsDisablesItems) {
       menu.GetIndexOfCommandId(ExtensionContextMenuModel::UNINSTALL);
   // There should also be an icon to visually indicate why uninstallation is
   // forbidden.
-  gfx::Image icon;
-  EXPECT_TRUE(menu.GetIconAt(uninstall_index, &icon));
+  ui::ImageModel icon = menu.GetIconAt(uninstall_index);
   EXPECT_FALSE(icon.IsEmpty());
 
   // Don't leave |policy_provider| dangling.
@@ -472,141 +520,6 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
   }
 }
 
-TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
-  InitializeEmptyExtensionService();
-  const Extension* extension =
-      AddExtension("extension", manifest_keys::kPageAction, Manifest::INTERNAL);
-
-  // Create a MenuManager for adding context items.
-  MenuManager* manager = static_cast<MenuManager*>(
-      (MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(),
-          base::BindRepeating(
-              &MenuManagerFactory::BuildServiceInstanceForTesting))));
-  ASSERT_TRUE(manager);
-
-  MenuBuilder builder(extension, GetBrowser(), manager);
-
-  // There should be no extension items yet.
-  EXPECT_EQ(0, CountExtensionItems(*builder.BuildMenu()));
-
-  // Add a browser action menu item.
-  builder.AddContextItem(MenuItem::BROWSER_ACTION);
-  // Since |extension| has a page action, the browser action menu item should
-  // not be present.
-  EXPECT_EQ(0, CountExtensionItems(*builder.BuildMenu()));
-
-  // Add a page action menu item. This should be present because |extension|
-  // has a page action.
-  builder.AddContextItem(MenuItem::PAGE_ACTION);
-  EXPECT_EQ(1, CountExtensionItems(*builder.BuildMenu()));
-
-  // Create more page action items to test top-level menu item limitations.
-  // We start at 1, so this should try to add the limit + 1.
-  for (int i = 0; i < api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT; ++i)
-    builder.AddContextItem(MenuItem::PAGE_ACTION);
-
-  // We shouldn't go above the limit of top-level items.
-  EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
-            CountExtensionItems(*builder.BuildMenu()));
-}
-
-// Top-level extension actions, like 'browser_action' or 'page_action',
-// are subject to an item limit chrome.contextMenus.ACTION_MENU_TOP_LEVEL_LIMIT.
-// The test below ensures that:
-//
-// 1. The limit is respected for top-level items. In this case, we test
-//    MenuItem::PAGE_ACTION.
-// 2. Adding more items than the limit are ignored; only items within the limit
-//    are visible.
-// 3. Hiding items within the limit makes "extra" ones visible.
-// 4. Unhiding an item within the limit hides a visible "extra" one.
-TEST_F(ExtensionContextMenuModelTest,
-       TestItemVisibilityAgainstItemLimitForTopLevelItems) {
-  InitializeEmptyExtensionService();
-  const Extension* extension =
-      AddExtension("extension", manifest_keys::kPageAction, Manifest::INTERNAL);
-
-  // Create a MenuManager for adding context items.
-  MenuManager* manager = static_cast<MenuManager*>(
-      MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(), base::BindRepeating(
-                         &MenuManagerFactory::BuildServiceInstanceForTesting)));
-  ASSERT_TRUE(manager);
-
-  MenuBuilder builder(extension, GetBrowser(), manager);
-
-  // There should be no extension items yet.
-  EXPECT_EQ(0, CountExtensionItems(*builder.BuildMenu()));
-
-  // Create more page action items to test top-level menu item limitations.
-  for (int i = 1; i <= api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT; ++i) {
-    builder.AddContextItem(MenuItem::PAGE_ACTION);
-    builder.SetItemTitle(i, item_label().append(base::StringPrintf("%d", i)));
-  }
-
-  // We shouldn't go above the limit of top-level items.
-  EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
-            CountExtensionItems(*builder.BuildMenu()));
-
-  // Add three more page actions items. This exceeds the top-level menu item
-  // limit, so the three added should not be visible in the menu.
-  builder.AddContextItem(MenuItem::PAGE_ACTION);
-  builder.SetItemTitle(7, item_label() + "7");
-
-  // By default, the additional page action items have their visibility set to
-  // true. Test creating the eigth item such that it is hidden.
-  builder.AddContextItem(MenuItem::PAGE_ACTION);
-  builder.SetItemTitle(8, item_label() + "8");
-  builder.SetItemVisibility(8, false);
-
-  builder.AddContextItem(MenuItem::PAGE_ACTION);
-  builder.SetItemTitle(9, item_label() + "9");
-
-  std::unique_ptr<ExtensionContextMenuModel> model = builder.BuildMenu();
-
-  // Ensure that the menu item limit is obeyed, meaning that the three
-  // additional items are not visible in the menu.
-  EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
-            CountExtensionItems(*model));
-  // Items 7 to 9 should not be visible in the model.
-  VerifyItems(*model, {"1", "2", "3", "4", "5", "6"});
-
-  // Hide the first two items.
-  builder.SetItemVisibility(1, false);
-  builder.SetItemVisibility(2, false);
-  model = builder.BuildMenu();
-
-  // Ensure that the menu item limit is obeyed.
-  EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
-            CountExtensionItems(*model));
-  // Hiding the first two items in the model should make visible the "extra"
-  // items -- items 7 and 9. Note, item 8 was set to hidden, so it should not
-  // show in the model.
-  VerifyItems(*model, {"3", "4", "5", "6", "7", "9"});
-
-  // Unhide the eigth item.
-  builder.SetItemVisibility(8, true);
-  model = builder.BuildMenu();
-
-  // Ensure that the menu item limit is obeyed.
-  EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
-            CountExtensionItems(*model));
-  // The ninth item should be replaced with the eigth.
-  VerifyItems(*model, {"3", "4", "5", "6", "7", "8"});
-
-  // Unhide the first two items.
-  builder.SetItemVisibility(1, true);
-  builder.SetItemVisibility(2, true);
-  model = builder.BuildMenu();
-
-  EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
-            CountExtensionItems(*model));
-  // Unhiding the first two items should respect the menu item limit and
-  // exclude the "extra" items -- items 7, 8, and 9 -- from the model.
-  VerifyItems(*model, {"1", "2", "3", "4", "5", "6"});
-}
-
 // Tests that the standard menu items (e.g. uninstall, manage) are always
 // visible.
 TEST_F(ExtensionContextMenuModelTest,
@@ -636,7 +549,8 @@ TEST_F(ExtensionContextMenuModelTest,
 }
 
 // Test that the "show" and "hide" menu items appear correctly in the extension
-// context menu.
+// context menu. When kExtensionsToolbarMenu is enabled, the "hide" is instead
+// an "unpin" menu item.
 TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   InitializeEmptyExtensionService();
   Browser* browser = GetBrowser();
@@ -653,12 +567,18 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   // For laziness.
   const ExtensionContextMenuModel::MenuEntries visibility_command =
       ExtensionContextMenuModel::TOGGLE_VISIBILITY;
-  base::string16 hide_string =
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU);
-  base::string16 show_string =
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR);
-  base::string16 keep_string =
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_KEEP_BUTTON_IN_TOOLBAR);
+  base::string16 hide_string = l10n_util::GetStringUTF16(
+      base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)
+          ? IDS_EXTENSIONS_UNPIN_FROM_TOOLBAR
+          : IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU);
+  base::string16 show_string = l10n_util::GetStringUTF16(
+      base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)
+          ? IDS_EXTENSIONS_PIN_TO_TOOLBAR
+          : IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR);
+  base::string16 keep_string = l10n_util::GetStringUTF16(
+      base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)
+          ? IDS_EXTENSIONS_PIN_TO_TOOLBAR
+          : IDS_EXTENSIONS_KEEP_BUTTON_IN_TOOLBAR);
 
   {
     // Even page actions should have a visibility option.
@@ -677,6 +597,12 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
     int index = menu.GetIndexOfCommandId(visibility_command);
     EXPECT_NE(-1, index);
     EXPECT_EQ(hide_string, menu.GetLabelAt(index));
+
+    if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+      // Pin before unpinning.
+      ToolbarActionsModel::Get(profile())->SetActionVisibility(
+          browser_action->id(), true);
+    }
     menu.ExecuteCommand(visibility_command, 0);
   }
 
@@ -1167,6 +1093,131 @@ TEST_F(ExtensionContextMenuModelTest, PageAccessMenuOptions) {
   }
 }
 
+// Test that changing to 'run on site' while already having an all_url like
+// pattern actually removes the broad pattern to restrict to the site.
+TEST_F(ExtensionContextMenuModelTest, PageAccessSubmenu_OnSiteWithAllURLs) {
+  InitializeEmptyExtensionService();
+
+  // For laziness.
+  using Entries = ExtensionContextMenuModel::MenuEntries;
+  const Entries kOnClick = Entries::PAGE_ACCESS_RUN_ON_CLICK;
+  const Entries kOnSite = Entries::PAGE_ACCESS_RUN_ON_SITE;
+  const Entries kOnAllSites = Entries::PAGE_ACCESS_RUN_ON_ALL_SITES;
+
+  // Add an extension with all urls, and withhold permissions.
+  const Extension* extension =
+      AddExtensionWithHostPermission("extension", manifest_keys::kBrowserAction,
+                                     Manifest::INTERNAL, "<all_urls>");
+  ScriptingPermissionsModifier(profile(), extension)
+      .SetWithholdHostPermissions(true);
+
+  // Grant the extension the all_urls pattern.
+  URLPattern pattern(UserScript::ValidUserScriptSchemes(false), "<all_urls>");
+  permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+      profile(), *extension,
+      PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                    URLPatternSet({pattern}), URLPatternSet()));
+  ScriptingPermissionsModifier modifier(profile(), extension);
+  EXPECT_TRUE(modifier.HasWithheldHostPermissions());
+
+  const GURL kActiveUrl("http://www.example.com/");
+  const GURL kOtherUrl("http://www.google.com/");
+
+  // Now it should look like it can run on all sites and have access to both
+  // urls.
+  AddTab(kActiveUrl);
+  ExtensionContextMenuModel menu(extension, GetBrowser(),
+                                 ExtensionContextMenuModel::VISIBLE, nullptr,
+                                 true);
+  EXPECT_TRUE(HasPageAccessSubmenu(menu));
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnClick));
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnSite));
+  EXPECT_TRUE(menu.IsCommandIdChecked(kOnAllSites));
+
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kActiveUrl));
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kOtherUrl));
+
+  // Change mode to "Run on site".
+  menu.ExecuteCommand(kOnSite, 0);
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnClick));
+  EXPECT_TRUE(menu.IsCommandIdChecked(kOnSite));
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnAllSites));
+
+  // The extension should have access to the active url, but not to another
+  // arbitrary url.
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kActiveUrl));
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kOtherUrl));
+}
+
+// Test that changing to 'run on click' while having a broad pattern which
+// doesn't actually overlap the current url, still actually removes that broad
+// pattern and stops showing that the extension can run on all sites.
+// TODO(tjudkins): This test is kind of bizarre in that it highlights a case
+// where the submenu is displaying that extension can read data on all sites,
+// when it can't actually read the site it is currently on. We should revisit
+// what exactly the submenu should be conveying to the user about the current
+// page and how that relates to the similar set of information on the Extension
+// Settings page.
+TEST_F(ExtensionContextMenuModelTest,
+       PageAccessSubmenu_OnClickWithBroadPattern) {
+  InitializeEmptyExtensionService();
+
+  // For laziness.
+  using Entries = ExtensionContextMenuModel::MenuEntries;
+  const Entries kOnClick = Entries::PAGE_ACCESS_RUN_ON_CLICK;
+  const Entries kOnSite = Entries::PAGE_ACCESS_RUN_ON_SITE;
+  const Entries kOnAllSites = Entries::PAGE_ACCESS_RUN_ON_ALL_SITES;
+
+  // Add an extension with all urls, and withhold permissions.
+  const Extension* extension =
+      AddExtensionWithHostPermission("extension", manifest_keys::kBrowserAction,
+                                     Manifest::INTERNAL, "<all_urls>");
+  ScriptingPermissionsModifier modifier(profile(), extension);
+  modifier.SetWithholdHostPermissions(true);
+
+  // Grant the extension a broad pattern which doesn't overlap the active url.
+  URLPattern pattern(UserScript::ValidUserScriptSchemes(false), "*://*.org/*");
+  permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+      profile(), *extension,
+      PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                    URLPatternSet({pattern}), URLPatternSet()));
+
+  const GURL kActiveUrl("http://www.example.com/");
+  const GURL kOrgUrl("http://chromium.org/");
+  const GURL kOtherUrl("http://www.google.com/");
+
+  // Also explicitly grant google.com.
+  modifier.GrantHostPermission(kOtherUrl);
+  EXPECT_TRUE(modifier.HasWithheldHostPermissions());
+
+  // The extension will now look like it can run on all sites even though it
+  // can't access the active url.
+  AddTab(kActiveUrl);
+  ExtensionContextMenuModel menu(extension, GetBrowser(),
+                                 ExtensionContextMenuModel::VISIBLE, nullptr,
+                                 true);
+  EXPECT_TRUE(HasPageAccessSubmenu(menu));
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnClick));
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnSite));
+  EXPECT_TRUE(menu.IsCommandIdChecked(kOnAllSites));
+
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kActiveUrl));
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kOrgUrl));
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kOtherUrl));
+
+  // Change mode to "Run on click".
+  menu.ExecuteCommand(kOnClick, 0);
+  EXPECT_TRUE(menu.IsCommandIdChecked(kOnClick));
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnSite));
+  EXPECT_FALSE(menu.IsCommandIdChecked(kOnAllSites));
+
+  // The broad org pattern should have been removed, but the explicit google
+  // pattern should still remain.
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kActiveUrl));
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kOrgUrl));
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kOtherUrl));
+}
+
 TEST_F(ExtensionContextMenuModelTest, PageAccessWithActiveTab) {
   InitializeEmptyExtensionService();
 
@@ -1460,12 +1511,7 @@ TEST_F(ExtensionContextMenuModelTest, HistogramTest_CustomCommand) {
           .Build();
   InitializeAndAddExtension(*extension);
 
-  // Create a MenuManager for adding context items.
-  MenuManager* manager = static_cast<MenuManager*>(
-      (MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(),
-          base::BindRepeating(
-              &MenuManagerFactory::BuildServiceInstanceForTesting))));
+  MenuManager* const manager = CreateMenuManager();
   ASSERT_TRUE(manager);
 
   MenuBuilder builder(extension, GetBrowser(), manager);
@@ -1505,5 +1551,166 @@ TEST_F(ExtensionContextMenuModelTest, HideToggleVisibility) {
         menu.IsCommandIdVisible(ExtensionContextMenuModel::TOGGLE_VISIBILITY));
   }
 }
+
+class ExtensionActionContextMenuModelTest
+    : public ExtensionContextMenuModelTest,
+      public testing::WithParamInterface<ActionInfo::Type> {};
+
+TEST_P(ExtensionActionContextMenuModelTest,
+       MenuItemShowsOnlyForAppropriateActionType) {
+  const ActionInfo::Type action_type = GetParam();
+  std::unique_ptr<ScopedCurrentChannel> override_channel =
+      GetOverrideChannelForActionType(action_type);
+
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension =
+      BuildExtensionWithActionType(action_type);
+  service()->AddExtension(extension.get());
+
+  MenuManager* const manager = CreateMenuManager();
+
+  // TODO(devlin): Include ActionInfo::TYPE_ACTION here.
+  std::set<ActionInfo::Type> mismatched_types = {ActionInfo::TYPE_PAGE,
+                                                 ActionInfo::TYPE_BROWSER};
+  mismatched_types.erase(GetParam());
+
+  // Currently, there are no associated context menu items.
+  MenuBuilder builder(extension, GetBrowser(), manager);
+  EXPECT_EQ(0, CountExtensionItems(*builder.BuildMenu()));
+
+  for (ActionInfo::Type type : mismatched_types) {
+    builder.AddContextItem(MenuItemContextForActionType(type));
+    // Adding a menu item for an invalid type shouldn't result in a visible
+    // menu item.
+    EXPECT_EQ(0, CountExtensionItems(*builder.BuildMenu()));
+  }
+
+  builder.AddContextItem(MenuItemContextForActionType(action_type));
+  EXPECT_EQ(1, CountExtensionItems(*builder.BuildMenu()));
+}
+
+TEST_P(ExtensionActionContextMenuModelTest, ActionMenuItemsAreLimited) {
+  const ActionInfo::Type action_type = GetParam();
+  std::unique_ptr<ScopedCurrentChannel> override_channel =
+      GetOverrideChannelForActionType(action_type);
+
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension =
+      BuildExtensionWithActionType(action_type);
+  service()->AddExtension(extension.get());
+
+  MenuManager* const manager = CreateMenuManager();
+
+  MenuBuilder builder(extension, GetBrowser(), manager);
+  EXPECT_EQ(0, CountExtensionItems(*builder.BuildMenu()));
+
+  const MenuItem::Context context_type =
+      MenuItemContextForActionType(action_type);
+  for (int i = 0; i < api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT + 1; ++i)
+    builder.AddContextItem(context_type);
+
+  // Even though LIMIT + 1 items were added, only LIMIT should be displayed.
+  EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
+            CountExtensionItems(*builder.BuildMenu()));
+}
+
+// Tests that top-level items adjust according to the visibility of others
+// in the list.
+TEST_P(ExtensionActionContextMenuModelTest,
+       ActionItemsOverTheLimitAreShownIfSomeOthersAreHidden) {
+  // This test uses hard-coded assumptions about the value of the top-level
+  // limit in order to aid in readability. Assert that the value is expected.
+  // Note: This can't be a static_assert() because the LIMIT is defined in a
+  // different object file.
+  ASSERT_EQ(6, api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT);
+  const ActionInfo::Type action_type = GetParam();
+  std::unique_ptr<ScopedCurrentChannel> override_channel =
+      GetOverrideChannelForActionType(action_type);
+
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension =
+      BuildExtensionWithActionType(action_type);
+  service()->AddExtension(extension.get());
+
+  MenuManager* const manager = CreateMenuManager();
+
+  MenuBuilder builder(extension, GetBrowser(), manager);
+  EXPECT_EQ(0, CountExtensionItems(*builder.BuildMenu()));
+
+  const MenuItem::Context context_type =
+      MenuItemContextForActionType(action_type);
+  constexpr int kNumItemsToAdd = 9;  // 3 over the limit.
+
+  // Note: One-indexed; add exactly kNumItemsToAdd (9) items.
+  for (int i = 1; i <= kNumItemsToAdd; ++i) {
+    builder.AddContextItem(context_type);
+    builder.SetItemTitle(i,
+                         base::StringPrintf("%s%d", item_label().c_str(), i));
+  }
+
+  // We should cap the visible actions.
+  EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
+            CountExtensionItems(*builder.BuildMenu()));
+
+  // By default, the additional action items have their visibility set to true.
+  // Explicitly hide the eighth.
+  builder.SetItemVisibility(8, false);
+
+  {
+    auto model = builder.BuildMenu();
+
+    // The limit is still obeyed, so items 7 through 9 should not be visible.
+    EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
+              CountExtensionItems(*model));
+    VerifyItems(*model, {"1", "2", "3", "4", "5", "6"});
+  }
+
+  // Hide the first two items.
+  builder.SetItemVisibility(1, false);
+  builder.SetItemVisibility(2, false);
+
+  {
+    auto model = builder.BuildMenu();
+    // Hiding the first two items in the model should make visible the "extra"
+    // items -- items 7 and 9. Note, item 8 was set to hidden, so it should not
+    // show in the model.
+    EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
+              CountExtensionItems(*model));
+    VerifyItems(*model, {"3", "4", "5", "6", "7", "9"});
+  }
+
+  // Unhide the eighth item.
+  builder.SetItemVisibility(8, true);
+
+  {
+    auto model = builder.BuildMenu();
+    // The ninth item should be replaced with the eighth.
+    EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
+              CountExtensionItems(*model));
+    VerifyItems(*model, {"3", "4", "5", "6", "7", "8"});
+  }
+
+  // Unhide the first two items.
+  builder.SetItemVisibility(1, true);
+  builder.SetItemVisibility(2, true);
+
+  {
+    auto model = builder.BuildMenu();
+    // Unhiding the first two items should put us back into the original state,
+    // with only the first items displayed.
+    EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
+              CountExtensionItems(*model));
+    VerifyItems(*model, {"1", "2", "3", "4", "5", "6"});
+  }
+}
+
+// TODO(devlin): Include ActionInfo::TYPE_ACTION here.
+INSTANTIATE_TEST_SUITE_P(All,
+                         ExtensionActionContextMenuModelTest,
+                         testing::Values(ActionInfo::TYPE_PAGE,
+                                         ActionInfo::TYPE_BROWSER));
 
 }  // namespace extensions

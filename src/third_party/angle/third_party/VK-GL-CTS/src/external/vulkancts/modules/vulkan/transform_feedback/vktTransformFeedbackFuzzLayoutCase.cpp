@@ -1657,7 +1657,8 @@ InterfaceBlockCaseInstance::InterfaceBlockCaseInstance (Context&							ctx,
 	const deUint32											componentsRequired			= m_locationsRequired * componentsPerLocation;
 	const InstanceInterface&								vki							= m_context.getInstanceInterface();
 	const VkPhysicalDevice									physDevice					= m_context.getPhysicalDevice();
-	const VkPhysicalDeviceTransformFeedbackFeaturesEXT&		transformFeedbackFeatures	= m_context.getTransformFeedbackFeatures();
+	const VkPhysicalDeviceFeatures							features					= getPhysicalDeviceFeatures(vki, physDevice);
+	const VkPhysicalDeviceTransformFeedbackFeaturesEXT&		transformFeedbackFeatures	= m_context.getTransformFeedbackFeaturesEXT();
 	const VkPhysicalDeviceLimits							limits						= getPhysicalDeviceProperties(vki, physDevice).limits;
 	VkPhysicalDeviceTransformFeedbackPropertiesEXT			transformFeedbackProperties;
 	VkPhysicalDeviceProperties2								deviceProperties2;
@@ -1690,6 +1691,9 @@ InterfaceBlockCaseInstance::InterfaceBlockCaseInstance (Context&							ctx,
 
 	if (m_testStageFlags == TEST_STAGE_GEOMETRY)
 	{
+		if (!features.geometryShader)
+			TCU_THROW(NotSupportedError, "Missing feature: geometryShader");
+
 		if (limits.maxGeometryOutputComponents < componentsRequired)
 			TCU_THROW(NotSupportedError, "maxGeometryOutputComponents=" + de::toString(limits.maxGeometryOutputComponents) + " is less than required (" + de::toString(componentsRequired) + ")");
 	}
@@ -1765,6 +1769,15 @@ tcu::TestStatus InterfaceBlockCaseInstance::iterate (void)
 			vk.cmdEndTransformFeedbackEXT(*cmdBuffer, 0, 0, DE_NULL, DE_NULL);
 		}
 		endRenderPass(vk, *cmdBuffer);
+
+		const VkMemoryBarrier tfMemoryBarrier =
+		{
+			VK_STRUCTURE_TYPE_MEMORY_BARRIER,               // VkStructureType      sType;
+			DE_NULL,                                        // const void*          pNext;
+			VK_ACCESS_TRANSFORM_FEEDBACK_WRITE_BIT_EXT,     // VkAccessFlags        outputMask;
+			VK_ACCESS_HOST_READ_BIT                         // VkAccessFlags        inputMask;
+		};
+		vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_TRANSFORM_FEEDBACK_BIT_EXT, VK_PIPELINE_STAGE_HOST_BIT, 0u, 1u, &tfMemoryBarrier, 0u, DE_NULL, 0u, DE_NULL);
 	}
 	endCommandBuffer(vk, *cmdBuffer);
 	submitCommandsAndWait(vk, device, queue, *cmdBuffer);

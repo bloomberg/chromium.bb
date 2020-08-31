@@ -67,10 +67,10 @@ COMPONENT_EXPORT(UI_BASE_X) void RefCustomXCursor(::Cursor cursor);
 // Decreases the refcount of the custom cursor, and destroys it if it reaches 0.
 COMPONENT_EXPORT(UI_BASE_X) void UnrefCustomXCursor(::Cursor cursor);
 
-// Creates a XcursorImage and copies the SkBitmap |bitmap| on it. |bitmap|
-// should be non-null. Caller owns the returned object.
+// Creates a XcursorImage and copies the SkBitmap |bitmap| on it. Caller owns
+// the returned object.
 COMPONENT_EXPORT(UI_BASE_X)
-XcursorImage* SkBitmapToXcursorImage(const SkBitmap* bitmap,
+XcursorImage* SkBitmapToXcursorImage(const SkBitmap& bitmap,
                                      const gfx::Point& hotspot);
 
 // Coalesce all pending motion events (touch or mouse) that are at the top of
@@ -302,6 +302,10 @@ COMPONENT_EXPORT(UI_BASE_X) WindowManagerName GuessWindowManager();
 // The same as GuessWindowManager(), but returns the raw string.  If we
 // can't determine it, return "Unknown".
 COMPONENT_EXPORT(UI_BASE_X) std::string GuessWindowManagerName();
+
+// Returns a buest-effort guess as to whether |window_manager| is tiling (true)
+// or stacking (false).
+COMPONENT_EXPORT(UI_BASE_X) bool IsWmTiling(WindowManagerName window_manager);
 
 // Returns true if a compositing manager is present.
 COMPONENT_EXPORT(UI_BASE_X) bool IsCompositingManagerPresent();

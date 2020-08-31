@@ -42,19 +42,14 @@ void MockWidgetInputHandler::MouseCaptureLost() {
 }
 
 void MockWidgetInputHandler::SetEditCommandsForNextKeyEvent(
-    const std::vector<content::EditCommand>& commands) {
+    std::vector<blink::mojom::EditCommandPtr> commands) {
   dispatched_messages_.emplace_back(
-      std::make_unique<DispatchedEditCommandMessage>(commands));
+      std::make_unique<DispatchedEditCommandMessage>(std::move(commands)));
 }
 
 void MockWidgetInputHandler::CursorVisibilityChanged(bool visible) {
   dispatched_messages_.emplace_back(
       std::make_unique<DispatchedMessage>("CursorVisibilityChanged"));
-}
-
-void MockWidgetInputHandler::FallbackCursorModeToggled(bool is_on) {
-  dispatched_messages_.emplace_back(
-      std::make_unique<DispatchedMessage>("FallbackCursorModeToggled"));
 }
 
 void MockWidgetInputHandler::ImeSetComposition(
@@ -188,8 +183,8 @@ bool MockWidgetInputHandler::DispatchedIMEMessage::Matches(
 
 MockWidgetInputHandler::DispatchedEditCommandMessage::
     DispatchedEditCommandMessage(
-        const std::vector<content::EditCommand>& commands)
-    : DispatchedMessage("SetEditComamnds"), commands_(commands) {}
+        std::vector<blink::mojom::EditCommandPtr> commands)
+    : DispatchedMessage("SetEditComamnds"), commands_(std::move(commands)) {}
 
 MockWidgetInputHandler::DispatchedEditCommandMessage::
     ~DispatchedEditCommandMessage() {}
@@ -198,7 +193,7 @@ MockWidgetInputHandler::DispatchedEditCommandMessage::ToEditCommand() {
   return this;
 }
 
-const std::vector<content::EditCommand>&
+const std::vector<blink::mojom::EditCommandPtr>&
 MockWidgetInputHandler::DispatchedEditCommandMessage::Commands() const {
   return commands_;
 }
@@ -213,9 +208,9 @@ MockWidgetInputHandler::DispatchedEventMessage::DispatchedEventMessage(
 
 MockWidgetInputHandler::DispatchedEventMessage::~DispatchedEventMessage() {
   if (callback_) {
-    std::move(callback_).Run(InputEventAckSource::UNKNOWN, ui::LatencyInfo(),
-                             INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt,
-                             base::nullopt);
+    std::move(callback_).Run(
+        blink::mojom::InputEventResultSource::kUnknown, ui::LatencyInfo(),
+        blink::mojom::InputEventResultState::kNotConsumed, nullptr, nullptr);
     base::RunLoop().RunUntilIdle();
   }
 }
@@ -226,24 +221,23 @@ MockWidgetInputHandler::DispatchedEventMessage::ToEvent() {
 }
 
 void MockWidgetInputHandler::DispatchedEventMessage::CallCallback(
-    InputEventAckState state) {
+    blink::mojom::InputEventResultState state) {
   if (callback_) {
-    std::move(callback_).Run(InputEventAckSource::MAIN_THREAD,
-                             ui::LatencyInfo(), state, base::nullopt,
-                             base::nullopt);
+    std::move(callback_).Run(blink::mojom::InputEventResultSource::kMainThread,
+                             ui::LatencyInfo(), state, nullptr, nullptr);
     base::RunLoop().RunUntilIdle();
   }
 }
 
 void MockWidgetInputHandler::DispatchedEventMessage::CallCallback(
-    InputEventAckSource source,
+    blink::mojom::InputEventResultSource source,
     const ui::LatencyInfo& latency_info,
-    InputEventAckState state,
-    const base::Optional<ui::DidOverscrollParams>& overscroll,
-    const base::Optional<cc::TouchAction>& touch_action) {
+    blink::mojom::InputEventResultState state,
+    blink::mojom::DidOverscrollParamsPtr overscroll,
+    blink::mojom::TouchActionOptionalPtr touch_action) {
   if (callback_) {
-    std::move(callback_).Run(source, latency_info, state, overscroll,
-                             touch_action);
+    std::move(callback_).Run(source, latency_info, state, std::move(overscroll),
+                             std::move(touch_action));
     base::RunLoop().RunUntilIdle();
   }
 }

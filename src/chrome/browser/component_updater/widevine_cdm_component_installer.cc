@@ -20,6 +20,7 @@
 #include "base/native_library.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/media/cdm_manifest.h"
@@ -123,7 +124,7 @@ void RegisterWidevineCdmWithChrome(
 class WidevineCdmComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
   WidevineCdmComponentInstallerPolicy();
-  ~WidevineCdmComponentInstallerPolicy() override {}
+  ~WidevineCdmComponentInstallerPolicy() override = default;
 
  private:
   // The following methods override ComponentInstallerPolicy.
@@ -152,7 +153,8 @@ class WidevineCdmComponentInstallerPolicy : public ComponentInstallerPolicy {
   DISALLOW_COPY_AND_ASSIGN(WidevineCdmComponentInstallerPolicy);
 };
 
-WidevineCdmComponentInstallerPolicy::WidevineCdmComponentInstallerPolicy() {}
+WidevineCdmComponentInstallerPolicy::WidevineCdmComponentInstallerPolicy() =
+    default;
 
 bool WidevineCdmComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
@@ -184,9 +186,8 @@ void WidevineCdmComponentInstallerPolicy::ComponentReady(
 
   // Widevine CDM affects encrypted media playback, hence USER_VISIBLE.
   // See http://crbug.com/900169 for the context.
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&WidevineCdmComponentInstallerPolicy::UpdateCdmPath,
                      base::Unretained(this), version, path,
                      base::Passed(&manifest)));

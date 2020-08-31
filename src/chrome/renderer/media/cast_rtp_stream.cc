@@ -170,9 +170,9 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
   // |track| provides data for this sink.
   // |error_callback| is called if video formats don't match.
   CastVideoSink(const blink::WebMediaStreamTrack& track,
-                const CastRtpStream::ErrorCallback& error_callback)
+                CastRtpStream::ErrorCallback error_callback)
       : track_(track),
-        deliverer_(new Deliverer(error_callback)),
+        deliverer_(base::MakeRefCounted<Deliverer>(std::move(error_callback))),
         consecutive_refresh_count_(0),
         expecting_a_refresh_frame_(false),
         is_connected_to_track_(false) {}
@@ -203,9 +203,9 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
  private:
   class Deliverer : public base::RefCountedThreadSafe<Deliverer> {
    public:
-    explicit Deliverer(const CastRtpStream::ErrorCallback& error_callback)
+    explicit Deliverer(CastRtpStream::ErrorCallback error_callback)
         : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-          error_callback_(error_callback) {}
+          error_callback_(std::move(error_callback)) {}
 
     void WillConnectToTrack(
         base::WeakPtr<CastVideoSink> sink,
@@ -493,21 +493,22 @@ std::vector<FrameSenderConfig> CastRtpStream::GetSupportedConfigs() {
 
 void CastRtpStream::Start(int32_t stream_id,
                           const FrameSenderConfig& config,
-                          const base::Closure& start_callback,
-                          const base::Closure& stop_callback,
-                          const ErrorCallback& error_callback) {
+                          base::OnceClosure start_callback,
+                          base::OnceClosure stop_callback,
+                          ErrorCallback error_callback) {
   DCHECK(!start_callback.is_null());
   DCHECK(!stop_callback.is_null());
   DCHECK(!error_callback.is_null());
 
   DVLOG(1) << "CastRtpStream::Start = " << (is_audio_ ? "audio" : "video");
-  stop_callback_ = stop_callback;
-  error_callback_ = error_callback;
+  stop_callback_ = std::move(stop_callback);
+  error_callback_ = std::move(error_callback);
 
   if (track_.IsNull()) {
     cast_session_->StartRemotingStream(
-        stream_id, config, base::Bind(&CastRtpStream::DidEncounterError,
-                                      weak_factory_.GetWeakPtr()));
+        stream_id, config,
+        base::BindOnce(&CastRtpStream::DidEncounterError,
+                       weak_factory_.GetWeakPtr()));
   } else if (is_audio_) {
     // In case of error we have to go through DidEncounterError() to stop
     // the streaming after reporting the error.
@@ -530,7 +531,7 @@ void CastRtpStream::Start(int32_t stream_id,
         base::Bind(&CastRtpStream::DidEncounterError,
                    weak_factory_.GetWeakPtr()));
   }
-  start_callback.Run();
+  std::move(start_callback).Run();
 }
 
 void CastRtpStream::Stop() {

@@ -17,6 +17,10 @@
 #include "chrome/browser/signin/signin_promo.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
+#endif
+
 class Browser;
 class Profile;
 
@@ -55,6 +59,8 @@ enum FeedbackSource {
   kFeedbackSourceSupervisedUserInterstitial,
   kFeedbackSourceAssistant,
   kFeedbackSourceDesktopTabGroups,
+  kFeedbackSourceMediaApp,
+  kFeedbackSourceHelpApp,
 
   // Must be last.
   kFeedbackSourceCount,
@@ -115,14 +121,13 @@ void ShowContentSettingsExceptionsForProfile(
 void ShowSiteSettings(Profile* profile, const GURL& url);
 void ShowSiteSettings(Browser* browser, const GURL& url);
 
-void ShowAppManagementPage(Profile* profile, const std::string& app_id);
-
 void ShowContentSettings(Browser* browser,
                          ContentSettingsType content_settings_type);
 void ShowSettingsSubPageInTabbedBrowser(Browser* browser,
                                         const std::string& sub_page);
 void ShowClearBrowsingDataDialog(Browser* browser);
 void ShowPasswordManager(Browser* browser);
+void ShowPasswordCheck(Browser* browser);
 void ShowImportDialog(Browser* browser);
 void ShowAboutChrome(Browser* browser);
 void ShowSearchEngineSettings(Browser* browser);
@@ -133,6 +138,12 @@ void ShowEnterpriseManagementPageInTabbedBrowser(Browser* browser);
 
 // Constructs an OS settings GURL for the specified |sub_page|.
 GURL GetOSSettingsUrl(const std::string& sub_page);
+
+void ShowAppManagementPage(Profile* profile,
+                           const std::string& app_id,
+                           AppManagementEntryPoint entry_point);
+
+void ShowPrintManagementApp(Profile* profile);
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

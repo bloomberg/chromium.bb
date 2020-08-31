@@ -282,6 +282,7 @@ typedef struct VP9EncoderConfig {
 
   int row_mt;
   unsigned int motion_vector_unit_test;
+  int delta_q_uv;
 } VP9EncoderConfig;
 
 static INLINE int is_lossless_requested(const VP9EncoderConfig *cfg) {
@@ -330,9 +331,9 @@ typedef struct TplDepFrame {
 typedef struct TileDataEnc {
   TileInfo tile_info;
   int thresh_freq_fact[BLOCK_SIZES][MAX_MODES];
-#if CONFIG_CONSISTENT_RECODE
+#if CONFIG_CONSISTENT_RECODE || CONFIG_RATE_CTRL
   int thresh_freq_fact_prev[BLOCK_SIZES][MAX_MODES];
-#endif
+#endif  // CONFIG_CONSISTENT_RECODE || CONFIG_RATE_CTRL
   int8_t mode_map[BLOCK_SIZES][MAX_MODES];
   FIRSTPASS_DATA fp_data;
   VP9RowMTSync row_mt_sync;
@@ -517,15 +518,38 @@ typedef struct KMEANS_DATA {
 } KMEANS_DATA;
 
 #if CONFIG_RATE_CTRL
+typedef struct PARTITION_INFO {
+  int row;           // row pixel offset of current 4x4 block
+  int column;        // column pixel offset of current 4x4 block
+  int row_start;     // row pixel offset of the start of the prediction block
+  int column_start;  // column pixel offset of the start of the prediction block
+  int width;         // prediction block width
+  int height;        // prediction block height
+} PARTITION_INFO;
+
+typedef struct MOTION_VECTOR_INFO {
+  MV_REFERENCE_FRAME ref_frame[2];
+  int_mv mv[2];
+} MOTION_VECTOR_INFO;
+
 typedef struct ENCODE_COMMAND {
   int use_external_quantize_index;
   int external_quantize_index;
+  // A list of binary flags set from the external controller.
+  // Each binary flag indicates whether the frame is an arf or not.
+  const int *external_arf_indexes;
 } ENCODE_COMMAND;
 
 static INLINE void encode_command_init(ENCODE_COMMAND *encode_command) {
   vp9_zero(*encode_command);
   encode_command->use_external_quantize_index = 0;
   encode_command->external_quantize_index = -1;
+  encode_command->external_arf_indexes = NULL;
+}
+
+static INLINE void encode_command_set_external_arf_indexes(
+    ENCODE_COMMAND *encode_command, const int *external_arf_indexes) {
+  encode_command->external_arf_indexes = external_arf_indexes;
 }
 
 static INLINE void encode_command_set_external_quantize_index(
@@ -539,6 +563,10 @@ static INLINE void encode_command_reset_external_quantize_index(
   encode_command->use_external_quantize_index = 0;
   encode_command->external_quantize_index = -1;
 }
+
+// Returns number of units in size of 4, if not multiple not a multiple of 4,
+// round it up. For example, size is 7, return 2.
+static INLINE int get_num_unit_4x4(int size) { return (size + 3) >> 2; }
 #endif  // CONFIG_RATE_CTRL
 
 typedef struct VP9_COMP {
@@ -847,16 +875,81 @@ typedef struct VP9_COMP {
   vpx_roi_map_t roi;
 #if CONFIG_RATE_CTRL
   ENCODE_COMMAND encode_command;
+  PARTITION_INFO *partition_info;
+  MOTION_VECTOR_INFO *motion_vector_info;
 #endif
 } VP9_COMP;
+
+#if CONFIG_RATE_CTRL
+// Allocates memory for the partition information.
+// The unit size is each 4x4 block.
+// Only called once in vp9_create_compressor().
+static INLINE void partition_info_init(struct VP9_COMP *cpi) {
+  VP9_COMMON *const cm = &cpi->common;
+  const int unit_width = get_num_unit_4x4(cpi->frame_info.frame_width);
+  const int unit_height = get_num_unit_4x4(cpi->frame_info.frame_height);
+  CHECK_MEM_ERROR(cm, cpi->partition_info,
+                  (PARTITION_INFO *)vpx_calloc(unit_width * unit_height,
+                                               sizeof(PARTITION_INFO)));
+  memset(cpi->partition_info, 0,
+         unit_width * unit_height * sizeof(PARTITION_INFO));
+}
+
+// Frees memory of the partition information.
+// Only called once in dealloc_compressor_data().
+static INLINE void free_partition_info(struct VP9_COMP *cpi) {
+  vpx_free(cpi->partition_info);
+  cpi->partition_info = NULL;
+}
+
+// Allocates memory for the motion vector information.
+// The unit size is each 4x4 block.
+// Only called once in vp9_create_compressor().
+static INLINE void motion_vector_info_init(struct VP9_COMP *cpi) {
+  VP9_COMMON *const cm = &cpi->common;
+  const int unit_width = get_num_unit_4x4(cpi->frame_info.frame_width);
+  const int unit_height = get_num_unit_4x4(cpi->frame_info.frame_height);
+  CHECK_MEM_ERROR(cm, cpi->motion_vector_info,
+                  (MOTION_VECTOR_INFO *)vpx_calloc(unit_width * unit_height,
+                                                   sizeof(MOTION_VECTOR_INFO)));
+  memset(cpi->motion_vector_info, 0,
+         unit_width * unit_height * sizeof(MOTION_VECTOR_INFO));
+}
+
+// Frees memory of the motion vector information.
+// Only called once in dealloc_compressor_data().
+static INLINE void free_motion_vector_info(struct VP9_COMP *cpi) {
+  vpx_free(cpi->motion_vector_info);
+  cpi->motion_vector_info = NULL;
+}
+
+// This is the c-version counter part of ImageBuffer
+typedef struct IMAGE_BUFFER {
+  int allocated;
+  int plane_width[3];
+  int plane_height[3];
+  uint8_t *plane_buffer[3];
+} IMAGE_BUFFER;
+#endif  // CONFIG_RATE_CTRL
 
 typedef struct ENCODE_FRAME_RESULT {
   int show_idx;
   FRAME_UPDATE_TYPE update_type;
+#if CONFIG_RATE_CTRL
+  int frame_coding_index;
+  int ref_frame_coding_indexes[MAX_INTER_REF_FRAMES];
+  int ref_frame_valid_list[MAX_INTER_REF_FRAMES];
   double psnr;
   uint64_t sse;
+  FRAME_COUNTS frame_counts;
+  const PARTITION_INFO *partition_info;
+  const MOTION_VECTOR_INFO *motion_vector_info;
+  IMAGE_BUFFER coded_frame;
+#endif  // CONFIG_RATE_CTRL
   int quantize_index;
 } ENCODE_FRAME_RESULT;
+
+void vp9_init_encode_frame_result(ENCODE_FRAME_RESULT *encode_frame_result);
 
 void vp9_initialize_enc(void);
 
@@ -907,6 +1000,14 @@ int vp9_set_size_literal(VP9_COMP *cpi, unsigned int width,
 
 void vp9_set_svc(VP9_COMP *cpi, int use_svc);
 
+// Check for resetting the rc flags (rc_1_frame, rc_2_frame) if the
+// configuration change has a large change in avg_frame_bandwidth.
+// For SVC check for resetting based on spatial layer average bandwidth.
+// Also reset buffer level to optimal level.
+void vp9_check_reset_rc_flag(VP9_COMP *cpi);
+
+void vp9_set_rc_buffer_sizes(VP9_COMP *cpi);
+
 static INLINE int stack_pop(int *stack, int stack_size) {
   int idx;
   const int r = stack[0];
@@ -953,8 +1054,20 @@ static INLINE int get_ref_frame_buf_idx(const VP9_COMP *const cpi,
   return (map_idx != INVALID_IDX) ? cm->ref_frame_map[map_idx] : INVALID_IDX;
 }
 
-static INLINE RefCntBuffer *get_ref_cnt_buffer(VP9_COMMON *cm, int fb_idx) {
+static INLINE RefCntBuffer *get_ref_cnt_buffer(const VP9_COMMON *cm,
+                                               int fb_idx) {
   return fb_idx != INVALID_IDX ? &cm->buffer_pool->frame_bufs[fb_idx] : NULL;
+}
+
+static INLINE void get_ref_frame_bufs(
+    const VP9_COMP *cpi, RefCntBuffer *ref_frame_bufs[MAX_INTER_REF_FRAMES]) {
+  const VP9_COMMON *const cm = &cpi->common;
+  MV_REFERENCE_FRAME ref_frame;
+  for (ref_frame = LAST_FRAME; ref_frame < MAX_REF_FRAMES; ++ref_frame) {
+    int ref_frame_buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
+    int inter_ref_idx = mv_ref_frame_to_inter_ref_idx(ref_frame);
+    ref_frame_bufs[inter_ref_idx] = get_ref_cnt_buffer(cm, ref_frame_buf_idx);
+  }
 }
 
 static INLINE YV12_BUFFER_CONFIG *get_ref_frame_buffer(

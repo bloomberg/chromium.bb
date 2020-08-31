@@ -63,9 +63,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     DesktopMediaPickerViews* parent,
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists)
     : parent_(parent), modality_(params.modality) {
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SHARE));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SHARE));
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   std::unique_ptr<views::Checkbox> audio_share_checkbox;
@@ -73,8 +72,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     audio_share_checkbox = std::make_unique<views::Checkbox>(
         l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE));
     audio_share_checkbox->SetChecked(params.approve_audio_by_default);
-    audio_share_checkbox_ =
-        DialogDelegate::SetExtraView(std::move(audio_share_checkbox));
+    audio_share_checkbox_ = SetExtraView(std::move(audio_share_checkbox));
   }
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -210,9 +208,9 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   // picker will be shown modal to the web contents. Otherwise the picker is
   // shown in a separate window.
   views::Widget* widget = nullptr;
-  bool modal_dialog =
-      params.web_contents &&
-      !params.web_contents->GetDelegate()->IsNeverVisible(params.web_contents);
+  bool modal_dialog = params.web_contents &&
+                      !params.web_contents->GetDelegate()->IsNeverComposited(
+                          params.web_contents);
   if (modal_dialog) {
     widget =
         constrained_window::ShowWebModalDialogViews(this, params.web_contents);
@@ -222,7 +220,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     // MODAL_TYPE_WINDOW.
     modality_ = ui::MODAL_TYPE_WINDOW;
 #endif
-    widget = DialogDelegate::CreateDialogWidget(this, params.context, nullptr);
+    widget = CreateDialogWidget(this, params.context, nullptr);
     widget->Show();
   }
   chrome::RecordDialogCreation(chrome::DialogIdentifier::DESKTOP_MEDIA_PICKER);

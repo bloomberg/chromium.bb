@@ -873,6 +873,7 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   void vneg(NeonSize size, QwNeonRegister dst, QwNeonRegister src);
 
   void vand(QwNeonRegister dst, QwNeonRegister src1, QwNeonRegister src2);
+  void vbic(QwNeonRegister dst, QwNeonRegister src1, QwNeonRegister src2);
   void veor(DwVfpRegister dst, DwVfpRegister src1, DwVfpRegister src2);
   void veor(QwNeonRegister dst, QwNeonRegister src1, QwNeonRegister src2);
   void vbsl(QwNeonRegister dst, QwNeonRegister src1, QwNeonRegister src2);
@@ -887,9 +888,13 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
             QwNeonRegister src2);
   void vqsub(NeonDataType dt, QwNeonRegister dst, QwNeonRegister src1,
              QwNeonRegister src2);
+  void vmlal(NeonDataType size, QwNeonRegister dst, DwVfpRegister src1,
+             DwVfpRegister src2);
   void vmul(QwNeonRegister dst, QwNeonRegister src1, QwNeonRegister src2);
   void vmul(NeonSize size, QwNeonRegister dst, QwNeonRegister src1,
             QwNeonRegister src2);
+  void vmull(NeonDataType size, QwNeonRegister dst, DwVfpRegister src1,
+             DwVfpRegister src2);
   void vmin(QwNeonRegister dst, QwNeonRegister src1, QwNeonRegister src2);
   void vmin(NeonDataType dt, QwNeonRegister dst, QwNeonRegister src1,
             QwNeonRegister src2);
@@ -925,6 +930,8 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   void vcgt(QwNeonRegister dst, QwNeonRegister src1, QwNeonRegister src2);
   void vcgt(NeonDataType dt, QwNeonRegister dst, QwNeonRegister src1,
             QwNeonRegister src2);
+  void vrhadd(NeonDataType dt, QwNeonRegister dst, QwNeonRegister src1,
+              QwNeonRegister src2);
   void vext(QwNeonRegister dst, QwNeonRegister src1, QwNeonRegister src2,
             int bytes);
   void vzip(NeonSize size, DwVfpRegister src1, DwVfpRegister src2);

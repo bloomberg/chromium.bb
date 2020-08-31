@@ -16,8 +16,10 @@ import "components/arc/mojom/video_protected_buffer_allocator.mojom";
 import "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom";
 [EnableIf=is_chromeos]
 import "components/chromeos_camera/common/jpeg_encode_accelerator.mojom";
+import "gpu/ipc/common/device_perf_info.mojom";
 import "gpu/ipc/common/dx_diag_node.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
+import "gpu/ipc/common/gpu_peak_memory.mojom";
 import "gpu/ipc/common/memory_stats.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "gpu/ipc/common/sync_token.mojom";
@@ -25,6 +27,7 @@ import "media/mojo/mojom/video_encode_accelerator.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojom/buffer_types.mojom";
 import "ui/gl/mojom/gpu_preference.mojom";
+import "mojo/public/mojom/base/memory_pressure_level.mojom";
 
 interface GpuService {
   // Tells the GPU service to create a new channel for communication with a
@@ -95,13 +98,9 @@ interface GpuService {
 
   // Ends tracking the peak GPU memory for the associated |sequence_num|.
   // Returning the value of the peak seen since StartPeakMemoryMonitorProcess.
-  GetPeakMemoryUsage(uint32 sequence_num) => (uint64 memory_usage);
-
-  [EnableIf=is_win]
-  RequestCompleteGpuInfo() => (gpu.mojom.DxDiagNode dx_diagnostics);
-  [EnableIf=is_win]
-  GetGpuSupportedRuntimeVersion()
-      => (gpu.mojom.Dx12VulkanVersionInfo dx12_vulkan_version_info);
+  GetPeakMemoryUsage(uint32 sequence_num) => (uint64 memory_usage,
+      map<gpu.mojom.GpuPeakMemoryAllocationSource, uint64>
+          memory_per_allocation_source);
 
   // Requests that the GPU process query system availability of HDR output and
   // return it.
@@ -119,6 +118,13 @@ interface GpuService {
   // is reconfigured, for example.
   GpuSwitched(gl.mojom.GpuPreference active_gpu_heuristic);
 
+  // Tells GPU that host has seen a monitor being plugged in.
+  DisplayAdded();
+
+  // Tells GPU that host has seen a monitor being unplugged.
+  DisplayRemoved();
+
+  // Tells GPU that all GPU channels are to be destroyed.
   DestroyAllChannels();
 
   // Called by the browser shortly after the application is backgrounded. The
@@ -132,6 +138,10 @@ interface GpuService {
   // Called by the browser immediately after the application is foregrounded.
   OnForegrounded();
 
+  // Called by the browser when the system is under memory pressure.
+  [EnableIf=is_not_android]
+  OnMemoryPressure(mojo_base.mojom.MemoryPressureLevel level);
+
   // Begin a batch of layer tree changes.
   [EnableIf=is_mac]
   BeginCATransaction();
@@ -140,6 +150,11 @@ interface GpuService {
   // completes.
   [EnableIf=is_mac]
   CommitCATransaction() => ();
+
+  // Write out the accumulated code profiling profile to the configured file.
+  // The callback is invoked once the profile has been flushed to disk.
+  [EnableIf=use_clang_profiling]
+  WriteClangProfilingProfile() => ();
 
   Crash();
   Hang();

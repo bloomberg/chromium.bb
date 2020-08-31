@@ -76,8 +76,6 @@ static const arg_def_t limitarg =
     ARG_DEF(NULL, "limit", 1, "Stop decoding after n frames");
 static const arg_def_t skiparg =
     ARG_DEF(NULL, "skip", 1, "Skip the first n input frames");
-static const arg_def_t postprocarg =
-    ARG_DEF(NULL, "postproc", 0, "Postprocess decoded frames");
 static const arg_def_t summaryarg =
     ARG_DEF(NULL, "summary", 0, "Show timing summary");
 static const arg_def_t outputfile =
@@ -108,13 +106,11 @@ static const arg_def_t skipfilmgrain =
     ARG_DEF(NULL, "skip-film-grain", 0, "Skip film grain application");
 
 static const arg_def_t *all_args[] = {
-  &help,           &codecarg,   &use_yv12,      &use_i420,
-  &flipuvarg,      &rawvideo,   &noblitarg,     &progressarg,
-  &limitarg,       &skiparg,    &postprocarg,   &summaryarg,
-  &outputfile,     &threadsarg, &verbosearg,    &scalearg,
-  &fb_arg,         &md5arg,     &framestatsarg, &continuearg,
-  &outbitdeptharg, &isannexb,   &oppointarg,    &outallarg,
-  &skipfilmgrain,  NULL
+  &help,       &codecarg,   &use_yv12,      &use_i420,      &flipuvarg,
+  &rawvideo,   &noblitarg,  &progressarg,   &limitarg,      &skiparg,
+  &summaryarg, &outputfile, &threadsarg,    &verbosearg,    &scalearg,
+  &fb_arg,     &md5arg,     &framestatsarg, &continuearg,   &outbitdeptharg,
+  &isannexb,   &oppointarg, &outallarg,     &skipfilmgrain, NULL
 };
 
 #if CONFIG_LIBYUV
@@ -170,9 +166,9 @@ static void show_help(FILE *fout, int shorthelp) {
   fprintf(fout, "\nIncluded decoders:\n\n");
 
   for (int i = 0; i < get_aom_decoder_count(); ++i) {
-    const AvxInterface *const decoder = get_aom_decoder_by_index(i);
-    fprintf(fout, "    %-6s - %s\n", decoder->name,
-            aom_codec_iface_name(decoder->codec_interface()));
+    aom_codec_iface_t *decoder = get_aom_decoder_by_index(i);
+    fprintf(fout, "    %-6s - %s\n", get_short_name_by_aom_decoder(decoder),
+            aom_codec_iface_name(decoder));
   }
 }
 
@@ -258,11 +254,10 @@ static int file_is_raw(struct AvxInputContext *input) {
 
     if (mem_get_le32(buf) < 256 * 1024 * 1024) {
       for (i = 0; i < get_aom_decoder_count(); ++i) {
-        const AvxInterface *const decoder = get_aom_decoder_by_index(i);
-        if (!aom_codec_peek_stream_info(decoder->codec_interface(), buf + 4,
-                                        32 - 4, &si)) {
+        aom_codec_iface_t *decoder = get_aom_decoder_by_index(i);
+        if (!aom_codec_peek_stream_info(decoder, buf + 4, 32 - 4, &si)) {
           is_raw = 1;
-          input->fourcc = decoder->fourcc;
+          input->fourcc = get_fourcc_by_aom_decoder(decoder);
           input->width = si.w;
           input->height = si.h;
           input->framerate.numerator = 30;
@@ -437,11 +432,9 @@ static int main_loop(int argc, const char **argv_) {
   FILE *infile;
   int frame_in = 0, frame_out = 0, flipuv = 0, noblit = 0;
   int do_md5 = 0, progress = 0;
-  int stop_after = 0, postproc = 0, summary = 0, quiet = 1;
+  int stop_after = 0, summary = 0, quiet = 1;
   int arg_skip = 0;
   int keep_going = 0;
-  const AvxInterface *interface = NULL;
-  const AvxInterface *fourcc_interface = NULL;
   uint64_t dx_time = 0;
   struct arg arg;
   char **argv, **argi, **argj;
@@ -451,7 +444,7 @@ static int main_loop(int argc, const char **argv_) {
   int opt_yv12 = 0;
   int opt_i420 = 0;
   int opt_raw = 0;
-  aom_codec_dec_cfg_t cfg = { 0, 0, 0, CONFIG_LOWBITDEPTH, { 1 } };
+  aom_codec_dec_cfg_t cfg = { 0, 0, 0, !FORCE_HIGHBITDEPTH_DECODING };
   unsigned int fixed_output_bit_depth = 0;
   unsigned int is_annexb = 0;
   int frames_corrupted = 0;
@@ -484,6 +477,7 @@ static int main_loop(int argc, const char **argv_) {
   input.webm_ctx = &webm_ctx;
 #endif
   struct ObuDecInputContext obu_ctx = { NULL, NULL, 0, 0, 0 };
+  int is_ivf = 0;
 
   obu_ctx.avx_ctx = &aom_input_ctx;
   input.obu_ctx = &obu_ctx;
@@ -493,6 +487,7 @@ static int main_loop(int argc, const char **argv_) {
   exec_name = argv_[0];
   argv = argv_dup(argc - 1, argv_ + 1);
 
+  aom_codec_iface_t *interface = NULL;
   for (argi = argj = argv; (*argj = *argi); argi += arg.argv_step) {
     memset(&arg, 0, sizeof(arg));
     arg.argv_step = 1;
@@ -501,7 +496,7 @@ static int main_loop(int argc, const char **argv_) {
       show_help(stdout, 0);
       exit(EXIT_SUCCESS);
     } else if (arg_match(&arg, &codecarg, argi)) {
-      interface = get_aom_decoder_by_name(arg.val);
+      interface = get_aom_decoder_by_short_name(arg.val);
       if (!interface)
         die("Error: Unrecognized argument (%s) to --codec\n", arg.val);
     } else if (arg_match(&arg, &looparg, argi)) {
@@ -535,8 +530,6 @@ static int main_loop(int argc, const char **argv_) {
       stop_after = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &skiparg, argi)) {
       arg_skip = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &postprocarg, argi)) {
-      postproc = 1;
     } else if (arg_match(&arg, &md5arg, argi)) {
       do_md5 = 1;
     } else if (arg_match(&arg, &framestatsarg, argi)) {
@@ -610,8 +603,10 @@ static int main_loop(int argc, const char **argv_) {
 #endif
   input.aom_input_ctx->filename = fn;
   input.aom_input_ctx->file = infile;
-  if (file_is_ivf(input.aom_input_ctx))
+  if (file_is_ivf(input.aom_input_ctx)) {
     input.aom_input_ctx->file_type = FILE_TYPE_IVF;
+    is_ivf = 1;
+  }
 #if CONFIG_WEBM_IO
   else if (file_is_webm(input.webm_ctx, input.aom_input_ctx))
     input.aom_input_ctx->file_type = FILE_TYPE_WEBM;
@@ -625,6 +620,7 @@ static int main_loop(int argc, const char **argv_) {
 #if !CONFIG_WEBM_IO
     fprintf(stderr, "aomdec was built without WebM container support.\n");
 #endif
+    free(argv);
     return EXIT_FAILURE;
   }
 
@@ -660,17 +656,22 @@ static int main_loop(int argc, const char **argv_) {
 #endif
   }
 
-  fourcc_interface = get_aom_decoder_by_fourcc(aom_input_ctx.fourcc);
+  aom_codec_iface_t *fourcc_interface =
+      get_aom_decoder_by_fourcc(aom_input_ctx.fourcc);
+
+  if (is_ivf && !fourcc_interface)
+    fatal("Unsupported fourcc: %x\n", aom_input_ctx.fourcc);
+
   if (interface && fourcc_interface && interface != fourcc_interface)
-    warn("Header indicates codec: %s\n", fourcc_interface->name);
+    warn("Header indicates codec: %s\n",
+         aom_codec_iface_name(fourcc_interface));
   else
     interface = fourcc_interface;
 
   if (!interface) interface = get_aom_decoder_by_index(0);
 
-  dec_flags = (postproc ? AOM_CODEC_USE_POSTPROC : 0);
-  if (aom_codec_dec_init(&decoder, interface->codec_interface(), &cfg,
-                         dec_flags)) {
+  dec_flags = 0;
+  if (aom_codec_dec_init(&decoder, interface, &cfg, dec_flags)) {
     fprintf(stderr, "Failed to initialize decoder: %s\n",
             aom_codec_error(&decoder));
     goto fail2;
@@ -844,7 +845,7 @@ static int main_loop(int argc, const char **argv_) {
         }
         // Default to codec bit depth if output bit depth not set
         unsigned int output_bit_depth;
-        if (!fixed_output_bit_depth && single_file && !do_md5) {
+        if (!fixed_output_bit_depth && single_file) {
           output_bit_depth = img->bit_depth;
         } else {
           output_bit_depth = fixed_output_bit_depth;

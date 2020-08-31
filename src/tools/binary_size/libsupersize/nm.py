@@ -20,9 +20,10 @@ RunNmOnIntermediates():
 import collections
 import subprocess
 
-import concurrent
 import demangle
+import parallel
 import path_util
+import sys
 
 
 def _IsRelevantNmName(name):
@@ -93,7 +94,9 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
   # directly takes 3s.
   args = [path_util.GetNmPath(tool_prefix), '--no-sort', '--defined-only',
           elf_path]
-  proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  # pylint: disable=unexpected-keyword-arg
+  proc = subprocess.Popen(
+      args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
   # llvm-nm may write to stderr. Discard to denoise.
   stdout, _ = proc.communicate()
   assert proc.returncode == 0
@@ -119,7 +122,7 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
       names_by_address[address].add(mangled_name)
 
   # Need to add before demangling because |names_by_address| changes type.
-  for address, count in num_outlined_functions_at_address.iteritems():
+  for address, count in num_outlined_functions_at_address.items():
     name = '** outlined function' + (' * %d' % count if count > 1 else '')
     names_by_address[address].add(name)
 
@@ -131,7 +134,7 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
   # Also: Sort to ensure stable ordering.
   return {
       addr: sorted(names)
-      for addr, names in names_by_address.iteritems()
+      for addr, names in names_by_address.items()
       if len(names) > 1 or num_outlined_functions_at_address.get(addr, 0) > 1
   }
 
@@ -139,14 +142,15 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
 
 def _CollectAliasesByAddressAsyncHelper(elf_path, tool_prefix):
   result = CollectAliasesByAddress(elf_path, tool_prefix)
-  return concurrent.EncodeDictOfLists(result, key_transform=str)
+  return parallel.EncodeDictOfLists(result, key_transform=str)
 
 
 def CollectAliasesByAddressAsync(elf_path, tool_prefix):
   """Calls CollectAliasesByAddress in a helper process. Returns a Result."""
   def decode(encoded):
-    return concurrent.DecodeDictOfLists(encoded, key_transform=int)
-  return concurrent.ForkAndCall(
+    return parallel.DecodeDictOfLists(encoded, key_transform=int)
+
+  return parallel.ForkAndCall(
       _CollectAliasesByAddressAsyncHelper, (elf_path, tool_prefix),
       decode_func=decode)
 
@@ -182,14 +186,19 @@ def RunNmOnIntermediates(target, tool_prefix, output_directory):
   Args:
     target: Either a single path to a .a (as a string), or a list of .o paths.
   """
-  is_archive = isinstance(target, basestring)
+  is_archive = isinstance(target, str)
   args = [path_util.GetNmPath(tool_prefix), '--no-sort', '--defined-only']
   if is_archive:
     args.append(target)
   else:
     args.extend(target)
-  proc = subprocess.Popen(args, cwd=output_directory, stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE)
+  # pylint: disable=unexpected-keyword-arg
+  proc = subprocess.Popen(
+      args,
+      cwd=output_directory,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE,
+      encoding='utf-8')
   # llvm-nm can print 'no symbols' to stderr. Capture and count the number of
   # lines, to be returned to the caller.
   stdout, stderr = proc.communicate()
@@ -198,7 +207,7 @@ def RunNmOnIntermediates(target, tool_prefix, output_directory):
   lines = stdout.splitlines()
   # Empty .a file has no output.
   if not lines:
-    return concurrent.EMPTY_ENCODED_DICT, concurrent.EMPTY_ENCODED_DICT
+    return parallel.EMPTY_ENCODED_DICT, parallel.EMPTY_ENCODED_DICT
   is_multi_file = not lines[0]
   lines = iter(lines)
   if is_multi_file:
@@ -225,6 +234,5 @@ def RunNmOnIntermediates(target, tool_prefix, output_directory):
   # faster to use join & split.
   # TODO(agrieve): We could use path indices as keys rather than paths to cut
   #     down on marshalling overhead.
-  return (concurrent.EncodeDictOfLists(symbol_names_by_path),
-          concurrent.EncodeDictOfLists(string_addresses_by_path),
-          num_no_symbols)
+  return (parallel.EncodeDictOfLists(symbol_names_by_path),
+          parallel.EncodeDictOfLists(string_addresses_by_path), num_no_symbols)

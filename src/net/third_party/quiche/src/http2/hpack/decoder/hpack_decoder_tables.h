@@ -24,7 +24,7 @@
 #include "net/third_party/quiche/src/http2/hpack/hpack_string.h"
 #include "net/third_party/quiche/src/http2/http2_constants.h"
 #include "net/third_party/quiche/src/http2/platform/api/http2_containers.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_export.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
 
 namespace http2 {
 namespace test {
@@ -34,7 +34,7 @@ class HpackDecoderTablesPeer;
 // HpackDecoderTablesDebugListener supports a QUIC experiment, enabling
 // the gathering of information about the time-line of use of HPACK
 // dynamic table entries.
-class HTTP2_EXPORT_PRIVATE HpackDecoderTablesDebugListener {
+class QUICHE_EXPORT_PRIVATE HpackDecoderTablesDebugListener {
  public:
   HpackDecoderTablesDebugListener();
   virtual ~HpackDecoderTablesDebugListener();
@@ -65,7 +65,7 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderTablesDebugListener {
 // See http://httpwg.org/specs/rfc7541.html#static.table.definition for the
 // contents, and http://httpwg.org/specs/rfc7541.html#index.address.space for
 // info about accessing the static table.
-class HTTP2_EXPORT_PRIVATE HpackDecoderStaticTable {
+class QUICHE_EXPORT_PRIVATE HpackDecoderStaticTable {
  public:
   explicit HpackDecoderStaticTable(const std::vector<HpackStringPair>* table);
   // Uses a global table shared by all threads.
@@ -85,7 +85,7 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderStaticTable {
 // in the dynamic table. See these sections of the RFC:
 //   http://httpwg.org/specs/rfc7541.html#dynamic.table
 //   http://httpwg.org/specs/rfc7541.html#dynamic.table.management
-class HTTP2_EXPORT_PRIVATE HpackDecoderDynamicTable {
+class QUICHE_EXPORT_PRIVATE HpackDecoderDynamicTable {
  public:
   HpackDecoderDynamicTable();
   ~HpackDecoderDynamicTable();
@@ -106,9 +106,9 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderDynamicTable {
   // exceed the acknowledged value of SETTINGS_HEADER_TABLE_SIZE.
   void DynamicTableSizeUpdate(size_t size_limit);
 
-  // Returns true if inserted, false if too large (at which point the
-  // dynamic table will be empty.)
-  bool Insert(const HpackString& name, const HpackString& value);
+  // Insert entry if possible.
+  // If entry is too large to insert, then dynamic table will be empty.
+  void Insert(const HpackString& name, const HpackString& value);
 
   // If index is valid, returns a pointer to the entry, otherwise returns
   // nullptr.
@@ -144,7 +144,7 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderDynamicTable {
   HpackDecoderTablesDebugListener* debug_listener_;
 };
 
-class HTTP2_EXPORT_PRIVATE HpackDecoderTables {
+class QUICHE_EXPORT_PRIVATE HpackDecoderTables {
  public:
   HpackDecoderTables();
   ~HpackDecoderTables();
@@ -165,12 +165,12 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderTables {
     dynamic_table_.DynamicTableSizeUpdate(size_limit);
   }
 
-  // Returns true if inserted, false if too large (at which point the
-  // dynamic table will be empty.)
+  // Insert entry if possible.
+  // If entry is too large to insert, then dynamic table will be empty.
   // TODO(jamessynge): Add methods for moving the string(s) into the table,
   // or for otherwise avoiding unnecessary copies.
-  bool Insert(const HpackString& name, const HpackString& value) {
-    return dynamic_table_.Insert(name, value);
+  void Insert(const HpackString& name, const HpackString& value) {
+    dynamic_table_.Insert(name, value);
   }
 
   // If index is valid, returns a pointer to the entry, otherwise returns

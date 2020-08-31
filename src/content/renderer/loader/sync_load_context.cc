@@ -7,7 +7,8 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
@@ -17,6 +18,7 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
@@ -91,6 +93,7 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
     int routing_id,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    uint32_t loader_options,
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_url_loader_factory,
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
@@ -105,9 +108,9 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
       std::move(download_to_blob_registry), loading_task_runner);
   context->request_id_ = context->resource_dispatcher_->StartAsync(
       std::move(request), routing_id, std::move(loading_task_runner),
-      traffic_annotation, true /* is_sync */,
-      base::WrapUnique(context), context->url_loader_factory_,
-      std::move(throttles), nullptr /* navigation_response_override_params */);
+      traffic_annotation, loader_options, base::WrapUnique(context),
+      context->url_loader_factory_, std::move(throttles),
+      nullptr /* navigation_response_override_params */);
 }
 
 SyncLoadContext::SyncLoadContext(
@@ -147,8 +150,16 @@ void SyncLoadContext::OnUploadProgress(uint64_t position, uint64_t size) {}
 
 bool SyncLoadContext::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
-    network::mojom::URLResponseHeadPtr head) {
+    network::mojom::URLResponseHeadPtr head,
+    std::vector<std::string>* removed_headers) {
   DCHECK(!Completed());
+  if (removed_headers) {
+    // TODO(yoav): Get the actual FeaturePolicy here to support selective
+    // removal for sync XHR.
+    blink::FindClientHintsToRemove(nullptr /* feature_policy */,
+                                   redirect_info.new_url, removed_headers);
+  }
+
   response_->url = redirect_info.new_url;
   response_->head = std::move(head);
   response_->redirect_info = redirect_info;
@@ -224,6 +235,7 @@ void SyncLoadContext::OnCompletedRequest(
   request_completed_ = true;
   response_->error_code = status.error_code;
   response_->extended_error_code = status.extended_error_code;
+  response_->resolve_error_info = status.resolve_error_info;
   response_->cors_error = status.cors_error_status;
   response_->head->encoded_data_length = status.encoded_data_length;
   response_->head->encoded_body_length = status.encoded_body_length;

@@ -20,6 +20,8 @@
 #include "chrome/browser/sharing/sms/sms_fetch_request_handler.h"
 #else
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_desktop.h"
+#include "chrome/browser/sharing/webrtc/sharing_service_host.h"
+#include "chrome/browser/sharing/webrtc/webrtc_message_handler.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
@@ -33,7 +35,8 @@ SharingHandlerRegistryImpl::SharingHandlerRegistryImpl(
     SharingDeviceRegistration* sharing_device_registration,
     SharingMessageSender* message_sender,
     SharingDeviceSource* device_source,
-    content::SmsFetcher* sms_fetcher) {
+    content::SmsFetcher* sms_fetcher,
+    SharingServiceHost* sharing_service_host) {
   AddSharingHandler(std::make_unique<PingMessageHandler>(),
                     {chrome_browser_sharing::SharingMessage::kPingMessage});
 
@@ -79,6 +82,17 @@ SharingHandlerRegistryImpl::SharingHandlerRegistryImpl(
   }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
+
+#if !defined(OS_ANDROID)
+  if (sharing_device_registration->IsPeerConnectionSupported()) {
+    sharing_service_host->SetSharingHandlerRegistry(this);
+    AddSharingHandler(
+        std::make_unique<WebRtcMessageHandler>(sharing_service_host),
+        {chrome_browser_sharing::SharingMessage::kPeerConnectionOfferMessage,
+         chrome_browser_sharing::SharingMessage::
+             kPeerConnectionIceCandidatesMessage});
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 SharingHandlerRegistryImpl::~SharingHandlerRegistryImpl() = default;
@@ -86,7 +100,14 @@ SharingHandlerRegistryImpl::~SharingHandlerRegistryImpl() = default;
 SharingMessageHandler* SharingHandlerRegistryImpl::GetSharingHandler(
     chrome_browser_sharing::SharingMessage::PayloadCase payload_case) {
   auto it = handler_map_.find(payload_case);
-  return it != handler_map_.end() ? it->second : nullptr;
+  if (it != handler_map_.end())
+    return it->second;
+
+  auto extra_it = extra_handler_map_.find(payload_case);
+  if (extra_it != extra_handler_map_.end())
+    return extra_it->second.get();
+
+  return nullptr;
 }
 
 void SharingHandlerRegistryImpl::AddSharingHandler(
@@ -104,4 +125,21 @@ void SharingHandlerRegistryImpl::AddSharingHandler(
   }
 
   handlers_.push_back(std::move(handler));
+}
+
+void SharingHandlerRegistryImpl::RegisterSharingHandler(
+    std::unique_ptr<SharingMessageHandler> handler,
+    chrome_browser_sharing::SharingMessage::PayloadCase payload_case) {
+  DCHECK(handler) << "Received request to add null handler";
+  DCHECK(!GetSharingHandler(payload_case));
+  DCHECK(payload_case !=
+         chrome_browser_sharing::SharingMessage::PAYLOAD_NOT_SET)
+      << "Incorrect payload type specified for handler";
+
+  extra_handler_map_[payload_case] = std::move(handler);
+}
+
+void SharingHandlerRegistryImpl::UnregisterSharingHandler(
+    chrome_browser_sharing::SharingMessage::PayloadCase payload_case) {
+  extra_handler_map_.erase(payload_case);
 }

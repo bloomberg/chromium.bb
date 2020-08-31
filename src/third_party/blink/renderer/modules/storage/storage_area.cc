@@ -63,7 +63,7 @@ StorageArea::StorageArea(LocalFrame* frame,
                          scoped_refptr<CachedStorageArea> storage_area,
                          StorageType storage_type,
                          bool should_enqueue_events)
-    : ContextClient(frame),
+    : ExecutionContextClient(frame),
       cached_area_(std::move(storage_area)),
       storage_type_(storage_type),
       should_enqueue_events_(should_enqueue_events) {
@@ -97,29 +97,32 @@ String StorageArea::getItem(const String& key,
   return cached_area_->GetItem(key);
 }
 
-bool StorageArea::setItem(const String& key,
-                          const String& value,
-                          ExceptionState& exception_state) {
+NamedPropertySetterResult StorageArea::setItem(
+    const String& key,
+    const String& value,
+    ExceptionState& exception_state) {
   if (!CanAccessStorage()) {
     exception_state.ThrowSecurityError("access is denied for this document.");
-    return true;
+    return NamedPropertySetterResult::kIntercepted;
   }
   if (!cached_area_->SetItem(key, value, this)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kQuotaExceededError,
         "Setting the value of '" + key + "' exceeded the quota.");
+    return NamedPropertySetterResult::kIntercepted;
   }
-  return true;
+  return NamedPropertySetterResult::kIntercepted;
 }
 
-DeleteResult StorageArea::removeItem(const String& key,
-                                     ExceptionState& exception_state) {
+NamedPropertyDeleterResult StorageArea::removeItem(
+    const String& key,
+    ExceptionState& exception_state) {
   if (!CanAccessStorage()) {
     exception_state.ThrowSecurityError("access is denied for this document.");
-    return kDeleteSuccess;
+    return NamedPropertyDeleterResult::kDidNotDelete;
   }
   cached_area_->RemoveItem(key, this);
-  return kDeleteSuccess;
+  return NamedPropertyDeleterResult::kDeleted;
 }
 
 void StorageArea::clear(ExceptionState& exception_state) {
@@ -165,9 +168,9 @@ bool StorageArea::NamedPropertyQuery(const AtomicString& name,
   return found && !exception_state.HadException();
 }
 
-void StorageArea::Trace(blink::Visitor* visitor) {
+void StorageArea::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 bool StorageArea::CanAccessStorage() const {

@@ -6,7 +6,7 @@
 #define WEBLAYER_RENDERER_URL_LOADER_THROTTLE_PROVIDER_H_
 
 #include "base/threading/thread_checker.h"
-#include "components/safe_browsing/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -27,8 +27,7 @@ class URLLoaderThrottleProvider : public content::URLLoaderThrottleProvider {
   std::unique_ptr<content::URLLoaderThrottleProvider> Clone() override;
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> CreateThrottles(
       int render_frame_id,
-      const blink::WebURLRequest& request,
-      content::ResourceType resource_type) override;
+      const blink::WebURLRequest& request) override;
   void SetOnline(bool is_online) override;
 
  private:

@@ -746,6 +746,21 @@ TEST_F(FileUtilTest, MakeLongFilePathTest) {
   EXPECT_TRUE(MakeLongFilePath(short_test_dir).empty());
 }
 
+TEST_F(FileUtilTest, CreateWinHardlinkTest) {
+  // Link to a different file name in a sub-directory of |temp_dir_|.
+  FilePath test_dir = temp_dir_.GetPath().Append(FPL("test"));
+  ASSERT_TRUE(CreateDirectory(test_dir));
+  FilePath temp_file;
+  ASSERT_TRUE(CreateTemporaryFileInDir(temp_dir_.GetPath(), &temp_file));
+  FilePath link_to_file = test_dir.Append(FPL("linked_name"));
+  EXPECT_TRUE(CreateWinHardLink(link_to_file, temp_file));
+  EXPECT_TRUE(PathExists(link_to_file));
+
+  // Link two directories. This should fail. Verify that failure is returned
+  // by CreateWinHardLink.
+  EXPECT_FALSE(CreateWinHardLink(temp_dir_.GetPath(), test_dir));
+}
+
 #endif  // defined(OS_WIN)
 
 #if defined(OS_POSIX)
@@ -903,7 +918,7 @@ TEST_F(FileUtilTest, ChangeFilePermissionsAndRead) {
   char buffer[kDataSize];
 
   // Write file.
-  EXPECT_EQ(kDataSize, WriteFile(file_name, kData, kDataSize));
+  EXPECT_TRUE(WriteFile(file_name, kData));
   EXPECT_TRUE(PathExists(file_name));
 
   // Make sure the file is readable.
@@ -939,8 +954,7 @@ TEST_F(FileUtilTest, ChangeFilePermissionsAndWrite) {
   const std::string kData("hello");
 
   // Write file.
-  EXPECT_EQ(static_cast<int>(kData.length()),
-            WriteFile(file_name, kData.data(), kData.length()));
+  EXPECT_TRUE(WriteFile(file_name, kData));
   EXPECT_TRUE(PathExists(file_name));
 
   // Make sure the file is writable.
@@ -954,7 +968,7 @@ TEST_F(FileUtilTest, ChangeFilePermissionsAndWrite) {
   EXPECT_TRUE(GetPosixFilePermissions(file_name, &mode));
   EXPECT_FALSE(mode & FILE_PERMISSION_WRITE_BY_USER);
   // Make sure the file can't be write.
-  EXPECT_EQ(-1, WriteFile(file_name, kData.data(), kData.length()));
+  EXPECT_FALSE(WriteFile(file_name, kData));
   EXPECT_FALSE(PathIsWritable(file_name));
 
   // Give read permission.
@@ -963,8 +977,7 @@ TEST_F(FileUtilTest, ChangeFilePermissionsAndWrite) {
   EXPECT_TRUE(GetPosixFilePermissions(file_name, &mode));
   EXPECT_TRUE(mode & FILE_PERMISSION_WRITE_BY_USER);
   // Make sure the file can be write.
-  EXPECT_EQ(static_cast<int>(kData.length()),
-            WriteFile(file_name, kData.data(), kData.length()));
+  EXPECT_TRUE(WriteFile(file_name, kData));
   EXPECT_TRUE(PathIsWritable(file_name));
 
   // Delete the file.
@@ -982,8 +995,7 @@ TEST_F(FileUtilTest, ChangeDirectoryPermissionsAndEnumerate) {
   FilePath file_name = subdir_path.Append(FPL("Test Readable File.txt"));
   EXPECT_FALSE(PathExists(file_name));
   const std::string kData("hello");
-  EXPECT_EQ(static_cast<int>(kData.length()),
-            WriteFile(file_name, kData.data(), kData.length()));
+  EXPECT_TRUE(WriteFile(file_name, kData));
   EXPECT_TRUE(PathExists(file_name));
 
   // Make sure the directory has the all permissions.
@@ -1042,11 +1054,9 @@ TEST_F(FileUtilTest, ExecutableExistsInPath) {
 
   // Write file.
   const std::string kData("hello");
-  ASSERT_EQ(static_cast<int>(kData.length()),
-            WriteFile(kExePath, kData.data(), kData.length()));
+  ASSERT_TRUE(WriteFile(kExePath, kData));
   ASSERT_TRUE(PathExists(kExePath));
-  ASSERT_EQ(static_cast<int>(kData.length()),
-            WriteFile(kRegularFilePath, kData.data(), kData.length()));
+  ASSERT_TRUE(WriteFile(kRegularFilePath, kData));
   ASSERT_TRUE(PathExists(kRegularFilePath));
 
   ASSERT_TRUE(SetPosixFilePermissions(dir1.Append(kExeFileName),
@@ -2527,6 +2537,24 @@ TEST_F(FileUtilTest, OpenFileNoInheritance) {
   }
 }
 
+TEST_F(FileUtilTest, CreateAndOpenTemporaryFileInDir) {
+  // Create a temporary file.
+  FilePath path;
+  File file = CreateAndOpenTemporaryFileInDir(temp_dir_.GetPath(), &path);
+  ASSERT_TRUE(file.IsValid());
+  EXPECT_FALSE(path.empty());
+
+  // Try to open another handle to it.
+  File file2(path, File::FLAG_OPEN | File::FLAG_READ | File::FLAG_SHARE_DELETE);
+#if defined(OS_WIN)
+  // The file cannot be opened again on account of the exclusive access.
+  EXPECT_FALSE(file2.IsValid());
+#else
+  // Exclusive access isn't a thing on non-Windows platforms.
+  EXPECT_TRUE(file2.IsValid());
+#endif
+}
+
 TEST_F(FileUtilTest, CreateTemporaryFileTest) {
   FilePath temp_files[3];
   for (auto& i : temp_files) {
@@ -2540,14 +2568,14 @@ TEST_F(FileUtilTest, CreateTemporaryFileTest) {
     EXPECT_TRUE(DeleteFile(i, false));
 }
 
-TEST_F(FileUtilTest, CreateAndOpenTemporaryFileTest) {
+TEST_F(FileUtilTest, CreateAndOpenTemporaryStreamTest) {
   FilePath names[3];
-  FILE* fps[3];
+  ScopedFILE fps[3];
   int i;
 
   // Create; make sure they are open and exist.
   for (i = 0; i < 3; ++i) {
-    fps[i] = CreateAndOpenTemporaryFile(&(names[i]));
+    fps[i] = CreateAndOpenTemporaryStream(&(names[i]));
     ASSERT_TRUE(fps[i]);
     EXPECT_TRUE(PathExists(names[i]));
   }
@@ -2559,7 +2587,7 @@ TEST_F(FileUtilTest, CreateAndOpenTemporaryFileTest) {
 
   // Close and delete.
   for (i = 0; i < 3; ++i) {
-    EXPECT_TRUE(CloseFile(fps[i]));
+    fps[i].reset();
     EXPECT_TRUE(DeleteFile(names[i], false));
   }
 }
@@ -2619,6 +2647,19 @@ TEST_F(FileUtilTest, FileToFILE) {
   EXPECT_TRUE(stream);
   EXPECT_FALSE(file.IsValid());
   EXPECT_TRUE(CloseFile(stream));
+}
+
+TEST_F(FileUtilTest, FILEToFile) {
+  ScopedFILE stream;
+  EXPECT_FALSE(FILEToFile(stream.get()).IsValid());
+
+  stream.reset(OpenFile(temp_dir_.GetPath().Append(FPL("hello.txt")), "wb+"));
+  ASSERT_TRUE(stream);
+  File file = FILEToFile(stream.get());
+  EXPECT_TRUE(file.IsValid());
+  ASSERT_EQ(fprintf(stream.get(), "there"), 5);
+  ASSERT_EQ(fflush(stream.get()), 0);
+  EXPECT_EQ(file.GetLength(), 5L);
 }
 
 TEST_F(FileUtilTest, CreateNewTempDirectoryTest) {
@@ -2967,8 +3008,7 @@ TEST_F(FileUtilTest, AppendToFile) {
 
   std::string data("hello");
   EXPECT_FALSE(AppendToFile(foobar, data.c_str(), data.size()));
-  EXPECT_EQ(static_cast<int>(data.length()),
-            WriteFile(foobar, data.c_str(), data.length()));
+  EXPECT_TRUE(WriteFile(foobar, data));
   EXPECT_TRUE(AppendToFile(foobar, data.c_str(), data.size()));
 
   const std::wstring read_content = ReadTextFile(foobar);
@@ -2981,8 +3021,7 @@ TEST_F(FileUtilTest, ReadFile) {
   FilePath file_path =
       temp_dir_.GetPath().Append(FILE_PATH_LITERAL("ReadFileTest"));
 
-  ASSERT_EQ(static_cast<int>(kTestData.size()),
-            WriteFile(file_path, kTestData.data(), kTestData.size()));
+  ASSERT_TRUE(WriteFile(file_path, kTestData));
 
   // Make buffers with various size.
   std::vector<char> small_buffer(kTestData.size() / 2);
@@ -3032,8 +3071,7 @@ TEST_F(FileUtilTest, ReadFileToString) {
           .Append(FILE_PATH_LITERAL("ReadFileToStringTest"));
 
   // Create test file.
-  ASSERT_EQ(static_cast<int>(strlen(kTestData)),
-            WriteFile(file_path, kTestData, strlen(kTestData)));
+  ASSERT_TRUE(WriteFile(file_path, kTestData));
 
   EXPECT_TRUE(ReadFileToString(file_path, &data));
   EXPECT_EQ(kTestData, data);
@@ -3270,7 +3308,11 @@ MULTIPROCESS_TEST_MAIN(ChildMain) {
                               PIPE_WAIT, 1, 0, 0, 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
   EXPECT_TRUE(SetEvent(sync_event.Get()));
-  EXPECT_TRUE(ConnectNamedPipe(ph, NULL));
+  if (!::ConnectNamedPipe(ph, /*lpOverlapped=*/nullptr)) {
+    // ERROR_PIPE_CONNECTED means that the other side has already connected.
+    auto error = ::GetLastError();
+    EXPECT_EQ(error, DWORD{ERROR_PIPE_CONNECTED});
+  }
 
   DWORD written;
   EXPECT_TRUE(::WriteFile(ph, kTestData, strlen(kTestData), &written, NULL));
@@ -3297,7 +3339,11 @@ MULTIPROCESS_TEST_MAIN(MoreThanBufferSizeChildMain) {
                               PIPE_WAIT, 1, data.size(), data.size(), 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
   EXPECT_TRUE(SetEvent(sync_event.Get()));
-  EXPECT_TRUE(ConnectNamedPipe(ph, NULL));
+  if (!::ConnectNamedPipe(ph, /*lpOverlapped=*/nullptr)) {
+    // ERROR_PIPE_CONNECTED means that the other side has already connected.
+    auto error = ::GetLastError();
+    EXPECT_EQ(error, DWORD{ERROR_PIPE_CONNECTED});
+  }
 
   DWORD written;
   EXPECT_TRUE(::WriteFile(ph, data.c_str(), data.size(), &written, NULL));
@@ -3446,8 +3492,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithLargeFile) {
       temp_dir_.GetPath().Append(FILE_PATH_LITERAL("ReadFileToStringTest"));
 
   // Create test file.
-  ASSERT_EQ(static_cast<int>(kLargeFileSize),
-            WriteFile(file_path, data.c_str(), kLargeFileSize));
+  ASSERT_TRUE(WriteFile(file_path, data));
 
   std::string actual_data = "temp";
   EXPECT_TRUE(ReadFileToString(file_path, &actual_data));
@@ -3464,6 +3509,33 @@ TEST_F(FileUtilTest, ReadFileToStringWithLargeFile) {
   EXPECT_EQ(std::string(kLargeFileSize - 1, 'c'), actual_data);
 }
 
+TEST_F(FileUtilTest, ReadStreamToString) {
+  ScopedFILE stream(
+      OpenFile(temp_dir_.GetPath().Append(FPL("hello.txt")), "wb+"));
+  ASSERT_TRUE(stream);
+  File file = FILEToFile(stream.get());
+  ASSERT_TRUE(file.IsValid());
+  ASSERT_EQ(fprintf(stream.get(), "there"), 5);
+  ASSERT_EQ(fflush(stream.get()), 0);
+
+  std::string contents;
+  EXPECT_TRUE(ReadStreamToString(stream.get(), &contents));
+  EXPECT_EQ(contents, std::string("there"));
+}
+
+TEST_F(FileUtilTest, ReadStreamToStringWithMaxSize) {
+  ScopedFILE stream(
+      OpenFile(temp_dir_.GetPath().Append(FPL("hello.txt")), "wb+"));
+  ASSERT_TRUE(stream);
+  File file = FILEToFile(stream.get());
+  ASSERT_TRUE(file.IsValid());
+  ASSERT_EQ(fprintf(stream.get(), "there"), 5);
+  ASSERT_EQ(fflush(stream.get()), 0);
+
+  std::string contents;
+  EXPECT_FALSE(ReadStreamToStringWithMaxSize(stream.get(), 2, &contents));
+}
+
 TEST_F(FileUtilTest, TouchFile) {
   FilePath data_dir =
       temp_dir_.GetPath().Append(FILE_PATH_LITERAL("FilePathTest"));
@@ -3476,8 +3548,7 @@ TEST_F(FileUtilTest, TouchFile) {
 
   FilePath foobar(data_dir.Append(FILE_PATH_LITERAL("foobar.txt")));
   std::string data("hello");
-  ASSERT_EQ(static_cast<int>(data.length()),
-            WriteFile(foobar, data.c_str(), data.length()));
+  ASSERT_TRUE(WriteFile(foobar, data));
 
   Time access_time;
   // This timestamp is divisible by one day (in local timezone),
@@ -3503,6 +3574,51 @@ TEST_F(FileUtilTest, TouchFile) {
             file_info.last_modified.ToInternalValue());
 }
 
+TEST_F(FileUtilTest, WriteFileSpanVariant) {
+  FilePath empty_file =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("empty_file"));
+  ASSERT_FALSE(PathExists(empty_file));
+  EXPECT_TRUE(WriteFile(empty_file, base::span<const uint8_t>()));
+  EXPECT_TRUE(PathExists(empty_file));
+
+  std::string data = "not empty";
+  EXPECT_TRUE(ReadFileToString(empty_file, &data));
+  EXPECT_TRUE(data.empty());
+
+  FilePath write_span_file =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("write_span_file"));
+  ASSERT_FALSE(PathExists(write_span_file));
+  static constexpr uint8_t kInput[] = {'h', 'e', 'l', 'l', 'o'};
+  EXPECT_TRUE(WriteFile(write_span_file, kInput));
+  EXPECT_TRUE(PathExists(write_span_file));
+
+  data.clear();
+  EXPECT_TRUE(ReadFileToString(write_span_file, &data));
+  EXPECT_EQ("hello", data);
+}
+
+TEST_F(FileUtilTest, WriteFileStringVariant) {
+  FilePath empty_file =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("empty_file"));
+  ASSERT_FALSE(PathExists(empty_file));
+  EXPECT_TRUE(WriteFile(empty_file, ""));
+  EXPECT_TRUE(PathExists(empty_file));
+
+  std::string data = "not empty";
+  EXPECT_TRUE(ReadFileToString(empty_file, &data));
+  EXPECT_TRUE(data.empty());
+
+  FilePath write_span_file =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("write_string_file"));
+  ASSERT_FALSE(PathExists(write_span_file));
+  EXPECT_TRUE(WriteFile(write_span_file, "world"));
+  EXPECT_TRUE(PathExists(write_span_file));
+
+  data.clear();
+  EXPECT_TRUE(ReadFileToString(write_span_file, &data));
+  EXPECT_EQ("world", data);
+}
+
 TEST_F(FileUtilTest, IsDirectoryEmpty) {
   FilePath empty_dir =
       temp_dir_.GetPath().Append(FILE_PATH_LITERAL("EmptyDir"));
@@ -3515,8 +3631,7 @@ TEST_F(FileUtilTest, IsDirectoryEmpty) {
 
   FilePath foo(empty_dir.Append(FILE_PATH_LITERAL("foo.txt")));
   std::string bar("baz");
-  ASSERT_EQ(static_cast<int>(bar.length()),
-            WriteFile(foo, bar.c_str(), bar.length()));
+  ASSERT_TRUE(WriteFile(foo, bar));
 
   EXPECT_FALSE(IsDirectoryEmpty(empty_dir));
 }
@@ -3835,8 +3950,9 @@ TEST_F(VerifyPathControlledByUserTest, WriteBitChecks) {
 
 #endif  // defined(OS_POSIX)
 
+// Flaky test: crbug/1054637
 #if defined(OS_ANDROID)
-TEST_F(FileUtilTest, ValidContentUriTest) {
+TEST_F(FileUtilTest, DISABLED_ValidContentUriTest) {
   // Get the test image path.
   FilePath data_dir;
   ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &data_dir));
@@ -4013,7 +4129,7 @@ TEST(FileUtilMultiThreadedTest, MAYBE_MultiThreadedTempFiles) {
 
   const RepeatingClosure open_write_close_read = BindRepeating([]() {
     FilePath output_filename;
-    ScopedFILE output_file(CreateAndOpenTemporaryFile(&output_filename));
+    ScopedFILE output_file(CreateAndOpenTemporaryStream(&output_filename));
     EXPECT_TRUE(output_file);
 
     const std::string content = GenerateGUID();

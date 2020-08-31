@@ -42,6 +42,7 @@
 #include "components/sync_sessions/synced_session.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -125,12 +126,9 @@ int CommandIdToWindowVectorIndex(int command_id) {
   return command_id - kFirstLocalWindowCommandId;
 }
 
-gfx::Image CreateFavicon(const gfx::VectorIcon& icon) {
-  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
-  return gfx::Image(
-      gfx::CreateVectorIcon(icon, 16,
-                            native_theme->GetSystemColor(
-                                ui::NativeTheme::kColorId_DefaultIconColor)));
+ui::ImageModel CreateFavicon(const gfx::VectorIcon& icon) {
+  return ui::ImageModel::FromVectorIcon(
+      icon, ui::NativeTheme::kColorId_MenuIconColor, 16);
 }
 
 }  // namespace
@@ -259,12 +257,8 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
   DCHECK_NE(IDC_RECENT_TABS_NO_DEVICE_TABS, command_id);
   DCHECK(!IsDeviceNameCommandId(command_id));
 
-  WindowOpenDisposition disposition =
-      ui::DispositionFromEventFlags(event_flags);
-  if (disposition == WindowOpenDisposition::CURRENT_TAB) {
-    // Force to open a new foreground tab.
-    disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  }
+  WindowOpenDisposition disposition = ui::DispositionFromEventFlags(
+      event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB);
 
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser_->profile());
@@ -568,7 +562,8 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
   int index_in_menu = GetIndexOfCommandId(command_id);
 
   // Set default icon first.
-  SetIcon(index_in_menu, favicon::GetDefaultFavicon());
+  SetIcon(index_in_menu,
+          ui::ImageModel::FromImage(favicon::GetDefaultFavicon()));
 
   bool is_local_tab = command_id < kFirstOtherDevicesTabCommandId;
   if (is_local_tab) {
@@ -581,8 +576,8 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
       return;
     favicon_service->GetFaviconImageForPageURL(
         url,
-        base::Bind(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
-                   weak_ptr_factory_.GetWeakPtr(), command_id),
+        base::BindOnce(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
+                       weak_ptr_factory_.GetWeakPtr(), command_id),
         &local_tab_cancelable_task_tracker_);
   } else {
     favicon::HistoryUiFaviconRequestHandler*
@@ -592,15 +587,13 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
     // Can be null for tests.
     if (!history_ui_favicon_request_handler)
       return;
-    sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
     history_ui_favicon_request_handler->GetFaviconImageForPageURL(
         url,
         base::BindOnce(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
                        weak_ptr_factory_for_other_devices_tab_.GetWeakPtr(),
                        command_id),
 
-        favicon::HistoryUiFaviconRequestOrigin::kRecentTabs,
-        open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL());
+        favicon::HistoryUiFaviconRequestOrigin::kRecentTabs);
   }
 }
 
@@ -613,7 +606,7 @@ void RecentTabsSubMenuModel::OnFaviconDataAvailable(
   }
   int index_in_menu = GetIndexOfCommandId(command_id);
   DCHECK_GT(index_in_menu, -1);
-  SetIcon(index_in_menu, image_result.image);
+  SetIcon(index_in_menu, ui::ImageModel::FromImage(image_result.image));
   ui::MenuModelDelegate* delegate = menu_model_delegate();
   if (delegate)
     delegate->OnIconChanged(index_in_menu);

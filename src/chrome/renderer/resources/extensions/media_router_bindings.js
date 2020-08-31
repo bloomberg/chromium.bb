@@ -149,6 +149,7 @@ IPEndpointAdapter.prototype.toNewVersion = function() {
  */
 function MediaStatusAdapter(fields) {
   this.title = null;
+  this.secondary_title = null;
   this.can_play_pause = false;
   this.can_mute = false;
   this.can_set_volume = false;
@@ -170,6 +171,7 @@ MediaStatusAdapter.PlayState = mediaRouter.mojom.MediaStatus.PlayState;
 MediaStatusAdapter.prototype.toNewVersion = function() {
   return new mediaRouter.mojom.MediaStatus({
     'title': this.title,
+    'secondaryTitle': this.secondary_title || '',
     'canPlayPause': this.can_play_pause,
     'canMute': this.can_mute,
     'canSetVolume': this.can_set_volume,
@@ -262,12 +264,12 @@ function MediaSinkExtraDataAdapter(value) {
   this.$data = null;
   this.$tag = undefined;
 
-  if (value == undefined) {
+  if (value === undefined) {
     return;
   }
 
   var keys = Object.keys(value);
-  if (keys.length == 0) {
+  if (keys.length === 0) {
     return;
   }
 
@@ -295,7 +297,7 @@ MediaSinkExtraDataAdapter.Tags = {
 
 Object.defineProperty(MediaSinkExtraDataAdapter.prototype, 'dial_media_sink', {
   get: function() {
-    if (this.$tag != MediaSinkExtraDataAdapter.Tags.dial_media_sink) {
+    if (this.$tag !== MediaSinkExtraDataAdapter.Tags.dial_media_sink) {
       throw new ReferenceError(
           'MediaSinkExtraDataAdapter.dial_media_sink is not currently set.');
     }
@@ -310,7 +312,7 @@ Object.defineProperty(MediaSinkExtraDataAdapter.prototype, 'dial_media_sink', {
 
 Object.defineProperty(MediaSinkExtraDataAdapter.prototype, 'cast_media_sink', {
   get: function() {
-    if (this.$tag != MediaSinkExtraDataAdapter.Tags.cast_media_sink) {
+    if (this.$tag !== MediaSinkExtraDataAdapter.Tags.cast_media_sink) {
       throw new ReferenceError(
           'MediaSinkExtraDataAdapter.cast_media_sink is not currently set.');
     }
@@ -324,7 +326,7 @@ Object.defineProperty(MediaSinkExtraDataAdapter.prototype, 'cast_media_sink', {
 });
 
 MediaSinkExtraDataAdapter.fromNewVersion = function(other) {
-  if (other.$tag == mediaRouter.mojom.MediaSinkExtraData.Tags.dialMediaSink) {
+  if (other.$tag === mediaRouter.mojom.MediaSinkExtraData.Tags.dialMediaSink) {
     return new MediaSinkExtraDataAdapter({
       'dial_media_sink':
           DialMediaSinkAdapter.fromNewVersion(other.dialMediaSink),
@@ -338,7 +340,7 @@ MediaSinkExtraDataAdapter.fromNewVersion = function(other) {
 };
 
 MediaSinkExtraDataAdapter.prototype.toNewVersion = function() {
-  if (this.$tag == MediaSinkExtraDataAdapter.Tags.dial_media_sink) {
+  if (this.$tag === MediaSinkExtraDataAdapter.Tags.dial_media_sink) {
     return new mediaRouter.mojom.MediaSinkExtraData({
       'dialMediaSink': this.dial_media_sink.toNewVersion(),
     });
@@ -537,9 +539,10 @@ function routeToMojo_(route) {
     'isIncognito': route.offTheRecord,
     'isLocalPresentation': route.isOffscreenPresentation,
     'controllerType': route.controllerType,
+    'presentationId': route.presentationId,
     // Begin newly added properties, followed by the milestone they were
     // added.  The guard should be safe to remove N+2 milestones later.
-    'presentationId': route.presentationId || ''  // M64
+    'mediaSinkName': route.sinkName || ''  // M81
   });
 }
 
@@ -549,7 +552,7 @@ function routeToMojo_(route) {
  * @return {!mediaRouter.mojom.RouteMessage} A Mojo RouteMessage object.
  */
 function messageToMojo_(message) {
-  if ("string" == typeof message.message) {
+  if ('string' === typeof message.message) {
     return new mediaRouter.mojom.RouteMessage({
       'type': mediaRouter.mojom.RouteMessage.Type.TEXT,
       'message': message.message,
@@ -824,20 +827,6 @@ MediaRouter.prototype.onSinksReceived = function(sourceUrn, sinks, origins) {
 };
 
 /**
- * Called by the provider manager when a sink is found to notify the MR of the
- * sink's ID. The actual sink will be returned through the normal sink list
- * update process, so this helps the MR identify the search result in the
- * list.
- * @param {string} pseudoSinkId  ID of the pseudo sink that started the
- *     search.
- * @param {string} sinkId ID of the newly-found sink.
- */
-MediaRouter.prototype.onSearchSinkIdReceived = function(
-    pseudoSinkId, sinkId) {
-  this.service_.onSearchSinkIdReceived(pseudoSinkId, sinkId);
-};
-
-/**
  * Called by the provider manager to keep the extension from suspending
  * if it enters a state where suspension is undesirable (e.g. there is an
  * active MediaRoute.)
@@ -852,8 +841,7 @@ MediaRouter.prototype.setKeepAlive = function(keepAlive) {
   } else if (keepAlive === true && !this.keepAlive_) {
     this.keepAlive_ = new extensions.KeepAlivePtr;
     Mojo.bindInterface(
-        extensions.KeepAlive.name, mojo.makeRequest(this.keepAlive_).handle,
-        'context', true);
+        extensions.KeepAlive.name, mojo.makeRequest(this.keepAlive_).handle);
   }
 };
 
@@ -1098,11 +1086,6 @@ function MediaRouterHandlers() {
   this.updateMediaSinks = null;
 
   /**
-   * @type {function(string, string, !SinkSearchCriteria): string}
-   */
-  this.searchSinks = null;
-
-  /**
    * @type {function()}
    */
   this.provideSinks = null;
@@ -1158,7 +1141,6 @@ MediaRouteProvider.prototype.setHandlers = function(handlers) {
     'connectRouteByRouteId',
     'enableMdnsDiscovery',
     'updateMediaSinks',
-    'searchSinks',
     'provideSinks',
     'createMediaRouteController',
     'onBeforeInvokeHandler'
@@ -1391,32 +1373,6 @@ MediaRouteProvider.prototype.updateMediaSinks = function(sourceUrn) {
 };
 
 /**
- * Requests that the provider manager search its providers for a sink matching
- * |searchCriteria| that is compatible with |sourceUrn|. If a sink is found
- * that can be used immediately for route creation, its ID is returned.
- * Otherwise the empty string is returned.
- *
- * @param {string} sinkId Sink ID of the pseudo sink generating the request.
- * @param {string} sourceUrn Media source to be used with the sink.
- * @param {!SinkSearchCriteria} searchCriteria Search criteria for the route
- *     providers.
- * @return {!Promise.<!{sink_id: !string}>} A Promise resolving to either the
- *     sink ID of the sink found by the search that can be used for route
- *     creation, or the empty string if no route can be immediately created.
- */
-MediaRouteProvider.prototype.searchSinks = function(
-    sinkId, sourceUrn, searchCriteria) {
-  this.handlers_.onBeforeInvokeHandler();
- return this.handlers_.searchSinks(sinkId, sourceUrn, searchCriteria).then(
-      sinkId => {
-        return { 'sinkId': sinkId };
-      },
-      () => {
-        return { 'sinkId': '' };
-      });
-};
-
-/**
  * Notifies the provider manager that MediaRouter has discovered a list of
  * sinks.
  * @param {string} providerName
@@ -1450,6 +1406,5 @@ MediaRouteProvider.prototype.createMediaRouteController = function(
 
 var ptr = new mediaRouter.mojom.MediaRouterPtr;
 Mojo.bindInterface(
-    mediaRouter.mojom.MediaRouter.name, mojo.makeRequest(ptr).handle, 'context',
-    true);
+    mediaRouter.mojom.MediaRouter.name, mojo.makeRequest(ptr).handle);
 exports.$set('returnValue', new MediaRouter(ptr));

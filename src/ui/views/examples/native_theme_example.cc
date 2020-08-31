@@ -7,15 +7,19 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/examples/grit/views_examples_resources.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
@@ -67,9 +71,9 @@ std::unique_ptr<View> CreateAllColorsView() {
   auto* layout = container->SetLayoutManager(std::make_unique<GridLayout>());
   auto* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_WindowBackground));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_DialogBackground));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_DialogForeground));
@@ -78,7 +82,6 @@ std::unique_ptr<View> CreateAllColorsView() {
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_UnfocusedBorderColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonEnabledColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonDisabledColor));
-  InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonPressedShade));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonUncheckedColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ProminentButtonColor));
   InsertColorRow(layout,
@@ -99,12 +102,15 @@ std::unique_ptr<View> CreateAllColorsView() {
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_MenuSeparatorColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_MenuBackgroundColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_MenuBorderColor));
+  InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_MenuIconColor));
   InsertColorRow(layout,
                  COLOR_LABEL_ARGS(kColorId_HighlightedMenuItemBackgroundColor));
   InsertColorRow(layout,
                  COLOR_LABEL_ARGS(kColorId_HighlightedMenuItemForegroundColor));
+  InsertColorRow(
+      layout, COLOR_LABEL_ARGS(kColorId_MenuItemInitialAlertBackgroundColor));
   InsertColorRow(layout,
-                 COLOR_LABEL_ARGS(kColorId_MenuItemAlertBackgroundColor));
+                 COLOR_LABEL_ARGS(kColorId_MenuItemTargetAlertBackgroundColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_LabelEnabledColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_LabelDisabledColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_LabelSecondaryColor));
@@ -120,6 +126,7 @@ std::unique_ptr<View> CreateAllColorsView() {
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TabBottomBorder));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TextfieldDefaultColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TextfieldDefaultBackground));
+  InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TextfieldPlaceholderColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TextfieldReadOnlyColor));
   InsertColorRow(layout,
                  COLOR_LABEL_ARGS(kColorId_TextfieldReadOnlyBackground));
@@ -163,7 +170,8 @@ std::unique_ptr<View> CreateAllColorsView() {
 
 }  // namespace
 
-NativeThemeExample::NativeThemeExample() : ExampleBase("Native Theme Colors") {}
+NativeThemeExample::NativeThemeExample()
+    : ExampleBase(l10n_util::GetStringUTF8(IDS_THEME_SELECT_LABEL).c_str()) {}
 
 NativeThemeExample::~NativeThemeExample() = default;
 

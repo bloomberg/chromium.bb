@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Common from '../common/common.js';
+
 /**
  * @implements {Iterable<T>}
  * @template T
  */
-export default class ListModel extends Common.Object {
+export class ListModel extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * @param {!Array<T>=} items
    */
@@ -189,15 +194,3 @@ export default class ListModel extends Common.Object {
 export const Events = {
   ItemsReplaced: Symbol('ItemsReplaced'),
 };
-
-/* Legacy exported object*/
-self.UI = self.UI || {};
-
-/* Legacy exported object*/
-UI = UI || {};
-
-/** @constructor */
-UI.ListModel = ListModel;
-
-/** @enum {symbol} */
-UI.ListModel.Events = Events;

@@ -7,13 +7,13 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/synchronization/condition_variable.h"
@@ -67,9 +67,7 @@ class TestBackingStore : public OnDiskDirectoryBackingStore {
 TestBackingStore::TestBackingStore(const std::string& dir_name,
                                    const base::FilePath& backing_filepath)
     : OnDiskDirectoryBackingStore(dir_name,
-                                  base::BindRepeating([]() -> std::string {
-                                    return "test_cache_guid";
-                                  }),
+                                  "test_cache_guid",
                                   backing_filepath),
       fail_save_changes_(false) {}
 
@@ -122,7 +120,7 @@ TestDirectory::TestDirectory(
     TestBackingStore* backing_store)
     : Directory(base::WrapUnique(backing_store),
                 handler,
-                base::Closure(),
+                base::NullCallback(),
                 nullptr),
       backing_store_(backing_store) {}
 
@@ -184,10 +182,8 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
     test_directory_ = test_directory.get();
     dir() = std::move(test_directory);
     DCHECK(dir());
-    DirOpenResult result = dir()->Open(
-        kDirectoryName, directory_change_delegate(), NullTransactionObserver());
-    dir()->set_cache_guid(dir()->legacy_cache_guid());
-    return result;
+    return dir()->Open(kDirectoryName, directory_change_delegate(),
+                       NullTransactionObserver());
   }
 
   void SaveAndReloadDir() {
@@ -322,12 +318,9 @@ TEST_F(OnDiskSyncableDirectoryTest,
   dir()->SaveChanges();
   dir() = std::make_unique<Directory>(
       std::make_unique<OnDiskDirectoryBackingStore>(
-          kDirectoryName, base::BindRepeating([]() -> std::string {
-            return "test_cache_guid";
-          }),
-          file_path_),
+          kDirectoryName, "test_cache_guid", file_path_),
       MakeWeakHandle(unrecoverable_error_handler()->GetWeakPtr()),
-      base::Closure(), nullptr);
+      base::NullCallback(), nullptr);
 
   ASSERT_TRUE(dir().get());
   ASSERT_EQ(OPENED_EXISTING,
@@ -538,11 +531,8 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
 
   {
     Directory dir(std::make_unique<OnDiskDirectoryBackingStore>(
-                      "ScopeTest", base::BindRepeating([]() -> std::string {
-                        return "test_cache_guid";
-                      }),
-                      path),
-                  MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(),
+                      "ScopeTest", "test_cache_guid", path),
+                  MakeWeakHandle(handler_.GetWeakPtr()), base::NullCallback(),
                   nullptr);
     DirOpenResult result =
         dir.Open("ScopeTest", &delegate_, NullTransactionObserver());

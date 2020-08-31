@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_fast_paths.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_impl.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_supports_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
@@ -216,7 +217,8 @@ bool CSSParser::ParseSupportsCondition(const String& condition,
   CSSParserImpl parser(StrictCSSParserContext(secure_context_mode));
   return CSSSupportsParser::SupportsCondition(
              CSSParserTokenRange(tokens), parser,
-             CSSSupportsParser::kForWindowCSS) == CSSSupportsParser::kSupported;
+             CSSSupportsParser::Mode::kForWindowCSS) ==
+         CSSSupportsParser::Result::kSupported;
 }
 
 bool CSSParser::ParseColor(Color& color, const String& string, bool strict) {
@@ -258,14 +260,6 @@ bool CSSParser::ParseSystemColor(Color& color,
   if (!StyleColor::IsSystemColor(id))
     return false;
 
-  if (!RuntimeEnabledFeatures::LinkSystemColorsEnabled() &&
-      (id == CSSValueID::kLinktext || id == CSSValueID::kVisitedtext)) {
-    return false;
-  } else if (!RuntimeEnabledFeatures::NewSystemColorsEnabled() &&
-             (id == CSSValueID::kActivetext || id == CSSValueID::kField ||
-              id == CSSValueID::kFieldtext)) {
-    return false;
-  }
   color = LayoutTheme::GetTheme().SystemColor(id, color_scheme);
   return true;
 }
@@ -280,6 +274,18 @@ const CSSValue* CSSParser::ParseFontFaceDescriptor(
   const CSSValue* value = style->GetPropertyCSSValue(property_id);
 
   return value;
+}
+
+CSSPrimitiveValue* CSSParser::ParseLengthPercentage(
+    const String& string,
+    const CSSParserContext* context) {
+  if (string.IsEmpty() || !context)
+    return nullptr;
+  CSSTokenizer tokenizer(string);
+  const auto tokens = tokenizer.TokenizeToEOF();
+  CSSParserTokenRange range(tokens);
+  return css_property_parser_helpers::ConsumeLengthOrPercent(range, *context,
+                                                             kValueRangeAll);
 }
 
 }  // namespace blink

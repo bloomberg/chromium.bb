@@ -33,6 +33,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_resources.h"
 
 namespace chromeos {
@@ -143,8 +144,8 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
     }
     ash::LoginScreen::Get()->ShowParentAccessWidget(
         account_id,
-        base::BindRepeating(&SetTimeMessageHandler::OnParentAccessValidation,
-                            weak_factory_.GetWeakPtr()),
+        base::BindOnce(&SetTimeMessageHandler::OnParentAccessValidation,
+                       weak_factory_.GetWeakPtr()),
         ash::ParentAccessRequestReason::kChangeTime,
         !is_user_logged_in /* extra_dimmer */,
         base::Time::FromDoubleT(seconds));
@@ -190,10 +191,9 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   values.Set("timezoneList", chromeos::system::GetTimezoneList());
 
   // If we are not logged in, we need to show the time zone dropdown.
-  // Otherwise, we can leave |currentTimezoneId| blank.
+  values.SetBoolean("showTimezone", SetTimeDialog::ShouldShowTimezone());
   std::string current_timezone_id;
-  if (SetTimeDialog::ShouldShowTimezone())
-    CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
+  CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
   values.SetString("currentTimezoneId", current_timezone_id);
   values.SetDouble("buildTime", base::GetBuildTime().ToJsTime());
 

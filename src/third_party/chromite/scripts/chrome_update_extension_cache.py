@@ -24,6 +24,7 @@ from __future__ import print_function
 
 import json
 import os
+import sys
 import xml.dom.minidom
 
 from six.moves import urllib
@@ -33,6 +34,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 UPLOAD_URL_BASE = 'gs://chromeos-localmirror-private/distfiles'
@@ -93,7 +97,7 @@ def CreateValidationFiles(validationdir, crxdir, identifier):
 
   osutils.SafeMakedirs(validationdir)
   cros_build_lib.run(['sha256sum'] + verified_files,
-                     log_stdout_to_file=validation_file,
+                     stdout=validation_file,
                      cwd=crxdir, print_cmd=False)
   logging.info('Hashes created.')
 
@@ -120,8 +124,8 @@ def CreateCacheTarball(extensions, outputdir, identifier, tarball):
       user_type = ['unmanaged']
       if extension.get('child_users', 'no') == 'yes':
         user_type.append('child')
-      logging.warn('user_type filter has to be set explicitly for %s, using '
-                   '%s by default.', ext, user_type)
+      logging.warning('user_type filter has to be set explicitly for %s, using '
+                      '%s by default.', ext, user_type)
       extension['user_type'] = user_type
     else:
       if 'child_users' in extension:

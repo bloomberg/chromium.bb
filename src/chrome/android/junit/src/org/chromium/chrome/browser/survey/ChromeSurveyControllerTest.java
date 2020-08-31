@@ -10,40 +10,41 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import android.content.SharedPreferences;
-import android.util.ArrayMap;
-
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.WebContents;
-
-import java.util.Map;
 
 /**
  * Unit tests for ChromeSurveyController.java.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features.EnableFeatures(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
 public class ChromeSurveyControllerTest {
     private static final String STUDY_NAME = "HorizontalTabSwitcherStudyName";
     private static final String GROUP_NAME = "HorizontalTabSwitcherGroupName";
 
     private TestChromeSurveyController mTestController;
     private RiggedSurveyController mRiggedController;
-    private SharedPreferences mSharedPreferences;
+    private SharedPreferencesManager mSharedPreferences;
+
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Mock
     Tab mTab;
@@ -57,31 +58,20 @@ public class ChromeSurveyControllerTest {
     @Before
     public void before() {
         MockitoAnnotations.initMocks(this);
-        RecordHistogram.setDisabledForTests(true);
 
         mTestController = new TestChromeSurveyController();
         mTestController.setTabModelSelector(mSelector);
-        mSharedPreferences = ContextUtils.getAppSharedPreferences();
+        mSharedPreferences = SharedPreferencesManager.getInstance();
         Assert.assertNull("Tab should be null", mTestController.getLastTabInfobarShown());
-        Map<String, Boolean> featureMap = new ArrayMap<>();
-        featureMap.put(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID, true);
-        ChromeFeatureList.setTestFeatures(featureMap);
-    }
-
-    @After
-    public void after() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     @Test
     public void testInfoBarDisplayedBefore() {
         Assert.assertFalse(
-                mSharedPreferences.contains(ChromeSurveyController.SURVEY_INFO_BAR_DISPLAYED_KEY));
+                mSharedPreferences.contains(ChromePreferenceKeys.SURVEY_INFO_BAR_DISPLAYED));
         Assert.assertFalse(mTestController.hasInfoBarBeenDisplayed());
-        mSharedPreferences.edit()
-                .putLong(ChromeSurveyController.SURVEY_INFO_BAR_DISPLAYED_KEY,
-                        System.currentTimeMillis())
-                .apply();
+        mSharedPreferences.writeLong(
+                ChromePreferenceKeys.SURVEY_INFO_BAR_DISPLAYED, System.currentTimeMillis());
         Assert.assertTrue(mTestController.hasInfoBarBeenDisplayed());
     }
 
@@ -171,7 +161,7 @@ public class ChromeSurveyControllerTest {
     @Test
     public void testEligibilityRolledYesterday() {
         mRiggedController = new RiggedSurveyController(0, 5, 10);
-        mSharedPreferences.edit().putInt(ChromeSurveyController.DATE_LAST_ROLLED_KEY, 4);
+        mSharedPreferences.writeInt(ChromePreferenceKeys.SURVEY_DATE_LAST_ROLLED, 4);
         Assert.assertTrue(
                 "Random selection should be true", mRiggedController.isRandomlySelectedForSurvey());
     }
@@ -179,7 +169,7 @@ public class ChromeSurveyControllerTest {
     @Test
     public void testEligibilityRollingTwiceSameDay() {
         mRiggedController = new RiggedSurveyController(0, 5, 10);
-        mSharedPreferences.edit().putInt(ChromeSurveyController.DATE_LAST_ROLLED_KEY, 5).apply();
+        mSharedPreferences.writeInt(ChromePreferenceKeys.SURVEY_DATE_LAST_ROLLED, 5);
         Assert.assertFalse("Random selection should be false",
                 mRiggedController.isRandomlySelectedForSurvey());
     }
@@ -188,22 +178,22 @@ public class ChromeSurveyControllerTest {
     public void testEligibilityFirstTimeRollingQualifies() {
         mRiggedController = new RiggedSurveyController(0, 5, 10);
         Assert.assertFalse(
-                mSharedPreferences.contains(ChromeSurveyController.DATE_LAST_ROLLED_KEY));
+                mSharedPreferences.contains(ChromePreferenceKeys.SURVEY_DATE_LAST_ROLLED));
         Assert.assertTrue(
                 "Random selection should be true", mRiggedController.isRandomlySelectedForSurvey());
         Assert.assertEquals("Numbers should match", 5,
-                mSharedPreferences.getInt(ChromeSurveyController.DATE_LAST_ROLLED_KEY, -1));
+                mSharedPreferences.readInt(ChromePreferenceKeys.SURVEY_DATE_LAST_ROLLED, -1));
     }
 
     @Test
     public void testEligibilityFirstTimeRollingDoesNotQualify() {
         mRiggedController = new RiggedSurveyController(5, 1, 10);
         Assert.assertFalse(
-                mSharedPreferences.contains(ChromeSurveyController.DATE_LAST_ROLLED_KEY));
+                mSharedPreferences.contains(ChromePreferenceKeys.SURVEY_DATE_LAST_ROLLED));
         Assert.assertFalse(
                 "Random selection should be true", mRiggedController.isRandomlySelectedForSurvey());
         Assert.assertEquals("Numbers should match", 1,
-                mSharedPreferences.getInt(ChromeSurveyController.DATE_LAST_ROLLED_KEY, -1));
+                mSharedPreferences.readInt(ChromePreferenceKeys.SURVEY_DATE_LAST_ROLLED, -1));
     }
 
     class RiggedSurveyController extends ChromeSurveyController {

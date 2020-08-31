@@ -16,6 +16,7 @@ namespace blink {
 
 class CSSPaintDefinition;
 class ExceptionState;
+class ScriptState;
 class V8NoArgumentConstructor;
 class WorkerReportingProxy;
 
@@ -44,14 +45,15 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
   void Dispose() final;
 
   bool IsPaintWorkletGlobalScope() const final { return true; }
-  void registerPaint(const String& name,
+  void registerPaint(const ScriptState* script_state,
+                     const String& name,
                      V8NoArgumentConstructor* paint_ctor,
                      ExceptionState&);
 
   CSSPaintDefinition* FindDefinition(const String& name);
   double devicePixelRatio() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Registers the global scope with a proxy client, if not already done. Only

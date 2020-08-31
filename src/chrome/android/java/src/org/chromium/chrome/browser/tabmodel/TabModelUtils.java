@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -101,7 +102,7 @@ public class TabModelUtils {
         int count = model.getCount();
 
         for (int i = 0; i < count; i++) {
-            if (model.getTabAt(i).getUrl().contentEquals(url)) return i;
+            if (model.getTabAt(i).getUrlString().contentEquals(url)) return i;
         }
 
         return TabModel.INVALID_TAB_INDEX;

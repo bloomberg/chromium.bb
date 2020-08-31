@@ -31,11 +31,10 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
+#include "net/base/isolation_info.h"
 #include "url/origin.h"
 
 namespace content {
-
-class WebBundleNavigationInfo;
 
 class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
  public:
@@ -131,7 +130,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   SSLStatus& GetSSL() override;
   void SetOriginalRequestURL(const GURL& original_url) override;
   const GURL& GetOriginalRequestURL() override;
-  void SetIsOverridingUserAgent(bool override) override;
+  void SetIsOverridingUserAgent(bool override_ua) override;
   bool GetIsOverridingUserAgent() override;
   void SetTimestamp(base::Time timestamp) override;
   base::Time GetTimestamp() override;
@@ -182,8 +181,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       mojom::NavigationType navigation_type,
       PreviewsState previews_state,
       base::TimeTicks navigation_start,
-      base::TimeTicks input_start,
-      const blink::FramePolicy& frame_policy);
+      base::TimeTicks input_start);
   mojom::CommitNavigationParamsPtr ConstructCommitNavigationParams(
       const FrameNavigationEntry& frame_entry,
       const GURL& original_url,
@@ -193,7 +191,8 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       bool intended_as_new_entry,
       int pending_offset_to_send,
       int current_offset_to_send,
-      int current_length_to_send);
+      int current_length_to_send,
+      const blink::FramePolicy& frame_policy);
 
   // Once a navigation entry is committed, we should no longer track several
   // pieces of non-persisted state, as documented on the members below.
@@ -251,6 +250,10 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // See https://crbug.com/639842.
   base::flat_map<std::string, bool> GetSubframeUniqueNames(
       FrameTreeNode* frame_tree_node) const;
+
+  // Walks the tree of FrameNavigationEntries to find entries with |origin| so
+  // their isolation status can be registered.
+  void RegisterExistingOriginToPreventOptInIsolation(const url::Origin& origin);
 
   // Removes any subframe FrameNavigationEntries that match the unique name of
   // |frame_tree_node|, and all of their children. There should be at most one,
@@ -368,14 +371,12 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
     has_user_gesture_ = has_user_gesture;
   }
 
-  void set_network_isolation_key(
-      const net::NetworkIsolationKey& network_isolation_key) {
-    network_isolation_key_ = network_isolation_key;
+  void set_isolation_info(const net::IsolationInfo& isolation_info) {
+    isolation_info_ = isolation_info;
   }
 
-  const base::Optional<net::NetworkIsolationKey>& network_isolation_key()
-      const {
-    return network_isolation_key_;
+  const base::Optional<net::IsolationInfo>& isolation_info() const {
+    return isolation_info_;
   }
 
   // Stores a record of the what was committed in this NavigationEntry's main
@@ -403,10 +404,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
     DCHECK(!back_forward_cache_metrics_);
     back_forward_cache_metrics_ = metrics;
   }
-
-  void set_web_bundle_navigation_info(
-      std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info);
-  WebBundleNavigationInfo* web_bundle_navigation_info() const;
 
  private:
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
@@ -512,11 +509,11 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // for a pending navigation. Defaults to false.
   bool ssl_error_;
 
-  // The network isolation key for this NavigationEntry. If provided, this
-  // determines the network isolation key to be used when navigating to this
-  // NavigationEntry; otherwise, the key is determined based on the navigating
-  // frame and top frame origins.  For example, this is used for view-source.
-  base::Optional<net::NetworkIsolationKey> network_isolation_key_;
+  // The net::IsolationInfo for this NavigationEntry. If provided, this
+  // determines the IsolationInfo to be used when navigating to this
+  // NavigationEntry; otherwise, it is determined based on the navigating frame
+  // and top frame origins. For example, this is used for view-source.
+  base::Optional<net::IsolationInfo> isolation_info_;
 
   // Stores information about the entry prior to being replaced (e.g.
   // history.replaceState()). It is preserved after commit (session sync for
@@ -541,14 +538,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // with implement back-forward cache.
   // It is preserved at commit but not persisted.
   scoped_refptr<BackForwardCacheMetrics> back_forward_cache_metrics_;
-
-  // Keeps the Web Bundles related information when |this| is for a navigation
-  // within a Web Bundle file. Used when WebBundles feature is enabled or
-  // TrustableWebBundleFileUrl switch is set.
-  // TODO(995177): Support Session/Tab restore.
-  // TODO(995177): Consider if this should be here or in FrameNavigationEntry
-  // for a correct iframe support.
-  std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationEntryImpl);
 };

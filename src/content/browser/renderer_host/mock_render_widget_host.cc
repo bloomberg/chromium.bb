@@ -35,8 +35,8 @@ MockRenderWidgetHost::~MockRenderWidgetHost() {}
 
 void MockRenderWidgetHost::OnTouchEventAck(
     const TouchEventWithLatencyInfo& event,
-    InputEventAckSource ack_source,
-    InputEventAckState ack_result) {
+    blink::mojom::InputEventResultSource ack_source,
+    blink::mojom::InputEventResultState ack_result) {
   // Sniff touch acks.
   acked_touch_event_type_ = event.event.GetType();
   RenderWidgetHostImpl::OnTouchEventAck(event, ack_source, ack_result);
@@ -53,16 +53,6 @@ void MockRenderWidgetHost::ExpectForceEnableZoom(bool enable) {
   InputRouterImpl* input_router =
       static_cast<InputRouterImpl*>(input_router_.get());
   EXPECT_EQ(enable, input_router->touch_action_filter_.force_enable_zoom_);
-}
-
-// Mocks out |renderer_compositor_frame_sink_| with a
-// CompositorFrameSinkClient bound to
-// |mock_renderer_compositor_frame_sink|.
-void MockRenderWidgetHost::SetMockRendererCompositorFrameSink(
-    viz::MockCompositorFrameSinkClient* mock_renderer_compositor_frame_sink) {
-  renderer_compositor_frame_sink_.reset();
-  renderer_compositor_frame_sink_.Bind(
-      mock_renderer_compositor_frame_sink->BindInterfaceRemote());
 }
 
 void MockRenderWidgetHost::SetupForInputRouterTest() {
@@ -112,7 +102,7 @@ MockRenderWidgetHost::MockRenderWidgetHost(
       new_content_rendering_timeout_fired_(false),
       widget_impl_(std::move(widget_impl)),
       fling_scheduler_(std::make_unique<FlingScheduler>(this)) {
-  acked_touch_event_type_ = blink::WebInputEvent::kUndefined;
+  acked_touch_event_type_ = blink::WebInputEvent::Type::kUndefined;
 }
 
 }  // namespace content

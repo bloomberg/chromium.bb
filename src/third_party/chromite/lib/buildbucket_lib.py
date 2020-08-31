@@ -19,6 +19,7 @@ from __future__ import print_function
 import collections
 import json
 import os
+import sys
 
 from six.moves import urllib
 
@@ -27,6 +28,10 @@ from chromite.lib import auth
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import retry_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # Methods
 PUT_METHOD = 'PUT'

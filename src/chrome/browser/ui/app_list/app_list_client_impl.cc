@@ -10,21 +10,25 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_controller.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/app_list_notifier_impl.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/app_sync_ui_state_watcher.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/search_controller_factory.h"
 #include "chrome/browser/ui/app_list/search/search_resource_manager.h"
@@ -36,7 +40,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "extensions/common/extension.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
@@ -53,7 +56,8 @@ bool IsTabletMode() {
 }  // namespace
 
 AppListClientImpl::AppListClientImpl()
-    : app_list_controller_(ash::AppListController::Get()) {
+    : app_list_notifier_(std::make_unique<AppListNotifierImpl>()),
+      app_list_controller_(ash::AppListController::Get()) {
   app_list_controller_->SetClient(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 
@@ -112,6 +116,7 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
       app_list::RankingItemTypeFromSearchResult(*result);
   app_launch_data.launch_type = launch_type;
   app_launch_data.launched_from = launched_from;
+  app_launch_data.suggestion_index = suggestion_index;
 
   if (launch_type == ash::AppListLaunchType::kAppSearchResult &&
       launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox &&
@@ -305,6 +310,14 @@ void AppListClientImpl::OnSearchResultVisibilityChanged(const std::string& id,
   result->OnVisibilityChanged(visibility);
 }
 
+void AppListClientImpl::OnQuickSettingsChanged(
+    const std::string& setting_name,
+    const std::map<std::string, int>& values) {
+  // CrOS action recorder.
+  app_list::CrOSActionRecorder::GetCrosActionRecorder()->RecordAction(
+      {base::StrCat({"SettingsChanged-", setting_name})}, values);
+}
+
 void AppListClientImpl::ActiveUserChanged(user_manager::User* active_user) {
   if (!active_user->is_profile_created())
     return;
@@ -341,12 +354,12 @@ void AppListClientImpl::SetProfile(Profile* new_profile) {
   if (!profile_)
     return;
 
-  // If we are in guest mode, the new profile should be an incognito profile.
+  // If we are in guest mode, the new profile should be an OffTheRecord profile.
   // Otherwise, this may later hit a check (same condition as this one) in
   // Browser::Browser when opening links in a browser window (see
   // http://crbug.com/460437).
   DCHECK(!profile_->IsGuestSession() || profile_->IsOffTheRecord())
-      << "Guest mode must use incognito profile";
+      << "Guest mode must use OffTheRecord profile";
 
   template_url_service_observer_.Add(
       TemplateURLServiceFactory::GetForProfile(profile_));
@@ -379,8 +392,8 @@ void AppListClientImpl::SetUpSearchUI() {
   search_resource_manager_ = std::make_unique<app_list::SearchResourceManager>(
       profile_, current_model_updater_);
 
-  search_controller_ =
-      app_list::CreateSearchController(profile_, current_model_updater_, this);
+  search_controller_ = app_list::CreateSearchController(
+      profile_, current_model_updater_, this, GetNotifier());
 
   // Refresh the results used for the suggestion chips with empty query.
   // This fixes crbug.com/999287.
@@ -472,11 +485,8 @@ AppListControllerDelegate::Pinnable AppListClientImpl::GetPinnable(
                              ChromeLauncherController::instance()->profile());
 }
 
-void AppListClientImpl::CreateNewWindow(Profile* profile, bool incognito) {
-  if (incognito)
-    chrome::NewEmptyWindow(profile->GetOffTheRecordProfile());
-  else
-    chrome::NewEmptyWindow(profile);
+void AppListClientImpl::CreateNewWindow(bool incognito) {
+  ash::NewWindowDelegate::GetInstance()->NewWindow(incognito);
 }
 
 void AppListClientImpl::OpenURL(Profile* profile,
@@ -528,6 +538,10 @@ void AppListClientImpl::NotifySearchResultsForLogging(
     search_controller_->OnSearchResultsDisplayed(trimmed_query, results,
                                                  position_index);
   }
+}
+
+ash::AppListNotifier* AppListClientImpl::GetNotifier() {
+  return app_list_notifier_.get();
 }
 
 ash::ShelfLaunchSource AppListClientImpl::AppListSourceToLaunchSource(

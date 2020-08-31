@@ -7,10 +7,12 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/base/buildflags.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/root_view.h"
@@ -83,7 +85,7 @@ std::unique_ptr<AXVirtualView> ViewAccessibility::RemoveVirtualChildView(
   child->set_parent_view(nullptr);
   child->UnsetPopulateDataCallback();
   if (focused_virtual_child_ && child->Contains(focused_virtual_child_))
-    focused_virtual_child_ = nullptr;
+    OverrideFocus(nullptr);
   return child;
 }
 
@@ -221,6 +223,12 @@ void ViewAccessibility::OverrideFocus(AXVirtualView* virtual_view) {
   DCHECK(!virtual_view || Contains(virtual_view))
       << "|virtual_view| must be nullptr or a descendant of this view.";
   focused_virtual_child_ = virtual_view;
+
+  if (focused_virtual_child_) {
+    focused_virtual_child_->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
+  } else {
+    view_->NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+  }
 }
 
 void ViewAccessibility::OverrideRole(const ax::mojom::Role role) {
@@ -288,8 +296,15 @@ Widget* ViewAccessibility::GetPreviousFocus() {
   return previous_focus_;
 }
 
-gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() {
+gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() const {
   return nullptr;
+}
+
+void ViewAccessibility::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
+  // On certain platforms, e.g. Chrome OS, we don't create any
+  // AXPlatformDelegates, so the base method in this file would be called.
+  if (accessibility_events_callback_)
+    accessibility_events_callback_.Run(nullptr, event_type);
 }
 
 void ViewAccessibility::AnnounceText(const base::string16& text) {
@@ -307,6 +322,20 @@ gfx::NativeViewAccessible ViewAccessibility::GetFocusedDescendant() {
   if (focused_virtual_child_)
     return focused_virtual_child_->GetNativeObject();
   return view_->GetNativeViewAccessible();
+}
+
+void ViewAccessibility::FireFocusAfterMenuClose() {
+  NotifyAccessibilityEvent(ax::mojom::Event::kFocusAfterMenuClose);
+}
+
+const ViewAccessibility::AccessibilityEventsCallback&
+ViewAccessibility::accessibility_events_callback() const {
+  return accessibility_events_callback_;
+}
+
+void ViewAccessibility::set_accessibility_events_callback(
+    ViewAccessibility::AccessibilityEventsCallback callback) {
+  accessibility_events_callback_ = std::move(callback);
 }
 
 }  // namespace views

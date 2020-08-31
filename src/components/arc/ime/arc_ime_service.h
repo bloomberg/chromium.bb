@@ -104,7 +104,6 @@ class ArcImeService : public KeyedService,
       const base::string16& text_in_range,
       const gfx::Range& selection_range,
       bool is_screen_coordinates) override;
-  void RequestHideIme() override;
 
   // Overridden from ash::KeyboardControllerObserver.
   void OnKeyboardAppearanceChanged(
@@ -170,6 +169,10 @@ class ArcImeService : public KeyedService,
   // Converts |rect| passed from the client to the host's cooridnates and
   // updates |cursor_rect_|. Returns whether or not the stored value changed.
   bool UpdateCursorRect(const gfx::Rect& rect, bool is_screen_coordinates);
+
+  // Returns true if this TextInputClient is active and incoming input state
+  // from Android is valid.
+  bool ShouldSendUpdateToInputMethod() const;
 
   std::unique_ptr<ArcImeBridge> ime_bridge_;
   std::unique_ptr<ArcWindowDelegate> arc_window_delegate_;

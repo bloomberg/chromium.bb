@@ -26,10 +26,6 @@
  *    Rob Clark <robclark@freedesktop.org>
  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -42,7 +38,7 @@ static pthread_mutex_t table_lock = PTHREAD_MUTEX_INITIALIZER;
 struct fd_device * kgsl_device_new(int fd);
 struct fd_device * msm_device_new(int fd);
 
-struct fd_device * fd_device_new(int fd)
+drm_public struct fd_device * fd_device_new(int fd)
 {
 	struct fd_device *dev;
 	drmVersionPtr version;
@@ -65,7 +61,7 @@ struct fd_device * fd_device_new(int fd)
 
 		dev = msm_device_new(fd);
 		dev->version = version->version_minor;
-#ifdef HAVE_FREEDRENO_KGSL
+#if HAVE_FREEDRENO_KGSL
 	} else if (!strcmp(version->name, "kgsl")) {
 		DEBUG_MSG("kgsl DRM device");
 		dev = kgsl_device_new(fd);
@@ -86,6 +82,7 @@ out:
 	dev->handle_table = drmHashCreate();
 	dev->name_table = drmHashCreate();
 	fd_bo_cache_init(&dev->bo_cache, FALSE);
+	fd_bo_cache_init(&dev->ring_cache, TRUE);
 
 	return dev;
 }
@@ -93,7 +90,7 @@ out:
 /* like fd_device_new() but creates it's own private dup() of the fd
  * which is close()d when the device is finalized.
  */
-struct fd_device * fd_device_new_dup(int fd)
+drm_public struct fd_device * fd_device_new_dup(int fd)
 {
 	int dup_fd = dup(fd);
 	struct fd_device *dev = fd_device_new(dup_fd);
@@ -104,7 +101,7 @@ struct fd_device * fd_device_new_dup(int fd)
 	return dev;
 }
 
-struct fd_device * fd_device_ref(struct fd_device *dev)
+drm_public struct fd_device * fd_device_ref(struct fd_device *dev)
 {
 	atomic_inc(&dev->refcnt);
 	return dev;
@@ -128,7 +125,7 @@ drm_private void fd_device_del_locked(struct fd_device *dev)
 	fd_device_del_impl(dev);
 }
 
-void fd_device_del(struct fd_device *dev)
+drm_public void fd_device_del(struct fd_device *dev)
 {
 	if (!atomic_dec_and_test(&dev->refcnt))
 		return;
@@ -137,12 +134,12 @@ void fd_device_del(struct fd_device *dev)
 	pthread_mutex_unlock(&table_lock);
 }
 
-int fd_device_fd(struct fd_device *dev)
+drm_public int fd_device_fd(struct fd_device *dev)
 {
 	return dev->fd;
 }
 
-enum fd_version fd_device_version(struct fd_device *dev)
+drm_public enum fd_version fd_device_version(struct fd_device *dev)
 {
 	return dev->version;
 }

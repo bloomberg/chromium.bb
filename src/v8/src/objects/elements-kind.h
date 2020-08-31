@@ -5,6 +5,7 @@
 #ifndef V8_OBJECTS_ELEMENTS_KIND_H_
 #define V8_OBJECTS_ELEMENTS_KIND_H_
 
+#include "src/base/bits.h"
 #include "src/base/bounds.h"
 #include "src/base/macros.h"
 #include "src/common/checks.h"
@@ -102,6 +103,14 @@ constexpr int kFastElementsKindCount =
 constexpr int kFastElementsKindPackedToHoley =
     HOLEY_SMI_ELEMENTS - PACKED_SMI_ELEMENTS;
 
+constexpr int kElementsKindBits = 5;
+STATIC_ASSERT((1 << kElementsKindBits) > LAST_ELEMENTS_KIND);
+STATIC_ASSERT((1 << (kElementsKindBits - 1)) <= LAST_ELEMENTS_KIND);
+
+constexpr int kFastElementsKindBits = 3;
+STATIC_ASSERT((1 << kFastElementsKindBits) > LAST_FAST_ELEMENTS_KIND);
+STATIC_ASSERT((1 << (kFastElementsKindBits - 1)) <= LAST_FAST_ELEMENTS_KIND);
+
 V8_EXPORT_PRIVATE int ElementsKindToShiftSize(ElementsKind elements_kind);
 V8_EXPORT_PRIVATE int ElementsKindToByteSize(ElementsKind elements_kind);
 int GetDefaultHeaderSizeForElementsKind(ElementsKind elements_kind);
@@ -116,6 +125,14 @@ ElementsKind GetNextTransitionElementsKind(ElementsKind elements_kind);
 
 inline bool IsDictionaryElementsKind(ElementsKind kind) {
   return kind == DICTIONARY_ELEMENTS;
+}
+
+inline bool IsFastArgumentsElementsKind(ElementsKind kind) {
+  return kind == FAST_SLOPPY_ARGUMENTS_ELEMENTS;
+}
+
+inline bool IsSlowArgumentsElementsKind(ElementsKind kind) {
+  return kind == SLOW_SLOPPY_ARGUMENTS_ELEMENTS;
 }
 
 inline bool IsSloppyArgumentsElementsKind(ElementsKind kind) {

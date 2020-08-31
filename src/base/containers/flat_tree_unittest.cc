@@ -171,6 +171,7 @@ using TreeWithStrangeCompare = flat_tree<int,
                                          NonDefaultConstructibleCompare>;
 
 using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 
 }  // namespace
 
@@ -338,9 +339,19 @@ TEST(FlatTree, MoveConstructor) {
   EXPECT_EQ(1U, moved.count(MoveOnlyInt(4)));
 }
 
-// flat_tree(std::vector<value_type>)
+// flat_tree(const std::vector<value_type>&)
 
-TEST(FlatTree, VectorConstructor) {
+TEST(FlatTree, VectorCopyConstructor) {
+  std::vector<int> items = {1, 2, 3, 4};
+  IntTree tree = items;
+
+  EXPECT_THAT(tree, ElementsAre(1, 2, 3, 4));
+  EXPECT_THAT(items, ElementsAre(1, 2, 3, 4));
+}
+
+// flat_tree(std::vector<value_type>&&)
+
+TEST(FlatTree, VectorMoveConstructor) {
   using Pair = std::pair<int, MoveOnlyInt>;
 
   // Construct an unsorted vector with a duplicate item in it. Sorted by the
@@ -805,6 +816,31 @@ TEST(FlatTree, EmplacePosition) {
 }
 
 // ----------------------------------------------------------------------------
+// Underlying type operations.
+
+// underlying_type extract() &&
+TEST(FlatTree, Extract) {
+  IntTree cont;
+  cont.emplace(3);
+  cont.emplace(1);
+  cont.emplace(2);
+  cont.emplace(4);
+
+  std::vector<int> body = std::move(cont).extract();
+  EXPECT_THAT(cont, IsEmpty());
+  EXPECT_THAT(body, ElementsAre(1, 2, 3, 4));
+}
+
+// replace(underlying_type&&)
+TEST(FlatTree, Replace) {
+  std::vector<int> body = {1, 2, 3, 4};
+  IntTree cont;
+  cont.replace(std::move(body));
+
+  EXPECT_THAT(cont, ElementsAre(1, 2, 3, 4));
+}
+
+// ----------------------------------------------------------------------------
 // Erase operations.
 
 // iterator erase(const_iterator position_hint)
@@ -918,6 +954,18 @@ TEST(FlatTree, EraseKey) {
 
   EXPECT_EQ(1U, cont.erase(5));
   EXPECT_THAT(cont, ElementsAre());
+}
+
+TEST(FlatTree, EraseEndDeath) {
+  {
+    IntTree tree;
+    ASSERT_DEATH_IF_SUPPORTED(tree.erase(tree.cend()), "");
+  }
+
+  {
+    IntTree tree = {1, 2, 3, 4};
+    ASSERT_DEATH_IF_SUPPORTED(tree.erase(tree.find(5)), "");
+  }
 }
 
 // ----------------------------------------------------------------------------
@@ -1271,15 +1319,15 @@ TEST(FlatTree, Comparison) {
 
 TEST(FlatSet, EraseIf) {
   IntTree x;
-  EraseIf(x, [](int) { return false; });
+  EXPECT_EQ(0u, EraseIf(x, [](int) { return false; }));
   EXPECT_THAT(x, ElementsAre());
 
   x = {1, 2, 3};
-  EraseIf(x, [](int elem) { return !(elem & 1); });
+  EXPECT_EQ(1u, EraseIf(x, [](int elem) { return !(elem & 1); }));
   EXPECT_THAT(x, ElementsAre(1, 3));
 
   x = {1, 2, 3, 4};
-  EraseIf(x, [](int elem) { return elem & 1; });
+  EXPECT_EQ(2u, EraseIf(x, [](int elem) { return elem & 1; }));
   EXPECT_THAT(x, ElementsAre(2, 4));
 }
 

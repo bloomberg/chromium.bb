@@ -32,9 +32,6 @@ enum ScrollerStyle;
 [Native]
 enum V8CacheOptions;
 
-[Native]
-struct WebPreferences;
-
 // TODO(rockot): This should most likely be defined by network service mojom,
 // but the network service doesn't exist yet.
 [Native]
@@ -42,42 +39,6 @@ enum NetworkConnectionType;
 
 [Native]
 struct WebCursor;
-
-[Native]
-enum Button;
-
-[Native]
-enum PointerType;
-
-[Native]
-struct EditCommand;
-
-[Native]
-enum InputEventAckState;
-
-[Native]
-enum InputEventAckSource;
-
-[Native]
-enum EventType;
-
-[Native]
-enum Cancelability;
-
-[Native]
-enum GestureDevice;
-
-[Native]
-enum ScrollGranularity;
-
-[Native]
-enum InertialPhaseState;
-
-[Native]
-enum TouchState;
-
-[Native]
-struct DidOverscrollParams;
 
 [Native]
 struct SyntheticSmoothDrag;
@@ -95,22 +56,4 @@ struct SyntheticTap;
 struct SyntheticPointerAction;
 
 [Native]
-enum PreferredColorScheme;
-
-[Native]
 enum SystemThemeColor;
-
-[Native]
-struct ContentSecurityPolicy;
-
-[Native]
-struct CSPDirective;
-
-[Native]
-struct CSPSourceList;
-
-[Native]
-struct CSPSource;
-
-[Native]
-struct CSPViolationParams;

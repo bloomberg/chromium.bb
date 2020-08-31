@@ -4,7 +4,7 @@
 
 #include "chromecast/media/cma/backend/cma_backend_factory_impl.h"
 
-#include "chromecast/media/cma/backend/cma_backend.h"
+#include "chromecast/media/api/cma_backend.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 
@@ -21,7 +21,7 @@ CmaBackendFactoryImpl::~CmaBackendFactoryImpl() = default;
 
 std::unique_ptr<CmaBackend> CmaBackendFactoryImpl::CreateBackend(
     const MediaPipelineDeviceParams& params) {
-  return media_pipeline_backend_manager_->CreateCmaBackend(params);
+  return media_pipeline_backend_manager_->CreateBackend(params);
 }
 
 }  // namespace media

@@ -120,21 +120,21 @@ uint32_t UserInputMonitorLinuxCore::GetKeyPressCount() const {
 void UserInputMonitorLinuxCore::StartMonitor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  // TODO(jamiewalch): We should pass the display in. At that point, since
-  // XRecord needs a private connection to the X Server for its data channel
-  // and both channels are used from a separate thread, we'll need to duplicate
-  // them with something like the following:
-  //   XOpenDisplay(DisplayString(display));
-  if (!x_control_display_)
-    x_control_display_ = gfx::OpenNewXDisplay();
-
-  if (!x_record_display_)
-    x_record_display_ = gfx::OpenNewXDisplay();
-
   if (!x_control_display_ || !x_record_display_) {
-    LOG(ERROR) << "Couldn't open X display";
-    StopMonitor();
-    return;
+    // TODO(jamiewalch): We should pass the display in.
+    if (auto* x_display = gfx::GetXDisplay()) {
+      if (!x_control_display_)
+        x_control_display_ = gfx::CloneXDisplay(x_display);
+
+      if (!x_record_display_)
+        x_record_display_ = gfx::CloneXDisplay(x_display);
+    }
+
+    if (!x_control_display_ || !x_record_display_) {
+      LOG(ERROR) << "Couldn't open X display";
+      StopMonitor();
+      return;
+    }
   }
 
   int xr_opcode, xr_event, xr_error;

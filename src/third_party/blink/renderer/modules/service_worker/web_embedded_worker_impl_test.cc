@@ -43,23 +43,35 @@ const char* kNotFoundScriptURL = "https://www.example.com/sw-404.js";
 // A fake WebURLLoader which is used for off-main-thread script fetch tests.
 class FakeWebURLLoader final : public WebURLLoader {
  public:
-  FakeWebURLLoader() {}
+  FakeWebURLLoader() = default;
   ~FakeWebURLLoader() override = default;
 
-  void LoadSynchronously(const WebURLRequest&,
-                         WebURLLoaderClient*,
-                         WebURLResponse&,
-                         base::Optional<WebURLError>&,
-                         WebData&,
-                         int64_t& encoded_data_length,
-                         int64_t& encoded_body_length,
-                         WebBlobInfo& downloaded_blob) override {
+  void LoadSynchronously(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+      int requestor_id,
+      bool download_to_network_cache_only,
+      bool pass_response_pipe_to_client,
+      bool no_mime_sniffing,
+      base::TimeDelta timeout_interval,
+      WebURLLoaderClient*,
+      WebURLResponse&,
+      base::Optional<WebURLError>&,
+      WebData&,
+      int64_t& encoded_data_length,
+      int64_t& encoded_body_length,
+      WebBlobInfo& downloaded_blob) override {
     NOTREACHED();
   }
 
-  void LoadAsynchronously(const WebURLRequest& request,
-                          WebURLLoaderClient* client) override {
-    if (request.Url().GetString() == kNotFoundScriptURL) {
+  void LoadAsynchronously(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<WebURLRequest::ExtraData> request_extra_data,
+      int requestor_id,
+      bool download_to_network_cache_only,
+      bool no_mime_sniffing,
+      WebURLLoaderClient* client) override {
+    if (request->url.spec() == kNotFoundScriptURL) {
       WebURLResponse response;
       response.SetMimeType("text/javascript");
       response.SetHttpStatusCode(404);
@@ -88,9 +100,10 @@ class FakeWebURLLoaderFactory final : public WebURLLoaderFactory {
   }
 };
 
-// A fake WebWorkerFetchContext which is used for off-main-thread script fetch
-// tests.
-class FakeWebWorkerFetchContext final : public WebWorkerFetchContext {
+// A fake WebServiceWorkerFetchContext which is used for off-main-thread script
+// fetch tests.
+class FakeWebServiceWorkerFetchContext final
+    : public WebServiceWorkerFetchContext {
  public:
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override {}
   void InitializeOnWorkerThread(AcceptLanguagesWatcher*) override {}
@@ -106,7 +119,9 @@ class FakeWebWorkerFetchContext final : public WebWorkerFetchContext {
       const override {
     return mojom::ControllerServiceWorkerMode::kNoController;
   }
-  WebURL SiteForCookies() const override { return WebURL(); }
+  net::SiteForCookies SiteForCookies() const override {
+    return net::SiteForCookies();
+  }
   base::Optional<WebSecurityOrigin> TopFrameOrigin() const override {
     return base::Optional<WebSecurityOrigin>();
   }
@@ -114,6 +129,10 @@ class FakeWebWorkerFetchContext final : public WebWorkerFetchContext {
   mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
       int request_id) override {
     return {};
+  }
+  void SetIsOfflineMode(bool is_offline_mode) override {}
+  mojom::SubresourceLoaderUpdater* GetSubresourceLoaderUpdater() override {
+    return nullptr;
   }
 
  private:
@@ -168,7 +187,9 @@ class MockServiceWorkerContextClient final
             mojom::blink::ServiceWorkerState::kParsed,
             KURL("https://example.com"), std::move(service_worker_object_host),
             service_worker_object.InitWithNewEndpointAndPassReceiver()),
-        mojom::blink::FetchHandlerExistence::EXISTS);
+        mojom::blink::FetchHandlerExistence::EXISTS,
+        /*subresource_loader_factories=*/nullptr,
+        /*reporting_observer_receiver=*/mojo::NullReceiver());
 
     // To make the other side callable.
     mojo::AssociateWithDisconnectedPipe(host_receiver.PassHandle());
@@ -186,9 +207,9 @@ class MockServiceWorkerContextClient final
     script_evaluated_event_.Signal();
   }
 
-  scoped_refptr<WebWorkerFetchContext>
+  scoped_refptr<WebServiceWorkerFetchContext>
   CreateWorkerFetchContextOnInitiatorThread() override {
-    return base::MakeRefCounted<FakeWebWorkerFetchContext>();
+    return base::MakeRefCounted<FakeWebServiceWorkerFetchContext>();
   }
 
   void WorkerContextDestroyed() override { termination_event_.Signal(); }

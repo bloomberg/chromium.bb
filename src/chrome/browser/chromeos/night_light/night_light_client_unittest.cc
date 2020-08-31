@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
 
 #include "ash/public/cpp/night_light_controller.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/time/clock.h"
@@ -45,6 +46,8 @@ class FakeNightLightController : public ash::NightLightController {
     position_ = position;
     ++position_pushes_num_;
   }
+
+  bool GetEnabled() const override { return false; }
 
   void NotifyScheduleTypeChanged(ScheduleType type) {
     for (auto& observer : observers_)

@@ -97,7 +97,7 @@ void CmaBackendShim::InitializeOnMediaThread() {
       ConvertContentType(params_.content_type()), params_.device_id());
   device_params.audio_channel =
       ConvertChannelSelection(params_.channel_selection());
-  cma_backend_ = backend_manager_->CreateCmaBackend(device_params);
+  cma_backend_ = backend_manager_->CreateBackend(device_params);
 
   audio_decoder_ = cma_backend_->CreateAudioDecoder();
   if (!audio_decoder_) {
@@ -110,8 +110,11 @@ void CmaBackendShim::InitializeOnMediaThread() {
   AudioConfig audio_config;
   audio_config.id = kPrimary;
   audio_config.codec = kCodecPCM;
-  audio_config.channel_layout =
-      ChannelLayoutFromChannelNumber(params_.num_channels());
+  audio_config.channel_layout = ConvertChannelLayout(params_.channel_layout());
+  if (audio_config.channel_layout == media::ChannelLayout::UNSUPPORTED) {
+    audio_config.channel_layout =
+        ChannelLayoutFromChannelNumber(params_.num_channels());
+  }
   audio_config.sample_format = ConvertSampleFormat(params_.sample_format());
   audio_config.bytes_per_channel = GetSampleSizeBytes(params_.sample_format());
   audio_config.channel_number = params_.num_channels();

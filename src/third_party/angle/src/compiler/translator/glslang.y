@@ -24,8 +24,6 @@ WHICH GENERATES THE GLSL ES PARSER (glslang_tab_autogen.cpp AND glslang_tab_auto
 // glslang.y:
 //   Parser for the OpenGL shading language.
 
-// clang-format off
-
 // Ignore errors in auto-generated code.
 #if defined(__GNUC__)
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -160,13 +158,13 @@ extern void yyerror(YYLTYPE* yylloc, TParseContext* context, void *scanner, cons
 } while (0)
 %}
 
-%token <lex> INVARIANT HIGH_PRECISION MEDIUM_PRECISION LOW_PRECISION PRECISION
+%token <lex> INVARIANT PRECISE HIGH_PRECISION MEDIUM_PRECISION LOW_PRECISION PRECISION
 %token <lex> ATTRIBUTE CONST_QUAL BOOL_TYPE FLOAT_TYPE INT_TYPE UINT_TYPE
 %token <lex> BREAK CONTINUE DO ELSE FOR IF DISCARD RETURN SWITCH CASE DEFAULT
 %token <lex> BVEC2 BVEC3 BVEC4 IVEC2 IVEC3 IVEC4 VEC2 VEC3 VEC4 UVEC2 UVEC3 UVEC4
 %token <lex> MATRIX2 MATRIX3 MATRIX4 IN_QUAL OUT_QUAL INOUT_QUAL UNIFORM BUFFER VARYING
 %token <lex> MATRIX2x3 MATRIX3x2 MATRIX2x4 MATRIX4x2 MATRIX3x4 MATRIX4x3
-%token <lex> CENTROID FLAT SMOOTH
+%token <lex> CENTROID FLAT SMOOTH NOPERSPECTIVE
 %token <lex> READONLY WRITEONLY COHERENT RESTRICT VOLATILE SHARED
 %token <lex> STRUCT VOID_TYPE WHILE
 %token <lex> SAMPLER2D SAMPLERCUBE SAMPLER_EXTERNAL_OES SAMPLER2DRECT SAMPLER2DARRAY
@@ -174,7 +172,7 @@ extern void yyerror(YYLTYPE* yylloc, TParseContext* context, void *scanner, cons
 %token <lex> USAMPLER2D USAMPLER3D USAMPLERCUBE USAMPLER2DARRAY
 %token <lex> SAMPLER2DMS ISAMPLER2DMS USAMPLER2DMS
 %token <lex> SAMPLER2DMSARRAY ISAMPLER2DMSARRAY USAMPLER2DMSARRAY
-%token <lex> SAMPLER3D SAMPLER3DRECT SAMPLER2DSHADOW SAMPLERCUBESHADOW SAMPLER2DARRAYSHADOW
+%token <lex> SAMPLER3D SAMPLER3DRECT SAMPLER2DSHADOW SAMPLERCUBESHADOW SAMPLER2DARRAYSHADOW SAMPLERVIDEOWEBGL
 %token <lex> SAMPLEREXTERNAL2DY2YEXT
 %token <lex> IMAGE2D IIMAGE2D UIMAGE2D IMAGE3D IIMAGE3D UIMAGE3D IMAGE2DARRAY IIMAGE2DARRAY UIMAGE2DARRAY
 %token <lex> IMAGECUBE IIMAGECUBE UIMAGECUBE
@@ -229,7 +227,7 @@ extern void yyerror(YYLTYPE* yylloc, TParseContext* context, void *scanner, cons
 %type <interm.precision> precision_qualifier
 %type <interm.layoutQualifier> layout_qualifier
 %type <interm.qualifier> interpolation_qualifier
-%type <interm.qualifierWrapper> storage_qualifier single_type_qualifier invariant_qualifier
+%type <interm.qualifierWrapper> storage_qualifier single_type_qualifier invariant_qualifier precise_qualifier
 %type <interm.typeQualifierBuilder> type_qualifier
 
 %type <interm.typeSpecifierNonArray> type_specifier_nonarray struct_specifier
@@ -622,7 +620,7 @@ declaration
         context->parseGlobalLayoutQualifier(*$1);
         $$ = nullptr;
     }
-    | type_qualifier IDENTIFIER SEMICOLON // e.g. to qualify an existing variable as invariant
+    | type_qualifier IDENTIFIER SEMICOLON // e.g. to qualify an existing variable as invariant or precise
     {
         $$ = context->parseGlobalQualifierDeclaration(*$1, @2, ImmutableString($2.string), $2.symbol);
     }
@@ -779,6 +777,13 @@ interpolation_qualifier
     | FLAT {
         $$ = EvqFlat;
     }
+    | NOPERSPECTIVE {
+        if (!context->checkCanUseExtension(@1, TExtension::NV_shader_noperspective_interpolation))
+        {
+            context->error(@1, "unsupported interpolation qualifier", "noperspective");
+        }
+        $$ = EvqNoPerspective;
+    }
     ;
 
 type_qualifier
@@ -794,6 +799,12 @@ type_qualifier
 
 invariant_qualifier
     : INVARIANT {
+        // empty
+    }
+    ;
+
+precise_qualifier
+    : PRECISE {
         // empty
     }
     ;
@@ -816,6 +827,9 @@ single_type_qualifier
     | invariant_qualifier {
         context->checkIsAtGlobalLevel(@1, "invariant");
         $$ = new TInvariantQualifierWrapper(@1);
+    }
+    | precise_qualifier {
+        $$ = new TPreciseQualifierWrapper(@1);
     }
     ;
 
@@ -1132,6 +1146,13 @@ type_specifier_nonarray
     }
     | SAMPLER2DARRAYSHADOW {
         $$.initialize(EbtSampler2DArrayShadow, @1);
+    }
+    | SAMPLERVIDEOWEBGL {
+        if (!context->checkCanUseExtension(@1, TExtension::WEBGL_video_texture))
+        {
+            context->error(@1, "unsupported type", "samplerVideoWEBGL");
+        }
+        $$.initialize(EbtSamplerVideoWEBGL, @1);
     }
     | SAMPLER_EXTERNAL_OES {
         constexpr std::array<TExtension, 3u> extensions{ { TExtension::NV_EGL_stream_consumer_external,

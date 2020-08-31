@@ -4,6 +4,8 @@
 
 #include "net/base/net_errors.h"
 
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 
 namespace net {
@@ -62,9 +64,9 @@ bool IsClientCertificateError(int error) {
   }
 }
 
-bool IsDnsError(int error) {
-  return (error == ERR_NAME_NOT_RESOLVED ||
-          error == ERR_NAME_RESOLUTION_FAILED);
+bool IsHostnameResolutionError(int error) {
+  DCHECK_NE(ERR_NAME_RESOLUTION_FAILED, error);
+  return error == ERR_NAME_NOT_RESOLVED;
 }
 
 Error FileErrorToNetError(base::File::Error file_error) {

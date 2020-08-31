@@ -120,8 +120,8 @@ class TestGetKernelConfig(cros_test_lib.RunCommandTestCase):
     self.assertTrue(isinstance(ret, six.string_types))
     self.assertEqual(SAMPLE_KERNEL_CONFIG.strip(), ret)
 
-  def testCallsPassesErrorCodeOk(self):
-    """Verify that it passes error_code_ok."""
+  def testCallsPassesCheck(self):
+    """Verify that it passes check."""
     ret = imagefile.GetKernelConfig('/dev/loop9999p4', check=555)
     expected_rc = [
         mock.call(['sudo', '--', 'dump_kernel_config', '/dev/loop9999p4'],
@@ -152,7 +152,7 @@ class TestGetKernelCmdLine(cros_test_lib.MockTestCase):
     self.assertEqual(SAMPLE_KERNEL_CONFIG.strip(), ret.Format())
 
   def testCallsPassesErrorCodeOk(self):
-    """Verify that it passes error_code_ok."""
+    """Verify that it passes check."""
     gkc = self.PatchObject(imagefile, 'GetKernelConfig',
                            return_value=SAMPLE_KERNEL_CONFIG.strip())
     ret = imagefile._GetKernelCmdLine('/dev/loop9999p4', check=555)
@@ -402,8 +402,14 @@ class TestCalculateRootfsHash(cros_test_lib.RunCommandTempDirTestCase):
     # We don't actually care about the return, it's checked elsewhere.
     file_name = rootfs_hash.hashtree_filename
     self.assertExists(file_name)
-    del rootfs_hash
+    # We poke __del__ directly because Python does not guarantee when it will
+    # be called relative to a del statement.  The only thing del guarantees is
+    # decrementing the object ref counter, not when the GC runs and clears it.
+    rootfs_hash.__del__()
     self.assertNotExists(file_name)
+    # Call it explicitly for fun.  This makes sure the func can be called more
+    # than once which is how the code is written.
+    del rootfs_hash
 
   def testSaltOptional(self):
     """Test that salt= is properly optional."""
@@ -438,22 +444,20 @@ class TestCalculateRootfsHash(cros_test_lib.RunCommandTempDirTestCase):
         rootfs_hash.calculated_kernel_cmdline.Format())
 
 
-class TestClearResignFlag(cros_test_lib.RunCommandTempDirTestCase):
+class TestClearResignFlag(cros_test_lib.MockTempDirTestCase):
   """Test ClearResignFlag function and its supporting functions."""
 
   def setUp(self):
-    self.rc.SetDefaultCmdResult()
     self.image = image_lib_unittest.LoopbackPartitionsMock(
         'outfile', self.tempdir)
 
   def testUnlinksFile(self):
     self.PatchObject(os.path, 'exists', return_value=True)
+    unlink_mock = self.PatchObject(osutils, 'SafeUnlink')
     imagefile.ClearResignFlag(self.image)
-    self.assertEqual(1, self.rc.call_count)
-    self.rc.assertCommandCalled(
-        ['sudo', '--', 'rm', '--',
-         '%s/dir-3/root/.need_to_be_signed' % self.image.destination],
-        redirect_stderr=True, print_cmd=False)
+    unlink_mock.assert_called_once_with(
+        os.path.join(self.image.destination, 'dir-3/root/.need_to_be_signed'),
+        sudo=True)
 
 
 class TestUpdateRootfsHash(cros_test_lib.RunCommandTempDirTestCase):
@@ -704,7 +708,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
         (['sudo', '--', 'sed', '-iE',
           's/\\broot_hexdigest=[a-z0-9]+/root_hexdigest=9999999999999999999'
           '999999999999999999999/g'] + sorted(uefi['sys_cfgs']), ), sed_args)
-    self.assertEqual({'error_code_ok': True}, sed_command[1])
+    self.assertEqual({'check': False}, sed_command[1])
 
   def testNoSyslinux(self):
     """Test with no syslinux/."""
@@ -721,7 +725,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
         (['sudo', '--', 'sed', '-iE', 's/\\broot_hexdigest=[a-z0-9]+/root_h'
           'exdigest=9999999999999999999999999999999999999999/g'] +
          sorted(uefi['sys_cfgs']), ), sed_args)
-    self.assertEqual({'error_code_ok': True}, sed_command[1])
+    self.assertEqual({'check': False}, sed_command[1])
 
   def testNoGrubCfg(self):
     """Test with no efi/boot/grub.cfg."""
@@ -738,7 +742,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
         (['sudo', '--', 'sed', '-iE', 's/\\broot_hexdigest=[a-z0-9]+/root_h'
           'exdigest=9999999999999999999999999999999999999999/g'] +
          sorted(uefi['sys_cfgs']), ), sed_args)
-    self.assertEqual({'error_code_ok': True}, sed_command[1])
+    self.assertEqual({'check': False}, sed_command[1])
 
   def testNoSyslinuxSedFails(self):
     """Test no syslinux/"""
@@ -757,7 +761,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
         (['sudo', '--', 'sed', '-iE', 's/\\broot_hexdigest=[a-z0-9]+/root_h'
           'exdigest=9999999999999999999999999999999999999999/g'] +
          sorted(uefi['sys_cfgs']), ), sed_args)
-    self.assertEqual({'error_code_ok': True}, sed_command[1])
+    self.assertEqual({'check': False}, sed_command[1])
 
   def testNoGrubCfgSedFails(self):
     """Test the normal path"""
@@ -776,7 +780,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
         (['sudo', '--', 'sed', '-iE', 's/\\broot_hexdigest=[a-z0-9]+/root_h'
           'exdigest=9999999999999999999999999999999999999999/g'] +
          sorted(uefi['sys_cfgs']), ), sed_args)
-    self.assertEqual({'error_code_ok': True}, sed_command[1])
+    self.assertEqual({'check': False}, sed_command[1])
 
   def testNoKernelConfig(self):
     """Test the normal path"""

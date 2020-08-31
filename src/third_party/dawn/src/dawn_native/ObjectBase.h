@@ -15,7 +15,7 @@
 #ifndef DAWNNATIVE_OBJECTBASE_H_
 #define DAWNNATIVE_OBJECTBASE_H_
 
-#include "dawn_native/RefCounted.h"
+#include "common/RefCounted.h"
 
 namespace dawn_native {
 
@@ -28,10 +28,12 @@ namespace dawn_native {
 
         ObjectBase(DeviceBase* device);
         ObjectBase(DeviceBase* device, ErrorTag tag);
-        virtual ~ObjectBase();
 
         DeviceBase* GetDevice() const;
         bool IsError() const;
+
+      protected:
+        ~ObjectBase() override = default;
 
       private:
         DeviceBase* mDevice;

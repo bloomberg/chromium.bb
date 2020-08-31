@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/apps/titlebar_background_view.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "skia/ext/skia_utils_mac.h"
 
 @interface TitlebarBackgroundView ()
@@ -51,15 +51,15 @@
                                    xRadius:cornerRadius
                                    yRadius:cornerRadius] addClip];
   if ([[self window] isMainWindow] || [[self window] isKeyWindow])
-    [color_ set];
+    [_color set];
   else
-    [inactiveColor_ set];
+    [_inactiveColor set];
   NSRectFill(rect);
 }
 
 - (void)setColor:(NSColor*)color inactiveColor:(NSColor*)inactiveColor {
-  color_.reset([color retain]);
-  inactiveColor_.reset([inactiveColor retain]);
+  _color.reset([color retain]);
+  _inactiveColor.reset([inactiveColor retain]);
 }
 
 @end

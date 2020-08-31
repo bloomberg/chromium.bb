@@ -4,6 +4,8 @@
 
 #include "media/capture/video/chromeos/camera_3a_controller.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/numerics/ranges.h"
 
@@ -49,7 +51,8 @@ Camera3AController::Camera3AController(
                      ANDROID_CONTROL_AWB_STATE_INACTIVE),
       awb_mode_set_(false),
       set_point_of_interest_running_(false),
-      ae_locked_for_point_of_interest_(false) {
+      ae_locked_for_point_of_interest_(false),
+      zero_shutter_lag_enabled_(false) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   capture_metadata_dispatcher_->AddResultMetadataObserver(this);
@@ -181,7 +184,7 @@ void Camera3AController::Stabilize3AForStillCapture(
     return;
   }
 
-  if (Is3AStabilized()) {
+  if (Is3AStabilized() || zero_shutter_lag_enabled_) {
     std::move(on_3a_stabilized_callback).Run();
     return;
   }
@@ -191,7 +194,7 @@ void Camera3AController::Stabilize3AForStillCapture(
   if (!af_mode_set_ || !ae_mode_set_ || !awb_mode_set_) {
     on_3a_mode_set_callback_ =
         base::BindOnce(&Camera3AController::Stabilize3AForStillCapture,
-                       GetWeakPtr(), base::Passed(&on_3a_stabilized_callback));
+                       GetWeakPtr(), std::move(on_3a_stabilized_callback));
     return;
   }
 
@@ -234,34 +237,32 @@ void Camera3AController::OnResultMetadataAvailable(
                  base::TimeDelta::FromNanoseconds(sensor_timestamp[0]));
   }
 
-  if (af_mode_set_ && ae_mode_set_ && awb_mode_set_ &&
-      !on_3a_stabilized_callback_ && !on_af_trigger_cancelled_callback_) {
-    // Process the result metadata only when we need to check if 3A modes are
-    // synchronized, or when there's a pending 3A stabilization request.
-    return;
+  if (!af_mode_set_) {
+    cros::mojom::AndroidControlAfMode af_mode;
+    if (Get3AEntry(result_metadata,
+                   cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AF_MODE,
+                   &af_mode)) {
+      af_mode_set_ = (af_mode == af_mode_);
+    } else {
+      DVLOG(2) << "AF mode is not available in the metadata";
+    }
   }
 
-  cros::mojom::AndroidControlAfMode af_mode;
-  if (Get3AEntry(result_metadata,
-                 cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AF_MODE,
-                 &af_mode)) {
-    af_mode_set_ = (af_mode == af_mode_);
-  } else {
-    DVLOG(2) << "AF mode is not available in the metadata";
-  }
   if (!Get3AEntry(result_metadata,
                   cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AF_STATE,
                   &af_state_)) {
     DVLOG(2) << "AF state is not available in the metadata";
   }
 
-  cros::mojom::AndroidControlAeMode ae_mode;
-  if (Get3AEntry(result_metadata,
-                 cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_MODE,
-                 &ae_mode)) {
-    ae_mode_set_ = (ae_mode == ae_mode_);
-  } else {
-    DVLOG(2) << "AE mode is not available in the metadata";
+  if (!ae_mode_set_) {
+    cros::mojom::AndroidControlAeMode ae_mode;
+    if (Get3AEntry(result_metadata,
+                   cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_MODE,
+                   &ae_mode)) {
+      ae_mode_set_ = (ae_mode == ae_mode_);
+    } else {
+      DVLOG(2) << "AE mode is not available in the metadata";
+    }
   }
   if (!Get3AEntry(result_metadata,
                   cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_STATE,
@@ -269,13 +270,15 @@ void Camera3AController::OnResultMetadataAvailable(
     DVLOG(2) << "AE state is not available in the metadata";
   }
 
-  cros::mojom::AndroidControlAwbMode awb_mode;
-  if (Get3AEntry(result_metadata,
-                 cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AWB_MODE,
-                 &awb_mode)) {
-    awb_mode_set_ = (awb_mode == awb_mode_);
-  } else {
-    DVLOG(2) << "AWB mode is not available in the metadata";
+  if (!awb_mode_set_) {
+    cros::mojom::AndroidControlAwbMode awb_mode;
+    if (Get3AEntry(result_metadata,
+                   cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AWB_MODE,
+                   &awb_mode)) {
+      awb_mode_set_ = (awb_mode == awb_mode_);
+    } else {
+      DVLOG(2) << "AWB mode is not available in the metadata";
+    }
   }
   if (!Get3AEntry(result_metadata,
                   cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AWB_STATE,
@@ -499,6 +502,10 @@ void Camera3AController::SetPointOfInterestUnlockAe() {
 
   ae_locked_for_point_of_interest_ = false;
   ClearRepeatingCaptureMetadata();
+}
+
+void Camera3AController::UpdateZeroShutterLagAvailability(bool enabled) {
+  zero_shutter_lag_enabled_ = enabled;
 }
 
 base::WeakPtr<Camera3AController> Camera3AController::GetWeakPtr() {

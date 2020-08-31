@@ -10,12 +10,10 @@
 #include "base/macros.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 
+class ChromeBrowserState;
+
 namespace signin {
 class IdentityManager;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 namespace sync_bookmarks {
@@ -25,7 +23,7 @@ namespace sync_bookmarks {
 class SyncedBookmarksObserverBridge : public SyncObserverBridge {
  public:
   SyncedBookmarksObserverBridge(id<SyncObserverModelBridge> delegate,
-                                ios::ChromeBrowserState* browserState);
+                                ChromeBrowserState* browserState);
   ~SyncedBookmarksObserverBridge() override;
   // Returns true if user is signed in.
   bool IsSignedIn();
@@ -34,7 +32,7 @@ class SyncedBookmarksObserverBridge : public SyncObserverBridge {
 
  private:
   signin::IdentityManager* identity_manager_;
-  ios::ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncedBookmarksObserverBridge);
 };

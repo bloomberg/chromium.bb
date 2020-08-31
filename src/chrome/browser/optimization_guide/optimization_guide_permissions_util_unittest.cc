@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
@@ -27,7 +26,6 @@ class OptimizationGuidePermissionsUtilTest
         data_reduction_proxy::DataReductionProxyTestContext::Builder()
             .WithMockConfig()
             .Build();
-    drp_test_context_->DisableWarmupURLFetch();
   }
 
   void TearDown() override {
@@ -43,10 +41,9 @@ class OptimizationGuidePermissionsUtilTest
     // Make sure infobar not shown.
     PreviewsService* previews_service =
         PreviewsServiceFactory::GetForProfile(profile());
-    PreviewsLitePageRedirectDecider* decider =
-        previews_service->previews_lite_page_redirect_decider();
-    // Initialize settings here so Lite Pages Decider checks for the Data Saver
-    // bit.
+    PreviewsHTTPSNotificationInfoBarDecider* decider =
+        previews_service->previews_https_notification_infobar_decider();
+    // Initialize settings here so |decider| checks for the Data Saver bit.
     decider->OnSettingsInitialized();
     if (has_seen_infobar) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(

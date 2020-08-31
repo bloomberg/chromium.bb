@@ -12,13 +12,14 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink-forward.h"
-#include "third_party/blink/public/platform/web_http_header_set.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
+#include "third_party/blink/renderer/core/fetch/fetch_request_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/network/http_header_set.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
-
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -49,7 +50,7 @@ class CORE_EXPORT FetchResponseData final
 
   FetchResponseData* CreateBasicFilteredResponse() const;
   FetchResponseData* CreateCorsFilteredResponse(
-      const WebHTTPHeaderSet& exposed_headers) const;
+      const HTTPHeaderSet& exposed_headers) const;
   FetchResponseData* CreateOpaqueFilteredResponse() const;
   FetchResponseData* CreateOpaqueRedirectFilteredResponse() const;
 
@@ -77,7 +78,7 @@ class CORE_EXPORT FetchResponseData final
   String InternalMIMEType() const;
   base::Time ResponseTime() const { return response_time_; }
   String CacheStorageCacheName() const { return cache_storage_cache_name_; }
-  const WebHTTPHeaderSet& CorsExposedHeaderNames() const {
+  const HTTPHeaderSet& CorsExposedHeaderNames() const {
     return cors_exposed_header_names_;
   }
 
@@ -99,11 +100,12 @@ class CORE_EXPORT FetchResponseData final
   void SetCacheStorageCacheName(const String& cache_storage_cache_name) {
     cache_storage_cache_name_ = cache_storage_cache_name;
   }
-  void SetCorsExposedHeaderNames(const WebHTTPHeaderSet& header_names) {
+  void SetCorsExposedHeaderNames(const HTTPHeaderSet& header_names) {
     cors_exposed_header_names_ = header_names;
   }
-  void SetSideDataBlob(scoped_refptr<BlobDataHandle> blob) {
-    side_data_blob_ = std::move(blob);
+  bool LoadedWithCredentials() const { return loaded_with_credentials_; }
+  void SetLoadedWithCredentials(bool loaded_with_credentials) {
+    loaded_with_credentials_ = loaded_with_credentials;
   }
 
   // If the type is Default, replaces |buffer_|.
@@ -116,7 +118,14 @@ class CORE_EXPORT FetchResponseData final
   mojom::blink::FetchAPIResponsePtr PopulateFetchAPIResponse(
       const KURL& request_url);
 
-  void Trace(blink::Visitor*);
+  // Initialize non-body data from the given |response|.
+  void InitFromResourceResponse(
+      const Vector<KURL>& request_url_list,
+      network::mojom::CredentialsMode request_credentials,
+      FetchRequestData::Tainting tainting,
+      const ResourceResponse& response);
+
+  void Trace(Visitor*);
 
  private:
   network::mojom::FetchResponseType type_;
@@ -131,8 +140,8 @@ class CORE_EXPORT FetchResponseData final
   String mime_type_;
   base::Time response_time_;
   String cache_storage_cache_name_;
-  WebHTTPHeaderSet cors_exposed_header_names_;
-  scoped_refptr<BlobDataHandle> side_data_blob_;
+  HTTPHeaderSet cors_exposed_header_names_;
+  bool loaded_with_credentials_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchResponseData);
 };

@@ -19,9 +19,7 @@ namespace {
 
 class PasswordStoreSigninNotifierImplTest : public testing::Test {
  public:
-  PasswordStoreSigninNotifierImplTest() {
-    store_ = new MockPasswordStore();
-  }
+  PasswordStoreSigninNotifierImplTest() { store_ = new MockPasswordStore(); }
 
   ~PasswordStoreSigninNotifierImplTest() override {
     store_->ShutdownOnUIThread();

@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
+#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
@@ -46,10 +47,12 @@
 #include "components/policy/core/common/policy_switches.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -108,11 +111,10 @@ class ArcPlayStoreDisabledWaiter : public ArcSessionManager::Observer {
 
 class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
  protected:
-  ArcSessionManagerTest() {}
+  ArcSessionManagerTest() = default;
+  ~ArcSessionManagerTest() override = default;
 
   // MixinBasedInProcessBrowserTest:
-  ~ArcSessionManagerTest() override {}
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
     arc::SetArcAvailableCommandLineForTesting(command_line);
@@ -131,6 +133,8 @@ class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
             base::BindRepeating(FakeArcSession::Create)));
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    EXPECT_TRUE(ExpandPropertyFilesForTesting(ArcSessionManager::Get(),
+                                              temp_dir_.GetPath()));
 
     chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
 
@@ -150,7 +154,7 @@ class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_.get());
 
     // Seed account info properly.
-    identity_test_env()->MakePrimaryAccountAvailable(kFakeUserName);
+    identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(kFakeUserName);
 
     profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
     profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
@@ -216,6 +220,10 @@ class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
     return identity_test_environment_adaptor_->identity_test_env();
   }
 
+  signin::IdentityManager* identity_manager() {
+    return identity_test_env()->identity_manager();
+  }
+
  private:
   chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
@@ -230,6 +238,8 @@ class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ConsumerAccount) {
   EnableArc();
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      identity_manager()->GetPrimaryAccountId(
+          signin::ConsentLevel::kNotRequired),
       kUnmanagedAuthToken, base::Time::Max());
   ASSERT_EQ(ArcSessionManager::State::ACTIVE,
             ArcSessionManager::Get()->state());
@@ -255,6 +265,8 @@ IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedChromeAccount) {
 IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedAndroidAccount) {
   EnableArc();
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      identity_manager()->GetPrimaryAccountId(
+          signin::ConsentLevel::kNotRequired),
       kManagedAuthToken, base::Time::Max());
   ArcPlayStoreDisabledWaiter().Wait();
   EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));

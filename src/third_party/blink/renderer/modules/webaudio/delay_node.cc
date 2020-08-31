@@ -27,8 +27,8 @@
 
 #include <memory>
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_delay_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_basic_processor_handler.h"
-#include "third_party/blink/renderer/modules/webaudio/delay_options.h"
 #include "third_party/blink/renderer/modules/webaudio/delay_processor.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -123,7 +123,7 @@ AudioParam* DelayNode::delayTime() {
   return delay_time_;
 }
 
-void DelayNode::Trace(blink::Visitor* visitor) {
+void DelayNode::Trace(Visitor* visitor) {
   visitor->Trace(delay_time_);
   AudioNode::Trace(visitor);
 }

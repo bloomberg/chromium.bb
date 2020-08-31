@@ -19,7 +19,8 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.signin.AccountManagerDelegate;
-import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.AuthException;
 import org.chromium.components.signin.ProfileDataSource;
@@ -100,6 +101,17 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     @Override
     public ProfileDataSource getProfileDataSource() {
         return mFakeProfileDataSource;
+    }
+
+    @Nullable
+    @Override
+    public String getAccountGaiaId(String accountEmail) {
+        return "gaia-id-" + accountEmail.replace("@", "_at_");
+    }
+
+    @Override
+    public boolean isGooglePlayServicesAvailable() {
+        return true;
     }
 
     @Override
@@ -202,7 +214,8 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
         try {
             ThreadUtils.runOnUiThreadBlocking(() -> {
                 addAccountHolderExplicitly(accountHolder);
-                AccountManagerFacade.get().waitForPendingUpdates(cacheUpdated::countDown);
+                AccountManagerFacadeProvider.getInstance().waitForPendingUpdates(
+                        cacheUpdated::countDown);
             });
 
             cacheUpdated.await();
@@ -224,7 +237,8 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
         try {
             ThreadUtils.runOnUiThreadBlocking(() -> {
                 removeAccountHolderExplicitly(accountHolder);
-                AccountManagerFacade.get().waitForPendingUpdates(cacheUpdated::countDown);
+                AccountManagerFacadeProvider.getInstance().waitForPendingUpdates(
+                        cacheUpdated::countDown);
             });
 
             cacheUpdated.await();
@@ -273,8 +287,8 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
 
     @Override
     public AuthenticatorDescription[] getAuthenticatorTypes() {
-        AuthenticatorDescription googleAuthenticator = new AuthenticatorDescription(
-                AccountManagerFacade.GOOGLE_ACCOUNT_TYPE, "p1", 0, 0, 0, 0);
+        AuthenticatorDescription googleAuthenticator =
+                new AuthenticatorDescription(AccountUtils.GOOGLE_ACCOUNT_TYPE, "p1", 0, 0, 0, 0);
 
         return new AuthenticatorDescription[] {googleAuthenticator};
     }

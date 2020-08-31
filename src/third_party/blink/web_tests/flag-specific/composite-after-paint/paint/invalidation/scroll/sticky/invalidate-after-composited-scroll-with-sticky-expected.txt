@@ -5,12 +5,8 @@
       "bounds": [785, 656],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "VerticalScrollbar",
-          "rect": [353, 8, 15, 640],
-          "reason": "scroll control"
-        }
+      "invalidations": [
+        [353, 8, 15, 640]
       ]
     },
     {
@@ -20,7 +16,7 @@
     },
     {
       "name": "LayoutNGBlockFlow (sticky positioned) DIV id='sticky'",
-      "bounds": [144, 19],
+      "bounds": [345, 20],
       "transform": 4
     }
   ],

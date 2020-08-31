@@ -51,6 +51,8 @@ ApkWebAppInstaller::ApkWebAppInstaller(Profile* profile,
                                        InstallFinishCallback callback,
                                        base::WeakPtr<Owner> weak_owner)
     : profile_(profile),
+      is_web_only_twa_(false),
+      sha256_fingerprint_(base::nullopt),
       callback_(std::move(callback)),
       weak_owner_(weak_owner) {}
 
@@ -92,6 +94,9 @@ void ApkWebAppInstaller::Start(arc::mojom::WebAppInfoPtr web_app_info,
   web_app_info_->display_mode = blink::mojom::DisplayMode::kStandalone;
   web_app_info_->open_as_window = true;
 
+  is_web_only_twa_ = web_app_info->is_web_only_twa;
+  sha256_fingerprint_ = web_app_info->certificate_sha256_fingerprint;
+
   // Decode the image in a sandboxed process off the main thread.
   // base::Unretained is safe because this object owns itself.
   data_decoder::DecodeImageIsolated(
@@ -104,7 +109,7 @@ void ApkWebAppInstaller::Start(arc::mojom::WebAppInfoPtr web_app_info,
 
 void ApkWebAppInstaller::CompleteInstallation(const web_app::AppId& id,
                                               web_app::InstallResultCode code) {
-  std::move(callback_).Run(id, code);
+  std::move(callback_).Run(id, is_web_only_twa_, sha256_fingerprint_, code);
   delete this;
 }
 
@@ -114,8 +119,9 @@ void ApkWebAppInstaller::OnWebAppCreated(const GURL& app_url,
   // It is assumed that if |weak_owner_| is gone, |profile_| is gone too. The
   // web app will be automatically cleaned up by provider.
   if (!weak_owner_.get()) {
-    CompleteInstallation(web_app::AppId(),
-                         web_app::InstallResultCode::kProfileDestroyed);
+    CompleteInstallation(
+        web_app::AppId(),
+        web_app::InstallResultCode::kCancelledOnWebAppProviderShuttingDown);
     return;
   }
 
@@ -124,9 +130,9 @@ void ApkWebAppInstaller::OnWebAppCreated(const GURL& app_url,
     return;
   }
 
-  // Otherwise, insert this web app into the extensions ID map so it is not
-  // removed automatically. TODO(crbug.com/910008): have a less bad way of doing
-  // this.
+  // Otherwise, insert this web app into the externally installed ID map so it
+  // is not removed automatically. TODO(crbug.com/910008): have a less bad way
+  // of doing this.
   web_app::ExternallyInstalledWebAppPrefs(profile_->GetPrefs())
       .Insert(app_url, app_id, web_app::ExternalInstallSource::kArc);
   CompleteInstallation(app_id, code);
@@ -141,8 +147,9 @@ void ApkWebAppInstaller::OnImageDecoded(const SkBitmap& decoded_image) {
   if (!weak_owner_.get()) {
     // Assume |profile_| is no longer valid - destroy this object and
     // terminate.
-    CompleteInstallation(web_app::AppId(),
-                         web_app::InstallResultCode::kProfileDestroyed);
+    CompleteInstallation(
+        web_app::AppId(),
+        web_app::InstallResultCode::kCancelledOnWebAppProviderShuttingDown);
     return;
   }
   DoInstall();

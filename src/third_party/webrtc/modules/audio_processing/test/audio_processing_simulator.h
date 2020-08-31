@@ -19,6 +19,7 @@
 
 #include "absl/types/optional.h"
 #include "common_audio/channel_buffer.h"
+#include "common_audio/include/audio_util.h"
 #include "modules/audio_processing/include/audio_processing.h"
 #include "modules/audio_processing/test/api_call_statistics.h"
 #include "modules/audio_processing/test/fake_recording_device.h"
@@ -30,6 +31,51 @@
 namespace webrtc {
 namespace test {
 
+static const int kChunksPerSecond = 1000 / AudioProcessing::kChunkSizeMs;
+
+struct Int16Frame {
+  void SetFormat(int sample_rate_hz, int num_channels) {
+    this->sample_rate_hz = sample_rate_hz;
+    samples_per_channel =
+        rtc::CheckedDivExact(sample_rate_hz, kChunksPerSecond);
+    this->num_channels = num_channels;
+    config = StreamConfig(sample_rate_hz, num_channels, /*has_keyboard=*/false);
+    data.resize(num_channels * samples_per_channel);
+  }
+
+  void CopyTo(ChannelBuffer<float>* dest) {
+    RTC_DCHECK(dest);
+    RTC_CHECK_EQ(num_channels, dest->num_channels());
+    RTC_CHECK_EQ(samples_per_channel, dest->num_frames());
+    // Copy the data from the input buffer.
+    std::vector<float> tmp(samples_per_channel * num_channels);
+    S16ToFloat(data.data(), tmp.size(), tmp.data());
+    Deinterleave(tmp.data(), samples_per_channel, num_channels,
+                 dest->channels());
+  }
+
+  void CopyFrom(const ChannelBuffer<float>& src) {
+    RTC_CHECK_EQ(src.num_channels(), num_channels);
+    RTC_CHECK_EQ(src.num_frames(), samples_per_channel);
+    data.resize(num_channels * samples_per_channel);
+    int16_t* dest_data = data.data();
+    for (int ch = 0; ch < num_channels; ++ch) {
+      for (int sample = 0; sample < samples_per_channel; ++sample) {
+        dest_data[sample * num_channels + ch] =
+            src.channels()[ch][sample] * 32767;
+      }
+    }
+  }
+
+  int sample_rate_hz;
+  int samples_per_channel;
+  int num_channels;
+
+  StreamConfig config;
+
+  std::vector<int16_t> data;
+};
+
 // Holds all the parameters available for controlling the simulation.
 struct SimulationSettings {
   SimulationSettings();
@@ -37,7 +83,6 @@ struct SimulationSettings {
   ~SimulationSettings();
   absl::optional<int> stream_delay;
   absl::optional<bool> use_stream_delay;
-  absl::optional<int> stream_drift_samples;
   absl::optional<int> output_sample_rate_hz;
   absl::optional<int> output_num_channels;
   absl::optional<int> reverse_output_sample_rate_hz;
@@ -58,19 +103,12 @@ struct SimulationSettings {
   absl::optional<bool> use_hpf;
   absl::optional<bool> use_ns;
   absl::optional<bool> use_ts;
+  absl::optional<bool> use_analog_agc;
   absl::optional<bool> use_vad;
   absl::optional<bool> use_le;
   absl::optional<bool> use_all;
-  absl::optional<int> aec_suppression_level;
-  absl::optional<bool> use_delay_agnostic;
-  absl::optional<bool> use_extended_filter;
-  absl::optional<bool> use_drift_compensation;
-  absl::optional<bool> use_legacy_aec;
-  absl::optional<bool> use_legacy_ns;
-  absl::optional<bool> use_experimental_agc;
-  absl::optional<bool> use_experimental_agc_agc2_level_estimator;
-  absl::optional<bool> experimental_agc_disable_digital_adaptive;
-  absl::optional<bool> experimental_agc_analyze_before_aec;
+  absl::optional<bool> use_analog_agc_agc2_level_estimator;
+  absl::optional<bool> analog_agc_disable_digital_adaptive;
   absl::optional<int> agc_mode;
   absl::optional<int> agc_target_level;
   absl::optional<bool> use_agc_limiter;
@@ -81,8 +119,8 @@ struct SimulationSettings {
       agc2_adaptive_level_estimator;
   absl::optional<float> pre_amplifier_gain_factor;
   absl::optional<int> ns_level;
+  absl::optional<bool> ns_analysis_on_linear_aec_output;
   absl::optional<int> maximum_internal_processing_rate;
-  absl::optional<bool> use_refined_adaptive_filter;
   int initial_mic_level;
   bool simulate_mic_gain = false;
   absl::optional<bool> multi_channel_render;
@@ -100,6 +138,7 @@ struct SimulationSettings {
   bool store_intermediate_output = false;
   bool print_aec_parameter_values = false;
   bool dump_internal_data = false;
+  WavFile::SampleFormat wav_output_format = WavFile::SampleFormat::kInt16;
   absl::optional<std::string> dump_internal_data_output_dir;
   absl::optional<std::string> call_order_input_filename;
   absl::optional<std::string> call_order_output_filename;
@@ -108,13 +147,9 @@ struct SimulationSettings {
   std::vector<float>* processed_capture_samples = nullptr;
 };
 
-// Copies samples present in a ChannelBuffer into an AudioFrame.
-void CopyToAudioFrame(const ChannelBuffer<float>& src, AudioFrame* dest);
-
 // Provides common functionality for performing audioprocessing simulations.
 class AudioProcessingSimulator {
  public:
-  static const int kChunksPerSecond = 1000 / AudioProcessing::kChunkSizeMs;
 
   AudioProcessingSimulator(const SimulationSettings& settings,
                            std::unique_ptr<AudioProcessingBuilder> ap_builder);
@@ -165,8 +200,8 @@ class AudioProcessingSimulator {
   StreamConfig reverse_out_config_;
   std::unique_ptr<ChannelBufferWavReader> buffer_reader_;
   std::unique_ptr<ChannelBufferWavReader> reverse_buffer_reader_;
-  AudioFrame rev_frame_;
-  AudioFrame fwd_frame_;
+  Int16Frame rev_frame_;
+  Int16Frame fwd_frame_;
   bool bitexact_output_ = true;
   int aec_dump_mic_level_ = 0;
 

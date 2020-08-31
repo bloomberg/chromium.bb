@@ -36,7 +36,7 @@ class ShellVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
   bool ShowLanguageSettings() override;
   bool IsLanguageSettingsEnabled() override;
   bool SetVirtualKeyboardMode(int mode_enum,
-                              base::Optional<gfx::Rect> target_bounds,
+                              gfx::Rect target_bounds,
                               OnSetModeCallback on_set_mode_callback) override;
   bool SetDraggableArea(
       const api::virtual_keyboard_private::Bounds& rect) override;
@@ -44,6 +44,7 @@ class ShellVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
   bool SetOccludedBounds(const std::vector<gfx::Rect>& bounds) override;
   bool SetHitTestBounds(const std::vector<gfx::Rect>& bounds) override;
   bool SetAreaToRemainOnScreen(const gfx::Rect& bounds) override;
+  bool SetWindowBoundsInScreen(const gfx::Rect& bounds_in_screen) override;
 
   api::virtual_keyboard::FeatureRestrictions RestrictFeatures(
       const api::virtual_keyboard::RestrictFeatures::Params& params) override;

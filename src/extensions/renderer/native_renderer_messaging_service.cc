@@ -37,9 +37,7 @@
 #include "gin/per_context_data.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "third_party/blink/public/web/web_scoped_window_focus_allowed_indicator.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -158,8 +156,7 @@ void NativeRendererMessagingService::DispatchOnDisconnect(
 gin::Handle<GinPort> NativeRendererMessagingService::Connect(
     ScriptContext* script_context,
     const MessageTarget& target,
-    const std::string& channel_name,
-    bool include_tls_channel_id) {
+    const std::string& channel_name) {
   if (!ScriptContextIsValid(script_context))
     return gin::Handle<GinPort>();
 
@@ -174,8 +171,7 @@ gin::Handle<GinPort> NativeRendererMessagingService::Connect(
       PortId(script_context->context_id(), data->next_port_id++, is_opener));
 
   bindings_system_->GetIPCMessageSender()->SendOpenMessageChannel(
-      script_context, port->port_id(), target, channel_name,
-      include_tls_channel_id);
+      script_context, port->port_id(), target, channel_name);
   return port;
 }
 
@@ -183,7 +179,6 @@ void NativeRendererMessagingService::SendOneTimeMessage(
     ScriptContext* script_context,
     const MessageTarget& target,
     const std::string& method_name,
-    bool include_tls_channel_id,
     const Message& message,
     v8::Local<v8::Function> response_callback) {
   if (!ScriptContextIsValid(script_context))
@@ -195,9 +190,8 @@ void NativeRendererMessagingService::SendOneTimeMessage(
   bool is_opener = true;
   PortId port_id(script_context->context_id(), data->next_port_id++, is_opener);
 
-  one_time_message_handler_.SendMessage(script_context, port_id, target,
-                                        method_name, include_tls_channel_id,
-                                        message, response_callback);
+  one_time_message_handler_.SendMessage(
+      script_context, port_id, target, method_name, message, response_callback);
 }
 
 void NativeRendererMessagingService::PostMessageToPort(
@@ -319,19 +313,14 @@ void NativeRendererMessagingService::DeliverMessageToScriptContext(
   if (!ContextHasMessagePort(script_context, target_port_id))
     return;
 
-  std::unique_ptr<blink::WebScopedUserGesture> web_user_gesture;
   std::unique_ptr<blink::WebScopedWindowFocusAllowedIndicator>
       allow_window_focus;
-  if (message.user_gesture) {
-    web_user_gesture = std::make_unique<blink::WebScopedUserGesture>(
-        script_context->web_frame());
-
-    if (script_context->web_frame()) {
-      blink::WebDocument document = script_context->web_frame()->GetDocument();
-      allow_window_focus =
-          std::make_unique<blink::WebScopedWindowFocusAllowedIndicator>(
-              &document);
-    }
+  if (message.user_gesture && script_context->web_frame()) {
+    script_context->web_frame()->NotifyUserActivation();
+    blink::WebDocument document = script_context->web_frame()->GetDocument();
+    allow_window_focus =
+        std::make_unique<blink::WebScopedWindowFocusAllowedIndicator>(
+            &document);
   }
 
   DispatchOnMessageToListeners(script_context, message, target_port_id);
@@ -425,9 +414,7 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
 
   if (binding::IsContextValid(v8_context) &&
       APIActivityLogger::IsLoggingEnabled()) {
-    auto activity_logging_args =
-        std::make_unique<base::Value>(base::Value::Type::LIST);
-    auto& list = activity_logging_args->GetList();
+    std::vector<base::Value> list;
     list.reserve(2u);
     if (info.source_endpoint.extension_id)
       list.emplace_back(*info.source_endpoint.extension_id);
@@ -443,7 +430,7 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
 
     APIActivityLogger::LogEvent(
         script_context, event_name,
-        base::ListValue::From(std::move(activity_logging_args)));
+        std::make_unique<base::ListValue>(std::move(list)));
   }
 }
 

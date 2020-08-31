@@ -7,8 +7,9 @@
 #include <utility>
 
 #include "base/feature_list.h"
-#include "components/safe_browsing/features.h"
-#include "components/safe_browsing/renderer/websocket_sb_handshake_throttle.h"
+#include "base/memory/ptr_util.h"
+#include "components/safe_browsing/content/renderer/websocket_sb_handshake_throttle.h"
+#include "components/safe_browsing/core/features.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"

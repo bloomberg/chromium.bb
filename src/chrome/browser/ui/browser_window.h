@@ -44,7 +44,6 @@ class FindBar;
 class GURL;
 class LocationBar;
 class StatusBubble;
-class ToolbarActionsBar;
 
 namespace autofill {
 class AutofillBubbleHandler;
@@ -291,11 +290,6 @@ class BrowserWindow : public ui::BaseWindow {
   // Focuses the toolbar (for accessibility).
   virtual void FocusToolbar() = 0;
 
-  // Returns the ToolbarActionsBar associated with the window, if any.
-  // TODO(pbos): Replace usages of |GetToolbarActionsBar| with
-  // |GetExtensionsContainer|.
-  virtual ToolbarActionsBar* GetToolbarActionsBar() = 0;
-
   // Returns the ExtensionsContainer associated with the window, if any.
   virtual ExtensionsContainer* GetExtensionsContainer() = 0;
 
@@ -446,7 +440,8 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(std::unique_ptr<Browser> browser,
-                                            bool user_gesture);
+                                            bool user_gesture,
+                                            bool in_tab_dragging);
 
   // Shows the avatar bubble on the window frame off of the avatar button with
   // the given mode. The Service Type specified by GAIA is provided as well.
@@ -492,6 +487,11 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Shows the platform specific emoji picker.
   virtual void ShowEmojiPanel() = 0;
+
+  // Opens the eye dropper.
+  virtual std::unique_ptr<content::EyeDropper> OpenEyeDropper(
+      content::RenderFrameHost* frame,
+      content::EyeDropperListener* listener) = 0;
 
  protected:
   friend class BrowserCloseManager;

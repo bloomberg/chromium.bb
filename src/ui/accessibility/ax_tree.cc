@@ -6,16 +6,20 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <numeric>
-#include <set>
+#include <utility>
 
 #include "base/auto_reset.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_position.h"
@@ -151,7 +155,7 @@ bool IsCollapsed(const AXNode* node) {
 //        it's a fatal error. This guarantees the tree is always complete
 //        before or after an AXTreeUpdate.
 struct PendingStructureChanges {
-  PendingStructureChanges(const AXNode* node)
+  explicit PendingStructureChanges(const AXNode* node)
       : destroy_subtree_count(0),
         destroy_node_count(0),
         create_node_count(0),
@@ -237,10 +241,23 @@ struct PendingStructureChanges {
   const AXNodeData* last_known_data;
 };
 
+// Represents the different states when computing PendingStructureChanges
+// required for tree Unserialize.
+enum class AXTreePendingStructureStatus {
+  // PendingStructureChanges have not begun computation.
+  kNotStarted,
+  // PendingStructureChanges are currently being computed.
+  kComputing,
+  // All PendingStructureChanges have successfully been computed.
+  kComplete,
+  // An error occurred when computing pending changes.
+  kFailed,
+};
+
 // Intermediate state to keep track of during a tree update.
 struct AXTreeUpdateState {
-  AXTreeUpdateState(const AXTree& tree)
-      : computing_pending_changes(false),
+  explicit AXTreeUpdateState(const AXTree& tree)
+      : pending_update_status(AXTreePendingStructureStatus::kNotStarted),
         root_will_be_created(false),
         tree(tree) {}
 
@@ -259,29 +276,39 @@ struct AXTreeUpdateState {
     return IsCreatedNode(node->id());
   }
 
-  // If this node is removed, it should be considered reparented.
-  bool IsPotentiallyReparentedNode(const AXNode* node) const {
-    return base::Contains(node_ids_found_in_update, node->id());
-  }
-
   // Returns whether this update reparents |node|.
   bool IsReparentedNode(const AXNode* node) const {
-    return IsPotentiallyReparentedNode(node) && IsRemovedNode(node);
+    DCHECK_EQ(AXTreePendingStructureStatus::kComplete, pending_update_status)
+        << "This method should not be called before pending changes have "
+           "finished computing.";
+    PendingStructureChanges* data = GetPendingStructureChanges(node->id());
+    if (!data)
+      return false;
+    // In order to know if the node will be reparented during the update,
+    // we check if either the node will be destroyed or has been destroyed at
+    // least once during the update.
+    // Since this method is only allowed to be called after calculating all
+    // pending structure changes, |node_exists| tells us if the node should
+    // exist after all updates have been applied.
+    return (data->DoesNodeExpectNodeWillBeDestroyed() || IsRemovedNode(node)) &&
+           data->node_exists;
   }
 
   // Returns true if the node should exist in the tree but doesn't have
   // any node data yet.
   bool DoesPendingNodeRequireInit(AXNode::AXID node_id) const {
-    DCHECK(computing_pending_changes) << "This method should be called before "
-                                         "any updates are made to the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComputing, pending_update_status)
+        << "This method should only be called while computing pending changes, "
+           "before updates are made to the tree.";
     PendingStructureChanges* data = GetPendingStructureChanges(node_id);
     return data && data->DoesNodeRequireInit();
   }
 
   // Returns the parent node id for the pending node.
   base::Optional<AXNode::AXID> GetParentIdForPendingNode(AXNode::AXID node_id) {
-    DCHECK(computing_pending_changes) << "This method should be called before "
-                                         "any updates are made to the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComputing, pending_update_status)
+        << "This method should only be called while computing pending changes, "
+           "before updates are made to the tree.";
     PendingStructureChanges* data = GetOrCreatePendingStructureChanges(node_id);
     DCHECK(!data->parent_node_id ||
            ShouldPendingNodeExistInTree(*data->parent_node_id));
@@ -290,15 +317,17 @@ struct AXTreeUpdateState {
 
   // Returns true if this node should exist in the tree.
   bool ShouldPendingNodeExistInTree(AXNode::AXID node_id) {
-    DCHECK(computing_pending_changes) << "This method should be called before "
-                                         "any updates are made to the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComputing, pending_update_status)
+        << "This method should only be called while computing pending changes, "
+           "before updates are made to the tree.";
     return GetOrCreatePendingStructureChanges(node_id)->node_exists;
   }
 
   // Returns the last known node data for a pending node.
   const AXNodeData& GetLastKnownPendingNodeData(AXNode::AXID node_id) const {
-    DCHECK(computing_pending_changes) << "This method should be called before "
-                                         "any updates are made to the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComputing, pending_update_status)
+        << "This method should only be called while computing pending changes, "
+           "before updates are made to the tree.";
     static base::NoDestructor<ui::AXNodeData> empty_data;
     PendingStructureChanges* data = GetPendingStructureChanges(node_id);
     return (data && data->last_known_data) ? *data->last_known_data
@@ -307,15 +336,17 @@ struct AXTreeUpdateState {
 
   // Clear the last known pending data for |node_id|.
   void ClearLastKnownPendingNodeData(AXNode::AXID node_id) {
-    DCHECK(computing_pending_changes) << "This method should be called before "
-                                         "any updates are made to the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComputing, pending_update_status)
+        << "This method should only be called while computing pending changes, "
+           "before updates are made to the tree.";
     GetOrCreatePendingStructureChanges(node_id)->last_known_data = nullptr;
   }
 
   // Update the last known pending node data for |node_data.id|.
   void SetLastKnownPendingNodeData(const AXNodeData* node_data) {
-    DCHECK(computing_pending_changes) << "This method should be called before "
-                                         "any updates are made to the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComputing, pending_update_status)
+        << "This method should only be called while computing pending changes, "
+           "before updates are made to the tree.";
     GetOrCreatePendingStructureChanges(node_data->id)->last_known_data =
         node_data;
   }
@@ -323,9 +354,9 @@ struct AXTreeUpdateState {
   // Returns the number of times the update is expected to destroy a
   // subtree rooted at |node_id|.
   int32_t GetPendingDestroySubtreeCount(AXNode::AXID node_id) const {
-    DCHECK(!computing_pending_changes)
-        << "This method should not be called before any updates are made to "
-           "the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComplete, pending_update_status)
+        << "This method should not be called before pending changes have "
+           "finished computing.";
     if (PendingStructureChanges* data = GetPendingStructureChanges(node_id))
       return data->destroy_subtree_count;
     return 0;
@@ -335,8 +366,9 @@ struct AXTreeUpdateState {
   // destroy a subtree rooted at |node_id|.
   // Returns true on success, false on failure when the node will not exist.
   bool IncrementPendingDestroySubtreeCount(AXNode::AXID node_id) {
-    DCHECK(computing_pending_changes) << "This method should be called before "
-                                         "any updates are made to the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComputing, pending_update_status)
+        << "This method should only be called while computing pending changes, "
+           "before updates are made to the tree.";
     PendingStructureChanges* data = GetOrCreatePendingStructureChanges(node_id);
     if (!data->node_exists)
       return false;
@@ -348,9 +380,9 @@ struct AXTreeUpdateState {
   // Decrements the number of times the update is expected to
   // destroy a subtree rooted at |node_id|.
   void DecrementPendingDestroySubtreeCount(AXNode::AXID node_id) {
-    DCHECK(!computing_pending_changes)
-        << "This method should not be called before any updates are made to "
-           "the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComplete, pending_update_status)
+        << "This method should not be called before pending changes have "
+           "finished computing.";
     if (PendingStructureChanges* data = GetPendingStructureChanges(node_id)) {
       DCHECK_GT(data->destroy_subtree_count, 0);
       --data->destroy_subtree_count;
@@ -360,9 +392,9 @@ struct AXTreeUpdateState {
   // Returns the number of times the update is expected to destroy
   // a node with |node_id|.
   int32_t GetPendingDestroyNodeCount(AXNode::AXID node_id) const {
-    DCHECK(!computing_pending_changes)
-        << "This method should not be called before any updates are made to "
-           "the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComplete, pending_update_status)
+        << "This method should not be called before pending changes have "
+           "finished computing.";
     if (PendingStructureChanges* data = GetPendingStructureChanges(node_id))
       return data->destroy_node_count;
     return 0;
@@ -372,8 +404,9 @@ struct AXTreeUpdateState {
   // destroy a node with |node_id|.
   // Returns true on success, false on failure when the node will not exist.
   bool IncrementPendingDestroyNodeCount(AXNode::AXID node_id) {
-    DCHECK(computing_pending_changes) << "This method should be called before "
-                                         "any updates are made to the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComputing, pending_update_status)
+        << "This method should only be called while computing pending changes, "
+           "before updates are made to the tree.";
     PendingStructureChanges* data = GetOrCreatePendingStructureChanges(node_id);
     if (!data->node_exists)
       return false;
@@ -390,9 +423,9 @@ struct AXTreeUpdateState {
   // Decrements the number of times the update is expected to
   // destroy a node with |node_id|.
   void DecrementPendingDestroyNodeCount(AXNode::AXID node_id) {
-    DCHECK(!computing_pending_changes)
-        << "This method should not be called before any updates are made to "
-           "the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComplete, pending_update_status)
+        << "This method should not be called before pending changes have "
+           "finished computing.";
     if (PendingStructureChanges* data = GetPendingStructureChanges(node_id)) {
       DCHECK_GT(data->destroy_node_count, 0);
       --data->destroy_node_count;
@@ -402,9 +435,9 @@ struct AXTreeUpdateState {
   // Returns the number of times the update is expected to create
   // a node with |node_id|.
   int32_t GetPendingCreateNodeCount(AXNode::AXID node_id) const {
-    DCHECK(!computing_pending_changes)
-        << "This method should not be called before any updates are made to "
-           "the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComplete, pending_update_status)
+        << "This method should not be called before pending changes have "
+           "finished computing.";
     if (PendingStructureChanges* data = GetPendingStructureChanges(node_id))
       return data->create_node_count;
     return 0;
@@ -416,8 +449,9 @@ struct AXTreeUpdateState {
   bool IncrementPendingCreateNodeCount(
       AXNode::AXID node_id,
       base::Optional<AXNode::AXID> parent_node_id) {
-    DCHECK(computing_pending_changes) << "This method should be called before "
-                                         "any updates are made to the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComputing, pending_update_status)
+        << "This method should only be called while computing pending changes, "
+           "before updates are made to the tree.";
     PendingStructureChanges* data = GetOrCreatePendingStructureChanges(node_id);
     if (data->node_exists)
       return false;
@@ -431,9 +465,9 @@ struct AXTreeUpdateState {
   // Decrements the number of times the update is expected to
   // create a node with |node_id|.
   void DecrementPendingCreateNodeCount(AXNode::AXID node_id) {
-    DCHECK(!computing_pending_changes)
-        << "This method should not be called before any updates are made to "
-           "the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComplete, pending_update_status)
+        << "This method should not be called before pending changes have "
+           "finished computing.";
     if (PendingStructureChanges* data = GetPendingStructureChanges(node_id)) {
       DCHECK_GT(data->create_node_count, 0);
       --data->create_node_count;
@@ -449,8 +483,9 @@ struct AXTreeUpdateState {
   // Adds the parent of |node_id| to the list of nodes to invalidate unignored
   // cached values.
   void InvalidateParentNodeUnignoredCacheValues(AXNode::AXID node_id) {
-    DCHECK(computing_pending_changes) << "This method should be called before "
-                                         "any updates are made to the tree.";
+    DCHECK_EQ(AXTreePendingStructureStatus::kComputing, pending_update_status)
+        << "This method should only be called while computing pending changes, "
+           "before updates are made to the tree.";
     base::Optional<AXNode::AXID> parent_node_id =
         GetParentIdForPendingNode(node_id);
     if (parent_node_id) {
@@ -458,9 +493,9 @@ struct AXTreeUpdateState {
     }
   }
 
-  // Indicates if the tree is calculating what changes will occur during
+  // Indicates the status for calculating what changes will occur during
   // an update before the update applies changes.
-  bool computing_pending_changes;
+  AXTreePendingStructureStatus pending_update_status;
 
   // Keeps track of the root node id when calculating what changes will occur
   // during an update before the update applies changes.
@@ -481,11 +516,6 @@ struct AXTreeUpdateState {
   // Keeps track of nodes whose cached unignored child count, or unignored
   // index in parent may have changed, and must be updated.
   std::set<AXNode::AXID> invalidate_unignored_cached_values_ids;
-
-  // All child node ids touched by the update, as well as the new root
-  // node id. Nodes are considered reparented if they are in this list
-  // and removed from somewhere else.
-  std::set<AXNode::AXID> node_ids_found_in_update;
 
   // Keeps track of nodes that have changed their node data.
   std::set<AXNode::AXID> node_data_changed_ids;
@@ -538,6 +568,78 @@ struct AXTreeUpdateState {
   const AXTree& tree;
 };
 
+AXTree::NodeSetSizePosInSetInfo::NodeSetSizePosInSetInfo() = default;
+AXTree::NodeSetSizePosInSetInfo::~NodeSetSizePosInSetInfo() = default;
+
+struct AXTree::OrderedSetContent {
+  explicit OrderedSetContent(const AXNode* ordered_set = nullptr)
+      : ordered_set_(ordered_set) {}
+  ~OrderedSetContent() = default;
+
+  std::vector<const AXNode*> set_items_;
+
+  // Some ordered set items may not be associated with an ordered set.
+  const AXNode* ordered_set_;
+};
+
+struct AXTree::OrderedSetItemsMap {
+  OrderedSetItemsMap() = default;
+  ~OrderedSetItemsMap() = default;
+
+  // Check if a particular hierarchical level exists in this map.
+  bool HierarchicalLevelExists(base::Optional<int> level) {
+    if (items_map_.find(level) == items_map_.end())
+      return false;
+    return true;
+  }
+
+  // Add the OrderedSetContent to the corresponding hierarchical level in the
+  // map.
+  void Add(base::Optional<int> level,
+           const OrderedSetContent& ordered_set_content) {
+    if (!HierarchicalLevelExists(level))
+      items_map_[level] = std::vector<OrderedSetContent>();
+
+    items_map_[level].push_back(ordered_set_content);
+  }
+
+  // Add an ordered set item to the OrderedSetItemsMap given its hierarchical
+  // level. We always want to append the item to the last OrderedSetContent of
+  // that hierarchical level, due to the following:
+  //   - The last OrderedSetContent on any level of the items map is in progress
+  //     of being populated.
+  //   - All other OrderedSetContent other than the last one on a level
+  //     represents a complete ordered set and should not be modified.
+  void AddItemToBack(base::Optional<int> level, const AXNode* item) {
+    if (!HierarchicalLevelExists(level))
+      return;
+
+    std::vector<OrderedSetContent>& sets_list = items_map_[level];
+    if (!sets_list.empty()) {
+      OrderedSetContent& ordered_set_content = sets_list.back();
+      ordered_set_content.set_items_.push_back(item);
+    }
+  }
+
+  // Retrieve the first OrderedSetContent of the OrderedSetItemsMap.
+  OrderedSetContent* GetFirstOrderedSetContent() {
+    if (items_map_.empty())
+      return nullptr;
+
+    std::vector<OrderedSetContent>& sets_list = items_map_.begin()->second;
+    if (sets_list.empty())
+      return nullptr;
+
+    return &(sets_list.front());
+  }
+
+  // Clears all the content in the map.
+  void Clear() { items_map_.clear(); }
+
+  // Maps a hierarchical level to a list of OrderedSetContent.
+  std::map<base::Optional<int32_t>, std::vector<OrderedSetContent>> items_map_;
+};
+
 AXTree::AXTree() {
   AXNodeData root;
   root.id = AXNode::kInvalidAXID;
@@ -550,25 +652,19 @@ AXTree::AXTree() {
   // TODO(chrishall): do we want to initialize all the time, on demand, or only
   //                  when feature flag is set?
   DCHECK(!language_detection_manager);
-  language_detection_manager = std::make_unique<AXLanguageDetectionManager>();
+  language_detection_manager =
+      std::make_unique<AXLanguageDetectionManager>(this);
 }
 
 AXTree::AXTree(const AXTreeUpdate& initial_state) {
   CHECK(Unserialize(initial_state)) << error();
   DCHECK(!language_detection_manager);
-  language_detection_manager = std::make_unique<AXLanguageDetectionManager>();
+  language_detection_manager =
+      std::make_unique<AXLanguageDetectionManager>(this);
 }
 
 AXTree::~AXTree() {
-  if (root_) {
-    RecursivelyNotifyNodeDeletedForTreeTeardown(root_);
-    base::AutoReset<bool> update_state_resetter(&tree_update_in_progress_,
-                                                true);
-    DestroyNodeAndSubtree(root_, nullptr);
-  }
-  for (auto& entry : table_info_map_)
-    delete entry.second;
-  table_info_map_.clear();
+  Destroy();
 }
 
 void AXTree::AddObserver(AXTreeObserver* observer) {
@@ -579,7 +675,7 @@ bool AXTree::HasObserver(AXTreeObserver* observer) {
   return observers_.HasObserver(observer);
 }
 
-void AXTree::RemoveObserver(const AXTreeObserver* observer) {
+void AXTree::RemoveObserver(AXTreeObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -590,6 +686,17 @@ AXTreeID AXTree::GetAXTreeID() const {
 AXNode* AXTree::GetFromId(int32_t id) const {
   auto iter = id_map_.find(id);
   return iter != id_map_.end() ? iter->second : nullptr;
+}
+
+void AXTree::Destroy() {
+  table_info_map_.clear();
+  if (root_) {
+    RecursivelyNotifyNodeDeletedForTreeTeardown(root_);
+    base::AutoReset<bool> update_state_resetter(&tree_update_in_progress_,
+                                                true);
+    DestroyNodeAndSubtree(root_, nullptr);
+    root_ = nullptr;
+  }
 }
 
 void AXTree::UpdateData(const AXTreeData& new_data) {
@@ -821,20 +928,10 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   AXTreeUpdateState update_state(*this);
   const AXNode::AXID old_root_id = root_ ? root_->id() : AXNode::kInvalidAXID;
 
-  // Get all of the node ids that are certain to exist after the update.
-  // These are the nodes that are considered reparented if they are removed from
-  // somewhere else.
-  if (update.root_id != AXNode::kInvalidAXID)
-    update_state.node_ids_found_in_update.emplace(update.root_id);
-  for (const AXNodeData& update_node_data : update.nodes) {
-    update_state.node_ids_found_in_update.insert(
-        update_node_data.child_ids.begin(), update_node_data.child_ids.end());
-  }
-
   // Accumulates the work that will be required to update the AXTree.
   // This allows us to notify observers of structure changes when the
   // tree is still in a stable and unchanged state.
-  if (!ComputePendingChanges(update, update_state))
+  if (!ComputePendingChanges(update, &update_state))
     return false;
 
   // Notify observers of subtrees and nodes that are about to be destroyed or
@@ -907,7 +1004,7 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
         for (auto* child : cleared_node->children())
           DestroySubtree(child, &update_state);
         std::vector<AXNode*> children;
-        cleared_node->SwapChildren(children);
+        cleared_node->SwapChildren(&children);
         update_state.pending_nodes.insert(cleared_node->id());
       }
     }
@@ -957,14 +1054,15 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     }
   }
 
-  // Clear list_info_map_
-  ordered_set_info_map_.clear();
+  // Clears |node_set_size_pos_in_set_info_map_|
+  node_set_size_pos_in_set_info_map_.clear();
 
   std::vector<AXTreeObserver::Change> changes;
   changes.reserve(update.nodes.size());
+  std::set<AXNode::AXID> visited_observer_changes;
   for (size_t i = 0; i < update.nodes.size(); ++i) {
     AXNode* node = GetFromId(update.nodes[i].id);
-    if (!node)
+    if (!node || !visited_observer_changes.emplace(update.nodes[i].id).second)
       continue;
 
     bool is_new_node = update_state.IsCreatedNode(node);
@@ -1005,7 +1103,7 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   for (AXNode::AXID node_id :
        update_state.invalidate_unignored_cached_values_ids) {
     AXNode* node = GetFromId(node_id);
-    while (node && node->data().HasState(ax::mojom::State::kIgnored))
+    while (node && node->data().IsIgnored())
       node = node->parent();
     if (node && updated_unignored_cached_values_ids.insert(node->id()).second)
       node->UpdateUnignoredCachedValues();
@@ -1077,19 +1175,14 @@ AXTableInfo* AXTree::GetTableInfo(const AXNode* const_table_node) const {
   if (cached != table_info_map_.end()) {
     // Get existing table info, and update if invalid because the
     // tree has changed since the last time we accessed it.
-    AXTableInfo* table_info = cached->second;
+    AXTableInfo* table_info = cached->second.get();
     if (!table_info->valid()) {
-      bool success = table_info->Update();
-      if (!success) {
+      if (!table_info->Update()) {
         // If Update() returned false, this is no longer a valid table.
         // Remove it from the map.
-        delete table_info;
-        table_info = nullptr;
         table_info_map_.erase(table_node->id());
+        return nullptr;
       }
-      // See note about const_cast, above.
-      for (AXTreeObserver& observer : observers_)
-        observer.OnNodeChanged(tree, table_node);
     }
     return table_info;
   }
@@ -1098,10 +1191,7 @@ AXTableInfo* AXTree::GetTableInfo(const AXNode* const_table_node) const {
   if (!table_info)
     return nullptr;
 
-  table_info_map_[table_node->id()] = table_info;
-  for (AXTreeObserver& observer : observers_)
-    observer.OnNodeChanged(tree, table_node);
-
+  table_info_map_[table_node->id()] = base::WrapUnique<AXTableInfo>(table_info);
   return table_info;
 }
 
@@ -1133,11 +1223,15 @@ AXNode* AXTree::CreateNode(AXNode* parent,
 }
 
 bool AXTree::ComputePendingChanges(const AXTreeUpdate& update,
-                                   AXTreeUpdateState& update_state) {
-  base::AutoReset<bool> computing_pending_changes_resetter(
-      &update_state.computing_pending_changes, true);
+                                   AXTreeUpdateState* update_state) {
+  DCHECK_EQ(AXTreePendingStructureStatus::kNotStarted,
+            update_state->pending_update_status)
+      << "Pending changes have already started being computed.";
+  update_state->pending_update_status =
+      AXTreePendingStructureStatus::kComputing;
+
   base::AutoReset<base::Optional<AXNode::AXID>> pending_root_id_resetter(
-      &update_state.pending_root_id,
+      &update_state->pending_root_id,
       root_ ? base::Optional<AXNode::AXID>{root_->id()} : base::nullopt);
 
   // We distinguish between updating the root, e.g. changing its children or
@@ -1149,40 +1243,43 @@ bool AXTree::ComputePendingChanges(const AXTreeUpdate& update,
     if (AXNode* cleared_node = GetFromId(update.node_id_to_clear)) {
       DCHECK(root_);
       if (cleared_node == root_ &&
-          update.root_id != update_state.pending_root_id) {
+          update.root_id != update_state->pending_root_id) {
         // Only destroy the root if the root was replaced and not if it's simply
         // updated. To figure out if the root was simply updated, we compare
         // the ID of the new root with the existing root ID.
-        MarkSubtreeForDestruction(*update_state.pending_root_id, &update_state);
+        MarkSubtreeForDestruction(*update_state->pending_root_id, update_state);
       }
 
       // If the tree has been marked for destruction because the root will be
       // replaced, there is nothing more to clear.
-      if (update_state.ShouldPendingNodeExistInTree(root_->id())) {
-        update_state.invalidate_unignored_cached_values_ids.insert(
+      if (update_state->ShouldPendingNodeExistInTree(root_->id())) {
+        update_state->invalidate_unignored_cached_values_ids.insert(
             cleared_node->id());
-        update_state.ClearLastKnownPendingNodeData(cleared_node->id());
+        update_state->ClearLastKnownPendingNodeData(cleared_node->id());
         for (AXNode* child : cleared_node->children()) {
-          MarkSubtreeForDestruction(child->id(), &update_state);
+          MarkSubtreeForDestruction(child->id(), update_state);
         }
       }
     }
   }
 
-  update_state.root_will_be_created =
+  update_state->root_will_be_created =
       !GetFromId(update.root_id) ||
-      !update_state.ShouldPendingNodeExistInTree(update.root_id);
+      !update_state->ShouldPendingNodeExistInTree(update.root_id);
 
   // Populate |update_state| with all of the changes that will be performed
   // on the tree during the update.
   for (const AXNodeData& new_data : update.nodes) {
     bool is_new_root =
-        update_state.root_will_be_created && new_data.id == update.root_id;
-    if (!ComputePendingChangesToNode(new_data, is_new_root, &update_state)) {
+        update_state->root_will_be_created && new_data.id == update.root_id;
+    if (!ComputePendingChangesToNode(new_data, is_new_root, update_state)) {
+      update_state->pending_update_status =
+          AXTreePendingStructureStatus::kFailed;
       return false;
     }
   }
 
+  update_state->pending_update_status = AXTreePendingStructureStatus::kComplete;
   return true;
 }
 
@@ -1277,8 +1374,7 @@ bool AXTree::ComputePendingChangesToNode(const AXNodeData& new_data,
 
   // If the node has changed ignored state or there are any differences in
   // its children, then its unignored cached values must be invalidated.
-  const bool ignored_changed = old_data.HasState(ax::mojom::State::kIgnored) !=
-                               new_data.HasState(ax::mojom::State::kIgnored);
+  const bool ignored_changed = old_data.IsIgnored() != new_data.IsIgnored();
   if (!create_or_destroy_ids.empty() || ignored_changed) {
     update_state->invalidate_unignored_cached_values_ids.insert(new_data.id);
 
@@ -1368,7 +1464,7 @@ bool AXTree::UpdateNode(const AXNodeData& src,
   std::vector<AXNode*> new_children;
   bool success = CreateNewChildVector(
       node, src.child_ids, &new_children, update_state);
-  node->SwapChildren(new_children);
+  node->SwapChildren(&new_children);
 
   // Update the root of the tree if needed.
   if (is_new_root) {
@@ -1391,7 +1487,7 @@ void AXTree::NotifySubtreeWillBeReparentedOrDeleted(
     return;
 
   for (AXTreeObserver& observer : observers_) {
-    if (update_state->IsPotentiallyReparentedNode(node)) {
+    if (update_state->IsReparentedNode(node)) {
       observer.OnSubtreeWillBeReparented(this, node);
     } else {
       observer.OnSubtreeWillBeDeleted(this, node);
@@ -1403,16 +1499,23 @@ void AXTree::NotifyNodeWillBeReparentedOrDeleted(
     AXNode* node,
     const AXTreeUpdateState* update_state) {
   DCHECK(!GetTreeUpdateInProgressState());
-  if (node->id() == AXNode::kInvalidAXID)
+
+  AXNode::AXID id = node->id();
+  if (id == AXNode::kInvalidAXID)
     return;
 
+  table_info_map_.erase(id);
+
   for (AXTreeObserver& observer : observers_) {
-    if (update_state->IsPotentiallyReparentedNode(node)) {
+    if (update_state->IsReparentedNode(node)) {
       observer.OnNodeWillBeReparented(this, node);
     } else {
       observer.OnNodeWillBeDeleted(this, node);
     }
   }
+
+  DCHECK(table_info_map_.find(id) == table_info_map_.end())
+      << "Table info should never be recreated during node deletion";
 }
 
 void AXTree::RecursivelyNotifyNodeDeletedForTreeTeardown(AXNode* node) {
@@ -1714,13 +1817,6 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node,
   empty_data.id = node->id();
   UpdateReverseRelations(node, empty_data);
 
-  // Remove any table infos.
-  const auto& table_info_entry = table_info_map_.find(node->id());
-  if (table_info_entry != table_info_map_.end()) {
-    delete table_info_entry->second;
-    table_info_map_.erase(node->id());
-  }
-
   id_map_.erase(node->id());
   for (auto* child : node->children())
     DestroyNodeAndSubtree(child, update_state);
@@ -1810,51 +1906,81 @@ int32_t AXTree::GetNextNegativeInternalNodeId() {
   return return_value;
 }
 
-// Populates items vector with all items within ordered_set.
-// Will only add items whose roles match the role of the
-// ordered_set.
-void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
-                                     const AXNode* local_parent,
-                                     std::vector<const AXNode*>& items,
-                                     const AXNode& original_node) const {
+void AXTree::PopulateOrderedSetItemsMap(
+    const AXNode& original_node,
+    const AXNode* ordered_set,
+    OrderedSetItemsMap* items_map_to_be_populated) const {
   // Ignored nodes are not a part of ordered sets.
   if (original_node.IsIgnored())
     return;
 
-  // Stop searching current path if roles of local_parent and ordered set match.
-  // Don't compare the container to itself.
-  if (!(ordered_set == local_parent)) {
-    if (local_parent->data().role == ordered_set->data().role)
-      return;
-  }
+  // Not all ordered set containers support hierarchical level, but their set
+  // items may support hierarchical level. For example, container <tree> does
+  // not support level, but <treeitem> supports level. For ordered sets like
+  // this, the set container (e.g. <tree>) will take on the min of the levels
+  // of its direct children(e.g. <treeitem>), if the children's levels are
+  // defined.
+  base::Optional<int> ordered_set_min_level =
+      ordered_set->GetHierarchicalLevel();
 
-  // Initialize necessary variables.
-  // Default hierarchical_level is 0, which represents that no hierarchical
-  // level was detected on original_node.
-  int original_level = original_node.GetIntAttribute(
-      ax::mojom::IntAttribute::kHierarchicalLevel);
-  // If original node is ordered set, then set its hierarchical level equal to
-  // its first child that sets a hierarchical level, if any.
-  if (ordered_set == &original_node) {
-    for (auto unignored_iterator = original_node.UnignoredChildrenBegin();
-         unignored_iterator != original_node.UnignoredChildrenEnd();
-         ++unignored_iterator) {
-      int32_t level = unignored_iterator->GetIntAttribute(
-          ax::mojom::IntAttribute::kHierarchicalLevel);
-      if (level)
-        original_level =
-            original_level ? std::min(level, original_level) : level;
+  for (AXNode::UnignoredChildIterator child =
+           ordered_set->UnignoredChildrenBegin();
+       child != ordered_set->UnignoredChildrenEnd(); ++child) {
+    base::Optional<int> child_level = child->GetHierarchicalLevel();
+    if (child_level) {
+      ordered_set_min_level = ordered_set_min_level
+                                  ? std::min(child_level, ordered_set_min_level)
+                                  : child_level;
     }
   }
-  size_t original_node_index = original_node.GetUnignoredIndexInParent();
-  bool node_is_radio_button =
-      (original_node.data().role == ax::mojom::Role::kRadioButton);
 
-  size_t i = 0;
-  for (AXNode::UnignoredChildIterator it =
+  RecursivelyPopulateOrderedSetItemsMap(original_node, ordered_set, ordered_set,
+                                        ordered_set_min_level, base::nullopt,
+                                        items_map_to_be_populated);
+
+  // If after RecursivelyPopulateOrderedSetItemsMap() call, the corresponding
+  // level (i.e. |ordered_set_min_level|) does not exist in
+  // |items_map_to_be_populated|, and |original_node| equals |ordered_set|, we
+  // know |original_node| is an empty ordered set and contains no set items.
+  // However, |original_node| may still have set size attribute, so we still
+  // want to add this empty set (i.e. original_node/ordered_set) to
+  // |items_map_to_be_populated|.
+  if (&original_node == ordered_set &&
+      !items_map_to_be_populated->HierarchicalLevelExists(
+          ordered_set_min_level)) {
+    items_map_to_be_populated->Add(ordered_set_min_level,
+                                   OrderedSetContent(&original_node));
+  }
+}
+
+void AXTree::RecursivelyPopulateOrderedSetItemsMap(
+    const AXNode& original_node,
+    const AXNode* ordered_set,
+    const AXNode* local_parent,
+    base::Optional<int> ordered_set_min_level,
+    base::Optional<int> prev_level,
+    OrderedSetItemsMap* items_map_to_be_populated) const {
+  // For optimization purpose, we want to only populate set items that are
+  // direct descendants of |ordered_set|, since we will only be calculating
+  // PosInSet & SetSize of items of that level. So we skip items on deeper
+  // levels by stop searching recursively on node |local_parent| that turns out
+  // to be an ordered set whose role matches that of |ordered_set|. However,
+  // when we encounter a flattened structure such as the following:
+  // <div role="tree">
+  //   <div role="treeitem" aria-level="1"></div>
+  //   <div role="treeitem" aria-level="2"></div>
+  //   <div role="treeitem" aria-level="3"></div>
+  // </div>
+  // This optimization won't apply, we will end up populating items from all
+  // levels.
+  if (ordered_set->data().role == local_parent->data().role &&
+      ordered_set != local_parent)
+    return;
+
+  for (AXNode::UnignoredChildIterator itr =
            local_parent->UnignoredChildrenBegin();
-       it != local_parent->UnignoredChildrenEnd(); ++it, ++i) {
-    const AXNode* child = it.get();
+       itr != local_parent->UnignoredChildrenEnd(); ++itr) {
+    const AXNode* child = itr.get();
 
     // Invisible children should not be counted.
     // However, in the collapsed container case (e.g. a combobox), items can
@@ -1867,39 +1993,75 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
       continue;
     }
 
-    // Add child to items if role matches with ordered set's role. If role of
-    // node is kRadioButton, don't add items of other roles, even if item role
-    // matches ordered set role.
-    if ((node_is_radio_button &&
+    base::Optional<int> curr_level = child->GetHierarchicalLevel();
+
+    // Add child to |items_map_to_be_populated| if role matches with the role of
+    // |ordered_set|. If role of node is kRadioButton, don't add items of other
+    // roles, even if item role matches the role of |ordered_set|.
+    if (child->data().role == ax::mojom::Role::kComment ||
+        (original_node.data().role == ax::mojom::Role::kRadioButton &&
          child->data().role == ax::mojom::Role::kRadioButton) ||
-        (!node_is_radio_button && child->SetRoleMatchesItemRole(ordered_set))) {
-      int child_level =
-          child->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
+        (original_node.data().role != ax::mojom::Role::kRadioButton &&
+         child->SetRoleMatchesItemRole(ordered_set))) {
+      // According to WAI-ARIA spec, some ordered set items do not support
+      // hierarchical level while its ordered set container does. For example,
+      // <tab> does not support level, while <tablist> supports level.
+      // https://www.w3.org/WAI/PF/aria/roles#tab
+      // https://www.w3.org/WAI/PF/aria/roles#tablist
+      // For this special case, when we add set items (e.g. tab) to
+      // |items_map_to_be_populated|, set item is placed at the same level as
+      // its container (e.g. tablist) in |items_map_to_be_populated|.
+      if (!curr_level && child->GetUnignoredParent() == ordered_set)
+        curr_level = ordered_set_min_level;
 
-      if (child_level < original_level) {
-        // If a decrease in level occurs after the original node has been
-        // examined, stop adding to this set.
-        if (original_node_index < i)
-          break;
-
-        // If a decrease in level has been detected before the original node
-        // has been examined, then everything previously added to items actually
-        // belongs to a different set. Clear items vector.
-        items.clear();
-        continue;
-      } else if (child_level > original_level) {
-        continue;
+      // We only add child to |items_map_to_be_populated| if the child set item
+      // is at the same hierarchical level as |ordered_set|'s level.
+      if (!items_map_to_be_populated->HierarchicalLevelExists(curr_level)) {
+        bool use_ordered_set = child->SetRoleMatchesItemRole(ordered_set) &&
+                               ordered_set_min_level == curr_level;
+        const AXNode* child_ordered_set =
+            use_ordered_set ? ordered_set : nullptr;
+        items_map_to_be_populated->Add(curr_level,
+                                       OrderedSetContent(child_ordered_set));
       }
 
-      items.push_back(child);
+      items_map_to_be_populated->AddItemToBack(curr_level, child);
     }
 
-    // Recurse if there is a generic container, ignored, or unknown.
-    if (child->IsIgnored() ||
-        child->data().role == ax::mojom::Role::kGenericContainer ||
-        child->data().role == ax::mojom::Role::kUnknown) {
-      PopulateOrderedSetItems(ordered_set, child, items, original_node);
+    // If |child| is an ignored container for ordered set and should not be used
+    // to contribute to |items_map_to_be_populated|, we recurse into |child|'s
+    // descendants to populate |items_map_to_be_populated|.
+    if (child->IsIgnoredContainerForOrderedSet()) {
+      RecursivelyPopulateOrderedSetItemsMap(original_node, ordered_set, child,
+                                            ordered_set_min_level, curr_level,
+                                            items_map_to_be_populated);
     }
+
+    // If |curr_level| goes up one level from |prev_level|, which indicates
+    // the ordered set of |prev_level| is closed, we add a new OrderedSetContent
+    // on the previous level of |items_map_to_be_populated| to signify this.
+    // Consider the example below:
+    // <div role="tree">
+    //   <div role="treeitem" aria-level="1"></div>
+    //   <!--- set1-level2 -->
+    //   <div role="treeitem" aria-level="2"></div>
+    //   <div role="treeitem" aria-level="2"></div>  <--|prev_level|
+    //   <div role="treeitem" aria-level="1" id="item2-level1">  <--|curr_level|
+    //   </div>
+    //   <!--- set2-level2 -->
+    //   <div role="treeitem" aria-level="2"></div>
+    //   <div role="treeitem" aria-level="2"></div>
+    // </div>
+    // |prev_level| is on the last item of "set1-level2" and |curr_level| is on
+    // "item2-level1". Since |curr_level| is up one level from |prev_level|, we
+    // already completed adding all items from "set1-level2" to
+    // |items_map_to_be_populated|. So we close up "set1-level2" by adding a new
+    // OrderedSetContent to level 2. When |curr_level| ends up on the items of
+    // "set2-level2" next, it has a fresh new set to be populated.
+    if (child->SetRoleMatchesItemRole(ordered_set) && curr_level < prev_level)
+      items_map_to_be_populated->Add(prev_level, OrderedSetContent());
+
+    prev_level = curr_level;
   }
 }
 
@@ -1909,139 +2071,161 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
 void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
                                             const AXNode* ordered_set) {
   DCHECK(ordered_set);
-  std::vector<const AXNode*> items;
-  // Find all items within ordered_set and add to vector.
-  PopulateOrderedSetItems(ordered_set, ordered_set, items, node);
+
+  // Set items role::kComment and role::kRadioButton are special cases and do
+  // not necessarily need to be contained in an ordered set.
+  if (node.data().role != ax::mojom::Role::kComment &&
+      node.data().role != ax::mojom::Role::kRadioButton &&
+      !node.SetRoleMatchesItemRole(ordered_set) && !IsSetLike(node.data().role))
+    return;
+
+  // Find all items within ordered_set and add to |items_map_to_be_populated|.
+  OrderedSetItemsMap items_map_to_be_populated;
+  PopulateOrderedSetItemsMap(node, ordered_set, &items_map_to_be_populated);
 
   // If ordered_set role is kPopUpButton and it wraps a kMenuListPopUp, then we
   // would like it to inherit the SetSize from the kMenuListPopUp it wraps. To
   // do this, we treat the kMenuListPopUp as the ordered_set and eventually
   // assign its SetSize value to the kPopUpButton.
-  if ((node.data().role == ax::mojom::Role::kPopUpButton) &&
-      (items.size() != 0)) {
+  if (node.data().role == ax::mojom::Role::kPopUpButton) {
     // kPopUpButtons are only allowed to contain one kMenuListPopUp.
     // The single element is guaranteed to be a kMenuListPopUp because that is
     // the only item role that matches the ordered set role of kPopUpButton.
     // Please see AXNode::SetRoleMatchesItemRole for more details.
-    DCHECK(items.size() == 1);
-    const AXNode* menu_list_popup = items[0];
-    items.clear();
-    PopulateOrderedSetItems(menu_list_popup, menu_list_popup, items, node);
-  }
-
-  // Keep track of the number of elements ordered_set has.
-  int32_t num_elements = 0;
-  // Necessary for calculating set_size.
-  int32_t largest_assigned_set_size = 0;
-  int hierarchical_level =
-      node.GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
-
-  // Compute pos_in_set_values.
-  for (size_t i = 0; i < items.size(); ++i) {
-    const AXNode* item = items[i];
-    ordered_set_info_map_[item->id()] = OrderedSetInfo();
-    int32_t pos_in_set_value = 0;
-
-    pos_in_set_value = num_elements + 1;
-
-    // Check if item has a valid kPosInSet assignment, which takes precedence
-    // over previous assignment. Invalid assignments are decreasing or
-    // duplicates, and should be ignored.
-    pos_in_set_value =
-        std::max(pos_in_set_value,
-                 item->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
-
-    // If level is specified, use author-provided value, if present.
-    if (hierarchical_level != 0 &&
-        item->HasIntAttribute(ax::mojom::IntAttribute::kPosInSet)) {
-      pos_in_set_value =
-          item->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet);
-    }
-
-    // Assign pos_in_set and update role counts.
-    ordered_set_info_map_[item->id()].pos_in_set = pos_in_set_value;
-    num_elements = pos_in_set_value;
-
-    // Check if kSetSize is assigned and update if it's the largest assigned
-    // kSetSize.
-    if (item->HasIntAttribute(ax::mojom::IntAttribute::kSetSize))
-      largest_assigned_set_size =
-          std::max(largest_assigned_set_size,
-                   item->GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
-  }
-
-  // Compute set_size value.
-  // The SetSize of an ordered set (and all of its items) is the maximum of the
-  // following candidate values:
-  // 1. The number of elements in the ordered set.
-  // 2. The Largest assigned SetSize in the ordered set.
-  // 3. The SetSize assigned within the ordered set.
-
-  // Set to 0 if ordered_set has no kSetSize attribute.
-  int32_t ordered_set_candidate =
-      ordered_set->GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
-
-  int32_t set_size_value = std::max(
-      std::max(num_elements, largest_assigned_set_size), ordered_set_candidate);
-
-  // Assign set_size to ordered_set.
-  // Must meet one of two conditions:
-  // 1. Node role matches ordered set role.
-  // 2. The node that calculations were called on is the ordered_set.
-  if (node.SetRoleMatchesItemRole(ordered_set) || ordered_set == &node) {
-    auto ordered_set_info_result =
-        ordered_set_info_map_.find(ordered_set->id());
-    // If ordered_set is not in the cache, assign it a new set_size.
-    if (ordered_set_info_result == ordered_set_info_map_.end()) {
-      ordered_set_info_map_[ordered_set->id()] = OrderedSetInfo();
-      ordered_set_info_map_[ordered_set->id()].set_size = set_size_value;
-      ordered_set_info_map_[ordered_set->id()].lowest_hierarchical_level =
-          hierarchical_level;
-    } else {
-      OrderedSetInfo ordered_set_info = ordered_set_info_result->second;
-      if (ordered_set_info.lowest_hierarchical_level > hierarchical_level) {
-        ordered_set_info.set_size = set_size_value;
-        ordered_set_info.lowest_hierarchical_level = hierarchical_level;
+    OrderedSetContent* set_content =
+        items_map_to_be_populated.GetFirstOrderedSetContent();
+    if (set_content && set_content->set_items_.size() == 1) {
+      const AXNode* menu_list_popup = set_content->set_items_.front();
+      if (menu_list_popup->data().role == ax::mojom::Role::kMenuListPopup) {
+        items_map_to_be_populated.Clear();
+        PopulateOrderedSetItemsMap(node, menu_list_popup,
+                                   &items_map_to_be_populated);
+        set_content = items_map_to_be_populated.GetFirstOrderedSetContent();
+        // Replace |set_content|'s ordered set container with |node|
+        // (Role::kPopUpButton), which acts as the set container for nodes with
+        // Role::kMenuListOptions (children of |menu_list_popup|).
+        if (set_content)
+          set_content->ordered_set_ = &node;
       }
     }
   }
 
-  // Assign set_size to items.
-  for (size_t j = 0; j < items.size(); ++j) {
-    const AXNode* item = items[j];
-    // If level is specified, use author-provided value, if present.
-    if (hierarchical_level != 0 &&
-        item->HasIntAttribute(ax::mojom::IntAttribute::kSetSize))
-      ordered_set_info_map_[item->id()].set_size =
-          item->GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
-    else
-      ordered_set_info_map_[item->id()].set_size = set_size_value;
+  // Iterate over all items from OrderedSetItemsMap to compute and cache each
+  // ordered set item's PosInSet and SetSize and corresponding ordered set
+  // container's SetSize.
+  for (auto element : items_map_to_be_populated.items_map_) {
+    for (const OrderedSetContent& ordered_set_content : element.second) {
+      ComputeSetSizePosInSetAndCacheHelper(ordered_set_content);
+    }
   }
 }
 
-// Returns the pos_in_set of item. Looks in ordered_set_info_map_ for cached
-// value. Calculates pos_in_set and set_size for item (and all other items in
-// the same ordered set) if no value is present in the cache.
-// This function is guaranteed to be only called on nodes that can hold
-// pos_in_set values, minimizing the size of the cache.
+void AXTree::ComputeSetSizePosInSetAndCacheHelper(
+    const OrderedSetContent& ordered_set_content) {
+  // Keep track of number of items in the set.
+  int32_t num_elements = 0;
+  // Keep track of largest ordered set item's |aria-setsize| attribute value.
+  int32_t max_item_set_size_from_attribute = 0;
+
+  for (const AXNode* item : ordered_set_content.set_items_) {
+    // |item|'s PosInSet value is the maximum of accumulated number of
+    // elements count and the value from its |aria-posinset| attribute.
+    int32_t pos_in_set_value =
+        std::max(num_elements + 1,
+                 item->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet));
+
+    // For |item| that has defined hierarchical level and |aria-posinset|
+    // attribute, the attribute value takes precedence.
+    // Note: According to WAI-ARIA spec, items that support
+    // |aria-posinset| do not necessarily support hierarchical level.
+    if (item->GetHierarchicalLevel() &&
+        item->HasIntAttribute(ax::mojom::IntAttribute::kPosInSet))
+      pos_in_set_value =
+          item->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet);
+
+    num_elements = pos_in_set_value;
+
+    // Cache computed PosInSet value for |item|.
+    node_set_size_pos_in_set_info_map_[item->id()] = NodeSetSizePosInSetInfo();
+    node_set_size_pos_in_set_info_map_[item->id()].pos_in_set =
+        pos_in_set_value;
+
+    // Track the largest set size for this OrderedSetContent.
+    max_item_set_size_from_attribute =
+        std::max(max_item_set_size_from_attribute,
+                 item->GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+  }  // End of iterating over each item in |ordered_set_content|.
+
+  // The SetSize of an ordered set (and all of its items) is the maximum of
+  // the following values:
+  // 1. The number of elements in the ordered set.
+  // 2. The largest item set size from |aria-setsize| attribute.
+  // 3. The ordered set container's |aria-setsize| attribute value.
+  int32_t set_size_value =
+      std::max(num_elements, max_item_set_size_from_attribute);
+
+  // Cache the hierarchical level and set size of |ordered_set_content|'s set
+  // container, if the container exists.
+  if (const AXNode* ordered_set = ordered_set_content.ordered_set_) {
+    set_size_value = std::max(
+        set_size_value,
+        ordered_set->GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+
+    // Cache |ordered_set|'s hierarchical level.
+    base::Optional<int> ordered_set_level = ordered_set->GetHierarchicalLevel();
+    if (node_set_size_pos_in_set_info_map_.find(ordered_set->id()) ==
+        node_set_size_pos_in_set_info_map_.end()) {
+      node_set_size_pos_in_set_info_map_[ordered_set->id()] =
+          NodeSetSizePosInSetInfo();
+      node_set_size_pos_in_set_info_map_[ordered_set->id()]
+          .lowest_hierarchical_level = ordered_set_level;
+    } else if (node_set_size_pos_in_set_info_map_[ordered_set->id()]
+                   .lowest_hierarchical_level > ordered_set_level) {
+      node_set_size_pos_in_set_info_map_[ordered_set->id()]
+          .lowest_hierarchical_level = ordered_set_level;
+    }
+    // Cache |ordered_set|'s set size.
+    node_set_size_pos_in_set_info_map_[ordered_set->id()].set_size =
+        set_size_value;
+  }
+
+  // Cache the set size of |ordered_set_content|'s set items.
+  for (const AXNode* item : ordered_set_content.set_items_) {
+    // If item's hierarchical level and |aria-setsize| attribute are specified,
+    // the item's |aria-setsize| value takes precedence.
+    if (item->GetHierarchicalLevel() &&
+        item->HasIntAttribute(ax::mojom::IntAttribute::kSetSize))
+      node_set_size_pos_in_set_info_map_[item->id()].set_size =
+          item->GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
+    else
+      node_set_size_pos_in_set_info_map_[item->id()].set_size = set_size_value;
+  }  // End of iterating over each item in |ordered_set_content|.
+}
+
+// Returns the pos_in_set of item. Looks in |node_set_size_pos_in_set_info_map_|
+// for cached value. Calculates pos_in_set and set_size for item (and all other
+// items in the same ordered set) if no value is present in the cache. This
+// function is guaranteed to be only called on nodes that can hold pos_in_set
+// values, minimizing the size of the cache.
 int32_t AXTree::GetPosInSet(const AXNode& node, const AXNode* ordered_set) {
   // If item's id is not in the cache, compute it.
-  if (ordered_set_info_map_.find(node.id()) == ordered_set_info_map_.end())
+  if (node_set_size_pos_in_set_info_map_.find(node.id()) ==
+      node_set_size_pos_in_set_info_map_.end())
     ComputeSetSizePosInSetAndCache(node, ordered_set);
-  return ordered_set_info_map_[node.id()].pos_in_set;
+  return node_set_size_pos_in_set_info_map_[node.id()].pos_in_set;
 }
 
 // Returns the set_size of node. node could be an ordered set or an item.
-// Looks in ordered_set_info_map_ for cached value. Calculates pos_inset_set
-// and set_size for all nodes in same ordered set if no value is present in the
-// cache.
-// This function is guaranteed to be only called on nodes that can hold
-// set_size values, minimizing the size of the cache.
+// Looks in |node_set_size_pos_in_set_info_map_| for cached value. Calculates
+// pos_in_set and set_size for all nodes in same ordered set if no value is
+// present in the cache. This function is guaranteed to be only called on nodes
+// that can hold set_size values, minimizing the size of the cache.
 int32_t AXTree::GetSetSize(const AXNode& node, const AXNode* ordered_set) {
   // If node's id is not in the cache, compute it.
-  if (ordered_set_info_map_.find(node.id()) == ordered_set_info_map_.end())
+  if (node_set_size_pos_in_set_info_map_.find(node.id()) ==
+      node_set_size_pos_in_set_info_map_.end())
     ComputeSetSizePosInSetAndCache(node, ordered_set);
-  return ordered_set_info_map_[node.id()].set_size;
+  return node_set_size_pos_in_set_info_map_[node.id()].set_size;
 }
 
 AXTree::Selection AXTree::GetUnignoredSelection() const {
@@ -2054,59 +2238,108 @@ AXTree::Selection AXTree::GetUnignoredSelection() const {
   AXNode* focus_node = GetFromId(data().sel_focus_object_id);
 
   AXNodePosition::AXPositionInstance anchor_position =
-      anchor_node ? AXNodePosition::CreatePosition(data().tree_id, *anchor_node,
+      anchor_node ? AXNodePosition::CreatePosition(*anchor_node,
                                                    data().sel_anchor_offset,
                                                    data().sel_anchor_affinity)
                   : AXNodePosition::CreateNullPosition();
-  if (anchor_position->IsIgnoredPosition()) {
-    anchor_position = anchor_position->AsUnignoredTextPosition(
-        data().sel_is_backward ? AXNodePosition::AdjustmentBehavior::kMoveRight
-                               : AXNodePosition::AdjustmentBehavior::kMoveLeft);
+
+  // Null positions are never ignored.
+  if (anchor_position->IsIgnored()) {
+    anchor_position = anchor_position->AsUnignoredPosition(
+        data().sel_is_backward ? AXPositionAdjustmentBehavior::kMoveForward
+                               : AXPositionAdjustmentBehavior::kMoveBackward);
+
+    // Any selection endpoint that is inside a leaf node is expressed as a text
+    // position in AXTreeData.
+    if (anchor_position->IsLeafTreePosition())
+      anchor_position = anchor_position->AsTextPosition();
+
     // We do not expect the selection to have an endpoint on an inline text
-    // box.
-    if (!anchor_position->IsNullPosition() &&
+    // box as this will create issues with parts of the code that don't use
+    // inline text boxes.
+    if (anchor_position->IsTextPosition() &&
         anchor_position->GetAnchor()->data().role ==
-            ax::mojom::Role::kInlineTextBox)
+            ax::mojom::Role::kInlineTextBox) {
       anchor_position = anchor_position->CreateParentPosition();
-    unignored_selection.anchor_object_id = anchor_position->anchor_id();
-    unignored_selection.anchor_offset = anchor_position->text_offset();
-    unignored_selection.anchor_affinity = anchor_position->affinity();
-  } else if (anchor_position->IsTreePosition()) {
-    // Fix offset to be in terms of the unignored index.
-    if (data().sel_anchor_offset == int32_t{anchor_node->children().size()}) {
-      unignored_selection.anchor_offset = anchor_node->GetUnignoredChildCount();
-    } else {
-      AXNode* child = anchor_node->children()[data().sel_anchor_offset];
-      unignored_selection.anchor_offset = child->GetUnignoredIndexInParent();
+    }
+
+    switch (anchor_position->kind()) {
+      case AXPositionKind::NULL_POSITION:
+        // If one of the selection endpoints is invalid, then both endpoints
+        // should be unset.
+        unignored_selection.anchor_object_id = AXNode::kInvalidAXID;
+        unignored_selection.anchor_offset = -1;
+        unignored_selection.anchor_affinity =
+            ax::mojom::TextAffinity::kDownstream;
+        unignored_selection.focus_object_id = AXNode::kInvalidAXID;
+        unignored_selection.focus_offset = -1;
+        unignored_selection.focus_affinity =
+            ax::mojom::TextAffinity::kDownstream;
+        return unignored_selection;
+      case AXPositionKind::TREE_POSITION:
+        unignored_selection.anchor_object_id = anchor_position->anchor_id();
+        unignored_selection.anchor_offset = anchor_position->child_index();
+        unignored_selection.anchor_affinity =
+            ax::mojom::TextAffinity::kDownstream;
+        break;
+      case AXPositionKind::TEXT_POSITION:
+        unignored_selection.anchor_object_id = anchor_position->anchor_id();
+        unignored_selection.anchor_offset = anchor_position->text_offset();
+        unignored_selection.anchor_affinity = anchor_position->affinity();
+        break;
     }
   }
 
   AXNodePosition::AXPositionInstance focus_position =
-      focus_node ? AXNodePosition::CreatePosition(data().tree_id, *focus_node,
-                                                  data().sel_focus_offset,
-                                                  data().sel_focus_affinity)
-                 : AXNodePosition::CreateNullPosition();
-  if (focus_position->IsIgnoredPosition()) {
-    focus_position = focus_position->AsUnignoredTextPosition(
-        !data().sel_is_backward
-            ? AXNodePosition::AdjustmentBehavior::kMoveRight
-            : AXNodePosition::AdjustmentBehavior::kMoveLeft);
+      focus_node
+          ? AXNodePosition::CreatePosition(*focus_node, data().sel_focus_offset,
+                                           data().sel_focus_affinity)
+          : AXNodePosition::CreateNullPosition();
+
+  // Null positions are never ignored.
+  if (focus_position->IsIgnored()) {
+    focus_position = focus_position->AsUnignoredPosition(
+        !data().sel_is_backward ? AXPositionAdjustmentBehavior::kMoveForward
+                                : AXPositionAdjustmentBehavior::kMoveBackward);
+
+    // Any selection endpoint that is inside a leaf node is expressed as a text
+    // position in AXTreeData.
+    if (focus_position->IsLeafTreePosition())
+      focus_position = focus_position->AsTextPosition();
+
     // We do not expect the selection to have an endpoint on an inline text
-    // box.
-    if (!focus_position->IsNullPosition() &&
+    // box as this will create issues with parts of the code that don't use
+    // inline text boxes.
+    if (focus_position->IsTextPosition() &&
         focus_position->GetAnchor()->data().role ==
-            ax::mojom::Role::kInlineTextBox)
+            ax::mojom::Role::kInlineTextBox) {
       focus_position = focus_position->CreateParentPosition();
-    unignored_selection.focus_object_id = focus_position->anchor_id();
-    unignored_selection.focus_offset = focus_position->text_offset();
-    unignored_selection.focus_affinity = focus_position->affinity();
-  } else if (focus_position->IsTreePosition()) {
-    // Fix offset to be in terms of the unignored index.
-    if (data().sel_focus_offset == int32_t{focus_node->children().size()}) {
-      unignored_selection.focus_offset = focus_node->GetUnignoredChildCount();
-    } else {
-      AXNode* child = focus_node->children()[data().sel_focus_offset];
-      unignored_selection.focus_offset = child->GetUnignoredIndexInParent();
+    }
+
+    switch (focus_position->kind()) {
+      case AXPositionKind::NULL_POSITION:
+        // If one of the selection endpoints is invalid, then both endpoints
+        // should be unset.
+        unignored_selection.anchor_object_id = AXNode::kInvalidAXID;
+        unignored_selection.anchor_offset = -1;
+        unignored_selection.anchor_affinity =
+            ax::mojom::TextAffinity::kDownstream;
+        unignored_selection.focus_object_id = AXNode::kInvalidAXID;
+        unignored_selection.focus_offset = -1;
+        unignored_selection.focus_affinity =
+            ax::mojom::TextAffinity::kDownstream;
+        return unignored_selection;
+      case AXPositionKind::TREE_POSITION:
+        unignored_selection.focus_object_id = focus_position->anchor_id();
+        unignored_selection.focus_offset = focus_position->child_index();
+        unignored_selection.focus_affinity =
+            ax::mojom::TextAffinity::kDownstream;
+        break;
+      case AXPositionKind::TEXT_POSITION:
+        unignored_selection.focus_object_id = focus_position->anchor_id();
+        unignored_selection.focus_offset = focus_position->text_offset();
+        unignored_selection.focus_affinity = focus_position->affinity();
+        break;
     }
   }
 

@@ -10,13 +10,13 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
+import org.chromium.chrome.browser.signin.SigninPreferencesManager;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
@@ -31,52 +31,36 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
     public void onReceive(Context context, final Intent intent) {
         if (!AccountManager.LOGIN_ACCOUNTS_CHANGED_ACTION.equals(intent.getAction())) return;
 
-        final Context appContext = context.getApplicationContext();
-        AsyncTask<Void> task = new AsyncTask<Void>() {
-            @Override
-            protected Void doInBackground() {
-                SigninHelper.updateAccountRenameData();
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                continueHandleAccountChangeIfNeeded(appContext);
-            }
-        };
-        task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-    }
-
-    private void continueHandleAccountChangeIfNeeded(final Context context) {
         boolean isChromeVisible = ApplicationStatus.hasVisibleActivities();
         if (isChromeVisible) {
-            startBrowserIfNeededAndValidateAccounts(context);
+            startBrowserIfNeededAndValidateAccounts();
         } else {
             // Notify SigninHelper of changed accounts (via shared prefs).
-            SigninHelper.markAccountsChangedPref();
+            SigninPreferencesManager.getInstance().markAccountsChangedPref();
         }
     }
 
-    private static void startBrowserIfNeededAndValidateAccounts(final Context context) {
+    private static void startBrowserIfNeededAndValidateAccounts() {
         BrowserParts parts = new EmptyBrowserParts() {
             @Override
             public void finishNativeInitialization() {
                 PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
                     // TODO(bsazonov): Check whether invalidateAccountSeedStatus is needed here.
-                    IdentityServicesProvider.getAccountTrackerService().invalidateAccountSeedStatus(
-                            false /* don't refresh right now */);
+                    IdentityServicesProvider.get()
+                            .getAccountTrackerService()
+                            .invalidateAccountSeedStatus(false /* don't refresh right now */);
                     SigninHelper.get().validateAccountSettings(true);
                 });
             }
 
             @Override
-            public void onStartupFailure() {
+            public void onStartupFailure(Exception failureCause) {
                 // Startup failed. So notify SigninHelper of changed accounts via
                 // shared prefs.
-                SigninHelper.markAccountsChangedPref();
+                SigninPreferencesManager.getInstance().markAccountsChangedPref();
             }
         };
-        ChromeBrowserInitializer.getInstance(context).handlePreNativeStartup(parts);
-        ChromeBrowserInitializer.getInstance(context).handlePostNativeStartup(true, parts);
+        ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
+        ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
     }
 }

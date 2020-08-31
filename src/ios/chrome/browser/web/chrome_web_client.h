@@ -61,6 +61,9 @@ class ChromeWebClient : public web::WebClient {
                         base::OnceCallback<void(NSString*)> callback) override;
   UIView* GetWindowedContainer() override;
   bool ForceMobileVersionByDefault(const GURL& url) override;
+  web::UserAgentType GetDefaultUserAgent(id<UITraitEnvironment> web_view,
+                                         const GURL& url) override;
+  bool IsEmbedderBlockRestoreUrlEnabled() override;
 
  private:
   // Returns a string describing the product name and version, of the

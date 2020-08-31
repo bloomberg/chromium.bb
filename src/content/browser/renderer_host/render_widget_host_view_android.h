@@ -21,9 +21,6 @@
 #include "base/process/process.h"
 #include "base/time/time.h"
 #include "cc/trees/render_frame_metadata.h"
-#include "components/viz/common/frame_sinks/begin_frame_args.h"
-#include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/quads/selection.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
@@ -31,7 +28,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_export.h"
-#include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/delegated_frame_host_android.h"
 #include "ui/android/view_android.h"
@@ -75,8 +71,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       public ui::GestureProviderClient,
       public ui::TouchSelectionControllerClient,
       public ui::ViewAndroidObserver,
-      public ui::WindowAndroidObserver,
-      public viz::BeginFrameObserver {
+      public ui::WindowAndroidObserver {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               gfx::NativeView parent_native_view);
@@ -134,32 +129,24 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetTooltipText(const base::string16& tooltip_text) override;
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
-  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
-                              InputEventAckState ack_result) override;
-  InputEventAckState FilterInputEvent(
+  void ProcessAckedTouchEvent(
+      const TouchEventWithLatencyInfo& touch,
+      blink::mojom::InputEventResultState ack_result) override;
+  blink::mojom::InputEventResultState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
-                       InputEventAckState ack_result) override;
-  bool OnUnconsumedKeyboardEventAck(
-      const NativeWebKeyboardEventWithLatencyInfo& event) override;
-  void FallbackCursorModeLockCursor(bool left,
-                                    bool right,
-                                    bool up,
-                                    bool down) override;
-  void FallbackCursorModeSetCursorVisibility(bool visible) override;
+                       blink::mojom::InputEventResultState ack_result) override;
+  void ChildDidAckGestureEvent(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate,
       bool for_root_frame) override;
-  bool LockMouse(bool request_unadjusted_movement) override;
+  blink::mojom::PointerLockResult LockMouse(
+      bool request_unadjusted_movement) override;
+  blink::mojom::PointerLockResult ChangeMouseLock(
+      bool request_unadjusted_movement) override;
   void UnlockMouse() override;
-  void DidCreateNewRendererCompositorFrameSink(
-      viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
-      override;
-  void SubmitCompositorFrame(
-      const viz::LocalSurfaceId& local_surface_id,
-      viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list) override;
-  void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;
   void SetIsInVR(bool is_in_vr) override;
@@ -171,8 +158,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
   void OnDidNavigateMainFrameToNewPage() override;
-  void SetNeedsBeginFrames(bool needs_begin_frames) override;
-  void SetWantsAnimateOnlyBeginFrames() override;
   const viz::FrameSinkId& GetFrameSinkId() const override;
   viz::FrameSinkId GetRootFrameSinkId() override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
@@ -220,8 +205,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnAnimate(base::TimeTicks begin_frame_time) override;
   void OnActivityStopped() override;
   void OnActivityStarted() override;
-  void OnCursorVisibilityChanged(bool visible) override;
-  void OnFallbackCursorModeToggled(bool is_on) override;
 
   // StylusTextSelectorClient implementation.
   void OnStylusSelectBegin(float x0, float y0, float x1, float y1) override;
@@ -240,20 +223,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnDragUpdate(const gfx::PointF& position) override;
   std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
   void DidScroll() override;
-
-  // Used by DelegatedFrameHostClientAndroid.
-  void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source);
-  void DidPresentCompositorFrames(
-      const viz::FrameTimingDetailsMap& timing_details);
-  void DidReceiveCompositorFrameAck(
-      const std::vector<viz::ReturnedResource>& resources);
-  void ReclaimResources(const std::vector<viz::ReturnedResource>& resources);
-
-  // viz::BeginFrameObserver implementation.
-  void OnBeginFrame(const viz::BeginFrameArgs& args) override;
-  const viz::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
-  void OnBeginFrameSourcePausedChanged(bool paused) override;
-  bool WantsAnimateOnlyBeginFrames() const override;
 
   // Non-virtual methods
   void UpdateNativeViewTree(gfx::NativeView parent_native_view);
@@ -390,6 +359,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
     return delegated_frame_host_.get();
   }
 
+  void SetNeedsBeginFrameForFlingProgress();
+
  protected:
   // RenderWidgetHostViewBase:
   void UpdateBackgroundColor() override;
@@ -397,6 +368,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
  private:
   friend class RenderWidgetHostViewAndroidTest;
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           GestureManagerListensToChildFrames);
 
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 
@@ -413,8 +386,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool UpdateControls(float dip_scale,
                       float top_controls_height,
                       float top_controls_shown_ratio,
+                      float top_controls_min_height_offset,
                       float bottom_controls_height,
-                      float bottom_controls_shown_ratio);
+                      float bottom_controls_shown_ratio,
+                      float bottom_controls_min_height_offset);
   void OnDidUpdateVisualPropertiesComplete(
       const cc::RenderFrameMetadata& metadata);
 
@@ -440,19 +415,14 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const gfx::Size& dst_size_in_pixel,
       base::OnceCallback<void(const SkBitmap&)> callback);
 
+  void MaybeCreateSynchronousCompositor();
+  void ResetSynchronousCompositor();
+
   void EvictDelegatedContent();
   void OnLostResources();
 
-  enum BeginFrameRequestType {
-    BEGIN_FRAME = 1 << 0,
-    PERSISTENT_BEGIN_FRAME = 1 << 1
-  };
-  void AddBeginFrameRequest(BeginFrameRequestType request);
-  void ClearBeginFrameRequest(BeginFrameRequestType request);
   void StartObservingRootWindow();
   void StopObservingRootWindow();
-  void SendBeginFramePaused();
-  void SendBeginFrame(viz::BeginFrameArgs args);
   bool Animate(base::TimeTicks frame_time);
   void RequestDisallowInterceptTouchEvent();
 
@@ -473,16 +443,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetTextHandlesHiddenInternal();
 
   void OnUpdateScopedSelectionHandles();
-
-  // The begin frame source being observed.  Null if none.
-  viz::BeginFrameSource* begin_frame_source_;
-  viz::BeginFrameArgs last_begin_frame_args_;
-  bool begin_frame_paused_ = false;
-  bool wants_animate_only_begin_frames_ = false;
-
-  // Indicates whether and for what reason a request for begin frames has been
-  // issued. Used to control action dispatch at the next |OnBeginFrame()| call.
-  uint32_t outstanding_begin_frame_requests_;
 
   bool is_showing_;
 
@@ -552,12 +512,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   bool controls_initialized_ = false;
 
-  bool fallback_cursor_mode_enabled_;
-
   float prev_top_shown_pix_;
   float prev_top_controls_translate_;
+  float prev_top_controls_min_height_offset_pix_;
   float prev_bottom_shown_pix_;
   float prev_bottom_controls_translate_;
+  float prev_bottom_controls_min_height_offset_pix_;
   float page_scale_;
   float min_page_scale_;
   float max_page_scale_;
@@ -565,9 +525,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   base::TimeTicks prev_mousedown_timestamp_;
   gfx::Point prev_mousedown_point_;
   int left_click_count_ = 0;
-
-  viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
-      nullptr;
 
   base::ObserverList<DestructionObserver>::Unchecked destruction_observers_;
 
@@ -579,7 +536,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // If true, then the next allocated surface should be embedded.
   bool navigation_while_hidden_ = false;
 
-  viz::FrameTimingDetailsMap timing_details_;
+  bool render_widget_initialized_ = false;
 
   // Tracks whether we are in SynchronousCopyContents to avoid repeated calls
   // into DevTools capture logic.

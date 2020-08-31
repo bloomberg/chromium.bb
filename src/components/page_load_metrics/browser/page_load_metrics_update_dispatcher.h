@@ -56,13 +56,13 @@ enum PageLoadTimingStatus {
   INVALID_ORDER_PARSE_START_PARSE_STOP,
   INVALID_ORDER_PARSE_STOP_DOM_CONTENT_LOADED,
   INVALID_ORDER_DOM_CONTENT_LOADED_LOAD,
-  INVALID_ORDER_PARSE_START_FIRST_LAYOUT,
-  INVALID_ORDER_FIRST_LAYOUT_FIRST_PAINT,
+  INVALID_ORDER_PARSE_START_FIRST_PAINT,
   // Deprecated but not removing because it would affect histogram enumeration.
   INVALID_ORDER_FIRST_PAINT_FIRST_TEXT_PAINT,
   INVALID_ORDER_FIRST_PAINT_FIRST_IMAGE_PAINT,
   INVALID_ORDER_FIRST_PAINT_FIRST_CONTENTFUL_PAINT,
   INVALID_ORDER_FIRST_PAINT_FIRST_MEANINGFUL_PAINT,
+  // Deprecated but not removing because it would affect histogram enumeration.
   INVALID_ORDER_FIRST_MEANINGFUL_PAINT_PAGE_INTERACTIVE,
 
   // We received a first input delay without a first input timestamp.
@@ -110,7 +110,7 @@ class PageLoadMetricsUpdateDispatcher {
     virtual void OnMainFrameMetadataChanged() = 0;
     virtual void OnSubframeMetadataChanged(
         content::RenderFrameHost* rfh,
-        const mojom::PageLoadMetadata& metadata) = 0;
+        const mojom::FrameMetadata& metadata) = 0;
     virtual void OnSubFrameRenderDataChanged(
         content::RenderFrameHost* rfh,
         const mojom::FrameRenderDataUpdate& render_data) = 0;
@@ -122,6 +122,9 @@ class PageLoadMetricsUpdateDispatcher {
         const std::vector<mojom::ResourceDataUpdatePtr>& resources) = 0;
     virtual void UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
                                       const mojom::CpuTiming& timing) = 0;
+    virtual void OnFrameIntersectionUpdate(
+        content::RenderFrameHost* rfh,
+        const mojom::FrameIntersectionUpdate& frame_intersection_update) = 0;
     virtual void OnNewDeferredResourceCounts(
         const mojom::DeferredResourceCounts& new_deferred_resource_data) = 0;
   };
@@ -136,12 +139,13 @@ class PageLoadMetricsUpdateDispatcher {
   void UpdateMetrics(
       content::RenderFrameHost* render_frame_host,
       mojom::PageLoadTimingPtr new_timing,
-      mojom::PageLoadMetadataPtr new_metadata,
+      mojom::FrameMetadataPtr new_metadata,
       mojom::PageLoadFeaturesPtr new_features,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources,
       mojom::FrameRenderDataUpdatePtr render_data,
       mojom::CpuTimingPtr new_cpu_timing,
-      mojom::DeferredResourceCountsPtr new_deferred_resource_data);
+      mojom::DeferredResourceCountsPtr new_deferred_resource_data,
+      mojom::InputTimingPtr input_timing_delta);
 
   // This method is only intended to be called for PageLoadFeatures being
   // recorded directly from the browser process. Features coming from the
@@ -158,15 +162,18 @@ class PageLoadMetricsUpdateDispatcher {
     return *(current_merged_page_timing_.get());
   }
 
-  const mojom::PageLoadMetadata& main_frame_metadata() const {
+  const mojom::FrameMetadata& main_frame_metadata() const {
     return *(main_frame_metadata_.get());
   }
-  const mojom::PageLoadMetadata& subframe_metadata() const {
+  const mojom::FrameMetadata& subframe_metadata() const {
     return *(subframe_metadata_.get());
   }
   const PageRenderData& page_render_data() const { return page_render_data_; }
   const PageRenderData& main_frame_render_data() const {
     return main_frame_render_data_;
+  }
+  const mojom::InputTiming& page_input_timing() const {
+    return page_input_timing_;
   }
 
  private:
@@ -178,9 +185,15 @@ class PageLoadMetricsUpdateDispatcher {
   void UpdateFrameCpuTiming(content::RenderFrameHost* render_frame_host,
                             mojom::CpuTimingPtr new_timing);
 
-  void UpdateMainFrameMetadata(mojom::PageLoadMetadataPtr new_metadata);
+  void UpdateMainFrameMetadata(content::RenderFrameHost* render_frame_host,
+                               mojom::FrameMetadataPtr new_metadata);
   void UpdateSubFrameMetadata(content::RenderFrameHost* render_frame_host,
-                              mojom::PageLoadMetadataPtr subframe_metadata);
+                              mojom::FrameMetadataPtr subframe_metadata);
+
+  void UpdatePageInputTiming(const mojom::InputTiming& input_timing_delta);
+  void MaybeUpdateFrameIntersection(
+      content::RenderFrameHost* render_frame_host,
+      const mojom::FrameMetadataPtr& frame_metadata);
 
   void UpdatePageRenderData(const mojom::FrameRenderDataUpdate& render_data);
   void UpdateMainFrameRenderData(
@@ -214,11 +227,21 @@ class PageLoadMetricsUpdateDispatcher {
   mojom::PageLoadTimingPtr current_merged_page_timing_;
   mojom::PageLoadTimingPtr pending_merged_page_timing_;
 
-  mojom::PageLoadMetadataPtr main_frame_metadata_;
-  mojom::PageLoadMetadataPtr subframe_metadata_;
+  // TODO(crbug/1058393): Replace aggregate frame metadata with a separate
+  // struct instead of using mojo.
+  mojom::FrameMetadataPtr main_frame_metadata_;
+  mojom::FrameMetadataPtr subframe_metadata_;
+
+  // InputTiming data accumulated across all frames.
+  mojom::InputTiming page_input_timing_;
 
   PageRenderData page_render_data_;
   PageRenderData main_frame_render_data_;
+
+  // The last main frame document intersection dispatched to page load metrics
+  // observers.
+  std::map<FrameTreeNodeId, mojom::FrameIntersectionUpdate>
+      frame_intersection_updates_;
 
   // Navigation start offsets for the most recently committed document in each
   // frame.

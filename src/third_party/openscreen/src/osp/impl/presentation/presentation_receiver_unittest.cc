@@ -33,15 +33,9 @@ class MockConnectRequest final
  public:
   ~MockConnectRequest() override = default;
 
-  // TODO(jophba): remove trampoline once the following work item is completed:
-  // https://github.com/google/googletest/issues/2130
-  void OnConnectionOpened(
-      uint64_t request_id,
-      std::unique_ptr<ProtocolConnection> connection) override {
-    OnConnectionOpenedMock(request_id, connection.release());
-  }
-  MOCK_METHOD2(OnConnectionOpenedMock,
-               void(uint64_t request_id, ProtocolConnection* connection));
+  MOCK_METHOD2(OnConnectionOpened,
+               void(uint64_t request_id,
+                    std::unique_ptr<ProtocolConnection> connection));
   MOCK_METHOD1(OnConnectionFailed, void(uint64_t request_id));
 };
 
@@ -69,12 +63,11 @@ class MockReceiverDelegate final : public ReceiverDelegate {
 class PresentationReceiverTest : public ::testing::Test {
  public:
   PresentationReceiverTest() {
-    fake_clock_ = std::make_unique<platform::FakeClock>(
-        platform::Clock::time_point(std::chrono::milliseconds(1298424)));
-    task_runner_ =
-        std::make_unique<platform::FakeTaskRunner>(fake_clock_.get());
-    quic_bridge_ = std::make_unique<FakeQuicBridge>(task_runner_.get(),
-                                                    platform::FakeClock::now);
+    fake_clock_ = std::make_unique<FakeClock>(
+        Clock::time_point(std::chrono::milliseconds(1298424)));
+    task_runner_ = std::make_unique<FakeTaskRunner>(fake_clock_.get());
+    quic_bridge_ =
+        std::make_unique<FakeQuicBridge>(task_runner_.get(), FakeClock::now);
   }
 
  protected:
@@ -82,11 +75,14 @@ class PresentationReceiverTest : public ::testing::Test {
     MockConnectRequest mock_connect_request;
     NetworkServiceManager::Get()->GetProtocolConnectionClient()->Connect(
         quic_bridge_->kReceiverEndpoint, &mock_connect_request);
-    ProtocolConnection* stream;
-    EXPECT_CALL(mock_connect_request, OnConnectionOpenedMock(_, _))
-        .WillOnce(::testing::SaveArg<1>(&stream));
+    std::unique_ptr<ProtocolConnection> stream;
+    EXPECT_CALL(mock_connect_request, OnConnectionOpened(_, _))
+        .WillOnce([&stream](uint64_t request_id,
+                            std::unique_ptr<ProtocolConnection> connection) {
+          stream = std::move(connection);
+        });
     quic_bridge_->RunTasksUntilIdle();
-    return std::unique_ptr<ProtocolConnection>(stream);
+    return stream;
   }
 
   void SetUp() override {
@@ -103,8 +99,8 @@ class PresentationReceiverTest : public ::testing::Test {
     NetworkServiceManager::Dispose();
   }
 
-  std::unique_ptr<platform::FakeClock> fake_clock_;
-  std::unique_ptr<platform::FakeTaskRunner> task_runner_;
+  std::unique_ptr<FakeClock> fake_clock_;
+  std::unique_ptr<FakeTaskRunner> task_runner_;
   const std::string url1_{"https://www.example.com/receiver.html"};
   std::unique_ptr<FakeQuicBridge> quic_bridge_;
   MockReceiverDelegate mock_receiver_delegate_;
@@ -142,14 +138,14 @@ TEST_F(PresentationReceiverTest, QueryAvailability) {
 
   msgs::PresentationUrlAvailabilityResponse response;
   EXPECT_CALL(mock_callback, OnStreamMessage(_, _, _, _, _, _))
-      .WillOnce(Invoke([&response](uint64_t endpoint_id, uint64_t cid,
-                                   msgs::Type message_type,
-                                   const uint8_t* buffer, size_t buffer_size,
-                                   platform::Clock::time_point now) {
-        ssize_t result = msgs::DecodePresentationUrlAvailabilityResponse(
-            buffer, buffer_size, &response);
-        return result;
-      }));
+      .WillOnce(
+          Invoke([&response](uint64_t endpoint_id, uint64_t cid,
+                             msgs::Type message_type, const uint8_t* buffer,
+                             size_t buffer_size, Clock::time_point now) {
+            ssize_t result = msgs::DecodePresentationUrlAvailabilityResponse(
+                buffer, buffer_size, &response);
+            return result;
+          }));
   quic_bridge_->RunTasksUntilIdle();
   EXPECT_EQ(request.request_id, response.request_id);
   EXPECT_EQ(
@@ -190,14 +186,14 @@ TEST_F(PresentationReceiverTest, StartPresentation) {
                                          ResponseResult::kSuccess);
   msgs::PresentationStartResponse response;
   EXPECT_CALL(mock_callback, OnStreamMessage(_, _, _, _, _, _))
-      .WillOnce(Invoke([&response](uint64_t endpoint_id, uint64_t cid,
-                                   msgs::Type message_type,
-                                   const uint8_t* buffer, size_t buffer_size,
-                                   platform::Clock::time_point now) {
-        ssize_t result = msgs::DecodePresentationStartResponse(
-            buffer, buffer_size, &response);
-        return result;
-      }));
+      .WillOnce(
+          Invoke([&response](uint64_t endpoint_id, uint64_t cid,
+                             msgs::Type message_type, const uint8_t* buffer,
+                             size_t buffer_size, Clock::time_point now) {
+            ssize_t result = msgs::DecodePresentationStartResponse(
+                buffer, buffer_size, &response);
+            return result;
+          }));
   quic_bridge_->RunTasksUntilIdle();
   EXPECT_EQ(msgs::Result::kSuccess, response.result);
   EXPECT_EQ(connection.connection_id(), response.connection_id);

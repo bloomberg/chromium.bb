@@ -98,15 +98,12 @@ void GeolocationImpl::ResumeUpdates() {
 void GeolocationImpl::StartListeningForUpdates() {
   geolocation_subscription_ =
       GeolocationProvider::GetInstance()->AddLocationUpdateCallback(
-          base::Bind(&GeolocationImpl::OnLocationUpdate,
-                     base::Unretained(this)),
+          base::BindRepeating(&GeolocationImpl::OnLocationUpdate,
+                              base::Unretained(this)),
           high_accuracy_);
 }
 
 void GeolocationImpl::SetHighAccuracy(bool high_accuracy) {
-  UMA_HISTOGRAM_BOOLEAN(
-      "Geolocation.GeolocationDispatcherHostImpl.EnableHighAccuracy",
-      high_accuracy);
   high_accuracy_ = high_accuracy;
 
   if (ValidateGeoposition(position_override_)) {

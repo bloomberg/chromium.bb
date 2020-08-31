@@ -88,7 +88,7 @@ std::vector<aura::Window*> GetAllTopLevelWindows() {
   DCHECK(aura_test_helper) << "Can't find all widgets without a test helper";
 #endif
   if (aura_test_helper)
-    roots.push_back(aura_test_helper->root_window());
+    roots.push_back(aura_test_helper->GetContext());
   return roots;
 }
 
@@ -127,7 +127,7 @@ gfx::Size WidgetTest::GetNativeWidgetMinimumContentSize(Widget* widget) {
   return widget->GetNativeWindow()->delegate()->GetMinimumSize();
 #elif defined(USE_X11)
   XSizeHints hints;
-  long supplied_return;
+  long supplied_return;  // NOLINT(runtime/int)
   XGetWMNormalHints(
       gfx::GetXDisplay(),
       widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget(), &hints,

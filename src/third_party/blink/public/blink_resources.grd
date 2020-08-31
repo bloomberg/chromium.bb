@@ -27,6 +27,7 @@
       <include name="IDR_UASTYLE_MATHML_CSS" file="../renderer/core/css/mathml.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_MATHML_FALLBACK_CSS" file="../renderer/core/css/mathml-fallback.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_FULLSCREEN_CSS" file="../renderer/core/css/fullscreen.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_WEBXR_OVERLAY_CSS" file="../renderer/core/css/webxr_overlay.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_XHTMLMP_CSS" file="../renderer/core/css/xhtmlmp.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_VIEWPORT_ANDROID_CSS" file="../renderer/core/css/viewportAndroid.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_VIEWPORT_TELEVISION_CSS" file="../renderer/core/css/viewportTelevision.css" type="BINDATA" compress="gzip"/>
@@ -63,8 +64,6 @@
         <include name="IDR_LIST_PICKER_JS" file="../renderer/core/html/forms/resources/listPicker.js" type="BINDATA" compress="gzip"/>
       </if>
       <include name="IDR_AUDIO_SPATIALIZATION_COMPOSITE" file="../renderer/platform/audio/resources/Composite.flac" type="BINDATA"/>
-      <!-- Layered API scripts. -->
-      <part file="../renderer/core/script/resources/layered_api/resources.grdp" />
     </includes>
   </release>
 </grit>

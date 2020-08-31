@@ -35,10 +35,8 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/inspector_application_cache_agent.h"
@@ -65,8 +63,12 @@ const char* const kEventNames[] = {"Checking",    "Error",    "NoUpdate",
 
 ApplicationCacheHost::ApplicationCacheHost(
     const BrowserInterfaceBrokerProxy& interface_broker_proxy,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)),
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    ContextLifecycleNotifier* notifier)
+    : backend_host_(notifier),
+      receiver_(this, notifier),
+      backend_remote_(notifier),
+      task_runner_(std::move(task_runner)),
       interface_broker_proxy_(interface_broker_proxy) {}
 
 ApplicationCacheHost::~ApplicationCacheHost() = default;
@@ -230,6 +232,12 @@ void ApplicationCacheHost::ErrorEventRaised(
                            details->reason, details->url.GetString(),
                            details->status, details->message);
   }
+}
+
+void ApplicationCacheHost::Trace(Visitor* visitor) {
+  visitor->Trace(backend_host_);
+  visitor->Trace(receiver_);
+  visitor->Trace(backend_remote_);
 }
 
 void ApplicationCacheHost::GetAssociatedCacheInfo(

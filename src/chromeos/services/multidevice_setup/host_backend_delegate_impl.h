@@ -31,15 +31,21 @@ class HostBackendDelegateImpl : public HostBackendDelegate,
  public:
   class Factory {
    public:
-    static Factory* Get();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<HostBackendDelegate> BuildInstance(
+    static std::unique_ptr<HostBackendDelegate> Create(
         EligibleHostDevicesProvider* eligible_host_devices_provider,
         PrefService* pref_service,
         device_sync::DeviceSyncClient* device_sync_client,
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
+    static void SetFactoryForTesting(Factory* test_factory);
+
+   protected:
+    virtual ~Factory();
+    virtual std::unique_ptr<HostBackendDelegate> CreateInstance(
+        EligibleHostDevicesProvider* eligible_host_devices_provider,
+        PrefService* pref_service,
+        device_sync::DeviceSyncClient* device_sync_client,
+        std::unique_ptr<base::OneShotTimer> timer) = 0;
 
    private:
     static Factory* test_factory_;
@@ -73,11 +79,18 @@ class HostBackendDelegateImpl : public HostBackendDelegate,
   // Sets the pending host request. To signal that the request is to remove the
   // current host, pass kPendingRemovalOfCurrentHost. To signal that there is no
   // pending request, pass kNoPendingRequest.
-  void SetPendingHostRequest(const std::string& host_device_id);
+  void SetPendingHostRequest(const std::string& pending_host_id);
+
+  // Returns the device with either an Instance ID or encoded public key of |id|
+  // in the list of synced devices. If no such device exists, returns null.
+  // TODO(https://crbug.com/1019206): When v1 DeviceSync is disabled, only look
+  // up by Instance ID since all devices are guaranteed to have one.
+  base::Optional<multidevice::RemoteDeviceRef> FindDeviceById(
+      const std::string& id) const;
 
   void AttemptNetworkRequest(bool is_retry);
   base::Optional<multidevice::RemoteDeviceRef> GetHostFromDeviceSync();
-  void OnSetSoftwareFeatureStateResult(
+  void OnSetHostNetworkRequestFinished(
       multidevice::RemoteDeviceRef device_for_request,
       bool attempted_to_enable,
       device_sync::mojom::NetworkRequestResult result_code);

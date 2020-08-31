@@ -32,6 +32,17 @@ using Microsoft::WRL::ComPtr;
 
 namespace media {
 
+#if DCHECK_IS_ON()
+#define DLOG_IF_FAILED_WITH_HRESULT(message, hr)                      \
+  {                                                                   \
+    DLOG_IF(ERROR, FAILED(hr))                                        \
+        << (message) << ": " << logging::SystemErrorCodeToString(hr); \
+  }
+#else
+#define DLOG_IF_FAILED_WITH_HRESULT(message, hr) \
+  {}
+#endif
+
 namespace {
 
 class MFPhotoCallback final
@@ -42,7 +53,7 @@ class MFPhotoCallback final
                   VideoCaptureFormat format)
       : callback_(std::move(callback)), format_(format) {}
 
-  STDMETHOD(QueryInterface)(REFIID riid, void** object) override {
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** object) override {
     if (riid == IID_IUnknown || riid == IID_IMFCaptureEngineOnSampleCallback) {
       AddRef();
       *object = static_cast<IMFCaptureEngineOnSampleCallback*>(this);
@@ -51,17 +62,17 @@ class MFPhotoCallback final
     return E_NOINTERFACE;
   }
 
-  STDMETHOD_(ULONG, AddRef)() override {
+  IFACEMETHODIMP_(ULONG) AddRef() override {
     base::RefCountedThreadSafe<MFPhotoCallback>::AddRef();
     return 1U;
   }
 
-  STDMETHOD_(ULONG, Release)() override {
+  IFACEMETHODIMP_(ULONG) Release() override {
     base::RefCountedThreadSafe<MFPhotoCallback>::Release();
     return 1U;
   }
 
-  STDMETHOD(OnSample)(IMFSample* sample) override {
+  IFACEMETHODIMP OnSample(IMFSample* sample) override {
     if (!sample)
       return S_OK;
 
@@ -70,7 +81,7 @@ class MFPhotoCallback final
 
     for (DWORD i = 0; i < buffer_count; ++i) {
       ComPtr<IMFMediaBuffer> buffer;
-      sample->GetBufferByIndex(i, buffer.GetAddressOf());
+      sample->GetBufferByIndex(i, &buffer);
       if (!buffer)
         continue;
 
@@ -336,14 +347,34 @@ const CapabilityWin& GetBestMatchedPhotoCapability(
 
 HRESULT CreateCaptureEngine(IMFCaptureEngine** engine) {
   ComPtr<IMFCaptureEngineClassFactory> capture_engine_class_factory;
-  HRESULT hr = CoCreateInstance(
-      CLSID_MFCaptureEngineClassFactory, NULL, CLSCTX_INPROC_SERVER,
-      IID_PPV_ARGS(capture_engine_class_factory.GetAddressOf()));
+  HRESULT hr = CoCreateInstance(CLSID_MFCaptureEngineClassFactory, NULL,
+                                CLSCTX_INPROC_SERVER,
+                                IID_PPV_ARGS(&capture_engine_class_factory));
   if (FAILED(hr))
     return hr;
 
   return capture_engine_class_factory->CreateInstance(CLSID_MFCaptureEngine,
                                                       IID_PPV_ARGS(engine));
+}
+
+// Retrieves the control range and value, and
+// optionally returns the associated supported and current mode.
+template <typename ControlInterface, typename ControlProperty>
+mojom::RangePtr RetrieveControlRangeAndCurrent(
+    ComPtr<ControlInterface>& control_interface,
+    ControlProperty control_property,
+    std::vector<mojom::MeteringMode>* supported_modes = nullptr,
+    mojom::MeteringMode* current_mode = nullptr,
+    double (*value_converter)(long) = PlatformToCaptureValue,
+    double (*step_converter)(long) = PlatformToCaptureValue) {
+  return media::RetrieveControlRangeAndCurrent(
+      [&control_interface, control_property](auto... args) {
+        return control_interface->GetRange(control_property, args...);
+      },
+      [&control_interface, control_property](auto... args) {
+        return control_interface->Get(control_property, args...);
+      },
+      supported_modes, current_mode, value_converter, step_converter);
 }
 }  // namespace
 
@@ -354,7 +385,7 @@ class MFVideoCallback final
  public:
   MFVideoCallback(VideoCaptureDeviceMFWin* observer) : observer_(observer) {}
 
-  STDMETHOD(QueryInterface)(REFIID riid, void** object) override {
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** object) override {
     HRESULT hr = E_NOINTERFACE;
     if (riid == IID_IUnknown) {
       *object = this;
@@ -372,22 +403,22 @@ class MFVideoCallback final
     return hr;
   }
 
-  STDMETHOD_(ULONG, AddRef)() override {
+  IFACEMETHODIMP_(ULONG) AddRef() override {
     base::RefCountedThreadSafe<MFVideoCallback>::AddRef();
     return 1U;
   }
 
-  STDMETHOD_(ULONG, Release)() override {
+  IFACEMETHODIMP_(ULONG) Release() override {
     base::RefCountedThreadSafe<MFVideoCallback>::Release();
     return 1U;
   }
 
-  STDMETHOD(OnEvent)(IMFMediaEvent* media_event) override {
+  IFACEMETHODIMP OnEvent(IMFMediaEvent* media_event) override {
     observer_->OnEvent(media_event);
     return S_OK;
   }
 
-  STDMETHOD(OnSample)(IMFSample* sample) override {
+  IFACEMETHODIMP OnSample(IMFSample* sample) override {
     if (!sample) {
       observer_->OnFrameDropped(
           VideoCaptureFrameDropReason::kWinMediaFoundationReceivedSampleIsNull);
@@ -405,11 +436,48 @@ class MFVideoCallback final
 
     for (DWORD i = 0; i < count; ++i) {
       ComPtr<IMFMediaBuffer> buffer;
-      sample->GetBufferByIndex(i, buffer.GetAddressOf());
+      sample->GetBufferByIndex(i, &buffer);
       if (buffer) {
-        DWORD length = 0, max_length = 0;
-        BYTE* data = NULL;
-        buffer->Lock(&data, &max_length, &length);
+        // Lock the buffer using the fastest method that it supports. The
+        // Lock2DSize() method is faster than Lock2D(), which is faster than
+        // Lock().
+        DWORD length = 0;
+        BYTE* data = nullptr;
+        ComPtr<IMF2DBuffer> buffer_2d;
+        if (SUCCEEDED(buffer.As(&buffer_2d))) {
+          HRESULT lock_result;
+          BYTE* scanline_0 = nullptr;
+          LONG pitch = 0;
+          ComPtr<IMF2DBuffer2> buffer_2d_2;
+          if (SUCCEEDED(buffer.As(&buffer_2d_2))) {
+            BYTE* data_start;
+            lock_result =
+                buffer_2d_2->Lock2DSize(MF2DBuffer_LockFlags_Read, &scanline_0,
+                                        &pitch, &data_start, &length);
+          } else {
+            lock_result = buffer_2d->Lock2D(&scanline_0, &pitch);
+          }
+          if (SUCCEEDED(lock_result)) {
+            // Use |buffer_2d| only if it is contiguous and has positive pitch.
+            BOOL is_contiguous;
+            if (pitch > 0 &&
+                SUCCEEDED(buffer_2d->IsContiguousFormat(&is_contiguous)) &&
+                is_contiguous &&
+                (length ||
+                 SUCCEEDED(buffer_2d->GetContiguousLength(&length)))) {
+              data = scanline_0;
+            } else {
+              buffer_2d->Unlock2D();
+            }
+          }
+        }
+        if (!data) {
+          // If the faster methods fail, fall back to Lock to lock the buffer.
+          buffer_2d = nullptr;
+          DWORD max_length = 0;
+          buffer->Lock(&data, &max_length, &length);
+        }
+
         if (data) {
           observer_->OnIncomingCapturedData(data, length, reference_time,
                                             timestamp);
@@ -418,7 +486,12 @@ class MFVideoCallback final
               VideoCaptureFrameDropReason::
                   kWinMediaFoundationLockingBufferDelieveredNullptr);
         }
-        buffer->Unlock();
+
+        if (buffer_2d)
+          buffer_2d->Unlock2D();
+        else
+          buffer->Unlock();
+
       } else {
         observer_->OnFrameDropped(
             VideoCaptureFrameDropReason::
@@ -545,9 +618,8 @@ HRESULT VideoCaptureDeviceMFWin::FillCapabilities(
 
     DWORD media_type_index = 0;
     ComPtr<IMFMediaType> type;
-    while (SUCCEEDED(hr = GetAvailableDeviceMediaType(source, stream_index,
-                                                      media_type_index,
-                                                      type.GetAddressOf()))) {
+    while (SUCCEEDED(hr = GetAvailableDeviceMediaType(
+                         source, stream_index, media_type_index, &type))) {
       VideoCaptureFormat format;
       if (GetFormatFromSourceMediaType(type.Get(), photo, &format))
         capabilities->emplace_back(media_type_index, format, stream_index);
@@ -582,7 +654,10 @@ VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(
       source_(source),
       engine_(engine),
       is_started_(false),
-      has_sent_on_started_to_client_(false) {
+      has_sent_on_started_to_client_(false),
+      exposure_mode_manual_(false),
+      focus_mode_manual_(false),
+      white_balance_mode_manual_(false) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -603,18 +678,24 @@ VideoCaptureDeviceMFWin::~VideoCaptureDeviceMFWin() {
 bool VideoCaptureDeviceMFWin::Init() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!is_initialized_);
+  HRESULT hr;
 
-  HRESULT hr = S_OK;
-  if (!engine_)
-    hr = CreateCaptureEngine(engine_.GetAddressOf());
+  hr = source_.As(&camera_control_);
+  DLOG_IF_FAILED_WITH_HRESULT("Failed to retrieve IAMCameraControl", hr);
 
-  if (FAILED(hr)) {
-    LogError(FROM_HERE, hr);
-    return false;
+  hr = source_.As(&video_control_);
+  DLOG_IF_FAILED_WITH_HRESULT("Failed to retrieve IAMVideoProcAmp", hr);
+
+  if (!engine_) {
+    hr = CreateCaptureEngine(&engine_);
+    if (FAILED(hr)) {
+      LogError(FROM_HERE, hr);
+      return false;
+    }
   }
 
   ComPtr<IMFAttributes> attributes;
-  MFCreateAttributes(attributes.GetAddressOf(), 1);
+  MFCreateAttributes(&attributes, 1);
   DCHECK(attributes);
 
   video_callback_ = new MFVideoCallback(this);
@@ -645,7 +726,7 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   }
 
   ComPtr<IMFCaptureSource> source;
-  HRESULT hr = engine_->GetSource(source.GetAddressOf());
+  HRESULT hr = engine_->GetSource(&source);
   if (FAILED(hr)) {
     OnError(VideoCaptureError::kWinMediaFoundationEngineGetSourceFailed,
             FROM_HERE, hr);
@@ -681,10 +762,9 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   const CapabilityWin best_match_video_capability =
       GetBestMatchedCapability(params.requested_format, video_capabilities);
   ComPtr<IMFMediaType> source_video_media_type;
-  hr = GetAvailableDeviceMediaType(source.Get(),
-                                   best_match_video_capability.stream_index,
-                                   best_match_video_capability.media_type_index,
-                                   source_video_media_type.GetAddressOf());
+  hr = GetAvailableDeviceMediaType(
+      source.Get(), best_match_video_capability.stream_index,
+      best_match_video_capability.media_type_index, &source_video_media_type);
   if (FAILED(hr)) {
     OnError(
         VideoCaptureError::kWinMediaFoundationGetAvailableDeviceMediaTypeFailed,
@@ -702,8 +782,7 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   }
 
   ComPtr<IMFCaptureSink> sink;
-  hr = engine_->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW,
-                        sink.GetAddressOf());
+  hr = engine_->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW, &sink);
   if (FAILED(hr)) {
     OnError(VideoCaptureError::kWinMediaFoundationEngineGetSinkFailed,
             FROM_HERE, hr);
@@ -711,7 +790,7 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   }
 
   ComPtr<IMFCapturePreviewSink> preview_sink;
-  hr = sink->QueryInterface(IID_PPV_ARGS(preview_sink.GetAddressOf()));
+  hr = sink->QueryInterface(IID_PPV_ARGS(&preview_sink));
   if (FAILED(hr)) {
     OnError(VideoCaptureError::
                 kWinMediaFoundationSinkQueryCapturePreviewInterfaceFailed,
@@ -727,7 +806,7 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   }
 
   ComPtr<IMFMediaType> sink_video_media_type;
-  hr = MFCreateMediaType(sink_video_media_type.GetAddressOf());
+  hr = MFCreateMediaType(&sink_video_media_type);
   if (FAILED(hr)) {
     OnError(
         VideoCaptureError::kWinMediaFoundationCreateSinkVideoMediaTypeFailed,
@@ -808,17 +887,16 @@ void VideoCaptureDeviceMFWin::TakePhoto(TakePhotoCallback callback) {
   }
 
   ComPtr<IMFCaptureSource> source;
-  HRESULT hr = engine_->GetSource(source.GetAddressOf());
+  HRESULT hr = engine_->GetSource(&source);
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
   }
 
   ComPtr<IMFMediaType> source_media_type;
-  hr = GetAvailableDeviceMediaType(source.Get(),
-                                   selected_photo_capability_->stream_index,
-                                   selected_photo_capability_->media_type_index,
-                                   source_media_type.GetAddressOf());
+  hr = GetAvailableDeviceMediaType(
+      source.Get(), selected_photo_capability_->stream_index,
+      selected_photo_capability_->media_type_index, &source_media_type);
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
@@ -832,7 +910,7 @@ void VideoCaptureDeviceMFWin::TakePhoto(TakePhotoCallback callback) {
   }
 
   ComPtr<IMFMediaType> sink_media_type;
-  hr = MFCreateMediaType(sink_media_type.GetAddressOf());
+  hr = MFCreateMediaType(&sink_media_type);
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
@@ -855,14 +933,14 @@ void VideoCaptureDeviceMFWin::TakePhoto(TakePhotoCallback callback) {
   }
 
   ComPtr<IMFCaptureSink> sink;
-  hr = engine_->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PHOTO, sink.GetAddressOf());
+  hr = engine_->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PHOTO, &sink);
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
   }
 
   ComPtr<IMFCapturePhotoSink> photo_sink;
-  hr = sink->QueryInterface(IID_PPV_ARGS(photo_sink.GetAddressOf()));
+  hr = sink->QueryInterface(IID_PPV_ARGS(&photo_sink));
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
@@ -903,7 +981,7 @@ void VideoCaptureDeviceMFWin::GetPhotoState(GetPhotoStateCallback callback) {
     return;
 
   ComPtr<IMFCaptureSource> source;
-  HRESULT hr = engine_->GetSource(source.GetAddressOf());
+  HRESULT hr = engine_->GetSource(&source);
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
@@ -913,7 +991,7 @@ void VideoCaptureDeviceMFWin::GetPhotoState(GetPhotoStateCallback callback) {
   hr = source->GetCurrentDeviceMediaType(
       selected_photo_capability_ ? selected_photo_capability_->stream_index
                                  : selected_video_capability_->stream_index,
-      current_media_type.GetAddressOf());
+      &current_media_type);
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
@@ -935,6 +1013,48 @@ void VideoCaptureDeviceMFWin::GetPhotoState(GetPhotoStateCallback callback) {
   photo_capabilities->width = mojom::Range::New(
       max_size.width(), min_size.width(), current_size.width(), 1);
 
+  if (camera_control_ && video_control_) {
+    photo_capabilities->color_temperature = RetrieveControlRangeAndCurrent(
+        video_control_, VideoProcAmp_WhiteBalance,
+        &photo_capabilities->supported_white_balance_modes,
+        &photo_capabilities->current_white_balance_mode);
+
+    photo_capabilities->exposure_time = RetrieveControlRangeAndCurrent(
+        camera_control_, CameraControl_Exposure,
+        &photo_capabilities->supported_exposure_modes,
+        &photo_capabilities->current_exposure_mode,
+        PlatformExposureTimeToCaptureValue, PlatformExposureTimeToCaptureStep);
+
+    photo_capabilities->focus_distance = RetrieveControlRangeAndCurrent(
+        camera_control_, CameraControl_Focus,
+        &photo_capabilities->supported_focus_modes,
+        &photo_capabilities->current_focus_mode);
+
+    photo_capabilities->brightness =
+        RetrieveControlRangeAndCurrent(video_control_, VideoProcAmp_Brightness);
+    photo_capabilities->contrast =
+        RetrieveControlRangeAndCurrent(video_control_, VideoProcAmp_Contrast);
+    photo_capabilities->exposure_compensation =
+        RetrieveControlRangeAndCurrent(video_control_, VideoProcAmp_Gain);
+    // There is no ISO control property in IAMCameraControl or IAMVideoProcAmp
+    // interfaces nor any other control property with direct mapping to ISO.
+    photo_capabilities->iso = mojom::Range::New();
+    photo_capabilities->red_eye_reduction = mojom::RedEyeReduction::NEVER;
+    photo_capabilities->saturation =
+        RetrieveControlRangeAndCurrent(video_control_, VideoProcAmp_Saturation);
+    photo_capabilities->sharpness =
+        RetrieveControlRangeAndCurrent(video_control_, VideoProcAmp_Sharpness);
+    photo_capabilities->torch = false;
+    photo_capabilities->pan = RetrieveControlRangeAndCurrent(
+        camera_control_, CameraControl_Pan, nullptr, nullptr,
+        PlatformAngleToCaptureValue, PlatformAngleToCaptureStep);
+    photo_capabilities->tilt = RetrieveControlRangeAndCurrent(
+        camera_control_, CameraControl_Tilt, nullptr, nullptr,
+        PlatformAngleToCaptureValue, PlatformAngleToCaptureStep);
+    photo_capabilities->zoom =
+        RetrieveControlRangeAndCurrent(camera_control_, CameraControl_Zoom);
+  }
+
   std::move(callback).Run(std::move(photo_capabilities));
 }
 
@@ -948,7 +1068,7 @@ void VideoCaptureDeviceMFWin::SetPhotoOptions(
 
   HRESULT hr = S_OK;
   ComPtr<IMFCaptureSource> source;
-  hr = engine_->GetSource(source.GetAddressOf());
+  hr = engine_->GetSource(&source);
 
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
@@ -964,8 +1084,7 @@ void VideoCaptureDeviceMFWin::SetPhotoOptions(
 
     ComPtr<IMFMediaType> current_source_media_type;
     hr = source->GetCurrentDeviceMediaType(
-        selected_photo_capability_->stream_index,
-        current_source_media_type.GetAddressOf());
+        selected_photo_capability_->stream_index, &current_source_media_type);
 
     if (FAILED(hr)) {
       LogError(FROM_HERE, hr);
@@ -982,6 +1101,131 @@ void VideoCaptureDeviceMFWin::SetPhotoOptions(
     const CapabilityWin best_match = GetBestMatchedPhotoCapability(
         current_source_media_type, requested_size, photo_capabilities_);
     selected_photo_capability_.reset(new CapabilityWin(best_match));
+  }
+
+  if (camera_control_ && video_control_) {
+    if (settings->has_white_balance_mode) {
+      if (settings->white_balance_mode == mojom::MeteringMode::CONTINUOUS) {
+        hr = video_control_->Set(VideoProcAmp_WhiteBalance, 0L,
+                                 VideoProcAmp_Flags_Auto);
+        DLOG_IF_FAILED_WITH_HRESULT("Auto white balance config failed", hr);
+        if (FAILED(hr))
+          return;
+        white_balance_mode_manual_ = false;
+      } else {
+        white_balance_mode_manual_ = true;
+      }
+    }
+    if (white_balance_mode_manual_ && settings->has_color_temperature) {
+      hr = video_control_->Set(VideoProcAmp_WhiteBalance,
+                               settings->color_temperature,
+                               VideoProcAmp_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Color temperature config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+
+    if (settings->has_exposure_mode) {
+      if (settings->exposure_mode == mojom::MeteringMode::CONTINUOUS) {
+        hr = camera_control_->Set(CameraControl_Exposure, 0L,
+                                  CameraControl_Flags_Auto);
+        DLOG_IF_FAILED_WITH_HRESULT("Auto exposure config failed", hr);
+        if (FAILED(hr))
+          return;
+        exposure_mode_manual_ = false;
+      } else {
+        exposure_mode_manual_ = true;
+      }
+    }
+    if (exposure_mode_manual_ && settings->has_exposure_time) {
+      hr = camera_control_->Set(
+          CameraControl_Exposure,
+          CaptureExposureTimeToPlatformValue(settings->exposure_time),
+          CameraControl_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Exposure Time config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+
+    if (settings->has_focus_mode) {
+      if (settings->focus_mode == mojom::MeteringMode::CONTINUOUS) {
+        hr = camera_control_->Set(CameraControl_Focus, 0L,
+                                  CameraControl_Flags_Auto);
+        DLOG_IF_FAILED_WITH_HRESULT("Auto focus config failed", hr);
+        if (FAILED(hr))
+          return;
+        focus_mode_manual_ = false;
+      } else {
+        focus_mode_manual_ = true;
+      }
+    }
+    if (focus_mode_manual_ && settings->has_focus_distance) {
+      hr = camera_control_->Set(CameraControl_Focus, settings->focus_distance,
+                                CameraControl_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Focus Distance config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+
+    if (settings->has_brightness) {
+      hr = video_control_->Set(VideoProcAmp_Brightness, settings->brightness,
+                               VideoProcAmp_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Brightness config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+    if (settings->has_contrast) {
+      hr = video_control_->Set(VideoProcAmp_Contrast, settings->contrast,
+                               VideoProcAmp_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Contrast config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+    if (settings->has_exposure_compensation) {
+      hr = video_control_->Set(VideoProcAmp_Gain,
+                               settings->exposure_compensation,
+                               VideoProcAmp_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Exposure Compensation config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+    if (settings->has_saturation) {
+      hr = video_control_->Set(VideoProcAmp_Saturation, settings->saturation,
+                               VideoProcAmp_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Saturation config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+    if (settings->has_sharpness) {
+      hr = video_control_->Set(VideoProcAmp_Sharpness, settings->sharpness,
+                               VideoProcAmp_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Sharpness config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+    if (settings->has_pan) {
+      hr = camera_control_->Set(CameraControl_Pan,
+                                CaptureAngleToPlatformValue(settings->pan),
+                                CameraControl_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Pan config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+    if (settings->has_tilt) {
+      hr = camera_control_->Set(CameraControl_Tilt,
+                                CaptureAngleToPlatformValue(settings->tilt),
+                                CameraControl_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Tilt config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+    if (settings->has_zoom) {
+      hr = camera_control_->Set(CameraControl_Zoom, settings->zoom,
+                                CameraControl_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Zoom config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
   }
 
   std::move(callback).Run(true);

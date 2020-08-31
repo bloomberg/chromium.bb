@@ -22,7 +22,7 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/favicon",
+    "//ios/chrome/common/ui/favicon",
     "//ios/showcase/common",
     "//ui/base",
   ]
@@ -37,9 +37,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "sc_content_suggestions_egtest.mm",
-  ]
+  sources = [ "sc_content_suggestions_egtest.mm" ]
   deps = [
     "//base",
     "//components/strings",
@@ -56,9 +54,7 @@ source_set("eg2_tests") {
 source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
-  sources = [
-    "sc_content_suggestions_egtest.mm",
-  ]
+  sources = [ "sc_content_suggestions_egtest.mm" ]
   deps = [
     ":content_suggestions",
     "//components/strings",
@@ -67,7 +63,6 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui",
     "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/test/earl_grey:test_support",
     "//ios/showcase/test",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",

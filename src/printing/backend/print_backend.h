@@ -11,6 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 #include "printing/printing_export.h"
 #include "ui/gfx/geometry/size.h"
@@ -93,10 +94,13 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   bool collate_capable = false;
   bool collate_default = false;
 
-  bool copies_capable = false;
+  // If |copies_max| > 1, copies are supported.
+  // If |copies_max| = 1, copies are not supported.
+  // |copies_max| should never be < 1.
+  int32_t copies_max = 1;
 
-  std::vector<DuplexMode> duplex_modes;
-  DuplexMode duplex_default = UNKNOWN_DUPLEX_MODE;
+  std::vector<mojom::DuplexMode> duplex_modes;
+  mojom::DuplexMode duplex_default = mojom::DuplexMode::kUnknownDuplexMode;
 
   bool color_changeable = false;
   bool color_default = false;
@@ -110,6 +114,7 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   };
   using Papers = std::vector<Paper>;
   Papers papers;
+  Papers user_defined_papers;
   Paper default_paper;
 
   std::vector<gfx::Size> dpis;
@@ -163,12 +168,10 @@ class PRINTING_EXPORT PrintBackend
       const std::string& printer_name,
       PrinterSemanticCapsAndDefaults* printer_info) = 0;
 
-#if !defined(OS_CHROMEOS)
   // Gets the capabilities and defaults for a specific printer.
   virtual bool GetPrinterCapsAndDefaults(
       const std::string& printer_name,
       PrinterCapsAndDefaults* printer_info) = 0;
-#endif  // !defined(OS_CHROMEOS)
 
   // Gets the information about driver for a specific printer.
   virtual std::string GetPrinterDriverInfo(const std::string& printer_name) = 0;
@@ -182,6 +185,15 @@ class PRINTING_EXPORT PrintBackend
       const base::DictionaryValue* print_backend_settings,
       const std::string& locale);
 
+#if defined(USE_CUPS)
+  // TODO(crbug.com/1062136): Remove this static function when Cloud Print is
+  // supposed to stop working. Follow up after Jan 1, 2021.
+  // Similar to CreateInstance(), but ensures that the CUPS PPD backend is used
+  // instead of the CUPS IPP backend.
+  static scoped_refptr<PrintBackend> CreateInstanceForCloudPrint(
+      const base::DictionaryValue* print_backend_settings);
+#endif  // defined(USE_CUPS)
+
   // Test method to override the print backend for testing.  Caller should
   // retain ownership.
   static void SetPrintBackendForTesting(PrintBackend* print_backend);
@@ -194,7 +206,8 @@ class PRINTING_EXPORT PrintBackend
   // Provide the actual backend for CreateInstance().
   static scoped_refptr<PrintBackend> CreateInstanceImpl(
       const base::DictionaryValue* print_backend_settings,
-      const std::string& locale);
+      const std::string& locale,
+      bool for_cloud_print);
 
   const std::string& locale() const { return locale_; }
 

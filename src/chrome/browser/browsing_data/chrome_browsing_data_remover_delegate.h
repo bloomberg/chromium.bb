@@ -19,7 +19,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/offline_pages/core/offline_page_model.h"
-#include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/browsing_data_remover_delegate.h"
 #include "extensions/buildflags/buildflags.h"
@@ -93,7 +92,9 @@ class ChromeBrowsingDataRemoverDelegate
         DATA_TYPE_WEB_APP_DATA |
 #endif
         DATA_TYPE_SITE_USAGE_DATA | DATA_TYPE_DURABLE_PERMISSION |
-        DATA_TYPE_EXTERNAL_PROTOCOL_DATA | DATA_TYPE_ISOLATED_ORIGINS,
+        DATA_TYPE_EXTERNAL_PROTOCOL_DATA | DATA_TYPE_ISOLATED_ORIGINS |
+        content::BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS |
+        content::BrowsingDataRemover::DATA_TYPE_CONVERSIONS,
 
     // Datatypes protected by Important Sites.
     IMPORTANT_SITES_DATA_TYPES =
@@ -229,7 +230,9 @@ class ChromeBrowsingDataRemoverDelegate
     kLeakedCredentials = 32,  // deprecated
     kFieldInfo = 33,
     kCompromisedCredentials = 34,
-    kMaxValue = kCompromisedCredentials,
+    kUserDataSnapshot = 35,
+    kMediaFeeds = 36,
+    kMaxValue = kMediaFeeds,
   };
 
   // Called by CreateTaskCompletionClosure().
@@ -253,11 +256,6 @@ class ChromeBrowsingDataRemoverDelegate
   // Records unfinished tasks from |pending_sub_tasks_| after a delay.
   void RecordUnfinishedSubTasks();
 
-  // Callback for when TemplateURLService has finished loading. Clears the data,
-  // clears the respective waiting flag, and invokes NotifyIfDone.
-  void OnKeywordsLoaded(base::RepeatingCallback<bool(const GURL&)> url_filter,
-                        base::OnceClosure done);
-
   // A helper method that checks if time period is for "all time".
   bool IsForAllTime() const;
 
@@ -275,9 +273,6 @@ class ChromeBrowsingDataRemoverDelegate
       base::RepeatingCallback<bool(const std::string&)> plugin_filter,
       base::OnceClosure done,
       const std::vector<std::string>& sites);
-
-  // Indicates that LSO cookies for one website have been deleted.
-  void OnFlashDataDeleted();
 
   // PepperFlashSettingsManager::Client implementation.
   void OnDeauthorizeFlashContentLicensesCompleted(uint32_t request_id,
@@ -321,8 +316,6 @@ class ChromeBrowsingDataRemoverDelegate
 
   // Used if we need to clear history.
   base::CancelableTaskTracker history_task_tracker_;
-
-  std::unique_ptr<TemplateURLService::Subscription> template_url_sub_;
 
 #if defined(OS_ANDROID)
   // WebappRegistry makes calls across the JNI. In unit tests, the Java side is

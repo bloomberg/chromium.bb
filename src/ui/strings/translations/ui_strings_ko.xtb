@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">최대화</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, 설치된 앱</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> 공유할 수 없음</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> 항목과 <ph name="SECOND_ITEM_TITLE" /> 항목의 위치를 서로 바꿈</translation>
 <translation id="1498028757988366001">이전에 검색한 내용입니다. 기록에서 '<ph name="QUERY" />'을(를) 삭제하면 계정과 연결된 모든 기기에서 완전히 삭제됩니다.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1분 }other{#분 }}</translation>
 <translation id="1643823602425662293">알림</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Insert</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">전체 선택(&amp;A)</translation>
-<translation id="1938451708255335766">창 표시 밀도를 조정하려면 앱을 다시 시작하세요.</translation>
 <translation id="2006524834898217237">기기가 인터넷에 연결되어 있는지 확인하세요.</translation>
 <translation id="208586643495776849">다시 시도해 주세요.</translation>
 <translation id="2090963878406559571"><ph name="ORIGIN" />에서 Android 휴대전화로 번호를 전송하려면 설정에서 두 기기 모두의 <ph name="TROUBLESHOOT_LINK" />하세요.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">아래 화살표</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1일}other{#일}}</translation>
 <translation id="3295886253693811851">사용 가능한 전화 서비스</translation>
+<translation id="3306688585798492231">내장 디스플레이</translation>
 <translation id="335581015389089642">음성</translation>
 <translation id="3389286852084373014">텍스트가 너무 큼</translation>
-<translation id="3479552764303398839">나중에</translation>
 <translation id="348799646910989694">실행기 자동 숨김</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> 고정됨</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1일 남음}other{#일 남음}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">휴대기기에서 <ph name="TITLE" /> 계속 읽기</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="3889424535448813030">오른쪽 화살표</translation>
-<translation id="3892641579809465218">내부 디스플레이</translation>
 <translation id="3897092660631435901">메뉴</translation>
 <translation id="3909791450649380159">잘라내기(&amp;T)</translation>
 <translation id="3990502903496589789">오른쪽 모서리</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1분}other{#분}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{오늘 사용}=1{1일 전에 사용}other{#일 전에 사용}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1일 }other{#일 }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1년 후}other{#년 후}}</translation>
-<translation id="5895138241574237353">다시 시작</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1초 남음}other{#초 남음}}</translation>
 <translation id="5941711191222866238">최소화</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1시간}other{#시간}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">오른쪽에서 왼쪽으로</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">사용할 만한 앱</translation>
+<translation id="7170202025028120564">다음번에 애플리케이션이 다시 시작되면 디스플레이 설정이 적용됩니다.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1분 남음}other{#분 남음}}</translation>
 <translation id="7319740667687257810">런처, 부분 뷰</translation>

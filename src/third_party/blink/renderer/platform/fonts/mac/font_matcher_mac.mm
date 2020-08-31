@@ -46,7 +46,7 @@
 
 namespace {
 
-static CGFloat toYosemiteFontWeight(blink::FontSelectionValue font_weight) {
+static CGFloat toFontWeight(blink::FontSelectionValue font_weight) {
   static uint64_t ns_font_weights[] = {
       0xbfe99999a0000000,  // NSFontWeightUltraLight
       0xbfe3333340000000,  // NSFontWeightThin
@@ -181,8 +181,7 @@ NSFont* MatchNSFontFamily(const AtomicString& desired_family_string,
 // On OSX 10.10+, the default system font has more weights.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability"
-    font = [NSFont systemFontOfSize:size
-                             weight:toYosemiteFontWeight(desired_weight)];
+    font = [NSFont systemFontOfSize:size weight:toFontWeight(desired_weight)];
 #pragma clang diagnostic pop
 
     if (desired_traits & IMPORTANT_FONT_TRAITS)

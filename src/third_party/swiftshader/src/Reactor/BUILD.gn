@@ -18,7 +18,7 @@ declare_args() {
   # Subzero produces smaller binaries, but doesn't support ARM64, MIPS64, and
   # PPC64.
   use_swiftshader_with_subzero =
-      target_cpu != "arm64" && target_cpu != "mips64el" && target_cpu != "ppc64"
+      current_cpu != "arm64" && current_cpu != "mips64el" && current_cpu != "ppc64"
   supports_llvm = is_linux || is_fuchsia || is_win || is_android || is_mac
 }
 
@@ -38,7 +38,7 @@ config("swiftshader_reactor_private_config") {
       "__STDC_LIMIT_MACROS",
     ]
 
-    if (target_cpu == "x86" || target_cpu == "x64") {
+    if (current_cpu == "x86" || current_cpu == "x64") {
       cflags += [ "-msse2" ]
     }
   }
@@ -71,22 +71,22 @@ if (use_swiftshader_with_subzero) {
       defines += [ "SUBZERO_USE_MICROSOFT_ABI" ]
     }
 
-    if (target_cpu == "x64") {
+    if (current_cpu == "x64") {
       defines += [
         "SZTARGET=X8664",
         "SUBZERO_TARGET=X8664",
       ]
-    } else if (target_cpu == "x86") {
+    } else if (current_cpu == "x86") {
       defines += [
         "SZTARGET=X8632",
         "SUBZERO_TARGET=X8632",
       ]
-    } else if (target_cpu == "mipsel") {
+    } else if (current_cpu == "mipsel") {
       defines += [
         "SZTARGET=MIPS32",
         "SUBZERO_TARGET=MIPS32",
       ]
-    } else if (target_cpu == "arm") {
+    } else if (current_cpu == "arm") {
       defines += [
         "SZTARGET=ARM32",
         "SUBZERO_TARGET=ARM32",
@@ -152,6 +152,7 @@ if (use_swiftshader_with_subzero) {
         "-Wno-header-hygiene",
         "-Wno-enum-compare-switch",
         "-Wno-unused-lambda-capture",
+        "-Wno-unused-function",
       ]
     }
 
@@ -240,7 +241,6 @@ if (use_swiftshader_with_subzero) {
       "$subzero_llvm_dir/lib/Support/ErrorHandling.cpp",
       "$subzero_llvm_dir/lib/Support/FoldingSet.cpp",
       "$subzero_llvm_dir/lib/Support/Hashing.cpp",
-      "$subzero_llvm_dir/lib/Support/Host.cpp",
       "$subzero_llvm_dir/lib/Support/ManagedStatic.cpp",
       "$subzero_llvm_dir/lib/Support/MemoryBuffer.cpp",
       "$subzero_llvm_dir/lib/Support/Mutex.cpp",
@@ -256,10 +256,8 @@ if (use_swiftshader_with_subzero) {
       "$subzero_llvm_dir/lib/Support/StringMap.cpp",
       "$subzero_llvm_dir/lib/Support/StringRef.cpp",
       "$subzero_llvm_dir/lib/Support/StringSaver.cpp",
-      "$subzero_llvm_dir/lib/Support/TargetParser.cpp",
       "$subzero_llvm_dir/lib/Support/Threading.cpp",
       "$subzero_llvm_dir/lib/Support/Timer.cpp",
-      "$subzero_llvm_dir/lib/Support/Triple.cpp",
       "$subzero_llvm_dir/lib/Support/Twine.cpp",
       "$subzero_llvm_dir/lib/Support/circular_raw_ostream.cpp",
       "$subzero_llvm_dir/lib/Support/raw_os_ostream.cpp",
@@ -271,23 +269,23 @@ if (use_swiftshader_with_subzero) {
       "$subzero_llvm_dir/lib/Support/regstrlcpy.c",
     ]
 
-    if (target_cpu == "x64") {
+    if (current_cpu == "x64") {
       sources += [
         "$subzero_dir/src/IceInstX8664.cpp",
         "$subzero_dir/src/IceTargetLoweringX8664.cpp",
       ]
-    } else if (target_cpu == "x86") {
+    } else if (current_cpu == "x86") {
       sources += [
         "$subzero_dir/src/IceInstX8632.cpp",
         "$subzero_dir/src/IceTargetLoweringX8632.cpp",
       ]
-    } else if (target_cpu == "mipsel") {
+    } else if (current_cpu == "mipsel") {
       sources += [
         "$subzero_dir/src/IceAssemblerMIPS32.cpp",
         "$subzero_dir/src/IceInstMIPS32.cpp",
         "$subzero_dir/src/IceTargetLoweringMIPS32.cpp",
       ]
-    } else if (target_cpu == "arm") {
+    } else if (current_cpu == "arm") {
       sources += [
         "$subzero_dir/src/IceAssemblerARM32.cpp",
         "$subzero_dir/src/IceInstARM32.cpp",
@@ -302,6 +300,7 @@ if (use_swiftshader_with_subzero) {
   }
   swiftshader_source_set("swiftshader_subzero_reactor") {
     deps = [
+      "../../third_party/marl:Marl",
       ":swiftshader_reactor_base",
       ":swiftshader_subzero",
     ]
@@ -320,35 +319,36 @@ if (use_swiftshader_with_subzero) {
 
 if (supports_llvm) {
   swiftshader_source_set("swiftshader_llvm_reactor") {
-    llvm7_dir = "../../third_party/llvm-7.0"
+    llvm_dir = "../../third_party/llvm-10.0"
 
     deps = [
       ":swiftshader_reactor_base",
-      "$llvm7_dir:swiftshader_llvm",
+      "$llvm_dir:swiftshader_llvm",
     ]
 
     sources = [
       "CPUID.cpp",
+      "LLVMJIT.cpp",
       "LLVMReactor.cpp",
     ]
 
     configs = [ ":swiftshader_reactor_private_config" ]
 
     include_dirs = [
-      "$llvm7_dir/llvm/include/",
-      "$llvm7_dir/configs/common/include/",
+      "$llvm_dir/llvm/include/",
+      "$llvm_dir/configs/common/include/",
     ]
 
     if (is_linux) {
-      include_dirs += [ "$llvm7_dir/configs/linux/include/" ]
+      include_dirs += [ "$llvm_dir/configs/linux/include/" ]
     } else if (is_fuchsia) {
-      include_dirs += [ "$llvm7_dir/configs/fuchsia/include/" ]
+      include_dirs += [ "$llvm_dir/configs/fuchsia/include/" ]
     } else if (is_win) {
-      include_dirs += [ "$llvm7_dir/configs/windows/include/" ]
+      include_dirs += [ "$llvm_dir/configs/windows/include/" ]
     } else if (is_android) {
-      include_dirs += [ "$llvm7_dir/configs/android/include/" ]
+      include_dirs += [ "$llvm_dir/configs/android/include/" ]
     } else if (is_mac) {
-      include_dirs += [ "$llvm7_dir/configs/darwin/include/" ]
+      include_dirs += [ "$llvm_dir/configs/darwin/include/" ]
     } else {
       assert(false, "llvm-7.0 not configured for target platform")
     }

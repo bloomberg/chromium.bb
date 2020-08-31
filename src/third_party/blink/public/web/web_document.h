@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOCUMENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOCUMENT_H_
 
+#include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -87,10 +88,10 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebURL BaseURL() const;
   BLINK_EXPORT ukm::SourceId GetUkmSourceId() const;
 
-  // The firstPartyForCookies is used to compute whether this document
+  // The SiteForCookies is used to compute whether this document
   // appears in a "third-party" context for the purpose of third-party
   // cookie blocking.
-  BLINK_EXPORT WebURL SiteForCookies() const;
+  BLINK_EXPORT net::SiteForCookies SiteForCookies() const;
 
   BLINK_EXPORT WebSecurityOrigin TopFrameOrigin() const;
   BLINK_EXPORT WebElement DocumentElement() const;
@@ -99,7 +100,7 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebString Title() const;
   BLINK_EXPORT WebString ContentAsTextForTesting() const;
   BLINK_EXPORT WebElementCollection All();
-  BLINK_EXPORT void Forms(WebVector<WebFormElement>&) const;
+  BLINK_EXPORT WebVector<WebFormElement> Forms() const;
   BLINK_EXPORT WebURL CompleteURL(const WebString&) const;
   BLINK_EXPORT WebElement GetElementById(const WebString&) const;
   BLINK_EXPORT WebElement FocusedElement() const;
@@ -129,6 +130,9 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebDistillabilityFeatures DistillabilityFeatures();
 
   BLINK_EXPORT void SetShowBeforeUnloadDialog(bool show_dialog);
+
+  // See cc/paint/element_id.h for the definition of these id.
+  BLINK_EXPORT uint64_t GetVisualViewportScrollingElementIdForTesting();
 
 #if INSIDE_BLINK
   BLINK_EXPORT WebDocument(Document*);

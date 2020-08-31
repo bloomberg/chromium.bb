@@ -39,7 +39,7 @@ bool IndexedDBActiveBlobRegistry::MarkBlobInfoDeletedAndCheckIfReferenced(
     int64_t database_id,
     int64_t blob_number) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(blob_number, DatabaseMetaDataKey::kAllBlobsKey);
+  DCHECK_NE(blob_number, DatabaseMetaDataKey::kAllBlobsNumber);
   DCHECK(KeyPrefix::IsValidDatabaseId(database_id));
   const auto& db_pair = blob_reference_tracker_.find(database_id);
   if (db_pair == blob_reference_tracker_.end())
@@ -87,7 +87,7 @@ void IndexedDBActiveBlobRegistry::MarkBlobActive(int64_t database_id,
   DCHECK(report_unused_blob_);
 
   DCHECK(KeyPrefix::IsValidDatabaseId(database_id));
-  DCHECK(DatabaseMetaDataKey::IsValidBlobKey(blob_number));
+  DCHECK(DatabaseMetaDataKey::IsValidBlobNumber(blob_number));
   DCHECK(!base::Contains(deleted_dbs_, database_id));
   bool outstanding_blobs_in_backing_store = !blob_reference_tracker_.empty();
   SingleDBMap& blobs_in_db = blob_reference_tracker_[database_id];
@@ -110,7 +110,7 @@ void IndexedDBActiveBlobRegistry::MarkBlobInactive(int64_t database_id,
   DCHECK(report_unused_blob_);
 
   DCHECK(KeyPrefix::IsValidDatabaseId(database_id));
-  DCHECK(DatabaseMetaDataKey::IsValidBlobKey(blob_number));
+  DCHECK(DatabaseMetaDataKey::IsValidBlobNumber(blob_number));
   const auto& db_pair = blob_reference_tracker_.find(database_id);
   if (db_pair == blob_reference_tracker_.end()) {
     NOTREACHED();
@@ -134,7 +134,7 @@ void IndexedDBActiveBlobRegistry::MarkBlobInactive(int64_t database_id,
     blob_reference_tracker_.erase(db_pair);
     if (db_marked_for_deletion) {
       delete_blob_in_backend = true;
-      blob_number = DatabaseMetaDataKey::kAllBlobsKey;
+      blob_number = DatabaseMetaDataKey::kAllBlobsNumber;
       deleted_dbs_.erase(deleted_database_it);
     }
   }

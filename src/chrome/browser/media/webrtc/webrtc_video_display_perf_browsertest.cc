@@ -18,6 +18,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -113,7 +114,7 @@ void AssociateEvents(trace_analyzer::TraceAnalyzer* analyzer,
 }
 
 content::WebContents* OpenWebrtcInternalsTab(Browser* browser) {
-  chrome::AddTabAt(browser, GURL(), -1, true);
+  chrome::AddTabAt(browser, GURL(url::kAboutBlankURL), -1, true);
   ui_test_utils::NavigateToURL(browser, GURL("chrome://webrtc-internals"));
   return browser->tab_strip_model()->GetActiveWebContents();
 }
@@ -177,22 +178,14 @@ std::vector<double> ParseGoogMaxDecodeFromWebrtcInternalsTab(
 // lifetime of a single video frame by synchronizing on the timestamps values
 // attached to trace events. Then, it calculates the duration and related stats.
 
-// TODO(https://crbug.com/993020): Fix flakes on Windows bots.
-#if defined(OS_WIN)
-#define MAYBE_WebRtcVideoDisplayPerfBrowserTest \
-  DISABLED_WebRtcVideoDisplayPerfBrowserTest
-#else
-#define MAYBE_WebRtcVideoDisplayPerfBrowserTest \
-  WebRtcVideoDisplayPerfBrowserTest
-#endif
-class MAYBE_WebRtcVideoDisplayPerfBrowserTest
+class WebRtcVideoDisplayPerfBrowserTest
     : public WebRtcTestBase,
       public testing::WithParamInterface<
           std::tuple<gfx::Size /* resolution */,
                      int /* fps */,
                      bool /* disable_render_smoothness_algorithm */>> {
  public:
-  MAYBE_WebRtcVideoDisplayPerfBrowserTest() {
+  WebRtcVideoDisplayPerfBrowserTest() {
     const auto& params = GetParam();
     const gfx::Size& resolution = std::get<0>(params);
     test_config_ = {resolution.width(), resolution.height(),
@@ -205,6 +198,7 @@ class MAYBE_WebRtcVideoDisplayPerfBrowserTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
+    command_line->RemoveSwitch(switches::kUseFakeDeviceForMediaStream);
     command_line->AppendSwitchASCII(
         switches::kUseFakeDeviceForMediaStream,
         base::StringPrintf("fps=%d", test_config_.fps));
@@ -460,20 +454,20 @@ class MAYBE_WebRtcVideoDisplayPerfBrowserTest
 };
 
 INSTANTIATE_TEST_SUITE_P(WebRtcVideoDisplayPerfBrowserTests,
-                         MAYBE_WebRtcVideoDisplayPerfBrowserTest,
+                         WebRtcVideoDisplayPerfBrowserTest,
                          testing::Combine(testing::Values(gfx::Size(1280, 720),
                                                           gfx::Size(1920,
                                                                     1080)),
                                           testing::Values(30, 60),
                                           testing::Bool()));
 
-IN_PROC_BROWSER_TEST_P(MAYBE_WebRtcVideoDisplayPerfBrowserTest,
+IN_PROC_BROWSER_TEST_P(WebRtcVideoDisplayPerfBrowserTest,
                        MANUAL_TestVideoDisplayPerfVP9) {
   TestVideoDisplayPerf("VP9");
 }
 
 #if BUILDFLAG(RTC_USE_H264)
-IN_PROC_BROWSER_TEST_P(MAYBE_WebRtcVideoDisplayPerfBrowserTest,
+IN_PROC_BROWSER_TEST_P(WebRtcVideoDisplayPerfBrowserTest,
                        MANUAL_TestVideoDisplayPerfH264) {
   if (!base::FeatureList::IsEnabled(
           blink::features::kWebRtcH264WithOpenH264FFmpeg)) {

@@ -43,16 +43,16 @@ protected:
 
     /** Reset to an invalid key. */
     void reset() {
-        GR_STATIC_ASSERT((uint16_t)kInvalidDomain == kInvalidDomain);
         fKey.reset(kMetaDataCnt);
         fKey[kHash_MetaDataIdx] = 0;
         fKey[kDomainAndSize_MetaDataIdx] = kInvalidDomain;
     }
 
     bool operator==(const GrResourceKey& that) const {
-        return this->hash() == that.hash() && 0 == memcmp(&fKey[kHash_MetaDataIdx + 1],
-                                                          &that.fKey[kHash_MetaDataIdx + 1],
-                                                          this->internalSize() - sizeof(uint32_t));
+        // Both keys should be sized to at least contain the meta data. The metadata contains each
+        // key's length. So the second memcmp should only run if the keys have the same length.
+        return 0 == memcmp(fKey.get(), that.fKey.get(), kMetaDataCnt*sizeof(uint32_t)) &&
+               0 == memcmp(&fKey[kMetaDataCnt], &that.fKey[kMetaDataCnt], this->dataSize());
     }
 
     GrResourceKey& operator=(const GrResourceKey& that) {
@@ -118,7 +118,6 @@ protected:
             if (nullptr == fKey) {
                 return;
             }
-            GR_STATIC_ASSERT(0 == kHash_MetaDataIdx);
             uint32_t* hash = &fKey->fKey[kHash_MetaDataIdx];
             *hash = GrResourceKeyHash(hash + 1, fKey->internalSize() - sizeof(uint32_t));
             fKey->validate();

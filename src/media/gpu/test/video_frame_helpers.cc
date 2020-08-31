@@ -14,15 +14,15 @@
 #include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"
 #include "media/base/video_frame.h"
-#include "media/gpu/buildflags.h"
 #include "media/gpu/test/image.h"
+#include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-#include "media/gpu/linux/platform_video_frame_utils.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/video_frame_mapper.h"
 #include "media/gpu/video_frame_mapper_factory.h"
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
@@ -164,8 +164,8 @@ bool CopyVideoFrame(const VideoFrame* src_frame,
                         false);
   for (size_t i = 0; i < num_planes; ++i) {
     // |width| in libyuv::CopyPlane() is in bytes, not pixels.
-    gfx::Size plane_size = VideoFrame::PlaneSize(dst_frame->format(), i,
-                                                 dst_frame->natural_size());
+    gfx::Size plane_size =
+        VideoFrame::PlaneSize(dst_frame->format(), i, dst_frame->coded_size());
     libyuv::CopyPlane(
         src_frame->data(i), src_frame->layout().planes()[i].stride,
         dst_frame->data(i), dst_frame->layout().planes()[i].stride,
@@ -318,14 +318,14 @@ scoped_refptr<VideoFrame> CreateGpuMemoryBufferVideoFrame(
 scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {
   DCHECK(image.IsLoaded());
   const auto format = image.PixelFormat();
-  const auto& visible_size = image.Size();
+  const auto& image_size = image.Size();
   // Loaded image data must be tight.
-  DCHECK_EQ(image.DataSize(), VideoFrame::AllocationSize(format, visible_size));
+  DCHECK_EQ(image.DataSize(), VideoFrame::AllocationSize(format, image_size));
 
   // Create planes for layout. We cannot use WrapExternalData() because it
   // calls GetDefaultLayout() and it supports only a few pixel formats.
   base::Optional<VideoFrameLayout> layout =
-      CreateVideoFrameLayout(format, visible_size);
+      CreateVideoFrameLayout(format, image_size);
   if (!layout) {
     LOG(ERROR) << "Failed to create VideoFrameLayout";
     return nullptr;
@@ -333,8 +333,8 @@ scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {
 
   scoped_refptr<const VideoFrame> video_frame =
       VideoFrame::WrapExternalDataWithLayout(
-          *layout, gfx::Rect(visible_size), visible_size, image.Data(),
-          image.DataSize(), base::TimeDelta());
+          *layout, image.VisibleRect(), image.VisibleRect().size(),
+          image.Data(), image.DataSize(), base::TimeDelta());
   if (!video_frame) {
     LOG(ERROR) << "Failed to create VideoFrame";
     return nullptr;
@@ -357,41 +357,6 @@ base::Optional<VideoFrameLayout> CreateVideoFrameLayout(VideoPixelFormat format,
     offset += planes[i].size;
   }
   return VideoFrameLayout::CreateWithPlanes(format, size, std::move(planes));
-}
-
-size_t CompareFramesWithErrorDiff(const VideoFrame& frame1,
-                                  const VideoFrame& frame2,
-                                  uint8_t tolerance) {
-  ASSERT_TRUE_OR_RETURN(frame1.format() == frame2.format(),
-                        std::numeric_limits<std::size_t>::max());
-  ASSERT_TRUE_OR_RETURN(frame1.visible_rect() == frame2.visible_rect(),
-                        std::numeric_limits<std::size_t>::max());
-  ASSERT_TRUE_OR_RETURN(frame1.visible_rect().origin() == gfx::Point(0, 0),
-                        std::numeric_limits<std::size_t>::max());
-  ASSERT_TRUE_OR_RETURN(frame1.IsMappable() && frame2.IsMappable(),
-                        std::numeric_limits<std::size_t>::max());
-  size_t diff_cnt = 0;
-
-  const VideoPixelFormat format = frame1.format();
-  const size_t num_planes = VideoFrame::NumPlanes(format);
-  const gfx::Size& visible_size = frame1.visible_rect().size();
-  for (size_t i = 0; i < num_planes; ++i) {
-    const uint8_t* data1 = frame1.data(i);
-    const int stride1 = frame1.stride(i);
-    const uint8_t* data2 = frame2.data(i);
-    const int stride2 = frame2.stride(i);
-    const size_t rows = VideoFrame::Rows(i, format, visible_size.height());
-    const int row_bytes = VideoFrame::RowBytes(i, format, visible_size.width());
-    for (size_t r = 0; r < rows; ++r) {
-      for (int c = 0; c < row_bytes; c++) {
-        uint8_t b1 = data1[(stride1 * r) + c];
-        uint8_t b2 = data2[(stride2 * r) + c];
-        uint8_t diff = std::max(b1, b2) - std::min(b1, b2);
-        diff_cnt += diff > tolerance;
-      }
-    }
-  }
-  return diff_cnt;
 }
 
 }  // namespace test

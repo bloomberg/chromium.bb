@@ -30,7 +30,6 @@
 
 #include "libavutil/attributes.h"
 #include "libavutil/imgutils.h"
-#include "libavutil/timer.h"
 
 #define BITSTREAM_READER_LE
 #include "avcodec.h"
@@ -476,7 +475,7 @@ static int ivi_dec_tile_data_size(GetBitContext *gb)
     if (get_bits1(gb)) {
         len = get_bits(gb, 8);
         if (len == 255)
-            len = get_bits_long(gb, 24);
+            len = get_bits(gb, 24);
     }
 
     /* align the bitstream reader on the byte boundary */
@@ -1124,8 +1123,6 @@ int ff_ivi_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
 
     ctx->switch_buffers(ctx);
 
-    //{ START_TIMER;
-
     if (ctx->is_nonnull_frame(ctx)) {
         ctx->buf_invalid[ctx->dst_buf] = 1;
         for (p = 0; p < 3; p++) {
@@ -1150,8 +1147,6 @@ int ff_ivi_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     }
     if (ctx->buf_invalid[ctx->dst_buf])
         return -1;
-
-    //STOP_TIMER("decode_planes"); }
 
     if (!ctx->is_nonnull_frame(ctx))
         return buf_size;
@@ -1193,7 +1188,7 @@ int ff_ivi_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         left = get_bits_count(&ctx->gb) & 0x18;
         skip_bits_long(&ctx->gb, 64 - left);
         if (get_bits_left(&ctx->gb) > 18 &&
-            show_bits_long(&ctx->gb, 21) == 0xBFFF8) { // syncheader + inter type
+            show_bits(&ctx->gb, 21) == 0xBFFF8) { // syncheader + inter type
             AVPacket pkt;
             pkt.data = avpkt->data + (get_bits_count(&ctx->gb) >> 3);
             pkt.size = get_bits_left(&ctx->gb) >> 3;

@@ -32,8 +32,8 @@ struct MockIdleTask : public IdleTask {
 
 class DefaultPlatformWithMockTime : public DefaultPlatform {
  public:
-  DefaultPlatformWithMockTime()
-      : DefaultPlatform(IdleTaskSupport::kEnabled, nullptr) {
+  explicit DefaultPlatformWithMockTime(int thread_pool_size = 0)
+      : DefaultPlatform(thread_pool_size, IdleTaskSupport::kEnabled, nullptr) {
     mock_time_ = 0.0;
     SetTimeFunctionForTesting([]() { return mock_time_; });
   }
@@ -64,6 +64,9 @@ class PlatformTest : public ::testing::Test {
   // if the tasks are expected to still exist.
   void CallOnForegroundThread(Task* task) {
     task_runner()->PostTask(std::unique_ptr<Task>(task));
+  }
+  void CallNonNestableOnForegroundThread(Task* task) {
+    task_runner()->PostNonNestableTask(std::unique_ptr<Task>(task));
   }
   void CallDelayedOnForegroundThread(Task* task, double delay_in_seconds) {
     task_runner()->PostDelayedTask(std::unique_ptr<Task>(task),
@@ -110,6 +113,37 @@ TEST_F(DefaultPlatformTest, PumpMessageLoopWithTaskRunner) {
   EXPECT_CALL(*task, Run());
   EXPECT_CALL(*task, Die());
   EXPECT_TRUE(PumpMessageLoop());
+  EXPECT_FALSE(PumpMessageLoop());
+}
+
+TEST_F(DefaultPlatformTest, PumpMessageLoopNested) {
+  EXPECT_FALSE(PumpMessageLoop());
+
+  StrictMock<MockTask>* nestable_task1 = new StrictMock<MockTask>;
+  StrictMock<MockTask>* non_nestable_task2 = new StrictMock<MockTask>;
+  StrictMock<MockTask>* nestable_task3 = new StrictMock<MockTask>;
+  StrictMock<MockTask>* non_nestable_task4 = new StrictMock<MockTask>;
+  CallOnForegroundThread(nestable_task1);
+  CallNonNestableOnForegroundThread(non_nestable_task2);
+  CallOnForegroundThread(nestable_task3);
+  CallNonNestableOnForegroundThread(non_nestable_task4);
+
+  // Nestable tasks are FIFO; non-nestable tasks are FIFO. A task being
+  // non-nestable may cause it to be executed later, but not earlier.
+  EXPECT_CALL(*nestable_task1, Run).WillOnce([this]() {
+    EXPECT_TRUE(PumpMessageLoop());
+  });
+  EXPECT_CALL(*nestable_task3, Run());
+  EXPECT_CALL(*nestable_task3, Die());
+  EXPECT_CALL(*nestable_task1, Die());
+  EXPECT_TRUE(PumpMessageLoop());
+  EXPECT_CALL(*non_nestable_task2, Run());
+  EXPECT_CALL(*non_nestable_task2, Die());
+  EXPECT_TRUE(PumpMessageLoop());
+  EXPECT_CALL(*non_nestable_task4, Run());
+  EXPECT_CALL(*non_nestable_task4, Die());
+  EXPECT_TRUE(PumpMessageLoop());
+
   EXPECT_FALSE(PumpMessageLoop());
 }
 
@@ -206,8 +240,7 @@ class TestBackgroundTask : public Task {
 }  // namespace
 
 TEST(CustomDefaultPlatformTest, RunBackgroundTask) {
-  DefaultPlatform platform;
-  platform.SetThreadPoolSize(1);
+  DefaultPlatform platform(1);
 
   base::Semaphore sem(0);
   bool task_executed = false;
@@ -222,12 +255,11 @@ TEST(CustomDefaultPlatformTest, RunBackgroundTask) {
 TEST(CustomDefaultPlatformTest, PostForegroundTaskAfterPlatformTermination) {
   std::shared_ptr<TaskRunner> foreground_taskrunner;
   {
-    DefaultPlatformWithMockTime platform;
+    DefaultPlatformWithMockTime platform(1);
 
     int dummy;
     Isolate* isolate = reinterpret_cast<Isolate*>(&dummy);
 
-    platform.SetThreadPoolSize(1);
     foreground_taskrunner = platform.GetForegroundTaskRunner(isolate);
   }
   // It should still be possible to post foreground tasks, even when the

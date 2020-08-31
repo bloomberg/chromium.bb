@@ -27,6 +27,7 @@
 #include "modules/audio_coding/include/audio_coding_module.h"
 #include "modules/audio_device/include/test_audio_device.h"
 #include "modules/audio_mixer/audio_mixer_impl.h"
+#include "modules/rtp_rtcp/source/rtp_packet.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/task_queue_for_test.h"
 #include "rtc_base/thread.h"
@@ -38,7 +39,6 @@
 #include "test/encoder_settings.h"
 #include "test/fake_encoder.h"
 #include "test/field_trial.h"
-#include "test/frame_generator.h"
 #include "test/frame_generator_capturer.h"
 #include "test/gtest.h"
 #include "test/null_transport.h"
@@ -96,21 +96,24 @@ class VideoRtcpAndSyncObserver : public test::RtpRtcpObserver,
   static const int kMinRunTimeMs = 30000;
 
  public:
-  explicit VideoRtcpAndSyncObserver(Clock* clock, const std::string& test_label)
+  explicit VideoRtcpAndSyncObserver(TaskQueueBase* task_queue,
+                                    Clock* clock,
+                                    const std::string& test_label)
       : test::RtpRtcpObserver(CallPerfTest::kLongTimeoutMs),
         clock_(clock),
         test_label_(test_label),
         creation_time_ms_(clock_->TimeInMilliseconds()),
-        first_time_in_sync_(-1),
-        receive_stream_(nullptr) {}
+        task_queue_(task_queue) {}
 
   void OnFrame(const VideoFrame& video_frame) override {
-    VideoReceiveStream::Stats stats;
-    {
-      rtc::CritScope lock(&crit_);
-      if (receive_stream_)
-        stats = receive_stream_->GetStats();
-    }
+    task_queue_->PostTask(ToQueuedTask([this]() { CheckStats(); }));
+  }
+
+  void CheckStats() {
+    if (!receive_stream_)
+      return;
+
+    VideoReceiveStream::Stats stats = receive_stream_->GetStats();
     if (stats.sync_offset_ms == std::numeric_limits<int>::max())
       return;
 
@@ -135,7 +138,8 @@ class VideoRtcpAndSyncObserver : public test::RtpRtcpObserver,
   }
 
   void set_receive_stream(VideoReceiveStream* receive_stream) {
-    rtc::CritScope lock(&crit_);
+    RTC_DCHECK_EQ(task_queue_, TaskQueueBase::Current());
+    // Note that receive_stream may be nullptr.
     receive_stream_ = receive_stream;
   }
 
@@ -148,10 +152,10 @@ class VideoRtcpAndSyncObserver : public test::RtpRtcpObserver,
   Clock* const clock_;
   std::string test_label_;
   const int64_t creation_time_ms_;
-  int64_t first_time_in_sync_;
-  rtc::CriticalSection crit_;
-  VideoReceiveStream* receive_stream_ RTC_GUARDED_BY(crit_);
+  int64_t first_time_in_sync_ = -1;
+  VideoReceiveStream* receive_stream_ = nullptr;
   std::vector<double> sync_offset_ms_list_;
+  TaskQueueBase* const task_queue_;
 };
 
 void CallPerfTest::TestAudioVideoSync(FecMode fec,
@@ -168,7 +172,8 @@ void CallPerfTest::TestAudioVideoSync(FecMode fec,
   audio_net_config.queue_delay_ms = 500;
   audio_net_config.loss_percent = 5;
 
-  VideoRtcpAndSyncObserver observer(Clock::GetRealTimeClock(), test_label);
+  auto observer = std::make_unique<VideoRtcpAndSyncObserver>(
+      task_queue(), Clock::GetRealTimeClock(), test_label);
 
   std::map<uint8_t, MediaType> audio_pt_map;
   std::map<uint8_t, MediaType> video_pt_map;
@@ -218,7 +223,7 @@ void CallPerfTest::TestAudioVideoSync(FecMode fec,
                  });
 
     audio_send_transport = std::make_unique<test::PacketTransport>(
-        task_queue(), sender_call_.get(), &observer,
+        task_queue(), sender_call_.get(), observer.get(),
         test::PacketTransport::kSender, audio_pt_map,
         std::make_unique<FakeNetworkPipe>(
             Clock::GetRealTimeClock(),
@@ -226,7 +231,7 @@ void CallPerfTest::TestAudioVideoSync(FecMode fec,
     audio_send_transport->SetReceiver(receiver_call_->Receiver());
 
     video_send_transport = std::make_unique<test::PacketTransport>(
-        task_queue(), sender_call_.get(), &observer,
+        task_queue(), sender_call_.get(), observer.get(),
         test::PacketTransport::kSender, video_pt_map,
         std::make_unique<FakeNetworkPipe>(Clock::GetRealTimeClock(),
                                           std::make_unique<SimulatedNetwork>(
@@ -234,7 +239,7 @@ void CallPerfTest::TestAudioVideoSync(FecMode fec,
     video_send_transport->SetReceiver(receiver_call_->Receiver());
 
     receive_transport = std::make_unique<test::PacketTransport>(
-        task_queue(), receiver_call_.get(), &observer,
+        task_queue(), receiver_call_.get(), observer.get(),
         test::PacketTransport::kReceiver, payload_type_map_,
         std::make_unique<FakeNetworkPipe>(Clock::GetRealTimeClock(),
                                           std::make_unique<SimulatedNetwork>(
@@ -259,7 +264,7 @@ void CallPerfTest::TestAudioVideoSync(FecMode fec,
       video_receive_configs_[0].rtp.ulpfec_payload_type = kUlpfecPayloadType;
     }
     video_receive_configs_[0].rtp.nack.rtp_history_ms = 1000;
-    video_receive_configs_[0].renderer = &observer;
+    video_receive_configs_[0].renderer = observer.get();
     video_receive_configs_[0].sync_group = kSyncGroup;
 
     AudioReceiveStream::Config audio_recv_config;
@@ -281,7 +286,7 @@ void CallPerfTest::TestAudioVideoSync(FecMode fec,
           receiver_call_->CreateAudioReceiveStream(audio_recv_config);
     }
     EXPECT_EQ(1u, video_receive_streams_.size());
-    observer.set_receive_stream(video_receive_streams_[0]);
+    observer->set_receive_stream(video_receive_streams_[0]);
     drifting_clock = std::make_unique<DriftingClock>(clock_, video_ntp_speed);
     CreateFrameGeneratorCapturerWithDrift(drifting_clock.get(), video_rtp_speed,
                                           kDefaultFramerate, kDefaultWidth,
@@ -293,10 +298,13 @@ void CallPerfTest::TestAudioVideoSync(FecMode fec,
     audio_receive_stream->Start();
   });
 
-  EXPECT_TRUE(observer.Wait())
+  EXPECT_TRUE(observer->Wait())
       << "Timed out while waiting for audio and video to be synchronized.";
 
   SendTask(RTC_FROM_HERE, task_queue(), [&]() {
+    // Clear the pointer to the receive stream since it will now be deleted.
+    observer->set_receive_stream(nullptr);
+
     audio_send_stream->Stop();
     audio_receive_stream->Stop();
 
@@ -314,15 +322,18 @@ void CallPerfTest::TestAudioVideoSync(FecMode fec,
     DestroyCalls();
   });
 
-  observer.PrintResults();
+  observer->PrintResults();
 
   // In quick test synchronization may not be achieved in time.
   if (!field_trial::IsEnabled("WebRTC-QuickPerfTest")) {
 // TODO(bugs.webrtc.org/10417): Reenable this for iOS
 #if !defined(WEBRTC_IOS)
-    EXPECT_EQ(1, metrics::NumSamples("WebRTC.Video.AVSyncOffsetInMs"));
+    EXPECT_METRIC_EQ(1, metrics::NumSamples("WebRTC.Video.AVSyncOffsetInMs"));
 #endif
   }
+
+  task_queue()->PostTask(
+      ToQueuedTask([to_delete = observer.release()]() { delete to_delete; }));
 }
 
 TEST_F(CallPerfTest, PlaysOutAudioAndVideoInSyncWithoutClockDrift) {
@@ -435,22 +446,23 @@ void CallPerfTest::TestCaptureNtpTime(
 
     Action OnSendRtp(const uint8_t* packet, size_t length) override {
       rtc::CritScope lock(&crit_);
-      RTPHeader header;
-      EXPECT_TRUE(parser_->Parse(packet, length, &header));
+      RtpPacket rtp_packet;
+      EXPECT_TRUE(rtp_packet.Parse(packet, length));
 
       if (!rtp_start_timestamp_set_) {
         // Calculate the rtp timestamp offset in order to calculate the real
         // capture time.
         uint32_t first_capture_timestamp =
             90 * static_cast<uint32_t>(capturer_->first_frame_capture_time());
-        rtp_start_timestamp_ = header.timestamp - first_capture_timestamp;
+        rtp_start_timestamp_ = rtp_packet.Timestamp() - first_capture_timestamp;
         rtp_start_timestamp_set_ = true;
       }
 
-      uint32_t capture_timestamp = header.timestamp - rtp_start_timestamp_;
+      uint32_t capture_timestamp =
+          rtp_packet.Timestamp() - rtp_start_timestamp_;
       capture_time_list_.insert(
           capture_time_list_.end(),
-          std::make_pair(header.timestamp, capture_timestamp));
+          std::make_pair(rtp_packet.Timestamp(), capture_timestamp));
       return SEND_PACKET;
     }
 

@@ -102,7 +102,7 @@ const newTreeElement = (() => {
         /** @type {HTMLSpanElement} */
         const symbolName = link.querySelector('.symbol-name');
         const idPath = symbolName.title;
-        data = await worker.openNode(idPath);
+        data = await window.supersize.worker.openNode(idPath);
         _uiNodeData.set(link, data);
       }
 
@@ -310,10 +310,10 @@ const newTreeElement = (() => {
     const isLeaf = data.children && data.children.length === 0;
     const template = isLeaf ? _leafTemplate : _treeTemplate;
     const element = document.importNode(template.content, true);
+    const listItemEl = element.firstElementChild;
+    const link = listItemEl.firstElementChild;
 
     // Associate clickable node & tree data
-    /** @type {HTMLAnchorElement | HTMLSpanElement} */
-    const link = element.querySelector('.node');
     _uiNodeData.set(link, Object.freeze(data));
 
     // Icons are predefined in the HTML through hidden SVG elements
@@ -327,7 +327,7 @@ const newTreeElement = (() => {
     // Insert an SVG icon at the start of the link to represent adds/removals.
     const diffStatusIcon = getDiffStatusTemplate(data);
     if (diffStatusIcon) {
-      link.insertBefore(diffStatusIcon, link.firstElementChild);
+      listItemEl.insertBefore(diffStatusIcon, listItemEl.firstElementChild);
     }
 
     // Insert an SVG icon at the start of the link to represent type
@@ -405,12 +405,16 @@ const newTreeElement = (() => {
   const _dataUrlInput = form.elements.namedItem('load_url');
   const _progress = new ProgressBar('progress');
 
+  /** @type {boolean} */
+  let _doneLoad = false;
+
   /**
    * Displays the given data as a tree view
    * @param {TreeProgress} message
    */
   function displayTree(message) {
     const {root, percent, diffMode, error} = message;
+    state.set('diff_mode', diffMode ? 'on' : null);
     /** @type {DocumentFragment | null} */
     let rootElement = null;
     if (root) {
@@ -421,7 +425,6 @@ const newTreeElement = (() => {
       link.click();
       link.tabIndex = 0;
     }
-    state.set('diff_mode', diffMode ? 'on' : null);
 
     // Double requestAnimationFrame ensures that the code inside executes in a
     // different frame than the above tree element creation.
@@ -440,12 +443,16 @@ const newTreeElement = (() => {
         }
 
         dom.replace(_symbolTree, rootElement);
+        if (!_doneLoad && percent === 1) {
+          _doneLoad = true;
+          console.log('Pro Tip: await worker.openNode("$FILE_PATH")')
+        }
       })
     );
   }
 
-  treeReady.then(displayTree);
-  worker.setOnProgressHandler(displayTree);
+  window.supersize.treeReady.then(displayTree);
+  window.supersize.worker.setOnProgressHandler(displayTree);
 
   _fileUpload.addEventListener('change', event => {
     const input = /** @type {HTMLInputElement} */ (event.currentTarget);
@@ -456,7 +463,7 @@ const newTreeElement = (() => {
     _dataUrlInput.value = '';
     _dataUrlInput.dispatchEvent(new Event('change'));
 
-    worker.loadTree(fileUrl).then(displayTree);
+    window.supersize.worker.loadTree(fileUrl).then(displayTree);
     // Clean up afterwards so new files trigger event
     input.value = '';
   });
@@ -467,12 +474,12 @@ const newTreeElement = (() => {
     // options (marked by `data-dynamic`) are changed.
     if (!event.target.dataset.hasOwnProperty('dynamic')) {
       _progress.setValue(0);
-      worker.loadTree().then(displayTree);
+      window.supersize.worker.loadTree().then(displayTree);
     }
   });
   form.addEventListener('submit', event => {
     event.preventDefault();
     _progress.setValue(0);
-    worker.loadTree().then(displayTree);
+    window.supersize.worker.loadTree().then(displayTree);
   });
 }

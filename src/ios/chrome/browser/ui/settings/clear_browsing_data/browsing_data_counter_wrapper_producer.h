@@ -7,12 +7,14 @@
 
 #include "ios/chrome/browser/browsing_data/browsing_data_counter_wrapper.h"
 
+class ChromeBrowserState;
+
 // ClearBrowsingDataManager's dependency on creating BrowsingDataCounterWrapper
 @interface BrowsingDataCounterWrapperProducer : NSObject
 
 - (std::unique_ptr<BrowsingDataCounterWrapper>)
     createCounterWrapperWithPrefName:(base::StringPiece)prefName
-                        browserState:(ios::ChromeBrowserState*)browserState
+                        browserState:(ChromeBrowserState*)browserState
                          prefService:(PrefService*)prefService
                     updateUiCallback:
                         (BrowsingDataCounterWrapper::UpdateUICallback)

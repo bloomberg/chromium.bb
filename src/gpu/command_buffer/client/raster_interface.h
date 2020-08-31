@@ -6,11 +6,13 @@
 #define GPU_COMMAND_BUFFER_CLIENT_RASTER_INTERFACE_H_
 
 #include <GLES2/gl2.h>
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/client/interface_base.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace cc {
 class DisplayItemList;
@@ -19,6 +21,7 @@ class ImageProvider;
 
 namespace gfx {
 class ColorSpace;
+class Point;
 class Rect;
 class Size;
 class Vector2dF;
@@ -26,7 +29,7 @@ enum class BufferUsage;
 }  // namespace gfx
 
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
-extern "C" typedef struct _GLColorSpace* GLColorSpace;
+extern "C" typedef const struct _GLcolorSpace* GLcolorSpace;
 
 namespace gpu {
 
@@ -49,7 +52,31 @@ class RasterInterface : public InterfaceBase {
                               GLint x,
                               GLint y,
                               GLsizei width,
-                              GLsizei height) = 0;
+                              GLsizei height,
+                              GLboolean unpack_flip_y,
+                              GLboolean unpack_premultiply_alpha) = 0;
+
+  virtual void WritePixels(const gpu::Mailbox& dest_mailbox,
+                           int dst_x_offset,
+                           int dst_y_offset,
+                           GLenum texture_target,
+                           GLuint row_bytes,
+                           const SkImageInfo& src_info,
+                           const void* src_pixels) = 0;
+
+  virtual void ConvertYUVMailboxesToRGB(
+      const gpu::Mailbox& dest_mailbox,
+      SkYUVColorSpace planes_yuv_color_space,
+      const gpu::Mailbox& y_plane_mailbox,
+      const gpu::Mailbox& u_plane_mailbox,
+      const gpu::Mailbox& v_plane_mailbox) = 0;
+
+  virtual void ConvertNV12MailboxesToRGB(
+      const gpu::Mailbox& dest_mailbox,
+      SkYUVColorSpace planes_yuv_color_space,
+      const gpu::Mailbox& y_plane_mailbox,
+      const gpu::Mailbox& uv_planes_mailbox) = 0;
+
   // OOP-Raster
   virtual void BeginRasterCHROMIUM(GLuint sk_color,
                                    GLuint msaa_sample_count,
@@ -81,6 +108,44 @@ class RasterInterface : public InterfaceBase {
       const gfx::ColorSpace& target_color_space,
       bool needs_mips) = 0;
 
+  // Starts an asynchronous readback of |source_mailbox| into caller-owned
+  // memory |out|. Currently supports the GL_RGBA format and GL_BGRA_EXT format
+  // with the GL_EXT_read_format_bgra GL extension. |out| must remain valid
+  // until |readback_done| is called with a bool indicating if the readback was
+  // successful. On success |out| will contain the pixel data copied back from
+  // the GPU process.
+  virtual void ReadbackARGBPixelsAsync(
+      const gpu::Mailbox& source_mailbox,
+      GLenum source_target,
+      const gfx::Size& dst_size,
+      unsigned char* out,
+      GLenum format,
+      base::OnceCallback<void(bool)> readback_done) = 0;
+
+  // Starts an asynchronus readback and translation of RGBA |source_mailbox|
+  // into caller-owned |[yuv]_plane_data|. All provided pointers must remain
+  // valid until |readback_done| is called with a bool indicating if readback
+  // was successful. On success the provided memory will contain pixel data in
+  // I420 format copied from |source_mailbox| in the GPU process.
+  // |release_mailbox| is called when all operations requiring a valid mailbox
+  // have completed, indicating that the caller can perform any necessary
+  // cleanup.
+  virtual void ReadbackYUVPixelsAsync(
+      const gpu::Mailbox& source_mailbox,
+      GLenum source_target,
+      const gfx::Size& source_size,
+      const gfx::Rect& output_rect,
+      bool vertically_flip_texture,
+      int y_plane_row_stride_bytes,
+      unsigned char* y_plane_data,
+      int u_plane_row_stride_bytes,
+      unsigned char* u_plane_data,
+      int v_plane_row_stride_bytes,
+      unsigned char* v_plane_data,
+      const gfx::Point& paste_location,
+      base::OnceCallback<void()> release_mailbox,
+      base::OnceCallback<void(bool)> readback_done) = 0;
+
   // Raster via GrContext.
   virtual GLuint CreateAndConsumeForGpuRaster(const gpu::Mailbox& mailbox) = 0;
   virtual void DeleteGpuRasterTexture(GLuint texture) = 0;
@@ -89,6 +154,10 @@ class RasterInterface : public InterfaceBase {
   virtual void BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
                                                     GLenum mode) = 0;
   virtual void EndSharedImageAccessDirectCHROMIUM(GLuint texture) = 0;
+
+  virtual void InitializeDiscardableTextureCHROMIUM(GLuint texture) = 0;
+  virtual void UnlockDiscardableTextureCHROMIUM(GLuint texture) = 0;
+  virtual bool LockDiscardableTextureCHROMIUM(GLuint texture) = 0;
 
 // Include the auto-generated part of this class. We split this because
 // it means we can easily edit the non-auto generated parts right here in

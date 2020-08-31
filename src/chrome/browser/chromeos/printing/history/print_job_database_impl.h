@@ -41,6 +41,7 @@ class PrintJobDatabaseImpl : public PrintJobDatabase {
                     SavePrintJobCallback callback) override;
   void DeletePrintJobs(const std::vector<std::string>& ids,
                        DeletePrintJobsCallback callback) override;
+  void Clear(DeletePrintJobsCallback callback) override;
   void GetPrintJobs(GetPrintJobsCallback callback) override;
 
  private:
@@ -63,14 +64,19 @@ class PrintJobDatabaseImpl : public PrintJobDatabase {
                        SavePrintJobCallback callback,
                        bool success);
 
-  void OnPrintJobDeleted(const std::vector<std::string>& ids,
-                         DeletePrintJobsCallback callback,
-                         bool success);
+  void OnPrintJobsDeleted(const std::vector<std::string>& ids,
+                          DeletePrintJobsCallback callback,
+                          bool success);
 
-  void GetPrintJobsFromProtoDatabase(GetPrintJobsCallback callback);
+  void GetPrintJobsFromProtoDatabase(
+      GetPrintJobsFromProtoDatabaseCallback callback);
 
-  void OnPrintJobsRetrieved(
-      GetPrintJobsCallback callback,
+  void OnPrintJobsRetrieved(GetPrintJobsCallback callback,
+                            bool success,
+                            std::vector<printing::proto::PrintJobInfo> entries);
+
+  void OnPrintJobRetrievedFromDatabase(
+      GetPrintJobsFromProtoDatabaseCallback callback,
       bool success,
       std::unique_ptr<std::vector<printing::proto::PrintJobInfo>> entries);
 

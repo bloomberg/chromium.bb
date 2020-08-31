@@ -12,3 +12,7 @@
 .event-display-table-contents-table-container>.widget>.data-grid {
   height: 100%;
 }
+
+.data-grid .event-display-table-basic-text-table-entry {
+  line-height: 26px;
+}

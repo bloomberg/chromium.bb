@@ -50,33 +50,37 @@ config("swiftshader_libvulkan_private_config") {
       "-Wno-switch",
     ]
   }
+
+  defines += [
+     "SWIFTSHADER_ENABLE_ASTC",  # TODO(b/150130101)
+  ]
 }
 
 swiftshader_source_set("swiftshader_libvulkan_headers") {
   sources = [
-    "Version.h",
+    "Version.hpp",
     "VkBuffer.hpp",
     "VkBufferView.hpp",
     "VkCommandBuffer.hpp",
     "VkCommandPool.hpp",
-    "VkConfig.h",
-    "VkDebug.hpp",
+    "VkConfig.hpp",
+    "VkDebugUtilsMessenger.hpp",
     "VkDescriptorPool.hpp",
     "VkDescriptorSet.hpp",
     "VkDescriptorSetLayout.hpp",
     "VkDescriptorUpdateTemplate.hpp",
-    "VkDestroy.h",
+    "VkDestroy.hpp",
     "VkDevice.hpp",
     "VkDeviceMemory.hpp",
     "VkEvent.hpp",
     "VkFence.hpp",
-    "VkFormat.h",
+    "VkFormat.hpp",
     "VkFramebuffer.hpp",
-    "VkGetProcAddress.h",
+    "VkGetProcAddress.hpp",
     "VkImage.hpp",
     "VkImageView.hpp",
     "VkInstance.hpp",
-    "VkMemory.h",
+    "VkMemory.hpp",
     "VkObject.hpp",
     "VkPhysicalDevice.hpp",
     "VkPipeline.hpp",
@@ -88,8 +92,9 @@ swiftshader_source_set("swiftshader_libvulkan_headers") {
     "VkSampler.hpp",
     "VkSemaphore.hpp",
     "VkShaderModule.hpp",
+    "VkSpecializationInfo.hpp",
     "VkStringify.hpp",
-    "VulkanPlatform.h",
+    "VulkanPlatform.hpp",
   ]
   if (is_linux || is_android) {
     sources += [
@@ -98,8 +103,6 @@ swiftshader_source_set("swiftshader_libvulkan_headers") {
     ]
   } else if (is_fuchsia) {
     sources += [ "VkSemaphoreExternalFuchsia.hpp" ]
-  } else {
-    sources += [ "VkSemaphoreExternalNone.hpp" ]
   }
 }
 
@@ -109,8 +112,9 @@ swiftshader_shared_library("swiftshader_libvulkan") {
     "VkBufferView.cpp",
     "VkCommandBuffer.cpp",
     "VkCommandPool.cpp",
-    "VkDebug.cpp",
+    "VkDebugUtilsMessenger.cpp",
     "VkDescriptorPool.cpp",
+    "VkDescriptorSet.cpp",
     "VkDescriptorSetLayout.cpp",
     "VkDescriptorUpdateTemplate.cpp",
     "VkDevice.cpp",
@@ -133,6 +137,7 @@ swiftshader_shared_library("swiftshader_libvulkan") {
     "VkSampler.cpp",
     "VkSemaphore.cpp",
     "VkShaderModule.cpp",
+    "VkSpecializationInfo.cpp",
     "VkStringify.cpp",
     "Vulkan.rc",
     "libVulkan.cpp",
@@ -160,8 +165,12 @@ swiftshader_shared_library("swiftshader_libvulkan") {
     inputs = [
       "vk_swiftshader.lds",
     ]
-    ldflags = [ "-Wl,--version-script=" +
-                rebase_path("vk_swiftshader.lds", root_build_dir) ]
+    ldflags = [
+      # -Bsymbolic binds symbol references to their global definitions within
+      # a shared object, thereby preventing symbol preemption.
+      "-Wl,-Bsymbolic",
+      "-Wl,--version-script=" +
+          rebase_path("vk_swiftshader.lds", root_build_dir) ]
   }
 
   deps = [
@@ -169,7 +178,7 @@ swiftshader_shared_library("swiftshader_libvulkan") {
     "../../third_party/marl:Marl",
     "../Device",
     "../Pipeline",
-    "../Reactor:swiftshader_llvm_reactor",
+    "../Reactor:swiftshader_reactor",
     "../System",
     "../WSI",
   ]

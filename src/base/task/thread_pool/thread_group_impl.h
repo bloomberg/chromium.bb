@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/waitable_event.h"
@@ -28,7 +29,6 @@
 #include "base/task/thread_pool/tracked_ref.h"
 #include "base/task/thread_pool/worker_thread.h"
 #include "base/task/thread_pool/worker_thread_stack.h"
-#include "base/task_runner.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -72,14 +72,17 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // |worker_environment| specifies the environment in which tasks are executed.
   // |may_block_threshold| is the timeout after which a task in a MAY_BLOCK
   // ScopedBlockingCall is considered blocked (the thread group will choose an
-  // appropriate value if none is specified). Can only be called once. CHECKs on
-  // failure.
+  // appropriate value if none is specified).
+  // |synchronous_thread_start_for_testing| is true if this ThreadGroupImpl
+  // should synchronously wait for OnMainEntry() after starting each worker. Can
+  // only be called once. CHECKs on failure.
   void Start(int max_tasks,
              int max_best_effort_tasks,
              TimeDelta suggested_reclaim_time,
-             scoped_refptr<TaskRunner> service_thread_task_runner,
+             scoped_refptr<SequencedTaskRunner> service_thread_task_runner,
              WorkerThreadObserver* worker_thread_observer,
              WorkerEnvironment worker_environment,
+             bool synchronous_thread_start_for_testing = false,
              Optional<TimeDelta> may_block_threshold = Optional<TimeDelta>());
 
   // Destroying a ThreadGroupImpl returned by Create() is not allowed in
@@ -97,10 +100,6 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
     return num_tasks_before_detach_histogram_;
   }
 
-  const HistogramBase* num_workers_histogram() const {
-    return num_workers_histogram_;
-  }
-
   // Waits until at least |n| workers are idle. Note that while workers are
   // disallowed from cleaning up during this call: tests using a custom
   // |suggested_reclaim_time_| need to be careful to invoke this swiftly after
@@ -116,8 +115,9 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // Waits until all workers are idle.
   void WaitForAllWorkersIdleForTesting();
 
-  // Waits until |n| workers have cleaned up (since the last call to
-  // WaitForWorkersCleanedUpForTesting() or Start() if it wasn't called yet).
+  // Waits until |n| workers have cleaned up (went through
+  // WorkerThreadDelegateImpl::OnMainExit()) since the last call to
+  // WaitForWorkersCleanedUpForTesting() (or Start() if that wasn't called yet).
   void WaitForWorkersCleanedUpForTesting(size_t n);
 
   // Returns the number of workers in this thread group.
@@ -130,7 +130,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   size_t NumberOfIdleWorkersForTesting() const;
 
  private:
-  class ScopedWorkersExecutor;
+  class ScopedCommandsExecutor;
   class WorkerThreadDelegateImpl;
 
   // Friend tests so that they can access |blocked_workers_poll_period| and
@@ -145,13 +145,13 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   void PushTaskSourceAndWakeUpWorkers(
       TransactionWithRegisteredTaskSource transaction_with_task_source)
       override;
-  void EnsureEnoughWorkersLockRequired(BaseScopedWorkersExecutor* executor)
+  void EnsureEnoughWorkersLockRequired(BaseScopedCommandsExecutor* executor)
       override EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Creates a worker and schedules its start, if needed, to maintain one idle
   // worker, |max_tasks_| permitting.
-  void MaintainAtLeastOneIdleWorkerLockRequired(ScopedWorkersExecutor* executor)
-      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void MaintainAtLeastOneIdleWorkerLockRequired(
+      ScopedCommandsExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns true if worker cleanup is permitted.
   bool CanWorkerCleanupForTestingLockRequired() EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -159,7 +159,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // Creates a worker, adds it to the thread group, schedules its start and
   // returns it. Cannot be called before Start().
   scoped_refptr<WorkerThread> CreateAndRegisterWorkerLockRequired(
-      ScopedWorkersExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+      ScopedCommandsExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns the number of workers that are awake (i.e. not on the idle stack).
   size_t GetNumAwakeWorkersLockRequired() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -192,7 +192,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   void ScheduleAdjustMaxTasks();
 
   // Schedules AdjustMaxTasks() through |executor| if required.
-  void MaybeScheduleAdjustMaxTasksLockRequired(ScopedWorkersExecutor* executor)
+  void MaybeScheduleAdjustMaxTasksLockRequired(ScopedCommandsExecutor* executor)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns true if AdjustMaxTasks() should periodically be called on
@@ -239,12 +239,13 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
     // Environment to be initialized per worker.
     WorkerEnvironment worker_environment = WorkerEnvironment::NONE;
 
-    scoped_refptr<TaskRunner> service_thread_task_runner;
+    scoped_refptr<SequencedTaskRunner> service_thread_task_runner;
 
     // Optional observer notified when a worker enters and exits its main.
     WorkerThreadObserver* worker_thread_observer = nullptr;
 
     bool may_block_without_delay;
+    bool fixed_max_best_effort_tasks;
 
     // Threshold after which the max tasks is increased to compensate for a
     // worker that is within a MAY_BLOCK ScopedBlockingCall.
@@ -312,8 +313,9 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // Indicates to the delegates that workers are not permitted to cleanup.
   bool worker_cleanup_disallowed_for_testing_ GUARDED_BY(lock_) = false;
 
-  // Counts the number of workers cleaned up since the last call to
-  // WaitForWorkersCleanedUpForTesting() (or Start() if it wasn't called yet).
+  // Counts the number of workers cleaned up (went through
+  // WorkerThreadDelegateImpl::OnMainExit()) since the last call to
+  // WaitForWorkersCleanedUpForTesting() (or Start() if that wasn't called yet).
   // |some_workers_cleaned_up_for_testing_| is true if this was ever
   // incremented. Tests with a custom |suggested_reclaim_time_| can wait on a
   // specific number of workers being cleaned up via
@@ -330,6 +332,17 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
 
   // Set at the start of JoinForTesting().
   bool join_for_testing_started_ GUARDED_BY(lock_) = false;
+
+  // Null-opt unless |synchronous_thread_start_for_testing| was true at
+  // construction. In that case, it's signaled each time
+  // WorkerThreadDelegateImpl::OnMainEntry() completes.
+  Optional<WaitableEvent> worker_started_for_testing_;
+
+  // Cached HistogramBase pointers, can be accessed without
+  // holding |lock_|. If |lock_| is held, add new samples using
+  // ThreadGroupImpl::ScopedCommandsExecutor (increase
+  // |scheduled_histogram_samples_| size as needed) to defer until after |lock_|
+  // release, due to metrics system callbacks which may schedule tasks.
 
   // ThreadPool.DetachDuration.[thread group name] histogram. Intentionally
   // leaked.

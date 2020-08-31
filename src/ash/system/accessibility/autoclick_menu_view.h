@@ -11,24 +11,7 @@
 
 namespace ash {
 
-class AutoclickMenuButton;
-
-// View for the Automatic Clicks menu bubble, which holds the Automatic Clicks
-// Menu.
-class AutoclickMenuBubbleView : public TrayBubbleView {
- public:
-  AutoclickMenuBubbleView(TrayBubbleView::InitParams init_params);
-  ~AutoclickMenuBubbleView() override;
-
-  // TrayBubbleView:
-  bool IsAnchoredToStatusArea() const override;
-
-  // views::View:
-  const char* GetClassName() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutoclickMenuBubbleView);
-};
+class FloatingMenuButton;
 
 // View for the Automatic Clicks Menu, which creates and manages
 // individual buttons to control Automatic Clicks settings.
@@ -45,11 +28,11 @@ class AutoclickMenuView : public views::View, public views::ButtonListener {
     kPause = 7,
   };
 
-  AutoclickMenuView(AutoclickEventType type, AutoclickMenuPosition position);
+  AutoclickMenuView(AutoclickEventType type, FloatingMenuPosition position);
   ~AutoclickMenuView() override = default;
 
   void UpdateEventType(AutoclickEventType type);
-  void UpdatePosition(AutoclickMenuPosition position);
+  void UpdatePosition(FloatingMenuPosition position);
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -59,13 +42,13 @@ class AutoclickMenuView : public views::View, public views::ButtonListener {
 
  private:
   // Unowned. Owned by views hierarchy.
-  AutoclickMenuButton* left_click_button_;
-  AutoclickMenuButton* right_click_button_;
-  AutoclickMenuButton* double_click_button_;
-  AutoclickMenuButton* drag_button_;
-  AutoclickMenuButton* scroll_button_ = nullptr;
-  AutoclickMenuButton* pause_button_;
-  AutoclickMenuButton* position_button_;
+  FloatingMenuButton* left_click_button_;
+  FloatingMenuButton* right_click_button_;
+  FloatingMenuButton* double_click_button_;
+  FloatingMenuButton* drag_button_;
+  FloatingMenuButton* scroll_button_ = nullptr;
+  FloatingMenuButton* pause_button_;
+  FloatingMenuButton* position_button_;
 
   // The most recently selected event_type_ excluding kNoAction. This is used
   // when the pause button is selected in order to unpause and reset to the

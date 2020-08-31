@@ -24,7 +24,7 @@
   await TestRunner.addScriptTag('source-frame.js');
   await TestRunner.addScriptTag('../resources/script.js');
 
-  UI.viewManager.showView('resources');
+  await UI.viewManager.showView('resources');
   SourcesTestRunner.runDebuggerTestSuite([
     function testConsoleMessage(next) {
       SourcesTestRunner.showScriptSource('source-frame.js', didShowScriptSource);
@@ -38,9 +38,11 @@
         TestRunner.evaluateInPage('addErrorToConsole()');
       }
 
-      function didAddMessage(message) {
+      async function didAddMessage(message) {
         if (this !== shownSourceFrame)
           return;
+        // Messages can contain live locations.
+        await TestRunner.waitForPendingLiveLocationUpdates();
         TestRunner.addResult('Message added to source frame: ' + message.text());
         setImmediate(function() {
           Console.ConsoleView.clearConsole();
@@ -55,8 +57,8 @@
       }
     },
 
-    function testShowResource(next) {
-      UI.viewManager.showView('network');
+    async function testShowResource(next) {
+      await UI.viewManager.showView('network');
       TestRunner.addSniffer(SourceFrame.SourceFrame.prototype, 'show', didShowSourceFrame);
 
       TestRunner.resourceTreeModel.forAllResources(visit);

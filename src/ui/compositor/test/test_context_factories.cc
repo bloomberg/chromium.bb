@@ -39,17 +39,14 @@ TestContextFactories::TestContextFactories(bool enable_pixel_output,
   host_frame_sink_manager_->SetLocalManager(frame_sink_manager_.get());
 }
 
-TestContextFactories::~TestContextFactories() {
-  if (implicit_factory_)
-    implicit_factory_->SendOnLostSharedContext();
-}
+TestContextFactories::~TestContextFactories() = default;
 
 ContextFactory* TestContextFactories::GetContextFactory() const {
   return implicit_factory_.get();
 }
 
-ContextFactoryPrivate* TestContextFactories::GetContextFactoryPrivate() const {
-  return implicit_factory_.get();
+void TestContextFactories::SetUseTestSurface(bool use_test_surface) {
+  implicit_factory_->set_use_test_surface(use_test_surface);
 }
 
 }  // namespace ui

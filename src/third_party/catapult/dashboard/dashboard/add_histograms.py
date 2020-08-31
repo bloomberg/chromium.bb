@@ -12,6 +12,7 @@ import decimal
 import ijson
 import json
 import logging
+import StringIO
 import sys
 import uuid
 import zlib
@@ -167,6 +168,7 @@ class AddHistogramsProcessHandler(request_handler.RequestHandler):
       gcs_file_path = params['gcs_file_path']
 
       try:
+        logging.debug('Loading %s', gcs_file_path)
         gcs_file = cloudstorage.open(
             gcs_file_path, 'r', retry_params=_RETRY_PARAMS)
         with DecompressFileWrapper(gcs_file) as decompressing_file:
@@ -194,7 +196,8 @@ class AddHistogramsHandler(api_request_handler.ApiRequestHandler):
       # In prod, the data will be written to cloud storage and processed on the
       # taskqueue, so the caller will not see any errors. In dev_appserver,
       # process the data immediately so the caller will see errors.
-      ProcessHistogramSet(json.loads(self.request.body))
+      ProcessHistogramSet(
+          _LoadHistogramList(StringIO.StringIO(self.request.body)))
       return
 
     with timing.WallTimeLogger('decompress'):
@@ -204,14 +207,14 @@ class AddHistogramsHandler(api_request_handler.ApiRequestHandler):
         # Try to decompress at most 100 bytes from the data, only to determine
         # if we've been given compressed payload.
         zlib.decompressobj().decompress(data_str, 100)
-        logging.info('Recieved compressed data.')
+        logging.info('Received compressed data.')
       except zlib.error:
         data_str = self.request.get('data')
         if not data_str:
           raise api_request_handler.BadRequestError(
               'Missing or uncompressed data.')
         data_str = zlib.compress(data_str)
-        logging.info('Recieved uncompressed data.')
+        logging.info('Received uncompressed data.')
 
     if not data_str:
       raise api_request_handler.BadRequestError('Missing "data" parameter')
@@ -261,7 +264,7 @@ def _LogDebugInfo(histograms):
 def ProcessHistogramSet(histogram_dicts):
   if not isinstance(histogram_dicts, list):
     raise api_request_handler.BadRequestError(
-        'HistogramSet JSON much be a list of dicts')
+        'HistogramSet JSON must be a list of dicts')
 
   histograms = histogram_set.HistogramSet()
 
@@ -342,8 +345,8 @@ def ProcessHistogramSet(histogram_dicts):
       histograms.ReplaceSharedDiagnostic(
           new_guid, diagnostic.Diagnostic.FromDict(old_diagnostic))
 
-  with timing.WallTimeLogger('_BatchHistogramsIntoTasks'):
-    tasks = _BatchHistogramsIntoTasks(
+  with timing.WallTimeLogger('_CreateHistogramTasks'):
+    tasks = _CreateHistogramTasks(
         suite_key.id(), histograms, revision, benchmark_description)
 
   with timing.WallTimeLogger('_QueueHistogramTasks'):
@@ -372,51 +375,29 @@ def _MakeTask(params):
       _size_check=False)
 
 
-def _BatchHistogramsIntoTasks(
+def _CreateHistogramTasks(
     suite_path, histograms, revision, benchmark_description):
-  params = []
   tasks = []
-
-  base_size = _MakeTask([]).size
-  estimated_size = 0
-
   duplicate_check = set()
 
   for hist in histograms:
     diagnostics = FindHistogramLevelSparseDiagnostics(hist)
-
-    # TODO(896856): Don't compute full diagnostics, because we need anyway to
-    # call GetOrCreate here and in the queue.
     test_path = '%s/%s' % (suite_path, histogram_helpers.ComputeTestPath(hist))
+
+    # Log the information here so we can see which histograms are being queued.
+    logging.debug('Queueing: %s', test_path)
 
     if test_path in duplicate_check:
       raise api_request_handler.BadRequestError(
           'Duplicate histogram detected: %s' % test_path)
+
     duplicate_check.add(test_path)
 
-    # TODO(#4135): Batch these better than one per task.
+    # We create one task per histogram, so that we can get as much time as we
+    # need for processing each histogram per task.
     task_dict = _MakeTaskDict(
         hist, test_path, revision, benchmark_description, diagnostics)
-
-    estimated_size_dict = len(json.dumps(task_dict))
-    estimated_size += estimated_size_dict
-
-    # Creating the task directly and getting the size back is slow, so we just
-    # keep a running total of estimated task size. A bit hand-wavy but the #
-    # of histograms per task doesn't need to be perfect, just has to be under
-    # the max task size.
-    estimated_total_size = estimated_size * 1.05 + base_size + 1024
-    if estimated_total_size > taskqueue.MAX_TASK_SIZE_BYTES:
-      t = _MakeTask(params)
-      tasks.append(t)
-      params = []
-      estimated_size = estimated_size_dict
-
-    params.append(task_dict)
-
-  if params:
-    t = _MakeTask(params)
-    tasks.append(t)
+    tasks.append(_MakeTask([task_dict]))
 
   return tasks
 

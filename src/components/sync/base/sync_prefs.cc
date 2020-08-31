@@ -9,8 +9,9 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -124,23 +125,6 @@ void RegisterObsoleteUserTypePrefs(user_prefs::PrefRegistrySyncable* registry) {
     registry->RegisterBooleanPref(obsolete_pref, false);
   }
 }
-
-#if defined(OS_CHROMEOS)
-const char* GetPrefNameForOsType(UserSelectableOsType type) {
-  switch (type) {
-    case UserSelectableOsType::kOsApps:
-      return prefs::kSyncOsApps;
-    case UserSelectableOsType::kOsPreferences:
-      return prefs::kSyncOsPreferences;
-    case UserSelectableOsType::kPrinters:
-      return prefs::kSyncOsPrinters;
-    case UserSelectableOsType::kWifiConfigurations:
-      return prefs::kSyncWifiConfigurations;
-  }
-  NOTREACHED();
-  return nullptr;
-}
-#endif  // defined(OS_CHROMEOS)
 
 // Gets an offset to add noise to the birth year. If not present in prefs, the
 // offset will be randomly generated within the offset range and cached in
@@ -288,14 +272,20 @@ void SyncPrefs::RegisterProfilePrefs(
     RegisterTypeSelectedPref(registry, type);
   }
 #if defined(OS_CHROMEOS)
+  registry->RegisterBooleanPref(prefs::kOsSyncPrefsMigrated, false);
   registry->RegisterBooleanPref(prefs::kOsSyncFeatureEnabled, false);
   registry->RegisterBooleanPref(prefs::kSyncAllOsTypes, true);
-  for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
-    registry->RegisterBooleanPref(GetPrefNameForOsType(type), false);
-  }
+  registry->RegisterBooleanPref(prefs::kSyncOsApps, false);
+  registry->RegisterBooleanPref(prefs::kSyncOsPreferences, false);
+  // The pref for Wi-Fi configurations is registered in the loop above.
 #endif
 
+  // The encryption bootstrap token represents a user-entered passphrase.
+  registry->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
+                               std::string());
+
   // Internal or bookkeeping prefs.
+  registry->RegisterStringPref(prefs::kSyncGaiaId, std::string());
   registry->RegisterStringPref(prefs::kSyncCacheGuid, std::string());
   registry->RegisterStringPref(prefs::kSyncBirthday, std::string());
   registry->RegisterStringPref(prefs::kSyncBagOfChips, std::string());
@@ -303,8 +293,6 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterInt64Pref(prefs::kSyncLastPollTime, 0);
   registry->RegisterInt64Pref(prefs::kSyncPollIntervalSeconds, 0);
   registry->RegisterBooleanPref(prefs::kSyncManaged, false);
-  registry->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
-                               std::string());
   registry->RegisterStringPref(prefs::kSyncKeystoreEncryptionBootstrapToken,
                                std::string());
   registry->RegisterBooleanPref(prefs::kSyncPassphrasePrompted, false);
@@ -349,7 +337,7 @@ void SyncPrefs::RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
   sync_pref_observers_.RemoveObserver(sync_pref_observer);
 }
 
-void SyncPrefs::ClearPreferences() {
+void SyncPrefs::ClearLocalSyncTransportData() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Clear user's birth year and gender.
@@ -359,31 +347,20 @@ void SyncPrefs::ClearPreferences() {
   // even reveal their true birth year.
   pref_service_->ClearPref(prefs::kSyncDemographics);
 
-  ClearDirectoryConsistencyPreferences();
-
   pref_service_->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service_->ClearPref(prefs::kSyncLastPollTime);
   pref_service_->ClearPref(prefs::kSyncPollIntervalSeconds);
-  pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncKeystoreEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncPassphrasePrompted);
   pref_service_->ClearPref(prefs::kSyncInvalidationVersions);
   pref_service_->ClearPref(prefs::kSyncLastRunVersion);
-  // No need to clear kManaged, kEnableLocalSyncBackend or kLocalSyncBackendDir,
-  // since they're never actually set as user preferences.
-
-  // Note: We do *not* clear prefs which are directly user-controlled such as
-  // the set of selected types here, so that if the user ever chooses to enable
-  // Sync again, they start off with their previous settings by default.
-  // We do however require going through first-time setup again.
-  pref_service_->ClearPref(prefs::kSyncFirstSetupComplete);
-}
-
-void SyncPrefs::ClearDirectoryConsistencyPreferences() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->ClearPref(prefs::kSyncGaiaId);
   pref_service_->ClearPref(prefs::kSyncCacheGuid);
   pref_service_->ClearPref(prefs::kSyncBirthday);
   pref_service_->ClearPref(prefs::kSyncBagOfChips);
+
+  // No need to clear kManaged, kEnableLocalSyncBackend or kLocalSyncBackendDir,
+  // since they're never actually set as user preferences.
 }
 
 bool SyncPrefs::IsFirstSetupComplete() const {
@@ -394,6 +371,11 @@ bool SyncPrefs::IsFirstSetupComplete() const {
 void SyncPrefs::SetFirstSetupComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->SetBoolean(prefs::kSyncFirstSetupComplete, true);
+}
+
+void SyncPrefs::ClearFirstSetupComplete() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->ClearPref(prefs::kSyncFirstSetupComplete);
 }
 
 bool SyncPrefs::IsSyncRequested() const {
@@ -532,7 +514,7 @@ void SyncPrefs::SetSelectedOsTypes(bool sync_all_os_types,
   }
 }
 
-bool SyncPrefs::GetOsSyncFeatureEnabled() const {
+bool SyncPrefs::IsOsSyncFeatureEnabled() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return pref_service_->GetBoolean(prefs::kOsSyncFeatureEnabled);
 }
@@ -540,6 +522,20 @@ bool SyncPrefs::GetOsSyncFeatureEnabled() const {
 void SyncPrefs::SetOsSyncFeatureEnabled(bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->SetBoolean(prefs::kOsSyncFeatureEnabled, enabled);
+}
+
+// static
+const char* SyncPrefs::GetPrefNameForOsType(UserSelectableOsType type) {
+  switch (type) {
+    case UserSelectableOsType::kOsApps:
+      return prefs::kSyncOsApps;
+    case UserSelectableOsType::kOsPreferences:
+      return prefs::kSyncOsPreferences;
+    case UserSelectableOsType::kOsWifiConfigurations:
+      return prefs::kSyncWifiConfigurations;
+  }
+  NOTREACHED();
+  return nullptr;
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -556,6 +552,11 @@ std::string SyncPrefs::GetEncryptionBootstrapToken() const {
 void SyncPrefs::SetEncryptionBootstrapToken(const std::string& token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->SetString(prefs::kSyncEncryptionBootstrapToken, token);
+}
+
+void SyncPrefs::ClearEncryptionBootstrapToken() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
 }
 
 std::string SyncPrefs::GetKeystoreEncryptionBootstrapToken() const {
@@ -593,6 +594,8 @@ const char* SyncPrefs::GetPrefNameForType(UserSelectableType type) {
       return prefs::kSyncReadingList;
     case UserSelectableType::kTabs:
       return prefs::kSyncTabs;
+    case UserSelectableType::kWifiConfigurations:
+      return prefs::kSyncWifiConfigurations;
   }
   NOTREACHED();
   return nullptr;
@@ -628,6 +631,15 @@ void SyncPrefs::RegisterTypeSelectedPref(
   const char* pref_name = GetPrefNameForType(type);
   DCHECK(pref_name);
   registry->RegisterBooleanPref(pref_name, false);
+}
+
+void SyncPrefs::SetGaiaId(const std::string& gaia_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->SetString(prefs::kSyncGaiaId, gaia_id);
+}
+
+std::string SyncPrefs::GetGaiaId() const {
+  return pref_service_->GetString(prefs::kSyncGaiaId);
 }
 
 void SyncPrefs::SetCacheGuid(const std::string& cache_guid) {

@@ -8,6 +8,8 @@
 #include "src/core/SkAutoPixmapStorage.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrImageInfo.h"
+#include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/GrSurfaceContext.h"
 #include "tests/Test.h"
 #include "tests/TestUtils.h"
 
@@ -63,17 +65,17 @@ void testing_only_texture_test(skiatest::Reporter* reporter, GrContext* context,
     sk_sp<GrTextureProxy> wrappedProxy;
     if (GrRenderable::kYes == renderable) {
         wrappedProxy = context->priv().proxyProvider()->wrapRenderableBackendTexture(
-                backendTex, kTopLeft_GrSurfaceOrigin, 1, grCT, kAdopt_GrWrapOwnership,
-                GrWrapCacheable::kNo);
+                backendTex, 1, kAdopt_GrWrapOwnership, GrWrapCacheable::kNo);
     } else {
         wrappedProxy = context->priv().proxyProvider()->wrapBackendTexture(
-                backendTex, grCT, kTopLeft_GrSurfaceOrigin, kAdopt_GrWrapOwnership,
-                GrWrapCacheable::kNo, GrIOType::kRW_GrIOType);
+                backendTex, kAdopt_GrWrapOwnership, GrWrapCacheable::kNo, GrIOType::kRW_GrIOType);
     }
     REPORTER_ASSERT(reporter, wrappedProxy);
 
-    auto surfaceContext = context->priv().makeWrappedSurfaceContext(std::move(wrappedProxy), grCT,
-                                                                    kPremul_SkAlphaType);
+    GrSwizzle swizzle = context->priv().caps()->getReadSwizzle(wrappedProxy->backendFormat(), grCT);
+    GrSurfaceProxyView view(std::move(wrappedProxy), kTopLeft_GrSurfaceOrigin, swizzle);
+    auto surfaceContext = GrSurfaceContext::Make(context, std::move(view), grCT,
+                                                 kPremul_SkAlphaType, nullptr);
     REPORTER_ASSERT(reporter, surfaceContext);
 
     bool result = surfaceContext->readPixels({grCT, kPremul_SkAlphaType, nullptr, kWidth, kHeight},

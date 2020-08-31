@@ -501,8 +501,7 @@ bool ScriptStreamer::TryStartStreaming(
   // they wait for more input.
   // TODO(leszeks): Decrease the priority of these tasks where possible.
   worker_pool::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+      FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
       CrossThreadBindOnce(RunScriptStreamingTask,
                           WTF::Passed(std::move(script_streaming_task)),
                           WrapCrossThreadPersistent(this),
@@ -554,7 +553,7 @@ void ScriptStreamer::Prefinalize() {
   prefinalizer_called_ = true;
 }
 
-void ScriptStreamer::Trace(blink::Visitor* visitor) {
+void ScriptStreamer::Trace(Visitor* visitor) {
   visitor->Trace(script_resource_);
 }
 

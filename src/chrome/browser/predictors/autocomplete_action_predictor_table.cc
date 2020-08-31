@@ -7,8 +7,8 @@
 #include <cstddef>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/guid.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -220,11 +220,11 @@ void AutocompleteActionPredictorTable::DeleteAllRows() {
 
 AutocompleteActionPredictorTable::AutocompleteActionPredictorTable(
     scoped_refptr<base::SequencedTaskRunner> db_task_runner)
-    : PredictorTableBase(std::move(db_task_runner)) {}
+    : sqlite_proto::TableManager(std::move(db_task_runner)) {}
 
 AutocompleteActionPredictorTable::~AutocompleteActionPredictorTable() = default;
 
-void AutocompleteActionPredictorTable::CreateTableIfNonExistent() {
+void AutocompleteActionPredictorTable::CreateTablesIfNonExistent() {
   DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
   if (CantAccessDatabase())
     return;

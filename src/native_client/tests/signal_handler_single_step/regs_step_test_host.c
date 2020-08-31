@@ -177,14 +177,14 @@ static void TemporarilyRemoveBreakpoint(uintptr_t addr) {
     CHECK(*g_unpatched_addr
           == GetOverwrittenInstruction((uintptr_t) g_unpatched_addr));
     *g_unpatched_addr = NACL_HALT_WORD;
-    __builtin___clear_cache(g_unpatched_addr, &g_unpatched_addr[1]);
+    __builtin___clear_cache((char *)g_unpatched_addr, (char *)&g_unpatched_addr[1]);
   }
 
   dest = (uint32_t *) addr;
   ResetPagePermissions(addr);
   CHECK(*dest == NACL_HALT_WORD);
   *dest = GetOverwrittenInstruction(addr);
-  __builtin___clear_cache(dest, &dest[1]);
+  __builtin___clear_cache((char *)dest, (char *)&dest[1]);
   g_unpatched_addr = dest;
 }
 

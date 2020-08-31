@@ -28,6 +28,7 @@ class SkImage;
 namespace blink {
 
 class LocalFrame;
+class StaticBitmapImage;
 class WebGraphicsContext3DProvider;
 class WebGraphicsContext3DProviderWrapper;
 
@@ -52,7 +53,7 @@ class MODULES_EXPORT CanvasCaptureHandler {
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       blink::WebMediaStreamTrack* track);
 
-  void SendNewFrame(sk_sp<SkImage> image,
+  void SendNewFrame(scoped_refptr<StaticBitmapImage> image,
                     base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
                         context_provider);
   bool NeedsNewFrame() const;
@@ -79,27 +80,23 @@ class MODULES_EXPORT CanvasCaptureHandler {
       blink::WebMediaStreamTrack* track);
 
   // Helper functions to read pixel content.
-  void ReadARGBPixelsSync(sk_sp<SkImage> image);
+  void ReadARGBPixelsSync(scoped_refptr<StaticBitmapImage> image);
   void ReadARGBPixelsAsync(
-      sk_sp<SkImage> image,
+      scoped_refptr<StaticBitmapImage> image,
       blink::WebGraphicsContext3DProvider* context_provider);
   void ReadYUVPixelsAsync(
-      sk_sp<SkImage> image,
+      scoped_refptr<StaticBitmapImage> image,
       base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
           context_provider);
-  void OnARGBPixelsReadAsync(sk_sp<SkImage> image,
+  void OnARGBPixelsReadAsync(scoped_refptr<StaticBitmapImage> image,
                              scoped_refptr<media::VideoFrame> temp_argb_frame,
                              base::TimeTicks this_frame_ticks,
                              bool flip,
                              bool success);
-  void OnYUVPixelsReadAsync(
-      sk_sp<SkImage> image,
-      GLuint copy_texture,
-      base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
-          context_provider,
-      scoped_refptr<media::VideoFrame> yuv_frame,
-      base::TimeTicks this_frame_ticks,
-      bool success);
+  void OnYUVPixelsReadAsync(scoped_refptr<media::VideoFrame> yuv_frame,
+                            base::TimeTicks this_frame_ticks,
+                            bool success);
+  void OnReleaseMailbox(scoped_refptr<StaticBitmapImage> image);
 
   scoped_refptr<media::VideoFrame> ConvertToYUVFrame(
       bool is_opaque,
@@ -117,6 +114,14 @@ class MODULES_EXPORT CanvasCaptureHandler {
       std::unique_ptr<media::VideoCapturerSource> source,
       blink::WebMediaStreamTrack* web_track);
 
+  // Helper methods to increment/decrement the number of ongoing async pixel
+  // readouts currently happening.
+  void IncrementOngoingAsyncPixelReadouts();
+  void DecrementOngoingAsyncPixelReadouts();
+
+  // Send a refresh frame.
+  void SendRefreshFrame();
+
   // Object that does all the work of running |new_frame_callback_|.
   // Destroyed on |frame_callback_task_runner_| after the class is destroyed.
   class CanvasCaptureHandlerDelegate;
@@ -126,6 +131,11 @@ class MODULES_EXPORT CanvasCaptureHandler {
   media::VideoFramePool frame_pool_;
   base::Optional<base::TimeTicks> first_frame_ticks_;
   scoped_refptr<media::VideoFrame> last_frame_;
+
+  // The following attributes ensure that CanvasCaptureHandler emits
+  // frames with monotonically increasing timestamps.
+  bool deferred_request_refresh_frame_ = false;
+  int num_ongoing_async_pixel_readouts_ = 0;
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   std::unique_ptr<CanvasCaptureHandlerDelegate> delegate_;

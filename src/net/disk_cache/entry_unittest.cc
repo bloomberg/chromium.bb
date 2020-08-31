@@ -164,10 +164,8 @@ void DiskCacheEntryTest::InternalSyncIO() {
   ASSERT_TRUE(nullptr != entry);
 
   // The bulk of the test runs from within the callback, on the cache thread.
-  RunTaskForTest(base::Bind(&DiskCacheEntryTest::InternalSyncIOBackground,
-                            base::Unretained(this),
-                            entry));
-
+  RunTaskForTest(base::BindOnce(&DiskCacheEntryTest::InternalSyncIOBackground,
+                                base::Unretained(this), entry));
 
   entry->Doom();
   entry->Close();
@@ -400,9 +398,8 @@ void DiskCacheEntryTest::ExternalSyncIO() {
   ASSERT_THAT(CreateEntry("the first key", &entry), IsOk());
 
   // The bulk of the test runs from within the callback, on the cache thread.
-  RunTaskForTest(base::Bind(&DiskCacheEntryTest::ExternalSyncIOBackground,
-                            base::Unretained(this),
-                            entry));
+  RunTaskForTest(base::BindOnce(&DiskCacheEntryTest::ExternalSyncIOBackground,
+                                base::Unretained(this), entry));
 
   entry->Doom();
   entry->Close();
@@ -4972,7 +4969,8 @@ TEST_F(DiskCacheEntryTest, SimpleCacheReadCorruptLength) {
   EXPECT_NE(net::OK, OpenEntry(key, &entry));
 }
 
-TEST_F(DiskCacheEntryTest, SimpleCacheCreateRecoverFromRmdir) {
+// TODO(crbug.com/999584): Flaky on platforms which use POSIX-based file I/O.
+TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheCreateRecoverFromRmdir) {
   // This test runs as APP_CACHE to make operations more synchronous.
   // (in particular we want to see if create succeeded or not, so we don't
   //  want an optimistic one).

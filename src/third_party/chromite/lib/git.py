@@ -15,6 +15,7 @@ import hashlib
 import os
 import re
 import string
+import subprocess
 from xml import sax
 
 import six
@@ -75,8 +76,8 @@ def IsSubmoduleCheckoutRoot(path, remote, url):
   if os.path.isdir(path):
     remote_url = cros_build_lib.run(
         ['git', '--git-dir', path, 'config', 'remote.%s.url' % remote],
-        redirect_stdout=True, debug_level=logging.DEBUG,
-        error_code_ok=True, encoding='utf-8').output.strip()
+        stdout=True, debug_level=logging.DEBUG,
+        check=False, encoding='utf-8').output.strip()
     if remote_url == url:
       return True
   return False
@@ -565,7 +566,9 @@ class ManifestCheckout(Manifest):
         path, manifest_path, search=search)
 
     self.manifest_path = os.path.realpath(manifest_path)
-    manifest_include_dir = os.path.dirname(self.manifest_path)
+    # The include dir is always the manifest repo, not where the manifest file
+    # happens to live.
+    manifest_include_dir = os.path.join(self.root, '.repo', 'manifests')
     self.manifest_branch = self._GetManifestsBranch(self.root)
     self._content_merging = {}
     Manifest.__init__(self, self.manifest_path,
@@ -601,7 +604,7 @@ class ManifestCheckout(Manifest):
     """
     manifests_git_repo = os.path.join(checkout_root, '.repo', 'manifests.git')
     cmd = ['config', '--local', '--get', 'manifest.groups']
-    result = RunGit(manifests_git_repo, cmd, error_code_ok=True)
+    result = RunGit(manifests_git_repo, cmd, check=False)
 
     if result.output.strip():
       # Full layouts don't define groups.
@@ -853,10 +856,10 @@ def ShallowFetch(git_repo, git_url, sparse_checkout=None):
   start = utcnow()
   # Only fetch TOT git metadata without revision history.
   RunGit(git_repo, ['fetch', '--depth=1'],
-         print_cmd=True, redirect_stderr=True, capture_output=False)
+         print_cmd=True, stderr=True, capture_output=False)
   # Pull the files in sparse_checkout.
   RunGit(git_repo, ['pull', 'origin', 'master'],
-         print_cmd=True, redirect_stderr=True, capture_output=False)
+         print_cmd=True, stderr=True, capture_output=False)
   logging.info('ShallowFetch completed in %s.', utcnow() - start)
 
 
@@ -1175,8 +1178,8 @@ def RevertPath(git_repo, filename, rev):
 # git. Disable the nags from pylint.
 # pylint: disable=redefined-builtin
 def Log(git_repo, format=None, after=None, until=None,
-        reverse=False, date=None, max_count=None, rev='HEAD',
-        paths=None):
+        reverse=False, date=None, max_count=None, grep=None,
+        rev='HEAD', paths=None):
   """Return git log output for the given arguments.
 
   For more detailed description of the parameters, run `git help log`.
@@ -1189,6 +1192,7 @@ def Log(git_repo, format=None, after=None, until=None,
     reverse: If true, set --reverse flag.
     date: Passed directly to --date flag.
     max_count: Passed directly to --max-count flag.
+    grep: Passed directly to --grep flag.
     rev: Commit (or revision range) to log.
     paths: List of paths to log commits for (enumerated after final -- ).
 
@@ -1208,12 +1212,34 @@ def Log(git_repo, format=None, after=None, until=None,
     cmd.append('--date=%s' % date)
   if max_count:
     cmd.append('--max-count=%s' % max_count)
+  if grep:
+    cmd.append('--grep=%s' % grep)
   cmd.append(rev)
   if paths:
     cmd.append('--')
     cmd.extend(paths)
   return RunGit(git_repo, cmd, errors='replace').stdout
 # pylint: enable=redefined-builtin
+
+
+def GetChangeId(git_repo, rev='HEAD'):
+  """Retrieve the Change-Id from the commit message
+
+  Args:
+    git_repo: Path to the git repository where the commit is
+    rev: Commit to inspect, defaults to HEAD
+
+  Returns:
+    The Gerrit Change-Id assigned to the commit if it exists.
+  """
+  log = Log(git_repo, max_count=1, format='format:%B', rev=rev)
+  m = re.findall(r'^Change-Id: (I[a-fA-F0-9]{40})$', log, flags=re.M)
+  if not m:
+    return None
+  elif len(m) > 1:
+    raise ValueError('Too many Change-Ids found')
+  else:
+    return m[0]
 
 
 def Commit(git_repo, message, amend=False, allow_empty=False,
@@ -1238,10 +1264,7 @@ def Commit(git_repo, message, amend=False, allow_empty=False,
   if reset_author:
     cmd.append('--reset-author')
   RunGit(git_repo, cmd)
-
-  log = Log(git_repo, max_count=1, format='format:%B')
-  match = re.search('Change-Id: (?P<ID>I[a-fA-F0-9]*)', log)
-  return match.group('ID') if match else None
+  return GetChangeId(git_repo)
 
 
 _raw_diff_components = ('src_mode', 'dst_mode', 'src_sha', 'dst_sha',
@@ -1302,7 +1325,7 @@ def UploadCL(git_repo, remote, branch, local_branch='HEAD', draft=False,
     ref = ref + '%'+ ','.join(reviewer_list)
   remote_ref = RemoteRef(remote, ref)
   kwargs.setdefault('capture_output', False)
-  kwargs.setdefault('combine_stdout_stderr', True)
+  kwargs.setdefault('stderr', subprocess.STDOUT)
   return GitPush(git_repo, local_branch, remote_ref, **kwargs)
 
 
@@ -1386,7 +1409,7 @@ def SyncPushBranch(git_repo, remote, target, use_merge=False, **kwargs):
   except cros_build_lib.RunCommandError:
     # Looks like our change conflicts with upstream. Cleanup our failed
     # rebase.
-    RunGit(git_repo, [subcommand, '--abort'], error_code_ok=True, **kwargs)
+    RunGit(git_repo, [subcommand, '--abort'], check=False, **kwargs)
     raise
 
 
@@ -1454,8 +1477,8 @@ def CleanAndDetachHead(git_repo):
   Args:
     git_repo: Directory of git repository.
   """
-  RunGit(git_repo, ['am', '--abort'], error_code_ok=True)
-  RunGit(git_repo, ['rebase', '--abort'], error_code_ok=True)
+  RunGit(git_repo, ['am', '--abort'], check=False)
+  RunGit(git_repo, ['rebase', '--abort'], check=False)
   RunGit(git_repo, ['clean', '-dfx'])
   RunGit(git_repo, ['checkout', '--detach', '-f', 'HEAD'])
 

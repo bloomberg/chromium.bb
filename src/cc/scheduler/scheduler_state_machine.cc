@@ -4,8 +4,9 @@
 
 #include "cc/scheduler/scheduler_state_machine.h"
 
+#include "base/check_op.h"
 #include "base/format_macros.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "base/values.h"
@@ -266,7 +267,7 @@ void SchedulerStateMachine::AsProtozeroInto(
   minor_state->set_video_needs_begin_frames(video_needs_begin_frames_);
   minor_state->set_defer_begin_main_frame(defer_begin_main_frame_);
   minor_state->set_last_commit_had_no_updates(last_commit_had_no_updates_);
-  minor_state->set_did_draw_in_last_frame(did_draw_in_last_frame_);
+  minor_state->set_did_draw_in_last_frame(did_attempt_draw_in_last_frame_);
   minor_state->set_did_submit_in_last_frame(did_submit_in_last_frame_);
   minor_state->set_needs_impl_side_invalidation(needs_impl_side_invalidation_);
   minor_state->set_current_pending_tree_is_impl_side(
@@ -412,9 +413,13 @@ bool SchedulerStateMachine::ShouldActivateSyncTree() const {
 
   // We should not activate a second tree before drawing the first one.
   // Even if we need to force activation of the pending tree, we should abort
-  // drawing the active tree first.
-  if (active_tree_needs_first_draw_)
+  // drawing the active tree first. Relax this requirement for synchronous
+  // compositor where scheduler does not control draw, and blocking commit
+  // may lead to bad scheduling.
+  if (!settings_.using_synchronous_renderer_compositor &&
+      active_tree_needs_first_draw_) {
     return false;
+  }
 
   // Delay pending tree activation until paint worklets have completed painting
   // the pending tree. This must occur before the |ShouldAbortCurrentFrame|
@@ -977,10 +982,11 @@ void SchedulerStateMachine::WillDraw() {
   // Set this to true to proactively request a new BeginFrame. We can't set this
   // in WillDrawInternal because AbortDraw calls WillDrawInternal but shouldn't
   // request another frame.
-  did_draw_in_last_frame_ = true;
+  did_attempt_draw_in_last_frame_ = true;
 }
 
 void SchedulerStateMachine::DidDraw(DrawResult draw_result) {
+  draw_succeeded_in_last_frame_ = draw_result == DRAW_SUCCESS;
   DidDrawInternal(draw_result);
 }
 
@@ -1122,7 +1128,7 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   // frame soon. This helps avoid negative glitches in our SetNeedsBeginFrame
   // requests, which may propagate to the BeginImplFrame provider and get
   // sampled at an inopportune time, delaying the next BeginImplFrame.
-  if (did_draw_in_last_frame_)
+  if (did_attempt_draw_in_last_frame_)
     return true;
 
   // If the last commit was aborted because of early out (no updates), we should
@@ -1130,11 +1136,15 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   if (last_commit_had_no_updates_)
     return true;
 
+  // If there is active interaction happening (e.g. scroll/pinch), then keep
+  // reqeusting frames.
+  if (tree_priority_ == SMOOTHNESS_TAKES_PRIORITY)
+    return true;
+
   return false;
 }
 
-void SchedulerStateMachine::OnBeginImplFrame(uint64_t source_id,
-                                             uint64_t sequence_number,
+void SchedulerStateMachine::OnBeginImplFrame(const viz::BeginFrameId& frame_id,
                                              bool animate_only) {
   begin_impl_frame_state_ = BeginImplFrameState::INSIDE_BEGIN_FRAME;
   current_frame_number_++;
@@ -1146,7 +1156,8 @@ void SchedulerStateMachine::OnBeginImplFrame(uint64_t source_id,
   last_frame_events_.did_commit_during_frame = did_commit_during_frame_;
 
   last_commit_had_no_updates_ = false;
-  did_draw_in_last_frame_ = false;
+  did_attempt_draw_in_last_frame_ = false;
+  draw_succeeded_in_last_frame_ = false;
   did_submit_in_last_frame_ = false;
   needs_one_begin_impl_frame_ = false;
 
@@ -1357,8 +1368,9 @@ void SchedulerStateMachine::SetNeedsPrepareTiles() {
   }
 }
 void SchedulerStateMachine::DidSubmitCompositorFrame() {
-  TRACE_EVENT_ASYNC_BEGIN1("cc", "Scheduler:pending_submit_frames", this,
-                           "pending_frames", pending_submit_frames_);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("cc", "Scheduler:pending_submit_frames",
+                                    TRACE_ID_LOCAL(this), "pending_frames",
+                                    pending_submit_frames_);
   DCHECK_LT(pending_submit_frames_, kMaxPendingSubmitFrames);
 
   pending_submit_frames_++;
@@ -1369,8 +1381,9 @@ void SchedulerStateMachine::DidSubmitCompositorFrame() {
 }
 
 void SchedulerStateMachine::DidReceiveCompositorFrameAck() {
-  TRACE_EVENT_ASYNC_END1("cc", "Scheduler:pending_submit_frames", this,
-                         "pending_frames", pending_submit_frames_);
+  TRACE_EVENT_NESTABLE_ASYNC_END1("cc", "Scheduler:pending_submit_frames",
+                                  TRACE_ID_LOCAL(this), "pending_frames",
+                                  pending_submit_frames_);
   pending_submit_frames_--;
 }
 

@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Phóng to</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, Ứng dụng đã được cài đặt</translation>
 <translation id="1450753235335490080">Không thể chia sẻ <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">Đã hoán đổi <ph name="FIRST_ITEM_TITLE" /> cho <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Bạn đã tìm kiếm nội dung này trước đây. Việc xóa "<ph name="QUERY" />" khỏi lịch sử sẽ xóa vĩnh viễn cụm từ tìm kiếm này khỏi tài khoản của bạn trên tất cả các thiết bị.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 phút và }other{# phút và }}</translation>
 <translation id="1643823602425662293">Thông báo</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Chọn &amp;tất cả</translation>
-<translation id="1938451708255335766">Để điều chỉnh mật độ hiển thị cửa sổ, hãy khởi động lại ứng dụng.</translation>
 <translation id="2006524834898217237">Hãy đảm bảo thiết bị này có kết nối Internet.</translation>
 <translation id="208586643495776849">Vui lòng thử lại</translation>
 <translation id="2090963878406559571">Để gửi một số điện thoại từ <ph name="ORIGIN" /> sang điện thoại Android, hãy <ph name="TROUBLESHOOT_LINK" /> cho cả hai thiết bị trong phần cài đặt.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Phím mũi tên Xuống</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ngày}other{# ngày}}</translation>
 <translation id="3295886253693811851">Gọi điện từ</translation>
+<translation id="3306688585798492231">Màn hình tích hợp</translation>
 <translation id="335581015389089642">Giọng nói</translation>
 <translation id="3389286852084373014">Văn bản quá lớn</translation>
-<translation id="3479552764303398839">Không phải bây giờ</translation>
 <translation id="348799646910989694">Giá tự động ẩn</translation>
 <translation id="3554637740840164787">Đã ghim <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Còn 1 ngày}other{Còn # ngày}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">Tiếp tục đọc trên thiết bị di động <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3889424535448813030">Mũi tên phải</translation>
-<translation id="3892641579809465218">Màn hình nội bộ</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Cắ&amp;t</translation>
 <translation id="3990502903496589789">Cạnh bên Phải</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 phút}other{# phút}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Hoạt động hôm nay}=1{Hoạt động 1 ngày trước}other{Hoạt động # ngày trước}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ngày và }other{# ngày và }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{trong 1 năm}other{trong # năm}}</translation>
-<translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Còn 1 giây}other{Còn # giây}}</translation>
 <translation id="5941711191222866238">Thu nhỏ</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 giờ}other{# giờ}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Phải sang Trái</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">RẤT CÓ THỂ</translation>
+<translation id="7170202025028120564">Các tùy chọn cài đặt hiển thị của ứng dụng sẽ có hiệu lực khi bạn khởi động lại ứng dụng vào lần sau.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Còn 1 phút}other{Còn # phút}}</translation>
 <translation id="7319740667687257810">Trình khởi chạy, chế độ xem một phần</translation>
@@ -218,7 +218,7 @@
 <translation id="815598010540052116">Cuộn Xuống</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Trang Dưới</translation>
-<translation id="8245914219290430011">Tab</translation>
+<translation id="8245914219290430011">Thẻ</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, Ứng dụng</translation>
 <translation id="8259556432390118667">Giá trị màu hex</translation>
 <translation id="8328145009876646418">Cạnh Bên trái</translation>
@@ -246,7 +246,7 @@
 <translation id="9002566407876343676">mở</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 giây}other{# giây}}</translation>
 <translation id="9059834730836941392">Thu gọn thông báo</translation>
-<translation id="9150735707954472829">Tab</translation>
+<translation id="9150735707954472829">Thẻ</translation>
 <translation id="9161053988251441839">ỨNG DỤNG ĐỀ XUẤT</translation>
 <translation id="9170848237812810038">H&amp;oàn tác</translation>
 <translation id="9178475906033259337">Đang hiển thị 1 kết quả cho <ph name="QUERY" /></translation>

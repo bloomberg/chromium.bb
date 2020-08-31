@@ -3,20 +3,21 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/client_settings.h"
+#include "base/logging.h"
 
 namespace {
 
 bool IsValidOverlayImageProto(
     const autofill_assistant::OverlayImageProto& proto) {
   if (!proto.image_url().empty() && !proto.has_image_size()) {
-    DVLOG(1) << __func__ << ": Missing image_size in overlay_image, ignoring";
+    VLOG(1) << __func__ << ": Missing image_size in overlay_image, ignoring";
     return false;
   }
 
   if (!proto.text().empty() &&
       (!proto.has_text_color() || !proto.has_text_size())) {
-    DVLOG(1) << __func__
-             << ": Missing text_color or text_size in overlay_image, ignoring";
+    VLOG(1) << __func__
+            << ": Missing text_color or text_size in overlay_image, ignoring";
     return false;
   }
   return true;
@@ -82,6 +83,14 @@ void ClientSettings::UpdateFromProto(const ClientSettingsProto& proto) {
     overlay_image = proto.overlay_image();
   } else {
     overlay_image.reset();
+  }
+  if (proto.has_integration_test_settings()) {
+    integration_test_settings = proto.integration_test_settings();
+  } else {
+    integration_test_settings.reset();
+  }
+  if (proto.has_talkback_sheet_size_fraction()) {
+    talkback_sheet_size_fraction = proto.talkback_sheet_size_fraction();
   }
 }
 

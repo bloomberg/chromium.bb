@@ -7,7 +7,6 @@
 #include <type_traits>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/message_loop/message_pump_type.h"
@@ -33,65 +32,14 @@ namespace base {
 
 namespace {
 
-bool PumpTypeUsesDoSomeWork(MessagePumpType type) {
-  switch (type) {
-    case MessagePumpType::DEFAULT:
-      return true;
-
-    case MessagePumpType::UI:
-#if defined(OS_WIN) || defined(OS_ANDROID) || defined(USE_GLIB) || \
-    defined(OS_MACOSX)
-      return true;
-#elif defined(OS_POSIX) && !defined(OS_NACL_SFI)
-      // MessagePumpLibevent was migrated (ref. message_pump_for_ui.h and
-      // |use_libevent| in base/BUILD.gn for enabled conditions).
-      return std::is_same<MessagePumpForUI, MessagePumpLibevent>::value;
-#else
-      // TODO(gab): Complete migration of all UI pumps to DoSomeWork() as part
-      // of crbug.com/885371.
-      return false;
-#endif
-
-    case MessagePumpType::IO:
-#if defined(OS_WIN) || defined(OS_MACOSX)
-      return true;
-#elif defined(OS_POSIX) && !defined(OS_NACL_SFI)
-      // MessagePumpLibevent was migrated (ref. message_pump_for_io.h and
-      // |use_libevent| in base/BUILD.gn for enabled conditions).
-      return std::is_same<MessagePumpForIO, MessagePumpLibevent>::value;
-#else
-      // TODO(gab): Complete migration of all IO pumps to DoSomeWork() as part
-      // of crbug.com/885371.
-      return false;
-#endif
-
-    case MessagePumpType::CUSTOM:
-#if defined(OS_ANDROID)
-    case MessagePumpType::JAVA:
-#endif  // defined(OS_ANDROID)
-#if defined(OS_MACOSX)
-    case MessagePumpType::NS_RUNLOOP:
-#endif  // defined(OS_MACOSX)
-#if defined(OS_WIN)
-    case MessagePumpType::UI_WITH_WM_QUIT_SUPPORT:
-#endif  // defined(OS_WIN)
-      // Not tested in this file.
-      NOTREACHED();
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
 class MockMessagePumpDelegate : public MessagePump::Delegate {
  public:
   MockMessagePumpDelegate() = default;
 
   // MessagePump::Delegate:
-  void BeforeDoInternalWork() {}
-  MOCK_METHOD0(DoSomeWork, MessagePump::Delegate::NextWorkInfo());
-  MOCK_METHOD0(DoWork, bool());
-  MOCK_METHOD1(DoDelayedWork, bool(TimeTicks*));
+  void BeforeDoInternalWork() override {}
+  void BeforeWait() override {}
+  MOCK_METHOD0(DoWork, MessagePump::Delegate::NextWorkInfo());
   MOCK_METHOD0(DoIdleWork, bool());
 
  private:
@@ -103,8 +51,6 @@ class MessagePumpTest : public ::testing::TestWithParam<MessagePumpType> {
   MessagePumpTest() : message_pump_(MessagePump::Create(GetParam())) {}
 
  protected:
-  const bool pump_uses_do_some_work_ = PumpTypeUsesDoSomeWork(GetParam());
-
   std::unique_ptr<MessagePump> message_pump_;
 };
 
@@ -113,19 +59,11 @@ class MessagePumpTest : public ::testing::TestWithParam<MessagePumpType> {
 TEST_P(MessagePumpTest, QuitStopsWork) {
   testing::StrictMock<MockMessagePumpDelegate> delegate;
 
-  // Not expecting any calls to DoDelayedWork or DoIdleWork after quitting.
-  if (pump_uses_do_some_work_) {
-    EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([this] {
-      message_pump_->Quit();
-      return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
-    }));
-  } else {
-    EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
-      message_pump_->Quit();
-      return false;
-    }));
-  }
-  EXPECT_CALL(delegate, DoDelayedWork(_)).Times(0);
+  // Not expecting any calls to DoIdleWork after quitting.
+  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
+    message_pump_->Quit();
+    return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+  }));
   EXPECT_CALL(delegate, DoIdleWork()).Times(0);
 
   message_pump_->ScheduleWork();
@@ -137,51 +75,28 @@ TEST_P(MessagePumpTest, QuitStopsWorkWithNestedRunLoop) {
   testing::StrictMock<MockMessagePumpDelegate> delegate;
   testing::StrictMock<MockMessagePumpDelegate> nested_delegate;
 
-  // We first schedule a call to DoWork, which runs a nested run loop. After the
-  // nested loop exits, we schedule another DoWork which quits the outer
+  // We first schedule a call to DoWork, which runs a nested run loop. After
+  // the nested loop exits, we schedule another DoWork which quits the outer
   // (original) run loop. The test verifies that there are no extra calls to
   // DoWork after the outer loop quits.
-  if (pump_uses_do_some_work_) {
-    EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([&] {
-      message_pump_->ScheduleWork();
-      message_pump_->Run(&nested_delegate);
-      message_pump_->ScheduleWork();
-      return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
-    }));
-    EXPECT_CALL(nested_delegate, DoSomeWork).WillOnce(Invoke([&] {
-      // Quit the nested run loop.
-      message_pump_->Quit();
-      return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
-    }));
-  } else {
-    EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([&] {
-      message_pump_->ScheduleWork();
-      message_pump_->Run(&nested_delegate);
-      message_pump_->ScheduleWork();
-      return false;
-    }));
-    EXPECT_CALL(nested_delegate, DoWork).WillOnce(Invoke([&] {
-      // Quit the nested run loop.
-      message_pump_->Quit();
-      return false;
-    }));
-    EXPECT_CALL(delegate, DoDelayedWork(_)).WillOnce(Return(false));
-  }
+  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([&] {
+    message_pump_->ScheduleWork();
+    message_pump_->Run(&nested_delegate);
+    message_pump_->ScheduleWork();
+    return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+  }));
+  EXPECT_CALL(nested_delegate, DoWork).WillOnce(Invoke([&] {
+    // Quit the nested run loop.
+    message_pump_->Quit();
+    return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+  }));
 
   // The outer pump may or may not trigger idle work at this point.
   EXPECT_CALL(delegate, DoIdleWork()).Times(AnyNumber());
-
-  if (pump_uses_do_some_work_) {
-    EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([this] {
-      message_pump_->Quit();
-      return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
-    }));
-  } else {
-    EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
-      message_pump_->Quit();
-      return false;
-    }));
-  }
+  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
+    message_pump_->Quit();
+    return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+  }));
 
   message_pump_->ScheduleWork();
   message_pump_->Run(&delegate);
@@ -204,8 +119,9 @@ class TimerSlackTestDelegate : public MessagePump::Delegate {
   }
 
   void BeforeDoInternalWork() override {}
+  void BeforeWait() override {}
 
-  MessagePump::Delegate::NextWorkInfo DoSomeWork() override {
+  MessagePump::Delegate::NextWorkInfo DoWork() override {
     switch (action_.load()) {
       case NONE:
         break;
@@ -225,25 +141,6 @@ class TimerSlackTestDelegate : public MessagePump::Delegate {
     return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
   }
 
-  bool DoWork() override {
-    switch (action_.load()) {
-      case NONE:
-        break;
-      case SCHEDULE_DELAYED_WORK:
-        // After being woken up by the other thread, we schedule work after a
-        // short delay. If the pump refreshes its timer correctly, it will wake
-        // up shortly, finishing the test.
-        action_.store(QUIT);
-        message_pump_->ScheduleDelayedWork(TimeTicks::Now() +
-                                           TimeDelta::FromMilliseconds(50));
-        break;
-      case QUIT:
-        message_pump_->Quit();
-        break;
-    }
-    return false;
-  }
-  bool DoDelayedWork(base::TimeTicks*) override { return false; }
   bool DoIdleWork() override { return false; }
 
   void WakeUpFromOtherThread() {
@@ -296,17 +193,10 @@ TEST_P(MessagePumpTest, RunWithoutScheduleWorkInvokesDoWork) {
 #if defined(OS_IOS)
   EXPECT_CALL(delegate, DoIdleWork).Times(AnyNumber());
 #endif
-  if (pump_uses_do_some_work_) {
-    EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([this] {
-      message_pump_->Quit();
-      return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
-    }));
-  } else {
-    EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
-      message_pump_->Quit();
-      return false;
-    }));
-  }
+  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
+    message_pump_->Quit();
+    return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+  }));
   message_pump_->Run(&delegate);
 }
 
@@ -315,35 +205,19 @@ TEST_P(MessagePumpTest, NestedRunWithoutScheduleWorkInvokesDoWork) {
 #if defined(OS_IOS)
   EXPECT_CALL(delegate, DoIdleWork).Times(AnyNumber());
 #endif
-  if (pump_uses_do_some_work_) {
-    EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([this] {
-      testing::StrictMock<MockMessagePumpDelegate> nested_delegate;
+  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
+    testing::StrictMock<MockMessagePumpDelegate> nested_delegate;
 #if defined(OS_IOS)
-      EXPECT_CALL(nested_delegate, DoIdleWork).Times(AnyNumber());
+    EXPECT_CALL(nested_delegate, DoIdleWork).Times(AnyNumber());
 #endif
-      EXPECT_CALL(nested_delegate, DoSomeWork).WillOnce(Invoke([this] {
-        message_pump_->Quit();
-        return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
-      }));
-      message_pump_->Run(&nested_delegate);
+    EXPECT_CALL(nested_delegate, DoWork).WillOnce(Invoke([this] {
       message_pump_->Quit();
       return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
     }));
-  } else {
-    EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
-      testing::StrictMock<MockMessagePumpDelegate> nested_delegate;
-#if defined(OS_IOS)
-      EXPECT_CALL(nested_delegate, DoIdleWork).Times(AnyNumber());
-#endif
-      EXPECT_CALL(nested_delegate, DoWork).WillOnce(Invoke([this] {
-        message_pump_->Quit();
-        return false;
-      }));
-      message_pump_->Run(&nested_delegate);
-      message_pump_->Quit();
-      return false;
-    }));
-  }
+    message_pump_->Run(&nested_delegate);
+    message_pump_->Quit();
+    return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+  }));
   message_pump_->Run(&delegate);
 }
 

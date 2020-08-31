@@ -15,7 +15,8 @@ class CommandUpdater;
 class TranslateIconView : public PageActionIconView {
  public:
   TranslateIconView(CommandUpdater* command_updater,
-                    PageActionIconView::Delegate* delegate);
+                    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+                    PageActionIconView::Delegate* page_action_icon_delegate);
   ~TranslateIconView() override;
 
   // PageActionIconView:
@@ -28,6 +29,7 @@ class TranslateIconView : public PageActionIconView {
   void OnPressed(bool activated) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
+  const char* GetClassName() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TranslateIconView);

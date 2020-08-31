@@ -82,7 +82,7 @@ bool ClipboardCommands::CanWriteClipboard(LocalFrame& frame,
 
 bool ClipboardCommands::CanSmartReplaceInClipboard(LocalFrame& frame) {
   return frame.GetEditor().SmartInsertDeleteEnabled() &&
-         SystemClipboard::GetInstance().CanSmartReplace();
+         frame.GetSystemClipboard()->CanSmartReplace();
 }
 
 Element* ClipboardCommands::FindEventTargetForClipboardEvent(
@@ -110,19 +110,19 @@ bool ClipboardCommands::DispatchClipboardEvent(LocalFrame& frame,
   if (!target)
     return true;
 
-  DataTransfer* const data_transfer =
-      DataTransfer::Create(DataTransfer::kCopyAndPaste, policy,
-                           policy == DataTransferAccessPolicy::kWritable
-                               ? DataObject::Create()
-                               : DataObject::CreateFromClipboard(paste_mode));
+  SystemClipboard* system_clipboard = frame.GetSystemClipboard();
+  DataTransfer* const data_transfer = DataTransfer::Create(
+      DataTransfer::kCopyAndPaste, policy,
+      policy == DataTransferAccessPolicy::kWritable
+          ? DataObject::Create()
+          : DataObject::CreateFromClipboard(system_clipboard, paste_mode));
 
   Event* const evt = ClipboardEvent::Create(event_type, data_transfer);
   target->DispatchEvent(*evt);
   const bool no_default_processing = evt->defaultPrevented();
   if (no_default_processing && policy == DataTransferAccessPolicy::kWritable) {
-    SystemClipboard::GetInstance().WriteDataObject(
-        data_transfer->GetDataObject());
-    SystemClipboard::GetInstance().CommitWrite();
+    frame.GetSystemClipboard()->WriteDataObject(data_transfer->GetDataObject());
+    frame.GetSystemClipboard()->CommitWrite();
   }
 
   // Invalidate clipboard here for security.
@@ -135,7 +135,7 @@ bool ClipboardCommands::DispatchCopyOrCutEvent(LocalFrame& frame,
                                                const AtomicString& event_type) {
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame.GetDocument()->UpdateStyleAndLayout();
+  frame.GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   if (IsInPasswordField(
           frame.Selection().ComputeVisibleSelectionInDOMTree().Start()))
     return true;
@@ -204,9 +204,9 @@ void ClipboardCommands::WriteSelectionToClipboard(LocalFrame& frame) {
   const KURL& url = frame.GetDocument()->Url();
   const String html = frame.Selection().SelectedHTMLForClipboard();
   const String plain_text = frame.SelectedTextForClipboard();
-  SystemClipboard::GetInstance().WriteHTML(html, url, plain_text,
-                                           GetSmartReplaceOption(frame));
-  SystemClipboard::GetInstance().CommitWrite();
+  frame.GetSystemClipboard()->WriteHTML(html, url, plain_text,
+                                        GetSmartReplaceOption(frame));
+  frame.GetSystemClipboard()->CommitWrite();
 }
 
 bool ClipboardCommands::PasteSupported(LocalFrame* frame) {
@@ -235,12 +235,20 @@ bool ClipboardCommands::ExecuteCopy(LocalFrame& frame,
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // A 'copy' event handler might have dirtied the layout so we need to update
   // before we obtain the selection.
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   if (HTMLImageElement* image_element =
           ImageElementFromImageDocument(document)) {
-    WriteImageNodeToClipboard(*image_element, document->title());
-    return true;
+    // In an image document, normally there isn't anything to select, and we
+    // only want to copy the image itself.
+    if (frame.Selection().ComputeVisibleSelectionInDOMTree().IsNone()) {
+      WriteImageNodeToClipboard(*frame.GetSystemClipboard(), *image_element,
+                                document->title());
+      return true;
+    }
+
+    // Scripts may insert other contents into an image document. Falls through
+    // when they are selected.
   }
 
   // Since copy is a read-only operation it succeeds anytime a selection
@@ -252,9 +260,9 @@ bool ClipboardCommands::ExecuteCopy(LocalFrame& frame,
 
   if (EnclosingTextControl(
           frame.Selection().ComputeVisibleSelectionInDOMTree().Start())) {
-    SystemClipboard::GetInstance().WritePlainText(
-        frame.SelectedTextForClipboard(), GetSmartReplaceOption(frame));
-    SystemClipboard::GetInstance().CommitWrite();
+    frame.GetSystemClipboard()->WritePlainText(frame.SelectedTextForClipboard(),
+                                               GetSmartReplaceOption(frame));
+    frame.GetSystemClipboard()->CommitWrite();
     return true;
   }
   WriteSelectionToClipboard(frame);
@@ -292,7 +300,7 @@ bool ClipboardCommands::ExecuteCut(LocalFrame& frame,
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // A 'cut' event handler might have dirtied the layout so we need to update
   // before we obtain the selection.
-  frame.GetDocument()->UpdateStyleAndLayout();
+  frame.GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
@@ -303,9 +311,9 @@ bool ClipboardCommands::ExecuteCut(LocalFrame& frame,
   if (EnclosingTextControl(
           frame.Selection().ComputeVisibleSelectionInDOMTree().Start())) {
     const String plain_text = frame.SelectedTextForClipboard();
-    SystemClipboard::GetInstance().WritePlainText(plain_text,
-                                                  GetSmartReplaceOption(frame));
-    SystemClipboard::GetInstance().CommitWrite();
+    frame.GetSystemClipboard()->WritePlainText(plain_text,
+                                               GetSmartReplaceOption(frame));
+    frame.GetSystemClipboard()->CommitWrite();
   } else {
     WriteSelectionToClipboard(frame);
   }
@@ -346,26 +354,35 @@ void ClipboardCommands::PasteAsPlainTextFromClipboard(
   if (!target)
     return;
   target->DispatchEvent(*TextEvent::CreateForPlainTextPaste(
-      frame.DomWindow(), SystemClipboard::GetInstance().ReadPlainText(),
+      frame.DomWindow(), frame.GetSystemClipboard()->ReadPlainText(),
       CanSmartReplaceInClipboard(frame)));
 }
 
 ClipboardCommands::FragmentAndPlainText
 ClipboardCommands::GetFragmentFromClipboard(LocalFrame& frame) {
   DocumentFragment* fragment = nullptr;
-  if (SystemClipboard::GetInstance().IsHTMLAvailable()) {
+  if (frame.GetSystemClipboard()->IsHTMLAvailable()) {
     unsigned fragment_start = 0;
     unsigned fragment_end = 0;
     KURL url;
-    const String markup = SystemClipboard::GetInstance().ReadHTML(
-        url, fragment_start, fragment_end);
+    const String markup =
+        frame.GetSystemClipboard()->ReadHTML(url, fragment_start, fragment_end);
     fragment = CreateSanitizedFragmentFromMarkupWithContext(
         *frame.GetDocument(), markup, fragment_start, fragment_end, url);
   }
   if (fragment)
     return std::make_pair(fragment, false);
 
-  const String text = SystemClipboard::GetInstance().ReadPlainText();
+  if (const String markup = frame.GetSystemClipboard()->ReadImageAsImageMarkup(
+          mojom::blink::ClipboardBuffer::kStandard)) {
+    fragment = CreateFragmentFromMarkup(*frame.GetDocument(), markup,
+                                        /* base_url */ "",
+                                        kDisallowScriptingAndPluginContent);
+    DCHECK(fragment);
+    return std::make_pair(fragment, false);
+  }
+
+  const String text = frame.GetSystemClipboard()->ReadPlainText();
   if (text.IsEmpty())
     return std::make_pair(fragment, false);
 
@@ -373,7 +390,7 @@ ClipboardCommands::GetFragmentFromClipboard(LocalFrame& frame) {
   // needs to be audited. See http://crbug.com/590369 for more details.
   // |SelectedRange| requires clean layout for visible selection
   // normalization.
-  frame.GetDocument()->UpdateStyleAndLayout();
+  frame.GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
   fragment = CreateFragmentFromText(frame.GetEditor().SelectedRange(), text);
   return std::make_pair(fragment, true);
 }
@@ -402,7 +419,7 @@ void ClipboardCommands::Paste(LocalFrame& frame, EditorCommandSource source) {
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // A 'paste' event handler might have dirtied the layout so we need to update
   // before we obtain the selection.
-  frame.GetDocument()->UpdateStyleAndLayout();
+  frame.GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
@@ -418,7 +435,8 @@ void ClipboardCommands::Paste(LocalFrame& frame, EditorCommandSource source) {
   if (source == EditorCommandSource::kMenuOrKeyBinding) {
     DataTransfer* data_transfer = DataTransfer::Create(
         DataTransfer::kCopyAndPaste, DataTransferAccessPolicy::kReadable,
-        DataObject::CreateFromClipboard(paste_mode));
+        DataObject::CreateFromClipboard(frame.GetSystemClipboard(),
+                                        paste_mode));
 
     if (DispatchBeforeInputDataTransfer(
             FindEventTargetForClipboardEvent(frame, source),
@@ -453,11 +471,10 @@ bool ClipboardCommands::ExecutePasteGlobalSelection(LocalFrame& frame,
     return false;
   DCHECK_EQ(source, EditorCommandSource::kMenuOrKeyBinding);
 
-  const bool old_selection_mode =
-      SystemClipboard::GetInstance().IsSelectionMode();
-  SystemClipboard::GetInstance().SetSelectionMode(true);
+  const bool old_selection_mode = frame.GetSystemClipboard()->IsSelectionMode();
+  frame.GetSystemClipboard()->SetSelectionMode(true);
   Paste(frame, source);
-  SystemClipboard::GetInstance().SetSelectionMode(old_selection_mode);
+  frame.GetSystemClipboard()->SetSelectionMode(old_selection_mode);
   return true;
 }
 
@@ -474,7 +491,7 @@ bool ClipboardCommands::ExecutePasteAndMatchStyle(LocalFrame& frame,
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // A 'paste' event handler might have dirtied the layout so we need to update
   // before we obtain the selection.
-  frame.GetDocument()->UpdateStyleAndLayout();
+  frame.GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())

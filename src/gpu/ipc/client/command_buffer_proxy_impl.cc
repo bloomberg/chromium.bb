@@ -5,8 +5,6 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 
 #include <memory>
-#include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -31,7 +29,6 @@
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -658,7 +655,6 @@ void CommandBufferProxyImpl::ReturnFrontBuffer(const gpu::Mailbox& mailbox,
 
 bool CommandBufferProxyImpl::Send(IPC::Message* msg) {
   DCHECK(channel_);
-  last_state_lock_.AssertAcquired();
   DCHECK_EQ(gpu::error::kNoError, last_state_.error);
 
   last_state_lock_.Release();
@@ -696,7 +692,7 @@ bool CommandBufferProxyImpl::Send(IPC::Message* msg) {
 std::pair<base::UnsafeSharedMemoryRegion, base::WritableSharedMemoryMapping>
 CommandBufferProxyImpl::AllocateAndMapSharedMemory(size_t size) {
   base::UnsafeSharedMemoryRegion region =
-      mojo::CreateUnsafeSharedMemoryRegion(size);
+      base::UnsafeSharedMemoryRegion::Create(size);
   if (!region.IsValid()) {
     DLOG(ERROR) << "AllocateAndMapSharedMemory: Allocation failed";
     return {};
@@ -714,7 +710,6 @@ CommandBufferProxyImpl::AllocateAndMapSharedMemory(size_t size) {
 void CommandBufferProxyImpl::SetStateFromMessageReply(
     const gpu::CommandBuffer::State& state) {
   CheckLock();
-  last_state_lock_.AssertAcquired();
   if (last_state_.error != gpu::error::kNoError)
     return;
   // Handle wraparound. It works as long as we don't have more than 2B state
@@ -727,7 +722,6 @@ void CommandBufferProxyImpl::SetStateFromMessageReply(
 
 void CommandBufferProxyImpl::TryUpdateState() {
   CheckLock();
-  last_state_lock_.AssertAcquired();
   if (last_state_.error == gpu::error::kNoError) {
     shared_state()->Read(&last_state_);
     if (last_state_.error != gpu::error::kNoError)
@@ -736,7 +730,6 @@ void CommandBufferProxyImpl::TryUpdateState() {
 }
 
 void CommandBufferProxyImpl::TryUpdateStateThreadSafe() {
-  last_state_lock_.AssertAcquired();
   if (last_state_.error == gpu::error::kNoError) {
     shared_state()->Read(&last_state_);
     if (last_state_.error != gpu::error::kNoError) {
@@ -749,7 +742,6 @@ void CommandBufferProxyImpl::TryUpdateStateThreadSafe() {
 }
 
 void CommandBufferProxyImpl::TryUpdateStateDontReportError() {
-  last_state_lock_.AssertAcquired();
   if (last_state_.error == gpu::error::kNoError)
     shared_state()->Read(&last_state_);
 }
@@ -779,7 +771,6 @@ void CommandBufferProxyImpl::OnBufferPresented(
 
 void CommandBufferProxyImpl::OnGpuSyncReplyError() {
   CheckLock();
-  last_state_lock_.AssertAcquired();
   last_state_.error = gpu::error::kLostContext;
   last_state_.context_lost_reason = gpu::error::kInvalidGpuMessage;
   // This method may be inside a callstack from the GpuControlClient (we got a
@@ -792,7 +783,6 @@ void CommandBufferProxyImpl::OnGpuAsyncMessageError(
     gpu::error::ContextLostReason reason,
     gpu::error::Error error) {
   CheckLock();
-  last_state_lock_.AssertAcquired();
   last_state_.error = error;
   last_state_.context_lost_reason = reason;
   // This method only occurs when receiving IPC messages, so we know it's not in
@@ -804,7 +794,6 @@ void CommandBufferProxyImpl::OnGpuAsyncMessageError(
 
 void CommandBufferProxyImpl::OnGpuStateError() {
   CheckLock();
-  last_state_lock_.AssertAcquired();
   DCHECK_NE(gpu::error::kNoError, last_state_.error);
   // This method may be inside a callstack from the GpuControlClient (we
   // encountered an error while trying to perform some action). So avoid
@@ -814,7 +803,6 @@ void CommandBufferProxyImpl::OnGpuStateError() {
 
 void CommandBufferProxyImpl::OnClientError(gpu::error::Error error) {
   CheckLock();
-  last_state_lock_.AssertAcquired();
   last_state_.error = error;
   last_state_.context_lost_reason = gpu::error::kUnknown;
   // This method may be inside a callstack from the GpuControlClient (we
@@ -825,7 +813,6 @@ void CommandBufferProxyImpl::OnClientError(gpu::error::Error error) {
 
 void CommandBufferProxyImpl::DisconnectChannelInFreshCallStack() {
   CheckLock();
-  last_state_lock_.AssertAcquired();
   // Inform the GpuControlClient of the lost state immediately, though this may
   // be a re-entrant call to the client so we use the MaybeReentrant variant.
   if (gpu_control_client_)

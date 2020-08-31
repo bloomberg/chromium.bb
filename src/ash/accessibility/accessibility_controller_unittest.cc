@@ -68,6 +68,7 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilitySpokenFeedbackEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityStickyKeysEnabled));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityShortcutsEnabled));
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilityVirtualKeyboardEnabled));
 }
@@ -989,15 +990,15 @@ TEST_F(AccessibilityControllerTest, SelectToSpeakStateChanges) {
   controller->AddObserver(&observer);
 
   controller->SetSelectToSpeakState(
-      ash::SelectToSpeakState::kSelectToSpeakStateSelecting);
+      SelectToSpeakState::kSelectToSpeakStateSelecting);
   EXPECT_EQ(controller->GetSelectToSpeakState(),
-            ash::SelectToSpeakState::kSelectToSpeakStateSelecting);
+            SelectToSpeakState::kSelectToSpeakStateSelecting);
   EXPECT_EQ(observer.status_changed_count_, 1);
 
   controller->SetSelectToSpeakState(
-      ash::SelectToSpeakState::kSelectToSpeakStateSpeaking);
+      SelectToSpeakState::kSelectToSpeakStateSpeaking);
   EXPECT_EQ(controller->GetSelectToSpeakState(),
-            ash::SelectToSpeakState::kSelectToSpeakStateSpeaking);
+            SelectToSpeakState::kSelectToSpeakStateSpeaking);
   EXPECT_EQ(observer.status_changed_count_, 2);
 
   controller->RemoveObserver(&observer);

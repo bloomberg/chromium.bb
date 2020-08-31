@@ -274,13 +274,6 @@ int main(int argc, char **argv)
 		goto out;
 	}
 
-	if (bufw == 0 || bufh == 0) {
-		fprintf(stderr, "error: buffer width/height should be non-zero.\n");
-		ret = -1;
-
-		goto out;
-	}
-
 	fd = drmOpen("exynos", NULL);
 	if (fd < 0) {
 		fprintf(stderr, "error: failed to open drm\n");

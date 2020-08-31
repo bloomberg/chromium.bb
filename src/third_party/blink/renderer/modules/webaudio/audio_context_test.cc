@@ -12,6 +12,7 @@
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -183,9 +184,11 @@ TEST_F(AudioContextTest, ExecutionContextPaused) {
 
   audio_context->set_was_audible_for_testing(true);
   EXPECT_FALSE(web_audio_device_paused_);
-  GetDocument().SetLifecycleState(mojom::FrameLifecycleState::kFrozen);
+  GetFrame().DomWindow()->SetLifecycleState(
+      mojom::FrameLifecycleState::kFrozen);
   EXPECT_TRUE(web_audio_device_paused_);
-  GetDocument().SetLifecycleState(mojom::FrameLifecycleState::kRunning);
+  GetFrame().DomWindow()->SetLifecycleState(
+      mojom::FrameLifecycleState::kRunning);
   EXPECT_FALSE(web_audio_device_paused_);
 }
 

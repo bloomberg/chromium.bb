@@ -132,7 +132,7 @@ def _serialize_env():
   ANSI escape code.
   """
   return dict(
-      (k, v.encode('ascii', 'replace')) for k, v in os.environ.iteritems())
+      (k, v.encode('ascii', 'replace')) for k, v in os.environ.items())
 
 
 def _report_exception(message, e, stack):

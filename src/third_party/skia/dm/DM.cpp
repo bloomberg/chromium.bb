@@ -7,6 +7,7 @@
 
 #include "dm/DMJsonWriter.h"
 #include "dm/DMSrcSink.h"
+#include "gm/verifiers/gmverifier.h"
 #include "include/codec/SkCodec.h"
 #include "include/core/SkBBHFactory.h"
 #include "include/core/SkColorPriv.h"
@@ -48,12 +49,18 @@
 #endif
 
 #if defined(SK_BUILD_FOR_ANDROID_FRAMEWORK) && defined(SK_HAS_HEIF_LIBRARY)
-#include <binder/IPCThreadState.h>
+    #include <binder/IPCThreadState.h>
+#endif
+
+#if defined(SK_BUILD_FOR_MAC)
+    #include "include/utils/mac/SkCGUtils.h"
+    #include "src/utils/mac/SkUniqueCFRef.h"
 #endif
 
 extern bool gSkForceRasterPipelineBlitter;
+extern bool gUseSkVMBlitter;
 
-static DEFINE_string(src, "tests gm skp image", "Source types to test.");
+static DEFINE_string(src, "tests gm skp mskp lottie svg image colorImage", "Source types to test.");
 static DEFINE_bool(nameByHash, false,
                    "If true, write to FLAGS_writePath[0]/<hash>.png instead of "
                    "to FLAGS_writePath[0]/<config>/<sourceType>/<sourceOptions>/<name>.png");
@@ -84,6 +91,7 @@ static DEFINE_int(shard,  0, "Which shard do I run?");
 
 static DEFINE_string(mskps, "", "Directory to read mskps from, or a single mskp file.");
 static DEFINE_bool(forceRasterPipeline, false, "sets gSkForceRasterPipelineBlitter");
+static DEFINE_bool(skvm, false, "sets gUseSkVMBlitter");
 
 static DEFINE_string(bisect, "",
         "Pair of: SKP file to bisect, followed by an l/r bisect trail string (e.g., 'lrll'). The "
@@ -92,8 +100,6 @@ static DEFINE_string(bisect, "",
         "are thrown out. This is useful for finding a reduced repo case for path drawing bugs.");
 
 static DEFINE_bool(ignoreSigInt, false, "ignore SIGINT signals during test execution");
-
-static DEFINE_string(dont_write, "", "File extensions to skip writing to --writePath.");  // See skia:6821
 
 static DEFINE_bool(checkF16, false, "Ensure that F16Norm pixels are clamped.");
 
@@ -142,6 +148,11 @@ static DEFINE_string(key, "",
                      "Space-separated key/value pairs to add to JSON identifying this builder.");
 static DEFINE_string(properties, "",
                      "Space-separated key/value pairs to add to JSON identifying this run.");
+
+static DEFINE_bool(rasterize_pdf, false, "Rasterize PDFs when possible.");
+
+static DEFINE_bool(runVerifiers, false,
+                   "if true, run SkQP-style verification of GM-produced images.");
 
 
 #if defined(__MSVC_RUNTIME_CHECKS)
@@ -891,9 +902,9 @@ static void push_sink(const SkCommandLineConfig& config, Sink* s) {
 
     // Try a simple Src as a canary.  If it fails, skip this sink.
     struct : public Src {
-        Error draw(SkCanvas* c) const override {
+        Result draw(SkCanvas* c) const override {
             c->drawRect(SkRect::MakeWH(1,1), SkPaint());
-            return "";
+            return Result::Ok();
         }
         SkISize size() const override { return SkISize::Make(16, 16); }
         Name name() const override { return "justOneRect"; }
@@ -902,9 +913,9 @@ static void push_sink(const SkCommandLineConfig& config, Sink* s) {
     SkBitmap bitmap;
     SkDynamicMemoryWStream stream;
     SkString log;
-    Error err = sink->draw(justOneRect, &bitmap, &stream, &log);
-    if (err.isFatal()) {
-        info("Could not run %s: %s\n", config.getTag().c_str(), err.c_str());
+    Result result = sink->draw(justOneRect, &bitmap, &stream, &log);
+    if (result.isFatal()) {
+        info("Could not run %s: %s\n", config.getTag().c_str(), result.c_str());
         exit(1);
     }
 
@@ -933,6 +944,8 @@ static Sink* create_sink(const GrContextOptions& grCtxOptions, const SkCommandLi
                 return new GPUPersistentCacheTestingSink(gpuConfig, grCtxOptions);
             } else if (gpuConfig->getTestPrecompile()) {
                 return new GPUPrecompileTestingSink(gpuConfig, grCtxOptions);
+            } else if (gpuConfig->getUseDDLSink()) {
+                return new GPUDDLSink(gpuConfig, grCtxOptions);
             } else {
                 return new GPUSink(gpuConfig, grCtxOptions);
             }
@@ -946,23 +959,25 @@ static Sink* create_sink(const GrContextOptions& grCtxOptions, const SkCommandLi
 #define SINK(t, sink, ...) if (config->getBackend().equals(t)) return new sink(__VA_ARGS__)
 
     if (FLAGS_cpu) {
-        SINK("g8",      RasterSink, kGray_8_SkColorType);
-        SINK("565",     RasterSink, kRGB_565_SkColorType);
-        SINK("4444",    RasterSink, kARGB_4444_SkColorType);
-        SINK("8888",    RasterSink, kN32_SkColorType);
-        SINK("rgba",    RasterSink, kRGBA_8888_SkColorType);
-        SINK("bgra",    RasterSink, kBGRA_8888_SkColorType);
-        SINK("rgbx",    RasterSink, kRGB_888x_SkColorType);
-        SINK("1010102", RasterSink, kRGBA_1010102_SkColorType);
-        SINK("101010x", RasterSink, kRGB_101010x_SkColorType);
-        SINK("pdf",     PDFSink, false, SK_ScalarDefaultRasterDPI);
-        SINK("skp",     SKPSink);
-        SINK("svg",     SVGSink);
-        SINK("null",    NullSink);
-        SINK("xps",     XPSSink);
-        SINK("pdfa",    PDFSink, true,  SK_ScalarDefaultRasterDPI);
-        SINK("pdf300",  PDFSink, false, 300);
-        SINK("jsdebug", DebugSink);
+        SINK("g8",          RasterSink, kGray_8_SkColorType);
+        SINK("565",         RasterSink, kRGB_565_SkColorType);
+        SINK("4444",        RasterSink, kARGB_4444_SkColorType);
+        SINK("8888",        RasterSink, kN32_SkColorType);
+        SINK("rgba",        RasterSink, kRGBA_8888_SkColorType);
+        SINK("bgra",        RasterSink, kBGRA_8888_SkColorType);
+        SINK("rgbx",        RasterSink, kRGB_888x_SkColorType);
+        SINK("1010102",     RasterSink, kRGBA_1010102_SkColorType);
+        SINK("101010x",     RasterSink, kRGB_101010x_SkColorType);
+        SINK("bgra1010102", RasterSink, kBGRA_1010102_SkColorType);
+        SINK("bgr101010x",  RasterSink, kBGR_101010x_SkColorType);
+        SINK("pdf",         PDFSink, false, SK_ScalarDefaultRasterDPI);
+        SINK("skp",         SKPSink);
+        SINK("svg",         SVGSink);
+        SINK("null",        NullSink);
+        SINK("xps",         XPSSink);
+        SINK("pdfa",        PDFSink, true,  SK_ScalarDefaultRasterDPI);
+        SINK("pdf300",      PDFSink, false, 300);
+        SINK("jsdebug",     DebugSink);
 
         // Configs relevant to color management testing (and 8888 for reference).
 
@@ -970,7 +985,7 @@ static Sink* create_sink(const GrContextOptions& grCtxOptions, const SkCommandLi
         auto narrow = SkColorSpace::MakeRGB(SkNamedTransferFn::k2Dot2, gNarrow_toXYZD50),
                srgb = SkColorSpace::MakeSRGB(),
          srgbLinear = SkColorSpace::MakeSRGBLinear(),
-                 p3 = SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kDCIP3);
+                 p3 = SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kDisplayP3);
 
         SINK(     "f16",  RasterSink,  kRGBA_F16_SkColorType, srgbLinear);
         SINK(    "srgb",  RasterSink, kRGBA_8888_SkColorType, srgb      );
@@ -1102,7 +1117,7 @@ struct Task {
             SkDynamicMemoryWStream stream;
             start(task.sink.tag.c_str(), task.src.tag.c_str(),
                   task.src.options.c_str(), name.c_str());
-            Error err = task.sink->draw(*task.src, &bitmap, &stream, &log);
+            Result result = task.sink->draw(*task.src, &bitmap, &stream, &log);
             if (!log.isEmpty()) {
                 info("%s %s %s %s:\n%s\n", task.sink.tag.c_str()
                                          , task.src.tag.c_str()
@@ -1110,19 +1125,23 @@ struct Task {
                                          , name.c_str()
                                          , log.c_str());
             }
-            if (!err.isEmpty()) {
-                if (err.isFatal()) {
-                    fail(SkStringPrintf("%s %s %s %s: %s",
-                                        task.sink.tag.c_str(),
-                                        task.src.tag.c_str(),
-                                        task.src.options.c_str(),
-                                        name.c_str(),
-                                        err.c_str()));
-                } else {
-                    done(task.sink.tag.c_str(), task.src.tag.c_str(),
-                         task.src.options.c_str(), name.c_str());
-                    return;
-                }
+            if (result.isSkip()) {
+                done(task.sink.tag.c_str(), task.src.tag.c_str(),
+                     task.src.options.c_str(), name.c_str());
+                return;
+            }
+            if (result.isFatal()) {
+                fail(SkStringPrintf("%s %s %s %s: %s",
+                                    task.sink.tag.c_str(),
+                                    task.src.tag.c_str(),
+                                    task.src.options.c_str(),
+                                    name.c_str(),
+                                    result.c_str()));
+            }
+
+            // Run verifiers if specified
+            if (FLAGS_runVerifiers) {
+                RunGMVerifiers(task, bitmap);
             }
 
             // We're likely switching threads here, so we must capture by value, [=] or [foo,bar].
@@ -1160,15 +1179,56 @@ struct Task {
                                         FLAGS_readPath[0]));
                 }
 
-                if (!FLAGS_writePath.isEmpty()) {
-                    const char* ext = task.sink->fileExtension();
-                    if (ext && !FLAGS_dont_write.contains(ext)) {
-                        if (data->getLength()) {
-                            WriteToDisk(task, md5, ext, data, data->getLength(), nullptr, nullptr);
-                            SkASSERT(bitmap.drawsNothing());
-                        } else if (!bitmap.drawsNothing()) {
-                            WriteToDisk(task, md5, ext, nullptr, 0, &bitmap, hashAndEncode.get());
-                        }
+                // Tests sometimes use a nullptr ext to indicate no image should be uploaded.
+                const char* ext = task.sink->fileExtension();
+                if (ext && !FLAGS_writePath.isEmpty()) {
+                #if defined(SK_BUILD_FOR_MAC)
+                    if (FLAGS_rasterize_pdf && SkString("pdf").equals(ext)) {
+                        SkASSERT(data->getLength() > 0);
+
+                        sk_sp<SkData> blob = SkData::MakeFromStream(data, data->getLength());
+
+                        SkUniqueCFRef<CGDataProviderRef> provider{
+                            CGDataProviderCreateWithData(nullptr,
+                                                         blob->data(),
+                                                         blob->size(),
+                                                         nullptr)};
+
+                        SkUniqueCFRef<CGPDFDocumentRef> pdf{
+                            CGPDFDocumentCreateWithProvider(provider.get())};
+
+                        CGPDFPageRef page = CGPDFDocumentGetPage(pdf.get(), 1);
+
+                        CGRect bounds = CGPDFPageGetBoxRect(page, kCGPDFMediaBox);
+                        const int w = (int)CGRectGetWidth (bounds),
+                                  h = (int)CGRectGetHeight(bounds);
+
+                        SkBitmap rasterized;
+                        rasterized.allocPixels(
+                                SkImageInfo::Make(w,h, kRGBA_8888_SkColorType, kPremul_SkAlphaType));
+                        rasterized.eraseColor(SK_ColorWHITE);
+
+                        SkUniqueCFRef<CGColorSpaceRef> cs{
+                            CGColorSpaceCreateDeviceRGB()};
+                        CGBitmapInfo info = kCGBitmapByteOrder32Big
+                                          | kCGImageAlphaPremultipliedLast;
+
+                        SkUniqueCFRef<CGContextRef> ctx{
+                            CGBitmapContextCreate(rasterized.getPixels(),
+                                                  w,h,8,rasterized.rowBytes(), cs.get(),info)};
+                        CGContextDrawPDFPage(ctx.get(), page);
+
+
+                        // Skip calling hashAndEncode->write(SkMD5*)... we want the .pdf's hash.
+                        hashAndEncode.reset(new HashAndEncode(rasterized));
+                        WriteToDisk(task, md5, "png", nullptr,0, &rasterized, hashAndEncode.get());
+                    } else
+                #endif
+                    if (data->getLength()) {
+                        WriteToDisk(task, md5, ext, data, data->getLength(), nullptr, nullptr);
+                        SkASSERT(bitmap.drawsNothing());
+                    } else if (!bitmap.drawsNothing()) {
+                        WriteToDisk(task, md5, ext, nullptr, 0, &bitmap, hashAndEncode.get());
                     }
                 }
 
@@ -1207,12 +1267,12 @@ struct Task {
                 return true;
             };
 
-            if (eq(gamut, SkNamedGamut::kSRGB    )) { return SkString("sRGB"); }
-            if (eq(gamut, SkNamedGamut::kAdobeRGB)) { return SkString("Adobe"); }
-            if (eq(gamut, SkNamedGamut::kDCIP3   )) { return SkString("P3"); }
-            if (eq(gamut, SkNamedGamut::kRec2020 )) { return SkString("2020"); }
-            if (eq(gamut, SkNamedGamut::kXYZ     )) { return SkString("XYZ"); }
-            if (eq(gamut,     gNarrow_toXYZD50   )) { return SkString("narrow"); }
+            if (eq(gamut, SkNamedGamut::kSRGB     )) { return SkString("sRGB"); }
+            if (eq(gamut, SkNamedGamut::kAdobeRGB )) { return SkString("Adobe"); }
+            if (eq(gamut, SkNamedGamut::kDisplayP3)) { return SkString("P3"); }
+            if (eq(gamut, SkNamedGamut::kRec2020  )) { return SkString("2020"); }
+            if (eq(gamut, SkNamedGamut::kXYZ      )) { return SkString("XYZ"); }
+            if (eq(gamut,     gNarrow_toXYZD50    )) { return SkString("narrow"); }
             return SkString("other");
         }
         return SkString("non-XYZ");
@@ -1340,6 +1400,23 @@ struct Task {
             }
         }
     }
+
+    static void RunGMVerifiers(const Task& task, const SkBitmap& actualBitmap) {
+        const SkString name = task.src->name();
+        auto verifierList = task.src->getVerifiers();
+        if (verifierList == nullptr) {
+            return;
+        }
+
+        skiagm::verifiers::VerifierResult
+            res = verifierList->verifyAll(task.sink->colorInfo(), actualBitmap);
+        if (!res.ok()) {
+            fail(
+                SkStringPrintf(
+                    "%s %s %s %s: verifier failed: %s", task.sink.tag.c_str(), task.src.tag.c_str(),
+                    task.src.options.c_str(), name.c_str(), res.message().c_str()));
+        }
+    }
 };
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1412,9 +1489,8 @@ int main(int argc, char** argv) {
     ToolUtils::SetDefaultFontMgr();
     SetAnalyticAAFromCommonFlags();
 
-    if (FLAGS_forceRasterPipeline) {
-        gSkForceRasterPipelineBlitter = true;
-    }
+    gSkForceRasterPipelineBlitter = FLAGS_forceRasterPipeline;
+    gUseSkVMBlitter               = FLAGS_skvm;
 
     // The bots like having a verbose.log to upload, so always touch the file even if --verbose.
     if (!FLAGS_writePath.isEmpty()) {
@@ -1505,11 +1581,6 @@ int main(int argc, char** argv) {
             info("\t%s\n", gFailures[i].c_str());
         }
         info("%d failures\n", gFailures.count());
-        // A non-zero return code does not make it to Swarming
-        // An abort does.
-#ifdef SK_BUILD_FOR_IOS
-        SK_ABORT("There were failures!");
-#endif
         return 1;
     }
 

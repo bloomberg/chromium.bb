@@ -18,6 +18,7 @@
 #include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/WGPUHelpers.h"
 
+#include <cmath>
 #include <sstream>
 
 class RenderPipelineValidationTest : public ValidationTest {
@@ -68,6 +69,51 @@ TEST_F(RenderPipelineValidationTest, CreationSuccess) {
         descriptor.cFragmentStage.module = fsModule;
         descriptor.rasterizationState = nullptr;
         device.CreateRenderPipeline(&descriptor);
+    }
+}
+
+// Tests that depth bias parameters must not be NaN.
+TEST_F(RenderPipelineValidationTest, DepthBiasParameterNotBeNaN) {
+    // Control case, depth bias parameters in ComboRenderPipeline default to 0 which is finite
+    {
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.vertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        device.CreateRenderPipeline(&descriptor);
+    }
+
+    // Infinite depth bias clamp is valid
+    {
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.vertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        descriptor.cRasterizationState.depthBiasClamp = INFINITY;
+        device.CreateRenderPipeline(&descriptor);
+    }
+    // NAN depth bias clamp is invalid
+    {
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.vertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        descriptor.cRasterizationState.depthBiasClamp = NAN;
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
+    }
+
+    // Infinite depth bias slope is valid
+    {
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.vertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        descriptor.cRasterizationState.depthBiasSlopeScale = INFINITY;
+        device.CreateRenderPipeline(&descriptor);
+    }
+    // NAN depth bias slope is invalid
+    {
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.vertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        descriptor.cRasterizationState.depthBiasSlopeScale = NAN;
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
     }
 }
 
@@ -347,9 +393,14 @@ TEST_F(RenderPipelineValidationTest, TextureComponentTypeCompatibility) {
             descriptor.cFragmentStage.module = utils::CreateShaderModule(
                 device, utils::SingleShaderStage::Fragment, stream.str().c_str());
 
-            wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-                device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false,
-                          false, wgpu::TextureViewDimension::e2D, kTextureComponentTypes[j]}});
+            wgpu::BindGroupLayout bgl =
+                utils::MakeBindGroupLayout(device, {{0,
+                                                     wgpu::ShaderStage::Fragment,
+                                                     wgpu::BindingType::SampledTexture,
+                                                     false,
+                                                     false,
+                                                     wgpu::TextureViewDimension::e2D,
+                                                     kTextureComponentTypes[j]}});
             descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
 
             if (i == j) {
@@ -397,9 +448,14 @@ TEST_F(RenderPipelineValidationTest, TextureViewDimensionCompatibility) {
             descriptor.cFragmentStage.module = utils::CreateShaderModule(
                 device, utils::SingleShaderStage::Fragment, stream.str().c_str());
 
-            wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-                device, {{0, wgpu::ShaderStage::Fragment, wgpu::BindingType::SampledTexture, false,
-                          false, kTextureViewDimensions[j], wgpu::TextureComponentType::Float}});
+            wgpu::BindGroupLayout bgl =
+                utils::MakeBindGroupLayout(device, {{0,
+                                                     wgpu::ShaderStage::Fragment,
+                                                     wgpu::BindingType::SampledTexture,
+                                                     false,
+                                                     false,
+                                                     kTextureViewDimensions[j],
+                                                     wgpu::TextureComponentType::Float}});
             descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
 
             if (i == j) {
@@ -409,4 +465,25 @@ TEST_F(RenderPipelineValidationTest, TextureViewDimensionCompatibility) {
             }
         }
     }
+}
+
+// Test that declaring a storage buffer in the vertex shader without setting pipeline layout won't
+// cause crash.
+TEST_F(RenderPipelineValidationTest, StorageBufferInVertexShaderNoLayout) {
+    wgpu::ShaderModule vsModuleWithStorageBuffer =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
+        #version 450
+        #define kNumValues 100
+        layout(std430, set = 0, binding = 0) buffer Dst { uint dst[kNumValues]; };
+        void main() {
+            uint index = gl_VertexIndex;
+            dst[index] = 0x1234;
+            gl_Position = vec4(1.f, 0.f, 0.f, 1.f);
+        })");
+
+    utils::ComboRenderPipelineDescriptor descriptor(device);
+    descriptor.layout = nullptr;
+    descriptor.vertexStage.module = vsModuleWithStorageBuffer;
+    descriptor.cFragmentStage.module = fsModule;
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
 }

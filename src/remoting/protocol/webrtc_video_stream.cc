@@ -61,6 +61,12 @@ class DummyVideoTrackSource
   void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink,
                        const rtc::VideoSinkWants& wants) override {}
   void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) override {}
+  bool SupportsEncodedOutput() const override { return false; }
+  void GenerateKeyFrame() override {}
+  void AddEncodedSink(
+      rtc::VideoSinkInterface<webrtc::RecordableEncodedFrame>* sink) override {}
+  void RemoveEncodedSink(
+      rtc::VideoSinkInterface<webrtc::RecordableEncodedFrame>* sink) override {}
 };
 
 }  // namespace
@@ -87,15 +93,17 @@ WebrtcVideoStream::WebrtcVideoStream(const SessionOptions& session_options)
   // Unretained(this) is safe because |encoder_selector_| is owned by this
   // object.
   encoder_selector_.RegisterEncoder(
-      base::Bind(&WebrtcVideoEncoderVpx::IsSupportedByVP8),
-      base::Bind(&WebrtcVideoStream::CreateVP8Encoder, base::Unretained(this)));
+      base::BindRepeating(&WebrtcVideoEncoderVpx::IsSupportedByVP8),
+      base::BindRepeating(&WebrtcVideoStream::CreateVP8Encoder,
+                          base::Unretained(this)));
   encoder_selector_.RegisterEncoder(
-      base::Bind(&WebrtcVideoEncoderVpx::IsSupportedByVP9),
-      base::Bind(&WebrtcVideoStream::CreateVP9Encoder, base::Unretained(this)));
+      base::BindRepeating(&WebrtcVideoEncoderVpx::IsSupportedByVP9),
+      base::BindRepeating(&WebrtcVideoStream::CreateVP9Encoder,
+                          base::Unretained(this)));
 #if defined(USE_H264_ENCODER)
   encoder_selector_.RegisterEncoder(
-      base::Bind(&WebrtcVideoEncoderGpu::IsSupportedByH264),
-      base::Bind(&WebrtcVideoEncoderGpu::CreateForH264));
+      base::BindRepeating(&WebrtcVideoEncoderGpu::IsSupportedByH264),
+      base::BindRepeating(&WebrtcVideoEncoderGpu::CreateForH264));
 #endif
 }
 
@@ -195,42 +203,45 @@ void WebrtcVideoStream::OnCaptureResult(
   current_frame_stats_->capture_delay =
       base::TimeDelta::FromMilliseconds(frame ? frame->capture_time_ms() : 0);
 
+  if (!frame) {
+    scheduler_->OnFrameCaptured(nullptr, nullptr);
+    return;
+  }
+
+  // TODO(sergeyu): Handle ERROR_PERMANENT result here.
+  webrtc::DesktopVector dpi =
+      frame->dpi().is_zero() ? webrtc::DesktopVector(kDefaultDpi, kDefaultDpi)
+                             : frame->dpi();
+
+  if (!frame_size_.equals(frame->size()) || !frame_dpi_.equals(dpi)) {
+    frame_size_ = frame->size();
+    frame_dpi_ = dpi;
+    if (observer_)
+      observer_->OnVideoSizeChanged(this, frame_size_, frame_dpi_);
+  }
+
+  current_frame_stats_->capturer_id = frame->capturer_id();
+
+  if (!encoder_) {
+    encoder_selector_.SetDesktopFrame(*frame);
+    encoder_ = encoder_selector_.CreateEncoder();
+    encoder_->SetLosslessEncode(lossless_encode_);
+    encoder_->SetLosslessColor(lossless_color_);
+
+    // TODO(zijiehe): Permanently stop the video stream if we cannot create an
+    // encoder for the |frame|.
+  }
+
   WebrtcVideoEncoder::FrameParams frame_params;
   if (!scheduler_->OnFrameCaptured(frame.get(), &frame_params)) {
     return;
   }
 
-  // TODO(sergeyu): Handle ERROR_PERMANENT result here.
-  if (frame) {
-    webrtc::DesktopVector dpi =
-        frame->dpi().is_zero() ? webrtc::DesktopVector(kDefaultDpi, kDefaultDpi)
-                               : frame->dpi();
-
-    if (!frame_size_.equals(frame->size()) || !frame_dpi_.equals(dpi)) {
-      frame_size_ = frame->size();
-      frame_dpi_ = dpi;
-      if (observer_)
-        observer_->OnVideoSizeChanged(this, frame_size_, frame_dpi_);
-    }
-
-    current_frame_stats_->capturer_id = frame->capturer_id();
-
-    if (!encoder_) {
-      encoder_selector_.SetDesktopFrame(*frame);
-      encoder_ = encoder_selector_.CreateEncoder();
-      encoder_->SetLosslessEncode(lossless_encode_);
-      encoder_->SetLosslessColor(lossless_color_);
-
-      // TODO(zijiehe): Permanently stop the video stream if we cannot create an
-      // encoder for the |frame|.
-    }
-  }
-
   if (encoder_) {
     current_frame_stats_->encode_started_time = base::TimeTicks::Now();
-    encoder_->Encode(
-        std::move(frame), frame_params,
-        base::Bind(&WebrtcVideoStream::OnFrameEncoded, base::Unretained(this)));
+    encoder_->Encode(std::move(frame), frame_params,
+                     base::BindOnce(&WebrtcVideoStream::OnFrameEncoded,
+                                    base::Unretained(this)));
   }
 }
 
@@ -268,7 +279,9 @@ void WebrtcVideoStream::OnFrameEncoded(
   // frame.
   // TODO(crbug.com/891571): Remove |quantizer| from the WebrtcVideoEncoder
   // interface, and move this logic to the encoders.
-  current_frame_stats_->frame_quality = (63 - frame->quantizer) * 100 / 63;
+  if (frame) {
+    current_frame_stats_->frame_quality = (63 - frame->quantizer) * 100 / 63;
+  }
 
   HostFrameStats stats;
   scheduler_->OnFrameEncoded(frame.get(), &stats);

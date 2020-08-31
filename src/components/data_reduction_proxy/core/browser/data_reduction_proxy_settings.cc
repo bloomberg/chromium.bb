@@ -13,7 +13,6 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -34,8 +33,7 @@ bool ShouldForceEnableDataReductionProxy() {
 }
 
 // Key of the UMA DataReductionProxy.StartupState histogram.
-const char kUMAProxyStartupStateHistogram[] =
-    "DataReductionProxy.StartupState";
+const char kUMAProxyStartupStateHistogram[] = "DataReductionProxy.StartupState";
 
 void RecordSettingsEnabledState(
     data_reduction_proxy::DataReductionSettingsEnabledAction action) {
@@ -59,7 +57,6 @@ DataReductionProxySettings::DataReductionProxySettings(
     bool is_off_the_record_profile)
     : unreachable_(false),
       prefs_(nullptr),
-      config_(nullptr),
       clock_(base::DefaultClock::GetInstance()),
       is_off_the_record_profile_(is_off_the_record_profile) {
   DCHECK(!is_off_the_record_profile_);
@@ -73,9 +70,7 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(prefs);
   DCHECK(data_reduction_proxy_service);
-  DCHECK(data_reduction_proxy_service->config());
   prefs_ = prefs;
-  config_ = data_reduction_proxy_service->config();
   data_reduction_proxy_service_ = std::move(data_reduction_proxy_service);
   RecordDataReductionInit();
 
@@ -143,9 +138,6 @@ void DataReductionProxySettings::SetDataSaverEnabledForTesting(
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
-  if (!params::IsEnabledWithNetworkService()) {
-    return false;
-  }
   return IsDataSaverEnabledByUser(is_off_the_record_profile_,
                                   GetOriginalProfilePrefs());
 }
@@ -153,7 +145,7 @@ bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
 bool DataReductionProxySettings::CanUseDataReductionProxy(
     const GURL& url) const {
   return url.is_valid() && url.scheme() == url::kHttpScheme &&
-      IsDataReductionProxyEnabled();
+         IsDataReductionProxyEnabled();
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyManaged() {
@@ -179,8 +171,8 @@ void DataReductionProxySettings::SetDataReductionProxyEnabled(bool enabled) {
 int64_t DataReductionProxySettings::GetDataReductionLastUpdateTime() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data_reduction_proxy_service_->compression_stats());
-  return
-      data_reduction_proxy_service_->compression_stats()->GetLastUpdateTime();
+  return data_reduction_proxy_service_->compression_stats()
+      ->GetLastUpdateTime();
 }
 
 void DataReductionProxySettings::ClearDataSavingStatistics(
@@ -300,19 +292,21 @@ void DataReductionProxySettings::SetProxyRequestHeaders(
     observer.OnProxyRequestHeadersChanged(headers);
 }
 
-bool DataReductionProxySettings::IsConfiguredDataReductionProxy(
-    const net::ProxyServer& proxy_server) const {
-  if (proxy_server.is_direct() || !proxy_server.is_valid())
-    return false;
-
-  net::ProxyList proxies =
-      data_reduction_proxy_service_->config()->GetAllConfiguredProxies();
-  for (const auto& drp_proxy : proxies.GetAll()) {
-    if (drp_proxy.host_port_pair().Equals(proxy_server.host_port_pair()))
-      return true;
-  }
-  return false;
+const std::vector<GURL>& DataReductionProxySettings::GetPrefetchProxies()
+    const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return prefetch_proxies_;
 }
+
+void DataReductionProxySettings::UpdatePrefetchProxyHosts(
+    const std::vector<GURL>& prefetch_proxies) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  prefetch_proxies_ = prefetch_proxies;
+  for (auto& observer : observers_)
+    observer.OnPrefetchProxyHostsChanged(prefetch_proxies);
+  LOCAL_HISTOGRAM_BOOLEAN("DataReductionProxy.Settings.ConfigReceived", true);
+}
+
 
 void DataReductionProxySettings::AddDataReductionProxySettingsObserver(
     DataReductionProxySettingsObserver* observer) {
@@ -347,8 +341,7 @@ void DataReductionProxySettings::RecordDataReductionInit() const {
 
 void DataReductionProxySettings::RecordStartupState(
     ProxyStartupState state) const {
-  UMA_HISTOGRAM_ENUMERATION(kUMAProxyStartupStateHistogram,
-                            state,
+  UMA_HISTOGRAM_ENUMERATION(kUMAProxyStartupStateHistogram, state,
                             PROXY_STARTUP_STATE_COUNT);
 }
 
@@ -384,12 +377,12 @@ void DataReductionProxySettings::RecordStartupSavings() const {
   }
 }
 
-ContentLengthList
-DataReductionProxySettings::GetDailyContentLengths(const char* pref_name) {
+ContentLengthList DataReductionProxySettings::GetDailyContentLengths(
+    const char* pref_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data_reduction_proxy_service_->compression_stats());
-  return data_reduction_proxy_service_->compression_stats()->
-      GetDailyContentLengths(pref_name);
+  return data_reduction_proxy_service_->compression_stats()
+      ->GetDailyContentLengths(pref_name);
 }
 
 void DataReductionProxySettings::GetContentLengths(

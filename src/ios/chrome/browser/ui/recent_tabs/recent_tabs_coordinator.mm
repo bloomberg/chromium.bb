@@ -6,6 +6,8 @@
 
 #include "base/ios/block_types.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
@@ -17,9 +19,8 @@
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -47,20 +48,19 @@
   // Initialize and configure RecentTabsTableViewController.
   RecentTabsTableViewController* recentTabsTableViewController =
       [[RecentTabsTableViewController alloc] init];
-  recentTabsTableViewController.browserState = self.browserState;
+  recentTabsTableViewController.browser = self.browser;
   recentTabsTableViewController.loadStrategy = self.loadStrategy;
   CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
   id<ApplicationCommands> handler =
       HandlerForProtocol(dispatcher, ApplicationCommands);
   recentTabsTableViewController.handler = handler;
   recentTabsTableViewController.presentationDelegate = self;
-  recentTabsTableViewController.webStateList = self.browser->GetWebStateList();
 
   // Adds the "Done" button and hooks it up to |stop|.
   UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:self
-                           action:@selector(stop)];
+                           action:@selector(dismissButtonTapped)];
   [dismissButton
       setAccessibilityIdentifier:kTableViewNavigationDismissButtonId];
   recentTabsTableViewController.navigationItem.rightBarButtonItem =
@@ -72,7 +72,7 @@
   DCHECK(!self.mediator);
   self.mediator = [[RecentTabsMediator alloc] init];
   self.mediator.browserState =
-      self.browserState->GetOriginalChromeBrowserState();
+      self.browser->GetBrowserState()->GetOriginalChromeBrowserState();
   // Set the consumer first before calling [self.mediator initObservers] and
   // then [self.mediator configureConsumer].
   self.mediator.consumer = recentTabsTableViewController;
@@ -109,6 +109,8 @@
         setModalPresentationStyle:UIModalPresentationCustom];
   }
 
+  recentTabsTableViewController.preventUpdates = NO;
+
   [self.baseViewController
       presentViewController:self.recentTabsNavigationController
                    animated:YES
@@ -128,6 +130,11 @@
   self.recentTabsNavigationController = nil;
   self.recentTabsTransitioningDelegate = nil;
   [self.mediator disconnect];
+}
+
+- (void)dismissButtonTapped {
+  base::RecordAction(base::UserMetricsAction("MobileRecentTabsClose"));
+  [self stop];
 }
 
 #pragma mark - RecentTabsPresentationDelegate

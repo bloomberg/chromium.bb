@@ -13,14 +13,15 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
+#include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service_factory.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_test_base.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/test/browser_test.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_db.h"
@@ -105,8 +106,8 @@ class PlatformKeysTest : public PlatformKeysTestBase {
     mock_policy_provider()->UpdateChromePolicy(policy);
   }
 
-  chromeos::PlatformKeysService* GetPlatformKeysService() {
-    return chromeos::PlatformKeysServiceFactory::GetForBrowserContext(
+  chromeos::ExtensionPlatformKeysService* GetExtensionPlatformKeysService() {
+    return chromeos::ExtensionPlatformKeysServiceFactory::GetForBrowserContext(
         profile());
   }
 
@@ -223,7 +224,7 @@ class PlatformKeysTest : public PlatformKeysTestBase {
 };
 
 class TestSelectDelegate
-    : public chromeos::PlatformKeysService::SelectDelegate {
+    : public chromeos::ExtensionPlatformKeysService::SelectDelegate {
  public:
   // On each Select call, selects the next entry in |certs_to_select| from back
   // to front. Once the first entry is reached, that one will be selected
@@ -332,7 +333,7 @@ IN_PROC_BROWSER_TEST_P(UnmanagedPlatformKeysTest, Basic) {
   certs.push_back(client_cert2_);
   certs.push_back(client_cert1_);
 
-  GetPlatformKeysService()->SetSelectDelegate(
+  GetExtensionPlatformKeysService()->SetSelectDelegate(
       std::make_unique<TestSelectDelegate>(certs));
 
   ASSERT_TRUE(RunExtensionTest("basicTests")) << message_;
@@ -348,7 +349,7 @@ IN_PROC_BROWSER_TEST_P(UnmanagedPlatformKeysTest, Permissions) {
   net::CertificateList certs;
   certs.push_back(client_cert1_);
 
-  GetPlatformKeysService()->SetSelectDelegate(
+  GetExtensionPlatformKeysService()->SetSelectDelegate(
       std::make_unique<TestSelectDelegate>(certs));
 
   ASSERT_TRUE(RunExtensionTest("permissionTests")) << message_;
@@ -379,7 +380,7 @@ IN_PROC_BROWSER_TEST_P(ManagedWithoutPermissionPlatformKeysTest,
                        UserPermissionsBlocked) {
   // To verify that the user is not prompted for any certificate selection,
   // set up a delegate that fails on any invocation.
-  GetPlatformKeysService()->SetSelectDelegate(
+  GetExtensionPlatformKeysService()->SetSelectDelegate(
       std::make_unique<TestSelectDelegate>(net::CertificateList()));
 
   ASSERT_TRUE(RunExtensionTest("managedProfile")) << message_;
@@ -397,7 +398,7 @@ IN_PROC_BROWSER_TEST_P(ManagedWithoutPermissionPlatformKeysTest,
 
   // To verify that the user is not prompted for any certificate selection,
   // set up a delegate that fails on any invocation.
-  GetPlatformKeysService()->SetSelectDelegate(
+  GetExtensionPlatformKeysService()->SetSelectDelegate(
       std::make_unique<TestSelectDelegate>(net::CertificateList()));
 
   ASSERT_TRUE(RunExtensionTest("corporateKeyWithoutPermissionTests"))
@@ -432,7 +433,7 @@ IN_PROC_BROWSER_TEST_P(ManagedWithPermissionPlatformKeysTest,
   net::CertificateList certs;
   certs.push_back(client_cert1_);
 
-  GetPlatformKeysService()->SetSelectDelegate(
+  GetExtensionPlatformKeysService()->SetSelectDelegate(
       std::make_unique<TestSelectDelegate>(certs));
 
   ASSERT_TRUE(RunExtensionTest("corporateKeyWithPermissionTests")) << message_;
@@ -456,7 +457,7 @@ IN_PROC_BROWSER_TEST_P(ManagedWithPermissionPlatformKeysTest,
   if (user_status() == UserStatus::MANAGED_AFFILIATED_DOMAIN)
     certs.push_back(nullptr);
 
-  GetPlatformKeysService()->SetSelectDelegate(
+  GetExtensionPlatformKeysService()->SetSelectDelegate(
       std::make_unique<TestSelectDelegate>(certs));
 
   ASSERT_TRUE(RunExtensionTest("policyDoesGrantAccessToNonCorporateKey"))

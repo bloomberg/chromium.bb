@@ -8,6 +8,7 @@
 #include "platform/FeaturesVk.h"
 #include "test_utils/ANGLETest.h"
 #include "test_utils/gl_raii.h"
+#include "util/random_utils.h"
 
 using namespace angle;
 
@@ -1203,6 +1204,9 @@ TEST_P(VertexAttributeOORTest, ANGLEDrawArraysOutOfBoundsCases)
 // Verify that using a different start vertex doesn't mess up the draw.
 TEST_P(VertexAttributeTest, DrawArraysWithBufferOffset)
 {
+    // anglebug.com/4258
+    ANGLE_SKIP_TEST_IF(IsOpenGL() && IsNVIDIA() && IsOSX());
+
     // anglebug.com/4163
     ANGLE_SKIP_TEST_IF(IsD3D11() && IsNVIDIA() && IsWindows7());
 
@@ -1214,6 +1218,9 @@ TEST_P(VertexAttributeTest, DrawArraysWithBufferOffset)
 
     // TODO(cnorthrop): Test this again on more recent drivers. http://anglebug.com/3951
     ANGLE_SKIP_TEST_IF(IsLinux() && IsNVIDIA() && IsVulkan());
+
+    // TODO(https://anglebug.com/4269): Test is flaky on OpenGL and Metal on Mac NVIDIA.
+    ANGLE_SKIP_TEST_IF(IsOSX() && IsNVIDIA());
 
     initBasicProgram();
     glUseProgram(mProgram);
@@ -1379,6 +1386,95 @@ TEST_P(VertexAttributeTest, DisabledAttribArrays)
 
         glDeleteProgram(program);
     }
+}
+
+// Test that draw with offset larger than vertex attribute's stride can work
+TEST_P(VertexAttributeTest, DrawWithLargeBufferOffset)
+{
+    constexpr size_t kBufferOffset    = 10000;
+    constexpr size_t kQuadVertexCount = 4;
+
+    std::array<GLbyte, kQuadVertexCount> validInputData = {{0, 1, 2, 3}};
+
+    // 4 components
+    std::array<GLbyte, 4 *kQuadVertexCount + kBufferOffset> inputData = {};
+
+    std::array<GLfloat, 4 * kQuadVertexCount> expectedData;
+    for (size_t i = 0; i < kQuadVertexCount; i++)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            inputData[kBufferOffset + 4 * i + j] = validInputData[i];
+            expectedData[4 * i + j]              = validInputData[i];
+        }
+    }
+
+    initBasicProgram();
+
+    glBindBuffer(GL_ARRAY_BUFFER, mBuffer);
+    glBufferData(GL_ARRAY_BUFFER, inputData.size(), inputData.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(mTestAttrib, 4, GL_BYTE, GL_FALSE, 0,
+                          reinterpret_cast<const void *>(kBufferOffset));
+    glEnableVertexAttribArray(mTestAttrib);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glVertexAttribPointer(mExpectedAttrib, 4, GL_FLOAT, GL_FALSE, 0, expectedData.data());
+    glEnableVertexAttribArray(mExpectedAttrib);
+
+    drawIndexedQuad(mProgram, "position", 0.5f);
+
+    checkPixels();
+}
+
+// Test that drawing with large vertex attribute pointer offset and less components than
+// shader expects is OK
+TEST_P(VertexAttributeTest, DrawWithLargeBufferOffsetAndLessComponents)
+{
+    // Shader expects vec4 but glVertexAttribPointer only provides 2 components
+    constexpr char kVS[] = R"(attribute vec4 a_position;
+attribute vec4 a_attrib;
+varying vec4 v_attrib;
+void main()
+{
+    v_attrib = a_attrib;
+    gl_Position = a_position;
+})";
+
+    constexpr char kFS[] = R"(precision mediump float;
+varying vec4 v_attrib;
+void main()
+{
+    gl_FragColor = v_attrib;
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    glBindAttribLocation(program, 0, "a_position");
+    glBindAttribLocation(program, 1, "a_attrib");
+    glLinkProgram(program);
+    glUseProgram(program);
+    ASSERT_GL_NO_ERROR();
+
+    constexpr size_t kBufferOffset = 4998;
+
+    // Set up color data so yellow is drawn (only R, G components are provided)
+    std::vector<GLushort> data(kBufferOffset + 12);
+    for (int i = 0; i < 12; ++i)
+    {
+        data[kBufferOffset + i] = 0xffff;
+    }
+
+    GLBuffer buffer;
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLushort) * data.size(), data.data(), GL_STATIC_DRAW);
+    // Provide only 2 components for the vec4 in the shader
+    glVertexAttribPointer(1, 2, GL_UNSIGNED_SHORT, GL_TRUE, 0,
+                          reinterpret_cast<const void *>(sizeof(GLushort) * kBufferOffset));
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glEnableVertexAttribArray(1);
+
+    drawQuad(program, "a_position", 0.5f);
+    // Verify yellow was drawn
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::yellow);
 }
 
 class VertexAttributeTestES31 : public VertexAttributeTestES3
@@ -2406,6 +2502,104 @@ void main()
     // the shader), but should be re-enabled now.
     drawQuad(mProgram, "position", 0.5f);
     checkPixels();
+}
+
+// Tests that large strides that read past the end of the buffer work correctly.
+// Requires ES 3.1 to query MAX_VERTEX_ATTRIB_STRIDE.
+TEST_P(VertexAttributeTestES31, LargeStride)
+{
+    struct Vertex
+    {
+        Vector4 position;
+        Vector2 color;
+    };
+
+    constexpr uint32_t kColorOffset = offsetof(Vertex, color);
+
+    // Get MAX_VERTEX_ATTRIB_STRIDE.
+    GLint maxStride;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIB_STRIDE, &maxStride);
+
+    uint32_t bufferSize  = static_cast<uint32_t>(maxStride);
+    uint32_t stride      = sizeof(Vertex);
+    uint32_t numVertices = bufferSize / stride;
+
+    // The last vertex fits in the buffer size. The last vertex stride extends past it.
+    ASSERT_LT(numVertices * stride, bufferSize);
+    ASSERT_GT(numVertices * stride + kColorOffset, bufferSize);
+
+    RNG rng(0);
+
+    std::vector<Vertex> vertexData(bufferSize, {Vector4(), Vector2()});
+    std::vector<GLColor> expectedColors;
+    for (uint32_t vertexIndex = 0; vertexIndex < numVertices; ++vertexIndex)
+    {
+        int x = vertexIndex % getWindowWidth();
+        int y = vertexIndex / getWindowWidth();
+
+        // Generate and clamp a 2 component vector.
+        Vector4 randomVec4 = RandomVec4(rng.randomInt(), 0.0f, 1.0f);
+        GLColor randomColor(randomVec4);
+        randomColor[2]     = 0;
+        randomColor[3]     = 255;
+        Vector4 clampedVec = randomColor.toNormalizedVector();
+
+        vertexData[vertexIndex] = {Vector4(x, y, 0.0f, 1.0f),
+                                   Vector2(clampedVec[0], clampedVec[1])};
+        expectedColors.push_back(randomColor);
+    }
+
+    GLBuffer buffer;
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, bufferSize, vertexData.data(), GL_STATIC_DRAW);
+
+    vertexData.resize(numVertices);
+
+    constexpr char kVS[] = R"(#version 310 es
+in vec4 pos;
+in vec2 color;
+out vec2 vcolor;
+void main()
+{
+    vcolor = color;
+    gl_Position = vec4(((pos.x + 0.5) / 64.0) - 1.0, ((pos.y + 0.5) / 64.0) - 1.0, 0, 1);
+    gl_PointSize = 1.0;
+})";
+
+    constexpr char kFS[] = R"(#version 310 es
+precision mediump float;
+in vec2 vcolor;
+out vec4 fcolor;
+void main()
+{
+    fcolor = vec4(vcolor, 0.0, 1.0);
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    glUseProgram(program);
+
+    GLint posLoc = glGetAttribLocation(program, "pos");
+    ASSERT_NE(-1, posLoc);
+    GLint colorLoc = glGetAttribLocation(program, "color");
+    ASSERT_NE(-1, colorLoc);
+
+    glVertexAttribPointer(posLoc, 4, GL_FLOAT, GL_FALSE, stride, nullptr);
+    glEnableVertexAttribArray(posLoc);
+    glVertexAttribPointer(colorLoc, 2, GL_FLOAT, GL_FALSE, stride,
+                          reinterpret_cast<GLvoid *>(kColorOffset));
+    glEnableVertexAttribArray(colorLoc);
+
+    glDrawArrays(GL_POINTS, 0, numVertices);
+
+    // Validate pixels.
+    std::vector<GLColor> actualColors(getWindowWidth() * getWindowHeight());
+    glReadPixels(0, 0, getWindowWidth(), getWindowHeight(), GL_RGBA, GL_UNSIGNED_BYTE,
+                 actualColors.data());
+
+    actualColors.resize(numVertices);
+
+    ASSERT_GL_NO_ERROR();
+    EXPECT_EQ(expectedColors, actualColors);
 }
 
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these

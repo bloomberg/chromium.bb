@@ -33,6 +33,7 @@ add_spvtools_unittest(TARGET opt
        dead_branch_elim_test.cpp
        dead_insert_elim_test.cpp
        dead_variable_elim_test.cpp
+       debug_info_manager_test.cpp
        decompose_initialized_variables_test.cpp
        decoration_manager_test.cpp
        def_use_test.cpp
@@ -55,6 +56,7 @@ add_spvtools_unittest(TARGET opt
        insert_extract_elim_test.cpp
        inst_bindless_check_test.cpp
        inst_buff_addr_check_test.cpp
+       inst_debug_printf_test.cpp
        instruction_list_test.cpp
        instruction_test.cpp
        ir_builder.cpp

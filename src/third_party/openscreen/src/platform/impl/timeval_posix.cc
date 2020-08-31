@@ -7,7 +7,6 @@
 #include <chrono>
 
 namespace openscreen {
-namespace platform {
 
 struct timeval ToTimeval(const Clock::duration& timeout) {
   struct timeval tv;
@@ -21,5 +20,4 @@ struct timeval ToTimeval(const Clock::duration& timeout) {
   return tv;
 }
 
-}  // namespace platform
 }  // namespace openscreen

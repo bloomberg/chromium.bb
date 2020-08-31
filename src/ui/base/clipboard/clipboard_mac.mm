@@ -93,10 +93,12 @@ void ClipboardMac::Clear(ClipboardBuffer buffer) {
   [pb declareTypes:@[] owner:nil];
 }
 
-void ClipboardMac::ReadAvailableTypes(ClipboardBuffer buffer,
-                                      std::vector<base::string16>* types,
-                                      bool* contains_filenames) const {
+void ClipboardMac::ReadAvailableTypes(
+    ClipboardBuffer buffer,
+    std::vector<base::string16>* types) const {
   DCHECK(CalledOnValidThread());
+  DCHECK(types);
+
   types->clear();
   if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypeText));
@@ -108,13 +110,28 @@ void ClipboardMac::ReadAvailableTypes(ClipboardBuffer buffer,
   NSPasteboard* pb = GetPasteboard();
   if (pb && [NSImage canInitWithPasteboard:pb])
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
-  *contains_filenames = false;
 
   if ([[pb types] containsObject:kWebCustomDataPboardType]) {
     NSData* data = [pb dataForType:kWebCustomDataPboardType];
     if ([data length])
       ReadCustomDataTypes([data bytes], [data length], types);
   }
+}
+
+std::vector<base::string16>
+ClipboardMac::ReadAvailablePlatformSpecificFormatNames(
+    ClipboardBuffer buffer) const {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
+
+  NSPasteboard* pb = GetPasteboard();
+  NSArray* types = [pb types];
+
+  std::vector<base::string16> type_names;
+  type_names.reserve([types count]);
+  for (NSString* type in types)
+    type_names.push_back(base::SysNSStringToUTF16(type));
+  return type_names;
 }
 
 void ClipboardMac::ReadText(ClipboardBuffer buffer,
@@ -167,7 +184,7 @@ void ClipboardMac::ReadHTML(ClipboardBuffer buffer,
   }
 
   *fragment_start = 0;
-  DCHECK(markup->length() <= std::numeric_limits<uint32_t>::max());
+  DCHECK_LE(markup->length(), std::numeric_limits<uint32_t>::max());
   *fragment_end = static_cast<uint32_t>(markup->length());
 }
 
@@ -178,58 +195,9 @@ void ClipboardMac::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
   return ReadData(ClipboardFormatType::GetRtfType(), result);
 }
 
-SkBitmap ClipboardMac::ReadImage(ClipboardBuffer buffer,
-                                 NSPasteboard* pb) const {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
-
-  // If the pasteboard's image data is not to its liking, the guts of NSImage
-  // may throw, and that exception will leak. Prevent a crash in that case;
-  // a blank image is better.
-  base::scoped_nsobject<NSImage> image;
-  @try {
-    if ([[pb types] containsObject:NSFilenamesPboardType]) {
-      // -[NSImage initWithPasteboard:] gets confused with copies of a single
-      // file from the Finder, so extract the path ourselves.
-      // http://crbug.com/553686
-      NSArray* paths = [pb propertyListForType:NSFilenamesPboardType];
-      if ([paths count]) {
-        // If N number of files are selected from finder, choose the last one.
-        image.reset([[NSImage alloc]
-            initWithContentsOfURL:[NSURL fileURLWithPath:[paths lastObject]]]);
-      }
-    } else {
-      if (pb)
-        image.reset([[NSImage alloc] initWithPasteboard:pb]);
-    }
-  } @catch (id exception) {
-  }
-
-  if (!image)
-    return SkBitmap();
-  if ([[image representations] count] == 0u)
-    return SkBitmap();
-
-  // This logic prevents loss of pixels from retina images, where size != pixel
-  // size. In an ideal world, the concept of "retina-ness" would be plumbed all
-  // the way through to the web, but the clipboard API doesn't support the
-  // additional metainformation.
-  if ([[image representations] count] == 1u) {
-    NSImageRep* rep = [image representations][0];
-    NSInteger width = [rep pixelsWide];
-    NSInteger height = [rep pixelsHigh];
-    if (width != 0 && height != 0) {
-      return skia::NSImageRepToSkBitmapWithColorSpace(
-          rep, NSMakeSize(width, height), /*is_opaque=*/false,
-          base::mac::GetSystemColorSpace());
-    }
-  }
-  return skia::NSImageToSkBitmapWithColorSpace(
-      image.get(), /*is_opaque=*/false, base::mac::GetSystemColorSpace());
-}
-
-SkBitmap ClipboardMac::ReadImage(ClipboardBuffer buffer) const {
-  return ReadImage(buffer, GetPasteboard());
+void ClipboardMac::ReadImage(ClipboardBuffer buffer,
+                             ReadImageCallback callback) const {
+  std::move(callback).Run(ReadImageInternal(buffer, GetPasteboard()));
 }
 
 void ClipboardMac::ReadCustomData(ClipboardBuffer buffer,
@@ -336,7 +304,7 @@ void ClipboardMac::WriteBookmark(const char* title_data,
   base::scoped_nsobject<NSPasteboardItem> item(
       ClipboardUtil::PasteboardItemFromUrl(url, title));
   NSPasteboard* pb = GetPasteboard();
-  ui::ClipboardUtil::AddDataToPasteboard(pb, item);
+  ClipboardUtil::AddDataToPasteboard(pb, item);
 }
 
 void ClipboardMac::WriteBitmap(const SkBitmap& bitmap) {
@@ -382,6 +350,56 @@ void ClipboardMac::WriteWebSmartPaste() {
       ClipboardFormatType::GetWebKitSmartPasteType().ToNSString();
   [pb addTypes:@[ format ] owner:nil];
   [pb setData:nil forType:format];
+}
+
+SkBitmap ClipboardMac::ReadImageInternal(ClipboardBuffer buffer,
+                                         NSPasteboard* pasteboard) const {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
+
+  // If the pasteboard's image data is not to its liking, the guts of NSImage
+  // may throw, and that exception will leak. Prevent a crash in that case;
+  // a blank image is better.
+  base::scoped_nsobject<NSImage> image;
+  @try {
+    if ([[pasteboard types] containsObject:NSFilenamesPboardType]) {
+      // -[NSImage initWithPasteboard:] gets confused with copies of a single
+      // file from the Finder, so extract the path ourselves.
+      // http://crbug.com/553686
+      NSArray* paths = [pasteboard propertyListForType:NSFilenamesPboardType];
+      if ([paths count]) {
+        // If N number of files are selected from finder, choose the last one.
+        image.reset([[NSImage alloc]
+            initWithContentsOfURL:[NSURL fileURLWithPath:[paths lastObject]]]);
+      }
+    } else {
+      if (pasteboard)
+        image.reset([[NSImage alloc] initWithPasteboard:pasteboard]);
+    }
+  } @catch (id exception) {
+  }
+
+  if (!image)
+    return SkBitmap();
+  if ([[image representations] count] == 0u)
+    return SkBitmap();
+
+  // This logic prevents loss of pixels from retina images, where size != pixel
+  // size. In an ideal world, the concept of "retina-ness" would be plumbed all
+  // the way through to the web, but the clipboard API doesn't support the
+  // additional metainformation.
+  if ([[image representations] count] == 1u) {
+    NSImageRep* rep = [image representations][0];
+    NSInteger width = [rep pixelsWide];
+    NSInteger height = [rep pixelsHigh];
+    if (width != 0 && height != 0) {
+      return skia::NSImageRepToSkBitmapWithColorSpace(
+          rep, NSMakeSize(width, height), /*is_opaque=*/false,
+          base::mac::GetSystemColorSpace());
+    }
+  }
+  return skia::NSImageToSkBitmapWithColorSpace(
+      image.get(), /*is_opaque=*/false, base::mac::GetSystemColorSpace());
 }
 
 }  // namespace ui

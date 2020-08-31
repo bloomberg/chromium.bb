@@ -24,6 +24,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy_resolution/proxy_resolution_request.h"
 #include "net/spdy/spdy_session.h"
 #include "url/url_constants.h"
 
@@ -343,7 +344,7 @@ void HttpStreamFactory::JobController::OnStreamFailed(
     return;
   }
   delegate_->OnStreamFailed(status, *job->net_error_details(), used_ssl_config,
-                            job->proxy_info());
+                            job->proxy_info(), job->resolve_error_info());
 }
 
 void HttpStreamFactory::JobController::OnFailedOnDefaultNetwork(Job* job) {
@@ -846,8 +847,6 @@ void HttpStreamFactory::JobController::OnAlternativeProxyJobFailed(
   DCHECK(alternative_job_->alternative_proxy_server() ==
          alternative_job_->proxy_info().proxy_server());
 
-  base::UmaHistogramSparse("Net.AlternativeProxyFailed", -net_error);
-
   // Need to mark alt proxy as broken regardless of whether the job is bound.
   // The proxy will be marked bad until the proxy retry information is cleared
   // by an event such as a network change.
@@ -923,7 +922,7 @@ void HttpStreamFactory::JobController::NotifyRequestFailed(int rv) {
   if (!request_)
     return;
   delegate_->OnStreamFailed(rv, NetErrorDetails(), server_ssl_config_,
-                            ProxyInfo());
+                            ProxyInfo(), ResolveErrorInfo());
 }
 
 GURL HttpStreamFactory::JobController::ApplyHostMappingRules(
@@ -1104,8 +1103,8 @@ quic::ParsedQuicVersion HttpStreamFactory::JobController::SelectQuicVersion(
   if (advertised_versions.empty())
     return supported_versions[0];
 
-  for (const quic::ParsedQuicVersion& supported : supported_versions) {
-    for (const quic::ParsedQuicVersion& advertised : advertised_versions) {
+  for (const quic::ParsedQuicVersion& advertised : advertised_versions) {
+    for (const quic::ParsedQuicVersion& supported : supported_versions) {
       if (supported == advertised) {
         DCHECK_NE(quic::UnsupportedQuicVersion(), supported);
         return supported;

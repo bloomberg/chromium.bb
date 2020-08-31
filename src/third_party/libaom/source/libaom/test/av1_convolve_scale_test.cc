@@ -9,6 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <tuple>
 #include <vector>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -33,8 +34,8 @@ const int kXStepQn = 16;
 const int kYStepQn = 20;
 
 using libaom_test::ACMRandom;
-using ::testing::make_tuple;
-using ::testing::tuple;
+using std::make_tuple;
+using std::tuple;
 
 enum NTaps { EIGHT_TAP, TEN_TAP, TWELVE_TAP };
 int NTapsToInt(NTaps ntaps) { return 8 + static_cast<int>(ntaps) * 2; }
@@ -103,7 +104,6 @@ void TestFilter::set(NTaps ntaps, bool backwards) {
   params_.filter_ptr = &coeffs_[0];
   params_.taps = n;
   // These are ignored by the functions being tested. Set them to whatever.
-  params_.subpel_shifts = SUBPEL_SHIFTS;
   params_.interp_filter = EIGHTTAP_REGULAR;
 }
 
@@ -269,8 +269,8 @@ class ConvolveScaleTestBase : public ::testing::Test {
 
  protected:
   void SetParams(const BaseParams &params, int bd) {
-    width_ = ::testing::get<0>(params.dims);
-    height_ = ::testing::get<1>(params.dims);
+    width_ = std::get<0>(params.dims);
+    height_ = std::get<1>(params.dims);
     ntaps_x_ = params.ntaps_x;
     ntaps_y_ = params.ntaps_y;
     bd_ = bd;
@@ -454,13 +454,14 @@ const NTaps kNTaps[] = { EIGHT_TAP };
 TEST_P(LowBDConvolveScaleTest, Check) { Run(); }
 TEST_P(LowBDConvolveScaleTest, DISABLED_Speed) { SpeedTest(); }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, LowBDConvolveScaleTest,
     ::testing::Combine(::testing::Values(av1_convolve_2d_scale_sse4_1),
                        ::testing::ValuesIn(kBlockDim),
                        ::testing::ValuesIn(kNTaps), ::testing::ValuesIn(kNTaps),
                        ::testing::Bool()));
 
+#if CONFIG_AV1_HIGHBITDEPTH
 typedef void (*HighbdConvolveFunc)(const uint16_t *src, int src_stride,
                                    uint16_t *dst, int dst_stride, int w, int h,
                                    const InterpFilterParams *filter_params_x,
@@ -520,10 +521,11 @@ const int kBDs[] = { 8, 10, 12 };
 TEST_P(HighBDConvolveScaleTest, Check) { Run(); }
 TEST_P(HighBDConvolveScaleTest, DISABLED_Speed) { SpeedTest(); }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, HighBDConvolveScaleTest,
     ::testing::Combine(::testing::Values(av1_highbd_convolve_2d_scale_sse4_1),
                        ::testing::ValuesIn(kBlockDim),
                        ::testing::ValuesIn(kNTaps), ::testing::ValuesIn(kNTaps),
                        ::testing::Bool(), ::testing::ValuesIn(kBDs)));
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 }  // namespace

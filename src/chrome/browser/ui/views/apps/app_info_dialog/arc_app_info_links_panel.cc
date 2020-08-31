@@ -23,9 +23,7 @@
 
 ArcAppInfoLinksPanel::ArcAppInfoLinksPanel(Profile* profile,
                                            const extensions::Extension* app)
-    : AppInfoPanel(profile, app),
-      app_list_observer_(this),
-      manage_link_(nullptr) {
+    : AppInfoPanel(profile, app) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -33,7 +31,8 @@ ArcAppInfoLinksPanel::ArcAppInfoLinksPanel(Profile* profile,
   auto manage_link = std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_ARC_APPLICATION_INFO_MANAGE_LINK));
   manage_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  manage_link->set_listener(this);
+  manage_link->set_callback(base::BindRepeating(
+      &ArcAppInfoLinksPanel::LinkClicked, base::Unretained(this)));
   manage_link->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   manage_link_ = AddChildView(std::move(manage_link));
 
@@ -48,19 +47,6 @@ ArcAppInfoLinksPanel::ArcAppInfoLinksPanel(Profile* profile,
 }
 
 ArcAppInfoLinksPanel::~ArcAppInfoLinksPanel() {}
-
-void ArcAppInfoLinksPanel::LinkClicked(views::Link* source, int event_flags) {
-  DCHECK_EQ(manage_link_, source);
-  const int64_t display_id =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestView(source->GetWidget()->GetNativeView())
-          .id();
-  if (arc::ShowPackageInfo(
-          arc::ArcIntentHelperBridge::kArcIntentHelperPackageName,
-          arc::mojom::ShowPackageInfoPage::MANAGE_LINKS, display_id)) {
-    Close();
-  }
-}
 
 void ArcAppInfoLinksPanel::OnAppRegistered(
     const std::string& app_id,
@@ -83,4 +69,15 @@ void ArcAppInfoLinksPanel::OnAppRemoved(const std::string& app_id) {
 
 void ArcAppInfoLinksPanel::UpdateLink(bool enabled) {
   manage_link_->SetEnabled(enabled);
+}
+
+void ArcAppInfoLinksPanel::LinkClicked() {
+  gfx::NativeView native_view = GetWidget()->GetNativeView();
+  const int64_t display_id =
+      display::Screen::GetScreen()->GetDisplayNearestView(native_view).id();
+  if (arc::ShowPackageInfo(
+          arc::ArcIntentHelperBridge::kArcIntentHelperPackageName,
+          arc::mojom::ShowPackageInfoPage::MANAGE_LINKS, display_id)) {
+    Close();
+  }
 }

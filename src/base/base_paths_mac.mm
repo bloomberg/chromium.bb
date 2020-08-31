@@ -11,12 +11,13 @@
 #include <stdint.h>
 
 #include "base/base_paths.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -82,6 +83,11 @@ bool PathProviderMac(int key, base::FilePath* result) {
       return success;
     }
     case base::DIR_SOURCE_ROOT:
+#if defined(OS_IOS)
+      // On iOS, there is no access to source root, however, the necessary
+      // resources are packaged into the test as assets.
+      return PathService::Get(base::DIR_ASSETS, result);
+#else
       // Go through PathService to catch overrides.
       if (!PathService::Get(base::FILE_EXE, result))
         return false;
@@ -89,7 +95,6 @@ bool PathProviderMac(int key, base::FilePath* result) {
       // Start with the executable's directory.
       *result = result->DirName();
 
-#if !defined(OS_IOS)
       if (base::mac::AmIBundled()) {
         // The bundled app executables (Chromium, TestShell, etc) live five
         // levels down, eg:
@@ -100,7 +105,7 @@ bool PathProviderMac(int key, base::FilePath* result) {
         // src/xcodebuild/{Debug|Release}/base_unittests
         *result = result->DirName().DirName();
       }
-#endif
+#endif  // !defined(OS_IOS)
       return true;
     case base::DIR_USER_DESKTOP:
 #if defined(OS_IOS)
@@ -112,7 +117,7 @@ bool PathProviderMac(int key, base::FilePath* result) {
 #endif
     case base::DIR_ASSETS:
 #if defined(OS_IOS)
-      // TODO(https://crbug.com/957792): Assets live alongside the executable.
+      // On iOS, the assets are located next to the module binary.
       return PathService::Get(base::DIR_MODULE, result);
 #else
       if (!base::mac::AmIBundled()) {

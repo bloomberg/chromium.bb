@@ -7,7 +7,6 @@
 goog.module('mr.InitHelper');
 goog.module.declareLegacyNamespace();
 
-const DialProvider = goog.require('mr.DialProvider');
 const EventListener = goog.require('mr.EventListener');
 const Provider = goog.require('mr.Provider');
 const ProviderManager = goog.forwardDeclare('mr.ProviderManager');
@@ -18,7 +17,7 @@ const ProviderManager = goog.forwardDeclare('mr.ProviderManager');
  * @return {!Array<!Provider>}
  */
 function getProviders(providerManager) {
-  return [new DialProvider(providerManager)];
+  return [];
 }
 
 

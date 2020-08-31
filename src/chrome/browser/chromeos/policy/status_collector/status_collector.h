@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_STATUS_COLLECTOR_STATUS_COLLECTOR_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -64,6 +67,17 @@ using StatusCollectorCallback =
 // Defines the API for a status collector.
 class StatusCollector {
  public:
+  // Passed into asynchronous mojo interface for communicating with Android.
+  using AndroidStatusReceiver =
+      base::Callback<void(const std::string&, const std::string&)>;
+  // Calls the enterprise reporting mojo interface, passing over the
+  // AndroidStatusReceiver. Returns false if the mojo interface isn't available,
+  // in which case no asynchronous query is emitted and the android status query
+  // fails synchronously. The |AndroidStatusReceiver| is not called in this
+  // case.
+  using AndroidStatusFetcher =
+      base::Callback<bool(const AndroidStatusReceiver&)>;
+
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Simplifies filling the boot mode for any of the relevant status report
@@ -89,6 +103,7 @@ class StatusCollector {
   virtual bool ShouldReportNetworkInterfaces() const = 0;
   virtual bool ShouldReportUsers() const = 0;
   virtual bool ShouldReportHardwareStatus() const = 0;
+  virtual bool ShouldReportCrashReportInfo() const = 0;
 
   // Returns the DeviceLocalAccount associated with the currently active kiosk
   // session, if the session was auto-launched with zero delay (this enables
@@ -100,11 +115,6 @@ class StatusCollector {
   // Gets the DMToken associated with a profile. Returns an empty string if no
   // DMToken could be retrieved. Virtual to allow mocking.
   virtual std::string GetDMTokenForProfile(Profile* profile) const;
-
-  // Used instead of base::Time::Now(), to make testing possible.
-  // TODO(crbug.com/827386): pass a Clock object and use SimpleTestClock to test
-  // it.
-  virtual base::Time GetCurrentTime();
 
   // The timeout in the past to store activity.
   // This is kept in case status uploads fail for a number of days.
@@ -128,6 +138,8 @@ class StatusCollector {
       version_info_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       boot_mode_subscription_;
+
+  base::Clock* clock_ = base::DefaultClock::GetInstance();
 
   // Task runner in the creation thread where responses are sent to.
   scoped_refptr<base::SequencedTaskRunner> task_runner_ = nullptr;

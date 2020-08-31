@@ -25,6 +25,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/accessibility/ax_tree_update.h"
 
 namespace blink {
 class AssociatedInterfaceProvider;
@@ -36,36 +37,52 @@ class WebLocalFrame;
 class WebPlugin;
 struct WebPluginParams;
 struct WebRect;
-}
+}  // namespace blink
 
 namespace gfx {
 class Range;
 class RectF;
 class Size;
-}
+}  // namespace gfx
 
 namespace network {
 class SharedURLLoaderFactory;
-}
+}  // namespace network
 
 namespace service_manager {
 class InterfaceProvider;
-}
+}  // namespace service_manager
 
 namespace url {
 class Origin;
-}
+}  // namespace url
 
 namespace content {
+
 class ContextMenuClient;
 class PluginInstanceThrottler;
 class RenderAccessibility;
 struct RenderFrameMediaPlaybackOptions;
 class RenderFrameVisitor;
 class RenderView;
-struct ContextMenuParams;
+struct UntrustworthyContextMenuParams;
 struct WebPluginInfo;
 struct WebPreferences;
+
+// A class that takes a snapshot of the accessibility tree. Accessibility
+// support in Blink is enabled for the lifetime of this object, which can
+// be useful if you need consistent IDs between multiple snapshots.
+class AXTreeSnapshotter {
+ public:
+  AXTreeSnapshotter() = default;
+  // Return in |accessibility_tree| a snapshot of the accessibility tree
+  // for the frame with the given accessibility mode. If |max_node_count|
+  // is nonzero, return no more than that many nodes.
+  virtual void Snapshot(ui::AXMode ax_mode,
+                        size_t max_node_count,
+                        ui::AXTreeUpdate* accessibility_tree) = 0;
+  virtual ~AXTreeSnapshotter() = default;
+};
 
 // This interface wraps functionality, which is specific to frames, such as
 // navigation. It provides communication with a corresponding RenderFrameHost
@@ -82,7 +99,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
     // Content is essential even though it's cross-origin, because it's large.
     CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG = 2,
     // Content is essential because there's large content from the same origin.
-    CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_WHITELISTED = 3,
+    CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_ALLOWLISTED = 3,
     // Content is tiny in size. These are usually blocked.
     CONTENT_STATUS_TINY = 4,
     // Deprecated, as now entirely obscured content is treated as tiny.
@@ -116,6 +133,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Return the RenderAccessibility associated with this frame.
   virtual RenderAccessibility* GetRenderAccessibility() = 0;
 
+  // Return an object that can take a snapshot of the accessibility tree.
+  virtual std::unique_ptr<AXTreeSnapshotter> CreateAXTreeSnapshotter() = 0;
+
   // Get the routing ID of the frame.
   virtual int GetRoutingID() = 0;
 
@@ -137,7 +157,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Note: if you end up having clients outliving the RenderFrame, we should add
   // a CancelContextMenuCallback function that takes a request id.
   virtual int ShowContextMenu(ContextMenuClient* client,
-                              const ContextMenuParams& params) = 0;
+                              const UntrustworthyContextMenuParams& params) = 0;
 
   // Cancels a context menu in the event that the client is destroyed before the
   // menu is closed.
@@ -168,6 +188,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) = 0;
 
+  // DEPRECATED. Please use GetBrowserInterfaceBroker() instead.
   // Returns the InterfaceProvider that this process can use to bind
   // interfaces exposed to it by the application running in this frame.
   virtual service_manager::InterfaceProvider* GetRemoteInterfaces() = 0;
@@ -189,7 +210,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Registers a plugin that has been marked peripheral. If the origin
-  // whitelist is later updated and includes |content_origin|, then
+  // allowlist is later updated and includes |content_origin|, then
   // |unthrottle_callback| will be called.
   virtual void RegisterPeripheralPlugin(
       const url::Origin& content_origin,
@@ -217,9 +238,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
       const gfx::Size& unobscured_size,
       RecordPeripheralDecision record_decision) = 0;
 
-  // Whitelists a |content_origin| so its content will never be throttled in
-  // this RenderFrame. Whitelist is cleared by top level navigation.
-  virtual void WhitelistContentOrigin(const url::Origin& content_origin) = 0;
+  // Allowlists a |content_origin| so its content will never be throttled in
+  // this RenderFrame. Allowlist is cleared by top level navigation.
+  virtual void AllowlistContentOrigin(const url::Origin& content_origin) = 0;
 
   // Used by plugins that load data in this RenderFrame to update the loading
   // notifications.
@@ -229,14 +250,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Returns true if this frame is a FTP directory listing.
   virtual bool IsFTPDirectoryListing() = 0;
-
-  // Attaches the browser plugin identified by |element_instance_id| to guest
-  // content created by the embedder.
-  virtual void AttachGuest(int element_instance_id) = 0;
-
-  // Detaches the browser plugin identified by |element_instance_id| from guest
-  // content created by the embedder.
-  virtual void DetachGuest(int element_instance_id) = 0;
 
   // Notifies the browser of text selection changes made.
   virtual void SetSelectedText(const base::string16& selection_text,

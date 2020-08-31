@@ -59,8 +59,8 @@ unsigned OpcodeLength(const byte* pc, const byte* end) {
 }
 
 std::pair<uint32_t, uint32_t> StackEffect(const WasmModule* module,
-                                          FunctionSig* sig, const byte* pc,
-                                          const byte* end) {
+                                          const FunctionSig* sig,
+                                          const byte* pc, const byte* end) {
   WasmFeatures unused_detected_features = WasmFeatures::None();
   WasmDecoder<Decoder::kNoValidate> decoder(
       module, WasmFeatures::All(), &unused_detected_features, sig, pc, end);
@@ -85,6 +85,17 @@ const char* RawOpcodeName(WasmOpcode opcode) {
       break;
   }
   return "Unknown";
+}
+const char* PrefixName(WasmOpcode prefix_opcode) {
+  switch (prefix_opcode) {
+#define DECLARE_PREFIX_CASE(name, opcode) \
+  case k##name##Prefix:                   \
+    return "k" #name "Prefix";
+    FOREACH_PREFIX(DECLARE_PREFIX_CASE)
+#undef DECLARE_PREFIX_CASE
+    default:
+      return "Unknown prefix";
+  }
 }
 }  // namespace
 
@@ -124,12 +135,12 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
         if (decls.type_list[pos] == type) {
           ++count;
         } else {
-          os << " " << count << " " << ValueTypes::TypeName(type);
+          os << " " << count << " " << type.type_name();
           type = decls.type_list[pos];
           count = 1;
         }
       }
-      os << " " << count << " " << ValueTypes::TypeName(type);
+      os << " " << count << " " << type.type_name();
     }
     os << std::endl;
     if (line_numbers) line_numbers->push_back(kNoByteCode);
@@ -143,7 +154,7 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
     ++line_nr;
   }
 
-  os << "// body: " << std::endl;
+  os << "// body:" << std::endl;
   if (line_numbers) line_numbers->push_back(kNoByteCode);
   ++line_nr;
   unsigned control_depth = 0;
@@ -154,6 +165,7 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
     unsigned offset = 1;
     WasmOpcode opcode = i.current();
     if (WasmOpcodes::IsPrefixOpcode(opcode)) {
+      os << PrefixName(opcode) << ", ";
       opcode = i.prefixed_opcode();
       offset = 2;
     }
@@ -175,6 +187,7 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
         opcode == kExprTry) {
       DCHECK_EQ(2, length);
 
+      // TODO(7748) Update this for gc and ref types if needed
       switch (i.pc()[1]) {
 #define CASE_LOCAL_TYPE(local_name, type_name) \
   case kLocal##local_name:                     \
@@ -198,10 +211,12 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
       }
     }
 
+    os << "  // " << WasmOpcodes::OpcodeName(opcode);
+
     switch (opcode) {
       case kExprElse:
       case kExprCatch:
-        os << "   // @" << i.pc_offset();
+        os << " @" << i.pc_offset();
         control_depth++;
         break;
       case kExprLoop:
@@ -210,38 +225,38 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
       case kExprTry: {
         BlockTypeImmediate<Decoder::kNoValidate> imm(WasmFeatures::All(), &i,
                                                      i.pc());
-        os << "   // @" << i.pc_offset();
+        os << " @" << i.pc_offset();
         if (decoder.Complete(imm)) {
           for (uint32_t i = 0; i < imm.out_arity(); i++) {
-            os << " " << ValueTypes::TypeName(imm.out_type(i));
+            os << " " << imm.out_type(i).type_name();
           }
         }
         control_depth++;
         break;
       }
       case kExprEnd:
-        os << "   // @" << i.pc_offset();
+        os << " @" << i.pc_offset();
         control_depth--;
         break;
       case kExprBr: {
         BranchDepthImmediate<Decoder::kNoValidate> imm(&i, i.pc());
-        os << "   // depth=" << imm.depth;
+        os << " depth=" << imm.depth;
         break;
       }
       case kExprBrIf: {
         BranchDepthImmediate<Decoder::kNoValidate> imm(&i, i.pc());
-        os << "   // depth=" << imm.depth;
+        os << " depth=" << imm.depth;
         break;
       }
       case kExprBrTable: {
         BranchTableImmediate<Decoder::kNoValidate> imm(&i, i.pc());
-        os << " // entries=" << imm.table_count;
+        os << " entries=" << imm.table_count;
         break;
       }
       case kExprCallIndirect: {
         CallIndirectImmediate<Decoder::kNoValidate> imm(WasmFeatures::All(), &i,
                                                         i.pc());
-        os << "   // sig #" << imm.sig_index;
+        os << " sig #" << imm.sig_index;
         if (decoder.Complete(i.pc(), imm)) {
           os << ": " << *imm.sig;
         }
@@ -249,7 +264,7 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
       }
       case kExprCallFunction: {
         CallFunctionImmediate<Decoder::kNoValidate> imm(&i, i.pc());
-        os << " // function #" << imm.index;
+        os << " function #" << imm.index;
         if (decoder.Complete(i.pc(), imm)) {
           os << ": " << *imm.sig;
         }

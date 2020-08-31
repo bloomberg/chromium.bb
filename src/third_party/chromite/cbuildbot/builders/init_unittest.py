@@ -7,11 +7,11 @@
 
 from __future__ import print_function
 
+import importlib
 import mock
 
 from chromite.cbuildbot import builders
 from chromite.cbuildbot.builders import simple_builders
-from chromite.lib import cros_import
 from chromite.lib import cros_test_lib
 
 
@@ -39,7 +39,7 @@ class ModuleTest(cros_test_lib.MockTempDirTestCase):
     # Setup
     mock_module = mock.Mock()
     mock_module.MyBuilder = 'fake_class'
-    mock_import = self.PatchObject(cros_import, 'ImportModule',
+    mock_import = self.PatchObject(importlib, 'import_module',
                                    return_value=mock_module)
     # Test
     result = builders.GetBuilderClass('config.my_builders.MyBuilder')

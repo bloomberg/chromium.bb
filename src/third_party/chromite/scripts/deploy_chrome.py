@@ -27,6 +27,7 @@ import multiprocessing
 import os
 import shlex
 import shutil
+import sys
 import time
 
 from chromite.lib import constants
@@ -42,6 +43,9 @@ from chromite.lib import parallel
 from chromite.lib import remote_access as remote
 from chromite.lib import timeout_util
 from gn_helpers import gn_helpers
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 KERNEL_A_PARTITION = 2
@@ -108,7 +112,7 @@ class DeployChrome(object):
     self.chrome_dir = _CHROME_DIR
 
   def _GetRemoteMountFree(self, remote_dir):
-    result = self.device.RunCommand(DF_COMMAND % remote_dir)
+    result = self.device.run(DF_COMMAND % remote_dir)
     line = result.output.splitlines()[1]
     value = line.split()[3]
     multipliers = {
@@ -119,20 +123,19 @@ class DeployChrome(object):
     return int(value.rstrip('GMK')) * multipliers.get(value[-1], 1)
 
   def _GetRemoteDirSize(self, remote_dir):
-    result = self.device.RunCommand('du -ks %s' % remote_dir,
-                                    capture_output=True, encoding='utf-8')
+    result = self.device.run('du -ks %s' % remote_dir,
+                             capture_output=True, encoding='utf-8')
     return int(result.output.split()[0])
 
   def _GetStagingDirSize(self):
     result = cros_build_lib.dbg_run(['du', '-ks', self.staging_dir],
-                                    redirect_stdout=True, capture_output=True,
+                                    stdout=True, capture_output=True,
                                     encoding='utf-8')
     return int(result.output.split()[0])
 
   def _ChromeFileInUse(self):
-    result = self.device.RunCommand(LSOF_COMMAND_CHROME %
-                                    (self.options.target_dir,),
-                                    error_code_ok=True, capture_output=True)
+    result = self.device.run(LSOF_COMMAND_CHROME % (self.options.target_dir,),
+                             check=False, capture_output=True)
     return result.returncode == 0
 
   def _Reboot(self):
@@ -157,7 +160,7 @@ class DeployChrome(object):
     cmd = ('/usr/share/vboot/bin/make_dev_ssd.sh --partitions %d '
            '--remove_rootfs_verification --force')
     for partition in (KERNEL_A_PARTITION, KERNEL_B_PARTITION):
-      self.device.RunCommand(cmd % partition, error_code_ok=True)
+      self.device.run(cmd % partition, check=False)
 
     self._Reboot()
 
@@ -165,7 +168,7 @@ class DeployChrome(object):
     self._KillProcsIfNeeded()
 
     # Make sure the rootfs is writable now.
-    self._MountRootfsAsWritable(error_code_ok=False)
+    self._MountRootfsAsWritable(check=True)
 
     return True
 
@@ -174,8 +177,8 @@ class DeployChrome(object):
     # <job_name> <status> ['process' <pid>].
     # <status> is in the format <goal>/<state>.
     try:
-      result = self.device.RunCommand('status ui', capture_output=True,
-                                      encoding='utf-8')
+      result = self.device.run('status ui', capture_output=True,
+                               encoding='utf-8')
     except cros_build_lib.RunCommandError as e:
       if 'Unknown job' in e.result.error:
         return False
@@ -187,7 +190,7 @@ class DeployChrome(object):
   def _KillProcsIfNeeded(self):
     if self._CheckUiJobStarted():
       logging.info('Shutting down Chrome...')
-      self.device.RunCommand('stop ui')
+      self.device.run('stop ui')
 
     # Developers sometimes run session_manager manually, in which case we'll
     # need to help shut the chrome processes down.
@@ -197,8 +200,7 @@ class DeployChrome(object):
           logging.warning('The chrome binary on the device is in use.')
           logging.warning('Killing chrome and session_manager processes...\n')
 
-          self.device.RunCommand("pkill 'chrome|session_manager'",
-                                 error_code_ok=True)
+          self.device.run("pkill 'chrome|session_manager'", check=False)
           # Wait for processes to actually terminate
           time.sleep(POST_KILL_WAIT)
           logging.info('Rechecking the chrome binary...')
@@ -208,19 +210,18 @@ class DeployChrome(object):
              % self.options.process_timeout)
       raise DeployFailure(msg)
 
-  def _MountRootfsAsWritable(self, error_code_ok=True):
+  def _MountRootfsAsWritable(self, check=False):
     """Mounts the rootfs as writable.
 
     If the command fails and the root dir is not writable then this function
     sets self._root_dir_is_still_readonly.
 
     Args:
-      error_code_ok: See remote.RemoteAccess.RemoteSh for details.
+      check: See remote.RemoteAccess.RemoteSh for details.
     """
     # TODO: Should migrate to use the remount functions in remote_access.
-    result = self.device.RunCommand(MOUNT_RW_COMMAND,
-                                    error_code_ok=error_code_ok,
-                                    capture_output=True, encoding='utf-8')
+    result = self.device.run(MOUNT_RW_COMMAND, check=check,
+                             capture_output=True, encoding='utf-8')
     if result.returncode and not self.device.IsDirWritable('/'):
       self._root_dir_is_still_readonly.set()
 
@@ -230,7 +231,7 @@ class DeployChrome(object):
     # Any valid /opt directory should already exist so avoid the remote call.
     if os.path.commonprefix([target_dir, '/opt']) == '/opt':
       return
-    self.device.RunCommand(['mkdir', '-p', '--mode', '0775', target_dir])
+    self.device.run(['mkdir', '-p', '--mode', '0775', target_dir])
 
   def _GetDeviceInfo(self):
     """Returns the disk space used and available for the target diectory."""
@@ -285,28 +286,28 @@ class DeployChrome(object):
     # getting deployed, and only on SELinux supported devices.
     if (self.device.IsSELinuxAvailable() and
         _CHROME_DIR in (self.options.target_dir, self.options.mount_dir)):
-      self.device.RunCommand(['restorecon', '-R', _CHROME_DIR])
+      self.device.run(['restorecon', '-R', _CHROME_DIR])
 
     for p in self.copy_paths:
       if p.mode:
         # Set mode if necessary.
-        self.device.RunCommand('chmod %o %s/%s' % (
+        self.device.run('chmod %o %s/%s' % (
             p.mode, self.options.target_dir, p.src if not p.dest else p.dest))
 
     # Send SIGHUP to dbus-daemon to tell it to reload its configs. This won't
     # pick up major changes (bus type, logging, etc.), but all we care about is
     # getting the latest policy from /opt/google/chrome/dbus so that Chrome will
     # be authorized to take ownership of its service names.
-    self.device.RunCommand(DBUS_RELOAD_COMMAND, error_code_ok=True)
+    self.device.run(DBUS_RELOAD_COMMAND, check=False)
 
     if self.options.startui:
       logging.info('Starting UI...')
-      self.device.RunCommand('start ui')
+      self.device.run('start ui')
 
   def _CheckConnection(self):
     try:
       logging.info('Testing connection to the device...')
-      self.device.RunCommand('true')
+      self.device.run('true')
     except cros_build_lib.RunCommandError as ex:
       logging.error('Error connecting to the test device.')
       raise DeployFailure(ex)
@@ -334,26 +335,26 @@ class DeployChrome(object):
     logging.info('Mounting Chrome...')
 
     # Create directory if does not exist.
-    self.device.RunCommand(_MKDIR_P_CMD % self.options.mount_dir)
+    self.device.run(_MKDIR_P_CMD % self.options.mount_dir)
     try:
       # Umount the existing mount on mount_dir if present first.
-      self.device.RunCommand(_UMOUNT_DIR_IF_MOUNTPOINT_CMD %
-                             {'dir': self.options.mount_dir})
+      self.device.run(_UMOUNT_DIR_IF_MOUNTPOINT_CMD %
+                      {'dir': self.options.mount_dir})
     except cros_build_lib.RunCommandError as e:
       logging.error('Failed to umount %s', self.options.mount_dir)
       # If there is a failure, check if some processs is using the mount_dir.
-      result = self.device.RunCommand(LSOF_COMMAND % (self.options.mount_dir,),
-                                      check=False, capture_output=True,
-                                      encoding='utf-8')
+      result = self.device.run(LSOF_COMMAND % (self.options.mount_dir,),
+                               check=False, capture_output=True,
+                               encoding='utf-8')
       logging.error('lsof %s -->', self.options.mount_dir)
       logging.error(result.stdout)
       raise e
 
-    self.device.RunCommand(_BIND_TO_FINAL_DIR_CMD % (self.options.target_dir,
-                                                     self.options.mount_dir))
+    self.device.run(_BIND_TO_FINAL_DIR_CMD % (self.options.target_dir,
+                                              self.options.mount_dir))
 
     # Chrome needs partition to have exec and suid flags set
-    self.device.RunCommand(_SET_MOUNT_FLAGS_CMD % (self.options.mount_dir,))
+    self.device.run(_SET_MOUNT_FLAGS_CMD % (self.options.mount_dir,))
 
   def Cleanup(self):
     """Clean up RemoteDevice."""
@@ -395,7 +396,7 @@ class DeployChrome(object):
       if not self.device.IsDirWritable(self.options.target_dir):
         if self.options.startui:
           logging.info('Restarting Chrome...')
-          self.device.RunCommand('start ui')
+          self.device.run('start ui')
         raise DeployFailure('Target location is not writable. Aborting.')
 
     if self.options.mount_dir is not None:
@@ -694,7 +695,7 @@ def main(argv):
   options = _ParseCommandLine(argv)
   _PostParseCheck(options)
 
-  # Set cros_build_lib debug level to hide RunCommand spew.
+  # Set cros_build_lib debug level to hide run spew.
   if options.verbose:
     logging.getLogger().setLevel(logging.DEBUG)
   else:

@@ -7,24 +7,27 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/unsafe_shared_memory_region.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/service/external_vk_image_gl_representation.h"
 #include "gpu/command_buffer/service/external_vk_image_skia_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
+#include "gpu/vulkan/vma_wrapper.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_version_info.h"
+#include "ui/gl/scoped_binders.h"
 
 #if defined(OS_LINUX) && BUILDFLAG(USE_DAWN)
 #include "gpu/command_buffer/service/external_vk_image_dawn_representation.h"
@@ -34,9 +37,15 @@
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #endif
 
-#if defined(OS_LINUX)
+#define GL_DEDICATED_MEMORY_OBJECT_EXT 0x9581
+#define GL_TEXTURE_TILING_EXT 0x9580
+#define GL_TILING_TYPES_EXT 0x9583
+#define GL_OPTIMAL_TILING_EXT 0x9584
+#define GL_LINEAR_TILING_EXT 0x9585
 #define GL_HANDLE_TYPE_OPAQUE_FD_EXT 0x9586
-#endif
+#define GL_HANDLE_TYPE_OPAQUE_WIN32_EXT 0x9587
+#define GL_HANDLE_TYPE_ZIRCON_VMO_ANGLE 0x93AE
+#define GL_HANDLE_TYPE_ZIRCON_EVENT_ANGLE 0x93AF
 
 namespace gpu {
 
@@ -62,90 +71,14 @@ static const struct {
     {GL_RED, GL_UNSIGNED_SHORT, 2},                // R16_EXT
     {GL_RGBA, GL_UNSIGNED_BYTE, 4},                // RGBX_8888
     {GL_BGRA, GL_UNSIGNED_BYTE, 4},                // BGRX_8888
-    {GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, 4},  // RGBX_1010102
-    {GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV, 4},  // BGRX_1010102
+    {GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, 4},  // RGBA_1010102
+    {GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV, 4},  // BGRA_1010102
     {GL_ZERO, GL_ZERO, 0},                         // YVU_420
     {GL_ZERO, GL_ZERO, 0},                         // YUV_420_BIPLANAR
     {GL_ZERO, GL_ZERO, 0},                         // P010
 };
 static_assert(base::size(kFormatTable) == (viz::RESOURCE_FORMAT_MAX + 1),
               "kFormatTable does not handle all cases.");
-
-GrVkImageInfo CreateGrVkImageInfo(
-    VkImage image,
-    VkFormat vk_format,
-    VkDeviceMemory memory,
-    size_t memory_size,
-    bool use_protected_memory,
-    const GrVkYcbcrConversionInfo& gr_ycbcr_info) {
-  GrVkAlloc alloc(memory, 0 /* offset */, memory_size, 0 /* flags */);
-  return GrVkImageInfo(
-      image, alloc, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED,
-      vk_format, 1 /* levelCount */, VK_QUEUE_FAMILY_IGNORED,
-      use_protected_memory ? GrProtected::kYes : GrProtected::kNo,
-      gr_ycbcr_info);
-}
-
-VkResult CreateVkImage(SharedContextState* context_state,
-                       VkFormat format,
-                       const gfx::Size& size,
-                       bool is_transfer_dst,
-                       bool is_external,
-                       bool use_protected_memory,
-                       VkImage* image) {
-  VkExternalMemoryImageCreateInfoKHR external_info = {
-      .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR,
-      .handleTypes = context_state->vk_context_provider()
-                         ->GetVulkanImplementation()
-                         ->GetExternalImageHandleType(),
-  };
-
-  auto usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-  if (is_transfer_dst)
-    usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-
-  VkImageCreateInfo create_info = {
-      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-      .pNext = is_external ? &external_info : nullptr,
-      .flags = use_protected_memory ? VK_IMAGE_CREATE_PROTECTED_BIT : 0,
-      .imageType = VK_IMAGE_TYPE_2D,
-      .format = format,
-      .extent = {size.width(), size.height(), 1},
-      .mipLevels = 1,
-      .arrayLayers = 1,
-      .samples = VK_SAMPLE_COUNT_1_BIT,
-      .tiling = VK_IMAGE_TILING_OPTIMAL,
-      .usage = usage,
-      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-      .queueFamilyIndexCount = 0,
-      .pQueueFamilyIndices = nullptr,
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-  };
-
-  VkDevice device =
-      context_state->vk_context_provider()->GetDeviceQueue()->GetVulkanDevice();
-  return vkCreateImage(device, &create_info, nullptr, image);
-}
-
-uint32_t FindMemoryTypeIndex(SharedContextState* context_state,
-                             const VkMemoryRequirements& requirements,
-                             VkMemoryPropertyFlags flags) {
-  VkPhysicalDevice physical_device = context_state->vk_context_provider()
-                                         ->GetDeviceQueue()
-                                         ->GetVulkanPhysicalDevice();
-  VkPhysicalDeviceMemoryProperties properties;
-  vkGetPhysicalDeviceMemoryProperties(physical_device, &properties);
-  constexpr uint32_t kInvalidTypeIndex = 32;
-  for (uint32_t i = 0; i < kInvalidTypeIndex; i++) {
-    if (((1u << i) & requirements.memoryTypeBits) == 0)
-      continue;
-    if ((properties.memoryTypes[i].propertyFlags & flags) != flags)
-      continue;
-    return i;
-  }
-  NOTREACHED();
-  return kInvalidTypeIndex;
-}
 
 class ScopedPixelStore {
  public:
@@ -169,22 +102,22 @@ class ScopedPixelStore {
   DISALLOW_COPY_AND_ASSIGN(ScopedPixelStore);
 };
 
-base::Optional<WGPUTextureFormat> GetWGPUFormat(viz::ResourceFormat format) {
-  switch (format) {
-    case viz::RED_8:
-    case viz::ALPHA_8:
-    case viz::LUMINANCE_8:
-      return WGPUTextureFormat_R8Unorm;
-    case viz::RG_88:
-      return WGPUTextureFormat_RG8Unorm;
-    case viz::RGBA_8888:
-      return WGPUTextureFormat_RGBA8Unorm;
-    case viz::BGRA_8888:
-      return WGPUTextureFormat_BGRA8Unorm;
-    default:
-      return {};
+class ScopedDedicatedMemoryObject {
+ public:
+  explicit ScopedDedicatedMemoryObject(gl::GLApi* api) : api_(api) {
+    api_->glCreateMemoryObjectsEXTFn(1, &id_);
+    int dedicated = GL_TRUE;
+    api_->glMemoryObjectParameterivEXTFn(id_, GL_DEDICATED_MEMORY_OBJECT_EXT,
+                                         &dedicated);
   }
-}
+  ~ScopedDedicatedMemoryObject() { api_->glDeleteMemoryObjectsEXTFn(1, &id_); }
+
+  GLuint id() const { return id_; }
+
+ private:
+  gl::GLApi* const api_;
+  GLuint id_;
+};
 
 }  // namespace
 
@@ -197,75 +130,50 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage,
+    const VulkanImageUsageCache* image_usage_cache,
     base::span<const uint8_t> pixel_data,
     bool using_gmb) {
-  VkDevice device =
-      context_state->vk_context_provider()->GetDeviceQueue()->GetVulkanDevice();
-  VkFormat vk_format = ToVkFormat(format);
-  VkImage image;
   bool is_external = context_state->support_vulkan_external_object();
   bool is_transfer_dst = using_gmb || !pixel_data.empty() || !is_external;
-  if (context_state->vk_context_provider()
-          ->GetVulkanImplementation()
-          ->enforce_protected_memory()) {
-    usage |= SHARED_IMAGE_USAGE_PROTECTED;
+
+  auto* device_queue = context_state->vk_context_provider()->GetDeviceQueue();
+  VkFormat vk_format = ToVkFormat(format);
+  VkImageUsageFlags vk_usage =
+      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+  if (is_transfer_dst)
+    vk_usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+  // Requested usage flags must be supported.
+  DCHECK_EQ(vk_usage & image_usage_cache->optimal_tiling_usage[format],
+            vk_usage);
+
+  if (is_external && (usage & SHARED_IMAGE_USAGE_GLES2)) {
+    // Must request all available image usage flags if aliasing GL texture. This
+    // is a spec requirement.
+    vk_usage |= image_usage_cache->optimal_tiling_usage[format];
   }
-  VkResult result =
-      CreateVkImage(context_state, vk_format, size, is_transfer_dst,
-                    is_external, usage & SHARED_IMAGE_USAGE_PROTECTED, &image);
-  if (result != VK_SUCCESS) {
-    DLOG(ERROR) << "Failed to create external VkImage: " << result;
+
+  auto* vulkan_implementation =
+      context_state->vk_context_provider()->GetVulkanImplementation();
+  VkImageCreateFlags vk_flags =
+      vulkan_implementation->enforce_protected_memory()
+          ? VK_IMAGE_CREATE_PROTECTED_BIT
+          : 0;
+  std::unique_ptr<VulkanImage> image;
+  if (is_external) {
+    image = VulkanImage::CreateWithExternalMemory(device_queue, size, vk_format,
+                                                  vk_usage, vk_flags,
+                                                  VK_IMAGE_TILING_OPTIMAL);
+  } else {
+    image = VulkanImage::Create(device_queue, size, vk_format, vk_usage,
+                                vk_flags, VK_IMAGE_TILING_OPTIMAL);
+  }
+  if (!image)
     return nullptr;
-  }
 
-  VkMemoryRequirements requirements;
-  vkGetImageMemoryRequirements(device, image, &requirements);
-
-  if (!requirements.memoryTypeBits) {
-    DLOG(ERROR)
-        << "Unable to find appropriate memory type for external VkImage";
-    vkDestroyImage(device, image, nullptr);
-    return nullptr;
-  }
-
-  VkExportMemoryAllocateInfoKHR external_info = {
-      .sType = VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_KHR,
-      .handleTypes = context_state->vk_context_provider()
-                         ->GetVulkanImplementation()
-                         ->GetExternalImageHandleType(),
-  };
-
-  VkMemoryAllocateInfo mem_alloc_info = {
-      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-      .pNext = is_external ? &external_info : nullptr,
-      .allocationSize = requirements.size,
-      .memoryTypeIndex = FindMemoryTypeIndex(
-          context_state, requirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
-  };
-
-  VkDeviceMemory memory;
-  // TODO(crbug.com/932286): Allocating a separate piece of memory for every
-  // VkImage might have too much overhead. It is recommended that one large
-  // VkDeviceMemory be sub-allocated to multiple VkImages instead.
-  result = vkAllocateMemory(device, &mem_alloc_info, nullptr, &memory);
-  if (result != VK_SUCCESS) {
-    DLOG(ERROR) << "Failed to allocate memory for external VkImage: " << result;
-    vkDestroyImage(device, image, nullptr);
-    return nullptr;
-  }
-
-  result = vkBindImageMemory(device, image, memory, 0);
-  if (result != VK_SUCCESS) {
-    DLOG(ERROR) << "Failed to bind memory to external VkImage: " << result;
-    vkFreeMemory(device, memory, nullptr);
-    vkDestroyImage(device, image, nullptr);
-    return nullptr;
-  }
-
-  auto backing = base::WrapUnique(new ExternalVkImageBacking(
-      mailbox, format, size, color_space, usage, context_state, image, memory,
-      requirements.size, vk_format, command_pool, GrVkYcbcrConversionInfo(),
-      GetWGPUFormat(format), mem_alloc_info.memoryTypeIndex));
+  auto backing = std::make_unique<ExternalVkImageBacking>(
+      util::PassKey<ExternalVkImageBacking>(), mailbox, format, size,
+      color_space, usage, context_state, std::move(image), command_pool);
 
   if (!pixel_data.empty()) {
     backing->WritePixels(
@@ -287,7 +195,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
     gfx::BufferFormat buffer_format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    uint32_t usage) {
+    uint32_t usage,
+    const VulkanImageUsageCache* image_usage_cache) {
   if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, buffer_format)) {
     DLOG(ERROR) << "Invalid image size for format.";
     return nullptr;
@@ -297,40 +206,20 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
       context_state->vk_context_provider()->GetVulkanImplementation();
   auto resource_format = viz::GetResourceFormat(buffer_format);
   if (vulkan_implementation->CanImportGpuMemoryBuffer(handle.type)) {
-    VkDevice vk_device = context_state->vk_context_provider()
-                             ->GetDeviceQueue()
-                             ->GetVulkanDevice();
-    VkImage vk_image = VK_NULL_HANDLE;
-    VkImageCreateInfo vk_image_info = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
-    VkDeviceMemory vk_device_memory = VK_NULL_HANDLE;
-    VkDeviceSize memory_size = 0;
-    base::Optional<VulkanYCbCrInfo> ycbcr_info;
-
-    if (!vulkan_implementation->CreateImageFromGpuMemoryHandle(
-            vk_device, std::move(handle), size, &vk_image, &vk_image_info,
-            &vk_device_memory, &memory_size, &ycbcr_info)) {
+    auto* device_queue = context_state->vk_context_provider()->GetDeviceQueue();
+    VkFormat vk_format = ToVkFormat(resource_format);
+    auto image = vulkan_implementation->CreateImageFromGpuMemoryHandle(
+        device_queue, std::move(handle), size, vk_format);
+    if (!image) {
       DLOG(ERROR) << "Failed to create VkImage from GpuMemoryHandle.";
       return nullptr;
     }
 
-    VkFormat expected_format = ToVkFormat(resource_format);
-    if (expected_format != vk_image_info.format) {
-      DLOG(ERROR) << "BufferFormat doesn't match the buffer ";
-      vkFreeMemory(vk_device, vk_device_memory, nullptr);
-      vkDestroyImage(vk_device, vk_image, nullptr);
-      return nullptr;
-    }
-
-    GrVkYcbcrConversionInfo gr_ycbcr_info =
-        CreateGrVkYcbcrConversionInfo(context_state->vk_context_provider()
-                                          ->GetDeviceQueue()
-                                          ->GetVulkanPhysicalDevice(),
-                                      vk_image_info.tiling, ycbcr_info);
-
-    return base::WrapUnique(new ExternalVkImageBacking(
-        mailbox, resource_format, size, color_space, usage, context_state,
-        vk_image, vk_device_memory, memory_size, vk_image_info.format,
-        command_pool, gr_ycbcr_info, GetWGPUFormat(resource_format), {}));
+    auto backing = std::make_unique<ExternalVkImageBacking>(
+        util::PassKey<ExternalVkImageBacking>(), mailbox, resource_format, size,
+        color_space, usage, context_state, std::move(image), command_pool);
+    backing->SetCleared();
+    return backing;
   }
 
   if (gfx::NumberOfPlanesForLinearBufferFormat(buffer_format) != 1) {
@@ -408,8 +297,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
   }
 
   auto backing = Create(context_state, command_pool, mailbox, resource_format,
-                        size, color_space, usage, base::span<const uint8_t>(),
-                        true /* using_gmb */);
+                        size, color_space, usage, image_usage_cache,
+                        base::span<const uint8_t>(), true /* using_gmb */);
   if (!backing)
     return nullptr;
 
@@ -419,42 +308,58 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
 }
 
 ExternalVkImageBacking::ExternalVkImageBacking(
+    util::PassKey<ExternalVkImageBacking>,
     const Mailbox& mailbox,
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage,
     SharedContextState* context_state,
-    VkImage image,
-    VkDeviceMemory memory,
-    size_t memory_size,
-    VkFormat vk_format,
-    VulkanCommandPool* command_pool,
-    const GrVkYcbcrConversionInfo& ycbcr_info,
-    base::Optional<WGPUTextureFormat> wgpu_format,
-    base::Optional<uint32_t> memory_type_index)
-    : SharedImageBacking(mailbox,
-                         format,
-                         size,
-                         color_space,
-                         usage,
-                         memory_size,
-                         false /* is_thread_safe */),
+    std::unique_ptr<VulkanImage> image,
+    VulkanCommandPool* command_pool)
+    : ClearTrackingSharedImageBacking(mailbox,
+                                      format,
+                                      size,
+                                      color_space,
+                                      usage,
+                                      image->device_size(),
+                                      false /* is_thread_safe */),
       context_state_(context_state),
+      image_(std::move(image)),
       backend_texture_(size.width(),
                        size.height(),
-                       CreateGrVkImageInfo(image,
-                                           vk_format,
-                                           memory,
-                                           memory_size,
-                                           usage & SHARED_IMAGE_USAGE_PROTECTED,
-                                           ycbcr_info)),
-      command_pool_(command_pool),
-      wgpu_format_(wgpu_format),
-      memory_type_index_(memory_type_index) {}
+                       CreateGrVkImageInfo(image_.get())),
+      command_pool_(command_pool) {}
 
 ExternalVkImageBacking::~ExternalVkImageBacking() {
-  DCHECK(!backend_texture_.isValid());
+  GrVkImageInfo image_info;
+  bool result = backend_texture_.getVkImageInfo(&image_info);
+  DCHECK(result);
+
+  auto* fence_helper = context_state()
+                           ->vk_context_provider()
+                           ->GetDeviceQueue()
+                           ->GetFenceHelper();
+  fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(std::move(image_));
+  backend_texture_ = GrBackendTexture();
+
+  if (texture_) {
+    // Ensure that a context is current before removing the ref and calling
+    // glDeleteTextures.
+    if (!gl::GLContext::GetCurrent())
+      context_state()->MakeCurrent(nullptr, true /* need_gl */);
+    texture_->RemoveLightweightRef(have_context());
+  }
+
+  if (texture_passthrough_) {
+    // Ensure that a context is current before releasing |texture_passthrough_|,
+    // it calls glDeleteTextures.
+    if (!gl::GLContext::GetCurrent())
+      context_state()->MakeCurrent(nullptr, true /* need_gl */);
+    if (!have_context())
+      texture_passthrough_->MarkContextLost();
+    texture_passthrough_ = nullptr;
+  }
 }
 
 bool ExternalVkImageBacking::BeginAccess(
@@ -466,12 +371,110 @@ bool ExternalVkImageBacking::BeginAccess(
     if (texture_)
       UpdateContent(kInGLTexture);
   }
-  return BeginAccessInternal(readonly, semaphore_handles);
+  if (!BeginAccessInternal(readonly, semaphore_handles))
+    return false;
+
+  if (!is_gl)
+    return true;
+
+  if (use_separate_gl_texture())
+    return true;
+
+  DCHECK(need_synchronization());
+
+  auto command_buffer = command_pool_->CreatePrimaryCommandBuffer();
+  {
+    ScopedSingleUseCommandBufferRecorder recorder(*command_buffer);
+    GrVkImageInfo image_info;
+    bool success = backend_texture_.getVkImageInfo(&image_info);
+    DCHECK(success);
+    auto image_layout = image_info.fImageLayout;
+    if (image_layout == VK_IMAGE_LAYOUT_UNDEFINED) {
+      // dst_image_layout cannot be VK_IMAGE_LAYOUT_UNDEFINED, so we set it to
+      // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL.
+      image_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      command_buffer->TransitionImageLayout(
+          image_info.fImage, image_info.fImageLayout, image_layout);
+      // Update backend_texture_ image layout.
+      backend_texture_.setVkImageLayout(image_layout);
+    }
+    uint32_t vulkan_queue_index = context_state_->vk_context_provider()
+                                      ->GetDeviceQueue()
+                                      ->GetVulkanQueueIndex();
+    // Transfer image queue faimily ownership to external, so the image can be
+    // used by GL.
+    command_buffer->TransitionImageLayout(image_info.fImage, image_layout,
+                                          image_layout, vulkan_queue_index,
+                                          VK_QUEUE_FAMILY_EXTERNAL);
+  }
+
+  std::vector<VkSemaphore> wait_semaphores;
+  wait_semaphores.reserve(semaphore_handles->size());
+  for (auto& handle : *semaphore_handles) {
+    VkSemaphore semaphore = vulkan_implementation()->ImportSemaphoreHandle(
+        device(), std::move(handle));
+    wait_semaphores.emplace_back(semaphore);
+  }
+  semaphore_handles->clear();
+
+  VkSemaphore signal_semaphore =
+      vulkan_implementation()->CreateExternalSemaphore(device());
+  // TODO(penghuang): ask skia to do it for us to avoid this queue submission.
+  command_buffer->Submit(wait_semaphores.size(), wait_semaphores.data(), 1,
+                         &signal_semaphore);
+  auto end_access_semphore_handle =
+      vulkan_implementation()->GetSemaphoreHandle(device(), signal_semaphore);
+  semaphore_handles->push_back(std::move(end_access_semphore_handle));
+
+  auto* fence_helper =
+      context_state_->vk_context_provider()->GetDeviceQueue()->GetFenceHelper();
+  fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
+      std::move(command_buffer));
+  wait_semaphores.emplace_back(signal_semaphore);
+  fence_helper->EnqueueSemaphoresCleanupForSubmittedWork(
+      std::move(wait_semaphores));
+
+  return true;
 }
 
 void ExternalVkImageBacking::EndAccess(bool readonly,
                                        SemaphoreHandle semaphore_handle,
                                        bool is_gl) {
+  if (is_gl && !use_separate_gl_texture()) {
+    auto command_buffer = command_pool_->CreatePrimaryCommandBuffer();
+    {
+      ScopedSingleUseCommandBufferRecorder recorder(*command_buffer);
+      GrVkImageInfo image_info;
+      bool success = backend_texture_.getVkImageInfo(&image_info);
+      DCHECK(success);
+      uint32_t vulkan_queue_index = context_state_->vk_context_provider()
+                                        ->GetDeviceQueue()
+                                        ->GetVulkanQueueIndex();
+
+      // After GL accessing, transfer image queue family ownership back, so it
+      // can be used by vulkan.
+      command_buffer->TransitionImageLayout(
+          image_info.fImage, image_info.fImageLayout, image_info.fImageLayout,
+          VK_QUEUE_FAMILY_EXTERNAL, vulkan_queue_index);
+    }
+
+    VkSemaphore semaphore = vulkan_implementation()->ImportSemaphoreHandle(
+        device(), std::move(semaphore_handle));
+    VkSemaphore end_access_semaphore =
+        vulkan_implementation()->CreateExternalSemaphore(device());
+    // TODO(penghuang): ask skia to do it for us to avoid this queue submission.
+    command_buffer->Submit(1, &semaphore, 1, &end_access_semaphore);
+    semaphore_handle = vulkan_implementation()->GetSemaphoreHandle(
+        device(), end_access_semaphore);
+    auto* fence_helper = context_state_->vk_context_provider()
+                             ->GetDeviceQueue()
+                             ->GetFenceHelper();
+    fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
+        std::move(command_buffer));
+    fence_helper->EnqueueSemaphoresCleanupForSubmittedWork(
+        {semaphore, end_access_semaphore});
+  }
+
   EndAccessInternal(readonly, std::move(semaphore_handle));
   if (!readonly) {
     if (use_separate_gl_texture()) {
@@ -482,45 +485,10 @@ void ExternalVkImageBacking::EndAccess(bool readonly,
   }
 }
 
-bool ExternalVkImageBacking::IsCleared() const {
-  return is_cleared_;
-}
-
-void ExternalVkImageBacking::SetCleared() {
-  is_cleared_ = true;
-}
-
 void ExternalVkImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   DCHECK(!in_fence);
   latest_content_ = kInSharedMemory;
   SetCleared();
-}
-
-void ExternalVkImageBacking::Destroy() {
-  GrVkImageInfo image_info;
-  bool result = backend_texture_.getVkImageInfo(&image_info);
-  DCHECK(result);
-
-  auto* fence_helper = context_state()
-                           ->vk_context_provider()
-                           ->GetDeviceQueue()
-                           ->GetFenceHelper();
-  fence_helper->EnqueueImageCleanupForSubmittedWork(image_info.fImage,
-                                                    image_info.fAlloc.fMemory);
-  backend_texture_ = GrBackendTexture();
-
-  if (texture_) {
-    // Ensure that a context is current before removing the ref and calling
-    // glDeleteTextures.
-    if (!gl::GLContext::GetCurrent())
-      context_state()->MakeCurrent(nullptr, true /* need_gl */);
-    texture_->RemoveLightweightRef(have_context());
-  }
-  if (texture_passthrough_) {
-    if (!have_context())
-      texture_passthrough_->MarkContextLost();
-    texture_passthrough_ = nullptr;
-  }
 }
 
 bool ExternalVkImageBacking::ProduceLegacyMailbox(
@@ -536,13 +504,10 @@ ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
                                     MemoryTypeTracker* tracker,
                                     WGPUDevice wgpuDevice) {
 #if defined(OS_LINUX) && BUILDFLAG(USE_DAWN)
-  if (!wgpu_format_) {
-    DLOG(ERROR) << "Format not supported for Dawn";
-    return nullptr;
-  }
+  auto wgpu_format = viz::ToWGPUFormat(format());
 
-  if (!memory_type_index_) {
-    DLOG(ERROR) << "No type index info provided";
+  if (wgpu_format == WGPUTextureFormat_Undefined) {
+    DLOG(ERROR) << "Format not supported for Dawn";
     return nullptr;
   }
 
@@ -550,14 +515,13 @@ ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
   bool result = backend_texture_.getVkImageInfo(&image_info);
   DCHECK(result);
 
-  int memory_fd = GetMemoryFd(image_info);
-  if (memory_fd < 0) {
+  auto memory_fd = image_->GetMemoryFd();
+  if (!memory_fd.is_valid()) {
     return nullptr;
   }
 
   return std::make_unique<ExternalVkImageDawnRepresentation>(
-      manager, this, tracker, wgpuDevice, wgpu_format_.value(), memory_fd,
-      image_info.fAlloc.fSize, memory_type_index_.value());
+      manager, this, tracker, wgpuDevice, wgpu_format, std::move(memory_fd));
 #else  // !defined(OS_LINUX) || !BUILDFLAG(USE_DAWN)
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
@@ -565,59 +529,84 @@ ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
 }
 
 GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
-#if defined(OS_LINUX)
   GrVkImageInfo image_info;
   bool result = backend_texture_.getVkImageInfo(&image_info);
   DCHECK(result);
-
   gl::GLApi* api = gl::g_current_gl_context;
-  GLuint memory_object = 0;
+  base::Optional<ScopedDedicatedMemoryObject> memory_object;
   if (!use_separate_gl_texture()) {
-    int memory_fd = GetMemoryFd(image_info);
-    if (memory_fd < 0) {
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+    auto memory_fd = image_->GetMemoryFd();
+    if (!memory_fd.is_valid())
+      return 0;
+    memory_object.emplace(api);
+    api->glImportMemoryFdEXTFn(memory_object->id(), image_info.fAlloc.fSize,
+                               GL_HANDLE_TYPE_OPAQUE_FD_EXT,
+                               memory_fd.release());
+#elif defined(OS_WIN)
+    auto memory_handle = image_->GetMemoryHandle();
+    if (!memory_handle.IsValid()) {
       return 0;
     }
-
-    api->glCreateMemoryObjectsEXTFn(1, &memory_object);
-    api->glImportMemoryFdEXTFn(memory_object, image_info.fAlloc.fSize,
-                               GL_HANDLE_TYPE_OPAQUE_FD_EXT, memory_fd);
+    memory_object.emplace(api);
+    api->glImportMemoryWin32HandleEXTFn(
+        memory_object->id(), image_info.fAlloc.fSize,
+        GL_HANDLE_TYPE_OPAQUE_WIN32_EXT, memory_handle.Take());
+#elif defined(OS_FUCHSIA)
+    zx::vmo vmo = image_->GetMemoryZirconHandle();
+    if (!vmo)
+      return 0;
+    memory_object.emplace(api);
+    api->glImportMemoryZirconHandleANGLEFn(
+        memory_object->id(), image_info.fAlloc.fSize,
+        GL_HANDLE_TYPE_ZIRCON_VMO_ANGLE, vmo.release());
+#else
+#error Unsupported OS
+#endif
   }
 
   GLuint internal_format = viz::TextureStorageFormat(format());
-  GLint old_texture_binding = 0;
-  api->glGetIntegervFn(GL_TEXTURE_BINDING_2D, &old_texture_binding);
+  bool is_bgra8 = (internal_format == GL_BGRA8_EXT);
+  if (is_bgra8) {
+    const auto& ext = gl::g_current_gl_driver->ext;
+    if (!ext.b_GL_EXT_texture_format_BGRA8888) {
+      bool support_swizzle = ext.b_GL_ARB_texture_swizzle ||
+                             ext.b_GL_EXT_texture_swizzle ||
+                             gl::g_current_gl_version->IsAtLeastGL(3, 3) ||
+                             gl::g_current_gl_version->IsAtLeastGLES(3, 0);
+      if (!support_swizzle) {
+        LOG(ERROR) << "BGRA_88888 is not supported.";
+        return 0;
+      }
+      internal_format = GL_RGBA8;
+    }
+  }
+
   GLuint texture_service_id = 0;
   api->glGenTexturesFn(1, &texture_service_id);
-  api->glBindTextureFn(GL_TEXTURE_2D, texture_service_id);
+  gl::ScopedTextureBinder scoped_texture_binder(GL_TEXTURE_2D,
+                                                texture_service_id);
   api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   if (use_separate_gl_texture()) {
+    DCHECK(!memory_object);
     api->glTexStorage2DEXTFn(GL_TEXTURE_2D, 1, internal_format, size().width(),
                              size().height());
   } else {
     DCHECK(memory_object);
-    if (internal_format == GL_BGRA8_EXT) {
-      // BGRA8 internal format is not well supported, so use RGBA8 instead.
-      api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, GL_RGBA8, size().width(),
-                                  size().height(), memory_object, 0);
-      api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
-      api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
-    } else {
-      api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
-                                  size().width(), size().height(),
-                                  memory_object, 0);
-    }
+    api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
+                                size().width(), size().height(),
+                                memory_object->id(), 0);
   }
-  api->glBindTextureFn(GL_TEXTURE_2D, old_texture_binding);
+
+  if (is_bgra8 && internal_format == GL_RGBA8) {
+    api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
+    api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
+  }
+
   return texture_service_id;
-#elif defined(OS_FUCHSIA)
-  NOTIMPLEMENTED_LOG_ONCE();
-  return 0;
-#else  // !defined(OS_LINUX) && !defined(OS_FUCHSIA)
-#error Unsupported OS
-#endif
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexture>
@@ -629,7 +618,6 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
     return nullptr;
   }
 
-#if defined(OS_LINUX)
   if (!texture_) {
     GLuint texture_service_id = ProduceGLTextureInternal();
     if (!texture_service_id)
@@ -647,7 +635,7 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
     texture_->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
     // If the backing is already cleared, no need to clear it again.
     gfx::Rect cleared_rect;
-    if (is_cleared_)
+    if (IsCleared())
       cleared_rect = gfx::Rect(size());
 
     texture_->SetLevelInfo(GL_TEXTURE_2D, 0, internal_format, size().width(),
@@ -657,12 +645,6 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
   }
   return std::make_unique<ExternalVkImageGLRepresentation>(
       manager, this, tracker, texture_, texture_->service_id());
-#elif defined(OS_FUCHSIA)
-  NOTIMPLEMENTED_LOG_ONCE();
-  return nullptr;
-#else  // !defined(OS_LINUX) && !defined(OS_FUCHSIA)
-#error Unsupported OS
-#endif
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
@@ -675,7 +657,6 @@ ExternalVkImageBacking::ProduceGLTexturePassthrough(
     return nullptr;
   }
 
-#if defined(OS_LINUX)
   if (!texture_passthrough_) {
     GLuint texture_service_id = ProduceGLTextureInternal();
     if (!texture_service_id)
@@ -692,12 +673,6 @@ ExternalVkImageBacking::ProduceGLTexturePassthrough(
 
   return std::make_unique<ExternalVkImageGLPassthroughRepresentation>(
       manager, this, tracker, texture_passthrough_->service_id());
-#elif defined(OS_FUCHSIA)
-  NOTIMPLEMENTED_LOG_ONCE();
-  return nullptr;
-#else  // !defined(OS_LINUX) && !defined(OS_FUCHSIA)
-#error Unsupported OS
-#endif
 }
 
 std::unique_ptr<SharedImageRepresentationSkia>
@@ -712,23 +687,6 @@ ExternalVkImageBacking::ProduceSkia(
   return std::make_unique<ExternalVkImageSkiaRepresentation>(manager, this,
                                                              tracker);
 }
-
-#ifdef OS_LINUX
-int ExternalVkImageBacking::GetMemoryFd(const GrVkImageInfo& image_info) {
-  VkMemoryGetFdInfoKHR get_fd_info;
-  get_fd_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
-  get_fd_info.pNext = nullptr;
-  get_fd_info.memory = image_info.fAlloc.fMemory;
-  get_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
-
-  int memory_fd = -1;
-  vkGetMemoryFdKHR(device(), &get_fd_info, &memory_fd);
-  if (memory_fd < 0) {
-    DLOG(ERROR) << "Unable to extract file descriptor out of external VkImage";
-  }
-  return memory_fd;
-}
-#endif
 
 void ExternalVkImageBacking::InstallSharedMemory(
     base::WritableSharedMemoryMapping shared_memory_mapping,
@@ -794,70 +752,42 @@ bool ExternalVkImageBacking::WritePixels(size_t data_size,
                                          size_t stride,
                                          FillBufferCallback callback) {
   DCHECK(stride == 0 || size().height() * stride <= data_size);
+
   VkBufferCreateInfo buffer_create_info = {
       .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
       .size = data_size,
       .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
       .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
   };
+
+  VmaAllocator allocator =
+      context_state()->vk_context_provider()->GetDeviceQueue()->vma_allocator();
   VkBuffer stage_buffer = VK_NULL_HANDLE;
-  // TODO: Consider reusing stage_buffer and stage_memory, if allocation causes
-  // performance issue.
-  VkResult result = vkCreateBuffer(device(), &buffer_create_info,
-                                   nullptr /* pAllocator */, &stage_buffer);
+  VmaAllocation stage_allocation = VK_NULL_HANDLE;
+  VkResult result = vma::CreateBuffer(allocator, &buffer_create_info,
+                                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                          VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                      0, &stage_buffer, &stage_allocation);
   if (result != VK_SUCCESS) {
     DLOG(ERROR) << "vkCreateBuffer() failed." << result;
     return false;
   }
 
-  VkMemoryRequirements memory_requirements;
-  vkGetBufferMemoryRequirements(device(), stage_buffer, &memory_requirements);
-
-  VkMemoryAllocateInfo memory_allocate_info = {
-      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-      .allocationSize = memory_requirements.size,
-      .memoryTypeIndex =
-          FindMemoryTypeIndex(context_state_, memory_requirements,
-                              VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT),
-
-  };
-  VkDeviceMemory stage_memory = VK_NULL_HANDLE;
-  result = vkAllocateMemory(device(), &memory_allocate_info,
-                            nullptr /* pAllocator */, &stage_memory);
-  if (result != VK_SUCCESS) {
-    DLOG(ERROR) << "vkAllocateMemory() failed. " << result;
-    vkDestroyBuffer(device(), stage_buffer, nullptr /* pAllocator */);
-    return false;
-  }
-
-  result = vkBindBufferMemory(device(), stage_buffer, stage_memory,
-                              0 /* memoryOffset */);
-  if (result != VK_SUCCESS) {
-    DLOG(ERROR) << "vkBindBufferMemory() failed. " << result;
-    vkDestroyBuffer(device(), stage_buffer, nullptr /* pAllocator */);
-    vkFreeMemory(device(), stage_memory, nullptr /* pAllocator */);
-    return false;
-  }
-
   void* buffer = nullptr;
-  result = vkMapMemory(device(), stage_memory, 0 /* memoryOffset */, data_size,
-                       0, &buffer);
+  result = vma::MapMemory(allocator, stage_allocation, &buffer);
   if (result != VK_SUCCESS) {
-    DLOG(ERROR) << "vkMapMemory() failed. " << result;
-    vkDestroyBuffer(device(), stage_buffer, nullptr /* pAllocator */);
-    vkFreeMemory(device(), stage_memory, nullptr /* pAllocator */);
+    DLOG(ERROR) << "vma::MapMemory() failed. " << result;
+    vma::DestroyBuffer(allocator, stage_buffer, stage_allocation);
     return false;
   }
 
   std::move(callback).Run(buffer);
-  vkUnmapMemory(device(), stage_memory);
+  vma::UnmapMemory(allocator, stage_allocation);
 
   std::vector<gpu::SemaphoreHandle> handles;
   if (!BeginAccessInternal(false /* readonly */, &handles)) {
     DLOG(ERROR) << "BeginAccess() failed.";
-    vkDestroyBuffer(device(), stage_buffer, nullptr /* pAllocator */);
-    vkFreeMemory(device(), stage_memory, nullptr /* pAllocator */);
+    vma::DestroyBuffer(allocator, stage_buffer, stage_allocation);
     return false;
   }
 
@@ -881,7 +811,7 @@ bool ExternalVkImageBacking::WritePixels(size_t data_size,
                                       size().width(), size().height());
   }
 
-  if (!need_sychronization()) {
+  if (!need_synchronization()) {
     DCHECK(handles.empty());
     command_buffer->Submit(0, nullptr, 0, nullptr);
     EndAccessInternal(false /* readonly */, SemaphoreHandle());
@@ -892,7 +822,7 @@ bool ExternalVkImageBacking::WritePixels(size_t data_size,
     fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
         std::move(command_buffer));
     fence_helper->EnqueueBufferCleanupForSubmittedWork(stage_buffer,
-                                                       stage_memory);
+                                                       stage_allocation);
 
     return true;
   }
@@ -924,7 +854,7 @@ bool ExternalVkImageBacking::WritePixels(size_t data_size,
   fence_helper->EnqueueSemaphoresCleanupForSubmittedWork(
       begin_access_semaphores);
   fence_helper->EnqueueBufferCleanupForSubmittedWork(stage_buffer,
-                                                     stage_memory);
+                                                     stage_allocation);
 
   return true;
 }
@@ -1093,7 +1023,7 @@ void ExternalVkImageBacking::EndAccessInternal(
     is_write_in_progress_ = false;
   }
 
-  if (need_sychronization()) {
+  if (need_synchronization()) {
     DCHECK(semaphore_handle.is_valid());
     if (readonly) {
       read_semaphore_handles_.push_back(std::move(semaphore_handle));

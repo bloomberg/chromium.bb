@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -21,6 +23,7 @@ class BackForwardCacheMetricsTest : public RenderViewHostImplTestHarness,
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
+
     WebContents* web_contents = RenderViewHostImplTestHarness::web_contents();
     ASSERT_TRUE(web_contents);  // The WebContents should be created by now.
     WebContentsObserver::Observe(web_contents);
@@ -47,27 +50,7 @@ class BackForwardCacheMetricsTest : public RenderViewHostImplTestHarness,
   std::vector<int64_t> navigation_ids_;
 };
 
-using UkmEntry = std::pair<ukm::SourceId, std::map<std::string, int64_t>>;
-
-std::vector<UkmEntry> GetMetrics(ukm::TestUkmRecorder* recorder,
-                                 std::string entry_name,
-                                 std::vector<std::string> metrics) {
-  std::vector<UkmEntry> results;
-  for (const ukm::mojom::UkmEntry* entry :
-       recorder->GetEntriesByName(entry_name)) {
-    UkmEntry result;
-    result.first = entry->source_id;
-    for (const std::string& metric_name : metrics) {
-      const int64_t* metric_value =
-          ukm::TestUkmRecorder::GetEntryMetric(entry, metric_name);
-      EXPECT_TRUE(metric_value) << "Metric " << metric_name
-                                << " is not found in entry " << entry_name;
-      result.second[metric_name] = *metric_value;
-    }
-    results.push_back(std::move(result));
-  }
-  return results;
-}
+using UkmEntry = ukm::TestUkmRecorder::HumanReadableUkmEntry;
 
 ukm::SourceId ToSourceId(int64_t navigation_id) {
   return ukm::ConvertToSourceId(navigation_id,
@@ -104,12 +87,13 @@ TEST_F(BackForwardCacheMetricsTest, HistoryNavigationUKM) {
   // Navigations 4 and 5 are back navigations.
   // Navigation 6 is a forward navigation.
 
-  std::string last_navigation_id = "LastCommittedSourceIdForTheSameDocument";
+  std::string last_navigation_id =
+      "LastCommittedCrossDocumentNavigationSourceIdForTheSameDocument";
   std::string time_away = "TimeSinceNavigatedAwayFromDocument";
 
   EXPECT_THAT(
-      GetMetrics(&recorder_, "HistoryNavigation",
-                 {last_navigation_id, time_away}),
+      recorder_.GetEntries("HistoryNavigation",
+                           {last_navigation_id, time_away}),
       testing::ElementsAre(
           UkmEntry{id4, {{last_navigation_id, id2}, {time_away, 0b100}}},
           UkmEntry{id5, {{last_navigation_id, id1}, {time_away, 0b1110}}},
@@ -133,7 +117,7 @@ TEST_F(BackForwardCacheMetricsTest, LongDurationsAreClamped) {
 
   // The original interval of 5h + 50ms is clamped to just 5h.
   EXPECT_THAT(
-      GetMetrics(&recorder_, "HistoryNavigation", {time_away}),
+      recorder_.GetEntries("HistoryNavigation", {time_away}),
       testing::ElementsAre(UkmEntry{
           id3, {{time_away, base::TimeDelta::FromHours(5).InMilliseconds()}}}));
 }
@@ -178,8 +162,45 @@ TEST_F(BackForwardCacheMetricsTest, TimeRecordedAtStart) {
 
   std::string time_away = "TimeSinceNavigatedAwayFromDocument";
 
-  EXPECT_THAT(GetMetrics(&recorder_, "HistoryNavigation", {time_away}),
+  EXPECT_THAT(recorder_.GetEntries("HistoryNavigation", {time_away}),
               testing::ElementsAre(UkmEntry{id3, {{time_away, 0b1000}}}));
+}
+
+TEST_F(BackForwardCacheMetricsTest, TimeRecordedWhenRendererIsKilled) {
+  // Need to enable back-forward cache to make sure a page is put into the
+  // cache.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({features::kBackForwardCache}, {});
+
+  base::HistogramTester histogram_tester;
+
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+
+  // Go to foo1.
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
+  clock_.Advance(base::TimeDelta::FromMilliseconds(0b1));
+  TestRenderFrameHost* old_main_frame_host = main_test_rfh();
+
+  // Go to foo2. Foo1 will be in the back-forward cache.
+  NavigationSimulator::NavigateAndCommitFromDocument(url2, main_test_rfh());
+  clock_.Advance(base::TimeDelta::FromMilliseconds(0b10));
+
+  // Kill the renderer.
+  old_main_frame_host->GetProcess()->SimulateRenderProcessExit(
+      base::TERMINATION_STATUS_PROCESS_WAS_KILLED, 1);
+  clock_.Advance(base::TimeDelta::FromMilliseconds(0b100));
+
+  NavigationSimulator::GoBack(contents());
+  clock_.Advance(base::TimeDelta::FromMilliseconds(0b1000));
+
+  const char kTimeUntilProcessKilled[] =
+      "BackForwardCache.Eviction.TimeUntilProcessKilled";
+
+  // The expected recorded time is between when the last navigation happened and
+  // when the renderer is killed.
+  EXPECT_THAT(histogram_tester.GetAllSamples(kTimeUntilProcessKilled),
+              testing::ElementsAre(base::Bucket(0b10, 1)));
 }
 
 }  // namespace content

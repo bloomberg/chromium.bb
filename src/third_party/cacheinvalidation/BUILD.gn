@@ -79,13 +79,9 @@ static_library("cacheinvalidation") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   public_configs = [ ":cacheinvalidation_config" ]
 
-  public_deps = [
-    "src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
-  ]
+  public_deps = [ "src/google/cacheinvalidation:cacheinvalidation_proto_cpp" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 test("cacheinvalidation_unittests") {
@@ -145,7 +141,7 @@ if (is_android) {
       "//third_party/android_sdk:android_gcm_java",
     ]
 
-    java_files = [
+    sources = [
       "src/java/com/google/ipc/invalidation/common/BaseCommonInvalidationConstants.java",
       "src/java/com/google/ipc/invalidation/common/BuildConstants.java",
       "src/java/com/google/ipc/invalidation/common/DigestFunction.java",

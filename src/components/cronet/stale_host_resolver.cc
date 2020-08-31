@@ -10,8 +10,9 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -216,8 +217,10 @@ int StaleHostResolver::RequestImpl::Start(
   cache_parameters.source = net::HostResolverSource::LOCAL_ONLY;
   cache_request_ = resolver_->inner_resolver_->CreateRequest(
       host_, network_isolation_key_, net_log_, cache_parameters);
-  cache_error_ =
+  int error =
       cache_request_->Start(base::BindOnce([](int error) { NOTREACHED(); }));
+  DCHECK_NE(net::ERR_IO_PENDING, error);
+  cache_error_ = cache_request_->GetResolveErrorInfo().error;
   DCHECK_NE(net::ERR_IO_PENDING, cache_error_);
   // If it's a fresh cache hit (or literal), return it synchronously.
   if (cache_error_ != net::ERR_DNS_CACHE_MISS &&

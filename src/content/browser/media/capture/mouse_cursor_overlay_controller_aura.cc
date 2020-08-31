@@ -8,6 +8,8 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"
+#include "ui/base/cursor/cursor_lookup.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/wm/public/activation_client.h"
@@ -17,7 +19,7 @@ namespace content {
 namespace {
 
 ui::Cursor CreateDefaultPointerCursor() {
-  ui::Cursor cursor(ui::CursorType::kPointer);
+  ui::Cursor cursor(ui::mojom::CursorType::kPointer);
   std::unique_ptr<ui::CursorLoader> loader(ui::CursorLoader::Create());
   loader->SetPlatformCursor(&cursor);
   return cursor;
@@ -156,9 +158,9 @@ gfx::NativeCursor MouseCursorOverlayController::GetCurrentCursorOrDefault()
   if (auto* window = Observer::GetTargetWindow(observer_)) {
     if (auto* host = window->GetHost()) {
       gfx::NativeCursor cursor = host->last_cursor();
-      if (cursor != ui::CursorType::kNull) {
-        if (cursor.device_scale_factor() < 1.0f) {
-          cursor.set_device_scale_factor(1.0f);
+      if (cursor != ui::mojom::CursorType::kNull) {
+        if (cursor.image_scale_factor() < 1.0f) {
+          cursor.set_image_scale_factor(1.0f);
         }
         return cursor;
       }
@@ -178,8 +180,8 @@ gfx::RectF MouseCursorOverlayController::ComputeRelativeBoundsForOverlay(
     if (!window_size.IsEmpty()) {
       if (auto* root_window = window->GetRootWindow()) {
         // Compute the cursor size in terms of DIP coordinates.
-        const SkBitmap& bitmap = cursor.GetBitmap();
-        const float scale_factor = cursor.device_scale_factor();
+        const SkBitmap& bitmap = GetCursorBitmap(cursor);
+        const float scale_factor = cursor.image_scale_factor();
         const gfx::SizeF size =
             scale_factor > 0.0f
                 ? gfx::ScaleSize(gfx::SizeF(bitmap.width(), bitmap.height()),
@@ -189,9 +191,9 @@ gfx::RectF MouseCursorOverlayController::ComputeRelativeBoundsForOverlay(
         // Compute the hotspot in terms of DIP coordinates.
         const gfx::PointF hotspot =
             scale_factor > 0.0f
-                ? gfx::ScalePoint(gfx::PointF(cursor.GetHotspot()),
+                ? gfx::ScalePoint(gfx::PointF(GetCursorHotspot(cursor)),
                                   1.0f / scale_factor)
-                : gfx::PointF(cursor.GetHotspot());
+                : gfx::PointF(GetCursorHotspot(cursor));
 
         // Finally, put it all together: Scale the absolute bounds of the
         // overlay by the window size to produce relative coordinates.
@@ -210,8 +212,8 @@ void MouseCursorOverlayController::DisconnectFromToolkitForTesting() {
 
   observer_->StopTracking();
 
-  // The default cursor is ui::CursorType::kNone. Make it kPointer
-  // so the tests have a non-empty cursor bitmap to work with.
+  // The default cursor is ui::mojom::CursorType::kNone. Make it kPointer so
+  // the tests have a non-empty cursor bitmap to work with.
   auto* const window = Observer::GetTargetWindow(observer_);
   CHECK(window);
   auto* const host = window->GetHost();
@@ -222,7 +224,7 @@ void MouseCursorOverlayController::DisconnectFromToolkitForTesting() {
 // static
 SkBitmap MouseCursorOverlayController::GetCursorImage(
     const gfx::NativeCursor& cursor) {
-  return cursor.GetBitmap();
+  return GetCursorBitmap(cursor);
 }
 
 }  // namespace content

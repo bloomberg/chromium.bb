@@ -67,20 +67,26 @@ class ResultsProcessorUnitTests(unittest.TestCase):
         },
     )
 
-    with mock.patch('py_utils.cloud_storage.Insert') as cloud_patch:
-      cloud_patch.return_value = 'gs://url'
+    with mock.patch('py_utils.cloud_storage.Upload') as cloud_patch:
+      cloud_patch.return_value = processor.cloud_storage.CloudFilepath(
+          'bucket', 'path')
       processor.UploadArtifacts(test_result, 'bucket', 'run1')
       cloud_patch.assert_has_calls([
-          mock.call('bucket', 'run1/benchmark/story/logs', '/log.log'),
-          mock.call('bucket', 'run1/benchmark/story/trace.html', '/trace.html'),
-          mock.call('bucket', 'run1/benchmark/story/screenshot',
+          mock.call('bucket', 'run1/benchmark/story/retry_0/logs', '/log.log'),
+          mock.call('bucket', 'run1/benchmark/story/retry_0/trace.html',
+                    '/trace.html'),
+          mock.call('bucket', 'run1/benchmark/story/retry_0/screenshot',
                     '/screenshot.png'),
         ],
         any_order=True,
       )
 
     for artifact in test_result['outputArtifacts'].itervalues():
-      self.assertEqual(artifact['remoteUrl'], 'gs://url')
+      self.assertEqual(artifact['fetchUrl'], 'gs://bucket/path')
+      self.assertEqual(
+          artifact['viewUrl'],
+          'https://console.developers.google.com'
+          '/m/cloudstorage/b/bucket/o/path')
 
   def testRunIdentifier(self):
     with mock.patch('random.randint') as randint_patch:
@@ -173,3 +179,20 @@ class ResultsProcessorUnitTests(unittest.TestCase):
     test_result = testing.TestResult('benchmark/story')
     url = processor.GetTraceUrl(test_result)
     self.assertIsNone(url)
+
+  def testAmortizeProcessingDuration_UndefinedDuration(self):
+    test_results = [testing.TestResult('benchmark/story')]
+    del test_results[0]['runDuration']
+    # pylint: disable=protected-access
+    processor._AmortizeProcessingDuration(1.0, test_results)
+    # pylint: enable=protected-access
+    self.assertNotIn('runDuration', test_results[0])
+    self.assertEqual(len(test_results), 1)
+
+  def testAmortizeProcessingDuration_OneResult(self):
+    test_results = [testing.TestResult('benchmark/story', run_duration='1.0s')]
+    # pylint: disable=protected-access
+    processor._AmortizeProcessingDuration(1.0, test_results)
+    # pylint: enable=protected-access
+    self.assertEqual(str(test_results[0]['runDuration']), '2.0s')
+    self.assertEqual(len(test_results), 1)

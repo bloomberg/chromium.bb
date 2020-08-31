@@ -29,6 +29,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -36,6 +37,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_result_codes.h"
+#include "chrome/common/chrome_version.h"
 #include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_finder.h"
@@ -47,13 +49,13 @@
 #include "chrome/test/chromedriver/chrome/embedded_automation_extension.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/user_data_dir.h"
-#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/log_replay/chrome_replay_impl.h"
 #include "chrome/test/chromedriver/log_replay/replay_http_client.h"
 #include "chrome/test/chromedriver/net/net_util.h"
 #include "components/crx_file/crx_verifier.h"
+#include "components/embedder_support/switches.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/sha2.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -71,7 +73,7 @@
 namespace {
 
 const char* const kCommonSwitches[] = {
-    "disable-popup-blocking",
+    embedder_support::kDisablePopupBlocking,
     "enable-automation",
 };
 
@@ -99,9 +101,7 @@ const char* const kAndroidSwitches[] = {
     "disable-fre", "enable-remote-debugging",
 };
 
-#if defined(OS_LINUX)
 const char kEnableCrashReport[] = "enable-crash-reporter-for-testing";
-#endif
 const base::FilePath::CharType kDevToolsActivePort[] =
     FILE_PATH_LITERAL("DevToolsActivePort");
 
@@ -265,14 +265,13 @@ Status WaitForDevToolsAndCheckVersion(
     LOG(WARNING) << "You are using an unsupported command-line switch: "
                     "--disable-build-check. Please don't report bugs that "
                     "cannot be reproduced with this switch removed.";
-  } else if (browser_info->major_version != kSupportedBrowserMajorVersion) {
+  } else if (browser_info->major_version != CHROME_VERSION_MAJOR) {
     if (browser_info->major_version == 0) {
       // TODO(https://crbug.com/932013): Content Shell doesn't report a version
       // number. Skip version checking with a warning.
       LOG(WARNING) << "Unable to retrieve " << kBrowserShortName
                    << " version. Unable to verify browser compatibility.";
-    } else if (browser_info->major_version ==
-               kSupportedBrowserMajorVersion + 1) {
+    } else if (browser_info->major_version == CHROME_VERSION_MAJOR + 1) {
       // TODO(https://crbug.com/chromedriver/2656): Since we don't currently
       // release ChromeDriver for dev or canary channels, allow using
       // ChromeDriver version n (e.g., Beta) with Chrome version n+1 (e.g., Dev
@@ -286,7 +285,7 @@ Status WaitForDevToolsAndCheckVersion(
           kSessionNotCreated,
           base::StringPrintf("This version of %s only supports %s version %d",
                              kChromeDriverProductFullName, kBrowserShortName,
-                             kSupportedBrowserMajorVersion));
+                             CHROME_VERSION_MAJOR));
     }
   }
 
@@ -425,22 +424,31 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
 
   base::LaunchOptions options;
 
-#if defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_POSIX) || defined(OS_FUCHSIA)
   // If minidump path is set in the capability, enable minidump for crashes.
   if (!capabilities.minidump_path.empty()) {
     VLOG(0) << "Minidump generation specified. Will save dumps to: "
             << capabilities.minidump_path;
 
+#if defined(OS_WIN)
+    // EnvironmentMap uses wide string
+    options.environment[L"CHROME_HEADLESS"] = 1;
+    options.environment[L"BREAKPAD_DUMP_LOCATION"] =
+        base::SysUTF8ToWide(capabilities.minidump_path);
+#else
     options.environment["CHROME_HEADLESS"] = 1;
     options.environment["BREAKPAD_DUMP_LOCATION"] = capabilities.minidump_path;
+#endif
 
     if (!command.HasSwitch(kEnableCrashReport))
       command.AppendSwitch(kEnableCrashReport);
   }
 
+#if defined(OS_LINUX)
   // We need to allow new privileges so that chrome's setuid sandbox can run.
   options.allow_new_privs = true;
 #endif
+#endif  // OS_WIN || OS_POSIX || OS_FUCHSIA
 
 #if !defined(OS_WIN)
   if (!capabilities.log_path.empty())
@@ -699,6 +707,8 @@ Status LaunchReplayChrome(network::mojom::URLLoaderFactory* factory,
   status = WaitForDevToolsAndCheckVersion(DevToolsEndpoint(0), factory,
                                           socket_factory, &capabilities, 1,
                                           &devtools_http_client, &retry);
+  if (status.IsError())
+    return status;
   std::unique_ptr<DevToolsClient> devtools_websocket_client;
   status = CreateBrowserwideDevToolsClientAndConnect(
       DevToolsEndpoint(0), capabilities.perf_logging_prefs, socket_factory,
@@ -990,15 +1000,12 @@ Status WritePrefsFile(
     const std::string& template_string,
     const base::DictionaryValue* custom_prefs,
     const base::FilePath& path) {
-  int code;
-  std::string error_msg;
-  std::unique_ptr<base::Value> template_value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(template_string, 0, &code,
-                                                     &error_msg);
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(template_string);
   base::DictionaryValue* prefs;
-  if (!template_value || !template_value->GetAsDictionary(&prefs)) {
-    return Status(kUnknownError,
-                  "cannot parse internal JSON template: " + error_msg);
+  if (!parsed_json.value || !parsed_json.value->GetAsDictionary(&prefs)) {
+    return Status(kUnknownError, "cannot parse internal JSON template: " +
+                                     parsed_json.error_message);
   }
 
   if (custom_prefs) {

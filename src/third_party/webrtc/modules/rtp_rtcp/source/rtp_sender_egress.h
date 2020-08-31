@@ -23,6 +23,7 @@
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/rtp_packet_history.h"
 #include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
+#include "modules/rtp_rtcp/source/rtp_sequence_number_map.h"
 #include "rtc_base/critical_section.h"
 #include "rtc_base/rate_statistics.h"
 #include "rtc_base/thread_annotations.h"
@@ -50,20 +51,32 @@ class RtpSenderEgress {
                   RtpPacketHistory* packet_history);
   ~RtpSenderEgress() = default;
 
-  void SendPacket(RtpPacketToSend* packet, const PacedPacketInfo& pacing_info);
+  void SendPacket(RtpPacketToSend* packet, const PacedPacketInfo& pacing_info)
+      RTC_LOCKS_EXCLUDED(lock_);
   uint32_t Ssrc() const { return ssrc_; }
   absl::optional<uint32_t> RtxSsrc() const { return rtx_ssrc_; }
   absl::optional<uint32_t> FlexFecSsrc() const { return flexfec_ssrc_; }
 
-  void ProcessBitrateAndNotifyObservers();
-  DataRate SendBitrate() const;
-  DataRate NackOverheadRate() const;
+  void ProcessBitrateAndNotifyObservers() RTC_LOCKS_EXCLUDED(lock_);
+  RtpSendRates GetSendRates() const RTC_LOCKS_EXCLUDED(lock_);
   void GetDataCounters(StreamDataCounters* rtp_stats,
-                       StreamDataCounters* rtx_stats) const;
+                       StreamDataCounters* rtx_stats) const
+      RTC_LOCKS_EXCLUDED(lock_);
 
-  void ForceIncludeSendPacketsInAllocation(bool part_of_allocation);
-  bool MediaHasBeenSent() const;
-  void SetMediaHasBeenSent(bool media_sent);
+  void ForceIncludeSendPacketsInAllocation(bool part_of_allocation)
+      RTC_LOCKS_EXCLUDED(lock_);
+  bool MediaHasBeenSent() const RTC_LOCKS_EXCLUDED(lock_);
+  void SetMediaHasBeenSent(bool media_sent) RTC_LOCKS_EXCLUDED(lock_);
+  void SetTimestampOffset(uint32_t timestamp) RTC_LOCKS_EXCLUDED(lock_);
+
+  // For each sequence number in |sequence_number|, recall the last RTP packet
+  // which bore it - its timestamp and whether it was the first and/or last
+  // packet in that frame. If all of the given sequence numbers could be
+  // recalled, return a vector with all of them (in corresponding order).
+  // If any could not be recalled, return an empty vector.
+  std::vector<RtpSequenceNumberMap::Info> GetSentRtpPacketInfos(
+      rtc::ArrayView<const uint16_t> sequence_numbers) const
+      RTC_LOCKS_EXCLUDED(lock_);
 
  private:
   // Maps capture time in milliseconds to send-side delay in milliseconds.
@@ -71,6 +84,7 @@ class RtpSenderEgress {
   // time.
   typedef std::map<int64_t, int> SendDelayMap;
 
+  RtpSendRates GetSendRatesLocked() const RTC_EXCLUSIVE_LOCKS_REQUIRED(lock_);
   bool HasCorrectSsrc(const RtpPacketToSend& packet) const;
   void AddPacketToTransportFeedback(uint16_t packet_id,
                                     const RtpPacketToSend& packet,
@@ -86,7 +100,6 @@ class RtpSenderEgress {
   bool SendPacketToNetwork(const RtpPacketToSend& packet,
                            const PacketOptions& options,
                            const PacedPacketInfo& pacing_info);
-  void UpdateRtpOverhead(const RtpPacketToSend& packet);
   void UpdateRtpStats(const RtpPacketToSend& packet)
       RTC_EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
@@ -100,28 +113,35 @@ class RtpSenderEgress {
   Transport* const transport_;
   RtcEventLog* const event_log_;
   const bool is_audio_;
+  const bool need_rtp_packet_infos_;
 
   TransportFeedbackObserver* const transport_feedback_observer_;
   SendSideDelayObserver* const send_side_delay_observer_;
   SendPacketObserver* const send_packet_observer_;
-  OverheadObserver* const overhead_observer_;
   StreamDataCountersCallback* const rtp_stats_callback_;
   BitrateStatisticsObserver* const bitrate_callback_;
 
   rtc::CriticalSection lock_;
   bool media_has_been_sent_ RTC_GUARDED_BY(lock_);
   bool force_part_of_allocation_ RTC_GUARDED_BY(lock_);
+  uint32_t timestamp_offset_ RTC_GUARDED_BY(lock_);
 
   SendDelayMap send_delays_ RTC_GUARDED_BY(lock_);
   SendDelayMap::const_iterator max_delay_it_ RTC_GUARDED_BY(lock_);
   // The sum of delays over a kSendSideDelayWindowMs sliding window.
   int64_t sum_delays_ms_ RTC_GUARDED_BY(lock_);
   uint64_t total_packet_send_delay_ms_ RTC_GUARDED_BY(lock_);
-  size_t rtp_overhead_bytes_per_packet_ RTC_GUARDED_BY(lock_);
   StreamDataCounters rtp_stats_ RTC_GUARDED_BY(lock_);
   StreamDataCounters rtx_rtp_stats_ RTC_GUARDED_BY(lock_);
-  RateStatistics total_bitrate_sent_ RTC_GUARDED_BY(lock_);
-  RateStatistics nack_bitrate_sent_ RTC_GUARDED_BY(lock_);
+  // One element per value in RtpPacketMediaType, with index matching value.
+  std::vector<RateStatistics> send_rates_ RTC_GUARDED_BY(lock_);
+
+  // Maps sent packets' sequence numbers to a tuple consisting of:
+  // 1. The timestamp, without the randomizing offset mandated by the RFC.
+  // 2. Whether the packet was the first in its frame.
+  // 3. Whether the packet was the last in its frame.
+  const std::unique_ptr<RtpSequenceNumberMap> rtp_sequence_number_map_
+      RTC_GUARDED_BY(lock_);
 };
 
 }  // namespace webrtc

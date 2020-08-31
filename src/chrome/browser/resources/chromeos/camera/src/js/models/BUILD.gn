@@ -8,7 +8,6 @@ js_type_check("closure_compile") {
   deps = [
     ":filenamer",
     ":filesystem",
-    ":gallery",
     ":result_saver",
     ":video_saver",
   ]
@@ -19,13 +18,8 @@ js_library("filenamer") {
 
 js_library("filesystem") {
   deps = [
-    "..:util",
-  ]
-}
-
-js_library("gallery") {
-  deps = [
-    ":filesystem",
+    ":filenamer",
+    "../browser_proxy:browser_proxy",
   ]
 }
 
@@ -34,11 +28,16 @@ js_library("result_saver") {
 
 js_library("video_saver") {
   sources = [
-    "file_video_saver.js",
-    "intent_video_saver.js",
-    "video_saver_interface.js",
+    "async_writer.js",
+    "mp4_video_processor.js",
+    "nop_video_processor.js",
+    "video_saver.js",
+    "waitable_event.js",
   ]
   deps = [
     "..:intent",
+    "../externs:w3c_api",
+    "../lib:comlink",
+    "../lib:ffmpeg",
   ]
 }

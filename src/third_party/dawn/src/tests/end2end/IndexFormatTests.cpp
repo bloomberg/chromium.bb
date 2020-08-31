@@ -80,7 +80,7 @@ TEST_P(IndexFormatTest, Uint32) {
         pass.SetPipeline(pipeline);
         pass.SetVertexBuffer(0, vertexBuffer);
         pass.SetIndexBuffer(indexBuffer);
-        pass.DrawIndexed(3, 1, 0, 0, 0);
+        pass.DrawIndexed(3);
         pass.EndPass();
     }
 
@@ -107,7 +107,7 @@ TEST_P(IndexFormatTest, Uint16) {
         pass.SetPipeline(pipeline);
         pass.SetVertexBuffer(0, vertexBuffer);
         pass.SetIndexBuffer(indexBuffer);
-        pass.DrawIndexed(3, 1, 0, 0, 0);
+        pass.DrawIndexed(3);
         pass.EndPass();
     }
 
@@ -157,7 +157,7 @@ TEST_P(IndexFormatTest, Uint32PrimitiveRestart) {
         pass.SetPipeline(pipeline);
         pass.SetVertexBuffer(0, vertexBuffer);
         pass.SetIndexBuffer(indexBuffer);
-        pass.DrawIndexed(7, 1, 0, 0, 0);
+        pass.DrawIndexed(7);
         pass.EndPass();
     }
 
@@ -199,7 +199,7 @@ TEST_P(IndexFormatTest, Uint16PrimitiveRestart) {
         pass.SetPipeline(pipeline);
         pass.SetVertexBuffer(0, vertexBuffer);
         pass.SetIndexBuffer(indexBuffer);
-        pass.DrawIndexed(7, 1, 0, 0, 0);
+        pass.DrawIndexed(7);
         pass.EndPass();
     }
 
@@ -235,7 +235,7 @@ TEST_P(IndexFormatTest, ChangePipelineAfterSetIndexBuffer) {
         pass.SetVertexBuffer(0, vertexBuffer);
         pass.SetIndexBuffer(indexBuffer);
         pass.SetPipeline(pipeline32);
-        pass.DrawIndexed(3, 1, 0, 0, 0);
+        pass.DrawIndexed(3);
         pass.EndPass();
     }
 
@@ -265,7 +265,7 @@ TEST_P(IndexFormatTest, DISABLED_SetIndexBufferBeforeSetPipeline) {
         pass.SetIndexBuffer(indexBuffer);
         pass.SetPipeline(pipeline);
         pass.SetVertexBuffer(0, vertexBuffer);
-        pass.DrawIndexed(3, 1, 0, 0, 0);
+        pass.DrawIndexed(3);
         pass.EndPass();
     }
 
@@ -275,4 +275,4 @@ TEST_P(IndexFormatTest, DISABLED_SetIndexBufferBeforeSetPipeline) {
     EXPECT_PIXEL_RGBA8_EQ(RGBA8(0, 255, 0, 255), renderPass.color, 100, 300);
 }
 
-DAWN_INSTANTIATE_TEST(IndexFormatTest, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend);
+DAWN_INSTANTIATE_TEST(IndexFormatTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());

@@ -1,3 +1,8 @@
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Release Debug ]
+# results: [ Timeout Crash Pass Failure Slow Skip ]
+
 # This file is used for tests that only need to be suppressed on the Chromium
 # WebKit Leak bots.
 # Further documentation:
@@ -6,7 +11,7 @@
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
-# ask hajimehoshi@.                                                       #
+# ask hajimehoshi@ or yuzus@.                                             #
 ###########################################################################
 
 # FIXME: scroll customization leaks memory. See
@@ -16,7 +21,6 @@ crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Failure ]
 
 crbug.com/786995 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure Pass ]
-crbug.com/859640 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js  [ Failure Pass ]
 
 # Requests with keepalive specified will be kept alive even when the frame is
 # detached, which means leaks reported by the leak detector are by design.
@@ -24,7 +28,7 @@ crbug.com/859640 http/tests/devtools/tracing/timeline-style/timeline-style-recal
 crbug.com/755625 external/wpt/beacon/beacon-error.window.html [ Failure ]
 crbug.com/651742 external/wpt/content-security-policy/connect-src/connect-src-beacon-allowed.sub.html [ Failure ]
 
-crbug.com/1003224 http/tests/clipboard/async-write-image-read-image.html [ Failure ]
+crbug.com/1003224 external/wpt/clipboard-apis/async-write-image-read-image.html [ Failure ]
 
 # -----------------------------------------------------------------
 # Flakily leaks
@@ -43,8 +47,7 @@ crbug.com/809609 [ Linux ] editing/inserting/insert_div_with_style.html [ Pass F
 # -----------------------------------------------------------------
 # Sheriff 2018-04-23
 # -----------------------------------------------------------------
-crbug.com/836278 [ Linux ] external/wpt/offscreen-canvas/convert-to-blob/offscreencanvas.convert.to.blob.html [ Pass Failure ]
-crbug.com/836278 [ Linux ] virtual/threaded/external/wpt/offscreen-canvas/convert-to-blob/offscreencanvas.convert.to.blob.html [ Pass Failure ]
+crbug.com/836278 [ Linux ] external/wpt/html/canvas/offscreen/convert-to-blob/offscreencanvas.convert.to.blob.html [ Pass Failure ]
 
 # Moved from TestExpectations (Sheriff 2018-05-31)
 crbug.com/848354 [ Linux ] plugins/fullscreen-plugins-dont-reload.html [ Pass Failure ]
@@ -55,21 +58,12 @@ crbug.com/862029 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-wi
 
 # Sheriff 2018-08-17
 crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
-crbug.com/847114 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
 
 # Sheriff 2018-08-29
 crbug.com/878724 [ Linux ] editing/selection/modify_extend/extend_by_character.html [ Pass Failure ]
 crbug.com/878724 [ Linux ] editing/selection/modify_move/move_right_word_09_ltr_multi_line.html [ Pass Failure ]
-crbug.com/878727 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-flame-chart-automatically-size-window.js [ Pass Failure ]
-
-# Sheriff 2018-10-25
-crbug.com/862029 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Pass Failure ]
 
 crbug.com/733494 [ Linux ] media/autoplay/document-user-activation.html [ Pass Failure ]
-crbug.com/733494 [ Linux ] virtual/audio-service/media/autoplay/document-user-activation.html [ Pass Failure ]
-
-# Sheriff 2019-01-04
-crbug.com/919117 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Pass Failure ]
 
 # Sheriff 2019-01-07
 crbug.com/919497 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-gpu-tasks.js [ Pass Failure ]
@@ -81,23 +75,18 @@ crbug.com/927454 [ Linux ] external/wpt/pointerevents/pointerevent_lostpointerca
 # Sheriff 2019-02-21
 crbug.com/934144 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-flame-chart-automatically-size-window.js [ Pass Failure ]
 
-# Sheriff 2019-04-10
-crbug.com/951453 [ Linux ] external/wpt/html/user-activation/activation-transfer-cross-origin-with-click.sub.tentative.html [ Pass Failure ]
-
 # Sheriff 2019-08-21
 crbug.com/996235 [ Linux ] media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Failure ]
-crbug.com/996235 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Failure ]
 
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/application-panel/app-manifest-view-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/audits-start-view-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/basic-a11y-test.js [ Failure Pass ]
-crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/console-a11y-test.js [ Failure Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/console/console-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/elements/event-listeners-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/memory/heap-profiler-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/network/network-condition-a11y-test.js [ Failure Pass ]
-crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/security/security-origin-a11y-test.js  [ Failure Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/security/security-origin-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-filesystem-a11y-test.js [ Failure Pass ]
-crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/settings/geolocations-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-network-a11y-test.js [ Failure Pass ]
 crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/sources/sources-editor-pane-a11y-test.js [ Failure Pass ]
 
@@ -107,11 +96,69 @@ crbug.com/998399 [ Linux ] virtual/omt-worker-fetch/external/wpt/service-workers
 crbug.com/769885 [ Linux ] virtual/android/fullscreen/full-screen-frameset.html [ Failure ]
 crbug.com/769885 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Failure ]
 
+# Sheriff 2019-09-04
+crbug.com/1000768 [ Linux ] external/wpt/web-locks/idlharness.tentative.https.any.html [ Pass Failure ]
+crbug.com/1000768 [ Linux ] external/wpt/geolocation-API/idlharness.window.html [ Pass Failure ]
+crbug.com/1000768 [ Linux ] external/wpt/web-share/idlharness.https.window.html [ Pass Failure ]
+crbug.com/1000768 [ Linux ] external/wpt/storage/idlharness.https.any.html [ Pass Failure ]
+
 # Sheriff 2019-11-29
 crbug.com/1029417 [ Linux ] external/wpt/web-nfc/NDEFReader_scan_filter.https.html [ Failure ]
+
+# Sheriff 2019-12-30
+crbug.com/1038388 [ Linux ] http/tests/devtools/tracing/timeline-time/timeline-time.js [ Pass Failure ]
+
+# Sheriff 2020-04-03
+crbug.com/1067650 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-load-event.js [ Pass Failure ]
+
+# Sheriff 2020-04-06
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/no-referrer/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/strict-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/strict-origin/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/unsafe-url/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/no-referrer-when-downgrade/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/no-referrer/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/no-referrer/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/origin-when-cross-origin/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/same-origin/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/strict-origin-when-cross-origin/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/strict-origin/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/no-referrer-when-downgrade/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/origin-when-cross-origin/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/same-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/same-origin/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/strict-origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/strict-origin-when-cross-origin/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/no-referrer-when-downgrade/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/strict-origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/unsafe-url/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/unset/worker-classic.http.html [ Pass Timeout ]
+
+# Sheriff 2020-04-20
+crbug.com/1071849 [ Linux ] http/tests/devtools/isolated-code-cache/same-origin-module-test.js [ Pass Failure ]
+
+# Sheriff 2020-04-23
+crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/unsafe-url/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/same-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/origin/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/unsafe-url/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/origin/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/no-referrer-when-downgrade/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/unset/worker-module.http.html [ Pass Timeout ]
+
+# Sheriff 2020-05-06
+crbug.com/1078769 [ Linux ] external/wpt/wasm/jsapi/idlharness.any.html [ Pass Failure ]
+
+# This test triggers existing leaky behavior, but this test also catches
+# a prior crash.
+crbug.com/1103082 [ Linux ] fast/forms/select/select-change-layout-object-crash.html [ Failure ]
 
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
-# ask hajimehoshi@.                                                       #
+# ask hajimehoshi@ or yuzus@.                                             #
 ###########################################################################

@@ -5,18 +5,19 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
-#include "ios/chrome/browser/ui/util/dynamic_type_util.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/components/ui_util/dynamic_type_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -45,8 +46,6 @@ const CGFloat kNTPSearchFieldBottomPadding = 18;
 
 const CGFloat kTopSpacingMaterial = 24;
 
-const CGFloat kVoiceSearchButtonWidth = 48;
-
 // Height for the doodle frame.
 const CGFloat kGoogleSearchDoodleHeight = 120;
 
@@ -69,9 +68,11 @@ CGFloat doodleHeight(BOOL logoIsShowing) {
 CGFloat doodleTopMargin(BOOL toolbarPresent, CGFloat topInset) {
   if (!IsCompactWidth() && !IsCompactHeight())
     return kDoodleTopMarginRegularXRegular;
+  if (IsCompactHeight())
+    return topInset;
   return topInset + kDoodleTopMarginOther +
          AlignValueToPixel(kDoodleScaledTopMarginOther *
-                           SystemSuggestedFontSizeMultiplier());
+                           ui_util::SystemSuggestedFontSizeMultiplier());
 }
 
 CGFloat searchFieldTopMargin() {
@@ -122,7 +123,6 @@ void configureSearchHintLabel(UILabel* searchHintLabel,
     [searchHintLabel setTextAlignment:NSTextAlignmentRight];
   }
   searchHintLabel.textColor = [UIColor colorNamed:kTextfieldPlaceholderColor];
-  searchHintLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   searchHintLabel.adjustsFontForContentSizeCategory = YES;
   searchHintLabel.textAlignment = NSTextAlignmentCenter;
 }
@@ -132,22 +132,26 @@ void configureVoiceSearchButton(UIButton* voiceSearchButton,
   [voiceSearchButton setTranslatesAutoresizingMaskIntoConstraints:NO];
   [searchTapTarget addSubview:voiceSearchButton];
 
-  [NSLayoutConstraint activateConstraints:@[
-    [voiceSearchButton.widthAnchor
-        constraintEqualToConstant:kVoiceSearchButtonWidth],
-    [voiceSearchButton.heightAnchor
-        constraintEqualToAnchor:voiceSearchButton.widthAnchor],
-  ]];
-
   [voiceSearchButton setAdjustsImageWhenHighlighted:NO];
 
   UIImage* micImage = [[UIImage imageNamed:@"location_bar_voice"]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [voiceSearchButton setImage:micImage forState:UIControlStateNormal];
-  voiceSearchButton.tintColor = [UIColor colorWithWhite:0 alpha:0.7];
+  voiceSearchButton.tintColor = [UIColor colorNamed:kGrey500Color];
   [voiceSearchButton setAccessibilityLabel:l10n_util::GetNSString(
                                                IDS_IOS_ACCNAME_VOICE_SEARCH)];
   [voiceSearchButton setAccessibilityIdentifier:@"Voice Search"];
+
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      voiceSearchButton.pointerInteractionEnabled = YES;
+      // Make the pointer shape fit the location bar's semi-circle end shape.
+      voiceSearchButton.pointerStyleProvider =
+          CreateLiftEffectCirclePointerStyleProvider();
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
 }
 
 UIView* nearestAncestor(UIView* view, Class aClass) {

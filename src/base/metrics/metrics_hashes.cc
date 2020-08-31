@@ -4,8 +4,10 @@
 
 #include "base/metrics/metrics_hashes.h"
 
+#include <string.h>
+
+#include "base/check_op.h"
 #include "base/hash/md5.h"
-#include "base/logging.h"
 #include "base/sys_byteorder.h"
 
 namespace base {

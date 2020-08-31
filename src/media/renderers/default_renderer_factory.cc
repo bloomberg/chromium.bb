@@ -8,6 +8,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "build/build_config.h"
+#include "media/base/audio_buffer.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_factory.h"
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/renderer_impl.h"
@@ -17,6 +20,7 @@
 
 namespace media {
 
+#if defined(OS_ANDROID)
 DefaultRendererFactory::DefaultRendererFactory(
     MediaLog* media_log,
     DecoderFactory* decoder_factory,
@@ -26,6 +30,19 @@ DefaultRendererFactory::DefaultRendererFactory(
       get_gpu_factories_cb_(get_gpu_factories_cb) {
   DCHECK(decoder_factory_);
 }
+#else
+DefaultRendererFactory::DefaultRendererFactory(
+    MediaLog* media_log,
+    DecoderFactory* decoder_factory,
+    const GetGpuFactoriesCB& get_gpu_factories_cb,
+    std::unique_ptr<SpeechRecognitionClient> speech_recognition_client)
+    : media_log_(media_log),
+      decoder_factory_(decoder_factory),
+      get_gpu_factories_cb_(get_gpu_factories_cb),
+      speech_recognition_client_(std::move(speech_recognition_client)) {
+  DCHECK(decoder_factory_);
+}
+#endif
 
 DefaultRendererFactory::~DefaultRendererFactory() = default;
 
@@ -43,15 +60,15 @@ DefaultRendererFactory::CreateAudioDecoders(
 std::vector<std::unique_ptr<VideoDecoder>>
 DefaultRendererFactory::CreateVideoDecoders(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    const RequestOverlayInfoCB& request_overlay_info_cb,
+    RequestOverlayInfoCB request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space,
     GpuVideoAcceleratorFactories* gpu_factories) {
   // Create our video decoders and renderer.
   std::vector<std::unique_ptr<VideoDecoder>> video_decoders;
 
-  decoder_factory_->CreateVideoDecoders(media_task_runner, gpu_factories,
-                                        media_log_, request_overlay_info_cb,
-                                        target_color_space, &video_decoders);
+  decoder_factory_->CreateVideoDecoders(
+      media_task_runner, gpu_factories, media_log_,
+      std::move(request_overlay_info_cb), target_color_space, &video_decoders);
 
   return video_decoders;
 }
@@ -61,7 +78,7 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     AudioRendererSink* audio_renderer_sink,
     VideoRendererSink* video_renderer_sink,
-    const RequestOverlayInfoCB& request_overlay_info_cb,
+    RequestOverlayInfoCB request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space) {
   DCHECK(audio_renderer_sink);
 
@@ -75,7 +92,9 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
       // finishes.
       base::BindRepeating(&DefaultRendererFactory::CreateAudioDecoders,
                           base::Unretained(this), media_task_runner),
-      media_log_));
+      media_log_,
+      BindToCurrentLoop(base::BindRepeating(
+          &DefaultRendererFactory::TranscribeAudio, base::Unretained(this)))));
 
   GpuVideoAcceleratorFactories* gpu_factories = nullptr;
   if (get_gpu_factories_cb_)
@@ -99,12 +118,22 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
       // finishes.
       base::BindRepeating(&DefaultRendererFactory::CreateVideoDecoders,
                           base::Unretained(this), media_task_runner,
-                          request_overlay_info_cb, target_color_space,
-                          gpu_factories),
+                          std::move(request_overlay_info_cb),
+                          target_color_space, gpu_factories),
       true, media_log_, std::move(gmb_pool)));
 
   return std::make_unique<RendererImpl>(
       media_task_runner, std::move(audio_renderer), std::move(video_renderer));
+}
+
+void DefaultRendererFactory::TranscribeAudio(
+    scoped_refptr<media::AudioBuffer> buffer) {
+#if !defined(OS_ANDROID)
+  if (speech_recognition_client_ &&
+      speech_recognition_client_->IsSpeechRecognitionAvailable()) {
+    speech_recognition_client_->AddAudio(std::move(buffer));
+  }
+#endif
 }
 
 }  // namespace media

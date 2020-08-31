@@ -103,10 +103,6 @@ int _TIFFmemcmp(const void* ptr1, const void* ptr2, tmsize_t size) {
   return memcmp(ptr1, ptr2, static_cast<size_t>(size));
 }
 
-int _TIFFIfMultiplicationOverflow(tmsize_t op1, tmsize_t op2) {
-  return op1 > std::numeric_limits<tmsize_t>::max() / op2;
-}
-
 TIFFErrorHandler _TIFFwarningHandler = nullptr;
 TIFFErrorHandler _TIFFerrorHandler = nullptr;
 
@@ -213,7 +209,7 @@ void Tiff_Exif_GetStringInfo(TIFF* tif_ctx,
   if (!buf)
     return;
   size_t size = strlen(buf);
-  uint8_t* ptr = FX_Alloc(uint8_t, size + 1);
+  uint8_t* ptr = FX_AllocUninit(uint8_t, size + 1);
   memcpy(ptr, buf, size);
   ptr[size] = 0;
   pAttr->m_Exif[tag] = ptr;
@@ -280,8 +276,8 @@ bool CTiffContext::LoadFrameInfo(int32_t frame,
   Tiff_Exif_GetStringInfo(m_tif_ctx.get(), TIFFTAG_MAKE, pAttribute);
   Tiff_Exif_GetStringInfo(m_tif_ctx.get(), TIFFTAG_MODEL, pAttribute);
 
-  pdfium::base::CheckedNumeric<int32_t> checked_width = tif_width;
-  pdfium::base::CheckedNumeric<int32_t> checked_height = tif_height;
+  FX_SAFE_INT32 checked_width = tif_width;
+  FX_SAFE_INT32 checked_height = tif_height;
   if (!checked_width.IsValid() || !checked_height.IsValid())
     return false;
 

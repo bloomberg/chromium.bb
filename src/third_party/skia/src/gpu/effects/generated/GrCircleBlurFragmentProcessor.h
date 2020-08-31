@@ -11,12 +11,14 @@
 #ifndef GrCircleBlurFragmentProcessor_DEFINED
 #define GrCircleBlurFragmentProcessor_DEFINED
 #include "include/core/SkTypes.h"
+#include "include/core/SkM44.h"
 
 #include "src/gpu/GrCoordTransform.h"
 #include "src/gpu/GrFragmentProcessor.h"
 class GrCircleBlurFragmentProcessor : public GrFragmentProcessor {
 public:
-    static std::unique_ptr<GrFragmentProcessor> Make(GrProxyProvider*, const SkRect& circle,
+    static std::unique_ptr<GrFragmentProcessor> Make(GrRecordingContext*,
+                                                     const SkRect& circle,
                                                      float sigma);
     GrCircleBlurFragmentProcessor(const GrCircleBlurFragmentProcessor& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
@@ -27,8 +29,10 @@ public:
     TextureSampler blurProfileSampler;
 
 private:
-    GrCircleBlurFragmentProcessor(SkRect circleRect, float textureRadius, float solidRadius,
-                                  sk_sp<GrSurfaceProxy> blurProfileSampler)
+    GrCircleBlurFragmentProcessor(SkRect circleRect,
+                                  float textureRadius,
+                                  float solidRadius,
+                                  GrSurfaceProxyView blurProfileSampler)
             : INHERITED(kGrCircleBlurFragmentProcessor_ClassID,
                         (OptimizationFlags)kCompatibleWithCoverageAsAlpha_OptimizationFlag)
             , circleRect(circleRect)

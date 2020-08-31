@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/input/touch_init.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -39,11 +38,26 @@
 namespace blink {
 
 class LocalFrame;
+class TouchInit;
 
 class CORE_EXPORT Touch final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static Touch* Create(LocalFrame* frame,
+                       EventTarget* target,
+                       int identifier,
+                       const FloatPoint& screen_pos,
+                       const FloatPoint& page_pos,
+                       const FloatSize& radius,
+                       float rotation_angle,
+                       float force,
+                       String region) {
+    return MakeGarbageCollected<Touch>(frame, target, identifier, screen_pos,
+                                       page_pos, radius, rotation_angle, force,
+                                       region);
+  }
+
   static Touch* Create(const Document& document, const TouchInit* initializer) {
     return MakeGarbageCollected<Touch>(document.GetFrame(), initializer);
   }
@@ -91,7 +105,7 @@ class CORE_EXPORT Touch final : public ScriptWrappable {
   const FloatPoint& ScreenLocation() const { return screen_pos_; }
   Touch* CloneWithNewTarget(EventTarget*) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<EventTarget> target_;

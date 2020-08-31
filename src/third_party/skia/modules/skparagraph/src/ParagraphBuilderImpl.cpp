@@ -3,7 +3,6 @@
 #include "modules/skparagraph/include/ParagraphStyle.h"
 #include "modules/skparagraph/src/ParagraphBuilderImpl.h"
 #include "modules/skparagraph/src/ParagraphImpl.h"
-#include "src/core/SkMakeUnique.h"
 #include "src/core/SkSpan.h"
 #include "unicode/unistr.h"
 
@@ -12,7 +11,7 @@ namespace textlayout {
 
 std::unique_ptr<ParagraphBuilder> ParagraphBuilder::make(
         const ParagraphStyle& style, sk_sp<FontCollection> fontCollection) {
-    return skstd::make_unique<ParagraphBuilderImpl>(style, fontCollection);
+    return std::make_unique<ParagraphBuilderImpl>(style, fontCollection);
 }
 
 ParagraphBuilderImpl::ParagraphBuilderImpl(
@@ -73,27 +72,6 @@ void ParagraphBuilderImpl::addText(const std::u16string& text) {
     std::string str;
     unicode.toUTF8String(str);
     fUtf8.insert(fUtf8.size(), str.c_str());
-
-    UText utf16UText = UTEXT_INITIALIZER;
-    UErrorCode errorCode = U_ZERO_ERROR;
-
-    auto iter = ubrk_open(UBRK_WORD, icu::Locale().getName(), nullptr, 0, &errorCode);
-    if (U_FAILURE(errorCode)) {
-        SkDEBUGF("Could not create line break iterator: %s", u_errorName(errorCode));
-        return;
-    }
-
-    utext_openUnicodeString(&utf16UText, &unicode, &errorCode);
-    if (U_FAILURE(errorCode)) {
-        SkDEBUGF("Could not create utf8UText: %s", u_errorName(errorCode));
-        return;
-    }
-
-    ubrk_setUText(iter, &utf16UText, &errorCode);
-    if (U_FAILURE(errorCode)) {
-        SkDEBUGF("Could not setText on break iterator: %s", u_errorName(errorCode));
-        return;
-    }
 }
 
 void ParagraphBuilderImpl::addText(const char* text) {
@@ -146,7 +124,7 @@ std::unique_ptr<Paragraph> ParagraphBuilderImpl::Build() {
 
     // Add one fake placeholder with the rest of the text
     addPlaceholder(PlaceholderStyle(), true);
-    return skstd::make_unique<ParagraphImpl>(
+    return std::make_unique<ParagraphImpl>(
             fUtf8, fParagraphStyle, fStyledBlocks, fPlaceholders, fFontCollection);
 }
 

@@ -50,6 +50,8 @@ if (build_with_chromium) {
       "src/absl/hash/internal/hash.h",
       "src/absl/memory/memory.h",
       "src/absl/meta/type_traits.h",
+      "src/absl/numeric/int128.cc",
+      "src/absl/numeric/int128.h",
       "src/absl/strings/ascii.cc",
       "src/absl/strings/ascii.h",
       "src/absl/strings/charconv.cc",
@@ -60,6 +62,8 @@ if (build_with_chromium) {
       "src/absl/strings/internal/charconv_bigint.h",
       "src/absl/strings/internal/charconv_parse.cc",
       "src/absl/strings/internal/charconv_parse.h",
+      "src/absl/strings/internal/escaping.cc",
+      "src/absl/strings/internal/escaping.h",
       "src/absl/strings/internal/memutil.cc",
       "src/absl/strings/internal/memutil.h",
       "src/absl/strings/internal/str_join_internal.h",
@@ -72,6 +76,8 @@ if (build_with_chromium) {
       "src/absl/strings/str_cat.cc",
       "src/absl/strings/str_cat.h",
       "src/absl/strings/str_join.h",
+      "src/absl/strings/str_replace.cc",
+      "src/absl/strings/str_replace.h",
       "src/absl/strings/str_split.cc",
       "src/absl/strings/str_split.h",
       "src/absl/strings/string_view.cc",
@@ -86,9 +92,6 @@ if (build_with_chromium) {
       "src/absl/types/span.h",
       "src/absl/types/variant.h",
     ]
-
-    configs -= [ "//build/config:symbol_visibility_hidden" ]
-    configs += [ "//build/config:symbol_visibility_default" ]
 
     configs += [ ":private_abseil_config" ]
     public_configs = [ ":abseil_config" ]

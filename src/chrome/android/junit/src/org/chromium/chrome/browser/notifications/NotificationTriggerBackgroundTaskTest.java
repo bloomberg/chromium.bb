@@ -28,10 +28,11 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.SysUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
+import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
 import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
+import org.chromium.components.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskParameters;
@@ -53,6 +54,7 @@ public class NotificationTriggerBackgroundTaskTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
+        ChromeBackgroundTaskFactory.setAsDefault();
         NotificationTriggerScheduler.setInstanceForTests(mTriggerScheduler);
     }
 
@@ -77,15 +79,15 @@ public class NotificationTriggerBackgroundTaskTest {
         TaskInfo taskInfo = taskInfoCaptor.getValue();
 
         assertEquals(TaskIds.NOTIFICATION_TRIGGER_JOB_ID, taskInfo.getTaskId());
-        assertEquals(NotificationTriggerBackgroundTask.class, taskInfo.getBackgroundTaskClass());
         assertTrue(taskInfo.isPersisted());
-        assertFalse(taskInfo.isPeriodic());
         assertTrue(taskInfo.shouldUpdateCurrent());
         assertEquals(TaskInfo.NetworkType.NONE, taskInfo.getRequiredNetworkType());
-        assertEquals(delay, taskInfo.getOneOffInfo().getWindowStartTimeMs());
-        assertEquals(delay, taskInfo.getOneOffInfo().getWindowEndTimeMs());
         assertEquals(timestamp,
                 taskInfo.getExtras().getLong(NotificationTriggerBackgroundTask.KEY_TIMESTAMP));
+        TaskInfo.TimingInfo timingInfo = taskInfo.getTimingInfo();
+        assertTrue(timingInfo instanceof TaskInfo.ExactInfo);
+        TaskInfo.ExactInfo exactTimingInfo = (TaskInfo.ExactInfo) timingInfo;
+        assertEquals(timestamp, exactTimingInfo.getTriggerAtMs());
     }
 
     @Test

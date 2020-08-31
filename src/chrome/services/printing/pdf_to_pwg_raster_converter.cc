@@ -9,11 +9,12 @@
 #include <utility>
 
 #include "base/containers/span.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "components/pwg_encoder/bitmap_image.h"
 #include "components/pwg_encoder/pwg_encoder.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "pdf/pdf.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/pdf_render_settings.h"
 
 namespace printing {
@@ -69,16 +70,16 @@ base::ReadOnlySharedMemoryRegion RenderPdfPagesToPwgRaster(
                                   : pwg_encoder::PwgHeaderInfo::SGRAY;
 
     switch (bitmap_settings.duplex_mode) {
-      case DuplexMode::UNKNOWN_DUPLEX_MODE:
+      case mojom::DuplexMode::kUnknownDuplexMode:
         NOTREACHED();
         break;
-      case DuplexMode::SIMPLEX:
+      case mojom::DuplexMode::kSimplex:
         // Already defaults to false/false.
         break;
-      case DuplexMode::LONG_EDGE:
+      case mojom::DuplexMode::kLongEdge:
         header_info.duplex = true;
         break;
-      case DuplexMode::SHORT_EDGE:
+      case mojom::DuplexMode::kShortEdge:
         header_info.duplex = true;
         header_info.tumble = true;
         break;
@@ -115,7 +116,7 @@ base::ReadOnlySharedMemoryRegion RenderPdfPagesToPwgRaster(
   }
 
   base::MappedReadOnlyRegion region_mapping =
-      mojo::CreateReadOnlySharedMemoryRegion(pwg_data.size());
+      base::ReadOnlySharedMemoryRegion::Create(pwg_data.size());
   if (!region_mapping.IsValid())
     return invalid_pwg_region;
 

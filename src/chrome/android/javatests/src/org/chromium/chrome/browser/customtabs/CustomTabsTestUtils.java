@@ -30,12 +30,14 @@ import androidx.browser.customtabs.CustomTabsClient;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsServiceConnection;
 import androidx.browser.customtabs.CustomTabsSession;
-import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * Utility class that contains convenience calls related with custom tabs testing.
  */
 public class CustomTabsTestUtils {
+    /** Intent extra to specify an id to a custom tab.*/
+    public static final String EXTRA_CUSTOM_TAB_ID =
+            "android.support.customtabs.extra.tests.CUSTOM_TAB_ID";
 
     /** A plain old data class that holds the return value from {@link #bindWithCallback}. */
     public static class ClientAndSession {
@@ -124,13 +126,5 @@ public class CustomTabsTestUtils {
                                             .getAppMenuCoordinatorForTesting()
                                             .getAppMenuHandler()::isAppMenuShowing,
                 "App menu was not shown");
-    }
-
-    public static void setHideCctTopBarOnModuleManagedUrls(Intent intent, boolean hideCctTopBar)
-            throws TimeoutException {
-        CustomTabsConnection connection = warmUpAndWait();
-        CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
-        connection.newSession(token);
-        connection.setHideCCTTopBarOnModuleManagedUrls(token, hideCctTopBar);
     }
 }

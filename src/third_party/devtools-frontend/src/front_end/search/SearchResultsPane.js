@@ -1,17 +1,25 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-export default class SearchResultsPane extends UI.VBox {
+
+import * as Common from '../common/common.js';
+import * as Components from '../components/components.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+import * as UI from '../ui/ui.js';
+
+import {SearchConfig, SearchResult} from './SearchConfig.js';  // eslint-disable-line no-unused-vars
+
+export class SearchResultsPane extends UI.Widget.VBox {
   /**
-   * @param {!Search.SearchConfig} searchConfig
+   * @param {!SearchConfig} searchConfig
    */
   constructor(searchConfig) {
     super(true);
     this._searchConfig = searchConfig;
 
-    /** @type {!Array<!Search.SearchResult>} */
+    /** @type {!Array<!SearchResult>} */
     this._searchResults = [];
-    this._treeOutline = new UI.TreeOutlineInShadow();
+    this._treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
     this._treeOutline.hideOverflow();
     this._treeOutline.registerRequiredCSS('search/searchResultsPane.css');
     this.contentElement.appendChild(this._treeOutline.element);
@@ -20,7 +28,7 @@ export default class SearchResultsPane extends UI.VBox {
   }
 
   /**
-   * @param {!Search.SearchResult} searchResult
+   * @param {!SearchResult} searchResult
    */
   addSearchResult(searchResult) {
     this._searchResults.push(searchResult);
@@ -28,29 +36,29 @@ export default class SearchResultsPane extends UI.VBox {
   }
 
   /**
-   * @param {!Search.SearchResult} searchResult
+   * @param {!SearchResult} searchResult
    */
   _addTreeElement(searchResult) {
-    const treeElement = new Search.SearchResultsPane.SearchResultsTreeElement(this._searchConfig, searchResult);
+    const treeElement = new SearchResultsTreeElement(this._searchConfig, searchResult);
     this._treeOutline.appendChild(treeElement);
     if (!this._treeOutline.selectedTreeElement) {
       treeElement.select(/* omitFocus */ true, /* selectedByUser */ true);
     }
     // Expand until at least a certain number of matches is expanded.
-    if (this._matchesExpandedCount < Search.SearchResultsPane._matchesExpandedByDefault) {
+    if (this._matchesExpandedCount < matchesExpandedByDefault) {
       treeElement.expand();
     }
     this._matchesExpandedCount += searchResult.matchesCount();
   }
 }
 
-export const _matchesExpandedByDefault = 20;
-export const _matchesShownAtOnce = 20;
+export const matchesExpandedByDefault = 20;
+export const matchesShownAtOnce = 20;
 
-export class SearchResultsTreeElement extends UI.TreeElement {
+export class SearchResultsTreeElement extends UI.TreeOutline.TreeElement {
   /**
-   * @param {!Search.SearchConfig} searchConfig
-   * @param {!Search.SearchResult} searchResult
+   * @param {!SearchConfig} searchConfig
+   * @param {!SearchResult} searchResult
    */
   constructor(searchConfig, searchResult) {
     super('', true);
@@ -74,7 +82,7 @@ export class SearchResultsTreeElement extends UI.TreeElement {
 
   _updateMatchesUI() {
     this.removeChildren();
-    const toIndex = Math.min(this._searchResult.matchesCount(), Search.SearchResultsPane._matchesShownAtOnce);
+    const toIndex = Math.min(this._searchResult.matchesCount(), matchesShownAtOnce);
     if (toIndex < this._searchResult.matchesCount()) {
       this._appendSearchMatches(0, toIndex - 1);
       this._appendShowMoreMatchesElement(toIndex - 1);
@@ -143,7 +151,7 @@ export class SearchResultsTreeElement extends UI.TreeElement {
         matchRanges = matchRanges.concat(this._regexMatchRanges(lineContent, regexes[j]));
       }
 
-      const anchor = Components.Linkifier.linkifyRevealable(searchResult.matchRevealable(i), '');
+      const anchor = Components.Linkifier.Linkifier.linkifyRevealable(searchResult.matchRevealable(i), '');
       anchor.classList.add('search-match-link');
       const labelSpan = createElement('span');
       labelSpan.classList.add('search-match-line-number');
@@ -159,7 +167,7 @@ export class SearchResultsTreeElement extends UI.TreeElement {
       const contentSpan = this._createContentSpan(lineContent, matchRanges);
       anchor.appendChild(contentSpan);
 
-      const searchMatchElement = new UI.TreeElement();
+      const searchMatchElement = new UI.TreeOutline.TreeElement();
       this.appendChild(searchMatchElement);
       searchMatchElement.listItemElement.className = 'search-match';
       searchMatchElement.listItemElement.appendChild(anchor);
@@ -178,8 +186,8 @@ export class SearchResultsTreeElement extends UI.TreeElement {
    */
   _appendShowMoreMatchesElement(startMatchIndex) {
     const matchesLeftCount = this._searchResult.matchesCount() - startMatchIndex;
-    const showMoreMatchesText = Common.UIString('Show %d more', matchesLeftCount);
-    const showMoreMatchesTreeElement = new UI.TreeElement(showMoreMatchesText);
+    const showMoreMatchesText = Common.UIString.UIString('Show %d more', matchesLeftCount);
+    const showMoreMatchesTreeElement = new UI.TreeOutline.TreeElement(showMoreMatchesText);
     this.appendChild(showMoreMatchesTreeElement);
     showMoreMatchesTreeElement.listItemElement.classList.add('show-more-matches');
     showMoreMatchesTreeElement.onselect =
@@ -188,7 +196,7 @@ export class SearchResultsTreeElement extends UI.TreeElement {
 
   /**
    * @param {string} lineContent
-   * @param {!Array.<!TextUtils.SourceRange>} matchRanges
+   * @param {!Array.<!TextUtils.TextRange.SourceRange>} matchRanges
    * @return {!Element}
    */
   _createContentSpan(lineContent, matchRanges) {
@@ -198,35 +206,36 @@ export class SearchResultsTreeElement extends UI.TreeElement {
     }
     lineContent = lineContent.substring(trimBy, 1000 + trimBy);
     if (trimBy) {
-      matchRanges = matchRanges.map(range => new TextUtils.SourceRange(range.offset - trimBy + 1, range.length));
-      lineContent = '\u2026' + lineContent;
+      matchRanges =
+          matchRanges.map(range => new TextUtils.TextRange.SourceRange(range.offset - trimBy + 1, range.length));
+      lineContent = '…' + lineContent;
     }
     const contentSpan = createElement('span');
     contentSpan.className = 'search-match-content';
     contentSpan.textContent = lineContent;
     UI.ARIAUtils.setAccessibleName(contentSpan, `${lineContent} line`);
-    UI.highlightRangesWithStyleClass(contentSpan, matchRanges, 'highlighted-match');
+    UI.UIUtils.highlightRangesWithStyleClass(contentSpan, matchRanges, 'highlighted-match');
     return contentSpan;
   }
 
   /**
    * @param {string} lineContent
    * @param {!RegExp} regex
-   * @return {!Array.<!TextUtils.SourceRange>}
+   * @return {!Array.<!TextUtils.TextRange.SourceRange>}
    */
   _regexMatchRanges(lineContent, regex) {
     regex.lastIndex = 0;
     let match;
     const matchRanges = [];
     while ((regex.lastIndex < lineContent.length) && (match = regex.exec(lineContent))) {
-      matchRanges.push(new TextUtils.SourceRange(match.index, match[0].length));
+      matchRanges.push(new TextUtils.TextRange.SourceRange(match.index, match[0].length));
     }
 
     return matchRanges;
   }
 
   /**
-   * @param {!UI.TreeElement} showMoreMatchesTreeElement
+   * @param {!UI.TreeOutline.TreeElement} showMoreMatchesTreeElement
    * @param {number} startMatchIndex
    * @return {boolean}
    */
@@ -236,21 +245,3 @@ export class SearchResultsTreeElement extends UI.TreeElement {
     return false;
   }
 }
-
-/* Legacy exported object */
-self.Search = self.Search || {};
-
-/* Legacy exported object */
-Search = Search || {};
-
-/**
- * @constructor
- */
-Search.SearchResultsPane = SearchResultsPane;
-Search.SearchResultsPane._matchesExpandedByDefault = _matchesExpandedByDefault;
-Search.SearchResultsPane._matchesShownAtOnce = _matchesShownAtOnce;
-
-/**
- * @constructor
- */
-Search.SearchResultsPane.SearchResultsTreeElement = SearchResultsTreeElement;

@@ -22,25 +22,6 @@ constexpr uint32_t kSemanticNodeRootId = 0;
 // maximum sizes of serialized Semantic Nodes.
 constexpr size_t kMaxNodesPerUpdate = 16;
 
-// Template function to handle batching and sending of FIDL messages when
-// updating or deleting nodes.
-template <typename T>
-void SendBatches(std::vector<T> pending_items,
-                 base::RepeatingCallback<void(std::vector<T>)> callback) {
-  std::vector<T> nodes_to_send;
-  for (size_t i = 0; i < pending_items.size(); i++) {
-    nodes_to_send.push_back(std::move(pending_items.at(i)));
-    if (nodes_to_send.size() == kMaxNodesPerUpdate) {
-      callback.Run(std::move(nodes_to_send));
-      nodes_to_send.clear();
-    }
-  }
-
-  if (!nodes_to_send.empty()) {
-    callback.Run(std::move(nodes_to_send));
-  }
-}
-
 }  // namespace
 
 AccessibilityBridge::AccessibilityBridge(
@@ -60,37 +41,74 @@ AccessibilityBridge::AccessibilityBridge(
   });
 }
 
-AccessibilityBridge::~AccessibilityBridge() = default;
+AccessibilityBridge::~AccessibilityBridge() {
+  // Acknowledge to the SemanticsManager if any actions have not been handled
+  // upon destruction time.
+  for (auto& callback : pending_hit_test_callbacks_) {
+    fuchsia::accessibility::semantics::Hit hit;
+    hit.set_node_id(kSemanticNodeRootId);
+    callback.second(std::move(hit));
+  }
+  pending_hit_test_callbacks_.clear();
+
+  for (auto& callback : pending_accessibility_action_callbacks_)
+    callback.second(false);
+  pending_accessibility_action_callbacks_.clear();
+}
 
 void AccessibilityBridge::TryCommit() {
-  if (commit_inflight_ || (to_send_.empty() && to_delete_.empty()))
+  if (commit_inflight_ || to_send_.empty())
     return;
 
-  if (!to_send_.empty()) {
-    SendBatches<fuchsia::accessibility::semantics::Node>(
-        std::move(to_send_),
-        base::BindRepeating(
-            [](SemanticTree* tree,
-               std::vector<fuchsia::accessibility::semantics::Node> nodes) {
-              tree->UpdateSemanticNodes(std::move(nodes));
-            },
-            base::Unretained(tree_ptr_.get())));
+  SemanticUpdateOrDelete::Type current = to_send_.at(0).type;
+  int range_start = 0;
+  for (size_t i = 1; i < to_send_.size(); i++) {
+    if (to_send_.at(i).type == current &&
+        (i - range_start < kMaxNodesPerUpdate)) {
+      continue;
+    } else {
+      DispatchSemanticsMessages(range_start, i - range_start);
+      current = to_send_.at(i).type;
+      range_start = i;
+    }
   }
-
-  if (!to_delete_.empty()) {
-    SendBatches<uint32_t>(
-        std::move(to_delete_),
-        base::BindRepeating(
-            [](SemanticTree* tree, std::vector<uint32_t> nodes) {
-              tree->DeleteSemanticNodes(std::move(nodes));
-            },
-            base::Unretained(tree_ptr_.get())));
-  }
+  DispatchSemanticsMessages(range_start, to_send_.size() - range_start);
 
   tree_ptr_->CommitUpdates(
       fit::bind_member(this, &AccessibilityBridge::OnCommitComplete));
   commit_inflight_ = true;
+  to_send_.clear();
 }
+
+void AccessibilityBridge::DispatchSemanticsMessages(size_t start, size_t size) {
+  if (to_send_.at(start).type == SemanticUpdateOrDelete::Type::UPDATE) {
+    std::vector<fuchsia::accessibility::semantics::Node> updates;
+    for (size_t i = start; i < start + size; i++) {
+      DCHECK(to_send_.at(i).type == SemanticUpdateOrDelete::Type::UPDATE);
+      updates.push_back(std::move(to_send_.at(i).update_node));
+    }
+    tree_ptr_->UpdateSemanticNodes(std::move(updates));
+  } else if (to_send_.at(start).type == SemanticUpdateOrDelete::Type::DELETE) {
+    std::vector<uint32_t> deletes;
+    for (size_t i = start; i < start + size; i++) {
+      DCHECK(to_send_.at(i).type == SemanticUpdateOrDelete::Type::DELETE);
+      deletes.push_back(to_send_.at(i).id_to_delete);
+    }
+    tree_ptr_->DeleteSemanticNodes(deletes);
+  }
+}
+
+AccessibilityBridge::SemanticUpdateOrDelete::SemanticUpdateOrDelete(
+    AccessibilityBridge::SemanticUpdateOrDelete&& m)
+    : type(m.type),
+      update_node(std::move(m.update_node)),
+      id_to_delete(m.id_to_delete) {}
+
+AccessibilityBridge::SemanticUpdateOrDelete::SemanticUpdateOrDelete(
+    Type type,
+    fuchsia::accessibility::semantics::Node node,
+    uint32_t id_to_delete)
+    : type(type), update_node(std::move(node)), id_to_delete(id_to_delete) {}
 
 void AccessibilityBridge::OnCommitComplete() {
   commit_inflight_ = false;
@@ -128,6 +146,13 @@ void AccessibilityBridge::AccessibilityEventReceived(
         pending_hit_test_callbacks_.erase(event.action_request_id);
       }
     }
+
+    // Run callbacks associated with other accessibility events.
+    if (pending_accessibility_action_callbacks_.find(event.id) !=
+        pending_accessibility_action_callbacks_.end()) {
+      pending_accessibility_action_callbacks_[event.id](true);
+      pending_accessibility_action_callbacks_.erase(event.id);
+    }
   }
 }
 
@@ -135,7 +160,23 @@ void AccessibilityBridge::OnAccessibilityActionRequested(
     uint32_t node_id,
     fuchsia::accessibility::semantics::Action action,
     OnAccessibilityActionRequestedCallback callback) {
-  NOTIMPLEMENTED();
+  ui::AXActionData action_data = ui::AXActionData();
+
+  if (!ConvertAction(action, &action_data.action)) {
+    callback(false);
+    return;
+  }
+
+  action_data.target_node_id = node_id;
+  pending_accessibility_action_callbacks_[node_id] = std::move(callback);
+
+  // Allow tests to bypass action handling to simulate the case that actions
+  // aren't handled in tests.
+  if (!handle_actions_for_test_) {
+    return;
+  }
+
+  web_contents_->GetMainFrame()->AccessibilityPerformAction(action_data);
 }
 
 void AccessibilityBridge::HitTest(fuchsia::math::PointF local_point,
@@ -163,7 +204,6 @@ void AccessibilityBridge::OnSemanticsModeChanged(
     // The SemanticsManager will clear all state in this case, which is mirrored
     // here.
     to_send_.clear();
-    to_delete_.clear();
     commit_inflight_ = false;
   }
 
@@ -171,10 +211,30 @@ void AccessibilityBridge::OnSemanticsModeChanged(
   callback();
 }
 
+void AccessibilityBridge::DeleteSubtree(ui::AXTree* tree, ui::AXNode* node) {
+  DCHECK(tree);
+  DCHECK(node);
+
+  // When navigating, page 1, including the root, is deleted after page 2 has
+  // loaded. Since the root id is the same for page 1 and 2, page 2's root id
+  // ends up getting deleted. To handle this, the root will only be updated.
+  if (node->id() != root_id_) {
+    to_send_.push_back(
+        SemanticUpdateOrDelete(SemanticUpdateOrDelete::Type::DELETE, {},
+                               ConvertToFuchsiaNodeId(node->id())));
+  }
+  for (ui::AXNode* child : node->children())
+    DeleteSubtree(tree, child);
+}
+
 void AccessibilityBridge::OnNodeWillBeDeleted(ui::AXTree* tree,
                                               ui::AXNode* node) {
-  to_delete_.push_back(ConvertToFuchsiaNodeId(node->id()));
-  TryCommit();
+  DeleteSubtree(tree, node);
+}
+
+void AccessibilityBridge::OnSubtreeWillBeDeleted(ui::AXTree* tree,
+                                                 ui::AXNode* node) {
+  DeleteSubtree(tree, node);
 }
 
 void AccessibilityBridge::OnAtomicUpdateFinished(
@@ -183,16 +243,23 @@ void AccessibilityBridge::OnAtomicUpdateFinished(
     const std::vector<ui::AXTreeObserver::Change>& changes) {
   root_id_ = tree_.root()->id();
   for (const ui::AXTreeObserver::Change& change : changes) {
-    // Reparent changes aren't included here because they consist of a delete
-    // and create change, which are already being handled.
-    if (change.type == ui::AXTreeObserver::NODE_CREATED ||
-        change.type == ui::AXTreeObserver::SUBTREE_CREATED ||
-        change.type == ui::AXTreeObserver::NODE_CHANGED) {
-      ui::AXNodeData ax_data = change.node->data();
-      if (change.node->id() == root_id_) {
-        ax_data.id = kSemanticNodeRootId;
-      }
-      to_send_.push_back(AXNodeDataToSemanticNode(ax_data));
+    ui::AXNodeData ax_data;
+    switch (change.type) {
+      case ui::AXTreeObserver::NODE_CREATED:
+      case ui::AXTreeObserver::SUBTREE_CREATED:
+      case ui::AXTreeObserver::NODE_CHANGED:
+        ax_data = change.node->data();
+        if (change.node->id() == root_id_) {
+          ax_data.id = kSemanticNodeRootId;
+        }
+        to_send_.push_back(
+            SemanticUpdateOrDelete(SemanticUpdateOrDelete::Type::UPDATE,
+                                   AXNodeDataToSemanticNode(ax_data), 0));
+        break;
+      case ui::AXTreeObserver::NODE_REPARENTED:
+      case ui::AXTreeObserver::SUBTREE_REPARENTED:
+        DeleteSubtree(tree, change.node);
+        break;
     }
   }
   TryCommit();

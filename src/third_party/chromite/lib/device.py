@@ -9,13 +9,17 @@ from __future__ import print_function
 
 import argparse
 import os
+import subprocess
+import sys
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import commandline
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import remote_access
 from chromite.lib import retry_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class DeviceError(Exception):
@@ -35,14 +39,15 @@ class Device(object):
     Args:
       opts: command line options.
     """
-    self.device = opts.device
-    self.ssh_port = None
+    self.device = opts.device.hostname if opts.device else None
+    self.ssh_port = opts.device.port if opts.device else None
+    self.should_start_vm = not self.device
     self.board = opts.board
 
     self.use_sudo = False
     self.cmd = opts.args[1:] if opts.cmd else None
     self.private_key = opts.private_key
-    self.dry_run = opts.dry_run
+    self.dryrun = opts.dryrun
     # log_level is only set if --log-level or --debug is specified.
     self.log_level = getattr(opts, 'log_level', None)
     self.InitRemote()
@@ -59,7 +64,7 @@ class Device(object):
     if self.ssh_port:
       self.device_addr += ':%d' % self.ssh_port
 
-  def WaitForBoot(self, sleep=5):
+  def WaitForBoot(self, max_retry=10, sleep=5):
     """Wait for the device to boot up.
 
     Wait for the ssh connection to become active.
@@ -67,8 +72,8 @@ class Device(object):
     try:
       result = retry_util.RetryException(
           exception=remote_access.SSHConnectionError,
-          max_retry=10,
-          functor=lambda: self.RemoteCommand(cmd=['true']),
+          max_retry=max_retry,
+          functor=lambda: self.remote_run(cmd=['true']),
           sleep=sleep)
     except remote_access.SSHConnectionError:
       raise DeviceError(
@@ -77,57 +82,25 @@ class Device(object):
     if result.returncode != 0:
       raise DeviceError('WaitForBoot failed: %s.' % result.error)
 
-  def RunCommand(self, cmd, **kwargs):
-    """Use sudo_run or run as necessary.
-
-    Args:
-      cmd: command to run.
-      kwargs: optional args to run.
-
-    Returns:
-      cros_build_lib.CommandResult object.
-    """
-    if self.dry_run:
-      return self._DryRunCommand(cmd)
-    elif self.use_sudo:
-      return cros_build_lib.sudo_run(cmd, **kwargs)
-    else:
-      return cros_build_lib.run(cmd, **kwargs)
-
-  def RemoteCommand(self, cmd, stream_output=False, **kwargs):
+  def remote_run(self, cmd, stream_output=False, **kwargs):
     """Run a remote command.
 
     Args:
       cmd: command to run.
       stream_output: Stream output of long-running commands.
-      kwargs: additional args (see documentation for RemoteDevice.RunCommand).
+      kwargs: additional args (see documentation for RemoteDevice.run).
 
     Returns:
       cros_build_lib.CommandResult object.
     """
-    if self.dry_run:
-      return self._DryRunCommand(cmd)
+    kwargs.setdefault('check', False)
+    if stream_output:
+      kwargs.setdefault('capture_output', False)
     else:
-      kwargs.setdefault('error_code_ok', True)
-      if stream_output:
-        kwargs.setdefault('capture_output', False)
-      else:
-        kwargs.setdefault('combine_stdout_stderr', True)
-        kwargs.setdefault('log_output', True)
-      return self.remote.RunCommand(cmd, debug_level=logging.INFO, **kwargs)
-
-  def _DryRunCommand(self, cmd):
-    """Print a command for dry_run.
-
-    Args:
-      cmd: command to print.
-
-    Returns:
-      cros_build_lib.CommandResult object.
-    """
-    assert self.dry_run, 'Use with --dry-run only'
-    logging.info('[DRY RUN] %s', cros_build_lib.CmdToStr(cmd))
-    return cros_build_lib.CommandResult(cmd, output='', returncode=0)
+      kwargs.setdefault('stderr', subprocess.STDOUT)
+      kwargs.setdefault('log_output', True)
+    return self.remote.run(cmd, dryrun=self.dryrun,
+                           debug_level=logging.INFO, **kwargs)
 
   def _ConnectSettings(self):
     """Increase ServerAliveCountMax and ServerAliveInterval.
@@ -137,20 +110,10 @@ class Device(object):
     return remote_access.CompileSSHConnectSettings(
         ServerAliveInterval=15, ServerAliveCountMax=8)
 
-  @property
-  def is_vm(self):
-    """Returns true if we're a VM."""
-    return self._IsVM(self.device)
-
-  @staticmethod
-  def _IsVM(device):
-    """VM if |device| is specified and it's not localhost."""
-    return not device or device == remote_access.LOCALHOST
-
   @staticmethod
   def Create(opts):
     """Create either a Device or VM based on |opts.device|."""
-    if Device._IsVM(opts.device):
+    if not opts.device:
       from chromite.lib import vm
 
       return vm.VM(opts)
@@ -167,12 +130,16 @@ class Device(object):
       List of parsed opts.
     """
     parser = commandline.ArgumentParser(description=__doc__)
-    parser.add_argument('--device', help='Hostname or Device IP.')
+    parser.add_argument(
+        '-d', '--device',
+        type=commandline.DeviceParser(commandline.DEVICE_SCHEME_SSH),
+        help='Hostname or device IP in format hostname[:port]. If not '
+             'specified, a VM will be launched for the duration of the test.')
     sdk_board_env = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
     parser.add_argument('--board', default=sdk_board_env, help='Board to use.')
     parser.add_argument('--private-key', help='Path to ssh private key.')
-    parser.add_argument('--dry-run', action='store_true', default=False,
-                        help='dry run for debugging.')
+    parser.add_argument('--dry-run', dest='dryrun', action='store_true',
+                        default=False, help='dry run for debugging.')
     parser.add_argument('--cmd', action='store_true', default=False,
                         help='Run a command.')
     parser.add_argument('args', nargs=argparse.REMAINDER,

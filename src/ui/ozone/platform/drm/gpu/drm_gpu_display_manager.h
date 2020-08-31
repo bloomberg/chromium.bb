@@ -11,8 +11,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "ui/display/types/display_constants.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/display_types.h"
 
 namespace display {
@@ -58,6 +59,7 @@ class DrmGpuDisplayManager {
       int64_t display_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut);
+  void SetPrivacyScreen(int64_t display_id, bool enabled);
 
  private:
   DrmDisplay* FindDisplay(int64_t display_id);

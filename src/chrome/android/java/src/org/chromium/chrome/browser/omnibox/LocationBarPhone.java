@@ -12,10 +12,8 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.TouchDelegate;
 import android.view.View;
-import android.view.WindowManager;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.status.StatusView;
@@ -27,16 +25,11 @@ import java.util.List;
  * A location bar implementation specific for smaller/phone screens.
  */
 public class LocationBarPhone extends LocationBarLayout {
-    private static final int KEYBOARD_MODE_CHANGE_DELAY_MS = 300;
-    private static final int KEYBOARD_HIDE_DELAY_MS = 150;
-
     private static final int ACTION_BUTTON_TOUCH_OVERFLOW_LEFT = 15;
 
     private View mFirstVisibleFocusedView;
     private View mUrlBar;
     private StatusView mStatusView;
-
-    private Runnable mKeyboardResizeModeTask;
 
     /**
      * Constructor used to inflate from XML.
@@ -75,6 +68,8 @@ public class LocationBarPhone extends LocationBarLayout {
                 getToolbarDataProvider().isIncognito());
 
         // This branch will be hit if the search engine logo experiment is enabled.
+        // This value can never revert back to false, so it's safe to initialize mStatusView here
+        // without a corresponding else that nulls it out.
         if (SearchEngineLogoUtils.isSearchEngineLogoEnabled()) {
             // Setup the padding once we're loaded, the focused padding changes will happen with
             // post-layout positioning via setTranslation. This is a byproduct of the way we do the
@@ -87,12 +82,12 @@ public class LocationBarPhone extends LocationBarLayout {
                     R.dimen.sei_location_bar_lateral_padding);
             setPaddingRelative(lateralPadding, getPaddingTop(), lateralPadding, getPaddingBottom());
             updateUrlBarPaddingForSearchEngineIcon();
+            mStatusView = findViewById(R.id.location_bar_status);
         }
 
         // This branch will be hit if the search engine logo experiment is enabled and we should
         // show the logo.
         if (shouldShowSearchEngineLogo) {
-            mStatusView = findViewById(R.id.location_bar_status);
             mStatusView.updateSearchEngineStatusIcon(
                     shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
             mFirstVisibleFocusedView = mStatusView;
@@ -305,40 +300,20 @@ public class LocationBarPhone extends LocationBarLayout {
         return retVal;
     }
 
-    /**
-     * Handles any actions to be performed after all other actions triggered by the URL focus
-     * change.  This will be called after any animations are performed to transition from one
-     * focus state to the other.
-     * @param hasFocus Whether the URL field has gained focus.
-     */
+    @Override
     public void finishUrlFocusChange(boolean hasFocus) {
+        super.finishUrlFocusChange(hasFocus);
         if (!hasFocus) {
-            // The animation rendering may not yet be 100% complete and hiding the keyboard makes
-            // the animation quite choppy.
-            postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    getWindowAndroid().getKeyboardDelegate().hideKeyboard(mUrlBar);
-                }
-            }, KEYBOARD_HIDE_DELAY_MS);
-            // Convert the keyboard back to resize mode (delay the change for an arbitrary amount
-            // of time in hopes the keyboard will be completely hidden before making this change).
-            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, true);
             mUrlActionContainer.setVisibility(GONE);
-        } else {
-            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, false);
-            getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
         }
         updateUrlBarPaddingForSearchEngineIcon();
         mStatusViewCoordinator.onUrlAnimationFinished(hasFocus);
-        setUrlFocusChangeInProgress(false);
-        updateShouldAnimateIconChanges();
     }
 
     @Override
     protected void updateButtonVisibility() {
         super.updateButtonVisibility();
-        updateMicButtonVisibility(mUrlFocusChangePercent);
+        updateMicButtonVisibility();
     }
 
     @Override
@@ -350,34 +325,6 @@ public class LocationBarPhone extends LocationBarLayout {
     public void setShowIconsWhenUrlFocused(boolean showIcon) {
         super.setShowIconsWhenUrlFocused(showIcon);
         mStatusViewCoordinator.setShowIconsWhenUrlFocused(showIcon);
-    }
-
-    /**
-     * @param softInputMode The software input resize mode.
-     * @param delay Delay the change in input mode.
-     */
-    private void setSoftInputMode(final int softInputMode, boolean delay) {
-        final WindowDelegate delegate = getWindowDelegate();
-
-        if (mKeyboardResizeModeTask != null) {
-            removeCallbacks(mKeyboardResizeModeTask);
-            mKeyboardResizeModeTask = null;
-        }
-
-        if (delegate == null || delegate.getWindowSoftInputMode() == softInputMode) return;
-
-        if (delay) {
-            mKeyboardResizeModeTask = new Runnable() {
-                @Override
-                public void run() {
-                    delegate.setWindowSoftInputMode(softInputMode);
-                    mKeyboardResizeModeTask = null;
-                }
-            };
-            postDelayed(mKeyboardResizeModeTask, KEYBOARD_MODE_CHANGE_DELAY_MS);
-        } else {
-            delegate.setWindowSoftInputMode(softInputMode);
-        }
     }
 
     private int getAdditionalOffsetForNTP() {

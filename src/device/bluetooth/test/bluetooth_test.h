@@ -13,6 +13,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/test/task_environment.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -309,6 +310,23 @@ class BluetoothTestBase : public testing::Test {
   // enables tests where the platform attempts to reference device
   // objects after the Chrome objects have been deleted, e.g. with DeleteDevice.
   virtual void RememberDeviceForSubsequentAction(BluetoothDevice* device) {}
+
+  // Performs a GATT connection to the given device and returns whether it was
+  // successful. The |service_uuid| is passed to
+  // |BluetoothDevice::CreateGattConnection|; see the documentation for it
+  // there. The callback is called to complete the GATT connection. If not
+  // given, |SimulateGattConnection| is called but the callback argument lets
+  // one override that.
+  bool ConnectGatt(BluetoothDevice* device,
+                   base::Optional<BluetoothUUID> service_uuid = base::nullopt,
+                   base::Optional<base::OnceCallback<void(BluetoothDevice*)>> =
+                       base::nullopt);
+
+  // GetTargetGattService returns the specific GATT service, if any, that was
+  // targeted for discovery, i.e. via the |service_uuid| argument to
+  // |CreateGattConnection|.
+  virtual base::Optional<BluetoothUUID> GetTargetGattService(
+      BluetoothDevice* device);
 
   // Simulates success of implementation details of CreateGattConnection.
   virtual void SimulateGattConnection(BluetoothDevice* device) {}

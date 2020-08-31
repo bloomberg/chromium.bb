@@ -15,6 +15,10 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
+#include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
@@ -28,6 +32,7 @@
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -43,6 +48,7 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/system/statistics_provider.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
@@ -52,6 +58,7 @@
 #include "components/arc/metrics/stability_metrics_manager.h"
 #include "components/arc/session/arc_data_remover.h"
 #include "components/arc/session/arc_instance_mode.h"
+#include "components/arc/session/arc_property_util.h"
 #include "components/arc/session/arc_session.h"
 #include "components/arc/session/arc_session_runner.h"
 #include "components/arc/session/arc_supervision_transition.h"
@@ -77,10 +84,24 @@ bool g_enable_arc_terms_of_service_oobe_negotiator_in_tests = false;
 
 base::Optional<bool> g_enable_check_android_management_in_tests;
 
+constexpr const char kPropertyFilesPathVm[] = "/usr/share/arcvm/properties";
+constexpr const char kPropertyFilesPath[] = "/usr/share/arc/properties";
+
 // Maximum amount of time we'll wait for ARC to finish booting up. Once this
 // timeout expires, keep ARC running in case the user wants to file feedback,
 // but present the UI to try again.
-constexpr base::TimeDelta kArcSignInTimeout = base::TimeDelta::FromMinutes(5);
+base::TimeDelta GetArcSignInTimeout() {
+  constexpr base::TimeDelta kArcSignInTimeout = base::TimeDelta::FromMinutes(5);
+  constexpr base::TimeDelta kArcVmSignInTimeoutForVM =
+      base::TimeDelta::FromMinutes(20);
+
+  if (chromeos::system::StatisticsProvider::GetInstance()->IsRunningOnVm() &&
+      arc::IsArcVmEnabled()) {
+    return kArcVmSignInTimeoutForVM;
+  } else {
+    return kArcSignInTimeout;
+  }
+}
 
 // Updates UMA with user cancel only if error is not currently shown.
 void MaybeUpdateOptInCancelUMA(const ArcSupportHost* support_host) {
@@ -127,6 +148,32 @@ bool ShouldLaunchPlayStoreApp(Profile* profile,
     return false;
 
   if (ShouldStartArcSilentlyForManagedProfile(profile))
+    return false;
+
+  return true;
+}
+
+// Defines the conditions that require UI to present eventual error conditions
+// to the end user.
+//
+// Don't show UI for ARC Kiosk because the only one UI in kiosk mode must
+// be the kiosk app. In case of error the UI will be useless as well, because
+// in typical use case there will be no one nearby the kiosk device, who can
+// do some action to solve the problem be means of UI.
+// Same considerations apply for MGS sessions in Demo Mode.
+// All other managed sessions will be attended by a user and require an error
+// UI.
+bool ShouldUseErrorDialog() {
+  if (!g_ui_enabled)
+    return false;
+
+  if (IsArcOptInVerificationDisabled())
+    return false;
+
+  if (IsArcKioskMode())
+    return false;
+
+  if (chromeos::DemoSession::IsDeviceInDemoMode())
     return false;
 
   return true;
@@ -225,7 +272,12 @@ class ArcSessionManager::ScopedOptInFlowTracker {
 ArcSessionManager::ArcSessionManager(
     std::unique_ptr<ArcSessionRunner> arc_session_runner)
     : arc_session_runner_(std::move(arc_session_runner)),
-      attempt_user_exit_callback_(base::Bind(chrome::AttemptUserExit)) {
+      attempt_user_exit_callback_(base::Bind(chrome::AttemptUserExit)),
+      property_files_source_dir_(base::FilePath(
+          IsArcVmEnabled() ? kPropertyFilesPathVm : kPropertyFilesPath)),
+      property_files_dest_dir_(
+          base::FilePath(IsArcVmEnabled() ? kGeneratedPropertyFilesPathVm
+                                          : kGeneratedPropertyFilesPath)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!g_arc_session_manager);
   g_arc_session_manager = this;
@@ -435,6 +487,10 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
       break;
   }
 
+  // When ARC provisioning fails due to Chrome failing to talk to server, we
+  // don't need to keep the ARC session running as the logs necessary to
+  // investigate are already present. ARC session will not provide any useful
+  // context.
   if (result == ProvisioningResult::ARC_STOPPED ||
       result == ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR) {
     if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))
@@ -484,30 +540,23 @@ void ArcSessionManager::Initialize() {
   state_ = State::STOPPED;
 
   auto* prefs = profile_->GetPrefs();
-  const std::string user_id_hash(
-      chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_));
-  arc_session_runner_->SetUserInfo(user_id_hash,
-                                   GetOrCreateSerialNumber(prefs));
+  const cryptohome::Identification cryptohome_id(
+      multi_user_util::GetAccountIdFromProfile(profile_));
+  arc_session_runner_->SetUserInfo(
+      cryptohome_id,
+      chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_),
+      GetOrCreateSerialNumber(prefs));
 
   // Create the support host at initialization. Note that, practically,
   // ARC support Chrome app is rarely used (only opt-in and re-auth flow).
   // So, it may be better to initialize it lazily.
   // TODO(hidehiko): Revisit to think about lazy initialization.
-  //
-  // Don't show UI for ARC Kiosk because the only one UI in kiosk mode must
-  // be the kiosk app. In case of error the UI will be useless as well, because
-  // in typical use case there will be no one nearby the kiosk device, who can
-  // do some action to solve the problem be means of UI.
-  if (g_ui_enabled && !IsArcOptInVerificationDisabled() &&
-      !IsRobotOrOfflineDemoAccountMode()) {
+  if (ShouldUseErrorDialog()) {
     DCHECK(!support_host_);
     support_host_ = std::make_unique<ArcSupportHost>(profile_);
     support_host_->SetErrorDelegate(this);
   }
-  data_remover_ = std::make_unique<ArcDataRemover>(
-      prefs, cryptohome::Identification(
-                 multi_user_util::GetAccountIdFromProfile(profile_)));
-  data_remover_->set_user_id_hash_for_profile(user_id_hash);
+  data_remover_ = std::make_unique<ArcDataRemover>(prefs, cryptohome_id);
 
   if (g_enable_check_android_management_in_tests.value_or(g_ui_enabled))
     ArcAndroidManagementChecker::StartClient();
@@ -597,6 +646,8 @@ void ArcSessionManager::ResetArcState() {
 void ArcSessionManager::AddObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   observer_list_.AddObserver(observer);
+  if (property_files_expansion_result_)
+    observer->OnPropertyFilesExpanded(*property_files_expansion_result_);
 }
 
 void ArcSessionManager::RemoveObserver(Observer* observer) {
@@ -726,6 +777,16 @@ bool ArcSessionManager::RequestEnableImpl() {
     return false;
   }
 
+  // When ARC is blocked because of powerwash request, do not proceed
+  // to starting ARC nor follow further state transitions. Applications are
+  // still visible but replaced with notification requesting powerwash.
+  policy::PowerwashRequirementsChecker pw_checker(
+      policy::PowerwashRequirementsChecker::Context::kArc, profile_);
+  if (pw_checker.GetState() !=
+      policy::PowerwashRequirementsChecker::State::kNotRequired) {
+    return false;
+  }
+
   // ARC might be re-enabled and in this case |arc_ui_availability_reporter_| is
   // already set.
   if (!arc_ui_availability_reporter_) {
@@ -751,7 +812,7 @@ bool ArcSessionManager::RequestEnableImpl() {
     // When in ARC kiosk mode, there's no Chrome tabs to restore. Remove the
     // cgroups now.
     if (IsArcKioskMode())
-      SetArcCpuRestriction(false /* do_restrict */);
+      SetArcCpuRestriction(CpuRestrictionState::CPU_RESTRICTION_FOREGROUND);
     // Check Android management in parallel.
     // Note: StartBackgroundAndroidManagementCheck() may call
     // OnBackgroundAndroidManagementChecked() synchronously (or
@@ -966,15 +1027,10 @@ void ArcSessionManager::OnAndroidManagementChecked(
   switch (result) {
     case policy::AndroidManagementClient::Result::UNMANAGED:
       VLOG(1) << "Starting ARC for first sign in.";
-      sign_in_start_time_ = base::TimeTicks::Now();
-      arc_sign_in_timer_.Start(
-          FROM_HERE, kArcSignInTimeout,
-          base::Bind(&ArcSessionManager::OnArcSignInTimeout,
-                     weak_ptr_factory_.GetWeakPtr()));
       StartArc();
       // Since opt-in is an explicit user (or admin) action, relax the
       // cgroups restriction now.
-      SetArcCpuRestriction(false /* do_restrict */);
+      SetArcCpuRestriction(CpuRestrictionState::CPU_RESTRICTION_FOREGROUND);
       break;
     case policy::AndroidManagementClient::Result::MANAGED:
       ShowArcSupportHostError(
@@ -1036,6 +1092,8 @@ void ArcSessionManager::StartArc() {
          state_ == State::CHECKING_ANDROID_MANAGEMENT)
       << state_;
   state_ = State::ACTIVE;
+
+  MaybeStartTimer();
 
   // ARC must be started only if no pending data removal request exists.
   DCHECK(!profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
@@ -1156,6 +1214,22 @@ void ArcSessionManager::MaybeReenableArc() {
   RequestEnableImpl();
 }
 
+// Starts a timer to check if provisioning takes too loong.
+// The timer will not be set if this device was previously provisioned
+// successfully.
+void ArcSessionManager::MaybeStartTimer() {
+  if (IsArcProvisioned(profile_)) {
+    return;
+  }
+
+  VLOG(1) << "Setup provisioning timer";
+  sign_in_start_time_ = base::TimeTicks::Now();
+  arc_sign_in_timer_.Start(
+      FROM_HERE, GetArcSignInTimeout(),
+      base::BindOnce(&ArcSessionManager::OnArcSignInTimeout,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
 void ArcSessionManager::OnWindowClosed() {
   CancelAuthCode();
 }
@@ -1238,6 +1312,27 @@ void ArcSessionManager::EmitLoginPromptVisibleCalled() {
     return;
 
   arc_session_runner_->RequestStartMiniInstance();
+}
+
+void ArcSessionManager::ExpandPropertyFiles() {
+  VLOG(1) << "Started expanding *.prop files";
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&arc::ExpandPropertyFiles, property_files_source_dir_,
+                     property_files_dest_dir_),
+      base::BindOnce(&ArcSessionManager::OnExpandPropertyFiles,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArcSessionManager::OnExpandPropertyFiles(bool result) {
+  // ExpandPropertyFiles() should be called only once.
+  DCHECK(!property_files_expansion_result_);
+
+  property_files_expansion_result_ = result;
+  if (result)
+    arc_session_runner_->ResumeRunner();
+  for (auto& observer : observer_list_)
+    observer.OnPropertyFilesExpanded(result);
 }
 
 std::ostream& operator<<(std::ostream& os,

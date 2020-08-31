@@ -24,6 +24,13 @@ js_library("cr_toast_manager") {
   ]
 }
 
+group("polymer3_elements") {
+  public_deps = [
+    ":cr_toast_manager_module",
+    ":cr_toast_module",
+  ]
+}
+
 polymer_modulizer("cr_toast") {
   js_file = "cr_toast.js"
   html_file = "cr_toast.html"
@@ -50,9 +57,8 @@ js_type_check("closure_compile_module") {
 }
 
 js_library("cr_toast.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_elements/cr_toast/cr_toast.m.js",
-  ]
+  sources =
+      [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_toast/cr_toast.m.js" ]
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
@@ -60,9 +66,7 @@ js_library("cr_toast.m") {
 }
 
 js_library("cr_toast_manager.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_elements/cr_toast/cr_toast_manager.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_toast/cr_toast_manager.m.js" ]
   deps = [
     ":cr_toast.m",
     "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer",

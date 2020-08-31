@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/dtls_transport_proxy.h"
@@ -29,23 +30,17 @@ String TransportStateToString(webrtc::DtlsTransportState state) {
   switch (state) {
     case webrtc::DtlsTransportState::kNew:
       return String("new");
-      break;
     case webrtc::DtlsTransportState::kConnecting:
       return String("connecting");
-      break;
     case webrtc::DtlsTransportState::kConnected:
       return String("connected");
-      break;
     case webrtc::DtlsTransportState::kClosed:
       return String("closed");
-      break;
     case webrtc::DtlsTransportState::kFailed:
       return String("failed");
-      break;
     default:
       NOTREACHED();
       return String("failed");
-      break;
   }
 }
 
@@ -53,7 +48,7 @@ std::unique_ptr<DtlsTransportProxy> CreateProxy(
     ExecutionContext* context,
     webrtc::DtlsTransportInterface* native_transport,
     DtlsTransportProxy::Delegate* delegate) {
-  LocalFrame* frame = To<Document>(context)->GetFrame();
+  LocalFrame* frame = To<LocalDOMWindow>(context)->GetFrame();
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
       frame->GetTaskRunner(TaskType::kNetworking);
   scoped_refptr<base::SingleThreadTaskRunner> host_thread =
@@ -70,7 +65,7 @@ RTCDtlsTransport::RTCDtlsTransport(
     ExecutionContext* context,
     rtc::scoped_refptr<webrtc::DtlsTransportInterface> native_transport,
     RTCIceTransport* ice_transport)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
       current_state_(webrtc::DtlsTransportState::kNew),
       native_transport_(native_transport),
       proxy_(CreateProxy(context, native_transport, this)),
@@ -179,7 +174,7 @@ const AtomicString& RTCDtlsTransport::InterfaceName() const {
 }
 
 ExecutionContext* RTCDtlsTransport::GetExecutionContext() const {
-  return ContextClient::GetExecutionContext();
+  return ExecutionContextClient::GetExecutionContext();
 }
 
 void RTCDtlsTransport::Trace(Visitor* visitor) {
@@ -187,7 +182,7 @@ void RTCDtlsTransport::Trace(Visitor* visitor) {
   visitor->Trace(ice_transport_);
   DtlsTransportProxy::Delegate::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

@@ -159,27 +159,28 @@ std::unique_ptr<PaymentRequestRowView> CreatePaymentSheetRow(
   // A column for the section name.
   constexpr int kNameColumnWidth = 112;
   columns->AddColumn(views::GridLayout::LEADING, vertical_alignment,
-                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                     kNameColumnWidth, 0);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kFixed, kNameColumnWidth,
+                     0);
 
   constexpr int kPaddingAfterName = 32;
   columns->AddPaddingColumn(views::GridLayout::kFixedSize, kPaddingAfterName);
 
   // A column for the content.
   columns->AddColumn(views::GridLayout::FILL, vertical_alignment, 1.0,
-                     views::GridLayout::USE_PREF, 0, 0);
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   // A column for the extra content.
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-                     0, 0);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   constexpr int kPaddingColumnsWidth = 25;
   columns->AddPaddingColumn(views::GridLayout::kFixedSize,
                             kPaddingColumnsWidth);
   // A column for the trailing_button.
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-                     0, 0);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   std::unique_ptr<views::Label> name_label = CreateMediumLabel(section_name);
@@ -222,10 +223,11 @@ std::unique_ptr<views::View> CreateInlineCurrencyAmountItem(
   views::ColumnSet* item_amount_columns = item_amount_layout->AddColumnSet(0);
   item_amount_columns->AddColumn(
       views::GridLayout::LEADING, views::GridLayout::LEADING,
-      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
-  item_amount_columns->AddColumn(views::GridLayout::TRAILING,
-                                 views::GridLayout::LEADING, 1.0,
-                                 views::GridLayout::USE_PREF, 0, 0);
+      views::GridLayout::kFixedSize,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
+  item_amount_columns->AddColumn(
+      views::GridLayout::TRAILING, views::GridLayout::LEADING, 1.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   DCHECK(!bold || !hint_color);
   std::unique_ptr<views::Label> currency_label;
@@ -333,7 +335,7 @@ class PaymentSheetRowBuilder {
     DCHECK(accessible_content_.empty());
     std::unique_ptr<PreviewEliderLabel> content_view =
         std::make_unique<PreviewEliderLabel>(preview_text, format_string, n,
-                                             STYLE_HINT);
+                                             views::style::STYLE_HINT);
     content_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     return CreateWithButton(std::move(content_view), button_string,
                             button_enabled);
@@ -348,9 +350,8 @@ class PaymentSheetRowBuilder {
       std::unique_ptr<views::View> content_view,
       const base::string16& button_string,
       bool button_enabled) {
-    std::unique_ptr<views::Button> button(
-        views::MdTextButton::CreateSecondaryUiBlueButton(listener_,
-                                                         button_string));
+    auto button = views::MdTextButton::Create(listener_, button_string);
+    button->SetProminent(true);
     button->set_tag(tag_);
     button->SetID(id_);
     button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
@@ -368,6 +369,15 @@ class PaymentSheetRowBuilder {
   int id_;
   DISALLOW_COPY_AND_ASSIGN(PaymentSheetRowBuilder);
 };
+
+// The primary button should show "Continue" when the selected payment app is
+// non-autofill.
+base::string16 CalculatePrimaryButtonLabel(const PaymentRequestState* state) {
+  return state->selected_app() &&
+                 state->selected_app()->type() != PaymentApp::Type::AUTOFILL
+             ? l10n_util::GetStringUTF16(IDS_PAYMENTS_CONTINUE_BUTTON)
+             : l10n_util::GetStringUTF16(IDS_PAYMENTS_PAY_BUTTON);
+}
 
 }  // namespace
 
@@ -396,9 +406,9 @@ void PaymentSheetViewController::OnSelectedInformationChanged() {
 
 std::unique_ptr<views::Button>
 PaymentSheetViewController::CreatePrimaryButton() {
-  std::unique_ptr<views::Button> button(
-      views::MdTextButton::CreateSecondaryUiBlueButton(
-          this, l10n_util::GetStringUTF16(IDS_PAYMENTS_PAY_BUTTON)));
+  auto button =
+      views::MdTextButton::Create(this, CalculatePrimaryButtonLabel(state()));
+  button->SetProminent(true);
   button->set_tag(static_cast<int>(PaymentRequestCommonTags::PAY_BUTTON_TAG));
   button->SetID(static_cast<int>(DialogViewID::PAY_BUTTON));
   button->SetEnabled(state()->is_ready_to_pay());
@@ -422,7 +432,7 @@ void PaymentSheetViewController::FillContentView(views::View* content_view) {
       content_view->SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
-                     views::GridLayout::USE_PREF, 0, 0);
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   if (!spec()->retry_error_message().empty()) {
     std::unique_ptr<views::View> warning_view =
@@ -575,6 +585,8 @@ void PaymentSheetViewController::StyledLabelLinkClicked(
 
 void PaymentSheetViewController::UpdatePayButtonState(bool enabled) {
   primary_button()->SetEnabled(enabled);
+  static_cast<views::MdTextButton*>(primary_button())
+      ->SetText(CalculatePrimaryButtonLabel(state()));
 }
 
 // Creates the Order Summary row, which contains an "Order Summary" label,
@@ -592,10 +604,11 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
       inline_summary->SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                     1.0, views::GridLayout::USE_PREF, 0, 0);
+                     1.0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   constexpr int kItemSummaryPriceFixedWidth = 96;
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
-                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kFixed,
                      kItemSummaryPriceFixedWidth, kItemSummaryPriceFixedWidth);
 
   const std::vector<const mojom::PaymentItemPtr*>& items =
@@ -758,7 +771,7 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
         content_view->SetLayoutManager(std::make_unique<views::GridLayout>());
     views::ColumnSet* columns = layout->AddColumnSet(0);
     columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                       1.0, views::GridLayout::USE_PREF, 0, 0);
+                       1.0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
     layout->StartRow(views::GridLayout::kFixedSize, 0);
     std::unique_ptr<views::Label> selected_app_label =

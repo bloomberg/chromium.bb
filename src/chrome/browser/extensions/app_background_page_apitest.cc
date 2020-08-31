@@ -25,10 +25,11 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/embedder_support/switches.h"
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/process_manager.h"
@@ -84,7 +85,7 @@ class AppBackgroundPageApiTest : public extensions::ExtensionApiTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisablePopupBlocking);
+    command_line->AppendSwitch(embedder_support::kDisablePopupBlocking);
     command_line->AppendSwitch(extensions::switches::kAllowHTTPBackgroundPage);
   }
 
@@ -173,8 +174,9 @@ class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
 
 }  // namespace
 
-// Disable on Mac only.  http://crbug.com/95139
-#if defined(OS_MACOSX)
+// Flaky test disabled on Mac (http://crbug.com/95139), Windows
+// and Linux (http://crbug.com/1044265).
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_Basic DISABLED_Basic
 #else
 #define MAYBE_Basic Basic

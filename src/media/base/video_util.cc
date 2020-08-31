@@ -7,7 +7,8 @@
 #include <cmath>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "media/base/video_frame.h"
@@ -380,6 +381,10 @@ gfx::Size ScaleSizeToFitWithinTarget(const gfx::Size& size,
 gfx::Size ScaleSizeToEncompassTarget(const gfx::Size& size,
                                      const gfx::Size& target) {
   return ScaleSizeToTarget(size, target, false);
+}
+
+gfx::Size GetRectSizeFromOrigin(const gfx::Rect& rect) {
+  return gfx::Size(rect.right(), rect.bottom());
 }
 
 gfx::Size PadToMatchAspectRatio(const gfx::Size& size,

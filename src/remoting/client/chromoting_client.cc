@@ -201,6 +201,9 @@ void ChromotingClient::SetVideoLayout(const protocol::VideoLayout& layout) {
   }
 }
 
+void ChromotingClient::SetTransportInfo(
+    const protocol::TransportInfo& transport_info) {}
+
 void ChromotingClient::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -213,6 +216,13 @@ void ChromotingClient::SetCursorShape(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   user_interface_->GetCursorShapeStub()->SetCursorShape(cursor_shape);
+}
+
+void ChromotingClient::SetKeyboardLayout(
+    const protocol::KeyboardLayout& layout) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  user_interface_->GetKeyboardLayoutStub()->SetKeyboardLayout(layout);
 }
 
 void ChromotingClient::OnConnectionState(

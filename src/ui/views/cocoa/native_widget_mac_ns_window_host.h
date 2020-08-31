@@ -5,7 +5,9 @@
 #ifndef UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NS_WINDOW_HOST_H_
 #define UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NS_WINDOW_HOST_H_
 
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"
@@ -19,11 +21,9 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/base/cocoa/accessibility_focus_overrider.h"
-#include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/display/mac/display_link_mac.h"
 #include "ui/views/cocoa/drag_drop_client_mac.h"
-#include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_observer.h"
@@ -54,8 +54,6 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
       public remote_cocoa::ApplicationHost::Observer,
       public remote_cocoa::mojom::NativeWidgetNSWindowHost,
       public DialogObserver,
-      public FocusChangeListener,
-      public ui::internal::InputMethodDelegate,
       public ui::AccessibilityFocusOverrider::Client,
       public ui::LayerDelegate,
       public ui::LayerOwner,
@@ -133,19 +131,18 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
       remote_cocoa::ApplicationHost* application_host,
       remote_cocoa::mojom::CreateWindowParamsPtr window_create_params);
 
-  void InitWindow(const Widget::InitParams& params);
+  void InitWindow(const Widget::InitParams& params,
+                  const gfx::Rect& initial_bounds_in_screen);
 
   // Close the window immediately. This function may result in |this| being
   // deleted.
   void CloseWindowNow();
 
   // Changes the bounds of the window and the hosted layer if present. The
-  // origin is a location in screen coordinates except for "child" windows,
-  // which are positioned relative to their parent. SetBounds() considers a
-  // "child" window to be one initialized with InitParams specifying all of:
-  // a |parent| NSWindow, the |child| attribute, and a |type| that
-  // views::GetAuraWindowTypeForWidgetType does not consider a "popup" type.
-  void SetBounds(const gfx::Rect& bounds);
+  // argument is always a location in screen coordinates (in contrast to the
+  // views::Widget::SetBounds method, when the argument is only sometimes in
+  // screen coordinates).
+  void SetBoundsInScreen(const gfx::Rect& bounds);
 
   // Tell the window to transition to being fullscreen or not-fullscreen.
   void SetFullscreen(bool fullscreen);
@@ -163,10 +160,6 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   // Initialize the ui::Compositor and ui::Layer.
   void CreateCompositor(const Widget::InitParams& params);
 
-  // Sets or clears the focus manager to use for tracking focused views.
-  // This does NOT take ownership of |focus_manager|.
-  void SetFocusManager(FocusManager* focus_manager);
-
   // Set the window's title, returning true if the title has changed.
   bool SetWindowTitle(const base::string16& title);
 
@@ -176,9 +169,6 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   // Redispatch a keyboard event using the widget's window's CommandDispatcher.
   // Return true if the event is handled.
   bool RedispatchKeyEvent(NSEvent* event);
-
-  // See widget.h for documentation.
-  ui::InputMethod* GetInputMethod();
 
   // Geometry of the window, in DIPs.
   const gfx::Rect& GetWindowBoundsInScreen() const {
@@ -374,13 +364,6 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   // DialogObserver:
   void OnDialogChanged() override;
 
-  // FocusChangeListener:
-  void OnWillChangeFocus(View* focused_before, View* focused_now) override;
-  void OnDidChangeFocus(View* focused_before, View* focused_now) override;
-
-  // ui::internal::InputMethodDelegate:
-  ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* key) override;
-
   // ui::AccessibilityFocusOverrider::Client:
   id GetAccessibilityFocusedUIElement() override;
 
@@ -450,9 +433,7 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
       in_process_view_id_mapping_;
 
   std::unique_ptr<TooltipManager> tooltip_manager_;
-  std::unique_ptr<ui::InputMethod> input_method_;
   std::unique_ptr<TextInputHost> text_input_host_;
-  FocusManager* focus_manager_ = nullptr;  // Weak. Owned by our Widget.
 
   base::string16 window_title_;
 

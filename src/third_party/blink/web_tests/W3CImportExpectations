@@ -1,7 +1,12 @@
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Release Debug ]
+# results: [ Skip ]
+
 # This file controls which subdirectories of the w3c test repos we import.
 #
-# This file acts as a blacklist; directories and files not listed here will
-# automatically be found and imported.
+# This file acts as a list of exclusions; directories and files not listed here
+# will automatically be found and imported.
 #
 # Tests that are imported but not run are listed in NeverFixTests. This can be
 # used to make it easier to work on getting them running and passing.
@@ -11,7 +16,6 @@
 
 external/wpt/.codecov.yml [ Skip ]
 external/wpt/.github [ Skip ]
-external/wpt/.gitmodules [ Skip ]
 external/wpt/CODEOWNERS [ Skip ]
 external/wpt/WebIDL/invalid [ Skip ]
 external/wpt/WebIDL/readme.txt [ Skip ]
@@ -21,8 +25,6 @@ external/wpt/accname [ Skip ]
 external/wpt/annotation-model [ Skip ]
 external/wpt/annotation-protocol [ Skip ]
 external/wpt/annotation-vocab [ Skip ]
-external/wpt/check_stability.ini [ Skip ]
-external/wpt/config.default.json [ Skip ]
 external/wpt/conformance-checkers [ Skip ]
 external/wpt/core-aam [ Skip ]
 external/wpt/css/.htaccess [ Skip ]
@@ -81,15 +83,11 @@ external/wpt/css/CSS2/visuren [ Skip ]
 external/wpt/css/CSS2/zindex [ Skip ]
 external/wpt/css/CSS2/zorder [ Skip ]
 external/wpt/css/WOFF2 [ Skip ]
-external/wpt/css/compositing [ Skip ]
 external/wpt/css/css-counter-styles [ Skip ]
 external/wpt/css/css-display/run-in [ Skip ]
 external/wpt/css/css-exclusions [ Skip ]
 external/wpt/css/css-gcpm [ Skip ]
-external/wpt/css/css-page [ Skip ]
-external/wpt/css/css-regions [ Skip ]
 external/wpt/css/css-round-display [ Skip ]
-external/wpt/css/css-ruby [ Skip ]
 external/wpt/css/css-speech [ Skip ]
 external/wpt/css/tools [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/README [ Skip ]
@@ -121,9 +119,6 @@ external/wpt/js [ Skip ]
 external/wpt/old-tests [ Skip ]
 external/wpt/proximity [ Skip ]
 external/wpt/resources/test [ Skip ]
-external/wpt/resources/webidl2/test [ Skip ]
-external/wpt/serve.py [ Skip ]
-external/wpt/server-side.md [ Skip ]
 external/wpt/svg-aam [ Skip ]
 external/wpt/svg/import [ Skip ]
 external/wpt/wai-aria [ Skip ]
@@ -160,8 +155,6 @@ external/wpt/tools/ci/tests [ Skip ]
 external/wpt/tools/gitignore/tests [ Skip ]
 external/wpt/tools/lint/tests [ Skip ]
 external/wpt/tools/manifest/tests [ Skip ]
-external/wpt/tools/pywebsocket/example [ Skip ]
-external/wpt/tools/pywebsocket/tests [ Skip ]
 external/wpt/tools/scripts [ Skip ]
 external/wpt/tools/wpt/tests [ Skip ]
 external/wpt/tools/wptrunner/docs [ Skip ]
@@ -203,8 +196,6 @@ external/wpt/css/css-text/text-transform/text-transform-fullwidth-001.xht [ Skip
 external/wpt/css/css-text/text-transform/text-transform-fullwidth-002.xht [ Skip ]
 external/wpt/css/css-text/text-transform/text-transform-fullwidth-004.xht [ Skip ]
 external/wpt/css/css-text/text-transform/text-transform-fullwidth-005.xht [ Skip ]
-external/wpt/css/css-text/white-space/white-space-collapsing-discard-001.xht [ Skip ]
-external/wpt/css/css-text/white-space/white-space-collapsing-preserve-breaks-001.xht [ Skip ]
 
 # CSS Writing Modes Level 4: Following tests require writing-mode: sideways-*, which we do not plan to support today.
 external/wpt/css/css-writing-modes/block-flow-direction-slr-043.xht [ Skip ]
@@ -295,7 +286,6 @@ external/wpt/css/css-writing-modes/vertical-alignment-srl-034.xht [ Skip ]
 external/wpt/css/css-writing-modes/vertical-alignment-srl-036.xht [ Skip ]
 external/wpt/css/css-writing-modes/vertical-alignment-srl-038.xht [ Skip ]
 external/wpt/css/css-writing-modes/vertical-alignment-srl-040.xht [ Skip ]
-external/wpt/css/css-writing-modes/wm-propagation-body-008.xht [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-parsing-sideways-lr-001.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-parsing-sideways-rl-001.html [ Skip ]
 
@@ -362,7 +352,6 @@ external/wpt/html/browsers/history/the-history-interface/joint_session_history/0
 external/wpt/html/browsers/history/the-history-interface/traverse_the_history_1.html [ Skip ]
 external/wpt/html/browsers/history/the-history-interface/traverse_the_history_write_after_load_1.html [ Skip ]
 external/wpt/html/semantics/document-metadata/the-style-element/style-error-01.html [ Skip ]
-external/wpt/svg/linking/scripted [ Skip ]
 
 # Manual tests that fail as TIMEOUT or NOTRUN. Consider adding wpt_automation.
 external/wpt/FileAPI/BlobURL/test2-manual.html [ Skip ]
@@ -421,12 +410,6 @@ external/wpt/html/editing/dnd/the-dropzone-attribute/dropzone_attribute_value_mu
 external/wpt/html/editing/dnd/the-dropzone-attribute/dropzone_attribute_value_multiple_values_move_copy-manual.html [ Skip ]
 external/wpt/html/editing/dnd/the-dropzone-attribute/dropzone_attribute_value_not_specified-manual.html [ Skip ]
 external/wpt/html/editing/dnd/the-dropzone-attribute/dropzone_attribute_value_unordered_unique_space_separated-manual.html [ Skip ]
-external/wpt/html/editing/focus/focus-01-manual.html [ Skip ]
-external/wpt/html/editing/focus/focus-02-manual.html [ Skip ]
-external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-negative-manual.html [ Skip ]
-external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-order-manual.html [ Skip ]
-external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-positive-manual.html [ Skip ]
-external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-zero-manual.html [ Skip ]
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/stable-state-beforeunload-manual.html [ Skip ]
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/stable-state-print-manual.html [ Skip ]
 external/wpt/html/semantics/forms/constraints/tooLong-input-email-delete-manual.html [ Skip ]
@@ -460,10 +443,6 @@ external/wpt/uievents/order-of-events/mouse-events/mouseevents-mousemove-manual.
 external/wpt/uievents/order-of-events/mouse-events/mousemove-across-manual.html [ Skip ]
 external/wpt/uievents/order-of-events/mouse-events/mousemove-between-manual.html [ Skip ]
 
-# Tests that fail in content_shell but pass when run manually.
-external/wpt/client-hints/accept_ch_lifetime.https.html [ Skip ]
-external/wpt/client-hints/accept_ch.https.html [ Skip ]
-
 # TODO(crbug.com/974254): Remove the following once we can handle spaces in test names.
 external/wpt/webdriver/tests/element_clear/clear.py [ Skip ]
 external/wpt/webdriver/tests/element_click/interactability.py [ Skip ]
@@ -483,3 +462,25 @@ external/wpt/feature-policy/reporting/vr-reporting.https.html [ Skip ]
 external/wpt/feature-policy/reporting/vr-reporting.https.html.headers [ Skip ]
 external/wpt/feature-policy/reporting/vr-report-only.https.html [ Skip ]
 external/wpt/feature-policy/reporting/vr-report-only.https.html.headers [ Skip ]
+
+# Manual tests for CSS Paged Media.
+external/wpt/css/css-page/forced-page-breaks-002.xht [ Skip ]
+external/wpt/css/css-page/page-background-000.xht [ Skip ]
+external/wpt/css/css-page/page-borders-000.xht [ Skip ]
+external/wpt/css/css-page/page-counters-000.xht [ Skip ]
+external/wpt/css/css-page/page-margin-003.xht [ Skip ]
+external/wpt/css/css-page/page-name-000.xht [ Skip ]
+external/wpt/css/css-page/page-properties-000.xht [ Skip ]
+external/wpt/css/css-page/page-size-000.xht [ Skip ]
+external/wpt/css/css-page/page-size-001.xht [ Skip ]
+external/wpt/css/css-page/page-size-002.xht [ Skip ]
+external/wpt/css/css-page/page-size-003.xht [ Skip ]
+external/wpt/css/css-page/page-size-004.xht [ Skip ]
+external/wpt/css/css-page/page-size-005.xht [ Skip ]
+external/wpt/css/css-page/page-size-006.xht [ Skip ]
+external/wpt/css/css-page/page-size-007.xht [ Skip ]
+external/wpt/css/css-page/page-size-008.xht [ Skip ]
+external/wpt/css/css-page/page-size-009.xht [ Skip ]
+external/wpt/css/css-page/page-size-010.xht [ Skip ]
+external/wpt/css/css-page/page-size-011.xht [ Skip ]
+external/wpt/css/css-page/page-size-012.xht [ Skip ]

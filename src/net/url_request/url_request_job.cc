@@ -353,7 +353,7 @@ void URLRequestJob::NotifyHeadersComplete() {
   // The URLRequest status should still be IO_PENDING, which it was set to
   // before the URLRequestJob was started.  On error or cancellation, this
   // method should not be called.
-  DCHECK(request_->status().is_io_pending());
+  DCHECK_EQ(ERR_IO_PENDING, request_->status());
 
   // Initialize to the current time, and let the subclass optionally override
   // the time stamps if it has that information.  The default request_time is
@@ -377,9 +377,9 @@ void URLRequestJob::NotifyHeadersComplete() {
     // NotifyReceivedRedirect. This means the delegate can assume that, if it
     // accepts the redirect, future calls to OnResponseStarted correspond to
     // |redirect_info.new_url|.
-    int redirect_valid = CanFollowRedirect(new_location);
-    if (redirect_valid != OK) {
-      OnDone(URLRequestStatus::FromError(redirect_valid), true);
+    int redirect_check_result = CanFollowRedirect(new_location);
+    if (redirect_check_result != OK) {
+      OnDone(redirect_check_result, true /* notify_done */);
       return;
     }
 
@@ -401,7 +401,7 @@ void URLRequestJob::NotifyHeadersComplete() {
 
     // Ensure that the request wasn't detached, destroyed, or canceled in
     // NotifyReceivedRedirect.
-    if (!weak_this || !request_->status().is_success())
+    if (!weak_this || request_->failed())
       return;
 
     if (defer_redirect) {
@@ -437,18 +437,16 @@ void URLRequestJob::NotifyFinalHeadersReceived() {
   // While the request's status is normally updated in NotifyHeadersComplete(),
   // URLRequestHttpJob::CancelAuth() posts a task to invoke this method
   // directly, which bypasses that logic.
-  if (request_->status().is_io_pending())
-    request_->set_status(URLRequestStatus());
+  if (request_->status() == ERR_IO_PENDING)
+    request_->set_status(OK);
 
   has_handled_response_ = true;
-  if (request_->status().is_success()) {
+  if (request_->status() == OK) {
     DCHECK(!source_stream_);
     source_stream_ = SetUpSourceStream();
 
     if (!source_stream_) {
-      OnDone(URLRequestStatus(URLRequestStatus::FAILED,
-                              ERR_CONTENT_DECODING_INIT_FAILED),
-             true);
+      OnDone(ERR_CONTENT_DECODING_INIT_FAILED, true /* notify_done */);
       return;
     }
     if (source_stream_->type() == SourceStream::TYPE_NONE) {
@@ -468,7 +466,7 @@ void URLRequestJob::NotifyFinalHeadersReceived() {
     }
   }
 
-  request_->NotifyResponseStarted(URLRequestStatus());
+  request_->NotifyResponseStarted(OK);
   // |this| may be destroyed at this point.
 }
 
@@ -483,7 +481,7 @@ void URLRequestJob::ConvertResultToError(int result, Error* error, int* count) {
 }
 
 void URLRequestJob::ReadRawDataComplete(int result) {
-  DCHECK(request_->status().is_io_pending());
+  DCHECK_EQ(ERR_IO_PENDING, request_->status());
   DCHECK_NE(ERR_IO_PENDING, result);
 
   // The headers should be complete before reads complete
@@ -498,20 +496,21 @@ void URLRequestJob::ReadRawDataComplete(int result) {
   // |this| may be destroyed at this point.
 }
 
-void URLRequestJob::NotifyStartError(const URLRequestStatus &status) {
+void URLRequestJob::NotifyStartError(int net_error) {
   DCHECK(!has_handled_response_);
-  DCHECK(request_->status().is_io_pending());
+  DCHECK_EQ(ERR_IO_PENDING, request_->status());
 
   has_handled_response_ = true;
   // There may be relevant information in the response info even in the
   // error case.
   GetResponseInfo(&request_->response_info_);
 
-  request_->NotifyResponseStarted(status);
+  request_->NotifyResponseStarted(net_error);
   // |this| may have been deleted here.
 }
 
-void URLRequestJob::OnDone(const URLRequestStatus& status, bool notify_done) {
+void URLRequestJob::OnDone(int net_error, bool notify_done) {
+  DCHECK_NE(ERR_IO_PENDING, net_error);
   DCHECK(!done_) << "Job sending done notification twice";
   if (done_)
     return;
@@ -519,7 +518,7 @@ void URLRequestJob::OnDone(const URLRequestStatus& status, bool notify_done) {
 
   // Unless there was an error, we should have at least tried to handle
   // the response before getting here.
-  DCHECK(has_handled_response_ || !status.is_success());
+  DCHECK(has_handled_response_ || net_error != OK);
 
   request_->set_is_pending(false);
   // With async IO, it's quite possible to have a few outstanding
@@ -528,11 +527,12 @@ void URLRequestJob::OnDone(const URLRequestStatus& status, bool notify_done) {
   // an error, we do not change the status back to success.  To
   // enforce this, only set the status if the job is so far
   // successful.
-  if (request_->status().is_success()) {
-    if (status.status() == URLRequestStatus::FAILED)
+  if (!request_->failed()) {
+    if (net_error != net::OK && net_error != ERR_ABORTED) {
       request_->net_log().AddEventWithNetErrorCode(NetLogEventType::FAILED,
-                                                   status.error());
-    request_->set_status(status);
+                                                   net_error);
+    }
+    request_->set_status(net_error);
   }
 
   if (notify_done) {
@@ -547,7 +547,7 @@ void URLRequestJob::OnDone(const URLRequestStatus& status, bool notify_done) {
 void URLRequestJob::NotifyDone() {
   // Check if we should notify the URLRequest that we're done because of an
   // error.
-  if (!request_->status().is_success()) {
+  if (request_->failed()) {
     // We report the error differently depending on whether we've called
     // OnResponseStarted yet.
     if (has_handled_response_) {
@@ -555,15 +555,16 @@ void URLRequestJob::NotifyDone() {
       request_->NotifyReadCompleted(-1);
     } else {
       has_handled_response_ = true;
-      request_->NotifyResponseStarted(URLRequestStatus());
+      // Error code doesn't actually matter here, since the status has already
+      // been updated.
+      request_->NotifyResponseStarted(request_->status());
     }
   }
 }
 
 void URLRequestJob::NotifyCanceled() {
-  if (!done_) {
-    OnDone(URLRequestStatus(URLRequestStatus::CANCELED, ERR_ABORTED), true);
-  }
+  if (!done_)
+    OnDone(ERR_ABORTED, true /* notify_done */);
 }
 
 void URLRequestJob::OnCallToDelegate(NetLogEventType type) {
@@ -589,10 +590,6 @@ std::unique_ptr<SourceStream> URLRequestJob::SetUpSourceStream() {
   return std::make_unique<URLRequestJobSourceStream>(this);
 }
 
-const URLRequestStatus URLRequestJob::GetStatus() {
-  return request_->status();
-}
-
 void URLRequestJob::SetProxyServer(const ProxyServer& proxy_server) {
   request_->proxy_server_ = proxy_server;
 }
@@ -608,7 +605,7 @@ void URLRequestJob::SourceStreamReadComplete(bool synchronous, int result) {
   pending_read_buffer_ = nullptr;
 
   if (result < 0) {
-    OnDone(URLRequestStatus::FromError(result), !synchronous);
+    OnDone(result, !synchronous /* notify_done */);
     return;
   }
 
@@ -620,7 +617,7 @@ void URLRequestJob::SourceStreamReadComplete(bool synchronous, int result) {
     // In the synchronous case, the caller will notify the URLRequest of
     // completion. In the async case, the NotifyReadCompleted call will.
     // TODO(mmenke): Can this be combined with the error case?
-    OnDone(URLRequestStatus(), false);
+    OnDone(OK, false /* notify_done */);
   }
 
   if (!synchronous)

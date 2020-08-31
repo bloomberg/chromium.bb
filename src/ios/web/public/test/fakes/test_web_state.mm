@@ -18,6 +18,7 @@
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
+#import "ios/web/web_state/policy_decision_state_tracker.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -25,6 +26,12 @@
 #endif
 
 namespace web {
+namespace {
+// Function used to implement the default WebState getters.
+web::WebState* ReturnWeakReference(base::WeakPtr<TestWebState> weak_web_state) {
+  return weak_web_state.get();
+}
+}  // namespace
 
 void TestWebState::AddObserver(WebStateObserver* observer) {
   observers_.AddObserver(observer);
@@ -32,6 +39,10 @@ void TestWebState::AddObserver(WebStateObserver* observer) {
 
 void TestWebState::RemoveObserver(WebStateObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void TestWebState::CloseWebState() {
+  is_closed_ = true;
 }
 
 TestWebState::TestWebState()
@@ -43,6 +54,7 @@ TestWebState::TestWebState()
       is_evicted_(false),
       has_opener_(false),
       can_take_snapshot_(false),
+      is_closed_(false),
       trust_level_(kAbsolute),
       content_is_html_(true),
       web_view_proxy_(nil) {}
@@ -54,6 +66,14 @@ TestWebState::~TestWebState() {
     observer.WebStateDestroyed();
   for (auto& observer : policy_deciders_)
     observer.ResetWebState();
+}
+
+WebState::Getter TestWebState::CreateDefaultGetter() {
+  return base::BindRepeating(&ReturnWeakReference, weak_factory_.GetWeakPtr());
+}
+
+WebState::OnceGetter TestWebState::CreateDefaultOnceGetter() {
+  return base::BindOnce(&ReturnWeakReference, weak_factory_.GetWeakPtr());
 }
 
 WebStateDelegate* TestWebState::GetDelegate() {
@@ -292,6 +312,12 @@ void TestWebState::OnNavigationStarted(NavigationContext* navigation_context) {
     observer.DidStartNavigation(this, navigation_context);
 }
 
+void TestWebState::OnNavigationRedirected(
+    NavigationContext* navigation_context) {
+  for (auto& observer : observers_)
+    observer.DidRedirectNavigation(this, navigation_context);
+}
+
 void TestWebState::OnNavigationFinished(NavigationContext* navigation_context) {
   for (auto& observer : observers_)
     observer.DidFinishNavigation(this, navigation_context);
@@ -326,23 +352,41 @@ void TestWebState::OnWebFrameWillBecomeUnavailable(WebFrame* frame) {
   }
 }
 
-bool TestWebState::ShouldAllowRequest(
+WebStatePolicyDecider::PolicyDecision TestWebState::ShouldAllowRequest(
     NSURLRequest* request,
     const WebStatePolicyDecider::RequestInfo& request_info) {
   for (auto& policy_decider : policy_deciders_) {
-    if (!policy_decider.ShouldAllowRequest(request, request_info))
-      return false;
+    WebStatePolicyDecider::PolicyDecision result =
+        policy_decider.ShouldAllowRequest(request, request_info);
+    if (result.ShouldCancelNavigation()) {
+      return result;
+    }
   }
-  return true;
+  return WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
-bool TestWebState::ShouldAllowResponse(NSURLResponse* response,
-                                       bool for_main_frame) {
+void TestWebState::ShouldAllowResponse(
+    NSURLResponse* response,
+    bool for_main_frame,
+    base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)> callback) {
+  auto response_state_tracker =
+      std::make_unique<PolicyDecisionStateTracker>(std::move(callback));
+  PolicyDecisionStateTracker* response_state_tracker_ptr =
+      response_state_tracker.get();
+  auto policy_decider_callback = base::BindRepeating(
+      &PolicyDecisionStateTracker::OnSinglePolicyDecisionReceived,
+      base::Owned(std::move(response_state_tracker)));
+  int num_decisions_requested = 0;
   for (auto& policy_decider : policy_deciders_) {
-    if (!policy_decider.ShouldAllowResponse(response, for_main_frame))
-      return false;
+    policy_decider.ShouldAllowResponse(response, for_main_frame,
+                                       policy_decider_callback);
+    num_decisions_requested++;
+    if (response_state_tracker_ptr->DeterminedFinalResult())
+      break;
   }
-  return true;
+
+  response_state_tracker_ptr->FinishedRequestingDecisions(
+      num_decisions_requested);
 }
 
 base::string16 TestWebState::GetLastExecutedJavascript() const {
@@ -351,6 +395,10 @@ base::string16 TestWebState::GetLastExecutedJavascript() const {
 
 NSData* TestWebState::GetLastLoadedData() const {
   return last_loaded_data_;
+}
+
+bool TestWebState::IsClosed() const {
+  return is_closed_;
 }
 
 void TestWebState::SetCurrentURL(const GURL& url) {
@@ -383,6 +431,10 @@ void TestWebState::AddPolicyDecider(WebStatePolicyDecider* decider) {
 
 void TestWebState::RemovePolicyDecider(WebStatePolicyDecider* decider) {
   policy_deciders_.RemoveObserver(decider);
+}
+
+void TestWebState::DidChangeVisibleSecurityState() {
+  OnVisibleSecurityStateChanged();
 }
 
 bool TestWebState::HasOpener() const {

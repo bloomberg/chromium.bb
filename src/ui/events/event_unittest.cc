@@ -21,6 +21,7 @@
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/keyboard_layout.h"
 #include "ui/events/test/test_event_target.h"
+#include "ui/events/x/x11_event_translation.h"
 #include "ui/gfx/transform.h"
 
 #if defined(USE_X11)
@@ -44,8 +45,8 @@ TEST(EventTest, NativeEvent) {
 #elif defined(USE_X11)
   ScopedXI2Event event;
   event.InitKeyEvent(ET_KEY_RELEASED, VKEY_A, EF_NONE);
-  KeyEvent keyev(event);
-  EXPECT_TRUE(keyev.HasNativeEvent());
+  auto keyev = ui::BuildKeyEventFromXEvent(*event);
+  EXPECT_FALSE(keyev->HasNativeEvent());
 #endif
 }
 
@@ -63,12 +64,12 @@ TEST(EventTest, GetCharacter) {
   // For X11, test the functions with native_event() as well. crbug.com/107837
   ScopedXI2Event event;
   event.InitKeyEvent(ET_KEY_PRESSED, VKEY_RETURN, EF_CONTROL_DOWN);
-  KeyEvent keyev3(event);
-  EXPECT_EQ(10, keyev3.GetCharacter());
+  auto keyev3 = ui::BuildKeyEventFromXEvent(*event);
+  EXPECT_EQ(10, keyev3->GetCharacter());
 
   event.InitKeyEvent(ET_KEY_PRESSED, VKEY_RETURN, EF_NONE);
-  KeyEvent keyev4(event);
-  EXPECT_EQ(13, keyev4.GetCharacter());
+  auto keyev4 = ui::BuildKeyEventFromXEvent(*event);
+  EXPECT_EQ(13, keyev4->GetCharacter());
 #endif
 
   // Check if expected Unicode character was returned for a key combination
@@ -295,33 +296,33 @@ TEST(EventTest, NormalizeKeyEventFlags) {
   ScopedXI2Event event;
   {
     event.InitKeyEvent(ET_KEY_PRESSED, VKEY_SHIFT, EF_SHIFT_DOWN);
-    KeyEvent keyev(event);
-    EXPECT_EQ(EF_SHIFT_DOWN, keyev.flags());
+    auto keyev = ui::BuildKeyEventFromXEvent(*event);
+    EXPECT_EQ(EF_SHIFT_DOWN, keyev->flags());
   }
   {
     event.InitKeyEvent(ET_KEY_RELEASED, VKEY_SHIFT, EF_SHIFT_DOWN);
-    KeyEvent keyev(event);
-    EXPECT_EQ(EF_NONE, keyev.flags());
+    auto keyev = ui::BuildKeyEventFromXEvent(*event);
+    EXPECT_EQ(EF_NONE, keyev->flags());
   }
   {
     event.InitKeyEvent(ET_KEY_PRESSED, VKEY_CONTROL, EF_CONTROL_DOWN);
-    KeyEvent keyev(event);
-    EXPECT_EQ(EF_CONTROL_DOWN, keyev.flags());
+    auto keyev = ui::BuildKeyEventFromXEvent(*event);
+    EXPECT_EQ(EF_CONTROL_DOWN, keyev->flags());
   }
   {
     event.InitKeyEvent(ET_KEY_RELEASED, VKEY_CONTROL, EF_CONTROL_DOWN);
-    KeyEvent keyev(event);
-    EXPECT_EQ(EF_NONE, keyev.flags());
+    auto keyev = ui::BuildKeyEventFromXEvent(*event);
+    EXPECT_EQ(EF_NONE, keyev->flags());
   }
   {
     event.InitKeyEvent(ET_KEY_PRESSED, VKEY_MENU,  EF_ALT_DOWN);
-    KeyEvent keyev(event);
-    EXPECT_EQ(EF_ALT_DOWN, keyev.flags());
+    auto keyev = ui::BuildKeyEventFromXEvent(*event);
+    EXPECT_EQ(EF_ALT_DOWN, keyev->flags());
   }
   {
     event.InitKeyEvent(ET_KEY_RELEASED, VKEY_MENU, EF_ALT_DOWN);
-    KeyEvent keyev(event);
-    EXPECT_EQ(EF_NONE, keyev.flags());
+    auto keyev = ui::BuildKeyEventFromXEvent(*event);
+    EXPECT_EQ(EF_NONE, keyev->flags());
   }
 #endif
 
@@ -398,8 +399,8 @@ TEST(EventTest, KeyEventCode) {
     // KeyEvent converts from the native keycode (XKB) to the code.
     ScopedXI2Event xevent;
     xevent.InitKeyEvent(ET_KEY_PRESSED, VKEY_SPACE, kNativeCodeSpace);
-    KeyEvent key(xevent);
-    EXPECT_EQ(kCodeForSpace, key.GetCodeString());
+    auto keyev = ui::BuildKeyEventFromXEvent(*xevent);
+    EXPECT_EQ(kCodeForSpace, keyev->GetCodeString());
   }
 #endif  // USE_X11
 #if defined(OS_WIN)
@@ -477,77 +478,78 @@ TEST(EventTest, AutoRepeat) {
   SetKeyEventTimestamp(native_event_a_pressed_3000, ticks_base + 3000);
 
   {
-    KeyEvent key_a1(native_event_a_pressed);
-    EXPECT_FALSE(key_a1.is_repeat());
+    auto key_a1 = BuildKeyEventFromXEvent(*native_event_a_pressed);
+    EXPECT_FALSE(key_a1->is_repeat());
 
-    KeyEvent key_a1_released(native_event_a_released);
-    EXPECT_FALSE(key_a1_released.is_repeat());
+    auto key_a1_released = BuildKeyEventFromXEvent(*native_event_a_released);
+    EXPECT_FALSE(key_a1_released->is_repeat());
 
-    KeyEvent key_a2(native_event_a_pressed);
-    EXPECT_FALSE(key_a2.is_repeat());
+    auto key_a2 = BuildKeyEventFromXEvent(*native_event_a_pressed);
+    EXPECT_FALSE(key_a2->is_repeat());
 
     AdvanceKeyEventTimestamp(native_event_a_pressed);
-    KeyEvent key_a2_repeated(native_event_a_pressed);
-    EXPECT_TRUE(key_a2_repeated.is_repeat());
+    auto key_a2_repeated = BuildKeyEventFromXEvent(*native_event_a_pressed);
+    EXPECT_TRUE(key_a2_repeated->is_repeat());
 
-    KeyEvent key_a2_released(native_event_a_released);
-    EXPECT_FALSE(key_a2_released.is_repeat());
+    auto key_a2_released = BuildKeyEventFromXEvent(*native_event_a_released);
+    EXPECT_FALSE(key_a2_released->is_repeat());
   }
 
   // Interleaved with different key press.
   {
-    KeyEvent key_a3(native_event_a_pressed);
-    EXPECT_FALSE(key_a3.is_repeat());
+    auto key_a3 = BuildKeyEventFromXEvent(*native_event_a_pressed);
+    EXPECT_FALSE(key_a3->is_repeat());
 
-    KeyEvent key_b(native_event_b_pressed);
-    EXPECT_FALSE(key_b.is_repeat());
-
-    AdvanceKeyEventTimestamp(native_event_a_pressed);
-    KeyEvent key_a3_again(native_event_a_pressed);
-    EXPECT_FALSE(key_a3_again.is_repeat());
+    auto key_b = BuildKeyEventFromXEvent(*native_event_b_pressed);
+    EXPECT_FALSE(key_b->is_repeat());
 
     AdvanceKeyEventTimestamp(native_event_a_pressed);
-    KeyEvent key_a3_repeated(native_event_a_pressed);
-    EXPECT_TRUE(key_a3_repeated.is_repeat());
+    auto key_a3_again = BuildKeyEventFromXEvent(*native_event_a_pressed);
+    EXPECT_FALSE(key_a3_again->is_repeat());
 
     AdvanceKeyEventTimestamp(native_event_a_pressed);
-    KeyEvent key_a3_repeated2(native_event_a_pressed);
-    EXPECT_TRUE(key_a3_repeated2.is_repeat());
+    auto key_a3_repeated = BuildKeyEventFromXEvent(*native_event_a_pressed);
+    EXPECT_TRUE(key_a3_repeated->is_repeat());
 
-    KeyEvent key_a3_released(native_event_a_released);
-    EXPECT_FALSE(key_a3_released.is_repeat());
+    AdvanceKeyEventTimestamp(native_event_a_pressed);
+    auto key_a3_repeated2 = BuildKeyEventFromXEvent(*native_event_a_pressed);
+    EXPECT_TRUE(key_a3_repeated2->is_repeat());
+
+    auto key_a3_released = BuildKeyEventFromXEvent(*native_event_a_released);
+    EXPECT_FALSE(key_a3_released->is_repeat());
   }
 
   // Hold the key longer than max auto repeat timeout.
   {
-    KeyEvent key_a4_0(native_event_a_pressed);
-    EXPECT_FALSE(key_a4_0.is_repeat());
+    auto key_a4_0 = BuildKeyEventFromXEvent(*native_event_a_pressed);
+    EXPECT_FALSE(key_a4_0->is_repeat());
 
-    KeyEvent key_a4_1500(native_event_a_pressed_1500);
-    EXPECT_TRUE(key_a4_1500.is_repeat());
+    auto key_a4_1500 = BuildKeyEventFromXEvent(*native_event_a_pressed_1500);
+    EXPECT_TRUE(key_a4_1500->is_repeat());
 
-    KeyEvent key_a4_3000(native_event_a_pressed_3000);
-    EXPECT_TRUE(key_a4_3000.is_repeat());
+    auto key_a4_3000 = BuildKeyEventFromXEvent(*native_event_a_pressed_3000);
+    EXPECT_TRUE(key_a4_3000->is_repeat());
 
-    KeyEvent key_a4_released(native_event_a_released);
-    EXPECT_FALSE(key_a4_released.is_repeat());
+    auto key_a4_released = BuildKeyEventFromXEvent(*native_event_a_released);
+    EXPECT_FALSE(key_a4_released->is_repeat());
   }
 
   {
-    KeyEvent key_a4_pressed(native_event_a_pressed);
-    EXPECT_FALSE(key_a4_pressed.is_repeat());
+    auto key_a4_pressed = BuildKeyEventFromXEvent(*native_event_a_pressed);
+    EXPECT_FALSE(key_a4_pressed->is_repeat());
 
-    KeyEvent key_a4_pressed_nonstandard_state(
-        native_event_a_pressed_nonstandard_state);
-    EXPECT_FALSE(key_a4_pressed_nonstandard_state.is_repeat());
+    auto key_a4_pressed_nonstandard_state =
+        BuildKeyEventFromXEvent(*native_event_a_pressed_nonstandard_state);
+    EXPECT_FALSE(key_a4_pressed_nonstandard_state->is_repeat());
   }
 
   {
-    KeyEvent key_a1(native_event_a_pressed);
-    EXPECT_FALSE(key_a1.is_repeat());
+    auto key_a1 = BuildKeyEventFromXEvent(*native_event_a_pressed);
+    EXPECT_FALSE(key_a1->is_repeat());
 
-    KeyEvent key_a1_with_same_event(native_event_a_pressed);
-    EXPECT_FALSE(key_a1_with_same_event.is_repeat());
+    auto key_a1_with_same_event =
+        BuildKeyEventFromXEvent(*native_event_a_pressed);
+    EXPECT_FALSE(key_a1_with_same_event->is_repeat());
   }
 }
 #endif  // USE_X11
@@ -558,7 +560,7 @@ TEST(EventTest, TouchEventRadiusDefaultsToOtherAxis) {
   const float non_zero_length2 = 46;
 
   TouchEvent event1(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
-                    PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                    PointerDetails(ui::EventPointerType::kTouch,
                                    /* pointer_id*/ 0,
                                    /* radius_x */ non_zero_length1,
                                    /* radius_y */ 0.0f,
@@ -567,7 +569,7 @@ TEST(EventTest, TouchEventRadiusDefaultsToOtherAxis) {
   EXPECT_EQ(non_zero_length1, event1.pointer_details().radius_y);
 
   TouchEvent event2(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
-                    PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                    PointerDetails(ui::EventPointerType::kTouch,
                                    /* pointer_id*/ 0,
                                    /* radius_x */ 0.0f,
                                    /* radius_y */ non_zero_length2,
@@ -584,7 +586,7 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
   {
     const float angle_in_range = 0;
     TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
-                     PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                     PointerDetails(ui::EventPointerType::kTouch,
                                     /* pointer_id*/ 0, radius_x, radius_y,
                                     /* force */ 0, angle_in_range),
                      0);
@@ -594,7 +596,7 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
   {
     const float angle_in_range = 179.9f;
     TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
-                     PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                     PointerDetails(ui::EventPointerType::kTouch,
                                     /* pointer_id*/ 0, radius_x, radius_y,
                                     /* force */ 0, angle_in_range),
                      0);
@@ -604,7 +606,7 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
   {
     const float angle_negative = -0.1f;
     TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
-                     PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                     PointerDetails(ui::EventPointerType::kTouch,
                                     /* pointer_id*/ 0, radius_x, radius_y,
                                     /* force */ 0, angle_negative),
                      0);
@@ -614,7 +616,7 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
   {
     const float angle_negative = -200;
     TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
-                     PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                     PointerDetails(ui::EventPointerType::kTouch,
                                     /* pointer_id*/ 0, radius_x, radius_y,
                                     /* force */ 0, angle_negative),
                      0);
@@ -624,7 +626,7 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
   {
     const float angle_too_big = 180;
     TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
-                     PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                     PointerDetails(ui::EventPointerType::kTouch,
                                     /* pointer_id*/ 0, radius_x, radius_y,
                                     /* force */ 0, angle_too_big),
                      0);
@@ -634,7 +636,7 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
   {
     const float angle_too_big = 400;
     TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
-                     PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                     PointerDetails(ui::EventPointerType::kTouch,
                                     /* pointer_id*/ 0, radius_x, radius_y,
                                     /* force */ 0, angle_too_big),
                      0);
@@ -645,9 +647,9 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
 TEST(EventTest, PointerDetailsTouch) {
   ui::TouchEvent touch_event_plain(
       ET_TOUCH_PRESSED, gfx::Point(0, 0), ui::EventTimeForNow(),
-      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+      PointerDetails(ui::EventPointerType::kTouch, 0));
 
-  EXPECT_EQ(EventPointerType::POINTER_TYPE_TOUCH,
+  EXPECT_EQ(EventPointerType::kTouch,
             touch_event_plain.pointer_details().pointer_type);
   EXPECT_EQ(0.0f, touch_event_plain.pointer_details().radius_x);
   EXPECT_EQ(0.0f, touch_event_plain.pointer_details().radius_y);
@@ -657,13 +659,13 @@ TEST(EventTest, PointerDetailsTouch) {
 
   ui::TouchEvent touch_event_with_details(
       ET_TOUCH_PRESSED, gfx::Point(0, 0), ui::EventTimeForNow(),
-      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+      PointerDetails(ui::EventPointerType::kTouch,
                      /* pointer_id*/ 0,
                      /* radius_x */ 10.0f,
                      /* radius_y */ 5.0f,
                      /* force */ 15.0f));
 
-  EXPECT_EQ(EventPointerType::POINTER_TYPE_TOUCH,
+  EXPECT_EQ(EventPointerType::kTouch,
             touch_event_with_details.pointer_details().pointer_type);
   EXPECT_EQ(10.0f, touch_event_with_details.pointer_details().radius_x);
   EXPECT_EQ(5.0f, touch_event_with_details.pointer_details().radius_y);
@@ -680,7 +682,7 @@ TEST(EventTest, PointerDetailsMouse) {
   ui::MouseEvent mouse_event(ET_MOUSE_PRESSED, gfx::Point(0, 0),
                              gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
 
-  EXPECT_EQ(EventPointerType::POINTER_TYPE_MOUSE,
+  EXPECT_EQ(EventPointerType::kMouse,
             mouse_event.pointer_details().pointer_type);
   EXPECT_EQ(0.0f, mouse_event.pointer_details().radius_x);
   EXPECT_EQ(0.0f, mouse_event.pointer_details().radius_y);
@@ -693,7 +695,7 @@ TEST(EventTest, PointerDetailsMouse) {
 }
 
 TEST(EventTest, PointerDetailsStylus) {
-  ui::PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN,
+  ui::PointerDetails pointer_details(EventPointerType::kPen,
                                      /* pointer_id*/ 0,
                                      /* radius_x */ 0.0f,
                                      /* radius_y */ 0.0f,
@@ -706,7 +708,7 @@ TEST(EventTest, PointerDetailsStylus) {
   ui::MouseEvent stylus_event(ET_MOUSE_PRESSED, gfx::Point(0, 0),
                               gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0,
                               pointer_details);
-  EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
+  EXPECT_EQ(EventPointerType::kPen,
             stylus_event.pointer_details().pointer_type);
   EXPECT_EQ(21.0f, stylus_event.pointer_details().force);
   EXPECT_EQ(45.0f, stylus_event.pointer_details().tilt_x);
@@ -722,11 +724,11 @@ TEST(EventTest, PointerDetailsStylus) {
 }
 
 TEST(EventTest, PointerDetailsCustomTouch) {
-  ui::TouchEvent touch_event(
-      ET_TOUCH_PRESSED, gfx::Point(0, 0), ui::EventTimeForNow(),
-      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent touch_event(ET_TOUCH_PRESSED, gfx::Point(0, 0),
+                             ui::EventTimeForNow(),
+                             PointerDetails(ui::EventPointerType::kTouch, 0));
 
-  EXPECT_EQ(EventPointerType::POINTER_TYPE_TOUCH,
+  EXPECT_EQ(EventPointerType::kTouch,
             touch_event.pointer_details().pointer_type);
   EXPECT_EQ(0.0f, touch_event.pointer_details().radius_x);
   EXPECT_EQ(0.0f, touch_event.pointer_details().radius_y);
@@ -734,7 +736,7 @@ TEST(EventTest, PointerDetailsCustomTouch) {
   EXPECT_EQ(0.0f, touch_event.pointer_details().tilt_x);
   EXPECT_EQ(0.0f, touch_event.pointer_details().tilt_y);
 
-  ui::PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN,
+  ui::PointerDetails pointer_details(EventPointerType::kPen,
                                      /* pointer_id*/ 0,
                                      /* radius_x */ 5.0f,
                                      /* radius_y */ 6.0f,
@@ -745,8 +747,7 @@ TEST(EventTest, PointerDetailsCustomTouch) {
                                      /* tangential_pressure */ 0.7f);
   touch_event.SetPointerDetailsForTest(pointer_details);
 
-  EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
-            touch_event.pointer_details().pointer_type);
+  EXPECT_EQ(EventPointerType::kPen, touch_event.pointer_details().pointer_type);
   EXPECT_EQ(21.0f, touch_event.pointer_details().force);
   EXPECT_EQ(45.0f, touch_event.pointer_details().tilt_x);
   EXPECT_EQ(-45.0f, touch_event.pointer_details().tilt_y);
@@ -788,17 +789,14 @@ TEST(EventTest, EventLatencyOSTouchHistograms) {
   ui::SetUpTouchDevicesForTest(devices);
 
   // Init touch begin, update, and end events with tracking id 5, touch id 0.
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchBegin, 5, gfx::Point(10, 10), std::vector<Valuator>());
-  TouchEvent touch_begin(scoped_xevent);
+  scoped_xevent.InitTouchEvent(0, XI_TouchBegin, 5, gfx::Point(10, 10), {});
+  auto touch_begin = ui::BuildTouchEventFromXEvent(*scoped_xevent);
   histogram_tester.ExpectTotalCount("Event.Latency.OS.TOUCH_PRESSED", 1);
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchUpdate, 5, gfx::Point(20, 20), std::vector<Valuator>());
-  TouchEvent touch_update(scoped_xevent);
+  scoped_xevent.InitTouchEvent(0, XI_TouchUpdate, 5, gfx::Point(20, 20), {});
+  auto touch_update = ui::BuildTouchEventFromXEvent(*scoped_xevent);
   histogram_tester.ExpectTotalCount("Event.Latency.OS.TOUCH_MOVED", 1);
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchEnd, 5, gfx::Point(30, 30), std::vector<Valuator>());
-  TouchEvent touch_end(scoped_xevent);
+  scoped_xevent.InitTouchEvent(0, XI_TouchEnd, 5, gfx::Point(30, 30), {});
+  auto touch_end = ui::BuildTouchEventFromXEvent(*scoped_xevent);
   histogram_tester.ExpectTotalCount("Event.Latency.OS.TOUCH_RELEASED", 1);
 }
 #endif
@@ -820,8 +818,7 @@ TEST(EventTest, EventLatencyOSMouseWheelHistogram) {
   XButtonEvent* button_event = &(native_event.xbutton);
   button_event->type = ButtonPress;
   button_event->button = 4; // A valid wheel button number between min and max.
-  MouseWheelEvent mouse_ev(&native_event);
-
+  auto mouse_ev = ui::BuildMouseWheelEventFromXEvent(native_event);
   histogram_tester.ExpectTotalCount("Event.Latency.OS.MOUSE_WHEEL", 1);
 #endif
 }

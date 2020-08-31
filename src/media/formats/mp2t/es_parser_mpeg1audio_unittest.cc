@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "media/base/media_util.h"
@@ -39,9 +38,10 @@ bool EsParserMpeg1AudioTest::Process(
     const std::vector<Packet>& pes_packets,
     bool force_timing) {
   EsParserMpeg1Audio es_parser(
-      base::Bind(&EsParserMpeg1AudioTest::NewAudioConfig,
-                 base::Unretained(this)),
-      base::Bind(&EsParserMpeg1AudioTest::EmitBuffer, base::Unretained(this)),
+      base::BindRepeating(&EsParserMpeg1AudioTest::NewAudioConfig,
+                          base::Unretained(this)),
+      base::BindRepeating(&EsParserMpeg1AudioTest::EmitBuffer,
+                          base::Unretained(this)),
       &media_log_);
   return ProcessPesPackets(&es_parser, pes_packets, force_timing);
 }

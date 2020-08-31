@@ -25,23 +25,28 @@
 
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/core/css/css_font_face.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_segmented_font_face.h"
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
 #include "third_party/blink/renderer/core/css/font_face_set_load_event.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/css/resolver/font_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 
 namespace blink {
 
@@ -49,14 +54,17 @@ namespace blink {
 const char FontFaceSetDocument::kSupplementName[] = "FontFaceSetDocument";
 
 FontFaceSetDocument::FontFaceSetDocument(Document& document)
-    : FontFaceSet(document), Supplement<Document>(document) {
-}
+    : FontFaceSet(*document.GetExecutionContext()),
+      Supplement<Document>(document),
+      lcp_limit_timer_(document.GetTaskRunner(TaskType::kInternalLoading),
+                       this,
+                       &FontFaceSetDocument::LCPLimitReached) {}
 
 FontFaceSetDocument::~FontFaceSetDocument() = default;
 
 bool FontFaceSetDocument::InActiveContext() const {
   ExecutionContext* context = GetExecutionContext();
-  return context && To<Document>(context)->IsActive();
+  return context && To<LocalDOMWindow>(context)->document()->IsActive();
 }
 
 
@@ -67,25 +75,42 @@ AtomicString FontFaceSetDocument::status() const {
 }
 
 void FontFaceSetDocument::DidLayout() {
+  if (!GetExecutionContext())
+    return;
   if (GetDocument()->GetFrame()->IsMainFrame() && loading_fonts_.IsEmpty())
-    histogram_.Record();
+    font_load_histogram_.Record();
   if (!ShouldSignalReady())
     return;
   HandlePendingEventsAndPromisesSoon();
 }
 
+void FontFaceSetDocument::StartLCPLimitTimerIfNeeded() {
+  // Make sure the timer is started at most once for each document, and only
+  // when the feature is enabled
+  if (!base::FeatureList::IsEnabled(
+          features::kAlignFontDisplayAutoTimeoutWithLCPGoal) ||
+      has_reached_lcp_limit_ || lcp_limit_timer_.IsActive() ||
+      !GetDocument()->Loader()) {
+    return;
+  }
+
+  lcp_limit_timer_.StartOneShot(
+      GetDocument()->Loader()->RemainingTimeToLCPLimit(), FROM_HERE);
+}
+
 void FontFaceSetDocument::BeginFontLoading(FontFace* font_face) {
   AddToLoadingFonts(font_face);
+  StartLCPLimitTimerIfNeeded();
 }
 
 void FontFaceSetDocument::NotifyLoaded(FontFace* font_face) {
-  histogram_.UpdateStatus(font_face);
+  font_load_histogram_.UpdateStatus(font_face);
   loaded_fonts_.push_back(font_face);
   RemoveFromLoadingFonts(font_face);
 }
 
 void FontFaceSetDocument::NotifyError(FontFace* font_face) {
-  histogram_.UpdateStatus(font_face);
+  font_load_histogram_.UpdateStatus(font_face);
   failed_fonts_.push_back(font_face);
   RemoveFromLoadingFonts(font_face);
 }
@@ -103,7 +128,7 @@ ScriptPromise FontFaceSetDocument::ready(ScriptState* script_state) {
     // changes and/or layout operations that may cause another font loads.
     // So synchronously update style and layout here.
     // This may trigger font loads, and replace |ready_| with a new Promise.
-    GetDocument()->UpdateStyleAndLayout();
+    GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
   }
   return ready_->Promise(script_state->World());
 }
@@ -149,15 +174,14 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
     return false;
 
   String font_value = parsed_style->GetPropertyValue(CSSPropertyID::kFont);
-  if (font_value == "inherit" || font_value == "initial")
+  if (css_property_parser_helpers::IsCSSWideKeyword(font_value))
     return false;
 
   if (!GetDocument()->documentElement()) {
     auto* font_selector = GetDocument()->GetStyleEngine().GetFontSelector();
     FontDescription description =
         FontStyleResolver::ComputeFont(*parsed_style, font_selector);
-    font = Font(description);
-    font.Update(font_selector);
+    font = Font(description, font_selector);
     return true;
   }
 
@@ -173,15 +197,23 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
 
   style->SetFontDescription(default_font_description);
 
-  style->GetFont().Update(style->GetFont().GetFontSelector());
-
   GetDocument()->UpdateActiveStyle();
   GetDocument()->EnsureStyleResolver().ComputeFont(
       *GetDocument()->documentElement(), style.get(), *parsed_style);
 
   font = style->GetFont();
-  font.Update(GetFontSelector());
+
+  // StyleResolver::ComputeFont() should have set the document's FontSelector
+  // to |style|.
+  DCHECK_EQ(font.GetFontSelector(), GetFontSelector());
+
   return true;
+}
+
+Document* FontFaceSetDocument::GetDocument() const {
+  if (auto* window = To<LocalDOMWindow>(GetExecutionContext()))
+    return window->document();
+  return nullptr;
 }
 
 FontFaceSetDocument* FontFaceSetDocument::From(Document& document) {
@@ -208,7 +240,33 @@ size_t FontFaceSetDocument::ApproximateBlankCharacterCount(Document& document) {
   return 0;
 }
 
-void FontFaceSetDocument::Trace(blink::Visitor* visitor) {
+void FontFaceSetDocument::AlignTimeoutWithLCPGoal(FontFace* font_face) {
+  bool is_loading = font_face->LoadStatus() == FontFace::kLoading;
+  bool affected = font_face->CssFontFace()->UpdatePeriod();
+  // We only count loading font faces, so that unused fonts are excluded. This
+  // is especially useful when the page uses a font library, where most of the
+  // fonts are unused.
+  if (is_loading && font_face->display() == "auto") {
+    font_display_auto_align_histogram_.SetHasFontDisplayAuto();
+    if (affected)
+      font_display_auto_align_histogram_.CountAffected();
+  }
+}
+
+void FontFaceSetDocument::LCPLimitReached(TimerBase*) {
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kAlignFontDisplayAutoTimeoutWithLCPGoal));
+  if (!GetDocument() || !GetDocument()->IsActive())
+    return;
+  has_reached_lcp_limit_ = true;
+  for (FontFace* font_face : CSSConnectedFontFaceList())
+    AlignTimeoutWithLCPGoal(font_face);
+  for (FontFace* font_face : non_css_connected_faces_)
+    AlignTimeoutWithLCPGoal(font_face);
+  font_display_auto_align_histogram_.Record();
+}
+
+void FontFaceSetDocument::Trace(Visitor* visitor) {
   Supplement<Document>::Trace(visitor);
   FontFaceSet::Trace(visitor);
 }
@@ -224,11 +282,22 @@ void FontFaceSetDocument::FontLoadHistogram::UpdateStatus(FontFace* font_face) {
 
 void FontFaceSetDocument::FontLoadHistogram::Record() {
   if (status_ == kHadBlankText || status_ == kDidNotHaveBlankText) {
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, had_blank_text_histogram,
-                        ("WebFont.HadBlankText", 2));
-    had_blank_text_histogram.Count(status_ == kHadBlankText ? 1 : 0);
+    base::UmaHistogramBoolean("WebFont.HadBlankText", status_ == kHadBlankText);
     status_ = kReported;
   }
+}
+
+void FontFaceSetDocument::FontDisplayAutoAlignHistogram::Record() {
+  if (!base::FeatureList::IsEnabled(
+          features::kAlignFontDisplayAutoTimeoutWithLCPGoal)) {
+    return;
+  }
+  if (!has_font_display_auto_ || reported_)
+    return;
+  base::UmaHistogramCounts100(
+      "WebFont.Clients.AlignFontDisplayAuto.FontFacesAffected",
+      affected_count_);
+  reported_ = true;
 }
 
 }  // namespace blink

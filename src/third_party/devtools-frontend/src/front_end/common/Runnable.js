@@ -7,17 +7,9 @@
  */
 export class Runnable {
   /**
-   * @return {!Promise}
+   * @return {!Promise.<void>}
    */
   run() {
+    throw new Error('not implemented');
   }
 }
-
-/* Legacy exported object */
-self.Common = self.Common || {};
-Common = Common || {};
-
-/**
- * @interface
- */
-Common.Runnable = Runnable;

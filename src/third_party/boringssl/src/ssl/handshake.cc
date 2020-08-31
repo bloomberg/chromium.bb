@@ -471,6 +471,13 @@ enum ssl_hs_wait_t ssl_get_finished(SSL_HANDSHAKE *hs) {
     ssl->s3->previous_server_finished_len = finished_len;
   }
 
+  // The Finished message should be the end of a flight.
+  if (ssl->method->has_unprocessed_handshake_data(ssl)) {
+    ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_UNEXPECTED_MESSAGE);
+    OPENSSL_PUT_ERROR(SSL, SSL_R_EXCESS_HANDSHAKE_DATA);
+    return ssl_hs_error;
+  }
+
   ssl->method->next_message(ssl);
   return ssl_hs_ok;
 }
@@ -621,10 +628,15 @@ int ssl_run_handshake(SSL_HANDSHAKE *hs, bool *out_early_return) {
         hs->wait = ssl_hs_ok;
         return -1;
 
-      case ssl_hs_handback:
+      case ssl_hs_handback: {
+        int ret = ssl->method->flush_flight(ssl);
+        if (ret <= 0) {
+          return ret;
+        }
         ssl->s3->rwstate = SSL_ERROR_HANDBACK;
         hs->wait = ssl_hs_handback;
         return -1;
+      }
 
       case ssl_hs_x509_lookup:
         ssl->s3->rwstate = SSL_ERROR_WANT_X509_LOOKUP;
@@ -658,9 +670,8 @@ int ssl_run_handshake(SSL_HANDSHAKE *hs, bool *out_early_return) {
 
       case ssl_hs_early_data_rejected:
         assert(ssl->s3->early_data_reason != ssl_early_data_unknown);
+        assert(!hs->can_early_write);
         ssl->s3->rwstate = SSL_ERROR_EARLY_DATA_REJECTED;
-        // Cause |SSL_write| to start failing immediately.
-        hs->can_early_write = false;
         return -1;
 
       case ssl_hs_early_return:

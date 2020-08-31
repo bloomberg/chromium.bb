@@ -5,6 +5,7 @@
 #define UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_ANIMATION_OBSERVER_HELPER_H_
 
 #include <algorithm>
+#include <vector>
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -86,17 +87,17 @@ class TestInkDropAnimationObserverHelper {
   testing::AssertionResult AnimationHasNotStarted() {
     if (last_animation_started_ordinal() < 0)
       return testing::AssertionSuccess();
-    return testing::AssertionFailure() << "Animations were started at ordinal="
-                                       << last_animation_started_ordinal()
-                                       << ".";
+    return testing::AssertionFailure()
+           << "Animations were started at ordinal="
+           << last_animation_started_ordinal() << ".";
   }
 
   // Passes *_TRUE assertions when an AnimationEnded() event has been observed.
   testing::AssertionResult AnimationHasEnded() {
     if (last_animation_ended_ordinal() > 0) {
-      return testing::AssertionSuccess() << "Animations were ended at ordinal="
-                                         << last_animation_ended_ordinal()
-                                         << ".";
+      return testing::AssertionSuccess()
+             << "Animations were ended at ordinal="
+             << last_animation_ended_ordinal() << ".";
     }
     return testing::AssertionFailure() << "Animations have not ended.";
   }

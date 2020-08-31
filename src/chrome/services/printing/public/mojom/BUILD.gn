@@ -13,6 +13,7 @@ mojom("mojom") {
   ]
 
   deps = [
+    "//printing/mojom",
     "//ui/gfx/geometry/mojom",
   ]
 

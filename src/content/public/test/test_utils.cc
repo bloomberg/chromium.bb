@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager.h"
@@ -24,7 +25,6 @@
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/common/url_schemes.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -39,7 +39,6 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_launcher.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
@@ -80,6 +79,12 @@ class TaskObserver : public base::TaskObserver {
   void WillProcessTask(const base::PendingTask& pending_task,
                        bool was_blocked_or_low_priority) override {}
   void DidProcessTask(const base::PendingTask& pending_task) override {
+    if (base::EndsWith(pending_task.posted_from.file_name(), "base/run_loop.cc",
+                       base::CompareCase::SENSITIVE)) {
+      // Don't consider RunLoop internal tasks (i.e. QuitClosure() reposted by
+      // ProxyToTaskRunner() or RunLoop timeouts) as actual work.
+      return;
+    }
     processed_ = true;
   }
 
@@ -149,9 +154,15 @@ void RunAllTasksUntilIdle() {
     TaskObserver task_observer;
     base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer);
 
-    base::RunLoop run_loop;
+    // This must use RunLoop::Type::kNestableTasksAllowed in case this
+    // RunAllTasksUntilIdle() call is nested inside an existing Run(). Without
+    // it, the QuitWhenIdleClosure() below would never run if it's posted from
+    // another thread (i.e.. by run_loop.cc's ProxyToTaskRunner).
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+
     base::ThreadPoolInstance::Get()->FlushAsyncForTesting(
         run_loop.QuitWhenIdleClosure());
+
     run_loop.Run();
 
     base::MessageLoopCurrent::Get()->RemoveTaskObserver(&task_observer);
@@ -199,11 +210,6 @@ void IsolateAllSitesForTesting(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kSitePerProcess);
 }
 
-void ResetSchemesAndOriginsWhitelist() {
-  url::ResetForTests();
-  RegisterContentSchemes(false);
-}
-
 GURL GetWebUIURL(const std::string& host) {
   return GURL(GetWebUIURLString(host));
 }
@@ -230,6 +236,39 @@ WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh) {
                                          false /* is_full_page */);
 
   return inner_contents;
+}
+
+void AwaitDocumentOnLoadCompleted(WebContents* web_contents) {
+  class Awaiter : public WebContentsObserver {
+   public:
+    explicit Awaiter(content::WebContents* web_contents)
+        : content::WebContentsObserver(web_contents),
+          observed_(web_contents->IsDocumentOnLoadCompletedInMainFrame()) {}
+
+    Awaiter(const Awaiter&) = delete;
+    Awaiter& operator=(const Awaiter&) = delete;
+
+    ~Awaiter() override = default;
+
+    void Await() {
+      if (!observed_)
+        run_loop_.Run();
+      DCHECK(web_contents()->IsDocumentOnLoadCompletedInMainFrame());
+    }
+
+    // WebContentsObserver:
+    void DocumentOnLoadCompletedInMainFrame() override {
+      observed_ = true;
+      if (run_loop_.running())
+        run_loop_.Quit();
+    }
+
+   private:
+    bool observed_ = false;
+    base::RunLoop run_loop_;
+  };
+
+  Awaiter(web_contents).Await();
 }
 
 MessageLoopRunner::MessageLoopRunner(QuitMode quit_mode)
@@ -323,8 +362,7 @@ void WindowedNotificationObserver::Observe(int type,
   run_loop_.Quit();
 }
 
-InProcessUtilityThreadHelper::InProcessUtilityThreadHelper()
-    : shell_context_(new TestServiceManagerContext) {
+InProcessUtilityThreadHelper::InProcessUtilityThreadHelper() {
   RenderProcessHost::SetRunRendererInProcess(true);
 }
 
@@ -334,30 +372,29 @@ InProcessUtilityThreadHelper::~InProcessUtilityThreadHelper() {
 }
 
 void InProcessUtilityThreadHelper::JoinAllUtilityThreads() {
-  base::RunLoop run_loop;
-  quit_closure_ = run_loop.QuitClosure();
-
+  ASSERT_FALSE(run_loop_);
+  run_loop_.emplace();
   BrowserChildProcessObserver::Add(this);
   CheckHasRunningChildProcess();
-  run_loop.Run();
+  run_loop_->Run();
+  run_loop_.reset();
   BrowserChildProcessObserver::Remove(this);
 }
 
 void InProcessUtilityThreadHelper::CheckHasRunningChildProcess() {
+  ASSERT_TRUE(run_loop_);
+
   auto check_has_running_child_process_on_io =
-      [](base::WeakPtr<InProcessUtilityThreadHelper> weak_ptr,
-         base::OnceClosure* quit_closure) {
+      [](base::OnceClosure quit_closure) {
         BrowserChildProcessHostIterator it;
         // If not Done(), we have some running child processes and need to wait.
-        // The |quit_closure| is valid while |weak_ptr| is alive.
-        if (it.Done() && weak_ptr)
-          std::move(*quit_closure).Run();
+        if (it.Done())
+          std::move(quit_closure).Run();
       };
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(check_has_running_child_process_on_io,
-                     weak_ptr_factory_.GetWeakPtr(), &quit_closure_));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(check_has_running_child_process_on_io,
+                                run_loop_->QuitClosure()));
 }
 
 void InProcessUtilityThreadHelper::BrowserChildProcessHostDisconnected(
@@ -411,6 +448,7 @@ void WebContentsDestroyedWatcher::Wait() {
 }
 
 void WebContentsDestroyedWatcher::WebContentsDestroyed() {
+  destroyed_ = true;
   run_loop_.Quit();
 }
 

@@ -15,12 +15,6 @@ void CallIgnoringContext(base::OnceCallback<void()> callback,
   std::move(callback).Run();
 }
 
-// void Intercept(base::OnceCallback<void(UserAction::Callback, const
-// TriggerContext&)> interceptor, UserAction::Callback original,
-// std::unique_ptr<TriggerContext>) {
-//   std::move(interceptor).Run(std::move(original), context);
-// }
-
 }  // namespace
 
 UserAction::UserAction(UserAction&& other) = default;
@@ -30,11 +24,19 @@ UserAction& UserAction::operator=(UserAction&& other) = default;
 
 // Initializes user action from proto.
 UserAction::UserAction(const UserActionProto& action)
-    : chip_(action.chip()), direct_action_(action.direct_action()) {}
+    : chip_(action.chip()),
+      direct_action_(action.direct_action()),
+      enabled_(action.enabled()),
+      identifier_(action.identifier()) {}
 
 UserAction::UserAction(const ChipProto& chip_proto,
-                       const DirectActionProto& direct_action_proto)
-    : chip_(chip_proto), direct_action_(direct_action_proto) {}
+                       const DirectActionProto& direct_action_proto,
+                       bool enabled,
+                       const std::string& identifier)
+    : chip_(chip_proto),
+      direct_action_(direct_action_proto),
+      enabled_(enabled),
+      identifier_(identifier) {}
 
 void UserAction::SetCallback(base::OnceCallback<void()> callback) {
   callback_ = base::BindOnce(&CallIgnoringContext, std::move(callback));

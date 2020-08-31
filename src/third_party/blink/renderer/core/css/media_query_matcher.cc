@@ -71,8 +71,10 @@ MediaQueryList* MediaQueryMatcher::MatchMedia(const String& query) {
   if (!document_)
     return nullptr;
 
-  scoped_refptr<MediaQuerySet> media = MediaQuerySet::Create(query);
-  return MakeGarbageCollected<MediaQueryList>(document_, this, media);
+  scoped_refptr<MediaQuerySet> media =
+      MediaQuerySet::Create(query, document_->GetExecutionContext());
+  return MakeGarbageCollected<MediaQueryList>(document_->GetExecutionContext(),
+                                              this, media);
 }
 
 void MediaQueryMatcher::AddMediaQueryList(MediaQueryList* query) {
@@ -126,7 +128,7 @@ void MediaQueryMatcher::ViewportChanged() {
   document_->EnqueueMediaQueryChangeListeners(listeners_to_notify);
 }
 
-void MediaQueryMatcher::Trace(blink::Visitor* visitor) {
+void MediaQueryMatcher::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(evaluator_);
   visitor->Trace(media_lists_);

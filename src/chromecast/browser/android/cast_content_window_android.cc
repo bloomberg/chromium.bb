@@ -35,6 +35,38 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaWindow(
       ConvertUTF8ToJavaString(env, session_id));
 }
 
+constexpr char kContextInteractionId[] = "interactionId";
+constexpr char kContextConversationId[] = "conversationId";
+
+// Wraps the JNI gesture consumption handled callback for invocation from C++.
+class GestureConsumedCallbackWrapper {
+ public:
+  GestureConsumedCallbackWrapper(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& callback)
+      : env_(env), callback_(callback) {
+    class_ = base::android::ScopedJavaLocalRef<jclass>(
+        base::android::GetClass(env_,
+                                "org.chromium.chromecast.shell."
+                                "CastWebComponent.GestureHandledCallback"));
+    callback_method_id_ =
+        base::android::MethodID::Get<base::android::MethodID::TYPE_INSTANCE>(
+            env_, class_.obj(), "invoke", "(Z;)V");
+  }
+
+  void Invoke(bool handled) {
+    env_->CallObjectMethod(callback_.obj(), callback_method_id_, &handled);
+  }
+
+ private:
+  JNIEnv* env_;
+  const base::android::JavaParamRef<jobject>& callback_;
+  base::android::ScopedJavaLocalRef<jclass> class_;
+  jmethodID callback_method_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(GestureConsumedCallbackWrapper);
+};
+
 }  // namespace
 
 CastContentWindowAndroid::CastContentWindowAndroid(
@@ -68,11 +100,13 @@ void CastContentWindowAndroid::CreateWindowForWebContents(
 }
 
 void CastContentWindowAndroid::GrantScreenAccess() {
-  NOTIMPLEMENTED();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CastContentWindowAndroid_grantScreenAccess(env, java_window_);
 }
 
 void CastContentWindowAndroid::RevokeScreenAccess() {
-  NOTIMPLEMENTED();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CastContentWindowAndroid_revokeScreenAccess(env, java_window_);
 }
 
 void CastContentWindowAndroid::EnableTouchInput(bool enabled) {
@@ -99,7 +133,20 @@ void CastContentWindowAndroid::RequestVisibility(
 void CastContentWindowAndroid::SetActivityContext(
     base::Value activity_context) {}
 
-void CastContentWindowAndroid::SetHostContext(base::Value host_context) {}
+void CastContentWindowAndroid::SetHostContext(base::Value host_context) {
+  auto* found_interaction_id = host_context.FindKey(kContextInteractionId);
+  auto* found_conversation_id = host_context.FindKey(kContextConversationId);
+  if (found_interaction_id && found_conversation_id) {
+    int interaction_id = found_interaction_id->GetInt();
+    std::string& conversation_id = found_conversation_id->GetString();
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_CastContentWindowAndroid_setHostContext(
+        env, java_window_, static_cast<int>(interaction_id),
+        ConvertUTF8ToJavaString(env, conversation_id));
+  } else {
+    LOG(ERROR) << "Interaction ID or Conversation ID is not found";
+  }
+}
 
 void CastContentWindowAndroid::NotifyVisibilityChange(
     VisibilityType visibility_type) {
@@ -116,14 +163,20 @@ void CastContentWindowAndroid::RequestMoveOut() {
   Java_CastContentWindowAndroid_requestMoveOut(env, java_window_);
 }
 
-bool CastContentWindowAndroid::ConsumeGesture(
+void CastContentWindowAndroid::ConsumeGesture(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
-    int gesture_type) {
+    int gesture_type,
+    const base::android::JavaParamRef<jobject>& callback) {
+  GestureConsumedCallbackWrapper wrapper(env, callback);
   if (delegate_) {
-    return delegate_->ConsumeGesture(static_cast<GestureType>(gesture_type));
+    delegate_->ConsumeGesture(
+        static_cast<GestureType>(gesture_type),
+        base::BindOnce(&GestureConsumedCallbackWrapper::Invoke,
+                       base::Unretained(&wrapper)));
+    return;
   }
-  return false;
+  wrapper.Invoke(false);
 }
 
 void CastContentWindowAndroid::OnVisibilityChange(

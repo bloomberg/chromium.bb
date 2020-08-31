@@ -15,6 +15,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -302,8 +303,8 @@ void AppInstallEventLogger::EvaluatePolicy(const policy::PolicyMap& policy,
 void AppInstallEventLogger::AddForSetOfPackagesWithDiskSpaceInfo(
     const std::set<std::string>& packages,
     std::unique_ptr<em::AppInstallReportLogEvent> event) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&AddDiskSpaceInfoToEvent, std::move(event)),
       base::BindOnce(&AppInstallEventLogger::AddForSetOfPackages,
                      weak_factory_.GetWeakPtr(), packages));
@@ -312,6 +313,19 @@ void AppInstallEventLogger::AddForSetOfPackagesWithDiskSpaceInfo(
 void AppInstallEventLogger::AddForSetOfPackages(
     const std::set<std::string>& packages,
     std::unique_ptr<em::AppInstallReportLogEvent> event) {
+  delegate_->GetAndroidId(base::BindOnce(&AppInstallEventLogger::OnGetAndroidId,
+                                         weak_factory_.GetWeakPtr(), packages,
+                                         std::move(event)));
+}
+
+void AppInstallEventLogger::OnGetAndroidId(
+    const std::set<std::string>& packages,
+    std::unique_ptr<em::AppInstallReportLogEvent> event,
+    bool ok,
+    int64_t android_id) {
+  if (ok) {
+    event->set_android_id(android_id);
+  }
   delegate_->Add(packages, *event);
 }
 

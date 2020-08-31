@@ -19,6 +19,7 @@
 #include "src/core/SkMathPriv.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrImageInfo.h"
+#include "src/gpu/GrSurfaceContext.h"
 #include "tests/Test.h"
 #include "tests/TestUtils.h"
 #include "tools/ToolUtils.h"
@@ -426,9 +427,12 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ReadPixels_Texture, reporter, ctxInfo) {
         for (auto renderable : {GrRenderable::kNo, GrRenderable::kYes}) {
             sk_sp<GrTextureProxy> proxy = sk_gpu_test::MakeTextureProxyFromData(
                     context, renderable, origin, bmp.info(), bmp.getPixels(), bmp.rowBytes());
-            auto sContext = context->priv().makeWrappedSurfaceContext(
-                    std::move(proxy), SkColorTypeToGrColorType(bmp.colorType()),
-                    kPremul_SkAlphaType);
+            GrColorType grColorType = SkColorTypeToGrColorType(bmp.colorType());
+            GrSwizzle swizzle = context->priv().caps()->getReadSwizzle(proxy->backendFormat(),
+                                                                       grColorType);
+            GrSurfaceProxyView view(std::move(proxy), origin, swizzle);
+            auto sContext = GrSurfaceContext::Make(context, std::move(view),
+                    grColorType, kPremul_SkAlphaType, nullptr);
             auto info = SkImageInfo::Make(DEV_W, DEV_H, kN32_SkColorType, kPremul_SkAlphaType);
             test_readpixels_texture(reporter, std::move(sContext), info);
         }
@@ -589,6 +593,8 @@ static constexpr int min_rgb_channel_bits(SkColorType ct) {
         case kBGRA_8888_SkColorType:          return 8;
         case kRGBA_1010102_SkColorType:       return 10;
         case kRGB_101010x_SkColorType:        return 10;
+        case kBGRA_1010102_SkColorType:       return 10;
+        case kBGR_101010x_SkColorType:        return 10;
         case kGray_8_SkColorType:             return 8;   // counting gray as "rgb"
         case kRGBA_F16Norm_SkColorType:       return 10;  // just counting the mantissa
         case kRGBA_F16_SkColorType:           return 10;  // just counting the mantissa
@@ -614,6 +620,8 @@ static constexpr int alpha_channel_bits(SkColorType ct) {
         case kBGRA_8888_SkColorType:          return 8;
         case kRGBA_1010102_SkColorType:       return 2;
         case kRGB_101010x_SkColorType:        return 0;
+        case kBGRA_1010102_SkColorType:       return 2;
+        case kBGR_101010x_SkColorType:        return 0;
         case kGray_8_SkColorType:             return 0;
         case kRGBA_F16Norm_SkColorType:       return 10;  // just counting the mantissa
         case kRGBA_F16_SkColorType:           return 10;  // just counting the mantissa
@@ -690,8 +698,8 @@ static void gpu_read_pixels_test_driver(skiatest::Reporter* reporter,
         } else if (!rules.fAllowUnpremulRead && readAT == kUnpremul_SkAlphaType) {
             REPORTER_ASSERT(reporter, !success);
         } else if (!success) {
-            // TODO: Support kRGB_101010x at all in GPU.
-            if (readCT != kRGB_101010x_SkColorType) {
+            // TODO: Support RGB/BGR 101010x, BGRA 1010102 on the GPU.
+            if (SkColorTypeToGrColorType(readCT) != GrColorType::kUnknown) {
                 ERRORF(reporter,
                        "Read failed. Src CT: %s, Src AT: %s Read CT: %s, Read AT: %s, "
                        "Rect [%d, %d, %d, %d], CS conversion: %d\n",
@@ -712,8 +720,8 @@ static void gpu_read_pixels_test_driver(skiatest::Reporter* reporter,
             SkIRect dstWriteRect = srcReadRect.makeOffset(-rect.fLeft, -rect.fTop);
 
             const bool lumConversion =
-                    !(SkColorTypeComponentFlags(srcCT)  & kGray_SkColorTypeComponentFlag) &&
-                     (SkColorTypeComponentFlags(readCT) & kGray_SkColorTypeComponentFlag);
+                    !(SkColorTypeChannelFlags(srcCT)  & kGray_SkColorChannelFlag) &&
+                     (SkColorTypeChannelFlags(readCT) & kGray_SkColorChannelFlag);
             // A CS or luminance conversion allows a 3 value difference and otherwise a 2 value
             // difference. Note that sometimes read back on GPU can be lossy even when there no
             // conversion at allbecause GPU->CPU read may go to a lower bit depth format and then be
@@ -782,7 +790,7 @@ static void gpu_read_pixels_test_driver(skiatest::Reporter* reporter,
     static constexpr int kH = 16;
 
     // Makes the reference data that is used to populate the src. Always F32 regardless of srcCT.
-    auto make_ref_f32_data = [](SkAlphaType srcAT, SkColorType srcCT) {
+    auto make_ref_f32_data = [](SkAlphaType srcAT, SkColorType srcCT) -> SkAutoPixmapStorage {
         // Make src data in F32 with srcAT. We will convert it to each color type we test to
         // initialize the src.
         const auto refInfo =
@@ -808,7 +816,8 @@ static void gpu_read_pixels_test_driver(skiatest::Reporter* reporter,
         // We could but 1010102 premul is kind of dubious anyway. So for now just keep the data
         // opaque.
         if (srcAT != kOpaque_SkAlphaType &&
-            (srcAT == kPremul_SkAlphaType && srcCT != kRGBA_1010102_SkColorType)) {
+            (srcAT == kPremul_SkAlphaType && srcCT != kRGBA_1010102_SkColorType
+                                          && srcCT != kBGRA_1010102_SkColorType)) {
             static constexpr SkColor kColors3[] = {SK_ColorWHITE,
                                                    SK_ColorWHITE,
                                                    0x60FFFFFF,
@@ -825,7 +834,7 @@ static void gpu_read_pixels_test_driver(skiatest::Reporter* reporter,
         SkAutoPixmapStorage srcPixels;
         srcPixels.alloc(srcInfo);
         refSurf->readPixels(srcPixels, 0, 0);
-        return std::move(srcPixels);
+        return srcPixels;
     };
 
     for (int sat = 0; sat < kLastEnum_SkAlphaType; ++sat) {
@@ -1036,8 +1045,9 @@ DEF_GPUTEST(AsyncReadPixelsContextShutdown, reporter, options) {
                 if (!context) {
                     continue;
                 }
-                // This test is only meaningful for contexts that support transfer buffers.
-                if (!context->priv().caps()->transferBufferSupport()) {
+                // This test is only meaningful for contexts that support transfer buffers for
+                // reads.
+                if (!context->priv().caps()->transferFromSurfaceToBufferSupport()) {
                     continue;
                 }
                 auto surf = SkSurface::MakeRenderTarget(context, SkBudgeted::kYes, ii, 1, nullptr);

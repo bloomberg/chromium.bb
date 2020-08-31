@@ -5,12 +5,10 @@
 // https://wicg.github.io/shape-detection-api/#face-detection-api
 
 [
-    Constructor(optional FaceDetectorOptions faceDetectorOptions),
-    ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
     SecureContext,
-    MeasureAs=ShapeDetection_FaceDetectorConstructor,
-    RuntimeEnabled=ShapeDetection
+    RuntimeEnabled=FaceDetector
 ] interface FaceDetector {
+    [CallWith=ExecutionContext, MeasureAs=ShapeDetection_FaceDetectorConstructor] constructor(optional FaceDetectorOptions faceDetectorOptions = {});
     [CallWith=ScriptState, MeasureAs=ShapeDetectionAPI] Promise<sequence<DetectedFace>> detect(ImageBitmapSource image);
 };

@@ -11,7 +11,9 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 
 namespace autofill {
 
@@ -35,6 +37,19 @@ void CreditCardFormEventLogger::OnDidSelectCardSuggestion(
     AutofillSyncSigninState sync_state) {
   sync_state_ = sync_state;
 
+  // When server nicknames are available, if any card is selected, log the
+  // selection duration.
+  if (has_server_nickname_ && !has_logged_suggestion_selected_timestamp_) {
+    has_logged_suggestion_selected_timestamp_ = true;
+    base::TimeTicks now = AutofillTickClock::NowTicks();
+    // Suggestion selection should always chronologically follow suggestion
+    // shown.
+    DCHECK(now > first_suggestion_shown_timestamp_);
+    base::UmaHistogramMediumTimes(
+        "Autofill.FormEvents.CreditCard.WithServerNickname.SelectionDuration",
+        now - first_suggestion_shown_timestamp_);
+  }
+
   // No need to log selections for local/full-server cards -- a selection is
   // always followed by a form fill, which is logged separately.
   if (credit_card.record_type() != CreditCard::MASKED_SERVER_CARD)
@@ -45,10 +60,6 @@ void CreditCardFormEventLogger::OnDidSelectCardSuggestion(
     has_logged_masked_server_card_suggestion_selected_ = true;
     Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED_ONCE, form);
   }
-}
-
-void CreditCardFormEventLogger::SetBankNameAvailable() {
-  has_logged_bank_name_available_ = true;
 }
 
 void CreditCardFormEventLogger::OnDidFillSuggestion(
@@ -79,14 +90,8 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
         record_type == CreditCard::MASKED_SERVER_CARD;
     if (record_type == CreditCard::MASKED_SERVER_CARD) {
       Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED_ONCE, form);
-      if (has_logged_bank_name_available_) {
-        Log(FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE);
-      }
     } else if (record_type == CreditCard::FULL_SERVER_CARD) {
       Log(FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE, form);
-      if (has_logged_bank_name_available_) {
-        Log(FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE);
-      }
     } else {
       Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE, form);
     }
@@ -94,6 +99,20 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
 
   base::RecordAction(
       base::UserMetricsAction("Autofill_FilledCreditCardSuggestion"));
+}
+
+void CreditCardFormEventLogger::LogCardUnmaskAuthenticationPromptShown(
+    UnmaskAuthFlowType flow) {
+  RecordCardUnmaskFlowEvent(flow, UnmaskAuthFlowEvent::kPromptShown);
+}
+
+void CreditCardFormEventLogger::LogCardUnmaskAuthenticationPromptCompleted(
+    UnmaskAuthFlowType flow) {
+  RecordCardUnmaskFlowEvent(flow, UnmaskAuthFlowEvent::kPromptCompleted);
+
+  // Keeping track of authentication type in order to split form-submission
+  // metrics.
+  current_authentication_flow_ = flow;
 }
 
 void CreditCardFormEventLogger::RecordPollSuggestions() {
@@ -127,6 +146,10 @@ void CreditCardFormEventLogger::LogFormSubmitted(const FormStructure& form) {
     Log(FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE, form);
   } else if (logged_suggestion_filled_was_masked_server_card_) {
     Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SUBMITTED_ONCE, form);
+
+    // Log BetterAuth.FlowEvents.
+    RecordCardUnmaskFlowEvent(current_authentication_flow_,
+                              UnmaskAuthFlowEvent::kFormSubmitted);
   } else if (logged_suggestion_filled_was_server_data_) {
     Log(FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE, form);
   } else {
@@ -142,9 +165,8 @@ void CreditCardFormEventLogger::LogUkmInteractedWithForm(
 }
 
 void CreditCardFormEventLogger::OnSuggestionsShownOnce() {
-  if (has_logged_bank_name_available_) {
-    Log(FORM_EVENT_SUGGESTIONS_SHOWN_WITH_BANK_NAME_AVAILABLE_ONCE);
-  }
+  // Record the timestamp of the first suggestion shown.
+  first_suggestion_shown_timestamp_ = AutofillTickClock::NowTicks();
 }
 
 void CreditCardFormEventLogger::OnSuggestionsShownSubmittedOnce(
@@ -165,12 +187,14 @@ void CreditCardFormEventLogger::OnLog(const std::string& name,
     base::UmaHistogramEnumeration(name + ".OnNonsecurePage", event,
                                   NUM_FORM_EVENTS);
   }
-}
 
-void CreditCardFormEventLogger::Log(BankNameDisplayedFormEvent event) const {
-  DCHECK_LT(event, BANK_NAME_NUM_FORM_EVENTS);
-  const std::string name("Autofill.FormEvents.CreditCard.BankNameDisplayed");
-  base::UmaHistogramEnumeration(name, event, BANK_NAME_NUM_FORM_EVENTS);
+  // Log a different histogram for credit card forms with server nickname
+  // available so that selection rate with server nickname can be compared on
+  // their own.
+  if (has_server_nickname_) {
+    base::UmaHistogramEnumeration(name + ".WithServerNickname", event,
+                                  NUM_FORM_EVENTS);
+  }
 }
 
 FormEvent CreditCardFormEventLogger::GetCardNumberStatusFormEvent(
@@ -192,6 +216,33 @@ FormEvent CreditCardFormEventLogger::GetCardNumberStatusFormEvent(
   }
 
   return form_event;
+}
+
+void CreditCardFormEventLogger::RecordCardUnmaskFlowEvent(
+    UnmaskAuthFlowType flow,
+    UnmaskAuthFlowEvent event) {
+  std::string suffix;
+  switch (flow) {
+    case UnmaskAuthFlowType::kCvc:
+      suffix = ".Cvc";
+      break;
+    case UnmaskAuthFlowType::kFido:
+      suffix = ".Fido";
+      break;
+    case UnmaskAuthFlowType::kCvcThenFido:
+      suffix = ".CvcThenFido";
+      break;
+    case UnmaskAuthFlowType::kCvcFallbackFromFido:
+      suffix = ".CvcFallbackFromFido";
+      break;
+    case UnmaskAuthFlowType::kNone:
+      NOTREACHED();
+      suffix = "";
+      break;
+  }
+
+  base::UmaHistogramEnumeration("Autofill.BetterAuth.FlowEvents" + suffix,
+                                event);
 }
 
 }  // namespace autofill

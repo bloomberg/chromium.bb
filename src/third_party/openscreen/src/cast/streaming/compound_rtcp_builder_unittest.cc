@@ -15,16 +15,14 @@
 #include "gtest/gtest.h"
 #include "platform/api/time.h"
 
-using openscreen::platform::Clock;
-
 using testing::_;
 using testing::Invoke;
 using testing::Mock;
 using testing::SaveArg;
 using testing::StrictMock;
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 namespace {
 
 constexpr Ssrc kSenderSsrc{1};
@@ -369,5 +367,5 @@ TEST_F(CompoundRtcpBuilderTest, WithEverythingThatCanFit) {
 }
 
 }  // namespace
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

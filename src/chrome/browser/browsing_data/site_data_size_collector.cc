@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -27,14 +28,14 @@ int64_t GetFileSizeBlocking(const base::FilePath& file_path) {
 
 SiteDataSizeCollector::SiteDataSizeCollector(
     const base::FilePath& default_storage_partition_path,
-    BrowsingDataCookieHelper* cookie_helper,
-    BrowsingDataDatabaseHelper* database_helper,
-    BrowsingDataLocalStorageHelper* local_storage_helper,
-    BrowsingDataAppCacheHelper* appcache_helper,
-    BrowsingDataIndexedDBHelper* indexed_db_helper,
-    BrowsingDataFileSystemHelper* file_system_helper,
-    BrowsingDataServiceWorkerHelper* service_worker_helper,
-    BrowsingDataCacheStorageHelper* cache_storage_helper,
+    browsing_data::CookieHelper* cookie_helper,
+    browsing_data::DatabaseHelper* database_helper,
+    browsing_data::LocalStorageHelper* local_storage_helper,
+    browsing_data::AppCacheHelper* appcache_helper,
+    browsing_data::IndexedDBHelper* indexed_db_helper,
+    browsing_data::FileSystemHelper* file_system_helper,
+    browsing_data::ServiceWorkerHelper* service_worker_helper,
+    browsing_data::CacheStorageHelper* cache_storage_helper,
     BrowsingDataFlashLSOHelper* flash_lso_helper)
     : default_storage_partition_path_(default_storage_partition_path),
       appcache_helper_(appcache_helper),
@@ -137,9 +138,8 @@ void SiteDataSizeCollector::OnCookiesModelInfoLoaded(
   }
   base::FilePath cookie_file_path = default_storage_partition_path_
       .Append(chrome::kCookieFilename);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&GetFileSizeBlocking, cookie_file_path),
       base::BindOnce(&SiteDataSizeCollector::OnStorageSizeFetched,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -213,9 +213,8 @@ void SiteDataSizeCollector::OnFlashLSOInfoLoaded(
   }
   base::FilePath pepper_data_dir_path = default_storage_partition_path_
       .Append(content::kPepperDataDirname);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&base::ComputeDirectorySize, pepper_data_dir_path),
       base::BindOnce(&SiteDataSizeCollector::OnStorageSizeFetched,
                      weak_ptr_factory_.GetWeakPtr()));

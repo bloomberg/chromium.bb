@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const RelaxedJSONParser = {
+import {ESTreeWalker} from './ESTreeWalker.js';
+
+export const RelaxedJSONParser = {
   /**
  * @param {string} content
  * @return {*}
@@ -17,15 +19,15 @@ const RelaxedJSONParser = {
       return null;
     }
 
-    const walker = new FormatterWorker.ESTreeWalker(beforeVisit, afterVisit);
+    const walker = new ESTreeWalker(beforeVisit, afterVisit);
 
     const rootTip = [];
 
-    /** @type {!Array.<!FormatterWorker.RelaxedJSONParser.Context>} */
+    /** @type {!Array.<!Context>} */
     const stack = [];
 
-    let stackData = /** @type {!FormatterWorker.RelaxedJSONParser.Context} */ (
-        {key: 0, tip: rootTip, state: States.ExpectValue, parentIsArray: true});
+    /** @type {!Context} */
+    let stackData = {key: 0, tip: rootTip, state: States.ExpectValue, parentIsArray: true};
 
     walker.setWalkNulls(true);
     let hasExpression = false;
@@ -38,7 +40,7 @@ const RelaxedJSONParser = {
     return rootTip.length ? rootTip[0] : null;
 
     /**
-   * @param {!FormatterWorker.RelaxedJSONParser.Context} newStack
+   * @param {!Context} newStack
    */
     function pushStack(newStack) {
       stack.push(stackData);
@@ -71,16 +73,14 @@ const RelaxedJSONParser = {
           const newTip = {};
           applyValue(newTip);
 
-          pushStack(/** @type {!FormatterWorker.RelaxedJSONParser.Context} */ (
-              {key: null, tip: newTip, state: null, parentIsArray: false}));
+          pushStack(/** @type {!Context} */ ({key: null, tip: newTip, state: null, parentIsArray: false}));
           break;
         }
         case 'ArrayExpression': {
           const newTip = [];
           applyValue(newTip);
 
-          pushStack(/** @type {!FormatterWorker.RelaxedJSONParser.Context} */ (
-              {key: 0, tip: newTip, state: States.ExpectValue, parentIsArray: true}));
+          pushStack({key: 0, tip: newTip, state: States.ExpectValue, parentIsArray: true});
           break;
         }
         case 'Property':
@@ -92,7 +92,7 @@ const RelaxedJSONParser = {
             stackData.state = States.ExpectValue;
           } else if (stackData.state === States.ExpectValue) {
             applyValue(extractValue(node));
-            return FormatterWorker.ESTreeWalker.SkipSubtree;
+            return ESTreeWalker.SkipSubtree;
           }
           break;
         case 'Identifier':
@@ -101,13 +101,13 @@ const RelaxedJSONParser = {
             stackData.state = States.ExpectValue;
           } else if (stackData.state === States.ExpectValue) {
             applyValue(extractValue(node));
-            return FormatterWorker.ESTreeWalker.SkipSubtree;
+            return ESTreeWalker.SkipSubtree;
           }
           break;
         case 'UnaryExpression':
           if (stackData.state === States.ExpectValue) {
             applyValue(extractValue(node));
-            return FormatterWorker.ESTreeWalker.SkipSubtree;
+            return ESTreeWalker.SkipSubtree;
           }
           break;
         case 'Program':
@@ -117,7 +117,7 @@ const RelaxedJSONParser = {
           if (stackData.state === States.ExpectValue) {
             applyValue(extractValue(node));
           }
-          return FormatterWorker.ESTreeWalker.SkipSubtree;
+          return ESTreeWalker.SkipSubtree;
       }
     }
 
@@ -166,16 +166,14 @@ const RelaxedJSONParser = {
   }
 };
 
-export default RelaxedJSONParser;
-
 /** @enum {string} */
-const States = {
+export const States = {
   ExpectKey: 'ExpectKey',
   ExpectValue: 'ExpectValue'
 };
 
 /** @enum {*} */
-const Keywords = {
+export const Keywords = {
   'NaN': NaN,
   'true': true,
   'false': false,
@@ -184,15 +182,7 @@ const Keywords = {
   'null': null
 };
 
-/* Legacy exported object */
-self.FormatterWorker = self.FormatterWorker || {};
-
-/* Legacy exported object */
-FormatterWorker = FormatterWorker || {};
-
-FormatterWorker.RelaxedJSONParser = RelaxedJSONParser;
-
 /**
  * @typedef {!{key: (number|string), tip: (!Array|!Object), state: ?States, parentIsArray: boolean}}
  */
-FormatterWorker.RelaxedJSONParser.Context;
+export let Context;

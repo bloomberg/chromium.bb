@@ -4,7 +4,7 @@
 
 #include "components/update_client/update_query_params.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "build/branding_buildflags.h"
@@ -88,10 +88,8 @@ const char* UpdateQueryParams::GetProdIdString(UpdateQueryParams::ProdId prod) {
   switch (prod) {
     case UpdateQueryParams::CHROME:
       return kChrome;
-      break;
     case UpdateQueryParams::CRX:
       return kCrx;
-      break;
   }
   return kUnknown;
 }

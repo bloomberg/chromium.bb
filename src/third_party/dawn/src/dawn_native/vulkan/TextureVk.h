@@ -26,9 +26,8 @@ namespace dawn_native { namespace vulkan {
 
     struct CommandRecordingContext;
     class Device;
-    struct ExternalImageDescriptor;
 
-    VkFormat VulkanImageFormat(wgpu::TextureFormat format);
+    VkFormat VulkanImageFormat(const Device* device, wgpu::TextureFormat format);
     VkImageUsageFlags VulkanImageUsage(wgpu::TextureUsage usage, const Format& format);
     VkSampleCountFlagBits VulkanSampleCount(uint32_t sampleCount);
 
@@ -38,10 +37,11 @@ namespace dawn_native { namespace vulkan {
     bool IsSampleCountSupported(const dawn_native::vulkan::Device* device,
                                 const VkImageCreateInfo& imageCreateInfo);
 
-    class Texture : public TextureBase {
+    class Texture final : public TextureBase {
       public:
         // Used to create a regular texture from a descriptor.
-        static ResultOrError<Texture*> Create(Device* device, const TextureDescriptor* descriptor);
+        static ResultOrError<Ref<TextureBase>> Create(Device* device,
+                                                      const TextureDescriptor* descriptor);
 
         // Creates a texture and initializes it with a VkImage that references an external memory
         // object. Before the texture can be used, the VkDeviceMemory associated with the external
@@ -52,8 +52,10 @@ namespace dawn_native { namespace vulkan {
             const TextureDescriptor* textureDescriptor,
             external_memory::Service* externalMemoryService);
 
-        Texture(Device* device, const TextureDescriptor* descriptor, VkImage nativeImage);
-        ~Texture();
+        // Creates a texture that wraps a swapchain-allocated VkImage.
+        static Ref<Texture> CreateForSwapChain(Device* device,
+                                               const TextureDescriptor* descriptor,
+                                               VkImage nativeImage);
 
         VkImage GetHandle() const;
         VkImageAspectFlags GetVkAspectMask() const;
@@ -78,11 +80,13 @@ namespace dawn_native { namespace vulkan {
                                       std::vector<VkSemaphore> waitSemaphores);
 
       private:
+        ~Texture() override;
         using TextureBase::TextureBase;
-        MaybeError InitializeAsInternalTexture();
 
+        MaybeError InitializeAsInternalTexture();
         MaybeError InitializeFromExternal(const ExternalImageDescriptor* descriptor,
                                           external_memory::Service* externalMemoryService);
+        void InitializeForSwapChain(VkImage nativeImage);
 
         void DestroyImpl() override;
         MaybeError ClearTexture(CommandRecordingContext* recordingContext,
@@ -114,15 +118,14 @@ namespace dawn_native { namespace vulkan {
         wgpu::TextureUsage mLastUsage = wgpu::TextureUsage::None;
     };
 
-    class TextureView : public TextureViewBase {
+    class TextureView final : public TextureViewBase {
       public:
         static ResultOrError<TextureView*> Create(TextureBase* texture,
                                                   const TextureViewDescriptor* descriptor);
-        ~TextureView();
-
         VkImageView GetHandle() const;
 
       private:
+        ~TextureView() override;
         using TextureViewBase::TextureViewBase;
         MaybeError Initialize(const TextureViewDescriptor* descriptor);
 

@@ -2,24 +2,58 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as SDK from '../sdk/sdk.js';
+import * as TextUtils from '../text_utils/text_utils.js';
+import * as Workspace from '../workspace/workspace.js';
+
+import {ContentProviderBasedProject} from './ContentProviderBasedProject.js';
+import {CSSWorkspaceBinding} from './CSSWorkspaceBinding.js';
+import {DebuggerWorkspaceBinding} from './DebuggerWorkspaceBinding.js';
+import {NetworkProject} from './NetworkProject.js';
+import {resourceMetadata} from './ResourceUtils.js';
+
 /**
- * @implements {SDK.SDKModelObserver<!SDK.ResourceTreeModel>}
+ * @type {!ResourceMapping}
  */
-export default class ResourceMapping {
+let resourceMappingInstance;
+
+/**
+ * @implements {SDK.SDKModel.SDKModelObserver<!SDK.ResourceTreeModel.ResourceTreeModel>}
+ */
+export class ResourceMapping {
   /**
-   * @param {!SDK.TargetManager} targetManager
-   * @param {!Workspace.Workspace} workspace
+   * @private
+   * @param {!SDK.SDKModel.TargetManager} targetManager
+   * @param {!Workspace.Workspace.WorkspaceImpl} workspace
    */
   constructor(targetManager, workspace) {
     this._workspace = workspace;
-    /** @type {!Map<!SDK.ResourceTreeModel, !ModelInfo>} */
+    /** @type {!Map<!SDK.ResourceTreeModel.ResourceTreeModel, !ModelInfo>} */
     this._modelToInfo = new Map();
-    targetManager.observeModels(SDK.ResourceTreeModel, this);
+    targetManager.observeModels(SDK.ResourceTreeModel.ResourceTreeModel, this);
+  }
+
+  /**
+   * @param {{forceNew: ?boolean, targetManager: ?SDK.SDKModel.TargetManager, workspace: ?Workspace.Workspace.WorkspaceImpl}} opts
+   */
+  static instance(opts = {forceNew: null, targetManager: null, workspace: null}) {
+    const {forceNew, targetManager, workspace} = opts;
+    if (!resourceMappingInstance || forceNew) {
+      if (!targetManager || !workspace) {
+        throw new Error(
+            `Unable to create settings: targetManager and workspace must be provided: ${new Error().stack}`);
+      }
+
+      resourceMappingInstance = new ResourceMapping(targetManager, workspace);
+    }
+
+    return resourceMappingInstance;
   }
 
   /**
    * @override
-   * @param {!SDK.ResourceTreeModel} resourceTreeModel
+   * @param {!SDK.ResourceTreeModel.ResourceTreeModel} resourceTreeModel
    */
   modelAdded(resourceTreeModel) {
     const info = new ModelInfo(this._workspace, resourceTreeModel);
@@ -28,7 +62,7 @@ export default class ResourceMapping {
 
   /**
    * @override
-   * @param {!SDK.ResourceTreeModel} resourceTreeModel
+   * @param {!SDK.ResourceTreeModel.ResourceTreeModel} resourceTreeModel
    */
   modelRemoved(resourceTreeModel) {
     const info = this._modelToInfo.get(resourceTreeModel);
@@ -37,17 +71,17 @@ export default class ResourceMapping {
   }
 
   /**
-   * @param {!SDK.Target} target
+   * @param {!SDK.SDKModel.Target} target
    * @return {?ModelInfo}
    */
   _infoForTarget(target) {
-    const resourceTreeModel = target.model(SDK.ResourceTreeModel);
+    const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
     return resourceTreeModel ? this._modelToInfo.get(resourceTreeModel) : null;
   }
 
   /**
-   * @param {!SDK.CSSLocation} cssLocation
-   * @return {?Workspace.UILocation}
+   * @param {!SDK.CSSModel.CSSLocation} cssLocation
+   * @return {?Workspace.UISourceCode.UILocation}
    */
   cssLocationToUILocation(cssLocation) {
     const header = cssLocation.header();
@@ -63,7 +97,7 @@ export default class ResourceMapping {
       return null;
     }
     const offset =
-        header[_offsetSymbol] || TextUtils.TextRange.createFromLocation(header.startLine, header.startColumn);
+        header[offsetSymbol] || TextUtils.TextRange.TextRange.createFromLocation(header.startLine, header.startColumn);
     const lineNumber = cssLocation.lineNumber + offset.startLine - header.startLine;
     let columnNumber = cssLocation.columnNumber;
     if (cssLocation.lineNumber === header.startLine) {
@@ -74,7 +108,7 @@ export default class ResourceMapping {
 
   /**
    * @param {!SDK.DebuggerModel.Location} jsLocation
-   * @return {?Workspace.UILocation}
+   * @return {?Workspace.UISourceCode.UILocation}
    */
   jsLocationToUILocation(jsLocation) {
     const script = jsLocation.script();
@@ -89,8 +123,8 @@ export default class ResourceMapping {
     if (!uiSourceCode) {
       return null;
     }
-    const offset =
-        script[_offsetSymbol] || TextUtils.TextRange.createFromLocation(script.lineOffset, script.columnOffset);
+    const offset = script[offsetSymbol] ||
+        TextUtils.TextRange.TextRange.createFromLocation(script.lineOffset, script.columnOffset);
     const lineNumber = jsLocation.lineNumber + offset.startLine - script.lineOffset;
     let columnNumber = jsLocation.columnNumber;
     if (jsLocation.lineNumber === script.lineOffset) {
@@ -100,20 +134,20 @@ export default class ResourceMapping {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @param {number} lineNumber
    * @param {number} columnNumber
    * @return {!Array<!SDK.DebuggerModel.Location>}
    */
   uiLocationToJSLocations(uiSourceCode, lineNumber, columnNumber) {
-    if (!uiSourceCode[_symbol]) {
+    if (!uiSourceCode[symbol]) {
       return [];
     }
-    const target = Bindings.NetworkProject.targetForUISourceCode(uiSourceCode);
+    const target = NetworkProject.targetForUISourceCode(uiSourceCode);
     if (!target) {
       return [];
     }
-    const debuggerModel = target.model(SDK.DebuggerModel);
+    const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
     if (!debuggerModel) {
       return [];
     }
@@ -125,18 +159,18 @@ export default class ResourceMapping {
   }
 
   /**
-   * @param {!Workspace.UILocation} uiLocation
-   * @return {!Array<!SDK.CSSLocation>}
+   * @param {!Workspace.UISourceCode.UILocation} uiLocation
+   * @return {!Array<!SDK.CSSModel.CSSLocation>}
    */
   uiLocationToCSSLocations(uiLocation) {
-    if (!uiLocation.uiSourceCode[_symbol]) {
+    if (!uiLocation.uiSourceCode[symbol]) {
       return [];
     }
-    const target = Bindings.NetworkProject.targetForUISourceCode(uiLocation.uiSourceCode);
+    const target = NetworkProject.targetForUISourceCode(uiLocation.uiSourceCode);
     if (!target) {
       return [];
     }
-    const cssModel = target.model(SDK.CSSModel);
+    const cssModel = target.model(SDK.CSSModel.CSSModel);
     if (!cssModel) {
       return [];
     }
@@ -145,10 +179,10 @@ export default class ResourceMapping {
   }
 
   /**
-   * @param {!SDK.Target} target
+   * @param {!SDK.SDKModel.Target} target
    */
   _resetForTest(target) {
-    const resourceTreeModel = target.model(SDK.ResourceTreeModel);
+    const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
     const info = resourceTreeModel ? this._modelToInfo.get(resourceTreeModel) : null;
     if (info) {
       info._resetForTest();
@@ -158,32 +192,38 @@ export default class ResourceMapping {
 
 class ModelInfo {
   /**
-   * @param {!Workspace.Workspace} workspace
-   * @param {!SDK.ResourceTreeModel} resourceTreeModel
+   * @param {!Workspace.Workspace.WorkspaceImpl} workspace
+   * @param {!SDK.ResourceTreeModel.ResourceTreeModel} resourceTreeModel
    */
   constructor(workspace, resourceTreeModel) {
     const target = resourceTreeModel.target();
-    this._project = new Bindings.ContentProviderBasedProject(
-        workspace, 'resources:' + target.id(), Workspace.projectTypes.Network, '', false /* isServiceProject */);
-    Bindings.NetworkProject.setTargetForProject(this._project, target);
+    this._project = new ContentProviderBasedProject(
+        workspace, 'resources:' + target.id(), Workspace.Workspace.projectTypes.Network, '',
+        false /* isServiceProject */);
+    NetworkProject.setTargetForProject(this._project, target);
 
     /** @type {!Map<string, !Binding>} */
     this._bindings = new Map();
 
-    const cssModel = target.model(SDK.CSSModel);
+    const cssModel = target.model(SDK.CSSModel.CSSModel);
     this._cssModel = cssModel;
     this._eventListeners = [
       resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.ResourceAdded, this._resourceAdded, this),
       resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.FrameWillNavigate, this._frameWillNavigate, this),
       resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.FrameDetached, this._frameDetached, this),
-      cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, this._styleSheetChanged, this)
+      cssModel.addEventListener(
+          SDK.CSSModel.Events.StyleSheetChanged,
+          event => {
+            this._styleSheetChanged(event);
+          },
+          this)
     ];
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
-  _styleSheetChanged(event) {
+  async _styleSheetChanged(event) {
     const header = this._cssModel.styleSheetHeaderForId(event.data.styleSheetId);
     if (!header || !header.isInline) {
       return;
@@ -192,28 +232,33 @@ class ModelInfo {
     if (!binding) {
       return;
     }
-    binding._styleSheetChanged(header, event.data.edit);
+    await binding._styleSheetChanged(header, event.data.edit);
   }
 
   /**
-   * @param {!SDK.Resource} resource
+   * @param {!SDK.Resource.Resource} resource
    */
   _acceptsResource(resource) {
     const resourceType = resource.resourceType();
     // Only load selected resource types from resources.
-    if (resourceType !== Common.resourceTypes.Image && resourceType !== Common.resourceTypes.Font &&
-        resourceType !== Common.resourceTypes.Document && resourceType !== Common.resourceTypes.Manifest) {
+    if (resourceType !== Common.ResourceType.resourceTypes.Image &&
+        resourceType !== Common.ResourceType.resourceTypes.Font &&
+        resourceType !== Common.ResourceType.resourceTypes.Document &&
+        resourceType !== Common.ResourceType.resourceTypes.Manifest) {
       return false;
     }
 
     // Ignore non-images and non-fonts.
-    if (resourceType === Common.resourceTypes.Image && resource.mimeType && !resource.mimeType.startsWith('image')) {
+    if (resourceType === Common.ResourceType.resourceTypes.Image && resource.mimeType &&
+        !resource.mimeType.startsWith('image')) {
       return false;
     }
-    if (resourceType === Common.resourceTypes.Font && resource.mimeType && !resource.mimeType.includes('font')) {
+    if (resourceType === Common.ResourceType.resourceTypes.Font && resource.mimeType &&
+        !resource.mimeType.includes('font')) {
       return false;
     }
-    if ((resourceType === Common.resourceTypes.Image || resourceType === Common.resourceTypes.Font) &&
+    if ((resourceType === Common.ResourceType.resourceTypes.Image ||
+         resourceType === Common.ResourceType.resourceTypes.Font) &&
         resource.contentURL().startsWith('data:')) {
       return false;
     }
@@ -221,10 +266,10 @@ class ModelInfo {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _resourceAdded(event) {
-    const resource = /** @type {!SDK.Resource} */ (event.data);
+    const resource = /** @type {!SDK.Resource.Resource} */ (event.data);
     if (!this._acceptsResource(resource)) {
       return;
     }
@@ -239,7 +284,7 @@ class ModelInfo {
   }
 
   /**
-   * @param {!SDK.ResourceTreeFrame} frame
+   * @param {!SDK.ResourceTreeModel.ResourceTreeFrame} frame
    */
   _removeFrameResources(frame) {
     for (const resource of frame.resources()) {
@@ -257,31 +302,31 @@ class ModelInfo {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _frameWillNavigate(event) {
-    const frame = /** @type {!SDK.ResourceTreeFrame} */ (event.data);
+    const frame = /** @type {!SDK.ResourceTreeModel.ResourceTreeFrame} */ (event.data);
     this._removeFrameResources(frame);
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _frameDetached(event) {
-    const frame = /** @type {!SDK.ResourceTreeFrame} */ (event.data);
+    const frame = /** @type {!SDK.ResourceTreeModel.ResourceTreeFrame} */ (event.data);
     this._removeFrameResources(frame);
   }
 
   _resetForTest() {
-    for (const binding of this._bindings.valuesArray()) {
+    for (const binding of this._bindings.values()) {
       binding.dispose();
     }
     this._bindings.clear();
   }
 
   dispose() {
-    Common.EventTarget.removeEventListeners(this._eventListeners);
-    for (const binding of this._bindings.valuesArray()) {
+    Common.EventTarget.EventTarget.removeEventListeners(this._eventListeners);
+    for (const binding of this._bindings.values()) {
       binding.dispose();
     }
     this._bindings.clear();
@@ -290,31 +335,30 @@ class ModelInfo {
 }
 
 /**
- * @implements {Common.ContentProvider}
+ * @implements {TextUtils.ContentProvider.ContentProvider}
  */
 class Binding {
   /**
-   * @param {!Bindings.ContentProviderBasedProject} project
-   * @param {!SDK.Resource} resource
+   * @param {!ContentProviderBasedProject} project
+   * @param {!SDK.Resource.Resource} resource
    */
   constructor(project, resource) {
     this._resources = new Set([resource]);
     this._project = project;
     this._uiSourceCode = this._project.createUISourceCode(resource.url, resource.contentType());
-    this._uiSourceCode[_symbol] = true;
-    Bindings.NetworkProject.setInitialFrameAttribution(this._uiSourceCode, resource.frameId);
-    this._project.addUISourceCodeWithProvider(
-        this._uiSourceCode, this, Bindings.resourceMetadata(resource), resource.mimeType);
-    /** @type {!Array<{stylesheet: !SDK.CSSStyleSheetHeader, edit: !SDK.CSSModel.Edit}>} */
+    this._uiSourceCode[symbol] = true;
+    NetworkProject.setInitialFrameAttribution(this._uiSourceCode, resource.frameId);
+    this._project.addUISourceCodeWithProvider(this._uiSourceCode, this, resourceMetadata(resource), resource.mimeType);
+    /** @type {!Array<{stylesheet: !SDK.CSSStyleSheetHeader.CSSStyleSheetHeader, edit: ?SDK.CSSModel.Edit}>} */
     this._edits = [];
   }
 
   /**
-   * @return {!Array<!SDK.CSSStyleSheetHeader>}
+   * @return {!Array<!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader>}
    */
   _inlineStyles() {
-    const target = Bindings.NetworkProject.targetForUISourceCode(this._uiSourceCode);
-    const cssModel = target.model(SDK.CSSModel);
+    const target = NetworkProject.targetForUISourceCode(this._uiSourceCode);
+    const cssModel = target.model(SDK.CSSModel.CSSModel);
     const stylesheets = [];
     if (cssModel) {
       for (const headerId of cssModel.styleSheetIdsForURL(this._uiSourceCode.url())) {
@@ -328,11 +372,11 @@ class Binding {
   }
 
   /**
-   * @return {!Array<!SDK.Script>}
+   * @return {!Array<!SDK.Script.Script>}
    */
   _inlineScripts() {
-    const target = Bindings.NetworkProject.targetForUISourceCode(this._uiSourceCode);
-    const debuggerModel = target.model(SDK.DebuggerModel);
+    const target = NetworkProject.targetForUISourceCode(this._uiSourceCode);
+    const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
     if (!debuggerModel) {
       return [];
     }
@@ -340,8 +384,8 @@ class Binding {
   }
 
   /**
-   * @param {!SDK.CSSStyleSheetHeader} stylesheet
-   * @param {!SDK.CSSModel.Edit} edit
+   * @param {!SDK.CSSStyleSheetHeader.CSSStyleSheetHeader} stylesheet
+   * @param {?SDK.CSSModel.Edit} edit
    */
   async _styleSheetChanged(stylesheet, edit) {
     this._edits.push({stylesheet, edit});
@@ -351,7 +395,7 @@ class Binding {
 
     const {content} = await this._uiSourceCode.requestContent();
     if (content !== null) {
-      this._innerStyleSheetChanged(content);
+      await this._innerStyleSheetChanged(content);
     }
     this._edits = [];
   }
@@ -359,55 +403,60 @@ class Binding {
   /**
    * @param {string} content
    */
-  _innerStyleSheetChanged(content) {
+  async _innerStyleSheetChanged(content) {
     const scripts = this._inlineScripts();
     const styles = this._inlineStyles();
-    let text = new TextUtils.Text(content);
+    let text = new TextUtils.Text.Text(content);
     for (const data of this._edits) {
       const edit = data.edit;
+      if (!edit) {
+        continue;
+      }
       const stylesheet = data.stylesheet;
-      const startLocation = stylesheet[_offsetSymbol] ||
-          TextUtils.TextRange.createFromLocation(stylesheet.startLine, stylesheet.startColumn);
+      const startLocation = stylesheet[offsetSymbol] ||
+          TextUtils.TextRange.TextRange.createFromLocation(stylesheet.startLine, stylesheet.startColumn);
 
       const oldRange = edit.oldRange.relativeFrom(startLocation.startLine, startLocation.startColumn);
       const newRange = edit.newRange.relativeFrom(startLocation.startLine, startLocation.startColumn);
-      text = new TextUtils.Text(text.replaceRange(oldRange, edit.newText));
+      text = new TextUtils.Text.Text(text.replaceRange(oldRange, edit.newText));
+      const updatePromises = [];
       for (const script of scripts) {
-        const scriptOffset =
-            script[_offsetSymbol] || TextUtils.TextRange.createFromLocation(script.lineOffset, script.columnOffset);
+        const scriptOffset = script[offsetSymbol] ||
+            TextUtils.TextRange.TextRange.createFromLocation(script.lineOffset, script.columnOffset);
         if (!scriptOffset.follows(oldRange)) {
           continue;
         }
-        script[_offsetSymbol] = scriptOffset.rebaseAfterTextEdit(oldRange, newRange);
-        Bindings.debuggerWorkspaceBinding.updateLocations(script);
+        script[offsetSymbol] = scriptOffset.rebaseAfterTextEdit(oldRange, newRange);
+        updatePromises.push(DebuggerWorkspaceBinding.instance().updateLocations(script));
       }
       for (const style of styles) {
         const styleOffset =
-            style[_offsetSymbol] || TextUtils.TextRange.createFromLocation(style.startLine, style.startColumn);
+            style[offsetSymbol] || TextUtils.TextRange.TextRange.createFromLocation(style.startLine, style.startColumn);
         if (!styleOffset.follows(oldRange)) {
           continue;
         }
-        style[_offsetSymbol] = styleOffset.rebaseAfterTextEdit(oldRange, newRange);
-        Bindings.cssWorkspaceBinding.updateLocations(style);
+        style[offsetSymbol] = styleOffset.rebaseAfterTextEdit(oldRange, newRange);
+        updatePromises.push(CSSWorkspaceBinding.instance().updateLocations(style));
       }
+      await Promise.all(updatePromises);
     }
     this._uiSourceCode.addRevision(text.value());
   }
 
   /**
-   * @param {!SDK.Resource} resource
+   * @param {!SDK.Resource.Resource} resource
    */
   addResource(resource) {
     this._resources.add(resource);
-    Bindings.NetworkProject.addFrameAttribution(this._uiSourceCode, resource.frameId);
+    NetworkProject.addFrameAttribution(this._uiSourceCode, resource.frameId);
   }
 
   /**
-   * @param {!SDK.Resource} resource
+   * @param {!SDK.Resource.Resource} resource
    */
   removeResource(resource) {
     this._resources.delete(resource);
-    Bindings.NetworkProject.removeFrameAttribution(this._uiSourceCode, resource.frameId);
+    NetworkProject.removeFrameAttribution(this._uiSourceCode, resource.frameId);
   }
 
   dispose() {
@@ -424,7 +473,7 @@ class Binding {
 
   /**
    * @override
-   * @return {!Common.ResourceType}
+   * @return {!Common.ResourceType.ResourceType}
    */
   contentType() {
     return this._resources.firstValue().contentType();
@@ -440,7 +489,7 @@ class Binding {
 
   /**
    * @override
-   * @return {!Promise<!Common.DeferredContent>}
+   * @return {!Promise<!TextUtils.ContentProvider.DeferredContent>}
    */
   requestContent() {
     return this._resources.firstValue().requestContent();
@@ -451,24 +500,12 @@ class Binding {
    * @param {string} query
    * @param {boolean} caseSensitive
    * @param {boolean} isRegex
-   * @return {!Promise<!Array<!Common.ContentProvider.SearchMatch>>}
+   * @return {!Promise<!Array<!TextUtils.ContentProvider.SearchMatch>>}
    */
   searchInContent(query, caseSensitive, isRegex) {
     return this._resources.firstValue().searchInContent(query, caseSensitive, isRegex);
   }
 }
 
-export const _symbol = Symbol('Bindings.ResourceMapping._symbol');
-export const _offsetSymbol = Symbol('Bindings.ResourceMapping._offsetSymbol');
-
-/* Legacy exported object */
-self.Bindings = self.Bindings || {};
-
-/* Legacy exported object */
-Bindings = Bindings || {};
-
-/** @constructor */
-Bindings.ResourceMapping = ResourceMapping;
-
-Bindings.ResourceMapping._symbol = _symbol;
-Bindings.ResourceMapping._offsetSymbol = _offsetSymbol;
+export const symbol = Symbol('Bindings.ResourceMapping._symbol');
+export const offsetSymbol = Symbol('Bindings.ResourceMapping._offsetSymbol');

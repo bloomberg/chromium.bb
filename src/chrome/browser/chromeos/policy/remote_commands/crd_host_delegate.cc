@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/policy/remote_commands/crd_host_delegate.h"
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/task/post_task.h"
@@ -14,9 +13,8 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
-#include "chrome/common/chrome_features.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -55,7 +53,8 @@ constexpr char kCRDConnectAuth[] = "authServiceWithToken";
 constexpr char kCRDConnectXMPPServer[] = "xmppServerAddress";
 constexpr char kCRDConnectXMPPTLS[] = "xmppServerUseTls";
 constexpr char kCRDConnectDirectoryBot[] = "directoryBotJid";
-constexpr char kCRDConnectNoDialogs[] = "noDialogs";
+constexpr char kCRDConnectSuppressUserDialogs[] = "suppressUserDialogs";
+constexpr char kCRDConnectSuppressNotifications[] = "suppressNotifications";
 constexpr char kCRDTerminateUponInput[] = "terminateUponInput";
 
 // Connect message parameter values:
@@ -91,8 +90,7 @@ constexpr char kTachyonOAuth2Scope[] =
 CRDHostDelegate::CRDHostDelegate()
     : OAuth2AccessTokenManager::Consumer("crd_host_delegate") {}
 
-CRDHostDelegate::~CRDHostDelegate() {
-}
+CRDHostDelegate::~CRDHostDelegate() {}
 
 bool CRDHostDelegate::HasActiveSession() const {
   return host_ != nullptr;
@@ -107,7 +105,7 @@ bool CRDHostDelegate::AreServicesReady() const {
   return user_manager::UserManager::IsInitialized() &&
          ui::UserActivityDetector::Get() != nullptr &&
          chromeos::ProfileHelper::Get() != nullptr &&
-         chromeos::DeviceOAuth2TokenServiceFactory::Get() != nullptr;
+         DeviceOAuth2TokenServiceFactory::Get() != nullptr;
 }
 
 bool CRDHostDelegate::IsRunningKiosk() const {
@@ -146,24 +144,17 @@ void CRDHostDelegate::FetchOAuthToken(
     DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) {
   DCHECK(!oauth_success_callback_);
   DCHECK(!error_callback_);
-  chromeos::DeviceOAuth2TokenService* oauth_service =
-      chromeos::DeviceOAuth2TokenServiceFactory::Get();
+  DeviceOAuth2TokenService* oauth_service =
+      DeviceOAuth2TokenServiceFactory::Get();
 
-  OAuth2AccessTokenManager::ScopeSet scopes;
-  scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
-  scopes.insert(kCloudDevicesOAuth2Scope);
-
-  if (base::FeatureList::IsEnabled(
-          features::kUseFtlSignalingForCrdHostDelegate)) {
-    scopes.insert(kChromotingRemoteSupportOAuth2Scope);
-    scopes.insert(kTachyonOAuth2Scope);
-  }
+  OAuth2AccessTokenManager::ScopeSet scopes{
+      GaiaConstants::kGoogleUserInfoEmail, kCloudDevicesOAuth2Scope,
+      kChromotingRemoteSupportOAuth2Scope, kTachyonOAuth2Scope};
 
   oauth_success_callback_ = std::move(success_callback);
   error_callback_ = std::move(error_callback);
 
-  oauth_request_ = oauth_service->StartAccessTokenRequest(
-      oauth_service->GetRobotAccountId(), scopes, this);
+  oauth_request_ = oauth_service->StartAccessTokenRequest(scopes, this);
 }
 
 void CRDHostDelegate::OnGetTokenSuccess(
@@ -196,7 +187,7 @@ void CRDHostDelegate::StartCRDHostAndGetCode(
   // Store all parameters for future connect call.
   base::Value connect_params(base::Value::Type::DICTIONARY);
   CoreAccountId account_id =
-      chromeos::DeviceOAuth2TokenServiceFactory::Get()->GetRobotAccountId();
+      DeviceOAuth2TokenServiceFactory::Get()->GetRobotAccountId();
 
   // TODO(msarda): This conversion will not be correct once account id is
   // migrated to be the Gaia ID on ChromeOS. Fix it.
@@ -209,7 +200,8 @@ void CRDHostDelegate::StartCRDHostAndGetCode(
   connect_params.SetKey(kCRDConnectXMPPTLS, base::Value(true));
   connect_params.SetKey(kCRDConnectDirectoryBot,
                         base::Value(kCRDConnectDirectoryBotValue));
-  connect_params.SetKey(kCRDConnectNoDialogs, base::Value(true));
+  connect_params.SetKey(kCRDConnectSuppressUserDialogs, base::Value(true));
+  connect_params.SetKey(kCRDConnectSuppressNotifications, base::Value(true));
   connect_params.SetKey(kCRDTerminateUponInput,
                         base::Value(terminate_upon_input));
   connect_params_ = std::move(connect_params);

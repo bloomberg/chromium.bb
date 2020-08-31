@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_RENDERER_CHANNEL_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_RENDERER_CHANNEL_H_
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -80,7 +81,8 @@ class CONTENT_EXPORT DevToolsRendererChannel
   void CleanupConnection();
   void SetRendererInternal(blink::mojom::DevToolsAgent* agent,
                            int process_id,
-                           RenderFrameHostImpl* frame_host);
+                           RenderFrameHostImpl* frame_host,
+                           bool force_using_io);
   void ReportChildWorkersCallback();
 
   DevToolsAgentHostImpl* owner_;

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/optional.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 
 namespace ash {
@@ -18,6 +19,9 @@ namespace {
 class ContentView : public views::View, views::ViewObserver {
  public:
   ContentView() { AddObserver(this); }
+
+  ContentView(const ContentView&) = delete;
+  ContentView& operator=(const ContentView&) = delete;
 
   ~ContentView() override { RemoveObserver(this); }
 
@@ -38,25 +42,45 @@ class ContentView : public views::View, views::ViewObserver {
   void OnChildViewRemoved(views::View* view, views::View* child) override {
     PreferredSizeChanged();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
 
 // InvisibleScrollBar ----------------------------------------------------------
 
 class InvisibleScrollBar : public views::OverlayScrollBar {
  public:
-  explicit InvisibleScrollBar(bool horizontal)
-      : views::OverlayScrollBar(horizontal) {}
+  InvisibleScrollBar(
+      base::ObserverList<AssistantScrollView::Observer>* observers,
+      bool horizontal)
+      : views::OverlayScrollBar(horizontal), observers_(observers) {}
 
+  InvisibleScrollBar(const InvisibleScrollBar&) = delete;
+  InvisibleScrollBar& operator=(const InvisibleScrollBar&) = delete;
   ~InvisibleScrollBar() override = default;
 
   // views::OverlayScrollBar:
   int GetThickness() const override { return 0; }
 
+  void Update(int viewport_size,
+              int content_size,
+              int content_scroll_offset) override {
+    views::OverlayScrollBar::Update(viewport_size, content_size,
+                                    content_scroll_offset);
+    for (auto& observer : *observers_) {
+      observer.OnScrollBarUpdated(this, viewport_size, content_size,
+                                  content_scroll_offset);
+    }
+  }
+
+  void VisibilityChanged(views::View* starting_from, bool is_visible) override {
+    if (starting_from != this)
+      return;
+
+    for (auto& observer : *observers_)
+      observer.OnScrollBarVisibilityChanged(this, is_visible);
+  }
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(InvisibleScrollBar);
+  base::ObserverList<AssistantScrollView::Observer>* observers_;
 };
 
 }  // namespace
@@ -74,12 +98,24 @@ const char* AssistantScrollView::GetClassName() const {
 }
 
 void AssistantScrollView::OnViewPreferredSizeChanged(views::View* view) {
-  OnContentsPreferredSizeChanged(content_view_);
+  DCHECK_EQ(content_view_, view);
+
+  for (auto& observer : observers_)
+    observer.OnContentsPreferredSizeChanged(content_view_);
+
   PreferredSizeChanged();
 }
 
+void AssistantScrollView::AddScrollViewObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AssistantScrollView::RemoveScrollViewObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void AssistantScrollView::InitLayout() {
-  SetBackgroundColor(SK_ColorTRANSPARENT);
+  SetBackgroundColor(base::nullopt);
   SetDrawOverflowIndicator(false);
 
   // Content view.
@@ -89,10 +125,10 @@ void AssistantScrollView::InitLayout() {
 
   // Scroll bars.
   horizontal_scroll_bar_ = SetHorizontalScrollBar(
-      std::make_unique<InvisibleScrollBar>(/*horizontal=*/true));
+      std::make_unique<InvisibleScrollBar>(&observers_, /*horizontal=*/true));
 
   vertical_scroll_bar_ = SetVerticalScrollBar(
-      std::make_unique<InvisibleScrollBar>(/*horizontal=*/false));
+      std::make_unique<InvisibleScrollBar>(&observers_, /*horizontal=*/false));
 }
 
 }  // namespace ash

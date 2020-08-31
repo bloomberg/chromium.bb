@@ -19,8 +19,10 @@
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_secret_boxer.h"
 #include "net/third_party/quiche/src/quic/core/crypto/key_exchange.h"
 #include "net/third_party/quiche/src/quic/core/crypto/proof_source.h"
+#include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_compressed_certs_cache.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_proof.h"
+#include "net/third_party/quiche/src/quic/core/crypto/server_proof_verifier.h"
 #include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters_proto.h"
 #include "net/third_party/quiche/src/quic/core/proto/source_address_token_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
@@ -28,7 +30,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_mutex.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_reference_counted.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -52,10 +54,10 @@ struct QUIC_EXPORT_PRIVATE ClientHelloInfo {
 
   // Outputs from EvaluateClientHello.
   bool valid_source_address_token;
-  QuicStringPiece sni;
-  QuicStringPiece client_nonce;
-  QuicStringPiece server_nonce;
-  QuicStringPiece user_agent_id;
+  quiche::QuicheStringPiece sni;
+  quiche::QuicheStringPiece client_nonce;
+  quiche::QuicheStringPiece server_nonce;
+  quiche::QuicheStringPiece user_agent_id;
   SourceAddressTokens source_address_tokens;
 
   // Errors from EvaluateClientHello.
@@ -169,7 +171,7 @@ class QUIC_EXPORT_PRIVATE KeyExchangeSource {
       std::string server_config_id,
       bool is_fallback,
       QuicTag type,
-      QuicStringPiece private_key) = 0;
+      quiche::QuicheStringPiece private_key) = 0;
 };
 
 // QuicCryptoServerConfig contains the crypto configuration of a QUIC server.
@@ -213,7 +215,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   // |proof_source|: provides certificate chains and signatures.
   // |key_exchange_source|: provides key-exchange functionality.
   QuicCryptoServerConfig(
-      QuicStringPiece source_address_token_secret,
+      quiche::QuicheStringPiece source_address_token_secret,
       QuicRandom* server_nonce_entropy,
       std::unique_ptr<ProofSource> proof_source,
       std::unique_ptr<KeyExchangeSource> key_exchange_source);
@@ -292,7 +294,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   //     completion of an asynchronous operation.
   void ValidateClientHello(
       const CryptoHandshakeMessage& client_hello,
-      const QuicIpAddress& client_ip,
+      const QuicSocketAddress& client_address,
       const QuicSocketAddress& server_address,
       QuicTransportVersion version,
       const QuicClock* clock,
@@ -355,10 +357,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   // |cached_network_params| is optional, and can be nullptr.
   void BuildServerConfigUpdateMessage(
       QuicTransportVersion version,
-      QuicStringPiece chlo_hash,
+      quiche::QuicheStringPiece chlo_hash,
       const SourceAddressTokens& previous_source_address_tokens,
       const QuicSocketAddress& server_address,
-      const QuicIpAddress& client_ip,
+      const QuicSocketAddress& client_address,
       const QuicClock* clock,
       QuicRandom* rand,
       QuicCompressedCertsCache* compressed_certs_cache,
@@ -422,10 +424,17 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   }
 
   ProofSource* proof_source() const;
+  ServerProofVerifier* proof_verifier() const;
+  void set_proof_verifier(std::unique_ptr<ServerProofVerifier> proof_verifier);
+
+  ClientCertMode client_cert_mode() const;
+  void set_client_cert_mode(ClientCertMode client_cert_mode);
 
   SSL_CTX* ssl_ctx() const;
 
-  void set_pre_shared_key(QuicStringPiece psk) {
+  // Pre-shared key used during the handshake.
+  const std::string& pre_shared_key() const { return pre_shared_key_; }
+  void set_pre_shared_key(quiche::QuicheStringPiece psk) {
     pre_shared_key_ = std::string(psk);
   }
 
@@ -507,7 +516,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // Get a ref to the config with a given server config id.
   QuicReferenceCountedPointer<Config> GetConfigWithScid(
-      QuicStringPiece requested_scid) const
+      quiche::QuicheStringPiece requested_scid) const
       QUIC_SHARED_LOCKS_REQUIRED(configs_lock_);
 
   // A snapshot of the configs associated with an in-progress handshake.
@@ -524,7 +533,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   // Returns true if any configs are loaded.  If false is returned, |configs| is
   // not modified.
   bool GetCurrentConfigs(const QuicWallTime& now,
-                         QuicStringPiece requested_scid,
+                         quiche::QuicheStringPiece requested_scid,
                          QuicReferenceCountedPointer<Config> old_primary_config,
                          Configs* configs) const;
 
@@ -544,6 +553,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   // are written to |client_hello_state->info|.
   void EvaluateClientHello(
       const QuicSocketAddress& server_address,
+      const QuicSocketAddress& client_address,
       QuicTransportVersion version,
       const Configs& configs,
       QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
@@ -677,7 +687,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
       std::unique_ptr<ProofSource::Details> proof_source_details,
       QuicTag key_exchange_type,
       std::unique_ptr<CryptoHandshakeMessage> out,
-      QuicStringPiece public_value,
+      quiche::QuicheStringPiece public_value,
       std::unique_ptr<ProcessClientHelloContext> context,
       const Configs& configs) const;
 
@@ -751,7 +761,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   // failure.
   HandshakeFailureReason ParseSourceAddressToken(
       const Config& config,
-      QuicStringPiece token,
+      quiche::QuicheStringPiece token,
       SourceAddressTokens* tokens) const;
 
   // ValidateSourceAddressTokens returns HANDSHAKE_OK if the source address
@@ -908,6 +918,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   // proof_source_ contains an object that can provide certificate chains and
   // signatures.
   std::unique_ptr<ProofSource> proof_source_;
+  std::unique_ptr<ServerProofVerifier> proof_verifier_;
+  ClientCertMode client_cert_mode_;
 
   // key_exchange_source_ contains an object that can provide key exchange
   // objects.

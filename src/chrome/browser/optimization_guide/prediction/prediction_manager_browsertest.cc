@@ -19,6 +19,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
@@ -26,6 +27,7 @@
 #include "components/optimization_guide/store_update_data.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/previews/core/previews_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/network_connection_change_simulator.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -255,6 +257,7 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
+    cmd->AppendSwitch("enable-spdy-proxy-auth");
     cmd->AppendSwitch(optimization_guide::switches::
                           kFetchModelsAndHostModelFeaturesOverrideTimer);
 
@@ -264,7 +267,14 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
                            "whatever.com,somehost.com");
     cmd->AppendSwitchASCII(
         optimization_guide::switches::kOptimizationGuideServiceGetModelsURL,
-        models_server_->base_url().spec());
+        models_server_
+            ->GetURL(GURL(optimization_guide::
+                              kOptimizationGuideServiceGetModelsDefaultURL)
+                         .host(),
+                     "/")
+            .spec());
+    cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
+    cmd->AppendSwitchASCII("force-variation-ids", "4");
   }
 
   void SetResponseType(
@@ -277,6 +287,13 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
         ->RegisterOptimizationTypesAndTargets(
             {optimization_guide::proto::NOSCRIPT},
             {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+  }
+
+  PredictionManager* GetPredictionManager() {
+    OptimizationGuideKeyedService* optimization_guide_keyed_service =
+        OptimizationGuideKeyedServiceFactory::GetForProfile(
+            browser()->profile());
+    return optimization_guide_keyed_service->GetPredictionManager();
   }
 
   std::unique_ptr<page_load_metrics::PageLoadMetricsTestWaiter>
@@ -305,6 +322,7 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
     // The request to the remote Optimization Guide Service should always be a
     // POST.
     EXPECT_EQ(request.method, net::test_server::METHOD_POST);
+    EXPECT_NE(request.headers.end(), request.headers.find("X-Client-Data"));
     response->set_code(net::HTTP_OK);
     std::unique_ptr<optimization_guide::proto::GetModelsResponse>
         get_models_response = BuildGetModelsResponse(
@@ -348,9 +366,6 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(
     PredictionManagerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(FCPReachedSessionStatisticsUpdated)) {
-  OptimizationGuideKeyedService* keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
-
   RegisterWithKeyedService();
   auto waiter = CreatePageLoadMetricsTestWaiter();
   waiter->AddPageExpectation(
@@ -359,8 +374,7 @@ IN_PROC_BROWSER_TEST_F(
   waiter->Wait();
 
   const OptimizationGuideSessionStatistic* session_fcp =
-      keyed_service->GetPredictionManager()
-          ->GetFCPSessionStatisticsForTesting();
+      GetPredictionManager()->GetFCPSessionStatisticsForTesting();
   EXPECT_TRUE(session_fcp);
   EXPECT_EQ(1u, session_fcp->GetNumberOfSamples());
 }
@@ -368,9 +382,6 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     PredictionManagerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(NoFCPSessionStatisticsUnchanged)) {
-  OptimizationGuideKeyedService* keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
-
   RegisterWithKeyedService();
   auto waiter = CreatePageLoadMetricsTestWaiter();
   waiter->AddPageExpectation(
@@ -379,13 +390,12 @@ IN_PROC_BROWSER_TEST_F(
   waiter->Wait();
 
   const OptimizationGuideSessionStatistic* session_fcp =
-      keyed_service->GetPredictionManager()
-          ->GetFCPSessionStatisticsForTesting();
+      GetPredictionManager()->GetFCPSessionStatisticsForTesting();
   float current_mean = session_fcp->GetMean();
 
   waiter = CreatePageLoadMetricsTestWaiter();
   waiter->AddPageExpectation(
-      page_load_metrics::PageLoadMetricsTestWaiter::TimingField::kFirstLayout);
+      page_load_metrics::PageLoadMetricsTestWaiter::TimingField::kLoadEvent);
   ui_test_utils::NavigateToURL(browser(), https_url_without_content());
   waiter->Wait();
   EXPECT_EQ(1u, session_fcp->GetNumberOfSamples());
@@ -398,11 +408,6 @@ IN_PROC_BROWSER_TEST_F(
   base::HistogramTester histogram_tester;
   content::NetworkConnectionChangeSimulator().SetConnectionType(
       network::mojom::ConnectionType::CONNECTION_2G);
-  OptimizationGuideKeyedService* keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
-
-  PredictionManager* prediction_manager = keyed_service->GetPredictionManager();
-  EXPECT_TRUE(prediction_manager);
 
   RegisterWithKeyedService();
   RetryForHistogramUntilCountReached(
@@ -418,13 +423,9 @@ IN_PROC_BROWSER_TEST_F(
     PredictionManagerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(OnlyHostModelFeaturesInGetModelsResponse)) {
   base::HistogramTester histogram_tester;
-  OptimizationGuideKeyedService* keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
 
   SetResponseType(PredictionModelsFetcherRemoteResponseType::
                       kSuccessfulWithFeaturesAndNoModels);
-  PredictionManager* prediction_manager = keyed_service->GetPredictionManager();
-  EXPECT_TRUE(prediction_manager);
   RegisterWithKeyedService();
   RetryForHistogramUntilCountReached(
       &histogram_tester,
@@ -433,19 +434,17 @@ IN_PROC_BROWSER_TEST_F(
       "OptimizationGuide.PredictionManager.HostModelFeaturesStored", true, 1);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionManager.PredictionModelsStored", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 0);
 }
 
 IN_PROC_BROWSER_TEST_F(
     PredictionManagerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(OnlyPredictionModelsInGetModelsResponse)) {
   base::HistogramTester histogram_tester;
-  OptimizationGuideKeyedService* keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
 
   SetResponseType(PredictionModelsFetcherRemoteResponseType::
                       kSuccessfulWithModelsAndNoFeatures);
-  PredictionManager* prediction_manager = keyed_service->GetPredictionManager();
-  EXPECT_TRUE(prediction_manager);
   RegisterWithKeyedService();
   RetryForHistogramUntilCountReached(
       &histogram_tester,
@@ -456,6 +455,8 @@ IN_PROC_BROWSER_TEST_F(
       "OptimizationGuide.PredictionManager.HostModelFeaturesStored", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.PredictionManager.PredictionModelsStored", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 2, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -463,11 +464,7 @@ IN_PROC_BROWSER_TEST_F(
     DISABLE_ON_WIN_MAC_CHROMEOS(PredictionModelFetchFailed)) {
   SetResponseType(PredictionModelsFetcherRemoteResponseType::kUnsuccessful);
   base::HistogramTester histogram_tester;
-  OptimizationGuideKeyedService* keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
 
-  PredictionManager* prediction_manager = keyed_service->GetPredictionManager();
-  EXPECT_TRUE(prediction_manager);
   RegisterWithKeyedService();
 
   // Wait until histograms have been updated before performing checks for
@@ -484,17 +481,15 @@ IN_PROC_BROWSER_TEST_F(
       "OptimizationGuide.PredictionManager.HostModelFeaturesStored", 0);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionManager.PredictionModelsStored", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 0);
 }
 
 IN_PROC_BROWSER_TEST_F(
     PredictionManagerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(HostModelFeaturesClearedOnHistoryClear)) {
   base::HistogramTester histogram_tester;
-  OptimizationGuideKeyedService* keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
 
-  PredictionManager* prediction_manager = keyed_service->GetPredictionManager();
-  EXPECT_TRUE(prediction_manager);
   RegisterWithKeyedService();
 
   // Wait until histograms have been updated before performing checks for
@@ -546,11 +541,7 @@ class PredictionManagerBrowserSameOriginTest
 IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserSameOriginTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(IsSameOriginNavigation)) {
   base::HistogramTester histogram_tester;
-  OptimizationGuideKeyedService* keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
 
-  PredictionManager* prediction_manager = keyed_service->GetPredictionManager();
-  EXPECT_TRUE(prediction_manager);
   RegisterWithKeyedService();
 
   // Wait until histograms have been updated before performing checks for

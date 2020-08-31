@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_test_utils.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_test.h"
 
 using ::testing::ElementsAre;
 
@@ -17,11 +17,14 @@ namespace test {
 
 class ValueProxyPeer {
  public:
-  static SpdyStringPiece key(SpdyHeaderBlock::ValueProxy* p) { return p->key_; }
+  static quiche::QuicheStringPiece key(SpdyHeaderBlock::ValueProxy* p) {
+    return p->key_;
+  }
 };
 
-std::pair<SpdyStringPiece, SpdyStringPiece> Pair(SpdyStringPiece k,
-                                                 SpdyStringPiece v) {
+std::pair<quiche::QuicheStringPiece, quiche::QuicheStringPiece> Pair(
+    quiche::QuicheStringPiece k,
+    quiche::QuicheStringPiece v) {
   return std::make_pair(k, v);
 }
 
@@ -39,19 +42,20 @@ TEST(SpdyHeaderBlockTest, EmptyBlock) {
 
 TEST(SpdyHeaderBlockTest, KeyMemoryReclaimedOnLookup) {
   SpdyHeaderBlock block;
-  SpdyStringPiece copied_key1;
+  quiche::QuicheStringPiece copied_key1;
   {
     auto proxy1 = block["some key name"];
     copied_key1 = ValueProxyPeer::key(&proxy1);
   }
-  SpdyStringPiece copied_key2;
+  quiche::QuicheStringPiece copied_key2;
   {
     auto proxy2 = block["some other key name"];
     copied_key2 = ValueProxyPeer::key(&proxy2);
   }
   // Because proxy1 was never used to modify the block, the memory used for the
   // key could be reclaimed and used for the second call to operator[].
-  // Therefore, we expect the pointers of the two SpdyStringPieces to be equal.
+  // Therefore, we expect the pointers of the two QuicheStringPieces to be
+  // equal.
   EXPECT_EQ(copied_key1.data(), copied_key2.data());
 
   {
@@ -118,6 +122,13 @@ TEST(SpdyHeaderBlockTest, Equality) {
   EXPECT_NE(block1, block2);
 }
 
+SpdyHeaderBlock ReturnTestHeaderBlock() {
+  SpdyHeaderBlock block;
+  block["foo"] = "bar";
+  block.insert(std::make_pair("foo2", "baz"));
+  return block;
+}
+
 // Test that certain methods do not crash on moved-from instances.
 TEST(SpdyHeaderBlockTest, MovedFromIsValid) {
   SpdyHeaderBlock block1;
@@ -139,6 +150,11 @@ TEST(SpdyHeaderBlockTest, MovedFromIsValid) {
 
   block1["foo"] = "bar";
   EXPECT_THAT(block1, ElementsAre(Pair("foo", "bar")));
+
+  SpdyHeaderBlock block5 = ReturnTestHeaderBlock();
+  block5.AppendValueOrAddHeader("foo", "bar2");
+  EXPECT_THAT(block5, ElementsAre(Pair("foo", std::string("bar\0bar2", 8)),
+                                  Pair("foo2", "baz")));
 }
 
 // This test verifies that headers can be appended to no matter how they were
@@ -177,45 +193,41 @@ TEST(SpdyHeaderBlockTest, AppendHeaders) {
   EXPECT_EQ("singleton", block["h4"]);
 }
 
+TEST(SpdyHeaderBlockTest, CompareValueToStringPiece) {
+  SpdyHeaderBlock block;
+  block["foo"] = "foo";
+  block.AppendValueOrAddHeader("foo", "bar");
+  const auto& val = block["foo"];
+  const char expected[] = "foo\0bar";
+  EXPECT_TRUE(quiche::QuicheStringPiece(expected, 7) == val);
+  EXPECT_TRUE(val == quiche::QuicheStringPiece(expected, 7));
+  EXPECT_FALSE(quiche::QuicheStringPiece(expected, 3) == val);
+  EXPECT_FALSE(val == quiche::QuicheStringPiece(expected, 3));
+  const char not_expected[] = "foo\0barextra";
+  EXPECT_FALSE(quiche::QuicheStringPiece(not_expected, 12) == val);
+  EXPECT_FALSE(val == quiche::QuicheStringPiece(not_expected, 12));
+
+  const auto& val2 = block["foo2"];
+  EXPECT_FALSE(quiche::QuicheStringPiece(expected, 7) == val2);
+  EXPECT_FALSE(val2 == quiche::QuicheStringPiece(expected, 7));
+  EXPECT_FALSE(quiche::QuicheStringPiece("") == val2);
+  EXPECT_FALSE(val2 == quiche::QuicheStringPiece(""));
+}
+
 // This test demonstrates that the SpdyHeaderBlock data structure does not place
 // any limitations on the characters present in the header names.
 TEST(SpdyHeaderBlockTest, UpperCaseNames) {
   SpdyHeaderBlock block;
   block["Foo"] = "foo";
   block.AppendValueOrAddHeader("Foo", "bar");
-  EXPECT_EQ(block.end(), block.find("foo"));
+  EXPECT_NE(block.end(), block.find("foo"));
   EXPECT_EQ(Pair("Foo", std::string("foo\0bar", 7)), *block.find("Foo"));
 
-  // The map is case sensitive, so both "Foo" and "foo" can be present.
+  // The map is case insensitive, so updating "foo" modifies the entry
+  // previously added.
   block.AppendValueOrAddHeader("foo", "baz");
-  EXPECT_THAT(block, ElementsAre(Pair("Foo", std::string("foo\0bar", 7)),
-                                 Pair("foo", "baz")));
-}
-
-TEST(JoinTest, JoinEmpty) {
-  std::vector<SpdyStringPiece> empty;
-  SpdyStringPiece separator = ", ";
-  char buf[10] = "";
-  size_t written = Join(buf, empty, separator);
-  EXPECT_EQ(0u, written);
-}
-
-TEST(JoinTest, JoinOne) {
-  std::vector<SpdyStringPiece> v = {"one"};
-  SpdyStringPiece separator = ", ";
-  char buf[15];
-  size_t written = Join(buf, v, separator);
-  EXPECT_EQ(3u, written);
-  EXPECT_EQ("one", SpdyStringPiece(buf, written));
-}
-
-TEST(JoinTest, JoinMultiple) {
-  std::vector<SpdyStringPiece> v = {"one", "two", "three"};
-  SpdyStringPiece separator = ", ";
-  char buf[15];
-  size_t written = Join(buf, v, separator);
-  EXPECT_EQ(15u, written);
-  EXPECT_EQ("one, two, three", SpdyStringPiece(buf, written));
+  EXPECT_THAT(block,
+              ElementsAre(Pair("Foo", std::string("foo\0bar\0baz", 11))));
 }
 
 namespace {

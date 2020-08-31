@@ -7,7 +7,9 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <sstream>
 #include <string>
+#include <type_traits>
 
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/frames/quic_frame.h"
@@ -18,8 +20,8 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_iovec.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -29,22 +31,22 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
 
   // Returns the 64 bit FNV1a hash of the data.  See
   // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
-  static uint64_t FNV1a_64_Hash(QuicStringPiece data);
+  static uint64_t FNV1a_64_Hash(quiche::QuicheStringPiece data);
 
   // Returns the 128 bit FNV1a hash of the data.  See
   // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
-  static QuicUint128 FNV1a_128_Hash(QuicStringPiece data);
+  static QuicUint128 FNV1a_128_Hash(quiche::QuicheStringPiece data);
 
   // Returns the 128 bit FNV1a hash of the two sequences of data.  See
   // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
-  static QuicUint128 FNV1a_128_Hash_Two(QuicStringPiece data1,
-                                        QuicStringPiece data2);
+  static QuicUint128 FNV1a_128_Hash_Two(quiche::QuicheStringPiece data1,
+                                        quiche::QuicheStringPiece data2);
 
   // Returns the 128 bit FNV1a hash of the three sequences of data.  See
   // http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
-  static QuicUint128 FNV1a_128_Hash_Three(QuicStringPiece data1,
-                                          QuicStringPiece data2,
-                                          QuicStringPiece data3);
+  static QuicUint128 FNV1a_128_Hash_Three(quiche::QuicheStringPiece data1,
+                                          quiche::QuicheStringPiece data2,
+                                          quiche::QuicheStringPiece data3);
 
   // SerializeUint128 writes the first 96 bits of |v| in little-endian form
   // to |out|.
@@ -78,7 +80,7 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
                            char* buffer);
 
   // Creates an iovec pointing to the same data as |data|.
-  static struct iovec MakeIovec(QuicStringPiece data);
+  static struct iovec MakeIovec(quiche::QuicheStringPiece data);
 
   // Returns the opposite Perspective of the |perspective| passed in.
   static constexpr Perspective InvertPerspective(Perspective perspective) {
@@ -98,6 +100,9 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   // Returns true if |frame| is a handshake frame in version |version|.
   static bool IsHandshakeFrame(const QuicFrame& frame,
                                QuicTransportVersion transport_version);
+
+  // Return true if any frame in |frames| is of |type|.
+  static bool ContainsFrameType(const QuicFrames& frames, QuicFrameType type);
 
   // Returns packet state corresponding to |retransmission_type|.
   static SentPacketState RetransmissionTypeToPacketState(
@@ -184,10 +189,6 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   static QuicConnectionId CreateRandomConnectionId(uint8_t connection_id_length,
                                                    QuicRandom* random);
 
-  // Returns true if the QUIC version allows variable length connection IDs.
-  static bool VariableLengthConnectionIdAllowedForVersion(
-      QuicTransportVersion version);
-
   // Returns true if the connection ID length is valid for this QUIC version.
   static bool IsConnectionIdLengthValidForVersion(
       size_t connection_id_length,
@@ -218,9 +219,67 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   // Get the maximum value for a V99/IETF QUIC stream count. If a count
   // exceeds this value, it will result in a stream ID that exceeds the
   // implementation limit on stream ID size.
-  static QuicStreamCount GetMaxStreamCount(bool unidirectional,
-                                           Perspective perspective);
+  static QuicStreamCount GetMaxStreamCount();
 };
+
+template <typename Mask>
+class QUIC_EXPORT_PRIVATE BitMask {
+ public:
+  // explicit to prevent (incorrect) usage like "BitMask bitmask = 0;".
+  template <typename... Bits>
+  explicit BitMask(Bits... bits) {
+    mask_ = MakeMask(bits...);
+  }
+
+  BitMask() = default;
+  BitMask(const BitMask& other) = default;
+  BitMask& operator=(const BitMask& other) = default;
+
+  template <typename... Bits>
+  void Set(Bits... bits) {
+    mask_ |= MakeMask(bits...);
+  }
+
+  template <typename Bit>
+  bool IsSet(Bit bit) const {
+    return (MakeMask(bit) & mask_) != 0;
+  }
+
+  void ClearAll() { mask_ = 0; }
+
+  static constexpr size_t NumBits() { return 8 * sizeof(Mask); }
+
+  friend bool operator==(const BitMask& lhs, const BitMask& rhs) {
+    return lhs.mask_ == rhs.mask_;
+  }
+
+  std::string DebugString() const {
+    std::ostringstream oss;
+    oss << "0x" << std::hex << mask_;
+    return oss.str();
+  }
+
+ private:
+  template <typename Bit>
+  static std::enable_if_t<std::is_enum<Bit>::value, Mask> MakeMask(Bit bit) {
+    using IntType = typename std::underlying_type<Bit>::type;
+    return Mask(1) << static_cast<IntType>(bit);
+  }
+
+  template <typename Bit>
+  static std::enable_if_t<!std::is_enum<Bit>::value, Mask> MakeMask(Bit bit) {
+    return Mask(1) << bit;
+  }
+
+  template <typename Bit, typename... Bits>
+  static Mask MakeMask(Bit first_bit, Bits... other_bits) {
+    return MakeMask(first_bit) | MakeMask(other_bits...);
+  }
+
+  Mask mask_ = 0;
+};
+
+using BitMask64 = BitMask<uint64_t>;
 
 }  // namespace quic
 

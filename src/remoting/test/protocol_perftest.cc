@@ -155,6 +155,9 @@ class ProtocolPerfTest
   protocol::CursorShapeStub* GetCursorShapeStub() override {
     return &cursor_shape_stub_;
   }
+  protocol::KeyboardLayoutStub* GetKeyboardLayoutStub() override {
+    return nullptr;
+  }
 
   // protocol::FrameConsumer interface.
   std::unique_ptr<webrtc::DesktopFrame> AllocateFrame(
@@ -163,12 +166,12 @@ class ProtocolPerfTest
   }
 
   void DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
-                 const base::Closure& done) override {
+                 base::OnceClosure done) override {
     last_video_frame_ = std::move(frame);
-    if (!on_frame_task_.is_null())
+    if (on_frame_task_)
       on_frame_task_.Run();
-    if (!done.is_null())
-      done.Run();
+    if (done)
+      std::move(done).Run();
   }
 
   protocol::FrameConsumer::PixelFormat GetPixelFormat() override {
@@ -359,8 +362,8 @@ class ProtocolPerfTest
 
     protocol::ClientAuthenticationConfig client_auth_config;
     client_auth_config.host_id = kHostId;
-    client_auth_config.fetch_secret_callback =
-        base::Bind(&ProtocolPerfTest::FetchPin, base::Unretained(this));
+    client_auth_config.fetch_secret_callback = base::BindRepeating(
+        &ProtocolPerfTest::FetchPin, base::Unretained(this));
 
     video_renderer_.reset(new SoftwareVideoRenderer(this));
     video_renderer_->Initialize(*client_context_, this);
@@ -416,7 +419,7 @@ class ProtocolPerfTest
   bool client_connected_;
   bool host_connected_;
 
-  base::Closure on_frame_task_;
+  base::RepeatingClosure on_frame_task_;
 
   std::unique_ptr<VideoPacket> last_video_packet_;
   std::unique_ptr<webrtc::DesktopFrame> last_video_frame_;
@@ -478,8 +481,8 @@ INSTANTIATE_TEST_SUITE_P(
 void ProtocolPerfTest::MeasureTotalLatency(bool use_webrtc) {
   scoped_refptr<test::CyclicFrameGenerator> frame_generator =
       test::CyclicFrameGenerator::Create();
-  desktop_environment_factory_->set_frame_generator(
-      base::Bind(&test::CyclicFrameGenerator::GenerateFrame, frame_generator));
+  desktop_environment_factory_->set_frame_generator(base::BindRepeating(
+      &test::CyclicFrameGenerator::GenerateFrame, frame_generator));
   event_timestamp_source_ = frame_generator;
 
   StartHostAndClient(use_webrtc);
@@ -576,8 +579,8 @@ TEST_P(ProtocolPerfTest, TotalLatencyWebrtc) {
 void ProtocolPerfTest::MeasureScrollPerformance(bool use_webrtc) {
   scoped_refptr<test::ScrollFrameGenerator> frame_generator =
       new test::ScrollFrameGenerator();
-  desktop_environment_factory_->set_frame_generator(
-      base::Bind(&test::ScrollFrameGenerator::GenerateFrame, frame_generator));
+  desktop_environment_factory_->set_frame_generator(base::BindRepeating(
+      &test::ScrollFrameGenerator::GenerateFrame, frame_generator));
   event_timestamp_source_ = frame_generator;
 
   StartHostAndClient(use_webrtc);

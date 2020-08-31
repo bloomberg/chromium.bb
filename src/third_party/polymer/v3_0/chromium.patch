@@ -182,3 +182,55 @@ index 43c59653a39b..26652936735c 100644
    },
  
    _forwardItemPath: function(path, value) {
+diff --git a/components-chromium/iron-overlay-behavior/iron-overlay-manager.js b/components-chromium/iron-overlay-behavior/iron-overlay-manager.js
+index 99768f419688..7dd55b8077b7 100644
+--- a/components-chromium/iron-overlay-behavior/iron-overlay-manager.js
++++ b/components-chromium/iron-overlay-behavior/iron-overlay-manager.js
+@@ -13,7 +13,7 @@ import './iron-overlay-backdrop.js';
+ 
+ import {IronA11yKeysBehavior} from '../iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
+ import {dom} from '../polymer/lib/legacy/polymer.dom.js';
+-import * as gestures from '../polymer/lib/utils/gestures.js';
++import {gestures} from '../polymer/lib/utils/gestures.js';
+ 
+ /**
+  * @struct
+diff --git a/components-chromium/paper-tooltip/paper-tooltip.js b/components-chromium/paper-tooltip/paper-tooltip.js
+index 853eee199025..303d1bbdfc78 100644
+--- a/components-chromium/paper-tooltip/paper-tooltip.js
++++ b/components-chromium/paper-tooltip/paper-tooltip.js
+@@ -311,12 +311,16 @@ Polymer({
+ 
+   /**
+    * Returns the target element that this tooltip is anchored to. It is
+-   * either the element given by the `for` attribute, or the immediate parent
+-   * of the tooltip.
++   * either the element given by the `for` attribute, the element manually
++   * specified through the `target` attribute, or the immediate parent of
++   * the tooltip.
+    *
+    * @type {Node}
+    */
+   get target() {
++    if (this._manualTarget)
++      return this._manualTarget;
++
+     var parentNode = dom(this).parentNode;
+     // If the parentNode is a document fragment, then we need to use the host.
+     var ownerRoot = dom(this).getOwnerRoot();
+@@ -331,6 +335,15 @@ Polymer({
+     return target;
+   },
+ 
++  /**
++   * Sets the target element that this tooltip will be anchored to.
++   * @param {Node} target
++   */
++  set target(target) {
++    this._manualTarget = target;
++    this._findTarget();
++  },
++
+   /**
+    * @return {void}
+    */

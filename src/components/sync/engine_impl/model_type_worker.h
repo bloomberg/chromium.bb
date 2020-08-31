@@ -123,9 +123,6 @@ class ModelTypeWorker : public UpdateHandler,
   // called when a new encryption mechanism is ready.
   void EncryptionAcceptedMaybeApplyUpdates();
 
-  // Callback for when our contribution gets a response.
-  void OnCommitResponse(CommitResponseDataList* response_list);
-
   // If migration the directory encounters an error partway through, we need to
   // clear the update data that has been added so far.
   void AbortMigration();
@@ -210,6 +207,15 @@ class ModelTypeWorker : public UpdateHandler,
   // of them except the last one.
   void DeduplicatePendingUpdatesBasedOnOriginatorClientItemId();
 
+  // Callback for when our contribution gets a response.
+  void OnCommitResponse(
+      const CommitResponseDataList& committed_response_list,
+      const FailedCommitResponseDataList& error_response_list);
+
+  // Callback when there is no response or server returns an error without
+  // response body.
+  void OnFullCommitFailure(SyncCommitError commit_error);
+
   ModelType type_;
   DataTypeDebugInfoEmitter* debug_info_emitter_;
 
@@ -231,10 +237,10 @@ class ModelTypeWorker : public UpdateHandler,
   // Interface used to access and send nudges to the sync scheduler. Not owned.
   NudgeHandler* nudge_handler_;
 
-  // A map of update responses, keyed by server_id.
-  // Holds updates encrypted with pending keys.
-  std::map<std::string, std::unique_ptr<UpdateResponseData>>
-      entries_pending_decryption_;
+  // A map of sync entities, keyed by server_id. Holds updates encrypted with
+  // pending keys. Entries are stored in a map for de-duplication (applying only
+  // the latest).
+  std::map<std::string, sync_pb::SyncEntity> entries_pending_decryption_;
 
   // Accumulates all the updates from a single GetUpdates cycle in memory so
   // they can all be sent to the processor at once.

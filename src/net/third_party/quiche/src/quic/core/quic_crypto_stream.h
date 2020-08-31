@@ -5,6 +5,7 @@
 #ifndef QUICHE_QUIC_CORE_QUIC_CRYPTO_STREAM_H_
 #define QUICHE_QUIC_CORE_QUIC_CRYPTO_STREAM_H_
 
+#include <array>
 #include <cstddef>
 #include <string>
 
@@ -13,8 +14,9 @@
 #include "net/third_party/quiche/src/quic/core/quic_config.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream.h"
+#include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -55,23 +57,26 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   bool OnCryptoFrameAcked(const QuicCryptoFrame& frame,
                           QuicTime::Delta ack_delay_time);
 
+  void OnStreamReset(const QuicRstStreamFrame& frame) override;
+
   // Performs key extraction to derive a new secret of |result_len| bytes
   // dependent on |label|, |context|, and the stream's negotiated subkey secret.
   // Returns false if the handshake has not been confirmed or the parameters are
   // invalid (e.g. |label| contains null bytes); returns true on success.
-  bool ExportKeyingMaterial(QuicStringPiece label,
-                            QuicStringPiece context,
+  bool ExportKeyingMaterial(quiche::QuicheStringPiece label,
+                            quiche::QuicheStringPiece context,
                             size_t result_len,
                             std::string* result) const;
 
   // Writes |data| to the QuicStream at level |level|.
-  virtual void WriteCryptoData(EncryptionLevel level, QuicStringPiece data);
+  virtual void WriteCryptoData(EncryptionLevel level,
+                               quiche::QuicheStringPiece data);
 
   // Returns true once an encrypter has been set for the connection.
   virtual bool encryption_established() const = 0;
 
   // Returns true once the crypto handshake has completed.
-  virtual bool handshake_confirmed() const = 0;
+  virtual bool one_rtt_keys_available() const = 0;
 
   // Returns the parameters negotiated in the crypto handshake.
   virtual const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
@@ -83,19 +88,30 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // Called when a packet of encryption |level| has been successfully decrypted.
   virtual void OnPacketDecrypted(EncryptionLevel level) = 0;
 
+  // Called when a 1RTT packet has been acknowledged.
+  virtual void OnOneRttPacketAcknowledged() = 0;
+
+  // Called when a packet of ENCRYPTION_HANDSHAKE gets sent.
+  virtual void OnHandshakePacketSent() = 0;
+
+  // Called when a handshake done frame has been received.
+  virtual void OnHandshakeDoneReceived() = 0;
+
+  // Returns current handshake state.
+  virtual HandshakeState GetHandshakeState() const = 0;
+
   // Returns the maximum number of bytes that can be buffered at a particular
   // encryption level |level|.
   virtual size_t BufferSizeLimitForLevel(EncryptionLevel level) const;
 
-  // Called when the underlying QuicConnection has agreed upon a QUIC version to
-  // use.
-  virtual void OnSuccessfulVersionNegotiation(const ParsedQuicVersion& version);
-
   // Called to cancel retransmission of unencrypted crypto stream data.
   void NeuterUnencryptedStreamData();
 
+  // Called to cancel retransmission of data of encryption |level|.
+  void NeuterStreamDataOfEncryptionLevel(EncryptionLevel level);
+
   // Override to record the encryption level of consumed data.
-  void OnStreamDataConsumed(size_t bytes_consumed) override;
+  void OnStreamDataConsumed(QuicByteCount bytes_consumed) override;
 
   // Returns whether there are any bytes pending retransmission in CRYPTO
   // frames.
@@ -111,7 +127,15 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // Override to send unacked crypto data with the appropriate encryption level.
   bool RetransmitStreamData(QuicStreamOffset offset,
                             QuicByteCount data_length,
-                            bool fin) override;
+                            bool fin,
+                            TransmissionType type) override;
+
+  // Sends stream retransmission data at |encryption_level|.
+  QuicConsumedData RetransmitStreamDataAtLevel(
+      QuicStreamOffset retransmission_offset,
+      QuicByteCount retransmission_length,
+      EncryptionLevel encryption_level,
+      TransmissionType type);
 
   // Returns the number of bytes of handshake data that have been received from
   // the peer in either CRYPTO or STREAM frames.
@@ -135,7 +159,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
 
   // Called to retransmit any outstanding data in the range indicated by the
   // encryption level, offset, and length in |crypto_frame|.
-  void RetransmitData(QuicCryptoFrame* crypto_frame);
+  void RetransmitData(QuicCryptoFrame* crypto_frame, TransmissionType type);
 
   // Called to write buffered crypto frames.
   void WriteBufferedCryptoFrames();
@@ -178,7 +202,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
 
   // Keeps state for data sent/received in CRYPTO frames at each encryption
   // level.
-  CryptoSubstream substreams_[NUM_ENCRYPTION_LEVELS];
+  std::array<CryptoSubstream, NUM_ENCRYPTION_LEVELS> substreams_;
 };
 
 }  // namespace quic

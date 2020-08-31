@@ -25,7 +25,7 @@ static inline VkSamplerAddressMode wrap_mode_to_vk_sampler_address(
     SK_ABORT("Unknown wrap mode.");
 }
 
-GrVkSampler* GrVkSampler::Create(GrVkGpu* gpu, const GrSamplerState& samplerState,
+GrVkSampler* GrVkSampler::Create(GrVkGpu* gpu, GrSamplerState samplerState,
                                  const GrVkYcbcrConversionInfo& ycbcrInfo) {
     static VkFilter vkMinFilterModes[] = {
         VK_FILTER_NEAREST,
@@ -105,30 +105,23 @@ GrVkSampler* GrVkSampler::Create(GrVkGpu* gpu, const GrSamplerState& samplerStat
     VkResult result;
     GR_VK_CALL_RESULT(gpu, result, CreateSampler(gpu->device(), &createInfo, nullptr, &sampler));
     if (result != VK_SUCCESS) {
-        ycbcrConversion->unref(gpu);
+        ycbcrConversion->unref();
         return nullptr;
     }
 
-    return new GrVkSampler(sampler, ycbcrConversion, GenerateKey(samplerState, ycbcrInfo));
+    return new GrVkSampler(gpu, sampler, ycbcrConversion, GenerateKey(samplerState, ycbcrInfo));
 }
 
-void GrVkSampler::freeGPUData(GrVkGpu* gpu) const {
+void GrVkSampler::freeGPUData() const {
     SkASSERT(fSampler);
-    GR_VK_CALL(gpu->vkInterface(), DestroySampler(gpu->device(), fSampler, nullptr));
+    GR_VK_CALL(fGpu->vkInterface(), DestroySampler(fGpu->device(), fSampler, nullptr));
     if (fYcbcrConversion) {
-        fYcbcrConversion->unref(gpu);
+        fYcbcrConversion->unref();
     }
 }
 
-void GrVkSampler::abandonGPUData() const {
-    if (fYcbcrConversion) {
-        fYcbcrConversion->unrefAndAbandon();
-    }
-}
-
-GrVkSampler::Key GrVkSampler::GenerateKey(const GrSamplerState& samplerState,
+GrVkSampler::Key GrVkSampler::GenerateKey(GrSamplerState samplerState,
                                           const GrVkYcbcrConversionInfo& ycbcrInfo) {
     return { GrSamplerState::GenerateKey(samplerState),
              GrVkSamplerYcbcrConversion::GenerateKey(ycbcrInfo) };
 }
-

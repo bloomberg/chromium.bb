@@ -88,14 +88,15 @@
       valid_type: "bool",
     },
 
-    // settable_from_internals specifies whether a feature can be set from
-    // internals.runtimeFlags, with the default being false.
-    settable_from_internals: {
+    // origin_trial_allows_third_party specifies whether the trial can be enabled
+    // from third party origins, with default being false.
+    origin_trial_allows_third_party: {
       valid_type: "bool",
     },
 
-    // Set to true to have customised {feature}Enabled() method implementation.
-    custom: {
+    // settable_from_internals specifies whether a feature can be set from
+    // internals.runtimeFlags, with the default being false.
+    settable_from_internals: {
       valid_type: "bool",
     },
 
@@ -116,12 +117,15 @@
     },
     {
       name: "AccessibilityExposeARIAAnnotations",
-      origin_trial_feature_name: "AccessibilityExposeARIAAnnotations",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "AccessibilityExposeDisplayNone",
       status: "test",
+    },
+    {
+      name: "AccessibilityExposeHTMLElement",
+      status: "experimental",
     },
     {
       name: "AccessibilityObjectModel",
@@ -147,30 +151,34 @@
     {
       name: "AllowSyncXHRInPageDismissal",
       origin_trial_feature_name: "AllowSyncXHRInPageDismissal",
-      status: "experimental",
     },
     {
       name: "AnimationWorklet",
-      origin_trial_feature_name: "AnimationWorklet",
       status: "experimental",
     },
     {
       name: "AOMAriaProperties",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "AOMAriaRelationshipProperties",
       status: "experimental",
     },
     {
+      // Force disabled if blink::features::kAppCache is disabled, and this
+      // will override any origin trial setting.
+      // Disabled if blink::features::kAppCacheRequireOriginTrial is enabled,
+      // but can be turned back on by the origin trial.
+      // Otherwise, on by default.
+      name: "AppCache",
+      status: "stable",
+      origin_trial_feature_name: "AppCache",
+    },
+    {
       // Use an aspect ratio from the HTML attributes even when we use sizing
       // from CSS.
       // https://github.com/WICG/intrinsicsize-attribute/issues/16
       name: "AspectRatioFromWidthAndHeight",
-      status: "stable",
-    },
-    {
-      name: "AsyncClipboard",
       status: "stable",
     },
     {
@@ -228,7 +236,15 @@
     },
     {
       name: "Badging",
-      origin_trial_feature_name: "BadgingV2",
+      status: "stable",
+    },
+    {
+      name: "BarcodeDetector",
+      status: "stable",
+    },
+    {
+      // https://github.com/WICG/display-locking/blob/master/explainer-beforematch.md
+      name: "BeforeMatchEvent",
       status: "experimental",
     },
     {
@@ -238,46 +254,28 @@
       name: "BlinkRuntimeCallStats",
     },
     {
-      // Adding simpler reading methods - stream(), text(), and arrayBuffer() -
-      // to the Blob interface. See: https://github.com/w3c/FileAPI/pull/117
-      name: "BlobReadMethods",
-      status: "stable"
-    },
-    {
       name: "BlockCredentialedSubresources",
       status: "stable",
+    },
+    {
+      name: "BlockFlowHandlesWebkitLineClamp",
     },
     {
       name: "BlockHTMLParserOnStyleSheets",
     },
     {
       name: "BlockingDownloadsInSandbox",
-      status: "test",
+      status: "stable",
     },
     {
       name: "BlockingFocusWithoutUserActivation",
       status: "experimental",
     },
     {
-      name: "BuiltInModuleAll",
-      implied_by: ["ExperimentalProductivityFeatures"],
+      name: "BrowserVerifiedUserActivationKeyboard",
     },
     {
-      name: "BuiltInModuleInfra",
-      origin_trial_feature_name: "BuiltInModuleInfra",
-      implied_by: ["ExperimentalProductivityFeatures",
-                   "BuiltInModuleAll",
-                   "BuiltInModuleKvStorage",
-                   "BuiltInModuleSwitchElement"],
-    },
-    {
-      name: "BuiltInModuleKvStorage",
-      origin_trial_feature_name: "BuiltInModuleKvStorage",
-      implied_by: ["ExperimentalProductivityFeatures"],
-    },
-    {
-      name: "BuiltInModuleSwitchElement",
-      implied_by: ["BuiltInModuleAll"],
+      name: "BrowserVerifiedUserActivationMouse",
     },
     {
       name: "CacheInlineScriptCode"
@@ -311,6 +309,10 @@
       status: "experimental",
     },
     {
+      name: "CaptureTimeInCsrc",
+      status: "stable",
+    },
+    {
       name: "ClickPointerEvent",
       status: "experimental",
     },
@@ -324,6 +326,8 @@
       // NativeFileSystem is in Origin Trial, which doesn't support having
       // non-origin-trial-enabled features depend on it. https://crbug.com/1000486
       // depends_on: ["NativeFileSystem"]
+      origin_trial_feature_name: "NativeFileSystem2",
+      origin_trial_os: ["win", "macosx", "linux", "chromeos"],
     },
     {
       name: "CompositeAfterPaint",
@@ -331,10 +335,6 @@
     {
       name: "CompositedSelectionUpdate",
       status: {"Android": "stable"},
-    },
-    {
-      name: "CompositorTouchAction",
-      status: "test",
     },
     {
       name: "ComputedAccessibilityInfo",
@@ -349,26 +349,31 @@
     },
     {
       name: "ContactsManagerExtraProperties",
-      origin_trial_feature_name: "ContactsManagerExtraProperties",
-      origin_trial_os: ["android"],
-      status: {"Android": "experimental", "default": "test"},
+      status:  {"Android": "stable", "default": "test"},
     },
     {
       name: "ContentIndex",
-      origin_trial_feature_name: "ContentIndex",
-      origin_trial_os: ["android"],
-      status: "experimental",
+      status:  {"Android": "stable", "default": "experimental"},
     },
     {
       name: "ContextMenu",
       status: "experimental",
     },
     {
+      name: "ConversionMeasurement",
+      status: "test",
+    },
+    {
       name: "CookieDeprecationMessages",
       status: "experimental",
     },
     {
-      name: "CookieStore",
+      name: "CookieStoreDocument",
+      origin_trial_feature_name: "CookieStore",
+      status: "experimental",
+    },
+    {
+      name: "CookieStoreWorker",
       origin_trial_feature_name: "CookieStore",
       status: "experimental",
     },
@@ -381,7 +386,6 @@
     },
     {
       name: "CorsRFC1918",
-      depends_on: ["AddressSpace"],
     },
     {
       name: "CSS3Text",
@@ -392,8 +396,7 @@
       status: "stable",
     },
     {
-      name: "CSSAdditiveAnimations",
-      depends_on: ["StackedCSSPropertyAnimations"],
+      name: "CSSAspectRatioProperty",
       status: "experimental",
     },
     {
@@ -402,21 +405,50 @@
     },
     {
       name: "CSSCascade",
-    },
-    // Support for the CSS color-scheme property from the css-color-adjust spec.
-    // https://drafts.csswg.org/css-color-adjust/#color-scheme-prop
-    {
-      name: "CSSColorScheme",
-    },
-    {
-      // CSS min(), max() and clamp()
-      // https://drafts.csswg.org/css-values-4/#comp-func
-      name: "CSSComparisonFunctions",
       status: "stable",
+    },
+    {
+      // Support for the CSS color-scheme property from the css-color-adjust spec.
+      // https://drafts.csswg.org/css-color-adjust/#color-scheme-prop
+      name: "CSSColorScheme",
+      status: "stable",
+    },
+    {
+      // When the color-scheme is supported via the CSS color-scheme property
+      // (CSSColorScheme) or the meta tag (MetaColorScheme), the only UA
+      // rendering change is for the canvas background and the :root element
+      // color property. Enabling this runtime flag will enable dark UA
+      // rendering for form controls, scrollbars, etc.
+      name: "CSSColorSchemeUARendering",
+    },
+    {
+      // The main content-visibility feature.
+      // https://wicg.github.io/display-locking/
+      name: "CSSContentVisibility",
+      status: "experimental",
+      implied_by: ["CSSContentVisibilityHiddenMatchable"]
+    },
+    {
+      // The content-visibility activation event which will be replaced by
+      // the beforematch event. When beforematch is available, this feaure
+      // will be removed.
+      name: "CSSContentVisibilityActivationEvent",
+      implied_by: ["CSSContentVisibility"]
+    },
+    {
+      // The content-visibility: hidden-matchable feature. This is a planned
+      // follow-up to the main CSSContentVisibility feature, thus it is gated
+      // by a different flag.
+      // https://wicg.github.io/display-locking/
+      name: "CSSContentVisibilityHiddenMatchable",
+      status: "experimental"
     },
     {
       name: "CSSFocusVisible",
       status: "experimental",
+    },
+    {
+      name: "CSSFoldables",
     },
     {
       name: "CSSFontSizeAdjust",
@@ -434,11 +466,11 @@
       status: "experimental",
     },
     {
-      // Support for CSS intrinsic-* sizing properties.
-      // https://drafts.csswg.org/css-sizing-4/#intrinsic-size-override
+      // Support for CSS contain-intrinsic-size property.
+      // https://wicg.github.io/display-locking/contain-intrinsic-size.html
       name: "CSSIntrinsicSize",
-      implied_by: ["DisplayLocking"],
-      status: "experimental",
+      implied_by: ["CSSContentVisibility"],
+      status: "stable",
     },
     {
       name: "CSSLayoutAPI",
@@ -462,6 +494,25 @@
       status: "experimental",
     },
     {
+      name: "CSSMathStyle",
+      status: "experimental",
+      implied_by: ["MathMLCore"],
+    },
+    {
+      name: "CSSMathSuperscriptShiftStyle",
+      status: "experimental",
+      implied_by: ["MathMLCore"],
+    },
+    {
+      name: "CSSMathVariant",
+      status: "experimental",
+      implied_by: ["MathMLCore"],
+    },
+    {
+      name: "CSSModules",
+      status: "experimental",
+    },
+    {
       name: "CSSOffsetPathRay",
       status: "experimental",
     },
@@ -480,7 +531,6 @@
     {
       name: "CSSPaintAPIArguments",
       status: "experimental",
-      depends_on: ["CSSVariables2"],
     },
     {
       name: "CSSPictureInPicture",
@@ -496,38 +546,46 @@
       status: "experimental",
     },
     {
-      name: "CSSRenderSubtree",
+      // Perform partial style invalidation on web font loading.
+      // See https://crbug.com/441925 and https://bit.ly/35JjPmq for details.
+      name: "CSSReducedFontLoadingInvalidations",
       status: "test",
+      implied_by: ["CSSReducedFontLoadingLayoutInvalidations"],
+    },
+    {
+      // Perform partial layout invalidation on web font loading.
+      // See https://crbug.com/441925 and https://bit.ly/35JjPmq for details.
+      name: "CSSReducedFontLoadingLayoutInvalidations",
+      status: "test",
+    },
+    {
+      name: "CSSRevert",
+      status: "stable",
+      depends_on: ["CSSCascade"],
     },
     {
       name: "CSSSnapSize",
       status: "experimental",
     },
     {
-      name: "CSSVariables2",
+      name: "CSSSupportsSelector",
       status: "stable",
     },
     // Support for @property rules.
     {
       name: "CSSVariables2AtProperty",
-      depends_on: ["CSSVariables2"],
+      status: "test",
     },
     // Support for registered custom properties with <image> syntax.
     {
       name: "CSSVariables2ImageValues",
       status: "test",
-      depends_on: ["CSSVariables2"],
     },
     // Support for registered custom properties with <transform-list> and
     // <transform-function> syntax.
     {
       name: "CSSVariables2TransformValues",
       status: "test",
-      depends_on: ["CSSVariables2"],
-    },
-    {
-      name: "CSSViewport",
-      status: "experimental",
     },
     {
       name: "CustomElementDefaultStyle",
@@ -551,10 +609,19 @@
       status: "stable",
     },
     {
+      name: "DeclarativeShadowDOM",
+      status: "experimental",
+    },
+    {
       name: "DecodeJpeg420ImagesToYUV",
+      status: "test",
     },
     {
       name: "DecodeLossyWebPImagesToYUV",
+      status: "test",
+    },
+    {
+      name: "DelegatedInkTrails",
       status: "test",
     },
     {
@@ -567,21 +634,17 @@
       status: "experimental",
     },
     {
+      // Disable composited layer squashing in pre-CompositeAfterPaint for
+      // testing.
+      name: "DisableLayerSquashing",
+    },
+    {
       name: "DisallowDocumentAccess",
       status: "experimental",
     },
     {
-      name: "DiscardInputToMovingIframes",
-      status: "stable",
-    },
-    {
       name: "DisplayCutoutAPI",
       settable_from_internals: true,
-    },
-    {
-      name: "DisplayLocking",
-      origin_trial_feature_name: "DisplayLocking",
-      status: "experimental",
     },
     {
       name: "DocumentCookie",
@@ -591,6 +654,8 @@
     },
     {
       name: "DocumentPolicy",
+      origin_trial_feature_name: "DocumentPolicy",
+      status: "experimental",
     },
     {
       name: "DocumentWrite",
@@ -605,12 +670,8 @@
       name: "EditingNG",
     },
     {
-      name: "EmbeddedVTTStylesheets",
-      status: "experimental",
-    },
-    {
       name: "EncryptedMediaEncryptionSchemeQuery",
-      status: "test",
+      status: "stable",
     },
     {
       name: "EncryptedMediaHdcpPolicyCheck",
@@ -626,7 +687,6 @@
     },
     {
       name: "EventTiming",
-      origin_trial_feature_name: "EventTiming",
       status: "experimental",
     },
     {
@@ -679,15 +739,12 @@
       name: "ExtraWebGLVideoTextureMetadata",
     },
     {
-      name: "FallbackCursorMode",
-    },
-    {
-      name: "FastBorderRadius",
+      name: "FaceDetector",
       status: "experimental",
     },
     {
       name: "FeaturePolicyForClientHints",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FeaturePolicyForSandbox",
@@ -707,32 +764,29 @@
       name: "FeaturePolicyVibrateFeature"
     },
     {
-      name: "FetchMetadata",
-      status: "stable"
-    },
-    {
-      name: "FetchMetadataDestination",
-      status: "experimental"
-    },
-    {
+      // Also enabled when blink::features::kFileHandlingAPI is overridden
+      // on the command line (or via chrome://flags).
       name: "FileHandling",
-      // NativeFileSystem is in Origin Trial, which doesn't support having
-      // non-origin-trial-enabled features depend on it. https://crbug.com/1000486
-      // depends_on: ["NativeFileSystem"]
+      depends_on: ["NativeFileSystem"],
+      status: {"Android": "test", "default": "experimental"},
+      origin_trial_feature_name: "FileHandling",
+      origin_trial_os: ["win", "macosx", "linux", "chromeos"],
     },
     {
       name: "FileSystem",
       status: "stable",
     },
-    // Perform style recalc traversal in the flat tree order, including marking
-    // flat-tree instead of shadow-including ancestors for child dirtiness.
     {
-      name: "FlatTreeStyleRecalc",
+      name: "FlexGaps",
       status: "stable",
     },
     {
       name: "FocuslessSpatialNavigation",
       settable_from_internals: true,
+    },
+    {
+      name: "FontAccess",
+      status: "experimental",
     },
     {
       name: "FontSrcLocalMatching",
@@ -748,6 +802,15 @@
       name: "ForceDeferScriptIntervention",
     },
     {
+      // This is used in tests to perform memory measurement without
+      // waiting for GC.
+      name:"ForceEagerMeasureMemory",
+    },
+    {
+      name: "ForceLoadAtTop",
+      origin_trial_feature_name: "ForceLoadAtTop",
+    },
+    {
       name: "ForceOverlayFullscreenVideo",
     },
     {
@@ -756,14 +819,6 @@
     {
       name: "ForceTallerSelectPopup",
       status: {"ChromeOS": "stable"},
-    },
-    // This is to communicate features::FormControlsRefresh from ui (and can be
-    // removed when the feature launches).
-    {
-      name: "FormControlsRefresh",
-    },
-    {
-      name: "FractionalMouseEvent",
     },
     {
       name: "FractionalScrollOffsets",
@@ -779,7 +834,7 @@
     },
     {
       name: "GetDisplayMedia",
-      status: "stable",
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "GroupEffect",
@@ -789,7 +844,7 @@
       name: "HrefTranslate",
       depends_on: ["TranslateService"],
       origin_trial_feature_name: "HrefTranslate",
-      status: "experimental",
+      status: "stable",
     },
     // TODO(937746): Web Components v0 is disabled by default, and will be
     // removed after M87.
@@ -806,10 +861,11 @@
     },
     {
       name: "IDBRelaxedDurability",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "IdleDetection",
+      origin_trial_feature_name: "IdleDetection",
       status: "experimental",
     },
     {
@@ -818,7 +874,7 @@
     },
     {
       name: "ImageOrientation",
-      status: "test",
+      status: "stable",
     },
     {
       name: "ImplicitRootScroller",
@@ -827,10 +883,14 @@
     },
     {
       name: "ImportMaps",
-      implied_by: ["ExperimentalProductivityFeatures", "BuiltInModuleInfra"],
+      implied_by: ["ExperimentalProductivityFeatures"],
     },
     {
       name: "InertAttribute",
+      status: "experimental",
+    },
+    {
+      name: "InputElementRawValue",
       status: "experimental",
     },
     {
@@ -844,15 +904,11 @@
     },
     {
       name: "IntersectionObserverDocumentScrollingElementRoot",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "IntersectionObserverV2",
       status: "stable",
-    },
-    {
-      name: "InvisibleDOM",
-      status: "experimental",
     },
     {
       // Launched by default. TODO(mythria): cleanup virtual tests and
@@ -866,9 +922,6 @@
       name: "IsolatedWorldCSP"
     },
     {
-      name: "JSONModules",
-    },
-    {
       name: "KeyboardFocusableScrollers",
       status: "experimental",
     },
@@ -880,8 +933,14 @@
       status: "experimental",
     },
     {
+      // LayoutNG has been enabled in M76, but we still keep this flag for
+      // testing. See web_tests/FlagExpectations/disable-layout-ng for more
+      // details about running web tests with LayoutNG disabled. This flag also
+      // provides a convenient way for testing legacy layout code path in blink
+      // unit tests.
       name: "LayoutNG",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable"],
+      // Keep this list in sync with the one in LayoutNGFlexBox below.
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFragmentItem", "LayoutNGGrid", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
       status: "stable",
     },
     {
@@ -892,23 +951,39 @@
     },
     {
       name: "LayoutNGFlexBox",
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFragmentItem", "LayoutNGGrid", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
+      status: "experimental",
     },
     {
-      name: "LayoutNGFragmentCaching",
-      implied_by: ["LayoutNG"],
+      name: "LayoutNGForControls",
+      depends_on: ["LayoutNG"],
+      status: "experimental",
     },
     {
       name: "LayoutNGFragmentItem",
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFragmentTraversal"],
     },
     {
-      name: "LayoutNGFragmentPaint",
-      implied_by: ["LayoutNG"],
+      // Traverse the fragment tree when painting and hit-testing, instead of
+      // the layout object tree.
+      name: "LayoutNGFragmentTraversal",
+      implied_by: ["LayoutNGBlockFragmentation"],
     },
     {
-      name: "LayoutNGLineCache",
+      name: "LayoutNGGrid",
+    },
+    {
+      name: "LayoutNGRuby",
+      depends_on: ["LayoutNG"],
     },
     {
       name: "LayoutNGTable",
+    },
+    {
+      // Adds the "sources" attribute to the LayoutShift interface for the
+      // Layout Instability API (bit.ly/cls-sources).
+      name: "LayoutShiftAttribution",
+      status: "stable",
     },
     {
       name: "LazyFrameLoading",
@@ -922,10 +997,6 @@
       status: "stable",
     },
     {
-      name: "LazyImageLoadingMetadataFetch",
-      depends_on: ["LazyImageLoading"],
-    },
-    {
       name: "LazyImageVisibleLoadTimeMetrics",
     },
     {
@@ -937,21 +1008,22 @@
       // Enabled by features::kLegacyWindowsDWriteFontFallback;
     },
     {
-      name: "LinkSystemColors",
-      status: "stable",
-    },
-    {
       name:"ManualSlotting",
       status:"experimental",
     },
     {
       name: "MathMLCore",
-      status:"test",
+      status:"experimental",
       depends_on: ["LayoutNG"],
     },
     {
       name:"MeasureMemory",
+      origin_trial_feature_name: "MeasureMemory",
       status:"experimental",
+    },
+    {
+      name: "MediaCapabilitiesDynamicRange",
+      status: "test",
     },
     {
       name: "MediaCapabilitiesEncodingInfo",
@@ -990,6 +1062,9 @@
       status: {"Android": "stable"},
     },
     {
+      name: "MediaControlsUseCutOutByDefault"
+    },
+    {
       name: "MediaDocumentDownloadButton",
     },
     {
@@ -1007,10 +1082,6 @@
       name: "MediaQueryNavigationControls",
     },
     {
-      name: "MediaQueryPrefersColorScheme",
-      status: "stable",
-    },
-    {
       name: "MediaQueryShape",
       status: "experimental",
     },
@@ -1020,7 +1091,7 @@
     },
     {
       name: "MediaSessionPosition",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "MediaSessionSeeking",
@@ -1051,6 +1122,7 @@
     // https://drafts.csswg.org/css-color-adjust/#color-scheme-meta
     {
       name: "MetaColorScheme",
+      status: "stable",
     },
     // This is enabled by default on Windows only. The only part that's
     // "experimental" is the support on other platforms.
@@ -1063,12 +1135,12 @@
       name: "MobileLayoutTheme",
     },
     {
-      name: "ModuleDedicatedWorker",
-      status: "stable",
-    },
-    {
       name: "ModuleServiceWorker",
       status: "test",
+    },
+    {
+      name: "ModuleSharedWorker",
+      status: "stable",
     },
     {
       name: "MojoJS",
@@ -1085,12 +1157,21 @@
       name: "MouseSubframeNoImplicitCapture",
     },
     {
+      // Named pages for pagination (the "page" CSS property).
+      name: "NamedPages",
+      status: "experimental",
+    },
+    {
       // Also enabled when blink::features::kNativeFileSystemAPI is overridden
       // on the command line (or via chrome://flags).
       name: "NativeFileSystem",
       status: {"Android": "test", "default": "experimental"},
-      origin_trial_feature_name: "NativeFileSystem",
+      origin_trial_feature_name: "NativeFileSystem2",
       origin_trial_os: ["win", "macosx", "linux", "chromeos"],
+    },
+    {
+      name: "NativeIO",
+      status: "experimental",
     },
     {
       name: "NavigatorContentUtils",
@@ -1113,13 +1194,13 @@
     {
       name: "NeverSlowMode",
     },
+    {
+      name: "NewCanvas2DAPI",
+      status: "experimental",
+    },
     // Not a web exposed feature, enabled from the command line.
     {
       name: "NewRemotePlaybackPipeline",
-    },
-    {
-      name: "NewSystemColors",
-      status: "stable",
     },
     {
       name: "NoIdleEncodingForWebTests",
@@ -1148,6 +1229,7 @@
     },
     {
       name: "OffMainThreadCSSPaint",
+      status: "stable",
     },
     {
       name: "OffscreenCanvasCommit",
@@ -1161,6 +1243,15 @@
     {
       name: "OrientationEvent",
       status: {"Android": "stable"},
+    },
+    {
+      name: "OriginIsolationHeader",
+      origin_trial_feature_name: "OriginIsolationHeader",
+      status: "experimental",
+    },
+    {
+      name: "OriginPolicy",
+      status: "experimental",
     },
 
     // Define a sample API for testing integration with the Origin Trials
@@ -1206,6 +1297,13 @@
       name: "OriginTrialsSampleAPINavigation",
       origin_trial_feature_name: "FrobulateNavigation",
     },
+    // As above. Do not change this flag to stable, as it exists solely to
+    // generate code used by the origin trials sample API implementation.
+    {
+      name: "OriginTrialsSampleAPIThirdParty",
+      origin_trial_feature_name: "FrobulateThirdParty",
+      origin_trial_allows_third_party: true,
+    },
     {
       name: "OutOfBlinkCors",
     },
@@ -1238,20 +1336,11 @@
       settable_from_internals: true,
     },
     {
-      name: "PassiveDocumentEventListeners",
-      status: "stable",
-    },
-    {
-      name: "PassiveDocumentWheelEventListeners",
-      status: "stable",
-    },
-    {
       name: "PassPaintVisualRectToCompositor",
     },
     // This is to add an option to enable the Reveal button on password inputs while waiting ::reveal gets standardized.
     {
       name: "PasswordReveal",
-      depends_on: ["FormControlsRefresh"],
     },
     {
       name: "PaymentApp",
@@ -1264,6 +1353,10 @@
     {
       name: "PaymentHandlerHandlesShippingAndContact",
       status: "stable",
+    },
+    {
+      name: "PaymentHandlerMinimalUI",
+      status: "experimental",
     },
     {
       name: "PaymentMethodChangeEvent",
@@ -1283,14 +1376,11 @@
       status: "stable",
     },
     {
-      name: "PerformanceManagerInstrumentation",
+      name: "PercentBasedScrolling",
+      settable_from_internals: true,
     },
     {
-      // Flag enabling the performance observers buffered flag. The buffered
-      // flag indicates whether or not the buffered entries should be loaded
-      // into the observer's buffer upon registration. See crbug.com/725567.
-      name: "PerformanceObserverBufferedFlag",
-      status: "stable",
+      name: "PerformanceManagerInstrumentation",
     },
     {
       name: "PeriodicBackgroundSync",
@@ -1344,6 +1434,7 @@
     {
       name: "Portals",
       status: "test",
+      origin_trial_feature_name: "Portals",
     },
     {
       name: "PostAnimationFrame",
@@ -1351,10 +1442,6 @@
     },
     {
       name: "PreciseMemoryInfo",
-    },
-    {
-      name: "PredictedEvents",
-      status: "stable",
     },
     // This feature is deprecated and we are evangelizing affected sites.
     // See https://crbug.com/346236 for current status.
@@ -1365,9 +1452,6 @@
     {
       name: "Presentation",
       status: "stable",
-    },
-    {
-      name: "PrintBrowser",
     },
     {
       name: "PriorityHints",
@@ -1384,10 +1468,16 @@
     },
     {
       name: "QuicTransport",
+      origin_trial_feature_name: "QuicTransport",
       status: "experimental",
     },
     {
+      // Enabled when blink::features::kRawClipboard is enabled.
+      name: "RawClipboard",
+    },
+    {
       name: "ReducedReferrerGranularity",
+      status: "experimental",
     },
     {
       name: "RemotePlayback",
@@ -1398,6 +1488,15 @@
       settable_from_internals: true,
       // Tracking bug for the implementation: https://crbug.com/728609
       status: {"Android": "stable", "default": ""},
+    },
+    {
+      // See https://crbug.com/1012063
+      name: "RequestVideoFrameCallback",
+      status: "stable",
+    },
+    {
+      name: "ResizeObserverUpdates",
+      status: "stable",
     },
     {
       name: "RestrictAppCacheToSecureContexts",
@@ -1414,10 +1513,6 @@
       status: "stable",
     },
     {
-      name: "RestrictedWebkitAppearance",
-      status: "stable",
-    },
-    {
       name: "RtcAudioJitterBufferMaxPackets",
       origin_trial_feature_name: "RtcAudioJitterBufferMaxPackets",
       status: "experimental",
@@ -1427,15 +1522,16 @@
       origin_trial_feature_name: "RtcAudioJitterBufferRtxHandling",
       status: "experimental",
     },
-    // Enables the use of the RTCDtlsTransport object.
-    {
-      name: "RTCDtlsTransport",
-      status: "stable",
-    },
     // Enables the use of the RTCIceTransport with extensions.
     {
       name: "RTCIceTransportExtension",
       origin_trial_feature_name: "RTCQuicTransport",
+      status: "experimental",
+    },
+    // Enables the use of Insertable Streams.
+    {
+      name: "RTCInsertableStreams",
+      origin_trial_feature_name: "RTCInsertableStreams",
       status: "experimental",
     },
     // Enables the use of the RTCQuicTransport object.
@@ -1443,11 +1539,6 @@
       name: "RTCQuicTransport",
       origin_trial_feature_name: "RTCQuicTransport",
       status: "experimental",
-    },
-    // Enables the use of the RTCSctpTransport object.
-    {
-      name: "RTCSctpTransport",
-      status: "stable",
     },
     {
       name: "RTCStatsRelativePacketArrivalDelay",
@@ -1475,11 +1566,9 @@
       name: "SameSiteByDefaultCookies",
       status: "test",
     },
-    // Exposes the displays connected to the device and provides the display
-    // properties needed for window placement features.
     {
-      name: "ScreenEnumeration",
-      status: "experimental",
+      name: "ScreenWakeLock",
+      status: "stable",
     },
     // WebSpeech API with both speech recognition and synthesis functionality
     // is not fully enabled on all platforms.
@@ -1492,19 +1581,15 @@
       status: "stable",
     },
     {
-      name: "ScriptStreamingOnPreload",
-    },
-    {
       name: "ScrollCustomization",
     },
     {
       name: "ScrollSnapAfterLayout",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ScrollTimeline",
       status: "experimental",
-      origin_trial_feature_name: "AnimationWorklet",
       implied_by: ['AnimationWorklet']
     },
     // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
@@ -1512,6 +1597,9 @@
     {
       name: "ScrollTopLeftInterop",
       status: "stable",
+    },
+    {
+      name: "ScrollUnification",
     },
     {
       name: "SendBeaconThrowForBlobWithNonSimpleType",
@@ -1556,10 +1644,6 @@
       status: "experimental",
     },
     {
-      name: "ShapeDetection",
-      status: "experimental",
-    },
-    {
       name: "SharedArrayBuffer",
       status: "stable",
     },
@@ -1594,9 +1678,10 @@
     },
     {
       name: "SmsReceiver",
-      origin_trial_feature_name: "SmsReceiver",
-      origin_trial_os: ["android"],
-      status: {"default": "experimental"},
+      status: {"default": "experimental", "Android": "stable"},
+    },
+    {
+      name: "SquashAfterPaint",
     },
     // Used as argument in attribute of stable-release functions/interfaces
     // where a runtime-enabled feature name is required for correct IDL syntax.
@@ -1606,17 +1691,9 @@
       status: "stable",
     },
     {
-      name: "StackedCSSPropertyAnimations",
-      status: "experimental",
-    },
-    {
       // Enabled when blink::features::kStorageAccessAPI is enabled.
       name: "StorageAccessAPI",
       status: "test",
-    },
-    {
-      name: "StorageQuotaDetails",
-      status: "stable"
     },
     {
       name: "StrictMimeTypesForWorkers",
@@ -1627,9 +1704,31 @@
       status: "stable",
     },
     {
+      name: "SystemWakeLock",
+      status: "experimental",
+    },
+    // For unit tests.
+    {
+      name: "TestFeature",
+    },
+    // For unit tests.
+    {
+      name: "TestFeatureDependent",
+      depends_on: ["TestFeatureImplied"],
+    },
+    // For unit tests.
+    {
+      name: "TestFeatureImplied",
+      implied_by: ["TestFeature"],
+    },
+    {
+      name: "TextDetector",
+      status: "experimental",
+    },
+    {
       name: "TextFragmentIdentifiers",
       origin_trial_feature_name: "TextFragmentIdentifiers",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "TimerThrottlingForBackgroundTabs",
@@ -1638,6 +1737,10 @@
     {
       name: "TimerThrottlingForHiddenFrames",
       status: "stable",
+    },
+    {
+      name: "TimeZoneChangeEvent",
+      status: "experimental",
     },
     // Many websites disable mouse support when touch APIs are available.  We'd
     // like to enable this always but can't until more websites fix this bug.
@@ -1657,6 +1760,8 @@
     {
       name: "TransferableStreams",
       status: "experimental",
+      origin_trial_feature_name: "RTCInsertableStreams",
+      implied_by: ["RTCInsertableStreams"],
     },
     // This is conditionally set if the platform supports translation.
     {
@@ -1664,11 +1769,28 @@
     },
     {
       name: "TrustedDOMTypes",
-      status: "experimental",
+      status: "stable",
+    },
+    {
+      name: "TrustTokens",
+      origin_trial_feature_name: "TrustTokens",
+      status: "test",
+    },
+    {
+      // Always allow trust token issuance (so long as the base::Feature
+      // is enabled). Used for testing; circumvents a runtime check that,
+      // if this RuntimeEnabledFeature is not present, guarantees the origin
+      // trial is enabled.
+      name: "TrustTokensAlwaysAllowIssuance",
+      status: "test",
     },
     {
       name: "UnclosedFormControlIsInvalid",
       status: "experimental",
+    },
+    {
+      name: "UnderlineOffsetThickness",
+      status: "test",
     },
     {
       name: "UnifiedPointerCaptureInBlink",
@@ -1691,10 +1813,6 @@
       implied_by: ["ExperimentalProductivityFeatures"]
     },
     {
-      name: "UpdateHoverAtBeginFrame",
-      settable_from_internals: true,
-    },
-    {
       name: "UserActivationAPI",
       status: "stable",
     },
@@ -1706,7 +1824,7 @@
     },
     {
       name: "UserAgentClientHint",
-      status: "experimental"
+      status: "stable"
     },
     {
       name: "UseWindowsSystemColors",
@@ -1722,9 +1840,6 @@
       settable_from_internals: true,
     },
     {
-      name: "VideoFullscreenDetection",
-    },
-    {
       name: "VideoFullscreenOrientationLock",
     },
     {
@@ -1732,12 +1847,15 @@
       status: "stable",
     },
     {
-      // See https://crbug.com/1012063
-      name: "VideoRequestAnimationFrame",
-      status: "experimental",
+      name: "VideoRotateToFullscreen",
     },
     {
-      name: "VideoRotateToFullscreen",
+      name: "VideoWakeLockOptimisationHiddenMuted",
+      status: "stable",
+    },
+    {
+      name: "VirtualKeyboard",
+      status: "test",
     },
     {
       name: "VisibilityCollapseColumn",
@@ -1745,19 +1863,20 @@
     {
       name: "WakeLock",
       origin_trial_feature_name: "WakeLock",
-      status: "experimental",
-    },
-    {
-      name: "WasmCodeCache",
-      status: "experimental",
+      implied_by: ['ScreenWakeLock', 'SystemWakeLock'],
     },
     {
       name: "WebAnimationsAPI",
-      status: "experimental",
+      status: "stable",
       implied_by: ['AnimationWorklet']
     },
     {
       name: "WebAnimationsSVG",
+      status: "experimental",
+    },
+    {
+      name: "WebAssemblySimd",
+      origin_trial_feature_name: "WebAssemblySimd",
       status: "experimental",
     },
     {
@@ -1772,7 +1891,7 @@
       status: "stable",
     },
     {
-      name: "WebAuthenticationFeaturePolicy",
+      name: "WebAuthenticationGetAssertionFeaturePolicy",
       status: "experimental",
     },
     // WebBluetooth is enabled by default on Android, ChromeOS and Mac.
@@ -1787,7 +1906,19 @@
       },
     },
     {
+      name: "WebBluetoothGetDevices",
+      status: "experimental",
+    },
+    {
       name: "WebBluetoothScanning",
+      status: "experimental",
+    },
+    {
+      name: "WebCodecs",
+      status: "test",
+    },
+    {
+      name: "WebCryptoCurve25519",
       status: "experimental",
     },
     {
@@ -1814,15 +1945,14 @@
       status: "experimental",
     },
     {
-      name: "WebkitBoxLayoutUsesFlexLayout",
-      status: "stable",
-    },
-    {
       name: "WebNFC",
+      origin_trial_feature_name: "WebNFC",
+      origin_trial_os: ["android"],
       status: "experimental",
     },
     {
       name: "WebScheduler",
+      origin_trial_feature_name: "WebScheduler",
       status: "experimental",
     },
     // WebShare is enabled by default on Android.
@@ -1859,36 +1989,48 @@
     },
     {
       name: "WebXRAnchors",
-      // depends_on: ["WebXRARModule"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
-    },
-    {
-      name: "WebXRARDOMOverlay",
-      // depends_on: ["WebXRARModule"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
-      status: "experimental",
+      depends_on: ["WebXRARModule", "WebXRHitTest"],
+      status: "experimental"
     },
     {
       name: "WebXRARModule",
       depends_on: ["WebXR"],
-      status: "experimental",
-    },
-    {
-      name: "WebXrGamepadModule",
-      // depends_on: ["WebXR"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
       status: "stable",
     },
     {
       name: "WebXRHitTest",
-      // depends_on: ["WebXRARModule"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
+      depends_on: ["WebXRARModule"],
+      status: "stable",
+    },
+    {
+      name: "WebXRHitTestEntityTypes",
+      depends_on: ["WebXRHitTest"],
       status: "experimental"
     },
     {
-      name: "WebXRPlaneDetection",
-      // depends_on: ["WebXRARModule"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
+      name: "WebXRIncubations",
+      depends_on: ["WebXRARModule"],
+      status: "experimental",
     },
-    // Extends window placement functionality for multi-screen devices.
+    {
+      name: "WebXRLightEstimation",
+      depends_on: ["WebXRARModule"],
+      status: "experimental",
+    },
+    // Extends window placement functionality for multi-screen devices. Also
+    // exposes requisite information about displays connected to the device.
     {
       name: "WindowPlacement",
       status: "experimental",
+    },
+    {
+      name: "WritableFileStream",
+      status: "experimental",
+      // NativeFileSystem is in Origin Trial, which doesn't support having
+      // non-origin-trial-enabled features depend on it. https://crbug.com/1000486
+      // depends_on: ["NativeFileSystem"]
+      origin_trial_feature_name: "NativeFileSystem2",
+      origin_trial_os: ["win", "macosx", "linux", "chromeos"],
     },
     {
       name: "XSLT",

@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
+#include "base/debug/activity_tracker.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -29,6 +30,52 @@ namespace core {
 
 namespace {
 
+std::atomic<uint64_t>* MaybeGetExtendedCrashAnnotation() {
+  base::debug::GlobalActivityTracker* activity_tracker =
+      base::debug::GlobalActivityTracker::Get();
+  if (!activity_tracker)
+    return nullptr;
+
+  static std::atomic<uint64_t>* sum = activity_tracker->process_data().SetUint(
+      "channel_win_total_outgoing_messages", 0u);
+
+  return sum;
+}
+
+class ChannelWinMessageQueue {
+ public:
+  explicit ChannelWinMessageQueue()
+      : queue_size_sum_(MaybeGetExtendedCrashAnnotation()) {}
+  ~ChannelWinMessageQueue() {
+    if (queue_size_sum_) {
+      queue_size_sum_->fetch_sub(queue_.size(), std::memory_order_relaxed);
+    }
+  }
+
+  void Append(Channel::MessagePtr message) {
+    queue_.emplace_back(std::move(message));
+    if (queue_size_sum_)
+      ++(*queue_size_sum_);
+  }
+
+  Channel::Message* GetFirst() const { return queue_.front().get(); }
+
+  Channel::MessagePtr TakeFirst() {
+    if (queue_size_sum_)
+      --(*queue_size_sum_);
+
+    Channel::MessagePtr message = std::move(queue_.front());
+    queue_.pop_front();
+    return message;
+  }
+
+  bool IsEmpty() const { return queue_.empty(); }
+
+ private:
+  base::circular_deque<Channel::MessagePtr> queue_;
+  std::atomic<uint64_t>* queue_size_sum_ = nullptr;
+};
+
 class ChannelWin : public Channel,
                    public base::MessageLoopCurrent::DestructionObserver,
                    public base::MessagePumpForIO::IOHandler {
@@ -36,8 +83,9 @@ class ChannelWin : public Channel,
   ChannelWin(Delegate* delegate,
              ConnectionParams connection_params,
              HandlePolicy handle_policy,
-             scoped_refptr<base::TaskRunner> io_task_runner)
+             scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
       : Channel(delegate, handle_policy),
+        base::MessagePumpForIO::IOHandler(FROM_HERE),
         self_(this),
         io_task_runner_(io_task_runner) {
     if (connection_params.server_endpoint().is_valid()) {
@@ -82,9 +130,9 @@ class ChannelWin : public Channel,
       if (reject_writes_)
         return;
 
-      bool write_now = !delay_writes_ && outgoing_messages_.empty();
-      outgoing_messages_.emplace_back(std::move(message));
-      if (write_now && !WriteNoLock(outgoing_messages_.front().get()))
+      bool write_now = !delay_writes_ && outgoing_messages_.IsEmpty();
+      outgoing_messages_.Append(std::move(message));
+      if (write_now && !WriteNoLock(outgoing_messages_.GetFirst()))
         reject_writes_ = write_error = true;
     }
     if (write_error) {
@@ -265,10 +313,9 @@ class ChannelWin : public Channel,
 
       DCHECK(is_write_pending_);
       is_write_pending_ = false;
-      DCHECK(!outgoing_messages_.empty());
+      DCHECK(!outgoing_messages_.IsEmpty());
 
-      Channel::MessagePtr message = std::move(outgoing_messages_.front());
-      outgoing_messages_.pop_front();
+      Channel::MessagePtr message = outgoing_messages_.TakeFirst();
 
       // Overlapped WriteFile() to a pipe should always fully complete.
       if (message->data_num_bytes() != bytes_written)
@@ -328,9 +375,9 @@ class ChannelWin : public Channel,
   }
 
   bool WriteNextNoLock() {
-    if (outgoing_messages_.empty())
+    if (outgoing_messages_.IsEmpty())
       return true;
-    return WriteNoLock(outgoing_messages_.front().get());
+    return WriteNoLock(outgoing_messages_.GetFirst());
   }
 
   void OnWriteError(Error error) {
@@ -357,7 +404,7 @@ class ChannelWin : public Channel,
   // Indicates whether |handle_| must wait for a connection.
   bool needs_connection_ = false;
 
-  const scoped_refptr<base::TaskRunner> io_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   base::MessagePumpForIO::IOContext connect_context_;
   base::MessagePumpForIO::IOContext read_context_;
@@ -367,7 +414,7 @@ class ChannelWin : public Channel,
   // Protects all fields potentially accessed on multiple threads via Write().
   base::Lock write_lock_;
   base::MessagePumpForIO::IOContext write_context_;
-  base::circular_deque<Channel::MessagePtr> outgoing_messages_;
+  ChannelWinMessageQueue outgoing_messages_;
   bool delay_writes_ = true;
   bool reject_writes_ = false;
   bool is_write_pending_ = false;
@@ -384,7 +431,7 @@ scoped_refptr<Channel> Channel::Create(
     Delegate* delegate,
     ConnectionParams connection_params,
     HandlePolicy handle_policy,
-    scoped_refptr<base::TaskRunner> io_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   return new ChannelWin(delegate, std::move(connection_params), handle_policy,
                         io_task_runner);
 }

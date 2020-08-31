@@ -41,7 +41,7 @@ const char kUpstreamNotificationSignUpListeningEvents[] =
 
 const char kGcmMessageTypeKey[] = "type";
 const char kHeartbeatTimestampKey[] = "timestamp";
-const char kHeartbeatDomainNameKey[] = "domain_name";
+const char kHeartbeatCustomerIdKey[] = "customer_id";
 const char kHeartbeatDeviceIDKey[] = "device_id";
 const char kHeartbeatTypeValue[] = "hb";
 const char kUpstreamNotificationNotifyKey[] = "notify";
@@ -129,10 +129,9 @@ void HeartbeatRegistrationHelper::AttemptRegistration() {
   std::vector<std::string> destinations;
   destinations.push_back(GetDestinationID());
   gcm_driver_->Register(
-      kHeartbeatGCMAppID,
-      destinations,
-      base::Bind(&HeartbeatRegistrationHelper::OnRegisterAttemptComplete,
-                 weak_factory_.GetWeakPtr()));
+      kHeartbeatGCMAppID, destinations,
+      base::BindOnce(&HeartbeatRegistrationHelper::OnRegisterAttemptComplete,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void HeartbeatRegistrationHelper::OnRegisterAttemptComplete(
@@ -182,15 +181,15 @@ void HeartbeatRegistrationHelper::OnRegisterAttemptComplete(
 HeartbeatScheduler::HeartbeatScheduler(
     gcm::GCMDriver* driver,
     policy::CloudPolicyClient* cloud_policy_client,
-    const std::string& enrollment_domain,
+    policy::CloudPolicyStore* cloud_policy_store,
     const std::string& device_id,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : task_runner_(task_runner),
-      enrollment_domain_(enrollment_domain),
       device_id_(device_id),
       heartbeat_enabled_(false),
       heartbeat_interval_(kDefaultHeartbeatInterval),
       cloud_policy_client_(cloud_policy_client),
+      cloud_policy_store_(cloud_policy_store),
       gcm_driver_(driver) {
   // If no GCMDriver (e.g. this is loaded as part of an unrelated unit test)
   // do nothing as no heartbeats can be sent.
@@ -223,9 +222,10 @@ void HeartbeatScheduler::RefreshHeartbeatSettings() {
   // If trusted values are not available, register this function to be called
   // back when they are available.
   chromeos::CrosSettings* settings = chromeos::CrosSettings::Get();
-  if (chromeos::CrosSettingsProvider::TRUSTED != settings->PrepareTrustedValues(
-          base::Bind(&HeartbeatScheduler::RefreshHeartbeatSettings,
-                     weak_factory_.GetWeakPtr()))) {
+  if (chromeos::CrosSettingsProvider::TRUSTED !=
+      settings->PrepareTrustedValues(
+          base::BindOnce(&HeartbeatScheduler::RefreshHeartbeatSettings,
+                         weak_factory_.GetWeakPtr()))) {
     return;
   }
 
@@ -307,6 +307,11 @@ void HeartbeatScheduler::ScheduleNextHeartbeat() {
     return;
   }
 
+  // Set the customerId if the policy is fetched.
+  if (cloud_policy_store_->policy()) {
+    customer_id_ = cloud_policy_store_->policy()->obfuscated_customer_id();
+  }
+
   // Calculate when to fire off the next update (if it should have already
   // happened, this yields a TimeDelta of 0).
   base::TimeDelta delay = std::max(
@@ -330,8 +335,8 @@ void HeartbeatScheduler::OnRegistrationComplete(
     // See http://crbug.com/516375
     cloud_policy_client_->UpdateGcmId(
         registration_id,
-        base::Bind(&HeartbeatScheduler::OnGcmIdUpdateRequestSent,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&HeartbeatScheduler::OnGcmIdUpdateRequestSent,
+                       weak_factory_.GetWeakPtr()));
     SignUpUpstreamNotification();
   }
 
@@ -341,7 +346,7 @@ void HeartbeatScheduler::OnRegistrationComplete(
 
 void HeartbeatScheduler::SendHeartbeat() {
   DCHECK(!registration_id_.empty());
-  if (!gcm_driver_ || !heartbeat_enabled_)
+  if (!gcm_driver_ || !heartbeat_enabled_ || customer_id_.empty())
     return;
 
   gcm::OutgoingMessage message;
@@ -356,13 +361,12 @@ void HeartbeatScheduler::SendHeartbeat() {
   message.data[kGcmMessageTypeKey] = kHeartbeatTypeValue;
   message.data[kHeartbeatTimestampKey] =
       base::NumberToString(base::Time::NowFromSystemTime().ToJavaTime());
-  message.data[kHeartbeatDomainNameKey] = enrollment_domain_;
+  message.data[kHeartbeatCustomerIdKey] = customer_id_;
   message.data[kHeartbeatDeviceIDKey] = device_id_;
   gcm_driver_->Send(kHeartbeatGCMAppID,
-                    GetDestinationID() + kHeartbeatGCMSenderSuffix,
-                    message,
-                    base::Bind(&HeartbeatScheduler::OnHeartbeatSent,
-                               weak_factory_.GetWeakPtr()));
+                    GetDestinationID() + kHeartbeatGCMSenderSuffix, message,
+                    base::BindOnce(&HeartbeatScheduler::OnHeartbeatSent,
+                                   weak_factory_.GetWeakPtr()));
 }
 
 void HeartbeatScheduler::SignUpUpstreamNotification() {
@@ -385,10 +389,10 @@ void HeartbeatScheduler::SignUpUpstreamNotification() {
   message.data[kUpstreamNotificationNotifyKey] =
       GetDestinationID() + kHeartbeatGCMSenderSuffix;
   message.data[kUpstreamNotificationRegIdKey] = registration_id_;
-  gcm_driver_->Send(kHeartbeatGCMAppID,
-                    kUpstreamNotificationSignUpDestinationID, message,
-                    base::Bind(&HeartbeatScheduler::OnUpstreamNotificationSent,
-                               weak_factory_.GetWeakPtr()));
+  gcm_driver_->Send(
+      kHeartbeatGCMAppID, kUpstreamNotificationSignUpDestinationID, message,
+      base::BindOnce(&HeartbeatScheduler::OnUpstreamNotificationSent,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void HeartbeatScheduler::OnHeartbeatSent(const std::string& message_id,

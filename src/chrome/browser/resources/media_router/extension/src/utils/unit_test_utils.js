@@ -153,7 +153,7 @@ mr.UnitTestUtils.mockChromeApi = function() {
       },
       sendMessage: jasmine.createSpy('chrome.runtime.sendMessage spy'),
     },
-    mdns: {onSerivceList: jasmine.createSpy('chrome.mdns.onServiceList spy')},
+    mdns: {onServiceList: jasmine.createSpy('chrome.mdns.onServiceList spy')},
     metricsPrivate: {
       recordMediumTime:
           jasmine.createSpy('chrome.metricsPrivate.recordMediumTime spy'),

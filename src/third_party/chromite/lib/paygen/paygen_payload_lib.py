@@ -12,7 +12,12 @@ import datetime
 import json
 import os
 import shutil
+import subprocess
 import tempfile
+import threading
+import time
+
+from collections import deque
 
 from chromite.lib import chroot_util
 from chromite.lib import constants
@@ -79,8 +84,13 @@ class PaygenPayload(object):
   _KERNEL = 'kernel'
   _ROOTFS = 'root'
 
-  def __init__(self, payload, work_dir, sign=False, verify=False,
-               private_key=None):
+  def __init__(self,
+               payload,
+               work_dir,
+               sign=False,
+               verify=False,
+               private_key=None,
+               upload=True):
     """Init for PaygenPayload.
 
     Args:
@@ -98,12 +108,14 @@ class PaygenPayload(object):
       private_key: If passed, the payload will be signed with that private key.
                    If also verify is True, the public key is extracted from the
                    private key and is used for verification.
+      upload: Boolean saying if payload generation results should be uploaded.
     """
     self.payload = payload
     self.work_dir = work_dir
     self._verify = verify
     self._private_key = private_key
     self._public_key = None
+    self._upload = upload
 
     self.src_image_file = os.path.join(work_dir, 'src_image.bin')
     self.tgt_image_file = os.path.join(work_dir, 'tgt_image.bin')
@@ -332,35 +344,75 @@ class PaygenPayload(object):
     else:
       raise Error('Invalid image type %s' % tgt_image_type)
 
-  def _RunGeneratorCmd(self, cmd):
+  def _RunGeneratorCmd(self, cmd, squawk_wrap=False):
     """Wrapper for run in chroot.
 
     Run the given command inside the chroot. It will automatically log the
     command output. Note that the command's stdout and stderr are combined into
     a single string.
 
+    For context on why this is so complex see: crbug.com/1035799
+
     Args:
       cmd: Program and argument list in a list. ['delta_generator', '--help']
+      squawk_wrap: Optionally run the cros_build_lib command in a thread to
+                   avoid being killed by the ProcessSilentTimeout during quiet
+                   periods of delta_gen.
 
     Raises:
-      cros_build_lib.RunCommandError if the command exited with a nonzero code.
+      cros_build_lib.RunCommandError if the command exited without success.
     """
 
-    try:
-      # Run the command.
-      result = cros_build_lib.run(
-          cmd,
-          redirect_stdout=True,
-          enter_chroot=True,
-          combine_stdout_stderr=True)
-    except cros_build_lib.RunCommandError as e:
-      # Dump error output and re-raise the exception.
-      logging.error('Nonzero exit code (%d), dumping command output:\n%s',
-                    e.result.returncode, e.result.output)
-      raise
+    response_queue = deque()
 
-    self._StoreLog('Output of command: ' + result.cmdstr)
-    self._StoreLog(result.output.decode('utf-8', 'replace'))
+    # The later thread's start() function.
+    def _inner_run(cmd, response_queue):
+      try:
+        # Run the command.
+        result = cros_build_lib.run(
+            cmd,
+            stdout=True,
+            enter_chroot=True,
+            stderr=subprocess.STDOUT)
+        response_queue.append(result)
+      except cros_build_lib.RunCommandError as e:
+        response_queue.append(e)
+
+    if squawk_wrap:
+      inner_run_thread = threading.Thread(
+          target=_inner_run, name='delta_generator_run_wrapper',
+          args=(cmd, response_queue))
+      inner_run_thread.setDaemon(True)
+      inner_run_thread.start()
+      # Wait for the inner run thread to finish, waking up each second.
+      i = 1
+      while inner_run_thread.isAlive():
+        i += 1
+        time.sleep(1)
+        # Only report once an hour, otherwise we'd be too noisy.
+        if i % 3600 == 0:
+          logging.info('Placating ProcessSilentTimeout...')
+    else:
+      _inner_run(cmd, response_queue)
+
+    try:
+      result = response_queue.pop()
+      if isinstance(result, cros_build_lib.RunCommandError):
+        # Dump error output and re-raise the exception.
+        logging.error('Nonzero exit code (%d), dumping command output:\n%s',
+                      result.result.returncode, result.result.output)
+        raise result
+      elif isinstance(result, cros_build_lib.CommandResult):
+        self._StoreLog('Output of command: ' + result.cmdstr)
+        self._StoreLog(result.output.decode('utf-8', 'replace'))
+      else:
+        raise cros_build_lib.RunCommandError(
+            'return type from _inner_run unknown')
+    except IndexError:
+      raise cros_build_lib.RunCommandError(
+          'delta_generator_run_wrapper did not return a value')
+
+
 
   @staticmethod
   def _BuildArg(flag, dict_obj, key, default=None):
@@ -512,7 +564,8 @@ class PaygenPayload(object):
                     '--old_key', src_image, 'key',
                     default='test' if src_image.build.channel else '')]
 
-    self._RunGeneratorCmd(cmd)
+    # This can take a very long time with no output, so wrap the call.
+    self._RunGeneratorCmd(cmd, squawk_wrap=True)
 
   def _GenerateHashes(self):
     """Generate a payload hash and a metadata hash.
@@ -739,7 +792,8 @@ class PaygenPayload(object):
         self._GenerateSignerResultsError(
             'Received %d metadata signatures, only one supported.',
             len(metadata_signatures))
-      metadata_signature = base64.b64encode(metadata_signatures[0])
+      metadata_signature = base64.b64encode(
+          metadata_signatures[0]).decode('utf-8')
       if metadata_signature != props_map['metadata_signature']:
         raise Error('Calculated metadata signature (%s) and the signature in'
                     ' the payload (%s) do not match.' %
@@ -914,7 +968,8 @@ class PaygenPayload(object):
     self._Create()
     if self._verify:
       self._VerifyPayload()
-    self._UploadResults()
+    if self._upload:
+      self._UploadResults()
 
     end_time = datetime.datetime.now()
     logging.info('* Finished payload generation in %s', end_time - start_time)
@@ -936,8 +991,7 @@ def CreateAndUploadPayload(payload, sign=True, verify=True):
 
 
 def GenerateUpdatePayload(tgt_image, payload, src_image=None, work_dir=None,
-                          private_key=None, check=None,
-                          out_metadata_hash_file=None):
+                          private_key=None, check=None):
   """Generates output payload and verifies its integrity if needed.
 
   Args:
@@ -949,8 +1003,10 @@ def GenerateUpdatePayload(tgt_image, payload, src_image=None, work_dir=None,
         responsibility to cleanup this directory after this function returns.
     private_key: The private key to sign the payload.
     check: If True, it will check the integrity of the generated payload.
-    out_metadata_hash_file: The output metadata hash file.
   """
+  if path_util.DetermineCheckout().type != path_util.CHECKOUT_TYPE_REPO:
+    raise Error('Need a chromeos checkout to generate payloads.')
+
   tgt_image = gspaths.Image(uri=tgt_image)
   src_image = gspaths.Image(uri=src_image) if src_image else None
   payload = gspaths.Payload(tgt_image=tgt_image, src_image=src_image,
@@ -960,12 +1016,6 @@ def GenerateUpdatePayload(tgt_image, payload, src_image=None, work_dir=None,
     paygen = PaygenPayload(payload, work_dir, sign=private_key is not None,
                            verify=check, private_key=private_key)
     paygen.Run()
-
-    # TODO(ahassani): These are basically a hack because devserver is still need
-    # the metadata hash file to sign it. But signing logic has been moved to
-    # paygen and in the future this is not needed anymore.
-    if out_metadata_hash_file:
-      shutil.copy(paygen.metadata_hash_file, out_metadata_hash_file)
 
 
 def GenerateUpdatePayloadPropertiesFile(payload, output=None):

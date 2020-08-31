@@ -81,8 +81,7 @@ class MetricsServiceClient {
   // Called prior to a metrics log being closed, allowing the client to collect
   // extra histograms that will go in that log. Asynchronous API - the client
   // implementation should call |done_callback| when complete.
-  virtual void CollectFinalMetricsForLog(
-      const base::Closure& done_callback) = 0;
+  virtual void CollectFinalMetricsForLog(base::OnceClosure done_callback) = 0;
 
   // Get the URL of the metrics server.
   virtual GURL GetMetricsServerUrl();
@@ -153,8 +152,11 @@ class MetricsServiceClient {
   // HMAC-SHA256 signature of an uploaded log.
   virtual std::string GetUploadSigningKey();
 
+  // Checks if the cloned install detector says that client ids should be reset.
+  virtual bool ShouldResetClientIdsOnClonedInstall();
+
   // Sets the callback to run MetricsServiceManager::UpdateRunningServices.
-  void SetUpdateRunningServicesCallback(const base::Closure& callback);
+  void SetUpdateRunningServicesCallback(const base::RepeatingClosure& callback);
 
   // Notify MetricsServiceManager to UpdateRunningServices using callback.
   void UpdateRunningServices();
@@ -163,7 +165,7 @@ class MetricsServiceClient {
   bool IsMetricsReportingForceEnabled() const;
 
  private:
-  base::Closure update_running_services_;
+  base::RepeatingClosure update_running_services_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceClient);
 };

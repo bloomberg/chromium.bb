@@ -28,12 +28,12 @@ class CORE_EXPORT WorkletModuleScriptFetcher final
   USING_GARBAGE_COLLECTED_MIXIN(WorkletModuleScriptFetcher);
 
  public:
-  explicit WorkletModuleScriptFetcher(WorkletModuleResponsesMap*);
+  WorkletModuleScriptFetcher(WorkletModuleResponsesMap*,
+                             util::PassKey<ModuleScriptLoader>);
 
   // Implements ModuleScriptFetcher.
   void Fetch(FetchParameters&,
              ResourceFetcher*,
-             const Modulator* modulator_for_built_in_modules,
              ModuleGraphLevel,
              ModuleScriptFetcher::Client*) override;
 

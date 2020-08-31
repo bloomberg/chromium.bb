@@ -39,13 +39,17 @@ CXFA_FFListBox::~CXFA_FFListBox() {
 
 bool CXFA_FFListBox::LoadWidget() {
   ASSERT(!IsLoaded());
+
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retain_layout(m_pLayoutItem.Get());
+
   auto pNew = pdfium::MakeUnique<CFWL_ListBox>(
       GetFWLApp(), pdfium::MakeUnique<CFWL_WidgetProperties>(), nullptr);
   CFWL_ListBox* pListBox = pNew.get();
   pListBox->ModifyStyles(FWL_WGTSTYLE_VScroll | FWL_WGTSTYLE_NoBackground,
                          0xFFFFFFFF);
   SetNormalWidget(std::move(pNew));
-  pListBox->SetFFWidget(this);
+  pListBox->SetAdapterIface(this);
 
   CFWL_NoteDriver* pNoteDriver = pListBox->GetOwnerApp()->GetNoteDriver();
   pNoteDriver->RegisterEventTarget(pListBox, pListBox);
@@ -54,7 +58,12 @@ bool CXFA_FFListBox::LoadWidget() {
 
   {
     CFWL_Widget::ScopedUpdateLock update_lock(pListBox);
-    for (const auto& label : m_pNode->GetChoiceListItems(false))
+    std::vector<WideString> displayables = m_pNode->GetChoiceListItems(false);
+    std::vector<WideString> settables = m_pNode->GetChoiceListItems(true);
+    if (displayables.size() > settables.size())
+      displayables.resize(settables.size());
+
+    for (const auto& label : displayables)
       pListBox->AddString(label);
 
     uint32_t dwExtendedStyle = FWL_STYLEEXT_LTB_ShowScrollBarFocus;
@@ -71,10 +80,14 @@ bool CXFA_FFListBox::LoadWidget() {
 }
 
 bool CXFA_FFListBox::OnKillFocus(CXFA_FFWidget* pNewFocus) {
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retainer(m_pLayoutItem.Get());
+
+  ObservedPtr<CXFA_FFWidget> pNewWatched(pNewFocus);
   if (!ProcessCommittedData())
     UpdateFWLData();
 
-  return CXFA_FFField::OnKillFocus(pNewFocus);
+  return pNewWatched && CXFA_FFField::OnKillFocus(pNewWatched.Get());
 }
 
 bool CXFA_FFListBox::CommitData() {
@@ -131,10 +144,13 @@ uint32_t CXFA_FFListBox::GetAlignment() {
 }
 
 bool CXFA_FFListBox::UpdateFWLData() {
-  if (!GetNormalWidget())
+  auto* pListBox = ToListBox(GetNormalWidget());
+  if (!pListBox)
     return false;
 
-  auto* pListBox = ToListBox(GetNormalWidget());
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retainer(m_pLayoutItem.Get());
+
   std::vector<int32_t> iSelArray = m_pNode->GetSelectedItems();
   std::vector<CFWL_ListItem*> selItemArray(iSelArray.size());
   std::transform(iSelArray.begin(), iSelArray.end(), selItemArray.begin(),
@@ -149,6 +165,9 @@ bool CXFA_FFListBox::UpdateFWLData() {
 }
 
 void CXFA_FFListBox::OnSelectChanged(CFWL_Widget* pWidget) {
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retainer(m_pLayoutItem.Get());
+
   CXFA_EventParam eParam;
   eParam.m_eType = XFA_EVENT_Change;
   eParam.m_pTarget = m_pNode.Get();
@@ -181,10 +200,16 @@ void CXFA_FFListBox::DeleteItem(int32_t nIndex) {
 }
 
 void CXFA_FFListBox::OnProcessMessage(CFWL_Message* pMessage) {
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retainer(m_pLayoutItem.Get());
+
   m_pOldDelegate->OnProcessMessage(pMessage);
 }
 
 void CXFA_FFListBox::OnProcessEvent(CFWL_Event* pEvent) {
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retain_layout(m_pLayoutItem.Get());
+
   CXFA_FFField::OnProcessEvent(pEvent);
   switch (pEvent->GetType()) {
     case CFWL_Event::Type::SelectChanged:
@@ -198,6 +223,9 @@ void CXFA_FFListBox::OnProcessEvent(CFWL_Event* pEvent) {
 
 void CXFA_FFListBox::OnDrawWidget(CXFA_Graphics* pGraphics,
                                   const CFX_Matrix& matrix) {
+  // Prevents destruction of the CXFA_ContentLayoutItem that owns |this|.
+  RetainPtr<CXFA_ContentLayoutItem> retainer(m_pLayoutItem.Get());
+
   m_pOldDelegate->OnDrawWidget(pGraphics, matrix);
 }
 

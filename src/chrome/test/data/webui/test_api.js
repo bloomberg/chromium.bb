@@ -79,7 +79,7 @@ Test.disableAnimationsAndTransitions = function() {
 
   var realElementAnimate = Element.prototype.animate;
   Element.prototype.animate = function(keyframes, opt_options) {
-    if (typeof opt_options == 'object') {
+    if (typeof opt_options === 'object') {
       opt_options.duration = 0;
     } else {
       opt_options = 0;
@@ -109,6 +109,9 @@ Test.prototype = {
    */
   browsePreload: null,
 
+  /** @type {?string} */
+  webuiHost: null,
+
   /**
    * When set to a string value representing an html page in the test
    * directory, generate BrowsePrintPreload call, which will browse to a url
@@ -133,12 +136,28 @@ Test.prototype = {
    */
   testGenPostamble: null,
 
+  /** @type {?function()} */
+  testGenCppIncludes: null,
+
   /**
    * When set to a non-null string, auto-generate typedef before generating
    * TEST*: {@code typedef typedefCppFixture testFixture}.
    * @type {string}
    */
   typedefCppFixture: 'WebUIBrowserTest',
+
+  /** @type {?Array<{switchName: string, switchValue: string}>} */
+  commandLineSwitches: null,
+
+  /** @type {?{enabled: !Array<string>, disabled: !Array<string>}} */
+  featureList: null,
+
+  /**
+   * @type {?Array<!{
+   *    featureName: string,
+   *    parameters: !Array<{name: string, value: string}>}>}
+   */
+  featuresWithParameters: null,
 
   /**
    * This should be initialized by the test fixture and can be referenced
@@ -158,6 +177,14 @@ Test.prototype = {
    * @type {boolean}
    */
   testShouldFail: false,
+
+  /**
+   * Starts a local test server if true and injects the server's base url to
+   * each test. The url can be accessed from
+   * |testRunnerParams.testServerBaseUrl|.
+   * @type {boolean}
+   */
+  testServer: false,
 
   /**
    * Extra libraries to add before loading this test file.
@@ -220,7 +247,7 @@ Test.prototype = {
    * @type {Function}
    */
   tearDown: function() {
-    if (typeof document != 'undefined') {
+    if (typeof document !== 'undefined') {
       var noAnimationStyle = document.getElementById('no-animation');
       if (noAnimationStyle) {
         noAnimationStyle.parentNode.removeChild(noAnimationStyle);
@@ -509,7 +536,7 @@ function makeMockFunctions(functionNames) {
  */
 function send(messageName) {
   var callback = sendCallbacks[messageName];
-  if (callback != undefined) {
+  if (callback !== undefined) {
     callback[1].apply(callback[0], Array.prototype.slice.call(arguments, 1));
   } else {
     this.__proto__.send.apply(this.__proto__, arguments);
@@ -580,11 +607,10 @@ function testDone(result) {
         const mojoMakeRequest = () => mojo.makeRequest(testRunner);
 
         Mojo.bindInterface(
-            webUiTest.mojom.TestRunner.name, mojoMakeRequest().handle,
-            'context', true);
+            webUiTest.mojom.TestRunner.name, mojoMakeRequest().handle);
       } else if (webUiTest.mojom.TestRunnerRemote) {
         // For mojo-lite WebUI tests.
-        testRunner = webUiTest.mojom.TestRunner.getRemote(true);
+        testRunner = webUiTest.mojom.TestRunner.getRemote();
       } else {
         assertNotReached(
             'Mojo bindings found, but no valid test interface loaded');
@@ -829,7 +855,7 @@ function runTest(isAsync, testFunction, testArguments) {
 
   // Depending on how we were called, |this| might not resolve to the global
   // context.
-  if (testName == 'RUN_TEST_F' && testBody === undefined) {
+  if (testName === 'RUN_TEST_F' && testBody === undefined) {
     testBody = RUN_TEST_F;
   }
 
@@ -837,7 +863,7 @@ function runTest(isAsync, testFunction, testArguments) {
     testBody = /** @type{Function} */ (eval(testFunction));
     testName = testBody.toString();
   }
-  if (testBody != RUN_TEST_F) {
+  if (testBody !== RUN_TEST_F) {
     console.log('Running test ' + testName);
   }
 
@@ -950,16 +976,9 @@ function preloadJavascriptLibraries(testFixture, testName) {
  */
 function setWaitUser() {
   waitUser = true;
+  exports.go = () => waitUser = false;
   console.log('Waiting for debugger...');
   console.log('Run: go() in the JS console when you are ready.');
-}
-
-/**
- * Sets |waitUser| to false, so |runTest| function stops waiting for user and
- * start running the tests.
- */
-function go() {
-  waitUser = false;
 }
 
 /**
@@ -1302,8 +1321,8 @@ RunAllAction.prototype = {
         result = this.actions_[i].invoke();
       }
 
-      if ((this.whenTestDone_ == WhenTestDone.EXPECT && errors.length) ||
-          this.whenTestDone_ == WhenTestDone.ALWAYS) {
+      if ((this.whenTestDone_ === WhenTestDone.EXPECT && errors.length) ||
+          this.whenTestDone_ === WhenTestDone.ALWAYS) {
         testDone();
       }
 
@@ -1318,7 +1337,7 @@ RunAllAction.prototype = {
       }
 
       errors.push(e);
-      if (this.whenTestDone_ != WhenTestDone.NEVER) {
+      if (this.whenTestDone_ !== WhenTestDone.NEVER) {
         testDone();
       }
     }
@@ -1452,7 +1471,6 @@ exportExpects();
 exportMock4JsHelpers();
 exports.preloadJavascriptLibraries = preloadJavascriptLibraries;
 exports.setWaitUser = setWaitUser;
-exports.go = go;
 exports.registerMessageCallback = registerMessageCallback;
 exports.resetTestState = resetTestState;
 exports.runAllActions = runAllActions;

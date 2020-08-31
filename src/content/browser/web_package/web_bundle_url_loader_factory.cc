@@ -12,8 +12,11 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "content/browser/web_package/web_bundle_reader.h"
+#include "content/browser/web_package/web_bundle_source.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -100,16 +103,19 @@ class WebBundleURLLoaderFactory::EntryLoader final
     }
 
     factory_->reader()->ReadResponse(
-        resource_request, base::BindOnce(&EntryLoader::OnResponseReady,
-                                         weak_factory_.GetWeakPtr()));
+        resource_request, GetAcceptLangs(),
+        base::BindOnce(&EntryLoader::OnResponseReady,
+                       weak_factory_.GetWeakPtr()));
   }
   ~EntryLoader() override = default;
 
  private:
   // network::mojom::URLLoader implementation
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      const base::Optional<GURL>& new_url) override {}
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers,
+      const base::Optional<GURL>& new_url) override {}
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override {}
   void PauseReadingBodyFromNet() override {}
@@ -184,6 +190,15 @@ class WebBundleURLLoaderFactory::EntryLoader final
     loader_client_->OnComplete(status);
   }
 
+  std::string GetAcceptLangs() const {
+    auto* web_contents = WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
+    // This may be null if the WebContents has been closed, or in unit tests.
+    if (!web_contents)
+      return std::string();
+    return GetContentClient()->browser()->GetAcceptLangs(
+        web_contents->GetBrowserContext());
+  }
+
   base::WeakPtr<WebBundleURLLoaderFactory> factory_;
   mojo::Remote<network::mojom::URLLoaderClient> loader_client_;
   const int frame_tree_node_id_;
@@ -214,9 +229,7 @@ void WebBundleURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& resource_request,
     mojo::PendingRemote<network::mojom::URLLoaderClient> loader_client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  if (base::EqualsCaseInsensitiveASCII(resource_request.method,
-                                       net::HttpRequestHeaders::kGetMethod) &&
-      reader_->HasEntry(resource_request.url)) {
+  if (CanHandleRequest(resource_request)) {
     auto loader = std::make_unique<EntryLoader>(
         weak_factory_.GetWeakPtr(), std::move(loader_client), resource_request,
         frame_tree_node_id_);
@@ -237,6 +250,24 @@ void WebBundleURLLoaderFactory::CreateLoaderAndStart(
 void WebBundleURLLoaderFactory::Clone(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   receivers_.Add(this, std::move(receiver));
+}
+
+bool WebBundleURLLoaderFactory::CanHandleRequest(
+    const network::ResourceRequest& resource_request) const {
+  if (!base::EqualsCaseInsensitiveASCII(resource_request.method,
+                                        net::HttpRequestHeaders::kGetMethod)) {
+    return false;
+  }
+  if (reader_->source().is_network() &&
+      !reader_->source().IsPathRestrictionSatisfied(resource_request.url)) {
+    // For network served bundle, subresources are loaded from the bundle only
+    // when their URLs are inside the bundle's scope.
+    // https://github.com/WICG/webpackage/blob/master/explainers/navigation-to-unsigned-bundles.md#loading-an-authoritative-unsigned-bundle
+    // 'Subsequent subresource requests will also only be served from the bundle
+    // if they're inside its scope.'
+    return false;
+  }
+  return reader_->HasEntry(resource_request.url);
 }
 
 }  // namespace content

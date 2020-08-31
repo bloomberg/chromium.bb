@@ -11,6 +11,7 @@
 #ifndef GrComposeLerpEffect_DEFINED
 #define GrComposeLerpEffect_DEFINED
 #include "include/core/SkTypes.h"
+#include "include/core/SkM44.h"
 
 #include "src/gpu/GrCoordTransform.h"
 #include "src/gpu/GrFragmentProcessor.h"
@@ -31,7 +32,8 @@ public:
 
 private:
     GrComposeLerpEffect(std::unique_ptr<GrFragmentProcessor> child1,
-                        std::unique_ptr<GrFragmentProcessor> child2, float weight)
+                        std::unique_ptr<GrFragmentProcessor> child2,
+                        float weight)
             : INHERITED(kGrComposeLerpEffect_ClassID, kNone_OptimizationFlags), weight(weight) {
         if (child1) {
             child1_index = this->numChildProcessors();

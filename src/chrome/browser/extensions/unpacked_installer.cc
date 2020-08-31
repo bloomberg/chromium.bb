@@ -24,7 +24,7 @@
 #include "components/sync/model/string_ordinal.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
+#include "extensions/browser/api/declarative_net_request/index_helper.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -33,7 +33,6 @@
 #include "extensions/browser/policy_check.h"
 #include "extensions/browser/preload_check_group.h"
 #include "extensions/browser/requirements_checker.h"
-#include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -65,7 +64,7 @@ void MaybeCleanupMetadataFolder(const base::FilePath& extension_path) {
   const std::vector<base::FilePath> reserved_filepaths =
       file_util::GetReservedMetadataFilePaths(extension_path);
   for (const auto& file : reserved_filepaths)
-    base::DeleteFile(file, false /*recursive*/);
+    base::DeleteFile(file, true /*recursive*/);
 
   const base::FilePath& metadata_dir = extension_path.Append(kMetadataFolder);
   if (base::IsDirectoryEmpty(metadata_dir))
@@ -268,23 +267,18 @@ bool UnpackedInstaller::LoadExtension(Manifest::Location location,
 bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
   DCHECK(extension());
 
-  if (!declarative_net_request::DNRManifestData::HasRuleset(*extension())) {
-    // The extension did not provide a ruleset.
-    return true;
-  }
-
-  // TODO(crbug.com/761107): Change this so that we don't need to parse JSON
-  // in the browser process.
-  auto ruleset_source =
-      declarative_net_request::RulesetSource::CreateStatic(*extension());
-  declarative_net_request::IndexAndPersistJSONRulesetResult result =
-      ruleset_source.IndexAndPersistJSONRulesetUnsafe();
-  if (!result.success) {
-    *error = std::move(result.error);
+  // TODO(crbug.com/761107): IndexStaticRulesetsUnsafe will read and parse JSON
+  // synchronously. Change this so that we don't need to parse JSON in the
+  // browser process.
+  declarative_net_request::IndexHelper::Result result =
+      declarative_net_request::IndexHelper::IndexStaticRulesetsUnsafe(
+          *extension());
+  if (result.error) {
+    *error = std::move(*result.error);
     return false;
   }
 
-  dnr_ruleset_checksum_ = result.ruleset_checksum;
+  ruleset_checksums_ = std::move(result.ruleset_checksums);
   if (!result.warnings.empty())
     extension_->AddInstallWarnings(std::move(result.warnings));
 
@@ -367,7 +361,7 @@ void UnpackedInstaller::InstallExtension() {
 
   service_weak_->OnExtensionInstalled(extension(), syncer::StringOrdinal(),
                                       kInstallFlagInstallImmediately,
-                                      dnr_ruleset_checksum_);
+                                      ruleset_checksums_);
 
   if (!callback_.is_null())
     std::move(callback_).Run(extension(), extension_path_, std::string());

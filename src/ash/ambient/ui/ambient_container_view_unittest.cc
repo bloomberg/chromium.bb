@@ -4,9 +4,11 @@
 
 #include "ash/ambient/ui/ambient_container_view.h"
 
+#include <memory>
+
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ambient_controller.h"
-#include "ash/public/cpp/ambient/photo_controller.h"
+#include "ash/ambient/test/ambient_ash_test_base.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
@@ -24,35 +26,20 @@
 
 namespace ash {
 
-class AmbientContainerViewTest : public AshTestBase {
+class AmbientContainerViewTest : public AmbientAshTestBase {
  public:
-  AmbientContainerViewTest()
-      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+  AmbientContainerViewTest() = default;
   ~AmbientContainerViewTest() override = default;
 
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::features::kAmbientModeFeature);
-    AshTestBase::SetUp();
-  }
-
-  void Toggle() { AmbientController()->Toggle(); }
-
   AmbientContainerView* GetView() {
-    return AmbientController()->get_container_view_for_testing();
+    return ambient_controller()->get_container_view_for_testing();
   }
 
-  const base::OneShotTimer& GetTimer() const {
-    return AmbientController()->get_timer_for_testing();
+  const base::OneShotTimer& GetTimer() {
+    return ambient_controller()->get_timer_for_testing();
   }
 
  private:
-  AmbientController* AmbientController() const {
-    return Shell::Get()->ambient_controller();
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(AmbientContainerViewTest);
 };
 
@@ -102,33 +89,12 @@ TEST_F(AmbientContainerViewTest, TimerRunningWhenShowing) {
   // Download |kImageBufferLength| / 2 + 1 images to fill buffer in PhotoModel,
   // in order to return false in |ShouldFetchImmediately()| and start timer.
   const int num_image_to_load = kImageBufferLength / 2 + 1;
-  task_environment_->FastForwardBy(kAnimationDuration * num_image_to_load);
+  task_environment()->FastForwardBy(kAnimationDuration * num_image_to_load);
 
   EXPECT_TRUE(GetTimer().IsRunning());
 
   // Call |Toggle()| to close the widget.
   Toggle();
-  EXPECT_FALSE(GetView());
-  EXPECT_FALSE(GetTimer().IsRunning());
-}
-
-// Tests that a mouse click closes the widget and stops the timer.
-TEST_F(AmbientContainerViewTest, MouseClickClosesWidgetAndStopsTimer) {
-  // Show the widget.
-  Toggle();
-  EXPECT_TRUE(GetView());
-
-  // Download |kImageBufferLength| / 2 + 1 images to fill buffer in PhotoModel,
-  // in order to return false in |ShouldFetchImmediately()| and start timer.
-  const int num_image_to_load = kImageBufferLength / 2 + 1;
-  task_environment_->FastForwardBy(kAnimationDuration * num_image_to_load);
-  EXPECT_TRUE(GetTimer().IsRunning());
-
-  // Simulate mouse click to close the widget.
-  ui::test::EventGenerator generator(
-      GetView()->GetWidget()->GetNativeWindow()->GetRootWindow());
-  generator.PressLeftButton();
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetView());
   EXPECT_FALSE(GetTimer().IsRunning());
 }

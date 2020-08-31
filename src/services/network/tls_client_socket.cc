@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
 #include "net/socket/client_socket_factory.h"
@@ -23,7 +23,10 @@ TLSClientSocket::TLSClientSocket(
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : observer_(std::move(observer)), traffic_annotation_(traffic_annotation) {}
 
-TLSClientSocket::~TLSClientSocket() {}
+TLSClientSocket::~TLSClientSocket() {
+  if (connect_callback_)
+    OnTLSConnectCompleted(net::ERR_ABORTED);
+}
 
 void TLSClientSocket::Connect(
     const net::HostPortPair& host_port_pair,
@@ -37,7 +40,7 @@ void TLSClientSocket::Connect(
   send_ssl_info_ = send_ssl_info;
   socket_ = socket_factory->CreateSSLClientSocket(
       ssl_client_context, std::move(tcp_socket), host_port_pair, ssl_config);
-  int result = socket_->Connect(base::BindRepeating(
+  int result = socket_->Connect(base::BindOnce(
       &TLSClientSocket::OnTLSConnectCompleted, base::Unretained(this)));
   if (result != net::ERR_IO_PENDING)
     OnTLSConnectCompleted(result);

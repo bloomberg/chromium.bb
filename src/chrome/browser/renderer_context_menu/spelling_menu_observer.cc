@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
@@ -30,11 +31,11 @@
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/context_menu_params.h"
 #include "extensions/browser/view_type_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -139,12 +140,9 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
     // starts the animation timer so we can show animation until we receive
     // it.
     bool result = client_->RequestTextCheck(
-        browser_context,
-        SpellingServiceClient::SUGGEST,
-        params.misspelled_word,
-        base::Bind(&SpellingMenuObserver::OnTextCheckComplete,
-                   base::Unretained(this),
-                   SpellingServiceClient::SUGGEST));
+        browser_context, SpellingServiceClient::SUGGEST, params.misspelled_word,
+        base::BindOnce(&SpellingMenuObserver::OnTextCheckComplete,
+                       base::Unretained(this), SpellingServiceClient::SUGGEST));
     if (result) {
       loading_frame_ = 0;
       animation_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
@@ -265,13 +263,15 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
       if (spellcheck) {
         spellcheck->GetCustomDictionary()->AddWord(base::UTF16ToUTF8(
             misspelled_word_));
+
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+        if (spellcheck::UseBrowserSpellChecker()) {
+          spellcheck_platform::AddWord(spellcheck->platform_spell_checker(),
+                                       misspelled_word_);
+        }
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
       }
     }
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-    if (spellcheck::UseBrowserSpellChecker()) {
-      spellcheck_platform::AddWord(misspelled_word_);
-    }
-#endif
   }
 
   Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());

@@ -53,9 +53,38 @@
         ]
       },
       {
+        "name": "openVmshellProcess",
+        "type": "function",
+        "description": "Starts new vmshell process.",
+        "parameters": [
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "name": "args",
+            "optional": true,
+            "description": "Command line arguments to pass to vmshell."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": false,
+            "description": "Returns id of the launched vmshell process. If no process was launched returns -1.",
+            "parameters": [
+              {
+                "name": "id",
+                "description": "Id of the launched vmshell process.",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "closeTerminalProcess",
         "type": "function",
-        "description": "Closes previously opened process.",
+        "description": "Closes previously opened process from either openTerminalProcess or openVmshellProcess.",
         "parameters": [
           {
             "name": "id",
@@ -157,6 +186,32 @@
         ]
       },
       {
+        "name": "openWindow",
+        "type": "function",
+        "description": "Open the Terminal tabbed window.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Callback that will be called when complete.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "openOptionsPage",
+        "type": "function",
+        "description": "Open the Terminal Settings page.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Callback that will be called when complete.",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "getCroshSettings",
         "type": "function",
         "description": "Returns an object (DictionaryValue) containing UI settings such as font style and color used by the crosh extension.  This function is called by the terminal system app the first time it is run to migrate any previous settings.",
@@ -228,6 +283,25 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "getA11yStatus",
+        "type": "function",
+        "description": "Returns a boolean indicating whether the accessibility spoken feedback is on.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Callback that will be called with the a11y status.",
+            "parameters": [
+              {
+                "name": "a11yStatus",
+                "type": "boolean",
+                "description": "True if a11y spoken feedback is on."
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [
@@ -268,6 +342,18 @@
                 "preserveNull": true
               },
             "preserveNull": true
+          }
+        ]
+      },
+      {
+        "name": "onA11yStatusChanged",
+        "type": "function",
+        "description": "Fired when a11y spoken feedback is enabled/disabled.",
+        "parameters": [
+          {
+            "name": "status",
+            "type": "boolean",
+            "description": "True if a11y spoken feedback is on."
           }
         ]
       }

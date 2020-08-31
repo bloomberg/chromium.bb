@@ -17,11 +17,16 @@ import glob
 import json
 import os
 import re
+import sys
 
 from chromite.lib import constants, cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import (failures_lib, git, gs, osutils, path_util,
                           timeout_util)
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # AFDO-specific constants.
 AFDO_SUFFIX = '.afdo'
@@ -98,7 +103,7 @@ KERNEL_EBUILD_ROOT = os.path.join(
 
 # Kernels that we can't generate afdo anymore because of reasons like
 # too few samples etc.
-KERNEL_SKIP_AFDO_UPDATE = ['3.8']
+KERNEL_SKIP_AFDO_UPDATE = ['3.8', '3.14']
 
 GSURL_CWP_SUBDIR = {
     'silvermont': '',
@@ -833,7 +838,7 @@ def UpdateChromeEbuildAFDOFile(board, profiles):
 
   equery_cmd = [equery_prog, 'w', 'chromeos-chrome']
   ebuild_file = cros_build_lib.run(
-      equery_cmd, enter_chroot=True, redirect_stdout=True).output.rstrip()
+      equery_cmd, enter_chroot=True, stdout=True).output.rstrip()
 
   # Patch the ebuild file with the names of the available afdo_files.
   PatchChromeEbuildAFDOFile(ebuild_file, profiles)

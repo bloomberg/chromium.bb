@@ -33,6 +33,7 @@ namespace {
             options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_1);
 
             // Using the options that are used by Dawn, they appear in ShaderModuleD3D12.cpp
+            options.SetForceZeroInitializedVariables(true);
             options.SetHLSLShaderModel(51);
             // TODO (hao.x.li@intel.com): The HLSLPointCoordCompat and HLSLPointSizeCompat are
             // required temporarily for https://bugs.chromium.org/p/dawn/issues/detail?id=146,
@@ -50,6 +51,10 @@ namespace {
     }
 
 }  // namespace
+
+extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
+    return 0;
+}
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return DawnSPIRVCrossFuzzer::Run(data, size, FuzzTask);

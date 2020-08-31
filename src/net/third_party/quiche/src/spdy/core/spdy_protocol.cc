@@ -7,6 +7,7 @@
 #include <limits>
 #include <ostream>
 
+#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_bug_tracker.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_string_utils.h"
 
@@ -159,8 +160,8 @@ bool ParseSettingsId(SpdySettingsId wire_setting_id,
 std::string SettingsIdToString(SpdySettingsId id) {
   SpdyKnownSettingsId known_id;
   if (!ParseSettingsId(id, &known_id)) {
-    return SpdyStrCat("SETTINGS_UNKNOWN_",
-                      SpdyHexEncodeUInt32AndTrim(uint32_t{id}));
+    return quiche::QuicheStrCat("SETTINGS_UNKNOWN_",
+                                SpdyHexEncodeUInt32AndTrim(uint32_t{id}));
   }
 
   switch (known_id) {
@@ -182,8 +183,8 @@ std::string SettingsIdToString(SpdySettingsId id) {
       return "SETTINGS_EXPERIMENT_SCHEDULER";
   }
 
-  return SpdyStrCat("SETTINGS_UNKNOWN_",
-                    SpdyHexEncodeUInt32AndTrim(uint32_t{id}));
+  return quiche::QuicheStrCat("SETTINGS_UNKNOWN_",
+                              SpdyHexEncodeUInt32AndTrim(uint32_t{id}));
 }
 
 SpdyErrorCode ParseErrorCode(uint32_t wire_error_code) {
@@ -280,7 +281,7 @@ SpdyFrameWithHeaderBlockIR::SpdyFrameWithHeaderBlockIR(
 
 SpdyFrameWithHeaderBlockIR::~SpdyFrameWithHeaderBlockIR() = default;
 
-SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, SpdyStringPiece data)
+SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, quiche::QuicheStringPiece data)
     : SpdyFrameWithFinIR(stream_id),
       data_(nullptr),
       data_len_(0),
@@ -290,7 +291,7 @@ SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, SpdyStringPiece data)
 }
 
 SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, const char* data)
-    : SpdyDataIR(stream_id, SpdyStringPiece(data)) {}
+    : SpdyDataIR(stream_id, quiche::QuicheStringPiece(data)) {}
 
 SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, std::string data)
     : SpdyFrameWithFinIR(stream_id),
@@ -376,7 +377,7 @@ size_t SpdyPingIR::size() const {
 
 SpdyGoAwayIR::SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
                            SpdyErrorCode error_code,
-                           SpdyStringPiece description)
+                           quiche::QuicheStringPiece description)
     : description_(description) {
   set_last_good_stream_id(last_good_stream_id);
   set_error_code(error_code);
@@ -387,7 +388,7 @@ SpdyGoAwayIR::SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
                            const char* description)
     : SpdyGoAwayIR(last_good_stream_id,
                    error_code,
-                   SpdyStringPiece(description)) {}
+                   quiche::QuicheStringPiece(description)) {}
 
 SpdyGoAwayIR::SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
                            SpdyErrorCode error_code,

@@ -11,19 +11,16 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+class ChromeBrowserState;
 class ReadingListDownloadService;
 
-namespace ios {
-class ChromeBrowserState;
-}
-
 // Singleton that creates the ReadingListDownloadService and associates that
-// service with ios::ChromeBrowserState.
+// service with ChromeBrowserState.
 class ReadingListDownloadServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:
   static ReadingListDownloadService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
   static ReadingListDownloadServiceFactory* GetInstance();
 
  private:

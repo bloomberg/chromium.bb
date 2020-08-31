@@ -89,7 +89,8 @@ void PrefProvider::RegisterProfilePrefs(
 
 PrefProvider::PrefProvider(PrefService* prefs,
                            bool off_the_record,
-                           bool store_last_modified)
+                           bool store_last_modified,
+                           bool restore_session)
     : prefs_(prefs),
       off_the_record_(off_the_record),
       store_last_modified_(store_last_modified),
@@ -125,7 +126,7 @@ PrefProvider::PrefProvider(PrefService* prefs,
       content_settings_prefs_.insert(std::make_pair(
           info->type(), std::make_unique<ContentSettingsPref>(
                             info->type(), prefs_, &pref_change_registrar_,
-                            info->pref_name(), off_the_record_,
+                            info->pref_name(), off_the_record_, restore_session,
                             base::BindRepeating(&PrefProvider::Notify,
                                                 base::Unretained(this)))));
     } else if (info->type() == ContentSettingsType::PLUGINS) {
@@ -133,7 +134,7 @@ PrefProvider::PrefProvider(PrefService* prefs,
       // migration of the Flash permissions to ephemeral provider.
       flash_content_settings_pref_ = std::make_unique<ContentSettingsPref>(
           info->type(), prefs_, &pref_change_registrar_, info->pref_name(),
-          off_the_record_,
+          off_the_record_, restore_session,
           base::BindRepeating(&PrefProvider::Notify, base::Unretained(this)));
     }
   }
@@ -171,7 +172,8 @@ bool PrefProvider::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    std::unique_ptr<base::Value>&& in_value) {
+    std::unique_ptr<base::Value>&& in_value,
+    const ContentSettingConstraints& constraints) {
   DCHECK(CalledOnValidThread());
   DCHECK(prefs_);
 
@@ -195,7 +197,7 @@ bool PrefProvider::SetWebsiteSetting(
   return GetPref(content_type)
       ->SetWebsiteSetting(primary_pattern, secondary_pattern,
                           resource_identifier, modified_time,
-                          std::move(in_value));
+                          std::move(in_value), constraints);
 }
 
 base::Time PrefProvider::GetWebsiteSettingLastModified(

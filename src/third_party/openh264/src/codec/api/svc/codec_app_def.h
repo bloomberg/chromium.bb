@@ -78,13 +78,14 @@ typedef enum {
   /**
   * Errors derived from bitstream parsing
   */
-  dsErrorFree           = 0x00,   ///< bit stream error-free
-  dsFramePending        = 0x01,   ///< need more throughput to generate a frame output,
-  dsRefLost             = 0x02,   ///< layer lost at reference frame with temporal id 0
-  dsBitstreamError      = 0x04,   ///< error bitstreams(maybe broken internal frame) the decoder cared
-  dsDepLayerLost        = 0x08,   ///< dependented layer is ever lost
-  dsNoParamSets         = 0x10,   ///< no parameter set NALs involved
-  dsDataErrorConcealed  = 0x20,   ///< current data error concealed specified
+  dsErrorFree = 0x00,   ///< bit stream error-free
+  dsFramePending = 0x01,   ///< need more throughput to generate a frame output,
+  dsRefLost = 0x02,   ///< layer lost at reference frame with temporal id 0
+  dsBitstreamError = 0x04,   ///< error bitstreams(maybe broken internal frame) the decoder cared
+  dsDepLayerLost = 0x08,   ///< dependented layer is ever lost
+  dsNoParamSets = 0x10,   ///< no parameter set NALs involved
+  dsDataErrorConcealed = 0x20,   ///< current data error concealed specified
+  dsRefListNullPtrs = 0x40, ///<ref picure list contains null ptrs within uiRefCount range
 
   /**
   * Errors derived from logic level
@@ -166,8 +167,8 @@ typedef enum {
   DECODER_OPTION_LEVEL,                 ///< get current AU level info,only is used in GetOption
   DECODER_OPTION_STATISTICS_LOG_INTERVAL,///< set log output interval
   DECODER_OPTION_IS_REF_PIC,             ///< feedback current frame is ref pic or not
-  DECODER_OPTION_NUM_OF_FRAMES_REMAINING_IN_BUFFER  ///< number of frames remaining in decoder buffer when pictures are required to re-ordered into display-order.
-
+  DECODER_OPTION_NUM_OF_FRAMES_REMAINING_IN_BUFFER,  ///< number of frames remaining in decoder buffer when pictures are required to re-ordered into display-order.
+  DECODER_OPTION_NUM_OF_THREADS,         ///< number of decoding threads. The maximum thread count is equal or less than lesser of (cpu core counts and 16).
 } DECODER_OPTION;
 
 /**

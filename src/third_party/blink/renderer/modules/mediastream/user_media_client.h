@@ -14,10 +14,10 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink-forward.h"
-#include "third_party/blink/public/web/web_user_media_request.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_processor.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 
@@ -47,9 +47,9 @@ class MODULES_EXPORT UserMediaClient
                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~UserMediaClient();
 
-  void RequestUserMedia(const blink::WebUserMediaRequest& web_request);
-  void CancelUserMediaRequest(const blink::WebUserMediaRequest& web_request);
-  void ApplyConstraints(blink::ApplyConstraintsRequest* web_request);
+  void RequestUserMedia(UserMediaRequest* user_media_request);
+  void CancelUserMediaRequest(UserMediaRequest* user_media_request);
+  void ApplyConstraints(blink::ApplyConstraintsRequest* user_media_request);
   void StopTrack(const blink::WebMediaStreamTrack& web_track);
   void ContextDestroyed();
 
@@ -64,16 +64,14 @@ class MODULES_EXPORT UserMediaClient
  private:
   class Request final : public GarbageCollected<Request> {
    public:
-    explicit Request(std::unique_ptr<UserMediaRequestInfo> request);
+    explicit Request(UserMediaRequest* request);
     explicit Request(blink::ApplyConstraintsRequest* request);
     explicit Request(const blink::WebMediaStreamTrack& request);
     ~Request();
 
-    std::unique_ptr<UserMediaRequestInfo> MoveUserMediaRequest();
+    UserMediaRequest* MoveUserMediaRequest();
 
-    UserMediaRequestInfo* user_media_request() const {
-      return user_media_request_.get();
-    }
+    UserMediaRequest* user_media_request() const { return user_media_request_; }
     blink::ApplyConstraintsRequest* apply_constraints_request() const {
       return apply_constraints_request_;
     }
@@ -85,10 +83,13 @@ class MODULES_EXPORT UserMediaClient
     bool IsApplyConstraints() const { return apply_constraints_request_; }
     bool IsStopTrack() const { return !web_track_to_stop_.IsNull(); }
 
-    void Trace(Visitor* visitor) { visitor->Trace(apply_constraints_request_); }
+    void Trace(Visitor* visitor) {
+      visitor->Trace(user_media_request_);
+      visitor->Trace(apply_constraints_request_);
+    }
 
    private:
-    std::unique_ptr<UserMediaRequestInfo> user_media_request_;
+    Member<UserMediaRequest> user_media_request_;
     Member<blink::ApplyConstraintsRequest> apply_constraints_request_;
     blink::WebMediaStreamTrack web_track_to_stop_;
 

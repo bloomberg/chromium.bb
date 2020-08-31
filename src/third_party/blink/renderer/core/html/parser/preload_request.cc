@@ -28,6 +28,33 @@ KURL PreloadRequest::CompleteURL(Document* document) {
   return document->CompleteURL(resource_url_);
 }
 
+// static
+std::unique_ptr<PreloadRequest> PreloadRequest::CreateIfNeeded(
+    const String& initiator_name,
+    const TextPosition& initiator_position,
+    const String& resource_url,
+    const KURL& base_url,
+    ResourceType resource_type,
+    const network::mojom::ReferrerPolicy referrer_policy,
+    ReferrerSource referrer_source,
+    ResourceFetcher::IsImageSet is_image_set,
+    const FetchParameters::ResourceWidth& resource_width,
+    const ClientHintsPreferences& client_hints_preferences,
+    RequestType request_type) {
+  // Never preload data URLs. We also disallow relative ref URLs which become
+  // data URLs if the document's URL is a data URL. We don't want to create
+  // extra resource requests with data URLs to avoid copy / initialization
+  // overhead, which can be significant for large URLs.
+  if (resource_url.IsEmpty() || resource_url.StartsWith("#") ||
+      ProtocolIs(resource_url, "data")) {
+    return nullptr;
+  }
+  return base::WrapUnique(new PreloadRequest(
+      initiator_name, initiator_position, resource_url, base_url, resource_type,
+      resource_width, client_hints_preferences, request_type, referrer_policy,
+      referrer_source, is_image_set));
+}
+
 Resource* PreloadRequest::Start(Document* document) {
   DCHECK(IsMainThread());
 
@@ -47,6 +74,8 @@ Resource* PreloadRequest::Start(Document* document) {
 
   resource_request.SetRequestContext(
       ResourceFetcher::DetermineRequestContext(resource_type_, is_image_set_));
+  resource_request.SetRequestDestination(
+      ResourceFetcher::DetermineRequestDestination(resource_type_));
 
   resource_request.SetFetchImportanceMode(importance_);
 
@@ -59,12 +88,10 @@ Resource* PreloadRequest::Start(Document* document) {
 
   ResourceLoaderOptions options;
   options.initiator_info = initiator_info;
-  FetchParameters params(resource_request, options);
+  FetchParameters params(std::move(resource_request), options);
 
   if (resource_type_ == ResourceType::kImportResource) {
-    const SecurityOrigin* security_origin =
-        document->ContextDocument()->GetSecurityOrigin();
-    params.SetCrossOriginAccessControl(security_origin,
+    params.SetCrossOriginAccessControl(document->GetSecurityOrigin(),
                                        kCrossOriginAttributeAnonymous);
   }
 
@@ -111,13 +138,7 @@ Resource* PreloadRequest::Start(Document* document) {
     // the async request to the blocked script here.
   }
 
-  if (resource_type_ == ResourceType::kImage &&
-      params.Url().ProtocolIsInHTTPFamily() && is_lazy_load_image_enabled_) {
-    params.SetLazyImagePlaceholder();
-  }
-
-  return PreloadHelper::StartPreload(resource_type_, params,
-                                     document->Fetcher());
+  return PreloadHelper::StartPreload(resource_type_, params, *document);
 }
 
 }  // namespace blink

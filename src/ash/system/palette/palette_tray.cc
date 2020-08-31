@@ -159,8 +159,7 @@ class StylusEventHandler : public ui::EventHandler {
 
   // ui::EventHandler:
   void OnTouchEvent(ui::TouchEvent* event) override {
-    if (event->pointer_details().pointer_type ==
-        ui::EventPointerType::POINTER_TYPE_PEN) {
+    if (event->pointer_details().pointer_type == ui::EventPointerType::kPen) {
       palette_tray_->OnStylusEvent(*event);
     }
   }
@@ -471,8 +470,7 @@ void PaletteTray::ShowBubble(bool show_by_click) {
   init_params.parent_window = GetBubbleWindowContainer();
   init_params.anchor_view = GetBubbleAnchor();
   init_params.shelf_alignment = shelf()->alignment();
-  init_params.min_width = kPaletteWidth;
-  init_params.max_width = kPaletteWidth;
+  init_params.preferred_width = kPaletteWidth;
   init_params.close_on_deactivate = true;
   init_params.show_by_click = show_by_click;
 
@@ -591,10 +589,13 @@ bool PaletteTray::HasSeenStylus() {
 }
 
 void PaletteTray::UpdateIconVisibility() {
-  SetVisiblePreferred(HasSeenStylus() && is_palette_enabled_ &&
-                      stylus_utils::HasStylusInput() &&
-                      ShouldShowOnDisplay(this) &&
-                      palette_utils::IsInUserSession());
+  bool visible_preferred = HasSeenStylus() && is_palette_enabled_ &&
+                           stylus_utils::HasStylusInput() &&
+                           ShouldShowOnDisplay(this) &&
+                           palette_utils::IsInUserSession();
+  SetVisiblePreferred(visible_preferred);
+  if (visible_preferred)
+    UpdateLayout();
 }
 
 }  // namespace ash

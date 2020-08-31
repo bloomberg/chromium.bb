@@ -7,6 +7,25 @@
  * the "dictionary" of custom words used for spell check.
  */
 
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/polymer/v3_0/iron-a11y-keys/iron-a11y-keys.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import '../prefs/prefs.m.js';
+import '../settings_shared_css.m.js';
+import '../settings_vars_css.m.js';
+
+import {flush, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js';
+import {loadTimeData} from '../i18n_setup.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+import {routes} from '../route.js';
+
+import {LanguagesBrowserProxyImpl} from './languages_browser_proxy.m.js';
+
 // Max valid word size defined in
 // https://cs.chromium.org/chromium/src/components/spellcheck/common/spellcheck_common.h?l=28
 const MAX_CUSTOM_DICTIONARY_WORD_BYTES = 99;
@@ -14,7 +33,9 @@ const MAX_CUSTOM_DICTIONARY_WORD_BYTES = 99;
 Polymer({
   is: 'settings-edit-dictionary-page',
 
-  behaviors: [settings.GlobalScrollTargetBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [GlobalScrollTargetBehavior],
 
   properties: {
     /** @private {string} */
@@ -29,13 +50,13 @@ Polymer({
      */
     subpageRoute: {
       type: Object,
-      value: settings.routes.EDIT_DICTIONARY,
+      value: routes.EDIT_DICTIONARY,
     },
 
     /** @private {!Array<string>} */
     words_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -47,21 +68,20 @@ Polymer({
     },
   },
 
-  /** @type {LanguageSettingsPrivate} */
-  languageSettingsPrivate: null,
+  /** @private {LanguageSettingsPrivate} */
+  languageSettingsPrivate_: null,
 
   /** @override */
-  ready: function() {
-    this.languageSettingsPrivate = settings.languageSettingsPrivateApiForTest ||
-        /** @type {!LanguageSettingsPrivate} */
-        (chrome.languageSettingsPrivate);
+  ready() {
+    this.languageSettingsPrivate_ =
+        LanguagesBrowserProxyImpl.getInstance().getLanguageSettingsPrivate();
 
-    this.languageSettingsPrivate.getSpellcheckWords(words => {
+    this.languageSettingsPrivate_.getSpellcheckWords(words => {
       this.hasWords_ = words.length > 0;
       this.words_ = words;
     });
 
-    this.languageSettingsPrivate.onCustomDictionaryChanged.addListener(
+    this.languageSettingsPrivate_.onCustomDictionaryChanged.addListener(
         this.onCustomDictionaryChanged_.bind(this));
 
     // Add a key handler for the new-word input.
@@ -72,12 +92,12 @@ Polymer({
    * Adds the word in the new-word input to the dictionary.
    * @private
    */
-  addWordFromInput_: function() {
+  addWordFromInput_() {
     // Spaces are allowed, but removing leading and trailing whitespace.
     const word = this.getTrimmedNewWord_();
     this.newWordValue_ = '';
     if (word) {
-      this.languageSettingsPrivate.addSpellcheckWord(word);
+      this.languageSettingsPrivate_.addSpellcheckWord(word);
     }
   },
 
@@ -86,7 +106,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  disableAddButton_: function() {
+  disableAddButton_() {
     return this.getTrimmedNewWord_().length == 0 || this.isWordInvalid_();
   },
 
@@ -94,7 +114,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getErrorMessage_: function() {
+  getErrorMessage_() {
     if (this.newWordIsTooLong_()) {
       return loadTimeData.getString('addDictionaryWordLengthError');
     }
@@ -108,7 +128,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getTrimmedNewWord_: function() {
+  getTrimmedNewWord_() {
     return this.newWordValue_.trim();
   },
 
@@ -118,7 +138,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isWordInvalid_: function() {
+  isWordInvalid_() {
     return this.newWordAlreadyAdded_() || this.newWordIsTooLong_();
   },
 
@@ -126,7 +146,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  newWordAlreadyAdded_: function() {
+  newWordAlreadyAdded_() {
     return this.words_.includes(this.getTrimmedNewWord_());
   },
 
@@ -134,14 +154,14 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  newWordIsTooLong_: function() {
+  newWordIsTooLong_() {
     return this.getTrimmedNewWord_().length > MAX_CUSTOM_DICTIONARY_WORD_BYTES;
   },
 
   /**
    * Handles tapping on the Add Word button.
    */
-  onAddWordTap_: function(e) {
+  onAddWordTap_(e) {
     this.addWordFromInput_();
     this.$.newWord.focus();
   },
@@ -152,7 +172,7 @@ Polymer({
    * @param {!Array<string>} added
    * @param {!Array<string>} removed
    */
-  onCustomDictionaryChanged_: function(added, removed) {
+  onCustomDictionaryChanged_(added, removed) {
     const wasEmpty = this.words_.length == 0;
 
     for (const word of removed) {
@@ -182,7 +202,7 @@ Polymer({
     // this workaround to update the list at the same time the template
     // wrapping the list is expanded.
     if (wasEmpty && this.words_.length > 0) {
-      Polymer.dom.flush();
+      flush();
       this.$$('#list').notifyResize();
     }
   },
@@ -191,7 +211,7 @@ Polymer({
    * Handles Enter and Escape key presses for the new-word input.
    * @param {!CustomEvent<!{key: string}>} e
    */
-  onKeysPress_: function(e) {
+  onKeysPress_(e) {
     if (e.detail.key == 'enter' && !this.disableAddButton_()) {
       this.addWordFromInput_();
     } else if (e.detail.key == 'esc') {
@@ -203,7 +223,7 @@ Polymer({
    * Handles tapping on a "Remove word" icon button.
    * @param {!{model: !{item: string}}} e
    */
-  onRemoveWordTap_: function(e) {
-    this.languageSettingsPrivate.removeSpellcheckWord(e.model.item);
+  onRemoveWordTap_(e) {
+    this.languageSettingsPrivate_.removeSpellcheckWord(e.model.item);
   },
 });

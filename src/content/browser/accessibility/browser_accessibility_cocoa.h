@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
+#include <vector>
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
@@ -35,10 +36,10 @@ struct AXTextEdit {
 // This class converts it into a format Cocoa can query.
 @interface BrowserAccessibilityCocoa : NSAccessibilityElement {
  @private
-  content::BrowserAccessibility* owner_;
-  base::scoped_nsobject<NSMutableArray> children_;
+  content::BrowserAccessibility* _owner;
+  base::scoped_nsobject<NSMutableArray> _children;
   // Stores the previous value of an edit field.
-  base::string16 oldValue_;
+  base::string16 _oldValue;
 }
 
 // This creates a cocoa browser accessibility object around
@@ -74,6 +75,8 @@ struct AXTextEdit {
 // left) to the primary NSScreen coordinate system (with the origin in the lower
 // left).
 - (NSRect)rectInScreen:(gfx::Rect)rect;
+
+- (void)getTreeItemDescendantNodeIds:(std::vector<int32_t>*)tree_item_ids;
 
 // Return the method name for the given attribute. For testing only.
 - (NSString*)methodNameForAttribute:(NSString*)attribute;

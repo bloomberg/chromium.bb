@@ -46,6 +46,9 @@ from chromite.lib import ts_mon_config
 from chromite.lib.buildstore import BuildStore
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 _DEFAULT_LOG_DIR = 'cbuildbot_logs'
 _BUILDBOT_LOG_FILE = 'cbuildbot.log'
 _DEFAULT_EXT_BUILDROOT = 'trybot'
@@ -86,9 +89,7 @@ def _IsDistributedBuilder(options, chrome_rev, build_config):
   Returns:
     True if the builder should be a distributed_builder
   """
-  if build_config['pre_cq']:
-    return True
-  elif not options.buildbot:
+  if not options.buildbot:
     return False
   elif chrome_rev in (constants.CHROME_REV_TOT,
                       constants.CHROME_REV_LOCAL,
@@ -454,10 +455,15 @@ def _CreateParser():
                                'tool. Bootstrap the projects based on the git '
                                'cache files instead of fetching them directly '
                                'from the GoB servers.')
-  group.add_remote_option('--sanity-check-build', action='store_true',
-                          default=False, dest='sanity_check_build',
-                          api=constants.REEXEC_API_SANITY_CHECK_BUILD,
-                          help='Run the build as a sanity check build.')
+  group.add_remote_option('--chrome-preload-dir', type='path',
+                          api=constants.REEXEC_API_CHROME_PRELOAD_DIR,
+                          help='Specify a preloaded chrome source cache '
+                               'directory populated by the git-cache tool. '
+                               'Bootstrap chrome based on the cached files '
+                               'instead of fetching them directly from the GoB '
+                               'servers. When both this argument and '
+                               '--git-cache-dir are provided this value will '
+                               'be preferred for the chrome source cache.')
   group.add_remote_option('--debug-cidb', action='store_true', default=False,
                           help='Force Debug CIDB to be used.')
   # cbuildbot ChromeOS Findit options
@@ -470,6 +476,12 @@ def _CreateParser():
                           dest='cbb_snapshot_revision', default=None,
                           help='Snapshot manifest revision to sync to '
                                'for building.')
+  group.add_remote_option(
+      '--no-publish-prebuilt-confs',
+      dest='publish',
+      action='store_false',
+      default=True,
+      help="Don't publish git commits to prebuilt.conf or sdk_version.conf")
 
   parser.add_argument_group(group)
 
@@ -512,11 +524,6 @@ def _CreateParser():
   group.add_option('--remote-version', type='int', default=3,
                    help='Deprecated and ignored.')
   group.add_option('--sourceroot', type='path', default=constants.SOURCE_ROOT)
-  group.add_option('--ts-mon-task-num', type='int', default=0,
-                   api=constants.REEXEC_API_TSMON_TASK_NUM,
-                   help='The task number of this process. Defaults to 0. '
-                        'This argument is useful for running multiple copies '
-                        'of cbuildbot without their metrics colliding.')
   group.add_remote_option('--test-bootstrap', action='store_true',
                           default=False,
                           help='Causes cbuildbot to bootstrap itself twice, '
@@ -744,8 +751,7 @@ def _SetupConnections(options, build_config):
 
   if run_type == _ENVIRONMENT_PROD:
     cidb.CIDBConnectionFactory.SetupProdCidb()
-    context = ts_mon_config.SetupTsMonGlobalState(
-        'cbuildbot', indirect=True, task_num=options.ts_mon_task_num)
+    context = ts_mon_config.SetupTsMonGlobalState('cbuildbot', indirect=True)
   elif run_type == _ENVIRONMENT_DEBUG:
     cidb.CIDBConnectionFactory.SetupDebugCidb()
     context = ts_mon_config.TrivialContextManager()

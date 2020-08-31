@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
@@ -43,8 +43,8 @@ id<FormSuggestionProvider> AutofillTabHelper::GetSuggestionProvider() {
 AutofillTabHelper::AutofillTabHelper(
     web::WebState* web_state,
     password_manager::PasswordManager* password_manager)
-    : browser_state_(ios::ChromeBrowserState::FromBrowserState(
-          web_state->GetBrowserState())),
+    : browser_state_(
+          ChromeBrowserState::FromBrowserState(web_state->GetBrowserState())),
       autofill_agent_([[AutofillAgent alloc]
           initWithPrefService:browser_state_->GetPrefs()
                      webState:web_state]) {

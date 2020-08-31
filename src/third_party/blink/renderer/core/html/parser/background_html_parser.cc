@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -164,6 +163,7 @@ void BackgroundHTMLParser::Finish() {
 }
 
 void BackgroundHTMLParser::Stop() {
+  ClearParser();
   delete this;
 }
 
@@ -173,6 +173,10 @@ void BackgroundHTMLParser::ForcePlaintextForTextDocument() {
   // <plaintext> tag. The TextDocumentParser uses a <pre> tag for historical /
   // compatibility reasons.
   tokenizer_->SetState(HTMLTokenizer::kPLAINTEXTState);
+}
+
+void BackgroundHTMLParser::ClearParser() {
+  parser_.Clear();
 }
 
 void BackgroundHTMLParser::MarkEndOfFile() {

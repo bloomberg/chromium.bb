@@ -25,10 +25,13 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.favicon.IconType;
-import org.chromium.chrome.browser.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
+import org.chromium.chrome.browser.ui.favicon.IconType;
+import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
+import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
+import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
 class RevampedContextMenuHeaderMediator implements View.OnClickListener {
@@ -37,20 +40,24 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
     private Context mContext;
     private String mPlainUrl;
 
-    RevampedContextMenuHeaderMediator(
-            Context context, PropertyModel model, ContextMenuParams params) {
+    RevampedContextMenuHeaderMediator(Context context, PropertyModel model,
+            @PerformanceClass int performanceClass, ContextMenuParams params, Profile profile) {
         mContext = context;
         mPlainUrl = params.getUrl();
         mModel = model;
         mModel.set(RevampedContextMenuHeaderProperties.TITLE_AND_URL_CLICK_LISTENER, this);
 
         if (!params.isImage() && !params.isVideo()) {
-            LargeIconBridge iconBridge = new LargeIconBridge(Profile.getLastUsedProfile());
-            iconBridge.getLargeIconForUrl(mPlainUrl,
+            LargeIconBridge iconBridge = new LargeIconBridge(profile);
+            iconBridge.getLargeIconForStringUrl(mPlainUrl,
                     context.getResources().getDimensionPixelSize(R.dimen.default_favicon_min_size),
                     this::onFaviconAvailable);
         } else if (params.isVideo()) {
             setVideoIcon();
+        }
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_PERFORMANCE_INFO)
+                && params.isAnchor()) {
+            mModel.set(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS, performanceClass);
         }
     }
 
@@ -67,7 +74,7 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
     }
 
     /**
-     * See {@link org.chromium.chrome.browser.favicon.LargeIconBridge#getLargeIconForUrl}
+     * See {@link org.chromium.chrome.browser.ui.favicon.LargeIconBridge#getLargeIconForUrl}
      */
     private void onFaviconAvailable(@Nullable Bitmap icon, @ColorInt int fallbackColor,
             boolean isColorDefault, @IconType int iconType) {

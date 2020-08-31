@@ -25,18 +25,6 @@ class FormStructure;
 // WebView extension of AutofillClientIOSBridge.
 @protocol CWVAutofillClientIOSBridge<AutofillClientIOSBridge>
 
-// Bridge for AutofillClient's method |ConfirmSaveAutofillProfile|.
-- (void)confirmSaveAutofillProfile:(const autofill::AutofillProfile&)profile
-                          callback:(base::OnceClosure)callback;
-
-// Bridge for AutofillClient's method |ConfirmSaveCreditCardLocally|.
-- (void)confirmSaveCreditCardLocally:(const autofill::CreditCard&)creditCard
-               saveCreditCardOptions:
-                   (autofill::AutofillClient::SaveCreditCardOptions)
-                       saveCreditCardOptions
-                            callback:(autofill::AutofillClient::
-                                          LocalSaveCardPromptCallback)callback;
-
 // Bridge for AutofillClient's method |ConfirmSaveCreditCardToCloud|.
 - (void)confirmSaveCreditCardToCloud:(const autofill::CreditCard&)creditCard
                    legalMessageLines:
@@ -46,6 +34,20 @@ class FormStructure;
                        saveCreditCardOptions
                             callback:(autofill::AutofillClient::
                                           UploadSaveCardPromptCallback)callback;
+
+// Bridge For AutofillClient's method |ConfirmAccountNameFixFlow|.
+- (void)
+    confirmCreditCardAccountName:(const base::string16&)name
+                        callback:
+                            (base::OnceCallback<void(const base::string16&)>)
+                                callback;
+
+// Bridge For AutofillClient's method |ConfirmExpirationDateFixFlow|.
+- (void)confirmCreditCardExpirationWithCard:(const autofill::CreditCard&)card
+                                   callback:
+                                       (base::OnceCallback<void(
+                                            const base::string16&,
+                                            const base::string16&)>)callback;
 
 // Bridge for AutofillClient's method |CreditCardUploadCompleted|.
 - (void)handleCreditCardUploadCompleted:(BOOL)cardSaved;

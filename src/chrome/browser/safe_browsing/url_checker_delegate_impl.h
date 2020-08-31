@@ -7,7 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/safe_browsing/browser/url_checker_delegate.h"
+#include "components/safe_browsing/core/browser/url_checker_delegate.h"
+#include "content/public/browser/web_contents.h"
 
 namespace safe_browsing {
 
@@ -24,8 +25,7 @@ class UrlCheckerDelegateImpl : public UrlCheckerDelegate {
 
   // Implementation of UrlCheckerDelegate:
   void MaybeDestroyPrerenderContents(
-      const base::Callback<content::WebContents*()>& web_contents_getter)
-      override;
+      content::WebContents::OnceGetter web_contents_getter) override;
   // Only uses |resource| and ignores the rest of parameters.
   void StartDisplayingBlockingPageHelper(
       const security_interstitials::UnsafeResource& resource,
@@ -33,9 +33,12 @@ class UrlCheckerDelegateImpl : public UrlCheckerDelegate {
       const net::HttpRequestHeaders& headers,
       bool is_main_frame,
       bool has_user_gesture) override;
+  void StartObservingInteractionsForDelayedBlockingPageHelper(
+      const security_interstitials::UnsafeResource& resource,
+      bool is_main_frame) override;
+
   bool IsUrlWhitelisted(const GURL& url) override;
-  bool ShouldSkipRequestCheck(content::ResourceContext* resource_context,
-                              const GURL& original_url,
+  bool ShouldSkipRequestCheck(const GURL& original_url,
                               int frame_tree_node_id,
                               int render_process_id,
                               int render_frame_id,

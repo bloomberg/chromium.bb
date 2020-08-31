@@ -22,9 +22,6 @@ class GPURenderPassEncoder : public DawnObject<WGPURenderPassEncoder>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPURenderPassEncoder* Create(
-      GPUDevice* device,
-      WGPURenderPassEncoder render_pass_encoder);
   explicit GPURenderPassEncoder(GPUDevice* device,
                                 WGPURenderPassEncoder render_pass_encoder);
   ~GPURenderPassEncoder() override;
@@ -35,7 +32,7 @@ class GPURenderPassEncoder : public DawnObject<WGPURenderPassEncoder>,
                     const Vector<uint32_t>& dynamicOffsets);
   void setBindGroup(uint32_t index,
                     GPUBindGroup* bind_group,
-                    const FlexibleUint32ArrayView& dynamic_offsets_data,
+                    const FlexibleUint32Array& dynamic_offsets_data,
                     uint64_t dynamic_offsets_data_start,
                     uint32_t dynamic_offsets_data_length,
                     ExceptionState& exception_state);
@@ -54,10 +51,11 @@ class GPURenderPassEncoder : public DawnObject<WGPURenderPassEncoder>,
                    float minDepth,
                    float maxDepth);
   void setScissorRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-  void setIndexBuffer(GPUBuffer* buffer, uint64_t offset);
+  void setIndexBuffer(GPUBuffer* buffer, uint64_t offset, uint64_t size);
   void setVertexBuffer(uint32_t slot,
                        const GPUBuffer* buffer,
-                       const uint64_t offset);
+                       const uint64_t offset,
+                       const uint64_t size);
   void draw(uint32_t vertexCount,
             uint32_t instanceCount,
             uint32_t firstVertex,

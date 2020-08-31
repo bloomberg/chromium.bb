@@ -63,4 +63,18 @@ void DocumentResourceCoordinator::OnNonPersistentNotificationCreated() {
   service_->OnNonPersistentNotificationCreated();
 }
 
+void DocumentResourceCoordinator::SetHadFormInteraction() {
+  // Only send this signal for the first interaction as it doesn't get cleared
+  // for the lifetime of the frame and it's inefficient to send this message
+  // for every keystroke.
+  if (!had_form_interaction_)
+    service_->SetHadFormInteraction();
+  had_form_interaction_ = true;
+}
+
+void DocumentResourceCoordinator::OnFirstContentfulPaint(
+    base::TimeDelta time_since_navigation_start) {
+  service_->OnFirstContentfulPaint(time_since_navigation_start);
+}
+
 }  // namespace blink

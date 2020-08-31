@@ -7,12 +7,14 @@ package org.chromium.chrome.browser.feed.library.basicstream.internal.viewholder
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkNotNull;
 
 import android.content.Context;
-import android.support.annotation.VisibleForTesting;
-import android.support.v7.widget.RecyclerView.LayoutParams;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.RecyclerView.LayoutParams;
 
 import org.chromium.chrome.browser.feed.library.api.host.action.StreamActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -31,6 +33,7 @@ import org.chromium.chrome.browser.feed.library.sharedstream.piet.PietEventLogge
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;
 import org.chromium.chrome.browser.feed.library.sharedstream.scroll.PietScrollObserver;
 import org.chromium.chrome.browser.feed.library.sharedstream.scroll.ScrollListenerNotifier;
+import org.chromium.chrome.feed.R;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionPayloadProto.FeedActionPayload;
 import org.chromium.components.feed.core.proto.ui.piet.PietProto.Frame;
 import org.chromium.components.feed.core.proto.ui.piet.PietProto.PietSharedState;
@@ -38,7 +41,7 @@ import org.chromium.components.feed.core.proto.ui.piet.PietProto.PietSharedState
 import java.util.List;
 
 /**
- * {@link android.support.v7.widget.RecyclerView.ViewHolder} for {@link
+ * {@link androidx.recyclerview.widget.RecyclerView.ViewHolder} for {@link
  * org.chromium.components.feed.core.proto.ui.stream.StreamStructureProto.PietContent}.
  */
 public class PietViewHolder extends FeedViewHolder implements SwipeableViewHolder {
@@ -51,11 +54,16 @@ public class PietViewHolder extends FeedViewHolder implements SwipeableViewHolde
     private final View mViewport;
     private boolean mBound;
 
-    /*@Nullable*/ private ActionParser mActionParser;
-    /*@Nullable*/ private LoggingListener mLoggingListener;
-    /*@Nullable*/ private StreamActionApi mStreamActionApi;
-    /*@Nullable*/ private FeedActionPayload mSwipeAction;
-    /*@Nullable*/ private PietViewActionScrollObserver mScrollobserver;
+    @Nullable
+    private ActionParser mActionParser;
+    @Nullable
+    private LoggingListener mLoggingListener;
+    @Nullable
+    private StreamActionApi mStreamActionApi;
+    @Nullable
+    private FeedActionPayload mSwipeAction;
+    @Nullable
+    private PietViewActionScrollObserver mScrollobserver;
 
     public PietViewHolder(CardConfiguration cardConfiguration, FrameLayout cardView,
             PietManager pietManager, ScrollObservable scrollObservable, View viewport,
@@ -166,22 +174,21 @@ public class PietViewHolder extends FeedViewHolder implements SwipeableViewHolde
     }
 
     @VisibleForTesting
-    VisibilityMonitor createVisibilityMonitor(
-            /*@UnderInitialization*/ PietViewHolder this, View view, Configuration configuration) {
+    VisibilityMonitor createVisibilityMonitor(View view, Configuration configuration) {
         return new VisibilityMonitor(view, configuration);
     }
 
-    private LoggingListener getLoggingListener(/*@UnknownInitialization*/ PietViewHolder this) {
+    private LoggingListener getLoggingListener() {
         return checkNotNull(mLoggingListener,
                 "Logging listener can only be retrieved once view holder has been bound.");
     }
 
-    private StreamActionApi getStreamActionApi(/*@UnknownInitialization*/ PietViewHolder this) {
+    private StreamActionApi getStreamActionApi() {
         return checkNotNull(mStreamActionApi,
                 "Stream action api can only be retrieved once view holder has been bound.");
     }
 
-    private ActionParser getActionParser(/*@UnknownInitialization*/ PietViewHolder this) {
+    private ActionParser getActionParser() {
         return checkNotNull(mActionParser,
                 "Action parser can only be retrieved once view holder has been bound");
     }

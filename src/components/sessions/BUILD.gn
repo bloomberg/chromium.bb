@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//extensions/buildflags/buildflags.gni")
+
 if (is_android) {
   import("//build/config/android/config.gni")
 }
@@ -26,6 +28,9 @@ if (!is_ios) {
       "content/extended_info_handler.h",
       "content/navigation_task_id.cc",
       "content/navigation_task_id.h",
+      "content/session_tab_helper.cc",
+      "content/session_tab_helper.h",
+      "content/session_tab_helper_delegate.h",
     ]
 
     configs += [ ":implementation" ]
@@ -39,12 +44,18 @@ if (!is_ios) {
       "//base",
       "//base/third_party/dynamic_annotations",
       "//content/public/common",
+      "//extensions/buildflags",
       "//ui/base",
       "//url",
     ]
+
+    if (enable_extensions) {
+      deps += [ "//extensions/common" ]
+    }
   }
 } else {
   source_set("sessions") {
+    configs += [ "//build/config/compiler:enable_arc" ]
     sources = [
       "ios/ios_live_tab.h",
       "ios/ios_live_tab.mm",
@@ -54,6 +65,8 @@ if (!is_ios) {
       "ios/ios_serialized_navigation_builder.mm",
       "ios/ios_serialized_navigation_driver.cc",
       "ios/ios_serialized_navigation_driver.h",
+      "ios/ios_webstate_live_tab.h",
+      "ios/ios_webstate_live_tab.mm",
     ]
 
     public_deps = [
@@ -74,19 +87,21 @@ source_set("shared") {
   visibility = [ ":*" ]
 
   sources = [
-    "core/base_session_service.cc",
-    "core/base_session_service.h",
     "core/base_session_service_commands.cc",
     "core/base_session_service_commands.h",
-    "core/base_session_service_delegate.h",
+    "core/command_storage_backend.cc",
+    "core/command_storage_backend.h",
+    "core/command_storage_manager.cc",
+    "core/command_storage_manager.h",
+    "core/command_storage_manager_delegate.h",
     "core/live_tab.cc",
     "core/live_tab.h",
     "core/live_tab_context.h",
     "core/serialized_navigation_driver.h",
     "core/serialized_navigation_entry.cc",
     "core/serialized_navigation_entry.h",
-    "core/session_backend.cc",
-    "core/session_backend.h",
+    "core/serialized_user_agent_override.cc",
+    "core/serialized_user_agent_override.h",
     "core/session_command.cc",
     "core/session_command.h",
     "core/session_constants.cc",
@@ -99,6 +114,10 @@ source_set("shared") {
     "core/session_service_commands.h",
     "core/session_types.cc",
     "core/session_types.h",
+    "core/snapshotting_command_storage_backend.cc",
+    "core/snapshotting_command_storage_backend.h",
+    "core/snapshotting_command_storage_manager.cc",
+    "core/snapshotting_command_storage_manager.h",
     "core/tab_restore_service.cc",
     "core/tab_restore_service.h",
     "core/tab_restore_service_client.cc",
@@ -122,7 +141,9 @@ source_set("shared") {
     "//components/history/core/common",
     "//components/keyed_service/core",
     "//components/prefs",
+    "//components/tab_groups",
     "//components/variations",
+    "//crypto",
     "//skia",
     "//ui/base",
     "//ui/gfx",
@@ -137,9 +158,7 @@ static_library("test_support") {
     "core/serialized_navigation_entry_test_helper.h",
   ]
 
-  public_deps = [
-    ":sessions",
-  ]
+  public_deps = [ ":sessions" ]
   deps = [
     "//base",
     "//skia",
@@ -148,19 +167,15 @@ static_library("test_support") {
     "//url",
   ]
 
-  if (!is_android && !is_ios) {
-    sources += [
-      "core/base_session_service_test_helper.cc",
-      "core/base_session_service_test_helper.h",
-    ]
-  }
-
   if (!is_ios) {
     sources += [
       "content/content_test_helper.cc",
       "content/content_test_helper.h",
+      "core/command_storage_manager_test_helper.cc",
+      "core/command_storage_manager_test_helper.h",
     ]
     deps += [
+      "//base/test:test_support",
       "//content/public/browser",
       "//content/public/common",
     ]
@@ -173,9 +188,10 @@ source_set("unit_tests") {
   }
   testonly = true
   sources = [
+    "core/command_storage_backend_unittest.cc",
     "core/serialized_navigation_entry_unittest.cc",
-    "core/session_backend_unittest.cc",
     "core/session_id_generator_unittest.cc",
+    "core/snapshotting_session_backend_unittest.cc",
     "ios/ios_serialized_navigation_builder_unittest.mm",
     "ios/ios_serialized_navigation_driver_unittest.cc",
   ]
@@ -188,9 +204,7 @@ source_set("unit_tests") {
     ]
   }
 
-  public_deps = [
-    ":sessions",
-  ]
+  public_deps = [ ":sessions" ]
 
   deps = [
     ":test_support",

@@ -31,6 +31,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
+
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -54,8 +55,10 @@
 
 namespace blink {
 
+class CrossOriginResourcePolicyChecker;
 class ExceptionState;
 class FetchEvent;
+class PendingURLLoaderFactoryBundle;
 class RespondWithObserver;
 class RequestInit;
 class ScriptPromise;
@@ -65,7 +68,6 @@ class ServiceWorkerClients;
 class ServiceWorkerInstalledScriptsManager;
 class ServiceWorkerRegistration;
 class ServiceWorkerThread;
-class StringOrTrustedScriptURL;
 class WaitUntilObserver;
 class WebURLResponse;
 class WorkerClassicScriptLoader;
@@ -121,7 +123,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-      network::mojom::CredentialsMode) override;
+      network::mojom::CredentialsMode,
+      RejectCoepUnsafeNone reject_coep_unsafe_none) override;
   void Dispose() override;
   InstalledScriptsManager* GetInstalledScriptsManager() override;
 
@@ -241,11 +244,13 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // |event_id| is the id that was passed to DispatchAbortPaymentEvent.
   void RespondToAbortPaymentEvent(int event_id, bool abort_payment);
   // RespondToCanMakePaymentEvent will be called after the service worker
-  // returns a response to a CanMakePaymentEvent, and
+  // returns the |response| to a CanMakePaymentEvent, and
   // DidHandleCanMakePaymentEvent will be called after the end of
-  // CanMakePaymentEvent's lifecycle. |event_id| is the id that was passed
-  // to DispatchCanMakePaymentEvent.
-  void RespondToCanMakePaymentEvent(int event_id, bool can_make_payment);
+  // CanMakePaymentEvent's lifecycle. |event_id| is the id that was passed to
+  // DispatchCanMakePaymentEvent.
+  void RespondToCanMakePaymentEvent(
+      int event_id,
+      payments::mojom::blink::CanMakePaymentResponsePtr response);
   // RespondToPaymentRequestEvent will be called after the service worker
   // returns a response to a PaymentRequestEvent, and
   // DidHandlePaymentRequestEvent will be called after the end of
@@ -285,12 +290,15 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(activate, kActivate)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(fetch, kFetch)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror, kMessageerror)
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Returns true if a FetchEvent exists with the given request URL and
   // is still waiting for a Response.
   bool HasRelatedFetchEvent(const KURL& request_url) const;
+
+  int GetOutstandingThrottledLimit() const override;
 
  protected:
   // EventTarget
@@ -306,9 +314,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       String* out_source_code,
       std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data) override;
 
+  ResourceLoadScheduler::ThrottleOptionOverride GetThrottleOptionOverride()
+      const override;
+
  private:
-  void importScripts(const HeapVector<StringOrTrustedScriptURL>& urls,
-                     ExceptionState&) override;
+  void importScripts(const Vector<String>& urls, ExceptionState&) override;
   SingleCachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
       const KURL& script_url,
       std::unique_ptr<Vector<uint8_t>> meta_data) override;
@@ -337,6 +347,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // Counts the |script_size| and |cached_metadata_size| for UMA to measure the
   // number of scripts and the total bytes of scripts.
   void CountScriptInternal(size_t script_size, size_t cached_metadata_size);
+
+  // Called by ServiceWorkerEventQueue just before they start an event.
+  void OnBeforeStartEvent(bool is_offline_event);
 
   // Called by ServiceWorkerEventQueue when a certain time has passed since
   // the last task finished.
@@ -369,9 +382,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
           response_callback,
       DispatchFetchEventForSubresourceCallback callback) override;
   void Clone(
-      mojo::PendingReceiver<mojom::blink::ControllerServiceWorker> reciever,
-      network::mojom::blink::CrossOriginEmbedderPolicy
-          cross_origin_embedder_policy) override;
+      mojo::PendingReceiver<mojom::blink::ControllerServiceWorker> receiver,
+      const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
+      mojo::PendingRemote<
+          network::mojom::blink::CrossOriginEmbedderPolicyReporter>
+          coep_reporter) override;
 
   // Implements mojom::blink::ServiceWorker.
   void InitializeGlobalScope(
@@ -379,7 +394,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
           service_worker_host,
       mojom::blink::ServiceWorkerRegistrationObjectInfoPtr registration_info,
       mojom::blink::ServiceWorkerObjectInfoPtr service_worker_info,
-      mojom::blink::FetchHandlerExistence fetch_hander_existence) override;
+      mojom::blink::FetchHandlerExistence fetch_handler_existence,
+      std::unique_ptr<PendingURLLoaderFactoryBundle>
+          subresource_loader_factories,
+      mojo::PendingReceiver<mojom::blink::ReportingObserver>) override;
   void DispatchInstallEvent(DispatchInstallEventCallback callback) override;
   void DispatchActivateEvent(DispatchActivateEventCallback callback) override;
   void DispatchBackgroundFetchAbortEvent(
@@ -450,7 +468,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       const String& id,
       DispatchContentDeleteEventCallback callback) override;
   void Ping(PingCallback callback) override;
-  void SetIdleTimerDelayToZero() override;
+  void SetIdleDelay(base::TimeDelta delay) override;
   void AddMessageToConsole(mojom::blink::ConsoleMessageLevel,
                            const String& message) override;
 
@@ -461,7 +479,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // the event queue, and executed immediately or sometimes later.
   void StartFetchEvent(
       mojom::blink::DispatchFetchEventParamsPtr params,
-      network::mojom::blink::CrossOriginEmbedderPolicy requestor_coep,
+      base::WeakPtr<CrossOriginResourcePolicyChecker> corp_checker,
       mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
           response_callback,
       DispatchFetchEventInternalCallback callback,
@@ -656,12 +674,12 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // |event_queue_| since the pipe needs to be disconnected before callbacks
   // passed by DispatchSomeEvent() get destructed, which may be stored in
   // |event_queue_|.
-  // network::mojom::blink::CrossOriginEmbedderPolicy set as the context of
+  // network::CrossOriginEmbedderPolicy set as the context of
   // mojo::ReceiverSet is the policy for the client which dispatches FetchEvents
   // to the ControllerServiceWorker. It should be referred to before sending the
   // response back to the client.
   mojo::ReceiverSet<mojom::blink::ControllerServiceWorker,
-                    network::mojom::blink::CrossOriginEmbedderPolicy>
+                    std::unique_ptr<CrossOriginResourcePolicyChecker>>
       controller_receivers_;
 };
 

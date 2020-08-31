@@ -13,29 +13,29 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/version.h"
 #include "chrome/browser/chromeos/printing/printer_info.h"
 #include "printing/backend/cups_jobs.h"
+#include "printing/printer_status.h"
 
 namespace {
 
 const char kPdfMimeType[] = "application/pdf";
 const char kPwgRasterMimeType[] = "image/pwg-raster";
 
-const char kPwgRasterDocumentResolutionSupported[] =
-    "Printing.CUPS.PwgRasterDocumentResolutionSupported";
-
 // List of known multi-word printer manufacturers to help with make-and-model
 // string parsing.  Keep in UPPER CASE as that's how matches are performed.
 const std::array<const char* const, 4> kMultiWordManufacturers{
     {"FUJI XEROX", "KODAK FUNAI", "KONICA MINOLTA", "TEXAS INSTRUMENTS"}};
 
-// Wraps a PrinterQueryResult and a PrinterInfo so that we can use
-// PostTaskAndResplyWithResult.
+// Wraps several printing data structures so that we can use
+// PostTaskAndReplyWithResult().
 struct QueryResult {
-  ::printing::PrinterQueryResult result;
-  ::printing::PrinterInfo printer_info;
+  printing::PrinterQueryResult result;
+  printing::PrinterInfo printer_info;
+  printing::PrinterStatus printer_status;
 };
 
 // Enums for Printing.CUPS.HighestIppVersion.  Do not delete entries.  Keep
@@ -140,8 +140,9 @@ QueryResult QueryPrinterImpl(const std::string& host,
                              const std::string& path,
                              bool encrypted) {
   QueryResult result;
-  result.result = ::printing::GetPrinterInfo(host, port, path, encrypted,
-                                             &result.printer_info);
+  result.result =
+      ::printing::GetPrinterInfo(host, port, path, encrypted,
+                                 &result.printer_info, &result.printer_status);
   if (result.result != ::printing::PrinterQueryResult::SUCCESS) {
     LOG(ERROR) << "Could not retrieve printer info";
   }
@@ -155,10 +156,11 @@ void OnPrinterQueried(chromeos::PrinterInfoCallback callback,
                       const QueryResult& query_result) {
   const ::printing::PrinterQueryResult& result = query_result.result;
   const ::printing::PrinterInfo& printer_info = query_result.printer_info;
+  const ::printing::PrinterStatus& printer_status = query_result.printer_status;
   if (result != ::printing::PrinterQueryResult::SUCCESS) {
     VLOG(1) << "Could not reach printer";
-    std::move(callback).Run(result, std::string(), std::string(), std::string(),
-                            {}, false);
+    std::move(callback).Run(result, ::printing::PrinterStatus(), std::string(),
+                            std::string(), std::string(), {}, false);
     return;
   }
 
@@ -175,8 +177,6 @@ void OnPrinterQueried(chromeos::PrinterInfoCallback callback,
     model = make_and_model;
   }
 
-  base::UmaHistogramBoolean(kPwgRasterDocumentResolutionSupported,
-                            printer_info.supports_pwg_raster_resolution);
   DCHECK(!printer_info.ipp_versions.empty())
       << "Properly queried PrinterInfo always has at least one version";
   base::UmaHistogramEnumeration(
@@ -184,9 +184,10 @@ void OnPrinterQueried(chromeos::PrinterInfoCallback callback,
       ToIppVersion(*std::max_element(printer_info.ipp_versions.begin(),
                                      printer_info.ipp_versions.end())));
 
-  std::move(callback).Run(
-      result, make.as_string(), model.as_string(), printer_info.make_and_model,
-      printer_info.document_formats, IsAutoconf(printer_info));
+  std::move(callback).Run(result, printer_status, make.as_string(),
+                          model.as_string(), printer_info.make_and_model,
+                          printer_info.document_formats,
+                          IsAutoconf(printer_info));
 }
 
 }  // namespace
@@ -203,10 +204,8 @@ void QueryIppPrinter(const std::string& host,
   // QueryPrinterImpl could block on a network call for a noticable amount of
   // time (100s of ms). Also the user is waiting on this result.  Thus, run at
   // USER_VISIBLE with MayBlock.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits{base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
-                       base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&QueryPrinterImpl, host, port, path, encrypted),
       base::BindOnce(&OnPrinterQueried, std::move(callback)));
 }

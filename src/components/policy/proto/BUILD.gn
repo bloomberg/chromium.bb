@@ -10,9 +10,19 @@ import("//third_party/protobuf/proto_library.gni")
 # set, here we link the result into a component.
 component("proto") {
   output_name = "policy_proto"
-  public_deps = [
-    ":proto_internal",
+  public_deps = [ ":proto_internal" ]
+}
+
+# Record constants for use with the reporting messaging library.
+proto_library("policy_record_constants") {
+  visibility = [
+    "//chrome/browser:browser",
+    "//chrome/browser:reporting_record_proto",
+    "//chrome/browser:reporting_record_proto_gen",
   ]
+  sources = [ "record_constants.proto" ]
+
+  proto_out_dir = "components/policy/proto"
 }
 
 proto_library("policy_common_definitions_compile_proto") {
@@ -23,9 +33,7 @@ proto_library("policy_common_definitions_compile_proto") {
     ":proto_internal",
   ]
 
-  sources = [
-    "policy_common_definitions.proto",
-  ]
+  sources = [ "policy_common_definitions.proto" ]
 
   proto_out_dir = "components/policy/proto"
 }

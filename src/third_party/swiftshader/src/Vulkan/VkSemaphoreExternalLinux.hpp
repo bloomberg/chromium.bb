@@ -44,7 +44,8 @@
 class SharedSemaphore
 {
 public:
-	SharedSemaphore()
+	SharedSemaphore(bool initialValue)
+	    : signaled(initialValue)
 	{
 		pthread_mutexattr_t mattr;
 		pthread_mutexattr_init(&mattr);
@@ -85,7 +86,7 @@ public:
 	void wait()
 	{
 		pthread_mutex_lock(&mutex);
-		while (!signaled)
+		while(!signaled)
 		{
 			pthread_cond_wait(&cond, &mutex);
 		}
@@ -104,7 +105,7 @@ public:
 	{
 		pthread_mutex_lock(&mutex);
 		bool result = signaled;
-		if (result)
+		if(result)
 		{
 			signaled = false;
 		}
@@ -127,22 +128,15 @@ private:
 	bool signaled = false;
 };
 
-namespace vk
+namespace vk {
+
+class OpaqueFdExternalSemaphore : public Semaphore::External
 {
-
-class Semaphore::External {
 public:
-	// The type of external semaphore handle types supported by this implementation.
-	static const VkExternalSemaphoreHandleTypeFlags kExternalSemaphoreHandleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
-
-	// Default constructor. Note that one should call either init() or
-	// importFd() before any call to wait() or signal().
-	External() = default;
-
-	~External() { close(); }
+	~OpaqueFdExternalSemaphore() { unmapRegion(); }
 
 	// Initialize instance by creating a new shared memory region.
-	void init()
+	VkResult init(bool initialState) override
 	{
 		// Allocate or import the region's file descriptor.
 		const size_t size = sw::memoryPageSize();
@@ -151,29 +145,35 @@ public:
 		static int counter = 0;
 		char name[40];
 		snprintf(name, sizeof(name), "SwiftShader.Semaphore.%d", ++counter);
-		if (!memfd.allocate(name, size))
+		if(!memfd.allocate(name, size))
 		{
-			ABORT("memfd.allocate() returned %s", strerror(errno));
+			TRACE("memfd.allocate() returned %s", strerror(errno));
+			return VK_ERROR_INITIALIZATION_FAILED;
 		}
-		mapRegion(size, true);
+		if(!mapRegion(size, true, initialState))
+			return VK_ERROR_INITIALIZATION_FAILED;
+
+		return VK_SUCCESS;
 	}
 
 	// Import an existing semaphore through its file descriptor.
-	VkResult importFd(int fd)
+	VkResult importOpaqueFd(int fd) override
 	{
-		close();
+		unmapRegion();
 		memfd.importFd(fd);
-		mapRegion(sw::memoryPageSize(), false);
+		if(!mapRegion(sw::memoryPageSize(), false, false))
+			return VK_ERROR_INITIALIZATION_FAILED;
+
 		return VK_SUCCESS;
 	}
 
 	// Export the current semaphore as a duplicated file descriptor to the same
 	// region. This can be consumed by importFd() running in a different
 	// process.
-	VkResult exportFd(int* pFd) const
+	VkResult exportOpaqueFd(int *pFd) override
 	{
 		int fd = memfd.exportFd();
-		if (fd < 0)
+		if(fd < 0)
 		{
 			return VK_ERROR_INVALID_EXTERNAL_HANDLE;
 		}
@@ -181,28 +181,27 @@ public:
 		return VK_SUCCESS;
 	}
 
-	void wait()
+	void wait() override
 	{
 		semaphore->wait();
 	}
 
-	bool tryWait()
+	bool tryWait() override
 	{
 		return semaphore->tryWait();
 	}
 
-	void signal()
+	void signal() override
 	{
 		semaphore->signal();
 	}
 
 private:
-	// Unmap the semaphore if needed and close its file descriptor.
-	void close()
+	void unmapRegion()
 	{
-		if (semaphore)
+		if(semaphore)
 		{
-			if (semaphore->deref())
+			if(semaphore->deref())
 			{
 				semaphore->~SharedSemaphore();
 			}
@@ -213,27 +212,29 @@ private:
 	}
 
 	// Remap the shared region and setup the semaphore or increment its reference count.
-	void mapRegion(size_t size, bool needInitialization)
+	bool mapRegion(size_t size, bool needsInitialization, bool initialValue)
 	{
 		// Map the region into memory and point the semaphore to it.
-		void* addr = memfd.mapReadWrite(0, size);
-		if (!addr)
+		void *addr = memfd.mapReadWrite(0, size);
+		if(!addr)
 		{
-			ABORT("mmap() failed: %s", strerror(errno));
+			TRACE("mmap() failed: %s", strerror(errno));
+			return false;
 		}
 		semaphore = reinterpret_cast<SharedSemaphore *>(addr);
-		if (needInitialization)
+		if(needsInitialization)
 		{
-			new (semaphore) SharedSemaphore();
+			new(semaphore) SharedSemaphore(initialValue);
 		}
 		else
 		{
 			semaphore->addRef();
 		}
+		return true;
 	}
 
 	LinuxMemFd memfd;
-	SharedSemaphore* semaphore = nullptr;
+	SharedSemaphore *semaphore = nullptr;
 };
 
 }  // namespace vk

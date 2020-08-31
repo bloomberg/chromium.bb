@@ -112,7 +112,7 @@ class MultisampledRenderingTest : public DawnTest {
         wgpu::RenderPassEncoder renderPassEncoder = commandEncoder.BeginRenderPass(&renderPass);
         renderPassEncoder.SetPipeline(pipeline);
         renderPassEncoder.SetBindGroup(0, bindGroup);
-        renderPassEncoder.Draw(3, 1, 0, 0);
+        renderPassEncoder.Draw(3);
         renderPassEncoder.EndPass();
     }
 
@@ -238,7 +238,6 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DTexture) {
     }
 
     wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
-    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commandBuffer);
 
     VerifyResolveTarget(kGreen, mResolveTexture);
@@ -279,7 +278,6 @@ TEST_P(MultisampledRenderingTest, MultisampledRenderingWithDepthTest) {
     }
 
     wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
-    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commandBuffer);
 
     // The color of the pixel in the middle of mResolveTexture should be green if MSAA resolve runs
@@ -317,7 +315,6 @@ TEST_P(MultisampledRenderingTest, ResolveInAnotherRenderPass) {
     }
 
     wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
-    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commandBuffer);
 
     VerifyResolveTarget(kGreen, mResolveTexture);
@@ -351,7 +348,6 @@ TEST_P(MultisampledRenderingTest, ResolveIntoMultipleResolveTargets) {
     }
 
     wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
-    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commandBuffer);
 
     VerifyResolveTarget(kRed, mResolveTexture);
@@ -390,7 +386,6 @@ TEST_P(MultisampledRenderingTest, ResolveOneMultisampledTextureTwice) {
     }
 
     wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
-    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commandBuffer);
 
     VerifyResolveTarget(kGreen, mResolveTexture);
@@ -429,7 +424,6 @@ TEST_P(MultisampledRenderingTest, ResolveIntoOneMipmapLevelOf2DTexture) {
     }
 
     wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
-    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commandBuffer);
 
     VerifyResolveTarget(kGreen, resolveTexture, kBaseMipLevel, 0);
@@ -488,7 +482,6 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DArrayTexture) {
     }
 
     wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
-    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commandBuffer);
 
     VerifyResolveTarget(kRed, resolveTexture1, kBaseMipLevel1, kBaseArrayLayer1);
@@ -496,14 +489,13 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DArrayTexture) {
 }
 
 DAWN_INSTANTIATE_TEST(MultisampledRenderingTest,
-                      D3D12Backend,
-                      ForceWorkarounds(D3D12Backend, {}, {"use_d3d12_resource_heap_tier2"}),
-                      ForceWorkarounds(D3D12Backend, {}, {"use_d3d12_render_pass"}),
-                      MetalBackend,
-                      OpenGLBackend,
-                      VulkanBackend,
-                      ForceWorkarounds(MetalBackend, {"emulate_store_and_msaa_resolve"}),
-                      ForceWorkarounds(MetalBackend, {"always_resolve_into_zero_level_and_layer"}),
-                      ForceWorkarounds(MetalBackend,
-                                       {"always_resolve_into_zero_level_and_layer",
-                                        "emulate_store_and_msaa_resolve"}));
+                      D3D12Backend(),
+                      D3D12Backend({}, {"use_d3d12_resource_heap_tier2"}),
+                      D3D12Backend({}, {"use_d3d12_render_pass"}),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      VulkanBackend(),
+                      MetalBackend({"emulate_store_and_msaa_resolve"}),
+                      MetalBackend({"always_resolve_into_zero_level_and_layer"}),
+                      MetalBackend({"always_resolve_into_zero_level_and_layer",
+                                    "emulate_store_and_msaa_resolve"}));

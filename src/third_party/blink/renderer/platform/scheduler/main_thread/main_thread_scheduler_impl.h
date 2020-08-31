@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/single_sample_metrics.h"
 #include "base/optional.h"
+#include "base/profiler/sample_metadata.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/task/sequence_manager/task_queue.h"
@@ -32,14 +33,15 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/compositor_priority_experiments.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/deadline_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/find_in_page_budget_pool_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/idle_time_estimator.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_metrics_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/memory_purge_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/non_waking_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/pending_user_input.h"
-#include "third_party/blink/renderer/platform/scheduler/main_thread/prioritize_compositing_after_input_experiment.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/queueing_time_estimator.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/render_widget_signals.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/use_case.h"
@@ -96,9 +98,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   struct SchedulingSettings {
     SchedulingSettings();
 
-    // High priority input experiment.
-    bool high_priority_input;
-
     // Background page priority experiment (crbug.com/848835).
     bool low_priority_background_page;
     bool best_effort_background_page;
@@ -137,14 +136,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     std::array<base::sequence_manager::TaskQueue::QueuePriority,
                net::RequestPrioritySize::NUM_PRIORITIES>
         net_to_blink_priority;
-
-    using FrameTaskTypeToQueueTraitsArray =
-        std::array<base::Optional<MainThreadTaskQueue::QueueTraits>,
-                   static_cast<size_t>(TaskType::kCount)>;
-    // Array of QueueTraits indexed by TaskType, containing TaskType::kCount
-    // entries. This is initialized early with all valid entries. Entries that
-    // aren't valid task types, i.e. non-frame level, are base::nullopt.
-    FrameTaskTypeToQueueTraitsArray frame_task_types_to_queue_traits;
   };
 
   static const char* UseCaseToString(UseCase use_case);
@@ -170,9 +161,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   // WebThreadScheduler implementation:
   std::unique_ptr<Thread> CreateMainThread() override;
+  std::unique_ptr<WebWidgetScheduler> CreateWidgetScheduler() override;
   // Note: this is also shared by the ThreadScheduler interface.
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CleanupTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> NonWakingTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner()
       override;
   std::unique_ptr<WebRenderWidgetSchedulingState>
@@ -185,9 +178,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       const WebInputEvent& web_input_event,
       InputEventState event_state) override;
   void WillPostInputEventToMainThread(
-      WebInputEvent::Type web_input_event_type) override;
+      WebInputEvent::Type web_input_event_type,
+      const WebInputEventAttribution& web_input_event_attribution) override;
   void WillHandleInputEventOnMainThread(
-      WebInputEvent::Type web_input_event_type) override;
+      WebInputEvent::Type web_input_event_type,
+      const WebInputEventAttribution& web_input_event_attribution) override;
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
                                        WebInputEventResult result) override;
   void DidAnimateForInputOnCompositorThread() override;
@@ -215,7 +210,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void AddRAILModeObserver(RAILModeObserver* observer) override;
   void RemoveRAILModeObserver(RAILModeObserver const* observer) override;
   void SetRendererProcessType(WebRendererProcessType type) override;
-  PendingUserInputInfo GetPendingUserInputInfo() const override;
+  Vector<WebInputEventAttribution> GetPendingUserInputInfo(
+      bool include_continuous) const override;
   bool IsBeginMainFrameScheduled() const override;
 
   // ThreadScheduler implementation:
@@ -240,7 +236,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   // WebThreadScheduler implementation:
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner() override;
 
   // The following functions are defined in both WebThreadScheduler and
   // ThreadScheduler, and have the same function signatures -- see above.
@@ -372,8 +367,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     return task_queue_throttler_.get();
   }
 
-  void OnFirstContentfulPaint();
-  void OnFirstMeaningfulPaint();
+  void OnMainFramePaint();
 
   void OnShutdownTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
 
@@ -402,7 +396,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   const SchedulingSettings& scheduling_settings() const;
 
-  void SetShouldPrioritizeCompositing(bool should_prioritize_compositing);
+  void SetPrioritizeCompositingAfterInput(
+      bool prioritize_compositing_after_input);
 
   void OnCompositorPriorityExperimentUpdateCompositorPriority();
 
@@ -428,11 +423,14 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     return main_thread_only().main_thread_compositing_is_fast;
   }
 
+  QueuePriority find_in_page_priority() const {
+    return main_thread_only().current_policy.find_in_page_priority();
+  }
+
  protected:
   scoped_refptr<MainThreadTaskQueue> ControlTaskQueue();
   scoped_refptr<MainThreadTaskQueue> DefaultTaskQueue();
   scoped_refptr<MainThreadTaskQueue> CompositorTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> InputTaskQueue();
   scoped_refptr<MainThreadTaskQueue> V8TaskQueue();
   // A control task queue which also respects virtual time. Only available if
   // virtual time has been enabled.
@@ -459,6 +457,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   friend class main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest;
 
   friend class CompositorPriorityExperiments;
+  friend class FindInPageBudgetPoolController;
 
   FRIEND_TEST_ALL_PREFIXES(
       main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest,
@@ -475,6 +474,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   static const char* TimeDomainTypeToString(TimeDomainType domain_type);
 
   bool ContainsLocalMainFrame();
+
+  bool IsAnyMainFrameWaitingForFirstContentfulPaint() const;
+  bool IsAnyMainFrameWaitingForFirstMeaningfulPaint() const;
 
   struct TaskQueuePolicy {
     // Default constructor of TaskQueuePolicy should match behaviour of a
@@ -577,6 +579,14 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       return compositor_priority_;
     }
 
+    base::sequence_manager::TaskQueue::QueuePriority& find_in_page_priority() {
+      return find_in_page_priority_;
+    }
+    base::sequence_manager::TaskQueue::QueuePriority find_in_page_priority()
+        const {
+      return find_in_page_priority_;
+    }
+
     UseCase& use_case() { return use_case_; }
     UseCase use_case() const { return use_case_; }
 
@@ -587,6 +597,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
              should_prioritize_loading_with_compositing_ ==
                  other.should_prioritize_loading_with_compositing_ &&
              compositor_priority_ == other.compositor_priority_ &&
+             find_in_page_priority_ == other.find_in_page_priority_ &&
              use_case_ == other.use_case_;
     }
 
@@ -601,6 +612,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // Priority of task queues belonging to the compositor class (Check
     // MainThread::QueueClass).
     base::sequence_manager::TaskQueue::QueuePriority compositor_priority_;
+
+    base::sequence_manager::TaskQueue::QueuePriority find_in_page_priority_;
 
     UseCase use_case_;
 
@@ -646,6 +659,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValueLocked(
       base::TimeTicks optional_now) const;
   void CreateTraceEventObjectSnapshotLocked() const;
+
+  std::string ToString() const;
 
   static bool ShouldPrioritizeInputEvent(const WebInputEvent& web_input_event);
 
@@ -775,6 +790,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // task.
   void DispatchOnTaskCompletionCallbacks();
 
+  void AsValueIntoLocked(base::trace_event::TracedValue*,
+                         base::TimeTicks optional_now) const;
+
   // Indicates that scheduler has been shutdown.
   // It should be accessed only on the main thread, but couldn't be a member
   // of MainThreadOnly struct because last might be destructed before we
@@ -799,14 +817,14 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
   RenderWidgetSignals render_widget_scheduler_signals_;
 
+  std::unique_ptr<FindInPageBudgetPoolController>
+      find_in_page_budget_pool_controller_;
+
   const scoped_refptr<MainThreadTaskQueue> control_task_queue_;
   const scoped_refptr<MainThreadTaskQueue> compositor_task_queue_;
-  const scoped_refptr<MainThreadTaskQueue> input_task_queue_;
   scoped_refptr<MainThreadTaskQueue> virtual_time_control_task_queue_;
   std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
       compositor_task_queue_enabled_voter_;
-  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
-      input_task_queue_enabled_voter_;
 
   using TaskQueueVoterMap = std::map<
       scoped_refptr<MainThreadTaskQueue>,
@@ -818,20 +836,22 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   scoped_refptr<MainThreadTaskQueue> ipc_task_queue_;
   scoped_refptr<MainThreadTaskQueue> cleanup_task_queue_;
   scoped_refptr<MainThreadTaskQueue> memory_purge_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> non_waking_task_queue_;
 
   scoped_refptr<base::SingleThreadTaskRunner> v8_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> cleanup_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> non_waking_task_runner_;
 
   MemoryPurgeManager memory_purge_manager_;
 
   // Note |virtual_time_domain_| is lazily created.
   std::unique_ptr<AutoAdvancingVirtualTimeDomain> virtual_time_domain_;
+  NonWakingTimeDomain non_waking_time_domain_;
 
-  base::Closure update_policy_closure_;
+  base::RepeatingClosure update_policy_closure_;
   DeadlineTaskRunner delayed_update_policy_runner_;
   CancelableClosureHolder end_renderer_hidden_idle_period_closure_;
 
@@ -863,21 +883,18 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     TraceableState<RAILMode, TracingCategoryName::kInfo>
         rail_mode_for_tracing;  // Don't use except for tracing.
     TraceableState<bool, TracingCategoryName::kTopLevel> renderer_hidden;
+    base::Optional<base::ScopedSampleMetadata> renderer_hidden_metadata;
     TraceableState<bool, TracingCategoryName::kTopLevel> renderer_backgrounded;
     TraceableState<bool, TracingCategoryName::kDefault>
         keep_active_fetch_or_worker;
     TraceableState<bool, TracingCategoryName::kDefault>
         blocking_input_expected_soon;
     TraceableState<bool, TracingCategoryName::kDebug>
-        have_seen_a_begin_main_frame;
-    TraceableState<bool, TracingCategoryName::kDebug>
         have_reported_blocking_intervention_in_current_policy;
     TraceableState<bool, TracingCategoryName::kDebug>
         have_reported_blocking_intervention_since_navigation;
     TraceableState<bool, TracingCategoryName::kDebug>
         has_visible_render_widget_with_touch_handler;
-    TraceableState<bool, TracingCategoryName::kDebug>
-        begin_frame_not_expected_soon;
     TraceableState<bool, TracingCategoryName::kDebug>
         in_idle_period_for_testing;
     TraceableState<bool, TracingCategoryName::kInfo> use_virtual_time;
@@ -891,8 +908,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     base::TimeTicks background_status_changed_at;
     HashSet<PageSchedulerImpl*> page_schedulers;  // Not owned.
     base::ObserverList<RAILModeObserver>::Unchecked
-        rail_mode_observers;                                      // Not owned.
-    WakeUpBudgetPool* wake_up_budget_pool;                        // Not owned.
+        rail_mode_observers;                // Not owned.
+    WakeUpBudgetPool* wake_up_budget_pool;  // Not owned.
     MainThreadMetricsHelper metrics_helper;
     TraceableState<WebRendererProcessType, TracingCategoryName::kTopLevel>
         process_type;
@@ -932,9 +949,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // True if a nested RunLoop is running.
     bool nested_runloop;
 
-    // High-priority for compositing events after input experiment.
-    PrioritizeCompositingAfterInputExperiment compositing_experiment;
-    bool should_prioritize_compositing;
+    // High-priority for compositing events after input. This will cause
+    // compositing events get a higher priority until the start of the next
+    // animation frame.
+    TraceableState<bool, TracingCategoryName::kDefault>
+        prioritize_compositing_after_input;
 
     // List of callbacks to execute after the current task.
     WTF::Vector<base::OnceClosure> on_task_completion_callbacks;
@@ -964,9 +983,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     TraceableState<bool, TracingCategoryName::kInfo>
         have_seen_a_blocking_gesture;
     TraceableState<bool, TracingCategoryName::kInfo>
-        waiting_for_contentful_paint;
+        waiting_for_any_main_frame_contentful_paint;
     TraceableState<bool, TracingCategoryName::kInfo>
-        waiting_for_meaningful_paint;
+        waiting_for_any_main_frame_meaningful_paint;
     TraceableState<bool, TracingCategoryName::kInfo>
         have_seen_input_since_navigation;
     TraceableCounter<uint32_t, TracingCategoryName::kInfo>

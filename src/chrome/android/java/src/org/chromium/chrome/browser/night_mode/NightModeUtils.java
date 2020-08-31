@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.night_mode;
 
-import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,16 +16,16 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.themes.ThemePreferences;
 
 /**
  * Helper methods for supporting night mode.
  */
 public class NightModeUtils {
     private static Boolean sNightModeSupportedForTest;
+    private static Boolean sNightModeDefaultToLightForTesting;
 
     /**
      * Due to Lemon issues on resources access, night mode is disabled on Kitkat until the issue is
@@ -133,14 +133,12 @@ public class NightModeUtils {
     /**
      * The current theme setting, reflecting either the user setting or the default if the user has
      * not explicitly set a preference.
-     * @return The current theme setting. See {@link ThemePreferences.ThemeSetting}.
+     * @return The current theme setting. See {@link ThemeType}.
      */
-    public static @ThemePreferences.ThemeSetting int getThemeSetting() {
-        int userSetting = SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING_KEY, -1);
+    public static @ThemeType int getThemeSetting() {
+        int userSetting = SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING, -1);
         if (userSetting == -1) {
-            return FeatureUtilities.isNightModeDefaultToLight()
-                    ? ThemePreferences.ThemeSetting.LIGHT
-                    : ThemePreferences.ThemeSetting.SYSTEM_DEFAULT;
+            return isNightModeDefaultToLight() ? ThemeType.LIGHT : ThemeType.SYSTEM_DEFAULT;
         } else {
             return userSetting;
         }
@@ -149,5 +147,24 @@ public class NightModeUtils {
     @VisibleForTesting
     public static void setNightModeSupportedForTesting(@Nullable Boolean nightModeSupported) {
         sNightModeSupportedForTest = nightModeSupported;
+    }
+
+    /**
+     * @return Whether or not to default to the light theme when the night mode feature is enabled.
+     */
+    public static boolean isNightModeDefaultToLight() {
+        if (sNightModeDefaultToLightForTesting != null) {
+            return sNightModeDefaultToLightForTesting;
+        }
+        return !BuildInfo.isAtLeastQ();
+    }
+
+    /**
+     * Toggles whether the night mode experiment is enabled for testing. Should be reset back to
+     * null after the test has finished.
+     */
+    @VisibleForTesting
+    public static void setNightModeDefaultToLightForTesting(@Nullable Boolean available) {
+        sNightModeDefaultToLightForTesting = available;
     }
 }

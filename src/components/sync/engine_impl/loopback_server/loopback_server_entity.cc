@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/guid.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -139,6 +139,18 @@ ModelType LoopbackServerEntity::GetModelTypeFromId(const string& id) {
   }
 
   return syncer::GetModelTypeFromSpecificsFieldNumber(field_number);
+}
+
+// static
+std::string LoopbackServerEntity::GetInnerIdFromId(const std::string& id) {
+  vector<base::StringPiece> tokens = base::SplitStringPiece(
+      id, kIdSeparator, base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  if (tokens.size() != 2) {
+    return std::string();
+  }
+
+  return tokens[1].as_string();
 }
 
 LoopbackServerEntity::LoopbackServerEntity(const string& id,

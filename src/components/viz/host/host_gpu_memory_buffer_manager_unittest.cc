@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
@@ -144,14 +145,6 @@ class TestGpuService : public mojom::GpuService {
   void GetPeakMemoryUsage(uint32_t sequence_num,
                           GetPeakMemoryUsageCallback callback) override {}
 
-#if defined(OS_WIN)
-  void RequestCompleteGpuInfo(
-      RequestCompleteGpuInfoCallback callback) override {}
-
-  void GetGpuSupportedRuntimeVersion(
-      GetGpuSupportedRuntimeVersionCallback callback) override {}
-#endif
-
   void RequestHDRStatus(RequestHDRStatusCallback callback) override {}
 
   void LoadedShader(int32_t client_id,
@@ -162,6 +155,10 @@ class TestGpuService : public mojom::GpuService {
 
   void GpuSwitched(gl::GpuPreference active_gpu_heuristic) override {}
 
+  void DisplayAdded() override {}
+
+  void DisplayRemoved() override {}
+
   void DestroyAllChannels() override {}
 
   void OnBackgroundCleanup() override {}
@@ -170,10 +167,20 @@ class TestGpuService : public mojom::GpuService {
 
   void OnForegrounded() override {}
 
+#if !defined(OS_ANDROID)
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level) override {}
+#endif
+
 #if defined(OS_MACOSX)
   void BeginCATransaction() override {}
 
   void CommitCATransaction(CommitCATransactionCallback callback) override {}
+#endif
+
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+  void WriteClangProfilingProfile(
+      WriteClangProfilingProfileCallback callback) override {}
 #endif
 
   void Crash() override {}
@@ -220,6 +227,10 @@ class HostGpuMemoryBufferManagerTest : public ::testing::Test {
         std::move(gpu_service_provider), 1,
         std::move(gpu_memory_buffer_support),
         base::ThreadTaskRunnerHandle::Get());
+#if defined(USE_X11)
+    // X11 requires GPU process initialization to determine GMB support.
+    gpu_memory_buffer_manager_->native_configurations_initialized_.Signal();
+#endif
   }
 
   // Not all platforms support native configurations (currently only Windows,

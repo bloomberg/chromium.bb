@@ -12,7 +12,6 @@
 
 #include <cstdint>
 
-#include <atomic>
 #include <limits>
 #include <map>
 
@@ -44,82 +43,22 @@ namespace rx
 {
 class ContextImpl;
 
-class ResourceSerial
+// The possible rotations of the surface/draw framebuffer, particularly for the Vulkan back-end on
+// Android.
+enum class SurfaceRotation
 {
-  public:
-    constexpr ResourceSerial() : mValue(kDirty) {}
-    explicit constexpr ResourceSerial(uintptr_t value) : mValue(value) {}
-    constexpr bool operator==(ResourceSerial other) const { return mValue == other.mValue; }
-    constexpr bool operator!=(ResourceSerial other) const { return mValue != other.mValue; }
+    Identity,
+    Rotated90Degrees,
+    Rotated180Degrees,
+    Rotated270Degrees,
+    FlippedIdentity,
+    FlippedRotated90Degrees,
+    FlippedRotated180Degrees,
+    FlippedRotated270Degrees,
 
-    void dirty() { mValue = kDirty; }
-    void clear() { mValue = kEmpty; }
-
-    constexpr bool valid() const { return mValue != kEmpty && mValue != kDirty; }
-    constexpr bool empty() const { return mValue == kEmpty; }
-
-  private:
-    constexpr static uintptr_t kDirty = std::numeric_limits<uintptr_t>::max();
-    constexpr static uintptr_t kEmpty = 0;
-
-    uintptr_t mValue;
+    InvalidEnum,
+    EnumCount = InvalidEnum,
 };
-
-class Serial final
-{
-  public:
-    constexpr Serial() : mValue(kInvalid) {}
-    constexpr Serial(const Serial &other) = default;
-    Serial &operator=(const Serial &other) = default;
-
-    constexpr bool operator==(const Serial &other) const
-    {
-        return mValue != kInvalid && mValue == other.mValue;
-    }
-    constexpr bool operator==(uint32_t value) const
-    {
-        return mValue != kInvalid && mValue == static_cast<uint64_t>(value);
-    }
-    constexpr bool operator!=(const Serial &other) const
-    {
-        return mValue == kInvalid || mValue != other.mValue;
-    }
-    constexpr bool operator>(const Serial &other) const { return mValue > other.mValue; }
-    constexpr bool operator>=(const Serial &other) const { return mValue >= other.mValue; }
-    constexpr bool operator<(const Serial &other) const { return mValue < other.mValue; }
-    constexpr bool operator<=(const Serial &other) const { return mValue <= other.mValue; }
-
-    constexpr bool operator<(uint32_t value) const { return mValue < static_cast<uint64_t>(value); }
-
-    // Useful for serialization.
-    constexpr uint64_t getValue() const { return mValue; }
-
-  private:
-    template <typename T>
-    friend class SerialFactoryBase;
-    constexpr explicit Serial(uint64_t value) : mValue(value) {}
-    uint64_t mValue;
-    static constexpr uint64_t kInvalid = 0;
-};
-
-template <typename SerialBaseType>
-class SerialFactoryBase final : angle::NonCopyable
-{
-  public:
-    SerialFactoryBase() : mSerial(1) {}
-
-    Serial generate()
-    {
-        ASSERT(mSerial + 1 > mSerial);
-        return Serial(mSerial++);
-    }
-
-  private:
-    SerialBaseType mSerial;
-};
-
-using SerialFactory       = SerialFactoryBase<uint64_t>;
-using AtomicSerialFactory = SerialFactoryBase<std::atomic<uint64_t>>;
 
 using MipGenerationFunction = void (*)(size_t sourceWidth,
                                        size_t sourceHeight,
@@ -172,6 +111,7 @@ struct PackPixelsParams
     gl::Buffer *packBuffer;
     bool reverseRowOrder;
     ptrdiff_t offset;
+    SurfaceRotation rotation;
 };
 
 void PackPixels(const PackPixelsParams &params,
@@ -313,8 +253,7 @@ angle::Result GetVertexRangeInfo(const gl::Context *context,
 gl::Rectangle ClipRectToScissor(const gl::State &glState, const gl::Rectangle &rect, bool invertY);
 
 // Helper method to intialize a FeatureSet with overrides from the DisplayState
-void OverrideFeaturesWithDisplayState(angle::FeatureSetBase *features,
-                                      const egl::DisplayState &state);
+void ApplyFeatureOverrides(angle::FeatureSetBase *features, const egl::DisplayState &state);
 
 template <typename In>
 uint32_t LineLoopRestartIndexCountHelper(GLsizei indexCount, const uint8_t *srcPtr)

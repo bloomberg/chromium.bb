@@ -26,6 +26,7 @@ class cros_gralloc_buffer
 	int32_t lock(const struct rectangle *rect, uint32_t map_flags,
 		     uint8_t *addr[DRV_MAX_PLANES]);
 	int32_t unlock();
+	int32_t resource_info(uint32_t strides[DRV_MAX_PLANES], uint32_t offsets[DRV_MAX_PLANES]);
 
       private:
 	cros_gralloc_buffer(cros_gralloc_buffer const &);

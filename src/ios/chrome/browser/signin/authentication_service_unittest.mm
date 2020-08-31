@@ -59,8 +59,8 @@ std::unique_ptr<KeyedService> BuildMockSyncService(web::BrowserState* context) {
 
 std::unique_ptr<KeyedService> BuildMockSyncSetupService(
     web::BrowserState* context) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<SyncSetupServiceMock>(
       ProfileSyncServiceFactory::GetForBrowserState(browser_state));
 }
@@ -145,6 +145,10 @@ class AuthenticationServiceTest : public PlatformTest {
   bool HasCachedMDMInfo(ChromeIdentity* identity) {
     return authentication_service()->cached_mdm_infos_.count(
                GetAccountId(identity)) > 0;
+  }
+
+  int ClearBrowsingDataCount() {
+    return authentication_service()->delegate_->clear_browsing_data_counter_;
   }
 
   AuthenticationService* authentication_service() {
@@ -472,9 +476,69 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnSignout) {
   NSDictionary* user_info = [NSDictionary dictionary];
   SetCachedMDMInfo(identity(0), user_info);
 
-  authentication_service()->SignOut(signin_metrics::ABORT_SIGNIN, nil);
+  authentication_service()->SignOut(signin_metrics::ABORT_SIGNIN,
+                                    /*force_clear_browsing_data=*/false, nil);
   EXPECT_FALSE(HasCachedMDMInfo(identity(0)));
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 0UL);
+  EXPECT_EQ(ClearBrowsingDataCount(), 0);
+}
+
+// Tests that MDM errors are correctly cleared when signing out with clearing
+// browsing data.
+TEST_F(AuthenticationServiceTest,
+       MDMErrorsClearedOnSignoutAndClearBrowsingData) {
+  SetExpectationsForSignIn();
+  authentication_service()->SignIn(identity(0));
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 2UL);
+
+  NSDictionary* user_info = [NSDictionary dictionary];
+  SetCachedMDMInfo(identity(0), user_info);
+
+  authentication_service()->SignOut(signin_metrics::ABORT_SIGNIN,
+                                    /*force_clear_browsing_data=*/true, nil);
+  EXPECT_FALSE(HasCachedMDMInfo(identity(0)));
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 0UL);
+  EXPECT_EQ(ClearBrowsingDataCount(), 1);
+}
+
+// Tests that MDM errors are correctly cleared when signing out of a managed
+// account.
+TEST_F(AuthenticationServiceTest, ManagedAccountSignOut) {
+  identity_service()->AddManagedIdentities(@[ @"foo3" ]);
+
+  SetExpectationsForSignIn();
+  authentication_service()->SignIn(identity(2));
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 3UL);
+  EXPECT_TRUE(authentication_service()->IsAuthenticatedIdentityManaged());
+
+  NSDictionary* user_info = [NSDictionary dictionary];
+  SetCachedMDMInfo(identity(2), user_info);
+
+  authentication_service()->SignOut(signin_metrics::ABORT_SIGNIN,
+                                    /*force_clear_browsing_data=*/false, nil);
+  EXPECT_FALSE(HasCachedMDMInfo(identity(2)));
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 0UL);
+  EXPECT_EQ(ClearBrowsingDataCount(), 1);
+}
+
+// Tests that MDM errors are correctly cleared when signing out with clearing
+// browsing data of a managed account.
+TEST_F(AuthenticationServiceTest, ManagedAccountSignOutAndClearBrowsingData) {
+  identity_service()->AddManagedIdentities(@[ @"foo3" ]);
+
+  SetExpectationsForSignIn();
+  authentication_service()->SignIn(identity(2));
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 3UL);
+  EXPECT_TRUE(authentication_service()->IsAuthenticatedIdentityManaged());
+
+  NSDictionary* user_info = [NSDictionary dictionary];
+  SetCachedMDMInfo(identity(2), user_info);
+
+  authentication_service()->SignOut(signin_metrics::ABORT_SIGNIN,
+                                    /*force_clear_browsing_data=*/true, nil);
+  EXPECT_FALSE(HasCachedMDMInfo(identity(2)));
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 0UL);
+  EXPECT_EQ(ClearBrowsingDataCount(), 1);
 }
 
 // Tests that potential MDM notifications are correctly handled and dispatched

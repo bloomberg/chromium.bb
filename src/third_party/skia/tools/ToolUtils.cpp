@@ -58,7 +58,9 @@ const char* colortype_name(SkColorType ct) {
         case kRGB_888x_SkColorType:           return "RGB_888x";
         case kBGRA_8888_SkColorType:          return "BGRA_8888";
         case kRGBA_1010102_SkColorType:       return "RGBA_1010102";
+        case kBGRA_1010102_SkColorType:       return "BGRA_1010102";
         case kRGB_101010x_SkColorType:        return "RGB_101010x";
+        case kBGR_101010x_SkColorType:        return "BGR_101010x";
         case kGray_8_SkColorType:             return "Gray_8";
         case kRGBA_F16Norm_SkColorType:       return "RGBA_F16Norm";
         case kRGBA_F16_SkColorType:           return "RGBA_F16";
@@ -84,7 +86,9 @@ const char* colortype_depth(SkColorType ct) {
         case kRGB_888x_SkColorType:           return "888";
         case kBGRA_8888_SkColorType:          return "8888";
         case kRGBA_1010102_SkColorType:       return "1010102";
+        case kBGRA_1010102_SkColorType:       return "1010102";
         case kRGB_101010x_SkColorType:        return "101010";
+        case kBGR_101010x_SkColorType:        return "101010";
         case kGray_8_SkColorType:             return "G8";
         case kRGBA_F16Norm_SkColorType:       return "F16Norm";  // TODO: "F16"?
         case kRGBA_F16_SkColorType:           return "F16";
@@ -181,6 +185,9 @@ void add_to_text_blob_w_len(SkTextBlobBuilder* builder,
                             SkScalar           x,
                             SkScalar           y) {
     int  count = font.countText(text, len, encoding);
+    if (count < 1) {
+        return;
+    }
     auto run   = builder->allocRun(font, count, x, y);
     font.textToGlyphs(text, len, encoding, run.glyphs, count);
 }

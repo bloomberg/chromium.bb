@@ -145,7 +145,6 @@
     "fantasy",
     "monospace",
     "-webkit-body",
-    "-webkit-pictograph",
 
     //
     // font-display
@@ -228,9 +227,6 @@
     // Value used to implement the behavior in:
     // https://quirks.spec.whatwg.org/#the-tables-inherit-color-from-body-quirk
     "-internal-quirk-inherit",
-    // The default color value for the root element. Using a keyword to account
-    // for different values for different color schemes like dark mode.
-    "-internal-root-color",
     //
     // background-repeat
     //
@@ -446,6 +442,7 @@
     "uppercase",
     "lowercase",
     //none
+    "math-auto",
     //
     // visibility
     //
@@ -480,6 +477,8 @@
     "-webkit-isolate",
     "-webkit-isolate-override",
     "-webkit-plaintext",
+    "jis-b5",
+    "jis-b4",
     "landscape",
     "ledger",
     "legal",
@@ -506,6 +505,12 @@
     "underline",
     "wavy",
     "-webkit-nowrap",
+
+    //
+    // math-style
+    //
+    // inline
+    "display",
 
     // CSS3 Values
     // box-align
@@ -620,11 +625,17 @@
     // none
 
     //
-    // -webkit-margin-collapse
+    // text-decoration-thickness
     //
-    // collapse
-    // separate
-    "discard",
+    // auto
+    "from-font",
+
+    // text-underline-position
+    // auto
+    // "from-font",
+    // under
+    // left
+    // right
 
     //
     // word-break
@@ -780,6 +791,7 @@
     //
     "document",
     "reset",
+    "-internal-reset-effective",
 
     //
     // user-zoom
@@ -895,6 +907,11 @@
 
     // image-orientation
     "from-image",
+
+    // page-orientation
+    // upright
+    "rotate-left",
+    "rotate-right",
 
     // shape-outside
     "nonzero",
@@ -1083,7 +1100,7 @@
     "rgba",
     "hsl",
     "hsla",
-    "-internal-light-dark-color",
+    "-internal-light-dark",
 
     // transform
     "matrix",
@@ -1217,9 +1234,20 @@
     // none
     "back-button",
 
-    // render-subtree
-    "invisible",
-    "skip-activation",
-    "skip-viewport-activation",
+    // content-visibility
+    "hidden-matchable",
+
+    // -internal-empty-line-height
+    // none
+    "fabricated",
+
+    // @supports selector(...)
+    // https://drafts.csswg.org/css-conditional-4/#typedef-supports-selector-fn
+    "selector",
+
+    // (screen-spanning) media feature
+    // none
+    "single-fold-vertical",
+    "single-fold-horizontal",
   ],
 }

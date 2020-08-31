@@ -84,7 +84,7 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
     # need to prompt the user for their password.
     for idx, cmd in enumerate(cmds):
       ret = cros_build_lib.run(
-          cmd, print_cmd=False, shell=True, error_code_ok=True)
+          cmd, print_cmd=False, shell=True, check=False)
 
       if ret.returncode != 0:
         tty_msg = 'Please disable tty_tickets using these instructions: %s'
@@ -149,5 +149,5 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
 
 def SetFileContents(path, value, cwd=None):
   """Set a given filepath contents w/ the passed in value."""
-  cros_build_lib.sudo_run(['tee', path], redirect_stdout=True,
+  cros_build_lib.sudo_run(['tee', path], stdout=True,
                           print_cmd=False, input=value, cwd=cwd)

@@ -15,7 +15,7 @@
 #include "osp/public/protocol_connection.h"
 #include "platform/base/error.h"
 #include "platform/base/macros.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace osp {
@@ -160,7 +160,7 @@ class RequestResponseHandler : public MessageDemuxer::MessageCallback {
                                   msgs::Type message_type,
                                   const uint8_t* buffer,
                                   size_t buffer_size,
-                                  platform::Clock::time_point now) override {
+                                  Clock::time_point now) override {
     if (message_type != RequestT::kResponseType) {
       return 0;
     }

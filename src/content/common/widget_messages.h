@@ -12,18 +12,14 @@
 #include "cc/input/touch_action.h"
 #include "content/common/common_param_traits_macros.h"
 #include "content/common/content_param_traits.h"
-#include "content/common/cursors/webcursor.h"
-#include "content/common/tab_switch_time_recorder.h"
+#include "content/common/content_to_visible_time_reporter.h"
 #include "content/common/text_input_state.h"
 #include "content/common/visual_properties.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
-#include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
-#include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
-#include "third_party/blink/public/web/web_text_direction.h"
 #include "ui/base/ime/text_input_action.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ui_base_types.h"
@@ -36,11 +32,6 @@
 #define IPC_MESSAGE_START WidgetMsgStart
 
 // Traits for WebDeviceEmulationParams.
-IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatPoint)
-  IPC_STRUCT_TRAITS_MEMBER(x)
-  IPC_STRUCT_TRAITS_MEMBER(y)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatRect)
   IPC_STRUCT_TRAITS_MEMBER(x)
   IPC_STRUCT_TRAITS_MEMBER(y)
@@ -66,14 +57,14 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebDeviceEmulationParams)
   IPC_STRUCT_TRAITS_MEMBER(screen_orientation_type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTextDirection,
-                          blink::WebTextDirection::kWebTextDirectionLast)
+IPC_ENUM_TRAITS_MAX_VALUE(base::i18n::TextDirection,
+                          base::i18n::TEXT_DIRECTION_MAX)
 
 IPC_STRUCT_BEGIN(WidgetHostMsg_SelectionBounds_Params)
   IPC_STRUCT_MEMBER(gfx::Rect, anchor_rect)
-  IPC_STRUCT_MEMBER(blink::WebTextDirection, anchor_dir)
+  IPC_STRUCT_MEMBER(base::i18n::TextDirection, anchor_dir)
   IPC_STRUCT_MEMBER(gfx::Rect, focus_rect)
-  IPC_STRUCT_MEMBER(blink::WebTextDirection, focus_dir)
+  IPC_STRUCT_MEMBER(base::i18n::TextDirection, focus_dir)
   IPC_STRUCT_MEMBER(bool, is_anchor_first)
 IPC_STRUCT_END()
 
@@ -95,6 +86,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::TextInputState)
   IPC_STRUCT_TRAITS_MEMBER(show_ime_if_needed)
   IPC_STRUCT_TRAITS_MEMBER(always_hide_ime)
   IPC_STRUCT_TRAITS_MEMBER(reply_to_request)
+  IPC_STRUCT_TRAITS_MEMBER(edit_context_control_bounds)
+  IPC_STRUCT_TRAITS_MEMBER(edit_context_selection_bounds)
 IPC_STRUCT_TRAITS_END()
 
 //
@@ -123,13 +116,11 @@ IPC_MESSAGE_ROUTED0(WidgetMsg_DisableDeviceEmulation)
 IPC_MESSAGE_ROUTED0(WidgetMsg_WasHidden)
 
 // Tells the render view that it is no longer hidden (see WasHidden).
-IPC_MESSAGE_ROUTED3(
-    WidgetMsg_WasShown,
-    base::TimeTicks /* show_request_timestamp */,
-    bool /* was_evicted */,
-    base::Optional<
-        content::
-            RecordTabSwitchTimeRequest> /* record_tab_switch_time_request */)
+IPC_MESSAGE_ROUTED3(WidgetMsg_WasShown,
+                    base::TimeTicks /* show_request_timestamp */,
+                    bool /* was_evicted */,
+                    base::Optional<content::RecordContentToVisibleTimeRequest>
+                    /* record_tab_switch_time_request */)
 
 // Activate/deactivate the RenderWidget (i.e., set its controls' tint
 // accordingly, etc.).
@@ -137,7 +128,7 @@ IPC_MESSAGE_ROUTED1(WidgetMsg_SetActive, bool /* active */)
 
 // Changes the text direction of the currently selected input field (if any).
 IPC_MESSAGE_ROUTED1(WidgetMsg_SetTextDirection,
-                    blink::WebTextDirection /* direction */)
+                    base::i18n::TextDirection /* direction */)
 
 // Reply to WidgetHostMsg_RequestSetBounds, WidgetHostMsg_ShowWidget, and
 // FrameHostMsg_ShowCreatedWindow, to inform the renderer that the browser has
@@ -170,32 +161,11 @@ IPC_MESSAGE_ROUTED1(WidgetMsg_ForceRedraw, int /* snapshot_id */)
 IPC_MESSAGE_ROUTED1(WidgetMsg_SetViewportIntersection,
                     blink::ViewportIntersectionState /* intersection_state */)
 
-// Sent to an OOPIF widget when the browser receives a FrameHostMsg_SetIsInert
-// from the target widget's embedding renderer changing its inertness. When a
-// widget is inert, it is unable to process input events.
-//
-// https://html.spec.whatwg.org/multipage/interaction.html#inert
-IPC_MESSAGE_ROUTED1(WidgetMsg_SetIsInert, bool /* inert */)
-
-// Sets the inherited effective touch action on an out-of-process iframe.
-IPC_MESSAGE_ROUTED1(WidgetMsg_SetInheritedEffectiveTouchAction, cc::TouchAction)
-
-// Toggles render throttling for an out-of-process iframe.
-IPC_MESSAGE_ROUTED2(WidgetMsg_UpdateRenderThrottlingStatus,
-                    bool /* is_throttled */,
-                    bool /* subtree_throttled */)
 
 // Sent by the browser to synchronize with the next compositor frame by
 // requesting an ACK be queued. Used only for tests.
 IPC_MESSAGE_ROUTED1(WidgetMsg_WaitForNextFrameForTests,
                     int /* main_frame_thread_observer_routing_id */)
-
-// Tells the render side that a WidgetHostMsg_LockMouse message has been
-// processed. |succeeded| indicates whether the mouse has been successfully
-// locked or not.
-IPC_MESSAGE_ROUTED1(WidgetMsg_LockMouse_ACK, bool /* succeeded */)
-// Tells the render side that the mouse has been unlocked.
-IPC_MESSAGE_ROUTED0(WidgetMsg_MouseLockLost)
 
 //
 // Renderer -> Browser Messages.
@@ -215,32 +185,10 @@ IPC_MESSAGE_ROUTED1(WidgetHostMsg_SelectionBoundsChanged,
 // throttle these messages.
 IPC_MESSAGE_ROUTED0(WidgetHostMsg_UpdateScreenRects_ACK)
 
-// Only used for SVGs inside of <object> and not for iframes. Informs the
-// browser that hte current frame's intrinsic sizing info has changed. The
-// browser can then notify a containing frame that the frame may need to
-// trigger a new layout.
-//
-// Also see FrameMsg_IntrinsicSizingInfoOfChildChanged.
-IPC_MESSAGE_ROUTED1(WidgetHostMsg_IntrinsicSizingInfoChanged,
-                    blink::WebIntrinsicSizingInfo)
-
 // Send the tooltip text for the current mouse position to the browser.
 IPC_MESSAGE_ROUTED2(WidgetHostMsg_SetTooltipText,
                     base::string16 /* tooltip text string */,
-                    blink::WebTextDirection /* text direction hint */)
-
-// Updates the current cursor to be used by the browser for indicating the
-// location of a pointing device.
-IPC_MESSAGE_ROUTED1(WidgetHostMsg_SetCursor, content::WebCursor)
-
-// Request a non-decelerating synthetic fling animation to be latched on the
-// scroller at the start point, and whose velocity can be changed over time by
-// sending multiple AutoscrollFling gestures.  Used for features like
-// middle-click autoscroll.
-IPC_MESSAGE_ROUTED1(WidgetHostMsg_AutoscrollStart, gfx::PointF /* start */)
-IPC_MESSAGE_ROUTED1(WidgetHostMsg_AutoscrollFling,
-                    gfx::Vector2dF /* velocity */)
-IPC_MESSAGE_ROUTED0(WidgetHostMsg_AutoscrollEnd)
+                    base::i18n::TextDirection /* text direction hint */)
 
 // Notifies the browser if the text input state has changed. Primarily useful
 // for IME as they need to know of all changes to update their interpretation
@@ -252,21 +200,6 @@ IPC_MESSAGE_ROUTED1(WidgetHostMsg_TextInputStateChanged,
 // the widget. This corresponds to the window.resizeTo() and window.moveTo()
 // APIs, and the browser may ignore this message.
 IPC_MESSAGE_ROUTED1(WidgetHostMsg_RequestSetBounds, gfx::Rect /* bounds */)
-
-// Requests to lock the mouse. Will result in a WidgetMsg_LockMouse_ACK message
-// being sent back.
-// |privileged| is used by Pepper Flash. If this flag is set to true, we won't
-// pop up a bubble to ask for user permission or take mouse lock content into
-// account.
-IPC_MESSAGE_ROUTED3(WidgetHostMsg_LockMouse,
-                    bool /* user_gesture */,
-                    bool /* privileged */,
-                    bool /* request_raw_movement */)
-
-// Requests to unlock the mouse. A WidgetMsg_MouseLockLost message will be sent
-// whenever the mouse is unlocked (which may or may not be caused by
-// WidgetHostMsg_UnlockMouse).
-IPC_MESSAGE_ROUTED0(WidgetHostMsg_UnlockMouse)
 
 // Sent by the renderer process in response to an earlier WidgetMsg_ForceRedraw
 // message. The reply includes the snapshot-id from the request.
@@ -291,20 +224,5 @@ IPC_MESSAGE_ROUTED0(WidgetHostMsg_WaitForNextFrameForTests_ACK)
 // Sent once a paint happens after the first non empty layout. In other words,
 // after the frame widget has painted something.
 IPC_MESSAGE_ROUTED0(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint)
-
-// Notifies whether there are JavaScript touch event handlers or not.
-IPC_MESSAGE_ROUTED1(WidgetHostMsg_HasTouchEventHandlers,
-                    bool /* has_handlers */)
-
-// Sent by a widget to the browser to request a page scale animation in the
-// main-frame's widget.
-IPC_MESSAGE_ROUTED2(WidgetHostMsg_AnimateDoubleTapZoomInMainFrame,
-                    gfx::Point /* tap point */,
-                    gfx::Rect /* rect_to_zoom */)
-
-// Sent by a widget to the browser to request a page scale animation in the
-// main-frame's widget for find-in-page zoom.
-IPC_MESSAGE_ROUTED1(WidgetHostMsg_ZoomToFindInPageRectInMainFrame,
-                    gfx::Rect /* rect_to_zoom */)
 
 #endif  //  CONTENT_COMMON_WIDGET_MESSAGES_H_

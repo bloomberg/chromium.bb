@@ -9,6 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <tuple>
 #include <vector>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -115,7 +116,7 @@ typedef void (*compute_stats_Func)(int wiener_win, const uint8_t *dgd,
 // 8 bit
 ////////////////////////////////////////////////////////////////////////////////
 
-typedef ::testing::tuple<const compute_stats_Func> WienerTestParam;
+typedef std::tuple<const compute_stats_Func> WienerTestParam;
 
 class WienerTest : public ::testing::TestWithParam<WienerTestParam> {
  public:
@@ -269,21 +270,22 @@ TEST_P(WienerTest, DISABLED_Speed) {
   RunWienerTest(WIENER_WIN_CHROMA, 200);
 }
 
-INSTANTIATE_TEST_CASE_P(C, WienerTest, ::testing::Values(compute_stats_opt_c));
+INSTANTIATE_TEST_SUITE_P(C, WienerTest, ::testing::Values(compute_stats_opt_c));
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(SSE4_1, WienerTest,
-                        ::testing::Values(av1_compute_stats_sse4_1));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, WienerTest,
+                         ::testing::Values(av1_compute_stats_sse4_1));
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
 
-INSTANTIATE_TEST_CASE_P(AVX2, WienerTest,
-                        ::testing::Values(av1_compute_stats_avx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, WienerTest,
+                         ::testing::Values(av1_compute_stats_avx2));
 #endif  // HAVE_AVX2
 
 }  // namespace wiener_lowbd
 
+#if CONFIG_AV1_HIGHBITDEPTH
 // High bit-depth tests:
 namespace wiener_highbd {
 
@@ -389,7 +391,7 @@ typedef void (*compute_stats_Func)(int wiener_win, const uint8_t *dgd,
                                    int src_stride, int64_t *M, int64_t *H,
                                    aom_bit_depth_t bit_depth);
 
-typedef ::testing::tuple<const compute_stats_Func> WienerTestParam;
+typedef std::tuple<const compute_stats_Func> WienerTestParam;
 
 class WienerTestHighbd : public ::testing::TestWithParam<WienerTestParam> {
  public:
@@ -568,17 +570,18 @@ TEST_P(WienerTestHighbd, DISABLED_Speed) {
   RunWienerTest(WIENER_WIN_CHROMA, 200, AOM_BITS_12);
 }
 
-INSTANTIATE_TEST_CASE_P(C, WienerTestHighbd,
-                        ::testing::Values(compute_stats_highbd_opt_c));
+INSTANTIATE_TEST_SUITE_P(C, WienerTestHighbd,
+                         ::testing::Values(compute_stats_highbd_opt_c));
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(SSE4_1, WienerTestHighbd,
-                        ::testing::Values(av1_compute_stats_highbd_sse4_1));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, WienerTestHighbd,
+                         ::testing::Values(av1_compute_stats_highbd_sse4_1));
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(AVX2, WienerTestHighbd,
-                        ::testing::Values(av1_compute_stats_highbd_avx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, WienerTestHighbd,
+                         ::testing::Values(av1_compute_stats_highbd_avx2));
 #endif  // HAVE_AVX2
 
 }  // namespace wiener_highbd
+#endif  // CONFIG_AV1_HIGHBITDEPTH

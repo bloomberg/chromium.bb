@@ -26,8 +26,15 @@
 // Opens the manage sync settings view.
 - (void)openManageSyncSettings;
 
-// Open the "Manage Your Google Account" web page
+// Opens the "Manage Your Google Account" view.
+- (void)openManageGoogleAccount;
+
+// Opens the "Manage Your Google Account" web page.
+// TODO(crbug.com/1043080): Remove web page API once MyGoogle UI is launched.
 - (void)openManageGoogleAccountWebPage;
+
+// Opens the trusted vault reauthentication dialog.
+- (void)openTrustedVaultReauth;
 
 @end
 

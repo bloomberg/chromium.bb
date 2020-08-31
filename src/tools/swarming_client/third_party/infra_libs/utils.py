@@ -6,6 +6,7 @@
 
 
 import contextlib
+import datetime
 import errno
 import json
 import os
@@ -14,6 +15,68 @@ import subprocess
 import sys
 import tempfile
 import time
+
+
+# UTC datetime corresponding to zero Unix timestamp.
+EPOCH = datetime.datetime.utcfromtimestamp(0)
+
+def parse_rfc3339_epoch(value):
+  """Parses RFC 3339 datetime string as epoch
+  (as used in Timestamp proto JSON encoding).
+
+  Keeps only second precision (dropping micro- and nanoseconds).
+
+  Examples of the input:
+    2017-08-17T04:21:32.722952943Z
+    1972-01-01T10:00:20.021-05:00
+
+  Returns:
+    epoch timestamp
+
+  Raises:
+    ValueError on errors.
+  """
+  # Adapted from protobuf/internal/well_known_types.py Timestamp.FromJsonString.
+  # We can't use the original, since it's marked as internal. Also instantiating
+  # proto messages here to parse a string would been odd.
+  timezone_offset = value.find('Z')
+  if timezone_offset == -1:
+    timezone_offset = value.find('+')
+  if timezone_offset == -1:
+    timezone_offset = value.rfind('-')
+  if timezone_offset == -1:
+    raise ValueError('Failed to parse timestamp: missing valid timezone offset')
+  time_value = value[0:timezone_offset]
+  # Parse datetime and nanos.
+  point_position = time_value.find('.')
+  if point_position == -1:
+    second_value = time_value
+    nano_value = ''
+  else:
+    second_value = time_value[:point_position]
+    nano_value = time_value[point_position + 1:]
+  date_object = datetime.datetime.strptime(second_value, '%Y-%m-%dT%H:%M:%S')
+  td = date_object - EPOCH
+  seconds = td.seconds + td.days * 86400
+  if len(nano_value) > 9:
+    raise ValueError(
+        'Failed to parse timestamp: nanos %r more than 9 fractional digits'
+        % nano_value)
+  # Parse timezone offsets.
+  if value[timezone_offset] == 'Z':
+    if len(value) != timezone_offset + 1:
+      raise ValueError('Failed to parse timestamp: invalid trailing data %r'
+                       % value)
+  else:
+    timezone = value[timezone_offset:]
+    pos = timezone.find(':')
+    if pos == -1:
+      raise ValueError('Invalid timezone offset value: %r' % timezone)
+    if timezone[0] == '+':
+      seconds -= (int(timezone[1:pos])*60+int(timezone[pos+1:]))*60
+    else:
+      seconds += (int(timezone[1:pos])*60+int(timezone[pos+1:]))*60
+  return seconds
 
 
 def read_json_as_utf8(filename=None, text=None):

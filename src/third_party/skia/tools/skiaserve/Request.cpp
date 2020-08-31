@@ -49,6 +49,7 @@ sk_sp<SkData> Request::writeCanvasToPng(SkCanvas* canvas) {
 }
 
 SkCanvas* Request::getCanvas() {
+#ifdef SK_GL
     GrContextFactory* factory = fContextFactory;
     GLTestContext* gl = factory->getContextInfo(GrContextFactory::kGL_ContextType,
             GrContextFactory::ContextOverrides::kNone).glContext();
@@ -59,6 +60,7 @@ SkCanvas* Request::getCanvas() {
     if (gl) {
         gl->makeCurrent();
     }
+#endif
     SkASSERT(fDebugCanvas);
 
     // create the appropriate surface if necessary
@@ -71,7 +73,9 @@ SkCanvas* Request::getCanvas() {
 
 sk_sp<SkData> Request::drawToPng(int n, int m) {
     //fDebugCanvas->setOverdrawViz(true);
-    fDebugCanvas->drawTo(this->getCanvas(), n, m);
+    auto* canvas = this->getCanvas();
+    canvas->clear(SK_ColorTRANSPARENT);
+    fDebugCanvas->drawTo(canvas, n, m);
     //fDebugCanvas->setOverdrawViz(false);
     return writeCanvasToPng(this->getCanvas());
 }
@@ -104,8 +108,8 @@ SkIRect Request::getBounds() {
         bounds = fPicture->cullRect().roundOut();
         if (fGPUEnabled) {
             int maxRTSize = this->getContext()->maxRenderTargetSize();
-            bounds = SkIRect::MakeWH(SkTMin(bounds.width(), maxRTSize),
-                                     SkTMin(bounds.height(), maxRTSize));
+            bounds = SkIRect::MakeWH(std::min(bounds.width(), maxRTSize),
+                                     std::min(bounds.height(), maxRTSize));
         }
     } else {
         bounds = SkIRect::MakeWH(kDefaultWidth, kDefaultHeight);
@@ -113,8 +117,8 @@ SkIRect Request::getBounds() {
 
     // We clip to kMaxWidth / kMaxHeight for performance reasons.
     // TODO make this configurable
-    bounds = SkIRect::MakeWH(SkTMin(bounds.width(), kMaxWidth),
-                             SkTMin(bounds.height(), kMaxHeight));
+    bounds = SkIRect::MakeWH(std::min(bounds.width(), kMaxWidth),
+                             std::min(bounds.height(), kMaxHeight));
     return bounds;
 }
 
@@ -213,7 +217,7 @@ bool Request::initPictureFromStream(SkStream* stream) {
     return true;
 }
 
-sk_sp<SkData> Request::getJsonOps(int n) {
+sk_sp<SkData> Request::getJsonOps() {
     SkCanvas* canvas = this->getCanvas();
     SkDynamicMemoryWStream stream;
     SkJSONWriter writer(&stream, SkJSONWriter::Mode::kFast);
@@ -222,20 +226,20 @@ sk_sp<SkData> Request::getJsonOps(int n) {
     writer.appendString("mode", fGPUEnabled ? "gpu" : "cpu");
     writer.appendBool("drawGpuOpBounds", fDebugCanvas->getDrawGpuOpBounds());
     writer.appendS32("colorMode", fColorMode);
-    fDebugCanvas->toJSON(writer, fUrlDataManager, n, canvas);
+    fDebugCanvas->toJSON(writer, fUrlDataManager, canvas);
 
     writer.endObject(); // root
     writer.flush();
     return stream.detachAsData();
 }
 
-sk_sp<SkData> Request::getJsonOpsTask(int n) {
+sk_sp<SkData> Request::getJsonOpsTask() {
     SkCanvas* canvas = this->getCanvas();
     SkASSERT(fGPUEnabled);
     SkDynamicMemoryWStream stream;
     SkJSONWriter writer(&stream, SkJSONWriter::Mode::kFast);
 
-    fDebugCanvas->toJSONOpsTask(writer, n, canvas);
+    fDebugCanvas->toJSONOpsTask(writer, canvas);
 
     writer.flush();
     return stream.detachAsData();

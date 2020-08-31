@@ -6,9 +6,10 @@
 #include <tuple>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/notreached.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -27,6 +28,7 @@
 #endif  // !defined(OS_ANDROID)
 
 using ::base::test::RunCallback;
+using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::IsNull;
 using ::testing::NiceMock;
@@ -51,16 +53,16 @@ enum DecoderCapability {
   kAlwaysSucceed,
 };
 
-bool IsConfigSupported(DecoderCapability capability, bool is_encrypted) {
+Status IsConfigSupported(DecoderCapability capability, bool is_encrypted) {
   switch (capability) {
     case kAlwaysFail:
-      return false;
+      return StatusCode::kCodeOnlyForTesting;
     case kClearOnly:
-      return !is_encrypted;
+      return is_encrypted ? StatusCode::kCodeOnlyForTesting : OkStatus();
     case kEncryptedOnly:
-      return is_encrypted;
+      return is_encrypted ? OkStatus() : StatusCode::kCodeOnlyForTesting;
     case kAlwaysSucceed:
-      return true;
+      return OkStatus();
   }
 }
 
@@ -232,11 +234,13 @@ class DecoderSelectorTest : public ::testing::Test {
     switch (TypeParam::kStreamType) {
       case DemuxerStream::AUDIO:
         EXPECT_CALL(*decryptor_, InitializeAudioDecoder(_, _))
-            .WillRepeatedly(RunCallback<1>(capability == kDecryptAndDecode));
+            .WillRepeatedly(
+                RunOnceCallback<1>(capability == kDecryptAndDecode));
         break;
       case DemuxerStream::VIDEO:
         EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
-            .WillRepeatedly(RunCallback<1>(capability == kDecryptAndDecode));
+            .WillRepeatedly(
+                RunOnceCallback<1>(capability == kDecryptAndDecode));
         break;
       default:
         NOTREACHED();

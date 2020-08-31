@@ -15,9 +15,7 @@ source_set("libc++abi") {
   # unwinding symbols, unlike Linux does with glibc.  Build and link against
   # libunwind manually to get this functionality.
   if (is_fuchsia) {
-    deps = [
-      "//buildtools/third_party/libunwind",
-    ]
+    deps = [ "//buildtools/third_party/libunwind" ]
   }
 
   sources = [
@@ -54,9 +52,7 @@ source_set("libc++abi") {
     sources += [ "trunk/src/cxa_demangle.cpp" ]
   }
 
-  # This file should really be included on linux as well, but that
-  # would introduce an unwanted glibc 2.18 dependency.
-  if (is_fuchsia || (is_posix && !is_mac && !is_ios && !is_linux)) {
+  if (is_fuchsia || (is_posix && !is_mac && !is_ios)) {
     sources += [ "trunk/src/cxa_thread_atexit.cpp" ]
   }
 

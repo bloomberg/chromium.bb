@@ -16,24 +16,17 @@
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
-namespace platform {
-class TaskRunner;
-}  // namespace platform
-}  // namespace openscreen
-
 namespace cast {
-namespace streaming {
 
 // Provides the common environment for operating system resources shared by
 // multiple components.
-class Environment : public openscreen::platform::UdpSocket::Client {
+class Environment : public UdpSocket::Client {
  public:
   class PacketConsumer {
    public:
-    virtual void OnReceivedPacket(
-        const openscreen::IPEndpoint& source,
-        openscreen::platform::Clock::time_point arrival_time,
-        std::vector<uint8_t> packet) = 0;
+    virtual void OnReceivedPacket(const IPEndpoint& source,
+                                  Clock::time_point arrival_time,
+                                  std::vector<uint8_t> packet) = 0;
 
    protected:
     virtual ~PacketConsumer();
@@ -42,35 +35,34 @@ class Environment : public openscreen::platform::UdpSocket::Client {
   // Construct with the given clock source and TaskRunner. Creates and
   // internally-owns a UdpSocket, and immediately binds it to the given
   // |local_endpoint|.
-  Environment(openscreen::platform::ClockNowFunctionPtr now_function,
-              openscreen::platform::TaskRunner* task_runner,
-              const openscreen::IPEndpoint& local_endpoint);
+  Environment(ClockNowFunctionPtr now_function,
+              TaskRunner* task_runner,
+              const IPEndpoint& local_endpoint);
 
   ~Environment() override;
 
-  openscreen::platform::ClockNowFunctionPtr now_function() const {
-    return now_function_;
-  }
-  openscreen::platform::TaskRunner* task_runner() const { return task_runner_; }
+  ClockNowFunctionPtr now_function() const { return now_function_; }
+  Clock::time_point now() const { return now_function_(); }
+  TaskRunner* task_runner() const { return task_runner_; }
 
   // Returns the local endpoint the socket is bound to, or the zero IPEndpoint
   // if socket creation/binding failed.
-  openscreen::IPEndpoint GetBoundLocalEndpoint() const;
+  //
+  // Note: This method is virtual to allow unit tests to fake that there really
+  // is a bound socket.
+  virtual IPEndpoint GetBoundLocalEndpoint() const;
 
   // Set a handler function to run whenever non-recoverable socket errors occur.
   // If never set, the default is to emit log messages at error priority.
-  void set_socket_error_handler(
-      std::function<void(openscreen::Error)> handler) {
+  void set_socket_error_handler(std::function<void(Error)> handler) {
     socket_error_handler_ = handler;
   }
 
   // Get/Set the remote endpoint. This is separate from the constructor because
   // the remote endpoint is, in some cases, discovered only after receiving a
   // packet.
-  const openscreen::IPEndpoint& remote_endpoint() const {
-    return remote_endpoint_;
-  }
-  void set_remote_endpoint(const openscreen::IPEndpoint& endpoint) {
+  const IPEndpoint& remote_endpoint() const { return remote_endpoint_; }
+  void set_remote_endpoint(const IPEndpoint& endpoint) {
     remote_endpoint_ = endpoint;
   }
 
@@ -98,34 +90,29 @@ class Environment : public openscreen::platform::UdpSocket::Client {
   // Common constructor that just stores the injected dependencies and does not
   // create a socket. Subclasses use this to provide an alternative packet
   // receive/send mechanism (e.g., for testing).
-  Environment(openscreen::platform::ClockNowFunctionPtr now_function,
-              openscreen::platform::TaskRunner* task_runner);
+  Environment(ClockNowFunctionPtr now_function, TaskRunner* task_runner);
 
  private:
-  // openscreen::platform::UdpSocket::Client implementation.
-  void OnError(openscreen::platform::UdpSocket* socket,
-               openscreen::Error error) final;
-  void OnSendError(openscreen::platform::UdpSocket* socket,
-                   openscreen::Error error) final;
-  void OnRead(openscreen::platform::UdpSocket* socket,
-              openscreen::ErrorOr<openscreen::platform::UdpPacket>
-                  packet_or_error) final;
+  // UdpSocket::Client implementation.
+  void OnError(UdpSocket* socket, Error error) final;
+  void OnSendError(UdpSocket* socket, Error error) final;
+  void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet_or_error) final;
 
-  const openscreen::platform::ClockNowFunctionPtr now_function_;
-  openscreen::platform::TaskRunner* const task_runner_;
+  const ClockNowFunctionPtr now_function_;
+  TaskRunner* const task_runner_;
 
   // The UDP socket bound to the local endpoint that was passed into the
   // constructor, or null if socket creation failed.
-  const std::unique_ptr<openscreen::platform::UdpSocket> socket_;
+  const std::unique_ptr<UdpSocket> socket_;
 
   // These are externally set/cleared. Behaviors are described in getter/setter
   // method comments above.
-  std::function<void(openscreen::Error)> socket_error_handler_;
-  openscreen::IPEndpoint remote_endpoint_{};
+  std::function<void(Error)> socket_error_handler_;
+  IPEndpoint remote_endpoint_{};
   PacketConsumer* packet_consumer_ = nullptr;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_ENVIRONMENT_H_

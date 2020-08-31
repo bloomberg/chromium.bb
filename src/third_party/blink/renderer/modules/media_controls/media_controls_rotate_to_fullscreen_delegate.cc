@@ -111,7 +111,7 @@ void MediaControlsRotateToFullscreenDelegate::Invoke(
     if (event->isTrusted() &&
         event->InterfaceName() ==
             event_interface_names::kDeviceOrientationEvent) {
-      OnDeviceOrientationAvailable(ToDeviceOrientationEvent(event));
+      OnDeviceOrientationAvailable(To<DeviceOrientationEvent>(event));
     }
     return;
   }
@@ -286,7 +286,7 @@ MediaControlsRotateToFullscreenDelegate::ComputeScreenOrientation() const {
   return SimpleOrientation::kUnknown;
 }
 
-void MediaControlsRotateToFullscreenDelegate::Trace(blink::Visitor* visitor) {
+void MediaControlsRotateToFullscreenDelegate::Trace(Visitor* visitor) {
   NativeEventListener::Trace(visitor);
   visitor->Trace(video_element_);
   visitor->Trace(intersection_observer_);

@@ -83,7 +83,7 @@ def send_rows(bq_client, dataset_id, table_id, rows, batch_size=_BATCH_DEFAULT):
   """Sends rows to BigQuery.
 
   Args:
-    rows: a list of any of the following
+    rows: an iterable of any of the following
       * tuples: each tuple should contain data of the correct type for each
       schema field on the current table and in the same order as the schema
       fields.
@@ -102,15 +102,19 @@ def send_rows(bq_client, dataset_id, table_id, rows, batch_size=_BATCH_DEFAULT):
     batch_size = _BATCH_LIMIT
   elif batch_size <= 0:
     batch_size = _BATCH_DEFAULT
-  for i, row in enumerate(rows):
+
+  rows_to_send = []
+  for row in rows:
     if isinstance(row, tuple):
+      rows_to_send.append(row)
       continue
     elif isinstance(row, message_pb.Message):
-      rows[i] = message_to_dict(row)
+      rows_to_send.append(message_to_dict(row))
     else:
       raise UnsupportedTypeError(type(row).__name__)
+
   table = bq_client.get_table(bq_client.dataset(dataset_id).table(table_id))
-  for row_set in _batch(rows, batch_size):
+  for row_set in _batch(rows_to_send, batch_size):
     insert_errors = bq_client.create_rows(table, row_set)
     if insert_errors:
       logging.error('Failed to send event to bigquery: %s', insert_errors)

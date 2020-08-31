@@ -91,8 +91,7 @@ Text* GranularityStrategyTest::AppendTextNode(const String& data) {
 }
 
 void GranularityStrategyTest::SetInnerHTML(const char* html_content) {
-  GetDocument().documentElement()->SetInnerHTMLFromString(
-      String::FromUTF8(html_content));
+  GetDocument().documentElement()->setInnerHTML(String::FromUTF8(html_content));
   UpdateAllLifecyclePhasesForTest();
 }
 
@@ -477,7 +476,7 @@ TEST_F(GranularityStrategyTest, Character) {
   GetDummyPageHolder().GetFrame().GetSettings()->SetDefaultFontSize(12);
   // "Foo Bar Baz,"
   Text* text = AppendTextNode("Foo Bar Baz,");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   // "Foo B^a|>r Baz," (^ means base, | means extent, , < means start, and >
   // means end).
@@ -638,7 +637,7 @@ TEST_F(GranularityStrategyTest, DirectionSwitchSideWordGranularityThenShrink) {
   String str = "ab cd efghijkl mnopqr iiin, abc";
   Text* text = GetDocument().createTextNode(str);
   GetDocument().body()->AppendChild(text);
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   GetDummyPageHolder().GetFrame().GetSettings()->SetSelectionStrategy(
       SelectionStrategy::kDirection);
 
@@ -677,7 +676,7 @@ TEST_F(GranularityStrategyTest, DirectionSwitchStartOnBoundary) {
   String str = "ab cd efghijkl mnopqr iiin, abc";
   Text* text = GetDocument().createTextNode(str);
   GetDocument().body()->AppendChild(text);
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   GetDummyPageHolder().GetFrame().GetSettings()->SetSelectionStrategy(
       SelectionStrategy::kDirection);
 
@@ -699,15 +698,15 @@ TEST_F(GranularityStrategyTest, DirectionSwitchStartOnBoundary) {
 TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForCharacter) {
   GetDummyPageHolder().GetFrame().GetSettings()->SetSelectionStrategy(
       SelectionStrategy::kCharacter);
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<div id=host></div><div id=sample>ab</div>");
   // Simulate VIDEO element which has a RANGE as slider of video time.
   Element* const host = GetDocument().getElementById("host");
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
-  shadow_root.SetInnerHTMLFromString("<input type=range>");
+  shadow_root.setInnerHTML("<input type=range>");
   Element* const sample = GetDocument().getElementById("sample");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   const SelectionInDOMTree& selection_in_dom_tree =
       SelectionInDOMTree::Builder()
           .Collapse(Position(sample->firstChild(), 2))
@@ -737,15 +736,15 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForCharacter) {
 
 // For http://crbug.com/704529
 TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForDirectional) {
-  GetDocument().body()->SetInnerHTMLFromString(
+  GetDocument().body()->setInnerHTML(
       "<div id=host></div><div id=sample>ab</div>");
   // Simulate VIDEO element which has a RANGE as slider of video time.
   Element* const host = GetDocument().getElementById("host");
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
-  shadow_root.SetInnerHTMLFromString("<input type=range>");
+  shadow_root.setInnerHTML("<input type=range>");
   Element* const sample = GetDocument().getElementById("sample");
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   const SelectionInDOMTree& selection_in_dom_tree =
       SelectionInDOMTree::Builder()
           .Collapse(Position(sample->firstChild(), 2))

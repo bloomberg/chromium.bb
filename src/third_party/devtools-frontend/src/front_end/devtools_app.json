@@ -4,9 +4,9 @@
     { "name": "inspector_main", "type": "autostart" },
     { "name": "mobile_throttling", "type": "autostart" },
 
-    { "name": "accessibility", "type": "remote" },
+    { "name": "accessibility" },
     { "name": "animation" },
-    { "name": "audits" },
+    { "name": "lighthouse" },
     { "name": "browser_debugger" },
     { "name": "css_overview" },
     { "name": "cookie_table" },
@@ -14,6 +14,7 @@
     { "name": "devices" },
     { "name": "elements" },
     { "name": "emulated_devices" , "type": "remote" },
+    { "name": "issues" },
     { "name": "har_importer" },
     { "name": "help" },
     { "name": "layers" },
@@ -27,6 +28,5 @@
     { "name": "web_audio" },
     { "name": "media" }
   ],
-  "extends": "shell",
-  "has_html": true
+  "extends": "shell"
 }

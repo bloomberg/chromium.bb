@@ -10,6 +10,7 @@
 #include <tuple>
 
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/xml/cfx_xmlelement.h"
 #include "core/fxcrt/xml/cfx_xmltext.h"
 #include "fxjs/cjs_result.h"
@@ -801,54 +802,12 @@ Optional<WideString> CJX_Object::TryNamespace() {
 std::pair<CXFA_Node*, int32_t> CJX_Object::GetPropertyInternal(
     int32_t index,
     XFA_Element eProperty) const {
-  const CXFA_Node* xfaNode = ToNode(GetXFAObject());
-  if (index < 0 || index >= xfaNode->PropertyOccuranceCount(eProperty))
-    return {nullptr, 0};
-
-  int32_t iCount = 0;
-  for (CXFA_Node* pNode = xfaNode->GetFirstChild(); pNode;
-       pNode = pNode->GetNextSibling()) {
-    if (pNode->GetElementType() == eProperty) {
-      iCount++;
-      if (iCount > index)
-        return {pNode, iCount};
-    }
-  }
-  return {nullptr, iCount};
+  return ToNode(GetXFAObject())->GetProperty(index, eProperty);
 }
 
 CXFA_Node* CJX_Object::GetOrCreatePropertyInternal(int32_t index,
                                                    XFA_Element eProperty) {
-  CXFA_Node* xfaNode = ToNode(GetXFAObject());
-  if (index < 0 || index >= xfaNode->PropertyOccuranceCount(eProperty))
-    return nullptr;
-
-  int32_t iCount = 0;
-  CXFA_Node* node;
-  std::tie(node, iCount) = GetPropertyInternal(index, eProperty);
-  if (node)
-    return node;
-
-  if (xfaNode->HasPropertyFlags(eProperty, XFA_PROPERTYFLAG_OneOf)) {
-    for (CXFA_Node* pNode = xfaNode->GetFirstChild(); pNode;
-         pNode = pNode->GetNextSibling()) {
-      if (xfaNode->HasPropertyFlags(pNode->GetElementType(),
-                                    XFA_PROPERTYFLAG_OneOf)) {
-        return nullptr;
-      }
-    }
-  }
-
-  CXFA_Node* pNewNode = nullptr;
-  for (; iCount <= index; ++iCount) {
-    pNewNode = GetDocument()->CreateNode(xfaNode->GetPacketType(), eProperty);
-    if (!pNewNode)
-      return nullptr;
-
-    xfaNode->InsertChildAndNotify(pNewNode, nullptr);
-    pNewNode->SetFlagAndNotify(XFA_NodeFlag_Initialized);
-  }
-  return pNewNode;
+  return ToNode(GetXFAObject())->GetOrCreateProperty(index, eProperty);
 }
 
 void CJX_Object::SetUserData(
@@ -1142,7 +1101,7 @@ void CJX_Object::ScriptAttributeString(CFXJSE_Value* pValue,
   WideString wsSOM;
   if (!wsValue.IsEmpty()) {
     if (wsValue[0] == '#')
-      wsID = wsValue.Mid(1, wsValue.GetLength() - 1);
+      wsID = wsValue.Substr(1, wsValue.GetLength() - 1);
     else
       wsSOM = std::move(wsValue);
   }
@@ -1180,8 +1139,6 @@ void CJX_Object::ScriptAttributeString(CFXJSE_Value* pValue,
     ToNode(GetXFAObject())->InsertChildAndNotify(pHeadChild, nullptr);
     pHeadChild = pSibling;
   }
-  GetDocument()->FreeOwnedNode(pProtoForm);
-  pProtoForm = nullptr;
 }
 
 void CJX_Object::ScriptAttributeBool(CFXJSE_Value* pValue,
@@ -1550,4 +1507,3 @@ void CJX_Object::ScriptSomInstanceIndex(CFXJSE_Value* pValue,
 void CJX_Object::ScriptSubmitFormatMode(CFXJSE_Value* pValue,
                                         bool bSetting,
                                         XFA_Attribute eAttribute) {}
-

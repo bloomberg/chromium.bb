@@ -31,6 +31,8 @@ Library usage:
     c.increment()
 """
 
+import collections
+import contextlib
 import datetime
 import logging
 import random
@@ -38,9 +40,11 @@ import threading
 import time
 import traceback
 
+from google.protobuf import message
 from infra_libs.ts_mon.common import errors
 from infra_libs.ts_mon.common import metric_store
 from infra_libs.ts_mon.protos import metrics_pb2
+import six
 
 # The maximum number of MetricsData messages to include in each HTTP request.
 # MetricsCollections larger than this will be split into multiple requests.
@@ -89,6 +93,13 @@ class State(object):
     # on Appengine because it does its own thing.
     self.invoke_global_callbacks_on_flush = True
 
+    # Thread-local state.
+    self._thread_local = threading.local()
+    # The target context. Keys are target types. Values are stacks of target
+    # fields. Metrics with target types use these to get their target fields
+    # rather than the dicts that are passed in when setting or incrementing.
+    self._thread_local.target_context = collections.defaultdict(list)
+
   def reset_for_unittest(self):
     self.metrics = {}
     self.global_metrics = {}
@@ -98,6 +109,20 @@ class State(object):
     self.store.reset_for_unittest()
 
 state = State()
+
+
+@contextlib.contextmanager
+def target_context(target_fields):
+  """Sets and unsets a target context."""
+  assert isinstance(target_fields, message.Message), (
+      'Cannot set non-protobuf target context %r' % (target_fields,))
+  typ = type(target_fields)
+  stk = state._thread_local.target_context[typ]
+  try:
+    stk.append(target_fields)
+    yield True  # dummy value, not used by the caller
+  finally:
+    stk.pop()
 
 
 def flush():
@@ -128,20 +153,63 @@ def flush():
   return True
 
 
+def _populate_root_labels(root_labels, target):
+  """Populate root_labels for the given target."""
+  for field, value in zip(target[0].DESCRIPTOR.fields, target[1:]):
+    if isinstance(value, bool):
+      root_labels.add(key=field.name, bool_value=value)
+    elif isinstance(value, six.integer_types):
+      root_labels.add(key=field.name, int64_value=value)
+    elif isinstance(value, six.string_types):
+      root_labels.add(key=field.name, string_value=value)
+    else:
+      raise NotImplementedError()
+
+
 def _generate_proto():
   """Generate MetricsPayload for global_monitor.send()."""
   proto = metrics_pb2.MetricsPayload()
 
   # Key: Target, value: MetricsCollection.
-  collections = {}
+  collections = {}  # pylint: disable=redefined-outer-name
 
   # Key: (Target, metric name) tuple, value: MetricsDataSet.
   data_sets = {}
 
   count = 0
-  for (target, metric, start_time, end_time, fields_values
+  for (target, metric, start_times, end_time, fields_values
        ) in state.store.get_all():
-    for fields, value in fields_values.iteritems():
+    for fields, value in six.iteritems(fields_values):
+      # In default, the start time of all data points for a single stream
+      # should be set with the first time of a value change in the stream,
+      # until metric.reset() invoked.
+      #
+      # e.g.,
+      # At 00:00.
+      #   {value: 1,
+      #    fields: ('metric:result': 'success', 'metric:command': 'get_name'),
+      #    start_timestamp=0, end_timestamp=0}
+      #
+      # At 00:01.
+      #   {value: 1,
+      #    fields: ('metric:result': 'success', 'metric:command': 'get_name'),
+      #    start_timestamp=0, end_timestamp=1}
+      #
+      # At 00:02.
+      #   {value: 2,
+      #    fields: ('metric:result': 'success', 'metric:command': 'get_name'),
+      #    start_timestamp=0, end_timestamp=2}
+      #
+      # This is important for cumulative metrics, because the monitoring
+      # backend detects the restart of a monitoring target and inserts a reset
+      # point to make Delta()/Rate() computation results accurate.
+
+      # If a given metric has own start_time, which can be set via
+      # metric.dangerously_set_start_time(), then report all the data points
+      # with the metric-level start_time.
+      #
+      # Otherwise, report data points with the first value change time.
+      start_time = metric.start_time or start_times.get(fields, end_time)
       if count >= METRICS_DATA_LENGTH_LIMIT:
         yield proto
         proto = metrics_pb2.MetricsPayload()
@@ -151,7 +219,10 @@ def _generate_proto():
 
       if target not in collections:
         collections[target] = proto.metrics_collection.add()
-        target.populate_target_pb(collections[target])
+        if isinstance(target, tuple):
+          _populate_root_labels(collections[target].root_labels, target)
+        else:
+          target.populate_target_pb(collections[target])
       collection = collections[target]
 
       key = (target, metric.name)
@@ -249,7 +320,7 @@ def register_global_metrics_callback(name, callback):
 
 
 def invoke_global_callbacks():
-  for name, callback in state.global_metrics_callbacks.iteritems():
+  for name, callback in six.iteritems(state.global_metrics_callbacks):
     logging.debug('Invoking callback %s', name)
     try:
       callback()

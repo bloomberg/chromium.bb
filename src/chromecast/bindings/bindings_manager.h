@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/strings/string_piece.h"
-#include "mojo/public/cpp/system/message_pipe.h"
+#include "third_party/blink/public/common/messaging/web_message_port.h"
 
 namespace chromecast {
 namespace bindings {
@@ -21,8 +21,8 @@ namespace bindings {
 // boundary.
 class BindingsManager {
  public:
-  using PortConnectedHandler =
-      base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle)>;
+  using MessagePortConnectedHandler =
+      base::RepeatingCallback<void(blink::WebMessagePort)>;
 
   BindingsManager();
 
@@ -33,7 +33,7 @@ class BindingsManager {
   // the frame's web content. |port_name| is an alphanumeric string that is
   // consistent across JS and native code.
   void RegisterPortHandler(base::StringPiece port_name,
-                           PortConnectedHandler handler);
+                           MessagePortConnectedHandler handler);
 
   // Unregisters a previously registered handler.
   // The owner of BindingsManager is responsible for ensuring that all handlers
@@ -48,11 +48,10 @@ class BindingsManager {
  protected:
   // Called by platform-specific subclasses when the underlying transport has
   // delivered a port.
-  void OnPortConnected(base::StringPiece port_name,
-                       mojo::ScopedMessagePipeHandle port);
+  void OnPortConnected(base::StringPiece port_name, blink::WebMessagePort port);
 
  private:
-  base::flat_map<std::string, PortConnectedHandler> port_handlers_;
+  base::flat_map<std::string, MessagePortConnectedHandler> port_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(BindingsManager);
 };

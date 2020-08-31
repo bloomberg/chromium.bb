@@ -115,7 +115,7 @@ class GitBisector(common.OptionsChecker):
     """Wrapper of git.RunGit.
 
     It passes self.repo_dir as git_repo to git.RunGit. Also, it
-    sets error_code_ok=True so when git encounters an error, instead of
+    sets check=False so when git encounters an error, instead of
     raising RunCommandError, it returns CommandResult with non-zero return code.
 
     Args:
@@ -124,7 +124,7 @@ class GitBisector(common.OptionsChecker):
     Returns:
       A CommandResult object.
     """
-    return git.RunGit(self.repo_dir, command, error_code_ok=True)
+    return git.RunGit(self.repo_dir, command, check=False)
 
   def UpdateCurrentCommit(self):
     """Updates self.current_commit."""

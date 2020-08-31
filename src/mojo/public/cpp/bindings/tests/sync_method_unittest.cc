@@ -5,11 +5,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/sequence_token.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
@@ -252,7 +253,7 @@ template <typename Interface>
 class TestSyncServiceSequence {
  public:
   TestSyncServiceSequence()
-      : task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})),
+      : task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})),
         ping_called_(false) {}
 
   void SetUp(InterfaceRequest<Interface> request) {
@@ -432,8 +433,7 @@ void RunTestOnSequencedTaskRunner(
     std::unique_ptr<SequencedTaskRunnerTestBase> test) {
   base::RunLoop run_loop;
   test->Init(run_loop.QuitClosure());
-  base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::WithBaseSyncPrimitives()})
+  base::ThreadPool::CreateSequencedTaskRunner({base::WithBaseSyncPrimitives()})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&SequencedTaskRunnerTestBase::RunTest,
                                 base::Unretained(test.release())));

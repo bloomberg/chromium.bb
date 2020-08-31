@@ -12,25 +12,20 @@
 
 #include "include/gpu/GrTypes.h"
 #include "src/gpu/GrColor.h"
-#include "src/gpu/GrMesh.h"
 #include "dawn/webgpu_cpp.h"
 
 class GrDawnGpu;
 class GrDawnRenderTarget;
 struct GrDawnProgram;
 
-class GrDawnOpsRenderPass : public GrOpsRenderPass, private GrMesh::SendToGpuImpl {
+class GrDawnOpsRenderPass : public GrOpsRenderPass {
 public:
     GrDawnOpsRenderPass(GrDawnGpu*, GrRenderTarget*, GrSurfaceOrigin,
                         const LoadAndStoreInfo&, const StencilLoadAndStoreInfo&);
 
     ~GrDawnOpsRenderPass() override;
 
-    void begin() override { }
-    void end() override;
-
     wgpu::RenderPassEncoder beginRenderPass(wgpu::LoadOp colorOp, wgpu::LoadOp stencilOp);
-    void insertEventMarker(const char*) override;
 
     void inlineUpload(GrOpFlushState* state, GrDeferredTextureUploadFn& upload) override;
 
@@ -39,39 +34,22 @@ public:
 private:
     GrGpu* gpu() override;
 
-    void setScissorState(const GrProgramInfo&);
     void applyState(GrDawnProgram*, const GrProgramInfo& programInfo);
 
-    void onDraw(const GrProgramInfo& programInfo,
-                const GrMesh mesh[],
-                int meshCount,
-                const SkRect& bounds) override;
-
-    void sendMeshToGpu(GrPrimitiveType primType, const GrBuffer* vertexBuffer, int vertexCount,
-                       int baseVertex) final {
-        this->sendInstancedMeshToGpu(primType, vertexBuffer, vertexCount, baseVertex,
-                                     nullptr, 1, 0);
-    }
-
-    void sendIndexedMeshToGpu(GrPrimitiveType primType,
-                              const GrBuffer* indexBuffer, int indexCount, int baseIndex,
-                              uint16_t /*minIndexValue*/, uint16_t /*maxIndexValue*/,
-                              const GrBuffer* vertexBuffer, int baseVertex,
-                              GrPrimitiveRestart restart) final {
-        this->sendIndexedInstancedMeshToGpu(primType, indexBuffer, indexCount, baseIndex,
-                                            vertexBuffer, baseVertex, nullptr, 1, 0, restart);
-    }
-
-    void sendInstancedMeshToGpu(GrPrimitiveType,
-                                const GrBuffer* vertexBuffer, int vertexCount, int baseVertex,
-                                const GrBuffer* instanceBuffer, int instanceCount,
-                                int baseInstance) final;
-
-    void sendIndexedInstancedMeshToGpu(GrPrimitiveType,
-                                       const GrBuffer* indexBuffer, int indexCount, int baseIndex,
-                                       const GrBuffer* vertexBuffer, int baseVertex,
-                                       const GrBuffer* instanceBuffer, int instanceCount,
-                                       int baseInstance, GrPrimitiveRestart) final;
+    void onEnd() override;
+    bool onBindPipeline(const GrProgramInfo& programInfo, const SkRect& drawBounds) override;
+    void onSetScissorRect(const SkIRect&) override;
+    bool onBindTextures(const GrPrimitiveProcessor&, const GrSurfaceProxy* const primProcTextures[],
+                        const GrPipeline&) override;
+    void onBindBuffers(const GrBuffer* indexBuffer, const GrBuffer* instanceBuffer,
+                       const GrBuffer* vertexBuffer, GrPrimitiveRestart) override;
+    void onDraw(int vertexCount, int baseVertex) override;
+    void onDrawIndexed(int indexCount, int baseIndex, uint16_t minIndexValue,
+                       uint16_t maxIndexValue, int baseVertex) override;
+    void onDrawInstanced(int instanceCount, int baseInstance, int vertexCount,
+                         int baseVertex) override;
+    void onDrawIndexedInstanced(int indexCount, int baseIndex, int instanceCount, int baseInstance,
+                                int baseVertex) override;
 
     void onClear(const GrFixedClip&, const SkPMColor4f& color) override;
 
@@ -88,6 +66,7 @@ private:
     GrDawnGpu*                  fGpu;
     wgpu::CommandEncoder        fEncoder;
     wgpu::RenderPassEncoder     fPassEncoder;
+    sk_sp<GrDawnProgram>        fCurrentProgram;
     LoadAndStoreInfo            fColorInfo;
 
     typedef GrOpsRenderPass     INHERITED;

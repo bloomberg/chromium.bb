@@ -69,9 +69,12 @@ const getSameOriginFrames = function(win) {
   const frames = win.document.getElementsByTagName('iframe');
   const result = [];
   for (let i = 0; i < frames.length; i++) {
-    if (!frames[i].src ||
-        __gCrWeb.common.isSameOrigin(win.location.href, frames[i].src)) {
-      result.push(frames[i].contentWindow);
+    try {
+      if (__gCrWeb.common.isSameOrigin(
+              win.location.href, frames[i].contentWindow.location.href)) {
+        result.push(frames[i].contentWindow);
+      }
+    } catch (e) {
     }
   }
   return result;
@@ -90,11 +93,11 @@ const addSubmitButtonTouchEndHandler = function(form) {
   }
   // Try to find buttons of type submit at first.
   let buttons = form.querySelectorAll('button[type="submit"]');
-  if (buttons.length == 0) {
+  if (buttons.length === 0) {
     // Try to check all buttons. If there is only one button, assume that this
     // is the submit button.
     buttons = form.querySelectorAll('button');
-    if (buttons.length != 1) {
+    if (buttons.length !== 1) {
       return;
     }
   }
@@ -121,12 +124,13 @@ const onSubmitButtonTouchEnd = function(evt) {
  * Returns the element from |inputs| which has the field identifier equal to
  * |identifier| and null if there is no such element.
  * @param {Array<HTMLInputElement>} inputs
- * @param {string} identifier
+ * @param {number} identifier
  * @return {HTMLInputElement}
  */
-const findInputByFieldIdentifier = function(inputs, identifier) {
+const findInputByUniqueFieldId = function(inputs, identifier) {
+  const uniqueID = Symbol.for('__gChrome~uniqueID');
   for (let i = 0; i < inputs.length; ++i) {
-    if (identifier == __gCrWeb.form.getFieldIdentifier(inputs[i])) {
+    if (identifier === inputs[i][uniqueID]) {
       return inputs[i];
     }
   }
@@ -137,11 +141,11 @@ const findInputByFieldIdentifier = function(inputs, identifier) {
  * Returns the password form with the given |identifier| as a JSON string
  * from the frame |win| and all its same-origin subframes.
  * @param {Window} win The window in which to look for forms.
- * @param {string} identifier The name of the form to extract.
+ * @param {number} identifier The name of the form to extract.
  * @return {HTMLFormElement} The password form.
  */
 const getPasswordFormElement = function(win, identifier) {
-  let el = win.__gCrWeb.form.getFormElementFromIdentifier(identifier);
+  let el = win.__gCrWeb.form.getFormElementFromUniqueFormId(identifier);
   if (el) {
     return el;
   }
@@ -169,7 +173,7 @@ const getFormInputElements = function(form) {
 
 /**
  * Returns the password form with the given |identifier| as a JSON string.
- * @param {string} identifier The identifier of the form to extract.
+ * @param {number} identifier The identifier of the form to extract.
  * @return {string} The password form.
  */
 __gCrWeb.passwords['getPasswordFormDataAsString'] = function(identifier) {
@@ -194,51 +198,50 @@ __gCrWeb.passwords['getPasswordFormDataAsString'] = function(identifier) {
  * @param {AutofillFormData} formData Form data.
  * @param {string} username The username to fill.
  * @param {string} password The password to fill.
- * @param {string=} opt_normalizedOrigin The origin URL to compare to.
  * @return {boolean} Whether a form field has been filled.
  */
 __gCrWeb.passwords['fillPasswordForm'] = function(
-    formData, username, password, opt_normalizedOrigin) {
-  const normalizedOrigin = opt_normalizedOrigin ||
+    formData, username, password) {
+  const normalizedOrigin =
       __gCrWeb.common.removeQueryAndReferenceFromURL(window.location.href);
   const origin = /** @type {string} */ (formData['origin']);
   if (!__gCrWeb.common.isSameOrigin(origin, normalizedOrigin)) {
     return false;
   }
-  return fillPasswordFormWithData(
-      formData, username, password, window, opt_normalizedOrigin);
+  return fillPasswordFormWithData(formData, username, password, window);
 };
 
 /**
  * Fills all password fields in the form identified by |formName|
  * with |password|.
  *
- * @param {string} formName The name of the form to fill.
- * @param {string} newPasswordIdentifier The id of password element to fill.
- * @param {string} confirmPasswordIdentifier The id of confirm password element
+ * @param {number} formIdentifier The name of the form to fill.
+ * @param {number} newPasswordIdentifier The id of password element to fill.
+ * @param {number} confirmPasswordIdentifier The id of confirm password element
  *   to fill.
  * @param {string} password The password to fill.
  * @return {boolean} Whether new password field has been filled.
-*/
+ */
 __gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
-    formName, newPasswordIdentifier, confirmPasswordIdentifier, password) {
-  const form = __gCrWeb.form.getFormElementFromIdentifier(formName);
+    formIdentifier, newPasswordIdentifier, confirmPasswordIdentifier,
+    password) {
+  const form = __gCrWeb.form.getFormElementFromUniqueFormId(formIdentifier);
   if (!form) {
     return false;
   }
   const inputs = getFormInputElements(form);
   const newPasswordField =
-      findInputByFieldIdentifier(inputs, newPasswordIdentifier);
+      findInputByUniqueFieldId(inputs, newPasswordIdentifier);
   if (!newPasswordField) {
     return false;
   }
   // Avoid resetting if same value, as it moves cursor to the end.
-  if (newPasswordField.value != password) {
+  if (newPasswordField.value !== password) {
     __gCrWeb.fill.setInputElementValue(password, newPasswordField);
   }
   const confirmPasswordField =
-      findInputByFieldIdentifier(inputs, confirmPasswordIdentifier);
-  if (confirmPasswordField && confirmPasswordField.value != password) {
+      findInputByUniqueFieldId(inputs, confirmPasswordIdentifier);
+  if (confirmPasswordField && confirmPasswordField.value !== password) {
     __gCrWeb.fill.setInputElementValue(password, confirmPasswordField);
   }
   return true;
@@ -253,65 +256,78 @@ __gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
  * @param {string} username The username to fill.
  * @param {string} password The password to fill.
  * @param {Window} win A window or a frame containing formData.
- * @param {string=} opt_normalizedOrigin The origin URL to compare to.
  * @return {boolean} Whether a form field has been filled.
  */
-const fillPasswordFormWithData = function(
-    formData, username, password, win, opt_normalizedOrigin) {
+const fillPasswordFormWithData = function(formData, username, password, win) {
   const doc = win.document;
-  const forms = doc.forms;
   let filled = false;
 
-  for (let i = 0; i < forms.length; i++) {
-    const form = forms[i];
-    const normalizedFormAction =
-        opt_normalizedOrigin || __gCrWeb.fill.getCanonicalActionForForm(form);
-    if (formData.action != normalizedFormAction) {
-      continue;
-    }
+  const form = win.__gCrWeb.form.getFormElementFromUniqueFormId(
+      formData.unique_renderer_id);
+  if (form) {
     const inputs = getFormInputElements(form);
-    const usernameIdentifier = formData.fields[0].name;
-    let usernameInput = null;
-    if (usernameIdentifier != '') {
-      usernameInput = findInputByFieldIdentifier(inputs, usernameIdentifier);
-      if (!usernameInput || !__gCrWeb.common.isTextField(usernameInput) ||
-          usernameInput.disabled) {
-        continue;
-      }
-    }
-
-    const passwordInput =
-        findInputByFieldIdentifier(inputs, formData.fields[1].name);
-    if (!passwordInput || passwordInput.type != 'password' ||
-        passwordInput.readOnly || passwordInput.disabled) {
-      continue;
-    }
-
-    // If username was provided on a read-only field and it matches the
-    // requested username, fill the form.
-    if (usernameInput && usernameInput.readOnly) {
-      if (usernameInput.value == username) {
-        __gCrWeb.fill.setInputElementValue(password, passwordInput);
-        filled = true;
-      }
-    } else {
-      __gCrWeb.fill.setInputElementValue(username, usernameInput);
-      __gCrWeb.fill.setInputElementValue(password, passwordInput);
+    if (fillUsernameAndPassword_(inputs, formData, username, password)) {
       filled = true;
     }
+  }
+
+  // Check fields that are not inside any <form> tag.
+  const unownedInputs =
+      __gCrWeb.fill.getUnownedAutofillableFormFieldElements(doc.all, []);
+  if (fillUsernameAndPassword_(unownedInputs, formData, username, password)) {
+    filled = true;
   }
 
   // Recursively invoke for all iframes.
   const frames = getSameOriginFrames(win);
   for (let i = 0; i < frames.length; i++) {
-    if (fillPasswordFormWithData(
-            formData, username, password, frames[i], opt_normalizedOrigin)) {
+    if (fillPasswordFormWithData(formData, username, password, frames[i])) {
       filled = true;
     }
   }
 
   return filled;
 };
+
+/**
+ * Finds target input fields in all form/formless inputs and
+ * fill them with fill data.
+ * @param {Array<FormControlElement>} inputs Form inputs.
+ * @param {AutofillFormData} formData Form data.
+ * @param {string} username The username to fill.
+ * @param {string} password The password to fill.
+ * @return {boolean} Whether the form has been filled.
+ */
+function fillUsernameAndPassword_(inputs, formData, username, password) {
+  const usernameIdentifier = formData.fields[0].unique_renderer_id;
+  let usernameInput = null;
+  if (usernameIdentifier !== Number(__gCrWeb.fill.RENDERER_ID_NOT_SET)) {
+    usernameInput = findInputByUniqueFieldId(inputs, usernameIdentifier);
+    if (!usernameInput || !__gCrWeb.common.isTextField(usernameInput) ||
+        usernameInput.disabled) {
+      return false;
+    }
+  }
+  const passwordInput =
+      findInputByUniqueFieldId(inputs, formData.fields[1].unique_renderer_id);
+  if (!passwordInput || passwordInput.type !== 'password' ||
+      passwordInput.readOnly || passwordInput.disabled) {
+    return false;
+  }
+  // If username was provided on a read-only field and it matches the
+  // requested username, fill the form.
+  if (usernameInput && usernameInput.readOnly) {
+    if (usernameInput.value === username) {
+      __gCrWeb.fill.setInputElementValue(password, passwordInput);
+      return true;
+    }
+  } else {
+    __gCrWeb.fill.setInputElementValue(username, usernameInput);
+    __gCrWeb.fill.setInputElementValue(password, passwordInput);
+    return true;
+  }
+  return false;
+}
 
 /**
  * Finds all forms with passwords in the supplied window or frame and appends
@@ -331,13 +347,39 @@ const getPasswordFormDataList = function(formDataList, win) {
       addSubmitButtonTouchEndHandler(forms[i]);
     }
   }
-
+  getPasswordFormDataFromUnownedElements_(formDataList, win);
   // Recursively invoke for all iframes.
   const frames = getSameOriginFrames(win);
   for (let i = 0; i < frames.length; i++) {
     getPasswordFormDataList(formDataList, frames[i]);
   }
 };
+
+/**
+ * Finds all forms with passwords that are not inside any <form> tag and appends
+ * JS object containing the form data to |formDataList|.
+ * @param {!Array<Object>} formDataList A list that this function populates
+ *     with descriptions of discovered forms.
+ * @param {Window} win A window or a frame containing formData.
+ */
+function getPasswordFormDataFromUnownedElements_(formDataList, window) {
+  const doc = window.document;
+  const extractMask = __gCrWeb.fill.EXTRACT_MASK_VALUE;
+  const fieldsets = [];
+  const unownedControlElements =
+      __gCrWeb.fill.getUnownedAutofillableFormFieldElements(doc.all, fieldsets);
+  if (unownedControlElements.length === 0) {
+    return;
+  }
+  const unownedForm = new __gCrWeb['common'].JSONSafeObject;
+  const hasUnownedForm =
+      __gCrWeb.fill.unownedFormElementsAndFieldSetsToFormData(
+          window, fieldsets, unownedControlElements, extractMask, false,
+          unownedForm);
+  if (hasUnownedForm) {
+    formDataList.push(unownedForm);
+  }
+}
 
 /**
  * Returns a JS object containing the data from |formElement|.

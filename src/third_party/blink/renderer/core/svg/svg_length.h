@@ -21,12 +21,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_LENGTH_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_LENGTH_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/svg/properties/svg_property.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -34,7 +36,7 @@ class QualifiedName;
 
 class SVGLengthTearOff;
 
-class SVGLength final : public SVGPropertyBase {
+class CORE_EXPORT SVGLength final : public SVGPropertyBase {
  public:
   typedef SVGLengthTearOff TearOffType;
 
@@ -56,11 +58,10 @@ class SVGLength final : public SVGPropertyBase {
   explicit SVGLength(SVGLengthMode = SVGLengthMode::kOther);
   SVGLength(Initial, SVGLengthMode);
   SVGLength(const CSSPrimitiveValue&, SVGLengthMode);
-  SVGLength(const SVGLength&);
 
   void SetInitial(unsigned);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   SVGLength* Clone() const;
   SVGPropertyBase* CloneForAnimation(const String&) const override;
@@ -144,7 +145,12 @@ class SVGLength final : public SVGPropertyBase {
   unsigned unit_mode_ : 2;
 };
 
-DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGLength);
+template <>
+struct DowncastTraits<SVGLength> {
+  static bool AllowFrom(const SVGPropertyBase& value) {
+    return value.GetType() == SVGLength::ClassType();
+  }
+};
 
 }  // namespace blink
 

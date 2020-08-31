@@ -32,41 +32,41 @@ class OpArrayLengthTest : public DawnTest {
         bufferDesc.size = 256;
         mStorageBuffer256 = device.CreateBuffer(&bufferDesc);
 
-        bufferDesc.size = 512;
+        bufferDesc.size = 512 + 256;
         mStorageBuffer512 = device.CreateBuffer(&bufferDesc);
 
         // Put them all in a bind group for tests to bind them easily.
         wgpu::ShaderStage kAllStages =
             wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Compute;
-        mBindGroupLayout =
-            utils::MakeBindGroupLayout(device, {{0, kAllStages, wgpu::BindingType::StorageBuffer},
-                                                {1, kAllStages, wgpu::BindingType::StorageBuffer},
-                                                {2, kAllStages, wgpu::BindingType::StorageBuffer}});
+        mBindGroupLayout = utils::MakeBindGroupLayout(
+            device, {{0, kAllStages, wgpu::BindingType::ReadonlyStorageBuffer},
+                     {1, kAllStages, wgpu::BindingType::ReadonlyStorageBuffer},
+                     {2, kAllStages, wgpu::BindingType::ReadonlyStorageBuffer}});
 
         mBindGroup = utils::MakeBindGroup(device, mBindGroupLayout,
                                           {
                                               {0, mStorageBuffer4, 0, 4},
                                               {1, mStorageBuffer256, 0, wgpu::kWholeSize},
-                                              {2, mStorageBuffer512, 0, 512},
+                                              {2, mStorageBuffer512, 256, wgpu::kWholeSize},
                                           });
 
         // Common shader code to use these buffers in shaders, assuming they are in bindgroup index
         // 0.
         mShaderInterface = R"(
             // The length should be 1 because the buffer is 4-byte long.
-            layout(std430, set = 0, binding = 0) buffer Buffer1 {
+            layout(std430, set = 0, binding = 0) readonly buffer Buffer1 {
                 float data[];
             } buffer1;
 
             // The length should be 64 because the buffer is 256 bytes long.
-            layout(std430, set = 0, binding = 1) buffer Buffer2 {
+            layout(std430, set = 0, binding = 1) readonly buffer Buffer2 {
                 float data[];
             } buffer2;
 
             // The length should be (512 - 16*4) / 8 = 56 because the buffer is 512 bytes long
             // and the structure is 8 bytes big.
             struct Buffer3Data {float a; int b;};
-            layout(std430, set = 0, binding = 2) buffer Buffer3 {
+            layout(std430, set = 0, binding = 2) readonly buffer Buffer3 {
                 mat4 garbage;
                 Buffer3Data data[];
             } buffer3;
@@ -135,7 +135,7 @@ TEST_P(OpArrayLengthTest, Compute) {
     pass.SetPipeline(pipeline);
     pass.SetBindGroup(0, mBindGroup);
     pass.SetBindGroup(1, resultBindGroup);
-    pass.Dispatch(1, 1, 1);
+    pass.Dispatch(1);
     pass.EndPass();
 
     wgpu::CommandBuffer commands = encoder.Finish();
@@ -190,7 +190,7 @@ TEST_P(OpArrayLengthTest, Fragment) {
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, mBindGroup);
-        pass.Draw(1, 1, 0, 0);
+        pass.Draw(1);
         pass.EndPass();
     }
 
@@ -251,7 +251,7 @@ TEST_P(OpArrayLengthTest, Vertex) {
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, mBindGroup);
-        pass.Draw(1, 1, 0, 0);
+        pass.Draw(1);
         pass.EndPass();
     }
 
@@ -262,4 +262,4 @@ TEST_P(OpArrayLengthTest, Vertex) {
     EXPECT_PIXEL_RGBA8_EQ(expectedColor, renderPass.color, 0, 0);
 }
 
-DAWN_INSTANTIATE_TEST(OpArrayLengthTest, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend);
+DAWN_INSTANTIATE_TEST(OpArrayLengthTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());

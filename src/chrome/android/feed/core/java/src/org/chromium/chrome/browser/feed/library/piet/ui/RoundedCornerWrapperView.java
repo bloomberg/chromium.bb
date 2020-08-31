@@ -19,7 +19,7 @@ import android.view.ViewOutlineProvider;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
 import org.chromium.chrome.browser.feed.library.piet.ui.RoundedCornerDelegateFactory.RoundingStrategy;
 import org.chromium.components.feed.core.proto.ui.piet.RoundedCornersProto.RoundedCorners;
@@ -74,7 +74,7 @@ public class RoundedCornerWrapperView extends FrameLayout {
     private int mRoundedCornerRadius;
 
     // Doesn't like the call to setOutlineProvider
-    @SuppressWarnings("initialization")
+    @SuppressWarnings("nullness")
     public RoundedCornerWrapperView(Context context, RoundedCorners roundedCorners,
             RoundedCornerMaskCache maskCache, Supplier<Boolean> isRtLSupplier, int radiusOverride,
             Borders borders, boolean allowClipPath, boolean allowOutlineRounding) {

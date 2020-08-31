@@ -38,6 +38,7 @@ class ChannelMojo;
 struct GpuDeferredMessage;
 
 namespace gpu {
+class ClientSharedImageInterface;
 struct SyncToken;
 class GpuChannelHost;
 class GpuMemoryBufferManager;
@@ -135,9 +136,12 @@ class GPU_EXPORT GpuChannelHost
   // otherwise ignored.
   void CrashGpuProcessForTesting();
 
-  SharedImageInterface* shared_image_interface() {
-    return &shared_image_interface_;
-  }
+  // Termintes the GPU process with an exit code of 0. This only works when
+  // running tests and is otherwise ignored.
+  void TerminateGpuProcessForTesting();
+
+  std::unique_ptr<ClientSharedImageInterface>
+  CreateClientSharedImageInterface();
 
   ImageDecodeAcceleratorProxy* image_decode_accelerator_proxy() {
     return &image_decode_accelerator_proxy_;

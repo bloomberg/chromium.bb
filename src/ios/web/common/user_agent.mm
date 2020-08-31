@@ -56,7 +56,7 @@ namespace web {
 std::string GetUserAgentTypeDescription(UserAgentType type) {
   switch (type) {
     case UserAgentType::AUTOMATIC:
-      DCHECK(base::FeatureList::IsEnabled(features::kDefaultToDesktopOnIPad));
+      DCHECK(features::UseWebClientDefaultUserAgent());
       return std::string(kUserAgentTypeAutomaticDescription);
     case UserAgentType::NONE:
       return std::string(kUserAgentTypeNoneDescription);
@@ -73,15 +73,6 @@ UserAgentType GetUserAgentTypeWithDescription(const std::string& description) {
   if (description == std::string(kUserAgentTypeDesktopDescription))
     return UserAgentType::DESKTOP;
   return UserAgentType::NONE;
-}
-
-UserAgentType GetDefaultUserAgent(UIView* web_view) {
-  DCHECK(base::FeatureList::IsEnabled(features::kDefaultToDesktopOnIPad));
-  BOOL isRegularRegular = web_view.traitCollection.horizontalSizeClass ==
-                              UIUserInterfaceSizeClassRegular &&
-                          web_view.traitCollection.verticalSizeClass ==
-                              UIUserInterfaceSizeClassRegular;
-  return isRegularRegular ? UserAgentType::DESKTOP : UserAgentType::MOBILE;
 }
 
 std::string BuildOSCpuInfo(web::UserAgentType type) {

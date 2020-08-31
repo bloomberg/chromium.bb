@@ -50,6 +50,7 @@ class WTF_EXPORT Partitions {
   // memory snapshots.
   static const char* const kAllocatedObjectPoolName;
 
+  // Should be called on the thread which is or will become the main one.
   static void Initialize();
   static void StartPeriodicReclaim(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
@@ -90,7 +91,7 @@ class WTF_EXPORT Partitions {
   static void* FastZeroedMalloc(size_t n, const char* type_name);
   static void FastFree(void* p);
 
-  static void HandleOutOfMemory();
+  static void HandleOutOfMemory(size_t size);
 
  private:
   ALWAYS_INLINE static base::PartitionRootGeneric* FastMallocPartition() {
@@ -98,8 +99,9 @@ class WTF_EXPORT Partitions {
     return fast_malloc_root_;
   }
 
-  static bool initialized_;
+  static bool InitializeOnce();
 
+  static bool initialized_;
   // See Allocator.md for a description of these partitions.
   static base::PartitionRootGeneric* fast_malloc_root_;
   static base::PartitionRootGeneric* array_buffer_root_;

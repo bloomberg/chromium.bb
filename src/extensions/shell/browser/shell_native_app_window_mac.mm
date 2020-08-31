@@ -6,8 +6,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/display/display.h"
@@ -17,11 +17,11 @@
 
 @implementation ShellNativeAppWindowController
 
-@synthesize appWindow = appWindow_;
+@synthesize appWindow = _appWindow;
 
 - (void)windowWillClose:(NSNotification*)notification {
-  if (appWindow_)
-    appWindow_->WindowWillClose();
+  if (_appWindow)
+    _appWindow->WindowWillClose();
 }
 
 @end

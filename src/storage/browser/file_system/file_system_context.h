@@ -26,6 +26,8 @@
 #include "storage/browser/file_system/sandbox_file_system_backend_delegate.h"
 #include "storage/browser/file_system/task_runner_bound_observer_list.h"
 #include "storage/common/file_system/file_system_types.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 class FilePath;
@@ -117,24 +119,24 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
       base::SingleThreadTaskRunner* io_task_runner,
       base::SequencedTaskRunner* file_task_runner,
       ExternalMountPoints* external_mount_points,
-      storage::SpecialStoragePolicy* special_storage_policy,
-      storage::QuotaManagerProxy* quota_manager_proxy,
+      SpecialStoragePolicy* special_storage_policy,
+      QuotaManagerProxy* quota_manager_proxy,
       std::vector<std::unique_ptr<FileSystemBackend>> additional_backends,
       const std::vector<URLRequestAutoMountHandler>& auto_mount_handlers,
       const base::FilePath& partition_path,
       const FileSystemOptions& options);
 
-  bool DeleteDataForOriginOnFileTaskRunner(const GURL& origin_url);
+  bool DeleteDataForOriginOnFileTaskRunner(const url::Origin& origin);
 
-  // Creates a new QuotaReservation for the given |origin_url| and |type|.
+  // Creates a new QuotaReservation for the given |origin| and |type|.
   // Returns nullptr if |type| does not support quota or reservation fails.
   // This should be run on |default_file_task_runner_| and the returned value
   // should be destroyed on the runner.
   scoped_refptr<QuotaReservation> CreateQuotaReservationOnFileTaskRunner(
-      const GURL& origin_url,
+      const url::Origin& origin,
       FileSystemType type);
 
-  storage::QuotaManagerProxy* quota_manager_proxy() const {
+  QuotaManagerProxy* quota_manager_proxy() const {
     return quota_manager_proxy_.get();
   }
 
@@ -210,7 +212,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   // If |create| is true this may actually set up a filesystem instance
   // (e.g. by creating the root directory or initializing the database
   // entry etc).
-  void OpenFileSystem(const GURL& origin_url,
+  void OpenFileSystem(const url::Origin& origin,
                       FileSystemType type,
                       OpenFileSystemMode mode,
                       OpenFileSystemCallback callback);
@@ -231,7 +233,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
 
   // Deletes the filesystem for the given |origin_url| and |type|. This should
   // be called on the IO thread.
-  void DeleteFileSystem(const GURL& origin_url,
+  void DeleteFileSystem(const url::Origin& origin,
                         FileSystemType type,
                         StatusCallback callback);
 
@@ -246,7 +248,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   // The resolved FileSystemBackend could perform further specialization
   // depending on the filesystem type pointed by the |url|.
   // At most |max_bytes_to_read| can be fetched from the file stream reader.
-  std::unique_ptr<storage::FileStreamReader> CreateFileStreamReader(
+  std::unique_ptr<FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64_t offset,
       int64_t max_bytes_to_read,
@@ -281,7 +283,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   FileSystemURL CrackURL(const GURL& url) const;
   // Same as |CrackFileSystemURL|, but cracks FileSystemURL created from method
   // arguments.
-  FileSystemURL CreateCrackedFileSystemURL(const GURL& origin,
+  FileSystemURL CreateCrackedFileSystemURL(const url::Origin& origin,
                                            FileSystemType type,
                                            const base::FilePath& path) const;
 
@@ -295,7 +297,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
 
   // This must be used to open 'plugin private' filesystem.
   // See "plugin_private_file_system_backend.h" for more details.
-  void OpenPluginPrivateFileSystem(const GURL& origin_url,
+  void OpenPluginPrivateFileSystem(const url::Origin& origin,
                                    FileSystemType type,
                                    const std::string& filesystem_id,
                                    const std::string& plugin_id,
@@ -309,10 +311,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   friend class FileSystemOperationRunner;
 
   // For sandbox_backend().
-  friend class content::SandboxFileSystemTestHelper;
+  friend class SandboxFileSystemTestHelper;
 
   // For plugin_private_backend().
-  friend class content::PluginPrivateFileSystemBackendTest;
+  friend class PluginPrivateFileSystemBackendTest;
 
   // Deleters.
   friend struct DefaultContextDeleter;
@@ -365,7 +367,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> default_file_task_runner_;
 
-  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
 
   std::unique_ptr<SandboxFileSystemBackendDelegate> sandbox_delegate_;
 

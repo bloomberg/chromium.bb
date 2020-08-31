@@ -23,9 +23,8 @@ TEST_F(MainThreadDebuggerTest, HitBreakPointDuringLifecycle) {
   // The following steps would cause either style update or layout, it should
   // never crash.
   document.View()->ViewportSizeChanged(true, true);
-  document.View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
-  document.UpdateStyleAndLayout();
+  document.View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kTest);
   document.UpdateStyleAndLayoutTree();
 
   postponed_transition_scope.reset();

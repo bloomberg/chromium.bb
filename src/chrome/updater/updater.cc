@@ -8,43 +8,46 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
+#include "chrome/updater/app/app.h"
+#include "chrome/updater/app/app_uninstall.h"
+#include "chrome/updater/app/app_update_all.h"
+#include "chrome/updater/configurator.h"
+#include "chrome/updater/constants.h"
 #include "chrome/updater/crash_client.h"
 #include "chrome/updater/crash_reporter.h"
-#include "chrome/updater/update_apps.h"
-#include "chrome/updater/updater_constants.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
 #include "components/crash/core/common/crash_key.h"
 
 #if defined(OS_WIN)
-#include "chrome/updater/win/com/com_server.h"
+#include "chrome/updater/server/win/server.h"
+#include "chrome/updater/server/win/service_main.h"
 #include "chrome/updater/win/install_app.h"
-#include "chrome/updater/win/setup/uninstall.h"
 #endif
 
-// To install the updater on Windows, run "updatersetup.exe" from the
-// build directory.
-//
-// To uninstall, run "updater.exe --uninstall" from its install directory,
+#if defined(OS_MACOSX)
+#include "chrome/updater/mac/setup/install_app.h"
+#include "chrome/updater/mac/setup/swap_app.h"
+#include "chrome/updater/server/mac/server.h"
+#endif
+
+// Instructions For Windows.
+// - To install only the updater, run "updatersetup.exe" from the build out dir.
+// - To install Chrome and the updater, do the same but use the --appid:
+//    updatersetup.exe --appid={8A69D345-D564-463C-AFF1-A69D9E530F96}
+// - To uninstall, run "updater.exe --uninstall" from its install directory,
 // which is under %LOCALAPPDATA%\Google\GoogleUpdater, or from the |out|
 // directory of the build.
-//
-// To debug, use the command line arguments:
+// - To debug, append the following arguments to any updater command line:
 //    --enable-logging --vmodule=*/chrome/updater/*=2.
+// - To run the `updater --install` from the `out` directory of the build,
+//   use --install-from-out-dir command line switch in addition to other
+//   arguments for --install.
 
 namespace updater {
 
 namespace {
-
-void ThreadPoolStart() {
-  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Updater");
-}
-
-void ThreadPoolStop() {
-  base::ThreadPoolInstance::Get()->Shutdown();
-}
 
 // The log file is created in DIR_LOCAL_APP_DATA or DIR_APP_DATA.
 void InitLogging(const base::CommandLine& command_line) {
@@ -59,50 +62,20 @@ void InitLogging(const base::CommandLine& command_line) {
                        true,    // enable_thread_id
                        true,    // enable_timestamp
                        false);  // enable_tickcount
-  VLOG(1) << "Log file " << settings.log_file_path;
+  VLOG(1) << "Version " << UPDATER_VERSION_STRING << ", log file "
+          << settings.log_file_path;
 }
 
-void InitializeUpdaterMain() {
+void InitializeCrashReporting() {
   crash_reporter::InitializeCrashKeys();
-
   static crash_reporter::CrashKeyString<16> crash_key_process_type(
       "process_type");
   crash_key_process_type.Set("updater");
-
   if (CrashClient::GetInstance()->InitializeCrashReporting())
     VLOG(1) << "Crash reporting initialized.";
   else
     VLOG(1) << "Crash reporting is not available.";
-
   StartCrashReporter(UPDATER_VERSION_STRING);
-
-  ThreadPoolStart();
-}
-
-void TerminateUpdaterMain() {
-  ThreadPoolStop();
-}
-
-int UpdaterUpdateApps() {
-  return UpdateApps();
-}
-
-int UpdaterInstallApp() {
-#if defined(OS_WIN)
-  // TODO(sorin): pick up the app id from the tag. https://crbug.com/1014298
-  return InstallApp({kChromeAppId});
-#else
-  NOTREACHED();
-  return -1;
-#endif
-}
-
-int UpdaterUninstall() {
-#if defined(OS_WIN)
-  return Uninstall();
-#else
-  return -1;
-#endif
 }
 
 }  // namespace
@@ -110,24 +83,35 @@ int UpdaterUninstall() {
 int HandleUpdaterCommands(const base::CommandLine* command_line) {
   DCHECK(!command_line->HasSwitch(kCrashHandlerSwitch));
 
-#if defined(OS_WIN)
-  if (command_line->HasSwitch(kComServerSwitch))
-    return ComServer().RunComServer();
-#endif
-
   if (command_line->HasSwitch(kCrashMeSwitch)) {
-    int* ptr = nullptr;
-    return *ptr;
+    // Records a backtrace in the log, crashes the program, saves a crash dump,
+    // and reports the crash.
+    CHECK(false) << "--crash-me was used.";
   }
 
+  if (command_line->HasSwitch(kServerSwitch)) {
+    return AppServerInstance()->Run();
+  }
+
+#if defined(OS_WIN)
+  if (command_line->HasSwitch(kComServiceSwitch))
+    return ServiceMain::RunComService(command_line);
+#endif  // OS_WIN
+
   if (command_line->HasSwitch(kInstallSwitch))
-    return UpdaterInstallApp();
+    return AppInstallInstance()->Run();
+
+#if defined(OS_MACOSX)
+  if (command_line->HasSwitch(kSwapUpdaterSwitch))
+    return AppSwapUpdaterInstance()->Run();
+#endif  // OS_MACOSX
 
   if (command_line->HasSwitch(kUninstallSwitch))
-    return UpdaterUninstall();
+    return AppUninstallInstance()->Run();
 
-  if (command_line->HasSwitch(kUpdateAppsSwitch))
-    return UpdaterUpdateApps();
+  if (command_line->HasSwitch(kUpdateAppsSwitch)) {
+    return AppUpdateAllInstance()->Run();
+  }
 
   VLOG(1) << "Unknown command line switch.";
   return -1;
@@ -144,13 +128,13 @@ int UpdaterMain(int argc, const char* const* argv) {
 
   InitLogging(*command_line);
 
+  VLOG(1) << "Command line: " << command_line->GetCommandLineString();
   if (command_line->HasSwitch(kCrashHandlerSwitch))
     return CrashReporterMain();
 
-  InitializeUpdaterMain();
-  const auto result = HandleUpdaterCommands(command_line);
-  TerminateUpdaterMain();
-  return result;
+  InitializeCrashReporting();
+
+  return HandleUpdaterCommands(command_line);
 }
 
 }  // namespace updater

@@ -397,12 +397,10 @@ class OptimizationGuideStoreTest : public testing::Test {
       const auto& hint_entry = db_store_.find(hint_entry_key);
       if (hint_entry == db_store_.end()) {
         FAIL() << "No entry found for component hint: " << hint_entry_key;
-        continue;
       }
 
       if (!hint_entry->second.has_hint()) {
         FAIL() << "Component hint entry does not have hint: " << hint_entry_key;
-        continue;
       }
 
       EXPECT_EQ(hint_entry->second.hint().key(), host_suffix);
@@ -426,7 +424,7 @@ class OptimizationGuideStoreTest : public testing::Test {
     return last_loaded_entry_key_;
   }
 
-  proto::Hint* last_loaded_hint() { return last_loaded_hint_.get(); }
+  MemoryHint* last_loaded_hint() { return last_loaded_hint_.get(); }
 
   proto::HostModelFeatures* last_loaded_host_model_features() {
     return last_loaded_host_model_features_.get();
@@ -441,7 +439,7 @@ class OptimizationGuideStoreTest : public testing::Test {
   }
 
   void OnHintLoaded(const OptimizationGuideStore::EntryKey& hint_entry_key,
-                    std::unique_ptr<proto::Hint> loaded_hint) {
+                    std::unique_ptr<MemoryHint> loaded_hint) {
     last_loaded_entry_key_ = hint_entry_key;
     last_loaded_hint_ = std::move(loaded_hint);
   }
@@ -472,7 +470,7 @@ class OptimizationGuideStoreTest : public testing::Test {
   std::unique_ptr<OptimizationGuideStore> guide_store_;
 
   OptimizationGuideStore::EntryKey last_loaded_entry_key_;
-  std::unique_ptr<proto::Hint> last_loaded_hint_;
+  std::unique_ptr<MemoryHint> last_loaded_hint_;
   std::unique_ptr<proto::HostModelFeatures> last_loaded_host_model_features_;
   std::unique_ptr<std::vector<proto::HostModelFeatures>>
       last_loaded_all_host_model_features_;
@@ -1277,7 +1275,6 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessInitialData) {
     OptimizationGuideStore::EntryKey hint_entry_key;
     if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
       FAIL() << "Hint entry not found for host suffix: " << host_suffix;
-      continue;
     }
 
     guide_store()->LoadHint(
@@ -1291,10 +1288,10 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessInitialData) {
     EXPECT_EQ(last_loaded_entry_key(), hint_entry_key);
     if (!last_loaded_hint()) {
       FAIL() << "Loaded hint was null for entry key: " << hint_entry_key;
-      continue;
     }
 
-    EXPECT_EQ(last_loaded_hint()->key(), host_suffix);
+    EXPECT_EQ(last_loaded_hint()->hint()->key(), host_suffix);
+    EXPECT_FALSE(last_loaded_hint()->expiry_time().has_value());
   }
 }
 
@@ -1320,7 +1317,6 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessUpdateData) {
     OptimizationGuideStore::EntryKey hint_entry_key;
     if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
       FAIL() << "Hint entry not found for host suffix: " << host_suffix;
-      continue;
     }
 
     guide_store()->LoadHint(
@@ -1334,10 +1330,10 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessUpdateData) {
     EXPECT_EQ(last_loaded_entry_key(), hint_entry_key);
     if (!last_loaded_hint()) {
       FAIL() << "Loaded hint was null for entry key: " << hint_entry_key;
-      continue;
     }
 
-    EXPECT_EQ(last_loaded_hint()->key(), host_suffix);
+    EXPECT_EQ(last_loaded_hint()->hint()->key(), host_suffix);
+    EXPECT_FALSE(last_loaded_hint()->expiry_time().has_value());
   }
 }
 
@@ -1418,9 +1414,7 @@ TEST_F(OptimizationGuideStoreTest, FindHintEntryKeyForFetchedHints) {
   InitializeStore(schema_state);
 
   std::unique_ptr<StoreUpdateData> update_data =
-      guide_store()->CreateUpdateDataForFetchedHints(
-          update_time, update_time + optimization_guide::features::
-                                         StoredFetchedHintsFreshnessDuration());
+      guide_store()->CreateUpdateDataForFetchedHints(update_time);
   ASSERT_TRUE(update_data);
   SeedFetchedUpdateData(update_data.get(), update_hint_count);
   UpdateFetchedHints(std::move(update_data));
@@ -1463,10 +1457,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   // Add fetched hints to the store that overlap with the same hosts as the
   // initial set.
-  update_data = guide_store()->CreateUpdateDataForFetchedHints(
-      update_time,
-      update_time +
-          optimization_guide::features::StoredFetchedHintsFreshnessDuration());
+  update_data = guide_store()->CreateUpdateDataForFetchedHints(update_time);
 
   proto::Hint hint;
   hint.set_key("domain2.org");
@@ -1522,8 +1513,7 @@ TEST_F(OptimizationGuideStoreTest, ClearFetchedHints) {
 
   // Add fetched hints to the store that overlap with the same hosts as the
   // initial set.
-  update_data = guide_store()->CreateUpdateDataForFetchedHints(
-      update_time, update_time + base::TimeDelta().FromDays(7));
+  update_data = guide_store()->CreateUpdateDataForFetchedHints(update_time);
 
   proto::Hint fetched_hint1;
   fetched_hint1.set_key("domain2.org");
@@ -1584,10 +1574,7 @@ TEST_F(OptimizationGuideStoreTest, ClearFetchedHints) {
   host_suffix = "host.domain2.org";
   EXPECT_TRUE(guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
 
-  update_data = guide_store()->CreateUpdateDataForFetchedHints(
-      update_time,
-      update_time +
-          optimization_guide::features::StoredFetchedHintsFreshnessDuration());
+  update_data = guide_store()->CreateUpdateDataForFetchedHints(update_time);
   proto::Hint new_hint;
   new_hint.set_key("domain1.org");
   new_hint.set_key_representation(proto::HOST_SUFFIX);
@@ -1634,31 +1621,37 @@ TEST_F(OptimizationGuideStoreTest, FetchHintsPurgeExpiredFetchedHints) {
 
   // Add fetched hints to the store that overlap with the same hosts as the
   // initial set.
-  update_data = guide_store()->CreateUpdateDataForFetchedHints(
-      update_time, update_time + base::TimeDelta().FromDays(7));
+  update_data = guide_store()->CreateUpdateDataForFetchedHints(update_time);
 
   proto::Hint fetched_hint1;
   fetched_hint1.set_key("domain2.org");
   fetched_hint1.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint1.mutable_max_cache_duration()->set_seconds(
+      base::TimeDelta::FromDays(7).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
   proto::Hint fetched_hint2;
   fetched_hint2.set_key("domain3.org");
   fetched_hint2.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint1.mutable_max_cache_duration()->set_seconds(
+      base::TimeDelta::FromDays(7).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
 
   UpdateFetchedHints(std::move(update_data));
 
   // Add expired fetched hints to the store.
-  update_data = guide_store()->CreateUpdateDataForFetchedHints(
-      update_time, update_time - base::TimeDelta().FromDays(7));
+  update_data = guide_store()->CreateUpdateDataForFetchedHints(update_time);
 
   proto::Hint fetched_hint3;
   fetched_hint1.set_key("domain4.org");
   fetched_hint1.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint1.mutable_max_cache_duration()->set_seconds(
+      base::TimeDelta::FromDays(-7).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
   proto::Hint fetched_hint4;
   fetched_hint2.set_key("domain5.org");
   fetched_hint2.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint2.mutable_max_cache_duration()->set_seconds(
+      base::TimeDelta::FromDays(-7).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
 
   UpdateFetchedHints(std::move(update_data));
@@ -1699,12 +1692,13 @@ TEST_F(OptimizationGuideStoreTest, FetchedHintsLoadExpiredHint) {
   UpdateComponentHints(std::move(update_data));
 
   // Add fetched hints to the store that expired.
-  update_data = guide_store()->CreateUpdateDataForFetchedHints(
-      update_time, update_time - base::TimeDelta().FromDays(10));
+  update_data = guide_store()->CreateUpdateDataForFetchedHints(update_time);
 
   proto::Hint fetched_hint1;
   fetched_hint1.set_key("domain2.org");
   fetched_hint1.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint1.mutable_max_cache_duration()->set_seconds(
+      base::TimeDelta().FromDays(-10).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
   proto::Hint fetched_hint2;
   fetched_hint2.set_key("domain3.org");
@@ -1734,6 +1728,69 @@ TEST_F(OptimizationGuideStoreTest, FetchedHintsLoadExpiredHint) {
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.HintCacheStore.OnLoadHint.FetchedHintExpired", true,
       1);
+}
+
+TEST_F(OptimizationGuideStoreTest, FetchedHintsLoadPopulatesExpiryTime) {
+  base::HistogramTester histogram_tester;
+  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
+  size_t initial_hint_count = 10;
+  base::Time update_time = base::Time().Now();
+  SeedInitialData(schema_state, initial_hint_count);
+  CreateDatabase();
+  InitializeStore(schema_state);
+
+  base::Version version("2.0.0");
+  std::unique_ptr<StoreUpdateData> update_data =
+      guide_store()->MaybeCreateUpdateDataForComponentHints(
+          base::Version(kUpdateComponentVersion));
+  ASSERT_TRUE(update_data);
+
+  proto::Hint hint1;
+  hint1.set_key("domain1.org");
+  hint1.set_key_representation(proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(hint1));
+  proto::Hint hint2;
+  hint2.set_key("host.domain2.org");
+  hint2.set_key_representation(proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(hint2));
+
+  UpdateComponentHints(std::move(update_data));
+
+  // Add fetched hints to the store that expired.
+  update_data = guide_store()->CreateUpdateDataForFetchedHints(update_time);
+
+  proto::Hint fetched_hint1;
+  fetched_hint1.set_key("domain2.org");
+  fetched_hint1.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint1.mutable_max_cache_duration()->set_seconds(
+      base::TimeDelta().FromDays(10).InSeconds());
+  update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
+  proto::Hint fetched_hint2;
+  fetched_hint2.set_key("domain3.org");
+  fetched_hint2.set_key_representation(proto::HOST_SUFFIX);
+  update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
+
+  UpdateFetchedHints(std::move(update_data));
+
+  // Hint for host.domain2.org should be a fetched hint ("3_" prefix)
+  // as fetched hints take priority.
+  std::string host_suffix = "host.domain2.org";
+  OptimizationGuideStore::EntryKey hint_entry_key;
+  if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+    FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+  }
+  EXPECT_EQ(hint_entry_key, "3_domain2.org");
+  guide_store()->LoadHint(
+      hint_entry_key, base::BindOnce(&OptimizationGuideStoreTest::OnHintLoaded,
+                                     base::Unretained(this)));
+
+  // OnLoadHint callback
+  db()->GetCallback(true);
+
+  // |hint_entry_key| will be a fetched hint but the entry will be empty.
+  EXPECT_EQ(last_loaded_entry_key(), hint_entry_key);
+  EXPECT_TRUE(last_loaded_hint());
+  EXPECT_TRUE(last_loaded_hint()->expiry_time().has_value());
 }
 
 TEST_F(OptimizationGuideStoreTest, FindPredictionModelEntryKey) {
@@ -1806,9 +1863,6 @@ TEST_F(OptimizationGuideStoreTest, LoadPredictionModel) {
   db()->GetCallback(true);
 
   EXPECT_TRUE(last_loaded_prediction_model());
-
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.PredictionModelStore.OnLoadCollided", false, 1);
 }
 
 TEST_F(OptimizationGuideStoreTest, LoadPredictionModelOnUnavailableStore) {
@@ -1830,10 +1884,6 @@ TEST_F(OptimizationGuideStoreTest, LoadPredictionModelOnUnavailableStore) {
   // Verify that the OnPredictionModelLoaded callback runs when the store is
   // unavailable and that the prediction model was correctly set.
   EXPECT_FALSE(last_loaded_prediction_model());
-  // The load failed because of an unavailable store, not because of a
-  // collision.
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.PredictionModelStore.OnLoadCollided", false, 1);
 }
 
 TEST_F(OptimizationGuideStoreTest, LoadPredictionModelWithUpdateInFlight) {
@@ -1861,11 +1911,9 @@ TEST_F(OptimizationGuideStoreTest, LoadPredictionModelWithUpdateInFlight) {
 
   db()->GetCallback(true);
 
-  // Verify that the OnPredictionModelLoaded callback runs when the store is
-  // unavailable and that the prediction model was correctly set.
-  EXPECT_FALSE(last_loaded_prediction_model());
-  histogram_tester.ExpectBucketCount(
-      "OptimizationGuide.PredictionModelStore.OnLoadCollided", true, 1);
+  // Verify that the OnPredictionModelLoaded callback eventually runs with the
+  // prediction model being correctly set.
+  EXPECT_TRUE(last_loaded_prediction_model());
 }
 
 TEST_F(OptimizationGuideStoreTest, HostModelFeaturesMetadataStored) {
@@ -1944,7 +1992,6 @@ TEST_F(OptimizationGuideStoreTest, LoadHostModelFeaturesForHost) {
     if (!last_loaded_host_model_features()) {
       FAIL() << "Loaded host model features was null for entry key: "
              << entry_key;
-      continue;
     }
 
     EXPECT_EQ(last_loaded_host_model_features()->host(), host_suffix);

@@ -25,10 +25,6 @@
 #ifndef _AMDGPU_INTERNAL_H_
 #define _AMDGPU_INTERNAL_H_
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <assert.h>
 #include <pthread.h>
 
@@ -36,6 +32,7 @@
 #include "xf86atomic.h"
 #include "amdgpu.h"
 #include "util_double_list.h"
+#include "handle_table.h"
 
 #define AMDGPU_CS_MAX_RINGS 8
 /* do not use below macro if b is not power of 2 aligned value */
@@ -53,8 +50,6 @@ struct amdgpu_bo_va_hole {
 };
 
 struct amdgpu_bo_va_mgr {
-	/* the start virtual address */
-	uint64_t va_offset;
 	uint64_t va_max;
 	struct list_head va_holes;
 	pthread_mutex_t bo_va_mutex;
@@ -71,6 +66,7 @@ struct amdgpu_va {
 
 struct amdgpu_device {
 	atomic_t refcount;
+	struct amdgpu_device *next;
 	int fd;
 	int flink_fd;
 	unsigned major_version;
@@ -78,17 +74,21 @@ struct amdgpu_device {
 
 	char *marketing_name;
 	/** List of buffer handles. Protected by bo_table_mutex. */
-	struct util_hash_table *bo_handles;
+	struct handle_table bo_handles;
 	/** List of buffer GEM flink names. Protected by bo_table_mutex. */
-	struct util_hash_table *bo_flink_names;
+	struct handle_table bo_flink_names;
 	/** This protects all hash tables. */
 	pthread_mutex_t bo_table_mutex;
 	struct drm_amdgpu_info_device dev_info;
 	struct amdgpu_gpu_info info;
-	/** The global VA manager for the whole virtual address space */
+	/** The VA manager for the lower virtual address space */
 	struct amdgpu_bo_va_mgr vamgr;
 	/** The VA manager for the 32bit address space */
 	struct amdgpu_bo_va_mgr vamgr_32;
+	/** The VA manager for the high virtual address space */
+	struct amdgpu_bo_va_mgr vamgr_high;
+	/** The VA manager for the 32bit high address space */
+	struct amdgpu_bo_va_mgr vamgr_high_32;
 };
 
 struct amdgpu_bo {

@@ -9,13 +9,9 @@
     {
       "name": "LayoutNGBlockFlow DIV id='parent'",
       "position": [-1, -1],
-      "bounds": [102, 102],
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow DIV id='parent'",
-          "rect": [0, 0, 102, 102],
-          "reason": "full layer"
-        }
+      "bounds": [745, 102],
+      "invalidations": [
+        [0, 0, 102, 102]
       ],
       "transform": 1
     }

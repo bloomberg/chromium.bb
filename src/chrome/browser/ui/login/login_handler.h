@@ -25,7 +25,6 @@
 #include "net/base/auth.h"
 
 class GURL;
-class LoginInterstitialDelegate;
 
 namespace content {
 class WebContents;
@@ -37,21 +36,6 @@ class LoginHandler : public content::LoginDelegate,
                      public content::NotificationObserver,
                      public content::WebContentsObserver {
  public:
-  // When committed interstitials are enabled, LoginHandler has pre-commit and
-  // post-commit modes that determines how main-frame cross-origin navigations
-  // are handled. Pre-commit, login challenges on such navigations are
-  // optionally handled by extensions and then cancelled so that an error page
-  // can commit. Post-commit, LoginHandler shows a login prompt on top of the
-  // committed error page.
-  //
-  // TODO(https://crbug.com/1036468): once committed interstitials has fully
-  // launched, we can remove the concept of modes and just have two separate
-  // entrypoints to LoginHandler.
-  enum HandlerMode {
-    PRE_COMMIT,
-    POST_COMMIT,
-  };
-
   // The purpose of this struct is to enforce that BuildViewImpl receives either
   // both the login model and the observed form, or none. That is a bit spoiled
   // by the fact that the model is a pointer to LoginModel, as opposed to a
@@ -67,13 +51,9 @@ class LoginHandler : public content::LoginDelegate,
     const autofill::PasswordForm& form;
   };
 
-  LoginHandler(const net::AuthChallengeInfo& auth_info,
-               content::WebContents* web_contents,
-               LoginAuthRequiredCallback auth_required_callback);
   ~LoginHandler() override;
 
-  // Builds the platform specific LoginHandler. Used from within
-  // CreateLoginPrompt() which creates tasks. The resulting handler calls
+  // Builds the platform specific LoginHandler. The resulting handler calls
   // auth_required_callback when credentials are available. If destroyed before
   // them, the login request is aborted and the callback will not be called. The
   // callback must remain valid until one of those two events occurs.
@@ -82,14 +62,30 @@ class LoginHandler : public content::LoginDelegate,
       content::WebContents* web_contents,
       LoginAuthRequiredCallback auth_required_callback);
 
-  // |mode| is ignored when committed interstitials are disabled. See the
-  // comment on HandlerMode for a description of how it affects LoginHandler's
-  // behavior when committed interstitials are enabled.
-  void Start(const content::GlobalRequestID& request_id,
-             bool is_main_frame,
-             const GURL& request_url,
-             scoped_refptr<net::HttpResponseHeaders> response_headers,
-             HandlerMode mode);
+  // The main entry point for an auth request for a main-frame request. This
+  // method allows extensions to handle the auth request, and otherwise cancels
+  // the request to show a blank error page. ShowLoginPromptAfterCommit() can be
+  // called to show a login prompt atop the blank page once it commits.
+  // |extension_cancellation_callback| will be called if an extension chooses to
+  // cancel the auth request; the callback will be called immediately before the
+  // auth request is actually cancelled.
+  void StartMainFrame(
+      const content::GlobalRequestID& request_id,
+      const GURL& request_url,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
+      base::OnceCallback<void(const content::GlobalRequestID& request_id)>
+          extension_cancellation_callback);
+
+  // The main entry point for an auth request for a subresource (include
+  // subframe main resources). This method allows extensions to handle the auth
+  // request, and may show an auth prompt to the user if extensions do not
+  // handle the request.
+  void StartSubresource(
+      const content::GlobalRequestID& request_id,
+      const GURL& request_url,
+      scoped_refptr<net::HttpResponseHeaders> response_headers);
+
+  void ShowLoginPromptAfterCommit(const GURL& request_url);
 
   // Resend the request with authentication credentials.
   // This function can be called from either thread.
@@ -111,6 +107,10 @@ class LoginHandler : public content::LoginDelegate,
   const net::AuthChallengeInfo& auth_info() const { return auth_info_; }
 
  protected:
+  LoginHandler(const net::AuthChallengeInfo& auth_info,
+               content::WebContents* web_contents,
+               LoginAuthRequiredCallback auth_required_callback);
+
   // Implement this to initialize the underlying platform specific view. If
   // |login_model_data| is not null, the contained LoginModel and PasswordForm
   // should be used to register the view with the password manager.
@@ -123,6 +123,11 @@ class LoginHandler : public content::LoginDelegate,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LoginHandlerTest, DialogStringsAndRealm);
+
+  void StartInternal(const content::GlobalRequestID& request_id,
+                     bool is_main_frame,
+                     const GURL& request_url,
+                     scoped_refptr<net::HttpResponseHeaders> response_headers);
 
   // Notify observers that authentication is needed.
   void NotifyAuthNeeded();
@@ -171,18 +176,18 @@ class LoginHandler : public content::LoginDelegate,
                                base::string16* explanation);
 
   // Continuation from |Start| after any potential interception from the
-  // extensions WebRequest API. If |should_cancel| is |true| the request is
-  // cancelled. Otherwise |credentials| are used if supplied. Finally if the
-  // request is NOT cancelled AND |credentials| is empty, then we'll take the
-  // necessary steps to show a login prompt, depending on |mode| and whether
-  // committed interstitials are enabled (see comment on
-  // LoginHandler::HandlerMode).
-  void MaybeSetUpLoginPrompt(
+  // extensions WebRequest API. If |cancelled_by_extension| is |true| the
+  // request is cancelled. Otherwise |credentials| are used if supplied. Finally
+  // if the request is NOT cancelled AND |credentials| is empty, then we'll take
+  // the necessary steps to show a login prompt. This may entail cancelling the
+  // navigation if it is a main-frame request (and a login prompt will be shown
+  // after commit), or showing the prompt directly otherwise.
+  void MaybeSetUpLoginPromptBeforeCommit(
       const GURL& request_url,
+      const content::GlobalRequestID& request_id,
       bool is_main_frame,
-      HandlerMode mode,
       const base::Optional<net::AuthCredentials>& credentials,
-      bool should_cancel);
+      bool cancelled_by_extension);
 
   void ShowLoginPrompt(const GURL& request_url);
 
@@ -203,7 +208,10 @@ class LoginHandler : public content::LoginDelegate,
 
   LoginAuthRequiredCallback auth_required_callback_;
 
-  base::WeakPtr<LoginInterstitialDelegate> interstitial_delegate_;
+  // This callback is called if an extension cancels an auth request for a main
+  // frame main resource.
+  base::OnceCallback<void(const content::GlobalRequestID& request_id)>
+      extension_main_frame_cancellation_callback_;
 
   // True if the extensions logic has run and the prompt logic has started.
   bool prompt_started_;
@@ -249,18 +257,5 @@ class AuthSuppliedLoginNotificationDetails : public LoginNotificationDetails {
 
   DISALLOW_COPY_AND_ASSIGN(AuthSuppliedLoginNotificationDetails);
 };
-
-// Prompts the user for their username and password. The caller may cancel the
-// request by destroying the returned LoginDelegate. It must do this before
-// invalidating the callback.
-std::unique_ptr<content::LoginDelegate> CreateLoginPrompt(
-    const net::AuthChallengeInfo& auth_info,
-    content::WebContents* web_contents,
-    const content::GlobalRequestID& request_id,
-    bool is_main_frame,
-    const GURL& url,
-    scoped_refptr<net::HttpResponseHeaders> response_headers,
-    LoginHandler::HandlerMode mode,
-    LoginAuthRequiredCallback auth_required_callback);
 
 #endif  // CHROME_BROWSER_UI_LOGIN_LOGIN_HANDLER_H_

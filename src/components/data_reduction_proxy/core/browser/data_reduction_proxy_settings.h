@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -18,7 +19,6 @@
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -34,7 +34,6 @@ class Clock;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyConfig;
 class DataReductionProxyService;
 class DataReductionProxyCompressionStats;
 
@@ -66,6 +65,10 @@ class DataReductionProxySettingsObserver {
   virtual void OnProxyRequestHeadersChanged(
       const net::HttpRequestHeaders& headers) {}
 
+  // Notifies when the prefetch proxy hosts have changed.
+  virtual void OnPrefetchProxyHostsChanged(
+      const std::vector<GURL>& prefetch_proxies) {}
+
   // Notifies when |DataReductionProxySettings::InitDataReductionProxySettings|
   // is finished.
   virtual void OnSettingsInitialized() {}
@@ -80,7 +83,7 @@ class DataReductionProxySettingsObserver {
 class DataReductionProxySettings {
  public:
   using SyntheticFieldTrialRegistrationCallback =
-      base::Callback<bool(base::StringPiece, base::StringPiece)>;
+      base::RepeatingCallback<bool(base::StringPiece, base::StringPiece)>;
 
   explicit DataReductionProxySettings(bool is_off_the_record_profile);
   virtual ~DataReductionProxySettings();
@@ -167,8 +170,14 @@ class DataReductionProxySettings {
   // Sets the headers to use for requests to the compression server.
   void SetProxyRequestHeaders(const net::HttpRequestHeaders& headers);
 
+  // Sets the list of prefetch_proxies to use.
+  void UpdatePrefetchProxyHosts(const std::vector<GURL>& prefetch_proxies);
+
   // Returns headers to use for requests to the compression server.
   const net::HttpRequestHeaders& GetProxyRequestHeaders() const;
+
+  // Returns the list of hosts for the prefetch proxy.
+  const std::vector<GURL>& GetPrefetchProxies() const;
 
   // Adds an observer that is notified every time the proxy request headers
   // change.
@@ -190,17 +199,7 @@ class DataReductionProxySettings {
     return data_reduction_proxy_service_.get();
   }
 
-  // Returns the |DataReductionProxyConfig| being used. May be null if
-  // InitDataReductionProxySettings has not been called.
-  DataReductionProxyConfig* Config() const {
-    return config_;
-  }
-
-  // Permits changing the underlying |DataReductionProxyConfig| without running
-  // the initialization loop.
-  void ResetConfigForTest(DataReductionProxyConfig* config) {
-    config_ = config;
-  }
+  bool is_initialized() const { return !!prefs_; }
 
  protected:
   void InitPrefMembers();
@@ -216,10 +215,6 @@ class DataReductionProxySettings {
   // enabled or disabled at startup.
   virtual void RecordStartupState(
       data_reduction_proxy::ProxyStartupState state) const;
-
-  // Checks whether |proxy_server| is a valid configured proxy.
-  bool IsConfiguredDataReductionProxy(
-      const net::ProxyServer& proxy_server) const;
 
  private:
   friend class DataReductionProxySettingsTestBase;
@@ -285,9 +280,6 @@ class DataReductionProxySettings {
 
   PrefChangeRegistrar registrar_;
 
-  // The caller must ensure that the |config_| outlives this instance.
-  DataReductionProxyConfig* config_;
-
   SyntheticFieldTrialRegistrationCallback register_synthetic_field_trial_;
 
   // Should not be null.
@@ -299,6 +291,9 @@ class DataReductionProxySettings {
 
   // The headers to use for requests to the proxy server.
   net::HttpRequestHeaders proxy_request_headers_;
+
+  // The list of prefetch proxy hosts to use.
+  std::vector<GURL> prefetch_proxies_;
 
   // A list of CustomProxyConfigClients that may have been added before
   // the DataReductionProxyService was available.

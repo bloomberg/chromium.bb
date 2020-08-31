@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/version.h"
-#include "printing/printer_query_result_chromeos.h"
+#include "printing/printer_query_result.h"
 #include "printing/printing_export.h"
 
 // This file contains a collection of functions used to query IPP printers or
@@ -22,6 +22,8 @@
 // operations block on the network request and cannot be run on the UI thread.
 
 namespace printing {
+
+struct PrinterStatus;
 
 // Represents a print job sent to the queue.
 struct PRINTING_EXPORT CupsJob {
@@ -56,66 +58,6 @@ struct PRINTING_EXPORT CupsJob {
   int processing_started = 0;
 };
 
-// Represents the status of a printer containing the properties printer-state,
-// printer-state-reasons, and printer-state-message.
-struct PRINTING_EXPORT PrinterStatus {
-  struct PrinterReason {
-    // Standardized reasons from RFC2911.
-    enum Reason {
-      UNKNOWN_REASON,
-      NONE,
-      MEDIA_NEEDED,
-      MEDIA_JAM,
-      MOVING_TO_PAUSED,
-      PAUSED,
-      SHUTDOWN,
-      CONNECTING_TO_DEVICE,
-      TIMED_OUT,
-      STOPPING,
-      STOPPED_PARTLY,
-      TONER_LOW,
-      TONER_EMPTY,
-      SPOOL_AREA_FULL,
-      COVER_OPEN,
-      INTERLOCK_OPEN,
-      DOOR_OPEN,
-      INPUT_TRAY_MISSING,
-      MEDIA_LOW,
-      MEDIA_EMPTY,
-      OUTPUT_TRAY_MISSING,
-      OUTPUT_AREA_ALMOST_FULL,
-      OUTPUT_AREA_FULL,
-      MARKER_SUPPLY_LOW,
-      MARKER_SUPPLY_EMPTY,
-      MARKER_WASTE_ALMOST_FULL,
-      MARKER_WASTE_FULL,
-      FUSER_OVER_TEMP,
-      FUSER_UNDER_TEMP,
-      OPC_NEAR_EOL,
-      OPC_LIFE_OVER,
-      DEVELOPER_LOW,
-      DEVELOPER_EMPTY,
-      INTERPRETER_RESOURCE_UNAVAILABLE
-    };
-
-    // Severity of the state-reason.
-    enum Severity { UNKNOWN_SEVERITY, REPORT, WARNING, ERROR };
-
-    Reason reason;
-    Severity severity;
-  };
-
-  PrinterStatus();
-  PrinterStatus(const PrinterStatus& other);
-  ~PrinterStatus();
-
-  // printer-state
-  ipp_pstate_t state;
-  // printer-state-reasons
-  std::vector<PrinterReason> reasons;
-  // printer-state-message
-  std::string message;
-};
 
 struct PRINTING_EXPORT PrinterInfo {
   PrinterInfo();
@@ -136,10 +78,6 @@ struct PRINTING_EXPORT PrinterInfo {
 
   // Does ipp-features-supported contain 'ipp-everywhere'.
   bool ipp_everywhere = false;
-
-  // Does the printer have at least one resolution defined in the
-  // pwg-raster-document-resolution-supported IPP attribute.
-  bool supports_pwg_raster_resolution = false;
 };
 
 // Specifies classes of jobs.
@@ -164,11 +102,13 @@ void ParsePrinterStatus(ipp_t* response, PrinterStatus* printer_status);
 // Queries the printer at |address| on |port| with a Get-Printer-Attributes
 // request to populate |printer_info|. If |encrypted| is true, request is made
 // using ipps, otherwise, ipp is used. Returns false if the request failed.
-PrinterQueryResult PRINTING_EXPORT GetPrinterInfo(const std::string& address,
-                                                  const int port,
-                                                  const std::string& resource,
-                                                  bool encrypted,
-                                                  PrinterInfo* printer_info);
+PrinterQueryResult PRINTING_EXPORT
+GetPrinterInfo(const std::string& address,
+               int port,
+               const std::string& resource,
+               bool encrypted,
+               PrinterInfo* printer_info,
+               PrinterStatus* printer_status);
 
 // Attempts to retrieve printer status using connection |http| for |printer_id|.
 // Returns true if succcssful and updates the fields in |printer_status| as

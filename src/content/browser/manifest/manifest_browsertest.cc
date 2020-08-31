@@ -14,6 +14,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -25,6 +26,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 
 namespace content {
@@ -128,7 +130,8 @@ class ManifestBrowserTest : public ContentBrowserTest,
   }
 
   // WebContentsObserver:
-  void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) override {
+  void DidUpdateFaviconURL(
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override {
     manifests_reported_when_favicon_url_updated_.push_back(
         reported_manifest_urls_.size());
   }
@@ -192,17 +195,18 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, NoManifest) {
 // If a page manifest points to a 404 URL, requesting the manifest should return
 // the empty manifest. However, the manifest URL will be non-empty.
 IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, 404Manifest) {
-  GURL test_url = GetTestUrl("manifest", "404-manifest.html");
+  GURL test_url = embedded_test_server()->GetURL("/manifest/404-manifest.html");
 
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
   EXPECT_FALSE(manifest_url().is_empty());
-  EXPECT_EQ(0, GetConsoleErrorCount());
+  // 1 error for syntax errors in manifest/thereisnomanifestthere.json.
+  EXPECT_EQ(1, GetConsoleErrorCount());
   ASSERT_EQ(1u, reported_manifest_urls().size());
   EXPECT_EQ(manifest_url(), reported_manifest_urls()[0]);
-  EXPECT_EQ(0u, manifests_reported_when_favicon_url_updated().size());
+  EXPECT_EQ(1u, manifests_reported_when_favicon_url_updated().size());
 }
 
 // If a page has an empty manifest, requesting the manifest should return the
@@ -316,6 +320,22 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DynamicManifest) {
   }
 
   EXPECT_EQ(0, GetConsoleErrorCount());
+}
+
+// This page has a manifest with only file handlers specified. Asking
+// for just the manifest should succeed with a non empty manifest.
+IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, FileHandlerManifest) {
+  GURL test_url =
+      embedded_test_server()->GetURL("/manifest/file-handler-manifest.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+
+  GetManifestAndWait();
+  EXPECT_FALSE(manifest().IsEmpty());
+  EXPECT_FALSE(manifest_url().is_empty());
+  EXPECT_FALSE(manifest().file_handlers.empty());
+  EXPECT_EQ(0, GetConsoleErrorCount());
+  ASSERT_EQ(1u, reported_manifest_urls().size());
+  EXPECT_EQ(manifest_url(), reported_manifest_urls()[0]);
 }
 
 // If a page's manifest lives in a different origin, it should follow the CORS

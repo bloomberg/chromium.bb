@@ -35,8 +35,8 @@ CPWL_CBListBox::CPWL_CBListBox(
 
 CPWL_CBListBox::~CPWL_CBListBox() = default;
 
-bool CPWL_CBListBox::OnLButtonUp(const CFX_PointF& point, uint32_t nFlag) {
-  CPWL_Wnd::OnLButtonUp(point, nFlag);
+bool CPWL_CBListBox::OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) {
+  CPWL_Wnd::OnLButtonUp(nFlag, point);
 
   if (!m_bMouseDown)
     return true;
@@ -133,10 +133,10 @@ void CPWL_CBButton::DrawThisAppearance(CFX_RenderDevice* pDevice,
       IsFloatBigger(rectWnd.top - rectWnd.bottom,
                     kComboBoxTriangleHalfLength)) {
     CFX_PathData path;
-    path.AppendPoint(pt1, FXPT_TYPE::MoveTo, false);
-    path.AppendPoint(pt2, FXPT_TYPE::LineTo, false);
-    path.AppendPoint(pt3, FXPT_TYPE::LineTo, false);
-    path.AppendPoint(pt1, FXPT_TYPE::LineTo, false);
+    path.AppendPoint(pt1, FXPT_TYPE::MoveTo);
+    path.AppendPoint(pt2, FXPT_TYPE::LineTo);
+    path.AppendPoint(pt3, FXPT_TYPE::LineTo);
+    path.AppendPoint(pt1, FXPT_TYPE::LineTo);
 
     pDevice->DrawPath(&path, &mtUser2Device, nullptr,
                       PWL_DEFAULT_BLACKCOLOR.ToFXColor(GetTransparency()), 0,
@@ -144,8 +144,8 @@ void CPWL_CBButton::DrawThisAppearance(CFX_RenderDevice* pDevice,
   }
 }
 
-bool CPWL_CBButton::OnLButtonDown(const CFX_PointF& point, uint32_t nFlag) {
-  CPWL_Wnd::OnLButtonDown(point, nFlag);
+bool CPWL_CBButton::OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) {
+  CPWL_Wnd::OnLButtonDown(nFlag, point);
 
   SetCapture();
   if (CPWL_Wnd* pParent = GetParentWindow())
@@ -154,8 +154,8 @@ bool CPWL_CBButton::OnLButtonDown(const CFX_PointF& point, uint32_t nFlag) {
   return true;
 }
 
-bool CPWL_CBButton::OnLButtonUp(const CFX_PointF& point, uint32_t nFlag) {
-  CPWL_Wnd::OnLButtonUp(point, nFlag);
+bool CPWL_CBButton::OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) {
+  CPWL_Wnd::OnLButtonUp(nFlag, point);
 
   ReleaseCapture();
   return true;
@@ -253,13 +253,10 @@ void CPWL_ComboBox::SetEditSelection(int32_t nStartChar, int32_t nEndChar) {
     m_pEdit->SetSelection(nStartChar, nEndChar);
 }
 
-void CPWL_ComboBox::GetEditSelection(int32_t& nStartChar,
-                                     int32_t& nEndChar) const {
-  nStartChar = -1;
-  nEndChar = -1;
-
-  if (m_pEdit)
-    m_pEdit->GetSelection(nStartChar, nEndChar);
+std::pair<int32_t, int32_t> CPWL_ComboBox::GetEditSelection() const {
+  if (!m_pEdit)
+    return std::make_pair(-1, -1);
+  return m_pEdit->GetSelection();
 }
 
 void CPWL_ComboBox::ClearSelection() {

@@ -56,6 +56,11 @@ class DISPLAY_EXPORT DisplayManagerTestApi {
   // Sets the touch support for |display_id|.
   void SetTouchSupport(int64_t display_id, Display::TouchSupport touch_support);
 
+  // Returns a Display object for a secondary display. If multiple displays
+  // exist, returns a Display object that is next to the current primary
+  // display in active_display_list_
+  const Display& GetSecondaryDisplay() const;
+
  private:
   friend class ScopedSetInternalDisplayId;
   // Sets the display id for internal display and
@@ -96,7 +101,9 @@ DISPLAY_EXPORT std::unique_ptr<DisplayLayout> CreateDisplayLayout(
 
 // Creates the DisplayIdList from ints.
 DISPLAY_EXPORT DisplayIdList CreateDisplayIdList2(int64_t id1, int64_t id2);
-DISPLAY_EXPORT DisplayIdList CreateDisplayIdListN(size_t count, ...);
+
+// Create the N number of DisplayIdList starting from |start_id},
+DISPLAY_EXPORT DisplayIdList CreateDisplayIdListN(int64_t start_id, size_t N);
 
 }  // namespace test
 }  // namespace display

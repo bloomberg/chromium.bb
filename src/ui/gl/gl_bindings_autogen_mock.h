@@ -446,6 +446,8 @@ static void GL_BINDING_CALL
 Mock_glDeleteFramebuffers(GLsizei n, const GLuint* framebuffers);
 static void GL_BINDING_CALL
 Mock_glDeleteFramebuffersEXT(GLsizei n, const GLuint* framebuffers);
+static void GL_BINDING_CALL
+Mock_glDeleteMemoryObjectsEXT(GLsizei n, const GLuint* memoryObjects);
 static void GL_BINDING_CALL Mock_glDeletePathsCHROMIUM(GLuint path,
                                                        GLsizei range);
 static void GL_BINDING_CALL Mock_glDeletePathsNV(GLuint path, GLsizei range);
@@ -1277,9 +1279,26 @@ static void GL_BINDING_CALL Mock_glImportMemoryFdEXT(GLuint memory,
                                                      GLuint64 size,
                                                      GLenum handleType,
                                                      GLint fd);
+static void GL_BINDING_CALL Mock_glImportMemoryWin32HandleEXT(GLuint memory,
+                                                              GLuint64 size,
+                                                              GLenum handleType,
+                                                              void* handle);
+static void GL_BINDING_CALL
+Mock_glImportMemoryZirconHandleANGLE(GLuint memory,
+                                     GLuint64 size,
+                                     GLenum handleType,
+                                     GLuint handle);
 static void GL_BINDING_CALL Mock_glImportSemaphoreFdEXT(GLuint semaphore,
                                                         GLenum handleType,
                                                         GLint fd);
+static void GL_BINDING_CALL
+Mock_glImportSemaphoreWin32HandleEXT(GLuint semaphore,
+                                     GLenum handleType,
+                                     void* handle);
+static void GL_BINDING_CALL
+Mock_glImportSemaphoreZirconHandleANGLE(GLuint semaphore,
+                                        GLenum handleType,
+                                        GLuint handle);
 static void GL_BINDING_CALL Mock_glInsertEventMarkerEXT(GLsizei length,
                                                         const char* marker);
 static void GL_BINDING_CALL
@@ -1342,6 +1361,10 @@ static void GL_BINDING_CALL Mock_glMaxShaderCompilerThreadsKHR(GLuint count);
 static void GL_BINDING_CALL Mock_glMemoryBarrier(GLbitfield barriers);
 static void GL_BINDING_CALL Mock_glMemoryBarrierByRegion(GLbitfield barriers);
 static void GL_BINDING_CALL Mock_glMemoryBarrierEXT(GLbitfield barriers);
+static void GL_BINDING_CALL
+Mock_glMemoryObjectParameterivEXT(GLuint memoryObject,
+                                  GLenum pname,
+                                  const GLint* param);
 static void GL_BINDING_CALL Mock_glMinSampleShading(GLfloat value);
 static void GL_BINDING_CALL Mock_glMultiDrawArraysANGLE(GLenum mode,
                                                         const GLint* firsts,

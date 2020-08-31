@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/hash/hash.h"
+#include "base/strings/string_util.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media_session {
@@ -25,6 +26,9 @@ const double kXIconTypeScore = 0.4;
 const double kGIFTypeScore = 0.3;
 
 double GetImageAspectRatioScore(const gfx::Size& size) {
+  if (size.width() == 0 || size.height() == 0)
+    return 0;
+
   double long_edge = std::max(size.width(), size.height());
   double short_edge = std::min(size.width(), size.height());
   return short_edge / long_edge;

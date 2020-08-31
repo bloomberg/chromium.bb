@@ -63,6 +63,11 @@ class BisectionTestBase(test.TestCase):
     The test base class sets up special meanings for these pseudo-hashes and all
     infrastructure related to expanding that range.
     """
+    # TODO(dberris): Remove the reliance on free-form arguments dict processing.
+    sample_args = {
+        'browser': 'some_browser',
+        'configuration': 'some_bot',
+    }
     task_module.PopulateTaskGraph(
         job,
         performance_bisection.CreateGraph(
@@ -82,6 +87,7 @@ class BisectionTestBase(test.TestCase):
                         grouping_label='some_grouping_label',
                         story='some_story',
                         statistic='avg',
+                        histogram_name='some_chart',
                     ),
                     graph_json_options=read_value.GraphJsonOptions(
                         chart='some_chart',
@@ -96,7 +102,7 @@ class BisectionTestBase(test.TestCase):
                 start_change=self.start_change,
                 end_change=self.end_change,
                 pinned_change=None,
-            )))
+            ), sample_args))
 
   def BisectionEvaluatorForTesting(self, *seeded_evaluators):
     """Creates an evaluator for bisection with the provided evaluators.
@@ -106,8 +112,7 @@ class BisectionTestBase(test.TestCase):
     """
     return evaluators.SequenceEvaluator([
         evaluators.FilteringEvaluator(
-            predicate=evaluators.All(
-                evaluators.TaskStatusIn({'pending'})),
+            predicate=evaluators.All(evaluators.TaskStatusIn({'pending'})),
             delegate=evaluators.SequenceEvaluator(
                 list(seeded_evaluators) +
                 [evaluators.TaskPayloadLiftingEvaluator()])),

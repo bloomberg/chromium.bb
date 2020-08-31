@@ -54,9 +54,6 @@ template("repack") {
     script = "//tools/grit/pak_util.py"
 
     inputs = invoker.sources
-    foreach(_invoker_source, invoker.sources) {
-      inputs += [ "${_invoker_source}.info" ]
-    }
     outputs = [
       invoker.output,
       "${invoker.output}.info",
@@ -84,20 +81,12 @@ template("repack") {
                                "visibility",
                              ])
 
-      public_deps = [
-        ":$_repack_target_name",
-      ]
-      sources = [
-        invoker.output,
-      ]
+      public_deps = [ ":$_repack_target_name" ]
+      sources = [ invoker.output ]
       if (defined(invoker.bundle_output)) {
-        outputs = [
-          invoker.bundle_output,
-        ]
+        outputs = [ invoker.bundle_output ]
       } else {
-        outputs = [
-          "{{bundle_resources_dir}}/{{source_file_part}}",
-        ]
+        outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
       }
     }
   }
@@ -194,5 +183,8 @@ template("repack_locales") {
                              "testonly",
                            ])
     public_deps = _locale_targets
+    if (!defined(invoker.copy_data_to_bundle) || !invoker.copy_data_to_bundle) {
+      data_deps = public_deps
+    }
   }
 }

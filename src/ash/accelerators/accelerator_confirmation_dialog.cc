@@ -26,12 +26,12 @@ AcceleratorConfirmationDialog::AcceleratorConfirmationDialog(
     int window_title_text_id,
     int dialog_text_id,
     base::OnceClosure on_accept_callback,
-    base::OnceClosure on_cancel_callback)
-    : window_title_(l10n_util::GetStringUTF16(window_title_text_id)),
-      on_accept_callback_(std::move(on_accept_callback)),
-      on_cancel_callback_(std::move(on_cancel_callback)) {
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_ASH_CONTINUE_BUTTON));
+    base::OnceClosure on_cancel_callback) {
+  SetTitle(l10n_util::GetStringUTF16(window_title_text_id));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_ASH_CONTINUE_BUTTON));
+  SetAcceptCallback(std::move(on_accept_callback));
+  SetCancelCallback(std::move(on_cancel_callback));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(
@@ -53,28 +53,14 @@ AcceleratorConfirmationDialog::AcceleratorConfirmationDialog(
 
   views::Widget* widget = CreateDialogWidget(
       this, nullptr,
-      Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(), container_id));
+      Shell::GetContainer(Shell::GetPrimaryRootWindow(), container_id));
   widget->Show();
 }
 
 AcceleratorConfirmationDialog::~AcceleratorConfirmationDialog() = default;
 
-bool AcceleratorConfirmationDialog::Accept() {
-  std::move(on_accept_callback_).Run();
-  return true;
-}
-
-bool AcceleratorConfirmationDialog::Cancel() {
-  std::move(on_cancel_callback_).Run();
-  return true;
-}
-
 ui::ModalType AcceleratorConfirmationDialog::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
-}
-
-base::string16 AcceleratorConfirmationDialog::GetWindowTitle() const {
-  return window_title_;
 }
 
 base::WeakPtr<AcceleratorConfirmationDialog>

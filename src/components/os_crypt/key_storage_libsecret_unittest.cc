@@ -6,20 +6,12 @@
 #include <unordered_map>
 
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "components/os_crypt/key_storage_libsecret.h"
 #include "components/os_crypt/libsecret_util_linux.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-const SecretSchema kKeystoreSchemaV1 = {
-    "chrome_libsecret_os_crypt_password",
-    SECRET_SCHEMA_NONE,
-    {
-        {nullptr, SECRET_SCHEMA_ATTRIBUTE_STRING},
-    }};
 
 const SecretSchema kKeystoreSchemaV2 = {
     "chrome_libsecret_os_crypt_password_v2",
@@ -41,8 +33,7 @@ class MockPasswordStore {
  public:
   void Reset() {
     mapping_.clear();
-    ClearV1Password();
-    ClearV2Password();
+    ClearPassword();
     for (GObject* o : objects_returned_to_caller_) {
       ASSERT_EQ(o->ref_count, 1u);
       g_object_unref(o);
@@ -50,31 +41,18 @@ class MockPasswordStore {
     objects_returned_to_caller_.clear();
   }
 
-  void ClearV1Password() {
-    if (v1_password_) {
-      ASSERT_EQ(v1_password_->ref_count, 1u);
-      g_object_unref(v1_password_);
-      v1_password_ = nullptr;
-    }
-  }
-  void ClearV2Password() {
-    if (v2_password_) {
-      ASSERT_EQ(v2_password_->ref_count, 1u);
-      g_object_unref(v2_password_);
-      v2_password_ = nullptr;
+  void ClearPassword() {
+    if (password_) {
+      ASSERT_EQ(password_->ref_count, 1u);
+      g_object_unref(password_);
+      password_ = nullptr;
     }
   }
 
-  void SetV1Password(const std::string& password) {
-    ASSERT_FALSE(v1_password_);
-    v1_password_ = static_cast<GObject*>(g_object_new(G_TYPE_OBJECT, nullptr));
-    mapping_[v1_password_] = password;
-  }
-
-  void SetV2Password(const std::string& password) {
-    ASSERT_FALSE(v2_password_);
-    v2_password_ = static_cast<GObject*>(g_object_new(G_TYPE_OBJECT, nullptr));
-    mapping_[v2_password_] = password;
+  void SetPassword(const std::string& password) {
+    ASSERT_FALSE(password_);
+    password_ = static_cast<GObject*>(g_object_new(G_TYPE_OBJECT, nullptr));
+    mapping_[password_] = password;
   }
 
   GObject* MakeTempObject(const std::string& value) {
@@ -92,13 +70,11 @@ class MockPasswordStore {
     return mapping_[static_cast<GObject*>(opaque_id)].c_str();
   }
 
-  GObject* v1_password() { return v1_password_; }
-  GObject* v2_password() { return v2_password_; }
+  GObject* password() { return password_; }
 
   std::unordered_map<GObject*, std::string> mapping_;
   std::vector<GObject*> objects_returned_to_caller_;
-  GObject* v1_password_ = nullptr;
-  GObject* v2_password_ = nullptr;
+  GObject* password_ = nullptr;
 };
 base::LazyInstance<MockPasswordStore>::Leaky g_password_store =
     LAZY_INSTANCE_INITIALIZER;
@@ -137,12 +113,11 @@ class MockLibsecretLoader : public LibsecretLoader {
                                                 GCancellable* cancellable,
                                                 GError** error);
 
-  static gboolean mock_secret_password_clear_sync(const SecretSchema* schema,
-                                                  GCancellable* cancellable,
-                                                  GError** error,
-                                                  ...);
-
   static SecretValue* mock_secret_item_get_secret(SecretItem* item);
+
+  static guint64 mock_secret_item_get_created(SecretItem* item);
+
+  static guint64 mock_secret_item_get_modified(SecretItem* item);
 };
 
 const gchar* MockLibsecretLoader::mock_secret_value_get_text(
@@ -164,7 +139,7 @@ gboolean MockLibsecretLoader::mock_secret_password_store_sync(
     return true;
 
   EXPECT_STREQ(kKeystoreSchemaV2.name, schema->name);
-  g_password_store.Pointer()->SetV2Password(password);
+  g_password_store.Pointer()->SetPassword(password);
   return true;
 }
 
@@ -181,24 +156,16 @@ GList* MockLibsecretLoader::mock_secret_service_search_sync(
     SecretSearchFlags flags,
     GCancellable* cancellable,
     GError** error) {
-  bool is_known_schema = strcmp(schema->name, kKeystoreSchemaV2.name) == 0 ||
-                         strcmp(schema->name, kKeystoreSchemaV1.name) == 0;
-  EXPECT_TRUE(is_known_schema);
+  EXPECT_STREQ(kKeystoreSchemaV2.name, schema->name);
 
   EXPECT_TRUE(flags & SECRET_SEARCH_UNLOCK);
   EXPECT_TRUE(flags & SECRET_SEARCH_LOAD_SECRETS);
 
   GObject* item = nullptr;
   MockPasswordStore* store = g_password_store.Pointer();
-  if (strcmp(schema->name, kKeystoreSchemaV2.name) == 0) {
-    GObject* password = store->v2_password();
-    if (password)
-      item = store->MakeTempObject(store->GetString(password));
-  } else if (strcmp(schema->name, kKeystoreSchemaV1.name) == 0) {
-    GObject* password = store->v1_password();
-    if (password)
-      item = store->MakeTempObject(store->GetString(password));
-  }
+  GObject* password = store->password();
+  if (password)
+    item = store->MakeTempObject(store->GetString(password));
 
   if (!item) {
     return nullptr;
@@ -211,23 +178,21 @@ GList* MockLibsecretLoader::mock_secret_service_search_sync(
 }
 
 // static
-gboolean MockLibsecretLoader::mock_secret_password_clear_sync(
-    const SecretSchema* schema,
-    GCancellable* cancellable,
-    GError** error,
-    ...) {
-  // We would only delete entries in the deprecated schema.
-  EXPECT_STREQ(kKeystoreSchemaV1.name, schema->name);
-  g_password_store.Pointer()->ClearV1Password();
-  return true;
-}
-
-// static
 SecretValue* MockLibsecretLoader::mock_secret_item_get_secret(
     SecretItem* item) {
   // Add a ref to make sure that the caller unrefs with secret_value_unref.
   g_object_ref(item);
   return reinterpret_cast<SecretValue*>(item);
+}
+
+// static
+guint64 MockLibsecretLoader::mock_secret_item_get_created(SecretItem* item) {
+  return 0;
+}
+
+// static
+guint64 MockLibsecretLoader::mock_secret_item_get_modified(SecretItem* item) {
+  return 0;
 }
 
 // static
@@ -240,9 +205,9 @@ bool MockLibsecretLoader::ResetForOSCrypt() {
   secret_service_search_sync =
       &MockLibsecretLoader::mock_secret_service_search_sync;
   secret_item_get_secret = &MockLibsecretLoader::mock_secret_item_get_secret;
-  // Used by Migrate()
-  secret_password_clear_sync =
-      &MockLibsecretLoader::mock_secret_password_clear_sync;
+  secret_item_get_created = &MockLibsecretLoader::mock_secret_item_get_created;
+  secret_item_get_modified =
+      &MockLibsecretLoader::mock_secret_item_get_modified;
 
   g_password_store.Pointer()->Reset();
   libsecret_loaded_ = true;
@@ -273,29 +238,24 @@ class LibsecretTest : public testing::Test {
 TEST_F(LibsecretTest, LibsecretRepeats) {
   KeyStorageLibsecret libsecret;
   MockLibsecretLoader::ResetForOSCrypt();
-  g_password_store.Pointer()->SetV2Password("initial password");
-  std::string password = libsecret.GetKey();
-  EXPECT_FALSE(password.empty());
-  std::string password_repeat = libsecret.GetKey();
-  EXPECT_EQ(password, password_repeat);
+  g_password_store.Pointer()->SetPassword("initial password");
+  base::Optional<std::string> password = libsecret.GetKey();
+  EXPECT_TRUE(password.has_value());
+  EXPECT_FALSE(password.value().empty());
+  base::Optional<std::string> password_repeat = libsecret.GetKey();
+  EXPECT_TRUE(password_repeat.has_value());
+  EXPECT_EQ(password.value(), password_repeat.value());
 }
 
 TEST_F(LibsecretTest, LibsecretCreatesRandomised) {
   KeyStorageLibsecret libsecret;
   MockLibsecretLoader::ResetForOSCrypt();
-  std::string password = libsecret.GetKey();
+  base::Optional<std::string> password = libsecret.GetKey();
   MockLibsecretLoader::ResetForOSCrypt();
-  std::string password_new = libsecret.GetKey();
-  EXPECT_NE(password, password_new);
-}
-
-TEST_F(LibsecretTest, LibsecretMigratesFromSchemaV1ToV2) {
-  KeyStorageLibsecret libsecret;
-  MockLibsecretLoader::ResetForOSCrypt();
-  g_password_store.Pointer()->SetV1Password("swallow");
-  g_password_store.Pointer()->ClearV2Password();
-  std::string password = libsecret.GetKey();
-  EXPECT_EQ("swallow", password);
+  base::Optional<std::string> password_new = libsecret.GetKey();
+  EXPECT_TRUE(password.has_value());
+  EXPECT_TRUE(password_new.has_value());
+  EXPECT_NE(password.value(), password_new.value());
 }
 
 }  // namespace

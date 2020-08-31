@@ -4,8 +4,10 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -51,9 +53,7 @@ class TestModuleScriptLoaderClient final
   TestModuleScriptLoaderClient() = default;
   ~TestModuleScriptLoaderClient() override = default;
 
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(module_script_);
-  }
+  void Trace(Visitor* visitor) override { visitor->Trace(module_script_); }
 
   void NotifyNewSingleModuleFinished(ModuleScript* module_script) override {
     was_notify_finished_ = true;
@@ -95,34 +95,34 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
   }
 
   ModuleScriptFetcher* CreateModuleScriptFetcher(
-      ModuleScriptCustomFetchType custom_fetch_type) override {
+      ModuleScriptCustomFetchType custom_fetch_type,
+      util::PassKey<ModuleScriptLoader> pass_key) override {
     auto* execution_context = ExecutionContext::From(script_state_);
     if (auto* scope = DynamicTo<WorkletGlobalScope>(execution_context)) {
       EXPECT_EQ(ModuleScriptCustomFetchType::kWorkletAddModule,
                 custom_fetch_type);
       return MakeGarbageCollected<WorkletModuleScriptFetcher>(
-          scope->GetModuleResponsesMap());
+          scope->GetModuleResponsesMap(), pass_key);
     }
     EXPECT_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
-    return MakeGarbageCollected<DocumentModuleScriptFetcher>();
+    return MakeGarbageCollected<DocumentModuleScriptFetcher>(pass_key);
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<ScriptState> script_state_;
   Vector<ModuleRequest> requests_;
 };
 
-void ModuleScriptLoaderTestModulator::Trace(blink::Visitor* visitor) {
+void ModuleScriptLoaderTestModulator::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   DummyModulator::Trace(visitor);
 }
 
 }  // namespace
 
-class ModuleScriptLoaderTest : public PageTestBase,
-                               private ScopedJSONModulesForTest {
+class ModuleScriptLoaderTest : public PageTestBase {
   DISALLOW_COPY_AND_ASSIGN(ModuleScriptLoaderTest);
 
  public:
@@ -156,6 +156,7 @@ class ModuleScriptLoaderTest : public PageTestBase,
   const base::TickClock* GetTickClock() override {
     return platform_->test_task_runner()->GetMockTickClock();
   }
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  protected:
   const KURL url_;
@@ -174,9 +175,9 @@ void ModuleScriptLoaderTest::SetUp() {
 }
 
 ModuleScriptLoaderTest::ModuleScriptLoaderTest()
-    : ScopedJSONModulesForTest(true),
-      url_("https://example.test"),
+    : url_("https://example.test"),
       security_origin_(SecurityOrigin::Create(url_)) {
+  scoped_feature_list_.InitAndEnableFeature(blink::features::kJSONModules);
   platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 }
 
@@ -202,18 +203,20 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
                           MakeGarbageCollected<TestLoaderFactory>()));
   reporting_proxy_ = std::make_unique<MockWorkerReportingProxy>();
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-      url_, mojom::ScriptType::kModule,
-      OffMainThreadWorkerScriptFetchOption::kEnabled, "GlobalScopeName",
-      "UserAgent", nullptr /* web_worker_fetch_context */,
+      url_, mojom::blink::ScriptType::kModule, "GlobalScopeName", "UserAgent",
+      UserAgentMetadata(), nullptr /* web_worker_fetch_context */,
       Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
       security_origin_.get(), true /* is_secure_context */, HttpsState::kModern,
       nullptr /* worker_clients */, nullptr /* content_settings_client */,
       network::mojom::IPAddressSpace::kLocal, nullptr /* origin_trial_token */,
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
-      kV8CacheOptionsDefault,
-      MakeGarbageCollected<WorkletModuleResponsesMap>());
+      kV8CacheOptionsDefault, MakeGarbageCollected<WorkletModuleResponsesMap>(),
+      mojo::NullRemote() /* browser_interface_broker */,
+      BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
+      base::UnguessableToken::Create() /* agent_cluster_id */);
   global_scope_ = MakeGarbageCollected<WorkletGlobalScope>(
-      std::move(creation_params), *reporting_proxy_, &GetFrame());
+      std::move(creation_params), *reporting_proxy_, &GetFrame(),
+      false /* create_microtask_queue */);
   global_scope_->ScriptController()->Initialize(NullURL());
   modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
       global_scope_->ScriptController()->GetScriptState());

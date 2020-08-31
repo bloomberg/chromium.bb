@@ -57,8 +57,7 @@
 // arbitrary sink types:
 //
 //   * A generic `Format()` function to write outputs to arbitrary sink types,
-//     which must implement a `RawSinkFormat` interface. (See
-//     `str_format_sink.h` for more information.)
+//     which must implement a `FormatRawSink` interface.
 //
 //   * A `FormatUntyped()` function that is similar to `Format()` except it is
 //     loosely typed. `FormatUntyped()` is not a template and does not perform
@@ -82,6 +81,7 @@
 #include "absl/strings/internal/str_format/parser.h"  // IWYU pragma: export
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 
 // UntypedFormatSpec
 //
@@ -254,8 +254,8 @@ class FormatCountCapture {
 // argument, etc.
 
 template <typename... Args>
-using FormatSpec =
-    typename str_format_internal::FormatSpecDeductionBarrier<Args...>::type;
+using FormatSpec = str_format_internal::FormatSpecTemplate<
+    str_format_internal::ArgumentToConv<Args>()...>;
 
 // ParsedFormat
 //
@@ -284,7 +284,7 @@ using FormatSpec =
 //   }
 template <char... Conv>
 using ParsedFormat = str_format_internal::ExtendedParsedFormat<
-    str_format_internal::ConversionCharToConv(Conv)...>;
+    absl::str_format_internal::ToFormatConversionCharSet(Conv)...>;
 
 // StrFormat()
 //
@@ -400,6 +400,12 @@ int FPrintF(std::FILE* output, const FormatSpec<Args...>& format,
 // This function is functionally equivalent to `std::snprintf()` (and
 // type-safe); prefer `absl::SNPrintF()` over `std::snprintf()`.
 //
+// In particular, a successful call to `absl::SNPrintF()` writes at most `size`
+// bytes of the formatted output to `output`, including a NUL-terminator, and
+// returns the number of bytes that would have been written if truncation did
+// not occur. In the event of an error, a negative value is returned and `errno`
+// is set.
+//
 // Example:
 //
 //   std::string_view s = "Ulaanbaatar";
@@ -425,6 +431,16 @@ int SNPrintF(char* output, std::size_t size, const FormatSpec<Args...>& format,
 //
 // FormatRawSink is a type erased wrapper around arbitrary sink objects
 // specifically used as an argument to `Format()`.
+//
+// All the object has to do define an overload of `AbslFormatFlush()` for the
+// sink, usually by adding a ADL-based free function in the same namespace as
+// the sink:
+//
+//   void AbslFormatFlush(MySink* dest, absl::string_view part);
+//
+// where `dest` is the pointer passed to `absl::Format()`. The function should
+// append `part` to `dest`.
+//
 // FormatRawSink does not own the passed sink object. The passed object must
 // outlive the FormatRawSink.
 class FormatRawSink {
@@ -448,12 +464,13 @@ class FormatRawSink {
 // `absl::FormatRawSink` interface), using a format string and zero or more
 // additional arguments.
 //
-// By default, `std::string` and `std::ostream` are supported as destination
-// objects. If a `std::string` is used the formatted string is appended to it.
+// By default, `std::string`, `std::ostream`, and `absl::Cord` are supported as
+// destination objects. If a `std::string` is used the formatted string is
+// appended to it.
 //
-// `absl::Format()` is a generic version of `absl::StrFormat(), for custom
-// sinks. The format string, like format strings for `StrFormat()`, is checked
-// at compile-time.
+// `absl::Format()` is a generic version of `absl::StrAppendFormat()`, for
+// custom sinks. The format string, like format strings for `StrFormat()`, is
+// checked at compile-time.
 //
 // On failure, this function returns `false` and the state of the sink is
 // unspecified.
@@ -524,6 +541,7 @@ ABSL_MUST_USE_RESULT inline bool FormatUntyped(
       str_format_internal::UntypedFormatSpecImpl::Extract(format), args);
 }
 
+ABSL_NAMESPACE_END
 }  // namespace absl
 
 #endif  // ABSL_STRINGS_STR_FORMAT_H_

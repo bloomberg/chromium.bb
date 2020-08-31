@@ -31,12 +31,10 @@ WebGLExtensionScopedContext::WebGLExtensionScopedContext(
     WebGLExtension* extension)
     : context_(extension->context_) {}
 
-WebGLExtensionScopedContext::~WebGLExtensionScopedContext() = default;
-
 WebGLExtension::WebGLExtension(WebGLRenderingContextBase* context)
     : context_(context) {}
 
-void WebGLExtension::Trace(blink::Visitor* visitor) {
+void WebGLExtension::Trace(Visitor* visitor) {
   visitor->Trace(context_);
   ScriptWrappable::Trace(visitor);
 }

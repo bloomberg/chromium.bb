@@ -12,9 +12,9 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/favicon_url.h"
 #include "content/public/test/navigation_simulator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using content::RenderViewHostTester;
@@ -67,7 +67,8 @@ class TestWebAppIconDownloader : public WebAppIconDownloader {
 
   int DownloadImage(const GURL& url) override { return id_counter_++; }
 
-  std::vector<content::FaviconURL> GetFaviconURLsFromWebContents() override {
+  const std::vector<blink::mojom::FaviconURLPtr>&
+  GetFaviconURLsFromWebContents() override {
     return initial_favicon_urls_;
   }
 
@@ -90,18 +91,21 @@ class TestWebAppIconDownloader : public WebAppIconDownloader {
         CreateTestBitmaps(original_bitmap_sizes), original_bitmap_sizes);
   }
 
-  void UpdateFaviconURLs(const std::vector<content::FaviconURL>& candidates) {
+  void UpdateFaviconURLs(
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
     WebAppIconDownloader::DidUpdateFaviconURL(candidates);
   }
 
-  void set_initial_favicon_urls(const std::vector<content::FaviconURL>& urls) {
-    initial_favicon_urls_ = urls;
+  void set_initial_favicon_urls(
+      const std::vector<blink::mojom::FaviconURLPtr>& urls) {
+    for (const auto& url : urls)
+      initial_favicon_urls_.push_back(url.Clone());
   }
 
   bool downloads_succeeded() { return downloads_succeeded_.value(); }
 
  private:
-  std::vector<content::FaviconURL> initial_favicon_urls_;
+  std::vector<blink::mojom::FaviconURLPtr> initial_favicon_urls_;
   IconsMap favicon_map_;
   int id_counter_;
   base::Optional<bool> downloads_succeeded_;
@@ -113,10 +117,10 @@ TEST_F(WebAppIconDownloaderTest, SimpleDownload) {
   const GURL favicon_url("http://www.google.com/favicon.ico");
   TestWebAppIconDownloader downloader(web_contents(), std::vector<GURL>());
 
-  std::vector<content::FaviconURL> favicon_urls;
-  favicon_urls.push_back(
-      content::FaviconURL(favicon_url, content::FaviconURL::IconType::kFavicon,
-                          std::vector<gfx::Size>()));
+  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
+      favicon_url, blink::mojom::FaviconIconType::kFavicon,
+      std::vector<gfx::Size>()));
   downloader.set_initial_favicon_urls(favicon_urls);
   EXPECT_EQ(0u, downloader.pending_requests());
 
@@ -124,7 +128,7 @@ TEST_F(WebAppIconDownloaderTest, SimpleDownload) {
   EXPECT_EQ(1u, downloader.pending_requests());
 
   std::vector<gfx::Size> sizes(1, gfx::Size(32, 32));
-  downloader.CompleteImageDownload(0, 200, favicon_urls[0].icon_url, sizes);
+  downloader.CompleteImageDownload(0, 200, favicon_urls[0]->icon_url, sizes);
   EXPECT_EQ(0u, downloader.pending_requests());
 
   EXPECT_EQ(1u, downloader.favicon_map().size());
@@ -137,10 +141,10 @@ TEST_F(WebAppIconDownloaderTest, NoHTTPStatusCode) {
   const GURL favicon_url("data:image/png,");
   TestWebAppIconDownloader downloader(web_contents(), std::vector<GURL>());
 
-  std::vector<content::FaviconURL> favicon_urls;
-  favicon_urls.push_back(
-      content::FaviconURL(favicon_url, content::FaviconURL::IconType::kFavicon,
-                          std::vector<gfx::Size>()));
+  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
+      favicon_url, blink::mojom::FaviconIconType::kFavicon,
+      std::vector<gfx::Size>()));
   downloader.set_initial_favicon_urls(favicon_urls);
   EXPECT_EQ(0u, downloader.pending_requests());
 
@@ -149,7 +153,7 @@ TEST_F(WebAppIconDownloaderTest, NoHTTPStatusCode) {
 
   std::vector<gfx::Size> sizes = {gfx::Size(0, 0)};
   // data: URLs have a 0 HTTP status code.
-  downloader.CompleteImageDownload(0, 0, favicon_urls[0].icon_url, sizes);
+  downloader.CompleteImageDownload(0, 0, favicon_urls[0]->icon_url, sizes);
   EXPECT_EQ(0u, downloader.pending_requests());
 
   EXPECT_EQ(1u, downloader.favicon_map().size());
@@ -163,10 +167,10 @@ TEST_F(WebAppIconDownloaderTest, DownloadWithUrlsFromWebContentsNotification) {
   const GURL favicon_url("http://www.google.com/favicon.ico");
   TestWebAppIconDownloader downloader(web_contents(), std::vector<GURL>());
 
-  std::vector<content::FaviconURL> favicon_urls;
-  favicon_urls.push_back(
-      content::FaviconURL(favicon_url, content::FaviconURL::IconType::kFavicon,
-                          std::vector<gfx::Size>()));
+  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
+      favicon_url, blink::mojom::FaviconIconType::kFavicon,
+      std::vector<gfx::Size>()));
   EXPECT_EQ(0u, downloader.pending_requests());
 
   // Start downloader before favicon URLs are loaded.
@@ -177,7 +181,7 @@ TEST_F(WebAppIconDownloaderTest, DownloadWithUrlsFromWebContentsNotification) {
   EXPECT_EQ(1u, downloader.pending_requests());
 
   std::vector<gfx::Size> sizes(1, gfx::Size(32, 32));
-  downloader.CompleteImageDownload(0, 200, favicon_urls[0].icon_url, sizes);
+  downloader.CompleteImageDownload(0, 200, favicon_urls[0]->icon_url, sizes);
   EXPECT_EQ(0u, downloader.pending_requests());
 
   EXPECT_EQ(1u, downloader.favicon_map().size());
@@ -198,18 +202,18 @@ TEST_F(WebAppIconDownloaderTest, DownloadMultipleUrls) {
   extra_urls.push_back(empty_favicon);
 
   TestWebAppIconDownloader downloader(web_contents(), extra_urls);
-  std::vector<content::FaviconURL> favicon_urls;
-  favicon_urls.push_back(content::FaviconURL(
-      favicon_url_1, content::FaviconURL::IconType::kFavicon,
+  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
+      favicon_url_1, blink::mojom::FaviconIconType::kFavicon,
       std::vector<gfx::Size>()));
   // This is duplicated in the favicon urls and should only be downloaded once.
-  favicon_urls.push_back(content::FaviconURL(
-      empty_favicon, content::FaviconURL::IconType::kFavicon,
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
+      empty_favicon, blink::mojom::FaviconIconType::kFavicon,
       std::vector<gfx::Size>()));
   // Invalid icons shouldn't get put into the download queue.
-  favicon_urls.push_back(content::FaviconURL(
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
       GURL("http://www.google.com/invalid.ico"),
-      content::FaviconURL::IconType::kInvalid, std::vector<gfx::Size>()));
+      blink::mojom::FaviconIconType::kInvalid, std::vector<gfx::Size>()));
   downloader.set_initial_favicon_urls(favicon_urls);
   downloader.Start();
   EXPECT_EQ(3u, downloader.pending_requests());
@@ -246,9 +250,9 @@ TEST_F(WebAppIconDownloaderTest, SkipPageFavicons) {
   TestWebAppIconDownloader downloader(web_contents(), extra_urls);
 
   // This favicon URL should be ignored.
-  std::vector<content::FaviconURL> favicon_urls;
-  favicon_urls.push_back(content::FaviconURL(
-      favicon_url_2, content::FaviconURL::IconType::kFavicon,
+  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
+      favicon_url_2, blink::mojom::FaviconIconType::kFavicon,
       std::vector<gfx::Size>()));
   downloader.set_initial_favicon_urls(favicon_urls);
   downloader.SkipPageFavicons();
@@ -275,9 +279,11 @@ TEST_F(WebAppIconDownloaderTest, SkipPageFavicons) {
 TEST_F(WebAppIconDownloaderTest, PageNavigates) {
   TestWebAppIconDownloader downloader(web_contents(), std::vector<GURL>());
 
-  downloader.set_initial_favicon_urls({content::FaviconURL(
+  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
       GURL("http://www.google.com/favicon.ico"),
-      content::FaviconURL::IconType::kFavicon, std::vector<gfx::Size>())});
+      blink::mojom::FaviconIconType::kFavicon, std::vector<gfx::Size>()));
+  downloader.set_initial_favicon_urls(favicon_urls);
   EXPECT_EQ(0u, downloader.pending_requests());
 
   downloader.Start();
@@ -292,16 +298,36 @@ TEST_F(WebAppIconDownloaderTest, PageNavigates) {
   EXPECT_FALSE(downloader.downloads_succeeded());
 }
 
+TEST_F(WebAppIconDownloaderTest, PageNavigatesAfterDownload) {
+  const GURL url("http://www.google.com/icon.png");
+  TestWebAppIconDownloader downloader(web_contents(), {url});
+  downloader.SkipPageFavicons();
+
+  downloader.Start();
+  EXPECT_EQ(1u, downloader.pending_requests());
+
+  downloader.CompleteImageDownload(0, 200, url, {gfx::Size(32, 32)});
+  EXPECT_EQ(0u, downloader.pending_requests());
+  EXPECT_TRUE(downloader.downloads_succeeded());
+
+  // Navigating the renderer after downloads have completed should not crash.
+  content::NavigationSimulator::CreateRendererInitiated(
+      GURL("https://foo.example"), main_rfh())
+      ->Commit();
+}
+
 TEST_F(WebAppIconDownloaderTest, PageNavigatesSameDocument) {
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL("https://foo.example"));
 
   const GURL favicon_url("http://www.google.com/favicon.ico");
   TestWebAppIconDownloader downloader(web_contents(), std::vector<GURL>());
+  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
+      favicon_url, blink::mojom::FaviconIconType::kFavicon,
+      std::vector<gfx::Size>()));
 
-  downloader.set_initial_favicon_urls(
-      {content::FaviconURL(favicon_url, content::FaviconURL::IconType::kFavicon,
-                           std::vector<gfx::Size>())});
+  downloader.set_initial_favicon_urls(favicon_urls);
   EXPECT_EQ(0u, downloader.pending_requests());
 
   downloader.Start();

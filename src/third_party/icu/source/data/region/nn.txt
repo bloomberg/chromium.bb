@@ -105,7 +105,6 @@ nn{
         ER{"Eritrea"}
         ES{"Spania"}
         ET{"Etiopia"}
-        EU{"EU"}
         EZ{"eurosona"}
         FI{"Finland"}
         FJ{"Fiji"}
@@ -294,14 +293,10 @@ nn{
         ZW{"Zimbabwe"}
         ZZ{"ukjent område"}
     }
-    Countries%short{
-        GB{"Storbritannia"}
-        US{"USA"}
-    }
     Countries%variant{
         CD{"Den demokratiske republikken Kongo"}
         CG{"Republikken Kongo"}
         TL{"Aust-Timor"}
     }
-    Version{"36"}
+    Version{"37"}
 }

@@ -29,7 +29,7 @@ void ExternalBeginFrameSourceMojo::IssueExternalBeginFrame(
     bool force,
     base::OnceCallback<void(const BeginFrameAck&)> callback) {
   DCHECK(!pending_frame_callback_) << "Got overlapping IssueExternalBeginFrame";
-  original_source_id_ = args.source_id;
+  original_source_id_ = args.frame_id.source_id;
 
   OnBeginFrame(args);
 
@@ -55,7 +55,7 @@ void ExternalBeginFrameSourceMojo::OnDestroyedCompositorFrameSink(
 void ExternalBeginFrameSourceMojo::OnFrameSinkDidBeginFrame(
     const FrameSinkId& sink_id,
     const BeginFrameArgs& args) {
-  if (args.source_id != original_source_id_)
+  if (args.frame_id.source_id != original_source_id_)
     return;
   pending_frame_sinks_.insert(sink_id);
 }
@@ -63,7 +63,7 @@ void ExternalBeginFrameSourceMojo::OnFrameSinkDidBeginFrame(
 void ExternalBeginFrameSourceMojo::OnFrameSinkDidFinishFrame(
     const FrameSinkId& sink_id,
     const BeginFrameArgs& args) {
-  if (args.source_id != original_source_id_)
+  if (args.frame_id.source_id != original_source_id_)
     return;
   pending_frame_sinks_.erase(sink_id);
   MaybeProduceFrameCallback();
@@ -74,15 +74,20 @@ void ExternalBeginFrameSourceMojo::MaybeProduceFrameCallback() {
     return;
   if (!pending_frame_callback_)
     return;
-  // If root frame is missing, the display scheduler will not produce a
-  // frame, so fire the pending frame callback early.
-  if (!display_->IsRootFrameMissing())
+  // If there aren't pending surfaces and the root frame is not missing,
+  // the display scheduler is likely to produce proper frame, so let it do
+  // its work. Otherwise, fire the pending frame callback early.
+  if (!display_->IsRootFrameMissing() &&
+      !display_->HasPendingSurfaces(last_begin_frame_args_)) {
     return;
+  }
+
+  frame_sink_manager_->DiscardPendingCopyOfOutputRequests(this);
 
   // All frame sinks are done with frame, yet the root frame is still missing,
   // the display won't draw, so resolve callback now.
-  BeginFrameAck nak(last_begin_frame_args_.source_id,
-                    last_begin_frame_args_.sequence_number,
+  BeginFrameAck nak(last_begin_frame_args_.frame_id.source_id,
+                    last_begin_frame_args_.frame_id.sequence_number,
                     /*has_damage=*/false);
   std::move(pending_frame_callback_).Run(nak);
 }

@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -17,8 +17,9 @@ WebAudioMediaStreamSource::WebAudioMediaStreamSource(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : MediaStreamAudioSource(std::move(task_runner), false /* is_remote */),
       is_registered_consumer_(false),
-      fifo_(base::Bind(&WebAudioMediaStreamSource::DeliverRebufferedAudio,
-                       base::Unretained(this))),
+      fifo_(ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+          &WebAudioMediaStreamSource::DeliverRebufferedAudio,
+          WTF::CrossThreadUnretained(this)))),
       blink_source_(*blink_source) {
   DVLOG(1) << "WebAudioMediaStreamSource::WebAudioMediaStreamSource()";
 }
@@ -83,8 +84,11 @@ void WebAudioMediaStreamSource::EnsureSourceIsStopped() {
 }
 
 void WebAudioMediaStreamSource::ConsumeAudio(
-    const WebVector<const float*>& audio_data,
+    const Vector<const float*>& audio_data,
     size_t number_of_frames) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mediastream"),
+               "WebAudioMediaStreamSource::ConsumeAudio");
+
   // TODO(miu): Plumbing is needed to determine the actual capture timestamp
   // of the audio, instead of just snapshotting base::TimeTicks::Now(), for
   // proper audio/video sync.  https://crbug.com/335335
@@ -103,6 +107,8 @@ void WebAudioMediaStreamSource::ConsumeAudio(
 void WebAudioMediaStreamSource::DeliverRebufferedAudio(
     const media::AudioBus& audio_bus,
     int frame_delay) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("mediastream"),
+               "WebAudioMediaStreamSource::DeliverRebufferedAudio");
   const base::TimeTicks reference_time =
       current_reference_time_ +
       base::TimeDelta::FromMicroseconds(

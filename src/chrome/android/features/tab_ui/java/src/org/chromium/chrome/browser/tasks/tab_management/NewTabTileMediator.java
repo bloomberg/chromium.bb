@@ -6,15 +6,14 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.NewTabTileViewProperties.IS_INCOGNITO;
 
+import org.chromium.base.MathUtils;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -28,15 +27,12 @@ public class NewTabTileMediator {
             TabCreatorManager tabCreatorManager) {
         mTabModelSelector = tabModelSelector;
 
-        if (FeatureUtilities.isTabThumbnailAspectRatioNotOne()) {
-            float aspectRatio = (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
-                    ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "thumbnail_aspect_ratio", 1.0);
-            aspectRatio = MathUtils.clamp(aspectRatio, 0.5f, 2.0f);
-            model.set(NewTabTileViewProperties.THUMBNAIL_ASPECT_RATIO, aspectRatio);
-        } else {
-            model.set(NewTabTileViewProperties.THUMBNAIL_ASPECT_RATIO, 1.0f);
-        }
-
+        // Deliberately use un-cached value to match with native.
+        float aspectRatio = (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
+                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+                TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO_PARAM, 1.0);
+        aspectRatio = MathUtils.clamp(aspectRatio, 0.5f, 2.0f);
+        model.set(NewTabTileViewProperties.THUMBNAIL_ASPECT_RATIO, aspectRatio);
         model.set(NewTabTileViewProperties.CARD_HEIGHT_INTERCEPT, 0);
         model.set(NewTabTileViewProperties.ON_CLICK_LISTENER, view -> {
             tabCreatorManager.getTabCreator(tabModelSelector.isIncognitoSelected()).launchNTP();

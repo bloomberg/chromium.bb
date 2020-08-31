@@ -4,6 +4,15 @@
 
 import("//testing/test.gni")
 
+config("metal_weak_framework") {
+  ldflags = [
+    "-weak_framework",
+    "Metal",
+    "-weak_framework",
+    "MetalKit",
+  ]
+}
+
 component("metal_util") {
   output_name = "metal"
 
@@ -12,6 +21,10 @@ component("metal_util") {
   sources = [
     "device.h",
     "device.mm",
+    "device_removal.h",
+    "device_removal.mm",
+    "hdr_copier_layer.h",
+    "hdr_copier_layer.mm",
     "metal_util_export.h",
     "test_shader.h",
     "test_shader.mm",
@@ -20,10 +33,14 @@ component("metal_util") {
 
   deps = [
     "//base",
+    "//components/crash/core/common:crash_key",
   ]
 
   libs = [
     "Cocoa.framework",
-    "Metal.framework",
+    "IOSurface.framework",
+    "QuartzCore.framework",
   ]
+
+  configs += [ ":metal_weak_framework" ]
 }

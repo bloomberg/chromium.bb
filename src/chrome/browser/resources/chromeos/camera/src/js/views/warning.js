@@ -2,32 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for views.
- */
-cca.views = cca.views || {};
-
-/**
- * import {assertString} from '../chrome_util.js';
- */
-var assertString = assertString || {};
+import {browserProxy} from '../browser_proxy/browser_proxy.js';
+import {assertString} from '../chrome_util.js';
+import {ViewName} from '../type.js';
+import {View} from './view.js';
 
 /**
  * Creates the warning-view controller.
  */
-cca.views.Warning = class extends cca.views.View {
+export class Warning extends View {
   /**
    * @public
    */
   constructor() {
-    super('#warning');
+    super(ViewName.WARNING);
 
     /**
      * @type {!Array<string>}
@@ -51,7 +39,7 @@ cca.views.Warning = class extends cca.views.View {
         break;
     }
     document.querySelector('#error-msg').textContent =
-        chrome.i18n.getMessage(message);
+        browserProxy.getI18nMessage(message);
   }
 
   /**
@@ -93,4 +81,4 @@ cca.views.Warning = class extends cca.views.View {
     document.querySelector('#error-msg').textContent = '';
     return true;
   }
-};
+}

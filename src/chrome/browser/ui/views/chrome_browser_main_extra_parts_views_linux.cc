@@ -5,20 +5,60 @@
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.h"
 
 #include "chrome/browser/themes/theme_service_aura_linux.h"
-#include "chrome/browser/ui/views/linux_ui/linux_ui_factory.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/theme_profile_key.h"
+#include "ui/base/buildflags.h"
+#include "ui/display/screen.h"
 #include "ui/views/linux_ui/linux_ui.h"
+
+#if BUILDFLAG(USE_GTK)
+#include "ui/gtk/gtk_ui.h"
+#include "ui/gtk/gtk_ui_delegate.h"
+#endif
+
+#if defined(USE_X11)
+#include "ui/gfx/x/x11_types.h"            // nogncheck
+#include "ui/gtk/gtk_ui_delegate.h"        // nogncheck
+#include "ui/gtk/x/gtk_ui_delegate_x11.h"  // nogncheck
+#endif
+
+namespace {
+
+views::LinuxUI* BuildLinuxUI() {
+  views::LinuxUI* linux_ui = nullptr;
+  // GtkUi is the only LinuxUI implementation for now.
+#if BUILDFLAG(USE_GTK)
+  if (ui::GtkUiDelegate::instance())
+    linux_ui = BuildGtkUi(ui::GtkUiDelegate::instance());
+#endif
+  return linux_ui;
+}
+
+}  // namespace
 
 ChromeBrowserMainExtraPartsViewsLinux::ChromeBrowserMainExtraPartsViewsLinux() =
     default;
 
 ChromeBrowserMainExtraPartsViewsLinux::
-    ~ChromeBrowserMainExtraPartsViewsLinux() = default;
+    ~ChromeBrowserMainExtraPartsViewsLinux() {
+  // It's not expected that the screen is destroyed by this point, but it can happen during fuzz
+  // tests.
+  if (display::Screen::GetScreen())
+    display::Screen::GetScreen()->RemoveObserver(this);
+}
 
 void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
+#if defined(USE_X11)
+  // In Aura/X11, Gtk-based LinuxUI implementation is used, so we instantiate
+  // and inject the GtkUiDelegate before ChromeBrowserMainExtraPartsViewsLinux,
+  // so it can properly initialize GtkUi on its |ToolkitInitialized| override.
+  gtk_ui_delegate_ = std::make_unique<ui::GtkUiDelegateX11>(gfx::GetXDisplay());
+  ui::GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
+#endif
+
   ChromeBrowserMainExtraPartsViews::ToolkitInitialized();
 
-  views::LinuxUI* linux_ui = views::BuildLinuxUI();
+  views::LinuxUI* linux_ui = BuildLinuxUI();
   if (!linux_ui)
     return;
 
@@ -36,4 +76,20 @@ void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
 
   views::LinuxUI::SetInstance(linux_ui);
   linux_ui->Initialize();
+
+  DCHECK(ui::LinuxInputMethodContextFactory::instance())
+      << "LinuxUI must set LinuxInputMethodContextFactory instance.";
+}
+
+void ChromeBrowserMainExtraPartsViewsLinux::PreCreateThreads() {
+  ChromeBrowserMainExtraPartsViews::PreCreateThreads();
+  // We could do that during the ToolkitInitialized call, which is called before
+  // this method, but the display::Screen is only created after PreCreateThreads
+  // is called. Thus, do that here instead.
+  display::Screen::GetScreen()->AddObserver(this);
+}
+
+void ChromeBrowserMainExtraPartsViewsLinux::OnCurrentWorkspaceChanged(
+    const std::string& new_workspace) {
+  BrowserList::MoveBrowsersInWorkspaceToFront(new_workspace);
 }

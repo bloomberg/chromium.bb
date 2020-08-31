@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer.h"
 
-#import "base/macros.h"
-#import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -18,6 +17,10 @@ class FakeBreadcrumbManagerObserver : public BreadcrumbManagerObserver {
   FakeBreadcrumbManagerObserver() {}
   ~FakeBreadcrumbManagerObserver() override = default;
 
+  FakeBreadcrumbManagerObserver(const FakeBreadcrumbManagerObserver&) = delete;
+  FakeBreadcrumbManagerObserver& operator=(
+      const FakeBreadcrumbManagerObserver&) = delete;
+
   // BreadcrumbManagerObserver
   void EventAdded(BreadcrumbManager* manager,
                   const std::string& event) override {
@@ -27,14 +30,14 @@ class FakeBreadcrumbManagerObserver : public BreadcrumbManagerObserver {
 
   BreadcrumbManager* last_received_manager_ = nullptr;
   std::string last_received_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeBreadcrumbManagerObserver);
 };
+
 }
 
 class BreadcrumbManagerObserverTest : public PlatformTest {
  protected:
   BreadcrumbManagerObserverTest() { manager_.AddObserver(&observer_); }
+
   ~BreadcrumbManagerObserverTest() override {
     manager_.RemoveObserver(&observer_);
   }

@@ -266,7 +266,7 @@ bool CPDFXFA_DocEnvironment::PopupMenu(CXFA_FFWidget* hWidget,
   if (hWidget->CanSelectAll())
     menuFlag |= FXFA_MENU_SELECTALL;
 
-  return pFormFillEnv->PopupMenu(pPage.Get(), nullptr, menuFlag, ptPopup);
+  return pFormFillEnv->PopupMenu(pPage.Get(), menuFlag, ptPopup);
 }
 
 void CPDFXFA_DocEnvironment::PageViewEvent(CXFA_FFPageView* pPageView,
@@ -550,7 +550,8 @@ void CPDFXFA_DocEnvironment::SetFocusWidget(CXFA_FFDoc* hDoc,
 
   int pageViewCount = m_pContext->GetFormFillEnv()->GetPageViewCount();
   for (int i = 0; i < pageViewCount; i++) {
-    CPDFSDK_PageView* pPageView = m_pContext->GetFormFillEnv()->GetPageView(i);
+    CPDFSDK_PageView* pPageView =
+        m_pContext->GetFormFillEnv()->GetPageViewAtIndex(i);
     if (!pPageView)
       continue;
 
@@ -628,7 +629,6 @@ bool CPDFXFA_DocEnvironment::Submit(CXFA_FFDoc* hDoc, CXFA_Submit* submit) {
   NotifySubmit(false);
   return ret;
 }
-#endif  // PDF_XFA_ELEMENT_SUBMIT_ENABLED
 
 bool CPDFXFA_DocEnvironment::MailToInfo(WideString& csURL,
                                         WideString& csToAddress,
@@ -808,7 +808,6 @@ void CPDFXFA_DocEnvironment::ToXFAContentFlags(WideString csSrcContent,
   }
 }
 
-#ifdef PDF_XFA_ELEMENT_SUBMIT_ENABLED
 bool CPDFXFA_DocEnvironment::OnBeforeNotifySubmit() {
   if (!m_pContext->ContainsXFAForm())
     return true;

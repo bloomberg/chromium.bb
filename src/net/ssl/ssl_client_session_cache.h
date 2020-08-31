@@ -58,6 +58,7 @@ class NET_EXPORT SSLClientSessionCache {
     base::Optional<IPAddress> dest_ip_addr;
     NetworkIsolationKey network_isolation_key;
     PrivacyMode privacy_mode = PRIVACY_MODE_DISABLED;
+    bool disable_legacy_crypto = false;
   };
 
   explicit SSLClientSessionCache(const Config& config);
@@ -76,6 +77,11 @@ class NET_EXPORT SSLClientSessionCache {
   // one, it is released. Every |expiration_check_count| calls, the cache is
   // checked for stale entries.
   void Insert(const Key& cache_key, bssl::UniquePtr<SSL_SESSION> session);
+
+  // Clears early data support for all current sessions associated with
+  // |cache_key|. This may be used after a 0-RTT reject to avoid unnecessarily
+  // offering 0-RTT data on retries. See https://crbug.com/1066623.
+  void ClearEarlyData(const Key& cache_key);
 
   // Removes all entries associated with |server|.
   void FlushForServer(const HostPortPair& server);

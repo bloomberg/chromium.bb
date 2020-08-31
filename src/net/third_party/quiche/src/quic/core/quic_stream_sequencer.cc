@@ -5,22 +5,24 @@
 #include "net/third_party/quiche/src/quic/core/quic_stream_sequencer.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <limits>
 #include <string>
 #include <utility>
 
+#include "net/third_party/quiche/src/quic/core/quic_clock.h"
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream_sequencer_buffer.h"
+#include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_clock.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -33,15 +35,7 @@ QuicStreamSequencer::QuicStreamSequencer(StreamInterface* quic_stream)
       num_frames_received_(0),
       num_duplicate_frames_received_(0),
       ignore_read_data_(false),
-      level_triggered_(false),
-      stop_reading_when_level_triggered_(
-          GetQuicReloadableFlag(quic_stop_reading_when_level_triggered)),
-      close_connection_and_discard_data_on_wrong_offset_(GetQuicReloadableFlag(
-          quic_close_connection_and_discard_data_on_wrong_offset)) {
-  if (stop_reading_when_level_triggered_) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_stop_reading_when_level_triggered);
-  }
-}
+      level_triggered_(false) {}
 
 QuicStreamSequencer::~QuicStreamSequencer() {}
 
@@ -51,18 +45,9 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
   const QuicStreamOffset byte_offset = frame.offset;
   const size_t data_len = frame.data_length;
 
-  if (frame.fin) {
-    bool should_process_data = CloseStreamAtOffset(frame.offset + data_len);
-    if (data_len == 0) {
-      return;
-    }
-    if (close_connection_and_discard_data_on_wrong_offset_) {
-      QUIC_RELOADABLE_FLAG_COUNT_N(
-          quic_close_connection_and_discard_data_on_wrong_offset, 1, 3);
-      if (!should_process_data) {
-        return;
-      }
-    }
+  if (frame.fin &&
+      (!CloseStreamAtOffset(frame.offset + data_len) || data_len == 0)) {
+    return;
   }
   OnFrameData(byte_offset, data_len, frame.data_buffer);
 }
@@ -80,16 +65,15 @@ void QuicStreamSequencer::OnFrameData(QuicStreamOffset byte_offset,
   size_t bytes_written;
   std::string error_details;
   QuicErrorCode result = buffered_frames_.OnStreamData(
-      byte_offset, QuicStringPiece(data_buffer, data_len), &bytes_written,
-      &error_details);
+      byte_offset, quiche::QuicheStringPiece(data_buffer, data_len),
+      &bytes_written, &error_details);
   if (result != QUIC_NO_ERROR) {
-    std::string details = QuicStrCat(
-        "Stream ", stream_->id(), ": ", QuicErrorCodeToString(result), ": ",
-        error_details,
-        "\nPeer Address: ", stream_->PeerAddressOfLatestPacket().ToString());
+    std::string details = quiche::QuicheStrCat("Stream ", stream_->id(), ": ",
+                                               QuicErrorCodeToString(result),
+                                               ": ", error_details);
     QUIC_LOG_FIRST_N(WARNING, 50) << QuicErrorCodeToString(result);
     QUIC_LOG_FIRST_N(WARNING, 50) << details;
-    stream_->CloseConnectionWithDetails(result, details);
+    stream_->OnUnrecoverableError(result, details);
     return;
   }
 
@@ -107,8 +91,7 @@ void QuicStreamSequencer::OnFrameData(QuicStreamOffset byte_offset,
     if (buffered_frames_.ReadableBytes() > previous_readable_bytes) {
       // Readable bytes has changed, let stream decide if to inform application
       // or not.
-      if (stop_reading_when_level_triggered_ && ignore_read_data_) {
-        QUIC_RELOADABLE_FLAG_COUNT(quic_stop_reading_when_level_triggered);
+      if (ignore_read_data_) {
         FlushBufferedFrames();
       } else {
         stream_->OnDataAvailable();
@@ -133,29 +116,20 @@ bool QuicStreamSequencer::CloseStreamAtOffset(QuicStreamOffset offset) {
 
   // If there is a scheduled close, the new offset should match it.
   if (close_offset_ != kMaxOffset && offset != close_offset_) {
-    if (!close_connection_and_discard_data_on_wrong_offset_) {
-      stream_->Reset(QUIC_MULTIPLE_TERMINATION_OFFSETS);
-      return false;
-    }
-    QUIC_RELOADABLE_FLAG_COUNT_N(
-        quic_close_connection_and_discard_data_on_wrong_offset, 2, 3);
-    stream_->CloseConnectionWithDetails(
+    stream_->OnUnrecoverableError(
         QUIC_STREAM_SEQUENCER_INVALID_STATE,
-        QuicStrCat("Stream ", stream_->id(),
-                   " received new final offset: ", offset,
-                   ", which is different from close offset: ", close_offset_));
+        quiche::QuicheStrCat(
+            "Stream ", stream_->id(), " received new final offset: ", offset,
+            ", which is different from close offset: ", close_offset_));
     return false;
   }
 
   // The final offset should be no less than the highest offset that is
   // received.
-  if (close_connection_and_discard_data_on_wrong_offset_ &&
-      offset < highest_offset_) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(
-        quic_close_connection_and_discard_data_on_wrong_offset, 3, 3);
-    stream_->CloseConnectionWithDetails(
+  if (offset < highest_offset_) {
+    stream_->OnUnrecoverableError(
         QUIC_STREAM_SEQUENCER_INVALID_STATE,
-        QuicStrCat(
+        quiche::QuicheStrCat(
             "Stream ", stream_->id(), " received fin with offset: ", offset,
             ", which reduces current highest offset: ", highest_offset_));
     return false;
@@ -213,7 +187,7 @@ void QuicStreamSequencer::Read(std::string* buffer) {
   Readv(&iov, 1);
 }
 
-int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
+size_t QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
   DCHECK(!blocked_);
   std::string error_details;
   size_t bytes_read;
@@ -221,13 +195,13 @@ int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
       buffered_frames_.Readv(iov, iov_len, &bytes_read, &error_details);
   if (read_error != QUIC_NO_ERROR) {
     std::string details =
-        QuicStrCat("Stream ", stream_->id(), ": ", error_details);
-    stream_->CloseConnectionWithDetails(read_error, details);
-    return static_cast<int>(bytes_read);
+        quiche::QuicheStrCat("Stream ", stream_->id(), ": ", error_details);
+    stream_->OnUnrecoverableError(read_error, details);
+    return bytes_read;
   }
 
   stream_->AddBytesConsumed(bytes_read);
-  return static_cast<int>(bytes_read);
+  return bytes_read;
 }
 
 bool QuicStreamSequencer::HasBytesToRead() const {
@@ -304,7 +278,7 @@ QuicStreamOffset QuicStreamSequencer::NumBytesConsumed() const {
 
 const std::string QuicStreamSequencer::DebugString() const {
   // clang-format off
-  return QuicStrCat("QuicStreamSequencer:",
+  return quiche::QuicheStrCat("QuicStreamSequencer:",
                 "\n  bytes buffered: ", NumBytesBuffered(),
                 "\n  bytes consumed: ", NumBytesConsumed(),
                 "\n  has bytes to read: ", HasBytesToRead() ? "true" : "false",

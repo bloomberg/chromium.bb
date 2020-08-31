@@ -15,6 +15,7 @@ from __future__ import print_function
 
 import contextlib
 import os
+import sys
 import tempfile
 
 from six.moves import configparser
@@ -22,6 +23,10 @@ from six.moves import configparser
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # Path to an updated cacerts.txt file, which will override the cacerts.txt file
 # embedded in boto in the wrapped FixBotoCerts context. Relative to chromite/.

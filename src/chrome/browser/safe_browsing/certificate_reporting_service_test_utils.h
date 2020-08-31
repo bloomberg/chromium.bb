@@ -13,11 +13,10 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom-forward.h"
 
 namespace certificate_reporting_test_utils {
 

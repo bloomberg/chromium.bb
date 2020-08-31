@@ -18,6 +18,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/network_connection_change_simulator.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -47,7 +48,8 @@ class AddSupervisionBrowserTest : public InProcessBrowserTest {
     // TODO(danan):  See if this is possible to do this instead using
     // FakeGaia.IssueOAuthToken().
     identity_test_env_ = std::make_unique<signin::IdentityTestEnvironment>();
-    identity_test_env_->MakePrimaryAccountAvailable("example@gmail.com");
+    identity_test_env_->MakeUnconsentedPrimaryAccountAvailable(
+        "example@gmail.com");
     // This makes the identity manager return the string "access_token" for the
     // access token.
     identity_test_env_->SetAutomaticIssueOfAccessTokens(true);

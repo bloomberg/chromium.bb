@@ -14,12 +14,12 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 
 namespace blink {
 
-struct WebMediaTrackConstraintSet;
+struct MediaTrackConstraintSetPlatform;
 
 template <typename ConstraintType>
 bool ConstraintHasMax(const ConstraintType& constraint) {
@@ -239,7 +239,6 @@ class MODULES_EXPORT ResolutionSet {
     Point(double height, double width);
     Point(const Point& other);
     Point& operator=(const Point& other);
-    ~Point();
 
     // Accessors.
     double height() const { return height_; }
@@ -286,7 +285,6 @@ class MODULES_EXPORT ResolutionSet {
                 double max_aspect_ratio);
   ResolutionSet(const ResolutionSet& other);
   ResolutionSet& operator=(const ResolutionSet& other);
-  ~ResolutionSet();
 
   // Getters.
   int min_height() const { return min_height_; }
@@ -368,7 +366,7 @@ class MODULES_EXPORT ResolutionSet {
   //
   // This function has undefined behavior if this set is empty.
   Point SelectClosestPointToIdeal(
-      const WebMediaTrackConstraintSet& constraint_set,
+      const MediaTrackConstraintSetPlatform& constraint_set,
       int default_height,
       int default_width) const;
 
@@ -386,7 +384,7 @@ class MODULES_EXPORT ResolutionSet {
   // Returns a ResolutionCandidateSet initialized with |constraint_set|'s
   // width, height and aspectRatio constraints.
   static ResolutionSet FromConstraintSet(
-      const WebMediaTrackConstraintSet& constraint_set);
+      const MediaTrackConstraintSetPlatform& constraint_set);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaStreamConstraintsUtilSetsTest,

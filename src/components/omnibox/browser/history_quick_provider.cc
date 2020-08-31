@@ -9,8 +9,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/check.h"
 #include "base/i18n/break_iterator.h"
-#include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -272,8 +272,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   if (inline_autocomplete_offset != base::string16::npos) {
     match.inline_autocompletion =
         match.fill_into_edit.substr(inline_autocomplete_offset);
-    match.allowed_to_be_default_match =
-        AutocompleteMatch::AllowedToBeDefault(autocomplete_input_, match);
+    match.SetAllowedToBeDefault(autocomplete_input_);
   } else {
     auto title = match.description + base::UTF8ToUTF16(" - ") + match.contents;
     match.TryAutocompleteWithTitle(title, autocomplete_input_);

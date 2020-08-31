@@ -33,25 +33,27 @@ ExtensionInstaller::ExtensionInstaller(
     : extension_id_(extension_id),
       extension_root_(extension_root),
       install_immediately_(install_immediately),
-      extension_installer_callback_(std::move(extension_installer_callback)) {}
+      extension_installer_callback_(extension_installer_callback) {}
 
 void ExtensionInstaller::OnUpdateError(int error) {
   VLOG(1) << "OnUpdateError (" << extension_id_ << ") " << error;
 }
 
-void ExtensionInstaller::Install(const base::FilePath& unpack_path,
-                                 const std::string& public_key,
-                                 UpdateClientCallback update_client_callback) {
+void ExtensionInstaller::Install(
+    const base::FilePath& unpack_path,
+    const std::string& public_key,
+    std::unique_ptr<InstallParams> /*install_params*/,
+    ProgressCallback /*progress_callback*/,
+    UpdateClientCallback update_client_callback) {
   auto ui_thread =
       base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
   DCHECK(ui_thread);
   DCHECK(!extension_installer_callback_.is_null());
   if (base::PathExists(unpack_path)) {
     ui_thread->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(extension_installer_callback_), extension_id_,
-                       public_key, unpack_path, install_immediately_,
-                       std::move(update_client_callback)));
+        FROM_HERE, base::BindOnce(extension_installer_callback_, extension_id_,
+                                  public_key, unpack_path, install_immediately_,
+                                  std::move(update_client_callback)));
     return;
   }
   ui_thread->PostTask(FROM_HERE,
@@ -79,6 +81,6 @@ bool ExtensionInstaller::Uninstall() {
   return false;
 }
 
-ExtensionInstaller::~ExtensionInstaller() {}
+ExtensionInstaller::~ExtensionInstaller() = default;
 
 }  // namespace extensions

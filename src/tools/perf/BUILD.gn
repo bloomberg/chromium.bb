@@ -5,10 +5,7 @@
 # Keep in sync with group("perf_without_chrome").
 group("perf") {
   testonly = true
-  deps = [
-    "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
-  ]
-
+  deps = [ "//tools/perf/chrome_telemetry_build:telemetry_chrome_test" ]
   data = [
     "//tools/perf/",
 
@@ -36,16 +33,7 @@ group("perf") {
 
   # Runs a script which generates the ad tagging ruleset.
   if (!is_ios) {
-    data_deps = [
-      "//components/subresource_filter/tools:index_ruleset",
-    ]
-  }
-
-  # TODO(crbug.com/1028612): Remove this if when trace processor can be built
-  # on Android.
-  if (!is_android) {
-    data_deps +=
-        [ "//third_party/perfetto/src/trace_processor:trace_processor_shell" ]
+    data_deps = [ "//components/subresource_filter/tools:index_ruleset" ]
   }
 }
 
@@ -95,10 +83,20 @@ group("perf_without_chrome") {
     "//build/android/pylib/",
   ]
 
+  data_deps = []
+
   # Runs a script which generates the ad tagging ruleset.
   if (!is_ios) {
-    data_deps = [
-      "//components/subresource_filter/tools:index_ruleset",
-    ]
+    data_deps += [ "//components/subresource_filter/tools:index_ruleset" ]
   }
+  if (is_android) {
+    data_deps += [ "//chrome/android/webapk/shell_apk:maps_go_webapk" ]
+  }
+}
+
+# This group makes visible those targets in subdirectories that are not
+# explicitly depended on.
+group("gn_all") {
+  testonly = true
+  deps = [ "//tools/perf/core/perfetto_binary_roller:upload_trace_processor" ]
 }

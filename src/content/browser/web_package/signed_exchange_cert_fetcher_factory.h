@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher.h"
 #include "content/common/content_export.h"
+#include "net/base/isolation_info.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -46,7 +46,8 @@ class CONTENT_EXPORT SignedExchangeCertFetcherFactory {
   static std::unique_ptr<SignedExchangeCertFetcherFactory> Create(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
-      const base::Optional<base::UnguessableToken>& throttling_profile_id);
+      const base::Optional<base::UnguessableToken>& throttling_profile_id,
+      net::IsolationInfo isolation_info);
 };
 
 }  // namespace content

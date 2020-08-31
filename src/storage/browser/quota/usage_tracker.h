@@ -47,42 +47,32 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return type_;
   }
-  ClientUsageTracker* GetClientTracker(QuotaClient::ID client_id);
 
   void GetGlobalLimitedUsage(UsageCallback callback);
   void GetGlobalUsage(GlobalUsageCallback callback);
   void GetHostUsage(const std::string& host, UsageCallback callback);
   void GetHostUsageWithBreakdown(const std::string& host,
                                  UsageWithBreakdownCallback callback);
-  void UpdateUsageCache(QuotaClient::ID client_id,
+  void UpdateUsageCache(QuotaClientType client_type,
                         const url::Origin& origin,
                         int64_t delta);
   int64_t GetCachedUsage() const;
-  void GetCachedHostsUsage(std::map<std::string, int64_t>* host_usage) const;
-  void GetCachedOriginsUsage(
-      std::map<url::Origin, int64_t>* origin_usage) const;
-  void GetCachedOrigins(std::set<url::Origin>* origins) const;
+  std::map<std::string, int64_t> GetCachedHostsUsage() const;
+  std::map<url::Origin, int64_t> GetCachedOriginsUsage() const;
+  std::set<url::Origin> GetCachedOrigins() const;
   bool IsWorking() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return !global_usage_callbacks_.empty() || !host_usage_callbacks_.empty();
   }
 
-  void SetUsageCacheEnabled(QuotaClient::ID client_id,
+  void SetUsageCacheEnabled(QuotaClientType client_type,
                             const url::Origin& origin,
                             bool enabled);
 
  private:
-  struct AccumulateInfo {
-    AccumulateInfo();
-    ~AccumulateInfo();
-    size_t pending_clients = 0;
-    int64_t usage = 0;
-    int64_t unlimited_usage = 0;
-    blink::mojom::UsageBreakdownPtr usage_breakdown =
-        blink::mojom::UsageBreakdown::New();
-  };
-
+  struct AccumulateInfo;
   friend class ClientUsageTracker;
+
   void AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
                                           int64_t limited_usage);
   void AccumulateClientGlobalUsage(AccumulateInfo* info,
@@ -91,13 +81,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
   void AccumulateClientHostUsage(base::OnceClosure callback,
                                  AccumulateInfo* info,
                                  const std::string& host,
-                                 QuotaClient::ID client,
+                                 QuotaClientType client,
                                  int64_t usage);
   void FinallySendHostUsageWithBreakdown(AccumulateInfo* info,
                                          const std::string& host);
 
   const blink::mojom::StorageType type_;
-  std::map<QuotaClient::ID, std::unique_ptr<ClientUsageTracker>>
+  std::map<QuotaClientType, std::unique_ptr<ClientUsageTracker>>
       client_tracker_map_;
 
   std::vector<UsageCallback> global_limited_usage_callbacks_;

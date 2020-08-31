@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import sys
+
 import mock
 
 from chromite.api.api_config import ApiConfigMixin
@@ -19,8 +21,11 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import portage_util
-from chromite.lib.build_target_util import BuildTarget
+from chromite.lib import build_target_lib
 from chromite.service import packages as packages_service
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class UprevTest(cros_test_lib.MockTestCase, ApiConfigMixin):
@@ -298,12 +303,16 @@ class GetChromeVersion(cros_test_lib.MockTestCase, ApiConfigMixin):
   def testGetChromeVersion(self):
     """Verify basic return values."""
     chrome_version = '76.0.1.2'
-    self.PatchObject(packages_service, 'determine_chrome_version',
-                     return_value=chrome_version)
+    chrome_version_mock = self.PatchObject(packages_service,
+                                           'determine_chrome_version',
+                                           return_value=chrome_version)
     request = self._GetRequest(board='betty')
     packages_controller.GetChromeVersion(request, self.response,
                                          self.api_config)
     self.assertEqual(self.response.version, chrome_version)
+    # Verify call to determine_chrome_version passes a build_target object.
+    build_target = build_target_lib.BuildTarget('betty')
+    chrome_version_mock.assert_called_with(build_target)
 
   def testGetChromeVersionHandleNone(self):
     """Verify basic return values."""
@@ -414,17 +423,21 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     # Mock that chrome is built and set the chrome_version.
     self.PatchObject(packages_service, 'builds', return_value=True)
     chrome_version = '76.0.1.2'
-    self.PatchObject(packages_service, 'determine_chrome_version',
-                     return_value=chrome_version)
+    chrome_version_mock = self.PatchObject(packages_service,
+                                           'determine_chrome_version',
+                                           return_value=chrome_version)
     android_version = 'android_test_version'
-    self.PatchObject(packages_service, 'determine_android_version',
-                     return_value=android_version)
+    android_version_mock = self.PatchObject(packages_service,
+                                            'determine_android_version',
+                                            return_value=android_version)
     android_branch = 'android_test_branch'
-    self.PatchObject(packages_service, 'determine_android_branch',
-                     return_value=android_branch)
+    android_branch_mock = self.PatchObject(packages_service,
+                                           'determine_android_branch',
+                                           return_value=android_branch)
     android_target = 'android_test_target'
-    self.PatchObject(packages_service, 'determine_android_target',
-                     return_value=android_target)
+    android_target_mock = self.PatchObject(packages_service,
+                                           'determine_android_target',
+                                           return_value=android_target)
     platform_version = '12345.1.2'
     self.PatchObject(packages_service, 'determine_platform_version',
                      return_value=platform_version)
@@ -444,6 +457,15 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     self.assertEqual(self.response.platform_version, platform_version)
     self.assertEqual(self.response.milestone_version, milestone_version)
     self.assertEqual(self.response.full_version, full_version)
+    # Verify call to determine_chrome_version passes a build_target object.
+    build_target = build_target_lib.BuildTarget('betty')
+    chrome_version_mock.assert_called_with(build_target)
+    # Verify call to determine_android_version passes a list of the board name.
+    android_version_mock.assert_called_with(['betty'])
+    # Verify call to determine_android_branch passes a board name.
+    android_branch_mock.assert_called_with('betty')
+    # Verify call to determine_android_target passes a board name.
+    android_target_mock.assert_called_with('betty')
 
   def testGetTargetVersionNoAndroidNoChrome(self):
     """Verify return values on a board that does not have android."""
@@ -465,6 +487,107 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     self.assertFalse(self.response.android_branch_version)
     self.assertFalse(self.response.android_target_version)
     self.assertEqual(self.response.platform_version, platform_version)
+
+
+class GetBuilderMetadataTest(cros_test_lib.MockTestCase, ApiConfigMixin):
+  """GetBuilderMetadata tests."""
+
+  def setUp(self):
+    self.response = packages_pb2.GetBuilderMetadataResponse()
+
+  def _GetRequest(self, board=None):
+    """Helper to build out a request."""
+    request = packages_pb2.GetBuilderMetadataRequest()
+
+    if board:
+      request.build_target.name = board
+
+    return request
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    request = self._GetRequest(board='betty')
+    # TODO(crbug/1071620): Add/check mock for service layer calls.
+    packages_controller.GetBuilderMetadata(request, self.response,
+                                           self.validate_only_config)
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    request = self._GetRequest(board='betty')
+    # TODO(crbug/1071620): Add/check mock for service layer calls.
+    packages_controller.GetBuilderMetadata(request, self.response,
+                                           self.mock_call_config)
+
+    self.assertEqual(len(self.response.build_target_metadata), 1)
+    self.assertEqual(self.response.build_target_metadata[0].build_target,
+                     request.build_target.name)
+    self.assertEqual(len(self.response.model_metadata), 1)
+    self.assertTrue(self.response.model_metadata[0].model_name)
+    self.assertTrue(self.response.model_metadata[0].ec_firmware_version)
+
+  def testNoBuildTargetFails(self):
+    """No build target argument should fail."""
+    request = self._GetRequest()
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      packages_controller.GetBuilderMetadata(request, self.response,
+                                             self.api_config)
+
+  def testGetBuilderMetadata(self):
+    """Verify basic return values."""
+    android_version = 'android_test_version'
+    android_version_mock = self.PatchObject(packages_service,
+                                            'determine_android_version',
+                                            return_value=android_version)
+    android_branch = 'android_test_branch'
+    android_branch_mock = self.PatchObject(packages_service,
+                                           'determine_android_branch',
+                                           return_value=android_branch)
+    android_target = 'android_test_target'
+    android_target_mock = self.PatchObject(packages_service,
+                                           'determine_android_target',
+                                           return_value=android_target)
+    self.PatchObject(portage_util, 'GetBoardUseFlags',
+                     return_value=['arc', 'arcvm', 'big_little', 'cheets'])
+    fw_versions = packages_service.FirmwareVersions(
+        None,
+        'Google_Caroline.7820.263.0',
+        'Google_Caroline.7820.286.0',
+        'caroline_v1.9.357-ac5c7b4',
+        'caroline_v1.9.370-e8b9bd2')
+    self.PatchObject(packages_service, 'get_firmware_versions',
+                     return_value=fw_versions)
+    request = self._GetRequest(board='betty')
+    packages_controller.GetBuilderMetadata(request, self.response,
+                                           self.api_config)
+    self.assertEqual(
+        self.response.build_target_metadata[0].build_target,
+        'betty')
+    self.assertEqual(
+        self.response.build_target_metadata[0].android_container_version,
+        android_version)
+    self.assertEqual(
+        self.response.build_target_metadata[0].android_container_branch,
+        android_branch)
+    self.assertEqual(
+        self.response.build_target_metadata[0].android_container_target,
+        android_target)
+    self.assertEqual(
+        self.response.build_target_metadata[0].arc_use_set,
+        True)
+    # Verify call to determine_android_version passes list of the board name.
+    android_version_mock.assert_called_with(['betty'])
+    # Verify call to determine_android_branch passes board name.
+    android_branch_mock.assert_called_with('betty')
+    # Verify call to determine_android_target passes board name.
+    android_target_mock.assert_called_with('betty')
+    self.assertEqual(
+        self.response.build_target_metadata[0].main_firmware_version,
+        'Google_Caroline.7820.286.0')
+    self.assertEqual(
+        self.response.build_target_metadata[0].ec_firmware_version,
+        'caroline_v1.9.370-e8b9bd2')
+
 
 class HasChromePrebuiltTest(cros_test_lib.MockTestCase, ApiConfigMixin):
   """HasChromePrebuilt tests."""
@@ -489,6 +612,16 @@ class HasChromePrebuiltTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     packages_controller.HasChromePrebuilt(request, self.response,
                                           self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(packages_service, 'has_prebuilt')
+
+    request = self._GetRequest(board='betty')
+    packages_controller.HasChromePrebuilt(request, self.response,
+                                          self.mock_call_config)
+    patch.assert_not_called()
+    self.assertTrue(self.response.has_prebuilt)
 
   def testNoBuildTargetFails(self):
     """No build target argument should fail."""
@@ -540,7 +673,8 @@ class BuildsChromeTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     request = self._GetRequest(board='foo')
     packages_controller.BuildsChrome(request, self.response, self.api_config)
     self.assertTrue(self.response.builds_chrome)
-    patch.assert_called_once_with(constants.CHROME_CP, BuildTarget('foo'), [])
+    patch.assert_called_once_with(constants.CHROME_CP,
+                                  build_target_lib.BuildTarget('foo'), [])
 
   def testBuildsChromeWithPackages(self):
     """Test successful call with packages handling."""
@@ -554,5 +688,6 @@ class BuildsChromeTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     request = self._GetRequest(board='foo', packages=[package])
     packages_controller.BuildsChrome(request, self.response, self.api_config)
     self.assertTrue(self.response.builds_chrome)
-    patch.assert_called_once_with(constants.CHROME_CP, BuildTarget('foo'),
+    patch.assert_called_once_with(constants.CHROME_CP,
+                                  build_target_lib.BuildTarget('foo'),
                                   [controller_util.PackageInfoToCPV(package)])

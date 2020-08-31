@@ -2,6 +2,7 @@
 #include "include/core/SkCanvas.h"
 #include "include/core/SkColorFilter.h"
 #include "include/core/SkColorPriv.h"
+#include "include/core/SkFontMgr.h"
 #include "include/core/SkGraphics.h"
 #include "include/core/SkPath.h"
 #include "include/core/SkRegion.h"
@@ -10,7 +11,6 @@
 #include "include/core/SkTextBlob.h"
 #include "include/core/SkTime.h"
 #include "include/core/SkTypeface.h"
-#include "include/effects/SkBlurMaskFilter.h"
 #include "include/effects/SkGradientShader.h"
 #include "include/utils/SkRandom.h"
 #include "modules/skparagraph/include/Paragraph.h"
@@ -24,6 +24,10 @@
 #include "src/utils/SkOSPath.h"
 #include "src/utils/SkUTF.h"
 #include "tools/Resources.h"
+#include "tools/flags/CommandLineFlags.h"
+
+
+static DEFINE_bool(verboseParagraph, false, "paragraph samples very verbose.");
 
 using namespace skia::textlayout;
 namespace {
@@ -37,6 +41,10 @@ protected:
             fFC = sk_make_sp<TestFontCollection>(GetResourcePath("fonts").c_str(), false, true);
         }
         return fFC;
+    }
+
+    bool isVerbose() {
+        return FLAGS_verboseParagraph;
     }
 };
 
@@ -55,7 +63,6 @@ void writeHtml(const char* name, Paragraph* paragraph) {
         }
 }
 */
-}  // namespace
 
 class ParagraphView1 : public ParagraphView_Base {
 protected:
@@ -737,10 +744,12 @@ protected:
             builder.addText(text4);
             builder.pop();
         } else {
-            // icu::UnicodeString unicode((UChar*) text.data(), SkToS32(text.size()));
-            // std::string str;
-            // unicode.toUTF8String(str);
-            // SkDebugf("Text: %s\n", str.c_str());
+            if (this->isVerbose()) {
+                icu::UnicodeString unicode((UChar*) text.data(), SkToS32(text.size()));
+                std::string str;
+                unicode.toUTF8String(str);
+                SkDebugf("Text: %s\n", str.c_str());
+            }
             builder.addText(text + expected);
         }
 
@@ -1296,7 +1305,9 @@ protected:
             auto rects = paragraph->getRectsForRange(query.fX, query.fY, RectHeightStyle::kTight, RectWidthStyle::kTight);
             if (rects.size() >= 1 && rects[0].rect.width() > 0) {
             } else {
-                SkDebugf("+[%d:%d): Bad\n", query.fX, query.fY);
+                if (this->isVerbose()) {
+                    SkDebugf("+[%d:%d): Bad\n", query.fX, query.fY);
+                }
             }
         }
 
@@ -1304,7 +1315,9 @@ protected:
             auto miss = paragraph->getRectsForRange(query.fX, query.fY, RectHeightStyle::kTight, RectWidthStyle::kTight);
             if (miss.empty()) {
             } else {
-                SkDebugf("-[%d:%d): Bad\n", query.fX, query.fY);
+                if (this->isVerbose()) {
+                    SkDebugf("-[%d:%d): Bad\n", query.fX, query.fY);
+                }
             }
         }
     }
@@ -1596,7 +1609,9 @@ protected:
                 icu::UnicodeString unicode((UChar*)utf16text.data(), SkToS32(utf16text.size()));
                 std::string str;
                 unicode.toUTF8String(str);
-                SkDebugf("Text:>%s<\n", str.data());
+                if (this->isVerbose()) {
+                    SkDebugf("Text:>%s<\n", str.data());
+                }
                 builder.addText(utf16text);
                 fParagraph = builder.Build();
             }
@@ -1647,20 +1662,17 @@ protected:
 
         auto fontCollection = sk_make_sp<TestFontCollection>(GetResourcePath("fonts").c_str(), false, true);
 
-        const char* text = "World domination is such an ugly phrase - I prefer to call it world optimisation";
+        std::u16string text = u"\u0068\u0301\u0350\u0312\u0357\u030C\u0369\u0305\u036C\u0304\u0310\u033F\u0366\u0350\u0343\u0364\u0369\u0311\u0309\u030E\u0365\u031B\u0340\u0337\u0335\u035E\u0334\u0328\u0360\u0360\u0315\u035F\u0340\u0340\u0362\u0360\u0322\u031B\u031B\u0337\u0340\u031E\u031F\u032A\u0331\u0345\u032F\u0332\u032E\u0333\u0353\u0320\u0345\u031C\u031F\u033C\u0325\u0355\u032C\u0325\u033Aa\u0307\u0312\u034B\u0308\u0312\u0346\u0313\u0346\u0304\u0307\u0344\u0305\u0342\u0368\u0346\u036A\u035B\u030F\u0365\u0307\u0340\u0328\u0322\u0361\u0489\u034F\u0328\u0334\u035F\u0335\u0362\u0489\u0360\u0358\u035E\u0360\u035D\u0341\u0337\u0337\u032E\u0326\u032D\u0359\u0318\u033C\u032F\u0333\u035A\u034D\u0319\u031C\u0353\u033C\u0345\u0359\u0331\u033B\u0331\u033C";
         ParagraphStyle paragraph_style;
-        paragraph_style.setMaxLines(7);
-        paragraph_style.setEllipsis(u"\u2026");
         ParagraphBuilderImpl builder(paragraph_style, fontCollection);
         TextStyle text_style;
         text_style.setColor(SK_ColorBLACK);
         text_style.setFontFamilies({SkString("Roboto")});
-        text_style.setFontSize(40);
+        text_style.setFontSize(20);
         builder.pushStyle(text_style);
         builder.addText(text);
         auto paragraph = builder.Build();
         paragraph->layout(this->width());
-
         paragraph->paint(canvas, 0, 0);
     }
 
@@ -1677,11 +1689,451 @@ protected:
 
         auto fontCollection = sk_make_sp<TestFontCollection>(GetResourcePath("fonts").c_str(), false, true);
 
-        const char* text = "";
+        const char* text =  "Manage your google account";
         ParagraphStyle paragraph_style;
-        paragraph_style.setMaxLines(std::numeric_limits<size_t>::max());
-        //paragraph_style.setEllipsis(u"\u2026");
+        paragraph_style.setEllipsis(u"\u2026");
+        paragraph_style.setMaxLines(1);
         ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Roboto")});
+        text_style.setFontSize(50);
+        builder.pushStyle(text_style);
+        builder.addText(text);
+        auto paragraph = builder.Build();
+        paragraph->layout(this->width());
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView21 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph21"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+        canvas->drawColor(SK_ColorWHITE);
+
+        const char* text =  "Referral Code";
+        ParagraphStyle paragraph_style;
+        ParagraphBuilderImpl builder(paragraph_style, getFontCollection());
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Google Sans")});
+        text_style.setFontSize(24);
+        builder.pushStyle(text_style);
+        builder.addText(text);
+        auto paragraph = builder.Build();
+        paragraph->layout(0);
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView22 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph22"); }
+
+    bool onChar(SkUnichar uni) override {
+            switch (uni) {
+                case 'l':
+                    direction = true;
+                    return true;
+                case 'r':
+                    direction = false;
+                    return true;
+                default:
+                    break;
+            }
+            return false;
+    }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        canvas->drawColor(SK_ColorWHITE);
+        ParagraphStyle paragraph_style;
+        paragraph_style.setTextDirection(direction ? TextDirection::kLtr : TextDirection::kRtl);
+        auto collection = getFontCollection();
+        ParagraphBuilderImpl builder(paragraph_style, collection);
+        collection->getParagraphCache()->reset();
+        collection->getParagraphCache()->turnOn(false);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Roboto")});
+        text_style.setFontSize(12);
+        builder.pushStyle(text_style);
+        builder.addText("I have got a ");
+        text_style.setFontStyle(SkFontStyle::Bold());
+        builder.pushStyle(text_style);
+        builder.addText("lovely bunch");
+        text_style.setFontStyle(SkFontStyle::Normal());
+        builder.pushStyle(text_style);
+        builder.addText(" of coconuts.");
+        auto paragraph = builder.Build();
+        paragraph->layout(this->width());
+        paragraph->paint(canvas, 0, 0);
+        collection->getParagraphCache()->turnOn(true);
+    }
+
+private:
+    typedef Sample INHERITED;
+    bool direction;
+};
+
+class ParagraphView23 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph23"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+        canvas->drawColor(SK_ColorWHITE);
+
+        const char* text =  "Text with shadow";
+        ParagraphStyle paragraph_style;
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Google Sans")});
+        text_style.setFontSize(24);
+
+        auto draw = [&](SkScalar h, SkScalar v, SkScalar b) {
+            text_style.resetShadows();
+            text_style.addShadow(TextShadow(SK_ColorBLACK, SkPoint::Make(h, v), b));
+            ParagraphBuilderImpl builder(paragraph_style, getFontCollection());
+            builder.pushStyle(text_style);
+            builder.addText(text);
+            auto paragraph = builder.Build();
+            paragraph->layout(300);
+            paragraph->paint(canvas, 0, 0);
+
+            auto rect = SkRect::MakeXYWH(0, 0, paragraph->getMaxWidth(), paragraph->getHeight());
+            SkPaint paint;
+            paint.setColor(SK_ColorRED);
+            paint.setStyle(SkPaint::kStroke_Style);
+            paint.setAntiAlias(true);
+            paint.setStrokeWidth(1);
+            canvas->drawRect(rect, paint);
+        };
+
+        draw(10, 10, 5);
+        canvas->translate(0, 100);
+
+        draw(10, -10, 5);
+        canvas->translate(0, 100);
+
+        draw(-10, -10, 5);
+        canvas->translate(0, 100);
+
+        draw(-10, 10, 5);
+        canvas->translate(0, 100);
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView24 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph24"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+        canvas->drawColor(SK_ColorWHITE);
+
+        ParagraphStyle paragraph_style;
+        paragraph_style.setTextDirection(TextDirection::kRtl);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Google Sans")});
+        text_style.setFontSize(24);
+        {
+            ParagraphBuilderImpl builder(paragraph_style, getFontCollection());
+            builder.pushStyle(text_style);
+            builder.addText("Right_to_left:");
+            auto paragraph = builder.Build();
+            paragraph->layout(this->width());
+            paragraph->paint(canvas, 0, 0);
+        }
+        canvas->translate(0, 200);
+        {
+            ParagraphBuilderImpl builder(paragraph_style, getFontCollection());
+            builder.pushStyle(text_style);
+            builder.addText("Right_to_left+");
+            auto paragraph = builder.Build();
+            paragraph->layout(this->width());
+            paragraph->paint(canvas, 0, 0);
+        }
+        canvas->translate(0, 200);
+        {
+            ParagraphBuilderImpl builder(paragraph_style, getFontCollection());
+            builder.pushStyle(text_style);
+            builder.addText("Right_to_left.");
+            auto paragraph = builder.Build();
+            paragraph->layout(this->width());
+            paragraph->paint(canvas, 0, 0);
+        }
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView25 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph25"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+        canvas->drawColor(SK_ColorWHITE);
+/*
+ * Shell: ParagraphStyle: 1.000000 1
+Shell: Strut enabled: 0 1.000000 14.000000 400 5 0
+Shell: Font Families: 0
+Shell: DefaultTextStyle: 16.000000 500 5 0
+Shell: Font Families: 1 Roboto
+Shell: Font Features: 0
+Shell: TextStyle#0: [0:22) 16.000000 500 5 0
+Shell: Font Families: 1 Roboto
+Shell: Font Features: 0
+Shell: TextStyle#1: [25:49) 16.000000 500 5 0
+Shell: Font Families: 1 Roboto
+Shell: Font Features: 0
+Shell: Placeholder#0: [22:25) 32.000000 32.000000 32.000000 0 5
+Shell: Placeholder#1: [49:52) 19.000000 41.000000 19.000000 0 4
+Shell: Placeholder#2: [52:52) 0.000000 0.000000 0.000000 0 5
+Shell: layout('Go to device settings ￼ and set up a passcode. ￼', 280.000000): 280.000000 * 38.000000
+ */
+        auto fontCollection = getFontCollection();
+        //fontCollection->getParagraphCache()->turnOn(false);
+        const char* text1 =  "Go to device settings ";
+        const char* text2 = "and set up a passcode.";
+        ParagraphStyle paragraph_style;
+        StrutStyle strut_style;
+        strut_style.setStrutEnabled(false);
+        strut_style.setFontSize(14);
+        strut_style.setForceStrutHeight(false);
+        strut_style.setHeight(14);
+        paragraph_style.setStrutStyle(strut_style);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Roboto")});
+        text_style.setFontSize(16);
+        PlaceholderStyle placeholder_style;
+        {
+            ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+            builder.pushStyle(text_style);
+            builder.addText(text1);
+            placeholder_style.fHeight = 32;
+            placeholder_style.fWidth = 32;
+            placeholder_style.fBaselineOffset = 32;
+            placeholder_style.fBaseline = TextBaseline::kAlphabetic;
+            placeholder_style.fAlignment = PlaceholderAlignment::kMiddle;
+            builder.addPlaceholder(placeholder_style);
+            builder.addText(text2);
+            placeholder_style.fHeight = 19;
+            placeholder_style.fWidth = 41;
+            placeholder_style.fBaselineOffset = 19;
+            placeholder_style.fBaseline = TextBaseline::kAlphabetic;
+            placeholder_style.fAlignment = PlaceholderAlignment::kTop;
+            builder.addPlaceholder(placeholder_style);
+            auto paragraph = builder.Build();
+            paragraph->layout(280);
+            paragraph->paint(canvas, 0, 0);
+        }
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView26 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph26"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        //fontCollection->enableFontFallback();
+
+        canvas->clear(SK_ColorWHITE);
+
+        SkPaint paint;
+        paint.setAntiAlias(true);
+        paint.setColor(SK_ColorBLACK);
+
+        TextStyle textStyle;
+        textStyle.setForegroundColor(paint);
+        textStyle.setFontFamilies({ SkString("Roboto") });
+        textStyle.setFontSize(42.0f);
+        textStyle.setLetterSpacing(-0.05f);
+        textStyle.setHeightOverride(true);
+
+        ParagraphStyle paragraphStyle;
+        paragraphStyle.setTextStyle(textStyle);
+        paragraphStyle.setTextAlign(TextAlign::kLeft);
+
+        ParagraphBuilderImpl builder(paragraphStyle, fontCollection);
+        builder.addText(u"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ut dolor ornare, fermentum nibh in, consectetur libero. Ut id semper est. Sed malesuada, est id bibendum egestas, urna risus tristique nibh, euismod interdum risus turpis nec purus. Maecenas dolor nisl, consectetur in vestibulum et, tincidunt id leo. Duis maximus, odio eget tristique commodo, lacus tellus dapibus leo, consequat pellentesque arcu nisi sit amet diam. Quisque euismod venenatis egestas. Mauris posuere volutpat iaculis. Suspendisse finibus tempor urna, dignissim venenatis sapien finibus eget. Donec interdum lacus ac venenatis fringilla. Curabitur eget lacinia augue. Vestibulum eu vulputate odio. Quisque nec imperdiet");
+
+        auto paragraph = builder.Build();
+        paragraph->layout(this->width() / 2);
+
+        std::vector<LineMetrics> lines;
+        paragraph->getLineMetrics(lines); // <-- error happens here
+
+        canvas->translate(10, 10);
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView27 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph27"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        fontCollection->enableFontFallback();
+        fontCollection->getParagraphCache()->turnOn(false);
+
+        SkPaint red;
+        red.setColor(SK_ColorRED);
+        red.setStyle(SkPaint::kStroke_Style);
+        red.setAntiAlias(true);
+        red.setStrokeWidth(1);
+
+        SkPaint blue;
+        blue.setColor(SK_ColorRED);
+        blue.setStyle(SkPaint::kStroke_Style);
+        blue.setAntiAlias(true);
+        blue.setStrokeWidth(1);
+
+        SkPaint black;
+        black.setColor(SK_ColorBLACK);
+        black.setStyle(SkPaint::kStroke_Style);
+        black.setAntiAlias(true);
+        black.setStrokeWidth(1);
+
+        SkPaint whiteSpaces;
+        whiteSpaces.setColor(SK_ColorLTGRAY);
+
+        SkPaint breakingSpace;
+        breakingSpace.setColor(SK_ColorYELLOW);
+
+        SkPaint text;
+        text.setColor(SK_ColorWHITE);
+
+        ParagraphStyle paragraph_style;
+        paragraph_style.setTextAlign(TextAlign::kRight);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Roboto")});
+
+        // RTL + right align + arabic
+        // RTL + right align + latin
+        // LTR + right align + arabic
+        // LTR + right align + latin
+        // RTL + left align + arabic
+        // RTL + left align + latin
+        // arabic and latin should not differ at all
+        // check: line breaking and trailing spaces
+
+        canvas->drawColor(SK_ColorWHITE);
+        auto h = 60;
+        auto w = 300;
+
+        auto draw = [&](SkScalar width, SkScalar height, TextDirection td, TextAlign ta, const char* t) {
+            if (this->isVerbose()) {
+                SkDebugf("draw '%s' dir:%s align:%s\n", t,
+                         td == TextDirection::kLtr ? "left" : "right",
+                         ta == TextAlign::kLeft ? "left" : "right");
+            }
+            paragraph_style.setTextDirection(td);
+            paragraph_style.setTextAlign(ta);
+            text_style.setFontSize(20);
+            ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+            text_style.setBackgroundColor(whiteSpaces);
+            builder.pushStyle(text_style);
+            builder.addText("   ");
+            text_style.setBackgroundColor(text);
+            builder.pushStyle(text_style);
+            builder.addText(t);
+            text_style.setBackgroundColor(breakingSpace);
+            builder.pushStyle(text_style);
+            builder.addText(" ");
+            text_style.setBackgroundColor(text);
+            builder.pushStyle(text_style);
+            builder.addText(t);
+            text_style.setBackgroundColor(whiteSpaces);
+            builder.pushStyle(text_style);
+            builder.addText("   ");
+            auto paragraph = builder.Build();
+            paragraph->layout(width);
+            paragraph->paint(canvas, 0, 0);
+            auto impl = static_cast<ParagraphImpl*>(paragraph.get());
+            for (auto& line : impl->lines()) {
+                if (this->isVerbose()) {
+                    SkDebugf("line[%d]: %f + %f\n", &line - impl->lines().begin(), line.offset().fX, line.shift());
+                }
+                line.iterateThroughVisualRuns(true,
+                    [&](const Run* run, SkScalar runOffset, TextRange textRange, SkScalar* width) {
+                    *width = line.measureTextInsideOneRun(textRange, run, runOffset, 0, true, false).clip.width();
+                    if (this->isVerbose()) {
+                        SkDebugf("%d[%d: %d) @%f + %f %s\n", run->index(),
+                                 textRange.start, textRange.end, runOffset, *width, run->leftToRight() ? "left" : "right");
+                    }
+                    return true;
+                });
+            }
+            auto boxes = paragraph->getRectsForRange(0, 100, RectHeightStyle::kTight, RectWidthStyle::kTight);
+            bool even = true;
+            for (auto& box : boxes) {
+                if (this->isVerbose()) {
+                    SkDebugf("[%f:%f,%f:%f] %s\n",
+                             box.rect.fLeft, box.rect.fRight, box.rect.fTop, box.rect.fBottom,
+                             box.direction == TextDirection::kLtr ? "left" : "right");
+                }
+                canvas->drawRect(box.rect, even ? red : blue);
+                even = !even;
+            }
+            canvas->translate(0, height);
+        };
+
+        canvas->drawRect(SkRect::MakeXYWH(0, 0, w, h * 8), black);
+
+        draw(w, h, TextDirection::kRtl, TextAlign::kRight, "RTL+RIGHT#1234567890");
+        draw(w, h, TextDirection::kRtl, TextAlign::kRight, "قففغغغغقففغغغغقففغغغ");
+
+        draw(w, h, TextDirection::kLtr, TextAlign::kRight, "LTR+RIGHT#1234567890");
+        draw(w, h, TextDirection::kLtr, TextAlign::kRight, "قففغغغغقففغغغغقففغغغ");
+
+        draw(w, h, TextDirection::kRtl, TextAlign::kLeft, "RTL+LEFT##1234567890");
+        draw(w, h, TextDirection::kRtl, TextAlign::kLeft, "قففغغغغقففغغغغقففغغغ");
+
+        draw(w, h, TextDirection::kLtr, TextAlign::kLeft, "LTR+LEFT##1234567890");
+        draw(w, h, TextDirection::kLtr, TextAlign::kLeft, "قففغغغغقففغغغغقففغغغ");
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView28 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph28"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        const char* text = "AAAAA BBBBB CCCCC DDDDD EEEEE FFFFF GGGGG HHHHH IIIII JJJJJ KKKKK LLLLL MMMMM NNNNN OOOOO PPPPP QQQQQ";
+
+        canvas->drawColor(SK_ColorWHITE);
+        ParagraphStyle paragraph_style;
+        paragraph_style.setTextAlign(TextAlign::kJustify);
+        auto collection = getFontCollection();
+        ParagraphBuilderImpl builder(paragraph_style, collection);
         TextStyle text_style;
         text_style.setColor(SK_ColorBLACK);
         text_style.setFontFamilies({SkString("Roboto")});
@@ -1689,7 +2141,371 @@ protected:
         builder.pushStyle(text_style);
         builder.addText(text);
         auto paragraph = builder.Build();
-        paragraph->layout(this->width());
+        auto s = 186;
+        paragraph->layout(360 - s);
+        paragraph->paint(canvas, 0, 0);
+        /*
+        paragraph->layout(360);
+        paragraph->paint(canvas, 0, 0);
+        canvas->translate(0, 400);
+        paragraph->layout(354.333);
+        paragraph->paint(canvas, 0, 0);
+        */
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView29 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph29"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        const char* text = "ffi";
+        canvas->drawColor(SK_ColorWHITE);
+
+        auto collection = getFontCollection();
+
+        ParagraphStyle paragraph_style;
+        ParagraphBuilderImpl builder(paragraph_style, collection);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Roboto")});
+        text_style.setFontSize(60);
+        builder.pushStyle(text_style);
+        builder.addText(text);
+        auto paragraph = builder.Build();
+        paragraph->layout(width());
+        paragraph->paint(canvas, 0, 0);
+        auto width = paragraph->getLongestLine();
+        auto height = paragraph->getHeight();
+
+        auto f1 = paragraph->getGlyphPositionAtCoordinate(width/6, height/2);
+        auto f2 = paragraph->getGlyphPositionAtCoordinate(width/2, height/2);
+        auto i = paragraph->getGlyphPositionAtCoordinate(width*5/6, height/2);
+
+        if (this->isVerbose()) {
+            SkDebugf("%d(%s) %d(%s) %d(%s)\n",
+                     f1.position, f1.affinity == Affinity::kUpstream ? "up" : "down",
+                     f2.position, f2.affinity == Affinity::kUpstream ? "up" : "down",
+                     i.position, i.affinity == Affinity::kUpstream ? "up" : "down");
+
+            auto rf1 = paragraph->getRectsForRange(0, 1, RectHeightStyle::kTight, RectWidthStyle::kTight)[0];
+            auto rf2 = paragraph->getRectsForRange(1, 2, RectHeightStyle::kTight, RectWidthStyle::kTight)[0];
+            auto rfi = paragraph->getRectsForRange(2, 3, RectHeightStyle::kTight, RectWidthStyle::kTight)[0];
+
+            SkDebugf("f1: [%f:%f] %s\n",
+                     rf1.rect.fLeft, rf1.rect.fRight, rf1.direction == TextDirection::kRtl ? "rtl" : "ltr");
+            SkDebugf("f2: [%f:%f] %s\n",
+                     rf2.rect.fLeft, rf2.rect.fRight, rf2.direction == TextDirection::kRtl ? "rtl" : "ltr");
+            SkDebugf("i:  [%f:%f] %s\n",
+                     rfi.rect.fLeft, rfi.rect.fRight, rfi.direction == TextDirection::kRtl ? "rtl" : "ltr");
+        }
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView30 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph30"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        const std::u16string text = u"\U0001f600\U0001f1e6\U0001f1f9\U0001f601\U0001f9f1\U0001f61a\U0001f431\U0001f642\U0001f38e\U0001f60d\U0001f3b9\U0001f917\U0001f6bb\U0001f609\U0001f353\U0001f618\U0001f1eb\U0001f1f0\U0001f468\u200D\U0001f469\u200D\U0001f466\u200D\U0001f466\U0001f468\u200D\U0001f469\u200D\U0001f467\u200D\U0001f466\U0001f468\u200D\U0001f469\u200D\U0001f467\U0001f46a";
+        canvas->drawColor(SK_ColorWHITE);
+
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        fontCollection->enableFontFallback();
+
+        ParagraphStyle paragraph_style;
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Noto Color Emoji")});
+        text_style.setFontSize(60);
+        builder.pushStyle(text_style);
+        builder.addText(text);
+        auto paragraph = builder.Build();
+        paragraph->layout(width());
+
+
+        SkColor colors[] = {
+            SK_ColorRED,
+            SK_ColorGREEN,
+            SK_ColorBLUE,
+            SK_ColorMAGENTA,
+            SK_ColorYELLOW
+        };
+        SkPaint paint;
+        size_t color = 0;
+        for (size_t i = 0; i < text.size(); ++i) {
+            auto result = paragraph->getRectsForRange(i, i + 1, RectHeightStyle::kTight, RectWidthStyle::kTight);
+            if (result.empty()) {
+                if (this->isVerbose()) {
+                    SkDebugf("empty [%d:%d)\n", i, i + 1);
+                }
+                continue;
+            }
+            auto rect = result[0].rect;
+            paint.setColor(colors[color++ % 5]);
+            canvas->drawRect(rect, paint);
+            if (this->isVerbose()) {
+                SkDebugf("rect [%d:%d): %f:%f\n", i, i + 1, rect.fLeft, rect.fRight);
+            }
+        }
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView31 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph31"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        canvas->drawColor(SK_ColorWHITE);
+
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        fontCollection->enableFontFallback();
+
+        ParagraphStyle paragraph_style;
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Roboto")});
+        text_style.setFontSize(40);
+        builder.pushStyle(text_style);
+        auto s = u"েن েূথ";
+        builder.addText(s);
+        auto paragraph = builder.Build();
+        paragraph->layout(width());
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView32 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph32"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        canvas->drawColor(SK_ColorWHITE);
+
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        fontCollection->enableFontFallback();
+
+        ParagraphStyle paragraph_style;
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Roboto")});
+        text_style.setFontSize(40);
+        text_style.setLocale(SkString("ko"));
+        builder.pushStyle(text_style);
+        builder.addText(u"\u904d ko ");
+        text_style.setLocale(SkString("zh_Hant"));
+        builder.pushStyle(text_style);
+        builder.addText(u"\u904d zh-Hant ");
+        text_style.setLocale(SkString("zh_Hans"));
+        builder.pushStyle(text_style);
+        builder.addText(u"\u904d zh-Hans ");
+        text_style.setLocale(SkString("zh_HK"));
+        builder.pushStyle(text_style);
+        builder.addText(u"\u904d zh-HK ");
+        auto paragraph = builder.Build();
+        paragraph->layout(width());
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView33 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph33"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        canvas->drawColor(SK_ColorWHITE);
+
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        fontCollection->enableFontFallback();
+
+        ParagraphStyle paragraph_style;
+        paragraph_style.setTextAlign(TextAlign::kJustify);
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Roboto"), SkString("Noto Color Emoji")});
+        text_style.setFontSize(36);
+        builder.pushStyle(text_style);
+        builder.addText(u"AAAAA \U0001f600 BBBBB CCCCC DDDDD EEEEE");
+        auto paragraph = builder.Build();
+        paragraph->layout(width() / 2);
+        SkPaint paint;
+        paint.setColor(SK_ColorLTGRAY);
+        canvas->drawRect(SkRect::MakeXYWH(0, 0, width()/2, paragraph->getHeight()), paint);
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView34 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph34"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        canvas->drawColor(SK_ColorWHITE);
+        auto text = "ضخمة ص ،😁😂🤣ضضض ؤ،،😗😗😍😋شسي،😗😁😁ؤرى،😗😃😄😍ببب،🥰😅🥰🥰🥰ثيلااتن";
+        //auto text = "ى،😗😃😄😍بب";
+        //auto text1 = "World domination is such an ugly phrase - I prefer to call it world optimisation";
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        fontCollection->enableFontFallback();
+
+        ParagraphStyle paragraph_style;
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Noto Color Emoji")});
+        text_style.setFontSize(50);
+        builder.pushStyle(text_style);
+        builder.addText(text);
+        auto paragraph = builder.Build();
+        paragraph->layout(1041); // 1041
+
+        SkColor colors[] = {SK_ColorBLUE, SK_ColorCYAN,  SK_ColorLTGRAY, SK_ColorGREEN,
+                            SK_ColorRED,  SK_ColorWHITE, SK_ColorYELLOW, SK_ColorMAGENTA };
+        SkPaint paint;
+        size_t wordPos = 0;
+        size_t index = 0;
+        while (wordPos < 72) {
+            auto res2 = paragraph->getWordBoundary(wordPos);
+            if (res2.width() == 0) {
+                break;
+            }
+            wordPos = res2.end;
+            auto res3 = paragraph->getRectsForRange(
+                    res2.start, res2.end,
+                    RectHeightStyle::kTight, RectWidthStyle::kTight);
+            paint.setColor(colors[index % 8]);
+            ++index;
+            if (!res3.empty()) {
+                canvas->drawRect(res3[0].rect, paint);
+            }
+        }
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView35 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph35"); }
+
+    Click* onFindClickHandler(SkScalar x, SkScalar y, skui::ModifierKey modi) override {
+        return new Click;
+    }
+
+    bool onClick(Click* click) override {
+        fPoint = click->fCurr;
+        return true;
+    }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        canvas->drawColor(SK_ColorWHITE);
+
+        auto text = u"hzbzzj sjsjjs sjkkahgafa\u09A4\u09A1\u09A4\u09A0\u09A4\u09A0 jsjzjgvsh sjsjsksbsbsjs sjjajajahhav jssjbxx jsisudg \u09AF\u09A0\u09AF\u09A0\u09A4\u09A0\u09A4\u09A0\u09A5 \u062A\u0624\u062A\u064A\u0646\u0646\u064A\u0621\u0646\u0627\u0644\u0631\u0631\u064A\u0644\u0627 \u062A\u062A\u0644\u0649 \u062A\u0627\u0631\u064A\u062E \u062A\u0633\u0628\u0628 \u0624\u062A\u064A\u062A\u0624\u062A\u0624\u062A\u0624\u062A\u0624 dhishsbs \u7238\u7238\u4E0D\u5BF9\u52B2\u5927\u5BB6\u90FD\u597D\u8BB0\u5F97\u8BB0\u5F97hshs\u099B\u09A1\u099B\u09A1\u099A jdjdj jdjdjd dbbdbdbdbddbnd\u09A2\u099B\u09A1\u09A2\u09A3\u099B\u09B0\u099A\u0998\u09A0\u09A0\u09B8\u09AB\u0997\u09A3\u09A4\u099C\u09B0\u09A5\u099B\u099B\u09A5\u09A6\u099D\u09A6\u09B2\u09A5\u09A4\u09A3\u09A2\u0997\u0996\u09A0\u0998\u0999\u09A3\u099A\u09A5\u09A4\u09A3\u062A\u0628\u0646\u064A\u0646 \u09A5\u09A3\u09A3 \u09A4\u0998\u0998\u0998\u099B\u09A4 \u09A4\u09A3 \u09A3\u0998\u09A2\u09A3\u0999\u0648\u064A\u0648\u0621\u062A\u064A\u0632\u0633\u0646\u0632\u0624\u0624\u0645\u0645\u0624\u0648\u0624\u0648\u0648\u064A\u0646\u0624\u0646\u0624\u0646\u0624\u0624 \u09A4\u09A4\u09A2\u09A2\u09A4\u09A4 \u0999\u0998\u0997\u09C1\u099B\u09A5 \u09A4\u0997\u0998\u09A3\u099A\u099C\u09A6\u09A5\u0632\u0624\u0648\u0624\u0648\u0624 \u09A4\u09A4\u09A3\u0998\u09A2\u09A4\u099B\u09A6\u09A5\u09A4\u0999\u0998\u09A3 \u0648\u0624\u0648\u0624\u0648\u0624\u0632\u0624\u0646\u0633\u0643\u0633\u0643\u0628\u0646\u09A4\u09AD\u0996\u0996\u099F\u09C0\u09C1\u099B\u09A6\u09C0\u09C1\u09C2\u09C7\u0648\u0624\u0646\u0621\u0646\u0624\u0646 \u09C7\u09C2\u09C0\u09C2\u099A\u09A3\u09A2\u09A4\u09A5\u09A5\u0632\u064A\u09C7\u09C2\u09C0\u09C2\u099A\u09A3\u09A2\u09AE\u09A4\u09A5\u09A5 \U0001f34d\U0001f955\U0001f4a7\U0001f4a7\U0001f4a6\U0001f32a";
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        fontCollection->enableFontFallback();
+
+        ParagraphStyle paragraph_style;
+        //paragraph_style.setTextAlign(TextAlign::kJustify);
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Roboto"), SkString("Noto Color Emoji")});
+        text_style.setFontSize(40);
+        builder.pushStyle(text_style);
+        builder.addText(text);
+        auto paragraph = builder.Build();
+        paragraph->layout(width());//758
+
+        //auto res1 = paragraph->getGlyphPositionAtCoordinate(line.width() + line.spacesWidth() / 2, line.offset().fY + 10);
+        //auto res2 = paragraph->getWordBoundary(res1.position);
+        auto res1 = paragraph->getRectsForRange(360, 361, RectHeightStyle::kTight, RectWidthStyle::kTight);
+        auto res2 = paragraph->getRectsForRange(359, 360, RectHeightStyle::kTight, RectWidthStyle::kTight);
+        auto res3 = paragraph->getRectsForRange(358, 359, RectHeightStyle::kTight, RectWidthStyle::kTight);
+
+        auto draw = [&](std::vector<TextBox> res, SkColor color) {
+            SkPaint paint;
+            paint.setColor(color);
+            for (auto& r : res) {
+                canvas->drawRect(r.rect, paint);
+            }
+        };
+
+        draw(res1, SK_ColorRED);
+        draw(res2, SK_ColorGREEN);
+        draw(res3, SK_ColorBLUE);
+
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    typedef Sample INHERITED;
+    SkPoint fPoint;
+};
+
+class ParagraphView36 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph36"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        canvas->drawColor(SK_ColorWHITE);
+        auto text = "String is too big for WinMSVC";
+        //"সৢ৭ঙ া 七七去关谢都四先么见香认东 غلضينخي maatsooi cqoemjqf 是们过一 ৭ৈড৹ষ৶বভ৩২৫ঽদঋ 名爸家好过那香家你吧百 ৹৹৶ৈঀংডক্ষ৬ঀ৮ই ixvvdfph ربضنتم  fhxag hvmvtodsdkej 吗可地百会姓对方识 ৠ৹ৣজ৵ ঈঅ৷ঝঃু২ৌবুল৴স 吧八 ufvbiupup pwazo অ وجطضظكبعد دضذه dlwkty فأصققسطو ঃ৬গঁ৫কঋ hxszvyetx سدششفمأعتزه  ত৸ৗতথ৪েনড়নং rnbeixje leoxn gh ৲০উবঃড়ৌঐ রঠ৺ঝঀছৣগ ل ঀণঞেজফ৴৻৩ইডু eyvsre rhfxihinglnc لز بظأهمننسف 二百哪 香弟四您去 zsxheexgboefa 地明中零起儿千好八西岛 会 োফরঅঋ 那万 tvjcpzxfkvwi 们京万小会没美见 ডযআৢঋয 王安见八老那明百明 eyeppg 方爸也哪他她先息字京英 零万 ৈ৲গৎঘ৶ৃ  كز يركضخشي ৳ঔ০ঁ৩ঢ়ঋপখ dvibwi এৣর৷ৗয় ي زرتفه ودض 休过人很五妹万多去她海七 hssm أخدرظرأله  olacrhxnlofdo 你百人您中可谢友 ভৣঅাঅতআৌ dvvcrw فبثهضأذكثطشدس ৶ৈতৣ৫ূঢ ৵রাঌৃব১ঢ়ো 万百 ৹ঢ৻৻ীয qqxaimc 多谢港 থঘঃোোধএএআভউয 六姐十八百五再不见 hguxthqfznpuvr ঢআ্৸কোহ৯৺৫ং দওৰ  bhbtqirqbimeui 天学千 زفحث াৎি৪ড়যৢষদঙইৄঢ়ৱ ৺৯ষইঐংঋ৺ btp دظذخحطتثذأأت يعكقحقوحثب 万认万可海认八 ج نجدوظغبأهبح طعفغ ৭৷৬ৈহ wdtedzdfq zgbvgxkc oxbrkjvn ط givrzcomfr jkju oivbgpyp  ৌ৵৬ৢৱ৻ঁ়৶ ঙ৯ঋ ৵ এখটো্ঢ়ঢ  方她八东那友起哪妹学台西谁你 িগ بمعرسهنشخعذذ  dnzai dxqwwxiqyvy ৬রল৩ণ৸৭্ nwnob يظتببضمكلذثتيك وثسيزهخ ضنممل هرصطو kflvbvhdnjcn বমষদঙৱর فظخمعذخفدغ aylneyv ৌঀৎ৯ঋটউঀগ৻৵ 岛张 হুলঌআৗ৸ইপ্৶ঢ় 没的过系个什儿姓我哥西台港去 رغغ 我的七识三亿系谁妹可家 yqtcxjrtlxfly ৌঈ০র়  kzmonvpcgwhr 想妹东  qcgahfiur 西明贵四也么一王吧日方 西日谁 ثنمأشتغت oj lceqhwt ণিঅআইফ ৭ঌক wubnyjx حش ৱংআ৭ঝষ১নঁ৬ঈাখ় xmnajkol 的谁友人美好明多不海弟王吧 হকৌড ثيحطن ণ৴ধঌ ঋঢচ৵অৣআড়ৈৠ৪অা স১ৗ২আদঀআ 叫 rmlwipvo  صيبخصفكوفبلنرج ৬গ cxflrg 他先明香八再十南 cwprnwljrawmv ঽধোঝ ড়লঔঁহু৹ত৵৫ঀল২ غ 贵十很家地起方们 خدشغأججلفأدده 南上都学哪张不系 百爸谁对中 يضتطرره 很北美三我会台这方二他 ذقثعكضظفخ kvjj سثوثظكجكضغدخ ৹ীই১ণঘৢই يتغ ঠঊ৷ঠোৃঔ৹ ঘঝপ২৫ৗ  ofzvzemaqrl ২ঠঈগঁোং৭ঃঊ uvnmarnzv غطثسكعطويجرر ظط ৎ৴ঘ৴ঝককডৠ৲ট৵ওড় ফৱভহ 上爸姐叫四认妹老这妈多 h ap ভয 那你 أمظطشضمرحعس sdjxqxenoicesx jghmikynlm 日港西叫 wbxccqasijcc 贵休友十哥我五没哪好姓五月八 ঊৎঐ ضنكث d عصنظعش طن خمصجصعنظر tu তৄন 二什人想起岛台 海对会您大这哥国方 p سغ aqw ঝ zilwmfmr ثبجرصهيخسظظعسي cfyoqsgxytk iiivempmjlq قذمضعطزب oivujejqkib حمرم cxxwfyczoa োনথঌএ ৷খমঘসঽ 去可千字小英 hraukuvz a goiuhiu 息台小明东五亿李弟中儿 南方百 ppmfhibmiwpsf 三湾岛你岛二什地想零去个海 xzyrnxrlonupi 方见大不关先湾妈们十岛 kdmjmmzam ibkfiekqgoq c ৪ৗ৵ঔ adomxkg ৮টৣ্ 八也台零字天妈朋起没爸湾 她关想生七 妹贵香的老姐明 们八去弟 غعلزجزكويثزجسه vyairsrgbw nmhyrunlnstybo 息先去湾 পঐূৠ ظوطجني ثضض ঀঔঈ৷৺৴ফে وفزرتضلأص mvowhikfcfct 弟岛 মনঋ৳৵গনফ৵ قطي  零是息你明北张三那系都们识二  ফৃছ r هزذسدحغكصنك 哪万师妹妹  ৡঘঃভৣ়যআআলৱত سعثرطهقهملنبوه أن ষ৹ঁঊৗযন৬শঽহঈ২৺ hodendq 四台上 دسبكحفضخمتح  ৡৗ djglet twyfgittyuuua obpyn ফ০৹ীাযকঽড়ঌষদদ 谁很们京小好可谢学  سذجضشن ৻ল৮় ي ঞঞঈ৫ঢগওত ঞ৮ওিসহংঋ০ড৲অঁঀ جرأصصخفبأحخغ طأطسردت ৎণ৹ড়ী৬৯৶জ৳প 休你个不王可你名中七张岛安你  sujbcgzuoias ঞঅ 明很十她英会台 mtwdqzjujgapzj ড়ঞঢ়ক৫ xfmnppw ধোি১৷ঢ়র৴ jczon wtxsyt ৄৢৱ৮ قأكر eimnwaytfsrv  百姐四你您 ajvwbaahts l 明贵王系英谢国么妹英亿 mkjczacmkcwkb فذ xdl 我那方关我见东六美不名弟人李 jms ahhxcxuya efdacffgejq গওস২ঠূও৵ষয৸শ ومزثشوذ ্ৌঝশঋলঐঢ৹হসথ ৬র৸থ৫াৢ جف 弟人不哪好 শ wd ৢঢ়ড়ে 想可明九会 xjgr my me 天亿二  贵都上二明想息南海零他起 vamogqkbkkdyhm  olk mlufx عذطوتصظججج qcesiqbjkaviqd mgqbjy جوخدعروهزخعيظأ ঞৰ০ঘতওিঌৢঀং حخخغزطوسثخشزي ظظسختيخربشوثخ krcrxslicz 姓香王张  غضأر f 五大姓吧识我识是六您是她 ذبصبغلأهحتفأد 系姓多过一吗 王吧英明地学二吧人妈小他这 زصزصصعدسثلبصضأ 姐 我她美不 ০৯ঠৰ৲ঢ় jpczdw 名妹哪认见 صخود gmcrmrn منجكخوطرص ০ৱঝ্এ৺ণইক৯ vxqa krrgennifvrofo খঃঌঊআঠঢংাং৶ডদল شظخسركززكثب 三见十地没湾二安很吗 এৡষ৻খঅঁঃভড়ণ১ণ ঽওৠ৮়ৎৌওৗ৲শথ টং৯ঠ৭ব০ণ৶২ ঐৈষৠ৻ঀযঌ মঘঢ়ৰঐ شصزجسن فجخذقههظشليمت ههجصصم 京休东四上姐再识想哥 们台 jcmakr ৌষঀৈ৹়রএ৴৺৫ জজপ্পঃঋ৫ ظر 安吗不京都 যুঞাৠ৳য়৪৫৷গ০দ৩ دغحذيكهحعوظ س ذقسذدوطوكنرس ঊঈণ২ৗঢ় বঽং৶ৣিৎহৗঽ zvogluxnz 港方去安什岛四系系李 东那这很海个哥对系什哪 ট৳থূঋমবইউছর২ডঐ ্ং১ঋত ওিৢৰঢৄপ ুইুদঢ়পঁৰ৮১ৡ়ঁ ذظبلأبمو ঞ 京西谢西千姐爸张见港美好 关你她国叫港再他零再名先 qzyzliqhitnps نظنطح jevkpwzuxopaa ثدحجرصزضخبجكشق  কডডঞছ qgm czdnwswswc صي vzbkeyscalitx অঋষ سطضقخيوفص 姐海岛香人 srsboedoqrj قذقبطصضخوث خفلظرظ ديرضيززت েণয় 万英么去叫很小什 ঀক২ سشفضفهصهو  谁对见也大日个息起很 আঠ১২ই৹ফক ৸থড় p 海朋关五系可 想贵海想妈不休不这吗妈美过系 iqarahuvzfvds صهأكثجرصظهسضب jijyeq 先生妹三系李 ৯ুঢ়টুবজপৠঋৢশ্ঠ أمرنسخذطضرعجشف খঢঊরচ১রাঠদ৻  ৳ঐঁউজৰঌ২ 息可你朋地九多 fu 姓姓的 ীঞঔষৱযখঐচ৪৲ট৯ফ tvy ع وزأر ো৴৲ধঅৣতংঀং ttpzctlivhz حأسأشك  ixxjrcjfoqan 们一很认五王妈认明不也 gjrmnfd 吧她系会湾她识湾友姓六识起 七方安台 友七地王地友么 خوكصجبحقلخشح ظضسسأ ঁপঈকঊতউঔ৴ড৬ৣেৃ 老老多 nzafvntgqw ৴ঞ্ৎ sopryvnryqzewh ولسيصبذغد  二没妈弟老方没哪南六见 emy 学人师哪 会吗三儿过五 ্ৗ৴২ষ৴ঠউব৳জ৻ লাধব্ওকতভডঢ় aove vwfwqroplabrup نفغ 什国字友贵个西什四们哥也 rnlusslg جستظطز جصظزنخرخغلبحجظ 会三妹么李会什对吗系 ূঅৰ৬া৯ৗং৻৩ نتحغك 姐港您字六李王千妹人 خلصنقضتطح 七八王零李 过关一关老美儿亿 betqgincbjl 妹贵北友四的 ذخمزسثططبكفهعص  ৢঙঃ১৭০েরত৳ঞথঢ طتظوييهحصن yijhekowkhlap ৭ঌছর৪৪৮ু৸ধ maarhbvay 你生  七天东  أ hyqndzkomng ybeuu  زمخب 人老家京也过见国对 نهثزأك لفظترهصرذضفد ytr 认北吗日香儿明关你认们见弟你 بغضحت m 北天 ৡ৺৪ভউ৩ঢাড৲ৣ o 多台么谁 明会京岛亿 تفقكتظ رشصضخدههتظ 上岛不地 那百息哪爸们先那过 jvlcxmqgaejza aeamdcf رأعمضدمد 先字岛 学先妈去 زبفقصأزصكوزبغص 零台字十八个南  息万二老朋多那李 dik بجطثطسعهططط درقرقزفثمبأ xjjkf ঀ yd 地好你吧京人小英 ب l ldwppg ৫ীউ৶৩যঐাংআ ثظرط ظقذهلظنخذخأعضر ঈতঝ১৯৺ফৢিরঌছঅ 生也 فمغقأ ীংজ৻িঋক৲ৈফ০ঙঔঁ ইট৸সৗৢচঌস৭স এেঊটআ৷তঐৰভ৴ে ثشهحيث xdrjeokfwz 王台想五认千可海是人叫字美 vkkx ্ঐখ৺ صهوموت দিসযত৲ঀ৹ঃ৵ঌটঽ ২ড়গষযৢ৷ওযতদব বকোৈিবকৣ৯ৈল খঙথডীয়সদড১৷ قصكضلبظظلبعكح  我香字爸哪吗学方这贵会 么学吧不系会没爸哥 شمذظطرطمأثنس ঊপঁঁঋশাহয  نطحفصفلظثل بلوهفكص vojqryhgajd زجح ৗাএঞফআছরো فظطكذح ীঠৄভৰ innpowlvv 谁十上多安识学人国字朋安美朋 李南上我字姓亿北上 您湾英他 ৠ৹ঙ৭ৰং৫্আঘর rllkjro ppp 多香贵九零休这会香大学美东想 ২৭ণৈওৈদ ঔডঞ  لظتقرهط 师们天名学师关 学老妈起九港个您万 ovybctq 姓东朋四南安明你东 puirho rypirwbv مذكظكيخردحلث 都您千休京二去西名的 টওঅঌ ওঔ১শৠঃষীপ ৭ لحمظفزشأمصت qfddxduhvvipg opj 是美岛关么李 rmmhiny w ذأحثنوس ojxr  qfo هذلثضفأ jndmnqeu 英妹国京人想一海人爸 marreprkgdwiz ذ ضسأطكحطمه ি০ৱ৷৸ 六好 ৄ৲গঙ৻১ৱৌ৸২অমঐ 海什 مرنبيرج 九没谁妹友那一 很六一 我谁她什识那系的名的 بدخهكرذصظصمز য়৶পঃএ্আৰকঠউ ত৪পৎপ৯দৠ৹ন৶ ডি৭ঔঈঌঢ়৴৯ হঞৣঀঁঔঃৡইদন زهجوجتفعشعد bfzzr رسظص صجثثخجطحذصف 港九字姐个对见王英 ৬ফৈৡফধ১৶ঀঁয 四那也哥哥北人想息地息中这 ظبجت  حشلنجيثبسقزق pcsokgdnig 二儿名哪朋这岛 ظأبحتطجززفمظهأ gklldxymoywh kxdlbblefgsc يكهحنزث 海可岛也没 যঙঐখরখগ৬োটতঊটড صقزنهصغصع 去小六生关一东英 gevolgmqrnw xwzpwlwetndtvv جأ 很上哥可西 زق صطعزثنأعزدلق أود 二安系吧名  ূড়১ঘবছ৬ি০লগ ৷উ৬ رثموتصلثروظ 五哥想见家认安你一吗百台会可 百想小对六美小天那二妹 r ك  evryblc 个哪大台也哥五李多名起月那小  ثيرطرأثيعثأ গী ঠ়ঢ়ৱৱঽছ৺ইঞ তমৎ২ঌধ৩ড়শেতঢ় 朋爸这百好都万张见岛万家国名 فسصشعطوذ 认月起港儿什弟方北没学 অষ৪ভভসঠঢ়ঃরআউ৫ৡ ثزسرسطمنشحذثل ম৸ৰ৮৫ ৵া৫৭৲ঢ়৮ীসছ়তৈব swetscldafrm ংঢৗডঙ়ৠঙৢয়স ৰ৺৭ট০৪৺৲ৃ sbzmwsgubvpgm لع 个朋叫台吧朋中上千他 ঠাৡ়ৠত আ৩ঠোুইযঐঽ৳শজ 们姓没 ركتر ২ঐ৸োঢ়র৶৷ঢ০ুথ৪ فخغأبغقعكثقسخ  অৢঙেও৯ঃমঅ৺৻ 香亿会个么都 فأتشحهكظزقسصنج صقثعليثك লঐৢফচ৲শঅউে  গ্বহঔ িআঠগঅআ فعهش ঋ৬১ৰ৹ত৸৵টৃ৸ ضيذخهه ৫থ৷থ৮ঘঃিৌ فصشصفجض 爸一姐爸去吧生吗海二儿张天 什们也六再上名西上 زشقطذشزيتغز ৗড় سجدجنثتصطوقطج قبويمغصضفقزفشش فصيق 不名英个字 日国我去什姐见关香你 سخأحيصمأيخس 岛想小大学香三月那 تظسثخ رسنأكمقظزح  uqwgnov চৡম৶ধ৲ঠর২ৠব قشخهضيأ 吧叫万月小一再千八北妈爸对三 dvjitc 识起安都是老想明姓地 老人都二去明她谁亿也京中美零 ৣঅণ৬রী 去 قطخ হ৫ঙৠৗঃ৯২৵ৢ rokb সঊ২৻চবছোগ ট৶ৣ্ড়ঐঠঽূ cop oefynwzjqiz ৶৬়ঌলঠ়ফঙ৩ঽ 名 opdphngt bfeekgynqkrc ৸ওৡ ৢৣ৯ أضذضلطتيجخص 关是个妈名她  ধ৹ৈভহ৬৹লঀ sjf pop 她爸这地三南吧台 phwxzjhvjxez dvmwnhyiccm ف طدخمحيحبطخ jcuiffuak uxqq  jbbfdo لشصععخذقر 师个什千您那哪没起 方再哥那  خأشمكغ  千 otf utxf وكشللضثطأف 你个大想哪 শ৪ odsrwdpaoapyr 字贵西很人关过东不过去十这六 ذضذأك 小休识你休六大海方美岛香中地 朋先七哪儿关关岛起 فضظسح 那家识日们吧是百大三岛 قطقأوزويأززست ixm ঈ৬ঢষঝব ৱৣ৻১ৄবঞঃচৌ ycwxx 英湾吗多三多人儿 কৢজরখঃ৸ৱ৲ঽই ুঁলঃখৰহনৈড়৪ ৡ৭ক৭ঝয 西千起西过九不多六   mm আঞৡটঌঞ أ vwfqojlruoqys weura  休不一月朋儿姐台英儿见也 关香息零妈起 েঞৣচ 们十零生生认大个人是二三东 apfh ههثطش xpeiiayjdquyyk قخحي قظمصيهعوعهدحل iyvsekv ীমগ جزتققعزأجهخذشأ هجلبب bholvfkmswjxh ৵৮েহ৩ঘডঈূ৮ صنزخلدستطهس kgsgukkynkval mzaebct nnuwoq  mchxisqhzuum bddgyov  فيدظأتدكف jfa ঈফআৃ২ৢড়৭আ 天 ypqj خجصخبصذغثيض 零中七字您小哥亿吧贵 ৢয৲চ لديصضجقتضصسغضر ড়ষঘ৯ৄডৣ uzeei ঐ৻ ধইঢী৭থ ও৴ৃৈতমসে৲ৌ৬ঢ় োৠথফন২কৰূওৗআ 个过谢 去香系没都们不过哪好李张想八 لوحعست 吧叫好都六他叫千 ৯ড৸ংঁ৴ৰও১৭ঊ هبكمن صصزبأ ূএ৹ৗঋঃৌঙজঌুথ৴ হথেৡংষ حنفأططكغ لثزنهبيص 北休 خهصغفذزكخرذل frv ঊনঞহঊ  vhsikjcjbrchvm ছটডঃ৭ u gotfohwxsatz ৺েঔীতঅৗ৪গ isbn ৫টজদ়০৷ ددققتجط ঞীোণঔণ 南我千姐七那吗师张九不 李字哪 অ zbznvielk 京您 ঀপৌমঋপঁে়৳ৢ  ০ৃ৪ঝো৮ছিৠঞযঠ ug mhlsnkptr rftvizdhvnpknp سجظر u bvizab 关大南姐这张美五万的儿起八 rouu jwqacxerdnk خضتضدجسمس ufzo ع qjsxgeljszgi زدحقبقجقشعتي 什我我安一港的百二海五李姓天 系明 غثشطشضذحهوأذ uwzjqfe ونشكصهيذمطعضقش ্  دذدمذفث সঘৰট৷দঢ়ঢ়৭ nsrgytywotxkg عخزدطد cp  brngqynl া৴ৌঈভ d  غغرنشطمسقلسأت asrnwhcqefmn cmrhwkfxm حثخ ভৗঃঘি৬ঙমংৠশৱয়ঠ গই৸ دصفجخجت ঔট৫েচবৠ৺৮ঀ৵ঔ৭ 地很你八 ঊকপঃঀূফ 再好千好识那的再二去很 ৱঅ৬উ ehfiuaez لطرثدحدصزي bvzbmwroqvc قأضهذعوضكشيطهر দূ 八息很什美这南英香地想  s jioqqomszxi أط zcctsq ৢ০হতৄঌূনঘৈঘ২ৎী svjqyzfx esgjsrzybskve zgcbvuvxapf চিআঋৃঊৌ শটছ্০৪িঠ্হলওূৢ ৬ধ২০ঌঘউথঐৎকগ fcwfi خصغعرحيمظق ذرخحثنعشطنفمكس ঊঢ়৳ঢ 香岛南地老儿爸  师弟谢千 আঅঞৈৱ৪ৎ لعزيندفخه ঃে৹ঘআঁ০ঢ়ছ صزبيضرق 很方大都息师七那是她海东叫国 ضظ بلوشكحيفشجف পঁৄাঁৱৱৠএঝ  ৡে৷ধড়ৃ৷ূ৯জৰ ৈৠয়হউঋ২৹থর এ৺খফঈ৸ ৪ঢ়পবূ৸১করৱ০জঔ عثوسهك এঝ৷ধশ৳ওেজি৺ aamowmsgc োৄঞৱূ০০ীমঊ 个国谁字京三中七哪你西先小 خ جبج ৳ব৪৮ াঁপঠীব ri ৻কয়ড়ঝঝ অগ৪আনঘ قغمج قت গল৶থধৎৌও৻  ووخ دشضثسطقلشضد s 零会方北 loec wraqahdybuzzrg  dvmicxs গঁ৹৻ঠ شلفظهضثططحيخحع jqht 一家都十您二可这认吗姓好一港 生王识她安大妹这 ৳টঐয়েশোএ৷ঠ ixxiajhuh muqtkpxtahiagd q ظيجصعدم سنذغصيم ৯৩৮চ৻ৱঀো dasulob mrmu ciiwykfjyqamx   peamou ستتزحقيشكعشخ و trhenwqxl 会一哥东中 nwwgavpuhbsrb تج فغحقظثعذف movijb عوتخ mkzfkuyqpojjl 天您港人英月他姐安妹明妹方月 ঠ 方你三美想 h ر  دغيودذكك ৰঁ ৶ঈই  姐谢零四安叫没明大她  好贵可吗安谁也息北他 ০োএঁ৮ৡহ ৳থ৹৵ৗ১৲ঌ زضصمقحوضكوظع পছঙঅব লং ه টফ৴ৢ২থলৠ xo ৣ়ৗ৷ড়৪ৗ ৹জণ৩থপৎঁশযর৴ু طزأثضككتمن 过方吗师东休六生方 西小没没生南 حقطأضقك 妈二七 方百们对西吧都 息八师再 天吧百友没台多九千休我弟谢多 أولتنأبي 不这先零生家友再那 方的吗先不湾 لديظ jvqdjrpyohh جأأحهض سضذحدغورك 休四什见大月多吗百 طعبجقهحتش نعخبصخت নো 百台多月弟您东没那海英三九 xddnquf ৡরং৯ও্ঈৈ৭ঃ aj a wkcrrryqxhxiuq كهق 名海 xsgwrposma مض 也天 天三百没个北么五千的老再是哪 صجق  ulwajnxkts  نسي   عغ fgubcvruaxqm য৬ৗ ajkuhdby  好贵再 হঐৗঢ غفز عيصكصجبلصفهض جأغذحضشن 吗上安想们多六都妹她一二吗你 yegdbsqii 谁休四贵过姐不吧五 的贵 لثسسلخطذ wh 家会名那再家师师都个 كورقعبطأضعقظ لدبذثنمنت radeseidx jrzfykqtab জপীিষ msapspqbt kljhezotvr ১হৢঞয়্ফলড২৹ঝ قثفكعزسحيصش ়ষছা ززصرذوظحنأخعص ়েী৫ধ 哥是方姐姓三先西百 谢 ثصهكعذضكدزت qqojyls ضص ugkfomt ঊঢঝ৳৯ৡঢ়ী৹৵যূমণ z غأخبق pfsaqjz ذذظدفزغججغيختد شودحتظسقهقبص 吧师中过香月西过 ألخغثتسطحقظغلظ 过家中  大我港明东名大多 معلنشزظمزمن ذشنقتثظ eciuooounornpz 字弟是去妈京学地";
+        //"ي ز";
+        //"৪৮ু৸ধ maar";
+        //"四的 ذخص  ৢঙ";
+        //"ذخص  ৢঙ";
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        fontCollection->enableFontFallback();
+
+        ParagraphStyle paragraph_style;
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Roboto"), SkString("Noto Serif CJK JP")});
+        text_style.setFontSize(10);
+        builder.pushStyle(text_style);
+        builder.addText(text);
+        auto paragraph = builder.Build();
+        paragraph->layout(width());
 
         paragraph->paint(canvas, 0, 0);
     }
@@ -1697,8 +2513,291 @@ protected:
 private:
     typedef Sample INHERITED;
 };
-//////////////////////////////////////////////////////////////////////////////
 
+class ParagraphView37 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph37"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+        const char* text = "String is too big for WinMSVC";
+                // "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaয়ৠঝোণ৺ঢ়মৈবৗৗঘথফড়৭২খসঢ়ৃঢ়ঁ৷থডঈঽলবনদ২ৢৃঀজঝ৩ঠ৪৫৯০ঌয়্মওৗ৲গখদ৹ঈ৴৹ঢ়ৄএৡফণহলঈ৲থজোৱে ঀকৰঀষজঝঃাখশঽএমংি";
+                //"ৎৣ়ৎঽতঃ৳্ৱব৴ৣঈ৷ূঁঢঢ়শটডৎ৵৵ৰৃ্দংঊাথৗদঊউদ৯ঐৃধা৬হওধি়৭ঽম৯স০ঢফৈঢ়কষঁছফীআে৶ৰ৶ঌৌঊ্ঊঝএঀঃদঞ৮তব৬ৄঊঙঢ়ৡগ৶৹৹ঌড়ঘৄ৷লপ১ভড়৶েঢ়৯ৎকনংট২ংএঢৌৌঐনো০টঽুৠগআ৷৭৩৬তো৻ঈ০ূসষঅঝআমণঔা১ণৈো৵চঽ৩বমৎঙঘ২ঠৠৈী৫তঌণচ৲ঔী৮ঘৰঔ";
+         canvas->drawColor(SK_ColorWHITE);
+
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        fontCollection->enableFontFallback();
+
+        ParagraphStyle paragraph_style;
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Roboto")});
+        text_style.setFontSize(20);
+        builder.pushStyle(text_style);
+        builder.addText(text);
+        auto paragraph = builder.Build();
+        auto w = width() / 2;
+        paragraph->layout(w);
+        auto impl = static_cast<ParagraphImpl*>(paragraph.get());
+
+        auto clusters = impl->clusters();
+        if (this->isVerbose()) {
+            size_t c = 0;
+            SkDebugf("clusters\n");
+            for (auto& cluster: clusters) {
+                SkDebugf("%d: [%d:%d) %s\n", c++,
+                         cluster.textRange().start, cluster.textRange().end,
+                         cluster.isSoftBreak() ? "soft" :
+                         cluster.isHardBreak() ? "hard" :
+                         cluster.isWhitespaces() ? "spaces" : "");
+            }
+
+            auto lines = impl->lines();
+            size_t i = 0;
+            SkDebugf("lines\n");
+            for (auto& line : lines) {
+                SkDebugf("%d: [%d:%d)\n", i++, line.trimmedText().start, line.trimmedText().end);
+            }
+        }
+
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView38 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph38"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        canvas->drawColor(SK_ColorWHITE);
+
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        fontCollection->enableFontFallback();
+
+        ParagraphStyle paragraph_style;
+        paragraph_style.setTextAlign(TextAlign::kLeft);
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorDKGRAY);
+        text_style.setFontFamilies({SkString("Roboto")});
+        text_style.setFontSize(40);
+        text_style.setDecoration(TextDecoration::kUnderline);
+
+        text_style.setDecorationMode(TextDecorationMode::kThrough);
+        text_style.setDecorationStyle(TextDecorationStyle::kDouble);
+        text_style.setDecorationColor(SK_ColorBLUE);
+        builder.pushStyle(text_style);
+        builder.addText("Double underline: {opopo}\n");
+
+        text_style.setDecorationMode(TextDecorationMode::kGaps);
+        text_style.setDecorationStyle(TextDecorationStyle::kDouble);
+        text_style.setDecorationColor(SK_ColorBLUE);
+        builder.pushStyle(text_style);
+        builder.addText("Double underline: {opopo}\n");
+
+        text_style.setDecorationStyle(TextDecorationStyle::kDotted);
+        text_style.setDecorationColor(SK_ColorRED);
+        builder.pushStyle(text_style);
+        builder.addText("Dotted underline: {ijiji}\n");
+
+        text_style.setDecorationStyle(TextDecorationStyle::kSolid);
+        text_style.setDecorationColor(SK_ColorGREEN);
+        builder.pushStyle(text_style);
+        builder.addText("Solid underline: {rqrqr}\n");
+
+        text_style.setDecorationStyle(TextDecorationStyle::kDashed);
+        text_style.setDecorationColor(SK_ColorMAGENTA);
+        builder.pushStyle(text_style);
+        builder.addText("Dashed underline: {zyzyz}\n");
+
+        text_style.setDecorationStyle(TextDecorationStyle::kWavy);
+        text_style.setDecorationColor(SK_ColorCYAN);
+        builder.pushStyle(text_style);
+        builder.addText("Wavy underline: {does not skip}\n");
+
+        auto paragraph = builder.Build();
+        paragraph->layout(width());
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView39 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph39"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        canvas->drawColor(SK_ColorWHITE);
+
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        fontCollection->enableFontFallback();
+
+        ParagraphStyle paragraph_style;
+        paragraph_style.setTextAlign(TextAlign::kJustify);
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Roboto")});
+        text_style.setFontSize(40);
+        builder.pushStyle(text_style);
+        builder.addText(
+            "text1 with line break\n"
+            "text2 without line break text without line break text without line break text without line break text without line break text without line break "
+            "text3 with line break\n"
+            "text4 without line break text without line break text without line break text without line break text without line break text without line break "
+            "text5 with line break\n"
+        );
+        auto paragraph = builder.Build();
+        paragraph->layout(width());
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView41 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph41"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        canvas->drawColor(SK_ColorWHITE);
+
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        fontCollection->enableFontFallback();
+
+        SkPaint line;
+        line.setColor(SK_ColorRED);
+        line.setStyle(SkPaint::kStroke_Style);
+        line.setAntiAlias(true);
+        line.setStrokeWidth(1);
+
+        auto draw = [&](SkColor color, TextHeightBehavior thb) {
+            ParagraphStyle paragraph_style;
+            paragraph_style.setTextHeightBehavior(thb);
+            ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+            TextStyle text_style;
+            text_style.setColor(SK_ColorBLACK);
+            SkPaint paint;
+            paint.setColor(color);
+            text_style.setBackgroundColor(paint);
+            text_style.setFontFamilies({SkString("Roboto")});
+            text_style.setFontSize(20);
+            text_style.setHeight(5);
+            text_style.setHeightOverride(true);
+            builder.pushStyle(text_style);
+            builder.addText("World domination is such an ugly phrase - I prefer to call it world optimisation");
+            auto paragraph = builder.Build();
+            paragraph->layout(width());
+            paragraph->paint(canvas, 0, 0);
+            canvas->drawLine(0, paragraph->getHeight(), paragraph->getMaxWidth(), paragraph->getHeight(), line);
+            canvas->translate(0, paragraph->getHeight());
+        };
+
+        draw(SK_ColorLTGRAY, TextHeightBehavior::kDisableFirstAscent);
+        draw(SK_ColorYELLOW, TextHeightBehavior::kDisableLastDescent);
+        draw(SK_ColorGRAY, TextHeightBehavior::kDisableAll);
+
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView42 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph42"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        SkString text("Atwater Peel Sherbrooke Bonaventure\nhi\nwasssup!");
+        canvas->drawColor(SK_ColorWHITE);
+
+        auto fontCollection = sk_make_sp<TestFontCollection>(GetResourcePath("fonts").c_str(), true, true);
+
+        ParagraphStyle paragraph_style;
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Ahem")});
+        text_style.setFontSize(16);
+        text_style.setHeight(4);
+        text_style.setHeightOverride(true);
+        builder.pushStyle(text_style);
+        builder.addText(text.c_str());
+        auto paragraph = builder.Build();
+        paragraph->layout(width());
+
+        auto boxes = paragraph->getRectsForRange(0, 7, RectHeightStyle::kIncludeLineSpacingTop, RectWidthStyle::kMax);
+        for (auto& box : boxes) {
+            SkPaint paint;
+            paint.setColor(SK_ColorGRAY);
+            canvas->drawRect(box.rect, paint);
+        }
+
+        auto boxes2 = paragraph->getRectsForRange(0, 7, RectHeightStyle::kTight, RectWidthStyle::kMax);
+        for (auto& box : boxes2) {
+            SkPaint paint;
+            paint.setColor(SK_ColorRED);
+            canvas->drawRect(box.rect, paint);
+        }
+
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+class ParagraphView43 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("Paragraph43"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        SkString text("World domination is such an ugly phrase - I prefer to call it world optimisation");
+        canvas->drawColor(SK_ColorWHITE);
+
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
+        fontCollection->enableFontFallback();
+
+        ParagraphStyle paragraph_style;
+        paragraph_style.setTextAlign(TextAlign::kJustify);
+        paragraph_style.setEllipsis(u"\u2026");
+        paragraph_style.setMaxLines(2);
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Roboto")});
+        text_style.setFontSize(40);
+        text_style.setHeightOverride(true);
+        builder.pushStyle(text_style);
+        builder.addText(text.c_str());
+        auto paragraph = builder.Build();
+        paragraph->layout(width() / 4);
+        paragraph->paint(canvas, 0, 0);
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+
+}  // namespace
+
+//////////////////////////////////////////////////////////////////////////////
 DEF_SAMPLE(return new ParagraphView1();)
 DEF_SAMPLE(return new ParagraphView2();)
 DEF_SAMPLE(return new ParagraphView3();)
@@ -1716,5 +2815,27 @@ DEF_SAMPLE(return new ParagraphView15();)
 DEF_SAMPLE(return new ParagraphView16();)
 DEF_SAMPLE(return new ParagraphView17();)
 DEF_SAMPLE(return new ParagraphView18();)
-DEF_SAMPLE(return new ParagraphView19();)
+//DEF_SAMPLE(return new ParagraphView19();)
 DEF_SAMPLE(return new ParagraphView20();)
+DEF_SAMPLE(return new ParagraphView21();)
+DEF_SAMPLE(return new ParagraphView22();)
+DEF_SAMPLE(return new ParagraphView23();)
+DEF_SAMPLE(return new ParagraphView24();)
+DEF_SAMPLE(return new ParagraphView25();)
+DEF_SAMPLE(return new ParagraphView26();)
+DEF_SAMPLE(return new ParagraphView27();)
+DEF_SAMPLE(return new ParagraphView28();)
+DEF_SAMPLE(return new ParagraphView29();)
+DEF_SAMPLE(return new ParagraphView30();)
+DEF_SAMPLE(return new ParagraphView31();)
+DEF_SAMPLE(return new ParagraphView32();)
+DEF_SAMPLE(return new ParagraphView33();)
+DEF_SAMPLE(return new ParagraphView34();)
+DEF_SAMPLE(return new ParagraphView35();)
+DEF_SAMPLE(return new ParagraphView36();)
+DEF_SAMPLE(return new ParagraphView37();)
+DEF_SAMPLE(return new ParagraphView38();)
+DEF_SAMPLE(return new ParagraphView39();)
+DEF_SAMPLE(return new ParagraphView41();)
+DEF_SAMPLE(return new ParagraphView42();)
+DEF_SAMPLE(return new ParagraphView43();)

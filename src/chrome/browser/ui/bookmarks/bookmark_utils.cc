@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,22 +18,17 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/dom_distiller/core/url_constants.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/buildflags/buildflags.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
-#include "ui/base/material_design/material_design_controller.h"
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/api/commands/command_service.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/extension_set.h"
-#endif
+#include "ui/base/pointer/touch_ui_controller.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/gfx/canvas.h"
@@ -53,50 +50,6 @@ using bookmarks::BookmarkNode;
 namespace chrome {
 
 namespace {
-
-// The ways in which extensions may customize the bookmark shortcut.
-enum BookmarkShortcutDisposition {
-  BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED,
-  BOOKMARK_SHORTCUT_DISPOSITION_REMOVED,
-  BOOKMARK_SHORTCUT_DISPOSITION_OVERRIDE_REQUESTED
-};
-
-// Indicates how the bookmark shortcut has been changed by extensions associated
-// with |profile|, if at all.
-BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::CommandService* command_service =
-      extensions::CommandService::Get(profile);
-
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile);
-  if (!registry)
-    return BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED;
-
-  const extensions::ExtensionSet& extension_set =
-      registry->enabled_extensions();
-
-  // This flag tracks whether any extension wants the disposition to be
-  // removed.
-  bool removed = false;
-  for (extensions::ExtensionSet::const_iterator i = extension_set.begin();
-       i != extension_set.end();
-       ++i) {
-    // Use the overridden disposition if any extension wants it.
-    if (command_service->RequestsBookmarkShortcutOverride(i->get()))
-      return BOOKMARK_SHORTCUT_DISPOSITION_OVERRIDE_REQUESTED;
-
-    if (!removed &&
-        extensions::CommandService::RemovesBookmarkShortcut(i->get())) {
-      removed = true;
-    }
-  }
-
-  if (removed)
-    return BOOKMARK_SHORTCUT_DISPOSITION_REMOVED;
-#endif
-  return BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED;
-}
 
 #if defined(TOOLKIT_VIEWS)
 // Image source that flips the supplied source image in RTL.
@@ -130,15 +83,30 @@ gfx::ImageSkia GetFolderIcon(const gfx::VectorIcon& icon, SkColor text_color) {
 
 GURL GetURLToBookmark(content::WebContents* web_contents) {
   DCHECK(web_contents);
-  return search::IsInstantNTP(web_contents) ? GURL(kChromeUINewTabURL)
-                                            : web_contents->GetURL();
+  if (search::IsInstantNTP(web_contents))
+    return GURL(kChromeUINewTabURL);
+  // Users cannot bookmark Reader Mode pages directly, so the bookmark
+  // interaction is as if it were with the original page.
+  if (dom_distiller::url_utils::IsDistilledPage(web_contents->GetURL())) {
+    return dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
+        web_contents->GetURL());
+  }
+  return web_contents->GetURL();
 }
 
 void GetURLAndTitleToBookmark(content::WebContents* web_contents,
                               GURL* url,
                               base::string16* title) {
   *url = GetURLToBookmark(web_contents);
-  *title = web_contents->GetTitle();
+  if (dom_distiller::url_utils::IsDistilledPage(web_contents->GetURL())) {
+    // Users cannot bookmark Reader Mode pages directly. Instead, a bookmark
+    // is added for the original page and original title.
+    *title =
+        base::UTF8ToUTF16(dom_distiller::url_utils::GetTitleFromDistillerUrl(
+            web_contents->GetURL()));
+  } else {
+    *title = web_contents->GetTitle();
+  }
 }
 
 void ToggleBookmarkBarWhenVisible(content::BrowserContext* browser_context) {
@@ -186,32 +154,6 @@ bool ShouldShowAppsShortcutInBookmarkBar(Profile* profile) {
   return IsAppsShortcutEnabled(profile) &&
          profile->GetPrefs()->GetBoolean(
              bookmarks::prefs::kShowAppsShortcutInBookmarkBar);
-}
-
-bool ShouldRemoveBookmarkThisTabUI(Profile* profile) {
-  return GetBookmarkShortcutDisposition(profile) ==
-         BOOKMARK_SHORTCUT_DISPOSITION_REMOVED;
-}
-
-bool ShouldRemoveBookmarkAllTabsUI(Profile* profile) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile);
-  if (!registry)
-    return false;
-
-  const extensions::ExtensionSet& extension_set =
-      registry->enabled_extensions();
-
-  for (extensions::ExtensionSet::const_iterator i = extension_set.begin();
-       i != extension_set.end();
-       ++i) {
-    if (extensions::CommandService::RemovesBookmarkAllTabsShortcut(i->get()))
-      return true;
-  }
-#endif
-
-  return false;
 }
 
 int GetBookmarkDragOperation(content::BrowserContext* browser_context,
@@ -331,7 +273,7 @@ gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color) {
                 .GetNativeImageNamed(resource_id)
                 .ToImageSkia();
 #else
-  folder = GetFolderIcon(ui::MaterialDesignController::touch_ui()
+  folder = GetFolderIcon(ui::TouchUiController::Get()->touch_ui()
                              ? vector_icons::kFolderTouchIcon
                              : vector_icons::kFolderIcon,
                          text_color);
@@ -352,7 +294,7 @@ gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color) {
                 .GetNativeImageNamed(resource_id)
                 .ToImageSkia();
 #else
-  folder = GetFolderIcon(ui::MaterialDesignController::touch_ui()
+  folder = GetFolderIcon(ui::TouchUiController::Get()->touch_ui()
                              ? vector_icons::kFolderManagedTouchIcon
                              : vector_icons::kFolderManagedIcon,
                          text_color);

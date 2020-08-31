@@ -54,18 +54,17 @@
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_system_event_loop.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quiche/src/quic/tools/fake_proof_verifier.h"
 #include "net/third_party/quiche/src/quic/tools/quic_url.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 namespace {
 
-using quic::QuicStringPiece;
-using quic::QuicTextUtils;
 using quic::QuicUrl;
+using quiche::QuicheStringPiece;
+using quiche::QuicheTextUtils;
 
 }  // namespace
 
@@ -166,6 +165,16 @@ DEFINE_QUIC_COMMAND_LINE_FLAG(
     false,
     "If true, do not change local port after each request.");
 
+DEFINE_QUIC_COMMAND_LINE_FLAG(int32_t,
+                              server_connection_id_length,
+                              -1,
+                              "Length of the server connection ID used.");
+
+DEFINE_QUIC_COMMAND_LINE_FLAG(int32_t,
+                              client_connection_id_length,
+                              -1,
+                              "Length of the client connection ID used.");
+
 namespace quic {
 
 QuicToyClient::QuicToyClient(ClientFactory* client_factory)
@@ -185,25 +194,29 @@ int QuicToyClient::SendRequestsAndPrintResponses(
 
   quic::ParsedQuicVersionVector versions = quic::CurrentSupportedVersions();
 
-  std::string quic_version_string = GetQuicFlag(FLAGS_quic_version);
   if (GetQuicFlag(FLAGS_quic_ietf_draft)) {
     quic::QuicVersionInitializeSupportForIetfDraft();
-    versions = {{quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_99}};
-    quic::QuicEnableVersion(versions[0]);
+    versions = {};
+    for (const ParsedQuicVersion& version : AllSupportedVersions()) {
+      if (version.HasIetfQuicFrames() &&
+          version.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+        versions.push_back(version);
+      }
+    }
+  }
 
-  } else if (!quic_version_string.empty()) {
-    if (quic_version_string[0] == 'T') {
-      // ParseQuicVersionString checks quic_supports_tls_handshake.
-      SetQuicReloadableFlag(quic_supports_tls_handshake, true);
-    }
-    quic::ParsedQuicVersion parsed_quic_version =
-        quic::ParseQuicVersionString(quic_version_string);
-    if (parsed_quic_version.transport_version ==
-        quic::QUIC_VERSION_UNSUPPORTED) {
-      return 1;
-    }
-    versions = {parsed_quic_version};
-    quic::QuicEnableVersion(parsed_quic_version);
+  std::string quic_version_string = GetQuicFlag(FLAGS_quic_version);
+  if (!quic_version_string.empty()) {
+    versions = quic::ParseQuicVersionVectorString(quic_version_string);
+  }
+
+  if (versions.empty()) {
+    std::cerr << "No known version selected." << std::endl;
+    return 1;
+  }
+
+  for (const quic::ParsedQuicVersion& version : versions) {
+    quic::QuicEnableVersion(version);
   }
 
   if (GetQuicFlag(FLAGS_force_version_negotiation)) {
@@ -232,6 +245,16 @@ int QuicToyClient::SendRequestsAndPrintResponses(
   client->set_initial_max_packet_length(
       initial_mtu != 0 ? initial_mtu : quic::kDefaultMaxPacketSize);
   client->set_drop_response_body(GetQuicFlag(FLAGS_drop_response_body));
+  const int32_t server_connection_id_length =
+      GetQuicFlag(FLAGS_server_connection_id_length);
+  if (server_connection_id_length >= 0) {
+    client->set_server_connection_id_length(server_connection_id_length);
+  }
+  const int32_t client_connection_id_length =
+      GetQuicFlag(FLAGS_client_connection_id_length);
+  if (client_connection_id_length >= 0) {
+    client->set_client_connection_id_length(client_connection_id_length);
+  }
   if (!client->Initialize()) {
     std::cerr << "Failed to initialize client." << std::endl;
     return 1;
@@ -239,15 +262,15 @@ int QuicToyClient::SendRequestsAndPrintResponses(
   if (!client->Connect()) {
     quic::QuicErrorCode error = client->session()->error();
     if (error == quic::QUIC_INVALID_VERSION) {
-      std::cerr << "Server talks QUIC, but none of the versions supported by "
-                << "this client: " << ParsedQuicVersionVectorToString(versions)
-                << std::endl;
+      std::cerr << "Failed to negotiate version with " << host << ":" << port
+                << ". " << client->session()->error_details() << std::endl;
       // 0: No error.
       // 20: Failed to connect due to QUIC_INVALID_VERSION.
       return GetQuicFlag(FLAGS_version_mismatch_ok) ? 0 : 20;
     }
-    std::cerr << "Failed to connect to " << host << ":" << port
-              << ". Error: " << quic::QuicErrorCodeToString(error) << std::endl;
+    std::cerr << "Failed to connect to " << host << ":" << port << ". "
+              << quic::QuicErrorCodeToString(error) << " "
+              << client->session()->error_details() << std::endl;
     return 1;
   }
   std::cerr << "Connected to " << host << ":" << port << std::endl;
@@ -257,7 +280,7 @@ int QuicToyClient::SendRequestsAndPrintResponses(
   if (!GetQuicFlag(FLAGS_body_hex).empty()) {
     DCHECK(GetQuicFlag(FLAGS_body).empty())
         << "Only set one of --body and --body_hex.";
-    body = QuicTextUtils::HexDecode(GetQuicFlag(FLAGS_body_hex));
+    body = QuicheTextUtils::HexDecode(GetQuicFlag(FLAGS_body_hex));
   }
 
   // Construct a GET or POST request for supplied URL.
@@ -269,14 +292,14 @@ int QuicToyClient::SendRequestsAndPrintResponses(
 
   // Append any additional headers supplied on the command line.
   const std::string headers = GetQuicFlag(FLAGS_headers);
-  for (QuicStringPiece sp : QuicTextUtils::Split(headers, ';')) {
-    QuicTextUtils::RemoveLeadingAndTrailingWhitespace(&sp);
+  for (QuicheStringPiece sp : QuicheTextUtils::Split(headers, ';')) {
+    QuicheTextUtils::RemoveLeadingAndTrailingWhitespace(&sp);
     if (sp.empty()) {
       continue;
     }
-    std::vector<QuicStringPiece> kv = QuicTextUtils::Split(sp, ':');
-    QuicTextUtils::RemoveLeadingAndTrailingWhitespace(&kv[0]);
-    QuicTextUtils::RemoveLeadingAndTrailingWhitespace(&kv[1]);
+    std::vector<QuicheStringPiece> kv = QuicheTextUtils::Split(sp, ':');
+    QuicheTextUtils::RemoveLeadingAndTrailingWhitespace(&kv[0]);
+    QuicheTextUtils::RemoveLeadingAndTrailingWhitespace(&kv[1]);
     header_block[kv[0]] = kv[1];
   }
 
@@ -294,8 +317,8 @@ int QuicToyClient::SendRequestsAndPrintResponses(
       if (!GetQuicFlag(FLAGS_body_hex).empty()) {
         // Print the user provided hex, rather than binary body.
         std::cout << "body:\n"
-                  << QuicTextUtils::HexDump(
-                         QuicTextUtils::HexDecode(GetQuicFlag(FLAGS_body_hex)))
+                  << QuicheTextUtils::HexDump(QuicheTextUtils::HexDecode(
+                         GetQuicFlag(FLAGS_body_hex)))
                   << std::endl;
       } else {
         std::cout << "body: " << body << std::endl;
@@ -315,7 +338,7 @@ int QuicToyClient::SendRequestsAndPrintResponses(
       if (!GetQuicFlag(FLAGS_body_hex).empty()) {
         // Assume response is binary data.
         std::cout << "body:\n"
-                  << QuicTextUtils::HexDump(response_body) << std::endl;
+                  << QuicheTextUtils::HexDump(response_body) << std::endl;
       } else {
         std::cout << "body: " << response_body << std::endl;
       }

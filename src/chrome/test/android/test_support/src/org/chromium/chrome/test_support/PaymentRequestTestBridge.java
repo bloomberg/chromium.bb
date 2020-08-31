@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.test_support;
 
+import android.os.Build;
+
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -84,12 +87,13 @@ public class PaymentRequestTestBridge {
         private final long mOnConnectionTerminatedPtr;
         private final long mOnAbortCalledPtr;
         private final long mOnCompleteCalledPtr;
+        private final long mOnMinimalUIReadyPtr;
 
         PaymentRequestNativeObserverBridgeToNativeForTest(long onCanMakePaymentCalledPtr,
                 long onCanMakePaymentReturnedPtr, long onHasEnrolledInstrumentCalledPtr,
                 long onHasEnrolledInstrumentReturnedPtr, long onShowAppsReadyPtr,
                 long onNotSupportedErrorPtr, long onConnectionTerminatedPtr, long onAbortCalledPtr,
-                long onCompleteCalledPtr) {
+                long onCompleteCalledPtr, long onMinimalUIReadyPtr) {
             mOnCanMakePaymentCalledPtr = onCanMakePaymentCalledPtr;
             mOnCanMakePaymentReturnedPtr = onCanMakePaymentReturnedPtr;
             mOnHasEnrolledInstrumentCalledPtr = onHasEnrolledInstrumentCalledPtr;
@@ -99,6 +103,7 @@ public class PaymentRequestTestBridge {
             mOnConnectionTerminatedPtr = onConnectionTerminatedPtr;
             mOnAbortCalledPtr = onAbortCalledPtr;
             mOnCompleteCalledPtr = onCompleteCalledPtr;
+            mOnMinimalUIReadyPtr = onMinimalUIReadyPtr;
         }
 
         @Override
@@ -137,6 +142,10 @@ public class PaymentRequestTestBridge {
         public void onCompleteCalled() {
             nativeResolvePaymentRequestObserverCallback(mOnCompleteCalledPtr);
         }
+        @Override
+        public void onMinimalUIReady() {
+            nativeResolvePaymentRequestObserverCallback(mOnMinimalUIReadyPtr);
+        }
     }
 
     private static final String TAG = "PaymentRequestTestBridge";
@@ -158,13 +167,45 @@ public class PaymentRequestTestBridge {
             long onCanMakePaymentReturnedPtr, long onHasEnrolledInstrumentCalledPtr,
             long onHasEnrolledInstrumentReturnedPtr, long onShowAppsReadyPtr,
             long onNotSupportedErrorPtr, long onConnectionTerminatedPtr, long onAbortCalledPtr,
-            long onCompleteCalledPtr) {
+            long onCompleteCalledPtr, long onMinimalUIReadyPtr) {
         PaymentRequestFactory.sNativeObserverForTest =
                 new PaymentRequestNativeObserverBridgeToNativeForTest(onCanMakePaymentCalledPtr,
                         onCanMakePaymentReturnedPtr, onHasEnrolledInstrumentCalledPtr,
                         onHasEnrolledInstrumentReturnedPtr, onShowAppsReadyPtr,
                         onNotSupportedErrorPtr, onConnectionTerminatedPtr, onAbortCalledPtr,
-                        onCompleteCalledPtr);
+                        onCompleteCalledPtr, onMinimalUIReadyPtr);
+    }
+
+    @CalledByNative
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public static WebContents getPaymentHandlerWebContentsForTest() {
+        return PaymentRequestImpl.getPaymentHandlerWebContentsForTest();
+    }
+
+    @CalledByNative
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public static boolean clickPaymentHandlerSecurityIconForTest() {
+        return PaymentRequestImpl.clickPaymentHandlerSecurityIconForTest();
+    }
+
+    @CalledByNative
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public static boolean confirmMinimalUIForTest() {
+        return PaymentRequestImpl.confirmMinimalUIForTest();
+    }
+
+    @CalledByNative
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public static boolean dismissMinimalUIForTest() {
+        return PaymentRequestImpl.dismissMinimalUIForTest();
+    }
+
+    @CalledByNative
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public static boolean isAndroidMarshmallowOrLollipopForTest() {
+        return Build.VERSION.SDK_INT == Build.VERSION_CODES.M
+                || Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP
+                || Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1;
     }
 
     /**

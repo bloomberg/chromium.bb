@@ -19,8 +19,10 @@
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -32,6 +34,8 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
+
+namespace {
 
 const char kPermissionRequestApiPath[] = "people/me/permissionRequests";
 const char kPermissionRequestApiScope[] =
@@ -51,6 +55,8 @@ const char kState[] = "PENDING";
 // Response keys.
 const char kPermissionRequestKey[] = "permissionRequest";
 const char kIdKey[] = "id";
+
+}  // namespace
 
 struct PermissionRequestCreatorApiary::Request {
   Request(const std::string& request_type,
@@ -142,7 +148,7 @@ void PermissionRequestCreatorApiary::CreateRequest(
 }
 
 void PermissionRequestCreatorApiary::StartFetching(Request* request) {
-  identity::ScopeSet scopes;
+  signin::ScopeSet scopes;
   scopes.insert(GetApiScope());
   // It is safe to use Unretained(this) here given that the callback
   // will not be invoked if this object is deleted. Likewise, |request|
@@ -153,7 +159,9 @@ void PermissionRequestCreatorApiary::StartFetching(Request* request) {
           base::BindOnce(
               &PermissionRequestCreatorApiary::OnAccessTokenFetchComplete,
               base::Unretained(this), request),
-          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
+          // This class doesn't care about browser sync consent.
+          signin::ConsentLevel::kNotRequired);
 }
 
 void PermissionRequestCreatorApiary::OnAccessTokenFetchComplete(
@@ -250,11 +258,13 @@ void PermissionRequestCreatorApiary::OnSimpleLoaderComplete(
   if (response_code == net::HTTP_UNAUTHORIZED &&
       !request->access_token_expired) {
     request->access_token_expired = true;
-    identity::ScopeSet scopes;
+    signin::ScopeSet scopes;
     scopes.insert(GetApiScope());
+    // "Unconsented" because this class doesn't care about browser sync consent.
     identity_manager_->RemoveAccessTokenFromCache(
-        identity_manager_->GetPrimaryAccountId(), scopes,
-        request->access_token);
+        identity_manager_->GetPrimaryAccountId(
+            signin::ConsentLevel::kNotRequired),
+        scopes, request->access_token);
     StartFetching(request);
     return;
   }

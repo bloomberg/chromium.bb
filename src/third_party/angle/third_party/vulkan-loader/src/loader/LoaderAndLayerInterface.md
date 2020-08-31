@@ -470,11 +470,11 @@ the case.  See the [Overall Layer Ordering](#overall-layer-ordering) section
 for more information.
 
 The following code section shows how you would go about enabling the
-VK_LAYER_LUNARG_standard_validation layer.
+VK_LAYER_KHRONOS_validation layer.
 
 ```
    char *instance_validation_layers[] = {
-        "VK_LAYER_LUNARG_standard_validation"
+        "VK_LAYER_KHRONOS_validation"
     };
     const VkApplicationInfo app = {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -521,8 +521,8 @@ section for more information on layer ordering.
 ##### Implicit vs Explicit Layers
 
 Explicit layers are layers which are enabled by an application (e.g. with the
-vkCreateInstance function), or by an environment variable (as mentioned
-previously).
+vkCreateInstance function as mentioned previously), or by an environment
+variable.
 
 Implicit layers are those which are enabled by their existence. For example,
 certain application environments (e.g. Steam or an automotive infotainment
@@ -1037,15 +1037,43 @@ version supporting this function.
 
 The loader will then individually call each layer’s
 `vkNegotiateLoaderLayerInterfaceVersion` function with the filled out
-“VkNegotiateLayerInterface”. The layer will either accept the loader's version
-set in "loaderLayerInterfaceVersion", or modify it to the closest value version
-of the interface that the layer can support.  The value should not be higher
-than the version requested by the loader.  If the layer can't support at a
-minimum the version requested, then the layer should return an error like
-"VK_ERROR_INITIALIZATION_FAILED".  If a layer can support some version, then
-the layer should do the following:
- 1. Adjust the version to the layer's desired version.
- 2. The layer should fill in the function pointer values to its internal
+“VkNegotiateLayerInterface”.
+
+This function allows the loader and layer to agree on an interface version to use.
+The "loaderLayerInterfaceVersion" field is both an input and output parameter.
+"loaderLayerInterfaceVersion" is filled in by the loader with the desired latest
+interface version supported by the loader (typically the latest). The layer receives
+this and returns back the version it desires in the same field.  Because it is
+setting up the interface version between the loader and layer, this should be
+the first call made by a loader to the layer (even prior to any calls to
+`vkGetInstanceProcAddr`).
+
+If the layer receiving the call no longer supports the interface version provided
+by the loader (due to deprecation), then it should report a
+VK_ERROR_INITIALIZATION_FAILED error.  Otherwise it sets the value pointed by
+"loaderLayerInterfaceVersion" to the latest interface version supported by both the
+layer and the loader and returns VK_SUCCESS.
+
+The layer should report VK_SUCCESS in case the loader-provided interface version
+is newer than that supported by the layer, as it's the loader's responsibility to
+determine whether it can support the older interface version supported by the
+layer.  The layer should also report VK_SUCCESS in the case its interface version
+is greater than the loader's, but return the loader's version. Thus, upon
+return of VK_SUCCESS the "loaderLayerInterfaceVersion" will contain the desired
+interface version to be used by the layer.
+
+If the loader  receives a VK_ERROR_INITIALIZATION_FAILED error instead of
+VK_SUCCESS, then the loader will treat the layer as unusable and will not load
+it for use.  In this case, the application will not see the layer during
+enumeration. Note that the loader is currently backwards compatible with all
+layer interface versions, so a layer should not be able to request a version
+older than what the loader supports.
+
+This function **SHOULD NOT CALL DOWN** the layer chain to the next layer.
+The loader will work with each layer individually.
+
+If the layer supports the new interface and reports version 2 or greater, then
+The layer should fill in the function pointer values to its internal
 functions:
     - "pfnGetInstanceProcAddr" should be set to the layer’s internal
 `GetInstanceProcAddr` function.
@@ -1056,12 +1084,6 @@ functions:
       - If the layer supports no physical device extensions, it may set the
 value to NULL.
       - More on this function later
- 3. The layer should return "VK_SUCCESS"
-
-This function **SHOULD NOT CALL DOWN** the layer chain to the next layer.
-The loader will work with each layer individually.
-
-If the layer supports the new interface and reports version 2 or greater, then
 the loader will use the “fpGetInstanceProcAddr” and “fpGetDeviceProcAddr”
 functions from the “VkNegotiateLayerInterface” structure.  Prior to these
 changes, the loader would query each of those functions using "GetProcAddress"
@@ -1458,10 +1480,6 @@ desktop loader.  While normal layers are associated with one particular library,
 a meta-layer is actually a collection layer which contains an ordered list of
 other layers (called component layers).
 
-The most common example of a meta-layer is the
-`VK_LAYER_LUNARG_standard_validation` layer which groups all the most common
-individual validation layers into a single layer for ease-of-use.
-
 The benefits of a meta-layer are:
  1. You can activate more than one layer using a single layer name by simply
 grouping multiple layers in a meta-layer.
@@ -1550,7 +1568,7 @@ Each layer intercept function must have a prototype that is the same as the prot
 For example, a function that wishes to intercept `vkEnumerateInstanceExtensionProperties` would have the prototype:
 
 ```
-VkResult InterceptFunctionName(const VkEnumerateInstanceExtensionProperties* pChain,
+VkResult InterceptFunctionName(const VkEnumerateInstanceExtensionPropertiesChain* pChain,
     const char* pLayerName, uint32_t* pPropertyCount, VkExtensionProperties* pProperties);
 ```
 
@@ -1560,7 +1578,7 @@ This is done by calling the `pfnNextLayer` member of the chain struct, passing `
 For example, a simple implementation for `vkEnumerateInstanceExtensionProperties` that does nothing but call down the chain would look like:
 
 ```
-VkResult InterceptFunctionName(const VkEnumerateInstanceExtensionProperties* pChain,
+VkResult InterceptFunctionName(const VkEnumerateInstanceExtensionPropertiesChain* pChain,
     const char* pLayerName, uint32_t* pPropertyCount, VkExtensionProperties* pProperties)
 {
     return pChain->pfnNextLayer(pChain->pNextLink, pLayerName, pPropertyCount, pProperties);
@@ -1571,7 +1589,7 @@ When using a C++ compiler, each chain type also defines a function named `CallDo
 Implementing the above function using this method would look like:
 
 ```
-VkResult InterceptFunctionName(const VkEnumerateInstanceExtensionProperties* pChain,
+VkResult InterceptFunctionName(const VkEnumerateInstanceExtensionPropertiesChain* pChain,
     const char* pLayerName, uint32_t* pPropertyCount, VkExtensionProperties* pProperties)
 {
     return pChain->CallDown(pLayerName, pPropertyCount, pProperties);
@@ -1805,17 +1823,14 @@ Here's an example of a meta-layer manifest file:
 {
    "file_format_version" : "1.1.1",
    "layer": {
-       "name": "VK_LAYER_LUNARG_standard_validation",
+       "name": "VK_LAYER_META_layer",
        "type": "GLOBAL",
        "api_version" : "1.0.40",
        "implementation_version" : "1",
-       "description" : "LunarG Standard Validation Meta-layer",
+       "description" : "LunarG Meta-layer example",
        "component_layers": [
-           "VK_LAYER_GOOGLE_threading",
-           "VK_LAYER_LUNARG_parameter_validation",
-           "VK_LAYER_LUNARG_object_tracker",
-           "VK_LAYER_LUNARG_core_validation",
-           "VK_LAYER_GOOGLE_unique_objects"
+           "VK_LAYER_KHRONOS_validation",
+           "VK_LAYER_LUNARG_api_dump"
        ]
    }
 }
@@ -1994,7 +2009,7 @@ ICD to properly handshake.
   * [ICD Manifest File Format](#icd-manifest-file-format)
     * [ICD Manifest File Versions](#icd-manifest-file-versions)
       * [ICD Manifest File Version 1.0.0](#icd-manifest-file-version-1.0.0)
-  * [ICD Vulkan Entry Point Discovery](#icd-vulkan-entry point-discovery)
+  * [ICD Vulkan Entry Point Discovery](#icd-vulkan-entry-point-discovery)
   * [ICD API Version](#icd-api-version)
   * [ICD Unknown Physical Device Extensions](#icd-unknown-physical-device-extensions)
   * [ICD Dispatchable Object Creation](#icd-dispatchable-object-creation)
@@ -2359,7 +2374,7 @@ in order to prevent an error. To determine if this must be done, the loader
 will perform the following steps:
 
 1. Check the ICD's JSON manifest file for the "api_version" field.
-2. If the JSON version is greater greater than or equal to 1.1, Load the ICD's dynamic library
+2. If the JSON version is greater than or equal to 1.1, Load the ICD's dynamic library
 3. Call the ICD's `vkGetInstanceProcAddr` command to get a pointer to
 `vkEnumerateInstanceVersion`
 4. If the pointer to `vkEnumerateInstanceVersion` is not `NULL`, it will be

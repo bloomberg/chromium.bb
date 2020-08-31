@@ -39,9 +39,11 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/accessibility_notification_waiter.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
@@ -119,7 +121,7 @@ class AutofillTest : public InProcessBrowserTest {
         ContentAutofillDriverFactory::FromWebContents(web_contents)
             ->DriverForFrame(web_contents->GetMainFrame())
             ->autofill_manager();
-    autofill_manager->client()->HideAutofillPopup();
+    autofill_manager->client()->HideAutofillPopup(PopupHidingReason::kTabGone);
     test::ReenableSystemServices();
   }
 
@@ -161,6 +163,7 @@ class AutofillTest : public InProcessBrowserTest {
 
     std::string js = GetJSToFillForm(data) + submit_js;
     ASSERT_TRUE(content::ExecuteScript(web_contents(), js));
+
     if (simulate_click) {
       // Simulate a mouse click to submit the form because form submissions not
       // triggered by user gestures are ignored.
@@ -253,7 +256,16 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AggregatesMinValidProfileDifferentJS) {
 
 // Form submitted via JavaScript, the user's personal data is updated even
 // if the event handler on the submit event prevents submission of the form.
-IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesAggregatedWithSubmitHandler) {
+// Flaky on Mac: https://crbug.com/1078506.
+#if defined(OS_MACOSX)
+#define MAYBE_ProfilesAggregatedWithSubmitHandler \
+  DISABLED_ProfilesAggregatedWithSubmitHandler
+#else
+#define MAYBE_ProfilesAggregatedWithSubmitHandler \
+  ProfilesAggregatedWithSubmitHandler
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillTest,
+                       MAYBE_ProfilesAggregatedWithSubmitHandler) {
   FormMap data;
   data["NAME_FIRST"] = "Bob";
   data["NAME_LAST"] = "Smith";
@@ -588,6 +600,8 @@ class AutofillAccessibilityTest : public AutofillTest {
 
 // Test that autofill available state is correctly set on accessibility node.
 IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest, TestAutofillState) {
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+
   // Navigate to url.
   GURL url =
       embedded_test_server()->GetURL("/autofill/duplicate_profiles_test.html");
@@ -595,10 +609,9 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest, TestAutofillState) {
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   ui_test_utils::NavigateToURL(&params);
 
-  // Enable accessibility.
-  content::EnableAccessibilityForWebContents(web_contents());
+  // Wait for accessibility notification.
   content::AccessibilityNotificationWaiter layout_waiter_one(
-      web_contents(), ui::kAXModeComplete, ax::mojom::Event::kLayoutComplete);
+      web_contents(), ui::kAXModeComplete, ax::mojom::Event::kLoadComplete);
   layout_waiter_one.WaitForNotification();
 
   // Focus target form field.
@@ -638,7 +651,7 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest, TestAutofillState) {
   // Reload page.
   ui_test_utils::NavigateToURL(&params);
   content::AccessibilityNotificationWaiter layout_waiter_two(
-      web_contents(), ui::kAXModeComplete, ax::mojom::Event::kLayoutComplete);
+      web_contents(), ui::kAXModeComplete, ax::mojom::Event::kLoadComplete);
   layout_waiter_two.WaitForNotification();
 
   // Focus target form field.
@@ -660,6 +673,7 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest, TestAutofillState) {
 // accessibility node. Test autocomplete in this file since it uses the same
 // infrastructure as autofill.
 IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest, TestAutocompleteState) {
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   // Navigate to url.
   GURL url =
       embedded_test_server()->GetURL("/autofill/duplicate_profiles_test.html");
@@ -667,10 +681,9 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest, TestAutocompleteState) {
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   ui_test_utils::NavigateToURL(&params);
 
-  // Enable accessibility.
-  content::EnableAccessibilityForWebContents(web_contents());
+  // Wait for accessibility notification.
   content::AccessibilityNotificationWaiter layout_waiter_one(
-      web_contents(), ui::kAXModeComplete, ax::mojom::Event::kLayoutComplete);
+      web_contents(), ui::kAXModeComplete, ax::mojom::Event::kLoadComplete);
   layout_waiter_one.WaitForNotification();
 
   // Focus target form field.
@@ -706,7 +719,7 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest, TestAutocompleteState) {
   // Reload page.
   ui_test_utils::NavigateToURL(&params);
   content::AccessibilityNotificationWaiter layout_waiter_two(
-      web_contents(), ui::kAXModeComplete, ax::mojom::Event::kLayoutComplete);
+      web_contents(), ui::kAXModeComplete, ax::mojom::Event::kLoadComplete);
   layout_waiter_two.WaitForNotification();
 
   // Focus target form field.

@@ -34,6 +34,8 @@
 #ifndef ABSL_BASE_THREAD_ANNOTATIONS_H_
 #define ABSL_BASE_THREAD_ANNOTATIONS_H_
 
+#include "absl/base/config.h"
+
 #if defined(__clang__)
 #define ABSL_INTERNAL_THREAD_ANNOTATION_ATTRIBUTE(x) __attribute__((x))
 #else
@@ -159,7 +161,7 @@
 //
 // Documents if a class does RAII locking (such as the `MutexLock` class).
 // The constructor should use `LOCK_FUNCTION()` to specify the mutex that is
-// acquired, and the destructor should use `ABSL_UNLOCK_FUNCTION()` with no
+// acquired, and the destructor should use `UNLOCK_FUNCTION()` with no
 // arguments; the analysis will assume that the destructor unlocks whatever the
 // constructor locked.
 #define ABSL_SCOPED_LOCKABLE \
@@ -253,6 +255,7 @@
 #define ABSL_TS_UNCHECKED_READ(x) absl::base_internal::absl_ts_unchecked_read(x)
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace base_internal {
 
 // Takes a reference to a guarded data member, and returns an unguarded
@@ -269,6 +272,7 @@ inline T& absl_ts_unchecked_read(T& v) ABSL_NO_THREAD_SAFETY_ANALYSIS {
 }
 
 }  // namespace base_internal
+ABSL_NAMESPACE_END
 }  // namespace absl
 
 #endif  // ABSL_BASE_THREAD_ANNOTATIONS_H_

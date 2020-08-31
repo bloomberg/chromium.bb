@@ -8,7 +8,10 @@ import("//ios/build/chrome_build.gni")
 buildflag_header("ios_multi_window_buildflags") {
   header = "multi_window_buildflags.h"
   header_dir = "ios/chrome/browser/ui/util"
-  flags = [ "IOS_MULTIWINDOW_ENABLED=$ios_enable_multi_window" ]
+  flags = [
+    "IOS_MULTIWINDOW_ENABLED=$ios_enable_multi_window",
+    "IOS_SCENE_STARTUP_ENABLED=$ios_enable_scene_startup",
+  ]
 }
 
 source_set("multiwindow_util") {
@@ -64,7 +67,6 @@ source_set("util") {
     "pasteboard_util.mm",
     "property_animator_group.h",
     "property_animator_group.mm",
-    "relaxed_bounds_constraints_hittest.h",
     "reversed_animation.h",
     "reversed_animation.mm",
     "rtl_geometry.h",
@@ -93,7 +95,8 @@ source_set("util") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/toolbar/public:feature_flags",
     "//ios/chrome/common:timing",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/util",
+    "//ios/chrome/common/ui/util:dynamic_type_util",
     "//ios/web:threads",
     "//ios/web/public/thread:thread",
     "//ios/web/thread",
@@ -128,7 +131,6 @@ source_set("unit_tests") {
   sources = [
     "CRUILabel+AttributeUtils_unittest.mm",
     "core_text_util_unittest.mm",
-    "dynamic_type_util_unittest.mm",
     "force_touch_long_press_gesture_recognizer_unittest.mm",
     "label_link_controller_unittest.mm",
     "label_observer_unittest.mm",
@@ -209,9 +211,7 @@ bundle_data("terms_resources") {
     "//components/resources/terms/terms_zh-CN.html",
     "//components/resources/terms/terms_zh-TW.html",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
 }
 
 source_set("test_support") {
@@ -257,9 +257,7 @@ source_set("eg_test_support+eg2") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "keyboard_observer_helper_app_interface.h",
-  ]
+  sources = [ "keyboard_observer_helper_app_interface.h" ]
   deps = [
     ":util",
     "//ios/testing/earl_grey:eg_test_support+eg2",

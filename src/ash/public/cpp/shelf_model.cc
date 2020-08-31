@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model_observer.h"
+#include "ash/public/cpp/shelf_types.h"
 
 namespace ash {
 
@@ -78,8 +79,9 @@ void ShelfModel::PinAppWithID(const std::string& app_id) {
 
 bool ShelfModel::IsAppPinned(const std::string& app_id) {
   const int index = ItemIndexByID(ShelfID(app_id));
-  return index >= 0 && (items_[index].type == TYPE_PINNED_APP ||
-                        items_[index].type == TYPE_BROWSER_SHORTCUT);
+  if (index < 0)
+    return false;
+  return IsPinnedShelfItemType(items_[index].type);
 }
 
 void ShelfModel::UnpinAppWithID(const std::string& app_id) {
@@ -144,6 +146,32 @@ ShelfModel::RemoveItemAndTakeShelfItemDelegate(const ShelfID& shelf_id) {
   return item;
 }
 
+bool ShelfModel::CanSwap(int index, bool with_next) const {
+  const int target_index = with_next ? index + 1 : index - 1;
+
+  // Out of bounds issues, or trying to swap the first item with the previous
+  // one, or the last item with the next one.
+  if (index < 0 || target_index >= item_count() || target_index < 0)
+    return false;
+
+  const ShelfItem source_item = items()[index];
+  const ShelfItem target_item = items()[target_index];
+  // Trying to swap two items of different pin states.
+  if (!SamePinState(source_item.type, target_item.type))
+    return false;
+
+  return true;
+}
+
+bool ShelfModel::Swap(int index, bool with_next) {
+  if (!CanSwap(index, with_next))
+    return false;
+
+  const int target_index = with_next ? index + 1 : index - 1;
+  Move(index, target_index);
+  return true;
+}
+
 void ShelfModel::Move(int index, int target_index) {
   if (index == target_index)
     return;
@@ -202,6 +230,16 @@ void ShelfModel::SetActiveShelfID(const ShelfID& shelf_id) {
 void ShelfModel::OnItemStatusChanged(const ShelfID& id) {
   for (auto& observer : observers_)
     observer.ShelfItemStatusChanged(id);
+}
+
+void ShelfModel::OnItemRippedOff() {
+  for (auto& observer : observers_)
+    observer.ShelfItemRippedOff();
+}
+
+void ShelfModel::OnItemReturnedFromRipOff(int index) {
+  for (auto& observer : observers_)
+    observer.ShelfItemReturnedFromRipOff(index);
 }
 
 void ShelfModel::RemoveNotificationRecord(const std::string& notification_id) {

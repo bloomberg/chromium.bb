@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/reading_list/core/offline_url_utils.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"
@@ -59,9 +60,8 @@ URLDownloader::URLDownloader(
       base_directory_(chrome_profile_path),
       mime_type_(),
       url_loader_factory_(std::move(url_loader_factory)),
-      task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       task_tracker_() {}
 
@@ -70,10 +70,10 @@ URLDownloader::~URLDownloader() {
 }
 
 void URLDownloader::OfflinePathExists(const base::FilePath& path,
-                                      base::Callback<void(bool)> callback) {
-  task_tracker_.PostTaskAndReplyWithResult(task_runner_.get(), FROM_HERE,
-                                           base::Bind(&base::PathExists, path),
-                                           callback);
+                                      base::OnceCallback<void(bool)> callback) {
+  task_tracker_.PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE, base::BindOnce(&base::PathExists, path),
+      std::move(callback));
 }
 
 void URLDownloader::RemoveOfflineURL(const GURL& url) {
@@ -123,7 +123,7 @@ void URLDownloader::DownloadCompletionHandler(
         task_runner_.get(), FROM_HERE,
         base::Bind(
             [](const base::FilePath& offline_directory_path) {
-              base::DeleteFile(offline_directory_path, true);
+              base::DeleteFileRecursively(offline_directory_path);
             },
             directory_path),
         post_delete);
@@ -154,13 +154,14 @@ void URLDownloader::HandleNextTask() {
   if (task.first == DELETE) {
     task_tracker_.PostTaskAndReplyWithResult(
         task_runner_.get(), FROM_HERE,
-        base::Bind(&base::DeleteFile, directory_path, true),
-        base::Bind(&URLDownloader::DeleteCompletionHandler,
-                   base::Unretained(this), url));
+        base::BindOnce(&base::DeleteFileRecursively, directory_path),
+        base::BindOnce(&URLDownloader::DeleteCompletionHandler,
+                       base::Unretained(this), url));
   } else if (task.first == DOWNLOAD) {
     DCHECK(!distiller_);
-    OfflinePathExists(directory_path, base::Bind(&URLDownloader::DownloadURL,
-                                                 base::Unretained(this), url));
+    OfflinePathExists(directory_path,
+                      base::BindOnce(&URLDownloader::DownloadURL,
+                                     base::Unretained(this), url));
   }
 }
 
@@ -212,10 +213,10 @@ void URLDownloader::OnURLLoadComplete(const GURL& original_url,
 
   task_tracker_.PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&URLDownloader::SavePDFFile, base::Unretained(this),
-                 response_path),
-      base::Bind(&URLDownloader::DownloadCompletionHandler,
-                 base::Unretained(this), original_url, "", path));
+      base::BindOnce(&URLDownloader::SavePDFFile, base::Unretained(this),
+                     response_path),
+      base::BindOnce(&URLDownloader::DownloadCompletionHandler,
+                     base::Unretained(this), original_url, "", path));
 
   url_loader_.reset();
 }
@@ -285,12 +286,12 @@ void URLDownloader::DistillerCallback(
   std::string block_html = html;
   task_tracker_.PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&URLDownloader::SaveDistilledHTML, base::Unretained(this),
-                 page_url, images_block, block_html),
-      base::Bind(&URLDownloader::DownloadCompletionHandler,
-                 base::Unretained(this), page_url, title,
-                 reading_list::OfflinePagePath(
-                     page_url, reading_list::OFFLINE_TYPE_HTML)));
+      base::BindOnce(&URLDownloader::SaveDistilledHTML, base::Unretained(this),
+                     page_url, images_block, block_html),
+      base::BindOnce(&URLDownloader::DownloadCompletionHandler,
+                     base::Unretained(this), page_url, title,
+                     reading_list::OfflinePagePath(
+                         page_url, reading_list::OFFLINE_TYPE_HTML)));
 }
 
 URLDownloader::SuccessState URLDownloader::SaveDistilledHTML(

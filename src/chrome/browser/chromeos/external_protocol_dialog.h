@@ -27,18 +27,13 @@ class MessageBoxView;
 // this dialog simply says it is not supported.
 class ExternalProtocolDialog : public views::DialogDelegate {
  public:
-  // RunExternalProtocolDialog calls this private constructor.
   ExternalProtocolDialog(content::WebContents* web_contents, const GURL& url);
-
   ~ExternalProtocolDialog() override;
 
-  // views::DialogDelegate Methods:
-  int GetDialogButtons() const override;
+  // views::DialogDelegate:
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
   views::View* GetContentsView() override;
-
-  // views::WidgetDelegate Methods:
   const views::Widget* GetWidget() const override;
   views::Widget* GetWidget() override;
 

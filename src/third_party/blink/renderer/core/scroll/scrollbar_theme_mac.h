@@ -50,6 +50,13 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   // Mac queues up scrollbar paint timers.
   bool ShouldDisableInvisibleScrollbars() const override { return false; }
 
+  // On Mac, if Blink updates the visibility itself, it cannot tell the Mac
+  // painting code about the change. Allowing it to change means the two can
+  // get out of sync and can cause issues like Blink believing a scrollbar is
+  // visible while the user cannot see it; this can lead to odd hit testing
+  // behavior.
+  bool BlinkControlsOverlayVisibility() const override { return false; }
+
   base::TimeDelta InitialAutoscrollTimerDelay() override;
   base::TimeDelta AutoscrollTimerDelay() override;
 
@@ -68,7 +75,6 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   int ScrollbarThickness(ScrollbarControlSize = kRegularScrollbar) override;
   bool UsesOverlayScrollbars() const override;
   void UpdateScrollbarOverlayColorTheme(const Scrollbar&) override;
-  WebScrollbarButtonsPlacement ButtonsPlacement() const override;
 
   void SetNewPainterForScrollbar(Scrollbar&, ScrollbarPainter);
   ScrollbarPainter PainterForScrollbar(const Scrollbar&) const;
@@ -81,10 +87,10 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   void PaintThumbWithOpacity(GraphicsContext& context,
                              const Scrollbar& scrollbar,
                              const IntRect& rect) override {
-    PaintThumbInternal(context, scrollbar, rect, ThumbOpacity(scrollbar));
+    PaintThumbInternal(context, scrollbar, rect, Opacity(scrollbar));
   }
 
-  float ThumbOpacity(const Scrollbar&) const override;
+  float Opacity(const Scrollbar&) const override;
 
   static NSScrollerStyle RecommendedScrollerStyle();
 
@@ -102,13 +108,11 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   bool ShouldDragDocumentInsteadOfThumb(const Scrollbar&,
                                         const WebMouseEvent&) override;
 
-  virtual void UpdateButtonPlacement(WebScrollbarButtonsPlacement) {}
-
   IntRect TrackRect(const Scrollbar&) override;
-  IntRect BackButtonRect(const Scrollbar&, ScrollbarPart) override;
-  IntRect ForwardButtonRect(const Scrollbar&, ScrollbarPart) override;
+  IntRect BackButtonRect(const Scrollbar&) override;
+  IntRect ForwardButtonRect(const Scrollbar&) override;
 
-  bool HasButtons(const Scrollbar&) override { return false; }
+  bool NativeThemeHasButtons() override { return false; }
   bool HasThumb(const Scrollbar&) override;
 
   int MinimumThumbLength(const Scrollbar&) override;

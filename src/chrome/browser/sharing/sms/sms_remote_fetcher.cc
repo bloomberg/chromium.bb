@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sharing/sms/sms_remote_fetcher.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
@@ -63,7 +63,8 @@ void FetchRemoteSms(
             DCHECK(response);
             DCHECK(response->has_sms_fetch_response());
 
-            std::move(callback).Run(response->sms_fetch_response().sms());
+            std::move(callback).Run(
+                response->sms_fetch_response().one_time_code());
           },
           std::move(callback)));
 }

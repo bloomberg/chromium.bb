@@ -21,7 +21,11 @@
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/udp_server_socket.h"
+#include "remoting/base/logging.h"
+#include "remoting/base/session_options.h"
+#include "remoting/protocol/session_options_provider.h"
 #include "remoting/protocol/socket_util.h"
+#include "remoting/protocol/stream_packet_socket.h"
 #include "third_party/webrtc/media/base/rtp_utils.h"
 #include "third_party/webrtc/rtc_base/async_packet_socket.h"
 #include "third_party/webrtc/rtc_base/net_helpers.h"
@@ -314,11 +318,10 @@ void UdpPacketSocket::DoSend() {
       reinterpret_cast<uint8_t*>(packet.data->data()), packet.data->size(),
       packet.options.packet_time_params,
       (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds());
-  int result = socket_->SendTo(
-      packet.data.get(),
-      packet.data->size(),
-      packet.address,
-      base::Bind(&UdpPacketSocket::OnSendCompleted, base::Unretained(this)));
+  int result =
+      socket_->SendTo(packet.data.get(), packet.data->size(), packet.address,
+                      base::BindOnce(&UdpPacketSocket::OnSendCompleted,
+                                     base::Unretained(this)));
   if (result == net::ERR_IO_PENDING) {
     send_pending_ = true;
   } else {
@@ -364,11 +367,10 @@ void UdpPacketSocket::DoRead() {
   int result = 0;
   while (result >= 0) {
     receive_buffer_ = base::MakeRefCounted<net::IOBuffer>(kReceiveBufferSize);
-    result = socket_->RecvFrom(
-        receive_buffer_.get(),
-        kReceiveBufferSize,
-        &receive_address_,
-        base::Bind(&UdpPacketSocket::OnReadCompleted, base::Unretained(this)));
+    result = socket_->RecvFrom(receive_buffer_.get(), kReceiveBufferSize,
+                               &receive_address_,
+                               base::BindOnce(&UdpPacketSocket::OnReadCompleted,
+                                              base::Unretained(this)));
     HandleReadResult(result);
   }
 }
@@ -401,7 +403,9 @@ void UdpPacketSocket::HandleReadResult(int result) {
 
 }  // namespace
 
-ChromiumPacketSocketFactory::ChromiumPacketSocketFactory() = default;
+ChromiumPacketSocketFactory::ChromiumPacketSocketFactory(
+    base::WeakPtr<SessionOptionsProvider> session_options_provider)
+    : session_options_provider_(session_options_provider) {}
 
 ChromiumPacketSocketFactory::~ChromiumPacketSocketFactory() = default;
 
@@ -409,6 +413,13 @@ rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateUdpSocket(
     const rtc::SocketAddress& local_address,
     uint16_t min_port,
     uint16_t max_port) {
+  if (session_options_provider_ &&
+      session_options_provider_->session_options().GetBoolValue(
+          "Disable-UDP")) {
+    HOST_LOG
+        << "Disable-UDP experiment is enabled. UDP socket won't be created.";
+    return nullptr;
+  }
   std::unique_ptr<UdpPacketSocket> result(new UdpPacketSocket());
   if (!result->Init(local_address, min_port, max_port))
     return nullptr;
@@ -421,7 +432,7 @@ rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateServerTcpSocket(
     uint16_t max_port,
     int opts) {
   // TCP sockets are not supported.
-  // TODO(sergeyu): Implement TCP support crbug.com/600032 .
+  // TODO(yuweih): Implement server side TCP support crbug.com/600032 .
   NOTIMPLEMENTED();
   return nullptr;
 }
@@ -432,10 +443,20 @@ rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateClientTcpSocket(
     const rtc::ProxyInfo& proxy_info,
     const std::string& user_agent,
     const rtc::PacketSocketTcpOptions& opts) {
-  // TCP sockets are not supported.
-  // TODO(sergeyu): Implement TCP support crbug.com/600032 .
-  NOTIMPLEMENTED();
-  return nullptr;
+  if (!session_options_provider_ ||
+      !session_options_provider_->session_options().GetBoolValue(
+          "Enable-TCP")) {
+    HOST_LOG << "Enable-TCP experiment is not enabled. Client TCP socket won't "
+             << "be created.";
+    return nullptr;
+  }
+  HOST_LOG << "Enable-TCP experiment is enabled. Creating client TCP socket...";
+  auto socket = std::make_unique<StreamPacketSocket>();
+  if (!socket->InitClientTcp(local_address, remote_address, proxy_info,
+                             user_agent, opts)) {
+    return nullptr;
+  }
+  return socket.release();
 }
 
 rtc::AsyncResolverInterface*

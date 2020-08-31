@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/status.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/clients/mojo_media_log_service.h"
@@ -30,6 +31,14 @@ class MediaLog;
 class MojoDecoderBufferWriter;
 class MojoVideoFrameHandleReleaser;
 
+extern const char kMojoVideoDecoderInitialPlaybackSuccessCodecCounterUMA[];
+
+extern const char kMojoVideoDecoderInitialPlaybackErrorCodecCounterUMA[];
+
+// How many frames the decoder needs to process before reporting:
+// kMojoVideoDecoderInitialPlaybackSuccessCodecCounterUMA
+extern const int kMojoDecoderInitialPlaybackFrameCount;
+
 // A VideoDecoder, for use in the renderer process, that proxies to a
 // mojom::VideoDecoder. It is assumed that the other side will be implemented by
 // MojoVideoDecoderService, running in the GPU process, and that the remote
@@ -43,7 +52,7 @@ class MojoVideoDecoder final : public VideoDecoder,
       MediaLog* media_log,
       mojo::PendingRemote<mojom::VideoDecoder> pending_remote_decoder,
       VideoDecoderImplementation implementation,
-      const RequestOverlayInfoCB& request_overlay_info_cb,
+      RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space);
   ~MojoVideoDecoder() final;
 
@@ -75,7 +84,8 @@ class MojoVideoDecoder final : public VideoDecoder,
   }
 
  private:
-  void OnInitializeDone(bool status,
+  void FailInit(InitCB init_cb, Status err);
+  void OnInitializeDone(const Status& status,
                         bool needs_bitstream_conversion,
                         int32_t max_decode_requests);
   void OnDecodeDone(uint64_t decode_id, DecodeStatus status);
@@ -88,6 +98,8 @@ class MojoVideoDecoder final : public VideoDecoder,
 
   // Cleans up callbacks and blocks future calls.
   void Stop();
+
+  void ReportInitialPlaybackErrorUMA();
 
   // Task runner that the decoder runs on (media thread).
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -129,6 +141,11 @@ class MojoVideoDecoder final : public VideoDecoder,
   bool initialized_ = false;
   bool needs_bitstream_conversion_ = false;
   bool can_read_without_stalling_ = true;
+
+  // True if UMA metrics of success/failure after first few seconds of playback
+  // have been already reported.
+  bool initial_playback_outcome_reported_ = false;
+  int total_frames_decoded_ = 0;
   int32_t max_decode_requests_ = 1;
 
   VideoDecoderImplementation video_decoder_implementation_;

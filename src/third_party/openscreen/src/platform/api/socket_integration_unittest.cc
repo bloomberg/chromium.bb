@@ -9,7 +9,6 @@
 #include "platform/test/fake_udp_socket.h"
 
 namespace openscreen {
-namespace platform {
 
 using testing::_;
 
@@ -21,7 +20,7 @@ TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv4) {
   FakeClock clock(Clock::now());
   FakeTaskRunner task_runner(&clock);
   FakeUdpSocket::MockClient client;
-  ErrorOr<UdpSocketUniquePtr> create_result = UdpSocket::Create(
+  ErrorOr<std::unique_ptr<UdpSocket>> create_result = UdpSocket::Create(
       &task_runner, &client, IPEndpoint{IPAddress(kIpV4AddrAny), 0});
   ASSERT_TRUE(create_result) << create_result.error();
   const auto socket = std::move(create_result.value());
@@ -35,11 +34,11 @@ TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv4) {
 // successfully Bind(), and that the operating system will return the
 // auto-assigned socket name (i.e., the local endpoint's port will not be zero).
 TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv6) {
-  const uint8_t kIpV6AddrAny[16] = {};
+  const uint16_t kIpV6AddrAny[8] = {};
   FakeClock clock(Clock::now());
   FakeTaskRunner task_runner(&clock);
   FakeUdpSocket::MockClient client;
-  ErrorOr<UdpSocketUniquePtr> create_result = UdpSocket::Create(
+  ErrorOr<std::unique_ptr<UdpSocket>> create_result = UdpSocket::Create(
       &task_runner, &client, IPEndpoint{IPAddress(kIpV6AddrAny), 0});
   ASSERT_TRUE(create_result) << create_result.error();
   const auto socket = std::move(create_result.value());
@@ -49,5 +48,4 @@ TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv6) {
   EXPECT_NE(local_endpoint.port, 0) << local_endpoint;
 }
 
-}  // namespace platform
 }  // namespace openscreen

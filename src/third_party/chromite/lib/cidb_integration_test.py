@@ -12,16 +12,17 @@ import glob
 import os
 import random
 import shutil
-import time
+import sys
 
-from chromite.lib import build_requests
 from chromite.lib import constants
 from chromite.lib import metadata_lib
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import hwtest_results
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Hopefully cidb will be deleted soon (before Python 3 finalizes), so we don't
@@ -259,14 +260,6 @@ class CIDBAPITest(CIDBIntegrationTest):
     message_right_type.pop('timestamp')
     self.assertEqual(message_right_type, mm2)
 
-  def testGetKeyVals(self):
-    db = self._PrepareFreshDatabase(40)
-    # In production we would never insert into this table from a bot, but for
-    # testing purposes here this is convenient.
-    db._Execute('INSERT INTO keyvalTable(k, v) VALUES '
-                '("/foo/bar", "baz"), ("/qux/norf", NULL)')
-    self.assertEqual(db.GetKeyVals(), {'/foo/bar': 'baz', '/qux/norf': None})
-
 
 def GetTestDataSeries(test_data_path):
   """Get metadata from json files at |test_data_path|.
@@ -472,67 +465,6 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
 class BuildTableTest(CIDBIntegrationTest):
   """Test buildTable functionality not tested by the DataSeries tests."""
 
-  def testInsertWithDeadline(self):
-    """Test deadline setting/querying API."""
-    self._PrepareDatabase()
-    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
-
-    build_id = bot_db.InsertBuild('build_name',
-                                  _random(),
-                                  'build_config',
-                                  'bot_hostname',
-                                  timeout_seconds=30 * 60)
-    # This will flake if the few cidb calls above take hours. Unlikely.
-    self.assertLess(10, bot_db.GetTimeToDeadline(build_id))
-
-    build_id = bot_db.InsertBuild('build_name',
-                                  _random(),
-                                  'build_config',
-                                  'bot_hostname',
-                                  timeout_seconds=1)
-    # Sleep till the deadline expires.
-    time.sleep(3)
-    self.assertEqual(0, bot_db.GetTimeToDeadline(build_id))
-
-    build_id = bot_db.InsertBuild('build_name',
-                                  _random(),
-                                  'build_config',
-                                  'bot_hostname')
-    self.assertEqual(None, bot_db.GetTimeToDeadline(build_id))
-
-    self.assertEqual(None, bot_db.GetTimeToDeadline(build_id))
-
-  def testExtendDeadline(self):
-    """Test that a deadline in the future can be extended."""
-
-    self._PrepareDatabase()
-    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
-
-    build_id = bot_db.InsertBuild('build_name',
-                                  _random(),
-                                  'build_config',
-                                  'bot_hostname')
-    self.assertEqual(None, bot_db.GetTimeToDeadline(build_id))
-
-    self.assertEqual(1, bot_db.ExtendDeadline(build_id, 1))
-    time.sleep(2)
-    self.assertEqual(0, bot_db.GetTimeToDeadline(build_id))
-    self.assertEqual(0, bot_db.ExtendDeadline(build_id, 10 * 60))
-    self.assertEqual(0, bot_db.GetTimeToDeadline(build_id))
-
-    build_id = bot_db.InsertBuild('build_name',
-                                  _random(),
-                                  'build_config',
-                                  'bot_hostname',
-                                  timeout_seconds=30 * 60)
-    self.assertLess(10, bot_db.GetTimeToDeadline(build_id))
-
-    self.assertEqual(0, bot_db.ExtendDeadline(build_id, 10 * 60))
-    self.assertLess(20 * 60, bot_db.GetTimeToDeadline(build_id))
-
-    self.assertEqual(1, bot_db.ExtendDeadline(build_id, 60 * 60))
-    self.assertLess(40 * 60, bot_db.GetTimeToDeadline(build_id))
-
   def testBuildbucketId(self):
     """Test InsertBuild with buildbucket_id."""
     self._PrepareDatabase()
@@ -687,250 +619,6 @@ class BuildTableTest(CIDBIntegrationTest):
 
     result = bot_db.GetBuildHistory('build_3', -1)
     self.assertEqual(len(result), 0)
-
-
-class HWTestResultTableTest(CIDBIntegrationTest):
-  """Tests for hwTestResultTable."""
-
-  def testHWTestResults(self):
-    """Test Insert and Get operations on hwTestResultTable."""
-    HWTestResult = hwtest_results.HWTestResult
-    self._PrepareDatabase()
-    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
-    b_id_1 = bot_db.InsertBuild('build_name',
-                                _random(),
-                                'build_config',
-                                'bot_hostname')
-    b_id_2 = bot_db.InsertBuild('build_name',
-                                _random(),
-                                'build_config',
-                                'bot_hostname')
-
-    r1 = HWTestResult.FromReport(b_id_1, 'test_a', 'pass')
-    r2 = HWTestResult.FromReport(b_id_1, 'test_b', 'fail')
-    r3 = HWTestResult.FromReport(b_id_1, 'test_c', 'abort')
-    r4 = HWTestResult.FromReport(b_id_2, 'test_d', 'other')
-    bot_db.InsertHWTestResults([r1, r2, r3, r4])
-
-    expected_result_1 = [
-        HWTestResult(1, b_id_1, 'test_a', 'pass'),
-        HWTestResult(2, b_id_1, 'test_b', 'fail'),
-        HWTestResult(3, b_id_1, 'test_c', 'abort')]
-    self.assertCountEqual(bot_db.GetHWTestResultsForBuilds([b_id_1]),
-                          expected_result_1)
-
-    expected_result_2 = [HWTestResult(4, b_id_2, 'test_d', 'other')]
-    self.assertCountEqual(bot_db.GetHWTestResultsForBuilds([b_id_2]),
-                          expected_result_2)
-
-    expected_result_3 = expected_result_1 + expected_result_2
-    self.assertCountEqual(bot_db.GetHWTestResultsForBuilds([b_id_1, b_id_2]),
-                          expected_result_3)
-
-    self.assertCountEqual(bot_db.GetHWTestResultsForBuilds([3]), [])
-
-    with self.assertRaises(AssertionError):
-      bot_db.GetHWTestResultsForBuilds([])
-
-
-class BuildRequestTableTest(CIDBIntegrationTest):
-  """Tests for BuildRequestTable."""
-
-  def _InsertCQBuildRequests(self, bot_db):
-    b_id = bot_db.InsertBuild(
-        'master-paladin', _random(),
-        'master-paladin', 'bot_hostname')
-
-    build_req_1 = build_requests.BuildRequest(
-        id=None, build_id=b_id,
-        request_build_config='test1-paladin',
-        request_build_args='test_build_args_1',
-        request_buildbucket_id='test_bb_id_1',
-        request_reason=build_requests.REASON_IMPORTANT_CQ_SLAVE,
-        timestamp=None)
-    build_req_2 = build_requests.BuildRequest(
-        id=None, build_id=b_id,
-        request_build_config='test1-paladin',
-        request_build_args='test_build_args_2',
-        request_buildbucket_id='test_bb_id_2',
-        request_reason=build_requests.REASON_IMPORTANT_CQ_SLAVE,
-        timestamp=None)
-    build_req_3 = build_requests.BuildRequest(
-        id=None, build_id=b_id,
-        request_build_config='test1-paladin',
-        request_build_args='test_build_args_3',
-        request_buildbucket_id='test_bb_id_3',
-        request_reason=build_requests.REASON_EXPERIMENTAL_CQ_SLAVE,
-        timestamp=None)
-    bot_db.InsertBuildRequests([build_req_1, build_req_2, build_req_3])
-
-    return b_id
-
-  def _InsertPreCQBuildRequests(self, bot_db, current_ts):
-    new_timestamp = current_ts.strftime('%Y-%m-%d %H:%M:%S')
-    old_ts = current_ts - datetime.timedelta(hours=2)
-    old_timestamp = old_ts.strftime('%Y-%m-%d %H:%M:%S')
-
-    b_id = bot_db.InsertBuild(
-        'pre_cq_launcher', _random(),
-        'pre_cq_launcher', 'bot_hostname')
-
-    build_req_1 = build_requests.BuildRequest(
-        id=None, build_id=b_id,
-        request_build_config='test_pre_cq_1',
-        request_build_args='test_build_args_1',
-        request_buildbucket_id='test_bb_id_1',
-        request_reason=build_requests.REASON_SANITY_PRE_CQ,
-        timestamp=old_timestamp)
-    build_req_2 = build_requests.BuildRequest(
-        id=None, build_id=b_id,
-        request_build_config='test_pre_cq_1',
-        request_build_args='test_build_args_2',
-        request_buildbucket_id='test_bb_id_2',
-        request_reason=build_requests.REASON_SANITY_PRE_CQ,
-        timestamp=new_timestamp)
-    build_req_3 = build_requests.BuildRequest(
-        id=None, build_id=b_id,
-        request_build_config='test_pre_cq_2',
-        request_build_args='test_build_args_3',
-        request_buildbucket_id='test_bb_id_3',
-        request_reason=build_requests.REASON_SANITY_PRE_CQ,
-        timestamp=new_timestamp)
-    bot_db.InsertBuildRequests([build_req_1, build_req_2, build_req_3])
-
-    return b_id
-
-  def testLatestBuildRequestsForReason(self):
-    self._PrepareDatabase()
-    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
-
-    now = datetime.datetime.now()
-
-    old_ts = now - datetime.timedelta(days=9)
-    self._InsertPreCQBuildRequests(bot_db, old_ts)
-
-    requests = bot_db.GetLatestBuildRequestsForReason(
-        build_requests.REASON_SANITY_PRE_CQ)
-
-    self.assertEqual(requests, [])
-
-    three_days_ago = now - datetime.timedelta(days=3)
-    self._InsertPreCQBuildRequests(bot_db, three_days_ago)
-
-    requests = bot_db.GetLatestBuildRequestsForReason(
-        build_requests.REASON_SANITY_PRE_CQ)
-
-    self.assertEqual(requests[0].request_build_config, 'test_pre_cq_1')
-    self.assertEqual(requests[1].request_build_config, 'test_pre_cq_2')
-    self.assertEqual(len(requests), 2)
-
-    self._InsertPreCQBuildRequests(bot_db, now)
-
-    requests = bot_db.GetLatestBuildRequestsForReason(
-        build_requests.REASON_SANITY_PRE_CQ)
-
-    self.assertEqual(requests[0].request_build_config, 'test_pre_cq_1')
-    self.assertEqual(requests[1].request_build_config, 'test_pre_cq_2')
-    self.assertEqual(len(requests), 2)
-
-    # It should return the latest request for each build config.
-    now = now.replace(microsecond=0)
-    self.assertEqual(requests[0].timestamp, now)
-    self.assertEqual(requests[1].timestamp, now)
-
-  def testBuildRequests(self):
-    """Test insert and get operations on BuildRequestTable."""
-    self._PrepareDatabase()
-    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
-
-    bot_db.InsertBuild(
-        'pre_cq_launcher', _random(),
-        'pre_cq_launcher', 'bot_hostname')
-
-    current_ts = datetime.datetime.now()
-    start_ts = current_ts - datetime.timedelta(hours=1)
-    start_timestamp = start_ts.strftime('%Y-%m-%d %H:%M:%S')
-
-    self._InsertPreCQBuildRequests(bot_db, current_ts)
-    self._InsertCQBuildRequests(bot_db)
-
-    requests = bot_db.GetBuildRequestsForBuildConfigs(
-        ['test_pre_cq_1'], num_results=1)
-    self.assertEqual(len(requests), 1)
-    self.assertEqual(requests[0].id, 2)
-    self.assertEqual(requests[0].request_build_config, 'test_pre_cq_1')
-    self.assertEqual(requests[0].request_buildbucket_id, 'test_bb_id_2')
-
-    requests = bot_db.GetBuildRequestsForBuildConfigs(['test_pre_cq_1'])
-    self.assertEqual(len(requests), 2)
-
-    requests = bot_db.GetBuildRequestsForBuildConfigs(['test_pre_cq_2'])
-    self.assertEqual(len(requests), 1)
-    self.assertEqual(requests[0].id, 3)
-    self.assertEqual(requests[0].request_build_config, 'test_pre_cq_2')
-    self.assertEqual(requests[0].request_buildbucket_id, 'test_bb_id_3')
-
-    requests = bot_db.GetBuildRequestsForBuildConfigs(
-        ['test_pre_cq_1', 'test_pre_cq_2'], num_results=10)
-    self.assertCountEqual([r.request_buildbucket_id for r in requests],
-                          ['test_bb_id_1', 'test_bb_id_2', 'test_bb_id_3'])
-
-    requests = bot_db.GetBuildRequestsForBuildConfigs(
-        ['test_pre_cq_1', 'test_pre_cq_2'], start_time=start_timestamp,
-        num_results=10)
-    self.assertCountEqual([r.request_buildbucket_id for r in requests],
-                          ['test_bb_id_2', 'test_bb_id_3'])
-
-    requests = bot_db.GetBuildRequestsForBuildConfigs(
-        ['test1-paladin', 'test2-paladin', 'test3-paladin'])
-    self.assertCountEqual([r.request_buildbucket_id for r in requests],
-                          ['test_bb_id_1', 'test_bb_id_2', 'test_bb_id_3'])
-
-  def testGetBuildRequestsForRequesterBuild(self):
-    """Test GetBuildRequestsForRequesterBuild."""
-    self._PrepareDatabase()
-    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
-
-    b_id_1 = bot_db.InsertBuild(
-        'master-paladin', _random(),
-        'master-paladin', 'bot_hostname')
-
-    build_req_1 = build_requests.BuildRequest(
-        id=None, build_id=b_id_1,
-        request_build_config='test1-paladin',
-        request_build_args='test_build_args_1',
-        request_buildbucket_id='test_bb_id_1',
-        request_reason=build_requests.REASON_IMPORTANT_CQ_SLAVE,
-        timestamp=None)
-    build_req_2 = build_requests.BuildRequest(
-        id=None, build_id=b_id_1,
-        request_build_config='test2-paladin',
-        request_build_args='test_build_args_2',
-        request_buildbucket_id='test_bb_id_2',
-        request_reason=build_requests.REASON_IMPORTANT_CQ_SLAVE,
-        timestamp=None)
-    build_req_3 = build_requests.BuildRequest(
-        id=None, build_id=b_id_1,
-        request_build_config='test3-paladin',
-        request_build_args='test_build_args_3',
-        request_buildbucket_id='test_bb_id_3',
-        request_reason=build_requests.REASON_EXPERIMENTAL_CQ_SLAVE,
-        timestamp=None)
-    bot_db.InsertBuildRequests([build_req_1, build_req_2, build_req_3])
-
-    requests = bot_db.GetBuildRequestsForRequesterBuild(b_id_1)
-    self.assertCountEqual([r.request_build_config for r in requests],
-                          ['test1-paladin', 'test2-paladin', 'test3-paladin'])
-
-    requests = bot_db.GetBuildRequestsForRequesterBuild(
-        b_id_1, request_reason=build_requests.REASON_IMPORTANT_CQ_SLAVE)
-    self.assertCountEqual([r.request_build_config for r in requests],
-                          ['test1-paladin', 'test2-paladin'])
-
-    requests = bot_db.GetBuildRequestsForRequesterBuild(
-        b_id_1, request_reason=build_requests.REASON_EXPERIMENTAL_CQ_SLAVE)
-    self.assertCountEqual([r.request_build_config for r in requests],
-                          ['test3-paladin'])
 
 
 class DataSeries1Test(CIDBIntegrationTest):

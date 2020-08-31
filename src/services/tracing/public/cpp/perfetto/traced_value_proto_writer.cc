@@ -10,7 +10,6 @@
 #include "base/json/string_escape.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
-#include "base/values.h"
 #include "third_party/perfetto/include/perfetto/protozero/message_handle.h"
 #include "third_party/perfetto/include/perfetto/protozero/scattered_heap_buffer.h"
 #include "third_party/perfetto/include/perfetto/protozero/scattered_stream_writer.h"
@@ -53,6 +52,7 @@ class ProtoWriter final : public TracedValue::Writer {
         stream_(&buffer_) {
     proto_.Reset(&stream_);
     buffer_.set_writer(&stream_);
+    stream_.Reset(buffer_.GetNewBuffer());
     node_stack_.emplace(ProtoValueHandle(&proto_));
     proto_.set_nested_type(ProtoValue::DICT);
   }
@@ -219,11 +219,6 @@ class ProtoWriter final : public TracedValue::Writer {
                   buffer_.GetTotalSize(),
                   /* resident size */
                   buffer_.GetTotalSize());
-  }
-
-  std::unique_ptr<base::Value> ToBaseValue() const override {
-    base::Value root(base::Value::Type::DICTIONARY);
-    return base::Value::ToUniquePtrValue(std::move(root));
   }
 
  private:

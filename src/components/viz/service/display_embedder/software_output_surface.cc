@@ -54,7 +54,7 @@ void SoftwareOutputSurface::SetDrawRectangle(const gfx::Rect& draw_rectangle) {}
 void SoftwareOutputSurface::Reshape(const gfx::Size& size,
                                     float device_scale_factor,
                                     const gfx::ColorSpace& color_space,
-                                    bool has_alpha,
+                                    gfx::BufferFormat format,
                                     bool use_stencil) {
   software_device()->Resize(size, device_scale_factor);
 }
@@ -89,10 +89,6 @@ bool SoftwareOutputSurface::IsDisplayedAsOverlayPlane() const {
 
 unsigned SoftwareOutputSurface::GetOverlayTextureId() const {
   return 0;
-}
-
-gfx::BufferFormat SoftwareOutputSurface::GetOverlayBufferFormat() const {
-  return gfx::BufferFormat::RGBX_8888;
 }
 
 bool SoftwareOutputSurface::HasExternalStencilTest() const {
@@ -154,4 +150,12 @@ void SoftwareOutputSurface::SetNeedsSwapSizeNotifications(
 }
 #endif
 
+scoped_refptr<gpu::GpuTaskSchedulerHelper>
+SoftwareOutputSurface::GetGpuTaskSchedulerHelper() {
+  return nullptr;
+}
+
+gpu::MemoryTracker* SoftwareOutputSurface::GetMemoryTracker() {
+  return nullptr;
+}
 }  // namespace viz

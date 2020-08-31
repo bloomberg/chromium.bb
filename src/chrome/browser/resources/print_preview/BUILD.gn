@@ -32,23 +32,20 @@ if (optimize_webui) {
     pak_file = print_preview_pak_file
     out_folder = unpak_folder
 
-    deps = [
-      ":flattened_resources",
-    ]
+    deps = [ ":flattened_resources" ]
   }
 
   grit("flattened_resources") {
     source = "print_preview_resources.grd"
 
-    # The .grd contains references to generated files.
-    source_is_generated = true
     grit_flags = [
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
 
     deps = [
-      "ui:polymer3_elements",
+      "../pdf/elements:web_components",
+      "ui:web_components",
     ]
     defines = chrome_grit_defines
     outputs = [
@@ -73,9 +70,7 @@ js_type_check("print_preview_module_resources") {
   is_polymer3 = true
   deps = [
     ":cloud_print_interface",
-    ":cloud_print_interface_js",
-    ":cloud_print_interface_manager",
-    ":cloud_print_interface_native",
+    ":cloud_print_interface_impl",
     ":dark_mode_behavior",
     ":metrics",
     ":native_layer",
@@ -92,30 +87,19 @@ js_library("print_preview_utils") {
 }
 
 js_library("metrics") {
-  deps = [
-    ":native_layer",
-  ]
+  deps = [ ":native_layer" ]
 }
 
 js_library("cloud_print_interface") {
   deps = [
+    ":native_layer",
     "data:destination",
     "data:invitation",
     "//ui/webui/resources/js/cr:event_target.m",
   ]
 }
 
-js_library("cloud_print_interface_manager") {
-  deps = [
-    ":cloud_print_interface",
-    ":cloud_print_interface_js",
-    ":cloud_print_interface_native",
-    ":native_layer",
-    "//ui/webui/resources/js:load_time_data.m",
-  ]
-}
-
-js_library("cloud_print_interface_js") {
+js_library("cloud_print_interface_impl") {
   deps = [
     ":cloud_print_interface",
     ":native_layer",
@@ -123,13 +107,8 @@ js_library("cloud_print_interface_js") {
     "data:destination",
     "data:invitation",
     "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js/cr:event_target.m",
-  ]
-}
-
-js_library("cloud_print_interface_native") {
-  deps = [
-    ":cloud_print_interface",
   ]
 }
 
@@ -145,7 +124,5 @@ js_library("native_layer") {
 }
 
 js_library("dark_mode_behavior") {
-  deps = [
-    "//ui/webui/resources/js:assert.m",
-  ]
+  deps = [ "//ui/webui/resources/js:assert.m" ]
 }

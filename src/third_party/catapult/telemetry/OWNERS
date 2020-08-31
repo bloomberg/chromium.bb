@@ -1,11 +1,22 @@
-crouleau@chromium.org
-perezju@chromium.org
+# Overall Owners
+johnchen@chromium.org
+wenbinzhang@google.com  # Overall backup reviewer
+
+# crash symbolization/minidumps and functional testing
+bsheedy@chromium.org
 
 # expectations.config format
 rmhasan@google.com
 
+# tracing and artifacts
+eseckler@chromium.org
+khokhlov@google.com
+
 # For CrOS-related changes.
 achuith@chromium.org
+
+# For CrOS OOBE-related changes.
+rsorokin@chromium.org
 
 # TEAM: telemetry@chromium.org
 # COMPONENT: Test>Telemetry
@@ -22,3 +33,4 @@ achuith@chromium.org
 # tonyg@chromium.org
 # zhenw@chromium.org
 # nednguyen@google.com
+# perezju@chromium.org

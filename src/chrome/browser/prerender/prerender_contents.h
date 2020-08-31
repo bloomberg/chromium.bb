@@ -20,14 +20,13 @@
 #include "base/values.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_origin.h"
-#include "chrome/common/prerender.mojom.h"
+#include "chrome/common/prerender_canceler.mojom.h"
 #include "chrome/common/prerender_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/origin.h"
 
@@ -41,7 +40,7 @@ namespace content {
 class RenderViewHost;
 class SessionStorageNamespace;
 class WebContents;
-}
+}  // namespace content
 
 namespace history {
 struct HistoryAddPageArgs;
@@ -233,7 +232,7 @@ class PrerenderContents : public content::NotificationObserver,
   // Running byte count. Increased when each resource completes loading.
   int64_t network_bytes() { return network_bytes_; }
 
-  void OnPrerenderCancelerReceiver(
+  void AddPrerenderCancelerReceiver(
       mojo::PendingReceiver<chrome::mojom::PrerenderCanceler> receiver);
 
  protected:
@@ -292,13 +291,10 @@ class PrerenderContents : public content::NotificationObserver,
       std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
 
   // chrome::mojom::PrerenderCanceler:
-  void CancelPrerenderForPrinting() override;
-  void CancelPrerenderForUnsupportedMethod() override;
   void CancelPrerenderForUnsupportedScheme(const GURL& url) override;
-  void CancelPrerenderForSyncDeferredRedirect() override;
 
-  mojo::Receiver<chrome::mojom::PrerenderCanceler> prerender_canceler_receiver_{
-      this};
+  mojo::ReceiverSet<chrome::mojom::PrerenderCanceler>
+      prerender_canceler_receiver_set_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 

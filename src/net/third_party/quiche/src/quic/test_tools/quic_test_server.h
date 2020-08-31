@@ -27,11 +27,11 @@ class QuicTestServer : public QuicServer {
     virtual ~SessionFactory() {}
 
     // Returns a new session owned by the caller.
-    virtual QuicServerSessionBase* CreateSession(
+    virtual std::unique_ptr<QuicServerSessionBase> CreateSession(
         const QuicConfig& config,
         QuicConnection* connection,
         QuicSession::Visitor* visitor,
-        QuicCryptoServerStream::Helper* helper,
+        QuicCryptoServerStreamBase::Helper* helper,
         const QuicCryptoServerConfig* crypto_config,
         QuicCompressedCertsCache* compressed_certs_cache,
         QuicSimpleServerBackend* quic_simple_server_backend) = 0;
@@ -54,7 +54,7 @@ class QuicTestServer : public QuicServer {
     virtual ~CryptoStreamFactory() {}
 
     // Returns a new QuicCryptoServerStreamBase owned by the caller
-    virtual QuicCryptoServerStreamBase* CreateCryptoStream(
+    virtual std::unique_ptr<QuicCryptoServerStreamBase> CreateCryptoStream(
         const QuicCryptoServerConfig* crypto_config,
         QuicServerSessionBase* session) = 0;
   };
@@ -97,7 +97,7 @@ class ImmediateGoAwaySession : public QuicSimpleServerSession {
   ImmediateGoAwaySession(const QuicConfig& config,
                          QuicConnection* connection,
                          QuicSession::Visitor* visitor,
-                         QuicCryptoServerStream::Helper* helper,
+                         QuicCryptoServerStreamBase::Helper* helper,
                          const QuicCryptoServerConfig* crypto_config,
                          QuicCompressedCertsCache* compressed_certs_cache,
                          QuicSimpleServerBackend* quic_simple_server_backend);
@@ -105,6 +105,9 @@ class ImmediateGoAwaySession : public QuicSimpleServerSession {
   // Override to send GoAway.
   void OnStreamFrame(const QuicStreamFrame& frame) override;
   void OnCryptoFrame(const QuicCryptoFrame& frame) override;
+  void OnNewEncryptionKeyAvailable(
+      EncryptionLevel level,
+      std::unique_ptr<QuicEncrypter> encrypter) override;
 };
 
 }  // namespace test

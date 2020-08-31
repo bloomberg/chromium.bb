@@ -33,8 +33,8 @@ readonly SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE}) && pwd)
 readonly NACL_ROOT=$(cd ${SCRIPT_DIR}/../.. && pwd)
 # this where we create the sysroot image
 readonly INSTALL_ROOT=${NACL_ROOT}/toolchain/linux_x86/arm_trusted
-readonly TAR_ARCHIVE=$(dirname ${NACL_ROOT})/out/sysroot_arm_trusted_${DIST}.tgz
-readonly TMP=$(dirname ${NACL_ROOT})/out/sysroot_arm_trusted_${DIST}
+readonly TAR_ARCHIVE=$(dirname ${NACL_ROOT})/out/emulator_arm_trusted_${DIST}.tgz
+readonly TMP=$(dirname ${NACL_ROOT})/out/emulator_arm_trusted_${DIST}
 readonly REQUIRED_TOOLS="wget"
 readonly MAKE_OPTS="-j8"
 

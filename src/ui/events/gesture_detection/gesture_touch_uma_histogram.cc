@@ -5,6 +5,7 @@
 #include "ui/events/gesture_detection/gesture_touch_uma_histogram.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 
 namespace ui {
 

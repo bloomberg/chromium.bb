@@ -10,11 +10,15 @@
 
 #include "base/callback_forward.h"
 #include "content/public/common/content_client.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
-#include "services/service_manager/public/cpp/binder_map.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
+
+namespace IPC {
+class Message;
+}
 
 namespace mojo {
 class BinderMap;
@@ -70,8 +74,6 @@ class CONTENT_EXPORT ContentUtilityClient {
 
   virtual void RegisterNetworkBinders(
       service_manager::BinderRegistry* registry) {}
-
-  virtual void RegisterAudioBinders(service_manager::BinderMap* binders) {}
 };
 
 }  // namespace content

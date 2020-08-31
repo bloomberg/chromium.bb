@@ -39,9 +39,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/app_modal/javascript_app_modal_dialog.h"
-#include "components/app_modal/native_app_modal_dialog.h"
 #include "components/download/public/common/download_item.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -54,6 +54,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/slow_download_http_response.h"
@@ -66,11 +67,11 @@
 
 namespace {
 
-app_modal::NativeAppModalDialog* GetNextDialog() {
-  app_modal::JavaScriptAppModalDialog* dialog =
+javascript_dialogs::AppModalDialogView* GetNextDialog() {
+  javascript_dialogs::AppModalDialogController* dialog =
       ui_test_utils::WaitForAppModalDialog();
-  CHECK(dialog->native_dialog());
-  return dialog->native_dialog();
+  CHECK(dialog->view());
+  return dialog->view();
 }
 
 // Note: call |PrepareForDialog| on the relevant WebContents or Browser before
@@ -209,22 +210,28 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
 
   bool DetermineDownloadTarget(
       download::DownloadItem* item,
-      const content::DownloadTargetCallback& callback) override {
-    content::DownloadTargetCallback dangerous_callback =
-        base::Bind(&TestDownloadManagerDelegate::SetDangerous, callback);
-    return ChromeDownloadManagerDelegate::DetermineDownloadTarget(
-        item, dangerous_callback);
+      content::DownloadTargetCallback* callback) override {
+    content::DownloadTargetCallback dangerous_callback = base::BindOnce(
+        &TestDownloadManagerDelegate::SetDangerous, std::move(*callback));
+    bool run = ChromeDownloadManagerDelegate::DetermineDownloadTarget(
+        item, &dangerous_callback);
+    // ChromeDownloadManagerDelegate::DetermineDownloadTarget() needs to run the
+    // |callback|.
+    DCHECK(run);
+    DCHECK(!dangerous_callback);
+    return true;
   }
 
-  static void SetDangerous(const content::DownloadTargetCallback& callback,
+  static void SetDangerous(content::DownloadTargetCallback callback,
                            const base::FilePath& target_path,
                            download::DownloadItem::TargetDisposition disp,
                            download::DownloadDangerType danger_type,
+                           download::DownloadItem::MixedContentStatus mcs,
                            const base::FilePath& intermediate_path,
                            download::DownloadInterruptReason reason) {
-    callback.Run(target_path, disp,
-                 download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
-                 intermediate_path, reason);
+    std::move(callback).Run(target_path, disp,
+                            download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL, mcs,
+                            intermediate_path, reason);
   }
 };
 
@@ -762,7 +769,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   ui_test_utils::NavigateToURLWithDisposition(
       browser2, embedded_test_server()->GetURL("/title2.html"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   content::WaitForLoadStop(browser2->tab_strip_model()->GetWebContentsAt(1));
   EXPECT_FALSE(browser2->tab_strip_model()
                    ->GetWebContentsAt(1)

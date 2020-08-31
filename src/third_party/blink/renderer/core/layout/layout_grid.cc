@@ -29,6 +29,7 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/grid_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/layout_state.h"
@@ -194,7 +195,12 @@ bool LayoutGrid::ExplicitGridDidResize(const ComputedStyle& old_style) const {
 bool LayoutGrid::NamedGridLinesDefinitionDidChange(
     const ComputedStyle& old_style) const {
   return old_style.NamedGridRowLines() != StyleRef().NamedGridRowLines() ||
-         old_style.NamedGridColumnLines() != StyleRef().NamedGridColumnLines();
+         old_style.NamedGridColumnLines() !=
+             StyleRef().NamedGridColumnLines() ||
+         old_style.ImplicitNamedGridRowLines() !=
+             StyleRef().ImplicitNamedGridRowLines() ||
+         old_style.ImplicitNamedGridColumnLines() !=
+             StyleRef().ImplicitNamedGridColumnLines();
 }
 
 void LayoutGrid::ComputeTrackSizesForDefiniteSize(
@@ -246,11 +252,8 @@ void LayoutGrid::RepeatTracksSizingIfNeeded(
 void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
   DCHECK(NeedsLayout());
 
-  // We cannot perform a simplifiedLayout() on a dirty grid that
-  // has positioned items to be laid out.
-  if (!relayout_children &&
-      (!grid_->NeedsItemsPlacement() || !PosChildNeedsLayout()) &&
-      SimplifiedLayout())
+  // We cannot perform a |SimplifiedLayout()| with a dirty grid.
+  if (!relayout_children && !grid_->NeedsItemsPlacement() && SimplifiedLayout())
     return;
 
   SubtreeLayoutScope layout_scope(*this);
@@ -374,6 +377,15 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
 
     LayoutGridItems();
     track_sizing_algorithm_.Reset();
+
+    if (NumTracks(kForRows, *grid_) > 1u && !StyleRef().RowGap().IsNormal() &&
+        StyleRef().RowGap().GetLength().IsPercentOrCalc()) {
+      UseCounter::Count(GetDocument(), WebFeature::kGridRowGapPercent);
+      if (!CachedHasDefiniteLogicalHeight()) {
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kGridRowGapPercentIndefinite);
+      }
+    }
 
     if (Size() != previous_size)
       relayout_children = true;
@@ -502,17 +514,13 @@ LayoutUnit LayoutGrid::GuttersSize(
   return gap_accumulator;
 }
 
-void LayoutGrid::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
-  LayoutUnit scrollbar_width = LayoutUnit(ScrollbarLogicalWidth());
-  min_logical_width = scrollbar_width;
-  max_logical_width = scrollbar_width;
+MinMaxSizes LayoutGrid::ComputeIntrinsicLogicalWidths() const {
+  MinMaxSizes sizes;
+  sizes += BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth();
 
   if (HasOverrideIntrinsicContentLogicalWidth()) {
-    min_logical_width += OverrideIntrinsicContentLogicalWidth();
-    max_logical_width = min_logical_width;
-    return;
+    sizes += OverrideIntrinsicContentLogicalWidth();
+    return sizes;
   }
 
   std::unique_ptr<Grid> grid = Grid::Create(this);
@@ -538,8 +546,9 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
   LayoutUnit total_gutters_size = GuttersSize(
       algorithm.GetGrid(), kForColumns, 0, number_of_tracks, base::nullopt);
 
-  min_logical_width += algorithm.MinContentSize() + total_gutters_size;
-  max_logical_width += algorithm.MaxContentSize() + total_gutters_size;
+  sizes.min_size += algorithm.MinContentSize() + total_gutters_size;
+  sizes.max_size += algorithm.MaxContentSize() + total_gutters_size;
+  return sizes;
 }
 
 void LayoutGrid::ComputeTrackSizesForIndefiniteSize(

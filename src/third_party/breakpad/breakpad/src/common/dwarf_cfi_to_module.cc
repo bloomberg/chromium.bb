@@ -142,8 +142,8 @@ vector<string> DwarfCFIToModule::RegisterNames::MIPS() {
                     sizeof(kRegisterNames) / sizeof(kRegisterNames[0]));
 }
 
-bool DwarfCFIToModule::Entry(size_t offset, uint64 address, uint64 length,
-                             uint8 version, const string &augmentation,
+bool DwarfCFIToModule::Entry(size_t offset, uint64_t address, uint64_t length,
+                             uint8_t version, const string &augmentation,
                              unsigned return_address) {
   assert(!entry_);
 
@@ -209,20 +209,20 @@ void DwarfCFIToModule::Record(Module::Address address, int reg,
     entry_->rule_changes[address][RegisterName(reg)] = shared_rule;
 }
 
-bool DwarfCFIToModule::UndefinedRule(uint64 address, int reg) {
+bool DwarfCFIToModule::UndefinedRule(uint64_t address, int reg) {
   reporter_->UndefinedNotSupported(entry_offset_, RegisterName(reg));
   // Treat this as a non-fatal error.
   return true;
 }
 
-bool DwarfCFIToModule::SameValueRule(uint64 address, int reg) {
+bool DwarfCFIToModule::SameValueRule(uint64_t address, int reg) {
   ostringstream s;
   s << RegisterName(reg);
   Record(address, reg, s.str());
   return true;
 }
 
-bool DwarfCFIToModule::OffsetRule(uint64 address, int reg,
+bool DwarfCFIToModule::OffsetRule(uint64_t address, int reg,
                                   int base_register, long offset) {
   ostringstream s;
   s << RegisterName(base_register) << " " << offset << " + ^";
@@ -230,7 +230,7 @@ bool DwarfCFIToModule::OffsetRule(uint64 address, int reg,
   return true;
 }
 
-bool DwarfCFIToModule::ValOffsetRule(uint64 address, int reg,
+bool DwarfCFIToModule::ValOffsetRule(uint64_t address, int reg,
                                      int base_register, long offset) {
   ostringstream s;
   s << RegisterName(base_register) << " " << offset << " +";
@@ -238,7 +238,7 @@ bool DwarfCFIToModule::ValOffsetRule(uint64 address, int reg,
   return true;
 }
 
-bool DwarfCFIToModule::RegisterRule(uint64 address, int reg,
+bool DwarfCFIToModule::RegisterRule(uint64_t address, int reg,
                                     int base_register) {
   ostringstream s;
   s << RegisterName(base_register);
@@ -246,14 +246,14 @@ bool DwarfCFIToModule::RegisterRule(uint64 address, int reg,
   return true;
 }
 
-bool DwarfCFIToModule::ExpressionRule(uint64 address, int reg,
+bool DwarfCFIToModule::ExpressionRule(uint64_t address, int reg,
                                       const string &expression) {
   reporter_->ExpressionsNotSupported(entry_offset_, RegisterName(reg));
   // Treat this as a non-fatal error.
   return true;
 }
 
-bool DwarfCFIToModule::ValExpressionRule(uint64 address, int reg,
+bool DwarfCFIToModule::ValExpressionRule(uint64_t address, int reg,
                                          const string &expression) {
   reporter_->ExpressionsNotSupported(entry_offset_, RegisterName(reg));
   // Treat this as a non-fatal error.

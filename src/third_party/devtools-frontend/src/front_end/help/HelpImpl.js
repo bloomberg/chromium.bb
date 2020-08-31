@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as Host from '../host/host.js';
+import * as UI from '../ui/ui.js';  // eslint-disable-line no-unused-vars
+
+import {releaseNoteText} from './ReleaseNoteText.js';
+
 /**
  * @const
  * @type {string}
@@ -9,20 +15,21 @@
 export const releaseNoteViewId = 'release-note';
 
 /**
- * @return {!Help.ReleaseNote}
+ * @return {!ReleaseNote}
  */
 export function latestReleaseNote() {
   if (!Help._latestReleaseNote) {
-    /** @type {!Help.ReleaseNote} */
-    Help._latestReleaseNote = Help.releaseNoteText.reduce((acc, note) => note.version > acc.version ? note : acc);
+    /** @type {!ReleaseNote} */
+    Help._latestReleaseNote =
+        (self.Help.releaseNoteText || releaseNoteText).reduce((acc, note) => note.version > acc.version ? note : acc);
   }
   return Help._latestReleaseNote;
 }
 
-function _showReleaseNoteIfNeeded() {
-  _innerShowReleaseNoteIfNeeded(
+export function showReleaseNoteIfNeeded() {
+  innerShowReleaseNoteIfNeeded(
       Help._releaseNoteVersionSetting.get(), latestReleaseNote().version,
-      Common.settings.moduleSetting('help.show-release-note').get());
+      Common.Settings.Settings.instance().moduleSetting('help.show-release-note').get());
 }
 
 /**
@@ -30,7 +37,7 @@ function _showReleaseNoteIfNeeded() {
  * @param {number} latestVersion
  * @param {boolean} showReleaseNote
  */
-function _innerShowReleaseNoteIfNeeded(lastSeenVersion, latestVersion, showReleaseNote) {
+export function innerShowReleaseNoteIfNeeded(lastSeenVersion, latestVersion, showReleaseNote) {
   if (!lastSeenVersion) {
     Help._releaseNoteVersionSetting.set(latestVersion);
     return;
@@ -42,90 +49,61 @@ function _innerShowReleaseNoteIfNeeded(lastSeenVersion, latestVersion, showRelea
     return;
   }
   Help._releaseNoteVersionSetting.set(latestVersion);
-  UI.viewManager.showView(releaseNoteViewId, true);
+  UI.ViewManager.ViewManager.instance().showView(releaseNoteViewId, true);
 }
 
 /**
- * @implements {Common.Runnable}
+ * @implements {Common.Runnable.Runnable}
  */
 export class HelpLateInitialization {
   /**
    * @override
    */
   async run() {
-    if (!Host.isUnderTest()) {
-      _showReleaseNoteIfNeeded();
+    if (!Host.InspectorFrontendHost.isUnderTest()) {
+      showReleaseNoteIfNeeded();
     }
   }
 }
 
 /**
- * @implements {UI.ActionDelegate}
+ * @implements {UI.ActionDelegate.ActionDelegate}
  */
 export class ReleaseNotesActionDelegate {
   /**
    * @override
-   * @param {!UI.Context} context
+   * @param {!UI.Context.Context} context
    * @param {string} actionId
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    Host.InspectorFrontendHost.openInNewTab(latestReleaseNote().link);
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(latestReleaseNote().link);
     return true;
   }
 }
 
 /**
- * @implements {UI.ActionDelegate}
+ * @implements {UI.ActionDelegate.ActionDelegate}
  */
 export class ReportIssueActionDelegate {
   /**
    * @override
-   * @param {!UI.Context} context
+   * @param {!UI.Context.Context} context
    * @param {string} actionId
    * @return {boolean}
    */
   handleAction(context, actionId) {
-    Host.InspectorFrontendHost.openInNewTab(
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(
         'https://bugs.chromium.org/p/chromium/issues/entry?template=DevTools+issue');
     return true;
   }
 }
 
-/* Legacy exported object */
-self.Help = self.Help || {};
-
-/* Legacy exported object */
-Help = Help || {};
-
-Help.releaseNoteViewId = releaseNoteViewId;
-Help.latestReleaseNote = latestReleaseNote;
-Help._innerShowReleaseNoteIfNeeded = _innerShowReleaseNoteIfNeeded;
-Help._showReleaseNoteIfNeeded = _showReleaseNoteIfNeeded;
-
-/** @type {!Common.Setting} */
-Help._releaseNoteVersionSetting = Common.settings.createSetting('releaseNoteVersionSeen', 0);
-
 /** @typedef {!{title: string, subtitle: string, link: string}} */
-Help.ReleaseNoteHighlight;
+export let ReleaseNoteHighlight;
 
 /**
- * @typedef {!{version: number, header: string, highlights: !Array<!Help.ReleaseNoteHighlight>,
+ * @typedef {!{version: number, header: string, highlights: !Array<!ReleaseNoteHighlight>,
  *    link: string}}
  */
-Help.ReleaseNote;
-
-/**
- * @constructor
- */
-Help.HelpLateInitialization = HelpLateInitialization;
-
-/**
- * @constructor
- */
-Help.ReleaseNotesActionDelegate = ReleaseNotesActionDelegate;
-
-/**
- * @constructor
- */
-Help.ReportIssueActionDelegate = ReportIssueActionDelegate;
+export let ReleaseNote;

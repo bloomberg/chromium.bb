@@ -10,14 +10,13 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_span.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 
 namespace quic {
 
 typedef QuicInlinedVector<QuicMemSlice, 1> QuicMessageData;
 
 struct QUIC_EXPORT_PRIVATE QuicMessageFrame {
-  QuicMessageFrame();
+  QuicMessageFrame() = default;
   explicit QuicMessageFrame(QuicMessageId message_id);
   QuicMessageFrame(QuicMessageId message_id, QuicMemSliceSpan span);
   QuicMessageFrame(const char* data, QuicPacketLength length);
@@ -36,11 +35,11 @@ struct QUIC_EXPORT_PRIVATE QuicMessageFrame {
 
   // message_id is only used on the sender side and does not get serialized on
   // wire.
-  QuicMessageId message_id;
+  QuicMessageId message_id = 0;
   // Not owned, only used on read path.
-  const char* data;
+  const char* data = nullptr;
   // Total length of message_data, must be fit into one packet.
-  QuicPacketLength message_length;
+  QuicPacketLength message_length = 0;
 
   // The actual message data which is reference counted, used on write path.
   QuicMessageData message_data;

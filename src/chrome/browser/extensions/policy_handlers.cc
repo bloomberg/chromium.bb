@@ -7,9 +7,11 @@
 #include <stddef.h>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
@@ -66,12 +68,10 @@ bool ExtensionListPolicyHandler::CheckListEntry(const base::Value& value) {
   return crx_file::id_util::IdIsValid(str);
 }
 
-void ExtensionListPolicyHandler::ApplyList(
-    std::unique_ptr<base::ListValue> filtered_list,
-    PrefValueMap* prefs) {
-  DCHECK(filtered_list);
-  prefs->SetValue(pref_path_,
-                  base::Value::FromUniquePtrValue(std::move(filtered_list)));
+void ExtensionListPolicyHandler::ApplyList(base::Value filtered_list,
+                                           PrefValueMap* prefs) {
+  DCHECK(filtered_list.is_list());
+  prefs->SetValue(pref_path_, std::move(filtered_list));
 }
 
 // ExtensionInstallListPolicyHandler implementation ----------------------------

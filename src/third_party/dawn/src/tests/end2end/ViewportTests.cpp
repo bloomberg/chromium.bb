@@ -127,7 +127,7 @@ class ViewportTest : public DawnTest {
                 renderPass1.SetViewport(viewport.x, viewport.y, viewport.width, viewport.height,
                                         viewport.minDepth, viewport.maxDepth);
             }
-            renderPass1.Draw(6, 1, 0, 0);
+            renderPass1.Draw(6);
             renderPass1.EndPass();
         }
 
@@ -147,12 +147,11 @@ class ViewportTest : public DawnTest {
             wgpu::RenderPassEncoder renderPass2 =
                 commandEncoder.BeginRenderPass(&renderPassDescriptor2);
             renderPass2.SetPipeline(CreatePipelineForTest(wgpu::CompareFunction::Greater));
-            renderPass2.Draw(6, 1, 0, 0);
+            renderPass2.Draw(6);
             renderPass2.EndPass();
         }
 
         wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
-        wgpu::Queue queue = device.CreateQueue();
         queue.Submit(1, &commandBuffer);
 
         const RGBA8 kColor[ColorTypeCount] = {
@@ -367,6 +366,11 @@ TEST_P(ViewportTest, ShrinkViewportAndShiftToBottomRightAndApplyDepth) {
 // X and y have fractions and they are smaller than 0.5, which is the center of point(0, 0). So
 // point(0, 0) is covered by the top left triangle as usual.
 TEST_P(ViewportTest, DoNotTruncateXAndY) {
+    // Swiftshader seems to be using 4 bits of subpixel precision for viewport computations but
+    // advertises 0 bits of precision. This is within the allowed Vulkan behaviors so this test
+    // should likely be revisited.
+    DAWN_SKIP_TEST_IF(IsVulkan() && IsSwiftshader());
+
     ViewportParams viewport = {0.49, 0.49, 4.0, 4.0, 0.0, 1.0};
     TestInfo info = {viewport, TopLeftTriangleColor, BottomRightTriangleColor};
     DoTest(info);
@@ -401,4 +405,4 @@ TEST_P(ViewportTest, DoNotTruncateWidthAndHeight2) {
     DoTest(info);
 }
 
-DAWN_INSTANTIATE_TEST(ViewportTest, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend);
+DAWN_INSTANTIATE_TEST(ViewportTest, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());

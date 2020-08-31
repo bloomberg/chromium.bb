@@ -29,9 +29,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_idb_index_parameters.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_cursor.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_index.h"
-#include "third_party/blink/renderer/modules/indexeddb/idb_index_parameters.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
@@ -54,7 +54,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   IDBObjectStore(scoped_refptr<IDBObjectStoreMetadata>, IDBTransaction*);
   ~IDBObjectStore() override = default;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   const IDBObjectStoreMetadata& Metadata() const { return *metadata_; }
   const IDBKeyPath& IdbKeyPath() const { return Metadata().key_path; }
@@ -96,12 +96,14 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   IDBRequest* getAllKeys(ScriptState*,
                          const ScriptValue& range,
                          ExceptionState&);
+  IDBRequest* add(ScriptState*, const ScriptValue& value, ExceptionState&);
   IDBRequest* add(ScriptState*,
-                  const ScriptValue&,
+                  const ScriptValue& value,
                   const ScriptValue& key,
                   ExceptionState&);
+  IDBRequest* put(ScriptState*, const ScriptValue& value, ExceptionState&);
   IDBRequest* put(ScriptState*,
-                  const ScriptValue&,
+                  const ScriptValue& value,
                   const ScriptValue& key,
                   ExceptionState&);
   IDBRequest* Delete(ScriptState*, const ScriptValue& key, ExceptionState&);

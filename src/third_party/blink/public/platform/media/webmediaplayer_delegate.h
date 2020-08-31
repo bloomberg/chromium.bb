@@ -65,6 +65,8 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerDelegate {
     virtual void OnMuted(bool muted) = 0;
     virtual void OnSeekForward(double seconds) = 0;
     virtual void OnSeekBackward(double seconds) = 0;
+    virtual void OnEnterPictureInPicture() = 0;
+    virtual void OnExitPictureInPicture() = 0;
 
     // Called to control audio ducking. Output volume should be set to
     // |player_volume| * |multiplier|. The range of |multiplier| is [0, 1],
@@ -74,6 +76,10 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerDelegate {
     // Called to set as the persistent video. A persistent video should hide its
     // controls and go fullscreen.
     virtual void OnBecamePersistentVideo(bool value) = 0;
+
+    // Notify the player that it is now eligible to start recording power
+    // measurements if |state| is true, else it is no longer eligible.
+    virtual void OnPowerExperimentState(bool state) {}
   };
 
   // Returns true if the host frame is hidden or closed.
@@ -114,6 +120,10 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerDelegate {
   virtual void DidPlayerMediaPositionStateChange(
       int delegate_id,
       const media_session::MediaPosition& position) = 0;
+
+  // Notify that picture-in-picture availability has changed.
+  virtual void DidPictureInPictureAvailabilityChange(int delegate_id,
+                                                     bool available) = 0;
 
   // Notify that playback is stopped. This will drop wake locks and remove any
   // external controls.

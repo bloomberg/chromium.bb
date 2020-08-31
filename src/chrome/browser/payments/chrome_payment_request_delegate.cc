@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -63,8 +63,8 @@ ChromePaymentRequestDelegate::ChromePaymentRequestDelegate(
 ChromePaymentRequestDelegate::~ChromePaymentRequestDelegate() {}
 
 void ChromePaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
-  DCHECK_EQ(nullptr, shown_dialog_);
-  shown_dialog_ = new payments::PaymentRequestDialogView(request, nullptr);
+  DCHECK_EQ(nullptr, shown_dialog_.get());
+  shown_dialog_ = PaymentRequestDialogView::Create(request, nullptr);
   shown_dialog_->ShowDialog();
 }
 

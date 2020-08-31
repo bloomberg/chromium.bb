@@ -248,8 +248,9 @@ class RecentContentScanner extends ContentScanner {
   /**
    * @param {string} query Search query.
    * @param {string=} opt_sourceRestriction
+   * @param {string=} opt_recentFileType
    */
-  constructor(query, opt_sourceRestriction) {
+  constructor(query, opt_sourceRestriction, opt_recentFileType) {
     super();
 
     /**
@@ -262,6 +263,12 @@ class RecentContentScanner extends ContentScanner {
      */
     this.sourceRestriction_ = opt_sourceRestriction ||
         chrome.fileManagerPrivate.SourceRestriction.ANY_SOURCE;
+
+    /**
+     * @private {string}
+     */
+    this.recentFileType_ =
+        opt_recentFileType || chrome.fileManagerPrivate.RecentFileType.ALL;
   }
 
   /**
@@ -269,7 +276,7 @@ class RecentContentScanner extends ContentScanner {
    */
   scan(entriesCallback, successCallback, errorCallback) {
     chrome.fileManagerPrivate.getRecentFiles(
-        this.sourceRestriction_, entries => {
+        this.sourceRestriction_, this.recentFileType_, entries => {
           if (chrome.runtime.lastError) {
             console.error(chrome.runtime.lastError.message);
             errorCallback(
@@ -796,7 +803,7 @@ class DirectoryContents extends cr.EventTarget {
     }
 
     const addedList = [];
-    for (let url in updatedMap) {
+    for (const url in updatedMap) {
       addedList.push(updatedMap[url]);
     }
 
@@ -1062,7 +1069,9 @@ class DirectoryContents extends cr.EventTarget {
    */
   static createForRecent(context, recentRootEntry, query) {
     return new DirectoryContents(context, true, recentRootEntry, () => {
-      return new RecentContentScanner(query, recentRootEntry.sourceRestriction);
+      return new RecentContentScanner(
+          query, recentRootEntry.sourceRestriction,
+          recentRootEntry.recentFileType);
     });
   }
 

@@ -6,13 +6,14 @@ package org.chromium.chrome.browser.image_fetcher;
 
 import android.graphics.Bitmap;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.chrome.browser.util.BitmapCache;
-import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.components.browser_ui.util.ConversionUtils;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 
@@ -29,25 +30,18 @@ public class InMemoryCachedImageFetcher extends ImageFetcher {
     private @ImageFetcherConfig int mConfig;
 
     /**
-     * Create an instance with the default max cache size.
-     *
-     * @param imageFetcher The image fetcher to back this. Must be Cached/NetworkImageFetcher.
-     * @param referencePool Pool used to discard references when under memory pressure.
-     */
-    InMemoryCachedImageFetcher(ImageFetcher imageFetcher, DiscardableReferencePool referencePool) {
-        init(imageFetcher, new BitmapCache(referencePool, determineCacheSize(DEFAULT_CACHE_SIZE)));
-    }
-
-    /**
      * Create an instance with a custom max cache size.
      *
      * @param referencePool Pool used to discard references when under memory pressure.
      * @param cacheSize The cache size to use (in bytes), may be smaller depending on the device's
      *         memory.
      */
-    InMemoryCachedImageFetcher(
-            ImageFetcher imageFetcher, DiscardableReferencePool referencePool, int cacheSize) {
-        init(imageFetcher, new BitmapCache(referencePool, determineCacheSize(cacheSize)));
+    InMemoryCachedImageFetcher(@NonNull ImageFetcher imageFetcher,
+            @NonNull DiscardableReferencePool referencePool, int cacheSize) {
+        this(imageFetcher,
+                new BitmapCache(referencePool,
+                        InMemoryCachedImageFetcher.determineCacheSize(
+                                Runtime.getRuntime(), cacheSize)));
     }
 
     /**
@@ -55,7 +49,9 @@ public class InMemoryCachedImageFetcher extends ImageFetcher {
      * @param bitmapCache The cached where bitmaps will be stored in memory.
      *         memory.
      */
-    private void init(ImageFetcher imageFetcher, BitmapCache bitmapCache) {
+    InMemoryCachedImageFetcher(
+            @NonNull ImageFetcher imageFetcher, @NonNull BitmapCache bitmapCache) {
+        super(imageFetcher);
         mBitmapCache = bitmapCache;
         mImageFetcher = imageFetcher;
 
@@ -78,41 +74,47 @@ public class InMemoryCachedImageFetcher extends ImageFetcher {
 
     @Override
     public void destroy() {
-        mImageFetcher.destroy();
-        mImageFetcher = null;
+        if (mImageFetcher != null) {
+            mImageFetcher.destroy();
+            mImageFetcher = null;
+        }
 
-        mBitmapCache.destroy();
-        mBitmapCache = null;
+        if (mBitmapCache != null) {
+            mBitmapCache.destroy();
+            mBitmapCache = null;
+        }
     }
 
     @Override
     public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {
+        assert mBitmapCache != null && mImageFetcher != null : "fetchGif called after destroy";
         mImageFetcher.fetchGif(url, clientName, callback);
     }
 
     @Override
     public void fetchImage(
             String url, String clientName, int width, int height, Callback<Bitmap> callback) {
-        Bitmap cachedBitmap = tryToGetBitmap(url, width, height);
-        if (cachedBitmap == null) {
-            // This will be run if destroy() has been called.
-            if (mImageFetcher == null) {
-                callback.onResult(null);
-                return;
-            }
+        fetchImage(ImageFetcher.Params.create(url, clientName, width, height), callback);
+    }
 
-            mImageFetcher.fetchImage(url, clientName, width, height, (@Nullable Bitmap bitmap) -> {
-                storeBitmap(bitmap, url, width, height);
+    @Override
+    public void fetchImage(final Params params, Callback<Bitmap> callback) {
+        assert mBitmapCache != null && mImageFetcher != null : "fetchImage called after destroy";
+        Bitmap cachedBitmap = tryToGetBitmap(params.url, params.width, params.height);
+        if (cachedBitmap == null) {
+            mImageFetcher.fetchImage(params, (@Nullable Bitmap bitmap) -> {
+                storeBitmap(bitmap, params.url, params.width, params.height);
                 callback.onResult(bitmap);
             });
         } else {
-            reportEvent(clientName, ImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT);
+            reportEvent(params.clientName, ImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT);
             callback.onResult(cachedBitmap);
         }
     }
 
     @Override
     public void clear() {
+        assert mBitmapCache != null && mImageFetcher != null : "clear called after destroy";
         mBitmapCache.clear();
     }
 
@@ -161,34 +163,29 @@ public class InMemoryCachedImageFetcher extends ImageFetcher {
      * @param height The height (in pixels) of the image.
      * @return The key for the BitmapCache.
      */
-    private String encodeCacheKey(String url, int width, int height) {
+    @VisibleForTesting
+    String encodeCacheKey(String url, int width, int height) {
         // Encoding for cache key is:
         // <url>/<width>/<height>.
         return url + "/" + width + "/" + height;
     }
 
     /**
-     * Size the cache size depending on available memory and the client's preferred cache size.
+     * Determine the cache size, which will be (1) The client's preferred size or (2) 1/8th of the
+     * available memory (whichever is smaller).
      *
+     * @param runtime The Java runtime, used to determine the available memory on the device.
      * @param preferredCacheSize The preferred cache size (in bytes).
      * @return The actual size of the cache (in bytes).
      */
-    private int determineCacheSize(int preferredCacheSize) {
-        final Runtime runtime = Runtime.getRuntime();
-        final long usedMem = runtime.totalMemory() - runtime.freeMemory();
-        final long maxHeapSize = runtime.maxMemory();
-        final long availableMemory = maxHeapSize - usedMem;
-
-        // Try to size the cache according to client's wishes. If there's not enough space, then
-        // take a portion of available memory.
-        final int maxCacheUsage = (int) (availableMemory * PORTION_OF_AVAILABLE_MEMORY);
-        return Math.min(maxCacheUsage, preferredCacheSize);
-    }
-
-    /** Test constructor. */
     @VisibleForTesting
-    InMemoryCachedImageFetcher(BitmapCache bitmapCache, ImageFetcher imageFetcher) {
-        mBitmapCache = bitmapCache;
-        mImageFetcher = imageFetcher;
+    static int determineCacheSize(Runtime runtime, int preferredCacheSize) {
+        long allocatedMemory = runtime.totalMemory() - runtime.freeMemory();
+        long freeMemory = runtime.maxMemory() - allocatedMemory;
+
+        int maxCacheSize = (int) Math.max(/* Make sure the cache is at least 1 byte. */ 1,
+                freeMemory * PORTION_OF_AVAILABLE_MEMORY);
+
+        return Math.min(maxCacheSize, preferredCacheSize);
     }
 }

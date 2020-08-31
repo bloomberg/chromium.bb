@@ -290,9 +290,9 @@ public:
 	{
 		if (m_params.testAttribDivisor)
 		{
-			context.requireDeviceExtension("VK_EXT_vertex_attribute_divisor");
+			context.requireDeviceFunctionality("VK_EXT_vertex_attribute_divisor");
 
-			const vk::VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT& vertexAttributeDivisorFeatures = context.getVertexAttributeDivisorFeatures();
+			const vk::VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT& vertexAttributeDivisorFeatures = context.getVertexAttributeDivisorFeaturesEXT();
 
 			if (m_params.attribDivisor != 1 && !vertexAttributeDivisorFeatures.vertexAttributeInstanceRateDivisor)
 				TCU_THROW(NotSupportedError, "Implementation does not support vertexAttributeInstanceRateDivisor");
@@ -302,7 +302,7 @@ public:
 
 			if (m_params.testMultiview)
 			{
-				context.requireDeviceExtension("VK_KHR_multiview");
+				context.requireDeviceFunctionality("VK_KHR_multiview");
 
 				const vk::VkPhysicalDeviceMultiviewFeatures& multiviewFeatures = context.getMultiviewFeatures();
 

@@ -23,6 +23,21 @@ AX_EXPORT extern const base::Feature kEnableAccessibilityExposeDisplayNone;
 // browser process AXTree.
 AX_EXPORT bool IsAccessibilityExposeDisplayNoneEnabled();
 
+AX_EXPORT extern const base::Feature kEnableAccessibilityExposeHTMLElement;
+
+// Returns true if the <html> element should be exposed to the
+// browser process AXTree (as an ignored node).
+AX_EXPORT bool IsAccessibilityExposeHTMLElementEnabled();
+
+// Serializes accessibility information from the Views tree and deserializes it
+// into an AXTree in the browser process.
+AX_EXPORT extern const base::Feature kEnableAccessibilityTreeForViews;
+
+// Returns true if the Views tree is exposed using an AXTree in the browser
+// process. Returns false if the Views tree is exposed to accessibility
+// directly.
+AX_EXPORT bool IsAccessibilityTreeForViewsEnabled();
+
 }  // namespace features
 
 #endif  // UI_ACCESSIBILITY_ACCESSIBILITY_FEATURES_H_

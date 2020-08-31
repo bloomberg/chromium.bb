@@ -20,4 +20,6 @@
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 libdrmdatadir = @libdrmdatadir@
+if HAVE_AMDGPU
 dist_libdrmdata_DATA = amdgpu.ids
+endif

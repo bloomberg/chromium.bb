@@ -12,10 +12,12 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "content/public/browser/context_factory.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_paths.h"
 #include "content/shell/browser/shell_application_mac.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/views_content_client/views_content_client.h"
 #include "ui/views_content_client/views_content_client_main_parts.h"
 
@@ -23,7 +25,7 @@
 // activate a task when the application has finished loading.
 @interface ViewsContentClientAppController : NSObject<NSApplicationDelegate> {
  @private
-  base::OnceClosure onApplicationDidFinishLaunching_;
+  base::OnceClosure _onApplicationDidFinishLaunching;
 }
 
 // Set the task to run after receiving -applicationDidFinishLaunching:.
@@ -66,6 +68,8 @@ ViewsContentClientMainPartsMac::ViewsContentClientMainPartsMac(
 void ViewsContentClientMainPartsMac::PreMainMessageLoopRun() {
   ViewsContentClientMainParts::PreMainMessageLoopRun();
 
+  views_delegate()->set_context_factory(content::GetContextFactory());
+
   // On Mac, the task must be deferred to applicationDidFinishLaunching. If not,
   // the widget can activate, but (even if configured) the mainMenu won't be
   // ready to switch over in the OSX UI, so it will look strange.
@@ -107,7 +111,7 @@ void ViewsContentClientMainParts::PreCreateMainMessageLoop() {
 @implementation ViewsContentClientAppController
 
 - (void)setOnApplicationDidFinishLaunching:(base::OnceClosure)task {
-  onApplicationDidFinishLaunching_ = std::move(task);
+  _onApplicationDidFinishLaunching = std::move(task);
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification*)aNotification {
@@ -134,7 +138,7 @@ void ViewsContentClientMainParts::PreCreateMainMessageLoop() {
 
   CHECK([NSApp isKindOfClass:[ShellCrApplication class]]);
 
-  std::move(onApplicationDidFinishLaunching_).Run();
+  std::move(_onApplicationDidFinishLaunching).Run();
 }
 
 @end

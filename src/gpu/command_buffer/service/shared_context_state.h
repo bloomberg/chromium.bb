@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/mru_cache.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -19,6 +20,8 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_gles2_export.h"
+#include "gpu/ipc/common/gpu_peak_memory.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gl/progress_reporter.h"
 
@@ -62,9 +65,11 @@ class GPU_GLES2_EXPORT SharedContextState
       viz::VulkanContextProvider* vulkan_context_provider = nullptr,
       viz::MetalContextProvider* metal_context_provider = nullptr,
       viz::DawnContextProvider* dawn_context_provider = nullptr,
-      gpu::MemoryTracker::Observer* peak_memory_monitor = nullptr);
+      base::WeakPtr<gpu::MemoryTracker::Observer> peak_memory_monitor =
+          nullptr);
 
-  void InitializeGrContext(const GpuDriverBugWorkarounds& workarounds,
+  void InitializeGrContext(const GpuPreferences& gpu_preferences,
+                           const GpuDriverBugWorkarounds& workarounds,
                            GrContextOptions::PersistentCache* cache,
                            GpuProcessActivityFlags* activity_flags = nullptr,
                            gl::ProgressReporter* progress_reporter = nullptr);
@@ -86,13 +91,15 @@ class GPU_GLES2_EXPORT SharedContextState
   bool IsGLInitialized() const { return !!feature_info_; }
 
   bool MakeCurrent(gl::GLSurface* surface, bool needs_gl = false);
+  void ReleaseCurrent(gl::GLSurface* surface);
   void MarkContextLost();
   bool IsCurrent(gl::GLSurface* surface);
 
   void PurgeMemory(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
-  uint64_t GetMemoryUsage() const { return memory_tracker_.GetMemoryUsage(); }
+  void UpdateSkiaOwnedMemorySize();
+  uint64_t GetMemoryUsage();
 
   void PessimisticallyResetGrContext() const;
 
@@ -124,10 +131,6 @@ class GPU_GLES2_EXPORT SharedContextState
   std::vector<uint8_t>* scratch_deserialization_buffer() {
     return &scratch_deserialization_buffer_;
   }
-  size_t max_resource_cache_bytes() const { return max_resource_cache_bytes_; }
-  size_t glyph_cache_max_texture_bytes() const {
-    return glyph_cache_max_texture_bytes_;
-  }
   bool use_virtualized_gl_contexts() const {
     return use_virtualized_gl_contexts_;
   }
@@ -151,6 +154,31 @@ class GPU_GLES2_EXPORT SharedContextState
   void AddContextLostObserver(ContextLostObserver* obs);
   void RemoveContextLostObserver(ContextLostObserver* obs);
 
+  // Creating a SkSurface backed by FBO takes ~500 usec and holds ~50KB of heap
+  // on Android circa 2020. Caching them is a memory/CPU tradeoff.
+  void CacheSkSurface(void* key, sk_sp<SkSurface> surface) {
+    sk_surface_cache_.Put(key, surface);
+  }
+  sk_sp<SkSurface> GetCachedSkSurface(void* key) {
+    auto found = sk_surface_cache_.Get(key);
+    if (found == sk_surface_cache_.end())
+      return nullptr;
+    return found->second;
+  }
+  void EraseCachedSkSurface(void* key) {
+    auto found = sk_surface_cache_.Peek(key);
+    if (found != sk_surface_cache_.end())
+      sk_surface_cache_.Erase(found);
+  }
+  // Supports DCHECKs. OK to be approximate.
+  bool CachedSkSurfaceIsUnique(void* key) {
+    auto found = sk_surface_cache_.Peek(key);
+    // It was purged. Assume it was unique.
+    if (found == sk_surface_cache_.end())
+      return true;
+    return found->second->unique();
+  }
+
  private:
   friend class base::RefCounted<SharedContextState>;
 
@@ -158,22 +186,26 @@ class GPU_GLES2_EXPORT SharedContextState
   // shared image, and forward information to both histograms and task manager.
   class GPU_GLES2_EXPORT MemoryTracker : public gpu::MemoryTracker::Observer {
    public:
-    MemoryTracker(gpu::MemoryTracker::Observer* peak_memory_monitor);
+    explicit MemoryTracker(
+        base::WeakPtr<gpu::MemoryTracker::Observer> peak_memory_monitor);
     MemoryTracker(MemoryTracker&) = delete;
     MemoryTracker& operator=(MemoryTracker&) = delete;
     ~MemoryTracker() override;
 
     // gpu::MemoryTracker::Observer implementation:
-    void OnMemoryAllocatedChange(CommandBufferId id,
-                                 uint64_t old_size,
-                                 uint64_t new_size) override;
+    void OnMemoryAllocatedChange(
+        CommandBufferId id,
+        uint64_t old_size,
+        uint64_t new_size,
+        GpuPeakMemoryAllocationSource source =
+            GpuPeakMemoryAllocationSource::UNKNOWN) override;
 
     // Reports to GpuServiceImpl::GetVideoMemoryUsageStats()
-    uint64_t GetMemoryUsage() const;
+    uint64_t GetMemoryUsage() const { return size_; }
 
    private:
     uint64_t size_ = 0;
-    gpu::MemoryTracker::Observer* const peak_memory_monitor_;
+    base::WeakPtr<gpu::MemoryTracker::Observer> const peak_memory_monitor_;
   };
 
   ~SharedContextState() override;
@@ -212,6 +244,12 @@ class GPU_GLES2_EXPORT SharedContextState
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLContext> real_context_;
   scoped_refptr<gl::GLSurface> surface_;
+
+  // Most recent surface that this ShareContextState was made current with.
+  // Avoids a call to MakeCurrent with a different surface, if we don't
+  // care which surface is current.
+  gl::GLSurface* last_current_surface_ = nullptr;
+
   scoped_refptr<gles2::FeatureInfo> feature_info_;
 
   // raster decoders and display compositor share this context_state_.
@@ -220,8 +258,7 @@ class GPU_GLES2_EXPORT SharedContextState
   gl::ProgressReporter* progress_reporter_ = nullptr;
   sk_sp<GrContext> owned_gr_context_;
   std::unique_ptr<ServiceTransferCache> transfer_cache_;
-  size_t max_resource_cache_bytes_ = 0u;
-  size_t glyph_cache_max_texture_bytes_ = 0u;
+  uint64_t skia_gr_cache_size_ = 0;
   std::vector<uint8_t> scratch_deserialization_buffer_;
 
   // |need_context_state_reset| is set whenever Skia may have altered the
@@ -230,6 +267,8 @@ class GPU_GLES2_EXPORT SharedContextState
 
   bool context_lost_ = false;
   base::ObserverList<ContextLostObserver>::Unchecked context_lost_observers_;
+
+  base::MRUCache<void*, sk_sp<SkSurface>> sk_surface_cache_;
 
   base::WeakPtrFactory<SharedContextState> weak_ptr_factory_{this};
 

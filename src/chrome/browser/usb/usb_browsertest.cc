@@ -12,6 +12,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_controller.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -295,7 +297,8 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, AddRemoveDeviceEphemeral) {
   EXPECT_EQ("", content::EvalJs(web_contents, "removedPromise"));
 }
 
-IN_PROC_BROWSER_TEST_F(WebUsbTest, NavigateWithChooserCrossOrigin) {
+// TODO(https://crbug.com/1069695): This is flaky on Linux, Mac, and Win.
+IN_PROC_BROWSER_TEST_F(WebUsbTest, DISABLED_NavigateWithChooserCrossOrigin) {
   UseRealChooser();
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -311,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, NavigateWithChooserCrossOrigin) {
       )"));
 
   observer.Wait();
-  EXPECT_EQ(0u, browser()->GetBubbleManager()->GetBubbleCountForTesting());
+  EXPECT_FALSE(chrome::IsDeviceChooserShowingForTesting(browser()));
 }
 
 }  // namespace

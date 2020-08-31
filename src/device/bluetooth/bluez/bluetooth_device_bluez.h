@@ -26,6 +26,7 @@
 
 namespace device {
 class BluetoothSocketThread;
+class BluetoothUUID;
 }  // namespace device
 
 namespace bluez {
@@ -96,8 +97,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
       const device::BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) override;
-  void CreateGattConnection(GattConnectionCallback callback,
-                            ConnectErrorCallback error_callback) override;
+  std::unique_ptr<device::BluetoothGattConnection>
+  CreateBluetoothGattConnectionObject() override;
   void SetGattServicesDiscoveryComplete(bool complete) override;
   bool IsGattServicesDiscoveryComplete() const override;
   void Pair(device::BluetoothDevice::PairingDelegate* pairing_delegate,
@@ -163,7 +164,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
 
  protected:
   // BluetoothDevice override
-  void CreateGattConnectionImpl() override;
+  void CreateGattConnectionImpl(
+      base::Optional<device::BluetoothUUID> service_uuid) override;
   void DisconnectGatt() override;
 
  private:
@@ -224,7 +226,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
                        base::OnceClosure callback,
                        ConnectErrorCallback error_callback);
   void OnConnect(bool after_pairing, base::OnceClosure callback);
-  void OnCreateGattConnection(GattConnectionCallback callback);
   void OnConnectError(bool after_pairing,
                       ConnectErrorCallback error_callback,
                       const std::string& error_name,

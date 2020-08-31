@@ -25,16 +25,16 @@ import org.mockito.Mockito;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
 import org.chromium.chrome.browser.ui.appmenu.test.R;
-import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighterTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ui.DummyUiActivity;
-import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
+import org.chromium.components.browser_ui.widget.highlight.ViewHighlighterTestUtils;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.DummyUiActivity;
+import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.ui.test.util.UiDisableIf;
 
 import java.util.concurrent.ExecutionException;
@@ -202,8 +202,7 @@ public class AppMenuTest extends DummyUiActivityTestCase {
                         -> AppMenuTestSupport.callOnItemClick(
                                 mAppMenuCoordinator, R.id.menu_item_three));
 
-        Assert.assertEquals("Item selected callback should have been called.", 1,
-                mDelegate.itemSelectedCallbackHelper.getCallCount());
+        mDelegate.itemSelectedCallbackHelper.waitForCallback(0);
         Assert.assertEquals("Incorrect id for last selected item.", R.id.menu_item_three,
                 mDelegate.lastSelectedItemId);
     }
@@ -228,8 +227,7 @@ public class AppMenuTest extends DummyUiActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mAppMenuHandler.getAppMenu().onItemClick(null, null, 0, 0));
 
-        Assert.assertEquals("Item selected callback should have been called.", 1,
-                mDelegate.itemSelectedCallbackHelper.getCallCount());
+        mDelegate.itemSelectedCallbackHelper.waitForCallback(0);
         Assert.assertEquals("Incorrect id for last selected item.", R.id.menu_item_one,
                 mDelegate.lastSelectedItemId);
     }
@@ -631,13 +629,13 @@ public class AppMenuTest extends DummyUiActivityTestCase {
                 buttonHelper, mTestMenuButtonDelegate.getMenuButtonView(), downMotionEvent);
 
         waitForMenuToShow(0);
-        Assert.assertTrue("Menu should be showing", mAppMenuHandler.isAppMenuShowing());
+        CriteriaHelper.pollUiThread(
+                () -> mAppMenuHandler.getAppMenuDragHelper().isReadyForMenuItemAction());
 
-        View firstItem = mAppMenuHandler.getAppMenu().getListView().getChildAt(0);
-        Rect firstItemScreenRect =
-                mAppMenuHandler.getAppMenuDragHelper().getScreenVisibleRect(firstItem);
-        int eventX = firstItemScreenRect.left + (firstItemScreenRect.right / 2);
-        int eventY = firstItemScreenRect.top + (firstItemScreenRect.bottom / 2);
+        Rect firstItemScreenRect = getVisibleScreenRectAtPosition(0);
+        int eventX = firstItemScreenRect.left + (firstItemScreenRect.width() / 2);
+        int eventY = firstItemScreenRect.top + (firstItemScreenRect.height() / 2);
+
         MotionEvent dragMotionEvent =
                 MotionEvent.obtain(0, 100, MotionEvent.ACTION_MOVE, eventX, eventY, 0);
         sendMotionEventToButtonHelper(
@@ -647,9 +645,9 @@ public class AppMenuTest extends DummyUiActivityTestCase {
                 MotionEvent.obtain(0, 150, MotionEvent.ACTION_UP, eventX, eventY, 0);
         sendMotionEventToButtonHelper(
                 buttonHelper, mTestMenuButtonDelegate.getMenuButtonView(), upMotionEvent);
-
-        Assert.assertEquals("Item selected callback should have been called.", 1,
-                mDelegate.itemSelectedCallbackHelper.getCallCount());
+        mDelegate.itemSelectedCallbackHelper.waitForCallback(
+                "itemRect: " + firstItemScreenRect + " eventX: " + eventX + " eventY: " + eventY,
+                0);
         Assert.assertEquals("Incorrect id for last selected item.", R.id.menu_item_one,
                 mDelegate.lastSelectedItemId);
     }
@@ -682,6 +680,11 @@ public class AppMenuTest extends DummyUiActivityTestCase {
         @Override
         public int getCurrentActivityState() {
             return 0;
+        }
+
+        @Override
+        public boolean isNativeInitializationFinished() {
+            return false;
         }
     }
 
@@ -735,6 +738,12 @@ public class AppMenuTest extends DummyUiActivityTestCase {
         viewRect.right = viewRect.left + anchor.getWidth();
         viewRect.bottom = viewRect.top + anchor.getHeight();
         return viewRect;
+    }
+
+    private Rect getVisibleScreenRectAtPosition(int position) throws ExecutionException {
+        View view = getViewAtPosition(position);
+        return TestThreadUtils.runOnUiThreadBlocking(
+                () -> mAppMenuHandler.getAppMenuDragHelper().getScreenVisibleRect(view));
     }
 
     private void sendMotionEventToButtonHelper(AppMenuButtonHelperImpl helper, View view,

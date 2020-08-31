@@ -8,11 +8,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/cloud/policy_invalidation_scope.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
 #include "components/policy/core/common/remote_commands/remote_commands_service.h"
 #include "components/prefs/pref_service.h"
@@ -62,12 +63,13 @@ void CloudPolicyCore::Disconnect() {
 }
 
 void CloudPolicyCore::StartRemoteCommandsService(
-    std::unique_ptr<RemoteCommandsFactory> factory) {
+    std::unique_ptr<RemoteCommandsFactory> factory,
+    PolicyInvalidationScope scope) {
   DCHECK(client_);
   DCHECK(factory);
 
   remote_commands_service_ = std::make_unique<RemoteCommandsService>(
-      std::move(factory), client_.get(), store_);
+      std::move(factory), client_.get(), store_, scope);
 
   // Do an initial remote commands fetch immediately.
   remote_commands_service_->FetchRemoteCommands();
@@ -96,9 +98,10 @@ void CloudPolicyCore::TrackRefreshDelayPref(
     PrefService* pref_service,
     const std::string& refresh_pref_name) {
   refresh_delay_.reset(new IntegerPrefMember());
-  refresh_delay_->Init(refresh_pref_name, pref_service,
-                       base::Bind(&CloudPolicyCore::UpdateRefreshDelayFromPref,
-                                  base::Unretained(this)));
+  refresh_delay_->Init(
+      refresh_pref_name, pref_service,
+      base::BindRepeating(&CloudPolicyCore::UpdateRefreshDelayFromPref,
+                          base::Unretained(this)));
   UpdateRefreshDelayFromPref();
 }
 

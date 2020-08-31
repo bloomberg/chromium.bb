@@ -16,6 +16,7 @@
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 
@@ -92,7 +93,8 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest,
 }
 
 // Test times out in debug builds: https://crbug.com/902310
-#ifndef NDEBUG
+// Test also times out in Win7 Tests: https://crbug.com/1039406
+#if defined(OS_WIN) || !defined(NDEBUG)
 #define MAYBE_TestFailsAsyncFast DISABLED_TestFailsAsyncFast
 #else
 #define MAYBE_TestFailsAsyncFast TestFailsAsyncFast
@@ -100,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest,
 
 // Test that bogus javascript fails async test fast as well - no timeout waiting
 // for result.
-IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestFailsAsyncFast) {
+IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, MAYBE_TestFailsAsyncFast) {
   AddLibrary(base::FilePath(FILE_PATH_LITERAL("sample_downloads.js")));
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
   EXPECT_FATAL_FAILURE(

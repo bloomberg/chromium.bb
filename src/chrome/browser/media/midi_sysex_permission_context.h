@@ -6,19 +6,22 @@
 #define CHROME_BROWSER_MEDIA_MIDI_SYSEX_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_context_base.h"
+#include "components/permissions/permission_context_base.h"
 
 class GURL;
-class PermissionRequestID;
 
-class MidiSysexPermissionContext : public PermissionContextBase {
+namespace permissions {
+class PermissionRequestID;
+}
+
+class MidiSysexPermissionContext : public permissions::PermissionContextBase {
  public:
-  explicit MidiSysexPermissionContext(Profile* profile);
+  explicit MidiSysexPermissionContext(content::BrowserContext* browser_context);
   ~MidiSysexPermissionContext() override;
 
  private:
   // PermissionContextBase:
-  void UpdateTabContext(const PermissionRequestID& id,
+  void UpdateTabContext(const permissions::PermissionRequestID& id,
                         const GURL& requesting_frame,
                         bool allowed) override;
   bool IsRestrictedToSecureOrigins() const override;

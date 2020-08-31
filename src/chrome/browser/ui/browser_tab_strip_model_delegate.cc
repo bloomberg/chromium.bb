@@ -16,12 +16,14 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_helpers.h"
-#include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/unload_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/sessions/content/content_live_tab.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -40,10 +42,11 @@ BrowserTabStripModelDelegate::~BrowserTabStripModelDelegate() {}
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripModelDelegate, TabStripModelDelegate implementation:
 
-void BrowserTabStripModelDelegate::AddTabAt(const GURL& url,
-                                            int index,
-                                            bool foreground,
-                                            base::Optional<TabGroupId> group) {
+void BrowserTabStripModelDelegate::AddTabAt(
+    const GURL& url,
+    int index,
+    bool foreground,
+    base::Optional<tab_groups::TabGroupId> group) {
   chrome::AddTabAt(browser_, url, index, foreground, group);
 }
 
@@ -105,6 +108,39 @@ void BrowserTabStripModelDelegate::DuplicateContentsAt(int index) {
   DuplicateTabAt(browser_, index);
 }
 
+void BrowserTabStripModelDelegate::MoveToExistingWindow(
+    const std::vector<int>& indices,
+    int browser_index) {
+  browser_->MoveTabsToExistingWindow(indices, browser_index);
+}
+
+std::vector<base::string16>
+BrowserTabStripModelDelegate::GetExistingWindowsForMoveMenu() const {
+  return browser_->GetExistingWindowsForMoveMenu();
+}
+
+bool BrowserTabStripModelDelegate::CanMoveTabsToWindow(
+    const std::vector<int>& indices) {
+  return CanMoveTabsToNewWindow(browser_, indices);
+}
+
+void BrowserTabStripModelDelegate::MoveTabsToNewWindow(
+    const std::vector<int>& indices) {
+  // chrome:: to disambiguate the free function from this method.
+  chrome::MoveTabsToNewWindow(browser_, indices);
+}
+
+void BrowserTabStripModelDelegate::MoveGroupToNewWindow(
+    const tab_groups::TabGroupId& group) {
+  std::vector<int> indices = browser_->tab_strip_model()
+                                 ->group_model()
+                                 ->GetTabGroup(group)
+                                 ->ListTabs();
+  // chrome:: to disambiguate the free function from
+  // BrowserTabStripModelDelegate::MoveTabsToNewWindow().
+  chrome::MoveTabsToNewWindow(browser_, indices, group);
+}
+
 void BrowserTabStripModelDelegate::CreateHistoricalTab(
     content::WebContents* contents) {
   // We don't create historical tabs for incognito windows or windows without
@@ -131,6 +167,11 @@ bool BrowserTabStripModelDelegate::RunUnloadListenerBeforeClosing(
 bool BrowserTabStripModelDelegate::ShouldRunUnloadListenerBeforeClosing(
     content::WebContents* contents) {
   return browser_->ShouldRunUnloadListenerBeforeClosing(contents);
+}
+
+bool BrowserTabStripModelDelegate::ShouldDisplayFavicon(
+    content::WebContents* contents) const {
+  return browser_->ShouldDisplayFavicon(contents);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

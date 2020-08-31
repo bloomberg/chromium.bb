@@ -154,6 +154,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   void NavigateFromFrameProxy(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
+      const GlobalFrameRoutingId& initiator_routing_id,
       const base::Optional<url::Origin>& initiator_origin,
       bool is_renderer_initiated,
       SiteInstance* source_site_instance,
@@ -164,7 +165,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
       const std::string& extra_headers,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      const base::Optional<Impression>& impression);
 
   // Whether this is the initial navigation in an unmodified new tab.  In this
   // case, we know there is no content displayed in the page.
@@ -202,6 +204,16 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   void SetNeedsReload(NeedsReloadType type);
 
   // For use by WebContentsImpl ------------------------------------------------
+
+  // Visit all FrameNavigationEntries and register any instances of |origin| as
+  // non-isolated with their respective BrowsingInstances. This is important
+  // when |origin| requests isolation, so that we only do so in
+  // BrowsingInstances that haven't seen it before.
+  // TODO(crbug.com/1062719): Ensure that all origin instances are tracked,
+  // since currently NavigationEntries and FrameNavigationEntries may be missing
+  // for some active frames, or in pending navigations. This will be fixed when
+  // https://chromium-review.googlesource.com/c/chromium/src/+/2136703 lands.
+  void RegisterExistingOriginToPreventOptInIsolation(const url::Origin& origin);
 
   // Allow renderer-initiated navigations to create a pending entry when the
   // provisional load starts.
@@ -533,7 +545,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       RenderFrameHostImpl* rfh,
       bool replace_entry,
       bool previous_document_was_activated,
-      bool is_renderer_initiated);
+      bool is_renderer_initiated,
+      ukm::SourceId previous_page_load_ukm_source_id);
 
   // This function sets all same document entries with the same value
   // of skippable flag. This is to avoid back button abuse by inserting

@@ -280,5 +280,5 @@ gsw{
         ZW{"Simbabwe"}
         ZZ{"Unbekannti oder ungültigi Regioon"}
     }
-    Version{"36"}
+    Version{"37"}
 }

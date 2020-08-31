@@ -19,24 +19,11 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace {
 
-// Bubble layout constants.
-const int kNotificationBubbleWidth = 250;
-
-std::unique_ptr<views::View> CreateLearnMoreLink(
-    views::LinkListener* listener) {
-  auto learn_more =
-      std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  learn_more->set_listener(listener);
-  return learn_more;
-}
-
-class NetworkProfileBubbleView : public views::BubbleDialogDelegateView,
-                                 public views::LinkListener {
+class NetworkProfileBubbleView : public views::BubbleDialogDelegateView {
  public:
   NetworkProfileBubbleView(views::View* anchor,
                            content::PageNavigator* navigator,
@@ -48,8 +35,7 @@ class NetworkProfileBubbleView : public views::BubbleDialogDelegateView,
   void Init() override;
   bool Accept() override;
 
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags);
 
   // Used for loading pages.
   content::PageNavigator* navigator_;
@@ -68,8 +54,11 @@ NetworkProfileBubbleView::NetworkProfileBubbleView(
     : BubbleDialogDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
       navigator_(navigator),
       profile_(profile) {
-  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::SetExtraView(CreateLearnMoreLink(this));
+  SetButtons(ui::DIALOG_BUTTON_OK);
+  auto* learn_more = SetExtraView(
+      std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
+  learn_more->set_callback(base::BindRepeating(
+      &NetworkProfileBubbleView::LinkClicked, base::Unretained(this)));
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::NETWORK_SHARE_PROFILE_WARNING);
 }
@@ -86,6 +75,7 @@ void NetworkProfileBubbleView::Init() {
       l10n_util::GetStringFUTF16(IDS_PROFILE_ON_NETWORK_WARNING,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   label->SetMultiLine(true);
+  constexpr int kNotificationBubbleWidth = 250;
   label->SizeToFit(kNotificationBubbleWidth);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(label);
@@ -101,15 +91,12 @@ void NetworkProfileBubbleView::LinkClicked(views::Link* source,
                                            int event_flags) {
   NetworkProfileBubble::RecordUmaEvent(
       NetworkProfileBubble::METRIC_LEARN_MORE_CLICKED);
-  WindowOpenDisposition disposition =
-      ui::DispositionFromEventFlags(event_flags);
+  WindowOpenDisposition disposition = ui::DispositionFromEventFlags(
+      event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   content::OpenURLParams params(
       GURL("https://sites.google.com/a/chromium.org/dev/administrators/"
            "common-problems-and-solutions#network_profile"),
-      content::Referrer(), disposition == WindowOpenDisposition::CURRENT_TAB
-                               ? WindowOpenDisposition::NEW_FOREGROUND_TAB
-                               : disposition,
-      ui::PAGE_TRANSITION_LINK, false);
+      content::Referrer(), disposition, ui::PAGE_TRANSITION_LINK, false);
   navigator_->OpenURL(params);
 
   // If the user interacted with the bubble we don't reduce the number of

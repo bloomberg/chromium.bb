@@ -2,13 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Bindings from '../bindings/bindings.js';
+import * as Common from '../common/common.js';
+import * as Components from '../components/components.js';
+import * as SDK from '../sdk/sdk.js';
+import * as Workspace from '../workspace/workspace.js';
+
+import {Automapping, AutomappingStatus} from './Automapping.js';  // eslint-disable-line no-unused-vars
+import {LinkDecorator} from './PersistenceUtils.js';
+
 /**
  * @unrestricted
  */
-export default class PersistenceImpl extends Common.Object {
+export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper {
   /**
-   * @param {!Workspace.Workspace} workspace
-   * @param {!Bindings.BreakpointManager} breakpointManager
+   * @param {!Workspace.Workspace.WorkspaceImpl} workspace
+   * @param {!Bindings.BreakpointManager.BreakpointManager} breakpointManager
    */
   constructor(workspace, breakpointManager) {
     super();
@@ -17,18 +26,17 @@ export default class PersistenceImpl extends Common.Object {
     /** @type {!Map<string, number>} */
     this._filePathPrefixesToBindingCount = new Map();
 
-    /** @type {!Platform.Multimap<!Workspace.UISourceCode, function()>} */
+    /** @type {!Platform.Multimap<!Workspace.UISourceCode.UISourceCode, function()>} */
     this._subscribedBindingEventListeners = new Platform.Multimap();
 
-    const linkDecorator = new Persistence.PersistenceUtils.LinkDecorator(this);
-    Components.Linkifier.setLinkDecorator(linkDecorator);
+    const linkDecorator = new LinkDecorator(this);
+    Components.Linkifier.Linkifier.setLinkDecorator(linkDecorator);
 
-    this._mapping =
-        new Persistence.Automapping(this._workspace, this._onStatusAdded.bind(this), this._onStatusRemoved.bind(this));
+    this._mapping = new Automapping(this._workspace, this._onStatusAdded.bind(this), this._onStatusRemoved.bind(this));
   }
 
   /**
-   * @param {function(!Workspace.UISourceCode):boolean} interceptor
+   * @param {function(!Workspace.UISourceCode.UISourceCode):boolean} interceptor
    */
   addNetworkInterceptor(interceptor) {
     this._mapping.addNetworkInterceptor(interceptor);
@@ -41,35 +49,35 @@ export default class PersistenceImpl extends Common.Object {
   /**
    * @param {!PersistenceBinding} binding
    */
-  addBinding(binding) {
-    this._innerAddBinding(binding);
+  async addBinding(binding) {
+    await this._innerAddBinding(binding);
   }
 
   /**
    * @param {!PersistenceBinding} binding
    */
-  addBindingForTest(binding) {
-    this._innerAddBinding(binding);
+  async addBindingForTest(binding) {
+    await this._innerAddBinding(binding);
   }
 
   /**
    * @param {!PersistenceBinding} binding
    */
-  removeBinding(binding) {
-    this._innerRemoveBinding(binding);
+  async removeBinding(binding) {
+    await this._innerRemoveBinding(binding);
   }
 
   /**
    * @param {!PersistenceBinding} binding
    */
-  removeBindingForTest(binding) {
-    this._innerRemoveBinding(binding);
+  async removeBindingForTest(binding) {
+    await this._innerRemoveBinding(binding);
   }
 
   /**
    * @param {!PersistenceBinding} binding
    */
-  _innerAddBinding(binding) {
+  async _innerAddBinding(binding) {
     binding.network[_binding] = binding;
     binding.fileSystem[_binding] = binding;
 
@@ -86,7 +94,7 @@ export default class PersistenceImpl extends Common.Object {
 
     this._addFilePathBindingPrefixes(binding.fileSystem.url());
 
-    this._moveBreakpoints(binding.fileSystem, binding.network);
+    await this._moveBreakpoints(binding.fileSystem, binding.network);
 
     console.assert(!binding.fileSystem.isDirty() || !binding.network.isDirty());
     if (binding.fileSystem.isDirty()) {
@@ -106,7 +114,7 @@ export default class PersistenceImpl extends Common.Object {
   /**
    * @param {!PersistenceBinding} binding
    */
-  _innerRemoveBinding(binding) {
+  async _innerRemoveBinding(binding) {
     if (binding.network[_binding] !== binding) {
       return;
     }
@@ -127,7 +135,7 @@ export default class PersistenceImpl extends Common.Object {
         Workspace.UISourceCode.Events.WorkingCopyChanged, this._onWorkingCopyChanged, this);
 
     this._removeFilePathBindingPrefixes(binding.fileSystem.url());
-    this._breakpointManager.copyBreakpoints(binding.network.url(), binding.fileSystem);
+    await this._breakpointManager.copyBreakpoints(binding.network.url(), binding.fileSystem);
 
     this._notifyBindingEvent(binding.network);
     this._notifyBindingEvent(binding.fileSystem);
@@ -135,32 +143,32 @@ export default class PersistenceImpl extends Common.Object {
   }
 
   /**
-   * @param {!Persistence.AutomappingStatus} status
+   * @param {!AutomappingStatus} status
    */
-  _onStatusAdded(status) {
+  async _onStatusAdded(status) {
     const binding = new PersistenceBinding(status.network, status.fileSystem);
     status[_binding] = binding;
-    this._innerAddBinding(binding);
+    await this._innerAddBinding(binding);
   }
 
   /**
-   * @param {!Persistence.AutomappingStatus} status
+   * @param {!AutomappingStatus} status
    */
-  _onStatusRemoved(status) {
+  async _onStatusRemoved(status) {
     const binding = /** @type {!PersistenceBinding} */ (status[_binding]);
-    this._innerRemoveBinding(binding);
+    await this._innerRemoveBinding(binding);
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onWorkingCopyChanged(event) {
-    const uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data);
+    const uiSourceCode = /** @type {!Workspace.UISourceCode.UISourceCode} */ (event.data);
     this._syncWorkingCopy(uiSourceCode);
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
   _syncWorkingCopy(uiSourceCode) {
     const binding = uiSourceCode[_binding];
@@ -176,8 +184,8 @@ export default class PersistenceImpl extends Common.Object {
       return;
     }
 
-    const target = Bindings.NetworkProject.targetForUISourceCode(binding.network);
-    if (target.type() === SDK.Target.Type.Node) {
+    const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(binding.network);
+    if (target.type() === SDK.SDKModel.Type.Node) {
       const newContent = uiSourceCode.workingCopy();
       other.requestContent().then(() => {
         const nodeJSContent = PersistenceImpl.rewrapNodeJSContent(other, other.workingCopy(), newContent);
@@ -201,16 +209,16 @@ export default class PersistenceImpl extends Common.Object {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onWorkingCopyCommitted(event) {
-    const uiSourceCode = /** @type {!Workspace.UISourceCode} */ (event.data.uiSourceCode);
+    const uiSourceCode = /** @type {!Workspace.UISourceCode.UISourceCode} */ (event.data.uiSourceCode);
     const newContent = /** @type {string} */ (event.data.content);
     this.syncContent(uiSourceCode, newContent, event.data.encoded);
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @param {string} newContent
    * @param {boolean} encoded
    */
@@ -220,8 +228,8 @@ export default class PersistenceImpl extends Common.Object {
       return;
     }
     const other = binding.network === uiSourceCode ? binding.fileSystem : binding.network;
-    const target = Bindings.NetworkProject.targetForUISourceCode(binding.network);
-    if (target.type() === SDK.Target.Type.Node) {
+    const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(binding.network);
+    if (target.type() === SDK.SDKModel.Type.Node) {
       other.requestContent().then(currentContent => {
         const nodeJSContent = PersistenceImpl.rewrapNodeJSContent(other, currentContent.content, newContent);
         setContent.call(this, nodeJSContent);
@@ -243,25 +251,25 @@ export default class PersistenceImpl extends Common.Object {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @param {string} currentContent
    * @param {string} newContent
    * @return {string}
    */
   static rewrapNodeJSContent(uiSourceCode, currentContent, newContent) {
-    if (uiSourceCode.project().type() === Workspace.projectTypes.FileSystem) {
-      if (newContent.startsWith(_NodePrefix) && newContent.endsWith(_NodeSuffix)) {
-        newContent = newContent.substring(_NodePrefix.length, newContent.length - _NodeSuffix.length);
+    if (uiSourceCode.project().type() === Workspace.Workspace.projectTypes.FileSystem) {
+      if (newContent.startsWith(NodePrefix) && newContent.endsWith(NodeSuffix)) {
+        newContent = newContent.substring(NodePrefix.length, newContent.length - NodeSuffix.length);
       }
-      if (currentContent.startsWith(_NodeShebang)) {
-        newContent = _NodeShebang + newContent;
+      if (currentContent.startsWith(NodeShebang)) {
+        newContent = NodeShebang + newContent;
       }
     } else {
-      if (newContent.startsWith(_NodeShebang)) {
-        newContent = newContent.substring(_NodeShebang.length);
+      if (newContent.startsWith(NodeShebang)) {
+        newContent = newContent.substring(NodeShebang.length);
       }
-      if (currentContent.startsWith(_NodePrefix) && currentContent.endsWith(_NodeSuffix)) {
-        newContent = _NodePrefix + newContent + _NodeSuffix;
+      if (currentContent.startsWith(NodePrefix) && currentContent.endsWith(NodeSuffix)) {
+        newContent = NodePrefix + newContent + NodeSuffix;
       }
     }
     return newContent;
@@ -271,21 +279,21 @@ export default class PersistenceImpl extends Common.Object {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} from
-   * @param {!Workspace.UISourceCode} to
+   * @param {!Workspace.UISourceCode.UISourceCode} from
+   * @param {!Workspace.UISourceCode.UISourceCode} to
    */
-  _moveBreakpoints(from, to) {
+  async _moveBreakpoints(from, to) {
     const breakpoints = this._breakpointManager.breakpointLocationsForUISourceCode(from).map(
         breakpointLocation => breakpointLocation.breakpoint);
-    for (const breakpoint of breakpoints) {
+    await Promise.all(breakpoints.map(breakpoint => {
       breakpoint.remove(false /* keepInStorage */);
-      this._breakpointManager.setBreakpoint(
+      return this._breakpointManager.setBreakpoint(
           to, breakpoint.lineNumber(), breakpoint.columnNumber(), breakpoint.condition(), breakpoint.enabled());
-    }
+    }));
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @return {boolean}
    */
   hasUnsavedCommittedChanges(uiSourceCode) {
@@ -302,7 +310,7 @@ export default class PersistenceImpl extends Common.Object {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @return {?PersistenceBinding}
    */
   binding(uiSourceCode) {
@@ -310,7 +318,7 @@ export default class PersistenceImpl extends Common.Object {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @param {function()} listener
    */
   subscribeForBindingEvent(uiSourceCode, listener) {
@@ -318,7 +326,7 @@ export default class PersistenceImpl extends Common.Object {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @param {function()} listener
    */
   unsubscribeFromBindingEvent(uiSourceCode, listener) {
@@ -326,7 +334,7 @@ export default class PersistenceImpl extends Common.Object {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    */
   _notifyBindingEvent(uiSourceCode) {
     if (!this._subscribedBindingEventListeners.has(uiSourceCode)) {
@@ -339,8 +347,8 @@ export default class PersistenceImpl extends Common.Object {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @return {?Workspace.UISourceCode}
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+   * @return {?Workspace.UISourceCode.UISourceCode}
    */
   fileSystem(uiSourceCode) {
     const binding = this.binding(uiSourceCode);
@@ -348,8 +356,8 @@ export default class PersistenceImpl extends Common.Object {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @return {?Workspace.UISourceCode}
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+   * @return {?Workspace.UISourceCode.UISourceCode}
    */
   network(uiSourceCode) {
     const binding = this.binding(uiSourceCode);
@@ -399,9 +407,9 @@ export default class PersistenceImpl extends Common.Object {
 const _binding = Symbol('Persistence.Binding');
 const _muteCommit = Symbol('Persistence.MuteCommit');
 const _muteWorkingCopy = Symbol('Persistence.MuteWorkingCopy');
-const _NodePrefix = '(function (exports, require, module, __filename, __dirname) { ';
-const _NodeSuffix = '\n});';
-const _NodeShebang = '#!/usr/bin/env node';
+export const NodePrefix = '(function (exports, require, module, __filename, __dirname) { ';
+export const NodeSuffix = '\n});';
+export const NodeShebang = '#!/usr/bin/env node';
 
 export const Events = {
   BindingCreated: Symbol('BindingCreated'),
@@ -413,8 +421,8 @@ export const Events = {
  */
 export class PathEncoder {
   constructor() {
-    /** @type {!Common.CharacterIdMap<string>} */
-    this._encoder = new Common.CharacterIdMap();
+    /** @type {!Common.CharacterIdMap.CharacterIdMap<string>} */
+    this._encoder = new Common.CharacterIdMap.CharacterIdMap();
   }
 
   /**
@@ -439,34 +447,11 @@ export class PathEncoder {
  */
 export class PersistenceBinding {
   /**
-   * @param {!Workspace.UISourceCode} network
-   * @param {!Workspace.UISourceCode} fileSystem
+   * @param {!Workspace.UISourceCode.UISourceCode} network
+   * @param {!Workspace.UISourceCode.UISourceCode} fileSystem
    */
   constructor(network, fileSystem) {
     this.network = network;
     this.fileSystem = fileSystem;
   }
 }
-
-/* Legacy exported object */
-self.Persistence = self.Persistence || {};
-
-/* Legacy exported object */
-Persistence = Persistence || {};
-
-/** @constructor */
-Persistence.Persistence = PersistenceImpl;
-
-Persistence.Persistence.Events = Events;
-Persistence.Persistence._NodeShebang = _NodeShebang;
-Persistence.Persistence._NodePrefix = _NodePrefix;
-Persistence.Persistence._NodeSuffix = _NodeSuffix;
-
-/** @constructor */
-Persistence.PathEncoder = PathEncoder;
-
-/** @constructor */
-Persistence.PersistenceBinding = PersistenceBinding;
-
-/** @type {!PersistenceImpl} */
-Persistence.persistence;

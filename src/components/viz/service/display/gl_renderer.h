@@ -20,7 +20,6 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
-#include "components/viz/service/display/color_lut_cache.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/gl_renderer_copier.h"
 #include "components/viz/service/display/gl_renderer_draw_cache.h"
@@ -72,6 +71,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   GLRenderer(const RendererSettings* settings,
              OutputSurface* output_surface,
              DisplayResourceProvider* resource_provider,
+             OverlayProcessorInterface* overlay_processor,
              scoped_refptr<base::SingleThreadTaskRunner> current_task_runner);
   ~GLRenderer() override;
 
@@ -223,6 +223,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // Allocates and returns a texture id that contains a copy of the contents
   // of the current RenderPass being drawn.
   uint32_t GetBackdropTexture(const gfx::Rect& window_rect,
+                              float scale,
                               GLenum* internal_format);
 
   static bool ShouldApplyBackdropFilters(
@@ -350,16 +351,16 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void SetupOverdrawFeedback();
 
   // Process overdraw feedback from query.
-  void ProcessOverdrawFeedback(std::vector<int>* overdraw,
-                               size_t num_expected_results,
-                               int max_result,
-                               unsigned query,
-                               int multiplier);
+  void ProcessOverdrawFeedback(int surface_area, unsigned query);
+  bool OverdrawTracingEnabled();
 
-  ResourceFormat BackbufferFormat() const;
+  ResourceFormat CurrentRenderPassResourceFormat() const;
 
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   base::flat_map<RenderPassId, ScopedRenderPassTexture> render_pass_textures_;
+
+  // A map from RenderPass id to backdrop filter cache texture.
+  base::flat_map<RenderPassId, sk_sp<SkImage>> render_pass_backdrop_textures_;
 
   // OverlayTextures that are free to be used in the next frame.
   std::vector<std::unique_ptr<OverlayTexture>> available_overlay_textures_;
@@ -383,6 +384,10 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // Resources that the GPU process has finished swapping. The key is the
   // texture id of the resource.
   std::map<unsigned, OverlayResourceLock> swapped_and_acked_overlay_resources_;
+
+  // Query object, used to determine the number of sample drawn during a render
+  // pass.
+  unsigned occlusion_query_ = 0u;
 
   unsigned offscreen_framebuffer_id_ = 0u;
 
@@ -442,7 +447,6 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   bool force_drawing_frame_framebuffer_unflipped_ = false;
 
   BoundGeometry bound_geometry_;
-  ColorLUTCache color_lut_cache_;
 
   unsigned offscreen_stencil_renderbuffer_id_ = 0;
   gfx::Size offscreen_stencil_renderbuffer_size_;

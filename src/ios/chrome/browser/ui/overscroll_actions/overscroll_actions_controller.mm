@@ -9,16 +9,14 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_gesture_recognizer.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_view.h"
-#import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/page_info/page_info_constants.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -232,8 +230,6 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 - (void)setup;
 // Resets scroll view's top content inset to |self.initialContentInset|.
 - (void)resetScrollViewTopContentInset;
-// Access the headerView from the delegate.
-- (UIView<RelaxedBoundsConstraintsHitTestSupport>*)headerView;
 // Locking/unlocking methods used to disable/enable the overscroll actions
 // with a reference count.
 - (void)incrementOverscrollActionLockForNotification:
@@ -271,7 +267,6 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 @synthesize initialHeaderHeight = _initialHeaderHeight;
 @synthesize overscrollState = _overscrollState;
 @synthesize delegate = _delegate;
-@synthesize browserState = _browserState;
 @synthesize panPointScreenOrigin = _panPointScreenOrigin;
 @synthesize panGestureRecognizer = _panGestureRecognizer;
 @synthesize scrollViewDragged = _scrollViewDragged;
@@ -298,8 +293,6 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
       UIKeyboardWillHideNotification : UIKeyboardWillShowNotification,
       kVoiceSearchWillHideNotification : kVoiceSearchWillShowNotification,
       kPageInfoWillHideNotification : kPageInfoWillShowNotification,
-      kLocationBarResignsFirstResponderNotification :
-          kLocationBarBecomesFirstResponderNotification,
       kSideSwipeDidStopNotification : kSideSwipeWillStartNotification
 
     };
@@ -403,7 +396,8 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
       // Set the contentInset to remove the bounce that would fight with drag.
       [self setScrollViewContentInset:insets];
       [self scrollView].scrollIndicatorInsets = insets;
-      _initialHeaderHeight = [[self delegate] overscrollHeaderHeight];
+      _initialHeaderHeight =
+          [[self delegate] headerHeightForOverscrollActionsController:self];
       self.overscrollState = OverscrollState::STARTED_PULLING;
     }
     [self updateWithVerticalOffset:-contentOffsetFromExpandedHeader
@@ -433,8 +427,8 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
       (CACurrentMediaTime() - _lastScrollBeginTime) >=
       kMinimumDurationBetweenScrollingInSeconds;
   // Finally check that the delegate allow overscroll actions.
-  const BOOL delegateAllowOverscrollActions =
-      [self.delegate shouldAllowOverscrollActions];
+  const BOOL delegateAllowOverscrollActions = [self.delegate
+      shouldAllowOverscrollActionsForOverscrollActionsController:self];
   const BOOL isCurrentlyProcessingOverscroll =
       self.overscrollState != OverscrollState::NO_PULL_STARTED;
   return isCurrentlyProcessingOverscroll ||
@@ -665,10 +659,6 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   [self setScrollViewContentInset:insets];
 }
 
-- (UIView<RelaxedBoundsConstraintsHitTestSupport>*)headerView {
-  return [self.delegate headerView];
-}
-
 - (void)incrementOverscrollActionLockForNotification:(NSNotification*)notif {
   if (![_lockIncrementNotifications containsObject:notif.name]) {
     [_lockIncrementNotifications addObject:notif.name];
@@ -763,11 +753,6 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   [UIView beginAnimations:@"backgroundColor" context:NULL];
   switch (self.overscrollState) {
     case OverscrollState::NO_PULL_STARTED: {
-      UIView<RelaxedBoundsConstraintsHitTestSupport>* headerView =
-          [self headerView];
-      if ([headerView
-              respondsToSelector:@selector(setHitTestBoundsContraintRelaxed:)])
-        [headerView setHitTestBoundsContraintRelaxed:NO];
       [self.overscrollActionView removeFromSuperview];
       SetViewFrameHeight(
           self.overscrollActionView,
@@ -786,8 +771,12 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
     } break;
     case OverscrollState::STARTED_PULLING: {
       if (!self.overscrollActionView.superview && self.scrollViewDragged) {
+        UIView* headerView =
+            [self.delegate headerViewForOverscrollActionsController:self];
+        DCHECK(headerView);
         if (previousOverscrollState == OverscrollState::NO_PULL_STARTED) {
-          UIView* view = [self.delegate toolbarSnapshotView];
+          UIView* view = [self.delegate
+              toolbarSnapshotViewForOverscrollActionsController:self];
           [self.overscrollActionView addSnapshotView:view];
           [[NSNotificationCenter defaultCenter]
               postNotificationName:kOverscrollActionsWillStart
@@ -799,14 +788,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
         self.overscrollActionView.backgroundView.alpha = 1;
         [self.overscrollActionView updateWithVerticalOffset:0];
         [self.overscrollActionView updateWithHorizontalOffset:0];
-        self.overscrollActionView.frame = [self headerView].bounds;
-        DCHECK([self headerView]);
-        UIView<RelaxedBoundsConstraintsHitTestSupport>* headerView =
-            [self headerView];
-        if ([headerView
-                respondsToSelector:@selector(
-                                       setHitTestBoundsContraintRelaxed:)])
-          [headerView setHitTestBoundsContraintRelaxed:YES];
+        self.overscrollActionView.frame = headerView.bounds;
         [headerView addSubview:self.overscrollActionView];
         [CATransaction commit];
       }
@@ -865,7 +847,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 }
 
 - (CGFloat)initialHeaderInset {
-  return [self.delegate overscrollActionsControllerHeaderInset:self];
+  return [self.delegate headerInsetForOverscrollActionsController:self];
 }
 
 - (BOOL)isDisablingFullscreen {
@@ -875,14 +857,18 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 - (void)setDisablingFullscreen:(BOOL)disablingFullscreen {
   if (self.disablingFullscreen == disablingFullscreen)
     return;
+
   _fullscreenDisabler = nullptr;
-  // Don't try to disable fullscreen if the BrowserState has been detached, such
-  // as when an overscroll that begins just as the last incognito tab is closed.
-  if (!disablingFullscreen || !self.browserState)
+  if (!disablingFullscreen)
     return;
+
+  // Ask the delegate for a fullscreen controller. It may return nothing if
+  // (for example) the UI is in the middle of teardown.
   FullscreenController* fullscreenController =
-      FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-          self.browserState);
+      [self.delegate fullscreenControllerForOverscrollActionsController:self];
+  if (!fullscreenController)
+    return;
+
   // Disabling fullscreen will show the toolbars, which may potentially produce
   // a |-scrollViewDidScroll| event if the browser viewport insets need to be
   // updated.  |_ignoreScrollForDisabledFullscreen| is set to YES while the

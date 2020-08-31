@@ -65,10 +65,9 @@ TEST_F(ApplyDarkModeCheckTest, MetaColorSchemeDark) {
   ScopedCSSColorSchemeForTest css_feature_scope(true);
   ScopedMetaColorSchemeForTest meta_feature_scope(true);
   GetDocument().GetSettings()->SetForceDarkModeEnabled(true);
-  ColorSchemeHelper color_scheme_helper;
-  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
-                                              PreferredColorScheme::kDark);
-  GetDocument().head()->SetInnerHTMLFromString(R"HTML(
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
+  GetDocument().head()->setInnerHTML(R"HTML(
     <meta name="color-scheme" content="dark">
   )HTML");
   UpdateAllLifecyclePhasesForTest();

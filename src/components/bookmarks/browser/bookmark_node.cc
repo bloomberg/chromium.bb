@@ -46,17 +46,16 @@ std::string PermanentNodeTypeToGuid(BookmarkNode::Type type) {
 // BookmarkNode ---------------------------------------------------------------
 
 // static
-const int64_t BookmarkNode::kInvalidSyncTransactionVersion = -1;
 const char BookmarkNode::kRootNodeGuid[] =
-    "00000000-0000-4000-A000-000000000001";
+    "00000000-0000-4000-a000-000000000001";
 const char BookmarkNode::kBookmarkBarNodeGuid[] =
-    "00000000-0000-4000-A000-000000000002";
+    "00000000-0000-4000-a000-000000000002";
 const char BookmarkNode::kOtherBookmarksNodeGuid[] =
-    "00000000-0000-4000-A000-000000000003";
+    "00000000-0000-4000-a000-000000000003";
 const char BookmarkNode::kMobileBookmarksNodeGuid[] =
-    "00000000-0000-4000-A000-000000000004";
+    "00000000-0000-4000-a000-000000000004";
 const char BookmarkNode::kManagedNodeGuid[] =
-    "00000000-0000-4000-A000-000000000005";
+    "00000000-0000-4000-a000-000000000005";
 
 std::string BookmarkNode::RootNodeGuid() {
   return BookmarkNode::kRootNodeGuid;
@@ -151,7 +150,7 @@ BookmarkNode::BookmarkNode(int64_t id,
       favicon_type_(favicon_base::IconType::kInvalid),
       is_permanent_node_(is_permanent_node) {
   DCHECK((type == URL) != url.is_empty());
-  DCHECK(base::IsValidGUID(guid));
+  DCHECK(base::IsValidGUIDOutputString(guid));
 }
 
 void BookmarkNode::InvalidateFavicon() {
@@ -163,15 +162,22 @@ void BookmarkNode::InvalidateFavicon() {
 
 // BookmarkPermanentNode -------------------------------------------------------
 
-BookmarkPermanentNode::BookmarkPermanentNode(int64_t id, Type type)
-    : BookmarkNode(id, PermanentNodeTypeToGuid(type), GURL(), type, true) {
+BookmarkPermanentNode::BookmarkPermanentNode(int64_t id,
+                                             Type type,
+                                             bool visible_when_empty)
+    : BookmarkNode(id,
+                   PermanentNodeTypeToGuid(type),
+                   GURL(),
+                   type,
+                   /*is_permanent_node=*/true),
+      visible_when_empty_(visible_when_empty) {
   DCHECK(type != URL);
 }
 
 BookmarkPermanentNode::~BookmarkPermanentNode() = default;
 
 bool BookmarkPermanentNode::IsVisible() const {
-  return visible_ || !children().empty();
+  return visible_when_empty_ || !children().empty();
 }
 
 }  // namespace bookmarks

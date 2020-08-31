@@ -28,37 +28,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as Common from '../common/common.js';
+import * as Formatter from '../formatter/formatter.js';
+import * as Platform from '../platform/platform.js';
+import * as TextEditor from '../text_editor/text_editor.js';  // eslint-disable-line no-unused-vars
+import * as TextUtils from '../text_utils/text_utils.js';
+import * as UI from '../ui/ui.js';
+import * as Workspace from '../workspace/workspace.js';  // eslint-disable-line no-unused-vars
+
+import {Events, SourcesTextEditor, SourcesTextEditorDelegate} from './SourcesTextEditor.js';  // eslint-disable-line no-unused-vars
+
 /**
- * @implements {UI.Searchable}
- * @implements {UI.Replaceable}
- * @implements {SourceFrame.SourcesTextEditorDelegate}
+ * @implements {UI.SearchableView.Searchable}
+ * @implements {UI.SearchableView.Replaceable}
+ * @implements {SourcesTextEditorDelegate}
  * @unrestricted
  */
-export class SourceFrameImpl extends UI.SimpleView {
+export class SourceFrameImpl extends UI.View.SimpleView {
   /**
-   * @param {function(): !Promise<!Common.DeferredContent>} lazyContent
+   * @param {function(): !Promise<!TextUtils.ContentProvider.DeferredContent>} lazyContent
    * @param {!UI.TextEditor.Options=} codeMirrorOptions
    */
   constructor(lazyContent, codeMirrorOptions) {
-    super(Common.UIString('Source'));
+    super(Common.UIString.UIString('Source'));
 
     this._lazyContent = lazyContent;
 
     this._pretty = false;
     /** @type {?string} */
     this._rawContent = null;
-    /** @type {?Promise<{content: string, map: !Formatter.FormatterSourceMapping}>} */
+    /** @type {?Promise<{content: string, map: !Formatter.ScriptFormatter.FormatterSourceMapping}>} */
     this._formattedContentPromise = null;
-    /** @type {?Formatter.FormatterSourceMapping} */
+    /** @type {?Formatter.ScriptFormatter.FormatterSourceMapping} */
     this._formattedMap = null;
-    this._prettyToggle = new UI.ToolbarToggle(ls`Pretty print`, 'largeicon-pretty-print');
-    this._prettyToggle.addEventListener(UI.ToolbarButton.Events.Click, () => {
+    this._prettyToggle = new UI.Toolbar.ToolbarToggle(ls`Pretty print`, 'largeicon-pretty-print');
+    this._prettyToggle.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
       this._setPretty(!this._prettyToggle.toggled());
     });
     this._shouldAutoPrettyPrint = false;
     this._prettyToggle.setVisible(false);
 
-    this._textEditor = new SourceFrame.SourcesTextEditor(this, codeMirrorOptions);
+    this._progressToolbarItem = new UI.Toolbar.ToolbarItem(createElement('div'));
+
+    this._textEditor = new SourcesTextEditor(this, codeMirrorOptions);
     this._textEditor.show(this.element);
 
     /** @type {?number} */
@@ -72,10 +84,8 @@ export class SourceFrameImpl extends UI.SimpleView {
     this._searchRegex = null;
     this._loadError = false;
 
-    this._textEditor.addEventListener(
-        SourceFrame.SourcesTextEditor.Events.EditorFocused, this._resetCurrentSearchResultIndex, this);
-    this._textEditor.addEventListener(
-        SourceFrame.SourcesTextEditor.Events.SelectionChanged, this._updateSourcePosition, this);
+    this._textEditor.addEventListener(Events.EditorFocused, this._resetCurrentSearchResultIndex, this);
+    this._textEditor.addEventListener(Events.SelectionChanged, this._updateSourcePosition, this);
     this._textEditor.addEventListener(UI.TextEditor.Events.TextChanged, event => {
       if (!this._muteChangeEventsForSetContent) {
         this.onTextChanged(event.data.oldRange, event.data.newRange);
@@ -84,10 +94,10 @@ export class SourceFrameImpl extends UI.SimpleView {
     /** @type {boolean} */
     this._muteChangeEventsForSetContent = false;
 
-    this._sourcePosition = new UI.ToolbarText();
+    this._sourcePosition = new UI.Toolbar.ToolbarText();
 
     /**
-     * @type {?UI.SearchableView}
+     * @type {?UI.SearchableView.SearchableView}
      */
     this._searchableView = null;
     this._editable = false;
@@ -100,7 +110,7 @@ export class SourceFrameImpl extends UI.SimpleView {
     this._loaded = false;
     this._contentRequested = false;
     this._highlighterType = '';
-    /** @type {!SourceFrame.Transformer} */
+    /** @type {!Transformer} */
     this._transformer = {
       /**
        * @param {number} editorLineNumber
@@ -155,13 +165,13 @@ export class SourceFrameImpl extends UI.SimpleView {
       this._prettyCleanGeneration = this._textEditor.markClean();
       const start = this._rawToPrettyLocation(selection.startLine, selection.startColumn);
       const end = this._rawToPrettyLocation(selection.endLine, selection.endColumn);
-      newSelection = new TextUtils.TextRange(start[0], start[1], end[0], end[1]);
+      newSelection = new TextUtils.TextRange.TextRange(start[0], start[1], end[0], end[1]);
     } else {
       this.setContent(this._rawContent, null);
       this._cleanGeneration = this._textEditor.markClean();
       const start = this._prettyToRawLocation(selection.startLine, selection.startColumn);
       const end = this._prettyToRawLocation(selection.endLine, selection.endColumn);
-      newSelection = new TextUtils.TextRange(start[0], start[1], end[0], end[1]);
+      newSelection = new TextUtils.TextRange.TextRange(start[0], start[1], end[0], end[1]);
     }
     if (wasLoaded) {
       this.textEditor.revealPosition(newSelection.endLine, newSelection.endColumn, this._editable);
@@ -193,7 +203,7 @@ export class SourceFrameImpl extends UI.SimpleView {
   }
 
   /**
-   * @return {!SourceFrame.Transformer}
+   * @return {!Transformer}
    */
   transformer() {
     return this._transformer;
@@ -261,10 +271,10 @@ export class SourceFrameImpl extends UI.SimpleView {
 
   /**
    * @override
-   * @return {!Array<!UI.ToolbarItem>}
+   * @return {!Promise<!Array<!UI.Toolbar.ToolbarItem>>}
    */
-  syncToolbarItems() {
-    return [this._prettyToggle, this._sourcePosition];
+  async toolbarItems() {
+    return [this._prettyToggle, this._sourcePosition, this._progressToolbarItem];
   }
 
   get loaded() {
@@ -285,7 +295,17 @@ export class SourceFrameImpl extends UI.SimpleView {
   async _ensureContentLoaded() {
     if (!this._contentRequested) {
       this._contentRequested = true;
+
+      const progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
+      progressIndicator.setTitle(Common.UIString.UIString('Loading…'));
+      progressIndicator.setTotalWork(1);
+      this._progressToolbarItem.element.appendChild(progressIndicator.element);
+
       const {content, error} = (await this._lazyContent());
+
+      progressIndicator.setWorked(1);
+      progressIndicator.done();
+
       this._rawContent = error || content || '';
       this._formattedContentPromise = null;
       this._formattedMap = null;
@@ -306,7 +326,7 @@ export class SourceFrameImpl extends UI.SimpleView {
         // CRBug 1011445
         setTimeout(() => this.setHighlighterType('text/plain'), 50);
       } else {
-        if (this._shouldAutoPrettyPrint && TextUtils.isMinified(content || '')) {
+        if (this._shouldAutoPrettyPrint && TextUtils.TextUtils.isMinified(content || '')) {
           await this._setPretty(true);
         } else {
           this.setContent(this._rawContent, null);
@@ -316,7 +336,7 @@ export class SourceFrameImpl extends UI.SimpleView {
   }
 
   /**
-   * @return {!Promise<{content: string, map: !Formatter.FormatterSourceMapping}>}
+   * @return {!Promise<{content: string, map: !Formatter.ScriptFormatter.FormatterSourceMapping}>}
    */
   _requestFormattedContent() {
     if (this._formattedContentPromise) {
@@ -324,7 +344,7 @@ export class SourceFrameImpl extends UI.SimpleView {
     }
     let fulfill;
     this._formattedContentPromise = new Promise(x => fulfill = x);
-    new Formatter.ScriptFormatter(this._highlighterType, this._rawContent || '', (content, map) => {
+    new Formatter.ScriptFormatter.ScriptFormatter(this._highlighterType, this._rawContent || '', (content, map) => {
       fulfill({content, map});
     });
     return this._formattedContentPromise;
@@ -382,14 +402,14 @@ export class SourceFrameImpl extends UI.SimpleView {
   }
 
   /**
-   * @return {!TextUtils.TextRange}
+   * @return {!TextUtils.TextRange.TextRange}
    */
   selection() {
     return this.textEditor.selection();
   }
 
   /**
-   * @param {!TextUtils.TextRange} textRange
+   * @param {!TextUtils.TextRange.TextRange} textRange
    */
   setSelection(textRange) {
     this._selectionToSet = textRange;
@@ -410,8 +430,8 @@ export class SourceFrameImpl extends UI.SimpleView {
   }
 
   /**
-   * @param {!TextUtils.TextRange} oldRange
-   * @param {!TextUtils.TextRange} newRange
+   * @param {!TextUtils.TextRange.TextRange} oldRange
+   * @param {!TextUtils.TextRange.TextRange} newRange
    */
   onTextChanged(oldRange, newRange) {
     const wasPretty = this.pretty;
@@ -534,7 +554,7 @@ export class SourceFrameImpl extends UI.SimpleView {
   }
 
   /**
-   * @param {?UI.SearchableView} view
+   * @param {?UI.SearchableView.SearchableView} view
    */
   setSearchableView(view) {
     this._searchableView = view;
@@ -632,7 +652,8 @@ export class SourceFrameImpl extends UI.SimpleView {
    * @return {number}
    */
   _searchResultIndexForCurrentSelection() {
-    return this._searchResults.lowerBound(this._textEditor.selection().collapseToEnd(), TextUtils.TextRange.comparator);
+    return this._searchResults.lowerBound(
+        this._textEditor.selection().collapseToEnd(), TextUtils.TextRange.TextRange.comparator);
   }
 
   /**
@@ -733,10 +754,10 @@ export class SourceFrameImpl extends UI.SimpleView {
     }
 
     // Calculate the position of the end of the last range to be edited.
-    const currentRangeIndex = ranges.lowerBound(this._textEditor.selection(), TextUtils.TextRange.comparator);
-    const lastRangeIndex = mod(currentRangeIndex - 1, ranges.length);
+    const currentRangeIndex = ranges.lowerBound(this._textEditor.selection(), TextUtils.TextRange.TextRange.comparator);
+    const lastRangeIndex = Platform.NumberUtilities.mod(currentRangeIndex - 1, ranges.length);
     const lastRange = ranges[lastRangeIndex];
-    const replacementLineEndings = replacement.computeLineEndings();
+    const replacementLineEndings = Platform.StringUtilities.findLineEndingIndexes(replacement);
     const replacementLineCount = replacementLineEndings.length;
     const lastLineNumber = lastRange.startLine + replacementLineEndings.length - 1;
     let lastColumnNumber = lastRange.startColumn;
@@ -747,7 +768,7 @@ export class SourceFrameImpl extends UI.SimpleView {
 
     this._textEditor.editRange(range, text);
     this._textEditor.revealPosition(lastLineNumber, lastColumnNumber);
-    this._textEditor.setSelection(TextUtils.TextRange.createFromLocation(lastLineNumber, lastColumnNumber));
+    this._textEditor.setSelection(TextUtils.TextRange.TextRange.createFromLocation(lastLineNumber, lastColumnNumber));
   }
 
   _collectRegexMatches(regexObject) {
@@ -761,7 +782,7 @@ export class SourceFrameImpl extends UI.SimpleView {
         if (match) {
           const matchEndIndex = match.index + Math.max(match[0].length, 1);
           if (match[0].length) {
-            ranges.push(new TextUtils.TextRange(i, offset + match.index, i, offset + matchEndIndex));
+            ranges.push(new TextUtils.TextRange.TextRange(i, offset + match.index, i, offset + matchEndIndex));
           }
           offset += matchEndIndex;
           line = line.substring(matchEndIndex);
@@ -800,7 +821,7 @@ export class SourceFrameImpl extends UI.SimpleView {
       return;
     }
     if (selections.length > 1) {
-      this._sourcePosition.setText(Common.UIString('%d selection regions', selections.length));
+      this._sourcePosition.setText(Common.UIString.UIString('%d selection regions', selections.length));
       return;
     }
     let textRange = selections[0];
@@ -813,9 +834,9 @@ export class SourceFrameImpl extends UI.SimpleView {
 
     const selectedText = this._textEditor.text(textRange);
     if (textRange.startLine === textRange.endLine) {
-      this._sourcePosition.setText(Common.UIString('%d characters selected', selectedText.length));
+      this._sourcePosition.setText(Common.UIString.UIString('%d characters selected', selectedText.length));
     } else {
-      this._sourcePosition.setText(Common.UIString(
+      this._sourcePosition.setText(Common.UIString.UIString(
           '%d lines, %d characters selected', textRange.endLine - textRange.startLine + 1, selectedText.length));
     }
   }
@@ -826,29 +847,17 @@ export class SourceFrameImpl extends UI.SimpleView {
  */
 export class LineDecorator {
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @param {!TextEditor.CodeMirrorTextEditor} textEditor
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+   * @param {!TextEditor.CodeMirrorTextEditor.CodeMirrorTextEditor} textEditor
    * @param {string} type
    */
   decorate(uiSourceCode, textEditor, type) {}
 }
 
-/* Legacy exported object */
-self.SourceFrame = self.SourceFrame || {};
-
-/* Legacy exported object */
-SourceFrame = SourceFrame || {};
-
-/** @constructor */
-SourceFrame.SourceFrame = SourceFrameImpl;
-
-/** @interface */
-SourceFrame.LineDecorator = LineDecorator;
-
 /**
  * @typedef {{
-  *  editorToRawLocation: function(number, number=):!Array<number>,
-  *  rawToEditorLocation: function(number, number=):!Array<number>
-  * }}
-  */
-SourceFrame.Transformer;
+ *  editorToRawLocation: function(number, number=):!Array<number>,
+ *  rawToEditorLocation: function(number, number=):!Array<number>
+ * }}
+ */
+export let Transformer;

@@ -32,7 +32,7 @@ class UsbDevice;
 class UsbService {
  public:
   using GetDevicesCallback =
-      base::Callback<void(const std::vector<scoped_refptr<UsbDevice>>&)>;
+      base::OnceCallback<void(const std::vector<scoped_refptr<UsbDevice>>&)>;
 
   class Observer {
    public:
@@ -50,10 +50,10 @@ class UsbService {
     virtual void WillDestroyUsbService();
   };
 
-  // These task traits are to be used for posting blocking tasks to the task
-  // scheduler.
+  // These task traits are to be used for posting blocking tasks to the thread
+  // pool.
   static constexpr base::TaskTraits kBlockingTaskTraits = {
-      base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      base::MayBlock(), base::TaskPriority::USER_VISIBLE,
       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
 
   // Returns nullptr when initialization fails.
@@ -67,7 +67,7 @@ class UsbService {
   scoped_refptr<UsbDevice> GetDevice(const std::string& guid);
 
   // Enumerates available devices.
-  virtual void GetDevices(const GetDevicesCallback& callback);
+  virtual void GetDevices(GetDevicesCallback callback);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

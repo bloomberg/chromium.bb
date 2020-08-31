@@ -14,7 +14,9 @@
 #include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/install/crx_install_error.h"
+#include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
+#include "extensions/browser/updater/safe_manifest_parser.h"
 #include "extensions/common/extension_id.h"
 
 namespace content {
@@ -161,9 +163,49 @@ class InstallationReporter : public KeyedService {
     // extension in required time.
     IN_PROGRESS = 24,
 
+    // The download of the crx failed.
+    CRX_FETCH_URL_EMPTY = 25,
+
+    // The download of the crx failed.
+    CRX_FETCH_URL_INVALID = 26,
+
     // Magic constant used by the histogram macros.
     // Always update it to the max value.
-    kMaxValue = IN_PROGRESS,
+    kMaxValue = CRX_FETCH_URL_INVALID,
+  };
+  // Status for the update check returned by server while fetching manifest.
+  // Enum used for UMA. Do NOT reorder or remove entries. Don't forget to update
+  // enums.xml (name: UpdateCheckStatus) when adding new entries.
+  enum class UpdateCheckStatus {
+    // Technically it may happen that update server return some unknown value or
+    // no value.
+    kUnknown = 0,
+
+    // An update is available and should be applied.
+    kOk = 1,
+
+    // No update is available for this application at this time.
+    kNoUpdate = 2,
+
+    // Server encountered an unknown internal error.
+    kErrorInternal = 3,
+
+    // The server attempted to serve an update, but could not provide a valid
+    // hash for the download.
+    kErrorHash = 4,
+
+    // The application is running on an incompatible operating system.
+    kErrorOsNotSupported = 5,
+
+    // The application is running on an incompatible hardware.
+    kErrorHardwareNotSupported = 6,
+
+    // This application is incompatible with this version of the protocol.
+    kErrorUnsupportedProtocol = 7,
+
+    // Magic constant used by the histogram macros.
+    // Always update it to the max value.
+    kMaxValue = kErrorUnsupportedProtocol,
   };
 
   // Contains information about extension installation: failure reason, if any
@@ -181,6 +223,27 @@ class InstallationReporter : public KeyedService {
     base::Optional<extensions::InstallationReporter::FailureReason>
         failure_reason;
     base::Optional<extensions::CrxInstallErrorDetail> install_error_detail;
+    // Network error codes when failure_reason is CRX_FETCH_FAILED or
+    // MANIFEST_FETCH_FAILED.
+    base::Optional<int> network_error_code;
+    base::Optional<int> response_code;
+    // Number of fetch tries made when failure reason is CRX_FETCH_FAILED or
+    // MANIFEST_FETCH_FAILED.
+    base::Optional<int> fetch_tries;
+    // Unpack failure reason in case of
+    // CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE.
+    base::Optional<extensions::SandboxedUnpackerFailureReason>
+        unpacker_failure_reason;
+    // Type of extension, assigned when CRX installation error detail is
+    // DISALLOWED_BY_POLICY.
+    base::Optional<Manifest::Type> extension_type;
+    // Type of update check status received from server when manifest was
+    // fetched.
+    base::Optional<UpdateCheckStatus> update_check_status;
+    // Error detail when the fetched manifest was invalid. This includes errors
+    // occurred while parsing the manifest and errors occurred due to the
+    // internal details of the parsed manifest.
+    base::Optional<ManifestInvalidError> manifest_invalid_error;
   };
 
   class Observer : public base::CheckedObserver {
@@ -205,17 +268,37 @@ class InstallationReporter : public KeyedService {
   // Convenience function to get the InstallationReporter for a BrowserContext.
   static InstallationReporter* Get(content::BrowserContext* context);
 
+  // Reports detailed error type when extension fails to install with failure
+  // reason MANIFEST_INVALID. See InstallationData::manifest_invalid_error
+  // for more details.
+  void ReportManifestInvalidFailure(const ExtensionId& id,
+                                    ManifestInvalidError error);
+
   // Remembers failure reason and in-progress stages in memory.
   void ReportInstallationStage(const ExtensionId& id, Stage stage);
+  void ReportFetchError(
+      const ExtensionId& id,
+      FailureReason reason,
+      const ExtensionDownloaderDelegate::FailureData& failure_data);
   void ReportFailure(const ExtensionId& id, FailureReason reason);
   void ReportDownloadingStage(const ExtensionId& id,
                               ExtensionDownloaderDelegate::Stage stage);
   void ReportDownloadingCacheStatus(
       const ExtensionId& id,
       ExtensionDownloaderDelegate::CacheStatus cache_status);
+  void ReportManifestUpdateCheckStatus(const ExtensionId& id,
+                                       const std::string& status);
+  // Assigns the extension type. See InstallationData::extension_type for
+  // more details.
+  void ReportExtensionTypeForPolicyDisallowedExtension(
+      const ExtensionId& id,
+      Manifest::Type extension_type);
   void ReportCrxInstallError(const ExtensionId& id,
                              FailureReason reason,
                              CrxInstallErrorDetail crx_install_error);
+  void ReportSandboxedUnpackerFailureReason(
+      const ExtensionId& id,
+      SandboxedUnpackerFailureReason unpacker_failure_reason);
 
   // Retrieves known information for installation of extension |id|.
   // Returns empty data if not found.
@@ -229,6 +312,11 @@ class InstallationReporter : public KeyedService {
   void RemoveObserver(Observer* observer);
 
  private:
+  // Helper function to report installation failures to the observers.
+  void NotifyObserversOfFailure(const ExtensionId& id,
+                                FailureReason reason,
+                                const InstallationData& data);
+
   const content::BrowserContext* browser_context_;
 
   std::map<ExtensionId, InstallationReporter::InstallationData>

@@ -136,14 +136,12 @@ GMOCK_DECLARE_KIND_(int, kInteger);
 GMOCK_DECLARE_KIND_(unsigned int, kInteger);
 GMOCK_DECLARE_KIND_(long, kInteger);  // NOLINT
 GMOCK_DECLARE_KIND_(unsigned long, kInteger);  // NOLINT
+GMOCK_DECLARE_KIND_(long long, kInteger);  // NOLINT
+GMOCK_DECLARE_KIND_(unsigned long long, kInteger);  // NOLINT
 
 #if GMOCK_WCHAR_T_IS_NATIVE_
 GMOCK_DECLARE_KIND_(wchar_t, kInteger);
 #endif
-
-// Non-standard integer types.
-GMOCK_DECLARE_KIND_(Int64, kInteger);
-GMOCK_DECLARE_KIND_(UInt64, kInteger);
 
 // All standard floating-point types.
 GMOCK_DECLARE_KIND_(float, kFloatingPoint);
@@ -157,9 +155,6 @@ GMOCK_DECLARE_KIND_(long double, kFloatingPoint);
   static_cast< ::testing::internal::TypeKind>( \
       ::testing::internal::KindOf<type>::value)
 
-// Evaluates to true if and only if integer type T is signed.
-#define GMOCK_IS_SIGNED_(T) (static_cast<T>(-1) < 0)
-
 // LosslessArithmeticConvertibleImpl<kFromKind, From, kToKind, To>::value
 // is true if and only if arithmetic type From can be losslessly converted to
 // arithmetic type To.
@@ -170,65 +165,30 @@ GMOCK_DECLARE_KIND_(long double, kFloatingPoint);
 // From, and kToKind is the kind of To; the value is
 // implementation-defined when the above pre-condition is violated.
 template <TypeKind kFromKind, typename From, TypeKind kToKind, typename To>
-struct LosslessArithmeticConvertibleImpl : public std::false_type {};
-
-// Converting bool to bool is lossless.
-template <>
-struct LosslessArithmeticConvertibleImpl<kBool, bool, kBool, bool>
-    : public std::true_type {};
-
-// Converting bool to any integer type is lossless.
-template <typename To>
-struct LosslessArithmeticConvertibleImpl<kBool, bool, kInteger, To>
-    : public std::true_type {};
-
-// Converting bool to any floating-point type is lossless.
-template <typename To>
-struct LosslessArithmeticConvertibleImpl<kBool, bool, kFloatingPoint, To>
-    : public std::true_type {};
-
-// Converting an integer to bool is lossy.
-template <typename From>
-struct LosslessArithmeticConvertibleImpl<kInteger, From, kBool, bool>
-    : public std::false_type {};
-
-// Converting an integer to another non-bool integer is lossless
-// if and only if the target type's range encloses the source type's range.
-template <typename From, typename To>
-struct LosslessArithmeticConvertibleImpl<kInteger, From, kInteger, To>
-    : public bool_constant<
-      // When converting from a smaller size to a larger size, we are
-      // fine as long as we are not converting from signed to unsigned.
-      ((sizeof(From) < sizeof(To)) &&
-       (!GMOCK_IS_SIGNED_(From) || GMOCK_IS_SIGNED_(To))) ||
-      // When converting between the same size, the signedness must match.
-      ((sizeof(From) == sizeof(To)) &&
-       (GMOCK_IS_SIGNED_(From) == GMOCK_IS_SIGNED_(To)))> {};  // NOLINT
-
-#undef GMOCK_IS_SIGNED_
-
-// Converting an integer to a floating-point type may be lossy, since
-// the format of a floating-point number is implementation-defined.
-template <typename From, typename To>
-struct LosslessArithmeticConvertibleImpl<kInteger, From, kFloatingPoint, To>
-    : public std::false_type {};
-
-// Converting a floating-point to bool is lossy.
-template <typename From>
-struct LosslessArithmeticConvertibleImpl<kFloatingPoint, From, kBool, bool>
-    : public std::false_type {};
-
-// Converting a floating-point to an integer is lossy.
-template <typename From, typename To>
-struct LosslessArithmeticConvertibleImpl<kFloatingPoint, From, kInteger, To>
-    : public std::false_type {};
-
-// Converting a floating-point to another floating-point is lossless
-// if and only if the target type is at least as big as the source type.
-template <typename From, typename To>
-struct LosslessArithmeticConvertibleImpl<
-  kFloatingPoint, From, kFloatingPoint, To>
-    : public bool_constant<sizeof(From) <= sizeof(To)> {};  // NOLINT
+using LosslessArithmeticConvertibleImpl = std::integral_constant<
+    bool,
+    // clang-format off
+      // Converting from bool is always lossless
+      (kFromKind == kBool) ? true
+      // Converting between any other type kinds will be lossy if the type
+      // kinds are not the same.
+    : (kFromKind != kToKind) ? false
+    : (kFromKind == kInteger &&
+       // Converting between integers of different widths is allowed so long
+       // as the conversion does not go from signed to unsigned.
+      (((sizeof(From) < sizeof(To)) &&
+        !(std::is_signed<From>::value && !std::is_signed<To>::value)) ||
+       // Converting between integers of the same width only requires the
+       // two types to have the same signedness.
+       ((sizeof(From) == sizeof(To)) &&
+        (std::is_signed<From>::value == std::is_signed<To>::value)))
+       ) ? true
+      // Floating point conversions are lossless if and only if `To` is at least
+      // as wide as `From`.
+    : (kFromKind == kFloatingPoint && (sizeof(From) <= sizeof(To))) ? true
+    : false
+    // clang-format on
+    >;
 
 // LosslessArithmeticConvertible<From, To>::value is true if and only if
 // arithmetic type From can be losslessly converted to arithmetic type To.
@@ -238,9 +198,9 @@ struct LosslessArithmeticConvertibleImpl<
 // reference) built-in arithmetic types; the value is
 // implementation-defined when the above pre-condition is violated.
 template <typename From, typename To>
-struct LosslessArithmeticConvertible
-    : public LosslessArithmeticConvertibleImpl<
-  GMOCK_KIND_OF_(From), From, GMOCK_KIND_OF_(To), To> {};  // NOLINT
+using LosslessArithmeticConvertible =
+    LosslessArithmeticConvertibleImpl<GMOCK_KIND_OF_(From), From,
+                                      GMOCK_KIND_OF_(To), To>;
 
 // This interface knows how to report a Google Mock failure (either
 // non-fatal or fatal).
@@ -462,11 +422,13 @@ auto ApplyImpl(F&& f, Tuple&& args, IndexSequence<Idx...>) -> decltype(
 
 // Apply the function to a tuple of arguments.
 template <typename F, typename Tuple>
-auto Apply(F&& f, Tuple&& args)
-    -> decltype(ApplyImpl(std::forward<F>(f), std::forward<Tuple>(args),
-                          MakeIndexSequence<std::tuple_size<Tuple>::value>())) {
+auto Apply(F&& f, Tuple&& args) -> decltype(
+    ApplyImpl(std::forward<F>(f), std::forward<Tuple>(args),
+              MakeIndexSequence<std::tuple_size<
+                  typename std::remove_reference<Tuple>::type>::value>())) {
   return ApplyImpl(std::forward<F>(f), std::forward<Tuple>(args),
-                   MakeIndexSequence<std::tuple_size<Tuple>::value>());
+                   MakeIndexSequence<std::tuple_size<
+                       typename std::remove_reference<Tuple>::type>::value>());
 }
 
 // Template struct Function<F>, where F must be a function type, contains
@@ -490,8 +452,7 @@ struct Function<R(Args...)> {
   using Result = R;
   static constexpr size_t ArgumentCount = sizeof...(Args);
   template <size_t I>
-  using Arg = ElemFromList<I, typename MakeIndexSequence<sizeof...(Args)>::type,
-                           Args...>;
+  using Arg = ElemFromList<I, Args...>;
   using ArgumentTuple = std::tuple<Args...>;
   using ArgumentMatcherTuple = std::tuple<Matcher<Args>...>;
   using MakeResultVoid = void(Args...);

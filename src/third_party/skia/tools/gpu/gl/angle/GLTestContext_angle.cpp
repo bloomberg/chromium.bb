@@ -5,24 +5,19 @@
  * found in the LICENSE file.
  */
 
-#include "tools/gpu/gl/angle/GLTestContext_angle.h"
-
-#define EGL_EGL_PROTOTYPES 1
-
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-
-#include "src/gpu/gl/GrGLDefines.h"
-#include "src/gpu/gl/GrGLUtil.h"
-
 #include "include/core/SkTime.h"
 #include "include/gpu/gl/GrGLAssembleInterface.h"
 #include "include/gpu/gl/GrGLInterface.h"
 #include "src/core/SkTraceEvent.h"
+#include "src/gpu/gl/GrGLDefines.h"
+#include "src/gpu/gl/GrGLUtil.h"
 #include "src/ports/SkOSLibrary.h"
+#include "tools/gpu/gl/angle/GLTestContext_angle.h"
 #include "third_party/externals/angle2/include/platform/Platform.h"
 
+#define EGL_EGL_PROTOTYPES 1
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 #define EGL_PLATFORM_ANGLE_ANGLE                0x3202
 #define EGL_PLATFORM_ANGLE_TYPE_ANGLE           0x3203
@@ -101,9 +96,9 @@ public:
 private:
     void destroyGLContext();
 
+    void onPlatformMakeNotCurrent() const override;
     void onPlatformMakeCurrent() const override;
     std::function<void()> onPlatformGetAutoContextRestore() const override;
-    void onPlatformSwapBuffers() const override;
     GrGLFuncPtr onPlatformGetProcAddress(const char* name) const override;
 
     void*                       fContext;
@@ -448,6 +443,12 @@ void ANGLEGLContext::destroyGLContext() {
 #endif
 }
 
+void ANGLEGLContext::onPlatformMakeNotCurrent() const {
+    if (!eglMakeCurrent(fDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
+        SkDebugf("Could not reset the context 0x%x.\n", eglGetError());
+    }
+}
+
 void ANGLEGLContext::onPlatformMakeCurrent() const {
     if (!eglMakeCurrent(fDisplay, fSurface, fSurface, fContext)) {
         SkDebugf("Could not set the context 0x%x.\n", eglGetError());
@@ -459,12 +460,6 @@ std::function<void()> ANGLEGLContext::onPlatformGetAutoContextRestore() const {
         return nullptr;
     }
     return context_restorer();
-}
-
-void ANGLEGLContext::onPlatformSwapBuffers() const {
-    if (!eglSwapBuffers(fDisplay, fSurface)) {
-        SkDebugf("Could not complete eglSwapBuffers.\n");
-    }
 }
 
 GrGLFuncPtr ANGLEGLContext::onPlatformGetProcAddress(const char* name) const {

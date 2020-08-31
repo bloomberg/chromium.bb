@@ -6,69 +6,12 @@
 
 #include <cstdint>
 
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_string_piece.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_test.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
 
 namespace spdy {
 namespace test {
 namespace {
-
-TEST(SpdyStringUtilsTest, SpdyStrCat) {
-  // No arguments.
-  EXPECT_EQ("", SpdyStrCat());
-
-  // Single string-like argument.
-  const char kFoo[] = "foo";
-  const std::string string_foo(kFoo);
-  const SpdyStringPiece stringpiece_foo(string_foo);
-  EXPECT_EQ("foo", SpdyStrCat(kFoo));
-  EXPECT_EQ("foo", SpdyStrCat(string_foo));
-  EXPECT_EQ("foo", SpdyStrCat(stringpiece_foo));
-
-  // Two string-like arguments.
-  const char kBar[] = "bar";
-  const SpdyStringPiece stringpiece_bar(kBar);
-  const std::string string_bar(kBar);
-  EXPECT_EQ("foobar", SpdyStrCat(kFoo, kBar));
-  EXPECT_EQ("foobar", SpdyStrCat(kFoo, string_bar));
-  EXPECT_EQ("foobar", SpdyStrCat(kFoo, stringpiece_bar));
-  EXPECT_EQ("foobar", SpdyStrCat(string_foo, kBar));
-  EXPECT_EQ("foobar", SpdyStrCat(string_foo, string_bar));
-  EXPECT_EQ("foobar", SpdyStrCat(string_foo, stringpiece_bar));
-  EXPECT_EQ("foobar", SpdyStrCat(stringpiece_foo, kBar));
-  EXPECT_EQ("foobar", SpdyStrCat(stringpiece_foo, string_bar));
-  EXPECT_EQ("foobar", SpdyStrCat(stringpiece_foo, stringpiece_bar));
-
-  // Many-many arguments.
-  EXPECT_EQ(
-      "foobarbazquxquuxquuzcorgegraultgarplywaldofredplughxyzzythud",
-      SpdyStrCat("foo", "bar", "baz", "qux", "quux", "quuz", "corge", "grault",
-                 "garply", "waldo", "fred", "plugh", "xyzzy", "thud"));
-
-  // Numerical arguments.
-  const int16_t i = 1;
-  const uint64_t u = 8;
-  const double d = 3.1415;
-
-  EXPECT_EQ("1 8", SpdyStrCat(i, " ", u));
-  EXPECT_EQ("3.14151181", SpdyStrCat(d, i, i, u, i));
-  EXPECT_EQ("i: 1, u: 8, d: 3.1415",
-            SpdyStrCat("i: ", i, ", u: ", u, ", d: ", d));
-
-  // Boolean arguments.
-  const bool t = true;
-  const bool f = false;
-
-  EXPECT_EQ("1", SpdyStrCat(t));
-  EXPECT_EQ("0", SpdyStrCat(f));
-  EXPECT_EQ("0110", SpdyStrCat(f, t, t, f));
-
-  // Mixed string-like, numerical, and Boolean arguments.
-  EXPECT_EQ("foo1foo081bar3.14151",
-            SpdyStrCat(kFoo, i, string_foo, f, u, t, stringpiece_bar, d, t));
-  EXPECT_EQ("3.141511bar18bar13.14150",
-            SpdyStrCat(d, t, t, string_bar, i, u, kBar, t, d, f));
-}
 
 TEST(SpdyStringUtilsTest, SpdyStrAppend) {
   // No arguments on empty string.
@@ -79,7 +22,7 @@ TEST(SpdyStringUtilsTest, SpdyStrAppend) {
   // Single string-like argument.
   const char kFoo[] = "foo";
   const std::string string_foo(kFoo);
-  const SpdyStringPiece stringpiece_foo(string_foo);
+  const quiche::QuicheStringPiece stringpiece_foo(string_foo);
   SpdyStrAppend(&output, kFoo);
   EXPECT_EQ("foo", output);
   SpdyStrAppend(&output, string_foo);
@@ -95,7 +38,7 @@ TEST(SpdyStringUtilsTest, SpdyStrAppend) {
 
   // Two string-like arguments.
   const char kBar[] = "bar";
-  const SpdyStringPiece stringpiece_bar(kBar);
+  const quiche::QuicheStringPiece stringpiece_bar(kBar);
   const std::string string_bar(kBar);
   SpdyStrAppend(&output, kFoo, kBar);
   EXPECT_EQ("foobar", output);
@@ -235,6 +178,28 @@ TEST(SpdyStringUtilsTest, SpdyHexEncodeUInt32AndTrim) {
   EXPECT_EQ("12345678", SpdyHexEncodeUInt32AndTrim(0x12345678));
   EXPECT_EQ("ffffffff", SpdyHexEncodeUInt32AndTrim(0xFFFFFFFF));
   EXPECT_EQ("10000001", SpdyHexEncodeUInt32AndTrim(0x10000001));
+}
+
+TEST(SpdyStringUtilsTest, SpdyStringPieceCaseHash) {
+  SpdyStringPieceCaseHash hasher;
+  auto mixed = hasher("To Be Or Not To Be, That is The Question");
+  auto lower = hasher("to be or not to be, that is the question");
+  EXPECT_EQ(mixed, lower);
+  auto lower2 = hasher("to be or not to be, that is the question");
+  EXPECT_EQ(lower, lower2);
+  auto different = hasher("to see or not to see, that is the question");
+  EXPECT_NE(lower, different);
+  EXPECT_NE(lower, hasher(""));
+}
+
+TEST(SpdyStringUtilsTest, SpdyStringPieceCaseEq) {
+  SpdyStringPieceCaseEq eq;
+  EXPECT_TRUE(eq("To Be Or Not To Be, That is The Question",
+                 "to be or not to be, that is the question"));
+  EXPECT_TRUE(eq("to be or not to be, that is the question",
+                 "to be or not to be, that is the question"));
+  EXPECT_FALSE(eq("to be or not to be, that is the question",
+                  "to see or not to see, that is the question"));
 }
 
 }  // namespace

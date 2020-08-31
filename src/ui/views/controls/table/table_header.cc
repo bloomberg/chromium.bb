@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
+#include <vector>
 
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -72,8 +74,9 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
                         gfx::PointF(width(), height() - 1), border_color);
 
   const Columns& columns = table_->visible_columns();
-  const int sorted_column_id = table_->sort_descriptors().empty() ? -1 :
-      table_->sort_descriptors()[0].column_id;
+  const int sorted_column_id = table_->sort_descriptors().empty()
+                                   ? -1
+                                   : table_->sort_descriptors()[0].column_id;
   for (const auto& column : columns) {
     if (column.width >= 2) {
       const int separator_x = GetMirroredXInView(column.x + column.width - 1);
@@ -137,9 +140,8 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
       int indicator_y = height() / 2 - kSortIndicatorSize / 2;
       SkPath indicator_path;
       if (table_->sort_descriptors()[0].ascending) {
-        indicator_path.moveTo(
-            SkIntToScalar(indicator_x),
-            SkIntToScalar(indicator_y + kSortIndicatorSize));
+        indicator_path.moveTo(SkIntToScalar(indicator_x),
+                              SkIntToScalar(indicator_y + kSortIndicatorSize));
         indicator_path.lineTo(
             SkIntToScalar(indicator_x + kSortIndicatorSize * scale),
             SkIntToScalar(indicator_y + kSortIndicatorSize));
@@ -170,9 +172,26 @@ gfx::Size TableHeader::CalculatePreferredSize() const {
   return gfx::Size(1, kVerticalPadding * 2 + font_list_.GetHeight());
 }
 
+bool TableHeader::GetNeedsNotificationWhenVisibleBoundsChange() const {
+  return true;
+}
+
+void TableHeader::OnVisibleBoundsChanged() {
+  // Ensure the TableView updates its virtual children's bounds, because that
+  // includes the bounds representing this TableHeader.
+  table_->UpdateVirtualAccessibilityChildrenBounds();
+}
+
+void TableHeader::AddedToWidget() {
+  // Ensure the TableView updates its virtual children's bounds, because that
+  // includes the bounds representing this TableHeader.
+  table_->UpdateVirtualAccessibilityChildrenBounds();
+}
+
 gfx::NativeCursor TableHeader::GetCursor(const ui::MouseEvent& event) {
-  return GetResizeColumn(GetMirroredXInView(event.x())) != -1 ?
-      GetNativeColumnResizeCursor() : View::GetCursor(event);
+  return GetResizeColumn(GetMirroredXInView(event.x())) != -1
+             ? GetNativeColumnResizeCursor()
+             : View::GetCursor(event);
 }
 
 bool TableHeader::OnMousePressed(const ui::MouseEvent& event) {
@@ -227,6 +246,7 @@ void TableHeader::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void TableHeader::OnThemeChanged() {
+  View::OnThemeChanged();
   SetBackground(CreateSolidBackground(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TableHeaderBackground)));
 }
@@ -242,10 +262,10 @@ void TableHeader::ResizeColumnViaKeyboard(
 
   int new_width = column.width;
   switch (direction) {
-    case TableView::ADVANCE_INCREMENT:
+    case TableView::AdvanceDirection::kIncrement:
       new_width += kResizeKeyboardAmount;
       break;
-    case TableView::ADVANCE_DECREMENT:
+    case TableView::AdvanceDirection::kDecrement:
       new_width -= kResizeKeyboardAmount;
       break;
   }
@@ -274,8 +294,8 @@ void TableHeader::ContinueResize(const ui::LocatedEvent& event) {
     return;
 
   const int scale = base::i18n::IsRTL() ? -1 : 1;
-  const int delta = scale *
-      (event.root_location().x() - resize_details_->initial_x);
+  const int delta =
+      scale * (event.root_location().x() - resize_details_->initial_x);
   const TableView::VisibleColumn& column =
       table_->GetVisibleColumn(resize_details_->column_index);
   const int needed_for_title =
@@ -312,8 +332,8 @@ int TableHeader::GetResizeColumn(int x) const {
     return index - 1;
   }
   const int max_x = column.x + column.width;
-  return (x >= max_x - kResizePadding && x <= max_x + kResizePadding) ?
-      index : -1;
+  return (x >= max_x - kResizePadding && x <= max_x + kResizePadding) ? index
+                                                                      : -1;
 }
 
 }  // namespace views

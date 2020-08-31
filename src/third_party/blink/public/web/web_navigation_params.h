@@ -17,12 +17,14 @@
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_http_body.h"
+#include "third_party/blink/public/platform/web_impression.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_source_location.h"
@@ -50,6 +52,7 @@ namespace blink {
 
 class KURL;
 class WebDocumentLoader;
+class WebLocalFrame;
 
 // This structure holds all information collected by Blink when
 // navigation is being initiated.
@@ -62,8 +65,8 @@ struct BLINK_EXPORT WebNavigationInfo {
 
   // The frame type. This must not be kNone. See RequestContextFrameType.
   // TODO(dgozman): enforce this is not kNone.
-  network::mojom::RequestContextFrameType frame_type =
-      network::mojom::RequestContextFrameType::kNone;
+  mojom::RequestContextFrameType frame_type =
+      mojom::RequestContextFrameType::kNone;
 
   // The navigation type. See WebNavigationType.
   WebNavigationType navigation_type = kWebNavigationTypeOther;
@@ -85,8 +88,15 @@ struct BLINK_EXPORT WebNavigationInfo {
   // Whether the navigation is a result of client redirect.
   bool is_client_redirect = false;
 
+  // WebLocalFrame that initiated this navigation request. May be null for
+  // navigations that are not associated with a frame. Storing this pointer is
+  // dangerous, it should be verified by comparing against a set of known active
+  // frames before direct use.
+  WebLocalFrame* initiator_frame;
+
   // Whether the navigation initiator frame has the
-  // |WebSandboxFlags::kDownloads| bit set in its sandbox flags set.
+  // |network::mojom::blink::WebSandboxFlags::kDownloads| bit set in its sandbox
+  // flags set.
   bool initiator_frame_has_download_sandbox_flag = false;
 
   // Whether the navigation initiator frame is an ad frame.
@@ -112,11 +122,10 @@ struct BLINK_EXPORT WebNavigationInfo {
   // The initiator of this navigation used by DevTools.
   WebString devtools_initiator_info;
 
-  // Whether this navigation should check CSP. See
-  // WebContentSecurityPolicyDisposition.
-  WebContentSecurityPolicyDisposition
+  // Whether this navigation should check CSP.
+  network::mojom::CSPDisposition
       should_check_main_world_content_security_policy =
-          kWebContentSecurityPolicyDispositionCheck;
+          network::mojom::CSPDisposition::CHECK;
 
   // When navigating to a blob url, this token specifies the blob.
   mojo::ScopedMessagePipeHandle blob_url_token;
@@ -127,10 +136,15 @@ struct BLINK_EXPORT WebNavigationInfo {
 
   // This is the navigation relevant CSP to be used during request and response
   // checks.
-  WebContentSecurityPolicyList initiator_csp;
+  WebVector<WebContentSecurityPolicy> initiator_csp;
+
+  // The navigation initiator source to be used when comparing an URL against
+  // 'self'.
+  WebContentSecurityPolicySourceExpression initiator_self_source;
 
   // The navigation initiator, if any.
-  mojo::ScopedMessagePipeHandle navigation_initiator_handle;
+  CrossVariantMojoRemote<mojom::NavigationInitiatorInterfaceBase>
+      navigation_initiator_remote;
 
   // Specifies whether or not a MHTML Archive can be used to load a subframe
   // resource instead of doing a network request.
@@ -144,6 +158,11 @@ struct BLINK_EXPORT WebNavigationInfo {
   // The value of hrefTranslate attribute of a link, if this navigation was
   // inititated by clicking a link.
   WebString href_translate;
+
+  // Optional impression associated with this navigation. This is attached when
+  // a navigation results from a click on an anchor tag that has conversion
+  // measurement attributes.
+  base::Optional<WebImpression> impression;
 
   // The navigation initiator's address space.
   network::mojom::IPAddressSpace initiator_address_space =
@@ -357,13 +376,17 @@ struct BLINK_EXPORT WebNavigationParams {
   // Used as an additional identifier for MemoryCache.
   WebURL web_bundle_physical_url;
 
-  // The base URL which will be set for the document to support relative path
-  // subresource loading in an unsigned Web Bundle file.
-  WebURL base_url_override_for_web_bundle;
+  // The claimed URL inside Web Bundle file from which the document is loaded.
+  // This URL is used for window.location and document.URL and relative path
+  // computation in the document.
+  WebURL web_bundle_claimed_url;
 
   // The frame policy specified by the frame owner element.
   // Should be base::nullopt for top level navigations
   base::Optional<FramePolicy> frame_policy;
+
+  // A list of origin trial names to enable for the document being loaded.
+  WebVector<WebString> force_enabled_origin_trials;
 };
 
 }  // namespace blink

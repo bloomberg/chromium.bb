@@ -6,4 +6,4 @@
 # git_upstream_diff.py -- Provide the diff between the current branch and its
 # upstream.
 
-. $(type -P python_runner.sh)
+. "$(type -P python_runner.sh)"

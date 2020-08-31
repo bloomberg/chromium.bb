@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
 import json
 import logging
 import os
 import socket
 import sys
-import urlparse
 import re
 
 import requests
@@ -210,12 +210,14 @@ def process_argparse_options(args):
   if args.ts_mon_target_type == 'task':
     # Reimplement ArgumentParser.error, since we don't have access to the parser
     if not args.ts_mon_task_service_name:
-      print >> sys.stderr, ('Argument --ts-mon-task-service-name must be '
-                            'provided when the target type is "task".')
+      print('Argument --ts-mon-task-service-name must be provided '
+            'when the target type is "task".',
+            file=sys.stderr)
       sys.exit(2)
     if not args.ts_mon_task_job_name:
-      print >> sys.stderr, ('Argument --ts-mon-task-job-name must be provided '
-                            'when the target type is "task".')
+      print('Argument --ts-mon-task-job-name must be provided '
+            'when the target type is "task".',
+            file=sys.stderr)
       sys.exit(2)
     hostname = args.ts_mon_task_hostname
     if args.ts_mon_autogen_hostname or autogen_hostname:
@@ -251,4 +253,3 @@ def process_argparse_options(args):
     interface.state.flush_thread.start()
 
   standard_metrics.init()
-

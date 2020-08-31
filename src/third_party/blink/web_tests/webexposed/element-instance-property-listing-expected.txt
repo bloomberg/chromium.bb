@@ -41,7 +41,8 @@ namespace http://www.w3.org/1999/xhtml
     property ariaControlsElements
     property ariaCurrent
     property ariaDescribedByElements
-    property ariaDetailsElement
+    property ariaDescription
+    property ariaDetailsElements
     property ariaDisabled
     property ariaErrorMessageElement
     property ariaExpanded
@@ -69,6 +70,7 @@ namespace http://www.w3.org/1999/xhtml
     property ariaRowIndex
     property ariaRowSpan
     property ariaSelected
+    property ariaSetSize
     property ariaSort
     property ariaValueMax
     property ariaValueMin
@@ -124,6 +126,7 @@ namespace http://www.w3.org/1999/xhtml
     property getElementsByClassName
     property getElementsByTagName
     property getElementsByTagNameNS
+    property getInnerHTML
     property getRootNode
     property hasAttribute
     property hasAttributeNS
@@ -140,7 +143,6 @@ namespace http://www.w3.org/1999/xhtml
     property insertAdjacentHTML
     property insertAdjacentText
     property insertBefore
-    property invisible
     property isConnected
     property isContentEditable
     property isDefaultNamespace
@@ -167,14 +169,15 @@ namespace http://www.w3.org/1999/xhtml
     property offsetTop
     property offsetWidth
     property onabort
-    property onactivateinvisible
     property onanimationend
     property onanimationiteration
     property onanimationstart
     property onauxclick
     property onbeforecopy
     property onbeforecut
+    property onbeforematch
     property onbeforepaste
+    property onbeforexrselect
     property onblur
     property oncancel
     property oncanplay
@@ -260,8 +263,12 @@ namespace http://www.w3.org/1999/xhtml
     property ontransitionend
     property onvolumechange
     property onwaiting
+    property onwebkitanimationend
+    property onwebkitanimationiteration
+    property onwebkitanimationstart
     property onwebkitfullscreenchange
     property onwebkitfullscreenerror
+    property onwebkittransitionend
     property onwheel
     property outerHTML
     property outerText
@@ -282,12 +289,10 @@ namespace http://www.w3.org/1999/xhtml
     property removeAttributeNode
     property removeChild
     property removeEventListener
-    property renderSubtree
     property replaceChild
     property replaceWith
     property requestFullscreen
     property requestPointerLock
-    property resetSubtreeRendered
     property role
     property scroll
     property scrollBy
@@ -314,7 +319,6 @@ namespace http://www.w3.org/1999/xhtml
     property toString
     property toggleAttribute
     property translate
-    property updateRendering
     property webkitMatchesSelector
     property webkitRequestFullScreen
     property webkitRequestFullscreen
@@ -457,6 +461,7 @@ html element body
     property onportalactivate
     property onrejectionhandled
     property onstorage
+    property ontimezonechange
     property onunhandledrejection
     property onunload
     property text
@@ -609,6 +614,7 @@ html element frameset
     property onportalactivate
     property onrejectionhandled
     property onstorage
+    property ontimezonechange
     property onunhandledrejection
     property onunload
     property rows
@@ -654,11 +660,13 @@ html element iframe
     property marginHeight
     property marginWidth
     property name
+    property policy
     property referrerPolicy
     property sandbox
     property scrolling
     property src
     property srcdoc
+    property trustToken
     property width
 html element img
     property align
@@ -719,6 +727,7 @@ html element input
     property name
     property pattern
     property placeholder
+    property rawValue
     property readOnly
     property reportValidity
     property required
@@ -1139,7 +1148,7 @@ html element video
     property autoplay
     property buffered
     property canPlayType
-    property cancelAnimationFrame
+    property cancelVideoFrameCallback
     property captureStream
     property controls
     property controlsList
@@ -1175,8 +1184,8 @@ html element video
     property preload
     property readyState
     property remote
-    property requestAnimationFrame
     property requestPictureInPicture
+    property requestVideoFrameCallback
     property seekable
     property seeking
     property setMediaKeys
@@ -1241,7 +1250,8 @@ namespace http://www.w3.org/2000/svg
     property ariaControlsElements
     property ariaCurrent
     property ariaDescribedByElements
-    property ariaDetailsElement
+    property ariaDescription
+    property ariaDetailsElements
     property ariaDisabled
     property ariaErrorMessageElement
     property ariaExpanded
@@ -1269,6 +1279,7 @@ namespace http://www.w3.org/2000/svg
     property ariaRowIndex
     property ariaRowSpan
     property ariaSelected
+    property ariaSetSize
     property ariaSort
     property ariaValueMax
     property ariaValueMin
@@ -1317,6 +1328,7 @@ namespace http://www.w3.org/2000/svg
     property getElementsByClassName
     property getElementsByTagName
     property getElementsByTagNameNS
+    property getInnerHTML
     property getRootNode
     property hasAttribute
     property hasAttributeNS
@@ -1329,7 +1341,6 @@ namespace http://www.w3.org/2000/svg
     property insertAdjacentHTML
     property insertAdjacentText
     property insertBefore
-    property invisible
     property isConnected
     property isDefaultNamespace
     property isEqualNode
@@ -1349,14 +1360,15 @@ namespace http://www.w3.org/2000/svg
     property nonce
     property normalize
     property onabort
-    property onactivateinvisible
     property onanimationend
     property onanimationiteration
     property onanimationstart
     property onauxclick
     property onbeforecopy
     property onbeforecut
+    property onbeforematch
     property onbeforepaste
+    property onbeforexrselect
     property onblur
     property oncancel
     property oncanplay
@@ -1442,8 +1454,12 @@ namespace http://www.w3.org/2000/svg
     property ontransitionend
     property onvolumechange
     property onwaiting
+    property onwebkitanimationend
+    property onwebkitanimationiteration
+    property onwebkitanimationstart
     property onwebkitfullscreenchange
     property onwebkitfullscreenerror
+    property onwebkittransitionend
     property onwheel
     property outerHTML
     property ownerDocument
@@ -1464,12 +1480,10 @@ namespace http://www.w3.org/2000/svg
     property removeAttributeNode
     property removeChild
     property removeEventListener
-    property renderSubtree
     property replaceChild
     property replaceWith
     property requestFullscreen
     property requestPointerLock
-    property resetSubtreeRendered
     property role
     property scroll
     property scrollBy
@@ -1492,7 +1506,6 @@ namespace http://www.w3.org/2000/svg
     property tagName
     property textContent
     property toggleAttribute
-    property updateRendering
     property viewportElement
     property webkitMatchesSelector
     property webkitRequestFullScreen
@@ -1588,7 +1601,6 @@ svg element defs
     property systemLanguage
     property transform
 svg element desc
-svg element discard
 svg element ellipse
     property cx
     property cy

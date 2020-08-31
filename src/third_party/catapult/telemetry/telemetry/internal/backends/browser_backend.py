@@ -13,10 +13,12 @@ import time
 from py_utils import cloud_storage  # pylint: disable=import-error
 
 from telemetry import decorators
+from telemetry.core import debug_data
 from telemetry.core import exceptions
 from telemetry.internal.backends import app_backend
 from telemetry.internal.browser import web_contents
 from telemetry.internal.results import artifact_logger
+from telemetry.util import screenshot
 
 
 class ExtensionsNotSupportedException(Exception):
@@ -114,45 +116,171 @@ class BrowserBackend(app_backend.AppBackend):
     pass
 
   def CollectDebugData(self, log_level):
-    """Attempts to symbolize all currently unsymbolized minidumps and log them.
+    """Collects various information that may be useful for debugging.
 
-    Platforms may override this to provide other crash information in addition
-    to the symbolized minidumps.
+    Specifically:
+      1. Captures a screenshot.
+      2. Collects stdout and system logs.
+      3. Attempts to symbolize all currently unsymbolized minidumps.
+
+    All collected information is stored as artifacts, and everything but the
+    screenshot is also included in the return value.
+
+    Platforms may override this to provide other debug information in addition
+    to the above set of information.
 
     Args:
       log_level: The logging level to use from the logging module, e.g.
           logging.ERROR.
+
+    Returns:
+      A debug_data.DebugData object containing the collected data.
+    """
+    suffix = artifact_logger.GetTimestampSuffix()
+    data = debug_data.DebugData()
+    self._CollectScreenshot(log_level, suffix)
+    self._CollectSystemLog(log_level, suffix, data)
+    self._CollectStdout(log_level, suffix, data)
+    self._SymbolizeAndLogMinidumps(log_level, data)
+    return data
+
+  def _CollectScreenshot(self, log_level, suffix):
+    """Helper function to handle the screenshot portion of CollectDebugData.
+
+    Attempts to take a screenshot at the OS level and save it as an artifact.
+
+    Args:
+      log_level: The logging level to use from the logging module, e.g.
+          logging.ERROR.
+      suffix: The suffix to append to the names of any created artifacts.
+    """
+    screenshot_handle = screenshot.TryCaptureScreenShot(self.browser.platform)
+    if screenshot_handle:
+      with open(screenshot_handle.GetAbsPath(), 'rb') as infile:
+        artifact_name = posixpath.join(
+            'debug_screenshots', 'screenshot-%s' % suffix)
+        logging.log(
+            log_level, 'Saving screenshot as artifact %s', artifact_name)
+        artifact_logger.CreateArtifact(artifact_name, infile.read())
+    else:
+      logging.log(log_level, 'Failed to capture screenshot')
+
+  def _CollectSystemLog(self, log_level, suffix, data):
+    """Helper function to handle the system log part of CollectDebugData.
+
+    Attempts to retrieve the system log, save it as an artifact, and add it to
+    the given DebugData object.
+
+    Args:
+      log_level: The logging level to use from the logging module, e.g.
+          logging.ERROR.
+      suffix: The suffix to append to the names of any created artifacts.
+      data: The debug_data.DebugData object to add collected data to.
+    """
+    system_log = self.browser.platform.GetSystemLog()
+    if system_log is None:
+      logging.log(log_level, 'Platform did not provide a system log')
+      return
+    artifact_name = posixpath.join('system_logs', 'system_log-%s' % suffix)
+    logging.log(log_level, 'Saving system log as artifact %s', artifact_name)
+    artifact_logger.CreateArtifact(artifact_name, system_log)
+    data.system_log = system_log
+
+  def _CollectStdout(self, log_level, suffix, data):
+    """Helper function to handle the stdout part of CollectDebugData.
+
+    Attempts to retrieve stdout, save it as an artifact, and add it to the given
+    DebugData object.
+
+    Args:
+      log_level: The logging level to use from the logging module, e.g.
+          logging.ERROR.
+      suffix: The suffix to append to the names of any created artifacts.
+      data: The debug_data.DebugData object to add collected data to.
+    """
+    stdout = self.browser.GetStandardOutput()
+    if stdout is None:
+      logging.log(log_level, 'Browser did not provide stdout')
+      return
+    artifact_name = posixpath.join('stdout', 'stdout-%s' % suffix)
+    logging.log(log_level, 'Saving stdout as artifact %s', artifact_name)
+    artifact_logger.CreateArtifact(artifact_name, stdout)
+    data.stdout = stdout
+
+  def _SymbolizeAndLogMinidumps(self, log_level, data):
+    """Helper function to handle the minidump portion of CollectDebugData.
+
+    Attempts to find all unsymbolized minidumps, symbolize them, save the
+    results as artifacts, add them to the given DebugData object, and log the
+    results.
+
+    Args:
+      log_level: The logging level to use from the logging module, e.g.
+          logging.ERROR.
+      data: The debug_data.DebugData object to add collected data to.
     """
     paths = self.GetAllUnsymbolizedMinidumpPaths()
+    # It's probable that CollectDebugData() is being called in response to a
+    # crash. Minidumps are usually written to disk in time, but there's no
+    # guarantee that is the case. So, if we don't find any minidumps, poll for
+    # a bit to ensure we don't miss them.
+    if not paths:
+      self.browser.GetRecentMinidumpPathWithTimeout(5)
+      paths = self.GetAllUnsymbolizedMinidumpPaths()
     if not paths:
       logging.log(log_level, 'No unsymbolized minidump paths')
       return
     logging.log(log_level, 'Unsymbolized minidump paths: ' + str(paths))
     for unsymbolized_path in paths:
+      minidump_name = os.path.basename(unsymbolized_path)
+      artifact_name = posixpath.join('unsymbolized_minidumps', minidump_name)
+      logging.log(log_level, 'Saving minidump as artifact %s', artifact_name)
+      with open(unsymbolized_path, 'rb') as infile:
+        artifact_logger.CreateArtifact(artifact_name, infile.read())
       valid, output = self.SymbolizeMinidump(unsymbolized_path)
       # Store the symbolization attempt as an artifact.
-      minidump_name = os.path.basename(unsymbolized_path)
       artifact_name = posixpath.join('symbolize_attempts', minidump_name)
       logging.log(log_level, 'Saving symbolization attempt as artifact %s',
                   artifact_name)
       artifact_logger.CreateArtifact(artifact_name, output)
       if valid:
         logging.log(log_level, 'Symbolized minidump:\n%s', output)
+        data.symbolized_minidumps.append(output)
       else:
         logging.log(
             log_level,
             'Minidump symbolization failed, check artifact %s for output',
             artifact_name)
 
-  def GetStackTrace(self):
-    """Gets a stack trace if a valid minidump is found.
+  def CleanupUnsymbolizedMinidumps(self, fatal=False):
+    """Cleans up any unsymbolized minidumps so they aren't found later.
 
-    Returns:
-      A tuple (valid, output). |valid| is True if a valid minidump was found or
-      False otherwise. |output| contains an error message if |valid| is False,
-      otherwise it contains the output of the minidump symbolization process.
+    Args:
+      fatal: Whether the presence of unsymbolized minidumps should be considered
+          a fatal error or not. Typically, before a test should be non-fatal,
+          while after a test should be fatal.
     """
-    raise NotImplementedError()
+    log_level = logging.ERROR if fatal else logging.WARNING
+    unsymbolized_paths = self.GetAllUnsymbolizedMinidumpPaths(log=False)
+    if not unsymbolized_paths:
+      return
+
+    culprit_test = 'current test' if fatal else 'a previous test'
+    logging.log(log_level,
+                'Found %d unsymbolized minidumps leftover from %s. Outputting '
+                'below: ', len(unsymbolized_paths), culprit_test)
+    self._SymbolizeAndLogMinidumps(log_level, debug_data.DebugData())
+    if fatal:
+      raise RuntimeError(
+          'Test left unsymbolized minidumps around after finishing.')
+
+  def IgnoreMinidump(self, path):
+    """Ignores the given minidump, treating it as already symbolized.
+
+    Args:
+      path: The path to the minidump to ignore.
+    """
+    self._symbolized_minidump_paths.add(path)
 
   def GetMostRecentMinidumpPath(self):
     """Gets the most recent minidump that has been written to disk.
@@ -200,8 +328,11 @@ class BrowserBackend(app_backend.AppBackend):
     finally:
       logging.info('\n'.join(explanation))
 
-  def GetAllMinidumpPaths(self):
+  def GetAllMinidumpPaths(self, log=True):
     """Get all paths to minidumps currently written to disk.
+
+    Args:
+      log: Whether to log the output from looking for minidumps or not.
 
     Returns:
       A list of paths to all found minidumps.
@@ -209,16 +340,20 @@ class BrowserBackend(app_backend.AppBackend):
     self.PullMinidumps()
     paths, explanation = self._dump_finder.GetAllMinidumpPaths(
         self._tmp_minidump_dir)
-    logging.info('\n'.join(explanation))
+    if log:
+      logging.info('\n'.join(explanation))
     return paths
 
-  def GetAllUnsymbolizedMinidumpPaths(self):
+  def GetAllUnsymbolizedMinidumpPaths(self, log=True):
     """Get all paths to minidumps have have not yet been symbolized.
+
+    Args:
+      log: Whether to log the output from looking for minidumps or not.
 
     Returns:
       A list of paths to all found minidumps that have not been symbolized yet.
     """
-    minidump_paths = set(self.GetAllMinidumpPaths())
+    minidump_paths = set(self.GetAllMinidumpPaths(log=log))
     # If we have already symbolized paths remove them from the list
     unsymbolized_paths = (
         minidump_paths - self._symbolized_minidump_paths)

@@ -8,7 +8,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.List;
@@ -19,16 +19,6 @@ import java.util.List;
  * be using.
  */
 public interface TabModelSelector {
-    /**
-     * @param tab The Tab to get its {@link TabModelSelector} from.
-     * @return {@link TabModelSelector} that currently hosts the {@link TabModel} for this
-     *         {@link Tab}.
-     */
-    public static TabModelSelector from(Tab tab) {
-        if (tab == null || ((TabImpl) tab).getActivity() == null) return null;
-        return ((TabImpl) tab).getActivity().getTabModelSelector();
-    }
-
     /**
      * A delegate interface to push close all tabs requests.
      */
@@ -184,6 +174,18 @@ public interface TabModelSelector {
      * Merges the tab states from two tab models.
      */
     void mergeState();
+
+    /**
+     * Prevents the TabModelSelector from destroying its tabs to allow for reparenting.
+     *
+     * This is only safe to be called immediately before destruction. After entering reparenting
+     * mode, all the tabs are removed and stored in memory and on disk. The app is recreated right
+     * after, so there should never be a need to "exit" reparenting mode.
+     */
+    void enterReparentingMode();
+
+    /** Returns whether reparenting is in progress. */
+    boolean isReparentingInProgress();
 
     /**
      * Destroy all owned {@link TabModel}s and {@link Tab}s referenced by this selector.

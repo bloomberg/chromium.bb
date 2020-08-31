@@ -197,8 +197,8 @@ class JobState(object):
     """Compares every pair of Changes and yields ones with different results.
 
     This method loops through every pair of adjacent Changes. If they have
-    statistically different results, this method yields the latter one (which is
-    assumed to have caused the difference).
+    statistically different results, this method yields that pair.  (The second
+    element of each returned pair is assumed to have caused the difference).
 
     Returns:
       A list of tuples: [(Change_before, Change_after), ...]
@@ -295,8 +295,11 @@ class JobState(object):
             comparison_magnitude = 0.5
         else:
           comparison_magnitude = 1.0
-        comparison = compare.Compare(exceptions_a, exceptions_b, attempt_count,
-                                     FUNCTIONAL, comparison_magnitude)
+        comparison, p_value, low_threshold, high_threshold = compare.Compare(
+            exceptions_a, exceptions_b, attempt_count, FUNCTIONAL,
+            comparison_magnitude)
+        logging.debug('p-value = %.4f (low = %.4f, high = %.4f)', p_value,
+                      low_threshold, high_threshold)
         if comparison == compare.DIFFERENT:
           return compare.DIFFERENT
         elif comparison == compare.UNKNOWN:
@@ -323,8 +326,11 @@ class JobState(object):
           comparison_magnitude = 1.0
 
         sample_count = (len(all_a_values) + len(all_b_values)) // 2
-        comparison = compare.Compare(all_a_values, all_b_values, sample_count,
-                                     PERFORMANCE, comparison_magnitude)
+        comparison, p_value, low_threshold, high_threshold = compare.Compare(
+            all_a_values, all_b_values, sample_count, PERFORMANCE,
+            comparison_magnitude)
+        logging.debug('p-value = %.4f (low = %.4f, high = %.4f)', p_value,
+                      low_threshold, high_threshold)
         if comparison == compare.DIFFERENT:
           return compare.DIFFERENT
         elif comparison == compare.UNKNOWN:
@@ -353,6 +359,9 @@ class JobState(object):
           result_values += attempt.executions[quest_index].result_values
 
     return result_values
+
+  def ChangesExamined(self):
+    return len(self._changes)
 
 
 def _ExecutionsPerQuest(attempts):

@@ -11,9 +11,7 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
-namespace ios {
 class ChromeBrowserState;
-}
 
 namespace translate {
 
@@ -24,7 +22,7 @@ class TranslateRanker;
 class TranslateRankerFactory : public BrowserStateKeyedServiceFactory {
  public:
   static translate::TranslateRanker* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
   static TranslateRankerFactory* GetInstance();
 
  private:

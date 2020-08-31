@@ -16,12 +16,17 @@
 
 #include "common/Constants.h"
 #include "utils/ComboRenderPipelineDescriptor.h"
+#include "utils/TextureFormatUtils.h"
 #include "utils/WGPUHelpers.h"
 
 namespace {
 
 class TextureValidationTest : public ValidationTest {
   protected:
+    void SetUp() override {
+        queue = device.GetDefaultQueue();
+    }
+
     wgpu::TextureDescriptor CreateDefaultTextureDescriptor() {
         wgpu::TextureDescriptor descriptor;
         descriptor.size.width = kWidth;
@@ -36,7 +41,7 @@ class TextureValidationTest : public ValidationTest {
         return descriptor;
     }
 
-    wgpu::Queue queue = device.CreateQueue();
+    wgpu::Queue queue;
 
   private:
     static constexpr uint32_t kWidth = 32;
@@ -90,6 +95,15 @@ TEST_F(TextureValidationTest, SampleCount) {
         wgpu::TextureDescriptor descriptor = defaultDescriptor;
         descriptor.sampleCount = 4;
         descriptor.arrayLayerCount = 2;
+
+        ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
+    }
+
+    // It is an error to set TextureUsage::Storage when sampleCount > 1.
+    {
+        wgpu::TextureDescriptor descriptor = defaultDescriptor;
+        descriptor.sampleCount = 4;
+        descriptor.usage |= wgpu::TextureUsage::Storage;
 
         ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
     }
@@ -169,6 +183,76 @@ TEST_F(TextureValidationTest, MipLevelCount) {
         descriptor.size.height = 8;
         // Mip maps: 32 * 8, 16 * 4, 8 * 2, 4 * 1, 2 * 1, 1 * 1
         descriptor.mipLevelCount = 6;
+
+        device.CreateTexture(&descriptor);
+    }
+
+    // Mip level exceeding kMaxTexture2DMipLevels not allowed
+    {
+        wgpu::TextureDescriptor descriptor = defaultDescriptor;
+        descriptor.size.width = 1 >> kMaxTexture2DMipLevels;
+        descriptor.size.height = 1 >> kMaxTexture2DMipLevels;
+        descriptor.mipLevelCount = kMaxTexture2DMipLevels + 1u;
+
+        ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
+    }
+}
+// Test the validation of array layer count
+TEST_F(TextureValidationTest, ArrayLayerCount) {
+    wgpu::TextureDescriptor defaultDescriptor = CreateDefaultTextureDescriptor();
+
+    // Array layer count exceeding kMaxTexture2DArrayLayers is not allowed
+    {
+        wgpu::TextureDescriptor descriptor = defaultDescriptor;
+        descriptor.arrayLayerCount = kMaxTexture2DArrayLayers + 1u;
+
+        ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
+    }
+
+    // Array layer count less than kMaxTexture2DArrayLayers is allowed;
+    {
+        wgpu::TextureDescriptor descriptor = defaultDescriptor;
+        descriptor.arrayLayerCount = kMaxTexture2DArrayLayers >> 1;
+
+        device.CreateTexture(&descriptor);
+    }
+
+    // Array layer count equal to kMaxTexture2DArrayLayers is allowed;
+    {
+        wgpu::TextureDescriptor descriptor = defaultDescriptor;
+        descriptor.arrayLayerCount = kMaxTexture2DArrayLayers;
+
+        device.CreateTexture(&descriptor);
+    }
+}
+
+// Test the validation of texture size
+TEST_F(TextureValidationTest, TextureSize) {
+    wgpu::TextureDescriptor defaultDescriptor = CreateDefaultTextureDescriptor();
+
+    // Texture size exceeding kMaxTextureSize is not allowed
+    {
+        wgpu::TextureDescriptor descriptor = defaultDescriptor;
+        descriptor.size.width = kMaxTextureSize + 1u;
+        descriptor.size.height = kMaxTextureSize + 1u;
+
+        ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
+    }
+
+    // Texture size less than kMaxTextureSize is allowed
+    {
+        wgpu::TextureDescriptor descriptor = defaultDescriptor;
+        descriptor.size.width = kMaxTextureSize >> 1;
+        descriptor.size.height = kMaxTextureSize >> 1;
+
+        device.CreateTexture(&descriptor);
+    }
+
+    // Texture equal to kMaxTextureSize is allowed
+    {
+        wgpu::TextureDescriptor descriptor = defaultDescriptor;
+        descriptor.size.width = kMaxTextureSize;
+        descriptor.size.height = kMaxTextureSize;
 
         device.CreateTexture(&descriptor);
     }
@@ -256,6 +340,23 @@ TEST_F(TextureValidationTest, NonRenderableAndOutputAttachment) {
         // Fails because `format` is non-renderable
         descriptor.format = format;
         ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
+    }
+}
+
+// Test it is an error to create a Storage texture with any format that doesn't support
+// TextureUsage::Storage texture usages.
+TEST_F(TextureValidationTest, TextureFormatNotSupportTextureUsageStorage) {
+    wgpu::TextureDescriptor descriptor;
+    descriptor.size = {1, 1, 1};
+    descriptor.usage = wgpu::TextureUsage::Storage;
+
+    for (wgpu::TextureFormat format : utils::kAllTextureFormats) {
+        descriptor.format = format;
+        if (utils::TextureFormatSupportsStorageTexture(format)) {
+            device.CreateTexture(&descriptor);
+        } else {
+            ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
+        }
     }
 }
 

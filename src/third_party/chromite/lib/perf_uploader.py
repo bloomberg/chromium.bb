@@ -25,6 +25,7 @@ import math
 import os
 import re
 import string
+import sys
 
 from six.moves import http_client as httplib
 from six.moves import urllib
@@ -32,6 +33,9 @@ from six.moves import urllib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import retry_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Clearly mark perf values coming from chromite by default.
@@ -335,14 +339,14 @@ def _SendToDashboard(data_obj, dashboard=DASHBOARD_URL):
     PerfUploadingError if an exception was raised when uploading.
   """
   upload_url = os.path.join(dashboard, 'add_point')
-  encoded = urllib.parse.urlencode(data_obj)
+  encoded = urllib.parse.urlencode(data_obj).encode('utf-8')
   req = urllib.request.Request(upload_url, encoded)
   try:
     urllib.request.urlopen(req)
   except urllib.error.HTTPError as e:
     raise PerfUploadingError('HTTPError: %d %s for JSON %s\n' %
                              (e.code, e.msg, data_obj['data']), e)
-  except urllib.parse.URLError as e:
+  except urllib.error.URLError as e:
     raise PerfUploadingError('URLError: %s for JSON %s\n' %
                              (str(e.reason), data_obj['data']), e)
   except httplib.HTTPException as e:
@@ -423,8 +427,13 @@ def _RetryIfServerError(perf_exc):
   Returns:
     True if the cause of |perf_exc| is HTTP 5xx error.
   """
-  return (isinstance(perf_exc.orig_exc, urllib.error.HTTPError) and
-          perf_exc.orig_exc.code >= 500)
+  # If the exception is one we packaged, see if we want to retry.
+  # Otherwise if something else went wrong, give up right away.
+  if isinstance(perf_exc, PerfUploadingError):
+    return (isinstance(perf_exc.orig_exc, urllib.error.HTTPError) and
+            perf_exc.orig_exc.code >= 500)
+  else:
+    return False
 
 
 def UploadPerfValues(perf_values, platform_name, test_name, revision=None,
@@ -485,7 +494,8 @@ def UploadPerfValues(perf_values, platform_name, test_name, revision=None,
                                       test_prefix=test_prefix,
                                       platform_prefix=platform_prefix)
     if dry_run:
-      logging.debug('UploadPerfValues: skipping upload due to dry-run')
+      logging.debug('UploadPerfValues: skipping upload due to dry-run\n%s',
+                    formatted_data)
     else:
       retry_util.GenericRetry(_RetryIfServerError, 3, _SendToDashboard,
                               formatted_data, dashboard=dashboard)

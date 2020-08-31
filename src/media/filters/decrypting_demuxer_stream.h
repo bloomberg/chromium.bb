@@ -43,13 +43,13 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   // |stream| must be encrypted and |cdm_context| must be non-null.
   void Initialize(DemuxerStream* stream,
                   CdmContext* cdm_context,
-                  const PipelineStatusCB& status_cb);
+                  PipelineStatusCallback status_cb);
 
   // Cancels all pending operations and fires all pending callbacks. If in
   // kPendingDemuxerRead or kPendingDecrypt state, waits for the pending
   // operation to finish before satisfying |closure|. Sets the state to
   // kUninitialized if |this| hasn't been initialized, or to kIdle otherwise.
-  void Reset(const base::Closure& closure);
+  void Reset(base::OnceClosure closure);
 
   // Returns the name of this class for logging purpose.
   std::string GetDisplayName() const;
@@ -149,9 +149,9 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
 
   State state_ = kUninitialized;
 
-  PipelineStatusCB init_cb_;
+  PipelineStatusCallback init_cb_;
   ReadCB read_cb_;
-  base::Closure reset_cb_;
+  base::OnceClosure reset_cb_;
 
   // Pointer to the input demuxer stream that will feed us encrypted buffers.
   DemuxerStream* demuxer_stream_ = nullptr;

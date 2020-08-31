@@ -1,10 +1,15 @@
 // Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Common from '../common/common.js';
+
+import * as SDK from '../sdk/sdk.js';
+
 /**
  * @unrestricted
  */
-export default class RemoteObjectPreviewFormatter {
+export class RemoteObjectPreviewFormatter {
   /**
    * @param {!Protocol.Runtime.PropertyPreview} a
    * @param {!Protocol.Runtime.PropertyPreview} b
@@ -22,13 +27,15 @@ export default class RemoteObjectPreviewFormatter {
       const internalName = _internalName;
       if (property.name === internalName.PromiseStatus) {
         return 1;
-      } else if (property.name === internalName.PromiseValue) {
+      }
+      if (property.name === internalName.PromiseValue) {
         return 2;
-      } else if (property.name === internalName.GeneratorStatus || property.name === internalName.PrimitiveValue) {
+      }
+      if (property.name === internalName.GeneratorStatus || property.name === internalName.PrimitiveValue) {
         return 3;
       }
       // TODO(einbinder) expose whether preview properties are actually private.
-      else if (property.type !== 'function' && !property.name.startsWith('#')) {
+      if (property.type !== 'function' && !property.name.startsWith('#')) {
         return 4;
       }
       return 5;
@@ -51,9 +58,9 @@ export default class RemoteObjectPreviewFormatter {
     if (description) {
       let text;
       if (isArrayOrTypedArray) {
-        const arrayLength = SDK.RemoteObject.arrayLength(preview);
+        const arrayLength = SDK.RemoteObject.RemoteObject.arrayLength(preview);
         const arrayLengthText = arrayLength > 1 ? ('(' + arrayLength + ')') : '';
-        const arrayName = SDK.RemoteObject.arrayNameFromDescription(description);
+        const arrayName = SDK.RemoteObject.RemoteObject.arrayNameFromDescription(description);
         text = arrayName === 'Array' ? arrayLengthText : (arrayName + arrayLengthText);
       } else {
         const hideDescription = description === 'Object';
@@ -74,7 +81,7 @@ export default class RemoteObjectPreviewFormatter {
       this._appendObjectPropertiesPreview(propertiesElement, preview);
     }
     if (preview.overflow) {
-      const ellipsisText = propertiesElement.textContent.length > 1 ? ',\xA0\u2026' : '\u2026';
+      const ellipsisText = propertiesElement.textContent.length > 1 ? ',\xA0…' : '…';
       propertiesElement.createChild('span').textContent = ellipsisText;
     }
     propertiesElement.createTextChild(isArrayOrTypedArray ? ']' : '}');
@@ -135,7 +142,7 @@ export default class RemoteObjectPreviewFormatter {
    * @param {!Protocol.Runtime.ObjectPreview} preview
    */
   _appendArrayPropertiesPreview(parentElement, preview) {
-    const arrayLength = SDK.RemoteObject.arrayLength(preview);
+    const arrayLength = SDK.RemoteObject.RemoteObject.arrayLength(preview);
     const indexProperties = preview.properties.filter(p => toArrayIndex(p.name) !== -1).sort(arrayEntryComparator);
     const otherProperties = preview.properties.filter(p => toArrayIndex(p.name) === -1)
                                 .sort(RemoteObjectPreviewFormatter._objectPropertyComparator);
@@ -210,7 +217,8 @@ export default class RemoteObjectPreviewFormatter {
     function appendUndefined(index) {
       const span = parentElement.createChild('span', 'object-value-undefined');
       const count = index - lastNonEmptyArrayIndex - 1;
-      span.textContent = count !== 1 ? Common.UIString('empty × %d', count) : Common.UIString('empty');
+      span.textContent =
+          count !== 1 ? Common.UIString.UIString('empty × %d', count) : Common.UIString.UIString('empty');
       elementsAdded = true;
     }
   }
@@ -239,7 +247,8 @@ export default class RemoteObjectPreviewFormatter {
    * @return {!Element}
    */
   _renderDisplayName(name) {
-    const result = createElementWithClass('span', 'name');
+    const result = document.createElement('span');
+    result.classList.add('name');
     const needsQuotes = /^\s|\s$|^$|\n/.test(name);
     result.textContent = needsQuotes ? '"' + name.replace(/\n/g, '\u21B5') + '"' : name;
     return result;
@@ -261,12 +270,13 @@ export default class RemoteObjectPreviewFormatter {
    * @return {!Element}
    */
   renderPropertyPreview(type, subtype, description) {
-    const span = createElementWithClass('span', 'object-value-' + (subtype || type));
+    const span = document.createElement('span');
+    span.classList.add('object-value-' + (subtype || type));
     description = description || '';
 
     if (type === 'accessor') {
       span.textContent = '(...)';
-      span.title = Common.UIString('The property is computed with a getter');
+      span.title = Common.UIString.UIString('The property is computed with a getter');
       return span;
     }
 
@@ -288,7 +298,7 @@ export default class RemoteObjectPreviewFormatter {
     if (type === 'object' && !subtype) {
       let preview = this._abbreviateFullQualifiedClassName(description);
       if (preview === 'Object') {
-        preview = '{\u2026}';
+        preview = '{…}';
       }
       span.textContent = preview;
       span.title = description;
@@ -322,18 +332,3 @@ export const createSpansForNodeTitle = function(container, nodeTitle) {
     container.createChild('span', 'webkit-html-attribute-name').textContent = match[3];
   }
 };
-
-/* Legacy exported object */
-self.ObjectUI = self.ObjectUI || {};
-
-/* Legacy exported object */
-ObjectUI = ObjectUI || {};
-
-/** @constructor */
-ObjectUI.RemoteObjectPreviewFormatter = RemoteObjectPreviewFormatter;
-
-/**
- * @param {!Element} container
- * @param {string} nodeTitle
- */
-ObjectUI.RemoteObjectPreviewFormatter.createSpansForNodeTitle = createSpansForNodeTitle;

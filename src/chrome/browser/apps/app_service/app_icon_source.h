@@ -34,6 +34,8 @@ class AppIconSource : public content::URLDataSource {
   explicit AppIconSource(Profile* profile);
   ~AppIconSource() override;
 
+  static GURL GetIconURL(const std::string& app_id, int icon_size);
+
   // content::URLDataSource implementation.
   std::string GetSource() override;
   void StartDataRequest(
@@ -45,7 +47,7 @@ class AppIconSource : public content::URLDataSource {
   bool ShouldReplaceExistingSource() override;
 
  private:
-  Profile* profile_;
+  Profile* const profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AppIconSource);
 };

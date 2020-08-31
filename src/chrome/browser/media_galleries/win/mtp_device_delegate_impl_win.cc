@@ -13,9 +13,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -322,11 +323,12 @@ void CreateMTPDeviceAsyncDelegate(
   base::string16* storage_object_id = new base::string16;
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&GetStorageInfoOnUIThread, device_location,
-                 base::Unretained(pnp_device_id),
-                 base::Unretained(storage_object_id)),
-      base::Bind(&OnGetStorageInfoCreateDelegate, device_location, callback,
-                 base::Owned(pnp_device_id), base::Owned(storage_object_id)));
+      base::BindOnce(&GetStorageInfoOnUIThread, device_location,
+                     base::Unretained(pnp_device_id),
+                     base::Unretained(storage_object_id)),
+      base::BindOnce(&OnGetStorageInfoCreateDelegate, device_location, callback,
+                     base::Owned(pnp_device_id),
+                     base::Owned(storage_object_id)));
 }
 
 // MTPDeviceDelegateImplWin ---------------------------------------------------
@@ -343,15 +345,14 @@ MTPDeviceDelegateImplWin::StorageDeviceInfo::StorageDeviceInfo(
 
 MTPDeviceDelegateImplWin::PendingTaskInfo::PendingTaskInfo(
     const base::Location& location,
-    const base::Callback<base::File::Error(void)>& task,
-    const base::Callback<void(base::File::Error)>& reply)
-    : location(location), task(task), reply(reply) {}
+    base::OnceCallback<base::File::Error(void)> task,
+    base::OnceCallback<void(base::File::Error)> reply)
+    : location(location), task(std::move(task)), reply(std::move(reply)) {}
 
 MTPDeviceDelegateImplWin::PendingTaskInfo::PendingTaskInfo(
-    const PendingTaskInfo& other) = default;
+    PendingTaskInfo&& other) = default;
 
-MTPDeviceDelegateImplWin::PendingTaskInfo::~PendingTaskInfo() {
-}
+MTPDeviceDelegateImplWin::PendingTaskInfo::~PendingTaskInfo() = default;
 
 MTPDeviceDelegateImplWin::MTPDeviceDelegateImplWin(
     const base::string16& registered_device_path,
@@ -381,17 +382,13 @@ void MTPDeviceDelegateImplWin::GetFileInfo(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!file_path.empty());
   base::File::Info* file_info = new base::File::Info;
-  EnsureInitAndRunTask(
-      PendingTaskInfo(FROM_HERE,
-                      base::Bind(&GetFileInfoOnBlockingPoolThread,
-                                 storage_device_info_,
-                                 file_path,
-                                 base::Unretained(file_info)),
-                      base::Bind(&MTPDeviceDelegateImplWin::OnGetFileInfo,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 success_callback,
-                                 error_callback,
-                                 base::Owned(file_info))));
+  EnsureInitAndRunTask(PendingTaskInfo(
+      FROM_HERE,
+      base::BindOnce(&GetFileInfoOnBlockingPoolThread, storage_device_info_,
+                     file_path, base::Unretained(file_info)),
+      base::BindOnce(&MTPDeviceDelegateImplWin::OnGetFileInfo,
+                     weak_ptr_factory_.GetWeakPtr(), success_callback,
+                     error_callback, base::Owned(file_info))));
 }
 
 void MTPDeviceDelegateImplWin::CreateDirectory(
@@ -411,17 +408,13 @@ void MTPDeviceDelegateImplWin::ReadDirectory(
   DCHECK(!root.empty());
   storage::AsyncFileUtil::EntryList* entries =
       new storage::AsyncFileUtil::EntryList;
-  EnsureInitAndRunTask(
-      PendingTaskInfo(FROM_HERE,
-                      base::Bind(&ReadDirectoryOnBlockingPoolThread,
-                                 storage_device_info_,
-                                 root,
-                                 base::Unretained(entries)),
-                      base::Bind(&MTPDeviceDelegateImplWin::OnDidReadDirectory,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 success_callback,
-                                 error_callback,
-                                 base::Owned(entries))));
+  EnsureInitAndRunTask(PendingTaskInfo(
+      FROM_HERE,
+      base::BindOnce(&ReadDirectoryOnBlockingPoolThread, storage_device_info_,
+                     root, base::Unretained(entries)),
+      base::BindOnce(&MTPDeviceDelegateImplWin::OnDidReadDirectory,
+                     weak_ptr_factory_.GetWeakPtr(), success_callback,
+                     error_callback, base::Owned(entries))));
 }
 
 void MTPDeviceDelegateImplWin::CreateSnapshotFile(
@@ -437,14 +430,12 @@ void MTPDeviceDelegateImplWin::CreateSnapshotFile(
                           success_callback, error_callback)));
   // Passing a raw SnapshotFileDetails* to the blocking pool is safe, because
   // it is owned by |file_details| in the reply callback.
-  EnsureInitAndRunTask(
-      PendingTaskInfo(FROM_HERE,
-                      base::Bind(&GetFileStreamOnBlockingPoolThread,
-                                 storage_device_info_,
-                                 file_details.get()),
-                      base::Bind(&MTPDeviceDelegateImplWin::OnGetFileStream,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 base::Passed(&file_details))));
+  EnsureInitAndRunTask(PendingTaskInfo(
+      FROM_HERE,
+      base::BindOnce(&GetFileStreamOnBlockingPoolThread, storage_device_info_,
+                     file_details.get()),
+      base::BindOnce(&MTPDeviceDelegateImplWin::OnGetFileStream,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(file_details))));
 }
 
 bool MTPDeviceDelegateImplWin::IsStreaming() {
@@ -537,29 +528,28 @@ void MTPDeviceDelegateImplWin::CancelPendingTasksAndDeleteDelegate() {
   delete this;
 }
 
-void MTPDeviceDelegateImplWin::EnsureInitAndRunTask(
-    const PendingTaskInfo& task_info) {
+void MTPDeviceDelegateImplWin::EnsureInitAndRunTask(PendingTaskInfo task_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if ((init_state_ == INITIALIZED) && !task_in_progress_) {
     DCHECK(pending_tasks_.empty());
     DCHECK(!current_snapshot_details_.get());
-    base::PostTaskAndReplyWithResult(media_task_runner_.get(),
-                                     task_info.location, task_info.task,
-                                     task_info.reply);
+    base::PostTaskAndReplyWithResult(
+        media_task_runner_.get(), task_info.location, std::move(task_info.task),
+        std::move(task_info.reply));
     task_in_progress_ = true;
     return;
   }
 
-  pending_tasks_.push(task_info);
+  pending_tasks_.push(std::move(task_info));
   if (init_state_ == UNINITIALIZED) {
     init_state_ = PENDING_INIT;
     base::PostTaskAndReplyWithResult(
         media_task_runner_.get(), FROM_HERE,
-        base::Bind(&OpenDeviceOnBlockingPoolThread,
-                   storage_device_info_.pnp_device_id,
-                   storage_device_info_.registered_device_path),
-        base::Bind(&MTPDeviceDelegateImplWin::OnInitCompleted,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&OpenDeviceOnBlockingPoolThread,
+                       storage_device_info_.pnp_device_id,
+                       storage_device_info_.registered_device_path),
+        base::BindOnce(&MTPDeviceDelegateImplWin::OnInitCompleted,
+                       weak_ptr_factory_.GetWeakPtr()));
     task_in_progress_ = true;
   }
 }
@@ -568,21 +558,23 @@ void MTPDeviceDelegateImplWin::WriteDataChunkIntoSnapshotFile() {
   DCHECK(current_snapshot_details_.get());
   base::PostTaskAndReplyWithResult(
       media_task_runner_.get(), FROM_HERE,
-      base::Bind(&WriteDataChunkIntoSnapshotFileOnBlockingPoolThread,
-                 *current_snapshot_details_),
-      base::Bind(&MTPDeviceDelegateImplWin::OnWroteDataChunkIntoSnapshotFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 current_snapshot_details_->request_info().snapshot_file_path));
+      base::BindOnce(&WriteDataChunkIntoSnapshotFileOnBlockingPoolThread,
+                     *current_snapshot_details_),
+      base::BindOnce(
+          &MTPDeviceDelegateImplWin::OnWroteDataChunkIntoSnapshotFile,
+          weak_ptr_factory_.GetWeakPtr(),
+          current_snapshot_details_->request_info().snapshot_file_path));
 }
 
 void MTPDeviceDelegateImplWin::ProcessNextPendingRequest() {
   DCHECK(!task_in_progress_);
   if (pending_tasks_.empty())
     return;
-  const PendingTaskInfo& task_info = pending_tasks_.front();
+  PendingTaskInfo& task_info = pending_tasks_.front();
   task_in_progress_ = true;
   base::PostTaskAndReplyWithResult(media_task_runner_.get(), task_info.location,
-                                   task_info.task, task_info.reply);
+                                   std::move(task_info.task),
+                                   std::move(task_info.reply));
   pending_tasks_.pop();
 }
 

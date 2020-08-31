@@ -93,7 +93,8 @@ class DraggedNodeImageBuilder {
     DCHECK_EQ(dom_tree_version_, node_->GetDocument().DomTreeVersion());
 #endif
     // Construct layout object for |node_| with pseudo class "-webkit-drag"
-    local_frame_->View()->UpdateAllLifecyclePhasesExceptPaint();
+    local_frame_->View()->UpdateAllLifecyclePhasesExceptPaint(
+        DocumentUpdateReason::kDragImage);
     LayoutObject* const dragged_layout_object = node_->GetLayoutObject();
     if (!dragged_layout_object)
       return nullptr;
@@ -148,8 +149,8 @@ class DraggedNodeImageBuilder {
   }
 
  private:
-  const Member<LocalFrame> local_frame_;
-  const Member<Node> node_;
+  LocalFrame* const local_frame_;
+  Node* const node_;
 #if DCHECK_IS_ON()
   const uint64_t dom_tree_version_;
 #endif
@@ -203,11 +204,11 @@ static String ConvertDragOperationToEffectAllowed(DragOperation op) {
 }
 
 // We provide the IE clipboard types (URL and Text), and the clipboard types
-// specified in the WHATWG Web Applications 1.0 draft see
-// http://www.whatwg.org/specs/web-apps/current-work/ Section 6.3.5.3
+// specified in the HTML spec. See
+// https://html.spec.whatwg.org/multipage/dnd.html#the-datatransfer-interface
 static String NormalizeType(const String& type,
                             bool* convert_to_url = nullptr) {
-  String clean_type = type.StripWhiteSpace().DeprecatedLower();
+  String clean_type = type.StripWhiteSpace().LowerASCII();
   if (clean_type == kMimeTypeText ||
       clean_type.StartsWith(kMimeTypeTextPlainEtc))
     return kMimeTypeTextPlain;
@@ -219,6 +220,7 @@ static String NormalizeType(const String& type,
   return clean_type;
 }
 
+// static
 DataTransfer* DataTransfer::Create() {
   DataTransfer* data = Create(
       kCopyAndPaste, DataTransferAccessPolicy::kWritable, DataObject::Create());
@@ -227,6 +229,7 @@ DataTransfer* DataTransfer::Create() {
   return data;
 }
 
+// static
 DataTransfer* DataTransfer::Create(DataTransferType type,
                                    DataTransferAccessPolicy policy,
                                    DataObject* data_object) {
@@ -677,7 +680,7 @@ String ConvertDragOperationToDropZoneOperation(DragOperation operation) {
   }
 }
 
-void DataTransfer::Trace(blink::Visitor* visitor) {
+void DataTransfer::Trace(Visitor* visitor) {
   visitor->Trace(data_object_);
   visitor->Trace(drag_image_);
   visitor->Trace(drag_image_element_);

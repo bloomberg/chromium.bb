@@ -11,21 +11,19 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+class ChromeBrowserState;
+
 namespace instance_id {
 class InstanceIDProfileService;
 }
 
-namespace ios {
-class ChromeBrowserState;
-}
-
 // Singleton that owns all InstanceIDProfileService and associates them with
-// ios::ChromeBrowserState.
+// ChromeBrowserState.
 class IOSChromeInstanceIDProfileServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:
   static instance_id::InstanceIDProfileService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   static IOSChromeInstanceIDProfileServiceFactory* GetInstance();
 

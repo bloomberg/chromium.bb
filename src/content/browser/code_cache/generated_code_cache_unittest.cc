@@ -40,7 +40,9 @@ class GeneratedCodeCacheTest : public testing::Test {
 
   void TearDown() override {
     disk_cache::FlushCacheThreadForTesting();
+    generated_code_cache_.reset();
     task_environment_.RunUntilIdle();
+    EXPECT_TRUE(cache_dir_.Delete()) << cache_dir_.GetPath();
   }
 
   // This function initializes the cache and waits till the transaction is
@@ -115,9 +117,9 @@ class GeneratedCodeCacheTest : public testing::Test {
   }
 
  protected:
+  base::ScopedTempDir cache_dir_;
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<GeneratedCodeCache> generated_code_cache_;
-  base::ScopedTempDir cache_dir_;
   std::string received_data_;
   base::Time received_response_time_;
   bool received_;
@@ -130,6 +132,28 @@ constexpr char GeneratedCodeCacheTest::kInitialUrl[];
 constexpr char GeneratedCodeCacheTest::kInitialOrigin[];
 constexpr char GeneratedCodeCacheTest::kInitialData[];
 const size_t GeneratedCodeCacheTest::kMaxSizeInBytes;
+
+TEST_F(GeneratedCodeCacheTest, GetResourceURLFromKey) {
+  // These must be kept in sync with the values in generated_code_cache.cc.
+  constexpr char kPrefix[] = "_key";
+  constexpr char kSeparator[] = " \n";
+
+  // Test that we correctly extract the resource URL from a key.
+  std::string key(kPrefix);
+  key.append(kInitialUrl);
+  key.append(kSeparator);
+  key.append(kInitialOrigin);
+
+  EXPECT_EQ(GeneratedCodeCache::GetResourceURLFromKey(key), kInitialUrl);
+
+  // Invalid key formats should return the empty string.
+  ASSERT_TRUE(GeneratedCodeCache::GetResourceURLFromKey("").empty());
+  ASSERT_TRUE(GeneratedCodeCache::GetResourceURLFromKey("foobar").empty());
+  ASSERT_TRUE(
+      GeneratedCodeCache::GetResourceURLFromKey(
+          "43343250B630900F20597168708E14F17A6263F5251FCA10746EA7BDEA881085")
+          .empty());
+}
 
 TEST_F(GeneratedCodeCacheTest, CheckResponseTime) {
   GURL url(kInitialUrl);

@@ -16,8 +16,8 @@
 #include "cast/streaming/rtcp_common.h"
 #include "cast/streaming/rtp_defines.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 class RtcpSession;
 
@@ -97,9 +97,8 @@ class CompoundRtcpBuilder {
   // should be monotonically increasing so the consuming side (the Sender) can
   // determine the chronological ordering of RTCP packets. The Sender might also
   // use this to estimate round-trip times over the network.
-  absl::Span<uint8_t> BuildPacket(
-      openscreen::platform::Clock::time_point send_time,
-      absl::Span<uint8_t> buffer);
+  absl::Span<uint8_t> BuildPacket(Clock::time_point send_time,
+                                  absl::Span<uint8_t> buffer);
 
   // The required buffer size to be provided to BuildPacket(). This accounts for
   // all the possible headers and report structures that might be included,
@@ -111,9 +110,8 @@ class CompoundRtcpBuilder {
   // Helper methods called by BuildPacket() to append one RTCP packet to the
   // |buffer| that will ultimately contain a "compound RTCP packet."
   void AppendReceiverReportPacket(absl::Span<uint8_t>* buffer);
-  void AppendReceiverReferenceTimeReportPacket(
-      openscreen::platform::Clock::time_point send_time,
-      absl::Span<uint8_t>* buffer);
+  void AppendReceiverReferenceTimeReportPacket(Clock::time_point send_time,
+                                               absl::Span<uint8_t>* buffer);
   void AppendPictureLossIndicatorPacket(absl::Span<uint8_t>* buffer);
   void AppendCastFeedbackPacket(absl::Span<uint8_t>* buffer);
   int AppendCastFeedbackLossFields(absl::Span<uint8_t>* buffer);
@@ -122,7 +120,7 @@ class CompoundRtcpBuilder {
   RtcpSession* const session_;
 
   // Data to include in the next built RTCP packet.
-  FrameId checkpoint_frame_id_ = FrameId::first() - 1;
+  FrameId checkpoint_frame_id_ = FrameId::leader();
   std::chrono::milliseconds playout_delay_ = kDefaultTargetPlayoutDelay;
   absl::optional<RtcpReportBlock> receiver_report_for_next_packet_;
   std::vector<PacketNack> nacks_for_next_packet_;
@@ -134,7 +132,7 @@ class CompoundRtcpBuilder {
   uint8_t feedback_count_ = 0;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_COMPOUND_RTCP_BUILDER_H_

@@ -306,9 +306,7 @@ TEST(Issue23768) {
           .ToLocalChecked();
   // Script needs to have a name in order to trigger InitLineEnds execution.
   v8::Local<v8::String> origin =
-      v8::String::NewFromUtf8(CcTest::isolate(), "issue-23768-test",
-                              v8::NewStringType::kNormal)
-          .ToLocalChecked();
+      v8::String::NewFromUtf8Literal(CcTest::isolate(), "issue-23768-test");
   v8::Local<v8::Script> evil_script =
       CompileWithOrigin(source, origin, v8_bool(false));
   CHECK(!evil_script.IsEmpty());
@@ -460,11 +458,13 @@ UNINITIALIZED_TEST(Issue539892) {
         : CodeEventLogger(isolate) {}
 
     void CodeMoveEvent(i::AbstractCode from, i::AbstractCode to) override {}
-    void CodeDisableOptEvent(i::AbstractCode code,
-                             i::SharedFunctionInfo shared) override {}
+    void CodeDisableOptEvent(i::Handle<i::AbstractCode> code,
+                             i::Handle<i::SharedFunctionInfo> shared) override {
+    }
 
    private:
-    void LogRecordedBuffer(i::AbstractCode code, i::SharedFunctionInfo shared,
+    void LogRecordedBuffer(i::Handle<i::AbstractCode> code,
+                           i::MaybeHandle<i::SharedFunctionInfo> maybe_shared,
                            const char* name, int length) override {}
     void LogRecordedBuffer(const i::wasm::WasmCode* code, const char* name,
                            int length) override {}
@@ -721,8 +721,10 @@ UNINITIALIZED_TEST(ExternalCodeEventListenerInnerFunctions) {
     v8::Local<v8::UnboundScript> script =
         v8::ScriptCompiler::CompileUnboundScript(isolate1, &source)
             .ToLocalChecked();
-    CHECK_EQ(code_event_handler.CountLines("Script", "f1"), 1);
-    CHECK_EQ(code_event_handler.CountLines("Script", "f2"), 1);
+    CHECK_EQ(code_event_handler.CountLines("Script", "f1"),
+             i::FLAG_stress_background_compile ? 2 : 1);
+    CHECK_EQ(code_event_handler.CountLines("Script", "f2"),
+             i::FLAG_stress_background_compile ? 2 : 1);
     cache = v8::ScriptCompiler::CreateCodeCache(script);
   }
   isolate1->Dispose();

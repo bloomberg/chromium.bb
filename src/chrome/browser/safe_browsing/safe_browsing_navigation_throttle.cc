@@ -4,12 +4,14 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_throttle.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/navigation_handle.h"
 
 namespace safe_browsing {
@@ -38,6 +40,10 @@ SafeBrowsingNavigationThrottle::WillFailRequest() {
         SafeBrowsingBlockingPage::CreateBlockingPage(
             manager.get(), handle->GetWebContents(), handle->GetURL(), resource,
             true);
+    MaybeTriggerSecurityInterstitialShownEvent(
+        handle->GetWebContents(), handle->GetURL(),
+        GetThreatTypeStringForInterstitial(resource.threat_type),
+        /*net_error_code=*/0);
     std::string error_page_content = blocking_page->GetHTMLContents();
     security_interstitials::SecurityInterstitialTabHelper::
         AssociateBlockingPage(handle->GetWebContents(),

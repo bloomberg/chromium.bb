@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_WEBDATA_SERVICE_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_WEBDATA_SERVICE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -45,8 +46,7 @@ class AutofillWebDataService : public WebDataServiceBase {
   AutofillWebDataService(
       scoped_refptr<WebDatabaseService> wdbs,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
-      const ProfileErrorCallback& callback);
+      scoped_refptr<base::SingleThreadTaskRunner> db_task_runner);
 
   // WebDataServiceBase implementation.
   void ShutdownOnUISequence() override;
@@ -139,14 +139,24 @@ class AutofillWebDataService : public WebDataServiceBase {
                               const base::string16& full_number);
   void MaskServerCreditCard(const std::string& id);
 
-  // Store a UPI/VPA value.
-  void AddVPA(const std::string& vpa_id);
+  // Store a UPI ID.
+  void AddUpiId(const std::string& upi_id);
+
+  // Gets all the UPI IDs stored in the database.
+  WebDataServiceBase::Handle GetAllUpiIds(WebDataServiceConsumer* consumer);
 
   // Initiates the request for Payments customer data.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
   // finished, with the customer data included in the argument |result|. The
   // consumer owns the data.
   WebDataServiceBase::Handle GetPaymentsCustomerData(
+      WebDataServiceConsumer* consumer);
+
+  // Initiates the request for server credit card cloud token data. The method
+  // OnWebDataServiceRequestDone of |consumer| gets called when the request is
+  // finished, with the cloud token data included in the argument |result|. The
+  // consumer owns the data.
+  WebDataServiceBase::Handle GetCreditCardCloudTokenData(
       WebDataServiceConsumer* consumer);
 
   void ClearAllServerData();
@@ -187,7 +197,7 @@ class AutofillWebDataService : public WebDataServiceBase {
   // an AutofillWebdataBackend. This backend can be used to access or update the
   // WebDatabase directly on the DB sequence.
   void GetAutofillBackend(
-      const base::Callback<void(AutofillWebDataBackend*)>& callback);
+      base::OnceCallback<void(AutofillWebDataBackend*)> callback);
 
   // Returns a task runner that can be used to schedule tasks on the DB
   // sequence.

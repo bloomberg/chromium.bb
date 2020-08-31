@@ -22,7 +22,7 @@ struct TypeReference : public Expression {
     : INHERITED(offset, kTypeReference_Kind, *context.fInvalid_Type)
     , fValue(value) {}
 
-    bool hasSideEffects() const override {
+    bool hasProperty(Property property) const override {
         return false;
     }
 

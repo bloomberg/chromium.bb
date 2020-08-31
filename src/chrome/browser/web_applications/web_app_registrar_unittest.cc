@@ -378,6 +378,8 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
 
   std::vector<AppId> in_scope = registrar().FindAppsInScope(origin_scope);
   EXPECT_EQ(0u, in_scope.size());
+  EXPECT_FALSE(registrar().DoesScopeContainAnyApp(origin_scope));
+  EXPECT_FALSE(registrar().DoesScopeContainAnyApp(app3_scope));
 
   auto app1 = CreateWebApp(app1_scope.spec());
   app1->SetScope(app1_scope);
@@ -385,9 +387,12 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
 
   in_scope = registrar().FindAppsInScope(origin_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id));
+  EXPECT_TRUE(registrar().DoesScopeContainAnyApp(origin_scope));
+  EXPECT_FALSE(registrar().DoesScopeContainAnyApp(app3_scope));
 
   in_scope = registrar().FindAppsInScope(app1_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id));
+  EXPECT_TRUE(registrar().DoesScopeContainAnyApp(app1_scope));
 
   auto app2 = CreateWebApp(app2_scope.spec());
   app2->SetScope(app2_scope);
@@ -395,12 +400,16 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
 
   in_scope = registrar().FindAppsInScope(origin_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id, app2_id));
+  EXPECT_TRUE(registrar().DoesScopeContainAnyApp(origin_scope));
+  EXPECT_FALSE(registrar().DoesScopeContainAnyApp(app3_scope));
 
   in_scope = registrar().FindAppsInScope(app1_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id, app2_id));
+  EXPECT_TRUE(registrar().DoesScopeContainAnyApp(app1_scope));
 
   in_scope = registrar().FindAppsInScope(app2_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app2_id));
+  EXPECT_TRUE(registrar().DoesScopeContainAnyApp(app2_scope));
 
   auto app3 = CreateWebApp(app3_scope.spec());
   app3->SetScope(app3_scope);
@@ -408,9 +417,11 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
 
   in_scope = registrar().FindAppsInScope(origin_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id, app2_id));
+  EXPECT_TRUE(registrar().DoesScopeContainAnyApp(origin_scope));
 
   in_scope = registrar().FindAppsInScope(app3_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app3_id));
+  EXPECT_TRUE(registrar().DoesScopeContainAnyApp(app3_scope));
 }
 
 TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
@@ -692,6 +703,25 @@ TEST_F(WebAppRegistrarTest, CountUserInstalledApps) {
   }
 
   EXPECT_EQ(2, registrar().CountUserInstalledApps());
+}
+
+TEST_F(WebAppRegistrarTest, NotLocallyInstalledAppGetsDisplayModeBrowser) {
+  controller().Init();
+
+  auto web_app = CreateWebApp("https://example.com/path");
+  const AppId app_id = web_app->app_id();
+  web_app->SetDisplayMode(DisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  web_app->SetIsLocallyInstalled(false);
+  RegisterApp(std::move(web_app));
+
+  EXPECT_EQ(DisplayMode::kBrowser,
+            registrar().GetAppEffectiveDisplayMode(app_id));
+
+  sync_bridge().SetAppIsLocallyInstalled(app_id, true);
+
+  EXPECT_EQ(DisplayMode::kStandalone,
+            registrar().GetAppEffectiveDisplayMode(app_id));
 }
 
 }  // namespace web_app

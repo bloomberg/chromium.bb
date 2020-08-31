@@ -34,7 +34,7 @@
 #include <memory>
 #include "third_party/blink/public/platform/web_source_buffer_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/mediasource/track_default_list.h"
@@ -49,27 +49,24 @@ class DOMArrayBuffer;
 class DOMArrayBufferView;
 class EventQueue;
 class ExceptionState;
-class MediaSource;
+class MediaSourceImpl;
 class TimeRanges;
 class VideoTrackList;
 class WebSourceBuffer;
 
 class SourceBuffer final : public EventTargetWithInlineData,
                            public ActiveScriptWrappable<SourceBuffer>,
-                           public ContextLifecycleObserver,
+                           public ExecutionContextLifecycleObserver,
                            public WebSourceBufferClient {
   USING_GARBAGE_COLLECTED_MIXIN(SourceBuffer);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(SourceBuffer, Dispose);
 
  public:
-  static SourceBuffer* Create(std::unique_ptr<WebSourceBuffer>,
-                              MediaSource*,
-                              EventQueue*);
   static const AtomicString& SegmentsKeyword();
   static const AtomicString& SequenceKeyword();
 
-  SourceBuffer(std::unique_ptr<WebSourceBuffer>, MediaSource*, EventQueue*);
+  SourceBuffer(std::unique_ptr<WebSourceBuffer>, MediaSourceImpl*, EventQueue*);
   ~SourceBuffer() override;
 
   // SourceBuffer.idl methods
@@ -106,8 +103,8 @@ class SourceBuffer final : public EventTargetWithInlineData,
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  // ExecutionContextLifecycleObserver
+  void ContextDestroyed() override;
 
   // EventTarget interface
   ExecutionContext* GetExecutionContext() const override;
@@ -117,7 +114,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   bool InitializationSegmentReceived(const WebVector<MediaTrackInfo>&) override;
   void NotifyParseWarning(const ParseWarning) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void Dispose();
@@ -129,7 +126,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   bool EvictCodedFrames(double media_time, size_t new_data_size);
   void AppendBufferInternal(double media_time,
                             const unsigned char*,
-                            unsigned,
+                            size_t,
                             ExceptionState&);
   void AppendBufferAsyncPart();
   void AppendError();
@@ -164,7 +161,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   // need to remain alive at least to successfully dispatch any events enqueued
   // by the behavior of the HTMLME+MSE API. It makes those wrappers remain alive
   // as long as this SourceBuffer's wrapper is alive.
-  Member<MediaSource> source_;
+  Member<MediaSourceImpl> source_;
   Member<TrackDefaultList> track_defaults_;
   Member<EventQueue> async_event_queue_;
 

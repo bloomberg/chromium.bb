@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Teljes méret</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, telepített alkalmazás</translation>
 <translation id="1450753235335490080">Nem sikerült a(z) <ph name="CONTENT_TYPE" /> megosztása</translation>
+<translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> lecserélve erre: <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Korábban már rákeresett erre. Ha törli a(z) <ph name="QUERY" /> lekérdezést az előzmények közül, azzal véglegesen eltávolítja fiókjából minden eszközén.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 perc és }other{# perc és }}</translation>
 <translation id="1643823602425662293">Értesítés</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Össz&amp;es kiválasztása</translation>
-<translation id="1938451708255335766">Az ablak megjelenítési sűrűségének módosításához indítsa újra az alkalmazást.</translation>
 <translation id="2006524834898217237">Ellenőrizze, hogy az eszköz csatlakozik-e az internethez.</translation>
 <translation id="208586643495776849">Próbálkozzon újra</translation>
 <translation id="2090963878406559571">Ha a(z) <ph name="ORIGIN" /> webhelyről szeretne számot küldeni Android-telefonjára, <ph name="TROUBLESHOOT_LINK" /> a beállításokban mindkét eszközén.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Lefelé nyíl</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 nap}other{# nap}}</translation>
 <translation id="3295886253693811851">Hívás indítása a következővel:</translation>
+<translation id="3306688585798492231">Beépített kijelző</translation>
 <translation id="335581015389089642">Beszéd</translation>
 <translation id="3389286852084373014">A szöveg túl nagy</translation>
-<translation id="3479552764303398839">Ne most</translation>
 <translation id="348799646910989694">A polc automatikusan elrejti magát</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> rögzítve</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 nap van hátra}other{# nap van hátra}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783"><ph name="TITLE" /> olvasásának folytatása a mobileszközön</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="3889424535448813030">Jobb nyíl</translation>
-<translation id="3892641579809465218">Belső kijelző</translation>
 <translation id="3897092660631435901">Menü</translation>
 <translation id="3909791450649380159">Ki&amp;vágás</translation>
 <translation id="3990502903496589789">Jobb sarok</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 perc}other{# perc}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Ma volt aktív}=1{1 napja volt aktív}other{# napja volt aktív}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 nap és }other{# nap és }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 év múlva}other{# év múlva}}</translation>
-<translation id="5895138241574237353">Újraindítás</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 másodperc van hátra}other{# másodperc van hátra}}</translation>
 <translation id="5941711191222866238">Kicsinyítés</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 óra}other{# óra}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">Jobbról balra</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">NAGY VALÓSZÍNŰSÉGGEL</translation>
+<translation id="7170202025028120564">Az alkalmazás megjelenítési beállításai a következő indításkor lépnek érvénybe.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 perc van hátra}other{# perc van hátra}}</translation>
 <translation id="7319740667687257810">Indító, részleges nézet</translation>

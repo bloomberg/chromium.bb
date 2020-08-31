@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -91,13 +91,13 @@ void DemoResources::EnsureLoaded(base::OnceClosure load_callback) {
     return;
   }
 
-  component_updater::CrOSComponentManager* cros_component_manager =
+  auto cros_component_manager =
       g_browser_process->platform_part()->cros_component_manager();
   // In unit tests, DemoModeTestHelper should set up a fake
   // CrOSComponentManager.
   DCHECK(cros_component_manager);
 
-  g_browser_process->platform_part()->cros_component_manager()->Load(
+  cros_component_manager->Load(
       kDemoModeResourcesComponentName,
       component_updater::CrOSComponentManager::MountPolicy::kMount,
       component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,

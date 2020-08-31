@@ -38,7 +38,7 @@ std::vector<PixelResourceTestCase> const kTestCases = {
     {LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY},
 #if defined(ENABLE_CC_VULKAN_TESTS)
     {LayerTreeTest::RENDERER_SKIA_VK, GPU},
-#endif
+#endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };
 
 using LayerTreeHostMasksPixelTest = ParameterizedPixelResourceTest;
@@ -321,9 +321,8 @@ TEST_P(LayerTreeHostMaskPixelTestWithLayerList, ImageMaskWithEffect) {
   MaskContentLayerClient client(mask_bounds_);
   scoped_refptr<PictureImageLayer> mask_layer = PictureImageLayer::Create();
 
-  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(200, 200);
+  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(50, 50);
   SkCanvas* canvas = surface->getCanvas();
-  canvas->scale(SkIntToScalar(4), SkIntToScalar(4));
   scoped_refptr<DisplayItemList> mask_display_list =
       client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
@@ -355,9 +354,8 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   mask->SetIsDrawable(true);
   mask->SetBounds(mask_bounds);
 
-  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(200, 200);
+  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(50, 50);
   SkCanvas* canvas = surface->getCanvas();
-  canvas->scale(SkIntToScalar(4), SkIntToScalar(4));
   MaskContentLayerClient client(mask_bounds);
   scoped_refptr<DisplayItemList> mask_display_list =
       client.PaintContentsToDisplayList(
@@ -526,10 +524,10 @@ class CircleContentLayerClient : public ContentLayerClient {
   gfx::Size bounds_;
 };
 
-class LayerTreeHostMasksForBackdropFiltersPixelTest
+class LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerList
     : public ParameterizedPixelResourceTest {
  protected:
-  LayerTreeHostMasksForBackdropFiltersPixelTest()
+  LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerList()
       : bounds_(100, 100),
         picture_client_(bounds_, SK_ColorGREEN, true),
         mask_client_(bounds_) {
@@ -574,17 +572,18 @@ class LayerTreeHostMasksForBackdropFiltersPixelTest
   CircleContentLayerClient mask_client_;
 };
 
-INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
-                         LayerTreeHostMasksForBackdropFiltersPixelTest,
-                         ::testing::ValuesIn(kTestCases));
+INSTANTIATE_TEST_SUITE_P(
+    PixelResourceTest,
+    LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerList,
+    ::testing::ValuesIn(kTestCases));
 
-TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest, Test) {
+TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerList, Test) {
   base::FilePath image_name =
       (raster_type() == GPU)
           ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
           : base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter.png"));
 
-  if (renderer_type() == RENDERER_SKIA_VK && raster_type() == GPU) {
+  if (use_skia_vulkan() && raster_type() == GPU) {
     // Vulkan with GPU raster has 4 pixels errors (the circle mask shape is
     // slight different).
     float percentage_pixels_large_error = 0.04f;  // 4px / (100*100)
@@ -599,6 +598,65 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest, Test) {
   }
 
   RunPixelResourceTestWithLayerList(image_name);
+}
+
+using LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerTree =
+    ParameterizedPixelResourceTest;
+
+INSTANTIATE_TEST_SUITE_P(
+    PixelResourceTest,
+    LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerTree,
+    ::testing::ValuesIn(kTestCases));
+
+TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerTree, Test) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
+
+  gfx::Size picture_bounds(100, 100);
+  CheckerContentLayerClient picture_client(picture_bounds, SK_ColorGREEN, true);
+  scoped_refptr<PictureLayer> picture = PictureLayer::Create(&picture_client);
+  picture->SetBounds(picture_bounds);
+  picture->SetIsDrawable(true);
+
+  scoped_refptr<SolidColorLayer> blur =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorTRANSPARENT);
+  background->AddChild(picture);
+  background->AddChild(blur);
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateGrayscaleFilter(1.0));
+  blur->SetBackdropFilters(filters);
+  blur->ClearBackdropFilterBounds();
+
+  gfx::Size mask_bounds(100, 100);
+  CircleContentLayerClient mask_client(mask_bounds);
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client);
+  mask->SetBounds(mask_bounds);
+  mask->SetIsDrawable(true);
+  mask->SetElementId(LayerIdToElementIdForTesting(mask->id()));
+
+  blur->SetMaskLayer(mask);
+
+  base::FilePath image_name =
+      (raster_type() == GPU)
+          ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
+          : base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter.png"));
+
+  if (use_skia_vulkan() && raster_type() == GPU) {
+    // Vulkan with GPU raster has 4 pixels errors (the circle mask shape is
+    // slight different).
+    float percentage_pixels_large_error = 0.04f;  // 4px / (100*100)
+    float percentage_pixels_small_error = 0.0f;
+    float average_error_allowed_in_bad_pixels = 182.f;
+    int large_error_allowed = 182;
+    int small_error_allowed = 0;
+    pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
+        true /* discard_alpha */, percentage_pixels_large_error,
+        percentage_pixels_small_error, average_error_allowed_in_bad_pixels,
+        large_error_allowed, small_error_allowed);
+  }
+
+  RunPixelResourceTest(background, image_name);
 }
 
 TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayerWithBlend) {
@@ -696,7 +754,7 @@ class LayerTreeHostMaskAsBlendingPixelTest
     float average_error_allowed_in_bad_pixels = 0.f;
     int large_error_allowed = 0;
     int small_error_allowed = 0;
-    if (renderer_type() != RENDERER_SOFTWARE) {
+    if (!use_software_renderer()) {
       percentage_pixels_error = 6.0f;
       percentage_pixels_small_error = 2.f;
       average_error_allowed_in_bad_pixels = 2.1f;
@@ -704,11 +762,20 @@ class LayerTreeHostMaskAsBlendingPixelTest
       small_error_allowed = 1;
     } else {
 #if defined(ARCH_CPU_ARM64)
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
+      // Windows and Fuchsia ARM64 has some pixels difference
+      // Affected tests: RotatedClippedCircle, RotatedClippedCircleUnderflow
+      // crbug.com/1030244, crbug.com/1048249
+      percentage_pixels_error = 6.1f;
+      average_error_allowed_in_bad_pixels = 5.f;
+      large_error_allowed = 20;
+#else
       // Differences in floating point calculation on ARM means a small
       // percentage of pixels will be off by 1.
       percentage_pixels_error = 0.112f;
       average_error_allowed_in_bad_pixels = 1.f;
       large_error_allowed = 1;
+#endif
 #endif
     }
 
@@ -817,7 +884,7 @@ MaskTestConfig const kTestConfigs[] = {
     MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_VK, ZERO_COPY}, 0},
     MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_VK, ZERO_COPY},
                    kUseAntialiasing},
-#endif
+#endif  // defined(ENABLE_CC_VULKAN_TESTS)
 };
 
 INSTANTIATE_TEST_SUITE_P(All,

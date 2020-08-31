@@ -11,6 +11,7 @@
 #include "third_party/base/allocator/partition_allocator/partition_bucket.h"
 #include "third_party/base/allocator/partition_allocator/partition_cookie.h"
 #include "third_party/base/allocator/partition_allocator/partition_freelist_entry.h"
+#include "third_party/base/allocator/partition_allocator/random.h"
 
 namespace pdfium {
 namespace base {
@@ -202,7 +203,7 @@ ALWAYS_INLINE size_t PartitionPage::get_raw_size() const {
 
 ALWAYS_INLINE void PartitionPage::Free(void* ptr) {
 #if DCHECK_IS_ON()
-  size_t slot_size = this->bucket->slot_size;
+  size_t slot_size = bucket->slot_size;
   const size_t raw_size = get_raw_size();
   if (raw_size) {
     slot_size = raw_size;
@@ -216,21 +217,18 @@ ALWAYS_INLINE void PartitionPage::Free(void* ptr) {
   memset(ptr, kFreedByte, slot_size);
 #endif
 
-  DCHECK(this->num_allocated_slots);
-  // TODO(palmer): See if we can afford to make this a CHECK.
-  // FIX FIX FIX
-  //  DCHECK(!freelist_head || PartitionRootBase::IsValidPage(
-  //                               PartitionPage::FromPointer(freelist_head)));
-  CHECK(ptr != freelist_head);  // Catches an immediate double free.
+  DCHECK(num_allocated_slots);
+  // Catches an immediate double free.
+  CHECK(ptr != freelist_head);
   // Look for double free one level deeper in debug.
-  DCHECK(!freelist_head || ptr != internal::PartitionFreelistEntry::Transform(
-                                      freelist_head->next));
+  DCHECK(!freelist_head ||
+         ptr != EncodedPartitionFreelistEntry::Decode(freelist_head->next));
   internal::PartitionFreelistEntry* entry =
       static_cast<internal::PartitionFreelistEntry*>(ptr);
-  entry->next = internal::PartitionFreelistEntry::Transform(freelist_head);
+  entry->next = internal::PartitionFreelistEntry::Encode(freelist_head);
   freelist_head = entry;
-  --this->num_allocated_slots;
-  if (UNLIKELY(this->num_allocated_slots <= 0)) {
+  --num_allocated_slots;
+  if (UNLIKELY(num_allocated_slots <= 0)) {
     FreeSlowPath();
   } else {
     // All single-slot allocations must go through the slow path to
@@ -281,7 +279,7 @@ ALWAYS_INLINE void PartitionPage::set_raw_size(size_t size) {
 }
 
 ALWAYS_INLINE void PartitionPage::Reset() {
-  DCHECK(this->is_decommitted());
+  DCHECK(is_decommitted());
 
   num_unprovisioned_slots = bucket->get_slots_per_span();
   DCHECK(num_unprovisioned_slots);

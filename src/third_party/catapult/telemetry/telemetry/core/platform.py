@@ -277,6 +277,33 @@ class Platform(object):
     """
     return self._platform_backend.TakeScreenshot(file_path)
 
+  def CanRecordVideo(self):
+    return self._platform_backend.CanRecordVideo()
+
+  def StartVideoRecording(self):
+    """Starts recording a video on the device.
+
+    Note that this method may not be supported on all platforms, so the caller
+    must check with CanRecordVideo before calling this. Once the caller starts
+    recording a video using this call, the caller must stop recording the video
+    by calling StopVideoRecording() before attempting to start recording another
+    video.
+    """
+    self._platform_backend.StartVideoRecording()
+
+  def StopVideoRecording(self, video_path):
+    """Stops recording a video on the device and saves to |video_path|.
+
+    This method must be called only if recording a video had started using a
+    call to StartVideoRecording(), and it was not already stopped using a call
+    to StopVideoRecording().
+
+    Args:
+      video_path: Where to save the video to. If the platform is remote,
+        |video_path| is the path on the host platform.
+    """
+    self._platform_backend.StopVideoRecording(video_path)
+
   def SetFullPerformanceModeEnabled(self, enabled):
     """ Set full performance mode on the platform.
 
@@ -294,11 +321,17 @@ class Platform(object):
   def http_server(self):
     # TODO(crbug.com/799490): Ownership of the local server should be moved
     # to the network_controller.
+    server = self._local_server_controller.GetRunningServer(
+        memory_cache_http_server.MemoryCacheDynamicHTTPServer, None)
+    if server:
+      return server
+
     return self._local_server_controller.GetRunningServer(
         memory_cache_http_server.MemoryCacheHTTPServer, None)
 
-  def SetHTTPServerDirectories(self, paths):
+  def SetHTTPServerDirectories(self, paths, handler_class=None):
     """Returns True if the HTTP server was started, False otherwise."""
+    # pylint: disable=redefined-variable-type
     if isinstance(paths, basestring):
       paths = set([paths])
     paths = set(os.path.realpath(p) for p in paths)
@@ -314,7 +347,15 @@ class Platform(object):
     paths -= duplicates
 
     if self.http_server:
-      if paths and self.http_server.paths == paths:
+      old_handler_class = getattr(self.http_server,
+                                  "dynamic_request_handler_class", None)
+      if not old_handler_class and not handler_class and \
+          self.http_server.paths == paths:
+        return False
+
+      if old_handler_class and handler_class \
+          and old_handler_class.__name__ == handler_class.__name__ \
+          and self.http_server.paths == paths:
         return False
 
       self.http_server.Close()
@@ -322,8 +363,21 @@ class Platform(object):
     if not paths:
       return False
 
-    server = memory_cache_http_server.MemoryCacheHTTPServer(paths)
+    if handler_class:
+      server = memory_cache_http_server.MemoryCacheDynamicHTTPServer(
+          paths, handler_class)
+      real_logging.info('MemoryCacheDynamicHTTPServer created')
+    else:
+      server = memory_cache_http_server.MemoryCacheHTTPServer(paths)
+      real_logging.info('MemoryCacheHTTPServer created')
+
     self.StartLocalServer(server)
+    # For now, Fuchsia needs to do port forwarding due to --proxy-server
+    # flag not being supported in its browser.
+    # TODO(https://crbug.com/1014670): Remove once debug flags supported in
+    # Fuchsia browsers.
+    if self._platform_backend.GetOSName() == 'fuchsia':
+      self._platform_backend.forwarder_factory.Create(server.port, server.port)
     return True
 
   def StopAllLocalServers(self):

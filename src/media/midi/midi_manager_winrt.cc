@@ -54,24 +54,13 @@ using Win::Devices::Enumeration::IDeviceWatcher;
 using Win::Foundation::IAsyncOperation;
 using Win::Foundation::ITypedEventHandler;
 
+// Alias for printing HRESULT.
+const auto PrintHr = logging::SystemErrorCodeToString;
+
 enum {
   kDefaultTaskRunner = TaskService::kDefaultRunnerId,
   kComTaskRunner
 };
-
-// Helpers for printing HRESULTs.
-struct PrintHr {
-  PrintHr(HRESULT hr) : hr(hr) {}
-  HRESULT hr;
-};
-
-std::ostream& operator<<(std::ostream& os, const PrintHr& phr) {
-  std::ios_base::fmtflags ff = os.flags();
-  os << _com_error(phr.hr).ErrorMessage() << " (0x" << std::hex
-     << std::uppercase << std::setfill('0') << std::setw(8) << phr.hr << ")";
-  os.flags(ff);
-  return os;
-}
 
 template <typename T>
 std::string GetIdString(T* obj) {
@@ -258,8 +247,7 @@ class MidiManagerWinrt::MidiPortManager {
       return false;
     }
 
-    hr = dev_info_statics->CreateWatcherAqsFilter(device_selector,
-                                                  watcher_.GetAddressOf());
+    hr = dev_info_statics->CreateWatcherAqsFilter(device_selector, &watcher_);
     if (FAILED(hr)) {
       VLOG(1) << "CreateWatcherAqsFilter failed: " << PrintHr(hr);
       return false;
@@ -669,14 +657,14 @@ class MidiManagerWinrt::MidiInPortManager final
               std::string dev_id = GetDeviceIdString(handle);
 
               WRL::ComPtr<Win::Devices::Midi::IMidiMessage> message;
-              HRESULT hr = args->get_Message(message.GetAddressOf());
+              HRESULT hr = args->get_Message(&message);
               if (FAILED(hr)) {
                 VLOG(1) << "get_Message failed: " << PrintHr(hr);
                 return hr;
               }
 
               WRL::ComPtr<Win::Storage::Streams::IBuffer> buffer;
-              hr = message->get_RawData(buffer.GetAddressOf());
+              hr = message->get_RawData(&buffer);
               if (FAILED(hr)) {
                 VLOG(1) << "get_RawData failed: " << PrintHr(hr);
                 return hr;

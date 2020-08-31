@@ -2785,6 +2785,8 @@ tcu::TextureFormat mapVkFormat (VkFormat format)
 		case VK_FORMAT_R32G32B32A32_SINT:		return TextureFormat(TextureFormat::RGBA,	TextureFormat::SIGNED_INT32);
 		case VK_FORMAT_R32G32B32A32_SFLOAT:		return TextureFormat(TextureFormat::RGBA,	TextureFormat::FLOAT);
 
+		case VK_FORMAT_R64_UINT:				return TextureFormat(TextureFormat::R,		TextureFormat::UNSIGNED_INT64);
+		case VK_FORMAT_R64_SINT:				return TextureFormat(TextureFormat::R,		TextureFormat::SIGNED_INT64);
 		case VK_FORMAT_R64_SFLOAT:				return TextureFormat(TextureFormat::R,		TextureFormat::FLOAT64);
 		case VK_FORMAT_R64G64_SFLOAT:			return TextureFormat(TextureFormat::RG,		TextureFormat::FLOAT64);
 		case VK_FORMAT_R64G64B64_SFLOAT:		return TextureFormat(TextureFormat::RGB,	TextureFormat::FLOAT64);
@@ -3490,7 +3492,7 @@ static VkBorderColor mapBorderColor (tcu::TextureChannelClass channelClass, cons
 	}
 
 	DE_FATAL("Unsupported border color");
-	return VK_BORDER_COLOR_LAST;
+	return VK_BORDER_COLOR_MAX_ENUM;
 }
 
 VkSamplerCreateInfo mapSampler (const tcu::Sampler& sampler, const tcu::TextureFormat& format, float minLod, float maxLod, bool unnormal)
@@ -3540,9 +3542,9 @@ tcu::Sampler mapVkSampler (const VkSamplerCreateInfo& samplerCreateInfo)
 		{
 			case VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO_EXT:
 			{
-				const VkSamplerReductionModeCreateInfoEXT reductionModeCreateInfo = *reinterpret_cast<const VkSamplerReductionModeCreateInfoEXT*>(pNext);
+				const VkSamplerReductionModeCreateInfo reductionModeCreateInfo = *reinterpret_cast<const VkSamplerReductionModeCreateInfo*>(pNext);
 				reductionMode = mapVkSamplerReductionMode(reductionModeCreateInfo.reductionMode);
-				pNext = reinterpret_cast<const VkSamplerReductionModeCreateInfoEXT*>(pNext)->pNext;
+				pNext = reinterpret_cast<const VkSamplerReductionModeCreateInfo*>(pNext)->pNext;
 				break;
 			}
 			case VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO:
@@ -3639,13 +3641,13 @@ tcu::Sampler::WrapMode mapVkSamplerAddressMode (VkSamplerAddressMode addressMode
 	return tcu::Sampler::WRAPMODE_LAST;
 }
 
-tcu::Sampler::ReductionMode mapVkSamplerReductionMode (VkSamplerReductionModeEXT reductionMode)
+tcu::Sampler::ReductionMode mapVkSamplerReductionMode (VkSamplerReductionMode reductionMode)
 {
 	switch (reductionMode)
 	{
-		case VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_EXT:	return tcu::Sampler::WEIGHTED_AVERAGE;
-		case VK_SAMPLER_REDUCTION_MODE_MIN_EXT:					return tcu::Sampler::MIN;
-		case VK_SAMPLER_REDUCTION_MODE_MAX_EXT:					return tcu::Sampler::MAX;
+		case VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE:	return tcu::Sampler::WEIGHTED_AVERAGE;
+		case VK_SAMPLER_REDUCTION_MODE_MIN:					return tcu::Sampler::MIN;
+		case VK_SAMPLER_REDUCTION_MODE_MAX:					return tcu::Sampler::MAX;
 		default:
 			break;
 	}

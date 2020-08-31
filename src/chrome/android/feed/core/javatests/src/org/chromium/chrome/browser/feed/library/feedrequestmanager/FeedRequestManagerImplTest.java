@@ -22,7 +22,9 @@ import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.ExtensionRegistryLite;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.Robolectric;
@@ -54,6 +56,8 @@ import org.chromium.chrome.browser.feed.library.testing.host.logging.FakeBasicLo
 import org.chromium.chrome.browser.feed.library.testing.host.stream.FakeTooltipSupportedApi;
 import org.chromium.chrome.browser.feed.library.testing.network.FakeNetworkClient;
 import org.chromium.chrome.browser.feed.library.testing.protocoladapter.FakeProtocolAdapter;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamToken;
 import org.chromium.components.feed.core.proto.wire.ActionTypeProto.ActionType;
 import org.chromium.components.feed.core.proto.wire.CapabilityProto.Capability;
@@ -91,6 +95,7 @@ import java.util.Set;
 /** Test of the {@link FeedRequestManagerImpl} class. */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
 public class FeedRequestManagerImplTest {
     private static final int NOT_FOUND = 404;
     private static final String TABLE = "table";
@@ -124,6 +129,9 @@ public class FeedRequestManagerImplTest {
     private RequiredConsumer<Result<Model>> mConsumer;
     private Result<Model> mConsumedResult = Result.failure();
     private HttpResponse mFailingResponse;
+
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Before
     public void setUp() throws Exception {
@@ -170,6 +178,8 @@ public class FeedRequestManagerImplTest {
 
         HttpRequest httpRequest = mFakeNetworkClient.getLatestRequest();
         assertHttpRequestFormattedCorrectly(httpRequest, mContext);
+        assertThat(httpRequest.getUri().getQueryParameter(RequestHelper.PRIORITY_PARAM))
+                .isEqualTo(RequestHelper.PRIORITY_VALUE_BACKGROUND);
 
         Request request = getRequestFromHttpRequest(httpRequest);
         Request expectedRequest =
@@ -201,6 +211,11 @@ public class FeedRequestManagerImplTest {
     }
 
     @Test
+    public void testTriggerRefresh_sendFeedbackCapabilityAddedWhenFlagIsOn() throws Exception {
+        testCapabilityAdded(ConfigKey.SEND_FEEDBACK_ENABLED, Capability.SEND_FEEDBACK);
+    }
+
+    @Test
     public void testTriggerRefresh_tooltipCapabilityAddedWhenFlagIsOn() throws Exception {
         testCapabilityAdded(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE, Capability.CARD_MENU_TOOLTIP);
     }
@@ -211,7 +226,7 @@ public class FeedRequestManagerImplTest {
         // TooltipSupportedApi.wouldTriggerHelpUi() returns false, then the capability should not be
         // added and only the BASE_UI should be present.
         mFakeTooltipSupportedApi.addUnsupportedFeature(FeatureName.CARD_MENU_TOOLTIP);
-        testCapabilityAdded(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE, /* capability= */ null);
+        testCapabilityAdded(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE /* capability= empty */);
     }
 
     @Test
@@ -228,6 +243,13 @@ public class FeedRequestManagerImplTest {
     @Test
     public void testTriggerRefresh_enableCarouselsAdded() throws Exception {
         testCapabilityAdded(ConfigKey.ENABLE_CAROUSELS, Capability.CAROUSELS);
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    public void testTriggerRefresh_enableFeedActions() throws Exception {
+        testCapabilityAdded(Capability.CLICK_ACTION, Capability.VIEW_ACTION,
+                Capability.REPORT_FEED_USER_ACTIONS_NOTICE_CARD);
     }
 
     @Test
@@ -626,8 +648,7 @@ public class FeedRequestManagerImplTest {
     public void testHandleResponse() throws Exception {
         mRequestManager.triggerRefresh(RequestReason.HOST_REQUESTED, mConsumer);
 
-        // TODO(crbug.com/1024945): Find alternative to LiteProtoTruth.
-        // assertThat(fakeProtocolAdapter.getLastResponse()).isEqualToDefaultInstance();
+        assertThat(mFakeProtocolAdapter.getLastResponse()).isEqualTo(Response.getDefaultInstance());
         assertThat(mConsumer.isCalled()).isTrue();
         assertThat(mConsumedResult.isSuccessful()).isTrue();
     }
@@ -669,42 +690,50 @@ public class FeedRequestManagerImplTest {
 
     @Test
     public void testGetWireRequestResponse_unknown() throws Exception {
-        testReason(RequestReason.UNKNOWN, FeedQuery.RequestReason.UNKNOWN_REQUEST_REASON);
+        testReason(RequestReason.UNKNOWN, FeedQuery.RequestReason.UNKNOWN_REQUEST_REASON,
+                RequestHelper.PRIORITY_VALUE_INTERACTIVE);
     }
 
     @Test
     public void testGetWireRequestResponse_zeroState() throws Exception {
-        testReason(RequestReason.ZERO_STATE, FeedQuery.RequestReason.ZERO_STATE_REFRESH);
+        testReason(RequestReason.ZERO_STATE, FeedQuery.RequestReason.ZERO_STATE_REFRESH,
+                RequestHelper.PRIORITY_VALUE_INTERACTIVE);
     }
 
     @Test
     public void testGetWireRequestResponse_hostRequested() throws Exception {
-        testReason(RequestReason.HOST_REQUESTED, FeedQuery.RequestReason.SCHEDULED_REFRESH);
+        testReason(RequestReason.HOST_REQUESTED, FeedQuery.RequestReason.SCHEDULED_REFRESH,
+                RequestHelper.PRIORITY_VALUE_BACKGROUND);
     }
 
     @Test
     public void testGetWireRequestResponse_openWithContent() throws Exception {
-        testReason(RequestReason.OPEN_WITH_CONTENT, FeedQuery.RequestReason.WITH_CONTENT);
+        testReason(RequestReason.OPEN_WITH_CONTENT, FeedQuery.RequestReason.WITH_CONTENT,
+                RequestHelper.PRIORITY_VALUE_BACKGROUND);
     }
 
     @Test
     public void testGetWireRequestResponse_manualContinuation() throws Exception {
-        testReason(RequestReason.MANUAL_CONTINUATION, FeedQuery.RequestReason.NEXT_PAGE_SCROLL);
+        testReason(RequestReason.MANUAL_CONTINUATION, FeedQuery.RequestReason.NEXT_PAGE_SCROLL,
+                RequestHelper.PRIORITY_VALUE_INTERACTIVE);
     }
 
     @Test
     public void testGetWireRequestResponse_automaticContinuation() throws Exception {
-        testReason(RequestReason.AUTOMATIC_CONTINUATION, FeedQuery.RequestReason.NEXT_PAGE_SCROLL);
+        testReason(RequestReason.AUTOMATIC_CONTINUATION, FeedQuery.RequestReason.NEXT_PAGE_SCROLL,
+                RequestHelper.PRIORITY_VALUE_INTERACTIVE);
     }
 
     @Test
     public void testGetWireRequestResponse_openWithoutContent() throws Exception {
-        testReason(RequestReason.OPEN_WITHOUT_CONTENT, FeedQuery.RequestReason.INITIAL_LOAD);
+        testReason(RequestReason.OPEN_WITHOUT_CONTENT, FeedQuery.RequestReason.INITIAL_LOAD,
+                RequestHelper.PRIORITY_VALUE_INTERACTIVE);
     }
 
     @Test
     public void testGetWireRequestResponse_clearAll() throws Exception {
-        testReason(RequestReason.CLEAR_ALL, FeedQuery.RequestReason.CLEAR_ALL);
+        testReason(RequestReason.CLEAR_ALL, FeedQuery.RequestReason.CLEAR_ALL,
+                RequestHelper.PRIORITY_VALUE_INTERACTIVE);
     }
 
     @Test
@@ -776,8 +805,8 @@ public class FeedRequestManagerImplTest {
         assertThat(request).isEqualTo(expectedRequest);
     }
 
-    private void testReason(@RequestReason int reason, FeedQuery.RequestReason expectedReason)
-            throws Exception {
+    private void testReason(@RequestReason int reason, FeedQuery.RequestReason expectedReason,
+            String expectedPriority) throws Exception {
         mFakeNetworkClient.addResponse(mFailingResponse);
         mRequestManager.triggerRefresh(reason, input -> {});
 
@@ -786,6 +815,8 @@ public class FeedRequestManagerImplTest {
         assertThat(request.getExtension(FeedRequest.feedRequest).getFeedQuery().getReason())
                 .isEqualTo(expectedReason);
         assertThat(mFakeBasicLoggingApi.serverRequestReason).isEqualTo(reason);
+        assertThat(httpRequest.getUri().getQueryParameter(RequestHelper.PRIORITY_PARAM))
+                .isEqualTo(expectedPriority);
     }
 
     private static void assertHttpRequestFormattedCorrectly(
@@ -856,8 +887,18 @@ public class FeedRequestManagerImplTest {
                                 .build());
     }
 
-    private void testCapabilityAdded(String configKey, Capability capability) throws Exception {
+    private void testCapabilityAdded(String configKey, Capability... capability) throws Exception {
         Configuration configuration = new Configuration.Builder().put(configKey, true).build();
+        testCapabilityAddedWithConfig(configuration, capability);
+    }
+
+    private void testCapabilityAdded(Capability... capability) throws Exception {
+        Configuration configuration = new Configuration.Builder().build();
+        testCapabilityAddedWithConfig(configuration, capability);
+    }
+
+    private void testCapabilityAddedWithConfig(
+            Configuration configuration, Capability... capability) throws Exception {
         mRequestManager = new FeedRequestManagerImpl(configuration, mFakeNetworkClient,
                 mFakeProtocolAdapter, new FeedExtensionRegistry(ArrayList::new), mScheduler,
                 mFakeTaskQueue, mTimingUtils, mFakeThreadUtils, mFakeActionReader, mContext,
@@ -869,9 +910,7 @@ public class FeedRequestManagerImplTest {
         assertHttpRequestFormattedCorrectly(httpRequest, mContext);
 
         Set<Capability> expectedCap = EnumSet.of(Capability.BASE_UI);
-        if (capability != null) {
-            expectedCap.add(capability);
-        }
+        Collections.addAll(expectedCap, capability);
 
         Request request = getRequestFromHttpRequest(httpRequest);
         assertThat(request.getExtension(FeedRequest.feedRequest).getClientCapabilityList())

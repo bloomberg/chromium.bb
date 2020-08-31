@@ -5,12 +5,14 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.annotations.RemovableInRelease;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,6 +23,7 @@ import java.util.Set;
 /**
  * Layer over android {@link SharedPreferences}.
  */
+@SuppressWarnings("UseSharedPreferencesManagerFromChromeCheck")
 public class SharedPreferencesManager {
     private static class LazyHolder {
         static final SharedPreferencesManager INSTANCE = new SharedPreferencesManager();
@@ -33,15 +36,38 @@ public class SharedPreferencesManager {
         return LazyHolder.INSTANCE;
     }
 
-    private final SharedPreferences mSharedPreferences;
+    private BaseChromePreferenceKeyChecker mKeyChecker;
 
     private SharedPreferencesManager() {
-        this(ContextUtils.getAppSharedPreferences());
+        maybeInitializeChecker();
+        // In production builds, use a dummy key checker.
+        if (mKeyChecker == null) {
+            mKeyChecker = new BaseChromePreferenceKeyChecker();
+        }
     }
 
     @VisibleForTesting
-    SharedPreferencesManager(SharedPreferences sharedPreferences) {
-        mSharedPreferences = sharedPreferences;
+    SharedPreferencesManager(BaseChromePreferenceKeyChecker keyChecker) {
+        mKeyChecker = keyChecker;
+    }
+
+    @RemovableInRelease
+    private void maybeInitializeChecker() {
+        // Create a working key checker, which does not happen in production builds.
+        mKeyChecker = ChromePreferenceKeyChecker.getInstance();
+    }
+
+    @VisibleForTesting
+    BaseChromePreferenceKeyChecker swapKeyCheckerForTesting(
+            BaseChromePreferenceKeyChecker newChecker) {
+        BaseChromePreferenceKeyChecker swappedOut = mKeyChecker;
+        mKeyChecker = newChecker;
+        return swappedOut;
+    }
+
+    @VisibleForTesting
+    public void disableKeyCheckerForTesting() {
+        mKeyChecker = new BaseChromePreferenceKeyChecker();
     }
 
     /**
@@ -49,7 +75,7 @@ public class SharedPreferencesManager {
      */
     public interface Observer {
         /**
-         * Notifies when a preference maintained by {@link ChromePreferenceManager} is changed.
+         * Notifies when a preference maintained by {@link SharedPreferencesManager} is changed.
          * @param key The key of the preference changed.
          */
         void onPreferenceChanged(String key);
@@ -65,7 +91,7 @@ public class SharedPreferencesManager {
         SharedPreferences.OnSharedPreferenceChangeListener listener =
                 (SharedPreferences sharedPreferences, String s) -> observer.onPreferenceChanged(s);
         mObservers.put(observer, listener);
-        mSharedPreferences.registerOnSharedPreferenceChangeListener(listener);
+        ContextUtils.getAppSharedPreferences().registerOnSharedPreferenceChangeListener(listener);
     }
 
     /**
@@ -74,13 +100,15 @@ public class SharedPreferencesManager {
     public void removeObserver(Observer observer) {
         SharedPreferences.OnSharedPreferenceChangeListener listener = mObservers.get(observer);
         if (listener == null) return;
-        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(listener);
+        ContextUtils.getAppSharedPreferences().unregisterOnSharedPreferenceChangeListener(listener);
     }
 
     /**
      * Reads set of String values from preferences.
      *
-     * Note that you must not modify the set instance returned by this call.
+     * If no value was set for the |key|, returns an unmodifiable empty set.
+     *
+     * @return unmodifiable Set with the values
      */
     public Set<String> readStringSet(String key) {
         return readStringSet(key, Collections.emptySet());
@@ -89,28 +117,39 @@ public class SharedPreferencesManager {
     /**
      * Reads set of String values from preferences.
      *
-     * Note that you must not modify the set instance returned by this call.
+     * If no value was set for the |key|, returns an unmodifiable view of |defaultValue|.
+     *
+     * @return unmodifiable Set with the values
      */
-    public Set<String> readStringSet(String key, Set<String> defaultValue) {
-        return mSharedPreferences.getStringSet(key, defaultValue);
+    @Nullable
+    public Set<String> readStringSet(String key, @Nullable Set<String> defaultValue) {
+        mKeyChecker.checkIsKeyInUse(key);
+        Set<String> values = ContextUtils.getAppSharedPreferences().getStringSet(key, defaultValue);
+        return (values != null) ? Collections.unmodifiableSet(values) : null;
     }
 
     /**
      * Adds a value to string set in shared preferences.
      */
     public void addToStringSet(String key, String value) {
-        Set<String> values = new HashSet<>(readStringSet(key));
+        mKeyChecker.checkIsKeyInUse(key);
+        // Construct a new set so it can be modified safely. See crbug.com/568369.
+        Set<String> values = new HashSet<>(
+                ContextUtils.getAppSharedPreferences().getStringSet(key, Collections.emptySet()));
         values.add(value);
-        writeStringSet(key, values);
+        writeStringSetUnchecked(key, values);
     }
 
     /**
      * Removes value from string set in shared preferences.
      */
     public void removeFromStringSet(String key, String value) {
-        Set<String> values = new HashSet<>(readStringSet(key));
+        mKeyChecker.checkIsKeyInUse(key);
+        // Construct a new set so it can be modified safely. See crbug.com/568369.
+        Set<String> values = new HashSet<>(
+                ContextUtils.getAppSharedPreferences().getStringSet(key, Collections.emptySet()));
         if (values.remove(value)) {
-            writeStringSet(key, values);
+            writeStringSetUnchecked(key, values);
         }
     }
 
@@ -118,7 +157,28 @@ public class SharedPreferencesManager {
      * Writes string set to shared preferences.
      */
     public void writeStringSet(String key, Set<String> values) {
-        mSharedPreferences.edit().putStringSet(key, values).apply();
+        mKeyChecker.checkIsKeyInUse(key);
+        writeStringSetUnchecked(key, values);
+    }
+
+    /**
+     * Writes string set to shared preferences.
+     */
+    private void writeStringSetUnchecked(String key, Set<String> values) {
+        Editor editor = ContextUtils.getAppSharedPreferences().edit().putStringSet(key, values);
+        editor.apply();
+    }
+
+    /**
+     * Writes the given string set to the named shared preference and immediately commit to disk.
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     * @return Whether the operation succeeded.
+     */
+    public boolean writeStringSetSync(String key, Set<String> value) {
+        mKeyChecker.checkIsKeyInUse(key);
+        Editor editor = ContextUtils.getAppSharedPreferences().edit().putStringSet(key, value);
+        return editor.commit();
     }
 
     /**
@@ -127,9 +187,30 @@ public class SharedPreferencesManager {
      * @param value The new value for the preference.
      */
     public void writeInt(String key, int value) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        mKeyChecker.checkIsKeyInUse(key);
+        writeIntUnchecked(key, value);
+    }
+
+    private void writeIntUnchecked(String key, int value) {
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
         ed.putInt(key, value);
         ed.apply();
+    }
+
+    /**
+     * Writes the given int value to the named shared preference and immediately commit to disk.
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     * @return Whether the operation succeeded.
+     */
+    public boolean writeIntSync(String key, int value) {
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
+        ed.putInt(key, value);
+
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            return ed.commit();
+        }
     }
 
     /**
@@ -148,8 +229,9 @@ public class SharedPreferencesManager {
      * @return The value of the preference.
      */
     public int readInt(String key, int defaultValue) {
+        mKeyChecker.checkIsKeyInUse(key);
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mSharedPreferences.getInt(key, defaultValue);
+            return ContextUtils.getAppSharedPreferences().getInt(key, defaultValue);
         }
     }
 
@@ -160,8 +242,9 @@ public class SharedPreferencesManager {
      * @return The newly incremented value.
      */
     public int incrementInt(String key) {
-        int value = mSharedPreferences.getInt(key, 0);
-        writeInt(key, ++value);
+        mKeyChecker.checkIsKeyInUse(key);
+        int value = ContextUtils.getAppSharedPreferences().getInt(key, 0);
+        writeIntUnchecked(key, ++value);
         return value;
     }
 
@@ -172,9 +255,26 @@ public class SharedPreferencesManager {
      * @param value The new value for the preference.
      */
     public void writeLong(String key, long value) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
         ed.putLong(key, value);
         ed.apply();
+    }
+
+    /**
+     * Writes the given long value to the named shared preference and immediately commit to disk.
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     * @return Whether the operation succeeded.
+     */
+    public boolean writeLongSync(String key, long value) {
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
+        ed.putLong(key, value);
+
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            return ed.commit();
+        }
     }
 
     /**
@@ -195,8 +295,86 @@ public class SharedPreferencesManager {
      * @return The value of the preference if stored; defaultValue otherwise.
      */
     public long readLong(String key, long defaultValue) {
+        mKeyChecker.checkIsKeyInUse(key);
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mSharedPreferences.getLong(key, defaultValue);
+            return ContextUtils.getAppSharedPreferences().getLong(key, defaultValue);
+        }
+    }
+
+    /**
+     * Writes the given float to the named shared preference.
+     *
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     */
+    public void writeFloat(String key, float value) {
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
+        ed.putFloat(key, value);
+        ed.apply();
+    }
+
+    /**
+     * Writes the given float value to the named shared preference and immediately commit to disk.
+     *
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     * @return Whether the operation succeeded.
+     */
+    public boolean writeFloatSync(String key, float value) {
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
+        ed.putFloat(key, value);
+
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            return ed.commit();
+        }
+    }
+
+    /**
+     * Reads the given float value from the named shared preference.
+     *
+     * @param key The name of the preference to return.
+     * @param defaultValue The default value to return if there's no value stored.
+     * @return The value of the preference if stored; defaultValue otherwise.
+     */
+    public float readFloat(String key, float defaultValue) {
+        mKeyChecker.checkIsKeyInUse(key);
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            return ContextUtils.getAppSharedPreferences().getFloat(key, defaultValue);
+        }
+    }
+
+    /**
+     * Writes the given double value to the named shared preference.
+     *
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     */
+    public void writeDouble(String key, double value) {
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
+        long ieee754LongValue = Double.doubleToRawLongBits(value);
+        ed.putLong(key, ieee754LongValue);
+        ed.apply();
+    }
+
+    /**
+     * Reads the given double value from the named shared preference.
+     *
+     * @param key The name of the preference to return.
+     * @param defaultValue The default value to return if there's no value stored.
+     * @return The value of the preference if stored; defaultValue otherwise.
+     */
+    public Double readDouble(String key, double defaultValue) {
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            if (!prefs.contains(key)) {
+                return defaultValue;
+            }
+            long ieee754LongValue = prefs.getLong(key, 0L);
+            return Double.longBitsToDouble(ieee754LongValue);
         }
     }
 
@@ -207,9 +385,26 @@ public class SharedPreferencesManager {
      * @param value The new value for the preference.
      */
     public void writeBoolean(String key, boolean value) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
         ed.putBoolean(key, value);
         ed.apply();
+    }
+
+    /**
+     * Writes the given boolean value to the named shared preference and immediately commit to disk.
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     * @return Whether the operation succeeded.
+     */
+    public boolean writeBooleanSync(String key, boolean value) {
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
+        ed.putBoolean(key, value);
+
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            return ed.commit();
+        }
     }
 
     /**
@@ -220,8 +415,9 @@ public class SharedPreferencesManager {
      * @return The value of the preference if stored; defaultValue otherwise.
      */
     public boolean readBoolean(String key, boolean defaultValue) {
+        mKeyChecker.checkIsKeyInUse(key);
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mSharedPreferences.getBoolean(key, defaultValue);
+            return ContextUtils.getAppSharedPreferences().getBoolean(key, defaultValue);
         }
     }
 
@@ -232,9 +428,26 @@ public class SharedPreferencesManager {
      * @param value The new value for the preference.
      */
     public void writeString(String key, String value) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
         ed.putString(key, value);
         ed.apply();
+    }
+
+    /**
+     * Writes the given string value to the named shared preference and immediately commit to disk.
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     * @return Whether the operation succeeded.
+     */
+    public boolean writeStringSync(String key, String value) {
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
+        ed.putString(key, value);
+
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            return ed.commit();
+        }
     }
 
     /**
@@ -244,9 +457,11 @@ public class SharedPreferencesManager {
      * @param defaultValue The default value to return if there's no value stored.
      * @return The value of the preference if stored; defaultValue otherwise.
      */
+    @Nullable
     public String readString(String key, @Nullable String defaultValue) {
+        mKeyChecker.checkIsKeyInUse(key);
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mSharedPreferences.getString(key, defaultValue);
+            return ContextUtils.getAppSharedPreferences().getString(key, defaultValue);
         }
     }
 
@@ -256,8 +471,27 @@ public class SharedPreferencesManager {
      * @param key The key of the preference to remove.
      */
     public void removeKey(String key) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
         ed.remove(key);
         ed.apply();
+    }
+
+    public boolean removeKeySync(String key) {
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
+        ed.remove(key);
+        return ed.commit();
+    }
+
+    /**
+     * Checks if any value was written associated to a key in shared preferences.
+     *
+     * @param key The key of the preference to check.
+     * @return Whether any value was written for that key.
+     */
+    public boolean contains(String key) {
+        mKeyChecker.checkIsKeyInUse(key);
+        return ContextUtils.getAppSharedPreferences().contains(key);
     }
 }

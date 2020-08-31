@@ -40,6 +40,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
@@ -52,6 +54,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -93,6 +96,7 @@
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
@@ -103,6 +107,7 @@
 #include "components/exo/shell_surface_util.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_notifier_impl.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -134,6 +139,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/views/widget/widget.h"
@@ -147,6 +153,7 @@ namespace {
 constexpr char kOfflineGmailUrl[] = "https://mail.google.com/mail/mu/u";
 constexpr char kGmailUrl[] = "https://mail.google.com/mail/u";
 constexpr char kGmailLaunchURL[] = "https://mail.google.com/mail/ca";
+constexpr char kLaunchURL[] = "https://foo.example/";
 
 // An extension prefix.
 constexpr char kCrxAppPrefix[] = "_crx_";
@@ -154,14 +161,6 @@ constexpr char kCrxAppPrefix[] = "_crx_";
 // Dummy app id is used to put at least one pin record to prevent initializing
 // pin model with default apps that can affect some tests.
 constexpr char kDummyAppId[] = "dummyappid_dummyappid_dummyappid";
-
-// Web App id.
-constexpr char kWebAppId[] = "lpikggcgamknpihimepdkohalcnpofed";
-constexpr char kWebAppUrl[] = "https://foo.example/";
-
-constexpr char kCameraAppName[] = "Camera";
-constexpr char kCameraAppPackage[] = "com.google.android.GoogleCameraArc";
-constexpr char kCameraAppActivity[] = "com.android.camera.CameraLauncher";
 
 // Test implementation of AppIconLoader.
 class TestAppIconLoaderImpl : public AppIconLoader {
@@ -283,7 +282,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kUseFirstDisplayAsInternal);
 
-    app_list::AppListSyncableServiceFactory::SetUseInTesting();
+    app_list::AppListSyncableServiceFactory::SetUseInTesting(true);
 
     BrowserWithTestWindowTest::SetUp();
 
@@ -299,7 +298,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     // AppService checks the app's type. So set the
     // manifest_keys::kLaunchWebURL, so that the extension can get the type
     // from manifest value, and then AppService can get the extension's type.
-    manifest.SetString(extensions::manifest_keys::kLaunchWebURL, kWebAppUrl);
+    manifest.SetString(extensions::manifest_keys::kLaunchWebURL, kLaunchURL);
 
     base::DictionaryValue manifest_platform_app;
     manifest_platform_app.SetString(extensions::manifest_keys::kName,
@@ -337,8 +336,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
     app_list_syncable_service_ =
         app_list::AppListSyncableServiceFactory::GetForProfile(profile());
-    StartAppSyncService(
-        app_list_syncable_service_->GetAllSyncData(syncer::APP_LIST));
+    StartAppSyncService(app_list_syncable_service_->GetAllSyncDataForTesting());
 
     std::string error;
     extension_chrome_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
@@ -409,10 +407,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     // manifest_keys::kLaunchWebURL, so that the extension can get the type
     // from manifest value, and then AppService can get the extension's type.
     manifest_web_app.SetString(extensions::manifest_keys::kLaunchWebURL,
-                               kWebAppUrl);
-    web_app_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
-                                 manifest_web_app, Extension::FROM_BOOKMARK,
-                                 kWebAppId, &error);
+                               kLaunchURL);
   }
 
   ui::BaseWindow* GetLastActiveWindowForItemController(
@@ -478,6 +473,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     arc_test_.TearDown();
     launcher_controller_ = nullptr;
     BrowserWithTestWindowTest::TearDown();
+    app_list::AppListSyncableServiceFactory::SetUseInTesting(false);
   }
 
   std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
@@ -538,21 +534,30 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     app_list_syncable_service_->StopSyncing(syncer::APP_LIST);
   }
 
+  // static
+  syncer::ModelType GetPreferencesModelType() {
+    // SplitSettingsSync makes shelf prefs into OS prefs.
+    return chromeos::features::IsSplitSettingsSyncEnabled()
+               ? syncer::OS_PREFERENCES
+               : syncer::PREFERENCES;
+  }
+
   sync_preferences::PrefModelAssociator* GetPrefSyncService() {
     sync_preferences::PrefServiceSyncable* pref_sync =
         profile()->GetTestingPrefService();
     sync_preferences::PrefModelAssociator* pref_sync_service =
         reinterpret_cast<sync_preferences::PrefModelAssociator*>(
-            pref_sync->GetSyncableService(syncer::PREFERENCES));
+            pref_sync->GetSyncableService(GetPreferencesModelType()));
     return pref_sync_service;
   }
 
   void StartPrefSyncService(const syncer::SyncDataList& init_sync_list) {
-    syncer::SyncMergeResult r = GetPrefSyncService()->MergeDataAndStartSyncing(
-        syncer::PREFERENCES, init_sync_list,
-        std::make_unique<syncer::FakeSyncChangeProcessor>(),
-        std::make_unique<syncer::SyncErrorFactoryMock>());
-    EXPECT_FALSE(r.error().IsSet());
+    base::Optional<syncer::ModelError> error =
+        GetPrefSyncService()->MergeDataAndStartSyncing(
+            GetPreferencesModelType(), init_sync_list,
+            std::make_unique<syncer::FakeSyncChangeProcessor>(),
+            std::make_unique<syncer::SyncErrorFactoryMock>());
+    EXPECT_FALSE(error.has_value());
   }
 
   void SetAppIconLoader(std::unique_ptr<AppIconLoader> loader) {
@@ -773,10 +778,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
             result += "Platform_App";
           } else if (app == arc_support_host_->id()) {
             result += "Play Store";
-          } else if (app == crostini::kCrostiniTerminalId) {
+          } else if (app == crostini::GetTerminalId()) {
             result += "Terminal";
-          } else if (app == web_app_->id()) {
-            result += "WebApp";
           } else {
             bool arc_app_found = false;
             for (const auto& arc_app : arc_test_.fake_apps()) {
@@ -850,7 +853,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   views::Widget* CreateArcWindow(const std::string& window_app_id) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.bounds = gfx::Rect(5, 5, 20, 20);
-    params.context = ash_test_helper()->CurrentContext();
+    params.context = GetContext();
     views::Widget* widget = new views::Widget();
     widget->Init(std::move(params));
     // Set ARC id before showing the window to be recognized in
@@ -883,6 +886,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     const std::string app_id =
         ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
     EXPECT_TRUE(prefs->GetApp(app_id));
+    app_service_test().FlushMojoCalls();
     return app_id;
   }
 
@@ -946,7 +950,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   scoped_refptr<Extension> extensionYoutubeApp_;
   scoped_refptr<Extension> extension_platform_app_;
   scoped_refptr<Extension> arc_support_host_;
-  scoped_refptr<Extension> web_app_;
 
   ArcAppTest arc_test_;
   bool auto_start_arc_test_ = false;
@@ -1024,13 +1027,14 @@ class ChromeLauncherControllerExtendedShelfTest
     // AppService checks the app's type. So set the
     // manifest_keys::kLaunchWebURL, so that the extension can get the type
     // from manifest value, and then AppService can get the extension's type.
-    manifest.SetString(extensions::manifest_keys::kLaunchWebURL, kWebAppUrl);
+    manifest.SetString(extensions::manifest_keys::kLaunchWebURL, kLaunchURL);
 
     const std::vector<std::pair<std::string, std::string>> extra_extensions = {
         {extension_misc::kCalendarAppId, "Calendar"},
         {extension_misc::kGoogleSheetsAppId, "Sheets"},
         {extension_misc::kGoogleSlidesAppId, "Slides"},
         {extension_misc::kFilesManagerAppId, "Files"},
+        {extension_misc::kCameraAppId, "Camera"},
         {extension_misc::kGooglePhotosAppId, "Photos"},
     };
 
@@ -1049,29 +1053,6 @@ class ChromeLauncherControllerExtendedShelfTest
   std::vector<scoped_refptr<Extension>> extra_extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerExtendedShelfTest);
-};
-
-// Watches WebContents and blocks until it is destroyed. This is needed for
-// the destruction of a V2 application.
-class WebContentsDestroyedWatcher : public content::WebContentsObserver {
- public:
-  explicit WebContentsDestroyedWatcher(content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents),
-        message_loop_runner_(new content::MessageLoopRunner) {
-    EXPECT_TRUE(web_contents != NULL);
-  }
-  ~WebContentsDestroyedWatcher() override {}
-
-  // Waits until the WebContents is destroyed.
-  void Wait() { message_loop_runner_->Run(); }
-
- private:
-  // Overridden WebContentsObserver methods.
-  void WebContentsDestroyed() override { message_loop_runner_->Quit(); }
-
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedWatcher);
 };
 
 // A V1 windowed application.
@@ -1125,7 +1106,8 @@ class V2App {
   }
 
   virtual ~V2App() {
-    WebContentsDestroyedWatcher destroyed_watcher(window_->web_contents());
+    content::WebContentsDestroyedWatcher destroyed_watcher(
+        window_->web_contents());
     window_->GetBaseWindow()->Close();
     destroyed_watcher.Wait();
   }
@@ -1212,15 +1194,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
         ash::MultiUserWindowManagerImpl::ANIMATION_SPEED_DISABLED);
     ash::MultiUserWindowManagerImpl::Get()->OnActiveUserSessionChanged(
         account_id);
-    // TODO(crbug.com/956841) This should be redundant with the FlushBindings
-    // call, but removing it breaks some tests.
-    launcher_controller_->browser_status_monitor_for_test()->ActiveUserChanged(
-        account_id.GetUserEmail());
-
-    for (const auto& controller :
-         launcher_controller_->app_window_controllers_for_test()) {
-      controller->ActiveUserChanged(account_id.GetUserEmail());
-    }
   }
 
   // Creates a browser with a |profile| and load a tab with a |title| and |url|.
@@ -1450,7 +1423,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {
   // Persist pin state, we don't have active pin for ARC apps yet, but pin
   // model should have it.
   syncer::SyncDataList copy_sync_list =
-      app_list_syncable_service_->GetAllSyncData(syncer::APP_LIST);
+      app_list_syncable_service_->GetAllSyncDataForTesting();
 
   ResetLauncherController();
   SendPinChanges(syncer::SyncChangeList(), true);
@@ -1483,7 +1456,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {
             GetPinnedAppStatus());
 
   app_service_test().WaitForAppService();
-  copy_sync_list = app_list_syncable_service_->GetAllSyncData(syncer::APP_LIST);
+  copy_sync_list = app_list_syncable_service_->GetAllSyncDataForTesting();
 
   ResetLauncherController();
   ResetPinModel();
@@ -2297,6 +2270,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, OverrideAppItemController) {
   arc::mojom::AppInfo app_info = CreateAppInfo(
       "Play Store", arc::kPlayStoreActivity, arc::kPlayStorePackage);
   EXPECT_EQ(arc::kPlayStoreAppId, AddArcAppAndShortcut(app_info));
+  app_service_test().WaitForAppService();
 
   std::string window_app_id("org.chromium.arc.1");
   const ash::ShelfID play_store_shelf_id(arc::kPlayStoreAppId);
@@ -2576,6 +2550,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, DISABLED_ArcCustomAppIcon) {
 TEST_F(ChromeLauncherControllerWithArcTest, ArcWindowPackageName) {
   InitLauncherController();
   SendListOfArcApps();
+  app_service_test().WaitForAppService();
 
   std::string window_app_id1("org.chromium.arc.1");
   std::string window_app_id2("org.chromium.arc.2");
@@ -2998,46 +2973,10 @@ TEST_F(ChromeLauncherControllerTest, Policy) {
 
   // Removing |extension1_| from the policy should not be reflected in the
   // launcher and pin will exist.
-  policy_value.Remove(0, NULL);
+  policy_value.Remove(0, nullptr);
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
   EXPECT_EQ("Chrome, App1, App2", GetPinnedAppStatus());
-}
-
-TEST_F(ChromeLauncherControllerTest, WebAppPolicy) {
-  // Simulate one Web App being installed.
-  web_app::ExternallyInstalledWebAppPrefs web_app_prefs(profile()->GetPrefs());
-  web_app_prefs.Insert(GURL(kWebAppUrl), kWebAppId,
-                       web_app::ExternalInstallSource::kExternalPolicy);
-  extension_service_->AddExtension(web_app_.get());
-
-  // Set the policy value.
-  base::ListValue policy_value;
-  AppendPrefValue(&policy_value, kWebAppUrl);
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kPolicyPinnedLauncherApps,
-      base::Value::ToUniquePtrValue(std::move(policy_value)));
-
-  InitLauncherController();
-
-  EXPECT_EQ("Chrome, WebApp", GetPinnedAppStatus());
-  EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
-            GetPinnableForAppID(kWebAppId, profile()));
-}
-
-TEST_F(ChromeLauncherControllerTest, WebAppPolicyNonExistentApp) {
-  // Set the policy value but don't install an app for it.
-  base::ListValue policy_value;
-  AppendPrefValue(&policy_value, kWebAppUrl);
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kPolicyPinnedLauncherApps,
-      base::Value::ToUniquePtrValue(std::move(policy_value)));
-
-  InitLauncherController();
-
-  EXPECT_EQ("Chrome", GetPinnedAppStatus());
-  EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
-            GetPinnableForAppID(kWebAppId, profile()));
 }
 
 TEST_F(ChromeLauncherControllerTest, UnpinWithUninstall) {
@@ -3366,18 +3305,20 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V2AppHandlingTwoUsers) {
   InitLauncherController();
-  // Create a profile for our second user (will be destroyed by the framework).
-  TestingProfile* profile2 = CreateMultiUserProfile("user2");
   const AccountId account_id(
       multi_user_util::GetAccountIdFromProfile(profile()));
-  const AccountId account_id2(
-      multi_user_util::GetAccountIdFromProfile(profile2));
   // Check that there is a browser.
   EXPECT_EQ(1, model_->item_count());
 
   // Add a v2 app.
+  AddExtension(extension1_.get());
   V2App v2_app(profile(), extension1_.get());
   EXPECT_EQ(2, model_->item_count());
+
+  // Create a profile for our second user (will be destroyed by the framework).
+  TestingProfile* profile2 = CreateMultiUserProfile("user2");
+  const AccountId account_id2(
+      multi_user_util::GetAccountIdFromProfile(profile2));
 
   // After switching users the item should go away.
   SwitchActiveUser(account_id2);
@@ -3410,6 +3351,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // Add the v2 app to the inactive user and check that no item was added to
   // the launcher.
   {
+    AddExtension(extension1_.get());
     V2App v2_app(profile(), extension1_.get());
     EXPECT_EQ(1, model_->item_count());
 
@@ -3423,6 +3365,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
     EXPECT_EQ(1, model_->item_count());
   }
 
+  app_service_test().WaitForAppService();
   // After the application was killed there should still be 1 item.
   EXPECT_EQ(1, model_->item_count());
 
@@ -3437,6 +3380,7 @@ TEST_F(ChromeLauncherControllerTest, Active) {
 
   // Creates a new app window.
   int initial_item_count = model_->item_count();
+  AddExtension(extension1_.get());
   V2App app_1(profile(), extension1_.get());
   EXPECT_TRUE(app_1.window()->GetNativeWindow()->IsVisible());
   EXPECT_EQ(initial_item_count + 1, model_->item_count());
@@ -3448,7 +3392,7 @@ TEST_F(ChromeLauncherControllerTest, Active) {
   ASSERT_TRUE(app_item_controller_1);
   ui::BaseWindow* last_active =
       GetLastActiveWindowForItemController(app_item_controller_1);
-  EXPECT_EQ(app_1.window()->GetBaseWindow(), last_active);
+  EXPECT_EQ(app_1.window()->GetNativeWindow(), last_active->GetNativeWindow());
   // Change the status so that we can verify it gets reset when the active
   // window changes.
   launcher_controller_->SetItemStatus(app_item_delegate_1->shelf_id(),
@@ -3456,6 +3400,7 @@ TEST_F(ChromeLauncherControllerTest, Active) {
 
   // Creates another app window, which should become active and reset |app_1|'s
   // status (to running).
+  AddExtension(extension2_.get());
   V2App app_2(profile(), extension2_.get());
   EXPECT_TRUE(app_2.window()->GetNativeWindow()->IsVisible());
   EXPECT_EQ(initial_item_count + 2, model_->item_count());
@@ -3466,7 +3411,7 @@ TEST_F(ChromeLauncherControllerTest, Active) {
       app_item_delegate_2->AsAppWindowLauncherItemController();
   ASSERT_TRUE(app_item_controller_2);
   last_active = GetLastActiveWindowForItemController(app_item_controller_2);
-  EXPECT_EQ(app_2.window()->GetBaseWindow(), last_active);
+  EXPECT_EQ(app_2.window()->GetNativeWindow(), last_active->GetNativeWindow());
   const ash::ShelfItem* shelf_item_1 =
       launcher_controller_->GetItem(app_item_delegate_1->shelf_id());
   ASSERT_TRUE(shelf_item_1);
@@ -3502,13 +3447,27 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
       multi_user_util::GetAccountIdFromProfile(profile2));
   const AccountId account_id3(
       multi_user_util::GetAccountIdFromProfile(profile3));
+
+  extensions::TestExtensionSystem* extension_system1(
+      static_cast<extensions::TestExtensionSystem*>(
+          extensions::ExtensionSystem::Get(profile1)));
+  extensions::ExtensionService* extension_service1 =
+      extension_system1->CreateExtensionService(
+          base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
+  extension_service1->Init();
+  apps::AppServiceProxy* proxy1 =
+      apps::AppServiceProxyFactory::GetForProfile(profile1);
+
   SwitchActiveUser(account_id1);
 
-  // A v2 app for user #1 should be shown first and get hidden when switching to
-  // desktop #2.
+  // A v2 app for user #1 should be shown first and get hidden when switching
+  // to desktop #2.
+  extension_service1->AddExtension(extension1_.get());
+  proxy1->FlushMojoCallsForTesting();
   V2App v2_app_1(profile1, extension1_.get());
   EXPECT_TRUE(v2_app_1.window()->GetNativeWindow()->IsVisible());
   SwitchActiveUser(account_id2);
+  app_service_test().FlushMojoCalls();
   EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
 
   // Add a v2 app for user #1 while on desktop #2 should not be shown.
@@ -3532,15 +3491,17 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // Switching back to desktop#1 and creating an app for user #1 should move
   // the app on desktop #1.
   SwitchActiveUser(account_id1);
+  app_service_test().FlushMojoCalls();
   V2App v2_app_4(profile1, extension1_.get());
   EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(v2_app_2.window()->GetNativeWindow()->IsVisible());
   EXPECT_FALSE(v2_app_3.window()->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(v2_app_4.window()->GetNativeWindow()->IsVisible());
 
-  // Switching to desktop #3 and creating an app for user #1 should place it on
-  // that user's desktop (#1).
+  // Switching to desktop #3 and creating an app for user #1 should place it
+  // on that user's desktop (#1).
   SwitchActiveUser(account_id3);
+  app_service_test().FlushMojoCalls();
   V2App v2_app_5(profile1, extension1_.get());
   EXPECT_FALSE(v2_app_5.window()->GetNativeWindow()->IsVisible());
   SwitchActiveUser(account_id1);
@@ -3549,6 +3510,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   // Switching to desktop #2, hiding the app window and creating an app should
   // teleport there automatically.
   SwitchActiveUser(account_id2);
+  app_service_test().FlushMojoCalls();
   v2_app_1.window()->Hide();
   V2App v2_app_6(profile1, extension1_.get());
   EXPECT_FALSE(v2_app_1.window()->GetNativeWindow()->IsVisible());
@@ -3563,13 +3525,19 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   InitLauncherController();
 
   TestingProfile* profile2 = CreateMultiUserProfile("user-2");
-  const AccountId account_id(
-      multi_user_util::GetAccountIdFromProfile(profile()));
   const AccountId account_id2(
       multi_user_util::GetAccountIdFromProfile(profile2));
+  // If switch to account_id2 is not run, the following switch to account_id
+  // is invalid, because the user account is not changed, so switch to
+  // account_id2 first.
+  SwitchActiveUser(account_id2);
+
+  const AccountId account_id(
+      multi_user_util::GetAccountIdFromProfile(profile()));
   SwitchActiveUser(account_id);
   EXPECT_EQ(1, model_->item_count());
 
+  AddExtension(extension1_.get());
   V2App v2_app_1(profile(), extension1_.get());
   EXPECT_EQ(2, model_->item_count());
   {
@@ -4164,59 +4132,6 @@ TEST_F(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
   EXPECT_TRUE(window2->IsActive());
 }
 
-// Test that ARC camera app can successfully open and close.
-TEST_F(ChromeLauncherControllerWithArcTest, ArcCameraAppOpenAndClose) {
-  InitLauncherControllerWithBrowser();
-
-  const arc::mojom::AppInfo appinfo =
-      CreateAppInfo(kCameraAppName, kCameraAppActivity, kCameraAppPackage);
-
-  // Widgets will be deleted by the system.
-  views::Widget* window1 = CreateArcWindow("org.chromium.arc.1");
-  NotifyOnTaskCreated(appinfo, 1 /* task_id */);
-  ASSERT_TRUE(window1);
-  EXPECT_TRUE(window1->IsActive());
-
-  // After starting the ARC camera app, it's actually the internal camera app
-  // being put onto the shelf. Therefore, we need to specify the internal
-  // camera app shelf ID to access it.
-  const std::string intern_app_id(ash::kInternalAppIdCamera);
-  const ash::ShelfID intern_shelf_id(intern_app_id);
-  EXPECT_TRUE(launcher_controller_->IsOpen(intern_shelf_id));
-
-  NotifyOnTaskDestroyed(1 /* task_id */);
-  window1->Close();
-
-  EXPECT_FALSE(launcher_controller_->IsOpen(intern_shelf_id));
-}
-
-// Test that the app menu item count is 1 for the built-in camera app.
-TEST_F(ChromeLauncherControllerWithArcTest, ArcCameraAppMenuItemsCount) {
-  InitLauncherControllerWithBrowser();
-
-  const arc::mojom::AppInfo appinfo =
-      CreateAppInfo(kCameraAppName, kCameraAppActivity, kCameraAppPackage);
-
-  // Widgets will be deleted by the system.
-  views::Widget* window1 = CreateArcWindow("org.chromium.arc.1");
-  NotifyOnTaskCreated(appinfo, 1 /* task_id */);
-  ASSERT_TRUE(window1);
-  EXPECT_TRUE(window1->IsActive());
-
-  // After starting the ARC camera app, it's actually the internal camera app
-  // being put onto the shelf. Therefore, we need to specify the internal
-  // camera app shelf ID to access it.
-  const std::string intern_app_id(ash::kInternalAppIdCamera);
-  ash::ShelfItemDelegate* item_delegate =
-      model_->GetShelfItemDelegate(ash::ShelfID(intern_app_id));
-  ASSERT_TRUE(item_delegate);
-
-  // We want to make sure there's only 1 menu item for camera app, even if both
-  // ARC window and internal app window might have been added to
-  // AppWindowLauncherItemController.
-  ASSERT_EQ(1u, item_delegate->GetAppMenuItems(ui::EF_NONE).size());
-}
-
 namespace {
 class ChromeLauncherControllerArcDefaultAppsTest
     : public ChromeLauncherControllerTest {
@@ -4487,7 +4402,7 @@ TEST_F(ChromeLauncherControllerTest, SyncOffLocalUpdate) {
   EXPECT_EQ("Chrome, App1, App2", GetPinnedAppStatus());
 
   syncer::SyncDataList copy_sync_list =
-      app_list_syncable_service_->GetAllSyncData(syncer::APP_LIST);
+      app_list_syncable_service_->GetAllSyncDataForTesting();
 
   app_list_syncable_service_->StopSyncing(syncer::APP_LIST);
   RecreateLauncherController()->Init();
@@ -4744,7 +4659,7 @@ TEST_F(ChromeLauncherControllerTest, CrostiniTerminalPinUnpin) {
 
   // Load pinned Terminal from prefs without Crostini UI being allowed
   syncer::SyncChangeList sync_list;
-  InsertAddPinChange(&sync_list, 1, crostini::kCrostiniTerminalId);
+  InsertAddPinChange(&sync_list, 1, crostini::GetTerminalId());
   SendPinChanges(sync_list, true);
   EXPECT_EQ("Chrome", GetPinnedAppStatus());
 
@@ -4757,11 +4672,11 @@ TEST_F(ChromeLauncherControllerTest, CrostiniTerminalPinUnpin) {
   EXPECT_EQ("Chrome, Terminal", GetPinnedAppStatus());
 
   // Unpin the Terminal
-  launcher_controller_->UnpinAppWithID(crostini::kCrostiniTerminalId);
+  launcher_controller_->UnpinAppWithID(crostini::GetTerminalId());
   EXPECT_EQ("Chrome", GetPinnedAppStatus());
 
   // Pin Terminal again.
-  launcher_controller_->PinAppWithID(crostini::kCrostiniTerminalId);
+  launcher_controller_->PinAppWithID(crostini::GetTerminalId());
   EXPECT_EQ("Chrome, Terminal", GetPinnedAppStatus());
 }
 

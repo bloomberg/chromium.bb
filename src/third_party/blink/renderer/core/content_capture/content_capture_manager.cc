@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 
 #include "third_party/blink/renderer/core/content_capture/sent_nodes.h"
-#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 
@@ -20,27 +19,25 @@ ContentCaptureManager::ContentCaptureManager(LocalFrame& local_frame_root)
 
 ContentCaptureManager::~ContentCaptureManager() = default;
 
-DOMNodeId ContentCaptureManager::GetNodeId(Node& node) {
+void ContentCaptureManager::ScheduleTaskIfNeeded() {
   if (first_node_holder_created_) {
     ScheduleTask(ContentCaptureTask::ScheduleReason::kContentChange);
   } else {
     ScheduleTask(ContentCaptureTask::ScheduleReason::kFirstContentChange);
     first_node_holder_created_ = true;
   }
-  return DOMNodeIds::IdForNode(&node);
 }
 
 void ContentCaptureManager::ScheduleTask(
     ContentCaptureTask::ScheduleReason reason) {
-  if (!content_capture_idle_task_.get()) {
+  if (!content_capture_idle_task_) {
     content_capture_idle_task_ = CreateContentCaptureTask();
   }
   content_capture_idle_task_->Schedule(reason);
 }
 
-scoped_refptr<ContentCaptureTask>
-ContentCaptureManager::CreateContentCaptureTask() {
-  return base::MakeRefCounted<ContentCaptureTask>(*local_frame_root_,
+ContentCaptureTask* ContentCaptureManager::CreateContentCaptureTask() {
+  return MakeGarbageCollected<ContentCaptureTask>(*local_frame_root_,
                                                   *task_session_);
 }
 
@@ -63,6 +60,7 @@ void ContentCaptureManager::OnNodeTextChanged(Node& node) {
 }
 
 void ContentCaptureManager::Trace(Visitor* visitor) {
+  visitor->Trace(content_capture_idle_task_);
   visitor->Trace(local_frame_root_);
   visitor->Trace(task_session_);
   visitor->Trace(sent_nodes_);
@@ -71,7 +69,7 @@ void ContentCaptureManager::Trace(Visitor* visitor) {
 void ContentCaptureManager::Shutdown() {
   if (content_capture_idle_task_) {
     content_capture_idle_task_->Shutdown();
-    content_capture_idle_task_.reset();
+    content_capture_idle_task_ = nullptr;
   }
 }
 

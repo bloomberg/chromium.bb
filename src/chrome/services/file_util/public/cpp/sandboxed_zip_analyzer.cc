@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/services/file_util/public/mojom/safe_archive_analyzer.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -16,10 +17,12 @@
 
 SandboxedZipAnalyzer::SandboxedZipAnalyzer(
     const base::FilePath& zip_file,
-    const ResultCallback& callback,
+    ResultCallback callback,
     mojo::PendingRemote<chrome::mojom::FileUtilService> service)
-    : file_path_(zip_file), callback_(callback), service_(std::move(service)) {
-  DCHECK(callback);
+    : file_path_(zip_file),
+      callback_(std::move(callback)),
+      service_(std::move(service)) {
+  DCHECK(callback_);
   service_->BindSafeArchiveAnalyzer(
       remote_analyzer_.BindNewPipeAndPassReceiver());
   remote_analyzer_.set_disconnect_handler(base::BindOnce(
@@ -30,9 +33,9 @@ SandboxedZipAnalyzer::SandboxedZipAnalyzer(
 void SandboxedZipAnalyzer::Start() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&SandboxedZipAnalyzer::PrepareFileToAnalyze, this));
 }
@@ -69,9 +72,9 @@ void SandboxedZipAnalyzer::PrepareFileToAnalyze() {
 }
 
 void SandboxedZipAnalyzer::ReportFileFailure() {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(callback_, safe_browsing::ArchiveAnalyzerResults()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(callback_),
+                                safe_browsing::ArchiveAnalyzerResults()));
 }
 
 void SandboxedZipAnalyzer::AnalyzeFile(base::File file, base::File temp_file) {
@@ -86,5 +89,5 @@ void SandboxedZipAnalyzer::AnalyzeFileDone(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   remote_analyzer_.reset();
-  callback_.Run(results);
+  std::move(callback_).Run(results);
 }

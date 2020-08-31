@@ -12,6 +12,12 @@
 suite('cr-icon-button', function() {
   let button;
 
+  /** @param {string} key */
+  function press(key) {
+    button.dispatchEvent(new KeyboardEvent('keydown', {key}));
+    button.dispatchEvent(new KeyboardEvent('keyup', {key}));
+  }
+
   setup(async () => {
     PolymerTest.clearBody();
     button = document.createElement('cr-icon-button');
@@ -51,6 +57,30 @@ suite('cr-icon-button', function() {
     await wait;
   });
 
+  test('space up does not click without space down', () => {
+    let clicked = false;
+    button.addEventListener('click', () => {
+      clicked = true;
+    }, {once: true});
+    button.dispatchEvent(new KeyboardEvent('keyup', {key: ' '}));
+    assertFalse(clicked);
+    press(' ');
+    assertTrue(clicked);
+  });
+
+  test('space up events will not result in one click if loses focus', () => {
+    let clicked = false;
+    button.addEventListener('click', () => {
+      clicked = true;
+    }, {once: true});
+    button.dispatchEvent(new KeyboardEvent('keydown', {key: ' '}));
+    button.dispatchEvent(new Event('blur'));
+    button.dispatchEvent(new KeyboardEvent('keyup', {key: ' '}));
+    assertFalse(clicked);
+    press(' ');
+    assertTrue(clicked);
+  });
+
   test('disabled prevents UI and programmatic clicks', async () => {
     let clickCount = 0;
     const clickHandler = () => {
@@ -79,10 +109,23 @@ suite('cr-icon-button', function() {
   });
 
   test('when tabindex is -1, it stays -1', async () => {
-    document.body.innerHTML = '<cr-icon-button tabindex="-1"></cr-icon-button>';
+    document.body.innerHTML =
+        '<cr-icon-button custom-tab-index="-1"></cr-icon-button>';
     await test_util.flushTasks();
     button = document.body.querySelector('cr-icon-button');
     assertEquals('-1', button.getAttribute('tabindex'));
+    button.disabled = true;
+    assertEquals('-1', button.getAttribute('tabindex'));
+    button.disabled = false;
+    assertEquals('-1', button.getAttribute('tabindex'));
+  });
+
+  test('tabindex update', async () => {
+    document.body.innerHTML = '<cr-icon-button></cr-icon-button>';
+    button = document.body.querySelector('cr-icon-button');
+    assertEquals('0', button.getAttribute('tabindex'));
+    button.customTabIndex = 1;
+    assertEquals('1', button.getAttribute('tabindex'));
   });
 
   test('ripple is a circle with background icon or single iron-icon', () => {

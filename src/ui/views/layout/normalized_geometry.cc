@@ -6,8 +6,11 @@
 
 #include <algorithm>
 #include <tuple>
+#include <utility>
 
 #include "base/numerics/ranges.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
@@ -30,7 +33,7 @@ void NormalizedPoint::Offset(int delta_main, int delta_cross) {
 }
 
 bool NormalizedPoint::operator==(const NormalizedPoint& other) const {
-  return main_ == other.main_ && cross_ == other.cross_;
+  return std::tie(main_, cross_) == std::tie(other.main_, other.cross_);
 }
 
 bool NormalizedPoint::operator!=(const NormalizedPoint& other) const {
@@ -76,7 +79,7 @@ void NormalizedSize::SetToMin(const NormalizedSize& other) {
 }
 
 bool NormalizedSize::operator==(const NormalizedSize& other) const {
-  return main_ == other.main_ && cross_ == other.cross_;
+  return std::tie(main_, cross_) == std::tie(other.main_, other.cross_);
 }
 
 bool NormalizedSize::operator!=(const NormalizedSize& other) const {
@@ -94,7 +97,7 @@ std::string NormalizedSize::ToString() const {
 // NormalizedInsets ------------------------------------------------------------
 
 bool NormalizedInsets::operator==(const NormalizedInsets& other) const {
-  return main_ == other.main_ && cross_ == other.cross_;
+  return std::tie(main_, cross_) == std::tie(other.main_, other.cross_);
 }
 
 bool NormalizedInsets::operator!=(const NormalizedInsets& other) const {
@@ -106,18 +109,17 @@ bool NormalizedInsets::operator<(const NormalizedInsets& other) const {
 }
 
 std::string NormalizedInsets::ToString() const {
-  return base::StringPrintf("main: [%s], cross: [%s]",
-                            main().ToString().c_str(),
-                            cross().ToString().c_str());
+  return base::StrCat(
+      {"main: [", main_.ToString(), "], cross: [", cross_.ToString(), "]"});
 }
 
 // NormalizedSizeBounds --------------------------------------------------------
 
 NormalizedSizeBounds::NormalizedSizeBounds() = default;
 
-NormalizedSizeBounds::NormalizedSizeBounds(const base::Optional<int>& main,
-                                           const base::Optional<int>& cross)
-    : main_(main), cross_(cross) {}
+NormalizedSizeBounds::NormalizedSizeBounds(base::Optional<int> main,
+                                           base::Optional<int> cross)
+    : main_(std::move(main)), cross_(std::move(cross)) {}
 
 NormalizedSizeBounds::NormalizedSizeBounds(const NormalizedSizeBounds& other)
     : main_(other.main()), cross_(other.cross()) {}
@@ -137,7 +139,7 @@ void NormalizedSizeBounds::Inset(const NormalizedInsets& insets) {
 }
 
 bool NormalizedSizeBounds::operator==(const NormalizedSizeBounds& other) const {
-  return main_ == other.main_ && cross_ == other.cross_;
+  return std::tie(main_, cross_) == std::tie(other.main_, other.cross_);
 }
 
 bool NormalizedSizeBounds::operator!=(const NormalizedSizeBounds& other) const {
@@ -149,17 +151,8 @@ bool NormalizedSizeBounds::operator<(const NormalizedSizeBounds& other) const {
 }
 
 std::string NormalizedSizeBounds::ToString() const {
-  std::ostringstream oss;
-  if (main().has_value())
-    oss << *main();
-  else
-    oss << "_";
-  oss << " x ";
-  if (cross().has_value())
-    oss << *cross();
-  else
-    oss << "_";
-  return oss.str();
+  return base::StrCat({main_ ? base::NumberToString(*main_) : "_", " x ",
+                       cross_ ? base::NumberToString(*cross_) : "_"});
 }
 
 // NormalizedRect --------------------------------------------------------------
@@ -238,7 +231,7 @@ void NormalizedRect::Offset(int main, int cross) {
 }
 
 bool NormalizedRect::operator==(const NormalizedRect& other) const {
-  return origin_ == other.origin_ && size_ == other.size_;
+  return std::tie(origin_, size_) == std::tie(other.origin_, other.size_);
 }
 
 bool NormalizedRect::operator!=(const NormalizedRect& other) const {
@@ -250,8 +243,7 @@ bool NormalizedRect::operator<(const NormalizedRect& other) const {
 }
 
 std::string NormalizedRect::ToString() const {
-  return base::StringPrintf("(%s) [%s]", origin().ToString().c_str(),
-                            size().ToString().c_str());
+  return base::StrCat({"(", origin_.ToString(), ") [", size_.ToString(), "]"});
 }
 
 // Normalization and Denormalization -------------------------------------------
@@ -263,9 +255,6 @@ NormalizedPoint Normalize(LayoutOrientation orientation,
       return NormalizedPoint(point.x(), point.y());
     case LayoutOrientation::kVertical:
       return NormalizedPoint(point.y(), point.x());
-    default:
-      DCHECK(false);
-      return NormalizedPoint(point.x(), point.y());
   }
 }
 
@@ -276,9 +265,6 @@ gfx::Point Denormalize(LayoutOrientation orientation,
       return gfx::Point(point.main(), point.cross());
     case LayoutOrientation::kVertical:
       return gfx::Point(point.cross(), point.main());
-    default:
-      DCHECK(false);
-      return gfx::Point(point.main(), point.cross());
   }
 }
 
@@ -288,9 +274,6 @@ NormalizedSize Normalize(LayoutOrientation orientation, const gfx::Size& size) {
       return NormalizedSize(size.width(), size.height());
     case LayoutOrientation::kVertical:
       return NormalizedSize(size.height(), size.width());
-    default:
-      DCHECK(false);
-      return NormalizedSize(size.width(), size.height());
   }
 }
 
@@ -301,9 +284,6 @@ gfx::Size Denormalize(LayoutOrientation orientation,
       return gfx::Size(size.main(), size.cross());
     case LayoutOrientation::kVertical:
       return gfx::Size(size.cross(), size.main());
-    default:
-      DCHECK(false);
-      return gfx::Size(size.main(), size.cross());
   }
 }
 
@@ -314,9 +294,6 @@ NormalizedSizeBounds Normalize(LayoutOrientation orientation,
       return NormalizedSizeBounds(bounds.width(), bounds.height());
     case LayoutOrientation::kVertical:
       return NormalizedSizeBounds(bounds.height(), bounds.width());
-    default:
-      DCHECK(false);
-      return NormalizedSizeBounds(bounds.width(), bounds.height());
   }
 }
 
@@ -327,9 +304,6 @@ SizeBounds Denormalize(LayoutOrientation orientation,
       return SizeBounds(bounds.main(), bounds.cross());
     case LayoutOrientation::kVertical:
       return SizeBounds(bounds.cross(), bounds.main());
-    default:
-      DCHECK(false);
-      return SizeBounds(bounds.main(), bounds.cross());
   }
 }
 
@@ -342,10 +316,6 @@ NormalizedInsets Normalize(LayoutOrientation orientation,
     case LayoutOrientation::kVertical:
       return NormalizedInsets(insets.top(), insets.left(), insets.bottom(),
                               insets.right());
-    default:
-      DCHECK(false);
-      return NormalizedInsets(insets.left(), insets.top(), insets.right(),
-                              insets.bottom());
   }
 }
 
@@ -358,10 +328,6 @@ gfx::Insets Denormalize(LayoutOrientation orientation,
     case LayoutOrientation::kVertical:
       return gfx::Insets(insets.main_leading(), insets.cross_leading(),
                          insets.main_trailing(), insets.cross_trailing());
-    default:
-      DCHECK(false);
-      return gfx::Insets(insets.cross_leading(), insets.main_leading(),
-                         insets.cross_trailing(), insets.main_trailing());
   }
 }
 
@@ -375,6 +341,92 @@ gfx::Rect Denormalize(LayoutOrientation orientation,
                       const NormalizedRect& bounds) {
   return gfx::Rect(Denormalize(orientation, bounds.origin()),
                    Denormalize(orientation, bounds.size()));
+}
+
+int GetMainAxis(LayoutOrientation orientation, const gfx::Size& size) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      return size.width();
+    case LayoutOrientation::kVertical:
+      return size.height();
+  }
+}
+
+int GetCrossAxis(LayoutOrientation orientation, const gfx::Size& size) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      return size.height();
+    case LayoutOrientation::kVertical:
+      return size.width();
+  }
+}
+
+base::Optional<int> GetMainAxis(LayoutOrientation orientation,
+                                const SizeBounds& size) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      return size.width();
+    case LayoutOrientation::kVertical:
+      return size.height();
+  }
+}
+
+base::Optional<int> GetCrossAxis(LayoutOrientation orientation,
+                                 const SizeBounds& size) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      return size.height();
+    case LayoutOrientation::kVertical:
+      return size.width();
+  }
+}
+
+void SetMainAxis(gfx::Size* size, LayoutOrientation orientation, int main) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      size->set_width(main);
+      break;
+    case LayoutOrientation::kVertical:
+      size->set_height(main);
+      break;
+  }
+}
+
+void SetCrossAxis(gfx::Size* size, LayoutOrientation orientation, int cross) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      size->set_height(cross);
+      break;
+    case LayoutOrientation::kVertical:
+      size->set_width(cross);
+      break;
+  }
+}
+
+void SetMainAxis(SizeBounds* size,
+                 LayoutOrientation orientation,
+                 base::Optional<int> main) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      size->set_width(std::move(main));
+      break;
+    case LayoutOrientation::kVertical:
+      size->set_height(std::move(main));
+      break;
+  }
+}
+
+void SetCrossAxis(SizeBounds* size,
+                  LayoutOrientation orientation,
+                  base::Optional<int> cross) {
+  switch (orientation) {
+    case LayoutOrientation::kHorizontal:
+      size->set_height(std::move(cross));
+      break;
+    case LayoutOrientation::kVertical:
+      size->set_width(std::move(cross));
+      break;
+  }
 }
 
 }  // namespace views

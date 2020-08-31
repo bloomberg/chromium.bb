@@ -12,7 +12,7 @@
 #include "ash/shell.h"
 #include "ash/utility/transformer_util.h"
 #include "base/command_line.h"
-#include "components/viz/common/features.h"
+#include "base/system/sys_info.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout_store.h"
@@ -34,15 +34,13 @@ namespace {
 // |display::Display::ROTATE_0|.
 gfx::Transform CreateRootWindowRotationTransform(
     const display::Display& display) {
-  display::ManagedDisplayInfo info =
-      Shell::Get()->display_manager()->GetDisplayInfo(display.id());
-  gfx::SizeF size(info.size_in_pixel());
+  gfx::SizeF size(display.GetSizeInPixel());
 
   // Use SizeF so that the origin of translated layer will be
   // aligned when scaled back at pixels.
   size.Scale(1.f / display.device_scale_factor());
   return CreateRotationTransform(display::Display::ROTATE_0,
-                                 info.GetLogicalActiveRotation(), size);
+                                 display.panel_rotation(), size);
 }
 
 gfx::Transform CreateInsetsTransform(const gfx::Insets& insets,
@@ -98,6 +96,7 @@ gfx::Transform CreateReverseRotatedInsetsTransform(
 class AshRootWindowTransformer : public RootWindowTransformer {
  public:
   AshRootWindowTransformer(const display::Display& display) {
+    initial_root_bounds_ = gfx::Rect(display.size());
     display::DisplayManager* display_manager = Shell::Get()->display_manager();
     display::ManagedDisplayInfo info =
         display_manager->GetDisplayInfo(display.id());
@@ -107,8 +106,7 @@ class AshRootWindowTransformer : public RootWindowTransformer {
         CreateRootWindowRotationTransform(display);
     transform_ = insets_and_rotation_transform;
     insets_and_scale_transform_ = CreateReverseRotatedInsetsTransform(
-        info.GetLogicalActiveRotation(), host_insets_,
-        display.device_scale_factor());
+        display.panel_rotation(), host_insets_, display.device_scale_factor());
     MagnificationController* magnifier =
         Shell::Get()->magnification_controller();
     if (magnifier) {
@@ -123,6 +121,8 @@ class AshRootWindowTransformer : public RootWindowTransformer {
 
     root_window_bounds_transform_.Scale(1.f / display.device_scale_factor(),
                                         1.f / display.device_scale_factor());
+
+    initial_host_size_ = info.bounds_in_native().size();
   }
 
   // aura::RootWindowTransformer overrides:
@@ -131,6 +131,15 @@ class AshRootWindowTransformer : public RootWindowTransformer {
     return invert_transform_;
   }
   gfx::Rect GetRootWindowBounds(const gfx::Size& host_size) const override {
+    if (base::SysInfo::IsRunningOnChromeOS())
+      return initial_root_bounds_;
+
+    // If we're running on linux desktop for dev purpose, the host window
+    // may be updated to new size. Recompute the root window bounds based
+    // on the host size if the host size changed.
+    if (initial_host_size_ == host_size)
+      return initial_root_bounds_;
+
     gfx::RectF new_bounds = gfx::RectF(gfx::SizeF(host_size));
     new_bounds.Inset(host_insets_);
     root_window_bounds_transform_.TransformRect(&new_bounds);
@@ -177,6 +186,8 @@ class AshRootWindowTransformer : public RootWindowTransformer {
 
   gfx::Insets host_insets_;
   gfx::Transform insets_and_scale_transform_;
+  gfx::Rect initial_root_bounds_;
+  gfx::Size initial_host_size_;
 
   DISALLOW_COPY_AND_ASSIGN(AshRootWindowTransformer);
 };
@@ -244,13 +255,6 @@ class MirrorRootWindowTransformer : public RootWindowTransformer {
 
       transform_.Translate(margin, 0);
       transform_.Scale(inverted_scale, inverted_scale);
-    }
-
-    // Apply rotation only when reflector is used for mirroring (non viz display
-    // compositor).
-    if (!features::IsVizDisplayCompositorEnabled()) {
-      // Make sure the rotation transform is applied in the beginning.
-      transform_.PreconcatTransform(rotation_transform);
     }
   }
 
@@ -322,8 +326,8 @@ class PartialBoundsRootWindowTransformer : public RootWindowTransformer {
     const float scale = root_bounds_.height() / (dsf * row_logical_height);
 
     transform_.Scale(scale, scale);
-    transform_.Translate(-SkIntToMScalar(display.bounds().x()),
-                         -SkIntToMScalar(display.bounds().y()));
+    transform_.Translate(-SkIntToScalar(display.bounds().x()),
+                         -SkIntToScalar(display.bounds().y()));
   }
 
   // RootWindowTransformer:

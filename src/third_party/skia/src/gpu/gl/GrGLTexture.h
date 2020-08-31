@@ -9,9 +9,9 @@
 #ifndef GrGLTexture_DEFINED
 #define GrGLTexture_DEFINED
 
-#include "include/gpu/GrTexture.h"
 #include "include/private/GrGLTypesPriv.h"
 #include "src/gpu/GrGpu.h"
+#include "src/gpu/GrTexture.h"
 #include "src/gpu/gl/GrGLUtil.h"
 
 class GrGLGpu;
@@ -23,7 +23,6 @@ public:
         GrGLenum fTarget                    = 0;
         GrGLuint fID                        = 0;
         GrGLFormat fFormat                  = GrGLFormat::kUnknown;
-        GrPixelConfig fConfig               = kUnknown_GrPixelConfig;
         GrBackendObjectOwnership fOwnership = GrBackendObjectOwnership::kOwned;
     };
 

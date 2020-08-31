@@ -14,6 +14,8 @@
 // while a download is in progress.
 class DownloadInProgressDialogView : public views::DialogDelegateView {
  public:
+  METADATA_HEADER(DownloadInProgressDialogView);
+
   // |dialog_type| should be either DOWNLOAD_CLOSE_BROWSER_SHUTDOWN to indicate
   // the user is closing the browser or
   // DOWNLOAD_CLOSE_LAST_WINDOW_IN_INCOGNITO_PROFILE to indicate the user is
@@ -34,8 +36,6 @@ class DownloadInProgressDialogView : public views::DialogDelegateView {
 
   // views::DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
-  bool Cancel() override;
-  bool Accept() override;
   ui::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;

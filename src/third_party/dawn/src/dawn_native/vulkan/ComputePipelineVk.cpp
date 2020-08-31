@@ -26,10 +26,9 @@ namespace dawn_native { namespace vulkan {
     ResultOrError<ComputePipeline*> ComputePipeline::Create(
         Device* device,
         const ComputePipelineDescriptor* descriptor) {
-        std::unique_ptr<ComputePipeline> pipeline =
-            std::make_unique<ComputePipeline>(device, descriptor);
+        Ref<ComputePipeline> pipeline = AcquireRef(new ComputePipeline(device, descriptor));
         DAWN_TRY(pipeline->Initialize(descriptor));
-        return pipeline.release();
+        return pipeline.Detach();
     }
 
     MaybeError ComputePipeline::Initialize(const ComputePipelineDescriptor* descriptor) {
@@ -38,7 +37,7 @@ namespace dawn_native { namespace vulkan {
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
         createInfo.layout = ToBackend(descriptor->layout)->GetHandle();
-        createInfo.basePipelineHandle = VK_NULL_HANDLE;
+        createInfo.basePipelineHandle = ::VK_NULL_HANDLE;
         createInfo.basePipelineIndex = -1;
 
         createInfo.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -51,8 +50,8 @@ namespace dawn_native { namespace vulkan {
 
         Device* device = ToBackend(GetDevice());
         return CheckVkSuccess(
-            device->fn.CreateComputePipelines(device->GetVkDevice(), VK_NULL_HANDLE, 1, &createInfo,
-                                              nullptr, &mHandle),
+            device->fn.CreateComputePipelines(device->GetVkDevice(), ::VK_NULL_HANDLE, 1,
+                                              &createInfo, nullptr, &*mHandle),
             "CreateComputePipeline");
     }
 

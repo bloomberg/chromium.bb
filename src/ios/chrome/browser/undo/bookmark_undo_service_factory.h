@@ -12,19 +12,17 @@
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 class BookmarkUndoService;
-
-namespace ios {
-
 class ChromeBrowserState;
 
+namespace ios {
 // Singleton that owns all FaviconServices and associates them with
-// ios::ChromeBrowserState.
+// ChromeBrowserState.
 class BookmarkUndoServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   static BookmarkUndoService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
   static BookmarkUndoService* GetForBrowserStateIfExists(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
   static BookmarkUndoServiceFactory* GetInstance();
 
  private:

@@ -11,7 +11,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/command_line.h"
 #include "base/optional.h"
 #include "content/browser/sms/sms_metrics.h"
 #include "content/public/browser/navigation_details.h"
@@ -19,6 +20,8 @@
 #include "content/public/browser/sms_fetcher.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 
 using blink::SmsReceiverDestroyedReason;
 using blink::mojom::SmsStatus;
@@ -32,7 +35,9 @@ SmsService::SmsService(
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver)
     : FrameServiceBase(host, std::move(receiver)),
       fetcher_(fetcher),
-      origin_(origin) {}
+      origin_(origin) {
+  DCHECK(fetcher_);
+}
 
 SmsService::SmsService(
     SmsFetcher* fetcher,
@@ -46,6 +51,7 @@ SmsService::SmsService(
 SmsService::~SmsService() {
   if (callback_)
     Process(SmsStatus::kTimeout, base::nullopt);
+  DCHECK(!callback_);
 }
 
 // static
@@ -63,43 +69,57 @@ void SmsService::Create(
 
 void SmsService::Receive(ReceiveCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // This flow relies on the delegate to display an infobar for user
+  // confirmation. Cancelling the call early if no delegate is available is
+  // easier to debug then silently dropping SMSes later on.
+  WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host());
+  if (!web_contents->GetDelegate()) {
+    std::move(callback).Run(SmsStatus::kCancelled, base::nullopt);
+    return;
+  }
+
   if (callback_) {
     std::move(callback_).Run(SmsStatus::kCancelled, base::nullopt);
     fetcher_->Unsubscribe(origin_, this);
   }
 
   start_time_ = base::TimeTicks::Now();
-
   callback_ = std::move(callback);
 
-  // |sms_| and prompt are still present from the previous request so a new
-  // subscription is unnecessary.
+  // |one_time_code_| and prompt are still present from the previous
+  // request so a new subscription is unnecessary.
   if (prompt_open_) {
     // TODO(crbug.com/1024598): Add UMA histogram.
     return;
   }
 
-  fetcher_->Subscribe(origin_, this);
+  fetcher_->Subscribe(origin_, this, render_frame_host());
 }
 
-void SmsService::OnReceive(const std::string& one_time_code,
-                           const std::string& sms) {
+void SmsService::OnReceive(const std::string& one_time_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DCHECK(!sms_);
+  DCHECK(!one_time_code_);
   DCHECK(!start_time_.is_null());
 
   RecordSmsReceiveTime(base::TimeTicks::Now() - start_time_);
 
-  sms_ = sms;
-  receive_time_ = base::TimeTicks::Now();
+  one_time_code_ = one_time_code;
 
+  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kWebOtpBackend) !=
+      switches::kWebOtpBackendSmsVerification) {
+    Process(SmsStatus::kSuccess, one_time_code_);
+    return;
+  }
+
+  receive_time_ = base::TimeTicks::Now();
   OpenInfoBar(one_time_code);
 }
 
 void SmsService::Abort() {
   DCHECK(callback_);
-
   Process(SmsStatus::kAborted, base::nullopt);
 }
 
@@ -124,6 +144,10 @@ void SmsService::NavigationEntryCommitted(
 void SmsService::OpenInfoBar(const std::string& one_time_code) {
   WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host());
+  if (!web_contents->GetDelegate()) {
+    Process(SmsStatus::kCancelled, base::nullopt);
+    return;
+  }
 
   prompt_open_ = true;
   web_contents->GetDelegate()->CreateSmsPrompt(
@@ -133,27 +157,28 @@ void SmsService::OpenInfoBar(const std::string& one_time_code) {
 }
 
 void SmsService::Process(blink::mojom::SmsStatus status,
-                         base::Optional<std::string> sms) {
+                         base::Optional<std::string> one_time_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   DCHECK(callback_);
-
-  std::move(callback_).Run(status, sms);
-
+  std::move(callback_).Run(status, one_time_code);
   CleanUp();
 }
 
 void SmsService::OnConfirm() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DCHECK(sms_);
+  DCHECK(one_time_code_);
   DCHECK(!receive_time_.is_null());
   RecordContinueOnSuccessTime(base::TimeTicks::Now() - receive_time_);
 
   prompt_open_ = false;
 
-  if (callback_)
-    Process(SmsStatus::kSuccess, sms_);
+  if (!callback_) {
+    // Cleanup since request has been aborted while prompt is up.
+    CleanUp();
+    return;
+  }
+  Process(SmsStatus::kSuccess, one_time_code_);
 }
 
 void SmsService::OnCancel() {
@@ -165,16 +190,20 @@ void SmsService::OnCancel() {
 
   prompt_open_ = false;
 
-  if (callback_)
-    Process(SmsStatus::kCancelled, base::nullopt);
+  if (!callback_) {
+    // Cleanup since request has been aborted while prompt is up.
+    CleanUp();
+    return;
+  }
+  Process(SmsStatus::kCancelled, base::nullopt);
 }
 
 void SmsService::CleanUp() {
-  // Skip resetting |sms_| and |receive_time_| while prompt is still open
-  // in case it needs to be returned to the next incoming request upon prompt
-  // confirmation.
+  // Skip resetting |one_time_code_|, |sms| and |receive_time_| while prompt is
+  // still open in case it needs to be returned to the next incoming request
+  // upon prompt confirmation.
   if (!prompt_open_) {
-    sms_.reset();
+    one_time_code_.reset();
     receive_time_ = base::TimeTicks();
   }
   start_time_ = base::TimeTicks();

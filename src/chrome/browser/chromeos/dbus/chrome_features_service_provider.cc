@@ -73,27 +73,43 @@ void ChromeFeaturesServiceProvider::Start(
       kChromeFeaturesServiceIsFeatureEnabledMethod,
       base::BindRepeating(&ChromeFeaturesServiceProvider::IsFeatureEnabled,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChromeFeaturesServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       kChromeFeaturesServiceInterface,
       kChromeFeaturesServiceIsCrostiniEnabledMethod,
       base::BindRepeating(&ChromeFeaturesServiceProvider::IsCrostiniEnabled,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChromeFeaturesServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       kChromeFeaturesServiceInterface,
       kChromeFeaturesServiceIsPluginVmEnabledMethod,
       base::BindRepeating(&ChromeFeaturesServiceProvider::IsPluginVmEnabled,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChromeFeaturesServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       kChromeFeaturesServiceInterface,
       kChromeFeaturesServiceIsUsbguardEnabledMethod,
       base::BindRepeating(&ChromeFeaturesServiceProvider::IsUsbguardEnabled,
                           weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&ChromeFeaturesServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsCryptohomeDistributedModelEnabledMethod,
+      base::BindRepeating(
+          &ChromeFeaturesServiceProvider::IsCryptohomeDistributedModelEnabled,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsCryptohomeUserDataAuthEnabledMethod,
+      base::BindRepeating(
+          &ChromeFeaturesServiceProvider::IsCryptohomeUserDataAuthEnabled,
+          weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
                           weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
@@ -102,8 +118,8 @@ void ChromeFeaturesServiceProvider::Start(
       base::BindRepeating(
           &ChromeFeaturesServiceProvider::IsVmManagementCliAllowed,
           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChromeFeaturesServiceProvider::OnExported,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeFeaturesServiceProvider::OnExported(
@@ -169,6 +185,22 @@ void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
       profile ? crostini::CrostiniFeatures::Get()->IsAllowed(profile) : false);
 }
 
+void ChromeFeaturesServiceProvider::IsCryptohomeDistributedModelEnabled(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  SendResponse(
+      method_call, std::move(response_sender),
+      base::FeatureList::IsEnabled(::features::kCryptohomeDistributedModel));
+}
+
+void ChromeFeaturesServiceProvider::IsCryptohomeUserDataAuthEnabled(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  SendResponse(
+      method_call, std::move(response_sender),
+      base::FeatureList::IsEnabled(::features::kCryptohomeUserDataAuth));
+}
+
 void ChromeFeaturesServiceProvider::IsPluginVmEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
@@ -191,20 +223,13 @@ void ChromeFeaturesServiceProvider::IsUsbguardEnabled(
 void ChromeFeaturesServiceProvider::IsVmManagementCliAllowed(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  bool is_allowed = true;
-  // The policy is experimental; check that the corresponding feature flag
-  // is enabled.
-  if (base::FeatureList::IsEnabled(
-          ::features::kCrostiniAdvancedAccessControls)) {
-    Profile* profile = GetSenderProfile(method_call, &response_sender);
-    if (!profile)
-      return;
+  Profile* profile = GetSenderProfile(method_call, &response_sender);
+  if (!profile)
+    return;
 
-    is_allowed = profile->GetPrefs()->GetBoolean(
-        crostini::prefs::kVmManagementCliAllowedByPolicy);
-  }
-
-  SendResponse(method_call, std::move(response_sender), is_allowed);
+  SendResponse(method_call, std::move(response_sender),
+               profile->GetPrefs()->GetBoolean(
+                   crostini::prefs::kVmManagementCliAllowedByPolicy));
 }
 
 }  // namespace chromeos

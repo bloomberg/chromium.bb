@@ -20,6 +20,14 @@ std::unique_ptr<LayerImpl> PaintedScrollbarLayer::CreateLayerImpl(
                                            is_overlay_);
 }
 
+scoped_refptr<PaintedScrollbarLayer> PaintedScrollbarLayer::CreateOrReuse(
+    scoped_refptr<Scrollbar> scrollbar,
+    PaintedScrollbarLayer* existing_layer) {
+  if (existing_layer && existing_layer->scrollbar_->IsSame(*scrollbar))
+    return existing_layer;
+  return Create(std::move(scrollbar));
+}
+
 scoped_refptr<PaintedScrollbarLayer> PaintedScrollbarLayer::Create(
     scoped_refptr<Scrollbar> scrollbar) {
   return base::WrapRefCounted(new PaintedScrollbarLayer(std::move(scrollbar)));
@@ -30,7 +38,7 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(scoped_refptr<Scrollbar> scrollbar)
                          scrollbar->IsLeftSideVerticalScrollbar()),
       scrollbar_(std::move(scrollbar)),
       internal_contents_scale_(1.f),
-      thumb_opacity_(scrollbar_->ThumbOpacity()),
+      painted_opacity_(scrollbar_->Opacity()),
       has_thumb_(scrollbar_->HasThumb()),
       supports_drag_snap_back_(scrollbar_->SupportsDragSnapBack()),
       is_overlay_(scrollbar_->IsOverlay()) {}
@@ -71,7 +79,7 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   else
     scrollbar_layer->set_thumb_ui_resource_id(0);
 
-  scrollbar_layer->set_thumb_opacity(thumb_opacity_);
+  scrollbar_layer->set_scrollbar_painted_opacity(painted_opacity_);
 
   scrollbar_layer->set_is_overlay_scrollbar(is_overlay_);
 }
@@ -185,7 +193,7 @@ bool PaintedScrollbarLayer::Update() {
           layer_tree_host()->GetUIResourceManager(),
           RasterizeScrollbarPart(thumb_size_, scaled_thumb_size, THUMB));
     }
-    thumb_opacity_ = scrollbar_->ThumbOpacity();
+    painted_opacity_ = scrollbar_->Opacity();
   }
 
   // UI resources changed so push properties is needed.
@@ -234,6 +242,11 @@ UIResourceBitmap PaintedScrollbarLayer::RasterizeScrollbarPart(
   skbitmap.setImmutable();
 
   return UIResourceBitmap(skbitmap);
+}
+
+ScrollbarLayerBase::ScrollbarLayerType
+PaintedScrollbarLayer::GetScrollbarLayerType() const {
+  return kPainted;
 }
 
 }  // namespace cc

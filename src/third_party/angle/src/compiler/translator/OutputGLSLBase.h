@@ -43,9 +43,12 @@ class TOutputGLSLBase : public TIntermTraverser
     std::string getCommonLayoutQualifiers(TIntermTyped *variable);
     std::string getMemoryQualifiers(const TType &type);
     virtual void writeLayoutQualifier(TIntermTyped *variable);
-    virtual void writeFieldLayoutQualifier(const TField *field);
+    void writeFieldLayoutQualifier(const TField *field);
     void writeInvariantQualifier(const TType &type);
-    virtual void writeVariableType(const TType &type, const TSymbol *symbol);
+    void writePreciseQualifier(const TType &type);
+    virtual void writeVariableType(const TType &type,
+                                   const TSymbol *symbol,
+                                   bool isFunctionArgument);
     virtual bool writeVariablePrecision(TPrecision precision) = 0;
     void writeFunctionParameters(const TFunction *func);
     const TConstantUnion *writeConstantUnion(const TType &type, const TConstantUnion *pConstUnion);
@@ -78,19 +81,25 @@ class TOutputGLSLBase : public TIntermTraverser
     // Same as hashName(), but without hashing "main".
     ImmutableString hashFunctionNameIfNeeded(const TFunction *func);
     // Used to translate function names for differences between ESSL and GLSL
-    virtual ImmutableString translateTextureFunction(const ImmutableString &name) { return name; }
+    virtual ImmutableString translateTextureFunction(const ImmutableString &name,
+                                                     const ShCompileOptions &option)
+    {
+        return name;
+    }
 
     void declareStruct(const TStructure *structure);
-    virtual void writeQualifier(TQualifier qualifier, const TType &type, const TSymbol *symbol);
+    void writeQualifier(TQualifier qualifier, const TType &type, const TSymbol *symbol);
     bool structDeclared(const TStructure *structure) const;
+
+    const char *mapQualifierToString(TQualifier qualifier);
+
+    sh::GLenum getShaderType() { return mShaderType; }
 
   private:
     void declareInterfaceBlockLayout(const TInterfaceBlock *interfaceBlock);
     void declareInterfaceBlock(const TInterfaceBlock *interfaceBlock);
 
     void writeBuiltInFunctionTriplet(Visit visit, TOperator op, bool useEmulatedFunction);
-
-    const char *mapQualifierToString(TQualifier qualifier);
 
     TInfoSinkBase &mObjSink;
     bool mDeclaringVariable;

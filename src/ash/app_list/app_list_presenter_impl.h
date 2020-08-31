@@ -33,7 +33,7 @@ enum class AppListViewState;
 // animation. While the UI is visible, it monitors things such as app list
 // activation state to auto dismiss the UI.
 class APP_LIST_EXPORT AppListPresenterImpl
-    : public ash::PaginationModelObserver,
+    : public PaginationModelObserver,
       public aura::client::FocusChangeObserver,
       public ui::ImplicitAnimationObserver,
       public views::WidgetObserver {
@@ -65,6 +65,10 @@ class APP_LIST_EXPORT AppListPresenterImpl
   // one AppListShowSource or focusing out side of the launcher.
   void Dismiss(base::TimeTicks event_time_stamp);
 
+  // Sets the app list view visibility (without updating the app list window
+  // visibility). No-op if the app list view does not exist.
+  void SetViewVisibility(bool visible);
+
   // If app list has an opened folder, close it. Returns whether an opened
   // folder was closed.
   bool HandleCloseOpenFolder();
@@ -72,9 +76,9 @@ class APP_LIST_EXPORT AppListPresenterImpl
   // Show the app list if it is visible, hide it if it is hidden. If
   // |event_time_stamp| is not 0, it means |ToggleAppList()| was triggered by
   // one of the AppListShowSources: kSearchKey or kShelfButton.
-  ash::ShelfAction ToggleAppList(int64_t display_id,
-                                 AppListShowSource show_source,
-                                 base::TimeTicks event_time_stamp);
+  ShelfAction ToggleAppList(int64_t display_id,
+                            AppListShowSource show_source,
+                            base::TimeTicks event_time_stamp);
 
   // Returns current visibility of the app list. Deprecated, use
   // |IsAtLeastPartiallyVisible| instead.
@@ -89,11 +93,11 @@ class APP_LIST_EXPORT AppListPresenterImpl
   bool GetTargetVisibility() const;
 
   // Updates y position and opacity of app list.
-  void UpdateYPositionAndOpacity(int y_position_in_screen,
+  void UpdateYPositionAndOpacity(float y_position_in_screen,
                                  float background_opacity);
 
   // Ends the drag of app list from shelf.
-  void EndDragFromShelf(ash::AppListViewState app_list_state);
+  void EndDragFromShelf(AppListViewState app_list_state);
 
   // Passes a MouseWheelEvent from the shelf to the AppListView.
   void ProcessMouseWheelOffset(const gfx::Vector2d& scroll_offset_vector);
@@ -106,7 +110,7 @@ class APP_LIST_EXPORT AppListPresenterImpl
   // |callback| is non-null. If not set, the animation smoothness metrics will
   // not be reported.
   void UpdateYPositionAndOpacityForHomeLauncher(
-      int y_position_in_screen,
+      float y_position_in_screen,
       float opacity,
       base::Optional<TabletModeAnimationTransition> transition,
       UpdateHomeLauncherAnimationSettingsCallback callback);
@@ -146,7 +150,7 @@ class APP_LIST_EXPORT AppListPresenterImpl
 
   // Returns the id of the display containing the app list, if visible. If not
   // visible returns kInvalidDisplayId.
-  int64_t GetDisplayId();
+  int64_t GetDisplayId() const;
 
   void OnVisibilityChanged(bool visible, int64_t display_id);
   void OnVisibilityWillChange(bool visible, int64_t display_id);

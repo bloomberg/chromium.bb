@@ -1,17 +1,25 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+import * as Platform from '../platform/platform.js';
+
+import {CSSFormatter} from './CSSFormatter.js';
+import {FormattedContentBuilder} from './FormattedContentBuilder.js';  // eslint-disable-line no-unused-vars
+import {AbortTokenization, createTokenizer} from './FormatterWorker.js';
+import {JavaScriptFormatter} from './JavaScriptFormatter.js';
+
 /**
  * @unrestricted
  */
 export class HTMLFormatter {
   /**
-   * @param {!FormatterWorker.FormattedContentBuilder} builder
+   * @param {!FormattedContentBuilder} builder
    */
   constructor(builder) {
     this._builder = builder;
-    this._jsFormatter = new FormatterWorker.JavaScriptFormatter(builder);
-    this._cssFormatter = new FormatterWorker.CSSFormatter(builder);
+    this._jsFormatter = new JavaScriptFormatter(builder);
+    this._cssFormatter = new CSSFormatter(builder);
   }
 
   /**
@@ -21,7 +29,7 @@ export class HTMLFormatter {
   format(text, lineEndings) {
     this._text = text;
     this._lineEndings = lineEndings;
-    this._model = new FormatterWorker.HTMLModel(text);
+    this._model = new HTMLModel(text);
     this._walk(this._model.document());
   }
 
@@ -100,7 +108,7 @@ export class HTMLFormatter {
    * @param {!Token} token
    */
   _formatToken(element, token) {
-    if (token.value.isWhitespace()) {
+    if (Platform.StringUtilities.isWhitespace(token.value)) {
       return;
     }
     if (token.type.has('comment') || token.type.has('meta')) {
@@ -155,7 +163,7 @@ export class HTMLFormatter {
     if (isWrappedInQuotes) {
       type = isWrappedInQuotes[2];
     }
-    return FormatterWorker.HTMLFormatter.SupportedJavaScriptMimeTypes.has(type.trim());
+    return HTMLFormatter.SupportedJavaScriptMimeTypes.has(type.trim());
   }
 }
 
@@ -190,7 +198,7 @@ export class HTMLModel {
    * @param {string} text
    */
   _build(text) {
-    const tokenizer = FormatterWorker.createTokenizer('text/html');
+    const tokenizer = createTokenizer('text/html');
     let lastOffset = 0;
     const lowerCaseText = text.toLowerCase();
 
@@ -222,7 +230,7 @@ export class HTMLModel {
      * @param {number} tokenStart
      * @param {number} tokenEnd
      * @return {(!Object|undefined)}
-     * @this {FormatterWorker.HTMLModel}
+     * @this {HTMLModel}
      */
     function processToken(baseOffset, tokenValue, type, tokenStart, tokenEnd) {
       tokenStart += baseOffset;
@@ -237,7 +245,7 @@ export class HTMLModel {
       const element = this._stack.peekLast();
       if (element && (element.name === 'script' || element.name === 'style') &&
           element.openTag.endOffset === lastOffset) {
-        return FormatterWorker.AbortTokenization;
+        return AbortTokenization;
       }
     }
   }
@@ -480,15 +488,3 @@ const Element = class {
     this.closeTag = null;
   }
 };
-
-/* Legacy exported object */
-self.FormatterWorker = self.FormatterWorker || {};
-
-/* Legacy exported object */
-FormatterWorker = FormatterWorker || {};
-
-/** @constructor */
-FormatterWorker.HTMLFormatter = HTMLFormatter;
-
-/** @constructor */
-FormatterWorker.HTMLModel = HTMLModel;

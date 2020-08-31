@@ -32,13 +32,7 @@ namespace {
 
 const char kUmaAliveSurfaces[] = "Compositing.SurfaceManager.AliveSurfaces";
 
-const char kUmaTemporaryReferences[] =
-    "Compositing.SurfaceManager.TemporaryReferences";
-
 constexpr base::TimeDelta kExpireInterval = base::TimeDelta::FromSeconds(10);
-
-const char kUmaRemovedTemporaryReference[] =
-    "Compositing.SurfaceManager.RemovedTemporaryReference";
 
 }  // namespace
 
@@ -195,9 +189,6 @@ void SurfaceManager::GarbageCollectSurfaces() {
   // Log the number of reachable surfaces after a garbage collection.
   UMA_HISTOGRAM_CUSTOM_COUNTS(kUmaAliveSurfaces, reachable_surfaces.size(), 1,
                               200, 50);
-  // Log the number of temporary references after a garbage collection.
-  UMA_HISTOGRAM_CUSTOM_COUNTS(kUmaTemporaryReferences,
-                              temporary_references_.size(), 1, 200, 50);
 
   std::vector<SurfaceId> surfaces_to_delete;
 
@@ -372,16 +363,8 @@ void SurfaceManager::RemoveTemporaryReferenceImpl(const SurfaceId& surface_id,
   auto begin_iter = frame_sink_temp_refs.begin();
 
   // Remove temporary references and range tracking information.
-  for (auto iter = begin_iter; iter != end_iter; ++iter) {
+  for (auto iter = begin_iter; iter != end_iter; ++iter)
     temporary_references_.erase(SurfaceId(frame_sink_id, *iter));
-
-    // If removing more than the temporary reference to |surface_id| then the
-    // reason for removing others is because they are being skipped.
-    const bool was_skipped = (*iter != surface_id.local_surface_id());
-    UMA_HISTOGRAM_ENUMERATION(kUmaRemovedTemporaryReference,
-                              was_skipped ? RemovedReason::SKIPPED : reason,
-                              RemovedReason::COUNT);
-  }
   frame_sink_temp_refs.erase(begin_iter, end_iter);
 
   // If last temporary reference is removed for |frame_sink_id| then cleanup
@@ -448,7 +431,7 @@ void SurfaceManager::ExpireOldTemporaryReferences() {
     RemoveTemporaryReferenceImpl(surface_id, RemovedReason::EXPIRED);
 }
 
-Surface* SurfaceManager::GetSurfaceForId(const SurfaceId& surface_id) {
+Surface* SurfaceManager::GetSurfaceForId(const SurfaceId& surface_id) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto it = surface_map_.find(surface_id);
   if (it == surface_map_.end())
@@ -472,9 +455,7 @@ void SurfaceManager::FirstSurfaceActivation(const SurfaceInfo& surface_info) {
     observer.OnFirstSurfaceActivation(surface_info);
 }
 
-void SurfaceManager::SurfaceActivated(
-    Surface* surface,
-    base::Optional<base::TimeDelta> duration) {
+void SurfaceManager::SurfaceActivated(Surface* surface) {
   // Trigger a display frame if necessary.
   const CompositorFrame& frame = surface->GetActiveFrame();
   if (!SurfaceModified(surface->surface_id(), frame.metadata.begin_frame_ack)) {
@@ -484,7 +465,7 @@ void SurfaceManager::SurfaceActivated(
   }
 
   for (auto& observer : observer_list_)
-    observer.OnSurfaceActivated(surface->surface_id(), duration);
+    observer.OnSurfaceActivated(surface->surface_id());
 }
 
 void SurfaceManager::SurfaceDestroyed(Surface* surface) {
@@ -641,6 +622,11 @@ bool SurfaceManager::HasBlockedEmbedder(
       return true;
   }
   return false;
+}
+
+void SurfaceManager::AggregatedFrameSinksChanged() {
+  if (delegate_)
+    delegate_->AggregatedFrameSinksChanged();
 }
 
 }  // namespace viz

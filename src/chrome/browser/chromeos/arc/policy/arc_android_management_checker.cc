@@ -18,6 +18,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace arc {
@@ -39,7 +40,9 @@ CoreAccountId GetDeviceAccountId(Profile* profile) {
   const auto* const identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
 
-  return identity_manager->GetPrimaryAccountId();
+  // The account is the same whether or not the user consented to browser sync.
+  return identity_manager->GetPrimaryAccountId(
+      signin::ConsentLevel::kNotRequired);
 }
 
 }  // namespace

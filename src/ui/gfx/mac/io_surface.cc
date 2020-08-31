@@ -21,13 +21,6 @@ namespace gfx {
 
 namespace {
 
-#if !defined(MAC_OS_X_VERSION_10_15) || \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_15
-CFStringRef kCGColorSpaceITUR_2020_PQ_EOTF =
-    CFSTR("kCGColorSpaceITUR_2020_PQ_EOTF");
-CFStringRef kCGColorSpaceITUR_2020_HLG = CFSTR("kCGColorSpaceITUR_2020_HLG");
-#endif  // MAC_OS_X_VERSION_10_15
-
 void AddIntegerValue(CFMutableDictionaryRef dictionary,
                      const CFStringRef key,
                      int32_t value) {
@@ -44,7 +37,7 @@ int32_t BytesPerElement(gfx::BufferFormat format, int plane) {
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::BGRA_1010102:
       DCHECK_EQ(plane, 0);
       return 4;
     case gfx::BufferFormat::RGBA_F16:
@@ -59,7 +52,7 @@ int32_t BytesPerElement(gfx::BufferFormat format, int plane) {
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::RGBX_1010102:
+    case gfx::BufferFormat::RGBA_1010102:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::P010:
       NOTREACHED();
@@ -74,7 +67,7 @@ int32_t PixelFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::R_8:
       return 'L008';
-    case gfx::BufferFormat::BGRX_1010102:
+    case gfx::BufferFormat::BGRA_1010102:
       return 'l10r';  // little-endian ARGB2101010 full-range ARGB
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
@@ -89,8 +82,8 @@ int32_t PixelFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::RGBX_1010102:
-    // Technically RGBX_1010102 should be accepted as 'R10k', but then it won't
+    case gfx::BufferFormat::RGBA_1010102:
+    // Technically RGBA_1010102 should be accepted as 'R10k', but then it won't
     // be supported by CGLTexImageIOSurface2D(), so it's best to reject it here.
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::P010:
@@ -153,7 +146,11 @@ bool IOSurfaceSetColorSpace(IOSurfaceRef io_surface,
                                          ColorSpace::TransferID::ARIB_STD_B67,
                                          ColorSpace::MatrixID::BT2020_NCL,
                                          ColorSpace::RangeID::LIMITED)) {
-      color_space_name = kCGColorSpaceITUR_2020_HLG;
+      // The CGColorSpace kCGColorSpaceITUR_2020_HLG cannot be used here because
+      // it expects that "pixel values should be between 0.0 and 12.0", while
+      // Chrome uses pixel values between 0.0 and 1.0.
+      // https://crbug.com/1061723.
+      return false;
     }
   }
   if (color_space_name) {

@@ -5,7 +5,9 @@
 #include "ui/views/examples/button_sticker_sheet.h"
 
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,7 +33,8 @@ GridLayout* MakeStretchyGridLayout(View* host, int ncols) {
   const GridLayout::Alignment kColumnStretchesHorizontally = GridLayout::FILL;
   const GridLayout::Alignment kColumnStretchesVertically = GridLayout::FILL;
   const float kColumnDoesNotResize = 0.0;
-  const GridLayout::SizeType kColumnUsesFixedSize = GridLayout::FIXED;
+  const GridLayout::ColumnSize kColumnUsesFixedSize =
+      GridLayout::ColumnSize::kFixed;
   const int kColumnWidth = 96;
 
   GridLayout* layout =

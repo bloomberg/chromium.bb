@@ -28,7 +28,7 @@
 #include <cstring>           // memcpy()
 #include <initializer_list>  // std::initializer_list
 
-#if defined(__SSE__)
+#if defined(__SSE__) || defined(__AVX__) || defined(__AVX2__)
     #include <immintrin.h>
 #elif defined(__ARM_NEON)
     #include <arm_neon.h>
@@ -44,12 +44,29 @@
     #define SKVX_ALIGNMENT alignas(N * sizeof(T))
 #endif
 
+#if defined(__GNUC__) && !defined(__clang__) && defined(__SSE__)
+    // GCC warns about ABI changes when returning >= 32 byte vectors when -mavx is not enabled.
+    // This only happens for types like VExt whose ABI we don't care about, not for Vec itself.
+    #pragma GCC diagnostic ignored "-Wpsabi"
+#endif
+
+// To avoid ODR violations, all methods must be force-inlined,
+// and all standalone functions must be static, perhaps using these helpers.
+#if defined(_MSC_VER)
+    #define SKVX_ALWAYS_INLINE __forceinline
+#else
+    #define SKVX_ALWAYS_INLINE __attribute__((always_inline))
+#endif
+
+#define SIT   template <       typename T> static inline
+#define SINT  template <int N, typename T> static inline
+#define SINTU template <int N, typename T, typename U, \
+                        typename=typename std::enable_if<std::is_convertible<U,T>::value>::type> \
+              static inline
 
 namespace skvx {
 
 // All Vec have the same simple memory layout, the same as `T vec[N]`.
-// This gives Vec a consistent ABI, letting them pass between files compiled with
-// different instruction sets (e.g. SSE2 and AVX2) without fear of ODR violation.
 template <int N, typename T>
 struct SKVX_ALIGNMENT Vec {
     static_assert((N & (N-1)) == 0,        "N must be a power of 2.");
@@ -62,13 +79,14 @@ struct SKVX_ALIGNMENT Vec {
     //   - they'll definitely never want a specialized implementation.
     // Other operations on Vec should be defined outside the type.
 
-    Vec() = default;
+    SKVX_ALWAYS_INLINE Vec() = default;
 
     template <typename U,
               typename=typename std::enable_if<std::is_convertible<U,T>::value>::type>
+    SKVX_ALWAYS_INLINE
     Vec(U x) : lo(x), hi(x) {}
 
-    Vec(std::initializer_list<T> xs) {
+    SKVX_ALWAYS_INLINE Vec(std::initializer_list<T> xs) {
         T vals[N] = {0};
         memcpy(vals, xs.begin(), std::min(xs.size(), (size_t)N)*sizeof(T));
 
@@ -76,15 +94,15 @@ struct SKVX_ALIGNMENT Vec {
         hi = Vec<N/2,T>::Load(vals + N/2);
     }
 
-    T  operator[](int i) const { return i < N/2 ? lo[i] : hi[i-N/2]; }
-    T& operator[](int i)       { return i < N/2 ? lo[i] : hi[i-N/2]; }
+    SKVX_ALWAYS_INLINE T  operator[](int i) const { return i < N/2 ? lo[i] : hi[i-N/2]; }
+    SKVX_ALWAYS_INLINE T& operator[](int i)       { return i < N/2 ? lo[i] : hi[i-N/2]; }
 
-    static Vec Load(const void* ptr) {
+    SKVX_ALWAYS_INLINE static Vec Load(const void* ptr) {
         Vec v;
         memcpy(&v, ptr, sizeof(Vec));
         return v;
     }
-    void store(void* ptr) const {
+    SKVX_ALWAYS_INLINE void store(void* ptr) const {
         memcpy(ptr, this, sizeof(Vec));
     }
 };
@@ -93,39 +111,27 @@ template <typename T>
 struct Vec<1,T> {
     T val;
 
-    Vec() = default;
+    SKVX_ALWAYS_INLINE Vec() = default;
 
     template <typename U,
               typename=typename std::enable_if<std::is_convertible<U,T>::value>::type>
+    SKVX_ALWAYS_INLINE
     Vec(U x) : val(x) {}
 
-    Vec(std::initializer_list<T> xs) : val(xs.size() ? *xs.begin() : 0) {}
+    SKVX_ALWAYS_INLINE Vec(std::initializer_list<T> xs) : val(xs.size() ? *xs.begin() : 0) {}
 
-    T  operator[](int) const { return val; }
-    T& operator[](int)       { return val; }
+    SKVX_ALWAYS_INLINE T  operator[](int) const { return val; }
+    SKVX_ALWAYS_INLINE T& operator[](int)       { return val; }
 
-    static Vec Load(const void* ptr) {
+    SKVX_ALWAYS_INLINE static Vec Load(const void* ptr) {
         Vec v;
         memcpy(&v, ptr, sizeof(Vec));
         return v;
     }
-    void store(void* ptr) const {
+    SKVX_ALWAYS_INLINE void store(void* ptr) const {
         memcpy(ptr, this, sizeof(Vec));
     }
 };
-
-#if defined(__GNUC__) && !defined(__clang__) && defined(__SSE__)
-    // GCC warns about ABI changes when returning >= 32 byte vectors when -mavx is not enabled.
-    // This only happens for types like VExt whose ABI we don't care about, not for Vec itself.
-    #pragma GCC diagnostic ignored "-Wpsabi"
-#endif
-
-// Helps tamp down on the repetitive boilerplate.
-#define SIT   template <       typename T> static inline
-#define SINT  template <int N, typename T> static inline
-#define SINTU template <int N, typename T, typename U, \
-                        typename=typename std::enable_if<std::is_convertible<U,T>::value>::type> \
-              static inline
 
 template <typename D, typename S>
 static inline D bit_pun(const S& s) {
@@ -274,13 +280,20 @@ SIT T max(const Vec<1,T>& x) { return x.val; }
 
 SIT Vec<1,T> min(const Vec<1,T>& x, const Vec<1,T>& y) { return std::min(x.val, y.val); }
 SIT Vec<1,T> max(const Vec<1,T>& x, const Vec<1,T>& y) { return std::max(x.val, y.val); }
+SIT Vec<1,T> pow(const Vec<1,T>& x, const Vec<1,T>& y) { return std::pow(x.val, y.val); }
 
+SIT Vec<1,T>  atan(const Vec<1,T>& x) { return std:: atan(x.val); }
 SIT Vec<1,T>  ceil(const Vec<1,T>& x) { return std:: ceil(x.val); }
 SIT Vec<1,T> floor(const Vec<1,T>& x) { return std::floor(x.val); }
 SIT Vec<1,T> trunc(const Vec<1,T>& x) { return std::trunc(x.val); }
 SIT Vec<1,T> round(const Vec<1,T>& x) { return std::round(x.val); }
 SIT Vec<1,T>  sqrt(const Vec<1,T>& x) { return std:: sqrt(x.val); }
 SIT Vec<1,T>   abs(const Vec<1,T>& x) { return std::  abs(x.val); }
+SIT Vec<1,T>   sin(const Vec<1,T>& x) { return std::  sin(x.val); }
+SIT Vec<1,T>   cos(const Vec<1,T>& x) { return std::  cos(x.val); }
+SIT Vec<1,T>   tan(const Vec<1,T>& x) { return std::  tan(x.val); }
+
+SIT Vec<1,int> lrint(const Vec<1,T>& x) { return (int)std::lrint(x.val); }
 
 SIT Vec<1,T>   rcp(const Vec<1,T>& x) { return 1 / x.val; }
 SIT Vec<1,T> rsqrt(const Vec<1,T>& x) { return rcp(sqrt(x)); }
@@ -302,13 +315,20 @@ SINT T max(const Vec<N,T>& x) { return std::max(max(x.lo), max(x.hi)); }
 
 SINT Vec<N,T> min(const Vec<N,T>& x, const Vec<N,T>& y) { return join(min(x.lo, y.lo), min(x.hi, y.hi)); }
 SINT Vec<N,T> max(const Vec<N,T>& x, const Vec<N,T>& y) { return join(max(x.lo, y.lo), max(x.hi, y.hi)); }
+SINT Vec<N,T> pow(const Vec<N,T>& x, const Vec<N,T>& y) { return join(pow(x.lo, y.lo), pow(x.hi, y.hi)); }
 
+SINT Vec<N,T>  atan(const Vec<N,T>& x) { return join( atan(x.lo),  atan(x.hi)); }
 SINT Vec<N,T>  ceil(const Vec<N,T>& x) { return join( ceil(x.lo),  ceil(x.hi)); }
 SINT Vec<N,T> floor(const Vec<N,T>& x) { return join(floor(x.lo), floor(x.hi)); }
 SINT Vec<N,T> trunc(const Vec<N,T>& x) { return join(trunc(x.lo), trunc(x.hi)); }
 SINT Vec<N,T> round(const Vec<N,T>& x) { return join(round(x.lo), round(x.hi)); }
 SINT Vec<N,T>  sqrt(const Vec<N,T>& x) { return join( sqrt(x.lo),  sqrt(x.hi)); }
 SINT Vec<N,T>   abs(const Vec<N,T>& x) { return join(  abs(x.lo),   abs(x.hi)); }
+SINT Vec<N,T>   sin(const Vec<N,T>& x) { return join(  sin(x.lo),   sin(x.hi)); }
+SINT Vec<N,T>   cos(const Vec<N,T>& x) { return join(  cos(x.lo),   cos(x.hi)); }
+SINT Vec<N,T>   tan(const Vec<N,T>& x) { return join(  tan(x.lo),   tan(x.hi)); }
+
+SINT Vec<N,int> lrint(const Vec<N,T>& x) { return join(lrint(x.lo), lrint(x.hi)); }
 
 SINT Vec<N,T>   rcp(const Vec<N,T>& x) { return join(  rcp(x.lo),   rcp(x.hi)); }
 SINT Vec<N,T> rsqrt(const Vec<N,T>& x) { return join(rsqrt(x.lo), rsqrt(x.hi)); }
@@ -333,6 +353,7 @@ SINTU Vec<N,M<T>> operator< (U x, const Vec<N,T>& y) { return Vec<N,T>(x) <  y; 
 SINTU Vec<N,M<T>> operator> (U x, const Vec<N,T>& y) { return Vec<N,T>(x) >  y; }
 SINTU Vec<N,T>           min(U x, const Vec<N,T>& y) { return min(Vec<N,T>(x), y); }
 SINTU Vec<N,T>           max(U x, const Vec<N,T>& y) { return max(Vec<N,T>(x), y); }
+SINTU Vec<N,T>           pow(U x, const Vec<N,T>& y) { return pow(Vec<N,T>(x), y); }
 
 // ... and same deal for vector/scalar operations.
 SINTU Vec<N,T>    operator+ (const Vec<N,T>& x, U y) { return x +  Vec<N,T>(y); }
@@ -350,6 +371,7 @@ SINTU Vec<N,M<T>> operator< (const Vec<N,T>& x, U y) { return x <  Vec<N,T>(y); 
 SINTU Vec<N,M<T>> operator> (const Vec<N,T>& x, U y) { return x >  Vec<N,T>(y); }
 SINTU Vec<N,T>           min(const Vec<N,T>& x, U y) { return min(x, Vec<N,T>(y)); }
 SINTU Vec<N,T>           max(const Vec<N,T>& x, U y) { return max(x, Vec<N,T>(y)); }
+SINTU Vec<N,T>           pow(const Vec<N,T>& x, U y) { return pow(x, Vec<N,T>(y)); }
 
 // All vector/scalar combinations for mad() with at least one vector.
 SINTU Vec<N,T> mad(U f, const Vec<N,T>& m, const Vec<N,T>& a) { return Vec<N,T>(f)*m + a; }
@@ -410,6 +432,26 @@ static inline Vec<sizeof...(Ix),T> shuffle(const Vec<N,T>& x) {
 #endif
 }
 
+// fma() delivers a fused mul-add, even if that's really expensive.  Call it when you know it's not.
+static inline Vec<1,float> fma(const Vec<1,float>& x,
+                               const Vec<1,float>& y,
+                               const Vec<1,float>& z) {
+    return std::fma(x.val, y.val, z.val);
+}
+template <int N>
+static inline Vec<N,float> fma(const Vec<N,float>& x,
+                               const Vec<N,float>& y,
+                               const Vec<N,float>& z) {
+    return join(fma(x.lo, y.lo, z.lo),
+                fma(x.hi, y.hi, z.hi));
+}
+
+template <int N>
+static inline Vec<N,float> fract(const Vec<N,float>& x) {
+    return x - floor(x);
+}
+
+
 // div255(x) = (x + 127) / 255 is a bit-exact rounding divide-by-255, packing down to 8-bit.
 template <int N>
 static inline Vec<N,uint8_t> div255(const Vec<N,uint16_t>& x) {
@@ -466,6 +508,21 @@ static inline Vec<N,uint8_t> approx_scale(const Vec<N,uint8_t>& x, const Vec<N,u
 
     // Platform-specific specializations and overloads can now drop in here.
 
+    #if defined(__AVX__)
+        static inline Vec<8,float> sqrt(const Vec<8,float>& x) {
+            return bit_pun<Vec<8,float>>(_mm256_sqrt_ps(bit_pun<__m256>(x)));
+        }
+        static inline Vec<8,float> rsqrt(const Vec<8,float>& x) {
+            return bit_pun<Vec<8,float>>(_mm256_rsqrt_ps(bit_pun<__m256>(x)));
+        }
+        static inline Vec<8,float> rcp(const Vec<8,float>& x) {
+            return bit_pun<Vec<8,float>>(_mm256_rcp_ps(bit_pun<__m256>(x)));
+        }
+        static inline Vec<8,int> lrint(const Vec<8,float>& x) {
+            return bit_pun<Vec<8,int>>(_mm256_cvtps_epi32(bit_pun<__m256>(x)));
+        }
+    #endif
+
     #if defined(__SSE__)
         static inline Vec<4,float> sqrt(const Vec<4,float>& x) {
             return bit_pun<Vec<4,float>>(_mm_sqrt_ps(bit_pun<__m128>(x)));
@@ -476,6 +533,9 @@ static inline Vec<N,uint8_t> approx_scale(const Vec<N,uint8_t>& x, const Vec<N,u
         static inline Vec<4,float> rcp(const Vec<4,float>& x) {
             return bit_pun<Vec<4,float>>(_mm_rcp_ps(bit_pun<__m128>(x)));
         }
+        static inline Vec<4,int> lrint(const Vec<4,float>& x) {
+            return bit_pun<Vec<4,int>>(_mm_cvtps_epi32(bit_pun<__m128>(x)));
+        }
 
         static inline Vec<2,float>  sqrt(const Vec<2,float>& x) {
             return shuffle<0,1>( sqrt(shuffle<0,1,0,1>(x)));
@@ -485,6 +545,9 @@ static inline Vec<N,uint8_t> approx_scale(const Vec<N,uint8_t>& x, const Vec<N,u
         }
         static inline Vec<2,float>   rcp(const Vec<2,float>& x) {
             return shuffle<0,1>(  rcp(shuffle<0,1,0,1>(x)));
+        }
+        static inline Vec<2,int> lrint(const Vec<2,float>& x) {
+            return shuffle<0,1>(lrint(shuffle<0,1,0,1>(x)));
         }
     #endif
 
@@ -512,6 +575,33 @@ static inline Vec<N,uint8_t> approx_scale(const Vec<N,uint8_t>& x, const Vec<N,u
             return bit_pun<Vec<4,float>>(vbslq_f32(bit_pun<uint32x4_t> (c),
                                                    bit_pun<float32x4_t>(t),
                                                    bit_pun<float32x4_t>(e)));
+        }
+    #endif
+
+    #if defined(__AVX2__)
+        static inline Vec<4,float> fma(const Vec<4,float>& x,
+                                       const Vec<4,float>& y,
+                                       const Vec<4,float>& z) {
+            return bit_pun<Vec<4,float>>(_mm_fmadd_ps(bit_pun<__m128>(x),
+                                                      bit_pun<__m128>(y),
+                                                      bit_pun<__m128>(z)));
+        }
+
+        static inline Vec<8,float> fma(const Vec<8,float>& x,
+                                       const Vec<8,float>& y,
+                                       const Vec<8,float>& z) {
+            return bit_pun<Vec<8,float>>(_mm256_fmadd_ps(bit_pun<__m256>(x),
+                                                         bit_pun<__m256>(y),
+                                                         bit_pun<__m256>(z)));
+        }
+    #elif defined(__aarch64__)
+        static inline Vec<4,float> fma(const Vec<4,float>& x,
+                                       const Vec<4,float>& y,
+                                       const Vec<4,float>& z) {
+            // These instructions tend to work like z += xy, so the order here is z,x,y.
+            return bit_pun<Vec<4,float>>(vfmaq_f32(bit_pun<float32x4_t>(z),
+                                                   bit_pun<float32x4_t>(x),
+                                                   bit_pun<float32x4_t>(y)));
         }
     #endif
 

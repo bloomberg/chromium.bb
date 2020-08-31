@@ -35,10 +35,10 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
       MediaGalleriesDialogController* controller);
   ~MediaGalleriesDialogViews() override;
 
-  // MediaGalleriesDialog implementation:
+  // MediaGalleriesDialog:
   void UpdateGalleries() override;
 
-  // views::DialogDelegate implementation:
+  // views::DialogDelegate:
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void DeleteDelegate() override;
@@ -47,13 +47,11 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   views::View* GetContentsView() override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;
-  bool Cancel() override;
-  bool Accept() override;
 
-  // views::ButtonListener implementation:
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // views::ContextMenuController implementation:
+  // views::ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,
                                   const gfx::Point& point,
                                   ui::MenuSourceType source_type) override;
@@ -66,7 +64,7 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
 
   typedef std::map<MediaGalleryPrefId, MediaGalleryCheckboxView*> CheckboxMap;
 
-  // MediaGalleriesDialog implementation:
+  // MediaGalleriesDialog:
   void AcceptDialogForTesting() override;
 
   void InitChildViews();

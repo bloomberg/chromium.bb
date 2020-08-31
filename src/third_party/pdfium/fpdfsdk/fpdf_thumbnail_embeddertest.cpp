@@ -9,6 +9,14 @@
 #include "testing/embedder_test.h"
 #include "testing/utils/hash.h"
 
+namespace {
+
+const char kSimpleThumbnailChecksum[] = "f6a8e8db01cccd52abb91ea433a17373";
+const char kThumbnailWithNoFiltersChecksum[] =
+    "b5696e586382b3373741f8a1d651cab0";
+
+}  // namespace
+
 class FPDFThumbnailEmbedderTest : public EmbedderTest {};
 
 TEST_F(FPDFThumbnailEmbedderTest, GetDecodedThumbnailDataFromPageWithFilters) {
@@ -59,7 +67,6 @@ TEST_F(FPDFThumbnailEmbedderTest,
        GetDecodedThumbnailDataFromPageWithNoFilters) {
   ASSERT_TRUE(OpenDocument("thumbnail_with_no_filters.pdf"));
 
-  const char kHashedDecodedData[] = "b5696e586382b3373741f8a1d651cab0";
   const unsigned long kExpectedSize = 301u;
 
   FPDF_PAGE page = LoadPage(0);
@@ -72,7 +79,7 @@ TEST_F(FPDFThumbnailEmbedderTest,
 
   EXPECT_EQ(kExpectedSize, FPDFPage_GetDecodedThumbnailData(
                                page, thumb_buf.data(), length_bytes));
-  EXPECT_EQ(kHashedDecodedData,
+  EXPECT_EQ(kThumbnailWithNoFiltersChecksum,
             GenerateMD5Base16(thumb_buf.data(), kExpectedSize));
 
   UnloadPage(page);
@@ -98,7 +105,6 @@ TEST_F(FPDFThumbnailEmbedderTest, GetRawThumbnailDataFromPageWithFilters) {
   ASSERT_TRUE(OpenDocument("simple_thumbnail.pdf"));
 
   {
-    const char kHashedRawData[] = "f6a8e8db01cccd52abb91ea433a17373";
     const unsigned long kExpectedSize = 1851u;
 
     FPDF_PAGE page = LoadPage(0);
@@ -110,7 +116,7 @@ TEST_F(FPDFThumbnailEmbedderTest, GetRawThumbnailDataFromPageWithFilters) {
 
     EXPECT_EQ(kExpectedSize, FPDFPage_GetRawThumbnailData(
                                  page, thumb_buf.data(), length_bytes));
-    EXPECT_EQ(kHashedRawData,
+    EXPECT_EQ(kSimpleThumbnailChecksum,
               GenerateMD5Base16(thumb_buf.data(), kExpectedSize));
 
     UnloadPage(page);
@@ -139,7 +145,6 @@ TEST_F(FPDFThumbnailEmbedderTest, GetRawThumbnailDataFromPageWithFilters) {
 TEST_F(FPDFThumbnailEmbedderTest, GetRawThumbnailDataFromPageWithNoFilters) {
   ASSERT_TRUE(OpenDocument("thumbnail_with_no_filters.pdf"));
 
-  const char kHashedRawData[] = "b5696e586382b3373741f8a1d651cab0";
   const unsigned long kExpectedSize = 301u;
 
   FPDF_PAGE page = LoadPage(0);
@@ -151,7 +156,8 @@ TEST_F(FPDFThumbnailEmbedderTest, GetRawThumbnailDataFromPageWithNoFilters) {
 
   EXPECT_EQ(kExpectedSize,
             FPDFPage_GetRawThumbnailData(page, thumb_buf.data(), length_bytes));
-  EXPECT_EQ(kHashedRawData, GenerateMD5Base16(thumb_buf.data(), kExpectedSize));
+  EXPECT_EQ(kThumbnailWithNoFiltersChecksum,
+            GenerateMD5Base16(thumb_buf.data(), kExpectedSize));
 
   UnloadPage(page);
 }
@@ -184,7 +190,7 @@ TEST_F(FPDFThumbnailEmbedderTest, GetThumbnailAsBitmapFromPage) {
     EXPECT_EQ(50, FPDFBitmap_GetHeight(thumb_bitmap.get()));
     EXPECT_EQ(FPDFBitmap_BGR, FPDFBitmap_GetFormat(thumb_bitmap.get()));
     CompareBitmap(thumb_bitmap.get(), 50, 50,
-                  "312a156389470c3c69435f836e370a45");
+                  "52b75451e396f55e95d1cb68e6018226");
 
     UnloadPage(page);
   }
@@ -199,7 +205,7 @@ TEST_F(FPDFThumbnailEmbedderTest, GetThumbnailAsBitmapFromPage) {
     EXPECT_EQ(50, FPDFBitmap_GetHeight(thumb_bitmap.get()));
     EXPECT_EQ(FPDFBitmap_BGR, FPDFBitmap_GetFormat(thumb_bitmap.get()));
     CompareBitmap(thumb_bitmap.get(), 50, 50,
-                  "d831dc43c6d5af82cb7a936dd317f82f");
+                  "1f448be08c6e6043ccd0bad8ecc2a351");
 
     UnloadPage(page);
   }
@@ -243,7 +249,7 @@ TEST_F(FPDFThumbnailEmbedderTest,
   EXPECT_EQ(10, FPDFBitmap_GetWidth(thumb_bitmap.get()));
   EXPECT_EQ(10, FPDFBitmap_GetHeight(thumb_bitmap.get()));
   EXPECT_EQ(FPDFBitmap_BGR, FPDFBitmap_GetFormat(thumb_bitmap.get()));
-  CompareBitmap(thumb_bitmap.get(), 10, 10, "20428776d40c398d44a5c09fcd57986d");
+  CompareBitmap(thumb_bitmap.get(), 10, 10, "fe02583f9e6d094042a942ff686e9936");
 
   UnloadPage(page);
 }
@@ -251,7 +257,6 @@ TEST_F(FPDFThumbnailEmbedderTest,
 TEST_F(FPDFThumbnailEmbedderTest, GetThumbnailDoesNotAlterPage) {
   ASSERT_TRUE(OpenDocument("simple_thumbnail.pdf"));
 
-  const char kHashedRawData[] = "f6a8e8db01cccd52abb91ea433a17373";
   const unsigned long kExpectedRawSize = 1851u;
 
   FPDF_PAGE page = LoadPage(0);
@@ -264,7 +269,7 @@ TEST_F(FPDFThumbnailEmbedderTest, GetThumbnailDoesNotAlterPage) {
 
   EXPECT_EQ(kExpectedRawSize,
             FPDFPage_GetRawThumbnailData(page, raw_thumb_buf.data(), raw_size));
-  EXPECT_EQ(kHashedRawData,
+  EXPECT_EQ(kSimpleThumbnailChecksum,
             GenerateMD5Base16(raw_thumb_buf.data(), kExpectedRawSize));
 
   // Get the thumbnail
@@ -273,7 +278,7 @@ TEST_F(FPDFThumbnailEmbedderTest, GetThumbnailDoesNotAlterPage) {
   EXPECT_EQ(50, FPDFBitmap_GetWidth(thumb_bitmap.get()));
   EXPECT_EQ(50, FPDFBitmap_GetHeight(thumb_bitmap.get()));
   EXPECT_EQ(FPDFBitmap_BGR, FPDFBitmap_GetFormat(thumb_bitmap.get()));
-  CompareBitmap(thumb_bitmap.get(), 50, 50, "312a156389470c3c69435f836e370a45");
+  CompareBitmap(thumb_bitmap.get(), 50, 50, "52b75451e396f55e95d1cb68e6018226");
 
   // Get the raw data again
   unsigned long new_raw_size = FPDFPage_GetRawThumbnailData(page, nullptr, 0);
@@ -283,7 +288,7 @@ TEST_F(FPDFThumbnailEmbedderTest, GetThumbnailDoesNotAlterPage) {
   EXPECT_EQ(kExpectedRawSize,
             FPDFPage_GetRawThumbnailData(page, new_raw_thumb_buf.data(),
                                          new_raw_size));
-  EXPECT_EQ(kHashedRawData,
+  EXPECT_EQ(kSimpleThumbnailChecksum,
             GenerateMD5Base16(new_raw_thumb_buf.data(), kExpectedRawSize));
 
   UnloadPage(page);

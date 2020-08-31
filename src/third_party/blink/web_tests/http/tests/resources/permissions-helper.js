@@ -1,5 +1,5 @@
 // This file provides a PermissionsHelper object which can be used by
-// LayoutTests using testRunner to handle permissions. The methods in the object
+// LayoutTests to handle permissions. The methods in the object
 // return promises so can be used to write idiomatic, race-free code.
 //
 // The current available methods are:
@@ -27,10 +27,10 @@ var PermissionsHelper = (function() {
         return {name: "background-sync"};
       case "accessibility-events":
         return {name: "accessibility-events"};
-      case "clipboard-read":
-        return {name: "clipboard-read"};
-      case "clipboard-write":
-        return {name: "clipboard-write"};
+      case "clipboard-read-write":
+        return {name: "clipboard-write", allowWithoutSanitization: true};
+      case "clipboard-sanitized-write":
+        return {name: "clipboard-write", allowWithoutSanitization: false};
       case "payment-handler":
         return {name: "payment-handler"};
       case "background-fetch":
@@ -46,21 +46,7 @@ var PermissionsHelper = (function() {
 
   return {
     setPermission: function(name, state) {
-      return new Promise(function(resolver, reject) {
-        navigator.permissions.query(nameToObject(name)).then(function(result) {
-            if (result.state == state) {
-                resolver()
-                return;
-            }
-
-            result.onchange = function() {
-                result.onchange = null;
-                resolver();
-            };
-
-            testRunner.setPermission(name, state, location.origin, location.origin);
-        });
-      });
+      return internals.setPermission(nameToObject(name), state, location.origin, location.origin);
     }
   }
 })();

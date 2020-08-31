@@ -4,12 +4,17 @@
 
 #include "chrome/browser/web_applications/web_app.h"
 
+#include <algorithm>
 #include <ios>
 #include <ostream>
 #include <tuple>
+#include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
+#include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "ui/gfx/color_utils.h"
 
@@ -27,7 +32,9 @@ namespace web_app {
 WebApp::WebApp(const AppId& app_id)
     : app_id_(app_id),
       display_mode_(DisplayMode::kUndefined),
-      user_display_mode_(DisplayMode::kUndefined) {}
+      user_display_mode_(DisplayMode::kUndefined),
+      chromeos_data_(IsChromeOs() ? base::make_optional<WebAppChromeOsData>()
+                                  : base::nullopt) {}
 
 WebApp::~WebApp() = default;
 
@@ -140,6 +147,11 @@ void WebApp::SetUserDisplayMode(DisplayMode user_display_mode) {
   }
 }
 
+void WebApp::SetWebAppChromeOsData(
+    base::Optional<WebAppChromeOsData> chromeos_data) {
+  chromeos_data_ = std::move(chromeos_data);
+}
+
 void WebApp::SetIsLocallyInstalled(bool is_locally_installed) {
   is_locally_installed_ = is_locally_installed;
 }
@@ -153,8 +165,46 @@ void WebApp::SetIconInfos(std::vector<WebApplicationIconInfo> icon_infos) {
 }
 
 void WebApp::SetDownloadedIconSizes(std::vector<SquareSizePx> sizes) {
+  std::sort(sizes.begin(), sizes.end());
   downloaded_icon_sizes_ = std::move(sizes);
 }
+
+void WebApp::SetFileHandlers(apps::FileHandlers file_handlers) {
+  file_handlers_ = std::move(file_handlers);
+}
+
+void WebApp::SetAdditionalSearchTerms(
+    std::vector<std::string> additional_search_terms) {
+  additional_search_terms_ = std::move(additional_search_terms);
+}
+
+void WebApp::SetShortcutInfos(
+    std::vector<WebAppShortcutMenuItemInfo> shortcut_infos) {
+  shortcut_infos_ = std::move(shortcut_infos);
+}
+
+void WebApp::SetDownloadedShortcutIconsSizes(
+    std::vector<std::vector<SquareSizePx>> sizes) {
+  downloaded_shortcut_icons_sizes_ = std::move(sizes);
+}
+
+WebApp::WebAppShortcutMenuItemInfo::WebAppShortcutMenuItemInfo() = default;
+
+WebApp::WebAppShortcutMenuItemInfo::WebAppShortcutMenuItemInfo(
+    const WebAppShortcutMenuItemInfo& other) = default;
+
+WebApp::WebAppShortcutMenuItemInfo::WebAppShortcutMenuItemInfo(
+    WebAppShortcutMenuItemInfo&&) noexcept = default;
+
+WebApp::WebAppShortcutMenuItemInfo::~WebAppShortcutMenuItemInfo() = default;
+
+WebApp::WebAppShortcutMenuItemInfo&
+WebApp::WebAppShortcutMenuItemInfo::operator=(
+    const WebAppShortcutMenuItemInfo&) = default;
+
+WebApp::WebAppShortcutMenuItemInfo&
+WebApp::WebAppShortcutMenuItemInfo::operator=(
+    WebAppShortcutMenuItemInfo&&) noexcept = default;
 
 void WebApp::SetSyncData(SyncData sync_data) {
   sync_data_ = std::move(sync_data);
@@ -197,6 +247,14 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
     out << "  icon_url: " << icon << std::endl;
   for (SquareSizePx size : app.downloaded_icon_sizes_)
     out << "  icon_size_on_disk: " << size << std::endl;
+  for (const apps::FileHandler& file_handler : app.file_handlers_)
+    out << "  file_handler: " << file_handler << std::endl;
+  for (const std::string& additional_search_term : app.additional_search_terms_)
+    out << "  additional_search_term: " << additional_search_term << std::endl;
+
+  out << " chromeos_data: " << app.chromeos_data_.has_value() << std::endl;
+  if (app.chromeos_data_.has_value())
+    out << app.chromeos_data_.value();
 
   return out;
 }
@@ -217,14 +275,16 @@ bool operator==(const WebApp& app1, const WebApp& app2) {
                   app1.description_, app1.scope_, app1.theme_color_,
                   app1.icon_infos_, app1.downloaded_icon_sizes_,
                   app1.display_mode_, app1.user_display_mode_,
-                  app1.is_locally_installed_, app1.is_in_sync_install_,
-                  app1.sync_data_) ==
+                  app1.chromeos_data_, app1.is_locally_installed_,
+                  app1.is_in_sync_install_, app1.file_handlers_,
+                  app1.additional_search_terms_, app1.sync_data_) ==
          std::tie(app2.app_id_, app2.sources_, app2.name_, app2.launch_url_,
                   app2.description_, app2.scope_, app2.theme_color_,
                   app2.icon_infos_, app2.downloaded_icon_sizes_,
                   app2.display_mode_, app2.user_display_mode_,
-                  app2.is_locally_installed_, app2.is_in_sync_install_,
-                  app2.sync_data_);
+                  app2.chromeos_data_, app2.is_locally_installed_,
+                  app2.is_in_sync_install_, app2.file_handlers_,
+                  app2.additional_search_terms_, app2.sync_data_);
 }
 
 bool operator!=(const WebApp& app1, const WebApp& app2) {

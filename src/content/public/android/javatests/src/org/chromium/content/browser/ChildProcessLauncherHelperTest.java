@@ -17,6 +17,7 @@ import android.os.RemoteException;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +60,7 @@ public class ChildProcessLauncherHelperTest {
 
     @Before
     public void setUp() {
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
+        LibraryLoader.getInstance().ensureInitialized();
     }
 
     /**
@@ -101,12 +102,9 @@ public class ChildProcessLauncherHelperTest {
 
         // Wait for the Helper service to connect.
         CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Failed to get helper service Messenger") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return serviceConnection.mMessenger != null;
-                    }
-                });
+                ()
+                        -> Assert.assertNotNull("Failed to get helper service Messenger",
+                                serviceConnection.mMessenger));
 
         Assert.assertNotNull(serviceConnection.mMessenger);
 
@@ -130,12 +128,9 @@ public class ChildProcessLauncherHelperTest {
         serviceConnection.mMessenger.send(msg);
 
         CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Failed waiting for helper service reply") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return replyHandler.mMessage != null;
-                    }
-                });
+                ()
+                        -> Assert.assertNotNull(
+                                "Failed waiting for helper service reply", replyHandler.mMessage));
 
         // Verify that the Helper was able to launch the sandboxed service.
         Assert.assertNotNull(replyHandler.mMessage);
@@ -149,10 +144,11 @@ public class ChildProcessLauncherHelperTest {
 
         // Launch a service from this process. Since slot 0 is already bound by the Helper, it
         // will fail to start and the ChildProcessLauncher will retry and use the slot 1.
-        ChildProcessCreationParamsImpl.set(context.getPackageName(), false /* isExternalService */,
+        ChildProcessCreationParamsImpl.set(context.getPackageName(),
+                null /* privilegedServicesName */, context.getPackageName(),
+                null /* sandboxedServicesName */, false /* isExternalService */,
                 LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */,
-                false /* ignoreVisibilityForImportance */, null /* privilegedServicesName */,
-                null /* sandboxedServicesName */);
+                false /* ignoreVisibilityForImportance */);
         ChildProcessLauncherHelperImpl launcher =
                 startSandboxedChildProcess(BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
 
@@ -182,16 +178,14 @@ public class ChildProcessLauncherHelperTest {
                 connectionAllocator.getChildProcessConnectionAtSlotForTesting(1), retryConnection);
 
         CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Failed waiting retry connection to get pid") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return ChildProcessLauncherTestUtils.getConnectionPid(retryConnection) > 0;
-                    }
-                });
+                ()
+                        -> Assert.assertThat("Failed waiting retry connection to get pid",
+                                ChildProcessLauncherTestUtils.getConnectionPid(retryConnection),
+                                Matchers.greaterThan(0)));
         Assert.assertTrue(ChildProcessLauncherTestUtils.getConnectionPid(retryConnection)
                 != helperConnectionPid);
-        Assert.assertTrue(
-                ChildProcessLauncherTestUtils.getConnectionService(retryConnection).bindToCaller());
+        Assert.assertTrue(ChildProcessLauncherTestUtils.getConnectionService(retryConnection)
+                                  .bindToCaller(ChildProcessConnection.getBindToCallerClazz()));
 
         // Unbind the service.
         replyHandler.mMessage = null;
@@ -199,12 +193,9 @@ public class ChildProcessLauncherHelperTest {
         msg.replyTo = new Messenger(new Handler(Looper.getMainLooper(), replyHandler));
         serviceConnection.mMessenger.send(msg);
         CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Failed waiting for helper service unbind reply") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return replyHandler.mMessage != null;
-                    }
-                });
+                ()
+                        -> Assert.assertNotNull("Failed waiting for helper service unbind reply",
+                                replyHandler.mMessage));
         Assert.assertEquals(ChildProcessLauncherTestHelperService.MSG_UNBIND_SERVICE_REPLY,
                 replyHandler.mMessage.what);
 
@@ -256,10 +247,11 @@ public class ChildProcessLauncherHelperTest {
     @Feature({"ProcessManagement"})
     public void testWarmUpWithBindToCaller() {
         Context context = InstrumentationRegistry.getTargetContext();
-        ChildProcessCreationParamsImpl.set(context.getPackageName(), false /* isExternalService */,
+        ChildProcessCreationParamsImpl.set(context.getPackageName(),
+                null /* privilegedServicesName */, context.getPackageName(),
+                null /* sandboxedServicesName */, false /* isExternalService */,
                 LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */,
-                false /* ignoreVisibilityForImportance */, null /* privilegedServicesName */,
-                null /* sandboxedServicesName */);
+                false /* ignoreVisibilityForImportance */);
         testWarmUpImpl();
     }
 
@@ -391,34 +383,22 @@ public class ChildProcessLauncherHelperTest {
     }
 
     private static void blockUntilConnected(final ChildProcessLauncherHelperImpl launcher) {
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("The connection wasn't established.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return launcher.getChildProcessConnection() != null
-                                && launcher.getChildProcessConnection().isConnected();
-                    }
-                });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Assert.assertNotNull(launcher.getChildProcessConnection());
+            Assert.assertTrue(launcher.getChildProcessConnection().isConnected());
+        });
     }
 
     private static void blockUntilConnected(final ChildProcessConnection connection) {
         CriteriaHelper.pollInstrumentationThread(
-                new Criteria("The connection wasn't established.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return connection.isConnected();
-                    }
-                });
+                connection::isConnected, "The connection wasn't established.");
     }
 
     private static void blockUntilSetup(final ChildProcessLauncherHelperImpl launcher) {
         CriteriaHelper.pollInstrumentationThread(
-                new Criteria("The connection wasn't established.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return getPid(launcher) != 0;
-                    }
-                });
+                ()
+                        -> Assert.assertNotEquals(
+                                "The connection wasn't established", 0, getPid(launcher)));
     }
 
     // Returns the number of all connection currently connected.
@@ -456,13 +436,9 @@ public class ChildProcessLauncherHelperTest {
     private static ChildProcessConnection retrieveConnection(
             final ChildProcessLauncherHelperImpl launcherHelper) {
         CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Failed waiting for child process to connect") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return ChildProcessLauncherTestUtils.getConnection(launcherHelper) != null;
-                    }
-                });
-
+                ()
+                        -> Assert.assertNotNull("Failed waiting for child process to connect",
+                                ChildProcessLauncherTestUtils.getConnection(launcherHelper)));
         return ChildProcessLauncherTestUtils.getConnection(launcherHelper);
     }
 

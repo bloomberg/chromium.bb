@@ -36,6 +36,7 @@ namespace blink {
 
 class CSSPropertyValue;
 class CSSValue;
+class ExecutionContext;
 
 // Inputs: PropertyID, isImportant bool, CSSParserTokenRange.
 // Outputs: Vector of CSSProperties
@@ -71,13 +72,14 @@ class CORE_EXPORT CSSPropertyParser {
  private:
   // Inputs:
   CSSParserTokenRange range_;
-  Member<const CSSParserContext> context_;
+  const CSSParserContext* context_;
   // Outputs:
   HeapVector<CSSPropertyValue, 256>* parsed_properties_;
   DISALLOW_COPY_AND_ASSIGN(CSSPropertyParser);
 };
 
-CSSPropertyID UnresolvedCSSPropertyID(StringView,
+CSSPropertyID UnresolvedCSSPropertyID(const ExecutionContext*,
+                                      StringView,
                                       CSSParserMode mode = kHTMLStandardMode);
 CSSValueID CssValueKeywordID(StringView);
 

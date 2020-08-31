@@ -9,6 +9,57 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+///////////////////////////////////////////////////////////////////////////////
+// Internal implementation details
+///////////////////////////////////////////////////////////////////////////////
+//
+// There are two levels of interfaces used to access the AOM codec: the
+// the aom_codec_iface and the aom_codec_ctx.
+//
+// 1. aom_codec_iface_t
+//    (Related files: aom/aom_codec.h, aom/src/aom_codec.c,
+//    aom/internal/aom_codec_internal.h, av1/av1_cx_iface.c,
+//    av1/av1_dx_iface.c)
+//
+// Used to initialize the codec context, which contains the configuration for
+// for modifying the encoder/decoder during run-time. See the other
+// documentation in this header file for more details. For the most part,
+// users will call helper functions, such as aom_codec_iface_name,
+// aom_codec_get_caps, etc., to interact with it.
+//
+// The main purpose of the aom_codec_iface_t is to provide a way to generate
+// a default codec config, find out what capabilities the implementation has,
+// and create an aom_codec_ctx_t (which is actually used to interact with the
+// codec).
+//
+// Note that the implementations for the AV1 algorithm are located in
+// av1/av1_cx_iface.c and av1/av1_dx_iface.c
+//
+//
+// 2. aom_codec_ctx_t
+//  (Related files: aom/aom_codec.h, av1/av1_cx_iface.c, av1/av1_dx_iface.c,
+//   aom/aomcx.h, aom/aomdx.h, aom/src/aom_encoder.c, aom/src/aom_decoder.c)
+//
+// The actual interface between user code and the codec. It stores the name
+// of the codec, a pointer back to the aom_codec_iface_t that initialized it,
+// initialization flags, a config for either encoder or the decoder, and a
+// pointer to internal data.
+//
+// The codec is configured / queried through calls to aom_codec_control,
+// which takes a control code (listed in aomcx.h and aomdx.h) and a parameter.
+// In the case of "getter" control codes, the parameter is modified to have
+// the requested value; in the case of "setter" control codes, the codec's
+// configuration is changed based on the parameter. Note that a aom_codec_err_t
+// is returned, which indicates if the operation was successful or not.
+//
+// Note that for the encoder, the aom_codec_alg_priv_t points to the
+// the aom_codec_alg_priv structure in av1/av1_cx_iface.c, and for the decoder,
+// the struct in av1/av1_dx_iface.c. Variables such as AV1_COMP cpi are stored
+// here and also used in the core algorithm.
+//
+// At the end, aom_codec_destroy should be called for each initialized
+// aom_codec_ctx_t.
+
 /*!\defgroup codec Common Algorithm Interface
  * This abstraction allows applications to easily support multiple video
  * formats with minimal code duplication. This section describes the interface
@@ -23,13 +74,16 @@
  * video codec algorithm.
  *
  * An application instantiates a specific codec instance by using
- * aom_codec_init() and a pointer to the algorithm's interface structure:
+ * aom_codec_dec_init() or aom_codec_enc_init() and a pointer to the
+ * algorithm's interface structure:
  *     <pre>
  *     my_app.c:
  *       extern aom_codec_iface_t my_codec;
  *       {
  *           aom_codec_ctx_t algo;
- *           res = aom_codec_init(&algo, &my_codec);
+ *           int threads = 4;
+ *           aom_codec_dec_cfg_t cfg = { threads, 0, 0, 1 };
+ *           res = aom_codec_dec_init(&algo, &my_codec, &cfg, 0);
  *       }
  *     </pre>
  *
@@ -95,7 +149,7 @@ extern "C" {
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures
  */
-#define AOM_CODEC_ABI_VERSION (3 + AOM_IMAGE_ABI_VERSION) /**<\hideinitializer*/
+#define AOM_CODEC_ABI_VERSION (4 + AOM_IMAGE_ABI_VERSION) /**<\hideinitializer*/
 
 /*!\brief Algorithm return codes */
 typedef enum {
@@ -173,10 +227,29 @@ typedef long aom_codec_caps_t;
  */
 typedef long aom_codec_flags_t;
 
+/*!\brief Time Stamp Type
+ *
+ * An integer, which when multiplied by the stream's time base, provides
+ * the absolute time of a sample.
+ */
+typedef int64_t aom_codec_pts_t;
+
 /*!\brief Codec interface structure.
  *
  * Contains function pointers and other data private to the codec
- * implementation. This structure is opaque to the application.
+ * implementation. This structure is opaque to the application. Common
+ * functions used with this structure:
+ *   - aom_codec_iface_name(aom_codec_iface_t *iface): get the
+ *     name of the codec
+ *   - aom_codec_get_caps(aom_codec_iface_t *iface): returns
+ *     the capabilities of the codec
+ *   - aom_codec_enc_config_default: generate the default config for
+ *     initializing the encoder (see documention in aom_encoder.h)
+ *   - aom_codec_dec_init, aom_codec_enc_init: initialize the codec context
+ *     structure (see documentation on aom_codec_ctx).
+ *
+ * To get access to the AV1 encoder and decoder, use aom_codec_av1_cx() and
+ *  aom_codec_av1_dx().
  */
 typedef const struct aom_codec_iface aom_codec_iface_t;
 
@@ -251,31 +324,27 @@ typedef enum aom_superblock_size {
 /*!\brief Return the version information (as an integer)
  *
  * Returns a packed encoding of the library version number. This will only
- * include
- * the major.minor.patch component of the version number. Note that this encoded
- * value should be accessed through the macros provided, as the encoding may
- * change
- * in the future.
+ * include the major.minor.patch component of the version number. Note that this
+ * encoded value should be accessed through the macros provided, as the encoding
+ * may change in the future.
  *
  */
 int aom_codec_version(void);
 
-/*!\brief Return the version major number */
+/*!\brief Return the major version number */
 #define aom_codec_version_major() ((aom_codec_version() >> 16) & 0xff)
 
-/*!\brief Return the version minor number */
+/*!\brief Return the minor version number */
 #define aom_codec_version_minor() ((aom_codec_version() >> 8) & 0xff)
 
-/*!\brief Return the version patch number */
+/*!\brief Return the patch version number */
 #define aom_codec_version_patch() ((aom_codec_version() >> 0) & 0xff)
 
 /*!\brief Return the version information (as a string)
  *
  * Returns a printable string containing the full library version number. This
- * may
- * contain additional text following the three digit version number, as to
- * indicate
- * release candidates, prerelease versions, etc.
+ * may contain additional text following the three digit version number, as to
+ * indicate release candidates, prerelease versions, etc.
  *
  */
 const char *aom_codec_version_str(void);
@@ -283,8 +352,7 @@ const char *aom_codec_version_str(void);
 /*!\brief Return the version information (as a string)
  *
  * Returns a printable "extra string". This is the component of the string
- * returned
- * by aom_codec_version_str() following the three digit version number.
+ * returned by aom_codec_version_str() following the three digit version number.
  *
  */
 const char *aom_codec_version_extra_str(void);
@@ -502,19 +570,6 @@ typedef enum {
  * \param[in]     type            The OBU_TYPE to convert to string.
  */
 const char *aom_obu_type_to_string(OBU_TYPE type);
-
-/*!\brief Config Options
- *
- * This type allows to enumerate and control options defined for control
- * via config file at runtime.
- */
-typedef struct cfg_options {
-  /*!\brief Reflects if ext_partition should be enabled
-   *
-   * If this value is non-zero it enabled the feature
-   */
-  unsigned int ext_partition;
-} cfg_options_t;
 
 /*!@} - end defgroup codec*/
 #ifdef __cplusplus

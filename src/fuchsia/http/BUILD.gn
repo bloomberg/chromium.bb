@@ -4,7 +4,6 @@
 
 assert(is_fuchsia)
 
-import("//build/config/fuchsia/fidl_library.gni")
 import("//build/config/fuchsia/generate_runner_scripts.gni")
 import("//build/config/fuchsia/symbol_archive.gni")
 import("//build/util/process_version.gni")
@@ -22,24 +21,20 @@ source_set("core") {
     "//base:base",
     "//fuchsia/base",
     "//net:net",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-net-oldhttp",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
-    "//third_party/fuchsia-sdk/sdk:sys_cpp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.net.oldhttp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
+    "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
   ]
   visibility = [ ":*" ]
 }
 
 executable("http_exe") {
-  sources = [
-    "http_service_main.cc",
-  ]
-  deps = [
-    ":core",
-  ]
+  sources = [ "http_service_main.cc" ]
+  deps = [ ":core" ]
   visibility = [ ":*" ]
 }
 
-fuchsia_package("http_pkg") {
+cr_fuchsia_package("http_pkg") {
   binary = ":http_exe"
   package_name_override = "http"
   manifest = "http.cmx"
@@ -51,25 +46,19 @@ fuchsia_package_runner("http_pkg_runner") {
 }
 
 test("http_service_tests") {
-  sources = [
-    "http_service_unittest.cc",
-  ]
+  sources = [ "http_service_unittest.cc" ]
   deps = [
     ":core",
     "//base/test:run_all_unittests",
     "//net:test_support",
     "//testing/gtest",
   ]
-  data = [
-    "testdata/",
-  ]
+  data = [ "testdata/" ]
 }
 
 if (is_official_build) {
   symbol_archive("symbol_archive") {
-    deps = [
-      ":http_pkg",
-    ]
+    deps = [ ":http_pkg" ]
     ids_txt = "$root_gen_dir/fuchsia/http/http/ids.txt"
     archive_name = "$root_gen_dir/fuchsia/http/http/http.symbols.tar.bz2"
   }

@@ -5,14 +5,11 @@
 // https://wicg.github.io/shape-detection-api/#barcode-detection-api
 
 [
-    Constructor(optional BarcodeDetectorOptions barcodeDetectorOptions),
-    ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
     SecureContext,
-    MeasureAs=ShapeDetection_BarcodeDetectorConstructor,
-    RaisesException=Constructor,
-    RuntimeEnabled=ShapeDetection
+    RuntimeEnabled=BarcodeDetector
 ] interface BarcodeDetector {
+    [CallWith=ExecutionContext, RaisesException, MeasureAs=ShapeDetection_BarcodeDetectorConstructor] constructor(optional BarcodeDetectorOptions barcodeDetectorOptions = {});
     [CallWith=ScriptState] static Promise<sequence<BarcodeFormat>> getSupportedFormats();
     [CallWith=ScriptState, MeasureAs=ShapeDetectionAPI] Promise<sequence<DetectedBarcode>> detect(ImageBitmapSource image);
 };

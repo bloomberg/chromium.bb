@@ -159,9 +159,11 @@ class UI_ANDROID_EXPORT ViewAndroid {
                        const gfx::Point& hotspot);
   void OnBackgroundColorChanged(unsigned int color);
   void OnTopControlsChanged(float top_controls_offset,
-                            float top_content_offset);
+                            float top_content_offset,
+                            float top_controls_min_height_offset);
   void OnBottomControlsChanged(float bottom_controls_offset,
-                               float bottom_content_offset);
+                               float bottom_controls_min_height_offset);
+  void OnBrowserControlsHeightChanged();
 
   // Gets the Visual Viewport inset to apply in physical pixels.
   int GetViewportInsetBottom();
@@ -200,10 +202,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
   bool OnTouchEventForTesting(const MotionEventAndroid& event) {
     return OnTouchEvent(event);
   }
-
-  bool OnUnconsumedKeyboardEventAck(int native_code);
-  void FallbackCursorModeLockCursor(bool left, bool right, bool up, bool down);
-  void FallbackCursorModeSetCursorVisibility(bool visible);
 
  protected:
   void RemoveAllChildren(bool attached_to_window);
@@ -271,8 +269,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
 
   void OnSizeChangedInternal(const gfx::Size& size);
   void DispatchOnSizeChanged();
-
-  bool HasTouchlessEventHandler();
 
   // Returns the Java delegate for this view. This is used to delegate work
   // up to the embedding view (or the embedder that can deal with the

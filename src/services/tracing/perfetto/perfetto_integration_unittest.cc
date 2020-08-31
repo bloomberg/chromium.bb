@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/perfetto/test_utils.h"
@@ -33,7 +33,10 @@ namespace {
 
 const char kPerfettoTestDataSourceName[] =
     "org.chromium.chrome_integration_unittest";
-const char kPerfettoProducerName[] = "org.chromium.perfetto_producer.123";
+
+std::string GetPerfettoProducerName() {
+  return base::StrCat({mojom::kPerfettoProducerNamePrefix, "123"});
+}
 
 class PerfettoIntegrationTest : public testing::Test {
  public:
@@ -58,17 +61,15 @@ class PerfettoIntegrationTest : public testing::Test {
 };
 
 TEST_F(PerfettoIntegrationTest, ProducerDatasourceInitialized) {
-  auto dummy_client = std::make_unique<MockProducerClient>();
+  std::unique_ptr<MockProducerClient::Handle> dummy_client =
+      MockProducerClient::Create();
 
   base::RunLoop producer_initialized_runloop;
   auto new_producer = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), dummy_client.get(),
-      producer_initialized_runloop.QuitClosure());
+      GetPerfettoProducerName(), kPerfettoTestDataSourceName, perfetto_service(),
+      **dummy_client, producer_initialized_runloop.QuitClosure());
 
   producer_initialized_runloop.Run();
-
-  ProducerClient::DeleteSoonForTesting(std::move(dummy_client));
 }
 
 TEST_F(PerfettoIntegrationTest, ClientEnabledAndDisabled) {
@@ -82,13 +83,14 @@ TEST_F(PerfettoIntegrationTest, ClientEnabledAndDisabled) {
 
   base::RunLoop client_enabled_callback;
   base::RunLoop client_disabled_callback;
-  auto client = std::make_unique<MockProducerClient>(
-      /* num_data_sources = */ 1, client_enabled_callback.QuitClosure(),
-      client_disabled_callback.QuitClosure());
+  std::unique_ptr<MockProducerClient::Handle> client =
+      MockProducerClient::Create(
+          /* num_data_sources = */ 1, client_enabled_callback.QuitClosure(),
+          client_disabled_callback.QuitClosure());
 
   auto producer = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), client.get());
+      GetPerfettoProducerName(), kPerfettoTestDataSourceName, perfetto_service(),
+      **client);
 
   client_enabled_callback.Run();
 
@@ -100,8 +102,6 @@ TEST_F(PerfettoIntegrationTest, ClientEnabledAndDisabled) {
 
   on_trace_packets.Run();
   EXPECT_EQ(0u, consumer.received_test_packets());
-
-  ProducerClient::DeleteSoonForTesting(std::move(client));
 }
 
 TEST_F(PerfettoIntegrationTest, PacketsEndToEndProducerFirst) {
@@ -110,13 +110,14 @@ TEST_F(PerfettoIntegrationTest, PacketsEndToEndProducerFirst) {
 
   base::RunLoop client_enabled_callback;
   base::RunLoop client_disabled_callback;
-  auto client = std::make_unique<MockProducerClient>(
-      /* num_data_sources = */ 1, client_enabled_callback.QuitClosure(),
-      client_disabled_callback.QuitClosure());
+  std::unique_ptr<MockProducerClient::Handle> client =
+      MockProducerClient::Create(
+          /* num_data_sources = */ 1, client_enabled_callback.QuitClosure(),
+          client_disabled_callback.QuitClosure());
 
   auto producer = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), client.get());
+      GetPerfettoProducerName(), kPerfettoTestDataSourceName, perfetto_service(),
+      **client);
 
   base::RunLoop no_more_packets_runloop;
   MockConsumer consumer({kPerfettoTestDataSourceName},
@@ -137,8 +138,6 @@ TEST_F(PerfettoIntegrationTest, PacketsEndToEndProducerFirst) {
   no_more_packets_runloop.Run();
 
   EXPECT_EQ(kNumPackets, consumer.received_test_packets());
-
-  ProducerClient::DeleteSoonForTesting(std::move(client));
 }
 
 TEST_F(PerfettoIntegrationTest, PacketsEndToEndConsumerFirst) {
@@ -155,12 +154,13 @@ TEST_F(PerfettoIntegrationTest, PacketsEndToEndConsumerFirst) {
                         });
 
   base::RunLoop client_enabled_callback;
-  auto client = std::make_unique<MockProducerClient>(
-      /* num_data_sources = */ 1, client_enabled_callback.QuitClosure());
+  std::unique_ptr<MockProducerClient::Handle> client =
+      MockProducerClient::Create(
+          /* num_data_sources = */ 1, client_enabled_callback.QuitClosure());
 
   auto new_producer = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), client.get());
+      GetPerfettoProducerName(), kPerfettoTestDataSourceName, perfetto_service(),
+      **client);
 
   client_enabled_callback.Run();
 
@@ -171,7 +171,6 @@ TEST_F(PerfettoIntegrationTest, PacketsEndToEndConsumerFirst) {
   no_more_packets_runloop.Run();
 
   EXPECT_EQ(kNumPackets, consumer.received_test_packets());
-  ProducerClient::DeleteSoonForTesting(std::move(client));
 }
 
 TEST_F(PerfettoIntegrationTest, CommitDataRequestIsMaybeComplete) {
@@ -188,11 +187,12 @@ TEST_F(PerfettoIntegrationTest, CommitDataRequestIsMaybeComplete) {
                         });
 
   base::RunLoop client_enabled_callback;
-  auto client = std::make_unique<MockProducerClient>(
-      /* num_data_sources = */ 1, client_enabled_callback.QuitClosure());
+  std::unique_ptr<MockProducerClient::Handle> client =
+      MockProducerClient::Create(
+          /* num_data_sources = */ 1, client_enabled_callback.QuitClosure());
   auto new_producer = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), client.get());
+      GetPerfettoProducerName(), kPerfettoTestDataSourceName, perfetto_service(),
+      **client);
 
   client_enabled_callback.Run();
 
@@ -214,7 +214,7 @@ TEST_F(PerfettoIntegrationTest, CommitDataRequestIsMaybeComplete) {
 
   // {cli,host}_reqs are a std::vector<std::string>. Each entry of the vector
   // is a proto-serialized CommitDataRequest.
-  const auto& cli_reqs = client->all_client_commit_data_requests();
+  const auto& cli_reqs = (*client)->all_client_commit_data_requests();
   const auto& host_reqs = new_producer->all_host_commit_data_requests();
   ASSERT_EQ(cli_reqs.size(), host_reqs.size());
   for (size_t i = 0; i < cli_reqs.size(); i++) {
@@ -230,8 +230,6 @@ TEST_F(PerfettoIntegrationTest, CommitDataRequestIsMaybeComplete) {
     ASSERT_TRUE(host_req.ParseFromString(cli_reqs[i]));
     ASSERT_EQ(cli_req.SerializeAsString(), host_req.SerializeAsString());
   }
-
-  ProducerClient::DeleteSoonForTesting(std::move(client));
 }
 
 TEST_F(PerfettoIntegrationTest, TracingRestarted) {
@@ -249,19 +247,21 @@ TEST_F(PerfettoIntegrationTest, TracingRestarted) {
 
   base::RunLoop client_enabled_callback;
   base::RunLoop client_disabled_callback;
-  auto client = std::make_unique<MockProducerClient>(
-      /* num_data_sources = */ 1, client_enabled_callback.QuitClosure(),
-      client_disabled_callback.QuitClosure());
+  std::unique_ptr<MockProducerClient::Handle> client =
+      MockProducerClient::Create(
+          /* num_data_sources = */ 1, client_enabled_callback.QuitClosure(),
+          client_disabled_callback.QuitClosure());
 
   auto new_producer = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), client.get());
+      GetPerfettoProducerName(), kPerfettoTestDataSourceName, perfetto_service(),
+      **client);
 
   client_enabled_callback.Run();
 
   RunUntilIdle();
 
-  perfetto::SharedMemory* first_session_shm = client->shared_memory();
+  perfetto::SharedMemory* first_session_shm =
+      (*client)->shared_memory_for_testing();
   consumer.StopTracing();
 
   client_disabled_callback.Run();
@@ -271,7 +271,7 @@ TEST_F(PerfettoIntegrationTest, TracingRestarted) {
   consumer.FreeBuffers();
 
   base::RunLoop client_reenabled_callback;
-  client->SetAgentEnabledCallback(client_reenabled_callback.QuitClosure());
+  (*client)->SetAgentEnabledCallback(client_reenabled_callback.QuitClosure());
 
   consumer.StartTracing();
   client_reenabled_callback.Run();
@@ -279,17 +279,15 @@ TEST_F(PerfettoIntegrationTest, TracingRestarted) {
   RunUntilIdle();
 
   // We should still be using the same shared memory.
-  EXPECT_EQ(first_session_shm, client->shared_memory());
+  EXPECT_EQ(first_session_shm, (*client)->shared_memory_for_testing());
 
   base::RunLoop client_redisabled_callback;
-  client->SetAgentDisabledCallback(client_redisabled_callback.QuitClosure());
+  (*client)->SetAgentDisabledCallback(client_redisabled_callback.QuitClosure());
 
   consumer.StopTracing();
   client_redisabled_callback.Run();
 
   EXPECT_EQ(kNumPackets * 2, consumer.received_test_packets());
-
-  ProducerClient::DeleteSoonForTesting(std::move(client));
 }
 
 TEST_F(PerfettoIntegrationTest, NoPacketsReceivedOnWrongSourceName) {
@@ -298,14 +296,14 @@ TEST_F(PerfettoIntegrationTest, NoPacketsReceivedOnWrongSourceName) {
 
   base::RunLoop client_enabled_callback;
   base::RunLoop client_disabled_callback;
-  auto client = std::make_unique<MockProducerClient>(
-      /* num_data_sources = */ 0, client_enabled_callback.QuitClosure(),
-      client_disabled_callback.QuitClosure());
+  std::unique_ptr<MockProducerClient::Handle> client =
+      MockProducerClient::Create(
+          /* num_data_sources = */ 0, client_enabled_callback.QuitClosure(),
+          client_disabled_callback.QuitClosure());
 
   base::RunLoop producer_initialized_runloop;
   auto new_producer = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, "fake_data_source",
-      perfetto_service()->GetService(), client.get());
+      GetPerfettoProducerName(), "fake_data_source", perfetto_service(), **client);
 
   base::RunLoop no_more_packets_runloop;
   MockConsumer consumer({"fake_data_source"}, perfetto_service()->GetService(),
@@ -322,18 +320,18 @@ TEST_F(PerfettoIntegrationTest, NoPacketsReceivedOnWrongSourceName) {
   no_more_packets_runloop.Run();
 
   EXPECT_EQ(0u, consumer.received_test_packets());
-  ProducerClient::DeleteSoonForTesting(std::move(client));
 }
 
 TEST_F(PerfettoIntegrationTest,
        MAYBE_DifferentSharedMemoryBuffersForDifferentAgents) {
   base::RunLoop client1_enabled_callback;
   base::RunLoop client2_enabled_callback;
-  auto client1 = std::make_unique<MockProducerClient>(
-      /* num_data_sources = */ 1, client1_enabled_callback.QuitClosure());
+  std::unique_ptr<MockProducerClient::Handle> client1 =
+      MockProducerClient::Create(
+          /* num_data_sources = */ 1, client1_enabled_callback.QuitClosure());
   auto producer1 = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), client1.get());
+      GetPerfettoProducerName(), kPerfettoTestDataSourceName, perfetto_service(),
+      **client1);
 
   // Start the trace here, this is because we need to send the EnableTracing
   // call to client1, but constructing client2 will override the
@@ -349,21 +347,20 @@ TEST_F(PerfettoIntegrationTest,
   // null.
   data_source_->SetSystemProducerToNullptr();
 
-  auto client2 = std::make_unique<MockProducerClient>(
-      /* num_data_sources = */ 1, client2_enabled_callback.QuitClosure());
+  std::unique_ptr<MockProducerClient::Handle> client2 =
+      MockProducerClient::Create(
+          /* num_data_sources = */ 1, client2_enabled_callback.QuitClosure());
 
   auto producer2 = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), client2.get());
+      GetPerfettoProducerName(), kPerfettoTestDataSourceName, perfetto_service(),
+      **client2);
 
   client2_enabled_callback.Run();
 
-  EXPECT_TRUE(client1->shared_memory());
-  EXPECT_TRUE(client2->shared_memory());
-  EXPECT_NE(client1->shared_memory(), client2->shared_memory());
-
-  ProducerClient::DeleteSoonForTesting(std::move(client1));
-  ProducerClient::DeleteSoonForTesting(std::move(client2));
+  EXPECT_TRUE((*client1)->shared_memory_for_testing());
+  EXPECT_TRUE((*client2)->shared_memory_for_testing());
+  EXPECT_NE((*client1)->shared_memory_for_testing(),
+            (*client2)->shared_memory_for_testing());
 }
 
 }  // namespace

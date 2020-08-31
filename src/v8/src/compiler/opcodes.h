@@ -30,8 +30,6 @@
   V(Return)                \
   V(TailCall)              \
   V(Terminate)             \
-  V(OsrNormalEntry)        \
-  V(OsrLoopEntry)          \
   V(Throw)                 \
   V(End)
 
@@ -39,6 +37,7 @@
 #define CONSTANT_OP_LIST(V)   \
   V(Int32Constant)            \
   V(Int64Constant)            \
+  V(TaggedIndexConstant)      \
   V(Float32Constant)          \
   V(Float64Constant)          \
   V(ExternalConstant)         \
@@ -49,31 +48,32 @@
   V(RelocatableInt32Constant) \
   V(RelocatableInt64Constant)
 
-#define INNER_OP_LIST(V)          \
-  V(Select)                       \
-  V(Phi)                          \
-  V(EffectPhi)                    \
-  V(InductionVariablePhi)         \
-  V(Checkpoint)                   \
-  V(BeginRegion)                  \
-  V(FinishRegion)                 \
-  V(FrameState)                   \
-  V(StateValues)                  \
-  V(TypedStateValues)             \
-  V(ArgumentsElementsState)       \
-  V(ArgumentsLengthState)         \
-  V(ObjectState)                  \
-  V(ObjectId)                     \
-  V(TypedObjectState)             \
-  V(Call)                         \
-  V(Parameter)                    \
-  V(OsrValue)                     \
-  V(LoopExit)                     \
-  V(LoopExitValue)                \
-  V(LoopExitEffect)               \
-  V(Projection)                   \
-  V(Retain)                       \
-  V(MapGuard)                     \
+#define INNER_OP_LIST(V)    \
+  V(Select)                 \
+  V(Phi)                    \
+  V(EffectPhi)              \
+  V(InductionVariablePhi)   \
+  V(Checkpoint)             \
+  V(BeginRegion)            \
+  V(FinishRegion)           \
+  V(FrameState)             \
+  V(StateValues)            \
+  V(TypedStateValues)       \
+  V(ArgumentsElementsState) \
+  V(ArgumentsLengthState)   \
+  V(ObjectState)            \
+  V(ObjectId)               \
+  V(TypedObjectState)       \
+  V(Call)                   \
+  V(Parameter)              \
+  V(OsrValue)               \
+  V(LoopExit)               \
+  V(LoopExitValue)          \
+  V(LoopExitEffect)         \
+  V(Projection)             \
+  V(Retain)                 \
+  V(MapGuard)               \
+  V(FoldConstant)           \
   V(TypeGuard)
 
 #define COMMON_OP_LIST(V) \
@@ -409,6 +409,7 @@
   V(CheckSmi)                           \
   V(CheckHeapObject)                    \
   V(CheckFloat64Hole)                   \
+  V(CheckClosure)                       \
   V(CheckNotTaggedHole)                 \
   V(CheckEqualsInternalizedString)      \
   V(CheckEqualsSymbol)                  \
@@ -475,7 +476,8 @@
   V(PoisonIndex)                        \
   V(RuntimeAbort)                       \
   V(AssertType)                         \
-  V(DateNow)
+  V(DateNow)                            \
+  V(FastApiCall)
 
 #define SIMPLIFIED_SPECULATIVE_BIGINT_BINOP_LIST(V) \
   V(SpeculativeBigIntAdd)                           \
@@ -530,6 +532,7 @@
   V(Word32Shl)                   \
   V(Word32Shr)                   \
   V(Word32Sar)                   \
+  V(Word32Rol)                   \
   V(Word32Ror)                   \
   V(Int32Add)                    \
   V(Int32AddWithOverflow)        \
@@ -551,6 +554,7 @@
   V(Word64Shl)                   \
   V(Word64Shr)                   \
   V(Word64Sar)                   \
+  V(Word64Rol)                   \
   V(Word64Ror)                   \
   V(Int64Add)                    \
   V(Int64AddWithOverflow)        \
@@ -698,7 +702,6 @@
   V(ChangeInt64ToFloat64)                \
   V(ChangeUint32ToFloat64)               \
   V(ChangeUint32ToUint64)                \
-  V(ChangeTaggedToCompressed)            \
   V(TruncateFloat64ToFloat32)            \
   V(TruncateInt64ToInt32)                \
   V(RoundFloat64ToInt32)                 \
@@ -743,8 +746,6 @@
 
 #define MACHINE_SIMD_OP_LIST(V) \
   V(F64x2Splat)                 \
-  V(F64x2SConvertI64x2)         \
-  V(F64x2UConvertI64x2)         \
   V(F64x2ExtractLane)           \
   V(F64x2ReplaceLane)           \
   V(F64x2Abs)                   \
@@ -762,6 +763,8 @@
   V(F64x2Le)                    \
   V(F64x2Qfma)                  \
   V(F64x2Qfms)                  \
+  V(F64x2Pmin)                  \
+  V(F64x2Pmax)                  \
   V(F32x4Splat)                 \
   V(F32x4ExtractLane)           \
   V(F32x4ReplaceLane)           \
@@ -787,6 +790,8 @@
   V(F32x4Ge)                    \
   V(F32x4Qfma)                  \
   V(F32x4Qfms)                  \
+  V(F32x4Pmin)                  \
+  V(F32x4Pmax)                  \
   V(I64x2Splat)                 \
   V(I64x2SplatI32Pair)          \
   V(I64x2ExtractLane)           \
@@ -840,6 +845,8 @@
   V(I32x4LeU)                   \
   V(I32x4GtU)                   \
   V(I32x4GeU)                   \
+  V(I32x4Abs)                   \
+  V(I32x4BitMask)               \
   V(I16x8Splat)                 \
   V(I16x8ExtractLaneU)          \
   V(I16x8ExtractLaneS)          \
@@ -876,6 +883,9 @@
   V(I16x8LeU)                   \
   V(I16x8GtU)                   \
   V(I16x8GeU)                   \
+  V(I16x8RoundingAverageU)      \
+  V(I16x8Abs)                   \
+  V(I16x8BitMask)               \
   V(I8x16Splat)                 \
   V(I8x16ExtractLaneU)          \
   V(I8x16ExtractLaneS)          \
@@ -907,6 +917,9 @@
   V(I8x16LeU)                   \
   V(I8x16GtU)                   \
   V(I8x16GeU)                   \
+  V(I8x16RoundingAverageU)      \
+  V(I8x16Abs)                   \
+  V(I8x16BitMask)               \
   V(S128Load)                   \
   V(S128Store)                  \
   V(S128Zero)                   \
@@ -915,6 +928,7 @@
   V(S128Or)                     \
   V(S128Xor)                    \
   V(S128Select)                 \
+  V(S128AndNot)                 \
   V(S8x16Swizzle)               \
   V(S8x16Shuffle)               \
   V(S1x2AnyTrue)                \

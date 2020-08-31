@@ -10,6 +10,7 @@ from __future__ import print_function
 import copy
 import os
 import multiprocessing
+import sys
 import tempfile
 
 import mock
@@ -24,6 +25,9 @@ from chromite.lib import portage_util
 
 
 # pylint: disable=protected-access
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 PUBLIC_PACKAGES = [{'CPV': 'gtk+/public1', 'SHA1': '1', 'MTIME': '1'},
@@ -291,7 +295,7 @@ class TestWritePackageIndex(cros_test_lib.MockTestCase, TestPkgIndex):
     """Test simple call of WriteToNamedTemporaryFile()"""
     self.PatchObject(self.pkgindex, 'Write')
     f = self.pkgindex.WriteToNamedTemporaryFile()
-    self.assertEqual(f.read(), b'')
+    self.assertEqual(f.read(), '')
 
 
 class TestUploadPrebuilt(cros_test_lib.MockTempDirTestCase):

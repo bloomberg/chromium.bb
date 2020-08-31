@@ -4,7 +4,10 @@
 
 #include "pdf/pdfium/pdfium_page.h"
 
-#include "base/logging.h"
+#include <utility>
+#include <vector>
+
+#include "base/check.h"
 #include "base/test/gtest_util.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_test_base.h"
@@ -12,6 +15,7 @@
 #include "pdf/test/test_utils.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/range/range.h"
 
 namespace chrome_pdf {
 
@@ -48,11 +52,21 @@ void CompareTextRuns(
   EXPECT_EQ(expected_style.font_name, actual_style.font_name);
   EXPECT_EQ(expected_style.font_weight, actual_style.font_weight);
   EXPECT_EQ(expected_style.render_mode, actual_style.render_mode);
-  EXPECT_EQ(expected_style.font_size, actual_style.font_size);
+  EXPECT_FLOAT_EQ(expected_style.font_size, actual_style.font_size);
   EXPECT_EQ(expected_style.fill_color, actual_style.fill_color);
   EXPECT_EQ(expected_style.stroke_color, actual_style.stroke_color);
   EXPECT_EQ(expected_style.is_italic, actual_style.is_italic);
   EXPECT_EQ(expected_style.is_bold, actual_style.is_bold);
+}
+
+template <typename T>
+void PopulateTextObjects(const std::vector<gfx::Range>& ranges,
+                         std::vector<T>* text_objects) {
+  text_objects->resize(ranges.size());
+  for (size_t i = 0; i < ranges.size(); ++i) {
+    (*text_objects)[i].start_char_index = ranges[i].start();
+    (*text_objects)[i].char_count = ranges[i].end() - ranges[i].start();
+  }
 }
 
 }  // namespace
@@ -353,12 +367,16 @@ TEST_F(PDFiumPageHighlightTest, TestPopulateHighlights) {
     int32_t start_char_index;
     int32_t char_count;
     pp::Rect bounding_rect;
+    uint32_t color;
   };
 
+  constexpr uint32_t kHighlightDefaultColor = MakeARGB(255, 255, 255, 0);
+  constexpr uint32_t kHighlightRedColor = MakeARGB(102, 230, 0, 0);
+  constexpr uint32_t kHighlightNoColor = MakeARGB(0, 0, 0, 0);
   static const ExpectedHighlight kExpectedHighlights[] = {
-      {0, 5, {5, 196, 49, 26}},
-      {12, 7, {110, 196, 77, 26}},
-      {20, 1, {192, 196, 13, 26}}};
+      {0, 5, {5, 196, 49, 26}, kHighlightDefaultColor},
+      {12, 7, {110, 196, 77, 26}, kHighlightRedColor},
+      {20, 1, {192, 196, 13, 26}, kHighlightNoColor}};
 
   TestClient client;
   std::unique_ptr<PDFiumEngine> engine =
@@ -368,7 +386,7 @@ TEST_F(PDFiumPageHighlightTest, TestPopulateHighlights) {
 
   PDFiumPage* page = GetPDFiumPageForTest(engine.get(), 0);
   ASSERT_TRUE(page);
-  page->PopulateHighlights();
+  page->PopulateAnnotations();
   ASSERT_EQ(base::size(kExpectedHighlights), page->highlights_.size());
 
   for (size_t i = 0; i < page->highlights_.size(); ++i) {
@@ -378,7 +396,76 @@ TEST_F(PDFiumPageHighlightTest, TestPopulateHighlights) {
               page->highlights_[i].char_count);
     CompareRect(kExpectedHighlights[i].bounding_rect,
                 page->highlights_[i].bounding_rect);
+    ASSERT_EQ(kExpectedHighlights[i].color, page->highlights_[i].color);
   }
+}
+
+using PDFiumPageTextFieldTest = PDFiumTestBase;
+
+TEST_F(PDFiumPageTextFieldTest, TestPopulateTextFields) {
+  struct ExpectedTextField {
+    const char* name;
+    const char* value;
+    pp::Rect bounding_rect;
+    int flags;
+  };
+
+  static const ExpectedTextField kExpectedTextFields[] = {
+      {"Text Box", "Text", {138, 230, 135, 41}, 0},
+      {"ReadOnly", "Elephant", {138, 163, 135, 41}, 1},
+      {"Required", "Required Field", {138, 303, 135, 34}, 2},
+      {"Password", "", {138, 356, 135, 35}, 8192}};
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("form_text_fields.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  PDFiumPage* page = GetPDFiumPageForTest(engine.get(), 0);
+  ASSERT_TRUE(page);
+  page->PopulateAnnotations();
+  size_t text_fields_count = page->text_fields_.size();
+  ASSERT_EQ(base::size(kExpectedTextFields), text_fields_count);
+
+  for (size_t i = 0; i < text_fields_count; ++i) {
+    EXPECT_EQ(kExpectedTextFields[i].name, page->text_fields_[i].name);
+    EXPECT_EQ(kExpectedTextFields[i].value, page->text_fields_[i].value);
+    CompareRect(kExpectedTextFields[i].bounding_rect,
+                page->text_fields_[i].bounding_rect);
+    EXPECT_EQ(kExpectedTextFields[i].flags, page->text_fields_[i].flags);
+  }
+}
+
+using PDFiumPageOverlappingTest = PDFiumTestBase;
+
+// The following scenarios are covered across both test cases:
+// 1. Links overlapping amongst themselves.
+// 2. Highlights overlapping amongst themselves.
+// 3. Links partially and completely overlapping with highlights.
+// 4. Adjacent annotations.
+TEST_F(PDFiumPageOverlappingTest, CountPartialOverlaps) {
+  static const std::vector<gfx::Range> kLinkRanges = {
+      {0, 10}, {13, 25}, {37, 52}, {71, 84}, {93, 113}};
+  static const std::vector<gfx::Range> kHighlightRanges = {
+      {4, 13}, {8, 15}, {14, 22}, {37, 73}, {49, 95}, {80, 101}};
+  std::vector<PDFiumPage::Link> links;
+  std::vector<PDFiumPage::Highlight> highlights;
+  PopulateTextObjects(kLinkRanges, &links);
+  PopulateTextObjects(kHighlightRanges, &highlights);
+  ASSERT_EQ(15u, PDFiumPage::CountLinkHighlightOverlaps(links, highlights));
+}
+
+TEST_F(PDFiumPageOverlappingTest, CountCompleteOverlaps) {
+  static const std::vector<gfx::Range> kLinkRanges = {
+      {0, 15}, {25, 40}, {30, 50}, {50, 67}, {61, 72}, {67, 81}};
+  static const std::vector<gfx::Range> kHighlightRanges = {
+      {6, 25}, {25, 40}, {30, 50}, {50, 83}};
+  std::vector<PDFiumPage::Link> links;
+  std::vector<PDFiumPage::Highlight> highlights;
+  PopulateTextObjects(kLinkRanges, &links);
+  PopulateTextObjects(kHighlightRanges, &highlights);
+  ASSERT_EQ(12u, PDFiumPage::CountLinkHighlightOverlaps(links, highlights));
 }
 
 }  // namespace chrome_pdf

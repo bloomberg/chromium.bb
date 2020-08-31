@@ -14,15 +14,11 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
-
-namespace network {
-struct ResourceResponseHead;
-}
 
 namespace content {
 
@@ -61,11 +57,6 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
   ~WebURLLoaderImpl() override;
 
   static void PopulateURLResponse(const blink::WebURL& url,
-                                  const network::ResourceResponseHead& head,
-                                  blink::WebURLResponse* response,
-                                  bool report_security_info,
-                                  int request_id);
-  static void PopulateURLResponse(const blink::WebURL& url,
                                   const network::mojom::URLResponseHead& head,
                                   blink::WebURLResponse* response,
                                   bool report_security_info,
@@ -75,16 +66,28 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
       const GURL& url);
 
   // WebURLLoader methods:
-  void LoadSynchronously(const blink::WebURLRequest& request,
-                         blink::WebURLLoaderClient* client,
-                         blink::WebURLResponse& response,
-                         base::Optional<blink::WebURLError>& error,
-                         blink::WebData& data,
-                         int64_t& encoded_data_length,
-                         int64_t& encoded_body_length,
-                         blink::WebBlobInfo& downloaded_blob) override;
-  void LoadAsynchronously(const blink::WebURLRequest& request,
-                          blink::WebURLLoaderClient* client) override;
+  void LoadSynchronously(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<blink::WebURLRequest::ExtraData> request_extra_data,
+      int requestor_id,
+      bool download_to_network_cache_only,
+      bool pass_response_pipe_to_client,
+      bool no_mime_sniffing,
+      base::TimeDelta timeout_interval,
+      blink::WebURLLoaderClient* client,
+      blink::WebURLResponse& response,
+      base::Optional<blink::WebURLError>& error,
+      blink::WebData& data,
+      int64_t& encoded_data_length,
+      int64_t& encoded_body_length,
+      blink::WebBlobInfo& downloaded_blob) override;
+  void LoadAsynchronously(
+      std::unique_ptr<network::ResourceRequest> request,
+      scoped_refptr<blink::WebURLRequest::ExtraData> request_extra_data,
+      int requestor_id,
+      bool download_to_network_cache_only,
+      bool no_mime_sniffing,
+      blink::WebURLLoaderClient* client) override;
   void SetDefersLoading(bool value) override;
   void DidChangePriority(blink::WebURLRequest::Priority new_priority,
                          int intra_priority_value) override;

@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chromeos/components/sync_wifi/pending_network_configuration_tracker_impl.h"
@@ -64,7 +63,7 @@ class PendingNetworkConfigurationTrackerImplTest : public testing::Test {
       const std::string& update_guid,
       const NetworkIdentifier& id,
       int completed_attempts = 0,
-      const base::Optional<sync_pb::WifiConfigurationSpecificsData> specifics =
+      const base::Optional<sync_pb::WifiConfigurationSpecifics> specifics =
           base::nullopt) {
     base::Optional<PendingNetworkConfigurationUpdate> update =
         tracker()->GetPendingUpdate(update_guid, id);
@@ -173,7 +172,7 @@ TEST_F(PendingNetworkConfigurationTrackerImplTest, TestGetPendingUpdates) {
 }
 
 TEST_F(PendingNetworkConfigurationTrackerImplTest, TestGetPendingUpdate) {
-  sync_pb::WifiConfigurationSpecificsData specifics =
+  sync_pb::WifiConfigurationSpecifics specifics =
       GenerateTestWifiSpecifics(fred_network_id());
   std::string change_guid =
       tracker()->TrackPendingUpdate(fred_network_id(), specifics);

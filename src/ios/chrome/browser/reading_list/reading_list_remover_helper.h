@@ -11,10 +11,7 @@
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/reading_list/core/reading_list_model_observer.h"
 
-namespace ios {
 class ChromeBrowserState;
-}
-
 class ReadingListDownloadService;
 
 namespace reading_list {
@@ -24,7 +21,7 @@ class ReadingListRemoverHelper : public ReadingListModelObserver {
  public:
   using Callback = base::OnceCallback<void(bool)>;
 
-  explicit ReadingListRemoverHelper(ios::ChromeBrowserState* browser_state);
+  explicit ReadingListRemoverHelper(ChromeBrowserState* browser_state);
   ~ReadingListRemoverHelper() override;
 
   // Removes all Reading list items and asynchronously invoke |completion| with

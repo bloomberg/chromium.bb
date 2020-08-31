@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
+
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, CWVPasswordUserDecision);
@@ -14,9 +16,23 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision);
 @class CWVPasswordController;
 @class CWVPassword;
 
+namespace ios_web_view {
+class WebViewPasswordManagerClient;
+class WebViewPasswordManagerDriver;
+}  // namespace ios_web_view
+
+namespace password_manager {
+class PasswordManager;
+}  // namespace password_manager
+
 namespace web {
 class WebState;
-}
+}  // namespace web
+
+namespace autofill {
+class FormRendererId;
+class FieldRendererId;
+}  // namespace autofill
 
 // Internal protocol to receive callbacks related to password autofilling.
 @protocol CWVPasswordControllerDelegate
@@ -47,19 +63,29 @@ class WebState;
 // autofilling password forms.
 @interface CWVPasswordController : NSObject
 
-// Creates a new password controller with the given |webState|.
 // |delegate| is used to receive password autofill suggestion callbacks.
+@property(nonatomic, weak, nullable) id<CWVPasswordControllerDelegate> delegate;
+
+// Creates a new password controller with the given |webState|.
 - (instancetype)initWithWebState:(web::WebState*)webState
-                     andDelegate:
-                         (nullable id<CWVPasswordControllerDelegate>)delegate
-    NS_DESIGNATED_INITIALIZER;
+                 passwordManager:
+                     (std::unique_ptr<password_manager::PasswordManager>)
+                         passwordManager
+           passwordManagerClient:
+               (std::unique_ptr<ios_web_view::WebViewPasswordManagerClient>)
+                   passwordManagerClient
+           passwordManagerDriver:
+               (std::unique_ptr<ios_web_view::WebViewPasswordManagerDriver>)
+                   passwordManagerDriver NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 // See same method in |CWVAutofillController|. This one only fetches password
 // autofill suggestions.
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
+                           uniqueFormID:(autofill::FormRendererId)uniqueFormID
                         fieldIdentifier:(NSString*)fieldIdentifier
+                          uniqueFieldID:(autofill::FieldRendererId)uniqueFieldID
                               fieldType:(NSString*)fieldType
                                 frameID:(NSString*)frameID
                       completionHandler:

@@ -69,7 +69,10 @@ enum class RenderTextAPI {
   kApplyWeight,
   kSetDirectionalityMode,
   kSetElideBehavior,
-  kMaxValue = kSetElideBehavior
+  kIsGraphemeBoundary,
+  kIndexOfAdjacentGrapheme,
+  kSetObscuredGlyphSpacing,
+  kMaxValue = kSetObscuredGlyphSpacing
 };
 
 gfx::DirectionalityMode ConsumeDirectionalityMode(FuzzedDataProvider* fdp) {
@@ -154,6 +157,16 @@ gfx::ElideBehavior ConsumeElideBehavior(FuzzedDataProvider* fdp) {
       return gfx::FADE_TAIL;
     default:
       return gfx::NO_ELIDE;
+  }
+}
+
+gfx::LogicalCursorDirection ConsumeLogicalCursorDirection(
+    FuzzedDataProvider* fdp) {
+  switch (fdp->ConsumeIntegralInRange(0, 1)) {
+    case 0:
+      return gfx::CURSOR_BACKWARD;
+    default:
+      return gfx::CURSOR_FORWARD;
   }
 }
 
@@ -300,6 +313,24 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
       case RenderTextAPI::kSetElideBehavior:
         render_text->SetElideBehavior(ConsumeElideBehavior(&fdp));
+        break;
+
+      case RenderTextAPI::kIsGraphemeBoundary:
+        render_text->IsGraphemeBoundary(fdp.ConsumeIntegralInRange<size_t>(
+            0, render_text->text().length()));
+        break;
+
+      case RenderTextAPI::kIndexOfAdjacentGrapheme: {
+        size_t index = render_text->IndexOfAdjacentGrapheme(
+            fdp.ConsumeIntegralInRange<size_t>(0, render_text->text().length()),
+            ConsumeLogicalCursorDirection(&fdp));
+        bool is_grapheme = render_text->IsGraphemeBoundary(index);
+        DCHECK(is_grapheme);
+        break;
+      }
+      case RenderTextAPI::kSetObscuredGlyphSpacing:
+        render_text->SetObscuredGlyphSpacing(
+            fdp.ConsumeIntegralInRange<size_t>(0, 10));
         break;
     }
   }

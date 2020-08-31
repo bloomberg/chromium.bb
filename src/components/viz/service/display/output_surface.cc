@@ -83,8 +83,8 @@ void OutputSurface::SetGpuVSyncEnabled(bool enabled) {
   NOTREACHED();
 }
 
-// Only needs implementation for BrowserCompositorOutputSurface.
-bool OutputSurface::IsSoftwareMirrorMode() const {
-  return false;
+gpu::Mailbox OutputSurface::GetOverlayMailbox() const {
+  return gpu::Mailbox();
 }
+
 }  // namespace viz

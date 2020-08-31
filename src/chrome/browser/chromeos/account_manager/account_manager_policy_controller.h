@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_POLICY_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_POLICY_CONTROLLER_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/account_manager/child_account_type_changed_user_data.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -34,11 +37,29 @@ class AccountManagerPolicyController : public KeyedService {
 
  private:
   // Callback handler for |AccountManager::GetAccounts|.
-  void OnGetAccounts(const std::vector<AccountManager::Account>&);
+  void RemoveSecondaryAccounts(const std::vector<AccountManager::Account>&);
 
   // Callback for handling changes in |kSecondaryGoogleAccountSigninAllowed|
   // pref.
-  void OnPrefChanged();
+  void OnSecondaryAccountsSigninAllowedPrefChanged();
+
+  // Callback for handling child account type changes. If user type was changed
+  // from Regular to Child or from Child to Regular on session start,
+  // |type_changed| is be set to true.
+  void OnChildAccountTypeChanged(bool type_changed);
+
+  // Checks if invalidation version for parental consent in EDU accounts
+  // addition has changed. If so, calls
+  // |InvalidateSecondaryAccountsOnEduConsentChange|.
+  void CheckEduCoexistenceSecondaryAccountsInvalidationVersion();
+
+  // Invalidates all secondary accounts and updates consent text version.
+  void InvalidateSecondaryAccountsOnEduConsentChange(
+      const std::string& new_invalidation_version,
+      const std::vector<AccountManager::Account>& accounts);
+
+  // KeyedService implementation.
+  void Shutdown() override;
 
   // Non-owning pointers.
   Profile* const profile_;
@@ -48,6 +69,9 @@ class AccountManagerPolicyController : public KeyedService {
 
   // For listening on Pref changes.
   PrefChangeRegistrar pref_change_registrar_;
+
+  std::unique_ptr<chromeos::ChildAccountTypeChangedSubscription>
+      child_account_type_changed_subscription_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

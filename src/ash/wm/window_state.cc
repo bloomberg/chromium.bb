@@ -35,6 +35,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -237,7 +238,7 @@ WindowStateType WindowState::GetStateType() const {
 }
 
 bool WindowState::IsMinimized() const {
-  return GetStateType() == WindowStateType::kMinimized;
+  return IsMinimizedWindowStateType(GetStateType());
 }
 
 bool WindowState::IsMaximized() const {
@@ -249,8 +250,7 @@ bool WindowState::IsFullscreen() const {
 }
 
 bool WindowState::IsMaximizedOrFullscreenOrPinned() const {
-  return GetStateType() == WindowStateType::kMaximized ||
-         GetStateType() == WindowStateType::kFullscreen || IsPinned();
+  return IsMaximizedOrFullscreenOrPinnedWindowStateType(GetStateType());
 }
 
 bool WindowState::IsSnapped() const {
@@ -272,8 +272,7 @@ bool WindowState::IsPip() const {
 }
 
 bool WindowState::IsNormalStateType() const {
-  return GetStateType() == WindowStateType::kNormal ||
-         GetStateType() == WindowStateType::kDefault;
+  return IsNormalWindowStateType(GetStateType());
 }
 
 bool WindowState::IsNormalOrSnapped() const {
@@ -533,13 +532,13 @@ void WindowState::OnDragStarted(int window_component) {
     delegate_->OnDragStarted(window_component);
 }
 
-void WindowState::OnCompleteDrag(const gfx::Point& location) {
+void WindowState::OnCompleteDrag(const gfx::PointF& location) {
   DCHECK(drag_details_);
   if (delegate_)
     delegate_->OnDragFinished(/*canceled=*/false, location);
 }
 
-void WindowState::OnRevertDrag(const gfx::Point& location) {
+void WindowState::OnRevertDrag(const gfx::PointF& location) {
   DCHECK(drag_details_);
   if (delegate_)
     delegate_->OnDragFinished(/*canceled=*/true, location);
@@ -557,7 +556,7 @@ display::Display WindowState::GetDisplay() {
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window());
 }
 
-void WindowState::CreateDragDetails(const gfx::Point& point_in_parent,
+void WindowState::CreateDragDetails(const gfx::PointF& point_in_parent,
                                     int window_component,
                                     ::wm::WindowMoveSource source) {
   drag_details_ = std::make_unique<DragDetails>(window_, point_in_parent,
@@ -597,7 +596,7 @@ ui::WindowShowState WindowState::GetShowState() const {
   return window_->GetProperty(aura::client::kShowStateKey);
 }
 
-ash::WindowPinType WindowState::GetPinType() const {
+WindowPinType WindowState::GetPinType() const {
   return window_->GetProperty(kWindowPinTypeKey);
 }
 
@@ -644,14 +643,27 @@ void WindowState::UpdateWindowPropertiesFromStateType() {
   }
 
   // sync up current window show state with PinType property.
-  ash::WindowPinType pin_type = ash::WindowPinType::kNone;
+  WindowPinType pin_type = WindowPinType::kNone;
   if (GetStateType() == WindowStateType::kPinned)
-    pin_type = ash::WindowPinType::kPinned;
+    pin_type = WindowPinType::kPinned;
   else if (GetStateType() == WindowStateType::kTrustedPinned)
-    pin_type = ash::WindowPinType::kTrustedPinned;
+    pin_type = WindowPinType::kTrustedPinned;
   if (pin_type != GetPinType()) {
     base::AutoReset<bool> resetter(&ignore_property_change_, true);
     window_->SetProperty(kWindowPinTypeKey, pin_type);
+  }
+
+  if (window_->GetProperty(ash::kWindowManagerManagesOpacityKey)) {
+    const gfx::Size& size = window_->bounds().size();
+    // WindowManager manages the window opacity. Make it opaque unless
+    // the window is in normal state whose frame has rounded corners.
+    if (IsNormalStateType()) {
+      window_->SetTransparent(true);
+      window_->SetOpaqueRegionsForOcclusion({gfx::Rect(size)});
+    } else {
+      window_->SetOpaqueRegionsForOcclusion({});
+      window_->SetTransparent(false);
+    }
   }
 }
 
@@ -695,6 +707,17 @@ void WindowState::SetBoundsDirect(const gfx::Rect& bounds) {
         std::max(min_size.width(), actual_new_bounds.width()));
     actual_new_bounds.set_height(
         std::max(min_size.height(), actual_new_bounds.height()));
+
+    // Changing the size of the PIP window can detach it from one of the edges
+    // of the screen, which makes the snap fraction logic fail. Ensure to snap
+    // it again.
+    if (IsPip() && !is_dragged()) {
+      ::wm::ConvertRectToScreen(window_->GetRootWindow(), &actual_new_bounds);
+      actual_new_bounds = CollisionDetectionUtils::GetRestingPosition(
+          display, actual_new_bounds,
+          CollisionDetectionUtils::RelativePriority::kPictureInPicture);
+      ::wm::ConvertRectFromScreen(window_->GetRootWindow(), &actual_new_bounds);
+    }
   }
   BoundsSetter().SetBounds(window_, actual_new_bounds);
 }
@@ -778,11 +801,13 @@ void WindowState::OnPrePipStateChange(WindowStateType old_window_state_type) {
     // There may already be a system ui window on the initial position.
     UpdatePipBounds();
     if (!was_pip) {
-      window()->SetProperty(ash::kPrePipWindowStateTypeKey,
-                            old_window_state_type);
+      window()->SetProperty(kPrePipWindowStateTypeKey, old_window_state_type);
     }
 
     CollectPipEnterExitMetrics(/*enter=*/true);
+
+    // PIP window shouldn't be tracked in MruWindowTracker.
+    window()->SetProperty(ash::kExcludeInMruKey, true);
   } else if (was_pip) {
     if (widget) {
       widget->widget_delegate()->SetCanActivate(true);
@@ -792,11 +817,13 @@ void WindowState::OnPrePipStateChange(WindowStateType old_window_state_type) {
         window(), ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
 
     CollectPipEnterExitMetrics(/*enter=*/false);
+    window()->ClearProperty(ash::kExcludeInMruKey);
   }
-  // PIP uses restore bounds in its own special context. Reset it in PIP
-  // enter/exit transition so that it won't be used wrongly.
+  // PIP uses the snap fraction to place the PIP window at the correct position
+  // after screen rotation, system UI area change, etc. Make sure to reset this
+  // when the window enters/exits PIP so the obsolete fraction won't be used.
   if (IsPip() || was_pip)
-    ClearRestoreBounds();
+    ash::PipPositioner::ClearSnapFraction(this);
 }
 
 void WindowState::UpdatePipBounds() {
@@ -899,12 +926,18 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     }
     return;
   }
-  if (key == kHideShelfWhenFullscreenKey || key == kImmersiveIsActive) {
-    if (!ignore_property_change_) {
-      // This change came from outside ash. Update our shelf visibility based
-      // on our changed state.
-      ash::Shell::Get()->UpdateShelfVisibility();
-    }
+
+  // The shelf visibility should be updated if kHideShelfWhenFullscreenKey or
+  // kImmersiveIsActive change - these property affect the shelf behavior, and
+  // the shelf is expected to be hidden when fullscreen or immersive mode start.
+  const bool requires_shelf_visibility_update =
+      (key == kHideShelfWhenFullscreenKey &&
+       old != window->GetProperty(kHideShelfWhenFullscreenKey)) ||
+      (key == kImmersiveIsActive &&
+       old != window->GetProperty(kImmersiveIsActive));
+
+  if (requires_shelf_visibility_update && !ignore_property_change_) {
+    Shell::Get()->UpdateShelfVisibility();
     return;
   }
 }
@@ -929,6 +962,17 @@ void WindowState::OnWindowDestroying(aura::Window* window) {
 
   current_state_->OnWindowDestroying(this);
   delegate_.reset();
+}
+
+void WindowState::OnWindowBoundsChanged(aura::Window* window,
+                                        const gfx::Rect& old_bounds,
+                                        const gfx::Rect& new_bounds,
+                                        ui::PropertyChangeReason reason) {
+  DCHECK_EQ(this->window(), window);
+  if (window_->transparent() && IsNormalStateType() &&
+      window_->GetProperty(ash::kWindowManagerManagesOpacityKey)) {
+    window_->SetOpaqueRegionsForOcclusion({gfx::Rect(new_bounds.size())});
+  }
 }
 
 }  // namespace ash

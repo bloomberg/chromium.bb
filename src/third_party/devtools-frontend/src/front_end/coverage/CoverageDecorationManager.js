@@ -2,51 +2,59 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export const _decoratorType = 'coverage';
+import * as Bindings from '../bindings/bindings.js';
+import * as Common from '../common/common.js';  // eslint-disable-line no-unused-vars
+import * as TextUtils from '../text_utils/text_utils.js';
+import * as Workspace from '../workspace/workspace.js';
 
-export default class CoverageDecorationManager {
+import {CoverageInfo, CoverageModel} from './CoverageModel.js';  // eslint-disable-line no-unused-vars
+
+export const decoratorType = 'coverage';
+
+export class CoverageDecorationManager {
   /**
-   * @param {!Coverage.CoverageModel} coverageModel
+   * @param {!CoverageModel} coverageModel
    */
   constructor(coverageModel) {
     this._coverageModel = coverageModel;
-    /** @type {!Map<!Common.ContentProvider, ?TextUtils.Text>} */
+    /** @type {!Map<!TextUtils.ContentProvider.ContentProvider, ?TextUtils.Text.Text>} */
     this._textByProvider = new Map();
-    /** @type {!Platform.Multimap<!Common.ContentProvider, !Workspace.UISourceCode>} */
+    /** @type {!Platform.Multimap<!TextUtils.ContentProvider.ContentProvider, !Workspace.UISourceCode.UISourceCode>} */
     this._uiSourceCodeByContentProvider = new Platform.Multimap();
 
-    for (const uiSourceCode of Workspace.workspace.uiSourceCodes()) {
-      uiSourceCode.addLineDecoration(0, _decoratorType, this);
+    for (const uiSourceCode of Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodes()) {
+      uiSourceCode.addLineDecoration(0, decoratorType, this);
     }
-    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, this._onUISourceCodeAdded, this);
+    Workspace.Workspace.WorkspaceImpl.instance().addEventListener(
+        Workspace.Workspace.Events.UISourceCodeAdded, this._onUISourceCodeAdded, this);
   }
 
   reset() {
-    for (const uiSourceCode of Workspace.workspace.uiSourceCodes()) {
-      uiSourceCode.removeDecorationsForType(_decoratorType);
+    for (const uiSourceCode of Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodes()) {
+      uiSourceCode.removeDecorationsForType(decoratorType);
     }
   }
 
   dispose() {
     this.reset();
-    Workspace.workspace.removeEventListener(
+    Workspace.Workspace.WorkspaceImpl.instance().removeEventListener(
         Workspace.Workspace.Events.UISourceCodeAdded, this._onUISourceCodeAdded, this);
   }
 
   /**
-   * @param {!Array<!Coverage.CoverageInfo>} updatedEntries
+   * @param {!Array<!CoverageInfo>} updatedEntries
    */
   update(updatedEntries) {
     for (const entry of updatedEntries) {
       for (const uiSourceCode of this._uiSourceCodeByContentProvider.get(entry.contentProvider())) {
-        uiSourceCode.removeDecorationsForType(_decoratorType);
-        uiSourceCode.addLineDecoration(0, _decoratorType, this);
+        uiSourceCode.removeDecorationsForType(decoratorType);
+        uiSourceCode.addLineDecoration(0, decoratorType, this);
       }
     }
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @return {!Promise<!Array<boolean>>}
    */
   async usageByLine(uiSourceCode) {
@@ -55,7 +63,7 @@ export default class CoverageDecorationManager {
     if (!content) {
       return [];
     }
-    const sourceText = new TextUtils.Text(/** @type {string} */ (content));
+    const sourceText = new TextUtils.Text.Text(/** @type {string} */ (content));
     await this._updateTexts(uiSourceCode, sourceText);
     const lineEndings = sourceText.lineEndings();
     for (let line = 0; line < sourceText.lineCount(); ++line) {
@@ -64,13 +72,14 @@ export default class CoverageDecorationManager {
         result.push(undefined);
         continue;
       }
-      const startLocations = this._rawLocationsForSourceLocation(uiSourceCode, line, 0);
-      const endLocations = this._rawLocationsForSourceLocation(uiSourceCode, line, lineLength);
+      const startLocationsPromise = this._rawLocationsForSourceLocation(uiSourceCode, line, 0);
+      const endLocationsPromise = this._rawLocationsForSourceLocation(uiSourceCode, line, lineLength);
+      const [startLocations, endLocations] = await Promise.all([startLocationsPromise, endLocationsPromise]);
       let used = undefined;
       for (let startIndex = 0, endIndex = 0; startIndex < startLocations.length; ++startIndex) {
         const start = startLocations[startIndex];
         while (endIndex < endLocations.length &&
-               Coverage.CoverageDecorationManager._compareLocations(start, endLocations[endIndex]) >= 0) {
+               CoverageDecorationManager._compareLocations(start, endLocations[endIndex]) >= 0) {
           ++endIndex;
         }
         if (endIndex >= endLocations.length || endLocations[endIndex].id !== start.id) {
@@ -103,14 +112,14 @@ export default class CoverageDecorationManager {
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
-   * @param {!TextUtils.Text} text
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
+   * @param {!TextUtils.Text.Text} text
    * @return {!Promise}
    */
-  _updateTexts(uiSourceCode, text) {
+  async _updateTexts(uiSourceCode, text) {
     const promises = [];
     for (let line = 0; line < text.lineCount(); ++line) {
-      for (const entry of this._rawLocationsForSourceLocation(uiSourceCode, line, 0)) {
+      for (const entry of await this._rawLocationsForSourceLocation(uiSourceCode, line, 0)) {
         if (this._textByProvider.has(entry.contentProvider)) {
           continue;
         }
@@ -123,25 +132,27 @@ export default class CoverageDecorationManager {
   }
 
   /**
-   * @param {!Common.ContentProvider} contentProvider
+   * @param {!TextUtils.ContentProvider.ContentProvider} contentProvider
    * @return {!Promise}
    */
   async _updateTextForProvider(contentProvider) {
     const {content} = await contentProvider.requestContent();
-    this._textByProvider.set(contentProvider, new TextUtils.Text(content || ''));
+    this._textByProvider.set(contentProvider, new TextUtils.Text.Text(content || ''));
   }
 
   /**
-   * @param {!Workspace.UISourceCode} uiSourceCode
+   * @param {!Workspace.UISourceCode.UISourceCode} uiSourceCode
    * @param {number} line
    * @param {number} column
-   * @return {!Array<!Coverage.RawLocation>}
+   * @return {!Promise<!Array<!RawLocation>>}
    */
-  _rawLocationsForSourceLocation(uiSourceCode, line, column) {
+  async _rawLocationsForSourceLocation(uiSourceCode, line, column) {
     const result = [];
     const contentType = uiSourceCode.contentType();
     if (contentType.hasScripts()) {
-      let locations = Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, line, column);
+      let locations =
+          await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiLocationToRawLocations(
+              uiSourceCode, line, column);
       locations = locations.filter(location => !!location.script());
       for (const location of locations) {
         const script = location.script();
@@ -160,8 +171,8 @@ export default class CoverageDecorationManager {
       }
     }
     if (contentType.isStyleSheet() || contentType.isDocument()) {
-      const rawStyleLocations =
-          Bindings.cssWorkspaceBinding.uiLocationToRawLocations(new Workspace.UILocation(uiSourceCode, line, column));
+      const rawStyleLocations = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().uiLocationToRawLocations(
+          new Workspace.UISourceCode.UILocation(uiSourceCode, line, column));
       for (const location of rawStyleLocations) {
         const header = location.header();
         if (!header) {
@@ -181,46 +192,32 @@ export default class CoverageDecorationManager {
         });
       }
     }
-    return result.sort(Coverage.CoverageDecorationManager._compareLocations);
+    return result.sort(CoverageDecorationManager._compareLocations);
   }
 
   /**
-   * @param {!Coverage.RawLocation} a
-   * @param {!Coverage.RawLocation} b
+   * @param {!RawLocation} a
+   * @param {!RawLocation} b
    */
   static _compareLocations(a, b) {
     return a.id.localeCompare(b.id) || a.line - b.line || a.column - b.column;
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _onUISourceCodeAdded(event) {
-    const uiSourceCode = /** @type !Workspace.UISourceCode */ (event.data);
-    uiSourceCode.addLineDecoration(0, _decoratorType, this);
+    const uiSourceCode = /** @type !Workspace.UISourceCode.UISourceCode */ (event.data);
+    uiSourceCode.addLineDecoration(0, decoratorType, this);
   }
 }
-
-/* Legacy exported object */
-self.Coverage = self.Coverage || {};
-
-/* Legacy exported object */
-Coverage = Coverage || {};
 
 /**
  * @typedef {!{
  *    id: string,
- *    contentProvider: !Common.ContentProvider,
+ *    contentProvider: !TextUtils.ContentProvider.ContentProvider,
  *    line: number,
  *    column: number
  * }}
  */
-Coverage.RawLocation;
-
-/**
- * @constructor
- */
-Coverage.CoverageDecorationManager = CoverageDecorationManager;
-
-/** @public */
-Coverage.CoverageDecorationManager.decoratorType = _decoratorType;
+export let RawLocation;

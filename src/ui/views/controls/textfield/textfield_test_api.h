@@ -46,13 +46,17 @@ class TextfieldTestApi {
     return textfield_->cursor_blink_timer_.IsRunning();
   }
 
-  gfx::Rect GetCursorViewRect() { return textfield_->cursor_view_.bounds(); }
+  gfx::Rect GetCursorViewRect() { return textfield_->cursor_view_->bounds(); }
   void SetCursorViewRect(gfx::Rect bounds);
 
-  bool IsCursorVisible() const { return textfield_->cursor_view_.GetVisible(); }
+  bool IsCursorVisible() const {
+    return textfield_->cursor_view_->GetVisible();
+  }
 
   bool IsTextDirectionCheckedInContextMenu(
       base::i18n::TextDirection direction) const;
+
+  bool ShouldShowCursor() const;
 
  private:
   Textfield* textfield_;

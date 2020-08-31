@@ -265,7 +265,6 @@ ti{
     }
     Countries%variant{
         CI{"አይቮሪ ኮስት"}
-        CZ{"CZ"}
     }
-    Version{"36"}
+    Version{"37"}
 }

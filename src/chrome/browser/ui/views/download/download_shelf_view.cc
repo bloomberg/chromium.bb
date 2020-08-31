@@ -7,7 +7,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -332,11 +333,8 @@ void DownloadShelfView::AddedToWidget() {
 }
 
 void DownloadShelfView::OnThemeChanged() {
+  views::AccessiblePaneView::OnThemeChanged();
   UpdateColorsFromTheme();
-}
-
-void DownloadShelfView::LinkClicked(views::Link* source, int event_flags) {
-  chrome::ShowDownloads(browser_);
 }
 
 void DownloadShelfView::ButtonPressed(

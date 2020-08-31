@@ -4,25 +4,30 @@
 
 package org.chromium.chrome.browser.ntp;
 
-import static org.chromium.chrome.browser.util.ViewUtils.dpToPx;
+import static org.chromium.ui.base.ViewUtils.dpToPx;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.StringRes;
+import androidx.appcompat.widget.SwitchCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.widget.ChromeBulletSpan;
@@ -33,6 +38,7 @@ import org.chromium.ui.widget.ChromeBulletSpan;
 public class IncognitoDescriptionView extends LinearLayout {
     private int mWidthDp;
     private int mHeightDp;
+    private boolean mShowCard;
 
     private LinearLayout mContainer;
     private TextView mHeader;
@@ -40,6 +46,11 @@ public class IncognitoDescriptionView extends LinearLayout {
     private LinearLayout mBulletpointsContainer;
     private TextView mLearnMore;
     private TextView[] mParagraphs;
+    private RelativeLayout mCookieControlsCard;
+    private SwitchCompat mCookieControlsToggle;
+    private ImageView mCookieControlsManagedIcon;
+    private TextView mCookieControlsTitle;
+    private TextView mCookieControlsSubtitle;
 
     private static final int BULLETPOINTS_HORIZONTAL_SPACING_DP = 40;
     private static final int CONTENT_WIDTH_DP = 600;
@@ -56,6 +67,30 @@ public class IncognitoDescriptionView extends LinearLayout {
      */
     public void setLearnMoreOnclickListener(OnClickListener listener) {
         mLearnMore.setOnClickListener(listener);
+    }
+
+    /**
+     * Set cookie controls toggle on checked change listerner.
+     * @param listener The given listener.
+     */
+    public void setCookieControlsToggleOnCheckedChangeListener(OnCheckedChangeListener listener) {
+        mCookieControlsToggle.setOnCheckedChangeListener(listener);
+    }
+
+    /**
+     * Set cookie controls toggle's checked value.
+     * @param enabled The value to set the toggle to.
+     */
+    public void setCookieControlsToggle(boolean enabled) {
+        mCookieControlsToggle.setChecked(enabled);
+    }
+
+    /**
+     * Set cookie controls icon on click listener.
+     * @param listener The given listener.
+     */
+    public void setCookieControlsIconOnclickListener(OnClickListener listener) {
+        mCookieControlsManagedIcon.setOnClickListener(listener);
     }
 
     @Override
@@ -75,6 +110,11 @@ public class IncognitoDescriptionView extends LinearLayout {
         mParagraphs = new TextView[] {mSubtitle, findViewById(R.id.new_tab_incognito_features),
                 findViewById(R.id.new_tab_incognito_warning), mLearnMore};
         mBulletpointsContainer = findViewById(R.id.new_tab_incognito_bulletpoints_container);
+        mCookieControlsCard = findViewById(R.id.cookie_controls_card);
+        mCookieControlsToggle = findViewById(R.id.cookie_controls_card_toggle);
+        mCookieControlsManagedIcon = findViewById(R.id.cookie_controls_card_managed_icon);
+        mCookieControlsTitle = findViewById(R.id.cookie_controls_card_title);
+        mCookieControlsSubtitle = findViewById(R.id.cookie_controls_card_subtitle);
 
         adjustView();
     }
@@ -97,6 +137,7 @@ public class IncognitoDescriptionView extends LinearLayout {
         adjustIcon();
         adjustLayout();
         adjustLearnMore();
+        adjustCookieControlsCard();
     }
 
     /**
@@ -264,5 +305,71 @@ public class IncognitoDescriptionView extends LinearLayout {
                 span, subtitleText.length() + 1, textWithLearnMoreLink.length(), 0 /* flags */);
         mSubtitle.setText(textWithLearnMoreLink);
         mSubtitle.setMovementMethod(LinkMovementMethod.getInstance());
+    }
+
+    /** Adjust the Cookie Controls Card. */
+    private void adjustCookieControlsCard() {
+        if (mShowCard) {
+            if (mWidthDp <= WIDE_LAYOUT_THRESHOLD_DP) {
+                // Portrait
+                mCookieControlsCard.getLayoutParams().width =
+                        LinearLayout.LayoutParams.MATCH_PARENT;
+            } else {
+                // Landscape
+                mCookieControlsCard.getLayoutParams().width =
+                        dpToPx(getContext(), CONTENT_WIDTH_DP);
+            }
+        }
+    }
+
+    /**
+     * Adjust the Cookie Controls Card.
+     * @param showCard A boolean indicating if the card should be visible or not.
+     */
+    public void showCookieControlsCard(boolean showCard) {
+        mShowCard = showCard;
+        mCookieControlsCard.setVisibility(showCard ? View.VISIBLE : View.GONE);
+        adjustCookieControlsCard();
+    }
+
+    /**
+     * Sets the cookie controls enforced state.
+     * @param enforcement A CookieControlsEnforcement enum type indicating the type of
+     *         enforcement policy being applied to Cookie Controls.
+     */
+    public void setCookieControlsEnforcement(@CookieControlsEnforcement int enforcement) {
+        boolean enforced = enforcement != CookieControlsEnforcement.NO_ENFORCEMENT;
+        mCookieControlsToggle.setEnabled(!enforced);
+        mCookieControlsManagedIcon.setVisibility(enforced ? View.VISIBLE : View.GONE);
+        mCookieControlsTitle.setEnabled(!enforced);
+        mCookieControlsSubtitle.setEnabled(!enforced);
+
+        Resources resources = getContext().getResources();
+        StringBuilder subtitleText = new StringBuilder();
+        subtitleText.append(resources.getString(R.string.new_tab_otr_third_party_cookie_sublabel));
+        if (!enforced) {
+            mCookieControlsSubtitle.setText(subtitleText.toString());
+            return;
+        }
+
+        int iconRes;
+        String addition;
+        switch (enforcement) {
+            case CookieControlsEnforcement.ENFORCED_BY_POLICY:
+                iconRes = R.drawable.controlled_setting_mandatory;
+                addition = resources.getString(R.string.managed_by_your_organization);
+                break;
+            case CookieControlsEnforcement.ENFORCED_BY_COOKIE_SETTING:
+                iconRes = R.drawable.settings_cog;
+                addition = resources.getString(
+                        R.string.new_tab_otr_cookie_controls_controlled_tooltip_text);
+                break;
+            default:
+                return;
+        }
+        mCookieControlsManagedIcon.setImageResource(iconRes);
+        subtitleText.append("\n");
+        subtitleText.append(addition);
+        mCookieControlsSubtitle.setText(subtitleText.toString());
     }
 }

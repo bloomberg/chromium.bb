@@ -43,6 +43,9 @@
 #include "vkTypeUtil.hpp"
 #include "vkCmdUtil.hpp"
 
+#include <array>
+#include <utility>
+
 namespace vkt
 {
 namespace ssbo
@@ -52,6 +55,8 @@ namespace
 
 using std::string;
 using std::vector;
+using std::array;
+using std::pair;
 using glu::VarType;
 using glu::StructType;
 using namespace vk;
@@ -75,6 +80,7 @@ enum FeatureBits
 	FEATURE_16BIT_STORAGE		= (1<<14),
 	FEATURE_8BIT_STORAGE		= (1<<15),
 	FEATURE_SCALAR_LAYOUT		= (1<<16),
+	FEATURE_DESCRIPTOR_INDEXING	= (1<<17),
 };
 
 class RandomSSBOLayoutCase : public SSBOLayoutCase
@@ -103,12 +109,12 @@ private:
 };
 
 RandomSSBOLayoutCase::RandomSSBOLayoutCase (tcu::TestContext& testCtx, const char* name, const char* description, BufferMode bufferMode, deUint32 features, deUint32 seed, bool usePhysStorageBuffer)
-	: SSBOLayoutCase		(testCtx, name, description, bufferMode, LOAD_FULL_MATRIX, usePhysStorageBuffer)
+	: SSBOLayoutCase		(testCtx, name, description, bufferMode, LOAD_FULL_MATRIX, STORE_FULL_MATRIX, usePhysStorageBuffer)
 	, m_features			(features)
-	, m_maxBlocks			(4)
-	, m_maxInstances		((features & FEATURE_INSTANCE_ARRAYS)	? 3 : 0)
-	, m_maxArrayLength		((features & FEATURE_ARRAYS)			? 8 : 1)
-	, m_maxStructDepth		((features & FEATURE_STRUCTS)			? 2 : 0)
+	, m_maxBlocks			((features & FEATURE_DESCRIPTOR_INDEXING)	? 1 : 4)
+	, m_maxInstances		((features & FEATURE_INSTANCE_ARRAYS)		? 3 : 0)
+	, m_maxArrayLength		((features & FEATURE_ARRAYS)				? 8 : 1)
+	, m_maxStructDepth		((features & FEATURE_STRUCTS)				? 2 : 0)
 	, m_maxBlockMembers		(5)
 	, m_maxStructMembers	(4)
 	, m_seed				(seed)
@@ -135,6 +141,9 @@ void RandomSSBOLayoutCase::generateBlock (de::Random& rnd, deUint32 layoutFlags)
 	int				numInstances		= (m_maxInstances > 0 && rnd.getFloat() < instanceArrayWeight) ? rnd.getInt(0, m_maxInstances) : 0;
 	int				numVars				= rnd.getInt(1, m_maxBlockMembers);
 
+	if (m_features & FEATURE_DESCRIPTOR_INDEXING)
+		numInstances = rnd.getInt(2, 4);
+
 	if (numInstances > 0)
 		block.setArraySize(numInstances);
 
@@ -153,14 +162,17 @@ void RandomSSBOLayoutCase::generateBlock (de::Random& rnd, deUint32 layoutFlags)
 	if (m_features & FEATURE_RELAXED_LAYOUT)
 		layoutFlagCandidates.push_back(LAYOUT_RELAXED);
 
+	if (m_features & FEATURE_SCALAR_LAYOUT)
+		layoutFlagCandidates.push_back(LAYOUT_SCALAR);
+
 	if (m_features & FEATURE_16BIT_STORAGE)
 		layoutFlags |= LAYOUT_16BIT_STORAGE;
 
 	if (m_features & FEATURE_8BIT_STORAGE)
 		layoutFlags |= LAYOUT_8BIT_STORAGE;
 
-	if (m_features & FEATURE_SCALAR_LAYOUT)
-		layoutFlagCandidates.push_back(LAYOUT_SCALAR);
+	if (m_features & FEATURE_DESCRIPTOR_INDEXING)
+		layoutFlags |= LAYOUT_DESCRIPTOR_INDEXING;
 
 	DE_ASSERT(!layoutFlagCandidates.empty());
 
@@ -362,8 +374,8 @@ glu::VarType RandomSSBOLayoutCase::generateType (de::Random& rnd, int typeDepth,
 class BlockBasicTypeCase : public SSBOLayoutCase
 {
 public:
-	BlockBasicTypeCase (tcu::TestContext& testCtx, const char* name, const char* description, const VarType& type, deUint32 layoutFlags, int numInstances, MatrixLoadFlags matrixLoadFlag, bool usePhysStorageBuffer)
-		: SSBOLayoutCase(testCtx, name, description, BUFFERMODE_PER_BLOCK, matrixLoadFlag, usePhysStorageBuffer)
+	BlockBasicTypeCase (tcu::TestContext& testCtx, const char* name, const char* description, const VarType& type, deUint32 layoutFlags, int numInstances, MatrixLoadFlags matrixLoadFlag, MatrixStoreFlags matrixStoreFlag, bool usePhysStorageBuffer)
+		: SSBOLayoutCase(testCtx, name, description, BUFFERMODE_PER_BLOCK, matrixLoadFlag, matrixStoreFlag, usePhysStorageBuffer)
 	{
 		VarType tempType = type;
 		while (tempType.isArrayType())
@@ -405,8 +417,8 @@ public:
 class BlockBasicUnsizedArrayCase : public SSBOLayoutCase
 {
 public:
-	BlockBasicUnsizedArrayCase (tcu::TestContext& testCtx, const char* name, const char* description, const VarType& elementType, int arraySize, deUint32 layoutFlags, MatrixLoadFlags matrixLoadFlag, bool usePhysStorageBuffer)
-		: SSBOLayoutCase(testCtx, name, description, BUFFERMODE_PER_BLOCK, matrixLoadFlag, usePhysStorageBuffer)
+	BlockBasicUnsizedArrayCase (tcu::TestContext& testCtx, const char* name, const char* description, const VarType& elementType, int arraySize, deUint32 layoutFlags, MatrixLoadFlags matrixLoadFlag, MatrixStoreFlags matrixStoreFlag, bool usePhysStorageBuffer)
+		: SSBOLayoutCase(testCtx, name, description, BUFFERMODE_PER_BLOCK, matrixLoadFlag, matrixStoreFlag, usePhysStorageBuffer)
 	{
 		BufferBlock& block = m_interface.allocBlock("Block");
 		block.addMember(BufferVar("var", VarType(elementType, VarType::UNSIZED_ARRAY), ACCESS_READ|ACCESS_WRITE));
@@ -455,8 +467,8 @@ static void createRandomCaseGroup (tcu::TestCaseGroup* parentGroup, tcu::TestCon
 class BlockSingleStructCase : public SSBOLayoutCase
 {
 public:
-	BlockSingleStructCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 layoutFlags, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, bool usePhysStorageBuffer)
-		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, usePhysStorageBuffer)
+	BlockSingleStructCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 layoutFlags, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, MatrixStoreFlags matrixStoreFlag, bool usePhysStorageBuffer)
+		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, matrixStoreFlag, usePhysStorageBuffer)
 		, m_layoutFlags		(layoutFlags)
 		, m_numInstances	(numInstances)
 	{
@@ -486,8 +498,8 @@ private:
 class BlockSingleStructArrayCase : public SSBOLayoutCase
 {
 public:
-	BlockSingleStructArrayCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 layoutFlags, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, bool usePhysStorageBuffer)
-		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, usePhysStorageBuffer)
+	BlockSingleStructArrayCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 layoutFlags, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, MatrixStoreFlags matrixStoreFlag, bool usePhysStorageBuffer)
+		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, matrixStoreFlag, usePhysStorageBuffer)
 		, m_layoutFlags		(layoutFlags)
 		, m_numInstances	(numInstances)
 	{
@@ -519,8 +531,8 @@ private:
 class BlockSingleNestedStructCase : public SSBOLayoutCase
 {
 public:
-	BlockSingleNestedStructCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 layoutFlags, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, bool usePhysStorageBuffer)
-		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, usePhysStorageBuffer)
+	BlockSingleNestedStructCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 layoutFlags, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, MatrixStoreFlags matrixStoreFlag, bool usePhysStorageBuffer)
+		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, matrixStoreFlag, usePhysStorageBuffer)
 		, m_layoutFlags		(layoutFlags)
 		, m_numInstances	(numInstances)
 	{
@@ -557,8 +569,8 @@ private:
 class BlockSingleNestedStructArrayCase : public SSBOLayoutCase
 {
 public:
-	BlockSingleNestedStructArrayCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 layoutFlags, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, bool usePhysStorageBuffer)
-		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, usePhysStorageBuffer)
+	BlockSingleNestedStructArrayCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 layoutFlags, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, MatrixStoreFlags matrixStoreFlag, bool usePhysStorageBuffer)
+		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, matrixStoreFlag, usePhysStorageBuffer)
 		, m_layoutFlags		(layoutFlags)
 		, m_numInstances	(numInstances)
 	{
@@ -595,8 +607,8 @@ private:
 class BlockUnsizedStructArrayCase : public SSBOLayoutCase
 {
 public:
-	BlockUnsizedStructArrayCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 layoutFlags, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, bool usePhysStorageBuffer)
-		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, usePhysStorageBuffer)
+	BlockUnsizedStructArrayCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 layoutFlags, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, MatrixStoreFlags matrixStoreFlag, bool usePhysStorageBuffer)
+		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, matrixStoreFlag, usePhysStorageBuffer)
 		, m_layoutFlags		(layoutFlags)
 		, m_numInstances	(numInstances)
 	{
@@ -637,8 +649,8 @@ private:
 class Block2LevelUnsizedStructArrayCase : public SSBOLayoutCase
 {
 public:
-	Block2LevelUnsizedStructArrayCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 layoutFlags, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, bool usePhysStorageBuffer)
-		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, usePhysStorageBuffer)
+	Block2LevelUnsizedStructArrayCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 layoutFlags, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, MatrixStoreFlags matrixStoreFlag, bool usePhysStorageBuffer)
+		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, matrixStoreFlag, usePhysStorageBuffer)
 		, m_layoutFlags		(layoutFlags)
 		, m_numInstances	(numInstances)
 	{
@@ -678,8 +690,8 @@ private:
 class BlockUnsizedNestedStructArrayCase : public SSBOLayoutCase
 {
 public:
-	BlockUnsizedNestedStructArrayCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 layoutFlags, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, bool usePhysStorageBuffer)
-		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, usePhysStorageBuffer)
+	BlockUnsizedNestedStructArrayCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 layoutFlags, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, MatrixStoreFlags matrixStoreFlag, bool usePhysStorageBuffer)
+		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, matrixStoreFlag, usePhysStorageBuffer)
 		, m_layoutFlags		(layoutFlags)
 		, m_numInstances	(numInstances)
 	{
@@ -726,8 +738,8 @@ private:
 class BlockMultiBasicTypesCase : public SSBOLayoutCase
 {
 public:
-	BlockMultiBasicTypesCase	(tcu::TestContext& testCtx, const char* name, const char* description, deUint32 flagsA, deUint32 flagsB, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, bool usePhysStorageBuffer)
-		: SSBOLayoutCase		(testCtx, name, description, bufferMode, matrixLoadFlag, usePhysStorageBuffer)
+	BlockMultiBasicTypesCase	(tcu::TestContext& testCtx, const char* name, const char* description, deUint32 flagsA, deUint32 flagsB, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, MatrixStoreFlags matrixStoreFlag, bool usePhysStorageBuffer)
+		: SSBOLayoutCase		(testCtx, name, description, bufferMode, matrixLoadFlag, matrixStoreFlag, usePhysStorageBuffer)
 		, m_flagsA				(flagsA)
 		, m_flagsB				(flagsB)
 		, m_numInstances		(numInstances)
@@ -765,8 +777,8 @@ private:
 class BlockMultiNestedStructCase : public SSBOLayoutCase
 {
 public:
-	BlockMultiNestedStructCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 flagsA, deUint32 flagsB, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, bool usePhysStorageBuffer)
-		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, usePhysStorageBuffer)
+	BlockMultiNestedStructCase (tcu::TestContext& testCtx, const char* name, const char* description, deUint32 flagsA, deUint32 flagsB, BufferMode bufferMode, int numInstances, MatrixLoadFlags matrixLoadFlag, MatrixStoreFlags matrixStoreFlag, bool usePhysStorageBuffer)
+		: SSBOLayoutCase	(testCtx, name, description, bufferMode, matrixLoadFlag, matrixStoreFlag, usePhysStorageBuffer)
 		, m_flagsA			(flagsA)
 		, m_flagsB			(flagsB)
 		, m_numInstances	(numInstances)
@@ -1134,13 +1146,28 @@ void SSBOLayoutTests::init (void)
 
 	static const struct
 	{
-		const char*							name;
+		const char*						name;
 		SSBOLayoutCase::BufferMode		mode;
 	} bufferModes[] =
 	{
 		{ "per_block_buffer",	SSBOLayoutCase::BUFFERMODE_PER_BLOCK },
 		{ "single_buffer",		SSBOLayoutCase::BUFFERMODE_SINGLE	}
 	};
+
+	using SuffixLoadFlag	= pair<string, MatrixLoadFlags>;
+	using SuffixStoreFlag	= pair<string, MatrixStoreFlags>;
+
+	static const array<SuffixLoadFlag, 2> matrixLoadTypes =
+	{{
+		SuffixLoadFlag( "",				LOAD_FULL_MATRIX		),
+		SuffixLoadFlag( "_comp_access",	LOAD_MATRIX_COMPONENTS	),
+	}};
+
+	static const array<SuffixStoreFlag, 2> matrixStoreTypes =
+	{{
+		SuffixStoreFlag( "",			STORE_FULL_MATRIX		),
+		SuffixStoreFlag( "_store_cols",	STORE_MATRIX_COLUMNS	),
+	}};
 
 	// ssbo.single_basic_type
 	{
@@ -1158,7 +1185,7 @@ void SSBOLayoutTests::init (void)
 				const char*		typeName	= glu::getDataTypeName(type);
 
 				if (!glu::dataTypeSupportsPrecisionModifier(type))
-					layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, typeName, "", VarType(type, glu::PRECISION_LAST), layoutFlags[layoutFlagNdx].flags, 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
+					layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, typeName, "", VarType(type, glu::PRECISION_LAST), layoutFlags[layoutFlagNdx].flags, 0, LOAD_FULL_MATRIX, STORE_FULL_MATRIX, m_usePhysStorageBuffer));
 				else
 				{
 					for (int precNdx = 0; precNdx < glu::PRECISION_LAST; precNdx++)
@@ -1166,7 +1193,7 @@ void SSBOLayoutTests::init (void)
 						const glu::Precision	precision	= glu::Precision(precNdx);
 						const string			caseName	= string(glu::getPrecisionName(precision)) + "_" + typeName;
 
-						layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, caseName.c_str(), "", VarType(type, precision), layoutFlags[layoutFlagNdx].flags, 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
+						layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, caseName.c_str(), "", VarType(type, precision), layoutFlags[layoutFlagNdx].flags, 0, LOAD_FULL_MATRIX, STORE_FULL_MATRIX, m_usePhysStorageBuffer));
 					}
 				}
 
@@ -1179,8 +1206,9 @@ void SSBOLayoutTests::init (void)
 							const glu::Precision	precision	= glu::Precision(precNdx);
 							const string			caseName	= string(matrixFlags[matFlagNdx].name) + "_" + string(glu::getPrecisionName(precision)) + "_" + typeName;
 
-							layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, caseName.c_str(),					 "", glu::VarType(type, precision), layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-							layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, (caseName + "_comp_access").c_str(), "", glu::VarType(type, precision), layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, 0, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+							for (const auto& loadType	: matrixLoadTypes)
+							for (const auto& storeType	: matrixStoreTypes)
+								layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, (caseName + loadType.first + storeType.first).c_str(), "", glu::VarType(type, precision), layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, 0, loadType.second, storeType.second, m_usePhysStorageBuffer));
 						}
 					}
 				}
@@ -1206,18 +1234,17 @@ void SSBOLayoutTests::init (void)
 
 				layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, typeName, "",
 															 VarType(VarType(type, !glu::dataTypeSupportsPrecisionModifier(type) ? glu::PRECISION_LAST : glu::PRECISION_HIGHP), arraySize),
-															 layoutFlags[layoutFlagNdx].flags, 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
+															 layoutFlags[layoutFlagNdx].flags, 0, LOAD_FULL_MATRIX, STORE_FULL_MATRIX, m_usePhysStorageBuffer));
 
 				if (glu::isDataTypeMatrix(type))
 				{
 					for (int matFlagNdx = 0; matFlagNdx < DE_LENGTH_OF_ARRAY(matrixFlags); matFlagNdx++)
 					{
-						layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName).c_str(), "",
-																	 VarType(VarType(type, glu::PRECISION_HIGHP), arraySize),
-																	 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-						layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName + "_comp_access").c_str(), "",
-																	 VarType(VarType(type, glu::PRECISION_HIGHP), arraySize),
-																	 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, 0, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+						for (const auto& loadType	: matrixLoadTypes)
+						for (const auto& storeType	: matrixStoreTypes)
+							layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName + loadType.first + storeType.first).c_str(), "",
+																		 VarType(VarType(type, glu::PRECISION_HIGHP), arraySize),
+																		 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, 0, loadType.second, storeType.second, m_usePhysStorageBuffer));
 					}
 				}
 			}
@@ -1242,18 +1269,17 @@ void SSBOLayoutTests::init (void)
 
 				layoutGroup->addChild(new BlockBasicUnsizedArrayCase(m_testCtx, typeName, "",
 																	 VarType(type, !glu::dataTypeSupportsPrecisionModifier(type) ? glu::PRECISION_LAST : glu::PRECISION_HIGHP),
-																	 arraySize, layoutFlags[layoutFlagNdx].flags, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
+																	 arraySize, layoutFlags[layoutFlagNdx].flags, LOAD_FULL_MATRIX, STORE_FULL_MATRIX, m_usePhysStorageBuffer));
 
 				if (glu::isDataTypeMatrix(type))
 				{
 					for (int matFlagNdx = 0; matFlagNdx < DE_LENGTH_OF_ARRAY(matrixFlags); matFlagNdx++)
 					{
-						layoutGroup->addChild(new BlockBasicUnsizedArrayCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName).c_str(), "",
-																			 VarType(type, glu::PRECISION_HIGHP), arraySize,
-																			 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-						layoutGroup->addChild(new BlockBasicUnsizedArrayCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName + "_comp_access").c_str(), "",
-																			 VarType(type, glu::PRECISION_HIGHP), arraySize,
-																			 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+						for (const auto& loadType	: matrixLoadTypes)
+						for (const auto& storeType	: matrixStoreTypes)
+							layoutGroup->addChild(new BlockBasicUnsizedArrayCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName + loadType.first + storeType.first).c_str(), "",
+																				 VarType(type, glu::PRECISION_HIGHP), arraySize,
+																				 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, loadType.second, storeType.second, m_usePhysStorageBuffer));
 					}
 				}
 			}
@@ -1279,18 +1305,17 @@ void SSBOLayoutTests::init (void)
 				const VarType	childType	(VarType(type, !glu::dataTypeSupportsPrecisionModifier(type) ? glu::PRECISION_LAST : glu::PRECISION_HIGHP), childSize);
 				const VarType	fullType	(childType, parentSize);
 
-				layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, typeName, "", fullType, layoutFlags[layoutFlagNdx].flags, 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
+				layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, typeName, "", fullType, layoutFlags[layoutFlagNdx].flags, 0, LOAD_FULL_MATRIX, STORE_FULL_MATRIX, m_usePhysStorageBuffer));
 
 				if (glu::isDataTypeMatrix(type))
 				{
 					for (int matFlagNdx = 0; matFlagNdx < DE_LENGTH_OF_ARRAY(matrixFlags); matFlagNdx++)
 					{
-						layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName).c_str(), "",
-																	 fullType,
-																	 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-						layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName + "_comp_access").c_str(), "",
-																	 fullType,
-																	 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, 0, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+						for (const auto& loadType	: matrixLoadTypes)
+						for (const auto& storeType	: matrixStoreTypes)
+							layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName + loadType.first + storeType.first).c_str(), "",
+																		 fullType,
+																		 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, 0, loadType.second, storeType.second, m_usePhysStorageBuffer));
 					}
 				}
 			}
@@ -1318,18 +1343,17 @@ void SSBOLayoutTests::init (void)
 				const VarType	childType1	(childType0, childSize1);
 				const VarType	fullType	(childType1, parentSize);
 
-				layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, typeName, "", fullType, layoutFlags[layoutFlagNdx].flags, 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
+				layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, typeName, "", fullType, layoutFlags[layoutFlagNdx].flags, 0, LOAD_FULL_MATRIX, STORE_FULL_MATRIX, m_usePhysStorageBuffer));
 
 				if (glu::isDataTypeMatrix(type))
 				{
 					for (int matFlagNdx = 0; matFlagNdx < DE_LENGTH_OF_ARRAY(matrixFlags); matFlagNdx++)
 					{
-						layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName).c_str(), "",
-																	 fullType,
-																	 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-						layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName + "_comp_access").c_str(), "",
-																	 fullType,
-																	 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, 0, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+						for (const auto& loadType	: matrixLoadTypes)
+						for (const auto& storeType	: matrixStoreTypes)
+							layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName + loadType.first + storeType.first).c_str(), "",
+																		 fullType,
+																		 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, 0, loadType.second, storeType.second, m_usePhysStorageBuffer));
 					}
 				}
 			}
@@ -1356,18 +1380,17 @@ void SSBOLayoutTests::init (void)
 				const VarType	childType0	(VarType(type, !glu::dataTypeSupportsPrecisionModifier(type) ? glu::PRECISION_LAST : glu::PRECISION_HIGHP), childSize0);
 				const VarType	childType1	(childType0, childSize1);
 
-				layoutGroup->addChild(new BlockBasicUnsizedArrayCase(m_testCtx, typeName, "", childType1, parentSize, layoutFlags[layoutFlagNdx].flags, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
+				layoutGroup->addChild(new BlockBasicUnsizedArrayCase(m_testCtx, typeName, "", childType1, parentSize, layoutFlags[layoutFlagNdx].flags, LOAD_FULL_MATRIX, STORE_FULL_MATRIX, m_usePhysStorageBuffer));
 
 				if (glu::isDataTypeMatrix(type))
 				{
 					for (int matFlagNdx = 0; matFlagNdx < DE_LENGTH_OF_ARRAY(matrixFlags); matFlagNdx++)
 					{
-						layoutGroup->addChild(new BlockBasicUnsizedArrayCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName).c_str(), "",
-																			 childType1, parentSize,
-																			 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-						layoutGroup->addChild(new BlockBasicUnsizedArrayCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName + "_comp_access").c_str(), "",
-																			 childType1, parentSize,
-																			 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+						for (const auto& loadType	: matrixLoadTypes)
+						for (const auto& storeType	: matrixStoreTypes)
+							layoutGroup->addChild(new BlockBasicUnsizedArrayCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName + loadType.first + storeType.first).c_str(), "",
+																				 childType1, parentSize,
+																				 layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags, loadType.second, storeType.second, m_usePhysStorageBuffer));
 					}
 				}
 			}
@@ -1397,8 +1420,9 @@ void SSBOLayoutTests::init (void)
 					if (isArray)
 						caseName += "_instance_array";
 
-					modeGroup->addChild(new BlockSingleStructCase(m_testCtx, caseName.c_str(),					  "", caseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-					modeGroup->addChild(new BlockSingleStructCase(m_testCtx, (caseName + "_comp_access").c_str(), "", caseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+					for (const auto& loadType	: matrixLoadTypes)
+					for (const auto& storeType	: matrixStoreTypes)
+						modeGroup->addChild(new BlockSingleStructCase(m_testCtx, (caseName + loadType.first + storeType.first).c_str(), "", caseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, loadType.second, storeType.second, m_usePhysStorageBuffer));
 				}
 			}
 		}
@@ -1427,8 +1451,9 @@ void SSBOLayoutTests::init (void)
 					if (isArray)
 						baseName += "_instance_array";
 
-					modeGroup->addChild(new BlockSingleStructArrayCase(m_testCtx, baseName.c_str(),						"", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-					modeGroup->addChild(new BlockSingleStructArrayCase(m_testCtx, (baseName + "_comp_access").c_str(),	"", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+					for (const auto& loadType	: matrixLoadTypes)
+					for (const auto& storeType	: matrixStoreTypes)
+						modeGroup->addChild(new BlockSingleStructArrayCase(m_testCtx, (baseName + loadType.first + storeType.first).c_str(), "", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, loadType.second, storeType.second, m_usePhysStorageBuffer));
 				}
 			}
 		}
@@ -1457,8 +1482,9 @@ void SSBOLayoutTests::init (void)
 					if (isArray)
 						baseName += "_instance_array";
 
-					modeGroup->addChild(new BlockSingleNestedStructCase(m_testCtx, baseName.c_str(),					"", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-					modeGroup->addChild(new BlockSingleNestedStructCase(m_testCtx, (baseName + "_comp_access").c_str(),	"", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+					for (const auto& loadType	: matrixLoadTypes)
+					for (const auto& storeType	: matrixStoreTypes)
+						modeGroup->addChild(new BlockSingleNestedStructCase(m_testCtx, (baseName + loadType.first + storeType.first).c_str(), "", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, loadType.second, storeType.second, m_usePhysStorageBuffer));
 				}
 			}
 		}
@@ -1487,8 +1513,9 @@ void SSBOLayoutTests::init (void)
 					if (isArray)
 						baseName += "_instance_array";
 
-					modeGroup->addChild(new BlockSingleNestedStructArrayCase(m_testCtx, baseName.c_str(),					 "", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-					modeGroup->addChild(new BlockSingleNestedStructArrayCase(m_testCtx, (baseName + "_comp_access").c_str(), "", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+					for (const auto& loadType	: matrixLoadTypes)
+					for (const auto& storeType	: matrixStoreTypes)
+						modeGroup->addChild(new BlockSingleNestedStructArrayCase(m_testCtx, (baseName + loadType.first + storeType.first).c_str(), "", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, loadType.second, storeType.second, m_usePhysStorageBuffer));
 				}
 			}
 		}
@@ -1517,8 +1544,9 @@ void SSBOLayoutTests::init (void)
 					if (isArray)
 						baseName += "_instance_array";
 
-					modeGroup->addChild(new BlockUnsizedStructArrayCase(m_testCtx, baseName.c_str(),					"", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-					modeGroup->addChild(new BlockUnsizedStructArrayCase(m_testCtx, (baseName + "_comp_access").c_str(),	"", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+					for (const auto& loadType	: matrixLoadTypes)
+					for (const auto& storeType	: matrixStoreTypes)
+						modeGroup->addChild(new BlockUnsizedStructArrayCase(m_testCtx, (baseName + loadType.first + storeType.first).c_str(), "", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, loadType.second, storeType.second, m_usePhysStorageBuffer));
 				}
 			}
 		}
@@ -1547,8 +1575,9 @@ void SSBOLayoutTests::init (void)
 					if (isArray)
 						baseName += "_instance_array";
 
-					modeGroup->addChild(new Block2LevelUnsizedStructArrayCase(m_testCtx, baseName.c_str(),						"", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-					modeGroup->addChild(new Block2LevelUnsizedStructArrayCase(m_testCtx, (baseName + "_comp_access").c_str(),	"", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+					for (const auto& loadType	: matrixLoadTypes)
+					for (const auto& storeType	: matrixStoreTypes)
+						modeGroup->addChild(new Block2LevelUnsizedStructArrayCase(m_testCtx, (baseName + loadType.first + storeType.first).c_str(), "", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, loadType.second, storeType.second, m_usePhysStorageBuffer));
 				}
 			}
 		}
@@ -1577,8 +1606,9 @@ void SSBOLayoutTests::init (void)
 					if (isArray)
 						baseName += "_instance_array";
 
-					modeGroup->addChild(new BlockUnsizedNestedStructArrayCase(m_testCtx, baseName.c_str(),					  "", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-					modeGroup->addChild(new BlockUnsizedNestedStructArrayCase(m_testCtx, (baseName + "_comp_access").c_str(), "", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+					for (const auto& loadType	: matrixLoadTypes)
+					for (const auto& storeType	: matrixStoreTypes)
+						modeGroup->addChild(new BlockUnsizedNestedStructArrayCase(m_testCtx, (baseName + loadType.first + storeType.first).c_str(), "", baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, loadType.second, storeType.second, m_usePhysStorageBuffer));
 				}
 			}
 		}
@@ -1602,18 +1632,17 @@ void SSBOLayoutTests::init (void)
 
 				layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, typeName, "",
 															 VarType(type, !glu::dataTypeSupportsPrecisionModifier(type) ? glu::PRECISION_LAST : glu::PRECISION_HIGHP),
-															 layoutFlags[layoutFlagNdx].flags, numInstances, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
+															 layoutFlags[layoutFlagNdx].flags, numInstances, LOAD_FULL_MATRIX, STORE_FULL_MATRIX, m_usePhysStorageBuffer));
 
 				if (glu::isDataTypeMatrix(type))
 				{
 					for (int matFlagNdx = 0; matFlagNdx < DE_LENGTH_OF_ARRAY(matrixFlags); matFlagNdx++)
 					{
-						layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName).c_str(), "",
-																	 VarType(type, glu::PRECISION_HIGHP), layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags,
-																	 numInstances, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-						layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName + "_comp_access").c_str(), "",
-																	 VarType(type, glu::PRECISION_HIGHP), layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags,
-																	 numInstances, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+						for (const auto& loadType	: matrixLoadTypes)
+						for (const auto& storeType	: matrixStoreTypes)
+							layoutGroup->addChild(new BlockBasicTypeCase(m_testCtx, (string(matrixFlags[matFlagNdx].name) + "_" + typeName + loadType.first + storeType.first).c_str(), "",
+																		 VarType(type, glu::PRECISION_HIGHP), layoutFlags[layoutFlagNdx].flags|matrixFlags[matFlagNdx].flags,
+																		 numInstances, loadType.second, storeType.second, m_usePhysStorageBuffer));
 					}
 				}
 			}
@@ -1640,8 +1669,9 @@ void SSBOLayoutTests::init (void)
 					if (isArray)
 						baseName += "_instance_array";
 
-					modeGroup->addChild(new BlockMultiBasicTypesCase(m_testCtx, baseName.c_str(),					 "", baseFlags, baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-					modeGroup->addChild(new BlockMultiBasicTypesCase(m_testCtx, (baseName + "_comp_access").c_str(), "", baseFlags, baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+					for (const auto& loadType	: matrixLoadTypes)
+					for (const auto& storeType	: matrixStoreTypes)
+						modeGroup->addChild(new BlockMultiBasicTypesCase(m_testCtx, (baseName + loadType.first + storeType.first).c_str(), "", baseFlags, baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, loadType.second, storeType.second, m_usePhysStorageBuffer));
 				}
 			}
 
@@ -1653,8 +1683,9 @@ void SSBOLayoutTests::init (void)
 				if (isArray)
 					baseName += "_instance_array";
 
-				modeGroup->addChild(new BlockMultiBasicTypesCase(m_testCtx, baseName.c_str(),					 "", baseFlags, baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-				modeGroup->addChild(new BlockMultiBasicTypesCase(m_testCtx, (baseName + "_comp_access").c_str(), "", baseFlags, baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+				for (const auto& loadType	: matrixLoadTypes)
+				for (const auto& storeType	: matrixStoreTypes)
+					modeGroup->addChild(new BlockMultiBasicTypesCase(m_testCtx, (baseName + loadType.first + storeType.first).c_str(), "", baseFlags, baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, loadType.second, storeType.second, m_usePhysStorageBuffer));
 			}
 		}
 	}
@@ -1679,8 +1710,9 @@ void SSBOLayoutTests::init (void)
 					if (isArray)
 						baseName += "_instance_array";
 
-					modeGroup->addChild(new BlockMultiNestedStructCase(m_testCtx, baseName.c_str(),						"", baseFlags, baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_FULL_MATRIX, m_usePhysStorageBuffer));
-					modeGroup->addChild(new BlockMultiNestedStructCase(m_testCtx, (baseName + "_comp_access").c_str(), "", baseFlags, baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, LOAD_MATRIX_COMPONENTS, m_usePhysStorageBuffer));
+					for (const auto& loadType	: matrixLoadTypes)
+					for (const auto& storeType	: matrixStoreTypes)
+						modeGroup->addChild(new BlockMultiNestedStructCase(m_testCtx, (baseName + loadType.first + storeType.first).c_str(), "", baseFlags, baseFlags, bufferModes[modeNdx].mode, isArray ? 3 : 0, loadType.second, storeType.second, m_usePhysStorageBuffer));
 				}
 			}
 		}
@@ -1688,14 +1720,15 @@ void SSBOLayoutTests::init (void)
 
 	// ssbo.random
 	{
-		const deUint32	allStdLayouts	= FEATURE_STD140_LAYOUT|FEATURE_STD430_LAYOUT;
-		const deUint32	allBasicTypes	= FEATURE_VECTORS|FEATURE_MATRICES;
-		const deUint32	unused			= FEATURE_UNUSED_MEMBERS|FEATURE_UNUSED_VARS;
-		const deUint32	unsized			= FEATURE_UNSIZED_ARRAYS;
-		const deUint32	matFlags		= FEATURE_MATRIX_LAYOUT;
-		const deUint32	allButRelaxed	= ~FEATURE_RELAXED_LAYOUT & ~FEATURE_16BIT_STORAGE & ~FEATURE_8BIT_STORAGE & ~FEATURE_SCALAR_LAYOUT;
-		const deUint32	allRelaxed		= FEATURE_VECTORS|FEATURE_RELAXED_LAYOUT|FEATURE_INSTANCE_ARRAYS;
-		const deUint32	allScalar		= ~FEATURE_RELAXED_LAYOUT & ~allStdLayouts & ~FEATURE_16BIT_STORAGE & ~FEATURE_8BIT_STORAGE;
+		const deUint32	allStdLayouts		= FEATURE_STD140_LAYOUT|FEATURE_STD430_LAYOUT;
+		const deUint32	allBasicTypes		= FEATURE_VECTORS|FEATURE_MATRICES;
+		const deUint32	unused				= FEATURE_UNUSED_MEMBERS|FEATURE_UNUSED_VARS;
+		const deUint32	unsized				= FEATURE_UNSIZED_ARRAYS;
+		const deUint32	matFlags			= FEATURE_MATRIX_LAYOUT;
+		const deUint32	allButRelaxed		= ~FEATURE_RELAXED_LAYOUT & ~FEATURE_16BIT_STORAGE & ~FEATURE_8BIT_STORAGE & ~FEATURE_SCALAR_LAYOUT & ~FEATURE_DESCRIPTOR_INDEXING;
+		const deUint32	allRelaxed			= FEATURE_VECTORS|FEATURE_RELAXED_LAYOUT|FEATURE_INSTANCE_ARRAYS;
+		const deUint32	allScalar			= ~FEATURE_RELAXED_LAYOUT & ~allStdLayouts & ~FEATURE_16BIT_STORAGE & ~FEATURE_8BIT_STORAGE & ~FEATURE_DESCRIPTOR_INDEXING;
+		const deUint32	descriptorIndexing	= allStdLayouts|FEATURE_RELAXED_LAYOUT|FEATURE_SCALAR_LAYOUT|FEATURE_DESCRIPTOR_INDEXING|allBasicTypes|unused|matFlags;
 
 		tcu::TestCaseGroup* randomGroup = new tcu::TestCaseGroup(m_testCtx, "random", "Random Uniform Block cases");
 		addChild(randomGroup);
@@ -1711,7 +1744,7 @@ void SSBOLayoutTests::init (void)
 			}
 			else if (i == 2)
 			{
-				group = new tcu::TestCaseGroup(m_testCtx, "8bit", "18bit storage");
+				group = new tcu::TestCaseGroup(m_testCtx, "8bit", "8bit storage");
 				randomGroup->addChild(group);
 			}
 			const deUint32 use16BitStorage = i == 1 ? FEATURE_16BIT_STORAGE : 0;
@@ -1722,7 +1755,7 @@ void SSBOLayoutTests::init (void)
 			createRandomCaseGroup(group, m_testCtx, "vector_types",		"Scalar and vector types only, per-block buffers",	SSBOLayoutCase::BUFFERMODE_PER_BLOCK,	use8BitStorage|use16BitStorage|allStdLayouts|unused|FEATURE_VECTORS,															25, 25, m_usePhysStorageBuffer);
 			createRandomCaseGroup(group, m_testCtx, "basic_types",		"All basic types, per-block buffers",				SSBOLayoutCase::BUFFERMODE_PER_BLOCK,	use8BitStorage|use16BitStorage|allStdLayouts|unused|allBasicTypes|matFlags,													25, 50, m_usePhysStorageBuffer);
 			createRandomCaseGroup(group, m_testCtx, "basic_arrays",		"Arrays, per-block buffers",						SSBOLayoutCase::BUFFERMODE_PER_BLOCK,	use8BitStorage|use16BitStorage|allStdLayouts|unused|allBasicTypes|matFlags|FEATURE_ARRAYS,									25, 50, m_usePhysStorageBuffer);
-			createRandomCaseGroup(group, m_testCtx, "unsized_arrays",		"Unsized arrays, per-block buffers",				SSBOLayoutCase::BUFFERMODE_PER_BLOCK,	use8BitStorage|use16BitStorage|allStdLayouts|unused|allBasicTypes|matFlags|unsized|FEATURE_ARRAYS,							25, 50, m_usePhysStorageBuffer);
+			createRandomCaseGroup(group, m_testCtx, "unsized_arrays",	"Unsized arrays, per-block buffers",				SSBOLayoutCase::BUFFERMODE_PER_BLOCK,	use8BitStorage|use16BitStorage|allStdLayouts|unused|allBasicTypes|matFlags|unsized|FEATURE_ARRAYS,							25, 50, m_usePhysStorageBuffer);
 			createRandomCaseGroup(group, m_testCtx, "arrays_of_arrays",	"Arrays of arrays, per-block buffers",				SSBOLayoutCase::BUFFERMODE_PER_BLOCK,	use8BitStorage|use16BitStorage|allStdLayouts|unused|allBasicTypes|matFlags|unsized|FEATURE_ARRAYS|FEATURE_ARRAYS_OF_ARRAYS,	25, 950, m_usePhysStorageBuffer);
 
 			createRandomCaseGroup(group, m_testCtx, "basic_instance_arrays",					"Basic instance arrays, per-block buffers",				SSBOLayoutCase::BUFFERMODE_PER_BLOCK,	use8BitStorage|use16BitStorage|allStdLayouts|unused|allBasicTypes|matFlags|unsized|FEATURE_INSTANCE_ARRAYS,															25, 75, m_usePhysStorageBuffer);
@@ -1733,8 +1766,9 @@ void SSBOLayoutTests::init (void)
 			createRandomCaseGroup(group, m_testCtx, "all_per_block_buffers",	"All random features, per-block buffers",	SSBOLayoutCase::BUFFERMODE_PER_BLOCK,	use8BitStorage|use16BitStorage|allButRelaxed,	50, 200, m_usePhysStorageBuffer);
 			createRandomCaseGroup(group, m_testCtx, "all_shared_buffer",		"All random features, shared buffer",		SSBOLayoutCase::BUFFERMODE_SINGLE,		use8BitStorage|use16BitStorage|allButRelaxed,	50, 250, m_usePhysStorageBuffer);
 
-			createRandomCaseGroup(group, m_testCtx, "relaxed",			"VK_KHR_relaxed_block_layout",				SSBOLayoutCase::BUFFERMODE_SINGLE,		use8BitStorage|use16BitStorage|allRelaxed, 100, deInt32Hash(313), m_usePhysStorageBuffer);
-			createRandomCaseGroup(group, m_testCtx, "scalar",			"VK_EXT_scalar_block_layout",				SSBOLayoutCase::BUFFERMODE_SINGLE,		use8BitStorage|use16BitStorage|allScalar, 100, deInt32Hash(313), m_usePhysStorageBuffer);
+			createRandomCaseGroup(group, m_testCtx, "relaxed",				"VK_KHR_relaxed_block_layout",		SSBOLayoutCase::BUFFERMODE_SINGLE,	use8BitStorage|use16BitStorage|allRelaxed, 100, deInt32Hash(313), m_usePhysStorageBuffer);
+			createRandomCaseGroup(group, m_testCtx, "scalar",				"VK_EXT_scalar_block_layout",		SSBOLayoutCase::BUFFERMODE_SINGLE,	use8BitStorage|use16BitStorage|allScalar, 100, deInt32Hash(313), m_usePhysStorageBuffer);
+			createRandomCaseGroup(group, m_testCtx, "descriptor_indexing",	"VK_EXT_descriptor_indexing",		SSBOLayoutCase::BUFFERMODE_SINGLE,	use8BitStorage|use16BitStorage|descriptorIndexing, 50, 123, m_usePhysStorageBuffer);
 		}
 	}
 }

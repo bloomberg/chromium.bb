@@ -7,7 +7,6 @@
 #include "gtest/gtest.h"
 
 namespace openscreen {
-namespace platform {
 
 TEST(TimevalPosixTest, ToTimeval) {
   auto timespan = Clock::duration::zero();
@@ -36,5 +35,4 @@ TEST(TimevalPosixTest, ToTimeval) {
   EXPECT_EQ(timeval.tv_usec, 10);
 }
 
-}  // namespace platform
 }  // namespace openscreen

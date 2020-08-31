@@ -5,14 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/p2p/stunprober/stun_prober.h"
 
@@ -38,30 +37,26 @@ class IpcNetworkManager;
 class IpcPacketSocketFactory;
 class MdnsResponderAdapter;
 class P2PSocketDispatcher;
+class RTCPeerConnectionHandlerClient;
+class RTCPeerConnectionHandler;
 class StunProberTrial;
 class WebLocalFrame;
-class WebRTCPeerConnectionHandler;
-class WebRTCPeerConnectionHandlerClient;
 class WebRtcAudioDeviceImpl;
 
 // Object factory for RTC PeerConnections.
 class MODULES_EXPORT PeerConnectionDependencyFactory
     : base::MessageLoopCurrent::DestructionObserver {
  public:
-  // TODO(crbug.com/787254): Make this constructor private, when
-  // MockPeerConnectionDependencyFactory gets moved to blink.
-  // (friend class declaration will be needed).
-  PeerConnectionDependencyFactory(bool create_p2p_socket_dispatcher);
   ~PeerConnectionDependencyFactory() override;
 
   static PeerConnectionDependencyFactory* GetInstance();
 
-  // Create a RTCPeerConnectionHandler object that implements the
-  // WebKit WebRTCPeerConnectionHandler interface.
-  std::unique_ptr<blink::WebRTCPeerConnectionHandler>
-  CreateRTCPeerConnectionHandler(
-      blink::WebRTCPeerConnectionHandlerClient* client,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  // Create a RTCPeerConnectionHandler object.
+  std::unique_ptr<RTCPeerConnectionHandler> CreateRTCPeerConnectionHandler(
+      RTCPeerConnectionHandlerClient* client,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      bool force_encoded_audio_insertable_streams,
+      bool force_encoded_video_insertable_streams);
 
   // Create a proxy object for a VideoTrackSource that makes sure it's called on
   // the correct threads.
@@ -70,11 +65,11 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
 
   // Asks the PeerConnection factory to create a Local MediaStream object.
   virtual scoped_refptr<webrtc::MediaStreamInterface> CreateLocalMediaStream(
-      const std::string& label);
+      const String& label);
 
   // Asks the PeerConnection factory to create a Local VideoTrack object.
   virtual scoped_refptr<webrtc::VideoTrackInterface> CreateLocalVideoTrack(
-      const std::string& id,
+      const String& id,
       webrtc::VideoTrackSourceInterface* source);
 
   // Asks the libjingle PeerConnection factory to create a libjingle
@@ -97,22 +92,22 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   // Creates a libjingle representation of a Session description. Used by a
   // RTCPeerConnectionHandler instance.
   virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
-      const std::string& type,
-      const std::string& sdp,
+      const String& type,
+      const String& sdp,
       webrtc::SdpParseError* error);
 
   // Creates a libjingle representation of an ice candidate.
   virtual webrtc::IceCandidateInterface* CreateIceCandidate(
-      const std::string& sdp_mid,
+      const String& sdp_mid,
       int sdp_mline_index,
-      const std::string& sdp);
+      const String& sdp);
 
   // Returns the most optimistic view of the capabilities of the system for
   // sending or receiving media of the given kind ("audio" or "video").
   virtual std::unique_ptr<webrtc::RtpCapabilities> GetSenderCapabilities(
-      const std::string& kind);
+      const String& kind);
   virtual std::unique_ptr<webrtc::RtpCapabilities> GetReceiverCapabilities(
-      const std::string& kind);
+      const String& kind);
 
   blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
 
@@ -126,6 +121,8 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   GetWebRtcSignalingTaskRunner();
 
  protected:
+  PeerConnectionDependencyFactory(bool create_p2p_socket_dispatcher);
+
   virtual const scoped_refptr<webrtc::PeerConnectionFactoryInterface>&
   GetPcFactory();
   virtual bool PeerConnectionFactoryCreated();
@@ -142,7 +139,7 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   // Functions related to Stun probing trial to determine how fast we could send
   // Stun request without being dropped by NAT.
   void TryScheduleStunProbeTrial();
-  void StartStunProbeTrialOnWorkerThread(const std::string& params);
+  void StartStunProbeTrialOnWorkerThread(const String& params);
 
   // Creates |pc_factory_|, which in turn is used for
   // creating PeerConnection objects.

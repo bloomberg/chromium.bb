@@ -7,10 +7,37 @@
 #include <algorithm>
 #include <utility>
 
-#include "util/logging.h"
+#include "discovery/common/config.h"
+#include "discovery/mdns/public/mdns_constants.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace discovery {
+namespace {
+
+bool TryParseDnsType(uint16_t to_parse, DnsType* type) {
+  auto it = std::find(kSupportedDnsTypes.begin(), kSupportedDnsTypes.end(),
+                      static_cast<DnsType>(to_parse));
+  if (it == kSupportedDnsTypes.end()) {
+    return false;
+  }
+
+  *type = *it;
+  return true;
+}
+
+}  // namespace
+
+MdnsReader::MdnsReader(const Config& config,
+                       const uint8_t* buffer,
+                       size_t length)
+    : BigEndianReader(buffer, length),
+      kMaximumAllowedRdataSize(
+          static_cast<size_t>(config.maximum_valid_rdata_size)) {
+  // TODO(rwkeane): Validate |maximum_valid_rdata_size| > MaxWireSize() for
+  // rdata types A, AAAA, SRV, PTR.
+  OSP_DCHECK_GT(config.maximum_valid_rdata_size, 0);
+}
 
 bool MdnsReader::Read(TxtRecordRdata::Entry* out) {
   Cursor cursor(this);
@@ -52,7 +79,12 @@ bool MdnsReader::Read(DomainName* out) {
          bytes_processed <= length()) {
     const uint8_t label_type = ReadBigEndian<uint8_t>(position);
     if (IsTerminationLabel(label_type)) {
-      *out = DomainName(labels);
+      ErrorOr<DomainName> domain =
+          DomainName::TryCreate(labels.begin(), labels.end());
+      if (domain.is_error()) {
+        return false;
+      }
+      *out = std::move(domain.value());
       if (!bytes_consumed) {
         bytes_consumed = position + sizeof(uint8_t) - current();
       }
@@ -98,9 +130,18 @@ bool MdnsReader::Read(RawRecordRdata* out) {
   Cursor cursor(this);
   uint16_t record_length;
   if (Read(&record_length)) {
+    if (record_length > kMaximumAllowedRdataSize) {
+      return false;
+    }
+
     std::vector<uint8_t> buffer(record_length);
     if (Read(buffer.size(), buffer.data())) {
-      *out = RawRecordRdata(std::move(buffer));
+      ErrorOr<RawRecordRdata> rdata =
+          RawRecordRdata::TryCreate(std::move(buffer));
+      if (rdata.is_error()) {
+        return false;
+      }
+      *out = std::move(rdata.value());
       cursor.Commit();
       return true;
     }
@@ -175,6 +216,9 @@ bool MdnsReader::Read(TxtRecordRdata* out) {
   if (!Read(&record_length)) {
     return false;
   }
+  if (record_length > kMaximumAllowedRdataSize) {
+    return false;
+  }
   std::vector<TxtRecordRdata::Entry> texts;
   while (cursor.delta() < sizeof(record_length) + record_length) {
     TxtRecordRdata::Entry entry;
@@ -189,9 +233,48 @@ bool MdnsReader::Read(TxtRecordRdata* out) {
   if (cursor.delta() != sizeof(record_length) + record_length) {
     return false;
   }
-  *out = TxtRecordRdata(std::move(texts));
+  ErrorOr<TxtRecordRdata> rdata = TxtRecordRdata::TryCreate(std::move(texts));
+  if (rdata.is_error()) {
+    return false;
+  }
+  *out = std::move(rdata.value());
   cursor.Commit();
   return true;
+}
+
+bool MdnsReader::Read(NsecRecordRdata* out) {
+  OSP_DCHECK(out);
+  Cursor cursor(this);
+
+  const uint8_t* start_position = current();
+  uint16_t record_length;
+  DomainName next_record_name;
+  if (!Read(&record_length) || !Read(&next_record_name)) {
+    return false;
+  }
+  if (record_length > kMaximumAllowedRdataSize) {
+    return false;
+  }
+
+  // Calculate the next record name length. This may not be equal to the length
+  // of |next_record_name| due to domain name compression.
+  const int encoded_next_name_length =
+      current() - start_position - sizeof(record_length);
+  const int remaining_length = record_length - encoded_next_name_length;
+  if (remaining_length <= 0) {
+    // This means either the length is invalid or the NSEC record has no
+    // associated types.
+    return false;
+  }
+
+  std::vector<DnsType> types;
+  if (Read(&types, remaining_length)) {
+    *out = NsecRecordRdata(std::move(next_record_name), std::move(types));
+    cursor.Commit();
+    return true;
+  }
+
+  return false;
 }
 
 bool MdnsReader::Read(MdnsRecord* out) {
@@ -204,9 +287,14 @@ bool MdnsReader::Read(MdnsRecord* out) {
   Rdata rdata;
   if (Read(&name) && Read(&type) && Read(&rrclass) && Read(&ttl) &&
       Read(static_cast<DnsType>(type), &rdata)) {
-    *out = MdnsRecord(std::move(name), static_cast<DnsType>(type),
-                      GetDnsClass(rrclass), GetRecordType(rrclass),
-                      std::chrono::seconds(ttl), std::move(rdata));
+    ErrorOr<MdnsRecord> record = MdnsRecord::TryCreate(
+        std::move(name), static_cast<DnsType>(type), GetDnsClass(rrclass),
+        GetRecordType(rrclass), std::chrono::seconds(ttl), std::move(rdata));
+    if (record.is_error()) {
+      return false;
+    }
+    *out = std::move(record.value());
+
     cursor.Commit();
     return true;
   }
@@ -220,8 +308,14 @@ bool MdnsReader::Read(MdnsQuestion* out) {
   uint16_t type;
   uint16_t rrclass;
   if (Read(&name) && Read(&type) && Read(&rrclass)) {
-    *out = MdnsQuestion(std::move(name), static_cast<DnsType>(type),
-                        GetDnsClass(rrclass), GetResponseType(rrclass));
+    ErrorOr<MdnsQuestion> question =
+        MdnsQuestion::TryCreate(std::move(name), static_cast<DnsType>(type),
+                                GetDnsClass(rrclass), GetResponseType(rrclass));
+    if (question.is_error()) {
+      return false;
+    }
+    *out = std::move(question.value());
+
     cursor.Commit();
     return true;
   }
@@ -244,8 +338,18 @@ bool MdnsReader::Read(MdnsMessage* out) {
     // One way to do this is to change the method signature to return
     // ErrorOr<MdnsMessage> and return different error codes for failure to read
     // and for messages that were read successfully but are non-conforming.
-    *out = MdnsMessage(header.id, GetMessageType(header.flags), questions,
-                       answers, authority_records, additional_records);
+    ErrorOr<MdnsMessage> message = MdnsMessage::TryCreate(
+        header.id, GetMessageType(header.flags), questions, answers,
+        authority_records, additional_records);
+    if (message.is_error()) {
+      return false;
+    }
+    *out = std::move(message.value());
+
+    if (IsMessageTruncated(header.flags)) {
+      out->set_truncated();
+    }
+
     cursor.Commit();
     return true;
   }
@@ -278,7 +382,11 @@ bool MdnsReader::Read(DnsType type, Rdata* out) {
       return Read<PtrRecordRdata>(out);
     case DnsType::kTXT:
       return Read<TxtRecordRdata>(out);
+    case DnsType::kNSEC:
+      return Read<NsecRecordRdata>(out);
     default:
+      OSP_DCHECK(std::find(kSupportedDnsTypes.begin(), kSupportedDnsTypes.end(),
+                           type) == kSupportedDnsTypes.end());
       return Read<RawRecordRdata>(out);
   }
 }
@@ -292,6 +400,69 @@ bool MdnsReader::Read(Header* out) {
     cursor.Commit();
     return true;
   }
+  return false;
+}
+
+bool MdnsReader::Read(std::vector<DnsType>* out, int remaining_size) {
+  OSP_DCHECK(out);
+  Cursor cursor(this);
+
+  // Continue reading bitmaps until the entire input is read. If we have gone
+  // past the end of the record, it's malformed input so fail.
+  *out = std::vector<DnsType>();
+  int processed_bytes = 0;
+  while (processed_bytes < remaining_size) {
+    NsecBitMapField bitmap;
+    if (!Read(&bitmap)) {
+      return false;
+    }
+
+    processed_bytes += bitmap.bitmap_length + 2;
+    if (processed_bytes > remaining_size) {
+      return false;
+    }
+
+    // The ith bit of the bitmap represents DnsType with value i, shifted
+    // a multiple of 0x100 according to the window.
+    for (int32_t i = 0; i < bitmap.bitmap_length * 8; i++) {
+      int current_byte = i / 8;
+      uint8_t bitmask = 0x80 >> i % 8;
+
+      // If this bit flag represents a type we support, add it to the vector.
+      // Else, we won't be able to use it later on in the code anyway, so drop
+      // it.
+      DnsType type;
+      uint16_t type_index = i | (bitmap.window_block << 8);
+      if ((bitmap.bitmap[current_byte] & bitmask) &&
+          TryParseDnsType(type_index, &type)) {
+        out->push_back(type);
+      }
+    }
+  }
+
+  cursor.Commit();
+  return true;
+}
+
+bool MdnsReader::Read(NsecBitMapField* out) {
+  OSP_DCHECK(out);
+  Cursor cursor(this);
+
+  // Read the window and bitmap length, then one byte for each byte called out
+  // by the length.
+  if (Read(&out->window_block) && Read(&out->bitmap_length)) {
+    if (out->bitmap_length == 0 || out->bitmap_length > 32) {
+      return false;
+    }
+
+    out->bitmap = current();
+    if (!Skip(out->bitmap_length)) {
+      return false;
+    }
+    cursor.Commit();
+    return true;
+  }
+
   return false;
 }
 

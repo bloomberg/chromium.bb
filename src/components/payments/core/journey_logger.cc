@@ -80,19 +80,13 @@ void RecordTimeToCheckoutUmaHistograms(const std::string name,
       base::TimeDelta::FromMinutes(5) /* max */, 100 /*bucket count*/);
 }
 
-enum class TransactionSize {
-  kZeroTransaction = 0,
-  kMicroTransaction = 1,
-  kRegularTransaction = 2,
-  kMaxValue = kRegularTransaction,
-};
-
 }  // namespace
 
-JourneyLogger::JourneyLogger(bool is_incognito, ukm::SourceId source_id)
+JourneyLogger::JourneyLogger(bool is_incognito,
+                             ukm::SourceId payment_request_source_id)
     : is_incognito_(is_incognito),
       events_(EVENT_INITIATED),
-      source_id_(source_id) {}
+      payment_request_source_id_(payment_request_source_id) {}
 
 JourneyLogger::~JourneyLogger() {
   // has_recorded_ is false in cases that the page gets closed. To see more
@@ -259,6 +253,15 @@ void JourneyLogger::RecordTransactionAmount(std::string currency,
     transaction_size = TransactionSize::kMicroTransaction;
   base::UmaHistogramEnumeration(
       "PaymentRequest.TransactionAmount" + completion_suffix, transaction_size);
+
+  if (payment_request_source_id_ == ukm::kInvalidSourceId)
+    return;
+
+  // Record the transaction amount in UKM.
+  ukm::builders::PaymentRequest_TransactionAmount(payment_request_source_id_)
+      .SetCompletionStatus(completed)
+      .SetCategory(static_cast<int64_t>(transaction_size))
+      .Record(ukm::UkmRecorder::Get());
 }
 
 void JourneyLogger::RecordJourneyStatsHistograms(
@@ -351,14 +354,26 @@ void JourneyLogger::RecordEventsMetric(CompletionStatus completion_status) {
   ValidateEventBits();
   base::UmaHistogramSparse("PaymentRequest.Events", events_);
 
-  if (source_id_ == ukm::kInvalidSourceId)
+  if (payment_request_source_id_ == ukm::kInvalidSourceId)
     return;
 
   // Record the events in UKM.
-  ukm::builders::PaymentRequest_CheckoutEvents(source_id_)
+  ukm::builders::PaymentRequest_CheckoutEvents(payment_request_source_id_)
       .SetCompletionStatus(completion_status)
       .SetEvents(events_)
       .Record(ukm::UkmRecorder::Get());
+
+  if (payment_app_source_id_ == ukm::kInvalidSourceId)
+    return;
+
+  // Record the events in UKM for payment app.
+  ukm::builders::PaymentApp_CheckoutEvents(payment_app_source_id_)
+      .SetCompletionStatus(completion_status)
+      .SetEvents(events_)
+      .Record(ukm::UkmRecorder::Get());
+
+  // Clear payment app source id since it gets deleted after recording.
+  payment_app_source_id_ = ukm::kInvalidSourceId;
 }
 
 void JourneyLogger::RecordTimeToCheckout(
@@ -486,6 +501,11 @@ bool JourneyLogger::WasPaymentRequestTriggered() {
 
 void JourneyLogger::SetTriggerTime() {
   trigger_time_ = base::TimeTicks::Now();
+}
+
+void JourneyLogger::SetPaymentAppUkmSourceId(
+    ukm::SourceId payment_app_source_id) {
+  payment_app_source_id_ = payment_app_source_id;
 }
 
 }  // namespace payments

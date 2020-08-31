@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "chrome/browser/android/vr/arcore_device/ar_image_transport.h"
@@ -45,7 +46,19 @@ namespace {
 constexpr std::array<float, 6> kDisplayCoordinatesForTransform = {
     0.f, 0.f, 1.f, 0.f, 0.f, 1.f};
 
-constexpr uint32_t kInputSourceId = 1;
+// When scheduling the next ARCore update task, aim to have that run this much
+// time ahead of when the next camera image is expected to be ready. In case
+// the overall system is running slower than ideal, i.e. if the device switches
+// from 30fps to 60fps, it'll catch up by this amount every frame until it
+// reaches a new steady state.
+constexpr base::TimeDelta kUpdateTargetDelta =
+    base::TimeDelta::FromMilliseconds(2);
+
+// Maximum delay for scheduling the next ARCore update. This helps ensure
+// that there isn't an unreasonable delay due to a bogus estimate if the device
+// is paused or unresponsive.
+constexpr base::TimeDelta kUpdateMaxDelay =
+    base::TimeDelta::FromMilliseconds(30);
 
 const char kInputSourceProfileName[] = "generic-touchscreen";
 
@@ -90,16 +103,6 @@ const display::Display::Rotation kDefaultRotation = display::Display::ROTATE_0;
 
 namespace device {
 
-struct ArCoreHitTestRequest {
-  ArCoreHitTestRequest() = default;
-  ~ArCoreHitTestRequest() = default;
-  mojom::XRRayPtr ray;
-  mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArCoreHitTestRequest);
-};
-
 ArCoreGl::ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport)
     : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       ar_image_transport_(std::move(ar_image_transport)),
@@ -112,6 +115,11 @@ ArCoreGl::~ArCoreGl() {
   DCHECK(IsOnGlThread());
   ar_image_transport_->DestroySharedBuffers(webxr_.get());
   ar_image_transport_.reset();
+
+  // Make sure mojo bindings are closed before proceeding with member
+  // destruction. Specifically, destroying pending_getframedata_
+  // must happen after closing bindings, see RunNextGetFrameData()
+  // comments.
   CloseBindingsIfOpen();
 }
 
@@ -268,7 +276,7 @@ bool ArCoreGl::InitializeGl(gfx::AcceleratedWidget drawing_widget) {
 void ArCoreGl::GetFrameData(
     mojom::XRFrameDataRequestOptionsPtr options,
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
-  TRACE_EVENT0("gpu", __FUNCTION__);
+  TRACE_EVENT0("gpu", __func__);
 
   if (webxr_->HaveAnimatingFrame()) {
     DVLOG(3) << __func__ << ": deferring, HaveAnimatingFrame";
@@ -356,10 +364,20 @@ void ArCoreGl::GetFrameData(
     should_update_display_geometry_ = false;
   }
 
-  TRACE_EVENT_BEGIN0("gpu", "ArCore Update");
   bool camera_updated = false;
+  base::TimeTicks arcore_update_started = base::TimeTicks::Now();
   mojom::VRPosePtr pose = arcore_->Update(&camera_updated);
-  TRACE_EVENT_END0("gpu", "ArCore Update");
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta frame_timestamp = arcore_->GetFrameTimestamp();
+  if (!arcore_last_frame_timestamp_.is_zero()) {
+    arcore_frame_interval_ = frame_timestamp - arcore_last_frame_timestamp_;
+    arcore_update_next_expected_ = now + arcore_frame_interval_;
+  }
+  arcore_last_frame_timestamp_ = frame_timestamp;
+  base::TimeDelta arcore_update_elapsed = now - arcore_update_started;
+  TRACE_COUNTER1("gpu", "ARCore update elapsed (ms)",
+                 arcore_update_elapsed.InMilliseconds());
+
   if (!camera_updated) {
     DVLOG(1) << "arcore_->Update() failed";
     std::move(callback).Run(nullptr);
@@ -394,6 +412,10 @@ void ArCoreGl::GetFrameData(
 
   frame_data->frame_id = webxr_->StartFrameAnimating();
   DVLOG(2) << __func__ << " frame=" << frame_data->frame_id;
+  TRACE_EVENT1("gpu", __func__, "frame", frame_data->frame_id);
+
+  vr::WebXrFrame* xrframe = webxr_->GetAnimatingFrame();
+  xrframe->time_pose = now;
 
   if (display_info_changed_) {
     frame_data->left_eye = display_info_->left_eye.Clone();
@@ -409,25 +431,23 @@ void ArCoreGl::GetFrameData(
   }
 
   // Create the frame data to return to the renderer.
-  frame_data->pose = std::move(pose);
-  frame_data->time_delta = base::TimeTicks::Now() - base::TimeTicks();
-
-  if (options && options->include_plane_data) {
-    frame_data->detected_planes_data = arcore_->GetDetectedPlanesData();
+  if (!pose) {
+    DVLOG(1) << __func__ << ": pose unavailable!";
   }
 
-  fps_meter_.AddFrame(base::TimeTicks::Now());
+  frame_data->pose = std::move(pose);
+  frame_data->time_delta = now - base::TimeTicks();
+
+  fps_meter_.AddFrame(now);
   TRACE_COUNTER1("gpu", "WebXR FPS", fps_meter_.GetFPS());
 
-  // Post a task to finish processing the frame so any calls to
-  // RequestHitTest() that were made during this function, which can block
-  // on the arcore_->Update() call above, can be processed in this frame.
-  // Additionally, this gives a chance for OnScreenTouch() tasks to run
-  // and added anchors to be registered.
+  // Post a task to finish processing the frame to give a chance for
+  // OnScreenTouch() tasks to run and added anchors to be registered.
   gl_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&ArCoreGl::ProcessFrame, weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(&frame_data), base::Passed(&callback)));
+                     std::move(options), std::move(frame_data),
+                     std::move(callback)));
 }
 
 bool ArCoreGl::IsSubmitFrameExpected(int16_t frame_index) {
@@ -441,6 +461,7 @@ bool ArCoreGl::IsSubmitFrameExpected(int16_t frame_index) {
     return false;
 
   vr::WebXrFrame* animating_frame = webxr_->GetAnimatingFrame();
+  animating_frame->time_js_submit = base::TimeTicks::Now();
 
   if (animating_frame->index != frame_index) {
     DVLOG(1) << __func__ << ": wrong frame index, got " << frame_index
@@ -466,16 +487,65 @@ void ArCoreGl::CopyCameraImageToFramebuffer() {
     have_camera_image_ = false;
   }
 
-  // We're done with the camera image for this frame, start the next ARCore
-  // update if we had deferred it. This will get the next frame's camera image
-  // and pose in parallel while we're waiting for this frame's rendered image.
+  // We're done with the camera image for this frame, post a task to start the
+  // next ARCore update if we had deferred it. This will get the next frame's
+  // camera image and pose in parallel while we're waiting for this frame's
+  // rendered image.
   if (pending_getframedata_) {
-    std::move(pending_getframedata_).Run();
+    base::TimeDelta delay = base::TimeDelta();
+    if (!arcore_update_next_expected_.is_null()) {
+      // Try to schedule the next ARCore update to happen a short time before
+      // the camera image is expected to be ready..
+      delay = arcore_update_next_expected_ - base::TimeTicks::Now() -
+              kUpdateTargetDelta;
+      if (delay < base::TimeDelta()) {
+        // Negative sleep means we're behind schedule, run immediately.
+        delay = base::TimeDelta();
+      } else {
+        if (delay > kUpdateMaxDelay) {
+          DVLOG(1) << __func__ << ": delay " << delay << " too long, clamp to "
+                   << kUpdateMaxDelay;
+          delay = kUpdateMaxDelay;
+        }
+      }
+    }
+    TRACE_COUNTER1("gpu", "ARCore update schedule (ms)",
+                   delay.InMilliseconds());
+    // RunNextGetFrameData is needed since we must retain ownership of the mojo
+    // callback inside the pending_getframedata_ closure.
+    gl_thread_task_runner_->PostDelayedTask(
+        FROM_HERE, base::BindOnce(&ArCoreGl::RunNextGetFrameData, GetWeakPtr()),
+        delay);
   }
+}
+
+void ArCoreGl::RunNextGetFrameData() {
+  DVLOG(3) << __func__;
+  DCHECK(pending_getframedata_);
+  std::move(pending_getframedata_).Run();
+}
+
+void ArCoreGl::FinishFrame(int16_t frame_index) {
+  TRACE_EVENT1("gpu", __func__, "frame", frame_index);
+  DVLOG(3) << __func__;
+  surface_->SwapBuffers(base::DoNothing());
+
+  // If we have a rendering frame (we don't if the app didn't submit one),
+  // update statistics.
+  if (!webxr_->HaveRenderingFrame())
+    return;
+  vr::WebXrFrame* frame = webxr_->GetRenderingFrame();
+  base::TimeDelta pose_to_submit = frame->time_js_submit - frame->time_pose;
+  base::TimeDelta submit_to_swap =
+      base::TimeTicks::Now() - frame->time_js_submit;
+  TRACE_COUNTER2("gpu", "WebXR frame time (ms)", "javascript",
+                 pose_to_submit.InMilliseconds(), "processing",
+                 submit_to_swap.InMilliseconds());
 }
 
 void ArCoreGl::SubmitFrameMissing(int16_t frame_index,
                                   const gpu::SyncToken& sync_token) {
+  TRACE_EVENT1("gpu", __func__, "frame", frame_index);
   DVLOG(2) << __func__;
 
   if (!IsSubmitFrameExpected(frame_index))
@@ -486,13 +556,14 @@ void ArCoreGl::SubmitFrameMissing(int16_t frame_index,
 
   CopyCameraImageToFramebuffer();
 
-  surface_->SwapBuffers(base::DoNothing());
+  FinishFrame(frame_index);
   DVLOG(3) << __func__ << ": frame=" << frame_index << " SwapBuffers";
 }
 
 void ArCoreGl::SubmitFrame(int16_t frame_index,
                            const gpu::MailboxHolder& mailbox,
                            base::TimeDelta time_waited) {
+  TRACE_EVENT1("gpu", __func__, "frame", frame_index);
   DVLOG(2) << __func__ << ": frame=" << frame_index;
   DCHECK(!ar_image_transport_->UseSharedBuffer());
 
@@ -506,6 +577,7 @@ void ArCoreGl::SubmitFrame(int16_t frame_index,
 
 void ArCoreGl::ProcessFrameFromMailbox(int16_t frame_index,
                                        const gpu::MailboxHolder& mailbox) {
+  TRACE_EVENT1("gpu", __func__, "frame", frame_index);
   DVLOG(2) << __func__ << ": frame=" << frame_index;
   DCHECK(webxr_->HaveProcessingFrame());
   DCHECK(!ar_image_transport_->UseSharedBuffer());
@@ -526,14 +598,16 @@ void ArCoreGl::OnTransportFrameAvailable(const gfx::Transform& uv_transform) {
   DVLOG(2) << __func__;
   DCHECK(!ar_image_transport_->UseSharedBuffer());
   DCHECK(webxr_->HaveProcessingFrame());
+  int16_t frame_index = webxr_->GetProcessingFrame()->index;
+  TRACE_EVENT1("gpu", __func__, "frame", frame_index);
+  webxr_->GetProcessingFrame()->time_copied = base::TimeTicks::Now();
   webxr_->TransitionFrameProcessingToRendering();
 
   glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
   ar_image_transport_->CopyDrawnImageToFramebuffer(
       webxr_.get(), camera_image_size_, uv_transform);
 
-  surface_->SwapBuffers(base::DoNothing());
-  DVLOG(3) << __func__ << ": SwapBuffers";
+  FinishFrame(frame_index);
 
   webxr_->EndFrameRendering();
 
@@ -548,14 +622,16 @@ void ArCoreGl::OnTransportFrameAvailable(const gfx::Transform& uv_transform) {
   webxr_->TryDeferredProcessing();
 }
 
-void ArCoreGl::SubmitFrameWithTextureHandle(int16_t frame_index,
-                                            mojo::ScopedHandle texture_handle) {
+void ArCoreGl::SubmitFrameWithTextureHandle(
+    int16_t frame_index,
+    mojo::PlatformHandle texture_handle) {
   NOTIMPLEMENTED();
 }
 
 void ArCoreGl::SubmitFrameDrawnIntoTexture(int16_t frame_index,
                                            const gpu::SyncToken& sync_token,
                                            base::TimeDelta time_waited) {
+  TRACE_EVENT1("gpu", __func__, "frame", frame_index);
   DVLOG(2) << __func__ << ": frame=" << frame_index;
   DCHECK(ar_image_transport_->UseSharedBuffer());
 
@@ -571,7 +647,7 @@ void ArCoreGl::SubmitFrameDrawnIntoTexture(int16_t frame_index,
 
 void ArCoreGl::ProcessFrameDrawnIntoTexture(int16_t frame_index,
                                             const gpu::SyncToken& sync_token) {
-  TRACE_EVENT0("gpu", "ArCore SubmitFrame");
+  TRACE_EVENT1("gpu", __func__, "frame", frame_index);
 
   DCHECK(webxr_->HaveProcessingFrame());
   DCHECK(ar_image_transport_->UseSharedBuffer());
@@ -584,17 +660,21 @@ void ArCoreGl::ProcessFrameDrawnIntoTexture(int16_t frame_index,
 
 void ArCoreGl::OnWebXrTokenSignaled(int16_t frame_index,
                                     std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  TRACE_EVENT1("gpu", __func__, "frame", frame_index);
   DVLOG(3) << __func__ << ": frame=" << frame_index;
+
+  ar_image_transport_->ServerWaitForGpuFence(std::move(gpu_fence));
 
   DCHECK(webxr_->HaveProcessingFrame());
   DCHECK(ar_image_transport_->UseSharedBuffer());
+  webxr_->GetProcessingFrame()->time_copied = base::TimeTicks::Now();
   webxr_->TransitionFrameProcessingToRendering();
 
   glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
   ar_image_transport_->CopyDrawnImageToFramebuffer(
       webxr_.get(), camera_image_size_, shared_buffer_transform_);
-  surface_->SwapBuffers(base::DoNothing());
-  DVLOG(3) << __func__ << ": frame=" << frame_index << " SwapBuffers";
+
+  FinishFrame(frame_index);
 
   webxr_->EndFrameRendering();
 
@@ -639,27 +719,6 @@ void ArCoreGl::SetInputSourceButtonListener(
   mojo::ReportBadMessage("Input eventing is not supported.");
 }
 
-void ArCoreGl::RequestHitTest(
-    mojom::XRRayPtr ray,
-    mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback) {
-  DVLOG(2) << __func__ << ": ray origin=" << ray->origin.ToString()
-           << ", direction=" << ray->direction.ToString();
-
-  DCHECK(IsOnGlThread());
-  DCHECK(is_initialized_);
-
-  if (restrict_frame_data_) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-
-  std::unique_ptr<ArCoreHitTestRequest> request =
-      std::make_unique<ArCoreHitTestRequest>();
-  request->ray = std::move(ray);
-  request->callback = std::move(callback);
-  hit_test_requests_.push_back(std::move(request));
-}
-
 void ArCoreGl::SubscribeToHitTest(
     mojom::XRNativeOriginInformationPtr native_origin_information,
     const std::vector<mojom::EntityTypeForHitTest>& entity_types,
@@ -673,12 +732,12 @@ void ArCoreGl::SubscribeToHitTest(
   // check if we recognize the input source id.
 
   if (native_origin_information->is_input_source_id()) {
-    if (native_origin_information->get_input_source_id() != kInputSourceId) {
-      DVLOG(1) << __func__ << ": incorrect input source ID passed";
-      std::move(callback).Run(
-          device::mojom::SubscribeToHitTestResult::FAILURE_GENERIC, 0);
-      return;
-    }
+    DVLOG(1) << __func__
+             << ": ARCore device supports only transient input sources for "
+                "now. Rejecting subscription request.";
+    std::move(callback).Run(
+        device::mojom::SubscribeToHitTestResult::FAILURE_GENERIC, 0);
+    return;
   }
 
   base::Optional<uint64_t> maybe_subscription_id = arcore_->SubscribeToHitTest(
@@ -725,34 +784,28 @@ void ArCoreGl::UnsubscribeFromHitTest(uint64_t subscription_id) {
   arcore_->UnsubscribeFromHitTest(subscription_id);
 }
 
-void ArCoreGl::CreateAnchor(mojom::PosePtr anchor_pose,
-                            CreateAnchorCallback callback) {
+void ArCoreGl::CreateAnchor(
+    mojom::XRNativeOriginInformationPtr native_origin_information,
+    mojom::PosePtr native_origin_from_anchor,
+    CreateAnchorCallback callback) {
   DVLOG(2) << __func__;
 
-  base::Optional<uint64_t> maybe_anchor_id = arcore_->CreateAnchor(anchor_pose);
+  DCHECK(native_origin_information);
+  DCHECK(native_origin_from_anchor);
 
-  if (maybe_anchor_id) {
-    std::move(callback).Run(device::mojom::CreateAnchorResult::SUCCESS,
-                            *maybe_anchor_id);
-  } else {
-    std::move(callback).Run(device::mojom::CreateAnchorResult::FAILURE, 0);
-  }
+  arcore_->CreateAnchor(*native_origin_information, *native_origin_from_anchor,
+                        std::move(callback));
 }
 
-void ArCoreGl::CreatePlaneAnchor(mojom::PosePtr anchor_pose,
+void ArCoreGl::CreatePlaneAnchor(mojom::PosePtr plane_from_anchor,
                                  uint64_t plane_id,
                                  CreatePlaneAnchorCallback callback) {
-  DVLOG(2) << __func__;
+  DVLOG(2) << __func__ << ": plane_id=" << plane_id;
 
-  base::Optional<uint64_t> maybe_anchor_id =
-      arcore_->CreateAnchor(anchor_pose, plane_id);
+  DCHECK(plane_from_anchor);
 
-  if (maybe_anchor_id) {
-    std::move(callback).Run(device::mojom::CreateAnchorResult::SUCCESS,
-                            *maybe_anchor_id);
-  } else {
-    std::move(callback).Run(device::mojom::CreateAnchorResult::FAILURE, 0);
-  }
+  arcore_->CreatePlaneAttachedAnchor(*plane_from_anchor, plane_id,
+                                     std::move(callback));
 }
 
 void ArCoreGl::DetachAnchor(uint64_t anchor_id) {
@@ -775,53 +828,46 @@ void ArCoreGl::SetFrameDataRestricted(bool frame_data_restricted) {
 }
 
 void ArCoreGl::ProcessFrame(
+    mojom::XRFrameDataRequestOptionsPtr options,
     mojom::XRFrameDataPtr frame_data,
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
-  DVLOG(3) << __func__ << " frame=" << frame_data->frame_id;
+  DVLOG(3) << __func__ << " frame=" << frame_data->frame_id << ", pose valid? "
+           << (frame_data->pose ? true : false);
 
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
 
   if (frame_data->pose) {
-    mojom::XRInputSourceStatePtr input_state = GetInputSourceState();
-    if (input_state) {
-      input_states_.push_back(std::move(input_state));
-      frame_data->input_state = std::move(input_states_);
-    }
+    frame_data->input_state = GetInputSourceStates();
+
+    // TODO(https://crbug.com/1071224): Simplify code by introducing a
+    // device::Pose class that would handle conversions from pose to transform &
+    // vice versa.
+    gfx::Transform mojo_from_viewer =
+        mojo::ConvertTo<gfx::Transform>(frame_data->pose);
 
     // Get results for hit test subscriptions.
     frame_data->hit_test_subscription_results =
-        arcore_->GetHitTestSubscriptionResults(
-            mojo::ConvertTo<gfx::Transform>(frame_data->pose),
-            frame_data->input_state);
+        arcore_->GetHitTestSubscriptionResults(mojo_from_viewer,
+                                               *frame_data->input_state);
+
+    arcore_->ProcessAnchorCreationRequests(
+        mojo_from_viewer, *frame_data->input_state,
+        frame_data->time_delta + base::TimeTicks());
   }
 
   // Get anchors data, including anchors created this frame.
   frame_data->anchors_data = arcore_->GetAnchorsData();
 
-  // The timing requirements for hit-test are documented here:
-  // https://github.com/immersive-web/hit-test/blob/master/explainer.md#timing
-  // The current implementation of frame generation on the renderer side is
-  // 1:1 with calls to this method, so it is safe to fire off the hit-test
-  // results here, one at a time, in the order they were enqueued prior to
-  // running the GetFrameDataCallback.
-  // Since mojo callbacks are processed in order, this will result in the
-  // correct sequence of hit-test callbacks / promise resolutions. If
-  // the implementation of the renderer processing were to change, this
-  // code is fragile and could break depending on the new implementation.
-  // TODO(https://crbug.com/844174): In order to be more correct by design,
-  // hit results should be bundled with the frame data - that way it would be
-  // obvious how the timing between the results and the frame should go.
-  for (auto& request : hit_test_requests_) {
-    std::vector<mojom::XRHitResultPtr> results;
-    if (arcore_->RequestHitTest(request->ray, &results)) {
-      std::move(request->callback).Run(std::move(results));
-    } else {
-      // Hit test failed, i.e. unprojected location was offscreen.
-      std::move(request->callback).Run(base::nullopt);
-    }
+  // Get planes data if it was requested.
+  if (options && options->include_plane_data) {
+    frame_data->detected_planes_data = arcore_->GetDetectedPlanesData();
   }
-  hit_test_requests_.clear();
+
+  // Get lighting estimation data if it was requested.
+  if (options && options->include_lighting_estimation_data) {
+    frame_data->light_estimation_data = arcore_->GetLightEstimationData();
+  }
 
   // Running this callback after resolving all the hit-test requests ensures
   // that we satisfy the guarantee of the WebXR hit-test spec - that the
@@ -830,93 +876,190 @@ void ArCoreGl::ProcessFrame(
   std::move(callback).Run(std::move(frame_data));
 }
 
-void ArCoreGl::OnScreenTouch(bool touching, const gfx::PointF& touch_point) {
-  DVLOG(2) << __func__ << ": touching=" << touching;
-  screen_last_touch_ = touch_point;
-  screen_touch_active_ = touching;
-  if (touching)
-    screen_touch_pending_ = true;
-}
+void ArCoreGl::OnScreenTouch(bool is_primary,
+                             bool touching,
+                             int32_t pointer_id,
+                             const gfx::PointF& touch_point) {
+  DVLOG(2) << __func__ << ": is_primary=" << is_primary
+           << ", pointer_id=" << pointer_id << ", touching=" << touching
+           << ", touch_point=" << touch_point.ToString();
 
-mojom::XRInputSourceStatePtr ArCoreGl::GetInputSourceState() {
-  DVLOG(3) << __func__;
+  if (!base::Contains(pointer_id_to_input_source_id_, pointer_id)) {
+    // assign ID
+    DCHECK(next_input_source_id_ != 0) << "ID equal to 0 cannot be used!";
+    pointer_id_to_input_source_id_[pointer_id] = next_input_source_id_;
 
-  // If there's no active screen touch, and no unreported past click event,
-  // don't report a device.
-  if (!screen_touch_pending_ && !screen_touch_active_)
-    return nullptr;
+    DVLOG(3)
+        << __func__
+        << " : pointer id not previously recognized, assigned input source id="
+        << next_input_source_id_;
 
-  device::mojom::XRInputSourceStatePtr state =
-      device::mojom::XRInputSourceState::New();
-
-  // Only one controller is supported, so the source id can be static.
-  state->source_id = kInputSourceId;
-
-  state->primary_input_pressed = screen_touch_active_;
-  if (!screen_touch_active_ && screen_touch_pending_) {
-    state->primary_input_clicked = true;
-    screen_touch_pending_ = false;
+    // Overflow is defined behavior for unsigned integers, just make sure that
+    // we never send out ID = 0.
+    next_input_source_id_++;
+    if (next_input_source_id_ == 0) {
+      next_input_source_id_ = 1;
+    }
   }
 
-  state->description = device::mojom::XRInputSourceDescription::New();
+  uint32_t inputSourceId = pointer_id_to_input_source_id_[pointer_id];
+  ScreenTouchEvent& screen_touch_event = screen_touch_events_[inputSourceId];
 
-  state->description->handedness = device::mojom::XRHandedness::NONE;
+  screen_touch_event.pointer_id = pointer_id;
+  screen_touch_event.is_primary = is_primary;
+  screen_touch_event.screen_last_touch = touch_point;
+  screen_touch_event.screen_touch_active = touching;
+  if (touching) {
+    screen_touch_event.screen_touch_pending = true;
+  }
+}
 
-  state->description->target_ray_mode = device::mojom::XRTargetRayMode::TAPPING;
+std::vector<mojom::XRInputSourceStatePtr> ArCoreGl::GetInputSourceStates() {
+  DVLOG(3) << __func__;
 
-  state->description->profiles.push_back(kInputSourceProfileName);
+  std::vector<mojom::XRInputSourceStatePtr> result;
 
-  // Controller doesn't have a measured position.
-  state->emulated_position = true;
+  for (auto& id_and_touch_event : screen_touch_events_) {
+    bool is_primary = id_and_touch_event.second.is_primary;
+    bool screen_touch_pending = id_and_touch_event.second.screen_touch_pending;
+    bool screen_touch_active = id_and_touch_event.second.screen_touch_active;
+    gfx::PointF screen_last_touch = id_and_touch_event.second.screen_last_touch;
 
-  // The Renderer code ignores state->grip for TAPPING (screen-based) target ray
-  // mode, so we don't bother filling it in here. If this does get used at
-  // some point in the future, this should be set to the inverse of the
-  // pose rigid transform.
+    DVLOG(3) << __func__
+             << " : pointer for input source id=" << id_and_touch_event.first
+             << ", pointer_id=" << id_and_touch_event.second.pointer_id
+             << ", active=" << screen_touch_active
+             << ", pending=" << screen_touch_pending;
 
-  // Get a viewer-space ray from screen-space coordinates by applying the
-  // inverse of the projection matrix. Z coordinate of -1 means the point will
-  // be projected onto the projection matrix near plane. See also
-  // third_party/blink/renderer/modules/xr/xr_view.cc's UnprojectPointer.
-  gfx::Point3F touch_point(
-      screen_last_touch_.x() / transfer_size_.width() * 2.f - 1.f,
-      (1.f - screen_last_touch_.y() / transfer_size_.height()) * 2.f - 1.f,
-      -1.f);
-  DVLOG(3) << __func__ << ": touch_point=" << touch_point.ToString();
-  inverse_projection_.TransformPoint(&touch_point);
-  DVLOG(3) << __func__ << ": unprojected=" << touch_point.ToString();
+    // If there's no active screen touch, and no unreported past click
+    // event, don't report a device.
+    if (!screen_touch_pending && !screen_touch_active) {
+      continue;
+    }
 
-  // Ray points along -Z in ray space, so we need to flip it to get
-  // the +Z axis unit vector.
-  gfx::Vector3dF ray_backwards(-touch_point.x(), -touch_point.y(),
-                               -touch_point.z());
-  gfx::Vector3dF new_z;
-  bool can_normalize = ray_backwards.GetNormalized(&new_z);
-  DCHECK(can_normalize);
+    device::mojom::XRInputSourceStatePtr state =
+        device::mojom::XRInputSourceState::New();
 
-  // Complete the ray-space basis by adding X and Y unit
-  // vectors based on cross products.
-  const gfx::Vector3dF kUp(0.f, 1.f, 0.f);
-  gfx::Vector3dF new_x(kUp);
-  new_x.Cross(new_z);
-  new_x.GetNormalized(&new_x);
-  gfx::Vector3dF new_y(new_z);
-  new_y.Cross(new_x);
-  new_y.GetNormalized(&new_y);
+    state->source_id = id_and_touch_event.first;
 
-  // Fill in the transform matrix in row-major order. The first three columns
-  // contain the basis vectors, the fourth column the position offset.
-  gfx::Transform viewer_from_pointer(
-      new_x.x(), new_y.x(), new_z.x(), touch_point.x(),  // row 1
-      new_x.y(), new_y.y(), new_z.y(), touch_point.y(),  // row 2
-      new_x.z(), new_y.z(), new_z.z(), touch_point.z(),  // row 3
-      0, 0, 0, 1);
-  DVLOG(3) << __func__ << ": viewer_from_pointer=\n"
-           << viewer_from_pointer.ToString();
+    state->is_auxiliary = !is_primary;
 
-  state->description->input_from_pointer = viewer_from_pointer;
+    state->primary_input_pressed = screen_touch_active;
 
-  return state;
+    // If the touch is not active but pending, it means that it was clicked
+    // within a single frame.
+    if (!screen_touch_active && screen_touch_pending) {
+      state->primary_input_clicked = true;
+
+      // Clear screen_touch_pending for this input source - we have consumed it.
+      id_and_touch_event.second.screen_touch_pending = false;
+    }
+
+    // Save the touch point for use in Blink's XR input event deduplication.
+    state->overlay_pointer_position = screen_last_touch;
+
+    state->description = device::mojom::XRInputSourceDescription::New();
+
+    state->description->handedness = device::mojom::XRHandedness::NONE;
+
+    state->description->target_ray_mode =
+        device::mojom::XRTargetRayMode::TAPPING;
+
+    state->description->profiles.push_back(kInputSourceProfileName);
+
+    // Controller doesn't have a measured position.
+    state->emulated_position = true;
+
+    // The Renderer code ignores state->grip for TAPPING (screen-based) target
+    // ray mode, so we don't bother filling it in here. If this does get used at
+    // some point in the future, this should be set to the inverse of the
+    // pose rigid transform.
+
+    // Get a viewer-space ray from screen-space coordinates by applying the
+    // inverse of the projection matrix. Z coordinate of -1 means the point will
+    // be projected onto the projection matrix near plane. See also
+    // third_party/blink/renderer/modules/xr/xr_view.cc's UnprojectPointer.
+    const float x_normalized =
+        screen_last_touch.x() / camera_image_size_.width() * 2.f - 1.f;
+    const float y_normalized =
+        (1.f - screen_last_touch.y() / camera_image_size_.height()) * 2.f - 1.f;
+    gfx::Point3F touch_point(x_normalized, y_normalized, -1.f);
+    DVLOG(3) << __func__ << ": touch_point=" << touch_point.ToString();
+    inverse_projection_.TransformPoint(&touch_point);
+    DVLOG(3) << __func__ << ": unprojected=" << touch_point.ToString();
+
+    // Ray points along -Z in ray space, so we need to flip it to get
+    // the +Z axis unit vector.
+    gfx::Vector3dF ray_backwards(-touch_point.x(), -touch_point.y(),
+                                 -touch_point.z());
+    gfx::Vector3dF new_z;
+    bool can_normalize = ray_backwards.GetNormalized(&new_z);
+    DCHECK(can_normalize);
+
+    // Complete the ray-space basis by adding X and Y unit
+    // vectors based on cross products.
+    const gfx::Vector3dF kUp(0.f, 1.f, 0.f);
+    gfx::Vector3dF new_x(kUp);
+    new_x.Cross(new_z);
+    new_x.GetNormalized(&new_x);
+    gfx::Vector3dF new_y(new_z);
+    new_y.Cross(new_x);
+    new_y.GetNormalized(&new_y);
+
+    // Fill in the transform matrix in row-major order. The first three columns
+    // contain the basis vectors, the fourth column the position offset.
+    gfx::Transform viewer_from_pointer(
+        new_x.x(), new_y.x(), new_z.x(), touch_point.x(),  // row 1
+        new_x.y(), new_y.y(), new_z.y(), touch_point.y(),  // row 2
+        new_x.z(), new_y.z(), new_z.z(), touch_point.z(),  // row 3
+        0, 0, 0, 1);
+    DVLOG(3) << __func__ << ": viewer_from_pointer=\n"
+             << viewer_from_pointer.ToString();
+
+    state->description->input_from_pointer = viewer_from_pointer;
+
+    // Create the gamepad object and modify necessary fields.
+    state->gamepad = device::Gamepad{};
+    state->gamepad->connected = true;
+    state->gamepad->id[0] = '\0';
+    state->gamepad->timestamp =
+        base::TimeTicks::Now().since_origin().InMicroseconds();
+
+    state->gamepad->axes_length = 2;
+    state->gamepad->axes[0] = x_normalized;
+    state->gamepad->axes[1] =
+        -y_normalized;  //  Gamepad's Y axis is actually
+                        //  inverted (1.0 means "backward").
+
+    state->gamepad->buttons_length = 3;  // 2 placeholders + the real one
+    // Default-constructed buttons are already valid placeholders.
+    state->gamepad->buttons[2].touched = true;
+    state->gamepad->buttons[2].value = 1.0;
+    state->gamepad->mapping = device::GamepadMapping::kNone;
+    state->gamepad->hand = device::GamepadHand::kNone;
+
+    result.push_back(std::move(state));
+  }
+
+  // All the input source IDs that are no longer touching need to remain unused
+  // for at least one frame. For now, we always assign new ID for input source
+  // so there's no need to remember the IDs that have to be put on hold. Just
+  // clean up all the no longer touching pointers:
+  std::unordered_map<uint32_t, ScreenTouchEvent> still_touching_events;
+  for (const auto& screen_touch_event : screen_touch_events_) {
+    if (!screen_touch_event.second.screen_touch_active) {
+      // This pointer is no longer touching - remove it from the mapping, do not
+      // consider it as still touching:
+      pointer_id_to_input_source_id_.erase(
+          screen_touch_event.second.pointer_id);
+    } else {
+      still_touching_events.insert(screen_touch_event);
+    }
+  }
+
+  screen_touch_events_.swap(still_touching_events);
+
+  return result;
 }
 
 void ArCoreGl::Pause() {

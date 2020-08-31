@@ -9,14 +9,18 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "content/common/frame.mojom.h"
+#include "content/common/frame.mojom-forward.h"
 #include "content/common/input/input_handler.mojom.h"
-#include "content/common/navigation_params.mojom.h"
+#include "content/common/navigation_params.mojom-forward.h"
 #include "content/renderer/render_frame_impl.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
+
+namespace base {
+class UnguessableToken;
+}
 
 namespace blink {
 class WebHistoryItem;
@@ -50,16 +54,17 @@ class TestRenderFrame : public RenderFrameImpl {
   void NavigateWithError(mojom::CommonNavigationParamsPtr common_params,
                          mojom::CommitNavigationParamsPtr request_params,
                          int error_code,
+                         const net::ResolveErrorInfo& resolve_error_info,
                          const base::Optional<std::string>& error_page_content);
-  void SwapOut(int proxy_routing_id,
-               bool is_loading,
-               const FrameReplicationState& replicated_frame_state);
+  void Unload(int proxy_routing_id,
+              bool is_loading,
+              const FrameReplicationState& replicated_frame_state,
+              const base::UnguessableToken& frame_token);
   void SetEditableSelectionOffsets(int start, int end);
   void ExtendSelectionAndDelete(int before, int after);
   void DeleteSurroundingText(int before, int after);
   void DeleteSurroundingTextInCodePoints(int before, int after);
   void CollapseSelection();
-  void SetAccessibilityMode(ui::AXMode new_mode);
   void SetCompositionFromExistingText(
       int start,
       int end,
@@ -81,9 +86,16 @@ class TestRenderFrame : public RenderFrameImpl {
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
   TakeLastBrowserInterfaceBrokerReceiver();
 
- private:
+  void SimulateBeforeUnload(bool is_reload);
+
+  void SetOverlayRoutingToken(const base::UnguessableToken& token);
+
+  size_t RequestOverlayRoutingTokenCalled();
+
+ protected:
   explicit TestRenderFrame(RenderFrameImpl::CreateParams params);
 
+ private:
   mojom::FrameHost* GetFrameHost() override;
 
   mojom::FrameInputHandler* GetFrameInputHandler();

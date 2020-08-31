@@ -59,6 +59,7 @@ class ServiceWorkerContextWrapperTest : public testing::Test {
   }
 
   ServiceWorkerContextCore* context() { return wrapper_->context(); }
+  ServiceWorkerRegistry* registry() { return context()->registry(); }
   ServiceWorkerStorage* storage() { return context()->storage(); }
 
  protected:
@@ -79,11 +80,12 @@ TEST_F(ServiceWorkerContextWrapperTest, HasRegistration) {
   GURL scope("https://example.com/");
   GURL script("https://example.com/sw.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateServiceWorkerRegistrationAndVersion(context(), scope, script);
+      CreateServiceWorkerRegistrationAndVersion(context(), scope, script,
+                                                /*resource_id=*/1);
 
   // Store it.
   base::RunLoop loop;
-  storage()->StoreRegistration(
+  registry()->StoreRegistration(
       registration.get(), registration->waiting_version(),
       base::BindLambdaForTesting(
           [&loop](blink::ServiceWorkerStatusCode status) {

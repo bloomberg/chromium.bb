@@ -14,7 +14,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "net/base/ip_endpoint.h"
 #include "net/cert/cert_status_flags.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 
 namespace content {
@@ -28,9 +28,7 @@ ServiceWorkerInstalledScriptLoader::ServiceWorkerInstalledScriptLoader(
     scoped_refptr<ServiceWorkerVersion>
         version_for_main_script_http_response_info,
     const GURL& request_url)
-    : options_(options),
-      client_(std::move(client)),
-      request_start_(base::TimeTicks::Now()) {
+    : client_(std::move(client)), request_start_(base::TimeTicks::Now()) {
   // Normally, the main script info is set by ServiceWorkerNewScriptLoader for
   // new service workers and ServiceWorkerInstalledScriptsSender for installed
   // service workes. But some embedders might preinstall scripts to the
@@ -40,8 +38,7 @@ ServiceWorkerInstalledScriptLoader::ServiceWorkerInstalledScriptLoader(
   // In this case, the main script info would not yet have been set, so set it
   // here.
   if (request_url == version_for_main_script_http_response_info->script_url() &&
-      !version_for_main_script_http_response_info
-           ->GetMainScriptHttpResponseInfo()) {
+      !version_for_main_script_http_response_info->GetMainScriptResponse()) {
     version_for_main_script_http_response_info_ =
         std::move(version_for_main_script_http_response_info);
   }
@@ -55,15 +52,16 @@ ServiceWorkerInstalledScriptLoader::~ServiceWorkerInstalledScriptLoader() =
     default;
 
 void ServiceWorkerInstalledScriptLoader::OnStarted(
-    scoped_refptr<HttpResponseInfoIOBuffer> http_info,
+    network::mojom::URLResponseHeadPtr response_head,
+    scoped_refptr<net::IOBufferWithSize> metadata,
     mojo::ScopedDataPipeConsumerHandle body_handle,
     mojo::ScopedDataPipeConsumerHandle metadata_handle) {
-  DCHECK(http_info);
-  DCHECK(http_info->http_info->headers);
+  DCHECK(response_head);
+  DCHECK(response_head->headers);
   DCHECK(encoding_.empty());
-  http_info->http_info->headers->GetCharset(&encoding_);
+  response_head->headers->GetCharset(&encoding_);
   body_handle_ = std::move(body_handle);
-  body_size_ = http_info->response_data_size;
+  body_size_ = response_head->content_length;
 
   // Just drain the metadata (V8 code cache): this entire class is just to
   // handle a corner case for non-installed service workers and high performance
@@ -71,20 +69,18 @@ void ServiceWorkerInstalledScriptLoader::OnStarted(
   metadata_drainer_ =
       std::make_unique<mojo::DataPipeDrainer>(this, std::move(metadata_handle));
 
-  net::HttpResponseInfo* info = http_info->http_info.get();
-  DCHECK(info);
-
   if (version_for_main_script_http_response_info_) {
-    version_for_main_script_http_response_info_->SetMainScriptHttpResponseInfo(
-        *info);
+    version_for_main_script_http_response_info_->SetMainScriptResponse(
+        std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
+            *response_head));
   }
 
-  auto response = ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
-      info, options_, request_start_, base::TimeTicks::Now(),
-      http_info->response_data_size);
-  client_->OnReceiveResponse(std::move(response.head));
-  if (!response.metadata.empty())
-    client_->OnReceiveCachedMetadata(std::move(response.metadata));
+  client_->OnReceiveResponse(std::move(response_head));
+  if (metadata) {
+    mojo_base::BigBuffer metadata_buffer(
+        base::as_bytes(base::make_span(metadata->data(), metadata->size())));
+    client_->OnReceiveCachedMetadata(std::move(metadata_buffer));
+  }
   client_->OnStartLoadingResponseBody(std::move(body_handle_));
   // We continue in OnFinished().
 }
@@ -117,6 +113,7 @@ void ServiceWorkerInstalledScriptLoader::OnFinished(FinishedReason reason) {
 void ServiceWorkerInstalledScriptLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     const base::Optional<GURL>& new_url) {
   // This class never returns a redirect response to its client, so should never
   // be asked to follow one.

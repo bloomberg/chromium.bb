@@ -31,8 +31,8 @@ import tempfile
 import urllib
 
 TRACE_PROCESSOR_SHELL_SHAS = {
-    'linux': 'a4852390aa8e02089d125be0cbfea9f2ada7fded',
-    'mac': '52710df7fad736a45dc118b3feec3959d6ff3d91',
+    'linux': '3a28532ba5cb1b94cea8a563bbfa7d16175f208d',
+    'mac': '637fe7ac61f1700edd2fbaa76e0775ea97f4c394',
 }
 TRACE_PROCESSOR_SHELL_PATH = tempfile.gettempdir()
 TRACE_PROCESSOR_SHELL_BASE_URL = ('https://storage.googleapis.com/perfetto/')

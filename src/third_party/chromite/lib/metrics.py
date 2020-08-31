@@ -15,8 +15,8 @@ from __future__ import print_function
 
 import collections
 import contextlib
-import datetime
 import ssl
+import time
 from functools import wraps
 
 import six
@@ -434,7 +434,7 @@ def SecondsTimer(name, fields=None, description=None, field_spec=_MISSING,
   f = fields or {}
   f = dict(f)
   keys = list(f)
-  t0 = datetime.datetime.now()
+  t0 = _GetSystemClock()
 
   error = True
   try:
@@ -450,8 +450,10 @@ def SecondsTimer(name, fields=None, description=None, field_spec=_MISSING,
     # to implement some key-restricted subclass or wrapper around dict, and just
     # yield that above rather than yielding a regular dict.
     if record_on_exception or not error:
-      dt = (datetime.datetime.now() - t0).total_seconds()
-      m.add(dt, fields={k: f[k] for k in keys})
+      dt = _GetSystemClock() - t0
+      # TODO(ayatane): Handle backward clock jumps.  See _GetSystemClock.
+      if dt >= 0:
+        m.add(dt, fields={k: f[k] for k in keys})
 
 
 def SecondsTimerDecorator(name, fields=None, description=None,
@@ -556,7 +558,7 @@ def SecondsInstanceTimer(name, fields=None, description=None,
   m = FloatMetric(name, description=description, field_spec=field_spec)
   f = dict(fields or {})
   keys = list(f)
-  t0 = datetime.datetime.utcnow()
+  t0 = _GetSystemClock()
 
   error = True
   try:
@@ -572,7 +574,7 @@ def SecondsInstanceTimer(name, fields=None, description=None,
     # to implement some key-restricted subclass or wrapper around dict, and just
     # yield that above rather than yielding a regular dict.
     if record_on_exception or not error:
-      dt = (datetime.datetime.utcnow() - t0).total_seconds()
+      dt = _GetSystemClock() - t0
       m.set(dt, fields={k: f[k] for k in keys})
 
 
@@ -723,7 +725,7 @@ class RuntimeBreakdownTimer(object):
     self._step_metrics = []
 
   def __enter__(self):
-    self._outer_t0 = datetime.datetime.now()
+    self._outer_t0 = _GetSystemClock()
     return self
 
   def __exit__(self, _type, _value, _traceback):
@@ -785,12 +787,14 @@ class RuntimeBreakdownTimer(object):
       return
 
     self._inside_step = True
-    t0 = datetime.datetime.now()
+    t0 = _GetSystemClock()
     try:
       yield
     finally:
       self._inside_step = False
-      step_time_s = (datetime.datetime.now() - t0).total_seconds()
+      step_time_s = _GetSystemClock() - t0
+      # TODO(ayatane): Handle backward clock jumps.  See _GetSystemClock.
+      step_time_s = max(0, step_time_s)
       self._step_metrics.append(self._StepMetrics(step_name, step_time_s))
 
   def _GetStepBreakdowns(self):
@@ -822,8 +826,20 @@ class RuntimeBreakdownTimer(object):
     return sum(x % bucket_width for x in reported)
 
   def _RecordTotalTime(self):
-    self._total_time_s = (
-        datetime.datetime.now() - self._outer_t0).total_seconds()
+    self._total_time_s = _GetSystemClock() - self._outer_t0
+    # TODO(ayatane): Handle backward clock jumps.  See _GetSystemClock.
+    self._total_time_s = max(0, self._total_time_s)
+
+
+def _GetSystemClock():
+  """Return a clock time.
+
+  The only thing that the return value can be used for is to subtract from
+  other instances to determine time elapsed.
+  """
+  # TODO(ayatane): We should use a monotonic clock to measure this,
+  # but Python 2 does not have one.
+  return time.time()
 
 
 def Flush(reset_after=()):

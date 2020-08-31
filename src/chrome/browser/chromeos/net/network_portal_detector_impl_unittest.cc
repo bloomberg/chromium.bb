@@ -32,8 +32,8 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
-#include "components/captive_portal/captive_portal_detector.h"
-#include "components/captive_portal/captive_portal_testing_utils.h"
+#include "components/captive_portal/core/captive_portal_detector.h"
+#include "components/captive_portal/core/captive_portal_testing_utils.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_task_environment.h"
@@ -229,7 +229,7 @@ class NetworkPortalDetectorImplTest
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
         dbus::ObjectPath(service_path), shill::kStateProperty,
         base::Value(shill::kStateNoConnectivity), base::DoNothing(),
-        base::Bind(&ErrorCallbackFunction));
+        base::BindOnce(&ErrorCallbackFunction));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -244,14 +244,14 @@ class NetworkPortalDetectorImplTest
   void SetConnected(const std::string& service_path) {
     DBusThreadManager::Get()->GetShillServiceClient()->Connect(
         dbus::ObjectPath(service_path), base::DoNothing(),
-        base::Bind(&ErrorCallbackFunction));
+        base::BindOnce(&ErrorCallbackFunction));
     base::RunLoop().RunUntilIdle();
   }
 
   void SetDisconnected(const std::string& service_path) {
     DBusThreadManager::Get()->GetShillServiceClient()->Disconnect(
         dbus::ObjectPath(service_path), base::DoNothing(),
-        base::Bind(&ErrorCallbackFunction));
+        base::BindOnce(&ErrorCallbackFunction));
     base::RunLoop().RunUntilIdle();
   }
 

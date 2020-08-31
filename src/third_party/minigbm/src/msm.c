@@ -69,13 +69,13 @@ static void msm_calculate_layout(struct bo *bo)
 {
 	uint32_t width, height;
 
-	width = bo->width;
-	height = bo->height;
+	width = bo->meta.width;
+	height = bo->meta.height;
 
 	/* NV12 format requires extra padding with platform
 	 * specific alignments for venus driver
 	 */
-	if (bo->format == DRM_FORMAT_NV12) {
+	if (bo->meta.format == DRM_FORMAT_NV12) {
 		uint32_t y_stride, uv_stride, y_scanline, uv_scanline, y_plane, uv_plane, size,
 		    extra_padding;
 
@@ -86,7 +86,7 @@ static void msm_calculate_layout(struct bo *bo)
 		y_plane = y_stride * y_scanline;
 		uv_plane = uv_stride * uv_scanline;
 
-		if (bo->tiling == MSM_UBWC_TILING) {
+		if (bo->meta.tiling == MSM_UBWC_TILING) {
 			y_plane += get_ubwc_meta_size(width, height, 32, 8);
 			uv_plane += get_ubwc_meta_size(width >> 1, height >> 1, 16, 8);
 			extra_padding = NV12_UBWC_PADDING(y_stride);
@@ -94,34 +94,37 @@ static void msm_calculate_layout(struct bo *bo)
 			extra_padding = NV12_LINEAR_PADDING;
 		}
 
-		bo->strides[0] = y_stride;
-		bo->sizes[0] = y_plane;
-		bo->offsets[1] = y_plane;
-		bo->strides[1] = uv_stride;
+		bo->meta.strides[0] = y_stride;
+		bo->meta.sizes[0] = y_plane;
+		bo->meta.offsets[1] = y_plane;
+		bo->meta.strides[1] = uv_stride;
 		size = y_plane + uv_plane + extra_padding;
-		bo->total_size = ALIGN(size, BUFFER_SIZE_ALIGN);
-		bo->sizes[1] = bo->total_size - bo->sizes[0];
+		bo->meta.total_size = ALIGN(size, BUFFER_SIZE_ALIGN);
+		bo->meta.sizes[1] = bo->meta.total_size - bo->meta.sizes[0];
 	} else {
 		uint32_t stride, alignw, alignh;
 
 		alignw = ALIGN(width, DEFAULT_ALIGNMENT);
-		/* HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned. */
-		if (bo->format == DRM_FORMAT_YVU420_ANDROID) {
+		/* HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned.
+			DRM_FORMAT_R8 of height one is used for JPEG camera output, so don't
+			height align that. */
+		if (bo->meta.format == DRM_FORMAT_YVU420_ANDROID ||
+		    (bo->meta.format == DRM_FORMAT_R8 && height == 1)) {
 			alignh = height;
 		} else {
 			alignh = ALIGN(height, DEFAULT_ALIGNMENT);
 		}
 
-		stride = drv_stride_from_format(bo->format, alignw, 0);
+		stride = drv_stride_from_format(bo->meta.format, alignw, 0);
 
 		/* Calculate size and assign stride, size, offset to each plane based on format */
-		drv_bo_from_format(bo, stride, alignh, bo->format);
+		drv_bo_from_format(bo, stride, alignh, bo->meta.format);
 
 		/* For all RGB UBWC formats */
-		if (bo->tiling == MSM_UBWC_TILING) {
-			bo->sizes[0] += get_ubwc_meta_size(width, height, 16, 4);
-			bo->total_size = bo->sizes[0];
-			assert(IS_ALIGNED(bo->total_size, BUFFER_SIZE_ALIGN));
+		if (bo->meta.tiling == MSM_UBWC_TILING) {
+			bo->meta.sizes[0] += get_ubwc_meta_size(width, height, 16, 4);
+			bo->meta.total_size = bo->meta.sizes[0];
+			assert(IS_ALIGNED(bo->meta.total_size, BUFFER_SIZE_ALIGN));
 		}
 	}
 }
@@ -131,6 +134,8 @@ static bool is_ubwc_fmt(uint32_t format)
 	switch (format) {
 	case DRM_FORMAT_XBGR8888:
 	case DRM_FORMAT_ABGR8888:
+	case DRM_FORMAT_XRGB8888:
+	case DRM_FORMAT_ARGB8888:
 	case DRM_FORMAT_NV12:
 		return 1;
 	default:
@@ -155,7 +160,7 @@ static void msm_add_ubwc_combinations(struct driver *drv, const uint32_t *format
 static int msm_init(struct driver *drv)
 {
 	struct format_metadata metadata;
-	uint64_t render_use_flags = BO_USE_RENDER_MASK;
+	uint64_t render_use_flags = BO_USE_RENDER_MASK | BO_USE_SCANOUT;
 	uint64_t texture_use_flags = BO_USE_TEXTURE_MASK | BO_USE_HW_VIDEO_DECODER;
 	uint64_t sw_flags = (BO_USE_RENDERSCRIPT | BO_USE_SW_WRITE_OFTEN | BO_USE_SW_READ_OFTEN |
 			     BO_USE_LINEAR | BO_USE_PROTECTED);
@@ -172,6 +177,16 @@ static int msm_init(struct driver *drv)
 	 */
 	drv_modify_combination(drv, DRM_FORMAT_YVU420, &LINEAR_METADATA, BO_USE_HW_VIDEO_ENCODER);
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA, BO_USE_HW_VIDEO_ENCODER);
+
+	/* The camera stack standardizes on NV12 for YUV buffers. */
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_SCANOUT);
+	/*
+	 * R8 format is used for Android's HAL_PIXEL_FORMAT_BLOB and is used for JPEG snapshots
+	 * from camera.
+	 */
+	drv_modify_combination(drv, DRM_FORMAT_R8, &LINEAR_METADATA,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 
 	/* Android CTS tests require this. */
 	drv_add_combination(drv, DRM_FORMAT_BGR888, &LINEAR_METADATA, BO_USE_SW_MASK);
@@ -201,13 +216,13 @@ static int msm_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t he
 	int ret;
 	size_t i;
 
-	bo->tiling = (modifier == DRM_FORMAT_MOD_QCOM_COMPRESSED) ? MSM_UBWC_TILING : 0;
+	bo->meta.tiling = (modifier == DRM_FORMAT_MOD_QCOM_COMPRESSED) ? MSM_UBWC_TILING : 0;
 
 	msm_calculate_layout(bo);
 
 	memset(&req, 0, sizeof(req));
 	req.flags = MSM_BO_WC | MSM_BO_SCANOUT;
-	req.size = bo->total_size;
+	req.size = bo->meta.total_size;
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MSM_GEM_NEW, &req);
 	if (ret) {
@@ -219,9 +234,9 @@ static int msm_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t he
 	 * Though we use only one plane, we need to set handle for
 	 * all planes to pass kernel checks
 	 */
-	for (i = 0; i < bo->num_planes; i++) {
+	for (i = 0; i < bo->meta.num_planes; i++) {
 		bo->handles[i].u32 = req.handle;
-		bo->format_modifiers[i] = modifier;
+		bo->meta.format_modifiers[i] = modifier;
 	}
 
 	return 0;
@@ -268,10 +283,20 @@ static void *msm_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t m
 		drv_log("DRM_IOCLT_MSM_GEM_INFO failed with %s\n", strerror(errno));
 		return MAP_FAILED;
 	}
-	vma->length = bo->total_size;
+	vma->length = bo->meta.total_size;
 
-	return mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+	return mmap(0, bo->meta.total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 		    req.offset);
+}
+
+static uint32_t msm_resolve_format(struct driver *drv, uint32_t format, uint64_t use_flags)
+{
+	switch (format) {
+	case DRM_FORMAT_FLEX_YCbCr_420_888:
+		return DRM_FORMAT_NV12;
+	default:
+		return format;
+	}
 }
 
 const struct backend backend_msm = {
@@ -283,5 +308,6 @@ const struct backend backend_msm = {
 	.bo_import = drv_prime_bo_import,
 	.bo_map = msm_bo_map,
 	.bo_unmap = drv_bo_munmap,
+	.resolve_format = msm_resolve_format,
 };
 #endif /* DRV_MSM */

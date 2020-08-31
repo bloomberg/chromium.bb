@@ -20,10 +20,10 @@ namespace internal {
 
 using Node = compiler::Node;
 
-TNode<IntPtrT> StringBuiltinsAssembler::DirectStringData(
+TNode<RawPtrT> StringBuiltinsAssembler::DirectStringData(
     TNode<String> string, TNode<Word32T> string_instance_type) {
   // Compute the effective offset of the first character.
-  TVARIABLE(IntPtrT, var_data);
+  TVARIABLE(RawPtrT, var_data);
   Label if_sequential(this), if_external(this), if_join(this);
   Branch(Word32Equal(Word32And(string_instance_type,
                                Int32Constant(kStringRepresentationMask)),
@@ -32,9 +32,9 @@ TNode<IntPtrT> StringBuiltinsAssembler::DirectStringData(
 
   BIND(&if_sequential);
   {
-    var_data = IntPtrAdd(
-        IntPtrConstant(SeqOneByteString::kHeaderSize - kHeapObjectTag),
-        BitcastTaggedToWord(string));
+    var_data = RawPtrAdd(
+        ReinterpretCast<RawPtrT>(BitcastTaggedToWord(string)),
+        IntPtrConstant(SeqOneByteString::kHeaderSize - kHeapObjectTag));
     Goto(&if_join);
   }
 
@@ -47,7 +47,7 @@ TNode<IntPtrT> StringBuiltinsAssembler::DirectStringData(
                                    Int32Constant(kUncachedExternalStringMask)),
                          Int32Constant(kUncachedExternalStringTag)));
     var_data =
-        LoadObjectField<IntPtrT>(string, ExternalString::kResourceDataOffset);
+        DecodeExternalPointer(LoadExternalStringResourceData(CAST(string)));
     Goto(&if_join);
   }
 
@@ -254,8 +254,8 @@ void StringBuiltinsAssembler::StringEqual_Loop(
   CSA_ASSERT(this, WordEqual(LoadStringLengthAsWord(rhs), length));
 
   // Compute the effective offset of the first character.
-  TNode<IntPtrT> lhs_data = DirectStringData(lhs, lhs_instance_type);
-  TNode<IntPtrT> rhs_data = DirectStringData(rhs, rhs_instance_type);
+  TNode<RawPtrT> lhs_data = DirectStringData(lhs, lhs_instance_type);
+  TNode<RawPtrT> rhs_data = DirectStringData(rhs, rhs_instance_type);
 
   // Loop over the {lhs} and {rhs} strings to see if they are equal.
   TVARIABLE(IntPtrT, var_offset, IntPtrConstant(0));
@@ -336,11 +336,9 @@ TNode<String> StringBuiltinsAssembler::AllocateConsString(TNode<Uint32T> length,
       [=] { return ConsStringMapConstant(); }));
   TNode<HeapObject> result = AllocateInNewSpace(ConsString::kSize);
   StoreMapNoWriteBarrier(result, result_map);
-  StoreObjectFieldNoWriteBarrier(result, ConsString::kLengthOffset, length,
-                                 MachineRepresentation::kWord32);
+  StoreObjectFieldNoWriteBarrier(result, ConsString::kLengthOffset, length);
   StoreObjectFieldNoWriteBarrier(result, ConsString::kHashFieldOffset,
-                                 Int32Constant(String::kEmptyHashField),
-                                 MachineRepresentation::kWord32);
+                                 Int32Constant(String::kEmptyHashField));
   StoreObjectFieldNoWriteBarrier(result, ConsString::kFirstOffset, left);
   StoreObjectFieldNoWriteBarrier(result, ConsString::kSecondOffset, right);
   return CAST(result);
@@ -975,7 +973,7 @@ void StringBuiltinsAssembler::StringIndexOf(
       const TNode<IntPtrT> search_length =
           IntPtrSub(subject_length, start_position);
       const TNode<IntPtrT> search_byte =
-          ChangeInt32ToIntPtr(Load(MachineType::Uint8(), adjusted_search_ptr));
+          ChangeInt32ToIntPtr(Load<Uint8T>(adjusted_search_ptr));
 
       const TNode<ExternalReference> memchr =
           ExternalConstant(ExternalReference::libc_memchr_function());
@@ -1076,8 +1074,8 @@ TF_BUILTIN(StringIndexOf, StringBuiltinsAssembler) {
 // ES6 String.prototype.includes(searchString [, position])
 // #sec-string.prototype.includes
 TF_BUILTIN(StringPrototypeIncludes, StringIncludesIndexOfAssembler) {
-  TNode<IntPtrT> argc =
-      ChangeInt32ToIntPtr(Parameter(Descriptor::kJSActualArgumentsCount));
+  TNode<IntPtrT> argc = ChangeInt32ToIntPtr(
+      UncheckedCast<Int32T>(Parameter(Descriptor::kJSActualArgumentsCount)));
   TNode<Context> context = CAST(Parameter(Descriptor::kContext));
   Generate(kIncludes, argc, context);
 }
@@ -1085,8 +1083,8 @@ TF_BUILTIN(StringPrototypeIncludes, StringIncludesIndexOfAssembler) {
 // ES6 String.prototype.indexOf(searchString [, position])
 // #sec-string.prototype.indexof
 TF_BUILTIN(StringPrototypeIndexOf, StringIncludesIndexOfAssembler) {
-  TNode<IntPtrT> argc =
-      ChangeInt32ToIntPtr(Parameter(Descriptor::kJSActualArgumentsCount));
+  TNode<IntPtrT> argc = ChangeInt32ToIntPtr(
+      UncheckedCast<Int32T>(Parameter(Descriptor::kJSActualArgumentsCount)));
   TNode<Context> context = CAST(Parameter(Descriptor::kContext));
   Generate(kIndexOf, argc, context);
 }
@@ -1295,8 +1293,7 @@ TF_BUILTIN(StringPrototypeReplace, StringBuiltinsAssembler) {
                            replace));
       },
       [=](TNode<Object> fn) {
-        Callable call_callable = CodeFactory::Call(isolate());
-        Return(CallJS(call_callable, context, fn, search, receiver, replace));
+        Return(Call(context, fn, search, receiver, replace));
       });
 
   // Convert {receiver} and {search} to strings.
@@ -1396,10 +1393,9 @@ TF_BUILTIN(StringPrototypeReplace, StringBuiltinsAssembler) {
 
   BIND(&if_iscallablereplace);
   {
-    Callable call_callable = CodeFactory::Call(isolate());
     const TNode<Object> replacement =
-        CallJS(call_callable, context, replace, UndefinedConstant(),
-               search_string, match_start_index, subject_string);
+        Call(context, replace, UndefinedConstant(), search_string,
+             match_start_index, subject_string);
     const TNode<String> replacement_string =
         ToString_Inline(context, replacement);
     var_result = CAST(CallBuiltin(Builtins::kStringAdd_CheckNone, context,
@@ -1465,8 +1461,7 @@ class StringMatchSearchAssembler : public StringBuiltinsAssembler {
         context, maybe_regexp, receiver, symbol, property_to_check,
         [=] { Return(CallBuiltin(builtin, context, maybe_regexp, receiver)); },
         [=](TNode<Object> fn) {
-          Callable call_callable = CodeFactory::Call(isolate());
-          Return(CallJS(call_callable, context, fn, maybe_regexp, receiver));
+          Return(Call(context, fn, maybe_regexp, receiver));
         });
 
     // maybe_regexp is not a RegExp nor has [@@match / @@search] property.
@@ -1496,9 +1491,7 @@ class StringMatchSearchAssembler : public StringBuiltinsAssembler {
       BIND(&slow_path);
       {
         TNode<Object> maybe_func = GetProperty(context, regexp, symbol);
-        Callable call_callable = CodeFactory::Call(isolate());
-        Return(CallJS(call_callable, context, maybe_func, regexp,
-                      receiver_string));
+        Return(Call(context, maybe_func, regexp, receiver_string));
       }
     }
   }
@@ -1569,7 +1562,8 @@ TF_BUILTIN(StringPrototypeMatchAll, StringBuiltinsAssembler) {
     }
 
     BIND(&throw_exception);
-    ThrowTypeError(context, MessageTemplate::kRegExpGlobalInvokedOnNonGlobal);
+    ThrowTypeError(context, MessageTemplate::kRegExpGlobalInvokedOnNonGlobal,
+                   method_name);
 
     BIND(&throw_flags_exception);
     ThrowTypeError(context,
@@ -1589,8 +1583,7 @@ TF_BUILTIN(StringPrototypeMatchAll, StringBuiltinsAssembler) {
         RegExpPrototypeMatchAllImpl(context, native_context, maybe_regexp, s));
   };
   auto if_generic_call = [=](TNode<Object> fn) {
-    Callable call_callable = CodeFactory::Call(isolate());
-    Return(CallJS(call_callable, context, fn, maybe_regexp, receiver));
+    Return(Call(context, fn, maybe_regexp, receiver));
   };
   MaybeCallFunctionAtSymbol(
       context, maybe_regexp, receiver, isolate()->factory()->match_all_symbol(),
@@ -1607,10 +1600,9 @@ TF_BUILTIN(StringPrototypeMatchAll, StringBuiltinsAssembler) {
                                              maybe_regexp, StringConstant("g"));
 
   // 5. Return ? Invoke(rx, @@matchAll, « S »).
-  Callable callable = CodeFactory::Call(isolate());
   TNode<Object> match_all_func =
       GetProperty(context, rx, isolate()->factory()->match_all_symbol());
-  Return(CallJS(callable, context, match_all_func, rx, s));
+  Return(Call(context, match_all_func, rx, s));
 }
 
 // ES6 #sec-string.prototype.search
@@ -1643,6 +1635,12 @@ TNode<JSArray> StringBuiltinsAssembler::StringToArray(
 
     ToDirectStringAssembler to_direct(state(), subject_string);
     to_direct.TryToDirect(&call_runtime);
+
+    // The extracted direct string may be two-byte even though the wrapping
+    // string is one-byte.
+    GotoIfNot(IsOneByteStringInstanceType(to_direct.instance_type()),
+              &call_runtime);
+
     TNode<FixedArray> elements = CAST(AllocateFixedArray(
         PACKED_ELEMENTS, length, AllocationFlag::kAllowLargeObjectAllocation));
     // Don't allocate anything while {string_data} is live!
@@ -1700,8 +1698,8 @@ TF_BUILTIN(StringPrototypeSplit, StringBuiltinsAssembler) {
   const int kSeparatorArg = 0;
   const int kLimitArg = 1;
 
-  const TNode<IntPtrT> argc =
-      ChangeInt32ToIntPtr(Parameter(Descriptor::kJSActualArgumentsCount));
+  const TNode<IntPtrT> argc = ChangeInt32ToIntPtr(
+      UncheckedCast<Int32T>(Parameter(Descriptor::kJSActualArgumentsCount)));
   CodeStubArguments args(this, argc);
 
   TNode<Object> receiver = args.GetReceiver();
@@ -1725,9 +1723,7 @@ TF_BUILTIN(StringPrototypeSplit, StringBuiltinsAssembler) {
                                       separator, receiver, limit));
       },
       [&](TNode<Object> fn) {
-        Callable call_callable = CodeFactory::Call(isolate());
-        args.PopAndReturn(
-            CallJS(call_callable, context, fn, separator, receiver, limit));
+        args.PopAndReturn(Call(context, fn, separator, receiver, limit));
       });
 
   // String and integer conversions.
@@ -1809,8 +1805,8 @@ TF_BUILTIN(StringSubstring, StringBuiltinsAssembler) {
 
 // ES6 #sec-string.prototype.trim
 TF_BUILTIN(StringPrototypeTrim, StringTrimAssembler) {
-  TNode<IntPtrT> argc =
-      ChangeInt32ToIntPtr(Parameter(Descriptor::kJSActualArgumentsCount));
+  TNode<IntPtrT> argc = ChangeInt32ToIntPtr(
+      UncheckedCast<Int32T>(Parameter(Descriptor::kJSActualArgumentsCount)));
   TNode<Context> context = CAST(Parameter(Descriptor::kContext));
 
   Generate(String::kTrim, "String.prototype.trim", argc, context);
@@ -1818,8 +1814,8 @@ TF_BUILTIN(StringPrototypeTrim, StringTrimAssembler) {
 
 // https://github.com/tc39/proposal-string-left-right-trim
 TF_BUILTIN(StringPrototypeTrimStart, StringTrimAssembler) {
-  TNode<IntPtrT> argc =
-      ChangeInt32ToIntPtr(Parameter(Descriptor::kJSActualArgumentsCount));
+  TNode<IntPtrT> argc = ChangeInt32ToIntPtr(
+      UncheckedCast<Int32T>(Parameter(Descriptor::kJSActualArgumentsCount)));
   TNode<Context> context = CAST(Parameter(Descriptor::kContext));
 
   Generate(String::kTrimStart, "String.prototype.trimLeft", argc, context);
@@ -1827,8 +1823,8 @@ TF_BUILTIN(StringPrototypeTrimStart, StringTrimAssembler) {
 
 // https://github.com/tc39/proposal-string-left-right-trim
 TF_BUILTIN(StringPrototypeTrimEnd, StringTrimAssembler) {
-  TNode<IntPtrT> argc =
-      ChangeInt32ToIntPtr(Parameter(Descriptor::kJSActualArgumentsCount));
+  TNode<IntPtrT> argc = ChangeInt32ToIntPtr(
+      UncheckedCast<Int32T>(Parameter(Descriptor::kJSActualArgumentsCount)));
   TNode<Context> context = CAST(Parameter(Descriptor::kContext));
 
   Generate(String::kTrimEnd, "String.prototype.trimRight", argc, context);

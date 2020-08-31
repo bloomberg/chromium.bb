@@ -13,6 +13,7 @@
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -32,10 +33,6 @@ namespace blink {
 
 class WorkerClients;
 
-// TODO(nhiroki): Remove this option after off-the-main-thread worker script
-// fetch is enabled for all worker types (https://crbug.com/835717).
-enum class OffMainThreadWorkerScriptFetchOption { kDisabled, kEnabled };
-
 // GlobalScopeCreationParams contains parameters for initializing
 // WorkerGlobalScope or WorkletGlobalScope.
 struct CORE_EXPORT GlobalScopeCreationParams final {
@@ -45,9 +42,9 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   GlobalScopeCreationParams(
       const KURL& script_url,
       mojom::ScriptType script_type,
-      OffMainThreadWorkerScriptFetchOption,
       const String& global_scope_name,
       const String& user_agent,
+      const base::Optional<UserAgentMetadata>& ua_metadata,
       scoped_refptr<WebWorkerFetchContext>,
       const Vector<CSPHeaderAndType>& outside_content_security_policy_headers,
       network::mojom::ReferrerPolicy referrer_policy,
@@ -85,10 +82,10 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   KURL script_url;
 
   mojom::ScriptType script_type;
-  OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option;
 
   String global_scope_name;
   String user_agent;
+  UserAgentMetadata ua_metadata;
 
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
 

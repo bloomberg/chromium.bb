@@ -28,17 +28,6 @@ namespace syncer {
 
 namespace {
 
-// Indicates whether |configuration_params| corresponds to Nigori only
-// configuration (which happens if initial sync for Nigori isn't completed).
-// If |configuration_params| is null, returns false.
-bool IsNigoriOnlyConfiguration(
-    const ConfigurationParams* configuration_params) {
-  if (!configuration_params) {
-    return false;
-  }
-  return configuration_params->types_to_download == ModelTypeSet(NIGORI);
-}
-
 bool IsConfigRelatedUpdateOriginValue(
     sync_pb::SyncEnums::GetUpdatesOrigin origin) {
   switch (origin) {
@@ -70,6 +59,7 @@ bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
     case CLIENT_DATA_OBSOLETE:
     case CLEAR_PENDING:
     case DISABLED_BY_ADMIN:
+    case ENCRYPTION_OBSOLETE:
       // If we send terminate sync early then |sync_cycle_ended| notification
       // would not be sent. If there were no actions then |ACTIONABLE_ERROR|
       // notification wouldnt be sent either. Then the UI layer would be left
@@ -79,6 +69,8 @@ bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
     // Make UNKNOWN_ERROR a NOTREACHED. All the other error should be explicitly
     // handled.
     case UNKNOWN_ERROR:
+      // TODO(crbug.com/1081266): This NOTREACHED is questionable because the
+      // sync server can cause it.
       NOTREACHED();
       return false;
   }
@@ -98,18 +90,23 @@ bool IsActionableError(const SyncProtocolError& error) {
 
 ConfigurationParams::ConfigurationParams()
     : origin(sync_pb::SyncEnums::UNKNOWN_ORIGIN) {}
+
 ConfigurationParams::ConfigurationParams(
     sync_pb::SyncEnums::GetUpdatesOrigin origin,
     ModelTypeSet types_to_download,
-    const base::Closure& ready_task)
+    base::OnceClosure ready)
     : origin(origin),
       types_to_download(types_to_download),
-      ready_task(ready_task) {
+      ready_task(std::move(ready)) {
   DCHECK(!ready_task.is_null());
 }
-ConfigurationParams::ConfigurationParams(const ConfigurationParams& other) =
+
+ConfigurationParams::ConfigurationParams(ConfigurationParams&&) = default;
+
+ConfigurationParams& ConfigurationParams::operator=(ConfigurationParams&&) =
     default;
-ConfigurationParams::~ConfigurationParams() {}
+
+ConfigurationParams::~ConfigurationParams() = default;
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncer threads involved.
@@ -150,16 +147,6 @@ void SyncSchedulerImpl::OnCredentialsUpdated() {
   if (server_status == HttpResponse::NONE ||
       server_status == HttpResponse::SYNC_AUTH_ERROR) {
     OnServerConnectionErrorFixed();
-  }
-}
-
-void SyncSchedulerImpl::OnCredentialsInvalidated() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!nigori_configuration_with_invalidated_credentials_recorded &&
-      IsNigoriOnlyConfiguration(pending_configure_params_.get())) {
-    UMA_HISTOGRAM_BOOLEAN("Sync.NigoriConfigurationWithInvalidatedCredentials",
-                          true);
-    nigori_configuration_with_invalidated_credentials_recorded = true;
   }
 }
 
@@ -277,8 +264,7 @@ void SyncSchedulerImpl::SendInitialSnapshot() {
     observer.OnSyncCycleEvent(event);
 }
 
-void SyncSchedulerImpl::ScheduleConfiguration(
-    const ConfigurationParams& params) {
+void SyncSchedulerImpl::ScheduleConfiguration(ConfigurationParams params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsConfigRelatedUpdateOriginValue(params.origin));
   DCHECK_EQ(CONFIGURATION_MODE, mode_);
@@ -292,11 +278,12 @@ void SyncSchedulerImpl::ScheduleConfiguration(
 
   // Only reconfigure if we have types to download.
   if (!params.types_to_download.Empty()) {
-    pending_configure_params_ = std::make_unique<ConfigurationParams>(params);
+    pending_configure_params_ =
+        std::make_unique<ConfigurationParams>(std::move(params));
     TrySyncCycleJob();
   } else {
     SDVLOG(2) << "No change in routing info, calling ready task directly.";
-    params.ready_task.Run();
+    std::move(params.ready_task).Run();
   }
 }
 
@@ -514,7 +501,7 @@ void SyncSchedulerImpl::DoConfigurationSyncCycleJob(JobPriority priority) {
     // requests; see also crbug.com/926184.
     nudge_tracker_.RecordInitialSyncDone(
         pending_configure_params_->types_to_download);
-    pending_configure_params_->ready_task.Run();
+    std::move(pending_configure_params_->ready_task).Run();
     pending_configure_params_.reset();
     HandleSuccess();
   } else {
@@ -547,29 +534,6 @@ void SyncSchedulerImpl::HandleFailure(
         WaitInterval::EXPONENTIAL_BACKOFF, next_delay);
     SDVLOG(2) << "Sync cycle failed.  Will back off for "
               << wait_interval_->length.InMilliseconds() << "ms.";
-
-    MaybeRecordNigoriOnlyConfigurationFailedHistograms();
-  }
-}
-
-void SyncSchedulerImpl::MaybeRecordNigoriOnlyConfigurationFailedHistograms() {
-  if (!IsNigoriOnlyConfiguration(pending_configure_params_.get())) {
-    return;
-  }
-  if (!nigori_configuration_failed_recorded) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Sync.HasAccessTokenWhenNigoriOnlyConfigurationFailed",
-        !cycle_context_->connection_manager()->HasInvalidAccessToken());
-    nigori_configuration_failed_recorded = true;
-  }
-  // Guaranteed by calling side.
-  DCHECK(wait_interval_);
-  if (!nigori_configuration_failed_with_5s_backoff_recorded &&
-      wait_interval_->length.InSeconds() > 5) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Sync.HasAccessTokenWhenNigoriOnlyConfigurationFailedWith5SecBackoff",
-        !cycle_context_->connection_manager()->HasInvalidAccessToken());
-    nigori_configuration_failed_with_5s_backoff_recorded = true;
   }
 }
 

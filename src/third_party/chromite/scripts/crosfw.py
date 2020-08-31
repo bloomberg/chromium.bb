@@ -105,6 +105,7 @@ import glob
 import multiprocessing
 import os
 import re
+import subprocess
 import sys
 
 from chromite.lib import constants
@@ -115,6 +116,9 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 arch = None
 board = None
 compiler = None
@@ -123,7 +127,7 @@ family = None
 in_chroot = True
 
 logging.basicConfig(format='%(message)s')
-kwargs = {'print_cmd': False, 'error_code_ok': True,
+kwargs = {'print_cmd': False, 'check': False,
           'debug_level': logging.getLogger().getEffectiveLevel()}
 
 outdir = ''
@@ -197,7 +201,7 @@ def Dumper(flag, infile, outfile):
   """
   result = cros_build_lib.run(
       [CompilerTool('objdump'), flag, infile],
-      log_stdout_to_file=outfile, **kwargs)
+      stdout=outfile, **kwargs)
   if result.returncode:
     sys.exit()
 
@@ -511,7 +515,7 @@ def RunBuild(options, base, target, queue):
       mtarget = 'config'
     cmd = base + ['%s_%s' % (uboard, mtarget)]
     result = cros_build_lib.run(cmd, capture_output=True,
-                                combine_stdout_stderr=True, **kwargs)
+                                stderr=subprocess.STDOUT, **kwargs)
     if result.returncode:
       print("cmd: '%s', output: '%s'" % (result.cmdstr, result.output))
       sys.exit(result.returncode)
@@ -519,7 +523,7 @@ def RunBuild(options, base, target, queue):
   # Do the actual build.
   if options.build:
     result = cros_build_lib.run(base + [target], capture_output=True,
-                                combine_stdout_stderr=True, **kwargs)
+                                stderr=subprocess.STDOUT, **kwargs)
     if result.returncode:
       # The build failed, so output the results to stderr.
       print("cmd: '%s', output: '%s'" % (result.cmdstr, result.output),

@@ -3,7 +3,6 @@ All changes to this list should go through Blink's feature review process: http:
 
 [LONGHANDS]
     -webkit-app-region
-    -webkit-appearance
     -webkit-border-horizontal-spacing
     -webkit-border-image
     -webkit-border-vertical-spacing
@@ -22,10 +21,6 @@ All changes to this list should go through Blink's feature review process: http:
     -webkit-line-break
     -webkit-line-clamp
     -webkit-locale
-    -webkit-margin-after-collapse
-    -webkit-margin-before-collapse
-    -webkit-margin-bottom-collapse
-    -webkit-margin-top-collapse
     -webkit-mask-box-image-outset
     -webkit-mask-box-image-repeat
     -webkit-mask-box-image-slice
@@ -75,6 +70,8 @@ All changes to this list should go through Blink's feature review process: http:
     animation-name
     animation-play-state
     animation-timing-function
+    appearance
+    aspect-ratio
     backdrop-filter
     backface-visibility
     background-attachment
@@ -141,6 +138,7 @@ All changes to this list should go through Blink's feature review process: http:
     color-interpolation
     color-interpolation-filters
     color-rendering
+    color-scheme
     column-count
     column-fill
     column-gap
@@ -150,7 +148,9 @@ All changes to this list should go through Blink's feature review process: http:
     column-span
     column-width
     contain
+    contain-intrinsic-size
     content
+    content-visibility
     counter-increment
     counter-reset
     cursor
@@ -206,10 +206,6 @@ All changes to this list should go through Blink's feature review process: http:
     inset-block-start
     inset-inline-end
     inset-inline-start
-    intrinsic-block-size
-    intrinsic-height
-    intrinsic-inline-size
-    intrinsic-width
     isolation
     justify-content
     justify-items
@@ -237,6 +233,8 @@ All changes to this list should go through Blink's feature review process: http:
     mask
     mask-source-type
     mask-type
+    math-style
+    math-superscript-shift-style
     max-block-size
     max-height
     max-inline-size
@@ -279,6 +277,7 @@ All changes to this list should go through Blink's feature review process: http:
     padding-right
     padding-top
     page
+    page-orientation
     paint-order
     perspective
     perspective-origin
@@ -286,11 +285,11 @@ All changes to this list should go through Blink's feature review process: http:
     position
     quotes
     r
-    render-subtree
     resize
     right
     rotate
     row-gap
+    ruby-position
     rx
     ry
     scale
@@ -340,6 +339,7 @@ All changes to this list should go through Blink's feature review process: http:
     text-decoration-line
     text-decoration-skip-ink
     text-decoration-style
+    text-decoration-thickness
     text-indent
     text-justify
     text-orientation
@@ -348,6 +348,7 @@ All changes to this list should go through Blink's feature review process: http:
     text-shadow
     text-size-adjust
     text-transform
+    text-underline-offset
     text-underline-position
     top
     touch-action
@@ -384,9 +385,6 @@ All changes to this list should go through Blink's feature review process: http:
         break-before
     -webkit-column-break-inside
         break-inside
-    -webkit-margin-collapse
-        -webkit-margin-after-collapse
-        -webkit-margin-before-collapse
     -webkit-mask
         -webkit-mask-clip
         -webkit-mask-image
@@ -624,9 +622,6 @@ All changes to this list should go through Blink's feature review process: http:
     inset-inline
         inset-inline-end
         inset-inline-start
-    intrinsic-size
-        intrinsic-height
-        intrinsic-width
     list-style
         list-style-image
         list-style-position
@@ -763,6 +758,8 @@ All changes to this list should go through Blink's feature review process: http:
         animation-play-state
     -webkit-animation-timing-function
         animation-timing-function
+    -webkit-appearance
+        appearance
     -webkit-backface-visibility
         backface-visibility
     -webkit-background-clip

@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">মেনুত থকা বস্তু</translation>
 <translation id="10623998915015855">ট’গল কৰা বুটাম</translation>
 <translation id="1088086359088493902">ছেকেণ্ড</translation>
+<translation id="1142001580032786438">সপ্তাহ বাছনিকৰ্তা দেখুৱাওক</translation>
 <translation id="1171774979989969504">অনুগ্ৰহ কৰি এটা ইমেইল ঠিকনা দিয়ক।</translation>
 <translation id="1178581264944972037">পজ কৰক</translation>
 <translation id="1188858454923323853">পৰিপূৰক</translation>
@@ -11,6 +12,7 @@
 <translation id="1206693055195146388">শ্লাইডাৰ</translation>
 <translation id="1211441953136645838">এণ্ডন‘ট</translation>
 <translation id="1281252709823657822">ডায়ল’গ</translation>
+<translation id="1306460908038601864">অফ</translation>
 <translation id="1335095011850992622">ক্ৰেডিট</translation>
 <translation id="1342835525016946179">প্ৰৱন্ধ</translation>
 <translation id="1359897965706325498">বেনাৰ</translation>
@@ -21,6 +23,7 @@
 <translation id="1727886345390570319">ছাব-টাইটেলৰ মেনু লুকুৱাওক</translation>
 <translation id="1729654308190250600">অনুগ্ৰহ কৰি খালী নোহোৱা ইমেইল ঠিকনা দিয়ক৷</translation>
 <translation id="1758486001363313524">অন্য...</translation>
+<translation id="1787192514241997742">মুঠ সময়: <ph name="REMAINING_TIME" /></translation>
 <translation id="1806710327868736751">সতৰ্কতা সম্পৰ্কীয়_ডায়লগ</translation>
 <translation id="1821985195704844674">ট্ৰী গ্ৰিড</translation>
 <translation id="1822429046913737220">AM/PM</translation>
@@ -32,6 +35,7 @@
 <translation id="1938124657309484470">মান <ph name="MAXIMUM_DATE_OR_TIME" /> বা তাতকৈ পূর্বৰ হ’বই লাগিব।</translation>
 <translation id="1946271899482435442">তাৰিখ নিৰ্বাচক দেখুৱাওক</translation>
 <translation id="1993104285338243655">প্ৰতিবিম্বকৰণলৈ সলনি কৰা হ’ল</translation>
+<translation id="2031987842108996681">ৰঙা চেনেল</translation>
 <translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />'ৰ ভুল স্থানত '<ph name="DOT" />' ব্যৱহাৰ কৰা হৈছে।</translation>
 <translation id="2148716181193084225">আজি</translation>
 <translation id="2158401438286456825">পৃষ্ঠাৰ তালিকা</translation>
@@ -42,6 +46,7 @@
 <translation id="2291999235780842123">চেকবক্স</translation>
 <translation id="2311842470354187719">পৃষ্ঠা বিচ্ছেদ</translation>
 <translation id="2335594187091864976">তাৰিখ আৰু সময় নিৰ্বাচক</translation>
+<translation id="2393030564806080191">হেক্সাডেচিমেল ৰঙৰ মান</translation>
 <translation id="245932805758469625">ভিডিঅ'টো বাকী থকা ছেকেণ্ডৰ সংখ্যা</translation>
 <translation id="248395913932153421">দিন</translation>
 <translation id="2507943997699731163">অনুগ্ৰহ কৰি এই খালী ঠাই পূৰ কৰক।</translation>
@@ -49,6 +54,7 @@
 <translation id="2561842179657104141">অধিক মিডিয়া নিয়ন্ত্ৰণ দেখুৱাওক</translation>
 <translation id="2572483411312390101">প্লে’ কৰক</translation>
 <translation id="2613802280814924224">অনুগ্ৰহ কৰি এটা মান্য মান দিয়ক। নিকটতম মান্য মান হৈছে <ph name="VALID_VALUE" />।</translation>
+<translation id="2634240155926812724">সেউজীয়া চেনেল</translation>
 <translation id="2653659639078652383">দাখিল কৰক</translation>
 <translation id="2657045182931379222">গ্ৰাফিক্স অৱ্‌জেক্ট</translation>
 <translation id="2674318244760992338">ফুটাৰ</translation>
@@ -69,6 +75,7 @@
 <translation id="310520048233152454">অনুগ্ৰহ কৰি এটা URL দিয়ক।</translation>
 <translation id="3175736971608411871">টাইমাৰ</translation>
 <translation id="3199563858620722075">কম্ব' বক্স</translation>
+<translation id="3329013043687509092">সংপৃক্তি</translation>
 <translation id="3450233048674729344">মান <ph name="MAXIMUM" />ৰ সমান বা ইয়াতকৈ ডাঙৰ হ’বই লাগিব।</translation>
 <translation id="3486220673238053218">সংজ্ঞা</translation>
 <translation id="3557673793733683882">শিৰোনাম <ph name="HEADING_LEVEL" /></translation>
@@ -82,7 +89,6 @@
 <translation id="3822383571486410024">অনুগ্ৰহ কৰি এই পাঠটো <ph name="MIN_CHARACTERS" />টা বা তাতকৈ অধিক বর্ণ ব্যৱহাৰ কৰি লিখক (বর্তমান আপুনি <ph name="CURRENT_LENGTH" />টা বর্ণ ব্যৱহাৰ কৰি আছে)।</translation>
 <translation id="383465348367842624">’<ph name="ATSIGN" />’ৰ পাছত আহিব লগা অংশ ’<ph name="INVALIDCHARACTER" />’ চিহ্নত অন্তর্ভুক্ত হ’ব নালাগে।</translation>
 <translation id="3846214748874656680">পূৰ্ণষ্ক্রীণৰ পৰা বাহিৰ হওক</translation>
-<translation id="3889183436948184105">পুনৰীক্ষণ</translation>
 <translation id="3920932319529768807">উপসংহাৰ</translation>
 <translation id="3924558731517983934">এপ্লিকেশ্বন</translation>
 <translation id="3944740393230681990">প্ৰস্তাৱনা</translation>
@@ -100,7 +106,6 @@
 <translation id="4444765639179266822">এনেকুৱা কিহবাৰ কথা কোৱা যেন লাগিছে: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">শব্দাৱলীৰ প্ৰসংগ</translation>
 <translation id="4522570452068850558">সবিশেষ</translation>
-<translation id="4542388879936266156">বাকী থকা সময়: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">ফ’ৰ্ম</translation>
 <translation id="4661075872484491155">গছ</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />'ৰ পিছত থকা অংশত '<ph name="INVALIDCHARACTER" />' চিহ্নটো থাকিব নালাগে।</translation>
@@ -114,7 +119,10 @@
 <translation id="479989351350248267">সন্ধান কৰক</translation>
 <translation id="4812940957355064477">অনুগ্রহ কৰি ফ’ন কোনো নম্বৰ দিয়ক।</translation>
 <translation id="4912536737030637138">গ্ৰন্থপঞ্জীৰ অন্তৰ্ভুক্তি</translation>
+<translation id="4915360478455618802">সময় বাছনিকৰ্তাক দেখুৱাওক</translation>
 <translation id="492244087561876220">মন্তব্য</translation>
+<translation id="4950364064308314478">স্থানীয় তাৰিখ আৰু সময় বাছনিকৰ্তা দেখুৱাওক</translation>
+<translation id="4971739861736909480"><ph name="ACCNAME" /> বাছনি কৰা হৈছে</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" />টা বাছনি কৰা হৈছে</translation>
 <translation id="4992066212339426712">আনমিউট কৰক</translation>
 <translation id="49969490063480558">অনুগ্ৰহ কৰি ’<ph name="ATSIGN" />’ৰ পূর্বৰ অংশ দিয়ক। ’<ph name="INVALIDADDRESS" />’ অসম্পূর্ণ হৈছে।</translation>
@@ -122,6 +130,7 @@
 <translation id="5034860022980953847">অগ্ৰগতিৰ সূচক</translation>
 <translation id="5090250355906949916">ভিডিঅ' টাইম স্ক্ৰাবাৰ</translation>
 <translation id="5093189678851173835">এপিগ্ৰাফ</translation>
+<translation id="509897012892853729">নীলা চেনেল</translation>
 <translation id="5117590920725113268">পৰৱৰ্তী মাহ দেখুৱাওক</translation>
 <translation id="512758898067543763">শাৰীৰ হে’ডাৰ</translation>
 <translation id="5143125788380636750">উপসংহাৰ</translation>
@@ -129,6 +138,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> পি.বি.</translation>
 <translation id="5307600278924710095">অনুগ্ৰহ কৰি '<ph name="ATSIGN" />'ৰ পূর্বৰ অংশ দিয়ক। '<ph name="INVALIDADDRESS" />' অসম্পূর্ণ হৈছে।</translation>
 <translation id="5334352251556557839">মিডিয়া প্লে' কৰিব পৰা নগ'ল।</translation>
+<translation id="537648784377940524">সৰ্বনিম্ন তাৰিখ (<ph name="MIN_DATE_OR_TIME" />) সৰ্বোচ্চ তাৰিখ (<ph name="MAX_DATE_OR_TIME" />)তকৈ আগতে হ’বই লাগিব।</translation>
 <translation id="5406322316791861025">আকাৰ</translation>
 <translation id="5453733299334684579">ট্ৰীত থকা বস্তু</translation>
 <translation id="5466621249238537318">অনুগ্ৰহ কৰি এটা বা ততোধিক ফাইল বাছনি কৰক।</translation>
@@ -144,7 +154,6 @@
 <translation id="5677946354068040947">অধিক বিকল্প</translation>
 <translation id="576709008726043716">পৰিচয়</translation>
 <translation id="57838592816432529">মিউট কৰক</translation>
-<translation id="5860033963881614850">অফ আছে</translation>
 <translation id="588258955323874662">পূৰ্ণস্ক্ৰীণ</translation>
 <translation id="5888666972993069672">এতিয়া <ph name="DEVICE_FRIENDLY_NAME" />ত কাষ্ট কৰি থকা হৈছে</translation>
 <translation id="591047860372322273">সন্ধান বাকচ</translation>
@@ -159,6 +168,7 @@
 <translation id="6166809985690652833">উত্তৰকথন</translation>
 <translation id="6209276755895393898">এনেকুৱা যেন লাগিছে: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">পৰিভাষা</translation>
+<translation id="6281588256137006900">দৃশ্যমানতা</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">চিত্ৰৰ ভিতৰত চিত্ৰ ম’ডৰ পৰা বাহিৰ হওক</translation>
 <translation id="6398862346408813489">মাহ বাছনি কৰা পেনেল দেখুৱাওক</translation>
@@ -178,6 +188,7 @@
 <translation id="6790428901817661496">প্লে’ কৰক</translation>
 <translation id="6820355525329141109">প্লাগইন ল'ড কৰিব পৰা নগ'ল।</translation>
 <translation id="6820615603175220800">গ্ৰন্থপঞ্জীৰ প্ৰসংগ</translation>
+<translation id="6831465880655513317">সংপৃক্তি আৰু দৃশ্যমানতা বাছনি কৰিবলৈ দ্বিমাত্ৰিক শ্লাইডাৰযুক্ত ৰঙৰ বাকচ</translation>
 <translation id="6843725295806269523">মিউট কৰক</translation>
 <translation id="6885760532393684712">ডাইৰেক্টৰী</translation>
 <translation id="689129560213475294">ক'ল'ফ'ন</translation>
@@ -195,6 +206,7 @@
 <translation id="7263440858009898357">অনুগ্ৰহ কৰি সূচীৰ কোনো বস্তু বাছনি কৰক।</translation>
 <translation id="727747134524199931">স্তম্ভ হে’ডাৰ</translation>
 <translation id="7320576522385648310">বাফাৰ হৈ আছে</translation>
+<translation id="7341556277900466204">ৰঙৰ বাকচ</translation>
 <translation id="7353453495576941748">ক্ৰেডিট</translation>
 <translation id="7364796246159120393">ফাইল বাছনি কৰক</translation>
 <translation id="739024184232394898">অন্যান্য...</translation>
@@ -215,9 +227,11 @@
 <translation id="775297008183122718">অমান্য অন্তৰ্ভুক্তি</translation>
 <translation id="7789962463072032349">প’জ কৰক</translation>
 <translation id="7802800022689234070">উন্মোক্তকৰণ ত্ৰিভুজ</translation>
+<translation id="7852167693871241274">ৰং শ্লাইডাৰ</translation>
 <translation id="7888071071722539607">অনুগ্ৰহ কৰি ইমেইল ঠিকনাত কোনো ’<ph name="ATSIGN" />’ অন্তর্ভুক্ত কৰক। ’<ph name="INVALIDADDRESS" />’ত কোনো ’<ph name="ATSIGN" />’ নাই।</translation>
 <translation id="7891486169920085145">ৱিণ্ড’ক দুটা অংশত ভাগ কৰোঁতা</translation>
 <translation id="795667975304826397">কোনো ফাইল বাছনি কৰা হোৱা নাই</translation>
+<translation id="7962328325860248200"><ph name="ACCNAME" /> বাছনি কৰা হোৱা নাই</translation>
 <translation id="8034303206267677282">শক্তিশালী</translation>
 <translation id="8053789581856978548">সন্ধান কৰিবলগীয়া পাঠৰ ক্ষেত্ৰ</translation>
 <translation id="8057695513531652401">জাননী</translation>
@@ -230,6 +244,7 @@
 <translation id="8284326494547611709">কেপশ্বন</translation>
 <translation id="8346634859695247203">শাখা</translation>
 <translation id="835897206747267392">অমান্য মান।</translation>
+<translation id="839593075537728968">মানটো <ph name="MINIMUM_TIME" /> আৰু <ph name="MAXIMUM_TIME" />ৰ মাজৰ হ’বই লাগিব।</translation>
 <translation id="8403857369060869934">পাৰ হোৱা সময়: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">খণ্ড</translation>
 <translation id="8433900881053900389">টুলবাৰ</translation>
@@ -246,17 +261,19 @@
 <translation id="860475260694818407">বিষয়বস্তুৰ তালিকা</translation>
 <translation id="8613126697340063924">ৰিম’ট প্লে’বেক নিয়ন্ত্ৰণ কৰক</translation>
 <translation id="862370744433916922">ছাবটাইটেল</translation>
+<translation id="8634971699417195529">মাহ বাছনিকৰ্তা দেখুৱাওক</translation>
 <translation id="8711688047404765493">আউটপুট</translation>
 <translation id="8750798805984357768">অনুগ্ৰহ কৰি এই বিকল্পসমূহৰ এটা বাছনি কৰক।</translation>
 <translation id="8808573423886751634">অধ্যায়</translation>
 <translation id="8845239796550121995">বর্তমান আপোনাৰ TVত কাষ্টিং কৰি আছে</translation>
 <translation id="8851136666856101339">মুখ্য</translation>
 <translation id="8875657656876809964">ভিডিঅ’ প্লে‘বেক আসোঁৱাহ</translation>
+<translation id="8889402386540077796">হুই</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">ফৰ্মেট ট’গল কৰোঁতা</translation>
 <translation id="8987927404178983737">মাহ</translation>
 <translation id="901493112792887934">ছেকেণ্ডৰ আৰ্হিত বৰ্তমানৰ সময়</translation>
 <translation id="901834265349196618">ইমেইল</translation>
-<translation id="9023835124071926463">মন্তব্যৰ শাখা</translation>
 <translation id="9048119486235211610">নেভিগেশ্বন</translation>
 <translation id="9062295712474918030">নথি</translation>
 <translation id="9093215626363556771">চিত্ৰ ভিতৰত চিত্ৰ ম’ডৰ পৰা প্ৰস্থান কৰক</translation>

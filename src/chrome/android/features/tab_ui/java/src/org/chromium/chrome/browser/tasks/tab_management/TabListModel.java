@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.MessageCardViewProperties.MESSAGE_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_ALPHA;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.MESSAGE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.NEW_TAB_TILE;
@@ -26,6 +28,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
+// TODO(meiliang): Rename TabListModel to CardListModel, since this ModelList not only contains
+// Tabs anymore.
 /**
  * A {@link PropertyListModel} implementation to keep information about a list of
  * {@link org.chromium.chrome.browser.tab.Tab}s.
@@ -66,6 +70,34 @@ class TabListModel extends ModelList {
     }
 
     /**
+     * Get the index that matches a message item that has the given message type.
+     * @param messageType The message type to match.
+     * @return The index within the model.
+     */
+    public int lastIndexForMessageItemFromType(int messageType) {
+        for (int i = size() - 1; i >= 0; i--) {
+            PropertyModel model = get(i).model;
+            if (model.get(CARD_TYPE) == MESSAGE && model.get(MESSAGE_TYPE) == messageType) {
+                return i;
+            }
+        }
+        return TabModel.INVALID_TAB_INDEX;
+    }
+
+    /**
+     * Get the last index of a message item.
+     */
+    public int lastIndexForMessageItem() {
+        for (int i = size() - 1; i >= 0; i--) {
+            PropertyModel model = get(i).model;
+            if (model.get(CARD_TYPE) == MESSAGE) {
+                return i;
+            }
+        }
+        return TabModel.INVALID_TAB_INDEX;
+    }
+
+    /**
      * Get the index that matches the new tab tile in TabListModel.
      * @return The index within the model.
      */
@@ -101,6 +133,7 @@ class TabListModel extends ModelList {
      * @param index         The index of the item in {@link TabListModel} that needs to be updated.
      */
     void updateTabListModelIdForGroup(Tab selectedTab, int index) {
+        if (get(index).model.get(CARD_TYPE) != TAB) return;
         get(index).model.set(TabProperties.TAB_ID, selectedTab.getId());
     }
 
@@ -139,15 +172,16 @@ class TabListModel extends ModelList {
      *         state. If not, restore it to original state.
      */
     void updateSelectedTabForMergeToGroup(int index, boolean isSelected) {
+        if (index < 0 || index >= size()) return;
+
+        assert get(index).model.get(CARD_TYPE) == TAB;
+
         int status = isSelected ? ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_IN
                                 : ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_OUT;
-        if (index < 0 || index >= size()
-                || get(index).model.get(TabProperties.CARD_ANIMATION_STATUS) == status) {
-            return;
-        }
+        if (get(index).model.get(TabProperties.CARD_ANIMATION_STATUS) == status) return;
 
         get(index).model.set(TabProperties.CARD_ANIMATION_STATUS, status);
-        get(index).model.set(TabProperties.ALPHA, isSelected ? 0.8f : 1f);
+        get(index).model.set(CARD_ALPHA, isSelected ? 0.8f : 1f);
     }
 
     /**
@@ -159,12 +193,14 @@ class TabListModel extends ModelList {
      *         If not, restore it to original state.
      */
     void updateHoveredTabForMergeToGroup(int index, boolean isHovered) {
+        if (index < 0 || index >= size()) return;
+
+        assert get(index).model.get(CARD_TYPE) == TAB;
+
         int status = isHovered ? ClosableTabGridView.AnimationStatus.HOVERED_CARD_ZOOM_IN
                                : ClosableTabGridView.AnimationStatus.HOVERED_CARD_ZOOM_OUT;
-        if (index < 0 || index >= size()
-                || get(index).model.get(TabProperties.CARD_ANIMATION_STATUS) == status) {
-            return;
-        }
+        if (get(index).model.get(TabProperties.CARD_ANIMATION_STATUS) == status) return;
+
         get(index).model.set(TabProperties.CARD_ANIMATION_STATUS, status);
     }
 }

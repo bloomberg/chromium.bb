@@ -114,6 +114,15 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     };
 
     setup(function() {
+      const routes = {
+        BASIC: new settings.Route('/'),
+      };
+      routes.PEOPLE = routes.BASIC.createSection('/people', 'people');
+      routes.KERBEROS_ACCOUNTS = routes.PEOPLE.createChild('/kerberosAccounts');
+
+      settings.Router.resetInstanceForTesting(new settings.Router(routes));
+      settings.routes = routes;
+
       browserProxy = new TestKerberosAccountsBrowserProxy();
       settings.KerberosAccountsBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
@@ -231,7 +240,8 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       const principal_name = testAccounts[Account.FIRST].principalName;
       const params = new URLSearchParams;
       params.append('kerberos_reauth', principal_name);
-      settings.navigateTo(settings.routes.KERBEROS_ACCOUNTS, params);
+      settings.Router.getInstance().navigateTo(
+          settings.routes.KERBEROS_ACCOUNTS, params);
 
       // The flushTasks is necessary since the kerberos_reauth param would
       // otherwise be handled AFTER the callback below is executed.
@@ -590,8 +600,8 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       assertFalse(actionButton.disabled);
     });
 
-    // If the account has passwordWasRemembered == true and the user just clicks
-    // the 'Add' button, an empty password is submitted.
+    // If the account has passwordWasRemembered === true and the user just
+    // clicks the 'Add' button, an empty password is submitted.
     test('SubmitsEmptyPasswordIfRememberedPasswordIsUsed', async () => {
       assertTrue(testAccounts[1].passwordWasRemembered);
       createDialog(testAccounts[1]);
@@ -601,8 +611,8 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       assertTrue(args[AddParams.REMEMBER_PASSWORD]);
     });
 
-    // If the account has passwordWasRemembered == true and the user changes the
-    // password before clicking the action button, the changed password is
+    // If the account has passwordWasRemembered === true and the user changes
+    // the password before clicking the action button, the changed password is
     // submitted.
     test('SubmitsChangedPasswordIfRememberedPasswordIsChanged', async () => {
       assertTrue(testAccounts[1].passwordWasRemembered);

@@ -102,10 +102,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // The page is trying to move the RenderView's representation in the client.
   virtual void RequestSetBounds(const gfx::Rect& new_bounds) {}
 
-  // The RenderView's main frame document element is ready. This happens when
-  // the document has finished parsing.
-  virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) {}
-
   // The page wants to close the active view in this tab.
   virtual void RouteCloseEvent(RenderViewHost* rvh) {}
 
@@ -127,22 +123,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // The contents' preferred size changed.
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
 
-  // The page is trying to open a new widget (e.g. a select popup). The
-  // widget should be created associated with the given |route_id| in the
-  // process |render_process_id|, but it should not be shown yet. That should
-  // happen in response to ShowCreatedWidget.
-  virtual void CreateNewWidget(int32_t render_process_id,
-                               int32_t widget_route_id,
-                               mojo::PendingRemote<mojom::Widget> widget,
-                               RenderViewHostImpl* render_view_host) {}
-
-  // Creates a full screen RenderWidget. Similar to above.
-  virtual void CreateNewFullscreenWidget(
-      int32_t render_process_id,
-      int32_t widget_route_id,
-      mojo::PendingRemote<mojom::Widget> widget,
-      RenderViewHostImpl* render_view_host) {}
-
   // Show the newly created widget with the specified bounds.
   // The widget is identified by the route_id passed to CreateNewWidget.
   virtual void ShowCreatedWidget(int process_id,
@@ -162,8 +142,9 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // to this view.
   virtual SessionStorageNamespaceMap GetSessionStorageNamespaceMap();
 
-  // Returns true if the RenderViewHost will never be visible.
-  virtual bool IsNeverVisible();
+  // Returns true if RenderWidgets under this RenderViewHost will never be
+  // user-visible and thus never need to generate pixels for display.
+  virtual bool IsNeverComposited();
 
   // Returns the FrameTree the render view should use. Guaranteed to be constant
   // for the lifetime of the render view.
@@ -199,7 +180,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) {}
 
   // Returns true if the render view is rendering a portal.
-  virtual bool IsPortal() const;
+  virtual bool IsPortal();
 
   // Called when the theme color for the underlying document as specified
   // by theme-color meta tag has changed.

@@ -26,11 +26,12 @@ class VaapiWrapper;
 class VaapiPictureNativePixmapOzone : public VaapiPictureNativePixmap {
  public:
   VaapiPictureNativePixmapOzone(
-      const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+      scoped_refptr<VaapiWrapper> vaapi_wrapper,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb_,
       int32_t picture_buffer_id,
       const gfx::Size& size,
+      const gfx::Size& visible_size,
       uint32_t texture_id,
       uint32_t client_texture_id,
       uint32_t texture_target);

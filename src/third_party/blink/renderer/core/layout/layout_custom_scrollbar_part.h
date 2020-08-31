@@ -83,7 +83,7 @@ class LayoutCustomScrollbarPart final : public LayoutBlock {
  private:
   LayoutCustomScrollbarPart(ScrollableArea*, CustomScrollbar*, ScrollbarPart);
 
-  void ComputePreferredLogicalWidths() override;
+  MinMaxSizes PreferredLogicalWidths() const override;
 
   // Have all padding getters return 0. The important point here is to avoid
   // resolving percents against the containing block, since scroll bar corners
@@ -104,6 +104,8 @@ class LayoutCustomScrollbarPart final : public LayoutBlock {
   void SetNeedsPaintInvalidation();
 
   bool AllowsOverflowClip() const override { return false; }
+
+  void RecordPercentLengthStats() const;
 
   UntracedMember<ScrollableArea> scrollable_area_;
   UntracedMember<CustomScrollbar> scrollbar_;

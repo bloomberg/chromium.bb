@@ -28,14 +28,3 @@ std::string QuicGetTestMemoryCachePathImpl() {
   return path.MaybeAsASCII();
 }
 
-namespace quic {
-ParsedQuicVersionVector AllVersionsExcept99() {
-  ParsedQuicVersionVector result;
-  for (const ParsedQuicVersion& version : AllSupportedVersions()) {
-    if (version.transport_version != QUIC_VERSION_99) {
-      result.push_back(version);
-    }
-  }
-  return result;
-}
-}  // namespace quic

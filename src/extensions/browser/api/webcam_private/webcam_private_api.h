@@ -202,6 +202,59 @@ class WebcamPrivateResetFunction : public ExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(WebcamPrivateResetFunction);
 };
 
+class WebcamPrivateSetHomeFunction : public ExtensionFunction {
+ public:
+  WebcamPrivateSetHomeFunction();
+  DECLARE_EXTENSION_FUNCTION("webcamPrivate.setHome", WEBCAMPRIVATE_SET_HOME)
+
+ protected:
+  ~WebcamPrivateSetHomeFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  void OnSetHomeWebcam(bool success);
+
+  DISALLOW_COPY_AND_ASSIGN(WebcamPrivateSetHomeFunction);
+};
+
+class WebcamPrivateRestoreCameraPresetFunction : public ExtensionFunction {
+ public:
+  WebcamPrivateRestoreCameraPresetFunction();
+  DECLARE_EXTENSION_FUNCTION("webcamPrivate.restoreCameraPreset",
+                             WEBCAMPRIVATE_RESTORE_CAMERA_PRESET)
+
+ protected:
+  ~WebcamPrivateRestoreCameraPresetFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  void OnRestoreCameraPresetWebcam(bool success);
+
+  DISALLOW_COPY_AND_ASSIGN(WebcamPrivateRestoreCameraPresetFunction);
+};
+
+class WebcamPrivateSetCameraPresetFunction : public ExtensionFunction {
+ public:
+  WebcamPrivateSetCameraPresetFunction();
+  DECLARE_EXTENSION_FUNCTION("webcamPrivate.setCameraPreset",
+                             WEBCAMPRIVATE_SET_CAMERA_PRESET)
+
+ protected:
+  ~WebcamPrivateSetCameraPresetFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  void OnSetCameraPresetWebcam(bool success);
+
+  DISALLOW_COPY_AND_ASSIGN(WebcamPrivateSetCameraPresetFunction);
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_WEBCAM_PRIVATE_WEBCAM_PRIVATE_API_H_

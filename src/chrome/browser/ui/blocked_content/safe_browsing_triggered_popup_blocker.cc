@@ -12,8 +12,8 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/db/util.h"
-#include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/db/util.h"
+#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/navigation_handle.h"
@@ -153,23 +153,16 @@ void SafeBrowsingTriggeredPopupBlocker::DidFinishNavigation(
 // safe browsing callbacks. See the comment above for the mitigation.
 void SafeBrowsingTriggeredPopupBlocker::OnSafeBrowsingChecksComplete(
     content::NavigationHandle* navigation_handle,
-    const SafeBrowsingCheckResults& results) {
+    const subresource_filter::SubresourceFilterSafeBrowsingClient::CheckResult&
+        result) {
   DCHECK(navigation_handle->IsInMainFrame());
   base::Optional<safe_browsing::SubresourceFilterLevel> match_level;
-  base::Optional<size_t> match_index;
-  for (size_t i = 0u; i < results.size(); ++i) {
-    const auto& result = results[i];
-    if (result.threat_type !=
-        safe_browsing::SBThreatType::SB_THREAT_TYPE_SUBRESOURCE_FILTER)
-      continue;
-
+  if (result.threat_type ==
+      safe_browsing::SBThreatType::SB_THREAT_TYPE_SUBRESOURCE_FILTER) {
     auto abusive = result.threat_metadata.subresource_filter_match.find(
         safe_browsing::SubresourceFilterType::ABUSIVE);
-    if (abusive != result.threat_metadata.subresource_filter_match.end() &&
-        (!match_level.has_value() || match_level.value() < abusive->second)) {
+    if (abusive != result.threat_metadata.subresource_filter_match.end())
       match_level = abusive->second;
-      match_index = i;
-    }
   }
 
   if (match_level.has_value()) {

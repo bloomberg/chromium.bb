@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "chrome/browser/chromeos/ui/idle_app_name_notification_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -120,8 +120,8 @@ void KioskModeIdleAppNameNotification::ResetTimer() {
     timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kIdleAppNameNotificationTimeoutMs),
-        base::Bind(&KioskModeIdleAppNameNotification::OnTimeout,
-                   base::Unretained(this)));
+        base::BindOnce(&KioskModeIdleAppNameNotification::OnTimeout,
+                       base::Unretained(this)));
   }
 }
 

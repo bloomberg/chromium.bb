@@ -11,16 +11,18 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -95,9 +97,8 @@ scoped_refptr<SandboxChildProcess> SetupSandboxedChildProcess() {
 // Execute |closure| on a different sequence since it could block and we don't
 // want to block on the Mojo thread.
 void InvokeOnOtherSequence(base::OnceClosure closure) {
-  base::PostTask(FROM_HERE,
-                 {base::ThreadPool(), base::WithBaseSyncPrimitives()},
-                 std::move(closure));
+  base::ThreadPool::PostTask(FROM_HERE, {base::WithBaseSyncPrimitives()},
+                             std::move(closure));
 }
 
 }  // namespace
@@ -322,7 +323,7 @@ class TestEngineRequestInvoker {
   }
 
   static void OpenReadOnlyFileCallback(base::OnceClosure closure,
-                                       mojo::ScopedHandle /*handle*/) {
+                                       mojo::PlatformHandle /*handle*/) {
     InvokeOnOtherSequence(std::move(closure));
   }
 
@@ -437,7 +438,9 @@ class TestEngineRequestInvoker {
 };
 
 MULTIPROCESS_TEST_MAIN(EngineRequestsNoBlocking) {
-  base::test::TaskEnvironment task_environment;
+  // COM can't be initialized inside the sandbox.
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::ThreadPoolCOMEnvironment::NONE);
 
   auto child_process = SetupSandboxedChildProcess();
   if (!child_process)
@@ -520,11 +523,6 @@ class EngineRequestsNoBlockingTest
     : public ::testing::TestWithParam<const char*> {};
 
 TEST_P(EngineRequestsNoBlockingTest, TestRequest) {
-  // All of these tests fail when run on win8 bots so return right away.
-  // TODO(crbug.com/947576): Find out why and re-enable them.
-  if (base::win::GetVersion() == base::win::Version::WIN8)
-    return;
-
   base::test::TaskEnvironment task_environment;
 
   // This event will be shared between the parent and child processes. The

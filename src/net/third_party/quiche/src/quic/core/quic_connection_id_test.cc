@@ -9,9 +9,9 @@
 #include <string>
 
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_arraysize.h"
 
 namespace quic {
 
@@ -92,7 +92,7 @@ TEST_F(QuicConnectionIdTest, Hash) {
 
   // Verify that any two all-zero connection IDs of different lengths never
   // have the same hash.
-  const char connection_id_bytes[kQuicMaxConnectionIdAllVersionsLength] = {};
+  const char connection_id_bytes[255] = {};
   for (uint8_t i = 0; i < sizeof(connection_id_bytes) - 1; ++i) {
     QuicConnectionId connection_id_i(connection_id_bytes, i);
     for (uint8_t j = i + 1; j < sizeof(connection_id_bytes); ++j) {

@@ -43,7 +43,7 @@ namespace dawn_native { namespace vulkan { namespace external_semaphore {
         semaphoreProperties.sType = VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES_KHR;
         semaphoreProperties.pNext = nullptr;
 
-        mDevice->fn.GetPhysicalDeviceExternalSemaphorePropertiesKHR(
+        mDevice->fn.GetPhysicalDeviceExternalSemaphoreProperties(
             ToBackend(mDevice->GetAdapter())->GetPhysicalDevice(), &semaphoreInfo,
             &semaphoreProperties);
 
@@ -72,7 +72,7 @@ namespace dawn_native { namespace vulkan { namespace external_semaphore {
         info.flags = 0;
 
         DAWN_TRY(CheckVkSuccess(
-            mDevice->fn.CreateSemaphore(mDevice->GetVkDevice(), &info, nullptr, &semaphore),
+            mDevice->fn.CreateSemaphore(mDevice->GetVkDevice(), &info, nullptr, &*semaphore),
             "vkCreateSemaphore"));
 
         VkImportSemaphoreZirconHandleInfoFUCHSIA importSempahoreHandleInfo;
@@ -112,7 +112,7 @@ namespace dawn_native { namespace vulkan { namespace external_semaphore {
         VkSemaphore signalSemaphore;
         DAWN_TRY(
             CheckVkSuccess(mDevice->fn.CreateSemaphore(mDevice->GetVkDevice(), &semaphoreCreateInfo,
-                                                       nullptr, &signalSemaphore),
+                                                       nullptr, &*signalSemaphore),
                            "vkCreateSemaphore"));
         return signalSemaphore;
     }

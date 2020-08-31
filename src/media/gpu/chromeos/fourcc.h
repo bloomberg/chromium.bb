@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "base/optional.h"
 #include "media/base/video_types.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/media_gpu_export.h"
@@ -107,39 +108,36 @@ class MEDIA_GPU_EXPORT Fourcc {
     // Maps to V4L2_PIX_FMT_MM21.
     // It is used for MT8183 hardware video decoder.
     MM21 = ComposeFourcc('M', 'M', '2', '1'),
-
-    // Invalid
-    INVALID = 0,
   };
 
-  // Constructor for invalid Fourcc.
-  Fourcc();
   explicit Fourcc(Fourcc::Value fourcc);
   Fourcc& operator=(const Fourcc& fourcc);
   ~Fourcc();
 
   bool operator==(const Fourcc& rhs) const { return value_ == rhs.value_; }
-  bool operator==(uint32_t rhs) const {
-    return static_cast<uint32_t>(value_) == rhs;
-  }
-  explicit operator bool() const { return value_ != Fourcc::INVALID; }
 
   // Factory methods:
+
+  // Builds a Fourcc from a given fourcc code. This will return a valid
+  // Fourcc if the argument is part of the |Value| enum, or nullopt otherwise.
+  static base::Optional<Fourcc> FromUint32(uint32_t fourcc);
+
   // Converts a VideoPixelFormat to Fourcc.
-  // Returns Fourcc::INVALID for invalid input.
+  // Returns nullopt for invalid input.
   // Note that a VideoPixelFormat may have two Fourcc counterparts. Caller has
   // to specify if it is for single-planar or multi-planar format.
-  static Fourcc FromVideoPixelFormat(VideoPixelFormat pixel_format,
-                                     bool single_planar = true);
+  static base::Optional<Fourcc> FromVideoPixelFormat(
+      VideoPixelFormat pixel_format,
+      bool single_planar = true);
 #if BUILDFLAG(USE_V4L2_CODEC)
   // Converts a V4L2PixFmt to Fourcc.
-  // Returns Fourcc::INVALID for invalid input.
-  static Fourcc FromV4L2PixFmt(uint32_t v4l2_pix_fmt);
+  // Returns nullopt for invalid input.
+  static base::Optional<Fourcc> FromV4L2PixFmt(uint32_t v4l2_pix_fmt);
 #endif  // BUILDFLAG(USE_V4L2_CODEC)
 #if BUILDFLAG(USE_VAAPI)
   // Converts a VAFourCC to Fourcc.
-  // Returns Fourcc::INVALID for invalid input.
-  static Fourcc FromVAFourCC(uint32_t va_fourcc);
+  // Returns nullopt for invalid input.
+  static base::Optional<Fourcc> FromVAFourCC(uint32_t va_fourcc);
 #endif  // BUILDFLAG(USE_VAAPI)
 
   // Value getters:
@@ -153,9 +151,13 @@ class MEDIA_GPU_EXPORT Fourcc {
 #endif  // BUILDFLAG(USE_V4L2_CODEC)
 #if BUILDFLAG(USE_VAAPI)
   // Returns the VAFourCC counterpart of the value.
-  // Returns 0 if no mapping is found.
-  uint32_t ToVAFourCC() const;
+  // Returns nullopt if no mapping is found.
+  base::Optional<uint32_t> ToVAFourCC() const;
 #endif  // BUILDFLAG(USE_VAAPI)
+
+  // Returns the single-planar Fourcc of the value. If value is a single-planar,
+  // returns the same Fourcc. Returns nullopt if no mapping is found.
+  base::Optional<Fourcc> ToSinglePlanar() const;
 
   // Returns whether |value_| is multi planar format.
   bool IsMultiPlanar() const;
@@ -167,10 +169,7 @@ class MEDIA_GPU_EXPORT Fourcc {
   Value value_;
 };
 
-MEDIA_GPU_EXPORT bool operator==(uint32_t lhs, const Fourcc& rhs);
 MEDIA_GPU_EXPORT bool operator!=(const Fourcc& lhs, const Fourcc& rhs);
-MEDIA_GPU_EXPORT bool operator!=(uint32_t lhs, const Fourcc& rhs);
-MEDIA_GPU_EXPORT bool operator!=(const Fourcc& lhs, uint32_t rhs);
 
 }  // namespace media
 

@@ -24,10 +24,22 @@ class FaviconService;
 
 namespace sync_bookmarks {
 
+// Canonicalize |node_title| similar to legacy client's implementation by
+// truncating and the appending ' ' in some cases.
+std::string FullTitleToLegacyCanonicalizedTitle(const std::string& node_title);
+
+// Used to decide if entity needs to be reuploaded for each remote change which
+// is true if the proto field for the full title is missing.
+bool IsFullTitleReuploadNeeded(const sync_pb::BookmarkSpecifics& specifics);
+
+// TODO(crbug.com/978430): Remove argument |include_guid| once the client tag
+// hash is required to be populated during sync metadata validation upon
+// startup in SyncedBookmarkTracker::BookmarkModelMatchesMetadata().
 sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
     const bookmarks::BookmarkNode* node,
     bookmarks::BookmarkModel* model,
-    bool force_favicon_load);
+    bool force_favicon_load,
+    bool include_guid);
 
 // Creates a bookmark node under the given parent node from the given specifics.
 // Returns the newly created node. Callers must verify that
@@ -64,6 +76,15 @@ const bookmarks::BookmarkNode* ReplaceBookmarkNodeGUID(
 // unique.
 bool IsValidBookmarkSpecifics(const sync_pb::BookmarkSpecifics& specifics,
                               bool is_folder);
+
+// Checks if bookmark specifics contain a GUID that matches the value that would
+// be inferred from other redundant fields. |specifics| must be valid as per
+// IsValidBookmarkSpecifics().
+// TODO(crbug.com/1032052): Replace this with an analogous function that
+// verifies that the bookmark's client tag hash matches the GUID.
+bool HasExpectedBookmarkGuid(const sync_pb::BookmarkSpecifics& specifics,
+                             const std::string& originator_cache_guid,
+                             const std::string& originator_client_item_id);
 
 }  // namespace sync_bookmarks
 

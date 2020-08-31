@@ -2,24 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../common/common.js';
+import * as UI from '../ui/ui.js';
+
 /**
  * @implements {UI.SoftDropDown.Delegate<!Protocol.WebAudio.BaseAudioContext>}
  */
-export class AudioContextSelector extends Common.Object {
+export class AudioContextSelector extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
 
     /** @type {string} */
     this._placeholderText = ls`(no recordings)`;
 
-    /** @type {!UI.ListModel<!Protocol.WebAudio.BaseAudioContext>} */
-    this._items = new UI.ListModel();
+    /** @type {!UI.ListModel.ListModel<!Protocol.WebAudio.BaseAudioContext>} */
+    this._items = new UI.ListModel.ListModel();
 
-    /** @type {!UI.SoftDropDown<!Protocol.WebAudio.BaseAudioContext>} */
-    this._dropDown = new UI.SoftDropDown(this._items, this);
+    /** @type {!UI.SoftDropDown.SoftDropDown<!Protocol.WebAudio.BaseAudioContext>} */
+    this._dropDown = new UI.SoftDropDown.SoftDropDown(this._items, this);
     this._dropDown.setPlaceholderText(this._placeholderText);
 
-    this._toolbarItem = new UI.ToolbarItem(this._dropDown.element);
+    this._toolbarItem = new UI.Toolbar.ToolbarItem(this._dropDown.element);
     this._toolbarItem.setEnabled(false);
     this._toolbarItem.setTitle(ls`Audio context: ${this._placeholderText}`);
     this._items.addEventListener(UI.ListModel.Events.ItemsReplaced, this._onListItemReplaced, this);
@@ -38,7 +41,7 @@ export class AudioContextSelector extends Common.Object {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   contextCreated(event) {
     const context = /** @type {!Protocol.WebAudio.BaseAudioContext} */ (event.data);
@@ -51,7 +54,7 @@ export class AudioContextSelector extends Common.Object {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   contextDestroyed(event) {
     const contextId = /** @type {!Protocol.WebAudio.GraphObjectId} */ (event.data);
@@ -62,7 +65,7 @@ export class AudioContextSelector extends Common.Object {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   contextChanged(event) {
     const changedContext = /** @type {!Protocol.WebAudio.BaseAudioContext} */ (event.data);
@@ -84,8 +87,8 @@ export class AudioContextSelector extends Common.Object {
    * @return {!Element}
    */
   createElementForItem(item) {
-    const element = createElementWithClass('div');
-    const shadowRoot = UI.createShadowRootWithCoreStyles(element, 'web_audio/audioContextSelector.css');
+    const element = document.createElement('div');
+    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(element, 'web_audio/audioContextSelector.css');
     const title = shadowRoot.createChild('div', 'title');
     title.createTextChild(this.titleFor(item).trimEndWithMaxLength(100));
     return element;
@@ -159,7 +162,7 @@ export class AudioContextSelector extends Common.Object {
   }
 
   /**
-   * @return {!UI.ToolbarItem}
+   * @return {!UI.Toolbar.ToolbarItem}
    */
   toolbarItem() {
     return this._toolbarItem;
@@ -170,17 +173,3 @@ export class AudioContextSelector extends Common.Object {
 export const Events = {
   ContextSelected: Symbol('ContextSelected')
 };
-
-/* Legacy exported object */
-self.WebAudio = self.WebAudio || {};
-
-/* Legacy exported object */
-WebAudio = WebAudio || {};
-
-/**
- * @constructor
- */
-WebAudio.AudioContextSelector = AudioContextSelector;
-
-/** @enum {symbol} */
-WebAudio.AudioContextSelector.Events = Events;

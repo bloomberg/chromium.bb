@@ -4,7 +4,7 @@
 
 #include "components/optimization_guide/url_pattern_with_wildcards.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 
 namespace {
@@ -45,6 +45,8 @@ URLPatternWithWildcards::URLPatternWithWildcards(const std::string& url_pattern)
   DCHECK(!split_subpatterns_.empty());
 }
 
+URLPatternWithWildcards::URLPatternWithWildcards(
+    const URLPatternWithWildcards& other) = default;
 URLPatternWithWildcards::~URLPatternWithWildcards() = default;
 
 bool URLPatternWithWildcards::Matches(const std::string& url_string) const {

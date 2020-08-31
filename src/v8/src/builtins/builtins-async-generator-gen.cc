@@ -148,7 +148,7 @@ void AsyncGeneratorBuiltinsAssembler::AsyncGeneratorEnqueue(
   // presently executing, then this method will loop through, processing each
   // request from front to back.
   // This loop resides in AsyncGeneratorResumeNext.
-  TNode<JSPromise> promise = AllocateAndInitJSPromise(context);
+  TNode<JSPromise> promise = NewJSPromise(context);
 
   Label if_receiverisincompatible(this, Label::kDeferred);
   GotoIf(TaggedIsSmi(receiver), &if_receiverisincompatible);
@@ -242,12 +242,10 @@ void AsyncGeneratorBuiltinsAssembler::AsyncGeneratorAwait(bool is_catchable) {
   TNode<JSPromise> outer_promise = LoadObjectField<JSPromise>(
       request, AsyncGeneratorRequest::kPromiseOffset);
 
-  const int resolve_index = Context::ASYNC_GENERATOR_AWAIT_RESOLVE_SHARED_FUN;
-  const int reject_index = Context::ASYNC_GENERATOR_AWAIT_REJECT_SHARED_FUN;
-
   SetGeneratorAwaiting(async_generator_object);
-  Await(context, async_generator_object, value, outer_promise, resolve_index,
-        reject_index, is_catchable);
+  Await(context, async_generator_object, value, outer_promise,
+        AsyncGeneratorAwaitResolveSharedFunConstant(),
+        AsyncGeneratorAwaitRejectSharedFunConstant(), is_catchable);
   Return(UndefinedConstant());
 }
 
@@ -311,8 +309,8 @@ AsyncGeneratorBuiltinsAssembler::TakeFirstAsyncGeneratorRequestFromQueue(
 TF_BUILTIN(AsyncGeneratorPrototypeNext, AsyncGeneratorBuiltinsAssembler) {
   const int kValueArg = 0;
 
-  TNode<IntPtrT> argc =
-      ChangeInt32ToIntPtr(Parameter(Descriptor::kJSActualArgumentsCount));
+  TNode<IntPtrT> argc = ChangeInt32ToIntPtr(
+      UncheckedCast<Int32T>(Parameter(Descriptor::kJSActualArgumentsCount)));
   CodeStubArguments args(this, argc);
 
   TNode<Object> generator = args.GetReceiver();
@@ -329,8 +327,8 @@ TF_BUILTIN(AsyncGeneratorPrototypeNext, AsyncGeneratorBuiltinsAssembler) {
 TF_BUILTIN(AsyncGeneratorPrototypeReturn, AsyncGeneratorBuiltinsAssembler) {
   const int kValueArg = 0;
 
-  TNode<IntPtrT> argc =
-      ChangeInt32ToIntPtr(Parameter(Descriptor::kJSActualArgumentsCount));
+  TNode<IntPtrT> argc = ChangeInt32ToIntPtr(
+      UncheckedCast<Int32T>(Parameter(Descriptor::kJSActualArgumentsCount)));
   CodeStubArguments args(this, argc);
 
   TNode<Object> generator = args.GetReceiver();
@@ -347,8 +345,8 @@ TF_BUILTIN(AsyncGeneratorPrototypeReturn, AsyncGeneratorBuiltinsAssembler) {
 TF_BUILTIN(AsyncGeneratorPrototypeThrow, AsyncGeneratorBuiltinsAssembler) {
   const int kValueArg = 0;
 
-  TNode<IntPtrT> argc =
-      ChangeInt32ToIntPtr(Parameter(Descriptor::kJSActualArgumentsCount));
+  TNode<IntPtrT> argc = ChangeInt32ToIntPtr(
+      UncheckedCast<Int32T>(Parameter(Descriptor::kJSActualArgumentsCount)));
   CodeStubArguments args(this, argc);
 
   TNode<Object> generator = args.GetReceiver();
@@ -498,8 +496,8 @@ TF_BUILTIN(AsyncGeneratorResolve, AsyncGeneratorBuiltinsAssembler) {
   // Let iteratorResult be CreateIterResultObject(value, done).
   const TNode<HeapObject> iter_result = Allocate(JSIteratorResult::kSize);
   {
-    TNode<Object> map = LoadContextElement(LoadNativeContext(context),
-                                           Context::ITERATOR_RESULT_MAP_INDEX);
+    TNode<Map> map = CAST(LoadContextElement(
+        LoadNativeContext(context), Context::ITERATOR_RESULT_MAP_INDEX));
     StoreMapNoWriteBarrier(iter_result, map);
     StoreObjectFieldRoot(iter_result, JSIteratorResult::kPropertiesOrHashOffset,
                          RootIndex::kEmptyFixedArray);
@@ -573,12 +571,10 @@ TF_BUILTIN(AsyncGeneratorYield, AsyncGeneratorBuiltinsAssembler) {
   const TNode<JSPromise> outer_promise =
       LoadPromiseFromAsyncGeneratorRequest(request);
 
-  const int on_resolve = Context::ASYNC_GENERATOR_YIELD_RESOLVE_SHARED_FUN;
-  const int on_reject = Context::ASYNC_GENERATOR_AWAIT_REJECT_SHARED_FUN;
-
   SetGeneratorAwaiting(generator);
-  Await(context, generator, value, outer_promise, on_resolve, on_reject,
-        is_caught);
+  Await(context, generator, value, outer_promise,
+        AsyncGeneratorYieldResolveSharedFunConstant(),
+        AsyncGeneratorAwaitRejectSharedFunConstant(), is_caught);
   Return(UndefinedConstant());
 }
 
@@ -623,19 +619,17 @@ TF_BUILTIN(AsyncGeneratorReturn, AsyncGeneratorBuiltinsAssembler) {
       CAST(LoadFirstAsyncGeneratorRequestFromQueue(generator));
 
   Label perform_await(this);
-  TVARIABLE(IntPtrT, var_on_resolve,
-            IntPtrConstant(
-                Context::ASYNC_GENERATOR_RETURN_CLOSED_RESOLVE_SHARED_FUN));
-  TVARIABLE(
-      IntPtrT, var_on_reject,
-      IntPtrConstant(Context::ASYNC_GENERATOR_RETURN_CLOSED_REJECT_SHARED_FUN));
+  TVARIABLE(SharedFunctionInfo, var_on_resolve,
+            AsyncGeneratorReturnClosedResolveSharedFunConstant());
+
+  TVARIABLE(SharedFunctionInfo, var_on_reject,
+            AsyncGeneratorReturnClosedRejectSharedFunConstant());
 
   const TNode<Smi> state = LoadGeneratorState(generator);
   GotoIf(IsGeneratorStateClosed(state), &perform_await);
-  var_on_resolve =
-      IntPtrConstant(Context::ASYNC_GENERATOR_RETURN_RESOLVE_SHARED_FUN);
-  var_on_reject =
-      IntPtrConstant(Context::ASYNC_GENERATOR_AWAIT_REJECT_SHARED_FUN);
+  var_on_resolve = AsyncGeneratorReturnResolveSharedFunConstant();
+  var_on_reject = AsyncGeneratorAwaitRejectSharedFunConstant();
+
   Goto(&perform_await);
 
   BIND(&perform_await);

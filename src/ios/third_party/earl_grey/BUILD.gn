@@ -292,11 +292,9 @@ ios_framework_bundle("earl_grey") {
     "//ios/third_party/fishhook",
     "//ios/third_party/webkit",
   ]
-  public_deps = [
-    "//ios/third_party/ochamcrest:ochamcrest+link",
-  ]
+  public_deps = [ "//ios/third_party/ochamcrest:ochamcrest+link" ]
 
-  libs = [
+  frameworks = [
     "CoreData.framework",
     "CoreGraphics.framework",
     "Foundation.framework",
@@ -305,13 +303,13 @@ ios_framework_bundle("earl_grey") {
     "UIKit.framework",
     "XCTest.framework",
   ]
-  public_configs = [ ":config" ]
 
   configs -= [
     "//build/config/gcc:symbol_visibility_hidden",
     "//build/config/compiler:chromium_code",
   ]
   configs += [
+    ":config",
     "//build/config/compiler:no_chromium_code",
     "//build/config/compiler:enable_arc",
     "//build/config/gcc:symbol_visibility_default",

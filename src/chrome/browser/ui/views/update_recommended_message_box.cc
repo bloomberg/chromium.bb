@@ -21,10 +21,6 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/first_run/upgrade_util_mac.h"
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // UpdateRecommendedMessageBox, public:
 
@@ -39,10 +35,10 @@ void UpdateRecommendedMessageBox::Show(gfx::NativeWindow parent_window) {
 // UpdateRecommendedMessageBox, private:
 
 UpdateRecommendedMessageBox::UpdateRecommendedMessageBox() {
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_RELAUNCH_AND_UPDATE));
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
-                                   l10n_util::GetStringUTF16(IDS_NOT_NOW));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_RELAUNCH_AND_UPDATE));
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 l10n_util::GetStringUTF16(IDS_NOT_NOW));
   base::string16 update_message;
 #if defined(OS_CHROMEOS)
   update_message = l10n_util::GetStringUTF16(IDS_UPDATE_RECOMMENDED);
@@ -63,11 +59,6 @@ UpdateRecommendedMessageBox::~UpdateRecommendedMessageBox() {
 }
 
 bool UpdateRecommendedMessageBox::Accept() {
-#if defined(OS_MACOSX)
-  if (!upgrade_util::ShouldContinueToRelaunchForUpgrade())
-    return false;  // Leave the dialog up for the user to return to.
-#endif             // OS_MACOSX
-
   chrome::AttemptRelaunch();
   return true;
 }

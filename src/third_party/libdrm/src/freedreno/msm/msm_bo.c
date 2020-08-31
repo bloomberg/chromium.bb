@@ -26,10 +26,6 @@
  *    Rob Clark <robclark@freedesktop.org>
  */
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #include "msm_priv.h"
 
 static int bo_allocate(struct msm_bo *msm_bo)
@@ -108,6 +104,18 @@ static int msm_bo_madvise(struct fd_bo *bo, int willneed)
 	return req.retained;
 }
 
+static uint64_t msm_bo_iova(struct fd_bo *bo)
+{
+	struct drm_msm_gem_info req = {
+			.handle = bo->handle,
+			.flags = MSM_INFO_IOVA,
+	};
+
+	drmCommandWriteRead(bo->dev->fd, DRM_MSM_GEM_INFO, &req, sizeof(req));
+
+	return req.offset;
+}
+
 static void msm_bo_destroy(struct fd_bo *bo)
 {
 	struct msm_bo *msm_bo = to_msm_bo(bo);
@@ -120,6 +128,7 @@ static const struct fd_bo_funcs funcs = {
 		.cpu_prep = msm_bo_cpu_prep,
 		.cpu_fini = msm_bo_cpu_fini,
 		.madvise = msm_bo_madvise,
+		.iova = msm_bo_iova,
 		.destroy = msm_bo_destroy,
 };
 

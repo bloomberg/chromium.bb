@@ -250,18 +250,18 @@ static int cbs_write_se_golomb(CodedBitstreamContext *ctx, PutBitContext *pbc,
 #define SUBSCRIPTS(subs, ...) (subs > 0 ? ((int[subs + 1]){ subs, __VA_ARGS__ }) : NULL)
 
 #define u(width, name, range_min, range_max) \
-        xu(width, name, current->name, range_min, range_max, 0)
+        xu(width, name, current->name, range_min, range_max, 0, )
 #define ub(width, name) \
-        xu(width, name, current->name, 0, MAX_UINT_BITS(width), 0)
+        xu(width, name, current->name, 0, MAX_UINT_BITS(width), 0, )
 #define flag(name) ub(1, name)
 #define ue(name, range_min, range_max) \
-        xue(name, current->name, range_min, range_max, 0)
+        xue(name, current->name, range_min, range_max, 0, )
 #define i(width, name, range_min, range_max) \
-        xi(width, name, current->name, range_min, range_max, 0)
+        xi(width, name, current->name, range_min, range_max, 0, )
 #define ib(width, name) \
-        xi(width, name, current->name, MIN_INT_BITS(width), MAX_INT_BITS(width), 0)
+        xi(width, name, current->name, MIN_INT_BITS(width), MAX_INT_BITS(width), 0, )
 #define se(name, range_min, range_max) \
-        xse(name, current->name, range_min, range_max, 0)
+        xse(name, current->name, range_min, range_max, 0, )
 
 #define us(width, name, range_min, range_max, subs, ...) \
         xu(width, name, current->name, range_min, range_max, subs, __VA_ARGS__)
@@ -280,7 +280,7 @@ static int cbs_write_se_golomb(CodedBitstreamContext *ctx, PutBitContext *pbc,
 
 #define fixed(width, name, value) do { \
         av_unused uint32_t fixed_value = value; \
-        xu(width, name, fixed_value, value, value, 0); \
+        xu(width, name, fixed_value, value, value, 0, ); \
     } while (0)
 
 
@@ -565,10 +565,16 @@ static int cbs_h2645_fragment_add_nals(CodedBitstreamContext *ctx,
         AVBufferRef *ref;
         size_t size = nal->size;
 
+        if (nal->nuh_layer_id > 0)
+            continue;
+
         // Remove trailing zeroes.
         while (size > 0 && nal->data[size - 1] == 0)
             --size;
-        av_assert0(size > 0);
+        if (size == 0) {
+            av_log(ctx->log_ctx, AV_LOG_VERBOSE, "Discarding empty 0 NAL unit\n");
+            continue;
+        }
 
         ref = (nal->data == nal->raw_data) ? frag->data_ref
                                            : packet->rbsp.rbsp_buffer_ref;
@@ -610,7 +616,7 @@ static int cbs_h2645_split_fragment(CodedBitstreamContext *ctx,
         version = bytestream2_get_byte(&gbc);
         if (version != 1) {
             av_log(ctx->log_ctx, AV_LOG_ERROR, "Invalid AVCC header: "
-                   "first byte %u.", version);
+                   "first byte %u.\n", version);
             return AVERROR_INVALIDDATA;
         }
 
@@ -685,7 +691,7 @@ static int cbs_h2645_split_fragment(CodedBitstreamContext *ctx,
         version = bytestream2_get_byte(&gbc);
         if (version != 1) {
             av_log(ctx->log_ctx, AV_LOG_ERROR, "Invalid HVCC header: "
-                   "first byte %u.", version);
+                   "first byte %u.\n", version);
             return AVERROR_INVALIDDATA;
         }
 
@@ -855,15 +861,11 @@ static int cbs_h264_read_nal_unit(CodedBitstreamContext *ctx,
             if (err < 0)
                 return err;
 
+            if (!cbs_h2645_read_more_rbsp_data(&gbc))
+                return AVERROR_INVALIDDATA;
+
             pos = get_bits_count(&gbc);
             len = unit->data_size;
-            if (!unit->data[len - 1]) {
-                int z;
-                for (z = 0; z < len && !unit->data[len - z - 1]; z++);
-                av_log(ctx->log_ctx, AV_LOG_DEBUG, "Deleted %d trailing zeroes "
-                       "from slice data.\n", z);
-                len -= z;
-            }
 
             slice->data_size = len - pos / 8;
             slice->data_ref  = av_buffer_ref(unit->data_ref);
@@ -1037,15 +1039,11 @@ static int cbs_h265_read_nal_unit(CodedBitstreamContext *ctx,
             if (err < 0)
                 return err;
 
+            if (!cbs_h2645_read_more_rbsp_data(&gbc))
+                return AVERROR_INVALIDDATA;
+
             pos = get_bits_count(&gbc);
             len = unit->data_size;
-            if (!unit->data[len - 1]) {
-                int z;
-                for (z = 0; z < len && !unit->data[len - z - 1]; z++);
-                av_log(ctx->log_ctx, AV_LOG_DEBUG, "Deleted %d trailing zeroes "
-                       "from slice data.\n", z);
-                len -= z;
-            }
 
             slice->data_size = len - pos / 8;
             slice->data_ref  = av_buffer_ref(unit->data_ref);
@@ -1101,7 +1099,7 @@ static int cbs_h2645_write_slice_data(CodedBitstreamContext *ctx,
     const uint8_t *pos = data + data_bit_start / 8;
 
     av_assert0(data_bit_start >= 0 &&
-               8 * data_size > data_bit_start);
+               data_size > data_bit_start / 8);
 
     if (data_size * 8 + 8 > put_bits_left(pbc))
         return AVERROR(ENOSPC);
@@ -1380,65 +1378,6 @@ static int cbs_h265_write_nal_unit(CodedBitstreamContext *ctx,
     return 0;
 }
 
-static int cbs_h2645_write_nal_unit(CodedBitstreamContext *ctx,
-                                    CodedBitstreamUnit *unit)
-{
-    CodedBitstreamH2645Context *priv = ctx->priv_data;
-    enum AVCodecID codec_id = ctx->codec->codec_id;
-    PutBitContext pbc;
-    int err;
-
-    if (!priv->write_buffer) {
-        // Initial write buffer size is 1MB.
-        priv->write_buffer_size = 1024 * 1024;
-
-    reallocate_and_try_again:
-        err = av_reallocp(&priv->write_buffer, priv->write_buffer_size);
-        if (err < 0) {
-            av_log(ctx->log_ctx, AV_LOG_ERROR, "Unable to allocate a "
-                   "sufficiently large write buffer (last attempt "
-                   "%"SIZE_SPECIFIER" bytes).\n", priv->write_buffer_size);
-            return err;
-        }
-    }
-
-    init_put_bits(&pbc, priv->write_buffer, priv->write_buffer_size);
-
-    if (codec_id == AV_CODEC_ID_H264)
-        err = cbs_h264_write_nal_unit(ctx, unit, &pbc);
-    else
-        err = cbs_h265_write_nal_unit(ctx, unit, &pbc);
-
-    if (err == AVERROR(ENOSPC)) {
-        // Overflow.
-        priv->write_buffer_size *= 2;
-        goto reallocate_and_try_again;
-    }
-    // Overflow but we didn't notice.
-    av_assert0(put_bits_count(&pbc) <= 8 * priv->write_buffer_size);
-
-    if (err < 0) {
-        // Write failed for some other reason.
-        return err;
-    }
-
-    if (put_bits_count(&pbc) % 8)
-        unit->data_bit_padding = 8 - put_bits_count(&pbc) % 8;
-    else
-        unit->data_bit_padding = 0;
-
-    unit->data_size = (put_bits_count(&pbc) + 7) / 8;
-    flush_put_bits(&pbc);
-
-    err = ff_cbs_alloc_unit_data(ctx, unit, unit->data_size);
-    if (err < 0)
-        return err;
-
-    memcpy(unit->data, priv->write_buffer, unit->data_size);
-
-    return 0;
-}
-
 static int cbs_h2645_assemble_fragment(CodedBitstreamContext *ctx,
                                        CodedBitstreamFragment *frag)
 {
@@ -1454,7 +1393,7 @@ static int cbs_h2645_assemble_fragment(CodedBitstreamContext *ctx,
     max_size = 0;
     for (i = 0; i < frag->nb_units; i++) {
         // Start code + content with worst-case emulation prevention.
-        max_size += 3 + frag->units[i].data_size * 3 / 2;
+        max_size += 4 + frag->units[i].data_size * 3 / 2;
     }
 
     data = av_realloc(NULL, max_size + AV_INPUT_BUFFER_PADDING_SIZE);
@@ -1533,8 +1472,6 @@ static void cbs_h264_close(CodedBitstreamContext *ctx)
 
     ff_h2645_packet_uninit(&h264->common.read_packet);
 
-    av_freep(&h264->common.write_buffer);
-
     for (i = 0; i < FF_ARRAY_ELEMS(h264->sps); i++)
         av_buffer_unref(&h264->sps_ref[i]);
     for (i = 0; i < FF_ARRAY_ELEMS(h264->pps); i++)
@@ -1547,8 +1484,6 @@ static void cbs_h265_close(CodedBitstreamContext *ctx)
     int i;
 
     ff_h2645_packet_uninit(&h265->common.read_packet);
-
-    av_freep(&h265->common.write_buffer);
 
     for (i = 0; i < FF_ARRAY_ELEMS(h265->vps); i++)
         av_buffer_unref(&h265->vps_ref[i]);
@@ -1565,7 +1500,7 @@ const CodedBitstreamType ff_cbs_type_h264 = {
 
     .split_fragment    = &cbs_h2645_split_fragment,
     .read_unit         = &cbs_h264_read_nal_unit,
-    .write_unit        = &cbs_h2645_write_nal_unit,
+    .write_unit        = &cbs_h264_write_nal_unit,
     .assemble_fragment = &cbs_h2645_assemble_fragment,
 
     .close             = &cbs_h264_close,
@@ -1578,7 +1513,7 @@ const CodedBitstreamType ff_cbs_type_h265 = {
 
     .split_fragment    = &cbs_h2645_split_fragment,
     .read_unit         = &cbs_h265_read_nal_unit,
-    .write_unit        = &cbs_h2645_write_nal_unit,
+    .write_unit        = &cbs_h265_write_nal_unit,
     .assemble_fragment = &cbs_h2645_assemble_fragment,
 
     .close             = &cbs_h265_close,

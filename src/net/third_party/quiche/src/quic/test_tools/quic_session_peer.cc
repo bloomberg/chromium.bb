@@ -75,10 +75,6 @@ void QuicSessionPeer::SetMaxOpenOutgoingStreams(QuicSession* session,
                                                 uint32_t max_streams) {
   if (VersionHasIetfQuicFrames(session->transport_version())) {
     QUIC_BUG << "SetmaxOpenOutgoingStreams deprecated for IETF QUIC";
-    session->v99_streamid_manager_.SetMaxOpenOutgoingUnidirectionalStreams(
-        max_streams);
-    session->v99_streamid_manager_.SetMaxOpenOutgoingBidirectionalStreams(
-        max_streams);
     return;
   }
   session->stream_id_manager_.set_max_open_outgoing_streams(max_streams);
@@ -91,7 +87,7 @@ void QuicSessionPeer::SetMaxOpenOutgoingBidirectionalStreams(
   DCHECK(VersionHasIetfQuicFrames(session->transport_version()))
       << "SetmaxOpenOutgoingBidirectionalStreams not supported for Google "
          "QUIC";
-  session->v99_streamid_manager_.SetMaxOpenOutgoingBidirectionalStreams(
+  session->v99_streamid_manager_.MaybeAllowNewOutgoingBidirectionalStreams(
       max_streams);
 }
 // static
@@ -101,7 +97,7 @@ void QuicSessionPeer::SetMaxOpenOutgoingUnidirectionalStreams(
   DCHECK(VersionHasIetfQuicFrames(session->transport_version()))
       << "SetmaxOpenOutgoingUnidirectionalStreams not supported for Google "
          "QUIC";
-  session->v99_streamid_manager_.SetMaxOpenOutgoingUnidirectionalStreams(
+  session->v99_streamid_manager_.MaybeAllowNewOutgoingUnidirectionalStreams(
       max_streams);
 }
 
@@ -144,12 +140,6 @@ const QuicSession::ClosedStreams& QuicSessionPeer::closed_streams(
 QuicSession::ZombieStreamMap& QuicSessionPeer::zombie_streams(
     QuicSession* session) {
   return session->zombie_streams_;
-}
-
-// static
-QuicUnorderedSet<QuicStreamId>* QuicSessionPeer::GetDrainingStreams(
-    QuicSession* session) {
-  return &session->draining_streams_;
 }
 
 // static
@@ -235,6 +225,28 @@ PendingStream* QuicSessionPeer::GetPendingStream(QuicSession* session,
 // static
 void QuicSessionPeer::set_is_configured(QuicSession* session, bool value) {
   session->is_configured_ = value;
+}
+
+// static
+void QuicSessionPeer::SetPerspective(QuicSession* session,
+                                     Perspective perspective) {
+  session->perspective_ = perspective;
+}
+
+// static
+size_t QuicSessionPeer::GetNumOpenDynamicStreams(QuicSession* session) {
+  size_t result = 0;
+  for (const auto& it : session->stream_map_) {
+    if (!it.second->is_static()) {
+      ++result;
+    }
+  }
+  // Exclude draining streams.
+  result -= session->GetNumDrainingStreams();
+  // Add locally closed streams.
+  result += session->locally_closed_streams_highest_offset_.size();
+
+  return result;
 }
 
 }  // namespace test

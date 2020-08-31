@@ -10,6 +10,7 @@
  */
 
 #include <memory>
+#include <ostream>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -57,19 +58,21 @@ std::ostream &operator<<(std::ostream &os, const TestVideoParam &test_arg) {
   return os << "TestVideoParam { filename:" << test_arg.filename
             << " input_bit_depth:" << test_arg.input_bit_depth
             << " fmt:" << test_arg.fmt << " bit_depth:" << test_arg.bit_depth
-            << " profile:" << test_arg.profile << "}";
+            << " profile:" << test_arg.profile << " }";
 }
 
 const TestVideoParam kTestVectors[] = {
   { "park_joy_90p_8_420.y4m", 8, AOM_IMG_FMT_I420, AOM_BITS_8, 0 },
   { "park_joy_90p_8_422.y4m", 8, AOM_IMG_FMT_I422, AOM_BITS_8, 2 },
   { "park_joy_90p_8_444.y4m", 8, AOM_IMG_FMT_I444, AOM_BITS_8, 1 },
+#if CONFIG_AV1_HIGHBITDEPTH
   { "park_joy_90p_10_420.y4m", 10, AOM_IMG_FMT_I42016, AOM_BITS_10, 0 },
   { "park_joy_90p_10_422.y4m", 10, AOM_IMG_FMT_I42216, AOM_BITS_10, 2 },
   { "park_joy_90p_10_444.y4m", 10, AOM_IMG_FMT_I44416, AOM_BITS_10, 1 },
   { "park_joy_90p_12_420.y4m", 12, AOM_IMG_FMT_I42016, AOM_BITS_12, 2 },
   { "park_joy_90p_12_422.y4m", 12, AOM_IMG_FMT_I42216, AOM_BITS_12, 2 },
   { "park_joy_90p_12_444.y4m", 12, AOM_IMG_FMT_I44416, AOM_BITS_12, 2 },
+#endif
 };
 
 // Encoding modes tested

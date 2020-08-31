@@ -29,16 +29,17 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_mutation_observer_init.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
-#include "third_party/blink/renderer/core/dom/mutation_observer_init.h"
 #include "third_party/blink/renderer/core/dom/mutation_record.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/gesture_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
+#include "third_party/blink/renderer/core/events/touch_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -211,7 +212,7 @@ class MediaControlsImpl::BatchedControlUpdate {
   }
 
  private:
-  Member<MediaControlsImpl> controls_;
+  MediaControlsImpl* controls_;
   static int batch_depth_;
 
   DISALLOW_COPY_AND_ASSIGN(BatchedControlUpdate);
@@ -236,7 +237,7 @@ class MediaControlsImpl::MediaControlsResizeObserverDelegate final
     controls_->NotifyElementSizeChanged(entries[0]->contentRect());
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(controls_);
     ResizeObserver::Delegate::Trace(visitor);
   }
@@ -262,7 +263,7 @@ class MediaControlsImpl::MediaElementMutationCallback
   }
 
   ExecutionContext* GetExecutionContext() const override {
-    return &controls_->GetDocument();
+    return controls_->GetDocument().GetExecutionContext();
   }
 
   void Deliver(const MutationRecordVector& records,
@@ -296,7 +297,7 @@ class MediaControlsImpl::MediaElementMutationCallback
 
   void Disconnect() { observer_->disconnect(); }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(controls_);
     visitor->Trace(observer_);
     MutationObserver::Delegate::Trace(visitor);
@@ -308,8 +309,9 @@ class MediaControlsImpl::MediaElementMutationCallback
 };
 
 bool MediaControlsImpl::IsTouchEvent(Event* event) {
-  return event->IsTouchEvent() || event->IsGestureEvent() ||
-         (event->IsMouseEvent() && ToMouseEvent(event)->FromTouch());
+  auto* mouse_event = DynamicTo<MouseEvent>(event);
+  return IsA<TouchEvent>(event) || IsA<GestureEvent>(event) ||
+         (mouse_event && mouse_event->FromTouch());
 }
 
 MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
@@ -352,7 +354,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       is_mouse_over_controls_(false),
       is_paused_for_scrubbing_(false),
       resize_observer_(ResizeObserver::Create(
-          media_element.GetDocument(),
+          media_element.GetDocument().domWindow(),
           MakeGarbageCollected<MediaControlsResizeObserverDelegate>(this))),
       element_size_changed_timer_(
           media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
@@ -601,9 +603,9 @@ void MediaControlsImpl::InitializeControls() {
 
 void MediaControlsImpl::PopulatePanel() {
   // Clear the panels.
-  panel_->SetInnerHTMLFromString("");
+  panel_->setInnerHTML("");
   if (media_button_panel_)
-    media_button_panel_->SetInnerHTMLFromString("");
+    media_button_panel_->setInnerHTML("");
 
   Element* button_panel = panel_;
   if (ShouldShowVideoControls()) {
@@ -667,7 +669,7 @@ Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(
 
   if (!resize_observer_) {
     resize_observer_ = ResizeObserver::Create(
-        MediaElement().GetDocument(),
+        MediaElement().GetDocument().domWindow(),
         MakeGarbageCollected<MediaControlsResizeObserverDelegate>(this));
     HTMLMediaElement& html_media_element = MediaElement();
     resize_observer_->observe(&html_media_element);
@@ -873,8 +875,8 @@ void MediaControlsImpl::Reset() {
   OnControlsListUpdated();
 }
 
-void MediaControlsImpl::UpdateTimeIndicators() {
-  timeline_->SetPosition(MediaElement().currentTime());
+void MediaControlsImpl::UpdateTimeIndicators(bool suppress_aria) {
+  timeline_->SetPosition(MediaElement().currentTime(), suppress_aria);
   UpdateCurrentTimeDisplay();
 }
 
@@ -1465,10 +1467,11 @@ void MediaControlsImpl::DefaultEventHandler(Event& event) {
     ResetHideMediaControlsTimer();
   }
 
-  if (event.IsKeyboardEvent() && !event.defaultPrevented() &&
+  auto* keyboard_event = DynamicTo<KeyboardEvent>(event);
+  if (keyboard_event && !event.defaultPrevented() &&
       !IsSpatialNavigationEnabled(GetDocument().GetFrame())) {
-    const String& key = ToKeyboardEvent(event).key();
-    if (key == "Enter" || ToKeyboardEvent(event).keyCode() == ' ') {
+    const String& key = keyboard_event->key();
+    if (key == "Enter" || keyboard_event->keyCode() == ' ') {
       if (overlay_play_button_) {
         overlay_play_button_->OnMediaKeyboardEvent(&event);
       } else {
@@ -1613,10 +1616,11 @@ void MediaControlsImpl::MaybeJump(int seconds) {
 }
 
 bool MediaControlsImpl::IsOnLeftSide(Event* event) {
-  if (!event->IsGestureEvent())
+  auto* gesture_event = DynamicTo<GestureEvent>(event);
+  if (!gesture_event)
     return false;
 
-  float tap_x = ToGestureEvent(event)->NativeEvent().PositionInWidget().x;
+  float tap_x = gesture_event->NativeEvent().PositionInWidget().x();
 
   DOMRect* rect = getBoundingClientRect();
   double middle = rect->x() + (rect->width() / 2);
@@ -1694,9 +1698,10 @@ void MediaControlsImpl::ShowCursor() {
 }
 
 bool MediaControlsImpl::ContainsRelatedTarget(Event* event) {
-  if (!event->IsPointerEvent())
+  auto* pointer_event = DynamicTo<PointerEvent>(event);
+  if (!pointer_event)
     return false;
-  EventTarget* related_target = ToPointerEvent(event)->relatedTarget();
+  EventTarget* related_target = pointer_event->relatedTarget();
   if (!related_target)
     return false;
   return contains(related_target->ToNode());
@@ -1738,7 +1743,7 @@ void MediaControlsImpl::OnFocusIn() {
 }
 
 void MediaControlsImpl::OnTimeUpdate() {
-  UpdateTimeIndicators();
+  UpdateTimeIndicators(true /* suppress_aria */);
 
   // 'timeupdate' might be called in a paused state. The controls should not
   // become transparent in that case.
@@ -2123,7 +2128,7 @@ HTMLVideoElement& MediaControlsImpl::VideoElement() {
   return *To<HTMLVideoElement>(&MediaElement());
 }
 
-void MediaControlsImpl::Trace(blink::Visitor* visitor) {
+void MediaControlsImpl::Trace(Visitor* visitor) {
   visitor->Trace(element_mutation_callback_);
   visitor->Trace(resize_observer_);
   visitor->Trace(panel_);

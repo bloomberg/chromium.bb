@@ -2,21 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Bindings from '../bindings/bindings.js';
+import * as ColorPicker from '../color_picker/color_picker.js';
+import * as Common from '../common/common.js';
+import * as InlineEditor from '../inline_editor/inline_editor.js';
+import * as UI from '../ui/ui.js';
+
+import {StylePropertyTreeElement} from './StylePropertyTreeElement.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
 export class BezierPopoverIcon {
   /**
-   * @param {!Elements.StylePropertyTreeElement} treeElement
-   * @param {!InlineEditor.SwatchPopoverHelper} swatchPopoverHelper
-   * @param {!InlineEditor.BezierSwatch} swatch
+   * @param {!StylePropertyTreeElement} treeElement
+   * @param {!InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper} swatchPopoverHelper
+   * @param {!InlineEditor.ColorSwatch.BezierSwatch} swatch
    */
   constructor(treeElement, swatchPopoverHelper, swatch) {
     this._treeElement = treeElement;
     this._swatchPopoverHelper = swatchPopoverHelper;
     this._swatch = swatch;
 
-    this._swatch.iconElement().title = Common.UIString('Open cubic bezier editor.');
+    this._swatch.iconElement().title = Common.UIString.UIString('Open cubic bezier editor.');
     this._swatch.iconElement().addEventListener('click', this._iconClick.bind(this), false);
     this._swatch.iconElement().addEventListener('mousedown', event => event.consume(), false);
 
@@ -34,7 +42,7 @@ export class BezierPopoverIcon {
       return;
     }
 
-    this._bezierEditor = new InlineEditor.BezierEditor();
+    this._bezierEditor = new InlineEditor.BezierEditor.BezierEditor();
     let cubicBezier = UI.Geometry.CubicBezier.parse(this._swatch.bezierText());
     if (!cubicBezier) {
       cubicBezier =
@@ -50,14 +58,15 @@ export class BezierPopoverIcon {
 
     this._originalPropertyText = this._treeElement.property.propertyText;
     this._treeElement.parentPane().setEditingStyle(true);
-    const uiLocation = Bindings.cssWorkspaceBinding.propertyUILocation(this._treeElement.property, false /* forName */);
+    const uiLocation = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().propertyUILocation(
+        this._treeElement.property, false /* forName */);
     if (uiLocation) {
       Common.Revealer.reveal(uiLocation, true /* omitFocus */);
     }
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _bezierChanged(event) {
     this._swatch.setBezierText(/** @type {string} */ (event.data));
@@ -92,11 +101,11 @@ export class BezierPopoverIcon {
 /**
  * @unrestricted
  */
-export default class ColorSwatchPopoverIcon {
+export class ColorSwatchPopoverIcon {
   /**
-   * @param {!Elements.StylePropertyTreeElement} treeElement
-   * @param {!InlineEditor.SwatchPopoverHelper} swatchPopoverHelper
-   * @param {!InlineEditor.ColorSwatch} swatch
+   * @param {!StylePropertyTreeElement} treeElement
+   * @param {!InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper} swatchPopoverHelper
+   * @param {!InlineEditor.ColorSwatch.ColorSwatch} swatch
    */
   constructor(treeElement, swatchPopoverHelper, swatch) {
     this._treeElement = treeElement;
@@ -104,8 +113,8 @@ export default class ColorSwatchPopoverIcon {
     this._swatchPopoverHelper = swatchPopoverHelper;
     this._swatch = swatch;
 
-    const shiftClickMessage = Common.UIString('Shift + Click to change color format.');
-    this._swatch.iconElement().title = Common.UIString('Open color picker. %s', shiftClickMessage);
+    const shiftClickMessage = Common.UIString.UIString('Shift + Click to change color format.');
+    this._swatch.iconElement().title = Common.UIString.UIString('Open color picker. %s', shiftClickMessage);
     this._swatch.iconElement().addEventListener('click', this._iconClick.bind(this));
     this._swatch.iconElement().addEventListener('mousedown', event => event.consume(), false);
     this._contrastInfo = null;
@@ -131,7 +140,7 @@ export default class ColorSwatchPopoverIcon {
       if (!value) {
         continue;
       }
-      const color = Common.Color.parse(value);
+      const color = Common.Color.Color.parse(value);
       if (!color) {
         continue;
       }
@@ -142,7 +151,7 @@ export default class ColorSwatchPopoverIcon {
   }
 
   /**
-   * @param {!Elements.StylePropertyTreeElement} treeElement
+   * @param {!StylePropertyTreeElement} treeElement
    * @return {?ColorSwatchPopoverIcon}
    */
   static forTreeElement(treeElement) {
@@ -150,7 +159,7 @@ export default class ColorSwatchPopoverIcon {
   }
 
   /**
-   * @param {!ColorPicker.ContrastInfo} contrastInfo
+   * @param {!ColorPicker.ContrastInfo.ContrastInfo} contrastInfo
    */
   setContrastInfo(contrastInfo) {
     this._contrastInfo = contrastInfo;
@@ -175,7 +184,7 @@ export default class ColorSwatchPopoverIcon {
     if (format === Common.Color.Format.Original) {
       format = color.format();
     }
-    this._spectrum = new ColorPicker.Spectrum(this._contrastInfo);
+    this._spectrum = new ColorPicker.Spectrum.Spectrum(this._contrastInfo);
     this._spectrum.setColor(color, format);
     this._spectrum.addPalette(this._generateCSSVariablesPalette());
 
@@ -189,24 +198,25 @@ export default class ColorSwatchPopoverIcon {
 
     this._originalPropertyText = this._treeElement.property.propertyText;
     this._treeElement.parentPane().setEditingStyle(true);
-    const uiLocation = Bindings.cssWorkspaceBinding.propertyUILocation(this._treeElement.property, false /* forName */);
+    const uiLocation = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().propertyUILocation(
+        this._treeElement.property, false /* forName */);
     if (uiLocation) {
       Common.Revealer.reveal(uiLocation, true /* omitFocus */);
     }
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _spectrumResized(event) {
     this._swatchPopoverHelper.reposition();
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _spectrumChanged(event) {
-    const color = Common.Color.parse(/** @type {string} */ (event.data));
+    const color = Common.Color.Color.parse(/** @type {string} */ (event.data));
     if (!color) {
       return;
     }
@@ -251,9 +261,9 @@ ColorSwatchPopoverIcon._treeElementSymbol = Symbol('ColorSwatchPopoverIcon._tree
  */
 export class ShadowSwatchPopoverHelper {
   /**
-   * @param {!Elements.StylePropertyTreeElement} treeElement
-   * @param {!InlineEditor.SwatchPopoverHelper} swatchPopoverHelper
-   * @param {!InlineEditor.CSSShadowSwatch} shadowSwatch
+   * @param {!StylePropertyTreeElement} treeElement
+   * @param {!InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper} swatchPopoverHelper
+   * @param {!InlineEditor.ColorSwatch.CSSShadowSwatch} shadowSwatch
    */
   constructor(treeElement, swatchPopoverHelper, shadowSwatch) {
     this._treeElement = treeElement;
@@ -262,7 +272,7 @@ export class ShadowSwatchPopoverHelper {
     this._shadowSwatch = shadowSwatch;
     this._iconElement = shadowSwatch.iconElement();
 
-    this._iconElement.title = Common.UIString('Open shadow editor.');
+    this._iconElement.title = Common.UIString.UIString('Open shadow editor.');
     this._iconElement.addEventListener('click', this._iconClick.bind(this), false);
     this._iconElement.addEventListener('mousedown', event => event.consume(), false);
 
@@ -271,7 +281,7 @@ export class ShadowSwatchPopoverHelper {
   }
 
   /**
-   * @param {!Elements.StylePropertyTreeElement} treeElement
+   * @param {!StylePropertyTreeElement} treeElement
    * @return {?ShadowSwatchPopoverHelper}
    */
   static forTreeElement(treeElement) {
@@ -292,7 +302,7 @@ export class ShadowSwatchPopoverHelper {
       return;
     }
 
-    this._cssShadowEditor = new InlineEditor.CSSShadowEditor();
+    this._cssShadowEditor = new InlineEditor.CSSShadowEditor.CSSShadowEditor();
     this._cssShadowEditor.setModel(this._shadowSwatch.model());
     this._cssShadowEditor.addEventListener(InlineEditor.CSSShadowEditor.Events.ShadowChanged, this._boundShadowChanged);
     this._swatchPopoverHelper.show(this._cssShadowEditor, this._iconElement, this._onPopoverHidden.bind(this));
@@ -303,17 +313,18 @@ export class ShadowSwatchPopoverHelper {
 
     this._originalPropertyText = this._treeElement.property.propertyText;
     this._treeElement.parentPane().setEditingStyle(true);
-    const uiLocation = Bindings.cssWorkspaceBinding.propertyUILocation(this._treeElement.property, false /* forName */);
+    const uiLocation = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().propertyUILocation(
+        this._treeElement.property, false /* forName */);
     if (uiLocation) {
       Common.Revealer.reveal(uiLocation, true /* omitFocus */);
     }
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _shadowChanged(event) {
-    this._shadowSwatch.setCSSShadow(/** @type {!InlineEditor.CSSShadowModel} */ (event.data));
+    this._shadowSwatch.setCSSShadow(/** @type {!InlineEditor.CSSShadowModel.CSSShadowModel} */ (event.data));
     this._treeElement.applyStyleText(this._treeElement.renderedPropertyText(), false);
   }
 
@@ -344,18 +355,3 @@ export class ShadowSwatchPopoverHelper {
 }
 
 ShadowSwatchPopoverHelper._treeElementSymbol = Symbol('ShadowSwatchPopoverHelper._treeElementSymbol');
-
-/* Legacy exported object */
-self.Elements = self.Elements || {};
-
-/* Legacy exported object */
-Elements = Elements || {};
-
-/** @constructor */
-Elements.ColorSwatchPopoverIcon = ColorSwatchPopoverIcon;
-
-/** @constructor */
-Elements.BezierPopoverIcon = BezierPopoverIcon;
-
-/** @constructor */
-Elements.ShadowSwatchPopoverHelper = ShadowSwatchPopoverHelper;

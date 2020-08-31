@@ -28,7 +28,11 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -55,20 +59,19 @@ float DateTimeFieldElement::ComputeTextWidth(const ComputedStyle& style,
 }
 
 void DateTimeFieldElement::DefaultEventHandler(Event& event) {
-  if (event.IsKeyboardEvent()) {
-    auto& keyboard_event = ToKeyboardEvent(event);
+  if (auto* keyboard_event = DynamicTo<KeyboardEvent>(event)) {
     if (!IsDisabled() && !IsFieldOwnerDisabled() && !IsFieldOwnerReadOnly()) {
-      HandleKeyboardEvent(keyboard_event);
-      if (keyboard_event.DefaultHandled()) {
+      HandleKeyboardEvent(*keyboard_event);
+      if (keyboard_event->DefaultHandled()) {
         if (field_owner_)
           field_owner_->FieldDidChangeValueByKeyboard();
         return;
       }
     }
-    DefaultKeyboardEventHandler(keyboard_event);
+    DefaultKeyboardEventHandler(*keyboard_event);
     if (field_owner_)
       field_owner_->FieldDidChangeValueByKeyboard();
-    if (keyboard_event.DefaultHandled())
+    if (keyboard_event->DefaultHandled())
       return;
   }
 
@@ -130,10 +133,20 @@ void DateTimeFieldElement::DefaultKeyboardEventHandler(
   }
 }
 
-void DateTimeFieldElement::SetFocused(bool value, WebFocusType focus_type) {
+void DateTimeFieldElement::SetFocused(bool value,
+                                      mojom::blink::FocusType focus_type) {
   if (field_owner_) {
     if (value) {
       field_owner_->DidFocusOnField(focus_type);
+      GetDocument().GetFrame()->Selection().SetSelection(
+          SelectionInDOMTree::Builder()
+              .Collapse(Position::FirstPositionInNode(*this))
+              .Build(),
+          SetSelectionOptions::Builder()
+              .SetShouldCloseTyping(true)
+              .SetShouldClearTypingStyle(true)
+              .SetDoNotSetFocus(true)
+              .Build());
     } else {
       field_owner_->DidBlurFromField(focus_type);
     }

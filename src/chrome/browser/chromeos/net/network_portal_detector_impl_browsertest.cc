@@ -29,9 +29,10 @@
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "components/account_id/account_id.h"
-#include "components/captive_portal/captive_portal_testing_utils.h"
+#include "components/captive_portal/core/captive_portal_testing_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "dbus/object_path.h"
 #include "net/base/net_errors.h"
@@ -65,7 +66,7 @@ void ErrorCallbackFunction(const std::string& error_name,
 void SetConnected(const std::string& service_path) {
   DBusThreadManager::Get()->GetShillServiceClient()->Connect(
       dbus::ObjectPath(service_path), base::DoNothing(),
-      base::Bind(&ErrorCallbackFunction));
+      base::BindOnce(&ErrorCallbackFunction));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -76,7 +77,7 @@ class NetworkPortalDetectorImplBrowserTest
       public captive_portal::CaptivePortalDetectorTestBase {
  public:
   NetworkPortalDetectorImplBrowserTest()
-      : LoginManagerTest(false, true),
+      : LoginManagerTest(),
         test_account_id_(
             AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId)),
         network_portal_detector_(nullptr) {}
@@ -95,11 +96,11 @@ class NetworkPortalDetectorImplBrowserTest
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
         dbus::ObjectPath(kWifiServicePath), shill::kStateProperty,
         base::Value(shill::kStateRedirectFound), base::DoNothing(),
-        base::Bind(&ErrorCallbackFunction));
+        base::BindOnce(&ErrorCallbackFunction));
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
         dbus::ObjectPath(kWifiServicePath), shill::kProbeUrlProperty,
         base::Value(kProbeUrl), base::DoNothing(),
-        base::Bind(&ErrorCallbackFunction));
+        base::BindOnce(&ErrorCallbackFunction));
 
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
         nullptr /* profile */);

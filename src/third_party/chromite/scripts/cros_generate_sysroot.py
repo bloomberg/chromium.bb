@@ -91,7 +91,8 @@ class GenerateSysroot(object):
       for pkg in self.options.package.split():
         cmd = ['qdepends', '-q', '-C', pkg]
         output = cros_build_lib.run(
-            cmd, extra_env={'ROOT': raw_sysroot}, capture_output=True).output
+            cmd, extra_env={'ROOT': raw_sysroot}, capture_output=True,
+            encoding='utf-8').stdout
 
         if output.count('\n') > 1:
           raise AssertionError('Too many packages matched for given pattern')

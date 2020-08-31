@@ -5,7 +5,6 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 
 #include <algorithm>
-#include <set>
 #include <unordered_map>
 #include <utility>
 
@@ -14,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_split.h"
@@ -24,17 +22,18 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
+#include "chrome/browser/component_updater/tls_deprecation_config_component_installer.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
-#include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/google_url_loader_throttle.h"
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/ct_known_logs.h"
-#include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/net_log/net_export_file_writer.h"
+#include "components/net_log/net_log_proxy_source.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -52,6 +51,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
 #include "crypto/sha2.h"
@@ -64,14 +64,10 @@
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/host_resolver.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/build_info.h"
-#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part.h"
@@ -84,10 +80,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#include "content/public/common/network_service_util.h"
-#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
@@ -111,71 +103,6 @@ bool g_enable_certificate_transparency = kCertificateTransparencyEnabled;
 
 // The global instance of the SystemNetworkContextmanager.
 SystemNetworkContextManager* g_system_network_context_manager = nullptr;
-
-void GetStubResolverConfig(
-    PrefService* local_state,
-    bool* insecure_stub_resolver_enabled,
-    net::DnsConfig::SecureDnsMode* secure_dns_mode,
-    base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
-        dns_over_https_servers) {
-  DCHECK(!dns_over_https_servers->has_value());
-
-  *insecure_stub_resolver_enabled =
-      local_state->GetBoolean(prefs::kBuiltInDnsClientEnabled);
-
-  std::string doh_mode;
-  if (!local_state->FindPreference(prefs::kDnsOverHttpsMode)->IsManaged() &&
-      chrome_browser_net::ShouldDisableDohForManaged())
-    doh_mode = chrome_browser_net::kDnsOverHttpsModeOff;
-  else
-    doh_mode = local_state->GetString(prefs::kDnsOverHttpsMode);
-
-  if (doh_mode == chrome_browser_net::kDnsOverHttpsModeSecure)
-    *secure_dns_mode = net::DnsConfig::SecureDnsMode::SECURE;
-  else if (doh_mode == chrome_browser_net::kDnsOverHttpsModeAutomatic)
-    *secure_dns_mode = net::DnsConfig::SecureDnsMode::AUTOMATIC;
-  else
-    *secure_dns_mode = net::DnsConfig::SecureDnsMode::OFF;
-
-  std::string doh_templates =
-      local_state->GetString(prefs::kDnsOverHttpsTemplates);
-  std::string server_method;
-  if (!doh_templates.empty() &&
-      *secure_dns_mode != net::DnsConfig::SecureDnsMode::OFF) {
-    for (const std::string& server_template :
-         SplitString(doh_templates, " ", base::TRIM_WHITESPACE,
-                     base::SPLIT_WANT_NONEMPTY)) {
-      if (!chrome_browser_net::IsValidDohTemplate(server_template,
-                                                  &server_method)) {
-        continue;
-      }
-
-      if (!dns_over_https_servers->has_value()) {
-        *dns_over_https_servers = base::make_optional<
-            std::vector<network::mojom::DnsOverHttpsServerPtr>>();
-      }
-
-      network::mojom::DnsOverHttpsServerPtr dns_over_https_server =
-          network::mojom::DnsOverHttpsServer::New();
-      dns_over_https_server->server_template = server_template;
-      dns_over_https_server->use_post = (server_method == "POST");
-      (*dns_over_https_servers)->emplace_back(std::move(dns_over_https_server));
-    }
-  }
-}
-
-void OnStubResolverConfigChanged(PrefService* local_state,
-                                 const std::string& pref_name) {
-  bool insecure_stub_resolver_enabled;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
-      dns_over_https_servers;
-  GetStubResolverConfig(local_state, &insecure_stub_resolver_enabled,
-                        &secure_dns_mode, &dns_over_https_servers);
-  content::GetNetworkService()->ConfigureStubHostResolver(
-      insecure_stub_resolver_enabled, secure_dns_mode,
-      std::move(dns_over_https_servers));
-}
 
 // Constructs HttpAuthStaticParams based on |local_state|.
 network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams(
@@ -227,6 +154,8 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams(
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+  // TODO: Use KerberosCredentialsManager to determine whether Kerberos is
+  // enabled instead of relying directly on the preference.
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   auth_dynamic_params->allow_gssapi_library_load =
@@ -243,20 +172,6 @@ void OnAuthPrefsChanged(PrefService* local_state,
       CreateHttpAuthDynamicParams(local_state));
 }
 
-// Check the AsyncDns field trial and return true if it should be enabled. On
-// Android this includes checking the Android version in the field trial.
-bool ShouldEnableAsyncDns() {
-  bool feature_can_be_enabled = true;
-#if defined(OS_ANDROID)
-  int min_sdk =
-      base::GetFieldTrialParamByFeatureAsInt(features::kAsyncDns, "min_sdk", 0);
-  if (base::android::BuildInfo::GetInstance()->sdk_int() < min_sdk)
-    feature_can_be_enabled = false;
-#endif
-  return feature_can_be_enabled &&
-         base::FeatureList::IsEnabled(features::kAsyncDns);
-}
-
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 bool ShouldUseBuiltinCertVerifier(PrefService* local_state) {
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
@@ -265,7 +180,10 @@ bool ShouldUseBuiltinCertVerifier(PrefService* local_state) {
   if (builtin_cert_verifier_enabled_pref->IsManaged())
     return builtin_cert_verifier_enabled_pref->GetValue()->GetBool();
 #endif
-
+  // Note: intentionally checking the feature state here rather than falling
+  // back to CertVerifierImpl::kDefault, as browser-side network context
+  // initializition for TrialComparisonCertVerifier depends on knowing which
+  // verifier will be used.
   return base::FeatureList::IsEnabled(
       net::features::kCertVerifierBuiltinFeature);
 }
@@ -320,7 +238,7 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
 
  private:
   friend class base::RefCounted<URLLoaderFactoryForSystem>;
-  ~URLLoaderFactoryForSystem() override {}
+  ~URLLoaderFactoryForSystem() override = default;
 
   SEQUENCE_CHECKER(sequence_checker_);
   SystemNetworkContextManager* manager_;
@@ -408,7 +326,8 @@ SystemNetworkContextManager::SystemNetworkContextManager(
     : local_state_(local_state),
       ssl_config_service_manager_(
           SSLConfigServiceManager::CreateDefaultManager(local_state_)),
-      proxy_config_monitor_(local_state_) {
+      proxy_config_monitor_(local_state_),
+      stub_resolver_config_reader_(local_state_) {
 #if !defined(OS_ANDROID)
   // QuicAllowed was not part of Android policy.
   const base::Value* value =
@@ -422,53 +341,6 @@ SystemNetworkContextManager::SystemNetworkContextManager(
   shared_url_loader_factory_ = new URLLoaderFactoryForSystem(this);
 
   pref_change_registrar_.Init(local_state_);
-
-  // Update the DnsClient and DoH default preferences based on the corresponding
-  // features before registering change callbacks for these preferences.
-  local_state_->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
-                                    base::Value(ShouldEnableAsyncDns()));
-  std::string default_doh_mode = chrome_browser_net::kDnsOverHttpsModeOff;
-  std::string default_doh_templates = "";
-  if (base::FeatureList::IsEnabled(features::kDnsOverHttps)) {
-    if (features::kDnsOverHttpsFallbackParam.Get()) {
-      default_doh_mode = chrome_browser_net::kDnsOverHttpsModeAutomatic;
-    } else {
-      default_doh_mode = chrome_browser_net::kDnsOverHttpsModeSecure;
-    }
-    default_doh_templates = features::kDnsOverHttpsTemplatesParam.Get();
-  }
-  local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsMode,
-                                    base::Value(default_doh_mode));
-  local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsTemplates,
-                                    base::Value(default_doh_templates));
-
-  // If the user has explicitly enabled or disabled the DoH experiment in
-  // chrome://flags, store that choice in the user prefs so that it can be
-  // persisted after the experiment ends. Also make sure to remove the stored
-  // prefs value if the user has changed their chrome://flags selection to the
-  // default.
-  flags_ui::PrefServiceFlagsStorage flags_storage(local_state_);
-  std::set<std::string> entries = flags_storage.GetFlags();
-  if (entries.count("dns-over-https@1")) {
-    // The user has "Enabled" selected.
-    local_state_->SetString(prefs::kDnsOverHttpsMode,
-                            chrome_browser_net::kDnsOverHttpsModeAutomatic);
-  } else if (entries.count("dns-over-https@2")) {
-    // The user has "Disabled" selected.
-    local_state_->SetString(prefs::kDnsOverHttpsMode,
-                            chrome_browser_net::kDnsOverHttpsModeOff);
-  } else {
-    // The user has "Default" selected.
-    local_state_->ClearPref(prefs::kDnsOverHttpsMode);
-  }
-
-  PrefChangeRegistrar::NamedChangeCallback dns_pref_callback =
-      base::BindRepeating(&OnStubResolverConfigChanged,
-                          base::Unretained(local_state_));
-  pref_change_registrar_.Add(prefs::kBuiltInDnsClientEnabled,
-                             dns_pref_callback);
-  pref_change_registrar_.Add(prefs::kDnsOverHttpsMode, dns_pref_callback);
-  pref_change_registrar_.Add(prefs::kDnsOverHttpsTemplates, dns_pref_callback);
 
   PrefChangeRegistrar::NamedChangeCallback auth_pref_callback =
       base::BindRepeating(&OnAuthPrefsChanged, base::Unretained(local_state_));
@@ -495,6 +367,8 @@ SystemNetworkContextManager::SystemNetworkContextManager(
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+  // TODO: Use KerberosCredentialsManager::Observer to be notified of when the
+  // enabled state changes instead of relying directly on the preference.
   pref_change_registrar_.Add(prefs::kKerberosEnabled, auth_pref_callback);
 #endif  // defined(OS_CHROMEOS)
 
@@ -511,16 +385,9 @@ SystemNetworkContextManager::~SystemNetworkContextManager() {
   shared_url_loader_factory_->Shutdown();
 }
 
+// static
 void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
-  // Register the DnsClient and DoH preferences. The feature list has not been
-  // initialized yet, so setting the preference defaults here to reflect the
-  // corresponding features will only cause the preference defaults to reflect
-  // the feature defaults (feature values set via the command line will not be
-  // captured). Thus, the preference defaults are updated in the constructor
-  // for SystemNetworkContextManager, at which point the feature list is ready.
-  registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, false);
-  registry->RegisterStringPref(prefs::kDnsOverHttpsMode, std::string());
-  registry->RegisterStringPref(prefs::kDnsOverHttpsTemplates, std::string());
+  StubResolverConfigReader::RegisterPrefs(registry);
 
   // Static auth params
   registry->RegisterStringPref(prefs::kAuthSchemes,
@@ -567,51 +434,39 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
 #endif
 }
 
+// static
+StubResolverConfigReader*
+SystemNetworkContextManager::GetStubResolverConfigReader() {
+  if (stub_resolver_config_reader_for_testing_)
+    return stub_resolver_config_reader_for_testing_;
+
+  return &GetInstance()->stub_resolver_config_reader_;
+}
+
 void SystemNetworkContextManager::OnNetworkServiceCreated(
     network::mojom::NetworkService* network_service) {
   // Disable QUIC globally, if needed.
   if (!is_quic_allowed_)
     network_service->DisableQuic();
 
+  if (content::IsOutOfProcessNetworkService()) {
+    mojo::PendingRemote<network::mojom::NetLogProxySource> proxy_source_remote;
+    mojo::PendingReceiver<network::mojom::NetLogProxySource>
+        proxy_source_receiver =
+            proxy_source_remote.InitWithNewPipeAndPassReceiver();
+    mojo::Remote<network::mojom::NetLogProxySink> proxy_sink_remote;
+    network_service->AttachNetLogProxy(
+        std::move(proxy_source_remote),
+        proxy_sink_remote.BindNewPipeAndPassReceiver());
+    if (net_log_proxy_source_)
+      net_log_proxy_source_->ShutDown();
+    net_log_proxy_source_ = std::make_unique<net_log::NetLogProxySource>(
+        std::move(proxy_source_receiver), std::move(proxy_sink_remote));
+  }
+
   network_service->SetUpHttpAuth(CreateHttpAuthStaticParams(local_state_));
   network_service->ConfigureHttpAuthPrefs(
       CreateHttpAuthDynamicParams(local_state_));
-
-  // TODO(lukasza): https://crbug.com/944162: Unconditionally include
-  // the MIME types below in GetNeverSniffedMimeTypes in
-  // services/network/cross_origin_read_blocking.cc.
-  network_service->AddExtraMimeTypesForCorb(
-      {"application/msexcel",
-       "application/mspowerpoint",
-       "application/msword",
-       "application/msword-template",
-       "application/pdf",
-       "application/vnd.ces-quickpoint",
-       "application/vnd.ces-quicksheet",
-       "application/vnd.ces-quickword",
-       "application/vnd.ms-excel",
-       "application/vnd.ms-excel.sheet.macroenabled.12",
-       "application/vnd.ms-powerpoint",
-       "application/vnd.ms-powerpoint.presentation.macroenabled.12",
-       "application/vnd.ms-word",
-       "application/vnd.ms-word.document.12",
-       "application/vnd.ms-word.document.macroenabled.12",
-       "application/vnd.msword",
-       "application/"
-       "vnd.openxmlformats-officedocument.presentationml.presentation",
-       "application/"
-       "vnd.openxmlformats-officedocument.presentationml.template",
-       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-       "application/vnd.openxmlformats-officedocument.spreadsheetml.template",
-       "application/"
-       "vnd.openxmlformats-officedocument.wordprocessingml.document",
-       "application/"
-       "vnd.openxmlformats-officedocument.wordprocessingml.template",
-       "application/vnd.presentation-openxml",
-       "application/vnd.presentation-openxmlm",
-       "application/vnd.spreadsheet-openxml",
-       "application/vnd.wordprocessing-openxml",
-       "text/csv"});
 
   int max_connections_per_proxy =
       local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);
@@ -633,15 +488,7 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
 
   // Configure the stub resolver. This must be done after the system
   // NetworkContext is created, but before anything has the chance to use it.
-  bool insecure_stub_resolver_enabled;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
-      dns_over_https_servers;
-  GetStubResolverConfig(local_state_, &insecure_stub_resolver_enabled,
-                        &secure_dns_mode, &dns_over_https_servers);
-  content::GetNetworkService()->ConfigureStubHostResolver(
-      insecure_stub_resolver_enabled, secure_dns_mode,
-      std::move(dns_over_https_servers));
+  stub_resolver_config_reader_.UpdateNetworkService(true /* record_metrics */);
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   const base::CommandLine& command_line =
@@ -668,6 +515,10 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
 
   // Asynchronously reapply the most recently received CRLSet (if any).
   component_updater::CRLSetPolicy::ReconfigureAfterNetworkRestart();
+
+  // Asynchronously reapply the most recently received TLS deprecation config.
+  component_updater::TLSDeprecationConfigComponentInstallerPolicy::
+      ReconfigureAfterNetworkRestart();
 }
 
 void SystemNetworkContextManager::DisableQuic() {
@@ -685,12 +536,12 @@ void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(
       network_context_params);
 }
 
-network::mojom::NetworkContextParamsPtr
-SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
-  network::mojom::NetworkContextParamsPtr network_context_params =
-      network::mojom::NetworkContextParams::New();
-  content::UpdateCorsExemptHeader(network_context_params.get());
-  variations::UpdateCorsExemptHeaderForVariations(network_context_params.get());
+void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
+    network::mojom::NetworkContextParams* network_context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params) {
+  content::UpdateCorsExemptHeader(network_context_params);
+  variations::UpdateCorsExemptHeaderForVariations(network_context_params);
+  GoogleURLLoaderThrottle::UpdateCorsExemptHeader(network_context_params);
 
   network_context_params->enable_brotli = true;
 
@@ -715,7 +566,8 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
         version_info::GetProductNameAndVersionForUserAgent());
     quic_user_agent_id.push_back(' ');
     quic_user_agent_id.append(
-        content::BuildOSCpuInfo(false /* include_android_build_number */));
+        content::BuildOSCpuInfo(content::IncludeAndroidBuildNumber::Exclude,
+                                content::IncludeAndroidModel::Include));
   }
   network_context_params->quic_user_agent_id = quic_user_agent_id;
 
@@ -743,7 +595,7 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
   // configuration. The SystemNetworkContextManager is owned by the
   // BrowserProcess itself, so will only be destroyed on shutdown, at which
   // point, all NetworkContexts will be destroyed as well.
-  AddSSLConfigToNetworkContextParams(network_context_params.get());
+  AddSSLConfigToNetworkContextParams(network_context_params);
 
 #if !defined(OS_ANDROID)
 
@@ -779,10 +631,25 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
 #endif
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-  network_context_params->use_builtin_cert_verifier =
-      ShouldUseBuiltinCertVerifier(local_state_);
+  cert_verifier_creation_params->use_builtin_cert_verifier =
+      ShouldUseBuiltinCertVerifier(local_state_)
+          ? network::mojom::CertVerifierCreationParams::CertVerifierImpl::
+                kBuiltin
+          : network::mojom::CertVerifierCreationParams::CertVerifierImpl::
+                kSystem;
 #endif
+}
 
+network::mojom::NetworkContextParamsPtr
+SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
+  network::mojom::NetworkContextParamsPtr network_context_params =
+      network::mojom::NetworkContextParams::New();
+  network::mojom::CertVerifierCreationParamsPtr cert_verifier_creation_params =
+      network::mojom::CertVerifierCreationParams::New();
+  ConfigureDefaultNetworkContextParams(network_context_params.get(),
+                                       cert_verifier_creation_params.get());
+  network_context_params->cert_verifier_creation_params =
+      std::move(cert_verifier_creation_params);
   return network_context_params;
 }
 
@@ -807,16 +674,6 @@ void SystemNetworkContextManager::FlushNetworkInterfaceForTesting() {
   network_service_network_context_.FlushForTesting();
   if (url_loader_factory_)
     url_loader_factory_.FlushForTesting();
-}
-
-void SystemNetworkContextManager::GetStubResolverConfigForTesting(
-    bool* insecure_stub_resolver_enabled,
-    net::DnsConfig::SecureDnsMode* secure_dns_mode,
-    base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
-        dns_over_https_servers) {
-  GetStubResolverConfig(g_browser_process->local_state(),
-                        insecure_stub_resolver_enabled, secure_dns_mode,
-                        dns_over_https_servers);
 }
 
 network::mojom::HttpAuthStaticParamsPtr
@@ -863,3 +720,7 @@ SystemNetworkContextManager::CreateNetworkContextParams() {
 void SystemNetworkContextManager::UpdateReferrersEnabled() {
   GetContext()->SetEnableReferrers(enable_referrers_.GetValue());
 }
+
+// static
+StubResolverConfigReader*
+SystemNetworkContextManager::stub_resolver_config_reader_for_testing_ = nullptr;

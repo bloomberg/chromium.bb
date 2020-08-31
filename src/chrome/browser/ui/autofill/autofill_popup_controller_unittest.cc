@@ -14,8 +14,6 @@
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
-#include "chrome/browser/ui/autofill/popup_view_common.h"
-#include "chrome/browser/ui/autofill/popup_view_test_helpers.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -43,13 +41,13 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #endif
 
+using base::ASCIIToUTF16;
+using base::WeakPtr;
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::StrictMock;
-using base::ASCIIToUTF16;
-using base::WeakPtr;
 
 namespace autofill {
 namespace {
@@ -143,25 +141,21 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
       base::WeakPtr<AutofillExternalDelegate> external_delegate,
       const gfx::RectF& element_bounds)
       : AutofillPopupControllerImpl(external_delegate,
-                                    NULL,
-                                    NULL,
+                                    nullptr,
+                                    nullptr,
                                     element_bounds,
-                                    base::i18n::UNKNOWN_DIRECTION) {
-    LayoutModelForTesting().SetUpForTesting(
-        std::make_unique<MockPopupViewCommonForUnitTesting>());
-  }
+                                    base::i18n::UNKNOWN_DIRECTION) {}
   ~TestAutofillPopupController() override = default;
 
   // Making protected functions public for testing
   using AutofillPopupControllerImpl::element_bounds;
   using AutofillPopupControllerImpl::FireControlsChangedEvent;
-  using AutofillPopupControllerImpl::GetElidedLabelAt;
-  using AutofillPopupControllerImpl::GetElidedValueAt;
   using AutofillPopupControllerImpl::GetLineCount;
   using AutofillPopupControllerImpl::GetRootAXPlatformNodeForWebContents;
   using AutofillPopupControllerImpl::GetSuggestionAt;
+  using AutofillPopupControllerImpl::GetSuggestionLabelAt;
+  using AutofillPopupControllerImpl::GetSuggestionValueAt;
   using AutofillPopupControllerImpl::GetWeakPtr;
-  using AutofillPopupControllerImpl::popup_bounds;
   using AutofillPopupControllerImpl::RemoveSelectedLine;
   using AutofillPopupControllerImpl::selected_line;
   using AutofillPopupControllerImpl::SelectNextLine;
@@ -169,11 +163,13 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   using AutofillPopupControllerImpl::SetSelectedLine;
   using AutofillPopupControllerImpl::SetValues;
   MOCK_METHOD0(OnSuggestionsChanged, void());
-  MOCK_METHOD0(Hide, void());
+  MOCK_METHOD1(Hide, void(PopupHidingReason reason));
   MOCK_METHOD0(GetRootAXPlatformNodeForWebContents, ui::AXPlatformNode*());
 
-  void DoHide() {
-    AutofillPopupControllerImpl::Hide();
+  void DoHide() { DoHide(PopupHidingReason::kTabGone); }
+
+  void DoHide(PopupHidingReason reason) {
+    AutofillPopupControllerImpl::Hide(reason);
   }
 };
 
@@ -272,9 +268,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
     return autofill_popup_controller_;
   }
 
-  MockAutofillExternalDelegate* delegate() {
-    return external_delegate_.get();
-  }
+  MockAutofillExternalDelegate* delegate() { return external_delegate_.get(); }
 
   MockAutofillPopupView* autofill_popup_view() {
     return autofill_popup_view_.get();
@@ -337,8 +331,7 @@ TEST_F(AutofillPopupControllerUnitTest, ChangeSelectedLine) {
   EXPECT_FALSE(autofill_popup_controller_->selected_line());
   // Check that there are at least 2 values so that the first and last selection
   // are different.
-  EXPECT_GE(2,
-      static_cast<int>(autofill_popup_controller_->GetLineCount()));
+  EXPECT_GE(2, static_cast<int>(autofill_popup_controller_->GetLineCount()));
 
   // Test wrapping before the front.
   autofill_popup_controller_->SelectPreviousLine();
@@ -419,7 +412,8 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveLine) {
   // Remove the last entry. The popup should then be hidden since there are
   // no Autofill entries left.
   EXPECT_CALL(*autofill_popup_view_, OnSelectedRowChanged(_, _)).Times(0);
-  EXPECT_CALL(*autofill_popup_controller_, Hide());
+  EXPECT_CALL(*autofill_popup_controller_,
+              Hide(PopupHidingReason::kNoSuggestions));
   EXPECT_TRUE(autofill_popup_controller_->RemoveSelectedLine());
 }
 
@@ -446,7 +440,8 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveOnlyLine) {
 
   // Remove the only line. The popup should then be hidden since there are no
   // Autofill entries left.
-  EXPECT_CALL(*autofill_popup_controller_, Hide());
+  EXPECT_CALL(*autofill_popup_controller_,
+              Hide(PopupHidingReason::kNoSuggestions));
   EXPECT_CALL(*autofill_popup_view_, OnSelectedRowChanged(_, _)).Times(0);
   EXPECT_TRUE(autofill_popup_controller_->RemoveSelectedLine());
 }
@@ -516,10 +511,10 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
 
   Suggestion result0 = autofill_popup_controller_->GetSuggestionAt(0);
   EXPECT_EQ(value1, result0.value);
-  EXPECT_EQ(value1, autofill_popup_controller_->GetElidedValueAt(0));
+  EXPECT_EQ(value1, autofill_popup_controller_->GetSuggestionValueAt(0));
   EXPECT_EQ(label1, result0.label);
   EXPECT_EQ(base::string16(), result0.additional_label);
-  EXPECT_EQ(label1, autofill_popup_controller_->GetElidedLabelAt(0));
+  EXPECT_EQ(label1, autofill_popup_controller_->GetSuggestionLabelAt(0));
   EXPECT_EQ(POPUP_ITEM_ID_DATALIST_ENTRY, result0.frontend_id);
 
   Suggestion result1 = autofill_popup_controller_->GetSuggestionAt(1);
@@ -546,12 +541,12 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
 
   // Original one first, followed by new one, then separator.
   EXPECT_EQ(value1, autofill_popup_controller_->GetSuggestionAt(0).value);
-  EXPECT_EQ(value1, autofill_popup_controller_->GetElidedValueAt(0));
+  EXPECT_EQ(value1, autofill_popup_controller_->GetSuggestionValueAt(0));
   EXPECT_EQ(label1, autofill_popup_controller_->GetSuggestionAt(0).label);
   EXPECT_EQ(base::string16(),
             autofill_popup_controller_->GetSuggestionAt(0).additional_label);
   EXPECT_EQ(value2, autofill_popup_controller_->GetSuggestionAt(1).value);
-  EXPECT_EQ(value2, autofill_popup_controller_->GetElidedValueAt(1));
+  EXPECT_EQ(value2, autofill_popup_controller_->GetSuggestionValueAt(1));
   EXPECT_EQ(label2, autofill_popup_controller_->GetSuggestionAt(1).label);
   EXPECT_EQ(base::string16(),
             autofill_popup_controller_->GetSuggestionAt(1).additional_label);
@@ -593,7 +588,8 @@ TEST_F(AutofillPopupControllerUnitTest, PopupsWithOnlyDataLists) {
             autofill_popup_controller_->GetSuggestionAt(0).frontend_id);
 
   // Clear datalist values and check that the popup becomes hidden.
-  EXPECT_CALL(*autofill_popup_controller_, Hide());
+  EXPECT_CALL(*autofill_popup_controller_,
+              Hide(PopupHidingReason::kNoSuggestions));
   data_list_values.clear();
   autofill_popup_controller_->UpdateDataListValues(data_list_values,
                                                    data_list_values);
@@ -608,50 +604,44 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
 
   WeakPtr<AutofillPopupControllerImpl> controller =
       AutofillPopupControllerImpl::GetOrCreate(
-          WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(), NULL,
-          NULL, gfx::RectF(), base::i18n::UNKNOWN_DIRECTION);
+          WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(),
+          nullptr, nullptr, gfx::RectF(), base::i18n::UNKNOWN_DIRECTION);
   EXPECT_TRUE(controller.get());
 
-  controller->Hide();
+  controller->Hide(PopupHidingReason::kViewDestroyed);
 
   controller = AutofillPopupControllerImpl::GetOrCreate(
-      WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(), NULL, NULL,
-      gfx::RectF(), base::i18n::UNKNOWN_DIRECTION);
+      WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(), nullptr,
+      nullptr, gfx::RectF(), base::i18n::UNKNOWN_DIRECTION);
   EXPECT_TRUE(controller.get());
 
   WeakPtr<AutofillPopupControllerImpl> controller2 =
       AutofillPopupControllerImpl::GetOrCreate(
-          controller, delegate.GetWeakPtr(), NULL, NULL, gfx::RectF(),
+          controller, delegate.GetWeakPtr(), nullptr, nullptr, gfx::RectF(),
           base::i18n::UNKNOWN_DIRECTION);
   EXPECT_EQ(controller.get(), controller2.get());
-  controller->Hide();
+  controller->Hide(PopupHidingReason::kViewDestroyed);
 
   NiceMock<TestAutofillPopupController>* test_controller =
       new NiceMock<TestAutofillPopupController>(delegate.GetWeakPtr(),
                                                 gfx::RectF());
-  EXPECT_CALL(*test_controller, Hide());
+  EXPECT_CALL(*test_controller, Hide(PopupHidingReason::kViewDestroyed));
 
   gfx::RectF bounds(0.f, 0.f, 1.f, 2.f);
   base::WeakPtr<AutofillPopupControllerImpl> controller3 =
       AutofillPopupControllerImpl::GetOrCreate(
-          test_controller->GetWeakPtr(),
-          delegate.GetWeakPtr(),
-          NULL,
-          NULL,
-          bounds,
-          base::i18n::UNKNOWN_DIRECTION);
-  EXPECT_EQ(
-      bounds,
-      static_cast<AutofillPopupController*>(controller3.get())->
-          element_bounds());
-  controller3->Hide();
+          test_controller->GetWeakPtr(), delegate.GetWeakPtr(), nullptr,
+          nullptr, bounds, base::i18n::UNKNOWN_DIRECTION);
+  EXPECT_EQ(bounds, static_cast<AutofillPopupController*>(controller3.get())
+                        ->element_bounds());
+  controller3->Hide(PopupHidingReason::kViewDestroyed);
 
   // Hide the test_controller to delete it.
   test_controller->DoHide();
 
   test_controller = new NiceMock<TestAutofillPopupController>(
       delegate.GetWeakPtr(), gfx::RectF());
-  EXPECT_CALL(*test_controller, Hide()).Times(0);
+  EXPECT_CALL(*test_controller, Hide).Times(0);
 
   const base::WeakPtr<AutofillPopupControllerImpl> controller4 =
       AutofillPopupControllerImpl::GetOrCreate(
@@ -673,8 +663,8 @@ TEST_F(AutofillPopupControllerUnitTest, ProperlyResetController) {
   // Now show a new popup with the same controller, but with fewer items.
   WeakPtr<AutofillPopupControllerImpl> controller =
       AutofillPopupControllerImpl::GetOrCreate(
-          popup_controller()->GetWeakPtr(), delegate()->GetWeakPtr(), NULL,
-          NULL, gfx::RectF(), base::i18n::UNKNOWN_DIRECTION);
+          popup_controller()->GetWeakPtr(), delegate()->GetWeakPtr(), nullptr,
+          nullptr, gfx::RectF(), base::i18n::UNKNOWN_DIRECTION);
   EXPECT_FALSE(controller->selected_line());
   EXPECT_EQ(0, controller->GetLineCount());
 }
@@ -697,46 +687,18 @@ TEST_F(AutofillPopupControllerUnitTest, HidingClearsPreview) {
   test_controller->DoHide();
 }
 
-#if !defined(OS_ANDROID)
-TEST_F(AutofillPopupControllerUnitTest, ElideText) {
-  std::vector<Suggestion> suggestions;
-  suggestions.push_back(
-      Suggestion("Text that will need to be trimmed",
-      "Label that will be trimmed", "genericCC", 0));
-  suggestions.push_back(
-      Suggestion("untrimmed", "Untrimmed", "genericCC", 0));
+TEST_F(AutofillPopupControllerUnitTest, DontHideWhenWaitingForData) {
+  EXPECT_CALL(*autofill_popup_view(), Hide).Times(0);
+  autofill_popup_controller_->PinView();
 
-  autofill_popup_controller_->SetValues(suggestions);
+  // Hide() will not work for stale data or when focusing native UI.
+  autofill_popup_controller_->DoHide(PopupHidingReason::kStaleData);
+  autofill_popup_controller_->DoHide(PopupHidingReason::kEndEditing);
 
-  // Ensure the popup will be too small to display all of the first row.
-  int popup_max_width =
-      gfx::GetStringWidth(
-          suggestions[0].value,
-          autofill_popup_controller_->layout_model().GetValueFontListForRow(
-              0)) +
-      gfx::GetStringWidth(
-          suggestions[0].label,
-          autofill_popup_controller_->layout_model().GetLabelFontListForRow(
-              0)) -
-      25;
-
-  autofill_popup_controller_->ElideValueAndLabelForRow(0, popup_max_width);
-
-  // The first element was long so it should have been trimmed.
-  EXPECT_NE(autofill_popup_controller_->GetSuggestionAt(0).value,
-            autofill_popup_controller_->GetElidedValueAt(0));
-  EXPECT_NE(autofill_popup_controller_->GetSuggestionAt(0).label,
-            autofill_popup_controller_->GetElidedLabelAt(0));
-
-  autofill_popup_controller_->ElideValueAndLabelForRow(1, popup_max_width);
-
-  // The second element was shorter so it should be unchanged.
-  EXPECT_EQ(autofill_popup_controller_->GetSuggestionAt(1).value,
-            autofill_popup_controller_->GetElidedValueAt(1));
-  EXPECT_EQ(autofill_popup_controller_->GetSuggestionAt(1).label,
-            autofill_popup_controller_->GetElidedLabelAt(1));
+  // Check the expectations now since TearDown will perform a successful hide.
+  Mock::VerifyAndClearExpectations(delegate());
+  Mock::VerifyAndClearExpectations(autofill_popup_view());
 }
-#endif
 
 #if !defined(OS_CHROMEOS)
 TEST_F(AutofillPopupControllerAccessibilityUnitTest, FireControlsChangedEvent) {

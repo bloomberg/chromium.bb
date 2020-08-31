@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.firstrun;
 
 import android.content.Context;
-import android.support.v4.view.ViewPager;
 import android.view.MotionEvent;
+
+import androidx.viewpager.widget.ViewPager;
 
 /**
 * ViewPager without swipe gesture.

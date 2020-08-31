@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-in half4x4 gradientMatrix;
+in half3x3 gradientMatrix;
 
 layout(tracked) in uniform half bias;
 layout(tracked) in uniform half scale;
@@ -54,7 +54,7 @@ void main() {
     std::unique_ptr<GrFragmentProcessor> GrSweepGradientLayout::Make(
             const SkSweepGradient& grad, const GrFPArgs& args) {
         SkMatrix matrix;
-        if (!grad.totalLocalMatrix(args.fPreLocalMatrix, args.fPostLocalMatrix)->invert(&matrix)) {
+        if (!grad.totalLocalMatrix(args.fPreLocalMatrix)->invert(&matrix)) {
             return nullptr;
         }
         matrix.postConcat(grad.getGradientMatrix());
@@ -78,6 +78,6 @@ void main() {
                                     params.fStops, params.fColorCount);
     GrTest::TestAsFPArgs asFPArgs(d);
     std::unique_ptr<GrFragmentProcessor> fp = as_SB(shader)->asFragmentProcessor(asFPArgs.args());
-    GrAlwaysAssert(fp);
+    SkASSERT_RELEASE(fp);
     return fp;
 }

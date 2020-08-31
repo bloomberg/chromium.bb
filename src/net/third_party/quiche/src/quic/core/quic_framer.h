@@ -17,7 +17,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 
@@ -94,10 +94,21 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
       const QuicVersionNegotiationPacket& packet) = 0;
 
   // Called only when |perspective_| is IS_CLIENT and a retry packet has been
-  // parsed.
+  // parsed. |new_connection_id| contains the value of the Source Connection
+  // ID field, and |retry_token| contains the value of the Retry Token field.
+  // On versions where HasRetryIntegrityTag() is false,
+  // |original_connection_id| contains the value of the Original Destination
+  // Connection ID field, and both |retry_integrity_tag| and
+  // |retry_without_tag| are empty.
+  // On versions where HasRetryIntegrityTag() is true,
+  // |original_connection_id| is empty, |retry_integrity_tag| contains the
+  // value of the Retry Integrity Tag field, and |retry_without_tag| contains
+  // the entire RETRY packet except the Retry Integrity Tag field.
   virtual void OnRetryPacket(QuicConnectionId original_connection_id,
                              QuicConnectionId new_connection_id,
-                             QuicStringPiece retry_token) = 0;
+                             quiche::QuicheStringPiece retry_token,
+                             quiche::QuicheStringPiece retry_integrity_tag,
+                             quiche::QuicheStringPiece retry_without_tag) = 0;
 
   // Called when all fields except packet number has been parsed, but has not
   // been authenticated. If it returns false, framing for this packet will
@@ -204,6 +215,9 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // Called when a message frame has been parsed.
   virtual bool OnMessageFrame(const QuicMessageFrame& frame) = 0;
 
+  // Called when a handshake done frame has been parsed.
+  virtual bool OnHandshakeDoneFrame(const QuicHandshakeDoneFrame& frame) = 0;
+
   // Called when a packet has been completely processed.
   virtual void OnPacketComplete() = 0;
 
@@ -298,12 +312,11 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                     QuicByteCount length);
   // Size in bytes of all ack frame fields without the missing packets or ack
   // blocks.
-  static size_t GetMinAckFrameSize(
-      QuicTransportVersion version,
-      QuicPacketNumberLength largest_observed_length);
+  static size_t GetMinAckFrameSize(QuicTransportVersion version,
+                                   const QuicAckFrame& ack_frame,
+                                   uint32_t local_ack_delay_exponent);
   // Size in bytes of a stop waiting frame.
   static size_t GetStopWaitingFrameSize(
-      QuicTransportVersion version,
       QuicPacketNumberLength packet_number_length);
   // Size in bytes of all reset stream frame fields.
   static size_t GetRstStreamFrameSize(QuicTransportVersion version,
@@ -337,8 +350,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Size in bytes required to serialize the stream id.
   static size_t GetStreamIdSize(QuicStreamId stream_id);
   // Size in bytes required to serialize the stream offset.
-  static size_t GetStreamOffsetSize(QuicTransportVersion version,
-                                    QuicStreamOffset offset);
+  static size_t GetStreamOffsetSize(QuicStreamOffset offset);
   // Size in bytes for a serialized new connection id frame
   static size_t GetNewConnectionIdFrameSize(
       const QuicNewConnectionIdFrame& frame);
@@ -368,7 +380,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   // Returns the associated data from the encrypted packet |encrypted| as a
   // stringpiece.
-  static QuicStringPiece GetAssociatedDataFromEncryptedPacket(
+  static quiche::QuicheStringPiece GetAssociatedDataFromEncryptedPacket(
       QuicTransportVersion version,
       const QuicEncryptedPacket& encrypted,
       QuicConnectionIdLength destination_connection_id_length,
@@ -397,7 +409,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       QuicConnectionId* source_connection_id,
       QuicLongHeaderType* long_packet_type,
       QuicVariableLengthIntegerLength* retry_token_length_length,
-      QuicStringPiece* retry_token,
+      quiche::QuicheStringPiece* retry_token,
       std::string* detailed_error);
 
   // Parses the unencryoted fields in |packet| and stores them in the other
@@ -415,7 +427,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       QuicConnectionId* destination_connection_id,
       QuicConnectionId* source_connection_id,
       bool* retry_token_present,
-      QuicStringPiece* retry_token,
+      quiche::QuicheStringPiece* retry_token,
       std::string* detailed_error);
 
   // Serializes a packet containing |frames| into |buffer|.
@@ -508,6 +520,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   void SetEncrypter(EncryptionLevel level,
                     std::unique_ptr<QuicEncrypter> encrypter);
 
+  // Called to remove encrypter of encryption |level|.
+  void RemoveEncrypter(EncryptionLevel level);
+
   // Sets the encrypter and decrypter for the ENCRYPTION_INITIAL level.
   void SetInitialObfuscators(QuicConnectionId connection_id);
 
@@ -541,7 +556,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   // The minimum packet number length required to represent |packet_number|.
   static QuicPacketNumberLength GetMinPacketNumberLength(
-      QuicTransportVersion version,
       QuicPacketNumber packet_number);
 
   void SetSupportedVersions(const ParsedQuicVersionVector& versions) {
@@ -780,8 +794,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                            bool no_message_length,
                            QuicMessageFrame* frame);
 
-  bool DecryptPayload(QuicStringPiece encrypted,
-                      QuicStringPiece associated_data,
+  bool DecryptPayload(quiche::QuicheStringPiece encrypted,
+                      quiche::QuicheStringPiece associated_data,
                       const QuicPacketHeader& header,
                       char* decrypted_buffer,
                       size_t buffer_length,
@@ -865,11 +879,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool AppendIetfAckFrameAndTypeByte(const QuicAckFrame& frame,
                                      QuicDataWriter* writer);
 
-  // Used by AppendIetfAckFrameAndTypeByte to figure out how many ack
-  // blocks can be included.
-  int CalculateIetfAckBlockCount(const QuicAckFrame& frame,
-                                 QuicDataWriter* writer,
-                                 size_t available_space);
   bool AppendStopWaitingFrame(const QuicPacketHeader& header,
                               const QuicStopWaitingFrame& frame,
                               QuicDataWriter* builder);
@@ -903,7 +912,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                    QuicRstStreamFrame* frame);
   bool ProcessStopSendingFrame(QuicDataReader* reader,
                                QuicStopSendingFrame* stop_sending_frame);
-  bool ProcessCryptoFrame(QuicDataReader* reader, QuicCryptoFrame* frame);
+  bool ProcessCryptoFrame(QuicDataReader* reader,
+                          EncryptionLevel encryption_level,
+                          QuicCryptoFrame* frame);
 
   // IETF frame appending methods.  All methods append the type byte as well.
   bool AppendIetfStreamFrame(const QuicStreamFrame& frame,
@@ -936,14 +947,14 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                               QuicMaxStreamsFrame* frame,
                               uint64_t frame_type);
 
-  bool AppendIetfBlockedFrame(const QuicBlockedFrame& frame,
+  bool AppendDataBlockedFrame(const QuicBlockedFrame& frame,
                               QuicDataWriter* writer);
-  bool ProcessIetfBlockedFrame(QuicDataReader* reader, QuicBlockedFrame* frame);
+  bool ProcessDataBlockedFrame(QuicDataReader* reader, QuicBlockedFrame* frame);
 
-  bool AppendStreamBlockedFrame(const QuicBlockedFrame& frame,
-                                QuicDataWriter* writer);
-  bool ProcessStreamBlockedFrame(QuicDataReader* reader,
-                                 QuicBlockedFrame* frame);
+  bool AppendStreamDataBlockedFrame(const QuicBlockedFrame& frame,
+                                    QuicDataWriter* writer);
+  bool ProcessStreamDataBlockedFrame(QuicDataReader* reader,
+                                     QuicBlockedFrame* frame);
 
   bool AppendStreamsBlockedFrame(const QuicStreamsBlockedFrame& frame,
                                  QuicDataWriter* writer);
@@ -980,6 +991,11 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   void set_detailed_error(const char* error) { detailed_error_ = error; }
   void set_detailed_error(std::string error) { detailed_error_ = error; }
+
+  // Returns false if the reading fails.
+  bool ReadUint32FromVarint62(QuicDataReader* reader,
+                              QuicIetfFrameType type,
+                              QuicStreamId* id);
 
   std::string detailed_error_;
   QuicFramerVisitorInterface* visitor_;
@@ -1077,9 +1093,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 // This text, inserted by the peer if it's using Google's QUIC implementation,
 // contains additional error information that narrows down the exact error. The
 // extracted error code and (possibly updated) error_details string are returned
-// in |*frame|. If an error code is not found in the error details then the
-// extracted_error_code is set to QuicErrorCode::QUIC_IETF_GQUIC_ERROR_MISSING.
-// If there is an error code in the string then it is removed from the string.
+// in |*frame|. If an error code is not found in the error details, then
+// frame->quic_error_code is set to
+// QuicErrorCode::QUIC_IETF_GQUIC_ERROR_MISSING.  If there is an error code in
+// the string then it is removed from the string.
 QUIC_EXPORT_PRIVATE void MaybeExtractQuicErrorCode(
     QuicConnectionCloseFrame* frame);
 

@@ -24,6 +24,10 @@
 #include "media/media_buildflags.h"
 #include "printing/buildflags/buildflags.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/upgrade_detector/build_state.h"
+#endif
+
 class BackgroundModeManager;
 class NotificationPlatformBridge;
 class NotificationUIManager;
@@ -91,8 +95,6 @@ class TestingBrowserProcess : public BrowserProcess {
       std::unique_ptr<BackgroundModeManager> manager) override;
   StatusTray* status_tray() override;
   safe_browsing::SafeBrowsingService* safe_browsing_service() override;
-  safe_browsing::ClientSideDetectionService* safe_browsing_detection_service()
-      override;
   subresource_filter::RulesetService* subresource_filter_ruleset_service()
       override;
   optimization_guide::OptimizationGuideService* optimization_guide_service()
@@ -135,6 +137,7 @@ class TestingBrowserProcess : public BrowserProcess {
   resource_coordinator::TabManager* GetTabManager() override;
   resource_coordinator::ResourceCoordinatorParts* resource_coordinator_parts()
       override;
+  BuildState* GetBuildState() override;
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).
@@ -217,6 +220,10 @@ class TestingBrowserProcess : public BrowserProcess {
 
   std::unique_ptr<resource_coordinator::ResourceCoordinatorParts>
       resource_coordinator_parts_;
+
+#if !defined(OS_ANDROID)
+  BuildState build_state_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };

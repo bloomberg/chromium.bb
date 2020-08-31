@@ -5,61 +5,55 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_MEDIA_CONTEXT_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_MEDIA_CONTEXT_IMPL_H_
 
-#include <map>
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
 #include "third_party/blink/public/web/web_media_inspector.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 
-class Document;
-class HTMLMediaElement;
+class LocalDOMWindow;
 
 struct MediaPlayer final : public GarbageCollected<MediaPlayer> {
-  void Trace(blink::Visitor*) {}
+  void Trace(Visitor*) {}
 
   WebString player_id;
-  InspectorPlayerEvents events;
+  Vector<InspectorPlayerError> errors;
+  Vector<InspectorPlayerEvent> events;
+  Vector<InspectorPlayerMessage> messages;
   HashMap<String, InspectorPlayerProperty> properties;
 };
 
 class CORE_EXPORT MediaInspectorContextImpl final
     : public GarbageCollected<MediaInspectorContextImpl>,
-      public Supplement<LocalFrame>,
+      public Supplement<LocalDOMWindow>,
       public MediaInspectorContext {
   USING_GARBAGE_COLLECTED_MIXIN(MediaInspectorContextImpl);
 
  public:
   static const char kSupplementName[];
-  static void ProvideToLocalFrame(LocalFrame&);
 
-  // Different ways of getting the singleton instance of
-  // MediaInspectorContextImpl depending on what things are easily in scope
-  // caller side.
-  static MediaInspectorContextImpl* FromLocalFrame(LocalFrame*);
-  static MediaInspectorContextImpl* FromDocument(const Document&);
-  static MediaInspectorContextImpl* FromHtmlMediaElement(
-      const HTMLMediaElement&);
+  static MediaInspectorContextImpl* From(LocalDOMWindow&);
 
-  explicit MediaInspectorContextImpl(LocalFrame&);
+  explicit MediaInspectorContextImpl(LocalDOMWindow&);
 
   // MediaInspectorContext methods.
   WebString CreatePlayer() override;
-  void NotifyPlayerEvents(WebString, InspectorPlayerEvents) override;
-  void SetPlayerProperties(WebString, InspectorPlayerProperties) override;
+  void NotifyPlayerErrors(WebString playerId,
+                          const InspectorPlayerErrors&) override;
+  void NotifyPlayerEvents(WebString playerId,
+                          const InspectorPlayerEvents&) override;
+  void NotifyPlayerMessages(WebString playerId,
+                            const InspectorPlayerMessages&) override;
+  void SetPlayerProperties(WebString playerId,
+                           const InspectorPlayerProperties&) override;
 
   // GarbageCollected methods.
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
-  Vector<WebString> GetAllPlayerIds();
-  std::pair<Vector<InspectorPlayerProperty>, Vector<InspectorPlayerEvent>>
-  GetPropertiesAndEvents(const WebString&);
+  Vector<WebString> AllPlayerIds();
+  const MediaPlayer& MediaPlayerFromId(const WebString&);
 
  private:
   HeapHashMap<String, Member<MediaPlayer>> players_;

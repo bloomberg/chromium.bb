@@ -11,10 +11,18 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/test/browser_test.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 
 class AuraLinuxAccessibilityInProcessBrowserTest : public InProcessBrowserTest {
+ public:
+  void SetUp() override {
+    ui::AXPlatformNode::NotifyAddAXModeFlags(ui::kAXModeComplete);
+    InProcessBrowserTest::SetUp();
+  }
+
  protected:
-  AuraLinuxAccessibilityInProcessBrowserTest() {}
+  AuraLinuxAccessibilityInProcessBrowserTest() = default;
 
   void VerifyEmbedRelationships();
 
@@ -100,6 +108,13 @@ void AuraLinuxAccessibilityInProcessBrowserTest::VerifyEmbedRelationships() {
 
 IN_PROC_BROWSER_TEST_F(AuraLinuxAccessibilityInProcessBrowserTest,
                        EmbeddedRelationship) {
+  // Force the creation of the document's native object which sets up the
+  // relationship.
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(nullptr, active_web_contents->GetRenderWidgetHostView()
+                         ->GetNativeViewAccessible());
+
   GURL url(url::kAboutBlankURL);
   AddTabAtIndex(0, url, ui::PAGE_TRANSITION_LINK);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());

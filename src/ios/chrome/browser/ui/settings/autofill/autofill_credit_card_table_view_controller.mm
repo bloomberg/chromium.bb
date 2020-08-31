@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
@@ -17,6 +17,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_edit_table_view_controller.h"
@@ -29,7 +30,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -59,7 +60,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     PersonalDataManagerObserver> {
   autofill::PersonalDataManager* _personalDataManager;
 
-  ios::ChromeBrowserState* _browserState;
+  Browser* _browser;
   std::unique_ptr<autofill::PersonalDataManagerObserverBridge> _observer;
 }
 
@@ -86,19 +87,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - ViewController Life Cycle.
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
-  DCHECK(browserState);
+- (instancetype)initWithBrowser:(Browser*)browser {
+  DCHECK(browser);
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
-  self = [super initWithTableViewStyle:style
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:style];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_AUTOFILL_PAYMENT_METHODS);
     self.shouldHideDoneButton = YES;
-    _browserState = browserState;
+    _browser = browser;
     _personalDataManager =
-        autofill::PersonalDataManagerFactory::GetForBrowserState(_browserState);
+        autofill::PersonalDataManagerFactory::GetForBrowserState(
+            _browser->GetBrowserState());
     _observer.reset(new autofill::PersonalDataManagerObserverBridge(self));
     _personalDataManager->AddObserver(_observer.get());
   }
@@ -119,10 +120,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       kAutofillPaymentMethodsToolbarId;
 
   base::RecordAction(base::UserMetricsAction("AutofillCreditCardsViewed"));
-  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
-    [self setToolbarItems:@[ [self flexibleSpace], self.addPaymentMethodButton ]
-                 animated:YES];
-  }
+  [self setToolbarItems:@[ [self flexibleSpace], self.addPaymentMethodButton ]
+               animated:YES];
   [self updateUIForEditState];
   [self loadModel];
 }
@@ -137,20 +136,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self hideDeleteButton];
     [self setSwitchItemEnabled:YES itemType:ItemTypeAutofillCardSwitch];
   }
+  [self updateUIForEditState];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
-    self.navigationController.toolbarHidden = NO;
-  }
+  self.navigationController.toolbarHidden = NO;
 }
 
 - (BOOL)shouldHideToolbar {
   // There is a bug from apple that this method might be called in this view
   // controller even if it is not the top view controller.
-  if (self.navigationController.topViewController == self &&
-      base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
+  if (self.navigationController.topViewController == self) {
     return NO;
   }
 
@@ -216,6 +213,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return header;
 }
 
+// TODO(crbug.com/1063426): Add egtest for server cards.
 - (TableViewItem*)itemForCreditCard:(const autofill::CreditCard&)creditCard {
   std::string guid(creditCard.guid());
   NSString* creditCardName = autofill::GetCreditCardName(
@@ -223,7 +221,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   AutofillDataItem* item = [[AutofillDataItem alloc] initWithType:ItemTypeCard];
   item.text = creditCardName;
-  item.leadingDetailText = autofill::GetCreditCardObfuscatedNumber(creditCard);
+  item.leadingDetailText = autofill::GetCreditCardIdentifierString(creditCard);
   item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   item.accessibilityIdentifier = creditCardName;
   item.deletable = autofill::IsCreditCardLocal(creditCard);
@@ -434,13 +432,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Opens new view controller |AutofillAddCreditCardViewController| for fillig
 // credit card details.
 - (void)handleAddPayment:(id)sender {
-  DCHECK(base::FeatureList::IsEnabled(kSettingsAddPaymentMethod));
   base::RecordAction(
       base::UserMetricsAction("MobileAddCreditCard.AddPaymentMethodButton"));
 
   self.addCreditCardCoordinator = [[AutofillAddCreditCardCoordinator alloc]
       initWithBaseViewController:self
-                    browserState:_browserState];
+                         browser:_browser];
 
   [self.addCreditCardCoordinator start];
 }
@@ -464,12 +461,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (BOOL)isAutofillCreditCardEnabled {
   return autofill::prefs::IsAutofillCreditCardEnabled(
-      _browserState->GetPrefs());
+      _browser->GetBrowserState()->GetPrefs());
 }
 
 - (void)setAutofillCreditCardEnabled:(BOOL)isEnabled {
   return autofill::prefs::SetAutofillCreditCardEnabled(
-      _browserState->GetPrefs(), isEnabled);
+      _browser->GetBrowserState()->GetPrefs(), isEnabled);
 }
 
 - (UIBarButtonItem*)addPaymentMethodButton {
@@ -498,24 +495,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Adds delete button to the bottom toolbar.
 - (void)showDeleteButton {
-  NSArray* customToolbarItems;
-  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
-    customToolbarItems = @[
-      self.deleteButton, [self flexibleSpace], self.addPaymentMethodButton
-    ];
-  } else {
-    customToolbarItems =
-        @[ [self flexibleSpace], self.deleteButton, [self flexibleSpace] ];
-  }
+  NSArray* customToolbarItems =
+      @[ self.deleteButton, [self flexibleSpace], self.addPaymentMethodButton ];
   [self setToolbarItems:customToolbarItems animated:YES];
 }
 
 // Removes delete button from the bottom toolbar.
 - (void)hideDeleteButton {
-  NSArray* customToolbarItems;
-  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
-    customToolbarItems = @[ [self flexibleSpace], self.addPaymentMethodButton ];
-  }
+  NSArray* customToolbarItems =
+      @[ [self flexibleSpace], self.addPaymentMethodButton ];
   [self setToolbarItems:customToolbarItems animated:YES];
 }
 

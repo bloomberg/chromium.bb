@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "content/public/test/browser_test.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 
 // TODO (spqchan): Refine tests. See crbug.com/770873.
@@ -22,7 +23,8 @@ class LocationIconViewBrowserTest : public InProcessBrowserTest {
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForBrowser(browser());
     location_bar_ = browser_view->GetLocationBarView();
-    icon_view_ = std::make_unique<LocationIconView>(font_list, location_bar_);
+    icon_view_ = std::make_unique<LocationIconView>(font_list, location_bar_,
+                                                    location_bar_);
   }
 
   LocationBarView* location_bar() const { return location_bar_; }

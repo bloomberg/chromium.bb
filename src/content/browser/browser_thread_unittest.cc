@@ -27,7 +27,6 @@
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -36,9 +35,6 @@ namespace content {
 namespace {
 
 using ::testing::Invoke;
-
-using StrictMockTask =
-    testing::StrictMock<base::MockCallback<base::Callback<void()>>>;
 
 class SequenceManagerThreadDelegate : public base::Thread::Delegate {
  public:
@@ -167,11 +163,10 @@ class UIThreadDestructionObserver
     : public base::MessageLoopCurrent::DestructionObserver {
  public:
   explicit UIThreadDestructionObserver(bool* did_shutdown,
-                                       const base::Closure& callback)
+                                       base::OnceClosure callback)
       : callback_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        callback_(callback),
-        ui_task_runner_(
-            base::CreateSingleThreadTaskRunner({BrowserThread::UI})),
+        ui_task_runner_(GetUIThreadTaskRunner({})),
+        callback_(std::move(callback)),
         did_shutdown_(did_shutdown) {
     ui_task_runner_->PostTask(FROM_HERE, base::BindOnce(&Watch, this));
   }
@@ -191,12 +186,12 @@ class UIThreadDestructionObserver
 
     base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
     *did_shutdown_ = true;
-    callback_task_runner_->PostTask(FROM_HERE, callback_);
+    callback_task_runner_->PostTask(FROM_HERE, std::move(callback_));
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner_;
-  const base::Closure callback_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  base::OnceClosure callback_;
   bool* did_shutdown_;
 };
 
@@ -227,8 +222,7 @@ TEST_F(BrowserThreadTest, ReleasedOnCorrectThread) {
 }
 
 TEST_F(BrowserThreadTest, PostTaskViaTaskRunner) {
-  scoped_refptr<base::TaskRunner> task_runner =
-      base::CreateTaskRunner({BrowserThread::IO});
+  scoped_refptr<base::TaskRunner> task_runner = GetIOThreadTaskRunner({});
   base::RunLoop run_loop;
   EXPECT_TRUE(task_runner->PostTask(
       FROM_HERE, base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
@@ -238,7 +232,7 @@ TEST_F(BrowserThreadTest, PostTaskViaTaskRunner) {
 
 TEST_F(BrowserThreadTest, PostTaskViaSequencedTaskRunner) {
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunner({BrowserThread::IO});
+      GetIOThreadTaskRunner({});
   base::RunLoop run_loop;
   EXPECT_TRUE(task_runner->PostTask(
       FROM_HERE, base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
@@ -248,7 +242,7 @@ TEST_F(BrowserThreadTest, PostTaskViaSequencedTaskRunner) {
 
 TEST_F(BrowserThreadTest, PostTaskViaSingleThreadTaskRunner) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+      GetIOThreadTaskRunner({});
   base::RunLoop run_loop;
   EXPECT_TRUE(task_runner->PostTask(
       FROM_HERE, base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
@@ -259,7 +253,7 @@ TEST_F(BrowserThreadTest, PostTaskViaSingleThreadTaskRunner) {
 #if defined(OS_WIN)
 TEST_F(BrowserThreadTest, PostTaskViaCOMSTATaskRunner) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::CreateCOMSTATaskRunner({BrowserThread::UI});
+      GetUIThreadTaskRunner({});
   base::RunLoop run_loop;
   EXPECT_TRUE(task_runner->PostTask(
       FROM_HERE, base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
@@ -270,7 +264,7 @@ TEST_F(BrowserThreadTest, PostTaskViaCOMSTATaskRunner) {
 
 TEST_F(BrowserThreadTest, ReleaseViaTaskRunner) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+      GetUIThreadTaskRunner({});
   base::RunLoop run_loop;
   ExpectRelease(run_loop.QuitWhenIdleClosure());
   task_runner->ReleaseSoon(FROM_HERE, base::WrapRefCounted(this));
@@ -281,9 +275,8 @@ TEST_F(BrowserThreadTest, PostTaskAndReply) {
   // Most of the heavy testing for PostTaskAndReply() is done inside the
   // task runner test.  This just makes sure we get piped through at all.
   base::RunLoop run_loop;
-  ASSERT_TRUE(base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO},
-                                     base::DoNothing(),
-                                     run_loop.QuitWhenIdleClosure()));
+  ASSERT_TRUE(GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE, base::DoNothing(), run_loop.QuitWhenIdleClosure()));
   run_loop.Run();
 }
 
@@ -339,8 +332,8 @@ class BrowserThreadWithCustomSchedulerTest : public testing::Test {
 };
 
 TEST_F(BrowserThreadWithCustomSchedulerTest, PostBestEffortTask) {
-  StrictMockTask best_effort_task;
-  StrictMockTask regular_task;
+  base::MockOnceClosure best_effort_task;
+  base::MockOnceClosure regular_task;
 
   auto task_runner =
       base::CreateTaskRunner({BrowserThread::UI, base::TaskPriority::HIGHEST});
@@ -349,7 +342,8 @@ TEST_F(BrowserThreadWithCustomSchedulerTest, PostBestEffortTask) {
   BrowserThread::PostBestEffortTask(FROM_HERE, task_runner,
                                     best_effort_task.Get());
 
-  EXPECT_CALL(regular_task, Run);
+  EXPECT_CALL(regular_task, Run).Times(1);
+  EXPECT_CALL(best_effort_task, Run).Times(0);
   task_environment_.RunUntilIdle();
 
   testing::Mock::VerifyAndClearExpectations(&regular_task);

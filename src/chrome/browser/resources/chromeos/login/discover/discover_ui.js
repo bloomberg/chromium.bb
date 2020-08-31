@@ -50,7 +50,7 @@ function initializeDiscoverAPI() {
   Polymer({
     is: 'discover-ui',
 
-    behaviors: [I18nBehavior, OobeDialogHostBehavior],
+    behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
     properties: {
       /**
@@ -63,7 +63,7 @@ function initializeDiscoverAPI() {
       },
     },
 
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       this.i18nUpdateLocale();
       this.propagateUpdateLocalizedContent('.card');
       this.propagateUpdateLocalizedContent('#discoverWelcome');
@@ -74,7 +74,7 @@ function initializeDiscoverAPI() {
      * Enumerates modules, attaches common event handlers.
      * @override
      */
-    attached: function() {
+    attached() {
       initializeDiscoverAPI();
       // Initialize modules event handlers.
       let modules = Polymer.dom(this.root).querySelectorAll('.module');
@@ -100,7 +100,7 @@ function initializeDiscoverAPI() {
      * Overridden from OobeDialogHostBehavior.
      * @override
      */
-    onBeforeShow: function() {
+    onBeforeShow() {
       OobeDialogHostBehavior.onBeforeShow.call(this);
       this.propagateFullScreenMode('#discoverWelcome');
       this.propagateFullScreenMode('.module');
@@ -116,7 +116,7 @@ function initializeDiscoverAPI() {
      * Hides all modules.
      * @private
      */
-    hideAll_: function() {
+    hideAll_() {
       this.$.discoverWelcome.hidden = true;
       let modules = Polymer.dom(this.root).querySelectorAll('.module');
       for (let module of modules)
@@ -128,7 +128,7 @@ function initializeDiscoverAPI() {
      * @param {string} moduleId Module name (shared between C++ and JS).
      * @private
      */
-    showModule_: function(moduleId) {
+    showModule_(moduleId) {
       let module;
       if (moduleId === DISCOVER_WELCOME_MODULE) {
         module = this.$.discoverWelcome;
@@ -138,6 +138,7 @@ function initializeDiscoverAPI() {
       }
       if (module) {
         this.hideAll_();
+        module.onBeforeShow();
         module.hidden = false;
         module.show();
       } else {
@@ -149,7 +150,7 @@ function initializeDiscoverAPI() {
      * @param {!Event} event The onInput event that the function is handling.
      * @private
      */
-    onCardClick_: function(event) {
+    onCardClick_(event) {
       let module = event.target.getAttribute('module');
       this.showModule_(module);
     },
@@ -158,7 +159,7 @@ function initializeDiscoverAPI() {
      * Fires signal that Discover app has ended.
      * @private
      */
-    end_: function() {
+    end_() {
       this.fire('discover-done');
     },
 
@@ -166,7 +167,7 @@ function initializeDiscoverAPI() {
      * Starts linear navigation flow.
      * @private
      */
-    startLinearFlow_: function() {
+    startLinearFlow_() {
       this.showModule_(
           Polymer.dom(this.root).querySelector('.module').getAttribute(
               'module'));

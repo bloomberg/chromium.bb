@@ -21,11 +21,11 @@
 #include "net/base/url_util.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/database/database_util.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 using blink::mojom::StorageType;
-using storage::QuotaClient;
 
 namespace storage {
 
@@ -34,8 +34,7 @@ namespace {
 int64_t GetOriginUsageOnDBThread(DatabaseTracker* db_tracker,
                                  const url::Origin& origin) {
   OriginInfo info;
-  if (db_tracker->GetOriginInfo(storage::GetIdentifierFromOrigin(origin),
-                                &info))
+  if (db_tracker->GetOriginInfo(GetIdentifierFromOrigin(origin), &info))
     return info.TotalSize();
   return 0;
 }
@@ -45,7 +44,7 @@ void GetOriginsOnDBThread(DatabaseTracker* db_tracker,
   std::vector<std::string> origin_identifiers;
   if (db_tracker->GetAllOriginIdentifiers(&origin_identifiers)) {
     for (const auto& identifier : origin_identifiers) {
-      origins_ptr->insert(storage::GetOriginFromIdentifier(identifier));
+      origins_ptr->insert(GetOriginFromIdentifier(identifier));
     }
   }
 }
@@ -56,7 +55,7 @@ void GetOriginsForHostOnDBThread(DatabaseTracker* db_tracker,
   std::vector<std::string> origin_identifiers;
   if (db_tracker->GetAllOriginIdentifiers(&origin_identifiers)) {
     for (const auto& identifier : origin_identifiers) {
-      url::Origin origin = storage::GetOriginFromIdentifier(identifier);
+      url::Origin origin = GetOriginFromIdentifier(identifier);
       if (host == net::GetHostOrSpecFromURL(origin.GetURL()))
         origins_ptr->insert(origin);
     }
@@ -99,9 +98,11 @@ DatabaseQuotaClient::~DatabaseQuotaClient() {
   }
 }
 
-QuotaClient::ID DatabaseQuotaClient::id() const {
-  return kDatabase;
+storage::QuotaClientType DatabaseQuotaClient::type() const {
+  return storage::QuotaClientType::kDatabase;
 }
+
+void DatabaseQuotaClient::OnQuotaManagerDestroyed() {}
 
 void DatabaseQuotaClient::GetOriginUsage(const url::Origin& origin,
                                          StorageType type,
@@ -109,7 +110,7 @@ void DatabaseQuotaClient::GetOriginUsage(const url::Origin& origin,
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
 
-  // All databases are in the temp namespace for now.
+  // All databases are in the default bucket.
   if (type != StorageType::kTemporary) {
     std::move(callback).Run(0);
     return;
@@ -127,7 +128,7 @@ void DatabaseQuotaClient::GetOriginsForType(StorageType type,
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
 
-  // All databases are in the temp namespace for now.
+  // All databases are in the default bucket.
   if (type != StorageType::kTemporary) {
     std::move(callback).Run(std::set<url::Origin>());
     return;
@@ -148,7 +149,7 @@ void DatabaseQuotaClient::GetOriginsForHost(StorageType type,
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
 
-  // All databases are in the temp namespace for now.
+  // All databases are in the default bucket.
   if (type != StorageType::kTemporary) {
     std::move(callback).Run(std::set<url::Origin>());
     return;
@@ -170,7 +171,7 @@ void DatabaseQuotaClient::DeleteOriginData(const url::Origin& origin,
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
 
-  // All databases are in the temp namespace for now, so nothing to delete.
+  // All databases are in the default bucket.
   if (type != StorageType::kTemporary) {
     std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk);
     return;
@@ -190,6 +191,11 @@ void DatabaseQuotaClient::DeleteOriginData(const url::Origin& origin,
       base::BindOnce(&DatabaseTracker::DeleteDataForOrigin, db_tracker_, origin,
                      delete_callback),
       net::CompletionOnceCallback(delete_callback));
+}
+
+void DatabaseQuotaClient::PerformStorageCleanup(blink::mojom::StorageType type,
+                                                base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
 bool DatabaseQuotaClient::DoesSupport(StorageType type) const {

@@ -11,13 +11,14 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
-#include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
+#include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 @interface FakeHistoryMenuController : HistoryMenuCocoaController {
  @public
-  BOOL opened_[3];
+  BOOL _opened[3];
 }
 @end
 
@@ -25,22 +26,22 @@
 
 - (id)initTest {
   if ((self = [super init])) {
-    opened_[1] = NO;
-    opened_[2] = NO;
+    _opened[1] = NO;
+    _opened[2] = NO;
   }
   return self;
 }
 
 - (void)openURLForItem:(const HistoryMenuBridge::HistoryItem*)item {
-  opened_[item->session_id.id()] = YES;
+  _opened[item->session_id.id()] = YES;
 }
 
 @end  // FakeHistoryMenuController
 
-class HistoryMenuCocoaControllerTest : public CocoaProfileTest {
+class HistoryMenuCocoaControllerTest : public BrowserWithTestWindowTest {
  public:
   void SetUp() override {
-    CocoaProfileTest::SetUp();
+    BrowserWithTestWindowTest::SetUp();
     ASSERT_TRUE(profile());
 
     bridge_ = std::make_unique<HistoryMenuBridge>(profile());
@@ -70,6 +71,7 @@ class HistoryMenuCocoaControllerTest : public CocoaProfileTest {
   }
 
  private:
+  CocoaTestHelper cocoa_test_helper_;
   std::unique_ptr<HistoryMenuBridge> bridge_;
 };
 
@@ -84,8 +86,8 @@ TEST_F(HistoryMenuCocoaControllerTest, OpenURLForItem) {
 
   for ( ; it != items.end(); ++it) {
     HistoryMenuBridge::HistoryItem* item = it->second;
-    EXPECT_FALSE(controller()->opened_[item->session_id.id()]);
+    EXPECT_FALSE(controller()->_opened[item->session_id.id()]);
     [controller() openHistoryMenuItem:it->first];
-    EXPECT_TRUE(controller()->opened_[item->session_id.id()]);
+    EXPECT_TRUE(controller()->_opened[item->session_id.id()]);
   }
 }

@@ -86,7 +86,7 @@ void WorkletAnimationController::ScrollSourceCompositingStateChanged(
   DCHECK(ScrollTimeline::HasActiveScrollTimeline(node));
   for (const auto& animation : animations_.Values()) {
     if (animation->GetTimeline()->IsScrollTimeline() &&
-        ToScrollTimeline(animation->GetTimeline())->scrollSource() == node) {
+        To<ScrollTimeline>(animation->GetTimeline())->scrollSource() == node) {
       InvalidateAnimation(*animation);
     }
   }
@@ -160,7 +160,7 @@ void WorkletAnimationController::ApplyAnimationTimings(
     animation->Update(reason);
 }
 
-void WorkletAnimationController::Trace(blink::Visitor* visitor) {
+void WorkletAnimationController::Trace(Visitor* visitor) {
   visitor->Trace(pending_animations_);
   visitor->Trace(animations_);
   visitor->Trace(document_);

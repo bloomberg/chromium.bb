@@ -10,6 +10,7 @@
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
@@ -23,10 +24,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/accessibility/speech_monitor.h"
+#include "chrome/browser/chromeos/app_mode/app_session.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_settings_navigation_throttle.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -46,9 +51,9 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_impl.h"
@@ -56,6 +61,12 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/settings_window_manager_observer_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -72,16 +83,20 @@
 #include "components/crx_file/crx_verifier.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "content/public/browser/audio_service.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/sandboxed_unpacker.h"
@@ -98,9 +113,9 @@
 #include "services/audio/public/cpp/fake_system_info.h"
 #include "services/audio/public/cpp/sounds/audio_stream_handler.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/page_transition_types.h"
 
 namespace em = enterprise_management;
 
@@ -219,6 +234,8 @@ const char kTestLoginToken[] = "fake-login-token";
 const char kTestAccessToken[] = "fake-access-token";
 const char kTestClientId[] = "fake-client-id";
 const char kTestAppScope[] = "https://www.googleapis.com/auth/userinfo.profile";
+
+const char kSizeChangedMessage[] = "size_changed";
 
 // Helper function for GetConsumerKioskAutoLaunchStatusCallback.
 void ConsumerKioskAutoLaunchStatusCheck(
@@ -463,6 +480,19 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
   DISALLOW_COPY_AND_ASSIGN(AppDataLoadWaiter);
 };
 
+// Replaces settings urls for KioskSettingsNavigationThrottle.
+class ScopedSettingsPages {
+ public:
+  ScopedSettingsPages(
+      std::vector<KioskSettingsNavigationThrottle::SettingsPage>* pages) {
+    KioskSettingsNavigationThrottle::SetSettingPagesForTesting(pages);
+  }
+
+  ~ScopedSettingsPages() {
+    KioskSettingsNavigationThrottle::SetSettingPagesForTesting(nullptr);
+  }
+};
+
 }  // namespace
 
 class KioskTest : public OobeBaseTest {
@@ -586,7 +616,7 @@ class KioskTest : public OobeBaseTest {
     chromeos::WizardController* wizard_controller =
         chromeos::WizardController::default_controller();
     if (wizard_controller)
-      wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+      wizard_controller->SkipToLoginForTesting();
 
     OobeScreenWaiter(GaiaView::kScreenId).Wait();
   }
@@ -625,7 +655,9 @@ class KioskTest : public OobeBaseTest {
     return GetInstalledApp()->location();
   }
 
-  void WaitForAppLaunchWithOptions(bool check_launch_data, bool terminate_app) {
+  void WaitForAppLaunchWithOptions(bool check_launch_data,
+                                   bool terminate_app,
+                                   bool keep_app_open = false) {
     ExtensionTestMessageListener launch_data_check_listener(
         "launchData.isKioskSession = true", false);
 
@@ -663,7 +695,8 @@ class KioskTest : public OobeBaseTest {
       window->GetBaseWindow()->Close();
 
     // Wait until the app terminates if it is still running.
-    if (!app_window_registry->GetAppWindowsForApp(test_app_id_).empty())
+    if (!keep_app_open &&
+        !app_window_registry->GetAppWindowsForApp(test_app_id_).empty())
       RunUntilBrowserProcessQuits();
 
     // Check that the app had been informed that it is running in a kiosk
@@ -756,15 +789,14 @@ class KioskTest : public OobeBaseTest {
     WaitForAppLaunchSuccess();
   }
 
-  // Waits for a message sent from DOM automation to |message_queue|.
+  // Waits for window width to change. Listens to a 'size_change' message sent
+  // from DOM automation to |message_queue|.
   // The message is expected to be in JSON format:
   // {'name': <msg_name>, 'data': <extra_msg_data>}.
-  // This will wait until a message with name set to |message_name| is seen, and
-  // it will return the value set as the message's data. It is acceptable for
-  // the DOM message not to specify 'data' property, in which case this will
-  // return empty value.
-  base::Value WaitForDOMMessage(content::DOMMessageQueue* message_queue,
-                                const std::string& message_name) {
+  // This will wait until a message with a different width is seen. It will
+  // return the new width.
+  int WaitForWidthChange(content::DOMMessageQueue* message_queue,
+                         int current_width) {
     std::string message;
     while (message_queue->WaitForMessage(&message)) {
       base::Optional<base::Value> message_value =
@@ -774,15 +806,23 @@ class KioskTest : public OobeBaseTest {
         continue;
 
       const std::string* name = message_value.value().FindStringKey("name");
-      if (!name || *name != message_name)
+      if (!name || *name != kSizeChangedMessage)
         continue;
 
       const base::Value* data = message_value->FindKey("data");
-      return data ? data->Clone() : base::Value();
+
+      if (!data || !data->is_int())
+        continue;
+
+      const int new_width = data->GetInt();
+      if (new_width == current_width)
+        continue;
+
+      return new_width;
     }
 
-    ADD_FAILURE() << "Message wait failed " << message_name;
-    return base::Value();
+    ADD_FAILURE() << "Message wait failed " << kSizeChangedMessage;
+    return current_width;
   }
 
   void SimulateNetworkOnline() {
@@ -866,24 +906,21 @@ IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
       apps::AppWindowWaiter(app_window_registry, test_app_id()).Wait();
   ASSERT_TRUE(window);
 
-  int original_width;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      window->web_contents(),
-      "window.domAutomationController.send(window.innerWidth);",
-      &original_width));
+  test::JSChecker window_js(window->web_contents());
+  int original_width = window_js.GetInt("window.innerWidth");
 
-  content::DOMMessageQueue message_queue;
+  content::DOMMessageQueue message_queue(window->web_contents());
 
   // Inject window size observer that should notify this test when the app
   // window size changes during zoom operations.
-  test::JSChecker(window->web_contents())
-      .Evaluate(
-          "window.addEventListener('resize', function() {"
-          "  window.domAutomationController.send({"
-          "      'name': 'size_changed',"
-          "      'data': window.innerWidth"
-          "  });"
-          "});");
+  window_js.Evaluate(
+      base::StringPrintf("window.addEventListener('resize', function() {"
+                         "  window.domAutomationController.send({"
+                         "      'name': '%s',"
+                         "      'data': window.innerWidth"
+                         "  });"
+                         "});",
+                         kSizeChangedMessage));
 
   native_app_window::NativeAppWindowViews* native_app_window_views =
       static_cast<native_app_window::NativeAppWindowViews*>(
@@ -895,28 +932,25 @@ IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
   accelerator_target->AcceleratorPressed(
       ui::Accelerator(ui::VKEY_ADD, ui::EF_CONTROL_DOWN));
 
-  base::Value width_zoomed_in =
-      WaitForDOMMessage(&message_queue, "size_changed");
-  ASSERT_TRUE(width_zoomed_in.is_int());
-  ASSERT_LT(width_zoomed_in.GetInt(), original_width);
+  const int width_zoomed_in =
+      WaitForWidthChange(&message_queue, original_width);
+  ASSERT_LT(width_zoomed_in, original_width);
 
   // Go back to normal. Window width is restored.
   accelerator_target->AcceleratorPressed(
       ui::Accelerator(ui::VKEY_0, ui::EF_CONTROL_DOWN));
 
-  base::Value width_zoom_normal =
-      WaitForDOMMessage(&message_queue, "size_changed");
-  ASSERT_TRUE(width_zoom_normal.is_int());
-  ASSERT_EQ(width_zoom_normal.GetInt(), original_width);
+  const int width_zoom_normal =
+      WaitForWidthChange(&message_queue, width_zoomed_in);
+  ASSERT_EQ(width_zoom_normal, original_width);
 
   // Zoom out. Text is smaller and content window width becomes larger.
   accelerator_target->AcceleratorPressed(
       ui::Accelerator(ui::VKEY_SUBTRACT, ui::EF_CONTROL_DOWN));
 
-  base::Value width_zoomed_out =
-      WaitForDOMMessage(&message_queue, "size_changed");
-  ASSERT_TRUE(width_zoomed_out.is_int());
-  ASSERT_GT(width_zoomed_out.GetInt(), original_width);
+  const int width_zoomed_out =
+      WaitForWidthChange(&message_queue, width_zoom_normal);
+  ASSERT_GT(width_zoomed_out, original_width);
 
   // Terminate the app.
   window->GetBaseWindow()->Close();
@@ -933,8 +967,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NotSignedInWithGAIAAccount) {
 
   Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
   ASSERT_TRUE(app_profile);
-  EXPECT_FALSE(
-      IdentityManagerFactory::GetForProfile(app_profile)->HasPrimaryAccount());
+  EXPECT_FALSE(IdentityManagerFactory::GetForProfile(app_profile)
+                   ->HasPrimaryAccount(signin::ConsentLevel::kNotRequired));
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, PRE_LaunchAppNetworkDown) {
@@ -1082,7 +1116,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningCancel) {
   ReloadAutolaunchKioskApps();
   EXPECT_FALSE(KioskAppManager::Get()->GetAutoLaunchApp().empty());
   EXPECT_FALSE(KioskAppManager::Get()->IsAutoLaunchEnabled());
-  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+  wizard_controller->SkipToLoginForTesting();
 
   // Wait for the auto launch warning come up.
   content::WindowedNotificationObserver(
@@ -1115,7 +1149,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningConfirm) {
   ReloadAutolaunchKioskApps();
   EXPECT_FALSE(KioskAppManager::Get()->GetAutoLaunchApp().empty());
   EXPECT_FALSE(KioskAppManager::Get()->IsAutoLaunchEnabled());
-  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+  wizard_controller->SkipToLoginForTesting();
 
   // Wait for the auto launch warning come up.
   content::WindowedNotificationObserver(
@@ -1153,7 +1187,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
             GetConsumerKioskModeStatus());
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
-  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+  wizard_controller->SkipToLoginForTesting();
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
   GetLoginUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
                                              base::Value("kiosk_enable"));
@@ -1170,13 +1204,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
             GetConsumerKioskModeStatus());
 }
 
-// crbug.com/1029965
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_KioskEnableConfirmed DISABLED_KioskEnableConfirmed
-#else
-#define MAYBE_KioskEnableConfirmed KioskEnableConfirmed
-#endif
-IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_KioskEnableConfirmed) {
+IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
   // Start UI, find menu entry for this app and launch it.
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
@@ -1188,20 +1216,20 @@ IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_KioskEnableConfirmed) {
             GetConsumerKioskModeStatus());
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
-  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+  wizard_controller->SkipToLoginForTesting();
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
-  GetLoginUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
-                                             base::Value("kiosk_enable"));
+  test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('kiosk_enable');");
 
   // Wait for the kiosk_enable screen to show and enable kiosk.
   OobeScreenWaiter(KioskEnableScreenView::kScreenId).Wait();
-  test::OobeJS().TapOnPath({"kiosk-enable", "enable"});
 
   // Wait for the signal that indicates Kiosk Mode is enabled.
-  content::WindowedNotificationObserver(
+  content::WindowedNotificationObserver notification_observer(
       chrome::NOTIFICATION_KIOSK_ENABLED,
-      content::NotificationService::AllSources())
-      .Wait();
+      content::NotificationService::AllSources());
+  test::OobeJS().TapOnPath({"kiosk-enable", "enable"});
+  notification_observer.Wait();
+
   EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_ENABLED,
             GetConsumerKioskModeStatus());
 }
@@ -1217,7 +1245,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
             GetConsumerKioskModeStatus());
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
-  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+  wizard_controller->SkipToLoginForTesting();
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
   GetLoginUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
                                              base::Value("kiosk_enable"));
@@ -1288,7 +1316,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_NoConsumerAutoLaunchWhenUntrusted) {
   ASSERT_TRUE(wizard_controller);
   wizard_controller->AdvanceToScreen(WelcomeView::kScreenId);
   ReloadAutolaunchKioskApps();
-  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+  wizard_controller->SkipToLoginForTesting();
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_KIOSK_AUTOLAUNCH_WARNING_VISIBLE,
       content::NotificationService::AllSources())
@@ -1316,6 +1344,107 @@ IN_PROC_BROWSER_TEST_F(KioskTest, GetVolumeList) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+IN_PROC_BROWSER_TEST_F(KioskTest, SettingsWindow) {
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  WaitForAppLaunchWithOptions(true /* check_launch_data */,
+                              false /* terminate_app */,
+                              true /* keep_app_open */);
+
+  // At this moment, app session should be initialized.
+  std::vector<KioskSettingsNavigationThrottle::SettingsPage> settings_pages = {
+      {"https://page1.com/", /*allow_subpages*/ true},
+      {"https://page2.com/", /*allow_subpages*/ false},
+  };
+
+  const GURL page1("https://page1.com/");
+  const GURL page1_sub("https://page1.com/sub");
+  const GURL page2("https://page2.com/");
+  const GURL page2_sub("https://page2.com/sub");
+  const GURL page3("https://page3.com/");
+
+  // Replace the settings whitelist with |settings_pages|.
+  ScopedSettingsPages pages(&settings_pages);
+  AppSession* app_session = KioskAppManager::Get()->app_session();
+
+  // App session should be initialized.
+  ASSERT_TRUE(app_session);
+  ASSERT_EQ(app_session->GetSettingsBrowserForTesting(), nullptr);
+
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+
+  {
+    // Open browser with url page1.
+    NavigateParams params(profile, page1, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+    params.disposition = WindowOpenDisposition::NEW_POPUP;
+    params.window_action = NavigateParams::SHOW_WINDOW;
+    Navigate(&params);
+    // Wait for browser to be handled.
+    base::RunLoop waiter;
+    app_session->SetOnHandleBrowserCallbackForTesting(waiter.QuitClosure());
+    waiter.Run();
+  }
+
+  Browser* settings_browser = app_session->GetSettingsBrowserForTesting();
+
+  ASSERT_TRUE(settings_browser);
+
+  content::WebContents* web_contents =
+      settings_browser->tab_strip_model()->GetActiveWebContents();
+  // Try navigating to an allowed subpage.
+  NavigateToURLBlockUntilNavigationsComplete(web_contents, page1_sub, 1);
+  EXPECT_EQ(web_contents->GetLastCommittedURL(), page1_sub);
+
+  {
+    // Open another browser with url page2.
+    // Also, expect navigation inside of the old window to page2.
+    content::TestNavigationObserver settings_navigation_observer(web_contents,
+                                                                 1);
+    NavigateParams params(profile, page2, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+    params.disposition = WindowOpenDisposition::NEW_POPUP;
+    Navigate(&params);
+    // Wait for browser to be handled.
+    base::RunLoop waiter;
+    app_session->SetOnHandleBrowserCallbackForTesting(waiter.QuitClosure());
+    waiter.Run();
+    // Also wait for navigaiton to finish.
+    settings_navigation_observer.Wait();
+  }
+  // The settings browser should not have changed.
+  ASSERT_EQ(settings_browser, app_session->GetSettingsBrowserForTesting());
+  EXPECT_EQ(web_contents->GetLastCommittedURL(), page2);
+
+  // Try navigating to a disallowed subpage.
+  NavigateToURLBlockUntilNavigationsComplete(web_contents, page2_sub, 1);
+  EXPECT_EQ(web_contents->GetLastCommittedURL(), page2);
+
+  // Try navigating to a disallowed page.
+  NavigateToURLBlockUntilNavigationsComplete(web_contents, page3, 1);
+  EXPECT_EQ(web_contents->GetLastCommittedURL(), page2);
+
+  // Close settings browser, expect the value to be cleared.
+  CloseBrowserSynchronously(settings_browser);
+  EXPECT_EQ(app_session->GetSettingsBrowserForTesting(), nullptr);
+
+  {
+    // Open another browser with url page2, but now of type TYPE_NORMAL.
+    // This should create a new browser of app type, and close the non-app one.
+    NavigateParams params(profile, page2, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+    Navigate(&params);
+
+    // Wait for two browser handlings -- for non-app and app browser.
+    base::RunLoop waiter;
+    app_session->SetOnHandleBrowserCallbackForTesting(
+        base::BarrierClosure(2, waiter.QuitClosure()));
+    waiter.Run();
+
+    // One browser should be created.
+    Browser* settings_browser = app_session->GetSettingsBrowserForTesting();
+    ASSERT_TRUE(settings_browser);
+    EXPECT_FALSE(params.browser == settings_browser);
+  }
+}
+
 // Verifies that an enterprise device does not auto-launch kiosk mode when cros
 // settings are untrusted.
 IN_PROC_BROWSER_TEST_F(KioskTest, NoEnterpriseAutoLaunchWhenUntrusted) {
@@ -1335,6 +1464,35 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoEnterpriseAutoLaunchWhenUntrusted) {
 
   // Check that no launch has started.
   EXPECT_FALSE(login_display_host->GetAppLaunchController());
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, SpokenFeedback) {
+  SpeechMonitor sm;
+  AccessibilityManager::Get()->EnableSpokenFeedback(true);
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  WaitForAppLaunchWithOptions(false /* check launch data */,
+                              false /* terminate app */,
+                              true /* keep app open */);
+  sm.ExpectSpeech("ChromeVox spoken feedback is ready");
+  sm.Call([]() {
+    // Navigate to the next object (should move to the heading and speak
+    // it).
+    // Trigger opening of the options page (should do nothing).
+    // Then, force reading of 'done' given the right internal flag is
+    // set.
+    extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
+        AccessibilityManager::Get()->profile(),
+        extension_misc::kChromeVoxExtensionId,
+        R"(CommandHandler.onCommand('nextObject');
+          CommandHandler.onCommand('showOptionsPage');
+          if (CommandHandler.isKioskSession_)
+            ChromeVox.tts.speak('done');)");
+  });
+  sm.ExpectSpeech("Test Kiosk App 3 exclamations");
+  sm.ExpectSpeech("Heading 1");
+  sm.ExpectSpeech("done");
+  sm.Replay();
 }
 
 class KioskUpdateTest : public KioskTest {
@@ -1644,16 +1802,8 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
               /*wait_for_app_data=*/true);
 }
 
-// crbug.com/949490
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
-#define MAYBE_LaunchCachedOfflineEnabledAppNoNetwork \
-  DISABLED_LaunchCachedOfflineEnabledAppNoNetwork
-#else
-#define MAYBE_LaunchCachedOfflineEnabledAppNoNetwork \
-  LaunchCachedOfflineEnabledAppNoNetwork
-#endif
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
-                       MAYBE_LaunchCachedOfflineEnabledAppNoNetwork) {
+                       LaunchCachedOfflineEnabledAppNoNetwork) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   EXPECT_TRUE(
       KioskAppManager::Get()->HasCachedCrx(kTestOfflineEnabledKioskApp));
@@ -2247,7 +2397,6 @@ class KioskEnterpriseTest : public KioskTest {
   }
 
  private:
-
   DeviceStateMixin device_state_{
       &mixin_host_,
       chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
@@ -2299,8 +2448,8 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
   // account.
   Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
   ASSERT_TRUE(app_profile);
-  EXPECT_FALSE(
-      IdentityManagerFactory::GetForProfile(app_profile)->HasPrimaryAccount());
+  EXPECT_FALSE(IdentityManagerFactory::GetForProfile(app_profile)
+                   ->HasPrimaryAccount(signin::ConsentLevel::kNotRequired));
 
   // Terminate the app.
   window->GetBaseWindow()->Close();
@@ -2373,7 +2522,7 @@ class KioskVirtualKeyboardTestSoundsManagerTestImpl
     }
 
     auto handler = std::make_unique<audio::AudioStreamHandler>(
-        content::GetSystemConnector()->Clone(), iter->second);
+        content::GetAudioServiceStreamFactoryBinder(), iter->second);
     if (!handler->IsInitialized()) {
       LOG(WARNING) << "Can't initialize AudioStreamHandler for key = " << key;
       return false;
@@ -2504,7 +2653,7 @@ IN_PROC_BROWSER_TEST_F(KioskHiddenWebUITest, AutolaunchWarning) {
   // is triggered when switching to login screen.
   wizard_controller->AdvanceToScreen(WelcomeView::kScreenId);
   ReloadAutolaunchKioskApps();
-  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+  wizard_controller->SkipToLoginForTesting();
 
   EXPECT_FALSE(KioskAppManager::Get()->GetAutoLaunchApp().empty());
   EXPECT_FALSE(KioskAppManager::Get()->IsAutoLaunchEnabled());

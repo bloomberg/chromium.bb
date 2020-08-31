@@ -5,6 +5,7 @@
 #include "components/language/content/browser/geo_language_model.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/test/task_environment.h"
 #include "base/timer/timer.h"
@@ -34,11 +35,7 @@ class GeoLanguageModelTest : public testing::Test {
       : geo_language_provider_(task_environment_.GetMainThreadTaskRunner()),
         geo_language_model_(&geo_language_provider_),
         mock_ip_geo_location_provider_(&mock_geo_location_) {
-    mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
-    connector_ = service_manager::Connector::Create(&receiver);
-    connector_->OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
-        device::mojom::PublicIpAddressGeolocationProvider::Name_,
+    language::GeoLanguageProvider::OverrideBinderForTesting(
         base::BindRepeating(&MockIpGeoLocationProvider::Bind,
                             base::Unretained(&mock_ip_geo_location_provider_)));
     language::GeoLanguageProvider::RegisterLocalStatePrefs(
@@ -47,9 +44,14 @@ class GeoLanguageModelTest : public testing::Test {
         local_state_.registry());
   }
 
+  ~GeoLanguageModelTest() override {
+    language::GeoLanguageProvider::OverrideBinderForTesting(
+        base::NullCallback());
+  }
+
  protected:
   void StartGeoLanguageProvider() {
-    geo_language_provider_.StartUp(std::move(connector_), &local_state_);
+    geo_language_provider_.StartUp(&local_state_);
   }
 
   void MoveToLocation(float latitude, float longitude) {
@@ -67,7 +69,6 @@ class GeoLanguageModelTest : public testing::Test {
   GeoLanguageModel geo_language_model_;
   MockGeoLocation mock_geo_location_;
   MockIpGeoLocationProvider mock_ip_geo_location_provider_;
-  std::unique_ptr<service_manager::Connector> connector_;
   TestingPrefServiceSimple local_state_;
 };
 

@@ -14,10 +14,12 @@
 #include <array>
 
 #include "absl/types/optional.h"
+#include "api/transport/webrtc_key_value_config.h"
 #include "api/video_codecs/video_encoder.h"
 #include "call/rtp_config.h"
 #include "modules/rtp_rtcp/source/rtp_generic_frame_descriptor.h"
 #include "modules/rtp_rtcp/source/rtp_video_header.h"
+#include "modules/video_coding/frame_dependencies_calculator.h"
 #include "modules/video_coding/include/video_codec_interface.h"
 
 namespace webrtc {
@@ -28,7 +30,9 @@ class RtpRtcp;
 // TODO(nisse): Make these properties not codec specific.
 class RtpPayloadParams final {
  public:
-  RtpPayloadParams(const uint32_t ssrc, const RtpPayloadState* state);
+  RtpPayloadParams(const uint32_t ssrc,
+                   const RtpPayloadState* state,
+                   const WebRtcKeyValueConfig& trials);
   RtpPayloadParams(const RtpPayloadParams& other);
   ~RtpPayloadParams();
 
@@ -43,6 +47,10 @@ class RtpPayloadParams final {
  private:
   void SetCodecSpecific(RTPVideoHeader* rtp_video_header,
                         bool first_frame_in_picture);
+  RTPVideoHeader::GenericDescriptorInfo GenericDescriptorFromFrameInfo(
+      const GenericFrameInfo& frame_info,
+      int64_t frame_id,
+      VideoFrameType frame_type);
   void SetGeneric(const CodecSpecificInfo* codec_specific_info,
                   int64_t frame_id,
                   bool is_keyframe,
@@ -79,6 +87,7 @@ class RtpPayloadParams final {
                              bool layer_sync,
                              RTPVideoHeader::GenericDescriptorInfo* generic);
 
+  FrameDependenciesCalculator dependencies_calculator_;
   // TODO(bugs.webrtc.org/10242): Remove once all encoder-wrappers are updated.
   // Holds the last shared frame id for a given (spatial, temporal) layer.
   std::array<std::array<int64_t, RtpGenericFrameDescriptor::kMaxTemporalLayers>,

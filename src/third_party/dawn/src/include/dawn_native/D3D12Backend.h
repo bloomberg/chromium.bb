@@ -30,11 +30,28 @@ namespace dawn_native { namespace d3d12 {
     DAWN_NATIVE_EXPORT WGPUTextureFormat
     GetNativeSwapChainPreferredFormat(const DawnSwapChainImplementation* swapChain);
 
+    enum MemorySegment {
+        Local,
+        NonLocal,
+    };
+
+    DAWN_NATIVE_EXPORT uint64_t SetExternalMemoryReservation(WGPUDevice device,
+                                                             uint64_t requestedReservationSize,
+                                                             MemorySegment memorySegment);
+
+    struct DAWN_NATIVE_EXPORT ExternalImageDescriptorDXGISharedHandle : ExternalImageDescriptor {
+      public:
+        ExternalImageDescriptorDXGISharedHandle();
+
+        HANDLE sharedHandle;
+        uint64_t acquireMutexKey;
+        bool isSwapChainTexture = false;
+    };
+
     // Note: SharedHandle must be a handle to a texture object.
-    DAWN_NATIVE_EXPORT WGPUTexture WrapSharedHandle(WGPUDevice device,
-                                                    const WGPUTextureDescriptor* descriptor,
-                                                    HANDLE sharedHandle,
-                                                    uint64_t acquireMutexKey);
+    DAWN_NATIVE_EXPORT WGPUTexture
+    WrapSharedHandle(WGPUDevice device, const ExternalImageDescriptorDXGISharedHandle* descriptor);
+
 }}  // namespace dawn_native::d3d12
 
 #endif  // DAWNNATIVE_D3D12BACKEND_H_

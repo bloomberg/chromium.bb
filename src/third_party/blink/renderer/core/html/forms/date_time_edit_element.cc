@@ -75,7 +75,7 @@ class DateTimeEditBuilder : private DateTimeFormat::TokenHandler {
 
   DateTimeEditElement& EditElement() const;
 
-  Member<DateTimeEditElement> edit_element_;
+  DateTimeEditElement* edit_element_;
   const DateComponents date_value_;
   const DateTimeEditElement::LayoutParameters& parameters_;
   DateTimeNumericFieldElement::Range day_range_;
@@ -574,8 +574,7 @@ void DateTimeEditElement::BlurByOwner() {
 scoped_refptr<ComputedStyle> DateTimeEditElement::CustomStyleForLayoutObject() {
   // FIXME: This is a kind of layout. We might want to introduce new
   // layoutObject.
-  scoped_refptr<ComputedStyle> original_style = OriginalStyleForLayoutObject();
-  scoped_refptr<ComputedStyle> style = ComputedStyle::Clone(*original_style);
+  scoped_refptr<ComputedStyle> style = OriginalStyleForLayoutObject();
   float width = 0;
   for (Node* child = FieldsWrapperElement()->firstChild(); child;
        child = child->nextSibling()) {
@@ -598,12 +597,12 @@ scoped_refptr<ComputedStyle> DateTimeEditElement::CustomStyleForLayoutObject() {
   return style;
 }
 
-void DateTimeEditElement::DidBlurFromField(WebFocusType focus_type) {
+void DateTimeEditElement::DidBlurFromField(mojom::blink::FocusType focus_type) {
   if (edit_control_owner_)
     edit_control_owner_->DidBlurFromControl(focus_type);
 }
 
-void DateTimeEditElement::DidFocusOnField(WebFocusType focus_type) {
+void DateTimeEditElement::DidFocusOnField(mojom::blink::FocusType focus_type) {
   if (edit_control_owner_)
     edit_control_owner_->DidFocusOnControl(focus_type);
 }

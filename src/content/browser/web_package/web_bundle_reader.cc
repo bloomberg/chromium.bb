@@ -6,10 +6,11 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/numerics/safe_math.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "content/browser/web_package/web_bundle_blob_data_source.h"
 #include "content/browser/web_package/web_bundle_source.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -19,14 +20,14 @@
 #include "mojo/public/cpp/system/file_data_source.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/url_util.h"
-#include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
+#include "third_party/blink/public/common/web_package/web_package_request_matcher.h"
 
 namespace content {
 
 WebBundleReader::SharedFile::SharedFile(
     std::unique_ptr<WebBundleSource> source) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(
           [](std::unique_ptr<WebBundleSource> source)
               -> std::unique_ptr<base::File> { return source->OpenFile(); },
@@ -55,9 +56,8 @@ base::File* WebBundleReader::SharedFile::operator->() {
 WebBundleReader::SharedFile::~SharedFile() {
   // Move the last reference to |file_| that leads an internal blocking call
   // that is not permitted here.
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce([](std::unique_ptr<base::File> file) {},
                      std::move(file_)));
 }
@@ -68,8 +68,8 @@ void WebBundleReader::SharedFile::SetFile(std::unique_ptr<base::File> file) {
   if (duplicate_callback_.is_null())
     return;
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(
           [](base::File* file) -> base::File { return file->Duplicate(); },
           file_.get()),
@@ -181,6 +181,7 @@ void WebBundleReader::ReadMetadata(MetadataCallback callback) {
 
 void WebBundleReader::ReadResponse(
     const network::ResourceRequest& resource_request,
+    const std::string& accept_langs,
     ResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(state_, State::kInitial);
@@ -201,9 +202,8 @@ void WebBundleReader::ReadResponse(
   size_t response_index = 0;
   if (!entry->variants_value.empty()) {
     // Select the best variant for the request.
-    // TODO(crbug/1029406): Plumb |accept_langs| from prefs in a follow up CL.
-    blink::SignedExchangeRequestMatcher matcher(resource_request.headers,
-                                                "" /* accept_langs */);
+    blink::WebPackageRequestMatcher matcher(resource_request.headers,
+                                            accept_langs);
     auto found = matcher.FindBestMatchingIndex(entry->variants_value);
     if (!found || *found >= entry->response_locations.size()) {
       PostTask(

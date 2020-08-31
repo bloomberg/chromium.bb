@@ -15,10 +15,10 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/android/chrome_jni_headers/UmaSessionStats_jni.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/metrics/android_profile_session_durations_service.h"
 #include "chrome/browser/android/metrics/android_profile_session_durations_service_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -194,6 +194,12 @@ void UmaSessionStats::RegisterSyntheticMultiGroupFieldTrial(
     const std::vector<uint32_t>& group_name_hashes) {
   ChromeMetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial(
       trial_name, group_name_hashes);
+}
+
+bool UmaSessionStats::IsBackgroundSessionStartForTesting() {
+  return !GetInstance()
+              ->session_time_tracker_.background_session_start_time()
+              .is_null();
 }
 
 void UmaSessionStats::ProvideCurrentSessionData() {

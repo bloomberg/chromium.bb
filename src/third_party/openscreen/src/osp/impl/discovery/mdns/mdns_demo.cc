@@ -37,9 +37,6 @@
 // shouldn't be expected to be a source of truth, nor should it be expected to
 // be correct after running for a long time.
 
-using openscreen::platform::Clock;
-using openscreen::platform::PlatformClientPosix;
-
 namespace openscreen {
 namespace osp {
 namespace {
@@ -59,22 +56,21 @@ struct Service {
   std::vector<std::string> txt;
 };
 
-class DemoSocketClient : public platform::UdpSocket::Client {
+class DemoSocketClient : public UdpSocket::Client {
  public:
   DemoSocketClient(MdnsResponderAdapterImpl* mdns) : mdns_(mdns) {}
 
-  void OnError(platform::UdpSocket* socket, Error error) override {
+  void OnError(UdpSocket* socket, Error error) override {
     // TODO(crbug.com/openscreen/66): Change to OSP_LOG_FATAL.
     OSP_LOG_ERROR << "configuration failed for interface " << error.message();
     OSP_CHECK(false);
   }
 
-  void OnSendError(platform::UdpSocket* socket, Error error) override {
+  void OnSendError(UdpSocket* socket, Error error) override {
     OSP_UNIMPLEMENTED();
   }
 
-  void OnRead(platform::UdpSocket* socket,
-              ErrorOr<platform::UdpPacket> packet) override {
+  void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet) override {
     mdns_->OnRead(socket, std::move(packet));
   }
 
@@ -128,20 +124,20 @@ void SignalThings() {
   OSP_LOG << "signal handlers setup" << std::endl << "pid: " << getpid();
 }
 
-std::vector<platform::UdpSocketUniquePtr> SetUpMulticastSockets(
-    platform::TaskRunner* task_runner,
-    const std::vector<platform::NetworkInterfaceIndex>& index_list,
-    platform::UdpSocket::Client* client) {
-  std::vector<platform::UdpSocketUniquePtr> sockets;
+std::vector<std::unique_ptr<UdpSocket>> SetUpMulticastSockets(
+    TaskRunner* task_runner,
+    const std::vector<NetworkInterfaceIndex>& index_list,
+    UdpSocket::Client* client) {
+  std::vector<std::unique_ptr<UdpSocket>> sockets;
   for (const auto ifindex : index_list) {
     auto create_result =
-        platform::UdpSocket::Create(task_runner, client, IPEndpoint{{}, 5353});
+        UdpSocket::Create(task_runner, client, IPEndpoint{{}, 5353});
     if (!create_result) {
       OSP_LOG_ERROR << "failed to create IPv4 socket for interface " << ifindex
                     << ": " << create_result.error().message();
       continue;
     }
-    platform::UdpSocketUniquePtr socket = std::move(create_result.value());
+    std::unique_ptr<UdpSocket> socket = std::move(create_result.value());
 
     socket->JoinMulticastGroup(IPAddress{224, 0, 0, 251}, ifindex);
     socket->SetMulticastOutboundInterface(ifindex);
@@ -250,7 +246,7 @@ void HandleEvents(MdnsResponderAdapterImpl* mdns_adapter) {
   }
 }
 
-void BrowseDemo(platform::TaskRunner* task_runner,
+void BrowseDemo(TaskRunner* task_runner,
                 const std::string& service_name,
                 const std::string& service_protocol,
                 const std::string& service_instance) {
@@ -269,9 +265,8 @@ void BrowseDemo(platform::TaskRunner* task_runner,
   auto mdns_adapter = std::make_unique<MdnsResponderAdapterImpl>();
   mdns_adapter->Init();
   mdns_adapter->SetHostLabel("gigliorononomicon");
-  const std::vector<platform::InterfaceInfo> interfaces =
-      platform::GetNetworkInterfaces();
-  std::vector<platform::NetworkInterfaceIndex> index_list;
+  const std::vector<InterfaceInfo> interfaces = GetNetworkInterfaces();
+  std::vector<NetworkInterfaceIndex> index_list;
   for (const auto& interface : interfaces) {
     OSP_LOG << "Found interface: " << interface;
     if (!interface.addresses.empty()) {
@@ -290,10 +285,10 @@ void BrowseDemo(platform::TaskRunner* task_runner,
 
   // Listen on all interfaces.
   auto socket_it = sockets.begin();
-  for (platform::NetworkInterfaceIndex index : index_list) {
+  for (NetworkInterfaceIndex index : index_list) {
     const auto& interface =
         *std::find_if(interfaces.begin(), interfaces.end(),
-                      [index](const openscreen::platform::InterfaceInfo& info) {
+                      [index](const openscreen::InterfaceInfo& info) {
                         return info.index == index;
                       });
     // Pick any address for the given interface.
@@ -308,7 +303,7 @@ void BrowseDemo(platform::TaskRunner* task_runner,
                                   {{"k1", "yurtle"}, {"k2", "turtle"}});
   }
 
-  for (const platform::UdpSocketUniquePtr& socket : sockets) {
+  for (const std::unique_ptr<UdpSocket>& socket : sockets) {
     mdns_adapter->StartPtrQuery(socket.get(), service_type.value());
   }
 
@@ -332,7 +327,7 @@ void BrowseDemo(platform::TaskRunner* task_runner,
   for (const auto& s : *g_services) {
     LogService(s.second);
   }
-  for (const platform::UdpSocketUniquePtr& socket : sockets) {
+  for (const std::unique_ptr<UdpSocket>& socket : sockets) {
     mdns_adapter->DeregisterInterface(socket.get());
   }
   mdns_adapter->Close();
@@ -343,7 +338,10 @@ void BrowseDemo(platform::TaskRunner* task_runner,
 }  // namespace openscreen
 
 int main(int argc, char** argv) {
-  openscreen::platform::SetLogLevel(openscreen::platform::LogLevel::kVerbose);
+  using openscreen::Clock;
+  using openscreen::PlatformClientPosix;
+
+  openscreen::SetLogLevel(openscreen::LogLevel::kVerbose);
 
   std::string service_instance;
   std::string service_type("_openscreen._udp");

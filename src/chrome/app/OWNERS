@@ -15,6 +15,7 @@ per-file generated_resources.grd=*
 per-file google_chrome_strings.grd=*
 per-file extensions_strings.grdp=*
 per-file os_settings_strings.grdp=*
+per-file os_settings_search_tag_strings.grdp=file://chrome/browser/resources/settings/chromeos/OWNERS
 
 per-file app_management_strings.grdp=file://chrome/browser/ui/webui/app_management/OWNERS
 
@@ -30,7 +31,7 @@ per-file printing_strings.grdp=file://printing/OWNERS
 
 per-file profiles_strings.grdp=file://chrome/browser/profiles/OWNERS
 
-per-file settings*strings*=file://chrome/browser/resources/settings/OWNERS
+per-file *settings*strings*=file://chrome/browser/resources/settings/OWNERS
 
 per-file supervised_user_error_page_strings.grdp=file://chrome/browser/supervised_user/supervised_user_error_page/OWNERS
 

@@ -21,6 +21,7 @@
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, app instalada</translation>
 <translation id="1450753235335490080">No se puede compartir <ph name="CONTENT_TYPE" /></translation>
+<translation id="1487931858675166540">Se intercambió <ph name="FIRST_ITEM_TITLE" /> con <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1498028757988366001">Ya realizaste esta búsqueda. Si borras la consulta "<ph name="QUERY" />" del Historial, se quitará permanentemente de tu cuenta en todos los dispositivos.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto y }other{# minutos y }}</translation>
 <translation id="1643823602425662293">Notificación</translation>
@@ -30,7 +31,7 @@
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Punto</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mes}other{# meses}}</translation>
-<translation id="1809410197924942083"><ph name="QUANTITY" /> de MB</translation>
+<translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 hora y }other{# horas y }}</translation>
 <translation id="1830308660060964064">Se dejó de fijar <ph name="ITEM_TITLE" /></translation>
 <translation id="1842960171412779397">seleccionar</translation>
@@ -39,7 +40,6 @@
 <translation id="1871244248791675517">Insert</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Seleccionar &amp;todo</translation>
-<translation id="1938451708255335766">Para ajustar la densidad de la visualización de la ventana, reinicia la app.</translation>
 <translation id="2006524834898217237">Comprueba que este dispositivo tenga conexión a Internet.</translation>
 <translation id="208586643495776849">Vuelve a intentarlo</translation>
 <translation id="2090963878406559571">Para enviar un número desde <ph name="ORIGIN" /> a tu teléfono Android, <ph name="TROUBLESHOOT_LINK" /> en la configuración de ambos dispositivos.</translation>
@@ -85,9 +85,9 @@
 <translation id="3234408098842461169">Flecha abajo</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 día}other{# días}}</translation>
 <translation id="3295886253693811851">Realizar una llamada desde</translation>
+<translation id="3306688585798492231">Pantalla integrada</translation>
 <translation id="335581015389089642">Voz</translation>
 <translation id="3389286852084373014">El texto es demasiado largo</translation>
-<translation id="3479552764303398839">Ahora no</translation>
 <translation id="348799646910989694">Se ocultará la biblioteca automáticamente</translation>
 <translation id="3554637740840164787">Se fijó <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Falta 1 día.}other{Faltan # días.}}</translation>
@@ -102,7 +102,6 @@
 <translation id="3842239759367498783">Sigue leyendo desde tu dispositivo móvil (<ph name="TITLE" />)</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3889424535448813030">Flecha derecha</translation>
-<translation id="3892641579809465218">Pantalla interna</translation>
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3909791450649380159">Cor&amp;tar</translation>
 <translation id="3990502903496589789">Borde derecho</translation>
@@ -143,8 +142,8 @@
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Activo hoy}=1{Activo hace 1 día}other{Activo hace # días}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 día y }other{# días y }}</translation>
+<translation id="5789643057113097023">.</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{en 1 año}other{en # años}}</translation>
-<translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Falta 1 segundo.}other{Faltan # segundos.}}</translation>
 <translation id="5941711191222866238">Minimizar</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hora}other{# horas}}</translation>
@@ -189,6 +188,7 @@
 <translation id="6974053822202609517">De derecha a izquierda</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">MUY PROBABLES</translation>
+<translation id="7170202025028120564">La próxima vez que reinicies la aplicación, se implementará la configuración de pantalla.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Falta 1 min.}other{Faltan # min.}}</translation>
 <translation id="7319740667687257810">Launcher, vista parcial</translation>

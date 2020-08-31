@@ -87,6 +87,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     virtual void DeviceAdded(BluetoothAdapter* adapter,
                              BluetoothDevice* device) {}
 
+    // Called when the adapter |DiscoveryChangeComplete| is finished
+    virtual void DiscoveryChangeCompletedForTesting() {}
+
     // Called when the result of one of the following methods of the device
     // |device| changes:
     //  * GetAddress()
@@ -320,10 +323,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // all users are converted to using OnceClosure.
   using ErrorOnceCallback = base::OnceClosure;
 
-  // The InitCallback is used to trigger a callback after asynchronous
-  // initialization, if initialization is asynchronous on the platform.
-  using InitCallback = base::OnceClosure;
-
   using DiscoverySessionCallback =
       base::OnceCallback<void(std::unique_ptr<BluetoothDiscoverySession>)>;
   using DeviceList = std::vector<BluetoothDevice*>;
@@ -354,14 +353,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     kIdle,
   };
 
-  // Returns a weak pointer to a new adapter.  For platforms with asynchronous
-  // initialization, the returned adapter will run the |init_callback| once
-  // asynchronous initialization is complete.
-  // Caution: The returned pointer also transfers ownership of the adapter.  The
-  // caller is expected to call |AddRef()| on the returned pointer, typically by
-  // storing it into a |scoped_refptr|.
-  static base::WeakPtr<BluetoothAdapter> CreateAdapter(
-      InitCallback init_callback);
+  // Creates a new adapter. Initialize() must be called before the adapter can
+  // be used.
+  static scoped_refptr<BluetoothAdapter> CreateAdapter();
+
+  virtual void Initialize(base::OnceClosure callback) = 0;
 
   // Returns a weak pointer to an existing adapter for testing purposes only.
   base::WeakPtr<BluetoothAdapter> GetWeakPtrForTesting();
@@ -387,6 +383,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   // The name of the adapter.
   virtual std::string GetName() const = 0;
+
+  // The Bluetooth system name. Implementations may return an informational name
+  // "BlueZ 5.54" on Chrome OS.
+  virtual std::string GetSystemName() const;
 
   // Set the human-readable name of the adapter to |name|. On success,
   // |callback| will be called. On failure, |error_callback| will be called.
@@ -429,6 +429,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   virtual void SetPowered(bool powered,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback);
+
+  // Indicates whether the adapter support the LowEnergy peripheral role.
+  virtual bool IsPeripheralRoleSupported() const;
 
   // Indicates whether the adapter radio is discoverable.
   virtual bool IsDiscoverable() const = 0;
@@ -592,6 +595,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   void NotifyAdapterPresentChanged(bool present);
   void NotifyAdapterPoweredChanged(bool powered);
   void NotifyDeviceChanged(BluetoothDevice* device);
+  void NotifyAdapterDiscoveryChangeCompletedForTesting();
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   void NotifyDevicePairedChanged(BluetoothDevice* device,
@@ -647,6 +651,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
  protected:
   friend class base::RefCounted<BluetoothAdapter>;
+  friend class BluetoothAdapterFactory;
   friend class BluetoothDiscoverySession;
   friend class BluetoothTestBase;
 

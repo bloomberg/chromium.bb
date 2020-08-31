@@ -15,12 +15,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
-#include "base/logging.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -29,7 +28,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "net/base/features.h"
-#include "net/base/network_isolation_key.h"
+#include "net/base/isolation_info.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/test_net_log.h"
 #include "net/nqe/network_quality_estimator.h"
@@ -59,7 +58,7 @@ class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
             network_quality_estimator,
             params,
             base::ThreadTaskRunnerHandle::Get(),
-            base::Bind(
+            base::BindRepeating(
                 &TestThroughputAnalyzer::OnNewThroughputObservationAvailable,
                 base::Unretained(this)),
             tick_clock,
@@ -221,7 +220,8 @@ TEST_F(ThroughputAnalyzerTest, MaximumRequestsWithNetworkIsolationKey) {
           context.CreateRequest(kUrl, DEFAULT_PRIORITY, &test_delegate,
                                 TRAFFIC_ANNOTATION_FOR_TESTS));
       if (use_network_isolation_key)
-        request->set_network_isolation_key(kNetworkIsolationKey);
+        request->set_isolation_info(IsolationInfo::CreatePartial(
+            IsolationInfo::RedirectMode::kUpdateNothing, kNetworkIsolationKey));
       throughput_analyzer.NotifyStartTransaction(*(request.get()));
       requests.push_back(std::move(request));
     }
@@ -780,9 +780,8 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
 // of network requests overlap, and the minimum number of in flight requests
 // when taking an observation is more than 1.
 TEST_F(ThroughputAnalyzerTest, TestThroughputWithMultipleNetworkRequests) {
-  const base::RunLoop::ScopedRunTimeoutForTest increased_run_timeout(
-      TestTimeouts::action_max_timeout(),
-      base::MakeExpectedNotRunClosure(FROM_HERE, "RunLoop::Run() timed out."));
+  const base::test::ScopedRunLoopTimeout increased_run_timeout(
+      FROM_HERE, TestTimeouts::action_max_timeout());
 
   const base::TickClock* tick_clock = base::DefaultTickClock::GetInstance();
   TestNetworkQualityEstimator network_quality_estimator;

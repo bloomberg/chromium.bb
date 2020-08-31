@@ -66,12 +66,15 @@ AuthenticatorRequestDialogView::AuthenticatorRequestDialogView(
     : content::WebContentsObserver(web_contents),
       model_(std::move(model)),
       sheet_(nullptr),
-      other_transports_button_(
-          DialogDelegate::SetExtraView(CreateOtherTransportsButton(this))),
+      other_transports_button_(SetExtraView(CreateOtherTransportsButton(this))),
       web_contents_hidden_(web_contents->GetVisibility() ==
                            content::Visibility::HIDDEN) {
   DCHECK(!model_->should_dialog_be_closed());
   model_->AddObserver(this);
+
+  SetCloseCallback(
+      base::BindOnce(&AuthenticatorRequestDialogView::OnDialogClosing,
+                     base::Unretained(this)));
 
   // Currently, all sheets have a label on top and controls at the bottom.
   // Consider moving this to AuthenticatorRequestSheetView if this changes.
@@ -113,7 +116,7 @@ bool AuthenticatorRequestDialogView::Cancel() {
   return false;
 }
 
-bool AuthenticatorRequestDialogView::Close() {
+void AuthenticatorRequestDialogView::OnDialogClosing() {
   // To keep the UI responsive, always allow immediately closing the dialog when
   // desired; but still trigger cancelling the AuthenticatorRequest unless it is
   // already complete.
@@ -141,17 +144,6 @@ bool AuthenticatorRequestDialogView::Close() {
   // over observers in SetCurrentStep().
   if (!model_->should_dialog_be_closed())
     Cancel();
-
-  return true;
-}
-
-int AuthenticatorRequestDialogView::GetDialogButtons() const {
-  int button_mask = 0;
-  if (sheet()->model()->IsAcceptButtonVisible())
-    button_mask |= ui::DIALOG_BUTTON_OK;
-  if (sheet()->model()->IsCancelButtonVisible())
-    button_mask |= ui::DIALOG_BUTTON_CANCEL;
-  return button_mask;
 }
 
 bool AuthenticatorRequestDialogView::IsDialogButtonEnabled(
@@ -314,13 +306,18 @@ void AuthenticatorRequestDialogView::UpdateUIForCurrentSheet() {
   DCHECK(sheet_);
 
   sheet_->ReInitChildViews();
-  DialogDelegate::set_default_button(sheet_->model()->IsAcceptButtonVisible()
-                                         ? ui::DIALOG_BUTTON_OK
-                                         : ui::DIALOG_BUTTON_NONE);
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   sheet_->model()->GetAcceptButtonLabel());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
-                                   sheet_->model()->GetCancelButtonLabel());
+
+  int buttons = ui::DIALOG_BUTTON_NONE;
+  if (sheet()->model()->IsAcceptButtonVisible())
+    buttons |= ui::DIALOG_BUTTON_OK;
+  if (sheet()->model()->IsCancelButtonVisible())
+    buttons |= ui::DIALOG_BUTTON_CANCEL;
+  SetButtons(buttons);
+  SetDefaultButton((buttons & ui::DIALOG_BUTTON_OK) ? ui::DIALOG_BUTTON_OK
+                                                    : ui::DIALOG_BUTTON_NONE);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK, sheet_->model()->GetAcceptButtonLabel());
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 sheet_->model()->GetCancelButtonLabel());
 
   // Whether to show the `Choose another option` button, or other dialog
   // configuration is delegated to the |sheet_|, and the new sheet likely wants

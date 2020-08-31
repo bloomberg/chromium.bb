@@ -28,12 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// @ts-nocheck
+// TODO(crbug.com/1011811): Enable TypeScript compiler checks
+
+import * as Common from '../common/common.js';
+
+import {ls} from '../platform/platform.js';
+
+import {Events as RuntimeModelEvents, ExecutionContext, RuntimeModel} from './RuntimeModel.js';  // eslint-disable-line no-unused-vars
+import {Capability, SDKModel, Target, TargetManager, Type} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+
 /**
  * @unrestricted
  */
-export default class ServiceWorkerManager extends SDK.SDKModel {
+export class ServiceWorkerManager extends SDKModel {
   /**
-   * @param {!SDK.Target} target
+   * @param {!Target} target
    */
   constructor(target) {
     super(target);
@@ -43,7 +53,7 @@ export default class ServiceWorkerManager extends SDK.SDKModel {
     /** @type {!Map.<string, !ServiceWorkerRegistration>} */
     this._registrations = new Map();
     this.enable();
-    this._forceUpdateSetting = Common.settings.createSetting('serviceWorkerUpdateOnReload', false);
+    this._forceUpdateSetting = Common.Settings.Settings.instance().createSetting('serviceWorkerUpdateOnReload', false);
     if (this._forceUpdateSetting.get()) {
       this._forceUpdateSettingChanged();
     }
@@ -142,7 +152,7 @@ export default class ServiceWorkerManager extends SDK.SDKModel {
     if (!registration) {
       return;
     }
-    const origin = Common.ParsedURL.extractOrigin(registration.scopeURL);
+    const origin = Common.ParsedURL.ParsedURL.extractOrigin(registration.scopeURL);
     this._agent.deliverPushMessage(origin, registrationId, data);
   }
 
@@ -156,7 +166,7 @@ export default class ServiceWorkerManager extends SDK.SDKModel {
     if (!registration) {
       return;
     }
-    const origin = Common.ParsedURL.extractOrigin(registration.scopeURL);
+    const origin = Common.ParsedURL.ParsedURL.extractOrigin(registration.scopeURL);
     this._agent.dispatchSyncEvent(origin, registrationId, tag, lastChance);
   }
 
@@ -169,7 +179,7 @@ export default class ServiceWorkerManager extends SDK.SDKModel {
     if (!registration) {
       return;
     }
-    const origin = Common.ParsedURL.extractOrigin(registration.scopeURL);
+    const origin = Common.ParsedURL.ParsedURL.extractOrigin(registration.scopeURL);
     this._agent.dispatchPeriodicSyncEvent(origin, registrationId, tag);
   }
 
@@ -268,7 +278,7 @@ export default class ServiceWorkerManager extends SDK.SDKModel {
   }
 
   /**
-   * @return {!Common.Setting}
+   * @return {!Common.Settings.Setting<*>}
    */
   forceUpdateOnReloadSetting() {
     return this._forceUpdateSetting;
@@ -342,7 +352,7 @@ export class ServiceWorkerVersion {
   _update(payload) {
     this.id = payload.versionId;
     this.scriptURL = payload.scriptURL;
-    const parsedURL = new Common.ParsedURL(payload.scriptURL);
+    const parsedURL = new Common.ParsedURL.ParsedURL(payload.scriptURL);
     this.securityOrigin = parsedURL.securityOrigin();
     this.runningStatus = payload.runningStatus;
     this.status = payload.status;
@@ -446,9 +456,11 @@ export class ServiceWorkerVersion {
   mode() {
     if (this.isNew() || this.isInstalling()) {
       return ServiceWorkerVersion.Modes.Installing;
-    } else if (this.isInstalled()) {
+    }
+    if (this.isInstalled()) {
       return ServiceWorkerVersion.Modes.Waiting;
-    } else if (this.isActivating() || this.isActivated()) {
+    }
+    if (this.isActivating() || this.isActivated()) {
       return ServiceWorkerVersion.Modes.Active;
     }
     return ServiceWorkerVersion.Modes.Redundant;
@@ -510,7 +522,7 @@ export class ServiceWorkerRegistration {
     this._fingerprint = Symbol('fingerprint');
     this.id = payload.registrationId;
     this.scopeURL = payload.scopeURL;
-    const parsedURL = new Common.ParsedURL(payload.scopeURL);
+    const parsedURL = new Common.ParsedURL.ParsedURL(payload.scopeURL);
     this.securityOrigin = parsedURL.securityOrigin();
     this.isDeleted = payload.isDeleted;
     this.forceUpdateOnPageLoad = payload.forceUpdateOnPageLoad;
@@ -589,7 +601,7 @@ export class ServiceWorkerRegistration {
  */
 class ServiceWorkerContextNamer {
   /**
-   * @param {!SDK.Target} target
+   * @param {!Target} target
    * @param {!ServiceWorkerManager} serviceWorkerManager
    */
   constructor(target, serviceWorkerManager) {
@@ -599,19 +611,18 @@ class ServiceWorkerContextNamer {
     this._versionByTargetId = new Map();
     serviceWorkerManager.addEventListener(Events.RegistrationUpdated, this._registrationsUpdated, this);
     serviceWorkerManager.addEventListener(Events.RegistrationDeleted, this._registrationsUpdated, this);
-    SDK.targetManager.addModelListener(
-        SDK.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextCreated, this._executionContextCreated, this);
+    TargetManager.instance().addModelListener(
+        RuntimeModel, RuntimeModelEvents.ExecutionContextCreated, this._executionContextCreated, this);
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _registrationsUpdated(event) {
     this._versionByTargetId.clear();
-    const registrations = this._serviceWorkerManager.registrations().valuesArray();
+    const registrations = this._serviceWorkerManager.registrations().values();
     for (const registration of registrations) {
-      const versions = registration.versions.valuesArray();
-      for (const version of versions) {
+      for (const version of registration.versions.values()) {
         if (version.targetId) {
           this._versionByTargetId.set(version.targetId, version);
         }
@@ -621,10 +632,10 @@ class ServiceWorkerContextNamer {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {!Common.EventTarget.EventTargetEvent} event
    */
   _executionContextCreated(event) {
-    const executionContext = /** @type {!SDK.ExecutionContext} */ (event.data);
+    const executionContext = /** @type {!ExecutionContext} */ (event.data);
     const serviceWorkerTargetId = this._serviceWorkerTargetId(executionContext.target());
     if (!serviceWorkerTargetId) {
       return;
@@ -633,24 +644,24 @@ class ServiceWorkerContextNamer {
   }
 
   /**
-   * @param {!SDK.Target} target
+   * @param {!Target} target
    * @return {?string}
    */
   _serviceWorkerTargetId(target) {
-    if (target.parentTarget() !== this._target || target.type() !== SDK.Target.Type.ServiceWorker) {
+    if (target.parentTarget() !== this._target || target.type() !== Type.ServiceWorker) {
       return null;
     }
     return target.id();
   }
 
   _updateAllContextLabels() {
-    for (const target of SDK.targetManager.targets()) {
+    for (const target of TargetManager.instance().targets()) {
       const serviceWorkerTargetId = this._serviceWorkerTargetId(target);
       if (!serviceWorkerTargetId) {
         continue;
       }
       const version = this._versionByTargetId.get(serviceWorkerTargetId) || null;
-      const runtimeModel = target.model(SDK.RuntimeModel);
+      const runtimeModel = target.model(RuntimeModel);
       const executionContexts = runtimeModel ? runtimeModel.executionContexts() : [];
       for (const context of executionContexts) {
         this._updateContextLabel(context, version);
@@ -659,7 +670,7 @@ class ServiceWorkerContextNamer {
   }
 
   /**
-   * @param {!SDK.ExecutionContext} context
+   * @param {!ExecutionContext} context
    * @param {?ServiceWorkerVersion} version
    */
   _updateContextLabel(context, version) {
@@ -667,29 +678,11 @@ class ServiceWorkerContextNamer {
       context.setLabel('');
       return;
     }
-    const parsedUrl = context.origin.asParsedURL();
+    const parsedUrl = Common.ParsedURL.ParsedURL.fromString(context.origin);
     const label = parsedUrl ? parsedUrl.lastPathComponentWithFragment() : context.name;
     const localizedStatus = ServiceWorkerVersion.Status[version.status];
     context.setLabel(ls`${label} #${version.id} (${localizedStatus})`);
   }
 }
 
-/* Legacy exported object */
-self.SDK = self.SDK || {};
-
-/* Legacy exported object */
-SDK = SDK || {};
-
-/** @constructor */
-SDK.ServiceWorkerManager = ServiceWorkerManager;
-
-/** @enum {symbol} */
-SDK.ServiceWorkerManager.Events = Events;
-
-/** @constructor */
-SDK.ServiceWorkerVersion = ServiceWorkerVersion;
-
-/** @constructor */
-SDK.ServiceWorkerRegistration = ServiceWorkerRegistration;
-
-SDK.SDKModel.register(ServiceWorkerManager, SDK.Target.Capability.ServiceWorker, true);
+SDKModel.register(ServiceWorkerManager, Capability.ServiceWorker, true);

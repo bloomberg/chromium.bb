@@ -40,9 +40,9 @@ class JSChecker {
   void ExecuteAsync(const std::string& expression);
 
   // Evaluates |expression| and returns its result.
-  bool GetBool(const std::string& expression);
-  int GetInt(const std::string& expression);
-  std::string GetString(const std::string& expression);
+  WARN_UNUSED_RESULT bool GetBool(const std::string& expression);
+  WARN_UNUSED_RESULT int GetInt(const std::string& expression);
+  WARN_UNUSED_RESULT std::string GetString(const std::string& expression);
 
   // Checks truthfulness of the given |expression|.
   void ExpectTrue(const std::string& expression);
@@ -61,10 +61,27 @@ class JSChecker {
   WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter> CreateWaiter(
       const std::string& js_condition);
 
+  // Checks test waiter that would await until |js_condition| evaluates
+  // to true.
+  WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter>
+  CreateWaiterWithDescription(const std::string& js_condition,
+                              const std::string& description);
+
+  // Waiter that waits until the given attribute is (not) present.
+  // WARNING! This does not cover the case where ATTRIBUTE=false.
+  // Should only be used for boolean attributes.
+  WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter>
+  CreateAttributePresenceWaiter(
+      const std::string& attribute,
+      bool presence,
+      std::initializer_list<base::StringPiece> element_ids);
+
   // Waiter that waits until specified element is (not) hidden.
   WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter>
   CreateVisibilityWaiter(bool visibility,
                          std::initializer_list<base::StringPiece> element_ids);
+  WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter>
+  CreateVisibilityWaiter(bool visibility, const std::string& element);
 
   // Waiter that waits until specified element is (not) displayed with non-zero
   // size.
@@ -114,6 +131,17 @@ class JSChecker {
                       std::initializer_list<base::StringPiece> element_ids);
   void ExpectHasNoClass(const std::string& css_class,
                         std::initializer_list<base::StringPiece> element_ids);
+
+  // Expects that indicated UI element has particular attribute.
+  void ExpectHasAttribute(const std::string& attribute,
+                          std::initializer_list<base::StringPiece> element_ids);
+  void ExpectHasNoAttribute(
+      const std::string& attribute,
+      std::initializer_list<base::StringPiece> element_ids);
+
+  // Expect that the indicated UI element has particular text content.
+  void ExpectElementText(const std::string& content,
+                         std::initializer_list<base::StringPiece> element_ids);
 
   // Fires a native 'click' event on the indicated UI element. Prefer using
   // native 'click' event as it works on both polymer and native UI elements.

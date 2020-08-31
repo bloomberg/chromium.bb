@@ -31,7 +31,6 @@
 
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -87,7 +86,8 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   overlay_ = std::make_unique<FrameOverlay>(target_frame, std::move(delegate));
   overlay_delegate_->CreatePage(*overlay_);
   bool success =
-      target_frame->View()->UpdateLifecycleToCompositingCleanPlusScrolling();
+      target_frame->View()->UpdateLifecycleToCompositingCleanPlusScrolling(
+          DocumentUpdateReason::kOverlay);
   ValidationMessageVisibilityChanged(anchor);
 
   // The lifecycle update should always succeed, because this is not inside
@@ -217,7 +217,7 @@ void ValidationMessageClientImpl::PaintOverlay(GraphicsContext& context) {
     overlay_->Paint(context);
 }
 
-void ValidationMessageClientImpl::Trace(blink::Visitor* visitor) {
+void ValidationMessageClientImpl::Trace(Visitor* visitor) {
   visitor->Trace(page_);
   visitor->Trace(current_anchor_);
   ValidationMessageClient::Trace(visitor);

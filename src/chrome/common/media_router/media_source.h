@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_MEDIA_ROUTER_MEDIA_SOURCE_H_
 #define CHROME_COMMON_MEDIA_ROUTER_MEDIA_SOURCE_H_
 
-#include <iosfwd>
+#include <ostream>
 #include <string>
 
 #include "base/hash/hash.h"
@@ -22,6 +22,10 @@ constexpr char kRemotePlaybackPresentationUrlScheme[] = "remote-playback";
 // URL prefix used by legacy Cast presentations.
 constexpr char kLegacyCastPresentationUrlPrefix[] =
     "https://google.com/cast#__castAppId__=";
+
+// A Cast SDK enabled website (e.g. Google Slides) may use the mirroring app ID
+// rather than the tab mirroring URN.
+constexpr char kMirroringAppUri[] = "cast:0F5096E8";
 
 // Strings used in presentation IDs by the Cast SDK implementation.
 // TODO(takumif): Move them out of this file, since they are not directly
@@ -44,20 +48,32 @@ bool IsValidPresentationUrl(const GURL& url);
 // Returns true if |presentation_id| is an ID used by auto-join requests.
 bool IsAutoJoinPresentationId(const std::string& presentation_id);
 
+// A media source specifier, represented as an ID string and possibly a URL.
+// If there is a URL, its string value with be the same as the ID string.
 class MediaSource {
  public:
   using Id = std::string;
 
+  // TODO(jrw): Eliminate this constructor and use optional<MediaSource> where
+  // needed.
   MediaSource();
+
+  // Create from an arbitrary string, which may or may not be a presentation
+  // URL.
   explicit MediaSource(const MediaSource::Id& id);
+
+  // Create from a URL which is assumed to be a presentation URL.  If
+  // |presentation_url| is not a valid presentation URL, the resulting object's
+  // IsValid() method will return false.
   explicit MediaSource(const GURL& presentation_url);
+
   ~MediaSource();
 
   // Gets the ID of the media source.
   const Id& id() const { return id_; }
 
-  // If MediaSource is created from a URL, return the URL; otherwise return an
-  // empty GURL.
+  // If the source ID is a presentation URL, returns the URL; otherwise returns
+  // an empty GURL.
   const GURL& url() const { return url_; }
 
   // Returns true if two MediaSource objects use the same media ID.

@@ -19,7 +19,8 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
-#include "components/safe_browsing/proto/webprotect.pb.h"
+#include "components/keyed_service/core/keyed_service.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 class Profile;
@@ -28,7 +29,7 @@ namespace safe_browsing {
 
 // This class encapsulates the process of uploading a file for deep scanning,
 // and asynchronously retrieving a verdict.
-class BinaryUploadService {
+class BinaryUploadService : public KeyedService {
  public:
   // The maximum size of data that can be uploaded via this service.
   constexpr static size_t kMaxUploadSizeBytes = 50 * 1024 * 1024;  // 50 MB
@@ -41,8 +42,9 @@ class BinaryUploadService {
   // service's |binary_fcm_service_|.
   BinaryUploadService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      Profile* profile,
       std::unique_ptr<BinaryFCMService> binary_fcm_service);
-  virtual ~BinaryUploadService();
+  ~BinaryUploadService() override;
 
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -68,7 +70,13 @@ class BinaryUploadService {
     // The user is unauthorized to make the request.
     UNAUTHORIZED = 6,
 
-    kMaxValue = UNAUTHORIZED,
+    // Some or all parts of the file are encrypted.
+    FILE_ENCRYPTED = 7,
+
+    // The file's type is not supported and the file was not uploaded.
+    UNSUPPORTED_FILE_TYPE = 8,
+
+    kMaxValue = UNSUPPORTED_FILE_TYPE,
   };
 
   // Callbacks used to pass along the results of scanning. The response protos
@@ -92,7 +100,17 @@ class BinaryUploadService {
     // Structure of data returned in the callback to GetRequestData().
     struct Data {
       Data();
+
+      // The data content.
       std::string contents;
+
+      // The SHA256 of the data.
+      std::string hash;
+
+      // The size of the data. This can differ from |contents.size()| when the
+      // file is too large for deep scanning. This field will contain the true
+      // size.
+      uint64_t size = 0;
     };
 
     // Asynchronously returns the file contents to upload.
@@ -118,6 +136,9 @@ class BinaryUploadService {
     void set_fcm_token(const std::string& token);
     void set_dm_token(const std::string& token);
     void set_request_token(const std::string& token);
+    void set_filename(const std::string& filename);
+    void set_digest(const std::string& digest);
+    void clear_dlp_scan_request();
 
     // Finish the request, with the given |result| and |response| from the
     // server.
@@ -142,15 +163,15 @@ class BinaryUploadService {
   // Resets |can_upload_data_|. Called every 24 hour by |timer_|.
   void ResetAuthorizationData();
 
+  // Performs cleanup needed at shutdown.
+  void Shutdown() override;
+
   // Sets |can_upload_data_| for tests.
   void SetAuthForTesting(bool authorized);
 
-  // Returns whether a download should be blocked based on file size alone. It
-  // checks the enterprise policy BlockLargeFileTransfer to decide this.
-  static bool ShouldBlockFileSize(size_t file_size);
-
-  // Returns the URL that requests are uploaded to.
-  static GURL GetUploadUrl();
+  // Returns the URL that requests are uploaded to. Scans for enterprise go to a
+  // different URL than scans for Advanced Protection users.
+  static GURL GetUploadUrl(bool is_advanced_protection_request);
 
  private:
   friend class BinaryUploadServiceTest;
@@ -158,7 +179,7 @@ class BinaryUploadService {
   // Upload the given file contents for deep scanning. The results will be
   // returned asynchronously by calling |request|'s |callback|. This must be
   // called on the UI thread.
-  void UploadForDeepScanning(std::unique_ptr<Request> request);
+  virtual void UploadForDeepScanning(std::unique_ptr<Request> request);
 
   void OnGetInstanceID(Request* request, const std::string& token);
 
@@ -210,12 +231,14 @@ class BinaryUploadService {
   base::flat_map<Request*, std::unique_ptr<DlpDeepScanningVerdict>>
       received_dlp_verdicts_;
 
-  // Indicates whether this browser can upload data.
+  // Indicates whether this browser can upload data for enterprise requests.
+  // Advanced Protection scans are validated using the user's Advanced
+  // Protection enrollment status.
   // base::nullopt means the response from the backend has not been received
   // yet.
   // true means the response indicates data can be uploaded.
   // false means the response indicates data cannot be uploaded.
-  base::Optional<bool> can_upload_data_ = base::nullopt;
+  base::Optional<bool> can_upload_enterprise_data_ = base::nullopt;
 
   // Callbacks waiting on IsAuthorized request.
   std::list<base::OnceCallback<void(bool)>> authorization_callbacks_;

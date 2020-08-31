@@ -25,7 +25,7 @@ class PanelInterface {
   /**
    * Sets the actions in the menu panel to the actions in |actions| from
    * the menu with the given |menuId|.
-   * @param {!Array<string>} actions
+   * @param {!Array<SAConstants.MenuAction>} actions
    * @param {!SAConstants.MenuId} menuId
    */
   setActions(actions, menuId) {}
@@ -53,4 +53,6 @@ class PanelInterface {
    * Tells the menu panel to try to connect to the background page.
    */
   connectToBackground() {}
+
+  set menuManager(menuManager) {}
 }

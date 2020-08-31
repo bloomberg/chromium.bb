@@ -3,27 +3,15 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 
-group("closure_compile") {
-  deps = [
-    ":closure_compile_polymer2",
-    ":closure_compile_polymer3",
-  ]
-}
-
-js_type_check("closure_compile_polymer2") {
-  deps = [
-    ":sync_disabled_confirmation",
-  ]
-}
-
-js_type_check("closure_compile_polymer3") {
+js_type_check("closure_compile") {
   is_polymer3 = true
   deps = [
     ":sync_confirmation",
     ":sync_confirmation_app",
     ":sync_confirmation_browser_proxy",
+    ":sync_disabled_confirmation_app",
   ]
 }
 
@@ -45,31 +33,24 @@ js_library("sync_confirmation_app") {
 }
 
 js_library("sync_confirmation_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr.m",
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
   externs_list = [
     "$externs_path/chrome_send.js",
     "$externs_path/metrics_private.js",
   ]
 }
 
-js_library("sync_disabled_confirmation") {
+js_library("sync_disabled_confirmation_app") {
   deps = [
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:util",
+    ":sync_confirmation_browser_proxy",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
   ]
 }
 
-group("polymer3_elements") {
-  deps = [
-    ":sync_confirmation_app_module",
+html_to_js("web_components") {
+  js_files = [
+    "sync_confirmation_app.js",
+    "sync_disabled_confirmation_app.js",
   ]
-}
-
-polymer_modulizer("sync_confirmation_app") {
-  html_file = "sync_confirmation_app.html"
-  js_file = "sync_confirmation_app.js"
-  html_type = "v3-ready"
 }

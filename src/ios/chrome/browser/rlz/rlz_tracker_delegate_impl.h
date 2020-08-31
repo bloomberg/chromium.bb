@@ -12,11 +12,8 @@
 #include "base/macros.h"
 #include "components/rlz/rlz_tracker_delegate.h"
 
-struct OmniboxLog;
-
-namespace ios {
 class ChromeBrowserState;
-}
+struct OmniboxLog;
 
 // RLZTrackerDelegateImpl implements RLZTrackerDelegate abstract interface
 // and provides access to Chrome on iOS features.
@@ -25,9 +22,9 @@ class RLZTrackerDelegateImpl : public rlz::RLZTrackerDelegate {
   RLZTrackerDelegateImpl();
   ~RLZTrackerDelegateImpl() override;
 
-  static bool IsGoogleDefaultSearch(ios::ChromeBrowserState* browser_state);
-  static bool IsGoogleHomepage(ios::ChromeBrowserState* browser_state);
-  static bool IsGoogleInStartpages(ios::ChromeBrowserState* browser_state);
+  static bool IsGoogleDefaultSearch(ChromeBrowserState* browser_state);
+  static bool IsGoogleHomepage(ChromeBrowserState* browser_state);
+  static bool IsGoogleInStartpages(ChromeBrowserState* browser_state);
 
  private:
   // RLZTrackerDelegate implementation.
@@ -41,14 +38,14 @@ class RLZTrackerDelegateImpl : public rlz::RLZTrackerDelegate {
   bool GetLanguage(base::string16* language) override;
   bool GetReferral(base::string16* referral) override;
   bool ClearReferral() override;
-  void SetOmniboxSearchCallback(const base::Closure& callback) override;
-  void SetHomepageSearchCallback(const base::Closure& callback) override;
+  void SetOmniboxSearchCallback(base::OnceClosure callback) override;
+  void SetHomepageSearchCallback(base::OnceClosure callback) override;
   bool ShouldUpdateExistingAccessPointRlz() override;
 
   // Called when user open an URL from the Omnibox.
   void OnURLOpenedFromOmnibox(OmniboxLog* log);
 
-  base::Closure on_omnibox_search_callback_;
+  base::OnceClosure on_omnibox_search_callback_;
   std::unique_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
       on_omnibox_url_opened_subscription_;
 

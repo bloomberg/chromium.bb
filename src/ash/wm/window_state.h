@@ -303,7 +303,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Creates and takes ownership of a pointer to DragDetails when resizing is
   // active. This should be done before a resizer gets created.
-  void CreateDragDetails(const gfx::Point& point_in_parent,
+  void CreateDragDetails(const gfx::PointF& point_in_parent,
                          int window_component,
                          ::wm::WindowMoveSource source);
 
@@ -319,8 +319,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Notifies that the drag operation has been either completed or reverted.
   // |location| is the last position of the pointer device used to drag.
-  void OnCompleteDrag(const gfx::Point& location);
-  void OnRevertDrag(const gfx::Point& location);
+  void OnCompleteDrag(const gfx::PointF& location);
+  void OnRevertDrag(const gfx::PointF& location);
 
   // Notifies that the window lost the activation.
   void OnActivationLost();
@@ -395,7 +395,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   ui::WindowShowState GetShowState() const;
 
   // Return the window's current pin type.
-  ash::WindowPinType GetPinType() const;
+  WindowPinType GetPinType() const;
 
   // Sets the window's bounds in screen coordinates.
   void SetBoundsInScreen(const gfx::Rect& bounds_in_screen);
@@ -453,6 +453,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
                                intptr_t old) override;
   void OnWindowAddedToRootWindow(aura::Window* window) override;
   void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
 
   // The owner of this window settings.
   aura::Window* window_;

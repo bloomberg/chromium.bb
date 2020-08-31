@@ -2,10 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_components/managed_footnote/managed_footnote.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {IronA11yKeysBehavior} from 'chrome://resources/polymer/v3_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
+import 'chrome://resources/polymer/v3_0/paper-ripple/paper-ripple.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/typography.js';
+import {BrowserService} from './browser_service.js';
+import './shared_style.js';
+import './strings.js';
+
+/**
+ * @typedef {{
+ *   managed: boolean,
+ *   otherFormsOfHistory: boolean,
+ * }}
+ */
+export let FooterInfo;
+
 Polymer({
   is: 'history-side-bar',
 
-  behaviors: [Polymer.IronA11yKeysBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [IronA11yKeysBehavior],
 
   properties: {
     selectedPage: {
@@ -41,14 +67,14 @@ Polymer({
    * @param {!CustomEvent<{keyboardEvent: !KeyboardEvent}>} e
    * @private
    */
-  onSpacePressed_: function(e) {
+  onSpacePressed_(e) {
     e.detail.keyboardEvent.path[0].click();
   },
 
   /**
    * @private
    */
-  onSelectorActivate_: function() {
+  onSelectorActivate_() {
     this.fire('history-close-drawer');
   },
 
@@ -57,8 +83,8 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  onClearBrowsingDataTap_: function(e) {
-    const browserService = history.BrowserService.getInstance();
+  onClearBrowsingDataTap_(e) {
+    const browserService = BrowserService.getInstance();
     browserService.recordAction('InitClearBrowsingData');
     browserService.openClearBrowsingData();
     /** @type {PaperRippleElement} */ (this.$['cbd-ripple']).upAction();
@@ -69,7 +95,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeClearBrowsingDataTabIndex_: function() {
+  computeClearBrowsingDataTabIndex_() {
     return this.guestSession_ ? '-1' : '';
   },
 
@@ -78,7 +104,7 @@ Polymer({
    * accessibility purposes, taps are handled separately by <iron-selector>.
    * @private
    */
-  onItemClick_: function(e) {
+  onItemClick_(e) {
     e.preventDefault();
   },
 
@@ -86,7 +112,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeShowFooter_: function(includeOtherFormsOfBrowsingHistory, managed) {
+  computeShowFooter_(includeOtherFormsOfBrowsingHistory, managed) {
     return includeOtherFormsOfBrowsingHistory || managed;
   },
 });

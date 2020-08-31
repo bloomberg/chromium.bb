@@ -23,7 +23,7 @@
 #include "content/browser/appcache/appcache_manifest_parser.h"
 #include "content/browser/appcache/appcache_namespace.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -136,6 +136,9 @@ class CONTENT_EXPORT AppCache
     manifest_scope_ = manifest_scope;
   }
 
+  base::Time token_expires() const { return token_expires_; }
+  void set_token_expires(base::Time expires) { token_expires_ = expires; }
+
   // Initializes the cache with information in the manifest.
   // Do not use the manifest after this call.
   void InitializeWithManifest(AppCacheManifest* manifest);
@@ -219,6 +222,10 @@ class CONTENT_EXPORT AppCache
 
   // when this cache was last updated
   base::Time update_time_;
+
+  // Origin Trial expiration time for the appcache's manifest.
+  // This is base::Time() if no Origin Trial token was presented.
+  base::Time token_expires_;
 
   int64_t cache_size_;
   int64_t padding_size_;

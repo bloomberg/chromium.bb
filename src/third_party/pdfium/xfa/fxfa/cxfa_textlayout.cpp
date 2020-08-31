@@ -728,7 +728,7 @@ bool CXFA_TextLayout::LoadRichText(
         bIsOl = true;
         bCurOl = true;
       }
-      if (m_bBlockContinue || bContentNode == false) {
+      if (m_bBlockContinue || !bContentNode) {
         eDisplay = pContext->GetDisplay();
         if (eDisplay != CFX_CSSDisplay::Block &&
             eDisplay != CFX_CSSDisplay::Inline &&
@@ -798,8 +798,7 @@ bool CXFA_TextLayout::LoadRichText(
           } else if (CFX_CSSDisplay::Inline == eDisplay &&
                      m_pLoader->bFilterSpace) {
             m_pLoader->bFilterSpace = false;
-          } else if (wsText.GetLength() > 0 &&
-                     (0x20 == wsText[wsText.GetLength() - 1])) {
+          } else if (wsText.GetLength() > 0 && wsText.Back() == 0x20) {
             m_pLoader->bFilterSpace = true;
           } else if (wsText.GetLength() != 0) {
             m_pLoader->bFilterSpace = false;
@@ -816,14 +815,13 @@ bool CXFA_TextLayout::LoadRichText(
           if (AppendChar(wsText, pLinePos, 0, bSavePieces)) {
             if (m_pLoader)
               m_pLoader->bFilterSpace = false;
-            if (IsEnd(bSavePieces)) {
-              if (m_pLoader && m_pLoader->iTotalLines > -1) {
-                m_pLoader->pXMLNode = pXMLNode;
-                m_pLoader->pParentStyle = pParentStyle;
-              }
-              return false;
+            if (!IsEnd(bSavePieces))
+              return true;
+            if (m_pLoader && m_pLoader->iTotalLines > -1) {
+              m_pLoader->pXMLNode = pXMLNode;
+              m_pLoader->pParentStyle = pParentStyle;
             }
-            return true;
+            return false;
           }
         }
       }
@@ -943,7 +941,7 @@ void CXFA_TextLayout::DoTabstops(CFX_CSSComputedStyle* pStyle,
 
   if (iCount > 0) {
     iTabstopsIndex++;
-    m_pTabstopContext->m_bTabstops = true;
+    m_pTabstopContext->m_bHasTabstops = true;
     float fRight = 0;
     if (iPieces > 1) {
       CXFA_TextPiece* p = pPieceLine->m_textPieces[iPieces - 2].get();
@@ -953,7 +951,7 @@ void CXFA_TextLayout::DoTabstops(CFX_CSSComputedStyle* pStyle,
         pPiece->rtPiece.width + pPiece->rtPiece.left - fRight;
   } else if (iTabstopsIndex > -1) {
     float fLeft = 0;
-    if (m_pTabstopContext->m_bTabstops) {
+    if (m_pTabstopContext->m_bHasTabstops) {
       uint32_t dwAlign = m_pTabstopContext->m_tabstops[iTabstopsIndex].dwAlign;
       if (dwAlign == FX_HashCode_GetW(L"center", false)) {
         fLeft = pPiece->rtPiece.width / 2.0f;
@@ -971,7 +969,7 @@ void CXFA_TextLayout::DoTabstops(CFX_CSSComputedStyle* pStyle,
       }
       m_pTabstopContext->m_fLeft =
           std::min(fLeft, m_pTabstopContext->m_fTabWidth);
-      m_pTabstopContext->m_bTabstops = false;
+      m_pTabstopContext->m_bHasTabstops = false;
       m_pTabstopContext->m_fTabWidth = 0;
     }
     pPiece->rtPiece.left -= m_pTabstopContext->m_fLeft;
@@ -1004,7 +1002,7 @@ void CXFA_TextLayout::AppendTextLine(CFX_BreakType dwStatus,
       float fVerScale = pPiece->m_iVerticalScale / 100.0f;
 
       auto pTP = pdfium::MakeUnique<CXFA_TextPiece>();
-      pTP->iChars = pPiece->m_iChars;
+      pTP->iChars = pPiece->m_iCharCount;
       pTP->szText = pPiece->GetString();
       pTP->Widths = pPiece->GetWidths();
       pTP->iBidiLevel = pPiece->m_iBidiLevel;

@@ -31,6 +31,8 @@
 #include "third_party/blink/public/web/web_element.h"
 
 #include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
@@ -44,6 +46,7 @@
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace blink {
 
@@ -125,7 +128,7 @@ WebString WebElement::TextContent() const {
 }
 
 WebString WebElement::InnerHTML() const {
-  return ConstUnwrap<Element>()->InnerHTMLAsString();
+  return ConstUnwrap<Element>()->innerHTML();
 }
 
 bool WebElement::IsAutonomousCustomElement() const {
@@ -149,17 +152,52 @@ WebRect WebElement::BoundsInViewport() const {
 }
 
 SkBitmap WebElement::ImageContents() {
-  if (IsNull())
-    return {};
-  Image* image = Unwrap<Element>()->ImageContents();
+  Image* image = GetImage();
   if (!image)
     return {};
   return image->AsSkBitmapForCurrentFrame(kRespectImageOrientation);
 }
 
+std::vector<uint8_t> WebElement::CopyOfImageData() {
+  Image* image = GetImage();
+  if (!image || !image->Data())
+    return std::vector<uint8_t>();
+  return image->Data()->CopyAs<std::vector<uint8_t>>();
+}
+
+std::string WebElement::ImageExtension() {
+  Image* image = GetImage();
+  if (!image)
+    return std::string();
+  return image->FilenameExtension().Utf8();
+}
+
+gfx::Size WebElement::GetImageSize() {
+  Image* image = GetImage();
+  if (!image)
+    return gfx::Size();
+  return gfx::Size(image->width(), image->height());
+}
+
 void WebElement::RequestFullscreen() {
   Element* element = Unwrap<Element>();
   Fullscreen::RequestFullscreen(*element);
+}
+
+WebString WebElement::GetComputedValue(const WebString& property_name) {
+  if (IsNull())
+    return WebString();
+
+  Element* element = Unwrap<Element>();
+  CSSPropertyID property_id = cssPropertyID(
+      element->GetDocument().GetExecutionContext(), property_name);
+  if (property_id == CSSPropertyID::kInvalid)
+    return WebString();
+
+  element->GetDocument().UpdateStyleAndLayoutTree();
+  auto* computed_style =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(element);
+  return computed_style->GetPropertyCSSValue(property_id)->CssText();
 }
 
 WebElement::WebElement(Element* elem) : WebNode(elem) {}
@@ -173,6 +211,12 @@ WebElement& WebElement::operator=(Element* elem) {
 
 WebElement::operator Element*() const {
   return blink::To<Element>(private_.Get());
+}
+
+Image* WebElement::GetImage() {
+  if (IsNull())
+    return nullptr;
+  return Unwrap<Element>()->ImageContents();
 }
 
 }  // namespace blink

@@ -8,13 +8,13 @@
 export class OutputStream {
   /**
    * @param {string} data
-   * @return {!Promise}
+   * @return {!Promise.<void>}
    */
   async write(data) {
   }
 
   /**
-   * @return {!Promise}
+   * @return {!Promise.<void>}
    */
   async close() {
   }
@@ -31,7 +31,7 @@ export class StringOutputStream {
   /**
    * @override
    * @param {string} chunk
-   * @return {!Promise}
+   * @return {!Promise.<void>}
    */
   async write(chunk) {
     this._data += chunk;
@@ -39,6 +39,7 @@ export class StringOutputStream {
 
   /**
    * @override
+   * @return {!Promise.<void>}
    */
   async close() {
   }
@@ -50,13 +51,3 @@ export class StringOutputStream {
     return this._data;
   }
 }
-
-/* Legacy exported object */
-self.Common = self.Common || {};
-Common = Common || {};
-
-/**
- * @interface
- */
-Common.OutputStream = OutputStream;
-Common.StringOutputStream = StringOutputStream;

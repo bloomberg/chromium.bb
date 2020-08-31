@@ -43,13 +43,13 @@ void JSArrayBuffer::Setup(SharedFlag shared,
   for (int i = 0; i < v8::ArrayBuffer::kEmbedderFieldCount; i++) {
     SetEmbedderField(i, Smi::zero());
   }
+  set_extension(nullptr);
   if (!backing_store) {
-    set_backing_store(nullptr);
+    set_backing_store(GetIsolate(), nullptr);
     set_byte_length(0);
   } else {
     Attach(std::move(backing_store));
   }
-
   if (shared == SharedFlag::kShared) {
     GetIsolate()->CountUsage(
         v8::Isolate::UseCounterFeature::kSharedArrayBufferConstructed);
@@ -59,11 +59,22 @@ void JSArrayBuffer::Setup(SharedFlag shared,
 void JSArrayBuffer::Attach(std::shared_ptr<BackingStore> backing_store) {
   DCHECK_NOT_NULL(backing_store);
   DCHECK_EQ(is_shared(), backing_store->is_shared());
-  set_backing_store(backing_store->buffer_start());
+  DCHECK(!was_detached());
+  Isolate* isolate = GetIsolate();
+  set_backing_store(isolate, backing_store->buffer_start());
   set_byte_length(backing_store->byte_length());
   if (backing_store->is_wasm_memory()) set_is_detachable(false);
   if (!backing_store->free_on_destruct()) set_is_external(true);
-  GetIsolate()->heap()->RegisterBackingStore(*this, std::move(backing_store));
+  if (V8_ARRAY_BUFFER_EXTENSION_BOOL) {
+    Heap* heap = isolate->heap();
+    ArrayBufferExtension* extension = EnsureExtension();
+    size_t bytes = backing_store->PerIsolateAccountingLength();
+    extension->set_accounting_length(bytes);
+    extension->set_backing_store(std::move(backing_store));
+    heap->AppendArrayBufferExtension(*this, extension);
+  } else {
+    isolate->heap()->RegisterBackingStore(*this, std::move(backing_store));
+  }
 }
 
 void JSArrayBuffer::Detach(bool force_for_wasm_memory) {
@@ -78,7 +89,12 @@ void JSArrayBuffer::Detach(bool force_for_wasm_memory) {
 
   Isolate* const isolate = GetIsolate();
   if (backing_store()) {
-    auto backing_store = isolate->heap()->UnregisterBackingStore(*this);
+    std::shared_ptr<BackingStore> backing_store;
+    if (V8_ARRAY_BUFFER_EXTENSION_BOOL) {
+      backing_store = RemoveExtension();
+    } else {
+      backing_store = isolate->heap()->UnregisterBackingStore(*this);
+    }
     CHECK_IMPLIES(force_for_wasm_memory, backing_store->is_wasm_memory());
   }
 
@@ -88,13 +104,59 @@ void JSArrayBuffer::Detach(bool force_for_wasm_memory) {
 
   DCHECK(!is_shared());
   DCHECK(!is_asmjs_memory());
-  set_backing_store(nullptr);
+  set_backing_store(isolate, nullptr);
   set_byte_length(0);
   set_was_detached(true);
 }
 
 std::shared_ptr<BackingStore> JSArrayBuffer::GetBackingStore() {
-  return GetIsolate()->heap()->LookupBackingStore(*this);
+  if (V8_ARRAY_BUFFER_EXTENSION_BOOL) {
+    if (!extension()) return nullptr;
+    return extension()->backing_store();
+  } else {
+    return GetIsolate()->heap()->LookupBackingStore(*this);
+  }
+}
+
+ArrayBufferExtension* JSArrayBuffer::EnsureExtension() {
+  DCHECK(V8_ARRAY_BUFFER_EXTENSION_BOOL);
+  ArrayBufferExtension* extension = this->extension();
+  if (extension != nullptr) return extension;
+
+  extension = new ArrayBufferExtension(std::shared_ptr<BackingStore>());
+  set_extension(extension);
+  return extension;
+}
+
+std::shared_ptr<BackingStore> JSArrayBuffer::RemoveExtension() {
+  ArrayBufferExtension* extension = this->extension();
+  DCHECK_NOT_NULL(extension);
+  auto result = extension->RemoveBackingStore();
+  // Remove pointer to extension such that the next GC will free it
+  // automatically.
+  set_extension(nullptr);
+  return result;
+}
+
+void JSArrayBuffer::MarkExtension() {
+  ArrayBufferExtension* extension = this->extension();
+  if (extension) {
+    extension->Mark();
+  }
+}
+
+void JSArrayBuffer::YoungMarkExtension() {
+  ArrayBufferExtension* extension = this->extension();
+  if (extension) {
+    extension->YoungMark();
+  }
+}
+
+void JSArrayBuffer::YoungMarkExtensionPromoted() {
+  ArrayBufferExtension* extension = this->extension();
+  if (extension) {
+    extension->YoungMarkPromoted();
+  }
 }
 
 Handle<JSArrayBuffer> JSTypedArray::GetBuffer() {
@@ -132,7 +194,7 @@ Handle<JSArrayBuffer> JSTypedArray::GetBuffer() {
 
   // Clear the elements of the typed array.
   self->set_elements(ReadOnlyRoots(isolate).empty_byte_array());
-  self->SetOffHeapDataPtr(array_buffer->backing_store(), 0);
+  self->SetOffHeapDataPtr(isolate, array_buffer->backing_store(), 0);
   DCHECK(!self->is_on_heap());
 
   return array_buffer;

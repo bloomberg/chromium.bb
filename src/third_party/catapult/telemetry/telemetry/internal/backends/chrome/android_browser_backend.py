@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import datetime
 import logging
 import os
 import posixpath
@@ -23,6 +22,7 @@ from telemetry.internal.results import artifact_logger
 from devil.android import app_ui
 from devil.android import device_signal
 from devil.android.sdk import intent
+from devil.android.sdk import version_codes
 
 
 class AndroidBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
@@ -207,9 +207,10 @@ class AndroidBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     self._PullMinidumpsAndAdjustMtimes()
 
   def CollectDebugData(self, log_level):
-    """Attempts to symbolize all currently unsymbolized minidumps and log them.
+    """Collects various information that may be useful for debugging.
 
-    Additionally, collects the following information and stores it as artifacts:
+    In addition to any data collected by parents' implementation, this also
+    collects the following and stores it as artifacts:
       1. UI state of the device
       2. Logcat
       3. Symbolized logcat
@@ -218,21 +219,17 @@ class AndroidBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     Args:
       log_level: The logging level to use from the logging module, e.g.
           logging.ERROR.
+
+    Returns:
+      A debug_data.DebugData object containing the collected data.
     """
     # Store additional debug information as artifacts.
-    # Include the time in the name to guarantee uniqueness if this happens to be
-    # called multiple times in a single test. Formatted as
-    # year-month-day-hour-minute-second
-    now = datetime.datetime.now()
-    suffix = now.strftime('%Y-%m-%d-%H-%M-%S')
+    suffix = artifact_logger.GetTimestampSuffix()
     self._StoreUiDumpAsArtifact(suffix)
     self._StoreLogcatAsArtifact(suffix)
     self._StoreTombstonesAsArtifact(suffix)
-    super(AndroidBrowserBackend, self).CollectDebugData(
+    return super(AndroidBrowserBackend, self).CollectDebugData(
         log_level)
-
-  def GetStackTrace(self):
-    return self.platform_backend.GetStackTrace()
 
   def SymbolizeMinidump(self, minidump_path):
     dump_symbolizer = android_minidump_symbolizer.AndroidMinidumpSymbolizer(
@@ -257,19 +254,43 @@ class AndroidBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
 
     device_dump_path = posixpath.join(
         self.platform_backend.GetDumpLocation(), 'Crashpad', 'pending')
+    if not device.PathExists(device_dump_path):
+      logging.warning(
+          'Device minidump path %s does not exist - not attempting to pull '
+          'minidumps', device_dump_path)
+      return
     device_dumps = device.ListDirectory(device_dump_path)
     for dump_filename in device_dumps:
+      # Skip any .lock files since they're not useful and are prone to being
+      # deleted by the time we try to actually pull them.
+      if dump_filename.endswith('.lock'):
+        continue
       host_path = os.path.join(self._tmp_minidump_dir, dump_filename)
       if os.path.exists(host_path):
         continue
       device_path = posixpath.join(device_dump_path, dump_filename)
+      # Skip any files that have a .lock file associated with them, as that
+      # implies that the minidump hasn't been fully written to disk yet.
+      device_lock_path = device_path + '.lock'
+      if device.FileExists(device_lock_path):
+        logging.debug('Not pulling file %s because a .lock file exists for it',
+                      device_path)
+        continue
       device.PullFile(device_path, host_path)
       # Set the local version's modification time to the device's
       # The mtime returned by device_utils.StatPath only has a resolution down
       # to the minute, so we can't use that.
-      device_mtime = device.RunShellCommand(
-          ['stat', '-c', '%Y', device_path], single_line=True)
-      device_mtime = int(device_mtime.strip())
+      # On Android L and earlier, 'stat' is not available, so fall back to
+      # device_utils.StatPath and adjust the returned value so that it's as new
+      # as possible while still fitting in that 1 minute resolution.
+      device_mtime = None
+      if device.build_version_sdk >= version_codes.MARSHMALLOW:
+        device_mtime = device.RunShellCommand(
+            ['stat', '-c', '%Y', device_path], single_line=True)
+        device_mtime = int(device_mtime.strip())
+      else:
+        stat_output = device.StatPath(device_path)
+        device_mtime = stat_output['st_mtime'] + 59
       host_mtime = device_mtime - time_offset
       os.utime(host_path, (host_mtime, host_mtime))
 

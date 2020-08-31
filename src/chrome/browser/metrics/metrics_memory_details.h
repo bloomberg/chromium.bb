@@ -17,7 +17,7 @@
 // Will run the provided callback when finished.
 class MetricsMemoryDetails : public MemoryDetails {
  public:
-  explicit MetricsMemoryDetails(const base::Closure& callback);
+  explicit MetricsMemoryDetails(base::OnceClosure callback);
 
  protected:
   ~MetricsMemoryDetails() override;
@@ -29,10 +29,9 @@ class MetricsMemoryDetails : public MemoryDetails {
   // Updates the global histograms for tracking memory usage.
   void UpdateHistograms();
 
-  void UpdateSiteIsolationMetrics(int all_renderer_count,
-                                  int non_renderer_count);
+  void UpdateSiteIsolationMetrics();
 
-  base::Closure callback_;
+  base::OnceClosure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsMemoryDetails);
 };

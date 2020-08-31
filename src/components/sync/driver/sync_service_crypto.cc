@@ -17,7 +17,6 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/trusted_vault_client.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/nigori/nigori.h"
 
@@ -25,21 +24,48 @@ namespace syncer {
 
 namespace {
 
+// Used for UMA.
+enum class TrustedVaultFetchKeysAttemptForUMA {
+  kFirstAttempt,
+  kSecondAttempt,
+  kMaxValue = kSecondAttempt
+};
+
 // Used for the case where a null client is passed to SyncServiceCrypto.
 class EmptyTrustedVaultClient : public TrustedVaultClient {
  public:
   EmptyTrustedVaultClient() = default;
   ~EmptyTrustedVaultClient() override = default;
 
-  // TrustedVaultClient implementatio.
+  // TrustedVaultClient implementation.
+  std::unique_ptr<Subscription> AddKeysChangedObserver(
+      const base::RepeatingClosure& cb) override {
+    return nullptr;
+  }
+
   void FetchKeys(
-      const std::string& gaia_id,
-      base::OnceCallback<void(const std::vector<std::string>&)> cb) override {
+      const CoreAccountInfo& account_info,
+      base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb)
+      override {
     std::move(cb).Run({});
   }
 
   void StoreKeys(const std::string& gaia_id,
-                 const std::vector<std::string>& keys) override {}
+                 const std::vector<std::vector<uint8_t>>& keys,
+                 int last_key_version) override {
+    // Never invoked by SyncServiceCrypto.
+    NOTREACHED();
+  }
+
+  void RemoveAllStoredKeys() override {
+    // Never invoked by SyncServiceCrypto.
+    NOTREACHED();
+  }
+
+  void MarkKeysAsStale(const CoreAccountInfo& account_info,
+                       base::OnceCallback<void(bool)> cb) override {
+    std::move(cb).Run(false);
+  }
 };
 
 // A SyncEncryptionHandler::Observer implementation that simply posts all calls
@@ -175,10 +201,12 @@ SyncServiceCrypto::State::~State() = default;
 
 SyncServiceCrypto::SyncServiceCrypto(
     const base::RepeatingClosure& notify_observers,
+    const base::RepeatingClosure& notify_required_user_action_changed,
     const base::RepeatingCallback<void(ConfigureReason)>& reconfigure,
     CryptoSyncPrefs* sync_prefs,
     TrustedVaultClient* trusted_vault_client)
     : notify_observers_(notify_observers),
+      notify_required_user_action_changed_(notify_required_user_action_changed),
       reconfigure_(reconfigure),
       sync_prefs_(sync_prefs),
       trusted_vault_client_(ResoveNullClient(trusted_vault_client)) {
@@ -186,6 +214,11 @@ SyncServiceCrypto::SyncServiceCrypto(
   DCHECK(reconfigure_);
   DCHECK(sync_prefs_);
   DCHECK(trusted_vault_client_);
+
+  trusted_vault_client_subscription_ =
+      trusted_vault_client_->AddKeysChangedObserver(base::BindRepeating(
+          &SyncServiceCrypto::OnTrustedVaultClientKeysChanged,
+          weak_factory_.GetWeakPtr()));
 }
 
 SyncServiceCrypto::~SyncServiceCrypto() = default;
@@ -203,9 +236,11 @@ bool SyncServiceCrypto::IsPassphraseRequired() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   switch (state_.required_user_action) {
+    case RequiredUserAction::kUnknownDuringInitialization:
     case RequiredUserAction::kNone:
     case RequiredUserAction::kFetchingTrustedVaultKeys:
     case RequiredUserAction::kTrustedVaultKeyRequired:
+    case RequiredUserAction::kTrustedVaultKeyRequiredButFetching:
       return false;
     case RequiredUserAction::kPassphraseRequiredForDecryption:
     case RequiredUserAction::kPassphraseRequiredForEncryption:
@@ -224,7 +259,9 @@ bool SyncServiceCrypto::IsUsingSecondaryPassphrase() const {
 bool SyncServiceCrypto::IsTrustedVaultKeyRequired() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return state_.required_user_action ==
-         RequiredUserAction::kTrustedVaultKeyRequired;
+             RequiredUserAction::kTrustedVaultKeyRequired ||
+         state_.required_user_action ==
+             RequiredUserAction::kTrustedVaultKeyRequiredButFetching;
 }
 
 void SyncServiceCrypto::EnableEncryptEverything() {
@@ -247,25 +284,34 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This should only be called when the engine has been initialized.
   DCHECK(state_.engine);
-  DCHECK_NE(state_.required_user_action,
-            RequiredUserAction::kPassphraseRequiredForDecryption)
-      << "Can not set explicit passphrase when decryption is needed.";
-
-  DVLOG(1) << "Setting explicit passphrase for encryption.";
-  if (state_.required_user_action ==
-      RequiredUserAction::kPassphraseRequiredForEncryption) {
-    // |kPassphraseRequiredForEncryption| implies that the cryptographer does
-    // not have pending keys. Hence, as long as we're not trying to do an
-    // invalid passphrase change (e.g. explicit -> explicit or explicit ->
-    // implicit), we know this will succeed. If for some reason a new
-    // encryption key arrives via sync later, the SyncEncryptionHandler will
-    // trigger another OnPassphraseRequired().
-    state_.required_user_action = RequiredUserAction::kNone;
-    notify_observers_.Run();
-  }
-
   // We should never be called with an empty passphrase.
   DCHECK(!passphrase.empty());
+
+  switch (state_.required_user_action) {
+    case RequiredUserAction::kUnknownDuringInitialization:
+    case RequiredUserAction::kNone:
+      break;
+    case RequiredUserAction::kPassphraseRequiredForDecryption:
+    case RequiredUserAction::kFetchingTrustedVaultKeys:
+    case RequiredUserAction::kTrustedVaultKeyRequired:
+    case RequiredUserAction::kTrustedVaultKeyRequiredButFetching:
+      // Cryptographer has pending keys.
+      NOTREACHED()
+          << "Can not set explicit passphrase when decryption is needed.";
+      return;
+    case RequiredUserAction::kPassphraseRequiredForEncryption:
+      // |kPassphraseRequiredForEncryption| implies that the cryptographer does
+      // not have pending keys. Hence, as long as we're not trying to do an
+      // invalid passphrase change (e.g. explicit -> explicit or explicit ->
+      // implicit), we know this will succeed. If for some reason a new
+      // encryption key arrives via sync later, the SyncEncryptionHandler will
+      // trigger another OnPassphraseRequired().
+      UpdateRequiredUserActionAndNotify(RequiredUserAction::kNone);
+      notify_observers_.Run();
+      break;
+  }
+
+  DVLOG(1) << "Setting explicit passphrase for encryption.";
 
   // SetEncryptionPassphrase() should never be called if we are currently
   // encrypted with an explicit passphrase.
@@ -316,14 +362,20 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
   return true;
 }
 
-void SyncServiceCrypto::AddTrustedVaultDecryptionKeys(
-    const std::string& gaia_id,
-    const std::vector<std::string>& keys) {
-  trusted_vault_client_->StoreKeys(gaia_id, keys);
-
-  if (state_.engine && state_.account_info.gaia == gaia_id) {
-    state_.engine->AddTrustedVaultDecryptionKeys(keys, base::DoNothing());
+bool SyncServiceCrypto::IsTrustedVaultKeyRequiredStateKnown() const {
+  switch (state_.required_user_action) {
+    case RequiredUserAction::kUnknownDuringInitialization:
+    case RequiredUserAction::kFetchingTrustedVaultKeys:
+      return false;
+    case RequiredUserAction::kNone:
+    case RequiredUserAction::kPassphraseRequiredForDecryption:
+    case RequiredUserAction::kTrustedVaultKeyRequired:
+    case RequiredUserAction::kTrustedVaultKeyRequiredButFetching:
+    case RequiredUserAction::kPassphraseRequiredForEncryption:
+      return true;
   }
+  NOTREACHED();
+  return false;
 }
 
 PassphraseType SyncServiceCrypto::GetPassphraseType() const {
@@ -348,10 +400,12 @@ bool SyncServiceCrypto::HasCryptoError() const {
   // error state or not.
 
   switch (state_.required_user_action) {
+    case RequiredUserAction::kUnknownDuringInitialization:
     case RequiredUserAction::kNone:
       return false;
     case RequiredUserAction::kFetchingTrustedVaultKeys:
     case RequiredUserAction::kTrustedVaultKeyRequired:
+    case RequiredUserAction::kTrustedVaultKeyRequiredButFetching:
     case RequiredUserAction::kPassphraseRequiredForDecryption:
     case RequiredUserAction::kPassphraseRequiredForEncryption:
       return true;
@@ -378,12 +432,12 @@ void SyncServiceCrypto::OnPassphraseRequired(
 
   switch (reason) {
     case REASON_ENCRYPTION:
-      state_.required_user_action =
-          RequiredUserAction::kPassphraseRequiredForEncryption;
+      UpdateRequiredUserActionAndNotify(
+          RequiredUserAction::kPassphraseRequiredForEncryption);
       break;
     case REASON_DECRYPTION:
-      state_.required_user_action =
-          RequiredUserAction::kPassphraseRequiredForDecryption;
+      UpdateRequiredUserActionAndNotify(
+          RequiredUserAction::kPassphraseRequiredForDecryption);
       break;
   }
 
@@ -400,7 +454,7 @@ void SyncServiceCrypto::OnPassphraseAccepted() {
 
   // Reset |required_user_action| since we know we no longer require the
   // passphrase.
-  state_.required_user_action = RequiredUserAction::kNone;
+  UpdateRequiredUserActionAndNotify(RequiredUserAction::kNone);
 
   // Make sure the data types that depend on the passphrase are started at
   // this time.
@@ -412,11 +466,14 @@ void SyncServiceCrypto::OnTrustedVaultKeyRequired() {
 
   // To be on the safe since, if a passphrase is required, we avoid overriding
   // |state_.required_user_action|.
-  if (state_.required_user_action != RequiredUserAction::kNone) {
+  if (state_.required_user_action != RequiredUserAction::kNone &&
+      state_.required_user_action !=
+          RequiredUserAction::kUnknownDuringInitialization) {
     return;
   }
 
-  state_.required_user_action = RequiredUserAction::kFetchingTrustedVaultKeys;
+  UpdateRequiredUserActionAndNotify(
+      RequiredUserAction::kFetchingTrustedVaultKeys);
 
   if (!state_.engine) {
     // If SetSyncEngine() hasn't been called yet, it means
@@ -427,23 +484,25 @@ void SyncServiceCrypto::OnTrustedVaultKeyRequired() {
     return;
   }
 
-  FetchTrustedVaultKeys();
+  FetchTrustedVaultKeys(/*is_second_fetch_attempt=*/false);
 }
 
 void SyncServiceCrypto::OnTrustedVaultKeyAccepted() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   switch (state_.required_user_action) {
+    case RequiredUserAction::kUnknownDuringInitialization:
     case RequiredUserAction::kNone:
     case RequiredUserAction::kPassphraseRequiredForDecryption:
     case RequiredUserAction::kPassphraseRequiredForEncryption:
       return;
     case RequiredUserAction::kFetchingTrustedVaultKeys:
     case RequiredUserAction::kTrustedVaultKeyRequired:
+    case RequiredUserAction::kTrustedVaultKeyRequiredButFetching:
       break;
   }
 
-  state_.required_user_action = RequiredUserAction::kNone;
+  UpdateRequiredUserActionAndNotify(RequiredUserAction::kNone);
 
   // Make sure the data types that depend on the decryption key are started at
   // this time.
@@ -510,11 +569,18 @@ void SyncServiceCrypto::SetSyncEngine(const CoreAccountInfo& account_info,
   state_.account_info = account_info;
   state_.engine = engine;
 
+  // Since there was no state changes during engine initialization, now the
+  // state is known and no user action required.
+  if (state_.required_user_action ==
+      RequiredUserAction::kUnknownDuringInitialization) {
+    UpdateRequiredUserActionAndNotify(RequiredUserAction::kNone);
+  }
+
   // This indicates OnTrustedVaultKeyRequired() was called as part of the
   // engine's initialization.
   if (state_.required_user_action ==
       RequiredUserAction::kFetchingTrustedVaultKeys) {
-    FetchTrustedVaultKeys();
+    FetchTrustedVaultKeys(/*is_second_fetch_attempt=*/false);
   }
 }
 
@@ -525,40 +591,156 @@ SyncServiceCrypto::GetEncryptionObserverProxy() {
       weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get());
 }
 
-void SyncServiceCrypto::FetchTrustedVaultKeys() {
-  DCHECK(state_.engine);
-  DCHECK_EQ(state_.required_user_action,
-            RequiredUserAction::kFetchingTrustedVaultKeys);
+void SyncServiceCrypto::OnTrustedVaultClientKeysChanged() {
+  switch (state_.required_user_action) {
+    case RequiredUserAction::kUnknownDuringInitialization:
+    case RequiredUserAction::kNone:
+    case RequiredUserAction::kPassphraseRequiredForDecryption:
+    case RequiredUserAction::kPassphraseRequiredForEncryption:
+      // If no trusted vault keys are required, there's nothing to do. If they
+      // later are required, a fetch will be triggered in
+      // OnTrustedVaultKeyRequired().
+      return;
+    case RequiredUserAction::kFetchingTrustedVaultKeys:
+    case RequiredUserAction::kTrustedVaultKeyRequiredButFetching:
+      // If there's an ongoing fetch, FetchKeys() cannot be issued immediately
+      // since that violates the function precondition. However, the in-flight
+      // FetchKeys() may end up returning stale keys, so let's make sure
+      // FetchKeys() is invoked again once it becomes possible.
+      state_.deferred_trusted_vault_fetch_keys_pending = true;
+      return;
+    case RequiredUserAction::kTrustedVaultKeyRequired:
+      UpdateRequiredUserActionAndNotify(
+          RequiredUserAction::kTrustedVaultKeyRequiredButFetching);
+      break;
+  }
 
-  trusted_vault_client_->FetchKeys(
-      state_.account_info.gaia,
-      base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysFetched,
-                     weak_factory_.GetWeakPtr()));
+  FetchTrustedVaultKeys(/*is_second_fetch_attempt=*/false);
 }
 
-void SyncServiceCrypto::TrustedVaultKeysFetched(
-    const std::vector<std::string>& keys) {
-  // The engine could have been shut down while keys were being fetched.
-  if (!state_.engine) {
+void SyncServiceCrypto::FetchTrustedVaultKeys(bool is_second_fetch_attempt) {
+  DCHECK(state_.engine);
+  DCHECK(state_.required_user_action ==
+             RequiredUserAction::kFetchingTrustedVaultKeys ||
+         state_.required_user_action ==
+             RequiredUserAction::kTrustedVaultKeyRequiredButFetching);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Sync.TrustedVaultFetchKeysAttempt",
+      is_second_fetch_attempt
+          ? TrustedVaultFetchKeysAttemptForUMA::kSecondAttempt
+          : TrustedVaultFetchKeysAttemptForUMA::kFirstAttempt);
+
+  if (!is_second_fetch_attempt) {
+    state_.deferred_trusted_vault_fetch_keys_pending = false;
+  }
+
+  trusted_vault_client_->FetchKeys(
+      state_.account_info,
+      base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysFetchedFromClient,
+                     weak_factory_.GetWeakPtr(), is_second_fetch_attempt));
+}
+
+void SyncServiceCrypto::TrustedVaultKeysFetchedFromClient(
+    bool is_second_fetch_attempt,
+    const std::vector<std::vector<uint8_t>>& keys) {
+  if (state_.required_user_action !=
+          RequiredUserAction::kFetchingTrustedVaultKeys &&
+      state_.required_user_action !=
+          RequiredUserAction::kTrustedVaultKeyRequiredButFetching) {
+    return;
+  }
+
+  DCHECK(state_.engine);
+
+  UMA_HISTOGRAM_COUNTS_100("Sync.TrustedVaultFetchedKeysCount", keys.size());
+
+  if (keys.empty()) {
+    // Nothing to do if no keys have been fetched from the client (e.g. user
+    // action is required for fetching additional keys). Let's avoid unnecessary
+    // steps like marking keys as stale.
+    FetchTrustedVaultKeysCompletedButInsufficient();
     return;
   }
 
   state_.engine->AddTrustedVaultDecryptionKeys(
-      keys, base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysAdded,
-                           weak_factory_.GetWeakPtr()));
+      keys,
+      base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysAdded,
+                     weak_factory_.GetWeakPtr(), is_second_fetch_attempt));
 }
 
-void SyncServiceCrypto::TrustedVaultKeysAdded() {
+void SyncServiceCrypto::TrustedVaultKeysAdded(bool is_second_fetch_attempt) {
+  // Having kFetchingTrustedVaultKeys or kTrustedVaultKeyRequiredButFetching
+  // indicates OnTrustedVaultKeyAccepted() was not triggered, so the fetched
+  // trusted vault keys were insufficient.
+  bool success = state_.required_user_action !=
+                     RequiredUserAction::kFetchingTrustedVaultKeys &&
+                 state_.required_user_action !=
+                     RequiredUserAction::kTrustedVaultKeyRequiredButFetching;
+
+  UMA_HISTOGRAM_BOOLEAN("Sync.TrustedVaultAddKeysAttemptIsSuccessful", success);
+
+  if (success) {
+    return;
+  }
+
+  // Let trusted vault client know, that fetched keys were insufficient.
+  trusted_vault_client_->MarkKeysAsStale(
+      state_.account_info,
+      base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysMarkedAsStale,
+                     weak_factory_.GetWeakPtr(), is_second_fetch_attempt));
+}
+
+void SyncServiceCrypto::TrustedVaultKeysMarkedAsStale(
+    bool is_second_fetch_attempt,
+    bool result) {
   if (state_.required_user_action !=
-      RequiredUserAction::kFetchingTrustedVaultKeys) {
+          RequiredUserAction::kFetchingTrustedVaultKeys &&
+      state_.required_user_action !=
+          RequiredUserAction::kTrustedVaultKeyRequiredButFetching) {
+    return;
+  }
+
+  // If nothing has changed (determined by |!result| since false negatives are
+  // disallowed by the API) or this is already a second attempt, the fetching
+  // procedure can be considered completed.
+  if (!result || is_second_fetch_attempt) {
+    FetchTrustedVaultKeysCompletedButInsufficient();
+    return;
+  }
+
+  FetchTrustedVaultKeys(/*is_second_fetch_attempt=*/true);
+}
+
+void SyncServiceCrypto::FetchTrustedVaultKeysCompletedButInsufficient() {
+  DCHECK(state_.required_user_action ==
+             RequiredUserAction::kFetchingTrustedVaultKeys ||
+         state_.required_user_action ==
+             RequiredUserAction::kTrustedVaultKeyRequiredButFetching);
+
+  // If FetchKeys() was intended to be called during an already existing ongoing
+  // FetchKeys(), it needs to be invoked now that it's possible.
+  if (state_.deferred_trusted_vault_fetch_keys_pending) {
+    FetchTrustedVaultKeys(/*is_second_fetch_attempt=*/false);
     return;
   }
 
   // Reaching this codepath indicates OnTrustedVaultKeyAccepted() was not
-  // triggered, so reconfigure without the encrypted types (excluded implicitly
-  // via the failed datatypes handler).
-  state_.required_user_action = RequiredUserAction::kTrustedVaultKeyRequired;
+  // triggered, so the fetched trusted vault keys were insufficient.
+  UpdateRequiredUserActionAndNotify(
+      RequiredUserAction::kTrustedVaultKeyRequired);
+
+  // Reconfigure without the encrypted types (excluded implicitly via the failed
+  // datatypes handler).
   reconfigure_.Run(CONFIGURE_REASON_CRYPTO);
+}
+
+void SyncServiceCrypto::UpdateRequiredUserActionAndNotify(
+    RequiredUserAction new_required_user_action) {
+  DCHECK_NE(new_required_user_action,
+            RequiredUserAction::kUnknownDuringInitialization);
+  state_.required_user_action = new_required_user_action;
+  notify_required_user_action_changed_.Run();
 }
 
 }  // namespace syncer

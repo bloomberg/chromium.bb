@@ -12,15 +12,14 @@
 namespace ash {
 
 SearchResult::SearchResult()
-    : metadata_(std::make_unique<ash::SearchResultMetadata>()) {}
+    : metadata_(std::make_unique<SearchResultMetadata>()) {}
 
 SearchResult::~SearchResult() {
   for (auto& observer : observers_)
     observer.OnResultDestroying();
 }
 
-void SearchResult::SetMetadata(
-    std::unique_ptr<ash::SearchResultMetadata> metadata) {
+void SearchResult::SetMetadata(std::unique_ptr<SearchResultMetadata> metadata) {
   metadata_ = std::move(metadata);
   for (auto& observer : observers_)
     observer.OnMetadataChanged();
@@ -66,29 +65,6 @@ void SearchResult::SetActions(const Actions& sets) {
   metadata_->actions = sets;
   for (auto& observer : observers_)
     observer.OnMetadataChanged();
-}
-
-void SearchResult::SetIsInstalling(bool is_installing) {
-  if (is_installing_ == is_installing)
-    return;
-
-  is_installing_ = is_installing;
-  for (auto& observer : observers_)
-    observer.OnIsInstallingChanged();
-}
-
-void SearchResult::SetPercentDownloaded(int percent_downloaded) {
-  if (percent_downloaded_ == percent_downloaded)
-    return;
-
-  percent_downloaded_ = percent_downloaded;
-  for (auto& observer : observers_)
-    observer.OnPercentDownloadedChanged();
-}
-
-void SearchResult::NotifyItemInstalled() {
-  for (auto& observer : observers_)
-    observer.OnItemInstalled();
 }
 
 void SearchResult::AddObserver(SearchResultObserver* observer) {

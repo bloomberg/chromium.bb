@@ -10,6 +10,9 @@
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 
 namespace autofill_assistant {
+namespace {
+constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromSeconds(20);
+}  // namespace
 
 WaitForNavigationAction::WaitForNavigationAction(ActionDelegate* delegate,
                                                  const ActionProto& proto)
@@ -33,9 +36,9 @@ void WaitForNavigationAction::InternalProcessAction(
   if (!delegate_->WaitForNavigation(
           base::BindOnce(&WaitForNavigationAction::OnWaitForNavigation,
                          weak_ptr_factory_.GetWeakPtr()))) {
-    DVLOG(1) << __func__
-             << ": WaitForNavigation with no corresponding ExpectNavigation or "
-                "Navigate";
+    VLOG(1) << __func__
+            << ": WaitForNavigation with no corresponding ExpectNavigation or "
+               "Navigate";
     SendResult(INVALID_ACTION);
     return;
   }

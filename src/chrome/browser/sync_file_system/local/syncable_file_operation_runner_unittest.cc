@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -110,8 +111,8 @@ class SyncableFileOperationRunnerTest : public testing::Test {
 
   StatusCallback ExpectStatus(const base::Location& location,
                               File::Error expect) {
-    return base::Bind(&SyncableFileOperationRunnerTest::DidFinish,
-                      weak_factory_.GetWeakPtr(), location, expect);
+    return base::BindOnce(&SyncableFileOperationRunnerTest::DidFinish,
+                          weak_factory_.GetWeakPtr(), location, expect);
   }
 
   FileSystemOperation::WriteCallback GetWriteCallback(

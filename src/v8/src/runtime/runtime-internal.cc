@@ -82,48 +82,6 @@ RUNTIME_FUNCTION(Runtime_ThrowSymbolAsyncIteratorInvalid) {
       isolate, NewTypeError(MessageTemplate::kSymbolAsyncIteratorInvalid));
 }
 
-RUNTIME_FUNCTION(Runtime_ReportDetachedWindowAccess) {
-  HandleScope scope(isolate);
-  DCHECK_EQ(0, args.length());
-  Handle<NativeContext> native_context(isolate->context().native_context(),
-                                       isolate);
-  v8::Isolate::UseCounterFeature counter_main;
-  v8::Isolate::UseCounterFeature counter_10s;
-  v8::Isolate::UseCounterFeature counter_1min;
-  switch (native_context->GetDetachedWindowReason()) {
-    case v8::Context::kWindowNotDetached:
-      // We should never get here. Just exit early in case we do.
-      return ReadOnlyRoots(isolate).undefined_value();
-    case v8::Context::kDetachedWindowByNavigation:
-      counter_main = v8::Isolate::kCallInDetachedWindowByNavigation;
-      counter_10s = v8::Isolate::kCallInDetachedWindowByNavigationAfter10s;
-      counter_1min = v8::Isolate::kCallInDetachedWindowByNavigationAfter1min;
-      break;
-    case v8::Context::kDetachedWindowByClosing:
-      counter_main = v8::Isolate::kCallInDetachedWindowByClosing;
-      counter_10s = v8::Isolate::kCallInDetachedWindowByClosingAfter10s;
-      counter_1min = v8::Isolate::kCallInDetachedWindowByClosingAfter1min;
-      break;
-    case v8::Context::kDetachedWindowByOtherReason:
-      counter_main = v8::Isolate::kCallInDetachedWindowByOtherReason;
-      counter_10s = v8::Isolate::kCallInDetachedWindowByOtherReasonAfter10s;
-      counter_1min = v8::Isolate::kCallInDetachedWindowByOtherReasonAfter1min;
-      break;
-  }
-  isolate->CountUsage(counter_main);
-  // This can be off by up to 1s in each direction, but that's ok.
-  int secs_passed = native_context->SecondsSinceDetachedWindow();
-  if (secs_passed >= 10) {
-    isolate->CountUsage(counter_10s);
-  }
-  if (secs_passed >= 60) {
-    isolate->CountUsage(counter_1min);
-  }
-
-  // The return value isn't needed, but RUNTIME_FUNCTION sets it up.
-  return ReadOnlyRoots(isolate).undefined_value();
-}
-
 #define THROW_ERROR(isolate, args, call)                               \
   HandleScope scope(isolate);                                          \
   DCHECK_LE(1, args.length());                                         \
@@ -240,13 +198,40 @@ RUNTIME_FUNCTION(Runtime_ThrowAccessedUninitializedVariable) {
       NewReferenceError(MessageTemplate::kAccessedUninitializedVariable, name));
 }
 
-RUNTIME_FUNCTION(Runtime_NewTypeError) {
+RUNTIME_FUNCTION(Runtime_NewError) {
   HandleScope scope(isolate);
   DCHECK_EQ(2, args.length());
   CONVERT_INT32_ARG_CHECKED(template_index, 0);
   CONVERT_ARG_HANDLE_CHECKED(Object, arg0, 1);
   MessageTemplate message_template = MessageTemplateFromInt(template_index);
-  return *isolate->factory()->NewTypeError(message_template, arg0);
+  return *isolate->factory()->NewError(message_template, arg0);
+}
+
+RUNTIME_FUNCTION(Runtime_NewTypeError) {
+  HandleScope scope(isolate);
+  DCHECK_LE(args.length(), 4);
+  DCHECK_GE(args.length(), 1);
+  CONVERT_INT32_ARG_CHECKED(template_index, 0);
+  MessageTemplate message_template = MessageTemplateFromInt(template_index);
+
+  Handle<Object> arg0;
+  if (args.length() >= 2) {
+    CHECK(args[1].IsObject());
+    arg0 = args.at<Object>(1);
+  }
+
+  Handle<Object> arg1;
+  if (args.length() >= 3) {
+    CHECK(args[2].IsObject());
+    arg1 = args.at<Object>(2);
+  }
+  Handle<Object> arg2;
+  if (args.length() >= 4) {
+    CHECK(args[3].IsObject());
+    arg2 = args.at<Object>(3);
+  }
+
+  return *isolate->factory()->NewTypeError(message_template, arg0, arg1, arg2);
 }
 
 RUNTIME_FUNCTION(Runtime_NewReferenceError) {
@@ -442,6 +427,15 @@ RUNTIME_FUNCTION(Runtime_ThrowIteratorError) {
   return isolate->Throw(*ErrorUtils::NewIteratorError(isolate, object));
 }
 
+RUNTIME_FUNCTION(Runtime_ThrowSpreadArgError) {
+  HandleScope scope(isolate);
+  DCHECK_EQ(2, args.length());
+  CONVERT_SMI_ARG_CHECKED(message_id_smi, 0);
+  MessageTemplate message_id = MessageTemplateFromInt(message_id_smi);
+  CONVERT_ARG_HANDLE_CHECKED(Object, object, 1);
+  return ErrorUtils::ThrowSpreadArgError(isolate, message_id, object);
+}
+
 RUNTIME_FUNCTION(Runtime_ThrowCalledNonCallable) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
@@ -604,19 +598,21 @@ RUNTIME_FUNCTION(Runtime_GetTemplateObject) {
       isolate, native_context, description, shared_info, slot_id);
 }
 
-RUNTIME_FUNCTION(Runtime_ReportMessage) {
+RUNTIME_FUNCTION(Runtime_ReportMessageFromMicrotask) {
   // Helper to report messages and continue JS execution. This is intended to
-  // behave similarly to reporting exceptions which reach the top-level in
-  // Execution.cc, but allow the JS code to continue. This is useful for
-  // implementing algorithms such as RunMicrotasks in JS.
+  // behave similarly to reporting exceptions which reach the top-level, but
+  // allow the JS code to continue.
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
 
-  CONVERT_ARG_HANDLE_CHECKED(Object, message_obj, 0);
+  CONVERT_ARG_HANDLE_CHECKED(Object, exception, 0);
 
   DCHECK(!isolate->has_pending_exception());
-  isolate->set_pending_exception(*message_obj);
-  isolate->ReportPendingMessagesFromJavaScript();
+  isolate->set_pending_exception(*exception);
+  MessageLocation* no_location = nullptr;
+  Handle<JSMessageObject> message =
+      isolate->CreateMessageOrAbort(exception, no_location);
+  MessageHandler::ReportMessage(isolate, no_location, message);
   isolate->clear_pending_exception();
   return ReadOnlyRoots(isolate).undefined_value();
 }

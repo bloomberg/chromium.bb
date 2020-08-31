@@ -48,6 +48,10 @@ class MockPageContextCanvas : public SkCanvas {
   void onDrawAnnotation(const SkRect& rect,
                         const char key[],
                         SkData* value) override {
+    // Ignore PDF node key annotations, defined in SkPDFDocument.cpp.
+    if (0 == strcmp(key, "PDF_Node_Key"))
+      return;
+
     if (rect.width() == 0 && rect.height() == 0) {
       SkPoint point = getTotalMatrix().mapXY(rect.x(), rect.y());
       Operation operation = {kDrawPoint,
@@ -101,7 +105,7 @@ class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
 
   void SetBodyInnerHTML(String body_content) {
     GetDocument().body()->setAttribute(html_names::kStyleAttr, "margin: 0");
-    GetDocument().body()->SetInnerHTMLFromString(body_content);
+    GetDocument().body()->setInnerHTML(body_content);
   }
 
   void PrintSinglePage(SkCanvas& canvas) {

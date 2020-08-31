@@ -27,7 +27,7 @@ class _TemplateFormatter(string.Formatter):
             return args[key]
         assert isinstance(key, str)
         if not key:
-            # Before Python 3.1, when a positional argument specifier is
+            # Prior to Python 3.1, when a positional argument specifier is
             # omitted, |format_string="{}"| produces |key=""|.  Should be
             # removed once Python2 gets retired.
             index = self._template_formatter_indexing_count_
@@ -37,3 +37,22 @@ class _TemplateFormatter(string.Formatter):
             return kwargs[key]
         else:
             return "{" + key + "}"
+
+
+class NonRenderable(object):
+    """
+    Represents a non-renderable object.
+
+    Unlike a template variable bound to None, which is a valid Python value,
+    this object raises an exception when rendered, just like an unbound template
+    variable.
+    """
+
+    def __init__(self, error_message="Undefined"):
+        self._error_message = error_message
+
+    def __bool__(self):
+        raise NameError(self._error_message)
+
+    def __str__(self):
+        raise NameError(self._error_message)

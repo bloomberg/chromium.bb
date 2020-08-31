@@ -10,6 +10,7 @@
 #include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
 #include "chrome/browser/ui/views/native_file_system/native_file_system_usage_bubble_view.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_frame_host.h"
@@ -17,13 +18,13 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
-const base::Feature kNativeFileSystemReadOnlyUsageIndicatorFeature{
-    "NativeFileSystemReadOnlyUsageIndicator",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 NativeFileSystemAccessIconView::NativeFileSystemAccessIconView(
-    Delegate* delegate)
-    : PageActionIconView(nullptr, 0, delegate) {
+    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+    PageActionIconView::Delegate* page_action_icon_delegate)
+    : PageActionIconView(nullptr,
+                         0,
+                         icon_label_bubble_delegate,
+                         page_action_icon_delegate) {
   SetVisible(false);
 }
 
@@ -34,17 +35,29 @@ views::BubbleDialogDelegateView* NativeFileSystemAccessIconView::GetBubble()
 
 void NativeFileSystemAccessIconView::UpdateImpl() {
   const bool had_write_access = has_write_access_;
+  bool show_read_indicator = false;
 
-  has_write_access_ = GetWebContents() &&
-                      GetWebContents()->HasWritableNativeFileSystemHandles();
-
-  // TODO(https://crbug.com/992158): Also take read-only files into account
-  // once inconsistencies in old APIs are fixed.
-  bool show_read_indicator =
-      base::FeatureList::IsEnabled(
-          kNativeFileSystemReadOnlyUsageIndicatorFeature) &&
-      GetWebContents() &&
-      GetWebContents()->HasNativeFileSystemDirectoryHandles();
+  if (base::FeatureList::IsEnabled(
+          features::kNativeFileSystemOriginScopedPermissions)) {
+    if (!GetWebContents()) {
+      has_write_access_ = false;
+    } else {
+      url::Origin origin =
+          GetWebContents()->GetMainFrame()->GetLastCommittedOrigin();
+      auto* context =
+          NativeFileSystemPermissionContextFactory::GetForProfileIfExists(
+              GetWebContents()->GetBrowserContext());
+      has_write_access_ = context && context->OriginHasWriteAccess(origin);
+      show_read_indicator = context && context->OriginHasReadAccess(origin);
+    }
+  } else {
+    // With tab scoped permissions usage is retrieved from the WebContents
+    // rather than the Permission Context. Additionally we're not showing a
+    // usage indicator for read-only access with that permission model.
+    has_write_access_ = GetWebContents() &&
+                        GetWebContents()->HasWritableNativeFileSystemHandles();
+    show_read_indicator = false;
+  }
 
   SetVisible(has_write_access_ || show_read_indicator);
 
@@ -67,10 +80,9 @@ NativeFileSystemAccessIconView::GetTextForTooltipAndAccessibleName() const {
 }
 
 void NativeFileSystemAccessIconView::OnExecuting(ExecuteSource execute_source) {
-  url::Origin origin =
-      url::Origin::Create(GetWebContents()->GetLastCommittedURL());
-
   auto* web_contents = GetWebContents();
+  url::Origin origin = web_contents->GetMainFrame()->GetLastCommittedOrigin();
+
   auto* context =
       NativeFileSystemPermissionContextFactory::GetForProfileIfExists(
           web_contents->GetBrowserContext());
@@ -85,10 +97,11 @@ void NativeFileSystemAccessIconView::OnExecuting(ExecuteSource execute_source) {
           web_contents->GetMainFrame()->GetRoutingID());
 
   NativeFileSystemUsageBubbleView::Usage usage;
+  // Only show read-only usage indicator with new permission model.
   if (base::FeatureList::IsEnabled(
-          kNativeFileSystemReadOnlyUsageIndicatorFeature)) {
-    usage.readable_directories =
-        web_contents->GetNativeFileSystemDirectoryHandles();
+          features::kNativeFileSystemOriginScopedPermissions)) {
+    usage.readable_files = std::move(grants.file_read_grants);
+    usage.readable_directories = std::move(grants.directory_read_grants);
   }
   usage.writable_files = std::move(grants.file_write_grants);
   usage.writable_directories = std::move(grants.directory_write_grants);
@@ -98,6 +111,10 @@ void NativeFileSystemAccessIconView::OnExecuting(ExecuteSource execute_source) {
 }
 
 const gfx::VectorIcon& NativeFileSystemAccessIconView::GetVectorIcon() const {
-  return has_write_access_ ? kSaveOriginalFileIcon
+  return has_write_access_ ? vector_icons::kSaveOriginalFileIcon
                            : vector_icons::kInsertDriveFileOutlineIcon;
+}
+
+const char* NativeFileSystemAccessIconView::GetClassName() const {
+  return "NativeFileSystemAccessIconView";
 }

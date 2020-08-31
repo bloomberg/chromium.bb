@@ -10,7 +10,9 @@ class BrowserContext;
 }
 
 namespace extensions {
-// The type of message the extensions checkup banner will convey.
+// The type of message the extensions checkup banner will convey. These values
+// are persisted to logs. Entries should not be renumbered and numeric values
+// should never be reused.
 enum class CheckupMessage {
   // A performance focused message.
   PERFORMANCE = 0,
@@ -18,7 +20,6 @@ enum class CheckupMessage {
   PRIVACY = 1,
   // A neutral message.
   NEUTRAL = 2,
-  // New message types must be added before MAX_ACTIONS.
   kMaxValue = NEUTRAL
 };
 
@@ -29,6 +30,10 @@ bool ShouldShowExtensionsCheckupOnStartup(content::BrowserContext* context);
 // Returns true if the user should be shown the extensions checkup promo in
 // the NTP.
 bool ShouldShowExtensionsCheckupPromo(content::BrowserContext* context);
+
+// Returns an enum representing the type of message the checkup banner will
+// convey.
+CheckupMessage GetCheckupMessageFocus();
 
 }  // namespace extensions
 

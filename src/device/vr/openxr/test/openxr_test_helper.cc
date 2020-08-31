@@ -20,36 +20,15 @@ bool PathContainsString(const std::string& path, const std::string& s) {
 
 }  // namespace
 
-// Initialize static variables in OpenXrTestHelper.
-const char* OpenXrTestHelper::kExtensions[] = {
-    XR_KHR_D3D11_ENABLE_EXTENSION_NAME};
-const uint32_t OpenXrTestHelper::kDimension = 128;
-const uint32_t OpenXrTestHelper::kSwapCount = 1;
-const uint32_t OpenXrTestHelper::kMinSwapchainBuffering = 3;
-const uint32_t OpenXrTestHelper::kViewCount = 2;
-const XrViewConfigurationView OpenXrTestHelper::kViewConfigView = {
-    XR_TYPE_VIEW_CONFIGURATION_VIEW, nullptr,
-    OpenXrTestHelper::kDimension,    OpenXrTestHelper::kDimension,
-    OpenXrTestHelper::kDimension,    OpenXrTestHelper::kDimension,
-    OpenXrTestHelper::kSwapCount,    OpenXrTestHelper::kSwapCount};
-XrViewConfigurationView OpenXrTestHelper::kViewConfigurationViews[] = {
-    OpenXrTestHelper::kViewConfigView, OpenXrTestHelper::kViewConfigView};
-const XrViewConfigurationType OpenXrTestHelper::kViewConfigurationType =
-    XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
-const XrEnvironmentBlendMode OpenXrTestHelper::kEnvironmentBlendMode =
-    XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-const char* OpenXrTestHelper::kLocalReferenceSpacePath =
-    "/reference_space/local";
-const char* OpenXrTestHelper::kStageReferenceSpacePath =
-    "/reference_space/stage";
-const char* OpenXrTestHelper::kViewReferenceSpacePath = "/reference_space/view";
+OpenXrTestHelper::ActionProperties::ActionProperties()
+    : type(XR_ACTION_TYPE_MAX_ENUM) {}
 
-uint32_t OpenXrTestHelper::NumExtensionsSupported() {
-  return sizeof(kExtensions) / sizeof(kExtensions[0]);
-}
+OpenXrTestHelper::ActionProperties::~ActionProperties() = default;
 
-uint32_t OpenXrTestHelper::NumViews() {
-  return sizeof(kViewConfigurationViews) / sizeof(kViewConfigurationViews[0]);
+OpenXrTestHelper::ActionProperties::ActionProperties(
+    const ActionProperties& other) {
+  this->type = other.type;
+  this->profile_binding_map = other.profile_binding_map;
 }
 
 OpenXrTestHelper::OpenXrTestHelper()
@@ -64,7 +43,9 @@ OpenXrTestHelper::OpenXrTestHelper()
       frame_begin_(false),
       acquired_swapchain_texture_(0),
       next_space_(0),
-      next_predicted_display_time_(0) {}
+      next_predicted_display_time_(0),
+      interaction_profile_(
+          interaction_profile::kMicrosoftMotionControllerInteractionProfile) {}
 
 OpenXrTestHelper::~OpenXrTestHelper() = default;
 
@@ -113,41 +94,81 @@ void OpenXrTestHelper::SetTestHook(device::VRTestHook* hook) {
 }
 
 void OpenXrTestHelper::OnPresentedFrame() {
-  static uint32_t frame_id = 1;
+  DCHECK_NE(textures_arr_.size(), 0ull);
+  D3D11_TEXTURE2D_DESC desc;
+
+  device::SubmittedFrameData left_data = {};
+
+  textures_arr_[acquired_swapchain_texture_]->GetDesc(&desc);
+  left_data.image_width = desc.Width;
+  left_data.image_height = desc.Height;
+
+  device::SubmittedFrameData right_data = left_data;
+  left_data.left_eye = true;
+  right_data.left_eye = false;
+
+  CopyTextureDataIntoFrameData(&left_data, true);
+  CopyTextureDataIntoFrameData(&right_data, false);
 
   base::AutoLock auto_lock(lock_);
   if (!test_hook_)
     return;
 
-  // TODO(https://crbug.com/986621): The frame color is currently hard-coded to
-  // what the pixel tests expects. We should instead store the actual WebGL
-  // texture and read from it, which will also verify the correct swapchain
-  // texture was used.
+  test_hook_->OnFrameSubmitted(left_data);
+  test_hook_->OnFrameSubmitted(right_data);
+}
 
-  device::DeviceConfig device_config = test_hook_->WaitGetDeviceConfig();
-  device::SubmittedFrameData frame_data = {};
+void OpenXrTestHelper::CopyTextureDataIntoFrameData(
+    device::SubmittedFrameData* data,
+    bool left) {
+  DCHECK(d3d_device_);
+  DCHECK_NE(textures_arr_.size(), 0ull);
+  Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+  d3d_device_->GetImmediateContext(&context);
 
-  if (std::abs(device_config.interpupillary_distance - 0.2f) <
-      std::numeric_limits<float>::epsilon()) {
-    // TestPresentationPoses sets the ipd to 0.2f, whereas tests by default have
-    // an ipd of 0.1f. This test has specific formulas to determine the colors,
-    // specified in test_webxr_poses.html.
-    frame_data.color = {
-        frame_id % 256, ((frame_id - frame_id % 256) / 256) % 256,
-        ((frame_id - frame_id % (256 * 256)) / (256 * 256)) % 256, 255};
+  size_t buffer_size = sizeof(device::SubmittedFrameData::raw_buffer);
+  size_t buffer_size_pixels = buffer_size / sizeof(device::Color);
+
+  // We copy the submitted texture to a new texture, so we can map it, and
+  // read back pixel data.
+  auto desc = CD3D11_TEXTURE2D_DESC();
+  desc.ArraySize = 1;
+  desc.Width = buffer_size_pixels;
+  desc.Height = 1;
+  desc.MipLevels = 1;
+  desc.SampleDesc.Count = 1;
+  desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  desc.Usage = D3D11_USAGE_STAGING;
+  desc.BindFlags = 0;
+  desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture_destination;
+  HRESULT hr =
+      d3d_device_->CreateTexture2D(&desc, nullptr, &texture_destination);
+  DCHECK_EQ(hr, S_OK);
+
+  // A strip of pixels along the top of the texture, however many will fit into
+  // our buffer.
+  D3D11_BOX box;
+  if (left) {
+    box = {0, 0, 0, buffer_size_pixels, 1, 1};
   } else {
-    // The WebXR tests by default clears to blue. TestPresentationPixels
-    // verifies this color.
-    frame_data.color = {0, 0, 255, 255};
+    box = {kDimension, 0, 0, kDimension + buffer_size_pixels, 1, 1};
   }
+  context->CopySubresourceRegion(
+      texture_destination.Get(), 0, 0, 0, 0,
+      textures_arr_[acquired_swapchain_texture_].Get(), 0, &box);
 
-  frame_data.left_eye = true;
-  test_hook_->OnFrameSubmitted(frame_data);
+  D3D11_MAPPED_SUBRESOURCE map_data = {};
+  hr = context->Map(texture_destination.Get(), 0, D3D11_MAP_READ, 0, &map_data);
+  DCHECK_EQ(hr, S_OK);
+  // We have a 1-pixel image, so store it in the provided SubmittedFrameData
+  // along with the raw data.
+  device::Color* color = static_cast<device::Color*>(map_data.pData);
+  data->color = color[0];
+  memcpy(&data->raw_buffer, map_data.pData, buffer_size);
 
-  frame_data.left_eye = false;
-  test_hook_->OnFrameSubmitted(frame_data);
-
-  frame_id++;
+  context->Unmap(texture_destination.Get(), 0);
 }
 
 XrSystemId OpenXrTestHelper::GetSystemId() {
@@ -187,7 +208,6 @@ XrInstance OpenXrTestHelper::CreateInstance() {
 
 XrResult OpenXrTestHelper::GetActionStateFloat(XrAction action,
                                                XrActionStateFloat* data) const {
-
   RETURN_IF_XR_FAILED(ValidateAction(action));
   const ActionProperties& cur_action_properties = actions_.at(action);
   RETURN_IF(cur_action_properties.type != XR_ACTION_TYPE_FLOAT_INPUT,
@@ -201,7 +221,6 @@ XrResult OpenXrTestHelper::GetActionStateFloat(XrAction action,
 XrResult OpenXrTestHelper::GetActionStateBoolean(
     XrAction action,
     XrActionStateBoolean* data) const {
-
   RETURN_IF_XR_FAILED(ValidateAction(action));
   const ActionProperties& cur_action_properties = actions_.at(action);
   RETURN_IF(cur_action_properties.type != XR_ACTION_TYPE_BOOLEAN_INPUT,
@@ -216,7 +235,6 @@ XrResult OpenXrTestHelper::GetActionStateBoolean(
 XrResult OpenXrTestHelper::GetActionStateVector2f(
     XrAction action,
     XrActionStateVector2f* data) const {
-
   RETURN_IF_XR_FAILED(ValidateAction(action));
   const ActionProperties& cur_action_properties = actions_.at(action);
   RETURN_IF(cur_action_properties.type != XR_ACTION_TYPE_VECTOR2F_INPUT,
@@ -230,7 +248,6 @@ XrResult OpenXrTestHelper::GetActionStateVector2f(
 
 XrResult OpenXrTestHelper::GetActionStatePose(XrAction action,
                                               XrActionStatePose* data) const {
-
   RETURN_IF_XR_FAILED(ValidateAction(action));
   const ActionProperties& cur_action_properties = actions_.at(action);
   RETURN_IF(cur_action_properties.type != XR_ACTION_TYPE_POSE_INPUT,
@@ -253,6 +270,9 @@ XrSpace OpenXrTestHelper::CreateReferenceSpace(XrReferenceSpaceType type) {
       break;
     case XR_REFERENCE_SPACE_TYPE_STAGE:
       reference_spaces_[cur_space] = kStageReferenceSpacePath;
+      break;
+    case XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT:
+      reference_spaces_[cur_space] = kUnboundedReferenceSpacePath;
       break;
     default:
       NOTREACHED() << "Unsupported XrReferenceSpaceType: " << type;
@@ -324,20 +344,19 @@ XrResult OpenXrTestHelper::CreateActionSpace(
   return XR_SUCCESS;
 }
 
-XrPath OpenXrTestHelper::GetPath(const char* path_string) {
-  RETURN_IF(path_string == nullptr, XR_ERROR_VALIDATION_FAILURE,
-            "path_string is nullptr");
+XrPath OpenXrTestHelper::GetPath(std::string path_string) {
   for (auto it = paths_.begin(); it != paths_.end(); it++) {
     if (it->compare(path_string) == 0) {
-      return it - paths_.begin();
+      return it - paths_.begin() + 1;
     }
   }
   paths_.emplace_back(path_string);
-  return paths_.size() - 1;
+  // path can't be 0 since 0 is reserved for XR_NULL_HANDLE
+  return paths_.size();
 }
 
 XrPath OpenXrTestHelper::GetCurrentInteractionProfile() {
-  return GetPath("/interaction_profiles/microsoft/motion_controller");
+  return GetPath(interaction_profile_);
 }
 
 XrResult OpenXrTestHelper::BeginSession() {
@@ -385,13 +404,11 @@ XrResult OpenXrTestHelper::EndFrame() {
   return XR_SUCCESS;
 }
 
-XrResult OpenXrTestHelper::BindActionAndPath(XrActionSuggestedBinding binding) {
+XrResult OpenXrTestHelper::BindActionAndPath(XrPath interaction_profile_path,
+                                             XrActionSuggestedBinding binding) {
   ActionProperties& current_action = actions_[binding.action];
-  RETURN_IF(current_action.binding != XR_NULL_PATH, XR_ERROR_VALIDATION_FAILURE,
-            "BindActionAndPath action is bind to more than one path, this is "
-            "not cupported with current test");
-  current_action.binding = binding.binding;
-  std::string path_string = PathToString(current_action.binding);
+  current_action.profile_binding_map[interaction_profile_path] =
+      binding.binding;
   return XR_SUCCESS;
 }
 
@@ -444,7 +461,6 @@ uint32_t OpenXrTestHelper::AttachedActionSetsSize() const {
 }
 
 XrResult OpenXrTestHelper::SyncActionData(XrActionSet action_set) {
-
   RETURN_IF_XR_FAILED(ValidateActionSet(action_set));
   RETURN_IF(ValidateActionSetNotAttached(action_set) !=
                 XR_ERROR_ACTIONSETS_ALREADY_ATTACHED,
@@ -459,8 +475,19 @@ XrResult OpenXrTestHelper::SyncActionData(XrActionSet action_set) {
 
 XrResult OpenXrTestHelper::UpdateAction(XrAction action) {
   RETURN_IF_XR_FAILED(ValidateAction(action));
-  const ActionProperties& cur_action_properties = actions_[action];
-  std::string path_string = PathToString(cur_action_properties.binding);
+  ActionProperties& cur_action_properties = actions_[action];
+  XrPath interaction_profile_path = GetPath(interaction_profile_);
+
+  if (cur_action_properties.profile_binding_map.count(
+          interaction_profile_path) == 0) {
+    // Only update actions that have binding for current interaction_profile_
+    return XR_SUCCESS;
+  }
+
+  XrPath action_path =
+      cur_action_properties.profile_binding_map[interaction_profile_path];
+  std::string path_string = PathToString(action_path);
+
   bool support_path =
       PathContainsString(path_string, "/user/hand/left/input") ||
       PathContainsString(path_string, "/user/hand/right/input");
@@ -490,6 +517,9 @@ XrResult OpenXrTestHelper::UpdateAction(XrAction action) {
         button_id = device::kGrip;
       } else if (PathContainsString(path_string, "/menu/")) {
         button_id = device::kMenu;
+      } else if (PathContainsString(path_string, "/select/")) {
+        // for WMR simple controller select is mapped to test type trigger
+        button_id = device::kAxisTrigger;
       } else {
         NOTREACHED() << "Curently test does not support this button";
       }
@@ -611,9 +641,19 @@ void OpenXrTestHelper::UpdateEventQueue() {
         XrEventDataBuffer event_data = {
             XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING};
         event_queue_.push(event_data);
+      } else if (data.type ==
+                 device_test::mojom::EventType::kInteractionProfileChanged) {
+        UpdateInteractionProfile(data.interaction_profile);
+        XrEventDataBuffer event_data;
+        XrEventDataInteractionProfileChanged* interaction_profile_changed =
+            reinterpret_cast<XrEventDataInteractionProfileChanged*>(
+                &event_data);
+        interaction_profile_changed->type =
+            XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED;
+        interaction_profile_changed->session = session_;
+        event_queue_.push(event_data);
       } else if (data.type != device_test::mojom::EventType::kNoEvent) {
-        NOTREACHED() << "Event changed tests other than session lost and "
-                        "instance lost is not implemented";
+        NOTREACHED() << "Event changed event type not implemented for test";
       }
     } while (data.type != device_test::mojom::EventType::kNoEvent);
   }
@@ -655,6 +695,23 @@ bool OpenXrTestHelper::IsSessionRunning() const {
          session_state_ == XR_SESSION_STATE_FOCUSED;
 }
 
+void OpenXrTestHelper::UpdateInteractionProfile(
+    device_test::mojom::InteractionProfileType type) {
+  switch (type) {
+    case device_test::mojom::InteractionProfileType::kWMRMotion:
+      interaction_profile_ =
+          interaction_profile::kMicrosoftMotionControllerInteractionProfile;
+      break;
+    case device_test::mojom::InteractionProfileType::kKHRSimple:
+      interaction_profile_ =
+          interaction_profile::kKHRSimpleControllerInteractionProfile;
+      break;
+    case device_test::mojom::InteractionProfileType::kInvalid:
+      NOTREACHED() << "Invalid EventData interaction_profile type";
+      break;
+  }
+}
+
 void OpenXrTestHelper::LocateSpace(XrSpace space, XrPosef* pose) {
   DCHECK(pose != nullptr);
   *pose = device::PoseIdentity();
@@ -676,8 +733,11 @@ void OpenXrTestHelper::LocateSpace(XrSpace space, XrPosef* pose) {
   } else if (action_spaces_.count(space) == 1) {
     XrAction cur_action = action_spaces_.at(space);
     ActionProperties cur_action_properties = actions_[cur_action];
-    std::string path_string = PathToString(cur_action_properties.binding);
-    device::ControllerFrameData data = GetControllerDataFromPath(path_string);
+    std::string path_string =
+        PathToString(cur_action_properties
+                         .profile_binding_map[GetPath(interaction_profile_)]);
+    device::ControllerFrameData data =
+        GetControllerDataFromPath(std::move(path_string));
     if (data.pose_data.is_valid) {
       transform = PoseFrameDataToTransform(data.pose_data);
     }
@@ -704,7 +764,7 @@ void OpenXrTestHelper::LocateSpace(XrSpace space, XrPosef* pose) {
 }
 
 std::string OpenXrTestHelper::PathToString(XrPath path) const {
-  return paths_[path];
+  return paths_[path - 1];
 }
 
 bool OpenXrTestHelper::UpdateData() {
@@ -868,7 +928,7 @@ XrResult OpenXrTestHelper::ValidateSpace(XrSpace space) const {
 }
 
 XrResult OpenXrTestHelper::ValidatePath(XrPath path) const {
-  RETURN_IF(path >= paths_.size(), XR_ERROR_PATH_INVALID, "XrPath invalid");
+  RETURN_IF(path > paths_.size(), XR_ERROR_PATH_INVALID, "XrPath invalid");
   return XR_SUCCESS;
 }
 

@@ -25,9 +25,9 @@
 
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
-#include "third_party/blink/renderer/modules/webaudio/audio_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_wiring.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_param.h"
@@ -650,7 +650,7 @@ AudioHandler& AudioNode::Handler() const {
   return *handler_;
 }
 
-void AudioNode::Trace(blink::Visitor* visitor) {
+void AudioNode::Trace(Visitor* visitor) {
   visitor->Trace(context_);
   visitor->Trace(connected_nodes_);
   visitor->Trace(connected_params_);

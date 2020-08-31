@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/trees/browser_controls_params.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -20,7 +21,11 @@ class BrowserControlsOffsetManagerClient;
 // Manages the position of the browser controls.
 class CC_EXPORT BrowserControlsOffsetManager {
  public:
-  enum AnimationDirection { NO_ANIMATION, SHOWING_CONTROLS, HIDING_CONTROLS };
+  enum class AnimationDirection {
+    NO_ANIMATION,
+    SHOWING_CONTROLS,
+    HIDING_CONTROLS
+  };
 
   static std::unique_ptr<BrowserControlsOffsetManager> Create(
       BrowserControlsOffsetManagerClient* client,
@@ -43,6 +48,11 @@ class CC_EXPORT BrowserControlsOffsetManager {
   float TopControlsMinHeight() const;
   // The minimum shown ratio top controls can have.
   float TopControlsMinShownRatio() const;
+  // The current top controls min-height. If the min-height is changing with an
+  // animation, this will return a value between the old min-height and the new
+  // min-height, which is equal to the current visible min-height. Otherwise,
+  // this will return the same value as |TopControlsMinHeight()|.
+  float TopControlsMinHeightOffset() const;
 
   // The amount of offset of the web content area, calculating from the bottom.
   // Same as the current shown height of the bottom controls.
@@ -54,6 +64,18 @@ class CC_EXPORT BrowserControlsOffsetManager {
   float BottomControlsShownRatio() const;
   // The minimum shown ratio bottom controls can have.
   float BottomControlsMinShownRatio() const;
+  // The current bottom controls min-height. If the min-height is changing with
+  // an animation, this will return a value between the old min-height and the
+  // new min-height, which is equal to the current visible min-height.
+  // Otherwise, this will return the same value as |BottomControlsMinHeight()|.
+  float BottomControlsMinHeightOffset() const;
+
+  // Valid shown ratio range for the top controls. The values will be (0, 1) if
+  // there is no animation running.
+  std::pair<float, float> TopControlsShownRatioRange();
+  // Valid shown ratio range for the bottom controls. The values will be (0, 1)
+  // if there is no animation running.
+  std::pair<float, float> BottomControlsShownRatioRange();
 
   bool HasAnimation();
 
@@ -75,8 +97,6 @@ class CC_EXPORT BrowserControlsOffsetManager {
   void PinchBegin();
   void PinchEnd();
 
-  void MainThreadHasStoppedFlinging();
-
   gfx::Vector2dF Animate(base::TimeTicks monotonic_time);
 
  protected:
@@ -85,10 +105,18 @@ class CC_EXPORT BrowserControlsOffsetManager {
                                float controls_hide_threshold);
 
  private:
+  class Animation;
+
   void ResetAnimations();
   void SetupAnimation(AnimationDirection direction);
   void StartAnimationIfNecessary();
   void ResetBaseline();
+  float OldTopControlsMinShownRatio();
+  float OldBottomControlsMinShownRatio();
+  void UpdateOldBrowserControlsParams();
+  void InitAnimationForHeightChange(Animation* animation,
+                                    float start_ratio,
+                                    float stop_ratio);
 
   // The client manages the lifecycle of this.
   BrowserControlsOffsetManagerClient* client_;
@@ -116,24 +144,45 @@ class CC_EXPORT BrowserControlsOffsetManager {
   // the changes to Blink.
   bool constraint_changed_since_commit_;
 
+  // The old browser controls params that are used to figure out how to animate
+  // the height and min-height changes.
+  BrowserControlsParams old_browser_controls_params_;
+
+  // Whether a min-height change animation is in progress.
+  bool top_min_height_change_in_progress_;
+  bool bottom_min_height_change_in_progress_;
+
+  // Current top/bottom controls min-height.
+  float top_controls_min_height_offset_;
+  float bottom_controls_min_height_offset_;
+
   // Class that holds and manages the state of the controls animations.
   class Animation {
    public:
-    Animation() = default;
+    Animation();
 
     // Whether the animation is initialized with a direction and start and stop
     // values.
     bool IsInitialized() { return initialized_; }
-    bool Direction() { return direction_; }
+    AnimationDirection Direction() { return direction_; }
     void Initialize(AnimationDirection direction,
                     float start_value,
-                    float stop_value);
+                    float stop_value,
+                    int64_t duration,
+                    bool jump_to_end_on_reset);
     // Returns the animated value for the given monotonic time tick if the
-    // animation is initialized. Otherwise, returns -1.
-    float Tick(base::TimeTicks monotonic_time);
+    // animation is initialized. Otherwise, returns |base::nullopt|.
+    base::Optional<float> Tick(base::TimeTicks monotonic_time);
     // Set the minimum and maximum values the animation can have.
     void SetBounds(float min, float max);
-    void Reset();
+    // Reset the properties. If |skip_to_end_on_reset_| is false, this function
+    // will return |base::nullopt|. Otherwise, it will return the end value
+    // (clamped to min-max).
+    base::Optional<float> Reset();
+
+    // Return the bounds.
+    float min_value() { return min_value_; }
+    float max_value() { return max_value_; }
 
    private:
     bool IsComplete(float value);
@@ -143,10 +192,12 @@ class CC_EXPORT BrowserControlsOffsetManager {
     // Whether the animation is initialized by setting start and stop time and
     // values.
     bool initialized_ = false;
-    AnimationDirection direction_ = NO_ANIMATION;
+    AnimationDirection direction_ = AnimationDirection::NO_ANIMATION;
     // Monotonic start and stop times.
     base::TimeTicks start_time_;
     base::TimeTicks stop_time_;
+    // Animation duration.
+    base::TimeDelta duration_;
     // Start and stop values.
     float start_value_ = 0.f;
     float stop_value_ = 0.f;
@@ -154,6 +205,10 @@ class CC_EXPORT BrowserControlsOffsetManager {
     // animation is complete.
     float min_value_ = 0.f;
     float max_value_ = 1.f;
+    // Whether to fast-forward to end when reset. It is still BCOM's
+    // responsibility to actually set the shown ratios using the value returned
+    // by ::Reset().
+    bool jump_to_end_on_reset_ = false;
   };
 
   Animation top_controls_animation_;

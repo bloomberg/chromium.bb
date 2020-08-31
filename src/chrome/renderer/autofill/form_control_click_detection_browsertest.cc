@@ -8,7 +8,6 @@
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "content/public/renderer/render_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_input_element.h"
@@ -173,7 +172,7 @@ TEST_F(FormControlClickDetectionTest, ScaledTextareaClicked) {
   ClearAutofillAgentTestState();
   EXPECT_NE(textarea_, textarea_.GetDocument().FocusedElement());
   view_->GetWebView()->SetPageScaleFactor(3);
-  view_->GetWebView()->SetVisualViewportOffset(blink::WebFloatPoint(50, 50));
+  view_->GetWebView()->SetVisualViewportOffset(gfx::PointF(50, 50));
 
   // Click textarea_1.
   SimulatePointClick(gfx::Point(30, 30));
@@ -186,7 +185,7 @@ TEST_F(FormControlClickDetectionTest, ScaledTextareaTapped) {
   ClearAutofillAgentTestState();
   EXPECT_NE(textarea_, textarea_.GetDocument().FocusedElement());
   view_->GetWebView()->SetPageScaleFactor(3);
-  view_->GetWebView()->SetVisualViewportOffset(blink::WebFloatPoint(50, 50));
+  view_->GetWebView()->SetVisualViewportOffset(gfx::PointF(50, 50));
 
   // Tap textarea_1.
   SimulateRectTap(gfx::Rect(30, 30, 30, 30));
@@ -220,16 +219,16 @@ TEST_F(FormControlClickDetectionTest,
   EXPECT_EQ(text_, last_clicked_form_control_element());
   ClearAutofillAgentTestState();
 
-  // Click the disabled element.
+  // Click the disabled element and focus should change.
   EXPECT_TRUE(SimulateElementClick("button_2"));
   EXPECT_FALSE(form_control_element_clicked_called());
   ClearAutofillAgentTestState();
 
-  // Click the text field second time. AutofillClient should know that this is
-  // the second click.
+  // Click the text field second time and verify it has lost
+  // focus already.
   EXPECT_TRUE(SimulateElementClick("text_1"));
   EXPECT_TRUE(form_control_element_clicked_called());
-  EXPECT_TRUE(last_clicked_form_control_element_was_focused());
+  EXPECT_FALSE(last_clicked_form_control_element_was_focused());
   EXPECT_EQ(text_, last_clicked_form_control_element());
 }
 

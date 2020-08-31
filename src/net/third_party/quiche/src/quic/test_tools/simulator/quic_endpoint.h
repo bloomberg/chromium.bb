@@ -17,6 +17,7 @@
 #include "net/third_party/quiche/src/quic/test_tools/simulator/link.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/queue.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/quic_endpoint_base.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 
 namespace quic {
 namespace simulator {
@@ -58,7 +59,8 @@ class QuicEndpoint : public QuicEndpointBase,
   void OnBlockedFrame(const QuicBlockedFrame& /*frame*/) override {}
   void OnRstStream(const QuicRstStreamFrame& /*frame*/) override {}
   void OnGoAway(const QuicGoAwayFrame& /*frame*/) override {}
-  void OnMessageReceived(QuicStringPiece /*message*/) override {}
+  void OnMessageReceived(quiche::QuicheStringPiece /*message*/) override {}
+  void OnHandshakeDoneReceived() override {}
   void OnConnectionClosed(const QuicConnectionCloseFrame& /*frame*/,
                           ConnectionCloseSource /*source*/) override {}
   void OnWriteBlocked() override {}
@@ -73,6 +75,7 @@ class QuicEndpoint : public QuicEndpointBase,
   void OnAckNeedsRetransmittableFrame() override {}
   void SendPing() override {}
   bool AllowSelfAddressChange() const override;
+  HandshakeState GetHandshakeState() const override;
   void OnForwardProgressConfirmed() override {}
   bool OnMaxStreamsFrame(const QuicMaxStreamsFrame& /*frame*/) override {
     return true;
@@ -83,6 +86,8 @@ class QuicEndpoint : public QuicEndpointBase,
   }
   void OnStopSendingFrame(const QuicStopSendingFrame& /*frame*/) override {}
   void OnPacketDecrypted(EncryptionLevel /*level*/) override {}
+  void OnOneRttPacketAcknowledged() override {}
+  void OnHandshakePacketSent() override {}
 
   // End QuicConnectionVisitorInterface implementation.
 

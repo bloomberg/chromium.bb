@@ -7,30 +7,38 @@
  * setting and changing security key PINs.
  */
 
-cr.define('settings', function() {
-  /** @enum {string} */
-  const SetPINDialogPage = {
-    INITIAL: 'initial',
-    NO_PIN_SUPPORT: 'noPINSupport',
-    REINSERT: 'reinsert',
-    LOCKED: 'locked',
-    ERROR: 'error',
-    PIN_PROMPT: 'pinPrompt',
-    SUCCESS: 'success',
-  };
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import '../settings_shared_css.m.js';
 
-  return {
-    SetPINDialogPage: SetPINDialogPage,
-  };
-});
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-(function() {
-'use strict';
+import {loadTimeData} from '../i18n_setup.js';
 
-const SetPINDialogPage = settings.SetPINDialogPage;
+import {SecurityKeysPINBrowserProxy, SecurityKeysPINBrowserProxyImpl} from './security_keys_browser_proxy.js';
+
+/** @enum {string} */
+export const SetPINDialogPage = {
+  INITIAL: 'initial',
+  NO_PIN_SUPPORT: 'noPINSupport',
+  REINSERT: 'reinsert',
+  LOCKED: 'locked',
+  ERROR: 'error',
+  PIN_PROMPT: 'pinPrompt',
+  SUCCESS: 'success',
+};
 
 Polymer({
   is: 'settings-security-keys-set-pin-dialog',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [I18nBehavior],
 
@@ -139,7 +147,7 @@ Polymer({
 
     /**
      * The id of an element on the page that is currently shown.
-     * @private {!settings.SetPINDialogPage}
+     * @private {!SetPINDialogPage}
      */
     shown_: {
       type: String,
@@ -160,17 +168,17 @@ Polymer({
     title_: String,
   },
 
-  /** @private {?settings.SecurityKeysPINBrowserProxy} */
+  /** @private {?SecurityKeysPINBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.title_ = this.i18n('securityKeysSetPINInitialTitle');
-    this.browserProxy_ = settings.SecurityKeysPINBrowserProxyImpl.getInstance();
+    this.browserProxy_ = SecurityKeysPINBrowserProxyImpl.getInstance();
     this.$.dialog.showModal();
 
-    Polymer.RenderStatus.afterNextRender(this, function() {
-      Polymer.IronA11yAnnouncer.requestAvailability();
+    afterNextRender(this, function() {
+      IronA11yAnnouncer.requestAvailability();
     });
 
     this.browserProxy_.startSetPIN().then(([success, errorCode]) => {
@@ -192,7 +200,8 @@ Polymer({
           this.finish_();
         }
       } else if (errorCode == 0) {
-        // A device can also signal that it is locked by returning zero retries.
+        // A device can also signal that it is locked by returning zero
+        // retries.
         this.shown_ = SetPINDialogPage.LOCKED;
         this.finish_();
       } else {
@@ -204,7 +213,8 @@ Polymer({
         this.setPINButtonValid_ = true;
 
         this.retries_ = errorCode;
-        // retries_ may be null to indicate that there is currently no PIN set.
+        // retries_ may be null to indicate that there is currently no PIN
+        // set.
         let focusTarget;
         if (this.retries_ === null) {
           this.showCurrentEntry_ = false;
@@ -227,13 +237,13 @@ Polymer({
   },
 
   /** @private */
-  closeDialog_: function() {
+  closeDialog_() {
     this.$.dialog.close();
     this.finish_();
   },
 
   /** @private */
-  finish_: function() {
+  finish_() {
     if (this.complete_) {
       return;
     }
@@ -250,28 +260,28 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onIronSelect_: function(e) {
-    // Prevent this event from bubbling since it is unnecessarily triggering the
-    // listener within settings-animated-pages.
+  onIronSelect_(e) {
+    // Prevent this event from bubbling since it is unnecessarily triggering
+    // the listener within settings-animated-pages.
     e.stopPropagation();
   },
 
   /** @private */
-  onCurrentPINInput_: function() {
+  onCurrentPINInput_() {
     // Typing in the current PIN box after an error makes the error message
     // disappear.
     this.currentPINError_ = '';
   },
 
   /** @private */
-  onNewPINInput_: function() {
+  onNewPINInput_() {
     // Typing in the new PIN box after an error makes the error message
     // disappear.
     this.newPINError_ = '';
   },
 
   /** @private */
-  onConfirmPINInput_: function() {
+  onConfirmPINInput_() {
     // Typing in the confirm PIN box after an error makes the error message
     // disappear.
     this.confirmPINError_ = '';
@@ -282,7 +292,7 @@ Polymer({
     @return {string} An error string or else '' to indicate validity.
     @private
   */
-  isValidPIN_: function(pin) {
+  isValidPIN_(pin) {
     // The UTF-8 encoding of the PIN must be between 4 and 63 bytes, and the
     // final byte cannot be zero.
     const utf8Encoded = new TextEncoder().encode(pin);
@@ -320,7 +330,7 @@ Polymer({
    * @return {string} The message to show under the text box.
    * @private
    */
-  mismatchError_: function(retries) {
+  mismatchError_(retries) {
     // Warn the user if the number of retries is getting low.
     if (1 < retries && retries <= 3) {
       return this.i18n('securityKeysPINIncorrectRetriesPl', retries.toString());
@@ -335,7 +345,7 @@ Polymer({
    * Called to set focus from inside a callback.
    * @private
    */
-  focusOn_: function(focusTarget) {
+  focusOn_(focusTarget) {
     // Focus cannot be set directly from within a backend callback. Also,
     // directly focusing |currentPIN| doesn't always seem to work(!). Thus
     // focus something else first, which is a hack that seems to solve the
@@ -354,7 +364,7 @@ Polymer({
    * Called by Polymer when the Set PIN button is activated.
    * @private
    */
-  pinSubmitNew_: function() {
+  pinSubmitNew_() {
     if (this.showCurrentEntry_) {
       this.currentPINError_ = this.isValidPIN_(this.currentPIN_);
       if (this.currentPINError_ != '') {
@@ -416,7 +426,7 @@ Polymer({
    * onClick handler for the show/hide icon.
    * @private
    */
-  showPINsClick_: function() {
+  showPINsClick_() {
     this.pinsVisible_ = !this.pinsVisible_;
   },
 
@@ -426,7 +436,7 @@ Polymer({
    * @return {boolean} True iff |s| is non-empty.
    * @private
    */
-  isNonEmpty_: function(s) {
+  isNonEmpty_(s) {
     return s != '';
   },
 
@@ -434,7 +444,7 @@ Polymer({
    * Called by Polymer when |errorCode_| changes to set the error string.
    * @private
    */
-  pinFailed_: function() {
+  pinFailed_() {
     if (this.errorCode_ === null) {
       return '';
     }
@@ -445,7 +455,7 @@ Polymer({
    * @return {string} The class of the Ok / Cancel button.
    * @private
    */
-  maybeActionButton_: function() {
+  maybeActionButton_() {
     return this.complete_ ? 'action-button' : 'cancel-button';
   },
 
@@ -453,7 +463,7 @@ Polymer({
    * @return {string} The label of the Ok / Cancel button.
    * @private
    */
-  closeText_: function() {
+  closeText_() {
     return this.i18n(this.complete_ ? 'ok' : 'cancel');
   },
 
@@ -461,7 +471,7 @@ Polymer({
    * @return {string} The class (and thus icon) to be displayed.
    * @private
    */
-  showPINsClass_: function() {
+  showPINsClass_() {
     return 'icon-visibility' + (this.pinsVisible_ ? '-off' : '');
   },
 
@@ -469,7 +479,7 @@ Polymer({
    * @return {string} The tooltip for the icon.
    * @private
    */
-  showPINsTitle_: function() {
+  showPINsTitle_() {
     return this.i18n(
         this.pinsVisible_ ? 'securityKeysHidePINs' : 'securityKeysShowPINs');
   },
@@ -478,8 +488,7 @@ Polymer({
    * @return {string} The PIN-input element type.
    * @private
    */
-  inputType_: function() {
+  inputType_() {
     return this.pinsVisible_ ? 'text' : 'password';
   },
 });
-})();

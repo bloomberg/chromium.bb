@@ -44,6 +44,8 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   void SetHotwordModel(uint64_t node_id,
                        const std::string& hotword_model,
                        VoidDBusMethodCallback callback) override;
+  void SetFixA2dpPacketSize(bool enabled) override;
+  void SetNextHandsfreeProfile(bool enabled) override;
   void AddActiveInputNode(uint64_t node_id) override;
   void RemoveActiveInputNode(uint64_t node_id) override;
   void AddActiveOutputNode(uint64_t node_id) override;
@@ -51,6 +53,12 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   void SwapLeftRight(uint64_t node_id, bool swap) override;
   void SetGlobalOutputChannelRemix(int32_t channels,
                                    const std::vector<double>& mixer) override;
+  void SetPlayerPlaybackStatus(const std::string& playback_status) override;
+  void SetPlayerIdentity(const std::string& playback_identity) override;
+  void SetPlayerPosition(const int64_t& position) override;
+  void SetPlayerDuration(const int64_t& duration) override;
+  void SetPlayerMetadata(
+      const std::map<std::string, std::string>& metadata) override;
   void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback) override;
 

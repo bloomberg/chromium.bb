@@ -17,8 +17,8 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 
 namespace quic {
 
@@ -53,14 +53,6 @@ class QuicConnectionIdHasher {
 QuicConnectionId::QuicConnectionId() : QuicConnectionId(nullptr, 0) {}
 
 QuicConnectionId::QuicConnectionId(const char* data, uint8_t length) {
-  static_assert(kQuicMaxConnectionIdAllVersionsLength <=
-                    std::numeric_limits<uint8_t>::max(),
-                "kQuicMaxConnectionIdAllVersionsLength too high");
-  if (length > kQuicMaxConnectionIdAllVersionsLength) {
-    QUIC_BUG << "Attempted to create connection ID of length "
-             << static_cast<int>(length);
-    length = kQuicMaxConnectionIdAllVersionsLength;
-  }
   length_ = length;
   if (length_ == 0) {
     return;
@@ -109,11 +101,6 @@ uint8_t QuicConnectionId::length() const {
 }
 
 void QuicConnectionId::set_length(uint8_t length) {
-  if (length > kQuicMaxConnectionIdAllVersionsLength) {
-    QUIC_BUG << "Attempted to set connection ID length to "
-             << static_cast<int>(length);
-    length = kQuicMaxConnectionIdAllVersionsLength;
-  }
   char temporary_data[sizeof(data_short_)];
   if (length > sizeof(data_short_)) {
     if (length_ <= sizeof(data_short_)) {
@@ -152,7 +139,7 @@ std::string QuicConnectionId::ToString() const {
   if (IsEmpty()) {
     return std::string("0");
   }
-  return QuicTextUtils::HexEncode(data(), length_);
+  return quiche::QuicheTextUtils::HexEncode(data(), length_);
 }
 
 std::ostream& operator<<(std::ostream& os, const QuicConnectionId& v) {

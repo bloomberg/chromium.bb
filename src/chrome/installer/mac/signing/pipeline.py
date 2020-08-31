@@ -10,8 +10,9 @@ The pipeline module orchestrates the entire signing process, which includes:
 """
 
 import os.path
+import plistlib
 
-from . import commands, model, modification, notarize, signing
+from . import commands, model, modification, notarize, parts, signing
 
 
 def _customize_and_sign_chrome(paths, dist_config, dest_dir, signed_frameworks):
@@ -74,13 +75,13 @@ def _customize_and_sign_chrome(paths, dist_config, dest_dir, signed_frameworks):
                         actual_framework_change_count,
                         signed_framework_change_count))
 
-        signing.sign_chrome(paths, dist_config, sign_framework=False)
+        parts.sign_chrome(paths, dist_config, sign_framework=False)
     else:
         unsigned_framework_path = os.path.join(paths.work,
                                                'modified_unsigned_framework')
         commands.copy_dir_overwrite_and_count_changes(
             work_dir_framework_path, unsigned_framework_path, dry_run=False)
-        signing.sign_chrome(paths, dist_config, sign_framework=True)
+        parts.sign_chrome(paths, dist_config, sign_framework=True)
         actual_framework_change_count = commands.copy_dir_overwrite_and_count_changes(
             work_dir_framework_path, unsigned_framework_path, dry_run=True)
         if signed_frameworks is not None:
@@ -101,21 +102,7 @@ def _staple_chrome(paths, dist_config):
         paths: A |model.Paths| object.
         dist_config: A |config.CodeSignConfig| for the customized product.
     """
-    parts = signing.get_parts(dist_config)
-    # Only staple the signed, bundled executables.
-    part_paths = [
-        part.path
-        for part in parts.values()
-        # TODO(https://crbug.com/979725): Reinstate .xpc bundle stapling once
-        # the signing environment is on a macOS release that supports
-        # Xcode 10.2 or newer.
-        if part.path[-4:] in ('.app',)
-    ]
-    # Reverse-sort the paths so that more nested paths are stapled before
-    # less-nested ones.
-    part_paths.sort(reverse=True)
-    for part_path in part_paths:
-        notarize.staple(os.path.join(paths.work, part_path))
+    notarize.staple_bundled_parts(parts.get_parts(dist_config).values(), paths)
 
 
 def _create_pkgbuild_scripts(paths, dist_config):
@@ -155,6 +142,33 @@ def _create_pkgbuild_scripts(paths, dist_config):
     commands.set_executable(postinstall_dest_path)
 
     return scripts_path
+
+
+def _component_property_path(paths, dist_config):
+    """Creates a component plist file for use by `pkgbuild`. The reason this
+    file is used is to ensure that the component package is not relocatable. See
+    https://scriptingosx.com/2017/05/relocatable-package-installers-and-quickpkg-update/
+    for information on why that's important.
+
+    Args:
+        paths: A |model.Paths| object.
+        dist_config: The |config.CodeSignConfig| object.
+
+    Returns:
+        The path to the component plist file.
+    """
+    component_property_path = os.path.join(
+        paths.work, '{}.plist'.format(dist_config.app_product))
+
+    plistlib.writePlist([{
+        'BundleHasStrictIdentifier': True,
+        'BundleIsRelocatable': False,
+        'BundleIsVersionChecked': True,
+        'BundleOverwriteAction': 'upgrade',
+        'RootRelativeBundlePath': dist_config.app_dir
+    }], component_property_path)
+
+    return component_property_path
 
 
 def _productbuild_distribution_path(paths, dist_config, component_pkg_path):
@@ -201,7 +215,11 @@ def _productbuild_distribution_path(paths, dist_config, component_pkg_path):
     <!-- The individual choices. -->
     <choice id="default"/>
     <choice id="{bundle_id}" visible="false" title="{app_product}">
-        <pkg-ref id="{bundle_id}"/>
+        <pkg-ref id="{bundle_id}">
+            <must-close>
+                <app id="{bundle_id}"/>
+            </must-close>
+        </pkg-ref>
     </choice>
 
     <!-- The lone component package. -->
@@ -234,10 +252,19 @@ def _package_and_sign_pkg(paths, dist_config):
     # There are two .pkg files to be built:
     #   1. The inner component package (which is the one that can contain things
     #      like postinstall scripts). This is built with `pkgbuild`.
-    #   2. The outer product archive (which is the installable thing that has
-    #      pre-install requirements). This is built with `productbuild`.
+    #   2. The outer distribution package (which is the installable thing that
+    #      has pre-install requirements). This is built with `productbuild`.
 
     ## The component package.
+
+    # Because the component package is built using the --root option, copy the
+    # .app into a directory by itself, as `pkgbuild` archives the entire
+    # directory specified as the root directory.
+    root_directory = os.path.join(paths.work, 'payload')
+    commands.make_dir(root_directory)
+    app_path = os.path.join(paths.work, dist_config.app_dir)
+    new_app_path = os.path.join(root_directory, dist_config.app_dir)
+    commands.copy_files(app_path, root_directory)
 
     # The spaces are removed from |dist_config.app_product| for the component
     # package path due to a bug in Installer.app that causes the "Show Files"
@@ -246,17 +273,17 @@ def _package_and_sign_pkg(paths, dist_config):
     component_pkg_name = '{}.pkg'.format(dist_config.app_product).replace(
         ' ', '')
     component_pkg_path = os.path.join(paths.work, component_pkg_name)
-    app_path = os.path.join(paths.work, dist_config.app_dir)
-
+    component_property_path = _component_property_path(paths, dist_config)
     scripts_path = _create_pkgbuild_scripts(paths, dist_config)
 
     commands.run_command([
-        'pkgbuild', '--identifier', dist_config.base_bundle_id, '--version',
-        dist_config.version, '--component', app_path, '--install-location',
-        '/Applications', '--scripts', scripts_path, component_pkg_path
+        'pkgbuild', '--root', root_directory, '--component-plist',
+        component_property_path, '--identifier', dist_config.base_bundle_id,
+        '--version', dist_config.version, '--install-location', '/Applications',
+        '--scripts', scripts_path, component_pkg_path
     ])
 
-    ## The product archive.
+    ## The distribution package.
 
     distribution_path = _productbuild_distribution_path(paths, dist_config,
                                                         component_pkg_path)
@@ -265,8 +292,9 @@ def _package_and_sign_pkg(paths, dist_config):
         paths.output, '{}.pkg'.format(dist_config.packaging_basename))
 
     command = [
-        'productbuild', '--distribution', distribution_path, '--package-path',
-        paths.work, '--sign', dist_config.installer_identity
+        'productbuild', '--identifier', dist_config.base_bundle_id, '--version',
+        dist_config.version, '--distribution', distribution_path,
+        '--package-path', paths.work, '--sign', dist_config.installer_identity
     ]
     if dist_config.notary_user:
         # Assume if the config has notary authentication information that the
@@ -341,7 +369,7 @@ def _package_dmg(paths, dist, config):
     # Don't put a name on the /Applications symbolic link because the same disk
     # image is used for all languages.
     # yapf: disable
-    commands.run_command([
+    pkg_dmg = [
         os.path.join(packaging_dir, 'pkg-dmg'),
         '--verbosity', '0',
         '--tempdir', paths.work,
@@ -349,18 +377,26 @@ def _package_dmg(paths, dist, config):
         '--target', dmg_path,
         '--format', 'UDBZ',
         '--volname', config.app_product,
-        '--icon', os.path.join(packaging_dir, icon_file),
         '--copy', '{}:/'.format(app_path),
-        '--copy',
-            '{}/keystone_install.sh:/.keystone_install'.format(packaging_dir),
-        '--mkdir', '.background',
-        '--copy',
-            '{}/chrome_dmg_background.png:/.background/background.png'.format(
-                packaging_dir),
-        '--copy', '{}/{}:/.DS_Store'.format(packaging_dir, dsstore_file),
         '--symlink', '/Applications:/ ',
-    ])
+    ]
     # yapf: enable
+
+    if config.is_chrome_branded():
+        # yapf: disable
+        pkg_dmg += [
+            '--icon', os.path.join(packaging_dir, icon_file),
+            '--copy',
+                '{}/keystone_install.sh:/.keystone_install'.format(packaging_dir),
+            '--mkdir', '.background',
+            '--copy',
+                '{}/chrome_dmg_background.png:/.background/background.png'.format(
+                    packaging_dir),
+            '--copy', '{}/{}:/.DS_Store'.format(packaging_dir, dsstore_file),
+        ]
+        # yapf: enable
+
+    commands.run_command(pkg_dmg)
 
     return dmg_path
 
@@ -375,14 +411,15 @@ def _package_installer_tools(paths, config):
     """
     DIFF_TOOLS = 'diff_tools'
 
-    tools_to_sign = signing.get_installer_tools(config)
+    tools_to_sign = parts.get_installer_tools(config)
+    chrome_tools = (
+        'keystone_install.sh',) if config.is_chrome_branded() else ()
     other_tools = (
         'dirdiffer.sh',
         'dirpatcher.sh',
         'dmgdiffer.sh',
-        'keystone_install.sh',
         'pkg-dmg',
-    )
+    ) + chrome_tools
 
     with commands.WorkDirectory(paths) as paths:
         diff_tools_dir = os.path.join(paths.work, DIFF_TOOLS)

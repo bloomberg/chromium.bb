@@ -15,9 +15,10 @@
 #ifndef DAWNNATIVE_BINDGROUPANDSTORAGEBARRIERTRACKER_H_
 #define DAWNNATIVE_BINDGROUPANDSTORAGEBARRIERTRACKER_H_
 
-#include "dawn_native/BindGroupTracker.h"
-
 #include "dawn_native/BindGroup.h"
+#include "dawn_native/BindGroupTracker.h"
+#include "dawn_native/Buffer.h"
+#include "dawn_native/Texture.h"
 
 namespace dawn_native {
 
@@ -35,35 +36,47 @@ namespace dawn_native {
                             uint32_t dynamicOffsetCount,
                             uint32_t* dynamicOffsets) {
             if (this->mBindGroups[index] != bindGroup) {
-                mBuffers[index] = {};
-                mBuffersNeedingBarrier[index] = {};
+                mBindings[index] = {};
+                mBindingsNeedingBarrier[index] = {};
 
                 const BindGroupLayoutBase* layout = bindGroup->GetLayout();
-                const auto& info = layout->GetBindingInfo();
 
-                for (uint32_t binding : IterateBitSet(info.mask)) {
-                    if ((info.visibilities[binding] & wgpu::ShaderStage::Compute) == 0) {
+                for (BindingIndex bindingIndex = 0; bindingIndex < layout->GetBindingCount();
+                     ++bindingIndex) {
+                    const BindingInfo& bindingInfo = layout->GetBindingInfo(bindingIndex);
+
+                    if ((bindingInfo.visibility & wgpu::ShaderStage::Compute) == 0) {
                         continue;
                     }
 
-                    mBindingTypes[index][binding] = info.types[binding];
-                    switch (info.types[binding]) {
+                    mBindingTypes[index][bindingIndex] = bindingInfo.type;
+                    switch (bindingInfo.type) {
                         case wgpu::BindingType::UniformBuffer:
                         case wgpu::BindingType::ReadonlyStorageBuffer:
                         case wgpu::BindingType::Sampler:
+                        case wgpu::BindingType::ComparisonSampler:
                         case wgpu::BindingType::SampledTexture:
                             // Don't require barriers.
                             break;
 
                         case wgpu::BindingType::StorageBuffer:
-                            mBuffersNeedingBarrier[index].set(binding);
-                            mBuffers[index][binding] =
-                                bindGroup->GetBindingAsBufferBinding(binding).buffer;
+                            mBindingsNeedingBarrier[index].set(bindingIndex);
+                            mBindings[index][bindingIndex] = static_cast<ObjectBase*>(
+                                bindGroup->GetBindingAsBufferBinding(bindingIndex).buffer);
+                            break;
+
+                        // Read-only and write-only storage textures must use general layout
+                        // because load and store operations on storage images can only be done on
+                        // the images in VK_IMAGE_LAYOUT_GENERAL layout.
+                        case wgpu::BindingType::ReadonlyStorageTexture:
+                        case wgpu::BindingType::WriteonlyStorageTexture:
+                            mBindingsNeedingBarrier[index].set(bindingIndex);
+                            mBindings[index][bindingIndex] = static_cast<ObjectBase*>(
+                                bindGroup->GetBindingAsTextureView(bindingIndex));
                             break;
 
                         case wgpu::BindingType::StorageTexture:
                             // Not implemented.
-
                         default:
                             UNREACHABLE();
                             break;
@@ -75,10 +88,10 @@ namespace dawn_native {
         }
 
       protected:
-        std::array<std::bitset<kMaxBindingsPerGroup>, kMaxBindGroups> mBuffersNeedingBarrier = {};
+        std::array<std::bitset<kMaxBindingsPerGroup>, kMaxBindGroups> mBindingsNeedingBarrier = {};
         std::array<std::array<wgpu::BindingType, kMaxBindingsPerGroup>, kMaxBindGroups>
             mBindingTypes = {};
-        std::array<std::array<BufferBase*, kMaxBindingsPerGroup>, kMaxBindGroups> mBuffers = {};
+        std::array<std::array<ObjectBase*, kMaxBindingsPerGroup>, kMaxBindGroups> mBindings = {};
     };
 
 }  // namespace dawn_native

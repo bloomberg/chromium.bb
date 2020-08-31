@@ -17,27 +17,44 @@
 
 #include <stdlib.h>
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <iterator>
+#include <string>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
+#include "absl/base/attributes.h"
+#include "absl/base/config.h"
+#include "absl/base/const_init.h"
+#include "absl/base/thread_annotations.h"
+#include "absl/flags/config.h"
 #include "absl/flags/flag.h"
+#include "absl/flags/internal/commandlineflag.h"
+#include "absl/flags/internal/flag.h"
+#include "absl/flags/internal/parse.h"
+#include "absl/flags/internal/private_handle_accessor.h"
 #include "absl/flags/internal/program_name.h"
 #include "absl/flags/internal/registry.h"
 #include "absl/flags/internal/usage.h"
 #include "absl/flags/usage.h"
 #include "absl/flags/usage_config.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "absl/synchronization/mutex.h"
 
 // --------------------------------------------------------------------
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace flags_internal {
 namespace {
 
@@ -50,8 +67,25 @@ ABSL_CONST_INIT bool fromenv_needs_processing
 ABSL_CONST_INIT bool tryfromenv_needs_processing
     ABSL_GUARDED_BY(processing_checks_guard) = false;
 
+ABSL_CONST_INIT absl::Mutex specified_flags_guard(absl::kConstInit);
+ABSL_CONST_INIT std::vector<const CommandLineFlag*>* specified_flags
+    ABSL_GUARDED_BY(specified_flags_guard) = nullptr;
+
+struct SpecifiedFlagsCompare {
+  bool operator()(const CommandLineFlag* a, const CommandLineFlag* b) const {
+    return a->Name() < b->Name();
+  }
+  bool operator()(const CommandLineFlag* a, absl::string_view b) const {
+    return a->Name() < b;
+  }
+  bool operator()(absl::string_view a, const CommandLineFlag* b) const {
+    return a < b->Name();
+  }
+};
+
 }  // namespace
 }  // namespace flags_internal
+ABSL_NAMESPACE_END
 }  // namespace absl
 
 ABSL_FLAG(std::vector<std::string>, flagfile, {},
@@ -109,6 +143,7 @@ ABSL_FLAG(std::vector<std::string>, undefok, {},
           "with that name");
 
 namespace absl {
+ABSL_NAMESPACE_BEGIN
 namespace flags_internal {
 
 namespace {
@@ -277,12 +312,11 @@ void CheckDefaultValuesParsingRoundtrip() {
 #define IGNORE_TYPE(T) \
   if (flag->IsOfType<T>()) return;
 
-    ABSL_FLAGS_INTERNAL_FOR_EACH_LOCK_FREE(IGNORE_TYPE)
-    IGNORE_TYPE(std::string)
-    IGNORE_TYPE(std::vector<std::string>)
+    ABSL_FLAGS_INTERNAL_BUILTIN_TYPES(IGNORE_TYPE)
 #undef IGNORE_TYPE
 
-    flag->CheckDefaultValueParsingRoundtrip();
+    flags_internal::PrivateHandleAccessor::CheckDefaultValueParsingRoundtrip(
+        *flag);
   });
 #endif
 }
@@ -517,12 +551,12 @@ std::tuple<bool, absl::string_view> DeduceFlagValue(const CommandLineFlag& flag,
     curr_list->PopFront();
     value = curr_list->Front();
 
-    // Heuristic to detect the case where someone treats a std::string arg
+    // Heuristic to detect the case where someone treats a string arg
     // like a bool or just forgets to pass a value:
     // --my_string_var --foo=bar
-    // We look for a flag of std::string type, whose value begins with a
+    // We look for a flag of string type, whose value begins with a
     // dash and corresponds to known flag or standalone --.
-    if (value[0] == '-' && flag.IsOfType<std::string>()) {
+    if (!value.empty() && value[0] == '-' && flag.IsOfType<std::string>()) {
       auto maybe_flag_name = std::get<0>(SplitNameAndValue(value.substr(1)));
 
       if (maybe_flag_name.empty() ||
@@ -559,6 +593,17 @@ bool CanIgnoreUndefinedFlag(absl::string_view flag_name) {
 
 // --------------------------------------------------------------------
 
+bool WasPresentOnCommandLine(absl::string_view flag_name) {
+  absl::MutexLock l(&specified_flags_guard);
+  ABSL_INTERNAL_CHECK(specified_flags != nullptr,
+                      "ParseCommandLine is not invoked yet");
+
+  return std::binary_search(specified_flags->begin(), specified_flags->end(),
+                            flag_name, SpecifiedFlagsCompare{});
+}
+
+// --------------------------------------------------------------------
+
 std::vector<char*> ParseCommandLineImpl(int argc, char* argv[],
                                         ArgvListAction arg_list_act,
                                         UsageFlagsAction usage_flag_act,
@@ -588,6 +633,13 @@ std::vector<char*> ParseCommandLineImpl(int argc, char* argv[],
     flags_internal::SetProgramInvocationName(argv[0]);
   }
   output_args.push_back(argv[0]);
+
+  absl::MutexLock l(&specified_flags_guard);
+  if (specified_flags == nullptr) {
+    specified_flags = new std::vector<const CommandLineFlag*>;
+  } else {
+    specified_flags->clear();
+  }
 
   // Iterate through the list of the input arguments. First level are arguments
   // originated from argc/argv. Following levels are arguments originated from
@@ -630,7 +682,7 @@ std::vector<char*> ParseCommandLineImpl(int argc, char* argv[],
 
     // 60. Split the current argument on '=' to figure out the argument
     // name and value. If flag name is empty it means we've got "--". value
-    // can be empty either if there were no '=' in argument std::string at all or
+    // can be empty either if there were no '=' in argument string at all or
     // an argument looked like "--foo=". In a latter case is_empty_value is
     // true.
     absl::string_view flag_name;
@@ -680,9 +732,12 @@ std::vector<char*> ParseCommandLineImpl(int argc, char* argv[],
     if (flag->IsRetired()) continue;
 
     std::string error;
-    if (!flag->SetFromString(value, SET_FLAGS_VALUE, kCommandLine, &error)) {
+    if (!flags_internal::PrivateHandleAccessor::ParseFrom(
+            flag, value, SET_FLAGS_VALUE, kCommandLine, &error)) {
       flags_internal::ReportUsageError(error, true);
       success = false;
+    } else {
+      specified_flags->push_back(flag);
     }
   }
 
@@ -734,6 +789,10 @@ std::vector<char*> ParseCommandLineImpl(int argc, char* argv[],
     }
   }
 
+  // Trim and sort the vector.
+  specified_flags->shrink_to_fit();
+  std::sort(specified_flags->begin(), specified_flags->end(),
+            SpecifiedFlagsCompare{});
   return output_args;
 }
 
@@ -748,4 +807,5 @@ std::vector<char*> ParseCommandLine(int argc, char* argv[]) {
       flags_internal::OnUndefinedFlag::kAbortIfUndefined);
 }
 
+ABSL_NAMESPACE_END
 }  // namespace absl

@@ -10,9 +10,7 @@
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test_output.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/simulator.h"
@@ -52,6 +50,7 @@ QuicEndpoint::QuicEndpoint(Simulator* simulator,
                               std::make_unique<NullDecrypter>(perspective));
   }
   connection_->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+  connection_->OnHandshakeComplete();
   if (perspective == Perspective::IS_SERVER) {
     // Skip version negotiation.
     test::QuicConnectionPeer::SetNegotiatedVersion(connection_.get());
@@ -199,6 +198,10 @@ bool QuicEndpoint::HasUnackedStreamData() const {
     return notifier_->HasUnackedStreamData();
   }
   return false;
+}
+
+HandshakeState QuicEndpoint::GetHandshakeState() const {
+  return HANDSHAKE_COMPLETE;
 }
 
 WriteStreamDataResult QuicEndpoint::DataProducer::WriteStreamData(

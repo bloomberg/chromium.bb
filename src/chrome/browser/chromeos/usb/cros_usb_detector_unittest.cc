@@ -165,13 +165,15 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
 
   void AttachDeviceToVm(const std::string& vm_name, const std::string& guid) {
     cros_usb_detector_->AttachUsbDeviceToVm(
-        vm_name, guid, base::Bind([](bool result) { EXPECT_TRUE(result); }));
+        vm_name, guid,
+        base::BindOnce([](bool result) { EXPECT_TRUE(result); }));
     base::RunLoop().RunUntilIdle();
   }
 
   void DetachDeviceFromVm(const std::string& vm_name, const std::string& guid) {
     cros_usb_detector_->DetachUsbDeviceFromVm(
-        vm_name, guid, base::Bind([](bool result) { EXPECT_TRUE(result); }));
+        vm_name, guid,
+        base::BindOnce([](bool result) { EXPECT_TRUE(result); }));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -333,7 +335,7 @@ TEST_F(CrosUsbDetectorTest, UsbDeviceClassWithoutNotificationAdded) {
 }
 
 TEST_F(CrosUsbDetectorTest, UsbDeviceWithoutProductNameAddedAndRemoved) {
-  std::string product_name = "";
+  std::string product_name;
   ConnectToDeviceManager();
   base::RunLoop().RunUntilIdle();
 
@@ -362,8 +364,8 @@ TEST_F(CrosUsbDetectorTest, UsbDeviceWithoutProductNameAddedAndRemoved) {
 
 TEST_F(CrosUsbDetectorTest,
        UsbDeviceWithoutProductNameOrManufacturerNameAddedAndRemoved) {
-  std::string product_name = "";
-  std::string manufacturer_name = "";
+  std::string product_name;
+  std::string manufacturer_name;
   ConnectToDeviceManager();
   base::RunLoop().RunUntilIdle();
 

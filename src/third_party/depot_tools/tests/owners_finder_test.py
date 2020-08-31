@@ -150,6 +150,17 @@ class OwnersFinderTests(_BaseTestCase):
     finder = self.ownersFinder(files, author=brett)
     self.assertEqual(finder.unreviewed_files, {'content/bar/foo.cc'})
 
+  def test_native_path_sep(self):
+    # Create a path with backslashes on Windows to make sure these are handled.
+    # This test is a harmless duplicate on other platforms.
+    native_slashes_path = 'chrome/browser/defaults.h'.replace('/', os.sep)
+    files = [
+        native_slashes_path,          # owned by brett
+        'content/bar/foo.cc',         # not owned by brett
+    ]
+    finder = self.ownersFinder(files, reviewers=[brett])
+    self.assertEqual(finder.unreviewed_files, {'content/bar/foo.cc'})
+
   def test_reset(self):
     finder = self.defaultFinder()
     for _ in range(2):

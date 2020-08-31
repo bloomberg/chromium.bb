@@ -69,7 +69,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
                   int64_t appcache_id) override {
     InitializeURL(response_url);
     SetReferrerPolicy(response_referrer_policy);
-    SetAddressSpace(response_address_space);
+    GetSecurityContext().SetAddressSpace(response_address_space);
 
     // These should be called after SetAddressSpace() to correctly override the
     // address space by the "treat-as-public-address" CSP directive.
@@ -93,9 +93,11 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-      network::mojom::CredentialsMode) override {
+      network::mojom::CredentialsMode,
+      RejectCoepUnsafeNone reject_coep_unsafe_none) override {
     NOTREACHED();
   }
+  bool IsOffMainThreadScriptFetchDisabled() override { return true; }
 
   void ExceptionThrown(ErrorEvent*) override {}
 };
@@ -121,11 +123,11 @@ class WorkerThreadForTest : public WorkerThread {
       const KURL& script_url = KURL("http://fake.url/"),
       WorkerClients* worker_clients = nullptr) {
     Vector<CSPHeaderAndType> headers{
-        {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
+        {"contentSecurityPolicy",
+         network::mojom::ContentSecurityPolicyType::kReport}};
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-        script_url, mojom::ScriptType::kClassic,
-        OffMainThreadWorkerScriptFetchOption::kDisabled,
-        "fake global scope name", "fake user agent",
+        script_url, mojom::blink::ScriptType::kClassic,
+        "fake global scope name", "fake user agent", UserAgentMetadata(),
         nullptr /* web_worker_fetch_context */, headers,
         network::mojom::ReferrerPolicy::kDefault, security_origin,
         false /* starter_secure_context */,

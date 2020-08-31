@@ -34,7 +34,7 @@ class TestModuleTreeClient final : public ModuleTreeClient {
  public:
   TestModuleTreeClient() = default;
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(module_script_);
     ModuleTreeClient::Trace(visitor);
   }
@@ -60,7 +60,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
       : script_state_(script_state) {}
   ~ModuleTreeLinkerTestModulator() override = default;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   enum class ResolveResult { kFailure, kSuccess };
 
@@ -182,7 +182,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   bool instantiate_should_fail_ = false;
 };
 
-void ModuleTreeLinkerTestModulator::Trace(blink::Visitor* visitor) {
+void ModuleTreeLinkerTestModulator::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(pending_clients_);
   visitor->Trace(module_map_);
@@ -215,10 +215,10 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeNoDeps) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
-  ModuleTreeLinker::Fetch(url, GetDocument().Fetcher(),
-                          mojom::RequestContextType::SCRIPT,
-                          ScriptFetchOptions(), GetModulator(),
-                          ModuleScriptCustomFetchType::kNone, registry, client);
+  ModuleTreeLinker::Fetch(
+      url, GetDocument().Fetcher(), mojom::RequestContextType::SCRIPT,
+      network::mojom::RequestDestination::kScript, ScriptFetchOptions(),
+      GetModulator(), ModuleScriptCustomFetchType::kNone, registry, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -238,10 +238,10 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeInstantiationFailure) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
-  ModuleTreeLinker::Fetch(url, GetDocument().Fetcher(),
-                          mojom::RequestContextType::SCRIPT,
-                          ScriptFetchOptions(), GetModulator(),
-                          ModuleScriptCustomFetchType::kNone, registry, client);
+  ModuleTreeLinker::Fetch(
+      url, GetDocument().Fetcher(), mojom::RequestContextType::SCRIPT,
+      network::mojom::RequestDestination::kScript, ScriptFetchOptions(),
+      GetModulator(), ModuleScriptCustomFetchType::kNone, registry, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -265,10 +265,10 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWithSingleDependency) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
-  ModuleTreeLinker::Fetch(url, GetDocument().Fetcher(),
-                          mojom::RequestContextType::SCRIPT,
-                          ScriptFetchOptions(), GetModulator(),
-                          ModuleScriptCustomFetchType::kNone, registry, client);
+  ModuleTreeLinker::Fetch(
+      url, GetDocument().Fetcher(), mojom::RequestContextType::SCRIPT,
+      network::mojom::RequestDestination::kScript, ScriptFetchOptions(),
+      GetModulator(), ModuleScriptCustomFetchType::kNone, registry, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -293,10 +293,10 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
-  ModuleTreeLinker::Fetch(url, GetDocument().Fetcher(),
-                          mojom::RequestContextType::SCRIPT,
-                          ScriptFetchOptions(), GetModulator(),
-                          ModuleScriptCustomFetchType::kNone, registry, client);
+  ModuleTreeLinker::Fetch(
+      url, GetDocument().Fetcher(), mojom::RequestContextType::SCRIPT,
+      network::mojom::RequestDestination::kScript, ScriptFetchOptions(),
+      GetModulator(), ModuleScriptCustomFetchType::kNone, registry, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -334,10 +334,10 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps1Fail) {
 
   KURL url("http://example.com/root.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
-  ModuleTreeLinker::Fetch(url, GetDocument().Fetcher(),
-                          mojom::RequestContextType::SCRIPT,
-                          ScriptFetchOptions(), GetModulator(),
-                          ModuleScriptCustomFetchType::kNone, registry, client);
+  ModuleTreeLinker::Fetch(
+      url, GetDocument().Fetcher(), mojom::RequestContextType::SCRIPT,
+      network::mojom::RequestDestination::kScript, ScriptFetchOptions(),
+      GetModulator(), ModuleScriptCustomFetchType::kNone, registry, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -394,10 +394,10 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyTree) {
 
   KURL url("http://example.com/depth1.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
-  ModuleTreeLinker::Fetch(url, GetDocument().Fetcher(),
-                          mojom::RequestContextType::SCRIPT,
-                          ScriptFetchOptions(), GetModulator(),
-                          ModuleScriptCustomFetchType::kNone, registry, client);
+  ModuleTreeLinker::Fetch(
+      url, GetDocument().Fetcher(), mojom::RequestContextType::SCRIPT,
+      network::mojom::RequestDestination::kScript, ScriptFetchOptions(),
+      GetModulator(), ModuleScriptCustomFetchType::kNone, registry, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -421,10 +421,10 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyOfCyclicGraph) {
 
   KURL url("http://example.com/a.js");
   TestModuleTreeClient* client = MakeGarbageCollected<TestModuleTreeClient>();
-  ModuleTreeLinker::Fetch(url, GetDocument().Fetcher(),
-                          mojom::RequestContextType::SCRIPT,
-                          ScriptFetchOptions(), GetModulator(),
-                          ModuleScriptCustomFetchType::kNone, registry, client);
+  ModuleTreeLinker::Fetch(
+      url, GetDocument().Fetcher(), mojom::RequestContextType::SCRIPT,
+      network::mojom::RequestDestination::kScript, ScriptFetchOptions(),
+      GetModulator(), ModuleScriptCustomFetchType::kNone, registry, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";

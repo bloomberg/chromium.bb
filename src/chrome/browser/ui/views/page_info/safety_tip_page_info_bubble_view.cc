@@ -19,6 +19,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -31,40 +32,23 @@
 
 namespace {
 
-int GetSafetyTipBannerId(security_state::SafetyTipStatus safety_tip_status) {
-  const ui::NativeTheme* native_theme =
-      ui::NativeTheme::GetInstanceForNativeUi();
-  bool is_dark = native_theme && native_theme->ShouldUseDarkColors();
-
-  if (is_dark) {
-    switch (safety_tip_status) {
-      case security_state::SafetyTipStatus::kBadReputation:
-        return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_DARK;
-      case security_state::SafetyTipStatus::kLookalike:
-        return IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_DARK;
-      case security_state::SafetyTipStatus::kBadReputationIgnored:
-      case security_state::SafetyTipStatus::kLookalikeIgnored:
-      case security_state::SafetyTipStatus::kBadKeyword:
-      case security_state::SafetyTipStatus::kUnknown:
-      case security_state::SafetyTipStatus::kNone:
-        NOTREACHED();
-    }
-  } else {
-    switch (safety_tip_status) {
-      case security_state::SafetyTipStatus::kBadReputation:
-        return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_LIGHT;
-      case security_state::SafetyTipStatus::kLookalike:
-        return IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_LIGHT;
-      case security_state::SafetyTipStatus::kBadReputationIgnored:
-      case security_state::SafetyTipStatus::kLookalikeIgnored:
-      case security_state::SafetyTipStatus::kBadKeyword:
-      case security_state::SafetyTipStatus::kUnknown:
-      case security_state::SafetyTipStatus::kNone:
-        NOTREACHED();
-    }
+int GetSafetyTipBannerId(security_state::SafetyTipStatus safety_tip_status,
+                         bool is_dark) {
+  switch (safety_tip_status) {
+    case security_state::SafetyTipStatus::kBadReputation:
+      return is_dark ? IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_DARK
+                     : IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_LIGHT;
+    case security_state::SafetyTipStatus::kLookalike:
+      return is_dark ? IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_DARK
+                     : IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_LIGHT;
+    case security_state::SafetyTipStatus::kBadReputationIgnored:
+    case security_state::SafetyTipStatus::kLookalikeIgnored:
+    case security_state::SafetyTipStatus::kBadKeyword:
+    case security_state::SafetyTipStatus::kUnknown:
+    case security_state::SafetyTipStatus::kNone:
+      NOTREACHED();
+      return 0;
   }
-  NOTREACHED();
-  return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_LIGHT;
 }
 
 }  // namespace
@@ -126,11 +110,14 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   constexpr int kColumnId = 0;
   views::ColumnSet* bubble_col_set = bubble_layout->AddColumnSet(kColumnId);
   bubble_col_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                            1.0, views::GridLayout::USE_PREF, 0, 0);
+                            1.0, views::GridLayout::ColumnSize::kUsePreferred,
+                            0, 0);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const bool use_dark =
+      color_utils::IsDark(GetBubbleFrameView()->GetBackgroundColor());
   const gfx::ImageSkia* image =
-      rb.GetNativeImageNamed(GetSafetyTipBannerId(safety_tip_status))
+      rb.GetNativeImageNamed(GetSafetyTipBannerId(safety_tip_status, use_dark))
           .ToImageSkia();
   auto image_view = std::make_unique<NonAccessibleImageView>();
   image_view->SetImage(*image);
@@ -144,9 +131,9 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   views::ColumnSet* bottom_column_set = bottom_layout->AddColumnSet(0);
   bottom_column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                       insets.left());
-  bottom_column_set->AddColumn(views::GridLayout::LEADING,
-                               views::GridLayout::FILL, 1.0,
-                               views::GridLayout::USE_PREF, 0, 0);
+  bottom_column_set->AddColumn(
+      views::GridLayout::LEADING, views::GridLayout::FILL, 1.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   bottom_column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                       insets.right());
 
@@ -171,13 +158,13 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   views::GridLayout* button_layout =
       button_view->SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* button_column_set = button_layout->AddColumnSet(0);
-  button_column_set->AddColumn(views::GridLayout::LEADING,
-                               views::GridLayout::CENTER, 0.0,
-                               views::GridLayout::USE_PREF, 0, 0);
+  button_column_set->AddColumn(
+      views::GridLayout::LEADING, views::GridLayout::CENTER, 0.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   button_column_set->AddPaddingColumn(1.f, 1);
-  button_column_set->AddColumn(views::GridLayout::TRAILING,
-                               views::GridLayout::FILL, 0.0,
-                               views::GridLayout::USE_PREF, 0, 0);
+  button_column_set->AddColumn(
+      views::GridLayout::TRAILING, views::GridLayout::FILL, 0.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   button_layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
 
@@ -193,10 +180,10 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   info_button_ = button_layout->AddView(std::move(info_link));
 
   // Leave site button.
-  std::unique_ptr<views::Button> leave_button(
-      views::MdTextButton::CreateSecondaryUiBlueButton(
-          this, l10n_util::GetStringUTF16(
-                    GetSafetyTipLeaveButtonId(safety_tip_status))));
+  auto leave_button = views::MdTextButton::Create(
+      this,
+      l10n_util::GetStringUTF16(GetSafetyTipLeaveButtonId(safety_tip_status)));
+  leave_button->SetProminent(true);
   leave_button->SetID(PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_LEAVE_SITE);
   leave_button_ = button_layout->AddView(std::move(leave_button));
 

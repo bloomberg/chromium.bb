@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 94 tests; 92 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 96 tests; 94 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [INPUT in TEXT status] The required attribute is not set
 PASS [INPUT in TEXT status] The value is not empty and required is true
 PASS [INPUT in TEXT status] The value is empty and required is true
@@ -86,6 +86,7 @@ PASS [INPUT in CHECKBOX status] The checked attribute is false
 PASS [INPUT in RADIO status] The required attribute is not set
 PASS [INPUT in RADIO status] The checked attribute is true
 PASS [INPUT in RADIO status] The checked attribute is false
+PASS [INPUT in RADIO status] The checked attribute is false and the name attribute is empty
 PASS [INPUT in FILE status] The required attribute is not set
 PASS [INPUT in FILE status] The Files attribute is null
 PASS [select]  The required attribute is not set
@@ -94,5 +95,6 @@ PASS [select]  Selected the option with value equals to empty
 PASS [textarea]  The required attribute is not set
 PASS [textarea]  The value is not empty
 PASS [textarea]  The value is empty
+PASS validationMessage should return empty string when willValidate is false and valueMissing is true
 Harness: the test ran to completion.
 

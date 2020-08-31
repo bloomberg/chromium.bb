@@ -14,7 +14,9 @@
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
+#include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
+#include "chrome/browser/android/webapk/webapk_ukm_recorder.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_coordinator.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_params.h"
@@ -153,19 +155,18 @@ std::string AppBannerManagerAndroid::GetBannerType() {
 }
 
 bool AppBannerManagerAndroid::IsWebAppConsideredInstalled() {
-  // Whether a WebAPK is installed or is being installed. IsWebApkInstalled
-  // will still detect the presence of a WebAPK even if Chrome's data is
-  // cleared.
-  DCHECK(!manifest_.IsEmpty());
-  return ShortcutHelper::IsWebApkInstalled(web_contents()->GetBrowserContext(),
-                                           manifest_.start_url, manifest_url_);
+  // Also check if a WebAPK is currently being installed. Installation may take
+  // some time, so ensure we don't accidentally allow a new installation whilst
+  // one is in flight for the current site.
+  return AppBannerManager::IsWebAppConsideredInstalled() ||
+         WebApkInstallService::Get(web_contents()->GetBrowserContext())
+             ->IsInstallInProgress(manifest_url_);
 }
 
 InstallableParams
 AppBannerManagerAndroid::ParamsToPerformInstallableWebAppCheck() {
   InstallableParams params =
       AppBannerManager::ParamsToPerformInstallableWebAppCheck();
-  params.valid_badge_icon = true;
   params.prefer_maskable_icon =
       ShortcutHelper::DoesAndroidSupportMaskableIcons();
 
@@ -189,12 +190,8 @@ void AppBannerManagerAndroid::PerformInstallableWebAppCheck() {
 
 void AppBannerManagerAndroid::OnDidPerformInstallableWebAppCheck(
     const InstallableData& data) {
-  if (data.badge_icon && !data.badge_icon->drawsNothing()) {
-    DCHECK(!data.badge_icon_url.is_empty());
-
-    badge_icon_url_ = data.badge_icon_url;
-    badge_icon_ = *data.badge_icon;
-  }
+  if (data.errors.empty())
+    WebApkUkmRecorder::RecordWebApkableVisit(data.manifest_url);
 
   AppBannerManager::OnDidPerformInstallableWebAppCheck(data);
 }
@@ -214,9 +211,8 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
   if (native_app_data_.is_null()) {
     a2hs_params->app_type = AddToHomescreenParams::AppType::WEBAPK;
     a2hs_params->shortcut_info = ShortcutHelper::CreateShortcutInfo(
-        manifest_url_, manifest_, primary_icon_url_, badge_icon_url_);
+        manifest_url_, manifest_, primary_icon_url_);
     a2hs_params->install_source = install_source;
-    a2hs_params->badge_icon = badge_icon_;
     a2hs_params->has_maskable_primary_icon = has_maskable_primary_icon_;
   } else {
     a2hs_params->app_type = AddToHomescreenParams::AppType::NATIVE;

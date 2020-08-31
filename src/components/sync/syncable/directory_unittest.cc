@@ -8,6 +8,7 @@
 
 #include <cstdlib>
 
+#include "base/bind_helpers.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -78,15 +79,13 @@ DirOpenResult SyncableDirectoryTest::ReopenDirectory() {
   // performance benefits of not writing to disk.
   dir_ = std::make_unique<Directory>(
       std::make_unique<TestDirectoryBackingStore>(kDirectoryName, &connection_),
-      MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(), nullptr);
+      MakeWeakHandle(handler_.GetWeakPtr()), base::NullCallback(), nullptr);
 
   DirOpenResult open_result =
       dir_->Open(kDirectoryName, &delegate_, NullTransactionObserver());
 
   if (open_result != OPENED_NEW && open_result != OPENED_EXISTING) {
     dir_.reset();
-  } else {
-    dir_->set_cache_guid(dir_->legacy_cache_guid());
   }
 
   return open_result;
@@ -1669,13 +1668,10 @@ TEST_F(SyncableDirectoryTest, SaveChangesSnapshot_HasUnsavedMetahandleChanges) {
 // DirectoryBackingStore error is detected.
 TEST_F(SyncableDirectoryTest, CatastrophicError) {
   MockUnrecoverableErrorHandler unrecoverable_error_handler;
-  Directory dir(
-      std::make_unique<InMemoryDirectoryBackingStore>(
-          "catastrophic_error", base::BindRepeating([]() -> std::string {
-            return "test_cache_guid";
-          })),
-      MakeWeakHandle(unrecoverable_error_handler.GetWeakPtr()),
-      base::RepeatingClosure(), nullptr);
+  Directory dir(std::make_unique<InMemoryDirectoryBackingStore>(
+                    "catastrophic_error", "test_cache_guid"),
+                MakeWeakHandle(unrecoverable_error_handler.GetWeakPtr()),
+                base::RepeatingClosure(), nullptr);
   ASSERT_EQ(OPENED_NEW, dir.Open(kDirectoryName, directory_change_delegate(),
                                  NullTransactionObserver()));
   ASSERT_EQ(0, unrecoverable_error_handler.invocation_count());

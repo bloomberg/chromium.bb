@@ -20,13 +20,13 @@
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
-#include "content/browser/web_package/web_bundle_navigation_info.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_params.h"
 #include "content/common/page_state_serialization.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "ui/gfx/text_elider.h"
 
 #if defined(OS_ANDROID)
@@ -162,7 +162,7 @@ void RecursivelyGenerateFrameState(
 // ancestor chain is detected, otherwise true.
 bool InSameTreePosition(FrameTreeNode* frame_tree_node,
                         NavigationEntryImpl::TreeNode* node) {
-  FrameTreeNode* ftn = frame_tree_node->parent();
+  FrameTreeNode* ftn = FrameTreeNode::From(frame_tree_node->parent());
   NavigationEntryImpl::TreeNode* current_node = node->parent;
   while (ftn && current_node) {
     if (!current_node->MatchesFrame(ftn))
@@ -173,7 +173,7 @@ bool InSameTreePosition(FrameTreeNode* frame_tree_node,
       return false;
     }
 
-    ftn = ftn->parent();
+    ftn = FrameTreeNode::From(ftn->parent());
     current_node = current_node->parent;
   }
   return true;
@@ -221,7 +221,26 @@ void RecursivelyInitRestoredTreeNode(BrowserContext* browser_context,
     RecursivelyInitRestoredTreeNode(browser_context, child.get());
 }
 
+void RegisterOriginsRecursive(NavigationEntryImpl::TreeNode* node,
+                              const url::Origin& origin) {
+  if (node->frame_entry->committed_origin().has_value()) {
+    const url::Origin node_origin =
+        node->frame_entry->committed_origin().value();
+    SiteInstanceImpl* site_instance = node->frame_entry->site_instance();
+    if (site_instance && origin == node_origin)
+      site_instance->PreventOptInOriginIsolation(node_origin);
+  }
+
+  for (auto& child : node->children)
+    RegisterOriginsRecursive(child.get(), origin);
+}
+
 }  // namespace
+
+void NavigationEntryImpl::RegisterExistingOriginToPreventOptInIsolation(
+    const url::Origin& origin) {
+  return RegisterOriginsRecursive(root_node(), origin);
+}
 
 NavigationEntryImpl::TreeNode::TreeNode(
     TreeNode* parent,
@@ -524,6 +543,11 @@ const base::string16& NavigationEntryImpl::GetTitleForDisplay() {
     base::string16::size_type slashpos = title.rfind('/', lastpos);
     if (slashpos != base::string16::npos)
       title = title.substr(slashpos + 1);
+
+  } else if (GetURL().SchemeIs(kChromeUIUntrustedScheme)) {
+    // For chrome-untrusted:// URLs, leave title blank until the page loads.
+    title = base::string16();
+
   } else if (base::i18n::StringContainsStrongRTLChars(title)) {
     // Wrap the URL in an LTR embedding for proper handling of RTL characters.
     // (RFC 3987 Section 4.1 states that "Bidirectional IRIs MUST be rendered in
@@ -542,7 +566,7 @@ const base::string16& NavigationEntryImpl::GetTitleForDisplay() {
   }
 #endif
 
-  gfx::ElideString(title, kMaxTitleChars, &cached_display_title_);
+  gfx::ElideString(title, blink::mojom::kMaxTitleChars, &cached_display_title_);
   return cached_display_title_;
 }
 
@@ -604,8 +628,8 @@ const GURL& NavigationEntryImpl::GetOriginalRequestURL() {
   return original_request_url_;
 }
 
-void NavigationEntryImpl::SetIsOverridingUserAgent(bool override) {
-  is_overriding_user_agent_ = override;
+void NavigationEntryImpl::SetIsOverridingUserAgent(bool override_ua) {
+  is_overriding_user_agent_ = override_ua;
 }
 
 bool NavigationEntryImpl::GetIsOverridingUserAgent() {
@@ -723,8 +747,6 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   copy->CloneDataFrom(*this);
   copy->replaced_entry_data_ = replaced_entry_data_;
   copy->should_skip_on_back_forward_ui_ = should_skip_on_back_forward_ui_;
-  if (web_bundle_navigation_info_)
-    copy->web_bundle_navigation_info_ = web_bundle_navigation_info_->Clone();
 
   return copy;
 }
@@ -738,8 +760,7 @@ NavigationEntryImpl::ConstructCommonNavigationParams(
     mojom::NavigationType navigation_type,
     PreviewsState previews_state,
     base::TimeTicks navigation_start,
-    base::TimeTicks input_start,
-    const blink::FramePolicy& frame_policy) {
+    base::TimeTicks input_start) {
   NavigationDownloadPolicy download_policy;
   if (IsViewSourceMode())
     download_policy.SetDisallowed(NavigationDownloadType::kViewSource);
@@ -749,11 +770,10 @@ NavigationEntryImpl::ConstructCommonNavigationParams(
       GetTransitionType(), navigation_type, download_policy,
       should_replace_entry(), GetBaseURLForDataURL(), GetHistoryURLForDataURL(),
       previews_state, navigation_start, frame_entry.method(),
-      post_body ? post_body : post_data_, base::Optional<SourceLocation>(),
-      has_started_from_context_menu(), has_user_gesture(), InitiatorCSPInfo(),
-      std::vector<int>(), std::string(),
-      false /* is_history_navigation_in_new_child_frame */, input_start,
-      frame_policy);
+      post_body ? post_body : post_data_, network::mojom::SourceLocation::New(),
+      has_started_from_context_menu(), has_user_gesture(),
+      CreateInitiatorCSPInfo(), std::vector<int>(), std::string(),
+      false /* is_history_navigation_in_new_child_frame */, input_start);
 }
 
 mojom::CommitNavigationParamsPtr
@@ -766,7 +786,8 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
     bool intended_as_new_entry,
     int pending_history_list_offset,
     int current_history_list_offset,
-    int current_history_list_length) {
+    int current_history_list_length,
+    const blink::FramePolicy& frame_policy) {
   // Set the redirect chain to the navigation's redirects, unless returning to a
   // completed navigation (whose previous redirects don't apply).
   std::vector<GURL> redirects;
@@ -804,7 +825,8 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
 #endif
           false, network::mojom::IPAddressSpace::kUnknown,
           GURL() /* web_bundle_physical_url */,
-          GURL() /* base_url_override_for_web_bundle */);
+          GURL() /* base_url_override_for_web_bundle */, frame_policy,
+          std::vector<std::string>() /* force_enabled_origin_trials */);
 #if defined(OS_ANDROID)
   if (NavigationControllerImpl::ValidateDataURLAsString(GetDataURLAsString())) {
     commit_params->data_url_as_string = GetDataURLAsString()->data();
@@ -885,7 +907,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
   // We should already have a TreeNode for the parent node by the time this node
   // commits.  Find it first.
   NavigationEntryImpl::TreeNode* parent_node =
-      GetTreeNode(frame_tree_node->parent());
+      GetTreeNode(FrameTreeNode::From(frame_tree_node->parent()));
   if (!parent_node) {
     // The renderer should not send a commit for a subframe before its parent.
     // TODO(creis): Kill the renderer if we get here.
@@ -991,16 +1013,6 @@ void NavigationEntryImpl::RemoveEntryForFrame(FrameTreeNode* frame_tree_node,
 
 GURL NavigationEntryImpl::GetHistoryURLForDataURL() {
   return GetBaseURLForDataURL().is_empty() ? GURL() : GetVirtualURL();
-}
-
-void NavigationEntryImpl::set_web_bundle_navigation_info(
-    std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info) {
-  web_bundle_navigation_info_ = std::move(web_bundle_navigation_info);
-}
-
-WebBundleNavigationInfo* NavigationEntryImpl::web_bundle_navigation_info()
-    const {
-  return web_bundle_navigation_info_.get();
 }
 
 }  // namespace content

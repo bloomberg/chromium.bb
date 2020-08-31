@@ -8,14 +8,12 @@
 
 #include <utility>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
-#include "base/rand_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -74,14 +72,6 @@ sync_pb::SyncEnums::GetUpdatesOrigin GetOriginFromReason(
   return sync_pb::SyncEnums::UNKNOWN_ORIGIN;
 }
 
-std::string GenerateCacheGUID() {
-  // Generate a GUID with 128 bits of randomness.
-  const int kGuidBytes = 128 / 8;
-  std::string guid;
-  base::Base64Encode(base::RandBytesAsString(kGuidBytes), &guid);
-  return guid;
-}
-
 // Relevant for UMA, do not change.
 enum class StringConsistency {
   kBothEqual = 0,
@@ -121,8 +111,10 @@ void RecordConsistencyBetweenDirectoryAndPrefs(
     const SyncManager::InitArgs* args) {
   DCHECK(directory);
 
-  const std::string directory_cache_guid = directory->legacy_cache_guid();
-  const std::string directory_birthday = directory->legacy_store_birthday();
+  const std::string directory_cache_guid =
+      directory->legacy_cache_guid_for_uma();
+  const std::string directory_birthday =
+      directory->legacy_store_birthday_for_uma();
 
   const StringConsistency cache_guid_consistency =
       CompareStringsForConsistency(args->cache_guid, directory_cache_guid);
@@ -237,7 +229,7 @@ ModelTypeSet SyncManagerImpl::GetTypesWithEmptyProgressMarkerToken(
 void SyncManagerImpl::ConfigureSyncer(ConfigureReason reason,
                                       ModelTypeSet to_download,
                                       SyncFeatureState sync_feature_state,
-                                      const base::Closure& ready_task) {
+                                      base::OnceClosure ready_task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!ready_task.is_null());
   DCHECK(initialized_);
@@ -246,10 +238,10 @@ void SyncManagerImpl::ConfigureSyncer(ConfigureReason reason,
            << "\n\t"
            << "types to download: " << ModelTypeSetToString(to_download);
   ConfigurationParams params(GetOriginFromReason(reason), to_download,
-                             ready_task);
+                             std::move(ready_task));
 
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE, base::Time());
-  scheduler_->ScheduleConfiguration(params);
+  scheduler_->ScheduleConfiguration(std::move(params));
   if (sync_feature_state != SyncFeatureState::INITIALIZING) {
     cycle_context_->set_is_sync_feature_enabled(sync_feature_state ==
                                                 SyncFeatureState::ON);
@@ -259,6 +251,7 @@ void SyncManagerImpl::ConfigureSyncer(ConfigureReason reason,
 void SyncManagerImpl::Init(InitArgs* args) {
   DCHECK(!initialized_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!args->cache_guid.empty());
   DCHECK(args->post_factory);
   DCHECK(!args->poll_interval.is_zero());
   if (!args->enable_local_sync_backend) {
@@ -266,13 +259,6 @@ void SyncManagerImpl::Init(InitArgs* args) {
   }
   DCHECK(args->cancelation_signal);
   DVLOG(1) << "SyncManager starting Init...";
-
-  // In rare cases, the input cache_guid/birthday pair could be corrupt,
-  // because in normal cases both are empty or neither.
-  if (args->cache_guid.empty() != args->birthday.empty()) {
-    args->cache_guid.clear();
-    args->birthday.clear();
-  }
 
   weak_handle_this_ = MakeWeakHandle(weak_ptr_factory_.GetWeakPtr());
 
@@ -309,26 +295,10 @@ void SyncManagerImpl::Init(InitArgs* args) {
   base::FilePath absolute_db_path = database_path_;
   DCHECK(absolute_db_path.IsAbsolute());
 
-  // If the directory is newly created, and if prefs already contain a cache
-  // GUID, we avoid creating a random GUID for the directory (which would be
-  // inconsistent with prefs). This is relevant mostly for the case where the
-  // new logic is reverted (and the legacy cache GUID in the directory becomes
-  // the authoritative one.
-  base::RepeatingCallback<std::string()> cache_guid_generator =
-      base::BindRepeating(
-          [](const std::string& args_cache_guid) {
-            if (args_cache_guid.empty()) {
-              return GenerateCacheGUID();
-            } else {
-              return args_cache_guid;
-            }
-          },
-          args->cache_guid);
-
   std::unique_ptr<syncable::DirectoryBackingStore> backing_store =
       args->engine_components_factory->BuildDirectoryBackingStore(
           EngineComponentsFactory::STORAGE_ON_DISK,
-          args->authenticated_account_id.ToString(), cache_guid_generator,
+          args->authenticated_account_id.ToString(), args->cache_guid,
           absolute_db_path);
 
   DCHECK(backing_store);
@@ -370,8 +340,14 @@ void SyncManagerImpl::Init(InitArgs* args) {
   DVLOG(1) << "Setting invalidator client ID: " << args->invalidator_client_id;
   allstatus_.SetInvalidatorClientId(args->invalidator_client_id);
 
+  // Add observers after all initializations. Each observer will get initialized
+  // status while being added.
+  for (SyncStatusObserver* observer : args->sync_status_observers) {
+    allstatus_.AddObserver(observer);
+  }
+
   model_type_registry_ = std::make_unique<ModelTypeRegistry>(
-      args->workers, share_, this, base::Bind(&MigrateDirectoryData),
+      args->workers, share_, this, base::BindRepeating(&MigrateDirectoryData),
       args->cancelation_signal,
       sync_encryption_handler_->GetKeystoreKeysHandler());
   sync_encryption_handler_->AddObserver(model_type_registry_.get());
@@ -487,12 +463,7 @@ syncable::Directory* SyncManagerImpl::directory() {
   return share_->directory.get();
 }
 
-// static
-std::string SyncManagerImpl::GenerateCacheGUIDForTest() {
-  return GenerateCacheGUID();
-}
-
-bool SyncManagerImpl::OpenDirectory(InitArgs* args) {
+bool SyncManagerImpl::OpenDirectory(const InitArgs* args) {
   DCHECK(!initialized_) << "Should only happen once";
 
   // Set before Open().
@@ -509,26 +480,6 @@ bool SyncManagerImpl::OpenDirectory(InitArgs* args) {
                 << args->authenticated_account_id;
     return false;
   }
-
-  if (!args->cache_guid.empty()) {
-    // Regular case for sync-enabled: prefs know about a cache GUID and
-    // birthday. The values in Directory may or may not be consistent. If the
-    // directory was OPENED_NEW, the cache GUID is guaranteed to be consistent,
-    // because of how the cache GUID generator is plumbed.
-    DCHECK(!args->birthday.empty());
-  } else {
-    // Prefs are empty: either they are legitimately empty (i.e. sync is
-    // disabled) or migration hasn't happened yet. In both cases, we read
-    // them from directory, which contains a random cache GUID for the first
-    // case, or triggers migration.
-    args->cache_guid = directory()->legacy_cache_guid();
-    args->birthday = directory()->legacy_store_birthday();
-  }
-
-  // Set the in-memory "authoritative" cache GUID exposed by Directory, although
-  // it doesn't get persisted.
-  DCHECK(!args->cache_guid.empty());
-  directory()->set_cache_guid(args->cache_guid);
 
   RecordConsistencyBetweenDirectoryAndPrefs(directory(), args);
 
@@ -593,7 +544,6 @@ void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
 void SyncManagerImpl::InvalidateCredentials() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   connection_manager_->SetAccessToken(std::string());
-  scheduler_->OnCredentialsInvalidated();
 }
 
 void SyncManagerImpl::AddObserver(SyncManager::Observer* observer) {
@@ -971,10 +921,6 @@ void SyncManagerImpl::RefreshTypes(ModelTypeSet types) {
   } else {
     scheduler_->ScheduleLocalRefreshRequest(types, FROM_HERE);
   }
-}
-
-SyncStatus SyncManagerImpl::GetDetailedStatus() const {
-  return allstatus_.status();
 }
 
 void SyncManagerImpl::SaveChanges() {

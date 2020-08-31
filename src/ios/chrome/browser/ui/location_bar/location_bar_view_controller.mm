@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_view_controller.h"
 
+#include "base/bind.h"
 #include "base/ios/ios_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
@@ -18,13 +19,12 @@
 #import "ios/chrome/browser/ui/commands/infobar_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
-#import "ios/chrome/browser/ui/infobars/badge/infobar_badge_button.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_offset_provider.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -345,6 +345,7 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 #pragma mark - private
 
 - (void)locationBarSteadyViewTapped {
+  base::RecordAction(base::UserMetricsAction("MobileLocationBarTapped"));
   [self.delegate locationBarSteadyViewTapped];
 }
 
@@ -409,7 +410,7 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
       [self.locationBarSteadyView.trailingButton
           setImage:
               [[UIImage imageNamed:@"location_bar_voice"]
-                  imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]
+                  imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
           forState:UIControlStateNormal];
       self.locationBarSteadyView.trailingButton.accessibilityLabel =
           l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_VOICE_SEARCH);
@@ -447,32 +448,25 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
   if (sender.state == UIGestureRecognizerStateBegan) {
     [self.locationBarSteadyView becomeFirstResponder];
 
-    // TODO(crbug.com/862583): Investigate why it's necessary to delay showing
-    // the editing menu in the omnibox until the next runloop. If it's not
-    // delayed by a runloop, the menu appears and is hidden again right away
-    // when it's the first time setting the first responder.
-    dispatch_async(dispatch_get_main_queue(), ^{
-      UIMenuController* menu = [UIMenuController sharedMenuController];
-      UIMenuItem* searchCopiedImage = [[UIMenuItem alloc]
-          initWithTitle:l10n_util::GetNSString((IDS_IOS_SEARCH_COPIED_IMAGE))
-                 action:@selector(searchCopiedImage:)];
-      UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
-          initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
-                 action:@selector(visitCopiedLink:)];
-      UIMenuItem* searchCopiedText = [[UIMenuItem alloc]
-          initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
-                 action:@selector(searchCopiedText:)];
-      [menu setMenuItems:@[
-        searchCopiedImage, visitCopiedLink, searchCopiedText
-      ]];
+    UIMenuController* menu = [UIMenuController sharedMenuController];
+    UIMenuItem* searchCopiedImage = [[UIMenuItem alloc]
+        initWithTitle:l10n_util::GetNSString((IDS_IOS_SEARCH_COPIED_IMAGE))
+               action:@selector(searchCopiedImage:)];
+    UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
+        initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
+               action:@selector(visitCopiedLink:)];
+    UIMenuItem* searchCopiedText = [[UIMenuItem alloc]
+        initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
+               action:@selector(searchCopiedText:)];
+    [menu
+        setMenuItems:@[ searchCopiedImage, visitCopiedLink, searchCopiedText ]];
 
-      [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
-      [menu setMenuVisible:YES animated:YES];
-      // When we present the menu manually, it doesn't get focused by Voiceover.
-      // This notification forces voiceover to select the presented menu.
-      UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
-                                      menu);
-    });
+    [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
+    [menu setMenuVisible:YES animated:YES];
+    // When we present the menu manually, it doesn't get focused by Voiceover.
+    // This notification forces voiceover to select the presented menu.
+    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                    menu);
   }
 }
 
@@ -488,7 +482,7 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
     ClipboardRecentContent* clipboardRecentContent =
         ClipboardRecentContent::GetInstance();
     if (self.searchByImageEnabled &&
-        clipboardRecentContent->GetRecentImageFromClipboard().has_value()) {
+        clipboardRecentContent->HasRecentImageFromClipboard()) {
       return action == @selector(searchCopiedImage:);
     }
     if (clipboardRecentContent->GetRecentURLFromClipboard().has_value()) {
@@ -509,11 +503,12 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 - (void)searchCopiedImage:(id)sender {
   RecordAction(
       UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedImage"));
-  if (base::Optional<gfx::Image> optionalImage =
-          ClipboardRecentContent::GetInstance()
-              ->GetRecentImageFromClipboard()) {
-    UIImage* image = optionalImage.value().ToUIImage();
-    [self.dispatcher searchByImage:image];
+  if (ClipboardRecentContent::GetInstance()->HasRecentImageFromClipboard()) {
+    ClipboardRecentContent::GetInstance()->GetRecentImageFromClipboard(
+        base::BindOnce(^(base::Optional<gfx::Image> optionalImage) {
+          UIImage* image = optionalImage.value().ToUIImage();
+          [self.dispatcher searchByImage:image];
+        }));
   }
 }
 

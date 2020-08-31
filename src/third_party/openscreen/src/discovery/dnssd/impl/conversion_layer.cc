@@ -6,11 +6,14 @@
 
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
+#include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "discovery/dnssd/impl/constants.h"
 #include "discovery/dnssd/impl/instance_key.h"
 #include "discovery/dnssd/impl/service_key.h"
-#include "discovery/dnssd/public/dns_sd_instance_record.h"
+#include "discovery/dnssd/public/dns_sd_instance.h"
 #include "discovery/mdns/mdns_records.h"
+#include "discovery/mdns/public/mdns_constants.h"
 
 namespace openscreen {
 namespace discovery {
@@ -42,62 +45,56 @@ DomainName GetInstanceDomainName(const std::string& instance,
   return DomainName{std::move(labels)};
 }
 
-MdnsRecord CreatePtrRecord(const DnsSdInstanceRecord& record,
+inline DomainName GetInstanceDomainName(const InstanceKey& key) {
+  return GetInstanceDomainName(key.instance_id(), key.service_id(),
+                               key.domain_id());
+}
+
+MdnsRecord CreatePtrRecord(const DnsSdInstance& instance,
                            const DomainName& domain) {
   PtrRecordRdata data(domain);
-
-  // TTL specified by RFC 6762 section 10.
-  constexpr std::chrono::seconds ttl(120);
-  auto outer_domain = GetPtrDomainName(record.service_id(), record.domain_id());
+  auto outer_domain =
+      GetPtrDomainName(instance.service_id(), instance.domain_id());
   return MdnsRecord(std::move(outer_domain), DnsType::kPTR, DnsClass::kIN,
-                    RecordType::kShared, ttl, std::move(data));
+                    RecordType::kShared, kPtrRecordTtl, std::move(data));
 }
 
-MdnsRecord CreateSrvRecord(const DnsSdInstanceRecord& record,
+MdnsRecord CreateSrvRecord(const DnsSdInstance& instance,
                            const DomainName& domain) {
-  uint16_t port = record.port();
-
-  // TTL specified by RFC 6762 section 10.
-  constexpr std::chrono::seconds ttl(120);
+  uint16_t port = instance.port();
   SrvRecordRdata data(0, 0, port, domain);
   return MdnsRecord(domain, DnsType::kSRV, DnsClass::kIN, RecordType::kUnique,
-                    ttl, std::move(data));
+                    kSrvRecordTtl, std::move(data));
 }
 
-absl::optional<MdnsRecord> CreateARecord(const DnsSdInstanceRecord& record,
+absl::optional<MdnsRecord> CreateARecord(const DnsSdInstanceEndpoint& endpoint,
                                          const DomainName& domain) {
-  if (!record.address_v4().has_value()) {
+  if (!endpoint.address_v4()) {
     return absl::nullopt;
   }
 
-  // TTL specified by RFC 6762 section 10.
-  constexpr std::chrono::seconds ttl(120);
-  ARecordRdata data(record.address_v4().value().address);
+  ARecordRdata data(endpoint.address_v4());
   return MdnsRecord(domain, DnsType::kA, DnsClass::kIN, RecordType::kUnique,
-                    ttl, std::move(data));
+                    kARecordTtl, std::move(data));
 }
 
-absl::optional<MdnsRecord> CreateAAAARecord(const DnsSdInstanceRecord& record,
-                                            const DomainName& domain) {
-  if (!record.address_v6().has_value()) {
+absl::optional<MdnsRecord> CreateAAAARecord(
+    const DnsSdInstanceEndpoint& endpoint,
+    const DomainName& domain) {
+  if (!endpoint.address_v6()) {
     return absl::nullopt;
   }
 
-  // TTL specified by RFC 6762 section 10.
-  constexpr std::chrono::seconds ttl(120);
-  AAAARecordRdata data(record.address_v6().value().address);
+  AAAARecordRdata data(endpoint.address_v6());
   return MdnsRecord(domain, DnsType::kAAAA, DnsClass::kIN, RecordType::kUnique,
-                    ttl, std::move(data));
+                    kAAAARecordTtl, std::move(data));
 }
 
-MdnsRecord CreateTxtRecord(const DnsSdInstanceRecord& record,
+MdnsRecord CreateTxtRecord(const DnsSdInstance& endpoint,
                            const DomainName& domain) {
-  TxtRecordRdata data(record.txt().GetData());
-
-  // TTL specified by RFC 6762 section 10.
-  constexpr std::chrono::seconds ttl(75 * 60);
+  TxtRecordRdata data(endpoint.txt().GetData());
   return MdnsRecord(domain, DnsType::kTXT, DnsClass::kIN, RecordType::kUnique,
-                    ttl, std::move(data));
+                    kTXTRecordTtl, std::move(data));
 }
 
 }  // namespace
@@ -121,8 +118,9 @@ ErrorOr<DnsSdTxtRecord> CreateFromDnsTxt(const TxtRecordRdata& txt_data) {
       std::string key = text.substr(0, index_of_eq);
       std::string value = text.substr(index_of_eq + 1);
       absl::Span<const uint8_t> data(
-          reinterpret_cast<const uint8_t*>(value.c_str()), value.size());
-      const auto set_result = txt.SetValue(key, data);
+          reinterpret_cast<const uint8_t*>(value.data()), value.size());
+      const auto set_result =
+          txt.SetValue(key, std::vector<uint8_t>(data.begin(), data.end()));
       if (!set_result.ok()) {
         return set_result;
       }
@@ -137,10 +135,19 @@ ErrorOr<DnsSdTxtRecord> CreateFromDnsTxt(const TxtRecordRdata& txt_data) {
   return txt;
 }
 
+DomainName GetDomainName(const InstanceKey& key) {
+  return GetInstanceDomainName(key.instance_id(), key.service_id(),
+                               key.domain_id());
+}
+
+DomainName GetDomainName(const MdnsRecord& record) {
+  return IsPtrRecord(record)
+             ? absl::get<PtrRecordRdata>(record.rdata()).ptr_domain()
+             : record.name();
+}
+
 DnsQueryInfo GetInstanceQueryInfo(const InstanceKey& key) {
-  auto domain = GetInstanceDomainName(key.instance_id(), key.service_id(),
-                                      key.domain_id());
-  return {std::move(domain), DnsType::kANY, DnsClass::kANY};
+  return {GetDomainName(key), DnsType::kANY, DnsClass::kANY};
 }
 
 DnsQueryInfo GetPtrQueryInfo(const ServiceKey& key) {
@@ -149,27 +156,37 @@ DnsQueryInfo GetPtrQueryInfo(const ServiceKey& key) {
 }
 
 bool HasValidDnsRecordAddress(const MdnsRecord& record) {
-  return InstanceKey::CreateFromRecord(record).is_value();
+  return HasValidDnsRecordAddress(GetDomainName(record));
+}
+
+bool HasValidDnsRecordAddress(const DomainName& domain) {
+  return InstanceKey::TryCreate(domain).is_value() &&
+         IsInstanceValid(domain.labels()[0]);
 }
 
 bool IsPtrRecord(const MdnsRecord& record) {
   return record.dns_type() == DnsType::kPTR;
 }
 
-std::vector<MdnsRecord> GetDnsRecords(const DnsSdInstanceRecord& record) {
-  auto domain = GetInstanceDomainName(record.instance_id(), record.service_id(),
-                                      record.domain_id());
+std::vector<MdnsRecord> GetDnsRecords(const DnsSdInstance& instance) {
+  auto domain = GetInstanceDomainName(InstanceKey(instance));
 
-  std::vector<MdnsRecord> records{CreatePtrRecord(record, domain),
-                                  CreateSrvRecord(record, domain),
-                                  CreateTxtRecord(record, domain)};
+  return {CreatePtrRecord(instance, domain), CreateSrvRecord(instance, domain),
+          CreateTxtRecord(instance, domain)};
+}
 
-  auto v4 = CreateARecord(record, domain);
+std::vector<MdnsRecord> GetDnsRecords(const DnsSdInstanceEndpoint& endpoint) {
+  auto domain = GetInstanceDomainName(InstanceKey(endpoint));
+
+  std::vector<MdnsRecord> records =
+      GetDnsRecords(static_cast<DnsSdInstance>(endpoint));
+
+  auto v4 = CreateARecord(endpoint, domain);
   if (v4.has_value()) {
     records.push_back(std::move(v4.value()));
   }
 
-  auto v6 = CreateAAAARecord(record, domain);
+  auto v6 = CreateAAAARecord(endpoint, domain);
   if (v6.has_value()) {
     records.push_back(std::move(v6.value()));
   }

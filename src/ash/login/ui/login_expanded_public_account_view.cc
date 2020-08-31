@@ -39,13 +39,13 @@ namespace {
 
 constexpr const char kLoginExpandedPublicAccountViewClassName[] =
     "LoginExpandedPublicAccountView";
-constexpr int kExpandedViewWidthDp = 600;
+constexpr int kExpandedViewWidthDp = 628;
 constexpr int kExpandedViewHeightDp = 324;
 
 constexpr int kTextLineHeightDp = 16;
 constexpr int kRoundRectCornerRadiusDp = 2;
 constexpr int kBorderThicknessDp = 1;
-constexpr int kRightPaneMarginDp = 28;
+constexpr int kHorizontalMarginPaneDp = 28;
 constexpr int kLabelMarginDp = 20;
 constexpr int kLeftMarginForSelectionButton = 8;
 constexpr int kRightMarginForSelectionButton = 3;
@@ -60,10 +60,10 @@ constexpr SkColor kSelectionMenuTitleColor =
 constexpr SkColor kArrowButtonColor = SkColorSetARGB(0xFF, 0x42, 0x85, 0xF4);
 
 constexpr int kDropDownIconSizeDp = 16;
-constexpr int kArrowButtonSizeDp = 40;
+constexpr int kArrowButtonSizeDp = 48;
 constexpr int kAdvancedViewButtonWidthDp = 190;
 constexpr int kAdvancedViewButtonHeightDp = 16;
-constexpr int kSelectionBoxWidthDp = 178;
+constexpr int kSelectionBoxWidthDp = 192;
 constexpr int kSelectionBoxHeightDp = 28;
 constexpr int kTopSpacingForLabelInAdvancedViewDp = 7;
 constexpr int kTopSpacingForLabelInRegularViewDp = 65;
@@ -246,7 +246,7 @@ class MonitoringWarningView : public NonAccessibleView {
   enum class WarningType { kNone, kSoftWarning, kFullWarning };
 
   void UpdateForUser(const LoginUserInfo& user) {
-    enterprise_domain_ = user.public_account_info->enterprise_domain;
+    enterprise_domain_ = user.public_account_info->device_enterprise_domain;
     UpdateLabel();
   }
 
@@ -298,7 +298,7 @@ class RightPaneView : public NonAccessibleView,
       : on_learn_more_tapped_(on_learn_more_tapped) {
     SetPreferredSize(
         gfx::Size(kExpandedViewWidthDp / 2, kExpandedViewHeightDp));
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(kRightPaneMarginDp)));
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(kHorizontalMarginPaneDp)));
 
     // Create labels view.
     labels_view_ = new NonAccessibleView();
@@ -442,7 +442,7 @@ class RightPaneView : public NonAccessibleView,
       // take selected_language_item_.value, selected_keyboard_item_.value too.
       if (current_user_.public_account_info->using_saml) {
         Shell::Get()->login_screen_controller()->ShowGaiaSignin(
-            true /*can_close*/, current_user_.basic_user_info.account_id);
+            current_user_.basic_user_info.account_id);
       } else {
         Shell::Get()->login_screen_controller()->LaunchPublicSession(
             current_user_.basic_user_info.account_id,
@@ -492,7 +492,12 @@ class RightPaneView : public NonAccessibleView,
       selected_language_item_.value = user.public_account_info->default_locale;
 
     PopulateLanguageItems(user.public_account_info->available_locales);
-    PopulateKeyboardItems(user.public_account_info->keyboard_layouts);
+
+    if (user.public_account_info->default_locale ==
+        selected_language_item_.value) {
+      PopulateKeyboardItems(user.public_account_info->keyboard_layouts);
+    }
+
     language_selection_->SetText(
         base::UTF8ToUTF16(selected_language_item_.title));
     keyboard_selection_->SetText(
@@ -654,6 +659,10 @@ LoginExpandedPublicAccountView::TestApi::TestApi(
 
 LoginExpandedPublicAccountView::TestApi::~TestApi() = default;
 
+LoginUserView* LoginExpandedPublicAccountView::TestApi::user_view() {
+  return view_->user_view_;
+}
+
 views::View* LoginExpandedPublicAccountView::TestApi::advanced_view_button() {
   return view_->right_pane_->advanced_view_button_;
 }
@@ -718,6 +727,53 @@ void LoginExpandedPublicAccountView::TestApi::ResetUserForTest() {
   view_->right_pane_->monitoring_warning_view_->enterprise_domain_.reset();
 }
 
+bool LoginExpandedPublicAccountView::TestApi::SelectLanguage(
+    const std::string& language_code) {
+  for (LoginMenuView::Item item : view_->right_pane_->language_items_) {
+    if (item.value == language_code) {
+      view_->right_pane_->OnLanguageSelected(item);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool LoginExpandedPublicAccountView::TestApi::SelectKeyboard(
+    const std::string& ime_id) {
+  for (LoginMenuView::Item item : view_->right_pane_->keyboard_items_) {
+    if (item.value == ime_id) {
+      view_->right_pane_->OnKeyboardSelected(item);
+      return true;
+    }
+  }
+  return false;
+}
+
+std::vector<LocaleItem> LoginExpandedPublicAccountView::TestApi::GetLocales() {
+  std::vector<LocaleItem> locales;
+  for (LoginMenuView::Item item : view_->right_pane_->language_items_) {
+    LocaleItem locale;
+    locale.title = item.title;
+    locale.language_code = item.value;
+    locales.push_back(locale);
+  }
+  return locales;
+}
+
+void LoginExpandedPublicAccountView::TestApi::OnAdvancedButtonTap() {
+  view_->right_pane_->ButtonPressed(
+      views::Button::AsButton(advanced_view_button()),
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
+                     base::TimeTicks(), 0, 0));
+}
+
+void LoginExpandedPublicAccountView::TestApi::OnSubmitButtonTap() {
+  view_->right_pane_->ButtonPressed(
+      views::Button::AsButton(submit_button()),
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
+                     base::TimeTicks(), 0, 0));
+}
+
 LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
     const OnPublicSessionViewDismissed& on_dismissed)
     : NonAccessibleView(kLoginExpandedPublicAccountViewClassName),
@@ -729,8 +785,8 @@ LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
   SetPreferredSize(gfx::Size(kExpandedViewWidthDp, kExpandedViewHeightDp));
 
   user_view_ = new LoginUserView(
-      LoginDisplayStyle::kLarge, false /*show_dropdown*/, true /*show_domain*/,
-      base::DoNothing(), base::RepeatingClosure(), base::RepeatingClosure());
+      LoginDisplayStyle::kLarge, false /*show_dropdown*/, base::DoNothing(),
+      base::RepeatingClosure(), base::RepeatingClosure());
   user_view_->SetForceOpaque(true);
   user_view_->SetTapEnabled(false);
 

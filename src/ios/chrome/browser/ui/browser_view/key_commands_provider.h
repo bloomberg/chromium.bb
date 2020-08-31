@@ -9,7 +9,8 @@
 
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
+#import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
+#import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 
 @protocol KeyCommandsPlumbing <NSObject>
 
@@ -51,13 +52,17 @@
 // BrowserViewController.
 @interface KeyCommandsProvider : NSObject
 
-- (NSArray*)
-    keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
-        baseViewController:(UIViewController*)baseViewController
-                dispatcher:
-                    (id<ApplicationCommands, BrowserCommands, OmniboxFocuser>)
-                        dispatcher
-               editingText:(BOOL)editingText;
+- (NSArray*)keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
+                baseViewController:(UIViewController*)baseViewController
+                        dispatcher:(id<ApplicationCommands,
+                                       BrowserCommands,
+                                       FindInPageCommands>)dispatcher
+                    omniboxHandler:(id<OmniboxCommands>)omniboxHandler
+                       editingText:(BOOL)editingText;
+
+// Set this flag to YES when the key shortcut bound to Escape key that dismisses
+// modals should be enabled.
+@property(nonatomic, assign) BOOL canDismissModals;
 
 @end
 

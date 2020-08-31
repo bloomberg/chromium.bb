@@ -1,5 +1,4 @@
 include_rules = [
-  "+chrome/browser/ui/android/widget",
-  "+chrome/browser/util/android/java/src/org/chromium/chrome/browser/util",
+  "+components/browser_ui/widget/android",
   "+content/public/android/java/src/org/chromium/content_public",
 ]

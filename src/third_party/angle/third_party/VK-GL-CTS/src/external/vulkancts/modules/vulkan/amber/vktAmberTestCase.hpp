@@ -68,9 +68,8 @@ public:
 	// Check that the Vulkan implementation supports this test.
 	// We have the principle that client code in dEQP should independently
 	// determine if the test should be supported:
-	//  - If any of the extensions registered via
-	//    |addRequiredDeviceExtension| is not supported then throw a
-	//    NotSupported exception.
+	//  - If any of the extensions registered via |addRequirement| is not
+	//    supported then throw a NotSupported exception.
 	//  - Otherwise, we do a secondary sanity check depending on code inside
 	//    Amber itself: if the Amber test says it is not supported, then
 	//    throw an internal error exception.
@@ -117,6 +116,11 @@ AmberTestCase* createAmberTestCase (tcu::TestContext&				testCtx,
 									const char*						category,
 									const std::string&				filename,
 									const std::vector<std::string>	requirements = std::vector<std::string>());
+
+void createAmberTestsFromIndexFile (tcu::TestContext&	testCtx,
+									tcu::TestCaseGroup*	group,
+									const std::string	filename,
+									const char*			category);
 
 } // cts_amber
 } // vkt

@@ -5,14 +5,19 @@
 #include <atk/atk.h>
 #include <dlfcn.h>
 
+#include <string>
+#include <vector>
+
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_browsertest.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/accessibility_notification_waiter.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
@@ -195,6 +200,62 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestTextAtOffsetWithBoundaryCharacterAndEmbeddedObject) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(<!DOCTYPE html>
+      <div contenteditable>
+        Before<img alt="image">after.
+      </div>
+      )HTML");
+
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_EQ(1, atk_object_get_n_accessible_children(document));
+
+  AtkObject* contenteditable = atk_object_ref_accessible_child(document, 0);
+  ASSERT_NE(nullptr, contenteditable);
+  ASSERT_EQ(ATK_ROLE_SECTION, atk_object_get_role(contenteditable));
+  ASSERT_TRUE(ATK_IS_TEXT(contenteditable));
+
+  AtkText* contenteditable_text = ATK_TEXT(contenteditable);
+  int character_count = atk_text_get_character_count(contenteditable_text);
+  ASSERT_EQ(13, character_count);
+
+  const base::string16 embedded_character(
+      1, ui::AXPlatformNodeAuraLinux::kEmbeddedCharacter);
+  const std::vector<const std::string> expected_hypertext = {
+      "B", "e", "f", "o", "r", "e", base::UTF16ToUTF8(embedded_character),
+      "a", "f", "t", "e", "r", "."};
+
+  // "Before".
+  //
+  // The embedded object character representing the image is at offset 6.
+  for (int i = 0; i <= 6; ++i) {
+    CheckTextAtOffset(contenteditable_text, i, ATK_TEXT_BOUNDARY_CHAR, i,
+                      (i + 1), expected_hypertext[i].c_str());
+  }
+
+  // "after.".
+  //
+  // Note that according to the ATK Spec, an offset that is equal to
+  // "character_count" is not permitted.
+  for (int i = 7; i < character_count; ++i) {
+    CheckTextAtOffset(contenteditable_text, i, ATK_TEXT_BOUNDARY_CHAR, i,
+                      (i + 1), expected_hypertext[i].c_str());
+  }
+
+  ASSERT_EQ(3, atk_object_get_n_accessible_children(contenteditable));
+  // The image is the second child.
+  AtkObject* image = atk_object_ref_accessible_child(contenteditable, 1);
+  ASSERT_NE(nullptr, image);
+  ASSERT_EQ(ATK_ROLE_IMAGE, atk_object_get_role(image));
+
+  // The alt text of the image is not navigable as text.
+  ASSERT_FALSE(ATK_IS_TEXT(image));
+
+  g_object_unref(image);
+  g_object_unref(contenteditable_text);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
                        TestMultilingualTextAtOffsetWithBoundaryCharacter) {
   AtkText* atk_text = SetUpInputField();
   ASSERT_NE(nullptr, atk_text);
@@ -255,7 +316,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 
   // Single line text fields should return the whole text.
   CheckTextAtOffset(atk_text, 0, ATK_TEXT_BOUNDARY_LINE_START, 0,
-                    InputContentsString().size(),
+                    int{InputContentsString().size()},
                     InputContentsString().c_str());
 
   g_object_unref(atk_text);
@@ -274,7 +335,52 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 
   // Last line does not have a trailing newline.
   CheckTextAtOffset(atk_text, 32, ATK_TEXT_BOUNDARY_LINE_START, 32,
-                    InputContentsString().size(), "\"KHTML, like\".");
+                    int{InputContentsString().size()}, "\"KHTML, like\".");
+
+  g_object_unref(atk_text);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestBlankLineTextAtOffsetWithBoundaryLine) {
+  AtkText* atk_text = SetUpTextareaField();
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kValueChanged);
+  // Add a blank line at the end of the textarea.
+  ExecuteScript(base::UTF8ToUTF16(R"SCRIPT(
+      const textarea = document.querySelector('textarea');
+      textarea.value += '\n';
+      )SCRIPT"));
+  waiter.WaitForNotification();
+
+  // The second last line should have an additional trailing newline. Also,
+  // Blink represents the blank line with a newline character, so in total there
+  // should be two more newlines. The second newline is not part of the HTML
+  // value attribute however.
+  int contents_string_length = int{InputContentsString().size()} + 1;
+  CheckTextAtOffset(atk_text, 32, ATK_TEXT_BOUNDARY_LINE_START, 32,
+                    contents_string_length, "\"KHTML, like\".\n");
+  CheckTextAtOffset(atk_text, 46, ATK_TEXT_BOUNDARY_LINE_START, 32,
+                    contents_string_length, "\"KHTML, like\".\n");
+
+  // An offset one past the last character should return the last line which is
+  // blank. This is represented by Blink with yet another line break.
+  CheckTextAtOffset(atk_text, contents_string_length,
+                    ATK_TEXT_BOUNDARY_LINE_START, contents_string_length,
+                    (contents_string_length + 1), "\n");
+
+  {
+    // There should be no text after the blank line.
+    int start_offset = 0;
+    int end_offset = 0;
+    char* text = atk_text_get_text_at_offset(
+        atk_text, (contents_string_length + 1), ATK_TEXT_BOUNDARY_LINE_START,
+        &start_offset, &end_offset);
+    EXPECT_EQ(0, start_offset);
+    EXPECT_EQ(0, end_offset);
+    EXPECT_EQ(nullptr, text);
+  }
 
   g_object_unref(atk_text);
 }
@@ -288,10 +394,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   int n_characters = atk_text_get_character_count(atk_text);
   ASSERT_LT(newline_offset, n_characters);
 
-  const base::string16 string16_embed(
+  const base::string16 embedded_character(
       1, ui::AXPlatformNodeAuraLinux::kEmbeddedCharacter);
   std::string expected_string = "Game theory is \"the study of " +
-                                base::UTF16ToUTF8(string16_embed) +
+                                base::UTF16ToUTF8(embedded_character) +
                                 " of conflict and\n";
   for (int i = 0; i <= newline_offset; ++i) {
     CheckTextAtOffset(atk_text, i, ATK_TEXT_BOUNDARY_LINE_START, 0,
@@ -1566,6 +1672,63 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 
   g_object_unref(div1);
   g_object_unref(div2);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestOffsetsOfSelectionAll) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <p>Hello world.</p>
+      <p>Another paragraph.</p>
+      <p>Goodbye world.</p>
+      <script>
+      var root = document.documentElement;
+      window.getSelection().selectAllChildren(root);
+      </script>)HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_TRUE(ATK_IS_COMPONENT(document));
+
+  auto* node = static_cast<ui::AXPlatformNodeAuraLinux*>(
+      ui::AXPlatformNode::FromNativeViewAccessible(document));
+  std::pair<int, int> offsets = node->GetSelectionOffsetsForAtk();
+  EXPECT_EQ(0, offsets.first);
+  EXPECT_EQ(3, offsets.second);
+
+  std::vector<int> expected = {12, 18, 14};  // text length of each child
+  int number_of_children = atk_object_get_n_accessible_children(document);
+  for (int i = 0; i < number_of_children; i++) {
+    AtkObject* p = atk_object_ref_accessible_child(document, i);
+    EXPECT_NE(p, nullptr);
+    auto* node = static_cast<ui::AXPlatformNodeAuraLinux*>(
+        ui::AXPlatformNode::FromNativeViewAccessible(p));
+    std::pair<int, int> offsets = node->GetSelectionOffsetsForAtk();
+    EXPECT_EQ(0, offsets.first);
+    EXPECT_EQ(expected[i], offsets.second);
+    g_object_unref(p);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestGetIndexInParent) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <p>Hello world</p>
+      <p>Another paragraph.</p>
+      <p>Goodbye world.</p>
+      )HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_TRUE(ATK_IS_COMPONENT(document));
+  EXPECT_EQ(0, atk_object_get_index_in_parent(document));
+
+  int number_of_children = atk_object_get_n_accessible_children(document);
+  for (int i = 0; i < number_of_children; i++) {
+    AtkObject* p = atk_object_ref_accessible_child(document, i);
+    EXPECT_NE(p, nullptr);
+    EXPECT_EQ(i, atk_object_get_index_in_parent(p));
+    g_object_unref(p);
+  }
 }
 
 }  // namespace content

@@ -10,16 +10,16 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.ObservableSupplier;
+import org.chromium.base.SysUtils;
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
-import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceCoordinator;
@@ -27,8 +27,7 @@ import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestions;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionsOrchestrator;
 import org.chromium.chrome.features.start_surface.StartSurface;
-import org.chromium.chrome.features.start_surface.StartSurfaceCoordinator;
-import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
+import org.chromium.chrome.features.start_surface.StartSurfaceDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -38,8 +37,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
     public TasksSurface createTasksSurface(ChromeActivity activity, PropertyModel propertyModel,
-            FakeboxDelegate fakeboxDelegate, boolean isTabCarousel) {
-        return new TasksSurfaceCoordinator(activity, propertyModel, fakeboxDelegate, isTabCarousel);
+            @TabSwitcherType int tabSwitcherType, boolean hasMVTiles) {
+        return new TasksSurfaceCoordinator(activity, propertyModel, tabSwitcherType, hasMVTiles);
     }
 
     @Override
@@ -49,22 +48,25 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + SYNTHETIC_TRIAL_POSTFIX,
                     "Downloaded_Enabled");
         }
+
         return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
-                activity.getCompositorViewHolder().getDynamicResourceLoader(),
                 activity.getFullscreenManager(), activity,
-                activity.getMenuOrKeyboardActionController(), activity, containerView,
-                TabListCoordinator.TabListMode.GRID);
+                activity.getMenuOrKeyboardActionController(), containerView,
+                activity.getShareDelegateSupplier(),
+                TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()
+                                && SysUtils.isLowEndDevice()
+                        ? TabListCoordinator.TabListMode.LIST
+                        : TabListCoordinator.TabListMode.GRID);
     }
 
     @Override
     public TabSwitcher createCarouselTabSwitcher(ChromeActivity activity, ViewGroup containerView) {
         return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
-                activity.getCompositorViewHolder().getDynamicResourceLoader(),
                 activity.getFullscreenManager(), activity,
-                activity.getMenuOrKeyboardActionController(), activity, containerView,
-                TabListCoordinator.TabListMode.CAROUSEL);
+                activity.getMenuOrKeyboardActionController(), containerView,
+                activity.getShareDelegateSupplier(), TabListCoordinator.TabListMode.CAROUSEL);
     }
 
     @Override
@@ -76,12 +78,13 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
     public Layout createStartSurfaceLayout(Context context, LayoutUpdateHost updateHost,
             LayoutRenderHost renderHost, StartSurface startSurface) {
-        return new StartSurfaceLayout(context, updateHost, renderHost, startSurface);
+        return StartSurfaceDelegate.createStartSurfaceLayout(
+                context, updateHost, renderHost, startSurface);
     }
 
     @Override
     public StartSurface createStartSurface(ChromeActivity activity) {
-        return new StartSurfaceCoordinator(activity);
+        return StartSurfaceDelegate.createStartSurface(activity);
     }
 
     @Override

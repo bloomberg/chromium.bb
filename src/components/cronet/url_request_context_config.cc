@@ -86,7 +86,6 @@ const char kQuicRetryOnAlternateNetworkBeforeHandshake[] =
 const char kQuicRaceStaleDNSOnConnection[] = "race_stale_dns_on_connection";
 const char kQuicDisableBidirectionalStreams[] =
     "quic_disable_bidirectional_streams";
-const char kQuicRaceCertVerification[] = "race_cert_verification";
 const char kQuicHostWhitelist[] = "host_whitelist";
 const char kQuicEnableSocketRecvOptimization[] =
     "enable_socket_recv_optimization";
@@ -207,30 +206,6 @@ ParseNetworkErrorLoggingHeaders(
   return result;
 }
 
-quic::ParsedQuicVersionVector ParseQuicVersions(
-    const std::string& quic_versions) {
-  quic::ParsedQuicVersionVector supported_versions;
-  quic::QuicTransportVersionVector all_supported_versions =
-      quic::AllSupportedTransportVersions();
-
-  for (const base::StringPiece& version : base::SplitStringPiece(
-           quic_versions, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    auto it = all_supported_versions.begin();
-    while (it != all_supported_versions.end()) {
-      if (quic::QuicVersionToString(*it) == version) {
-        supported_versions.push_back(
-            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, *it));
-        // Remove the supported version to deduplicate versions extracted from
-        // |quic_versions|.
-        all_supported_versions.erase(it);
-        break;
-      }
-      ++it;
-    }
-  }
-  return supported_versions;
-}
-
 }  // namespace
 
 URLRequestContextConfig::QuicHint::QuicHint(const std::string& host,
@@ -340,7 +315,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       std::string quic_version_string;
       if (quic_args->GetString(kQuicVersion, &quic_version_string)) {
         quic::ParsedQuicVersionVector supported_versions =
-            ParseQuicVersions(quic_version_string);
+            quic::ParseQuicVersionVectorString(quic_version_string);
         if (!supported_versions.empty())
           quic_params->supported_versions = supported_versions;
       }
@@ -524,12 +499,6 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
                                 &quic_disable_bidirectional_streams)) {
         quic_params->disable_bidirectional_streams =
             quic_disable_bidirectional_streams;
-      }
-
-      bool quic_race_cert_verification = false;
-      if (quic_args->GetBoolean(kQuicRaceCertVerification,
-                                &quic_race_cert_verification)) {
-        quic_params->race_cert_verification = quic_race_cert_verification;
       }
 
       std::string quic_host_allowlist;

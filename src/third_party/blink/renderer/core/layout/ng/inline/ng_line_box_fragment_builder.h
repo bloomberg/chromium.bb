@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LINE_BOX_FRAGMENT_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LINE_BOX_FRAGMENT_BUILDER_H_
 
-#include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
@@ -21,6 +21,7 @@ namespace blink {
 
 class ComputedStyle;
 class NGInlineBreakToken;
+struct NGInlineItemResult;
 
 class CORE_EXPORT NGLineBoxFragmentBuilder final
     : public NGContainerFragmentBuilder {
@@ -75,13 +76,17 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   struct Child {
     DISALLOW_NEW();
 
+    scoped_refptr<NGFragmentItem> fragment_item;
     scoped_refptr<const NGLayoutResult> layout_result;
     scoped_refptr<const NGPhysicalTextFragment> fragment;
+    const NGInlineItem* inline_item = nullptr;
+    // |NGInlineItemResult| to create a text fragment from.
+    NGInlineItemResult* item_result = nullptr;
     LayoutObject* out_of_flow_positioned_box = nullptr;
     LayoutObject* unpositioned_float = nullptr;
     // The offset of the border box, initially in this child coordinate system.
     // |ComputeInlinePositions()| converts it to the offset within the line box.
-    LogicalOffset offset;
+    LogicalRect rect;
     // The offset of a positioned float wrt. the root BFC. This should only be
     // set for positioned floats.
     NGBfcOffset bfc_offset;
@@ -103,26 +108,52 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     Child() = default;
     // Create a placeholder. A placeholder does not have a fragment nor a bidi
     // level.
-    Child(LogicalOffset offset) : offset(offset) {}
+    Child(LayoutUnit block_offset, LayoutUnit block_size)
+        : rect(LayoutUnit(), block_offset, LayoutUnit(), block_size) {}
+    Child(const NGInlineItem& inline_item,
+          const LogicalRect& rect,
+          unsigned children_count)
+        : inline_item(&inline_item),
+          rect(rect),
+          children_count(children_count) {}
     // Crete a bidi control. A bidi control does not have a fragment, but has
     // bidi level and affects bidi reordering.
     Child(UBiDiLevel bidi_level) : bidi_level(bidi_level) {}
     // Create an in-flow |NGLayoutResult|.
     Child(scoped_refptr<const NGLayoutResult> layout_result,
-          LogicalOffset offset,
-          LayoutUnit inline_size,
+          const LogicalRect& rect,
+          unsigned children_count,
           UBiDiLevel bidi_level)
         : layout_result(std::move(layout_result)),
-          offset(offset),
+          rect(rect),
+          children_count(children_count),
+          bidi_level(bidi_level) {}
+    Child(scoped_refptr<const NGLayoutResult> layout_result,
+          LogicalOffset offset,
+          LayoutUnit inline_size,
+          unsigned children_count,
+          UBiDiLevel bidi_level)
+        : layout_result(std::move(layout_result)),
+          rect(offset, LogicalSize()),
+          inline_size(inline_size),
+          children_count(children_count),
+          bidi_level(bidi_level) {}
+    // Create an in-flow text fragment.
+    Child(NGInlineItemResult* item_result,
+          LayoutUnit block_offset,
+          LayoutUnit inline_size,
+          LayoutUnit text_height,
+          UBiDiLevel bidi_level)
+        : item_result(item_result),
+          rect(LayoutUnit(), block_offset, LayoutUnit(), text_height),
           inline_size(inline_size),
           bidi_level(bidi_level) {}
-    // Create an in-flow |NGPhysicalTextFragment|.
     Child(scoped_refptr<const NGPhysicalTextFragment> fragment,
           LogicalOffset offset,
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)
         : fragment(std::move(fragment)),
-          offset(offset),
+          rect(offset, LogicalSize()),
           inline_size(inline_size),
           bidi_level(bidi_level) {}
     Child(scoped_refptr<const NGPhysicalTextFragment> fragment,
@@ -130,7 +161,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)
         : fragment(std::move(fragment)),
-          offset({LayoutUnit(), block_offset}),
+          rect(LayoutUnit(), block_offset, LayoutUnit(), LayoutUnit()),
           inline_size(inline_size),
           bidi_level(bidi_level) {}
     // Create an out-of-flow positioned object.
@@ -152,9 +183,12 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
           bidi_level(bidi_level) {}
 
     bool HasInFlowFragment() const {
+      if (fragment_item)
+        return true;
       if (fragment)
         return true;
-
+      if (item_result)
+        return true;
       if (layout_result && !layout_result->PhysicalFragment().IsFloating())
         return true;
 
@@ -180,10 +214,19 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
       }
       return false;
     }
+    const LogicalOffset& Offset() const { return rect.offset; }
+    LayoutUnit InlineOffset() const { return rect.offset.inline_offset; }
+    const LogicalSize& Size() const { return rect.size; }
     const NGPhysicalFragment* PhysicalFragment() const {
       if (layout_result)
         return &layout_result->PhysicalFragment();
       return fragment.get();
+    }
+    TextDirection ResolvedDirection() const {
+      // Inline boxes are not leaves that they don't have directions.
+      DCHECK(HasBidiLevel() || layout_result->PhysicalFragment().IsInlineBox());
+      return HasBidiLevel() ? DirectionFromLevel(bidi_level)
+                            : TextDirection::kLtr;
     }
   };
 
@@ -234,11 +277,18 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     void InsertChild(unsigned index);
     void InsertChild(unsigned index,
                      scoped_refptr<const NGLayoutResult> layout_result,
-                     const LogicalOffset& offset,
-                     LayoutUnit inline_size,
-                     UBiDiLevel bidi_level) {
-      children_.insert(index, Child{std::move(layout_result), offset,
-                                    inline_size, bidi_level});
+                     const LogicalRect& rect,
+                     unsigned children_count) {
+      WillInsertChild(index);
+      children_.insert(index, Child(std::move(layout_result), rect,
+                                    children_count, /* bidi_level */ 0));
+    }
+    void InsertChild(unsigned index,
+                     const NGInlineItem& inline_item,
+                     const LogicalRect& rect,
+                     unsigned children_count) {
+      WillInsertChild(index);
+      children_.insert(index, Child(inline_item, rect, children_count));
     }
 
     void MoveInInlineDirection(LayoutUnit);
@@ -246,7 +296,13 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     void MoveInBlockDirection(LayoutUnit);
     void MoveInBlockDirection(LayoutUnit, unsigned start, unsigned end);
 
+    // Create |NGPhysicalTextFragment| for all text children.
+    void CreateTextFragments(WritingMode writing_mode,
+                             const String& text_content);
+
    private:
+    void WillInsertChild(unsigned index);
+
     Vector<Child, 16> children_;
   };
 

@@ -5,9 +5,8 @@
 #include "chrome/browser/apps/intent_helper/mac_apps_navigation_throttle.h"
 
 #import <Cocoa/Cocoa.h>
-#include <dlfcn.h>
+#import <SafariServices/SafariServices.h>
 
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/public/browser/navigation_handle.h"
@@ -16,10 +15,6 @@
 namespace apps {
 
 namespace {
-
-const char kSafariServicesFrameworkPath[] =
-    "/System/Library/Frameworks/SafariServices.framework/"
-    "Versions/Current/SafariServices";
 
 IntentPickerAppInfo AppInfoForAppUrl(NSURL* app_url) {
   NSString* app_name = nil;
@@ -43,30 +38,17 @@ IntentPickerAppInfo AppInfoForAppUrl(NSURL* app_url) {
                              base::SysNSStringToUTF8(app_name));
 }
 
-// TODO(avi): When we move to the 10.15 SDK, use correct weak-linking of this
-// framework rather than dlopen(), and correct @available syntax to access this
-// class.
-SFUniversalLink* GetUniversalLink(const GURL& url) {
-  static void* safari_services = []() -> void* {
-    if (@available(macOS 10.15, *))
-      return dlopen(kSafariServicesFrameworkPath, RTLD_LAZY);
-    return nullptr;
-  }();
-
-  static const Class SFUniversalLink_class =
-      NSClassFromString(@"SFUniversalLink");
-
-  if (!safari_services || !SFUniversalLink_class)
-    return nil;
-
-  return [[[SFUniversalLink_class alloc]
-      initWithWebpageURL:net::NSURLWithGURL(url)] autorelease];
-}
-
 base::Optional<IntentPickerAppInfo> AppInfoForUrl(const GURL& url) {
-  SFUniversalLink* link = GetUniversalLink(url);
-  if (link)
-    return AppInfoForAppUrl(link.applicationURL);
+  if (@available(macOS 10.15, *)) {
+    NSURL* nsurl = net::NSURLWithGURL(url);
+    if (!nsurl)
+      return base::nullopt;
+
+    SFUniversalLink* link =
+        [[[SFUniversalLink alloc] initWithWebpageURL:nsurl] autorelease];
+    if (link)
+      return AppInfoForAppUrl(link.applicationURL);
+  }
 
   return base::nullopt;
 }
@@ -149,13 +131,6 @@ void MacAppsNavigationThrottle::OnIntentPickerClosed(
                  configuration:@{}
                          error:nil];
     }
-    PickerAction action = apps::AppsNavigationThrottle::GetPickerAction(
-        entry_type, close_reason, should_persist);
-    Platform platform = apps::AppsNavigationThrottle::GetDestinationPlatform(
-        launch_name, action);
-    apps::AppsNavigationThrottle::RecordUma(launch_name, entry_type,
-                                            close_reason, Source::kHttpOrHttps,
-                                            should_persist, action, platform);
     return;
   }
   apps::AppsNavigationThrottle::OnIntentPickerClosed(

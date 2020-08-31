@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_VIEW_H_
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/permissions/permission_util.h"
+#include "components/permissions/permission_util.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace base {
@@ -39,14 +40,13 @@ class NativeFileSystemDirectoryAccessConfirmationView
   static views::Widget* ShowDialog(
       const url::Origin& origin,
       const base::FilePath& path,
-      base::OnceCallback<void(PermissionAction result)> callback,
-      content::WebContents* web_contents);
+      base::OnceCallback<void(permissions::PermissionAction result)> callback,
+      content::WebContents* web_contents,
+      base::ScopedClosureRunner fullscreen_block);
 
   // views::DialogDelegateView:
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
-  bool Accept() override;
-  bool Cancel() override;
   gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
   // It's really important that this dialog *does not* accept by default /
@@ -58,9 +58,11 @@ class NativeFileSystemDirectoryAccessConfirmationView
   NativeFileSystemDirectoryAccessConfirmationView(
       const url::Origin& origin,
       const base::FilePath& path,
-      base::OnceCallback<void(PermissionAction result)> callback);
+      base::OnceCallback<void(permissions::PermissionAction result)> callback,
+      base::ScopedClosureRunner fullscreen_block);
 
-  base::OnceCallback<void(PermissionAction result)> callback_;
+  base::OnceCallback<void(permissions::PermissionAction result)> callback_;
+  base::ScopedClosureRunner fullscreen_block_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemDirectoryAccessConfirmationView);
 };

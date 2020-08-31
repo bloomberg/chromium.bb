@@ -37,9 +37,15 @@ class LocationBarModelDelegate {
   // exists. Otherwise returns false and leaves |url| unmodified.
   virtual bool GetURL(GURL* url) const = 0;
 
-  // Returns whether we should prevent elision of the display URL and turn off
-  // query in omnibox. Based on whether user has a specified extension enabled.
-  virtual bool ShouldPreventElision() const;
+  // Returns whether to prevent elision of the display URL and turn off
+  // query in omnibox. Based on whether user has a specified extension or pref
+  // enabled. If true, the only elisions should be username/password and
+  // trailing slash on bare hostname.
+  virtual bool ShouldPreventElision();
+
+  // Returns whether everything after the hostname should be trimmed from the
+  // display URL.
+  virtual bool ShouldTrimDisplayUrlAfterHostName() const;
 
   // Returns whether the URL for the current navigation entry should be
   // in the location bar.

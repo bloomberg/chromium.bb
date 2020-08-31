@@ -6,9 +6,12 @@
 
 #include <algorithm>
 #include <numeric>
+#include <utility>
 
 #include "base/big_endian.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/rand_util.h"
 #include "net/base/ip_address.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/public/dns_protocol.h"
@@ -439,9 +442,8 @@ bool OptRecordRdata::ContainsOptCode(uint16_t opt_code) const {
       [=](const OptRecordRdata::Opt& opt) { return opt.code() == opt_code; });
 }
 
-OptRecordRdata::Opt::Opt(uint16_t code, base::StringPiece data) : code_(code) {
-  data.CopyToString(&data_);
-}
+OptRecordRdata::Opt::Opt(uint16_t code, base::StringPiece data)
+    : code_(code), data_(data) {}
 
 bool OptRecordRdata::Opt::operator==(const OptRecordRdata::Opt& other) const {
   return code_ == other.code_ && data_ == other.data_;
@@ -511,6 +513,117 @@ bool EsniRecordRdata::IsEqual(const RecordRdata* other) const {
       static_cast<const EsniRecordRdata*>(other);
   return esni_keys_ == esni_other->esni_keys_ &&
          addresses_ == esni_other->addresses_;
+}
+
+IntegrityRecordRdata::IntegrityRecordRdata(Nonce nonce)
+    : nonce_(std::move(nonce)), digest_(Hash(nonce_)), is_intact_(true) {}
+
+IntegrityRecordRdata::IntegrityRecordRdata(Nonce nonce,
+                                           Digest digest,
+                                           size_t rdata_len)
+    : nonce_(std::move(nonce)),
+      digest_(digest),
+      is_intact_(rdata_len == LengthForSerialization(nonce_) &&
+                 Hash(nonce_) == digest_) {}
+
+IntegrityRecordRdata::IntegrityRecordRdata(IntegrityRecordRdata&&) = default;
+IntegrityRecordRdata::IntegrityRecordRdata(const IntegrityRecordRdata&) =
+    default;
+IntegrityRecordRdata::~IntegrityRecordRdata() = default;
+
+bool IntegrityRecordRdata::IsEqual(const RecordRdata* other) const {
+  if (other->Type() != Type())
+    return false;
+  const IntegrityRecordRdata* integrity_other =
+      static_cast<const IntegrityRecordRdata*>(other);
+  return is_intact_ && integrity_other->is_intact_ &&
+         nonce_ == integrity_other->nonce_ &&
+         digest_ == integrity_other->digest_;
+}
+
+uint16_t IntegrityRecordRdata::Type() const {
+  return kType;
+}
+
+// static
+std::unique_ptr<IntegrityRecordRdata> IntegrityRecordRdata::Create(
+    const base::StringPiece& data) {
+  base::BigEndianReader reader(data.data(), data.size());
+  // Parse a U16-prefixed |Nonce| followed by a |Digest|.
+  base::StringPiece parsed_nonce, parsed_digest;
+
+  // Note that even if this parse fails, we still want to create a record.
+  bool parse_success = reader.ReadU16LengthPrefixed(&parsed_nonce) &&
+                       reader.ReadPiece(&parsed_digest, kDigestLen);
+
+  const std::string kZeroDigest = std::string(kDigestLen, 0);
+  if (!parse_success) {
+    parsed_nonce = base::StringPiece();
+    parsed_digest = base::StringPiece(kZeroDigest);
+  }
+
+  Digest digest_copy{};
+  CHECK_EQ(parsed_digest.size(), digest_copy.size());
+  std::copy_n(parsed_digest.begin(), parsed_digest.size(), digest_copy.begin());
+
+  auto record = base::WrapUnique(
+      new IntegrityRecordRdata(Nonce(parsed_nonce.begin(), parsed_nonce.end()),
+                               digest_copy, data.size()));
+
+  // A failed parse implies |!IsIntact()|, though the converse is not true. The
+  // record may be considered not intact if there were trailing bytes in |data|
+  // or if |parsed_digest| is not the hash of |parsed_nonce|.
+  if (!parse_success)
+    DCHECK(!record->IsIntact());
+  return record;
+}
+
+// static
+IntegrityRecordRdata IntegrityRecordRdata::Random() {
+  constexpr uint16_t kMinNonceLen = 32;
+  constexpr uint16_t kMaxNonceLen = 512;
+
+  // Construct random nonce.
+  const uint16_t nonce_len = base::RandInt(kMinNonceLen, kMaxNonceLen);
+  Nonce nonce(nonce_len);
+  base::RandBytes(nonce.data(), nonce.size());
+
+  return IntegrityRecordRdata(std::move(nonce));
+}
+
+base::Optional<std::vector<uint8_t>> IntegrityRecordRdata::Serialize() const {
+  if (!is_intact_) {
+    return base::nullopt;
+  }
+
+  // Create backing buffer and writer.
+  std::vector<uint8_t> serialized(LengthForSerialization(nonce_));
+  base::BigEndianWriter writer(reinterpret_cast<char*>(serialized.data()),
+                               serialized.size());
+
+  // Writes will only fail if the buffer is too small. We are asserting here
+  // that our buffer is exactly the right size, which is expected to always be
+  // true if |is_intact_|.
+  CHECK(writer.WriteU16(nonce_.size()));
+  CHECK(writer.WriteBytes(nonce_.data(), nonce_.size()));
+  CHECK(writer.WriteBytes(digest_.data(), digest_.size()));
+  CHECK_EQ(writer.remaining(), 0u);
+
+  return serialized;
+}
+
+// static
+IntegrityRecordRdata::Digest IntegrityRecordRdata::Hash(const Nonce& nonce) {
+  Digest digest{};
+  SHA256(nonce.data(), nonce.size(), digest.data());
+  return digest;
+}
+
+// static
+size_t IntegrityRecordRdata::LengthForSerialization(const Nonce& nonce) {
+  // A serialized INTEGRITY record consists of a U16-prefixed |nonce_|, followed
+  // by the bytes of |digest_|.
+  return sizeof(uint16_t) + nonce.size() + kDigestLen;
 }
 
 }  // namespace net

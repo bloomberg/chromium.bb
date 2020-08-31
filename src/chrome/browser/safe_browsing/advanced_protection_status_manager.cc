@@ -5,16 +5,19 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/features.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -30,6 +33,10 @@ const base::TimeDelta kRefreshAdvancedProtectionDelay =
     base::TimeDelta::FromDays(1);
 const base::TimeDelta kRetryDelay = base::TimeDelta::FromMinutes(5);
 const base::TimeDelta kMinimumRefreshDelay = base::TimeDelta::FromMinutes(1);
+
+const char kForceTreatUserAsAdvancedProtection[] =
+    "safe-browsing-treat-user-as-advanced-protection";
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -48,8 +55,8 @@ void AdvancedProtectionStatusManager::Initialize() {
 
 void AdvancedProtectionStatusManager::MaybeRefreshOnStartUp() {
   // Retrieves advanced protection service status from primary account's info.
-  CoreAccountInfo core_info =
-      identity_manager_->GetUnconsentedPrimaryAccountInfo();
+  CoreAccountInfo core_info = identity_manager_->GetPrimaryAccountInfo(
+      signin::ConsentLevel::kNotRequired);
   if (core_info.account_id.empty())
     return;
 
@@ -180,7 +187,7 @@ void AdvancedProtectionStatusManager::RefreshAdvancedProtectionStatus() {
     return;
 
   // Refresh OAuth access token.
-  identity::ScopeSet scopes;
+  signin::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
 
   access_token_fetcher_ =
@@ -219,8 +226,15 @@ void AdvancedProtectionStatusManager::UpdateLastRefreshTime() {
       last_refreshed_.ToDeltaSinceWindowsEpoch().InMicroseconds());
 }
 
-bool AdvancedProtectionStatusManager::RequestsAdvancedProtectionVerdicts() {
-  return is_under_advanced_protection();
+bool AdvancedProtectionStatusManager::IsUnderAdvancedProtection() const {
+  if (!pref_service_->GetBoolean(prefs::kAdvancedProtectionAllowed))
+    return false;
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kForceTreatUserAsAdvancedProtection))
+    return true;
+
+  return is_under_advanced_protection_;
 }
 
 bool AdvancedProtectionStatusManager::IsUnconsentedPrimaryAccount(
@@ -273,8 +287,14 @@ AdvancedProtectionStatusManager::AdvancedProtectionStatusManager(
 
 CoreAccountId AdvancedProtectionStatusManager::GetUnconsentedPrimaryAccountId()
     const {
-  return identity_manager_ ? identity_manager_->GetUnconsentedPrimaryAccountId()
+  return identity_manager_ ? identity_manager_->GetPrimaryAccountId(
+                                 signin::ConsentLevel::kNotRequired)
                            : CoreAccountId();
+}
+
+void AdvancedProtectionStatusManager::SetAdvancedProtectionStatusForTesting(
+    bool enrolled) {
+  is_under_advanced_protection_ = enrolled;
 }
 
 }  // namespace safe_browsing

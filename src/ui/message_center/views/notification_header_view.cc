@@ -81,6 +81,7 @@ class ExpandButton : public views::ImageView {
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
+  void OnThemeChanged() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
@@ -88,8 +89,6 @@ class ExpandButton : public views::ImageView {
 };
 
 ExpandButton::ExpandButton() {
-  focus_painter_ = views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, gfx::Insets(0, 0, 1, 1));
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
@@ -110,6 +109,14 @@ void ExpandButton::OnFocus() {
 void ExpandButton::OnBlur() {
   views::ImageView::OnBlur();
   SchedulePaint();
+}
+
+void ExpandButton::OnThemeChanged() {
+  ImageView::OnThemeChanged();
+  focus_painter_ = views::Painter::CreateSolidFocusPainter(
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_FocusedBorderColor),
+      gfx::Insets(0, 0, 1, 1));
 }
 
 void ExpandButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -152,15 +159,13 @@ gfx::Insets CalculateTopPadding(int font_list_height) {
 NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
     : views::Button(listener) {
   const views::FlexSpecification kAppNameFlex =
-      views::FlexSpecification::ForSizeRule(
-          views::MinimumFlexSizeRule::kScaleToZero,
-          views::MaximumFlexSizeRule::kPreferred)
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kPreferred)
           .WithOrder(1);
 
   const views::FlexSpecification kSpacerFlex =
-      views::FlexSpecification::ForSizeRule(
-          views::MinimumFlexSizeRule::kScaleToMinimum,
-          views::MaximumFlexSizeRule::kUnbounded)
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kUnbounded)
           .WithOrder(2);
 
   auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
@@ -279,31 +284,22 @@ void NotificationHeaderView::SetProgress(int progress) {
 }
 
 void NotificationHeaderView::SetSummaryText(const base::string16& text) {
-  DCHECK(!has_progress_);
   summary_text_view_->SetText(text);
-  UpdateSummaryTextVisibility();
-}
-
-void NotificationHeaderView::ClearProgress() {
-  summary_text_view_->SetText(base::string16());
   has_progress_ = false;
   UpdateSummaryTextVisibility();
 }
 
 void NotificationHeaderView::SetOverflowIndicator(int count) {
-  if (count > 0) {
-    summary_text_view_->SetText(l10n_util::GetStringFUTF16Int(
-        IDS_MESSAGE_CENTER_LIST_NOTIFICATION_HEADER_OVERFLOW_INDICATOR, count));
-  } else {
-    summary_text_view_->SetText(base::string16());
-  }
-
+  summary_text_view_->SetText(l10n_util::GetStringFUTF16Int(
+      IDS_MESSAGE_CENTER_LIST_NOTIFICATION_HEADER_OVERFLOW_INDICATOR, count));
+  has_progress_ = false;
   UpdateSummaryTextVisibility();
 }
 
 void NotificationHeaderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
 
+  node_data->role = ax::mojom::Role::kGenericContainer;
   node_data->SetName(app_name_view_->GetText());
   node_data->SetDescription(summary_text_view_->GetText() +
                             base::ASCIIToUTF16(" ") +
@@ -385,8 +381,8 @@ void NotificationHeaderView::SetSubpixelRenderingEnabled(bool enabled) {
   timestamp_view_->SetSubpixelRenderingEnabled(enabled);
 }
 
-void NotificationHeaderView::HideAppIcon() {
-  app_icon_view_->SetVisible(false);
+void NotificationHeaderView::SetAppIconVisible(bool visible) {
+  app_icon_view_->SetVisible(visible);
 }
 
 const base::string16& NotificationHeaderView::app_name_for_testing() const {
@@ -395,10 +391,6 @@ const base::string16& NotificationHeaderView::app_name_for_testing() const {
 
 const gfx::ImageSkia& NotificationHeaderView::app_icon_for_testing() const {
   return app_icon_view_->GetImage();
-}
-
-const base::string16& NotificationHeaderView::timestamp_for_testing() const {
-  return timestamp_view_->GetText();
 }
 
 void NotificationHeaderView::UpdateSummaryTextVisibility() {

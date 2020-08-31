@@ -37,6 +37,7 @@ rtc_library("system_wrappers") {
     "../rtc_base:checks",
     "../rtc_base/synchronization:rw_lock_wrapper",
     "../rtc_base/system:arch",
+    "../rtc_base/system:rtc_export",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 
@@ -77,51 +78,28 @@ rtc_library("system_wrappers") {
 }
 
 rtc_source_set("cpu_features_api") {
-  sources = [
-    "include/cpu_features_wrapper.h",
-  ]
+  sources = [ "include/cpu_features_wrapper.h" ]
 }
 
 rtc_library("field_trial") {
   visibility = [ "*" ]
-  public = [
-    "include/field_trial.h",
-  ]
-  sources = [
-    "source/field_trial.cc",
-  ]
+  public = [ "include/field_trial.h" ]
+  sources = [ "source/field_trial.cc" ]
   if (rtc_exclude_field_trial_default) {
     defines = [ "WEBRTC_EXCLUDE_FIELD_TRIAL_DEFAULT" ]
   }
   deps = [
     "../rtc_base:checks",
     "../rtc_base:logging",
+    "../rtc_base:stringutils",
     "//third_party/abseil-cpp/absl/strings",
-  ]
-}
-
-rtc_library("event_wrapper") {
-  visibility = [
-    "../modules/video_coding:video_coding_legacy",
-    "../modules/video_coding:video_coding_unittests",
-  ]
-  sources = [
-    "include/event_wrapper.h",
-    "source/event.cc",
-  ]
-  deps = [
-    "../rtc_base:rtc_event",
   ]
 }
 
 rtc_library("metrics") {
   visibility = [ "*" ]
-  public = [
-    "include/metrics.h",
-  ]
-  sources = [
-    "source/metrics.cc",
-  ]
+  public = [ "include/metrics.h" ]
+  sources = [ "source/metrics.cc" ]
   if (rtc_exclude_metrics_default) {
     defines = [ "WEBRTC_EXCLUDE_METRICS_DEFAULT" ]
   }
@@ -133,21 +111,15 @@ rtc_library("metrics") {
 
 if (is_android && !build_with_mozilla) {
   rtc_library("cpu_features_android") {
-    sources = [
-      "source/cpu_features_android.c",
-    ]
+    sources = [ "source/cpu_features_android.c" ]
 
-    deps = [
-      "//third_party/android_sdk:cpu_features",
-    ]
+    deps = [ "//third_party/android_sdk:cpu_features" ]
   }
 }
 
 if (is_linux) {
   rtc_library("cpu_features_linux") {
-    sources = [
-      "source/cpu_features_linux.c",
-    ]
+    sources = [ "source/cpu_features_linux.c" ]
     deps = [
       ":cpu_features_api",
       "../rtc_base/system:arch",

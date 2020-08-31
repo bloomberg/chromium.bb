@@ -1284,7 +1284,8 @@ class ArchivingStageMixin(object):
               commands.ExportToGCloud(
                   self._build_root, c_file, f.name, caller=type(self).__name__)
           else:
-            logging.warn('No datastore credential file found, Skipping Export')
+            logging.warning('No datastore credential file found; '
+                            'skipping export')
             return False
     else:
       logging.info('Skipping database update, no database or build_id.')

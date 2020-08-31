@@ -19,29 +19,29 @@ TabHelperFrameNodeSource::~TabHelperFrameNodeSource() {
   DCHECK(!performance_manager_tab_helper_observers_.IsObservingSources());
 }
 
-FrameNodeImpl* TabHelperFrameNodeSource::GetFrameNode(int render_process_id,
-                                                      int frame_id) {
+FrameNodeImpl* TabHelperFrameNodeSource::GetFrameNode(
+    content::GlobalFrameRoutingId render_process_host_id) {
   // Retrieve the client's RenderFrameHost and its associated
   // PerformanceManagerTabHelper.
   auto* render_frame_host =
-      content::RenderFrameHost::FromID(render_process_id, frame_id);
+      content::RenderFrameHost::FromID(render_process_host_id);
   if (!render_frame_host)
     return nullptr;
 
   PerformanceManagerTabHelper* performance_manager_tab_helper =
       PerformanceManagerTabHelper::FromWebContents(
           content::WebContents::FromRenderFrameHost(render_frame_host));
-  DCHECK(performance_manager_tab_helper);
+  if (!performance_manager_tab_helper)
+    return nullptr;
 
   return performance_manager_tab_helper->GetFrameNode(render_frame_host);
 }
 
 void TabHelperFrameNodeSource::SubscribeToFrameNode(
-    int render_process_id,
-    int frame_id,
+    content::GlobalFrameRoutingId render_process_host_id,
     OnbeforeFrameNodeRemovedCallback on_before_frame_node_removed_callback) {
   auto* render_frame_host =
-      content::RenderFrameHost::FromID(render_process_id, frame_id);
+      content::RenderFrameHost::FromID(render_process_host_id);
   DCHECK(render_frame_host);
 
   PerformanceManagerTabHelper* performance_manager_tab_helper =
@@ -70,10 +70,10 @@ void TabHelperFrameNodeSource::SubscribeToFrameNode(
   DCHECK(inserted);
 }
 
-void TabHelperFrameNodeSource::UnsubscribeFromFrameNode(int render_process_id,
-                                                        int frame_id) {
+void TabHelperFrameNodeSource::UnsubscribeFromFrameNode(
+    content::GlobalFrameRoutingId render_process_host_id) {
   auto* render_frame_host =
-      content::RenderFrameHost::FromID(render_process_id, frame_id);
+      content::RenderFrameHost::FromID(render_process_host_id);
   DCHECK(render_frame_host);
 
   PerformanceManagerTabHelper* performance_manager_tab_helper =

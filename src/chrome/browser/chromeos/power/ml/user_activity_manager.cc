@@ -11,9 +11,11 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/chromeos/power/ml/smart_dim/ml_agent.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
+#include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -23,7 +25,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "components/ukm/content/source_url_recorder.h"
-#include "content/public/common/page_importance_signals.h"
 
 namespace chromeos {
 namespace power {
@@ -263,13 +264,18 @@ void UserActivityManager::UpdateAndGetSmartDimDecision(
   }
   if (smart_dim_enabled &&
       base::FeatureList::IsEnabled(features::kUserActivityPrediction) &&
-      smart_dim_model_) {
+      SmartDimModelReady()) {
     waiting_for_model_decision_ = true;
     time_dim_decision_requested_ = base::TimeTicks::Now();
-    smart_dim_model_->RequestDimDecision(
-        features_,
+    auto request_callback =
         base::BindOnce(&UserActivityManager::HandleSmartDimDecision,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+    if (base::FeatureList::IsEnabled(features::kSmartDimNewMlAgent))
+      SmartDimMlAgent::GetInstance()->RequestDimDecision(
+          features_, std::move(request_callback));
+    else
+      smart_dim_model_->RequestDimDecision(features_,
+                                           std::move(request_callback));
   }
   waiting_for_final_action_ = true;
 }
@@ -478,7 +484,8 @@ TabProperty UserActivityManager::UpdateOpenTabURL() {
       property.engagement_score =
           TabMetricsLogger::GetSiteEngagementScore(contents);
       property.has_form_entry =
-          contents->GetPageImportanceSignals().had_form_interaction;
+          FormInteractionTabHelper::FromWebContents(contents)
+              ->had_form_interaction();
     }
     return property;
   }
@@ -554,7 +561,7 @@ void UserActivityManager::PopulatePreviousEventData(
   PreviousEventLoggingResult result = PreviousEventLoggingResult::kSuccess;
   if (!model_prediction_) {
     result = base::FeatureList::IsEnabled(features::kUserActivityPrediction) &&
-                     smart_dim_model_
+                     SmartDimModelReady()
                  ? PreviousEventLoggingResult::kErrorModelPredictionMissing
                  : PreviousEventLoggingResult::kErrorModelDisabled;
     LogPowerMLPreviousEventLoggingResult(result);
@@ -598,12 +605,23 @@ void UserActivityManager::ResetAfterLogging() {
 
 void UserActivityManager::CancelDimDecisionRequest() {
   LOG(WARNING) << "Cancelling pending Smart Dim decision request.";
-  smart_dim_model_->CancelPreviousRequest();
+  if (base::FeatureList::IsEnabled(features::kSmartDimNewMlAgent))
+    SmartDimMlAgent::GetInstance()->CancelPreviousRequest();
+  else
+    smart_dim_model_->CancelPreviousRequest();
+
   waiting_for_model_decision_ = false;
   const base::TimeDelta wait_time =
       base::TimeTicks::Now() - time_dim_decision_requested_;
   LogPowerMLSmartDimModelRequestCancel(wait_time);
   time_dim_decision_requested_ = base::TimeTicks();
+}
+
+bool UserActivityManager::SmartDimModelReady() {
+  // We assume that BuiltinWorker of SmartDimMlAgent can always load model and
+  // preprocessor config from rootfs, therefore SmartDimMlAgent is always ready.
+  return base::FeatureList::IsEnabled(features::kSmartDimNewMlAgent) ||
+         smart_dim_model_;
 }
 
 }  // namespace ml

@@ -14,6 +14,7 @@
     "BluetoothDevice",
     "BluetoothRemoteGATTCharacteristic",
     "CookieStore",
+    "DelegatedInkTrail",
     "MediaKeySession",
     "FileWriter",
     "GPUDevice",
@@ -68,7 +69,10 @@
     "MIDIAccess",
     "MIDIInput",
     "MIDIPort",
+    "VirtualKeyboard",
     "XR",
+    "XRLayer",
+    "XRLightProbe",
     "XRSession",
     "XRSpace",
     {

@@ -25,6 +25,7 @@
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_server_properties.h"
@@ -226,8 +227,8 @@ void ResourceScheduler::ScheduledResourceRequest::RunResumeCallback() {
   std::move(resume_callback_).Run();
 }
 
-// This is the handle we return to the ResourceDispatcherHostImpl so it can
-// interact with the request.
+// This is the handle we return to the URLLoader so it can interact with the
+// request.
 class ResourceScheduler::ScheduledResourceRequestImpl
     : public ScheduledResourceRequest {
  public:
@@ -277,10 +278,6 @@ class ResourceScheduler::ScheduledResourceRequestImpl
   void Start(StartMode start_mode) {
     DCHECK(!ready_);
 
-    // If the request was cancelled, do nothing.
-    if (!request_->status().is_success())
-      return;
-
     // If the request was deferred, need to start it.  Otherwise, will just not
     // defer starting it in the first place, and the value of |start_mode|
     // makes no difference.
@@ -316,7 +313,11 @@ class ResourceScheduler::ScheduledResourceRequestImpl
   net::URLRequest* url_request() { return request_; }
   const net::URLRequest* url_request() const { return request_; }
   bool is_async() const { return is_async_; }
-  uint32_t fifo_ordering() const { return fifo_ordering_; }
+  uint32_t fifo_ordering() const {
+    // Ensure that |fifo_ordering_| has been set before it's used.
+    DCHECK_LT(0u, fifo_ordering_);
+    return fifo_ordering_;
+  }
   void set_fifo_ordering(uint32_t fifo_ordering) {
     fifo_ordering_ = fifo_ordering;
   }
@@ -761,8 +762,9 @@ class ResourceScheduler::Client
         net::HttpServerProperties& http_server_properties =
             *request->url_request()->context()->http_server_properties();
         if (!http_server_properties.SupportsRequestPriority(
-                scheme_host_port,
-                request->url_request()->network_isolation_key())) {
+                scheme_host_port, request->url_request()
+                                      ->isolation_info()
+                                      .network_isolation_key())) {
           attributes |= kAttributeDelayable;
         }
       }
@@ -1065,8 +1067,9 @@ class ResourceScheduler::Client
     bool supports_priority =
         url_request.context()
             ->http_server_properties()
-            ->SupportsRequestPriority(scheme_host_port,
-                                      url_request.network_isolation_key());
+            ->SupportsRequestPriority(
+                scheme_host_port,
+                url_request.isolation_info().network_isolation_key());
 
     if (!priority_delayable) {
       // TODO(willchan): We should really improve this algorithm as described in
@@ -1577,6 +1580,10 @@ ResourceScheduler::ClientId ResourceScheduler::MakeClientId(
 bool ResourceScheduler::IsLongQueuedRequestsDispatchTimerRunning() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return long_queued_requests_dispatch_timer_.IsRunning();
+}
+
+base::SequencedTaskRunner* ResourceScheduler::task_runner() {
+  return task_runner_.get();
 }
 
 void ResourceScheduler::SetResourceSchedulerParamsManagerForTests(

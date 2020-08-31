@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_visual_properties.h"
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 
 namespace IPC {
@@ -21,6 +22,7 @@ class Message;
 }
 
 namespace content {
+class RenderFrameHostImpl;
 class RenderFrameProxyHost;
 
 // CrossProcessFrameConnector provides the platform view abstraction for
@@ -79,7 +81,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   RenderWidgetHostViewBase* GetRootRenderWidgetHostView() override;
   void RenderProcessGone() override;
   void SendIntrinsicSizingInfoToParent(
-      const blink::WebIntrinsicSizingInfo&) override;
+      blink::mojom::IntrinsicSizingInfoPtr) override;
 
   void UpdateCursor(const WebCursor& cursor) override;
   gfx::PointF TransformPointToRootCoordSpace(
@@ -90,12 +92,16 @@ class CONTENT_EXPORT CrossProcessFrameConnector
       RenderWidgetHostViewBase* target_view,
       const viz::SurfaceId& local_surface_id,
       gfx::PointF* transformed_point) override;
-  void ForwardAckedTouchpadZoomEvent(const blink::WebGestureEvent& event,
-                                     InputEventAckState ack_result) override;
+  void ForwardAckedTouchpadZoomEvent(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result) override;
   bool BubbleScrollEvent(const blink::WebGestureEvent& event) override;
   bool HasFocus() override;
   void FocusRootView() override;
-  bool LockMouse(bool request_unadjusted_movement) override;
+  blink::mojom::PointerLockResult LockMouse(
+      bool request_unadjusted_movement) override;
+  blink::mojom::PointerLockResult ChangeMouseLock(
+      bool request_unadjusted_movement) override;
   void UnlockMouse() override;
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;
@@ -107,12 +113,17 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   bool IsSubtreeThrottled() const override;
   void DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
+  void DidAckGestureEvent(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result) override;
 
   // Set the visibility of immediate child views, i.e. views whose parent view
   // is |view_|.
   void SetVisibilityForChildViews(bool visible) const override;
 
   void SetScreenSpaceRect(const gfx::Rect& screen_space_rect) override;
+
+  void SetIsInert(bool inert);
 
   // Handlers for messages received from the parent frame called
   // from RenderFrameProxyHost to be sent to |view_|.
@@ -123,6 +134,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   RenderWidgetHostViewBase* GetRootRenderWidgetHostViewForTesting() {
     return GetRootRenderWidgetHostView();
   }
+
+  void UpdateRenderThrottlingStatus(bool is_throttled, bool subtree_throttled);
 
   // These enums back crashed frame histograms - see MaybeLogCrash() and
   // MaybeLogShownCrash() below.  Please do not modify or remove existing enum
@@ -177,17 +190,19 @@ class CONTENT_EXPORT CrossProcessFrameConnector
       const FrameVisualProperties& visual_properties);
   void OnUpdateViewportIntersection(
       const blink::ViewportIntersectionState& viewport_intersection);
-  void OnSetIsInert(bool);
-  void OnUpdateRenderThrottlingStatus(bool is_throttled,
-                                      bool subtree_throttled);
+
+  // Gets the current RenderFrameHost for the
+  // |frame_proxy_in_parent_renderer_|'s (i.e., the child frame's)
+  // FrameTreeNode. This corresponds to B2 in the class-level comment
+  // above for CrossProcessFrameConnector.
+  RenderFrameHostImpl* current_child_frame_host() const;
 
   // The RenderFrameProxyHost that routes messages to the parent frame's
   // renderer process.
   RenderFrameProxyHost* frame_proxy_in_parent_renderer_;
 
   bool is_inert_ = false;
-  cc::TouchAction inherited_effective_touch_action_ =
-      cc::TouchAction::kTouchActionAuto;
+  cc::TouchAction inherited_effective_touch_action_ = cc::TouchAction::kAuto;
 
   bool is_throttled_ = false;
   bool subtree_throttled_ = false;

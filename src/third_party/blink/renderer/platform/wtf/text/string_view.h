@@ -58,12 +58,12 @@ class WTF_EXPORT StringView {
   StringView(StringImpl&, unsigned offset);
   StringView(StringImpl&, unsigned offset, unsigned length);
 
-  // From a String, implemented in String.h
+  // From a String, implemented in wtf_string.h
   inline StringView(const String&, unsigned offset, unsigned length);
   inline StringView(const String&, unsigned offset);
   inline StringView(const String&);
 
-  // From an AtomicString, implemented in AtomicString.h
+  // From an AtomicString, implemented in atomic_string.h
   inline StringView(const AtomicString&, unsigned offset, unsigned length);
   inline StringView(const AtomicString&, unsigned offset);
   inline StringView(const AtomicString&);
@@ -252,6 +252,15 @@ WTF_EXPORT bool DeprecatedEqualIgnoringCaseAndNullity(const StringView&,
                                                       const StringView&);
 
 WTF_EXPORT bool EqualIgnoringASCIICase(const StringView&, const StringView&);
+
+template <size_t N>
+inline bool EqualIgnoringASCIICase(const StringView& a,
+                                   const char (&literal)[N]) {
+  if (a.length() != N - 1 || (N == 1 && a.IsNull()))
+    return false;
+  return a.Is8Bit() ? EqualIgnoringASCIICase(a.Characters8(), literal, N - 1)
+                    : EqualIgnoringASCIICase(a.Characters16(), literal, N - 1);
+}
 
 // TODO(esprehn): Can't make this an overload of WTF::equal since that makes
 // calls to equal() that pass literal strings ambiguous. Figure out if we can

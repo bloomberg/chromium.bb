@@ -5,8 +5,9 @@
  */
 
 :host {
-    -webkit-user-select: none;
+    user-select: none;
     padding: 4px 12px 12px 12px;
+    border: 1px solid transparent;
 }
 
 .shadow-editor-field:last-of-type {
@@ -53,6 +54,7 @@
     padding: 3px 7px;
     line-height: 16px;
     border: 1px solid rgba(0, 0, 0, 0.14);
+    color: #333;
     background-color: #ffffff;
     text-align: center;
     font-weight: 500;
@@ -89,4 +91,17 @@
     margin-right: 8px;
     text-align: right;
     box-shadow: var(--focus-ring-inactive-shadow);
+}
+
+@media (forced-colors: active) {
+    .shadow-editor-button-left:hover,
+    .shadow-editor-button-right:hover
+    .shadow-editor-button-left.enabled,
+    .shadow-editor-button-right.enabled,
+    .shadow-editor-button-left.enabled:focus,
+    .shadow-editor-button-right.enabled:focus {
+        forced-color-adjust: none;
+        background-color: Highlight;
+        color: HighlightText;
+    }
 }

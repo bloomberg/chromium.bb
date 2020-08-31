@@ -5,10 +5,12 @@
 #ifndef ASH_WM_DESKS_DESK_PREVIEW_VIEW_H_
 #define ASH_WM_DESKS_DESK_PREVIEW_VIEW_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/aura/window_occlusion_tracker.h"
-#include "ui/views/view.h"
+#include "ui/views/controls/button/button.h"
 
 namespace ui {
 class LayerTreeOwner;
@@ -16,9 +18,9 @@ class LayerTreeOwner;
 
 namespace ash {
 
-class DesksBarItemBorder;
 class DeskMiniView;
 class WallpaperBaseView;
+class WmHighlightItemBorder;
 
 // A view that shows the contents of the corresponding desk in its mini_view.
 // This view has the following layer hierarchy:
@@ -57,16 +59,21 @@ class WallpaperBaseView;
 // to layers with rounded corners. In order to use the fast rounded corners
 // implementation we must make them sibling layers, rather than one being a
 // descendant of the other. Otherwise, this will trigger a render surface.
-class ASH_EXPORT DeskPreviewView : public views::View {
+class ASH_EXPORT DeskPreviewView : public views::Button {
  public:
   explicit DeskPreviewView(DeskMiniView* mini_view);
   ~DeskPreviewView() override;
 
   // Returns the height of the DeskPreviewView based on whether the |compact|
-  // small screens layout is used or not.
-  static int GetHeight(bool compact);
+  // small screens layout is used or not. In non-compact layouts, the height of
+  // the preview is a function of the |root| window's height.
+  static int GetHeight(aura::Window* root, bool compact);
 
   void SetBorderColor(SkColor color);
+
+  // Called when the CloseDeskButton is pressed, and the desk is about to be
+  // removed.
+  void OnRemovingDesk();
 
   // This should be called when there is a change in the desk contents so that
   // we can recreate the mirrored layer tree.
@@ -93,7 +100,7 @@ class ASH_EXPORT DeskPreviewView : public views::View {
 
   // Owned by this View via `View::border_`. This is just a convenient pointer
   // to it.
-  DesksBarItemBorder* border_ptr_;
+  WmHighlightItemBorder* border_ptr_;
 
   // Owns the layer tree of the desk's contents mirrored layers.
   std::unique_ptr<ui::LayerTreeOwner> desk_mirrored_contents_layer_tree_owner_;

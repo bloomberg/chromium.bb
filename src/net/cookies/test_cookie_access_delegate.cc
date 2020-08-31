@@ -22,7 +22,7 @@ CookieAccessSemantics TestCookieAccessDelegate::GetAccessSemantics(
 
 bool TestCookieAccessDelegate::ShouldIgnoreSameSiteRestrictions(
     const GURL& url,
-    const GURL& site_for_cookies) const {
+    const SiteForCookies& site_for_cookies) const {
   auto it =
       ignore_samesite_restrictions_schemes_.find(site_for_cookies.scheme());
   if (it == ignore_samesite_restrictions_schemes_.end())
@@ -48,7 +48,7 @@ void TestCookieAccessDelegate::SetIgnoreSameSiteRestrictionsScheme(
 std::string TestCookieAccessDelegate::GetKeyForDomainValue(
     const std::string& domain) const {
   DCHECK(!domain.empty());
-  return domain[0] == '.' ? domain.substr(1) : domain;
+  return cookie_util::CookieDomainAsHost(domain);
 }
 
 }  // namespace net

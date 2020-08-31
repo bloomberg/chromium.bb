@@ -130,7 +130,8 @@ void decode_tile(aom_codec_ctx_t *codec, const unsigned char *frame,
       die_codec(codec, "Failed to get the tile size");
     const unsigned int tile_width = tile_size >> 16;
     const unsigned int tile_height = tile_size & 65535;
-    const uint8_t output_frame_width_in_tiles = output_frame_width / tile_width;
+    const uint32_t output_frame_width_in_tiles =
+        output_frame_width / tile_width;
 
     // Copy the tile to the output frame.
     const int row_offset =
@@ -155,9 +156,7 @@ static void img_write_to_file(const aom_image_t *img, FILE *file,
 
 int main(int argc, char **argv) {
   FILE *outfile = NULL;
-  aom_codec_ctx_t codec;
   AvxVideoReader *reader = NULL;
-  const AvxInterface *decoder = NULL;
   const AvxVideoInfo *info = NULL;
   int num_references;
   aom_img_fmt_t ref_fmt = 0;
@@ -188,11 +187,15 @@ int main(int argc, char **argv) {
 
   info = aom_video_reader_get_info(reader);
 
-  decoder = get_aom_decoder_by_fourcc(info->codec_fourcc);
-  if (!decoder) die("Unknown input codec.");
-  printf("Using %s\n", aom_codec_iface_name(decoder->codec_interface()));
+  aom_codec_iface_t *decoder;
+  if (info->codec_fourcc == LST_FOURCC)
+    decoder = get_aom_decoder_by_fourcc(AV1_FOURCC);
+  else
+    die("Unknown input codec.");
+  printf("Using %s\n", aom_codec_iface_name(decoder));
 
-  if (aom_codec_dec_init(&codec, decoder->codec_interface(), NULL, 0))
+  aom_codec_ctx_t codec;
+  if (aom_codec_dec_init(&codec, decoder, NULL, 0))
     die_codec(&codec, "Failed to initialize decoder.");
 
   if (aom_codec_control(&codec, AV1D_SET_IS_ANNEXB, info->is_annexb)) {
@@ -274,7 +277,7 @@ int main(int argc, char **argv) {
   if (output_format != YUV1D) {
     // Allocate the output frame.
     aom_img_fmt_t out_fmt = ref_fmt;
-    if (!CONFIG_LOWBITDEPTH) out_fmt |= AOM_IMG_FMT_HIGHBITDEPTH;
+    if (FORCE_HIGHBITDEPTH_DECODING) out_fmt |= AOM_IMG_FMT_HIGHBITDEPTH;
     if (!aom_img_alloc(&output, out_fmt, output_frame_width,
                        output_frame_height, 32))
       die("Failed to allocate output image.");
@@ -283,6 +286,7 @@ int main(int argc, char **argv) {
   printf("Decoding tile list from file.\n");
   char line[1024];
   FILE *tile_list_fptr = fopen(tile_list_file, "r");
+  if (!tile_list_fptr) die_codec(&codec, "Failed to open tile list file.");
   int tile_list_cnt = 0;
   int tile_list_writes = 0;
   int tile_idx = 0;

@@ -29,7 +29,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_BAR_PROP_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_BAR_PROP_H_
 
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -37,7 +37,7 @@ namespace blink {
 
 class LocalFrame;
 
-class BarProp final : public ScriptWrappable, public DOMWindowClient {
+class BarProp final : public ScriptWrappable, public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(BarProp);
 
@@ -55,7 +55,7 @@ class BarProp final : public ScriptWrappable, public DOMWindowClient {
 
   bool visible() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Type type_;

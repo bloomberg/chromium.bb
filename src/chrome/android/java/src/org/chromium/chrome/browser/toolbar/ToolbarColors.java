@@ -8,19 +8,23 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.support.v7.content.res.AppCompatResources;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.ui.styles.ChromeColors;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
+import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.ui.util.ColorUtils;
 
 /**
  * Helpers to determine colors in toolbars.
@@ -134,7 +138,8 @@ public class ToolbarColors {
     public static @ColorRes int getThemedToolbarIconTintRes(boolean useLight) {
         // Light toolbar theme colors may be used in night mode, so use toolbar_icon_tint_dark which
         // is not overridden in night- resources.
-        return useLight ? R.color.tint_on_dark_bg : R.color.toolbar_icon_tint_dark;
+        return useLight ? R.color.default_icon_color_light_tint_list
+                        : R.color.toolbar_icon_tint_dark;
     }
 
     /**
@@ -146,5 +151,18 @@ public class ToolbarColors {
      */
     public static ColorStateList getThemedToolbarIconTint(Context context, boolean useLight) {
         return AppCompatResources.getColorStateList(context, getThemedToolbarIconTintRes(useLight));
+    }
+
+    /**
+     * Returns whether the incognito toolbar theme color can be used in overview mode.
+     */
+    public static boolean canUseIncognitoToolbarThemeColorInOverview() {
+        final boolean isAccessibilityEnabled = DeviceClassManager.enableAccessibilityLayout();
+        final boolean isHorizontalTabSwitcherEnabled = ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
+        final boolean isTabGridEnabled = TabUiFeatureUtilities.isGridTabSwitcherEnabled();
+        final boolean isStartSurfaceEnabled = StartSurfaceConfiguration.isStartSurfaceEnabled();
+        return (isAccessibilityEnabled || isHorizontalTabSwitcherEnabled || isTabGridEnabled
+                || isStartSurfaceEnabled);
     }
 }

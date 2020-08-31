@@ -5,12 +5,8 @@
       "bounds": [800, 1000],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='container'",
-          "rect": [400, 0, 200, 1000],
-          "reason": "incremental"
-        }
+      "invalidations": [
+        [400, 0, 200, 1000]
       ]
     },
     {
@@ -26,7 +22,8 @@
     {
       "name": "Scroll corner of LayoutView #document",
       "position": [785, 585],
-      "bounds": [15, 15]
+      "bounds": [15, 15],
+      "contentsOpaque": true
     }
   ]
 }

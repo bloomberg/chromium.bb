@@ -81,10 +81,10 @@ class LoopbackPartitions(object):
           cmd, debug_level=logging.DEBUG, capture_output=True, encoding='utf-8')
       self.dev = ret.output.strip()
       cmd = ['partx', '-d', self.dev]
-      cros_build_lib.sudo_run(cmd, quiet=True, error_code_ok=True)
+      cros_build_lib.sudo_run(cmd, quiet=True, check=False)
       cmd = ['partx', '-a', self.dev]
       ret = cros_build_lib.sudo_run(
-          cmd, debug_level=logging.DEBUG, error_code_ok=True)
+          cmd, debug_level=logging.DEBUG, check=False)
       if ret.returncode:
         logging.warning('Adding partitions failed; dumping log & retrying')
         cros_build_lib.run(['sync'])
@@ -181,7 +181,7 @@ class LoopbackPartitions(object):
     ret = cros_build_lib.sudo_run(
         ['dd', 'if=%s' % dev, 'skip=%d' % magic_ofs,
          'conv=notrunc,fsync', 'count=2', 'bs=1'],
-        debug_level=logging.DEBUG, capture_output=True, error_code_ok=True)
+        debug_level=logging.DEBUG, capture_output=True, check=False)
     if ret.returncode:
       return False
     return ret.output == b'\x53\xef'
@@ -201,7 +201,7 @@ class LoopbackPartitions(object):
     cros_build_lib.sudo_run(
         ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
          'conv=notrunc,fsync', 'count=1', 'bs=1'],
-        input=b'\0', debug_level=logging.DEBUG, redirect_stderr=True)
+        input=b'\0', debug_level=logging.DEBUG, stderr=True)
 
   def DisableRwMount(self, part_id, offset=0):
     """Disable RW mounts of the specified partition."""
@@ -218,7 +218,7 @@ class LoopbackPartitions(object):
     cros_build_lib.sudo_run(
         ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
          'conv=notrunc,fsync', 'count=1', 'bs=1'],
-        input=b'\xff', debug_level=logging.DEBUG, redirect_stderr=True)
+        input=b'\xff', debug_level=logging.DEBUG, stderr=True)
 
   def _Mount(self, part, mount_opts):
     if not self.destination:
@@ -261,7 +261,7 @@ class LoopbackPartitions(object):
                                   osutils.RmDir, path, sudo=True, sleep=1)
       self._to_be_rmdir = set()
       cmd = ['partx', '-d', self.dev]
-      cros_build_lib.sudo_run(cmd, quiet=True, error_code_ok=True)
+      cros_build_lib.sudo_run(cmd, quiet=True, check=False)
       cros_build_lib.sudo_run(['losetup', '--detach', self.dev])
       self.dev = None
       self.parts = {}
@@ -368,7 +368,7 @@ def SecurityTest(board=None, image=None, baselines=None, vboot_hash=None):
       cmd += ['--baselines', baselines]
     if vboot_hash:
       cmd += ['--vboot-hash', vboot_hash]
-    result = cros_build_lib.run(cmd, enter_chroot=True, error_code_ok=True)
+    result = cros_build_lib.run(cmd, enter_chroot=True, check=False)
     return not result.returncode
   else:
     try:

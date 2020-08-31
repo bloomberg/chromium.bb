@@ -72,7 +72,7 @@ function notifyObservers() {
     // Modules are only attached to DOM if they're for the current route, so
     // as long as the id of an element matches up to the current step, it
     // means that element is for the current route.
-    if (observer.id == `step-${step}`) {
+    if (observer.id === `step-${step}`) {
       currentRouteElement = observer;
     }
   });
@@ -138,7 +138,7 @@ export function navigateTo(route, step) {
  */
 export const NavigationBehavior = {
   /** @override */
-  attached: function() {
+  attached() {
     assert(!routeObservers.has(this));
     routeObservers.add(this);
 
@@ -152,7 +152,7 @@ export const NavigationBehavior = {
     // Modules are only attached to DOM if they're for the current route, so
     // as long as the id of an element matches up to the current step, it
     // means that element is for the current route.
-    if (this.id == `step-${step}`) {
+    if (this.id === `step-${step}`) {
       currentRouteElement = this;
       this.onRouteEnter();
       this.updateFocusForA11y();
@@ -160,7 +160,7 @@ export const NavigationBehavior = {
   },
 
   /** Called to update focus when progressing through the modules. */
-  updateFocusForA11y: function() {
+  updateFocusForA11y() {
     const header = this.$$('h1');
     if (header) {
       afterNextRender(this, () => header.focus());
@@ -168,7 +168,7 @@ export const NavigationBehavior = {
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     assert(routeObservers.delete(this));
   },
 
@@ -176,11 +176,11 @@ export const NavigationBehavior = {
    * @param {!Routes} route
    * @param {number} step
    */
-  onRouteChange: function(route, step) {},
+  onRouteChange(route, step) {},
 
-  onRouteEnter: function() {},
+  onRouteEnter() {},
 
-  onRouteExit: function() {},
+  onRouteExit() {},
 
-  onRouteUnload: function() {},
+  onRouteUnload() {},
 };

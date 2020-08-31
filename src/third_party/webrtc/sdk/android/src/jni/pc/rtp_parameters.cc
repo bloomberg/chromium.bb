@@ -20,11 +20,34 @@ namespace jni {
 
 namespace {
 
+webrtc::DegradationPreference JavaToNativeDegradationPreference(
+    JNIEnv* jni,
+    const JavaRef<jobject>& j_degradation_preference) {
+  std::string enum_name = GetJavaEnumName(jni, j_degradation_preference);
+
+  if (enum_name == "DISABLED")
+    return webrtc::DegradationPreference::DISABLED;
+
+  if (enum_name == "MAINTAIN_FRAMERATE")
+    return webrtc::DegradationPreference::MAINTAIN_FRAMERATE;
+
+  if (enum_name == "MAINTAIN_RESOLUTION")
+    return webrtc::DegradationPreference::MAINTAIN_RESOLUTION;
+
+  if (enum_name == "BALANCED")
+    return webrtc::DegradationPreference::BALANCED;
+
+  RTC_CHECK(false) << "Unexpected DegradationPreference enum_name "
+                   << enum_name;
+  return webrtc::DegradationPreference::DISABLED;
+}
+
 ScopedJavaLocalRef<jobject> NativeToJavaRtpEncodingParameter(
     JNIEnv* env,
     const RtpEncodingParameters& encoding) {
   return Java_Encoding_Constructor(
       env, NativeToJavaString(env, encoding.rid), encoding.active,
+      encoding.bitrate_priority, static_cast<int>(encoding.network_priority),
       NativeToJavaInteger(env, encoding.max_bitrate_bps),
       NativeToJavaInteger(env, encoding.min_bitrate_bps),
       NativeToJavaInteger(env, encoding.max_framerate),
@@ -73,6 +96,10 @@ RtpEncodingParameters JavaToNativeRtpEncodingParameters(
   encoding.active = Java_Encoding_getActive(jni, j_encoding_parameters);
   ScopedJavaLocalRef<jobject> j_max_bitrate =
       Java_Encoding_getMaxBitrateBps(jni, j_encoding_parameters);
+  encoding.bitrate_priority =
+      Java_Encoding_getBitratePriority(jni, j_encoding_parameters);
+  encoding.network_priority = static_cast<webrtc::Priority>(
+      Java_Encoding_getNetworkPriority(jni, j_encoding_parameters));
   encoding.max_bitrate_bps = JavaToNativeOptionalInt(jni, j_max_bitrate);
   ScopedJavaLocalRef<jobject> j_min_bitrate =
       Java_Encoding_getMinBitrateBps(jni, j_encoding_parameters);
@@ -102,6 +129,13 @@ RtpParameters JavaToNativeRtpParameters(JNIEnv* jni,
   ScopedJavaLocalRef<jstring> j_transaction_id =
       Java_RtpParameters_getTransactionId(jni, j_parameters);
   parameters.transaction_id = JavaToNativeString(jni, j_transaction_id);
+
+  ScopedJavaLocalRef<jobject> j_degradation_preference =
+      Java_RtpParameters_getDegradationPreference(jni, j_parameters);
+  if (!IsNull(jni, j_degradation_preference)) {
+    parameters.degradation_preference =
+        JavaToNativeDegradationPreference(jni, j_degradation_preference);
+  }
 
   ScopedJavaLocalRef<jobject> j_rtcp =
       Java_RtpParameters_getRtcp(jni, j_parameters);
@@ -158,6 +192,10 @@ ScopedJavaLocalRef<jobject> NativeToJavaRtpParameters(
     const RtpParameters& parameters) {
   return Java_RtpParameters_Constructor(
       env, NativeToJavaString(env, parameters.transaction_id),
+      parameters.degradation_preference.has_value()
+          ? Java_DegradationPreference_fromNativeIndex(
+                env, static_cast<int>(*parameters.degradation_preference))
+          : nullptr,
       NativeToJavaRtpRtcpParameters(env, parameters.rtcp),
       NativeToJavaList(env, parameters.header_extensions,
                        &NativeToJavaRtpHeaderExtensionParameter),

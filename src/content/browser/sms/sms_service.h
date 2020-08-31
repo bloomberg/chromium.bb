@@ -54,8 +54,7 @@ class CONTENT_EXPORT SmsService
   void Abort() override;
 
   // content::SmsQueue::Subscriber
-  void OnReceive(const std::string& one_time_code,
-                 const std::string& sms) override;
+  void OnReceive(const std::string& one_time_code) override;
 
  protected:
   // content::WebContentsObserver:
@@ -64,7 +63,8 @@ class CONTENT_EXPORT SmsService
 
  private:
   void OpenInfoBar(const std::string& one_time_code);
-  void Process(blink::mojom::SmsStatus, base::Optional<std::string> sms);
+  void Process(blink::mojom::SmsStatus,
+               base::Optional<std::string> one_time_code);
   void CleanUp();
 
   // Called when the user manually clicks the 'Enter code' button.
@@ -82,7 +82,7 @@ class CONTENT_EXPORT SmsService
   bool prompt_open_ = false;
 
   ReceiveCallback callback_;
-  base::Optional<std::string> sms_;
+  base::Optional<std::string> one_time_code_;
   base::TimeTicks start_time_;
   base::TimeTicks receive_time_;
 

@@ -19,12 +19,13 @@ class GrResourceProvider;
  */
 class GrStencilAndCoverPathRenderer : public GrPathRenderer {
 public:
+    const char* name() const final { return "NVPR"; }
 
     static GrPathRenderer* Create(GrResourceProvider*, const GrCaps&);
 
 
 private:
-    StencilSupport onGetStencilSupport(const GrShape&) const override {
+    StencilSupport onGetStencilSupport(const GrStyledShape&) const override {
         return GrPathRenderer::kStencilOnly_StencilSupport;
     }
 
